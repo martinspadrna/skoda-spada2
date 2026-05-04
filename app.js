@@ -1,0 +1,1986 @@
+const APP_KEY = "rotace_kalkulacky_state_v122";
+const ROTATION_BUILD = "2026-05-02-v150-" + Date.now();
+
+const HARD_MACHINE_HEADERS = ["TNKS01", "TBKR07", "TPKW01", "TPKW02", "TBKR01"];
+const SOFT_MACHINE_HEADERS = ["MSKC01", "MSKC03", "MSKC04", "MFKF06", "MFKF10"];
+
+const KNOWN_STAT_NAMES = new Set(["Blažek", "Kmínek", "Kříž", "Novotný", "Pech", "Starý", "Střížek", "Synek", "Třasák", "Špadrna"]);
+
+
+const NO_START_HOLIDAYS = new Set(["1-1", "4-3", "4-6", "5-1", "5-8", "7-5", "7-6", "9-28", "10-17", "10-28", "12-24", "12-25", "12-26"]);
+
+function dateKeyMD(date) {
+  return (date.getMonth() + 1) + "-" + date.getDate();
+}
+
+function isShiftStartBlocked(date) {
+  return !!getSpecialWorkInfo(date);
+}
+
+function getSpecialWorkInfo(now) {
+  const key = dateKeyMD(now);
+  const HOLIDAY_LABELS = {
+    "1-1": "Nový rok",
+    "4-3": "Velký pátek",
+    "4-6": "Velikonoční pondělí",
+    "5-1": "Svátek práce",
+    "5-8": "Den vítězství",
+    "7-5": "Cyril a Metoděj",
+    "7-6": "Jan Hus",
+    "9-28": "Den české státnosti",
+    "10-17": "Svátek",
+    "10-28": "Vznik ČSR",
+    "11-17": "Den boje za svobodu a demokracii",
+    "12-24": "Štědrý den",
+    "12-25": "1. svátek vánoční",
+    "12-26": "2. svátek vánoční"
+  };
+  if (HOLIDAY_LABELS[key]) return { type: "holiday", label: HOLIDAY_LABELS[key] };
+  if (key === "10-24" || key === "10-25") return { type: "czd", label: "CZD – celozávodní dovolená" };
+  if ((now >= new Date(2026, 6, 19, 14, 0, 0, 0) && now < new Date(2026, 7, 2, 18, 0, 0, 0)) ||
+      (now >= new Date(2026, 11, 23, 18, 0, 0, 0) && now < new Date(2027, 0, 2, 6, 0, 0, 0))) {
+    return { type: "czd", label: "CZD – celozávodní dovolená" };
+  }
+  return null;
+}
+
+const appRotation = loadRotationData();
+const app = {
+  rotationView: "names",
+  selectedMonth: null,
+  selectedName: null,
+  selectedStatsName: null,
+  selectedStatsMachine: null,
+  soustruhMode: "lis",
+  soustruhFirstBatch: "",
+  soustruhPlan: "1248",
+  soustruh126Start: 32,
+  soustruh106Counts: ["", "", "", ""],
+  selectedYear: new Date().getFullYear(),
+  importYear: new Date().getFullYear(),
+  importClicks: 0,
+  adminUnlocked: false,
+  machine: localStorage.getItem("machine") || "TBKR01",
+  prog: localStorage.getItem("prog") || "AD",
+  rotation: appRotation
+};
+
+// Budoucí rozšíření: statistiky za rok pro jednotlivá jména/stroje/úklid.
+
+const BRUS_CONFIG = {
+  TBKR01: {
+    AD:   { pieceSec: 58.5, dressEvery: 58, dressSec: 240, label: "AD" },
+    ADV:  { pieceSec: 62.7, dressEvery: 45, dressSec: 240, label: "AD volné" },
+    AE:   { pieceSec: 57.0, dressEvery: 58, dressSec: 240, label: "AE" },
+    AEV:  { pieceSec: 60.0, dressEvery: 45, dressSec: 240, label: "AE volné" },
+    AH:   { pieceSec: 63.0, dressEvery: 65, dressSec: 240, label: "AH" }
+  },
+  TBKR07: {
+    AD:   { pieceSec: 58.2, dressEvery: 59, dressSec: 240, label: "AD" },
+    ADV:  { pieceSec: 60.3, dressEvery: 45, dressSec: 240, label: "AD volné" },
+    AE:   { pieceSec: 56.4, dressEvery: 58, dressSec: 240, label: "AE" },
+    AEV:  { pieceSec: 60.0, dressEvery: 45, dressSec: 240, label: "AE volné" },
+    AH:   { pieceSec: 63.0, dressEvery: 65, dressSec: 240, label: "AH" }
+  }
+};
+
+
+function clone(obj) {
+  return JSON.parse(JSON.stringify(obj));
+}
+
+function normalizeRows(rows) {
+  return (Array.isArray(rows) ? rows : []).map(row => ({
+    date: String(row && row.date ? row.date : "").trim(),
+    cells: (Array.isArray(row && row.cells) ? row.cells : []).map(v => String(v || "").trim())
+  }));
+}
+
+function canonicalAbsenceKey(note) {
+  const n = normalizeNoteEntry(note);
+  const people = (n.people && n.people.length) ? n.people.join(" a ") : (n.person || "");
+  if (n.isAbsence) {
+    return ["ABS", n.date, n.shift, people, n.code].join("|");
+  }
+  return ["NOTE", n.date, n.shift, n.text || people || ""].join("|");
+}
+
+function mergeNotes(primaryNotes, fallbackNotes) {
+  const out = [];
+  const seen = new Set();
+
+  const pushNote = (note) => {
+    const normalized = normalizeNoteEntry(note);
+    const peopleText = (normalized.people && normalized.people.length)
+      ? normalized.people.join(" a ")
+      : normalized.person;
+
+    const item = {
+      date: normalized.date,
+      shift: normalized.shift,
+      person: peopleText,
+      code: normalized.code,
+      text: normalized.text || [normalized.date, peopleText, normalized.code].filter(Boolean).join(" ").trim()
+    };
+
+    const key = canonicalAbsenceKey(item);
+    if (!seen.has(key)) {
+      seen.add(key);
+      out.push(item);
+    }
+  };
+
+  (Array.isArray(primaryNotes) ? primaryNotes : []).forEach(pushNote);
+  (Array.isArray(fallbackNotes) ? fallbackNotes : []).forEach(pushNote);
+  return out;
+}
+
+function normalizeMonthForImport(monthData, fallbackMonthData) {
+  const normalizeSection = (section, fallbackMachines) => {
+    const incoming = monthData && monthData[section] ? monthData[section] : null;
+    const fallback = fallbackMonthData && fallbackMonthData[section] ? fallbackMonthData[section] : null;
+    const incomingRows = Array.isArray(incoming && incoming.rows) ? normalizeRows(incoming.rows) : null;
+    const fallbackRows = Array.isArray(fallback && fallback.rows) ? normalizeRows(fallback.rows) : [];
+    const rows = incomingRows !== null ? incomingRows : fallbackRows;
+
+    const machines = (incoming && Array.isArray(incoming.machines) && incoming.machines.length)
+      ? incoming.machines.slice()
+      : ((fallback && Array.isArray(fallback.machines) && fallback.machines.length)
+          ? fallback.machines.slice()
+          : fallbackMachines.slice());
+    const title = (incoming && incoming.title) || (fallback && fallback.title) || (section === "hard" ? "Rotace tvrdota" : "Rotace měkota");
+    return { title, machines, rows };
+  };
+
+  const normalizeNotesArray = (arr) => (Array.isArray(arr) ? arr : []).map(n => ({
+    date: String(n && n.date ? n.date : "").trim(),
+    shift: String(n && n.shift ? n.shift : "").trim(),
+    person: String(n && n.person ? n.person : "").trim(),
+    code: String(n && n.code ? n.code : "").trim(),
+    text: String(n && n.text ? n.text : "").trim()
+  }));
+
+  const hasNotes = monthData && Object.prototype.hasOwnProperty.call(monthData, "notes");
+  const incomingNotes = hasNotes ? normalizeNotesArray(monthData.notes) : null;
+  const fallbackNotes = fallbackMonthData && Array.isArray(fallbackMonthData.notes) ? normalizeNotesArray(fallbackMonthData.notes) : [];
+
+  return {
+    hard: normalizeSection("hard", HARD_MACHINE_HEADERS),
+    soft: normalizeSection("soft", SOFT_MACHINE_HEADERS),
+    notes: incomingNotes !== null ? incomingNotes : fallbackNotes
+  };
+}
+
+function normalizeRotationData(rotation) {
+  const src = clone(initialRotationData);
+  const incoming = rotation && rotation.months && typeof rotation.months === "object" ? rotation.months : {};
+  Object.entries(incoming).forEach(([monthKey, monthData]) => {
+    const fallbackMonthData = initialRotationData.months ? initialRotationData.months[monthKey] : null;
+    src.months[monthKey] = normalizeMonthForImport(monthData, fallbackMonthData);
+  });
+  return src;
+}
+
+function defaultRotation() {
+  return normalizeRotationData({ months: {} });
+}
+
+function loadRotationData() {
+  try {
+    const savedBuild = localStorage.getItem("rotationBuild");
+    if (savedBuild && savedBuild !== ROTATION_BUILD) {
+      return defaultRotation();
+    }
+    const raw = localStorage.getItem(APP_KEY);
+    if (!raw) return defaultRotation();
+    const parsed = JSON.parse(raw);
+    if (!parsed || !parsed.months) return defaultRotation();
+    return normalizeRotationData(parsed);
+  } catch (e) {
+    return defaultRotation();
+  }
+}
+
+function saveRotationData() {
+
+
+  try {
+    localStorage.setItem(APP_KEY, JSON.stringify(app.rotation));
+    localStorage.setItem("rotationBuild", ROTATION_BUILD);
+    localStorage.setItem("machine", app.machine);
+    localStorage.setItem("prog", app.prog);
+    localStorage.setItem("f_kusy", document.getElementById("f_kusy")?.value || "");
+    localStorage.setItem("p_kusy", document.getElementById("p_kusy")?.value || "");
+    localStorage.setItem("davka", document.getElementById("davka")?.value || "");
+    localStorage.setItem("orovnani", document.getElementById("orovnani")?.value || "");
+    localStorage.setItem("celkem", document.getElementById("celkem")?.value || "");
+    localStorage.setItem("soustruhMode", app.soustruhMode);
+    localStorage.setItem("soustruhFirstBatch", app.soustruhFirstBatch || "");
+    localStorage.setItem("soustruhPlan", app.soustruhPlan || "");
+    localStorage.setItem("soustruh126Start", String(app.soustruh126Start || 32));
+    localStorage.setItem("soustruh106Counts", JSON.stringify(app.soustruh106Counts || ["", "", "", ""]));
+  } catch (e) {}
+}
+
+function restoreInputs() {
+  const setVal = (id, key) => {
+    const el = document.getElementById(id);
+    if (el) el.value = localStorage.getItem(key) || "";
+  };
+  setVal("f_kusy", "f_kusy");
+  setVal("p_kusy", "p_kusy");
+  setVal("davka", "davka");
+  setVal("orovnani", "orovnani");
+  setVal("celkem", "celkem");
+  const lisPlanEl = document.getElementById("lis_plan");
+  if (lisPlanEl) lisPlanEl.value = "1248";
+  const v126PlanEl = document.getElementById("v126_plan");
+  if (v126PlanEl) v126PlanEl.value = "1248";
+  const v106PlanEl = document.getElementById("v106_plan");
+  if (v106PlanEl) v106PlanEl.value = "1248";
+  try {
+    const arr = JSON.parse(localStorage.getItem("soustruh106Counts") || "[\"\",\"\",\"\",\"\"]");
+    ["v106_c1","v106_c2","v106_c3","v106_c4"].forEach((id, idx) => { const el = document.getElementById(id); if (el && !el.value) el.value = arr[idx] || ""; });
+  } catch (e) {}
+  app.soustruhMode = localStorage.getItem("soustruhMode") || app.soustruhMode || "lis";
+  app.soustruhFirstBatch = localStorage.getItem("soustruhFirstBatch") || "";
+  app.soustruhPlan = localStorage.getItem("soustruhPlan") || "";
+  app.soustruh126Start = parseInt(localStorage.getItem("soustruh126Start"), 10) || 32;
+  try { app.soustruh106Counts = JSON.parse(localStorage.getItem("soustruh106Counts") || "[\"\",\"\",\"\",\"\"]"); } catch (e) { app.soustruh106Counts = ["", "", "", ""]; }
+}
+
+function showPage(id) {
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  const el = document.getElementById(id);
+  if (el) el.classList.add("active");
+  if (id === "rotace") {
+    renderRotace();
+  }
+  if (id === "brusy") {
+    renderBrusy();
+  }
+  if (id === "soustruhy") {
+    renderSoustruhy();
+  }
+}
+
+function setRotaceView(view) {
+  app.rotationView = view;
+  const namesPanel = document.getElementById("rotaceNamesPanel");
+  const statsPanel = document.getElementById("rotaceStatsPanel");
+  const monthsPanel = document.getElementById("rotaceMonthsPanel");
+  const tabNames = document.getElementById("tabNames");
+  const tabStats = document.getElementById("tabStats");
+  const tabMonths = document.getElementById("tabMonths");
+
+  [namesPanel, statsPanel, monthsPanel].forEach(panel => panel && panel.classList.remove("active"));
+  [tabNames, tabStats, tabMonths].forEach(tab => tab && (tab.style.outline = "none"));
+
+  if (view === "names") {
+    namesPanel && namesPanel.classList.add("active");
+    tabNames && (tabNames.style.outline = "3px solid #7CFF7C");
+  } else if (view === "stats") {
+    statsPanel && statsPanel.classList.add("active");
+    tabStats && (tabStats.style.outline = "3px solid #7CFF7C");
+  } else {
+    monthsPanel && monthsPanel.classList.add("active");
+    tabMonths && (tabMonths.style.outline = "3px solid #7CFF7C");
+  }
+}
+
+function getShiftEnd(now) {
+  const d = new Date(now);
+  const day = d.getDay();
+
+  if (day === 0 && d.getHours() >= 6 && d.getHours() < 14) {
+    const e = new Date(d);
+    e.setHours(14, 0, 0, 0);
+    return e;
+  }
+
+  if (d.getHours() >= 6 && d.getHours() < 18) {
+    const e = new Date(d);
+    e.setHours(18, 0, 0, 0);
+    return e;
+  } else {
+    const e = new Date(d);
+    if (d.getHours() >= 18) e.setDate(e.getDate() + 1);
+    e.setHours(6, 0, 0, 0);
+    return e;
+  }
+}
+
+const SHIFT_CYCLE_START = new Date(2026, 3, 27, 0, 0, 0, 0); // 27.4.2026 = B / 1. týden
+const SHIFT_CYCLE_ORDER = ["B", "D", "A", "C"];
+const SHIFT_PHASE_BY_TEAM = { B: 0, D: 1, A: 2, C: 3 };
+
+function startOfLocalDay(d) {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
+}
+
+function startOfWeekMonday(d) {
+  const day = d.getDay();
+  const diff = (day + 6) % 7; // Monday = 0
+  const base = startOfLocalDay(d);
+  base.setDate(base.getDate() - diff);
+  return base;
+}
+
+function formatDuration(ms) {
+  const totalMinutes = Math.max(0, Math.floor(ms / 60000));
+  const days = Math.floor(totalMinutes / 1440);
+  const hours = Math.floor((totalMinutes % 1440) / 60);
+  const minutes = totalMinutes % 60;
+
+  const parts = [];
+  if (days) parts.push(days + " d");
+  if (hours || parts.length) parts.push(hours + " h");
+  parts.push(minutes + " min");
+  return parts.join(" ");
+}
+
+function parseMonthKey(monthKey) {
+  const m = /^(\d{1,2})\/(\d{2})$/.exec(String(monthKey || "").trim());
+  if (!m) return null;
+  return {
+    month: parseInt(m[1], 10),
+    year: 2000 + parseInt(m[2], 10)
+  };
+}
+
+function makeSortDateFromMonthKey(monthKey, day, month) {
+  const parsed = parseMonthKey(monthKey);
+  const year = parsed ? parsed.year : 2026;
+  const mm = Number.isFinite(month) ? month : (parsed ? parsed.month : 1);
+  const dd = Number.isFinite(day) ? day : 1;
+  return new Date(year, mm - 1, dd, 12, 0, 0, 0).toISOString();
+}
+
+function monthKeyFromYearMonth(year, month) {
+  return String(month) + "/" + String(year).slice(-2);
+}
+
+function getAvailableYears(rotation) {
+  const src = rotation || app.rotation || {};
+  const years = new Set();
+  Object.keys(src.months || {}).forEach(monthKey => {
+    const parsed = parseMonthKey(monthKey);
+    if (parsed) years.add(parsed.year);
+  });
+  if (!years.size) years.add(new Date().getFullYear());
+  return [...years].sort((a, b) => a - b);
+}
+
+function getImportYears(rotation) {
+  const available = getAvailableYears(rotation);
+  const currentYear = new Date().getFullYear();
+  const minYear = available.length ? Math.min(...available) : currentYear;
+  const maxYear = available.length ? Math.max(...available) : currentYear;
+  const start = Math.min(minYear - 1, currentYear - 1);
+  const end = Math.max(maxYear + 1, currentYear + 2);
+  const years = [];
+  for (let y = start; y <= end; y += 1) years.push(y);
+  return years;
+}
+
+function getInitialSelectedYear(rotation) {
+  const years = getAvailableYears(rotation);
+  const currentYear = new Date().getFullYear();
+  return years.includes(currentYear) ? currentYear : years[years.length - 1];
+}
+
+function getMonthsForYear(rotation, year) {
+  return Object.keys((rotation || app.rotation || {}).months || {})
+    .filter(monthKey => {
+      const parsed = parseMonthKey(monthKey);
+      return parsed && parsed.year === year;
+    })
+    .sort((a, b) => {
+      const pa = parseMonthKey(a);
+      const pb = parseMonthKey(b);
+      if (pa.year !== pb.year) return pa.year - pb.year;
+      return pa.month - pb.month;
+    });
+}
+
+function formatCount(value) {
+  const num = Number(value) || 0;
+  return Number.isInteger(num) ? String(num) : String(num).replace(".", ",");
+}
+
+function formatDoses(value) {
+  const num = Number(value) || 0;
+  const rounded = Math.round((num / 32) * 10) / 10;
+  return formatCount(rounded);
+}
+
+function createDateFromMonthKey(monthKey, day) {
+  const parsed = parseMonthKey(monthKey);
+  if (!parsed) return null;
+  return new Date(parsed.year, parsed.month - 1, day, 12, 0, 0, 0);
+}
+
+function isSundayForMonthKey(monthKey, day) {
+  const d = createDateFromMonthKey(monthKey, day);
+  return d ? d.getDay() === 0 : false;
+}
+
+function setSelectedYear(year) {
+  const numeric = parseInt(year, 10);
+  if (!Number.isFinite(numeric)) return;
+  app.selectedYear = numeric;
+
+  const yearMonths = getMonthsForYear(app.rotation, numeric);
+  if (!app.selectedMonth || !yearMonths.includes(app.selectedMonth)) {
+    app.selectedMonth = yearMonths[0] || null;
+  }
+
+  renderRotace();
+}
+
+function setSelectedStatsName(name) {
+  app.selectedStatsName = app.selectedStatsName === name ? null : (name || null);
+  renderStatsPanel();
+}
+
+function setSelectedStatsMachine(machine) {
+  app.selectedStatsMachine = app.selectedStatsMachine === machine ? null : (machine || null);
+  renderStatsPanel();
+}
+
+
+function syncYearControls() {
+  const monthYearSelect = document.getElementById("monthYearSelect");
+  const statsYearSelect = document.getElementById("statsYearSelect");
+  const importYearSelect = document.getElementById("importYearSelect");
+  const overwriteMonth = document.getElementById("overwriteMonth");
+
+  const fillSelect = (el, values, selected) => {
+    if (!el) return;
+    const current = String(selected || "");
+    el.innerHTML = "";
+    values.forEach(year => {
+      const opt = document.createElement("option");
+      opt.value = String(year);
+      opt.textContent = String(year);
+      if (String(year) === current) opt.selected = true;
+      el.appendChild(opt);
+    });
+  };
+
+  fillSelect(monthYearSelect, getAvailableYears(app.rotation), app.selectedYear);
+  fillSelect(statsYearSelect, getAvailableYears(app.rotation), app.selectedYear);
+  fillSelect(importYearSelect, getImportYears(app.rotation), app.importYear);
+
+  if (overwriteMonth) {
+    const selectedYear = parseInt(app.importYear, 10) || parseInt(app.selectedYear, 10);
+    const months = getMonthsForYear(app.rotation, selectedYear);
+    overwriteMonth.innerHTML = '<option value="">— jen doplnit nové měsíce —</option>';
+    months.forEach(monthKey => {
+      const opt = document.createElement("option");
+      opt.value = monthKey;
+      opt.textContent = monthKey;
+      overwriteMonth.appendChild(opt);
+    });
+  }
+}
+
+function renderMonthGrid() {
+  const monthGrid = document.getElementById("monthsGrid");
+  if (!monthGrid) return;
+  const months = getMonthsForYear(app.rotation, parseInt(app.selectedYear, 10));
+  monthGrid.innerHTML = "";
+  months.forEach(monthKey => {
+    const el = document.createElement("div");
+    el.className = "listItem" + (app.selectedMonth === monthKey ? " activeChoice" : "");
+    el.textContent = monthKey;
+    el.onclick = () => {
+      app.selectedMonth = monthKey;
+      renderRotace();
+      renderMonth(monthKey);
+      setRotaceView("months");
+    };
+    monthGrid.appendChild(el);
+  });
+  if (!months.length) {
+    monthGrid.innerHTML = "<div class='smallText'>Pro tenhle rok tu zatím nic není.</div>";
+  }
+}
+
+
+function getStatsMachineLabel(machine) {
+  const name = String(machine || "").trim();
+  if (!name) return "";
+
+  if (/^MSKC\d+$/i.test(name)) return "MSK";
+  if (/^MFKF\d+$/i.test(name)) return "MFK";
+  if (name === "TNKS01") return "TNK";
+  if (/^TBKR\d+$/i.test(name)) return "TBK";
+  if (name === "TPKW02") return "W02";
+  if (name === "TPKW01") return "W01";
+
+  return name;
+}
+
+function getStatsMachineOrder(machineKeys) {
+  const preferred = ["MSK", "MFK", "TNK", "TBK", "W02", "W01"];
+  const keys = Array.isArray(machineKeys) ? machineKeys.slice() : [];
+  const out = [];
+
+  preferred.forEach(key => {
+    if (keys.includes(key)) out.push(key);
+  });
+
+  keys
+    .filter(key => !preferred.includes(key))
+    .sort((a, b) => a.localeCompare(b, "cs"))
+    .forEach(key => out.push(key));
+
+  return out;
+}
+
+function buildStatsForYear(year) {
+  const stats = {
+    year,
+    people: {},
+    names: [],
+    machineTotals: {},
+    cleanTotals: {},
+    absenceTotals: {}
+  };
+
+  const ensureColumn = (label) => {
+    const key = String(label || "").trim();
+    if (!key) return "";
+    if (!(key in stats.machineTotals)) {
+      stats.machineTotals[key] = 0;
+      stats.cleanTotals[key] = 0;
+      stats.absenceTotals[key] = 0;
+    }
+    return key;
+  };
+
+  const ensurePerson = (name) => {
+    if (!stats.people[name]) {
+      stats.people[name] = {
+        name,
+        work: {},
+        clean: {},
+        absence: {},
+        totalWork: 0,
+        totalClean: 0,
+        totalAbsence: 0,
+        workDays: new Set()
+      };
+    }
+    return stats.people[name];
+  };
+
+  const nameIndex = buildNameIndex(app.rotation);
+  const knownStatNames = getKnownStatNames();
+
+  Object.entries(app.rotation.months || {}).forEach(([monthKey, month]) => {
+    const parsedMonth = parseMonthKey(monthKey);
+    if (!parsedMonth || parsedMonth.year !== year) return;
+
+    ["hard", "soft"].forEach(section => {
+      const sec = month[section];
+      if (!sec || !Array.isArray(sec.rows)) return;
+
+      sec.rows.forEach(row => {
+        const parsedDate = parseDateToken(row.date);
+        if (!parsedDate) return;
+        const isSunday = isSundayForMonthKey(monthKey, parsedDate.day);
+        const isSundayMorning = isSunday && /^R/.test(parsedDate.shift || "");
+
+        const rowNames = new Set();
+
+        (row.cells || []).forEach((cell, idx) => {
+          const name = String(cell || "").trim();
+          const machine = (sec.machines || [])[idx] || "";
+          if (!name || !machine || !knownStatNames.has(name)) return;
+
+          rowNames.add(name);
+          const person = ensurePerson(name);
+          const isPairMachine = section === "hard" && (machine === "TNKS01" || machine === "TPKW01");
+
+          if (isPairMachine) {
+            if (isSunday) {
+              const column = ensureColumn(getStatsMachineLabel(machine));
+              if (column) {
+                person.work[column] = (person.work[column] || 0) + 1;
+                stats.machineTotals[column] = (stats.machineTotals[column] || 0) + 1;
+              }
+            } else {
+              ["TNK", "W01"].forEach(columnName => {
+                const column = ensureColumn(columnName);
+                if (!column) return;
+                person.work[column] = (person.work[column] || 0) + 0.5;
+                stats.machineTotals[column] = (stats.machineTotals[column] || 0) + 0.5;
+              });
+            }
+          } else {
+            const column = ensureColumn(getStatsMachineLabel(machine));
+            if (!column) return;
+            person.work[column] = (person.work[column] || 0) + 1;
+            stats.machineTotals[column] = (stats.machineTotals[column] || 0) + 1;
+          }
+
+          if (isSundayMorning) {
+            const cleanColumn = ensureColumn(getStatsMachineLabel(machine));
+            if (cleanColumn) {
+              person.clean[cleanColumn] = (person.clean[cleanColumn] || 0) + 1;
+              person.totalClean += 1;
+              stats.cleanTotals[cleanColumn] = (stats.cleanTotals[cleanColumn] || 0) + 1;
+            }
+          }
+        });
+
+        rowNames.forEach(name => {
+          const person = ensurePerson(name);
+          const dayKey = `${monthKey}|${row.date}|${name}`;
+          if (!person.workDays.has(dayKey)) {
+            person.workDays.add(dayKey);
+            person.totalWork += 1;
+          }
+        });
+      });
+    });
+  });
+
+  Object.entries(app.rotation.months || {}).forEach(([monthKey, month]) => {
+    const parsedMonth = parseMonthKey(monthKey);
+    if (!parsedMonth || parsedMonth.year !== year) return;
+
+    (month.notes || []).forEach(note => {
+      const n = normalizeNoteEntry(note);
+      if (!n.isAbsence || !n.people || !n.people.length) return;
+
+      const parsedDate = parseDateToken(n.date);
+      const shift = n.shift || (parsedDate ? parsedDate.shift : "");
+
+      n.people.forEach(personName => {
+        const name = String(personName || "").trim();
+        if (!name || !knownStatNames.has(name)) return;
+
+        const person = ensurePerson(name);
+        const candidates = (nameIndex[name] || []).filter(entry => {
+          if (entry.absence) return false;
+          if (entry.monthKey !== monthKey) return false;
+          if (entry.date !== n.date) return false;
+          if (shift && entry.shift && entry.shift !== shift) return false;
+          return true;
+        });
+
+        const chosen = candidates[0] || (nameIndex[name] || []).find(entry => !entry.absence && entry.monthKey === monthKey && entry.date === n.date);
+        if (chosen && chosen.machine) {
+          const column = ensureColumn(getStatsMachineLabel(chosen.machine));
+          if (column) {
+            person.absence[column] = (person.absence[column] || 0) + 1;
+            stats.absenceTotals[column] = (stats.absenceTotals[column] || 0) + 1;
+          }
+        }
+        person.totalAbsence += 1;
+      });
+    });
+  });
+
+  Object.values(stats.people).forEach(person => {
+    ["TNK", "W01"].forEach(column => {
+      if (typeof person.work[column] === "number") person.work[column] = Math.round(person.work[column]);
+    });
+  });
+  ["TNK", "W01"].forEach(column => {
+    if (typeof stats.machineTotals[column] === "number") stats.machineTotals[column] = Math.round(stats.machineTotals[column]);
+  });
+
+  stats.names = Object.keys(stats.people).filter(name => KNOWN_STAT_NAMES.has(name)).sort((a, b) => a.localeCompare(b, "cs"));
+  stats.machineOrder = getStatsMachineOrder(Object.keys(stats.machineTotals));
+  return stats;
+}
+
+
+
+
+function renderStatsPanel() {
+  const statsNameGrid = document.getElementById("statsNameGrid");
+  const statsMachineGrid = document.getElementById("statsMachineGrid");
+  const statsNameView = document.getElementById("statsNameView");
+  const statsMachineView = document.getElementById("statsMachineView");
+  if (!statsNameGrid || !statsMachineGrid || !statsNameView || !statsMachineView) return;
+
+  const year = parseInt(app.selectedYear, 10) || getInitialSelectedYear(app.rotation);
+  const stats = buildStatsForYear(year);
+
+  if (app.selectedStatsMachine && !stats.machineOrder.includes(app.selectedStatsMachine)) {
+    app.selectedStatsMachine = null;
+  }
+  if (app.selectedStatsName && !stats.people[app.selectedStatsName]) {
+    app.selectedStatsName = null;
+  }
+
+  statsNameGrid.innerHTML = "";
+  stats.names.forEach(name => {
+    const el = document.createElement("div");
+    el.className = "listItem" + (app.selectedStatsName === name ? " activeChoice" : "");
+    el.textContent = name;
+    el.onclick = () => setSelectedStatsName(name);
+    statsNameGrid.appendChild(el);
+  });
+  if (!stats.names.length) {
+    statsNameGrid.innerHTML = "<div class='smallText'>Pro tenhle rok tu ještě nejsou žádná data.</div>";
+  }
+
+  statsMachineGrid.innerHTML = "";
+  stats.machineOrder.forEach(machine => {
+    const el = document.createElement("div");
+    el.className = "listItem" + (app.selectedStatsMachine === machine ? " activeChoice" : "");
+    el.textContent = machine;
+    el.dataset.machine = machine;
+    el.onclick = () => setSelectedStatsMachine(machine);
+    statsMachineGrid.appendChild(el);
+  });
+  if (!stats.machineOrder.length) {
+    statsMachineGrid.innerHTML = "<div class='smallText'>Pro tenhle rok tu ještě nejsou žádné stroje.</div>";
+  }
+
+  if (app.selectedStatsName) {
+    const person = stats.people[app.selectedStatsName];
+    if (person) {
+      let title = escapeHtml(person.name) + " — " + escapeHtml(String(year));
+      statsNameView.innerHTML =
+        "<div class='sectionTitle'>" + title + "</div>" +
+        "<div class='statsSummary'>" +
+        "<div class='tile'><div class='smallText'>Práce celkem</div><div style='font-size:22px;margin-top:4px;'>" + formatCount(person.totalWork) + "</div></div>" +
+        "<div class='tile'><div class='smallText'>Úklid celkem</div><div style='font-size:22px;margin-top:4px;'>" + formatCount(person.totalClean) + "</div></div>" +
+        "<div class='tile'><div class='smallText'>Nepřítomnost celkem</div><div style='font-size:22px;margin-top:4px;'>" + formatCount(person.totalAbsence) + "</div></div>" +
+        "</div>" +
+        "<div class='tableWrap'><table class='statsTable'><thead><tr><th>Stroj</th><th>Práce</th><th>Úklid</th></tr></thead><tbody>" +
+        stats.machineOrder.map(machine => "<tr><td>" + escapeHtml(machine) + "</td><td>" + formatCount(person.work[machine] || 0) + "</td><td>" + formatCount(person.clean[machine] || 0) + "</td></tr>").join("") +
+        "</tbody></table></div>";
+    } else {
+      statsNameView.innerHTML = "";
+    }
+  } else {
+    statsNameView.innerHTML = "";
+  }
+
+  if (app.selectedStatsMachine) {
+    const machine = app.selectedStatsMachine;
+    const machineStats = Object.values(stats.people)
+      .map(p => ({
+        name: p.name,
+        work: Number(p.work[machine] || 0),
+        clean: Number(p.clean[machine] || 0)
+      }))
+      .filter(p => p.work > 0 || p.clean > 0)
+      .sort((a, b) => {
+        if (b.work !== a.work) return b.work - a.work;
+        if (b.clean !== a.clean) return b.clean - a.clean;
+        return a.name.localeCompare(b.name, "cs");
+      });
+
+    const top3 = machineStats.filter(p => p.work > 0).slice(0, 3);
+    const topClean2 = machineStats
+      .filter(p => p.clean > 0)
+      .sort((a, b) => {
+        if (b.clean !== a.clean) return b.clean - a.clean;
+        if (b.work !== a.work) return b.work - a.work;
+        return a.name.localeCompare(b.name, "cs");
+      })
+      .slice(0, 2);
+
+    let html = "";
+    html += "<div class='sectionTitle'>Stroj " + escapeHtml(machine) + "</div>";
+    html += "<div class='statsSummary'>";
+    html += "<div class='tile'><div class='smallText'>Top 3 jména</div><div style='font-size:22px;margin-top:4px;'>" + formatCount(top3.length) + "</div></div>";
+    html += "<div class='tile'><div class='smallText'>Úklid #1</div><div style='font-size:18px;margin-top:6px;'>" + escapeHtml(topClean2[0] ? topClean2[0].name + " (" + formatCount(topClean2[0].clean) + ")" : "—") + "</div></div>";
+    html += "<div class='tile'><div class='smallText'>Úklid #2</div><div style='font-size:18px;margin-top:6px;'>" + escapeHtml(topClean2[1] ? topClean2[1].name + " (" + formatCount(topClean2[1].clean) + ")" : "—") + "</div></div>";
+    html += "</div>";
+    html += "<div class='tableWrap'><table class='statsTable'><thead><tr><th>Pořadí</th><th>Jméno</th><th>Práce</th></tr></thead><tbody>";
+    if (top3.length) {
+      top3.forEach((item, idx) => {
+        html += "<tr><td>" + (idx + 1) + "</td><td>" + escapeHtml(item.name) + "</td><td>" + formatCount(item.work) + "</td></tr>";
+      });
+    } else {
+      html += "<tr><td colspan='3'>Na tenhle stroj tu ještě nejsou žádná data.</td></tr>";
+    }
+    html += "</tbody></table></div>";
+    statsMachineView.innerHTML = html;
+  } else {
+    statsMachineView.innerHTML = "";
+  }
+}
+
+
+function addDays(base, days) {
+  const d = new Date(base);
+  d.setDate(d.getDate() + days);
+  return d;
+}
+
+function buildShiftIntervals(weekStart, cycleIndex) {
+  const intervals = [];
+  const add = (dayOffset, startHour, startMinute, endDayOffset, endHour, endMinute, label) => {
+    intervals.push({
+      start: new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + dayOffset, startHour, startMinute, 0, 0),
+      end: new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + endDayOffset, endHour, endMinute, 0, 0),
+      label
+    });
+  };
+
+  const pushIfAllowed = (dayOffset, startHour, startMinute, endDayOffset, endHour, endMinute, label) => {
+    const start = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + dayOffset, startHour, startMinute, 0, 0);
+    if (isShiftStartBlocked(start)) return;
+    intervals.push({
+      start,
+      end: new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + endDayOffset, endHour, endMinute, 0, 0),
+      label
+    });
+  };
+
+  if (cycleIndex === 0) { // B
+    pushIfAllowed(0, 6, 0, 0, 18, 0, "ranní");
+    pushIfAllowed(1, 6, 0, 1, 18, 0, "ranní");
+    pushIfAllowed(4, 18, 0, 5, 6, 0, "noční");
+    pushIfAllowed(5, 18, 0, 6, 6, 0, "noční");
+    pushIfAllowed(6, 22, 0, 7, 6, 0, "noční");
+  } else if (cycleIndex === 1) { // D
+    pushIfAllowed(2, 6, 0, 2, 18, 0, "ranní");
+    pushIfAllowed(3, 6, 0, 3, 18, 0, "ranní");
+  } else if (cycleIndex === 2) { // A
+    pushIfAllowed(0, 18, 0, 1, 6, 0, "noční");
+    pushIfAllowed(1, 18, 0, 2, 6, 0, "noční");
+    pushIfAllowed(4, 6, 0, 4, 18, 0, "ranní");
+    pushIfAllowed(5, 6, 0, 5, 18, 0, "ranní");
+    pushIfAllowed(6, 6, 0, 6, 14, 0, "ranní");
+  } else if (cycleIndex === 3) { // C
+    pushIfAllowed(2, 18, 0, 3, 6, 0, "noční");
+    pushIfAllowed(3, 18, 0, 4, 6, 0, "noční");
+  }
+
+  return intervals;
+}
+
+function getTeamShiftState(now, team) {
+  const baseWeek = startOfWeekMonday(SHIFT_CYCLE_START);
+  const currentWeek = startOfWeekMonday(now);
+  const weekDiff = Math.floor((startOfLocalDay(currentWeek) - startOfLocalDay(baseWeek)) / 86400000 / 7);
+  const phase = SHIFT_PHASE_BY_TEAM[team] ?? 0;
+  const currentIndex = ((weekDiff + phase) % 4 + 4) % 4;
+
+  const weeks = [
+    { start: addDays(currentWeek, -7), index: ((currentIndex - 1) % 4 + 4) % 4 },
+    { start: currentWeek, index: currentIndex },
+    { start: addDays(currentWeek, 7), index: (currentIndex + 1) % 4 }
+  ];
+
+  const intervals = weeks.flatMap(w => buildShiftIntervals(w.start, w.index));
+  const active = intervals.find(item => now >= item.start && now < item.end) || null;
+  if (active) {
+    return { active: true, label: active.label, start: active.start, end: active.end };
+  }
+
+  const next = intervals
+    .filter(item => item.start > now && !isShiftStartBlocked(item.start))
+    .sort((a, b) => a.start - b.start)[0] || null;
+
+  return { active: false, next };
+}
+
+function getActiveShiftNow(now) {
+  for (const team of SHIFT_CYCLE_ORDER) {
+    const state = getTeamShiftState(now, team);
+    if (state.active) return { team, label: state.label, start: state.start, end: state.end };
+  }
+  return null;
+}
+
+function updateShift() {
+  const now = new Date();
+  const active = getActiveShiftNow(now);
+  const dState = getTeamShiftState(now, "D");
+  const special = getSpecialWorkInfo(now);
+  const sameDay = (a, b) => a && b && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  const showSpecial = special && (!active || sameDay(active.start, now));
+
+  const lines = [];
+  if (active && !showSpecial) {
+    lines.push("Aktuálně v práci: směna " + active.team + (active.label ? " (" + active.label + ")" : ""));
+  } else if (special) {
+    if (special.type === "holiday") {
+      lines.push("Svátek – " + special.label);
+    } else {
+      lines.push("CZD – celozávodní dovolená");
+    }
+    lines.push("Dnes se nepracuje");
+  } else {
+    lines.push("Aktuálně není žádná směna");
+  }
+
+  if (dState.active) {
+    lines.push("Směna D: do konce zbývá " + formatDuration(dState.end - now));
+  } else if (dState.next) {
+    lines.push("Směna D začne za: " + formatDuration(dState.next.start - now));
+  } else {
+    lines.push("Směna D: bez dalšího termínu");
+  }
+
+  document.getElementById("shiftTime").innerText = lines.join("\n");
+}
+setInterval(updateShift, 10000);
+updateShift();
+
+
+function resetSoustruhy() {
+  ["lis_first", "lis_plan", "v126_first", "v126_plan", "v106_first", "v106_plan", "v106_c1", "v106_c2", "v106_c3", "v106_c4"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  });
+  ["soustruhyLisResult", "soustruhy126Result", "soustruhy106Result"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = "";
+  });
+  app.soustruhMode = "lis";
+  app.soustruh126Start = 32;
+  app.soustruh106Counts = ["", "", "", ""];
+  renderSoustruhy();
+  saveRotationData();
+}
+
+function resetFields(ids) {
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  });
+  saveRotationData();
+}
+
+function calcF() {
+  const sec = Math.max(0, (getShiftEnd(new Date()) - new Date()) / 1000);
+  const ks = Math.floor(sec / 60);
+  const hotovo = parseInt(document.getElementById("f_kusy").value) || 0;
+  const celkem = hotovo + ks;
+  document.getElementById("outF").innerHTML =
+    "Do konce směny ještě stihneš " + ks + " ks, tj. " + formatDoses(ks) + " dávek.<br>" +
+    "Celkově budeš mít " + celkem + " ks, tj. " + formatDoses(celkem) + " dávek.<br><br>" +
+    "Na obou frézkách ještě stihneš " + (ks * 2) + " ks, tj. " + formatDoses(ks * 2) + " dávek.";
+  saveRotationData();
+}
+
+function calcP() {
+  const sec = Math.max(0, (getShiftEnd(new Date()) - new Date()) / 1000);
+  const ks = Math.floor(sec / 30);
+  const hotovo = parseInt(document.getElementById("p_kusy").value) || 0;
+  const celkem = hotovo + ks;
+  document.getElementById("outP").innerHTML =
+    "Do konce směny ještě stihneš " + ks + " ks, tj. " + formatDoses(ks) + " dávek.<br>" +
+    "Celkově budeš mít " + celkem + " ks, tj. " + formatDoses(celkem) + " dávek.";
+  saveRotationData();
+}
+
+function calcBrusy() {
+  const sec = Math.max(0, (getShiftEnd(new Date()) - new Date()) / 1000);
+  const cfg = getBrusConfig(app.machine, app.prog);
+  const ks = countBrusyPieces(sec, cfg);
+  const celkem = parseInt(document.getElementById("celkem").value) || 0;
+  const celkove = celkem + ks;
+  document.getElementById("outB").innerHTML =
+    "Do konce směny ještě stihneš " + ks + " ks, tj. " + formatDoses(ks) + " dávek.<br>" +
+    "Celkově budeš mít " + celkove + " ks, tj. " + formatDoses(celkove) + " dávek.";
+  saveRotationData();
+}
+
+function setMachine(m) {
+  app.machine = m;
+  renderBrusy();
+  renderSoustruhy();
+  saveRotationData();
+}
+
+function setProg(p) {
+  app.prog = p;
+  renderBrusy();
+  renderSoustruhy();
+  saveRotationData();
+}
+
+function getBrusConfig(machine, prog) {
+  const machineCfg = BRUS_CONFIG[machine] || BRUS_CONFIG.TBKR01;
+  const cfg = machineCfg[prog] || machineCfg.AD;
+  return {
+    machine,
+    prog,
+    label: cfg.label || prog,
+    pieceSec: Number(cfg.pieceSec) || 0,
+    dressEvery: Number(cfg.dressEvery) || 0,
+    dressSec: Number(cfg.dressSec) || 0
+  };
+}
+
+function formatBrusSeconds(value) {
+  return String(Number(value) || 0).replace(".", ",");
+}
+
+function countBrusyPieces(availableSec, cfg) {
+  const pieceSec = Number(cfg.pieceSec) || 0;
+  const dressEvery = Math.max(1, Math.floor(Number(cfg.dressEvery) || 1));
+  const dressSec = Math.max(0, Number(cfg.dressSec) || 0);
+  if (pieceSec <= 0) return 0;
+
+  let low = 0;
+  let high = Math.max(1, Math.floor(availableSec / pieceSec) + 1);
+
+  const needed = (pieces) => {
+    if (pieces <= 0) return 0;
+    return pieces * pieceSec + Math.floor((pieces - 1) / dressEvery) * dressSec;
+  };
+
+  while (low < high) {
+    const mid = Math.ceil((low + high) / 2);
+    if (needed(mid) <= availableSec) low = mid;
+    else high = mid - 1;
+  }
+  return low;
+}
+
+
+function getSoustruhBatchList(firstBatch, sizes, plan) {
+  const batches = [];
+  const start = parseInt(firstBatch, 10);
+  const target = parseInt(plan, 10);
+  if (!Number.isFinite(start) || !Number.isFinite(target) || target <= 0 || !Array.isArray(sizes) || !sizes.length) return batches;
+
+  let produced = 0;
+  let batchNo = start;
+  let index = 0;
+  while (produced < target && batches.length < 1000) {
+    const size = Number(sizes[index % sizes.length]) || 0;
+    if (size <= 0) break;
+    produced += size;
+    batches.push({ batchNo, size, produced });
+    batchNo += 1;
+    index += 1;
+  }
+  return batches;
+}
+
+function renderBatchResult(title, batches, target, firstBatch) {
+  if (!batches.length) return "<div class='smallText'>Doplň vstupy, ať se to spočítá.</div>";
+  const lastBatch = batches[batches.length - 1].batchNo;
+  const total = batches[batches.length - 1].produced;
+  let html = "<div class='smallText' style='margin-bottom:10px;'>" + escapeHtml(title) + "</div>";
+  html += "<div class='statsSummary'>";
+  html += "<div class='tile'><div class='smallText'>Dávek</div><div style='font-size:22px;margin-top:4px;'>" + formatCount(batches.length) + "</div></div>";
+  html += "<div class='tile'><div class='smallText'>Poslední dávka</div><div style='font-size:22px;margin-top:4px;'>" + formatCount(lastBatch) + "</div></div>";
+  html += "<div class='tile'><div class='smallText'>Vyrobeno</div><div style='font-size:22px;margin-top:4px;'>" + formatCount(total) + "</div></div>";
+  html += "</div>";
+  html += "<div class='tableWrap'><table class='statsTable'><thead><tr><th>Dávka</th><th>Ks</th><th>Součet</th></tr></thead><tbody>";
+  batches.forEach(item => {
+    html += "<tr><td>" + formatCount(item.batchNo) + "</td><td>" + formatCount(item.size) + "</td><td>" + formatCount(item.produced) + "</td></tr>";
+  });
+  html += "</tbody></table></div>";
+  return html;
+}
+
+function setSoustruhMode(mode) {
+  app.soustruhMode = mode;
+  renderSoustruhy();
+  saveRotationData();
+}
+
+function setSoustruh126Start(size) {
+  app.soustruh126Start = Number(size) === 31 ? 31 : 32;
+  renderSoustruhy();
+  saveRotationData();
+}
+
+function renderSoustruhy() {
+  const modeButtons = document.querySelectorAll('[data-soustruh-mode]');
+  const panels = {
+    lis: document.getElementById('soustruhyLisPanel'),
+    "126": document.getElementById('soustruhy126Panel'),
+    "106": document.getElementById('soustruhy106Panel')
+  };
+
+  modeButtons.forEach(btn => {
+    const mode = btn.getAttribute('data-soustruh-mode');
+    btn.classList.toggle('activeChoice', app.soustruhMode === mode);
+  });
+
+  Object.entries(panels).forEach(([mode, panel]) => {
+    if (panel) panel.classList.toggle('active', app.soustruhMode === mode);
+  });
+
+  const lisFirst = document.getElementById('lis_first');
+  const lisPlan = document.getElementById('lis_plan');
+  const v126First = document.getElementById('v126_first');
+  const v126Plan = document.getElementById('v126_plan');
+  const v106First = document.getElementById('v106_first');
+  const v106Plan = document.getElementById('v106_plan');
+  const v106C1 = document.getElementById('v106_c1');
+  const v106C2 = document.getElementById('v106_c2');
+  const v106C3 = document.getElementById('v106_c3');
+  const v106C4 = document.getElementById('v106_c4');
+
+  if (lisPlan && !lisPlan.value) lisPlan.value = app.soustruhPlan || '1248';
+  if (v126Plan && !v126Plan.value) v126Plan.value = app.soustruhPlan || '1248';
+  if (v106Plan && !v106Plan.value) v106Plan.value = app.soustruhPlan || '1248';
+  if (v106C1 && !v106C1.value) v106C1.value = app.soustruh106Counts[0] || '';
+  if (v106C2 && !v106C2.value) v106C2.value = app.soustruh106Counts[1] || '';
+  if (v106C3 && !v106C3.value) v106C3.value = app.soustruh106Counts[2] || '';
+  if (v106C4 && !v106C4.value) v106C4.value = app.soustruh106Counts[3] || '';
+
+  const startButtons = document.querySelectorAll('[data-startsize]');
+  startButtons.forEach(btn => {
+    const size = Number(btn.getAttribute('data-startsize'));
+    btn.classList.toggle('activeChoice', app.soustruh126Start === size);
+  });
+}
+
+function calcSoustruhyLis() {
+  const first = parseInt(document.getElementById('lis_first').value, 10);
+  const plan = parseInt(document.getElementById('lis_plan').value, 10);
+  const out = document.getElementById('soustruhyLisResult');
+  if (!Number.isFinite(first) || !Number.isFinite(plan) || plan <= 0) {
+    out.innerHTML = "<div class='smallText'>Doplň první dávku a plán.</div>";
+    return;
+  }
+  app.soustruhPlan = String(plan);
+  const batches = getSoustruhBatchList(first, [32], plan);
+  out.innerHTML = renderBatchResult('Lis', batches, plan, first);
+  saveRotationData();
+}
+
+function calcSoustruhy126() {
+  const first = parseInt(document.getElementById('v126_first').value, 10);
+  const plan = parseInt(document.getElementById('v126_plan').value, 10);
+  const out = document.getElementById('soustruhy126Result');
+  if (!Number.isFinite(first) || !Number.isFinite(plan) || plan <= 0) {
+    out.innerHTML = "<div class='smallText'>Doplň první dávku a plán.</div>";
+    return;
+  }
+  app.soustruhPlan = String(plan);
+  const startSize = app.soustruh126Start === 31 ? 31 : 32;
+  const sizes = startSize === 32 ? [32, 31] : [31, 32];
+  const batches = getSoustruhBatchList(first, sizes, plan);
+  out.innerHTML = renderBatchResult('Volné 126 ks', batches, plan, first);
+  saveRotationData();
+}
+
+function calcSoustruhy106() {
+  const first = parseInt(document.getElementById('v106_first').value, 10);
+  const plan = parseInt(document.getElementById('v106_plan').value, 10);
+  const counts = [
+    parseInt(document.getElementById('v106_c1').value, 10),
+    parseInt(document.getElementById('v106_c2').value, 10),
+    parseInt(document.getElementById('v106_c3').value, 10),
+    parseInt(document.getElementById('v106_c4').value, 10)
+  ];
+  const out = document.getElementById('soustruhy106Result');
+  if (!Number.isFinite(first) || !Number.isFinite(plan) || plan <= 0 || counts.some(v => !Number.isFinite(v) || v <= 0)) {
+    out.innerHTML = "<div class='smallText'>Doplň první dávku, plán a první čtyři dávky.</div>";
+    return;
+  }
+  app.soustruhPlan = String(plan);
+  app.soustruh106Counts = counts.map(v => String(v));
+  const batches = getSoustruhBatchList(first, counts, plan);
+  out.innerHTML = renderBatchResult('Volné 106 ks', batches, plan, first);
+  saveRotationData();
+}
+function renderBrusy() {
+  document.querySelectorAll("#brusy .bbtn").forEach(b => {
+    b.classList.remove("activeMachine", "activeIndex", "activeChoice");
+  });
+  const machineBtn = document.querySelector(`#brusy [data-machine="${app.machine}"]`);
+  const progBtn = document.querySelector(`#brusy [data-prog="${app.prog}"]`);
+  if (machineBtn) machineBtn.classList.add("activeMachine", "activeChoice");
+  if (progBtn) progBtn.classList.add("activeIndex", "activeChoice");
+
+  const info = document.getElementById("brusyInfo");
+  if (info) {
+    const cfg = getBrusConfig(app.machine, app.prog);
+    info.innerHTML =
+      "<div><b>" + escapeHtml(app.machine) + " / " + escapeHtml(cfg.label) + "</b></div>" +
+      "<div class='smallText'>Vyroba kusu: " + formatBrusSeconds(cfg.pieceSec) + " s · Orovnává po " + formatCount(cfg.dressEvery) + " ks · Orovnává " + formatCount(Math.round(cfg.dressSec / 60)) + " min</div>";
+  }
+}
+
+function monthKeyFromSheetName(sheetName) {
+  const m = /^(\d{2})\.(\d{4})$/.exec(String(sheetName || "").trim());
+  if (!m) return null;
+  return `${parseInt(m[1], 10)}/${String(parseInt(m[2], 10)).slice(-2)}`;
+}
+
+function normalizeShiftText(text) {
+  const raw = String(text || "").trim().replace(/\s+/g, " ");
+  if (!raw) return "";
+  const parts = raw.split(" ");
+  const dedup = [];
+  for (const part of parts) {
+    if (dedup.length === 0 || dedup[dedup.length - 1] !== part) dedup.push(part);
+  }
+  return dedup.join(" ").trim();
+}
+
+
+function escapeRegExp(text) {
+  return String(text || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function cleanDateLabel(rawDate, shift) {
+  const date = String(rawDate || "").trim().replace(/\s+/g, " ");
+  const sh = String(shift || "").trim();
+  if (!date || !sh) return date;
+  const re = new RegExp("(?:\\s+" + escapeRegExp(sh) + ")+$");
+  return date.replace(re, "").trim();
+}
+
+function parseDateToken(token) {
+  const m = /^(\d{1,2})\.(\d{1,2})\.\s*(.*)$/.exec(token || "");
+  if (!m) return null;
+  const day = parseInt(m[1], 10);
+  const month = parseInt(m[2], 10);
+  const shift = normalizeShiftText(m[3] || "");
+  return {
+    day,
+    month,
+    shift,
+    sortDate: new Date(2026, month - 1, day).toISOString()
+  };
+}
+
+var ABSENCE_LABELS = {
+  "D": "Dovolená",
+  "NV": "Náhradní volno",
+  "Š": "Školení",
+  "§": "Paragraf",
+  "S": "Senior",
+  "L": "Lázně"
+};
+
+function absenceLabelFromCode(code) {
+  const raw = String(code || "").trim();
+  if (!raw) return "";
+  const key = raw.toUpperCase();
+  if (ABSENCE_LABELS && ABSENCE_LABELS[key]) return ABSENCE_LABELS[key];
+  if (/^\d+(?:[.,]\d+)?$/.test(raw)) return "";
+  return raw;
+}
+
+function sanitizeAbsencePersonName(text) {
+  return String(text || "")
+    .trim()
+    .replace(/\s+(?:od|do)\b.*$/i, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function splitAbsencePeople(text) {
+  const raw = String(text || "").trim();
+  if (!raw) return [];
+
+  return raw
+    .replace(/\s+(?:a|i|&|\/)\s+/gi, " | ")
+    .replace(/[,;+]/g, " | ")
+    .split(/\s*\|\s*/g)
+    .map(part => part.trim())
+    .filter(Boolean)
+    .filter(part => !/^od\s+\d/i.test(part));
+}
+
+function looksLikeAbsencePerson(text) {
+  const t = String(text || "").trim();
+  if (!t) return false;
+  if (/\d/.test(t)) return false;
+  if (/\bdo\b/i.test(t)) return false;
+  if (/[:/]/.test(t)) return false;
+  return true;
+}
+
+function normalizeNoteEntry(note) {
+  const date = String(note && note.date ? note.date : "").trim();
+  const shiftFromDate = parseDateToken(date);
+  let shift = normalizeShiftText(String(note && note.shift ? note.shift : (shiftFromDate ? shiftFromDate.shift : "")) || "");
+  let person = sanitizeAbsencePersonName(note && note.person ? note.person : "");
+  let code = String(note && note.code ? note.code : "").trim();
+  let text = String(note && note.text ? note.text : "").trim();
+  let people = [];
+
+  if (!person && text) {
+    const tokens = text.split(/\s+/).filter(Boolean);
+    let start = 0;
+
+    // ignore leading date token from the notes column text, e.g. "29.4. R Špadrna D"
+    if (tokens[start] && /^\d{1,2}\.\d{1,2}\.$/.test(tokens[start])) {
+      start += 1;
+    }
+
+    // ignore / capture an explicit shift token if it is part of the note text
+    if (tokens[start] && /^(?:N8|R8|N|R)$/i.test(tokens[start])) {
+      if (!shift) shift = normalizeShiftText(tokens[start].toUpperCase());
+      start += 1;
+    }
+
+    const remaining = tokens.slice(start);
+
+    if (remaining.length >= 2 && absenceLabelFromCode(remaining[remaining.length - 1])) {
+      code = code || remaining[remaining.length - 1];
+      const peopleText = remaining.slice(0, -1).join(" ").trim();
+      people = splitAbsencePeople(peopleText).map(sanitizeAbsencePersonName).filter(Boolean);
+      person = sanitizeAbsencePersonName(people[0] || peopleText);
+    } else if (remaining.length === 1 && !absenceLabelFromCode(remaining[0])) {
+      person = sanitizeAbsencePersonName(remaining[0]);
+    } else if (remaining.length > 1 && !code && looksLikeAbsencePerson(remaining[0])) {
+      // fallback: "Jméno" without an explicit code means vacation
+      person = sanitizeAbsencePersonName(remaining[0]);
+      code = "D";
+    }
+  }
+
+  person = sanitizeAbsencePersonName(person);
+
+  if (!code && person) {
+    code = "D";
+  }
+
+  const label = absenceLabelFromCode(code);
+  if (!people.length && person) people = splitAbsencePeople(person).map(sanitizeAbsencePersonName).filter(Boolean);
+  if (!people.length && person) people = [person];
+  const isAbsence = !!label && !!person;
+
+  return {
+    date,
+    shift,
+    person,
+    people,
+    code,
+    label,
+    isAbsence,
+    text
+  };
+}
+
+
+function buildNameIndex(rotation) {
+  const map = new Map();
+  Object.entries(rotation.months || {}).forEach(([monthKey, month]) => {
+    ["hard", "soft"].forEach(section => {
+      const sec = month[section];
+      if (!sec || !sec.rows) return;
+      sec.rows.forEach(row => {
+        const parsed = parseDateToken(row.date);
+        if (!parsed) return;
+        (row.cells || []).forEach((cell, idx) => {
+          const name = (cell || "").trim();
+          if (!name || !KNOWN_STAT_NAMES.has(name)) return;
+          if (!map.has(name)) map.set(name, []);
+          const machine = (sec.machines && sec.machines[idx]) ? sec.machines[idx] : "";
+          map.get(name).push({
+            monthKey,
+            section,
+            date: row.date,
+            dateLabel: cleanDateLabel(row.date, parsed.shift),
+            shift: parsed.shift,
+            machine,
+            sortDate: makeSortDateFromMonthKey(monthKey, parsed.day, parsed.month)
+          });
+        });
+      });
+    });
+
+    (month.notes || []).forEach(note => {
+      const n = normalizeNoteEntry(note);
+      if (!n.isAbsence || !n.people || !n.people.length) return;
+      const parsed = parseDateToken(n.date);
+      const shift = n.shift || (parsed ? parsed.shift : "");
+      n.people.forEach(personName => {
+        const name = String(personName || "").trim();
+        if (!name || !KNOWN_STAT_NAMES.has(name)) return;
+        if (!map.has(name)) map.set(name, []);
+        map.get(name).push({
+          monthKey,
+          section: "notes",
+          date: n.date,
+          dateLabel: cleanDateLabel(n.date, shift),
+          shift,
+          machine: n.label || "Dovolená",
+          absence: true,
+          sortDate: parsed ? makeSortDateFromMonthKey(monthKey, parsed.day, parsed.month) : new Date(2026, 0, 1).toISOString()
+        });
+      });
+    });
+  });
+  const result = {};
+  [...map.keys()].sort((a, b) => a.localeCompare(b, "cs")).forEach(name => {
+    result[name] = map.get(name).sort((a, b) => a.sortDate.localeCompare(b.sortDate));
+  });
+  return result;
+}
+
+function getKnownStatNames() {
+  return KNOWN_STAT_NAMES;
+}
+
+
+
+function formatAbsenceNoteLine(note) {
+  const n = normalizeNoteEntry(note);
+  if (!n.isAbsence) return "";
+  const people = (n.people && n.people.length)
+    ? n.people.join(" a ")
+    : (n.person || "");
+  const code = n.code ? " " + n.code : "";
+  return [n.date, people, n.label && !people ? n.label : ""].filter(Boolean).join(" ");
+}
+
+function renderRotace() {
+  const namesGrid = document.getElementById("namesGrid");
+  const personView = document.getElementById("personView");
+  const monthView = document.getElementById("monthView");
+
+  const year = parseInt(app.selectedYear, 10) || getInitialSelectedYear(app.rotation);
+  const availableYears = getAvailableYears(app.rotation);
+  if (!availableYears.includes(year)) {
+    app.selectedYear = getInitialSelectedYear(app.rotation);
+  }
+
+  syncYearControls();
+  renderMonthGrid();
+
+  const nameIndex = buildNameIndex(app.rotation);
+  const names = Object.keys(nameIndex);
+
+  namesGrid.innerHTML = "";
+  names.forEach(name => {
+    const el = document.createElement("div");
+    el.className = "listItem" + (app.selectedName === name ? " activeChoice" : "");
+    el.textContent = name;
+    el.onclick = () => {
+      app.selectedName = app.selectedName === name ? null : name;
+      renderRotace();
+    };
+    namesGrid.appendChild(el);
+  });
+
+  if (app.selectedName && nameIndex[app.selectedName]) {
+    renderPerson(app.selectedName);
+  } else {
+    personView.innerHTML = "";
+  }
+
+  if (app.selectedMonth && app.rotation.months[app.selectedMonth]) {
+    renderMonth(app.selectedMonth);
+  } else if (monthView) {
+    monthView.innerHTML = "<div class='smallText'>Vyber měsíc.</div>";
+  }
+
+  renderStatsPanel();
+  document.getElementById("adminBox").style.display = app.adminUnlocked ? "block" : "none";
+}
+
+function getSoftMachineDisplayLabel(entry, rotation) {
+  const machine = String(entry && entry.machine ? entry.machine : "").trim();
+  if (!machine) return "";
+  if (String(entry && entry.section ? entry.section : "") !== "soft" || machine !== "MFKF10") return machine;
+
+  const month = rotation && rotation.months ? rotation.months[entry.monthKey] : null;
+  const soft = month && month.soft ? month.soft : null;
+  if (!soft || !Array.isArray(soft.rows) || !Array.isArray(soft.machines)) return machine;
+
+  const row = soft.rows.find(r => String(r && r.date ? r.date : "").trim() === String(entry.date || "").trim());
+  if (!row) return machine;
+
+  const idx06 = soft.machines.indexOf("MFKF06");
+  const idx10 = soft.machines.indexOf("MFKF10");
+  if (idx10 < 0) return machine;
+
+  const has10 = String((row.cells || [])[idx10] || "").trim();
+  const has06 = idx06 >= 0 ? String((row.cells || [])[idx06] || "").trim() : "";
+  if (has10 && !has06) return "MFKF10 (+ MFKF06)";
+  return machine;
+}
+
+function renderPerson(name) {
+  const personView = document.getElementById("personView");
+  const rawEntries = (buildNameIndex(app.rotation)[name] || []).slice();
+
+  if (!rawEntries.length) {
+    personView.innerHTML = "<div class='smallText'>Pro tohle jméno zatím nejsou žádné směny.</div>";
+    return;
+  }
+
+  const dayKey = (d) => {
+    const date = new Date(d);
+    return date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0") + "-" + String(date.getDate()).padStart(2, "0");
+  };
+
+  const priorityOf = (entry) => {
+    if (entry && entry.absence) return 3;
+    if ((entry && entry.section) === "soft") return 2;
+    if ((entry && entry.section) === "hard") return 1;
+    return 0;
+  };
+
+  const groups = new Map();
+  rawEntries.forEach(entry => {
+    const dateObj = new Date(entry.sortDate);
+    if (Number.isNaN(dateObj.getTime())) return;
+    if (getSpecialWorkInfo(dateObj)) return;
+
+    const key = dayKey(dateObj);
+    if (!groups.has(key)) {
+      groups.set(key, {
+        sortDate: new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate(), 12, 0, 0, 0).toISOString(),
+        dateLabel: entry.dateLabel || entry.date || "",
+        bestEntry: null
+      });
+    }
+
+    const group = groups.get(key);
+    if (!group.dateLabel && entry.dateLabel) group.dateLabel = entry.dateLabel;
+    if (!group.bestEntry || priorityOf(entry) > priorityOf(group.bestEntry)) {
+      group.bestEntry = entry;
+    }
+  });
+
+  const entries = [...groups.values()]
+    .map(group => {
+      const best = group.bestEntry || {};
+      return {
+        sortDate: group.sortDate,
+        dateLabel: group.dateLabel || best.dateLabel || best.date || "",
+        shift: best.shift || "",
+        target: best.absence ? (best.machine || "Dovolená") : getSoftMachineDisplayLabel(best, app.rotation)
+      };
+    })
+    .sort((a, b) => a.sortDate.localeCompare(b.sortDate));
+
+  if (!entries.length) {
+    personView.innerHTML = "<div class='smallText'>Pro tohle jméno nejsou v aktuálním rozpisu žádné směny.</div>";
+    return;
+  }
+
+  const today = new Date();
+  const todayDay = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+
+  let currentIdx = entries.findIndex(e => new Date(e.sortDate).getTime() === todayDay);
+  if (currentIdx === -1) {
+    currentIdx = entries.findIndex(e => new Date(e.sortDate).getTime() > todayDay);
+    if (currentIdx === -1) currentIdx = entries.length - 1;
+  }
+
+  const startIdx = Math.max(0, currentIdx - 1);
+  const endIdx = Math.min(entries.length, currentIdx + 4);
+  const around = entries.slice(startIdx, endIdx);
+
+  let html = "<div class='smallText'><b>" + escapeHtml(name) + "</b></div>";
+  around.forEach((e, i) => {
+    const idx = startIdx + i;
+    html += "<div class='personLine" + (idx === currentIdx ? " current" : "") + "'>" +
+      escapeHtml(e.dateLabel || "") + (e.shift ? " " + escapeHtml(e.shift) : "") +
+      " → " + escapeHtml(e.target || "") +
+      "</div>";
+  });
+
+  personView.innerHTML = html;
+}
+
+function renderMonth(monthKey) {
+  const month = app.rotation.months[monthKey];
+  const monthView = document.getElementById("monthView");
+  if (!month || !monthView) return;
+
+  let html = "<div class='sectionTitle'>" + escapeHtml(monthKey) + "</div>";
+
+  const renderTable = (section, label) => {
+    const sec = month[section];
+    if (!sec) return "";
+    let out = "<div class='smallText' style='margin-top:10px;font-weight:bold;'>" + label + "</div>";
+    out += "<div class='tableWrap'><table class='rotTable'><thead><tr><th>Datum</th>";
+    (sec.machines || []).forEach(m => {
+      out += "<th>" + escapeHtml(m) + "</th>";
+    });
+    out += "</tr></thead><tbody>";
+
+    (sec.rows || []).forEach(row => {
+      out += "<tr><td class='dateCell'>" + escapeHtml(row.date) + "</td>";
+      (row.cells || []).forEach(cell => {
+        const val = (cell || "").trim();
+        if (val) {
+          out += "<td>" + escapeHtml(val) + "</td>";
+        } else {
+          out += "<td class='missingCell'>—</td>";
+        }
+      });
+      out += "</tr>";
+    });
+
+    out += "</tbody></table></div>";
+    return out;
+  };
+
+  html += renderTable("hard", "Tvrdota");
+  html += renderTable("soft", "Měkota");
+
+  html += "<div class='smallText' style='margin-top:12px;font-weight:bold;'>Dovolené / absence</div>";
+  const absNotes = (month.notes || []).map(normalizeNoteEntry).filter(n => n.isAbsence);
+
+  if (absNotes.length) {
+    const grouped = new Map();
+    absNotes.forEach(n => {
+      const key = n.date || "";
+      if (!grouped.has(key)) grouped.set(key, []);
+      grouped.get(key).push(n);
+    });
+
+    const rows = [...grouped.entries()].map(([date, items]) => ({
+      date,
+      items: items.slice().sort((a, b) => String(a.person || "").localeCompare(String(b.person || ""), "cs"))
+    }));
+
+    const maxPairs = Math.max(1, ...rows.map(r => r.items.length));
+    html += "<div class='tableWrap'><table class='noteTable'><thead><tr>";
+    for (let i = 0; i < maxPairs; i += 1) {
+      if (i > 0) html += "<th class='noteSpacer'></th>";
+      html += "<th>Datum</th><th>Směna</th><th>Jméno</th><th>Důvod</th>";
+    }
+    html += "</tr></thead><tbody>";
+
+    rows.forEach(row => {
+      html += "<tr>";
+      for (let i = 0; i < maxPairs; i += 1) {
+        if (i > 0) html += "<td class='noteSpacer'></td>";
+        const n = row.items[i];
+        if (n) {
+          const parsed = parseDateToken(n.date);
+          const dateOnly = parsed ? String(parsed.day) + "." + String(parsed.month) + "." : n.date;
+          const shift = n.shift || (parsed ? parsed.shift : "");
+          const people = (n.people && n.people.length) ? n.people.join(" a ") : (n.person || "");
+          const reason = n.label || n.code || "";
+          html += "<td>" + escapeHtml(dateOnly) + "</td><td>" + escapeHtml(shift) + "</td><td>" + escapeHtml(people) + "</td><td>" + escapeHtml(reason) + "</td>";
+        } else {
+          html += "<td class='emptyCell'>—</td><td class='emptyCell'>—</td><td class='emptyCell'>—</td><td class='emptyCell'>—</td>";
+        }
+      }
+      html += "</tr>";
+    });
+
+    html += "</tbody></table></div>";
+  } else {
+    html += "<div class='smallText'>Bez poznámek.</div>";
+  }
+
+  monthView.innerHTML = html;
+}
+
+function showMonthByKey(monthKey) {
+  app.selectedMonth = monthKey;
+  setRotaceView("months");
+  renderRotace();
+  renderMonth(monthKey);
+}
+
+function refreshInitialUI() {
+  restoreInputs();
+  renderBrusy();
+  renderSoustruhy();
+  const currentYear = new Date().getFullYear();
+  const currentMonth = monthKeyFromYearMonth(currentYear, new Date().getMonth() + 1);
+  const currentYearMonths = getMonthsForYear(app.rotation, currentYear);
+  app.selectedYear = getAvailableYears(app.rotation).includes(currentYear) ? currentYear : getInitialSelectedYear(app.rotation);
+  app.importYear = app.selectedYear;
+  app.selectedMonth = currentYearMonths.includes(currentMonth) ? currentMonth : (currentYearMonths[0] || null);
+  app.selectedName = null;
+  app.selectedStatsName = null;
+  setRotaceView(app.rotationView || "names");
+  renderRotace();
+  if (app.selectedMonth) renderMonth(app.selectedMonth);
+  updateImportBoxVisibility();
+}
+
+function escapeHtml(str) {
+  return String(str || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+/* SIGNATURE TYPEWRITER */
+(function typeSignature() {
+  const target = document.getElementById("signatureTap");
+  const text = "Martin Špadrna";
+  let i = 0;
+  function tick() {
+    if (!target) return;
+    if (i <= text.length) {
+      target.textContent = text.slice(0, i);
+      i += 1;
+      setTimeout(tick, 65);
+    }
+  }
+  tick();
+})();
+
+/* SECRET ADMIN UNLOCK */
+function updateImportBoxVisibility() {
+  const box = document.getElementById("adminBox");
+  if (box) box.style.display = app.adminUnlocked ? "block" : "none";
+}
+
+document.getElementById("signatureTap").addEventListener("click", () => {
+  app.importClicks += 1;
+  if (app.importClicks >= 5 && !app.adminUnlocked) {
+    const user = prompt("Jméno:") || "";
+    const pass = prompt("Heslo:") || "";
+    if (user.trim() === "Sp4d4" && pass === "SpadaM772326") {
+      app.adminUnlocked = true;
+      updateImportBoxVisibility();
+    } else {
+      alert("Špatné přihlášení.");
+    }
+    app.importClicks = 0;
+  }
+});
+
+document.getElementById("monthYearSelect")?.addEventListener("change", (e) => {
+  setSelectedYear(e.target.value);
+});
+
+document.getElementById("statsYearSelect")?.addEventListener("change", (e) => {
+  setSelectedYear(e.target.value);
+});
+
+
+document.getElementById("importYearSelect")?.addEventListener("change", (e) => {
+  app.importYear = parseInt(e.target.value, 10) || getInitialSelectedYear(app.rotation);
+  syncYearControls();
+});
+
+
+
+async function exportCurrentHtml() {
+  if (typeof JSZip === "undefined") {
+    alert("Export ZIP není dostupný, nenačetla se knihovna JSZip.");
+    return;
+  }
+
+  try {
+    const appSource = document.getElementById("src-app-js")?.textContent || "";
+    const stylesSource = document.getElementById("src-styles-css")?.textContent || "";
+
+    if (!appSource || !stylesSource) {
+      throw new Error("Chybí zdrojové bloky pro export.");
+    }
+
+    const dataSource = `const initialRotationData = ${JSON.stringify(app.rotation)};\n`;
+
+    const pages = [...document.querySelectorAll(".page")];
+    const previousActive = pages.find(p => p.classList.contains("active"))?.id || "home";
+    pages.forEach(p => p.classList.remove("active"));
+    const home = document.getElementById("home");
+    if (home) home.classList.add("active");
+
+    const clone = document.documentElement.cloneNode(true);
+    clone.querySelectorAll('#src-app-js, #src-data-js, #src-styles-css').forEach(el => el.remove());
+    const indexText = `<!DOCTYPE html>\n${clone.outerHTML}`;
+
+    pages.forEach(p => p.classList.remove("active"));
+    const restore = document.getElementById(previousActive);
+    if (restore) restore.classList.add("active");
+
+    const zip = new JSZip();
+    zip.file("index.html", indexText);
+    zip.file("styles.css", stylesSource);
+    zip.file("data.js", dataSource);
+    zip.file("app.js", appSource);
+
+    const blob = await zip.generateAsync({ type: "blob" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "rotace_v150.zip";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  } catch (err) {
+    console.error(err);
+    alert("Export ZIP se nepovedl: " + (err && err.message ? err.message : err));
+  }
+}
+
+document.getElementById("exportBtn")?.addEventListener("click", () => {
+  exportCurrentHtml();
+});
+
+document.getElementById("githubBtn")?.addEventListener("click", () => {
+  window.open("https://github.com/martinspadrna/skoda-spada/upload/main", "_blank", "noopener");
+});
+
+document.getElementById("rotaceReset").addEventListener("click", () => {
+  app.selectedName = null;
+  app.selectedStatsName = null;
+  app.selectedStatsMachine = null;
+  app.selectedMonth = null;
+  app.rotationView = "names";
+  setRotaceView(app.rotationView || "names");
+  renderRotace();
+  document.getElementById("personView").innerHTML =
+    "<div class='smallText'>Klikni na jméno a ukáže se, kam jde.</div>";
+  document.getElementById("monthView").innerHTML =
+    "<div class='smallText'>Vyber měsíc vlevo nahoře.</div>";
+});
+
+
+
+
+
+function parseWorkbookFromSheetJS(workbook) {
+  const out = { months: {} };
+  const compact = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  const isMonthSheet = (sheetName) => /^\d{2}\.\d{4}$/.test(String(sheetName || ""));
+  const isRosterStartBlocked = (dateLabel) => {
+    const m = /^(\d{1,2})\.(\d{1,2})\./.exec(compact(dateLabel));
+    if (!m) return false;
+    const day = parseInt(m[1], 10);
+    const month = parseInt(m[2], 10);
+    if (NO_START_HOLIDAYS.has(month + "-" + day)) return true;
+    if ((month === 7 && day >= 20) || (month === 8 && day <= 1)) return true;
+    return false;
+  };
+  const isDateLabel = (value) => /^\d{1,2}\.\d{1,2}\.\s*[NR](?:8)?$/.test(compact(value));
+
+  workbook.SheetNames.forEach(sheetName => {
+    if (!isMonthSheet(sheetName)) return;
+
+    const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {
+      header: 1,
+      blankrows: false,
+      defval: ""
+    }).map(row => {
+      const copy = Array.isArray(row) ? row.slice() : [];
+      while (copy.length < 35) copy.push("");
+      return copy;
+    });
+
+    const findSectionRow = (labelRegex) => rows.findIndex(row => {
+      const first = compact(row && row[0]);
+      return /rotace/i.test(first) && labelRegex.test(first);
+    });
+
+    const hardIdx = findSectionRow(/tvrdota/i);
+    const softIdx = findSectionRow(/měkota|mekota/i);
+    if (hardIdx === -1 || softIdx === -1 || softIdx <= hardIdx) return;
+
+    const parseSection = (startIdx, endIdx, machines, title) => {
+      const sectionRows = [];
+      for (let r = startIdx; r < endIdx && r < rows.length; r += 1) {
+        const row = rows[r] || [];
+        const date = compact(row[0]);
+        if (!isDateLabel(date) || isRosterStartBlocked(date)) continue;
+        const cells = row.slice(1, 6).map(v => compact(v));
+        sectionRows.push({ date, cells });
+      }
+      return { title, machines: machines.slice(), rows: sectionRows };
+    };
+
+    const parseNotes = (startIdx, endIdx) => {
+      const notes = [];
+      for (let r = startIdx; r < endIdx && r < rows.length; r += 1) {
+        const row = rows[r] || [];
+        const noteDate = compact(row[7]); // H
+        if (!isDateLabel(noteDate) || isRosterStartBlocked(noteDate)) continue;
+
+        for (const c of [8, 10, 12]) { // I/J, K/L, M/N
+          const person = compact(row[c]);
+          const code = compact(row[c + 1]);
+          if (!person && !code) continue;
+          if (!person) continue;
+          notes.push({
+            date: noteDate,
+            shift: "",
+            person,
+            code: code || "D",
+            text: [person, code || "D"].filter(Boolean).join(" ")
+          });
+        }
+      }
+      return notes;
+    };
+
+    const hard = parseSection(hardIdx + 1, softIdx, HARD_MACHINE_HEADERS, "Rotace tvrdota");
+    const soft = parseSection(softIdx + 1, rows.length, SOFT_MACHINE_HEADERS, "Rotace měkota");
+    const notes = parseNotes(hardIdx + 1, softIdx);
+
+    out.months[monthKeyFromSheetName(sheetName)] = { hard, soft, notes };
+  });
+
+  return out;
+}
+
+document.getElementById("importBtn").addEventListener("click", async () => {
+  const input = document.getElementById("excelFile");
+  const file = input.files && input.files[0];
+  if (!file) {
+    alert("Vyber Excel soubor.");
+    return;
+  }
+  if (typeof XLSX === "undefined") {
+    alert("Knihovna pro Excel se nenačetla.");
+    return;
+  }
+
+  const overwriteMonth = document.getElementById("overwriteMonth")?.value || "";
+  const buffer = await file.arrayBuffer();
+  const wb = XLSX.read(buffer, { type: "array" });
+  const imported = parseWorkbookFromSheetJS(wb);
+
+  let added = 0;
+  let overwritten = 0;
+
+  Object.entries(imported.months).forEach(([monthKey, monthData]) => {
+    const normalized = normalizeMonthForImport(monthData);
+    const existed = !!app.rotation.months[monthKey];
+
+    if (overwriteMonth && monthKey === overwriteMonth) {
+      app.rotation.months[monthKey] = normalized;
+      overwritten += 1;
+      return;
+    }
+
+    app.rotation.months[monthKey] = normalized;
+    if (existed) {
+      overwritten += 1;
+    } else {
+      added += 1;
+    }
+  });
+
+  app.rotation = normalizeRotationData(app.rotation);
+  if (!getAvailableYears(app.rotation).includes(parseInt(app.selectedYear, 10))) {
+    app.selectedYear = getInitialSelectedYear(app.rotation);
+  }
+  saveRotationData();
+  renderRotace();
+
+  if (app.selectedMonth && app.rotation.months[app.selectedMonth]) {
+    renderMonth(app.selectedMonth);
+  }
+  if (app.selectedName) renderPerson(app.selectedName);
+
+  const msg = [];
+  if (added) msg.push("Přidáno nových měsíců: " + added);
+  if (overwriteMonth && overwritten) msg.push("Přepsán měsíc: " + overwriteMonth);
+  if (!added && !(overwriteMonth && overwritten)) {
+    msg.push("Žádné změny.");
+  }
+  alert(msg.join(" | "));
+});
+
+/* INITIAL */
+document.getElementById("tabNames").style.outline = "none";
+document.getElementById("tabMonths").style.outline = "3px solid #7CFF7C";
+setRotaceView("names");
+refreshInitialUI();
