@@ -293,7 +293,7 @@ label{
 .ad{background:#1a3d5c;}
 .ae{background:#1f4d2f;}
 .ah{background:#6b3f14;}
-.adv{background:#3b4656;}
+.adv{background:#3f5f7a;}
 .aev{background:#38453b;}
 
 /* Brusy: barvy indexů mají vždy vyhrát nad obecným pozadím panelu */
@@ -538,7 +538,18 @@ td.missingCell{
 }
 
 body{
-  background: var(--bg);
+ font-family:Arial, sans-serif;
+ color:var(--text);
+ margin:0;
+ padding:15px;
+
+ background:
+   radial-gradient(circle at center,
+     rgba(124,255,124,0.08) 0%,
+     rgba(124,255,124,0.04) 25%,
+     rgba(11,15,12,1) 70%
+   ),
+   var(--bg);
 }
 
 .page.active{
