@@ -24,7 +24,7 @@
 <h1>Rotace a kalkulačky</h1>
 <div id="shiftTime">Aktuálně v práci: směna A (ranní)<br>Směna D začne za: 2 d 8 h 2 min</div>
 <div class="version">
-  v.0155-rc | <span class="signature" id="signatureTap">Martin Špadrna</span>
+  v.0156-rc | <span class="signature" id="signatureTap">Martin Špadrna</span>
 </div>
 
 <!-- HOME -->
@@ -140,14 +140,14 @@
     </div>
 
     <div id="soustruhy106Panel" class="subPanel">
-      <div class="smallText">Volné 106ks: zadej první dávku, první čtyři dávky a plán.</div>
+      <div class="smallText">Volné 106ks: zadej číslo první dávky, plán a počet kusů v prvních čtyřech dávkách.</div>
       <label>První dávka</label>
       <input id="v106_first" type="number" autocomplete="off">
       <div class="grid" style="grid-template-columns:1fr 1fr; gap:10px;">
-        <div><label>1. dávka ks</label><input id="v106_c1" type="number"></div>
-        <div><label>2. dávka ks</label><input id="v106_c2" type="number"></div>
-        <div><label>3. dávka ks</label><input id="v106_c3" type="number"></div>
-        <div><label>4. dávka ks</label><input id="v106_c4" type="number"></div>
+        <div><label>1. dávka- počet kusů</label><input id="v106_c1" type="number"></div>
+        <div><label>2. dávka- počet kusů</label><input id="v106_c2" type="number"></div>
+        <div><label>3. dávka- počet kusů</label><input id="v106_c3" type="number"></div>
+        <div><label>4. dávka- počet kusů</label><input id="v106_c4" type="number"></div>
       </div>
       <label>Plán výroby</label>
       <input id="v106_plan" type="number" value="1248" autocomplete="off">
@@ -254,7 +254,7 @@
 
 <script type="text/plain" id="src-app-js" hidden>
 const APP_KEY = "rotace_kalkulacky_state_v122";
-const ROTATION_BUILD = "2026-05-04-v.0155-rc-" + Date.now();
+const ROTATION_BUILD = "2026-05-04-v.0156-rc-" + Date.now();
 
 const HARD_MACHINE_HEADERS = ["TNKS01", "TBKR07", "TPKW01", "TPKW02", "TBKR01"];
 const SOFT_MACHINE_HEADERS = ["MSKC01", "MSKC03", "MSKC04", "MFKF06", "MFKF10"];
@@ -2055,7 +2055,7 @@ async function exportCurrentHtml() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "rotace_v.0155-rc.zip";
+    a.download = "rotace_v.0156-rc.zip";
     document.body.appendChild(a);
     a.click();
     a.remove();
