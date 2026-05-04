@@ -24,7 +24,7 @@
 <h1>Rotace a kalkulačky</h1>
 <div id="shiftTime">Aktuálně v práci: směna A (ranní)<br>Směna D začne za: 2 d 8 h 2 min</div>
 <div class="version">
-  v.0156-rc | <span class="signature" id="signatureTap">Martin Špadrna</span>
+  v.0157-rc | <span class="signature" id="signatureTap">Martin Špadrna</span>
 </div>
 
 <!-- HOME -->
@@ -116,8 +116,8 @@
     </div>
 
     <div id="soustruhyLisPanel" class="subPanel">
-      <div class="smallText">Lis: zadáš první dávku a plán. Počítá se po 32 ks.</div>
-      <label>První dávka</label>
+      <div class="smallText">Lis: zadej číslo první dávky a plán.</div>
+      <label>Číslo první dávky</label>
       <input id="lis_first" type="number" autocomplete="off">
       <label>Plán výroby</label>
       <input id="lis_plan" type="number" value="1248" autocomplete="off">
@@ -126,8 +126,8 @@
     </div>
 
     <div id="soustruhy126Panel" class="subPanel active">
-      <div class="smallText">Volné 126ks: zadáš první dávku, plán a jestli začínáš 32 nebo 31.</div>
-      <label>První dávka</label>
+      <div class="smallText">Volné 126ks: zadej číslo první dávky, plán a jestli začínáš dávkou s 32 nebo 31 kusy.</div>
+      <label>Číslo první dávky</label>
       <input id="v126_first" type="number" autocomplete="off">
       <label>Plán výroby</label>
       <input id="v126_plan" type="number" value="1248" autocomplete="off">
@@ -141,7 +141,7 @@
 
     <div id="soustruhy106Panel" class="subPanel">
       <div class="smallText">Volné 106ks: zadej číslo první dávky, plán a počet kusů v prvních čtyřech dávkách.</div>
-      <label>První dávka</label>
+      <label>Číslo první dávky</label>
       <input id="v106_first" type="number" autocomplete="off">
       <div class="grid" style="grid-template-columns:1fr 1fr; gap:10px;">
         <div><label>1. dávka- počet kusů</label><input id="v106_c1" type="number"></div>
@@ -254,7 +254,7 @@
 
 <script type="text/plain" id="src-app-js" hidden>
 const APP_KEY = "rotace_kalkulacky_state_v122";
-const ROTATION_BUILD = "2026-05-04-v.0156-rc-" + Date.now();
+const ROTATION_BUILD = "2026-05-04-v.0157-rc-" + Date.now();
 
 const HARD_MACHINE_HEADERS = ["TNKS01", "TBKR07", "TPKW01", "TPKW02", "TBKR01"];
 const SOFT_MACHINE_HEADERS = ["MSKC01", "MSKC03", "MSKC04", "MFKF06", "MFKF10"];
@@ -2055,7 +2055,7 @@ async function exportCurrentHtml() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "rotace_v.0156-rc.zip";
+    a.download = "rotace_v.0157-rc.zip";
     document.body.appendChild(a);
     a.click();
     a.remove();
