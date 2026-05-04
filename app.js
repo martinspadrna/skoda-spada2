@@ -1,5 +1,5 @@
 const APP_KEY = "rotace_kalkulacky_state_v122";
-const ROTATION_BUILD = "2026-05-04-v151-" + Date.now();
+const ROTATION_BUILD = "2026-05-04-v.0155-rc-" + Date.now();
 
 const HARD_MACHINE_HEADERS = ["TNKS01", "TBKR07", "TPKW01", "TPKW02", "TBKR01"];
 const SOFT_MACHINE_HEADERS = ["MSKC01", "MSKC03", "MSKC04", "MFKF06", "MFKF10"];
@@ -1800,7 +1800,7 @@ async function exportCurrentHtml() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "rotace_v151.zip";
+    a.download = "rotace_v.0155-rc.zip";
     document.body.appendChild(a);
     a.click();
     a.remove();

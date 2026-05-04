@@ -24,7 +24,7 @@
 <h1>Rotace a kalkulačky</h1>
 <div id="shiftTime">Aktuálně v práci: směna A (ranní)<br>Směna D začne za: 2 d 8 h 2 min</div>
 <div class="version">
-  v0.152 | <span class="signature" id="signatureTap">Martin Špadrna</span>
+  v.0155-rc | <span class="signature" id="signatureTap">Martin Špadrna</span>
 </div>
 
 <!-- HOME -->
@@ -116,18 +116,18 @@
     </div>
 
     <div id="soustruhyLisPanel" class="subPanel">
-      <div class="smallText">Lis: zadej číslo první dávky a plán.</div>
-      <label>Číslo první dávky</label>
+      <div class="smallText">Lis: zadáš první dávku a plán. Počítá se po 32 ks.</div>
+      <label>První dávka</label>
       <input id="lis_first" type="number" autocomplete="off">
       <label>Plán výroby</label>
       <input id="lis_plan" type="number" value="1248" autocomplete="off">
-      <button onclick="calcSoustruhyLis()">Spočítej lis</button>
+      <button class="soustruhCalcBtn" onclick="calcSoustruhyLis()">Spočítej lis</button>
       <div class="card" id="soustruhyLisResult"></div>
     </div>
 
     <div id="soustruhy126Panel" class="subPanel active">
-      <div class="smallText">Volné 126ks: zadej číslo první dávky, plán a jestli začínáš dávkou s 32 nebo 31 kusy.</div>
-      <label>Číslo první dávky</label>
+      <div class="smallText">Volné 126ks: zadáš první dávku, plán a jestli začínáš 32 nebo 31.</div>
+      <label>První dávka</label>
       <input id="v126_first" type="number" autocomplete="off">
       <label>Plán výroby</label>
       <input id="v126_plan" type="number" value="1248" autocomplete="off">
@@ -135,13 +135,13 @@
         <div class="bbtn activeChoice" data-startsize="32" onclick="setSoustruh126Start(32)">Začínám 32 ks</div>
         <div class="bbtn" data-startsize="31" onclick="setSoustruh126Start(31)">Začínám 31 ks</div>
       </div>
-      <button onclick="calcSoustruhy126()">Spočítej 126</button>
+      <button class="soustruhCalcBtn" onclick="calcSoustruhy126()">Spočítej 126</button>
       <div class="card" id="soustruhy126Result"></div>
     </div>
 
     <div id="soustruhy106Panel" class="subPanel">
-      <div class="smallText">Volné 106ks: zadej číslo první dávky, plán a kusy v prvních čtyřech dávkách.</div>
-      <label>Číslo první dávky</label>
+      <div class="smallText">Volné 106ks: zadej první dávku, první čtyři dávky a plán.</div>
+      <label>První dávka</label>
       <input id="v106_first" type="number" autocomplete="off">
       <div class="grid" style="grid-template-columns:1fr 1fr; gap:10px;">
         <div><label>1. dávka ks</label><input id="v106_c1" type="number"></div>
@@ -151,7 +151,7 @@
       </div>
       <label>Plán výroby</label>
       <input id="v106_plan" type="number" value="1248" autocomplete="off">
-      <button onclick="calcSoustruhy106()">Spočítej 106</button>
+      <button class="soustruhCalcBtn" onclick="calcSoustruhy106()">Spočítej 106</button>
       <div class="card" id="soustruhy106Result"></div>
     </div>
   </div>
@@ -254,7 +254,7 @@
 
 <script type="text/plain" id="src-app-js" hidden>
 const APP_KEY = "rotace_kalkulacky_state_v122";
-const ROTATION_BUILD = "2026-05-04-v152-" + Date.now();
+const ROTATION_BUILD = "2026-05-04-v.0155-rc-" + Date.now();
 
 const HARD_MACHINE_HEADERS = ["TNKS01", "TBKR07", "TPKW01", "TPKW02", "TBKR01"];
 const SOFT_MACHINE_HEADERS = ["MSKC01", "MSKC03", "MSKC04", "MFKF06", "MFKF10"];
@@ -1398,7 +1398,7 @@ function calcSoustruhyLis() {
   const plan = parseInt(document.getElementById('lis_plan').value, 10);
   const out = document.getElementById('soustruhyLisResult');
   if (!Number.isFinite(first) || !Number.isFinite(plan) || plan <= 0) {
-    out.innerHTML = "<div class='smallText'>Doplň číslo první dávky a plán.</div>";
+    out.innerHTML = "<div class='smallText'>Doplň první dávku a plán.</div>";
     return;
   }
   app.soustruhPlan = String(plan);
@@ -1412,7 +1412,7 @@ function calcSoustruhy126() {
   const plan = parseInt(document.getElementById('v126_plan').value, 10);
   const out = document.getElementById('soustruhy126Result');
   if (!Number.isFinite(first) || !Number.isFinite(plan) || plan <= 0) {
-    out.innerHTML = "<div class='smallText'>Doplň číslo první dávky a plán.</div>";
+    out.innerHTML = "<div class='smallText'>Doplň první dávku a plán.</div>";
     return;
   }
   app.soustruhPlan = String(plan);
@@ -1434,7 +1434,7 @@ function calcSoustruhy106() {
   ];
   const out = document.getElementById('soustruhy106Result');
   if (!Number.isFinite(first) || !Number.isFinite(plan) || plan <= 0 || counts.some(v => !Number.isFinite(v) || v <= 0)) {
-    out.innerHTML = "<div class='smallText'>Doplň číslo první dávky, plán a kusy v prvních čtyřech dávkách.</div>";
+    out.innerHTML = "<div class='smallText'>Doplň první dávku, plán a první čtyři dávky.</div>";
     return;
   }
   app.soustruhPlan = String(plan);
@@ -2055,7 +2055,7 @@ async function exportCurrentHtml() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "rotace_v151.zip";
+    a.download = "rotace_v.0155-rc.zip";
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -2241,13 +2241,10 @@ setRotaceView("names");
 refreshInitialUI();
 </script>
 <script type="text/plain" id="src-styles-css" hidden>
-html { background: var(--bg); }
 :root{
   --bg:#0b0f0c;
-  --surface:#171c19;
-  --surface2:#171c19;
-  --panel:var(--surface);
-  --panel2:var(--surface2);
+  --panel:#151a17;
+  --panel2:#1c1f1d;
   --green:#4CAF50;
   --green2:#7CFF7C;
   --text:#ffffff;
@@ -2270,6 +2267,29 @@ body{
  color:var(--text);
  margin:0;
  padding:15px;
+ position:relative;
+ isolation:isolate;
+}
+body::before{
+ content:'';
+ position:fixed;
+ inset:0;
+ pointer-events:none;
+ z-index:-1;
+ background:
+  linear-gradient(90deg,
+   rgba(11,15,12,0.98) 0%,
+   rgba(11,15,12,0.98) 22%,
+   rgba(124,255,124,0.06) 50%,
+   rgba(11,15,12,0.98) 78%,
+   rgba(11,15,12,0.98) 100%
+  ),
+  radial-gradient(ellipse at center,
+   rgba(124,255,124,0.10) 0%,
+   rgba(124,255,124,0.05) 20%,
+   rgba(124,255,124,0.02) 38%,
+   rgba(11,15,12,0) 62%
+  );
 }
 
 h1{
@@ -2342,7 +2362,7 @@ h1{
 }
 
 .tile{
- background:var(--panel2);
+ background:var(--panel);
  border:2px solid var(--green);
  border-radius:12px;
  min-height:110px;
@@ -2368,6 +2388,10 @@ button{
  cursor:pointer;
 }
 
+.soustruhCalcBtn{
+ border:2px solid rgba(124,255,124,.8);
+}
+
 .resetBtn{
  width:34px;
  height:34px;
@@ -2382,7 +2406,7 @@ button{
 }
 
 .card{
- background:var(--panel2);
+ background:var(--panel);
  padding:12px;
  margin-top:10px;
  border-radius:10px;
@@ -2438,20 +2462,9 @@ label{
  grid-template-columns:1fr 1fr;
  gap:10px;
  margin-top:10px;
- background:var(--panel2);
- padding:6px;
- border-radius:16px;
- border:1px solid #2f3330;
 }
 
-.subPanel{
- display:none;
- background:var(--panel2);
- padding:12px;
- margin-top:10px;
- border-radius:12px;
- border:1px solid #2f3330;
-}
+.subPanel{display:none;}
 .subPanel.active{display:block;}
 
 .headerBar{
@@ -2488,20 +2501,12 @@ label{
  display:grid;
  grid-template-columns:1fr 1fr;
  gap:10px;
- background:var(--panel2);
- padding:6px;
- border-radius:16px;
- border:1px solid #2f3330;
 }
 
 .indexGrid{
  display:grid;
  grid-template-columns:1fr 1fr;
  gap:10px;
- background:var(--panel2);
- padding:6px;
- border-radius:16px;
- border:1px solid #2f3330;
 }
 
 .freeWrap{
@@ -2533,23 +2538,11 @@ label{
  outline:3px solid white;
 }
 
-.ad{background:#1a3d5c;}
-.ae{background:#1f4d2f;}
-.ah{background:#6b3f14;}
-.adv{background:#3b4656;}
-.aev{background:#38453b;}
-
-/* Brusy: barvy indexů mají vždy vyhrát nad obecným pozadím panelu */
-#brusy .indexGrid > .bbtn[data-prog="AD"],
-#brusy .indexGrid > .bbtn.ad { background:#1a3d5c !important; color:#fff !important; }
-#brusy .indexGrid > .bbtn[data-prog="AE"],
-#brusy .indexGrid > .bbtn.ae { background:#1f4d2f !important; color:#fff !important; }
-#brusy .indexGrid > .bbtn[data-prog="AH"],
-#brusy .indexGrid > .bbtn.ah { background:#6b3f14 !important; color:#fff !important; }
-#brusy .indexGrid > .freeWrap > .bbtn[data-prog="ADV"],
-#brusy .indexGrid > .freeWrap > .bbtn.adv { background:#3b4656 !important; color:#fff !important; }
-#brusy .indexGrid > .freeWrap > .bbtn[data-prog="AEV"],
-#brusy .indexGrid > .freeWrap > .bbtn.aev { background:#38453b !important; color:#fff !important; }
+.ad{background:var(--blue);}
+.ae{background:var(--emerald);}
+.ah{background:var(--orange);}
+.adv{background:#415f85;}
+.aev{background:var(--gray2);}
 
 .tableWrap{
  overflow-x:auto;
@@ -2617,7 +2610,7 @@ td.missingCell{
  padding:12px;
  border:1px dashed #4CAF50;
  border-radius:10px;
- background:var(--panel2);
+ background:#111613;
 }
 
 .smallText{
@@ -2627,7 +2620,7 @@ td.missingCell{
 }
 
 .personCard{
- background:var(--panel2);
+ background:var(--panel);
  padding:12px;
  border-radius:10px;
  margin-top:10px;
@@ -2776,12 +2769,14 @@ td.missingCell{
 .bbtn.activeChoice{outline:3px solid var(--green2);}
 :root{
   --panelShellBorder: 1px solid rgba(124,255,124,.18);
-  --panelShellShadow: none;
-  --panelShellGlass: none;
+  --panelShellShadow: 0 12px 26px rgba(0,0,0,.24);
+  --panelShellGlass: linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,0));
 }
 
 body{
-  background: var(--bg);
+  background:
+    radial-gradient(circle at top, rgba(124,255,124,.08), transparent 28%),
+    linear-gradient(180deg, #0b0f0c 0%, #090d0a 100%);
 }
 
 .page.active{
@@ -2800,13 +2795,11 @@ body{
 
 .subNav,
 .bgrid,
-.indexGrid,
-.subPanel{
+.indexGrid{
   padding: 6px;
   border: 1px solid rgba(124,255,124,.12);
   border-radius: 16px;
-  background: var(--panel2);
-  box-shadow: none;
+  background: rgba(255,255,255,.015);
 }
 
 .card,
@@ -2815,8 +2808,8 @@ body{
 .soustruhModePanel{
   border: var(--panelShellBorder);
   border-radius: 14px;
-  box-shadow: none;
-  background: var(--panel2);
+  box-shadow: var(--panelShellShadow);
+  background-image: var(--panelShellGlass);
 }
 
 .tile,
@@ -2825,8 +2818,8 @@ body{
 .statsSummary .tile{
   border: 1px solid rgba(124,255,124,.22);
   border-radius: 12px;
-  box-shadow: none;
-  background: var(--panel2);
+  box-shadow: var(--panelShellShadow);
+  background-image: var(--panelShellGlass);
   transition: transform .12s ease, border-color .12s ease, box-shadow .12s ease, filter .12s ease;
 }
 
@@ -2835,14 +2828,14 @@ input,
 select,
 .homeBtn,
 .resetBtn{
-  box-shadow: none;
+  box-shadow: var(--panelShellShadow);
   transition: transform .12s ease, border-color .12s ease, box-shadow .12s ease, filter .12s ease;
 }
 
 button,
 input,
 select{
-  background: var(--panel2);
+  background-image: var(--panelShellGlass);
 }
 
 .tile,

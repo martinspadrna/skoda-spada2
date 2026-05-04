@@ -1,10 +1,8 @@
 html { background: var(--bg); }
 :root{
   --bg:#0b0f0c;
-  --surface:#171c19;
-  --surface2:#171c19;
-  --panel:var(--surface);
-  --panel2:var(--surface2);
+  --panel:#151a17;
+  --panel2:#1c1f1d;
   --green:#4CAF50;
   --green2:#7CFF7C;
   --text:#ffffff;
@@ -27,6 +25,29 @@ body{
  color:var(--text);
  margin:0;
  padding:15px;
+ position:relative;
+ isolation:isolate;
+}
+body::before{
+ content:'';
+ position:fixed;
+ inset:0;
+ pointer-events:none;
+ z-index:-1;
+ background:
+  linear-gradient(90deg,
+   rgba(11,15,12,0.98) 0%,
+   rgba(11,15,12,0.98) 22%,
+   rgba(124,255,124,0.06) 50%,
+   rgba(11,15,12,0.98) 78%,
+   rgba(11,15,12,0.98) 100%
+  ),
+  radial-gradient(ellipse at center,
+   rgba(124,255,124,0.10) 0%,
+   rgba(124,255,124,0.05) 20%,
+   rgba(124,255,124,0.02) 38%,
+   rgba(11,15,12,0) 62%
+  );
 }
 
 h1{
@@ -99,7 +120,7 @@ h1{
 }
 
 .tile{
- background:var(--panel2);
+ background:var(--panel);
  border:2px solid var(--green);
  border-radius:12px;
  min-height:110px;
@@ -125,6 +146,10 @@ button{
  cursor:pointer;
 }
 
+.soustruhCalcBtn{
+ border:2px solid rgba(124,255,124,.8);
+}
+
 .resetBtn{
  width:34px;
  height:34px;
@@ -139,7 +164,7 @@ button{
 }
 
 .card{
- background:var(--panel2);
+ background:var(--panel);
  padding:12px;
  margin-top:10px;
  border-radius:10px;
@@ -195,20 +220,9 @@ label{
  grid-template-columns:1fr 1fr;
  gap:10px;
  margin-top:10px;
- background:var(--panel2);
- padding:6px;
- border-radius:16px;
- border:1px solid #2f3330;
 }
 
-.subPanel{
- display:none;
- background:var(--panel2);
- padding:12px;
- margin-top:10px;
- border-radius:12px;
- border:1px solid #2f3330;
-}
+.subPanel{display:none;}
 .subPanel.active{display:block;}
 
 .headerBar{
@@ -245,20 +259,12 @@ label{
  display:grid;
  grid-template-columns:1fr 1fr;
  gap:10px;
- background:var(--panel2);
- padding:6px;
- border-radius:16px;
- border:1px solid #2f3330;
 }
 
 .indexGrid{
  display:grid;
  grid-template-columns:1fr 1fr;
  gap:10px;
- background:var(--panel2);
- padding:6px;
- border-radius:16px;
- border:1px solid #2f3330;
 }
 
 .freeWrap{
@@ -290,23 +296,11 @@ label{
  outline:3px solid white;
 }
 
-.ad{background:#1a3d5c;}
-.ae{background:#1f4d2f;}
-.ah{background:#6b3f14;}
-.adv{background:#3f5f7a;}
-.aev{background:#38453b;}
-
-/* Brusy: barvy indexů mají vždy vyhrát nad obecným pozadím panelu */
-#brusy .indexGrid > .bbtn[data-prog="AD"],
-#brusy .indexGrid > .bbtn.ad { background:#1a3d5c !important; color:#fff !important; }
-#brusy .indexGrid > .bbtn[data-prog="AE"],
-#brusy .indexGrid > .bbtn.ae { background:#1f4d2f !important; color:#fff !important; }
-#brusy .indexGrid > .bbtn[data-prog="AH"],
-#brusy .indexGrid > .bbtn.ah { background:#6b3f14 !important; color:#fff !important; }
-#brusy .indexGrid > .freeWrap > .bbtn[data-prog="ADV"],
-#brusy .indexGrid > .freeWrap > .bbtn.adv { background:#3b4656 !important; color:#fff !important; }
-#brusy .indexGrid > .freeWrap > .bbtn[data-prog="AEV"],
-#brusy .indexGrid > .freeWrap > .bbtn.aev { background:#38453b !important; color:#fff !important; }
+.ad{background:var(--blue);}
+.ae{background:var(--emerald);}
+.ah{background:var(--orange);}
+.adv{background:#415f85;}
+.aev{background:var(--gray2);}
 
 .tableWrap{
  overflow-x:auto;
@@ -374,7 +368,7 @@ td.missingCell{
  padding:12px;
  border:1px dashed #4CAF50;
  border-radius:10px;
- background:var(--panel2);
+ background:#111613;
 }
 
 .smallText{
@@ -384,7 +378,7 @@ td.missingCell{
 }
 
 .personCard{
- background:var(--panel2);
+ background:var(--panel);
  padding:12px;
  border-radius:10px;
  margin-top:10px;
@@ -533,23 +527,14 @@ td.missingCell{
 .bbtn.activeChoice{outline:3px solid var(--green2);}
 :root{
   --panelShellBorder: 1px solid rgba(124,255,124,.18);
-  --panelShellShadow: none;
-  --panelShellGlass: none;
+  --panelShellShadow: 0 12px 26px rgba(0,0,0,.24);
+  --panelShellGlass: linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,0));
 }
 
 body{
- font-family:Arial, sans-serif;
- color:var(--text);
- margin:0;
- padding:15px;
-
- background:
-   radial-gradient(circle at center,
-     rgba(124,255,124,0.08) 0%,
-     rgba(124,255,124,0.04) 25%,
-     rgba(11,15,12,1) 70%
-   ),
-   var(--bg);
+  background:
+    radial-gradient(circle at top, rgba(124,255,124,.08), transparent 28%),
+    linear-gradient(180deg, #0b0f0c 0%, #090d0a 100%);
 }
 
 .page.active{
@@ -568,13 +553,11 @@ body{
 
 .subNav,
 .bgrid,
-.indexGrid,
-.subPanel{
+.indexGrid{
   padding: 6px;
   border: 1px solid rgba(124,255,124,.12);
   border-radius: 16px;
-  background: var(--panel2);
-  box-shadow: none;
+  background: rgba(255,255,255,.015);
 }
 
 .card,
@@ -583,8 +566,8 @@ body{
 .soustruhModePanel{
   border: var(--panelShellBorder);
   border-radius: 14px;
-  box-shadow: none;
-  background: var(--panel2);
+  box-shadow: var(--panelShellShadow);
+  background-image: var(--panelShellGlass);
 }
 
 .tile,
@@ -593,8 +576,8 @@ body{
 .statsSummary .tile{
   border: 1px solid rgba(124,255,124,.22);
   border-radius: 12px;
-  box-shadow: none;
-  background: var(--panel2);
+  box-shadow: var(--panelShellShadow);
+  background-image: var(--panelShellGlass);
   transition: transform .12s ease, border-color .12s ease, box-shadow .12s ease, filter .12s ease;
 }
 
@@ -603,14 +586,14 @@ input,
 select,
 .homeBtn,
 .resetBtn{
-  box-shadow: none;
+  box-shadow: var(--panelShellShadow);
   transition: transform .12s ease, border-color .12s ease, box-shadow .12s ease, filter .12s ease;
 }
 
 button,
 input,
 select{
-  background: var(--panel2);
+  background-image: var(--panelShellGlass);
 }
 
 .tile,
