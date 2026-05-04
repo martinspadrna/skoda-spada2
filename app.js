@@ -1800,7 +1800,7 @@ async function exportCurrentHtml() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "rotace_v150.zip";
+    a.download = "rotace_v151.zip";
     document.body.appendChild(a);
     a.click();
     a.remove();
