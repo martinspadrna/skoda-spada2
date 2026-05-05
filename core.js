@@ -1,6 +1,6 @@
 
 const APP_KEY = "rotace_kalkulacky_state_v122";
-const ROTATION_BUILD = "2026-05-04-v.0160-rc-" + Date.now();
+const ROTATION_BUILD = "2026-05-04-v.0161-rc-" + Date.now();
 
 const HARD_MACHINE_HEADERS = ["TNKS01", "TBKR07", "TPKW01", "TPKW02", "TBKR01"];
 const SOFT_MACHINE_HEADERS = ["MSKC01", "MSKC03", "MSKC04", "MFKF06", "MFKF10"];

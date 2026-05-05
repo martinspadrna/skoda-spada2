@@ -19,12 +19,19 @@
 
 *{box-sizing:border-box;}
 
+html{
+ min-height:100%;
+ background:var(--bg);
+}
+
 body{
  font-family:Arial, sans-serif;
  background:var(--bg);
+ background-color:var(--bg);
  color:var(--text);
  margin:0;
- padding:15px;
+ min-height:100vh;
+ padding:calc(15px + env(safe-area-inset-top)) calc(15px + env(safe-area-inset-right)) calc(15px + env(safe-area-inset-bottom)) calc(15px + env(safe-area-inset-left));
  position:relative;
  isolation:isolate;
 }

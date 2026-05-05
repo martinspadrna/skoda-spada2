@@ -1,17 +1,27 @@
-document.getElementById("signatureTap").addEventListener("click", () => {
-  app.importClicks += 1;
-  if (app.importClicks >= 5 && !app.adminUnlocked) {
-    const user = prompt("Jméno:") || "";
-    const pass = prompt("Heslo:") || "";
-    if (user.trim() === "Sp4d4" && pass === "SpadaM772326") {
-      app.adminUnlocked = true;
-      updateImportBoxVisibility();
-    } else {
-      alert("Špatné přihlášení.");
+function bindSecretMenu() {
+  const tap = document.getElementById("signatureTap");
+  if (!tap || tap.dataset.secretBound === "1") return false;
+  tap.dataset.secretBound = "1";
+  tap.addEventListener("click", () => {
+    app.importClicks += 1;
+    if (app.importClicks >= 5 && !app.adminUnlocked) {
+      const user = prompt("Jméno:") || "";
+      const pass = prompt("Heslo:") || "";
+      if (user.trim() === "Sp4d4" && pass === "SpadaM772326") {
+        app.adminUnlocked = true;
+        updateImportBoxVisibility();
+      } else {
+        alert("Špatné přihlášení.");
+      }
+      app.importClicks = 0;
     }
-    app.importClicks = 0;
-  }
-});
+  });
+  return true;
+}
+
+if (!bindSecretMenu()) {
+  document.addEventListener("DOMContentLoaded", bindSecretMenu, { once: true });
+}
 
 document.getElementById("monthYearSelect")?.addEventListener("change", (e) => {
   setSelectedYear(e.target.value);
@@ -45,9 +55,7 @@ async function readExportText(relativePath) {
   const id = EXPORT_SOURCE_IDS[relativePath];
   const embedded = id ? document.getElementById(id) : null;
   if (embedded && embedded.textContent) {
-    return embedded.textContent.replace(/^
-+|
-+$/g, "");
+    return embedded.textContent.replace(/^\s+|\s+$/g, "");
   }
 
   const response = await fetch(new URL(relativePath, window.location.href).toString(), { cache: "no-store" });
@@ -106,7 +114,7 @@ ${clone.outerHTML}`;
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "rotace_v.0160-rc.zip";
+    a.download = "rotace_v.0161-rc.zip";
     document.body.appendChild(a);
     a.click();
     a.remove();

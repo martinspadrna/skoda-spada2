@@ -109,7 +109,7 @@
 <h1>Rotace a kalkulačky</h1>
 <div id="shiftTime">Aktuálně v práci: směna C (ranní)<br>Směna D začne za: 1 h 59 min</div>
 <div class="version">
-  v.0160-rc | <span class="signature" id="signatureTap">Martin Špadrna</span>
+  v.0161-rc | <span class="signature" id="signatureTap">Martin Špadrna</span>
 </div>
 
 <!-- HOME -->
@@ -371,7 +371,7 @@
 <script type="text/plain" id="src-core-js" hidden>
 
 const APP_KEY = "rotace_kalkulacky_state_v122";
-const ROTATION_BUILD = "2026-05-04-v.0160-rc-" + Date.now();
+const ROTATION_BUILD = "2026-05-04-v.0161-rc-" + Date.now();
 
 const HARD_MACHINE_HEADERS = ["TNKS01", "TBKR07", "TPKW01", "TPKW02", "TBKR01"];
 const SOFT_MACHINE_HEADERS = ["MSKC01", "MSKC03", "MSKC04", "MFKF06", "MFKF10"];
@@ -2133,20 +2133,30 @@ function updateImportBoxVisibility() {
 
 </script>
 <script type="text/plain" id="src-app-init-js" hidden>
-document.getElementById("signatureTap").addEventListener("click", () => {
-  app.importClicks += 1;
-  if (app.importClicks >= 5 && !app.adminUnlocked) {
-    const user = prompt("Jméno:") || "";
-    const pass = prompt("Heslo:") || "";
-    if (user.trim() === "Sp4d4" && pass === "SpadaM772326") {
-      app.adminUnlocked = true;
-      updateImportBoxVisibility();
-    } else {
-      alert("Špatné přihlášení.");
+function bindSecretMenu() {
+  const tap = document.getElementById("signatureTap");
+  if (!tap || tap.dataset.secretBound === "1") return false;
+  tap.dataset.secretBound = "1";
+  tap.addEventListener("click", () => {
+    app.importClicks += 1;
+    if (app.importClicks >= 5 && !app.adminUnlocked) {
+      const user = prompt("Jméno:") || "";
+      const pass = prompt("Heslo:") || "";
+      if (user.trim() === "Sp4d4" && pass === "SpadaM772326") {
+        app.adminUnlocked = true;
+        updateImportBoxVisibility();
+      } else {
+        alert("Špatné přihlášení.");
+      }
+      app.importClicks = 0;
     }
-    app.importClicks = 0;
-  }
-});
+  });
+  return true;
+}
+
+if (!bindSecretMenu()) {
+  document.addEventListener("DOMContentLoaded", bindSecretMenu, { once: true });
+}
 
 document.getElementById("monthYearSelect")?.addEventListener("change", (e) => {
   setSelectedYear(e.target.value);
@@ -2180,9 +2190,7 @@ async function readExportText(relativePath) {
   const id = EXPORT_SOURCE_IDS[relativePath];
   const embedded = id ? document.getElementById(id) : null;
   if (embedded && embedded.textContent) {
-    return embedded.textContent.replace(/^
-+|
-+$/g, "");
+    return embedded.textContent.replace(/^\s+|\s+$/g, "");
   }
 
   const response = await fetch(new URL(relativePath, window.location.href).toString(), { cache: "no-store" });
@@ -2241,7 +2249,7 @@ ${clone.outerHTML}`;
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "rotace_v.0160-rc.zip";
+    a.download = "rotace_v.0161-rc.zip";
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -2452,12 +2460,19 @@ const initialRotationData = {"months":{"1/25":{"hard":{"title":"Rotace tvrdota",
 
 *{box-sizing:border-box;}
 
+html{
+ min-height:100%;
+ background:var(--bg);
+}
+
 body{
  font-family:Arial, sans-serif;
  background:var(--bg);
+ background-color:var(--bg);
  color:var(--text);
  margin:0;
- padding:15px;
+ min-height:100vh;
+ padding:calc(15px + env(safe-area-inset-top)) calc(15px + env(safe-area-inset-right)) calc(15px + env(safe-area-inset-bottom)) calc(15px + env(safe-area-inset-left));
  position:relative;
  isolation:isolate;
 }
