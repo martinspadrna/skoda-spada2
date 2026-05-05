@@ -24,7 +24,7 @@
 <h1>Rotace a kalkulačky</h1>
 <div id="shiftTime">Aktuálně v práci: směna A (ranní)<br>Směna D začne za: 2 d 8 h 2 min</div>
 <div class="version">
-  v.0157-rc | <span class="signature" id="signatureTap">Martin Špadrna</span>
+  v.0159-rc | <span class="signature" id="signatureTap">Martin Špadrna</span>
 </div>
 
 <!-- HOME -->
@@ -35,6 +35,7 @@
     <div class="tile" onclick="showPage('frezky')">Frézky</div>
     <div class="tile" onclick="showPage('brusy')">Brusy</div>
     <div class="tile" onclick="showPage('pracka')">Pračka</div>
+    <div class="tile" onclick="showPage('navody')">Návody</div>
   </div>
   <div class="homeDivider"></div>
   <div class="grid">
@@ -116,18 +117,18 @@
     </div>
 
     <div id="soustruhyLisPanel" class="subPanel">
-      <div class="smallText">Lis: zadej číslo první dávky a plán.</div>
-      <label>Číslo první dávky</label>
+      <div class="smallText">Lis: zadáš první dávku a plán. Počítá se po 32 ks.</div>
+      <label>První dávka</label>
       <input id="lis_first" type="number" autocomplete="off">
       <label>Plán výroby</label>
       <input id="lis_plan" type="number" value="1248" autocomplete="off">
-      <button class="soustruhCalcBtn" onclick="calcSoustruhyLis()">Spočítej lis</button>
+      <button onclick="calcSoustruhyLis()">Spočítej lis</button>
       <div class="card" id="soustruhyLisResult"></div>
     </div>
 
     <div id="soustruhy126Panel" class="subPanel active">
-      <div class="smallText">Volné 126ks: zadej číslo první dávky, plán a jestli začínáš dávkou s 32 nebo 31 kusy.</div>
-      <label>Číslo první dávky</label>
+      <div class="smallText">Volné 126ks: zadáš první dávku, plán a jestli začínáš 32 nebo 31.</div>
+      <label>První dávka</label>
       <input id="v126_first" type="number" autocomplete="off">
       <label>Plán výroby</label>
       <input id="v126_plan" type="number" value="1248" autocomplete="off">
@@ -135,25 +136,39 @@
         <div class="bbtn activeChoice" data-startsize="32" onclick="setSoustruh126Start(32)">Začínám 32 ks</div>
         <div class="bbtn" data-startsize="31" onclick="setSoustruh126Start(31)">Začínám 31 ks</div>
       </div>
-      <button class="soustruhCalcBtn" onclick="calcSoustruhy126()">Spočítej 126</button>
+      <button onclick="calcSoustruhy126()">Spočítej 126</button>
       <div class="card" id="soustruhy126Result"></div>
     </div>
 
     <div id="soustruhy106Panel" class="subPanel">
-      <div class="smallText">Volné 106ks: zadej číslo první dávky, plán a počet kusů v prvních čtyřech dávkách.</div>
-      <label>Číslo první dávky</label>
+      <div class="smallText">Volné 106ks: zadej první dávku, první čtyři dávky a plán.</div>
+      <label>První dávka</label>
       <input id="v106_first" type="number" autocomplete="off">
       <div class="grid" style="grid-template-columns:1fr 1fr; gap:10px;">
-        <div><label>1. dávka- počet kusů</label><input id="v106_c1" type="number"></div>
-        <div><label>2. dávka- počet kusů</label><input id="v106_c2" type="number"></div>
-        <div><label>3. dávka- počet kusů</label><input id="v106_c3" type="number"></div>
-        <div><label>4. dávka- počet kusů</label><input id="v106_c4" type="number"></div>
+        <div><label>1. dávka ks</label><input id="v106_c1" type="number"></div>
+        <div><label>2. dávka ks</label><input id="v106_c2" type="number"></div>
+        <div><label>3. dávka ks</label><input id="v106_c3" type="number"></div>
+        <div><label>4. dávka ks</label><input id="v106_c4" type="number"></div>
       </div>
       <label>Plán výroby</label>
       <input id="v106_plan" type="number" value="1248" autocomplete="off">
-      <button class="soustruhCalcBtn" onclick="calcSoustruhy106()">Spočítej 106</button>
+      <button onclick="calcSoustruhy106()">Spočítej 106</button>
       <div class="card" id="soustruhy106Result"></div>
     </div>
+  </div>
+</div>
+
+<!-- NÁVODY -->
+<div id="navody" class="page">
+  <div class="headerBar">
+    <div></div>
+    <h3>Návody</h3>
+    <div style="width:34px;"></div>
+  </div>
+
+  <div class="card">
+    <div class="smallText" style="margin-bottom:12px;">Složky s korekcemi a postupy pro různé stroje.</div>
+    <div id="manualsContent"></div>
   </div>
 </div>
 
@@ -172,6 +187,7 @@
     <button onclick="window.open('https://sa.gthcatering.cz/restaurant/c1/', '_blank', 'noopener')">
       Otevřít jídelní lístek
     </button>
+    <div id="canteenHours" class="canteenHours"></div>
   </div>
 </div>
 
@@ -254,7 +270,7 @@
 
 <script type="text/plain" id="src-app-js" hidden>
 const APP_KEY = "rotace_kalkulacky_state_v122";
-const ROTATION_BUILD = "2026-05-04-v.0157-rc-" + Date.now();
+const ROTATION_BUILD = "2026-05-05-v.0159-rc-" + Date.now();
 
 const HARD_MACHINE_HEADERS = ["TNKS01", "TBKR07", "TPKW01", "TPKW02", "TBKR01"];
 const SOFT_MACHINE_HEADERS = ["MSKC01", "MSKC03", "MSKC04", "MFKF06", "MFKF10"];
@@ -328,14 +344,14 @@ const BRUS_CONFIG = {
     ADV:  { pieceSec: 62.7, dressEvery: 45, dressSec: 240, label: "AD volné" },
     AE:   { pieceSec: 57.0, dressEvery: 58, dressSec: 240, label: "AE" },
     AEV:  { pieceSec: 60.0, dressEvery: 45, dressSec: 240, label: "AE volné" },
-    AH:   { pieceSec: 63.0, dressEvery: 65, dressSec: 240, label: "AH" }
+    AH:   { pieceSec: 66, dressEvery: 87, dressSec: 406, label: "AH" }
   },
   TBKR07: {
     AD:   { pieceSec: 58.2, dressEvery: 59, dressSec: 240, label: "AD" },
     ADV:  { pieceSec: 60.3, dressEvery: 45, dressSec: 240, label: "AD volné" },
-    AE:   { pieceSec: 56.4, dressEvery: 58, dressSec: 240, label: "AE" },
+    AE:   { pieceSec: 56.4, dressEvery: 59, dressSec: 325, label: "AE" },
     AEV:  { pieceSec: 60.0, dressEvery: 45, dressSec: 240, label: "AE volné" },
-    AH:   { pieceSec: 63.0, dressEvery: 65, dressSec: 240, label: "AH" }
+    AH:   { pieceSec: 66, dressEvery: 87, dressSec: 406, label: "AH" }
   }
 };
 
@@ -517,6 +533,54 @@ function showPage(id) {
   if (id === "soustruhy") {
     renderSoustruhy();
   }
+  if (id === "navody") {
+    renderNavody();
+  }
+  if (id === "jidlo") {
+    renderJidloHours();
+  }
+}
+
+function renderNavody() {
+  const el = document.getElementById("manualsContent");
+  if (!el) return;
+  const folders = Array.isArray(manualsData) ? manualsData : [];
+  if (!folders.length) {
+    el.innerHTML = "<div class='smallText'>Zatím nejsou přidané žádné návody.</div>";
+    return;
+  }
+
+  let html = "";
+  folders.forEach(folder => {
+    const folderTitle = escapeHtml(folder && (folder.title || folder.folder || "Složka"));
+    const items = Array.isArray(folder && folder.items) ? folder.items : [];
+    html += "<details class='manualFolder' open><summary>" + folderTitle + "</summary><div class='manualItems'>";
+    if (!items.length) {
+      html += "<div class='manualEmpty smallText'>Zatím bez návodů.</div>";
+    } else {
+      items.forEach(item => {
+        const title = escapeHtml(item && (item.title || item.name || "Návod"));
+        const text = escapeHtml(item && (item.text || item.note || ""));
+        html += "<div class='manualItem'><div class='manualTitle'>" + title + "</div>";
+        if (text) html += "<div class='smallText'>" + text + "</div>";
+        html += "</div>";
+      });
+    }
+    html += "</div></details>";
+  });
+  el.innerHTML = html;
+}
+
+function renderJidloHours() {
+  const el = document.getElementById("canteenHours");
+  if (!el) return;
+  const info = canteenInfo || {};
+  const title = String(info.title || "Otevírací doba kantýny");
+  const text = String(info.text || info.hours || "Zatím není nastavena.");
+  const note = String(info.note || "Až pošleš čas, zobrazím ho tady.");
+  el.innerHTML = "<div class='sectionTitle' style='margin-top:10px;'>" + escapeHtml(title) + "</div>" +
+    "<div style='margin-top:4px;'>" + escapeHtml(text) + "</div>" +
+    "<div class='smallText' style='margin-top:6px;'>" + escapeHtml(note) + "</div>";
 }
 
 function setRotaceView(view) {
@@ -1238,11 +1302,14 @@ function calcBrusy() {
   const sec = Math.max(0, (getShiftEnd(new Date()) - new Date()) / 1000);
   const cfg = getBrusConfig(app.machine, app.prog);
   const ks = countBrusyPieces(sec, cfg);
+  const hotovo = parseInt(document.getElementById("davka").value) || 0;
   const celkem = parseInt(document.getElementById("celkem").value) || 0;
-  const celkove = celkem + ks;
+  const celkove = celkem + ks + hotovo;
+  const doDavy = hotovo > 0 ? Math.ceil((ks + hotovo) / 32) : formatDoses(ks);
+  const celkemDavy = hotovo > 0 ? Math.ceil(celkove / 32) : formatDoses(celkove);
   document.getElementById("outB").innerHTML =
-    "Do konce směny ještě stihneš " + ks + " ks, tj. " + formatDoses(ks) + " dávek.<br>" +
-    "Celkově budeš mít " + celkove + " ks, tj. " + formatDoses(celkove) + " dávek.";
+    "Do konce směny ještě stihneš " + ks + " ks, tj. " + doDavy + " dávek" + (hotovo > 0 ? " (včetně rozdělané dávky)" : "") + ".<br>" +
+    "Celkově budeš mít " + celkove + " ks, tj. " + celkemDavy + " dávek.";
   saveRotationData();
 }
 
@@ -1275,6 +1342,23 @@ function getBrusConfig(machine, prog) {
 
 function formatBrusSeconds(value) {
   return String(Number(value) || 0).replace(".", ",");
+}
+
+function formatBrusPieceTime(value) {
+  const num = Number(value) || 0;
+  if (Number.isInteger(num) && num >= 60) {
+    const min = Math.floor(num / 60);
+    const sec = num % 60;
+    return min + "m" + sec + "sec";
+  }
+  return formatBrusSeconds(num) + "s";
+}
+
+function formatBrusDressTime(value) {
+  const num = Math.round(Number(value) || 0);
+  const min = Math.floor(num / 60);
+  const sec = num % 60;
+  return min + "m" + sec + "sec";
 }
 
 function countBrusyPieces(availableSec, cfg) {
@@ -1457,7 +1541,7 @@ function renderBrusy() {
     const cfg = getBrusConfig(app.machine, app.prog);
     info.innerHTML =
       "<div><b>" + escapeHtml(app.machine) + " / " + escapeHtml(cfg.label) + "</b></div>" +
-      "<div class='smallText'>Vyroba kusu: " + formatBrusSeconds(cfg.pieceSec) + " s · Orovnává po " + formatCount(cfg.dressEvery) + " ks · Orovnává " + formatCount(Math.round(cfg.dressSec / 60)) + " min</div>";
+      "<div class='smallText'>Vyroba kusu: " + formatBrusPieceTime(cfg.pieceSec) + " · Orovnává po " + formatCount(cfg.dressEvery) + " ks · Orovnává " + formatBrusDressTime(cfg.dressSec) + "</div>";
   }
 }
 
@@ -1940,6 +2024,8 @@ function refreshInitialUI() {
   restoreInputs();
   renderBrusy();
   renderSoustruhy();
+  renderNavody();
+  renderJidloHours();
   const currentYear = new Date().getFullYear();
   const currentMonth = monthKeyFromYearMonth(currentYear, new Date().getMonth() + 1);
   const currentYearMonths = getMonthsForYear(app.rotation, currentYear);
@@ -2029,7 +2115,7 @@ async function exportCurrentHtml() {
       throw new Error("Chybí zdrojové bloky pro export.");
     }
 
-    const dataSource = `const initialRotationData = ${JSON.stringify(app.rotation)};\n`;
+    const dataSource = `const initialRotationData = ${JSON.stringify(app.rotation)};\nconst manualsData = ${JSON.stringify(manualsData, null, 2)};\nconst canteenInfo = ${JSON.stringify(canteenInfo, null, 2)};\n`;
 
     const pages = [...document.querySelectorAll(".page")];
     const previousActive = pages.find(p => p.classList.contains("active"))?.id || "home";
@@ -2055,7 +2141,7 @@ async function exportCurrentHtml() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "rotace_v.0157-rc.zip";
+    a.download = "rotace_v.0159-rc.zip";
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -2241,6 +2327,7 @@ setRotaceView("names");
 refreshInitialUI();
 </script>
 <script type="text/plain" id="src-styles-css" hidden>
+html { background: var(--bg); }
 :root{
   --bg:#0b0f0c;
   --panel:#151a17;
@@ -2267,29 +2354,6 @@ body{
  color:var(--text);
  margin:0;
  padding:15px;
- position:relative;
- isolation:isolate;
-}
-body::before{
- content:'';
- position:fixed;
- inset:0;
- pointer-events:none;
- z-index:-1;
- background:
-  linear-gradient(90deg,
-   rgba(11,15,12,0.98) 0%,
-   rgba(11,15,12,0.98) 22%,
-   rgba(124,255,124,0.06) 50%,
-   rgba(11,15,12,0.98) 78%,
-   rgba(11,15,12,0.98) 100%
-  ),
-  radial-gradient(ellipse at center,
-   rgba(124,255,124,0.10) 0%,
-   rgba(124,255,124,0.05) 20%,
-   rgba(124,255,124,0.02) 38%,
-   rgba(11,15,12,0) 62%
-  );
 }
 
 h1{
@@ -2386,10 +2450,6 @@ button{
  color:white;
  font-size:18px;
  cursor:pointer;
-}
-
-.soustruhCalcBtn{
- border:2px solid rgba(124,255,124,.8);
 }
 
 .resetBtn{
@@ -2541,7 +2601,7 @@ label{
 .ad{background:var(--blue);}
 .ae{background:var(--emerald);}
 .ah{background:var(--orange);}
-.adv{background:#415f85;}
+.adv{background:var(--gray);}
 .aev{background:var(--gray2);}
 
 .tableWrap{
@@ -3020,6 +3080,51 @@ input{
   table.rotTable {
     min-width: 520px;
   }
+}
+
+
+.manualFolder{
+  margin-top:10px;
+  border:1px solid rgba(124,255,124,.12);
+  border-radius:12px;
+  background:var(--panel2);
+  overflow:hidden;
+}
+
+.manualFolder summary{
+  cursor:pointer;
+  padding:12px 14px;
+  font-weight:700;
+  list-style:none;
+}
+.manualFolder summary::-webkit-details-marker{ display:none; }
+
+.manualItems{
+  display:grid;
+  gap:8px;
+  padding:0 12px 12px;
+}
+
+.manualItem{
+  background:var(--panel);
+  border:1px solid rgba(124,255,124,.12);
+  border-radius:10px;
+  padding:10px 12px;
+}
+
+.manualTitle{
+  font-weight:700;
+  margin-bottom:4px;
+}
+
+.manualEmpty{
+  padding:6px 2px 2px;
+}
+
+.canteenHours{
+  margin-top:14px;
+  padding-top:12px;
+  border-top:1px solid rgba(124,255,124,.18);
 }
 
 </script>

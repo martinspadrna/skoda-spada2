@@ -1,5 +1,5 @@
 const APP_KEY = "rotace_kalkulacky_state_v122";
-const ROTATION_BUILD = "2026-05-04-v.0157-rc-" + Date.now();
+const ROTATION_BUILD = "2026-05-05-v.0159-rc-" + Date.now();
 
 const HARD_MACHINE_HEADERS = ["TNKS01", "TBKR07", "TPKW01", "TPKW02", "TBKR01"];
 const SOFT_MACHINE_HEADERS = ["MSKC01", "MSKC03", "MSKC04", "MFKF06", "MFKF10"];
@@ -73,14 +73,14 @@ const BRUS_CONFIG = {
     ADV:  { pieceSec: 62.7, dressEvery: 45, dressSec: 240, label: "AD volné" },
     AE:   { pieceSec: 57.0, dressEvery: 58, dressSec: 240, label: "AE" },
     AEV:  { pieceSec: 60.0, dressEvery: 45, dressSec: 240, label: "AE volné" },
-    AH:   { pieceSec: 63.0, dressEvery: 65, dressSec: 240, label: "AH" }
+    AH:   { pieceSec: 66, dressEvery: 87, dressSec: 406, label: "AH" }
   },
   TBKR07: {
     AD:   { pieceSec: 58.2, dressEvery: 59, dressSec: 240, label: "AD" },
     ADV:  { pieceSec: 60.3, dressEvery: 45, dressSec: 240, label: "AD volné" },
-    AE:   { pieceSec: 56.4, dressEvery: 58, dressSec: 240, label: "AE" },
+    AE:   { pieceSec: 56.4, dressEvery: 59, dressSec: 325, label: "AE" },
     AEV:  { pieceSec: 60.0, dressEvery: 45, dressSec: 240, label: "AE volné" },
-    AH:   { pieceSec: 63.0, dressEvery: 65, dressSec: 240, label: "AH" }
+    AH:   { pieceSec: 66, dressEvery: 87, dressSec: 406, label: "AH" }
   }
 };
 
@@ -262,6 +262,54 @@ function showPage(id) {
   if (id === "soustruhy") {
     renderSoustruhy();
   }
+  if (id === "navody") {
+    renderNavody();
+  }
+  if (id === "jidlo") {
+    renderJidloHours();
+  }
+}
+
+function renderNavody() {
+  const el = document.getElementById("manualsContent");
+  if (!el) return;
+  const folders = Array.isArray(manualsData) ? manualsData : [];
+  if (!folders.length) {
+    el.innerHTML = "<div class='smallText'>Zatím nejsou přidané žádné návody.</div>";
+    return;
+  }
+
+  let html = "";
+  folders.forEach(folder => {
+    const folderTitle = escapeHtml(folder && (folder.title || folder.folder || "Složka"));
+    const items = Array.isArray(folder && folder.items) ? folder.items : [];
+    html += "<details class='manualFolder' open><summary>" + folderTitle + "</summary><div class='manualItems'>";
+    if (!items.length) {
+      html += "<div class='manualEmpty smallText'>Zatím bez návodů.</div>";
+    } else {
+      items.forEach(item => {
+        const title = escapeHtml(item && (item.title || item.name || "Návod"));
+        const text = escapeHtml(item && (item.text || item.note || ""));
+        html += "<div class='manualItem'><div class='manualTitle'>" + title + "</div>";
+        if (text) html += "<div class='smallText'>" + text + "</div>";
+        html += "</div>";
+      });
+    }
+    html += "</div></details>";
+  });
+  el.innerHTML = html;
+}
+
+function renderJidloHours() {
+  const el = document.getElementById("canteenHours");
+  if (!el) return;
+  const info = canteenInfo || {};
+  const title = String(info.title || "Otevírací doba kantýny");
+  const text = String(info.text || info.hours || "Zatím není nastavena.");
+  const note = String(info.note || "Až pošleš čas, zobrazím ho tady.");
+  el.innerHTML = "<div class='sectionTitle' style='margin-top:10px;'>" + escapeHtml(title) + "</div>" +
+    "<div style='margin-top:4px;'>" + escapeHtml(text) + "</div>" +
+    "<div class='smallText' style='margin-top:6px;'>" + escapeHtml(note) + "</div>";
 }
 
 function setRotaceView(view) {
@@ -983,11 +1031,14 @@ function calcBrusy() {
   const sec = Math.max(0, (getShiftEnd(new Date()) - new Date()) / 1000);
   const cfg = getBrusConfig(app.machine, app.prog);
   const ks = countBrusyPieces(sec, cfg);
+  const hotovo = parseInt(document.getElementById("davka").value) || 0;
   const celkem = parseInt(document.getElementById("celkem").value) || 0;
-  const celkove = celkem + ks;
+  const celkove = celkem + ks + hotovo;
+  const doDavy = hotovo > 0 ? Math.ceil((ks + hotovo) / 32) : formatDoses(ks);
+  const celkemDavy = hotovo > 0 ? Math.ceil(celkove / 32) : formatDoses(celkove);
   document.getElementById("outB").innerHTML =
-    "Do konce směny ještě stihneš " + ks + " ks, tj. " + formatDoses(ks) + " dávek.<br>" +
-    "Celkově budeš mít " + celkove + " ks, tj. " + formatDoses(celkove) + " dávek.";
+    "Do konce směny ještě stihneš " + ks + " ks, tj. " + doDavy + " dávek" + (hotovo > 0 ? " (včetně rozdělané dávky)" : "") + ".<br>" +
+    "Celkově budeš mít " + celkove + " ks, tj. " + celkemDavy + " dávek.";
   saveRotationData();
 }
 
@@ -1020,6 +1071,23 @@ function getBrusConfig(machine, prog) {
 
 function formatBrusSeconds(value) {
   return String(Number(value) || 0).replace(".", ",");
+}
+
+function formatBrusPieceTime(value) {
+  const num = Number(value) || 0;
+  if (Number.isInteger(num) && num >= 60) {
+    const min = Math.floor(num / 60);
+    const sec = num % 60;
+    return min + "m" + sec + "sec";
+  }
+  return formatBrusSeconds(num) + "s";
+}
+
+function formatBrusDressTime(value) {
+  const num = Math.round(Number(value) || 0);
+  const min = Math.floor(num / 60);
+  const sec = num % 60;
+  return min + "m" + sec + "sec";
 }
 
 function countBrusyPieces(availableSec, cfg) {
@@ -1202,7 +1270,7 @@ function renderBrusy() {
     const cfg = getBrusConfig(app.machine, app.prog);
     info.innerHTML =
       "<div><b>" + escapeHtml(app.machine) + " / " + escapeHtml(cfg.label) + "</b></div>" +
-      "<div class='smallText'>Vyroba kusu: " + formatBrusSeconds(cfg.pieceSec) + " s · Orovnává po " + formatCount(cfg.dressEvery) + " ks · Orovnává " + formatCount(Math.round(cfg.dressSec / 60)) + " min</div>";
+      "<div class='smallText'>Vyroba kusu: " + formatBrusPieceTime(cfg.pieceSec) + " · Orovnává po " + formatCount(cfg.dressEvery) + " ks · Orovnává " + formatBrusDressTime(cfg.dressSec) + "</div>";
   }
 }
 
@@ -1685,6 +1753,8 @@ function refreshInitialUI() {
   restoreInputs();
   renderBrusy();
   renderSoustruhy();
+  renderNavody();
+  renderJidloHours();
   const currentYear = new Date().getFullYear();
   const currentMonth = monthKeyFromYearMonth(currentYear, new Date().getMonth() + 1);
   const currentYearMonths = getMonthsForYear(app.rotation, currentYear);
@@ -1774,7 +1844,7 @@ async function exportCurrentHtml() {
       throw new Error("Chybí zdrojové bloky pro export.");
     }
 
-    const dataSource = `const initialRotationData = ${JSON.stringify(app.rotation)};\n`;
+    const dataSource = `const initialRotationData = ${JSON.stringify(app.rotation)};\nconst manualsData = ${JSON.stringify(manualsData, null, 2)};\nconst canteenInfo = ${JSON.stringify(canteenInfo, null, 2)};\n`;
 
     const pages = [...document.querySelectorAll(".page")];
     const previousActive = pages.find(p => p.classList.contains("active"))?.id || "home";
@@ -1800,7 +1870,7 @@ async function exportCurrentHtml() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "rotace_v.0157-rc.zip";
+    a.download = "rotace_v.0159-rc.zip";
     document.body.appendChild(a);
     a.click();
     a.remove();
