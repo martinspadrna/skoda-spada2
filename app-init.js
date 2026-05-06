@@ -114,7 +114,7 @@ ${clone.outerHTML}`;
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "rotace_v.0171-rc.zip";
+    a.download = "rotace_v.0172-rc.zip";
     document.body.appendChild(a);
     a.click();
     a.remove();

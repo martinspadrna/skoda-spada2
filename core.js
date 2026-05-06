@@ -1,6 +1,6 @@
 
 const APP_KEY = "rotace_kalkulacky_state_v122";
-const ROTATION_BUILD = "2026-05-06-v.0171-rc-" + Date.now();
+const ROTATION_BUILD = "2026-05-06-v.0172-rc-" + Date.now();
 
 const HARD_MACHINE_HEADERS = ["TNKS01", "TBKR07", "TPKW01", "TPKW02", "TBKR01"];
 const SOFT_MACHINE_HEADERS = ["MSKC01", "MSKC03", "MSKC04", "MFKF06", "MFKF10"];
@@ -175,6 +175,18 @@ function formatFoodDayName(date) {
   return FOOD_DAY_NAMES[date.getDay()] || "";
 }
 
+function formatFoodRelativeLabel(date, referenceDate) {
+  const target = new Date(date);
+  const reference = new Date(referenceDate);
+  target.setHours(0, 0, 0, 0);
+  reference.setHours(0, 0, 0, 0);
+
+  const diffDays = Math.round((target.getTime() - reference.getTime()) / 86400000);
+  if (diffDays === 0) return "dnes";
+  if (diffDays === 1) return "zítra";
+  return formatFoodDayName(target);
+}
+
 function foodDateAtTime(baseDate, timeText) {
   const [hourText, minuteText] = String(timeText || "").split(":");
   const hour = parseInt(hourText, 10);
@@ -242,11 +254,8 @@ function foodStatusText(status) {
 }
 
 function foodStatusMeta(status, location) {
-  if (status.isOpen && status.active) {
-    return location.place + " · dnes " + formatFoodRange(status.active.start, status.active.end);
-  }
   if (status.next) {
-    return "Další termín: " + formatFoodDayName(status.next.start) + " " + formatFoodRange(status.next.start, status.next.end);
+    return "Další termín: " + formatFoodRelativeLabel(status.next.start, new Date()) + " " + formatFoodRange(status.next.start, status.next.end);
   }
   return "Rozpis není dostupný.";
 }
@@ -279,13 +288,15 @@ function getNextPayrollDate(now) {
   const today = new Date(now || new Date());
   today.setHours(0, 0, 0, 0);
 
-  const thisMonth = getPayrollDateForMonth(today.getFullYear(), today.getMonth());
-  if (thisMonth && today <= thisMonth) {
-    return thisMonth;
+  for (let i = 0; i < 24; i += 1) {
+    const monthDate = new Date(today.getFullYear(), today.getMonth() + i, 1);
+    const payDate = getPayrollDateForMonth(monthDate.getFullYear(), monthDate.getMonth());
+    if (payDate && payDate >= today) {
+      return payDate;
+    }
   }
 
-  const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
-  return getPayrollDateForMonth(nextMonth.getFullYear(), nextMonth.getMonth());
+  return null;
 }
 
 function pluralizeDays(count) {

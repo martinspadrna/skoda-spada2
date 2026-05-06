@@ -160,6 +160,8 @@ h1{
 }
 
 .foodTileTitle{
+  width:100%;
+  text-align:center;
   font-size:18px;
   font-weight:700;
   line-height:1.15;
@@ -714,11 +716,11 @@ input{
 
 @media (max-width: 700px) {
   body {
-    padding: 10px;
+    padding: calc(18px + env(safe-area-inset-top)) 10px 10px;
   }
 
   h1 {
-    margin: 8px 0 10px;
+    margin: 16px 0 10px;
     font-size: 23px;
   }
 
@@ -776,7 +778,7 @@ input{
   }
 
   .homeBtn {
-    top: 22px;
+    top: calc(28px + env(safe-area-inset-top));
   }
 
   .card {
