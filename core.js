@@ -1,6 +1,6 @@
 
 const APP_KEY = "rotace_kalkulacky_state_v122";
-const ROTATION_BUILD = "2026-05-06-v.0174-rc-" + Date.now();
+const ROTATION_BUILD = "2026-05-06-v.0179-rc-" + Date.now();
 
 const HARD_MACHINE_HEADERS = ["TNKS01", "TBKR07", "TPKW01", "TPKW02", "TBKR01"];
 const SOFT_MACHINE_HEADERS = ["MSKC01", "MSKC03", "MSKC04", "MFKF06", "MFKF10"];
@@ -231,15 +231,12 @@ function findFoodStatus(location, now) {
     for (const window of windows) {
       const range = foodRangeFromWindow(baseDate, window);
       if (baseNow >= range.start && baseNow < range.end) {
-        active = range;
-        break;
+        if (!active || range.start < active.start) active = range;
       }
       if (range.start > baseNow && (!next || range.start < next.start)) {
         next = range;
       }
     }
-
-    if (active) break;
   }
 
   return { active, next, isOpen: !!active };

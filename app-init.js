@@ -39,35 +39,53 @@ document.getElementById("importYearSelect")?.addEventListener("change", (e) => {
 
 
 
-const EXPORT_SOURCE_IDS = {
-  "app.js": "src-app-js",
-  "core.js": "src-core-js",
-  "stats.js": "src-stats-js",
-  "soustruhy.js": "src-soustruhy-js",
-  "brusy.js": "src-brusy-js",
-  "rotace.js": "src-rotace-js",
-  "app-init.js": "src-app-init-js",
-  "data.js": "src-data-js",
-  "styles.css": "src-styles-css"
-};
+const EXPORT_FILES = [
+  "styles.css",
+  "data.js",
+  "app.js",
+  "core.js",
+  "stats.js",
+  "soustruhy.js",
+  "brusy.js",
+  "rotace.js",
+  "app-init.js"
+];
 
 async function readExportText(relativePath) {
-  try {
-    const response = await fetch(new URL(relativePath, window.location.href).toString(), { cache: "no-store" });
-    if (response.ok) {
-      return await response.text();
-    }
-  } catch (err) {
-    console.warn("Fetch export zdroje selhal pro " + relativePath + ":", err);
+  const response = await fetch(new URL(relativePath, window.location.href).toString(), { cache: "no-store" });
+  if (!response.ok) {
+    throw new Error(`Nepodařilo se načíst ${relativePath} (${response.status})`);
   }
+  return await response.text();
+}
 
-  const id = EXPORT_SOURCE_IDS[relativePath];
-  const embedded = id ? document.getElementById(id) : null;
-  if (embedded && embedded.textContent) {
-    return embedded.textContent.replace(/^\s+|\s+$/g, "");
-  }
-
-  throw new Error(`Nepodařilo se načíst ${relativePath}`);
+function buildExportIndexHtml(bodyHtml) {
+  return [
+    '<!DOCTYPE html>',
+    '<html lang="cs">',
+    '<head>',
+    '<meta charset="UTF-8">',
+    '<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">',
+    '<meta name="apple-mobile-web-app-capable" content="yes">',
+    '<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">',
+    '<meta name="theme-color" content="#0b0f0c">',
+    '',
+    '<title>Rotace a kalkulačky</title>',
+    '',
+    '<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%0A%20%20%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%234CAF50%22%2F%3E%0A%20%20%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2224%22%20fill%3D%22%230b0f0c%22%20opacity%3D%22.12%22%2F%3E%0A%20%20%3Ctext%20x%3D%2232%22%20y%3D%2240%22%20text-anchor%3D%22middle%22%20font-family%3D%22Kalam%2C%20cursive%22%20font-size%3D%2220%22%20font-weight%3D%22700%22%20fill%3D%22%23ffffff%22%3EM.%C5%A0.%3C%2Ftext%3E%0A%3C%2Fsvg%3E">',
+    '<link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&display=swap" rel="stylesheet">',
+    '<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>',
+    '<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>',
+    '<link rel="stylesheet" href="styles.css">',
+    '</head>',
+    '<body>',
+    bodyHtml,
+    '',
+    '<script src="data.js"></script>',
+    '<script src="app.js"></script>',
+    '</body>',
+    '</html>'
+  ].join('\n');
 }
 
 async function exportCurrentHtml() {
@@ -77,49 +95,37 @@ async function exportCurrentHtml() {
   }
 
   try {
-    const moduleFiles = [
-      "app.js",
-      "core.js",
-      "stats.js",
-      "soustruhy.js",
-      "brusy.js",
-      "rotace.js",
-      "app-init.js"
-    ];
-
-    const stylesSource = await readExportText("styles.css");
-    const moduleSources = {};
-    for (const file of moduleFiles) {
-      moduleSources[file] = await readExportText(file);
-    }
-
     const pages = [...document.querySelectorAll(".page")];
     const previousActive = pages.find(p => p.classList.contains("active"))?.id || "home";
     pages.forEach(p => p.classList.remove("active"));
     const home = document.getElementById("home");
     if (home) home.classList.add("active");
 
-    const clone = document.documentElement.cloneNode(true);
-    clone.querySelectorAll('#src-app-js, #src-core-js, #src-stats-js, #src-soustruhy-js, #src-brusy-js, #src-rotace-js, #src-app-init-js, #src-data-js, #src-styles-css').forEach(el => el.remove());
-    const indexText = `<!DOCTYPE html>
-${clone.outerHTML}`;
+    const bodyClone = document.body.cloneNode(true);
+    bodyClone.classList.remove("qrModalOpen");
+    bodyClone.querySelectorAll('#personQrModal, .qrModalOverlay, script[type="text/plain"][id^="src-"]').forEach(el => el.remove());
+    const bodyHtml = bodyClone.innerHTML.trim();
+    const indexText = buildExportIndexHtml(bodyHtml);
 
     pages.forEach(p => p.classList.remove("active"));
     const restore = document.getElementById(previousActive);
     if (restore) restore.classList.add("active");
 
+    const exportSources = {};
+    for (const file of EXPORT_FILES) {
+      exportSources[file] = await readExportText(file);
+    }
+
     const zip = new JSZip();
-    zip.file("index.html", indexText);
-    zip.file("styles.css", stylesSource);
-    zip.file("data.js", `const initialRotationData = ${JSON.stringify(app.rotation)};
-`);
-    moduleFiles.forEach(file => zip.file(file, moduleSources[file]));
+    for (const file of EXPORT_FILES) {
+      zip.file(file, file === "index.html" ? indexText : exportSources[file]);
+    }
 
     const blob = await zip.generateAsync({ type: "blob" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "rotace_v.0174-rc.zip";
+    a.download = "rotace_v.0179-rc.zip";
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -146,7 +152,7 @@ document.getElementById("rotaceReset").addEventListener("click", () => {
   setRotaceView(app.rotationView || "names");
   renderRotace();
   document.getElementById("personView").innerHTML =
-    "<div class='smallText'>Klikni na jméno a ukáže se, kam jde.</div>";
+    "<div class='smallText'>Klepni na jméno a ukáže se, kam jde.</div>";
   document.getElementById("monthView").innerHTML =
     "<div class='smallText'>Vyber měsíc vlevo nahoře.</div>";
 });
