@@ -141,6 +141,75 @@ h1{
 
 .big{grid-column:span 2;min-height:140px;font-size:22px;}
 
+.foodTile{
+  justify-content:flex-start;
+  align-items:flex-start;
+  flex-direction:column;
+  text-align:left;
+  gap:6px;
+  min-height:164px;
+}
+
+.foodTileTitle{
+  font-size:18px;
+  font-weight:700;
+  line-height:1.15;
+}
+
+.foodTileSub{
+  font-size:12px;
+  color:var(--soft);
+  line-height:1.2;
+  margin-top:-2px;
+}
+
+.foodTileRow{
+  width:100%;
+  padding-top:4px;
+  border-top:1px solid rgba(124,255,124,.08);
+}
+
+.foodTileRow:first-of-type{
+  margin-top:2px;
+}
+
+.foodTileLabel{
+  font-size:13px;
+  font-weight:700;
+  line-height:1.2;
+  color:var(--green2);
+}
+
+.foodTileText{
+  font-size:14px;
+  line-height:1.35;
+  margin-top:2px;
+}
+
+.foodTileMeta{
+  font-size:12px;
+  line-height:1.25;
+  color:var(--soft);
+  margin-top:2px;
+}
+
+.foodTileHint{
+  margin-top:auto;
+  font-size:12px;
+  line-height:1.2;
+  color:#9fc39f;
+  opacity:.9;
+}
+
+.foodOpen{
+  border-color:rgba(124,255,124,.92);
+  box-shadow:0 0 0 1px rgba(124,255,124,.12), 0 10px 24px rgba(0,0,0,.18);
+}
+
+.foodClosed{
+  border-color:rgba(255,255,255,.08);
+}
+
 button{
  width:100%;
  padding:14px;
@@ -629,11 +698,11 @@ input{
 
 @media (max-width: 700px) {
   body {
-    padding: 34px 10px 10px;
+    padding: 10px;
   }
 
   h1 {
-    margin: 24px 0 10px;
+    margin: 8px 0 10px;
     font-size: 23px;
   }
 
@@ -668,6 +737,22 @@ input{
   .big {
     min-height: 120px;
     font-size: 20px;
+  }
+
+  .foodTile {
+    min-height: 176px;
+  }
+
+  .foodTileText {
+    font-size: 13px;
+  }
+
+  .foodTileRow {
+    padding-top: 5px;
+  }
+
+  .homeBtn {
+    top: 16px;
   }
 
   .card {

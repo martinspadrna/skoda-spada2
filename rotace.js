@@ -86,6 +86,25 @@ function renderPerson(name) {
     return 0;
   };
 
+  const getSharedSoftSuffix = (entry) => {
+    if (!entry || entry.section !== "soft") return "";
+    const machine = String(entry.machine || "").trim();
+    if (machine !== "MSKC03" && machine !== "MSKC04") return "";
+
+    const month = app.rotation && app.rotation.months ? app.rotation.months[entry.monthKey] : null;
+    const soft = month && month.soft ? month.soft : null;
+    if (!soft || !Array.isArray(soft.rows) || !Array.isArray(soft.machines)) return "";
+
+    const row = soft.rows.find(r => String(r && r.date ? r.date : "").trim() === String(entry.date || "").trim());
+    if (!row) return "";
+
+    const idx01 = soft.machines.indexOf("MSKC01");
+    if (idx01 < 0) return "";
+
+    const has01 = String((row.cells || [])[idx01] || "").trim();
+    return has01 ? "" : " (+MSKC01)";
+  };
+
   const groups = new Map();
   rawEntries.forEach(entry => {
     const dateObj = new Date(entry.sortDate);
@@ -115,7 +134,9 @@ function renderPerson(name) {
         sortDate: group.sortDate,
         dateLabel: group.dateLabel || best.dateLabel || best.date || "",
         shift: best.shift || "",
-        target: best.absence ? (best.machine || "Dovolená") : getSoftMachineDisplayLabel(best, app.rotation)
+        target: best.absence
+          ? (best.machine || "Dovolená")
+          : getSoftMachineDisplayLabel(best, app.rotation) + getSharedSoftSuffix(best)
       };
     })
     .sort((a, b) => a.sortDate.localeCompare(b.sortDate));

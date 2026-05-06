@@ -1,6 +1,6 @@
 
 const APP_KEY = "rotace_kalkulacky_state_v122";
-const ROTATION_BUILD = "2026-05-04-v.0162-rc-" + Date.now();
+const ROTATION_BUILD = "2026-05-06-v.0167-rc-" + Date.now();
 
 const HARD_MACHINE_HEADERS = ["TNKS01", "TBKR07", "TPKW01", "TPKW02", "TBKR01"];
 const SOFT_MACHINE_HEADERS = ["MSKC01", "MSKC03", "MSKC04", "MFKF06", "MFKF10"];
@@ -70,20 +70,182 @@ const app = {
 
 const BRUS_CONFIG = {
   TBKR01: {
-    AD:   { pieceSec: 58.5, dressEvery: 58, dressSec: 240, label: "AD" },
+    AD:   { pieceSec: 58.2, dressEvery: 59, dressSec: 323, label: "AD" },
     ADV:  { pieceSec: 62.7, dressEvery: 45, dressSec: 240, label: "AD volné" },
     AE:   { pieceSec: 57.0, dressEvery: 58, dressSec: 240, label: "AE" },
     AEV:  { pieceSec: 60.0, dressEvery: 45, dressSec: 240, label: "AE volné" },
     AH:   { pieceSec: 66.0, dressEvery: 87, dressSec: 400, label: "AH" }
   },
   TBKR07: {
-    AD:   { pieceSec: 58.2, dressEvery: 59, dressSec: 240, label: "AD" },
+    AD:   { pieceSec: 58.2, dressEvery: 59, dressSec: 298, label: "AD" },
     ADV:  { pieceSec: 60.3, dressEvery: 45, dressSec: 240, label: "AD volné" },
     AE:   { pieceSec: 56.4, dressEvery: 59, dressSec: 325, label: "AE" },
     AEV:  { pieceSec: 60.0, dressEvery: 45, dressSec: 240, label: "AE volné" },
     AH:   { pieceSec: 63.0, dressEvery: 65, dressSec: 240, label: "AH" }
   }
 };
+
+
+const FOOD_LOCATIONS = [
+  {
+    key: "kantyna",
+    label: "Kantýna",
+    place: "Kiosek M2",
+    days: {
+      0: [["05:30", "09:00"], ["10:00", "12:00"]],
+      1: [["05:30", "09:00"], ["10:00", "12:00"], ["13:00", "16:00"], ["17:30", "21:00"], ["22:00", "00:00"], ["01:00", "04:00"]],
+      2: [["05:30", "09:00"], ["10:00", "12:00"], ["13:00", "16:00"], ["17:30", "21:00"], ["22:00", "00:00"], ["01:00", "04:00"]],
+      3: [["05:30", "09:00"], ["10:00", "12:00"], ["13:00", "16:00"], ["17:30", "21:00"], ["22:00", "00:00"], ["01:00", "04:00"]],
+      4: [["05:30", "09:00"], ["10:00", "12:00"], ["13:00", "16:00"], ["17:30", "21:00"], ["22:00", "00:00"], ["01:00", "04:00"]],
+      5: [["05:30", "09:00"], ["10:00", "12:00"], ["13:00", "16:00"], ["17:30", "21:00"], ["22:00", "00:00"], ["01:00", "04:00"]],
+      6: [["05:30", "09:00"], ["10:00", "12:00"], ["21:30", "00:00"], ["01:00", "03:00"]]
+    }
+  },
+  {
+    key: "jidelna",
+    label: "Jídelna",
+    place: "Restaurace Vrchlabí",
+    days: {
+      0: [["10:00", "12:00"]],
+      1: [["01:30", "03:00"], ["07:00", "09:00"], ["10:30", "12:30"], ["15:00", "16:30"], ["22:30", "00:00"]],
+      2: [["07:00", "09:00"], ["10:30", "12:30"], ["15:00", "16:30"], ["22:30", "00:00"]],
+      3: [["07:00", "09:00"], ["10:30", "12:30"], ["15:00", "16:30"], ["22:30", "00:00"]],
+      4: [["07:00", "09:00"], ["10:30", "12:30"], ["15:00", "16:30"], ["22:30", "00:00"]],
+      5: [["07:00", "09:00"], ["10:30", "12:30"], ["15:00", "16:30"], ["22:30", "00:00"]],
+      6: [["10:30", "12:30"], ["15:00", "16:30"], ["22:30", "00:00"]]
+    }
+  }
+];
+
+const FOOD_DAY_NAMES = [
+  "neděle",
+  "pondělí",
+  "úterý",
+  "středa",
+  "čtvrtek",
+  "pátek",
+  "sobota"
+];
+
+function pad2(value) {
+  return String(value).padStart(2, "0");
+}
+
+function formatFoodTime(date) {
+  return pad2(date.getHours()) + ":" + pad2(date.getMinutes());
+}
+
+function formatFoodRange(start, end) {
+  return formatFoodTime(start) + "–" + formatFoodTime(end);
+}
+
+function formatFoodDayName(date) {
+  return FOOD_DAY_NAMES[date.getDay()] || "";
+}
+
+function foodDateAtTime(baseDate, timeText) {
+  const [hourText, minuteText] = String(timeText || "").split(":");
+  const hour = parseInt(hourText, 10);
+  const minute = parseInt(minuteText, 10);
+  const date = new Date(baseDate);
+  date.setHours(Number.isFinite(hour) ? hour : 0, Number.isFinite(minute) ? minute : 0, 0, 0);
+  return date;
+}
+
+function foodRangeFromWindow(baseDate, window) {
+  const start = foodDateAtTime(baseDate, window[0]);
+  const end = foodDateAtTime(baseDate, window[1]);
+  if (end <= start) end.setDate(end.getDate() + 1);
+  return { start, end };
+}
+
+function getFoodScheduleForDay(location, dayIndex) {
+  return (location && location.days && location.days[dayIndex]) ? location.days[dayIndex] : [];
+}
+
+function findFoodStatus(location, now) {
+  const baseNow = new Date(now);
+  const today = new Date(baseNow);
+  today.setHours(0, 0, 0, 0);
+
+  let active = null;
+  let next = null;
+
+  for (let offset = -1; offset <= 8; offset += 1) {
+    const baseDate = new Date(today);
+    baseDate.setDate(baseDate.getDate() + offset);
+    const windows = getFoodScheduleForDay(location, baseDate.getDay());
+
+    for (const window of windows) {
+      const range = foodRangeFromWindow(baseDate, window);
+      if (baseNow >= range.start && baseNow < range.end) {
+        active = range;
+        break;
+      }
+      if (range.start > baseNow && (!next || range.start < next.start)) {
+        next = range;
+      }
+    }
+
+    if (active) break;
+  }
+
+  return { active, next, isOpen: !!active };
+}
+
+function foodStatusText(status) {
+  if (status.isOpen && status.active) {
+    return "🟢 otevřeno do " + formatFoodTime(status.active.end);
+  }
+  if (status.next) {
+    return "🔴 zavřeno, nejbližší " + formatFoodDayName(status.next.start) + " " + formatFoodRange(status.next.start, status.next.end);
+  }
+  return "🔴 zavřeno";
+}
+
+function foodStatusMeta(status, location) {
+  if (status.isOpen && status.active) {
+    return location.place + " · dnes " + formatFoodRange(status.active.start, status.active.end);
+  }
+  if (status.next) {
+    return "Další termín: " + formatFoodDayName(status.next.start) + " " + formatFoodRange(status.next.start, status.next.end);
+  }
+  return "Rozpis není dostupný.";
+}
+
+function updateFoodTile() {
+  const tile = document.getElementById("foodTile");
+  if (!tile) return;
+
+  const statuses = FOOD_LOCATIONS.map(location => {
+    const status = findFoodStatus(location, new Date());
+    return {
+      location,
+      status,
+      text: foodStatusText(status),
+      meta: foodStatusMeta(status, location)
+    };
+  });
+
+  const anyOpen = statuses.some(item => item.status.isOpen);
+  tile.classList.toggle("foodOpen", anyOpen);
+  tile.classList.toggle("foodClosed", !anyOpen);
+
+  const html = [
+    '<div class="foodTileTitle">Jídelní lístek</div>',
+    '<div class="foodTileSub">Aktuální provozní doba</div>',
+    ...statuses.map(item =>
+      '<div class="foodTileRow">' +
+        '<div class="foodTileLabel">' + item.location.label + '</div>' +
+        '<div class="foodTileText">' + item.text + '</div>' +
+        '<div class="foodTileMeta">' + item.meta + '</div>' +
+      '</div>'
+    ),
+    '<div class="foodTileHint">Klikni pro menu</div>'
+  ].join('');
+
+  tile.innerHTML = html;
+}
 
 
 function clone(obj) {
@@ -263,6 +425,9 @@ function showPage(id) {
   }
   if (id === "soustruhy") {
     renderSoustruhy();
+  }
+  if (id === "home" && typeof updateFoodTile === "function") {
+    updateFoodTile();
   }
 }
 

@@ -114,7 +114,7 @@ ${clone.outerHTML}`;
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "rotace_v.0162-rc.zip";
+    a.download = "rotace_v.0167-rc.zip";
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -297,3 +297,7 @@ document.getElementById("tabNames").style.outline = "none";
 document.getElementById("tabMonths").style.outline = "3px solid #7CFF7C";
 setRotaceView("names");
 refreshInitialUI();
+if (typeof updateFoodTile === "function") {
+  updateFoodTile();
+  setInterval(updateFoodTile, 60 * 1000);
+}
