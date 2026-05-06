@@ -20,10 +20,7 @@ function renderRotace() {
     const el = document.createElement("div");
     el.className = "listItem" + (app.selectedName === name ? " activeChoice" : "");
     el.textContent = name;
-    el.onclick = () => {
-      app.selectedName = app.selectedName === name ? null : name;
-      renderRotace();
-    };
+    el.onclick = () => handlePersonTap(name);
     namesGrid.appendChild(el);
   });
 
@@ -63,6 +60,25 @@ function getSoftMachineDisplayLabel(entry, rotation) {
   const has06 = idx06 >= 0 ? String((row.cells || [])[idx06] || "").trim() : "";
   if (has10 && !has06) return "MFKF10 (+ MFKF06)";
   return machine;
+}
+
+
+function handlePersonTap(name) {
+  const now = Date.now();
+  if (!app.nameTapState || app.nameTapState.name !== name || now - app.nameTapState.lastTap > 750) {
+    app.nameTapState = { name, count: 1, lastTap: now };
+  } else {
+    app.nameTapState.count += 1;
+    app.nameTapState.lastTap = now;
+  }
+
+  app.selectedName = name;
+  renderRotace();
+
+  if (app.nameTapState.count >= 3) {
+    app.nameTapState = { name, count: 0, lastTap: 0 };
+    showPersonQrModal(name);
+  }
 }
 
 function renderPerson(name) {

@@ -52,17 +52,22 @@ const EXPORT_SOURCE_IDS = {
 };
 
 async function readExportText(relativePath) {
+  try {
+    const response = await fetch(new URL(relativePath, window.location.href).toString(), { cache: "no-store" });
+    if (response.ok) {
+      return await response.text();
+    }
+  } catch (err) {
+    console.warn("Fetch export zdroje selhal pro " + relativePath + ":", err);
+  }
+
   const id = EXPORT_SOURCE_IDS[relativePath];
   const embedded = id ? document.getElementById(id) : null;
   if (embedded && embedded.textContent) {
     return embedded.textContent.replace(/^\s+|\s+$/g, "");
   }
 
-  const response = await fetch(new URL(relativePath, window.location.href).toString(), { cache: "no-store" });
-  if (!response.ok) {
-    throw new Error(`Nepodařilo se načíst ${relativePath} (${response.status})`);
-  }
-  return await response.text();
+  throw new Error(`Nepodařilo se načíst ${relativePath}`);
 }
 
 async function exportCurrentHtml() {
@@ -114,7 +119,7 @@ ${clone.outerHTML}`;
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "rotace_v.0172-rc.zip";
+    a.download = "rotace_v.0174-rc.zip";
     document.body.appendChild(a);
     a.click();
     a.remove();
