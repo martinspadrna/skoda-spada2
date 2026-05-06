@@ -40,10 +40,13 @@ document.getElementById("importYearSelect")?.addEventListener("change", (e) => {
 
 
 const EXPORT_FILES = [
+  "index.html",
   "styles.css",
   "data.js",
   "app.js",
   "core.js",
+  "qr.js",
+  "payroll.js",
   "stats.js",
   "soustruhy.js",
   "brusy.js",
@@ -51,7 +54,31 @@ const EXPORT_FILES = [
   "app-init.js"
 ];
 
+const EXPORT_SOURCE_IDS = {
+  "styles.css": "src-styles-css",
+  "data.js": "src-data-js",
+  "app.js": "src-app-js",
+  "core.js": "src-core-js",
+  "qr.js": "src-qr-js",
+  "payroll.js": "src-payroll-js",
+  "stats.js": "src-stats-js",
+  "soustruhy.js": "src-soustruhy-js",
+  "brusy.js": "src-brusy-js",
+  "rotace.js": "src-rotace-js",
+  "app-init.js": "src-app-init-js"
+};
+
+function escapePlainTextBlock(text) {
+  return String(text || "").replace(/<\/script/gi, "<\/script");
+}
+
 async function readExportText(relativePath) {
+  const id = EXPORT_SOURCE_IDS[relativePath];
+  const embedded = id ? document.getElementById(id) : null;
+  if (embedded && embedded.textContent) {
+    return embedded.textContent.replace(/^\s+|\s+$/g, "");
+  }
+
   const response = await fetch(new URL(relativePath, window.location.href).toString(), { cache: "no-store" });
   if (!response.ok) {
     throw new Error(`Nepodařilo se načíst ${relativePath} (${response.status})`);
@@ -59,7 +86,7 @@ async function readExportText(relativePath) {
   return await response.text();
 }
 
-function buildExportIndexHtml(bodyHtml) {
+function buildExportIndexHtml(bodyHtml, sourceBlocksHtml) {
   return [
     '<!DOCTYPE html>',
     '<html lang="cs">',
@@ -80,6 +107,7 @@ function buildExportIndexHtml(bodyHtml) {
     '</head>',
     '<body>',
     bodyHtml,
+    sourceBlocksHtml || '',
     '',
     '<script src="data.js"></script>',
     '<script src="app.js"></script>',
@@ -89,6 +117,7 @@ function buildExportIndexHtml(bodyHtml) {
 }
 
 async function exportCurrentHtml() {
+
   if (typeof JSZip === "undefined") {
     alert("Export ZIP není dostupný, nenačetla se knihovna JSZip.");
     return;
@@ -104,28 +133,45 @@ async function exportCurrentHtml() {
     const bodyClone = document.body.cloneNode(true);
     bodyClone.classList.remove("qrModalOpen");
     bodyClone.querySelectorAll('#personQrModal, .qrModalOverlay, script[type="text/plain"][id^="src-"]').forEach(el => el.remove());
+
+    const exportFileContents = {};
+
+    const rotationSnapshot = JSON.stringify(app.rotation || {}, null, 2);
+    exportFileContents["data.js"] = `const initialRotationData = ${rotationSnapshot};`;
+
+    for (const file of EXPORT_FILES) {
+      if (file === "index.html" || file === "data.js") continue;
+      exportFileContents[file] = await readExportText(file);
+    }
+
+    const sourceBlocksHtml = EXPORT_FILES
+      .map(file => {
+        const id = EXPORT_SOURCE_IDS[file];
+        if (!id) return "";
+        return `<script type="text/plain" id="${id}">${escapePlainTextBlock(exportFileContents[file])}</script>`;
+      })
+      .filter(Boolean)
+      .join('\n');
+
     const bodyHtml = bodyClone.innerHTML.trim();
-    const indexText = buildExportIndexHtml(bodyHtml);
+    const indexText = buildExportIndexHtml(bodyHtml, sourceBlocksHtml);
 
     pages.forEach(p => p.classList.remove("active"));
     const restore = document.getElementById(previousActive);
     if (restore) restore.classList.add("active");
 
-    const exportSources = {};
-    for (const file of EXPORT_FILES) {
-      exportSources[file] = await readExportText(file);
-    }
-
     const zip = new JSZip();
+    zip.file("index.html", indexText);
     for (const file of EXPORT_FILES) {
-      zip.file(file, file === "index.html" ? indexText : exportSources[file]);
+      if (file === "index.html") continue;
+      zip.file(file, exportFileContents[file]);
     }
 
     const blob = await zip.generateAsync({ type: "blob" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "rotace_v.0179-rc.zip";
+    a.download = "rotace_v.0186-rc.zip";
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -135,30 +181,6 @@ async function exportCurrentHtml() {
     alert("Export ZIP se nepovedl: " + (err && err.message ? err.message : err));
   }
 }
-document.getElementById("exportBtn")?.addEventListener("click", () => {
-  exportCurrentHtml();
-});
-
-document.getElementById("githubBtn")?.addEventListener("click", () => {
-  window.open("https://github.com/martinspadrna/skoda-spada/upload/main", "_blank", "noopener");
-});
-
-document.getElementById("rotaceReset").addEventListener("click", () => {
-  app.selectedName = null;
-  app.selectedStatsName = null;
-  app.selectedStatsMachine = null;
-  app.selectedMonth = null;
-  app.rotationView = "names";
-  setRotaceView(app.rotationView || "names");
-  renderRotace();
-  document.getElementById("personView").innerHTML =
-    "<div class='smallText'>Klepni na jméno a ukáže se, kam jde.</div>";
-  document.getElementById("monthView").innerHTML =
-    "<div class='smallText'>Vyber měsíc vlevo nahoře.</div>";
-});
-
-
-
 
 
 function parseWorkbookFromSheetJS(workbook) {
@@ -302,6 +324,8 @@ document.getElementById("importBtn").addEventListener("click", async () => {
   }
   alert(msg.join(" | "));
 });
+
+document.getElementById("exportBtn")?.addEventListener("click", exportCurrentHtml);
 
 /* INITIAL */
 document.getElementById("tabNames").style.outline = "none";

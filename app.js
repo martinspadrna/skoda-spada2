@@ -1,6 +1,8 @@
 (async () => {
   const files = [
     "core.js",
+    "qr.js",
+    "payroll.js",
     "stats.js",
     "soustruhy.js",
     "brusy.js",
