@@ -1,6 +1,6 @@
 
 const APP_KEY = "rotace_kalkulacky_state_v122";
-const ROTATION_BUILD = "2026-05-06-v.0167-rc-" + Date.now();
+const ROTATION_BUILD = "2026-05-06-v.0171-rc-" + Date.now();
 
 const HARD_MACHINE_HEADERS = ["TNKS01", "TBKR07", "TPKW01", "TPKW02", "TBKR01"];
 const SOFT_MACHINE_HEADERS = ["MSKC01", "MSKC03", "MSKC04", "MFKF06", "MFKF10"];
@@ -117,6 +117,38 @@ const FOOD_LOCATIONS = [
   }
 ];
 
+const FOOD_SPECIAL_SUNDAY_DATES = new Set([
+  "2026-01-11",
+  "2026-01-18",
+  "2026-01-25",
+  "2026-02-08",
+  "2026-02-15",
+  "2026-03-01",
+  "2026-03-08",
+  "2026-03-15",
+  "2026-03-22",
+  "2026-03-29",
+  "2026-04-12",
+  "2026-04-19",
+  "2026-05-17",
+  "2026-05-24",
+  "2026-05-31",
+  "2026-06-07",
+  "2026-06-14",
+  "2026-06-21",
+  "2026-09-13",
+  "2026-09-20",
+  "2026-10-04",
+  "2026-10-11",
+  "2026-10-18",
+  "2026-11-22"
+]);
+
+const FOOD_SPECIAL_OVERRIDES = {
+  kantyna: [["01:00", "04:00"], ["05:30", "09:00"], ["10:00", "12:00"], ["17:30", "21:00"], ["21:30", "00:00"]],
+  jidelna: [["10:00", "12:00"], ["21:30", "23:30"]]
+};
+
 const FOOD_DAY_NAMES = [
   "neděle",
   "pondělí",
@@ -159,8 +191,14 @@ function foodRangeFromWindow(baseDate, window) {
   return { start, end };
 }
 
-function getFoodScheduleForDay(location, dayIndex) {
-  return (location && location.days && location.days[dayIndex]) ? location.days[dayIndex] : [];
+function getFoodScheduleForDay(location, dayIndex, date) {
+  const dayWindows = (location && location.days && location.days[dayIndex]) ? location.days[dayIndex] : [];
+  const day = date instanceof Date ? date : null;
+  const iso = day ? (day.getFullYear() + "-" + pad2(day.getMonth() + 1) + "-" + pad2(day.getDate())) : '';
+  if (day && dayIndex === 0 && FOOD_SPECIAL_SUNDAY_DATES.has(iso) && FOOD_SPECIAL_OVERRIDES[location.key]) {
+    return FOOD_SPECIAL_OVERRIDES[location.key];
+  }
+  return dayWindows;
 }
 
 function findFoodStatus(location, now) {
@@ -174,7 +212,7 @@ function findFoodStatus(location, now) {
   for (let offset = -1; offset <= 8; offset += 1) {
     const baseDate = new Date(today);
     baseDate.setDate(baseDate.getDate() + offset);
-    const windows = getFoodScheduleForDay(location, baseDate.getDay());
+    const windows = getFoodScheduleForDay(location, baseDate.getDay(), baseDate);
 
     for (const window of windows) {
       const range = foodRangeFromWindow(baseDate, window);
@@ -198,7 +236,7 @@ function foodStatusText(status) {
     return "🟢 otevřeno do " + formatFoodTime(status.active.end);
   }
   if (status.next) {
-    return "🔴 zavřeno, nejbližší " + formatFoodDayName(status.next.start) + " " + formatFoodRange(status.next.start, status.next.end);
+    return "🔴 zavřeno";
   }
   return "🔴 zavřeno";
 }
@@ -211,6 +249,62 @@ function foodStatusMeta(status, location) {
     return "Další termín: " + formatFoodDayName(status.next.start) + " " + formatFoodRange(status.next.start, status.next.end);
   }
   return "Rozpis není dostupný.";
+}
+
+function isPayrollWorkday(date) {
+  const day = date.getDay();
+  if (day === 0 || day === 6) return false;
+  return !getSpecialWorkInfo(date);
+}
+
+function getPayrollDateForMonth(year, monthIndex) {
+  const cursor = new Date(year, monthIndex, 1);
+  cursor.setHours(0, 0, 0, 0);
+  let workdayCount = 0;
+
+  while (cursor.getMonth() === monthIndex) {
+    if (isPayrollWorkday(cursor)) {
+      workdayCount += 1;
+      if (workdayCount === 4) {
+        return new Date(cursor);
+      }
+    }
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  return null;
+}
+
+function getNextPayrollDate(now) {
+  const today = new Date(now || new Date());
+  today.setHours(0, 0, 0, 0);
+
+  const thisMonth = getPayrollDateForMonth(today.getFullYear(), today.getMonth());
+  if (thisMonth && today <= thisMonth) {
+    return thisMonth;
+  }
+
+  const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+  return getPayrollDateForMonth(nextMonth.getFullYear(), nextMonth.getMonth());
+}
+
+function pluralizeDays(count) {
+  if (count === 1) return 'den';
+  if (count >= 2 && count <= 4) return 'dny';
+  return 'dní';
+}
+
+function getPayrollTileText(now) {
+  const payDate = getNextPayrollDate(now || new Date());
+  const today = new Date(now || new Date());
+  today.setHours(0, 0, 0, 0);
+
+  if (!payDate) return '💸 Výplata: bez termínu';
+
+  const diffDays = Math.round((payDate.getTime() - today.getTime()) / 86400000);
+  if (diffDays <= 0) return '💸 Výplata přijde dnes';
+  if (diffDays === 1) return '💸 Výplata přijde zítra';
+  return '💸 Výplata přijde za ' + diffDays + ' ' + pluralizeDays(diffDays);
 }
 
 function updateFoodTile() {
@@ -234,14 +328,28 @@ function updateFoodTile() {
   const html = [
     '<div class="foodTileTitle">Jídelní lístek</div>',
     '<div class="foodTileSub">Aktuální provozní doba</div>',
-    ...statuses.map(item =>
-      '<div class="foodTileRow">' +
-        '<div class="foodTileLabel">' + item.location.label + '</div>' +
-        '<div class="foodTileText">' + item.text + '</div>' +
-        '<div class="foodTileMeta">' + item.meta + '</div>' +
-      '</div>'
-    ),
-    '<div class="foodTileHint">Klikni pro menu</div>'
+    ...statuses.map(item => {
+      return [
+        '<div class="foodTileRow">',
+        '<div class="foodTileLabel">' + escapeHtml(item.location.label) + '</div>',
+        '<div class="foodTileText">' + escapeHtml(item.text) + '</div>',
+        '<div class="foodTileMeta">' + escapeHtml(item.meta) + '</div>',
+        '</div>'
+      ].join('');
+    })
+  ].join('');
+
+  tile.innerHTML = html;
+}
+
+function updateEportalTile() {
+  const tile = document.getElementById("eportalTile");
+  if (!tile) return;
+
+  const html = [
+    '<div class="foodTileTitle">Eportal</div>',
+    '<div class="foodTileLive" id="payrollTileLive">' + getPayrollTileText(new Date()) + '</div>',
+    '<div class="foodTileHint">Klikni pro intranet</div>'
   ].join('');
 
   tile.innerHTML = html;
@@ -426,8 +534,9 @@ function showPage(id) {
   if (id === "soustruhy") {
     renderSoustruhy();
   }
-  if (id === "home" && typeof updateFoodTile === "function") {
-    updateFoodTile();
+  if (id === "home") {
+    if (typeof updateFoodTile === "function") updateFoodTile();
+    if (typeof updateEportalTile === "function") updateEportalTile();
   }
 }
 

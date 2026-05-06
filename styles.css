@@ -100,7 +100,7 @@ h1{
 
 .homeBtn{
  position:fixed;
- top:10px;
+ top:20px;
  right:10px;
  width:45px;
  height:45px;
@@ -147,7 +147,16 @@ h1{
   flex-direction:column;
   text-align:left;
   gap:6px;
-  min-height:164px;
+  min-height:190px;
+}
+
+.eportalTile{
+  justify-content:flex-start;
+  align-items:flex-start;
+  flex-direction:column;
+  text-align:left;
+  gap:6px;
+  min-height:160px;
 }
 
 .foodTileTitle{
@@ -161,6 +170,13 @@ h1{
   color:var(--soft);
   line-height:1.2;
   margin-top:-2px;
+}
+
+.foodTileLive{
+  font-size:13px;
+  line-height:1.25;
+  font-weight:700;
+  color:#d8ffd8;
 }
 
 .foodTileRow{
@@ -740,11 +756,19 @@ input{
   }
 
   .foodTile {
-    min-height: 176px;
+    min-height: 202px;
+  }
+
+  .eportalTile {
+    min-height: 162px;
   }
 
   .foodTileText {
     font-size: 13px;
+  }
+
+  .foodTileLive {
+    font-size: 12px;
   }
 
   .foodTileRow {
@@ -752,7 +776,7 @@ input{
   }
 
   .homeBtn {
-    top: 16px;
+    top: 22px;
   }
 
   .card {

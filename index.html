@@ -109,7 +109,7 @@
 <h1>Rotace a kalkulačky</h1>
 <div id="shiftTime">Aktuálně v práci: směna C (ranní)<br>Směna D začne za: 1 h 59 min</div>
 <div class="version">
-  v.0167-rc | <span class="signature" id="signatureTap">Martin Špadrna</span>
+  v.0171-rc | <span class="signature" id="signatureTap">Martin Špadrna</span>
 </div>
 
 <!-- HOME -->
@@ -128,7 +128,12 @@
       <div class="foodTileSub">Aktuální provozní doba</div>
       <div class="foodTileText">Načítám provoz...</div>
     </div>
-    <div class="tile" onclick="window.open('https://space.skoda.vwgroup.com/', '_blank', 'noopener')">Eportal</div>
+    <div class="tile eportalTile" id="eportalTile" onclick="window.open('https://space.skoda.vwgroup.com/', '_blank', 'noopener')" role="button" tabindex="0" aria-label="Eportal">
+      <div class="foodTileTitle">Eportal</div>
+      <div class="foodTileLive" id="payrollTileLive">💸 Výplata přijde za…</div>
+      
+      <div class="foodTileHint">Klikni pro intranet</div>
+    </div>
   </div>
 </div>
 
@@ -184,7 +189,7 @@
       <input type="file" id="excelFile" accept=".xlsx,.xls">
       <div class="adminActions"><button id="importBtn">Import Excelu</button><button id="exportBtn">Export ZIP</button><button id="githubBtn" style="grid-column:1 / -1;">Otevřít GitHub upload</button></div>
     </div>
-    <div id="monthView" class="card"><div class="sectionTitle">5/26</div><div class="smallText" style="margin-top:10px;font-weight:bold;">Tvrdota</div><div class="tableWrap"><table class="rotTable"><thead><tr><th>Datum</th><th>TNKS01</th><th>TBKR07</th><th>TPKW01</th><th>TPKW02</th><th>TBKR01</th></tr></thead><tbody><tr><td class="dateCell">4.5. N</td><td>Špadrna</td><td>Blažek</td><td>Střížek</td><td>Pech</td><td>Kmínek</td></tr><tr><td class="dateCell">5.5. N</td><td>Kříž</td><td>Pech</td><td>Synek</td><td>Starý</td><td>Kmínek</td></tr><tr><td class="dateCell">9.5. R</td><td>Kmínek</td><td>Kříž</td><td>Třasák</td><td>Blažek</td><td>Špadrna</td></tr><tr><td class="dateCell">10.5. R8</td><td>Starý</td><td>Špadrna</td><td>Kříž</td><td>Pech</td><td>Blažek</td></tr><tr><td class="dateCell">13.5. N</td><td>Blažek</td><td>Starý</td><td>Špadrna</td><td>Střížek</td><td>Pech</td></tr><tr><td class="dateCell">14.5. N</td><td>Pech</td><td>Blažek</td><td>Starý</td><td>Třasák</td><td>Kříž</td></tr><tr><td class="dateCell">18.5. R</td><td>Kříž</td><td>Pech</td><td>Blažek</td><td>Synek</td><td>Novotný</td></tr><tr><td class="dateCell">19.5. R</td><td>Střížek</td><td>Kříž</td><td>Pech</td><td>Blažek</td><td>Starý</td></tr><tr><td class="dateCell">22.5. N</td><td>Synek</td><td>Novotný</td><td>Starý</td><td>Špadrna</td><td>Blažek</td></tr><tr><td class="dateCell">23.5. N</td><td>Blažek</td><td>Starý</td><td>Novotný</td><td>Kříž</td><td>Pech</td></tr><tr><td class="dateCell">24.5. N8</td><td>Špadrna</td><td>Novotný</td><td>Střížek</td><td>Synek</td><td>Kříž</td></tr><tr><td class="dateCell">27.5. R</td><td>Kříž</td><td>Pech</td><td>Synek</td><td>Starý</td><td>Novotný</td></tr><tr><td class="dateCell">28.5. R</td><td>Novotný</td><td>Kříž</td><td>Pech</td><td>Blažek</td><td>Starý</td></tr></tbody></table></div><div class="smallText" style="margin-top:10px;font-weight:bold;">Měkota</div><div class="tableWrap"><table class="rotTable"><thead><tr><th>Datum</th><th>MSKC01</th><th>MSKC03</th><th>MSKC04</th><th>MFKF06</th><th>MFKF10</th></tr></thead><tbody><tr><td class="dateCell">4.5. N</td><td>Starý</td><td>Kříž</td><td>Synek</td><td class="missingCell">—</td><td>Třasák</td></tr><tr><td class="dateCell">5.5. N</td><td>Třasák</td><td>Střížek</td><td>Špadrna</td><td class="missingCell">—</td><td>Blažek</td></tr><tr><td class="dateCell">9.5. R</td><td class="missingCell">—</td><td>Střížek</td><td>Synek</td><td class="missingCell">—</td><td>Pech</td></tr><tr><td class="dateCell">10.5. R8</td><td>Třasák</td><td>Střížek</td><td>Kmínek</td><td class="missingCell">—</td><td>Synek</td></tr><tr><td class="dateCell">13.5. N</td><td>Třasák</td><td>Synek</td><td>Kmínek</td><td class="missingCell">—</td><td>Kříž</td></tr><tr><td class="dateCell">14.5. N</td><td>Špadrna</td><td>Střížek</td><td>Synek</td><td class="missingCell">—</td><td>Kmínek</td></tr><tr><td class="dateCell">18.5. R</td><td class="missingCell">—</td><td>Střížek</td><td>Špadrna</td><td class="missingCell">—</td><td>Starý</td></tr><tr><td class="dateCell">19.5. R</td><td class="missingCell">—</td><td>Střížek</td><td>Synek</td><td class="missingCell">—</td><td>Novotný</td></tr><tr><td class="dateCell">22.5. N</td><td class="missingCell">—</td><td>Špadrna</td><td>Kříž</td><td class="missingCell">—</td><td>Pech</td></tr><tr><td class="dateCell">23.5. N</td><td class="missingCell">—</td><td>Střížek</td><td>Synek</td><td class="missingCell">—</td><td>Špadrna</td></tr><tr><td class="dateCell">24.5. N8</td><td class="missingCell">—</td><td>Pech</td><td>Blažek</td><td class="missingCell">—</td><td>Starý</td></tr><tr><td class="dateCell">27.5. R</td><td class="missingCell">—</td><td>Špadrna</td><td>Blažek</td><td class="missingCell">—</td><td>Střížek</td></tr><tr><td class="dateCell">28.5. R</td><td class="missingCell">—</td><td>Střížek</td><td>Synek</td><td class="missingCell">—</td><td>Špadrna</td></tr></tbody></table></div><div class="smallText" style="margin-top:12px;font-weight:bold;">Dovolené / absence</div><div class="tableWrap"><table class="noteTable"><thead><tr><th>Datum</th><th>Směna</th><th>Jméno</th><th>Důvod</th><th class="noteSpacer"></th><th>Datum</th><th>Směna</th><th>Jméno</th><th>Důvod</th></tr></thead><tbody><tr><td>4.5.</td><td>N</td><td>Novotný</td><td>Lázně</td><td class="noteSpacer"></td><td class="emptyCell">—</td><td class="emptyCell">—</td><td class="emptyCell">—</td><td class="emptyCell">—</td></tr><tr><td>5.5.</td><td>N</td><td>Novotný</td><td>Lázně</td><td class="noteSpacer"></td><td class="emptyCell">—</td><td class="emptyCell">—</td><td class="emptyCell">—</td><td class="emptyCell">—</td></tr><tr><td>9.5.</td><td>R</td><td>Novotný</td><td>Lázně</td><td class="noteSpacer"></td><td>9.5.</td><td>R</td><td>Starý</td><td>Dovolená</td></tr><tr><td>10.5.</td><td>R8</td><td>Novotný</td><td>Lázně</td><td class="noteSpacer"></td><td class="emptyCell">—</td><td class="emptyCell">—</td><td class="emptyCell">—</td><td class="emptyCell">—</td></tr><tr><td>13.5.</td><td>N</td><td>Novotný</td><td>Lázně</td><td class="noteSpacer"></td><td class="emptyCell">—</td><td class="emptyCell">—</td><td class="emptyCell">—</td><td class="emptyCell">—</td></tr><tr><td>14.5.</td><td>N</td><td>Novotný</td><td>Lázně</td><td class="noteSpacer"></td><td class="emptyCell">—</td><td class="emptyCell">—</td><td class="emptyCell">—</td><td class="emptyCell">—</td></tr><tr><td>18.5.</td><td>R</td><td>Kmínek</td><td>Lázně</td><td class="noteSpacer"></td><td>18.5.</td><td>R</td><td>Třasák</td><td>Lázně</td></tr><tr><td>19.5.</td><td>R</td><td>Kmínek</td><td>Lázně</td><td class="noteSpacer"></td><td>19.5.</td><td>R</td><td>Třasák</td><td>Lázně</td></tr><tr><td>22.5.</td><td>N</td><td>Kmínek</td><td>Lázně</td><td class="noteSpacer"></td><td>22.5.</td><td>N</td><td>Třasák</td><td>Lázně</td></tr><tr><td>23.5.</td><td>N</td><td>Kmínek</td><td>Lázně</td><td class="noteSpacer"></td><td>23.5.</td><td>N</td><td>Třasák</td><td>Lázně</td></tr><tr><td>24.5.</td><td>N8</td><td>Kmínek</td><td>Lázně</td><td class="noteSpacer"></td><td>24.5.</td><td>N8</td><td>Třasák</td><td>Lázně</td></tr><tr><td>27.5.</td><td>R</td><td>Kmínek</td><td>Lázně</td><td class="noteSpacer"></td><td>27.5.</td><td>R</td><td>Třasák</td><td>Lázně</td></tr><tr><td>28.5.</td><td>R</td><td>Kmínek</td><td>Lázně</td><td class="noteSpacer"></td><td>28.5.</td><td>R</td><td>Třasák</td><td>Lázně</td></tr></tbody></table></div></div>
+    <div id="monthView" class="card"><div class="sectionTitle">5/26</div><div class="smallText" style="margin-top:14px;font-weight:bold;">Tvrdota</div><div class="tableWrap"><table class="rotTable"><thead><tr><th>Datum</th><th>TNKS01</th><th>TBKR07</th><th>TPKW01</th><th>TPKW02</th><th>TBKR01</th></tr></thead><tbody><tr><td class="dateCell">4.5. N</td><td>Špadrna</td><td>Blažek</td><td>Střížek</td><td>Pech</td><td>Kmínek</td></tr><tr><td class="dateCell">5.5. N</td><td>Kříž</td><td>Pech</td><td>Synek</td><td>Starý</td><td>Kmínek</td></tr><tr><td class="dateCell">9.5. R</td><td>Kmínek</td><td>Kříž</td><td>Třasák</td><td>Blažek</td><td>Špadrna</td></tr><tr><td class="dateCell">10.5. R8</td><td>Starý</td><td>Špadrna</td><td>Kříž</td><td>Pech</td><td>Blažek</td></tr><tr><td class="dateCell">13.5. N</td><td>Blažek</td><td>Starý</td><td>Špadrna</td><td>Střížek</td><td>Pech</td></tr><tr><td class="dateCell">14.5. N</td><td>Pech</td><td>Blažek</td><td>Starý</td><td>Třasák</td><td>Kříž</td></tr><tr><td class="dateCell">18.5. R</td><td>Kříž</td><td>Pech</td><td>Blažek</td><td>Synek</td><td>Novotný</td></tr><tr><td class="dateCell">19.5. R</td><td>Střížek</td><td>Kříž</td><td>Pech</td><td>Blažek</td><td>Starý</td></tr><tr><td class="dateCell">22.5. N</td><td>Synek</td><td>Novotný</td><td>Starý</td><td>Špadrna</td><td>Blažek</td></tr><tr><td class="dateCell">23.5. N</td><td>Blažek</td><td>Starý</td><td>Novotný</td><td>Kříž</td><td>Pech</td></tr><tr><td class="dateCell">24.5. N8</td><td>Špadrna</td><td>Novotný</td><td>Střížek</td><td>Synek</td><td>Kříž</td></tr><tr><td class="dateCell">27.5. R</td><td>Kříž</td><td>Pech</td><td>Synek</td><td>Starý</td><td>Novotný</td></tr><tr><td class="dateCell">28.5. R</td><td>Novotný</td><td>Kříž</td><td>Pech</td><td>Blažek</td><td>Starý</td></tr></tbody></table></div><div class="smallText" style="margin-top:10px;font-weight:bold;">Měkota</div><div class="tableWrap"><table class="rotTable"><thead><tr><th>Datum</th><th>MSKC01</th><th>MSKC03</th><th>MSKC04</th><th>MFKF06</th><th>MFKF10</th></tr></thead><tbody><tr><td class="dateCell">4.5. N</td><td>Starý</td><td>Kříž</td><td>Synek</td><td class="missingCell">—</td><td>Třasák</td></tr><tr><td class="dateCell">5.5. N</td><td>Třasák</td><td>Střížek</td><td>Špadrna</td><td class="missingCell">—</td><td>Blažek</td></tr><tr><td class="dateCell">9.5. R</td><td class="missingCell">—</td><td>Střížek</td><td>Synek</td><td class="missingCell">—</td><td>Pech</td></tr><tr><td class="dateCell">10.5. R8</td><td>Třasák</td><td>Střížek</td><td>Kmínek</td><td class="missingCell">—</td><td>Synek</td></tr><tr><td class="dateCell">13.5. N</td><td>Třasák</td><td>Synek</td><td>Kmínek</td><td class="missingCell">—</td><td>Kříž</td></tr><tr><td class="dateCell">14.5. N</td><td>Špadrna</td><td>Střížek</td><td>Synek</td><td class="missingCell">—</td><td>Kmínek</td></tr><tr><td class="dateCell">18.5. R</td><td class="missingCell">—</td><td>Střížek</td><td>Špadrna</td><td class="missingCell">—</td><td>Starý</td></tr><tr><td class="dateCell">19.5. R</td><td class="missingCell">—</td><td>Střížek</td><td>Synek</td><td class="missingCell">—</td><td>Novotný</td></tr><tr><td class="dateCell">22.5. N</td><td class="missingCell">—</td><td>Špadrna</td><td>Kříž</td><td class="missingCell">—</td><td>Pech</td></tr><tr><td class="dateCell">23.5. N</td><td class="missingCell">—</td><td>Střížek</td><td>Synek</td><td class="missingCell">—</td><td>Špadrna</td></tr><tr><td class="dateCell">24.5. N8</td><td class="missingCell">—</td><td>Pech</td><td>Blažek</td><td class="missingCell">—</td><td>Starý</td></tr><tr><td class="dateCell">27.5. R</td><td class="missingCell">—</td><td>Špadrna</td><td>Blažek</td><td class="missingCell">—</td><td>Střížek</td></tr><tr><td class="dateCell">28.5. R</td><td class="missingCell">—</td><td>Střížek</td><td>Synek</td><td class="missingCell">—</td><td>Špadrna</td></tr></tbody></table></div><div class="smallText" style="margin-top:12px;font-weight:bold;">Dovolené / absence</div><div class="tableWrap"><table class="noteTable"><thead><tr><th>Datum</th><th>Směna</th><th>Jméno</th><th>Důvod</th><th class="noteSpacer"></th><th>Datum</th><th>Směna</th><th>Jméno</th><th>Důvod</th></tr></thead><tbody><tr><td>4.5.</td><td>N</td><td>Novotný</td><td>Lázně</td><td class="noteSpacer"></td><td class="emptyCell">—</td><td class="emptyCell">—</td><td class="emptyCell">—</td><td class="emptyCell">—</td></tr><tr><td>5.5.</td><td>N</td><td>Novotný</td><td>Lázně</td><td class="noteSpacer"></td><td class="emptyCell">—</td><td class="emptyCell">—</td><td class="emptyCell">—</td><td class="emptyCell">—</td></tr><tr><td>9.5.</td><td>R</td><td>Novotný</td><td>Lázně</td><td class="noteSpacer"></td><td>9.5.</td><td>R</td><td>Starý</td><td>Dovolená</td></tr><tr><td>10.5.</td><td>R8</td><td>Novotný</td><td>Lázně</td><td class="noteSpacer"></td><td class="emptyCell">—</td><td class="emptyCell">—</td><td class="emptyCell">—</td><td class="emptyCell">—</td></tr><tr><td>13.5.</td><td>N</td><td>Novotný</td><td>Lázně</td><td class="noteSpacer"></td><td class="emptyCell">—</td><td class="emptyCell">—</td><td class="emptyCell">—</td><td class="emptyCell">—</td></tr><tr><td>14.5.</td><td>N</td><td>Novotný</td><td>Lázně</td><td class="noteSpacer"></td><td class="emptyCell">—</td><td class="emptyCell">—</td><td class="emptyCell">—</td><td class="emptyCell">—</td></tr><tr><td>18.5.</td><td>R</td><td>Kmínek</td><td>Lázně</td><td class="noteSpacer"></td><td>18.5.</td><td>R</td><td>Třasák</td><td>Lázně</td></tr><tr><td>19.5.</td><td>R</td><td>Kmínek</td><td>Lázně</td><td class="noteSpacer"></td><td>19.5.</td><td>R</td><td>Třasák</td><td>Lázně</td></tr><tr><td>22.5.</td><td>N</td><td>Kmínek</td><td>Lázně</td><td class="noteSpacer"></td><td>22.5.</td><td>N</td><td>Třasák</td><td>Lázně</td></tr><tr><td>23.5.</td><td>N</td><td>Kmínek</td><td>Lázně</td><td class="noteSpacer"></td><td>23.5.</td><td>N</td><td>Třasák</td><td>Lázně</td></tr><tr><td>24.5.</td><td>N8</td><td>Kmínek</td><td>Lázně</td><td class="noteSpacer"></td><td>24.5.</td><td>N8</td><td>Třasák</td><td>Lázně</td></tr><tr><td>27.5.</td><td>R</td><td>Kmínek</td><td>Lázně</td><td class="noteSpacer"></td><td>27.5.</td><td>R</td><td>Třasák</td><td>Lázně</td></tr><tr><td>28.5.</td><td>R</td><td>Kmínek</td><td>Lázně</td><td class="noteSpacer"></td><td>28.5.</td><td>R</td><td>Třasák</td><td>Lázně</td></tr></tbody></table></div></div>
   </div>
 </div>
 
@@ -375,7 +380,7 @@
 <script type="text/plain" id="src-core-js" hidden>
 
 const APP_KEY = "rotace_kalkulacky_state_v122";
-const ROTATION_BUILD = "2026-05-06-v.0167-rc-" + Date.now();
+const ROTATION_BUILD = "2026-05-06-v.0171-rc-" + Date.now();
 
 const HARD_MACHINE_HEADERS = ["TNKS01", "TBKR07", "TPKW01", "TPKW02", "TBKR01"];
 const SOFT_MACHINE_HEADERS = ["MSKC01", "MSKC03", "MSKC04", "MFKF06", "MFKF10"];
@@ -492,6 +497,38 @@ const FOOD_LOCATIONS = [
   }
 ];
 
+const FOOD_SPECIAL_SUNDAY_DATES = new Set([
+  "2026-01-11",
+  "2026-01-18",
+  "2026-01-25",
+  "2026-02-08",
+  "2026-02-15",
+  "2026-03-01",
+  "2026-03-08",
+  "2026-03-15",
+  "2026-03-22",
+  "2026-03-29",
+  "2026-04-12",
+  "2026-04-19",
+  "2026-05-17",
+  "2026-05-24",
+  "2026-05-31",
+  "2026-06-07",
+  "2026-06-14",
+  "2026-06-21",
+  "2026-09-13",
+  "2026-09-20",
+  "2026-10-04",
+  "2026-10-11",
+  "2026-10-18",
+  "2026-11-22"
+]);
+
+const FOOD_SPECIAL_OVERRIDES = {
+  kantyna: [["01:00", "04:00"], ["05:30", "09:00"], ["10:00", "12:00"], ["17:30", "21:00"], ["21:30", "00:00"]],
+  jidelna: [["10:00", "12:00"], ["21:30", "23:30"]]
+};
+
 const FOOD_DAY_NAMES = [
   "neděle",
   "pondělí",
@@ -534,8 +571,14 @@ function foodRangeFromWindow(baseDate, window) {
   return { start, end };
 }
 
-function getFoodScheduleForDay(location, dayIndex) {
-  return (location && location.days && location.days[dayIndex]) ? location.days[dayIndex] : [];
+function getFoodScheduleForDay(location, dayIndex, date) {
+  const dayWindows = (location && location.days && location.days[dayIndex]) ? location.days[dayIndex] : [];
+  const day = date instanceof Date ? date : null;
+  const iso = day ? (day.getFullYear() + "-" + pad2(day.getMonth() + 1) + "-" + pad2(day.getDate())) : '';
+  if (day && dayIndex === 0 && FOOD_SPECIAL_SUNDAY_DATES.has(iso) && FOOD_SPECIAL_OVERRIDES[location.key]) {
+    return FOOD_SPECIAL_OVERRIDES[location.key];
+  }
+  return dayWindows;
 }
 
 function findFoodStatus(location, now) {
@@ -549,7 +592,7 @@ function findFoodStatus(location, now) {
   for (let offset = -1; offset <= 8; offset += 1) {
     const baseDate = new Date(today);
     baseDate.setDate(baseDate.getDate() + offset);
-    const windows = getFoodScheduleForDay(location, baseDate.getDay());
+    const windows = getFoodScheduleForDay(location, baseDate.getDay(), baseDate);
 
     for (const window of windows) {
       const range = foodRangeFromWindow(baseDate, window);
@@ -573,7 +616,7 @@ function foodStatusText(status) {
     return "🟢 otevřeno do " + formatFoodTime(status.active.end);
   }
   if (status.next) {
-    return "🔴 zavřeno, nejbližší " + formatFoodDayName(status.next.start) + " " + formatFoodRange(status.next.start, status.next.end);
+    return "🔴 zavřeno";
   }
   return "🔴 zavřeno";
 }
@@ -586,6 +629,62 @@ function foodStatusMeta(status, location) {
     return "Další termín: " + formatFoodDayName(status.next.start) + " " + formatFoodRange(status.next.start, status.next.end);
   }
   return "Rozpis není dostupný.";
+}
+
+function isPayrollWorkday(date) {
+  const day = date.getDay();
+  if (day === 0 || day === 6) return false;
+  return !getSpecialWorkInfo(date);
+}
+
+function getPayrollDateForMonth(year, monthIndex) {
+  const cursor = new Date(year, monthIndex, 1);
+  cursor.setHours(0, 0, 0, 0);
+  let workdayCount = 0;
+
+  while (cursor.getMonth() === monthIndex) {
+    if (isPayrollWorkday(cursor)) {
+      workdayCount += 1;
+      if (workdayCount === 4) {
+        return new Date(cursor);
+      }
+    }
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  return null;
+}
+
+function getNextPayrollDate(now) {
+  const today = new Date(now || new Date());
+  today.setHours(0, 0, 0, 0);
+
+  const thisMonth = getPayrollDateForMonth(today.getFullYear(), today.getMonth());
+  if (thisMonth && today <= thisMonth) {
+    return thisMonth;
+  }
+
+  const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+  return getPayrollDateForMonth(nextMonth.getFullYear(), nextMonth.getMonth());
+}
+
+function pluralizeDays(count) {
+  if (count === 1) return 'den';
+  if (count >= 2 && count <= 4) return 'dny';
+  return 'dní';
+}
+
+function getPayrollTileText(now) {
+  const payDate = getNextPayrollDate(now || new Date());
+  const today = new Date(now || new Date());
+  today.setHours(0, 0, 0, 0);
+
+  if (!payDate) return '💸 Výplata: bez termínu';
+
+  const diffDays = Math.round((payDate.getTime() - today.getTime()) / 86400000);
+  if (diffDays <= 0) return '💸 Výplata přijde dnes';
+  if (diffDays === 1) return '💸 Výplata přijde zítra';
+  return '💸 Výplata přijde za ' + diffDays + ' ' + pluralizeDays(diffDays);
 }
 
 function updateFoodTile() {
@@ -609,14 +708,28 @@ function updateFoodTile() {
   const html = [
     '<div class="foodTileTitle">Jídelní lístek</div>',
     '<div class="foodTileSub">Aktuální provozní doba</div>',
-    ...statuses.map(item =>
-      '<div class="foodTileRow">' +
-        '<div class="foodTileLabel">' + item.location.label + '</div>' +
-        '<div class="foodTileText">' + item.text + '</div>' +
-        '<div class="foodTileMeta">' + item.meta + '</div>' +
-      '</div>'
-    ),
-    '<div class="foodTileHint">Klikni pro menu</div>'
+    ...statuses.map(item => {
+      return [
+        '<div class="foodTileRow">',
+        '<div class="foodTileLabel">' + escapeHtml(item.location.label) + '</div>',
+        '<div class="foodTileText">' + escapeHtml(item.text) + '</div>',
+        '<div class="foodTileMeta">' + escapeHtml(item.meta) + '</div>',
+        '</div>'
+      ].join('');
+    })
+  ].join('');
+
+  tile.innerHTML = html;
+}
+
+function updateEportalTile() {
+  const tile = document.getElementById("eportalTile");
+  if (!tile) return;
+
+  const html = [
+    '<div class="foodTileTitle">Eportal</div>',
+    '<div class="foodTileLive" id="payrollTileLive">' + getPayrollTileText(new Date()) + '</div>',
+    '<div class="foodTileHint">Klikni pro intranet</div>'
   ].join('');
 
   tile.innerHTML = html;
@@ -801,8 +914,9 @@ function showPage(id) {
   if (id === "soustruhy") {
     renderSoustruhy();
   }
-  if (id === "home" && typeof updateFoodTile === "function") {
-    updateFoodTile();
+  if (id === "home") {
+    if (typeof updateFoodTile === "function") updateFoodTile();
+    if (typeof updateEportalTile === "function") updateEportalTile();
   }
 }
 
@@ -1474,7 +1588,13 @@ function updateShift() {
   document.getElementById("shiftTime").innerText = lines.join("\n");
 }
 setInterval(updateShift, 10000);
+setInterval(() => {
+  if (typeof updateFoodTile === "function") updateFoodTile();
+  if (typeof updateEportalTile === "function") updateEportalTile();
+}, 60000);
 updateShift();
+if (typeof updateFoodTile === "function") updateFoodTile();
+if (typeof updateEportalTile === "function") updateEportalTile();
 
 
 
@@ -2439,7 +2559,7 @@ ${clone.outerHTML}`;
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "rotace_v.0167-rc.zip";
+    a.download = "rotace_v.0171-rc.zip";
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -2778,7 +2898,16 @@ h1{
   flex-direction:column;
   text-align:left;
   gap:6px;
-  min-height:164px;
+  min-height:190px;
+}
+
+.eportalTile{
+  justify-content:flex-start;
+  align-items:flex-start;
+  flex-direction:column;
+  text-align:left;
+  gap:6px;
+  min-height:160px;
 }
 
 .foodTileTitle{
@@ -2792,6 +2921,13 @@ h1{
   color:var(--soft);
   line-height:1.2;
   margin-top:-2px;
+}
+
+.foodTileLive{
+  font-size:13px;
+  line-height:1.25;
+  font-weight:700;
+  color:#d8ffd8;
 }
 
 .foodTileRow{
@@ -3371,11 +3507,19 @@ input{
   }
 
   .foodTile {
-    min-height: 176px;
+    min-height: 202px;
+  }
+
+  .eportalTile {
+    min-height: 162px;
   }
 
   .foodTileText {
     font-size: 13px;
+  }
+
+  .foodTileLive {
+    font-size: 12px;
   }
 
   .foodTileRow {
@@ -3383,7 +3527,7 @@ input{
   }
 
   .homeBtn {
-    top: 16px;
+    top: 22px;
   }
 
   .card {

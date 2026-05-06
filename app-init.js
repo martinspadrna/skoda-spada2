@@ -114,7 +114,7 @@ ${clone.outerHTML}`;
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "rotace_v.0167-rc.zip";
+    a.download = "rotace_v.0171-rc.zip";
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -300,4 +300,8 @@ refreshInitialUI();
 if (typeof updateFoodTile === "function") {
   updateFoodTile();
   setInterval(updateFoodTile, 60 * 1000);
+}
+if (typeof updateEportalTile === "function") {
+  updateEportalTile();
+  setInterval(updateEportalTile, 60 * 1000);
 }
