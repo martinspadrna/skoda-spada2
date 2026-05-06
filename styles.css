@@ -629,11 +629,11 @@ input{
 
 @media (max-width: 700px) {
   body {
-    padding: 10px;
+    padding: 34px 10px 10px;
   }
 
   h1 {
-    margin: 8px 0 10px;
+    margin: 24px 0 10px;
     font-size: 23px;
   }
 
