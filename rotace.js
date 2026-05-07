@@ -297,8 +297,11 @@ function refreshInitialUI() {
   setRotaceView(app.rotationView || "names");
   renderRotace();
   if (app.selectedMonth) renderMonth(app.selectedMonth);
+  if (typeof renderHomeDashboard === 'function') renderHomeDashboard();
+  if (typeof syncBottomNav === 'function') syncBottomNav('home');
   updateImportBoxVisibility();
 }
+
 
 function escapeHtml(str) {
   return String(str || "")

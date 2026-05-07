@@ -440,7 +440,9 @@ function updateShift() {
   }
 
   document.getElementById("shiftTime").innerText = lines.join("\n");
+  if (typeof renderHomeDashboard === 'function') renderHomeDashboard(lines);
 }
+
 setInterval(updateShift, 10000);
 updateShift();
 
