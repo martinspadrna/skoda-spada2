@@ -1,6 +1,6 @@
 
 const APP_KEY = "rotace_kalkulacky_state_v122";
-const ROTATION_BUILD = "2026-05-07-v.0189-rc-" + Date.now();
+const ROTATION_BUILD = "2026-05-07-v.0193-rc-" + Date.now();
 
 const HARD_MACHINE_HEADERS = ["TNKS01", "TBKR07", "TPKW01", "TPKW02", "TBKR01"];
 const SOFT_MACHINE_HEADERS = ["MSKC01", "MSKC03", "MSKC04", "MFKF06", "MFKF10"];
@@ -231,49 +231,6 @@ function restoreInputs() {
   app.soustruhPlan = storedSoustruhPlan && storedSoustruhPlan !== "1248" ? storedSoustruhPlan : "1216";
   app.soustruh126Start = parseInt(localStorage.getItem("soustruh126Start"), 10) || 32;
   try { app.soustruh106Counts = JSON.parse(localStorage.getItem("soustruh106Counts") || "[\"\",\"\",\"\",\"\"]"); } catch (e) { app.soustruh106Counts = ["", "", "", ""]; }
-}
-
-function showPage(id) {
-  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
-  const el = document.getElementById(id);
-  if (el) el.classList.add("active");
-  if (id === "rotace") {
-    renderRotace();
-  }
-  if (id === "brusy") {
-    renderBrusy();
-  }
-  if (id === "soustruhy") {
-    renderSoustruhy();
-  }
-  if (id === "home") {
-    if (typeof updateFoodTile === "function") updateFoodTile();
-    if (typeof updateEportalTile === "function") updateEportalTile();
-  }
-}
-
-function setRotaceView(view) {
-  app.rotationView = view;
-  const namesPanel = document.getElementById("rotaceNamesPanel");
-  const statsPanel = document.getElementById("rotaceStatsPanel");
-  const monthsPanel = document.getElementById("rotaceMonthsPanel");
-  const tabNames = document.getElementById("tabNames");
-  const tabStats = document.getElementById("tabStats");
-  const tabMonths = document.getElementById("tabMonths");
-
-  [namesPanel, statsPanel, monthsPanel].forEach(panel => panel && panel.classList.remove("active"));
-  [tabNames, tabStats, tabMonths].forEach(tab => tab && (tab.style.outline = "none"));
-
-  if (view === "names") {
-    namesPanel && namesPanel.classList.add("active");
-    tabNames && (tabNames.style.outline = "3px solid #7CFF7C");
-  } else if (view === "stats") {
-    statsPanel && statsPanel.classList.add("active");
-    tabStats && (tabStats.style.outline = "3px solid #7CFF7C");
-  } else {
-    monthsPanel && monthsPanel.classList.add("active");
-    tabMonths && (tabMonths.style.outline = "3px solid #7CFF7C");
-  }
 }
 
 function getShiftEnd(now) {

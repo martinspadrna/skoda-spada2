@@ -1,0 +1,183 @@
+@media (max-width: 700px) {
+  body {
+    padding: calc(26px + env(safe-area-inset-top)) 10px 10px;
+  }
+
+  h1 {
+    margin: 20px 0 10px;
+    font-size: 23px;
+  }
+
+  #shiftTime {
+    font-size: 12px;
+    line-height: 1.3;
+  }
+
+  .version {
+    right: 14px;
+    bottom: 5px;
+    font-size: 11px;
+    max-width: calc(100vw - 90px);
+  }
+
+  .signature {
+    font-size: 20px;
+  }
+
+  .grid {
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  .tile {
+    min-height: 96px;
+    font-size: 16px;
+    padding: 10px;
+    border-radius: 11px;
+  }
+
+  .big {
+    min-height: 120px;
+    font-size: 20px;
+  }
+
+  .foodTile {
+    min-height: 202px;
+  }
+
+  .eportalTile {
+    min-height: 162px;
+  }
+
+  .foodTileText {
+    font-size: 13px;
+  }
+
+  .foodTileLive {
+    font-size: 12px;
+  }
+
+  .foodTileRow {
+    padding-top: 5px;
+  }
+
+  .homeBtn {
+    top: calc(36px + env(safe-area-inset-top));
+  }
+
+  .card {
+    padding: 10px;
+    margin-top: 8px;
+  }
+
+  input,
+  select {
+    padding: 14px;
+    margin-top: 6px;
+    margin-bottom: 10px;
+    font-size: 16px;
+  }
+
+  label {
+    font-size: 13px;
+    margin-top: 7px;
+  }
+
+  .listGrid {
+    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .listItem {
+    min-height: 46px;
+    padding: 10px;
+    font-size: 15px;
+  }
+
+  .subNav {
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .headerBar {
+    min-height: 36px;
+    padding: 0 38px;
+    margin-top: 6px;
+    margin-bottom: 6px;
+  }
+
+  .headerBar h3 {
+    font-size: 18px;
+  }
+
+  .sectionTitle {
+    margin: 7px 0 5px;
+    font-size: 16px;
+  }
+
+  .bgrid {
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .bgrid .bbtn {
+    min-height: 62px;
+    font-size: 17px;
+  }
+
+  .indexGrid {
+    gap: 10px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(124, 255, 124, 0.35);
+  }
+
+  .indexGrid > .bbtn {
+    min-height: 54px;
+    font-size: 16px;
+  }
+
+  .indexGrid > .freeWrap {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .freeWrap .bbtn {
+    min-height: 54px;
+    font-size: 16px;
+  }
+
+  .soustruhModePanel {
+    margin-top: 8px;
+  }
+
+  .soustruhResultCard {
+    margin-top: 8px;
+  }
+
+  .statsSummary {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .statsSummary .tile {
+    min-height: 68px;
+    font-size: 14px;
+  }
+
+  .statsTable th,
+  .statsTable td,
+  .noteTable th,
+  .noteTable td {
+    font-size: 12px;
+    padding: 7px 5px;
+  }
+
+  table.rotTable {
+    min-width: 520px;
+  }
+}

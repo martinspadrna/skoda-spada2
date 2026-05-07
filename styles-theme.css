@@ -1,0 +1,94 @@
+:root{
+  --panelShellBorder: 1px solid rgba(124,255,124,.18);
+  --panelShellShadow: 0 12px 26px rgba(0,0,0,.24);
+  --panelShellGlass: linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,0));
+}
+
+body{
+  background:
+    radial-gradient(circle at top, rgba(124,255,124,.08), transparent 28%),
+    linear-gradient(180deg, #0b0f0c 0%, #090d0a 100%);
+}
+
+.page.active{
+  animation: pageIn .16s ease-out;
+}
+
+@keyframes pageIn{
+  from{ opacity:0; transform: translateY(4px); }
+  to{ opacity:1; transform: translateY(0); }
+}
+
+.headerBar{
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(124,255,124,.12);
+}
+
+.subNav,
+.bgrid,
+.indexGrid{
+  padding: 6px;
+  border: 1px solid rgba(124,255,124,.12);
+  border-radius: 16px;
+  background: rgba(255,255,255,.015);
+}
+
+.card,
+.personCard,
+.adminBox,
+.soustruhModePanel{
+  border: var(--panelShellBorder);
+  border-radius: 14px;
+  box-shadow: var(--panelShellShadow);
+  background-image: var(--panelShellGlass);
+}
+
+.tile,
+.listItem,
+.bbtn,
+.statsSummary .tile{
+  border: 1px solid rgba(124,255,124,.22);
+  border-radius: 12px;
+  box-shadow: var(--panelShellShadow);
+  background-image: var(--panelShellGlass);
+  transition: transform .12s ease, border-color .12s ease, box-shadow .12s ease, filter .12s ease;
+}
+
+button,
+input,
+select,
+.homeBtn,
+.resetBtn{
+  box-shadow: var(--panelShellShadow);
+  transition: transform .12s ease, border-color .12s ease, box-shadow .12s ease, filter .12s ease;
+}
+
+button,
+input,
+select{
+  background-image: var(--panelShellGlass);
+}
+
+.tile,
+.listItem,
+.bbtn,
+button,
+.homeBtn,
+.resetBtn,
+label,
+select,
+input{
+  touch-action: manipulation;
+}
+
+@media (hover:hover) and (pointer:fine){
+  .tile:hover,
+  .listItem:hover,
+  .bbtn:hover,
+  button:hover,
+  .homeBtn:hover,
+  .resetBtn:hover{
+    filter: brightness(1.05);
+    transform: translateY(-1px);
+  }
+}

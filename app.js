@@ -7,6 +7,8 @@
     "soustruhy.js",
     "brusy.js",
     "rotace.js",
+    "ui.js",
+    "export.js",
     "app-init.js"
   ];
 
