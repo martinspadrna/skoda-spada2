@@ -54,6 +54,17 @@ const EXPORT_FILES = [
   "app-init.js"
 ];
 
+const SOURCE_CACHE = window.__ROTACE_SOURCE_CACHE__ || (window.__ROTACE_SOURCE_CACHE__ = {});
+
+function primeSourceCache() {
+  document.querySelectorAll('script[type="text/plain"][id^="src-"]').forEach((el) => {
+    const key = Object.keys(EXPORT_SOURCE_IDS).find((file) => EXPORT_SOURCE_IDS[file] === el.id);
+    if (key && el.textContent) {
+      SOURCE_CACHE[key] = el.textContent.replace(/^\s+|\s+$/g, "");
+    }
+  });
+}
+
 const EXPORT_SOURCE_IDS = {
   "styles.css": "src-styles-css",
   "data.js": "src-data-js",
@@ -73,17 +84,29 @@ function escapePlainTextBlock(text) {
 }
 
 async function readExportText(relativePath) {
+  if (SOURCE_CACHE[relativePath]) {
+    return SOURCE_CACHE[relativePath];
+  }
+
   const id = EXPORT_SOURCE_IDS[relativePath];
   const embedded = id ? document.getElementById(id) : null;
   if (embedded && embedded.textContent) {
-    return embedded.textContent.replace(/^\s+|\s+$/g, "");
+    const text = embedded.textContent.replace(/^\s+|\s+$/g, "");
+    SOURCE_CACHE[relativePath] = text;
+    return text;
   }
 
-  const response = await fetch(new URL(relativePath, window.location.href).toString(), { cache: "no-store" });
-  if (!response.ok) {
-    throw new Error(`Nepodařilo se načíst ${relativePath} (${response.status})`);
+  try {
+    const response = await fetch(new URL(relativePath, window.location.href).toString(), { cache: "no-store" });
+    if (!response.ok) {
+      throw new Error(`Nepodařilo se načíst ${relativePath} (${response.status})`);
+    }
+    const text = await response.text();
+    SOURCE_CACHE[relativePath] = text;
+    return text;
+  } catch (err) {
+    throw new Error(`Nepodařilo se načíst ${relativePath}: ${err && err.message ? err.message : err}`);
   }
-  return await response.text();
 }
 
 function buildExportIndexHtml(bodyHtml, sourceBlocksHtml) {
@@ -124,6 +147,8 @@ async function exportCurrentHtml() {
   }
 
   try {
+    primeSourceCache();
+
     const pages = [...document.querySelectorAll(".page")];
     const previousActive = pages.find(p => p.classList.contains("active"))?.id || "home";
     pages.forEach(p => p.classList.remove("active"));
@@ -171,7 +196,7 @@ async function exportCurrentHtml() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "rotace_v.0186-rc.zip";
+    a.download = "rotace_v.0189-rc.zip";
     document.body.appendChild(a);
     a.click();
     a.remove();

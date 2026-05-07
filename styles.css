@@ -760,11 +760,11 @@ input{
 
 @media (max-width: 700px) {
   body {
-    padding: calc(18px + env(safe-area-inset-top)) 10px 10px;
+    padding: calc(26px + env(safe-area-inset-top)) 10px 10px;
   }
 
   h1 {
-    margin: 16px 0 10px;
+    margin: 20px 0 10px;
     font-size: 23px;
   }
 
@@ -822,7 +822,7 @@ input{
   }
 
   .homeBtn {
-    top: calc(28px + env(safe-area-inset-top));
+    top: calc(36px + env(safe-area-inset-top));
   }
 
   .card {
@@ -863,7 +863,7 @@ input{
   .headerBar {
     min-height: 36px;
     padding: 0 38px;
-    margin-top: 4px;
+    margin-top: 6px;
     margin-bottom: 6px;
   }
 
