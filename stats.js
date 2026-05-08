@@ -1,23 +1,20 @@
 function renderMonthGrid() {
-  const monthGrid = document.getElementById("monthsGrid");
-  if (!monthGrid) return;
+  const monthSelect = document.getElementById("monthSelect");
+  if (!monthSelect) return;
   const months = getMonthsForYear(app.rotation, parseInt(app.selectedYear, 10));
-  monthGrid.innerHTML = "";
-  months.forEach(monthKey => {
-    const el = document.createElement("div");
-    el.className = "listItem" + (app.selectedMonth === monthKey ? " activeChoice" : "");
-    el.textContent = monthKey;
-    el.onclick = () => {
-      app.selectedMonth = monthKey;
-      renderRotace();
-      renderMonth(monthKey);
-      setRotaceView("months");
-    };
-    monthGrid.appendChild(el);
-  });
-  if (!months.length) {
-    monthGrid.innerHTML = "<div class='smallText'>Pro tenhle rok tu zatím nic není.</div>";
-  }
+  const currentMonthKey = typeof monthKeyFromYearMonth === 'function'
+    ? monthKeyFromYearMonth(new Date().getFullYear(), new Date().getMonth() + 1)
+    : '';
+
+  const selected = months.includes(app.selectedMonth)
+    ? app.selectedMonth
+    : (months.includes(currentMonthKey) ? currentMonthKey : (months[0] || ""));
+  monthSelect.innerHTML = ['<option value="">Vyber měsíc…</option>']
+    .concat(months.map(monthKey => '<option value="' + escapeHtml(monthKey) + '">' + escapeHtml(monthKey) + '</option>'))
+    .join('');
+  monthSelect.value = selected;
+  app.selectedMonth = selected || null;
+
 }
 
 
@@ -52,6 +49,31 @@ function getStatsMachineOrder(machineKeys) {
   return out;
 }
 
+function getBestEntry(counts) {
+  const items = Object.entries(counts || {}).map(([key, value]) => [String(key || '').trim(), Number(value) || 0]).filter(([, value]) => value > 0);
+  if (!items.length) return null;
+  return items.sort((a, b) => {
+    if (b[1] !== a[1]) return b[1] - a[1];
+    return a[0].localeCompare(b[0], 'cs');
+  })[0];
+}
+
+
+function getBestEntries(counts) {
+  const items = Object.entries(counts || {}).map(([key, value]) => [String(key || '').trim(), Number(value) || 0]).filter(([, value]) => value > 0);
+  if (!items.length) return [];
+  const maxValue = Math.max(...items.map(([, value]) => value));
+  return items
+    .filter(([, value]) => value === maxValue)
+    .sort((a, b) => a[0].localeCompare(b[0], 'cs'));
+}
+
+function formatMachineWinners(entries) {
+  const list = Array.isArray(entries) ? entries : [];
+  if (!list.length) return '—';
+  return list.map(([name, value]) => name + ' (' + formatCount(value) + ')').join(', ');
+}
+
 function buildStatsForYear(year) {
   const stats = {
     year,
@@ -59,7 +81,8 @@ function buildStatsForYear(year) {
     names: [],
     machineTotals: {},
     cleanTotals: {},
-    absenceTotals: {}
+    absenceTotals: {},
+    machineCleanLeaders: {}
   };
 
   const ensureColumn = (label) => {
@@ -83,7 +106,11 @@ function buildStatsForYear(year) {
         totalWork: 0,
         totalClean: 0,
         totalAbsence: 0,
-        workDays: new Set()
+        workDays: new Set(),
+        topWorkMachine: null,
+        topCleanMachine: null,
+        topWorkMachines: [],
+        topCleanMachines: []
       };
     }
     return stats.people[name];
@@ -202,6 +229,11 @@ function buildStatsForYear(year) {
     ["TNK", "W01"].forEach(column => {
       if (typeof person.work[column] === "number") person.work[column] = Math.round(person.work[column]);
     });
+
+    person.topWorkMachine = getBestEntry(person.work);
+    person.topCleanMachine = getBestEntry(person.clean);
+    person.topWorkMachines = getBestEntries(person.work);
+    person.topCleanMachines = getBestEntries(person.clean);
   });
   ["TNK", "W01"].forEach(column => {
     if (typeof stats.machineTotals[column] === "number") stats.machineTotals[column] = Math.round(stats.machineTotals[column]);
@@ -209,9 +241,26 @@ function buildStatsForYear(year) {
 
   stats.names = Object.keys(stats.people).filter(name => KNOWN_STAT_NAMES.has(name)).sort((a, b) => a.localeCompare(b, "cs"));
   stats.machineOrder = getStatsMachineOrder(Object.keys(stats.machineTotals));
+
+  stats.machineOrder.forEach(machine => {
+    const leaders = [];
+    let maxClean = 0;
+    Object.values(stats.people).forEach(person => {
+      const cleanCount = Number(person.clean[machine] || 0);
+      if (cleanCount <= 0) return;
+      if (cleanCount > maxClean) {
+        maxClean = cleanCount;
+        leaders.length = 0;
+        leaders.push(person.name);
+      } else if (cleanCount === maxClean) {
+        leaders.push(person.name);
+      }
+    });
+    if (leaders.length) stats.machineCleanLeaders[machine] = { names: leaders.sort((a, b) => a.localeCompare(b, 'cs')), clean: maxClean };
+  });
+
   return stats;
 }
-
 
 
 
@@ -232,99 +281,91 @@ function renderStatsPanel() {
     app.selectedStatsName = null;
   }
 
-  statsNameGrid.innerHTML = "";
+  statsNameGrid.innerHTML = '';
   stats.names.forEach(name => {
-    const el = document.createElement("div");
-    el.className = "listItem" + (app.selectedStatsName === name ? " activeChoice" : "");
-    el.textContent = name;
-    el.onclick = () => setSelectedStatsName(name);
-    statsNameGrid.appendChild(el);
+    const tile = document.createElement('div');
+    tile.className = 'listItem statsNameTile' + (app.selectedStatsName === name ? ' activeChoice' : '');
+    tile.setAttribute('role', 'button');
+    tile.setAttribute('tabindex', '0');
+    tile.innerHTML = '<div class="statsTileMain"><div class="statsTileTitle">' + escapeHtml(name) + '</div></div>';
+    tile.onclick = () => setSelectedStatsName(name);
+    tile.onkeydown = (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        setSelectedStatsName(name);
+      }
+    };
+    statsNameGrid.appendChild(tile);
   });
-  if (!stats.names.length) {
-    statsNameGrid.innerHTML = "<div class='smallText'>Pro tenhle rok tu ještě nejsou žádná data.</div>";
-  }
 
-  statsMachineGrid.innerHTML = "";
+  statsMachineGrid.innerHTML = '';
   stats.machineOrder.forEach(machine => {
-    const el = document.createElement("div");
-    el.className = "listItem" + (app.selectedStatsMachine === machine ? " activeChoice" : "");
-    el.textContent = machine;
-    el.dataset.machine = machine;
-    el.onclick = () => setSelectedStatsMachine(machine);
-    statsMachineGrid.appendChild(el);
+    const leader = stats.machineCleanLeaders[machine] || null;
+    const leaderNames = leader && Array.isArray(leader.names) && leader.names.length
+      ? leader.names.join(', ')
+      : '—';
+
+    const tile = document.createElement('div');
+    tile.className = 'listItem statsMachineTile' + (app.selectedStatsMachine === machine ? ' activeChoice' : '');
+    tile.setAttribute('role', 'button');
+    tile.setAttribute('tabindex', '0');
+    tile.innerHTML = [
+      '<div class="statsTileMain">',
+      '  <div class="statsTileTitle">' + escapeHtml(machine) + '</div>',
+      '</div>'
+    ].join('');
+    tile.onclick = () => setSelectedStatsMachine(machine);
+    tile.onkeydown = (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        setSelectedStatsMachine(machine);
+      }
+    };
+    statsMachineGrid.appendChild(tile);
   });
-  if (!stats.machineOrder.length) {
-    statsMachineGrid.innerHTML = "<div class='smallText'>Pro tenhle rok tu ještě nejsou žádné stroje.</div>";
-  }
 
   if (app.selectedStatsName) {
     const person = stats.people[app.selectedStatsName];
     if (person) {
-      let title = escapeHtml(person.name) + " — " + escapeHtml(String(year));
+      const topWork = formatMachineWinners(person.topWorkMachines || (person.topWorkMachine ? [person.topWorkMachine] : []));
+      const topClean = formatMachineWinners(person.topCleanMachines || (person.topCleanMachine ? [person.topCleanMachine] : []));
       statsNameView.innerHTML =
-        "<div class='sectionTitle'>" + title + "</div>" +
+        "<div class='sectionTitle'>" + escapeHtml(person.name) + " — " + escapeHtml(String(year)) + "</div>" +
         "<div class='statsSummary'>" +
-        "<div class='tile'><div class='smallText'>Práce celkem</div><div style='font-size:22px;margin-top:4px;'>" + formatCount(person.totalWork) + "</div></div>" +
-        "<div class='tile'><div class='smallText'>Úklid celkem</div><div style='font-size:22px;margin-top:4px;'>" + formatCount(person.totalClean) + "</div></div>" +
-        "<div class='tile'><div class='smallText'>Nepřítomnost celkem</div><div style='font-size:22px;margin-top:4px;'>" + formatCount(person.totalAbsence) + "</div></div>" +
+        "<div class='tile'><div class='smallText'>Práce celkem</div><div style='font-size:20px;margin-top:4px;'>" + formatCount(person.totalWork) + "</div></div>" +
+        "<div class='tile'><div class='smallText'>Úklid celkem</div><div style='font-size:20px;margin-top:4px;'>" + formatCount(person.totalClean) + "</div></div>" +
+        "<div class='tile'><div class='smallText'>Absence celkem</div><div style='font-size:20px;margin-top:4px;'>" + formatCount(person.totalAbsence) + "</div></div>" +
+        "<div class='tile'><div class='smallText'>Práce + absence</div><div style='font-size:20px;margin-top:4px;'>" + formatCount(person.totalWork + person.totalAbsence) + "</div></div>" +
+        "<div class='tile'><div class='smallText'>Nejvíc pracoval na</div><div style='font-size:17px;margin-top:6px;font-weight:800;'>" + escapeHtml(topWork) + "</div></div>" +
+        "<div class='tile'><div class='smallText'>Nejvíc uklízel na</div><div style='font-size:17px;margin-top:6px;font-weight:800;'>" + escapeHtml(topClean) + "</div></div>" +
         "</div>" +
-        "<div class='tableWrap'><table class='statsTable'><thead><tr><th>Stroj</th><th>Práce</th><th>Úklid</th></tr></thead><tbody>" +
-        stats.machineOrder.map(machine => "<tr><td>" + escapeHtml(machine) + "</td><td>" + formatCount(person.work[machine] || 0) + "</td><td>" + formatCount(person.clean[machine] || 0) + "</td></tr>").join("") +
+        "<div class='tableWrap'><table class='statsTable'><thead><tr><th>Stroj</th><th>Práce</th><th>Úklid</th><th>Absence</th></tr></thead><tbody>" +
+        stats.machineOrder.map(machine => "<tr><td>" + escapeHtml(machine) + "</td><td>" + formatCount(person.work[machine] || 0) + "</td><td>" + formatCount(person.clean[machine] || 0) + "</td><td>" + formatCount(person.absence[machine] || 0) + "</td></tr>").join("") +
         "</tbody></table></div>";
     } else {
       statsNameView.innerHTML = "";
     }
   } else {
-    statsNameView.innerHTML = "";
+    statsNameView.innerHTML = "<div class='smallText'>Klepni na jméno nahoře.</div>";
   }
 
   if (app.selectedStatsMachine) {
     const machine = app.selectedStatsMachine;
-    const machineStats = Object.values(stats.people)
-      .map(p => ({
-        name: p.name,
-        work: Number(p.work[machine] || 0),
-        clean: Number(p.clean[machine] || 0)
-      }))
-      .filter(p => p.work > 0 || p.clean > 0)
-      .sort((a, b) => {
-        if (b.work !== a.work) return b.work - a.work;
-        if (b.clean !== a.clean) return b.clean - a.clean;
-        return a.name.localeCompare(b.name, "cs");
-      });
+    const leader = stats.machineCleanLeaders[machine] || null;
+    const leaderNames = leader && Array.isArray(leader.names) && leader.names.length
+      ? leader.names.join(', ')
+      : '—';
 
-    const top3 = machineStats.filter(p => p.work > 0).slice(0, 3);
-    const topClean2 = machineStats
-      .filter(p => p.clean > 0)
-      .sort((a, b) => {
-        if (b.clean !== a.clean) return b.clean - a.clean;
-        if (b.work !== a.work) return b.work - a.work;
-        return a.name.localeCompare(b.name, "cs");
-      })
-      .slice(0, 2);
-
-    let html = "";
-    html += "<div class='sectionTitle'>Stroj " + escapeHtml(machine) + "</div>";
-    html += "<div class='statsSummary'>";
-    html += "<div class='tile'><div class='smallText'>Top 3 jména</div><div style='font-size:22px;margin-top:4px;'>" + formatCount(top3.length) + "</div></div>";
-    html += "<div class='tile'><div class='smallText'>Úklid #1</div><div style='font-size:18px;margin-top:6px;'>" + escapeHtml(topClean2[0] ? topClean2[0].name + " (" + formatCount(topClean2[0].clean) + ")" : "—") + "</div></div>";
-    html += "<div class='tile'><div class='smallText'>Úklid #2</div><div style='font-size:18px;margin-top:6px;'>" + escapeHtml(topClean2[1] ? topClean2[1].name + " (" + formatCount(topClean2[1].clean) + ")" : "—") + "</div></div>";
-    html += "</div>";
-    html += "<div class='tableWrap'><table class='statsTable'><thead><tr><th>Pořadí</th><th>Jméno</th><th>Práce</th></tr></thead><tbody>";
-    if (top3.length) {
-      top3.forEach((item, idx) => {
-        html += "<tr><td>" + (idx + 1) + "</td><td>" + escapeHtml(item.name) + "</td><td>" + formatCount(item.work) + "</td></tr>";
-      });
-    } else {
-      html += "<tr><td colspan='3'>Na tenhle stroj tu ještě nejsou žádná data.</td></tr>";
-    }
-    html += "</tbody></table></div>";
-    statsMachineView.innerHTML = html;
+    statsMachineView.innerHTML = [
+      "<div class='sectionTitle'>" + escapeHtml(machine) + "</div>",
+      "<div class='statsSummary'>",
+      "<div class='tile'><div class='smallText'>Letos nejvíc uklízeli</div><div style='font-size:20px;margin-top:6px;'>" + escapeHtml(leaderNames) + "</div></div>",
+      "</div>"
+    ].join('');
   } else {
-    statsMachineView.innerHTML = "";
+    statsMachineView.innerHTML = "<div class='smallText'>Klepni na stroj nahoře.</div>";
   }
 }
-
 
 function addDays(base, days) {
   const d = new Date(base);
@@ -409,41 +450,160 @@ function getActiveShiftNow(now) {
   return null;
 }
 
-function updateShift() {
+function formatCalendarDateLabel(now) {
+  return new Intl.DateTimeFormat("cs-CZ", {
+    weekday: "short",
+    day: "numeric",
+    month: "numeric",
+    year: "numeric"
+  }).format(now);
+}
+
+function getCalendarSpecialText(now) {
+  const parts = [];
+  const special = getSpecialWorkInfo(now);
+  if (special) {
+    if (special.type === "holiday") {
+      parts.push("Svátek: " + special.label);
+    } else if (special.type === "czd") {
+      parts.push(special.label);
+    }
+  }
+
+  const today = new Date(now);
+  today.setHours(0, 0, 0, 0);
+  const monthKey = (today.getMonth() + 1) + "/" + String(today.getFullYear()).slice(-2);
+  const month = app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
+
+  if (month && Array.isArray(month.notes)) {
+    const dayPrefix = today.getDate() + ".";
+    const vacationNames = [];
+    month.notes.forEach(note => {
+      const date = String(note && note.date ? note.date : "").trim();
+      if (!date.startsWith(dayPrefix)) return;
+
+      const person = String(note && note.person ? note.person : "").trim();
+      const code = String(note && note.code ? note.code : "").trim().toUpperCase();
+      const text = String(note && note.text ? note.text : "").trim();
+      const noteBlob = (code + " " + text).toUpperCase();
+
+      const isVacation = code === "D" || code === "§" || /DOVOLEN|LÁZNĚ/.test(noteBlob);
+      if (isVacation && person) vacationNames.push(person);
+    });
+
+    const uniqueVacationNames = [...new Set(vacationNames)];
+    if (uniqueVacationNames.length) {
+      parts.push("Dovolená: " + uniqueVacationNames.join(", "));
+    }
+  }
+
+  return parts.join(" · ") || "Bez událostí";
+}
+
+function updateDashboard() {
   const now = new Date();
   const active = getActiveShiftNow(now);
   const dState = getTeamShiftState(now, "D");
   const special = getSpecialWorkInfo(now);
   const sameDay = (a, b) => a && b && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
   const showSpecial = special && (!active || sameDay(active.start, now));
+  const vacationCountdown = typeof getVacationCountdown === "function"
+    ? getVacationCountdown(now)
+    : { text: "--", meta: "" };
+  const esc = typeof escapeHtml === "function"
+    ? escapeHtml
+    : (value) => String(value ?? "").replace(/[&<>"']/g, ch => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      }[ch]));
 
-  const lines = [];
-  if (active && !showSpecial) {
-    lines.push("Aktuálně v práci: směna " + active.team + (active.label ? " (" + active.label + ")" : ""));
-  } else if (special) {
-    if (special.type === "holiday") {
-      lines.push("Svátek – " + special.label);
-    } else {
-      lines.push("CZD – celozávodní dovolená");
-    }
-    lines.push("Dnes se nepracuje");
-  } else {
-    lines.push("Aktuálně není žádná směna");
+  const hero = document.getElementById('dashHero');
+  if (hero) {
+    const heroLine1 = active && !showSpecial
+      ? 'V práci: směna ' + active.team + (active.label ? ' (' + active.label + ')' : '')
+      : (special ? 'Dnes se nepracuje' : '—');
+    const heroLine2 = dState.next
+      ? 'Směna D začne za: ' + formatDuration(dState.next.start - now)
+      : 'Směna D začne za: —';
+    const heroProgress = active && !showSpecial && active.start && active.end
+      ? Math.max(0, Math.min(100, ((now.getTime() - active.start.getTime()) / (active.end.getTime() - active.start.getTime())) * 100))
+      : 0;
+    hero.innerHTML = [
+      '<div class="dashboardHeroLine1">' + esc(heroLine1) + '</div>',
+      '<div class="dashboardHeroLine2">' + esc(heroLine2) + '</div>',
+      '<div class="dashboardHeroBar"><span style="width:' + heroProgress.toFixed(1) + '%"></span></div>'
+    ].join('');
   }
 
-  if (dState.active) {
-    lines.push("Směna D: do konce zbývá " + formatDuration(dState.end - now));
-  } else if (dState.next) {
-    lines.push("Směna D začne za: " + formatDuration(dState.next.start - now));
-  } else {
-    lines.push("Směna D: bez dalšího termínu");
-  }
+  const setCard = (id, title, value, meta, dotClass, clickable, iconHtml) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.toggle('dashboardCardClickable', !!clickable);
+    const dot = dotClass ? '<span class="dashboardDot ' + esc(dotClass) + '" aria-hidden="true"></span>' : '';
+    const icon = iconHtml ? '<div class="dashboardIcon" aria-hidden="true">' + iconHtml + '</div>' : '';
+    el.innerHTML = [
+      '<div class="dashboardTop">',
+      '<div class="dashboardLabel">' + esc(title) + '</div>',
+      dot,
+      '</div>',
+      '<div class="dashboardValue">' + esc(value || '--') + '</div>',
+      meta ? '<div class="dashboardMeta">' + esc(meta) + '</div>' : '',
+      icon
+    ].join('');
+  };
 
-  document.getElementById("shiftTime").innerText = lines.join("\n");
-  if (typeof renderHomeDashboard === 'function') renderHomeDashboard(lines);
+  const walletIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 7.5h10.2c1.7 0 3 .9 3.6 2.2l1 2.1H18c-1.9 0-3.5 1.5-3.5 3.5s1.6 3.5 3.5 3.5h1.3c.8 0 1.5-.7 1.5-1.5v-6.8c0-1.7-1.4-3-3-3H4.5a2 2 0 0 0-2 2v5.8a2 2 0 0 0 2 2h10.1"/><path d="M16.5 12.5h3.2"/><circle cx="17.8" cy="15.9" r="0.75" fill="currentColor" stroke="none"/></svg>';
+  const utensilsIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3v9"/><path d="M6 6h3"/><path d="M6 9h3"/><path d="M11 3v18"/><path d="M15 3v18"/><path d="M19 3v7"/><path d="M19 10h3"/><path d="M19 13h3"/></svg>';
+  const calendarIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M7 3.5v3M17 3.5v3M3.5 9h17"/></svg>';
+  const clockIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="7.5"/><path d="M12 8v4.5l3 2"/></svg>';
+  const bagIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 8h11l-.8 10.5a2 2 0 0 1-2 1.8H9.3a2 2 0 0 1-2-1.8L6.5 8Z"/><path d="M8.5 8a3.5 3.5 0 0 1 7 0"/></svg>';
+  const truckIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 7h11v9h-11z"/><path d="M14.5 10h3.2l2 2v4h-5.2z"/><circle cx="8" cy="18" r="1.8"/><circle cx="18" cy="18" r="1.8"/></svg>';
+  const globeIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="7.5"/><path d="M4.8 12h14.4"/><path d="M12 4.5c2.2 2 3.5 4.5 3.5 7.5S14.2 17 12 19.5c-2.2-2.5-3.5-4.5-3.5-7.5S9.8 6.5 12 4.5Z"/></svg>';
+
+  const payDate = typeof getNextPayrollDate === 'function' ? getNextPayrollDate(now) : null;
+  const payDateText = payDate
+    ? new Intl.DateTimeFormat('cs-CZ', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(payDate).replace(/\s+/g, '')
+    : '—';
+  const payDays = payDate
+    ? Math.max(0, Math.round((payDate.getTime() - new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()) / 86400000))
+    : null;
+  const payMeta = payDays === null
+    ? ''
+    : (payDays === 0 ? 'dnes' : 'za ' + payDays + ' ' + (payDays === 1 ? 'den' : (payDays >= 2 && payDays <= 4 ? 'dny' : 'dní')));
+
+  setCard('dashCalendar', 'Kalendář', formatCalendarDateLabel(now), getCalendarSpecialText(now), '', false, calendarIcon);
+  setCard('dashCountdown', 'Zbývá', active && !showSpecial ? formatDuration(active.end - now) : '—', '', '', false, clockIcon);
+
+  const kantyna = findFoodStatus(FOOD_LOCATIONS[0], now);
+  const jidelna = findFoodStatus(FOOD_LOCATIONS[1], now);
+  const foodText = status => status.isOpen ? 'Otevřeno' : 'Zavřeno';
+  const foodDot = status => status.isOpen ? 'is-open' : 'is-closed';
+  const foodMeta = status => {
+    if (status.isOpen && status.active) return 'do ' + formatFoodTime(status.active.end);
+    if (!status.next) return 'Rozpis není dostupný.';
+    const today = new Date(now);
+    today.setHours(0, 0, 0, 0);
+    const nextStart = new Date(status.next.start);
+    nextStart.setHours(0, 0, 0, 0);
+    const diffDays = Math.round((nextStart - today) / 86400000);
+    const range = formatFoodRange(status.next.start, status.next.end);
+    if (diffDays <= 0) return 'poté v ' + range;
+    if (diffDays === 1) return 'poté zítra v ' + range;
+    return 'poté ' + formatFoodRelativeLabel(status.next.start, now) + ' v ' + range;
+  };
+  setCard('dashKantyna', 'Kantýna', foodText(kantyna), foodMeta(kantyna), foodDot(kantyna), true, utensilsIcon);
+  setCard('dashJidelna', 'Jídelna', foodText(jidelna), foodMeta(jidelna), foodDot(jidelna), true, utensilsIcon);
+  setCard('dashVyplata', 'Další výplata', payDateText, payMeta, '', false, walletIcon);
+  setCard('dashCzd', 'Odpočet do dovolené', vacationCountdown.text, vacationCountdown.meta, '', false, bagIcon);
+  setCard('dashFoodLink', 'Jídelní lístek', 'Otevřít', 'Aktuální menu', '', true, truckIcon);
+  setCard('dashEportalLink', 'Eportal', 'Otevřít', 'Firemní portál', '', true, globeIcon);
 }
 
-setInterval(updateShift, 10000);
-updateShift();
-
-
+function updateShift() {
+  updateDashboard();
+}
+setInterval(updateDashboard, 10000);
+updateDashboard();

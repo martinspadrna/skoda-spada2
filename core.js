@@ -1,6 +1,8 @@
 
 const APP_KEY = "rotace_kalkulacky_state_v122";
-const ROTATION_BUILD = "2026-05-07-v.1(202)-" + Date.now();
+const APP_VERSION = "v.1(222)";
+window.APP_VERSION = APP_VERSION;
+const ROTATION_BUILD = "2026-05-08-" + APP_VERSION + "-" + Date.now();
 
 const HARD_MACHINE_HEADERS = ["TNKS01", "TBKR07", "TPKW01", "TPKW02", "TBKR01"];
 const SOFT_MACHINE_HEADERS = ["MSKC01", "MSKC03", "MSKC04", "MFKF06", "MFKF10"];
@@ -45,6 +47,26 @@ function getSpecialWorkInfo(now) {
   return null;
 }
 
+const CZD_PERIODS = [
+  { start: new Date(2026, 6, 19, 14, 0, 0, 0), end: new Date(2026, 7, 2, 18, 0, 0, 0) },
+  { start: new Date(2026, 11, 23, 18, 0, 0, 0), end: new Date(2027, 0, 2, 6, 0, 0, 0) }
+];
+
+function getVacationCountdown(now) {
+  const today = new Date(now || new Date());
+  today.setHours(0, 0, 0, 0);
+  const upcoming = CZD_PERIODS.find(period => period.start.getTime() > today.getTime()) || CZD_PERIODS[0];
+  if (!upcoming) return { text: '—', meta: '' };
+
+  const start = new Date(upcoming.start);
+  start.setHours(0, 0, 0, 0);
+  const diffDays = Math.max(0, Math.round((start.getTime() - today.getTime()) / 86400000));
+  return {
+    text: diffDays === 0 ? 'Dnes' : (diffDays + ' ' + (diffDays === 1 ? 'den' : 'dní')),
+    meta: ''
+  };
+}
+
 const appRotation = loadRotationData();
 const app = {
   rotationView: "names",
@@ -59,12 +81,25 @@ const app = {
   soustruh106Counts: ["", "", "", ""],
   selectedYear: new Date().getFullYear(),
   importYear: new Date().getFullYear(),
+  foodScheduleFocus: "kantyna",
   importClicks: 0,
+  pendingMenuImport: false,
   adminUnlocked: false,
   machine: localStorage.getItem("machine") || "TBKR01",
   prog: localStorage.getItem("prog") || "AD",
+  version: APP_VERSION,
   rotation: appRotation
 };
+
+function escapeHtml(str) {
+  return String(str ?? "").replace(/[&<>"']/g, ch => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  }[ch]));
+}
 
 // Budoucí rozšíření: statistiky za rok pro jednotlivá jména/stroje/úklid.
 

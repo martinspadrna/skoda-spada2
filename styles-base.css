@@ -30,7 +30,7 @@ body{
  color:var(--text);
  margin:0;
  min-height:100vh;
- padding:calc(15px + env(safe-area-inset-top)) calc(15px + env(safe-area-inset-right)) calc(15px + env(safe-area-inset-bottom)) calc(15px + env(safe-area-inset-left));
+ padding:calc(15px + env(safe-area-inset-top)) calc(15px + env(safe-area-inset-right)) calc(118px + env(safe-area-inset-bottom)) calc(15px + env(safe-area-inset-left));
  position:relative;
  isolation:isolate;
 }
@@ -153,97 +153,26 @@ h1{
  margin-top:0;
 }
 
-/* --- visual polish v.1(201) --- */
-html{
-  scroll-behavior:smooth;
+
+html, body{
+  width:100%;
 }
 
 body{
-  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
   background:
-    radial-gradient(circle at 20% 0%, rgba(124,255,124,.10), transparent 26%),
-    radial-gradient(circle at 80% 10%, rgba(124,255,124,.06), transparent 24%),
-    linear-gradient(180deg, #0b0f0c 0%, #090d0a 100%);
-  background-attachment: fixed;
+    radial-gradient(circle at top, rgba(124,255,124,.10), transparent 26%),
+    linear-gradient(180deg, #050705 0%, #090b08 100%);
 }
 
-body::before{
-  opacity:.95;
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,0)),
-    radial-gradient(circle at top, rgba(124,255,124,.08), transparent 32%);
+body > button.homeBtn,
+body > h1,
+body > #shiftTime,
+body > .version{
+  display:none !important;
 }
 
-h1{
-  color:#dfffe1;
-  letter-spacing:.2px;
-  text-shadow:0 0 24px rgba(124,255,124,.18);
-}
-
-#shiftTime{
-  color:#aeb8b2;
-  display:inline-block;
-  width:min(100%, 760px);
-  margin-left:auto;
-  margin-right:auto;
-  padding:8px 14px;
-  border:1px solid rgba(124,255,124,.10);
-  border-radius:16px;
-  background:rgba(255,255,255,.02);
-  backdrop-filter:blur(10px);
-}
-
-.version{
-  opacity:.42;
-}
-
-.signature{
-  color:#e1e1e1;
-}
-
-.homeBtn{
-  background:linear-gradient(180deg, rgba(31,37,33,.96), rgba(20,24,22,.94));
-  border:1px solid rgba(124,255,124,.16);
-  box-shadow:0 14px 30px rgba(0,0,0,.28);
-  backdrop-filter:blur(12px);
-}
-
-.brusDetails{
-  border:1px solid rgba(124,255,124,.18);
-  background:rgba(19,23,21,.76);
-  backdrop-filter:blur(14px);
-}
-
-/* --- base polish v.1(202) --- */
-body{
-  padding-bottom:calc(96px + env(safe-area-inset-bottom));
-}
-
-body::before{
-  background:
-    radial-gradient(circle at 50% 0%, rgba(124,255,124,.14), transparent 24%),
-    radial-gradient(circle at 18% 16%, rgba(124,255,124,.06), transparent 18%),
-    radial-gradient(circle at 82% 10%, rgba(124,255,124,.04), transparent 20%),
-    linear-gradient(90deg,
-      rgba(11,15,12,0.99) 0%,
-      rgba(11,15,12,0.99) 20%,
-      rgba(124,255,124,0.05) 50%,
-      rgba(11,15,12,0.99) 80%,
-      rgba(11,15,12,0.99) 100%
-    );
-}
-
-h1{
-  letter-spacing:-0.02em;
-  text-shadow:0 2px 18px rgba(124,255,124,.14);
-}
-
-#shiftTime{
-  max-width:46rem;
-  margin-left:auto;
-  margin-right:auto;
-}
-
-.version{
-  font-variant-numeric:tabular-nums;
+.page{
+  width:min(100%, 460px);
+  margin:0 auto;
 }

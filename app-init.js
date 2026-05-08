@@ -37,6 +37,14 @@ document.getElementById("importYearSelect")?.addEventListener("change", (e) => {
   syncYearControls();
 });
 
+const excelFileInput = document.getElementById("excelFile");
+if (excelFileInput) {
+  excelFileInput.addEventListener("change", () => {
+    if (!app.pendingMenuImport) return;
+    app.pendingMenuImport = false;
+    document.getElementById("importBtn")?.click();
+  });
+}
 
 
 function parseWorkbookFromSheetJS(workbook) {

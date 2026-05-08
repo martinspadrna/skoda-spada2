@@ -149,11 +149,13 @@ function findFoodStatus(location, now) {
   const baseNow = new Date(now);
   const today = new Date(baseNow);
   today.setHours(0, 0, 0, 0);
+  const special = getSpecialWorkInfo(baseNow);
 
   let active = null;
   let next = null;
+  const startOffset = special ? 1 : -1;
 
-  for (let offset = -1; offset <= 8; offset += 1) {
+  for (let offset = startOffset; offset <= 8; offset += 1) {
     const baseDate = new Date(today);
     baseDate.setDate(baseDate.getDate() + offset);
     const windows = getFoodScheduleForDay(location, baseDate.getDay(), baseDate);
@@ -167,6 +169,10 @@ function findFoodStatus(location, now) {
         next = range;
       }
     }
+  }
+
+  if (special) {
+    active = null;
   }
 
   return { active, next, isOpen: !!active };
@@ -183,10 +189,23 @@ function foodStatusText(status) {
 }
 
 function foodStatusMeta(status, location) {
-  if (status.next) {
-    return "Další termín: " + formatFoodRelativeLabel(status.next.start, new Date()) + " " + formatFoodRange(status.next.start, status.next.end);
+  if (status.isOpen && status.active) {
+    return "do " + formatFoodTime(status.active.end);
   }
-  return "Rozpis není dostupný.";
+  if (!status.next) {
+    return "Rozpis není dostupný.";
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const nextStart = new Date(status.next.start);
+  nextStart.setHours(0, 0, 0, 0);
+  const diffDays = Math.round((nextStart - today) / 86400000);
+  const range = formatFoodRange(status.next.start, status.next.end);
+
+  if (diffDays <= 0) return "poté v " + range;
+  if (diffDays === 1) return "poté zítra v " + range;
+  return "poté " + formatFoodRelativeLabel(status.next.start, new Date()) + " v " + range;
 }
 
 function isPayrollWorkday(date) {
@@ -292,6 +311,102 @@ function updateEportalTile() {
   ].join('');
 
   tile.innerHTML = html;
+}
+
+
+function getFoodScheduleLocation(which) {
+  const key = which === 'jidelna' ? 'jidelna' : 'kantyna';
+  return FOOD_LOCATIONS.find(item => item.key === key) || FOOD_LOCATIONS[0];
+}
+
+function formatFoodWindowsList(windows) {
+  if (!Array.isArray(windows) || !windows.length) return 'Zavřeno';
+  return windows.map(item => item[0] + '–' + item[1]).join(', ');
+}
+
+function buildFoodScheduleHtml(location) {
+  const dayLabels = ['Ne', 'Po', 'Út', 'St', 'Čt', 'Pá', 'So'];
+  const rows = dayLabels.map((dayLabel, dayIndex) => {
+    const windows = (location.days && location.days[dayIndex]) || [];
+    return '<div class="foodScheduleRow">' +
+      '<div class="foodScheduleDay">' + dayLabel + '</div>' +
+      '<div class="foodScheduleWindows">' + escapeHtml(formatFoodWindowsList(windows)) + '</div>' +
+    '</div>';
+  }).join('');
+
+  return [
+    '<div class="foodScheduleTitleBlock">',
+    '<div class="sectionTitle">Otevírací doba</div>',
+    '<div class="smallText" style="margin-top:0; margin-bottom:10px;">' + escapeHtml(location.label) + '</div>',
+    '</div>',
+    rows
+  ].join('');
+}
+
+function renderFoodSchedulePage() {
+  const location = getFoodScheduleLocation(app && app.foodScheduleFocus ? app.foodScheduleFocus : 'kantyna');
+  const title = document.getElementById('foodScheduleTitle');
+  const card = document.getElementById('foodScheduleCard');
+  if (!card) return;
+
+  if (title) title.textContent = location.label;
+  card.innerHTML = buildFoodScheduleHtml(location);
+}
+
+function renderFoodScheduleModal() {
+  const location = getFoodScheduleLocation(app && app.foodScheduleFocus ? app.foodScheduleFocus : 'kantyna');
+  const overlay = ensureFoodScheduleModal();
+  const title = overlay.querySelector('#foodScheduleModalTitle');
+  const body = overlay.querySelector('#foodScheduleModalBody');
+  if (title) title.textContent = location.label;
+  if (body) body.innerHTML = buildFoodScheduleHtml(location);
+}
+
+function showFoodSchedule(which) {
+  app.foodScheduleFocus = which === 'jidelna' ? 'jidelna' : 'kantyna';
+  renderFoodScheduleModal();
+  const overlay = ensureFoodScheduleModal();
+  overlay.classList.add('isVisible');
+  document.body.classList.add('foodModalOpen');
+}
+
+function hideFoodScheduleModal() {
+  const overlay = document.getElementById('foodScheduleModal');
+  if (!overlay) return;
+  overlay.classList.remove('isVisible');
+  document.body.classList.remove('foodModalOpen');
+}
+
+function ensureFoodScheduleModal() {
+  let overlay = document.getElementById('foodScheduleModal');
+  if (overlay) return overlay;
+
+  overlay = document.createElement('div');
+  overlay.id = 'foodScheduleModal';
+  overlay.className = 'foodScheduleOverlay';
+  overlay.innerHTML = [
+    '<div class="foodScheduleModal" role="dialog" aria-modal="true" aria-labelledby="foodScheduleModalTitle">',
+    '<button type="button" class="foodScheduleClose" aria-label="Zavřít">×</button>',
+    '<div class="foodScheduleModalTitle" id="foodScheduleModalTitle"></div>',
+    '<div class="foodScheduleModalBody" id="foodScheduleModalBody"></div>',
+    '</div>'
+  ].join('');
+
+  overlay.addEventListener('click', (event) => {
+    if (event.target === overlay) hideFoodScheduleModal();
+  });
+
+  overlay.querySelector('.foodScheduleClose')?.addEventListener('click', hideFoodScheduleModal);
+
+  if (!document.body.dataset.foodModalKeydownBound) {
+    document.body.dataset.foodModalKeydownBound = '1';
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') hideFoodScheduleModal();
+    });
+  }
+
+  document.body.appendChild(overlay);
+  return overlay;
 }
 
 function normalizePersonQrKey(name) {

@@ -1,7 +1,7 @@
 function renderRotace() {
-  const namesGrid = document.getElementById("namesGrid");
-  const personView = document.getElementById("personView");
-  const monthView = document.getElementById("monthView");
+  const namesGrid = document.getElementById('namesGrid');
+  const personView = document.getElementById('personView');
+  const monthView = document.getElementById('monthView');
 
   const year = parseInt(app.selectedYear, 10) || getInitialSelectedYear(app.rotation);
   const availableYears = getAvailableYears(app.rotation);
@@ -15,19 +15,28 @@ function renderRotace() {
   const nameIndex = buildNameIndex(app.rotation);
   const names = Object.keys(nameIndex);
 
-  namesGrid.innerHTML = "";
+  namesGrid.innerHTML = '';
   names.forEach(name => {
-    const el = document.createElement("div");
-    el.className = "listItem" + (app.selectedName === name ? " activeChoice" : "");
-    el.textContent = name;
+    const el = document.createElement('div');
+    const isActive = app.selectedName === name;
+    el.className = 'listItem rotaceNameTile' + (isActive ? ' activeChoice' : '');
+    el.setAttribute('role', 'button');
+    el.setAttribute('tabindex', '0');
+    el.innerHTML = '<div class="rotaceTileTitle">' + escapeHtml(name) + '</div>';
     el.onclick = () => handlePersonTap(name);
+    el.onkeydown = (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        handlePersonTap(name);
+      }
+    };
     namesGrid.appendChild(el);
   });
 
   if (app.selectedName && nameIndex[app.selectedName]) {
     renderPerson(app.selectedName);
   } else {
-    personView.innerHTML = "";
+    personView.innerHTML = "<div class='smallText'>Klepni na jméno a pod ním se ukáže přehled směn.</div>";
   }
 
   if (app.selectedMonth && app.rotation.months[app.selectedMonth]) {
@@ -37,7 +46,7 @@ function renderRotace() {
   }
 
   renderStatsPanel();
-  document.getElementById("adminBox").style.display = app.adminUnlocked ? "block" : "none";
+  document.getElementById('adminBox').style.display = app.adminUnlocked ? 'block' : 'none';
 }
 
 function getSoftMachineDisplayLabel(entry, rotation) {
@@ -81,13 +90,10 @@ function handlePersonTap(name) {
   }
 }
 
-function renderPerson(name) {
-  const personView = document.getElementById("personView");
+function getPersonScheduleEntries(name) {
   const rawEntries = (buildNameIndex(app.rotation)[name] || []).slice();
-
   if (!rawEntries.length) {
-    personView.innerHTML = "<div class='smallText'>Pro tohle jméno zatím nejsou žádné směny.</div>";
-    return;
+    return { entries: [], currentIdx: -1 };
   }
 
   const dayKey = (d) => {
@@ -157,37 +163,143 @@ function renderPerson(name) {
     })
     .sort((a, b) => a.sortDate.localeCompare(b.sortDate));
 
-  if (!entries.length) {
-    personView.innerHTML = "<div class='smallText'>Pro tohle jméno nejsou v aktuálním rozpisu žádné směny.</div>";
-    return;
-  }
-
   const today = new Date();
   const todayDay = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
-
   let currentIdx = entries.findIndex(e => new Date(e.sortDate).getTime() === todayDay);
   if (currentIdx === -1) {
     currentIdx = entries.findIndex(e => new Date(e.sortDate).getTime() > todayDay);
     if (currentIdx === -1) currentIdx = entries.length - 1;
   }
+  return { entries, currentIdx };
+}
 
-  const startIdx = Math.max(0, currentIdx - 1);
-  const endIdx = Math.min(entries.length, currentIdx + 4);
-  const around = entries.slice(startIdx, endIdx);
+function buildPersonScheduleModalHtml(name) {
+  const model = getPersonScheduleEntries(name);
+  if (!model.entries.length) {
+    return "<div class='smallText'>Pro tohle jméno zatím nejsou žádné směny.</div>";
+  }
 
-  let html = "<div class='smallText'><b>" + escapeHtml(name) + "</b></div>";
-  around.forEach((e, i) => {
-    const idx = startIdx + i;
-    html += "<div class='personLine" + (idx === currentIdx ? " current" : "") + "'>" +
-      escapeHtml(e.dateLabel || "") + (e.shift ? " " + escapeHtml(e.shift) : "") +
-      " → " + escapeHtml(e.target || "") +
-      "</div>";
+  let html = "<div class='personScheduleTitle'>" + escapeHtml(name) + "</div>";
+  html += "<div class='tableWrap'><table class='personScheduleTable'><thead><tr><th>Datum</th><th>Směna</th><th>Cíl</th></tr></thead><tbody>";
+  model.entries.forEach((e, idx) => {
+    html += "<tr class='" + (idx === model.currentIdx ? "currentRow" : "") + "'><td>" + escapeHtml(e.dateLabel || "") + "</td><td>" + escapeHtml(e.shift || "") + "</td><td>" + escapeHtml(e.target || "") + "</td></tr>";
   });
+  html += "</tbody></table></div>";
+  return html;
+}
 
-  personView.innerHTML = html;
+function renderPersonScheduleModal(name) {
+  const overlay = ensurePersonScheduleModal();
+  const title = overlay.querySelector('#personScheduleModalTitle');
+  const body = overlay.querySelector('#personScheduleModalBody');
+  if (title) title.textContent = name;
+  if (body) body.innerHTML = buildPersonScheduleModalHtml(name);
+}
+
+function showPersonScheduleModal(name) {
+  const overlay = ensurePersonScheduleModal();
+  renderPersonScheduleModal(name);
+  overlay.classList.add('isVisible');
+  document.body.classList.add('personModalOpen');
+}
+
+function hidePersonScheduleModal() {
+  const overlay = document.getElementById('personScheduleModal');
+  if (!overlay) return;
+  overlay.classList.remove('isVisible');
+  document.body.classList.remove('personModalOpen');
+}
+
+function ensurePersonScheduleModal() {
+  let overlay = document.getElementById('personScheduleModal');
+  if (overlay) return overlay;
+
+  overlay = document.createElement('div');
+  overlay.id = 'personScheduleModal';
+  overlay.className = 'personScheduleOverlay';
+  overlay.innerHTML = [
+    '<div class="personScheduleModal" role="dialog" aria-modal="true" aria-labelledby="personScheduleModalTitle">',
+    '<button type="button" class="personScheduleClose" aria-label="Zavřít">×</button>',
+    '<div class="personScheduleTitle" id="personScheduleModalTitle"></div>',
+    '<div class="personScheduleBody" id="personScheduleModalBody"></div>',
+    '</div>'
+  ].join('');
+
+  overlay.addEventListener('click', (event) => {
+    if (event.target === overlay) hidePersonScheduleModal();
+  });
+  overlay.querySelector('.personScheduleClose')?.addEventListener('click', hidePersonScheduleModal);
+
+  if (!document.body.dataset.personModalKeydownBound) {
+    document.body.dataset.personModalKeydownBound = '1';
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') hidePersonScheduleModal();
+    });
+  }
+
+  document.body.appendChild(overlay);
+  return overlay;
+}
+
+
+
+
+function renderPerson(name) {
+  const personView = document.getElementById("personView");
+  const schedule = getPersonScheduleEntries(name);
+  const entries = Array.isArray(schedule.entries) ? schedule.entries : [];
+  const currentIdx = Number.isFinite(schedule.currentIdx) ? schedule.currentIdx : -1;
+
+  if (!entries.length) {
+    personView.innerHTML = "<div class='smallText'>Pro tohle jméno zatím nejsou žádné směny.</div>";
+    return;
+  }
+
+  const pickEntry = (index) => {
+    if (index < 0) return null;
+    if (index >= entries.length) return entries[entries.length - 1] || null;
+    return entries[index] || null;
+  };
+
+  const formatEntry = (entry, label) => {
+    if (!entry) {
+      return [
+        '<div class="rotaceMiniCard isEmpty">',
+        '  <div class="rotaceMiniLabel">' + escapeHtml(label) + '</div>',
+        '  <div class="rotaceMiniDate">—</div>',
+        '  <div class="rotaceMiniTarget">—</div>',
+        '</div>'
+      ].join('');
+    }
+
+    return [
+      '<div class="rotaceMiniCard' + (label === "Aktuální" ? ' current' : '') + '">',
+      '  <div class="rotaceMiniLabel">' + escapeHtml(label) + '</div>',
+      '  <div class="rotaceMiniDate">' + escapeHtml(entry.dateLabel || "") + (entry.shift ? ' ' + escapeHtml(entry.shift) : '') + '</div>',
+      '  <div class="rotaceMiniTarget">' + escapeHtml(entry.target || "") + '</div>',
+      '</div>'
+    ].join('');
+  };
+
+  const baseIdx = currentIdx >= 0 ? currentIdx : 0;
+  const cards = [
+    ['Poslední', pickEntry(baseIdx - 1)],
+    ['Aktuální', pickEntry(baseIdx)],
+    ['+1', pickEntry(baseIdx + 1)],
+    ['+2', pickEntry(baseIdx + 2)],
+    ['+3', pickEntry(baseIdx + 3)]
+  ];
+
+  personView.innerHTML = [
+    '<div class="rotacePersonTitle">' + escapeHtml(name) + '</div>',
+    '<div class="rotaceQuickCards">',
+    cards.map(([label, entry]) => formatEntry(entry, label)).join(''),
+    '</div>'
+  ].join('');
 }
 
 function renderMonth(monthKey) {
+
   const month = app.rotation.months[monthKey];
   const monthView = document.getElementById("monthView");
   if (!month || !monthView) return;
@@ -297,11 +409,8 @@ function refreshInitialUI() {
   setRotaceView(app.rotationView || "names");
   renderRotace();
   if (app.selectedMonth) renderMonth(app.selectedMonth);
-  if (typeof renderHomeDashboard === 'function') renderHomeDashboard();
-  if (typeof syncBottomNav === 'function') syncBottomNav('home');
   updateImportBoxVisibility();
 }
-
 
 function escapeHtml(str) {
   return String(str || "")

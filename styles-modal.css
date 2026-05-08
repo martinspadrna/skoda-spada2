@@ -10,7 +10,7 @@ body.qrModalOpen{
   align-items:center;
   justify-content:center;
   padding:18px;
-  background:rgba(7,10,8,.72);
+  background:rgba(4,6,5,.76);
   backdrop-filter:blur(10px);
 }
 
@@ -20,7 +20,7 @@ body.qrModalOpen{
 
 .qrModal{
   width:min(92vw, 360px);
-  border-radius:24px;
+  border-radius:26px;
   background:rgba(20,24,22,.96);
   border:1px solid rgba(124,255,124,.16);
   box-shadow:0 24px 60px rgba(0,0,0,.45);
@@ -75,4 +75,356 @@ body.qrModalOpen{
   font-weight:700;
   letter-spacing:.08em;
   color:var(--green2);
+}
+
+
+body.foodModalOpen{
+  overflow:hidden;
+}
+
+.foodScheduleOverlay{
+  position:fixed;
+  inset:0;
+  z-index:3900;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  background:rgba(7,10,8,.72);
+  backdrop-filter:blur(10px);
+}
+
+.foodScheduleOverlay.isVisible{
+  display:flex;
+}
+
+.foodScheduleModal{
+  width:min(92vw, 430px);
+  max-height:min(86vh, 760px);
+  overflow:auto;
+  border-radius:24px;
+  background:rgba(20,24,22,.96);
+  border:1px solid rgba(124,255,124,.16);
+  box-shadow:0 24px 60px rgba(0,0,0,.45);
+  padding:18px 18px 16px;
+  position:relative;
+}
+
+.foodScheduleClose{
+  position:sticky;
+  float:right;
+  top:0;
+  margin-left:auto;
+  width:36px;
+  height:36px;
+  padding:0;
+  margin-top:0;
+  border-radius:50%;
+  background:rgba(255,255,255,.06);
+  color:var(--text);
+  font-size:22px;
+  line-height:1;
+}
+
+.foodScheduleModalTitle{
+  clear:both;
+  font-size:18px;
+  font-weight:700;
+  line-height:1.2;
+  margin:4px 34px 14px 0;
+}
+
+.foodScheduleModalBody{
+  margin-top:2px;
+}
+
+.foodScheduleRow{
+  display:flex;
+  gap:12px;
+  align-items:flex-start;
+  padding:10px 0;
+  border-top:1px solid rgba(124,255,124,.10);
+}
+
+.foodScheduleDay{
+  width:42px;
+  flex:none;
+  font-weight:800;
+  color:var(--green2);
+}
+
+.foodScheduleWindows{
+  flex:1;
+  color:var(--text);
+  line-height:1.35;
+}
+
+
+body.personModalOpen{
+  overflow:hidden;
+}
+
+.personScheduleOverlay{
+  position:fixed;
+  inset:0;
+  z-index:3950;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  background:rgba(7,10,8,.72);
+  backdrop-filter:blur(10px);
+}
+
+.personScheduleOverlay.isVisible{
+  display:flex;
+}
+
+.personScheduleModal{
+  width:min(92vw, 430px);
+  max-height:min(86vh, 760px);
+  overflow:auto;
+  border-radius:24px;
+  background:rgba(20,24,22,.96);
+  border:1px solid rgba(124,255,124,.16);
+  box-shadow:0 24px 60px rgba(0,0,0,.45);
+  padding:18px 18px 16px;
+  position:relative;
+}
+
+.personScheduleClose{
+  position:sticky;
+  float:right;
+  top:0;
+  margin-left:auto;
+  width:36px;
+  height:36px;
+  padding:0;
+  margin-top:0;
+  border-radius:50%;
+  background:rgba(255,255,255,.06);
+  color:var(--text);
+  font-size:22px;
+  line-height:1;
+}
+
+.personScheduleTitle{
+  clear:both;
+  font-size:18px;
+  font-weight:700;
+  line-height:1.2;
+  margin:4px 34px 14px 0;
+}
+
+.personScheduleBody{
+  margin-top:2px;
+}
+
+.personScheduleTable{
+  width:100%;
+  border-collapse:collapse;
+  font-size:13px;
+}
+
+.personScheduleTable th,
+.personScheduleTable td{
+  padding:10px 8px;
+  border-top:1px solid rgba(124,255,124,.08);
+  text-align:left;
+}
+
+.personScheduleTable thead th{
+  border-top:none;
+  padding-top:0;
+  color:rgba(255,255,255,.58);
+  font-size:11px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+
+.personScheduleTable .currentRow td{
+  color:#dfffdb;
+  background:rgba(124,255,124,.06);
+}
+
+.personScheduleTable td:nth-child(1){
+  white-space:nowrap;
+  color:rgba(255,255,255,.82);
+}
+
+.personScheduleTable td:nth-child(2){
+  white-space:nowrap;
+  color:var(--green2);
+  font-weight:700;
+}
+
+.personScheduleTable td:nth-child(3){
+  color:var(--text);
+}
+
+
+body.appMenuOpen{
+  overflow:hidden;
+}
+
+.appMenuOverlay{
+  position:fixed;
+  inset:0;
+  z-index:3975;
+  display:none;
+  align-items:flex-end;
+  justify-content:center;
+  padding:18px 14px calc(14px + env(safe-area-inset-bottom));
+  background:rgba(7,10,8,.70);
+  backdrop-filter:blur(12px);
+}
+
+.appMenuOverlay.isVisible{
+  display:flex;
+}
+
+.appMenuSheet{
+  width:min(100%, 430px);
+  border-radius:28px;
+  background:rgba(18,22,20,.97);
+  border:1px solid rgba(124,255,124,.16);
+  box-shadow:0 26px 64px rgba(0,0,0,.46);
+  padding:18px;
+  position:relative;
+}
+
+.appMenuClose{
+  position:absolute;
+  top:12px;
+  right:12px;
+  width:36px;
+  height:36px;
+  padding:0;
+  margin:0;
+  border-radius:50%;
+  background:rgba(255,255,255,.06);
+  color:var(--text);
+  font-size:22px;
+  line-height:1;
+}
+
+.appMenuHeader{
+  padding-right:42px;
+}
+
+.appMenuKicker{
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.18em;
+  color:rgba(124,255,124,.7);
+  font-weight:800;
+}
+
+.appMenuTitle{
+  font-size:22px;
+  line-height:1.05;
+  font-weight:900;
+  margin-top:6px;
+}
+
+.appMenuSubtitle{
+  margin-top:6px;
+  font-size:13px;
+  color:var(--soft);
+}
+
+.appMenuBody{
+  margin-top:16px;
+}
+
+.appMenuGrid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+.appMenuAction{
+  min-height:52px;
+  border-radius:16px;
+  border:1px solid rgba(124,255,124,.18);
+  background:rgba(20,24,22,.96);
+  color:var(--text);
+  font-size:14px;
+  font-weight:800;
+  text-align:left;
+  padding:12px 14px;
+  width:100%;
+  box-shadow:0 10px 24px rgba(0,0,0,.18);
+}
+
+.appMenuAction.appMenuBack{
+  margin-top:12px;
+  text-align:center;
+}
+
+.appMenuCard{
+  border:1px solid rgba(124,255,124,.12);
+  border-radius:20px;
+  padding:14px;
+  background:rgba(255,255,255,.02);
+}
+
+.appMenuCardTitle{
+  font-size:16px;
+  font-weight:800;
+  margin-bottom:10px;
+}
+
+.appMenuVersion{
+  font-size:26px;
+  font-weight:900;
+  letter-spacing:-.03em;
+  margin-bottom:10px;
+  color:var(--green2);
+}
+
+.appMenuText{
+  display:grid;
+  gap:6px;
+  font-size:14px;
+  line-height:1.35;
+  color:var(--text);
+}
+
+.appMenuHint{
+  margin-top:10px;
+  font-size:12px;
+  line-height:1.35;
+  color:var(--soft);
+}
+
+.appMenuContactRow{
+  display:flex;
+  gap:10px;
+  justify-content:space-between;
+  align-items:flex-start;
+  padding:10px 0;
+  border-top:1px solid rgba(124,255,124,.08);
+  font-size:14px;
+  line-height:1.3;
+}
+
+.appMenuContactRow:first-of-type{
+  border-top:0;
+  padding-top:0;
+}
+
+.appMenuContactRow span{
+  color:var(--soft);
+}
+
+.appMenuContactRow b{
+  text-align:right;
+  font-weight:800;
+}
+
+@media (max-width: 420px){
+  .appMenuGrid{
+    grid-template-columns:1fr;
+  }
 }

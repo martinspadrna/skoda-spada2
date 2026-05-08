@@ -50,7 +50,9 @@ body{
   border: 1px solid rgba(124,255,124,.22);
   border-radius: 12px;
   box-shadow: var(--panelShellShadow);
+  background-color: rgba(20,24,22,.96);
   background-image: var(--panelShellGlass);
+  backdrop-filter: blur(10px);
   transition: transform .12s ease, border-color .12s ease, box-shadow .12s ease, filter .12s ease;
 }
 
@@ -93,204 +95,979 @@ input{
   }
 }
 
-/* --- stronger glow / polish overrides v.1(201) --- */
-.headerBar{
-  border-bottom-color:rgba(124,255,124,.16);
-}
 
-.sectionTitle{
-  color:#dfffe1;
-  letter-spacing:.02em;
-}
-
-.smallText{
-  color:#9eaca2;
-}
-
-button,
-input,
-select{
-  border-radius:16px;
-}
-
-button{
-  background:linear-gradient(180deg, #5bc25f, #3f9443);
-  box-shadow:0 12px 24px rgba(0,0,0,.22);
-}
-
-button:active{
-  transform:translateY(1px);
-}
-
-input,
-select{
+/* Dashboard refresh v1(208) */
+.dashboardShell{
+  margin-top:12px;
+  padding:14px;
+  border-radius:28px;
+  border:1px solid rgba(124,255,124,.12);
   background:
-    linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,0)),
-    rgba(12,16,13,.95);
-  border:1px solid rgba(124,255,124,.22);
-  color:#f6fff6;
+    radial-gradient(circle at top right, rgba(124,255,124,.10), transparent 34%),
+    linear-gradient(180deg, rgba(19,24,21,.95) 0%, rgba(10,13,11,.96) 100%);
+  box-shadow:0 20px 56px rgba(0,0,0,.34);
 }
 
-input:focus,
-select:focus{
-  outline:none;
-  border-color:rgba(124,255,124,.52);
-  box-shadow:0 0 0 3px rgba(124,255,124,.14);
+.dashboardAppTitle{
+  font-size:24px;
+  line-height:1.05;
+  font-weight:800;
+  color:var(--text);
+  margin:2px 0 10px;
 }
 
-.tile:hover,
-.listItem:hover,
-.bbtn:hover,
-button:hover,
-.homeBtn:hover,
-.resetBtn:hover{
-  border-color:rgba(124,255,124,.35);
+.dashboardHeader{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:14px;
 }
 
-.foodTileTitle{
-  font-size:19px;
-  color:#f5fff5;
+.dashboardEyebrow{
+  font-size:12px;
+  letter-spacing:.22em;
+  color:rgba(255,255,255,.42);
+  text-transform:uppercase;
 }
 
-.foodTileSub,
-.foodTileMeta{
-  color:#a9b9ad;
+.dashboardTitleRow{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:4px;
 }
 
-.foodTileLive{
-  color:#eaffea;
+.dashboardTitle{
+  font-size:23px;
+  line-height:1.05;
+  font-weight:800;
+  color:var(--text);
 }
 
-.foodOpen{
-  box-shadow:0 0 0 1px rgba(124,255,124,.14), 0 16px 32px rgba(0,0,0,.18);
+.dashboardVersionTag{
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.1em;
+  color:rgba(255,255,255,.46);
+  padding:5px 8px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(20,24,22,.96);
+  backdrop-filter: blur(10px);
 }
 
-.adminActions .bbtn,
-.adminActions button{
+.dashboardLivePill{
+  align-self:flex-start;
+  font-size:13px;
+  font-weight:800;
+  letter-spacing:.08em;
+  color:#dfffe5;
+  padding:10px 14px;
+  border-radius:999px;
+  border:1px solid rgba(124,255,124,.20);
+  background:linear-gradient(180deg, rgba(62,100,61,.86), rgba(37,61,36,.86));
+  box-shadow:0 0 0 1px rgba(124,255,124,.08) inset, 0 12px 24px rgba(0,0,0,.22);
+}
+
+.dashboardHeroCard{
+  grid-column:1 / -1;
+  padding:16px 16px 15px;
+  border-radius:24px;
+  border:1px solid rgba(124,255,124,.14);
+  background:
+    linear-gradient(180deg, rgba(16,20,17,.94), rgba(10,14,11,.90)),
+    radial-gradient(circle at top left, rgba(124,255,124,.10), transparent 42%);
+  box-shadow:0 18px 40px rgba(0,0,0,.28);
+}
+
+.dashboardHeroLine1{
+  font-size:16px;
+  font-weight:700;
+  line-height:1.35;
+  color:var(--text);
+}
+
+.dashboardHeroLine2{
+  margin-top:6px;
+  font-size:14px;
+  line-height:1.3;
+  color:rgba(255,255,255,.74);
+}
+
+.dashboardGrid{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:10px;
+  margin-top:10px;
+}
+
+.dashboardCard{
+  min-height:96px;
+  align-items:flex-start;
+  justify-content:space-between;
+  text-align:left;
+  flex-direction:column;
+  padding:14px;
+  border-radius:20px;
+  background:linear-gradient(180deg, rgba(20,24,22,.97), rgba(13,16,14,.98));
+  border:1px solid rgba(124,255,124,.10);
+}
+
+.dashboardCardEmpty{
+  visibility:hidden;
+  pointer-events:none;
+}
+
+.dashboardLinkCard .dashboardMeta{
+  color:rgba(255,255,255,.56);
+}
+
+.dashboardLabel{
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:rgba(255,255,255,.42);
+}
+
+.dashboardValue{
+  width:100%;
+  font-size:15px;
+  font-weight:800;
+  line-height:1.12;
+  color:var(--text);
+}
+
+.dashboardMeta{
+  width:100%;
+  font-size:11px;
+  line-height:1.2;
+  color:rgba(255,255,255,.58);
+}
+
+
+.dashboardTop{
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+
+.dashboardDot{
+  width:11px;
+  height:11px;
+  border-radius:999px;
+  flex:none;
+  background:rgba(255,255,255,.22);
+  box-shadow:0 0 0 2px rgba(255,255,255,.06);
+}
+
+.dashboardDot.is-open{
+  background:#6eff86;
+  box-shadow:0 0 0 2px rgba(110,255,134,.16), 0 0 14px rgba(110,255,134,.28);
+}
+
+.dashboardDot.is-closed{
+  background:#ff6868;
+  box-shadow:0 0 0 2px rgba(255,104,104,.14), 0 0 14px rgba(255,104,104,.18);
+}
+
+.dashboardCardClickable{ cursor:pointer; }
+
+
+.bottomNav{
+  position:fixed;
+  left:50%;
+  right:auto;
+  transform:translateX(-50%);
+  bottom:10px;
+  z-index:3000;
+  width:min(calc(100% - 20px), 500px);
+  padding:9px 10px calc(9px + env(safe-area-inset-bottom));
+  background:rgba(7,10,8,.58);
+  backdrop-filter:blur(20px) saturate(150%);
+  border:1px solid rgba(124,255,124,.10);
+  border-radius:26px;
+  box-shadow:0 18px 40px rgba(0,0,0,.42);
+}
+
+.bottomNavInner{
+  display:grid;
+  grid-template-columns:repeat(6, minmax(0, 1fr));
+  gap:6px;
+}
+
+.bottomNavBtn{
+  position:relative;
+  overflow:hidden;
   min-height:54px;
+  border-radius:16px;
+  border:1px solid rgba(124,255,124,.16);
+  background:rgba(20,24,22,.96);
+  backdrop-filter: blur(10px);
+  color:var(--text);
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  align-items:center;
+  justify-content:center;
+  padding:7px 5px;
+  font-size:11px;
+  font-weight:700;
+  line-height:1.1;
+  box-shadow:0 10px 24px rgba(0,0,0,.18);
 }
 
-/* --- visual polish v.1(202) --- */
-body{
+.bottomNavBtn span{
+  font-size:16px;
+  line-height:1;
+  transition:transform .18s ease;
+}
+
+.bottomNavBtn.active{
+  border-color:rgba(124,255,124,.86);
+  background:linear-gradient(180deg, rgba(124,255,124,.16), rgba(20,24,22,.96));
+  transform:translateY(-2px);
+  box-shadow:0 0 0 1px rgba(124,255,124,.18) inset, 0 14px 28px rgba(0,0,0,.24), 0 0 18px rgba(124,255,124,.10);
+}
+
+.bottomNavBtn.active::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  background:linear-gradient(180deg, rgba(124,255,124,.10), rgba(124,255,124,0));
+  pointer-events:none;
+}
+
+.bottomNavBtn.active span{
+  transform:scale(1.1);
+}
+
+.bottomNavLabel{
+  font-size:11px;
+  font-weight:700;
+  white-space:nowrap;
+}
+
+
+/* App-style refresh v1(214) */
+.page{
+  width:min(100%, 460px);
+  margin:0 auto;
+}
+
+.dashboardShell{
+  margin-top:10px;
+  padding:16px;
+  border-radius:32px;
+  border:1px solid rgba(124,255,124,.12);
   background:
-    radial-gradient(circle at top, rgba(124,255,124,.10), transparent 28%),
-    radial-gradient(circle at 18% 18%, rgba(124,255,124,.04), transparent 18%),
-    radial-gradient(circle at 82% 12%, rgba(124,255,124,.03), transparent 16%),
-    linear-gradient(180deg, #09100d 0%, #070b09 100%);
+    radial-gradient(circle at top left, rgba(124,255,124,.10), transparent 34%),
+    linear-gradient(180deg, rgba(16,20,17,.96) 0%, rgba(7,10,8,.98) 100%);
+  box-shadow:0 28px 64px rgba(0,0,0,.42);
 }
 
-.page.active{
-  animation:pageIn .18s ease-out;
+.dashboardAppTitle{
+  font-size:30px;
+  line-height:1.02;
+  font-weight:900;
+  letter-spacing:-.04em;
+  color:var(--text);
+  margin:0 0 14px;
 }
 
-@keyframes pageIn{
-  from{ opacity:0; transform:translateY(6px) scale(.992); }
-  to{ opacity:1; transform:translateY(0) scale(1); }
+.dashboardHeroCard{
+  position:relative;
+  overflow:hidden;
+  grid-column:1 / -1;
+  padding:16px 16px 16px 64px;
+  border-radius:26px;
+  border:1px solid rgba(124,255,124,.15);
+  background:
+    linear-gradient(180deg, rgba(16,20,17,.98), rgba(10,13,11,.96)),
+    radial-gradient(circle at top left, rgba(124,255,124,.11), transparent 45%);
+  box-shadow:0 20px 44px rgba(0,0,0,.32);
+}
+
+#dashHero::before{
+  content:'🌙';
+  position:absolute;
+  left:16px;
+  top:16px;
+  width:34px;
+  height:34px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(124,255,124,.12);
+  border:1px solid rgba(124,255,124,.16);
+  box-shadow:0 0 0 4px rgba(124,255,124,.04);
+  font-size:18px;
+}
+
+.dashboardHeroLine1{
+  font-size:13px;
+  font-weight:700;
+  line-height:1.32;
+  color:var(--text);
+}
+
+.dashboardHeroLine2{
+  margin-top:6px;
+  font-size:12px;
+  line-height:1.25;
+  color:rgba(255,255,255,.72);
+}
+
+.dashboardHeroBar{
+  margin-top:12px;
+  width:100%;
+  height:7px;
+  border-radius:999px;
+  overflow:hidden;
+  background:rgba(255,255,255,.08);
+}
+
+.dashboardHeroBar span{
+  display:block;
+  height:100%;
+  border-radius:inherit;
+  background:linear-gradient(90deg, #8cff8f, #69f06f);
+  box-shadow:0 0 16px rgba(124,255,124,.25);
+}
+
+.dashboardGrid{
+  gap:12px;
+  margin-top:12px;
+}
+
+.dashboardCard{
+  min-height:96px;
+  padding:12px 12px 12px;
+  border-radius:20px;
+  background:linear-gradient(180deg, rgba(19,23,20,.98), rgba(12,15,13,.98));
+  border:1px solid rgba(124,255,124,.12);
+  box-shadow:0 14px 32px rgba(0,0,0,.26);
+}
+
+.dashboardCard .dashboardLabel{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.dashboardCard .dashboardLabel::before{
+  font-size:16px;
+  line-height:1;
+}
+
+.dashboardValue{
+  font-size:clamp(15px, 4.6vw, 22px);
+  letter-spacing:-.03em;
+  color:#dfffdb;
+}
+
+.dashboardLinkCard .dashboardValue{
+  font-size:14px;
+}
+
+.dashboardMeta{
+  color:rgba(255,255,255,.56);
+}
+
+.dashboardCardClickable{
+  cursor:pointer;
+}
+
+.bottomNav{
+  left:50%;
+  right:auto;
+  transform:translateX(-50%);
+  width:min(calc(100% - 20px), 500px);
+  padding:9px 10px calc(9px + env(safe-area-inset-bottom));
+  background:rgba(7,10,8,.58);
+  backdrop-filter:blur(20px) saturate(150%);
+  border:1px solid rgba(124,255,124,.10);
+  border-radius:26px;
+  box-shadow:0 18px 40px rgba(0,0,0,.42);
+}
+
+.bottomNavInner{
+  gap:7px;
+}
+
+.bottomNavBtn{
+  min-height:58px;
+  border-radius:18px;
+  border:1px solid rgba(124,255,124,.10);
+  background:rgba(12,16,13,.96);
+  box-shadow:0 10px 22px rgba(0,0,0,.20);
+}
+
+.bottomNavBtn.active{
+  border-color:rgba(124,255,124,.90);
+  background:linear-gradient(180deg, rgba(124,255,124,.16), rgba(12,16,13,.98));
+  transform:translateY(-2px);
+}
+
+.bottomNavLabel{
+  font-size:10px;
+  letter-spacing:.02em;
+  color:rgba(255,255,255,.72);
+}
+
+.bottomNavBtn.active .bottomNavLabel{
+  color:#c9ffc9;
 }
 
 .headerBar{
-  padding-bottom:8px;
-  border-bottom:1px solid rgba(124,255,124,.12);
+  padding:0 6px 8px;
+  border-bottom:0;
+  min-height:46px;
 }
 
-.subNav,
-.bgrid,
-.indexGrid{
-  padding:8px;
+.headerBar h3{
+  font-size:22px;
+  font-weight:800;
+  letter-spacing:-.02em;
+  color:var(--text);
+}
+
+.subNav{
+  padding:6px;
   border-radius:18px;
-  background:rgba(255,255,255,.018);
+  background:rgba(255,255,255,.02);
+  border:1px solid rgba(124,255,124,.10);
+}
+
+.subNav .tile,
+.bgrid .bbtn,
+.indexGrid .bbtn{
+  min-height:52px;
+  border-radius:16px;
+  font-size:15px;
+  background:rgba(15,19,16,.96);
   border:1px solid rgba(124,255,124,.12);
 }
 
-.card,
-.personCard,
-.adminBox,
-.soustruhModePanel{
-  border:1px solid rgba(124,255,124,.16);
-  box-shadow:0 16px 34px rgba(0,0,0,.26);
-  background-image:
-    linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,0)),
-    linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,0));
+#rotaceNamesPanel .smallText.rotaceHint{
+  display:none;
 }
 
-.tile,
-.listItem,
-.bbtn,
-.statsSummary .tile{
-  border:1px solid rgba(124,255,124,.18);
-  box-shadow:0 16px 34px rgba(0,0,0,.26);
-  background-image:
-    linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+#rotaceNamesPanel .listGrid,
+#statsNameGrid,
+#statsMachineGrid{
+  grid-template-columns:repeat(auto-fit, minmax(68px, 1fr));
+  gap:8px;
 }
 
-.tile:hover,
-.listItem:hover,
-.bbtn:hover,
-button:hover,
-.homeBtn:hover,
-.resetBtn:hover{
-  border-color:rgba(124,255,124,.42);
-  box-shadow:0 18px 38px rgba(0,0,0,.28);
+#monthsGrid{
+  grid-template-columns:1fr;
+  gap:8px;
 }
 
-.homeHero,
-.homeMiniCard,
-.homeAction,
-.bottomNav,
-.bottomNavItem{
-  box-shadow:0 18px 38px rgba(0,0,0,.28);
+#rotaceNamesPanel .listItem,
+#statsNameGrid .listItem,
+#statsMachineGrid .listItem{
+  justify-content:center;
+  text-align:center;
+  min-height:38px;
+  padding:7px 5px;
+  border-radius:16px;
 }
 
-.homeHeroTitle{
-  text-shadow:0 2px 18px rgba(124,255,124,.12);
+#rotaceNamesPanel .listItem::after,
+#statsNameGrid .listItem::after,
+#statsMachineGrid .listItem::after{
+  content:'';
+  display:none;
 }
 
-.homeChip{
-  box-shadow:0 12px 20px rgba(0,0,0,.16);
+.rotaceNameTile,
+.statsNameTile,
+.statsMachineTile{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:44px;
 }
 
-.homeMiniCard span,
-.homeAction span,
-.homeShiftSummary,
-.foodTileSub,
-.foodTileMeta{
-  color:#a9baa8;
+.rotaceTileTitle,
+.statsTileTitle{
+  font-size:11px;
+  font-weight:800;
+  line-height:1.1;
+  word-break:break-word;
 }
 
-.homeAction strong,
-.homeMiniCard strong,
-.foodTileTitle,
-.sectionTitle,
-.headerBar h3,
-.h1,
-#shiftTime,
-.foodTileLive{
-  color:#f5fff5;
+.statsTileSub{
+  margin-top:3px;
+  font-size:9px;
+  line-height:1.25;
+  color:rgba(255,255,255,.62);
 }
 
-.foodTile{
-  background:
-    radial-gradient(circle at top left, rgba(124,255,124,.08), transparent 34%),
-    rgba(18,22,20,.92);
+#kalkulacky .grid{
+  grid-template-columns:1fr;
 }
 
+#kalkulacky .tile{
+  justify-content:space-between;
+  text-align:left;
+  min-height:72px;
+  padding:18px 18px;
+  border-radius:18px;
+}
+
+
+.foodTile,
 .eportalTile{
-  background:
-    radial-gradient(circle at top right, rgba(124,255,124,.06), transparent 32%),
-    rgba(18,22,20,.92);
+  border-radius:20px;
+  background:linear-gradient(180deg, rgba(19,23,20,.98), rgba(12,15,13,.98));
+  border:1px solid rgba(124,255,124,.10);
 }
 
-.homeHero::before,
-.homeHero::after{
-  filter:blur(0);
+.foodTileTitle,
+.foodTileLabel,
+.foodTileLive,
+.foodTileText,
+.foodTileMeta,
+.foodTileHint{
+  color:inherit;
 }
 
-.homeDivider{
-  margin:18px 6px;
+.foodTileTitle,
+.foodTileLabel{
+  text-transform:none;
+  letter-spacing:0;
+}
+
+
+.bottomNavMenuBtn{
+  min-width:0;
+  padding:0;
+}
+
+.bottomNavMenuBtn span{
+  font-size:22px;
+  line-height:1;
+  margin-top:-2px;
+}
+
+.bottomNavMenuBtn .bottomNavLabel{
+  display:none;
+}
+
+#dashVyplata .dashboardValue{
+  font-size:13px;
+  line-height:1.12;
+}
+
+#dashCzd .dashboardValue{
+  font-size:18px;
+  line-height:1.05;
+}
+
+#soustruhy .card,
+#brusy .card,
+#frezky .card,
+.appMenuPage .card{
+  border:1px solid rgba(124,255,124,.18);
+  border-radius:18px;
+  background:rgba(20,24,22,.96);
+  background-image:linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,0));
+  box-shadow:0 12px 26px rgba(0,0,0,.24);
+}
+
+#soustruhy .bgrid,
+#soustruhy .grid,
+#brusy .bgrid,
+#brusy .indexGrid,
+#frezky .grid{
+  padding:6px;
+  border:1px solid rgba(124,255,124,.12);
+  border-radius:16px;
+  background:rgba(255,255,255,.015);
+}
+
+#soustruhy .bbtn,
+#brusy .bbtn,
+#frezky button,
+#soustruhy button,
+#brusy button{
+  border-radius:14px;
+}
+
+#soustruhy input,
+#brusy input,
+#frezky input,
+#soustruhy select,
+#brusy select{
+  border-radius:14px;
+}
+
+.appMenuPage .appMenuPageCard{
+  padding:14px;
+}
+
+.appMenuPage .appMenuGrid{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:10px;
+}
+
+.appMenuPage .appMenuAction{
+  min-height:54px;
+}
+
+.appMenuPage .appMenuCardTitle{
+  font-size:18px;
+  font-weight:800;
+}
+
+.appMenuPage .appMenuVersion{
+  margin-top:6px;
+  font-size:15px;
+  font-weight:800;
+  color:var(--green2);
+}
+
+.appMenuPage .appMenuText{
+  margin-top:10px;
+  display:grid;
+  gap:8px;
+}
+
+.appMenuPage .appMenuBody{
+  margin-top:14px;
+}
+
+.appMenuPage .appMenuContactRow{
+  font-size:14px;
+}
+
+.appMenuHistory{
+  margin-top:12px;
+  display:grid;
+  gap:10px;
+}
+
+.appMenuHistoryGroup{
+  padding:12px;
+  border-radius:16px;
+  border:1px solid rgba(124,255,124,.10);
+  background:rgba(255,255,255,.02);
+}
+
+.appMenuHistoryRange{
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--green2);
+}
+
+.appMenuHistoryTitle{
+  margin-top:4px;
+  font-size:15px;
+  font-weight:800;
+  line-height:1.2;
+}
+
+.appMenuHistoryList{
+  margin-top:7px;
+  display:grid;
+  gap:4px;
+}
+
+.appMenuHistoryItem{
+  font-size:12px;
+  line-height:1.35;
+  color:rgba(255,255,255,.78);
+}
+
+
+/* v1(221) compact dashboard + menu + kalkulačky */
+.dashboardShell{
+  padding:12px;
+  border-radius:26px;
+}
+
+.dashboardGrid{
+  gap:8px;
+}
+
+.dashboardCard{
+  position:relative;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  grid-template-rows:auto auto auto;
+  gap:6px 10px;
+  min-height:102px;
+  padding:14px;
+  border-radius:22px;
+}
+
+.dashboardTop,
+.dashboardLabel,
+.dashboardValue,
+.dashboardMeta{
+  grid-column:1;
+}
+
+.dashboardIcon{
+  grid-column:2;
+  grid-row:1 / span 3;
+  align-self:center;
+  justify-self:end;
+  width:46px;
+  height:46px;
+  color:var(--green2);
+  opacity:.95;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.dashboardIcon svg{
+  width:100%;
+  height:100%;
+  display:block;
+  stroke:currentColor;
+}
+
+.dashboardLabel{
+  font-size:11px;
+  letter-spacing:.10em;
+}
+
+.dashboardValue{
+  font-size:14px;
+  line-height:1.12;
+}
+
+.dashboardMeta{
+  font-size:11px;
+}
+
+#dashVyplata .dashboardValue{
+  font-size:13px;
+  line-height:1.12;
+  font-weight:900;
+  color:var(--green2);
+}
+
+#dashCzd .dashboardValue{
+  font-size:16px;
+  line-height:1.06;
+  font-weight:900;
+}
+
+#dashVyplata .dashboardIcon,
+#dashJidelna .dashboardIcon,
+#dashKantyna .dashboardIcon,
+#dashCalendar .dashboardIcon,
+#dashCountdown .dashboardIcon,
+#dashFoodLink .dashboardIcon,
+#dashEportalLink .dashboardIcon{
+  opacity:.9;
+}
+
+.calcTile{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:10px;
+  align-items:center;
+  justify-content:space-between;
+  min-height:92px;
+  padding:14px 15px;
+  text-align:left;
+}
+
+.calcTile.big{
+  min-height:92px;
+}
+
+.calcTileText{
+  font-size:17px;
+  font-weight:800;
+  line-height:1.05;
+}
+
+.calcTileSub{
+  font-size:12px;
+  color:rgba(255,255,255,.60);
+  margin-top:4px;
+  line-height:1.2;
+}
+
+.calcTileIcon{
+  width:42px;
+  height:42px;
+  color:var(--green2);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.calcTileIcon svg{
+  width:100%;
+  height:100%;
+  display:block;
+  stroke:currentColor;
+}
+
+.appMenuPage .appMenuPageCard{
+  padding:14px;
+}
+
+.appMenuPage .appMenuGrid{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:10px;
+}
+
+.appMenuPage .appMenuAction{
+  min-height:54px;
+  border-radius:16px;
+  font-size:15px;
+}
+
+.appMenuPage .appMenuCardTitle{
+  font-size:18px;
+  font-weight:800;
+}
+
+.appMenuPage .appMenuVersion{
+  margin-top:6px;
+  font-size:15px;
+  font-weight:800;
+  color:var(--green2);
+}
+
+.appMenuPage .appMenuText{
+  margin-top:10px;
+  display:grid;
+  gap:8px;
+}
+
+.appMenuPage .appMenuBody{
+  margin-top:0;
+}
+
+.appMenuPage .appMenuContactRow{
+  display:flex;
+  gap:10px;
+  justify-content:space-between;
+  align-items:flex-start;
+  padding:10px 0;
   border-top:1px solid rgba(124,255,124,.08);
+  font-size:14px;
+  line-height:1.3;
 }
 
-.homeBtn,
-.resetBtn{
-  backdrop-filter:blur(12px);
+.appMenuPage .appMenuContactRow:first-of-type{
+  border-top:0;
+  padding-top:0;
+}
+
+.appMenuPage .appMenuHint{
+  margin-top:8px;
+  color:var(--soft);
+}
+
+
+/* v1(221) rotace/statistics compact tiles */
+#rotaceNamesPanel .listGrid,
+#statsNameGrid.listGrid,
+#statsMachineGrid.listGrid{
+  grid-template-columns:repeat(auto-fit, minmax(68px, 1fr));
+  gap:8px;
+}
+
+.rotacePersonTitle{
+  font-size:18px;
+  font-weight:900;
+  margin-bottom:10px;
+}
+
+.rotaceQuickCards{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(92px, 1fr));
+  gap:8px;
+}
+
+.rotaceMiniCard{
+  border:1px solid rgba(124,255,124,.14);
+  border-radius:18px;
+  padding:11px 9px;
+  background:rgba(255,255,255,.02);
+  box-shadow:0 10px 22px rgba(0,0,0,.18);
+  min-height:82px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+}
+
+.rotaceMiniCard.current{
+  border-color:rgba(124,255,124,.34);
+  background:rgba(124,255,124,.06);
+}
+
+.rotaceMiniCard.isEmpty{
+  opacity:.66;
+}
+
+.rotaceMiniLabel{
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--green2);
+}
+
+.rotaceMiniDate{
+  margin-top:8px;
+  font-size:13px;
+  font-weight:800;
+  line-height:1.2;
+}
+
+.rotaceMiniTarget{
+  font-size:12px;
+  line-height:1.25;
+  color:rgba(255,255,255,.70);
+}
+
+.statsTileMain{
+  width:100%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+}
+
+.statsTileTitle{
+  font-size:14px;
+  font-weight:800;
+  line-height:1.1;
+}
+
+.statsTileSub{
+  font-size:11px;
+  line-height:1.2;
+  color:rgba(255,255,255,.62);
+}
+
+.statsNameTile .statsTileSub{
+  display:none;
+}
+
+.statsMachineTile .statsTileSub{
+  display:none;
 }
