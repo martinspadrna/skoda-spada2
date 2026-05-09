@@ -21,9 +21,10 @@ body.qrModalOpen{
 .qrModal{
   width:min(92vw, 360px);
   border-radius:26px;
-  background:rgba(20,24,22,.96);
+  background:rgba(20,24,22,.84);
   border:1px solid rgba(124,255,124,.16);
   box-shadow:0 24px 60px rgba(0,0,0,.45);
+  backdrop-filter:blur(18px) saturate(160%);
   padding:18px 18px 16px;
   position:relative;
   text-align:center;
@@ -90,8 +91,8 @@ body.foodModalOpen{
   align-items:center;
   justify-content:center;
   padding:18px;
-  background:rgba(7,10,8,.72);
-  backdrop-filter:blur(10px);
+  background:rgba(7,10,8,.60);
+  backdrop-filter:blur(18px) saturate(160%);
 }
 
 .foodScheduleOverlay.isVisible{
@@ -103,9 +104,10 @@ body.foodModalOpen{
   max-height:min(86vh, 760px);
   overflow:auto;
   border-radius:24px;
-  background:rgba(20,24,22,.96);
+  background:rgba(20,24,22,.84);
   border:1px solid rgba(124,255,124,.16);
   box-shadow:0 24px 60px rgba(0,0,0,.45);
+  backdrop-filter:blur(18px) saturate(160%);
   padding:18px 18px 16px;
   position:relative;
 }
@@ -136,14 +138,19 @@ body.foodModalOpen{
 
 .foodScheduleModalBody{
   margin-top:2px;
+  display:grid;
+  gap:8px;
 }
 
 .foodScheduleRow{
   display:flex;
   gap:12px;
   align-items:flex-start;
-  padding:10px 0;
-  border-top:1px solid rgba(124,255,124,.10);
+  padding:10px 12px;
+  margin-top:8px;
+  border-radius:16px;
+  border:1px solid rgba(124,255,124,.10);
+  background:rgba(255,255,255,.03);
 }
 
 .foodScheduleDay{
@@ -172,8 +179,8 @@ body.personModalOpen{
   align-items:center;
   justify-content:center;
   padding:18px;
-  background:rgba(7,10,8,.72);
-  backdrop-filter:blur(10px);
+  background:rgba(7,10,8,.60);
+  backdrop-filter:blur(18px) saturate(160%);
 }
 
 .personScheduleOverlay.isVisible{
@@ -185,9 +192,10 @@ body.personModalOpen{
   max-height:min(86vh, 760px);
   overflow:auto;
   border-radius:24px;
-  background:rgba(20,24,22,.96);
+  background:rgba(20,24,22,.84);
   border:1px solid rgba(124,255,124,.16);
   box-shadow:0 24px 60px rgba(0,0,0,.45);
+  backdrop-filter:blur(18px) saturate(160%);
   padding:18px 18px 16px;
   position:relative;
 }

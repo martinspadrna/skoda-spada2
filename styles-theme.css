@@ -160,7 +160,7 @@ input{
 
 .dashboardLivePill{
   align-self:flex-start;
-  font-size:13px;
+  font-size:15px;
   font-weight:800;
   letter-spacing:.08em;
   color:#dfffe5;
@@ -283,9 +283,9 @@ input{
   bottom:10px;
   z-index:3000;
   width:min(calc(100% - 16px), 470px);
-  padding:6px 8px calc(6px + env(safe-area-inset-bottom));
-  background:rgba(7,10,8,.58);
-  backdrop-filter:blur(20px) saturate(150%);
+  padding:8px 8px calc(8px + env(safe-area-inset-bottom));
+  background:rgba(7,10,8,.46);
+  backdrop-filter:blur(24px) saturate(180%);
   border:1px solid rgba(124,255,124,.10);
   border-radius:26px;
   box-shadow:0 18px 40px rgba(0,0,0,.42);
@@ -293,14 +293,14 @@ input{
 
 .bottomNavInner{
   display:grid;
-  grid-template-columns:repeat(6, minmax(0, 1fr));
+  grid-template-columns:repeat(5, minmax(0, 1fr)) 32px;
   gap:4px;
 }
 
 .bottomNavBtn{
   position:relative;
   overflow:hidden;
-  min-height:42px;
+  min-height:68px;
   border-radius:14px;
   border:1px solid rgba(124,255,124,.16);
   background:rgba(20,24,22,.96);
@@ -308,10 +308,10 @@ input{
   color:var(--text);
   display:flex;
   flex-direction:column;
-  gap:1px;
+  gap:2px;
   align-items:center;
   justify-content:center;
-  padding:5px 4px;
+  padding:6px 4px;
   font-size:10px;
   font-weight:700;
   line-height:1.05;
@@ -319,7 +319,7 @@ input{
 }
 
 .bottomNavBtn span{
-  font-size:14px;
+  font-size:16px;
   line-height:1;
   transition:transform .18s ease;
 }
@@ -327,7 +327,7 @@ input{
 .bottomNavBtn.active{
   border-color:rgba(124,255,124,.86);
   background:linear-gradient(180deg, rgba(124,255,124,.16), rgba(20,24,22,.96));
-  transform:translateY(-2px);
+  transform:translateY(-3px);
   box-shadow:0 0 0 1px rgba(124,255,124,.18) inset, 0 14px 28px rgba(0,0,0,.24), 0 0 18px rgba(124,255,124,.10);
 }
 
@@ -408,7 +408,7 @@ input{
 }
 
 .dashboardHeroLine1{
-  font-size:13px;
+  font-size:15px;
   font-weight:700;
   line-height:1.32;
   color:var(--text);
@@ -646,8 +646,11 @@ input{
 
 
 .bottomNavMenuBtn{
-  min-width:0;
-  padding:0;
+  min-width:32px;
+  width:32px;
+  max-width:32px;
+  padding:0 2px;
+  justify-self:center;
 }
 
 .bottomNavMenuBtn span{
@@ -660,8 +663,14 @@ input{
   display:none;
 }
 
+.bottomNavMenuBtn .moreIcon{
+  width:8px;
+  height:22px;
+  display:block;
+}
+
 #dashVyplata .dashboardValue{
-  font-size:13px;
+  font-size:15px;
   line-height:1.12;
 }
 
@@ -853,7 +862,7 @@ input{
 }
 
 #dashVyplata .dashboardValue{
-  font-size:13px;
+  font-size:15px;
   line-height:1.12;
   font-weight:900;
   color:var(--green2);
@@ -1030,7 +1039,7 @@ input{
 
 .rotaceMiniDate{
   margin-top:8px;
-  font-size:13px;
+  font-size:15px;
   font-weight:800;
   line-height:1.2;
 }
@@ -1202,7 +1211,7 @@ input{
 
 .rotaceMiniDate{
   margin-top:0;
-  font-size:13px;
+  font-size:15px;
   font-weight:800;
   line-height:1.2;
 }
@@ -1221,7 +1230,7 @@ input{
 
 .bottomNav{
   width:min(calc(100% - 16px), 460px);
-  padding:4px 6px calc(4px + env(safe-area-inset-bottom));
+  padding:8px 6px calc(8px + env(safe-area-inset-bottom));
   border-radius:18px;
   background:rgba(10,14,12,.36);
   backdrop-filter:blur(24px) saturate(170%);
@@ -1338,7 +1347,7 @@ input{
 
 .bottomNav{
   overflow:visible;
-  padding:4px 6px calc(4px + env(safe-area-inset-bottom));
+  padding:8px 6px calc(8px + env(safe-area-inset-bottom));
   border-radius:18px;
 }
 
@@ -1374,7 +1383,7 @@ input{
 }
 
 .rotaceQuickStack .rotaceMiniCard{
-  min-height:64px;
+  min-height:68px;
 }
 
 #kalkulacky .grid{
@@ -1389,4 +1398,11 @@ input{
 #kalkulacky .calcTileIcon{
   width:34px;
   height:34px;
+}
+
+.foodScheduleGlass{
+  background:rgba(20,24,22,.80);
+  border:1px solid rgba(124,255,124,.12);
+  backdrop-filter:blur(18px) saturate(160%);
+  box-shadow:0 18px 40px rgba(0,0,0,.22);
 }

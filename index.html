@@ -249,7 +249,7 @@
     <div style="width:34px;"></div>
   </div>
 
-  <div class="card" id="foodScheduleCard"></div>
+  <div class="card foodScheduleGlass" id="foodScheduleCard"></div>
 
   <div class="card" style="text-align:center; margin-top:12px;">
     <div class="smallText" style="margin-bottom:12px;">
@@ -379,7 +379,7 @@
 });</script>
 <script type="text/plain" id="src-core-js">
 const APP_KEY = "rotace_kalkulacky_state_v122";
-const APP_VERSION = "v.1(227)";
+const APP_VERSION = "v.1(228)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-05-08-" + APP_VERSION + "-" + Date.now();
 
@@ -894,7 +894,7 @@ function startMenuImport() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v.1(227)',
+      range: 'v.1(228)',
       title: 'Aktuální verze',
       lines: [
         'Dashboard má nové ikonky, menší texty a světýlko u kantýny/jídelny.',
@@ -1745,8 +1745,10 @@ function formatFoodWindowsList(windows) {
 }
 
 function buildFoodScheduleHtml(location) {
-  const dayLabels = ['Ne', 'Po', 'Út', 'St', 'Čt', 'Pá', 'So'];
-  const rows = dayLabels.map((dayLabel, dayIndex) => {
+  const dayLabels = ['Po', 'Út', 'St', 'Čt', 'Pá', 'So', 'Ne'];
+  const dayOrder = [1, 2, 3, 4, 5, 6, 0];
+  const rows = dayLabels.map((dayLabel, idx) => {
+    const dayIndex = dayOrder[idx];
     const windows = (location.days && location.days[dayIndex]) || [];
     return '<div class="foodScheduleRow">' +
       '<div class="foodScheduleDay">' + dayLabel + '</div>' +
@@ -6316,9 +6318,10 @@ input{
 .qrModal{
   width:min(92vw, 360px);
   border-radius:26px;
-  background:rgba(20,24,22,.96);
+  background:rgba(20,24,22,.84);
   border:1px solid rgba(124,255,124,.16);
   box-shadow:0 24px 60px rgba(0,0,0,.45);
+  backdrop-filter:blur(18px) saturate(160%);
   padding:18px 18px 16px;
   position:relative;
   text-align:center;
@@ -6385,8 +6388,8 @@ body.foodModalOpen{
   align-items:center;
   justify-content:center;
   padding:18px;
-  background:rgba(7,10,8,.72);
-  backdrop-filter:blur(10px);
+  background:rgba(7,10,8,.60);
+  backdrop-filter:blur(18px) saturate(160%);
 }
 
 .foodScheduleOverlay.isVisible{
@@ -6398,9 +6401,10 @@ body.foodModalOpen{
   max-height:min(86vh, 760px);
   overflow:auto;
   border-radius:24px;
-  background:rgba(20,24,22,.96);
+  background:rgba(20,24,22,.84);
   border:1px solid rgba(124,255,124,.16);
   box-shadow:0 24px 60px rgba(0,0,0,.45);
+  backdrop-filter:blur(18px) saturate(160%);
   padding:18px 18px 16px;
   position:relative;
 }
@@ -6431,14 +6435,19 @@ body.foodModalOpen{
 
 .foodScheduleModalBody{
   margin-top:2px;
+  display:grid;
+  gap:8px;
 }
 
 .foodScheduleRow{
   display:flex;
   gap:12px;
   align-items:flex-start;
-  padding:10px 0;
-  border-top:1px solid rgba(124,255,124,.10);
+  padding:10px 12px;
+  margin-top:8px;
+  border-radius:16px;
+  border:1px solid rgba(124,255,124,.10);
+  background:rgba(255,255,255,.03);
 }
 
 .foodScheduleDay{
@@ -6467,8 +6476,8 @@ body.personModalOpen{
   align-items:center;
   justify-content:center;
   padding:18px;
-  background:rgba(7,10,8,.72);
-  backdrop-filter:blur(10px);
+  background:rgba(7,10,8,.60);
+  backdrop-filter:blur(18px) saturate(160%);
 }
 
 .personScheduleOverlay.isVisible{
@@ -6480,9 +6489,10 @@ body.personModalOpen{
   max-height:min(86vh, 760px);
   overflow:auto;
   border-radius:24px;
-  background:rgba(20,24,22,.96);
+  background:rgba(20,24,22,.84);
   border:1px solid rgba(124,255,124,.16);
   box-shadow:0 24px 60px rgba(0,0,0,.45);
+  backdrop-filter:blur(18px) saturate(160%);
   padding:18px 18px 16px;
   position:relative;
 }
