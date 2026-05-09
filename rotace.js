@@ -255,21 +255,36 @@ function renderPerson(name) {
     return;
   }
 
-  const startIdx = Math.max(0, currentIdx - 1);
-  const endIdx = Math.min(entries.length, currentIdx + 4);
-  const visibleEntries = entries.slice(startIdx, endIdx);
+  const pickEntry = (index) => {
+    if (index < 0) return null;
+    if (index >= entries.length) return null;
+    return entries[index] || null;
+  };
 
-  const formatEntry = (entry, isCurrent) => [
-    '<div class="rotaceMiniCard' + (isCurrent ? ' current' : '') + '">',
-    '  <div class="rotaceMiniDate">' + escapeHtml(entry.dateLabel || "") + (entry.shift ? ' ' + escapeHtml(entry.shift) : '') + '</div>',
-    '  <div class="rotaceMiniTarget">' + escapeHtml(entry.target || "") + '</div>',
-    '</div>'
-  ].join('');
+  const baseIdx = currentIdx >= 0 ? currentIdx : 0;
+  const currentEntry = currentIdx >= 0 ? entries[currentIdx] : pickEntry(baseIdx);
+  const list = [
+    pickEntry(baseIdx - 1),
+    currentEntry,
+    pickEntry(baseIdx + 1),
+    pickEntry(baseIdx + 2),
+    pickEntry(baseIdx + 3)
+  ].filter(Boolean);
+
+  const renderRow = (entry) => {
+    const isCurrent = currentEntry && entry === currentEntry;
+    return [
+      '<div class="rotaceFlowItem' + (isCurrent ? ' current' : '') + '">',
+      '  <div class="rotaceFlowDate">' + escapeHtml((entry.dateLabel || '') + (entry.shift ? ' ' + entry.shift : '')) + '</div>',
+      '  <div class="rotaceFlowTarget">' + escapeHtml(entry.target || '') + '</div>',
+      '</div>'
+    ].join('');
+  };
 
   personView.innerHTML = [
     '<div class="rotacePersonTitle">' + escapeHtml(name) + '</div>',
-    '<div class="rotaceQuickCards rotaceQuickStack">',
-    visibleEntries.map((entry, idx) => formatEntry(entry, (startIdx + idx) === currentIdx)).join(''),
+    '<div class="rotaceFlowList">',
+    list.map(renderRow).join(''),
     '</div>'
   ].join('');
 }

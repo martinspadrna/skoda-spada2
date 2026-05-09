@@ -219,17 +219,17 @@
 
   .bottomNav{
     width:min(calc(100% - 16px), 430px);
-    padding:4px 6px calc(4px + env(safe-area-inset-bottom));
-    border-radius:20px;
+    padding:8px 9px calc(8px + env(safe-area-inset-bottom));
+    border-radius:24px;
   }
 
   .bottomNavInner{
-    gap:4px;
+    gap:5px;
   }
 
   .bottomNavBtn{
-    min-height:40px;
-    padding:3px 2px;
+    min-height:50px;
+    padding:7px 4px;
   }
 
   #kalkulacky .tile,
@@ -264,8 +264,8 @@
   }
 
   .calcTile{
-    min-height:82px;
-    padding:11px 12px;
+    min-height:86px;
+    padding:12px 13px;
   }
 
   .calcTileText{
@@ -273,8 +273,8 @@
   }
 
   .calcTileIcon{
-    width:36px;
-    height:36px;
+    width:38px;
+    height:38px;
   }
 
   .appMenuPage .appMenuGrid{
@@ -284,61 +284,30 @@
 
 
 @media (max-width: 700px) {
-  #kalkulacky .grid{
+  .dashboardCard{
     gap:8px;
   }
 
-  .dashboardIconInline{
-    width:32px;
-    height:32px;
+  .dashboardLabel{
+    font-size:12px;
   }
 
-  .dashboardValue{
-    font-size:15px;
+  .dashboardIcon{
+    width:28px;
+    height:28px;
   }
 
-  .bottomNav{
-    width:min(calc(100% - 10px), 460px);
-    padding:5px 7px calc(5px + env(safe-area-inset-bottom));
-    border-radius:20px;
+  .calcTile{
+    min-height:86px;
+    padding:12px 13px;
   }
 
-  .bottomNavBtn{
-    min-height:44px;
-    padding:3px 3px;
+  .calcTileText{
+    font-size:16px;
   }
 
-  .bottomNavBtn span{
-    font-size:13px;
-  }
-}
-
-
-@media (max-width: 700px) {
-  #home .dashboardValue{
-    font-size:13px !important;
-  }
-
-  .bottomNav{
-    width:min(calc(100% - 8px), 460px);
-    padding:3px 5px calc(3px + env(safe-area-inset-bottom));
-  }
-
-  .bottomNavBtn{
-    min-height:36px;
-    padding:2px 2px;
-  }
-
-  .bottomNavBtn.active{
-    transform:translateY(-5px) scale(1.06);
-  }
-
-  .bottomNavBtn span{
-    font-size:13px;
-  }
-
-  .bottomNavMenuBtn .moreIcon{
-    width:4px;
-    height:14px;
+  .calcTileIcon{
+    width:38px;
+    height:38px;
   }
 }
