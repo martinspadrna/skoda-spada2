@@ -268,7 +268,7 @@ function renderPerson(name) {
 
   personView.innerHTML = [
     '<div class="rotacePersonTitle">' + escapeHtml(name) + '</div>',
-    '<div class="rotaceQuickCards rotaceQuickList">',
+    '<div class="rotaceQuickCards rotaceQuickStack">',
     visibleEntries.map((entry, idx) => formatEntry(entry, (startIdx + idx) === currentIdx)).join(''),
     '</div>'
   ].join('');

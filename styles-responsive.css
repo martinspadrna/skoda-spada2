@@ -312,3 +312,33 @@
     font-size:13px;
   }
 }
+
+
+@media (max-width: 700px) {
+  #home .dashboardValue{
+    font-size:13px !important;
+  }
+
+  .bottomNav{
+    width:min(calc(100% - 8px), 460px);
+    padding:3px 5px calc(3px + env(safe-area-inset-bottom));
+  }
+
+  .bottomNavBtn{
+    min-height:36px;
+    padding:2px 2px;
+  }
+
+  .bottomNavBtn.active{
+    transform:translateY(-5px) scale(1.06);
+  }
+
+  .bottomNavBtn span{
+    font-size:13px;
+  }
+
+  .bottomNavMenuBtn .moreIcon{
+    width:6px;
+    height:15px;
+  }
+}

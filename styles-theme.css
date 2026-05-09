@@ -1246,3 +1246,124 @@ input{
   display:block;
 }
 
+
+
+/* v1(225) dashboard/menu/rotace refinements */
+#home .dashboardValue{
+  font-size:13px !important;
+  line-height:1.12 !important;
+  color:var(--green2) !important;
+}
+
+#home .dashboardMeta{
+  display:block !important;
+  font-size:12px !important;
+  line-height:1.25 !important;
+  color:rgba(255,255,255,.78) !important;
+}
+
+#home .dashboardLabelRow{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  min-width:0;
+}
+
+#home .dashboardLabel{
+  color:rgba(255,255,255,.88);
+}
+
+#home .dashboardIconInline{
+  width:34px;
+  height:34px;
+}
+
+#home .dashboardCardFood .dashboardMeta{
+  color:rgba(255,255,255,.82) !important;
+}
+
+#home .dashboardCardClickable .dashboardMeta{
+  color:rgba(255,255,255,.78) !important;
+}
+
+#home .dashboardDot{
+  width:9px;
+  height:9px;
+  margin-left:1px;
+}
+
+#home .dashboardCard .dashboardLabel{
+  text-transform:none;
+  letter-spacing:0;
+  font-size:11px;
+}
+
+#home .dashboardCard .dashboardTop{
+  gap:6px;
+}
+
+#home .dashboardCard .dashboardHead{
+  gap:2px;
+}
+
+#home .dashboardCard .dashboardValue,
+#home .dashboardLinkCard .dashboardValue,
+#home .dashboardCardFood .dashboardValue{
+  font-size:13px !important;
+  color:var(--green2) !important;
+}
+
+.bottomNav{
+  overflow:visible;
+  padding:4px 6px calc(4px + env(safe-area-inset-bottom));
+  border-radius:18px;
+}
+
+.bottomNavInner{
+  gap:3px;
+  overflow:visible;
+}
+
+.bottomNavBtn{
+  min-height:38px;
+  padding:2px 2px;
+  overflow:visible;
+}
+
+.bottomNavBtn.active{
+  transform:translateY(-5px) scale(1.06);
+}
+
+.bottomNavMenuBtn .moreIcon{
+  width:6px;
+  height:16px;
+}
+
+#rotaceNamesPanel .rotaceQuickList,
+#personView .rotaceQuickCards.rotaceQuickStack{
+  grid-template-columns:1fr;
+}
+
+.rotaceQuickStack{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:8px;
+}
+
+.rotaceQuickStack .rotaceMiniCard{
+  min-height:64px;
+}
+
+#kalkulacky .grid{
+  grid-template-columns:1fr;
+  gap:8px;
+}
+
+#kalkulacky .calcTile{
+  width:100%;
+}
+
+#kalkulacky .calcTileIcon{
+  width:34px;
+  height:34px;
+}
