@@ -105,7 +105,7 @@ if (document.readyState === 'loading') {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v.1(234)',
+      range: 'v.1(236)',
       title: 'Aktuální verze',
       lines: [
         'Dashboard má čistší horní řádek bez barevné ikonky měsíce.',

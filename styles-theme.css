@@ -1615,3 +1615,65 @@ body.reduceMotion *::after{
   color:rgba(255,255,255,.62);
   line-height:1.35;
 }
+
+
+/* v1(236) bottom nav compact glass */
+.bottomNav{
+  width:min(calc(100% - 10px), 760px) !important;
+  padding:3px 4px calc(3px + env(safe-area-inset-bottom)) !important;
+  border-radius:28px !important;
+  border:1px solid rgba(109, 170, 120, .18) !important;
+  background:rgba(8, 12, 10, .52) !important;
+  backdrop-filter:blur(22px) saturate(145%) !important;
+  -webkit-backdrop-filter:blur(22px) saturate(145%) !important;
+  box-shadow:
+    0 16px 34px rgba(0,0,0,.42),
+    inset 0 1px 0 rgba(255,255,255,.05) !important;
+}
+
+.bottomNavInner{
+  grid-template-columns:repeat(5, minmax(0, 1fr)) 34px !important;
+  gap:6px !important;
+  align-items:center !important;
+}
+
+.bottomNavBtn{
+  min-height:56px !important;
+  padding:3px 2px !important;
+  border-radius:22px !important;
+}
+
+.bottomNavBtn span{
+  font-size:16px !important;
+}
+
+.bottomNavLabel{
+  font-size:11px !important;
+  line-height:1.05 !important;
+}
+
+.bottomNavBtn.active{
+  transform:translateY(-7px) scale(1.08) !important;
+  box-shadow:0 12px 26px rgba(112, 255, 123, .12), 0 0 0 1px rgba(124,255,124,.16) !important;
+}
+
+.bottomNavBtn.active::before{
+  inset:-4px !important;
+  border-radius:20px !important;
+}
+
+.bottomNavMenuBtn{
+  width:34px !important;
+  min-width:34px !important;
+  max-width:34px !important;
+  padding:0 !important;
+}
+
+.bottomNavMenuBtn .moreIcon{
+  width:5px !important;
+  height:22px !important;
+}
+
+.bottomNavMenuBtn .bottomNavLabel{
+  display:none !important;
+}

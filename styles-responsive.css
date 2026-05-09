@@ -422,3 +422,35 @@
     gap:10px;
   }
 }
+
+
+@media (max-width: 700px) {
+  .bottomNav{
+    width:min(calc(100% - 8px), 760px) !important;
+    padding:2px 3px calc(2px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .bottomNavInner{
+    gap:4px !important;
+  }
+
+  .bottomNavBtn{
+    min-height:54px !important;
+    padding:2px 2px !important;
+  }
+
+  .bottomNavMenuBtn{
+    width:34px !important;
+    min-width:34px !important;
+    max-width:34px !important;
+  }
+
+  .bottomNavMenuBtn .moreIcon{
+    width:4px !important;
+    height:20px !important;
+  }
+
+  .bottomNavBtn.active{
+    transform:translateY(-8px) scale(1.08) !important;
+  }
+}
