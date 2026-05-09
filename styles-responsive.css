@@ -528,7 +528,7 @@
 
 /* v1(246) bottom nav tighter and higher */
 .bottomNav{
-  bottom: calc(30px + env(safe-area-inset-bottom)) !important;
+  bottom: 10px !important;
   padding: 1px 4px 0 !important;
 }
 

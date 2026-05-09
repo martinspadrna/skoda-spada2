@@ -1,4 +1,4 @@
-// Extracted dashboard logic (v1(246))
+// Extracted dashboard logic (v1(248))
 function updateDashboard() {
   const now = typeof getPragueNow === "function" ? getPragueNow(new Date()) : new Date();
   const active = getActiveShiftNow(now);
@@ -86,7 +86,7 @@ function updateDashboard() {
 
   const kantyna = findFoodStatus(FOOD_LOCATIONS[0], now);
   const jidelna = findFoodStatus(FOOD_LOCATIONS[1], now);
-  const foodText = status => status.isOpen ? 'Otevřeno' : 'Zavřeno';
+  const foodText = status => status.isOpen && status.active ? ('Otevřeno do ' + formatFoodTime(status.active.end)) : 'Zavřeno';
   const foodDot = status => status.isOpen ? 'is-open' : 'is-closed';
   const foodMeta = status => {
     if (status.isOpen && status.active) return 'do ' + formatFoodTime(status.active.end);
@@ -123,13 +123,32 @@ function scheduleDashboardInitialPaint() {
   }
 }
 
+function forceHomeRefresh() {
+  if (typeof showPage === 'function') showPage('home');
+  if (typeof refreshHomeScreen === 'function') refreshHomeScreen();
+  else if (typeof updateDashboard === 'function') updateDashboard();
+}
+
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', scheduleDashboardInitialPaint, { once: true });
+  document.addEventListener('DOMContentLoaded', () => {
+    forceHomeRefresh();
+    scheduleDashboardInitialPaint();
+  }, { once: true });
 } else {
+  forceHomeRefresh();
   scheduleDashboardInitialPaint();
 }
-window.addEventListener('load', scheduleDashboardInitialPaint, { once: true });
-window.addEventListener('pageshow', scheduleDashboardInitialPaint);
+window.addEventListener('load', () => {
+  forceHomeRefresh();
+  scheduleDashboardInitialPaint();
+}, { once: true });
+window.addEventListener('pageshow', () => {
+  forceHomeRefresh();
+  scheduleDashboardInitialPaint();
+});
 window.addEventListener('visibilitychange', () => {
-  if (!document.hidden) scheduleDashboardInitialPaint();
+  if (!document.hidden) {
+    forceHomeRefresh();
+    scheduleDashboardInitialPaint();
+  }
 });

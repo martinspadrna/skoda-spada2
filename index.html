@@ -381,7 +381,7 @@
 });</script>
 <script type="text/plain" id="src-core-js">
 const APP_KEY = "rotace_kalkulacky_state_v122";
-const APP_VERSION = "v.1(247)";
+const APP_VERSION = "v.1(248)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-05-08-" + APP_VERSION + "-" + Date.now();
 
@@ -844,9 +844,7 @@ function syncYearControls() {
       overwriteMonth.appendChild(opt);
     });
   }
-}
-
-</script>
+}</script>
 <script type="text/plain" id="src-ui-js">function setBottomNavActive(pageId) {
   const buttons = document.querySelectorAll('.bottomNavBtn');
   buttons.forEach(btn => {
@@ -2426,7 +2424,7 @@ function getTodayAbsenceNames(now) {
 function updateShift() {
   if (typeof updateDashboard === "function") updateDashboard();
 }</script>
-<script type="text/plain" id="src-dashboard-js">// Extracted dashboard logic (v1(246))
+<script type="text/plain" id="src-dashboard-js">// Extracted dashboard logic (v1(248))
 function updateDashboard() {
   const now = typeof getPragueNow === "function" ? getPragueNow(new Date()) : new Date();
   const active = getActiveShiftNow(now);
@@ -2514,7 +2512,7 @@ function updateDashboard() {
 
   const kantyna = findFoodStatus(FOOD_LOCATIONS[0], now);
   const jidelna = findFoodStatus(FOOD_LOCATIONS[1], now);
-  const foodText = status => status.isOpen ? 'Otevřeno' : 'Zavřeno';
+  const foodText = status => status.isOpen && status.active ? ('Otevřeno do ' + formatFoodTime(status.active.end)) : 'Zavřeno';
   const foodDot = status => status.isOpen ? 'is-open' : 'is-closed';
   const foodMeta = status => {
     if (status.isOpen && status.active) return 'do ' + formatFoodTime(status.active.end);
@@ -2551,15 +2549,34 @@ function scheduleDashboardInitialPaint() {
   }
 }
 
+function forceHomeRefresh() {
+  if (typeof showPage === 'function') showPage('home');
+  if (typeof refreshHomeScreen === 'function') refreshHomeScreen();
+  else if (typeof updateDashboard === 'function') updateDashboard();
+}
+
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', scheduleDashboardInitialPaint, { once: true });
+  document.addEventListener('DOMContentLoaded', () => {
+    forceHomeRefresh();
+    scheduleDashboardInitialPaint();
+  }, { once: true });
 } else {
+  forceHomeRefresh();
   scheduleDashboardInitialPaint();
 }
-window.addEventListener('load', scheduleDashboardInitialPaint, { once: true });
-window.addEventListener('pageshow', scheduleDashboardInitialPaint);
+window.addEventListener('load', () => {
+  forceHomeRefresh();
+  scheduleDashboardInitialPaint();
+}, { once: true });
+window.addEventListener('pageshow', () => {
+  forceHomeRefresh();
+  scheduleDashboardInitialPaint();
+});
 window.addEventListener('visibilitychange', () => {
-  if (!document.hidden) scheduleDashboardInitialPaint();
+  if (!document.hidden) {
+    forceHomeRefresh();
+    scheduleDashboardInitialPaint();
+  }
 });</script>
 
 <script type="text/plain" id="src-soustruhy-js">function resetSoustruhy() {
@@ -3695,40 +3712,22 @@ document.getElementById("tabNames").style.outline = "none";
 document.getElementById("tabMonths").style.outline = "3px solid #7CFF7C";
 setRotaceView("names");
 refreshInitialUI();
-if (typeof showPage === "function") {
-  showPage("home");
-}
-if (typeof scheduleHomeRefresh === "function") {
-  scheduleHomeRefresh();
-} else {
-  if (typeof updateDashboard === "function") {
-    updateDashboard();
-  }
-  if (typeof updateFoodTile === "function") {
-    updateFoodTile();
-    setInterval(updateFoodTile, 60 * 1000);
-  }
-  if (typeof updateEportalTile === "function") {
-    updateEportalTile();
-    setInterval(updateEportalTile, 60 * 1000);
-  }
-}
-setTimeout(() => {
+const bootHome = () => {
   if (typeof showPage === "function") showPage("home");
   if (typeof scheduleHomeRefresh === "function") {
     scheduleHomeRefresh();
-  } else {
-    if (typeof updateDashboard === "function") updateDashboard();
-    if (typeof updateFoodTile === "function") updateFoodTile();
-    if (typeof updateEportalTile === "function") updateEportalTile();
+  } else if (typeof updateDashboard === "function") {
+    updateDashboard();
   }
-}, 120);
+  if (typeof updateFoodTile === "function") updateFoodTile();
+  if (typeof updateEportalTile === "function") updateEportalTile();
+};
+bootHome();
+setTimeout(bootHome, 60);
+setTimeout(bootHome, 240);
 
-
-window.addEventListener("load", () => {
-  if (typeof scheduleHomeRefresh === "function") scheduleHomeRefresh();
-  else if (typeof updateDashboard === "function") updateDashboard();
-});</script>
+window.addEventListener("load", bootHome, { once: true });
+window.addEventListener("pageshow", bootHome);</script>
 
 <script src="app.js"></script>
 <script type="text/plain" id="src-export-js">const EXPORT_SOURCE_IDS = {
@@ -6400,8 +6399,7 @@ body.reduceMotion *::after{
 .bottomNavMenuBtn .moreIcon{
   width:4px !important;
   height:20px !important;
-}
-</script>
+}</script>
 <script type="text/plain" id="src-styles-responsive-css">@media (max-width: 700px) {
   body {
     padding: calc(26px + env(safe-area-inset-top)) 10px 10px;
@@ -6932,7 +6930,7 @@ body.reduceMotion *::after{
 
 /* v1(246) bottom nav tighter and higher */
 .bottomNav{
-  bottom: calc(30px + env(safe-area-inset-bottom)) !important;
+  bottom: 10px !important;
   padding: 1px 4px 0 !important;
 }
 
@@ -7002,8 +7000,7 @@ body.reduceMotion *::after{
 .bottomNavMenuBtn .moreIcon{
   width:4px !important;
   height:20px !important;
-}
-</script>
+}</script>
 <script type="text/plain" id="src-styles-modal-css">body.qrModalOpen{
   overflow:hidden;
 }

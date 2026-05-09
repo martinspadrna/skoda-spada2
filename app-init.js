@@ -195,37 +195,19 @@ document.getElementById("tabNames").style.outline = "none";
 document.getElementById("tabMonths").style.outline = "3px solid #7CFF7C";
 setRotaceView("names");
 refreshInitialUI();
-if (typeof showPage === "function") {
-  showPage("home");
-}
-if (typeof scheduleHomeRefresh === "function") {
-  scheduleHomeRefresh();
-} else {
-  if (typeof updateDashboard === "function") {
-    updateDashboard();
-  }
-  if (typeof updateFoodTile === "function") {
-    updateFoodTile();
-    setInterval(updateFoodTile, 60 * 1000);
-  }
-  if (typeof updateEportalTile === "function") {
-    updateEportalTile();
-    setInterval(updateEportalTile, 60 * 1000);
-  }
-}
-setTimeout(() => {
+const bootHome = () => {
   if (typeof showPage === "function") showPage("home");
   if (typeof scheduleHomeRefresh === "function") {
     scheduleHomeRefresh();
-  } else {
-    if (typeof updateDashboard === "function") updateDashboard();
-    if (typeof updateFoodTile === "function") updateFoodTile();
-    if (typeof updateEportalTile === "function") updateEportalTile();
+  } else if (typeof updateDashboard === "function") {
+    updateDashboard();
   }
-}, 120);
+  if (typeof updateFoodTile === "function") updateFoodTile();
+  if (typeof updateEportalTile === "function") updateEportalTile();
+};
+bootHome();
+setTimeout(bootHome, 60);
+setTimeout(bootHome, 240);
 
-
-window.addEventListener("load", () => {
-  if (typeof scheduleHomeRefresh === "function") scheduleHomeRefresh();
-  else if (typeof updateDashboard === "function") updateDashboard();
-});
+window.addEventListener("load", bootHome, { once: true });
+window.addEventListener("pageshow", bootHome);
