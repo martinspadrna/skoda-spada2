@@ -500,6 +500,30 @@ function getCalendarSpecialText(now) {
   return parts.join(" · ") || "Bez událostí";
 }
 
+function getTodayVacationNames(now) {
+  const today = new Date(now);
+  today.setHours(0, 0, 0, 0);
+  const monthKey = (today.getMonth() + 1) + "/" + String(today.getFullYear()).slice(-2);
+  const month = app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
+  if (!month || !Array.isArray(month.notes)) return [];
+
+  const dayPrefix = today.getDate() + ".";
+  const names = [];
+  month.notes.forEach(note => {
+    const date = String(note && note.date ? note.date : "").trim();
+    if (!date.startsWith(dayPrefix)) return;
+
+    const person = String(note && note.person ? note.person : "").trim();
+    const code = String(note && note.code ? note.code : "").trim().toUpperCase();
+    const text = String(note && note.text ? note.text : "").trim();
+    const noteBlob = (code + " " + text).toUpperCase();
+    const isVacation = code === "D" || code === "§" || /DOVOLEN|LÁZNĚ/.test(noteBlob);
+    if (isVacation && person) names.push(person);
+  });
+  return [...new Set(names)];
+}
+
+
 function updateDashboard() {
   const now = new Date();
   const active = getActiveShiftNow(now);
@@ -528,12 +552,15 @@ function updateDashboard() {
     const heroLine2 = dState.next
       ? 'Směna D začne za: ' + formatDuration(dState.next.start - now)
       : 'Směna D začne za: —';
+    const dAwayNames = active && active.team === 'D' ? getTodayVacationNames(now) : [];
+    const heroLine3 = dAwayNames.length ? 'Mimo práci ze směny D: ' + dAwayNames.join(', ') : '';
     const heroProgress = active && !showSpecial && active.start && active.end
       ? Math.max(0, Math.min(100, ((now.getTime() - active.start.getTime()) / (active.end.getTime() - active.start.getTime())) * 100))
       : 0;
     hero.innerHTML = [
       '<div class="dashboardHeroLine1">' + esc(heroLine1) + '</div>',
       '<div class="dashboardHeroLine2">' + esc(heroLine2) + '</div>',
+      heroLine3 ? '<div class="dashboardHeroLine3">' + esc(heroLine3) + '</div>' : '',
       '<div class="dashboardHeroBar"><span style="width:' + heroProgress.toFixed(1) + '%"></span></div>'
     ].join('');
   }

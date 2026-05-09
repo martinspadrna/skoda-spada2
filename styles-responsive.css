@@ -388,3 +388,28 @@
     transform:translateY(-5px) scale(1.08);
   }
 }
+
+
+@media (max-width: 700px) {
+  .dashboardHeroLine3{
+    font-size:11px;
+  }
+
+  #kalkulacky .grid{
+    grid-template-columns:1fr !important;
+  }
+
+  .bottomNav{
+    padding:2px 5px calc(2px + env(safe-area-inset-bottom));
+  }
+
+  .bottomNavBtn{
+    min-height:38px;
+  }
+
+  .bottomNavMenuBtn{
+    width:28px;
+    min-width:28px;
+    max-width:28px;
+  }
+}

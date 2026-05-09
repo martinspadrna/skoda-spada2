@@ -49,13 +49,13 @@ function startMenuImport() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v.1(228)',
+      range: 'v.1(231)',
       title: 'Aktuální verze',
       lines: [
-        'Dashboard má nové ikonky, menší texty a světýlko u kantýny/jídelny.',
-        'Rotace ukazuje směny pod sebou bez štítků.',
-        'Kalkulačky jsou pod sebou s novými ikonami podle toku výroby.',
-        'Spodní menu Více je nižší, užší a ikona je co nejužší.'
+        'Spodní panel je utažený kolem ikon a aktivní volba může lehce přesahovat.',
+        'Kalkulačky jsou pod sebou a dashboard doplněný o info pro směnu D.',
+        'Kantýna, jídelna i další dashboard ikonky zůstávají sladěné do stejných stylů.',
+        'Otvírací doba jídelny a kantýny začíná od pondělí v glass modal okně.'
       ]
     },
     {
