@@ -1716,7 +1716,7 @@ body.reduceMotion *::after{
 }
 
 
-/* v1(239) tweaks */
+/* v1(240) tweaks */
 #dashHero::before{
   content:none !important;
   display:none !important;
@@ -1728,7 +1728,8 @@ body.reduceMotion *::after{
 }
 
 .bottomNav{
-  padding:4px 6px calc(2px + env(safe-area-inset-bottom)) !important;
+  bottom:4px !important;
+  padding:2px 5px 0 !important;
 }
 
 .bottomNavInner{
@@ -1737,8 +1738,8 @@ body.reduceMotion *::after{
 }
 
 .bottomNavBtn{
-  min-height:42px !important;
-  padding:0 2px 1px !important;
+  min-height:36px !important;
+  padding:0 2px 0 !important;
   gap:0 !important;
   justify-content:flex-end !important;
 }
@@ -1755,7 +1756,7 @@ body.reduceMotion *::after{
 }
 
 .bottomNavBtn.active{
-  transform:translateY(-6px) scale(1.10) !important;
+  transform:translateY(-7px) scale(1.11) !important;
 }
 
 .bottomNavMenuBtn{

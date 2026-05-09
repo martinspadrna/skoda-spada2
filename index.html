@@ -380,7 +380,7 @@
 });</script>
 <script type="text/plain" id="src-core-js">
 const APP_KEY = "rotace_kalkulacky_state_v122";
-const APP_VERSION = "v.1(239)";
+const APP_VERSION = "v.1(240)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-05-08-" + APP_VERSION + "-" + Date.now();
 
@@ -843,7 +843,9 @@ function syncYearControls() {
       overwriteMonth.appendChild(opt);
     });
   }
-}</script>
+}
+
+</script>
 <script type="text/plain" id="src-ui-js">function setBottomNavActive(pageId) {
   const buttons = document.querySelectorAll('.bottomNavBtn');
   buttons.forEach(btn => {
@@ -951,7 +953,7 @@ if (document.readyState === 'loading') {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v.1(239)',
+      range: 'v.1(240)',
       title: 'Aktuální verze',
       lines: [
         'Spodní lišta je těsnější kolem ikon a poslední volba je užší.',
@@ -6202,7 +6204,7 @@ body.reduceMotion *::after{
 }
 
 
-/* v1(239) tweaks */
+/* v1(240) tweaks */
 #dashHero::before{
   content:none !important;
   display:none !important;
@@ -6214,7 +6216,8 @@ body.reduceMotion *::after{
 }
 
 .bottomNav{
-  padding:4px 6px calc(2px + env(safe-area-inset-bottom)) !important;
+  bottom:4px !important;
+  padding:2px 5px 0 !important;
 }
 
 .bottomNavInner{
@@ -6223,8 +6226,8 @@ body.reduceMotion *::after{
 }
 
 .bottomNavBtn{
-  min-height:42px !important;
-  padding:0 2px 1px !important;
+  min-height:36px !important;
+  padding:0 2px 0 !important;
   gap:0 !important;
   justify-content:flex-end !important;
 }
@@ -6241,7 +6244,7 @@ body.reduceMotion *::after{
 }
 
 .bottomNavBtn.active{
-  transform:translateY(-6px) scale(1.10) !important;
+  transform:translateY(-7px) scale(1.11) !important;
 }
 
 .bottomNavMenuBtn{
@@ -6258,7 +6261,8 @@ body.reduceMotion *::after{
 #statsMachineGrid .statsMachineTile,
 #statsNameGrid .statsNameTile{
   align-items:flex-start;
-}</script>
+}
+</script>
 <script type="text/plain" id="src-styles-responsive-css">@media (max-width: 700px) {
   body {
     padding: calc(26px + env(safe-area-inset-top)) 10px 10px;
@@ -6595,7 +6599,8 @@ body.reduceMotion *::after{
 
   .bottomNav{
     width:min(calc(100% - 8px), 460px);
-    padding:5px 5px calc(5px + env(safe-area-inset-bottom));
+    bottom:4px;
+    padding:2px 5px 0;
     border-radius:18px;
   }
 
@@ -6750,7 +6755,8 @@ body.reduceMotion *::after{
     width:4px !important;
     height:18px !important;
   }
-}</script>
+}
+</script>
 <script type="text/plain" id="src-styles-modal-css">body.qrModalOpen{
   overflow:hidden;
 }

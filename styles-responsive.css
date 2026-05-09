@@ -334,7 +334,8 @@
 
   .bottomNav{
     width:min(calc(100% - 8px), 460px);
-    padding:5px 5px calc(5px + env(safe-area-inset-bottom));
+    bottom:4px;
+    padding:2px 5px 0;
     border-radius:18px;
   }
 
