@@ -4,6 +4,7 @@ const EXPORT_SOURCE_IDS = {
   "qr.js": "src-qr-js",
   "payroll.js": "src-payroll-js",
   "stats.js": "src-stats-js",
+  "dashboard.js": "src-dashboard-js",
   "soustruhy.js": "src-soustruhy-js",
   "brusy.js": "src-brusy-js",
   "rotace.js": "src-rotace-js",

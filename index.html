@@ -354,6 +354,7 @@
     "qr.js",
     "payroll.js",
     "stats.js",
+    "dashboard.js",
     "soustruhy.js",
     "brusy.js",
     "rotace.js",
@@ -380,7 +381,7 @@
 });</script>
 <script type="text/plain" id="src-core-js">
 const APP_KEY = "rotace_kalkulacky_state_v122";
-const APP_VERSION = "v.1(244)";
+const APP_VERSION = "v.1(245)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-05-08-" + APP_VERSION + "-" + Date.now();
 
@@ -951,7 +952,7 @@ if (document.readyState === 'loading') {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v.1(244)–v.1(244)',
+      range: 'v.1(243)–v.1(245)',
       title: 'Aktuální úpravy',
       lines: [
         'Dashboard dostal opravu načtení a lepší refresh po startu.',
@@ -960,7 +961,7 @@ function buildAppHistoryHtml(versionText) {
       ]
     },
     {
-      range: 'v.1(233)–v.1(244)',
+      range: 'v.1(233)–v.1(242)',
       title: 'Dashboard, lišta a statistiky',
       lines: [
         'Dashboard se ladil pro přehlednější stav směn a absencí.',
@@ -2394,6 +2395,10 @@ function getTodayAbsenceNames(now) {
 }
 
 
+function updateShift() {
+  if (typeof updateDashboard === "function") updateDashboard();
+}</script>
+<script type="text/plain" id="src-dashboard-js">// Extracted dashboard logic (v1(245))
 function updateDashboard() {
   const now = new Date();
   const active = getActiveShiftNow(now);
@@ -2504,11 +2509,28 @@ function updateDashboard() {
   setCard('dashEportalLink', 'Eportal', 'Otevřít', 'Firemní portál', '', true, externalIcon);
 }
 
-function updateShift() {
-  updateDashboard();
+function scheduleDashboardInitialPaint() {
+  const run = () => {
+    if (typeof updateDashboard === 'function') updateDashboard();
+  };
+  if (typeof requestAnimationFrame === 'function') {
+    requestAnimationFrame(() => {
+      run();
+      requestAnimationFrame(run);
+    });
+  } else {
+    setTimeout(run, 0);
+    setTimeout(run, 120);
+  }
 }
-setInterval(updateDashboard, 10000);
-updateDashboard();</script>
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', scheduleDashboardInitialPaint, { once: true });
+} else {
+  scheduleDashboardInitialPaint();
+}
+window.addEventListener('load', scheduleDashboardInitialPaint, { once: true });</script>
+
 <script type="text/plain" id="src-soustruhy-js">function resetSoustruhy() {
   ["lis_first", "lis_plan", "v126_first", "v126_plan", "v106_first", "v106_plan", "v106_c1", "v106_c2", "v106_c3", "v106_c4"].forEach(id => {
     const el = document.getElementById(id);
@@ -3684,6 +3706,7 @@ window.addEventListener("load", () => {
   "qr.js": "src-qr-js",
   "payroll.js": "src-payroll-js",
   "stats.js": "src-stats-js",
+  "dashboard.js": "src-dashboard-js",
   "soustruhy.js": "src-soustruhy-js",
   "brusy.js": "src-brusy-js",
   "rotace.js": "src-rotace-js",
@@ -6282,6 +6305,45 @@ body.reduceMotion *::after{
 #statsMachineGrid .statsMachineTile,
 #statsNameGrid .statsNameTile{
   align-items:flex-start;
+}
+
+
+/* v1(245) bottom nav raise + compact footroom */
+.bottomNav{
+  bottom:22px !important;
+  padding:2px 4px calc(1px + env(safe-area-inset-bottom)) !important;
+}
+
+.bottomNavInner{
+  gap:4px !important;
+}
+
+.bottomNavBtn{
+  min-height:58px !important;
+  padding:4px 3px 2px !important;
+}
+
+.bottomNavBtn span{
+  font-size:18px !important;
+}
+
+.bottomNavBtn.active{
+  transform:translateY(-10px) scale(1.10) !important;
+}
+
+.bottomNavBtn.active::before{
+  inset:-5px !important;
+}
+
+.bottomNavMenuBtn{
+  width:30px !important;
+  min-width:30px !important;
+  max-width:30px !important;
+}
+
+.bottomNavMenuBtn .moreIcon{
+  width:4px !important;
+  height:24px !important;
 }</script>
 <script type="text/plain" id="src-styles-responsive-css">@media (max-width: 700px) {
   body {
@@ -6786,6 +6848,27 @@ body.reduceMotion *::after{
     display:flex !important;
     flex-direction:column !important;
     gap:10px;
+  }
+}
+
+
+@media (max-width: 700px) {
+  .bottomNav{
+    bottom:18px !important;
+    padding:2px 3px calc(1px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .bottomNavBtn{
+    min-height:54px !important;
+    padding:3px 2px 1px !important;
+  }
+
+  .bottomNavBtn span{
+    font-size:17px !important;
+  }
+
+  .bottomNavBtn.active{
+    transform:translateY(-8px) scale(1.08) !important;
   }
 }</script>
 <script type="text/plain" id="src-styles-modal-css">body.qrModalOpen{

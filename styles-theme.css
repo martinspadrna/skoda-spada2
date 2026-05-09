@@ -1774,3 +1774,42 @@ body.reduceMotion *::after{
 #statsNameGrid .statsNameTile{
   align-items:flex-start;
 }
+
+
+/* v1(245) bottom nav raise + compact footroom */
+.bottomNav{
+  bottom:22px !important;
+  padding:2px 4px calc(1px + env(safe-area-inset-bottom)) !important;
+}
+
+.bottomNavInner{
+  gap:4px !important;
+}
+
+.bottomNavBtn{
+  min-height:58px !important;
+  padding:4px 3px 2px !important;
+}
+
+.bottomNavBtn span{
+  font-size:18px !important;
+}
+
+.bottomNavBtn.active{
+  transform:translateY(-10px) scale(1.10) !important;
+}
+
+.bottomNavBtn.active::before{
+  inset:-5px !important;
+}
+
+.bottomNavMenuBtn{
+  width:30px !important;
+  min-width:30px !important;
+  max-width:30px !important;
+}
+
+.bottomNavMenuBtn .moreIcon{
+  width:4px !important;
+  height:24px !important;
+}

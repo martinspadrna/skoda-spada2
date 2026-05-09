@@ -4,6 +4,7 @@
     "qr.js",
     "payroll.js",
     "stats.js",
+    "dashboard.js",
     "soustruhy.js",
     "brusy.js",
     "rotace.js",

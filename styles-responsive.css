@@ -503,3 +503,24 @@
     gap:10px;
   }
 }
+
+
+@media (max-width: 700px) {
+  .bottomNav{
+    bottom:18px !important;
+    padding:2px 3px calc(1px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .bottomNavBtn{
+    min-height:54px !important;
+    padding:3px 2px 1px !important;
+  }
+
+  .bottomNavBtn span{
+    font-size:17px !important;
+  }
+
+  .bottomNavBtn.active{
+    transform:translateY(-8px) scale(1.08) !important;
+  }
+}
