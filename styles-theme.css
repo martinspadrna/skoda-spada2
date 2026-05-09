@@ -1677,3 +1677,40 @@ body.reduceMotion *::after{
 .bottomNavMenuBtn .bottomNavLabel{
   display:none !important;
 }
+
+
+/* v1(237) bottom nav closer to edge */
+.bottomNav{
+  padding-top:1px !important;
+  padding-bottom:0 !important;
+}
+
+.bottomNavInner{
+  align-items:flex-end !important;
+}
+
+.bottomNavBtn{
+  min-height:44px !important;
+  padding-top:0 !important;
+  padding-bottom:0 !important;
+  justify-content:flex-end !important;
+}
+
+.bottomNavBtn span{
+  margin-bottom:2px !important;
+}
+
+.bottomNavBtn.active{
+  transform:translateY(-6px) scale(1.1) !important;
+}
+
+.bottomNavMenuBtn{
+  width:28px !important;
+  min-width:28px !important;
+  max-width:28px !important;
+}
+
+.bottomNavMenuBtn .moreIcon{
+  width:4px !important;
+  height:16px !important;
+}

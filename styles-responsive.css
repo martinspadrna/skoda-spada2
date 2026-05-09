@@ -454,3 +454,32 @@
     transform:translateY(-8px) scale(1.08) !important;
   }
 }
+
+
+@media (max-width: 700px) {
+  .bottomNav{
+    padding-top:1px !important;
+    padding-bottom:0 !important;
+  }
+
+  .bottomNavBtn{
+    min-height:42px !important;
+    padding-top:0 !important;
+    padding-bottom:0 !important;
+  }
+
+  .bottomNavBtn.active{
+    transform:translateY(-5px) scale(1.08) !important;
+  }
+
+  .bottomNavMenuBtn{
+    width:28px !important;
+    min-width:28px !important;
+    max-width:28px !important;
+  }
+
+  .bottomNavMenuBtn .moreIcon{
+    width:4px !important;
+    height:16px !important;
+  }
+}
