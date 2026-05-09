@@ -334,7 +334,7 @@
 
   .bottomNav{
     width:min(calc(100% - 8px), 460px);
-    bottom:4px;
+    bottom:14px;
     padding:2px 5px 0;
     border-radius:18px;
   }
@@ -459,9 +459,9 @@
 
 @media (max-width: 700px) {
   .bottomNav{
-    bottom:2px !important;
+    bottom:14px !important;
     width:min(calc(100% - 8px), 430px) !important;
-    padding:0 4px 0 !important;
+    padding:2px 4px 0 !important;
   }
 
   .bottomNavInner{

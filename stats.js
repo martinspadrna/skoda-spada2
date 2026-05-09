@@ -93,7 +93,8 @@ function buildStatsForYear(year) {
     machineTotals: {},
     cleanTotals: {},
     absenceTotals: {},
-    machineCleanLeaders: {}
+    machineCleanLeaders: {},
+    machineTopWorkers: {}
   };
 
   const ensureColumn = (label) => {
@@ -256,6 +257,7 @@ function buildStatsForYear(year) {
   stats.machineOrder.forEach(machine => {
     const leaders = [];
     let maxClean = 0;
+    const workers = [];
     Object.values(stats.people).forEach(person => {
       const cleanCount = Number(person.clean[machine] || 0);
       if (cleanCount <= 0) return;
@@ -266,8 +268,17 @@ function buildStatsForYear(year) {
       } else if (cleanCount === maxClean) {
         leaders.push(person.name);
       }
+
+      const workCount = Number(person.work[machine] || 0);
+      if (workCount > 0) workers.push([person.name, workCount]);
     });
     if (leaders.length) stats.machineCleanLeaders[machine] = { names: leaders.sort((a, b) => a.localeCompare(b, 'cs')), clean: maxClean };
+    if (workers.length) {
+      workers.sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'cs'));
+      stats.machineTopWorkers[machine] = workers.slice(0, 3).map(item => item[0]);
+    } else {
+      stats.machineTopWorkers[machine] = [];
+    }
   });
 
   return stats;

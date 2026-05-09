@@ -198,20 +198,34 @@ refreshInitialUI();
 if (typeof showPage === "function") {
   showPage("home");
 }
-if (typeof updateDashboard === "function") {
-  updateDashboard();
-}
-if (typeof updateFoodTile === "function") {
-  updateFoodTile();
-  setInterval(updateFoodTile, 60 * 1000);
-}
-if (typeof updateEportalTile === "function") {
-  updateEportalTile();
-  setInterval(updateEportalTile, 60 * 1000);
+if (typeof scheduleHomeRefresh === "function") {
+  scheduleHomeRefresh();
+} else {
+  if (typeof updateDashboard === "function") {
+    updateDashboard();
+  }
+  if (typeof updateFoodTile === "function") {
+    updateFoodTile();
+    setInterval(updateFoodTile, 60 * 1000);
+  }
+  if (typeof updateEportalTile === "function") {
+    updateEportalTile();
+    setInterval(updateEportalTile, 60 * 1000);
+  }
 }
 setTimeout(() => {
   if (typeof showPage === "function") showPage("home");
-  if (typeof updateDashboard === "function") updateDashboard();
-  if (typeof updateFoodTile === "function") updateFoodTile();
-  if (typeof updateEportalTile === "function") updateEportalTile();
+  if (typeof scheduleHomeRefresh === "function") {
+    scheduleHomeRefresh();
+  } else {
+    if (typeof updateDashboard === "function") updateDashboard();
+    if (typeof updateFoodTile === "function") updateFoodTile();
+    if (typeof updateEportalTile === "function") updateEportalTile();
+  }
 }, 120);
+
+
+window.addEventListener("load", () => {
+  if (typeof scheduleHomeRefresh === "function") scheduleHomeRefresh();
+  else if (typeof updateDashboard === "function") updateDashboard();
+});

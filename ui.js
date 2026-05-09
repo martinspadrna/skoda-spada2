@@ -105,68 +105,38 @@ if (document.readyState === 'loading') {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v.1(243)',
-      title: 'Aktuální verze',
+      range: 'v.1(243)–v.1(244)',
+      title: 'Aktuální úpravy',
       lines: [
-        'Dashboard se načítá hned po startu a stav kantýny je sjednocený s rozpisem.',
-        'Spodní lišta sedí těsněji kolem ikon a má glass vzhled.',
-        'Statistiky a více jsou rozpadnuté přehledněji.'
+        'Dashboard dostal opravu načtení a lepší refresh po startu.',
+        'Spodní panel se vytahuje výš, aby těsněji seděl na ikony.',
+        'Kantýna bere dnešní rozpis přesněji a kontakt je doplněný.'
       ]
     },
     {
-      range: 'v.1(238)–v.1(237)',
-      title: 'Lišta a statistiky',
+      range: 'v.1(233)–v.1(242)',
+      title: 'Dashboard, lišta a statistiky',
       lines: [
-        'Spodní panel se ladil na výšku ikon.',
-        'Ve statistikách se doplnil top 3 přehled a rozpad více jmen na řádky.'
+        'Dashboard se ladil pro přehlednější stav směn a absencí.',
+        'Spodní lišta dostala glass styl a přesnější velikosti.',
+        'Statistiky přidaly top 3 přehled a čistší rozpad jmen.'
       ]
     },
     {
-      range: 'v.1(236)–v.1(234)',
-      title: 'Dashboard a nastavení',
+      range: 'v.1(221)–v.1(232)',
+      title: 'Rotace, kalkulačky a menu',
       lines: [
-        'Dashboard dostal čistší vzhled a lepší karty.',
-        'Přidalo se nastavení pro kompaktní režim a reset lokálních dat.'
-      ]
-    },
-    {
-      range: 'v.1(233)–v.1(231)',
-      title: 'Rotace a rozpisy',
-      lines: [
-        'Rotace ukazuje směny pod sebou bez zbytečných štítků.',
-        'Kalkulačky i rozpisy byly srovnané do přehlednějšího pořadí.'
-      ]
-    },
-    {
-      range: 'v.1(230)–v.1(228)',
-      title: 'Panel a otevírací doby',
-      lines: [
-        'Spodní panel dostal glass efekt a přesnější výšku.',
-        'Otevírací doby kantýny a jídelny mají lepší zobrazení a pořádek od pondělí.'
-      ]
-    },
-    {
-      range: 'v.1(227)–v.1(225)',
-      title: 'Více a dashboard',
-      lines: [
-        'Menu „Více“ je samostatná stránka bez rušivých popisků.',
-        'Dashboardové ikony a hodnoty se sjednotily do čistšího stylu.'
-      ]
-    },
-    {
-      range: 'v.1(224)–v.1(221)',
-      title: 'Kalkulačky a rotace',
-      lines: [
-        'Kalkulačky dostaly nové ikony a svislé řazení.',
-        'Rotace i statistiky se převedly na tiles.'
+        'Rotace přešla na tiles a QR po trojkliku.',
+        'Kalkulačky dostaly nové pořadí a ikony.',
+        'Menu „Více“ se sjednotilo do vlastní stránky.'
       ]
     },
     {
       range: 'v.1(215)–v.1(220)',
       title: 'Refaktorace a stabilita',
       lines: [
-        'Čištění kódu, exportů a větší modularita.',
-        'Příprava na další rozšíření dashboardu, statistik a menu.'
+        'Čištění kódu, exportů a modularita.',
+        'Příprava na další rozšíření dashboardu a statistik.'
       ]
     },
     {
@@ -223,8 +193,8 @@ function openAppMenu(view) {
 
   const versionText = (typeof app !== 'undefined' && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '');
   const contactName = 'Martin Špadrna';
-  const contactPhone = 'Doplň telefonní číslo';
-  const contactEmail = 'Doplň e-mail';
+  const contactPhone = '+420 773 682 499';
+  const contactEmail = 'martinspadrna@gmail.com';
 
   if (body) {
     if (v === 'about') {
@@ -394,9 +364,13 @@ function showPage(id) {
   } else if (id === 'kalkulacky') {
     setBottomNavActive('kalkulacky');
   } else if (id === 'home') {
-    if (typeof updateDashboard === 'function') updateDashboard();
-    if (typeof updateFoodTile === 'function') updateFoodTile();
-    if (typeof updateEportalTile === 'function') updateEportalTile();
+    if (typeof scheduleHomeRefresh === 'function') {
+      scheduleHomeRefresh();
+    } else {
+      if (typeof updateDashboard === 'function') updateDashboard();
+      if (typeof updateFoodTile === 'function') updateFoodTile();
+      if (typeof updateEportalTile === 'function') updateEportalTile();
+    }
     setBottomNavActive('home');
   }
 }
@@ -422,6 +396,25 @@ function openRotaceStats() {
 function openKalkulacky() {
   showPage('kalkulacky');
   setBottomNavActive('kalkulacky');
+}
+
+function refreshHomeScreen() {
+  if (typeof updateDashboard === 'function') updateDashboard();
+  if (typeof updateFoodTile === 'function') updateFoodTile();
+  if (typeof updateEportalTile === 'function') updateEportalTile();
+}
+
+function scheduleHomeRefresh() {
+  const run = () => refreshHomeScreen();
+  if (typeof requestAnimationFrame === 'function') {
+    requestAnimationFrame(() => {
+      run();
+      requestAnimationFrame(run);
+    });
+  } else {
+    setTimeout(run, 0);
+    setTimeout(run, 120);
+  }
 }
 
 function setRotaceView(view) {

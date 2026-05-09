@@ -149,13 +149,10 @@ function findFoodStatus(location, now) {
   const baseNow = new Date(now);
   const today = new Date(baseNow);
   today.setHours(0, 0, 0, 0);
-  const special = getSpecialWorkInfo(baseNow);
-
   let active = null;
   let next = null;
-  const startOffset = special ? 1 : -1;
 
-  for (let offset = startOffset; offset <= 8; offset += 1) {
+  for (let offset = -1; offset <= 8; offset += 1) {
     const baseDate = new Date(today);
     baseDate.setDate(baseDate.getDate() + offset);
     const windows = getFoodScheduleForDay(location, baseDate.getDay(), baseDate);
@@ -169,10 +166,6 @@ function findFoodStatus(location, now) {
         next = range;
       }
     }
-  }
-
-  if (special) {
-    active = null;
   }
 
   return { active, next, isOpen: !!active };

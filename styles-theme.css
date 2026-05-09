@@ -280,7 +280,7 @@ input{
   left:50%;
   right:auto;
   transform:translateX(-50%);
-  bottom:10px;
+  bottom:14px;
   z-index:3000;
   width:min(calc(100% - 16px), 470px);
   padding:3px 6px calc(2px + env(safe-area-inset-bottom));
@@ -1728,7 +1728,7 @@ body.reduceMotion *::after{
 }
 
 .bottomNav{
-  bottom:0 !important;
+  bottom:14px !important;
   padding:2px 5px 0 !important;
 }
 
