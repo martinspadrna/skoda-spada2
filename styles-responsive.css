@@ -491,3 +491,45 @@
     height:18px !important;
   }
 }
+
+
+/* v1(241) bottom nav tighter */
+.bottomNav{
+  bottom:4px !important;
+  padding:1px 4px calc(1px + env(safe-area-inset-bottom)) !important;
+}
+
+.bottomNavInner{
+  gap:2px !important;
+  align-items:flex-end !important;
+}
+
+.bottomNavBtn{
+  min-height:44px !important;
+  padding:0 2px 1px !important;
+  justify-content:flex-end !important;
+}
+
+.bottomNavBtn span{
+  font-size:18px !important;
+}
+
+.bottomNavBtn.active{
+  transform:translateY(-5px) scale(1.07) !important;
+}
+
+.bottomNavLabel{
+  margin-top:-1px !important;
+}
+
+.bottomNavMenuBtn{
+  width:28px !important;
+  min-width:28px !important;
+  max-width:28px !important;
+  padding:0 !important;
+}
+
+.bottomNavMenuBtn .moreIcon{
+  width:3px !important;
+  height:18px !important;
+}

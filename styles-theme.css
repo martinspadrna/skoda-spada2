@@ -1774,3 +1774,75 @@ body.reduceMotion *::after{
 #statsNameGrid .statsNameTile{
   align-items:flex-start;
 }
+
+
+/* v1(241) overrides */
+.bottomNav{
+  bottom:4px;
+  padding:1px 4px calc(1px + env(safe-area-inset-bottom));
+}
+
+.bottomNavInner{
+  gap:2px;
+}
+
+.bottomNavBtn{
+  min-height:48px;
+  padding:0 2px 2px;
+}
+
+.bottomNavBtn span{
+  font-size:18px;
+}
+
+.bottomNavBtn.active{
+  transform:translateY(-4px) scale(1.06);
+}
+
+.bottomNavLabel{
+  margin-top:-1px;
+}
+
+.bottomNavMenuBtn{
+  min-width:28px;
+  width:28px;
+  max-width:28px;
+  padding:0;
+}
+
+.bottomNavMenuBtn .moreIcon{
+  width:3px;
+  height:18px;
+}
+
+.dashboardValue,
+.dashboardMeta{
+  color:var(--green2);
+}
+
+.dashboardValue{
+  font-size:15px;
+}
+
+#dashVyplata .dashboardValue,
+#dashCzd .dashboardValue,
+#dashCalendar .dashboardValue,
+#dashCountdown .dashboardValue,
+#dashKantyna .dashboardValue,
+#dashJidelna .dashboardValue,
+#dashFoodLink .dashboardValue,
+#dashEportalLink .dashboardValue{
+  color:var(--green2);
+}
+
+.appMenuHistoryGroup{
+  padding:10px 12px;
+}
+
+.appMenuHistoryTitle{
+  font-size:14px;
+}
+
+.appMenuHistoryItem{
+  font-size:11px;
+}

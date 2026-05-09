@@ -380,7 +380,7 @@
 });</script>
 <script type="text/plain" id="src-core-js">
 const APP_KEY = "rotace_kalkulacky_state_v122";
-const APP_VERSION = "v.1(240)";
+const APP_VERSION = "v.1(241)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-05-08-" + APP_VERSION + "-" + Date.now();
 
@@ -843,9 +843,7 @@ function syncYearControls() {
       overwriteMonth.appendChild(opt);
     });
   }
-}
-
-</script>
+}</script>
 <script type="text/plain" id="src-ui-js">function setBottomNavActive(pageId) {
   const buttons = document.querySelectorAll('.bottomNavBtn');
   buttons.forEach(btn => {
@@ -953,100 +951,84 @@ if (document.readyState === 'loading') {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v.1(240)',
+      range: 'v.1(241)',
       title: 'Aktuální verze',
       lines: [
-        'Spodní lišta je těsnější kolem ikon a poslední volba je užší.',
-        'Dashboard má čistší horní řádek a srovnané stavové řádky.',
-        'Statistiky ukazují více položek přehledně po řádcích.'
+        'Dolní lišta je těsnější kolem ikon.',
+        'Dashboard se načítá hned po startu.',
+        'Více má kratší přehled verzí.'
       ]
     },
     {
-      range: 'v.1(238)–v.1(237)',
-      title: 'Lišta a statistiky',
+      range: 'v.1(241)–v.1(231)',
+      title: 'Panel, dashboard a spodní lišta',
       lines: [
-        'Spodní panel se ladil na výšku ikon.',
-        'Ve statistikách se doplnil top 3 přehled a rozpad více jmen na řádky.'
+        'Ladění spodního panelu na výšku ikon.',
+        'Dashboardové karty a stavové řádky.',
+        'Rotace, kalkulačky a přesuny položek.'
       ]
     },
     {
-      range: 'v.1(236)–v.1(234)',
-      title: 'Dashboard a nastavení',
+      range: 'v.1(230)–v.1(221)',
+      title: 'Menu Více a přehledy',
       lines: [
-        'Dashboard dostal čistší vzhled a lepší karty.',
-        'Přidalo se nastavení pro kompaktní režim a reset lokálních dat.'
+        'Menu Více jako samostatná stránka.',
+        'Zpřesnění statistik, kontaktů a nastavení.',
+        'Lepší práce s otevřením jídelny a kantýny.'
       ]
     },
     {
-      range: 'v.1(233)–v.1(231)',
-      title: 'Rotace a rozpisy',
+      range: 'v.1(220)–v.1(211)',
+      title: 'Rotace a kalkulačky',
       lines: [
-        'Rotace ukazuje směny pod sebou bez zbytečných štítků.',
-        'Kalkulačky i rozpisy byly srovnané do přehlednějšího pořadí.'
+        'Rotace jako tiles s rychlým přehledem.',
+        'Kalkulačky pod sebou a s vlastními ikonami.',
+        'Sjednocení výpisů a modálů.'
       ]
     },
     {
-      range: 'v.1(230)–v.1(228)',
-      title: 'Panel a otevírací doby',
+      range: 'v.1(210)–v.1(200)',
+      title: 'Moderní app-like vzhled',
       lines: [
-        'Spodní panel dostal glass efekt a přesnější výšku.',
-        'Otevírací doby kantýny a jídelny mají lepší zobrazení a pořádek od pondělí.'
+        'Floating bottom navigace.',
+        'Glassmorphism a tmavé karty.',
+        'Dashboard a sekce jako mobilní aplikace.'
       ]
     },
     {
-      range: 'v.1(227)–v.1(225)',
-      title: 'Více a dashboard',
-      lines: [
-        'Menu „Více“ je samostatná stránka bez rušivých popisků.',
-        'Dashboardové ikony a hodnoty se sjednotily do čistšího stylu.'
-      ]
-    },
-    {
-      range: 'v.1(224)–v.1(221)',
-      title: 'Kalkulačky a rotace',
-      lines: [
-        'Kalkulačky dostaly nové ikony a svislé řazení.',
-        'Rotace i statistiky se převedly na tiles.'
-      ]
-    },
-    {
-      range: 'v.1(215)–v.1(220)',
+      range: 'v.1(199)–v.1(180)',
       title: 'Refaktorace a stabilita',
       lines: [
-        'Čištění kódu, exportů a větší modularita.',
-        'Příprava na další rozšíření dashboardu, statistik a menu.'
+        'Čištění kódu a exportů.',
+        'Stabilnější modulární struktura.',
+        'Příprava na další rozvoj.'
       ]
     },
     {
-      range: 'v0.151–v0.157-rc',
-      title: 'Velká refaktorace',
+      range: 'v.1(179)–v.1(150)',
+      title: 'Dashboard a navigace',
       lines: [
-        'Nový základ projektu.',
-        'Vyčištění starého kódu a stabilnější exporty.'
+        'První větší dashboardové úpravy.',
+        'Lepší navigace a responzivita.',
+        'Základ pro dnešní podobu aplikace.'
       ]
     },
     {
-      range: 'v0.91–v0.150',
-      title: 'Přechod na modernější architekturu',
+      range: 'v0.121–v0.149',
+      title: 'Moderní styl aplikace',
       lines: [
-        'Rozdělení logiky aplikace a čistší struktura.',
-        'Lepší mobilní navigace, dashboard a PWA příprava.'
+        'Glassmorphism vzhled a karty.',
+        'Lepší animace a kontrast.',
+        'Větší důraz na mobil.'
       ]
     },
     {
-      range: 'v0.41–v0.90',
-      title: 'Rotace, statistiky a vzhled',
-      lines: [
-        'Rozšíření rotací a statistik.',
-        'Modernější dark styl, karty a mobilní ergonomie.'
-      ]
-    },
-    {
-      range: 'v0.01–v0.40',
+      range: 'v0.01–v0.120',
       title: 'Začátek projektu',
       lines: [
-        'První funkční základ aplikace.',
-        'Základní navigace, první kalkulačky a jednoduchý dark vzhled.'
+        'První funkční základ.',
+        'Základní kalkulačky a rotace.',
+        'První stabilizace a mobilní ladění.'
       ]
     }
   ];
@@ -1071,8 +1053,8 @@ function openAppMenu(view) {
 
   const versionText = (typeof app !== 'undefined' && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '');
   const contactName = 'Martin Špadrna';
-  const contactPhone = 'Doplň telefonní číslo';
-  const contactEmail = 'Doplň e-mail';
+  const contactPhone = '+420 773 682 499';
+  const contactEmail = 'martinspadrna@gmail.com';
 
   if (body) {
     if (v === 'about') {
@@ -3418,6 +3400,9 @@ function refreshInitialUI() {
   setRotaceView(app.rotationView || "names");
   renderRotace();
   if (app.selectedMonth) renderMonth(app.selectedMonth);
+  if (typeof updateDashboard === 'function') updateDashboard();
+  if (typeof updateFoodTile === 'function') updateFoodTile();
+  if (typeof updateEportalTile === 'function') updateEportalTile();
   updateImportBoxVisibility();
 }
 
@@ -6262,7 +6247,78 @@ body.reduceMotion *::after{
 #statsNameGrid .statsNameTile{
   align-items:flex-start;
 }
-</script>
+
+
+/* v1(241) overrides */
+.bottomNav{
+  bottom:4px;
+  padding:1px 4px calc(1px + env(safe-area-inset-bottom));
+}
+
+.bottomNavInner{
+  gap:2px;
+}
+
+.bottomNavBtn{
+  min-height:48px;
+  padding:0 2px 2px;
+}
+
+.bottomNavBtn span{
+  font-size:18px;
+}
+
+.bottomNavBtn.active{
+  transform:translateY(-4px) scale(1.06);
+}
+
+.bottomNavLabel{
+  margin-top:-1px;
+}
+
+.bottomNavMenuBtn{
+  min-width:28px;
+  width:28px;
+  max-width:28px;
+  padding:0;
+}
+
+.bottomNavMenuBtn .moreIcon{
+  width:3px;
+  height:18px;
+}
+
+.dashboardValue,
+.dashboardMeta{
+  color:var(--green2);
+}
+
+.dashboardValue{
+  font-size:15px;
+}
+
+#dashVyplata .dashboardValue,
+#dashCzd .dashboardValue,
+#dashCalendar .dashboardValue,
+#dashCountdown .dashboardValue,
+#dashKantyna .dashboardValue,
+#dashJidelna .dashboardValue,
+#dashFoodLink .dashboardValue,
+#dashEportalLink .dashboardValue{
+  color:var(--green2);
+}
+
+.appMenuHistoryGroup{
+  padding:10px 12px;
+}
+
+.appMenuHistoryTitle{
+  font-size:14px;
+}
+
+.appMenuHistoryItem{
+  font-size:11px;
+}</script>
 <script type="text/plain" id="src-styles-responsive-css">@media (max-width: 700px) {
   body {
     padding: calc(26px + env(safe-area-inset-top)) 10px 10px;
@@ -6756,7 +6812,48 @@ body.reduceMotion *::after{
     height:18px !important;
   }
 }
-</script>
+
+
+/* v1(241) bottom nav tighter */
+.bottomNav{
+  bottom:4px !important;
+  padding:1px 4px calc(1px + env(safe-area-inset-bottom)) !important;
+}
+
+.bottomNavInner{
+  gap:2px !important;
+  align-items:flex-end !important;
+}
+
+.bottomNavBtn{
+  min-height:44px !important;
+  padding:0 2px 1px !important;
+  justify-content:flex-end !important;
+}
+
+.bottomNavBtn span{
+  font-size:18px !important;
+}
+
+.bottomNavBtn.active{
+  transform:translateY(-5px) scale(1.07) !important;
+}
+
+.bottomNavLabel{
+  margin-top:-1px !important;
+}
+
+.bottomNavMenuBtn{
+  width:28px !important;
+  min-width:28px !important;
+  max-width:28px !important;
+  padding:0 !important;
+}
+
+.bottomNavMenuBtn .moreIcon{
+  width:3px !important;
+  height:18px !important;
+}</script>
 <script type="text/plain" id="src-styles-modal-css">body.qrModalOpen{
   overflow:hidden;
 }

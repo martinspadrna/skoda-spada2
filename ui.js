@@ -105,100 +105,84 @@ if (document.readyState === 'loading') {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v.1(239)',
+      range: 'v.1(241)',
       title: 'Aktuální verze',
       lines: [
-        'Spodní lišta je těsnější kolem ikon a poslední volba je užší.',
-        'Dashboard má čistší horní řádek a srovnané stavové řádky.',
-        'Statistiky ukazují více položek přehledně po řádcích.'
+        'Dolní lišta je těsnější kolem ikon.',
+        'Dashboard se načítá hned po startu.',
+        'Více má kratší přehled verzí.'
       ]
     },
     {
-      range: 'v.1(238)–v.1(237)',
-      title: 'Lišta a statistiky',
+      range: 'v.1(240)–v.1(231)',
+      title: 'Panel, dashboard a spodní lišta',
       lines: [
-        'Spodní panel se ladil na výšku ikon.',
-        'Ve statistikách se doplnil top 3 přehled a rozpad více jmen na řádky.'
+        'Ladění spodního panelu na výšku ikon.',
+        'Dashboardové karty a stavové řádky.',
+        'Rotace, kalkulačky a přesuny položek.'
       ]
     },
     {
-      range: 'v.1(236)–v.1(234)',
-      title: 'Dashboard a nastavení',
+      range: 'v.1(230)–v.1(221)',
+      title: 'Menu Více a přehledy',
       lines: [
-        'Dashboard dostal čistší vzhled a lepší karty.',
-        'Přidalo se nastavení pro kompaktní režim a reset lokálních dat.'
+        'Menu Více jako samostatná stránka.',
+        'Zpřesnění statistik, kontaktů a nastavení.',
+        'Lepší práce s otevřením jídelny a kantýny.'
       ]
     },
     {
-      range: 'v.1(233)–v.1(231)',
-      title: 'Rotace a rozpisy',
+      range: 'v.1(220)–v.1(211)',
+      title: 'Rotace a kalkulačky',
       lines: [
-        'Rotace ukazuje směny pod sebou bez zbytečných štítků.',
-        'Kalkulačky i rozpisy byly srovnané do přehlednějšího pořadí.'
+        'Rotace jako tiles s rychlým přehledem.',
+        'Kalkulačky pod sebou a s vlastními ikonami.',
+        'Sjednocení výpisů a modálů.'
       ]
     },
     {
-      range: 'v.1(230)–v.1(228)',
-      title: 'Panel a otevírací doby',
+      range: 'v.1(210)–v.1(200)',
+      title: 'Moderní app-like vzhled',
       lines: [
-        'Spodní panel dostal glass efekt a přesnější výšku.',
-        'Otevírací doby kantýny a jídelny mají lepší zobrazení a pořádek od pondělí.'
+        'Floating bottom navigace.',
+        'Glassmorphism a tmavé karty.',
+        'Dashboard a sekce jako mobilní aplikace.'
       ]
     },
     {
-      range: 'v.1(227)–v.1(225)',
-      title: 'Více a dashboard',
-      lines: [
-        'Menu „Více“ je samostatná stránka bez rušivých popisků.',
-        'Dashboardové ikony a hodnoty se sjednotily do čistšího stylu.'
-      ]
-    },
-    {
-      range: 'v.1(224)–v.1(221)',
-      title: 'Kalkulačky a rotace',
-      lines: [
-        'Kalkulačky dostaly nové ikony a svislé řazení.',
-        'Rotace i statistiky se převedly na tiles.'
-      ]
-    },
-    {
-      range: 'v.1(215)–v.1(220)',
+      range: 'v.1(199)–v.1(180)',
       title: 'Refaktorace a stabilita',
       lines: [
-        'Čištění kódu, exportů a větší modularita.',
-        'Příprava na další rozšíření dashboardu, statistik a menu.'
+        'Čištění kódu a exportů.',
+        'Stabilnější modulární struktura.',
+        'Příprava na další rozvoj.'
       ]
     },
     {
-      range: 'v0.151–v0.157-rc',
-      title: 'Velká refaktorace',
+      range: 'v.1(179)–v.1(150)',
+      title: 'Dashboard a navigace',
       lines: [
-        'Nový základ projektu.',
-        'Vyčištění starého kódu a stabilnější exporty.'
+        'První větší dashboardové úpravy.',
+        'Lepší navigace a responzivita.',
+        'Základ pro dnešní podobu aplikace.'
       ]
     },
     {
-      range: 'v0.91–v0.150',
-      title: 'Přechod na modernější architekturu',
+      range: 'v0.121–v0.149',
+      title: 'Moderní styl aplikace',
       lines: [
-        'Rozdělení logiky aplikace a čistší struktura.',
-        'Lepší mobilní navigace, dashboard a PWA příprava.'
+        'Glassmorphism vzhled a karty.',
+        'Lepší animace a kontrast.',
+        'Větší důraz na mobil.'
       ]
     },
     {
-      range: 'v0.41–v0.90',
-      title: 'Rotace, statistiky a vzhled',
-      lines: [
-        'Rozšíření rotací a statistik.',
-        'Modernější dark styl, karty a mobilní ergonomie.'
-      ]
-    },
-    {
-      range: 'v0.01–v0.40',
+      range: 'v0.01–v0.120',
       title: 'Začátek projektu',
       lines: [
-        'První funkční základ aplikace.',
-        'Základní navigace, první kalkulačky a jednoduchý dark vzhled.'
+        'První funkční základ.',
+        'Základní kalkulačky a rotace.',
+        'První stabilizace a mobilní ladění.'
       ]
     }
   ];
@@ -223,8 +207,8 @@ function openAppMenu(view) {
 
   const versionText = (typeof app !== 'undefined' && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '');
   const contactName = 'Martin Špadrna';
-  const contactPhone = 'Doplň telefonní číslo';
-  const contactEmail = 'Doplň e-mail';
+  const contactPhone = '+420 773 682 499';
+  const contactEmail = 'martinspadrna@gmail.com';
 
   if (body) {
     if (v === 'about') {
