@@ -300,6 +300,11 @@ function renderStatsPanel() {
 
   statsMachineGrid.innerHTML = '';
   stats.machineOrder.forEach(machine => {
+    const leader = stats.machineCleanLeaders[machine] || null;
+    const leaderNames = leader && Array.isArray(leader.names) && leader.names.length
+      ? leader.names.join(', ')
+      : '—';
+
     const tile = document.createElement('div');
     tile.className = 'listItem statsMachineTile' + (app.selectedStatsMachine === machine ? ' activeChoice' : '');
     tile.setAttribute('role', 'button');
@@ -537,25 +542,31 @@ function updateDashboard() {
     const el = document.getElementById(id);
     if (!el) return;
     el.classList.toggle('dashboardCardClickable', !!clickable);
+    const icon = iconHtml ? '<div class="dashboardIcon dashboardIconInline" aria-hidden="true">' + iconHtml + '</div>' : '';
+    const dot = dotClass ? '<span class="dashboardDot ' + esc(dotClass) + '" aria-hidden="true"></span>' : '';
     el.innerHTML = [
       '<div class="dashboardTop">',
-      '  <div class="dashboardTopLeft">',
-      iconHtml ? '<div class="dashboardIcon" aria-hidden="true">' + iconHtml + '</div>' : '',
-      '    <div class="dashboardLabel">' + esc(title) + '</div>',
-      '  </div>',
+      icon,
+      '<div class="dashboardHead">',
+      '<div class="dashboardLabelRow">',
+      '<div class="dashboardLabel">' + esc(title) + '</div>',
+      dot,
       '</div>',
-      '<div class="dashboardValue">' + esc(value || '--') + '</div>'
+      '</div>',
+      '</div>',
+      '<div class="dashboardValue">' + esc(value || '--') + '</div>',
+      meta ? '<div class="dashboardMeta">' + esc(meta) + '</div>' : ''
     ].join('');
   };
 
-  const walletIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 7.5h10.2c1.7 0 3 .9 3.6 2.2l1 2.1H18c-1.9 0-3.5 1.5-3.5 3.5s1.6 3.5 3.5 3.5h1.3c.8 0 1.5-.7 1.5-1.5v-6.8c0-1.7-1.4-3-3-3H4.5a2 2 0 0 0-2 2v5.8a2 2 0 0 0 2 2h10.1"/><path d="M16.5 12.5h3.2"/><circle cx="17.8" cy="15.9" r="0.75" fill="currentColor" stroke="none"/></svg>';
-  const plateForkIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="4.1"/><path d="M4.5 5.4v11.2"/><path d="M4.5 5.4c.6 0 1.1.5 1.1 1.1v3.3"/><path d="M4.5 10.2h1.1"/><path d="M4.5 12.1h1.1"/><path d="M4.5 14h1.1"/><path d="M18.8 5.4c-1.7 0-3 1.3-3 3v8.2"/><path d="M15.8 8.5h2.7"/></svg>';
-  const rollIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.3 13c.9-3 3.8-5 7.2-5 3.9 0 6.8 2.1 6.9 4.8.1 2.2-1.7 4-4.1 4.8-2.8.9-6.2.8-8.7-.4-1.6-.8-2.1-2.7-1.3-4.2Z"/><path d="M7.8 10.3c1.7 1.1 4.9 1.6 7.7 1.1"/></svg>';
-  const calendarIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M7 3.5v3M17 3.5v3M3.5 9h17"/></svg>';
-  const clockIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="7.5"/><path d="M12 8v4.5l3 2"/></svg>';
-  const palmIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21v-6"/><path d="M12 11c1.8-3.4 4.5-5.4 7.3-5.5-1.6 1.1-2.8 2.6-3.6 4.4"/><path d="M12 11c-1.8-3.2-4.6-5.2-7.4-5.5 1.7 1.1 3 2.6 3.8 4.4"/><path d="M12 11c.3-3.8-.7-6.6-2.8-8.1-.1 2.1-.5 4.2-1.9 6.1"/><path d="M12 11c.6-3.1 1.9-5.4 4.6-6.9-.2 2.3-.9 4.5-2.4 6.4"/><path d="M6.2 20.8c1.9-1.4 4.1-2.2 5.8-2.2 1.8 0 4.1.8 5.8 2.2"/><path d="M8 21h8"/></svg>';
-  const bookIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5.5h6a3 3 0 0 1 3 3v10H8a3 3 0 0 0-3 3V5.5Z"/><path d="M19 5.5h-6a3 3 0 0 0-3 3v10h6a3 3 0 0 1 3 3V5.5Z"/><path d="M12 8.2v10.8"/></svg>';
-  const eportalIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3.5h6.5V10"/><path d="M20.5 3.5 11 13"/><path d="M4.5 8.5v10a2 2 0 0 0 2 2h10"/><path d="M8.5 13.5 4.5 17.5"/></svg>';
+  const walletIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.7 7.4h10.6c1.7 0 3.1.9 3.7 2.1l1 1.9H18c-1.7 0-3.1 1.4-3.1 3.1S16.3 17.6 18 17.6h1.6c.7 0 1.3-.6 1.3-1.3V11c0-1.8-1.4-3.3-3.2-3.3H4.7a2 2 0 0 0-2 2v5.3a2 2 0 0 0 2 2h9.5"/><path d="M16.4 12.1h3"/><circle cx="17.6" cy="15.2" r=".6" fill="currentColor" stroke="none"/></svg>';
+  const croissantIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.3 14.4c0-3.1 2.6-5.7 6.1-5.7 2.8 0 5.3 1.1 6.9 3-.1 2.6-2.2 4.6-5 4.6H9.4c-1.8 0-3.3-.8-4-2-.3-.5-.2-1.2.2-1.7.7-.7 1.2-1.3 1.5-2 .2-.6.2-1.2.1-1.8"/><path d="M8.4 12c.8.9 1.8 1.5 3 1.5 1.1 0 2.1-.3 3.1-1"/><path d="M13 8.3c.6.9 1.3 1.7 2.1 2.4"/></svg>';
+  const plateIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2.2"/><path d="M5.4 5.2v13.6M6.2 5.2v4.8M7.2 5.2v4.8M17.8 5.2v13.6M18.8 5.2c.9 2 .9 4.5 0 6.3"/></svg>';
+  const calendarIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M7 3.5v3M17 3.5v3M3.5 9h17"/></svg>';
+  const clockIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="7.5"/><path d="M12 8v4.5l3 2"/></svg>';
+  const palmIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20v-7"/><path d="M12 13c-1-2.3-3.4-4-6.2-4.3 1.9-1.6 4.3-1.8 6.3-.6"/><path d="M12 13c1.1-2.3 3.5-4 6.3-4.3-1.9-1.5-4.4-1.7-6.3-.6"/><path d="M7.2 20h9.6"/><path d="M8.8 20c1-1.3 2.1-2 3.2-2s2.2.7 3.2 2"/></svg>';
+  const bookIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5.8h5.2a3 3 0 0 1 3 3V20H8.2a3 3 0 0 0-3 3V8.8a3 3 0 0 1 0-3z"/><path d="M19 5.8h-5.2a3 3 0 0 0-3 3V20H15.8a3 3 0 0 1 3 3V8.8a3 3 0 0 0 0-3z"/><path d="M12 8.2v12"/></svg>';
+  const externalIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.5 6.5H5.8A2.3 2.3 0 0 0 3.5 8.8v9.4a2.3 2.3 0 0 0 2.3 2.3h9.4a2.3 2.3 0 0 0 2.3-2.3v-4.7"/><path d="M13.5 4.5h6v6"/><path d="M12 12l7.5-7.5"/></svg>';
 
   const payDate = typeof getNextPayrollDate === 'function' ? getNextPayrollDate(now) : null;
   const payDateText = payDate
@@ -568,7 +579,7 @@ function updateDashboard() {
     ? ''
     : (payDays === 0 ? 'dnes' : 'za ' + payDays + ' ' + (payDays === 1 ? 'den' : (payDays >= 2 && payDays <= 4 ? 'dny' : 'dní')));
 
-  setCard('dashCalendar', 'Kalendář', formatCalendarDateLabel(now), '', '', false, calendarIcon);
+  setCard('dashCalendar', 'Kalendář', formatCalendarDateLabel(now), getCalendarSpecialText(now), '', false, calendarIcon);
   setCard('dashCountdown', 'Zbývá', active && !showSpecial ? formatDuration(active.end - now) : '—', '', '', false, clockIcon);
 
   const kantyna = findFoodStatus(FOOD_LOCATIONS[0], now);
@@ -577,23 +588,23 @@ function updateDashboard() {
   const foodDot = status => status.isOpen ? 'is-open' : 'is-closed';
   const foodMeta = status => {
     if (status.isOpen && status.active) return 'do ' + formatFoodTime(status.active.end);
-    if (!status.next) return 'Rozpis není dostupný.';
+    if (!status.next) return 'otevření není známé';
     const today = new Date(now);
     today.setHours(0, 0, 0, 0);
     const nextStart = new Date(status.next.start);
     nextStart.setHours(0, 0, 0, 0);
     const diffDays = Math.round((nextStart - today) / 86400000);
-    const range = formatFoodRange(status.next.start, status.next.end);
-    if (diffDays <= 0) return 'poté v ' + range;
-    if (diffDays === 1) return 'poté zítra v ' + range;
-    return 'poté ' + formatFoodRelativeLabel(status.next.start, now) + ' v ' + range;
+    const time = formatFoodTime(status.next.start);
+    if (diffDays <= 0) return 'otevřeno dnes v ' + time;
+    if (diffDays === 1) return 'otevřeno zítra v ' + time;
+    return 'otevřeno ' + formatFoodRelativeLabel(status.next.start, now) + ' v ' + time;
   };
-  setCard('dashKantyna', 'Kantýna', foodText(kantyna), '', foodDot(kantyna), true, plateForkIcon);
-  setCard('dashJidelna', 'Jídelna', foodText(jidelna), '', foodDot(jidelna), true, rollIcon);
-  setCard('dashVyplata', 'Další výplata', payDateText, '', '', false, walletIcon);
-  setCard('dashCzd', 'Odpočet do dovolené', vacationCountdown.text, '', '', false, palmIcon);
-  setCard('dashFoodLink', 'Jídelní lístek', 'Otevřít', '', '', true, bookIcon);
-  setCard('dashEportalLink', 'Eportal', 'Otevřít', '', '', true, eportalIcon);
+  setCard('dashKantyna', 'Kantýna', foodText(kantyna), foodMeta(kantyna), foodDot(kantyna), true, croissantIcon);
+  setCard('dashJidelna', 'Jídelna', foodText(jidelna), foodMeta(jidelna), foodDot(jidelna), true, plateIcon);
+  setCard('dashVyplata', 'Další výplata', payDateText, payMeta, '', false, walletIcon);
+  setCard('dashCzd', 'Odpočet do dovolené', vacationCountdown.text, vacationCountdown.meta, '', false, palmIcon);
+  setCard('dashFoodLink', 'Jídelní lístek', 'Otevřít', 'Aktuální menu', '', true, bookIcon);
+  setCard('dashEportalLink', 'Eportal', 'Otevřít', 'Firemní portál', '', true, externalIcon);
 }
 
 function updateShift() {

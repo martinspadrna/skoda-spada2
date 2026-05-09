@@ -241,10 +241,7 @@ input{
 }
 
 .dashboardMeta{
-  width:100%;
-  font-size:11px;
-  line-height:1.2;
-  color:rgba(255,255,255,.58);
+  display:none;
 }
 
 
@@ -285,8 +282,8 @@ input{
   transform:translateX(-50%);
   bottom:10px;
   z-index:3000;
-  width:min(calc(100% - 20px), 500px);
-  padding:9px 10px calc(9px + env(safe-area-inset-bottom));
+  width:min(calc(100% - 16px), 470px);
+  padding:6px 8px calc(6px + env(safe-area-inset-bottom));
   background:rgba(7,10,8,.58);
   backdrop-filter:blur(20px) saturate(150%);
   border:1px solid rgba(124,255,124,.10);
@@ -297,32 +294,32 @@ input{
 .bottomNavInner{
   display:grid;
   grid-template-columns:repeat(6, minmax(0, 1fr));
-  gap:6px;
+  gap:4px;
 }
 
 .bottomNavBtn{
   position:relative;
   overflow:hidden;
-  min-height:54px;
-  border-radius:16px;
+  min-height:42px;
+  border-radius:14px;
   border:1px solid rgba(124,255,124,.16);
   background:rgba(20,24,22,.96);
   backdrop-filter: blur(10px);
   color:var(--text);
   display:flex;
   flex-direction:column;
-  gap:2px;
+  gap:1px;
   align-items:center;
   justify-content:center;
-  padding:7px 5px;
-  font-size:11px;
+  padding:5px 4px;
+  font-size:10px;
   font-weight:700;
-  line-height:1.1;
+  line-height:1.05;
   box-shadow:0 10px 24px rgba(0,0,0,.18);
 }
 
 .bottomNavBtn span{
-  font-size:16px;
+  font-size:14px;
   line-height:1;
   transition:transform .18s ease;
 }
@@ -348,7 +345,7 @@ input{
 }
 
 .bottomNavLabel{
-  font-size:11px;
+  font-size:10px;
   font-weight:700;
   white-space:nowrap;
 }
@@ -935,7 +932,7 @@ input{
 .appMenuPage .appMenuAction{
   min-height:54px;
   border-radius:16px;
-  font-size:15px;
+  font-size:14px;
 }
 
 .appMenuPage .appMenuCardTitle{
@@ -1073,62 +1070,54 @@ input{
 }
 
 
-/* v1(223) dashboard / rotace / kalkulačky */
-.dashboardCard{
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-
+/* v1(223) overrides */
 .dashboardTop{
+  width:100%;
   display:flex;
   align-items:flex-start;
-  justify-content:space-between;
-  gap:10px;
+  justify-content:flex-start;
+  gap:6px;
 }
 
-.dashboardTopLeft{
+.dashboardHead{
   display:flex;
-  align-items:center;
-  gap:10px;
+  flex-direction:column;
+  gap:2px;
   min-width:0;
+  flex:1 1 auto;
 }
 
-.dashboardCard .dashboardLabel::before{
-  content:none !important;
-  display:none !important;
-}
-
-.dashboardLabel{
-  font-size:13px;
-  line-height:1.15;
-  letter-spacing:.01em;
-  color:rgba(255,255,255,.90);
-}
-
-.dashboardIcon{
+.dashboardIconInline{
   width:30px;
   height:30px;
-  flex:0 0 auto;
+  flex:none;
   color:var(--green2);
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  opacity:.95;
+  align-self:flex-start;
+  justify-self:auto;
 }
 
-.dashboardIcon svg{
+.dashboardIconInline svg{
   width:100%;
   height:100%;
   display:block;
   stroke:currentColor;
 }
 
+.dashboardLabel{
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:0;
+  text-transform:none;
+  color:rgba(255,255,255,.78);
+}
+
 .dashboardValue{
-  font-size:clamp(18px, 5vw, 26px);
-  line-height:1.05;
-  letter-spacing:-.03em;
-  color:var(--green2);
+  width:100%;
+  font-size:16px;
   font-weight:900;
+  line-height:1.08;
+  color:var(--green2);
 }
 
 .dashboardMeta{
@@ -1136,38 +1125,28 @@ input{
 }
 
 #dashVyplata .dashboardValue,
-#dashCzd .dashboardValue,
-#dashCalendar .dashboardValue,
-#dashCountdown .dashboardValue,
-#dashKantyna .dashboardValue,
-#dashJidelna .dashboardValue,
-#dashFoodLink .dashboardValue,
-#dashEportalLink .dashboardValue{
-  font-size:clamp(18px, 5vw, 26px);
+#dashCzd .dashboardValue{
+  font-size:16px;
   color:var(--green2);
 }
 
-#dashVyplata .dashboardIcon,
-#dashCzd .dashboardIcon,
-#dashCalendar .dashboardIcon,
-#dashCountdown .dashboardIcon,
-#dashKantyna .dashboardIcon,
-#dashJidelna .dashboardIcon,
-#dashFoodLink .dashboardIcon,
-#dashEportalLink .dashboardIcon{
-  width:30px;
-  height:30px;
+#kalkulacky .grid{
+  grid-template-columns:1fr;
+  gap:10px;
 }
 
 .calcTile{
-  display:grid;
-  grid-template-columns:minmax(0,1fr) auto;
-  gap:10px;
-  align-items:center;
+  display:flex;
+  align-items:flex-start;
   justify-content:space-between;
-  min-height:92px;
+  gap:12px;
+  min-height:72px;
   padding:14px 15px;
   text-align:left;
+}
+
+.calcTile.big{
+  min-height:72px;
 }
 
 .calcTileText{
@@ -1177,12 +1156,13 @@ input{
 }
 
 .calcTileIcon{
-  width:42px;
-  height:42px;
+  width:38px;
+  height:38px;
   color:var(--green2);
   display:flex;
   align-items:center;
   justify-content:center;
+  flex:none;
 }
 
 .calcTileIcon svg{
@@ -1192,74 +1172,221 @@ input{
   stroke:currentColor;
 }
 
-.rotaceFlowList{
+.rotaceQuickCards,
+.rotaceQuickList{
   display:grid;
+  grid-template-columns:1fr;
   gap:8px;
-  margin-top:10px;
 }
 
-.rotaceFlowItem{
-  padding:12px 14px;
-  border-radius:16px;
-  border:1px solid rgba(124,255,124,.12);
-  background:rgba(255,255,255,.03);
-}
-
-.rotaceFlowItem.current{
-  border-color:rgba(124,255,124,.35);
-  background:rgba(124,255,124,.07);
-}
-
-.rotaceFlowDate{
-  font-size:12px;
-  font-weight:800;
-  letter-spacing:.04em;
-  color:var(--green2);
-}
-
-.rotaceFlowTarget{
-  margin-top:5px;
-  font-size:14px;
-  line-height:1.25;
-  color:rgba(255,255,255,.82);
-}
-
-.appMenuHistory{
-  margin-top:12px;
-  display:grid;
-  gap:10px;
-}
-
-.appMenuHistoryGroup{
-  padding:12px;
-  border-radius:16px;
-  border:1px solid rgba(124,255,124,.10);
+.rotaceMiniCard{
+  border:1px solid rgba(124,255,124,.14);
+  border-radius:18px;
+  padding:11px 10px;
   background:rgba(255,255,255,.02);
+  box-shadow:0 10px 22px rgba(0,0,0,.18);
+  min-height:62px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
 }
 
-.appMenuHistoryRange{
-  font-size:11px;
-  font-weight:900;
-  letter-spacing:.12em;
-  text-transform:uppercase;
-  color:var(--green2);
+.rotaceMiniCard.current{
+  border-color:rgba(124,255,124,.34);
+  background:rgba(124,255,124,.06);
 }
 
-.appMenuHistoryTitle{
-  margin-top:4px;
-  font-size:15px;
+.rotaceMiniLabel{
+  display:none;
+}
+
+.rotaceMiniDate{
+  margin-top:0;
+  font-size:13px;
   font-weight:800;
   line-height:1.2;
 }
 
-.appMenuHistoryList{
-  margin-top:7px;
-  display:grid;
-  gap:4px;
+.rotaceMiniTarget{
+  font-size:12px;
+  line-height:1.25;
+  color:rgba(255,255,255,.70);
 }
 
-.appMenuHistoryItem{
-  font-size:12px;
-  line-height:1.35;
-  color:rgba(255,255,255,.78);
+.appMenuPageTitleBar h3{
+  font-size:18px;
+  font-weight:900;
+  letter-spacing:0;
+}
+
+.bottomNav{
+  width:min(calc(100% - 16px), 460px);
+  padding:4px 6px calc(4px + env(safe-area-inset-bottom));
+  border-radius:18px;
+  background:rgba(10,14,12,.36);
+  backdrop-filter:blur(24px) saturate(170%);
+  -webkit-backdrop-filter:blur(24px) saturate(170%);
+  border:1px solid rgba(124,255,124,.08);
+  box-shadow:0 16px 32px rgba(0,0,0,.36);
+  overflow:visible;
+}
+
+.bottomNavInner{
+  display:grid;
+  grid-template-columns:repeat(5, minmax(0, 1fr)) 34px;
+  gap:4px;
+  overflow:visible;
+}
+
+.bottomNavBtn{
+  min-height:40px;
+  padding:2px 2px;
+  gap:1px;
+  font-size:9px;
+  line-height:1.05;
+  overflow:visible;
+}
+
+.bottomNavBtn.active{
+  transform:translateY(-5px) scale(1.05);
+  z-index:2;
+}
+
+.bottomNavBtn span{
+  font-size:14px;
+}
+
+.bottomNavMenuBtn{
+  width:34px;
+  min-width:34px;
+  padding:0;
+  justify-self:end;
+}
+
+.bottomNavMenuBtn .moreIcon{
+  width:3px;
+  height:16px;
+  display:block;
+}
+
+
+
+/* v1(225) dashboard/menu/rotace refinements */
+#home .dashboardValue{
+  font-size:13px !important;
+  line-height:1.12 !important;
+  color:var(--green2) !important;
+}
+
+#home .dashboardMeta{
+  display:block !important;
+  font-size:12px !important;
+  line-height:1.25 !important;
+  color:rgba(255,255,255,.78) !important;
+}
+
+#home .dashboardLabelRow{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  min-width:0;
+}
+
+#home .dashboardLabel{
+  color:rgba(255,255,255,.88);
+}
+
+#home .dashboardIconInline{
+  width:34px;
+  height:34px;
+}
+
+#home .dashboardCardFood .dashboardMeta{
+  color:rgba(255,255,255,.82) !important;
+}
+
+#home .dashboardCardClickable .dashboardMeta{
+  color:rgba(255,255,255,.78) !important;
+}
+
+#home .dashboardDot{
+  width:9px;
+  height:9px;
+  margin-left:1px;
+}
+
+#home .dashboardCard .dashboardLabel{
+  text-transform:none;
+  letter-spacing:0;
+  font-size:11px;
+}
+
+#home .dashboardCard .dashboardTop{
+  gap:6px;
+}
+
+#home .dashboardCard .dashboardHead{
+  gap:2px;
+}
+
+#home .dashboardCard .dashboardValue,
+#home .dashboardLinkCard .dashboardValue,
+#home .dashboardCardFood .dashboardValue{
+  font-size:13px !important;
+  color:var(--green2) !important;
+}
+
+.bottomNav{
+  overflow:visible;
+  padding:4px 6px calc(4px + env(safe-area-inset-bottom));
+  border-radius:18px;
+}
+
+.bottomNavInner{
+  gap:3px;
+  overflow:visible;
+}
+
+.bottomNavBtn{
+  min-height:38px;
+  padding:2px 2px;
+  overflow:visible;
+}
+
+.bottomNavBtn.active{
+  transform:translateY(-5px) scale(1.06);
+}
+
+.bottomNavMenuBtn .moreIcon{
+  width:4px;
+  height:14px;
+}
+
+#rotaceNamesPanel .rotaceQuickList,
+#personView .rotaceQuickCards.rotaceQuickStack{
+  grid-template-columns:1fr;
+}
+
+.rotaceQuickStack{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:8px;
+}
+
+.rotaceQuickStack .rotaceMiniCard{
+  min-height:64px;
+}
+
+#kalkulacky .grid{
+  grid-template-columns:1fr;
+  gap:8px;
+}
+
+#kalkulacky .calcTile{
+  width:100%;
+}
+
+#kalkulacky .calcTileIcon{
+  width:34px;
+  height:34px;
 }
