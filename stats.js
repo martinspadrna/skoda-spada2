@@ -518,16 +518,8 @@ function updateDashboard() {
 
   const hero = document.getElementById('dashHero');
   if (hero) {
-    const isNight = !!(active && /noční/i.test(active.label || ''));
-    const heroIcon = isNight
-      ? '<span class="dashboardHeroShiftIcon dashboardHeroShiftIconNight" aria-hidden="true">' +
-        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 3.8a8 8 0 1 0 4.7 12.7 8 8 0 0 1-4.7-12.7Z"/></svg>' +
-        '</span>'
-      : '<span class="dashboardHeroShiftIcon dashboardHeroShiftIconDay" aria-hidden="true">' +
-        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.8"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.1 5.1l1.7 1.7M17.2 17.2l1.7 1.7M18.9 5.1l-1.7 1.7M7.9 16.1l-1.7 1.7"/></svg>' +
-        '</span>';
     const heroLine1 = active && !showSpecial
-      ? heroIcon + '<span class="dashboardHeroLine1Text">V práci: směna ' + active.team + (active.label ? ' (' + active.label + ')' : '') + '</span>'
+      ? '<span class="dashboardHeroLine1Text">V práci: směna ' + active.team + (active.label ? ' (' + active.label + ')' : '') + '</span>'
       : '<span class="dashboardHeroLine1Text">' + (special ? 'Dnes se nepracuje' : '—') + '</span>';
     const heroLine2 = (!active || active.team !== 'D') && dState.next
       ? 'Směna D začne za: ' + formatDuration(dState.next.start - now)

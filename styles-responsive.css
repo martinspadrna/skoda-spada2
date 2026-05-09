@@ -413,3 +413,12 @@
     max-width:28px;
   }
 }
+
+
+@media (max-width: 700px){
+  #kalkulacky .grid{
+    display:flex !important;
+    flex-direction:column !important;
+    gap:10px;
+  }
+}

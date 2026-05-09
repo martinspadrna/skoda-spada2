@@ -45,17 +45,73 @@ function startMenuImport() {
   input.click();
 }
 
+const UI_PREFS_KEY = APP_KEY + ':uiPrefs';
+
+function loadUiPrefs() {
+  try {
+    const raw = localStorage.getItem(UI_PREFS_KEY);
+    if (!raw) return { compact: false, reduceMotion: false };
+    const parsed = JSON.parse(raw);
+    return {
+      compact: !!parsed.compact,
+      reduceMotion: !!parsed.reduceMotion
+    };
+  } catch (err) {
+    console.warn(err);
+    return { compact: false, reduceMotion: false };
+  }
+}
+
+function saveUiPrefs(prefs) {
+  const next = {
+    compact: !!prefs.compact,
+    reduceMotion: !!prefs.reduceMotion
+  };
+  try {
+    localStorage.setItem(UI_PREFS_KEY, JSON.stringify(next));
+  } catch (err) {
+    console.warn(err);
+  }
+  return next;
+}
+
+function applyUiPrefs(prefs) {
+  const next = saveUiPrefs(prefs || loadUiPrefs());
+  document.body.classList.toggle('compactUI', !!next.compact);
+  document.body.classList.toggle('reduceMotion', !!next.reduceMotion);
+  if (typeof app !== 'undefined') {
+    app.uiPrefs = next;
+  }
+  return next;
+}
+
+function toggleUiPref(key) {
+  const current = loadUiPrefs();
+  const next = { ...current, [key]: !current[key] };
+  applyUiPrefs(next);
+  return next;
+}
+
+function resetUiPrefs() {
+  applyUiPrefs({ compact: false, reduceMotion: false });
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => applyUiPrefs(loadUiPrefs()));
+} else {
+  applyUiPrefs(loadUiPrefs());
+}
 
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v.1(233)',
+      range: 'v.1(234)',
       title: 'Aktuální verze',
       lines: [
-        'Dashboard má nový den/noční stav nahoře a ukazuje všechny dnešní absence.',
-        'Kalkulačky zůstávají pod sebou a rotace má čistší přehled směn.',
-        'Kantýna, jídelna, výplata i odkazy mají sladěné ikonky a texty.',
-        'Otevření kantýny a jídelny začíná od pondělí v glass okně.'
+        'Dashboard má čistší horní řádek bez barevné ikonky měsíce.',
+        'Kalkulačky jsou napevno pod sebou a spodní panel drží jen to nutné.',
+        'Nastavení umí kompaktní režim, méně animací i reset lokálních dat.',
+        'Kantýna, jídelna, výplata a odkazy mají sjednocené ikony a texty.'
       ]
     },
     {
@@ -351,11 +407,19 @@ function openAppMenu(view) {
         '</div>'
       ].join('');
     } else if (v === 'settings') {
+      const prefs = loadUiPrefs();
       body.innerHTML = [
-        '<div class="appMenuCard">',
+        '<div class="appMenuCard appMenuSettingsCard">',
         '  <div class="appMenuCardTitle">Nastavení</div>',
-        '  <button type="button" class="appMenuAction" data-menu-action="reset-state">Vymazat uložený stav</button>',
-        '  <div class="appMenuHint">Smaže uložené rozložení a lokální stav aplikace.</div>',
+        '  <div class="appMenuText">',
+        '    <div>Kompaktní režim a méně animací se ukládají jen do tohoto zařízení.</div>',
+        '  </div>',
+        '  <div class="appMenuSettingsList">',
+        '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-pref="compact">' + (prefs.compact ? '✓ ' : '') + 'Kompaktní režim</button>',
+        '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-pref="reduceMotion">' + (prefs.reduceMotion ? '✓ ' : '') + 'Méně animací</button>',
+        '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-reset="1">Obnovit výchozí nastavení</button>',
+        '    <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="reset-state">Smazat lokální data</button>',
+        '  </div>',
         '  <button type="button" class="appMenuAction appMenuBack" data-menu-back="1">Zpět</button>',
         '</div>'
       ].join('');
@@ -389,12 +453,29 @@ function openAppMenu(view) {
             try {
               localStorage.removeItem(APP_KEY);
               localStorage.removeItem('rotationBuild');
+              localStorage.removeItem(UI_PREFS_KEY);
             } catch (err) {
               console.warn(err);
             }
             location.reload();
           }
         }
+      });
+    });
+
+    body.querySelectorAll('[data-ui-pref]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-ui-pref');
+        if (!key) return;
+        toggleUiPref(key);
+        openAppMenu('settings');
+      });
+    });
+
+    body.querySelectorAll('[data-ui-reset]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        resetUiPrefs();
+        openAppMenu('settings');
       });
     });
 

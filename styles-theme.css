@@ -1551,3 +1551,67 @@ input{
 #kalkulacky .tile{
   width:100%;
 }
+
+
+/* v1(234) overrides */
+#kalkulacky .grid{
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:stretch;
+  gap:10px;
+}
+
+#kalkulacky .calcTile,
+#kalkulacky .calcTileStack,
+#kalkulacky .tile{
+  width:100%;
+}
+
+body.compactUI .dashboardShell{
+  padding:12px;
+}
+
+body.compactUI .dashboardCard{
+  min-height:88px;
+  padding:10px 12px;
+}
+
+body.compactUI #kalkulacky .calcTile,
+body.compactUI #kalkulacky .tile{
+  min-height:64px;
+  padding:12px 13px;
+}
+
+body.compactUI .appMenuPage .appMenuAction{
+  min-height:46px;
+}
+
+body.reduceMotion *,
+body.reduceMotion *::before,
+body.reduceMotion *::after{
+  animation:none !important;
+  transition:none !important;
+  scroll-behavior:auto !important;
+}
+
+.appMenuSettingsCard{
+  display:grid;
+  gap:12px;
+}
+
+.appMenuSettingsList{
+  display:grid;
+  gap:8px;
+}
+
+.appMenuSettingBtn{
+  width:100%;
+  justify-content:flex-start;
+  text-align:left;
+}
+
+.appMenuHint{
+  font-size:12px;
+  color:rgba(255,255,255,.62);
+  line-height:1.35;
+}
