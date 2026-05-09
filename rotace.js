@@ -385,9 +385,6 @@ function refreshInitialUI() {
   setRotaceView(app.rotationView || "names");
   renderRotace();
   if (app.selectedMonth) renderMonth(app.selectedMonth);
-  if (typeof updateDashboard === 'function') updateDashboard();
-  if (typeof updateFoodTile === 'function') updateFoodTile();
-  if (typeof updateEportalTile === 'function') updateEportalTile();
   updateImportBoxVisibility();
 }
 

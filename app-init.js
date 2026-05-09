@@ -195,6 +195,12 @@ document.getElementById("tabNames").style.outline = "none";
 document.getElementById("tabMonths").style.outline = "3px solid #7CFF7C";
 setRotaceView("names");
 refreshInitialUI();
+if (typeof showPage === "function") {
+  showPage("home");
+}
+if (typeof updateDashboard === "function") {
+  updateDashboard();
+}
 if (typeof updateFoodTile === "function") {
   updateFoodTile();
   setInterval(updateFoodTile, 60 * 1000);
@@ -203,3 +209,9 @@ if (typeof updateEportalTile === "function") {
   updateEportalTile();
   setInterval(updateEportalTile, 60 * 1000);
 }
+setTimeout(() => {
+  if (typeof showPage === "function") showPage("home");
+  if (typeof updateDashboard === "function") updateDashboard();
+  if (typeof updateFoodTile === "function") updateFoodTile();
+  if (typeof updateEportalTile === "function") updateEportalTile();
+}, 120);
