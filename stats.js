@@ -68,6 +68,17 @@ function getBestEntries(counts) {
     .sort((a, b) => a[0].localeCompare(b[0], 'cs'));
 }
 
+function getTopEntries(counts, limit = 3) {
+  const items = Object.entries(counts || {})
+    .map(([key, value]) => [String(key || '').trim(), Number(value) || 0])
+    .filter(([, value]) => value > 0)
+    .sort((a, b) => {
+      if (b[1] !== a[1]) return b[1] - a[1];
+      return a[0].localeCompare(b[0], 'cs');
+    });
+  return items.slice(0, limit);
+}
+
 function formatMachineWinners(entries) {
   const list = Array.isArray(entries) ? entries : [];
   if (!list.length) return '—';
@@ -355,11 +366,23 @@ function renderStatsPanel() {
     const leaderNames = leader && Array.isArray(leader.names) && leader.names.length
       ? leader.names.join(', ')
       : '—';
+    const topWorkers = Object.values(stats.people)
+      .map(person => [person.name, Number(person.work[machine] || 0)])
+      .filter(([, value]) => value > 0)
+      .sort((a, b) => {
+        if (b[1] !== a[1]) return b[1] - a[1];
+        return a[0].localeCompare(b[0], 'cs');
+      })
+      .slice(0, 3);
+    const topWorkersText = topWorkers.length
+      ? topWorkers.map(([name, value], index) => `${index + 1}. ${name} (${formatCount(value)})`).join(' · ')
+      : '—';
 
     statsMachineView.innerHTML = [
       "<div class='sectionTitle'>" + escapeHtml(machine) + "</div>",
       "<div class='statsSummary'>",
       "<div class='tile'><div class='smallText'>Letos nejvíc uklízeli</div><div style='font-size:20px;margin-top:6px;'>" + escapeHtml(leaderNames) + "</div></div>",
+      "<div class='tile'><div class='smallText'>Top 3 práce</div><div style='font-size:16px;margin-top:6px;line-height:1.35;font-weight:800;'>" + escapeHtml(topWorkersText) + "</div></div>",
       "</div>"
     ].join('');
   } else {

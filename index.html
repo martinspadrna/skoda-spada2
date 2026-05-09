@@ -380,7 +380,7 @@
 });</script>
 <script type="text/plain" id="src-core-js">
 const APP_KEY = "rotace_kalkulacky_state_v122";
-const APP_VERSION = "v.1(237)";
+const APP_VERSION = "v.1(238)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-05-08-" + APP_VERSION + "-" + Date.now();
 
@@ -2102,6 +2102,17 @@ function getBestEntries(counts) {
     .sort((a, b) => a[0].localeCompare(b[0], 'cs'));
 }
 
+function getTopEntries(counts, limit = 3) {
+  const items = Object.entries(counts || {})
+    .map(([key, value]) => [String(key || '').trim(), Number(value) || 0])
+    .filter(([, value]) => value > 0)
+    .sort((a, b) => {
+      if (b[1] !== a[1]) return b[1] - a[1];
+      return a[0].localeCompare(b[0], 'cs');
+    });
+  return items.slice(0, limit);
+}
+
 function formatMachineWinners(entries) {
   const list = Array.isArray(entries) ? entries : [];
   if (!list.length) return '—';
@@ -2389,11 +2400,23 @@ function renderStatsPanel() {
     const leaderNames = leader && Array.isArray(leader.names) && leader.names.length
       ? leader.names.join(', ')
       : '—';
+    const topWorkers = Object.values(stats.people)
+      .map(person => [person.name, Number(person.work[machine] || 0)])
+      .filter(([, value]) => value > 0)
+      .sort((a, b) => {
+        if (b[1] !== a[1]) return b[1] - a[1];
+        return a[0].localeCompare(b[0], 'cs');
+      })
+      .slice(0, 3);
+    const topWorkersText = topWorkers.length
+      ? topWorkers.map(([name, value], index) => `${index + 1}. ${name} (${formatCount(value)})`).join(' · ')
+      : '—';
 
     statsMachineView.innerHTML = [
       "<div class='sectionTitle'>" + escapeHtml(machine) + "</div>",
       "<div class='statsSummary'>",
       "<div class='tile'><div class='smallText'>Letos nejvíc uklízeli</div><div style='font-size:20px;margin-top:6px;'>" + escapeHtml(leaderNames) + "</div></div>",
+      "<div class='tile'><div class='smallText'>Top 3 práce</div><div style='font-size:16px;margin-top:6px;line-height:1.35;font-weight:800;'>" + escapeHtml(topWorkersText) + "</div></div>",
       "</div>"
     ].join('');
   } else {
@@ -4802,7 +4825,7 @@ input{
 }
 
 .dashboardHeroLine1{
-  font-size:17px;
+  font-size:16px;
   font-weight:700;
   line-height:1.35;
   color:var(--text);
@@ -4902,7 +4925,7 @@ input{
   bottom:10px;
   z-index:3000;
   width:min(calc(100% - 16px), 470px);
-  padding:5px 8px calc(5px + env(safe-area-inset-bottom));
+  padding:3px 6px calc(2px + env(safe-area-inset-bottom));
   background:rgba(7,10,8,.46);
   backdrop-filter:blur(24px) saturate(180%);
   border:1px solid rgba(124,255,124,.10);
@@ -4913,13 +4936,13 @@ input{
 .bottomNavInner{
   display:grid;
   grid-template-columns:repeat(5, minmax(0, 1fr)) 32px;
-  gap:3px;
+  gap:2px;
 }
 
 .bottomNavBtn{
   position:relative;
   overflow:hidden;
-  min-height:58px;
+  min-height:52px;
   border-radius:14px;
   border:1px solid rgba(124,255,124,.16);
   background:rgba(20,24,22,.96);
@@ -4930,7 +4953,7 @@ input{
   gap:2px;
   align-items:center;
   justify-content:center;
-  padding:5px 4px;
+  padding:2px 3px;
   font-size:10px;
   font-weight:700;
   line-height:1.05;
@@ -4946,14 +4969,14 @@ input{
 .bottomNavBtn.active{
   border-color:rgba(124,255,124,.86);
   background:linear-gradient(180deg, rgba(124,255,124,.16), rgba(20,24,22,.96));
-  transform:translateY(-4px) scale(1.02);
+  transform:translateY(-6px) scale(1.06);
   box-shadow:0 0 0 1px rgba(124,255,124,.18) inset, 0 14px 28px rgba(0,0,0,.24), 0 0 18px rgba(124,255,124,.10);
 }
 
 .bottomNavBtn.active::before{
   content:'';
   position:absolute;
-  inset:0;
+  inset:-2px;
   border-radius:inherit;
   background:linear-gradient(180deg, rgba(124,255,124,.10), rgba(124,255,124,0));
   pointer-events:none;
@@ -5283,7 +5306,7 @@ input{
 }
 
 .bottomNavMenuBtn .moreIcon{
-  width:8px;
+  width:4px;
   height:18px;
   display:block;
 }
@@ -6332,8 +6355,7 @@ body.reduceMotion *::after{
 .bottomNavMenuBtn .moreIcon{
   width:4px !important;
   height:16px !important;
-}
-</script>
+}</script>
 <script type="text/plain" id="src-styles-responsive-css">@media (max-width: 700px) {
   body {
     padding: calc(26px + env(safe-area-inset-top)) 10px 10px;
@@ -6794,18 +6816,25 @@ body.reduceMotion *::after{
 
 @media (max-width: 700px) {
   .bottomNav{
-    padding-top:1px !important;
-    padding-bottom:0 !important;
+    padding:0 4px calc(0px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .bottomNavInner{
+    align-items:flex-end !important;
   }
 
   .bottomNavBtn{
-    min-height:42px !important;
-    padding-top:0 !important;
-    padding-bottom:0 !important;
+    min-height:40px !important;
+    padding:0 2px !important;
+    justify-content:flex-end !important;
+  }
+
+  .bottomNavBtn span{
+    margin-bottom:1px !important;
   }
 
   .bottomNavBtn.active{
-    transform:translateY(-5px) scale(1.08) !important;
+    transform:translateY(-6px) scale(1.08) !important;
   }
 
   .bottomNavMenuBtn{
@@ -6816,10 +6845,9 @@ body.reduceMotion *::after{
 
   .bottomNavMenuBtn .moreIcon{
     width:4px !important;
-    height:16px !important;
+    height:18px !important;
   }
-}
-</script>
+}</script>
 <script type="text/plain" id="src-styles-modal-css">body.qrModalOpen{
   overflow:hidden;
 }

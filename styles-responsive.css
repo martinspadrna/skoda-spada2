@@ -458,18 +458,25 @@
 
 @media (max-width: 700px) {
   .bottomNav{
-    padding-top:1px !important;
-    padding-bottom:0 !important;
+    padding:0 4px calc(0px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .bottomNavInner{
+    align-items:flex-end !important;
   }
 
   .bottomNavBtn{
-    min-height:42px !important;
-    padding-top:0 !important;
-    padding-bottom:0 !important;
+    min-height:40px !important;
+    padding:0 2px !important;
+    justify-content:flex-end !important;
+  }
+
+  .bottomNavBtn span{
+    margin-bottom:1px !important;
   }
 
   .bottomNavBtn.active{
-    transform:translateY(-5px) scale(1.08) !important;
+    transform:translateY(-6px) scale(1.08) !important;
   }
 
   .bottomNavMenuBtn{
@@ -480,6 +487,6 @@
 
   .bottomNavMenuBtn .moreIcon{
     width:4px !important;
-    height:16px !important;
+    height:18px !important;
   }
 }
