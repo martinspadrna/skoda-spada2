@@ -364,6 +364,7 @@ function showPage(id) {
   } else if (id === 'kalkulacky') {
     setBottomNavActive('kalkulacky');
   } else if (id === 'home') {
+    if (typeof refreshHomeScreen === 'function') refreshHomeScreen();
     if (typeof scheduleHomeRefresh === 'function') {
       scheduleHomeRefresh();
     } else {

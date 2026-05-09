@@ -95,6 +95,31 @@ function pad2(value) {
   return String(value).padStart(2, "0");
 }
 
+function getPragueNow(reference) {
+  const source = reference instanceof Date ? reference : new Date(reference || Date.now());
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/Prague',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  }).formatToParts(source).reduce((acc, part) => {
+    if (part.type !== 'literal') acc[part.type] = part.value;
+    return acc;
+  }, {});
+  return new Date(
+    Number(parts.year),
+    Number(parts.month) - 1,
+    Number(parts.day),
+    Number(parts.hour),
+    Number(parts.minute),
+    Number(parts.second)
+  );
+}
+
 function formatFoodTime(date) {
   return pad2(date.getHours()) + ":" + pad2(date.getMinutes());
 }
@@ -146,7 +171,7 @@ function getFoodScheduleForDay(location, dayIndex, date) {
 }
 
 function findFoodStatus(location, now) {
-  const baseNow = new Date(now);
+  const baseNow = getPragueNow(now);
   const today = new Date(baseNow);
   today.setHours(0, 0, 0, 0);
   let active = null;
@@ -189,7 +214,7 @@ function foodStatusMeta(status, location) {
     return "Rozpis není dostupný.";
   }
 
-  const today = new Date();
+  const today = getPragueNow(new Date());
   today.setHours(0, 0, 0, 0);
   const nextStart = new Date(status.next.start);
   nextStart.setHours(0, 0, 0, 0);
@@ -208,7 +233,7 @@ function isPayrollWorkday(date) {
 }
 
 function getPayrollDateForMonth(year, monthIndex) {
-  const cursor = new Date(year, monthIndex, 1);
+  const cursor = getPragueNow(new Date(year, monthIndex, 1));
   cursor.setHours(0, 0, 0, 0);
   let workdayCount = 0;
 
@@ -226,7 +251,7 @@ function getPayrollDateForMonth(year, monthIndex) {
 }
 
 function getNextPayrollDate(now) {
-  const today = new Date(now || new Date());
+  const today = getPragueNow(now || new Date());
   today.setHours(0, 0, 0, 0);
 
   for (let i = 0; i < 24; i += 1) {
@@ -248,7 +273,7 @@ function pluralizeDays(count) {
 
 function getPayrollTileText(now) {
   const payDate = getNextPayrollDate(now || new Date());
-  const today = new Date(now || new Date());
+  const today = getPragueNow(now || new Date());
   today.setHours(0, 0, 0, 0);
 
   if (!payDate) return '💸 Výplata: bez termínu';
@@ -264,7 +289,7 @@ function updateFoodTile() {
   if (!tile) return;
 
   const statuses = FOOD_LOCATIONS.map(location => {
-    const status = findFoodStatus(location, new Date());
+    const status = findFoodStatus(location, getPragueNow(new Date()));
     return {
       location,
       status,
@@ -300,7 +325,7 @@ function updateEportalTile() {
 
   const html = [
     '<div class="foodTileTitle">Eportal</div>',
-    '<div class="foodTileLive" id="payrollTileLive">' + getPayrollTileText(new Date()) + '</div>',
+    '<div class="foodTileLive" id="payrollTileLive">' + getPayrollTileText(getPragueNow(new Date())) + '</div>',
   ].join('');
 
   tile.innerHTML = html;

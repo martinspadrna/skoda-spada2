@@ -524,3 +524,55 @@
     transform:translateY(-8px) scale(1.08) !important;
   }
 }
+
+
+/* v1(246) bottom nav tighter and higher */
+.bottomNav{
+  bottom: calc(30px + env(safe-area-inset-bottom)) !important;
+  padding: 1px 4px 0 !important;
+}
+
+.bottomNavInner{
+  gap: 3px !important;
+}
+
+.bottomNavBtn{
+  min-height: 46px !important;
+  padding: 1px 2px 0 !important;
+}
+
+.bottomNavBtn span{
+  font-size: 18px !important;
+  line-height: 1 !important;
+}
+
+.bottomNavBtn.active{
+  transform: translateY(-8px) scale(1.08) !important;
+}
+
+.bottomNavBtn.active::before{
+  inset: -5px !important;
+}
+
+.bottomNavMenuBtn{
+  width: 30px !important;
+  min-width: 30px !important;
+  max-width: 30px !important;
+}
+
+.bottomNavMenuBtn .moreIcon{
+  width: 4px !important;
+  height: 24px !important;
+}
+
+/* icons fill their boxes a bit more */
+.dashboardIconInline,
+.dashboardIconInline svg{
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.dashboardIconInline svg{
+  transform: scale(1.08);
+  transform-origin: center;
+}

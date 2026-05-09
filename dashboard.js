@@ -1,6 +1,6 @@
-// Extracted dashboard logic (v1(245))
+// Extracted dashboard logic (v1(246))
 function updateDashboard() {
-  const now = new Date();
+  const now = typeof getPragueNow === "function" ? getPragueNow(new Date()) : new Date();
   const active = getActiveShiftNow(now);
   const dState = getTeamShiftState(now, "D");
   const special = getSpecialWorkInfo(now);
@@ -113,11 +113,10 @@ function scheduleDashboardInitialPaint() {
   const run = () => {
     if (typeof updateDashboard === 'function') updateDashboard();
   };
+  run();
   if (typeof requestAnimationFrame === 'function') {
-    requestAnimationFrame(() => {
-      run();
-      requestAnimationFrame(run);
-    });
+    requestAnimationFrame(run);
+    requestAnimationFrame(() => requestAnimationFrame(run));
   } else {
     setTimeout(run, 0);
     setTimeout(run, 120);
@@ -130,3 +129,7 @@ if (document.readyState === 'loading') {
   scheduleDashboardInitialPaint();
 }
 window.addEventListener('load', scheduleDashboardInitialPaint, { once: true });
+window.addEventListener('pageshow', scheduleDashboardInitialPaint);
+window.addEventListener('visibilitychange', () => {
+  if (!document.hidden) scheduleDashboardInitialPaint();
+});

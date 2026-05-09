@@ -381,7 +381,7 @@
 });</script>
 <script type="text/plain" id="src-core-js">
 const APP_KEY = "rotace_kalkulacky_state_v122";
-const APP_VERSION = "v.1(245)";
+const APP_VERSION = "v.1(246)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-05-08-" + APP_VERSION + "-" + Date.now();
 
@@ -952,7 +952,7 @@ if (document.readyState === 'loading') {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v.1(243)–v.1(245)',
+      range: 'v.1(243)–v.1(244)',
       title: 'Aktuální úpravy',
       lines: [
         'Dashboard dostal opravu načtení a lepší refresh po startu.',
@@ -1211,6 +1211,7 @@ function showPage(id) {
   } else if (id === 'kalkulacky') {
     setBottomNavActive('kalkulacky');
   } else if (id === 'home') {
+    if (typeof refreshHomeScreen === 'function') refreshHomeScreen();
     if (typeof scheduleHomeRefresh === 'function') {
       scheduleHomeRefresh();
     } else {
@@ -1435,6 +1436,31 @@ function pad2(value) {
   return String(value).padStart(2, "0");
 }
 
+function getPragueNow(reference) {
+  const source = reference instanceof Date ? reference : new Date(reference || Date.now());
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/Prague',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  }).formatToParts(source).reduce((acc, part) => {
+    if (part.type !== 'literal') acc[part.type] = part.value;
+    return acc;
+  }, {});
+  return new Date(
+    Number(parts.year),
+    Number(parts.month) - 1,
+    Number(parts.day),
+    Number(parts.hour),
+    Number(parts.minute),
+    Number(parts.second)
+  );
+}
+
 function formatFoodTime(date) {
   return pad2(date.getHours()) + ":" + pad2(date.getMinutes());
 }
@@ -1486,7 +1512,7 @@ function getFoodScheduleForDay(location, dayIndex, date) {
 }
 
 function findFoodStatus(location, now) {
-  const baseNow = new Date(now);
+  const baseNow = getPragueNow(now);
   const today = new Date(baseNow);
   today.setHours(0, 0, 0, 0);
   let active = null;
@@ -1529,7 +1555,7 @@ function foodStatusMeta(status, location) {
     return "Rozpis není dostupný.";
   }
 
-  const today = new Date();
+  const today = getPragueNow(new Date());
   today.setHours(0, 0, 0, 0);
   const nextStart = new Date(status.next.start);
   nextStart.setHours(0, 0, 0, 0);
@@ -1548,7 +1574,7 @@ function isPayrollWorkday(date) {
 }
 
 function getPayrollDateForMonth(year, monthIndex) {
-  const cursor = new Date(year, monthIndex, 1);
+  const cursor = getPragueNow(new Date(year, monthIndex, 1));
   cursor.setHours(0, 0, 0, 0);
   let workdayCount = 0;
 
@@ -1566,7 +1592,7 @@ function getPayrollDateForMonth(year, monthIndex) {
 }
 
 function getNextPayrollDate(now) {
-  const today = new Date(now || new Date());
+  const today = getPragueNow(now || new Date());
   today.setHours(0, 0, 0, 0);
 
   for (let i = 0; i < 24; i += 1) {
@@ -1588,7 +1614,7 @@ function pluralizeDays(count) {
 
 function getPayrollTileText(now) {
   const payDate = getNextPayrollDate(now || new Date());
-  const today = new Date(now || new Date());
+  const today = getPragueNow(now || new Date());
   today.setHours(0, 0, 0, 0);
 
   if (!payDate) return '💸 Výplata: bez termínu';
@@ -1604,7 +1630,7 @@ function updateFoodTile() {
   if (!tile) return;
 
   const statuses = FOOD_LOCATIONS.map(location => {
-    const status = findFoodStatus(location, new Date());
+    const status = findFoodStatus(location, getPragueNow(new Date()));
     return {
       location,
       status,
@@ -1640,7 +1666,7 @@ function updateEportalTile() {
 
   const html = [
     '<div class="foodTileTitle">Eportal</div>',
-    '<div class="foodTileLive" id="payrollTileLive">' + getPayrollTileText(new Date()) + '</div>',
+    '<div class="foodTileLive" id="payrollTileLive">' + getPayrollTileText(getPragueNow(new Date())) + '</div>',
   ].join('');
 
   tile.innerHTML = html;
@@ -2398,9 +2424,9 @@ function getTodayAbsenceNames(now) {
 function updateShift() {
   if (typeof updateDashboard === "function") updateDashboard();
 }</script>
-<script type="text/plain" id="src-dashboard-js">// Extracted dashboard logic (v1(245))
+<script type="text/plain" id="src-dashboard-js">// Extracted dashboard logic (v1(246))
 function updateDashboard() {
-  const now = new Date();
+  const now = typeof getPragueNow === "function" ? getPragueNow(new Date()) : new Date();
   const active = getActiveShiftNow(now);
   const dState = getTeamShiftState(now, "D");
   const special = getSpecialWorkInfo(now);
@@ -2513,11 +2539,10 @@ function scheduleDashboardInitialPaint() {
   const run = () => {
     if (typeof updateDashboard === 'function') updateDashboard();
   };
+  run();
   if (typeof requestAnimationFrame === 'function') {
-    requestAnimationFrame(() => {
-      run();
-      requestAnimationFrame(run);
-    });
+    requestAnimationFrame(run);
+    requestAnimationFrame(() => requestAnimationFrame(run));
   } else {
     setTimeout(run, 0);
     setTimeout(run, 120);
@@ -2529,7 +2554,11 @@ if (document.readyState === 'loading') {
 } else {
   scheduleDashboardInitialPaint();
 }
-window.addEventListener('load', scheduleDashboardInitialPaint, { once: true });</script>
+window.addEventListener('load', scheduleDashboardInitialPaint, { once: true });
+window.addEventListener('pageshow', scheduleDashboardInitialPaint);
+window.addEventListener('visibilitychange', () => {
+  if (!document.hidden) scheduleDashboardInitialPaint();
+});</script>
 
 <script type="text/plain" id="src-soustruhy-js">function resetSoustruhy() {
   ["lis_first", "lis_plan", "v126_first", "v126_plan", "v106_first", "v106_plan", "v106_c1", "v106_c2", "v106_c3", "v106_c4"].forEach(id => {
@@ -6870,6 +6899,58 @@ body.reduceMotion *::after{
   .bottomNavBtn.active{
     transform:translateY(-8px) scale(1.08) !important;
   }
+}
+
+
+/* v1(246) bottom nav tighter and higher */
+.bottomNav{
+  bottom: calc(30px + env(safe-area-inset-bottom)) !important;
+  padding: 1px 4px 0 !important;
+}
+
+.bottomNavInner{
+  gap: 3px !important;
+}
+
+.bottomNavBtn{
+  min-height: 46px !important;
+  padding: 1px 2px 0 !important;
+}
+
+.bottomNavBtn span{
+  font-size: 18px !important;
+  line-height: 1 !important;
+}
+
+.bottomNavBtn.active{
+  transform: translateY(-8px) scale(1.08) !important;
+}
+
+.bottomNavBtn.active::before{
+  inset: -5px !important;
+}
+
+.bottomNavMenuBtn{
+  width: 30px !important;
+  min-width: 30px !important;
+  max-width: 30px !important;
+}
+
+.bottomNavMenuBtn .moreIcon{
+  width: 4px !important;
+  height: 24px !important;
+}
+
+/* icons fill their boxes a bit more */
+.dashboardIconInline,
+.dashboardIconInline svg{
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.dashboardIconInline svg{
+  transform: scale(1.08);
+  transform-origin: center;
 }</script>
 <script type="text/plain" id="src-styles-modal-css">body.qrModalOpen{
   overflow:hidden;
