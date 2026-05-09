@@ -154,7 +154,7 @@ body.foodModalOpen{
 }
 
 .foodScheduleDay{
-  width:42px;
+  min-width:96px;
   flex:none;
   font-weight:800;
   color:var(--green2);
@@ -164,6 +164,7 @@ body.foodModalOpen{
   flex:1;
   color:var(--text);
   line-height:1.35;
+  text-align:left;
 }
 
 
@@ -454,4 +455,9 @@ body.appMenuOpen{
 .foodScheduleRow{
   background:rgba(255,255,255,.04);
   border:1px solid rgba(124,255,124,.12);
+}
+
+@media (max-width: 420px){
+  .foodScheduleRow{flex-direction:column;gap:4px;}
+  .foodScheduleDay,.foodScheduleWindows{text-align:left;min-width:0;}
 }

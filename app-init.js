@@ -204,10 +204,40 @@ const bootHome = () => {
   }
   if (typeof updateFoodTile === "function") updateFoodTile();
   if (typeof updateEportalTile === "function") updateEportalTile();
+
+  const runHomeRefresh = () => {
+    if (typeof refreshHomeScreen === "function") {
+      refreshHomeScreen();
+    } else if (typeof updateDashboard === "function") {
+      updateDashboard();
+      if (typeof updateFoodTile === "function") updateFoodTile();
+      if (typeof updateEportalTile === "function") updateEportalTile();
+    }
+  };
+
+  if (typeof requestAnimationFrame === "function") {
+    requestAnimationFrame(runHomeRefresh);
+    requestAnimationFrame(() => requestAnimationFrame(runHomeRefresh));
+  }
+  setTimeout(runHomeRefresh, 120);
+  setTimeout(runHomeRefresh, 360);
+  setTimeout(runHomeRefresh, 720);
+  setTimeout(runHomeRefresh, 1400);
 };
 bootHome();
 setTimeout(bootHome, 60);
 setTimeout(bootHome, 240);
+setTimeout(() => {
+  try {
+    if (typeof showPage === "function") showPage("home");
+    if (typeof refreshHomeScreen === "function") refreshHomeScreen();
+    else if (typeof updateDashboard === "function") updateDashboard();
+    if (typeof updateFoodTile === "function") updateFoodTile();
+    if (typeof updateEportalTile === "function") updateEportalTile();
+  } catch (err) {
+    console.warn('Late home boot failed', err);
+  }
+}, 1100);
 
 window.addEventListener("load", bootHome, { once: true });
 window.addEventListener("pageshow", bootHome);

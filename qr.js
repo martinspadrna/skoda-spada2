@@ -24,13 +24,13 @@ const FOOD_LOCATIONS = [
     label: "Kantýna",
     place: "Kiosek M2",
     days: {
-      0: [["05:30", "09:00"], ["10:00", "12:00"]],
+      0: [["05:30", "09:00"], ["10:00", "12:00"], ["21:30", "00:00"], ["01:00", "03:00"]],
       1: [["05:30", "09:00"], ["10:00", "12:00"], ["13:00", "16:00"], ["17:30", "21:00"], ["22:00", "00:00"], ["01:00", "04:00"]],
       2: [["05:30", "09:00"], ["10:00", "12:00"], ["13:00", "16:00"], ["17:30", "21:00"], ["22:00", "00:00"], ["01:00", "04:00"]],
       3: [["05:30", "09:00"], ["10:00", "12:00"], ["13:00", "16:00"], ["17:30", "21:00"], ["22:00", "00:00"], ["01:00", "04:00"]],
       4: [["05:30", "09:00"], ["10:00", "12:00"], ["13:00", "16:00"], ["17:30", "21:00"], ["22:00", "00:00"], ["01:00", "04:00"]],
       5: [["05:30", "09:00"], ["10:00", "12:00"], ["13:00", "16:00"], ["17:30", "21:00"], ["22:00", "00:00"], ["01:00", "04:00"]],
-      6: [["05:30", "09:00"], ["10:00", "12:00"], ["21:30", "00:00"], ["01:00", "03:00"]]
+      6: [["05:30", "09:00"], ["10:00", "12:00"], ["13:00", "16:00"], ["17:30", "21:00"], ["22:00", "00:00"], ["01:00", "04:00"]]
     }
   },
   {
@@ -44,7 +44,7 @@ const FOOD_LOCATIONS = [
       3: [["07:00", "09:00"], ["10:30", "12:30"], ["15:00", "16:30"], ["22:30", "00:00"]],
       4: [["07:00", "09:00"], ["10:30", "12:30"], ["15:00", "16:30"], ["22:30", "00:00"]],
       5: [["07:00", "09:00"], ["10:30", "12:30"], ["15:00", "16:30"], ["22:30", "00:00"]],
-      6: [["10:30", "12:30"], ["15:00", "16:30"], ["22:30", "00:00"]]
+      6: [["07:00", "09:00"], ["10:30", "12:30"], ["15:00", "16:30"], ["22:30", "00:00"]]
     }
   }
 ];
@@ -342,15 +342,49 @@ function formatFoodWindowsList(windows) {
   return windows.map(item => item[0] + '–' + item[1]).join(', ');
 }
 
-function buildFoodScheduleHtml(location) {
+function formatFoodDayLabel(dayIndex) {
+  const raw = FOOD_DAY_NAMES[dayIndex] || '';
+  return raw ? raw.charAt(0).toUpperCase() + raw.slice(1) : '';
+}
+
+function formatFoodDayRangeLabel(startDayIndex, endDayIndex) {
+  const startLabel = formatFoodDayLabel(startDayIndex);
+  const endLabel = formatFoodDayLabel(endDayIndex);
+  if (!startLabel) return endLabel || '';
+  if (!endLabel || startDayIndex === endDayIndex) return startLabel;
+  return startLabel + ' – ' + endLabel;
+}
+
+function buildFoodScheduleGroups(location) {
   const dayOrder = [1, 2, 3, 4, 5, 6, 0];
-  const dayLabels = ['Po', 'Út', 'St', 'Čt', 'Pá', 'So', 'Ne'];
-  const rows = dayOrder.map((dayIndex) => {
-    const dayLabel = dayLabels[dayIndex === 0 ? 6 : dayIndex - 1];
+  const groups = [];
+  let current = null;
+
+  dayOrder.forEach((dayIndex) => {
     const windows = (location.days && location.days[dayIndex]) || [];
+    const signature = JSON.stringify(windows);
+    if (!current || current.signature !== signature) {
+      current = {
+        startDay: dayIndex,
+        endDay: dayIndex,
+        signature,
+        windows
+      };
+      groups.push(current);
+    } else {
+      current.endDay = dayIndex;
+    }
+  });
+
+  return groups;
+}
+
+function buildFoodScheduleHtml(location) {
+  const rows = buildFoodScheduleGroups(location).map((group) => {
+    const dayLabel = formatFoodDayRangeLabel(group.startDay, group.endDay);
     return '<div class="foodScheduleRow">' +
-      '<div class="foodScheduleDay">' + dayLabel + '</div>' +
-      '<div class="foodScheduleWindows">' + escapeHtml(formatFoodWindowsList(windows)) + '</div>' +
+      '<div class="foodScheduleDay">' + escapeHtml(dayLabel) + '</div>' +
+      '<div class="foodScheduleWindows">' + escapeHtml(formatFoodWindowsList(group.windows)) + '</div>' +
     '</div>';
   }).join('');
 

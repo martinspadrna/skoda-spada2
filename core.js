@@ -1,8 +1,8 @@
 
 const APP_KEY = "rotace_kalkulacky_state_v122";
-const APP_VERSION = "v.1(248)";
+const APP_VERSION = "v.1(256)";
 window.APP_VERSION = APP_VERSION;
-const ROTATION_BUILD = "2026-05-08-" + APP_VERSION + "-" + Date.now();
+const ROTATION_BUILD = "2026-05-09-" + APP_VERSION + "-" + Date.now();
 
 const HARD_MACHINE_HEADERS = ["TNKS01", "TBKR07", "TPKW01", "TPKW02", "TBKR01"];
 const SOFT_MACHINE_HEADERS = ["MSKC01", "MSKC03", "MSKC04", "MFKF06", "MFKF10"];
@@ -61,9 +61,10 @@ function getVacationCountdown(now) {
   const start = new Date(upcoming.start);
   start.setHours(0, 0, 0, 0);
   const diffDays = Math.max(0, Math.round((start.getTime() - today.getTime()) / 86400000));
+  const targetLabel = upcoming.start.getTime() === CZD_PERIODS[0].start.getTime() ? 'k CZD' : 'k Vánocům';
   return {
     text: diffDays === 0 ? 'Dnes' : (diffDays + ' ' + (diffDays === 1 ? 'den' : 'dní')),
-    meta: ''
+    meta: targetLabel
   };
 }
 

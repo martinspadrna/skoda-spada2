@@ -23,12 +23,7 @@ const EXPORT_SOURCE_IDS = {
 const SOURCE_CACHE = window.__ROTACE_SOURCE_CACHE__ || (window.__ROTACE_SOURCE_CACHE__ = {});
 
 function primeSourceCache() {
-  for (const [file, id] of Object.entries(EXPORT_SOURCE_IDS)) {
-    const el = document.getElementById(id);
-    if (el && el.textContent) {
-      SOURCE_CACHE[file] = el.textContent.replace(/^\s+|\s+$/g, "");
-    }
-  }
+  // Keep the cache empty here so exports always read the current files first.
 }
 
 primeSourceCache();
@@ -36,6 +31,17 @@ primeSourceCache();
 async function readExportText(relativePath) {
   if (SOURCE_CACHE[relativePath]) {
     return SOURCE_CACHE[relativePath];
+  }
+
+  try {
+    const response = await fetch(new URL(relativePath, window.location.href).toString(), { cache: "no-store" });
+    if (response.ok) {
+      const text = await response.text();
+      SOURCE_CACHE[relativePath] = text;
+      return text;
+    }
+  } catch (err) {
+    console.warn(err);
   }
 
   const id = EXPORT_SOURCE_IDS[relativePath];
@@ -46,13 +52,7 @@ async function readExportText(relativePath) {
     return text;
   }
 
-  const response = await fetch(new URL(relativePath, window.location.href).toString(), { cache: "no-store" });
-  if (!response.ok) {
-    throw new Error(`Nepodařilo se načíst ${relativePath} (${response.status})`);
-  }
-  const text = await response.text();
-  SOURCE_CACHE[relativePath] = text;
-  return text;
+  throw new Error(`Nepodařilo se načíst ${relativePath}`);
 }
 
 async function exportCurrentHtml() {
@@ -103,6 +103,15 @@ async function exportCurrentHtml() {
     if (home) home.classList.add("active");
 
     const clone = document.documentElement.cloneNode(true);
+    for (const [file, id] of Object.entries(EXPORT_SOURCE_IDS)) {
+      const text = file === 'styles.css'
+        ? stylesSource
+        : (moduleSources[file] || cssSources[file] || (file === 'data.js' ? `const initialRotationData = ${JSON.stringify(app.rotation)};
+` : null));
+      if (!text) continue;
+      const node = clone.querySelector('[id="' + id + '"]');
+      if (node) node.textContent = text;
+    }
     const indexText = `<!DOCTYPE html>
 ${clone.outerHTML}`;
 
@@ -126,7 +135,7 @@ ${clone.outerHTML}`;
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "rotace_v1(207).zip";
+    a.download = "rotace_v1(256).zip";
     document.body.appendChild(a);
     a.click();
     a.remove();

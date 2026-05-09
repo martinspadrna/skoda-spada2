@@ -507,10 +507,10 @@ function getCalendarSpecialText(now) {
   return parts.join(" · ") || "Bez událostí";
 }
 
-function getTodayAbsenceNames(now) {
-  const today = new Date(now);
-  today.setHours(0, 0, 0, 0);
-  const monthKey = (today.getMonth() + 1) + "/" + String(today.getFullYear()).slice(-2);
+function getAbsenceNamesForDate(date) {
+  const target = new Date(date);
+  target.setHours(0, 0, 0, 0);
+  const monthKey = (target.getMonth() + 1) + "/" + String(target.getFullYear()).slice(-2);
   const month = app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
   if (!month || !Array.isArray(month.notes)) return [];
 
@@ -519,7 +519,7 @@ function getTodayAbsenceNames(now) {
     const n = normalizeNoteEntry(note);
     if (!n || !n.isAbsence || !Array.isArray(n.people) || !n.people.length) return;
     const parsed = parseDateToken(n.date);
-    if (!parsed || parsed.day !== today.getDate() || parsed.month !== (today.getMonth() + 1)) return;
+    if (!parsed || parsed.day !== target.getDate() || parsed.month !== (target.getMonth() + 1)) return;
     n.people.forEach(person => {
       const name = String(person || "").trim();
       if (name) names.push(name);
@@ -527,6 +527,10 @@ function getTodayAbsenceNames(now) {
   });
 
   return [...new Set(names)];
+}
+
+function getTodayAbsenceNames(now) {
+  return getAbsenceNamesForDate(now);
 }
 
 

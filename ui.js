@@ -105,12 +105,12 @@ if (document.readyState === 'loading') {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v.1(243)–v.1(244)',
+      range: 'v.1(250)–v.1(256)',
       title: 'Aktuální úpravy',
       lines: [
-        'Dashboard dostal opravu načtení a lepší refresh po startu.',
-        'Spodní panel se vytahuje výš, aby těsněji seděl na ikony.',
-        'Kantýna bere dnešní rozpis přesněji a kontakt je doplněný.'
+        'Jídelna a kantýna teď používají shodné dny na jednom řádku.',
+        'Dashboard ukazuje další směnu D i to, kdo na ní chybí.',
+        'Odpočet do dovolené doplňuje, jestli jde o CZD nebo Vánoce.'
       ]
     },
     {
@@ -364,13 +364,15 @@ function showPage(id) {
   } else if (id === 'kalkulacky') {
     setBottomNavActive('kalkulacky');
   } else if (id === 'home') {
-    if (typeof refreshHomeScreen === 'function') refreshHomeScreen();
     if (typeof scheduleHomeRefresh === 'function') {
       scheduleHomeRefresh();
     } else {
-      if (typeof updateDashboard === 'function') updateDashboard();
-      if (typeof updateFoodTile === 'function') updateFoodTile();
-      if (typeof updateEportalTile === 'function') updateEportalTile();
+      if (typeof refreshHomeScreen === 'function') refreshHomeScreen();
+      else {
+        if (typeof updateDashboard === 'function') updateDashboard();
+        if (typeof updateFoodTile === 'function') updateFoodTile();
+        if (typeof updateEportalTile === 'function') updateEportalTile();
+      }
     }
     setBottomNavActive('home');
   }
@@ -400,9 +402,21 @@ function openKalkulacky() {
 }
 
 function refreshHomeScreen() {
-  if (typeof updateDashboard === 'function') updateDashboard();
-  if (typeof updateFoodTile === 'function') updateFoodTile();
-  if (typeof updateEportalTile === 'function') updateEportalTile();
+  try {
+    if (typeof updateDashboard === 'function') updateDashboard();
+  } catch (err) {
+    console.warn('Dashboard refresh failed', err);
+  }
+  try {
+    if (typeof updateFoodTile === 'function') updateFoodTile();
+  } catch (err) {
+    console.warn('Food tile refresh failed', err);
+  }
+  try {
+    if (typeof updateEportalTile === 'function') updateEportalTile();
+  } catch (err) {
+    console.warn('Eportal tile refresh failed', err);
+  }
 }
 
 function scheduleHomeRefresh() {
@@ -410,12 +424,19 @@ function scheduleHomeRefresh() {
   if (typeof requestAnimationFrame === 'function') {
     requestAnimationFrame(() => {
       run();
-      requestAnimationFrame(run);
+      requestAnimationFrame(() => {
+        run();
+        requestAnimationFrame(run);
+      });
     });
   } else {
     setTimeout(run, 0);
     setTimeout(run, 120);
   }
+  setTimeout(run, 240);
+  setTimeout(run, 480);
+  setTimeout(run, 900);
+  setTimeout(run, 1500);
 }
 
 function setRotaceView(view) {
