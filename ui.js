@@ -105,112 +105,68 @@ if (document.readyState === 'loading') {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v.1(237)',
+      range: 'v.1(239)',
       title: 'Aktuální verze',
       lines: [
-        'Dashboard má čistší horní řádek bez barevné ikonky měsíce.',
-        'Kalkulačky jsou napevno pod sebou a spodní panel drží jen to nutné.',
-        'Nastavení umí kompaktní režim, méně animací i reset lokálních dat.',
-        'Kantýna, jídelna, výplata a odkazy mají sjednocené ikony a texty.'
+        'Spodní lišta je těsnější kolem ikon a poslední volba je užší.',
+        'Dashboard má čistší horní řádek a srovnané stavové řádky.',
+        'Statistiky ukazují více položek přehledně po řádcích.'
       ]
     },
     {
-      range: 'v.1(221)',
-      title: 'Více, dashboard a kalkulačky',
+      range: 'v.1(238)–v.1(237)',
+      title: 'Lišta a statistiky',
       lines: [
-        'Přehlednější dashboard podle nového vzoru.',
-        'Kalkulačky přepnuté na Soustruhy → Frézky → Brusy.',
-        'Statistiky čistší, menu už jako samostatná stránka.'
+        'Spodní panel se ladil na výšku ikon.',
+        'Ve statistikách se doplnil top 3 přehled a rozpad více jmen na řádky.'
       ]
     },
     {
-      range: 'v.1(220)',
-      title: 'Rotace a statistiky',
+      range: 'v.1(236)–v.1(234)',
+      title: 'Dashboard a nastavení',
       lines: [
-        'Rotace na tiles s krátkým přehledem pod jménem.',
-        'QR modal po trojkliku.',
-        'Statistiky doplněné o součet práce + absence.'
+        'Dashboard dostal čistší vzhled a lepší karty.',
+        'Přidalo se nastavení pro kompaktní režim a reset lokálních dat.'
       ]
     },
     {
-      range: 'v.1(219)',
-      title: 'Menu přes tři tečky',
+      range: 'v.1(233)–v.1(231)',
+      title: 'Rotace a rozpisy',
       lines: [
-        'Spodní menu přesunuto do stránky Více.',
-        'Import, export, nastavení, o aplikaci i kontakt na jednom místě.',
-        'Verze schovaná jen do O aplikaci.'
+        'Rotace ukazuje směny pod sebou bez zbytečných štítků.',
+        'Kalkulačky i rozpisy byly srovnané do přehlednějšího pořadí.'
       ]
     },
     {
-      range: 'v.1(218)',
-      title: 'Opravy a sjednocení',
+      range: 'v.1(230)–v.1(228)',
+      title: 'Panel a otevírací doby',
       lines: [
-        'Základ menu vyčištěný do jednodušší podoby.',
-        'Vylepšená práce s importem a exportem.',
-        'Doplněné menu položky pro správu aplikace.'
+        'Spodní panel dostal glass efekt a přesnější výšku.',
+        'Otevírací doby kantýny a jídelny mají lepší zobrazení a pořádek od pondělí.'
       ]
     },
     {
-      range: 'v.1(217)',
-      title: 'Nový základ aplikace',
+      range: 'v.1(227)–v.1(225)',
+      title: 'Více a dashboard',
       lines: [
-        'Rotace jako tiles, rozpisy s automaticky vybraným měsícem.',
-        'Statistiky jako tiles a dashboard po částech.',
-        'Přechod na moderní floating iOS styl.'
+        'Menu „Více“ je samostatná stránka bez rušivých popisků.',
+        'Dashboardové ikony a hodnoty se sjednotily do čistšího stylu.'
       ]
     },
     {
-      range: 'v0.211–v0.215',
-      title: 'Aktuální vývojová větev',
+      range: 'v.1(224)–v.1(221)',
+      title: 'Kalkulačky a rotace',
       lines: [
-        'Další sjednocování design systému.',
-        'Úpravy dashboardu, statistik a rotací.',
-        'Modernější ikony a mobilní rozložení.'
+        'Kalkulačky dostaly nové ikony a svislé řazení.',
+        'Rotace i statistiky se převedly na tiles.'
       ]
     },
     {
-      range: 'v0.201–v0.210',
-      title: 'App-like vzhled',
+      range: 'v.1(215)–v.1(220)',
+      title: 'Refaktorace a stabilita',
       lines: [
-        'Floating prvky a spodní navigace.',
-        'Dashboard podle moderních trendů.',
-        'Lepší mobilní ergonomie a dlaždice sekcí.'
-      ]
-    },
-    {
-      range: 'v0.191–v0.200',
-      title: 'Refaktorace a modernizace',
-      lines: [
-        'Čištění kódu a stabilnější export.',
-        'Příprava na PWA chování.',
-        'Modernější dashboard a struktura aplikace.'
-      ]
-    },
-    {
-      range: 'v0.181–v0.190',
-      title: 'UX a mobilní ergonomie',
-      lines: [
-        'Lepší ovládání na telefonu.',
-        'Úpravy textů, velikostí a mezer.',
-        'Plynulejší animace a přechody.'
-      ]
-    },
-    {
-      range: 'v0.171–v0.180',
-      title: 'Statistiky a rotace',
-      lines: [
-        'Přestavba statistik.',
-        'Lepší zobrazení jmen a strojů.',
-        'Zjednodušení rotací a klikání.'
-      ]
-    },
-    {
-      range: 'v0.158–v0.170',
-      title: 'Nová generace UI',
-      lines: [
-        'Výrazně modernější dashboard.',
-        'Nové ikony, karty a dark styl.',
-        'Jasnější vizuální hierarchie.'
+        'Čištění kódu, exportů a větší modularita.',
+        'Příprava na další rozšíření dashboardu, statistik a menu.'
       ]
     },
     {
@@ -218,143 +174,31 @@ function buildAppHistoryHtml(versionText) {
       title: 'Velká refaktorace',
       lines: [
         'Nový základ projektu.',
-        'Vyčištění starého kódu a modularita.',
-        'Stabilnější exporty a buildy.'
+        'Vyčištění starého kódu a stabilnější exporty.'
       ]
     },
     {
-      range: 'v0.141–v0.150',
-      title: 'Vývoj směrem k aplikaci',
-      lines: [
-        'Lepší mobilní navigace.',
-        'Úpravy spodního menu a přechodů.',
-        'Optimalizace výkonu a ovládání.'
-      ]
-    },
-    {
-      range: 'v0.131–v0.140',
-      title: 'Dashboard a přehledy',
-      lines: [
-        'Rozšíření dashboardu.',
-        'Přehlednější dlaždice a rychlé informace.',
-        'Lepší rozložení informací.'
-      ]
-    },
-    {
-      range: 'v0.121–v0.130',
-      title: 'Moderní styl aplikace',
-      lines: [
-        'Glassmorphism vzhled.',
-        'Plovoucí prvky a jemné animace.',
-        'Sjednocení celé aplikace.'
-      ]
-    },
-    {
-      range: 'v0.111–v0.120',
-      title: 'Stabilita systému',
-      lines: [
-        'Opravy kritických bugů.',
-        'Safari safe-area a export.',
-        'Lepší kompatibilita mobilních zařízení.'
-      ]
-    },
-    {
-      range: 'v0.101–v0.110',
-      title: 'UI a použitelnost',
-      lines: [
-        'Přehlednější navigace.',
-        'Úpravy dashboardu a ikon.',
-        'Optimalizace pro menší displeje.'
-      ]
-    },
-    {
-      range: 'v0.91–v0.100',
+      range: 'v0.91–v0.150',
       title: 'Přechod na modernější architekturu',
       lines: [
-        'Začátek větší refaktorace.',
-        'Rozdělení logiky aplikace.',
-        'Čistší struktura kódu a příprava na další rozvoj.'
+        'Rozdělení logiky aplikace a čistší struktura.',
+        'Lepší mobilní navigace, dashboard a PWA příprava.'
       ]
     },
     {
-      range: 'v0.81–v0.90',
-      title: 'Rozšíření funkcí',
+      range: 'v0.41–v0.90',
+      title: 'Rotace, statistiky a vzhled',
       lines: [
-        'Nové pomocné funkce.',
-        'Vylepšení statistik a exportů.',
-        'Stabilnější fungování aplikace.'
+        'Rozšíření rotací a statistik.',
+        'Modernější dark styl, karty a mobilní ergonomie.'
       ]
     },
     {
-      range: 'v0.71–v0.80',
-      title: 'Vzhled aplikace',
-      lines: [
-        'Výraznější dark mode styl.',
-        'Modernější karty a panely.',
-        'Lepší kontrast a čitelnost.'
-      ]
-    },
-    {
-      range: 'v0.61–v0.70',
-      title: 'Mobilní optimalizace',
-      lines: [
-        'Lepší ovládání jednou rukou.',
-        'Větší důraz na mobilní vzhled.',
-        'Lepší responzivita a rozpadání layoutu.'
-      ]
-    },
-    {
-      range: 'v0.51–v0.60',
-      title: 'Statistiky a data',
-      lines: [
-        'Rozšíření statistik.',
-        'Lepší práce s výrobními daty.',
-        'Opravy chyb v datech a načítání.'
-      ]
-    },
-    {
-      range: 'v0.41–v0.50',
-      title: 'Rotace a směny',
-      lines: [
-        'Rozšíření sekce rotací.',
-        'Lepší zobrazení směn a jmen.',
-        'První verze statistik.'
-      ]
-    },
-    {
-      range: 'v0.31–v0.40',
-      title: 'První větší redesign',
-      lines: [
-        'Modernější vzhled aplikace.',
-        'Vylepšené dlaždice a karty.',
-        'Lepší mezery, navigace a mobilní rozložení.'
-      ]
-    },
-    {
-      range: 'v0.21–v0.30',
-      title: 'Rozšíření funkcí',
-      lines: [
-        'Přidání dalších výpočtů.',
-        'Úpravy formulářů a validace.',
-        'Přehlednější sekce aplikace.'
-      ]
-    },
-    {
-      range: 'v0.11–v0.20',
-      title: 'Stabilizace základů',
-      lines: [
-        'Opravy prvních chyb v kalkulačkách.',
-        'Lepší rozložení tlačítek a textů.',
-        'První optimalizace výkonu.'
-      ]
-    },
-    {
-      range: 'v0.01–v0.10',
+      range: 'v0.01–v0.40',
       title: 'Začátek projektu',
       lines: [
         'První funkční základ aplikace.',
-        'Základní navigace mezi sekcemi.',
-        'První verze kalkulaček a jednoduchý tmavý vzhled.'
+        'Základní navigace, první kalkulačky a jednoduchý dark vzhled.'
       ]
     }
   ];

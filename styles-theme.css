@@ -1714,3 +1714,62 @@ body.reduceMotion *::after{
   width:4px !important;
   height:16px !important;
 }
+
+
+/* v1(239) tweaks */
+#dashHero::before{
+  content:none !important;
+  display:none !important;
+}
+
+.statsMultiLine{
+  white-space:pre-line;
+  line-height:1.35;
+}
+
+.bottomNav{
+  padding:4px 6px calc(2px + env(safe-area-inset-bottom)) !important;
+}
+
+.bottomNavInner{
+  gap:2px !important;
+  align-items:flex-end !important;
+}
+
+.bottomNavBtn{
+  min-height:42px !important;
+  padding:0 2px 1px !important;
+  gap:0 !important;
+  justify-content:flex-end !important;
+}
+
+.bottomNavBtn span{
+  font-size:18px !important;
+  line-height:1 !important;
+}
+
+.bottomNavLabel{
+  margin-top:0 !important;
+  font-size:10px !important;
+  line-height:1.05 !important;
+}
+
+.bottomNavBtn.active{
+  transform:translateY(-6px) scale(1.10) !important;
+}
+
+.bottomNavMenuBtn{
+  width:26px !important;
+  min-width:26px !important;
+  max-width:26px !important;
+}
+
+.bottomNavMenuBtn .moreIcon{
+  width:2px !important;
+  height:16px !important;
+}
+
+#statsMachineGrid .statsMachineTile,
+#statsNameGrid .statsNameTile{
+  align-items:flex-start;
+}

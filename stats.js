@@ -82,7 +82,7 @@ function getTopEntries(counts, limit = 3) {
 function formatMachineWinners(entries) {
   const list = Array.isArray(entries) ? entries : [];
   if (!list.length) return '—';
-  return list.map(([name, value]) => name + ' (' + formatCount(value) + ')').join(', ');
+  return list.map(([name, value]) => name + ' (' + formatCount(value) + ')').join('\n');
 }
 
 function buildStatsForYear(year) {
@@ -313,7 +313,7 @@ function renderStatsPanel() {
   stats.machineOrder.forEach(machine => {
     const leader = stats.machineCleanLeaders[machine] || null;
     const leaderNames = leader && Array.isArray(leader.names) && leader.names.length
-      ? leader.names.join(', ')
+      ? leader.names.join('\n')
       : '—';
 
     const tile = document.createElement('div');
@@ -347,8 +347,8 @@ function renderStatsPanel() {
         "<div class='tile'><div class='smallText'>Úklid celkem</div><div style='font-size:20px;margin-top:4px;'>" + formatCount(person.totalClean) + "</div></div>" +
         "<div class='tile'><div class='smallText'>Absence celkem</div><div style='font-size:20px;margin-top:4px;'>" + formatCount(person.totalAbsence) + "</div></div>" +
         "<div class='tile'><div class='smallText'>Práce + absence</div><div style='font-size:20px;margin-top:4px;'>" + formatCount(person.totalWork + person.totalAbsence) + "</div></div>" +
-        "<div class='tile'><div class='smallText'>Nejvíc pracoval na</div><div style='font-size:17px;margin-top:6px;font-weight:800;'>" + escapeHtml(topWork) + "</div></div>" +
-        "<div class='tile'><div class='smallText'>Nejvíc uklízel na</div><div style='font-size:17px;margin-top:6px;font-weight:800;'>" + escapeHtml(topClean) + "</div></div>" +
+        "<div class='tile'><div class='smallText'>Nejvíc pracoval na</div><div class='statsMultiLine' style='font-size:17px;margin-top:6px;font-weight:800;'>" + escapeHtml(topWork) + "</div></div>" +
+        "<div class='tile'><div class='smallText'>Nejvíc uklízel na</div><div class='statsMultiLine' style='font-size:17px;margin-top:6px;font-weight:800;'>" + escapeHtml(topClean) + "</div></div>" +
         "</div>" +
         "<div class='tableWrap'><table class='statsTable'><thead><tr><th>Stroj</th><th>Práce</th><th>Úklid</th><th>Absence</th></tr></thead><tbody>" +
         stats.machineOrder.map(machine => "<tr><td>" + escapeHtml(machine) + "</td><td>" + formatCount(person.work[machine] || 0) + "</td><td>" + formatCount(person.clean[machine] || 0) + "</td><td>" + formatCount(person.absence[machine] || 0) + "</td></tr>").join("") +
@@ -364,7 +364,7 @@ function renderStatsPanel() {
     const machine = app.selectedStatsMachine;
     const leader = stats.machineCleanLeaders[machine] || null;
     const leaderNames = leader && Array.isArray(leader.names) && leader.names.length
-      ? leader.names.join(', ')
+      ? leader.names.join('\n')
       : '—';
     const topWorkers = Object.values(stats.people)
       .map(person => [person.name, Number(person.work[machine] || 0)])
@@ -375,14 +375,14 @@ function renderStatsPanel() {
       })
       .slice(0, 3);
     const topWorkersText = topWorkers.length
-      ? topWorkers.map(([name, value], index) => `${index + 1}. ${name} (${formatCount(value)})`).join(' · ')
+      ? topWorkers.map(([name, value], index) => `${index + 1}. ${name} (${formatCount(value)})`).join('\n')
       : '—';
 
     statsMachineView.innerHTML = [
       "<div class='sectionTitle'>" + escapeHtml(machine) + "</div>",
       "<div class='statsSummary'>",
-      "<div class='tile'><div class='smallText'>Letos nejvíc uklízeli</div><div style='font-size:20px;margin-top:6px;'>" + escapeHtml(leaderNames) + "</div></div>",
-      "<div class='tile'><div class='smallText'>Top 3 práce</div><div style='font-size:16px;margin-top:6px;line-height:1.35;font-weight:800;'>" + escapeHtml(topWorkersText) + "</div></div>",
+      "<div class='tile'><div class='smallText'>Letos nejvíc uklízeli</div><div class='statsMultiLine' style='font-size:20px;margin-top:6px;'>" + escapeHtml(leaderNames) + "</div></div>",
+      "<div class='tile'><div class='smallText'>Top 3 práce</div><div class='statsMultiLine' style='font-size:16px;margin-top:6px;line-height:1.35;font-weight:800;'>" + escapeHtml(topWorkersText) + "</div></div>",
       "</div>"
     ].join('');
   } else {
