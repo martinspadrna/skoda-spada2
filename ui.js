@@ -49,7 +49,7 @@ function startMenuImport() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v.1(231)',
+      range: 'v.1(232)',
       title: 'Aktuální verze',
       lines: [
         'Spodní panel je utažený kolem ikon a aktivní volba může lehce přesahovat.',
