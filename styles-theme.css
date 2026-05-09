@@ -1504,3 +1504,50 @@ input{
   width:4px;
   height:14px;
 }
+
+
+.dashboardHeroLine1{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.dashboardHeroLine1Text{
+  min-width:0;
+}
+
+.dashboardHeroShiftIcon{
+  flex:0 0 auto;
+  width:24px;
+  height:24px;
+  border-radius:50%;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--green2);
+  background:rgba(124,255,124,.09);
+  border:1px solid rgba(124,255,124,.14);
+  box-shadow:0 8px 18px rgba(0,0,0,.16);
+}
+
+.dashboardHeroShiftIcon svg{
+  width:15px;
+  height:15px;
+  display:block;
+}
+
+.dashboardHeroShiftIconNight{
+  color:#b7caff;
+  background:rgba(183,202,255,.10);
+  border-color:rgba(183,202,255,.16);
+}
+
+#kalkulacky .grid{
+  display:grid !important;
+  grid-template-columns:1fr !important;
+  gap:10px !important;
+}
+
+#kalkulacky .tile{
+  width:100%;
+}

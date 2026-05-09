@@ -473,26 +473,25 @@ function getCalendarSpecialText(now) {
   return parts.join(" · ") || "Bez událostí";
 }
 
-function getTodayVacationNames(now) {
+function getTodayAbsenceNames(now) {
   const today = new Date(now);
   today.setHours(0, 0, 0, 0);
   const monthKey = (today.getMonth() + 1) + "/" + String(today.getFullYear()).slice(-2);
   const month = app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
   if (!month || !Array.isArray(month.notes)) return [];
 
-  const dayPrefix = today.getDate() + ".";
   const names = [];
   month.notes.forEach(note => {
-    const date = String(note && note.date ? note.date : "").trim();
-    if (!date.startsWith(dayPrefix)) return;
-
-    const person = String(note && note.person ? note.person : "").trim();
-    const code = String(note && note.code ? note.code : "").trim().toUpperCase();
-    const text = String(note && note.text ? note.text : "").trim();
-    const noteBlob = (code + " " + text).toUpperCase();
-    const isVacation = code === "D" || code === "§" || /DOVOLEN|LÁZNĚ/.test(noteBlob);
-    if (isVacation && person) names.push(person);
+    const n = normalizeNoteEntry(note);
+    if (!n || !n.isAbsence || !Array.isArray(n.people) || !n.people.length) return;
+    const parsed = parseDateToken(n.date);
+    if (!parsed || parsed.day !== today.getDate() || parsed.month !== (today.getMonth() + 1)) return;
+    n.people.forEach(person => {
+      const name = String(person || "").trim();
+      if (name) names.push(name);
+    });
   });
+
   return [...new Set(names)];
 }
 
@@ -519,19 +518,27 @@ function updateDashboard() {
 
   const hero = document.getElementById('dashHero');
   if (hero) {
+    const isNight = !!(active && /noční/i.test(active.label || ''));
+    const heroIcon = isNight
+      ? '<span class="dashboardHeroShiftIcon dashboardHeroShiftIconNight" aria-hidden="true">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 3.8a8 8 0 1 0 4.7 12.7 8 8 0 0 1-4.7-12.7Z"/></svg>' +
+        '</span>'
+      : '<span class="dashboardHeroShiftIcon dashboardHeroShiftIconDay" aria-hidden="true">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.8"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.1 5.1l1.7 1.7M17.2 17.2l1.7 1.7M18.9 5.1l-1.7 1.7M7.9 16.1l-1.7 1.7"/></svg>' +
+        '</span>';
     const heroLine1 = active && !showSpecial
-      ? 'V práci: směna ' + active.team + (active.label ? ' (' + active.label + ')' : '')
-      : (special ? 'Dnes se nepracuje' : '—');
+      ? heroIcon + '<span class="dashboardHeroLine1Text">V práci: směna ' + active.team + (active.label ? ' (' + active.label + ')' : '') + '</span>'
+      : '<span class="dashboardHeroLine1Text">' + (special ? 'Dnes se nepracuje' : '—') + '</span>';
     const heroLine2 = (!active || active.team !== 'D') && dState.next
       ? 'Směna D začne za: ' + formatDuration(dState.next.start - now)
       : '';
-    const dAwayNames = active && active.team === 'D' ? getTodayVacationNames(now) : [];
-    const heroLine3 = dAwayNames.length ? 'Mimo práci ze směny D: ' + dAwayNames.join(', ') : '';
+    const awayNames = getTodayAbsenceNames(now);
+    const heroLine3 = awayNames.length ? 'Dnes mimo práci: ' + awayNames.join(', ') : '';
     const heroProgress = active && !showSpecial && active.start && active.end
       ? Math.max(0, Math.min(100, ((now.getTime() - active.start.getTime()) / (active.end.getTime() - active.start.getTime())) * 100))
       : 0;
     hero.innerHTML = [
-      '<div class="dashboardHeroLine1">' + esc(heroLine1) + '</div>',
+      '<div class="dashboardHeroLine1">' + heroLine1 + '</div>',
       heroLine2 ? '<div class="dashboardHeroLine2">' + esc(heroLine2) + '</div>' : '',
       heroLine3 ? '<div class="dashboardHeroLine3">' + esc(heroLine3) + '</div>' : '',
       '<div class="dashboardHeroBar"><span style="width:' + heroProgress.toFixed(1) + '%"></span></div>'
