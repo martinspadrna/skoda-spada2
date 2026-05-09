@@ -325,8 +325,10 @@ function formatFoodWindowsList(windows) {
 }
 
 function buildFoodScheduleHtml(location) {
-  const dayLabels = ['Ne', 'Po', 'Út', 'St', 'Čt', 'Pá', 'So'];
-  const rows = dayLabels.map((dayLabel, dayIndex) => {
+  const dayOrder = [1, 2, 3, 4, 5, 6, 0];
+  const dayLabels = ['Po', 'Út', 'St', 'Čt', 'Pá', 'So', 'Ne'];
+  const rows = dayOrder.map((dayIndex) => {
+    const dayLabel = dayLabels[dayIndex === 0 ? 6 : dayIndex - 1];
     const windows = (location.days && location.days[dayIndex]) || [];
     return '<div class="foodScheduleRow">' +
       '<div class="foodScheduleDay">' + dayLabel + '</div>' +

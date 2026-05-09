@@ -436,3 +436,22 @@ body.appMenuOpen{
     grid-template-columns:1fr;
   }
 }
+
+
+/* v1(230) food schedule glass */
+.foodScheduleOverlay{
+  background:rgba(7,10,8,.38);
+  backdrop-filter:blur(22px) saturate(170%);
+}
+
+.foodScheduleModal{
+  background:rgba(20,24,22,.64);
+  border:1px solid rgba(124,255,124,.18);
+  backdrop-filter:blur(22px) saturate(170%);
+  box-shadow:0 22px 54px rgba(0,0,0,.34);
+}
+
+.foodScheduleRow{
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(124,255,124,.12);
+}
