@@ -105,12 +105,12 @@ if (document.readyState === 'loading') {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v.1(239)',
+      range: 'v.1(243)',
       title: 'Aktuální verze',
       lines: [
-        'Spodní lišta je těsnější kolem ikon a poslední volba je užší.',
-        'Dashboard má čistší horní řádek a srovnané stavové řádky.',
-        'Statistiky ukazují více položek přehledně po řádcích.'
+        'Dashboard se načítá hned po startu a stav kantýny je sjednocený s rozpisem.',
+        'Spodní lišta sedí těsněji kolem ikon a má glass vzhled.',
+        'Statistiky a více jsou rozpadnuté přehledněji.'
       ]
     },
     {

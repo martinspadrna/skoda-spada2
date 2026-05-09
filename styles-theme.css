@@ -1728,7 +1728,7 @@ body.reduceMotion *::after{
 }
 
 .bottomNav{
-  bottom:4px !important;
+  bottom:0 !important;
   padding:2px 5px 0 !important;
 }
 

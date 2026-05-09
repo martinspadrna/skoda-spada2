@@ -380,7 +380,7 @@
 });</script>
 <script type="text/plain" id="src-core-js">
 const APP_KEY = "rotace_kalkulacky_state_v122";
-const APP_VERSION = "v.1(242)";
+const APP_VERSION = "v.1(243)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-05-08-" + APP_VERSION + "-" + Date.now();
 
@@ -951,12 +951,12 @@ if (document.readyState === 'loading') {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v.1(242)',
+      range: 'v.1(243)',
       title: 'Aktuální verze',
       lines: [
-        'Spodní lišta je těsnější kolem ikon a poslední volba je užší.',
-        'Dashboard má čistší horní řádek a srovnané stavové řádky.',
-        'Statistiky ukazují více položek přehledně po řádcích.'
+        'Dashboard se načítá hned po startu a stav kantýny je sjednocený s rozpisem.',
+        'Spodní lišta sedí těsněji kolem ikon a má glass vzhled.',
+        'Statistiky a více jsou rozpadnuté přehledněji.'
       ]
     },
     {
@@ -1495,11 +1495,13 @@ function findFoodStatus(location, now) {
   const baseNow = new Date(now);
   const today = new Date(baseNow);
   today.setHours(0, 0, 0, 0);
+  const special = getSpecialWorkInfo(baseNow);
 
   let active = null;
   let next = null;
+  const startOffset = special ? 1 : -1;
 
-  for (let offset = -1; offset <= 8; offset += 1) {
+  for (let offset = startOffset; offset <= 8; offset += 1) {
     const baseDate = new Date(today);
     baseDate.setDate(baseDate.getDate() + offset);
     const windows = getFoodScheduleForDay(location, baseDate.getDay(), baseDate);
@@ -1513,6 +1515,10 @@ function findFoodStatus(location, now) {
         next = range;
       }
     }
+  }
+
+  if (special) {
+    active = null;
   }
 
   return { active, next, isOpen: !!active };
@@ -2505,7 +2511,21 @@ function updateShift() {
   updateDashboard();
 }
 setInterval(updateDashboard, 10000);
-updateDashboard();</script>
+updateDashboard();
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    if (typeof showPage === 'function') showPage('home');
+    if (typeof updateDashboard === 'function') updateDashboard();
+    if (typeof updateFoodTile === 'function') updateFoodTile();
+    if (typeof updateEportalTile === 'function') updateEportalTile();
+  }, { once: true });
+} else {
+  if (typeof showPage === 'function') showPage('home');
+  if (typeof updateDashboard === 'function') updateDashboard();
+  if (typeof updateFoodTile === 'function') updateFoodTile();
+  if (typeof updateEportalTile === 'function') updateEportalTile();
+}</script>
 <script type="text/plain" id="src-soustruhy-js">function resetSoustruhy() {
   ["lis_first", "lis_plan", "v126_first", "v126_plan", "v106_first", "v106_plan", "v106_c1", "v106_c2", "v106_c3", "v106_c4"].forEach(id => {
     const el = document.getElementById(id);
@@ -6220,7 +6240,7 @@ body.reduceMotion *::after{
 }
 
 .bottomNav{
-  bottom:4px !important;
+  bottom:0 !important;
   padding:2px 5px 0 !important;
 }
 
@@ -6265,8 +6285,7 @@ body.reduceMotion *::after{
 #statsMachineGrid .statsMachineTile,
 #statsNameGrid .statsNameTile{
   align-items:flex-start;
-}
-</script>
+}</script>
 <script type="text/plain" id="src-styles-responsive-css">@media (max-width: 700px) {
   body {
     padding: calc(26px + env(safe-area-inset-top)) 10px 10px;
