@@ -219,18 +219,18 @@
 
   .bottomNav{
     width:min(calc(100% - 16px), 430px);
-    padding:8px 6px calc(8px + env(safe-area-inset-bottom));
+    padding:5px 6px calc(5px + env(safe-area-inset-bottom));
     border-radius:20px;
   }
 
   .bottomNavInner{
-    gap:4px;
+    gap:3px;
     grid-template-columns:repeat(5, minmax(0, 1fr)) 30px;
   }
 
   .bottomNavBtn{
-    min-height:52px;
-    padding:4px 2px;
+    min-height:48px;
+    padding:3px 2px;
   }
 
   #kalkulacky .tile,
@@ -295,12 +295,12 @@
   }
 
   .dashboardValue{
-    font-size:15px;
+    font-size:16px;
   }
 
   .bottomNav{
     width:min(calc(100% - 10px), 460px);
-    padding:8px 6px calc(8px + env(safe-area-inset-bottom));
+    padding:5px 6px calc(5px + env(safe-area-inset-bottom));
     border-radius:18px;
   }
 
@@ -311,18 +311,18 @@
   }
 
   .bottomNavBtn{
-    min-height:52px;
+    min-height:48px;
     padding:2px 2px;
   }
 
   .bottomNavMenuBtn{
-    width:26px;
-    min-width:26px;
-    max-width:26px;
+    width:30px;
+    min-width:30px;
+    max-width:30px;
   }
 
   .bottomNavBtn span{
-    font-size:15px;
+    font-size:16px;
   }
 }
 
@@ -334,7 +334,7 @@
 
   .bottomNav{
     width:min(calc(100% - 8px), 460px);
-    padding:8px 5px calc(8px + env(safe-area-inset-bottom));
+    padding:5px 5px calc(5px + env(safe-area-inset-bottom));
     border-radius:18px;
   }
 
@@ -345,26 +345,26 @@
   }
 
   .bottomNavBtn{
-    min-height:52px;
+    min-height:48px;
     padding:2px 2px;
   }
 
   .bottomNavBtn.active{
-    transform:translateY(-5px) scale(1.05);
+    transform:translateY(-4px) scale(1.05);
   }
 
   .bottomNavBtn span{
-    font-size:15px;
+    font-size:16px;
   }
 
   .bottomNavMenuBtn{
-    width:26px;
-    min-width:26px;
-    max-width:26px;
+    width:30px;
+    min-width:30px;
+    max-width:30px;
   }
 
   .bottomNavMenuBtn .moreIcon{
-    width:3px;
-    height:16px;
+    width:8px;
+    height:18px;
   }
 }

@@ -183,7 +183,7 @@ input{
 }
 
 .dashboardHeroLine1{
-  font-size:16px;
+  font-size:17px;
   font-weight:700;
   line-height:1.35;
   color:var(--text);
@@ -283,7 +283,7 @@ input{
   bottom:10px;
   z-index:3000;
   width:min(calc(100% - 16px), 470px);
-  padding:8px 8px calc(8px + env(safe-area-inset-bottom));
+  padding:5px 8px calc(5px + env(safe-area-inset-bottom));
   background:rgba(7,10,8,.46);
   backdrop-filter:blur(24px) saturate(180%);
   border:1px solid rgba(124,255,124,.10);
@@ -294,13 +294,13 @@ input{
 .bottomNavInner{
   display:grid;
   grid-template-columns:repeat(5, minmax(0, 1fr)) 32px;
-  gap:4px;
+  gap:3px;
 }
 
 .bottomNavBtn{
   position:relative;
   overflow:hidden;
-  min-height:68px;
+  min-height:58px;
   border-radius:14px;
   border:1px solid rgba(124,255,124,.16);
   background:rgba(20,24,22,.96);
@@ -311,7 +311,7 @@ input{
   gap:2px;
   align-items:center;
   justify-content:center;
-  padding:6px 4px;
+  padding:5px 4px;
   font-size:10px;
   font-weight:700;
   line-height:1.05;
@@ -319,7 +319,7 @@ input{
 }
 
 .bottomNavBtn span{
-  font-size:16px;
+  font-size:17px;
   line-height:1;
   transition:transform .18s ease;
 }
@@ -327,7 +327,7 @@ input{
 .bottomNavBtn.active{
   border-color:rgba(124,255,124,.86);
   background:linear-gradient(180deg, rgba(124,255,124,.16), rgba(20,24,22,.96));
-  transform:translateY(-3px);
+  transform:translateY(-4px) scale(1.02);
   box-shadow:0 0 0 1px rgba(124,255,124,.18) inset, 0 14px 28px rgba(0,0,0,.24), 0 0 18px rgba(124,255,124,.10);
 }
 
@@ -341,7 +341,7 @@ input{
 }
 
 .bottomNavBtn.active span{
-  transform:scale(1.1);
+  transform:scale(1.16);
 }
 
 .bottomNavLabel{
@@ -459,7 +459,7 @@ input{
 }
 
 .dashboardCard .dashboardLabel::before{
-  font-size:16px;
+  font-size:17px;
   line-height:1;
 }
 
@@ -646,9 +646,9 @@ input{
 
 
 .bottomNavMenuBtn{
-  min-width:32px;
-  width:32px;
-  max-width:32px;
+  min-width:30px;
+  width:30px;
+  max-width:30px;
   padding:0 2px;
   justify-self:center;
 }
@@ -665,7 +665,7 @@ input{
 
 .bottomNavMenuBtn .moreIcon{
   width:8px;
-  height:22px;
+  height:18px;
   display:block;
 }
 
@@ -788,7 +788,7 @@ input{
 .appMenuHistoryList{
   margin-top:7px;
   display:grid;
-  gap:4px;
+  gap:3px;
 }
 
 .appMenuHistoryItem{
@@ -869,7 +869,7 @@ input{
 }
 
 #dashCzd .dashboardValue{
-  font-size:16px;
+  font-size:17px;
   line-height:1.06;
   font-weight:900;
 }
@@ -1055,7 +1055,7 @@ input{
   display:flex;
   flex-direction:column;
   align-items:center;
-  gap:4px;
+  gap:3px;
 }
 
 .statsTileTitle{
@@ -1123,7 +1123,7 @@ input{
 
 .dashboardValue{
   width:100%;
-  font-size:16px;
+  font-size:17px;
   font-weight:900;
   line-height:1.08;
   color:var(--green2);
@@ -1135,7 +1135,7 @@ input{
 
 #dashVyplata .dashboardValue,
 #dashCzd .dashboardValue{
-  font-size:16px;
+  font-size:17px;
   color:var(--green2);
 }
 
@@ -1243,7 +1243,7 @@ input{
 .bottomNavInner{
   display:grid;
   grid-template-columns:repeat(5, minmax(0, 1fr)) 34px;
-  gap:4px;
+  gap:3px;
   overflow:visible;
 }
 
@@ -1383,7 +1383,7 @@ input{
 }
 
 .rotaceQuickStack .rotaceMiniCard{
-  min-height:68px;
+  min-height:58px;
 }
 
 #kalkulacky .grid{
