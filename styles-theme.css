@@ -241,10 +241,7 @@ input{
 }
 
 .dashboardMeta{
-  width:100%;
-  font-size:11px;
-  line-height:1.2;
-  color:rgba(255,255,255,.58);
+  display:none;
 }
 
 
@@ -285,8 +282,8 @@ input{
   transform:translateX(-50%);
   bottom:10px;
   z-index:3000;
-  width:min(calc(100% - 20px), 500px);
-  padding:9px 10px calc(9px + env(safe-area-inset-bottom));
+  width:min(calc(100% - 16px), 470px);
+  padding:6px 8px calc(6px + env(safe-area-inset-bottom));
   background:rgba(7,10,8,.58);
   backdrop-filter:blur(20px) saturate(150%);
   border:1px solid rgba(124,255,124,.10);
@@ -297,32 +294,32 @@ input{
 .bottomNavInner{
   display:grid;
   grid-template-columns:repeat(6, minmax(0, 1fr));
-  gap:6px;
+  gap:4px;
 }
 
 .bottomNavBtn{
   position:relative;
   overflow:hidden;
-  min-height:54px;
-  border-radius:16px;
+  min-height:42px;
+  border-radius:14px;
   border:1px solid rgba(124,255,124,.16);
   background:rgba(20,24,22,.96);
   backdrop-filter: blur(10px);
   color:var(--text);
   display:flex;
   flex-direction:column;
-  gap:2px;
+  gap:1px;
   align-items:center;
   justify-content:center;
-  padding:7px 5px;
-  font-size:11px;
+  padding:5px 4px;
+  font-size:10px;
   font-weight:700;
-  line-height:1.1;
+  line-height:1.05;
   box-shadow:0 10px 24px rgba(0,0,0,.18);
 }
 
 .bottomNavBtn span{
-  font-size:16px;
+  font-size:14px;
   line-height:1;
   transition:transform .18s ease;
 }
@@ -348,7 +345,7 @@ input{
 }
 
 .bottomNavLabel{
-  font-size:11px;
+  font-size:10px;
   font-weight:700;
   white-space:nowrap;
 }
@@ -935,7 +932,7 @@ input{
 .appMenuPage .appMenuAction{
   min-height:54px;
   border-radius:16px;
-  font-size:15px;
+  font-size:14px;
 }
 
 .appMenuPage .appMenuCardTitle{
@@ -1071,3 +1068,181 @@ input{
 .statsMachineTile .statsTileSub{
   display:none;
 }
+
+
+/* v1(223) overrides */
+.dashboardTop{
+  width:100%;
+  display:flex;
+  align-items:flex-start;
+  justify-content:flex-start;
+  gap:6px;
+}
+
+.dashboardHead{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  min-width:0;
+  flex:1 1 auto;
+}
+
+.dashboardIconInline{
+  width:30px;
+  height:30px;
+  flex:none;
+  color:var(--green2);
+  opacity:.95;
+  align-self:flex-start;
+  justify-self:auto;
+}
+
+.dashboardIconInline svg{
+  width:100%;
+  height:100%;
+  display:block;
+  stroke:currentColor;
+}
+
+.dashboardLabel{
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:0;
+  text-transform:none;
+  color:rgba(255,255,255,.78);
+}
+
+.dashboardValue{
+  width:100%;
+  font-size:16px;
+  font-weight:900;
+  line-height:1.08;
+  color:var(--green2);
+}
+
+.dashboardMeta{
+  display:none;
+}
+
+#dashVyplata .dashboardValue,
+#dashCzd .dashboardValue{
+  font-size:16px;
+  color:var(--green2);
+}
+
+#kalkulacky .grid{
+  grid-template-columns:1fr;
+  gap:10px;
+}
+
+.calcTile{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  min-height:72px;
+  padding:14px 15px;
+  text-align:left;
+}
+
+.calcTile.big{
+  min-height:72px;
+}
+
+.calcTileText{
+  font-size:17px;
+  font-weight:800;
+  line-height:1.05;
+}
+
+.calcTileIcon{
+  width:38px;
+  height:38px;
+  color:var(--green2);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex:none;
+}
+
+.calcTileIcon svg{
+  width:100%;
+  height:100%;
+  display:block;
+  stroke:currentColor;
+}
+
+.rotaceQuickCards,
+.rotaceQuickList{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:8px;
+}
+
+.rotaceMiniCard{
+  border:1px solid rgba(124,255,124,.14);
+  border-radius:18px;
+  padding:11px 10px;
+  background:rgba(255,255,255,.02);
+  box-shadow:0 10px 22px rgba(0,0,0,.18);
+  min-height:62px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+
+.rotaceMiniCard.current{
+  border-color:rgba(124,255,124,.34);
+  background:rgba(124,255,124,.06);
+}
+
+.rotaceMiniLabel{
+  display:none;
+}
+
+.rotaceMiniDate{
+  margin-top:0;
+  font-size:13px;
+  font-weight:800;
+  line-height:1.2;
+}
+
+.rotaceMiniTarget{
+  font-size:12px;
+  line-height:1.25;
+  color:rgba(255,255,255,.70);
+}
+
+.appMenuPageTitleBar h3{
+  font-size:18px;
+  font-weight:900;
+  letter-spacing:0;
+}
+
+.bottomNav{
+  width:min(calc(100% - 16px), 460px);
+  padding:5px 7px calc(5px + env(safe-area-inset-bottom));
+  border-radius:20px;
+}
+
+.bottomNavInner{
+  gap:4px;
+}
+
+.bottomNavBtn{
+  min-height:42px;
+  padding:3px 3px;
+  gap:1px;
+  font-size:9px;
+}
+
+.bottomNavBtn span{
+  font-size:14px;
+}
+
+.bottomNavMenuBtn .moreIcon{
+  width:9px;
+  height:18px;
+  display:block;
+}
+

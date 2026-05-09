@@ -255,45 +255,21 @@ function renderPerson(name) {
     return;
   }
 
-  const pickEntry = (index) => {
-    if (index < 0) return null;
-    if (index >= entries.length) return entries[entries.length - 1] || null;
-    return entries[index] || null;
-  };
+  const startIdx = Math.max(0, currentIdx - 1);
+  const endIdx = Math.min(entries.length, currentIdx + 4);
+  const visibleEntries = entries.slice(startIdx, endIdx);
 
-  const formatEntry = (entry, label) => {
-    if (!entry) {
-      return [
-        '<div class="rotaceMiniCard isEmpty">',
-        '  <div class="rotaceMiniLabel">' + escapeHtml(label) + '</div>',
-        '  <div class="rotaceMiniDate">—</div>',
-        '  <div class="rotaceMiniTarget">—</div>',
-        '</div>'
-      ].join('');
-    }
-
-    return [
-      '<div class="rotaceMiniCard' + (label === "Aktuální" ? ' current' : '') + '">',
-      '  <div class="rotaceMiniLabel">' + escapeHtml(label) + '</div>',
-      '  <div class="rotaceMiniDate">' + escapeHtml(entry.dateLabel || "") + (entry.shift ? ' ' + escapeHtml(entry.shift) : '') + '</div>',
-      '  <div class="rotaceMiniTarget">' + escapeHtml(entry.target || "") + '</div>',
-      '</div>'
-    ].join('');
-  };
-
-  const baseIdx = currentIdx >= 0 ? currentIdx : 0;
-  const cards = [
-    ['Poslední', pickEntry(baseIdx - 1)],
-    ['Aktuální', pickEntry(baseIdx)],
-    ['+1', pickEntry(baseIdx + 1)],
-    ['+2', pickEntry(baseIdx + 2)],
-    ['+3', pickEntry(baseIdx + 3)]
-  ];
+  const formatEntry = (entry, isCurrent) => [
+    '<div class="rotaceMiniCard' + (isCurrent ? ' current' : '') + '">',
+    '  <div class="rotaceMiniDate">' + escapeHtml(entry.dateLabel || "") + (entry.shift ? ' ' + escapeHtml(entry.shift) : '') + '</div>',
+    '  <div class="rotaceMiniTarget">' + escapeHtml(entry.target || "") + '</div>',
+    '</div>'
+  ].join('');
 
   personView.innerHTML = [
     '<div class="rotacePersonTitle">' + escapeHtml(name) + '</div>',
-    '<div class="rotaceQuickCards">',
-    cards.map(([label, entry]) => formatEntry(entry, label)).join(''),
+    '<div class="rotaceQuickCards rotaceQuickList">',
+    visibleEntries.map((entry, idx) => formatEntry(entry, (startIdx + idx) === currentIdx)).join(''),
     '</div>'
   ].join('');
 }

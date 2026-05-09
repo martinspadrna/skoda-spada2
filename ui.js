@@ -15,6 +15,11 @@ function ensureAppMenuOverlay() {
   page.id = 'menu';
   page.className = 'page appMenuPage';
   page.innerHTML = [
+    '<div class="headerBar appMenuPageTitleBar">',
+    '  <div></div>',
+    '  <h3>Více</h3>',
+    '  <div style="width:34px;"></div>',
+    '</div>',
     '<div class="card appMenuPageCard">',
     '  <div class="appMenuBody" id="appMenuBody"></div>',
     '</div>'
@@ -44,13 +49,13 @@ function startMenuImport() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v.1(222)',
+      range: 'v.1(224)',
       title: 'Aktuální verze',
       lines: [
-        'Dashboard převzatý do stylu dvou čistých karet s jemným glow.',
-        'Výplata má menší text a novou ikonku, jak jsi posílal.',
-        'Rotace ukazuje poslední, aktuální a následující 3 směny.',
-        'Soustruhy, frézky i brusy dostaly sjednocené ikony.'
+        'Dashboard dostal nové zelené hodnoty a čistší ikonky.',
+        'Rotace ukazuje dny pod sebou bez štítků.',
+        'Kalkulačky jsou pod sebou s novými ikonami podle toku výroby.',
+        'Spodní menu Více je úspornější a kompaktnější.'
       ]
     },
     {

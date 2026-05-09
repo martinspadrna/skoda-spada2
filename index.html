@@ -96,21 +96,18 @@
 
   <div class="grid">
     <div class="tile calcTile" onclick="showPage('soustruhy')">
+      <div class="calcTileIcon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="7"></circle>
+          <circle cx="12" cy="12" r="2.3"></circle>
+          <path d="M12 4.7v2.6M12 16.7v2.6M4.7 12h2.6M16.7 12h2.6"></path>
+        </svg>
+      </div>
       <div>
         <div class="calcTileText">Soustruhy</div>
       </div>
-      <div class="calcTileIcon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="6.4"></circle>
-          <circle cx="12" cy="12" r="1.9"></circle>
-          <path d="M12 4.4v3.2M12 16.4v3.2M4.4 12h3.2M16.4 12h3.2M6.6 6.6l2.3 2.3M15.1 15.1l2.3 2.3M17.4 6.6l-2.3 2.3M9.9 14.1l-2.3 2.3"></path>
-        </svg>
-      </div>
     </div>
     <div class="tile calcTile" onclick="showPage('frezky')">
-      <div>
-        <div class="calcTileText">Frézky</div>
-      </div>
       <div class="calcTileIcon" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="6.2"></circle>
@@ -118,18 +115,19 @@
           <circle cx="12" cy="12" r="2.2"></circle>
         </svg>
       </div>
+      <div>
+        <div class="calcTileText">Frézky</div>
+      </div>
     </div>
     <div class="tile calcTile big" onclick="showPage('brusy')">
-      <div>
-        <div class="calcTileText">Brusy</div>
-      </div>
       <div class="calcTileIcon" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M7 12h2.6"></path>
-          <path d="M10 9.2l1.6-1.6M13 14.8l1.6 1.6M13.6 10.2l2.2-2.2M7.8 16l2.2-2.2"></path>
-          <path d="M9.2 6.4l1 1M14.8 17.6l1 1"></path>
-          <path d="M11.8 8.2l3.9 3.9"></path>
+          <path d="M4.8 13.6l1.9-2.9 1.9 2.9 1.9-2.9 1.9 2.9 1.9-2.9 1.9 2.9"></path>
+          <path d="M5.5 15.2l.8-1.3M8.8 15.2l.8-1.3M12 15.2l.8-1.3M15.3 15.2l.8-1.3"></path>
         </svg>
+      </div>
+      <div>
+        <div class="calcTileText">Brusy</div>
       </div>
     </div>
   </div>
@@ -382,7 +380,7 @@
 });</script>
 <script type="text/plain" id="src-core-js">
 const APP_KEY = "rotace_kalkulacky_state_v122";
-const APP_VERSION = "v.1(222)";
+const APP_VERSION = "v.1(224)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-05-08-" + APP_VERSION + "-" + Date.now();
 
@@ -863,6 +861,11 @@ function ensureAppMenuOverlay() {
   page.id = 'menu';
   page.className = 'page appMenuPage';
   page.innerHTML = [
+    '<div class="headerBar appMenuPageTitleBar">',
+    '  <div></div>',
+    '  <h3>Více</h3>',
+    '  <div style="width:34px;"></div>',
+    '</div>',
     '<div class="card appMenuPageCard">',
     '  <div class="appMenuBody" id="appMenuBody"></div>',
     '</div>'
@@ -892,13 +895,13 @@ function startMenuImport() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v.1(222)',
+      range: 'v.1(224)',
       title: 'Aktuální verze',
       lines: [
-        'Dashboard převzatý do stylu dvou čistých karet s jemným glow.',
-        'Výplata má menší text a novou ikonku, jak jsi posílal.',
-        'Rotace ukazuje poslední, aktuální a následující 3 směny.',
-        'Soustruhy, frézky i brusy dostaly sjednocené ikony.'
+        'Dashboard dostal nové zelené hodnoty a čistší ikonky.',
+        'Rotace ukazuje dny pod sebou bez štítků.',
+        'Kalkulačky jsou pod sebou s novými ikonami podle toku výroby.',
+        'Spodní menu Více je úspornější a kompaktnější.'
       ]
     },
     {
@@ -2490,26 +2493,27 @@ function updateDashboard() {
     const el = document.getElementById(id);
     if (!el) return;
     el.classList.toggle('dashboardCardClickable', !!clickable);
-    const dot = dotClass ? '<span class="dashboardDot ' + esc(dotClass) + '" aria-hidden="true"></span>' : '';
-    const icon = iconHtml ? '<div class="dashboardIcon" aria-hidden="true">' + iconHtml + '</div>' : '';
+    const icon = iconHtml ? '<div class="dashboardIcon dashboardIconInline" aria-hidden="true">' + iconHtml + '</div>' : '';
     el.innerHTML = [
       '<div class="dashboardTop">',
+      icon,
+      '<div class="dashboardHead">',
       '<div class="dashboardLabel">' + esc(title) + '</div>',
-      dot,
+      '</div>',
       '</div>',
       '<div class="dashboardValue">' + esc(value || '--') + '</div>',
-      meta ? '<div class="dashboardMeta">' + esc(meta) + '</div>' : '',
-      icon
+      meta ? '<div class="dashboardMeta">' + esc(meta) + '</div>' : ''
     ].join('');
   };
 
-  const walletIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 7.5h10.2c1.7 0 3 .9 3.6 2.2l1 2.1H18c-1.9 0-3.5 1.5-3.5 3.5s1.6 3.5 3.5 3.5h1.3c.8 0 1.5-.7 1.5-1.5v-6.8c0-1.7-1.4-3-3-3H4.5a2 2 0 0 0-2 2v5.8a2 2 0 0 0 2 2h10.1"/><path d="M16.5 12.5h3.2"/><circle cx="17.8" cy="15.9" r="0.75" fill="currentColor" stroke="none"/></svg>';
-  const utensilsIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3v9"/><path d="M6 6h3"/><path d="M6 9h3"/><path d="M11 3v18"/><path d="M15 3v18"/><path d="M19 3v7"/><path d="M19 10h3"/><path d="M19 13h3"/></svg>';
+  const walletIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 7.5h11.2c2 0 3.7 1.1 4.4 2.7l.8 2H18c-1.9 0-3.4 1.5-3.4 3.4S16.1 19 18 19h1.6c.8 0 1.4-.6 1.4-1.4V11c0-1.9-1.5-3.5-3.4-3.5H4.5a2 2 0 0 0-2 2v5.7a2 2 0 0 0 2 2h9.4"/><path d="M16.1 12.3h3.2"/><circle cx="17.5" cy="15.5" r=".65" fill="currentColor" stroke="none"/></svg>';
+  const croissantIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 14.2c0-3.2 2.6-5.8 6.2-5.8 2.8 0 5.4 1.1 7 3.1-.1 2.7-2.3 4.7-5.1 4.7H9.1c-1.8 0-3.4-.8-4.1-2.1-.3-.6-.2-1.3.3-1.8.7-.7 1.2-1.3 1.5-2 .2-.6.2-1.2.1-1.9"/><path d="M8.1 11.8c.8 1 1.9 1.6 3.1 1.6 1.1 0 2.2-.3 3.2-1"/><path d="M12.9 8.2c.7 1 1.3 1.8 2.2 2.5"/></svg>';
+  const plateIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5.9"/><circle cx="12" cy="12" r="2.1"/><path d="M5.6 5.4v13.2M6.5 5.4v4.6M7.4 5.4v4.6M17.8 5.4v13.2M18.8 5.4c.9 2 .9 4.4 0 6.2"/></svg>';
   const calendarIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M7 3.5v3M17 3.5v3M3.5 9h17"/></svg>';
   const clockIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="7.5"/><path d="M12 8v4.5l3 2"/></svg>';
-  const bagIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 8h11l-.8 10.5a2 2 0 0 1-2 1.8H9.3a2 2 0 0 1-2-1.8L6.5 8Z"/><path d="M8.5 8a3.5 3.5 0 0 1 7 0"/></svg>';
-  const truckIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 7h11v9h-11z"/><path d="M14.5 10h3.2l2 2v4h-5.2z"/><circle cx="8" cy="18" r="1.8"/><circle cx="18" cy="18" r="1.8"/></svg>';
-  const globeIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="7.5"/><path d="M4.8 12h14.4"/><path d="M12 4.5c2.2 2 3.5 4.5 3.5 7.5S14.2 17 12 19.5c-2.2-2.5-3.5-4.5-3.5-7.5S9.8 6.5 12 4.5Z"/></svg>';
+  const palmIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20v-7"/><path d="M12 13c-1.1-2.6-3.7-4.5-6.8-4.8 2.1-1.8 4.8-2.1 7-.7"/><path d="M12 13c1.2-2.6 3.9-4.5 7-4.8-2.2-1.7-4.9-2-7.1-.7"/><path d="M7 20h10"/><path d="M8.6 20c1.1-1.4 2.4-2.2 3.4-2.2s2.3.8 3.4 2.2"/></svg>';
+  const bookIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 6h5.4a3 3 0 0 1 3 3V20H8.4a3 3 0 0 0-3 3V9a3 3 0 0 1 0-3z"/><path d="M19 6h-5.4a3 3 0 0 0-3 3V20H15.6a3 3 0 0 1 3 3V9a3 3 0 0 0 0-3z"/><path d="M12 8.1v12.4"/></svg>';
+  const externalIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.5 6.5H5.8A2.3 2.3 0 0 0 3.5 8.8v9.4a2.3 2.3 0 0 0 2.3 2.3h9.4a2.3 2.3 0 0 0 2.3-2.3v-4.7"/><path d="M13.5 4.5h6v6"/><path d="M12 12l7.5-7.5"/></svg>';
 
   const payDate = typeof getNextPayrollDate === 'function' ? getNextPayrollDate(now) : null;
   const payDateText = payDate
@@ -2542,15 +2546,14 @@ function updateDashboard() {
     if (diffDays === 1) return 'poté zítra v ' + range;
     return 'poté ' + formatFoodRelativeLabel(status.next.start, now) + ' v ' + range;
   };
-  setCard('dashKantyna', 'Kantýna', foodText(kantyna), foodMeta(kantyna), foodDot(kantyna), true, utensilsIcon);
-  setCard('dashJidelna', 'Jídelna', foodText(jidelna), foodMeta(jidelna), foodDot(jidelna), true, utensilsIcon);
+  setCard('dashKantyna', 'Kantýna', foodText(kantyna), foodMeta(kantyna), foodDot(kantyna), true, croissantIcon);
+  setCard('dashJidelna', 'Jídelna', foodText(jidelna), foodMeta(jidelna), foodDot(jidelna), true, plateIcon);
   setCard('dashVyplata', 'Další výplata', payDateText, payMeta, '', false, walletIcon);
-  setCard('dashCzd', 'Odpočet do dovolené', vacationCountdown.text, vacationCountdown.meta, '', false, bagIcon);
-  setCard('dashFoodLink', 'Jídelní lístek', 'Otevřít', 'Aktuální menu', '', true, truckIcon);
-  setCard('dashEportalLink', 'Eportal', 'Otevřít', 'Firemní portál', '', true, globeIcon);
+  setCard('dashCzd', 'Odpočet do dovolené', vacationCountdown.text, vacationCountdown.meta, '', false, palmIcon);
+  setCard('dashFoodLink', 'Jídelní lístek', 'Otevřít', 'Aktuální menu', '', true, bookIcon);
+  setCard('dashEportalLink', 'Eportal', 'Otevřít', 'Firemní portál', '', true, externalIcon);
 }
 
-function updateShift() {
 function updateShift() {
   updateDashboard();
 }
@@ -3330,45 +3333,21 @@ function renderPerson(name) {
     return;
   }
 
-  const pickEntry = (index) => {
-    if (index < 0) return null;
-    if (index >= entries.length) return entries[entries.length - 1] || null;
-    return entries[index] || null;
-  };
+  const startIdx = Math.max(0, currentIdx - 1);
+  const endIdx = Math.min(entries.length, currentIdx + 4);
+  const visibleEntries = entries.slice(startIdx, endIdx);
 
-  const formatEntry = (entry, label) => {
-    if (!entry) {
-      return [
-        '<div class="rotaceMiniCard isEmpty">',
-        '  <div class="rotaceMiniLabel">' + escapeHtml(label) + '</div>',
-        '  <div class="rotaceMiniDate">—</div>',
-        '  <div class="rotaceMiniTarget">—</div>',
-        '</div>'
-      ].join('');
-    }
-
-    return [
-      '<div class="rotaceMiniCard' + (label === "Aktuální" ? ' current' : '') + '">',
-      '  <div class="rotaceMiniLabel">' + escapeHtml(label) + '</div>',
-      '  <div class="rotaceMiniDate">' + escapeHtml(entry.dateLabel || "") + (entry.shift ? ' ' + escapeHtml(entry.shift) : '') + '</div>',
-      '  <div class="rotaceMiniTarget">' + escapeHtml(entry.target || "") + '</div>',
-      '</div>'
-    ].join('');
-  };
-
-  const baseIdx = currentIdx >= 0 ? currentIdx : 0;
-  const cards = [
-    ['Poslední', pickEntry(baseIdx - 1)],
-    ['Aktuální', pickEntry(baseIdx)],
-    ['+1', pickEntry(baseIdx + 1)],
-    ['+2', pickEntry(baseIdx + 2)],
-    ['+3', pickEntry(baseIdx + 3)]
-  ];
+  const formatEntry = (entry, isCurrent) => [
+    '<div class="rotaceMiniCard' + (isCurrent ? ' current' : '') + '">',
+    '  <div class="rotaceMiniDate">' + escapeHtml(entry.dateLabel || "") + (entry.shift ? ' ' + escapeHtml(entry.shift) : '') + '</div>',
+    '  <div class="rotaceMiniTarget">' + escapeHtml(entry.target || "") + '</div>',
+    '</div>'
+  ].join('');
 
   personView.innerHTML = [
     '<div class="rotacePersonTitle">' + escapeHtml(name) + '</div>',
-    '<div class="rotaceQuickCards">',
-    cards.map(([label, entry]) => formatEntry(entry, label)).join(''),
+    '<div class="rotaceQuickCards rotaceQuickList">',
+    visibleEntries.map((entry, idx) => formatEntry(entry, (startIdx + idx) === currentIdx)).join(''),
     '</div>'
   ].join('');
 }
@@ -4795,10 +4774,7 @@ input{
 }
 
 .dashboardMeta{
-  width:100%;
-  font-size:11px;
-  line-height:1.2;
-  color:rgba(255,255,255,.58);
+  display:none;
 }
 
 
@@ -4839,8 +4815,8 @@ input{
   transform:translateX(-50%);
   bottom:10px;
   z-index:3000;
-  width:min(calc(100% - 20px), 500px);
-  padding:9px 10px calc(9px + env(safe-area-inset-bottom));
+  width:min(calc(100% - 16px), 470px);
+  padding:6px 8px calc(6px + env(safe-area-inset-bottom));
   background:rgba(7,10,8,.58);
   backdrop-filter:blur(20px) saturate(150%);
   border:1px solid rgba(124,255,124,.10);
@@ -4851,32 +4827,32 @@ input{
 .bottomNavInner{
   display:grid;
   grid-template-columns:repeat(6, minmax(0, 1fr));
-  gap:6px;
+  gap:4px;
 }
 
 .bottomNavBtn{
   position:relative;
   overflow:hidden;
-  min-height:54px;
-  border-radius:16px;
+  min-height:42px;
+  border-radius:14px;
   border:1px solid rgba(124,255,124,.16);
   background:rgba(20,24,22,.96);
   backdrop-filter: blur(10px);
   color:var(--text);
   display:flex;
   flex-direction:column;
-  gap:2px;
+  gap:1px;
   align-items:center;
   justify-content:center;
-  padding:7px 5px;
-  font-size:11px;
+  padding:5px 4px;
+  font-size:10px;
   font-weight:700;
-  line-height:1.1;
+  line-height:1.05;
   box-shadow:0 10px 24px rgba(0,0,0,.18);
 }
 
 .bottomNavBtn span{
-  font-size:16px;
+  font-size:14px;
   line-height:1;
   transition:transform .18s ease;
 }
@@ -4902,7 +4878,7 @@ input{
 }
 
 .bottomNavLabel{
-  font-size:11px;
+  font-size:10px;
   font-weight:700;
   white-space:nowrap;
 }
@@ -5489,7 +5465,7 @@ input{
 .appMenuPage .appMenuAction{
   min-height:54px;
   border-radius:16px;
-  font-size:15px;
+  font-size:14px;
 }
 
 .appMenuPage .appMenuCardTitle{
@@ -5624,6 +5600,183 @@ input{
 
 .statsMachineTile .statsTileSub{
   display:none;
+}
+
+
+/* v1(223) overrides */
+.dashboardTop{
+  width:100%;
+  display:flex;
+  align-items:flex-start;
+  justify-content:flex-start;
+  gap:6px;
+}
+
+.dashboardHead{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  min-width:0;
+  flex:1 1 auto;
+}
+
+.dashboardIconInline{
+  width:30px;
+  height:30px;
+  flex:none;
+  color:var(--green2);
+  opacity:.95;
+  align-self:flex-start;
+  justify-self:auto;
+}
+
+.dashboardIconInline svg{
+  width:100%;
+  height:100%;
+  display:block;
+  stroke:currentColor;
+}
+
+.dashboardLabel{
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:0;
+  text-transform:none;
+  color:rgba(255,255,255,.78);
+}
+
+.dashboardValue{
+  width:100%;
+  font-size:16px;
+  font-weight:900;
+  line-height:1.08;
+  color:var(--green2);
+}
+
+.dashboardMeta{
+  display:none;
+}
+
+#dashVyplata .dashboardValue,
+#dashCzd .dashboardValue{
+  font-size:16px;
+  color:var(--green2);
+}
+
+#kalkulacky .grid{
+  grid-template-columns:1fr;
+  gap:10px;
+}
+
+.calcTile{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  min-height:72px;
+  padding:14px 15px;
+  text-align:left;
+}
+
+.calcTile.big{
+  min-height:72px;
+}
+
+.calcTileText{
+  font-size:17px;
+  font-weight:800;
+  line-height:1.05;
+}
+
+.calcTileIcon{
+  width:38px;
+  height:38px;
+  color:var(--green2);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex:none;
+}
+
+.calcTileIcon svg{
+  width:100%;
+  height:100%;
+  display:block;
+  stroke:currentColor;
+}
+
+.rotaceQuickCards,
+.rotaceQuickList{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:8px;
+}
+
+.rotaceMiniCard{
+  border:1px solid rgba(124,255,124,.14);
+  border-radius:18px;
+  padding:11px 10px;
+  background:rgba(255,255,255,.02);
+  box-shadow:0 10px 22px rgba(0,0,0,.18);
+  min-height:62px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+
+.rotaceMiniCard.current{
+  border-color:rgba(124,255,124,.34);
+  background:rgba(124,255,124,.06);
+}
+
+.rotaceMiniLabel{
+  display:none;
+}
+
+.rotaceMiniDate{
+  margin-top:0;
+  font-size:13px;
+  font-weight:800;
+  line-height:1.2;
+}
+
+.rotaceMiniTarget{
+  font-size:12px;
+  line-height:1.25;
+  color:rgba(255,255,255,.70);
+}
+
+.appMenuPageTitleBar h3{
+  font-size:18px;
+  font-weight:900;
+  letter-spacing:0;
+}
+
+.bottomNav{
+  width:min(calc(100% - 16px), 460px);
+  padding:5px 7px calc(5px + env(safe-area-inset-bottom));
+  border-radius:20px;
+}
+
+.bottomNavInner{
+  gap:4px;
+}
+
+.bottomNavBtn{
+  min-height:42px;
+  padding:3px 3px;
+  gap:1px;
+  font-size:9px;
+}
+
+.bottomNavBtn span{
+  font-size:14px;
+}
+
+.bottomNavMenuBtn .moreIcon{
+  width:9px;
+  height:18px;
+  display:block;
 }</script>
 <script type="text/plain" id="src-styles-responsive-css">@media (max-width: 700px) {
   body {
@@ -5846,17 +5999,17 @@ input{
 
   .bottomNav{
     width:min(calc(100% - 16px), 430px);
-    padding:8px 9px calc(8px + env(safe-area-inset-bottom));
-    border-radius:24px;
+    padding:4px 6px calc(4px + env(safe-area-inset-bottom));
+    border-radius:20px;
   }
 
   .bottomNavInner{
-    gap:5px;
+    gap:4px;
   }
 
   .bottomNavBtn{
-    min-height:50px;
-    padding:7px 4px;
+    min-height:40px;
+    padding:3px 2px;
   }
 
   #kalkulacky .tile,
@@ -5891,8 +6044,8 @@ input{
   }
 
   .calcTile{
-    min-height:86px;
-    padding:12px 13px;
+    min-height:82px;
+    padding:11px 12px;
   }
 
   .calcTileText{
@@ -5900,12 +6053,43 @@ input{
   }
 
   .calcTileIcon{
-    width:38px;
-    height:38px;
+    width:36px;
+    height:36px;
   }
 
   .appMenuPage .appMenuGrid{
     grid-template-columns:1fr;
+  }
+}
+
+
+@media (max-width: 700px) {
+  #kalkulacky .grid{
+    gap:8px;
+  }
+
+  .dashboardIconInline{
+    width:32px;
+    height:32px;
+  }
+
+  .dashboardValue{
+    font-size:15px;
+  }
+
+  .bottomNav{
+    width:min(calc(100% - 10px), 460px);
+    padding:5px 7px calc(5px + env(safe-area-inset-bottom));
+    border-radius:20px;
+  }
+
+  .bottomNavBtn{
+    min-height:44px;
+    padding:3px 3px;
+  }
+
+  .bottomNavBtn span{
+    font-size:13px;
   }
 }</script>
 <script type="text/plain" id="src-styles-modal-css">body.qrModalOpen{
@@ -6345,7 +6529,7 @@ body.appMenuOpen{
     <button class="bottomNavBtn" data-page="kalkulacky" onclick="openKalkulacky()"><span>🧮</span><div class="bottomNavLabel">Kalkulačky</div></button>
     <button class="bottomNavBtn" data-page="rozpisy" onclick="openRotaceMonths()"><span>🗓️</span><div class="bottomNavLabel">Rozpisy</div></button>
     <button class="bottomNavBtn" data-page="statistiky" onclick="openRotaceStats()"><span>📊</span><div class="bottomNavLabel">Statistiky</div></button>
-    <button class="bottomNavBtn bottomNavMenuBtn" data-page="menu" type="button" aria-label="Více" onclick="toggleAppMenu()"><span>⋮</span><div class="bottomNavLabel">Více</div></button>
+    <button class="bottomNavBtn bottomNavMenuBtn" data-page="menu" type="button" aria-label="Více" onclick="toggleAppMenu()"><svg class="moreIcon" viewBox="0 0 10 24" aria-hidden="true"><circle cx="5" cy="4" r="1.4"></circle><circle cx="5" cy="12" r="1.4"></circle><circle cx="5" cy="20" r="1.4"></circle></svg><div class="bottomNavLabel">Více</div></button>
   </div>
 </nav>
 
