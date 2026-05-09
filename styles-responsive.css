@@ -576,3 +576,26 @@
   transform: scale(1.08);
   transform-origin: center;
 }
+
+
+/* v1(247) bottom nav icon fill and dashboard icon restore */
+#home .dashboardCard .dashboardIcon.dashboardIconInline,
+.dashboardCard .dashboardIcon.dashboardIconInline{
+  width:30px !important;
+  height:30px !important;
+}
+
+#home .dashboardCard .dashboardIcon.dashboardIconInline svg,
+.dashboardCard .dashboardIcon.dashboardIconInline svg{
+  transform:none !important;
+}
+
+.bottomNavBtn span{
+  font-size:21px !important;
+  line-height:1 !important;
+}
+
+.bottomNavMenuBtn .moreIcon{
+  width:4px !important;
+  height:20px !important;
+}

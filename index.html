@@ -381,7 +381,7 @@
 });</script>
 <script type="text/plain" id="src-core-js">
 const APP_KEY = "rotace_kalkulacky_state_v122";
-const APP_VERSION = "v.1(246)";
+const APP_VERSION = "v.1(247)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-05-08-" + APP_VERSION + "-" + Date.now();
 
@@ -844,7 +844,9 @@ function syncYearControls() {
       overwriteMonth.appendChild(opt);
     });
   }
-}</script>
+}
+
+</script>
 <script type="text/plain" id="src-ui-js">function setBottomNavActive(pageId) {
   const buttons = document.querySelectorAll('.bottomNavBtn');
   buttons.forEach(btn => {
@@ -6373,7 +6375,33 @@ body.reduceMotion *::after{
 .bottomNavMenuBtn .moreIcon{
   width:4px !important;
   height:24px !important;
-}</script>
+}
+
+
+/* v1(247) adjust dashboard icon size and bottom nav icon fill */
+#home .dashboardCard .dashboardIcon.dashboardIconInline,
+.dashboardCard .dashboardIcon.dashboardIconInline{
+  width:30px !important;
+  height:30px !important;
+}
+
+#home .dashboardCard .dashboardIcon.dashboardIconInline svg,
+.dashboardCard .dashboardIcon.dashboardIconInline svg{
+  width:100% !important;
+  height:100% !important;
+  transform:none !important;
+}
+
+.bottomNavBtn span{
+  font-size:21px !important;
+  line-height:1 !important;
+}
+
+.bottomNavMenuBtn .moreIcon{
+  width:4px !important;
+  height:20px !important;
+}
+</script>
 <script type="text/plain" id="src-styles-responsive-css">@media (max-width: 700px) {
   body {
     padding: calc(26px + env(safe-area-inset-top)) 10px 10px;
@@ -6951,7 +6979,31 @@ body.reduceMotion *::after{
 .dashboardIconInline svg{
   transform: scale(1.08);
   transform-origin: center;
-}</script>
+}
+
+
+/* v1(247) bottom nav icon fill and dashboard icon restore */
+#home .dashboardCard .dashboardIcon.dashboardIconInline,
+.dashboardCard .dashboardIcon.dashboardIconInline{
+  width:30px !important;
+  height:30px !important;
+}
+
+#home .dashboardCard .dashboardIcon.dashboardIconInline svg,
+.dashboardCard .dashboardIcon.dashboardIconInline svg{
+  transform:none !important;
+}
+
+.bottomNavBtn span{
+  font-size:21px !important;
+  line-height:1 !important;
+}
+
+.bottomNavMenuBtn .moreIcon{
+  width:4px !important;
+  height:20px !important;
+}
+</script>
 <script type="text/plain" id="src-styles-modal-css">body.qrModalOpen{
   overflow:hidden;
 }

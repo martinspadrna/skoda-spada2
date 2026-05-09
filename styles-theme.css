@@ -1813,3 +1813,28 @@ body.reduceMotion *::after{
   width:4px !important;
   height:24px !important;
 }
+
+
+/* v1(247) adjust dashboard icon size and bottom nav icon fill */
+#home .dashboardCard .dashboardIcon.dashboardIconInline,
+.dashboardCard .dashboardIcon.dashboardIconInline{
+  width:30px !important;
+  height:30px !important;
+}
+
+#home .dashboardCard .dashboardIcon.dashboardIconInline svg,
+.dashboardCard .dashboardIcon.dashboardIconInline svg{
+  width:100% !important;
+  height:100% !important;
+  transform:none !important;
+}
+
+.bottomNavBtn span{
+  font-size:21px !important;
+  line-height:1 !important;
+}
+
+.bottomNavMenuBtn .moreIcon{
+  width:4px !important;
+  height:20px !important;
+}
