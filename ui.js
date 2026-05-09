@@ -49,13 +49,13 @@ function startMenuImport() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v.1(225)',
+      range: 'v.1(226)',
       title: 'Aktuální verze',
       lines: [
         'Dashboard má nové ikonky, menší texty a světýlko u kantýny/jídelny.',
         'Rotace ukazuje směny pod sebou bez štítků.',
         'Kalkulačky jsou pod sebou s novými ikonami podle toku výroby.',
-        'Spodní menu Více je nižší a užší.'
+        'Spodní menu Více je nižší, užší a ikona je co nejužší.'
       ]
     },
     {
