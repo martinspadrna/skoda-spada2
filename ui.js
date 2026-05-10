@@ -1048,6 +1048,7 @@ function tttOpeningBookMove(board) {
 }
 
 
+
 function tttBestMove(board, difficulty) {
   const free = [];
   for (let i = 0; i < board.length; i += 1) {
@@ -1055,133 +1056,155 @@ function tttBestMove(board, difficulty) {
   }
   if (!free.length) return -1;
 
-  const win = tttWinningMove(board, 'O');
-  if (win >= 0) return win;
-  const block = tttWinningMove(board, 'X');
-  if (block >= 0) return block;
+  const immediateWin = tttWinningMove(board, 'O');
+  if (immediateWin >= 0) return immediateWin;
+  const immediateBlock = tttWinningMove(board, 'X');
+  if (immediateBlock >= 0) return immediateBlock;
 
-  const occupied = board.length - free.length;
-  const deadline = typeof performance !== 'undefined'
-    ? performance.now() + (difficulty === 'ai' ? (occupied < 6 ? 120 : occupied < 12 ? 180 : 240) : 80)
-    : 0;
+  const center = tttIndex(Math.floor(TTT_ROWS / 2), Math.floor(TTT_COLS / 2));
 
-  const criticalBlocks = tttCriticalThreatMoves(board, 'X');
-  if (criticalBlocks.length) {
-    const scoredCritical = criticalBlocks.map((idx) => {
-      board[idx] = 'O';
-      const remainingCritical = tttCriticalThreatMoves(board, 'X').length;
-      const remainingWins = tttWinningMoves(board, 'X').length;
-      const remainingThreatWindows = tttThreatWindowMoves(board, 'X').length;
-      const score = tttMoveHeuristic(board, idx, 'O') - remainingCritical * 260000 - remainingWins * 360000 - remainingThreatWindows * 180000;
-      board[idx] = '';
-      return { idx, score };
-    });
-    scoredCritical.sort((a, b) => b.score - a.score);
-    return scoredCritical[0]?.idx ?? criticalBlocks[0];
-  }
-
-  const threatBlocks = difficulty === 'ai' ? tttThreatWindowMoves(board, 'X') : [];
-  if (threatBlocks.length) {
-    const scoredThreats = threatBlocks.map((idx) => {
-      board[idx] = 'O';
-      const remainingThreatWindows = tttThreatWindowMoves(board, 'X').length;
-      const remainingCritical = tttCriticalThreatMoves(board, 'X').length;
-      const remainingWins = tttWinningMoves(board, 'X').length;
-      const remainingForkRisk = tttOpponentForkRisk(board, 'X', 10);
-      const score = tttMoveHeuristic(board, idx, 'O') - remainingThreatWindows * 220000 - remainingCritical * 180000 - remainingWins * 280000 - remainingForkRisk * 200000;
-      board[idx] = '';
-      return { idx, score };
-    });
-    scoredThreats.sort((a, b) => b.score - a.score);
-    return scoredThreats[0]?.idx ?? threatBlocks[0];
-  }
-
-  const openThreeBlocks = difficulty === 'ai' ? tttOpenThreeThreatMoves(board, 'X') : [];
-  if (openThreeBlocks.length) {
-    const scoredOpenThree = openThreeBlocks.map((idx) => {
-      board[idx] = 'O';
-      const remainingOpenThree = tttOpenThreeThreatMoves(board, 'X').length;
-      const remainingThreatWindows = tttThreatWindowMoves(board, 'X').length;
-      const remainingCritical = tttCriticalThreatMoves(board, 'X').length;
-      const remainingWins = tttWinningMoves(board, 'X').length;
-      const remainingForkRisk = tttOpponentForkRisk(board, 'X', 10);
-      const score = tttMoveHeuristic(board, idx, 'O') - remainingOpenThree * 280000 - remainingThreatWindows * 220000 - remainingCritical * 180000 - remainingWins * 300000 - remainingForkRisk * 240000;
-      board[idx] = '';
-      return { idx, score };
-    });
-    scoredOpenThree.sort((a, b) => b.score - a.score);
-    return scoredOpenThree[0]?.idx ?? openThreeBlocks[0];
-  }
-
-  const fork = difficulty === 'ai' ? tttForkMove(board, 'O') : -1;
-  if (fork >= 0) return fork;
-
-  if (difficulty === 'ai') {
-    const opponentFork = tttForkMove(board, 'X');
-    if (opponentFork >= 0) {
-      const forkBlockCandidates = Array.from(new Set([opponentFork, ...tttThreatWindowMoves(board, 'X'), ...tttCriticalThreatMoves(board, 'X')]));
-      forkBlockCandidates.sort((a, b) => tttMoveHeuristic(board, b, 'O') - tttMoveHeuristic(board, a, 'O'));
-      if (forkBlockCandidates.length) return forkBlockCandidates[0];
-    }
-  }
-
-  if (difficulty === 'ai') {
-    const forksToBlock = tttWinningMoves(board, 'X');
-    if (forksToBlock.length >= 2) {
-      const centerSorted = tttCandidateMoves(board, 3)
-        .filter(idx => !board[idx])
-        .sort((a, b) => tttMoveHeuristic(board, b, 'O') - tttMoveHeuristic(board, a, 'O'));
-      for (const idx of centerSorted) {
-        board[idx] = 'O';
-        const remainingThreats = tttWinningMoves(board, 'X').length;
-        board[idx] = '';
-        if (remainingThreats < forksToBlock.length) return idx;
+  const collectCandidates = (radius, limit) => {
+    const seen = new Set();
+    const add = (idx) => {
+      if (idx >= 0 && idx < board.length && !board[idx] && !seen.has(idx)) {
+        seen.add(idx);
       }
+    };
+
+    const stones = [];
+    for (let i = 0; i < board.length; i += 1) {
+      if (board[i]) stones.push(i);
     }
-  }
 
-  if (difficulty === 'ai' && occupied <= 1) {
-    return tttOpeningBookMove(board);
-  }
+    if (!stones.length) {
+      add(center);
+      return [center];
+    }
 
-  const searchDepth = difficulty === 'ai' ? 1
-    : (difficulty === 'medium' ? 2 : 1);
-  const candidateLimit = difficulty === 'ai' ? 4
-    : (difficulty === 'medium' ? 10 : 14);
-  const candidates = tttOrderedCandidates(board, 'O', candidateLimit);
-  const searchCandidates = difficulty === 'ai'
-    ? candidates.slice(0, occupied < 6 ? 3 : occupied < 12 ? 4 : 5)
-    : candidates;
+    stones.forEach((idx) => {
+      const row = Math.floor(idx / TTT_COLS);
+      const col = idx % TTT_COLS;
+      for (let dr = -radius; dr <= radius; dr += 1) {
+        for (let dc = -radius; dc <= radius; dc += 1) {
+          if (dr === 0 && dc === 0) continue;
+          const rr = row + dr;
+          const cc = col + dc;
+          if (!tttInBounds(rr, cc)) continue;
+          add(tttIndex(rr, cc));
+        }
+      }
+    });
+
+    add(center);
+    const list = Array.from(seen);
+    list.sort((a, b) => {
+      const ar = Math.floor(a / TTT_COLS);
+      const ac = a % TTT_COLS;
+      const br = Math.floor(b / TTT_COLS);
+      const bc = b % TTT_COLS;
+      const da = Math.abs(ar - Math.floor(TTT_ROWS / 2)) + Math.abs(ac - Math.floor(TTT_COLS / 2));
+      const db = Math.abs(br - Math.floor(TTT_ROWS / 2)) + Math.abs(bc - Math.floor(TTT_COLS / 2));
+      return da - db;
+    });
+    return list.slice(0, limit);
+  };
+
+  const scoreLine = (mark, idx) => {
+    const row = Math.floor(idx / TTT_COLS);
+    const col = idx % TTT_COLS;
+    let total = 0;
+    const dirs = [[0,1],[1,0],[1,1],[1,-1]];
+
+    for (const [dr, dc] of dirs) {
+      let count1 = 0;
+      let count2 = 0;
+      let open1 = 0;
+      let open2 = 0;
+
+      let r = row + dr;
+      let c = col + dc;
+      while (tttInBounds(r, c) && board[tttIndex(r, c)] === mark) {
+        count1 += 1;
+        r += dr;
+        c += dc;
+      }
+      if (tttInBounds(r, c) && !board[tttIndex(r, c)]) open1 = 1;
+
+      r = row - dr;
+      c = col - dc;
+      while (tttInBounds(r, c) && board[tttIndex(r, c)] === mark) {
+        count2 += 1;
+        r -= dr;
+        c -= dc;
+      }
+      if (tttInBounds(r, c) && !board[tttIndex(r, c)]) open2 = 1;
+
+      const run = count1 + count2 + 1;
+      const opens = open1 + open2;
+
+      if (run >= 5) total += 1000000;
+      else if (run === 4 && opens === 2) total += 180000;
+      else if (run === 4 && opens === 1) total += 55000;
+      else if (run === 3 && opens === 2) total += 12000;
+      else if (run === 3 && opens === 1) total += 3000;
+      else if (run === 2 && opens === 2) total += 900;
+      else if (run === 2 && opens === 1) total += 250;
+      else total += run * 18 + opens * 8;
+    }
+
+    const centerBias = (TTT_ROWS + TTT_COLS) - (Math.abs(row - Math.floor(TTT_ROWS / 2)) + Math.abs(col - Math.floor(TTT_COLS / 2)));
+    return total + centerBias * 3;
+  };
+
+  const evaluateBoard = (mark) => {
+    let sum = 0;
+    for (let i = 0; i < board.length; i += 1) {
+      if (board[i] !== mark) continue;
+      sum += scoreLine(mark, i);
+    }
+    return sum;
+  };
+
+  const candidateLimit = difficulty === 'ai' ? 18 : 12;
+  const candidates = collectCandidates(2, candidateLimit);
 
   if (difficulty === 'noob') {
-    return candidates[Math.floor(Math.random() * candidates.length)] ?? free[Math.floor(Math.random() * free.length)];
+    return candidates[Math.floor(Math.random() * candidates.length)] ?? free[0];
   }
 
-  if (difficulty === 'medium') {
-    const scored = candidates.map((idx) => {
-      board[idx] = 'O';
-      const opponentWins = tttWinningMoves(board, 'X').length;
-      const score = tttMoveHeuristic(board, idx, 'O') - opponentWins * 100000;
+  const scoreMove = (idx) => {
+    if (board[idx]) return -Infinity;
+    board[idx] = 'O';
+
+    const after = tttWinner(board);
+    if (after.winner === 'O') {
       board[idx] = '';
-      return { idx, score };
-    });
-    scored.sort((a, b) => b.score - a.score);
-    return scored[0]?.idx ?? candidates[0] ?? free[Math.floor(Math.random() * free.length)];
-  }
+      return 9e8;
+    }
+
+    let score = evaluateBoard('O') - evaluateBoard('X') * 0.92;
+    score += scoreLine('O', idx) * 2.5;
+
+    const opponentWinNow = tttWinningMove(board, 'X');
+    if (opponentWinNow >= 0) score -= 320000;
+
+    const replyCandidates = collectCandidates(2, 10).filter(i => !board[i]);
+    let worstReply = 0;
+    for (const reply of replyCandidates) {
+      board[reply] = 'X';
+      const replyScore = evaluateBoard('X') - evaluateBoard('O') * 0.85 + scoreLine('X', reply) * 2.2;
+      if (replyScore > worstReply) worstReply = replyScore;
+      board[reply] = '';
+    }
+
+    board[idx] = '';
+    return score - worstReply * 0.72;
+  };
 
   let bestIdx = candidates[0] ?? free[0];
   let bestScore = -Infinity;
-  const memo = {};
-
-  for (const idx of searchCandidates) {
-    if (deadline && typeof performance !== 'undefined' && performance.now() > deadline) break;
-    if (board[idx]) continue;
-    board[idx] = 'O';
-    const immediateThreats = tttWinningMoves(board, 'X').length;
-    const tactical = tttMoveHeuristic(board, idx, 'O') - immediateThreats * 280000 - tttCriticalThreatMoves(board, 'X').length * 220000 - tttThreatWindowMoves(board, 'X').length * 180000;
-    const searchScore = tttSearch(board, searchDepth, -Infinity, Infinity, false, memo, deadline);
-    const score = tactical + searchScore;
-    board[idx] = '';
+  for (const idx of candidates) {
+    const score = scoreMove(idx);
     if (score > bestScore) {
       bestScore = score;
       bestIdx = idx;
@@ -1189,8 +1212,6 @@ function tttBestMove(board, difficulty) {
   }
   return bestIdx;
 }
-
-
 function tttHardWinLog() {
   return [];
 }
@@ -1650,7 +1671,7 @@ function tttHandleMove(index) {
         requestAnimationFrame(tttLayoutBoard);
       }
     });
-  }, 90);
+  }, 35);
 }
 
 function resetTicTacToeGame(keepScreen) {
@@ -1855,6 +1876,14 @@ async function loadAdminRotationFromSupabase() {
   return null;
 }
 
+async function loadAdminMachineSettingsFromSupabase() {
+  if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.loadMachineSettings === 'function') {
+    app.machineSettingsRows = await window.RotationSupabaseBridge.loadMachineSettings();
+    return app.machineSettingsRows;
+  }
+  return [];
+}
+
 async function saveAdminRotationToSupabase(monthKey, rawText) {
   if (!monthKey) throw new Error('Chybí měsíc.');
   let parsed;
@@ -1912,39 +1941,55 @@ function adminNotesRowTemplate(row, rowIndex, allowBlankTail) {
   ].join('');
 }
 
+
 function buildAdminMachineSettingsTableHtml() {
   const rows = Array.isArray(app.machineSettingsRows) ? app.machineSettingsRows : [];
   const dataRows = rows.length ? rows : [
-    { machine_key: 'TNKS01', label: 'TNKS01', category: 'general', speed: '', settings_json: {} },
-    { machine_key: 'TBKR07', label: 'TBKR07', category: 'general', speed: '', settings_json: {} },
-    { machine_key: 'TPKW01', label: 'TPKW01', category: 'general', speed: '', settings_json: {} },
+    { machine_key: 'FZK01', label: 'Frézka 01', category: 'frezka', speed: '', settings_json: {} },
+    { machine_key: 'BRS01', label: 'Brus 01', category: 'brus', speed: '', settings_json: {} },
+    { machine_key: 'PRK01', label: 'Pračka 01', category: 'pracka', speed: '', settings_json: {} },
     { machine_key: '', label: '', category: 'general', speed: '', settings_json: {} }
   ];
+
   const tr = dataRows.map((row, idx) => {
-    const settingsText = typeof row.settings_json === 'string' ? row.settings_json : JSON.stringify(row.settings_json || {}, null, 0);
+    const settings = row && typeof row.settings_json === 'object' && row.settings_json !== null ? row.settings_json : {};
+    const cycleTime = row.speed ?? settings.cycle_time ?? settings.cycleTime ?? '';
+    const wheel = settings.wheel ?? settings.brus ?? settings.grind ?? '';
+    const index = settings.index ?? settings.grind_index ?? '';
+    const dressTime = settings.dress_time ?? settings.orovnani_time ?? settings.dressTime ?? '';
+    const dressCount = settings.dress_count ?? settings.orovnani_count ?? settings.dressCount ?? '';
     return [
       '<tr data-machine-row-index="' + String(idx) + '">',
       '  <td><input class="appMenuInlineInput" data-machine-field="machine_key" value="' + escapeHtml(String(row.machine_key || '')) + '" placeholder="kód"></td>',
       '  <td><input class="appMenuInlineInput" data-machine-field="label" value="' + escapeHtml(String(row.label || '')) + '" placeholder="název"></td>',
-      '  <td><input class="appMenuInlineInput" data-machine-field="category" value="' + escapeHtml(String(row.category || 'general')) + '" placeholder="kategorie"></td>',
-      '  <td><input class="appMenuInlineInput" data-machine-field="speed" value="' + escapeHtml(String(row.speed ?? '')) + '" placeholder="rychlost"></td>',
-      '  <td><input class="appMenuInlineInput" data-machine-field="settings_json" value="' + escapeHtml(settingsText) + '" placeholder="{ }"></td>',
+      '  <td><select class="appMenuInlineInput" data-machine-field="category">',
+      '    <option value="frezka"' + (String(row.category || '') === 'frezka' ? ' selected' : '') + '>frézka</option>',
+      '    <option value="brus"' + (String(row.category || '') === 'brus' ? ' selected' : '') + '>brus</option>',
+      '    <option value="pracka"' + (String(row.category || '') === 'pracka' ? ' selected' : '') + '>pračka</option>',
+      '    <option value="general"' + (String(row.category || 'general') === 'general' ? ' selected' : '') + '>ostatní</option>',
+      '  </select></td>',
+      '  <td><input class="appMenuInlineInput" data-machine-field="speed" value="' + escapeHtml(String(cycleTime ?? '')) + '" placeholder="čas kola"></td>',
+      '  <td><input class="appMenuInlineInput" data-machine-field="wheel" value="' + escapeHtml(String(wheel ?? '')) + '" placeholder="brus"></td>',
+      '  <td><input class="appMenuInlineInput" data-machine-field="index" value="' + escapeHtml(String(index ?? '')) + '" placeholder="index"></td>',
+      '  <td><input class="appMenuInlineInput" data-machine-field="dress_time" value="' + escapeHtml(String(dressTime ?? '')) + '" placeholder="orovnání"></td>',
+      '  <td><input class="appMenuInlineInput" data-machine-field="dress_count" value="' + escapeHtml(String(dressCount ?? '')) + '" placeholder="kusů"></td>',
       '</tr>'
     ].join('');
   }).join('');
+
   return [
     '<div class="appMenuSubSection">',
     '  <div class="appMenuSubTitle">Nastavení strojů</div>',
+    '  <div class="appMenuText">Vyplň hodnoty do tabulky a ulož online. Bez kódování a bez JSON editoru.</div>',
     '  <div class="tableWrap appMenuTableWrap">',
-    '    <table class="appMenuTable appMenuAdminTable">',
-    '      <thead><tr><th>Kód</th><th>Název</th><th>Typ</th><th>Rychlost</th><th>Nastavení</th></tr></thead>',
+    '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense">',
+    '      <thead><tr><th>Kód</th><th>Název</th><th>Typ</th><th>Čas kola</th><th>Brus</th><th>Index</th><th>Čas orovnání</th><th>Kusů po orovnání</th></tr></thead>',
     '      <tbody>' + tr + '</tbody>',
     '    </table>',
     '  </div>',
     '</div>'
   ].join('');
 }
-
 function buildAdminRotationTableHtml(monthKey) {
   const month = app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
   if (!month) {
@@ -1992,6 +2037,8 @@ function buildAdminRotationTableHtml(monthKey) {
   ].join('');
 }
 
+
+
 function readAdminMachineSettingsFromDom() {
   const rows = [];
   document.querySelectorAll('#appMenuBody tr[data-machine-row-index]').forEach((tr) => {
@@ -2000,23 +2047,22 @@ function readAdminMachineSettingsFromDom() {
     const label = String(get('label')).trim();
     const category = String(get('category')).trim() || 'general';
     const speedRaw = String(get('speed')).trim();
-    const settingsRaw = String(get('settings_json')).trim();
-    if (!machine_key && !label && !speedRaw && !settingsRaw) return;
-    let settings_json = {};
-    if (settingsRaw) {
-      try { settings_json = JSON.parse(settingsRaw); } catch (err) { settings_json = { raw: settingsRaw }; }
-    }
+    const wheel = String(get('wheel')).trim();
+    const index = String(get('index')).trim();
+    const dress_time = String(get('dress_time')).trim();
+    const dress_count = String(get('dress_count')).trim();
+    if (!machine_key && !label && !speedRaw && !wheel && !index && !dress_time && !dress_count) return;
+
     rows.push({
       machine_key,
       label: label || machine_key,
       category,
       speed: speedRaw,
-      settings_json
+      settings_json: { wheel, index, dress_time, dress_count }
     });
   });
   return rows;
 }
-
 function readAdminRotationFromDom(monthKey) {
   const fallback = app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
   const month = fallback ? JSON.parse(JSON.stringify(fallback)) : {
@@ -2091,7 +2137,12 @@ function renderAdminMenuBody(body) {
     '<div class="appMenuCard appMenuAdminCard">',
     '  <div class="appMenuCardTitle">' + escapeHtml(title) + '</div>',
     '  <div class="appMenuText">',
-    '    <div>Vyber měsíc, uprav řádky v tabulce a ulož online. Nastavení strojů jsou taky jen přes tabulku, bez kódování.</div>',
+    '    <div>Nejprve stroje, pak rozpisy, a export až úplně dole. Všechno se ukládá online přes Supabase.</div>',
+    '  </div>',
+    buildAdminMachineSettingsTableHtml(),
+    '  <div class="appMenuActionRow">',
+    '    <button type="button" class="appMenuAction" data-admin-action="load-machines">Načíst stroje</button>',
+    '    <button type="button" class="appMenuAction isActive" data-admin-action="save-machines">Uložit stroje</button>',
     '  </div>',
     '  <label class="appMenuLabel" for="adminMonthSelect">Měsíc</label>',
     '  <select id="adminMonthSelect" class="appMenuSelect">' + months.map(m => '<option value="' + escapeHtml(m) + '"' + (m === monthKey ? ' selected' : '') + '>' + escapeHtml(m) + '</option>').join('') + '</select>',
@@ -2100,15 +2151,15 @@ function renderAdminMenuBody(body) {
     '    <button type="button" class="appMenuAction" data-admin-action="load-online">Načíst online</button>',
     '    <button type="button" class="appMenuAction isActive" data-admin-action="save-rotation">Uložit rozpis</button>',
     '  </div>',
-    buildAdminMachineSettingsTableHtml(),
-    '  <div class="appMenuActionRow">',
-    '    <button type="button" class="appMenuAction" data-admin-action="load-machines">Načíst stroje</button>',
-    '    <button type="button" class="appMenuAction isActive" data-admin-action="save-machines">Uložit stroje</button>',
-    '  </div>',
     buildAdminRotationTableHtml(monthKey),
+    '  <div class="appMenuCard appMenuSubSection">',
+    '    <div class="appMenuSubTitle">Export celé aplikace</div>',
+    '    <div class="appMenuActionRow">',
+    '      <button type="button" class="appMenuAction" data-admin-action="import">Import Excelu</button>',
+    '      <button type="button" class="appMenuAction" data-admin-action="export">Export ZIP</button>',
+    '    </div>',
+    '  </div>',
     '  <div class="appMenuActionRow">',
-    '    <button type="button" class="appMenuAction" data-admin-action="import">Import Excelu</button>',
-    '    <button type="button" class="appMenuAction" data-admin-action="export">Export ZIP</button>',
     '    <button type="button" class="appMenuAction" data-menu-back="1">Zpět</button>',
     '  </div>',
     '</div>'
@@ -2169,7 +2220,16 @@ function openAppMenu(view) {
         '</div>'
       ].join('');
     } else if (v === 'admin') {
-      renderAdminMenuBody(body);
+      void (async () => {
+        try {
+          await loadAdminMachineSettingsFromSupabase();
+          await loadAdminRotationFromSupabase();
+          renderAdminMenuBody(body);
+        } catch (err) {
+          console.warn('Admin preload failed', err);
+          renderAdminMenuBody(body);
+        }
+      })();
     } else {
       body.innerHTML = [
         '<div class="appMenuGrid">',
@@ -2212,32 +2272,59 @@ function openAppMenu(view) {
       });
     });
 
-    body.querySelectorAll('[data-admin-action]').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const action = btn.getAttribute('data-admin-action');
-        const select = body.querySelector('#adminMonthSelect');
-        const textarea = body.querySelector('#adminRotationJson');
-        const monthKey = select ? select.value : getAdminSelectedMonthKey();
-        if (!monthKey || !textarea) return;
-        try {
-          if (action === 'load-month') {
-            textarea.value = getAdminMonthEditorValue(monthKey);
-          } else if (action === 'load-online') {
-            await loadAdminRotationFromSupabase();
-            renderAdminMenuBody(body);
-            return;
-          } else if (action === 'save-online') {
-            await saveAdminRotationToSupabase(monthKey, textarea.value);
-            alert('Rozpis uložený online.');
-          }
-          renderAdminMenuBody(body);
-        } catch (err) {
-          alert(err && err.message ? err.message : 'Administrace se nepodařila uložit.');
+    
+body.querySelectorAll('[data-admin-action]').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const action = btn.getAttribute('data-admin-action');
+    const select = body.querySelector('#adminMonthSelect');
+    const monthKey = select ? select.value : getAdminSelectedMonthKey();
+    try {
+      if (action === 'load-month') {
+        if (monthKey) {
+          app.selectedMonth = monthKey;
+          setRotaceView('months');
+          renderRotace();
+          if (typeof renderMonth === 'function') renderMonth(monthKey);
         }
-      });
-    });
+      } else if (action === 'load-online') {
+        await loadAdminRotationFromSupabase();
+        renderAdminMenuBody(body);
+        return;
+      } else if (action === 'save-rotation') {
+        await saveAdminRotationFromDom(monthKey);
+        alert('Rozpis uložený online.');
+      } else if (action === 'load-machines') {
+        if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.loadMachineSettings === 'function') {
+          app.machineSettingsRows = await window.RotationSupabaseBridge.loadMachineSettings();
+          renderAdminMenuBody(body);
+          return;
+        }
+      } else if (action === 'save-machines') {
+        const rows = readAdminMachineSettingsFromDom();
+        if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.saveMachineSettings === 'function') {
+          const result = await window.RotationSupabaseBridge.saveMachineSettings(rows);
+          if (result && result.ok === false) throw (result.error || new Error('Uložení strojů selhalo.'));
+          app.machineSettingsRows = rows;
+          renderAdminMenuBody(body);
+          alert('Nastavení strojů uložené online.');
+          return;
+        }
+      } else if (action === 'import') {
+        startMenuImport();
+        return;
+      } else if (action === 'export') {
+        document.getElementById('exportBtn')?.click();
+        return;
+      }
+      renderAdminMenuBody(body);
+    } catch (err) {
+      console.error('Admin action failed', err);
+      alert(err && err.message ? err.message : 'Administrace se nepodařila uložit.');
+    }
+  });
+});
 
-    body.querySelectorAll('[data-ui-pref]').forEach(btn => {
+body.querySelectorAll('[data-ui-pref]').forEach(btn => {
       btn.addEventListener('click', () => {
         const key = btn.getAttribute('data-ui-pref');
         if (!key) return;
@@ -2287,64 +2374,72 @@ function showFoodSchedule(which) {
   setBottomNavActive('home');
 }
 
+
 function showPage(id) {
   if (typeof app !== 'undefined') {
     app.homeBootSuppressed = id !== 'home';
   }
-  const modal = document.getElementById('foodScheduleModal');
-  if (modal) {
-    modal.classList.remove('isVisible');
-    document.body.classList.remove('foodModalOpen');
-  }
-  const personModal = document.getElementById('personScheduleModal');
-  if (personModal) {
-    personModal.classList.remove('isVisible');
-    document.body.classList.remove('personModalOpen');
-  }
 
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  if (id === 'menu') {
-    openAppMenu('menu');
-  }
-  const el = document.getElementById(id);
-  if (el) el.classList.add('active');
+  const navPage = id === 'rotace'
+    ? 'rotace'
+    : (id === 'brusy' || id === 'soustruhy' || id === 'frezky' || id === 'kalkulacky')
+      ? 'kalkulacky'
+      : (id === 'jidlo' ? 'home' : id);
 
-  if (id === 'rotace') {
-    if (typeof initRotaceCurrentMonth === 'function') initRotaceCurrentMonth();
-    setRotaceView('names');
-    renderRotace();
-    setBottomNavActive('rotace');
-  } else if (id === 'brusy') {
-    renderBrusy();
-    setBottomNavActive('kalkulacky');
-  } else if (id === 'soustruhy') {
-    renderSoustruhy();
-    setBottomNavActive('kalkulacky');
-  } else if (id === 'frezky') {
-    setBottomNavActive('kalkulacky');
-  } else if (id === 'jidlo') {
-    if (typeof renderFoodSchedulePage === 'function') {
-      renderFoodSchedulePage();
+  try {
+    const modal = document.getElementById('foodScheduleModal');
+    if (modal) {
+      modal.classList.remove('isVisible');
+      document.body.classList.remove('foodModalOpen');
     }
-    setBottomNavActive('home');
-  } else if (id === 'kalkulacky') {
-    setBottomNavActive('kalkulacky');
-  } else if (id === 'home') {
-    if (typeof scheduleHomeRefresh === 'function') {
-      scheduleHomeRefresh();
-    } else {
-      if (typeof refreshHomeScreen === 'function') refreshHomeScreen();
-      else {
-        if (typeof updateDashboard === 'function') updateDashboard();
-        if (typeof updateFoodTile === 'function') updateFoodTile();
-        if (typeof updateEportalTile === 'function') updateEportalTile();
+    const personModal = document.getElementById('personScheduleModal');
+    if (personModal) {
+      personModal.classList.remove('isVisible');
+      document.body.classList.remove('personModalOpen');
+    }
+
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    if (id === 'menu') {
+      openAppMenu('menu');
+    }
+    const el = document.getElementById(id);
+    if (el) el.classList.add('active');
+
+    if (id === 'rotace') {
+      if (typeof initRotaceCurrentMonth === 'function') initRotaceCurrentMonth();
+      setRotaceView('names');
+      if (typeof renderRotace === 'function') renderRotace();
+    } else if (id === 'brusy') {
+      if (typeof renderBrusy === 'function') renderBrusy();
+    } else if (id === 'soustruhy') {
+      if (typeof renderSoustruhy === 'function') renderSoustruhy();
+    } else if (id === 'frezky') {
+      // page exists only as part of kalkulačky hub
+    } else if (id === 'jidlo') {
+      if (typeof renderFoodSchedulePage === 'function') {
+        renderFoodSchedulePage();
+      }
+    } else if (id === 'home') {
+      if (typeof scheduleHomeRefresh === 'function') {
+        scheduleHomeRefresh();
+      } else {
+        if (typeof refreshHomeScreen === 'function') refreshHomeScreen();
+        else {
+          if (typeof updateDashboard === 'function') updateDashboard();
+          if (typeof updateFoodTile === 'function') updateFoodTile();
+          if (typeof updateEportalTile === 'function') updateEportalTile();
+        }
       }
     }
-    setBottomNavActive('home');
+  } catch (err) {
+    console.error('showPage failed', err);
+  } finally {
+    setBottomNavActive(navPage);
   }
 }
 
 function openRotaceNames() {
+
   showPage('rotace');
   setRotaceView('names');
   setBottomNavActive('rotace');

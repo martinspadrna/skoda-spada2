@@ -49,7 +49,8 @@ function renderRotace() {
   }
 
   renderStatsPanel();
-  document.getElementById('adminBox').style.display = 'none';
+  const adminBox = document.getElementById('adminBox');
+  if (adminBox) adminBox.style.display = 'none';
 }
 
 function getSoftMachineDisplayLabel(entry, rotation) {
@@ -476,6 +477,6 @@ function escapeHtml(str) {
 /* SECRET ADMIN UNLOCK */
 function updateImportBoxVisibility() {
   const box = document.getElementById("adminBox");
-  if (box) box.style.display = app.adminUnlocked ? "block" : "none";
+  if (box) box.style.display = "none";
 }
 
