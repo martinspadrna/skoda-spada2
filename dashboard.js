@@ -1,4 +1,4 @@
-// Extracted dashboard logic (v1(258))
+// Extracted dashboard logic (v1(259))
 function updateDashboard() {
   const now = typeof getPragueNow === "function" ? getPragueNow(new Date()) : new Date();
   const active = getActiveShiftNow(now);
@@ -21,22 +21,29 @@ function updateDashboard() {
 
   const hero = document.getElementById('dashHero');
   if (hero) {
+    const currentAbsences = active && active.team === 'D' ? getAbsenceNamesForDate(active.start || now) : [];
+    const nextAbsences = (!active || active.team !== 'D') && dState.next ? getAbsenceNamesForDate(dState.next.start) : [];
     const heroLine1 = active && !showSpecial
       ? '<span class="dashboardHeroLine1Text">V práci: směna ' + active.team + (active.label ? ' (' + active.label + ')' : '') + '</span>'
       : '<span class="dashboardHeroLine1Text">' + (special ? 'Dnes se nepracuje' : '—') + '</span>';
-    const nextAbsences = (!active || active.team !== 'D') && dState.next ? getAbsenceNamesForDate(dState.next.start) : [];
-    const heroLine2 = (!active || active.team !== 'D') && dState.next
-      ? 'Směna D začne za: ' + formatDuration(dState.next.start - now)
-      : '';
-    const heroLine3 = nextAbsences.length ? 'Na další směně chybí: ' + nextAbsences.join(', ') : '';
+    const heroLine2 = active && active.team === 'D'
+      ? (currentAbsences.length ? 'Aktuálně chybí: ' + currentAbsences.join(', ') : 'Aktuálně nechybí nikdo')
+      : ((!active || active.team !== 'D') && dState.next
+        ? 'Směna D začne za: ' + formatDuration(dState.next.start - now)
+        : '');
+    const heroLine3 = (!active || active.team !== 'D') && nextAbsences.length ? 'Na další směně chybí: ' + nextAbsences.join(', ') : '';
     const heroProgress = active && !showSpecial && active.start && active.end
       ? Math.max(0, Math.min(100, ((now.getTime() - active.start.getTime()) / (active.end.getTime() - active.start.getTime())) * 100))
       : 0;
+    const heroProgressText = active && !showSpecial ? Math.round(heroProgress) + ' %' : '';
     hero.innerHTML = [
       '<div class="dashboardHeroLine1">' + heroLine1 + '</div>',
       heroLine2 ? '<div class="dashboardHeroLine2">' + esc(heroLine2) + '</div>' : '',
       heroLine3 ? '<div class="dashboardHeroLine3">' + esc(heroLine3) + '</div>' : '',
-      '<div class="dashboardHeroBar"><span style="width:' + heroProgress.toFixed(1) + '%"></span></div>'
+      '<div class="dashboardHeroBarRow">',
+      '<div class="dashboardHeroBar"><span style="width:' + heroProgress.toFixed(1) + '%"></span></div>',
+      heroProgressText ? '<div class="dashboardHeroBarPercent">' + esc(heroProgressText) + '</div>' : '',
+      '</div>'
     ].join('');
   }
 
@@ -207,6 +214,16 @@ function bootHomeRefresh() {
   watchHomePaint();
 }
 
+function bootHomeRefreshLate() {
+  setTimeout(() => {
+    try {
+      bootHomeRefresh();
+    } catch (err) {
+      console.warn('Late home refresh failed', err);
+    }
+  }, 0);
+}
+
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', bootHomeRefresh, { once: true });
 } else {
@@ -219,3 +236,4 @@ window.addEventListener('visibilitychange', () => {
     bootHomeRefresh();
   }
 });
+window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;

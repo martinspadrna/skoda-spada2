@@ -421,9 +421,16 @@ input{
   color:rgba(255,255,255,.72);
 }
 
-.dashboardHeroBar{
+.dashboardHeroBarRow{
   margin-top:12px;
-  width:100%;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.dashboardHeroBar{
+  flex:1 1 auto;
+  min-width:0;
   height:7px;
   border-radius:999px;
   overflow:hidden;
@@ -436,6 +443,17 @@ input{
   border-radius:inherit;
   background:linear-gradient(90deg, #8cff8f, #69f06f);
   box-shadow:0 0 16px rgba(124,255,124,.25);
+}
+
+.dashboardHeroBarPercent{
+  flex:none;
+  min-width:42px;
+  text-align:right;
+  font-size:12px;
+  font-weight:800;
+  line-height:1;
+  color:rgba(223,255,219,.78);
+  letter-spacing:.02em;
 }
 
 .dashboardGrid{
@@ -1870,7 +1888,7 @@ body.reduceMotion *::after{
 }
 
 
-/* v1(258) dashboard + nav icon polish */
+/* v1(259) dashboard + nav icon polish */
 .dashboardTop{align-items:center !important;}
 .dashboardLabelRow{gap:8px !important; align-items:center !important;}
 #home .dashboardCard .dashboardIcon.dashboardIconInline,
