@@ -322,7 +322,7 @@
   <details class="brusDetails">
     <summary>Přesnější výpočet</summary>
     <div class="brusDetailsBody">
-      <label>Hotových kusů v dávce:</label>
+      <label>Hotových kusů v rozdělané dávce:</label>
       <input id="davka" type="number">
 
       <label>Kusů do orovnání:</label>
@@ -405,9 +405,9 @@
 });</script>
 <script type="text/plain" id="src-core-js">
 const APP_KEY = "rotace_kalkulacky_state_v122";
-const APP_VERSION = "v.1(264)";
+const APP_VERSION = "v.1(265)";
 window.APP_VERSION = APP_VERSION;
-const ROTATION_BUILD = "2026-05-09-" + APP_VERSION + "-" + Date.now();
+const ROTATION_BUILD = "2026-05-10-" + APP_VERSION + "-" + Date.now();
 
 const HARD_MACHINE_HEADERS = ["TNKS01", "TBKR07", "TPKW01", "TPKW02", "TBKR01"];
 const SOFT_MACHINE_HEADERS = ["MSKC01", "MSKC03", "MSKC04", "MFKF06", "MFKF10"];
@@ -987,7 +987,7 @@ if (document.readyState === 'loading') {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v.1(250)–v.1(264)',
+      range: 'v.1(250)–v.1(265)',
       title: 'Aktuální úpravy',
       lines: [
         'Jídelna a kantýna teď používají shodné dny na jednom řádku.',
@@ -2520,7 +2520,7 @@ function getTodayAbsenceNames(now) {
 function updateShift() {
   if (typeof updateDashboard === "function") updateDashboard();
 }</script>
-<script type="text/plain" id="src-dashboard-js">// Extracted dashboard logic (v1(264))
+<script type="text/plain" id="src-dashboard-js">// Extracted dashboard logic (v1(265))
 function updateDashboard() {
   const now = typeof getPragueNow === "function" ? getPragueNow(new Date()) : new Date();
   const active = getActiveShiftNow(now);
@@ -7784,7 +7784,7 @@ body.appMenuOpen{
     <button class="bottomNavBtn" data-page="kalkulacky" onclick="openKalkulacky()"><span class="bottomNavIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="3.8" width="14" height="16.4" rx="2.2"></rect><path d="M8 7h8M8 11h2M12 11h2M16 11h0M8 14.8h2M12 14.8h2M16 14.8h0"></path><path d="M8 18.2h2M12 18.2h2M16 18.2h0"></path></svg></span><div class="bottomNavLabel">Kalkulačky</div></button>
     <button class="bottomNavBtn" data-page="rozpisy" onclick="openRotaceMonths()"><span class="bottomNavIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2.2"></rect><path d="M4 9h16M8 3.8v3.2M16 3.8v3.2"></path><path d="M8 12.8h3M13 12.8h3M8 16h3"></path></svg></span><div class="bottomNavLabel">Rozpisy</div></button>
     <button class="bottomNavBtn" data-page="statistiky" onclick="openRotaceStats()"><span class="bottomNavIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 19.2V10.8"></path><path d="M10 19.2V6.8"></path><path d="M15 19.2V13.2"></path><path d="M20 19.2H4"></path></svg></span><div class="bottomNavLabel">Statistiky</div></button>
-    <button class="bottomNavBtn bottomNavMenuBtn" data-page="menu" type="button" aria-label="Více" onclick="toggleAppMenu()"><svg class="moreIcon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.1"></circle><circle cx="12" cy="12" r="3.1"></circle><circle cx="12" cy="16" r="3.1"></circle></svg><div class="bottomNavLabel">Více</div></button>
+    <button class="bottomNavBtn bottomNavMenuBtn" data-page="menu" type="button" aria-label="Více" onclick="toggleAppMenu()"><svg class="moreIcon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="2.75"></circle><circle cx="12" cy="12" r="2.75"></circle><circle cx="12" cy="16" r="2.75"></circle></svg><div class="bottomNavLabel">Více</div></button>
   </div>
 </nav>
 

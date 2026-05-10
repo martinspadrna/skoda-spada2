@@ -105,7 +105,7 @@ if (document.readyState === 'loading') {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v.1(250)–v.1(264)',
+      range: 'v.1(250)–v.1(265)',
       title: 'Aktuální úpravy',
       lines: [
         'Jídelna a kantýna teď používají shodné dny na jednom řádku.',
@@ -357,8 +357,10 @@ function showPage(id) {
   } else if (id === 'soustruhy') {
     renderSoustruhy();
     setBottomNavActive('kalkulacky');
-  } else if (id === 'frezky' || id === 'jidlo') {
-    if (id === 'jidlo' && typeof renderFoodSchedulePage === 'function') {
+  } else if (id === 'frezky') {
+    setBottomNavActive('kalkulacky');
+  } else if (id === 'jidlo') {
+    if (typeof renderFoodSchedulePage === 'function') {
       renderFoodSchedulePage();
     }
     setBottomNavActive('home');

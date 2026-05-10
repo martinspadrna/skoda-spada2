@@ -60,12 +60,37 @@ function renderFinishResult(outId, label, pieces, seconds, extraLine) {
     "<div class='smallText'>Za " + durationText + " · " + formatCount(pieces) + " ks / " + dosesText + " dávek" + (extraLine ? " · " + escapeHtml(extraLine) : "") + "</div>";
 }
 
-function estimateBrusSecondsForPieces(pieces, cfg) {
+function estimateBrusSecondsForPieces(pieces, cfg, doneInBatch, piecesToDress) {
   const pieceSec = Number(cfg.pieceSec) || 0;
   const dressEvery = Math.max(1, Math.floor(Number(cfg.dressEvery) || 1));
   const dressSec = Math.max(0, Number(cfg.dressSec) || 0);
-  if (pieceSec <= 0 || pieces <= 0) return 0;
-  return pieces * pieceSec + Math.floor((pieces - 1) / dressEvery) * dressSec;
+  const targetPieces = Math.max(0, Math.floor(Number(pieces) || 0));
+  const alreadyDone = Math.max(0, Math.floor(Number(doneInBatch) || 0));
+
+  if (pieceSec <= 0 || targetPieces <= 0) return 0;
+
+  let remaining = Math.max(0, targetPieces - alreadyDone);
+  if (remaining <= 0) return 0;
+
+  let firstRun = Math.max(1, Math.floor(Number(piecesToDress) || 0));
+  if (!firstRun) {
+    const modulo = alreadyDone % dressEvery;
+    firstRun = modulo ? (dressEvery - modulo) : dressEvery;
+  }
+
+  let seconds = 0;
+  const runFirst = Math.min(remaining, firstRun);
+  seconds += runFirst * pieceSec;
+  remaining -= runFirst;
+
+  while (remaining > 0) {
+    seconds += dressSec;
+    const run = Math.min(remaining, dressEvery);
+    seconds += run * pieceSec;
+    remaining -= run;
+  }
+
+  return seconds;
 }
 
 
@@ -126,6 +151,8 @@ function calcBrusy() {
 
 function calcBrusyFinish() {
   const target = resolveTargetPieces("b_finish_kusy", "b_finish_davky");
+  const doneInBatch = Math.max(0, parseInt(document.getElementById("davka")?.value, 10) || 0);
+  const piecesToDress = Math.max(0, parseInt(document.getElementById("orovnani")?.value, 10) || 0);
   const out = document.getElementById("outBTime");
   if (!out) return;
   if (!target.pieces) {
@@ -133,13 +160,17 @@ function calcBrusyFinish() {
     return;
   }
   const cfg = getBrusConfig(app.machine, app.prog);
-  const seconds = estimateBrusSecondsForPieces(target.pieces, cfg);
+  const seconds = estimateBrusSecondsForPieces(target.pieces, cfg, doneInBatch, piecesToDress);
+  const remainingPieces = Math.max(0, target.pieces - doneInBatch);
   const now = new Date();
   const finish = new Date(now.getTime() + seconds * 1000);
+  const preciseNote = (doneInBatch > 0 || piecesToDress > 0)
+    ? (" · přesněji s rozdělanou dávkou" + (doneInBatch > 0 ? (" " + formatCount(doneInBatch) + " ks hotovo") : "") + (piecesToDress > 0 ? (", do orovnání " + formatCount(piecesToDress) + " ks") : ""))
+    : "";
   out.innerHTML =
     "<div><b>" + escapeHtml(app.machine + " / " + cfg.label) + "</b></div>" +
     "<div style='margin-top:6px;'>Hotovo v <b>" + formatClockTime(finish) + "</b></div>" +
-    "<div class='smallText'>Za " + formatDuration(seconds * 1000) + " · " + formatCount(target.pieces) + " ks / " + formatDoses(target.pieces) + " dávek</div>";
+    "<div class='smallText'>Za " + formatDuration(seconds * 1000) + " · " + formatCount(remainingPieces) + " ks / " + formatDoses(remainingPieces) + " dávek" + escapeHtml(preciseNote) + "</div>";
   saveRotationData();
 }
 
