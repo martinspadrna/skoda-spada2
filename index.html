@@ -205,7 +205,7 @@
       <label>Číslo první dávky</label>
       <input id="lis_first" type="number" autocomplete="off">
       <label>Plán výroby</label>
-      <input id="lis_plan" type="number" value="1216" autocomplete="off">
+      <input id="lis_plan" type="number" value="" autocomplete="off">
       <button class="soustruhCalcBtn" onclick="calcSoustruhyLis()">Spočítej lis</button>
       <div class="card" id="soustruhyLisResult"></div>
     </div>
@@ -215,7 +215,7 @@
       <label>Číslo první dávky</label>
       <input id="v126_first" type="number" autocomplete="off">
       <label>Plán výroby</label>
-      <input id="v126_plan" type="number" value="1216" autocomplete="off">
+      <input id="v126_plan" type="number" value="" autocomplete="off">
       <div class="bgrid">
         <div class="bbtn activeChoice" data-startsize="32" onclick="setSoustruh126Start(32)">Začínám 32 ks</div>
         <div class="bbtn" data-startsize="31" onclick="setSoustruh126Start(31)">Začínám 31 ks</div>
@@ -235,7 +235,7 @@
         <div><label>4. dávka- počet kusů</label><input id="v106_c4" type="number"></div>
       </div>
       <label>Plán výroby</label>
-      <input id="v106_plan" type="number" value="1216" autocomplete="off">
+      <input id="v106_plan" type="number" value="" autocomplete="off">
       <button class="soustruhCalcBtn" onclick="calcSoustruhy106()">Spočítej 106</button>
       <div class="card" id="soustruhy106Result"></div>
     </div>
@@ -405,7 +405,7 @@
 });</script>
 <script type="text/plain" id="src-core-js">
 const APP_KEY = "rotace_kalkulacky_state_v122";
-const APP_VERSION = "v.1(271)";
+const APP_VERSION = "v.1(278)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-05-10-" + APP_VERSION + "-" + Date.now();
 
@@ -482,7 +482,7 @@ const app = {
   selectedStatsMachine: null,
   soustruhMode: "lis",
   soustruhFirstBatch: "",
-  soustruhPlan: "1216",
+  soustruhPlan: "",
   soustruh126Start: 32,
   soustruh106Counts: ["", "", "", ""],
   selectedYear: new Date().getFullYear(),
@@ -491,6 +491,7 @@ const app = {
   importClicks: 0,
   aboutTapCount: 0,
   aboutTapTimer: null,
+  homeBootSuppressed: false,
   tttState: null,
   pendingMenuImport: false,
   adminUnlocked: false,
@@ -668,11 +669,12 @@ function restoreInputs() {
   setVal("orovnani", "orovnani");
   setVal("celkem", "celkem");
   const lisPlanEl = document.getElementById("lis_plan");
-  if (lisPlanEl) lisPlanEl.value = "1216";
+  const soustruhDefaultPlan = String(typeof getSoustruhDefaultPlan === "function" ? getSoustruhDefaultPlan() : 1216);
+  if (lisPlanEl) lisPlanEl.value = soustruhDefaultPlan;
   const v126PlanEl = document.getElementById("v126_plan");
-  if (v126PlanEl) v126PlanEl.value = "1216";
+  if (v126PlanEl) v126PlanEl.value = soustruhDefaultPlan;
   const v106PlanEl = document.getElementById("v106_plan");
-  if (v106PlanEl) v106PlanEl.value = "1216";
+  if (v106PlanEl) v106PlanEl.value = soustruhDefaultPlan;
   try {
     const arr = JSON.parse(localStorage.getItem("soustruh106Counts") || "[\"\",\"\",\"\",\"\"]");
     ["v106_c1","v106_c2","v106_c3","v106_c4"].forEach((id, idx) => { const el = document.getElementById(id); if (el && !el.value) el.value = arr[idx] || ""; });
@@ -680,7 +682,7 @@ function restoreInputs() {
   app.soustruhMode = localStorage.getItem("soustruhMode") || app.soustruhMode || "lis";
   app.soustruhFirstBatch = localStorage.getItem("soustruhFirstBatch") || "";
   const storedSoustruhPlan = localStorage.getItem("soustruhPlan");
-  app.soustruhPlan = storedSoustruhPlan && storedSoustruhPlan !== "1248" ? storedSoustruhPlan : "1216";
+  app.soustruhPlan = storedSoustruhPlan && storedSoustruhPlan !== "1248" ? storedSoustruhPlan : String(typeof getSoustruhDefaultPlan === "function" ? getSoustruhDefaultPlan() : 1216);
   app.soustruh126Start = parseInt(localStorage.getItem("soustruh126Start"), 10) || 32;
   try { app.soustruh106Counts = JSON.parse(localStorage.getItem("soustruh106Counts") || "[\"\",\"\",\"\",\"\"]"); } catch (e) { app.soustruh106Counts = ["", "", "", ""]; }
 }
@@ -705,6 +707,16 @@ function getShiftEnd(now) {
     e.setHours(6, 0, 0, 0);
     return e;
   }
+}
+
+function getSoustruhDefaultPlan(now) {
+  const d = new Date(now || new Date());
+  const day = d.getDay();
+  const hour = d.getHours();
+
+  if (day === 0 && hour >= 6 && hour < 14) return 704;
+  if ((day === 0 && hour >= 22) || (day === 1 && hour < 6)) return 832;
+  return 1216;
 }
 
 const SHIFT_CYCLE_START = new Date(2026, 3, 27, 0, 0, 0, 0); // 27.4.2026 = B / 1. týden
@@ -880,9 +892,7 @@ function syncYearControls() {
       overwriteMonth.appendChild(opt);
     });
   }
-}
-
-</script>
+}</script>
 <script type="text/plain" id="src-ui-js">function setBottomNavActive(pageId) {
   const buttons = document.querySelectorAll('.bottomNavBtn');
   buttons.forEach(btn => {
@@ -996,9 +1006,9 @@ function ensureTicTacToeStyles() {
   align-items:stretch;
   justify-content:center;
   padding:0;
-  background:rgba(5,8,7,.72);
-  backdrop-filter:blur(18px) saturate(145%);
-  -webkit-backdrop-filter:blur(18px) saturate(145%);
+  background:rgba(5,8,7,.78);
+  backdrop-filter:blur(16px) saturate(145%);
+  -webkit-backdrop-filter:blur(16px) saturate(145%);
 }
 .tttOverlay.isVisible{display:flex;}
 .tttShell{
@@ -1006,7 +1016,7 @@ function ensureTicTacToeStyles() {
   height:100%;
   border:none;
   border-radius:0;
-  background:linear-gradient(180deg, rgba(16,24,20,.98), rgba(10,14,12,.96));
+  background:linear-gradient(180deg, rgba(10,14,12,.99), rgba(7,10,9,.98));
   box-shadow:0 24px 80px rgba(0,0,0,.55);
   overflow:hidden;
   display:flex;
@@ -1017,9 +1027,10 @@ function ensureTicTacToeStyles() {
   align-items:center;
   justify-content:space-between;
   gap:12px;
-  padding:16px 16px 12px;
-  border-bottom:1px solid rgba(255,255,255,.06);
+  padding:14px 14px 10px;
+  border-bottom:1px solid rgba(124,255,124,.10);
   flex:0 0 auto;
+  background:rgba(255,255,255,.02);
 }
 .tttHeaderTitle{
   display:flex;
@@ -1040,17 +1051,17 @@ function ensureTicTacToeStyles() {
   width:38px;
   height:38px;
   border:none;
-  border-radius:14px;
-  background:rgba(255,255,255,.06);
+  border-radius:0;
+  background:rgba(255,255,255,.05);
   color:#e7fff0;
-  font-size:24px;
+  font-size:26px;
   line-height:1;
 }
 .tttContent{
   flex:1;
   min-height:0;
   overflow:hidden;
-  padding:12px calc(12px + env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left));
+  padding:0;
   display:flex;
   flex-direction:column;
 }
@@ -1058,15 +1069,23 @@ function ensureTicTacToeStyles() {
 .tttGameScreen{
   display:flex;
   flex-direction:column;
-  gap:16px;
+  gap:12px;
   min-height:0;
   flex:1;
+}
+.tttStartScreen{
+  padding:14px;
+  overflow:auto;
+}
+.tttGameScreen{
+  position:relative;
+  padding:0;
 }
 .tttCard{
   border:1px solid rgba(124,255,124,.12);
   background:rgba(255,255,255,.03);
-  border-radius:22px;
-  padding:16px;
+  border-radius:0;
+  padding:14px;
 }
 .tttSectionTitle{
   margin:0 0 12px;
@@ -1092,7 +1111,7 @@ function ensureTicTacToeStyles() {
   border:1px solid rgba(124,255,124,.16);
   background:rgba(255,255,255,.04);
   color:#e7fff0;
-  border-radius:16px;
+  border-radius:0;
   padding:10px 12px;
   font-size:15px;
   font-weight:700;
@@ -1110,57 +1129,173 @@ function ensureTicTacToeStyles() {
   line-height:1.45;
 }
 .tttStatus{
+  position:absolute;
+  top:12px;
+  left:12px;
+  right:12px;
+  z-index:2;
   min-height:24px;
   color:#7CFF7C;
   font-size:14px;
   font-weight:700;
   text-align:center;
-  flex:0 0 auto;
+  background:rgba(7,10,9,.72);
+  border:1px solid rgba(124,255,124,.12);
+  padding:8px 12px;
+  pointer-events:none;
 }
 .tttBoardWrap{
-  flex:1;
-  min-height:0;
+  position:absolute;
+  inset:56px 12px 88px;
   display:flex;
-  align-items:stretch;
+  align-items:center;
   justify-content:center;
+  min-height:0;
+  overflow:hidden;
+  padding-bottom:2px;
 }
 .tttBoard{
   width:100%;
   height:100%;
   display:grid;
-  grid-template-columns:repeat(20, minmax(0, 1fr));
-  grid-template-rows:repeat(13, minmax(0, 1fr));
-  gap:4px;
+  grid-template-columns:repeat(10, var(--tttCellSize, 24px));
+  grid-template-rows:repeat(18, var(--tttCellSize, 24px));
+  gap:0;
+  justify-content:center;
+  align-content:center;
+  overflow:hidden;
+  box-shadow:inset 0 0 0 1px rgba(124,255,124,.22);
 }
 .tttCell{
   appearance:none;
   -webkit-appearance:none;
   font-family:inherit;
+  width:var(--tttCellSize, 24px);
+  height:var(--tttCellSize, 24px);
+  box-sizing:border-box;
   border:1px solid rgba(124,255,124,.14);
-  background:rgba(255,255,255,.04);
-  border-radius:12px;
+  background:rgba(255,255,255,.02);
+  border-radius:0;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:clamp(14px, 2.8vw, 28px);
-  font-weight:800;
+  font-size:calc(var(--tttCellSize, 24px) * .74);
+  font-weight:900;
   line-height:1;
+  text-align:center;
   color:#7CFF7C;
   text-shadow:0 0 10px rgba(124,255,124,.24), 0 0 18px rgba(124,255,124,.18);
-  transition:transform .16s ease, background .16s ease, border-color .16s ease;
+  transition:transform .16s ease, background .16s ease, border-color .16s ease, box-shadow .16s ease;
 }
 .tttCell:active{transform:scale(.98);}
 .tttCell.isFilled{
-  background:rgba(124,255,124,.06);
+  background:rgba(124,255,124,.05);
+}
+.tttCell.isX{
+  color:#7CFF7C;
+  text-shadow:0 0 10px rgba(124,255,124,.34), 0 0 18px rgba(124,255,124,.24), 0 0 28px rgba(124,255,124,.18);
+}
+.tttCell.isO{
+  color:#ff4040;
+  text-shadow:0 0 10px rgba(255,64,64,.34), 0 0 18px rgba(255,64,64,.24), 0 0 28px rgba(255,64,64,.18);
 }
 .tttCell.isWinner{
   background:rgba(124,255,124,.12);
   border-color:rgba(124,255,124,.5);
+  box-shadow:inset 0 0 0 1px rgba(124,255,124,.25), 0 0 18px rgba(124,255,124,.18);
+}
+.tttWinModal{
+  position:absolute;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:18px 14px calc(18px + env(safe-area-inset-bottom));
+  background:rgba(4,7,6,.66);
+  backdrop-filter:blur(10px) saturate(135%);
+  -webkit-backdrop-filter:blur(10px) saturate(135%);
+  z-index:4;
+}
+.tttWinCard{
+  width:min(100%, 380px);
+  border:1px solid rgba(124,255,124,.16);
+  border-radius:22px;
+  background:linear-gradient(180deg, rgba(13,18,15,.98), rgba(8,12,10,.98));
+  box-shadow:0 22px 60px rgba(0,0,0,.48);
+  padding:16px;
+}
+.tttWinText{
+  margin-top:6px;
+  color:rgba(231,255,240,.76);
+  font-size:13px;
+  line-height:1.45;
+}
+.tttWinLabel{
+  display:block;
+  margin-top:12px;
+  font-size:12px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:rgba(231,255,240,.62);
+}
+.tttWinInput{
+  width:100%;
+  margin-top:8px;
+  min-height:44px;
+  border-radius:14px;
+  border:1px solid rgba(124,255,124,.18);
+  background:rgba(255,255,255,.04);
+  color:#eaf7ee;
+  padding:10px 12px;
+  font:inherit;
+  font-size:16px;
+  outline:none;
+}
+.tttWinInput:focus{
+  border-color:rgba(124,255,124,.48);
+  box-shadow:0 0 0 3px rgba(124,255,124,.12);
+}
+.tttWinStats{
+  margin-top:12px;
+  display:grid;
+  grid-template-columns:1fr;
+  gap:8px;
+}
+.tttWinStats > div{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:9px 10px;
+  border-radius:14px;
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(124,255,124,.10);
+}
+.tttWinStats span{
+  color:rgba(231,255,240,.62);
+  font-size:12px;
+}
+.tttWinStats strong{
+  color:#eaf7ee;
+  font-size:13px;
+}
+.tttWinActions{
+  margin-top:14px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.tttWinModal.isVisible{
+  display:flex;
 }
 .tttFooter{
+  position:absolute;
+  left:12px;
+  right:12px;
+  bottom:calc(12px + env(safe-area-inset-bottom));
   display:flex;
   gap:10px;
-  flex:0 0 auto;
+  z-index:2;
 }
 .tttFooter .tttBtn{
   flex:1;
@@ -1173,12 +1308,12 @@ body.tttOpen{
   overflow:hidden;
 }
 @media (max-width: 520px){
-  .tttHeader{padding:14px 14px 10px;}
-  .tttContent{padding:10px calc(10px + env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) calc(10px + env(safe-area-inset-left));}
+  .tttHeader{padding:12px 12px 10px;}
+  .tttStartScreen{padding:12px;}
   .tttLevelRow{grid-template-columns:1fr;}
   .tttToggleRow{grid-template-columns:1fr;}
-  .tttBoard{gap:3px;}
-  .tttCell{font-size:clamp(12px, 3.4vw, 26px);}
+  .tttCell{font-size:clamp(18px, 7.2vw, 34px);}
+  .tttWinActions{grid-template-columns:1fr;}
 }
       `;
   document.head.appendChild(style);
@@ -1197,7 +1332,7 @@ function ensureTicTacToeOverlay() {
     '  <div class="tttHeader">',
     '    <div class="tttHeaderTitle">',
     '      <h2 id="tttTitle">Piškvorky</h2>',
-    '      <span>easter egg · 13 × 20 · 5 v řadě</span>',
+    '      <span>easter egg · 10 × 18 · 5 v řadě</span>',
     '    </div>',
     '    <button type="button" class="tttClose" aria-label="Zavřít">×</button>',
     '  </div>',
@@ -1209,6 +1344,23 @@ function ensureTicTacToeOverlay() {
     '      <div class="tttFooter">',
     '        <button type="button" class="tttBtn" id="tttRestartBtn">Nová hra</button>',
     '        <button type="button" class="tttBtn" id="tttBackBtn">Zpět</button>',
+    '      </div>',
+    '      <div class="tttWinModal" id="tttWinModal" style="display:none;">',
+    '        <div class="tttWinCard">',
+    '          <div class="tttSectionTitle">Výsledek</div>',
+    '          <div class="tttWinText">Napiš jméno a odešli výsledek výhry nad nejtvrdší AI.</div>',
+    '          <label class="tttWinLabel" for="tttWinName">Jméno</label>',
+    '          <input id="tttWinName" class="tttWinInput" type="text" autocomplete="name" maxlength="32" placeholder="Tvoje jméno">',
+    '          <div class="tttWinStats">',
+    '            <div><span>Herní režim</span><strong id="tttWinMode">—</strong></div>',
+    '            <div><span>Tahy celkem</span><strong id="tttWinMoves">—</strong></div>',
+    '            <div><span>Čas</span><strong id="tttWinTime">—</strong></div>',
+    '          </div>',
+    '          <div class="tttWinActions">',
+    '            <button type="button" class="tttBtn isActive" id="tttWinSubmit">Odeslat</button>',
+    '            <button type="button" class="tttBtn" id="tttWinCancel">Nechat být</button>',
+    '          </div>',
+    '        </div>',
     '      </div>',
     '    </div>',
     '  </div>',
@@ -1235,13 +1387,21 @@ function ensureTicTacToeOverlay() {
     });
   }
 
+  if (!window.__tttResizeBound) {
+    window.__tttResizeBound = true;
+    window.addEventListener('resize', tttLayoutBoard, { passive: true });
+    window.addEventListener('orientationchange', tttLayoutBoard, { passive: true });
+  }
+
   return overlay;
 }
 
-const TTT_ROWS = 13;
-const TTT_COLS = 20;
+const TTT_ROWS = 18;
+const TTT_COLS = 10;
 const TTT_WIN_LENGTH = 5;
 const TTT_TOTAL_CELLS = TTT_ROWS * TTT_COLS;
+const TTT_HARD_WIN_EMAIL = 'martinspadrna@gmail.com';
+const TTT_HARD_WIN_KEY = 'tttHardWins';
 
 function tttGetState() {
   if (!app.tttState) {
@@ -1253,7 +1413,14 @@ function tttGetState() {
       turn: 'X',
       gameOver: false,
       winner: null,
-      message: ''
+      message: '',
+      startedAt: 0,
+      moveCount: 0,
+      moveCountX: 0,
+      moveCountO: 0,
+      hardWinPrompt: false,
+      hardWinStats: null,
+      hardWinName: ''
     };
   }
   return app.tttState;
@@ -1383,6 +1550,18 @@ function tttWinningMove(board, mark) {
   return -1;
 }
 
+function tttWinningMoves(board, mark) {
+  const moves = [];
+  for (let i = 0; i < TTT_TOTAL_CELLS; i += 1) {
+    if (board[i]) continue;
+    board[i] = mark;
+    const result = tttWinner(board).winner;
+    board[i] = '';
+    if (result === mark) moves.push(i);
+  }
+  return moves;
+}
+
 function tttCandidateMoves(board, radius = 2) {
   const occupied = [];
   for (let i = 0; i < board.length; i += 1) {
@@ -1426,6 +1605,9 @@ function tttMoveHeuristic(board, index, mark) {
   }
 
   const opponent = mark === 'O' ? 'X' : 'O';
+  const opponentWins = tttWinningMoves(board, opponent).length;
+  if (opponentWins >= 2) score -= 300000;
+  else if (opponentWins === 1) score -= 180000;
   board[index] = opponent;
   if (tttWinner(board).winner === opponent) score += 900000;
   board[index] = mark;
@@ -1497,46 +1679,64 @@ function tttOrderedCandidates(board, mark, limit = 12) {
 }
 
 function tttSearch(board, depth, alpha, beta, maximizing, memo) {
-  const key = board.join('') + '|' + depth + '|' + (maximizing ? '1' : '0');
-  if (memo[key] !== undefined) return memo[key];
+  const result = tttWinner(board).winner;
+  if (result === 'O') return 10000000 + depth * 1000;
+  if (result === 'X') return -10000000 - depth * 1000;
+  if (result === 'draw') return 0;
 
-  const terminal = tttWinner(board).winner;
-  if (terminal === 'O') return memo[key] = 1000000 + depth;
-  if (terminal === 'X') return memo[key] = -1000000 - depth;
-  if (terminal === 'draw') return memo[key] = 0;
-  if (depth <= 0) return memo[key] = tttEvaluateBoard(board);
+  const key = board.join('') + '|' + depth + '|' + (maximizing ? 'O' : 'X');
+  if (memo && Object.prototype.hasOwnProperty.call(memo, key)) return memo[key];
+  if (depth <= 0) {
+    const leaf = tttEvaluateBoard(board);
+    if (memo) memo[key] = leaf;
+    return leaf;
+  }
 
   const mark = maximizing ? 'O' : 'X';
-  const candidates = tttOrderedCandidates(board, mark, maximizing ? 10 : 12);
-  if (!candidates.length) return memo[key] = tttEvaluateBoard(board);
+  let moves = tttOrderedCandidates(board, mark, maximizing ? 12 : 10);
+  if (!moves.length) moves = tttCandidateMoves(board, 2);
+  if (!moves.length) {
+    const leaf = tttEvaluateBoard(board);
+    if (memo) memo[key] = leaf;
+    return leaf;
+  }
 
-  if (maximizing) {
-    let best = -Infinity;
-    for (const idx of candidates) {
-      if (board[idx]) continue;
-      board[idx] = 'O';
-      const score = tttSearch(board, depth - 1, alpha, beta, false, memo);
-      board[idx] = '';
+  moves.sort((a, b) => tttMoveHeuristic(board, b, mark) - tttMoveHeuristic(board, a, mark));
+
+  let best = maximizing ? -Infinity : Infinity;
+  for (const idx of moves) {
+    if (board[idx]) continue;
+    board[idx] = mark;
+    const score = tttSearch(board, depth - 1, alpha, beta, !maximizing, memo);
+    board[idx] = '';
+    if (maximizing) {
       if (score > best) best = score;
       if (best > alpha) alpha = best;
-      if (beta <= alpha) break;
+      if (alpha >= beta) break;
+    } else {
+      if (score < best) best = score;
+      if (best < beta) beta = best;
+      if (alpha >= beta) break;
     }
-    memo[key] = best;
-    return best;
   }
 
-  let best = Infinity;
-  for (const idx of candidates) {
-    if (board[idx]) continue;
-    board[idx] = 'X';
-    const score = tttSearch(board, depth - 1, alpha, beta, true, memo);
-    board[idx] = '';
-    if (score < best) best = score;
-    if (best < beta) beta = best;
-    if (beta <= alpha) break;
-  }
-  memo[key] = best;
+  if (memo) memo[key] = best;
   return best;
+}
+
+function tttForkMove(board, mark) {
+  let fallback = -1;
+  for (let i = 0; i < TTT_TOTAL_CELLS; i += 1) {
+    if (board[i]) continue;
+    board[i] = mark;
+    const winNow = tttWinner(board).winner === mark;
+    const forkCount = tttWinningMoves(board, mark).length;
+    board[i] = '';
+    if (winNow) return i;
+    if (forkCount >= 2) return i;
+    if (fallback < 0 && forkCount === 1) fallback = i;
+  }
+  return fallback;
 }
 
 function tttBestMove(board, difficulty) {
@@ -1551,14 +1751,27 @@ function tttBestMove(board, difficulty) {
   const block = tttWinningMove(board, 'X');
   if (block >= 0) return block;
 
-  const candidates = tttOrderedCandidates(board, 'O', difficulty === 'ai' ? 14 : 18);
+  const fork = difficulty === 'ai' ? tttForkMove(board, 'O') : -1;
+  if (fork >= 0) return fork;
+
+  const occupied = board.length - free.length;
+  const isHard = difficulty === 'ai';
+  const searchDepth = isHard ? (occupied < 14 ? 4 : occupied < 70 ? 5 : 6) : (difficulty === 'medium' ? 2 : 1);
+  const candidateLimit = isHard ? 16 : (difficulty === 'medium' ? 10 : 18);
+  const candidates = tttOrderedCandidates(board, 'O', candidateLimit);
 
   if (difficulty === 'noob') {
     return candidates[Math.floor(Math.random() * candidates.length)] ?? free[Math.floor(Math.random() * free.length)];
   }
 
   if (difficulty === 'medium') {
-    const scored = candidates.map((idx) => ({ idx, score: tttMoveHeuristic(board, idx, 'O') }));
+    const scored = candidates.map((idx) => {
+      board[idx] = 'O';
+      const opponentWins = tttWinningMoves(board, 'X').length;
+      const score = tttMoveHeuristic(board, idx, 'O') - opponentWins * 100000;
+      board[idx] = '';
+      return { idx, score };
+    });
     scored.sort((a, b) => b.score - a.score);
     return scored[0]?.idx ?? candidates[0] ?? free[Math.floor(Math.random() * free.length)];
   }
@@ -1566,10 +1779,14 @@ function tttBestMove(board, difficulty) {
   let bestIdx = candidates[0] ?? free[0];
   let bestScore = -Infinity;
   const memo = {};
-  for (const idx of candidates.slice(0, 12)) {
+
+  for (const idx of candidates) {
     if (board[idx]) continue;
     board[idx] = 'O';
-    const score = tttSearch(board, 3, -Infinity, Infinity, false, memo);
+    const immediateThreats = tttWinningMoves(board, 'X').length;
+    const tactical = tttMoveHeuristic(board, idx, 'O') - immediateThreats * 200000;
+    const searchScore = tttSearch(board, searchDepth, -Infinity, Infinity, false, memo);
+    const score = tactical + searchScore;
     board[idx] = '';
     if (score > bestScore) {
       bestScore = score;
@@ -1577,6 +1794,148 @@ function tttBestMove(board, difficulty) {
     }
   }
   return bestIdx;
+}
+
+function tttHardWinLog() {
+  try {
+    const raw = localStorage.getItem(TTT_HARD_WIN_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (err) {
+    return [];
+  }
+}
+
+function tttSaveHardWin(entry) {
+  const next = tttHardWinLog();
+  next.unshift(entry);
+  try {
+    localStorage.setItem(TTT_HARD_WIN_KEY, JSON.stringify(next.slice(0, 100)));
+  } catch (err) {
+    console.warn(err);
+  }
+}
+
+function tttFormatElapsed(ms) {
+  return formatDuration(Math.max(0, Number(ms) || 0));
+}
+
+function tttReadHardWinStats() {
+  const state = tttGetState();
+  const elapsedMs = state.startedAt ? Math.max(0, Date.now() - state.startedAt) : 0;
+  return {
+    totalMoves: state.moveCount || 0,
+    xMoves: state.moveCountX || 0,
+    oMoves: state.moveCountO || 0,
+    elapsedMs,
+    elapsedText: tttFormatElapsed(elapsedMs)
+  };
+}
+
+function tttFillHardWinPrompt() {
+  const overlay = document.getElementById('tttOverlay');
+  if (!overlay) return;
+  const state = tttGetState();
+  const modal = overlay.querySelector('#tttWinModal');
+  const visible = !!state.hardWinPrompt && !!state.hardWinStats;
+
+  if (!modal) return;
+  modal.style.display = visible ? 'flex' : 'none';
+  modal.classList.toggle('isVisible', visible);
+  if (!visible) return;
+
+  const stats = state.hardWinStats || tttReadHardWinStats();
+  const nameInput = overlay.querySelector('#tttWinName');
+  const movesEl = overlay.querySelector('#tttWinMoves');
+  const timeEl = overlay.querySelector('#tttWinTime');
+  const modeEl = overlay.querySelector('#tttWinMode');
+
+  if (nameInput) {
+    const remembered = state.hardWinName || localStorage.getItem('tttHardWinName') || '';
+    if (!nameInput.value) nameInput.value = remembered;
+    state.hardWinName = nameInput.value;
+  }
+  if (movesEl) movesEl.textContent = formatCount(stats.totalMoves) + ' tahů';
+  if (timeEl) timeEl.textContent = stats.elapsedText;
+  if (modeEl) modeEl.textContent = state.mode === 'ai'
+    ? ('AI · ' + (state.difficulty === 'ai' ? 'nejtěžší' : state.difficulty))
+    : 'Proti spoluhráči';
+}
+
+function tttCloseHardWinPrompt() {
+  const state = tttGetState();
+  state.hardWinPrompt = false;
+  state.hardWinStats = null;
+  const overlay = document.getElementById('tttOverlay');
+  const modal = overlay ? overlay.querySelector('#tttWinModal') : null;
+  if (modal) {
+    modal.classList.remove('isVisible');
+    modal.style.display = 'none';
+  }
+  tttRender();
+  requestAnimationFrame(tttLayoutBoard);
+}
+
+function tttOpenHardWinPrompt() {
+  const state = tttGetState();
+  state.hardWinPrompt = true;
+  state.hardWinStats = tttReadHardWinStats();
+  state.hardWinName = state.hardWinName || localStorage.getItem('tttHardWinName') || '';
+  tttRender();
+  requestAnimationFrame(tttLayoutBoard);
+  requestAnimationFrame(tttLayoutBoard);
+}
+
+function tttSendHardWinEntry(entry) {
+  const subject = encodeURIComponent('Piškvorky – výhra nad nejtvrdší AI');
+  const body = encodeURIComponent([
+    'Jméno: ' + entry.name,
+    'Datum: ' + entry.date,
+    'Režim: ' + entry.mode,
+    'Obtížnost: ' + entry.difficulty,
+    'Tahy celkem: ' + entry.totalMoves,
+    'Tahy X: ' + entry.xMoves,
+    'Tahy O: ' + entry.oMoves,
+    'Čas: ' + entry.elapsedText,
+    'Poznámka: ' + (entry.note || '')
+  ].join('\n'));
+  window.location.href = 'mailto:' + TTT_HARD_WIN_EMAIL + '?subject=' + subject + '&body=' + body;
+}
+
+function tttSubmitHardWin() {
+  const state = tttGetState();
+  const overlay = document.getElementById('tttOverlay');
+  const nameInput = overlay ? overlay.querySelector('#tttWinName') : null;
+  const name = String(nameInput && nameInput.value ? nameInput.value : '').trim();
+  if (!name) {
+    alert('Napiš jméno, ať je to zapsané správně.');
+    return;
+  }
+
+  state.hardWinName = name;
+  try {
+    localStorage.setItem('tttHardWinName', name);
+  } catch (err) {
+    console.warn(err);
+  }
+
+  const stats = state.hardWinStats || tttReadHardWinStats();
+  const entry = {
+    name,
+    date: new Date().toISOString(),
+    mode: state.mode,
+    difficulty: state.difficulty,
+    totalMoves: stats.totalMoves,
+    xMoves: stats.xMoves,
+    oMoves: stats.oMoves,
+    elapsedMs: stats.elapsedMs,
+    elapsedText: stats.elapsedText,
+    note: 'Výhra nad nejtvrdší AI'
+  };
+
+  tttSaveHardWin(entry);
+  tttCloseHardWinPrompt();
+  tttSendHardWinEntry(entry);
 }
 
 function tttRender() {
@@ -1605,7 +1964,7 @@ function tttRender() {
       '    <button type="button" class="tttBtn' + (state.difficulty === 'medium' ? ' isActive' : '') + '" data-ttt-difficulty="medium">Medium</button>',
       '    <button type="button" class="tttBtn' + (state.difficulty === 'ai' ? ' isActive' : '') + '" data-ttt-difficulty="ai">AI</button>',
       '  </div>',
-      '  <div class="tttNote">Hrací pole má 13 × 20 políček a vyhrává 5 spojených v řadě.</div>',
+      '  <div class="tttNote">Hrací pole má 10 × 18 políček a vyhrává 5 spojených v řadě.</div>',
       '</div>',
       '<div class="tttCard">',
       '  <div class="tttSectionTitle">Spuštění</div>',
@@ -1618,6 +1977,8 @@ function tttRender() {
         state.mode = btn.getAttribute('data-ttt-mode') || 'ai';
         if (state.mode === 'pvp') state.difficulty = 'ai';
         tttRender();
+        requestAnimationFrame(tttLayoutBoard);
+        requestAnimationFrame(tttLayoutBoard);
       });
     });
     start.querySelectorAll('[data-ttt-difficulty]').forEach(btn => {
@@ -1625,6 +1986,7 @@ function tttRender() {
         if (state.mode === 'pvp') return;
         state.difficulty = btn.getAttribute('data-ttt-difficulty') || 'ai';
         tttRender();
+        requestAnimationFrame(tttLayoutBoard);
       });
     });
     start.querySelector('#tttStartBtn')?.addEventListener('click', () => {
@@ -1633,10 +1995,17 @@ function tttRender() {
       state.turn = 'X';
       state.gameOver = false;
       state.winner = null;
+      state.startedAt = Date.now();
+      state.moveCount = 0;
+      state.moveCountX = 0;
+      state.moveCountO = 0;
+      state.hardWinPrompt = false;
+      state.hardWinStats = null;
       state.message = state.mode === 'pvp'
         ? 'Hraje hráč X.'
         : 'Hraješ za X. AI je O.';
       tttRender();
+      requestAnimationFrame(tttLayoutBoard);
     });
     return;
   }
@@ -1649,7 +2018,11 @@ function tttRender() {
   const winnerLine = result.line || [];
   boardEl.innerHTML = state.board.map((cell, idx) => {
     const classes = ['tttCell'];
-    if (cell) classes.push('isFilled');
+    if (cell) {
+      classes.push('isFilled');
+      if (cell === 'X') classes.push('isX');
+      if (cell === 'O') classes.push('isO');
+    }
     if (winnerLine.includes(idx)) classes.push('isWinner');
     return '<button type="button" class="' + classes.join(' ') + '" data-ttt-cell="' + idx + '">' + (cell || '') + '</button>';
   }).join('');
@@ -1661,6 +2034,28 @@ function tttRender() {
       tttHandleMove(idx);
     });
   });
+
+  tttFillHardWinPrompt();
+  const modal = overlay.querySelector('#tttWinModal');
+  if (modal) {
+    const submit = overlay.querySelector('#tttWinSubmit');
+    const cancel = overlay.querySelector('#tttWinCancel');
+    const nameInput = overlay.querySelector('#tttWinName');
+    if (submit && !submit.dataset.bound) {
+      submit.dataset.bound = '1';
+      submit.addEventListener('click', tttSubmitHardWin);
+    }
+    if (cancel && !cancel.dataset.bound) {
+      cancel.dataset.bound = '1';
+      cancel.addEventListener('click', tttCloseHardWinPrompt);
+    }
+    if (nameInput && !nameInput.dataset.bound) {
+      nameInput.dataset.bound = '1';
+      nameInput.addEventListener('input', () => {
+        tttGetState().hardWinName = nameInput.value;
+      });
+    }
+  }
 }
 
 function tttHandleMove(index) {
@@ -1668,15 +2063,31 @@ function tttHandleMove(index) {
   if (state.gameOver || state.board[index]) return;
   if (state.mode === 'ai' && state.turn !== 'X') return;
 
-  state.board[index] = state.turn;
+  const mark = state.turn;
+  state.board[index] = mark;
+  state.moveCount += 1;
+  if (mark === 'X') state.moveCountX += 1;
+  else state.moveCountO += 1;
+
   const after = tttWinner(state.board);
   if (after.winner) {
     state.gameOver = true;
     state.winner = after.winner;
-    state.message = after.winner === 'draw'
-      ? 'Remíza. Dobře hrané.'
-      : (after.winner === 'X' ? 'Vyhrál jsi.' : 'Vyhrála O.');
+    if (after.winner === 'draw') {
+      state.message = 'Remíza. Dobře hrané.';
+    } else if (after.winner === 'X') {
+      state.message = 'Vyhrál jsi.';
+      if (state.mode === 'ai' && state.difficulty === 'ai') {
+        state.hardWinPrompt = true;
+        state.hardWinStats = tttReadHardWinStats();
+        tttOpenHardWinPrompt();
+        return;
+      }
+    } else {
+      state.message = 'Vyhrála O.';
+    }
     tttRender();
+    requestAnimationFrame(tttLayoutBoard);
     return;
   }
 
@@ -1684,32 +2095,47 @@ function tttHandleMove(index) {
     state.turn = state.turn === 'X' ? 'O' : 'X';
     state.message = state.turn === 'X' ? 'Hraje hráč X.' : 'Hraje hráč O.';
     tttRender();
+    requestAnimationFrame(tttLayoutBoard);
     return;
   }
 
   state.turn = 'O';
   state.message = 'Tah AI...';
   tttRender();
+  requestAnimationFrame(tttLayoutBoard);
 
   setTimeout(() => {
-    const fresh = tttGetState();
-    if (fresh.gameOver) return;
-    const aiMove = tttBestMove(fresh.board.slice(), fresh.difficulty || 'ai');
-    if (aiMove < 0 || fresh.board[aiMove]) return;
-    fresh.board[aiMove] = 'O';
-    const afterAi = tttWinner(fresh.board);
-    if (afterAi.winner) {
-      fresh.gameOver = true;
-      fresh.winner = afterAi.winner;
-      fresh.message = afterAi.winner === 'draw'
-        ? 'Remíza. Dobře hrané.'
-        : 'AI vyhrála. Zkus to znovu.';
+    try {
+      const fresh = tttGetState();
+      if (fresh.gameOver) return;
+      const aiMove = tttBestMove(fresh.board.slice(), fresh.difficulty || 'ai');
+      if (aiMove < 0 || fresh.board[aiMove]) return;
+      fresh.board[aiMove] = 'O';
+      fresh.moveCount += 1;
+      fresh.moveCountO += 1;
+      const afterAi = tttWinner(fresh.board);
+      if (afterAi.winner) {
+        fresh.gameOver = true;
+        fresh.winner = afterAi.winner;
+        fresh.message = afterAi.winner === 'draw'
+          ? 'Remíza. Dobře hrané.'
+          : 'AI vyhrála. Zkus to znovu.';
+        tttRender();
+        requestAnimationFrame(tttLayoutBoard);
+        return;
+      }
+      fresh.turn = 'X';
+      fresh.message = 'Hraješ za X.';
       tttRender();
-      return;
+      requestAnimationFrame(tttLayoutBoard);
+    } catch (err) {
+      console.warn('TTT AI move failed', err);
+      const fresh = tttGetState();
+      fresh.turn = 'X';
+      fresh.message = 'AI se na chvíli zasekla. Zkus tah znovu.';
+      tttRender();
+      requestAnimationFrame(tttLayoutBoard);
     }
-    fresh.turn = 'X';
-    fresh.message = 'Hraješ za X.';
-    tttRender();
   }, 180);
 }
 
@@ -1719,9 +2145,17 @@ function resetTicTacToeGame(keepScreen) {
   state.turn = 'X';
   state.gameOver = false;
   state.winner = null;
+  state.startedAt = 0;
+  state.moveCount = 0;
+  state.moveCountX = 0;
+  state.moveCountO = 0;
+  state.hardWinPrompt = false;
+  state.hardWinStats = null;
   state.message = state.mode === 'pvp' ? 'Hraje hráč X.' : 'Hraješ za X. AI je O.';
   if (!keepScreen) state.screen = 'start';
   tttRender();
+  requestAnimationFrame(tttLayoutBoard);
+  requestAnimationFrame(tttLayoutBoard);
 }
 
 function openTicTacToeGame() {
@@ -1732,16 +2166,45 @@ function openTicTacToeGame() {
   state.turn = 'X';
   state.gameOver = false;
   state.winner = null;
+  state.startedAt = 0;
+  state.moveCount = 0;
+  state.moveCountX = 0;
+  state.moveCountO = 0;
+  state.hardWinPrompt = false;
+  state.hardWinStats = null;
   state.message = '';
   overlay.classList.add('isVisible');
   document.body.classList.add('tttOpen');
   tttRender();
+  requestAnimationFrame(tttLayoutBoard);
+  requestAnimationFrame(tttLayoutBoard);
 }
 
 function closeTicTacToeGame() {
   const overlay = document.getElementById('tttOverlay');
   if (overlay) overlay.classList.remove('isVisible');
   document.body.classList.remove('tttOpen');
+}
+
+function tttLayoutBoard() {
+  const overlay = document.getElementById('tttOverlay');
+  if (!overlay || !overlay.classList.contains('isVisible')) return;
+  const board = overlay.querySelector('#tttBoard');
+  const wrap = overlay.querySelector('.tttBoardWrap');
+  if (!board || !wrap) return;
+
+  const wrapRect = wrap.getBoundingClientRect();
+  const styles = window.getComputedStyle(board);
+  const gap = parseFloat(styles.gap || styles.columnGap || '0') || 0;
+  const cellW = Math.floor((wrapRect.width - gap * (TTT_COLS - 1)) / TTT_COLS);
+  const cellH = Math.floor((wrapRect.height - gap * (TTT_ROWS - 1)) / TTT_ROWS);
+  const cell = Math.max(10, Math.min(cellW, cellH));
+
+  board.style.setProperty('--tttCellSize', cell + 'px');
+  board.style.gridTemplateColumns = `repeat(${TTT_COLS}, ${cell}px)`;
+  board.style.gridTemplateRows = `repeat(${TTT_ROWS}, ${cell}px)`;
+  board.style.width = (cell * TTT_COLS + gap * (TTT_COLS - 1)) + 'px';
+  board.style.height = (cell * TTT_ROWS + gap * (TTT_ROWS - 1)) + 'px';
 }
 
 function triggerAboutAction() {
@@ -1764,18 +2227,16 @@ function triggerAboutAction() {
   }, 320);
 }
 
-
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v.1(250)–v.1(271)',
+      range: 'v.1(250)–v.1(278)',
       title: 'Aktuální úpravy',
       lines: [
         'Jídelna a kantýna teď používají shodné dny na jednom řádku.',
         'Dashboard ukazuje další směnu D, kdo na ní chybí, a u průběhu směny i procenta.',
         'Odpočet do dovolené doplňuje, jestli jde o CZD nebo Vánoce.',
         'Kalkulačky pro frézky a brusy umí dopočítat i čas hotovosti.',
-        'Piškvorky se rozšířily na 13 × 20 polí a hraje se na 5 v řadě.',
         'Bonus: piškvorky se schovávají za trojitý klik na O aplikaci.'
       ]
     },
@@ -1994,6 +2455,9 @@ function showFoodSchedule(which) {
 }
 
 function showPage(id) {
+  if (typeof app !== 'undefined') {
+    app.homeBootSuppressed = id !== 'home';
+  }
   const modal = document.getElementById('foodScheduleModal');
   if (modal) {
     modal.classList.remove('isVisible');
@@ -2180,8 +2644,7 @@ function ensureFoodScheduleModal() {
 
   document.body.appendChild(overlay);
   return overlay;
-}
-</script>
+}</script>
 <script type="text/plain" id="src-qr-js">const PERSON_QR_CODES = {"Střížek":{"label":"Střížek Jan","code":"44344157","svg":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 20 20\" shape-rendering=\"crispEdges\"><rect width=\"20\" height=\"20\" fill=\"#fff\"/><path d=\"M1.6,1.6H2.4V2.4H1.6zM2.4,1.6H3.2V2.4H2.4zM3.2,1.6H4V2.4H3.2zM4,1.6H4.8V2.4H4zM4.8,1.6H5.6V2.4H4.8zM5.6,1.6H6.4V2.4H5.6zM6.4,1.6H7.2V2.4H6.4zM9.6,1.6H10.4V2.4H9.6zM10.4,1.6H11.2V2.4H10.4zM12.8,1.6H13.6V2.4H12.8zM13.6,1.6H14.4V2.4H13.6zM14.4,1.6H15.2V2.4H14.4zM15.2,1.6H16V2.4H15.2zM16,1.6H16.8V2.4H16zM16.8,1.6H17.6V2.4H16.8zM17.6,1.6H18.4V2.4H17.6zM1.6,2.4H2.4V3.2H1.6zM6.4,2.4H7.2V3.2H6.4zM8.8,2.4H9.6V3.2H8.8zM10.4,2.4H11.2V3.2H10.4zM12.8,2.4H13.6V3.2H12.8zM17.6,2.4H18.4V3.2H17.6zM1.6,3.2H2.4V4H1.6zM3.2,3.2H4V4H3.2zM4,3.2H4.8V4H4zM4.8,3.2H5.6V4H4.8zM6.4,3.2H7.2V4H6.4zM8,3.2H8.8V4H8zM8.8,3.2H9.6V4H8.8zM9.6,3.2H10.4V4H9.6zM12.8,3.2H13.6V4H12.8zM14.4,3.2H15.2V4H14.4zM15.2,3.2H16V4H15.2zM16,3.2H16.8V4H16zM17.6,3.2H18.4V4H17.6zM1.6,4H2.4V4.8H1.6zM3.2,4H4V4.8H3.2zM4,4H4.8V4.8H4zM4.8,4H5.6V4.8H4.8zM6.4,4H7.2V4.8H6.4zM8,4H8.8V4.8H8zM10.4,4H11.2V4.8H10.4zM11.2,4H12V4.8H11.2zM12.8,4H13.6V4.8H12.8zM14.4,4H15.2V4.8H14.4zM15.2,4H16V4.8H15.2zM16,4H16.8V4.8H16zM17.6,4H18.4V4.8H17.6zM1.6,4.8H2.4V5.6H1.6zM3.2,4.8H4V5.6H3.2zM4,4.8H4.8V5.6H4zM4.8,4.8H5.6V5.6H4.8zM6.4,4.8H7.2V5.6H6.4zM8,4.8H8.8V5.6H8zM9.6,4.8H10.4V5.6H9.6zM10.4,4.8H11.2V5.6H10.4zM11.2,4.8H12V5.6H11.2zM12.8,4.8H13.6V5.6H12.8zM14.4,4.8H15.2V5.6H14.4zM15.2,4.8H16V5.6H15.2zM16,4.8H16.8V5.6H16zM17.6,4.8H18.4V5.6H17.6zM1.6,5.6H2.4V6.4H1.6zM6.4,5.6H7.2V6.4H6.4zM8,5.6H8.8V6.4H8zM11.2,5.6H12V6.4H11.2zM12.8,5.6H13.6V6.4H12.8zM17.6,5.6H18.4V6.4H17.6zM1.6,6.4H2.4V7.2H1.6zM2.4,6.4H3.2V7.2H2.4zM3.2,6.4H4V7.2H3.2zM4,6.4H4.8V7.2H4zM4.8,6.4H5.6V7.2H4.8zM5.6,6.4H6.4V7.2H5.6zM6.4,6.4H7.2V7.2H6.4zM8,6.4H8.8V7.2H8zM9.6,6.4H10.4V7.2H9.6zM11.2,6.4H12V7.2H11.2zM12.8,6.4H13.6V7.2H12.8zM13.6,6.4H14.4V7.2H13.6zM14.4,6.4H15.2V7.2H14.4zM15.2,6.4H16V7.2H15.2zM16,6.4H16.8V7.2H16zM16.8,6.4H17.6V7.2H16.8zM17.6,6.4H18.4V7.2H17.6zM8,7.2H8.8V8H8zM8.8,7.2H9.6V8H8.8zM10.4,7.2H11.2V8H10.4zM11.2,7.2H12V8H11.2zM1.6,8H2.4V8.8H1.6zM3.2,8H4V8.8H3.2zM4,8H4.8V8.8H4zM4.8,8H5.6V8.8H4.8zM5.6,8H6.4V8.8H5.6zM6.4,8H7.2V8.8H6.4zM9.6,8H10.4V8.8H9.6zM11.2,8H12V8.8H11.2zM12.8,8H13.6V8.8H12.8zM13.6,8H14.4V8.8H13.6zM14.4,8H15.2V8.8H14.4zM15.2,8H16V8.8H15.2zM16,8H16.8V8.8H16zM1.6,8.8H2.4V9.6H1.6zM2.4,8.8H3.2V9.6H2.4zM3.2,8.8H4V9.6H3.2zM5.6,8.8H6.4V9.6H5.6zM7.2,8.8H8V9.6H7.2zM8.8,8.8H9.6V9.6H8.8zM9.6,8.8H10.4V9.6H9.6zM11.2,8.8H12V9.6H11.2zM13.6,8.8H14.4V9.6H13.6zM15.2,8.8H16V9.6H15.2zM16,8.8H16.8V9.6H16zM16.8,8.8H17.6V9.6H16.8zM17.6,8.8H18.4V9.6H17.6zM2.4,9.6H3.2V10.4H2.4zM5.6,9.6H6.4V10.4H5.6zM6.4,9.6H7.2V10.4H6.4zM8,9.6H8.8V10.4H8zM10.4,9.6H11.2V10.4H10.4zM12,9.6H12.8V10.4H12zM14.4,9.6H15.2V10.4H14.4zM17.6,9.6H18.4V10.4H17.6zM4,10.4H4.8V11.2H4zM7.2,10.4H8V11.2H7.2zM8,10.4H8.8V11.2H8zM8.8,10.4H9.6V11.2H8.8zM9.6,10.4H10.4V11.2H9.6zM13.6,10.4H14.4V11.2H13.6zM14.4,10.4H15.2V11.2H14.4zM15.2,10.4H16V11.2H15.2zM16.8,10.4H17.6V11.2H16.8zM17.6,10.4H18.4V11.2H17.6zM2.4,11.2H3.2V12H2.4zM3.2,11.2H4V12H3.2zM4.8,11.2H5.6V12H4.8zM5.6,11.2H6.4V12H5.6zM6.4,11.2H7.2V12H6.4zM8,11.2H8.8V12H8zM8.8,11.2H9.6V12H8.8zM10.4,11.2H11.2V12H10.4zM12,11.2H12.8V12H12zM14.4,11.2H15.2V12H14.4zM17.6,11.2H18.4V12H17.6zM8,12H8.8V12.8H8zM8.8,12H9.6V12.8H8.8zM9.6,12H10.4V12.8H9.6zM10.4,12H11.2V12.8H10.4zM11.2,12H12V12.8H11.2zM12,12H12.8V12.8H12zM12.8,12H13.6V12.8H12.8zM15.2,12H16V12.8H15.2zM16,12H16.8V12.8H16zM16.8,12H17.6V12.8H16.8zM1.6,12.8H2.4V13.6H1.6zM2.4,12.8H3.2V13.6H2.4zM3.2,12.8H4V13.6H3.2zM4,12.8H4.8V13.6H4zM4.8,12.8H5.6V13.6H4.8zM5.6,12.8H6.4V13.6H5.6zM6.4,12.8H7.2V13.6H6.4zM9.6,12.8H10.4V13.6H9.6zM11.2,12.8H12V13.6H11.2zM12.8,12.8H13.6V13.6H12.8zM13.6,12.8H14.4V13.6H13.6zM15.2,12.8H16V13.6H15.2zM16,12.8H16.8V13.6H16zM1.6,13.6H2.4V14.4H1.6zM6.4,13.6H7.2V14.4H6.4zM8,13.6H8.8V14.4H8zM8.8,13.6H9.6V14.4H8.8zM10.4,13.6H11.2V14.4H10.4zM11.2,13.6H12V14.4H11.2zM12,13.6H12.8V14.4H12zM12.8,13.6H13.6V14.4H12.8zM15.2,13.6H16V14.4H15.2zM17.6,13.6H18.4V14.4H17.6zM1.6,14.4H2.4V15.2H1.6zM3.2,14.4H4V15.2H3.2zM4,14.4H4.8V15.2H4zM4.8,14.4H5.6V15.2H4.8zM6.4,14.4H7.2V15.2H6.4zM8,14.4H8.8V15.2H8zM8.8,14.4H9.6V15.2H8.8zM11.2,14.4H12V15.2H11.2zM13.6,14.4H14.4V15.2H13.6zM16,14.4H16.8V15.2H16zM1.6,15.2H2.4V16H1.6zM3.2,15.2H4V16H3.2zM4,15.2H4.8V16H4zM4.8,15.2H5.6V16H4.8zM6.4,15.2H7.2V16H6.4zM8,15.2H8.8V16H8zM9.6,15.2H10.4V16H9.6zM11.2,15.2H12V16H11.2zM13.6,15.2H14.4V16H13.6zM1.6,16H2.4V16.8H1.6zM3.2,16H4V16.8H3.2zM4,16H4.8V16.8H4zM4.8,16H5.6V16.8H4.8zM6.4,16H7.2V16.8H6.4zM8,16H8.8V16.8H8zM9.6,16H10.4V16.8H9.6zM10.4,16H11.2V16.8H10.4zM12,16H12.8V16.8H12zM14.4,16H15.2V16.8H14.4zM16,16H16.8V16.8H16zM1.6,16.8H2.4V17.6H1.6zM6.4,16.8H7.2V17.6H6.4zM9.6,16.8H10.4V17.6H9.6zM13.6,16.8H14.4V17.6H13.6zM14.4,16.8H15.2V17.6H14.4zM16,16.8H16.8V17.6H16zM16.8,16.8H17.6V17.6H16.8zM1.6,17.6H2.4V18.4H1.6zM2.4,17.6H3.2V18.4H2.4zM3.2,17.6H4V18.4H3.2zM4,17.6H4.8V18.4H4zM4.8,17.6H5.6V18.4H4.8zM5.6,17.6H6.4V18.4H5.6zM6.4,17.6H7.2V18.4H6.4zM8,17.6H8.8V18.4H8zM8.8,17.6H9.6V18.4H8.8zM9.6,17.6H10.4V18.4H9.6zM10.4,17.6H11.2V18.4H10.4zM12,17.6H12.8V18.4H12zM14.4,17.6H15.2V18.4H14.4zM16,17.6H16.8V18.4H16z\" fill=\"#000\"/></svg>"},"Kmínek":{"label":"Kmínek Michal","code":"44920410","svg":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 20 20\" shape-rendering=\"crispEdges\"><rect width=\"20\" height=\"20\" fill=\"#fff\"/><path d=\"M1.6,1.6H2.4V2.4H1.6zM2.4,1.6H3.2V2.4H2.4zM3.2,1.6H4V2.4H3.2zM4,1.6H4.8V2.4H4zM4.8,1.6H5.6V2.4H4.8zM5.6,1.6H6.4V2.4H5.6zM6.4,1.6H7.2V2.4H6.4zM9.6,1.6H10.4V2.4H9.6zM10.4,1.6H11.2V2.4H10.4zM11.2,1.6H12V2.4H11.2zM12.8,1.6H13.6V2.4H12.8zM13.6,1.6H14.4V2.4H13.6zM14.4,1.6H15.2V2.4H14.4zM15.2,1.6H16V2.4H15.2zM16,1.6H16.8V2.4H16zM16.8,1.6H17.6V2.4H16.8zM17.6,1.6H18.4V2.4H17.6zM1.6,2.4H2.4V3.2H1.6zM6.4,2.4H7.2V3.2H6.4zM8.8,2.4H9.6V3.2H8.8zM9.6,2.4H10.4V3.2H9.6zM10.4,2.4H11.2V3.2H10.4zM12.8,2.4H13.6V3.2H12.8zM17.6,2.4H18.4V3.2H17.6zM1.6,3.2H2.4V4H1.6zM3.2,3.2H4V4H3.2zM4,3.2H4.8V4H4zM4.8,3.2H5.6V4H4.8zM6.4,3.2H7.2V4H6.4zM8,3.2H8.8V4H8zM9.6,3.2H10.4V4H9.6zM11.2,3.2H12V4H11.2zM12.8,3.2H13.6V4H12.8zM14.4,3.2H15.2V4H14.4zM15.2,3.2H16V4H15.2zM16,3.2H16.8V4H16zM17.6,3.2H18.4V4H17.6zM1.6,4H2.4V4.8H1.6zM3.2,4H4V4.8H3.2zM4,4H4.8V4.8H4zM4.8,4H5.6V4.8H4.8zM6.4,4H7.2V4.8H6.4zM8,4H8.8V4.8H8zM8.8,4H9.6V4.8H8.8zM9.6,4H10.4V4.8H9.6zM12.8,4H13.6V4.8H12.8zM14.4,4H15.2V4.8H14.4zM15.2,4H16V4.8H15.2zM16,4H16.8V4.8H16zM17.6,4H18.4V4.8H17.6zM1.6,4.8H2.4V5.6H1.6zM3.2,4.8H4V5.6H3.2zM4,4.8H4.8V5.6H4zM4.8,4.8H5.6V5.6H4.8zM6.4,4.8H7.2V5.6H6.4zM8,4.8H8.8V5.6H8zM8.8,4.8H9.6V5.6H8.8zM10.4,4.8H11.2V5.6H10.4zM11.2,4.8H12V5.6H11.2zM12.8,4.8H13.6V5.6H12.8zM14.4,4.8H15.2V5.6H14.4zM15.2,4.8H16V5.6H15.2zM16,4.8H16.8V5.6H16zM17.6,4.8H18.4V5.6H17.6zM1.6,5.6H2.4V6.4H1.6zM6.4,5.6H7.2V6.4H6.4zM8,5.6H8.8V6.4H8zM9.6,5.6H10.4V6.4H9.6zM11.2,5.6H12V6.4H11.2zM12.8,5.6H13.6V6.4H12.8zM17.6,5.6H18.4V6.4H17.6zM1.6,6.4H2.4V7.2H1.6zM2.4,6.4H3.2V7.2H2.4zM3.2,6.4H4V7.2H3.2zM4,6.4H4.8V7.2H4zM4.8,6.4H5.6V7.2H4.8zM5.6,6.4H6.4V7.2H5.6zM6.4,6.4H7.2V7.2H6.4zM8,6.4H8.8V7.2H8zM9.6,6.4H10.4V7.2H9.6zM11.2,6.4H12V7.2H11.2zM12.8,6.4H13.6V7.2H12.8zM13.6,6.4H14.4V7.2H13.6zM14.4,6.4H15.2V7.2H14.4zM15.2,6.4H16V7.2H15.2zM16,6.4H16.8V7.2H16zM16.8,6.4H17.6V7.2H16.8zM17.6,6.4H18.4V7.2H17.6zM8,7.2H8.8V8H8zM8.8,7.2H9.6V8H8.8zM9.6,7.2H10.4V8H9.6zM10.4,7.2H11.2V8H10.4zM11.2,7.2H12V8H11.2zM1.6,8H2.4V8.8H1.6zM3.2,8H4V8.8H3.2zM4,8H4.8V8.8H4zM4.8,8H5.6V8.8H4.8zM5.6,8H6.4V8.8H5.6zM6.4,8H7.2V8.8H6.4zM8.8,8H9.6V8.8H8.8zM9.6,8H10.4V8.8H9.6zM11.2,8H12V8.8H11.2zM12.8,8H13.6V8.8H12.8zM13.6,8H14.4V8.8H13.6zM14.4,8H15.2V8.8H14.4zM15.2,8H16V8.8H15.2zM16,8H16.8V8.8H16zM1.6,8.8H2.4V9.6H1.6zM4,8.8H4.8V9.6H4zM4.8,8.8H5.6V9.6H4.8zM8,8.8H8.8V9.6H8zM9.6,8.8H10.4V9.6H9.6zM11.2,8.8H12V9.6H11.2zM13.6,8.8H14.4V9.6H13.6zM16,8.8H16.8V9.6H16zM16.8,8.8H17.6V9.6H16.8zM2.4,9.6H3.2V10.4H2.4zM3.2,9.6H4V10.4H3.2zM5.6,9.6H6.4V10.4H5.6zM6.4,9.6H7.2V10.4H6.4zM8,9.6H8.8V10.4H8zM8.8,9.6H9.6V10.4H8.8zM9.6,9.6H10.4V10.4H9.6zM10.4,9.6H11.2V10.4H10.4zM12,9.6H12.8V10.4H12zM14.4,9.6H15.2V10.4H14.4zM15.2,9.6H16V10.4H15.2zM2.4,10.4H3.2V11.2H2.4zM3.2,10.4H4V11.2H3.2zM4,10.4H4.8V11.2H4zM4.8,10.4H5.6V11.2H4.8zM5.6,10.4H6.4V11.2H5.6zM8,10.4H8.8V11.2H8zM13.6,10.4H14.4V11.2H13.6zM14.4,10.4H15.2V11.2H14.4zM16,10.4H16.8V11.2H16zM2.4,11.2H3.2V12H2.4zM5.6,11.2H6.4V12H5.6zM6.4,11.2H7.2V12H6.4zM7.2,11.2H8V12H7.2zM8,11.2H8.8V12H8zM10.4,11.2H11.2V12H10.4zM12,11.2H12.8V12H12zM14.4,11.2H15.2V12H14.4zM15.2,11.2H16V12H15.2zM16.8,11.2H17.6V12H16.8zM17.6,11.2H18.4V12H17.6zM8,12H8.8V12.8H8zM9.6,12H10.4V12.8H9.6zM10.4,12H11.2V12.8H10.4zM11.2,12H12V12.8H11.2zM12,12H12.8V12.8H12zM12.8,12H13.6V12.8H12.8zM16,12H16.8V12.8H16zM16.8,12H17.6V12.8H16.8zM1.6,12.8H2.4V13.6H1.6zM2.4,12.8H3.2V13.6H2.4zM3.2,12.8H4V13.6H3.2zM4,12.8H4.8V13.6H4zM4.8,12.8H5.6V13.6H4.8zM5.6,12.8H6.4V13.6H5.6zM6.4,12.8H7.2V13.6H6.4zM11.2,12.8H12V13.6H11.2zM12.8,12.8H13.6V13.6H12.8zM13.6,12.8H14.4V13.6H13.6zM16,12.8H16.8V13.6H16zM1.6,13.6H2.4V14.4H1.6zM6.4,13.6H7.2V14.4H6.4zM8,13.6H8.8V14.4H8zM9.6,13.6H10.4V14.4H9.6zM10.4,13.6H11.2V14.4H10.4zM11.2,13.6H12V14.4H11.2zM12,13.6H12.8V14.4H12zM12.8,13.6H13.6V14.4H12.8zM15.2,13.6H16V14.4H15.2zM16,13.6H16.8V14.4H16zM17.6,13.6H18.4V14.4H17.6zM1.6,14.4H2.4V15.2H1.6zM3.2,14.4H4V15.2H3.2zM4,14.4H4.8V15.2H4zM4.8,14.4H5.6V15.2H4.8zM6.4,14.4H7.2V15.2H6.4zM8,14.4H8.8V15.2H8zM11.2,14.4H12V15.2H11.2zM13.6,14.4H14.4V15.2H13.6zM15.2,14.4H16V15.2H15.2zM16,14.4H16.8V15.2H16zM1.6,15.2H2.4V16H1.6zM3.2,15.2H4V16H3.2zM4,15.2H4.8V16H4zM4.8,15.2H5.6V16H4.8zM6.4,15.2H7.2V16H6.4zM8,15.2H8.8V16H8zM11.2,15.2H12V16H11.2zM13.6,15.2H14.4V16H13.6zM16,15.2H16.8V16H16zM1.6,16H2.4V16.8H1.6zM3.2,16H4V16.8H3.2zM4,16H4.8V16.8H4zM4.8,16H5.6V16.8H4.8zM6.4,16H7.2V16.8H6.4zM8,16H8.8V16.8H8zM9.6,16H10.4V16.8H9.6zM10.4,16H11.2V16.8H10.4zM12,16H12.8V16.8H12zM14.4,16H15.2V16.8H14.4zM16,16H16.8V16.8H16zM1.6,16.8H2.4V17.6H1.6zM6.4,16.8H7.2V17.6H6.4zM9.6,16.8H10.4V17.6H9.6zM13.6,16.8H14.4V17.6H13.6zM14.4,16.8H15.2V17.6H14.4zM16,16.8H16.8V17.6H16zM16.8,16.8H17.6V17.6H16.8zM1.6,17.6H2.4V18.4H1.6zM2.4,17.6H3.2V18.4H2.4zM3.2,17.6H4V18.4H3.2zM4,17.6H4.8V18.4H4zM4.8,17.6H5.6V18.4H4.8zM5.6,17.6H6.4V18.4H5.6zM6.4,17.6H7.2V18.4H6.4zM8,17.6H8.8V18.4H8zM10.4,17.6H11.2V18.4H10.4zM12,17.6H12.8V18.4H12zM14.4,17.6H15.2V18.4H14.4zM16,17.6H16.8V18.4H16z\" fill=\"#000\"/></svg>"},"Novotný":{"label":"Novotný Miroslav","code":"44935018","svg":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 20 20\" shape-rendering=\"crispEdges\"><rect width=\"20\" height=\"20\" fill=\"#fff\"/><path d=\"M1.6,1.6H2.4V2.4H1.6zM2.4,1.6H3.2V2.4H2.4zM3.2,1.6H4V2.4H3.2zM4,1.6H4.8V2.4H4zM4.8,1.6H5.6V2.4H4.8zM5.6,1.6H6.4V2.4H5.6zM6.4,1.6H7.2V2.4H6.4zM8,1.6H8.8V2.4H8zM8.8,1.6H9.6V2.4H8.8zM11.2,1.6H12V2.4H11.2zM12.8,1.6H13.6V2.4H12.8zM13.6,1.6H14.4V2.4H13.6zM14.4,1.6H15.2V2.4H14.4zM15.2,1.6H16V2.4H15.2zM16,1.6H16.8V2.4H16zM16.8,1.6H17.6V2.4H16.8zM17.6,1.6H18.4V2.4H17.6zM1.6,2.4H2.4V3.2H1.6zM6.4,2.4H7.2V3.2H6.4zM8,2.4H8.8V3.2H8zM8.8,2.4H9.6V3.2H8.8zM9.6,2.4H10.4V3.2H9.6zM10.4,2.4H11.2V3.2H10.4zM12.8,2.4H13.6V3.2H12.8zM17.6,2.4H18.4V3.2H17.6zM1.6,3.2H2.4V4H1.6zM3.2,3.2H4V4H3.2zM4,3.2H4.8V4H4zM4.8,3.2H5.6V4H4.8zM6.4,3.2H7.2V4H6.4zM8,3.2H8.8V4H8zM10.4,3.2H11.2V4H10.4zM12.8,3.2H13.6V4H12.8zM14.4,3.2H15.2V4H14.4zM15.2,3.2H16V4H15.2zM16,3.2H16.8V4H16zM17.6,3.2H18.4V4H17.6zM1.6,4H2.4V4.8H1.6zM3.2,4H4V4.8H3.2zM4,4H4.8V4.8H4zM4.8,4H5.6V4.8H4.8zM6.4,4H7.2V4.8H6.4zM8.8,4H9.6V4.8H8.8zM9.6,4H10.4V4.8H9.6zM10.4,4H11.2V4.8H10.4zM12.8,4H13.6V4.8H12.8zM14.4,4H15.2V4.8H14.4zM15.2,4H16V4.8H15.2zM16,4H16.8V4.8H16zM17.6,4H18.4V4.8H17.6zM1.6,4.8H2.4V5.6H1.6zM3.2,4.8H4V5.6H3.2zM4,4.8H4.8V5.6H4zM4.8,4.8H5.6V5.6H4.8zM6.4,4.8H7.2V5.6H6.4zM8,4.8H8.8V5.6H8zM8.8,4.8H9.6V5.6H8.8zM9.6,4.8H10.4V5.6H9.6zM11.2,4.8H12V5.6H11.2zM12.8,4.8H13.6V5.6H12.8zM14.4,4.8H15.2V5.6H14.4zM15.2,4.8H16V5.6H15.2zM16,4.8H16.8V5.6H16zM17.6,4.8H18.4V5.6H17.6zM1.6,5.6H2.4V6.4H1.6zM6.4,5.6H7.2V6.4H6.4zM8.8,5.6H9.6V6.4H8.8zM9.6,5.6H10.4V6.4H9.6zM10.4,5.6H11.2V6.4H10.4zM11.2,5.6H12V6.4H11.2zM12.8,5.6H13.6V6.4H12.8zM17.6,5.6H18.4V6.4H17.6zM1.6,6.4H2.4V7.2H1.6zM2.4,6.4H3.2V7.2H2.4zM3.2,6.4H4V7.2H3.2zM4,6.4H4.8V7.2H4zM4.8,6.4H5.6V7.2H4.8zM5.6,6.4H6.4V7.2H5.6zM6.4,6.4H7.2V7.2H6.4zM8,6.4H8.8V7.2H8zM9.6,6.4H10.4V7.2H9.6zM11.2,6.4H12V7.2H11.2zM12.8,6.4H13.6V7.2H12.8zM13.6,6.4H14.4V7.2H13.6zM14.4,6.4H15.2V7.2H14.4zM15.2,6.4H16V7.2H15.2zM16,6.4H16.8V7.2H16zM16.8,6.4H17.6V7.2H16.8zM17.6,6.4H18.4V7.2H17.6zM9.6,7.2H10.4V8H9.6zM10.4,7.2H11.2V8H10.4zM11.2,7.2H12V8H11.2zM1.6,8H2.4V8.8H1.6zM4,8H4.8V8.8H4zM4.8,8H5.6V8.8H4.8zM5.6,8H6.4V8.8H5.6zM6.4,8H7.2V8.8H6.4zM7.2,8H8V8.8H7.2zM8,8H8.8V8.8H8zM9.6,8H10.4V8.8H9.6zM11.2,8H12V8.8H11.2zM12,8H12.8V8.8H12zM14.4,8H15.2V8.8H14.4zM16,8H16.8V8.8H16zM16.8,8H17.6V8.8H16.8zM17.6,8H18.4V8.8H17.6zM5.6,8.8H6.4V9.6H5.6zM7.2,8.8H8V9.6H7.2zM11.2,8.8H12V9.6H11.2zM12.8,8.8H13.6V9.6H12.8zM14.4,8.8H15.2V9.6H14.4zM15.2,8.8H16V9.6H15.2zM16,8.8H16.8V9.6H16zM16.8,8.8H17.6V9.6H16.8zM17.6,8.8H18.4V9.6H17.6zM3.2,9.6H4V10.4H3.2zM4,9.6H4.8V10.4H4zM4.8,9.6H5.6V10.4H4.8zM5.6,9.6H6.4V10.4H5.6zM6.4,9.6H7.2V10.4H6.4zM8,9.6H8.8V10.4H8zM8.8,9.6H9.6V10.4H8.8zM12,9.6H12.8V10.4H12zM12.8,9.6H13.6V10.4H12.8zM14.4,9.6H15.2V10.4H14.4zM16,9.6H16.8V10.4H16zM17.6,9.6H18.4V10.4H17.6zM1.6,10.4H2.4V11.2H1.6zM3.2,10.4H4V11.2H3.2zM4.8,10.4H5.6V11.2H4.8zM7.2,10.4H8V11.2H7.2zM8,10.4H8.8V11.2H8zM8.8,10.4H9.6V11.2H8.8zM10.4,10.4H11.2V11.2H10.4zM16,10.4H16.8V11.2H16zM2.4,11.2H3.2V12H2.4zM3.2,11.2H4V12H3.2zM4.8,11.2H5.6V12H4.8zM5.6,11.2H6.4V12H5.6zM6.4,11.2H7.2V12H6.4zM12.8,11.2H13.6V12H12.8zM8,12H8.8V12.8H8zM10.4,12H11.2V12.8H10.4zM11.2,12H12V12.8H11.2zM13.6,12H14.4V12.8H13.6zM17.6,12H18.4V12.8H17.6zM1.6,12.8H2.4V13.6H1.6zM2.4,12.8H3.2V13.6H2.4zM3.2,12.8H4V13.6H3.2zM4,12.8H4.8V13.6H4zM4.8,12.8H5.6V13.6H4.8zM5.6,12.8H6.4V13.6H5.6zM6.4,12.8H7.2V13.6H6.4zM8,12.8H8.8V13.6H8zM8.8,12.8H9.6V13.6H8.8zM11.2,12.8H12V13.6H11.2zM12,12.8H12.8V13.6H12zM12.8,12.8H13.6V13.6H12.8zM13.6,12.8H14.4V13.6H13.6zM14.4,12.8H15.2V13.6H14.4zM16,12.8H16.8V13.6H16zM16.8,12.8H17.6V13.6H16.8zM1.6,13.6H2.4V14.4H1.6zM6.4,13.6H7.2V14.4H6.4zM8,13.6H8.8V14.4H8zM10.4,13.6H11.2V14.4H10.4zM11.2,13.6H12V14.4H11.2zM12,13.6H12.8V14.4H12zM13.6,13.6H14.4V14.4H13.6zM14.4,13.6H15.2V14.4H14.4zM1.6,14.4H2.4V15.2H1.6zM3.2,14.4H4V15.2H3.2zM4,14.4H4.8V15.2H4zM4.8,14.4H5.6V15.2H4.8zM6.4,14.4H7.2V15.2H6.4zM8,14.4H8.8V15.2H8zM9.6,14.4H10.4V15.2H9.6zM10.4,14.4H11.2V15.2H10.4zM11.2,14.4H12V15.2H11.2zM12.8,14.4H13.6V15.2H12.8zM13.6,14.4H14.4V15.2H13.6zM16,14.4H16.8V15.2H16zM17.6,14.4H18.4V15.2H17.6zM1.6,15.2H2.4V16H1.6zM3.2,15.2H4V16H3.2zM4,15.2H4.8V16H4zM4.8,15.2H5.6V16H4.8zM6.4,15.2H7.2V16H6.4zM8,15.2H8.8V16H8zM8.8,15.2H9.6V16H8.8zM9.6,15.2H10.4V16H9.6zM10.4,15.2H11.2V16H10.4zM11.2,15.2H12V16H11.2zM14.4,15.2H15.2V16H14.4zM15.2,15.2H16V16H15.2zM16,15.2H16.8V16H16zM1.6,16H2.4V16.8H1.6zM3.2,16H4V16.8H3.2zM4,16H4.8V16.8H4zM4.8,16H5.6V16.8H4.8zM6.4,16H7.2V16.8H6.4zM8.8,16H9.6V16.8H8.8zM9.6,16H10.4V16.8H9.6zM12.8,16H13.6V16.8H12.8zM15.2,16H16V16.8H15.2zM16,16H16.8V16.8H16zM16.8,16H17.6V16.8H16.8zM17.6,16H18.4V16.8H17.6zM1.6,16.8H2.4V17.6H1.6zM6.4,16.8H7.2V17.6H6.4zM8.8,16.8H9.6V17.6H8.8zM12,16.8H12.8V17.6H12zM12.8,16.8H13.6V17.6H12.8zM14.4,16.8H15.2V17.6H14.4zM16,16.8H16.8V17.6H16zM17.6,16.8H18.4V17.6H17.6zM1.6,17.6H2.4V18.4H1.6zM2.4,17.6H3.2V18.4H2.4zM3.2,17.6H4V18.4H3.2zM4,17.6H4.8V18.4H4zM4.8,17.6H5.6V18.4H4.8zM5.6,17.6H6.4V18.4H5.6zM6.4,17.6H7.2V18.4H6.4zM8,17.6H8.8V18.4H8zM9.6,17.6H10.4V18.4H9.6zM10.4,17.6H11.2V18.4H10.4zM16,17.6H16.8V18.4H16zM16.8,17.6H17.6V18.4H16.8z\" fill=\"#000\"/></svg>"},"Třasák":{"label":"Třasák Marek","code":"44933053","svg":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 20 20\" shape-rendering=\"crispEdges\"><rect width=\"20\" height=\"20\" fill=\"#fff\"/><path d=\"M1.6,1.6H2.4V2.4H1.6zM2.4,1.6H3.2V2.4H2.4zM3.2,1.6H4V2.4H3.2zM4,1.6H4.8V2.4H4zM4.8,1.6H5.6V2.4H4.8zM5.6,1.6H6.4V2.4H5.6zM6.4,1.6H7.2V2.4H6.4zM8,1.6H8.8V2.4H8zM8.8,1.6H9.6V2.4H8.8zM11.2,1.6H12V2.4H11.2zM12.8,1.6H13.6V2.4H12.8zM13.6,1.6H14.4V2.4H13.6zM14.4,1.6H15.2V2.4H14.4zM15.2,1.6H16V2.4H15.2zM16,1.6H16.8V2.4H16zM16.8,1.6H17.6V2.4H16.8zM17.6,1.6H18.4V2.4H17.6zM1.6,2.4H2.4V3.2H1.6zM6.4,2.4H7.2V3.2H6.4zM8,2.4H8.8V3.2H8zM11.2,2.4H12V3.2H11.2zM12.8,2.4H13.6V3.2H12.8zM17.6,2.4H18.4V3.2H17.6zM1.6,3.2H2.4V4H1.6zM3.2,3.2H4V4H3.2zM4,3.2H4.8V4H4zM4.8,3.2H5.6V4H4.8zM6.4,3.2H7.2V4H6.4zM8,3.2H8.8V4H8zM8.8,3.2H9.6V4H8.8zM11.2,3.2H12V4H11.2zM12.8,3.2H13.6V4H12.8zM14.4,3.2H15.2V4H14.4zM15.2,3.2H16V4H15.2zM16,3.2H16.8V4H16zM17.6,3.2H18.4V4H17.6zM1.6,4H2.4V4.8H1.6zM3.2,4H4V4.8H3.2zM4,4H4.8V4.8H4zM4.8,4H5.6V4.8H4.8zM6.4,4H7.2V4.8H6.4zM10.4,4H11.2V4.8H10.4zM11.2,4H12V4.8H11.2zM12.8,4H13.6V4.8H12.8zM14.4,4H15.2V4.8H14.4zM15.2,4H16V4.8H15.2zM16,4H16.8V4.8H16zM17.6,4H18.4V4.8H17.6zM1.6,4.8H2.4V5.6H1.6zM3.2,4.8H4V5.6H3.2zM4,4.8H4.8V5.6H4zM4.8,4.8H5.6V5.6H4.8zM6.4,4.8H7.2V5.6H6.4zM8,4.8H8.8V5.6H8zM9.6,4.8H10.4V5.6H9.6zM11.2,4.8H12V5.6H11.2zM12.8,4.8H13.6V5.6H12.8zM14.4,4.8H15.2V5.6H14.4zM15.2,4.8H16V5.6H15.2zM16,4.8H16.8V5.6H16zM17.6,4.8H18.4V5.6H17.6zM1.6,5.6H2.4V6.4H1.6zM6.4,5.6H7.2V6.4H6.4zM10.4,5.6H11.2V6.4H10.4zM11.2,5.6H12V6.4H11.2zM12.8,5.6H13.6V6.4H12.8zM17.6,5.6H18.4V6.4H17.6zM1.6,6.4H2.4V7.2H1.6zM2.4,6.4H3.2V7.2H2.4zM3.2,6.4H4V7.2H3.2zM4,6.4H4.8V7.2H4zM4.8,6.4H5.6V7.2H4.8zM5.6,6.4H6.4V7.2H5.6zM6.4,6.4H7.2V7.2H6.4zM8,6.4H8.8V7.2H8zM9.6,6.4H10.4V7.2H9.6zM11.2,6.4H12V7.2H11.2zM12.8,6.4H13.6V7.2H12.8zM13.6,6.4H14.4V7.2H13.6zM14.4,6.4H15.2V7.2H14.4zM15.2,6.4H16V7.2H15.2zM16,6.4H16.8V7.2H16zM16.8,6.4H17.6V7.2H16.8zM17.6,6.4H18.4V7.2H17.6zM8.8,7.2H9.6V8H8.8zM9.6,7.2H10.4V8H9.6zM10.4,7.2H11.2V8H10.4zM11.2,7.2H12V8H11.2zM1.6,8H2.4V8.8H1.6zM4,8H4.8V8.8H4zM4.8,8H5.6V8.8H4.8zM5.6,8H6.4V8.8H5.6zM6.4,8H7.2V8.8H6.4zM7.2,8H8V8.8H7.2zM8,8H8.8V8.8H8zM11.2,8H12V8.8H11.2zM12,8H12.8V8.8H12zM14.4,8H15.2V8.8H14.4zM16,8H16.8V8.8H16zM16.8,8H17.6V8.8H16.8zM17.6,8H18.4V8.8H17.6zM2.4,8.8H3.2V9.6H2.4zM3.2,8.8H4V9.6H3.2zM4,8.8H4.8V9.6H4zM7.2,8.8H8V9.6H7.2zM8.8,8.8H9.6V9.6H8.8zM9.6,8.8H10.4V9.6H9.6zM11.2,8.8H12V9.6H11.2zM12.8,8.8H13.6V9.6H12.8zM14.4,8.8H15.2V9.6H14.4zM15.2,8.8H16V9.6H15.2zM16,8.8H16.8V9.6H16zM16.8,8.8H17.6V9.6H16.8zM17.6,8.8H18.4V9.6H17.6zM1.6,9.6H2.4V10.4H1.6zM2.4,9.6H3.2V10.4H2.4zM3.2,9.6H4V10.4H3.2zM4,9.6H4.8V10.4H4zM5.6,9.6H6.4V10.4H5.6zM6.4,9.6H7.2V10.4H6.4zM7.2,9.6H8V10.4H7.2zM8.8,9.6H9.6V10.4H8.8zM12,9.6H12.8V10.4H12zM12.8,9.6H13.6V10.4H12.8zM14.4,9.6H15.2V10.4H14.4zM16,9.6H16.8V10.4H16zM17.6,9.6H18.4V10.4H17.6zM1.6,10.4H2.4V11.2H1.6zM3.2,10.4H4V11.2H3.2zM4,10.4H4.8V11.2H4zM4.8,10.4H5.6V11.2H4.8zM8,10.4H8.8V11.2H8zM9.6,10.4H10.4V11.2H9.6zM10.4,10.4H11.2V11.2H10.4zM15.2,10.4H16V11.2H15.2zM16,10.4H16.8V11.2H16zM1.6,11.2H2.4V12H1.6zM4,11.2H4.8V12H4zM4.8,11.2H5.6V12H4.8zM5.6,11.2H6.4V12H5.6zM6.4,11.2H7.2V12H6.4zM7.2,11.2H8V12H7.2zM12.8,11.2H13.6V12H12.8zM15.2,11.2H16V12H15.2zM8,12H8.8V12.8H8zM9.6,12H10.4V12.8H9.6zM10.4,12H11.2V12.8H10.4zM11.2,12H12V12.8H11.2zM13.6,12H14.4V12.8H13.6zM17.6,12H18.4V12.8H17.6zM1.6,12.8H2.4V13.6H1.6zM2.4,12.8H3.2V13.6H2.4zM3.2,12.8H4V13.6H3.2zM4,12.8H4.8V13.6H4zM4.8,12.8H5.6V13.6H4.8zM5.6,12.8H6.4V13.6H5.6zM6.4,12.8H7.2V13.6H6.4zM8,12.8H8.8V13.6H8zM8.8,12.8H9.6V13.6H8.8zM9.6,12.8H10.4V13.6H9.6zM11.2,12.8H12V13.6H11.2zM12,12.8H12.8V13.6H12zM12.8,12.8H13.6V13.6H12.8zM13.6,12.8H14.4V13.6H13.6zM14.4,12.8H15.2V13.6H14.4zM15.2,12.8H16V13.6H15.2zM16,12.8H16.8V13.6H16zM16.8,12.8H17.6V13.6H16.8zM1.6,13.6H2.4V14.4H1.6zM6.4,13.6H7.2V14.4H6.4zM8,13.6H8.8V14.4H8zM9.6,13.6H10.4V14.4H9.6zM10.4,13.6H11.2V14.4H10.4zM11.2,13.6H12V14.4H11.2zM12,13.6H12.8V14.4H12zM13.6,13.6H14.4V14.4H13.6zM14.4,13.6H15.2V14.4H14.4zM1.6,14.4H2.4V15.2H1.6zM3.2,14.4H4V15.2H3.2zM4,14.4H4.8V15.2H4zM4.8,14.4H5.6V15.2H4.8zM6.4,14.4H7.2V15.2H6.4zM8,14.4H8.8V15.2H8zM8.8,14.4H9.6V15.2H8.8zM10.4,14.4H11.2V15.2H10.4zM11.2,14.4H12V15.2H11.2zM12.8,14.4H13.6V15.2H12.8zM13.6,14.4H14.4V15.2H13.6zM15.2,14.4H16V15.2H15.2zM17.6,14.4H18.4V15.2H17.6zM1.6,15.2H2.4V16H1.6zM3.2,15.2H4V16H3.2zM4,15.2H4.8V16H4zM4.8,15.2H5.6V16H4.8zM6.4,15.2H7.2V16H6.4zM8,15.2H8.8V16H8zM8.8,15.2H9.6V16H8.8zM10.4,15.2H11.2V16H10.4zM11.2,15.2H12V16H11.2zM14.4,15.2H15.2V16H14.4zM15.2,15.2H16V16H15.2zM1.6,16H2.4V16.8H1.6zM3.2,16H4V16.8H3.2zM4,16H4.8V16.8H4zM4.8,16H5.6V16.8H4.8zM6.4,16H7.2V16.8H6.4zM9.6,16H10.4V16.8H9.6zM12.8,16H13.6V16.8H12.8zM15.2,16H16V16.8H15.2zM16,16H16.8V16.8H16zM16.8,16H17.6V16.8H16.8zM17.6,16H18.4V16.8H17.6zM1.6,16.8H2.4V17.6H1.6zM6.4,16.8H7.2V17.6H6.4zM8.8,16.8H9.6V17.6H8.8zM12,16.8H12.8V17.6H12zM12.8,16.8H13.6V17.6H12.8zM14.4,16.8H15.2V17.6H14.4zM16,16.8H16.8V17.6H16zM17.6,16.8H18.4V17.6H17.6zM1.6,17.6H2.4V18.4H1.6zM2.4,17.6H3.2V18.4H2.4zM3.2,17.6H4V18.4H3.2zM4,17.6H4.8V18.4H4zM4.8,17.6H5.6V18.4H4.8zM5.6,17.6H6.4V18.4H5.6zM6.4,17.6H7.2V18.4H6.4zM8,17.6H8.8V18.4H8zM9.6,17.6H10.4V18.4H9.6zM10.4,17.6H11.2V18.4H10.4zM16,17.6H16.8V18.4H16zM16.8,17.6H17.6V18.4H16.8z\" fill=\"#000\"/></svg>"},"Špadrna":{"label":"Špadrna Martin","code":"44344228","svg":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 20 20\" shape-rendering=\"crispEdges\"><rect width=\"20\" height=\"20\" fill=\"#fff\"/><path d=\"M1.6,1.6H2.4V2.4H1.6zM2.4,1.6H3.2V2.4H2.4zM3.2,1.6H4V2.4H3.2zM4,1.6H4.8V2.4H4zM4.8,1.6H5.6V2.4H4.8zM5.6,1.6H6.4V2.4H5.6zM6.4,1.6H7.2V2.4H6.4zM8.8,1.6H9.6V2.4H8.8zM9.6,1.6H10.4V2.4H9.6zM10.4,1.6H11.2V2.4H10.4zM11.2,1.6H12V2.4H11.2zM12.8,1.6H13.6V2.4H12.8zM13.6,1.6H14.4V2.4H13.6zM14.4,1.6H15.2V2.4H14.4zM15.2,1.6H16V2.4H15.2zM16,1.6H16.8V2.4H16zM16.8,1.6H17.6V2.4H16.8zM17.6,1.6H18.4V2.4H17.6zM1.6,2.4H2.4V3.2H1.6zM6.4,2.4H7.2V3.2H6.4zM8.8,2.4H9.6V3.2H8.8zM12.8,2.4H13.6V3.2H12.8zM17.6,2.4H18.4V3.2H17.6zM1.6,3.2H2.4V4H1.6zM3.2,3.2H4V4H3.2zM4,3.2H4.8V4H4zM4.8,3.2H5.6V4H4.8zM6.4,3.2H7.2V4H6.4zM8,3.2H8.8V4H8zM11.2,3.2H12V4H11.2zM12.8,3.2H13.6V4H12.8zM14.4,3.2H15.2V4H14.4zM15.2,3.2H16V4H15.2zM16,3.2H16.8V4H16zM17.6,3.2H18.4V4H17.6zM1.6,4H2.4V4.8H1.6zM3.2,4H4V4.8H3.2zM4,4H4.8V4.8H4zM4.8,4H5.6V4.8H4.8zM6.4,4H7.2V4.8H6.4zM8,4H8.8V4.8H8zM8.8,4H9.6V4.8H8.8zM9.6,4H10.4V4.8H9.6zM10.4,4H11.2V4.8H10.4zM11.2,4H12V4.8H11.2zM12.8,4H13.6V4.8H12.8zM14.4,4H15.2V4.8H14.4zM15.2,4H16V4.8H15.2zM16,4H16.8V4.8H16zM17.6,4H18.4V4.8H17.6zM1.6,4.8H2.4V5.6H1.6zM3.2,4.8H4V5.6H3.2zM4,4.8H4.8V5.6H4zM4.8,4.8H5.6V5.6H4.8zM6.4,4.8H7.2V5.6H6.4zM8,4.8H8.8V5.6H8zM10.4,4.8H11.2V5.6H10.4zM11.2,4.8H12V5.6H11.2zM12.8,4.8H13.6V5.6H12.8zM14.4,4.8H15.2V5.6H14.4zM15.2,4.8H16V5.6H15.2zM16,4.8H16.8V5.6H16zM17.6,4.8H18.4V5.6H17.6zM1.6,5.6H2.4V6.4H1.6zM6.4,5.6H7.2V6.4H6.4zM8,5.6H8.8V6.4H8zM9.6,5.6H10.4V6.4H9.6zM11.2,5.6H12V6.4H11.2zM12.8,5.6H13.6V6.4H12.8zM17.6,5.6H18.4V6.4H17.6zM1.6,6.4H2.4V7.2H1.6zM2.4,6.4H3.2V7.2H2.4zM3.2,6.4H4V7.2H3.2zM4,6.4H4.8V7.2H4zM4.8,6.4H5.6V7.2H4.8zM5.6,6.4H6.4V7.2H5.6zM6.4,6.4H7.2V7.2H6.4zM8,6.4H8.8V7.2H8zM9.6,6.4H10.4V7.2H9.6zM11.2,6.4H12V7.2H11.2zM12.8,6.4H13.6V7.2H12.8zM13.6,6.4H14.4V7.2H13.6zM14.4,6.4H15.2V7.2H14.4zM15.2,6.4H16V7.2H15.2zM16,6.4H16.8V7.2H16zM16.8,6.4H17.6V7.2H16.8zM17.6,6.4H18.4V7.2H17.6zM8,7.2H8.8V8H8zM8.8,7.2H9.6V8H8.8zM9.6,7.2H10.4V8H9.6zM10.4,7.2H11.2V8H10.4zM11.2,7.2H12V8H11.2zM1.6,8H2.4V8.8H1.6zM3.2,8H4V8.8H3.2zM4,8H4.8V8.8H4zM4.8,8H5.6V8.8H4.8zM5.6,8H6.4V8.8H5.6zM6.4,8H7.2V8.8H6.4zM11.2,8H12V8.8H11.2zM12.8,8H13.6V8.8H12.8zM13.6,8H14.4V8.8H13.6zM14.4,8H15.2V8.8H14.4zM15.2,8H16V8.8H15.2zM16,8H16.8V8.8H16zM1.6,8.8H2.4V9.6H1.6zM2.4,8.8H3.2V9.6H2.4zM4,8.8H4.8V9.6H4zM5.6,8.8H6.4V9.6H5.6zM8.8,8.8H9.6V9.6H8.8zM11.2,8.8H12V9.6H11.2zM13.6,8.8H14.4V9.6H13.6zM15.2,8.8H16V9.6H15.2zM16,8.8H16.8V9.6H16zM16.8,8.8H17.6V9.6H16.8zM17.6,8.8H18.4V9.6H17.6zM1.6,9.6H2.4V10.4H1.6zM2.4,9.6H3.2V10.4H2.4zM3.2,9.6H4V10.4H3.2zM4,9.6H4.8V10.4H4zM4.8,9.6H5.6V10.4H4.8zM5.6,9.6H6.4V10.4H5.6zM6.4,9.6H7.2V10.4H6.4zM10.4,9.6H11.2V10.4H10.4zM12,9.6H12.8V10.4H12zM14.4,9.6H15.2V10.4H14.4zM17.6,9.6H18.4V10.4H17.6zM2.4,10.4H3.2V11.2H2.4zM3.2,10.4H4V11.2H3.2zM4,10.4H4.8V11.2H4zM5.6,10.4H6.4V11.2H5.6zM13.6,10.4H14.4V11.2H13.6zM14.4,10.4H15.2V11.2H14.4zM15.2,10.4H16V11.2H15.2zM16.8,10.4H17.6V11.2H16.8zM17.6,10.4H18.4V11.2H17.6zM1.6,11.2H2.4V12H1.6zM2.4,11.2H3.2V12H2.4zM5.6,11.2H6.4V12H5.6zM6.4,11.2H7.2V12H6.4zM8,11.2H8.8V12H8zM9.6,11.2H10.4V12H9.6zM10.4,11.2H11.2V12H10.4zM12,11.2H12.8V12H12zM14.4,11.2H15.2V12H14.4zM17.6,11.2H18.4V12H17.6zM8,12H8.8V12.8H8zM8.8,12H9.6V12.8H8.8zM9.6,12H10.4V12.8H9.6zM10.4,12H11.2V12.8H10.4zM11.2,12H12V12.8H11.2zM12,12H12.8V12.8H12zM12.8,12H13.6V12.8H12.8zM16.8,12H17.6V12.8H16.8zM1.6,12.8H2.4V13.6H1.6zM2.4,12.8H3.2V13.6H2.4zM3.2,12.8H4V13.6H3.2zM4,12.8H4.8V13.6H4zM4.8,12.8H5.6V13.6H4.8zM5.6,12.8H6.4V13.6H5.6zM6.4,12.8H7.2V13.6H6.4zM8.8,12.8H9.6V13.6H8.8zM11.2,12.8H12V13.6H11.2zM12.8,12.8H13.6V13.6H12.8zM13.6,12.8H14.4V13.6H13.6zM16,12.8H16.8V13.6H16zM1.6,13.6H2.4V14.4H1.6zM6.4,13.6H7.2V14.4H6.4zM8,13.6H8.8V14.4H8zM8.8,13.6H9.6V14.4H8.8zM9.6,13.6H10.4V14.4H9.6zM10.4,13.6H11.2V14.4H10.4zM11.2,13.6H12V14.4H11.2zM12,13.6H12.8V14.4H12zM12.8,13.6H13.6V14.4H12.8zM15.2,13.6H16V14.4H15.2zM17.6,13.6H18.4V14.4H17.6zM1.6,14.4H2.4V15.2H1.6zM3.2,14.4H4V15.2H3.2zM4,14.4H4.8V15.2H4zM4.8,14.4H5.6V15.2H4.8zM6.4,14.4H7.2V15.2H6.4zM8,14.4H8.8V15.2H8zM11.2,14.4H12V15.2H11.2zM13.6,14.4H14.4V15.2H13.6zM1.6,15.2H2.4V16H1.6zM3.2,15.2H4V16H3.2zM4,15.2H4.8V16H4zM4.8,15.2H5.6V16H4.8zM6.4,15.2H7.2V16H6.4zM8,15.2H8.8V16H8zM8.8,15.2H9.6V16H8.8zM9.6,15.2H10.4V16H9.6zM11.2,15.2H12V16H11.2zM13.6,15.2H14.4V16H13.6zM16,15.2H16.8V16H16zM1.6,16H2.4V16.8H1.6zM3.2,16H4V16.8H3.2zM4,16H4.8V16.8H4zM4.8,16H5.6V16.8H4.8zM6.4,16H7.2V16.8H6.4zM8,16H8.8V16.8H8zM9.6,16H10.4V16.8H9.6zM10.4,16H11.2V16.8H10.4zM12,16H12.8V16.8H12zM14.4,16H15.2V16.8H14.4zM16,16H16.8V16.8H16zM1.6,16.8H2.4V17.6H1.6zM6.4,16.8H7.2V17.6H6.4zM9.6,16.8H10.4V17.6H9.6zM13.6,16.8H14.4V17.6H13.6zM14.4,16.8H15.2V17.6H14.4zM16,16.8H16.8V17.6H16zM16.8,16.8H17.6V17.6H16.8zM1.6,17.6H2.4V18.4H1.6zM2.4,17.6H3.2V18.4H2.4zM3.2,17.6H4V18.4H3.2zM4,17.6H4.8V18.4H4zM4.8,17.6H5.6V18.4H4.8zM5.6,17.6H6.4V18.4H5.6zM6.4,17.6H7.2V18.4H6.4zM8,17.6H8.8V18.4H8zM9.6,17.6H10.4V18.4H9.6zM10.4,17.6H11.2V18.4H10.4zM12,17.6H12.8V18.4H12zM14.4,17.6H15.2V18.4H14.4zM16,17.6H16.8V18.4H16z\" fill=\"#000\"/></svg>"},"Kříž":{"label":"Kříž Pavel","code":"44344094","svg":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 20 20\" shape-rendering=\"crispEdges\"><rect width=\"20\" height=\"20\" fill=\"#fff\"/><path d=\"M1.6,1.6H2.4V2.4H1.6zM2.4,1.6H3.2V2.4H2.4zM3.2,1.6H4V2.4H3.2zM4,1.6H4.8V2.4H4zM4.8,1.6H5.6V2.4H4.8zM5.6,1.6H6.4V2.4H5.6zM6.4,1.6H7.2V2.4H6.4zM8,1.6H8.8V2.4H8zM9.6,1.6H10.4V2.4H9.6zM10.4,1.6H11.2V2.4H10.4zM11.2,1.6H12V2.4H11.2zM12.8,1.6H13.6V2.4H12.8zM13.6,1.6H14.4V2.4H13.6zM14.4,1.6H15.2V2.4H14.4zM15.2,1.6H16V2.4H15.2zM16,1.6H16.8V2.4H16zM16.8,1.6H17.6V2.4H16.8zM17.6,1.6H18.4V2.4H17.6zM1.6,2.4H2.4V3.2H1.6zM6.4,2.4H7.2V3.2H6.4zM8,2.4H8.8V3.2H8zM12.8,2.4H13.6V3.2H12.8zM17.6,2.4H18.4V3.2H17.6zM1.6,3.2H2.4V4H1.6zM3.2,3.2H4V4H3.2zM4,3.2H4.8V4H4zM4.8,3.2H5.6V4H4.8zM6.4,3.2H7.2V4H6.4zM8,3.2H8.8V4H8zM11.2,3.2H12V4H11.2zM12.8,3.2H13.6V4H12.8zM14.4,3.2H15.2V4H14.4zM15.2,3.2H16V4H15.2zM16,3.2H16.8V4H16zM17.6,3.2H18.4V4H17.6zM1.6,4H2.4V4.8H1.6zM3.2,4H4V4.8H3.2zM4,4H4.8V4.8H4zM4.8,4H5.6V4.8H4.8zM6.4,4H7.2V4.8H6.4zM8.8,4H9.6V4.8H8.8zM9.6,4H10.4V4.8H9.6zM10.4,4H11.2V4.8H10.4zM12.8,4H13.6V4.8H12.8zM14.4,4H15.2V4.8H14.4zM15.2,4H16V4.8H15.2zM16,4H16.8V4.8H16zM17.6,4H18.4V4.8H17.6zM1.6,4.8H2.4V5.6H1.6zM3.2,4.8H4V5.6H3.2zM4,4.8H4.8V5.6H4zM4.8,4.8H5.6V5.6H4.8zM6.4,4.8H7.2V5.6H6.4zM8,4.8H8.8V5.6H8zM11.2,4.8H12V5.6H11.2zM12.8,4.8H13.6V5.6H12.8zM14.4,4.8H15.2V5.6H14.4zM15.2,4.8H16V5.6H15.2zM16,4.8H16.8V5.6H16zM17.6,4.8H18.4V5.6H17.6zM1.6,5.6H2.4V6.4H1.6zM6.4,5.6H7.2V6.4H6.4zM10.4,5.6H11.2V6.4H10.4zM11.2,5.6H12V6.4H11.2zM12.8,5.6H13.6V6.4H12.8zM17.6,5.6H18.4V6.4H17.6zM1.6,6.4H2.4V7.2H1.6zM2.4,6.4H3.2V7.2H2.4zM3.2,6.4H4V7.2H3.2zM4,6.4H4.8V7.2H4zM4.8,6.4H5.6V7.2H4.8zM5.6,6.4H6.4V7.2H5.6zM6.4,6.4H7.2V7.2H6.4zM8,6.4H8.8V7.2H8zM9.6,6.4H10.4V7.2H9.6zM11.2,6.4H12V7.2H11.2zM12.8,6.4H13.6V7.2H12.8zM13.6,6.4H14.4V7.2H13.6zM14.4,6.4H15.2V7.2H14.4zM15.2,6.4H16V7.2H15.2zM16,6.4H16.8V7.2H16zM16.8,6.4H17.6V7.2H16.8zM17.6,6.4H18.4V7.2H17.6zM8.8,7.2H9.6V8H8.8zM10.4,7.2H11.2V8H10.4zM11.2,7.2H12V8H11.2zM1.6,8H2.4V8.8H1.6zM4,8H4.8V8.8H4zM4.8,8H5.6V8.8H4.8zM5.6,8H6.4V8.8H5.6zM6.4,8H7.2V8.8H6.4zM7.2,8H8V8.8H7.2zM8,8H8.8V8.8H8zM8.8,8H9.6V8.8H8.8zM9.6,8H10.4V8.8H9.6zM11.2,8H12V8.8H11.2zM12,8H12.8V8.8H12zM14.4,8H15.2V8.8H14.4zM16,8H16.8V8.8H16zM16.8,8H17.6V8.8H16.8zM17.6,8H18.4V8.8H17.6zM2.4,8.8H3.2V9.6H2.4zM3.2,8.8H4V9.6H3.2zM4,8.8H4.8V9.6H4zM4.8,8.8H5.6V9.6H4.8zM7.2,8.8H8V9.6H7.2zM8,8.8H8.8V9.6H8zM11.2,8.8H12V9.6H11.2zM12.8,8.8H13.6V9.6H12.8zM14.4,8.8H15.2V9.6H14.4zM15.2,8.8H16V9.6H15.2zM16,8.8H16.8V9.6H16zM16.8,8.8H17.6V9.6H16.8zM2.4,9.6H3.2V10.4H2.4zM6.4,9.6H7.2V10.4H6.4zM9.6,9.6H10.4V10.4H9.6zM12,9.6H12.8V10.4H12zM12.8,9.6H13.6V10.4H12.8zM14.4,9.6H15.2V10.4H14.4zM15.2,9.6H16V10.4H15.2zM3.2,10.4H4V11.2H3.2zM4.8,10.4H5.6V11.2H4.8zM7.2,10.4H8V11.2H7.2zM8,10.4H8.8V11.2H8zM8.8,10.4H9.6V11.2H8.8zM9.6,10.4H10.4V11.2H9.6zM10.4,10.4H11.2V11.2H10.4zM16.8,10.4H17.6V11.2H16.8zM17.6,10.4H18.4V11.2H17.6zM1.6,11.2H2.4V12H1.6zM2.4,11.2H3.2V12H2.4zM4,11.2H4.8V12H4zM6.4,11.2H7.2V12H6.4zM7.2,11.2H8V12H7.2zM8.8,11.2H9.6V12H8.8zM9.6,11.2H10.4V12H9.6zM12.8,11.2H13.6V12H12.8zM15.2,11.2H16V12H15.2zM16.8,11.2H17.6V12H16.8zM8,12H8.8V12.8H8zM10.4,12H11.2V12.8H10.4zM11.2,12H12V12.8H11.2zM13.6,12H14.4V12.8H13.6zM16,12H16.8V12.8H16zM17.6,12H18.4V12.8H17.6zM1.6,12.8H2.4V13.6H1.6zM2.4,12.8H3.2V13.6H2.4zM3.2,12.8H4V13.6H3.2zM4,12.8H4.8V13.6H4zM4.8,12.8H5.6V13.6H4.8zM5.6,12.8H6.4V13.6H5.6zM6.4,12.8H7.2V13.6H6.4zM8,12.8H8.8V13.6H8zM8.8,12.8H9.6V13.6H8.8zM9.6,12.8H10.4V13.6H9.6zM11.2,12.8H12V13.6H11.2zM12,12.8H12.8V13.6H12zM12.8,12.8H13.6V13.6H12.8zM13.6,12.8H14.4V13.6H13.6zM14.4,12.8H15.2V13.6H14.4zM16.8,12.8H17.6V13.6H16.8zM1.6,13.6H2.4V14.4H1.6zM6.4,13.6H7.2V14.4H6.4zM8,13.6H8.8V14.4H8zM9.6,13.6H10.4V14.4H9.6zM10.4,13.6H11.2V14.4H10.4zM11.2,13.6H12V14.4H11.2zM12,13.6H12.8V14.4H12zM13.6,13.6H14.4V14.4H13.6zM14.4,13.6H15.2V14.4H14.4zM15.2,13.6H16V14.4H15.2zM1.6,14.4H2.4V15.2H1.6zM3.2,14.4H4V15.2H3.2zM4,14.4H4.8V15.2H4zM4.8,14.4H5.6V15.2H4.8zM6.4,14.4H7.2V15.2H6.4zM8,14.4H8.8V15.2H8zM8.8,14.4H9.6V15.2H8.8zM10.4,14.4H11.2V15.2H10.4zM11.2,14.4H12V15.2H11.2zM12.8,14.4H13.6V15.2H12.8zM13.6,14.4H14.4V15.2H13.6zM17.6,14.4H18.4V15.2H17.6zM1.6,15.2H2.4V16H1.6zM3.2,15.2H4V16H3.2zM4,15.2H4.8V16H4zM4.8,15.2H5.6V16H4.8zM6.4,15.2H7.2V16H6.4zM8,15.2H8.8V16H8zM8.8,15.2H9.6V16H8.8zM9.6,15.2H10.4V16H9.6zM10.4,15.2H11.2V16H10.4zM11.2,15.2H12V16H11.2zM14.4,15.2H15.2V16H14.4zM15.2,15.2H16V16H15.2zM16,15.2H16.8V16H16zM1.6,16H2.4V16.8H1.6zM3.2,16H4V16.8H3.2zM4,16H4.8V16.8H4zM4.8,16H5.6V16.8H4.8zM6.4,16H7.2V16.8H6.4zM9.6,16H10.4V16.8H9.6zM12.8,16H13.6V16.8H12.8zM15.2,16H16V16.8H15.2zM16,16H16.8V16.8H16zM16.8,16H17.6V16.8H16.8zM17.6,16H18.4V16.8H17.6zM1.6,16.8H2.4V17.6H1.6zM6.4,16.8H7.2V17.6H6.4zM9.6,16.8H10.4V17.6H9.6zM12,16.8H12.8V17.6H12zM12.8,16.8H13.6V17.6H12.8zM14.4,16.8H15.2V17.6H14.4zM16,16.8H16.8V17.6H16zM17.6,16.8H18.4V17.6H17.6zM1.6,17.6H2.4V18.4H1.6zM2.4,17.6H3.2V18.4H2.4zM3.2,17.6H4V18.4H3.2zM4,17.6H4.8V18.4H4zM4.8,17.6H5.6V18.4H4.8zM5.6,17.6H6.4V18.4H5.6zM6.4,17.6H7.2V18.4H6.4zM8,17.6H8.8V18.4H8zM10.4,17.6H11.2V18.4H10.4zM16,17.6H16.8V18.4H16zM16.8,17.6H17.6V18.4H16.8z\" fill=\"#000\"/></svg>"},"Synek":{"label":"Synek Jan","code":"44529582","svg":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 20 20\" shape-rendering=\"crispEdges\"><rect width=\"20\" height=\"20\" fill=\"#fff\"/><path d=\"M1.6,1.6H2.4V2.4H1.6zM2.4,1.6H3.2V2.4H2.4zM3.2,1.6H4V2.4H3.2zM4,1.6H4.8V2.4H4zM4.8,1.6H5.6V2.4H4.8zM5.6,1.6H6.4V2.4H5.6zM6.4,1.6H7.2V2.4H6.4zM8.8,1.6H9.6V2.4H8.8zM10.4,1.6H11.2V2.4H10.4zM11.2,1.6H12V2.4H11.2zM12.8,1.6H13.6V2.4H12.8zM13.6,1.6H14.4V2.4H13.6zM14.4,1.6H15.2V2.4H14.4zM15.2,1.6H16V2.4H15.2zM16,1.6H16.8V2.4H16zM16.8,1.6H17.6V2.4H16.8zM17.6,1.6H18.4V2.4H17.6zM1.6,2.4H2.4V3.2H1.6zM6.4,2.4H7.2V3.2H6.4zM8.8,2.4H9.6V3.2H8.8zM9.6,2.4H10.4V3.2H9.6zM10.4,2.4H11.2V3.2H10.4zM11.2,2.4H12V3.2H11.2zM12.8,2.4H13.6V3.2H12.8zM17.6,2.4H18.4V3.2H17.6zM1.6,3.2H2.4V4H1.6zM3.2,3.2H4V4H3.2zM4,3.2H4.8V4H4zM4.8,3.2H5.6V4H4.8zM6.4,3.2H7.2V4H6.4zM8,3.2H8.8V4H8zM10.4,3.2H11.2V4H10.4zM11.2,3.2H12V4H11.2zM12.8,3.2H13.6V4H12.8zM14.4,3.2H15.2V4H14.4zM15.2,3.2H16V4H15.2zM16,3.2H16.8V4H16zM17.6,3.2H18.4V4H17.6zM1.6,4H2.4V4.8H1.6zM3.2,4H4V4.8H3.2zM4,4H4.8V4.8H4zM4.8,4H5.6V4.8H4.8zM6.4,4H7.2V4.8H6.4zM8,4H8.8V4.8H8zM8.8,4H9.6V4.8H8.8zM9.6,4H10.4V4.8H9.6zM10.4,4H11.2V4.8H10.4zM12.8,4H13.6V4.8H12.8zM14.4,4H15.2V4.8H14.4zM15.2,4H16V4.8H15.2zM16,4H16.8V4.8H16zM17.6,4H18.4V4.8H17.6zM1.6,4.8H2.4V5.6H1.6zM3.2,4.8H4V5.6H3.2zM4,4.8H4.8V5.6H4zM4.8,4.8H5.6V5.6H4.8zM6.4,4.8H7.2V5.6H6.4zM8,4.8H8.8V5.6H8zM8.8,4.8H9.6V5.6H8.8zM10.4,4.8H11.2V5.6H10.4zM11.2,4.8H12V5.6H11.2zM12.8,4.8H13.6V5.6H12.8zM14.4,4.8H15.2V5.6H14.4zM15.2,4.8H16V5.6H15.2zM16,4.8H16.8V5.6H16zM17.6,4.8H18.4V5.6H17.6zM1.6,5.6H2.4V6.4H1.6zM6.4,5.6H7.2V6.4H6.4zM8,5.6H8.8V6.4H8zM9.6,5.6H10.4V6.4H9.6zM11.2,5.6H12V6.4H11.2zM12.8,5.6H13.6V6.4H12.8zM17.6,5.6H18.4V6.4H17.6zM1.6,6.4H2.4V7.2H1.6zM2.4,6.4H3.2V7.2H2.4zM3.2,6.4H4V7.2H3.2zM4,6.4H4.8V7.2H4zM4.8,6.4H5.6V7.2H4.8zM5.6,6.4H6.4V7.2H5.6zM6.4,6.4H7.2V7.2H6.4zM8,6.4H8.8V7.2H8zM9.6,6.4H10.4V7.2H9.6zM11.2,6.4H12V7.2H11.2zM12.8,6.4H13.6V7.2H12.8zM13.6,6.4H14.4V7.2H13.6zM14.4,6.4H15.2V7.2H14.4zM15.2,6.4H16V7.2H15.2zM16,6.4H16.8V7.2H16zM16.8,6.4H17.6V7.2H16.8zM17.6,6.4H18.4V7.2H17.6zM8,7.2H8.8V8H8zM8.8,7.2H9.6V8H8.8zM10.4,7.2H11.2V8H10.4zM11.2,7.2H12V8H11.2zM1.6,8H2.4V8.8H1.6zM3.2,8H4V8.8H3.2zM4,8H4.8V8.8H4zM4.8,8H5.6V8.8H4.8zM5.6,8H6.4V8.8H5.6zM6.4,8H7.2V8.8H6.4zM8.8,8H9.6V8.8H8.8zM9.6,8H10.4V8.8H9.6zM11.2,8H12V8.8H11.2zM12.8,8H13.6V8.8H12.8zM13.6,8H14.4V8.8H13.6zM14.4,8H15.2V8.8H14.4zM15.2,8H16V8.8H15.2zM16,8H16.8V8.8H16zM1.6,8.8H2.4V9.6H1.6zM3.2,8.8H4V9.6H3.2zM4,8.8H4.8V9.6H4zM5.6,8.8H6.4V9.6H5.6zM7.2,8.8H8V9.6H7.2zM8,8.8H8.8V9.6H8zM8.8,8.8H9.6V9.6H8.8zM9.6,8.8H10.4V9.6H9.6zM11.2,8.8H12V9.6H11.2zM13.6,8.8H14.4V9.6H13.6zM15.2,8.8H16V9.6H15.2zM16,8.8H16.8V9.6H16zM16.8,8.8H17.6V9.6H16.8zM1.6,9.6H2.4V10.4H1.6zM3.2,9.6H4V10.4H3.2zM4.8,9.6H5.6V10.4H4.8zM5.6,9.6H6.4V10.4H5.6zM6.4,9.6H7.2V10.4H6.4zM7.2,9.6H8V10.4H7.2zM8,9.6H8.8V10.4H8zM10.4,9.6H11.2V10.4H10.4zM12,9.6H12.8V10.4H12zM14.4,9.6H15.2V10.4H14.4zM16,9.6H16.8V10.4H16zM16.8,9.6H17.6V10.4H16.8zM17.6,9.6H18.4V10.4H17.6zM1.6,10.4H2.4V11.2H1.6zM7.2,10.4H8V11.2H7.2zM8,10.4H8.8V11.2H8zM9.6,10.4H10.4V11.2H9.6zM13.6,10.4H14.4V11.2H13.6zM14.4,10.4H15.2V11.2H14.4zM16.8,10.4H17.6V11.2H16.8zM17.6,10.4H18.4V11.2H17.6zM4,11.2H4.8V12H4zM4.8,11.2H5.6V12H4.8zM6.4,11.2H7.2V12H6.4zM7.2,11.2H8V12H7.2zM8,11.2H8.8V12H8zM8.8,11.2H9.6V12H8.8zM9.6,11.2H10.4V12H9.6zM10.4,11.2H11.2V12H10.4zM12,11.2H12.8V12H12zM14.4,11.2H15.2V12H14.4zM15.2,11.2H16V12H15.2zM16,11.2H16.8V12H16zM17.6,11.2H18.4V12H17.6zM8,12H8.8V12.8H8zM8.8,12H9.6V12.8H8.8zM9.6,12H10.4V12.8H9.6zM10.4,12H11.2V12.8H10.4zM11.2,12H12V12.8H11.2zM12,12H12.8V12.8H12zM12.8,12H13.6V12.8H12.8zM15.2,12H16V12.8H15.2zM16.8,12H17.6V12.8H16.8zM1.6,12.8H2.4V13.6H1.6zM2.4,12.8H3.2V13.6H2.4zM3.2,12.8H4V13.6H3.2zM4,12.8H4.8V13.6H4zM4.8,12.8H5.6V13.6H4.8zM5.6,12.8H6.4V13.6H5.6zM6.4,12.8H7.2V13.6H6.4zM8.8,12.8H9.6V13.6H8.8zM9.6,12.8H10.4V13.6H9.6zM11.2,12.8H12V13.6H11.2zM12.8,12.8H13.6V13.6H12.8zM13.6,12.8H14.4V13.6H13.6zM1.6,13.6H2.4V14.4H1.6zM6.4,13.6H7.2V14.4H6.4zM8,13.6H8.8V14.4H8zM9.6,13.6H10.4V14.4H9.6zM10.4,13.6H11.2V14.4H10.4zM11.2,13.6H12V14.4H11.2zM12,13.6H12.8V14.4H12zM12.8,13.6H13.6V14.4H12.8zM17.6,13.6H18.4V14.4H17.6zM1.6,14.4H2.4V15.2H1.6zM3.2,14.4H4V15.2H3.2zM4,14.4H4.8V15.2H4zM4.8,14.4H5.6V15.2H4.8zM6.4,14.4H7.2V15.2H6.4zM8,14.4H8.8V15.2H8zM8.8,14.4H9.6V15.2H8.8zM11.2,14.4H12V15.2H11.2zM13.6,14.4H14.4V15.2H13.6zM15.2,14.4H16V15.2H15.2zM16,14.4H16.8V15.2H16zM1.6,15.2H2.4V16H1.6zM3.2,15.2H4V16H3.2zM4,15.2H4.8V16H4zM4.8,15.2H5.6V16H4.8zM6.4,15.2H7.2V16H6.4zM8,15.2H8.8V16H8zM11.2,15.2H12V16H11.2zM13.6,15.2H14.4V16H13.6zM16,15.2H16.8V16H16zM1.6,16H2.4V16.8H1.6zM3.2,16H4V16.8H3.2zM4,16H4.8V16.8H4zM4.8,16H5.6V16.8H4.8zM6.4,16H7.2V16.8H6.4zM8,16H8.8V16.8H8zM8.8,16H9.6V16.8H8.8zM10.4,16H11.2V16.8H10.4zM12,16H12.8V16.8H12zM14.4,16H15.2V16.8H14.4zM16,16H16.8V16.8H16zM1.6,16.8H2.4V17.6H1.6zM6.4,16.8H7.2V17.6H6.4zM8.8,16.8H9.6V17.6H8.8zM13.6,16.8H14.4V17.6H13.6zM14.4,16.8H15.2V17.6H14.4zM16,16.8H16.8V17.6H16zM16.8,16.8H17.6V17.6H16.8zM1.6,17.6H2.4V18.4H1.6zM2.4,17.6H3.2V18.4H2.4zM3.2,17.6H4V18.4H3.2zM4,17.6H4.8V18.4H4zM4.8,17.6H5.6V18.4H4.8zM5.6,17.6H6.4V18.4H5.6zM6.4,17.6H7.2V18.4H6.4zM8,17.6H8.8V18.4H8zM8.8,17.6H9.6V18.4H8.8zM10.4,17.6H11.2V18.4H10.4zM12,17.6H12.8V18.4H12zM14.4,17.6H15.2V18.4H14.4zM16,17.6H16.8V18.4H16z\" fill=\"#000\"/></svg>"},"Pech":{"label":"Pech Lukáš","code":"44934710","svg":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 20 20\" shape-rendering=\"crispEdges\"><rect width=\"20\" height=\"20\" fill=\"#fff\"/><path d=\"M1.6,1.6H2.4V2.4H1.6zM2.4,1.6H3.2V2.4H2.4zM3.2,1.6H4V2.4H3.2zM4,1.6H4.8V2.4H4zM4.8,1.6H5.6V2.4H4.8zM5.6,1.6H6.4V2.4H5.6zM6.4,1.6H7.2V2.4H6.4zM8.8,1.6H9.6V2.4H8.8zM11.2,1.6H12V2.4H11.2zM12.8,1.6H13.6V2.4H12.8zM13.6,1.6H14.4V2.4H13.6zM14.4,1.6H15.2V2.4H14.4zM15.2,1.6H16V2.4H15.2zM16,1.6H16.8V2.4H16zM16.8,1.6H17.6V2.4H16.8zM17.6,1.6H18.4V2.4H17.6zM1.6,2.4H2.4V3.2H1.6zM6.4,2.4H7.2V3.2H6.4zM8.8,2.4H9.6V3.2H8.8zM10.4,2.4H11.2V3.2H10.4zM11.2,2.4H12V3.2H11.2zM12.8,2.4H13.6V3.2H12.8zM17.6,2.4H18.4V3.2H17.6zM1.6,3.2H2.4V4H1.6zM3.2,3.2H4V4H3.2zM4,3.2H4.8V4H4zM4.8,3.2H5.6V4H4.8zM6.4,3.2H7.2V4H6.4zM8,3.2H8.8V4H8zM9.6,3.2H10.4V4H9.6zM10.4,3.2H11.2V4H10.4zM12.8,3.2H13.6V4H12.8zM14.4,3.2H15.2V4H14.4zM15.2,3.2H16V4H15.2zM16,3.2H16.8V4H16zM17.6,3.2H18.4V4H17.6zM1.6,4H2.4V4.8H1.6zM3.2,4H4V4.8H3.2zM4,4H4.8V4.8H4zM4.8,4H5.6V4.8H4.8zM6.4,4H7.2V4.8H6.4zM8,4H8.8V4.8H8zM8.8,4H9.6V4.8H8.8zM9.6,4H10.4V4.8H9.6zM10.4,4H11.2V4.8H10.4zM11.2,4H12V4.8H11.2zM12.8,4H13.6V4.8H12.8zM14.4,4H15.2V4.8H14.4zM15.2,4H16V4.8H15.2zM16,4H16.8V4.8H16zM17.6,4H18.4V4.8H17.6zM1.6,4.8H2.4V5.6H1.6zM3.2,4.8H4V5.6H3.2zM4,4.8H4.8V5.6H4zM4.8,4.8H5.6V5.6H4.8zM6.4,4.8H7.2V5.6H6.4zM8,4.8H8.8V5.6H8zM8.8,4.8H9.6V5.6H8.8zM9.6,4.8H10.4V5.6H9.6zM10.4,4.8H11.2V5.6H10.4zM11.2,4.8H12V5.6H11.2zM12.8,4.8H13.6V5.6H12.8zM14.4,4.8H15.2V5.6H14.4zM15.2,4.8H16V5.6H15.2zM16,4.8H16.8V5.6H16zM17.6,4.8H18.4V5.6H17.6zM1.6,5.6H2.4V6.4H1.6zM6.4,5.6H7.2V6.4H6.4zM8,5.6H8.8V6.4H8zM8.8,5.6H9.6V6.4H8.8zM9.6,5.6H10.4V6.4H9.6zM11.2,5.6H12V6.4H11.2zM12.8,5.6H13.6V6.4H12.8zM17.6,5.6H18.4V6.4H17.6zM1.6,6.4H2.4V7.2H1.6zM2.4,6.4H3.2V7.2H2.4zM3.2,6.4H4V7.2H3.2zM4,6.4H4.8V7.2H4zM4.8,6.4H5.6V7.2H4.8zM5.6,6.4H6.4V7.2H5.6zM6.4,6.4H7.2V7.2H6.4zM8,6.4H8.8V7.2H8zM9.6,6.4H10.4V7.2H9.6zM11.2,6.4H12V7.2H11.2zM12.8,6.4H13.6V7.2H12.8zM13.6,6.4H14.4V7.2H13.6zM14.4,6.4H15.2V7.2H14.4zM15.2,6.4H16V7.2H15.2zM16,6.4H16.8V7.2H16zM16.8,6.4H17.6V7.2H16.8zM17.6,6.4H18.4V7.2H17.6zM8,7.2H8.8V8H8zM8.8,7.2H9.6V8H8.8zM10.4,7.2H11.2V8H10.4zM11.2,7.2H12V8H11.2zM1.6,8H2.4V8.8H1.6zM3.2,8H4V8.8H3.2zM4,8H4.8V8.8H4zM4.8,8H5.6V8.8H4.8zM5.6,8H6.4V8.8H5.6zM6.4,8H7.2V8.8H6.4zM8.8,8H9.6V8.8H8.8zM11.2,8H12V8.8H11.2zM12.8,8H13.6V8.8H12.8zM13.6,8H14.4V8.8H13.6zM14.4,8H15.2V8.8H14.4zM15.2,8H16V8.8H15.2zM16,8H16.8V8.8H16zM1.6,8.8H2.4V9.6H1.6zM2.4,8.8H3.2V9.6H2.4zM9.6,8.8H10.4V9.6H9.6zM11.2,8.8H12V9.6H11.2zM13.6,8.8H14.4V9.6H13.6zM15.2,8.8H16V9.6H15.2zM16,8.8H16.8V9.6H16zM16.8,8.8H17.6V9.6H16.8zM2.4,9.6H3.2V10.4H2.4zM4,9.6H4.8V10.4H4zM4.8,9.6H5.6V10.4H4.8zM5.6,9.6H6.4V10.4H5.6zM6.4,9.6H7.2V10.4H6.4zM8.8,9.6H9.6V10.4H8.8zM9.6,9.6H10.4V10.4H9.6zM10.4,9.6H11.2V10.4H10.4zM12,9.6H12.8V10.4H12zM14.4,9.6H15.2V10.4H14.4zM15.2,9.6H16V10.4H15.2zM16,9.6H16.8V10.4H16zM1.6,10.4H2.4V11.2H1.6zM4,10.4H4.8V11.2H4zM4.8,10.4H5.6V11.2H4.8zM5.6,10.4H6.4V11.2H5.6zM9.6,10.4H10.4V11.2H9.6zM13.6,10.4H14.4V11.2H13.6zM14.4,10.4H15.2V11.2H14.4zM15.2,10.4H16V11.2H15.2zM16,10.4H16.8V11.2H16zM1.6,11.2H2.4V12H1.6zM3.2,11.2H4V12H3.2zM4.8,11.2H5.6V12H4.8zM5.6,11.2H6.4V12H5.6zM6.4,11.2H7.2V12H6.4zM7.2,11.2H8V12H7.2zM8,11.2H8.8V12H8zM8.8,11.2H9.6V12H8.8zM9.6,11.2H10.4V12H9.6zM10.4,11.2H11.2V12H10.4zM12,11.2H12.8V12H12zM14.4,11.2H15.2V12H14.4zM16.8,11.2H17.6V12H16.8zM17.6,11.2H18.4V12H17.6zM8,12H8.8V12.8H8zM9.6,12H10.4V12.8H9.6zM10.4,12H11.2V12.8H10.4zM11.2,12H12V12.8H11.2zM12,12H12.8V12.8H12zM12.8,12H13.6V12.8H12.8zM15.2,12H16V12.8H15.2zM16.8,12H17.6V12.8H16.8zM1.6,12.8H2.4V13.6H1.6zM2.4,12.8H3.2V13.6H2.4zM3.2,12.8H4V13.6H3.2zM4,12.8H4.8V13.6H4zM4.8,12.8H5.6V13.6H4.8zM5.6,12.8H6.4V13.6H5.6zM6.4,12.8H7.2V13.6H6.4zM8.8,12.8H9.6V13.6H8.8zM9.6,12.8H10.4V13.6H9.6zM11.2,12.8H12V13.6H11.2zM12.8,12.8H13.6V13.6H12.8zM13.6,12.8H14.4V13.6H13.6zM16,12.8H16.8V13.6H16zM1.6,13.6H2.4V14.4H1.6zM6.4,13.6H7.2V14.4H6.4zM8,13.6H8.8V14.4H8zM9.6,13.6H10.4V14.4H9.6zM10.4,13.6H11.2V14.4H10.4zM11.2,13.6H12V14.4H11.2zM12,13.6H12.8V14.4H12zM12.8,13.6H13.6V14.4H12.8zM15.2,13.6H16V14.4H15.2zM16,13.6H16.8V14.4H16zM17.6,13.6H18.4V14.4H17.6zM1.6,14.4H2.4V15.2H1.6zM3.2,14.4H4V15.2H3.2zM4,14.4H4.8V15.2H4zM4.8,14.4H5.6V15.2H4.8zM6.4,14.4H7.2V15.2H6.4zM8,14.4H8.8V15.2H8zM9.6,14.4H10.4V15.2H9.6zM11.2,14.4H12V15.2H11.2zM13.6,14.4H14.4V15.2H13.6zM15.2,14.4H16V15.2H15.2zM16,14.4H16.8V15.2H16zM1.6,15.2H2.4V16H1.6zM3.2,15.2H4V16H3.2zM4,15.2H4.8V16H4zM4.8,15.2H5.6V16H4.8zM6.4,15.2H7.2V16H6.4zM8,15.2H8.8V16H8zM9.6,15.2H10.4V16H9.6zM11.2,15.2H12V16H11.2zM13.6,15.2H14.4V16H13.6zM16,15.2H16.8V16H16zM1.6,16H2.4V16.8H1.6zM3.2,16H4V16.8H3.2zM4,16H4.8V16.8H4zM4.8,16H5.6V16.8H4.8zM6.4,16H7.2V16.8H6.4zM8,16H8.8V16.8H8zM8.8,16H9.6V16.8H8.8zM10.4,16H11.2V16.8H10.4zM12,16H12.8V16.8H12zM14.4,16H15.2V16.8H14.4zM16,16H16.8V16.8H16zM1.6,16.8H2.4V17.6H1.6zM6.4,16.8H7.2V17.6H6.4zM8.8,16.8H9.6V17.6H8.8zM9.6,16.8H10.4V17.6H9.6zM13.6,16.8H14.4V17.6H13.6zM14.4,16.8H15.2V17.6H14.4zM16,16.8H16.8V17.6H16zM16.8,16.8H17.6V17.6H16.8zM1.6,17.6H2.4V18.4H1.6zM2.4,17.6H3.2V18.4H2.4zM3.2,17.6H4V18.4H3.2zM4,17.6H4.8V18.4H4zM4.8,17.6H5.6V18.4H4.8zM5.6,17.6H6.4V18.4H5.6zM6.4,17.6H7.2V18.4H6.4zM8,17.6H8.8V18.4H8zM8.8,17.6H9.6V18.4H8.8zM10.4,17.6H11.2V18.4H10.4zM12,17.6H12.8V18.4H12zM14.4,17.6H15.2V18.4H14.4zM16,17.6H16.8V18.4H16z\" fill=\"#000\"/></svg>"},"Starý":{"label":"Starý Pavel","code":"44957992","svg":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 20 20\" shape-rendering=\"crispEdges\"><rect width=\"20\" height=\"20\" fill=\"#fff\"/><path d=\"M1.6,1.6H2.4V2.4H1.6zM2.4,1.6H3.2V2.4H2.4zM3.2,1.6H4V2.4H3.2zM4,1.6H4.8V2.4H4zM4.8,1.6H5.6V2.4H4.8zM5.6,1.6H6.4V2.4H5.6zM6.4,1.6H7.2V2.4H6.4zM8.8,1.6H9.6V2.4H8.8zM11.2,1.6H12V2.4H11.2zM12.8,1.6H13.6V2.4H12.8zM13.6,1.6H14.4V2.4H13.6zM14.4,1.6H15.2V2.4H14.4zM15.2,1.6H16V2.4H15.2zM16,1.6H16.8V2.4H16zM16.8,1.6H17.6V2.4H16.8zM17.6,1.6H18.4V2.4H17.6zM1.6,2.4H2.4V3.2H1.6zM6.4,2.4H7.2V3.2H6.4zM8,2.4H8.8V3.2H8zM9.6,2.4H10.4V3.2H9.6zM10.4,2.4H11.2V3.2H10.4zM11.2,2.4H12V3.2H11.2zM12.8,2.4H13.6V3.2H12.8zM17.6,2.4H18.4V3.2H17.6zM1.6,3.2H2.4V4H1.6zM3.2,3.2H4V4H3.2zM4,3.2H4.8V4H4zM4.8,3.2H5.6V4H4.8zM6.4,3.2H7.2V4H6.4zM8.8,3.2H9.6V4H8.8zM11.2,3.2H12V4H11.2zM12.8,3.2H13.6V4H12.8zM14.4,3.2H15.2V4H14.4zM15.2,3.2H16V4H15.2zM16,3.2H16.8V4H16zM17.6,3.2H18.4V4H17.6zM1.6,4H2.4V4.8H1.6zM3.2,4H4V4.8H3.2zM4,4H4.8V4.8H4zM4.8,4H5.6V4.8H4.8zM6.4,4H7.2V4.8H6.4zM9.6,4H10.4V4.8H9.6zM11.2,4H12V4.8H11.2zM12.8,4H13.6V4.8H12.8zM14.4,4H15.2V4.8H14.4zM15.2,4H16V4.8H15.2zM16,4H16.8V4.8H16zM17.6,4H18.4V4.8H17.6zM1.6,4.8H2.4V5.6H1.6zM3.2,4.8H4V5.6H3.2zM4,4.8H4.8V5.6H4zM4.8,4.8H5.6V5.6H4.8zM6.4,4.8H7.2V5.6H6.4zM8,4.8H8.8V5.6H8zM8.8,4.8H9.6V5.6H8.8zM9.6,4.8H10.4V5.6H9.6zM10.4,4.8H11.2V5.6H10.4zM11.2,4.8H12V5.6H11.2zM12.8,4.8H13.6V5.6H12.8zM14.4,4.8H15.2V5.6H14.4zM15.2,4.8H16V5.6H15.2zM16,4.8H16.8V5.6H16zM17.6,4.8H18.4V5.6H17.6zM1.6,5.6H2.4V6.4H1.6zM6.4,5.6H7.2V6.4H6.4zM10.4,5.6H11.2V6.4H10.4zM12.8,5.6H13.6V6.4H12.8zM17.6,5.6H18.4V6.4H17.6zM1.6,6.4H2.4V7.2H1.6zM2.4,6.4H3.2V7.2H2.4zM3.2,6.4H4V7.2H3.2zM4,6.4H4.8V7.2H4zM4.8,6.4H5.6V7.2H4.8zM5.6,6.4H6.4V7.2H5.6zM6.4,6.4H7.2V7.2H6.4zM8,6.4H8.8V7.2H8zM9.6,6.4H10.4V7.2H9.6zM11.2,6.4H12V7.2H11.2zM12.8,6.4H13.6V7.2H12.8zM13.6,6.4H14.4V7.2H13.6zM14.4,6.4H15.2V7.2H14.4zM15.2,6.4H16V7.2H15.2zM16,6.4H16.8V7.2H16zM16.8,6.4H17.6V7.2H16.8zM17.6,6.4H18.4V7.2H17.6zM8.8,7.2H9.6V8H8.8zM1.6,8H2.4V8.8H1.6zM3.2,8H4V8.8H3.2zM4.8,8H5.6V8.8H4.8zM6.4,8H7.2V8.8H6.4zM8.8,8H9.6V8.8H8.8zM9.6,8H10.4V8.8H9.6zM11.2,8H12V8.8H11.2zM14.4,8H15.2V8.8H14.4zM16.8,8H17.6V8.8H16.8zM1.6,8.8H2.4V9.6H1.6zM2.4,8.8H3.2V9.6H2.4zM3.2,8.8H4V9.6H3.2zM4,8.8H4.8V9.6H4zM4.8,8.8H5.6V9.6H4.8zM5.6,8.8H6.4V9.6H5.6zM7.2,8.8H8V9.6H7.2zM8,8.8H8.8V9.6H8zM8.8,8.8H9.6V9.6H8.8zM9.6,8.8H10.4V9.6H9.6zM10.4,8.8H11.2V9.6H10.4zM12,8.8H12.8V9.6H12zM13.6,8.8H14.4V9.6H13.6zM15.2,8.8H16V9.6H15.2zM16,8.8H16.8V9.6H16zM1.6,9.6H2.4V10.4H1.6zM4,9.6H4.8V10.4H4zM4.8,9.6H5.6V10.4H4.8zM5.6,9.6H6.4V10.4H5.6zM6.4,9.6H7.2V10.4H6.4zM8,9.6H8.8V10.4H8zM9.6,9.6H10.4V10.4H9.6zM10.4,9.6H11.2V10.4H10.4zM12,9.6H12.8V10.4H12zM12.8,9.6H13.6V10.4H12.8zM13.6,9.6H14.4V10.4H13.6zM15.2,9.6H16V10.4H15.2zM16,9.6H16.8V10.4H16zM17.6,9.6H18.4V10.4H17.6zM4.8,10.4H5.6V11.2H4.8zM5.6,10.4H6.4V11.2H5.6zM10.4,10.4H11.2V11.2H10.4zM11.2,10.4H12V11.2H11.2zM12,10.4H12.8V11.2H12zM13.6,10.4H14.4V11.2H13.6zM14.4,10.4H15.2V11.2H14.4zM15.2,10.4H16V11.2H15.2zM16.8,10.4H17.6V11.2H16.8zM3.2,11.2H4V12H3.2zM4.8,11.2H5.6V12H4.8zM6.4,11.2H7.2V12H6.4zM9.6,11.2H10.4V12H9.6zM10.4,11.2H11.2V12H10.4zM12,11.2H12.8V12H12zM12.8,11.2H13.6V12H12.8zM13.6,11.2H14.4V12H13.6zM16,11.2H16.8V12H16zM16.8,11.2H17.6V12H16.8zM8,12H8.8V12.8H8zM8.8,12H9.6V12.8H8.8zM9.6,12H10.4V12.8H9.6zM12.8,12H13.6V12.8H12.8zM16,12H16.8V12.8H16zM1.6,12.8H2.4V13.6H1.6zM2.4,12.8H3.2V13.6H2.4zM3.2,12.8H4V13.6H3.2zM4,12.8H4.8V13.6H4zM4.8,12.8H5.6V13.6H4.8zM5.6,12.8H6.4V13.6H5.6zM6.4,12.8H7.2V13.6H6.4zM9.6,12.8H10.4V13.6H9.6zM11.2,12.8H12V13.6H11.2zM14.4,12.8H15.2V13.6H14.4zM17.6,12.8H18.4V13.6H17.6zM1.6,13.6H2.4V14.4H1.6zM6.4,13.6H7.2V14.4H6.4zM9.6,13.6H10.4V14.4H9.6zM12.8,13.6H13.6V14.4H12.8zM16,13.6H16.8V14.4H16zM16.8,13.6H17.6V14.4H16.8zM17.6,13.6H18.4V14.4H17.6zM1.6,14.4H2.4V15.2H1.6zM3.2,14.4H4V15.2H3.2zM4,14.4H4.8V15.2H4zM4.8,14.4H5.6V15.2H4.8zM6.4,14.4H7.2V15.2H6.4zM8,14.4H8.8V15.2H8zM8.8,14.4H9.6V15.2H8.8zM11.2,14.4H12V15.2H11.2zM12.8,14.4H13.6V15.2H12.8zM14.4,14.4H15.2V15.2H14.4zM17.6,14.4H18.4V15.2H17.6zM1.6,15.2H2.4V16H1.6zM3.2,15.2H4V16H3.2zM4,15.2H4.8V16H4zM4.8,15.2H5.6V16H4.8zM6.4,15.2H7.2V16H6.4zM8.8,15.2H9.6V16H8.8zM9.6,15.2H10.4V16H9.6zM10.4,15.2H11.2V16H10.4zM12,15.2H12.8V16H12zM13.6,15.2H14.4V16H13.6zM15.2,15.2H16V16H15.2zM16.8,15.2H17.6V16H16.8zM1.6,16H2.4V16.8H1.6zM3.2,16H4V16.8H3.2zM4,16H4.8V16.8H4zM4.8,16H5.6V16.8H4.8zM6.4,16H7.2V16.8H6.4zM8,16H8.8V16.8H8zM9.6,16H10.4V16.8H9.6zM10.4,16H11.2V16.8H10.4zM12,16H12.8V16.8H12zM12.8,16H13.6V16.8H12.8zM13.6,16H14.4V16.8H13.6zM16,16H16.8V16.8H16zM17.6,16H18.4V16.8H17.6zM1.6,16.8H2.4V17.6H1.6zM6.4,16.8H7.2V17.6H6.4zM9.6,16.8H10.4V17.6H9.6zM10.4,16.8H11.2V17.6H10.4zM11.2,16.8H12V17.6H11.2zM12,16.8H12.8V17.6H12zM13.6,16.8H14.4V17.6H13.6zM14.4,16.8H15.2V17.6H14.4zM15.2,16.8H16V17.6H15.2zM1.6,17.6H2.4V18.4H1.6zM2.4,17.6H3.2V18.4H2.4zM3.2,17.6H4V18.4H3.2zM4,17.6H4.8V18.4H4zM4.8,17.6H5.6V18.4H4.8zM5.6,17.6H6.4V18.4H5.6zM6.4,17.6H7.2V18.4H6.4zM8,17.6H8.8V18.4H8zM9.6,17.6H10.4V18.4H9.6zM10.4,17.6H11.2V18.4H10.4zM12,17.6H12.8V18.4H12zM12.8,17.6H13.6V18.4H12.8zM13.6,17.6H14.4V18.4H13.6zM16,17.6H16.8V18.4H16zM17.6,17.6H18.4V18.4H17.6z\" fill=\"#000\"/></svg>"},"Blažek":{"label":"Blažek Ladislav","code":"44169464","svg":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 20 20\" shape-rendering=\"crispEdges\"><rect width=\"20\" height=\"20\" fill=\"#fff\"/><path d=\"M1.6,1.6H2.4V2.4H1.6zM2.4,1.6H3.2V2.4H2.4zM3.2,1.6H4V2.4H3.2zM4,1.6H4.8V2.4H4zM4.8,1.6H5.6V2.4H4.8zM5.6,1.6H6.4V2.4H5.6zM6.4,1.6H7.2V2.4H6.4zM8,1.6H8.8V2.4H8zM8.8,1.6H9.6V2.4H8.8zM12.8,1.6H13.6V2.4H12.8zM13.6,1.6H14.4V2.4H13.6zM14.4,1.6H15.2V2.4H14.4zM15.2,1.6H16V2.4H15.2zM16,1.6H16.8V2.4H16zM16.8,1.6H17.6V2.4H16.8zM17.6,1.6H18.4V2.4H17.6zM1.6,2.4H2.4V3.2H1.6zM6.4,2.4H7.2V3.2H6.4zM10.4,2.4H11.2V3.2H10.4zM11.2,2.4H12V3.2H11.2zM12.8,2.4H13.6V3.2H12.8zM17.6,2.4H18.4V3.2H17.6zM1.6,3.2H2.4V4H1.6zM3.2,3.2H4V4H3.2zM4,3.2H4.8V4H4zM4.8,3.2H5.6V4H4.8zM6.4,3.2H7.2V4H6.4zM8,3.2H8.8V4H8zM8.8,3.2H9.6V4H8.8zM9.6,3.2H10.4V4H9.6zM10.4,3.2H11.2V4H10.4zM12.8,3.2H13.6V4H12.8zM14.4,3.2H15.2V4H14.4zM15.2,3.2H16V4H15.2zM16,3.2H16.8V4H16zM17.6,3.2H18.4V4H17.6zM1.6,4H2.4V4.8H1.6zM3.2,4H4V4.8H3.2zM4,4H4.8V4.8H4zM4.8,4H5.6V4.8H4.8zM6.4,4H7.2V4.8H6.4zM8.8,4H9.6V4.8H8.8zM9.6,4H10.4V4.8H9.6zM12.8,4H13.6V4.8H12.8zM14.4,4H15.2V4.8H14.4zM15.2,4H16V4.8H15.2zM16,4H16.8V4.8H16zM17.6,4H18.4V4.8H17.6zM1.6,4.8H2.4V5.6H1.6zM3.2,4.8H4V5.6H3.2zM4,4.8H4.8V5.6H4zM4.8,4.8H5.6V5.6H4.8zM6.4,4.8H7.2V5.6H6.4zM8.8,4.8H9.6V5.6H8.8zM9.6,4.8H10.4V5.6H9.6zM11.2,4.8H12V5.6H11.2zM12.8,4.8H13.6V5.6H12.8zM14.4,4.8H15.2V5.6H14.4zM15.2,4.8H16V5.6H15.2zM16,4.8H16.8V5.6H16zM17.6,4.8H18.4V5.6H17.6zM1.6,5.6H2.4V6.4H1.6zM6.4,5.6H7.2V6.4H6.4zM8,5.6H8.8V6.4H8zM9.6,5.6H10.4V6.4H9.6zM12.8,5.6H13.6V6.4H12.8zM17.6,5.6H18.4V6.4H17.6zM1.6,6.4H2.4V7.2H1.6zM2.4,6.4H3.2V7.2H2.4zM3.2,6.4H4V7.2H3.2zM4,6.4H4.8V7.2H4zM4.8,6.4H5.6V7.2H4.8zM5.6,6.4H6.4V7.2H5.6zM6.4,6.4H7.2V7.2H6.4zM8,6.4H8.8V7.2H8zM9.6,6.4H10.4V7.2H9.6zM11.2,6.4H12V7.2H11.2zM12.8,6.4H13.6V7.2H12.8zM13.6,6.4H14.4V7.2H13.6zM14.4,6.4H15.2V7.2H14.4zM15.2,6.4H16V7.2H15.2zM16,6.4H16.8V7.2H16zM16.8,6.4H17.6V7.2H16.8zM17.6,6.4H18.4V7.2H17.6zM8.8,7.2H9.6V8H8.8zM10.4,7.2H11.2V8H10.4zM1.6,8H2.4V8.8H1.6zM3.2,8H4V8.8H3.2zM6.4,8H7.2V8.8H6.4zM7.2,8H8V8.8H7.2zM9.6,8H10.4V8.8H9.6zM10.4,8H11.2V8.8H10.4zM11.2,8H12V8.8H11.2zM13.6,8H14.4V8.8H13.6zM16,8H16.8V8.8H16zM17.6,8H18.4V8.8H17.6zM1.6,8.8H2.4V9.6H1.6zM3.2,8.8H4V9.6H3.2zM4,8.8H4.8V9.6H4zM5.6,8.8H6.4V9.6H5.6zM7.2,8.8H8V9.6H7.2zM9.6,8.8H10.4V9.6H9.6zM16,8.8H16.8V9.6H16zM16.8,8.8H17.6V9.6H16.8zM1.6,9.6H2.4V10.4H1.6zM2.4,9.6H3.2V10.4H2.4zM4,9.6H4.8V10.4H4zM4.8,9.6H5.6V10.4H4.8zM6.4,9.6H7.2V10.4H6.4zM7.2,9.6H8V10.4H7.2zM8,9.6H8.8V10.4H8zM8.8,9.6H9.6V10.4H8.8zM9.6,9.6H10.4V10.4H9.6zM12.8,9.6H13.6V10.4H12.8zM15.2,9.6H16V10.4H15.2zM16.8,9.6H17.6V10.4H16.8zM2.4,10.4H3.2V11.2H2.4zM3.2,10.4H4V11.2H3.2zM11.2,10.4H12V11.2H11.2zM14.4,10.4H15.2V11.2H14.4zM15.2,10.4H16V11.2H15.2zM16,10.4H16.8V11.2H16zM16.8,10.4H17.6V11.2H16.8zM17.6,10.4H18.4V11.2H17.6zM1.6,11.2H2.4V12H1.6zM3.2,11.2H4V12H3.2zM4,11.2H4.8V12H4zM5.6,11.2H6.4V12H5.6zM6.4,11.2H7.2V12H6.4zM8.8,11.2H9.6V12H8.8zM12.8,11.2H13.6V12H12.8zM16,11.2H16.8V12H16zM16.8,11.2H17.6V12H16.8zM8,12H8.8V12.8H8zM9.6,12H10.4V12.8H9.6zM10.4,12H11.2V12.8H10.4zM12,12H12.8V12.8H12zM12.8,12H13.6V12.8H12.8zM13.6,12H14.4V12.8H13.6zM16,12H16.8V12.8H16zM16.8,12H17.6V12.8H16.8zM1.6,12.8H2.4V13.6H1.6zM2.4,12.8H3.2V13.6H2.4zM3.2,12.8H4V13.6H3.2zM4,12.8H4.8V13.6H4zM4.8,12.8H5.6V13.6H4.8zM5.6,12.8H6.4V13.6H5.6zM6.4,12.8H7.2V13.6H6.4zM8,12.8H8.8V13.6H8zM8.8,12.8H9.6V13.6H8.8zM10.4,12.8H11.2V13.6H10.4zM11.2,12.8H12V13.6H11.2zM12,12.8H12.8V13.6H12zM13.6,12.8H14.4V13.6H13.6zM14.4,12.8H15.2V13.6H14.4zM15.2,12.8H16V13.6H15.2zM16.8,12.8H17.6V13.6H16.8zM17.6,12.8H18.4V13.6H17.6zM1.6,13.6H2.4V14.4H1.6zM6.4,13.6H7.2V14.4H6.4zM8.8,13.6H9.6V14.4H8.8zM10.4,13.6H11.2V14.4H10.4zM12,13.6H12.8V14.4H12zM12.8,13.6H13.6V14.4H12.8zM13.6,13.6H14.4V14.4H13.6zM17.6,13.6H18.4V14.4H17.6zM1.6,14.4H2.4V15.2H1.6zM3.2,14.4H4V15.2H3.2zM4,14.4H4.8V15.2H4zM4.8,14.4H5.6V15.2H4.8zM6.4,14.4H7.2V15.2H6.4zM9.6,14.4H10.4V15.2H9.6zM10.4,14.4H11.2V15.2H10.4zM11.2,14.4H12V15.2H11.2zM12,14.4H12.8V15.2H12zM12.8,14.4H13.6V15.2H12.8zM13.6,14.4H14.4V15.2H13.6zM14.4,14.4H15.2V15.2H14.4zM15.2,14.4H16V15.2H15.2zM16,14.4H16.8V15.2H16zM16.8,14.4H17.6V15.2H16.8zM17.6,14.4H18.4V15.2H17.6zM1.6,15.2H2.4V16H1.6zM3.2,15.2H4V16H3.2zM4,15.2H4.8V16H4zM4.8,15.2H5.6V16H4.8zM6.4,15.2H7.2V16H6.4zM8.8,15.2H9.6V16H8.8zM9.6,15.2H10.4V16H9.6zM1.6,16H2.4V16.8H1.6zM3.2,16H4V16.8H3.2zM4,16H4.8V16.8H4zM4.8,16H5.6V16.8H4.8zM6.4,16H7.2V16.8H6.4zM8,16H8.8V16.8H8zM8.8,16H9.6V16.8H8.8zM12.8,16H13.6V16.8H12.8zM15.2,16H16V16.8H15.2zM16,16H16.8V16.8H16zM16.8,16H17.6V16.8H16.8zM17.6,16H18.4V16.8H17.6zM1.6,16.8H2.4V17.6H1.6zM6.4,16.8H7.2V17.6H6.4zM9.6,16.8H10.4V17.6H9.6zM11.2,16.8H12V17.6H11.2zM14.4,16.8H15.2V17.6H14.4zM16.8,16.8H17.6V17.6H16.8zM1.6,17.6H2.4V18.4H1.6zM2.4,17.6H3.2V18.4H2.4zM3.2,17.6H4V18.4H3.2zM4,17.6H4.8V18.4H4zM4.8,17.6H5.6V18.4H4.8zM5.6,17.6H6.4V18.4H5.6zM6.4,17.6H7.2V18.4H6.4zM8,17.6H8.8V18.4H8zM12.8,17.6H13.6V18.4H12.8zM15.2,17.6H16V18.4H15.2zM16,17.6H16.8V18.4H16zM16.8,17.6H17.6V18.4H16.8zM17.6,17.6H18.4V18.4H17.6z\" fill=\"#000\"/></svg>"}};
 
 const BRUS_CONFIG = {
@@ -3122,15 +3585,15 @@ function renderStatsPanel() {
       statsNameView.innerHTML =
         "<div class='sectionTitle'>" + escapeHtml(person.name) + " — " + escapeHtml(String(year)) + "</div>" +
         "<div class='statsSummary'>" +
-        "<div class='tile'><div class='smallText'>Práce celkem</div><div style='font-size:20px;margin-top:4px;'>" + formatCount(person.totalWork) + "</div></div>" +
-        "<div class='tile'><div class='smallText'>Úklid celkem</div><div style='font-size:20px;margin-top:4px;'>" + formatCount(person.totalClean) + "</div></div>" +
-        "<div class='tile'><div class='smallText'>Absence celkem</div><div style='font-size:20px;margin-top:4px;'>" + formatCount(person.totalAbsence) + "</div></div>" +
-        "<div class='tile'><div class='smallText'>Práce + absence</div><div style='font-size:20px;margin-top:4px;'>" + formatCount(person.totalWork + person.totalAbsence) + "</div></div>" +
-        "<div class='tile'><div class='smallText'>Nejvíc pracoval na</div><div class='statsMultiLine' style='font-size:17px;margin-top:6px;font-weight:800;'>" + escapeHtml(topWork) + "</div></div>" +
-        "<div class='tile'><div class='smallText'>Nejvíc uklízel na</div><div class='statsMultiLine' style='font-size:17px;margin-top:6px;font-weight:800;'>" + escapeHtml(topClean) + "</div></div>" +
+        "<div class='tile'><div class='smallText'>Práce celkem</div><div style='font-size:14px;margin-top:4px;'>" + formatCount(person.totalWork) + "</div></div>" +
+        "<div class='tile'><div class='smallText'>Úklid celkem</div><div style='font-size:14px;margin-top:4px;'>" + formatCount(person.totalClean) + "</div></div>" +
+        "<div class='tile'><div class='smallText'>Absence celkem</div><div style='font-size:14px;margin-top:4px;'>" + formatCount(person.totalAbsence) + "</div></div>" +
+        "<div class='tile'><div class='smallText'>Práce + absence</div><div style='font-size:14px;margin-top:4px;'>" + formatCount(person.totalWork + person.totalAbsence) + "</div></div>" +
+        "<div class='tile'><div class='smallText'>Nejvíc pracoval na</div><div class='statsMultiLine' style='font-size:14px;margin-top:6px;font-weight:800;'>" + escapeHtml(topWork) + "</div></div>" +
+        "<div class='tile'><div class='smallText'>Nejvíc uklízel na</div><div class='statsMultiLine' style='font-size:14px;margin-top:6px;font-weight:800;'>" + escapeHtml(topClean) + "</div></div>" +
         "</div>" +
-        "<div class='tableWrap'><table class='statsTable'><thead><tr><th>Stroj</th><th>Práce</th><th>Úklid</th><th>Absence</th></tr></thead><tbody>" +
-        stats.machineOrder.map(machine => "<tr><td>" + escapeHtml(machine) + "</td><td>" + formatCount(person.work[machine] || 0) + "</td><td>" + formatCount(person.clean[machine] || 0) + "</td><td>" + formatCount(person.absence[machine] || 0) + "</td></tr>").join("") +
+        "<div class='tableWrap'><table class='statsTable'><thead><tr><th>Stroj</th><th>Práce</th><th>Úklid</th></tr></thead><tbody>" +
+        stats.machineOrder.map(machine => "<tr><td>" + escapeHtml(machine) + "</td><td>" + formatCount(person.work[machine] || 0) + "</td><td>" + formatCount(person.clean[machine] || 0) + "</td></tr>").join("") +
         "</tbody></table></div>";
     } else {
       statsNameView.innerHTML = "";
@@ -3160,8 +3623,8 @@ function renderStatsPanel() {
     statsMachineView.innerHTML = [
       "<div class='sectionTitle'>" + escapeHtml(machine) + "</div>",
       "<div class='statsSummary'>",
-      "<div class='tile'><div class='smallText'>Letos nejvíc uklízeli</div><div class='statsMultiLine' style='font-size:20px;margin-top:6px;'>" + escapeHtml(leaderNames) + "</div></div>",
-      "<div class='tile'><div class='smallText'>Top 3 práce</div><div class='statsMultiLine' style='font-size:16px;margin-top:6px;line-height:1.35;font-weight:800;'>" + escapeHtml(topWorkersText) + "</div></div>",
+      "<div class='tile'><div class='smallText'>Letos nejvíc uklízeli</div><div class='statsMultiLine' style='font-size:14px;margin-top:6px;'>" + escapeHtml(leaderNames) + "</div></div>",
+      "<div class='tile'><div class='smallText'>Top 3 práce</div><div class='statsMultiLine' style='font-size:12px;margin-top:6px;line-height:1.25;font-weight:800;'>" + escapeHtml(topWorkersText) + "</div></div>",
       "</div>"
     ].join('');
   } else {
@@ -3305,7 +3768,7 @@ function getTodayAbsenceNames(now) {
 function updateShift() {
   if (typeof updateDashboard === "function") updateDashboard();
 }</script>
-<script type="text/plain" id="src-dashboard-js">// Extracted dashboard logic (v1(269))
+<script type="text/plain" id="src-dashboard-js">// Extracted dashboard logic (v1(273))
 function updateDashboard() {
   const now = typeof getPragueNow === "function" ? getPragueNow(new Date()) : new Date();
   const active = getActiveShiftNow(now);
@@ -3467,6 +3930,8 @@ function scheduleDashboardInitialPaint() {
 }
 
 function forceHomeRefresh() {
+  const activePage = document.querySelector('.page.active')?.id || "";
+  if (typeof app !== 'undefined' && app.homeBootSuppressed && activePage !== "home") return;
   if (typeof showPage === 'function') showPage('home');
   if (typeof refreshHomeScreen === 'function') refreshHomeScreen();
   else if (typeof updateDashboard === 'function') updateDashboard();
@@ -3543,8 +4008,7 @@ window.addEventListener('visibilitychange', () => {
     bootHomeRefresh();
   }
 });
-window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
-</script>
+window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;</script>
 
 <script type="text/plain" id="src-soustruhy-js">function resetSoustruhy() {
   ["lis_first", "lis_plan", "v126_first", "v126_plan", "v106_first", "v106_plan", "v106_c1", "v106_c2", "v106_c3", "v106_c4"].forEach(id => {
@@ -3556,6 +4020,7 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
     if (el) el.innerHTML = "";
   });
   app.soustruhMode = "lis";
+  app.soustruhPlan = String(typeof getSoustruhDefaultPlan === "function" ? getSoustruhDefaultPlan() : 1216);
   app.soustruh126Start = 32;
   app.soustruh106Counts = ["", "", "", ""];
   renderSoustruhy();
@@ -3608,12 +4073,37 @@ function renderFinishResult(outId, label, pieces, seconds, extraLine) {
     "<div class='smallText'>Za " + durationText + " · " + formatCount(pieces) + " ks / " + dosesText + " dávek" + (extraLine ? " · " + escapeHtml(extraLine) : "") + "</div>";
 }
 
-function estimateBrusSecondsForPieces(pieces, cfg) {
+function estimateBrusSecondsForPieces(pieces, cfg, doneInBatch, piecesToDress) {
   const pieceSec = Number(cfg.pieceSec) || 0;
   const dressEvery = Math.max(1, Math.floor(Number(cfg.dressEvery) || 1));
   const dressSec = Math.max(0, Number(cfg.dressSec) || 0);
-  if (pieceSec <= 0 || pieces <= 0) return 0;
-  return pieces * pieceSec + Math.floor((pieces - 1) / dressEvery) * dressSec;
+  const targetPieces = Math.max(0, Math.floor(Number(pieces) || 0));
+  const alreadyDone = Math.max(0, Math.floor(Number(doneInBatch) || 0));
+
+  if (pieceSec <= 0 || targetPieces <= 0) return 0;
+
+  let remaining = Math.max(0, targetPieces - alreadyDone);
+  if (remaining <= 0) return 0;
+
+  let firstRun = Math.max(1, Math.floor(Number(piecesToDress) || 0));
+  if (!firstRun) {
+    const modulo = alreadyDone % dressEvery;
+    firstRun = modulo ? (dressEvery - modulo) : dressEvery;
+  }
+
+  let seconds = 0;
+  const runFirst = Math.min(remaining, firstRun);
+  seconds += runFirst * pieceSec;
+  remaining -= runFirst;
+
+  while (remaining > 0) {
+    seconds += dressSec;
+    const run = Math.min(remaining, dressEvery);
+    seconds += run * pieceSec;
+    remaining -= run;
+  }
+
+  return seconds;
 }
 
 
@@ -3674,6 +4164,8 @@ function calcBrusy() {
 
 function calcBrusyFinish() {
   const target = resolveTargetPieces("b_finish_kusy", "b_finish_davky");
+  const doneInBatch = Math.max(0, parseInt(document.getElementById("davka")?.value, 10) || 0);
+  const piecesToDress = Math.max(0, parseInt(document.getElementById("orovnani")?.value, 10) || 0);
   const out = document.getElementById("outBTime");
   if (!out) return;
   if (!target.pieces) {
@@ -3681,13 +4173,17 @@ function calcBrusyFinish() {
     return;
   }
   const cfg = getBrusConfig(app.machine, app.prog);
-  const seconds = estimateBrusSecondsForPieces(target.pieces, cfg);
+  const seconds = estimateBrusSecondsForPieces(target.pieces, cfg, doneInBatch, piecesToDress);
+  const remainingPieces = Math.max(0, target.pieces - doneInBatch);
   const now = new Date();
   const finish = new Date(now.getTime() + seconds * 1000);
+  const preciseNote = (doneInBatch > 0 || piecesToDress > 0)
+    ? (" · přesněji s rozdělanou dávkou" + (doneInBatch > 0 ? (" " + formatCount(doneInBatch) + " ks hotovo") : "") + (piecesToDress > 0 ? (", do orovnání " + formatCount(piecesToDress) + " ks") : ""))
+    : "";
   out.innerHTML =
     "<div><b>" + escapeHtml(app.machine + " / " + cfg.label) + "</b></div>" +
     "<div style='margin-top:6px;'>Hotovo v <b>" + formatClockTime(finish) + "</b></div>" +
-    "<div class='smallText'>Za " + formatDuration(seconds * 1000) + " · " + formatCount(target.pieces) + " ks / " + formatDoses(target.pieces) + " dávek</div>";
+    "<div class='smallText'>Za " + formatDuration(seconds * 1000) + " · " + formatCount(remainingPieces) + " ks / " + formatDoses(remainingPieces) + " dávek" + escapeHtml(preciseNote) + "</div>";
   saveRotationData();
 }
 
@@ -3837,9 +4333,10 @@ function renderSoustruhy() {
   const v106C3 = document.getElementById('v106_c3');
   const v106C4 = document.getElementById('v106_c4');
 
-  if (lisPlan && !lisPlan.value) lisPlan.value = app.soustruhPlan || '1216';
-  if (v126Plan && !v126Plan.value) v126Plan.value = app.soustruhPlan || '1216';
-  if (v106Plan && !v106Plan.value) v106Plan.value = app.soustruhPlan || '1216';
+  const defaultPlan = String(app.soustruhPlan || (typeof getSoustruhDefaultPlan === "function" ? getSoustruhDefaultPlan() : 1216));
+  if (lisPlan && !lisPlan.value) lisPlan.value = defaultPlan;
+  if (v126Plan && !v126Plan.value) v126Plan.value = defaultPlan;
+  if (v106Plan && !v106Plan.value) v106Plan.value = defaultPlan;
   if (v106C1 && !v106C1.value) v106C1.value = app.soustruh106Counts[0] || '';
   if (v106C2 && !v106C2.value) v106C2.value = app.soustruh106Counts[1] || '';
   if (v106C3 && !v106C3.value) v106C3.value = app.soustruh106Counts[2] || '';
@@ -3901,8 +4398,7 @@ function calcSoustruhy106() {
   const batches = getSoustruhBatchList(first, counts, plan);
   out.innerHTML = renderBatchResult('Volné 106 ks', batches, plan, first);
   saveRotationData();
-}
-</script>
+}</script>
 <script type="text/plain" id="src-brusy-js">function renderBrusy() {
   document.querySelectorAll("#brusy .bbtn").forEach(b => {
     b.classList.remove("activeMachine", "activeIndex", "activeChoice");
@@ -4295,6 +4791,24 @@ function getPersonScheduleEntries(name) {
     return date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0") + "-" + String(date.getDate()).padStart(2, "0");
   };
 
+  const getPragueDateParts = () => {
+    try {
+      const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Europe/Prague',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      }).formatToParts(new Date());
+      const out = {};
+      parts.forEach(part => {
+        if (part.type !== 'literal') out[part.type] = parseInt(part.value, 10);
+      });
+      return out.year && out.month && out.day ? out : null;
+    } catch (err) {
+      return null;
+    }
+  };
+
   const priorityOf = (entry) => {
     if (entry && entry.absence) return 3;
     if ((entry && entry.section) === "soft") return 2;
@@ -4357,11 +4871,35 @@ function getPersonScheduleEntries(name) {
     })
     .sort((a, b) => a.sortDate.localeCompare(b.sortDate));
 
-  const now = new Date();
-  let currentIdx = entries.findIndex(entry => {
-    const end = getPersonScheduleEntryEnd(entry);
-    return end && now < end;
-  });
+  const todayParts = getPragueDateParts() || (() => {
+    const nowFallback = new Date();
+    return {
+      year: nowFallback.getFullYear(),
+      month: nowFallback.getMonth() + 1,
+      day: nowFallback.getDate()
+    };
+  })();
+
+  const todayKey = todayParts.year * 10000 + todayParts.month * 100 + todayParts.day;
+  const entryKey = (entry) => {
+    const date = new Date(entry.sortDate);
+    if (Number.isNaN(date.getTime())) return -1;
+    return date.getFullYear() * 10000 + (date.getMonth() + 1) * 100 + date.getDate();
+  };
+
+  let currentIdx = entries.findIndex(entry => entryKey(entry) === todayKey);
+  if (currentIdx === -1) {
+    let bestIdx = -1;
+    let bestKey = -Infinity;
+    entries.forEach((entry, idx) => {
+      const key = entryKey(entry);
+      if (key <= todayKey && key > bestKey) {
+        bestKey = key;
+        bestIdx = idx;
+      }
+    });
+    currentIdx = bestIdx;
+  }
   if (currentIdx === -1 && entries.length) currentIdx = entries.length - 1;
 
   return { entries, currentIdx };
@@ -4939,7 +5477,7 @@ ${clone.outerHTML}`;
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "rotace_v1(269).zip";
+    a.download = "rotace_a_kalkulacky_v1_277.zip";
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -4952,8 +5490,7 @@ ${clone.outerHTML}`;
 
 document.getElementById("exportBtn")?.addEventListener("click", () => {
   exportCurrentHtml();
-});
-</script>
+});</script>
 <script type="text/plain" id="src-styles-base-css">:root{
   --bg:#0b0f0c;
   --panel:#151a17;
@@ -6085,9 +6622,16 @@ input{
   color:rgba(255,255,255,.72);
 }
 
-.dashboardHeroBar{
+.dashboardHeroBarRow{
   margin-top:12px;
-  width:100%;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.dashboardHeroBar{
+  flex:1 1 auto;
+  min-width:0;
   height:7px;
   border-radius:999px;
   overflow:hidden;
@@ -6100,6 +6644,17 @@ input{
   border-radius:inherit;
   background:linear-gradient(90deg, #8cff8f, #69f06f);
   box-shadow:0 0 16px rgba(124,255,124,.25);
+}
+
+.dashboardHeroBarPercent{
+  flex:none;
+  min-width:42px;
+  text-align:right;
+  font-size:12px;
+  font-weight:800;
+  line-height:1;
+  color:rgba(223,255,219,.78);
+  letter-spacing:.02em;
 }
 
 .dashboardGrid{
@@ -6235,14 +6790,14 @@ input{
   color:#fff4e4;
 }
 #brusy .indexGrid .bbtn.adv{
-  background:linear-gradient(180deg, rgba(72,118,170,.48), rgba(16,21,29,.98));
-  border-color:rgba(121,169,228,.42);
-  color:#dfeaff;
+  background:linear-gradient(180deg, rgba(58,79,101,.24), rgba(16,20,24,.98));
+  border-color:rgba(128,150,170,.18);
+  color:rgba(228,236,242,.82);
 }
 #brusy .indexGrid .bbtn.aev{
-  background:linear-gradient(180deg, rgba(51,104,67,.48), rgba(16,22,18,.98));
-  border-color:rgba(117,189,138,.40);
-  color:#e4ffee;
+  background:linear-gradient(180deg, rgba(44,68,50,.22), rgba(16,20,18,.98));
+  border-color:rgba(104,132,114,.16);
+  color:rgba(226,240,230,.82);
 }
 #brusy .indexGrid .bbtn.activeIndex{
   outline:2px solid rgba(124,255,124,.70);
@@ -6254,7 +6809,6 @@ input{
 }
 
 #rotaceNamesPanel .listGrid,
-#statsNameGrid,
 #statsMachineGrid{
   grid-template-columns:repeat(auto-fit, minmax(68px, 1fr));
   gap:8px;
@@ -6266,12 +6820,19 @@ input{
 }
 
 #rotaceNamesPanel .listItem,
-#statsNameGrid .listItem,
 #statsMachineGrid .listItem{
   justify-content:center;
   text-align:center;
   min-height:38px;
   padding:7px 5px;
+  border-radius:16px;
+}
+
+#statsNameGrid .listItem{
+  justify-content:center;
+  text-align:center;
+  min-height:38px;
+  padding:7px 4px;
   border-radius:16px;
 }
 
@@ -6694,9 +7255,12 @@ input{
 
 /* v1(221) rotace/statistics compact tiles */
 #rotaceNamesPanel .listGrid,
-#statsNameGrid.listGrid,
 #statsMachineGrid.listGrid{
   grid-template-columns:repeat(auto-fit, minmax(68px, 1fr));
+  gap:8px;
+}
+#statsNameGrid.listGrid{
+  grid-template-columns:repeat(5, minmax(0, 1fr));
   gap:8px;
 }
 
@@ -6801,8 +7365,8 @@ input{
 }
 
 .dashboardIconInline{
-  width:24px;
-  height:24px;
+  width:44px;
+  height:44px;
   flex:none;
   color:var(--green2);
   opacity:.95;
@@ -7016,9 +7580,9 @@ input{
 }
 
 #home .dashboardIconInline{
-  width:24px;
-  height:24px;
-  flex:0 0 20px;
+  width:44px;
+  height:44px;
+  flex:0 0 44px;
 }
 
 #home .dashboardCardFood .dashboardMeta{
@@ -7545,7 +8109,7 @@ body.reduceMotion *::after{
 }
 
 
-/* v1(258) dashboard icons + home repaint */
+/* v1(247) adjust dashboard icon size and bottom nav icon fill */
 #home .dashboardCard .dashboardIcon.dashboardIconInline,
 .dashboardCard .dashboardIcon.dashboardIconInline{
   width:20px !important;
@@ -7575,7 +8139,30 @@ body.reduceMotion *::after{
   transform:translateY(-12px) !important;
   display:block !important;
 }
-</script>
+
+
+/* v1(259) dashboard + nav icon polish */
+.dashboardTop{align-items:center !important;}
+.dashboardLabelRow{gap:8px !important; align-items:center !important;}
+#home .dashboardCard .dashboardIcon.dashboardIconInline,
+.dashboardCard .dashboardIcon.dashboardIconInline{width:44px !important; height:44px !important; flex:0 0 44px !important; align-self:center !important;}
+#home .dashboardCard .dashboardIcon.dashboardIconInline img,
+#home .dashboardCard .dashboardIcon.dashboardIconInline svg,
+.dashboardCard .dashboardIcon.dashboardIconInline img,
+.dashboardCard .dashboardIcon.dashboardIconInline svg{width:100% !important; height:100% !important; object-fit:contain !important; display:block !important;}
+.bottomNavBtn{color:rgba(186,190,186,.58) !important;}
+.bottomNavBtn.active{color:var(--green2) !important;}
+.bottomNavBtn .bottomNavIcon,
+.bottomNavBtn .bottomNavIcon svg{width:22px !important; height:22px !important; display:block !important; color:currentColor !important; fill:none !important; stroke:currentColor !important; stroke-width:1.9 !important; stroke-linecap:round !important; stroke-linejoin:round !important;}
+.bottomNavBtn .bottomNavIcon{flex:0 0 22px !important; line-height:0 !important; font-size:0 !important;}
+.bottomNavBtn .bottomNavLabel{color:currentColor !important;}
+.bottomNavBtn:not(.active) .bottomNavIcon,
+.bottomNavBtn:not(.active) .bottomNavLabel,
+.bottomNavMenuBtn:not(.active) .moreIcon{color:rgba(186,190,186,.58) !important;}
+.bottomNavBtn.active .bottomNavIcon,
+.bottomNavBtn.active .bottomNavLabel,
+.bottomNavMenuBtn.active .moreIcon{color:var(--green2) !important;}
+.bottomNavMenuBtn .moreIcon{width:24px !important; height:24px !important; transform:translateY(-12px) !important; display:block !important;}</script>
 <script type="text/plain" id="src-styles-responsive-css">@media (max-width: 700px) {
   body {
     padding: calc(26px + env(safe-area-inset-top)) 10px 10px;
@@ -7822,9 +8409,13 @@ body.reduceMotion *::after{
 
 @media (max-width: 700px) {
   #rotaceNamesPanel .listGrid,
-  #statsNameGrid.listGrid,
   #statsMachineGrid.listGrid {
     grid-template-columns: repeat(auto-fit, minmax(74px, 1fr));
+    gap: 7px;
+  }
+
+  #statsNameGrid.listGrid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 7px;
   }
 

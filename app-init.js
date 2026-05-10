@@ -118,6 +118,9 @@ function initAppInitBindings() {
   if (typeof refreshInitialUI === "function") refreshInitialUI();
 
   const bootHome = () => {
+    if (typeof app !== "undefined" && app.homeBootSuppressed && (document.querySelector(".page.active")?.id || "") !== "home") {
+      return;
+    }
     try {
       if (typeof showPage === "function") showPage("home");
       if (typeof scheduleHomeRefresh === "function") {

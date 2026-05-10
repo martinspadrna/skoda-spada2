@@ -243,11 +243,19 @@
 
 
 @media (max-width: 700px) {
-  #rotaceNamesPanel .listGrid,
-  #statsNameGrid.listGrid,
-  #statsMachineGrid.listGrid {
+  #rotaceNamesPanel .listGrid {
     grid-template-columns: repeat(auto-fit, minmax(74px, 1fr));
     gap: 7px;
+  }
+
+  #statsNameGrid.listGrid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  #statsMachineGrid.listGrid {
+    grid-template-columns: repeat(auto-fit, minmax(58px, 1fr));
+    gap: 6px;
   }
 
   .rotaceMiniCard{

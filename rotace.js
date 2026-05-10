@@ -145,6 +145,24 @@ function getPersonScheduleEntries(name) {
     return date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0") + "-" + String(date.getDate()).padStart(2, "0");
   };
 
+  const getPragueDateParts = () => {
+    try {
+      const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Europe/Prague',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      }).formatToParts(new Date());
+      const out = {};
+      parts.forEach(part => {
+        if (part.type !== 'literal') out[part.type] = parseInt(part.value, 10);
+      });
+      return out.year && out.month && out.day ? out : null;
+    } catch (err) {
+      return null;
+    }
+  };
+
   const priorityOf = (entry) => {
     if (entry && entry.absence) return 3;
     if ((entry && entry.section) === "soft") return 2;
@@ -207,11 +225,35 @@ function getPersonScheduleEntries(name) {
     })
     .sort((a, b) => a.sortDate.localeCompare(b.sortDate));
 
-  const now = new Date();
-  let currentIdx = entries.findIndex(entry => {
-    const end = getPersonScheduleEntryEnd(entry);
-    return end && now < end;
-  });
+  const todayParts = getPragueDateParts() || (() => {
+    const nowFallback = new Date();
+    return {
+      year: nowFallback.getFullYear(),
+      month: nowFallback.getMonth() + 1,
+      day: nowFallback.getDate()
+    };
+  })();
+
+  const todayKey = todayParts.year * 10000 + todayParts.month * 100 + todayParts.day;
+  const entryKey = (entry) => {
+    const date = new Date(entry.sortDate);
+    if (Number.isNaN(date.getTime())) return -1;
+    return date.getFullYear() * 10000 + (date.getMonth() + 1) * 100 + date.getDate();
+  };
+
+  let currentIdx = entries.findIndex(entry => entryKey(entry) === todayKey);
+  if (currentIdx === -1) {
+    let bestIdx = -1;
+    let bestKey = -Infinity;
+    entries.forEach((entry, idx) => {
+      const key = entryKey(entry);
+      if (key <= todayKey && key > bestKey) {
+        bestKey = key;
+        bestIdx = idx;
+      }
+    });
+    currentIdx = bestIdx;
+  }
   if (currentIdx === -1 && entries.length) currentIdx = entries.length - 1;
 
   return { entries, currentIdx };
@@ -414,6 +456,14 @@ function showMonthByKey(monthKey) {
   renderMonth(monthKey);
 }
 
+function initRotaceCurrentMonth() {
+  const currentYear = new Date().getFullYear();
+  const currentMonth = monthKeyFromYearMonth(currentYear, new Date().getMonth() + 1);
+  const currentYearMonths = getMonthsForYear(app.rotation, currentYear);
+  app.selectedYear = getAvailableYears(app.rotation).includes(currentYear) ? currentYear : getInitialSelectedYear(app.rotation);
+  app.selectedMonth = currentYearMonths.includes(currentMonth) ? currentMonth : (currentYearMonths[0] || null);
+  app.importYear = app.selectedYear;
+}
 function refreshInitialUI() {
   restoreInputs();
   renderBrusy();

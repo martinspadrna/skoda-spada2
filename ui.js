@@ -111,9 +111,9 @@ function ensureTicTacToeStyles() {
   align-items:stretch;
   justify-content:center;
   padding:0;
-  background:rgba(5,8,7,.72);
-  backdrop-filter:blur(18px) saturate(145%);
-  -webkit-backdrop-filter:blur(18px) saturate(145%);
+  background:rgba(5,8,7,.78);
+  backdrop-filter:blur(16px) saturate(145%);
+  -webkit-backdrop-filter:blur(16px) saturate(145%);
 }
 .tttOverlay.isVisible{display:flex;}
 .tttShell{
@@ -121,7 +121,7 @@ function ensureTicTacToeStyles() {
   height:100%;
   border:none;
   border-radius:0;
-  background:linear-gradient(180deg, rgba(16,24,20,.98), rgba(10,14,12,.96));
+  background:linear-gradient(180deg, rgba(10,14,12,.99), rgba(7,10,9,.98));
   box-shadow:0 24px 80px rgba(0,0,0,.55);
   overflow:hidden;
   display:flex;
@@ -132,9 +132,10 @@ function ensureTicTacToeStyles() {
   align-items:center;
   justify-content:space-between;
   gap:12px;
-  padding:16px 16px 12px;
-  border-bottom:1px solid rgba(255,255,255,.06);
+  padding:14px 14px 10px;
+  border-bottom:1px solid rgba(124,255,124,.10);
   flex:0 0 auto;
+  background:rgba(255,255,255,.02);
 }
 .tttHeaderTitle{
   display:flex;
@@ -155,17 +156,17 @@ function ensureTicTacToeStyles() {
   width:38px;
   height:38px;
   border:none;
-  border-radius:14px;
-  background:rgba(255,255,255,.06);
+  border-radius:0;
+  background:rgba(255,255,255,.05);
   color:#e7fff0;
-  font-size:24px;
+  font-size:26px;
   line-height:1;
 }
 .tttContent{
   flex:1;
   min-height:0;
   overflow:hidden;
-  padding:12px calc(12px + env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left));
+  padding:0;
   display:flex;
   flex-direction:column;
 }
@@ -173,15 +174,23 @@ function ensureTicTacToeStyles() {
 .tttGameScreen{
   display:flex;
   flex-direction:column;
-  gap:16px;
+  gap:12px;
   min-height:0;
   flex:1;
+}
+.tttStartScreen{
+  padding:14px;
+  overflow:auto;
+}
+.tttGameScreen{
+  position:relative;
+  padding:0;
 }
 .tttCard{
   border:1px solid rgba(124,255,124,.12);
   background:rgba(255,255,255,.03);
-  border-radius:22px;
-  padding:16px;
+  border-radius:0;
+  padding:14px;
 }
 .tttSectionTitle{
   margin:0 0 12px;
@@ -207,7 +216,7 @@ function ensureTicTacToeStyles() {
   border:1px solid rgba(124,255,124,.16);
   background:rgba(255,255,255,.04);
   color:#e7fff0;
-  border-radius:16px;
+  border-radius:0;
   padding:10px 12px;
   font-size:15px;
   font-weight:700;
@@ -225,30 +234,42 @@ function ensureTicTacToeStyles() {
   line-height:1.45;
 }
 .tttStatus{
+  position:absolute;
+  top:12px;
+  left:12px;
+  right:12px;
+  z-index:2;
   min-height:24px;
   color:#7CFF7C;
   font-size:14px;
   font-weight:700;
   text-align:center;
-  flex:0 0 auto;
+  background:rgba(7,10,9,.72);
+  border:1px solid rgba(124,255,124,.12);
+  padding:8px 12px;
+  pointer-events:none;
 }
 .tttBoardWrap{
-  flex:1;
-  min-height:0;
+  position:absolute;
+  inset:56px 12px 88px;
   display:flex;
-  align-items:stretch;
+  align-items:center;
   justify-content:center;
+  min-height:0;
+  overflow:hidden;
+  padding-bottom:2px;
 }
 .tttBoard{
   width:100%;
   height:100%;
   display:grid;
-  grid-template-columns:repeat(16, var(--tttCellSize, 24px));
-  grid-template-rows:repeat(11, var(--tttCellSize, 24px));
-  gap:3px;
+  grid-template-columns:repeat(10, var(--tttCellSize, 24px));
+  grid-template-rows:repeat(18, var(--tttCellSize, 24px));
+  gap:0;
   justify-content:center;
   align-content:center;
   overflow:hidden;
+  box-shadow:inset 0 0 0 1px rgba(124,255,124,.22);
 }
 .tttCell{
   appearance:none;
@@ -258,30 +279,128 @@ function ensureTicTacToeStyles() {
   height:var(--tttCellSize, 24px);
   box-sizing:border-box;
   border:1px solid rgba(124,255,124,.14);
-  background:rgba(255,255,255,.04);
-  border-radius:12px;
+  background:rgba(255,255,255,.02);
+  border-radius:0;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:calc(var(--tttCellSize, 24px) * .56);
-  font-weight:800;
+  font-size:calc(var(--tttCellSize, 24px) * .74);
+  font-weight:900;
   line-height:1;
+  text-align:center;
   color:#7CFF7C;
   text-shadow:0 0 10px rgba(124,255,124,.24), 0 0 18px rgba(124,255,124,.18);
-  transition:transform .16s ease, background .16s ease, border-color .16s ease;
+  transition:transform .16s ease, background .16s ease, border-color .16s ease, box-shadow .16s ease;
 }
 .tttCell:active{transform:scale(.98);}
 .tttCell.isFilled{
-  background:rgba(124,255,124,.06);
+  background:rgba(124,255,124,.05);
+}
+.tttCell.isX{
+  color:#7CFF7C;
+  text-shadow:0 0 10px rgba(124,255,124,.34), 0 0 18px rgba(124,255,124,.24), 0 0 28px rgba(124,255,124,.18);
+}
+.tttCell.isO{
+  color:#ff4040;
+  text-shadow:0 0 10px rgba(255,64,64,.34), 0 0 18px rgba(255,64,64,.24), 0 0 28px rgba(255,64,64,.18);
 }
 .tttCell.isWinner{
   background:rgba(124,255,124,.12);
   border-color:rgba(124,255,124,.5);
+  box-shadow:inset 0 0 0 1px rgba(124,255,124,.25), 0 0 18px rgba(124,255,124,.18);
+}
+.tttWinModal{
+  position:absolute;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:18px 14px calc(18px + env(safe-area-inset-bottom));
+  background:rgba(4,7,6,.66);
+  backdrop-filter:blur(10px) saturate(135%);
+  -webkit-backdrop-filter:blur(10px) saturate(135%);
+  z-index:4;
+}
+.tttWinCard{
+  width:min(100%, 380px);
+  border:1px solid rgba(124,255,124,.16);
+  border-radius:22px;
+  background:linear-gradient(180deg, rgba(13,18,15,.98), rgba(8,12,10,.98));
+  box-shadow:0 22px 60px rgba(0,0,0,.48);
+  padding:16px;
+}
+.tttWinText{
+  margin-top:6px;
+  color:rgba(231,255,240,.76);
+  font-size:13px;
+  line-height:1.45;
+}
+.tttWinLabel{
+  display:block;
+  margin-top:12px;
+  font-size:12px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:rgba(231,255,240,.62);
+}
+.tttWinInput{
+  width:100%;
+  margin-top:8px;
+  min-height:44px;
+  border-radius:14px;
+  border:1px solid rgba(124,255,124,.18);
+  background:rgba(255,255,255,.04);
+  color:#eaf7ee;
+  padding:10px 12px;
+  font:inherit;
+  font-size:16px;
+  outline:none;
+}
+.tttWinInput:focus{
+  border-color:rgba(124,255,124,.48);
+  box-shadow:0 0 0 3px rgba(124,255,124,.12);
+}
+.tttWinStats{
+  margin-top:12px;
+  display:grid;
+  grid-template-columns:1fr;
+  gap:8px;
+}
+.tttWinStats > div{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:9px 10px;
+  border-radius:14px;
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(124,255,124,.10);
+}
+.tttWinStats span{
+  color:rgba(231,255,240,.62);
+  font-size:12px;
+}
+.tttWinStats strong{
+  color:#eaf7ee;
+  font-size:13px;
+}
+.tttWinActions{
+  margin-top:14px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.tttWinModal.isVisible{
+  display:flex;
 }
 .tttFooter{
+  position:absolute;
+  left:12px;
+  right:12px;
+  bottom:calc(12px + env(safe-area-inset-bottom));
   display:flex;
   gap:10px;
-  flex:0 0 auto;
+  z-index:2;
 }
 .tttFooter .tttBtn{
   flex:1;
@@ -294,12 +413,12 @@ body.tttOpen{
   overflow:hidden;
 }
 @media (max-width: 520px){
-  .tttHeader{padding:14px 14px 10px;}
-  .tttContent{padding:10px calc(10px + env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) calc(10px + env(safe-area-inset-left));}
+  .tttHeader{padding:12px 12px 10px;}
+  .tttStartScreen{padding:12px;}
   .tttLevelRow{grid-template-columns:1fr;}
   .tttToggleRow{grid-template-columns:1fr;}
-  .tttBoard{gap:3px;}
-  .tttCell{font-size:clamp(12px, 3.4vw, 26px);}
+  .tttCell{font-size:clamp(18px, 7.2vw, 34px);}
+  .tttWinActions{grid-template-columns:1fr;}
 }
       `;
   document.head.appendChild(style);
@@ -318,7 +437,7 @@ function ensureTicTacToeOverlay() {
     '  <div class="tttHeader">',
     '    <div class="tttHeaderTitle">',
     '      <h2 id="tttTitle">Piškvorky</h2>',
-    '      <span>easter egg · 11 × 16 · 5 v řadě</span>',
+    '      <span>easter egg · 10 × 21 · 5 v řadě</span>',
     '    </div>',
     '    <button type="button" class="tttClose" aria-label="Zavřít">×</button>',
     '  </div>',
@@ -330,6 +449,23 @@ function ensureTicTacToeOverlay() {
     '      <div class="tttFooter">',
     '        <button type="button" class="tttBtn" id="tttRestartBtn">Nová hra</button>',
     '        <button type="button" class="tttBtn" id="tttBackBtn">Zpět</button>',
+    '      </div>',
+    '      <div class="tttWinModal" id="tttWinModal" style="display:none;">',
+    '        <div class="tttWinCard">',
+    '          <div class="tttSectionTitle">Výsledek</div>',
+    '          <div class="tttWinText">Napiš jméno a odešli výsledek výhry nad nejtvrdší AI.</div>',
+    '          <label class="tttWinLabel" for="tttWinName">Jméno</label>',
+    '          <input id="tttWinName" class="tttWinInput" type="text" autocomplete="name" maxlength="32" placeholder="Tvoje jméno">',
+    '          <div class="tttWinStats">',
+    '            <div><span>Herní režim</span><strong id="tttWinMode">—</strong></div>',
+    '            <div><span>Tahy celkem</span><strong id="tttWinMoves">—</strong></div>',
+    '            <div><span>Čas</span><strong id="tttWinTime">—</strong></div>',
+    '          </div>',
+    '          <div class="tttWinActions">',
+    '            <button type="button" class="tttBtn isActive" id="tttWinSubmit">Odeslat</button>',
+    '            <button type="button" class="tttBtn" id="tttWinCancel">Nechat být</button>',
+    '          </div>',
+    '        </div>',
     '      </div>',
     '    </div>',
     '  </div>',
@@ -365,10 +501,12 @@ function ensureTicTacToeOverlay() {
   return overlay;
 }
 
-const TTT_ROWS = 11;
-const TTT_COLS = 16;
+const TTT_ROWS = 18;
+const TTT_COLS = 10;
 const TTT_WIN_LENGTH = 5;
 const TTT_TOTAL_CELLS = TTT_ROWS * TTT_COLS;
+const TTT_HARD_WIN_EMAIL = 'martinspadrna@gmail.com';
+const TTT_HARD_WIN_KEY = 'tttHardWins';
 
 function tttGetState() {
   if (!app.tttState) {
@@ -380,7 +518,14 @@ function tttGetState() {
       turn: 'X',
       gameOver: false,
       winner: null,
-      message: ''
+      message: '',
+      startedAt: 0,
+      moveCount: 0,
+      moveCountX: 0,
+      moveCountO: 0,
+      hardWinPrompt: false,
+      hardWinStats: null,
+      hardWinName: ''
     };
   }
   return app.tttState;
@@ -510,6 +655,111 @@ function tttWinningMove(board, mark) {
   return -1;
 }
 
+function tttWinningMoves(board, mark) {
+  const moves = [];
+  for (let i = 0; i < TTT_TOTAL_CELLS; i += 1) {
+    if (board[i]) continue;
+    board[i] = mark;
+    const result = tttWinner(board).winner;
+    board[i] = '';
+    if (result === mark) moves.push(i);
+  }
+  return moves;
+}
+
+function tttCriticalThreatMoves(board, mark) {
+  const directions = [
+    [0, 1],
+    [1, 0],
+    [1, 1],
+    [1, -1]
+  ];
+  const moves = new Set();
+
+  for (let row = 0; row < TTT_ROWS; row += 1) {
+    for (let col = 0; col < TTT_COLS; col += 1) {
+      const idx = tttIndex(row, col);
+      if (board[idx] !== mark) continue;
+
+      for (const [dr, dc] of directions) {
+        const prevRow = row - dr;
+        const prevCol = col - dc;
+        if (tttInBounds(prevRow, prevCol) && board[tttIndex(prevRow, prevCol)] === mark) continue;
+
+        let length = 0;
+        let r = row;
+        let c = col;
+        while (tttInBounds(r, c) && board[tttIndex(r, c)] === mark) {
+          length += 1;
+          r += dr;
+          c += dc;
+        }
+
+        const beforeRow = row - dr;
+        const beforeCol = col - dc;
+        const afterRow = r;
+        const afterCol = c;
+        const beforeOpen = tttInBounds(beforeRow, beforeCol) && !board[tttIndex(beforeRow, beforeCol)];
+        const afterOpen = tttInBounds(afterRow, afterCol) && !board[tttIndex(afterRow, afterCol)];
+
+        if (length >= 3 && (beforeOpen || afterOpen)) {
+          if (beforeOpen) moves.add(tttIndex(beforeRow, beforeCol));
+          if (afterOpen) moves.add(tttIndex(afterRow, afterCol));
+        }
+      }
+    }
+  }
+
+  return Array.from(moves);
+}
+
+function tttOpenThreeThreatMoves(board, mark) {
+  const directions = [
+    [0, 1],
+    [1, 0],
+    [1, 1],
+    [1, -1]
+  ];
+  const moves = new Set();
+
+  for (let row = 0; row < TTT_ROWS; row += 1) {
+    for (let col = 0; col < TTT_COLS; col += 1) {
+      const idx = tttIndex(row, col);
+      if (board[idx] !== mark) continue;
+
+      for (const [dr, dc] of directions) {
+        const prevRow = row - dr;
+        const prevCol = col - dc;
+        if (tttInBounds(prevRow, prevCol) && board[tttIndex(prevRow, prevCol)] === mark) continue;
+
+        let length = 0;
+        let r = row;
+        let c = col;
+        while (tttInBounds(r, c) && board[tttIndex(r, c)] === mark) {
+          length += 1;
+          r += dr;
+          c += dc;
+        }
+
+        const beforeRow = row - dr;
+        const beforeCol = col - dc;
+        const afterRow = r;
+        const afterCol = c;
+        const beforeOpen = tttInBounds(beforeRow, beforeCol) && !board[tttIndex(beforeRow, beforeCol)];
+        const afterOpen = tttInBounds(afterRow, afterCol) && !board[tttIndex(afterRow, afterCol)];
+
+        if (length === 3 && beforeOpen && afterOpen) {
+          moves.add(tttIndex(beforeRow, beforeCol));
+          moves.add(tttIndex(afterRow, afterCol));
+        }
+      }
+    }
+  }
+
+  return Array.from(moves);
+}
+
+
 function tttCandidateMoves(board, radius = 2) {
   const occupied = [];
   for (let i = 0; i < board.length; i += 1) {
@@ -553,6 +803,9 @@ function tttMoveHeuristic(board, index, mark) {
   }
 
   const opponent = mark === 'O' ? 'X' : 'O';
+  const opponentWins = tttWinningMoves(board, opponent).length;
+  if (opponentWins >= 2) score -= 300000;
+  else if (opponentWins === 1) score -= 180000;
   board[index] = opponent;
   if (tttWinner(board).winner === opponent) score += 900000;
   board[index] = mark;
@@ -624,46 +877,64 @@ function tttOrderedCandidates(board, mark, limit = 12) {
 }
 
 function tttSearch(board, depth, alpha, beta, maximizing, memo) {
-  const key = board.join('') + '|' + depth + '|' + (maximizing ? '1' : '0');
-  if (memo[key] !== undefined) return memo[key];
+  const result = tttWinner(board).winner;
+  if (result === 'O') return 10000000 + depth * 1000;
+  if (result === 'X') return -10000000 - depth * 1000;
+  if (result === 'draw') return 0;
 
-  const terminal = tttWinner(board).winner;
-  if (terminal === 'O') return memo[key] = 1000000 + depth;
-  if (terminal === 'X') return memo[key] = -1000000 - depth;
-  if (terminal === 'draw') return memo[key] = 0;
-  if (depth <= 0) return memo[key] = tttEvaluateBoard(board);
+  const key = board.join('') + '|' + depth + '|' + (maximizing ? 'O' : 'X');
+  if (memo && Object.prototype.hasOwnProperty.call(memo, key)) return memo[key];
+  if (depth <= 0) {
+    const leaf = tttEvaluateBoard(board);
+    if (memo) memo[key] = leaf;
+    return leaf;
+  }
 
   const mark = maximizing ? 'O' : 'X';
-  const candidates = tttOrderedCandidates(board, mark, maximizing ? 10 : 12);
-  if (!candidates.length) return memo[key] = tttEvaluateBoard(board);
+  let moves = tttOrderedCandidates(board, mark, maximizing ? 16 : 12);
+  if (!moves.length) moves = tttCandidateMoves(board, 2);
+  if (!moves.length) {
+    const leaf = tttEvaluateBoard(board);
+    if (memo) memo[key] = leaf;
+    return leaf;
+  }
 
-  if (maximizing) {
-    let best = -Infinity;
-    for (const idx of candidates) {
-      if (board[idx]) continue;
-      board[idx] = 'O';
-      const score = tttSearch(board, depth - 1, alpha, beta, false, memo);
-      board[idx] = '';
+  moves.sort((a, b) => tttMoveHeuristic(board, b, mark) - tttMoveHeuristic(board, a, mark));
+
+  let best = maximizing ? -Infinity : Infinity;
+  for (const idx of moves) {
+    if (board[idx]) continue;
+    board[idx] = mark;
+    const score = tttSearch(board, depth - 1, alpha, beta, !maximizing, memo);
+    board[idx] = '';
+    if (maximizing) {
       if (score > best) best = score;
       if (best > alpha) alpha = best;
-      if (beta <= alpha) break;
+      if (alpha >= beta) break;
+    } else {
+      if (score < best) best = score;
+      if (best < beta) beta = best;
+      if (alpha >= beta) break;
     }
-    memo[key] = best;
-    return best;
   }
 
-  let best = Infinity;
-  for (const idx of candidates) {
-    if (board[idx]) continue;
-    board[idx] = 'X';
-    const score = tttSearch(board, depth - 1, alpha, beta, true, memo);
-    board[idx] = '';
-    if (score < best) best = score;
-    if (best < beta) beta = best;
-    if (beta <= alpha) break;
-  }
-  memo[key] = best;
+  if (memo) memo[key] = best;
   return best;
+}
+
+function tttForkMove(board, mark) {
+  let fallback = -1;
+  for (let i = 0; i < TTT_TOTAL_CELLS; i += 1) {
+    if (board[i]) continue;
+    board[i] = mark;
+    const winNow = tttWinner(board).winner === mark;
+    const forkCount = tttWinningMoves(board, mark).length;
+    board[i] = '';
+    if (winNow) return i;
+    if (forkCount >= 2) return i;
+    if (fallback < 0 && forkCount === 1) fallback = i;
+  }
+  return fallback;
 }
 
 function tttBestMove(board, difficulty) {
@@ -678,14 +949,71 @@ function tttBestMove(board, difficulty) {
   const block = tttWinningMove(board, 'X');
   if (block >= 0) return block;
 
-  const candidates = tttOrderedCandidates(board, 'O', difficulty === 'ai' ? 14 : 18);
+  const criticalBlocks = tttCriticalThreatMoves(board, 'X');
+  if (criticalBlocks.length) {
+    const scoredCritical = criticalBlocks.map((idx) => {
+      board[idx] = 'O';
+      const remainingCritical = tttCriticalThreatMoves(board, 'X').length;
+      const remainingWins = tttWinningMoves(board, 'X').length;
+      const score = tttMoveHeuristic(board, idx, 'O') - remainingCritical * 220000 - remainingWins * 320000;
+      board[idx] = '';
+      return { idx, score };
+    });
+    scoredCritical.sort((a, b) => b.score - a.score);
+    return scoredCritical[0]?.idx ?? criticalBlocks[0];
+  }
+
+  const openThreeBlocks = difficulty === 'ai' ? tttOpenThreeThreatMoves(board, 'X') : [];
+  if (openThreeBlocks.length) {
+    const scoredOpenThree = openThreeBlocks.map((idx) => {
+      board[idx] = 'O';
+      const remainingOpenThree = tttOpenThreeThreatMoves(board, 'X').length;
+      const remainingCritical = tttCriticalThreatMoves(board, 'X').length;
+      const remainingWins = tttWinningMoves(board, 'X').length;
+      const score = tttMoveHeuristic(board, idx, 'O') - remainingOpenThree * 240000 - remainingCritical * 140000 - remainingWins * 260000;
+      board[idx] = '';
+      return { idx, score };
+    });
+    scoredOpenThree.sort((a, b) => b.score - a.score);
+    return scoredOpenThree[0]?.idx ?? openThreeBlocks[0];
+  }
+
+  const fork = difficulty === 'ai' ? tttForkMove(board, 'O') : -1;
+  if (fork >= 0) return fork;
+
+  if (difficulty === 'ai') {
+    const forksToBlock = tttWinningMoves(board, 'X');
+    if (forksToBlock.length >= 2) {
+      const centerSorted = tttCandidateMoves(board, 2)
+        .filter(idx => !board[idx])
+        .sort((a, b) => tttMoveHeuristic(board, b, 'O') - tttMoveHeuristic(board, a, 'O'));
+      for (const idx of centerSorted) {
+        board[idx] = 'O';
+        const remainingThreats = tttWinningMoves(board, 'X').length;
+        board[idx] = '';
+        if (remainingThreats < forksToBlock.length) return idx;
+      }
+    }
+  }
+
+  const occupied = board.length - free.length;
+  const isHard = difficulty === 'ai';
+  const searchDepth = isHard ? (occupied < 8 ? 7 : occupied < 24 ? 8 : 9) : (difficulty === 'medium' ? 2 : 1);
+  const candidateLimit = isHard ? 28 : (difficulty === 'medium' ? 10 : 18);
+  const candidates = tttOrderedCandidates(board, 'O', candidateLimit);
 
   if (difficulty === 'noob') {
     return candidates[Math.floor(Math.random() * candidates.length)] ?? free[Math.floor(Math.random() * free.length)];
   }
 
   if (difficulty === 'medium') {
-    const scored = candidates.map((idx) => ({ idx, score: tttMoveHeuristic(board, idx, 'O') }));
+    const scored = candidates.map((idx) => {
+      board[idx] = 'O';
+      const opponentWins = tttWinningMoves(board, 'X').length;
+      const score = tttMoveHeuristic(board, idx, 'O') - opponentWins * 100000;
+      board[idx] = '';
+      return { idx, score };
+    });
     scored.sort((a, b) => b.score - a.score);
     return scored[0]?.idx ?? candidates[0] ?? free[Math.floor(Math.random() * free.length)];
   }
@@ -693,10 +1021,14 @@ function tttBestMove(board, difficulty) {
   let bestIdx = candidates[0] ?? free[0];
   let bestScore = -Infinity;
   const memo = {};
-  for (const idx of candidates.slice(0, 12)) {
+
+  for (const idx of candidates) {
     if (board[idx]) continue;
     board[idx] = 'O';
-    const score = tttSearch(board, 3, -Infinity, Infinity, false, memo);
+    const immediateThreats = tttWinningMoves(board, 'X').length;
+    const tactical = tttMoveHeuristic(board, idx, 'O') - immediateThreats * 240000 - tttCriticalThreatMoves(board, 'X').length * 160000;
+    const searchScore = tttSearch(board, searchDepth, -Infinity, Infinity, false, memo);
+    const score = tactical + searchScore;
     board[idx] = '';
     if (score > bestScore) {
       bestScore = score;
@@ -704,6 +1036,154 @@ function tttBestMove(board, difficulty) {
     }
   }
   return bestIdx;
+}
+
+
+function tttHardWinLog() {
+  try {
+    const raw = localStorage.getItem(TTT_HARD_WIN_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (err) {
+    return [];
+  }
+}
+
+function tttSaveHardWin(entry) {
+  const next = tttHardWinLog();
+  next.unshift(entry);
+  try {
+    localStorage.setItem(TTT_HARD_WIN_KEY, JSON.stringify(next.slice(0, 100)));
+  } catch (err) {
+    console.warn(err);
+  }
+}
+
+function tttFormatElapsed(ms) {
+  return formatDuration(Math.max(0, Number(ms) || 0));
+}
+
+function tttReadHardWinStats() {
+  const state = tttGetState();
+  const elapsedMs = state.startedAt ? Math.max(0, Date.now() - state.startedAt) : 0;
+  return {
+    totalMoves: state.moveCount || 0,
+    xMoves: state.moveCountX || 0,
+    oMoves: state.moveCountO || 0,
+    elapsedMs,
+    elapsedText: tttFormatElapsed(elapsedMs)
+  };
+}
+
+function tttFillHardWinPrompt() {
+  const overlay = document.getElementById('tttOverlay');
+  if (!overlay) return;
+  const state = tttGetState();
+  const modal = overlay.querySelector('#tttWinModal');
+  const visible = !!state.hardWinPrompt && !!state.hardWinStats;
+
+  if (!modal) return;
+  modal.style.display = visible ? 'flex' : 'none';
+  modal.classList.toggle('isVisible', visible);
+  if (!visible) return;
+
+  const stats = state.hardWinStats || tttReadHardWinStats();
+  const nameInput = overlay.querySelector('#tttWinName');
+  const movesEl = overlay.querySelector('#tttWinMoves');
+  const timeEl = overlay.querySelector('#tttWinTime');
+  const modeEl = overlay.querySelector('#tttWinMode');
+
+  if (nameInput) {
+    const remembered = state.hardWinName || localStorage.getItem('tttHardWinName') || '';
+    if (!nameInput.value) nameInput.value = remembered;
+    state.hardWinName = nameInput.value;
+  }
+  if (movesEl) movesEl.textContent = formatCount(stats.totalMoves) + ' tahů';
+  if (timeEl) timeEl.textContent = stats.elapsedText;
+  if (modeEl) modeEl.textContent = state.mode === 'ai'
+    ? ('AI · ' + (state.difficulty === 'ai' ? 'nejtěžší' : state.difficulty))
+    : 'Proti spoluhráči';
+}
+
+function tttCloseHardWinPrompt() {
+  const state = tttGetState();
+  state.hardWinPrompt = false;
+  state.hardWinStats = null;
+  const overlay = document.getElementById('tttOverlay');
+  const modal = overlay ? overlay.querySelector('#tttWinModal') : null;
+  if (modal) {
+    modal.classList.remove('isVisible');
+    modal.style.display = 'none';
+  }
+  tttRender();
+  requestAnimationFrame(tttLayoutBoard);
+}
+
+function tttOpenHardWinPrompt() {
+  const state = tttGetState();
+  state.hardWinPrompt = true;
+  state.hardWinStats = tttReadHardWinStats();
+  state.hardWinName = state.hardWinName || localStorage.getItem('tttHardWinName') || '';
+  tttRender();
+  requestAnimationFrame(tttLayoutBoard);
+  requestAnimationFrame(tttLayoutBoard);
+}
+
+function tttSendHardWinEntry(entry) {
+  const lines = [
+    'Piškvorky – výhra nad nejtvrdší AI',
+    'Jméno: ' + entry.name,
+    'Datum: ' + entry.date,
+    'Režim: ' + entry.mode,
+    'Obtížnost: ' + entry.difficulty,
+    'Tahy celkem: ' + entry.totalMoves,
+    'Tahy X: ' + entry.xMoves,
+    'Tahy O: ' + entry.oMoves,
+    'Čas: ' + entry.elapsedText,
+    'Poznámka: ' + (entry.note || '')
+  ];
+  const text = lines.join('\n');
+  if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+    navigator.clipboard.writeText(text).catch(() => {});
+  }
+  return text;
+}
+
+function tttSubmitHardWin() {
+  const state = tttGetState();
+  const overlay = document.getElementById('tttOverlay');
+  const nameInput = overlay ? overlay.querySelector('#tttWinName') : null;
+  const name = String(nameInput && nameInput.value ? nameInput.value : '').trim();
+  if (!name) {
+    alert('Napiš jméno, ať je to zapsané správně.');
+    return;
+  }
+
+  state.hardWinName = name;
+  try {
+    localStorage.setItem('tttHardWinName', name);
+  } catch (err) {
+    console.warn(err);
+  }
+
+  const stats = state.hardWinStats || tttReadHardWinStats();
+  const entry = {
+    name,
+    date: new Date().toISOString(),
+    mode: state.mode,
+    difficulty: state.difficulty,
+    totalMoves: stats.totalMoves,
+    xMoves: stats.xMoves,
+    oMoves: stats.oMoves,
+    elapsedMs: stats.elapsedMs,
+    elapsedText: stats.elapsedText,
+    note: 'Výhra nad nejtvrdší AI'
+  };
+
+  tttSaveHardWin(entry);
+  tttCloseHardWinPrompt();
+  tttSendHardWinEntry(entry);
+  alert('Výhra uložená. Text je připravený ve schránce.');
 }
 
 function tttRender() {
@@ -732,7 +1212,7 @@ function tttRender() {
       '    <button type="button" class="tttBtn' + (state.difficulty === 'medium' ? ' isActive' : '') + '" data-ttt-difficulty="medium">Medium</button>',
       '    <button type="button" class="tttBtn' + (state.difficulty === 'ai' ? ' isActive' : '') + '" data-ttt-difficulty="ai">AI</button>',
       '  </div>',
-      '  <div class="tttNote">Hrací pole má 11 × 16 políček a vyhrává 5 spojených v řadě.</div>',
+      '  <div class="tttNote">Hrací pole má 10 × 18 políček a vyhrává 5 spojených v řadě.</div>',
       '</div>',
       '<div class="tttCard">',
       '  <div class="tttSectionTitle">Spuštění</div>',
@@ -745,7 +1225,7 @@ function tttRender() {
         state.mode = btn.getAttribute('data-ttt-mode') || 'ai';
         if (state.mode === 'pvp') state.difficulty = 'ai';
         tttRender();
-  requestAnimationFrame(tttLayoutBoard);
+        requestAnimationFrame(tttLayoutBoard);
         requestAnimationFrame(tttLayoutBoard);
       });
     });
@@ -754,7 +1234,7 @@ function tttRender() {
         if (state.mode === 'pvp') return;
         state.difficulty = btn.getAttribute('data-ttt-difficulty') || 'ai';
         tttRender();
-  requestAnimationFrame(tttLayoutBoard);
+        requestAnimationFrame(tttLayoutBoard);
       });
     });
     start.querySelector('#tttStartBtn')?.addEventListener('click', () => {
@@ -763,11 +1243,17 @@ function tttRender() {
       state.turn = 'X';
       state.gameOver = false;
       state.winner = null;
+      state.startedAt = Date.now();
+      state.moveCount = 0;
+      state.moveCountX = 0;
+      state.moveCountO = 0;
+      state.hardWinPrompt = false;
+      state.hardWinStats = null;
       state.message = state.mode === 'pvp'
         ? 'Hraje hráč X.'
         : 'Hraješ za X. AI je O.';
       tttRender();
-  requestAnimationFrame(tttLayoutBoard);
+      requestAnimationFrame(tttLayoutBoard);
     });
     return;
   }
@@ -780,7 +1266,11 @@ function tttRender() {
   const winnerLine = result.line || [];
   boardEl.innerHTML = state.board.map((cell, idx) => {
     const classes = ['tttCell'];
-    if (cell) classes.push('isFilled');
+    if (cell) {
+      classes.push('isFilled');
+      if (cell === 'X') classes.push('isX');
+      if (cell === 'O') classes.push('isO');
+    }
     if (winnerLine.includes(idx)) classes.push('isWinner');
     return '<button type="button" class="' + classes.join(' ') + '" data-ttt-cell="' + idx + '">' + (cell || '') + '</button>';
   }).join('');
@@ -792,6 +1282,28 @@ function tttRender() {
       tttHandleMove(idx);
     });
   });
+
+  tttFillHardWinPrompt();
+  const modal = overlay.querySelector('#tttWinModal');
+  if (modal) {
+    const submit = overlay.querySelector('#tttWinSubmit');
+    const cancel = overlay.querySelector('#tttWinCancel');
+    const nameInput = overlay.querySelector('#tttWinName');
+    if (submit && !submit.dataset.bound) {
+      submit.dataset.bound = '1';
+      submit.addEventListener('click', tttSubmitHardWin);
+    }
+    if (cancel && !cancel.dataset.bound) {
+      cancel.dataset.bound = '1';
+      cancel.addEventListener('click', tttCloseHardWinPrompt);
+    }
+    if (nameInput && !nameInput.dataset.bound) {
+      nameInput.dataset.bound = '1';
+      nameInput.addEventListener('input', () => {
+        tttGetState().hardWinName = nameInput.value;
+      });
+    }
+  }
 }
 
 function tttHandleMove(index) {
@@ -799,16 +1311,31 @@ function tttHandleMove(index) {
   if (state.gameOver || state.board[index]) return;
   if (state.mode === 'ai' && state.turn !== 'X') return;
 
-  state.board[index] = state.turn;
+  const mark = state.turn;
+  state.board[index] = mark;
+  state.moveCount += 1;
+  if (mark === 'X') state.moveCountX += 1;
+  else state.moveCountO += 1;
+
   const after = tttWinner(state.board);
   if (after.winner) {
     state.gameOver = true;
     state.winner = after.winner;
-    state.message = after.winner === 'draw'
-      ? 'Remíza. Dobře hrané.'
-      : (after.winner === 'X' ? 'Vyhrál jsi.' : 'Vyhrála O.');
+    if (after.winner === 'draw') {
+      state.message = 'Remíza. Dobře hrané.';
+    } else if (after.winner === 'X') {
+      state.message = 'Vyhrál jsi.';
+      if (state.mode === 'ai' && state.difficulty === 'ai') {
+        state.hardWinPrompt = true;
+        state.hardWinStats = tttReadHardWinStats();
+        tttOpenHardWinPrompt();
+        return;
+      }
+    } else {
+      state.message = 'Vyhrála O.';
+    }
     tttRender();
-  requestAnimationFrame(tttLayoutBoard);
+    requestAnimationFrame(tttLayoutBoard);
     return;
   }
 
@@ -816,7 +1343,7 @@ function tttHandleMove(index) {
     state.turn = state.turn === 'X' ? 'O' : 'X';
     state.message = state.turn === 'X' ? 'Hraje hráč X.' : 'Hraje hráč O.';
     tttRender();
-  requestAnimationFrame(tttLayoutBoard);
+    requestAnimationFrame(tttLayoutBoard);
     return;
   }
 
@@ -826,26 +1353,37 @@ function tttHandleMove(index) {
   requestAnimationFrame(tttLayoutBoard);
 
   setTimeout(() => {
-    const fresh = tttGetState();
-    if (fresh.gameOver) return;
-    const aiMove = tttBestMove(fresh.board.slice(), fresh.difficulty || 'ai');
-    if (aiMove < 0 || fresh.board[aiMove]) return;
-    fresh.board[aiMove] = 'O';
-    const afterAi = tttWinner(fresh.board);
-    if (afterAi.winner) {
-      fresh.gameOver = true;
-      fresh.winner = afterAi.winner;
-      fresh.message = afterAi.winner === 'draw'
-        ? 'Remíza. Dobře hrané.'
-        : 'AI vyhrála. Zkus to znovu.';
+    try {
+      const fresh = tttGetState();
+      if (fresh.gameOver) return;
+      const aiMove = tttBestMove(fresh.board.slice(), fresh.difficulty || 'ai');
+      if (aiMove < 0 || fresh.board[aiMove]) return;
+      fresh.board[aiMove] = 'O';
+      fresh.moveCount += 1;
+      fresh.moveCountO += 1;
+      const afterAi = tttWinner(fresh.board);
+      if (afterAi.winner) {
+        fresh.gameOver = true;
+        fresh.winner = afterAi.winner;
+        fresh.message = afterAi.winner === 'draw'
+          ? 'Remíza. Dobře hrané.'
+          : 'AI vyhrála. Zkus to znovu.';
+        tttRender();
+        requestAnimationFrame(tttLayoutBoard);
+        return;
+      }
+      fresh.turn = 'X';
+      fresh.message = 'Hraješ za X.';
       tttRender();
-  requestAnimationFrame(tttLayoutBoard);
-      return;
+      requestAnimationFrame(tttLayoutBoard);
+    } catch (err) {
+      console.warn('TTT AI move failed', err);
+      const fresh = tttGetState();
+      fresh.turn = 'X';
+      fresh.message = 'AI se na chvíli zasekla. Zkus tah znovu.';
+      tttRender();
+      requestAnimationFrame(tttLayoutBoard);
     }
-    fresh.turn = 'X';
-    fresh.message = 'Hraješ za X.';
-    tttRender();
-  requestAnimationFrame(tttLayoutBoard);
   }, 180);
 }
 
@@ -855,6 +1393,12 @@ function resetTicTacToeGame(keepScreen) {
   state.turn = 'X';
   state.gameOver = false;
   state.winner = null;
+  state.startedAt = 0;
+  state.moveCount = 0;
+  state.moveCountX = 0;
+  state.moveCountO = 0;
+  state.hardWinPrompt = false;
+  state.hardWinStats = null;
   state.message = state.mode === 'pvp' ? 'Hraje hráč X.' : 'Hraješ za X. AI je O.';
   if (!keepScreen) state.screen = 'start';
   tttRender();
@@ -870,6 +1414,12 @@ function openTicTacToeGame() {
   state.turn = 'X';
   state.gameOver = false;
   state.winner = null;
+  state.startedAt = 0;
+  state.moveCount = 0;
+  state.moveCountX = 0;
+  state.moveCountO = 0;
+  state.hardWinPrompt = false;
+  state.hardWinStats = null;
   state.message = '';
   overlay.classList.add('isVisible');
   document.body.classList.add('tttOpen');
@@ -893,10 +1443,10 @@ function tttLayoutBoard() {
 
   const wrapRect = wrap.getBoundingClientRect();
   const styles = window.getComputedStyle(board);
-  const gap = parseFloat(styles.gap || styles.columnGap || '3') || 3;
+  const gap = parseFloat(styles.gap || styles.columnGap || '0') || 0;
   const cellW = Math.floor((wrapRect.width - gap * (TTT_COLS - 1)) / TTT_COLS);
   const cellH = Math.floor((wrapRect.height - gap * (TTT_ROWS - 1)) / TTT_ROWS);
-  const cell = Math.max(14, Math.min(cellW, cellH));
+  const cell = Math.max(10, Math.min(cellW, cellH));
 
   board.style.setProperty('--tttCellSize', cell + 'px');
   board.style.gridTemplateColumns = `repeat(${TTT_COLS}, ${cell}px)`;
@@ -925,11 +1475,10 @@ function triggerAboutAction() {
   }, 320);
 }
 
-
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v.1(250)–v.1(271)',
+      range: 'v.1(250)–v.1(278)',
       title: 'Aktuální úpravy',
       lines: [
         'Jídelna a kantýna teď používají shodné dny na jednom řádku.',
@@ -1154,6 +1703,9 @@ function showFoodSchedule(which) {
 }
 
 function showPage(id) {
+  if (typeof app !== 'undefined') {
+    app.homeBootSuppressed = id !== 'home';
+  }
   const modal = document.getElementById('foodScheduleModal');
   if (modal) {
     modal.classList.remove('isVisible');
@@ -1173,6 +1725,7 @@ function showPage(id) {
   if (el) el.classList.add('active');
 
   if (id === 'rotace') {
+    if (typeof initRotaceCurrentMonth === 'function') initRotaceCurrentMonth();
     setRotaceView('names');
     renderRotace();
     setBottomNavActive('rotace');

@@ -8,6 +8,7 @@ function resetSoustruhy() {
     if (el) el.innerHTML = "";
   });
   app.soustruhMode = "lis";
+  app.soustruhPlan = String(typeof getSoustruhDefaultPlan === "function" ? getSoustruhDefaultPlan() : 1216);
   app.soustruh126Start = 32;
   app.soustruh106Counts = ["", "", "", ""];
   renderSoustruhy();
@@ -320,9 +321,10 @@ function renderSoustruhy() {
   const v106C3 = document.getElementById('v106_c3');
   const v106C4 = document.getElementById('v106_c4');
 
-  if (lisPlan && !lisPlan.value) lisPlan.value = app.soustruhPlan || '1216';
-  if (v126Plan && !v126Plan.value) v126Plan.value = app.soustruhPlan || '1216';
-  if (v106Plan && !v106Plan.value) v106Plan.value = app.soustruhPlan || '1216';
+  const defaultPlan = String(app.soustruhPlan || (typeof getSoustruhDefaultPlan === "function" ? getSoustruhDefaultPlan() : 1216));
+  if (lisPlan && !lisPlan.value) lisPlan.value = defaultPlan;
+  if (v126Plan && !v126Plan.value) v126Plan.value = defaultPlan;
+  if (v106Plan && !v106Plan.value) v106Plan.value = defaultPlan;
   if (v106C1 && !v106C1.value) v106C1.value = app.soustruh106Counts[0] || '';
   if (v106C2 && !v106C2.value) v106C2.value = app.soustruh106Counts[1] || '';
   if (v106C3 && !v106C3.value) v106C3.value = app.soustruh106Counts[2] || '';
