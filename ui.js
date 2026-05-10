@@ -1129,7 +1129,7 @@ function tttOpenHardWinPrompt() {
   requestAnimationFrame(tttLayoutBoard);
 }
 
-function tttSendHardWinEntry(entry) {
+async function tttSendHardWinEntry(entry) {
   const lines = [
     'Piškvorky – výhra nad nejtvrdší AI',
     'Jméno: ' + entry.name,
@@ -1143,6 +1143,13 @@ function tttSendHardWinEntry(entry) {
     'Poznámka: ' + (entry.note || '')
   ];
   const text = lines.join('\n');
+  try {
+    if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.sendGomokuWin === 'function') {
+      await window.RotationSupabaseBridge.sendGomokuWin(entry);
+    }
+  } catch (err) {
+    console.warn(err);
+  }
   if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
     navigator.clipboard.writeText(text).catch(() => {});
   }
@@ -1182,7 +1189,7 @@ function tttSubmitHardWin() {
 
   tttSaveHardWin(entry);
   tttCloseHardWinPrompt();
-  tttSendHardWinEntry(entry);
+  void tttSendHardWinEntry(entry);
   alert('Výhra uložená. Text je připravený ve schránce.');
 }
 
@@ -1478,7 +1485,7 @@ function triggerAboutAction() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v.1(250)–v.1(278)',
+      range: 'v.1(250)–v.1(282)',
       title: 'Aktuální úpravy',
       lines: [
         'Jídelna a kantýna teď používají shodné dny na jednom řádku.',

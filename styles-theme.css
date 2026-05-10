@@ -2052,8 +2052,33 @@ body.reduceMotion *::after{
   #rotaceNamesPanel .listGrid{
     grid-template-columns:repeat(auto-fit, minmax(74px, 1fr));
   }
-  #statsNameGrid.listGrid,
+  #statsNameGrid.listGrid{
+    grid-template-columns:repeat(5, minmax(0, 1fr));
+  }
   #statsMachineGrid.listGrid{
-    grid-template-columns:repeat(auto-fit, minmax(58px, 1fr));
+    grid-template-columns:repeat(5, minmax(0, 1fr));
+    gap:5px;
+  }
+  #statsMachineGrid .listItem{
+    min-height:36px;
+    padding:5px 2px;
+  }
+  #statsMachineGrid .statsTileTitle{
+    font-size:10.5px;
+    letter-spacing:-0.2px;
+  }
+}
+
+/* v.1(280) — strojové dlaždice se musí vejít na jeden řádek i na malých telefonech */
+@media (max-width: 380px){
+  #statsMachineGrid.listGrid{
+    gap:4px;
+  }
+  #statsMachineGrid .listItem{
+    padding:4px 1px;
+  }
+  #statsMachineGrid .statsTileTitle{
+    font-size:9.5px;
+    letter-spacing:-0.3px;
   }
 }

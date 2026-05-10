@@ -302,9 +302,10 @@ function updateFoodTile() {
   tile.classList.toggle("foodOpen", anyOpen);
   tile.classList.toggle("foodClosed", !anyOpen);
 
+  const remoteStatus = typeof getSupabaseCanteenStatus === 'function' ? getSupabaseCanteenStatus() : null;
   const html = [
     '<div class="foodTileTitle">Jídelní lístek</div>',
-    '<div class="foodTileSub">Aktuální provozní doba</div>',
+    '<div class="foodTileSub">Aktuální provozní doba' + (remoteStatus && remoteStatus.note ? ' · ' + escapeHtml(remoteStatus.note) : '') + '</div>',
     ...statuses.map(item => {
       return [
         '<div class="foodTileRow">',

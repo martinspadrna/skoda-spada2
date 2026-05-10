@@ -17,7 +17,9 @@ const EXPORT_SOURCE_IDS = {
   "styles-layout.css": "src-styles-layout-css",
   "styles-theme.css": "src-styles-theme-css",
   "styles-responsive.css": "src-styles-responsive-css",
-  "styles-modal.css": "src-styles-modal-css"
+  "styles-modal.css": "src-styles-modal-css",
+  "supabase-config.js": "src-supabase-config-js",
+  "supabase-bridge.js": "src-supabase-bridge-js"
 };
 
 const SOURCE_CACHE = window.__ROTACE_SOURCE_CACHE__ || (window.__ROTACE_SOURCE_CACHE__ = {});

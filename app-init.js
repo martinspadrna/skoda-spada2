@@ -175,6 +175,9 @@ function initAppInitBindings() {
   };
 
   bootHome();
+  if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.init === 'function') {
+    try { window.RotationSupabaseBridge.init(); } catch (err) { console.warn('Supabase bridge init failed', err); }
+  }
   setTimeout(bootHome, 60);
   setTimeout(bootHome, 240);
   setTimeout(() => {
