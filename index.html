@@ -405,7 +405,7 @@
 });</script>
 <script type="text/plain" id="src-core-js">
 const APP_KEY = "rotace_kalkulacky_state_v122";
-const APP_VERSION = "v.1(265)";
+const APP_VERSION = "v.1(266)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-05-10-" + APP_VERSION + "-" + Date.now();
 
@@ -987,7 +987,7 @@ if (document.readyState === 'loading') {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v.1(250)–v.1(265)',
+      range: 'v.1(250)–v.1(266)',
       title: 'Aktuální úpravy',
       lines: [
         'Jídelna a kantýna teď používají shodné dny na jednom řádku.',
@@ -2520,7 +2520,7 @@ function getTodayAbsenceNames(now) {
 function updateShift() {
   if (typeof updateDashboard === "function") updateDashboard();
 }</script>
-<script type="text/plain" id="src-dashboard-js">// Extracted dashboard logic (v1(265))
+<script type="text/plain" id="src-dashboard-js">// Extracted dashboard logic (v1(266))
 function updateDashboard() {
   const now = typeof getPragueNow === "function" ? getPragueNow(new Date()) : new Date();
   const active = getActiveShiftNow(now);
@@ -3455,6 +3455,50 @@ function handlePersonTap(name) {
   }
 }
 
+
+function getPersonScheduleEntryEnd(entry) {
+  const parsed = parseDateToken(String(entry && entry.dateLabel ? entry.dateLabel : ""));
+  if (!parsed) return null;
+
+  const baseDate = new Date(2026, parsed.month - 1, parsed.day, 0, 0, 0, 0);
+  const shift = normalizeShiftText(String(entry && entry.shift ? entry.shift : parsed.shift || "")).toUpperCase();
+
+  if (!shift) {
+    const endOfDay = new Date(baseDate);
+    endOfDay.setHours(23, 59, 59, 999);
+    return endOfDay;
+  }
+
+  if (shift.includes("R8")) {
+    const end = new Date(baseDate);
+    end.setHours(14, 0, 0, 0);
+    return end;
+  }
+
+  if (shift.includes("N8")) {
+    const end = new Date(baseDate);
+    end.setDate(end.getDate() + 1);
+    end.setHours(6, 0, 0, 0);
+    return end;
+  }
+
+  if (shift.startsWith("N")) {
+    const start = new Date(baseDate);
+    start.setHours(18, 0, 0, 0);
+    return getShiftEnd(start);
+  }
+
+  if (shift.startsWith("R")) {
+    const start = new Date(baseDate);
+    start.setHours(6, 0, 0, 0);
+    return getShiftEnd(start);
+  }
+
+  const endOfDay = new Date(baseDate);
+  endOfDay.setHours(23, 59, 59, 999);
+  return endOfDay;
+}
+
 function getPersonScheduleEntries(name) {
   const rawEntries = (buildNameIndex(app.rotation)[name] || []).slice();
   if (!rawEntries.length) {
@@ -3528,13 +3572,13 @@ function getPersonScheduleEntries(name) {
     })
     .sort((a, b) => a.sortDate.localeCompare(b.sortDate));
 
-  const today = new Date();
-  const todayDay = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
-  let currentIdx = entries.findIndex(e => new Date(e.sortDate).getTime() === todayDay);
-  if (currentIdx === -1) {
-    currentIdx = entries.findIndex(e => new Date(e.sortDate).getTime() > todayDay);
-    if (currentIdx === -1) currentIdx = entries.length - 1;
-  }
+  const now = new Date();
+  let currentIdx = entries.findIndex(entry => {
+    const end = getPersonScheduleEntryEnd(entry);
+    return end && now < end;
+  });
+  if (currentIdx === -1 && entries.length) currentIdx = entries.length - 1;
+
   return { entries, currentIdx };
 }
 
@@ -4584,11 +4628,11 @@ label{
  outline:2px solid rgba(255,255,255,.7);
 }
 
-.ad{background:linear-gradient(180deg, rgba(67,110,155,.35), rgba(20,24,22,.96)); border-color:rgba(103,159,214,.35); color:#dfefff;}
-.ae{background:linear-gradient(180deg, rgba(70,145,96,.33), rgba(20,24,22,.96)); border-color:rgba(107,197,131,.30); color:#e8ffe8;}
-.ah{background:linear-gradient(180deg, rgba(173,118,53,.30), rgba(20,24,22,.96)); border-color:rgba(230,171,92,.28); color:#fff1dd;}
-.adv{background:linear-gradient(180deg, rgba(65,95,133,.26), rgba(20,24,22,.96)); border-color:rgba(124,160,202,.22); color:#e8f2ff;}
-.aev{background:linear-gradient(180deg, rgba(54,72,61,.25), rgba(20,24,22,.96)); border-color:rgba(126,160,140,.20); color:#ecfff0;}
+.ad{background:linear-gradient(180deg, rgba(63,112,168,.52), rgba(20,24,22,.96)); border-color:rgba(117,171,230,.46); color:#eaf4ff;}
+.ae{background:linear-gradient(180deg, rgba(76,166,102,.50), rgba(20,24,22,.96)); border-color:rgba(124,244,147,.44); color:#ecffef;}
+.ah{background:linear-gradient(180deg, rgba(202,137,63,.50), rgba(20,24,22,.96)); border-color:rgba(240,179,96,.42); color:#fff1db;}
+.adv{background:linear-gradient(180deg, rgba(63,112,168,.26), rgba(20,24,22,.96)); border-color:rgba(117,171,230,.22); color:#edf4ff;}
+.aev{background:linear-gradient(180deg, rgba(76,166,102,.24), rgba(20,24,22,.96)); border-color:rgba(124,244,147,.20); color:#effff0;}
 
 .tableWrap{
  overflow-x:auto;
@@ -4812,7 +4856,27 @@ td.missingCell{
   margin-top:10px;
 }
 
-.bbtn.activeChoice{outline:3px solid var(--green2);}</script>
+.bbtn.activeChoice{outline:3px solid var(--green2);}
+#brusy .bbtn.ad.activeChoice{
+  outline-color:rgba(117,171,230,.96);
+  box-shadow:0 0 0 1px rgba(117,171,230,.24) inset, 0 0 18px rgba(117,171,230,.16);
+}
+#brusy .bbtn.ae.activeChoice{
+  outline-color:rgba(124,244,147,.96);
+  box-shadow:0 0 0 1px rgba(124,244,147,.24) inset, 0 0 18px rgba(124,244,147,.16);
+}
+#brusy .bbtn.ah.activeChoice{
+  outline-color:rgba(240,179,96,.96);
+  box-shadow:0 0 0 1px rgba(240,179,96,.24) inset, 0 0 18px rgba(240,179,96,.16);
+}
+#brusy .bbtn.adv.activeChoice{
+  outline-color:rgba(117,171,230,.52);
+  box-shadow:0 0 0 1px rgba(117,171,230,.16) inset, 0 0 14px rgba(117,171,230,.10);
+}
+#brusy .bbtn.aev.activeChoice{
+  outline-color:rgba(124,244,147,.52);
+  box-shadow:0 0 0 1px rgba(124,244,147,.16) inset, 0 0 14px rgba(124,244,147,.10);
+}</script>
 <script type="text/plain" id="src-styles-theme-css">:root{
   --panelShellBorder: 1px solid rgba(124,255,124,.18);
   --panelShellShadow: 0 12px 26px rgba(0,0,0,.24);
@@ -7784,7 +7848,7 @@ body.appMenuOpen{
     <button class="bottomNavBtn" data-page="kalkulacky" onclick="openKalkulacky()"><span class="bottomNavIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="3.8" width="14" height="16.4" rx="2.2"></rect><path d="M8 7h8M8 11h2M12 11h2M16 11h0M8 14.8h2M12 14.8h2M16 14.8h0"></path><path d="M8 18.2h2M12 18.2h2M16 18.2h0"></path></svg></span><div class="bottomNavLabel">Kalkulačky</div></button>
     <button class="bottomNavBtn" data-page="rozpisy" onclick="openRotaceMonths()"><span class="bottomNavIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2.2"></rect><path d="M4 9h16M8 3.8v3.2M16 3.8v3.2"></path><path d="M8 12.8h3M13 12.8h3M8 16h3"></path></svg></span><div class="bottomNavLabel">Rozpisy</div></button>
     <button class="bottomNavBtn" data-page="statistiky" onclick="openRotaceStats()"><span class="bottomNavIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 19.2V10.8"></path><path d="M10 19.2V6.8"></path><path d="M15 19.2V13.2"></path><path d="M20 19.2H4"></path></svg></span><div class="bottomNavLabel">Statistiky</div></button>
-    <button class="bottomNavBtn bottomNavMenuBtn" data-page="menu" type="button" aria-label="Více" onclick="toggleAppMenu()"><svg class="moreIcon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="2.75"></circle><circle cx="12" cy="12" r="2.75"></circle><circle cx="12" cy="16" r="2.75"></circle></svg><div class="bottomNavLabel">Více</div></button>
+    <button class="bottomNavBtn bottomNavMenuBtn" data-page="menu" type="button" aria-label="Více" onclick="toggleAppMenu()"><svg class="moreIcon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="2.15"></circle><circle cx="12" cy="12" r="2.15"></circle><circle cx="12" cy="16" r="2.15"></circle></svg><div class="bottomNavLabel">Více</div></button>
   </div>
 </nav>
 

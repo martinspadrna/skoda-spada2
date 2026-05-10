@@ -90,6 +90,50 @@ function handlePersonTap(name) {
   }
 }
 
+
+function getPersonScheduleEntryEnd(entry) {
+  const parsed = parseDateToken(String(entry && entry.dateLabel ? entry.dateLabel : ""));
+  if (!parsed) return null;
+
+  const baseDate = new Date(2026, parsed.month - 1, parsed.day, 0, 0, 0, 0);
+  const shift = normalizeShiftText(String(entry && entry.shift ? entry.shift : parsed.shift || "")).toUpperCase();
+
+  if (!shift) {
+    const endOfDay = new Date(baseDate);
+    endOfDay.setHours(23, 59, 59, 999);
+    return endOfDay;
+  }
+
+  if (shift.includes("R8")) {
+    const end = new Date(baseDate);
+    end.setHours(14, 0, 0, 0);
+    return end;
+  }
+
+  if (shift.includes("N8")) {
+    const end = new Date(baseDate);
+    end.setDate(end.getDate() + 1);
+    end.setHours(6, 0, 0, 0);
+    return end;
+  }
+
+  if (shift.startsWith("N")) {
+    const start = new Date(baseDate);
+    start.setHours(18, 0, 0, 0);
+    return getShiftEnd(start);
+  }
+
+  if (shift.startsWith("R")) {
+    const start = new Date(baseDate);
+    start.setHours(6, 0, 0, 0);
+    return getShiftEnd(start);
+  }
+
+  const endOfDay = new Date(baseDate);
+  endOfDay.setHours(23, 59, 59, 999);
+  return endOfDay;
+}
+
 function getPersonScheduleEntries(name) {
   const rawEntries = (buildNameIndex(app.rotation)[name] || []).slice();
   if (!rawEntries.length) {
@@ -163,13 +207,13 @@ function getPersonScheduleEntries(name) {
     })
     .sort((a, b) => a.sortDate.localeCompare(b.sortDate));
 
-  const today = new Date();
-  const todayDay = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
-  let currentIdx = entries.findIndex(e => new Date(e.sortDate).getTime() === todayDay);
-  if (currentIdx === -1) {
-    currentIdx = entries.findIndex(e => new Date(e.sortDate).getTime() > todayDay);
-    if (currentIdx === -1) currentIdx = entries.length - 1;
-  }
+  const now = new Date();
+  let currentIdx = entries.findIndex(entry => {
+    const end = getPersonScheduleEntryEnd(entry);
+    return end && now < end;
+  });
+  if (currentIdx === -1 && entries.length) currentIdx = entries.length - 1;
+
   return { entries, currentIdx };
 }
 
