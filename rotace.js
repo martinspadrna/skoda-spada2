@@ -49,7 +49,7 @@ function renderRotace() {
   }
 
   renderStatsPanel();
-  document.getElementById('adminBox').style.display = app.adminUnlocked ? 'block' : 'none';
+  document.getElementById('adminBox').style.display = 'none';
 }
 
 function getSoftMachineDisplayLabel(entry, rotation) {

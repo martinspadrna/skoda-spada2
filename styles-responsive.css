@@ -640,3 +640,5 @@
   transform:translateY(-12px) !important;
   display:block !important;
 }
+
+#statsMachineGrid .listBtn{padding:8px 6px;min-width:62px;}

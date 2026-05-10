@@ -437,7 +437,7 @@ function ensureTicTacToeOverlay() {
     '  <div class="tttHeader">',
     '    <div class="tttHeaderTitle">',
     '      <h2 id="tttTitle" style="display:none;">Piškvorky</h2>',
-    '      <span>easter egg · 10 × 21 · 5 v řadě</span>',
+    '      <span></span>',
     '    </div>',
     '    <button type="button" class="tttClose" aria-label="Zavřít">×</button>',
     '  </div>',
@@ -1144,11 +1144,9 @@ function tttBestMove(board, difficulty) {
     return tttOpeningBookMove(board);
   }
 
-  const searchDepth = difficulty === 'ai'
-    ? (occupied < 4 ? 2 : occupied < 10 ? 3 : 4)
+  const searchDepth = difficulty === 'ai' ? 1
     : (difficulty === 'medium' ? 2 : 1);
-  const candidateLimit = difficulty === 'ai'
-    ? (occupied < 6 ? 6 : occupied < 12 ? 8 : 10)
+  const candidateLimit = difficulty === 'ai' ? 4
     : (difficulty === 'medium' ? 10 : 14);
   const candidates = tttOrderedCandidates(board, 'O', candidateLimit);
   const searchCandidates = difficulty === 'ai'
@@ -1936,7 +1934,7 @@ function buildAdminMachineSettingsTableHtml() {
   }).join('');
   return [
     '<div class="appMenuSubSection">',
-    '  <div class="appMenuSubTitle">Kalkulačky a brusky</div>',
+    '  <div class="appMenuSubTitle">Nastavení strojů</div>',
     '  <div class="tableWrap appMenuTableWrap">',
     '    <table class="appMenuTable appMenuAdminTable">',
     '      <thead><tr><th>Kód</th><th>Název</th><th>Typ</th><th>Rychlost</th><th>Nastavení</th></tr></thead>',
@@ -2087,13 +2085,13 @@ async function saveAdminRotationFromDom(monthKey) {
 function renderAdminMenuBody(body) {
   const months = getAdminRotationMonthKeys();
   const monthKey = getAdminSelectedMonthKey();
-  const title = months.length ? 'Administrace rozpisu' : 'Administrace';
+  const title = months.length ? 'Administrace' : 'Administrace';
   const machineRows = Array.isArray(app.machineSettingsRows) ? app.machineSettingsRows : [];
   body.innerHTML = [
     '<div class="appMenuCard appMenuAdminCard">',
     '  <div class="appMenuCardTitle">' + escapeHtml(title) + '</div>',
     '  <div class="appMenuText">',
-    '    <div>Vyber měsíc, uprav řádky v tabulce a ulož online. Kalkulačky a brusky jsou taky jen přes tabulku, bez kódování.</div>',
+    '    <div>Vyber měsíc, uprav řádky v tabulce a ulož online. Nastavení strojů jsou taky jen přes tabulku, bez kódování.</div>',
     '  </div>',
     '  <label class="appMenuLabel" for="adminMonthSelect">Měsíc</label>',
     '  <select id="adminMonthSelect" class="appMenuSelect">' + months.map(m => '<option value="' + escapeHtml(m) + '"' + (m === monthKey ? ' selected' : '') + '>' + escapeHtml(m) + '</option>').join('') + '</select>',

@@ -1,4 +1,4 @@
-// v.1(289) – robustness: globální error handler, ring buffer chyb, self-test po načtení, Supabase bridge.
+// v.1(290) – robustness: globální error handler, ring buffer chyb, self-test po načtení, Supabase bridge.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
