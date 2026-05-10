@@ -1104,8 +1104,8 @@ input{
 }
 
 .dashboardIconInline{
-  width:18px;
-  height:18px;
+  width:44px;
+  height:44px;
   flex:none;
   color:var(--green2);
   opacity:.95;
@@ -1319,9 +1319,9 @@ input{
 }
 
 #home .dashboardIconInline{
-  width:20px;
-  height:20px;
-  flex:0 0 20px;
+  width:44px;
+  height:44px;
+  flex:0 0 44px;
 }
 
 #home .dashboardCardFood .dashboardMeta{
@@ -1870,11 +1870,11 @@ body.reduceMotion *::after{
 }
 
 
-/* v1(257) dashboard + nav icon polish */
+/* v1(258) dashboard + nav icon polish */
 .dashboardTop{align-items:center !important;}
 .dashboardLabelRow{gap:8px !important; align-items:center !important;}
 #home .dashboardCard .dashboardIcon.dashboardIconInline,
-.dashboardCard .dashboardIcon.dashboardIconInline{width:30px !important; height:30px !important; flex:0 0 30px !important; align-self:center !important;}
+.dashboardCard .dashboardIcon.dashboardIconInline{width:44px !important; height:44px !important; flex:0 0 44px !important; align-self:center !important;}
 #home .dashboardCard .dashboardIcon.dashboardIconInline img,
 #home .dashboardCard .dashboardIcon.dashboardIconInline svg,
 .dashboardCard .dashboardIcon.dashboardIconInline img,

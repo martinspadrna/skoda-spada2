@@ -133,7 +133,9 @@ function initAppInitBindings() {
 
     const runHomeRefresh = () => {
       try {
-        if (typeof refreshHomeScreen === "function") {
+        if (typeof forceHomeRefresh === "function") {
+          forceHomeRefresh();
+        } else if (typeof refreshHomeScreen === "function") {
           refreshHomeScreen();
         } else if (typeof updateDashboard === "function") {
           updateDashboard();
@@ -145,14 +147,28 @@ function initAppInitBindings() {
       }
     };
 
+    const keepPingingHome = () => {
+      let tries = 0;
+      const tick = () => {
+        tries += 1;
+        runHomeRefresh();
+        const stillBlank = typeof homeLooksUnpainted === "function" ? homeLooksUnpainted() : false;
+        if (stillBlank && tries < 18) {
+          setTimeout(tick, 120);
+        }
+      };
+      tick();
+    };
+
     if (typeof requestAnimationFrame === "function") {
       requestAnimationFrame(runHomeRefresh);
       requestAnimationFrame(() => requestAnimationFrame(runHomeRefresh));
     }
-    setTimeout(runHomeRefresh, 120);
-    setTimeout(runHomeRefresh, 360);
-    setTimeout(runHomeRefresh, 720);
-    setTimeout(runHomeRefresh, 1400);
+    setTimeout(runHomeRefresh, 80);
+    setTimeout(runHomeRefresh, 220);
+    setTimeout(runHomeRefresh, 520);
+    setTimeout(runHomeRefresh, 980);
+    setTimeout(keepPingingHome, 60);
   };
 
   bootHome();

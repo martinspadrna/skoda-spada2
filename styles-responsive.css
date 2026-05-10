@@ -290,8 +290,8 @@
   }
 
   .dashboardIconInline{
-    width:20px;
-    height:20px;
+    width:44px;
+    height:44px;
   }
 
   .dashboardValue{
@@ -557,7 +557,7 @@
 .bottomNavMenuBtn{
   width: 30px !important;
   min-width: 30px !important;
-  max-width: 30px !important;
+  max-width: 44px !important;
 }
 
 .bottomNavMenuBtn .moreIcon{
@@ -589,12 +589,12 @@
 }
 
 
-/* v1(257) dashboard icon sizing fix */
+/* v1(258) dashboard icon sizing fix */
 #home .dashboardCard .dashboardIcon.dashboardIconInline,
 .dashboardCard .dashboardIcon.dashboardIconInline{
-  width:20px !important;
-  height:20px !important;
-  flex:0 0 20px !important;
+  width:44px !important;
+  height:44px !important;
+  flex:0 0 44px !important;
 }
 
 #home .dashboardCard .dashboardIcon.dashboardIconInline img,
