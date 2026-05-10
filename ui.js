@@ -954,7 +954,11 @@ function tttOrderedCandidates(board, mark, limit = 12) {
   return scored.slice(0, limit).map(item => item.idx);
 }
 
-function tttSearch(board, depth, alpha, beta, maximizing, memo) {
+
+function tttSearch(board, depth, alpha, beta, maximizing, memo, deadline) {
+  if (deadline && typeof performance !== 'undefined' && performance.now() > deadline) {
+    return tttEvaluateBoard(board);
+  }
   const result = tttWinner(board).winner;
   if (result === 'O') return 10000000 + depth * 1000;
   if (result === 'X') return -10000000 - depth * 1000;
@@ -969,7 +973,7 @@ function tttSearch(board, depth, alpha, beta, maximizing, memo) {
   }
 
   const mark = maximizing ? 'O' : 'X';
-  let moves = tttOrderedCandidates(board, mark, maximizing ? 12 : 10);
+  let moves = tttOrderedCandidates(board, mark, maximizing ? 9 : 8);
   if (!moves.length) moves = tttCandidateMoves(board, 4);
   if (!moves.length) {
     const leaf = tttEvaluateBoard(board);
@@ -981,9 +985,10 @@ function tttSearch(board, depth, alpha, beta, maximizing, memo) {
 
   let best = maximizing ? -Infinity : Infinity;
   for (const idx of moves) {
+    if (deadline && typeof performance !== 'undefined' && performance.now() > deadline) break;
     if (board[idx]) continue;
     board[idx] = mark;
-    const score = tttSearch(board, depth - 1, alpha, beta, !maximizing, memo);
+    const score = tttSearch(board, depth - 1, alpha, beta, !maximizing, memo, deadline);
     board[idx] = '';
     if (maximizing) {
       if (score > best) best = score;
@@ -999,6 +1004,7 @@ function tttSearch(board, depth, alpha, beta, maximizing, memo) {
   if (memo) memo[key] = best;
   return best;
 }
+
 
 function tttForkMove(board, mark) {
   let fallback = -1;
@@ -1041,6 +1047,7 @@ function tttOpeningBookMove(board) {
   return candidates[0] ?? center;
 }
 
+
 function tttBestMove(board, difficulty) {
   const free = [];
   for (let i = 0; i < board.length; i += 1) {
@@ -1052,6 +1059,11 @@ function tttBestMove(board, difficulty) {
   if (win >= 0) return win;
   const block = tttWinningMove(board, 'X');
   if (block >= 0) return block;
+
+  const occupied = board.length - free.length;
+  const deadline = typeof performance !== 'undefined'
+    ? performance.now() + (difficulty === 'ai' ? (occupied < 6 ? 120 : occupied < 12 ? 180 : 240) : 80)
+    : 0;
 
   const criticalBlocks = tttCriticalThreatMoves(board, 'X');
   if (criticalBlocks.length) {
@@ -1128,15 +1140,20 @@ function tttBestMove(board, difficulty) {
     }
   }
 
-  const occupied = board.length - free.length;
-  const isHard = difficulty === 'ai';
-  if (isHard && occupied <= 1) {
+  if (difficulty === 'ai' && occupied <= 1) {
     return tttOpeningBookMove(board);
   }
-  const searchDepth = isHard ? (occupied < 4 ? 3 : occupied < 10 ? 4 : 5) : (difficulty === 'medium' ? 2 : 1);
-  const candidateLimit = isHard ? (occupied < 8 ? 10 : 14) : (difficulty === 'medium' ? 12 : 18);
+
+  const searchDepth = difficulty === 'ai'
+    ? (occupied < 4 ? 2 : occupied < 10 ? 3 : 4)
+    : (difficulty === 'medium' ? 2 : 1);
+  const candidateLimit = difficulty === 'ai'
+    ? (occupied < 6 ? 6 : occupied < 12 ? 8 : 10)
+    : (difficulty === 'medium' ? 10 : 14);
   const candidates = tttOrderedCandidates(board, 'O', candidateLimit);
-  const searchCandidates = isHard ? candidates.slice(0, occupied < 6 ? 4 : occupied < 12 ? 5 : 6) : candidates;
+  const searchCandidates = difficulty === 'ai'
+    ? candidates.slice(0, occupied < 6 ? 3 : occupied < 12 ? 4 : 5)
+    : candidates;
 
   if (difficulty === 'noob') {
     return candidates[Math.floor(Math.random() * candidates.length)] ?? free[Math.floor(Math.random() * free.length)];
@@ -1159,11 +1176,12 @@ function tttBestMove(board, difficulty) {
   const memo = {};
 
   for (const idx of searchCandidates) {
+    if (deadline && typeof performance !== 'undefined' && performance.now() > deadline) break;
     if (board[idx]) continue;
     board[idx] = 'O';
     const immediateThreats = tttWinningMoves(board, 'X').length;
     const tactical = tttMoveHeuristic(board, idx, 'O') - immediateThreats * 280000 - tttCriticalThreatMoves(board, 'X').length * 220000 - tttThreatWindowMoves(board, 'X').length * 180000;
-    const searchScore = tttSearch(board, searchDepth, -Infinity, Infinity, false, memo);
+    const searchScore = tttSearch(board, searchDepth, -Infinity, Infinity, false, memo, deadline);
     const score = tactical + searchScore;
     board[idx] = '';
     if (score > bestScore) {
@@ -1173,6 +1191,7 @@ function tttBestMove(board, difficulty) {
   }
   return bestIdx;
 }
+
 
 function tttHardWinLog() {
   return [];
@@ -1727,7 +1746,7 @@ function triggerAboutAction() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v.1(250)–v.1(288)',
+      range: 'v.1(250)–v.1(289)',
       title: 'Aktuální úpravy',
       lines: [
         'Jídelna a kantýna teď používají shodné dny na jednom řádku.',
@@ -1862,32 +1881,242 @@ async function saveAdminRotationToSupabase(monthKey, rawText) {
   return normalized;
 }
 
+function adminRotationRowTemplate(section, row, rowIndex, machineCount, allowBlankTail) {
+  const cells = Array.from({ length: machineCount }, (_, i) => String(row && row.cells && row.cells[i] ? row.cells[i] : ''));
+  const date = String(row && row.date ? row.date : '').trim();
+  const hasAny = !!(date || cells.some(Boolean) || (row && row.shift) || (row && row.person) || (row && row.code) || (row && row.text));
+  if (!hasAny && !allowBlankTail) return '';
+  return [
+    '<tr data-rotation-section="' + escapeHtml(section) + '" data-rotation-row-index="' + String(rowIndex) + '">',
+    '  <td><input class="appMenuInlineInput" data-rot-field="date" value="' + escapeHtml(date) + '" placeholder="datum"></td>',
+    cells.map((value, idx) => '<td><input class="appMenuInlineInput appMenuInlineInputTiny" data-rot-field="cell-' + String(idx) + '" value="' + escapeHtml(value) + '" placeholder="' + escapeHtml(String(idx + 1)) + '"></td>').join(''),
+    '</tr>'
+  ].join('');
+}
+
+function adminNotesRowTemplate(row, rowIndex, allowBlankTail) {
+  const note = row || {};
+  const date = String(note.date || '').trim();
+  const person = String(note.person || '').trim();
+  const code = String(note.code || '').trim();
+  const text = String(note.text || '').trim();
+  const shift = String(note.shift || '').trim();
+  const hasAny = !!(date || person || code || text || shift);
+  if (!hasAny && !allowBlankTail) return '';
+  return [
+    '<tr data-note-row-index="' + String(rowIndex) + '">',
+    '  <td><input class="appMenuInlineInput" data-note-field="date" value="' + escapeHtml(date) + '" placeholder="datum"></td>',
+    '  <td><input class="appMenuInlineInput" data-note-field="person" value="' + escapeHtml(person) + '" placeholder="jméno"></td>',
+    '  <td><input class="appMenuInlineInput" data-note-field="code" value="' + escapeHtml(code) + '" placeholder="kód"></td>',
+    '  <td><input class="appMenuInlineInput" data-note-field="shift" value="' + escapeHtml(shift) + '" placeholder="směna"></td>',
+    '  <td><input class="appMenuInlineInput" data-note-field="text" value="' + escapeHtml(text) + '" placeholder="poznámka"></td>',
+    '</tr>'
+  ].join('');
+}
+
+function buildAdminMachineSettingsTableHtml() {
+  const rows = Array.isArray(app.machineSettingsRows) ? app.machineSettingsRows : [];
+  const dataRows = rows.length ? rows : [
+    { machine_key: 'TNKS01', label: 'TNKS01', category: 'general', speed: '', settings_json: {} },
+    { machine_key: 'TBKR07', label: 'TBKR07', category: 'general', speed: '', settings_json: {} },
+    { machine_key: 'TPKW01', label: 'TPKW01', category: 'general', speed: '', settings_json: {} },
+    { machine_key: '', label: '', category: 'general', speed: '', settings_json: {} }
+  ];
+  const tr = dataRows.map((row, idx) => {
+    const settingsText = typeof row.settings_json === 'string' ? row.settings_json : JSON.stringify(row.settings_json || {}, null, 0);
+    return [
+      '<tr data-machine-row-index="' + String(idx) + '">',
+      '  <td><input class="appMenuInlineInput" data-machine-field="machine_key" value="' + escapeHtml(String(row.machine_key || '')) + '" placeholder="kód"></td>',
+      '  <td><input class="appMenuInlineInput" data-machine-field="label" value="' + escapeHtml(String(row.label || '')) + '" placeholder="název"></td>',
+      '  <td><input class="appMenuInlineInput" data-machine-field="category" value="' + escapeHtml(String(row.category || 'general')) + '" placeholder="kategorie"></td>',
+      '  <td><input class="appMenuInlineInput" data-machine-field="speed" value="' + escapeHtml(String(row.speed ?? '')) + '" placeholder="rychlost"></td>',
+      '  <td><input class="appMenuInlineInput" data-machine-field="settings_json" value="' + escapeHtml(settingsText) + '" placeholder="{ }"></td>',
+      '</tr>'
+    ].join('');
+  }).join('');
+  return [
+    '<div class="appMenuSubSection">',
+    '  <div class="appMenuSubTitle">Kalkulačky a brusky</div>',
+    '  <div class="tableWrap appMenuTableWrap">',
+    '    <table class="appMenuTable appMenuAdminTable">',
+    '      <thead><tr><th>Kód</th><th>Název</th><th>Typ</th><th>Rychlost</th><th>Nastavení</th></tr></thead>',
+    '      <tbody>' + tr + '</tbody>',
+    '    </table>',
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
+function buildAdminRotationTableHtml(monthKey) {
+  const month = app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
+  if (!month) {
+    return '<div class="smallText">Pro tenhle měsíc zatím nejsou data.</div>';
+  }
+  const hardRows = Array.isArray(month.hard && month.hard.rows) ? month.hard.rows : [];
+  const softRows = Array.isArray(month.soft && month.soft.rows) ? month.soft.rows : [];
+  const notesRows = Array.isArray(month.notes) ? month.notes : [];
+  const hardMachines = Array.isArray(month.hard && month.hard.machines) ? month.hard.machines : HARD_MACHINE_HEADERS;
+  const softMachines = Array.isArray(month.soft && month.soft.machines) ? month.soft.machines : SOFT_MACHINE_HEADERS;
+
+  const renderRows = (section, rows, machineCount) => {
+    const withBlank = rows.concat([ { date: '', cells: Array(machineCount).fill('') } ]);
+    return withBlank.map((row, idx) => adminRotationRowTemplate(section, row, idx, machineCount, true)).join('');
+  };
+
+  const renderNotes = () => {
+    const withBlank = notesRows.concat([ { date: '', person: '', code: '', shift: '', text: '' } ]);
+    return withBlank.map((row, idx) => adminNotesRowTemplate(row, idx, true)).join('');
+  };
+
+  return [
+    '<div class="appMenuSubSection" id="adminRotationEditor">',
+    '  <div class="appMenuSubTitle">Rozpis – ' + escapeHtml(monthKey) + '</div>',
+    '  <div class="appMenuText">Uprav řádky v tabulce. Prázdné řádky se při uložení ignorují.</div>',
+    '  <div class="tableWrap appMenuTableWrap">',
+    '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense">',
+    '      <thead><tr><th colspan="' + String(1 + hardMachines.length) + '">Tvrdota</th></tr><tr><th>Datum</th>' + hardMachines.map(m => '<th>' + escapeHtml(m) + '</th>').join('') + '</tr></thead>',
+    '      <tbody>' + renderRows('hard', hardRows, hardMachines.length) + '</tbody>',
+    '    </table>',
+    '  </div>',
+    '  <div class="tableWrap appMenuTableWrap">',
+    '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense">',
+    '      <thead><tr><th colspan="' + String(1 + softMachines.length) + '">Měkota</th></tr><tr><th>Datum</th>' + softMachines.map(m => '<th>' + escapeHtml(m) + '</th>').join('') + '</tr></thead>',
+    '      <tbody>' + renderRows('soft', softRows, softMachines.length) + '</tbody>',
+    '    </table>',
+    '  </div>',
+    '  <div class="tableWrap appMenuTableWrap">',
+    '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense">',
+    '      <thead><tr><th>Datum</th><th>Jméno</th><th>Kód</th><th>Směna</th><th>Poznámka</th></tr></thead>',
+    '      <tbody>' + renderNotes() + '</tbody>',
+    '    </table>',
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
+function readAdminMachineSettingsFromDom() {
+  const rows = [];
+  document.querySelectorAll('#appMenuBody tr[data-machine-row-index]').forEach((tr) => {
+    const get = (field) => tr.querySelector('[data-machine-field="' + field + '"]')?.value ?? '';
+    const machine_key = String(get('machine_key')).trim();
+    const label = String(get('label')).trim();
+    const category = String(get('category')).trim() || 'general';
+    const speedRaw = String(get('speed')).trim();
+    const settingsRaw = String(get('settings_json')).trim();
+    if (!machine_key && !label && !speedRaw && !settingsRaw) return;
+    let settings_json = {};
+    if (settingsRaw) {
+      try { settings_json = JSON.parse(settingsRaw); } catch (err) { settings_json = { raw: settingsRaw }; }
+    }
+    rows.push({
+      machine_key,
+      label: label || machine_key,
+      category,
+      speed: speedRaw,
+      settings_json
+    });
+  });
+  return rows;
+}
+
+function readAdminRotationFromDom(monthKey) {
+  const fallback = app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
+  const month = fallback ? JSON.parse(JSON.stringify(fallback)) : {
+    hard: { title: 'Rotace tvrdota', machines: HARD_MACHINE_HEADERS.slice(), rows: [] },
+    soft: { title: 'Rotace měkota', machines: SOFT_MACHINE_HEADERS.slice(), rows: [] },
+    notes: []
+  };
+
+  const root = document.getElementById('appMenuBody');
+  if (!root) return month;
+
+  const readSection = (section, machineCount) => {
+    const rows = [];
+    root.querySelectorAll('tr[data-rotation-section="' + section + '"]').forEach((tr) => {
+      const date = String(tr.querySelector('[data-rot-field="date"]')?.value || '').trim();
+      const cells = Array.from({ length: machineCount }, (_, i) => String(tr.querySelector('[data-rot-field="cell-' + i + '"]')?.value || '').trim());
+      if (!date && cells.every(v => !v)) return;
+      rows.push({ date, cells });
+    });
+    month[section] = month[section] || {};
+    month[section].rows = rows;
+    month[section].machines = section === 'hard' ? HARD_MACHINE_HEADERS.slice() : SOFT_MACHINE_HEADERS.slice();
+    if (!month[section].title) month[section].title = section === 'hard' ? 'Rotace tvrdota' : 'Rotace měkota';
+  };
+
+  readSection('hard', HARD_MACHINE_HEADERS.length);
+  readSection('soft', SOFT_MACHINE_HEADERS.length);
+
+  const notes = [];
+  root.querySelectorAll('tr[data-note-row-index]').forEach((tr) => {
+    const get = (field) => String(tr.querySelector('[data-note-field="' + field + '"]')?.value || '').trim();
+    const note = {
+      date: get('date'),
+      person: get('person'),
+      code: get('code'),
+      shift: get('shift'),
+      text: get('text')
+    };
+    if (!note.date && !note.person && !note.code && !note.shift && !note.text) return;
+    notes.push(note);
+  });
+  month.notes = notes;
+
+  return normalizeMonthForImport(month, fallback);
+}
+
+async function saveAdminRotationFromDom(monthKey) {
+  if (!monthKey) throw new Error('Chybí měsíc.');
+  const fallback = app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
+  const normalized = readAdminRotationFromDom(monthKey);
+  if (!app.rotation.months) app.rotation.months = {};
+  app.rotation.months[monthKey] = normalized;
+  app.rotation = normalizeRotationData(app.rotation);
+  app.selectedMonth = monthKey;
+  saveRotationData();
+  renderRotace();
+  if (typeof renderMonth === 'function') renderMonth(monthKey);
+  if (app.selectedName && typeof renderPerson === 'function') renderPerson(app.selectedName);
+  if (app.adminUnlocked) {
+    await saveRotationToSupabase(app.rotation, { source: 'admin-menu', monthKey });
+  }
+  return normalized;
+}
+
+
 function renderAdminMenuBody(body) {
   const months = getAdminRotationMonthKeys();
   const monthKey = getAdminSelectedMonthKey();
   const title = months.length ? 'Administrace rozpisu' : 'Administrace';
+  const machineRows = Array.isArray(app.machineSettingsRows) ? app.machineSettingsRows : [];
   body.innerHTML = [
     '<div class="appMenuCard appMenuAdminCard">',
     '  <div class="appMenuCardTitle">' + escapeHtml(title) + '</div>',
     '  <div class="appMenuText">',
-    '    <div>Vyber měsíc, načti ho do pole, uprav ručně a ulož online. Změna se hned propíše i na další zařízení.</div>',
+    '    <div>Vyber měsíc, uprav řádky v tabulce a ulož online. Kalkulačky a brusky jsou taky jen přes tabulku, bez kódování.</div>',
     '  </div>',
     '  <label class="appMenuLabel" for="adminMonthSelect">Měsíc</label>',
     '  <select id="adminMonthSelect" class="appMenuSelect">' + months.map(m => '<option value="' + escapeHtml(m) + '"' + (m === monthKey ? ' selected' : '') + '>' + escapeHtml(m) + '</option>').join('') + '</select>',
     '  <div class="appMenuActionRow">',
     '    <button type="button" class="appMenuAction" data-admin-action="load-month">Načíst měsíc</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="load-online">Načíst online</button>',
+    '    <button type="button" class="appMenuAction isActive" data-admin-action="save-rotation">Uložit rozpis</button>',
     '  </div>',
-    '  <label class="appMenuLabel" for="adminRotationJson">Obsah měsíce</label>',
-    '  <textarea id="adminRotationJson" class="appMenuTextarea" spellcheck="false">' + escapeHtml(getAdminMonthEditorValue(monthKey)) + '</textarea>',
+    buildAdminMachineSettingsTableHtml(),
     '  <div class="appMenuActionRow">',
-    '    <button type="button" class="appMenuAction isActive" data-admin-action="save-online">Uložit online</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="load-machines">Načíst stroje</button>',
+    '    <button type="button" class="appMenuAction isActive" data-admin-action="save-machines">Uložit stroje</button>',
+    '  </div>',
+    buildAdminRotationTableHtml(monthKey),
+    '  <div class="appMenuActionRow">',
+    '    <button type="button" class="appMenuAction" data-admin-action="import">Import Excelu</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="export">Export ZIP</button>',
     '    <button type="button" class="appMenuAction" data-menu-back="1">Zpět</button>',
     '  </div>',
-    '',
     '</div>'
   ].join('');
 }
+
 
 function openAppMenu(view) {
   const page = ensureAppMenuOverlay();
@@ -1907,7 +2136,7 @@ function openAppMenu(view) {
         '  <div class="appMenuVersion">' + escapeHtml(versionText || '—') + '</div>',
         '  <div class="appMenuText">',
         '    <div>Aktuální verze je nahoře, starší novinky jsou pod ní od nejnovějších po nejstarší.</div>',
-        '    <div>Import i export zůstávají schované v menu, aby zbytek aplikace působil čistě.</div>',
+        '    <div>Import i export jsou schované v administraci, aby zbytek aplikace působil čistě.</div>',
         '  </div>',
         '  ' + buildAppHistoryHtml(versionText),
         '  <button type="button" class="appMenuAction appMenuBack" data-menu-back="1">Zpět</button>',
@@ -1946,8 +2175,6 @@ function openAppMenu(view) {
     } else {
       body.innerHTML = [
         '<div class="appMenuGrid">',
-        '  <button type="button" class="appMenuAction" data-menu-action="import">Import Excelu</button>',
-        '  <button type="button" class="appMenuAction" data-menu-action="export">Export ZIP</button>',
         '  <button type="button" class="appMenuAction" data-menu-action="settings">Nastavení</button>',
         '  <button type="button" class="appMenuAction" data-menu-action="about">O aplikaci</button>',
         '  <button type="button" class="appMenuAction" data-menu-action="contact">Kontakt</button>',

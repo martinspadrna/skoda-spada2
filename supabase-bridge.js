@@ -164,6 +164,109 @@
     }
   }
 
+  async function loadMachineSettings() {
+    const client = getClient();
+    if (!client) return [];
+    try {
+      const { data, error } = await client
+        .from('machine_settings')
+        .select('*')
+        .order('machine_key', { ascending: true });
+      if (error) throw error;
+      return Array.isArray(data) ? data : [];
+    } catch (err) {
+      state.lastError = err;
+      console.error('Supabase machine settings load failed', err);
+      return [];
+    }
+  }
+
+  async function saveMachineSettings(rows) {
+    const client = getClient();
+    if (!client) return { ok: false, reason: 'missing-client' };
+    try {
+      const list = Array.isArray(rows) ? rows : [];
+      for (const row of list) {
+        const payload = {
+          machine_key: String(row && row.machine_key ? row.machine_key : '').trim(),
+          label: String(row && row.label ? row.label : '').trim(),
+          category: String(row && row.category ? row.category : 'general').trim(),
+          speed: row && row.speed !== '' && row.speed !== null && row.speed !== undefined ? Number(row.speed) : null,
+          settings_json: row && typeof row.settings_json === 'object' && row.settings_json !== null
+            ? row.settings_json
+            : (() => {
+                try { return row && row.settings_json ? JSON.parse(String(row.settings_json)) : {}; }
+                catch (err) { return {}; }
+              })(),
+          updated_at: new Date().toISOString()
+        };
+        if (!payload.machine_key || !payload.label) continue;
+        const { error } = await client.from('machine_settings').upsert([payload], { onConflict: 'machine_key' });
+        if (error) throw error;
+      }
+      return { ok: true };
+    } catch (err) {
+      state.lastError = err;
+      console.error('Supabase machine settings save failed', err);
+      return { ok: false, error: err };
+    }
+  }
+
+  async function loadRotationMonthEntries(monthStart) {
+    const client = getClient();
+    if (!client) return [];
+    try {
+      const { data, error } = await client
+        .from('rotation_entries')
+        .select('*')
+        .eq('month_start', monthStart)
+        .order('row_order', { ascending: true })
+        .order('employee_name', { ascending: true });
+      if (error) throw error;
+      return Array.isArray(data) ? data : [];
+    } catch (err) {
+      state.lastError = err;
+      console.error('Supabase rotation entries load failed', err);
+      return [];
+    }
+  }
+
+  async function saveRotationMonthEntries(monthStart, label, rows) {
+    const client = getClient();
+    if (!client) return { ok: false, reason: 'missing-client' };
+    try {
+      const monthRow = {
+        month_start: monthStart,
+        label: String(label || '').trim() || null,
+        updated_at: new Date().toISOString()
+      };
+      const { error: monthErr } = await client.from('rotation_months').upsert([monthRow], { onConflict: 'month_start' });
+      if (monthErr) throw monthErr;
+
+      const { error: deleteErr } = await client.from('rotation_entries').delete().eq('month_start', monthStart);
+      if (deleteErr) throw deleteErr;
+
+      const payloadRows = (Array.isArray(rows) ? rows : []).map((row, idx) => ({
+        month_start: monthStart,
+        employee_name: String(row && row.employee_name ? row.employee_name : '').trim(),
+        target_machine: String(row && row.target_machine ? row.target_machine : '').trim() || null,
+        assignment_type: String(row && row.assignment_type ? row.assignment_type : 'work').trim(),
+        shift_code: String(row && row.shift_code ? row.shift_code : '').trim() || null,
+        note: String(row && row.note ? row.note : '').trim() || null,
+        row_order: Number.isFinite(Number(row && row.row_order)) ? Number(row.row_order) : idx
+      })).filter(row => row.employee_name || row.target_machine || row.shift_code || row.note || row.assignment_type !== 'work');
+      if (payloadRows.length) {
+        const { error: insertErr } = await client.from('rotation_entries').insert(payloadRows);
+        if (insertErr) throw insertErr;
+      }
+      return { ok: true };
+    } catch (err) {
+      state.lastError = err;
+      console.error('Supabase rotation entries save failed', err);
+      return { ok: false, error: err };
+    }
+  }
+
   function init() {
     if (state.ready) return refreshPublicData();
     if (!hasClient()) {
@@ -179,6 +282,10 @@
     loadRotationState,
     saveRotationState,
     loadGomokuWins,
+    loadMachineSettings,
+    saveMachineSettings,
+    loadRotationMonthEntries,
+    saveRotationMonthEntries,
     getBridgeText,
     getCanteenStatus,
     getState: () => ({ ...state })

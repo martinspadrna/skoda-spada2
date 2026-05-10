@@ -2152,6 +2152,68 @@ body.reduceMotion *::after{
   font:12px/1.45 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   white-space:pre;
 }
+
+.appMenuSubSection{
+  display:grid;
+  gap:10px;
+  margin-top:4px;
+}
+.appMenuSubTitle{
+  font-size:13px;
+  font-weight:800;
+  letter-spacing:.02em;
+  color:rgba(244,249,245,.92);
+}
+.appMenuTableWrap{
+  overflow:auto;
+  border:1px solid rgba(124,255,124,.12);
+  border-radius:18px;
+  background:rgba(7,10,8,.48);
+}
+.appMenuAdminTable{
+  width:100%;
+  min-width:760px;
+  border-collapse:separate;
+  border-spacing:0;
+}
+.appMenuAdminTable thead th{
+  position:sticky;
+  top:0;
+  z-index:1;
+  background:rgba(7,10,8,.92);
+  color:rgba(231,255,240,.78);
+  font-size:11px;
+  text-align:left;
+  padding:10px 8px;
+  border-bottom:1px solid rgba(124,255,124,.10);
+}
+.appMenuAdminTable td{
+  padding:6px 6px;
+  border-bottom:1px solid rgba(124,255,124,.08);
+  vertical-align:top;
+}
+.appMenuInlineInput{
+  width:100%;
+  min-height:34px;
+  border:1px solid rgba(124,255,124,.14);
+  border-radius:12px;
+  background:rgba(255,255,255,.04);
+  color:#f4f9f5;
+  padding:8px 10px;
+  font-size:13px;
+  box-sizing:border-box;
+}
+.appMenuInlineInputTiny{
+  min-width:72px;
+  text-align:center;
+  padding:8px 6px;
+}
+.appMenuAdminTableDense{
+  min-width:840px;
+}
+.appMenuAdminTableDense td{
+  padding:5px 4px;
+}
 .appMenuActionRow{
   display:flex;
   gap:8px;
