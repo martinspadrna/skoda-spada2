@@ -589,7 +589,7 @@
 }
 
 
-/* v1(256) dashboard icon sizing fix */
+/* v1(257) dashboard icon sizing fix */
 #home .dashboardCard .dashboardIcon.dashboardIconInline,
 .dashboardCard .dashboardIcon.dashboardIconInline{
   width:20px !important;

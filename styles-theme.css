@@ -1868,3 +1868,27 @@ body.reduceMotion *::after{
   width:4px !important;
   height:20px !important;
 }
+
+
+/* v1(257) dashboard + nav icon polish */
+.dashboardTop{align-items:center !important;}
+.dashboardLabelRow{gap:8px !important; align-items:center !important;}
+#home .dashboardCard .dashboardIcon.dashboardIconInline,
+.dashboardCard .dashboardIcon.dashboardIconInline{width:30px !important; height:30px !important; flex:0 0 30px !important; align-self:center !important;}
+#home .dashboardCard .dashboardIcon.dashboardIconInline img,
+#home .dashboardCard .dashboardIcon.dashboardIconInline svg,
+.dashboardCard .dashboardIcon.dashboardIconInline img,
+.dashboardCard .dashboardIcon.dashboardIconInline svg{width:100% !important; height:100% !important; object-fit:contain !important; display:block !important;}
+.bottomNavBtn{color:rgba(186,190,186,.58) !important;}
+.bottomNavBtn.active{color:var(--green2) !important;}
+.bottomNavBtn .bottomNavIcon,
+.bottomNavBtn .bottomNavIcon svg{width:22px !important; height:22px !important; display:block !important; color:currentColor !important; fill:none !important; stroke:currentColor !important; stroke-width:1.9 !important; stroke-linecap:round !important; stroke-linejoin:round !important;}
+.bottomNavBtn .bottomNavIcon{flex:0 0 22px !important; line-height:0 !important; font-size:0 !important;}
+.bottomNavBtn .bottomNavLabel{color:currentColor !important;}
+.bottomNavBtn:not(.active) .bottomNavIcon,
+.bottomNavBtn:not(.active) .bottomNavLabel,
+.bottomNavMenuBtn:not(.active) .moreIcon{color:rgba(186,190,186,.58) !important;}
+.bottomNavBtn.active .bottomNavIcon,
+.bottomNavBtn.active .bottomNavLabel,
+.bottomNavMenuBtn.active .moreIcon{color:var(--green2) !important;}
+.bottomNavMenuBtn .moreIcon{width:10px !important; height:24px !important;}
