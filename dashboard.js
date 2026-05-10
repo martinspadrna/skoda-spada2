@@ -32,6 +32,7 @@ function updateDashboard() {
         ? 'Směna D začne za: ' + formatDuration(dState.next.start - now)
         : '');
     const heroLine3 = (!active || active.team !== 'D') && nextAbsences.length ? 'Na další směně chybí: ' + nextAbsences.join(', ') : '';
+    const heroLine4 = supabaseAnnouncement && supabaseAnnouncement.message ? (supabaseAnnouncement.title ? (supabaseAnnouncement.title + ': ' + supabaseAnnouncement.message) : supabaseAnnouncement.message) : '';
     const heroProgress = active && !showSpecial && active.start && active.end
       ? Math.max(0, Math.min(100, ((now.getTime() - active.start.getTime()) / (active.end.getTime() - active.start.getTime())) * 100))
       : 0;
@@ -40,6 +41,7 @@ function updateDashboard() {
       '<div class="dashboardHeroLine1">' + heroLine1 + '</div>',
       heroLine2 ? '<div class="dashboardHeroLine2">' + esc(heroLine2) + '</div>' : '',
       heroLine3 ? '<div class="dashboardHeroLine3">' + esc(heroLine3) + '</div>' : '',
+      heroLine4 ? '<div class="dashboardHeroLine3">' + esc(heroLine4) + '</div>' : '',
       '<div class="dashboardHeroBarRow">',
       '<div class="dashboardHeroBar"><span style="width:' + heroProgress.toFixed(1) + '%"></span></div>',
       heroProgressText ? '<div class="dashboardHeroBarPercent">' + esc(heroProgressText) + '</div>' : '',
@@ -98,6 +100,8 @@ function updateDashboard() {
   const payMeta = payDays === null
     ? ''
     : (payDays === 0 ? 'dnes' : 'za ' + payDays + ' ' + (payDays === 1 ? 'den' : (payDays >= 2 && payDays <= 4 ? 'dny' : 'dní')));
+  const supabaseAnnouncement = typeof getSupabaseAnnouncement === 'function' ? getSupabaseAnnouncement() : null;
+  const supabaseCanteen = typeof getSupabaseCanteenStatus === 'function' ? getSupabaseCanteenStatus() : null;
 
   setCard('dashCalendar', 'Kalendář', formatCalendarDateLabel(now), getCalendarSpecialText(now), '', false, calendarIcon);
   setCard('dashCountdown', 'Zbývá', active && !showSpecial ? formatDuration(active.end - now) : '—', '', '', false, clockIcon);
@@ -107,17 +111,17 @@ function updateDashboard() {
   const foodText = status => status.isOpen && status.active ? ('Otevřeno do ' + formatFoodTime(status.active.end)) : 'Zavřeno';
   const foodDot = status => status.isOpen ? 'is-open' : 'is-closed';
   const foodMeta = status => {
-    if (status.isOpen && status.active) return 'do ' + formatFoodTime(status.active.end);
-    if (!status.next) return 'otevření není známé';
+    const remoteNote = supabaseCanteen && supabaseCanteen.note ? String(supabaseCanteen.note).trim() : '';
+    if (status.isOpen && status.active) return remoteNote ? ('do ' + formatFoodTime(status.active.end) + ' · ' + remoteNote) : ('do ' + formatFoodTime(status.active.end));
+    if (!status.next) return remoteNote || 'otevření není známé';
     const today = new Date(now);
     today.setHours(0, 0, 0, 0);
     const nextStart = new Date(status.next.start);
     nextStart.setHours(0, 0, 0, 0);
     const diffDays = Math.round((nextStart - today) / 86400000);
     const time = formatFoodTime(status.next.start);
-    if (diffDays <= 0) return 'otevřeno dnes v ' + time;
-    if (diffDays === 1) return 'otevřeno zítra v ' + time;
-    return 'otevřeno ' + formatFoodRelativeLabel(status.next.start, now) + ' v ' + time;
+    const baseText = diffDays <= 0 ? ('otevřeno dnes v ' + time) : (diffDays === 1 ? ('otevřeno zítra v ' + time) : ('otevřeno ' + formatFoodRelativeLabel(status.next.start, now) + ' v ' + time));
+    return remoteNote ? (baseText + ' · ' + remoteNote) : baseText;
   };
   setCard('dashKantyna', 'Kantýna', foodText(kantyna), foodMeta(kantyna), foodDot(kantyna), true, croissantIcon);
   setCard('dashJidelna', 'Jídelna', foodText(jidelna), foodMeta(jidelna), foodDot(jidelna), true, plateIcon);
