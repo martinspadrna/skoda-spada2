@@ -436,7 +436,7 @@ function ensureTicTacToeOverlay() {
     '<div class="tttShell" role="dialog" aria-modal="true" aria-labelledby="tttTitle">',
     '  <div class="tttHeader">',
     '    <div class="tttHeaderTitle">',
-    '      <h2 id="tttTitle">Piškvorky</h2>',
+    '      <h2 id="tttTitle" style="display:none;">Piškvorky</h2>',
     '      <span>easter egg · 10 × 21 · 5 v řadě</span>',
     '    </div>',
     '    <button type="button" class="tttClose" aria-label="Zavřít">×</button>',
@@ -883,7 +883,8 @@ function tttMoveHeuristic(board, index, mark) {
   if (tttWinner(board).winner === opponent) score += 900000;
   board[index] = mark;
 
-  const forkRisk = tttOpponentForkRisk(board, opponent, 10);
+  const occupied = board.reduce((sum, cell) => sum + (cell ? 1 : 0), 0);
+  const forkRisk = occupied >= 5 ? tttOpponentForkRisk(board, opponent, 8) : 0;
   if (forkRisk >= 2) score -= 420000;
   else if (forkRisk >= 1) score -= 210000;
 
@@ -968,7 +969,7 @@ function tttSearch(board, depth, alpha, beta, maximizing, memo) {
   }
 
   const mark = maximizing ? 'O' : 'X';
-  let moves = tttOrderedCandidates(board, mark, maximizing ? 32 : 24);
+  let moves = tttOrderedCandidates(board, mark, maximizing ? 12 : 10);
   if (!moves.length) moves = tttCandidateMoves(board, 4);
   if (!moves.length) {
     const leaf = tttEvaluateBoard(board);
@@ -1132,9 +1133,10 @@ function tttBestMove(board, difficulty) {
   if (isHard && occupied <= 1) {
     return tttOpeningBookMove(board);
   }
-  const searchDepth = isHard ? (occupied < 6 ? 7 : occupied < 18 ? 10 : 12) : (difficulty === 'medium' ? 2 : 1);
-  const candidateLimit = isHard ? (occupied < 8 ? 24 : 48) : (difficulty === 'medium' ? 12 : 18);
+  const searchDepth = isHard ? (occupied < 4 ? 3 : occupied < 10 ? 4 : 5) : (difficulty === 'medium' ? 2 : 1);
+  const candidateLimit = isHard ? (occupied < 8 ? 10 : 14) : (difficulty === 'medium' ? 12 : 18);
   const candidates = tttOrderedCandidates(board, 'O', candidateLimit);
+  const searchCandidates = isHard ? candidates.slice(0, occupied < 6 ? 4 : occupied < 12 ? 5 : 6) : candidates;
 
   if (difficulty === 'noob') {
     return candidates[Math.floor(Math.random() * candidates.length)] ?? free[Math.floor(Math.random() * free.length)];
@@ -1156,7 +1158,7 @@ function tttBestMove(board, difficulty) {
   let bestScore = -Infinity;
   const memo = {};
 
-  for (const idx of candidates) {
+  for (const idx of searchCandidates) {
     if (board[idx]) continue;
     board[idx] = 'O';
     const immediateThreats = tttWinningMoves(board, 'X').length;
@@ -1173,23 +1175,11 @@ function tttBestMove(board, difficulty) {
 }
 
 function tttHardWinLog() {
-  try {
-    const raw = localStorage.getItem(TTT_HARD_WIN_KEY);
-    const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch (err) {
-    return [];
-  }
+  return [];
 }
 
 function tttSaveHardWin(entry) {
-  const next = tttHardWinLog();
-  next.unshift(entry);
-  try {
-    localStorage.setItem(TTT_HARD_WIN_KEY, JSON.stringify(next.slice(0, 100)));
-  } catch (err) {
-    console.warn(err);
-  }
+  void entry;
 }
 
 function tttFormatElapsed(ms) {
@@ -1462,7 +1452,7 @@ function tttRender() {
       '</div>',
       '<div class="tttCard tttWinHistory">',
       '  <div class="tttSectionTitle">Kdo porazil nejtvrdší AI</div>',
-      '  <div class="tttNote">Žebříček se načítá lokálně i online přes Supabase.</div>',
+      '  <div class="tttNote">Žebříček je online přes Supabase.</div>',
       '  ' + tttBuildHardWinTableHtml(),
       '</div>'
     ].join('');
@@ -1604,39 +1594,46 @@ function tttHandleMove(index) {
 
   setTimeout(() => {
     requestAnimationFrame(() => {
-    try {
-      const fresh = tttGetState();
-      if (fresh.gameOver) return;
-      const aiMove = tttBestMove(fresh.board.slice(), fresh.difficulty || 'ai');
-      if (aiMove < 0 || fresh.board[aiMove]) return;
-      fresh.board[aiMove] = 'O';
-      fresh.moveCount += 1;
-      fresh.moveCountO += 1;
-      const afterAi = tttWinner(fresh.board);
-      if (afterAi.winner) {
-        fresh.gameOver = true;
-        fresh.winner = afterAi.winner;
-        fresh.message = afterAi.winner === 'draw'
-          ? 'Remíza. Dobře hrané.'
-          : 'AI vyhrála. Zkus to znovu.';
+      try {
+        const fresh = tttGetState();
+        if (fresh.gameOver) return;
+        const snapshot = fresh.board.slice();
+        const aiMove = tttBestMove(snapshot, fresh.difficulty || 'ai');
+        if (aiMove < 0 || fresh.board[aiMove]) {
+          fresh.turn = 'X';
+          fresh.message = 'Hraješ za X.';
+          tttRender();
+          requestAnimationFrame(tttLayoutBoard);
+          return;
+        }
+        fresh.board[aiMove] = 'O';
+        fresh.moveCount += 1;
+        fresh.moveCountO += 1;
+        const afterAi = tttWinner(fresh.board);
+        if (afterAi.winner) {
+          fresh.gameOver = true;
+          fresh.winner = afterAi.winner;
+          fresh.message = afterAi.winner === 'draw'
+            ? 'Remíza. Dobře hrané.'
+            : 'AI vyhrála. Zkus to znovu.';
+          tttRender();
+          requestAnimationFrame(tttLayoutBoard);
+          return;
+        }
+        fresh.turn = 'X';
+        fresh.message = 'Hraješ za X.';
         tttRender();
         requestAnimationFrame(tttLayoutBoard);
-        return;
+      } catch (err) {
+        console.warn('TTT AI move failed', err);
+        const fresh = tttGetState();
+        fresh.turn = 'X';
+        fresh.message = 'AI se na chvíli zasekla. Zkus tah znovu.';
+        tttRender();
+        requestAnimationFrame(tttLayoutBoard);
       }
-      fresh.turn = 'X';
-      fresh.message = 'Hraješ za X.';
-      tttRender();
-      requestAnimationFrame(tttLayoutBoard);
-    } catch (err) {
-      console.warn('TTT AI move failed', err);
-      const fresh = tttGetState();
-      fresh.turn = 'X';
-      fresh.message = 'AI se na chvíli zasekla. Zkus tah znovu.';
-      tttRender();
-      requestAnimationFrame(tttLayoutBoard);
-    }
     });
-  }, 180);
+  }, 90);
 }
 
 function resetTicTacToeGame(keepScreen) {
@@ -1730,14 +1727,14 @@ function triggerAboutAction() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v.1(250)–v.1(286)',
+      range: 'v.1(250)–v.1(288)',
       title: 'Aktuální úpravy',
       lines: [
         'Jídelna a kantýna teď používají shodné dny na jednom řádku.',
         'Dashboard ukazuje další směnu D, kdo na ní chybí, a u průběhu směny i procenta.',
         'Odpočet do dovolené doplňuje, jestli jde o CZD nebo Vánoce.',
         'Kalkulačky pro frézky a brusy umí dopočítat i čas hotovosti.',
-        'Bonus: piškvorky se schovávají za trojitý klik na O aplikaci.'
+        'Bonus: piškvorky se otevírají po trojkliku na O aplikaci.'
       ]
     },
     {

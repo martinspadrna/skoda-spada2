@@ -1,38 +1,43 @@
-// Extracted dashboard logic (v1(286))
+// Extracted dashboard logic (v1(288))
 function updateDashboard() {
-  const now = typeof getPragueNow === "function" ? getPragueNow(new Date()) : new Date();
-  const active = getActiveShiftNow(now);
-  const dState = getTeamShiftState(now, "D");
-  const special = getSpecialWorkInfo(now);
+  const now = typeof getPragueNow === 'function' ? getPragueNow(new Date()) : new Date();
+  const active = typeof getActiveShiftNow === 'function' ? getActiveShiftNow(now) : null;
+  const dState = typeof getTeamShiftState === 'function' ? getTeamShiftState(now, 'D') : null;
+  const special = typeof getSpecialWorkInfo === 'function' ? getSpecialWorkInfo(now) : null;
   const sameDay = (a, b) => a && b && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
-  const showSpecial = special && (!active || sameDay(active.start, now));
-  const vacationCountdown = typeof getVacationCountdown === "function"
+  const showSpecial = !!(special && (!active || sameDay(active.start, now)));
+  const vacationCountdown = typeof getVacationCountdown === 'function'
     ? getVacationCountdown(now)
-    : { text: "--", meta: "" };
-  const esc = typeof escapeHtml === "function"
+    : { text: '--', meta: '' };
+  const esc = typeof escapeHtml === 'function'
     ? escapeHtml
-    : (value) => String(value ?? "").replace(/[&<>"']/g, ch => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#39;"
+    : (value) => String(value ?? '').replace(/[&<>"']/g, ch => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
       }[ch]));
+  const foodLocations = (typeof FOOD_LOCATIONS !== 'undefined' && Array.isArray(FOOD_LOCATIONS)) ? FOOD_LOCATIONS : [];
+  const firstFoodLocation = foodLocations[0] || null;
+  const secondFoodLocation = foodLocations[1] || null;
+  const hasFindFoodStatus = typeof findFoodStatus === 'function';
+  const kantyna = firstFoodLocation && hasFindFoodStatus ? findFoodStatus(firstFoodLocation, now) : null;
+  const jidelna = secondFoodLocation && hasFindFoodStatus ? findFoodStatus(secondFoodLocation, now) : null;
 
   const hero = document.getElementById('dashHero');
   if (hero) {
     const currentAbsences = active && active.team === 'D' ? getAbsenceNamesForDate(active.start || now) : [];
-    const nextAbsences = (!active || active.team !== 'D') && dState.next ? getAbsenceNamesForDate(dState.next.start) : [];
+    const nextAbsences = (!active || active.team !== 'D') && dState && dState.next ? getAbsenceNamesForDate(dState.next.start) : [];
     const heroLine1 = active && !showSpecial
       ? '<span class="dashboardHeroLine1Text">V práci: směna ' + active.team + (active.label ? ' (' + active.label + ')' : '') + '</span>'
       : '<span class="dashboardHeroLine1Text">' + (special ? 'Dnes se nepracuje' : '—') + '</span>';
     const heroLine2 = active && active.team === 'D'
       ? (currentAbsences.length ? 'Aktuálně chybí: ' + currentAbsences.join(', ') : 'Aktuálně nechybí nikdo')
-      : ((!active || active.team !== 'D') && dState.next
+      : ((!active || active.team !== 'D') && dState && dState.next
         ? 'Směna D začne za: ' + formatDuration(dState.next.start - now)
         : '');
     const heroLine3 = (!active || active.team !== 'D') && nextAbsences.length ? 'Na další směně chybí: ' + nextAbsences.join(', ') : '';
-    const heroLine4 = supabaseAnnouncement && supabaseAnnouncement.message ? (supabaseAnnouncement.title ? (supabaseAnnouncement.title + ': ' + supabaseAnnouncement.message) : supabaseAnnouncement.message) : '';
     const heroProgress = active && !showSpecial && active.start && active.end
       ? Math.max(0, Math.min(100, ((now.getTime() - active.start.getTime()) / (active.end.getTime() - active.start.getTime())) * 100))
       : 0;
@@ -41,7 +46,6 @@ function updateDashboard() {
       '<div class="dashboardHeroLine1">' + heroLine1 + '</div>',
       heroLine2 ? '<div class="dashboardHeroLine2">' + esc(heroLine2) + '</div>' : '',
       heroLine3 ? '<div class="dashboardHeroLine3">' + esc(heroLine3) + '</div>' : '',
-      heroLine4 ? '<div class="dashboardHeroLine3">' + esc(heroLine4) + '</div>' : '',
       '<div class="dashboardHeroBarRow">',
       '<div class="dashboardHeroBar"><span style="width:' + heroProgress.toFixed(1) + '%"></span></div>',
       heroProgressText ? '<div class="dashboardHeroBarPercent">' + esc(heroProgressText) + '</div>' : '',
@@ -100,28 +104,20 @@ function updateDashboard() {
   const payMeta = payDays === null
     ? ''
     : (payDays === 0 ? 'dnes' : 'za ' + payDays + ' ' + (payDays === 1 ? 'den' : (payDays >= 2 && payDays <= 4 ? 'dny' : 'dní')));
-  const supabaseAnnouncement = typeof getSupabaseAnnouncement === 'function' ? getSupabaseAnnouncement() : null;
-  const supabaseCanteen = typeof getSupabaseCanteenStatus === 'function' ? getSupabaseCanteenStatus() : null;
-
   setCard('dashCalendar', 'Kalendář', formatCalendarDateLabel(now), getCalendarSpecialText(now), '', false, calendarIcon);
   setCard('dashCountdown', 'Zbývá', active && !showSpecial ? formatDuration(active.end - now) : '—', '', '', false, clockIcon);
 
-  const kantyna = findFoodStatus(FOOD_LOCATIONS[0], now);
-  const jidelna = findFoodStatus(FOOD_LOCATIONS[1], now);
   const foodText = status => status.isOpen && status.active ? ('Otevřeno do ' + formatFoodTime(status.active.end)) : 'Zavřeno';
   const foodDot = status => status.isOpen ? 'is-open' : 'is-closed';
   const foodMeta = status => {
-    const remoteNote = supabaseCanteen && supabaseCanteen.note ? String(supabaseCanteen.note).trim() : '';
-    if (status.isOpen && status.active) return remoteNote ? ('do ' + formatFoodTime(status.active.end) + ' · ' + remoteNote) : ('do ' + formatFoodTime(status.active.end));
-    if (!status.next) return remoteNote || 'otevření není známé';
+    if (!status.next) return 'otevření není známé';
     const today = new Date(now);
     today.setHours(0, 0, 0, 0);
     const nextStart = new Date(status.next.start);
     nextStart.setHours(0, 0, 0, 0);
     const diffDays = Math.round((nextStart - today) / 86400000);
     const time = formatFoodTime(status.next.start);
-    const baseText = diffDays <= 0 ? ('otevřeno dnes v ' + time) : (diffDays === 1 ? ('otevřeno zítra v ' + time) : ('otevřeno ' + formatFoodRelativeLabel(status.next.start, now) + ' v ' + time));
-    return remoteNote ? (baseText + ' · ' + remoteNote) : baseText;
+    return diffDays <= 0 ? ('otevřeno dnes v ' + time) : (diffDays === 1 ? ('otevřeno zítra v ' + time) : ('otevřeno ' + formatFoodRelativeLabel(status.next.start, now) + ' v ' + time));
   };
   setCard('dashKantyna', 'Kantýna', foodText(kantyna), foodMeta(kantyna), foodDot(kantyna), true, croissantIcon);
   setCard('dashJidelna', 'Jídelna', foodText(jidelna), foodMeta(jidelna), foodDot(jidelna), true, plateIcon);
@@ -184,7 +180,7 @@ function homeLooksUnpainted() {
   const countValue = count?.querySelector('.dashboardValue')?.textContent?.trim() || '';
   const kantynaValue = kantyna?.querySelector('.dashboardValue')?.textContent?.trim() || '';
   const jidelnaValue = jidelna?.querySelector('.dashboardValue')?.textContent?.trim() || '';
-  return !hero || !cal || !count || heroText === 'V práci: směna A (noční)' || calValue === '--' || countValue === '--' || kantynaValue === '--' || jidelnaValue === '--';
+  return !hero || !cal || !count || !heroText || (!calValue && !countValue);
 }
 
 function hammerHomeRefresh() {
@@ -314,8 +310,9 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
     const countdownText = active && active.end
       ? (typeof formatDuration === 'function' ? formatDuration(active.end - now) : '—')
       : '—';
-    const foodA = safeCall(() => (typeof findFoodStatus === 'function' && Array.isArray(FOOD_LOCATIONS) ? findFoodStatus(FOOD_LOCATIONS[0], now) : null), null);
-    const foodB = safeCall(() => (typeof findFoodStatus === 'function' && Array.isArray(FOOD_LOCATIONS) ? findFoodStatus(FOOD_LOCATIONS[1], now) : null), null);
+    const foodLocations = (typeof FOOD_LOCATIONS !== 'undefined' && Array.isArray(FOOD_LOCATIONS)) ? FOOD_LOCATIONS : [];
+    const foodA = safeCall(() => (typeof findFoodStatus === 'function' && foodLocations[0] ? findFoodStatus(foodLocations[0], now) : null), null);
+    const foodB = safeCall(() => (typeof findFoodStatus === 'function' && foodLocations[1] ? findFoodStatus(foodLocations[1], now) : null), null);
     const foodText = (status) => {
       if (!status) return '—';
       if (status.isOpen && status.active) {
