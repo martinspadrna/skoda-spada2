@@ -5,7 +5,10 @@ function renderRotace() {
 
   const year = parseInt(app.selectedYear, 10) || getInitialSelectedYear(app.rotation);
   const availableYears = getAvailableYears(app.rotation);
-  if (!availableYears.includes(year)) {
+  const currentYear = new Date().getFullYear();
+  if (availableYears.includes(currentYear) && year !== currentYear) {
+    app.selectedYear = currentYear;
+  } else if (!availableYears.includes(year)) {
     app.selectedYear = getInitialSelectedYear(app.rotation);
   }
 
@@ -95,7 +98,9 @@ function getPersonScheduleEntryEnd(entry) {
   const parsed = parseDateToken(String(entry && entry.dateLabel ? entry.dateLabel : ""));
   if (!parsed) return null;
 
-  const baseDate = new Date(2026, parsed.month - 1, parsed.day, 0, 0, 0, 0);
+  const sortDate = entry && entry.sortDate ? new Date(entry.sortDate) : null;
+  const baseYear = sortDate && !Number.isNaN(sortDate.getTime()) ? sortDate.getFullYear() : (new Date()).getFullYear();
+  const baseDate = new Date(baseYear, parsed.month - 1, parsed.day, 0, 0, 0, 0);
   const shift = normalizeShiftText(String(entry && entry.shift ? entry.shift : parsed.shift || "")).toUpperCase();
 
   if (!shift) {
@@ -417,10 +422,12 @@ function showMonthByKey(monthKey) {
 }
 
 function initRotaceCurrentMonth() {
-  const currentYear = new Date().getFullYear();
-  const currentMonth = monthKeyFromYearMonth(currentYear, new Date().getMonth() + 1);
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = monthKeyFromYearMonth(currentYear, now.getMonth() + 1);
   const currentYearMonths = getMonthsForYear(app.rotation, currentYear);
-  app.selectedYear = getAvailableYears(app.rotation).includes(currentYear) ? currentYear : getInitialSelectedYear(app.rotation);
+  const availableYears = getAvailableYears(app.rotation);
+  app.selectedYear = availableYears.includes(currentYear) ? currentYear : getInitialSelectedYear(app.rotation);
   app.selectedMonth = currentYearMonths.includes(currentMonth) ? currentMonth : (currentYearMonths[0] || null);
   app.importYear = app.selectedYear;
 }

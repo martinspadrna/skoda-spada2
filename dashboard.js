@@ -1,4 +1,4 @@
-// Extracted dashboard logic (v1(285))
+// Extracted dashboard logic (v1(286))
 function updateDashboard() {
   const now = typeof getPragueNow === "function" ? getPragueNow(new Date()) : new Date();
   const active = getActiveShiftNow(now);
@@ -357,7 +357,15 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
 
   window.updateDashboard = function wrappedUpdateDashboard(...args) {
     try {
-      return originalUpdateDashboard ? originalUpdateDashboard.apply(this, args) : renderDashboardFallback();
+      const result = originalUpdateDashboard ? originalUpdateDashboard.apply(this, args) : null;
+      try {
+        if (typeof homeLooksUnpainted === 'function' && homeLooksUnpainted()) {
+          renderDashboardFallback();
+        }
+      } catch (checkErr) {
+        renderDashboardFallback(checkErr);
+      }
+      return result;
     } catch (err) {
       renderDashboardFallback(err);
       return null;

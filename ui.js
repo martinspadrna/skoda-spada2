@@ -1014,6 +1014,32 @@ function tttForkMove(board, mark) {
   return fallback;
 }
 
+function tttOpeningBookMove(board) {
+  const centerRow = Math.floor(TTT_ROWS / 2);
+  const centerCol = Math.floor(TTT_COLS / 2);
+  const center = tttIndex(centerRow, centerCol);
+  if (!board[center]) return center;
+
+  const ring = [
+    [centerRow - 1, centerCol],
+    [centerRow + 1, centerCol],
+    [centerRow, centerCol - 1],
+    [centerRow, centerCol + 1],
+    [centerRow - 1, centerCol - 1],
+    [centerRow - 1, centerCol + 1],
+    [centerRow + 1, centerCol - 1],
+    [centerRow + 1, centerCol + 1]
+  ];
+  for (const [r, c] of ring) {
+    if (!tttInBounds(r, c)) continue;
+    const idx = tttIndex(r, c);
+    if (!board[idx]) return idx;
+  }
+
+  const candidates = tttCandidateMoves(board, 1);
+  return candidates[0] ?? center;
+}
+
 function tttBestMove(board, difficulty) {
   const free = [];
   for (let i = 0; i < board.length; i += 1) {
@@ -1103,8 +1129,11 @@ function tttBestMove(board, difficulty) {
 
   const occupied = board.length - free.length;
   const isHard = difficulty === 'ai';
-  const searchDepth = isHard ? (occupied < 6 ? 10 : occupied < 18 ? 12 : 13) : (difficulty === 'medium' ? 2 : 1);
-  const candidateLimit = isHard ? 80 : (difficulty === 'medium' ? 12 : 18);
+  if (isHard && occupied <= 1) {
+    return tttOpeningBookMove(board);
+  }
+  const searchDepth = isHard ? (occupied < 6 ? 7 : occupied < 18 ? 10 : 12) : (difficulty === 'medium' ? 2 : 1);
+  const candidateLimit = isHard ? (occupied < 8 ? 24 : 48) : (difficulty === 'medium' ? 12 : 18);
   const candidates = tttOrderedCandidates(board, 'O', candidateLimit);
 
   if (difficulty === 'noob') {
@@ -1574,6 +1603,7 @@ function tttHandleMove(index) {
   requestAnimationFrame(tttLayoutBoard);
 
   setTimeout(() => {
+    requestAnimationFrame(() => {
     try {
       const fresh = tttGetState();
       if (fresh.gameOver) return;
@@ -1605,6 +1635,7 @@ function tttHandleMove(index) {
       tttRender();
       requestAnimationFrame(tttLayoutBoard);
     }
+    });
   }, 180);
 }
 
@@ -1699,7 +1730,7 @@ function triggerAboutAction() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v.1(250)–v.1(285)',
+      range: 'v.1(250)–v.1(286)',
       title: 'Aktuální úpravy',
       lines: [
         'Jídelna a kantýna teď používají shodné dny na jednom řádku.',
@@ -1856,7 +1887,7 @@ function renderAdminMenuBody(body) {
     '    <button type="button" class="appMenuAction isActive" data-admin-action="save-online">Uložit online</button>',
     '    <button type="button" class="appMenuAction" data-menu-back="1">Zpět</button>',
     '  </div>',
-    '  <div class="appMenuText appMenuSecretHint">Ukládá se celý měsíc. Po uložení se rozpis synchronizuje přes Supabase.</div>',
+    '',
     '</div>'
   ].join('');
 }
@@ -1889,7 +1920,7 @@ function openAppMenu(view) {
       body.innerHTML = [
         '<div class="appMenuCard appMenuSecretCard" data-admin-secret="contact" role="button" tabindex="0">',
         '  <div class="appMenuCardTitle">Kontakt</div>',
-        '  <div class="appMenuText appMenuSecretHint">Pět klepnutí na kontakt otevře administraci.</div>',
+        '',
         '  <div class="appMenuContactRow"><span>Jméno</span><b>' + escapeHtml(contactName) + '</b></div>',
         '  <div class="appMenuContactRow"><span>Telefon</span><b>' + escapeHtml(contactPhone) + '</b></div>',
         '  <div class="appMenuContactRow"><span>E-mail</span><b>' + escapeHtml(contactEmail) + '</b></div>',
