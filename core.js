@@ -1,6 +1,6 @@
 
 const APP_KEY = "rotace_kalkulacky_state_v122";
-const APP_VERSION = "v.1(263)";
+const APP_VERSION = "v.1(264)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-05-09-" + APP_VERSION + "-" + Date.now();
 
@@ -229,7 +229,11 @@ function saveRotationData() {
     localStorage.setItem("machine", app.machine);
     localStorage.setItem("prog", app.prog);
     localStorage.setItem("f_kusy", document.getElementById("f_kusy")?.value || "");
+    localStorage.setItem("f_finish_kusy", document.getElementById("f_finish_kusy")?.value || "");
+    localStorage.setItem("f_finish_davky", document.getElementById("f_finish_davky")?.value || "");
     localStorage.setItem("p_kusy", document.getElementById("p_kusy")?.value || "");
+    localStorage.setItem("b_finish_kusy", document.getElementById("b_finish_kusy")?.value || "");
+    localStorage.setItem("b_finish_davky", document.getElementById("b_finish_davky")?.value || "");
     localStorage.setItem("davka", document.getElementById("davka")?.value || "");
     localStorage.setItem("orovnani", document.getElementById("orovnani")?.value || "");
     localStorage.setItem("celkem", document.getElementById("celkem")?.value || "");
@@ -247,7 +251,11 @@ function restoreInputs() {
     if (el) el.value = localStorage.getItem(key) || "";
   };
   setVal("f_kusy", "f_kusy");
+  setVal("f_finish_kusy", "f_finish_kusy");
+  setVal("f_finish_davky", "f_finish_davky");
   setVal("p_kusy", "p_kusy");
+  setVal("b_finish_kusy", "b_finish_kusy");
+  setVal("b_finish_davky", "b_finish_davky");
   setVal("davka", "davka");
   setVal("orovnani", "orovnani");
   setVal("celkem", "celkem");

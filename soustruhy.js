@@ -21,6 +21,53 @@ function resetFields(ids) {
   });
   saveRotationData();
 }
+function formatClockTime(date) {
+  const d = date instanceof Date ? date : new Date(date);
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  return hh + ":" + mm;
+}
+
+function readPositiveInt(id) {
+  const el = document.getElementById(id);
+  if (!el) return 0;
+  const value = parseInt(el.value, 10);
+  return Number.isFinite(value) && value > 0 ? value : 0;
+}
+
+function resolveTargetPieces(pieceId, doseId) {
+  const pieces = readPositiveInt(pieceId);
+  if (pieces > 0) return { pieces, source: 'ks' };
+  const doses = readPositiveInt(doseId);
+  if (doses > 0) return { pieces: doses * 32, source: 'dávek' };
+  return { pieces: 0, source: '' };
+}
+
+function renderFinishResult(outId, label, pieces, seconds, extraLine) {
+  const out = document.getElementById(outId);
+  if (!out) return;
+  if (!pieces || !seconds || seconds < 0) {
+    out.innerHTML = "<div class='smallText'>Zadej počet kusů nebo dávek.</div>";
+    return;
+  }
+  const now = new Date();
+  const finish = new Date(now.getTime() + Math.round(seconds * 1000));
+  const durationText = formatDuration(Math.round(seconds * 1000));
+  const dosesText = formatDoses(pieces);
+  out.innerHTML =
+    "<div><b>" + escapeHtml(label) + "</b></div>" +
+    "<div style='margin-top:6px;'>Hotovo v <b>" + formatClockTime(finish) + "</b></div>" +
+    "<div class='smallText'>Za " + durationText + " · " + formatCount(pieces) + " ks / " + dosesText + " dávek" + (extraLine ? " · " + escapeHtml(extraLine) : "") + "</div>";
+}
+
+function estimateBrusSecondsForPieces(pieces, cfg) {
+  const pieceSec = Number(cfg.pieceSec) || 0;
+  const dressEvery = Math.max(1, Math.floor(Number(cfg.dressEvery) || 1));
+  const dressSec = Math.max(0, Number(cfg.dressSec) || 0);
+  if (pieceSec <= 0 || pieces <= 0) return 0;
+  return pieces * pieceSec + Math.floor((pieces - 1) / dressEvery) * dressSec;
+}
+
 
 function calcF() {
   const sec = Math.max(0, (getShiftEnd(new Date()) - new Date()) / 1000);
@@ -31,6 +78,24 @@ function calcF() {
     "Do konce směny ještě stihneš " + ks + " ks, tj. " + formatDoses(ks) + " dávek.<br>" +
     "Celkově budeš mít " + celkem + " ks, tj. " + formatDoses(celkem) + " dávek.<br><br>" +
     "Na obou frézkách ještě stihneš " + (ks * 2) + " ks, tj. " + formatDoses(ks * 2) + " dávek.";
+  saveRotationData();
+}
+
+function calcFFinish() {
+  const target = resolveTargetPieces("f_finish_kusy", "f_finish_davky");
+  const out = document.getElementById("outFTime");
+  if (!out) return;
+  if (!target.pieces) {
+    out.innerHTML = "<div class='smallText'>Zadej počet kusů nebo dávek.</div>";
+    return;
+  }
+  const seconds = target.pieces * 60;
+  const now = new Date();
+  const finish = new Date(now.getTime() + seconds * 1000);
+  out.innerHTML =
+    "<div><b>Frézky</b></div>" +
+    "<div style='margin-top:6px;'>Hotovo v <b>" + formatClockTime(finish) + "</b></div>" +
+    "<div class='smallText'>Za " + formatDuration(seconds * 1000) + " · " + formatCount(target.pieces) + " ks / " + formatDoses(target.pieces) + " dávek</div>";
   saveRotationData();
 }
 
@@ -56,6 +121,25 @@ function calcBrusy() {
   document.getElementById("outB").innerHTML =
     "Do konce směny ještě stihneš " + ks + " ks, tj. " + formatDoses(doKonce) + " dávek.<br>" +
     "Celkově budeš mít " + celkove + " ks, tj. " + formatDoses(celkove) + " dávek.";
+  saveRotationData();
+}
+
+function calcBrusyFinish() {
+  const target = resolveTargetPieces("b_finish_kusy", "b_finish_davky");
+  const out = document.getElementById("outBTime");
+  if (!out) return;
+  if (!target.pieces) {
+    out.innerHTML = "<div class='smallText'>Zadej počet kusů nebo dávek.</div>";
+    return;
+  }
+  const cfg = getBrusConfig(app.machine, app.prog);
+  const seconds = estimateBrusSecondsForPieces(target.pieces, cfg);
+  const now = new Date();
+  const finish = new Date(now.getTime() + seconds * 1000);
+  out.innerHTML =
+    "<div><b>" + escapeHtml(app.machine + " / " + cfg.label) + "</b></div>" +
+    "<div style='margin-top:6px;'>Hotovo v <b>" + formatClockTime(finish) + "</b></div>" +
+    "<div class='smallText'>Za " + formatDuration(seconds * 1000) + " · " + formatCount(target.pieces) + " ks / " + formatDoses(target.pieces) + " dávek</div>";
   saveRotationData();
 }
 

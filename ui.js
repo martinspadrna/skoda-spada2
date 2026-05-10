@@ -105,12 +105,13 @@ if (document.readyState === 'loading') {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v.1(250)–v.1(263)',
+      range: 'v.1(250)–v.1(264)',
       title: 'Aktuální úpravy',
       lines: [
         'Jídelna a kantýna teď používají shodné dny na jednom řádku.',
         'Dashboard ukazuje další směnu D, kdo na ní chybí, a u průběhu směny i procenta.',
-        'Odpočet do dovolené doplňuje, jestli jde o CZD nebo Vánoce.'
+        'Odpočet do dovolené doplňuje, jestli jde o CZD nebo Vánoce.',
+        'Kalkulačky pro frézky a brusy umí dopočítat i čas hotovosti.'
       ]
     },
     {
