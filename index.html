@@ -405,7 +405,7 @@
 });</script>
 <script type="text/plain" id="src-core-js">
 const APP_KEY = "rotace_kalkulacky_state_v122";
-const APP_VERSION = "v.1(266)";
+const APP_VERSION = "v.1(267)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-05-10-" + APP_VERSION + "-" + Date.now();
 
@@ -987,7 +987,7 @@ if (document.readyState === 'loading') {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v.1(250)–v.1(266)',
+      range: 'v.1(250)–v.1(267)',
       title: 'Aktuální úpravy',
       lines: [
         'Jídelna a kantýna teď používají shodné dny na jednom řádku.',
@@ -5429,6 +5429,39 @@ input{
   font-size:15px;
   background:rgba(15,19,16,.96);
   border:1px solid rgba(124,255,124,.12);
+}
+
+#brusy .indexGrid .bbtn{
+  box-shadow:0 10px 22px rgba(0,0,0,.20);
+}
+#brusy .indexGrid .bbtn.ad{
+  background:linear-gradient(180deg, rgba(57,110,168,.82), rgba(17,24,33,.98));
+  border-color:rgba(109,175,255,.74);
+  color:#eef6ff;
+}
+#brusy .indexGrid .bbtn.ae{
+  background:linear-gradient(180deg, rgba(49,144,86,.82), rgba(17,24,20,.98));
+  border-color:rgba(111,219,143,.72);
+  color:#effff2;
+}
+#brusy .indexGrid .bbtn.ah{
+  background:linear-gradient(180deg, rgba(191,122,44,.84), rgba(25,20,15,.98));
+  border-color:rgba(255,188,103,.72);
+  color:#fff4e4;
+}
+#brusy .indexGrid .bbtn.adv{
+  background:linear-gradient(180deg, rgba(72,118,170,.48), rgba(16,21,29,.98));
+  border-color:rgba(121,169,228,.42);
+  color:#dfeaff;
+}
+#brusy .indexGrid .bbtn.aev{
+  background:linear-gradient(180deg, rgba(51,104,67,.48), rgba(16,22,18,.98));
+  border-color:rgba(117,189,138,.40);
+  color:#e4ffee;
+}
+#brusy .indexGrid .bbtn.activeIndex{
+  outline:2px solid rgba(124,255,124,.70);
+  box-shadow:0 0 0 1px rgba(124,255,124,.20), 0 12px 24px rgba(0,0,0,.22);
 }
 
 #rotaceNamesPanel .smallText.rotaceHint{
