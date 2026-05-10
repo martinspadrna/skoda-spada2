@@ -1,6 +1,6 @@
 
 const APP_KEY = "rotace_kalkulacky_state_v122";
-const APP_VERSION = "v.1(267)";
+const APP_VERSION = "v.1(268)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-05-10-" + APP_VERSION + "-" + Date.now();
 
@@ -84,6 +84,9 @@ const app = {
   importYear: new Date().getFullYear(),
   foodScheduleFocus: "kantyna",
   importClicks: 0,
+  aboutTapCount: 0,
+  aboutTapTimer: null,
+  tttState: null,
   pendingMenuImport: false,
   adminUnlocked: false,
   machine: localStorage.getItem("machine") || "TBKR01",
