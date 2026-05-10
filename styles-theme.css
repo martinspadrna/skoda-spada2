@@ -1967,7 +1967,7 @@ body.reduceMotion *::after{
 .bottomNavMenuBtn .moreIcon{width:24px !important; height:24px !important; transform:translateY(-12px) !important; display:block !important;}
 
 
-/* v1(277) tweaks */
+/* v.1(283) tweaks */
 #brusy .indexGrid .bbtn.adv{
   background:linear-gradient(180deg, rgba(72,92,116,.38), rgba(18,22,26,.98));
   border-color:rgba(160,182,200,.34);
@@ -2052,8 +2052,132 @@ body.reduceMotion *::after{
   #rotaceNamesPanel .listGrid{
     grid-template-columns:repeat(auto-fit, minmax(74px, 1fr));
   }
-  #statsNameGrid.listGrid,
+  #statsNameGrid.listGrid{
+    grid-template-columns:repeat(5, minmax(0, 1fr));
+  }
   #statsMachineGrid.listGrid{
-    grid-template-columns:repeat(auto-fit, minmax(58px, 1fr));
+    grid-template-columns:repeat(5, minmax(0, 1fr));
+    gap:5px;
+  }
+  #statsMachineGrid .listItem{
+    min-height:36px;
+    padding:5px 2px;
+  }
+  #statsMachineGrid .statsTileTitle{
+    font-size:10.5px;
+    letter-spacing:-0.2px;
   }
 }
+
+/* v.1(280) — strojové dlaždice se musí vejít na jeden řádek i na malých telefonech */
+@media (max-width: 380px){
+  #statsMachineGrid.listGrid{
+    gap:4px;
+  }
+  #statsMachineGrid .listItem{
+    padding:4px 1px;
+  }
+  #statsMachineGrid .statsTileTitle{
+    font-size:9.5px;
+    letter-spacing:-0.3px;
+  }
+}
+
+/* v.1(283) admin + leaderboard + tighter machine tiles */
+#statsMachineGrid.listGrid{
+  grid-template-columns:repeat(5, minmax(0, 1fr));
+  gap:4px;
+}
+#statsMachineGrid .listItem{
+  padding:4px 1px;
+  min-height:34px;
+}
+#statsMachineGrid .statsMachineTile{
+  padding:4px 1px;
+}
+#statsMachineGrid .statsTileTitle{
+  font-size:9.5px;
+  line-height:1.02;
+  letter-spacing:-0.38px;
+}
+#statsMachineGrid .statsTileMain{
+  justify-content:center;
+}
+#statsMachineGrid .statsTileSub{
+  font-size:8px;
+}
+.appMenuAdminCard{
+  gap:10px;
+}
+.appMenuLabel{
+  display:block;
+  font-size:12px;
+  font-weight:700;
+  color:rgba(242,248,245,.88);
+  margin:4px 2px 6px;
+}
+.appMenuSelect,
+.appMenuTextarea{
+  width:100%;
+  border:1px solid rgba(124,255,124,.18);
+  border-radius:18px;
+  background:rgba(7,10,8,.72);
+  color:#f4f9f5;
+  box-shadow:0 12px 28px rgba(0,0,0,.22) inset, 0 10px 24px rgba(0,0,0,.16);
+}
+.appMenuSelect{
+  min-height:44px;
+  padding:11px 14px;
+}
+.appMenuTextarea{
+  min-height:180px;
+  padding:12px 14px;
+  resize:vertical;
+  font:12px/1.45 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  white-space:pre;
+}
+.appMenuActionRow{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.appMenuActionRow .appMenuAction{
+  flex:1 1 140px;
+}
+.appMenuSecretHint{
+  font-size:12px;
+  opacity:.72;
+}
+.tttWinHistory{
+  margin-top:12px;
+}
+.tttWinTable{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0 8px;
+}
+.tttWinTable th{
+  font-size:11px;
+  text-align:left;
+  color:rgba(239,246,241,.70);
+  padding:0 8px 3px;
+}
+.tttWinTable td{
+  background:rgba(12,16,13,.82);
+  border-top:1px solid rgba(124,255,124,.08);
+  border-bottom:1px solid rgba(124,255,124,.08);
+  padding:8px 8px;
+  font-size:12px;
+}
+.tttWinTable tr td:first-child{
+  border-left:1px solid rgba(124,255,124,.08);
+  border-radius:14px 0 0 14px;
+}
+.tttWinTable tr td:last-child{
+  border-right:1px solid rgba(124,255,124,.08);
+  border-radius:0 14px 14px 0;
+}
+.tttWinTable .muted{
+  opacity:.72;
+}
+

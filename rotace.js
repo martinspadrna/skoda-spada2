@@ -232,16 +232,15 @@ function getPersonScheduleEntries(name) {
       month: nowFallback.getMonth() + 1,
       day: nowFallback.getDate()
     };
-  })();
-
-  const todayKey = todayParts.year * 10000 + todayParts.month * 100 + todayParts.day;
+  })();  const todayKey = todayParts.year * 10000 + todayParts.month * 100 + todayParts.day;
   const entryKey = (entry) => {
     const date = new Date(entry.sortDate);
     if (Number.isNaN(date.getTime())) return -1;
     return date.getFullYear() * 10000 + (date.getMonth() + 1) * 100 + date.getDate();
   };
 
-  let currentIdx = entries.findIndex(entry => entryKey(entry) === todayKey);
+  const matchesToday = entries.findIndex(entry => entryKey(entry) === todayKey);
+  let currentIdx = matchesToday;
   if (currentIdx === -1) {
     let bestIdx = -1;
     let bestKey = -Infinity;

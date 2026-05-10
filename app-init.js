@@ -1,26 +1,97 @@
-function bindSecretMenu() {
-  const tap = document.getElementById("signatureTap");
-  if (!tap || tap.dataset.secretBound === "1") return false;
-  tap.dataset.secretBound = "1";
-  tap.addEventListener("click", () => {
-    app.importClicks += 1;
-    if (app.importClicks >= 5 && !app.adminUnlocked) {
-      const user = prompt("Jméno:") || "";
-      const pass = prompt("Heslo:") || "";
-      if (user.trim() === "Sp4d4" && pass === "SpadaM772326") {
+function bindAdminSecretUnlock() {
+  if (document.documentElement.dataset.adminSecretBound === '1') return true;
+  document.documentElement.dataset.adminSecretBound = '1';
+
+  let tapCount = 0;
+  let tapTimer = null;
+
+  document.addEventListener('click', (event) => {
+    const target = event.target && typeof event.target.closest === 'function'
+      ? event.target.closest('[data-admin-secret="contact"]')
+      : null;
+    if (!target) return;
+    if (typeof app !== 'undefined' && app.adminUnlocked) return;
+
+    tapCount += 1;
+    clearTimeout(tapTimer);
+    tapTimer = setTimeout(() => { tapCount = 0; }, 1200);
+
+    if (tapCount < 5) return;
+    tapCount = 0;
+
+    const user = prompt('Jméno:') || '';
+    const pass = prompt('Heslo:') || '';
+    if (user.trim() === 'Spada' && pass.trim() === 'Sp4d4M772326') {
+      if (typeof app !== 'undefined') {
         app.adminUnlocked = true;
-        updateImportBoxVisibility();
-      } else {
-        alert("Špatné přihlášení.");
+        app.contactTapCount = 0;
       }
-      app.importClicks = 0;
+      try {
+        localStorage.setItem('adminUnlocked', '1');
+      } catch (err) {
+        console.warn(err);
+      }
+      if (typeof updateImportBoxVisibility === 'function') updateImportBoxVisibility();
+      if (typeof openAppMenu === 'function') openAppMenu('admin');
+      else alert('Administrace odemčena.');
+    } else {
+      alert('Špatné přihlášení.');
     }
-  });
+  }, true);
+
   return true;
 }
 
-if (!bindSecretMenu()) {
-  document.addEventListener("DOMContentLoaded", bindSecretMenu, { once: true });
+async function syncRotationFromSupabase(force) {
+  const bridge = window.RotationSupabaseBridge;
+  if (!bridge || typeof bridge.loadRotationState !== 'function') return null;
+  try {
+    const remote = await bridge.loadRotationState();
+    if (!remote || !remote.payload) return null;
+    const next = typeof normalizeRotationData === 'function' ? normalizeRotationData(remote.payload) : remote.payload;
+    if (!next || !next.months) return null;
+
+    const nextText = JSON.stringify(next);
+    const currentText = JSON.stringify(typeof app !== 'undefined' && app.rotation ? app.rotation : null);
+    if (!force && nextText === currentText) return next;
+
+    if (typeof app !== 'undefined') {
+      app.rotation = next;
+      if (!app.selectedYear || !getAvailableYears(app.rotation).includes(parseInt(app.selectedYear, 10))) {
+        app.selectedYear = getInitialSelectedYear(app.rotation);
+      }
+    }
+
+    if (typeof saveRotationData === 'function') saveRotationData();
+    if (typeof renderRotace === 'function') renderRotace();
+    if (typeof renderStatsPanel === 'function') renderStatsPanel();
+    if (typeof app !== 'undefined' && app.selectedMonth && typeof renderMonth === 'function') {
+      renderMonth(app.selectedMonth);
+    }
+    if (typeof app !== 'undefined' && app.selectedName && typeof renderPerson === 'function') {
+      renderPerson(app.selectedName);
+    }
+    if (typeof updateImportBoxVisibility === 'function') updateImportBoxVisibility();
+    return next;
+  } catch (err) {
+    console.warn('Supabase rotation sync failed', err);
+    return null;
+  }
+}
+
+async function saveRotationToSupabase(rotation, meta) {
+  const bridge = window.RotationSupabaseBridge;
+  if (!bridge || typeof bridge.saveRotationState !== 'function') return { ok: false, reason: 'missing-bridge' };
+  try {
+    return await bridge.saveRotationState(rotation, meta || {});
+  } catch (err) {
+    console.warn('Supabase rotation save helper failed', err);
+    return { ok: false, error: err };
+  }
+}
+
+if (!bindAdminSecretUnlock()) {
+  document.addEventListener('DOMContentLoaded', bindAdminSecretUnlock, { once: true });
 }
 
 
@@ -92,6 +163,9 @@ function initAppInitBindings() {
         app.selectedYear = getInitialSelectedYear(app.rotation);
       }
       saveRotationData();
+      if (app.adminUnlocked) {
+        void saveRotationToSupabase(app.rotation, { source: 'import' });
+      }
       renderRotace();
 
       if (app.selectedMonth && app.rotation.months[app.selectedMonth]) {
@@ -178,6 +252,7 @@ function initAppInitBindings() {
   if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.init === 'function') {
     try { window.RotationSupabaseBridge.init(); } catch (err) { console.warn('Supabase bridge init failed', err); }
   }
+  void syncRotationFromSupabase(false);
   setTimeout(bootHome, 60);
   setTimeout(bootHome, 240);
   setTimeout(() => {
@@ -201,3 +276,6 @@ if (document.readyState === "loading") {
 } else {
   initAppInitBindings();
 }
+
+window.syncRotationFromSupabase = syncRotationFromSupabase;
+window.saveRotationToSupabase = saveRotationToSupabase;

@@ -254,8 +254,8 @@
   }
 
   #statsMachineGrid.listGrid {
-    grid-template-columns: repeat(auto-fit, minmax(58px, 1fr));
-    gap: 6px;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 3px;
   }
 
   .rotaceMiniCard{

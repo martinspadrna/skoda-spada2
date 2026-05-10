@@ -525,7 +525,10 @@ function tttGetState() {
       moveCountO: 0,
       hardWinPrompt: false,
       hardWinStats: null,
-      hardWinName: ''
+      hardWinName: '',
+      hardWinRemote: [],
+      hardWinLoading: false,
+      hardWinLoaded: false
     };
   }
   return app.tttState;
@@ -759,6 +762,49 @@ function tttOpenThreeThreatMoves(board, mark) {
   return Array.from(moves);
 }
 
+function tttThreatWindowMoves(board, mark) {
+  const opponent = mark === 'O' ? 'X' : 'O';
+  const moves = new Set();
+  const directions = [
+    [0, 1],
+    [1, 0],
+    [1, 1],
+    [1, -1]
+  ];
+
+  for (let row = 0; row < TTT_ROWS; row += 1) {
+    for (let col = 0; col < TTT_COLS; col += 1) {
+      for (const [dr, dc] of directions) {
+        const cells = [];
+        let ok = true;
+        for (let step = 0; step < TTT_WIN_LENGTH; step += 1) {
+          const r = row + dr * step;
+          const c = col + dc * step;
+          if (!tttInBounds(r, c)) { ok = false; break; }
+          cells.push(tttIndex(r, c));
+        }
+        if (!ok) continue;
+
+        let markCount = 0;
+        let emptyCount = 0;
+        const empties = [];
+        for (const idx of cells) {
+          const cell = board[idx];
+          if (cell === opponent) { ok = false; break; }
+          if (cell === mark) markCount += 1;
+          else if (!cell) { emptyCount += 1; empties.push(idx); }
+          else { ok = false; break; }
+        }
+        if (!ok) continue;
+        if (markCount >= 3 && emptyCount >= 1) {
+          empties.forEach(idx => moves.add(idx));
+        }
+      }
+    }
+  }
+
+  return Array.from(moves);
+}
 
 function tttCandidateMoves(board, radius = 2) {
   const occupied = [];
@@ -804,8 +850,13 @@ function tttMoveHeuristic(board, index, mark) {
 
   const opponent = mark === 'O' ? 'X' : 'O';
   const opponentWins = tttWinningMoves(board, opponent).length;
-  if (opponentWins >= 2) score -= 300000;
-  else if (opponentWins === 1) score -= 180000;
+  const opponentThreats = tttThreatWindowMoves(board, opponent).length;
+  if (opponentWins >= 3) score -= 520000;
+  else if (opponentWins >= 2) score -= 360000;
+  else if (opponentWins === 1) score -= 200000;
+  if (opponentThreats >= 3) score -= 220000;
+  else if (opponentThreats === 2) score -= 130000;
+  else if (opponentThreats === 1) score -= 70000;
   board[index] = opponent;
   if (tttWinner(board).winner === opponent) score += 900000;
   board[index] = mark;
@@ -864,7 +915,7 @@ function tttMoveHeuristic(board, index, mark) {
 }
 
 function tttOrderedCandidates(board, mark, limit = 12) {
-  const candidates = tttCandidateMoves(board, 2);
+  const candidates = tttCandidateMoves(board, 3);
   if (!candidates.length) {
     return [tttIndex(Math.floor(TTT_ROWS / 2), Math.floor(TTT_COLS / 2))];
   }
@@ -891,8 +942,8 @@ function tttSearch(board, depth, alpha, beta, maximizing, memo) {
   }
 
   const mark = maximizing ? 'O' : 'X';
-  let moves = tttOrderedCandidates(board, mark, maximizing ? 16 : 12);
-  if (!moves.length) moves = tttCandidateMoves(board, 2);
+  let moves = tttOrderedCandidates(board, mark, maximizing ? 24 : 18);
+  if (!moves.length) moves = tttCandidateMoves(board, 3);
   if (!moves.length) {
     const leaf = tttEvaluateBoard(board);
     if (memo) memo[key] = leaf;
@@ -955,7 +1006,8 @@ function tttBestMove(board, difficulty) {
       board[idx] = 'O';
       const remainingCritical = tttCriticalThreatMoves(board, 'X').length;
       const remainingWins = tttWinningMoves(board, 'X').length;
-      const score = tttMoveHeuristic(board, idx, 'O') - remainingCritical * 220000 - remainingWins * 320000;
+      const remainingThreatWindows = tttThreatWindowMoves(board, 'X').length;
+      const score = tttMoveHeuristic(board, idx, 'O') - remainingCritical * 260000 - remainingWins * 360000 - remainingThreatWindows * 180000;
       board[idx] = '';
       return { idx, score };
     });
@@ -963,14 +1015,30 @@ function tttBestMove(board, difficulty) {
     return scoredCritical[0]?.idx ?? criticalBlocks[0];
   }
 
+  const threatBlocks = difficulty === 'ai' ? tttThreatWindowMoves(board, 'X') : [];
+  if (threatBlocks.length) {
+    const scoredThreats = threatBlocks.map((idx) => {
+      board[idx] = 'O';
+      const remainingThreatWindows = tttThreatWindowMoves(board, 'X').length;
+      const remainingCritical = tttCriticalThreatMoves(board, 'X').length;
+      const remainingWins = tttWinningMoves(board, 'X').length;
+      const score = tttMoveHeuristic(board, idx, 'O') - remainingThreatWindows * 220000 - remainingCritical * 180000 - remainingWins * 280000;
+      board[idx] = '';
+      return { idx, score };
+    });
+    scoredThreats.sort((a, b) => b.score - a.score);
+    return scoredThreats[0]?.idx ?? threatBlocks[0];
+  }
+
   const openThreeBlocks = difficulty === 'ai' ? tttOpenThreeThreatMoves(board, 'X') : [];
   if (openThreeBlocks.length) {
     const scoredOpenThree = openThreeBlocks.map((idx) => {
       board[idx] = 'O';
       const remainingOpenThree = tttOpenThreeThreatMoves(board, 'X').length;
+      const remainingThreatWindows = tttThreatWindowMoves(board, 'X').length;
       const remainingCritical = tttCriticalThreatMoves(board, 'X').length;
       const remainingWins = tttWinningMoves(board, 'X').length;
-      const score = tttMoveHeuristic(board, idx, 'O') - remainingOpenThree * 240000 - remainingCritical * 140000 - remainingWins * 260000;
+      const score = tttMoveHeuristic(board, idx, 'O') - remainingOpenThree * 280000 - remainingThreatWindows * 220000 - remainingCritical * 180000 - remainingWins * 300000;
       board[idx] = '';
       return { idx, score };
     });
@@ -982,9 +1050,18 @@ function tttBestMove(board, difficulty) {
   if (fork >= 0) return fork;
 
   if (difficulty === 'ai') {
+    const opponentFork = tttForkMove(board, 'X');
+    if (opponentFork >= 0) {
+      const forkBlockCandidates = Array.from(new Set([opponentFork, ...tttThreatWindowMoves(board, 'X'), ...tttCriticalThreatMoves(board, 'X')]));
+      forkBlockCandidates.sort((a, b) => tttMoveHeuristic(board, b, 'O') - tttMoveHeuristic(board, a, 'O'));
+      if (forkBlockCandidates.length) return forkBlockCandidates[0];
+    }
+  }
+
+  if (difficulty === 'ai') {
     const forksToBlock = tttWinningMoves(board, 'X');
     if (forksToBlock.length >= 2) {
-      const centerSorted = tttCandidateMoves(board, 2)
+      const centerSorted = tttCandidateMoves(board, 3)
         .filter(idx => !board[idx])
         .sort((a, b) => tttMoveHeuristic(board, b, 'O') - tttMoveHeuristic(board, a, 'O'));
       for (const idx of centerSorted) {
@@ -998,8 +1075,8 @@ function tttBestMove(board, difficulty) {
 
   const occupied = board.length - free.length;
   const isHard = difficulty === 'ai';
-  const searchDepth = isHard ? (occupied < 8 ? 7 : occupied < 24 ? 8 : 9) : (difficulty === 'medium' ? 2 : 1);
-  const candidateLimit = isHard ? 28 : (difficulty === 'medium' ? 10 : 18);
+  const searchDepth = isHard ? (occupied < 8 ? 8 : occupied < 24 ? 9 : 10) : (difficulty === 'medium' ? 2 : 1);
+  const candidateLimit = isHard ? 40 : (difficulty === 'medium' ? 12 : 18);
   const candidates = tttOrderedCandidates(board, 'O', candidateLimit);
 
   if (difficulty === 'noob') {
@@ -1026,7 +1103,7 @@ function tttBestMove(board, difficulty) {
     if (board[idx]) continue;
     board[idx] = 'O';
     const immediateThreats = tttWinningMoves(board, 'X').length;
-    const tactical = tttMoveHeuristic(board, idx, 'O') - immediateThreats * 240000 - tttCriticalThreatMoves(board, 'X').length * 160000;
+    const tactical = tttMoveHeuristic(board, idx, 'O') - immediateThreats * 280000 - tttCriticalThreatMoves(board, 'X').length * 220000 - tttThreatWindowMoves(board, 'X').length * 180000;
     const searchScore = tttSearch(board, searchDepth, -Infinity, Infinity, false, memo);
     const score = tactical + searchScore;
     board[idx] = '';
@@ -1037,7 +1114,6 @@ function tttBestMove(board, difficulty) {
   }
   return bestIdx;
 }
-
 
 function tttHardWinLog() {
   try {
@@ -1073,6 +1149,114 @@ function tttReadHardWinStats() {
     elapsedMs,
     elapsedText: tttFormatElapsed(elapsedMs)
   };
+}
+
+function tttHardWinKey(entry) {
+  return [
+    String(entry && entry.name ? entry.name : '').trim().toLowerCase(),
+    String(entry && entry.date ? entry.date : '').trim(),
+    String(entry && entry.difficulty ? entry.difficulty : '').trim().toLowerCase(),
+    String(entry && (entry.totalMoves ?? entry.moves) ? (entry.totalMoves ?? entry.moves) : 0),
+    String(entry && (entry.elapsedMs ?? entry.elapsed_ms) ? (entry.elapsedMs ?? entry.elapsed_ms) : 0)
+  ].join('|');
+}
+
+function tttNormalizeHardWinEntry(entry) {
+  const elapsedMs = Number(entry && (entry.elapsedMs ?? entry.elapsed_ms) ? (entry.elapsedMs ?? entry.elapsed_ms) : 0) || 0;
+  const elapsedText = String(entry && (entry.elapsedText ?? entry.elapsed_text) ? (entry.elapsedText ?? entry.elapsed_text) : '').trim() || tttFormatElapsed(elapsedMs);
+  return {
+    name: String(entry && (entry.name ?? entry.player_name) ? (entry.name ?? entry.player_name) : '').trim(),
+    difficulty: String(entry && entry.difficulty ? entry.difficulty : '').trim(),
+    totalMoves: Number(entry && (entry.totalMoves ?? entry.moves) ? (entry.totalMoves ?? entry.moves) : 0) || 0,
+    xMoves: Number(entry && (entry.xMoves ?? entry.x_moves) ? (entry.xMoves ?? entry.x_moves) : 0) || 0,
+    oMoves: Number(entry && (entry.oMoves ?? entry.o_moves) ? (entry.oMoves ?? entry.o_moves) : 0) || 0,
+    elapsedMs,
+    elapsedText,
+    date: String(entry && (entry.date ?? entry.created_at) ? (entry.date ?? entry.created_at) : '').trim(),
+    appVersion: String(entry && (entry.appVersion ?? entry.app_version) ? (entry.appVersion ?? entry.app_version) : '').trim(),
+    note: String(entry && entry.note ? entry.note : '').trim()
+  };
+}
+
+function tttGetHardWinRows() {
+  const state = tttGetState();
+  const merged = [];
+  const seen = new Set();
+  const remote = Array.isArray(state.hardWinRemote) ? state.hardWinRemote : [];
+  const local = tttHardWinLog();
+
+  [...remote, ...local].forEach(raw => {
+    const entry = tttNormalizeHardWinEntry(raw);
+    if (!entry.name) return;
+    const key = tttHardWinKey(entry);
+    if (seen.has(key)) return;
+    seen.add(key);
+    merged.push(entry);
+  });
+
+  merged.sort((a, b) => {
+    const moveDiff = (a.totalMoves || 0) - (b.totalMoves || 0);
+    if (moveDiff) return moveDiff;
+    const timeDiff = (a.elapsedMs || 0) - (b.elapsedMs || 0);
+    if (timeDiff) return timeDiff;
+    return String(b.date || '').localeCompare(String(a.date || ''));
+  });
+
+  return merged.slice(0, 10);
+}
+
+async function tttRefreshHardWinRows(forceRender) {
+  const state = tttGetState();
+  if (state.hardWinLoading) return state.hardWinRemote || [];
+  state.hardWinLoading = true;
+  tttRender();
+  try {
+    if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.loadGomokuWins === 'function') {
+      const rows = await window.RotationSupabaseBridge.loadGomokuWins(25);
+      state.hardWinRemote = Array.isArray(rows) ? rows : [];
+    }
+    state.hardWinLoaded = true;
+  } catch (err) {
+    console.warn('TTT leaderboard load failed', err);
+    state.hardWinLoaded = true;
+  } finally {
+    state.hardWinLoading = false;
+  }
+  if (forceRender !== false && document.getElementById('tttOverlay')?.classList.contains('isVisible')) {
+    tttRender();
+  }
+  return state.hardWinRemote || [];
+}
+
+function tttBuildHardWinTableHtml() {
+  const state = tttGetState();
+  const rows = tttGetHardWinRows();
+  if (state.hardWinLoading && !rows.length) {
+    return '<div class="smallText">Načítám online výsledky…</div>';
+  }
+  if (!rows.length) {
+    return '<div class="smallText">Zatím žádné záznamy.</div>';
+  }
+
+  const rowsHtml = rows.map((row, idx) => {
+    const dateText = row.date ? new Date(row.date).toLocaleDateString('cs-CZ', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
+    return '<tr>' +
+      '<td>' + escapeHtml(String(idx + 1)) + '</td>' +
+      '<td>' + escapeHtml(row.name || '—') + '</td>' +
+      '<td>' + escapeHtml(formatCount(row.totalMoves || 0)) + '</td>' +
+      '<td>' + escapeHtml(row.elapsedText || '—') + '</td>' +
+      '<td>' + escapeHtml(dateText) + '</td>' +
+      '</tr>';
+  }).join('');
+
+  return [
+    '<div class="tableWrap tttWinHistory">',
+    '  <table class="tttWinTable">',
+    '    <thead><tr><th>#</th><th>Jméno</th><th>Tahy</th><th>Čas</th><th>Datum</th></tr></thead>',
+    '    <tbody>' + rowsHtml + '</tbody>',
+    '  </table>',
+    '</div>'
+  ].join('');
 }
 
 function tttFillHardWinPrompt() {
@@ -1125,11 +1309,20 @@ function tttOpenHardWinPrompt() {
   state.hardWinStats = tttReadHardWinStats();
   state.hardWinName = state.hardWinName || localStorage.getItem('tttHardWinName') || '';
   tttRender();
+  void tttRefreshHardWinRows();
   requestAnimationFrame(tttLayoutBoard);
   requestAnimationFrame(tttLayoutBoard);
 }
 
-function tttSendHardWinEntry(entry) {
+async function tttSendHardWinEntry(entry) {
+  try {
+    if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.sendGomokuWin === 'function') {
+      await window.RotationSupabaseBridge.sendGomokuWin(entry);
+    }
+  } catch (err) {
+    console.warn(err);
+  }
+
   const lines = [
     'Piškvorky – výhra nad nejtvrdší AI',
     'Jméno: ' + entry.name,
@@ -1182,8 +1375,9 @@ function tttSubmitHardWin() {
 
   tttSaveHardWin(entry);
   tttCloseHardWinPrompt();
-  tttSendHardWinEntry(entry);
-  alert('Výhra uložená. Text je připravený ve schránce.');
+  void tttSendHardWinEntry(entry);
+  void tttRefreshHardWinRows();
+  alert('Výhra uložená a odeslaná online.');
 }
 
 function tttRender() {
@@ -1217,6 +1411,11 @@ function tttRender() {
       '<div class="tttCard">',
       '  <div class="tttSectionTitle">Spuštění</div>',
       '  <button type="button" class="tttBtn" id="tttStartBtn" style="width:100%;">Hrát</button>',
+      '</div>',
+      '<div class="tttCard tttWinHistory">',
+      '  <div class="tttSectionTitle">Kdo porazil nejtvrdší AI</div>',
+      '  <div class="tttNote">Žebříček se načítá lokálně i online přes Supabase.</div>',
+      '  ' + tttBuildHardWinTableHtml(),
       '</div>'
     ].join('');
 
@@ -1255,6 +1454,9 @@ function tttRender() {
       tttRender();
       requestAnimationFrame(tttLayoutBoard);
     });
+    if (!state.hardWinLoaded && !state.hardWinLoading) {
+      void tttRefreshHardWinRows();
+    }
     return;
   }
 
@@ -1478,7 +1680,7 @@ function triggerAboutAction() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v.1(250)–v.1(278)',
+      range: 'v.1(250)–v.1(283)',
       title: 'Aktuální úpravy',
       lines: [
         'Jídelna a kantýna teď používají shodné dny na jednom řádku.',
@@ -1561,6 +1763,85 @@ function buildAppHistoryHtml(versionText) {
   ].join('');
 }
 
+function getAdminRotationMonthKeys() {
+  return Object.keys(app.rotation && app.rotation.months ? app.rotation.months : {}).sort((a, b) => a.localeCompare(b, 'cs'));
+}
+
+function getAdminSelectedMonthKey() {
+  const months = getAdminRotationMonthKeys();
+  if (!months.length) return '';
+  if (app.selectedMonth && months.includes(app.selectedMonth)) return app.selectedMonth;
+  const currentMonthKey = typeof monthKeyFromYearMonth === 'function'
+    ? monthKeyFromYearMonth(new Date().getFullYear(), new Date().getMonth() + 1)
+    : '';
+  if (currentMonthKey && months.includes(currentMonthKey)) return currentMonthKey;
+  return months[0];
+}
+
+function getAdminMonthEditorValue(monthKey) {
+  const key = monthKey || getAdminSelectedMonthKey();
+  const month = key && app.rotation && app.rotation.months ? app.rotation.months[key] : null;
+  return month ? JSON.stringify(month, null, 2) : '';
+}
+
+async function loadAdminRotationFromSupabase() {
+  if (typeof syncRotationFromSupabase === 'function') {
+    return syncRotationFromSupabase(true);
+  }
+  return null;
+}
+
+async function saveAdminRotationToSupabase(monthKey, rawText) {
+  if (!monthKey) throw new Error('Chybí měsíc.');
+  let parsed;
+  try {
+    parsed = JSON.parse(rawText);
+  } catch (err) {
+    throw new Error('JSON v poli není platný.');
+  }
+  const fallback = app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
+  const normalized = normalizeMonthForImport(parsed, fallback);
+  if (!app.rotation.months) app.rotation.months = {};
+  app.rotation.months[monthKey] = normalized;
+  app.rotation = normalizeRotationData(app.rotation);
+  app.selectedMonth = monthKey;
+  saveRotationData();
+  renderRotace();
+  if (typeof renderMonth === 'function') renderMonth(monthKey);
+  if (app.selectedName && typeof renderPerson === 'function') renderPerson(app.selectedName);
+  if (app.adminUnlocked) {
+    await saveRotationToSupabase(app.rotation, { source: 'admin-menu', monthKey });
+  }
+  return normalized;
+}
+
+function renderAdminMenuBody(body) {
+  const months = getAdminRotationMonthKeys();
+  const monthKey = getAdminSelectedMonthKey();
+  const title = months.length ? 'Administrace rozpisu' : 'Administrace';
+  body.innerHTML = [
+    '<div class="appMenuCard appMenuAdminCard">',
+    '  <div class="appMenuCardTitle">' + escapeHtml(title) + '</div>',
+    '  <div class="appMenuText">',
+    '    <div>Vyber měsíc, načti ho do pole, uprav ručně a ulož online. Změna se hned propíše i na další zařízení.</div>',
+    '  </div>',
+    '  <label class="appMenuLabel" for="adminMonthSelect">Měsíc</label>',
+    '  <select id="adminMonthSelect" class="appMenuSelect">' + months.map(m => '<option value="' + escapeHtml(m) + '"' + (m === monthKey ? ' selected' : '') + '>' + escapeHtml(m) + '</option>').join('') + '</select>',
+    '  <div class="appMenuActionRow">',
+    '    <button type="button" class="appMenuAction" data-admin-action="load-month">Načíst měsíc</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="load-online">Načíst online</button>',
+    '  </div>',
+    '  <label class="appMenuLabel" for="adminRotationJson">Obsah měsíce</label>',
+    '  <textarea id="adminRotationJson" class="appMenuTextarea" spellcheck="false">' + escapeHtml(getAdminMonthEditorValue(monthKey)) + '</textarea>',
+    '  <div class="appMenuActionRow">',
+    '    <button type="button" class="appMenuAction isActive" data-admin-action="save-online">Uložit online</button>',
+    '    <button type="button" class="appMenuAction" data-menu-back="1">Zpět</button>',
+    '  </div>',
+    '  <div class="appMenuText appMenuSecretHint">Ukládá se celý měsíc. Po uložení se rozpis synchronizuje přes Supabase.</div>',
+    '</div>'
+  ].join('');
+}
+
 function openAppMenu(view) {
   const page = ensureAppMenuOverlay();
   const body = page.querySelector('#appMenuBody');
@@ -1587,8 +1868,9 @@ function openAppMenu(view) {
       ].join('');
     } else if (v === 'contact') {
       body.innerHTML = [
-        '<div class="appMenuCard">',
+        '<div class="appMenuCard appMenuSecretCard" data-admin-secret="contact" role="button" tabindex="0">',
         '  <div class="appMenuCardTitle">Kontakt</div>',
+        '  <div class="appMenuText appMenuSecretHint">Pět klepnutí na kontakt otevře administraci.</div>',
         '  <div class="appMenuContactRow"><span>Jméno</span><b>' + escapeHtml(contactName) + '</b></div>',
         '  <div class="appMenuContactRow"><span>Telefon</span><b>' + escapeHtml(contactPhone) + '</b></div>',
         '  <div class="appMenuContactRow"><span>E-mail</span><b>' + escapeHtml(contactEmail) + '</b></div>',
@@ -1612,6 +1894,8 @@ function openAppMenu(view) {
         '  <button type="button" class="appMenuAction appMenuBack" data-menu-back="1">Zpět</button>',
         '</div>'
       ].join('');
+    } else if (v === 'admin') {
+      renderAdminMenuBody(body);
     } else {
       body.innerHTML = [
         '<div class="appMenuGrid">',
@@ -1620,6 +1904,7 @@ function openAppMenu(view) {
         '  <button type="button" class="appMenuAction" data-menu-action="settings">Nastavení</button>',
         '  <button type="button" class="appMenuAction" data-menu-action="about">O aplikaci</button>',
         '  <button type="button" class="appMenuAction" data-menu-action="contact">Kontakt</button>',
+        (app.adminUnlocked ? '  <button type="button" class="appMenuAction isActive" data-menu-action="admin">Administrace</button>' : ''),
         '</div>'
       ].join('');
     }
@@ -1637,17 +1922,45 @@ function openAppMenu(view) {
           triggerAboutAction();
         } else if (action === 'contact') {
           openAppMenu('contact');
+        } else if (action === 'admin') {
+          openAppMenu('admin');
         } else if (action === 'reset-state') {
           if (confirm('Smazat uložený stav aplikace?')) {
             try {
               localStorage.removeItem(APP_KEY);
               localStorage.removeItem('rotationBuild');
               localStorage.removeItem(UI_PREFS_KEY);
+              localStorage.removeItem('adminUnlocked');
             } catch (err) {
               console.warn(err);
             }
             location.reload();
           }
+        }
+      });
+    });
+
+    body.querySelectorAll('[data-admin-action]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const action = btn.getAttribute('data-admin-action');
+        const select = body.querySelector('#adminMonthSelect');
+        const textarea = body.querySelector('#adminRotationJson');
+        const monthKey = select ? select.value : getAdminSelectedMonthKey();
+        if (!monthKey || !textarea) return;
+        try {
+          if (action === 'load-month') {
+            textarea.value = getAdminMonthEditorValue(monthKey);
+          } else if (action === 'load-online') {
+            await loadAdminRotationFromSupabase();
+            renderAdminMenuBody(body);
+            return;
+          } else if (action === 'save-online') {
+            await saveAdminRotationToSupabase(monthKey, textarea.value);
+            alert('Rozpis uložený online.');
+          }
+          renderAdminMenuBody(body);
+        } catch (err) {
+          alert(err && err.message ? err.message : 'Administrace se nepodařila uložit.');
         }
       });
     });
