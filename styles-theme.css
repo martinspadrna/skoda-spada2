@@ -1909,4 +1909,4 @@ body.reduceMotion *::after{
 .bottomNavBtn.active .bottomNavIcon,
 .bottomNavBtn.active .bottomNavLabel,
 .bottomNavMenuBtn.active .moreIcon{color:var(--green2) !important;}
-.bottomNavMenuBtn .moreIcon{width:14px !important; height:24px !important;}
+.bottomNavMenuBtn .moreIcon{width:16px !important; height:16px !important; transform:translateY(-5px) !important; display:block !important;}
