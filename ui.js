@@ -243,21 +243,27 @@ function ensureTicTacToeStyles() {
   width:100%;
   height:100%;
   display:grid;
-  grid-template-columns:repeat(20, minmax(0, 1fr));
-  grid-template-rows:repeat(13, minmax(0, 1fr));
-  gap:4px;
+  grid-template-columns:repeat(16, var(--tttCellSize, 24px));
+  grid-template-rows:repeat(11, var(--tttCellSize, 24px));
+  gap:3px;
+  justify-content:center;
+  align-content:center;
+  overflow:hidden;
 }
 .tttCell{
   appearance:none;
   -webkit-appearance:none;
   font-family:inherit;
+  width:var(--tttCellSize, 24px);
+  height:var(--tttCellSize, 24px);
+  box-sizing:border-box;
   border:1px solid rgba(124,255,124,.14);
   background:rgba(255,255,255,.04);
   border-radius:12px;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:clamp(14px, 2.8vw, 28px);
+  font-size:calc(var(--tttCellSize, 24px) * .56);
   font-weight:800;
   line-height:1;
   color:#7CFF7C;
@@ -312,7 +318,7 @@ function ensureTicTacToeOverlay() {
     '  <div class="tttHeader">',
     '    <div class="tttHeaderTitle">',
     '      <h2 id="tttTitle">Piškvorky</h2>',
-    '      <span>easter egg · 13 × 20 · 5 v řadě</span>',
+    '      <span>easter egg · 11 × 16 · 5 v řadě</span>',
     '    </div>',
     '    <button type="button" class="tttClose" aria-label="Zavřít">×</button>',
     '  </div>',
@@ -350,11 +356,17 @@ function ensureTicTacToeOverlay() {
     });
   }
 
+  if (!window.__tttResizeBound) {
+    window.__tttResizeBound = true;
+    window.addEventListener('resize', tttLayoutBoard, { passive: true });
+    window.addEventListener('orientationchange', tttLayoutBoard, { passive: true });
+  }
+
   return overlay;
 }
 
-const TTT_ROWS = 13;
-const TTT_COLS = 20;
+const TTT_ROWS = 11;
+const TTT_COLS = 16;
 const TTT_WIN_LENGTH = 5;
 const TTT_TOTAL_CELLS = TTT_ROWS * TTT_COLS;
 
@@ -720,7 +732,7 @@ function tttRender() {
       '    <button type="button" class="tttBtn' + (state.difficulty === 'medium' ? ' isActive' : '') + '" data-ttt-difficulty="medium">Medium</button>',
       '    <button type="button" class="tttBtn' + (state.difficulty === 'ai' ? ' isActive' : '') + '" data-ttt-difficulty="ai">AI</button>',
       '  </div>',
-      '  <div class="tttNote">Hrací pole má 13 × 20 políček a vyhrává 5 spojených v řadě.</div>',
+      '  <div class="tttNote">Hrací pole má 11 × 16 políček a vyhrává 5 spojených v řadě.</div>',
       '</div>',
       '<div class="tttCard">',
       '  <div class="tttSectionTitle">Spuštění</div>',
@@ -733,6 +745,8 @@ function tttRender() {
         state.mode = btn.getAttribute('data-ttt-mode') || 'ai';
         if (state.mode === 'pvp') state.difficulty = 'ai';
         tttRender();
+  requestAnimationFrame(tttLayoutBoard);
+        requestAnimationFrame(tttLayoutBoard);
       });
     });
     start.querySelectorAll('[data-ttt-difficulty]').forEach(btn => {
@@ -740,6 +754,7 @@ function tttRender() {
         if (state.mode === 'pvp') return;
         state.difficulty = btn.getAttribute('data-ttt-difficulty') || 'ai';
         tttRender();
+  requestAnimationFrame(tttLayoutBoard);
       });
     });
     start.querySelector('#tttStartBtn')?.addEventListener('click', () => {
@@ -752,6 +767,7 @@ function tttRender() {
         ? 'Hraje hráč X.'
         : 'Hraješ za X. AI je O.';
       tttRender();
+  requestAnimationFrame(tttLayoutBoard);
     });
     return;
   }
@@ -792,6 +808,7 @@ function tttHandleMove(index) {
       ? 'Remíza. Dobře hrané.'
       : (after.winner === 'X' ? 'Vyhrál jsi.' : 'Vyhrála O.');
     tttRender();
+  requestAnimationFrame(tttLayoutBoard);
     return;
   }
 
@@ -799,12 +816,14 @@ function tttHandleMove(index) {
     state.turn = state.turn === 'X' ? 'O' : 'X';
     state.message = state.turn === 'X' ? 'Hraje hráč X.' : 'Hraje hráč O.';
     tttRender();
+  requestAnimationFrame(tttLayoutBoard);
     return;
   }
 
   state.turn = 'O';
   state.message = 'Tah AI...';
   tttRender();
+  requestAnimationFrame(tttLayoutBoard);
 
   setTimeout(() => {
     const fresh = tttGetState();
@@ -820,11 +839,13 @@ function tttHandleMove(index) {
         ? 'Remíza. Dobře hrané.'
         : 'AI vyhrála. Zkus to znovu.';
       tttRender();
+  requestAnimationFrame(tttLayoutBoard);
       return;
     }
     fresh.turn = 'X';
     fresh.message = 'Hraješ za X.';
     tttRender();
+  requestAnimationFrame(tttLayoutBoard);
   }, 180);
 }
 
@@ -837,6 +858,8 @@ function resetTicTacToeGame(keepScreen) {
   state.message = state.mode === 'pvp' ? 'Hraje hráč X.' : 'Hraješ za X. AI je O.';
   if (!keepScreen) state.screen = 'start';
   tttRender();
+  requestAnimationFrame(tttLayoutBoard);
+  requestAnimationFrame(tttLayoutBoard);
 }
 
 function openTicTacToeGame() {
@@ -851,12 +874,35 @@ function openTicTacToeGame() {
   overlay.classList.add('isVisible');
   document.body.classList.add('tttOpen');
   tttRender();
+  requestAnimationFrame(tttLayoutBoard);
+  requestAnimationFrame(tttLayoutBoard);
 }
 
 function closeTicTacToeGame() {
   const overlay = document.getElementById('tttOverlay');
   if (overlay) overlay.classList.remove('isVisible');
   document.body.classList.remove('tttOpen');
+}
+
+function tttLayoutBoard() {
+  const overlay = document.getElementById('tttOverlay');
+  if (!overlay || !overlay.classList.contains('isVisible')) return;
+  const board = overlay.querySelector('#tttBoard');
+  const wrap = overlay.querySelector('.tttBoardWrap');
+  if (!board || !wrap) return;
+
+  const wrapRect = wrap.getBoundingClientRect();
+  const styles = window.getComputedStyle(board);
+  const gap = parseFloat(styles.gap || styles.columnGap || '3') || 3;
+  const cellW = Math.floor((wrapRect.width - gap * (TTT_COLS - 1)) / TTT_COLS);
+  const cellH = Math.floor((wrapRect.height - gap * (TTT_ROWS - 1)) / TTT_ROWS);
+  const cell = Math.max(14, Math.min(cellW, cellH));
+
+  board.style.setProperty('--tttCellSize', cell + 'px');
+  board.style.gridTemplateColumns = `repeat(${TTT_COLS}, ${cell}px)`;
+  board.style.gridTemplateRows = `repeat(${TTT_ROWS}, ${cell}px)`;
+  board.style.width = (cell * TTT_COLS + gap * (TTT_COLS - 1)) + 'px';
+  board.style.height = (cell * TTT_ROWS + gap * (TTT_ROWS - 1)) + 'px';
 }
 
 function triggerAboutAction() {
@@ -883,7 +929,7 @@ function triggerAboutAction() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v.1(250)–v.1(270)',
+      range: 'v.1(250)–v.1(271)',
       title: 'Aktuální úpravy',
       lines: [
         'Jídelna a kantýna teď používají shodné dny na jednom řádku.',

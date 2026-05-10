@@ -282,8 +282,8 @@ label{
 .ad{background:linear-gradient(180deg, rgba(67,110,155,.35), rgba(20,24,22,.96)); border-color:rgba(103,159,214,.35); color:#dfefff;}
 .ae{background:linear-gradient(180deg, rgba(70,145,96,.33), rgba(20,24,22,.96)); border-color:rgba(107,197,131,.30); color:#e8ffe8;}
 .ah{background:linear-gradient(180deg, rgba(173,118,53,.30), rgba(20,24,22,.96)); border-color:rgba(230,171,92,.28); color:#fff1dd;}
-.adv{background:linear-gradient(180deg, rgba(65,95,133,.26), rgba(20,24,22,.96)); border-color:rgba(124,160,202,.22); color:#e8f2ff;}
-.aev{background:linear-gradient(180deg, rgba(54,72,61,.25), rgba(20,24,22,.96)); border-color:rgba(126,160,140,.20); color:#ecfff0;}
+.adv{background:linear-gradient(180deg, rgba(65,95,133,.12), rgba(20,24,22,.96)); border-color:rgba(124,160,202,.12); color:rgba(232,242,255,.72); filter:saturate(.72) brightness(.95);}
+.aev{background:linear-gradient(180deg, rgba(54,72,61,.10), rgba(20,24,22,.96)); border-color:rgba(126,160,140,.10); color:rgba(236,255,240,.68); filter:saturate(.68) brightness(.95);}
 
 .tableWrap{
  overflow-x:auto;
