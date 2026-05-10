@@ -1,4 +1,4 @@
-// Extracted dashboard logic (v1(269))
+// Extracted dashboard logic (v1(273))
 function updateDashboard() {
   const now = typeof getPragueNow === "function" ? getPragueNow(new Date()) : new Date();
   const active = getActiveShiftNow(now);
@@ -160,6 +160,8 @@ function scheduleDashboardInitialPaint() {
 }
 
 function forceHomeRefresh() {
+  const activePage = document.querySelector('.page.active')?.id || "";
+  if (typeof app !== 'undefined' && app.homeBootSuppressed && activePage !== "home") return;
   if (typeof showPage === 'function') showPage('home');
   if (typeof refreshHomeScreen === 'function') refreshHomeScreen();
   else if (typeof updateDashboard === 'function') updateDashboard();

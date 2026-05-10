@@ -1,6 +1,6 @@
 
 const APP_KEY = "rotace_kalkulacky_state_v122";
-const APP_VERSION = "v.1(271)";
+const APP_VERSION = "v.1(278)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-05-10-" + APP_VERSION + "-" + Date.now();
 
@@ -77,7 +77,7 @@ const app = {
   selectedStatsMachine: null,
   soustruhMode: "lis",
   soustruhFirstBatch: "",
-  soustruhPlan: "1216",
+  soustruhPlan: "",
   soustruh126Start: 32,
   soustruh106Counts: ["", "", "", ""],
   selectedYear: new Date().getFullYear(),
@@ -86,6 +86,7 @@ const app = {
   importClicks: 0,
   aboutTapCount: 0,
   aboutTapTimer: null,
+  homeBootSuppressed: false,
   tttState: null,
   pendingMenuImport: false,
   adminUnlocked: false,
@@ -263,11 +264,12 @@ function restoreInputs() {
   setVal("orovnani", "orovnani");
   setVal("celkem", "celkem");
   const lisPlanEl = document.getElementById("lis_plan");
-  if (lisPlanEl) lisPlanEl.value = "1216";
+  const soustruhDefaultPlan = String(typeof getSoustruhDefaultPlan === "function" ? getSoustruhDefaultPlan() : 1216);
+  if (lisPlanEl) lisPlanEl.value = soustruhDefaultPlan;
   const v126PlanEl = document.getElementById("v126_plan");
-  if (v126PlanEl) v126PlanEl.value = "1216";
+  if (v126PlanEl) v126PlanEl.value = soustruhDefaultPlan;
   const v106PlanEl = document.getElementById("v106_plan");
-  if (v106PlanEl) v106PlanEl.value = "1216";
+  if (v106PlanEl) v106PlanEl.value = soustruhDefaultPlan;
   try {
     const arr = JSON.parse(localStorage.getItem("soustruh106Counts") || "[\"\",\"\",\"\",\"\"]");
     ["v106_c1","v106_c2","v106_c3","v106_c4"].forEach((id, idx) => { const el = document.getElementById(id); if (el && !el.value) el.value = arr[idx] || ""; });
@@ -275,7 +277,7 @@ function restoreInputs() {
   app.soustruhMode = localStorage.getItem("soustruhMode") || app.soustruhMode || "lis";
   app.soustruhFirstBatch = localStorage.getItem("soustruhFirstBatch") || "";
   const storedSoustruhPlan = localStorage.getItem("soustruhPlan");
-  app.soustruhPlan = storedSoustruhPlan && storedSoustruhPlan !== "1248" ? storedSoustruhPlan : "1216";
+  app.soustruhPlan = storedSoustruhPlan && storedSoustruhPlan !== "1248" ? storedSoustruhPlan : String(typeof getSoustruhDefaultPlan === "function" ? getSoustruhDefaultPlan() : 1216);
   app.soustruh126Start = parseInt(localStorage.getItem("soustruh126Start"), 10) || 32;
   try { app.soustruh106Counts = JSON.parse(localStorage.getItem("soustruh106Counts") || "[\"\",\"\",\"\",\"\"]"); } catch (e) { app.soustruh106Counts = ["", "", "", ""]; }
 }
@@ -300,6 +302,16 @@ function getShiftEnd(now) {
     e.setHours(6, 0, 0, 0);
     return e;
   }
+}
+
+function getSoustruhDefaultPlan(now) {
+  const d = new Date(now || new Date());
+  const day = d.getDay();
+  const hour = d.getHours();
+
+  if (day === 0 && hour >= 6 && hour < 14) return 704;
+  if ((day === 0 && hour >= 22) || (day === 1 && hour < 6)) return 832;
+  return 1216;
 }
 
 const SHIFT_CYCLE_START = new Date(2026, 3, 27, 0, 0, 0, 0); // 27.4.2026 = B / 1. týden
