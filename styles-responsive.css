@@ -238,6 +238,8 @@
   #statsNameGrid .listItem,
   #statsMachineGrid .listItem{
     min-height:46px;
+    padding-left:2px;
+    padding-right:2px;
   }
 }
 
@@ -253,10 +255,22 @@
     gap: 6px;
   }
 
+  #statsNameGrid .listItem {
+    padding-left: 5px;
+    padding-right: 5px;
+  }
+
   #statsMachineGrid.listGrid {
     grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 3px;
+    gap: 2px;
   }
+
+  #statsMachineGrid .listItem {
+    padding-left: 2px;
+    padding-right: 2px;
+  }
+
+  
 
   .rotaceMiniCard{
     min-height:88px;

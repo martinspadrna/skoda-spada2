@@ -613,6 +613,22 @@ input{
   gap:8px;
 }
 
+#rotaceNamesPanel .rotaceTileTitle,
+#rotace .rotaceTileTitle{
+  font-size:12px;
+}
+
+#rotace .rotaceMachineTile .rotaceTileTitle,
+#rotace .rotaceMonthTile .rotaceTileTitle,
+#rotace .monthTile .rotaceTileTitle{
+  font-size:13px;
+  line-height:1.15;
+}
+
+#statsMachineGrid .statsTileTitle{
+  font-size:10px;
+}
+
 #monthsGrid{
   grid-template-columns:1fr;
   gap:8px;
@@ -623,7 +639,7 @@ input{
   justify-content:center;
   text-align:center;
   min-height:38px;
-  padding:7px 5px;
+  padding:7px 4px;
   border-radius:16px;
 }
 
@@ -631,7 +647,7 @@ input{
   justify-content:center;
   text-align:center;
   min-height:38px;
-  padding:7px 4px;
+  padding:7px 6px;
   border-radius:16px;
 }
 
@@ -1967,7 +1983,7 @@ body.reduceMotion *::after{
 .bottomNavMenuBtn .moreIcon{width:24px !important; height:24px !important; transform:translateY(-12px) !important; display:block !important;}
 
 
-/* v.1(283) tweaks */
+/* v.1(284) tweaks */
 #brusy .indexGrid .bbtn.adv{
   background:linear-gradient(180deg, rgba(72,92,116,.38), rgba(18,22,26,.98));
   border-color:rgba(160,182,200,.34);
@@ -2083,7 +2099,7 @@ body.reduceMotion *::after{
   }
 }
 
-/* v.1(283) admin + leaderboard + tighter machine tiles */
+/* v.1(284) admin + leaderboard + tighter machine tiles */
 #statsMachineGrid.listGrid{
   grid-template-columns:repeat(5, minmax(0, 1fr));
   gap:4px;

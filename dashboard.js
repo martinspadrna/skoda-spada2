@@ -1,4 +1,4 @@
-// Extracted dashboard logic (v1(273))
+// Extracted dashboard logic (v1(284))
 function updateDashboard() {
   const now = typeof getPragueNow === "function" ? getPragueNow(new Date()) : new Date();
   const active = getActiveShiftNow(now);
@@ -243,3 +243,124 @@ window.addEventListener('visibilitychange', () => {
   }
 });
 window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
+
+
+(function installDashboardFallbackGuard() {
+  if (window.__rotaceDashboardFallbackGuardInstalled) return;
+  window.__rotaceDashboardFallbackGuardInstalled = true;
+
+  const originalUpdateDashboard = typeof updateDashboard === 'function' ? updateDashboard : null;
+  const esc = typeof escapeHtml === 'function'
+    ? escapeHtml
+    : (value) => String(value ?? '').replace(/[&<>"']/g, (ch) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      }[ch]));
+
+  function safeCall(fn, fallback) {
+    try {
+      return typeof fn === 'function' ? fn() : fallback;
+    } catch (err) {
+      return fallback;
+    }
+  }
+
+  function nowInPrague() {
+    return typeof getPragueNow === 'function' ? getPragueNow(new Date()) : new Date();
+  }
+
+  function setCardSimple(id, title, value, meta, dotClass, clickable) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.toggle('dashboardCardClickable', !!clickable);
+    const dot = dotClass ? '<span class="dashboardDot ' + esc(dotClass) + '" aria-hidden="true"></span>' : '';
+    el.innerHTML = [
+      '<div class="dashboardTop">',
+      '  <div class="dashboardHead">',
+      '    <div class="dashboardLabelRow">',
+      '      <div class="dashboardLabel">' + esc(title) + '</div>',
+      dot,
+      '    </div>',
+      '  </div>',
+      '</div>',
+      '<div class="dashboardValue">' + esc(value || '--') + '</div>',
+      meta ? '<div class="dashboardMeta">' + esc(meta) + '</div>' : ''
+    ].join('');
+  }
+
+  function renderDashboardFallback(err) {
+    const now = nowInPrague();
+    const active = safeCall(() => typeof getActiveShiftNow === 'function' ? getActiveShiftNow(now) : null, null);
+    const special = safeCall(() => typeof getSpecialWorkInfo === 'function' ? getSpecialWorkInfo(now) : null, null);
+    const vacationCountdown = safeCall(() => typeof getVacationCountdown === 'function' ? getVacationCountdown(now) : { text: '--', meta: '' }, { text: '--', meta: '' });
+    const payDate = safeCall(() => typeof getNextPayrollDate === 'function' ? getNextPayrollDate(now) : null, null);
+    const payText = payDate
+      ? new Intl.DateTimeFormat('cs-CZ', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(payDate).replace(/\s+/g, '')
+      : '—';
+    const payMeta = payDate ? 'následující výplata' : '';
+    const calendarText = (() => {
+      try {
+        return new Intl.DateTimeFormat('cs-CZ', { weekday: 'short', day: 'numeric', month: 'numeric', year: 'numeric' }).format(now);
+      } catch (formatErr) {
+        return now.toLocaleDateString('cs-CZ');
+      }
+    })();
+    const activeText = active
+      ? 'V práci: směna ' + active.team + (active.label ? ' (' + active.label + ')' : '')
+      : (special ? 'Dnes se nepracuje' : '—');
+    const countdownText = active && active.end
+      ? (typeof formatDuration === 'function' ? formatDuration(active.end - now) : '—')
+      : '—';
+    const foodA = safeCall(() => (typeof findFoodStatus === 'function' && Array.isArray(FOOD_LOCATIONS) ? findFoodStatus(FOOD_LOCATIONS[0], now) : null), null);
+    const foodB = safeCall(() => (typeof findFoodStatus === 'function' && Array.isArray(FOOD_LOCATIONS) ? findFoodStatus(FOOD_LOCATIONS[1], now) : null), null);
+    const foodText = (status) => {
+      if (!status) return '—';
+      if (status.isOpen && status.active) {
+        return typeof formatFoodTime === 'function' ? ('Otevřeno do ' + formatFoodTime(status.active.end)) : 'Otevřeno';
+      }
+      return 'Zavřeno';
+    };
+    const foodMeta = (status) => {
+      if (!status) return '';
+      if (status.isOpen && status.active && typeof formatFoodTime === 'function') {
+        return 'do ' + formatFoodTime(status.active.end);
+      }
+      return status.next && typeof formatFoodTime === 'function' ? ('otevřeno v ' + formatFoodTime(status.next.start)) : '';
+    };
+
+    const hero = document.getElementById('dashHero');
+    if (hero) {
+      hero.innerHTML = [
+        '<div class="dashboardHeroLine1"><span class="dashboardHeroLine1Text">' + esc(activeText) + '</span></div>',
+        '<div class="dashboardHeroLine2">' + esc(countdownText) + '</div>',
+        '<div class="dashboardHeroLine3">' + esc(special ? special.label || '' : '') + '</div>',
+        '<div class="dashboardHeroBarRow"><div class="dashboardHeroBar"><span style="width:' + (active && active.start && active.end ? '50%' : '0%') + '"></span></div></div>'
+      ].join('');
+    }
+
+    setCardSimple('dashCalendar', 'Kalendář', calendarText, special ? String(special.label || '') : '', '', false);
+    setCardSimple('dashCountdown', 'Zbývá', countdownText, '', '', false);
+    setCardSimple('dashKantyna', 'Kantýna', foodText(foodA), foodMeta(foodA), foodA && foodA.isOpen ? 'is-open' : 'is-closed', true);
+    setCardSimple('dashJidelna', 'Jídelna', foodText(foodB), foodMeta(foodB), foodB && foodB.isOpen ? 'is-open' : 'is-closed', true);
+    setCardSimple('dashVyplata', 'Další výplata', payText, payMeta, '', false);
+    setCardSimple('dashCzd', 'Odpočet do dovolené', vacationCountdown.text || '--', vacationCountdown.meta || '', '', false);
+    setCardSimple('dashFoodLink', 'Jídelní lístek', 'Otevřít', 'Aktuální menu', '', true);
+    setCardSimple('dashEportalLink', 'Eportal', 'Otevřít', 'Firemní portál', '', true);
+
+    if (err) {
+      console.warn('Dashboard fallback activated', err);
+    }
+  }
+
+  window.updateDashboard = function wrappedUpdateDashboard(...args) {
+    try {
+      return originalUpdateDashboard ? originalUpdateDashboard.apply(this, args) : renderDashboardFallback();
+    } catch (err) {
+      renderDashboardFallback(err);
+      return null;
+    }
+  };
+})();

@@ -834,6 +834,28 @@ function tttCandidateMoves(board, radius = 2) {
   return Array.from(candidates);
 }
 
+
+function tttOpponentForkRisk(board, mark, limit = 12) {
+  const replies = tttOrderedCandidates(board, mark, limit);
+  let risk = 0;
+  for (const idx of replies) {
+    if (board[idx]) continue;
+    board[idx] = mark;
+    const winCount = tttWinningMoves(board, mark).length;
+    const critical = tttCriticalThreatMoves(board, mark).length;
+    const windows = tttThreatWindowMoves(board, mark).length;
+    const openThree = tttOpenThreeThreatMoves(board, mark).length;
+    board[idx] = '';
+    if (winCount >= 2 || critical >= 2 || windows >= 2 || openThree >= 2) {
+      risk += 1;
+    } else if (winCount >= 1 && (critical >= 1 || windows >= 1 || openThree >= 1)) {
+      risk += 0.5;
+    }
+    if (risk >= 3) break;
+  }
+  return risk;
+}
+
 function tttMoveHeuristic(board, index, mark) {
   const row = Math.floor(index / TTT_COLS);
   const col = index % TTT_COLS;
@@ -860,6 +882,10 @@ function tttMoveHeuristic(board, index, mark) {
   board[index] = opponent;
   if (tttWinner(board).winner === opponent) score += 900000;
   board[index] = mark;
+
+  const forkRisk = tttOpponentForkRisk(board, opponent, 10);
+  if (forkRisk >= 2) score -= 420000;
+  else if (forkRisk >= 1) score -= 210000;
 
   const directions = [
     [0, 1],
@@ -942,8 +968,8 @@ function tttSearch(board, depth, alpha, beta, maximizing, memo) {
   }
 
   const mark = maximizing ? 'O' : 'X';
-  let moves = tttOrderedCandidates(board, mark, maximizing ? 24 : 18);
-  if (!moves.length) moves = tttCandidateMoves(board, 3);
+  let moves = tttOrderedCandidates(board, mark, maximizing ? 32 : 24);
+  if (!moves.length) moves = tttCandidateMoves(board, 4);
   if (!moves.length) {
     const leaf = tttEvaluateBoard(board);
     if (memo) memo[key] = leaf;
@@ -1022,7 +1048,8 @@ function tttBestMove(board, difficulty) {
       const remainingThreatWindows = tttThreatWindowMoves(board, 'X').length;
       const remainingCritical = tttCriticalThreatMoves(board, 'X').length;
       const remainingWins = tttWinningMoves(board, 'X').length;
-      const score = tttMoveHeuristic(board, idx, 'O') - remainingThreatWindows * 220000 - remainingCritical * 180000 - remainingWins * 280000;
+      const remainingForkRisk = tttOpponentForkRisk(board, 'X', 10);
+      const score = tttMoveHeuristic(board, idx, 'O') - remainingThreatWindows * 220000 - remainingCritical * 180000 - remainingWins * 280000 - remainingForkRisk * 200000;
       board[idx] = '';
       return { idx, score };
     });
@@ -1038,7 +1065,8 @@ function tttBestMove(board, difficulty) {
       const remainingThreatWindows = tttThreatWindowMoves(board, 'X').length;
       const remainingCritical = tttCriticalThreatMoves(board, 'X').length;
       const remainingWins = tttWinningMoves(board, 'X').length;
-      const score = tttMoveHeuristic(board, idx, 'O') - remainingOpenThree * 280000 - remainingThreatWindows * 220000 - remainingCritical * 180000 - remainingWins * 300000;
+      const remainingForkRisk = tttOpponentForkRisk(board, 'X', 10);
+      const score = tttMoveHeuristic(board, idx, 'O') - remainingOpenThree * 280000 - remainingThreatWindows * 220000 - remainingCritical * 180000 - remainingWins * 300000 - remainingForkRisk * 240000;
       board[idx] = '';
       return { idx, score };
     });
@@ -1075,8 +1103,8 @@ function tttBestMove(board, difficulty) {
 
   const occupied = board.length - free.length;
   const isHard = difficulty === 'ai';
-  const searchDepth = isHard ? (occupied < 8 ? 8 : occupied < 24 ? 9 : 10) : (difficulty === 'medium' ? 2 : 1);
-  const candidateLimit = isHard ? 40 : (difficulty === 'medium' ? 12 : 18);
+  const searchDepth = isHard ? (occupied < 6 ? 9 : occupied < 18 ? 10 : 11) : (difficulty === 'medium' ? 2 : 1);
+  const candidateLimit = isHard ? 60 : (difficulty === 'medium' ? 12 : 18);
   const candidates = tttOrderedCandidates(board, 'O', candidateLimit);
 
   if (difficulty === 'noob') {
@@ -1680,7 +1708,7 @@ function triggerAboutAction() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v.1(250)–v.1(283)',
+      range: 'v.1(250)–v.1(284)',
       title: 'Aktuální úpravy',
       lines: [
         'Jídelna a kantýna teď používají shodné dny na jednom řádku.',
