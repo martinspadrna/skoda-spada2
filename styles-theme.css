@@ -682,8 +682,8 @@ input{
 }
 
 .bottomNavMenuBtn .moreIcon{
-  width:4px;
-  height:18px;
+  width:14px;
+  height:24px;
   display:block;
 }
 
@@ -1303,8 +1303,8 @@ input{
 }
 
 .bottomNavMenuBtn .moreIcon{
-  width:3px;
-  height:16px;
+  width:14px;
+  height:24px;
   display:block;
 }
 
@@ -1405,8 +1405,8 @@ input{
 }
 
 .bottomNavMenuBtn .moreIcon{
-  width:4px;
-  height:14px;
+  width:14px;
+  height:24px;
 }
 
 #rotaceNamesPanel .rotaceQuickList,
@@ -1485,8 +1485,8 @@ input{
 }
 
 .bottomNavMenuBtn .moreIcon{
-  width:6px;
-  height:18px;
+  width:14px;
+  height:24px;
 }
 
 
@@ -1539,8 +1539,8 @@ input{
 }
 
 .bottomNavMenuBtn .moreIcon{
-  width:4px;
-  height:14px;
+  width:14px;
+  height:24px;
 }
 
 
@@ -1708,8 +1708,8 @@ body.reduceMotion *::after{
 }
 
 .bottomNavMenuBtn .moreIcon{
-  width:5px !important;
-  height:22px !important;
+  width:14px !important;
+  height:24px !important;
 }
 
 .bottomNavMenuBtn .bottomNavLabel{
@@ -1749,8 +1749,8 @@ body.reduceMotion *::after{
 }
 
 .bottomNavMenuBtn .moreIcon{
-  width:4px !important;
-  height:16px !important;
+  width:14px !important;
+  height:24px !important;
 }
 
 
@@ -1804,8 +1804,8 @@ body.reduceMotion *::after{
 }
 
 .bottomNavMenuBtn .moreIcon{
-  width:2px !important;
-  height:16px !important;
+  width:14px !important;
+  height:24px !important;
 }
 
 #statsMachineGrid .statsMachineTile,
@@ -1848,7 +1848,7 @@ body.reduceMotion *::after{
 }
 
 .bottomNavMenuBtn .moreIcon{
-  width:4px !important;
+  width:14px !important;
   height:24px !important;
   color:var(--green2);
 }
@@ -1883,8 +1883,8 @@ body.reduceMotion *::after{
 }
 
 .bottomNavMenuBtn .moreIcon{
-  width:4px !important;
-  height:20px !important;
+  width:14px !important;
+  height:24px !important;
 }
 
 
@@ -1909,4 +1909,4 @@ body.reduceMotion *::after{
 .bottomNavBtn.active .bottomNavIcon,
 .bottomNavBtn.active .bottomNavLabel,
 .bottomNavMenuBtn.active .moreIcon{color:var(--green2) !important;}
-.bottomNavMenuBtn .moreIcon{width:10px !important; height:24px !important;}
+.bottomNavMenuBtn .moreIcon{width:14px !important; height:24px !important;}

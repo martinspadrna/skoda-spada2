@@ -365,8 +365,8 @@
   }
 
   .bottomNavMenuBtn .moreIcon{
-    width:8px;
-    height:18px;
+    width:14px;
+    height:24px;
   }
 }
 
@@ -447,8 +447,8 @@
   }
 
   .bottomNavMenuBtn .moreIcon{
-    width:4px !important;
-    height:20px !important;
+    width:14px !important;
+    height:24px !important;
   }
 
   .bottomNavBtn.active{
@@ -491,8 +491,8 @@
   }
 
   .bottomNavMenuBtn .moreIcon{
-    width:3px !important;
-    height:18px !important;
+    width:14px !important;
+    height:24px !important;
   }
 }
 
@@ -561,8 +561,8 @@
 }
 
 .bottomNavMenuBtn .moreIcon{
-  width: 4px !important;
-  height: 24px !important;
+  width:14px !important;
+  height:24px !important;
   color:var(--green2);
 }
 
@@ -611,6 +611,6 @@
 }
 
 .bottomNavMenuBtn .moreIcon{
-  width:4px !important;
-  height:20px !important;
+  width:14px !important;
+  height:24px !important;
 }
