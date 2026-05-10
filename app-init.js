@@ -250,7 +250,14 @@ function initAppInitBindings() {
 
   bootHome();
   if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.init === 'function') {
-    try { window.RotationSupabaseBridge.init(); } catch (err) { console.warn('Supabase bridge init failed', err); }
+    try {
+      const bridgeInit = window.RotationSupabaseBridge.init();
+      if (bridgeInit && typeof bridgeInit.then === 'function') {
+        bridgeInit.finally(() => {
+          if (typeof forceHomeRefresh === 'function') forceHomeRefresh();
+        });
+      }
+    } catch (err) { console.warn('Supabase bridge init failed', err); }
   }
   void syncRotationFromSupabase(false);
   setTimeout(bootHome, 60);

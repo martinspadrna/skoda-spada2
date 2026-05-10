@@ -1983,7 +1983,7 @@ body.reduceMotion *::after{
 .bottomNavMenuBtn .moreIcon{width:24px !important; height:24px !important; transform:translateY(-12px) !important; display:block !important;}
 
 
-/* v.1(284) tweaks */
+/* v.1(285) tweaks */
 #brusy .indexGrid .bbtn.adv{
   background:linear-gradient(180deg, rgba(72,92,116,.38), rgba(18,22,26,.98));
   border-color:rgba(160,182,200,.34);
@@ -2099,7 +2099,7 @@ body.reduceMotion *::after{
   }
 }
 
-/* v.1(284) admin + leaderboard + tighter machine tiles */
+/* v.1(285) admin + leaderboard + tighter machine tiles */
 #statsMachineGrid.listGrid{
   grid-template-columns:repeat(5, minmax(0, 1fr));
   gap:4px;

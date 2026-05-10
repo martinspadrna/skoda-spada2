@@ -99,7 +99,7 @@
       return Array.isArray(res && res.data) ? res.data : [];
     } catch (err) {
       state.lastError = err;
-      console.warn('Supabase win list load failed', err);
+      console.error('Supabase win list load failed', err);
       return [];
     }
   }
@@ -125,6 +125,7 @@
       state.lastError = null;
 
       if (typeof forceHomeRefresh === 'function') forceHomeRefresh();
+      if (typeof window.__rotaceBootHomeRefreshLate === 'function') window.__rotaceBootHomeRefreshLate();
       else {
         if (typeof updateDashboard === 'function') updateDashboard();
         if (typeof updateFoodTile === 'function') updateFoodTile();
@@ -158,7 +159,7 @@
       return { ok: true };
     } catch (err) {
       state.lastError = err;
-      console.warn('Supabase win insert failed', err);
+      console.error('Supabase win insert failed', err);
       return { ok: false, error: err };
     }
   }

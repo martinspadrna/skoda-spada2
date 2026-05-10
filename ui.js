@@ -1103,8 +1103,8 @@ function tttBestMove(board, difficulty) {
 
   const occupied = board.length - free.length;
   const isHard = difficulty === 'ai';
-  const searchDepth = isHard ? (occupied < 6 ? 9 : occupied < 18 ? 10 : 11) : (difficulty === 'medium' ? 2 : 1);
-  const candidateLimit = isHard ? 60 : (difficulty === 'medium' ? 12 : 18);
+  const searchDepth = isHard ? (occupied < 6 ? 10 : occupied < 18 ? 12 : 13) : (difficulty === 'medium' ? 2 : 1);
+  const candidateLimit = isHard ? 80 : (difficulty === 'medium' ? 12 : 18);
   const candidates = tttOrderedCandidates(board, 'O', candidateLimit);
 
   if (difficulty === 'noob') {
@@ -1208,21 +1208,13 @@ function tttNormalizeHardWinEntry(entry) {
 
 function tttGetHardWinRows() {
   const state = tttGetState();
-  const merged = [];
-  const seen = new Set();
   const remote = Array.isArray(state.hardWinRemote) ? state.hardWinRemote : [];
-  const local = tttHardWinLog();
 
-  [...remote, ...local].forEach(raw => {
-    const entry = tttNormalizeHardWinEntry(raw);
-    if (!entry.name) return;
-    const key = tttHardWinKey(entry);
-    if (seen.has(key)) return;
-    seen.add(key);
-    merged.push(entry);
-  });
+  const normalized = remote
+    .map(tttNormalizeHardWinEntry)
+    .filter(entry => entry.name);
 
-  merged.sort((a, b) => {
+  normalized.sort((a, b) => {
     const moveDiff = (a.totalMoves || 0) - (b.totalMoves || 0);
     if (moveDiff) return moveDiff;
     const timeDiff = (a.elapsedMs || 0) - (b.elapsedMs || 0);
@@ -1230,7 +1222,7 @@ function tttGetHardWinRows() {
     return String(b.date || '').localeCompare(String(a.date || ''));
   });
 
-  return merged.slice(0, 10);
+  return normalized.slice(0, 10);
 }
 
 async function tttRefreshHardWinRows(forceRender) {
@@ -1245,7 +1237,7 @@ async function tttRefreshHardWinRows(forceRender) {
     }
     state.hardWinLoaded = true;
   } catch (err) {
-    console.warn('TTT leaderboard load failed', err);
+    console.error('TTT leaderboard load failed', err);
     state.hardWinLoaded = true;
   } finally {
     state.hardWinLoading = false;
@@ -1263,7 +1255,7 @@ function tttBuildHardWinTableHtml() {
     return '<div class="smallText">Načítám online výsledky…</div>';
   }
   if (!rows.length) {
-    return '<div class="smallText">Zatím žádné záznamy.</div>';
+    return '<div class="smallText">Zatím žádné online výsledky.</div>';
   }
 
   const rowsHtml = rows.map((row, idx) => {
@@ -1345,35 +1337,25 @@ function tttOpenHardWinPrompt() {
 async function tttSendHardWinEntry(entry) {
   try {
     if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.sendGomokuWin === 'function') {
-      await window.RotationSupabaseBridge.sendGomokuWin(entry);
+      const result = await window.RotationSupabaseBridge.sendGomokuWin(entry);
+      if (!result || result.ok !== true) {
+        console.error('TTT online save failed', result && result.error ? result.error : result);
+        return result || { ok: false, reason: 'unknown' };
+      }
+      return result;
     }
+    return { ok: false, reason: 'missing-bridge' };
   } catch (err) {
-    console.warn(err);
+    console.error('TTT online save failed', err);
+    return { ok: false, error: err };
   }
-
-  const lines = [
-    'Piškvorky – výhra nad nejtvrdší AI',
-    'Jméno: ' + entry.name,
-    'Datum: ' + entry.date,
-    'Režim: ' + entry.mode,
-    'Obtížnost: ' + entry.difficulty,
-    'Tahy celkem: ' + entry.totalMoves,
-    'Tahy X: ' + entry.xMoves,
-    'Tahy O: ' + entry.oMoves,
-    'Čas: ' + entry.elapsedText,
-    'Poznámka: ' + (entry.note || '')
-  ];
-  const text = lines.join('\n');
-  if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
-    navigator.clipboard.writeText(text).catch(() => {});
-  }
-  return text;
 }
 
-function tttSubmitHardWin() {
+async function tttSubmitHardWin() {
   const state = tttGetState();
   const overlay = document.getElementById('tttOverlay');
   const nameInput = overlay ? overlay.querySelector('#tttWinName') : null;
+  const submitBtn = overlay ? overlay.querySelector('#tttWinSubmit') : null;
   const name = String(nameInput && nameInput.value ? nameInput.value : '').trim();
   if (!name) {
     alert('Napiš jméno, ať je to zapsané správně.');
@@ -1401,11 +1383,20 @@ function tttSubmitHardWin() {
     note: 'Výhra nad nejtvrdší AI'
   };
 
-  tttSaveHardWin(entry);
+  if (submitBtn) submitBtn.disabled = true;
+  const result = await tttSendHardWinEntry(entry);
+  await new Promise(resolve => setTimeout(resolve, 300));
+
+  if (result && result.ok === false) {
+    if (submitBtn) submitBtn.disabled = false;
+    alert('Výhru se nepodařilo uložit online.');
+    return;
+  }
+
   tttCloseHardWinPrompt();
-  void tttSendHardWinEntry(entry);
-  void tttRefreshHardWinRows();
-  alert('Výhra uložená a odeslaná online.');
+  await tttRefreshHardWinRows();
+  if (submitBtn) submitBtn.disabled = false;
+  alert('Výhra uložená online.');
 }
 
 function tttRender() {
@@ -1708,7 +1699,7 @@ function triggerAboutAction() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v.1(250)–v.1(284)',
+      range: 'v.1(250)–v.1(285)',
       title: 'Aktuální úpravy',
       lines: [
         'Jídelna a kantýna teď používají shodné dny na jednom řádku.',
