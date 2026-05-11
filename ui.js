@@ -1949,6 +1949,16 @@ function adminNotesRowTemplate(row, rowIndex, allowBlankTail) {
 }
 
 
+
+function splitMachineKey(rawKey) {
+  const raw = String(rawKey || '').trim();
+  if (!raw) return { machine: '', index: '' };
+  const parts = raw.includes('-') ? raw.split('-') : (raw.includes('_') ? raw.split('_') : [raw]);
+  const machine = String(parts[0] || '').trim();
+  const index = String(parts.slice(1).join('-') || '').trim();
+  return { machine, index };
+}
+
 function buildAdminMachineSettingsTableHtml() {
   const rows = Array.isArray(app.machineSettingsRows) ? app.machineSettingsRows : [];
   const dataRows = rows.length ? rows : [
@@ -2252,6 +2262,7 @@ function renderAdminMenuBody(body, section) {
 
 function openAppMenu(view) {
   const page = ensureAppMenuOverlay();
+  page.classList.add('active');
   const body = page.querySelector('#appMenuBody');
   const v = view || 'menu';
 

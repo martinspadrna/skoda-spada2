@@ -40,6 +40,42 @@
   }
 
 
+
+  async function refreshPublicData() {
+    const client = getClient();
+    if (!client) return null;
+
+    try {
+      const announcementsRes = await client
+        .from('announcements')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      if (announcementsRes && !announcementsRes.error) {
+        state.announcements = Array.isArray(announcementsRes.data) ? announcementsRes.data : [];
+      }
+
+      state.ready = true;
+      state.lastError = null;
+
+      if (typeof forceHomeRefresh === 'function') forceHomeRefresh();
+      if (typeof window.__rotaceBootHomeRefreshLate === 'function') window.__rotaceBootHomeRefreshLate();
+      else {
+        if (typeof updateDashboard === 'function') updateDashboard();
+        if (typeof updateFoodTile === 'function') updateFoodTile();
+        if (typeof updateEportalTile === 'function') updateEportalTile();
+      }
+
+      return { announcements: state.announcements };
+    } catch (err) {
+      state.lastError = err;
+      console.warn('Supabase public data refresh failed', err);
+      return null;
+    }
+  }
+
   function monthKeyToMonthStart(monthKey) {
     const match = /^(\d{1,2})\/(\d{2})$/.exec(String(monthKey || '').trim());
     if (!match) return null;
