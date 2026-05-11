@@ -643,7 +643,7 @@
 
 #statsMachineGrid .listBtn{padding:8px 6px;min-width:62px;}
 
-/* v1(319) cleanup: games, sync badge, scrollable bottom nav */
+/* v1(320) cleanup: games, sync badge, scrollable bottom nav */
 .dashboardHeroCard{position:relative !important;padding-right:128px !important;}
 .dashboardSyncBadge{position:absolute !important;top:12px !important;right:12px !important;z-index:3 !important;display:inline-flex !important;align-items:center !important;gap:6px !important;padding:7px 10px !important;border-radius:999px !important;border:1px solid rgba(124,255,124,.18) !important;background:rgba(12,16,14,.66) !important;backdrop-filter:blur(14px) saturate(150%) !important;-webkit-backdrop-filter:blur(14px) saturate(150%) !important;color:rgba(238,247,238,.82) !important;font-size:11px !important;line-height:1 !important;font-weight:700 !important;letter-spacing:.02em !important;box-shadow:0 10px 30px rgba(0,0,0,.18) !important;pointer-events:none !important;max-width:calc(100% - 24px) !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important;}
 .dashboardSyncBadge--online{border-color:rgba(124,255,124,.22) !important;background:rgba(10,28,16,.70) !important;color:#d7ffe0 !important;}

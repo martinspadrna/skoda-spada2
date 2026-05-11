@@ -137,7 +137,7 @@ ${clone.outerHTML}`;
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "rotace_a_kalkulacky_v1_319.zip";
+    a.download = "rotace_a_kalkulacky_v1_320.zip";
     document.body.appendChild(a);
     a.click();
     a.remove();

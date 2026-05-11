@@ -1579,8 +1579,24 @@ function tttHandleMove(index) {
     state.winner = after.winner;
     if (after.winner === 'draw') {
       state.message = 'Remíza. Dobře hrané.';
+      if (typeof gamesRecordStat === 'function') {
+        gamesRecordStat('ttt', {
+          plays: (gamesGetActiveAccount()?.stats.ttt.plays || 0) + 1,
+          draws: (gamesGetActiveAccount()?.stats.ttt.draws || 0) + 1,
+          bestMoves: gamesGetActiveAccount()?.stats.ttt.bestMoves || null,
+          bestTimeMs: gamesGetActiveAccount()?.stats.ttt.bestTimeMs || null
+        });
+      }
     } else if (after.winner === 'X') {
       state.message = 'Vyhrál jsi.';
+      if (typeof gamesRecordStat === 'function') {
+        gamesRecordStat('ttt', {
+          plays: (gamesGetActiveAccount()?.stats.ttt.plays || 0) + 1,
+          wins: (gamesGetActiveAccount()?.stats.ttt.wins || 0) + 1,
+          bestMoves: Math.min(gamesGetActiveAccount()?.stats.ttt.bestMoves || 9999, state.moveCount || 0),
+          bestTimeMs: Math.min(gamesGetActiveAccount()?.stats.ttt.bestTimeMs || 999999999, Date.now() - (state.startedAt || Date.now()))
+        });
+      }
       if (state.mode === 'ai' && state.difficulty === 'ai') {
         state.hardWinPrompt = true;
         state.hardWinStats = tttReadHardWinStats();
@@ -1589,6 +1605,12 @@ function tttHandleMove(index) {
       }
     } else {
       state.message = 'Vyhrála O.';
+      if (typeof gamesRecordStat === 'function') {
+        gamesRecordStat('ttt', {
+          plays: (gamesGetActiveAccount()?.stats.ttt.plays || 0) + 1,
+          losses: (gamesGetActiveAccount()?.stats.ttt.losses || 0) + 1
+        });
+      }
     }
     tttRender();
     requestAnimationFrame(tttLayoutBoard);
@@ -1632,6 +1654,15 @@ function tttHandleMove(index) {
           fresh.message = afterAi.winner === 'draw'
             ? 'Remíza. Dobře hrané.'
             : 'AI vyhrála. Zkus to znovu.';
+          if (typeof gamesRecordStat === 'function') {
+            const active = gamesGetActiveAccount();
+            if (active) {
+              gamesRecordStat('ttt', {
+                plays: (active.stats.ttt.plays || 0) + 1,
+                losses: (active.stats.ttt.losses || 0) + 1
+              });
+            }
+          }
           tttRender();
           requestAnimationFrame(tttLayoutBoard);
           return;
@@ -1673,6 +1704,7 @@ function resetTicTacToeGame(keepScreen) {
 
 function openGamesPage() {
   showPage('games');
+  if (typeof renderGamesHub === 'function') renderGamesHub();
 }
 
 function openTicTacToeGame() {
@@ -2580,6 +2612,8 @@ function showPage(id) {
     app.homeBootSuppressed = id !== 'home';
   }
   window.__rotaceHomeBootLocked = id !== 'home';
+  window.__rotaceUserNavigated = id !== 'home';
+  if (id !== 'home') window.__rotaceHomeBootLocked = true;
 
   const navPage = id === 'rotace'
     ? 'rotace'
@@ -2775,4 +2809,467 @@ function ensureFoodScheduleModal() {
 
   document.body.appendChild(overlay);
   return overlay;
+}
+
+
+// -------------------------
+// Games hub + account profile
+// -------------------------
+const GAMES_PROFILE_KEY = APP_KEY + ':games_profile_v1';
+const GAMES_ACCOUNT_LIST = [
+  { id: '1883', name: 'Střížek Jan' },
+  { id: '2652', name: 'Kmínek Michal' },
+  { id: '2202', name: 'Novotný Miroslav' },
+  { id: '2602', name: 'Třasák Marek' },
+  { id: '9811', name: 'Špadrna Martin' },
+  { id: '1496', name: 'Kříž Pavel' },
+  { id: '4789', name: 'Synek Jan' },
+  { id: '3037', name: 'Pech Lukáš' },
+  { id: '3808', name: 'Starý Pavel' },
+  { id: '6235', name: 'Blažek Ladislav' }
+];
+
+function gamesDefaultProfile() {
+  const accounts = {};
+  GAMES_ACCOUNT_LIST.forEach(acc => {
+    accounts[acc.id] = {
+      id: acc.id,
+      name: acc.name,
+      stats: {
+        ttt: { plays: 0, wins: 0, losses: 0, draws: 0, bestMoves: null, bestTimeMs: null },
+        g2048: { plays: 0, bestScore: 0, bestTile: 0 },
+        snake: { plays: 0, bestScore: 0, bestLength: 0 },
+        flap: { plays: 0, bestScore: 0, bestPipes: 0 }
+      },
+      achievements: [],
+      updatedAt: 0
+    };
+  });
+  return { activeAccountId: '', accounts };
+}
+
+function gamesLoadProfile() {
+  try {
+    const raw = localStorage.getItem(GAMES_PROFILE_KEY);
+    if (!raw) return gamesDefaultProfile();
+    const parsed = JSON.parse(raw);
+    const base = gamesDefaultProfile();
+    base.activeAccountId = String(parsed.activeAccountId || '').trim();
+    const srcAccounts = parsed.accounts && typeof parsed.accounts === 'object' ? parsed.accounts : {};
+    GAMES_ACCOUNT_LIST.forEach(acc => {
+      const incoming = srcAccounts[acc.id] || {};
+      base.accounts[acc.id] = {
+        id: acc.id,
+        name: acc.name,
+        stats: {
+          ttt: Object.assign({ plays: 0, wins: 0, losses: 0, draws: 0, bestMoves: null, bestTimeMs: null }, incoming.stats && incoming.stats.ttt ? incoming.stats.ttt : {}),
+          g2048: Object.assign({ plays: 0, bestScore: 0, bestTile: 0 }, incoming.stats && incoming.stats.g2048 ? incoming.stats.g2048 : {}),
+          snake: Object.assign({ plays: 0, bestScore: 0, bestLength: 0 }, incoming.stats && incoming.stats.snake ? incoming.stats.snake : {}),
+          flap: Object.assign({ plays: 0, bestScore: 0, bestPipes: 0 }, incoming.stats && incoming.stats.flap ? incoming.stats.flap : {})
+        },
+        achievements: Array.isArray(incoming.achievements) ? incoming.achievements.slice(0, 20) : [],
+        updatedAt: Number(incoming.updatedAt || 0) || 0
+      };
+    });
+    if (!base.activeAccountId || !base.accounts[base.activeAccountId]) {
+      base.activeAccountId = '';
+    }
+    return base;
+  } catch (err) {
+    console.warn('gamesLoadProfile failed', err);
+    return gamesDefaultProfile();
+  }
+}
+
+function gamesSaveProfile(profile) {
+  try {
+    localStorage.setItem(GAMES_PROFILE_KEY, JSON.stringify(profile));
+  } catch (err) {
+    console.warn('gamesSaveProfile failed', err);
+  }
+}
+
+function gamesGetProfile() {
+  if (!app.gamesProfile) {
+    app.gamesProfile = gamesLoadProfile();
+  }
+  return app.gamesProfile;
+}
+
+function gamesGetActiveAccount() {
+  const profile = gamesGetProfile();
+  return profile.accounts[profile.activeAccountId] || null;
+}
+
+function gamesSetActiveAccount(accountId) {
+  const profile = gamesGetProfile();
+  if (!profile.accounts[accountId]) return;
+  profile.activeAccountId = accountId;
+  gamesSaveProfile(profile);
+  renderGamesHub();
+}
+
+function gamesStatLine(label, value) {
+  return '<div class="gamesStatCard"><div class="gamesStatLabel">' + escapeHtml(label) + '</div><div class="gamesStatValue">' + escapeHtml(String(value)) + '</div></div>';
+}
+
+function gamesRenderAccountChips() {
+  const container = document.getElementById('gamesAccountChips');
+  const nameEl = document.getElementById('gamesAccountName');
+  const hintEl = document.getElementById('gamesAccountHint');
+  if (!container || !nameEl || !hintEl) return;
+  const profile = gamesGetProfile();
+  const active = profile.accounts[profile.activeAccountId] || null;
+  nameEl.textContent = active ? (active.id + ' · ' + active.name) : 'Vyber svůj účet';
+  hintEl.textContent = active
+    ? 'Statistiky i výsledky her se budou ukládat pod tímto účtem. Při vstupu do her už se nic neptá znovu.'
+    : 'Bez hesla, jen klepni na svoje číslo. Statistiky a výsledky se uloží pod vybraným účtem.';
+  container.innerHTML = GAMES_ACCOUNT_LIST.map(acc => {
+    const isActive = profile.activeAccountId === acc.id;
+    return '<button type="button" class="gamesAccountChip' + (isActive ? ' isActive' : '') + '" data-account-id="' + escapeHtml(acc.id) + '">' + escapeHtml(acc.id) + ' · ' + escapeHtml(acc.name) + '</button>';
+  }).join('');
+  container.querySelectorAll('[data-account-id]').forEach(btn => {
+    btn.addEventListener('click', () => gamesSetActiveAccount(btn.getAttribute('data-account-id')));
+  });
+}
+
+function gamesRenderStats() {
+  const grid = document.getElementById('gamesStatsGrid');
+  if (!grid) return;
+  const active = gamesGetActiveAccount();
+  const t = active ? active.stats : gamesDefaultProfile().accounts['9811'].stats;
+  grid.innerHTML = [
+    gamesStatLine('Piškvorky hrané', t.ttt.plays),
+    gamesStatLine('Piškvorky výhry', t.ttt.wins),
+    gamesStatLine('2048 nejlepší', t.g2048.bestScore || 0),
+    gamesStatLine('Snake rekord', t.snake.bestScore || 0)
+  ].join('');
+}
+
+function renderGamesHub() {
+  gamesGetProfile();
+  gamesRenderAccountChips();
+  gamesRenderStats();
+  gamesEnsureKeyBindings();
+  const stage = document.getElementById('gamesStage');
+  if (!stage) return;
+  if (!app.activeGameShell) {
+    stage.innerHTML = '<div class="gamesShell"><div class="smallText">Vyber hru nahoře. Statistiky se připisují k účtu vlevo nahoře.</div></div>';
+    return;
+  }
+  renderGameShell(app.activeGameShell);
+}
+
+function openGameShell(gameId) {
+  gamesStopActiveLoops();
+  const profile = gamesGetProfile();
+  if (!profile.activeAccountId) {
+    renderGamesHub();
+    alert('Nejdřív vyber účet nahoře.');
+    return;
+  }
+  app.activeGameShell = gameId;
+  renderGameShell(gameId);
+}
+
+function closeGameShell() {
+  gamesStopActiveLoops();
+  app.activeGameShell = '';
+  renderGamesHub();
+}
+
+function renderGameShell(gameId) {
+  const stage = document.getElementById('gamesStage');
+  if (!stage) return;
+  const titleMap = { ttt: 'Piškvorky', '2048': '2048', snake: 'Snake', flap: 'Flap Bird' };
+  const title = titleMap[gameId] || 'Hra';
+  stage.innerHTML = [
+    '<div class="gamesShell">',
+    '  <div class="gamesShellTop">',
+    '    <div class="gamesShellTitle">' + escapeHtml(title) + '</div>',
+    '    <button type="button" class="gamesShellBack" id="gamesShellBackBtn">Zpět</button>',
+    '  </div>',
+    '  <div id="gamesShellBody"></div>',
+    '</div>'
+  ].join('');
+  stage.querySelector('#gamesShellBackBtn')?.addEventListener('click', closeGameShell);
+  if (gameId === 'ttt') renderGamesTttShell();
+  else if (gameId === '2048') renderGame2048();
+  else if (gameId === 'snake') renderGameSnake();
+  else if (gameId === 'flap') renderGameFlap();
+}
+
+function gamesRecordStat(gameId, patch) {
+  const profile = gamesGetProfile();
+  const active = profile.accounts[profile.activeAccountId];
+  if (!active) return;
+  active.updatedAt = Date.now();
+  if (gameId === 'ttt') {
+    active.stats.ttt = Object.assign({}, active.stats.ttt, patch);
+  } else if (gameId === '2048') {
+    active.stats.g2048 = Object.assign({}, active.stats.g2048, patch);
+  } else if (gameId === 'snake') {
+    active.stats.snake = Object.assign({}, active.stats.snake, patch);
+  } else if (gameId === 'flap') {
+    active.stats.flap = Object.assign({}, active.stats.flap, patch);
+  }
+  gamesSaveProfile(profile);
+  gamesRenderStats();
+}
+
+function gamesEnsureKeyBindings() {
+  if (window.__rotaceGamesKeysBound) return;
+  window.__rotaceGamesKeysBound = true;
+  document.addEventListener('keydown', (ev) => {
+    if (!app.activeGameShell) return;
+    if (['INPUT', 'TEXTAREA', 'SELECT'].includes((ev.target && ev.target.tagName) || '')) return;
+    if (app.activeGameShell === '2048') {
+      const dir = ({ ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right' })[ev.key];
+      if (dir) { ev.preventDefault(); game2048Move(dir); }
+    } else if (app.activeGameShell === 'snake') {
+      const dir = ({ ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right' })[ev.key];
+      if (dir) { ev.preventDefault(); snakeSetDirection(dir); }
+    } else if (app.activeGameShell === 'flap') {
+      if (ev.key === ' ' || ev.key === 'ArrowUp') { ev.preventDefault(); flapTap(); }
+    }
+  }, { passive: false });
+}
+
+
+
+function gamesStopActiveLoops() {
+  if (app.gamesSnake && app.gamesSnake.timer) {
+    clearInterval(app.gamesSnake.timer);
+    app.gamesSnake.timer = null;
+  }
+  if (app.gamesFlap && app.gamesFlap.timer) {
+    cancelAnimationFrame(app.gamesFlap.timer);
+    app.gamesFlap.timer = null;
+  }
+}
+// ---- 2048 ----
+function game2048InitialState() {
+  return { board: Array(16).fill(0), score: 0, over: false, best: 0, spawned: false };
+}
+
+function game2048Spawn(state) {
+  const empties = state.board.map((v, i) => v ? -1 : i).filter(i => i >= 0);
+  if (!empties.length) return false;
+  const idx = empties[Math.floor(Math.random() * empties.length)];
+  state.board[idx] = Math.random() < 0.9 ? 2 : 4;
+  return true;
+}
+
+function game2048CanMove(board) {
+  for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) {
+    const v = board[game2048Index(i,j)]; if (!v) return true;
+    if (j < 3 && v === board[game2048Index(i,j+1)]) return true;
+    if (i < 3 && v === board[game2048Index(i+1,j)]) return true;
+  }
+  return false;
+}
+
+function game2048Index(r, c) { return r * 4 + c; }
+
+function renderGame2048() {
+  const body = document.getElementById('gamesShellBody');
+  if (!body) return;
+  const state = app.games2048 || (app.games2048 = game2048InitialState());
+  if (!state.spawned) {
+    game2048Spawn(state);
+    game2048Spawn(state);
+    state.spawned = true;
+  }
+  body.innerHTML = [
+    '<div class="gameInfoRow"><span>Skóre: <strong>' + state.score + '</strong></span><span>' + (state.over ? 'Konec hry' : 'Táhni šipkami nebo tlačítky') + '</span></div>',
+    '<div class="gameBoard game2048Board" id="game2048Board">' + state.board.map(v => '<div class="gameBoardCell">' + (v || '') + '</div>').join('') + '</div>',
+    '<div class="gameControls">' + ['up','left','down','right'].map(dir => '<button class="gameControlBtn" data-2048-dir="' + dir + '">' + ({up:'↑',down:'↓',left:'←',right:'→'})[dir] + '</button>').join('') + '</div>',
+    '<div class="gameInfoRow"><span>Nejvyšší: ' + (state.best || 0) + '</span><button class="gameControlBtn" id="game2048Restart">Restart</button></div>'
+  ].join('');
+  body.querySelectorAll('[data-2048-dir]').forEach(btn => btn.addEventListener('click', () => game2048Move(btn.getAttribute('data-2048-dir'))));
+  body.querySelector('#game2048Restart')?.addEventListener('click', () => { app.games2048 = game2048InitialState(); renderGame2048(); });
+}
+
+function game2048Move(dir) {
+  const state = app.games2048; if (!state || state.over) return;
+  const old = state.board.slice();
+  let moved = false;
+  const pull = (vals) => {
+    const arr = vals.filter(v => v);
+    const out = [];
+    for (let i = 0; i < arr.length; i++) {
+      if (i < arr.length - 1 && arr[i] === arr[i + 1]) { out.push(arr[i] * 2); state.score += arr[i] * 2; state.best = Math.max(state.best, arr[i] * 2); i++; }
+      else out.push(arr[i]);
+    }
+    while (out.length < 4) out.push(0);
+    return out;
+  };
+  for (let i = 0; i < 4; i++) {
+    let line = [];
+    if (dir === 'left') line = [0,1,2,3].map(c => old[game2048Index(i,c)]);
+    else if (dir === 'right') line = [3,2,1,0].map(c => old[game2048Index(i,c)]);
+    else if (dir === 'up') line = [0,1,2,3].map(r => old[game2048Index(r,i)]);
+    else if (dir === 'down') line = [3,2,1,0].map(r => old[game2048Index(r,i)]);
+    const next = pull(line);
+    if (dir === 'left') [0,1,2,3].forEach((c, idx) => { state.board[game2048Index(i,c)] = next[idx]; if (next[idx] !== old[game2048Index(i,c)]) moved = true; });
+    else if (dir === 'right') [3,2,1,0].forEach((c, idx) => { state.board[game2048Index(i,c)] = next[idx]; if (next[idx] !== old[game2048Index(i,c)]) moved = true; });
+    else if (dir === 'up') [0,1,2,3].forEach((r, idx) => { state.board[game2048Index(r,i)] = next[idx]; if (next[idx] !== old[game2048Index(r,i)]) moved = true; });
+    else if (dir === 'down') [3,2,1,0].forEach((r, idx) => { state.board[game2048Index(r,i)] = next[idx]; if (next[idx] !== old[game2048Index(r,i)]) moved = true; });
+  }
+  if (moved) {
+    game2048Spawn(state);
+    state.best = Math.max(state.best, ...state.board);
+    if (!state.board.includes(0) && !game2048CanMove(state.board)) state.over = true;
+    renderGame2048();
+    if (state.over) gamesRecordStat('2048', { plays: (gamesGetActiveAccount().stats.g2048.plays || 0) + 1, bestScore: Math.max(gamesGetActiveAccount().stats.g2048.bestScore || 0, state.score), bestTile: Math.max(gamesGetActiveAccount().stats.g2048.bestTile || 0, state.best) });
+  }
+}
+
+// ---- Snake ----
+function snakeDefaultState() {
+  const head = { x: 10, y: 10 };
+  return { size: 20, snake: [head, { x: 9, y: 10 }, { x: 8, y: 10 }], dir: { x: 1, y: 0 }, pending: null, food: { x: 5, y: 5 }, over: false, score: 0, timer: null };
+}
+function snakePlaceFood(state) {
+  let x, y, ok = false;
+  while (!ok) {
+    x = Math.floor(Math.random() * state.size);
+    y = Math.floor(Math.random() * state.size);
+    ok = !state.snake.some(p => p.x === x && p.y === y);
+  }
+  state.food = { x, y };
+}
+function renderGameSnake() {
+  const body = document.getElementById('gamesShellBody'); if (!body) return;
+  const state = app.gamesSnake || (app.gamesSnake = snakeDefaultState());
+  if (!state.food || !state.snake.length) snakePlaceFood(state);
+  const cells = [];
+  for (let y = 0; y < state.size; y++) {
+    for (let x = 0; x < state.size; x++) {
+      const idx = state.snake.findIndex(p => p.x === x && p.y === y);
+      let content = '';
+      if (state.food.x === x && state.food.y === y) content = '●';
+      else if (idx === 0) content = '◉';
+      else if (idx > 0) content = '•';
+      cells.push('<div class="gameBoardCell" style="font-size:' + (idx === 0 ? '16px' : '12px') + '">' + content + '</div>');
+    }
+  }
+  body.innerHTML = [
+    '<div class="gameInfoRow"><span>Skóre: <strong>' + state.score + '</strong></span><span>' + (state.over ? 'Konec hry' : 'Pohybuj hadem') + '</span></div>',
+    '<div class="gameBoard gameSnakeBoard" id="gameSnakeBoard" style="grid-template-columns:repeat(20,1fr);">' + cells.join('') + '</div>',
+    '<div class="gameControls">' + ['up','left','down','right'].map(dir => '<button class="gameControlBtn" data-snake-dir="' + dir + '">' + ({up:'↑',down:'↓',left:'←',right:'→'})[dir] + '</button>').join('') + '</div>',
+    '<div class="gameInfoRow"><span>Délka: ' + state.snake.length + '</span><button class="gameControlBtn" id="snakeRestart">Restart</button></div>'
+  ].join('');
+  body.querySelectorAll('[data-snake-dir]').forEach(btn => btn.addEventListener('click', () => snakeSetDirection(btn.getAttribute('data-snake-dir'))));
+  body.querySelector('#snakeRestart')?.addEventListener('click', () => { if (state.timer) clearInterval(state.timer); app.gamesSnake = snakeDefaultState(); snakePlaceFood(app.gamesSnake); snakeStart(); renderGameSnake(); });
+  snakeStart();
+}
+function snakeSetDirection(dir) {
+  const state = app.gamesSnake; if (!state || state.over) return;
+  const next = dir === 'up' ? { x:0,y:-1 } : dir === 'down' ? { x:0,y:1 } : dir === 'left' ? { x:-1,y:0 } : { x:1,y:0 };
+  if (state.dir.x + next.x === 0 && state.dir.y + next.y === 0) return;
+  state.pending = next;
+}
+function snakeTick() {
+  const state = app.gamesSnake; if (!state || state.over) return;
+  if (state.pending) { state.dir = state.pending; state.pending = null; }
+  const head = { x: state.snake[0].x + state.dir.x, y: state.snake[0].y + state.dir.y };
+  if (head.x < 0 || head.y < 0 || head.x >= state.size || head.y >= state.size || state.snake.some(p => p.x === head.x && p.y === head.y)) {
+    state.over = true; renderGameSnake(); gamesRecordStat('snake', { plays: (gamesGetActiveAccount().stats.snake.plays || 0) + 1, bestScore: Math.max(gamesGetActiveAccount().stats.snake.bestScore || 0, state.score), bestLength: Math.max(gamesGetActiveAccount().stats.snake.bestLength || 0, state.snake.length) }); return;
+  }
+  state.snake.unshift(head);
+  if (head.x === state.food.x && head.y === state.food.y) { state.score += 1; snakePlaceFood(state); }
+  else state.snake.pop();
+  renderGameSnake();
+}
+function snakeStart() {
+  const state = app.gamesSnake || (app.gamesSnake = snakeDefaultState());
+  if (state.timer) clearInterval(state.timer);
+  state.timer = setInterval(snakeTick, 140);
+}
+
+// ---- Flap Bird ----
+function flapDefaultState() {
+  return { y: 120, v: 0, gravity: 0.45, lift: -6.2, pipes: [], score: 0, over: false, timer: null, frame: 0 };
+}
+function renderGameFlap() {
+  const body = document.getElementById('gamesShellBody'); if (!body) return;
+  const state = app.gamesFlap || (app.gamesFlap = flapDefaultState());
+  body.innerHTML = [
+    '<div class="gameInfoRow"><span>Skóre: <strong>' + state.score + '</strong></span><span>' + (state.over ? 'Konec hry' : 'Klepni pro skok') + '</span></div>',
+    '<div class="gameBoard gameFlapBoard" id="gameFlapBoard" style="grid-template-columns:1fr;min-height:280px;position:relative;overflow:hidden;background:linear-gradient(180deg, rgba(124,255,124,.06), rgba(124,255,124,.01));">',
+    '  <div id="flapPipes"></div>',
+    '  <div id="flapBird" style="position:absolute;left:18%;top:' + Math.max(0, state.y) + 'px;width:20px;height:20px;border-radius:50%;background:linear-gradient(180deg, rgba(124,255,124,.95), rgba(34,56,32,.9));box-shadow:0 0 18px rgba(124,255,124,.18);"></div>',
+    '</div>',
+    '<div class="gameControls">',
+    '  <button class="gameControlBtn" id="flapTapBtn">Skok</button>',
+    '  <button class="gameControlBtn" id="flapRestartBtn">Restart</button>',
+    '</div>',
+    '<div class="gameInfoRow"><span>Trubky: ' + state.pipes.length + '</span><span>Pipes score: ' + state.score + '</span></div>'
+  ].join('');
+  body.querySelector('#flapTapBtn')?.addEventListener('click', flapTap);
+  body.querySelector('#flapRestartBtn')?.addEventListener('click', () => { if (state.timer) cancelAnimationFrame(state.timer); app.gamesFlap = flapDefaultState(); flapStart(); renderGameFlap(); });
+  flapStart();
+}
+function flapTap() { const state = app.gamesFlap; if (!state || state.over) return; state.v = state.lift; }
+function flapStart() {
+  const state = app.gamesFlap || (app.gamesFlap = flapDefaultState());
+  if (state.timer) cancelAnimationFrame(state.timer);
+  const loop = () => {
+    if (state.over) return;
+    state.frame += 1;
+    state.v += state.gravity;
+    state.y += state.v;
+    if (state.frame % 75 === 0) {
+      const gapY = 90 + Math.floor(Math.random() * 90);
+      state.pipes.push({ x: 100, gapY, passed: false });
+    }
+    state.pipes.forEach(p => { p.x -= 2.3; if (!p.passed && p.x < 15) { p.passed = true; state.score += 1; } });
+    state.pipes = state.pipes.filter(p => p.x > -20);
+    if (state.y < 0 || state.y > 260) state.over = true;
+    const birdTop = state.y, birdBottom = state.y + 20;
+    for (const p of state.pipes) {
+      if (18 + 20 > p.x && 18 < p.x + 22) {
+        if (birdTop < p.gapY || birdBottom > p.gapY + 70) state.over = true;
+      }
+    }
+    const bird = document.getElementById('flapBird');
+    const pipesEl = document.getElementById('flapPipes');
+    if (bird) bird.style.top = Math.max(0, state.y) + 'px';
+    if (pipesEl) {
+      pipesEl.innerHTML = state.pipes.map(p => '<div style="position:absolute;left:' + p.x + '%;top:0;bottom:0;width:22px;">' +
+        '<div style="position:absolute;left:0;top:0;width:100%;height:' + p.gapY + 'px;background:rgba(124,255,124,.18);border:1px solid rgba(124,255,124,.24);border-top:none;border-radius:0 0 10px 10px;"></div>' +
+        '<div style="position:absolute;left:0;top:' + (p.gapY + 70) + 'px;width:100%;bottom:0;background:rgba(124,255,124,.18);border:1px solid rgba(124,255,124,.24);border-bottom:none;border-radius:10px 10px 0 0;"></div>' +
+      '</div>').join('');
+    }
+    if (state.over) {
+      gamesRecordStat('flap', { plays: (gamesGetActiveAccount().stats.flap.plays || 0) + 1, bestScore: Math.max(gamesGetActiveAccount().stats.flap.bestScore || 0, state.score), bestPipes: Math.max(gamesGetActiveAccount().stats.flap.bestPipes || 0, state.score) });
+      renderGameFlap();
+      return;
+    }
+    state.timer = requestAnimationFrame(loop);
+  };
+  state.timer = requestAnimationFrame(loop);
+}
+
+function renderGamesTttShell() {
+  const body = document.getElementById('gamesShellBody');
+  if (!body) return;
+  body.innerHTML = [
+    '<div class="gameInfoRow"><span>Piškvorky teď běží v plném overlay režimu.</span><span>Ještě se dá pozvat odkazem.</span></div>',
+    '<div class="gamesShell" style="padding:12px;margin-top:10px;">',
+    '  <div class="smallText">Klikni na tlačítko níž a otevře se hra. Pozvánkový odkaz ještě dopojím do online vrstvy v další etapě.</div>',
+    '  <div class="gameControls" style="margin-top:10px;">',
+    '    <button type="button" class="gameControlBtn" id="openTttOverlayBtn">Otevřít piškvorky</button>',
+    '    <button type="button" class="gameControlBtn" id="copyTttInviteBtn">Kopírovat odkaz</button>',
+    '  </div>',
+    '</div>'
+  ].join('');
+  body.querySelector('#openTttOverlayBtn')?.addEventListener('click', openTicTacToeGame);
+  body.querySelector('#copyTttInviteBtn')?.addEventListener('click', () => {
+    const url = new URL(window.location.href);
+    url.hash = 'games=ttt';
+    navigator.clipboard?.writeText(url.toString()).catch(()=>{});
+    alert('Odkaz na piškvorky zkopírovaný do schránky.');
+  });
 }

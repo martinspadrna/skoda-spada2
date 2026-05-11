@@ -7,8 +7,8 @@
 <meta name="theme-color" content="#0b0f0c">
 <meta name="apple-mobile-web-app-title" content="Rotace a kalkulačky">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="_icons/icon-180.png">
-<link rel="icon" type="image/png" sizes="32x32" href="_icons/icon-32.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 
 <title>Rotace a kalkulačky</title>
@@ -27,10 +27,12 @@
 <!-- HOME -->
 <div id="home" class="page active">
   <div class="dashboardShell">
-    <div class="dashboardAppTitle">Rotace a kalkulačky</div>
+    <div class="dashboardAppTitleRow">
+      <div class="dashboardAppTitle">Rotace a kalkulačky</div>
+      <div class="dashboardSyncBadge dashboardSyncBadge--offline" id="dashboardSyncBadge">🟡 Offline cache</div>
+    </div>
 
     <div class="dashboardHeroCard" id="dashHero">
-      <div class="dashboardSyncBadge dashboardSyncBadge--offline" id="dashboardSyncBadge">🟡 Offline cache</div>
       <div class="dashboardHeroLine1"><span class="dashboardHeroLine1Text">V práci: směna A (noční)</span></div>
       <div class="dashboardHeroLine2">Směna D začne za: --</div>
       <div class="dashboardHeroLine3"></div>
@@ -80,24 +82,21 @@
         <div class="dashboardMeta"></div>
       </div>
 
-      <div class="tile dashboardCard dashboardLinkCard" id="dashFoodLink" onclick="window.open('https://sa.gthcatering.cz/restaurant/c1/', '_blank', 'noopener')" role="button" tabindex="0" aria-label="Jídelní lístek">
-        <div class="dashboardLabel">Jídelní lístek</div>
+      <div class="tile dashboardCard dashboardLinkCard" id="dashFoodLink" onclick="showPage('jidlo')" role="button" tabindex="0" aria-label="Jídelní lístek">
+        <div class="dashboardLabelRow">
+          <span class="dashboardIcon dashboardIconInline" aria-hidden="true"><img class="dashboardIconImage" src="data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 4h14v16H5z'/%3E%3Cpath d='M8 8h8M8 12h6M8 16h5'/%3E%3C/svg%3E" alt="" aria-hidden="true" loading="eager" decoding="sync"></span>
+          <div class="dashboardLabel">Jídelní lístek</div>
+        </div>
         <div class="dashboardValue">Otevřít</div>
         <div class="dashboardMeta">Aktuální menu</div>
       </div>
-      <div class="tile dashboardCard dashboardLinkCard" id="dashEportalLink" onclick="window.open('https://space.skoda.vwgroup.com/', '_blank', 'noopener')" role="button" tabindex="0" aria-label="Eportal">
-        <div class="dashboardLabel">Eportal</div>
-        <div class="dashboardValue">Otevřít</div>
-        <div class="dashboardMeta">Firemní portál</div>
-      </div>
-
-      <div class="tile dashboardCard dashboardLinkCard" id="dashGamesLink" onclick="showPage('games')" role="button" tabindex="0" aria-label="Hry">
+      <div class="tile dashboardCard dashboardLinkCard" id="dashEportalLink" onclick="showPage('eportal')" role="button" tabindex="0" aria-label="Eportal">
         <div class="dashboardLabelRow">
-          <span class="dashboardIcon dashboardIconInline" aria-hidden="true"><img class="dashboardIconImage" src="data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8.2 6.8h7.6a2 2 0 0 1 2 2v7.8a2 2 0 0 1-2 2H8.2a2 2 0 0 1-2-2V8.8a2 2 0 0 1 2-2Z'/%3E%3Cpath d='M9.6 9.2h4.8'/%3E%3Cpath d='M9.2 12h5.6'/%3E%3Cpath d='M8.8 14.8h6.4'/%3E%3Cpath d='M15.7 3.7c1.1 1 .9 2.7-.6 3.3'/%3E%3Cpath d='M6.6 3.8c-1 1.1-.8 2.7.7 3.2'/%3E%3Cpath d='M16 3.8c.4 1.2.3 2.2-.2 2.9'/%3E%3Cpath d='M7.8 3.7c-.4 1.1-.3 2.1.2 2.9'/%3E%3C/svg%3E" alt="" aria-hidden="true" loading="eager" decoding="sync"></span>
-          <div class="dashboardLabel">Hry</div>
+          <span class="dashboardIcon dashboardIconInline" aria-hidden="true"><img class="dashboardIconImage" src="data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4.5 12a7.5 7.5 0 0 1 15 0'/%3E%3Cpath d='M12 4.5v15'/%3E%3C/svg%3E" alt="" aria-hidden="true" loading="eager" decoding="sync"></span>
+          <div class="dashboardLabel">Eportal</div>
         </div>
         <div class="dashboardValue">Otevřít</div>
-        <div class="dashboardMeta">Piškvorky uvnitř</div>
+        <div class="dashboardMeta">Firemní portál</div>
       </div>
 
     </div>
@@ -111,8 +110,22 @@
     <div style="width:34px;"></div>
   </div>
 
-  <div class="grid">
-    <div class="tile calcTile calcTileStack big" onclick="openTicTacToeGame()">
+  <div class="card gamesAccountCard" id="gamesAccountCard">
+    <div class="gamesAccountTop">
+      <div>
+        <div class="dashboardLabel">Přihlášení</div>
+        <div class="gamesAccountName" id="gamesAccountName">Vyber svůj účet</div>
+      </div>
+      <button type="button" class="gamesTinyBtn" id="gamesAccountResetBtn">Přepnout</button>
+    </div>
+    <div class="gamesAccountChips" id="gamesAccountChips"></div>
+    <div class="gamesAccountHint" id="gamesAccountHint">Bez hesla, jen vyber svoje číslo. Statistiky se budou ukládat pod tímto účtem.</div>
+  </div>
+
+  <div class="gamesStatsGrid" id="gamesStatsGrid"></div>
+
+  <div class="gamesGrid" id="gamesGrid">
+    <div class="tile calcTile calcTileStack big gamesLaunchTile" onclick="openGameShell('ttt')" data-game="ttt">
       <div class="calcTileIcon" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
           <path d="M8.2 6.8h7.6a2 2 0 0 1 2 2v7.8a2 2 0 0 1-2 2H8.2a2 2 0 0 1-2-2V8.8a2 2 0 0 1 2-2Z"></path>
@@ -127,10 +140,54 @@
       </div>
       <div>
         <div class="calcTileText">Piškvorky</div>
-        <div class="smallText">Hra proti AI nebo spoluhráči</div>
+        <div class="smallText">AI, lokální duel a pozvánka do hry</div>
+      </div>
+    </div>
+
+    <div class="tile calcTile calcTileStack gamesLaunchTile" onclick="openGameShell('2048')" data-game="2048">
+      <div class="calcTileIcon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="5.5" y="5.5" width="13" height="13" rx="3"></rect>
+          <path d="M9 9h6M9 12h6M9 15h6"></path>
+        </svg>
+      </div>
+      <div>
+        <div class="calcTileText">2048</div>
+        <div class="smallText">Skládej čísla do sebe</div>
+      </div>
+    </div>
+
+    <div class="tile calcTile calcTileStack gamesLaunchTile" onclick="openGameShell('snake')" data-game="snake">
+      <div class="calcTileIcon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 15c2-4 4.5-6 8-6 2.3 0 4.2 1.1 5.8 3.2"></path>
+          <path d="M18.8 12.2c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2Z"></path>
+          <path d="M7 16.8v-2.5"></path>
+        </svg>
+      </div>
+      <div>
+        <div class="calcTileText">Snake</div>
+        <div class="smallText">Klasická hadí hra</div>
+      </div>
+    </div>
+
+    <div class="tile calcTile calcTileStack gamesLaunchTile" onclick="openGameShell('flap')" data-game="flap">
+      <div class="calcTileIcon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5.5 14.5c2-4.8 6-7 8.8-7 1.8 0 3.4.9 4.5 2.4"></path>
+          <path d="M7.5 9.5c2.2.2 4 .9 5.6 2.2"></path>
+          <path d="M14 14.2c1.7 0 3.3.8 4.6 2.5"></path>
+          <path d="M18.6 16.6c.5-.8.7-1.7.7-2.8"></path>
+        </svg>
+      </div>
+      <div>
+        <div class="calcTileText">Flap Bird</div>
+        <div class="smallText">Klikni a leť mezi trubkami</div>
       </div>
     </div>
   </div>
+
+  <div class="gamesStage" id="gamesStage"></div>
 </div>
 
 <div id="kalkulacky" class="page">
@@ -759,7 +816,7 @@ function installPwaAndConnectivityHooks() {
 </script>
 <script type="text/plain" id="src-core-js">
 const APP_KEY = "rotace_kalkulacky_state_v122";
-const APP_VERSION = "v.1(317)";
+const APP_VERSION = "v.1(320)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-05-10-" + APP_VERSION + "-" + Date.now();
 
@@ -11074,15 +11131,15 @@ body.appMenuOpen{
   .foodScheduleDay,.foodScheduleWindows{text-align:left;min-width:0;}
 }</script>
 <nav class="bottomNav" aria-label="Spodní navigace">
-  <div class="bottomNavInner">
+  <div class="bottomNavScroll" id="bottomNavScroll">
     <button class="bottomNavBtn active" data-page="home" onclick="showPage('home'); setBottomNavActive('home')"><span class="bottomNavIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 11.2 12 4l9 7.2"></path><path d="M5.5 10.8V20h13V10.8"></path><path d="M9.2 20v-5.4h5.6V20"></path></svg></span><div class="bottomNavLabel">Home</div></button>
     <button class="bottomNavBtn" data-page="rotace" onclick="openRotaceNames()"><span class="bottomNavIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="8.2" cy="8.1" r="3"></circle><circle cx="15.8" cy="8.1" r="3"></circle><path d="M3.8 19.2c.8-3 2.9-4.8 4.4-4.8s3.6 1.8 4.4 4.8"></path><path d="M11.8 19.2c.8-3 2.9-4.8 4.4-4.8s3.6 1.8 4.4 4.8"></path></svg></span><div class="bottomNavLabel">Rotace</div></button>
     <button class="bottomNavBtn" data-page="kalkulacky" onclick="openKalkulacky()"><span class="bottomNavIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="3.8" width="14" height="16.4" rx="2.2"></rect><path d="M8 7h8M8 11h2M12 11h2M16 11h0M8 14.8h2M12 14.8h2M16 14.8h0"></path><path d="M8 18.2h2M12 18.2h2M16 18.2h0"></path></svg></span><div class="bottomNavLabel">Kalkulačky</div></button>
-    <button class="bottomNavBtn" data-page="rozpisy" onclick="openRotaceMonths()"><span class="bottomNavIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2.2"></rect><path d="M4 9h16M8 3.8v3.2M16 3.8v3.2"></path><path d="M8 12.8h3M13 12.8h3M8 16h3"></path></svg></span><div class="bottomNavLabel">Rozpisy</div></button>
+    <button class="bottomNavBtn" data-page="rozpisy" onclick="openRotaceMonths()"><span class="bottomNavIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4.5 6.5h15M7 4v5M17 4v5M6.2 10.8h11.6M6.2 14h11.6M6.2 17.2h8.8"></path></svg></span><div class="bottomNavLabel">Rozpisy</div></button>
     <button class="bottomNavBtn" data-page="statistiky" onclick="openRotaceStats()"><span class="bottomNavIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 19.2V10.8"></path><path d="M10 19.2V6.8"></path><path d="M15 19.2V13.2"></path><path d="M20 19.2H4"></path></svg></span><div class="bottomNavLabel">Statistiky</div></button>
-    <button class="bottomNavBtn bottomNavMenuBtn" data-page="menu" type="button" aria-label="Více" onclick="toggleAppMenu()"><svg class="moreIcon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="2.15"></circle><circle cx="12" cy="12" r="2.15"></circle><circle cx="12" cy="16" r="2.15"></circle></svg><div class="bottomNavLabel">Více</div></button>
     <button class="bottomNavBtn bottomNavGamesBtn" data-page="games" onclick="showPage('games')"><span class="bottomNavIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8.2 6.8h7.6a2 2 0 0 1 2 2v7.8a2 2 0 0 1-2 2H8.2a2 2 0 0 1-2-2V8.8a2 2 0 0 1 2-2Z"></path><path d="M9.6 9.2h4.8"></path><path d="M9.2 12h5.6"></path><path d="M8.8 14.8h6.4"></path><path d="M15.7 3.7c1.1 1 .9 2.7-.6 3.3"></path><path d="M6.6 3.8c-1 1.1-.8 2.7.7 3.2"></path><path d="M16 3.8c.4 1.2.3 2.2-.2 2.9"></path><path d="M7.8 3.7c-.4 1.1-.3 2.1.2 2.9"></path></svg></span><div class="bottomNavLabel">Hry</div></button>
   </div>
+  <button class="bottomNavBtn bottomNavMenuBtn" data-page="menu" type="button" aria-label="Více" onclick="toggleAppMenu()"><svg class="moreIcon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="2.15"></circle><circle cx="12" cy="12" r="2.15"></circle><circle cx="12" cy="16" r="2.15"></circle></svg><div class="bottomNavLabel">Více</div></button>
 </nav>
 
 <script>

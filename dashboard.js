@@ -1,4 +1,4 @@
-// Extracted dashboard logic (v1(319))
+// Extracted dashboard logic (v1(320))
 function updateDashboard() {
   const now = typeof getPragueNow === 'function' ? getPragueNow(new Date()) : new Date();
   const active = typeof getActiveShiftNow === 'function' ? getActiveShiftNow(now) : null;
@@ -26,6 +26,12 @@ function updateDashboard() {
   const kantyna = firstFoodLocation && hasFindFoodStatus ? findFoodStatus(firstFoodLocation, now) : null;
   const jidelna = secondFoodLocation && hasFindFoodStatus ? findFoodStatus(secondFoodLocation, now) : null;
 
+  const syncBadge = document.getElementById('dashboardSyncBadge');
+  if (syncBadge) {
+    syncBadge.className = 'dashboardSyncBadge dashboardSyncBadge--' + esc(syncStatus.kind || 'offline');
+    syncBadge.textContent = syncStatus.label || '🟡 Offline cache';
+  }
+
   const hero = document.getElementById('dashHero');
   if (hero) {
     const currentAbsences = active && active.team === 'D' ? getAbsenceNamesForDate(active.start || now) : [];
@@ -44,7 +50,6 @@ function updateDashboard() {
       : 0;
     const heroProgressText = active && !showSpecial ? Math.round(heroProgress) + ' %' : '';
     hero.innerHTML = [
-      '<div class="dashboardSyncBadge dashboardSyncBadge--' + esc(syncStatus.kind || 'offline') + '" id="dashboardSyncBadge">' + esc(syncStatus.label || '🟡 Offline cache') + '</div>',
       '<div class="dashboardHeroLine1">' + heroLine1 + '</div>',
       heroLine2 ? '<div class="dashboardHeroLine2">' + esc(heroLine2) + '</div>' : '',
       heroLine3 ? '<div class="dashboardHeroLine3">' + esc(heroLine3) + '</div>' : '',
@@ -127,7 +132,6 @@ function updateDashboard() {
   setCard('dashCzd', 'Odpočet do dovolené', vacationCountdown.text, vacationCountdown.meta, '', false, palmIcon);
   setCard('dashFoodLink', 'Jídelní lístek', 'Otevřít', 'Aktuální menu', '', true, bookIcon);
   setCard('dashEportalLink', 'Eportal', 'Otevřít', 'Firemní portál', '', true, eportalIcon);
-  setCard('dashGamesLink', 'Hry', 'Otevřít', 'Piškvorky uvnitř', '', true, gamesIcon);
 }
 
 function scheduleDashboardInitialPaint() {
@@ -164,7 +168,7 @@ function scheduleDashboardInitialPaint() {
 
 function forceHomeRefresh() {
   const activePage = document.querySelector('.page.active')?.id || "";
-  if (typeof app !== 'undefined' && app.homeBootSuppressed && activePage !== "home") return;
+  if ((typeof app !== 'undefined' && app.homeBootSuppressed && activePage !== "home") || (window.__rotaceUserNavigated && activePage !== 'home')) return;
   if (typeof showPage === 'function') showPage('home');
   if (typeof refreshHomeScreen === 'function') refreshHomeScreen();
   else if (typeof updateDashboard === 'function') updateDashboard();
