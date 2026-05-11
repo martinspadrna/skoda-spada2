@@ -18,6 +18,104 @@ function renderMonthGrid() {
 }
 
 
+if (typeof window.normalizeShiftText !== 'function') {
+  window.normalizeShiftText = function normalizeShiftText(text) {
+    const raw = String(text || '').trim().replace(/\s+/g, ' ');
+    if (!raw) return '';
+    const parts = raw.split(' ');
+    const dedup = [];
+    for (const part of parts) {
+      if (dedup.length === 0 || dedup[dedup.length - 1] !== part) dedup.push(part);
+    }
+    return dedup.join(' ').trim();
+  };
+}
+
+if (typeof window.absenceLabelFromCode !== 'function') {
+  window.absenceLabelFromCode = function absenceLabelFromCode(code) {
+    const raw = String(code || '').trim();
+    if (!raw) return '';
+    const key = raw.toUpperCase();
+    const labels = { D: 'Dovolená', NV: 'Náhradní volno', Š: 'Školení', '§': 'Paragraf', S: 'Senior', L: 'Lázně' };
+    if (labels[key]) return labels[key];
+    if (/^\d+(?:[.,]\d+)?$/.test(raw)) return '';
+    return raw;
+  };
+}
+
+if (typeof window.sanitizeAbsencePersonName !== 'function') {
+  window.sanitizeAbsencePersonName = function sanitizeAbsencePersonName(text) {
+    return String(text || '')
+      .trim()
+      .replace(/\s+(?:od|do)\b.*$/i, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  };
+}
+
+if (typeof window.splitAbsencePeople !== 'function') {
+  window.splitAbsencePeople = function splitAbsencePeople(text) {
+    const raw = String(text || '').trim();
+    if (!raw) return [];
+    return raw
+      .replace(/\s+(?:a|i|&|\/)\s+/gi, ' | ')
+      .replace(/[,;+]/g, ' | ')
+      .split(/\s*\|\s*/g)
+      .map(part => part.trim())
+      .filter(Boolean)
+      .filter(part => !/^od\s+\d/i.test(part));
+  };
+}
+
+if (typeof window.looksLikeAbsencePerson !== 'function') {
+  window.looksLikeAbsencePerson = function looksLikeAbsencePerson(text) {
+    const t = String(text || '').trim();
+    if (!t) return false;
+    if (/\d/.test(t)) return false;
+    if (/\bdo\b/i.test(t)) return false;
+    if (/[:/]/.test(t)) return false;
+    return true;
+  };
+}
+
+if (typeof window.normalizeNoteEntry !== 'function') {
+  window.normalizeNoteEntry = function normalizeNoteEntry(note) {
+    const date = String(note && note.date ? note.date : '').trim();
+    const shiftFromDate = typeof parseDateToken === 'function' ? parseDateToken(date) : null;
+    let shift = typeof normalizeShiftText === 'function'
+      ? normalizeShiftText(String(note && note.shift ? note.shift : (shiftFromDate ? shiftFromDate.shift : '')) || '')
+      : String(note && note.shift ? note.shift : (shiftFromDate ? shiftFromDate.shift : '') || '').trim();
+    let person = typeof sanitizeAbsencePersonName === 'function' ? sanitizeAbsencePersonName(note && note.person ? note.person : '') : String(note && note.person ? note.person : '').trim();
+    let code = String(note && note.code ? note.code : '').trim();
+    let text = String(note && note.text ? note.text : '').trim();
+    let people = [];
+
+    if (!person && text) {
+      const tokens = text.split(/\s+/).filter(Boolean);
+      let start = 0;
+      if (tokens[start] && /^\d{1,2}\.\d{1,2}\.$/.test(tokens[start])) start += 1;
+      if (tokens[start] && /^(?:N8|R8|N|R)$/i.test(tokens[start])) {
+        if (!shift) shift = normalizeShiftText(tokens[start].toUpperCase());
+        start += 1;
+      }
+      const remaining = tokens.slice(start);
+      if (remaining.length >= 2 && typeof absenceLabelFromCode === 'function' && absenceLabelFromCode(remaining[remaining.length - 1])) {
+        code = code || remaining[remaining.length - 1];
+        const peopleText = remaining.slice(0, -1).join(' ').trim();
+        people = (typeof splitAbsencePeople === 'function' ? splitAbsencePeople(peopleText) : [peopleText]).map(v => sanitizeAbsencePersonName(v)).filter(Boolean);
+        person = sanitizeAbsencePersonName(people[0] || peopleText);
+      } else if (remaining.length === 1 && !(typeof absenceLabelFromCode === 'function' && absenceLabelFromCode(remaining[0]))) {
+        person = sanitizeAbsencePersonName(remaining[0]);
+      } else if (remaining.length > 1) {
+        person = sanitizeAbsencePersonName(remaining.join(' '));
+      }
+    }
+
+    if (!people.length && person) people = [person];
+    return { date, shift, person, code, text, people, isAbsence: !!(people.length || code || /\b(?:dovolen|absence|lázn|školen|paragraf|volno)\b/i.test(text)) };
+  };
+}
+
 function getStatsMachineLabel(machine) {
   const name = String(machine || "").trim();
   if (!name) return "";

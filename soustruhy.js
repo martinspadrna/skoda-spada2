@@ -189,16 +189,27 @@ function setProg(p) {
   saveRotationData();
 }
 
+function findBrusMachineSetting(machine, prog) {
+  const rows = Array.isArray(app && app.machineSettingsRows) ? app.machineSettingsRows : [];
+  const key = String(machine || '').trim() + '_' + String(prog || '').trim();
+  return rows.find(row => String(row && row.machine_key ? row.machine_key : '').trim() === key) || null;
+}
+
 function getBrusConfig(machine, prog) {
-  const machineCfg = BRUS_CONFIG[machine] || BRUS_CONFIG.TBKR01;
-  const cfg = machineCfg[prog] || machineCfg.AD;
+  const fallback = BRUS_CONFIG[machine] || BRUS_CONFIG.TBKR01;
+  const cfg = fallback[prog] || fallback.AD;
+  const setting = findBrusMachineSetting(machine, prog);
+  const settings = setting && typeof setting.settings_json === 'object' && setting.settings_json !== null ? setting.settings_json : {};
+  const pieceSec = setting && setting.speed !== '' && setting.speed !== null && setting.speed !== undefined ? Number(setting.speed) : Number(cfg.pieceSec) || 0;
+  const dressEvery = Number(settings.dress_count ?? cfg.dressEvery) || 0;
+  const dressSec = Number(settings.dress_time ?? cfg.dressSec) || 0;
   return {
     machine,
     prog,
-    label: cfg.label || prog,
-    pieceSec: Number(cfg.pieceSec) || 0,
-    dressEvery: Number(cfg.dressEvery) || 0,
-    dressSec: Number(cfg.dressSec) || 0
+    label: (setting && setting.label ? setting.label : cfg.label || prog),
+    pieceSec,
+    dressEvery,
+    dressSec
   };
 }
 

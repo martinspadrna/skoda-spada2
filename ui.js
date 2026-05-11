@@ -1905,6 +1905,12 @@ async function saveAdminRotationToSupabase(monthKey, rawText) {
   let saveResult = { ok: true, months: 0, entries: 0 };
   if (app.adminUnlocked) {
     saveResult = await saveRotationToSupabase(app.rotation, { source: 'admin-menu', monthKey }) || saveResult;
+    const statusEl = document.getElementById('adminOnlineSaveStatus');
+    if (statusEl) {
+      statusEl.textContent = saveResult && saveResult.ok === true
+        ? ('Uloženo online ✓ · měsíců: ' + String(saveResult.months || 0) + ' · řádků: ' + String(saveResult.entries || 0))
+        : 'Uložení online se nepodařilo.';
+    }
   }
   return { normalized, saveResult };
 }
@@ -1946,17 +1952,27 @@ function adminNotesRowTemplate(row, rowIndex, allowBlankTail) {
 function buildAdminMachineSettingsTableHtml() {
   const rows = Array.isArray(app.machineSettingsRows) ? app.machineSettingsRows : [];
   const dataRows = rows.length ? rows : [
-    { machine_key: 'FZK01', label: 'Frézka 01', category: 'frezka', speed: '', settings_json: {} },
-    { machine_key: 'FZK02', label: 'Frézka 02', category: 'frezka', speed: '', settings_json: {} },
-    { machine_key: 'BRS01', label: 'Brus 01', category: 'brus', speed: '', settings_json: { wheel: '', index: '', dress_time: '', dress_count: '' } },
-    { machine_key: 'PRK01', label: 'Pračka 01', category: 'pracka', speed: '', settings_json: {} },
-    { machine_key: '', label: '', category: 'general', speed: '', settings_json: {} }
+    { machine_key: 'FZK01', label: 'Frézka 01', category: 'frezka', speed: '', settings_json: { machine: '', index: '', dress_time: '', dress_count: '' } },
+    { machine_key: 'FZK02', label: 'Frézka 02', category: 'frezka', speed: '', settings_json: { machine: '', index: '', dress_time: '', dress_count: '' } },
+    { machine_key: 'TPKW01', label: 'Pračka TPKW01', category: 'pracka', speed: '', settings_json: { machine: '', index: '', dress_time: '', dress_count: '' } },
+    { machine_key: 'TPKW02', label: 'Pračka TPKW02', category: 'pracka', speed: '', settings_json: { machine: '', index: '', dress_time: '', dress_count: '' } },
+    { machine_key: 'TBKR01_AD', label: 'TBKR01 / AD', category: 'brus', speed: '58.2', settings_json: { machine: 'TBKR01', index: 'AD', dress_time: '323', dress_count: '59' } },
+    { machine_key: 'TBKR01_ADV', label: 'TBKR01 / ADV', category: 'brus', speed: '62.7', settings_json: { machine: 'TBKR01', index: 'ADV', dress_time: '240', dress_count: '45' } },
+    { machine_key: 'TBKR01_AE', label: 'TBKR01 / AE', category: 'brus', speed: '57.0', settings_json: { machine: 'TBKR01', index: 'AE', dress_time: '240', dress_count: '58' } },
+    { machine_key: 'TBKR01_AEV', label: 'TBKR01 / AEV', category: 'brus', speed: '60.0', settings_json: { machine: 'TBKR01', index: 'AEV', dress_time: '240', dress_count: '45' } },
+    { machine_key: 'TBKR01_AH', label: 'TBKR01 / AH', category: 'brus', speed: '66.0', settings_json: { machine: 'TBKR01', index: 'AH', dress_time: '400', dress_count: '87' } },
+    { machine_key: 'TBKR07_AD', label: 'TBKR07 / AD', category: 'brus', speed: '58.2', settings_json: { machine: 'TBKR07', index: 'AD', dress_time: '298', dress_count: '59' } },
+    { machine_key: 'TBKR07_ADV', label: 'TBKR07 / ADV', category: 'brus', speed: '60.3', settings_json: { machine: 'TBKR07', index: 'ADV', dress_time: '240', dress_count: '45' } },
+    { machine_key: 'TBKR07_AE', label: 'TBKR07 / AE', category: 'brus', speed: '56.4', settings_json: { machine: 'TBKR07', index: 'AE', dress_time: '325', dress_count: '59' } },
+    { machine_key: 'TBKR07_AEV', label: 'TBKR07 / AEV', category: 'brus', speed: '60.0', settings_json: { machine: 'TBKR07', index: 'AEV', dress_time: '240', dress_count: '45' } },
+    { machine_key: 'TBKR07_AH', label: 'TBKR07 / AH', category: 'brus', speed: '63.0', settings_json: { machine: 'TBKR07', index: 'AH', dress_time: '240', dress_count: '65' } },
+    { machine_key: '', label: '', category: 'general', speed: '', settings_json: { machine: '', index: '', dress_time: '', dress_count: '' } }
   ];
 
   const tr = dataRows.map((row, idx) => {
     const settings = row && typeof row.settings_json === 'object' && row.settings_json !== null ? row.settings_json : {};
     const cycleTime = row.speed ?? settings.cycle_time ?? settings.cycleTime ?? '';
-    const wheel = settings.wheel ?? settings.brus ?? settings.grind ?? '';
+    const machine = settings.machine ?? settings.wheel ?? settings.brus ?? settings.grind ?? '';
     const index = settings.index ?? settings.grind_index ?? '';
     const dressTime = settings.dress_time ?? settings.orovnani_time ?? settings.dressTime ?? '';
     const dressCount = settings.dress_count ?? settings.orovnani_count ?? settings.dressCount ?? '';
@@ -1970,9 +1986,10 @@ function buildAdminMachineSettingsTableHtml() {
       '    <option value="pracka"' + (String(row.category || '') === 'pracka' ? ' selected' : '') + '>pračka</option>',
       '    <option value="general"' + (String(row.category || 'general') === 'general' ? ' selected' : '') + '>ostatní</option>',
       '  </select></td>',
-      '  <td><input class="appMenuInlineInput" data-machine-field="speed" value="' + escapeHtml(String(cycleTime ?? '')) + '" placeholder="čas kola"></td>',
-      '  <td><input class="appMenuInlineInput" data-machine-field="wheel" value="' + escapeHtml(String(wheel ?? '')) + '" placeholder="brus"></td>',
+      '  <td><input class="appMenuInlineInput" data-machine-field="machine" value="' + escapeHtml(String(machine ?? '')) + '" placeholder="stroj"></td>',
       '  <td><input class="appMenuInlineInput" data-machine-field="index" value="' + escapeHtml(String(index ?? '')) + '" placeholder="index"></td>',
+      '  <td><input class="appMenuInlineInput" data-machine-field="speed" value="' + escapeHtml(String(cycleTime ?? '')) + '" placeholder="čas kola"></td>',
+      
       '  <td><input class="appMenuInlineInput" data-machine-field="dress_time" value="' + escapeHtml(String(dressTime ?? '')) + '" placeholder="orovnání"></td>',
       '  <td><input class="appMenuInlineInput" data-machine-field="dress_count" value="' + escapeHtml(String(dressCount ?? '')) + '" placeholder="kusů"></td>',
       '</tr>'
@@ -1985,7 +2002,7 @@ function buildAdminMachineSettingsTableHtml() {
     '  <div class="appMenuText">Vyplň hodnoty do tabulky a ulož online. Bez kódování a bez JSON editoru.</div>',
     '  <div class="tableWrap appMenuTableWrap">',
     '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense">',
-    '      <thead><tr><th>Kód</th><th>Název</th><th>Typ</th><th>Čas kola</th><th>Brus</th><th>Index</th><th>Čas orovnání</th><th>Kusů po orovnání</th></tr></thead>',
+    '      <thead><tr><th>Kód</th><th>Název</th><th>Typ</th><th>Stroj</th><th>Index</th><th>Čas kola</th><th>Čas orovnání</th><th>Kusů po orovnání</th></tr></thead>',
     '      <tbody>' + tr + '</tbody>',
     '    </table>',
     '  </div>',
@@ -2016,7 +2033,7 @@ function buildAdminRotationTableHtml(monthKey) {
   return [
     '<div class="appMenuSubSection" id="adminRotationEditor">',
     '  <div class="appMenuSubTitle">Rozpis – ' + escapeHtml(monthKey) + '</div>',
-    '  <div class="appMenuText">Uprav řádky v tabulce. Prázdné řádky se při uložení ignorují.</div>',
+    '  <div class="appMenuText">Stejný rozpis, jen editovatelný. Prázdné řádky se při uložení ignorují.</div>',
     '  <div class="tableWrap appMenuTableWrap">',
     '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense">',
     '      <thead><tr><th colspan="' + String(1 + hardMachines.length) + '">Tvrdota</th></tr><tr><th>Datum</th>' + hardMachines.map(m => '<th>' + escapeHtml(m) + '</th>').join('') + '</tr></thead>',
@@ -2049,22 +2066,37 @@ function readAdminMachineSettingsFromDom() {
     const label = String(get('label')).trim();
     const category = String(get('category')).trim() || 'general';
     const speedRaw = String(get('speed')).trim();
-    const wheel = String(get('wheel')).trim();
+    const machine = String(get('machine')).trim();
     const index = String(get('index')).trim();
     const dress_time = String(get('dress_time')).trim();
     const dress_count = String(get('dress_count')).trim();
-    if (!machine_key && !label && !speedRaw && !wheel && !index && !dress_time && !dress_count) return;
+    if (!machine_key && !label && !speedRaw && !machine && !index && !dress_time && !dress_count) return;
 
     rows.push({
       machine_key,
       label: label || machine_key,
       category,
       speed: speedRaw,
-      settings_json: { wheel, index, dress_time, dress_count }
+      settings_json: { machine, index, dress_time, dress_count }
     });
   });
   return rows;
 }
+function makeRotationRowKey(row) {
+  const cells = Array.isArray(row && row.cells) ? row.cells : [];
+  return [String(row && row.date ? row.date : '').trim(), cells.map(v => String(v || '').trim()).join('¦')].join('||');
+}
+
+function makeNoteRowKey(note) {
+  return [
+    String(note && note.date ? note.date : '').trim(),
+    String(note && note.person ? note.person : '').trim(),
+    String(note && note.code ? note.code : '').trim(),
+    String(note && note.shift ? note.shift : '').trim(),
+    String(note && note.text ? note.text : '').trim()
+  ].join('||');
+}
+
 function readAdminRotationFromDom(monthKey) {
   const fallback = app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
   const month = fallback ? JSON.parse(JSON.stringify(fallback)) : {
@@ -2078,11 +2110,16 @@ function readAdminRotationFromDom(monthKey) {
 
   const readSection = (section, machineCount) => {
     const rows = [];
+    const seen = new Set();
     root.querySelectorAll('tr[data-rotation-section="' + section + '"]').forEach((tr) => {
       const date = String(tr.querySelector('[data-rot-field="date"]')?.value || '').trim();
       const cells = Array.from({ length: machineCount }, (_, i) => String(tr.querySelector('[data-rot-field="cell-' + i + '"]')?.value || '').trim());
       if (!date && cells.every(v => !v)) return;
-      rows.push({ date, cells });
+      const row = { date, cells };
+      const key = makeRotationRowKey(row);
+      if (seen.has(key)) return;
+      seen.add(key);
+      rows.push(row);
     });
     month[section] = month[section] || {};
     month[section].rows = rows;
@@ -2094,6 +2131,7 @@ function readAdminRotationFromDom(monthKey) {
   readSection('soft', SOFT_MACHINE_HEADERS.length);
 
   const notes = [];
+  const seenNotes = new Set();
   root.querySelectorAll('tr[data-note-row-index]').forEach((tr) => {
     const get = (field) => String(tr.querySelector('[data-note-field="' + field + '"]')?.value || '').trim();
     const note = {
@@ -2104,6 +2142,9 @@ function readAdminRotationFromDom(monthKey) {
       text: get('text')
     };
     if (!note.date && !note.person && !note.code && !note.shift && !note.text) return;
+    const key = makeNoteRowKey(note);
+    if (seenNotes.has(key)) return;
+    seenNotes.add(key);
     notes.push(note);
   });
   month.notes = notes;
@@ -2309,6 +2350,8 @@ body.querySelectorAll('[data-admin-action]').forEach(btn => {
           if (result && result.ok === false) throw (result.error || new Error('Uložení strojů selhalo.'));
           app.machineSettingsRows = rows;
           renderAdminMenuBody(body);
+          const statusEl = document.getElementById('adminOnlineSaveStatus');
+          if (statusEl) statusEl.textContent = 'Stroje uložené online ✓' + ((result && result.savedCount) ? (' · řádků: ' + result.savedCount) : '');
           alert('Nastavení strojů uložené online ✓' + ((result && result.savedCount) ? (' · řádků: ' + result.savedCount) : ''));
           return;
         }

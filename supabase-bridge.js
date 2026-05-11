@@ -4,7 +4,6 @@
     client: null,
     ready: false,
     announcements: [],
-    canteenStatus: null,
     lastError: null
   };
 
@@ -37,11 +36,7 @@
   }
 
   function getCanteenStatus() {
-    return state.canteenStatus ? {
-      isOpen: !!state.canteenStatus.is_open,
-      note: String(state.canteenStatus.note || '').trim(),
-      updatedAt: state.canteenStatus.updated_at || null
-    } : null;
+    return null;
   }
 
 
@@ -53,12 +48,142 @@
     return `${year}-${String(month).padStart(2, '0')}-01`;
   }
 
+
+  function monthStartToMonthKey(monthStart) {
+    const raw = String(monthStart || '').trim();
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(raw);
+    if (!m) return raw ? raw : '';
+    return String(Number(m[2])) + '/' + String(m[1]).slice(-2);
+  }
+
+  function rebuildRotationFromTables(monthRows, entryRows) {
+    const months = {};
+    const hardMachines = Array.isArray(window.HARD_MACHINE_HEADERS) ? window.HARD_MACHINE_HEADERS.slice() : [];
+    const softMachines = Array.isArray(window.SOFT_MACHINE_HEADERS) ? window.SOFT_MACHINE_HEADERS.slice() : [];
+    const rowsByMonthKey = new Map();
+
+    (Array.isArray(monthRows) ? monthRows : []).forEach(row => {
+      const monthKey = String(row && row.label ? row.label : monthStartToMonthKey(row && row.month_start ? row.month_start : '')).trim();
+      if (!monthKey) return;
+      months[monthKey] = {
+        hard: { title: 'Rotace tvrdota', machines: hardMachines.slice(), rows: [] },
+        soft: { title: 'Rotace měkota', machines: softMachines.slice(), rows: [] },
+        notes: []
+      };
+      rowsByMonthKey.set(String(row && row.month_start ? row.month_start : '').trim() || monthKey, monthKey);
+    });
+
+    const ensureMonth = (monthKey) => {
+      if (!months[monthKey]) {
+        months[monthKey] = {
+          hard: { title: 'Rotace tvrdota', machines: hardMachines.slice(), rows: [] },
+          soft: { title: 'Rotace měkota', machines: softMachines.slice(), rows: [] },
+          notes: []
+        };
+      }
+      return months[monthKey];
+    };
+
+    const grouped = { hard: new Map(), soft: new Map() };
+
+    (Array.isArray(entryRows) ? entryRows : []).forEach(entry => {
+      const monthKey = rowsByMonthKey.get(String(entry && entry.month_start ? entry.month_start : '').trim()) || monthStartToMonthKey(entry && entry.month_start ? entry.month_start : '');
+      if (!monthKey) return;
+      const month = ensureMonth(monthKey);
+      const type = String(entry && entry.assignment_type ? entry.assignment_type : '').trim();
+
+      if (type === 'note') {
+        const note = {
+          date: String(entry && entry.shift_code ? entry.shift_code : '').trim(),
+          person: String(entry && entry.employee_name ? entry.employee_name : '').trim(),
+          code: String(entry && entry.target_machine ? entry.target_machine : '').trim(),
+          shift: '',
+          text: String(entry && entry.note ? entry.note : '').trim()
+        };
+        if (note.date || note.person || note.code || note.text) month.notes.push(note);
+        return;
+      }
+
+      const section = type === 'soft' ? 'soft' : 'hard';
+      const machineList = section === 'hard' ? hardMachines : softMachines;
+      const rowIndex = Math.floor(Number(entry && entry.row_order ? entry.row_order : 0) / 100);
+      const rowKey = [monthKey, section, String(entry && entry.shift_code ? entry.shift_code : '').trim(), String(rowIndex)].join('||');
+      const cidx = machineList.indexOf(String(entry && entry.target_machine ? entry.target_machine : '').trim());
+
+      if (!grouped[section].has(rowKey)) {
+        grouped[section].set(rowKey, {
+          date: String(entry && entry.shift_code ? entry.shift_code : '').trim(),
+          cells: Array(machineList.length).fill(''),
+          _order: rowIndex
+        });
+      }
+      const row = grouped[section].get(rowKey);
+      if (cidx >= 0) row.cells[cidx] = String(entry && entry.employee_name ? entry.employee_name : '').trim();
+    });
+
+    Object.entries(grouped).forEach(([section, map]) => {
+      const rows = Array.from(map.values()).sort((a, b) => a._order - b._order || String(a.date || '').localeCompare(String(b.date || ''), 'cs'));
+      rows.forEach(row => { delete row._order; });
+      Object.values(months).forEach(m => {
+        m[section].rows = rows.filter(r => true);
+      });
+    });
+
+    // Re-run per month to assign the correct rows only to each month.
+    Object.keys(months).forEach(monthKey => {
+      ['hard', 'soft'].forEach(section => { months[monthKey][section].rows = []; });
+    });
+
+    (Array.isArray(entryRows) ? entryRows : []).forEach(entry => {
+      const monthKey = rowsByMonthKey.get(String(entry && entry.month_start ? entry.month_start : '').trim()) || monthStartToMonthKey(entry && entry.month_start ? entry.month_start : '');
+      if (!monthKey) return;
+      const type = String(entry && entry.assignment_type ? entry.assignment_type : '').trim();
+      if (type === 'note') return;
+      const section = type === 'soft' ? 'soft' : 'hard';
+      const machineList = section === 'hard' ? hardMachines : softMachines;
+      const rowIndex = Math.floor(Number(entry && entry.row_order ? entry.row_order : 0) / 100);
+      const rowKey = [monthKey, section, String(entry && entry.shift_code ? entry.shift_code : '').trim(), String(rowIndex)].join('||');
+      const cidx = machineList.indexOf(String(entry && entry.target_machine ? entry.target_machine : '').trim());
+      const month = ensureMonth(monthKey);
+      if (!month[section]._map) month[section]._map = new Map();
+      if (!month[section]._map.has(rowKey)) {
+        month[section]._map.set(rowKey, { date: String(entry && entry.shift_code ? entry.shift_code : '').trim(), cells: Array(machineList.length).fill(''), _order: rowIndex });
+      }
+      const row = month[section]._map.get(rowKey);
+      if (cidx >= 0) row.cells[cidx] = String(entry && entry.employee_name ? entry.employee_name : '').trim();
+    });
+
+    Object.entries(months).forEach(([monthKey, month]) => {
+      ['hard', 'soft'].forEach(section => {
+        const map = month[section]._map || new Map();
+        month[section].rows = Array.from(map.values()).sort((a, b) => a._order - b._order || String(a.date || '').localeCompare(String(b.date || ''), 'cs'));
+        month[section].rows.forEach(row => { delete row._order; });
+        delete month[section]._map;
+      });
+      month.notes = (month.notes || []).sort((a, b) => String(a.date || '').localeCompare(String(b.date || ''), 'cs') || String(a.person || '').localeCompare(String(b.person || ''), 'cs'));
+    });
+
+    return { months };
+  }
+
   function defaultMachineSettingsRows() {
     return [
-      { machine_key: 'FZK01', label: 'Frézka 01', category: 'frezka', speed: null, settings_json: { cycle_time: '', cycleTime: '', wheel: '', index: '', dress_time: '', dress_count: '' } },
-      { machine_key: 'FZK02', label: 'Frézka 02', category: 'frezka', speed: null, settings_json: { cycle_time: '', cycleTime: '', wheel: '', index: '', dress_time: '', dress_count: '' } },
-      { machine_key: 'BRS01', label: 'Brus 01', category: 'brus', speed: null, settings_json: { cycle_time: '', cycleTime: '', wheel: '', index: '', dress_time: '', dress_count: '' } },
-      { machine_key: 'PRK01', label: 'Pračka 01', category: 'pracka', speed: null, settings_json: { cycle_time: '', cycleTime: '', wheel: '', index: '', dress_time: '', dress_count: '' } }
+      { machine_key: 'FZK01', label: 'Frézka 01', category: 'frezka', speed: null, settings_json: { machine: '', index: '', dress_time: '', dress_count: '' } },
+      { machine_key: 'FZK02', label: 'Frézka 02', category: 'frezka', speed: null, settings_json: { machine: '', index: '', dress_time: '', dress_count: '' } },
+      { machine_key: 'TPKW01', label: 'Pračka TPKW01', category: 'pracka', speed: null, settings_json: { machine: '', index: '', dress_time: '', dress_count: '' } },
+      { machine_key: 'TPKW02', label: 'Pračka TPKW02', category: 'pracka', speed: null, settings_json: { machine: '', index: '', dress_time: '', dress_count: '' } },
+
+      { machine_key: 'TBKR01_AD', label: 'TBKR01 / AD', category: 'brus', speed: 58.2, settings_json: { machine: 'TBKR01', index: 'AD', dress_time: 323, dress_count: 59 } },
+      { machine_key: 'TBKR01_ADV', label: 'TBKR01 / ADV', category: 'brus', speed: 62.7, settings_json: { machine: 'TBKR01', index: 'ADV', dress_time: 240, dress_count: 45 } },
+      { machine_key: 'TBKR01_AE', label: 'TBKR01 / AE', category: 'brus', speed: 57.0, settings_json: { machine: 'TBKR01', index: 'AE', dress_time: 240, dress_count: 58 } },
+      { machine_key: 'TBKR01_AEV', label: 'TBKR01 / AEV', category: 'brus', speed: 60.0, settings_json: { machine: 'TBKR01', index: 'AEV', dress_time: 240, dress_count: 45 } },
+      { machine_key: 'TBKR01_AH', label: 'TBKR01 / AH', category: 'brus', speed: 66.0, settings_json: { machine: 'TBKR01', index: 'AH', dress_time: 400, dress_count: 87 } },
+
+      { machine_key: 'TBKR07_AD', label: 'TBKR07 / AD', category: 'brus', speed: 58.2, settings_json: { machine: 'TBKR07', index: 'AD', dress_time: 298, dress_count: 59 } },
+      { machine_key: 'TBKR07_ADV', label: 'TBKR07 / ADV', category: 'brus', speed: 60.3, settings_json: { machine: 'TBKR07', index: 'ADV', dress_time: 240, dress_count: 45 } },
+      { machine_key: 'TBKR07_AE', label: 'TBKR07 / AE', category: 'brus', speed: 56.4, settings_json: { machine: 'TBKR07', index: 'AE', dress_time: 325, dress_count: 59 } },
+      { machine_key: 'TBKR07_AEV', label: 'TBKR07 / AEV', category: 'brus', speed: 60.0, settings_json: { machine: 'TBKR07', index: 'AEV', dress_time: 240, dress_count: 45 } },
+      { machine_key: 'TBKR07_AH', label: 'TBKR07 / AH', category: 'brus', speed: 63.0, settings_json: { machine: 'TBKR07', index: 'AH', dress_time: 240, dress_count: 65 } }
     ];
   }
 
@@ -208,11 +333,30 @@
       const { data, error } = await client.from('rotation_state').select('*').eq('key', 'main').maybeSingle();
       if (error) throw error;
       const row = data || null;
-      return row ? {
-        id: row.key || 'main',
-        payload: row.payload || row.rotation || null,
-        updatedAt: row.updated_at || null,
-        meta: row.meta || null
+      const payload = row ? (row.payload || row.rotation || null) : null;
+      const normalizedPayload = payload && typeof payload === 'object' && !Array.isArray(payload) && Object.keys(payload).length ? payload : null;
+      if (row && normalizedPayload) {
+        return {
+          id: row.key || 'main',
+          payload: normalizedPayload,
+          updatedAt: row.updated_at || null,
+          meta: row.meta || null
+        };
+      }
+
+      const [monthRowsRes, entryRowsRes] = await Promise.all([
+        client.from('rotation_months').select('*').order('month_start', { ascending: true }),
+        client.from('rotation_entries').select('*').order('month_start', { ascending: true }).order('row_order', { ascending: true })
+      ]);
+      const monthRows = monthRowsRes && !monthRowsRes.error ? (Array.isArray(monthRowsRes.data) ? monthRowsRes.data : []) : [];
+      const entryRows = entryRowsRes && !entryRowsRes.error ? (Array.isArray(entryRowsRes.data) ? entryRowsRes.data : []) : [];
+      const reconstructed = rebuildRotationFromTables(monthRows, entryRows);
+      return reconstructed && reconstructed.months && Object.keys(reconstructed.months).length ? {
+        id: row && row.key ? row.key : 'main',
+        payload: reconstructed,
+        updatedAt: row && row.updated_at ? row.updated_at : null,
+        meta: row && row.meta ? row.meta : null,
+        source: 'tables'
       } : null;
     } catch (err) {
       state.lastError = err;
@@ -237,7 +381,7 @@
 
       const verify = await client.from('rotation_state').select('*').eq('key', 'main').maybeSingle();
       if (verify && verify.error) throw verify.error;
-      const verifiedRow = Array.isArray(verify && verify.data) ? verify.data[0] || null : null;
+      const verifiedRow = verify && verify.data ? verify.data : null;
 
       const projection = payload ? await saveRotationProjection(payload) : { ok: true, months: 0, entries: 0 };
       if (!projection || projection.ok !== true) throw (projection && projection.error ? projection.error : new Error('Rotation projection save failed.'));
@@ -279,16 +423,10 @@
     if (!client) return null;
 
     try {
-      const [announcementsRes, canteenRes] = await Promise.all([
-        client.from('announcements').select('*').eq('is_active', true).order('created_at', { ascending: false }).limit(5),
-        client.from('canteen_status').select('*').order('updated_at', { ascending: false }).limit(1)
-      ]);
+      const announcementsRes = await client.from('announcements').select('*').eq('is_active', true).order('created_at', { ascending: false }).limit(5);
 
       if (announcementsRes && !announcementsRes.error) {
         state.announcements = Array.isArray(announcementsRes.data) ? announcementsRes.data : [];
-      }
-      if (canteenRes && !canteenRes.error) {
-        state.canteenStatus = Array.isArray(canteenRes.data) ? canteenRes.data[0] || null : null;
       }
 
       state.ready = true;
@@ -302,7 +440,7 @@
         if (typeof updateEportalTile === 'function') updateEportalTile();
       }
 
-      return { announcements: state.announcements, canteenStatus: state.canteenStatus };
+      return { announcements: state.announcements };
     } catch (err) {
       state.lastError = err;
       console.warn('Supabase public data refresh failed', err);
@@ -350,6 +488,7 @@
       const { data, error } = await client
         .from('machine_settings')
         .select('*')
+        .order('category', { ascending: true })
         .order('machine_key', { ascending: true });
       if (error) throw error;
       return Array.isArray(data) ? data : [];

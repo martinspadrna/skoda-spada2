@@ -66,6 +66,14 @@ async function syncRotationFromSupabase(force) {
       }
     }
 
+    if (typeof bridge.loadMachineSettings === 'function' && typeof app !== 'undefined') {
+      try {
+        app.machineSettingsRows = await bridge.loadMachineSettings();
+      } catch (settingsErr) {
+        console.warn('Machine settings sync failed', settingsErr);
+      }
+    }
+
     if (typeof saveRotationData === 'function') saveRotationData();
     if (typeof renderRotace === 'function') renderRotace();
     if (typeof renderStatsPanel === 'function') renderStatsPanel();
