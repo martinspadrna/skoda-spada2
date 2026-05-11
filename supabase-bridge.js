@@ -205,11 +205,11 @@
     const client = getClient();
     if (!client) return null;
     try {
-      const { data, error } = await client.from('rotation_state').select('*').eq('id', 'main').limit(1);
+      const { data, error } = await client.from('rotation_state').select('*').eq('key', 'main').maybeSingle();
       if (error) throw error;
-      const row = Array.isArray(data) ? data[0] || null : null;
+      const row = data || null;
       return row ? {
-        id: row.id || 'main',
+        id: row.key || 'main',
         payload: row.payload || row.rotation || null,
         updatedAt: row.updated_at || null,
         meta: row.meta || null
@@ -227,15 +227,15 @@
     try {
       const payload = rotation && typeof rotation === 'object' ? rotation : null;
       const row = {
-        id: 'main',
+        key: 'main',
         payload,
         meta: meta && typeof meta === 'object' ? meta : {},
         updated_at: new Date().toISOString()
       };
-      const { error } = await client.from('rotation_state').upsert([row], { onConflict: 'id' });
+      const { error } = await client.from('rotation_state').upsert([row], { onConflict: 'key' });
       if (error) throw error;
 
-      const verify = await client.from('rotation_state').select('*').eq('id', 'main').limit(1);
+      const verify = await client.from('rotation_state').select('*').eq('key', 'main').maybeSingle();
       if (verify && verify.error) throw verify.error;
       const verifiedRow = Array.isArray(verify && verify.data) ? verify.data[0] || null : null;
 
@@ -326,7 +326,16 @@
       };
       const { error } = await client.from('gomoku_wins').insert([payload]);
       if (error) throw error;
-      return { ok: true, savedCount: list.length };
+      try {
+        if (typeof window.loadTTTLeaderboard === 'function') {
+          setTimeout(() => {
+            try { window.loadTTTLeaderboard(true); } catch (err) { console.warn(err); }
+          }, 150);
+        }
+      } catch (err) {
+        console.warn(err);
+      }
+      return { ok: true, savedCount: 1 };
     } catch (err) {
       state.lastError = err;
       console.error('Supabase win insert failed', err);
