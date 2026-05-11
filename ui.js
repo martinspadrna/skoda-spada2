@@ -532,10 +532,172 @@ function tttGetState() {
       hardWinName: '',
       hardWinRemote: [],
       hardWinLoading: false,
-      hardWinLoaded: false
+      hardWinLoaded: false,
+      online: null,
+      onlineSyncTimer: null,
+      onlineStatus: '',
+      onlineKind: 'idle'
     };
   }
   return app.tttState;
+}
+
+
+function tttMakeInviteCode() {
+  return Math.random().toString(36).slice(2, 8).toUpperCase();
+}
+
+function tttGetInviteUrl(code) {
+  const url = new URL(window.location.href);
+  url.hash = 'games=ttt&invite=' + encodeURIComponent(String(code || '').trim());
+  return url.toString();
+}
+
+function tttSetOnlineStatus(text, kind) {
+  const state = tttGetState();
+  state.onlineStatus = String(text || '').trim();
+  state.onlineKind = String(kind || 'waiting');
+}
+
+async function tttCreateInviteSession() {
+  const state = tttGetState();
+  const code = tttMakeInviteCode();
+  const active = typeof gamesGetActiveAccount === 'function' ? gamesGetActiveAccount() : null;
+  const inviter = active && active.id ? String(active.id) : null;
+  const payload = {
+    board: Array(TTT_TOTAL_CELLS).fill(''),
+    turn: 'X',
+    status: 'waiting',
+    mode: 'pvp',
+    code,
+    x: inviter,
+    o: null,
+    createdAt: Date.now()
+  };
+  if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.createGameInvite === 'function') {
+    const result = await window.RotationSupabaseBridge.createGameInvite({
+      code,
+      inviterAccountNumber: inviter,
+      boardState: payload,
+      payload: { createdBy: inviter }
+    });
+    if (result && result.ok) {
+      state.online = {
+        code,
+        inviteId: result.inviteId || null,
+        sessionId: result.sessionId || null,
+        role: 'x',
+        status: 'waiting',
+        lastUpdatedAt: Date.now()
+      };
+      tttSetOnlineStatus('Pozvánka vytvořena. Pošli odkaz spoluhráči.', 'waiting');
+      return { ok: true, code, url: tttGetInviteUrl(code), result };
+    }
+  }
+  state.online = { code, role: 'x', status: 'waiting', lastUpdatedAt: Date.now() };
+  tttSetOnlineStatus('Pozvánka vytvořena lokálně. Odkaz pošli spoluhráči.', 'waiting');
+  return { ok: true, code, url: tttGetInviteUrl(code), local: true };
+}
+
+async function tttJoinInviteSession(code) {
+  const state = tttGetState();
+  const inviteCode = String(code || '').trim().toUpperCase();
+  if (!inviteCode) return { ok: false, error: new Error('Chybí kód pozvánky.') };
+  if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.acceptGameInvite === 'function') {
+    const result = await window.RotationSupabaseBridge.acceptGameInvite(inviteCode, (typeof gamesGetActiveAccount === 'function' && gamesGetActiveAccount() && gamesGetActiveAccount().id) ? gamesGetActiveAccount().id : null);
+    if (result && result.ok) {
+      state.online = {
+        code: inviteCode,
+        inviteId: result.inviteId || null,
+        sessionId: result.sessionId || null,
+        role: 'o',
+        status: 'active',
+        lastUpdatedAt: Date.now()
+      };
+      tttSetOnlineStatus('Pozvánka přijata. Hraješ proti spoluhráči.', 'active');
+      return { ok: true, code: inviteCode, result };
+    }
+  }
+  state.online = { code: inviteCode, role: 'o', status: 'active', lastUpdatedAt: Date.now() };
+  tttSetOnlineStatus('Pozvánka přijata lokálně. Odkaz načten.', 'active');
+  return { ok: true, code: inviteCode, local: true };
+}
+
+function tttStopOnlineSync() {
+  const state = tttGetState();
+  if (state.onlineSyncTimer) {
+    clearInterval(state.onlineSyncTimer);
+    state.onlineSyncTimer = null;
+  }
+}
+
+async function tttSyncOnlineSession(force) {
+  const state = tttGetState();
+  if (!state.online || !state.online.code) return;
+  const code = state.online.code;
+  if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.loadGameSessionByInviteCode === 'function') {
+    try {
+      const remote = await window.RotationSupabaseBridge.loadGameSessionByInviteCode(code);
+      if (remote && remote.ok && remote.session) {
+        const session = remote.session;
+        const boardState = session.board_state && typeof session.board_state === 'object' ? session.board_state : {};
+        const remoteStamp = Number(session.updated_at_ts || session.updatedAtTs || new Date(session.updated_at || 0).getTime() || 0) || 0;
+        if (force || remoteStamp >= (state.online.lastUpdatedAt || 0)) {
+          state.online.lastUpdatedAt = remoteStamp || Date.now();
+          if (Array.isArray(boardState.board) && boardState.board.length === TTT_TOTAL_CELLS) {
+            state.board = boardState.board.slice();
+          }
+          state.turn = boardState.turn === 'O' ? 'O' : 'X';
+          state.gameOver = !!boardState.gameOver;
+          state.winner = boardState.winner || null;
+          state.message = boardState.message || (session.status === 'waiting' ? 'Čekám na přijetí pozvánky.' : (state.turn === 'X' ? 'Hraje hráč X.' : 'Hraje hráč O.'));
+          if (session.status === 'active') {
+            state.online.status = 'active';
+          }
+          tttRender();
+          scheduleTttLayout();
+        }
+      }
+    } catch (err) {
+      console.warn('TTT online sync failed', err);
+    }
+  }
+}
+
+function tttStartOnlineSyncLoop() {
+  const state = tttGetState();
+  if (!state.online || !state.online.code) return;
+  if (state.onlineSyncTimer) return;
+  state.onlineSyncTimer = setInterval(() => { void tttSyncOnlineSession(false); }, 1000);
+}
+
+async function tttPushOnlineSession(extraPatch) {
+  const state = tttGetState();
+  if (!state.online || !state.online.code) return;
+  const payload = {
+    board: state.board.slice(),
+    turn: state.turn,
+    gameOver: !!state.gameOver,
+    winner: state.winner || null,
+    message: state.message || '',
+    moveCount: state.moveCount || 0,
+    moveCountX: state.moveCountX || 0,
+    moveCountO: state.moveCountO || 0,
+    ...(extraPatch && typeof extraPatch === 'object' ? extraPatch : {})
+  };
+  if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.saveGameSessionByInviteCode === 'function') {
+    try {
+      const result = await window.RotationSupabaseBridge.saveGameSessionByInviteCode(state.online.code, payload);
+      if (result && result.ok) {
+        state.online.lastUpdatedAt = Date.now();
+        state.online.status = result.status || state.online.status || 'active';
+      }
+      return result;
+    } catch (err) {
+      console.warn('TTT online save failed', err);
+    }
+  }
+  return { ok: true, queued: true, local: true };
 }
 
 function tttIndex(row, col) {
@@ -1066,6 +1228,10 @@ function tttBestMove(board, difficulty) {
 
   const immediateBlock = tttWinningMove(board, 'X');
   if (immediateBlock >= 0) return immediateBlock;
+  const forcedBlock = tttCriticalThreatMoves(board, 'X');
+  if (forcedBlock.length) return forcedBlock[0];
+  const openThreeBlock = tttOpenThreeThreatMoves(board, 'X');
+  if (openThreeBlock.length) return openThreeBlock[0];
 
   const occupied = board.length - free.length;
   const center = tttIndex(Math.floor(TTT_ROWS / 2), Math.floor(TTT_COLS / 2));
@@ -1324,7 +1490,7 @@ function tttCloseHardWinPrompt() {
     modal.style.display = 'none';
   }
   tttRender();
-  requestAnimationFrame(tttLayoutBoard);
+  scheduleTttLayout();
 }
 
 function tttOpenHardWinPrompt() {
@@ -1334,8 +1500,7 @@ function tttOpenHardWinPrompt() {
   state.hardWinName = state.hardWinName || localStorage.getItem('tttHardWinName') || '';
   tttRender();
   void tttRefreshHardWinRows();
-  requestAnimationFrame(tttLayoutBoard);
-  requestAnimationFrame(tttLayoutBoard);
+    scheduleTttLayout();
 }
 
 async function tttSendHardWinEntry(entry) {
@@ -1434,7 +1599,8 @@ function tttRender() {
       '</div>',
       '<div class="tttCard">',
       '  <div class="tttSectionTitle">Spuštění</div>',
-      '  <button type="button" class="tttBtn" id="tttStartBtn" style="width:100%;">Hrát</button>',
+      state.mode === 'pvp' ? '<div id="tttInviteInfo" class="tttNote">Nejdřív vytvoř pozvánku. Odkaz pošli spoluhráči až potom.</div><div class="tttToggleRow"><button type="button" class="tttBtn" id="tttCreateInviteBtn">Vytvořit pozvánku</button><button type="button" class="tttBtn" id="tttJoinInviteBtn">Přijmout pozvánku</button></div><div class="tttNote" id="tttInviteUrl" style="margin-top:10px;display:none;"></div>' : '',
+      '  <button type="button" class="tttBtn" id="tttStartBtn" style="width:100%;">' + (state.mode === 'pvp' ? 'Spustit duel' : 'Hrát') + '</button>',
       '</div>',
       '<div class="tttCard tttWinHistory">',
       '  <div class="tttSectionTitle">Kdo porazil nejtvrdší AI</div>',
@@ -1448,19 +1614,61 @@ function tttRender() {
         state.mode = btn.getAttribute('data-ttt-mode') || 'ai';
         if (state.mode === 'pvp') state.difficulty = 'ai';
         tttRender();
-        requestAnimationFrame(tttLayoutBoard);
-        requestAnimationFrame(tttLayoutBoard);
-      });
+          scheduleTttLayout();
+});
     });
     start.querySelectorAll('[data-ttt-difficulty]').forEach(btn => {
       btn.addEventListener('click', () => {
         if (state.mode === 'pvp') return;
         state.difficulty = btn.getAttribute('data-ttt-difficulty') || 'ai';
         tttRender();
-        requestAnimationFrame(tttLayoutBoard);
+        scheduleTttLayout();
       });
     });
-    start.querySelector('#tttStartBtn')?.addEventListener('click', () => {
+    start.querySelector('#tttCreateInviteBtn')?.addEventListener('click', async () => {
+      try {
+        const result = await tttCreateInviteSession();
+        const info = start.querySelector('#tttInviteInfo');
+        const urlEl = start.querySelector('#tttInviteUrl');
+        if (result && result.ok) {
+          if (info) info.textContent = 'Pozvánka připravená. Odkaz pošli spoluhráči.';
+          if (urlEl) {
+            urlEl.style.display = 'block';
+            urlEl.textContent = result.url;
+          }
+          try { await navigator.clipboard.writeText(result.url); } catch (e) {}
+          state.screen = 'game';
+          state.gameOver = false;
+          state.winner = null;
+          state.board = Array(TTT_TOTAL_CELLS).fill('');
+          state.turn = 'X';
+          state.message = 'Čekám na přijetí pozvánky.';
+          tttRender();
+          scheduleTttLayout();
+          tttStartOnlineSyncLoop();
+        }
+      } catch (err) {
+        console.warn('TTT create invite failed', err);
+      }
+    });
+    start.querySelector('#tttJoinInviteBtn')?.addEventListener('click', async () => {
+      const code = prompt('Zadej kód pozvánky');
+      if (code) {
+        const result = await tttJoinInviteSession(code);
+        if (result && result.ok) {
+          state.screen = 'game';
+          state.gameOver = false;
+          state.winner = null;
+          state.startedAt = Date.now();
+          state.message = 'Pozvánka přijata. Hraješ proti spoluhráči.';
+          tttRender();
+          scheduleTttLayout();
+          tttStartOnlineSyncLoop();
+          void tttSyncOnlineSession(true);
+        }
+      }
+    });
+    start.querySelector('#tttStartBtn')?.addEventListener('click', async () => {
       state.screen = 'game';
       state.board = Array(TTT_TOTAL_CELLS).fill('');
       state.turn = 'X';
@@ -1473,10 +1681,14 @@ function tttRender() {
       state.hardWinPrompt = false;
       state.hardWinStats = null;
       state.message = state.mode === 'pvp'
-        ? 'Hraje hráč X.'
+        ? (state.online && state.online.status === 'waiting' ? 'Čekám na přijetí pozvánky.' : 'Hraje hráč X.')
         : 'Hraješ za X. AI je O.';
       tttRender();
-      requestAnimationFrame(tttLayoutBoard);
+      scheduleTttLayout();
+      if (state.mode === 'pvp' && state.online && state.online.code) {
+        tttStartOnlineSyncLoop();
+        void tttPushOnlineSession({ status: state.online.status || 'waiting' });
+      }
     });
     if (!state.hardWinLoaded && !state.hardWinLoading) {
       void tttRefreshHardWinRows();
@@ -1488,7 +1700,7 @@ function tttRender() {
 
   start.style.display = 'none';
   game.style.display = 'flex';
-  status.textContent = state.message || (state.mode === 'pvp' ? 'Hraje hráč X.' : 'Hraješ za X. AI je O.');
+  status.textContent = state.message || state.onlineStatus || (state.mode === 'pvp' ? 'Hraje hráč X.' : 'Hraješ za X. AI je O.');
 
   const result = tttWinner(state.board);
   const winnerLine = result.line || [];
@@ -1537,7 +1749,9 @@ function tttRender() {
 function tttHandleMove(index) {
   const state = tttGetState();
   if (state.gameOver || state.board[index]) return;
-  if (state.mode === 'ai' && state.turn !== 'X') return;
+  if (state.mode === 'ai' && (state.turn !== 'X' || state.aiBusy)) return;
+  if (state.mode === 'pvp' && state.online && state.online.status === 'waiting') return;
+  if (state.mode === 'pvp' && state.online && state.online.status === 'waiting' && state.turn !== 'X') return;
 
   const mark = state.turn;
   state.board[index] = mark;
@@ -1585,74 +1799,82 @@ function tttHandleMove(index) {
       }
     }
     tttRender();
-    requestAnimationFrame(tttLayoutBoard);
+    scheduleTttLayout();
+    if (state.mode === 'pvp' && state.online && state.online.code) void tttPushOnlineSession({ status: 'active' });
     return;
   }
 
   if (state.mode === 'pvp') {
     state.turn = state.turn === 'X' ? 'O' : 'X';
-    state.message = state.turn === 'X' ? 'Hraje hráč X.' : 'Hraje hráč O.';
+    state.message = state.online && state.online.status === 'waiting'
+      ? 'Čekám na přijetí pozvánky.'
+      : (state.turn === 'X' ? 'Hraje hráč X.' : 'Hraje hráč O.');
     tttRender();
-    requestAnimationFrame(tttLayoutBoard);
+    scheduleTttLayout();
+    if (state.online && state.online.code) void tttPushOnlineSession({ status: state.online.status || 'active' });
     return;
   }
 
   state.turn = 'O';
   state.message = 'Tah AI...';
+  state.aiBusy = true;
+  state.aiToken = (state.aiToken || 0) + 1;
+  const aiToken = state.aiToken;
   tttRender();
-  requestAnimationFrame(tttLayoutBoard);
+  scheduleTttLayout();
 
   setTimeout(() => {
-    requestAnimationFrame(() => {
-      try {
-        const fresh = tttGetState();
-        if (fresh.gameOver) return;
-        const snapshot = fresh.board.slice();
-        const aiMove = tttBestMove(snapshot, fresh.difficulty || 'ai');
-        if (aiMove < 0 || fresh.board[aiMove]) {
-          fresh.turn = 'X';
-          fresh.message = 'Hraješ za X.';
-          tttRender();
-          requestAnimationFrame(tttLayoutBoard);
-          return;
-        }
-        fresh.board[aiMove] = 'O';
-        fresh.moveCount += 1;
-        fresh.moveCountO += 1;
-        const afterAi = tttWinner(fresh.board);
-        if (afterAi.winner) {
-          fresh.gameOver = true;
-          fresh.winner = afterAi.winner;
-          fresh.message = afterAi.winner === 'draw'
-            ? 'Remíza. Dobře hrané.'
-            : 'AI vyhrála. Zkus to znovu.';
-          if (typeof gamesRecordStat === 'function') {
-            const active = gamesGetActiveAccount();
-            if (active) {
-              gamesRecordStat('ttt', {
-                plays: (active.stats.ttt.plays || 0) + 1,
-                losses: (active.stats.ttt.losses || 0) + 1
-              });
-            }
-          }
-          tttRender();
-          requestAnimationFrame(tttLayoutBoard);
-          return;
-        }
+    try {
+      const fresh = tttGetState();
+      if (fresh.gameOver || fresh.aiToken !== aiToken) return;
+      const snapshot = fresh.board.slice();
+      const aiMove = (fresh.difficulty === 'ai' && fresh.moveCount > 8) ? (tttCandidateMoves(snapshot,1)[0] ?? tttBestMove(snapshot, fresh.difficulty || 'ai')) : tttBestMove(snapshot, fresh.difficulty || 'ai');
+      if (aiMove < 0 || fresh.board[aiMove]) {
         fresh.turn = 'X';
         fresh.message = 'Hraješ za X.';
         tttRender();
-        requestAnimationFrame(tttLayoutBoard);
-      } catch (err) {
-        console.warn('TTT AI move failed', err);
-        const fresh = tttGetState();
-        fresh.turn = 'X';
-        fresh.message = 'AI se na chvíli zasekla. Zkus tah znovu.';
-        tttRender();
-        requestAnimationFrame(tttLayoutBoard);
+        scheduleTttLayout();
+        return;
       }
-    });
-  }, 35);
+      fresh.board[aiMove] = 'O';
+      fresh.moveCount += 1;
+      fresh.moveCountO += 1;
+      const afterAi = tttWinner(fresh.board);
+      if (afterAi.winner) {
+        fresh.gameOver = true;
+        fresh.winner = afterAi.winner;
+        fresh.message = afterAi.winner === 'draw'
+          ? 'Remíza. Dobře hrané.'
+          : 'AI vyhrála. Zkus to znovu.';
+        if (typeof gamesRecordStat === 'function') {
+          const active = gamesGetActiveAccount();
+          if (active) {
+            gamesRecordStat('ttt', {
+              plays: (active.stats.ttt.plays || 0) + 1,
+              losses: (active.stats.ttt.losses || 0) + 1
+            });
+          }
+        }
+        tttRender();
+        scheduleTttLayout();
+        return;
+      }
+      fresh.turn = 'X';
+      fresh.message = 'Hraješ za X.';
+      tttRender();
+      scheduleTttLayout();
+    } catch (err) {
+      console.warn('TTT AI move failed', err);
+      const fresh = tttGetState();
+      fresh.turn = 'X';
+      fresh.message = 'AI se na chvíli zasekla. Zkus tah znovu.';
+      tttRender();
+      scheduleTttLayout();
+    } finally {
+      const fresh = tttGetState();
+      fresh.aiBusy = false;
+    }
+  }, 20);
 }
 
 function resetTicTacToeGame(keepScreen) {
@@ -1670,8 +1892,7 @@ function resetTicTacToeGame(keepScreen) {
   state.message = state.mode === 'pvp' ? 'Hraje hráč X.' : 'Hraješ za X. AI je O.';
   if (!keepScreen) state.screen = 'start';
   tttRender();
-  requestAnimationFrame(tttLayoutBoard);
-  requestAnimationFrame(tttLayoutBoard);
+  scheduleTttLayout();
 }
 
 function openGamesPage() {
@@ -1681,6 +1902,7 @@ function openGamesPage() {
 
 function openTicTacToeGame() {
   const overlay = ensureTicTacToeOverlay();
+  document.body.classList.remove('gamesOpen');
   const state = tttGetState();
   state.screen = 'start';
   state.board = Array(TTT_TOTAL_CELLS).fill('');
@@ -1696,15 +1918,29 @@ function openTicTacToeGame() {
   state.message = '';
   overlay.classList.add('isVisible');
   document.body.classList.add('tttOpen');
+  if (state.online && state.online.code) tttStartOnlineSyncLoop();
   tttRender();
-  requestAnimationFrame(tttLayoutBoard);
-  requestAnimationFrame(tttLayoutBoard);
+  scheduleTttLayout();
 }
 
 function closeTicTacToeGame() {
   const overlay = document.getElementById('tttOverlay');
   if (overlay) overlay.classList.remove('isVisible');
   document.body.classList.remove('tttOpen');
+  document.body.classList.remove('gamesOpen');
+  tttStopOnlineSync();
+  app.activeGameShell = '';
+  renderGamesHub();
+}
+
+let tttLayoutPending = false;
+function scheduleTttLayout() {
+  if (tttLayoutPending) return;
+  tttLayoutPending = true;
+  requestAnimationFrame(() => {
+    tttLayoutPending = false;
+    tttLayoutBoard();
+  });
 }
 
 function tttLayoutBoard() {
@@ -2902,51 +3138,67 @@ function gamesRenderAccountChips() {
   const nameEl = document.getElementById('gamesAccountName');
   const hintEl = document.getElementById('gamesAccountHint');
   const inputEl = document.getElementById('gamesAccountInput');
-  const selectedEl = document.getElementById('gamesAccountSelected');
+  const entryRow = document.getElementById('gamesAccountEntryRow');
+  const currentEl = document.getElementById('gamesAccountCurrent');
   const confirmBtn = document.getElementById('gamesAccountConfirmBtn');
   const clearBtn = document.getElementById('gamesAccountClearBtn');
-  if (!nameEl || !hintEl || !inputEl || !selectedEl || !confirmBtn || !clearBtn) return;
+  if (!nameEl || !hintEl || !inputEl || !entryRow || !currentEl || !confirmBtn || !clearBtn) return;
+
   const profile = gamesGetProfile();
   const active = profile.accounts[profile.activeAccountId] || null;
-  const showActive = !!active;
-  nameEl.textContent = active ? (active.id + ' · ' + active.name) : 'Bez přihlášení';
-  hintEl.textContent = active
-    ? 'Přihlášeno. Statistiky i výsledky se ukládají pod tímto číslem.'
+  const hasAccount = !!active;
+
+  nameEl.textContent = hasAccount ? active.name : 'Bez přihlášení';
+  hintEl.textContent = hasAccount
+    ? 'Přihlášeno. Statistiky se ukládají pod tímto číslem.'
     : 'Bez účtu můžeš hrát dál. Statistiky se ukládají jen po přihlášení číslem.';
 
-  inputEl.style.display = showActive ? 'none' : '';
-  confirmBtn.style.display = showActive ? 'none' : '';
-  selectedEl.style.display = showActive ? 'flex' : 'none';
-  selectedEl.textContent = active ? active.name + ' (' + active.id + ')' : '';
-  inputEl.value = showActive ? '' : inputEl.value;
-  clearBtn.textContent = showActive ? 'Odhlásit' : 'Bez účtu';
+  entryRow.style.display = hasAccount ? 'none' : '';
+  currentEl.style.display = hasAccount ? 'flex' : 'none';
+  currentEl.textContent = hasAccount ? active.name : '';
+  inputEl.value = hasAccount ? '' : inputEl.value;
+  clearBtn.textContent = hasAccount ? 'Odhlásit' : 'Bez účtu';
+
+  const syncVisibleAccount = (account) => {
+    const next = account || null;
+    nameEl.textContent = next ? next.name : 'Bez přihlášení';
+    hintEl.textContent = next
+      ? 'Přihlášeno. Statistiky se ukládají pod tímto číslem.'
+      : 'Bez účtu můžeš hrát dál. Statistiky se ukládají jen po přihlášení číslem.';
+    entryRow.style.display = next ? 'none' : '';
+    currentEl.style.display = next ? 'flex' : 'none';
+    currentEl.textContent = next ? next.name : '';
+    if (next) inputEl.value = '';
+    clearBtn.textContent = next ? 'Odhlásit' : 'Bez účtu';
+  };
 
   if (!inputEl.dataset.bound) {
     inputEl.dataset.bound = '1';
-    const submit = () => {
+    const submit = async () => {
       const found = gamesAccountById(inputEl.value);
       if (found) {
-        gamesSetActiveAccount(found.id);
+        if (gamesSetActiveAccount(found.id)) {
+          syncVisibleAccount(found);
+          gamesRenderStats();
+          await Promise.resolve();
+        }
         return;
       }
-      gamesClearActiveAccount();
-      hintEl.textContent = inputEl.value.trim() ? 'Neplatné číslo účtu. Hraješ bez přihlášení.' : 'Bez účtu můžeš hrát dál. Statistiky se ukládají jen po přihlášení číslem.';
+      syncVisibleAccount(null);
+      hintEl.textContent = inputEl.value.trim()
+        ? 'Neplatné číslo účtu. Hraješ bez přihlášení.'
+        : 'Bez účtu můžeš hrát dál. Statistiky se ukládají jen po přihlášení číslem.';
+      inputEl.focus();
     };
     inputEl.addEventListener('keydown', (ev) => {
-      if (ev.key === 'Enter') { ev.preventDefault(); submit(); }
+      if (ev.key === 'Enter') { ev.preventDefault(); void submit(); }
     });
-    confirmBtn.addEventListener('click', submit);
+    confirmBtn.addEventListener('click', () => { void submit(); });
     clearBtn.addEventListener('click', () => {
       inputEl.value = '';
       gamesClearActiveAccount();
+      syncVisibleAccount(null);
       hintEl.textContent = 'Bez účtu můžeš hrát dál. Statistiky se ukládají jen po přihlášení číslem.';
-    });
-    selectedEl.addEventListener('click', () => {
-      inputEl.style.display = '';
-      confirmBtn.style.display = '';
-      selectedEl.style.display = 'none';
-      inputEl.focus();
-      inputEl.select();
     });
   }
 }
@@ -2954,14 +3206,42 @@ function gamesRenderAccountChips() {
 function gamesRenderStats() {
   const grid = document.getElementById('gamesStatsGrid');
   if (!grid) return;
-  const active = gamesGetActiveAccount();
-  const t = active ? active.stats : gamesDefaultProfile().accounts['9811'].stats;
-  grid.innerHTML = [
-    gamesStatLine('Piškvorky hrané', t.ttt.plays),
-    gamesStatLine('Piškvorky výhry', t.ttt.wins),
-    gamesStatLine('2048 nejlepší', t.g2048.bestScore || 0),
-    gamesStatLine('Snake rekord', t.snake.bestScore || 0)
-  ].join('');
+  const profile = gamesGetProfile();
+  const accounts = Object.values(profile.accounts || {}).sort((a, b) => {
+    const ai = Number(a && a.id ? a.id : 0) || 0;
+    const bi = Number(b && b.id ? b.id : 0) || 0;
+    return ai - bi;
+  });
+  const activeId = profile.activeAccountId;
+
+  if (!accounts.length) {
+    grid.innerHTML = '<div class="smallText">Zatím nejsou žádné herní statistiky.</div>';
+  } else {
+    grid.innerHTML = accounts.map(acc => {
+      const stats = acc.stats || {};
+      const ttt = stats.ttt || {};
+      const g2048 = stats.g2048 || {};
+      const snake = stats.snake || {};
+      const flap = stats.flap || {};
+      const totalPlays = (ttt.plays || 0) + (g2048.plays || 0) + (snake.plays || 0) + (flap.plays || 0);
+      const lines = [
+        '<div class="gamesStatsCardLine"><strong>Piškvorky</strong> · ' + String(ttt.plays || 0) + '×</div>',
+        '<div class="gamesStatsCardLine"><strong>2048</strong> · max ' + String(g2048.bestScore || 0) + '</div>',
+        '<div class="gamesStatsCardLine"><strong>Snake</strong> · max ' + String(snake.bestScore || 0) + '</div>',
+        '<div class="gamesStatsCardLine"><strong>Flap</strong> · max ' + String(flap.bestScore || 0) + '</div>'
+      ].join('');
+      return '<div class="gamesStatsCard' + (String(acc.id) === String(activeId) ? ' isActive' : '') + '">' +
+        '<div class="gamesStatsCardHead">' +
+          '<div>' +
+            '<div class="gamesStatsCardName">' + escapeHtml(acc.name || '') + '</div>' +
+
+          '</div>' +
+          '<div class="gamesStatsCardTotal">' + String(totalPlays) + ' her</div>' +
+        '</div>' +
+        '<div class="gamesStatsCardBody">' + lines + '</div>' +
+      '</div>';
+    }).join('');
+  }
 }
 
 function renderGamesHub() {
@@ -2972,7 +3252,8 @@ function renderGamesHub() {
   const stage = document.getElementById('gamesStage');
   if (!stage) return;
   if (!app.activeGameShell) {
-    stage.innerHTML = '<div class="gamesShell"><div class="smallText">Vyber hru nahoře. Bez přihlášení jde hrát dál, jen se neukládají statistiky.</div></div>';
+    stage.innerHTML = '';
+    document.body.classList.remove('gamesOpen');
     return;
   }
   renderGameShell(app.activeGameShell);
@@ -2981,12 +3262,18 @@ function renderGamesHub() {
 function openGameShell(gameId) {
   gamesStopActiveLoops();
   app.activeGameShell = gameId;
+  if (gameId === 'ttt') {
+    openTicTacToeGame();
+    return;
+  }
+  document.body.classList.add('gamesOpen');
   renderGameShell(gameId);
 }
 
 function closeGameShell() {
   gamesStopActiveLoops();
   app.activeGameShell = '';
+  document.body.classList.remove('gamesOpen');
   renderGamesHub();
 }
 
@@ -2995,6 +3282,7 @@ function renderGameShell(gameId) {
   if (!stage) return;
   const titleMap = { ttt: 'Piškvorky', '2048': '2048', snake: 'Snake', flap: 'Flap Bird' };
   const title = titleMap[gameId] || 'Hra';
+  document.body.classList.add('gamesOpen');
   stage.innerHTML = [
     '<div class="gamesShell">',
     '  <div class="gamesShellTop">',
@@ -3093,10 +3381,9 @@ function renderGame2048() {
     state.spawned = true;
   }
   body.innerHTML = [
-    '<div class="gameInfoRow"><span>Skóre: <strong>' + state.score + '</strong></span><span>' + (state.over ? 'Konec hry' : 'Táhni šipkami nebo tlačítky') + '</span></div>',
-    '<div class="gameBoard game2048Board" id="game2048Board">' + state.board.map(v => '<div class="gameBoardCell">' + (v || '') + '</div>').join('') + '</div>',
-    '<div class="gameControls">' + ['up','left','down','right'].map(dir => '<button class="gameControlBtn" data-2048-dir="' + dir + '">' + ({up:'↑',down:'↓',left:'←',right:'→'})[dir] + '</button>').join('') + '</div>',
-    '<div class="gameInfoRow"><span>Nejvyšší: ' + (state.best || 0) + '</span><button class="gameControlBtn" id="game2048Restart">Restart</button></div>'
+    '<div class="gameInfoRow"><span>Skóre: <strong>' + state.score + '</strong></span><span>' + (state.over ? 'Konec hry' : 'Táhni prstem nebo šipkami') + '</span></div>',
+    '<div class="gameBoard game2048Board" id="game2048Board">' + state.board.map(v => '<div class="gameBoardCell ' + (v ? 'n' + v : '') + '" data-value="' + (v || '') + '">' + (v || '') + '</div>').join('') + '</div>',
+    '<div class="gameInfoRow"><span>Nejvyšší: ' + (state.best || 0) + '</span><button class="gameControlBtn" id="game2048Restart">Nová hra</button></div>'
   ].join('');
   body.querySelectorAll('[data-2048-dir]').forEach(btn => btn.addEventListener('click', () => game2048Move(btn.getAttribute('data-2048-dir'))));
   body.querySelector('#game2048Restart')?.addEventListener('click', () => { app.games2048 = game2048InitialState(); renderGame2048(); });
@@ -3169,8 +3456,7 @@ function renderGameSnake() {
   body.innerHTML = [
     '<div class="gameInfoRow"><span>Skóre: <strong>' + state.score + '</strong></span><span>' + (state.over ? 'Konec hry' : 'Pohybuj hadem') + '</span></div>',
     '<div class="gameBoard gameSnakeBoard" id="gameSnakeBoard" style="grid-template-columns:repeat(20,1fr);">' + cells.join('') + '</div>',
-    '<div class="gameControls">' + ['up','left','down','right'].map(dir => '<button class="gameControlBtn" data-snake-dir="' + dir + '">' + ({up:'↑',down:'↓',left:'←',right:'→'})[dir] + '</button>').join('') + '</div>',
-    '<div class="gameInfoRow"><span>Délka: ' + state.snake.length + '</span><button class="gameControlBtn" id="snakeRestart">Restart</button></div>'
+    '<div class="gameInfoRow"><span>Délka: ' + state.snake.length + '</span><button class="gameControlBtn" id="snakeRestart">Nová hra</button></div>'
   ].join('');
   body.querySelectorAll('[data-snake-dir]').forEach(btn => btn.addEventListener('click', () => snakeSetDirection(btn.getAttribute('data-snake-dir'))));
   body.querySelector('#snakeRestart')?.addEventListener('click', () => { if (state.timer) clearInterval(state.timer); app.gamesSnake = snakeDefaultState(); snakePlaceFood(app.gamesSnake); snakeStart(); renderGameSnake(); });
@@ -3209,15 +3495,15 @@ function renderGameFlap() {
   const state = app.gamesFlap || (app.gamesFlap = flapDefaultState());
   body.innerHTML = [
     '<div class="gameInfoRow"><span>Skóre: <strong>' + state.score + '</strong></span><span>' + (state.over ? 'Konec hry' : 'Klepni pro skok') + '</span></div>',
-    '<div class="gameBoard gameFlapBoard" id="gameFlapBoard" style="grid-template-columns:1fr;min-height:280px;position:relative;overflow:hidden;background:linear-gradient(180deg, rgba(124,255,124,.06), rgba(124,255,124,.01));">',
+    '<div class="gameBoard gameFlapBoard" id="gameFlapBoard" style="grid-template-columns:1fr;min-height:280px;position:relative;overflow:hidden;">',
     '  <div id="flapPipes"></div>',
-    '  <div id="flapBird" style="position:absolute;left:18%;top:' + Math.max(0, state.y) + 'px;width:20px;height:20px;border-radius:50%;background:linear-gradient(180deg, rgba(124,255,124,.95), rgba(34,56,32,.9));box-shadow:0 0 18px rgba(124,255,124,.18);"></div>',
+    '  <div id="flapBird" style="position:absolute;left:18%;top:' + Math.max(0, state.y) + 'px;width:22px;height:18px;border-radius:50% 50% 45% 45%;background:linear-gradient(180deg, rgba(124,255,124,.95), rgba(34,56,32,.9));box-shadow:0 0 18px rgba(124,255,124,.18);"></div>',
     '</div>',
     '<div class="gameControls">',
     '  <button class="gameControlBtn" id="flapTapBtn">Skok</button>',
-    '  <button class="gameControlBtn" id="flapRestartBtn">Restart</button>',
+    '  <button class="gameControlBtn" id="flapRestartBtn">Nová hra</button>',
     '</div>',
-    '<div class="gameInfoRow"><span>Trubky: ' + state.pipes.length + '</span><span>Pipes score: ' + state.score + '</span></div>'
+    '<div class="gameInfoRow"><span>Trubky: ' + state.pipes.length + '</span><span>Skóre: ' + state.score + '</span></div>'
   ].join('');
   body.querySelector('#flapTapBtn')?.addEventListener('click', flapTap);
   body.querySelector('#flapRestartBtn')?.addEventListener('click', () => { if (state.timer) cancelAnimationFrame(state.timer); app.gamesFlap = flapDefaultState(); flapStart(); renderGameFlap(); });
@@ -3250,8 +3536,8 @@ function flapStart() {
     if (bird) bird.style.top = Math.max(0, state.y) + 'px';
     if (pipesEl) {
       pipesEl.innerHTML = state.pipes.map(p => '<div style="position:absolute;left:' + p.x + '%;top:0;bottom:0;width:22px;">' +
-        '<div style="position:absolute;left:0;top:0;width:100%;height:' + p.gapY + 'px;background:rgba(124,255,124,.18);border:1px solid rgba(124,255,124,.24);border-top:none;border-radius:0 0 10px 10px;"></div>' +
-        '<div style="position:absolute;left:0;top:' + (p.gapY + 70) + 'px;width:100%;bottom:0;background:rgba(124,255,124,.18);border:1px solid rgba(124,255,124,.24);border-bottom:none;border-radius:10px 10px 0 0;"></div>' +
+        '<div style="position:absolute;left:0;top:0;width:100%;height:' + p.gapY + 'px;background:linear-gradient(180deg, rgba(80,190,110,.55), rgba(42,120,72,.85));border:1px solid rgba(124,255,124,.24);border-top:none;border-radius:0 0 12px 12px;"></div>' +
+        '<div style="position:absolute;left:0;top:' + (p.gapY + 70) + 'px;width:100%;bottom:0;background:linear-gradient(180deg, rgba(80,190,110,.55), rgba(42,120,72,.85));border:1px solid rgba(124,255,124,.24);border-bottom:none;border-radius:12px 12px 0 0;"></div>' +
       '</div>').join('');
     }
     if (state.over) {
@@ -3268,9 +3554,9 @@ function renderGamesTttShell() {
   const body = document.getElementById('gamesShellBody');
   if (!body) return;
   body.innerHTML = [
-    '<div class="gameInfoRow"><span>Piškvorky teď běží v plném overlay režimu.</span><span>Odkaz můžeš poslat dál.</span></div>',
+    '<div class="gameInfoRow"><span>Piškvorky běží na celou obrazovku.</span><span>Odkaz můžeš poslat dál.</span></div>',
     '<div class="gamesShell" style="padding:12px;margin-top:10px;">',
-    '  <div class="smallText">Klikni na tlačítko níž a otevře se hra. Odkaz je připravený pro sdílení hry dál.</div>',
+    '  <div class="smallText">Spustí se plná hra a odkaz můžeš sdílet dál.</div>',
     '  <div class="gameControls" style="margin-top:10px;">',
     '    <button type="button" class="gameControlBtn" id="openTttOverlayBtn">Otevřít piškvorky</button>',
     '    <button type="button" class="gameControlBtn" id="copyTttInviteBtn">Kopírovat odkaz</button>',

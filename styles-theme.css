@@ -2274,7 +2274,7 @@ body.reduceMotion *::after{
 .bottomNavGamesBtn .bottomNavIcon svg{stroke-width:1.8 !important;}
 #games .calcTileIcon svg{stroke:currentColor !important;}
 
-/* v1(325) bottom nav compact icons + hidden games */
+/* v1(326) bottom nav compact icons + hidden games */
 .bottomNav{display:flex !important;align-items:center !important;gap:6px !important;}
 .bottomNavScroll{display:flex !important;align-items:center !important;gap:4px !important;flex:1 1 auto !important;min-width:0 !important;overflow-x:auto !important;overflow-y:hidden !important;-webkit-overflow-scrolling:touch !important;scroll-snap-type:x proximity !important;scrollbar-width:none !important;}
 .bottomNavScroll::-webkit-scrollbar{display:none !important;}
@@ -2290,7 +2290,7 @@ body.reduceMotion *::after{
 .bottomNavGamesBtn .bottomNavIcon svg{stroke-width:1.8 !important;}
 
 
-/* v1(325) bottom nav fit + menu right + games hidden */
+/* v1(326) bottom nav fit + menu right + games hidden */
 .bottomNav{gap:4px !important;}
 .bottomNavScroll{flex:1 1 auto !important; min-width:0 !important; overflow-x:auto !important; overflow-y:hidden !important; -webkit-overflow-scrolling:touch !important; scroll-snap-type:x mandatory !important; scrollbar-width:none !important;}
 .bottomNavScroll::-webkit-scrollbar{display:none !important;}

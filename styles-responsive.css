@@ -643,7 +643,7 @@
 
 #statsMachineGrid .listBtn{padding:8px 6px;min-width:62px;}
 
-/* v1(325) cleanup: games, sync badge, scrollable bottom nav */
+/* v1(326) cleanup: games, sync badge, scrollable bottom nav */
 .dashboardAppTitleRow{display:flex !important;align-items:flex-start !important;justify-content:space-between !important;gap:12px !important;margin-bottom:10px !important;}
 .dashboardAppTitle{margin:0 !important;}
 .dashboardSyncBadge{display:inline-flex !important;align-items:center !important;gap:6px !important;padding:7px 10px !important;border-radius:999px !important;border:1px solid rgba(124,255,124,.18) !important;background:rgba(12,16,14,.66) !important;backdrop-filter:blur(14px) saturate(150%) !important;-webkit-backdrop-filter:blur(14px) saturate(150%) !important;color:rgba(238,247,238,.82) !important;font-size:11px !important;line-height:1 !important;font-weight:700 !important;letter-spacing:.02em !important;box-shadow:0 10px 30px rgba(0,0,0,.18) !important;pointer-events:none !important;max-width:calc(100% - 24px) !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important;position:static !important;flex:0 0 auto !important;margin-top:2px !important;}
@@ -656,7 +656,7 @@
 .bottomNavScroll::-webkit-scrollbar{display:none !important;}
 .bottomNavInner{display:flex !important;align-items:center !important;gap:4px !important;flex-wrap:nowrap !important;min-width:max-content !important;padding-right:8px !important;}
 .bottomNavBtn{flex:0 0 auto !important;scroll-snap-align:center !important;min-width:58px !important;}
-.bottomNavMenuBtn{flex:0 0 auto !important;position:sticky !important;right:0 !important;z-index:4 !important;margin-left:auto !important;background:linear-gradient(180deg, rgba(14,19,16,.92), rgba(10,14,12,.98)) !important;box-shadow:-8px 0 18px rgba(0,0,0,.18) !important;}
+.bottomNavMenuBtn{flex:0 0 auto !important;position:sticky !important;right:0 !important;z-index:4 !important;background:linear-gradient(180deg, rgba(14,19,16,.92), rgba(10,14,12,.98)) !important;box-shadow:-8px 0 18px rgba(0,0,0,.18) !important;}
 .bottomNavGamesBtn{margin-right:4px !important;}
 .bottomNavGamesBtn .bottomNavIcon svg{stroke-width:1.8 !important;}
 .bottomNavBtn .bottomNavIcon,
@@ -670,7 +670,7 @@
 .gamesAccountInput::placeholder{color:rgba(231,255,240,.42) !important;letter-spacing:.02em !important;}
 .gamesTinyBtn{white-space:nowrap !important;}
 
-/* v1(325) bottom nav compact icons + hidden games */
+/* v1(326) bottom nav compact icons + hidden games */
 .bottomNav{display:flex !important;align-items:center !important;gap:6px !important;}
 .bottomNavScroll{display:flex !important;align-items:center !important;gap:4px !important;flex:1 1 auto !important;min-width:0 !important;overflow-x:auto !important;overflow-y:hidden !important;-webkit-overflow-scrolling:touch !important;scroll-snap-type:x proximity !important;scrollbar-width:none !important;}
 .bottomNavScroll::-webkit-scrollbar{display:none !important;}
@@ -680,22 +680,167 @@
 .bottomNavBtn .bottomNavIcon{flex:0 0 22px !important;}
 .bottomNavBtn .bottomNavLabel{font-size:9px !important;line-height:1.04 !important;}
 .bottomNavBtn span{font-size:17px !important;line-height:1 !important;}
-.bottomNavMenuBtn{flex:0 0 38px !important;position:sticky !important;right:0 !important;z-index:4 !important;margin-left:auto !important;width:38px !important;min-width:38px !important;max-width:44px !important;}
+.bottomNavMenuBtn{flex:0 0 38px !important;position:sticky !important;right:0 !important;z-index:4 !important;width:38px !important;min-width:38px !important;max-width:44px !important;}
 .bottomNavMenuBtn .moreIcon{width:24px !important;height:24px !important;transform:translateY(-11px) !important;display:block !important;}
 .bottomNavGamesBtn{margin-right:4px !important;}
 .bottomNavGamesBtn .bottomNavIcon svg{stroke-width:1.8 !important;}
 
 
-/* v1(325) bottom nav fit + menu right + games hidden */
+/* v1(326) bottom nav fit + menu right + games hidden */
 .bottomNav{gap:4px !important;}
-.bottomNavScroll{flex:1 1 auto !important; min-width:0 !important; overflow-x:auto !important; overflow-y:hidden !important; -webkit-overflow-scrolling:touch !important; scroll-snap-type:x mandatory !important; scrollbar-width:none !important;}
+.bottomNavScroll{display:flex !important;flex:1 1 auto !important; min-width:0 !important; overflow-x:auto !important; overflow-y:hidden !important; -webkit-overflow-scrolling:touch !important; scroll-snap-type:x mandatory !important; scrollbar-width:none !important;}
 .bottomNavScroll::-webkit-scrollbar{display:none !important;}
 .bottomNavInner{display:flex !important; align-items:center !important; gap:3px !important; min-width:max-content !important; flex-wrap:nowrap !important; padding-right:6px !important;}
 .bottomNavBtn{flex:0 0 52px !important; width:52px !important; min-width:52px !important; max-width:52px !important; min-height:50px !important; padding:2px 2px 1px !important;}
 .bottomNavBtn .bottomNavIcon,.bottomNavBtn .bottomNavIcon svg{width:21px !important;height:21px !important;display:block !important;}
 .bottomNavBtn .bottomNavIcon{flex:0 0 21px !important;}
 .bottomNavBtn .bottomNavLabel{font-size:8.8px !important;line-height:1.03 !important;}
-.bottomNavMenuBtn{flex:0 0 38px !important; position:sticky !important; right:0 !important; margin-left:auto !important; z-index:5 !important; width:38px !important; min-width:38px !important; max-width:38px !important;}
+.bottomNavMenuBtn{flex:0 0 38px !important; position:sticky !important; right:0 !important;  z-index:5 !important; width:38px !important; min-width:38px !important; max-width:38px !important;}
 .bottomNavMenuBtn .moreIcon{width:22px !important;height:22px !important;transform:translateY(-11px) !important;display:block !important;}
 .bottomNavGamesBtn{margin-right:2px !important;}
 .gamesAccountSelected{flex:1 1 auto !important; min-width:0 !important; min-height:44px !important; display:flex !important; align-items:center !important; justify-content:center !important; padding:0 14px !important; border-radius:14px !important; border:1px solid rgba(124,255,124,.18) !important; background:rgba(255,255,255,.04) !important; color:#e7fff0 !important; font-weight:650 !important; letter-spacing:.02em !important;}
+
+
+/* v1(326) bottom nav compact row, games full-screen, games hub layout */
+.bottomNav{
+  width:min(calc(100% - 10px), 760px) !important;
+  padding:4px 5px calc(4px + env(safe-area-inset-bottom)) !important;
+  border-radius:18px !important;
+}
+.bottomNavScroll{
+  flex:1 1 auto !important;
+  min-width:0 !important;
+  overflow-x:auto !important;
+  overflow-y:hidden !important;
+  -webkit-overflow-scrolling:touch !important;
+  scroll-snap-type:x proximity !important;
+  scrollbar-width:none !important;
+}
+.bottomNavScroll::-webkit-scrollbar{display:none !important;}
+.bottomNavInner{
+  display:flex !important;
+  align-items:center !important;
+  flex-wrap:nowrap !important;
+  gap:4px !important;
+  min-width:max-content !important;
+  padding-right:6px !important;
+}
+.bottomNavBtn{
+  flex:0 0 58px !important;
+  width:58px !important;
+  min-width:58px !important;
+  max-width:58px !important;
+  min-height:48px !important;
+  padding:2px 2px 1px !important;
+}
+.bottomNavBtn .bottomNavIcon,
+.bottomNavBtn .bottomNavIcon svg{width:22px !important;height:22px !important;display:block !important;}
+.bottomNavBtn .bottomNavIcon{flex:0 0 22px !important;}
+.bottomNavBtn .bottomNavLabel{font-size:8.8px !important;line-height:1.02 !important;}
+.bottomNavMenuBtn{
+  flex:0 0 38px !important;
+  width:38px !important;
+  min-width:38px !important;
+  max-width:38px !important;
+  
+  position:sticky !important;
+  right:0 !important;
+  z-index:6 !important;
+}
+.bottomNavMenuBtn .moreIcon{width:22px !important;height:22px !important;transform:translateY(-11px) !important;display:block !important;}
+.bottomNavGamesBtn{margin-right:2px !important;}
+
+#games .gamesAccountRow{display:flex !important;align-items:center !important;gap:10px !important;margin-top:10px !important;}
+#games .gamesAccountCurrent{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  min-height:44px !important;
+  padding:0 14px !important;
+  border-radius:14px !important;
+  border:1px solid rgba(124,255,124,.18) !important;
+  background:rgba(255,255,255,.04) !important;
+  color:#e7fff0 !important;
+  font-weight:650 !important;
+  letter-spacing:.02em !important;
+}
+#games .gamesGrid{
+  display:grid !important;
+  grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
+  gap:10px !important;
+}
+#games .gamesLaunchTile{
+  min-height:112px !important;
+  padding:12px !important;
+}
+#games .gamesLaunchTile .calcTileText{font-size:16px !important;}
+#games .gamesLaunchTile .smallText{font-size:11px !important;line-height:1.2 !important;}
+#games .gamesStatsFolder{
+  margin-top:14px !important;
+  border-radius:18px !important;
+  border:1px solid rgba(124,255,124,.14) !important;
+  background:rgba(11,15,13,.58) !important;
+  overflow:hidden !important;
+}
+#games .gamesStatsFolder > summary{
+  list-style:none !important;
+  cursor:pointer !important;
+  padding:14px 14px !important;
+  font-weight:700 !important;
+  color:#e8ffe8 !important;
+}
+#games .gamesStatsFolder > summary::-webkit-details-marker{display:none !important;}
+#games .gamesStatsGrid{
+  display:grid !important;
+  grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
+  gap:10px !important;
+  padding:0 12px 12px !important;
+}
+.gamesStatsCard{
+  border-radius:16px !important;
+  border:1px solid rgba(124,255,124,.12) !important;
+  background:rgba(255,255,255,.035) !important;
+  padding:12px !important;
+  box-shadow:0 10px 28px rgba(0,0,0,.16) !important;
+}
+.gamesStatsCard.isActive{border-color:rgba(124,255,124,.24) !important; background:rgba(124,255,124,.05) !important;}
+.gamesStatsCardHead{display:flex !important;align-items:flex-start !important;justify-content:space-between !important;gap:10px !important;margin-bottom:8px !important;}
+.gamesStatsCardName{font-weight:700 !important;font-size:14px !important;line-height:1.1 !important;}
+.gamesStatsCardId{font-size:11px !important;color:rgba(231,255,240,.55) !important;margin-top:2px !important;}
+.gamesStatsCardTotal{font-size:12px !important;font-weight:700 !important;color:#dfffe3 !important;white-space:nowrap !important;}
+.gamesStatsCardBody{display:grid !important;gap:4px !important;}
+.gamesStatsCardLine{font-size:11px !important;line-height:1.2 !important;color:rgba(231,255,240,.82) !important;}
+#games .gamesStage{display:none !important;}
+body.gamesOpen #games .gamesStage{
+  display:block !important;
+  position:fixed !important;
+  inset:0 !important;
+  z-index:170 !important;
+  background:linear-gradient(180deg, rgba(7,10,8,.94), rgba(7,10,8,.98)) !important;
+  backdrop-filter:blur(18px) saturate(140%) !important;
+  -webkit-backdrop-filter:blur(18px) saturate(140%) !important;
+  padding:12px !important;
+  overflow:auto !important;
+}
+body.gamesOpen #games .gamesShell{
+  min-height:100% !important;
+  display:flex !important;
+  flex-direction:column !important;
+}
+body.gamesOpen #games .gamesShellTop{
+  position:sticky !important;
+  top:0 !important;
+  z-index:1 !important;
+}
+body.gamesOpen #games .gamesShell > #gamesShellBody{flex:1 1 auto !important;}
+#games .gameBoard{width:100% !important; max-width:100% !important;}
+#games .gameControls{display:flex !important; flex-wrap:wrap !important; gap:8px !important;}
+#games .gameControlBtn{min-height:44px !important; min-width:44px !important;}
+
+@media (max-width: 700px){
+  #games .gamesGrid{grid-template-columns:repeat(2, minmax(0, 1fr)) !important; gap:8px !important;}
+  #games .gamesLaunchTile{min-height:104px !important;}
+  #games .gamesStatsGrid{grid-template-columns:1fr !important;}
+  .bottomNavBtn{flex-basis:56px !important; width:56px !important; min-width:56px !important; max-width:56px !important;}
+  .bottomNavMenuBtn{flex-basis:38px !important; width:38px !important; min-width:38px !important; max-width:38px !important;}
+}

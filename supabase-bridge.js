@@ -231,6 +231,112 @@
     return Array.isArray(data) ? data : [];
   }
 
+
+  async function loadGameInviteByCode(client, code) {
+    const inviteCode = String(code || '').trim().toUpperCase();
+    if (!inviteCode) return { ok: false, error: new Error('Chybí kód pozvánky.') };
+    const { data, error } = await client.from('game_invites').select('*').eq('invite_code', inviteCode).maybeSingle();
+    if (error) throw error;
+    return { ok: true, invite: data || null };
+  }
+
+  async function createGameInviteDirect(client, payload) {
+    const inviteCode = String(payload && payload.code ? payload.code : '').trim().toUpperCase();
+    if (!inviteCode) throw new Error('Chybí kód pozvánky.');
+    const inviterAccountNumber = String(payload && payload.inviterAccountNumber ? payload.inviterAccountNumber : '').trim() || null;
+    const boardState = payload && payload.boardState && typeof payload.boardState === 'object' ? payload.boardState : { board: Array(180).fill(''), turn: 'X', status: 'waiting' };
+    const inviteRow = {
+      game_type: 'gomoku',
+      inviter_account_number: inviterAccountNumber,
+      invitee_account_number: null,
+      invite_code: inviteCode,
+      status: 'pending',
+      expires_at: null,
+      payload: payload && payload.payload && typeof payload.payload === 'object' ? payload.payload : {}
+    };
+    const { data: inviteData, error: inviteErr } = await client.from('game_invites').insert([inviteRow]).select('*').maybeSingle();
+    if (inviteErr) throw inviteErr;
+    const sessionRow = {
+      game_type: 'gomoku',
+      invite_id: inviteData && inviteData.id ? inviteData.id : null,
+      player_x_account_number: inviterAccountNumber,
+      player_o_account_number: null,
+      winner_account_number: null,
+      status: 'waiting',
+      board_state: boardState,
+      move_history: [],
+      updated_at: new Date().toISOString()
+    };
+    const { data: sessionData, error: sessionErr } = await client.from('game_sessions').insert([sessionRow]).select('*').maybeSingle();
+    if (sessionErr) throw sessionErr;
+    return { invite: inviteData || null, session: sessionData || null };
+  }
+
+  async function acceptGameInviteDirect(client, code, inviteeAccountNumber) {
+    const inviteCode = String(code || '').trim().toUpperCase();
+    const invitee = String(inviteeAccountNumber || '').trim() || null;
+    const loaded = await loadGameInviteByCode(client, inviteCode);
+    if (!loaded.invite) throw new Error('Pozvánka nenalezena.');
+    const invite = loaded.invite;
+    const { data: sessionData, error: sessionLookupErr } = await client.from('game_sessions').select('*').eq('invite_id', invite.id).maybeSingle();
+    if (sessionLookupErr) throw sessionLookupErr;
+    const nextInvite = {
+      status: 'accepted',
+      accepted_at: new Date().toISOString(),
+      invitee_account_number: invitee
+    };
+    const { data: updatedInvite, error: inviteUpdErr } = await client.from('game_invites').update(nextInvite).eq('id', invite.id).select('*').maybeSingle();
+    if (inviteUpdErr) throw inviteUpdErr;
+    const boardState = sessionData && sessionData.board_state && typeof sessionData.board_state === 'object' ? sessionData.board_state : { board: Array(180).fill(''), turn: 'X', status: 'active' };
+    boardState.status = 'active';
+    boardState.acceptedAt = new Date().toISOString();
+    const sessionRow = {
+      game_type: 'gomoku',
+      invite_id: invite.id,
+      player_x_account_number: invite.inviter_account_number || null,
+      player_o_account_number: invitee,
+      winner_account_number: null,
+      status: 'active',
+      board_state: boardState,
+      move_history: Array.isArray(sessionData && sessionData.move_history) ? sessionData.move_history : [],
+      updated_at: new Date().toISOString()
+    };
+    const { data: updatedSession, error: sessionUpdErr } = await client.from('game_sessions').upsert([Object.assign({ id: sessionData && sessionData.id ? sessionData.id : undefined }, sessionRow)], { onConflict: 'invite_id' }).select('*').maybeSingle();
+    if (sessionUpdErr) throw sessionUpdErr;
+    return { invite: updatedInvite || invite, session: updatedSession || sessionData || null };
+  }
+
+  async function loadGameSessionByInviteCodeDirect(client, code) {
+    const loaded = await loadGameInviteByCode(client, code);
+    if (!loaded.invite) return { ok: false, invite: null, session: null };
+    const { data: sessionData, error: sessionErr } = await client.from('game_sessions').select('*').eq('invite_id', loaded.invite.id).maybeSingle();
+    if (sessionErr) throw sessionErr;
+    return { ok: true, invite: loaded.invite, session: sessionData || null };
+  }
+
+  async function saveGameSessionByInviteCodeDirect(client, code, payload) {
+    const loaded = await loadGameInviteByCode(client, code);
+    if (!loaded.invite) throw new Error('Pozvánka nenalezena.');
+    const { data: sessionData, error: sessionErr } = await client.from('game_sessions').select('*').eq('invite_id', loaded.invite.id).maybeSingle();
+    if (sessionErr) throw sessionErr;
+    const boardState = payload && typeof payload === 'object' ? payload : {};
+    const sessionRow = {
+      game_type: 'gomoku',
+      invite_id: loaded.invite.id,
+      player_x_account_number: sessionData && sessionData.player_x_account_number ? sessionData.player_x_account_number : loaded.invite.inviter_account_number || null,
+      player_o_account_number: sessionData && sessionData.player_o_account_number ? sessionData.player_o_account_number : loaded.invite.invitee_account_number || null,
+      winner_account_number: boardState.winnerAccountNumber || sessionData && sessionData.winner_account_number || null,
+      status: boardState.status || sessionData && sessionData.status || 'active',
+      board_state: boardState,
+      move_history: Array.isArray(boardState.moveHistory) ? boardState.moveHistory : (Array.isArray(sessionData && sessionData.move_history) ? sessionData.move_history : []),
+      updated_at: new Date().toISOString(),
+      finished_at: boardState.gameOver ? new Date().toISOString() : (sessionData && sessionData.finished_at ? sessionData.finished_at : null)
+    };
+    const { data: updatedSession, error: updErr } = await client.from('game_sessions').upsert([Object.assign({ id: sessionData && sessionData.id ? sessionData.id : undefined }, sessionRow)], { onConflict: 'invite_id' }).select('*').maybeSingle();
+    if (updErr) throw updErr;
+    return { ok: true, session: updatedSession || null, status: sessionRow.status };
+  }
+
   async function flushPendingWrites() {
     if (flushPromise) return flushPromise;
     flushPromise = (async () => {
@@ -787,6 +893,30 @@
     getBridgeText,
     getCanteenStatus,
     getSyncUiStatus,
+    createGameInvite: async (payload) => {
+      const client = getClient();
+      if (!client || !navigator.onLine) return { ok: false, reason: 'offline-or-missing-client' };
+      try { return Object.assign({ ok: true }, await createGameInviteDirect(client, payload)); }
+      catch (err) { state.lastError = err; console.error('TTT invite create failed', err); return { ok: false, error: err }; }
+    },
+    acceptGameInvite: async (code, inviteeAccountNumber) => {
+      const client = getClient();
+      if (!client || !navigator.onLine) return { ok: false, reason: 'offline-or-missing-client' };
+      try { return Object.assign({ ok: true }, await acceptGameInviteDirect(client, code, inviteeAccountNumber)); }
+      catch (err) { state.lastError = err; console.error('TTT invite accept failed', err); return { ok: false, error: err }; }
+    },
+    loadGameSessionByInviteCode: async (code) => {
+      const client = getClient();
+      if (!client || !navigator.onLine) return { ok: false, reason: 'offline-or-missing-client' };
+      try { return Object.assign({ ok: true }, await loadGameSessionByInviteCodeDirect(client, code)); }
+      catch (err) { state.lastError = err; console.error('TTT session load failed', err); return { ok: false, error: err }; }
+    },
+    saveGameSessionByInviteCode: async (code, payload) => {
+      const client = getClient();
+      if (!client || !navigator.onLine) return { ok: false, reason: 'offline-or-missing-client' };
+      try { return Object.assign({ ok: true }, await saveGameSessionByInviteCodeDirect(client, code, payload)); }
+      catch (err) { state.lastError = err; console.error('TTT session save failed', err); return { ok: false, error: err }; }
+    },
     getState: () => ({ ...state })
   };
 
@@ -796,6 +926,10 @@
   window.getSupabaseAnnouncement = getBridgeText;
   window.getSupabaseCanteenStatus = getCanteenStatus;
   window.getSupabaseSyncStatus = getSyncUiStatus;
+  window.createGameInvite = async (payload) => window.RotationSupabaseBridge.createGameInvite(payload);
+  window.acceptGameInvite = async (code, inviteeAccountNumber) => window.RotationSupabaseBridge.acceptGameInvite(code, inviteeAccountNumber);
+  window.loadGameSessionByInviteCode = async (code) => window.RotationSupabaseBridge.loadGameSessionByInviteCode(code);
+  window.saveGameSessionByInviteCode = async (code, payload) => window.RotationSupabaseBridge.saveGameSessionByInviteCode(code, payload);
 
   window.addEventListener('online', () => {
     void flushPendingWrites();
