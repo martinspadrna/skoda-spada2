@@ -1067,102 +1067,82 @@ function tttBestMove(board, difficulty) {
   const immediateBlock = tttWinningMove(board, 'X');
   if (immediateBlock >= 0) return immediateBlock;
 
-  const mustBlockThreats = tttOpenThreeThreatMoves(board, 'X');
-  if (mustBlockThreats.length) {
-    let bestThreat = mustBlockThreats[0];
-    let bestThreatScore = -Infinity;
-    for (const idx of mustBlockThreats) {
-      if (board[idx]) continue;
-      board[idx] = 'O';
-      const oppWins = tttWinningMoves(board, 'X').length;
-      const oppCritical = tttCriticalThreatMoves(board, 'X').length;
-      const oppOpenThree = tttOpenThreeThreatMoves(board, 'X').length;
-      const ownOpenThree = tttOpenThreeThreatMoves(board, 'O').length;
-      const score = tttMoveHeuristic(board, idx, 'O') + ownOpenThree * 2200 - oppWins * 520000 - oppCritical * 170000 - oppOpenThree * 120000;
-      board[idx] = '';
-      if (score > bestThreatScore) {
-        bestThreatScore = score;
-        bestThreat = idx;
-      }
-    }
-    return bestThreat;
-  }
-
   const occupied = board.length - free.length;
   const center = tttIndex(Math.floor(TTT_ROWS / 2), Math.floor(TTT_COLS / 2));
-
-  if (difficulty === 'ai' && occupied <= 1) {
-    const opening = tttOpeningBookMove(board);
-    if (opening >= 0 && !board[opening]) return opening;
-    if (!board[center]) return center;
+  if ((difficulty === 'ai' || difficulty === 'medium') && occupied <= 1 && !board[center]) {
+    return center;
   }
 
-  const candidateLimit = difficulty === 'ai' ? (occupied < 8 ? 8 : 6) : difficulty === 'medium' ? 8 : 6;
-  const candidates = tttOrderedCandidates(board, 'O', candidateLimit).filter(idx => !board[idx]);
-  if (!candidates.length) return free[Math.floor(Math.random() * free.length)] ?? -1;
+  const candidates = tttCandidateMoves(board, occupied < 8 ? 2 : 1).slice(0, 14);
+  const movePool = candidates.length ? candidates : free.slice(0, 14);
 
-  if (difficulty === 'noob') {
-    return candidates[Math.floor(Math.random() * candidates.length)] ?? free[Math.floor(Math.random() * free.length)];
-  }
+  let bestIdx = movePool[0] ?? free[0];
+  let bestScore = -Infinity;
+  const centerRow = Math.floor(TTT_ROWS / 2);
+  const centerCol = Math.floor(TTT_COLS / 2);
+  const deadline = (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 8;
 
-  const scoreCandidate = (idx) => {
-    if (board[idx]) return -Infinity;
+  for (const idx of movePool) {
+    const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    if (now > deadline) break;
+    if (board[idx]) continue;
+
     board[idx] = 'O';
-    let score = tttMoveHeuristic(board, idx, 'O');
+    const winNow = tttWinner(board).winner === 'O';
+    const oppWin = tttWinningMove(board, 'X');
+
     const row = Math.floor(idx / TTT_COLS);
     const col = idx % TTT_COLS;
-    score -= (Math.abs(row - Math.floor(TTT_ROWS / 2)) + Math.abs(col - Math.floor(TTT_COLS / 2))) * 28;
-    if (idx === center) score += 4200;
+    let score = 0;
 
-    const myWins = tttWinningMoves(board, 'O').length;
-    const oppWins = tttWinningMoves(board, 'X').length;
-    const myCritical = tttCriticalThreatMoves(board, 'O').length;
-    const oppCritical = tttCriticalThreatMoves(board, 'X').length;
-    const myOpenThree = tttOpenThreeThreatMoves(board, 'O').length;
-    const oppOpenThree = tttOpenThreeThreatMoves(board, 'X').length;
+    if (winNow) score += 1000000;
+    if (oppWin >= 0) score -= 240000;
 
-    if (myWins >= 1) score += 900000;
-    if (myWins >= 2) score += 140000;
-    if (myCritical >= 2) score += 52000;
-    if (myOpenThree >= 2) score += 18000;
-    if (oppWins >= 1) score -= 720000;
-    if (oppWins >= 2) score -= 150000;
-    if (oppCritical >= 2) score -= 90000;
-    if (oppOpenThree >= 2) score -= 35000;
+    const distance = Math.abs(row - centerRow) + Math.abs(col - centerCol);
+    score += Math.max(0, 120 - distance * 18);
 
-    const replyCandidates = tttOrderedCandidates(board, 'X', occupied < 12 ? 4 : 3);
-    let worstReply = 0;
-    for (const reply of replyCandidates) {
-      if (board[reply]) continue;
-      board[reply] = 'X';
-      const replyWins = tttWinningMoves(board, 'X').length;
-      const replyCritical = tttCriticalThreatMoves(board, 'X').length;
-      const replyOpenThree = tttOpenThreeThreatMoves(board, 'X').length;
-      const replyScore = tttMoveHeuristic(board, reply, 'X') + replyWins * 190000 + replyCritical * 2500 + replyOpenThree * 1200;
-      if (replyScore > worstReply) worstReply = replyScore;
-      board[reply] = '';
+    let ownAdj = 0;
+    let oppAdj = 0;
+    for (let dr = -1; dr <= 1; dr += 1) {
+      for (let dc = -1; dc <= 1; dc += 1) {
+        if (!dr && !dc) continue;
+        const nr = row + dr;
+        const nc = col + dc;
+        if (!tttInBounds(nr, nc)) continue;
+        const cell = board[tttIndex(nr, nc)];
+        if (cell === 'O') ownAdj += 18;
+        else if (cell === 'X') oppAdj += 12;
+      }
     }
-    if (difficulty === 'ai') {
-      // Lightweight only: keep AI responsive on mobile and avoid freezing the UI thread.
-      // The deeper tactical checks above are enough to block immediate threats and forks.
-      score += 0;
+    score += ownAdj + oppAdj;
+
+    for (const [dr, dc] of [[0,1],[1,0],[1,1],[1,-1]]) {
+      let same = 1;
+      let openEnds = 0;
+      let r = row + dr;
+      let c = col + dc;
+      while (tttInBounds(r, c) && board[tttIndex(r, c)] === 'O') { same += 1; r += dr; c += dc; }
+      if (tttInBounds(r, c) && !board[tttIndex(r, c)]) openEnds += 1;
+      r = row - dr;
+      c = col - dc;
+      while (tttInBounds(r, c) && board[tttIndex(r, c)] === 'O') { same += 1; r -= dr; c -= dc; }
+      if (tttInBounds(r, c) && !board[tttIndex(r, c)]) openEnds += 1;
+      if (same >= 4 && openEnds >= 1) score += 45000;
+      else if (same === 3 && openEnds === 2) score += 12000;
+      else if (same === 3 && openEnds === 1) score += 4200;
+      else if (same === 2 && openEnds === 2) score += 900;
     }
 
     board[idx] = '';
-    return score - worstReply * 0.7;
-  };
 
-  let bestIdx = candidates[0] ?? free[0];
-  let bestScore = -Infinity;
-  for (const idx of candidates) {
-    const score = scoreCandidate(idx);
     if (score > bestScore) {
       bestScore = score;
       bestIdx = idx;
     }
   }
 
-  return bestIdx >= 0 ? bestIdx : (free[Math.floor(Math.random() * free.length)] ?? -1);
+  if (bestIdx >= 0) return bestIdx;
+  return free[Math.floor(Math.random() * free.length)] ?? -1;
 }
 
 function tttHardWinLog() {
@@ -2922,16 +2902,25 @@ function gamesRenderAccountChips() {
   const nameEl = document.getElementById('gamesAccountName');
   const hintEl = document.getElementById('gamesAccountHint');
   const inputEl = document.getElementById('gamesAccountInput');
+  const selectedEl = document.getElementById('gamesAccountSelected');
   const confirmBtn = document.getElementById('gamesAccountConfirmBtn');
   const clearBtn = document.getElementById('gamesAccountClearBtn');
-  if (!nameEl || !hintEl || !inputEl || !confirmBtn || !clearBtn) return;
+  if (!nameEl || !hintEl || !inputEl || !selectedEl || !confirmBtn || !clearBtn) return;
   const profile = gamesGetProfile();
   const active = profile.accounts[profile.activeAccountId] || null;
+  const showActive = !!active;
   nameEl.textContent = active ? (active.id + ' · ' + active.name) : 'Bez přihlášení';
   hintEl.textContent = active
     ? 'Přihlášeno. Statistiky i výsledky se ukládají pod tímto číslem.'
     : 'Bez účtu můžeš hrát dál. Statistiky se ukládají jen po přihlášení číslem.';
-  inputEl.value = active ? active.id : '';
+
+  inputEl.style.display = showActive ? 'none' : '';
+  confirmBtn.style.display = showActive ? 'none' : '';
+  selectedEl.style.display = showActive ? 'flex' : 'none';
+  selectedEl.textContent = active ? active.name + ' (' + active.id + ')' : '';
+  inputEl.value = showActive ? '' : inputEl.value;
+  clearBtn.textContent = showActive ? 'Odhlásit' : 'Bez účtu';
+
   if (!inputEl.dataset.bound) {
     inputEl.dataset.bound = '1';
     const submit = () => {
@@ -2951,6 +2940,13 @@ function gamesRenderAccountChips() {
       inputEl.value = '';
       gamesClearActiveAccount();
       hintEl.textContent = 'Bez účtu můžeš hrát dál. Statistiky se ukládají jen po přihlášení číslem.';
+    });
+    selectedEl.addEventListener('click', () => {
+      inputEl.style.display = '';
+      confirmBtn.style.display = '';
+      selectedEl.style.display = 'none';
+      inputEl.focus();
+      inputEl.select();
     });
   }
 }

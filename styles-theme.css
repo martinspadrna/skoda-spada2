@@ -2274,7 +2274,7 @@ body.reduceMotion *::after{
 .bottomNavGamesBtn .bottomNavIcon svg{stroke-width:1.8 !important;}
 #games .calcTileIcon svg{stroke:currentColor !important;}
 
-/* v1(324) bottom nav compact icons + hidden games */
+/* v1(325) bottom nav compact icons + hidden games */
 .bottomNav{display:flex !important;align-items:center !important;gap:6px !important;}
 .bottomNavScroll{display:flex !important;align-items:center !important;gap:4px !important;flex:1 1 auto !important;min-width:0 !important;overflow-x:auto !important;overflow-y:hidden !important;-webkit-overflow-scrolling:touch !important;scroll-snap-type:x proximity !important;scrollbar-width:none !important;}
 .bottomNavScroll::-webkit-scrollbar{display:none !important;}
@@ -2288,3 +2288,18 @@ body.reduceMotion *::after{
 .bottomNavMenuBtn .moreIcon{width:24px !important;height:24px !important;transform:translateY(-11px) !important;display:block !important;}
 .bottomNavGamesBtn{margin-right:4px !important;}
 .bottomNavGamesBtn .bottomNavIcon svg{stroke-width:1.8 !important;}
+
+
+/* v1(325) bottom nav fit + menu right + games hidden */
+.bottomNav{gap:4px !important;}
+.bottomNavScroll{flex:1 1 auto !important; min-width:0 !important; overflow-x:auto !important; overflow-y:hidden !important; -webkit-overflow-scrolling:touch !important; scroll-snap-type:x mandatory !important; scrollbar-width:none !important;}
+.bottomNavScroll::-webkit-scrollbar{display:none !important;}
+.bottomNavInner{display:flex !important; align-items:center !important; gap:3px !important; min-width:max-content !important; flex-wrap:nowrap !important; padding-right:6px !important;}
+.bottomNavBtn{flex:0 0 52px !important; width:52px !important; min-width:52px !important; max-width:52px !important; min-height:50px !important; padding:2px 2px 1px !important;}
+.bottomNavBtn .bottomNavIcon,.bottomNavBtn .bottomNavIcon svg{width:21px !important;height:21px !important;display:block !important;}
+.bottomNavBtn .bottomNavIcon{flex:0 0 21px !important;}
+.bottomNavBtn .bottomNavLabel{font-size:8.8px !important;line-height:1.03 !important;}
+.bottomNavMenuBtn{flex:0 0 38px !important; position:sticky !important; right:0 !important; margin-left:auto !important; z-index:5 !important; width:38px !important; min-width:38px !important; max-width:38px !important;}
+.bottomNavMenuBtn .moreIcon{width:22px !important;height:22px !important;transform:translateY(-11px) !important;display:block !important;}
+.bottomNavGamesBtn{margin-right:2px !important;}
+.gamesAccountSelected{flex:1 1 auto !important; min-width:0 !important; min-height:44px !important; display:flex !important; align-items:center !important; justify-content:center !important; padding:0 14px !important; border-radius:14px !important; border:1px solid rgba(124,255,124,.18) !important; background:rgba(255,255,255,.04) !important; color:#e7fff0 !important; font-weight:650 !important; letter-spacing:.02em !important;}
