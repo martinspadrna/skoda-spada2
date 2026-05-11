@@ -508,6 +508,25 @@ const TTT_TOTAL_CELLS = TTT_ROWS * TTT_COLS;
 const TTT_HARD_WIN_EMAIL = 'martinspadrna@gmail.com';
 const TTT_HARD_WIN_KEY = 'tttHardWins';
 
+function tttLoadHardWinCache() {
+  try {
+    const raw = localStorage.getItem('tttHardWinCache');
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (err) {
+    return [];
+  }
+}
+
+function tttSaveHardWinCache(rows) {
+  try {
+    localStorage.setItem('tttHardWinCache', JSON.stringify(Array.isArray(rows) ? rows.slice(0, 10) : []));
+  } catch (err) {
+    console.warn(err);
+  }
+}
+
 function tttGetState() {
   if (!app.tttState) {
     app.tttState = {
@@ -526,7 +545,7 @@ function tttGetState() {
       hardWinPrompt: false,
       hardWinStats: null,
       hardWinName: '',
-      hardWinRemote: [],
+      hardWinRemote: tttLoadHardWinCache(),
       hardWinLoading: false,
       hardWinLoaded: false
     };
@@ -1086,7 +1105,7 @@ function tttBestMove(board, difficulty) {
     if (!board[center]) return center;
   }
 
-  const candidateLimit = difficulty === 'ai' ? (occupied < 10 ? 28 : 40) : difficulty === 'medium' ? 14 : 10;
+  const candidateLimit = difficulty === 'ai' ? (occupied < 10 ? 34 : 48) : difficulty === 'medium' ? 14 : 10;
   const candidates = tttOrderedCandidates(board, 'O', candidateLimit);
 
   if (difficulty === 'noob') {
@@ -1117,6 +1136,10 @@ function tttBestMove(board, difficulty) {
     if (oppCritical >= 2) score -= 80000;
     if (oppOpenThree >= 2) score -= 30000;
 
+    const oppForkRisk = tttOpponentForkRisk(board, 'X', 10);
+    if (oppForkRisk >= 2) score -= 240000;
+    else if (oppForkRisk >= 1) score -= 110000;
+
     if (difficulty === 'medium') {
       const replyCandidates = tttOrderedCandidates(board, 'X', 12);
       let worstReply = 0;
@@ -1135,8 +1158,8 @@ function tttBestMove(board, difficulty) {
     }
 
     const memo = {};
-    const depth = occupied < 8 ? 4 : occupied < 18 ? 5 : 6;
-    const searchScore = tttSearch(board, depth, -Infinity, Infinity, false, memo, Date.now() + 8);
+    const depth = occupied < 6 ? 5 : occupied < 14 ? 6 : 7;
+    const searchScore = tttSearch(board, depth, -Infinity, Infinity, false, memo, Date.now() + 12);
     board[idx] = '';
     return score + searchScore;
   };
@@ -1235,29 +1258,40 @@ function tttUpdateDashboardMeta() {
   const el = document.getElementById('dashTttMeta');
   if (!el) return;
   const state = tttGetState();
-  if (state.hardWinLoading) {
-    el.textContent = 'Top 3 se načítá…';
+  const rows = tttGetHardWinRows();
+  if (state.hardWinLoading && !rows.length) {
+    el.classList.add('isLoading');
+    el.textContent = 'Načítám Top 3…';
     return;
   }
-  const rows = tttGetHardWinRows();
+  el.classList.remove('isLoading');
   el.textContent = rows.length ? 'Top 3 online připravené' : 'Top 3 online: zatím bez výsledků';
 }
 
 async function tttRefreshHardWinRows(forceRender) {
   const state = tttGetState();
   if (state.hardWinLoading) return state.hardWinRemote || [];
-  state.hardWinLoading = true;
-  tttUpdateDashboardMeta();
-  tttRender();
+
+  const hasVisibleRows = tttGetHardWinRows().length > 0;
+  state.hardWinLoading = !hasVisibleRows;
+  if (state.hardWinLoading) {
+    tttUpdateDashboardMeta();
+    tttRender();
+  }
+
   try {
     if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.loadGomokuWins === 'function') {
       const rows = await window.RotationSupabaseBridge.loadGomokuWins(25);
       state.hardWinRemote = Array.isArray(rows) ? rows : [];
+      tttSaveHardWinCache(state.hardWinRemote);
     }
     state.hardWinLoaded = true;
   } catch (err) {
     console.error('TTT leaderboard load failed', err);
     state.hardWinLoaded = true;
+    if (!state.hardWinRemote.length) {
+      state.hardWinRemote = tttLoadHardWinCache();
+    }
   } finally {
     state.hardWinLoading = false;
     tttUpdateDashboardMeta();
@@ -2176,10 +2210,11 @@ async function saveAdminRotationFromDom(monthKey) {
   renderRotace();
   if (typeof renderMonth === 'function') renderMonth(monthKey);
   if (app.selectedName && typeof renderPerson === 'function') renderPerson(app.selectedName);
+  let saveResult = { ok: true, reason: 'local-only' };
   if (app.adminUnlocked) {
-    await saveRotationToSupabase(app.rotation, { source: 'admin-menu', monthKey });
+    saveResult = await saveRotationToSupabase(app.rotation, { source: 'admin-menu', monthKey }) || saveResult;
   }
-  return normalized;
+  return { normalized, saveResult };
 }
 
 
@@ -2376,14 +2411,13 @@ function bindAppMenuHandlers(body) {
       if (adminAction === 'save-rotation') {
         const result = await saveAdminRotationFromDom(monthKey);
         const statusEl = document.getElementById('adminOnlineSaveStatus');
-        if (statusEl) {
-          statusEl.textContent = result && result.saveResult && result.saveResult.ok === true
-            ? ('Rozpis uložený online ✓ · měsíců: ' + String(result.saveResult.months || 0) + ' · řádků: ' + String(result.saveResult.entries || 0))
-            : 'Rozpis se nepodařilo uložit online.';
-        }
-        alert(result && result.saveResult && result.saveResult.ok === true
-          ? ('Rozpis uložený online ✓ · měsíců: ' + String(result.saveResult.months || 0) + ' · řádků: ' + String(result.saveResult.entries || 0))
-          : 'Rozpis se nepodařilo uložit online.');
+        const saveResult = result && result.saveResult ? result.saveResult : null;
+        const onlineOk = !saveResult || saveResult.ok !== false;
+        const saveText = onlineOk
+          ? ('Rozpis uložený online ✓ · měsíců: ' + String(saveResult && saveResult.months ? saveResult.months : 0) + ' · řádků: ' + String(saveResult && saveResult.entries ? saveResult.entries : 0))
+          : 'Rozpis se nepodařilo uložit online.';
+        if (statusEl) statusEl.textContent = saveText;
+        alert(saveText);
         renderAdminMenuBody(body, currentView);
         return;
       }
