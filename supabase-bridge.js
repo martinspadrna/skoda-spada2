@@ -45,6 +45,162 @@
   }
 
 
+  function monthKeyToMonthStart(monthKey) {
+    const match = /^(\d{1,2})\/(\d{2})$/.exec(String(monthKey || '').trim());
+    if (!match) return null;
+    const month = Math.max(1, Math.min(12, parseInt(match[1], 10) || 1));
+    const year = 2000 + (parseInt(match[2], 10) || 0);
+    return `${year}-${String(month).padStart(2, '0')}-01`;
+  }
+
+  function defaultMachineSettingsRows() {
+    return [
+      { machine_key: 'FZK01', label: 'Frézka 01', category: 'frezka', speed: null, settings_json: { cycle_time: '', cycleTime: '', wheel: '', index: '', dress_time: '', dress_count: '' } },
+      { machine_key: 'FZK02', label: 'Frézka 02', category: 'frezka', speed: null, settings_json: { cycle_time: '', cycleTime: '', wheel: '', index: '', dress_time: '', dress_count: '' } },
+      { machine_key: 'BRS01', label: 'Brus 01', category: 'brus', speed: null, settings_json: { cycle_time: '', cycleTime: '', wheel: '', index: '', dress_time: '', dress_count: '' } },
+      { machine_key: 'PRK01', label: 'Pračka 01', category: 'pracka', speed: null, settings_json: { cycle_time: '', cycleTime: '', wheel: '', index: '', dress_time: '', dress_count: '' } }
+    ];
+  }
+
+  function buildRotationProjection(rotation) {
+    const months = rotation && rotation.months && typeof rotation.months === 'object' ? rotation.months : {};
+    const monthRows = [];
+    const entryRows = [];
+    const now = new Date().toISOString();
+
+    Object.entries(months).forEach(([monthKey, month]) => {
+      const monthStart = monthKeyToMonthStart(monthKey);
+      if (!monthStart || !month || typeof month !== 'object') return;
+      monthRows.push({
+        month_start: monthStart,
+        label: String(monthKey || '').trim() || null,
+        updated_at: now
+      });
+
+      const pushRow = (section, row, rowIndex, machineName, cellIndex, cellValue) => {
+        const value = String(cellValue || '').trim();
+        if (!value) return;
+        entryRows.push({
+          month_start: monthStart,
+          employee_name: value,
+          target_machine: String(machineName || '').trim() || null,
+          assignment_type: String(section || 'work').trim(),
+          shift_code: String(row && row.date ? row.date : '').trim() || null,
+          note: row && row.text ? String(row.text).trim() : null,
+          row_order: (rowIndex * 100) + cellIndex,
+          updated_at: now
+        });
+      };
+
+      const hard = month.hard && Array.isArray(month.hard.rows) ? month.hard.rows : [];
+      const hardMachines = month.hard && Array.isArray(month.hard.machines) ? month.hard.machines : [];
+      hard.forEach((row, rowIndex) => {
+        const cells = Array.isArray(row && row.cells) ? row.cells : [];
+        cells.forEach((cellValue, cellIndex) => pushRow('hard', row, rowIndex, hardMachines[cellIndex], cellIndex, cellValue));
+      });
+
+      const soft = month.soft && Array.isArray(month.soft.rows) ? month.soft.rows : [];
+      const softMachines = month.soft && Array.isArray(month.soft.machines) ? month.soft.machines : [];
+      soft.forEach((row, rowIndex) => {
+        const cells = Array.isArray(row && row.cells) ? row.cells : [];
+        cells.forEach((cellValue, cellIndex) => pushRow('soft', row, rowIndex, softMachines[cellIndex], cellIndex, cellValue));
+      });
+
+      const notes = Array.isArray(month.notes) ? month.notes : [];
+      notes.forEach((note, rowIndex) => {
+        const person = String(note && note.person ? note.person : '').trim();
+        if (!person) return;
+        entryRows.push({
+          month_start: monthStart,
+          employee_name: person,
+          target_machine: String(note && note.code ? note.code : '').trim() || null,
+          assignment_type: 'note',
+          shift_code: String(note && note.date ? note.date : '').trim() || null,
+          note: String(note && note.text ? note.text : '').trim() || null,
+          row_order: 9000 + rowIndex,
+          updated_at: now
+        });
+      });
+    });
+
+    return { monthRows, entryRows };
+  }
+
+  async function saveRotationProjection(rotation) {
+    const client = getClient();
+    if (!client) return { ok: false, reason: 'missing-client' };
+    try {
+      const { monthRows, entryRows } = buildRotationProjection(rotation);
+      if (monthRows.length) {
+        const { error: monthErr } = await client.from('rotation_months').upsert(monthRows, { onConflict: 'month_start' });
+        if (monthErr) throw monthErr;
+      }
+      if (monthRows.length) {
+        const monthStarts = [...new Set(monthRows.map(row => row.month_start))];
+        if (monthStarts.length) {
+          const { error: deleteErr } = await client.from('rotation_entries').delete().in('month_start', monthStarts);
+          if (deleteErr) throw deleteErr;
+        }
+      }
+      if (entryRows.length) {
+        for (let i = 0; i < entryRows.length; i += 500) {
+          const chunk = entryRows.slice(i, i + 500);
+          const { error: insertErr } = await client.from('rotation_entries').insert(chunk);
+          if (insertErr) throw insertErr;
+        }
+      }
+      return { ok: true, months: monthRows.length, entries: entryRows.length };
+    } catch (err) {
+      state.lastError = err;
+      console.error('Supabase rotation projection save failed', err);
+      return { ok: false, error: err };
+    }
+  }
+
+  async function seedFromLocalSnapshot(rotation, machineRows) {
+    const client = getClient();
+    if (!client) return { ok: false, reason: 'missing-client' };
+    try {
+      const [monthCountRes, entryCountRes, machineCountRes] = await Promise.all([
+        client.from('rotation_months').select('month_start', { count: 'exact', head: true }),
+        client.from('rotation_entries').select('id', { count: 'exact', head: true }),
+        client.from('machine_settings').select('id', { count: 'exact', head: true })
+      ]);
+      const monthCount = Number(monthCountRes && monthCountRes.count) || 0;
+      const entryCount = Number(entryCountRes && entryCountRes.count) || 0;
+      const machineCount = Number(machineCountRes && machineCountRes.count) || 0;
+
+      const payload = rotation && rotation.months ? rotation : null;
+      if (!payload) return { ok: false, reason: 'missing-rotation' };
+
+      let seeded = false;
+      if (!machineCount) {
+        const machines = Array.isArray(machineRows) && machineRows.length ? machineRows : defaultMachineSettingsRows();
+        const machineResult = await saveMachineSettings(machines);
+        if (!machineResult || machineResult.ok !== true) throw (machineResult && machineResult.error ? machineResult.error : new Error('Seed machine settings failed.'));
+        seeded = true;
+      }
+
+      if (!monthCount || !entryCount) {
+        const rotationResult = await saveRotationState(payload, { source: 'seed' });
+        if (!rotationResult || rotationResult.ok !== true) throw (rotationResult && rotationResult.error ? rotationResult.error : new Error('Seed rotation failed.'));
+        seeded = true;
+      }
+
+      return {
+        ok: true,
+        seeded,
+        months: monthCount,
+        entries: entryCount,
+        machines: machineCount
+      };
+    } catch (err) {
+      state.lastError = err;
+      console.error('Supabase seed failed', err);
+      return { ok: false, error: err };
+    }
+  }
+
   async function loadRotationState() {
     const client = getClient();
     if (!client) return null;
@@ -78,7 +234,21 @@
       };
       const { error } = await client.from('rotation_state').upsert([row], { onConflict: 'id' });
       if (error) throw error;
-      return { ok: true };
+
+      const verify = await client.from('rotation_state').select('*').eq('id', 'main').limit(1);
+      if (verify && verify.error) throw verify.error;
+      const verifiedRow = Array.isArray(verify && verify.data) ? verify.data[0] || null : null;
+
+      const projection = payload ? await saveRotationProjection(payload) : { ok: true, months: 0, entries: 0 };
+      if (!projection || projection.ok !== true) throw (projection && projection.error ? projection.error : new Error('Rotation projection save failed.'));
+
+      return {
+        ok: true,
+        verified: !!verifiedRow,
+        updatedAt: verifiedRow && verifiedRow.updated_at ? verifiedRow.updated_at : row.updated_at,
+        months: projection.months || 0,
+        entries: projection.entries || 0
+      };
     } catch (err) {
       state.lastError = err;
       console.warn('Supabase rotation save failed', err);
@@ -156,7 +326,7 @@
       };
       const { error } = await client.from('gomoku_wins').insert([payload]);
       if (error) throw error;
-      return { ok: true };
+      return { ok: true, savedCount: list.length };
     } catch (err) {
       state.lastError = err;
       console.error('Supabase win insert failed', err);

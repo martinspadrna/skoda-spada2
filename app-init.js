@@ -46,7 +46,11 @@ async function syncRotationFromSupabase(force) {
   const bridge = window.RotationSupabaseBridge;
   if (!bridge || typeof bridge.loadRotationState !== 'function') return null;
   try {
-    const remote = await bridge.loadRotationState();
+    let remote = await bridge.loadRotationState();
+    if ((!remote || !remote.payload) && typeof bridge.seedFromLocalSnapshot === 'function' && typeof app !== 'undefined' && app.rotation && app.rotation.months && Object.keys(app.rotation.months).length) {
+      await bridge.seedFromLocalSnapshot(app.rotation, app.machineSettingsRows || []);
+      remote = await bridge.loadRotationState();
+    }
     if (!remote || !remote.payload) return null;
     const next = typeof normalizeRotationData === 'function' ? normalizeRotationData(remote.payload) : remote.payload;
     if (!next || !next.months) return null;

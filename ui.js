@@ -1902,10 +1902,11 @@ async function saveAdminRotationToSupabase(monthKey, rawText) {
   renderRotace();
   if (typeof renderMonth === 'function') renderMonth(monthKey);
   if (app.selectedName && typeof renderPerson === 'function') renderPerson(app.selectedName);
+  let saveResult = { ok: true, months: 0, entries: 0 };
   if (app.adminUnlocked) {
-    await saveRotationToSupabase(app.rotation, { source: 'admin-menu', monthKey });
+    saveResult = await saveRotationToSupabase(app.rotation, { source: 'admin-menu', monthKey }) || saveResult;
   }
-  return normalized;
+  return { normalized, saveResult };
 }
 
 function adminRotationRowTemplate(section, row, rowIndex, machineCount, allowBlankTail) {
@@ -1946,7 +1947,8 @@ function buildAdminMachineSettingsTableHtml() {
   const rows = Array.isArray(app.machineSettingsRows) ? app.machineSettingsRows : [];
   const dataRows = rows.length ? rows : [
     { machine_key: 'FZK01', label: 'Frézka 01', category: 'frezka', speed: '', settings_json: {} },
-    { machine_key: 'BRS01', label: 'Brus 01', category: 'brus', speed: '', settings_json: {} },
+    { machine_key: 'FZK02', label: 'Frézka 02', category: 'frezka', speed: '', settings_json: {} },
+    { machine_key: 'BRS01', label: 'Brus 01', category: 'brus', speed: '', settings_json: { wheel: '', index: '', dress_time: '', dress_count: '' } },
     { machine_key: 'PRK01', label: 'Pračka 01', category: 'pracka', speed: '', settings_json: {} },
     { machine_key: '', label: '', category: 'general', speed: '', settings_json: {} }
   ];
@@ -2138,6 +2140,7 @@ function renderAdminMenuBody(body) {
     '  <div class="appMenuCardTitle">' + escapeHtml(title) + '</div>',
     '  <div class="appMenuText">',
     '    <div>Nejprve stroje, pak rozpisy, a export až úplně dole. Všechno se ukládá online přes Supabase.</div>',
+    '    <div class="smallText" id="adminOnlineSaveStatus">Stav uložení se zobrazí po každém kliknutí na Uložit.</div>',
     '  </div>',
     buildAdminMachineSettingsTableHtml(),
     '  <div class="appMenuActionRow">',
@@ -2306,7 +2309,7 @@ body.querySelectorAll('[data-admin-action]').forEach(btn => {
           if (result && result.ok === false) throw (result.error || new Error('Uložení strojů selhalo.'));
           app.machineSettingsRows = rows;
           renderAdminMenuBody(body);
-          alert('Nastavení strojů uložené online.');
+          alert('Nastavení strojů uložené online ✓' + ((result && result.savedCount) ? (' · řádků: ' + result.savedCount) : ''));
           return;
         }
       } else if (action === 'import') {
