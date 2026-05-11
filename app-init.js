@@ -19,8 +19,7 @@ function bindAdminSecretUnlock() {
     if (tapCount < 3) return;
     tapCount = 0;
 
-    const user = prompt('Jméno:') || '';
-    const pass = prompt('Heslo:') || '';
+    const pass = prompt('Heslo administrace:') || '';
     if (pass.trim() === '772326') {
       if (typeof app !== 'undefined') {
         app.adminUnlocked = true;

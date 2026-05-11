@@ -27,35 +27,6 @@
     return state.client;
   }
 
-
-  function normalizeMachineKey(key) {
-    return String(key || '').trim().replaceAll('_', '-').toUpperCase();
-  }
-
-  function saveCache(key, data) {
-    try {
-      localStorage.setItem(key, JSON.stringify({
-        updatedAt: Date.now(),
-        version: String(window.APP_VERSION || ''),
-        data
-      }));
-    } catch (err) {
-      console.warn(err);
-    }
-  }
-
-  function loadCache(key, fallback) {
-    try {
-      const raw = localStorage.getItem(key);
-      if (!raw) return fallback;
-      const parsed = JSON.parse(raw);
-      return parsed && parsed.data ? parsed.data : fallback;
-    } catch (err) {
-      return fallback;
-    }
-  }
-
-
   function getBridgeText() {
     const active = state.announcements.find(item => item && item.is_active !== false) || state.announcements[0] || null;
     return active ? {
@@ -260,13 +231,11 @@
         .order('category', { ascending: true })
         .order('machine_key', { ascending: true });
       if (error) throw error;
-      const normalized = (Array.isArray(data) ? data : []).map(row => ({...row, machine_key: normalizeMachineKey(row.machine_key)}));
-      saveCache('machine_settings_cache', normalized);
-      return normalized;
+      return Array.isArray(data) ? data : [];
     } catch (err) {
       state.lastError = err;
       console.error('Supabase machine settings load failed', err);
-      return loadCache('machine_settings_cache', defaultMachineSettingsRows());
+      return [];
     }
   }
 
@@ -294,7 +263,6 @@
           : (row && row.speed !== '' && row.speed !== null && row.speed !== undefined ? Number(row.speed) : null);
         const dressTime = row && row.dress_time !== '' && row.dress_time !== null && row.dress_time !== undefined ? Number(row.dress_time) : null;
         const dressCount = row && row.dress_count !== '' && row.dress_count !== null && row.dress_count !== undefined ? parseInt(row.dress_count, 10) : null;
-        const normalizedKey = normalizeMachineKey(row && row.machine_key ? row.machine_key : '');
         const payload = {
           machine_key,
           machine_code: machineCode || null,
@@ -337,13 +305,11 @@
         .order('row_order', { ascending: true })
         .order('employee_name', { ascending: true });
       if (error) throw error;
-      const normalized = (Array.isArray(data) ? data : []).map(row => ({...row, machine_key: normalizeMachineKey(row.machine_key)}));
-      saveCache('machine_settings_cache', normalized);
-      return normalized;
+      return Array.isArray(data) ? data : [];
     } catch (err) {
       state.lastError = err;
       console.error('Supabase rotation entries load failed', err);
-      return loadCache('machine_settings_cache', defaultMachineSettingsRows());
+      return [];
     }
   }
 
@@ -469,7 +435,7 @@
     } catch (err) {
       state.lastError = err;
       console.error('Supabase win list load failed', err);
-      return loadCache('machine_settings_cache', defaultMachineSettingsRows());
+      return [];
     }
   }
 
