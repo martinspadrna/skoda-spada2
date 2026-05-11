@@ -405,9 +405,14 @@
       const { error } = await client.from('rotation_state').upsert([row], { onConflict: 'key' });
       if (error) throw error;
 
-      const verify = await client.from('rotation_state').select('*').eq('key', 'main').maybeSingle();
-      if (verify && verify.error) throw verify.error;
-      const verifiedRow = verify && verify.data ? verify.data : null;
+      let verifiedRow = null;
+      try {
+        const verify = await client.from('rotation_state').select('updated_at').eq('key', 'main').maybeSingle();
+        if (verify && verify.error) throw verify.error;
+        verifiedRow = verify && verify.data ? verify.data : null;
+      } catch (verifyErr) {
+        console.warn('Supabase rotation save verify skipped', verifyErr);
+      }
 
       return {
         ok: true,

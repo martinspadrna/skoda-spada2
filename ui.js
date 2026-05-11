@@ -1058,182 +1058,104 @@ function tttBestMove(board, difficulty) {
 
   const immediateWin = tttWinningMove(board, 'O');
   if (immediateWin >= 0) return immediateWin;
+
   const immediateBlock = tttWinningMove(board, 'X');
   if (immediateBlock >= 0) return immediateBlock;
 
-  const forcedWin = tttOpenThreeThreatMoves(board, 'O');
-  if (forcedWin.length === 1) return forcedWin[0];
-
-  const forcedDefense = tttOpenThreeThreatMoves(board, 'X');
-  if (forcedDefense.length === 1) return forcedDefense[0];
-
-  const center = tttIndex(Math.floor(TTT_ROWS / 2), Math.floor(TTT_COLS / 2));
-
-  const collectCandidates = (radius, limit) => {
-    const seen = new Set();
-    const add = (idx) => {
-      if (idx >= 0 && idx < board.length && !board[idx] && !seen.has(idx)) {
-        seen.add(idx);
-      }
-    };
-
-    const stones = [];
-    for (let i = 0; i < board.length; i += 1) {
-      if (board[i]) stones.push(i);
-    }
-
-    if (!stones.length) {
-      add(center);
-      return [center];
-    }
-
-    stones.forEach((idx) => {
-      const row = Math.floor(idx / TTT_COLS);
-      const col = idx % TTT_COLS;
-      for (let dr = -radius; dr <= radius; dr += 1) {
-        for (let dc = -radius; dc <= radius; dc += 1) {
-          if (dr === 0 && dc === 0) continue;
-          const rr = row + dr;
-          const cc = col + dc;
-          if (!tttInBounds(rr, cc)) continue;
-          add(tttIndex(rr, cc));
-        }
-      }
+  const mustBlockThreats = tttOpenThreeThreatMoves(board, 'X');
+  if (mustBlockThreats.length) {
+    const threatScores = mustBlockThreats.map((idx) => {
+      board[idx] = 'O';
+      const oppWins = tttWinningMoves(board, 'X').length;
+      const oppCritical = tttCriticalThreatMoves(board, 'X').length;
+      const oppOpenThree = tttOpenThreeThreatMoves(board, 'X').length;
+      const score = tttMoveHeuristic(board, idx, 'O') - oppWins * 520000 - oppCritical * 170000 - oppOpenThree * 120000;
+      board[idx] = '';
+      return { idx, score };
     });
-
-    add(center);
-    const list = Array.from(seen);
-    list.sort((a, b) => {
-      const ar = Math.floor(a / TTT_COLS);
-      const ac = a % TTT_COLS;
-      const br = Math.floor(b / TTT_COLS);
-      const bc = b % TTT_COLS;
-      const da = Math.abs(ar - Math.floor(TTT_ROWS / 2)) + Math.abs(ac - Math.floor(TTT_COLS / 2));
-      const db = Math.abs(br - Math.floor(TTT_ROWS / 2)) + Math.abs(bc - Math.floor(TTT_COLS / 2));
-      return da - db;
-    });
-    return list.slice(0, limit);
-  };
-
-  const scoreLine = (mark, idx) => {
-    const row = Math.floor(idx / TTT_COLS);
-    const col = idx % TTT_COLS;
-    let total = 0;
-    const dirs = [[0,1],[1,0],[1,1],[1,-1]];
-
-    for (const [dr, dc] of dirs) {
-      let count1 = 0;
-      let count2 = 0;
-      let open1 = 0;
-      let open2 = 0;
-
-      let r = row + dr;
-      let c = col + dc;
-      while (tttInBounds(r, c) && board[tttIndex(r, c)] === mark) {
-        count1 += 1;
-        r += dr;
-        c += dc;
-      }
-      if (tttInBounds(r, c) && !board[tttIndex(r, c)]) open1 = 1;
-
-      r = row - dr;
-      c = col - dc;
-      while (tttInBounds(r, c) && board[tttIndex(r, c)] === mark) {
-        count2 += 1;
-        r -= dr;
-        c -= dc;
-      }
-      if (tttInBounds(r, c) && !board[tttIndex(r, c)]) open2 = 1;
-
-      const run = count1 + count2 + 1;
-      const opens = open1 + open2;
-
-      if (run >= 5) total += 1000000;
-      else if (run === 4 && opens === 2) total += 180000;
-      else if (run === 4 && opens === 1) total += 55000;
-      else if (run === 3 && opens === 2) total += 12000;
-      else if (run === 3 && opens === 1) total += 3000;
-      else if (run === 2 && opens === 2) total += 900;
-      else if (run === 2 && opens === 1) total += 250;
-      else total += run * 18 + opens * 8;
-    }
-
-    const centerBias = (TTT_ROWS + TTT_COLS) - (Math.abs(row - Math.floor(TTT_ROWS / 2)) + Math.abs(col - Math.floor(TTT_COLS / 2)));
-    return total + centerBias * 3;
-  };
-
-  const evaluateBoard = (mark) => {
-    let sum = 0;
-    for (let i = 0; i < board.length; i += 1) {
-      if (board[i] !== mark) continue;
-      sum += scoreLine(mark, i);
-    }
-    return sum;
-  };
-
-  const candidateLimit = difficulty === 'ai' ? 24 : 12;
-  const candidates = collectCandidates(2, candidateLimit);
-
-  if (difficulty === 'noob') {
-    return candidates[Math.floor(Math.random() * candidates.length)] ?? free[0];
+    threatScores.sort((a, b) => b.score - a.score);
+    return threatScores[0]?.idx ?? mustBlockThreats[0];
   }
 
-  const scoreMove = (idx) => {
+  const occupied = board.length - free.length;
+  const center = tttIndex(Math.floor(TTT_ROWS / 2), Math.floor(TTT_COLS / 2));
+
+  if (difficulty === 'ai' && occupied <= 1) {
+    const opening = tttOpeningBookMove(board);
+    if (opening >= 0 && !board[opening]) return opening;
+    if (!board[center]) return center;
+  }
+
+  const candidateLimit = difficulty === 'ai' ? (occupied < 10 ? 28 : 40) : difficulty === 'medium' ? 14 : 10;
+  const candidates = tttOrderedCandidates(board, 'O', candidateLimit);
+
+  if (difficulty === 'noob') {
+    return candidates[Math.floor(Math.random() * candidates.length)] ?? free[Math.floor(Math.random() * free.length)];
+  }
+
+  const scoreCandidate = (idx) => {
     if (board[idx]) return -Infinity;
     board[idx] = 'O';
 
-    const after = tttWinner(board);
-    if (after.winner === 'O') {
-      board[idx] = '';
-      return 9e8;
-    }
+    let score = tttMoveHeuristic(board, idx, 'O');
+    score -= (Math.abs(Math.floor(idx / TTT_COLS) - Math.floor(TTT_ROWS / 2)) + Math.abs((idx % TTT_COLS) - Math.floor(TTT_COLS / 2))) * 35;
+    if (idx === center) score += 3000;
 
-    let score = evaluateBoard('O') - evaluateBoard('X') * 0.95;
-    score += scoreLine('O', idx) * 3.0;
-
-    const myWinningMoves = tttWinningMoves(board, 'O').length;
-    const oppWinningMoves = tttWinningMoves(board, 'X').length;
+    const myWins = tttWinningMoves(board, 'O').length;
+    const oppWins = tttWinningMoves(board, 'X').length;
     const myCritical = tttCriticalThreatMoves(board, 'O').length;
     const oppCritical = tttCriticalThreatMoves(board, 'X').length;
     const myOpenThree = tttOpenThreeThreatMoves(board, 'O').length;
     const oppOpenThree = tttOpenThreeThreatMoves(board, 'X').length;
 
-    if (myWinningMoves >= 1) score += 900000;
-    if (myWinningMoves >= 2) score += 150000;
-    if (myCritical >= 2) score += 60000;
-    if (myOpenThree >= 2) score += 25000;
-    if (oppWinningMoves >= 1) score -= 650000;
-    if (oppWinningMoves >= 2) score -= 120000;
-    if (oppCritical >= 2) score -= 70000;
+    if (myWins >= 1) score += 850000;
+    if (myWins >= 2) score += 120000;
+    if (myCritical >= 2) score += 45000;
+    if (myOpenThree >= 2) score += 18000;
+    if (oppWins >= 1) score -= 650000;
+    if (oppWins >= 2) score -= 120000;
+    if (oppCritical >= 2) score -= 80000;
     if (oppOpenThree >= 2) score -= 30000;
 
-    const replyCandidates = collectCandidates(2, difficulty === 'ai' ? 16 : 10).filter(i => !board[i]);
-    let worstReply = 0;
-    for (const reply of replyCandidates) {
-      board[reply] = 'X';
-      const replyWin = tttWinningMove(board, 'X') >= 0 ? 1 : 0;
-      const replyCritical = tttCriticalThreatMoves(board, 'X').length;
-      const replyOpenThree = tttOpenThreeThreatMoves(board, 'X').length;
-      const replyScore = evaluateBoard('X') - evaluateBoard('O') * 0.9 + scoreLine('X', reply) * 2.2 + replyWin * 50000 + replyCritical * 2500 + replyOpenThree * 1200;
-      if (replyScore > worstReply) worstReply = replyScore;
-      board[reply] = '';
+    if (difficulty === 'medium') {
+      const replyCandidates = tttOrderedCandidates(board, 'X', 12);
+      let worstReply = 0;
+      for (const reply of replyCandidates) {
+        if (board[reply]) continue;
+        board[reply] = 'X';
+        const replyScore = tttMoveHeuristic(board, reply, 'X')
+          + tttWinningMoves(board, 'X').length * 130000
+          + tttCriticalThreatMoves(board, 'X').length * 1200
+          + tttOpenThreeThreatMoves(board, 'X').length * 800;
+        if (replyScore > worstReply) worstReply = replyScore;
+        board[reply] = '';
+      }
+      board[idx] = '';
+      return score - worstReply * 0.75;
     }
 
+    const memo = {};
+    const depth = occupied < 8 ? 4 : occupied < 18 ? 5 : 6;
+    const searchScore = tttSearch(board, depth, -Infinity, Infinity, false, memo, Date.now() + 8);
     board[idx] = '';
-    return score - worstReply * 0.85;
+    return score + searchScore;
   };
 
   let bestIdx = candidates[0] ?? free[0];
   let bestScore = -Infinity;
+
   for (const idx of candidates) {
-    const score = scoreMove(idx);
+    const score = scoreCandidate(idx);
     if (score > bestScore) {
       bestScore = score;
       bestIdx = idx;
     }
   }
-  return bestIdx;
+
+  if (bestIdx >= 0) return bestIdx;
+  return free[Math.floor(Math.random() * free.length)] ?? -1;
 }
+
 function tttHardWinLog() {
   return [];
 }
@@ -1243,7 +1165,12 @@ function tttSaveHardWin(entry) {
 }
 
 function tttFormatElapsed(ms) {
-  return formatDuration(Math.max(0, Number(ms) || 0));
+  const total = Math.max(0, Number(ms) || 0);
+  const seconds = Math.floor(total / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  if (minutes <= 0) return secs + ' s';
+  return minutes + ' min ' + String(secs).padStart(2, '0') + ' s';
 }
 
 function tttReadHardWinStats() {
@@ -1304,10 +1231,23 @@ function tttGetHardWinRows() {
   return normalized.slice(0, 10);
 }
 
+function tttUpdateDashboardMeta() {
+  const el = document.getElementById('dashTttMeta');
+  if (!el) return;
+  const state = tttGetState();
+  if (state.hardWinLoading) {
+    el.textContent = 'Top 3 se načítá…';
+    return;
+  }
+  const rows = tttGetHardWinRows();
+  el.textContent = rows.length ? 'Top 3 online připravené' : 'Top 3 online: zatím bez výsledků';
+}
+
 async function tttRefreshHardWinRows(forceRender) {
   const state = tttGetState();
   if (state.hardWinLoading) return state.hardWinRemote || [];
   state.hardWinLoading = true;
+  tttUpdateDashboardMeta();
   tttRender();
   try {
     if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.loadGomokuWins === 'function') {
@@ -1320,6 +1260,7 @@ async function tttRefreshHardWinRows(forceRender) {
     state.hardWinLoaded = true;
   } finally {
     state.hardWinLoading = false;
+    tttUpdateDashboardMeta();
   }
   if (forceRender !== false && document.getElementById('tttOverlay')?.classList.contains('isVisible')) {
     tttRender();
@@ -1555,6 +1496,8 @@ function tttRender() {
     });
     if (!state.hardWinLoaded && !state.hardWinLoading) {
       void tttRefreshHardWinRows();
+    } else {
+      tttUpdateDashboardMeta();
     }
     return;
   }
