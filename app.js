@@ -1,4 +1,4 @@
-// v.1(317) – PWA/service worker, online refresh hooks, self-test po načtení, Supabase bridge.
+// v.1(323) – PWA/service worker, online refresh hooks, self-test po načtení, Supabase bridge.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
