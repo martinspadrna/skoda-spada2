@@ -1165,7 +1165,7 @@ function tttBestMove(board, difficulty) {
     return sum;
   };
 
-  const candidateLimit = difficulty === 'ai' ? 18 : 12;
+  const candidateLimit = difficulty === 'ai' ? 24 : 12;
   const candidates = collectCandidates(2, candidateLimit);
 
   if (difficulty === 'noob') {
@@ -1182,23 +1182,39 @@ function tttBestMove(board, difficulty) {
       return 9e8;
     }
 
-    let score = evaluateBoard('O') - evaluateBoard('X') * 0.92;
-    score += scoreLine('O', idx) * 2.5;
+    let score = evaluateBoard('O') - evaluateBoard('X') * 0.95;
+    score += scoreLine('O', idx) * 3.0;
 
-    const opponentWinNow = tttWinningMove(board, 'X');
-    if (opponentWinNow >= 0) score -= 320000;
+    const myWinningMoves = tttWinningMoves(board, 'O').length;
+    const oppWinningMoves = tttWinningMoves(board, 'X').length;
+    const myCritical = tttCriticalThreatMoves(board, 'O').length;
+    const oppCritical = tttCriticalThreatMoves(board, 'X').length;
+    const myOpenThree = tttOpenThreeThreatMoves(board, 'O').length;
+    const oppOpenThree = tttOpenThreeThreatMoves(board, 'X').length;
 
-    const replyCandidates = collectCandidates(2, 10).filter(i => !board[i]);
+    if (myWinningMoves >= 1) score += 900000;
+    if (myWinningMoves >= 2) score += 150000;
+    if (myCritical >= 2) score += 60000;
+    if (myOpenThree >= 2) score += 25000;
+    if (oppWinningMoves >= 1) score -= 650000;
+    if (oppWinningMoves >= 2) score -= 120000;
+    if (oppCritical >= 2) score -= 70000;
+    if (oppOpenThree >= 2) score -= 30000;
+
+    const replyCandidates = collectCandidates(2, difficulty === 'ai' ? 16 : 10).filter(i => !board[i]);
     let worstReply = 0;
     for (const reply of replyCandidates) {
       board[reply] = 'X';
-      const replyScore = evaluateBoard('X') - evaluateBoard('O') * 0.85 + scoreLine('X', reply) * 2.2;
+      const replyWin = tttWinningMove(board, 'X') >= 0 ? 1 : 0;
+      const replyCritical = tttCriticalThreatMoves(board, 'X').length;
+      const replyOpenThree = tttOpenThreeThreatMoves(board, 'X').length;
+      const replyScore = evaluateBoard('X') - evaluateBoard('O') * 0.9 + scoreLine('X', reply) * 2.2 + replyWin * 50000 + replyCritical * 2500 + replyOpenThree * 1200;
       if (replyScore > worstReply) worstReply = replyScore;
       board[reply] = '';
     }
 
     board[idx] = '';
-    return score - worstReply * 0.72;
+    return score - worstReply * 0.85;
   };
 
   let bestIdx = candidates[0] ?? free[0];
@@ -1451,7 +1467,7 @@ async function tttSubmitHardWin() {
   }
 
   tttCloseHardWinPrompt();
-  await tttRefreshHardWinRows();
+  await tttRefreshHardWinRows(true);
   if (submitBtn) submitBtn.disabled = false;
   alert('Výhra uložená online.');
 }
@@ -2034,7 +2050,7 @@ function buildAdminRotationTableHtml(monthKey) {
   return [
     '<div class="appMenuSubSection" id="adminRotationEditor">',
     '  <div class="appMenuSubTitle">Rozpis – ' + escapeHtml(monthKey) + '</div>',
-    '  <div class="appMenuText">Stejný rozpis, jen editovatelný. Prázdné řádky se při uložení ignorují.</div>',
+    '  <div class="appMenuText">Stejný rozpis, jen editovatelný. Vyplňuj rovnou v mřížce, jako bys upravoval samotný rozpis. Prázdné řádky se při uložení ignorují.</div>',
     '  <div class="tableWrap appMenuTableWrap">',
     '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense">',
     '      <thead><tr><th colspan="' + String(1 + hardMachines.length) + '">Tvrdota</th></tr><tr><th>Datum</th>' + hardMachines.map(m => '<th>' + escapeHtml(m) + '</th>').join('') + '</tr></thead>',
@@ -2102,6 +2118,11 @@ function makeNoteRowKey(note) {
     String(note && note.text ? note.text : '').trim()
   ].join('||');
 }
+
+window.splitMachineKey = splitMachineKey;
+window.makeMachineKey = makeMachineKey;
+window.makeRotationRowKey = makeRotationRowKey;
+window.makeNoteRowKey = makeNoteRowKey;
 
 function readAdminRotationFromDom(monthKey) {
   const fallback = app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
@@ -2260,6 +2281,165 @@ function renderAdminMenuBody(body, section) {
   }
 }
 
+
+function bindAppMenuHandlers(body) {
+  if (!body || body.dataset.menuHandlersBound === '1') return;
+  body.dataset.menuHandlersBound = '1';
+
+  body.addEventListener('click', async (event) => {
+    const target = event.target && typeof event.target.closest === 'function'
+      ? event.target.closest('[data-menu-action], [data-admin-action], [data-ui-pref], [data-ui-reset], [data-menu-back]')
+      : null;
+    if (!target || !body.contains(target)) return;
+
+    const menuAction = target.getAttribute('data-menu-action');
+    const adminAction = target.getAttribute('data-admin-action');
+    const uiPref = target.getAttribute('data-ui-pref');
+    const uiReset = target.hasAttribute('data-ui-reset');
+    const menuBack = target.getAttribute('data-menu-back');
+    const currentView = String(body.dataset.adminView || 'home');
+    const select = body.querySelector('#adminMonthSelect');
+    const monthKey = select ? select.value : getAdminSelectedMonthKey();
+
+    try {
+      if (menuBack) {
+        openAppMenu('menu');
+        return;
+      }
+
+      if (menuAction === 'import') {
+        startMenuImport();
+        return;
+      }
+      if (menuAction === 'export') {
+        document.getElementById('exportBtn')?.click();
+        return;
+      }
+      if (menuAction === 'settings') {
+        openAppMenu('settings');
+        return;
+      }
+      if (menuAction === 'about') {
+        triggerAboutAction();
+        return;
+      }
+      if (menuAction === 'contact') {
+        openAppMenu('contact');
+        return;
+      }
+      if (menuAction === 'admin') {
+        openAppMenu('admin');
+        return;
+      }
+      if (menuAction === 'admin-machines') {
+        openAppMenu('admin-machines');
+        return;
+      }
+      if (menuAction === 'admin-rotation') {
+        openAppMenu('admin-rotation');
+        return;
+      }
+      if (menuAction === 'admin-export') {
+        openAppMenu('admin-export');
+        return;
+      }
+      if (menuAction === 'reset-state') {
+        if (confirm('Smazat uložený stav aplikace?')) {
+          try {
+            localStorage.removeItem(APP_KEY);
+            localStorage.removeItem('rotationBuild');
+            localStorage.removeItem(UI_PREFS_KEY);
+            localStorage.removeItem('adminUnlocked');
+          } catch (err) {
+            console.warn(err);
+          }
+          location.reload();
+        }
+        return;
+      }
+
+      if (adminAction === 'back-admin') {
+        openAppMenu('admin');
+        return;
+      }
+      if (adminAction === 'open-machines') {
+        openAppMenu('admin-machines');
+        return;
+      }
+      if (adminAction === 'open-rotation') {
+        openAppMenu('admin-rotation');
+        return;
+      }
+      if (adminAction === 'open-export') {
+        openAppMenu('admin-export');
+        return;
+      }
+      if (adminAction === 'load-month') {
+        if (monthKey) {
+          app.selectedMonth = monthKey;
+          setRotaceView('months');
+          renderRotace();
+          if (typeof renderMonth === 'function') renderMonth(monthKey);
+        }
+        return;
+      }
+      if (adminAction === 'load-online') {
+        await loadAdminRotationFromSupabase();
+        renderAdminMenuBody(body, currentView);
+        return;
+      }
+      if (adminAction === 'save-rotation') {
+        const result = await saveAdminRotationFromDom(monthKey);
+        const statusEl = document.getElementById('adminOnlineSaveStatus');
+        if (statusEl) {
+          statusEl.textContent = result && result.saveResult && result.saveResult.ok === true
+            ? ('Rozpis uložený online ✓ · měsíců: ' + String(result.saveResult.months || 0) + ' · řádků: ' + String(result.saveResult.entries || 0))
+            : 'Rozpis se nepodařilo uložit online.';
+        }
+        alert(result && result.saveResult && result.saveResult.ok === true
+          ? ('Rozpis uložený online ✓ · měsíců: ' + String(result.saveResult.months || 0) + ' · řádků: ' + String(result.saveResult.entries || 0))
+          : 'Rozpis se nepodařilo uložit online.');
+        renderAdminMenuBody(body, currentView);
+        return;
+      }
+      if (adminAction === 'load-machines') {
+        if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.loadMachineSettings === 'function') {
+          app.machineSettingsRows = await window.RotationSupabaseBridge.loadMachineSettings();
+          renderAdminMenuBody(body, currentView);
+          return;
+        }
+      }
+      if (adminAction === 'save-machines') {
+        const rows = readAdminMachineSettingsFromDom();
+        if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.saveMachineSettings === 'function') {
+          const result = await window.RotationSupabaseBridge.saveMachineSettings(rows);
+          if (result && result.ok === false) throw (result.error || new Error('Uložení strojů selhalo.'));
+          app.machineSettingsRows = rows;
+          renderAdminMenuBody(body, currentView);
+          const statusEl = document.getElementById('adminOnlineSaveStatus');
+          if (statusEl) statusEl.textContent = 'Stroje uložené online ✓' + ((result && result.savedCount) ? (' · řádků: ' + result.savedCount) : '');
+          alert('Nastavení strojů uložené online ✓' + ((result && result.savedCount) ? (' · řádků: ' + result.savedCount) : ''));
+          return;
+        }
+      }
+
+      if (uiPref) {
+        toggleUiPref(uiPref);
+        openAppMenu('settings');
+        return;
+      }
+      if (uiReset) {
+        resetUiPrefs();
+        openAppMenu('settings');
+        return;
+      }
+    } catch (err) {
+      console.error('Menu/admin action failed', err);
+      alert(err && err.message ? err.message : 'Akce se nepodařila.');
+    }
+  });
+}
+
 function openAppMenu(view) {
   const page = ensureAppMenuOverlay();
   page.classList.add('active');
@@ -2286,6 +2466,7 @@ function openAppMenu(view) {
         '</div>'
       ].join('');
     } else if (v === 'contact') {
+      bindAppMenuHandlers(body);
       body.innerHTML = [
         '<div class="appMenuCard appMenuSecretCard" data-admin-secret="contact" role="button" tabindex="0">',
         '  <div class="appMenuCardTitle">Kontakt</div>',
@@ -2297,6 +2478,7 @@ function openAppMenu(view) {
         '</div>'
       ].join('');
     } else if (v === 'settings') {
+      bindAppMenuHandlers(body);
       const prefs = loadUiPrefs();
       body.innerHTML = [
         '<div class="appMenuCard appMenuSettingsCard">',
@@ -2314,6 +2496,7 @@ function openAppMenu(view) {
         '</div>'
       ].join('');
     } else if (v === 'admin') {
+      bindAppMenuHandlers(body);
       void (async () => {
         try {
           await loadAdminMachineSettingsFromSupabase();
@@ -2357,141 +2540,7 @@ function openAppMenu(view) {
       ].join('');
     }
 
-    body.querySelectorAll('[data-menu-action]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const action = btn.getAttribute('data-menu-action');
-        if (action === 'import') {
-          startMenuImport();
-        } else if (action === 'export') {
-          document.getElementById('exportBtn')?.click();
-        } else if (action === 'settings') {
-          openAppMenu('settings');
-        } else if (action === 'about') {
-          triggerAboutAction();
-        } else if (action === 'contact') {
-          openAppMenu('contact');
-        } else if (action === 'admin') {
-          openAppMenu('admin');
-        } else if (action === 'admin-machines') {
-          openAppMenu('admin-machines');
-        } else if (action === 'admin-rotation') {
-          openAppMenu('admin-rotation');
-        } else if (action === 'admin-export') {
-          openAppMenu('admin-export');
-        } else if (action === 'reset-state') {
-          if (confirm('Smazat uložený stav aplikace?')) {
-            try {
-              localStorage.removeItem(APP_KEY);
-              localStorage.removeItem('rotationBuild');
-              localStorage.removeItem(UI_PREFS_KEY);
-              localStorage.removeItem('adminUnlocked');
-            } catch (err) {
-              console.warn(err);
-            }
-            location.reload();
-          }
-        }
-      });
-    });
-
-    
-body.querySelectorAll('[data-admin-action]').forEach(btn => {
-  btn.addEventListener('click', async () => {
-    const action = btn.getAttribute('data-admin-action');
-    const currentView = String(body.dataset.adminView || 'home');
-    const select = body.querySelector('#adminMonthSelect');
-    const monthKey = select ? select.value : getAdminSelectedMonthKey();
-    try {
-      if (action === 'back-admin') {
-        openAppMenu('admin');
-        return;
-      }
-      if (action === 'open-machines') {
-        openAppMenu('admin-machines');
-        return;
-      }
-      if (action === 'open-rotation') {
-        openAppMenu('admin-rotation');
-        return;
-      }
-      if (action === 'open-export') {
-        openAppMenu('admin-export');
-        return;
-      }
-      if (action === 'load-month') {
-        if (monthKey) {
-          app.selectedMonth = monthKey;
-          setRotaceView('months');
-          renderRotace();
-          if (typeof renderMonth === 'function') renderMonth(monthKey);
-        }
-      } else if (action === 'load-online') {
-        await loadAdminRotationFromSupabase();
-        renderAdminMenuBody(body, currentView);
-        return;
-      } else if (action === 'save-rotation') {
-        const result = await saveAdminRotationFromDom(monthKey);
-        const statusEl = document.getElementById('adminOnlineSaveStatus');
-        if (statusEl) {
-          statusEl.textContent = result && result.saveResult && result.saveResult.ok === true
-            ? ('Rozpis uložený online ✓ · měsíců: ' + String(result.saveResult.months || 0) + ' · řádků: ' + String(result.saveResult.entries || 0))
-            : 'Rozpis se nepodařilo uložit online.';
-        }
-        alert(result && result.saveResult && result.saveResult.ok === true
-          ? ('Rozpis uložený online ✓ · měsíců: ' + String(result.saveResult.months || 0) + ' · řádků: ' + String(result.saveResult.entries || 0))
-          : 'Rozpis se nepodařilo uložit online.');
-      } else if (action === 'load-machines') {
-        if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.loadMachineSettings === 'function') {
-          app.machineSettingsRows = await window.RotationSupabaseBridge.loadMachineSettings();
-          renderAdminMenuBody(body, currentView);
-          return;
-        }
-      } else if (action === 'save-machines') {
-        const rows = readAdminMachineSettingsFromDom();
-        if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.saveMachineSettings === 'function') {
-          const result = await window.RotationSupabaseBridge.saveMachineSettings(rows);
-          if (result && result.ok === false) throw (result.error || new Error('Uložení strojů selhalo.'));
-          app.machineSettingsRows = rows;
-          renderAdminMenuBody(body, currentView);
-          const statusEl = document.getElementById('adminOnlineSaveStatus');
-          if (statusEl) statusEl.textContent = 'Stroje uložené online ✓' + ((result && result.savedCount) ? (' · řádků: ' + result.savedCount) : '');
-          alert('Nastavení strojů uložené online ✓' + ((result && result.savedCount) ? (' · řádků: ' + result.savedCount) : ''));
-          return;
-        }
-      } else if (action === 'import') {
-        startMenuImport();
-        return;
-      } else if (action === 'export') {
-        document.getElementById('exportBtn')?.click();
-        return;
-      }
-      renderAdminMenuBody(body, currentView);
-    } catch (err) {
-      console.error('Admin action failed', err);
-      alert(err && err.message ? err.message : 'Administrace se nepodařila uložit.');
-    }
-  });
-});
-
-body.querySelectorAll('[data-ui-pref]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const key = btn.getAttribute('data-ui-pref');
-        if (!key) return;
-        toggleUiPref(key);
-        openAppMenu('settings');
-      });
-    });
-
-    body.querySelectorAll('[data-ui-reset]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        resetUiPrefs();
-        openAppMenu('settings');
-      });
-    });
-
-    body.querySelectorAll('[data-menu-back]').forEach(btn => {
-      btn.addEventListener('click', () => openAppMenu('menu'));
-    });
+    bindAppMenuHandlers(body);
   }
 
   return page;

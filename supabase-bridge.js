@@ -349,6 +349,123 @@
     }
   }
 
+  async function loadRotationState() {
+    const client = getClient();
+    if (!client) return null;
+    try {
+      const { data, error } = await client.from('rotation_state').select('*').eq('key', 'main').maybeSingle();
+      if (error) throw error;
+
+      const row = data || null;
+      if (row && (row.payload || row.rotation)) {
+        return {
+          id: row.key || 'main',
+          payload: row.payload || row.rotation || null,
+          updatedAt: row.updated_at || null,
+          meta: row.meta || null
+        };
+      }
+
+      if (typeof loadRotationFromTables === 'function') {
+        const rebuilt = await loadRotationFromTables();
+        if (rebuilt && rebuilt.months && Object.keys(rebuilt.months).length) {
+          return {
+            id: row && row.key ? row.key : 'main',
+            payload: rebuilt,
+            updatedAt: row && row.updated_at ? row.updated_at : null,
+            meta: { source: 'tables' }
+          };
+        }
+      }
+
+      return row ? {
+        id: row.key || 'main',
+        payload: row.payload || row.rotation || null,
+        updatedAt: row.updated_at || null,
+        meta: row.meta || null
+      } : null;
+    } catch (err) {
+      state.lastError = err;
+      console.warn('Supabase rotation load failed', err);
+      return null;
+    }
+  }
+
+  async function saveRotationState(rotation, meta) {
+    const client = getClient();
+    if (!client) return { ok: false, reason: 'missing-client' };
+    try {
+      const payload = rotation && typeof rotation === 'object' ? rotation : null;
+      const row = {
+        key: 'main',
+        payload,
+        meta: meta && typeof meta === 'object' ? meta : {},
+        updated_at: new Date().toISOString()
+      };
+      const { error } = await client.from('rotation_state').upsert([row], { onConflict: 'key' });
+      if (error) throw error;
+
+      const verify = await client.from('rotation_state').select('*').eq('key', 'main').maybeSingle();
+      if (verify && verify.error) throw verify.error;
+      const verifiedRow = verify && verify.data ? verify.data : null;
+
+      return {
+        ok: true,
+        verified: !!verifiedRow,
+        updatedAt: verifiedRow && verifiedRow.updated_at ? verifiedRow.updated_at : row.updated_at
+      };
+    } catch (err) {
+      state.lastError = err;
+      console.warn('Supabase rotation save failed', err);
+      return { ok: false, error: err };
+    }
+  }
+
+  async function loadGomokuWins(limit) {
+    const client = getClient();
+    if (!client) return [];
+    try {
+      const res = await client
+        .from('gomoku_wins')
+        .select('player_name,difficulty,moves,elapsed_ms,elapsed_text,x_moves,o_moves,created_at,app_version')
+        .order('created_at', { ascending: false })
+        .limit(Math.max(1, Math.min(100, Number(limit) || 20)));
+      if (res && res.error) throw res.error;
+      return Array.isArray(res && res.data) ? res.data : [];
+    } catch (err) {
+      state.lastError = err;
+      console.error('Supabase win list load failed', err);
+      return [];
+    }
+  }
+
+  async function sendGomokuWin(entry) {
+    const client = getClient();
+    if (!client) return { ok: false, reason: 'missing-client' };
+    try {
+      const payload = {
+        player_name: String(entry && entry.name ? entry.name : '').trim(),
+        difficulty: String(entry && entry.difficulty ? entry.difficulty : '').trim(),
+        moves: Number(entry && entry.totalMoves ? entry.totalMoves : 0) || 0,
+        app_version: String(window.APP_VERSION || '').trim(),
+        elapsed_ms: Number(entry && entry.elapsedMs ? entry.elapsedMs : 0) || 0,
+        elapsed_text: String(entry && entry.elapsedText ? entry.elapsedText : '').trim(),
+        x_moves: Number(entry && entry.xMoves ? entry.xMoves : 0) || 0,
+        o_moves: Number(entry && entry.oMoves ? entry.oMoves : 0) || 0
+      };
+      const { data, error } = await client.from('gomoku_wins').insert([payload]).select('*');
+      if (error) throw error;
+      return { ok: true, data: Array.isArray(data) ? data : [] };
+    } catch (err) {
+      state.lastError = err;
+      console.error('Supabase win insert failed', err);
+      return { ok: false, error: err };
+    }
+  }
+
+
+  window.refreshPublicData = refreshPublicData;
+
   function init() {
     if (state.ready) return refreshPublicData();
     if (!hasClient()) {
@@ -356,6 +473,8 @@
     }
     return refreshPublicData();
   }
+
+  window.sendGomokuWin = sendGomokuWin;
 
   window.RotationSupabaseBridge = {
     init,

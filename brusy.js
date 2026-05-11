@@ -244,3 +244,12 @@ function formatAbsenceNoteLine(note) {
   return [n.date, people, n.label && !people ? n.label : ""].filter(Boolean).join(" ");
 }
 
+
+
+window.parseDateToken = parseDateToken;
+window.normalizeNoteEntry = normalizeNoteEntry;
+window.normalizeShiftText = normalizeShiftText;
+window.sanitizeAbsencePersonName = sanitizeAbsencePersonName;
+window.absenceLabelFromCode = absenceLabelFromCode;
+window.splitAbsencePeople = splitAbsencePeople;
+window.getKnownStatNames = getKnownStatNames;
