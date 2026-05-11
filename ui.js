@@ -873,20 +873,20 @@ function tttMoveHeuristic(board, index, mark) {
   const opponent = mark === 'O' ? 'X' : 'O';
   const opponentWins = tttWinningMoves(board, opponent).length;
   const opponentThreats = tttThreatWindowMoves(board, opponent).length;
-  if (opponentWins >= 3) score -= 520000;
-  else if (opponentWins >= 2) score -= 360000;
-  else if (opponentWins === 1) score -= 200000;
-  if (opponentThreats >= 3) score -= 220000;
-  else if (opponentThreats === 2) score -= 130000;
-  else if (opponentThreats === 1) score -= 70000;
+  if (opponentWins >= 3) score -= 850000;
+  else if (opponentWins >= 2) score -= 500000;
+  else if (opponentWins === 1) score -= 280000;
+  if (opponentThreats >= 3) score -= 380000;
+  else if (opponentThreats === 2) score -= 190000;
+  else if (opponentThreats === 1) score -= 110000;
   board[index] = opponent;
   if (tttWinner(board).winner === opponent) score += 900000;
   board[index] = mark;
 
   const occupied = board.reduce((sum, cell) => sum + (cell ? 1 : 0), 0);
   const forkRisk = occupied >= 5 ? tttOpponentForkRisk(board, opponent, 8) : 0;
-  if (forkRisk >= 2) score -= 420000;
-  else if (forkRisk >= 1) score -= 210000;
+  if (forkRisk >= 2) score -= 650000;
+  else if (forkRisk >= 1) score -= 320000;
 
   const directions = [
     [0, 1],
@@ -1060,6 +1060,12 @@ function tttBestMove(board, difficulty) {
   if (immediateWin >= 0) return immediateWin;
   const immediateBlock = tttWinningMove(board, 'X');
   if (immediateBlock >= 0) return immediateBlock;
+
+  const forcedWin = tttOpenThreeThreatMoves(board, 'O');
+  if (forcedWin.length === 1) return forcedWin[0];
+
+  const forcedDefense = tttOpenThreeThreatMoves(board, 'X');
+  if (forcedDefense.length === 1) return forcedDefense[0];
 
   const center = tttIndex(Math.floor(TTT_ROWS / 2), Math.floor(TTT_COLS / 2));
 
@@ -1468,6 +1474,7 @@ async function tttSubmitHardWin() {
 
   tttCloseHardWinPrompt();
   await tttRefreshHardWinRows(true);
+  if (typeof tttRender === 'function') tttRender();
   if (submitBtn) submitBtn.disabled = false;
   alert('Výhra uložená online.');
 }
@@ -1975,50 +1982,85 @@ function splitMachineKey(rawKey) {
   return { machine, index };
 }
 
+function makeMachineKey(machineCode, machineIndex, category) {
+  const machine = String(machineCode || '').trim();
+  const index = String(machineIndex || '').trim();
+  const cat = String(category || '').trim();
+  if (!machine) return '';
+  if (cat === 'brus') return machine + (index ? '-' + index : '');
+  return machine;
+}
+
+
 function buildAdminMachineSettingsTableHtml() {
   const rows = Array.isArray(app.machineSettingsRows) ? app.machineSettingsRows : [];
-  const dataRows = rows.length ? rows : [
-    { machine_key: 'FREZKY', machine_code: 'FREZKY', machine_index: '', label: 'Frezky', category: 'frezka', cycle_time: '', dress_time: '', dress_count: '' },
-    { machine_key: 'TPKW01', machine_code: 'TPKW01', machine_index: '', label: 'Pračka', category: 'pracka', cycle_time: '', dress_time: '', dress_count: '' },
-    { machine_key: 'TBKR01-AD', machine_code: 'TBKR01', machine_index: 'AD', label: 'TBKR01-AD', category: 'brus', cycle_time: '58.2', dress_time: '323', dress_count: '59' },
-    { machine_key: 'TBKR01-AE', machine_code: 'TBKR01', machine_index: 'AE', label: 'TBKR01-AE', category: 'brus', cycle_time: '57.0', dress_time: '240', dress_count: '58' },
-    { machine_key: 'TBKR01-AH', machine_code: 'TBKR01', machine_index: 'AH', label: 'TBKR01-AH', category: 'brus', cycle_time: '66.0', dress_time: '400', dress_count: '87' },
-    { machine_key: 'TBKR01-AD volné', machine_code: 'TBKR01', machine_index: 'AD volné', label: 'TBKR01-AD volné', category: 'brus', cycle_time: '62.7', dress_time: '240', dress_count: '45' },
-    { machine_key: 'TBKR01-AE volné', machine_code: 'TBKR01', machine_index: 'AE volné', label: 'TBKR01-AE volné', category: 'brus', cycle_time: '60.0', dress_time: '240', dress_count: '45' },
-    { machine_key: 'TBKR07-AD', machine_code: 'TBKR07', machine_index: 'AD', label: 'TBKR07-AD', category: 'brus', cycle_time: '58.2', dress_time: '298', dress_count: '59' },
-    { machine_key: 'TBKR07-AE', machine_code: 'TBKR07', machine_index: 'AE', label: 'TBKR07-AE', category: 'brus', cycle_time: '56.4', dress_time: '325', dress_count: '59' },
-    { machine_key: 'TBKR07-AH', machine_code: 'TBKR07', machine_index: 'AH', label: 'TBKR07-AH', category: 'brus', cycle_time: '63.0', dress_time: '240', dress_count: '65' },
-    { machine_key: 'TBKR07-AD volné', machine_code: 'TBKR07', machine_index: 'AD volné', label: 'TBKR07-AD volné', category: 'brus', cycle_time: '60.3', dress_time: '240', dress_count: '45' },
-    { machine_key: 'TBKR07-AE volné', machine_code: 'TBKR07', machine_index: 'AE volné', label: 'TBKR07-AE volné', category: 'brus', cycle_time: '60.0', dress_time: '240', dress_count: '45' }
+  const machineRows = rows.filter(row => String(row && row.category ? row.category : '').trim() !== 'brus');
+  const brusRows = rows.filter(row => String(row && row.category ? row.category : '').trim() === 'brus');
+
+  const machineDefaults = machineRows.length ? machineRows : [
+    { machine_key: 'FREZKY', machine_code: 'FREZKY', machine_index: '', label: 'Frezky', category: 'frezka', cycle_time: '', settings_json: { machine: 'FREZKY', index: '', cycle_time: '' } },
+    { machine_key: 'TPKW01', machine_code: 'TPKW01', machine_index: '', label: 'Pračka', category: 'pracka', cycle_time: '', settings_json: { machine: 'TPKW01', index: '', cycle_time: '' } }
   ];
 
-  const tr = dataRows.map((row, idx) => {
-    const settings = row && typeof row.settings_json === 'object' && row.settings_json !== null ? row.settings_json : {};
-    const machineCode = String(row.machine_code || settings.machine || splitMachineKey(row.machine_key).machine || '').trim();
-    const machineIndex = String(row.machine_index || settings.index || splitMachineKey(row.machine_key).index || '').trim();
-    const cycleTime = row.cycle_time ?? row.speed ?? settings.cycle_time ?? settings.cycleTime ?? '';
-    const dressTime = row.dress_time ?? settings.dress_time ?? settings.orovnani_time ?? settings.dressTime ?? '';
-    const dressCount = row.dress_count ?? settings.dress_count ?? settings.orovnani_count ?? settings.dressCount ?? '';
+  const brusDefaults = brusRows.length ? brusRows : [
+    { machine_key: 'TBKR01-AD', machine_code: 'TBKR01', machine_index: 'AD', label: 'TBKR01-AD', category: 'brus', cycle_time: '58.2', dress_time: '323', dress_count: '59', settings_json: { machine: 'TBKR01', index: 'AD', cycle_time: '58.2', dress_time: '323', dress_count: '59' } },
+    { machine_key: 'TBKR01-AE', machine_code: 'TBKR01', machine_index: 'AE', label: 'TBKR01-AE', category: 'brus', cycle_time: '57.0', dress_time: '240', dress_count: '58', settings_json: { machine: 'TBKR01', index: 'AE', cycle_time: '57.0', dress_time: '240', dress_count: '58' } },
+    { machine_key: 'TBKR01-AH', machine_code: 'TBKR01', machine_index: 'AH', label: 'TBKR01-AH', category: 'brus', cycle_time: '66.0', dress_time: '400', dress_count: '87', settings_json: { machine: 'TBKR01', index: 'AH', cycle_time: '66.0', dress_time: '400', dress_count: '87' } },
+    { machine_key: 'TBKR01-AD volné', machine_code: 'TBKR01', machine_index: 'AD volné', label: 'TBKR01-AD volné', category: 'brus', cycle_time: '62.7', dress_time: '240', dress_count: '45', settings_json: { machine: 'TBKR01', index: 'AD volné', cycle_time: '62.7', dress_time: '240', dress_count: '45' } },
+    { machine_key: 'TBKR01-AE volné', machine_code: 'TBKR01', machine_index: 'AE volné', label: 'TBKR01-AE volné', category: 'brus', cycle_time: '60.0', dress_time: '240', dress_count: '45', settings_json: { machine: 'TBKR01', index: 'AE volné', cycle_time: '60.0', dress_time: '240', dress_count: '45' } },
+    { machine_key: 'TBKR07-AD', machine_code: 'TBKR07', machine_index: 'AD', label: 'TBKR07-AD', category: 'brus', cycle_time: '58.2', dress_time: '298', dress_count: '59', settings_json: { machine: 'TBKR07', index: 'AD', cycle_time: '58.2', dress_time: '298', dress_count: '59' } },
+    { machine_key: 'TBKR07-AE', machine_code: 'TBKR07', machine_index: 'AE', label: 'TBKR07-AE', category: 'brus', cycle_time: '56.4', dress_time: '325', dress_count: '59', settings_json: { machine: 'TBKR07', index: 'AE', cycle_time: '56.4', dress_time: '325', dress_count: '59' } },
+    { machine_key: 'TBKR07-AH', machine_code: 'TBKR07', machine_index: 'AH', label: 'TBKR07-AH', category: 'brus', cycle_time: '63.0', dress_time: '240', dress_count: '65', settings_json: { machine: 'TBKR07', index: 'AH', cycle_time: '63.0', dress_time: '240', dress_count: '65' } },
+    { machine_key: 'TBKR07-AD volné', machine_code: 'TBKR07', machine_index: 'AD volné', label: 'TBKR07-AD volné', category: 'brus', cycle_time: '60.3', dress_time: '240', dress_count: '45', settings_json: { machine: 'TBKR07', index: 'AD volné', cycle_time: '60.3', dress_time: '240', dress_count: '45' } },
+    { machine_key: 'TBKR07-AE volné', machine_code: 'TBKR07', machine_index: 'AE volné', label: 'TBKR07-AE volné', category: 'brus', cycle_time: '60.0', dress_time: '240', dress_count: '45', settings_json: { machine: 'TBKR07', index: 'AE volné', cycle_time: '60.0', dress_time: '240', dress_count: '45' } }
+  ];
+
+  const machineRowsHtml = machineDefaults.map((row, idx) => {
+    const machineCode = String(row.machine_code || splitMachineKey(row.machine_key).machine || '').trim();
+    const cycleTime = row.cycle_time ?? row.speed ?? (row.settings_json && row.settings_json.cycle_time) ?? '';
     return [
-      '<tr data-machine-row-index="' + String(idx) + '">',
-      '  <td><input class="appMenuInlineInput" data-machine-field="label" value="' + escapeHtml(String(row.label || '')) + '" placeholder="Název"></td>',
-      '  <td><input class="appMenuInlineInput" data-machine-field="machine_code" value="' + escapeHtml(machineCode) + '" placeholder="Stroj"></td>',
-      '  <td><input class="appMenuInlineInput" data-machine-field="machine_index" value="' + escapeHtml(machineIndex) + '" placeholder="Index"></td>',
-      '  <td><input class="appMenuInlineInput" data-machine-field="cycle_time" value="' + escapeHtml(String(cycleTime ?? '')) + '" placeholder="Čas výroby kola"></td>',
-      '  <td><input class="appMenuInlineInput" data-machine-field="dress_time" value="' + escapeHtml(String(dressTime ?? '')) + '" placeholder="Čas orovnání"></td>',
-      '  <td><input class="appMenuInlineInput" data-machine-field="dress_count" value="' + escapeHtml(String(dressCount ?? '')) + '" placeholder="Po kolika ks"></td>',
+      '<tr data-machine-row-index="m' + String(idx) + '">',
+      '  <td><input class="appMenuInlineInput" data-machine-field="machine_code" value="' + escapeHtml(machineCode) + '" placeholder="FREZKY / TPKW01"></td>',
+      '  <td><input class="appMenuInlineInput" data-machine-field="label" value="' + escapeHtml(String(row.label || '')) + '" placeholder="název"></td>',
+      '  <td><input class="appMenuInlineInput" data-machine-field="cycle_time" value="' + escapeHtml(String(cycleTime ?? '')) + '" placeholder="čas výroby kola"></td>',
+      '</tr>'
+    ].join('');
+  }).join('');
+
+  const brusRowsHtml = brusDefaults.map((row, idx) => {
+    const machineCode = String(row.machine_code || splitMachineKey(row.machine_key).machine || '').trim();
+    const machineIndex = String(row.machine_index || splitMachineKey(row.machine_key).index || '').trim();
+    const cycleTime = row.cycle_time ?? row.speed ?? (row.settings_json && row.settings_json.cycle_time) ?? '';
+    const dressTime = row.dress_time ?? (row.settings_json && row.settings_json.dress_time) ?? '';
+    const dressCount = row.dress_count ?? (row.settings_json && row.settings_json.dress_count) ?? '';
+    return [
+      '<tr data-machine-row-index="b' + String(idx) + '">',
+      '  <td><input class="appMenuInlineInput" data-machine-field="machine_code" value="' + escapeHtml(machineCode) + '" placeholder="TBKR01"></td>',
+      '  <td><input class="appMenuInlineInput" data-machine-field="machine_index" value="' + escapeHtml(machineIndex) + '" placeholder="AD / AE / AH / volné"></td>',
+      '  <td><input class="appMenuInlineInput" data-machine-field="label" value="' + escapeHtml(String(row.label || '')) + '" placeholder="název"></td>',
+      '  <td><input class="appMenuInlineInput" data-machine-field="cycle_time" value="' + escapeHtml(String(cycleTime ?? '')) + '" placeholder="čas výroby kola"></td>',
+      '  <td><input class="appMenuInlineInput" data-machine-field="dress_time" value="' + escapeHtml(String(dressTime ?? '')) + '" placeholder="čas orovnání"></td>',
+      '  <td><input class="appMenuInlineInput" data-machine-field="dress_count" value="' + escapeHtml(String(dressCount ?? '')) + '" placeholder="po kolika ks"></td>',
       '</tr>'
     ].join('');
   }).join('');
 
   return [
-    '<div class="appMenuSubSection">',
+    '<div class="appMenuSubSection" id="adminMachinesSection">',
     '  <div class="appMenuSubTitle">Nastavení strojů</div>',
-    '  <div class="appMenuText">Každý stroj je jeden řádek. U brusů se zapisuje stroj + index + parametry.</div>',
+    '  <div class="appMenuText">Frezky a pračka mají jen čas výroby kola. Brusky mají stroj, index, čas výroby kola, čas orovnání a počet kusů po orovnání.</div>',
     '  <div class="tableWrap appMenuTableWrap">',
+    '    <div class="smallText">Frezky a pračka</div>',
     '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense">',
-    '      <thead><tr><th>Název</th><th>Stroj</th><th>Index</th><th>Čas výroby kola</th><th>Čas orovnání</th><th>Po kolika ks</th></tr></thead>',
-    '      <tbody>' + tr + '</tbody>',
+    '      <thead><tr><th>Stroj</th><th>Název</th><th>Čas výroby kola</th></tr></thead>',
+    '      <tbody>' + machineRowsHtml + '</tbody>',
+    '    </table>',
+    '  </div>',
+    '  <div class="tableWrap appMenuTableWrap" style="margin-top:12px;">',
+    '    <div class="smallText">Brusy</div>',
+    '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense">',
+    '      <thead><tr><th>Stroj</th><th>Index</th><th>Název</th><th>Čas výroby kola</th><th>Čas orovnání</th><th>Po kolika ks</th></tr></thead>',
+    '      <tbody>' + brusRowsHtml + '</tbody>',
     '    </table>',
     '  </div>',
     '</div>'
