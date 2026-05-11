@@ -642,3 +642,17 @@
 }
 
 #statsMachineGrid .listBtn{padding:8px 6px;min-width:62px;}
+
+/* v1(319) cleanup: games, sync badge, scrollable bottom nav */
+.dashboardHeroCard{position:relative !important;padding-right:128px !important;}
+.dashboardSyncBadge{position:absolute !important;top:12px !important;right:12px !important;z-index:3 !important;display:inline-flex !important;align-items:center !important;gap:6px !important;padding:7px 10px !important;border-radius:999px !important;border:1px solid rgba(124,255,124,.18) !important;background:rgba(12,16,14,.66) !important;backdrop-filter:blur(14px) saturate(150%) !important;-webkit-backdrop-filter:blur(14px) saturate(150%) !important;color:rgba(238,247,238,.82) !important;font-size:11px !important;line-height:1 !important;font-weight:700 !important;letter-spacing:.02em !important;box-shadow:0 10px 30px rgba(0,0,0,.18) !important;pointer-events:none !important;max-width:calc(100% - 24px) !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important;}
+.dashboardSyncBadge--online{border-color:rgba(124,255,124,.22) !important;background:rgba(10,28,16,.70) !important;color:#d7ffe0 !important;}
+.dashboardSyncBadge--offline,.dashboardSyncBadge--pending{border-color:rgba(255,214,102,.22) !important;background:rgba(28,24,10,.70) !important;color:#f7f0cd !important;}
+.dashboardSyncBadge--error{border-color:rgba(255,124,124,.22) !important;background:rgba(28,10,10,.72) !important;color:#ffdcdc !important;}
+.bottomNavInner{overflow-x:auto !important;overflow-y:hidden !important;-webkit-overflow-scrolling:touch !important;scroll-snap-type:x proximity !important;flex-wrap:nowrap !important;scrollbar-width:none !important;gap:8px !important;padding-right:8px !important;}
+.bottomNavInner::-webkit-scrollbar{display:none !important;}
+.bottomNavBtn{flex:0 0 auto !important;scroll-snap-align:center !important;}
+.bottomNavMenuBtn{position:sticky !important;right:0 !important;margin-left:auto !important;z-index:4 !important;background:linear-gradient(180deg, rgba(14,19,16,.92), rgba(10,14,12,.98)) !important;box-shadow:-8px 0 18px rgba(0,0,0,.18) !important;}
+.bottomNavGamesBtn{margin-right:8px !important;}
+.bottomNavGamesBtn .bottomNavIcon svg{stroke-width:1.8 !important;}
+#games .calcTileIcon svg{stroke:currentColor !important;}

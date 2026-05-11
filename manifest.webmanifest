@@ -4,26 +4,11 @@
   "start_url": "./index.html?source=pwa",
   "scope": "./",
   "display": "standalone",
-  "display_override": [
-    "standalone",
-    "minimal-ui"
-  ],
+  "display_override": ["standalone", "minimal-ui"],
   "background_color": "#0b0f0c",
   "theme_color": "#0b0f0c",
   "description": "Směny, kalkulačky, dashboard a piškvorky pro mobilní použití.",
   "icons": [
-    {
-      "src": "icon-32.png",
-      "sizes": "32x32",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "icon-180.png",
-      "sizes": "180x180",
-      "type": "image/png",
-      "purpose": "any"
-    },
     {
       "src": "icon-192.png",
       "sizes": "192x192",
@@ -35,12 +20,6 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
-    },
-    {
-      "src": "icon-1024.png",
-      "sizes": "1024x1024",
-      "type": "image/png",
-      "purpose": "any"
     }
   ]
 }

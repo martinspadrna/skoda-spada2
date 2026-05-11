@@ -1,4 +1,4 @@
-// Extracted dashboard logic (v1(317))
+// Extracted dashboard logic (v1(319))
 function updateDashboard() {
   const now = typeof getPragueNow === 'function' ? getPragueNow(new Date()) : new Date();
   const active = typeof getActiveShiftNow === 'function' ? getActiveShiftNow(now) : null;
@@ -19,6 +19,7 @@ function updateDashboard() {
         "'": '&#39;'
       }[ch]));
   const foodLocations = (typeof FOOD_LOCATIONS !== 'undefined' && Array.isArray(FOOD_LOCATIONS)) ? FOOD_LOCATIONS : [];
+  const syncStatus = typeof getSupabaseSyncStatus === 'function' ? getSupabaseSyncStatus() : { kind: 'offline', label: '🟡 Offline cache', detail: '' };
   const firstFoodLocation = foodLocations[0] || null;
   const secondFoodLocation = foodLocations[1] || null;
   const hasFindFoodStatus = typeof findFoodStatus === 'function';
@@ -43,6 +44,7 @@ function updateDashboard() {
       : 0;
     const heroProgressText = active && !showSpecial ? Math.round(heroProgress) + ' %' : '';
     hero.innerHTML = [
+      '<div class="dashboardSyncBadge dashboardSyncBadge--' + esc(syncStatus.kind || 'offline') + '" id="dashboardSyncBadge">' + esc(syncStatus.label || '🟡 Offline cache') + '</div>',
       '<div class="dashboardHeroLine1">' + heroLine1 + '</div>',
       heroLine2 ? '<div class="dashboardHeroLine2">' + esc(heroLine2) + '</div>' : '',
       heroLine3 ? '<div class="dashboardHeroLine3">' + esc(heroLine3) + '</div>' : '',
@@ -93,7 +95,7 @@ function updateDashboard() {
   const palmIcon = iconImg(DASHBOARD_ICON_SRC.palm);
   const bookIcon = iconImg(DASHBOARD_ICON_SRC.document);
   const eportalIcon = iconImg(DASHBOARD_ICON_SRC.eportal);
-  const tttIcon = iconImg('data:image/svg+xml;charset=UTF-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4.2" y="4.2" width="15.6" height="15.6" rx="3.2"></rect><path d="M8 8l4 4"></path><path d="M12 8l-4 4"></path><path d="M8 16l4-4"></path><circle cx="16" cy="8.8" r="1.7"></circle></svg>'));
+  const gamesIcon = iconImg('data:image/svg+xml;charset=UTF-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8.2 6.8h7.6a2 2 0 0 1 2 2v7.8a2 2 0 0 1-2 2H8.2a2 2 0 0 1-2-2V8.8a2 2 0 0 1 2-2Z"></path><path d="M9.6 9.2h4.8"></path><path d="M9.2 12h5.6"></path><path d="M8.8 14.8h6.4"></path><path d="M15.7 3.7c1.1 1 .9 2.7-.6 3.3"></path><path d="M6.6 3.8c-1 1.1-.8 2.7.7 3.2"></path><path d="M16 3.8c.4 1.2.3 2.2-.2 2.9"></path><path d="M7.8 3.7c-.4 1.1-.3 2.1.2 2.9"></path></svg>'));
 
   const payDate = typeof getNextPayrollDate === 'function' ? getNextPayrollDate(now) : null;
   const payDateText = payDate
@@ -108,7 +110,7 @@ function updateDashboard() {
   setCard('dashCalendar', 'Kalendář', formatCalendarDateLabel(now), getCalendarSpecialText(now), '', false, calendarIcon);
   setCard('dashCountdown', 'Zbývá', active && !showSpecial ? formatDuration(active.end - now) : '—', '', '', false, clockIcon);
 
-  const foodText = status => status && status.isOpen && status.active ? 'Otevřeno' : 'Zavřeno';
+  const foodText = status => status.isOpen && status.active ? ('Otevřeno do ' + formatFoodTime(status.active.end)) : 'Zavřeno';
   const foodDot = status => status.isOpen ? 'is-open' : 'is-closed';
   const foodMeta = status => {
     if (status.isOpen && status.active) {
@@ -125,7 +127,7 @@ function updateDashboard() {
   setCard('dashCzd', 'Odpočet do dovolené', vacationCountdown.text, vacationCountdown.meta, '', false, palmIcon);
   setCard('dashFoodLink', 'Jídelní lístek', 'Otevřít', 'Aktuální menu', '', true, bookIcon);
   setCard('dashEportalLink', 'Eportal', 'Otevřít', 'Firemní portál', '', true, eportalIcon);
-  setCard('dashTttLink', 'Piškvorky', 'Hrát', '', '', true, tttIcon);
+  setCard('dashGamesLink', 'Hry', 'Otevřít', 'Piškvorky uvnitř', '', true, gamesIcon);
 }
 
 function scheduleDashboardInitialPaint() {
@@ -162,9 +164,7 @@ function scheduleDashboardInitialPaint() {
 
 function forceHomeRefresh() {
   const activePage = document.querySelector('.page.active')?.id || "";
-  const lastChange = typeof app !== 'undefined' && app ? Number(app.lastPageChangeAt || 0) : 0;
   if (typeof app !== 'undefined' && app.homeBootSuppressed && activePage !== "home") return;
-  if (activePage !== 'home' && lastChange && Date.now() - lastChange < 2500) return;
   if (typeof showPage === 'function') showPage('home');
   if (typeof refreshHomeScreen === 'function') refreshHomeScreen();
   else if (typeof updateDashboard === 'function') updateDashboard();
@@ -290,27 +290,6 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
     ].join('');
   }
 
-
-  function setSyncStatusIndicator(mode, detail) {
-    const el = document.getElementById('syncStatusBadge');
-    const states = {
-      online: { cls: 'is-online', text: '🟢 Online synchronizováno' },
-      offline: { cls: 'is-offline', text: '🟡 Offline cache' },
-      error: { cls: 'is-error', text: '🔴 Nepodařilo se synchronizovat' },
-      syncing: { cls: 'is-offline', text: '🟡 Synchronizuji…' }
-    };
-    const info = states[mode] || states.online;
-    const text = String(detail || info.text || '').trim();
-    if (el) {
-      el.className = 'syncStatusBadge ' + info.cls;
-      el.textContent = text;
-    }
-    if (typeof app !== 'undefined') {
-      app.syncStatus = { mode: mode || 'online', text };
-    }
-    return { mode: mode || 'online', text };
-  }
-
   function renderDashboardFallback(err) {
     const now = nowInPrague();
     const active = safeCall(() => typeof getActiveShiftNow === 'function' ? getActiveShiftNow(now) : null, null);
@@ -335,21 +314,22 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
       ? (typeof formatDuration === 'function' ? formatDuration(active.end - now) : '—')
       : '—';
     const foodLocations = (typeof FOOD_LOCATIONS !== 'undefined' && Array.isArray(FOOD_LOCATIONS)) ? FOOD_LOCATIONS : [];
+  const syncStatus = typeof getSupabaseSyncStatus === 'function' ? getSupabaseSyncStatus() : { kind: 'offline', label: '🟡 Offline cache', detail: '' };
     const foodA = safeCall(() => (typeof findFoodStatus === 'function' && foodLocations[0] ? findFoodStatus(foodLocations[0], now) : null), null);
     const foodB = safeCall(() => (typeof findFoodStatus === 'function' && foodLocations[1] ? findFoodStatus(foodLocations[1], now) : null), null);
     const foodText = (status) => {
       if (!status) return '—';
       if (status.isOpen && status.active) {
-        return 'Otevřeno';
+        return typeof formatFoodTime === 'function' ? ('Otevřeno do ' + formatFoodTime(status.active.end)) : 'Otevřeno';
       }
       return 'Zavřeno';
     };
     const foodMeta = (status) => {
       if (!status) return '';
       if (status.isOpen && status.active && typeof formatFoodTime === 'function') {
-        return 'Poté otevřeno od ' + formatFoodTime(status.next.start) + ' do ' + formatFoodTime(status.next.end);
+        return 'do ' + formatFoodTime(status.active.end);
       }
-      return status.next && typeof formatFoodTime === 'function' ? ('Otevřeno od ' + formatFoodTime(status.next.start) + ' do ' + formatFoodTime(status.next.end)) : '';
+      return status.next && typeof formatFoodTime === 'function' ? ('otevřeno v ' + formatFoodTime(status.next.start)) : '';
     };
 
     const hero = document.getElementById('dashHero');
@@ -371,11 +351,6 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
     setCardSimple('dashFoodLink', 'Jídelní lístek', 'Otevřít', 'Aktuální menu', '', true);
     setCardSimple('dashEportalLink', 'Eportal', 'Otevřít', 'Firemní portál', '', true);
 
-    if (typeof setSyncStatusIndicator === 'function') {
-      if (!navigator.onLine) setSyncStatusIndicator('offline');
-      else if (err) setSyncStatusIndicator('error');
-      else setSyncStatusIndicator('online');
-    }
     if (err) {
       console.warn('Dashboard fallback activated', err);
     }
@@ -398,5 +373,3 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
     }
   };
 })();
-
-window.setSyncStatusIndicator = setSyncStatusIndicator;

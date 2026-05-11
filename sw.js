@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v1-318';
+const CACHE_VERSION = 'v1-319';
 const STATIC_CACHE = `rotace-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `rotace-runtime-${CACHE_VERSION}`;
 const APP_SHELL = [
@@ -26,11 +26,11 @@ const APP_SHELL = [
   './supabase-config.js',
   './supabase-bridge.js',
   './manifest.webmanifest',
-  './icon-32.png',
-  './icon-180.png',
   './icon-192.png',
   './icon-512.png',
-  './icon-1024.png'
+  './_icons/icon-32.png',
+  './_icons/icon-180.png',
+  './_icons/icon-1024.png'
 ];
 
 const RUNTIME_EXTENSIONS = ['.js', '.css', '.png', '.jpg', '.jpeg', '.webp', '.svg', '.ico', '.json', '.webmanifest'];

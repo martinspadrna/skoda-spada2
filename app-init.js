@@ -203,7 +203,8 @@ function initAppInitBindings() {
   if (typeof refreshInitialUI === "function") refreshInitialUI();
 
   const bootHome = () => {
-    if (typeof app !== "undefined" && app.homeBootSuppressed && (document.querySelector(".page.active")?.id || "") !== "home") {
+    const activePage = document.querySelector(".page.active")?.id || "";
+    if ((typeof app !== "undefined" && app.homeBootSuppressed && activePage !== "home") || (window.__rotaceHomeBootLocked && activePage !== "home")) {
       return;
     }
     try {
@@ -275,6 +276,10 @@ function initAppInitBindings() {
   setTimeout(bootHome, 240);
   setTimeout(() => {
     try {
+      const activePage = document.querySelector(".page.active")?.id || "";
+      if ((window.__rotaceHomeBootLocked && activePage !== "home") || (typeof app !== "undefined" && app.homeBootSuppressed && activePage !== "home")) {
+        return;
+      }
       if (typeof showPage === "function") showPage("home");
       if (typeof refreshHomeScreen === "function") refreshHomeScreen();
       else if (typeof updateDashboard === "function") updateDashboard();

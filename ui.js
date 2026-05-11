@@ -884,7 +884,7 @@ function tttMoveHeuristic(board, index, mark) {
   board[index] = mark;
 
   const occupied = board.reduce((sum, cell) => sum + (cell ? 1 : 0), 0);
-  const forkRisk = occupied >= 8 ? tttOpponentForkRisk(board, opponent, 6) : 0;
+  const forkRisk = occupied >= 5 ? tttOpponentForkRisk(board, opponent, 8) : 0;
   if (forkRisk >= 2) score -= 650000;
   else if (forkRisk >= 1) score -= 320000;
 
@@ -1065,30 +1065,37 @@ function tttBestMove(board, difficulty) {
 
   const mustBlockThreats = tttOpenThreeThreatMoves(board, 'X');
   if (mustBlockThreats.length) {
-    const threatScores = mustBlockThreats.map((idx) => {
+    let bestThreat = mustBlockThreats[0];
+    let bestThreatScore = -Infinity;
+    for (const idx of mustBlockThreats) {
+      if (board[idx]) continue;
       board[idx] = 'O';
       const oppWins = tttWinningMoves(board, 'X').length;
       const oppCritical = tttCriticalThreatMoves(board, 'X').length;
       const oppOpenThree = tttOpenThreeThreatMoves(board, 'X').length;
-      const score = tttMoveHeuristic(board, idx, 'O') - oppWins * 520000 - oppCritical * 170000 - oppOpenThree * 120000;
+      const ownOpenThree = tttOpenThreeThreatMoves(board, 'O').length;
+      const score = tttMoveHeuristic(board, idx, 'O') + ownOpenThree * 2200 - oppWins * 520000 - oppCritical * 170000 - oppOpenThree * 120000;
       board[idx] = '';
-      return { idx, score };
-    });
-    threatScores.sort((a, b) => b.score - a.score);
-    return threatScores[0]?.idx ?? mustBlockThreats[0];
+      if (score > bestThreatScore) {
+        bestThreatScore = score;
+        bestThreat = idx;
+      }
+    }
+    return bestThreat;
   }
 
   const occupied = board.length - free.length;
   const center = tttIndex(Math.floor(TTT_ROWS / 2), Math.floor(TTT_COLS / 2));
 
-  if (difficulty === 'ai' && occupied <= 4) {
+  if (difficulty === 'ai' && occupied <= 1) {
     const opening = tttOpeningBookMove(board);
     if (opening >= 0 && !board[opening]) return opening;
     if (!board[center]) return center;
   }
 
-  const candidateLimit = difficulty === 'ai' ? (occupied < 8 ? 16 : 24) : difficulty === 'medium' ? 10 : 8;
-  const candidates = tttOrderedCandidates(board, 'O', candidateLimit);
+  const candidateLimit = difficulty === 'ai' ? (occupied < 10 ? 14 : 18) : difficulty === 'medium' ? 12 : 10;
+  const candidates = tttOrderedCandidates(board, 'O', candidateLimit).filter(idx => !board[idx]);
+  if (!candidates.length) return free[Math.floor(Math.random() * free.length)] ?? -1;
 
   if (difficulty === 'noob') {
     return candidates[Math.floor(Math.random() * candidates.length)] ?? free[Math.floor(Math.random() * free.length)];
@@ -1097,10 +1104,11 @@ function tttBestMove(board, difficulty) {
   const scoreCandidate = (idx) => {
     if (board[idx]) return -Infinity;
     board[idx] = 'O';
-
     let score = tttMoveHeuristic(board, idx, 'O');
-    score -= (Math.abs(Math.floor(idx / TTT_COLS) - Math.floor(TTT_ROWS / 2)) + Math.abs((idx % TTT_COLS) - Math.floor(TTT_COLS / 2))) * 35;
-    if (idx === center) score += 3000;
+    const row = Math.floor(idx / TTT_COLS);
+    const col = idx % TTT_COLS;
+    score -= (Math.abs(row - Math.floor(TTT_ROWS / 2)) + Math.abs(col - Math.floor(TTT_COLS / 2))) * 28;
+    if (idx === center) score += 4200;
 
     const myWins = tttWinningMoves(board, 'O').length;
     const oppWins = tttWinningMoves(board, 'X').length;
@@ -1109,37 +1117,46 @@ function tttBestMove(board, difficulty) {
     const myOpenThree = tttOpenThreeThreatMoves(board, 'O').length;
     const oppOpenThree = tttOpenThreeThreatMoves(board, 'X').length;
 
-    if (myWins >= 1) score += 850000;
-    if (myWins >= 2) score += 120000;
-    if (myCritical >= 2) score += 45000;
+    if (myWins >= 1) score += 900000;
+    if (myWins >= 2) score += 140000;
+    if (myCritical >= 2) score += 52000;
     if (myOpenThree >= 2) score += 18000;
-    if (oppWins >= 1) score -= 650000;
-    if (oppWins >= 2) score -= 120000;
-    if (oppCritical >= 2) score -= 80000;
-    if (oppOpenThree >= 2) score -= 30000;
+    if (oppWins >= 1) score -= 720000;
+    if (oppWins >= 2) score -= 150000;
+    if (oppCritical >= 2) score -= 90000;
+    if (oppOpenThree >= 2) score -= 35000;
 
     if (difficulty === 'medium') {
-      const replyCandidates = tttOrderedCandidates(board, 'X', 12);
+      const replyCandidates = tttOrderedCandidates(board, 'X', 8);
       let worstReply = 0;
       for (const reply of replyCandidates) {
         if (board[reply]) continue;
         board[reply] = 'X';
         const replyScore = tttMoveHeuristic(board, reply, 'X')
-          + tttWinningMoves(board, 'X').length * 130000
-          + tttCriticalThreatMoves(board, 'X').length * 1200
-          + tttOpenThreeThreatMoves(board, 'X').length * 800;
+          + tttWinningMoves(board, 'X').length * 180000
+          + tttCriticalThreatMoves(board, 'X').length * 2200
+          + tttOpenThreeThreatMoves(board, 'X').length * 1200;
         if (replyScore > worstReply) worstReply = replyScore;
         board[reply] = '';
       }
       board[idx] = '';
-      return score - worstReply * 0.75;
+      return score - worstReply * 0.6;
     }
 
-    const memo = {};
-    const depth = occupied < 8 ? 2 : occupied < 16 ? 3 : 4;
-    const searchScore = tttSearch(board, depth, -Infinity, Infinity, false, memo, (typeof performance !== "undefined" ? performance.now() : Date.now()) + 6);
+    const replyCandidates = tttOrderedCandidates(board, 'X', occupied < 12 ? 8 : 6);
+    let worstReply = 0;
+    for (const reply of replyCandidates) {
+      if (board[reply]) continue;
+      board[reply] = 'X';
+      const replyWins = tttWinningMoves(board, 'X').length;
+      const replyCritical = tttCriticalThreatMoves(board, 'X').length;
+      const replyOpenThree = tttOpenThreeThreatMoves(board, 'X').length;
+      const replyScore = tttMoveHeuristic(board, reply, 'X') + replyWins * 190000 + replyCritical * 2500 + replyOpenThree * 1200;
+      if (replyScore > worstReply) worstReply = replyScore;
+      board[reply] = '';
+    }
     board[idx] = '';
-    return score + searchScore;
+    return score - worstReply * 0.7;
   };
 
   let bestIdx = candidates[0] ?? free[0];
@@ -1153,8 +1170,7 @@ function tttBestMove(board, difficulty) {
     }
   }
 
-  if (bestIdx >= 0) return bestIdx;
-  return free[Math.floor(Math.random() * free.length)] ?? -1;
+  return bestIdx >= 0 ? bestIdx : (free[Math.floor(Math.random() * free.length)] ?? -1);
 }
 
 function tttHardWinLog() {
@@ -1268,7 +1284,7 @@ function tttBuildHardWinTableHtml() {
   const state = tttGetState();
   const rows = tttGetHardWinRows();
   if (state.hardWinLoading && !rows.length) {
-    return '<div class="smallText">Načítám výsledky…</div>';
+    return '<div class="smallText">Načítám online výsledky…</div>';
   }
   if (!rows.length) {
     return '<div class="smallText">Zatím žádné online výsledky.</div>';
@@ -1655,6 +1671,10 @@ function resetTicTacToeGame(keepScreen) {
   requestAnimationFrame(tttLayoutBoard);
 }
 
+function openGamesPage() {
+  showPage('games');
+}
+
 function openTicTacToeGame() {
   const overlay = ensureTicTacToeOverlay();
   const state = tttGetState();
@@ -1724,7 +1744,7 @@ function buildAppHistoryHtml(versionText) {
         'Dashboard ukazuje další směnu D, kdo na ní chybí, a u průběhu směny i procenta.',
         'Odpočet do dovolené doplňuje, jestli jde o CZD nebo Vánoce.',
         'Kalkulačky pro frézky a brusy umí dopočítat i čas hotovosti.',
-        'Piškvorky jsou přímo na dashboardu.'
+        'Piškvorky najdeš přímo na dashboardu.'
       ]
     },
     {
@@ -2558,8 +2578,8 @@ function showFoodSchedule(which) {
 function showPage(id) {
   if (typeof app !== 'undefined') {
     app.homeBootSuppressed = id !== 'home';
-    app.lastPageChangeAt = Date.now();
   }
+  window.__rotaceHomeBootLocked = id !== 'home';
 
   const navPage = id === 'rotace'
     ? 'rotace'
@@ -2612,6 +2632,7 @@ function showPage(id) {
         }
       }
     }
+
   } catch (err) {
     console.error('showPage failed', err);
   } finally {

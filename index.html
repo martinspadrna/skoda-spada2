@@ -7,13 +7,13 @@
 <meta name="theme-color" content="#0b0f0c">
 <meta name="apple-mobile-web-app-title" content="Rotace a kalkulačky">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
-<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
-<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="apple-touch-icon" href="_icons/icon-180.png">
+<link rel="icon" type="image/png" sizes="32x32" href="_icons/icon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 
 <title>Rotace a kalkulačky</title>
 
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" href="icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&amp;display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -28,9 +28,9 @@
 <div id="home" class="page active">
   <div class="dashboardShell">
     <div class="dashboardAppTitle">Rotace a kalkulačky</div>
-    <div id="syncStatusBadge" class="syncStatusBadge">🟡 Offline cache</div>
 
     <div class="dashboardHeroCard" id="dashHero">
+      <div class="dashboardSyncBadge dashboardSyncBadge--offline" id="dashboardSyncBadge">🟡 Offline cache</div>
       <div class="dashboardHeroLine1"><span class="dashboardHeroLine1Text">V práci: směna A (noční)</span></div>
       <div class="dashboardHeroLine2">Směna D začne za: --</div>
       <div class="dashboardHeroLine3"></div>
@@ -91,15 +91,44 @@
         <div class="dashboardMeta">Firemní portál</div>
       </div>
 
-      <div class="tile dashboardCard dashboardLinkCard" id="dashTttLink" onclick="openTicTacToeGame()" role="button" tabindex="0" aria-label="Piškvorky">
+      <div class="tile dashboardCard dashboardLinkCard" id="dashGamesLink" onclick="showPage('games')" role="button" tabindex="0" aria-label="Hry">
         <div class="dashboardLabelRow">
-          <span class="dashboardIcon dashboardIconInline" aria-hidden="true"><img class="dashboardIconImage" src="data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4.2' y='4.2' width='15.6' height='15.6' rx='3.2'/%3E%3Cpath d='M8 8l4 4'/%3E%3Cpath d='M12 8l-4 4'/%3E%3Cpath d='M8 16l4-4'/%3E%3Ccircle cx='16' cy='8.8' r='1.7'/%3E%3C/svg%3E" alt="" aria-hidden="true" loading="eager" decoding="sync"></span>
-          <div class="dashboardLabel">Piškvorky</div>
+          <span class="dashboardIcon dashboardIconInline" aria-hidden="true"><img class="dashboardIconImage" src="data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8.2 6.8h7.6a2 2 0 0 1 2 2v7.8a2 2 0 0 1-2 2H8.2a2 2 0 0 1-2-2V8.8a2 2 0 0 1 2-2Z'/%3E%3Cpath d='M9.6 9.2h4.8'/%3E%3Cpath d='M9.2 12h5.6'/%3E%3Cpath d='M8.8 14.8h6.4'/%3E%3Cpath d='M15.7 3.7c1.1 1 .9 2.7-.6 3.3'/%3E%3Cpath d='M6.6 3.8c-1 1.1-.8 2.7.7 3.2'/%3E%3Cpath d='M16 3.8c.4 1.2.3 2.2-.2 2.9'/%3E%3Cpath d='M7.8 3.7c-.4 1.1-.3 2.1.2 2.9'/%3E%3C/svg%3E" alt="" aria-hidden="true" loading="eager" decoding="sync"></span>
+          <div class="dashboardLabel">Hry</div>
         </div>
-        <div class="dashboardValue">Hrát</div>
-        <div class="dashboardMeta" id="dashTttMeta"></div>
+        <div class="dashboardValue">Otevřít</div>
+        <div class="dashboardMeta">Piškvorky uvnitř</div>
       </div>
 
+    </div>
+  </div>
+</div>
+
+<div id="games" class="page">
+  <div class="headerBar">
+    <div></div>
+    <h3>Hry</h3>
+    <div style="width:34px;"></div>
+  </div>
+
+  <div class="grid">
+    <div class="tile calcTile calcTileStack big" onclick="openTicTacToeGame()">
+      <div class="calcTileIcon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M8.2 6.8h7.6a2 2 0 0 1 2 2v7.8a2 2 0 0 1-2 2H8.2a2 2 0 0 1-2-2V8.8a2 2 0 0 1 2-2Z"></path>
+          <path d="M9.6 9.2h4.8"></path>
+          <path d="M9.2 12h5.6"></path>
+          <path d="M8.8 14.8h6.4"></path>
+          <path d="M15.7 3.7c1.1 1 .9 2.7-.6 3.3"></path>
+          <path d="M6.6 3.8c-1 1.1-.8 2.7.7 3.2"></path>
+          <path d="M16 3.8c.4 1.2.3 2.2-.2 2.9"></path>
+          <path d="M7.8 3.7c-.4 1.1-.3 2.1.2 2.9"></path>
+        </svg>
+      </div>
+      <div>
+        <div class="calcTileText">Piškvorky</div>
+        <div class="smallText">Hra proti AI nebo spoluhráči</div>
+      </div>
     </div>
   </div>
 </div>
@@ -11052,6 +11081,7 @@ body.appMenuOpen{
     <button class="bottomNavBtn" data-page="rozpisy" onclick="openRotaceMonths()"><span class="bottomNavIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2.2"></rect><path d="M4 9h16M8 3.8v3.2M16 3.8v3.2"></path><path d="M8 12.8h3M13 12.8h3M8 16h3"></path></svg></span><div class="bottomNavLabel">Rozpisy</div></button>
     <button class="bottomNavBtn" data-page="statistiky" onclick="openRotaceStats()"><span class="bottomNavIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 19.2V10.8"></path><path d="M10 19.2V6.8"></path><path d="M15 19.2V13.2"></path><path d="M20 19.2H4"></path></svg></span><div class="bottomNavLabel">Statistiky</div></button>
     <button class="bottomNavBtn bottomNavMenuBtn" data-page="menu" type="button" aria-label="Více" onclick="toggleAppMenu()"><svg class="moreIcon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="2.15"></circle><circle cx="12" cy="12" r="2.15"></circle><circle cx="12" cy="16" r="2.15"></circle></svg><div class="bottomNavLabel">Více</div></button>
+    <button class="bottomNavBtn bottomNavGamesBtn" data-page="games" onclick="showPage('games')"><span class="bottomNavIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8.2 6.8h7.6a2 2 0 0 1 2 2v7.8a2 2 0 0 1-2 2H8.2a2 2 0 0 1-2-2V8.8a2 2 0 0 1 2-2Z"></path><path d="M9.6 9.2h4.8"></path><path d="M9.2 12h5.6"></path><path d="M8.8 14.8h6.4"></path><path d="M15.7 3.7c1.1 1 .9 2.7-.6 3.3"></path><path d="M6.6 3.8c-1 1.1-.8 2.7.7 3.2"></path><path d="M16 3.8c.4 1.2.3 2.2-.2 2.9"></path><path d="M7.8 3.7c-.4 1.1-.3 2.1.2 2.9"></path></svg></span><div class="bottomNavLabel">Hry</div></button>
   </div>
 </nav>
 
