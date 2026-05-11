@@ -286,13 +286,6 @@ function initAppInitBindings() {
   }, 1100);
 
   window.addEventListener("load", bootHome, { once: true });
-  window.addEventListener('online', () => {
-    if (typeof forceHomeRefresh === 'function') forceHomeRefresh();
-    else if (typeof refreshHomeScreen === 'function') refreshHomeScreen();
-    if (typeof tttRefreshHardWinRows === 'function') void tttRefreshHardWinRows(true);
-    if (typeof syncRotationFromSupabase === 'function') void syncRotationFromSupabase(false);
-  });
-
   window.addEventListener("pageshow", bootHome);
 }
 

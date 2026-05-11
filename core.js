@@ -1,6 +1,6 @@
 
 const APP_KEY = "rotace_kalkulacky_state_v122";
-const APP_VERSION = "v.1(310)";
+const APP_VERSION = "v.1(311)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-05-10-" + APP_VERSION + "-" + Date.now();
 
@@ -248,6 +248,9 @@ function saveRotationData() {
     localStorage.setItem("soustruh126Start", String(app.soustruh126Start || 32));
     localStorage.setItem("soustruh106Counts", JSON.stringify(app.soustruh106Counts || ["", "", "", ""]));
     localStorage.setItem("adminUnlocked", app.adminUnlocked ? "1" : "0");
+    if (typeof window.__rotaceSignalStateChange === "function") {
+      window.__rotaceSignalStateChange("local-save");
+    }
   } catch (e) {}
 }
 

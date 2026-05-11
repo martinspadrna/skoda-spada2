@@ -1,31 +1,11 @@
 (function () {
   const SUPABASE_CONFIG = window.SUPABASE_CONFIG || {};
-  const ANNOUNCEMENTS_CACHE_KEY = 'rotaceSupabaseAnnouncements_v1';
   const state = {
     client: null,
     ready: false,
-    announcements: loadAnnouncementsCache(),
+    announcements: [],
     lastError: null
   };
-
-  function loadAnnouncementsCache() {
-    try {
-      const raw = localStorage.getItem(ANNOUNCEMENTS_CACHE_KEY);
-      if (!raw) return [];
-      const parsed = JSON.parse(raw);
-      return Array.isArray(parsed) ? parsed : [];
-    } catch (err) {
-      return [];
-    }
-  }
-
-  function saveAnnouncementsCache(rows) {
-    try {
-      localStorage.setItem(ANNOUNCEMENTS_CACHE_KEY, JSON.stringify(Array.isArray(rows) ? rows.slice(0, 10) : []));
-    } catch (err) {
-      console.warn(err);
-    }
-  }
 
   function hasClient() {
     return !!(window.supabase && typeof window.supabase.createClient === 'function');
@@ -63,7 +43,7 @@
 
   async function refreshPublicData() {
     const client = getClient();
-    if (!client) return { announcements: state.announcements, cached: true };
+    if (!client) return null;
 
     try {
       const announcementsRes = await client
@@ -75,7 +55,6 @@
 
       if (announcementsRes && !announcementsRes.error) {
         state.announcements = Array.isArray(announcementsRes.data) ? announcementsRes.data : [];
-        saveAnnouncementsCache(state.announcements);
       }
 
       state.ready = true;
@@ -93,7 +72,7 @@
     } catch (err) {
       state.lastError = err;
       console.warn('Supabase public data refresh failed', err);
-      return { announcements: state.announcements, error: err };
+      return null;
     }
   }
 
@@ -520,13 +499,6 @@
 
   window.getSupabaseAnnouncement = getBridgeText;
   window.getSupabaseCanteenStatus = getCanteenStatus;
-
-  window.addEventListener('online', () => {
-    void refreshPublicData();
-    if (typeof tttRefreshHardWinRows === 'function') void tttRefreshHardWinRows(true);
-    if (typeof syncRotationFromSupabase === 'function') void syncRotationFromSupabase(false);
-    if (typeof forceHomeRefresh === 'function') forceHomeRefresh();
-  });
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init, { once: true });
