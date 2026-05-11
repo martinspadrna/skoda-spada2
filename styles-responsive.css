@@ -643,16 +643,44 @@
 
 #statsMachineGrid .listBtn{padding:8px 6px;min-width:62px;}
 
-/* v1(320) cleanup: games, sync badge, scrollable bottom nav */
-.dashboardHeroCard{position:relative !important;padding-right:128px !important;}
-.dashboardSyncBadge{position:absolute !important;top:12px !important;right:12px !important;z-index:3 !important;display:inline-flex !important;align-items:center !important;gap:6px !important;padding:7px 10px !important;border-radius:999px !important;border:1px solid rgba(124,255,124,.18) !important;background:rgba(12,16,14,.66) !important;backdrop-filter:blur(14px) saturate(150%) !important;-webkit-backdrop-filter:blur(14px) saturate(150%) !important;color:rgba(238,247,238,.82) !important;font-size:11px !important;line-height:1 !important;font-weight:700 !important;letter-spacing:.02em !important;box-shadow:0 10px 30px rgba(0,0,0,.18) !important;pointer-events:none !important;max-width:calc(100% - 24px) !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important;}
+/* v1(324) cleanup: games, sync badge, scrollable bottom nav */
+.dashboardAppTitleRow{display:flex !important;align-items:flex-start !important;justify-content:space-between !important;gap:12px !important;margin-bottom:10px !important;}
+.dashboardAppTitle{margin:0 !important;}
+.dashboardSyncBadge{display:inline-flex !important;align-items:center !important;gap:6px !important;padding:7px 10px !important;border-radius:999px !important;border:1px solid rgba(124,255,124,.18) !important;background:rgba(12,16,14,.66) !important;backdrop-filter:blur(14px) saturate(150%) !important;-webkit-backdrop-filter:blur(14px) saturate(150%) !important;color:rgba(238,247,238,.82) !important;font-size:11px !important;line-height:1 !important;font-weight:700 !important;letter-spacing:.02em !important;box-shadow:0 10px 30px rgba(0,0,0,.18) !important;pointer-events:none !important;max-width:calc(100% - 24px) !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important;position:static !important;flex:0 0 auto !important;margin-top:2px !important;}
+.dashboardHeroCard{padding-right:16px !important;}
 .dashboardSyncBadge--online{border-color:rgba(124,255,124,.22) !important;background:rgba(10,28,16,.70) !important;color:#d7ffe0 !important;}
 .dashboardSyncBadge--offline,.dashboardSyncBadge--pending{border-color:rgba(255,214,102,.22) !important;background:rgba(28,24,10,.70) !important;color:#f7f0cd !important;}
 .dashboardSyncBadge--error{border-color:rgba(255,124,124,.22) !important;background:rgba(28,10,10,.72) !important;color:#ffdcdc !important;}
-.bottomNavInner{overflow-x:auto !important;overflow-y:hidden !important;-webkit-overflow-scrolling:touch !important;scroll-snap-type:x proximity !important;flex-wrap:nowrap !important;scrollbar-width:none !important;gap:8px !important;padding-right:8px !important;}
-.bottomNavInner::-webkit-scrollbar{display:none !important;}
-.bottomNavBtn{flex:0 0 auto !important;scroll-snap-align:center !important;}
-.bottomNavMenuBtn{position:sticky !important;right:0 !important;margin-left:auto !important;z-index:4 !important;background:linear-gradient(180deg, rgba(14,19,16,.92), rgba(10,14,12,.98)) !important;box-shadow:-8px 0 18px rgba(0,0,0,.18) !important;}
-.bottomNavGamesBtn{margin-right:8px !important;}
+.bottomNav{display:flex !important;align-items:center !important;gap:6px !important;}
+.bottomNavScroll{display:flex !important;align-items:center !important;gap:4px !important;flex:1 1 auto !important;min-width:0 !important;overflow-x:auto !important;overflow-y:hidden !important;-webkit-overflow-scrolling:touch !important;scroll-snap-type:x proximity !important;scrollbar-width:none !important;}
+.bottomNavScroll::-webkit-scrollbar{display:none !important;}
+.bottomNavInner{display:flex !important;align-items:center !important;gap:4px !important;flex-wrap:nowrap !important;min-width:max-content !important;padding-right:8px !important;}
+.bottomNavBtn{flex:0 0 auto !important;scroll-snap-align:center !important;min-width:58px !important;}
+.bottomNavMenuBtn{flex:0 0 auto !important;position:sticky !important;right:0 !important;z-index:4 !important;margin-left:auto !important;background:linear-gradient(180deg, rgba(14,19,16,.92), rgba(10,14,12,.98)) !important;box-shadow:-8px 0 18px rgba(0,0,0,.18) !important;}
+.bottomNavGamesBtn{margin-right:4px !important;}
 .bottomNavGamesBtn .bottomNavIcon svg{stroke-width:1.8 !important;}
+.bottomNavBtn .bottomNavIcon,
+.bottomNavBtn .bottomNavIcon svg{width:24px !important;height:24px !important;}
+.bottomNavBtn .bottomNavIcon{flex:0 0 26px !important;}
+.bottomNavBtn .bottomNavLabel{font-size:10px !important;line-height:1.05 !important;}
+.bottomNavMenuBtn .moreIcon{width:24px !important;height:24px !important;transform:translateY(-11px) !important;}
 #games .calcTileIcon svg{stroke:currentColor !important;}
+.gamesAccountRow{display:flex !important;align-items:center !important;gap:10px !important;margin-top:10px !important;}
+.gamesAccountInput{flex:1 1 auto !important;min-width:0 !important;height:44px !important;border-radius:14px !important;border:1px solid rgba(124,255,124,.14) !important;background:rgba(255,255,255,.04) !important;color:#e7fff0 !important;padding:0 12px !important;font:inherit !important;font-size:16px !important;letter-spacing:.08em !important;}
+.gamesAccountInput::placeholder{color:rgba(231,255,240,.42) !important;letter-spacing:.02em !important;}
+.gamesTinyBtn{white-space:nowrap !important;}
+
+/* v1(324) bottom nav compact icons + hidden games */
+.bottomNav{display:flex !important;align-items:center !important;gap:6px !important;}
+.bottomNavScroll{display:flex !important;align-items:center !important;gap:4px !important;flex:1 1 auto !important;min-width:0 !important;overflow-x:auto !important;overflow-y:hidden !important;-webkit-overflow-scrolling:touch !important;scroll-snap-type:x proximity !important;scrollbar-width:none !important;}
+.bottomNavScroll::-webkit-scrollbar{display:none !important;}
+.bottomNavInner{display:flex !important;align-items:center !important;gap:4px !important;flex-wrap:nowrap !important;min-width:max-content !important;padding-right:8px !important;}
+.bottomNavBtn{flex:0 0 auto !important;scroll-snap-align:center !important;min-width:58px !important;min-height:52px !important;padding:2px 2px 1px !important;}
+.bottomNavBtn .bottomNavIcon,.bottomNavBtn .bottomNavIcon svg{width:22px !important;height:22px !important;display:block !important;}
+.bottomNavBtn .bottomNavIcon{flex:0 0 22px !important;}
+.bottomNavBtn .bottomNavLabel{font-size:9px !important;line-height:1.04 !important;}
+.bottomNavBtn span{font-size:17px !important;line-height:1 !important;}
+.bottomNavMenuBtn{flex:0 0 38px !important;position:sticky !important;right:0 !important;z-index:4 !important;margin-left:auto !important;width:38px !important;min-width:38px !important;max-width:44px !important;}
+.bottomNavMenuBtn .moreIcon{width:24px !important;height:24px !important;transform:translateY(-11px) !important;display:block !important;}
+.bottomNavGamesBtn{margin-right:4px !important;}
+.bottomNavGamesBtn .bottomNavIcon svg{stroke-width:1.8 !important;}

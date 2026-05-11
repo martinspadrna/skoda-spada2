@@ -204,7 +204,7 @@ function initAppInitBindings() {
 
   const bootHome = () => {
     const activePage = document.querySelector(".page.active")?.id || "";
-    if ((typeof app !== "undefined" && app.homeBootSuppressed && activePage !== "home") || (window.__rotaceHomeBootLocked && activePage !== "home") || (window.__rotaceUserNavigated && activePage !== 'home')) {
+    if ((typeof app !== "undefined" && app.homeBootSuppressed && activePage !== "home") || window.__rotaceManualNavLocked || (window.__rotaceHomeBootLocked && activePage !== "home") || (window.__rotaceUserNavigated && activePage !== 'home')) {
       return;
     }
     try {
@@ -277,7 +277,7 @@ function initAppInitBindings() {
   setTimeout(() => {
     try {
       const activePage = document.querySelector(".page.active")?.id || "";
-      if ((window.__rotaceHomeBootLocked && activePage !== "home") || (typeof app !== "undefined" && app.homeBootSuppressed && activePage !== "home") || (window.__rotaceUserNavigated && activePage !== 'home')) {
+      if (window.__rotaceManualNavLocked || (window.__rotaceHomeBootLocked && activePage !== "home") || (typeof app !== "undefined" && app.homeBootSuppressed && activePage !== "home") || (window.__rotaceUserNavigated && activePage !== 'home')) {
         return;
       }
       if (typeof showPage === "function") showPage("home");

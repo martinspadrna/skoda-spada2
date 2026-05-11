@@ -1,4 +1,4 @@
-// Extracted dashboard logic (v1(320))
+// Extracted dashboard logic (v1(321))
 function updateDashboard() {
   const now = typeof getPragueNow === 'function' ? getPragueNow(new Date()) : new Date();
   const active = typeof getActiveShiftNow === 'function' ? getActiveShiftNow(now) : null;

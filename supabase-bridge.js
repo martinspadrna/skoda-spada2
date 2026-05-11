@@ -68,15 +68,31 @@
   }
 
   function saveLocalSnapshot(rotation, machineSettingsRows) {
+    const existing = readLocalSnapshot() || {};
+    const hasRotation = !!(rotation && typeof rotation === 'object');
+    const hasMachineSettings = Array.isArray(machineSettingsRows) && machineSettingsRows.length > 0;
+    const nextRotation = hasRotation ? rotation : (existing.rotation || null);
+    const nextMachineSettings = hasMachineSettings
+      ? machineSettingsRows
+      : (Array.isArray(existing.machineSettingsRows) ? existing.machineSettingsRows : []);
+    const nextAnnouncements = Array.isArray(state.announcements) && state.announcements.length
+      ? state.announcements
+      : (Array.isArray(existing.announcements) ? existing.announcements : []);
     const snapshot = {
       updatedAt: Date.now(),
-      version: window.APP_VERSION || '',
-      rotation: rotation && typeof rotation === 'object' ? rotation : null,
-      machineSettingsRows: Array.isArray(machineSettingsRows) ? machineSettingsRows : [],
-      announcements: Array.isArray(state.announcements) ? state.announcements : []
+      version: window.APP_VERSION || existing.version || '',
+      rotation: nextRotation,
+      machineSettingsRows: nextMachineSettings,
+      announcements: nextAnnouncements
     };
+    if (existing && typeof existing.updatedAt === 'number' && existing.updatedAt > snapshot.updatedAt && !hasRotation && !hasMachineSettings) {
+      snapshot.updatedAt = existing.updatedAt;
+      snapshot.version = existing.version || snapshot.version;
+    }
     safeWriteJson(LOCAL_STATE_KEY, snapshot);
-    if (Array.isArray(machineSettingsRows)) safeWriteJson(LOCAL_MACHINE_SETTINGS_KEY, machineSettingsRows);
+    if (hasMachineSettings || (Array.isArray(existing.machineSettingsRows) && existing.machineSettingsRows.length)) {
+      safeWriteJson(LOCAL_MACHINE_SETTINGS_KEY, snapshot.machineSettingsRows);
+    }
     return snapshot;
   }
 
@@ -318,8 +334,8 @@
         const cachedAnnouncements = safeReadJson(LOCAL_ANNOUNCEMENTS_KEY, []);
         if (Array.isArray(cachedAnnouncements) && cachedAnnouncements.length) {
           state.announcements = cachedAnnouncements;
-          state.ready = true;
         }
+        state.ready = true;
       }
 
       if (typeof forceHomeRefresh === 'function') forceHomeRefresh();
@@ -337,10 +353,9 @@
       const cachedAnnouncements = safeReadJson(LOCAL_ANNOUNCEMENTS_KEY, []);
       if (Array.isArray(cachedAnnouncements) && cachedAnnouncements.length) {
         state.announcements = cachedAnnouncements;
-        state.ready = true;
-        return { announcements: state.announcements, cached: true };
       }
-      return null;
+      state.ready = true;
+      return { announcements: state.announcements, cached: true };
     }
   }
 
@@ -514,7 +529,10 @@
       state.machineSettingsSnapshot = cached.machineSettingsRows;
       return cached.machineSettingsRows;
     }
-    return [];
+    const defaults = defaultMachineSettingsRows();
+    state.machineSettingsSnapshot = defaults;
+    saveLocalSnapshot(state.rotationSnapshot || null, defaults);
+    return defaults;
   }
 
   async function saveMachineSettings(rows) {

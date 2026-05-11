@@ -2273,3 +2273,18 @@ body.reduceMotion *::after{
 .bottomNavGamesBtn{margin-right:8px !important;}
 .bottomNavGamesBtn .bottomNavIcon svg{stroke-width:1.8 !important;}
 #games .calcTileIcon svg{stroke:currentColor !important;}
+
+/* v1(324) bottom nav compact icons + hidden games */
+.bottomNav{display:flex !important;align-items:center !important;gap:6px !important;}
+.bottomNavScroll{display:flex !important;align-items:center !important;gap:4px !important;flex:1 1 auto !important;min-width:0 !important;overflow-x:auto !important;overflow-y:hidden !important;-webkit-overflow-scrolling:touch !important;scroll-snap-type:x proximity !important;scrollbar-width:none !important;}
+.bottomNavScroll::-webkit-scrollbar{display:none !important;}
+.bottomNavInner{display:flex !important;align-items:center !important;gap:4px !important;flex-wrap:nowrap !important;min-width:max-content !important;padding-right:8px !important;}
+.bottomNavBtn{flex:0 0 auto !important;scroll-snap-align:center !important;min-width:58px !important;min-height:52px !important;padding:2px 2px 1px !important;}
+.bottomNavBtn .bottomNavIcon,.bottomNavBtn .bottomNavIcon svg{width:22px !important;height:22px !important;display:block !important;}
+.bottomNavBtn .bottomNavIcon{flex:0 0 22px !important;}
+.bottomNavBtn .bottomNavLabel{font-size:9px !important;line-height:1.04 !important;}
+.bottomNavBtn span{font-size:17px !important;line-height:1 !important;}
+.bottomNavMenuBtn{flex:0 0 38px !important;position:sticky !important;right:0 !important;z-index:4 !important;margin-left:auto !important;width:38px !important;min-width:38px !important;max-width:44px !important;}
+.bottomNavMenuBtn .moreIcon{width:24px !important;height:24px !important;transform:translateY(-11px) !important;display:block !important;}
+.bottomNavGamesBtn{margin-right:4px !important;}
+.bottomNavGamesBtn .bottomNavIcon svg{stroke-width:1.8 !important;}
