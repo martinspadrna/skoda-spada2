@@ -1,4 +1,4 @@
-// v.1(313) – PWA/service worker, online refresh hooks, self-test po načtení, Supabase bridge.
+// v.1(316) – PWA/service worker, online refresh hooks, self-test po načtení, Supabase bridge.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
@@ -129,6 +129,9 @@
 
 
 function installPwaAndConnectivityHooks() {
+  if (window.__rotacePwaBootstrapped) return;
+  window.__rotacePwaBootstrapped = true;
+
   const setConnectionFlag = () => {
     try {
       document.documentElement.dataset.connection = navigator.onLine ? 'online' : 'offline';
@@ -143,6 +146,8 @@ function installPwaAndConnectivityHooks() {
   let lastLiveRefreshAt = 0;
   let liveRefreshTimer = null;
   let liveChannel = null;
+  let swRegistrationPromise = null;
+  let deferredInstallPrompt = null;
 
   const runLiveRefresh = async (reason, opts = {}) => {
     const force = !!(opts && opts.force);
@@ -157,6 +162,9 @@ function installPwaAndConnectivityHooks() {
       try {
         if (navigator.onLine && typeof refreshPublicData === 'function') {
           await refreshPublicData();
+        }
+        if (navigator.onLine && typeof flushSupabaseSyncQueue === 'function') {
+          await flushSupabaseSyncQueue();
         }
         if (navigator.onLine && typeof syncRotationFromSupabase === 'function') {
           await syncRotationFromSupabase(false);
@@ -177,13 +185,7 @@ function installPwaAndConnectivityHooks() {
     return liveRefreshPromise;
   };
 
-  const signalStateChange = (reason) => {
-    const payload = {
-      type: 'state-change',
-      reason: reason || 'state-change',
-      tabId,
-      ts: Date.now()
-    };
+  const broadcastState = (payload) => {
     try {
       localStorage.setItem('rotace_live_signal_v1', JSON.stringify(payload));
     } catch (err) {}
@@ -192,11 +194,83 @@ function installPwaAndConnectivityHooks() {
     } catch (err) {}
   };
 
+  const signalStateChange = (reason) => {
+    broadcastState({
+      type: 'state-change',
+      reason: reason || 'state-change',
+      tabId,
+      ts: Date.now()
+    });
+  };
+
+  const registerServiceWorker = () => {
+    if (!('serviceWorker' in navigator)) return null;
+    if (swRegistrationPromise) return swRegistrationPromise;
+
+    swRegistrationPromise = navigator.serviceWorker.register('sw.js', { scope: './' }).then((registration) => {
+      if (registration && registration.update) {
+        registration.update().catch(() => {});
+      }
+      if (registration && !registration.__rotaceUpdateHooked) {
+        registration.__rotaceUpdateHooked = true;
+        registration.addEventListener('updatefound', () => {
+          const installing = registration.installing;
+          if (!installing) return;
+          installing.addEventListener('statechange', () => {
+            if (installing.state === 'installed') {
+              if (navigator.serviceWorker.controller && registration.waiting) {
+                try {
+                  registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+                } catch (err) {}
+              }
+              void runLiveRefresh('sw-installed', { force: true });
+            }
+          });
+        });
+      }
+      return registration;
+    }).catch((err) => {
+      console.warn('Service worker registration failed', err);
+      return null;
+    });
+
+    window.__rotaceSwRegistrationPromise = swRegistrationPromise;
+    return swRegistrationPromise;
+  };
+
   setConnectionFlag();
 
   window.__rotaceTriggerLiveRefresh = runLiveRefresh;
   window.__rotaceRefreshAfterOnline = runLiveRefresh;
   window.__rotaceSignalStateChange = signalStateChange;
+  window.__rotacePromptInstall = async () => {
+    if (!deferredInstallPrompt) return false;
+    try {
+      deferredInstallPrompt.prompt();
+      const choice = await deferredInstallPrompt.userChoice;
+      deferredInstallPrompt = null;
+      window.__rotaceDeferredInstallPrompt = null;
+      delete document.documentElement.dataset.installable;
+      return !!choice && choice.outcome === 'accepted';
+    } catch (err) {
+      console.warn('Install prompt failed', err);
+      return false;
+    }
+  };
+
+  window.addEventListener('beforeinstallprompt', (event) => {
+    event.preventDefault();
+    deferredInstallPrompt = event;
+    window.__rotaceDeferredInstallPrompt = event;
+    document.documentElement.dataset.installable = '1';
+  });
+
+  window.addEventListener('appinstalled', () => {
+    deferredInstallPrompt = null;
+    window.__rotaceDeferredInstallPrompt = null;
+    delete document.documentElement.dataset.installable;
+    signalStateChange('appinstalled');
+  });
 
   if ('BroadcastChannel' in window) {
     try {
@@ -214,17 +288,39 @@ function installPwaAndConnectivityHooks() {
     }
   }
 
+  if ('serviceWorker' in navigator) {
+    registerServiceWorker();
+
+    navigator.serviceWorker.addEventListener('message', (event) => {
+      const data = event && event.data ? event.data : null;
+      if (!data) return;
+      if (data.type === 'sw-activated' || data.type === 'refresh-ui' || data.type === 'sw-ready') {
+        void runLiveRefresh(data.reason || data.type || 'sw-message', { force: true });
+      }
+    });
+
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      void runLiveRefresh('controllerchange', { force: true });
+    });
+  }
+
   window.addEventListener('online', () => {
     setConnectionFlag();
+    if (typeof flushSupabaseSyncQueue === 'function') void flushSupabaseSyncQueue();
     void runLiveRefresh('online', { force: true });
+    signalStateChange('online');
   });
   window.addEventListener('offline', () => {
     setConnectionFlag();
     if (typeof updateDashboard === 'function') updateDashboard();
+    signalStateChange('offline');
   });
   window.addEventListener('pageshow', () => {
     setConnectionFlag();
-    if (navigator.onLine) void runLiveRefresh('pageshow');
+    if (navigator.onLine) {
+      if (typeof flushSupabaseSyncQueue === 'function') void flushSupabaseSyncQueue();
+      void runLiveRefresh('pageshow');
+    }
   });
   window.addEventListener('focus', () => {
     if (!document.hidden && navigator.onLine) void runLiveRefresh('focus');
@@ -243,24 +339,6 @@ function installPwaAndConnectivityHooks() {
     }
   });
 
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js', { scope: './' }).then((registration) => {
-      if (registration && registration.update) {
-        registration.update().catch(() => {});
-      }
-    }).catch((err) => {
-      console.warn('Service worker registration failed', err);
-    });
-
-    navigator.serviceWorker.addEventListener('message', (event) => {
-      const data = event && event.data ? event.data : null;
-      if (!data) return;
-      if (data.type === 'sw-activated' || data.type === 'refresh-ui') {
-        void runLiveRefresh(data.reason || data.type || 'sw-message', { force: true });
-      }
-    });
-  }
-
   liveRefreshTimer = window.setInterval(() => {
     if (!document.hidden && navigator.onLine) void runLiveRefresh('interval');
   }, LIVE_REFRESH_INTERVAL_MS);
@@ -270,6 +348,7 @@ function installPwaAndConnectivityHooks() {
     try { if (liveChannel) liveChannel.close(); } catch (err) {}
   });
 }
+
 
 
 })().catch(err => {

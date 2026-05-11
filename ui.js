@@ -2179,10 +2179,11 @@ async function saveAdminRotationFromDom(monthKey) {
   renderRotace();
   if (typeof renderMonth === 'function') renderMonth(monthKey);
   if (app.selectedName && typeof renderPerson === 'function') renderPerson(app.selectedName);
+  let saveResult = null;
   if (app.adminUnlocked) {
-    await saveRotationToSupabase(app.rotation, { source: 'admin-menu', monthKey });
+    saveResult = await saveRotationToSupabase(app.rotation, { source: 'admin-menu', monthKey });
   }
-  return normalized;
+  return { normalized, saveResult };
 }
 
 
@@ -2382,13 +2383,18 @@ function bindAppMenuHandlers(body) {
       if (adminAction === 'save-rotation') {
         const result = await saveAdminRotationFromDom(monthKey);
         const statusEl = document.getElementById('adminOnlineSaveStatus');
+        const saveResult = result && result.saveResult ? result.saveResult : null;
         if (statusEl) {
-          statusEl.textContent = result && result.saveResult && result.saveResult.ok === true
-            ? ('Rozpis uložený online ✓ · měsíců: ' + String(result.saveResult.months || 0) + ' · řádků: ' + String(result.saveResult.entries || 0))
+          statusEl.textContent = saveResult && saveResult.ok === true
+            ? (saveResult.queued
+                ? 'Rozpis uložený lokálně ✓ · po připojení se synchronizuje'
+                : ('Rozpis uložený online ✓ · měsíců: ' + String(saveResult.months || 0) + ' · řádků: ' + String(saveResult.entries || 0)))
             : 'Rozpis se nepodařilo uložit online.';
         }
-        alert(result && result.saveResult && result.saveResult.ok === true
-          ? ('Rozpis uložený online ✓ · měsíců: ' + String(result.saveResult.months || 0) + ' · řádků: ' + String(result.saveResult.entries || 0))
+        alert(saveResult && saveResult.ok === true
+          ? (saveResult.queued
+              ? 'Rozpis uložený lokálně ✓ · po připojení se synchronizuje.'
+              : ('Rozpis uložený online ✓ · měsíců: ' + String(saveResult.months || 0) + ' · řádků: ' + String(saveResult.entries || 0)))
           : (navigator.onLine ? 'Rozpis se nepodařilo uložit online.' : 'Rozpis uložený lokálně. Po připojení se synchronizuje.'));
         renderAdminMenuBody(body, currentView);
         return;
@@ -2408,8 +2414,12 @@ function bindAppMenuHandlers(body) {
           app.machineSettingsRows = rows;
           renderAdminMenuBody(body, currentView);
           const statusEl = document.getElementById('adminOnlineSaveStatus');
-          if (statusEl) statusEl.textContent = 'Stroje uložené online ✓' + ((result && result.savedCount) ? (' · řádků: ' + result.savedCount) : '');
-          alert('Nastavení strojů uložené online ✓' + ((result && result.savedCount) ? (' · řádků: ' + result.savedCount) : ''));
+          if (statusEl) statusEl.textContent = (result && result.queued)
+            ? ('Stroje uložené lokálně ✓ · po připojení se synchronizují' + ((result && result.savedCount) ? (' · řádků: ' + result.savedCount) : ''))
+            : ('Stroje uložené online ✓' + ((result && result.savedCount) ? (' · řádků: ' + result.savedCount) : ''));
+          alert((result && result.queued)
+            ? ('Nastavení strojů uložené lokálně ✓ · po připojení se synchronizují' + ((result && result.savedCount) ? (' · řádků: ' + result.savedCount) : ''))
+            : ('Nastavení strojů uložené online ✓' + ((result && result.savedCount) ? (' · řádků: ' + result.savedCount) : '')));
           return;
         }
       }

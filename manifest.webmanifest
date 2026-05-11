@@ -1,9 +1,10 @@
 {
   "name": "Rotace a kalkulačky",
   "short_name": "Rotace",
-  "start_url": "./index.html",
+  "start_url": "./index.html?source=pwa",
   "scope": "./",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "background_color": "#0b0f0c",
   "theme_color": "#0b0f0c",
   "description": "Směny, kalkulačky, dashboard a piškvorky pro mobilní použití.",

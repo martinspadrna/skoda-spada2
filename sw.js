@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v1-313';
+const CACHE_VERSION = 'v1-316';
 const STATIC_CACHE = `rotace-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `rotace-runtime-${CACHE_VERSION}`;
 const APP_SHELL = [
@@ -32,6 +32,8 @@ const APP_SHELL = [
 
 const RUNTIME_EXTENSIONS = ['.js', '.css', '.png', '.jpg', '.jpeg', '.webp', '.svg', '.ico', '.json', '.webmanifest'];
 
+const OFFLINE_FALLBACK_HTML = `<!DOCTYPE html><html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#0b0f0c"><title>Rotace a kalkulačky</title><style>html,body{margin:0;min-height:100%;background:#0b0f0c;color:#eef6ee;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}body{display:grid;place-items:center;padding:24px}main{max-width:440px;width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:24px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.35)}h1{font-size:1.35rem;line-height:1.2;margin:0 0 12px}p{margin:0;color:rgba(238,246,238,.78);line-height:1.5}small{display:block;margin-top:14px;color:rgba(238,246,238,.58)}</style></head><body><main><h1>Jsi offline</h1><p>Appka je dostupná v omezeném režimu. Jakmile se připojení vrátí, synchronizuje se poslední stav automaticky.</p><small>Rotace a kalkulačky</small></main></body></html>`;
+
 self.addEventListener('install', (event) => {
   event.waitUntil((async () => {
     const cache = await caches.open(STATIC_CACHE);
@@ -45,6 +47,14 @@ self.addEventListener('install', (event) => {
   })());
 });
 
+self.addEventListener('message', (event) => {
+  const data = event && event.data ? event.data : null;
+  if (!data) return;
+  if (data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
 self.addEventListener('activate', (event) => {
   event.waitUntil((async () => {
     const keys = await caches.keys();
@@ -52,6 +62,11 @@ self.addEventListener('activate', (event) => {
       if (key !== STATIC_CACHE && key !== RUNTIME_CACHE) return caches.delete(key);
       return Promise.resolve(false);
     }));
+    if ('navigationPreload' in self.registration) {
+      try {
+        await self.registration.navigationPreload.enable();
+      } catch (err) {}
+    }
     await self.clients.claim();
     const clients = await self.clients.matchAll({ includeUncontrolled: true, type: 'window' });
     for (const client of clients) {
@@ -110,7 +125,10 @@ self.addEventListener('fetch', (event) => {
         return response;
       } catch (err) {
         const cache = await caches.open(STATIC_CACHE);
-        return (await cache.match('./index.html')) || (await cache.match('./')) || Response.error();
+        return (await cache.match('./index.html')) || (await cache.match('./')) || new Response(OFFLINE_FALLBACK_HTML, {
+          status: 200,
+          headers: { 'Content-Type': 'text/html; charset=utf-8' }
+        });
       }
     })());
     return;

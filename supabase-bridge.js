@@ -4,6 +4,8 @@
     client: null,
     ready: false,
     announcements: [],
+    rotationSnapshot: null,
+    machineSettingsSnapshot: [],
     lastError: null
   };
 
@@ -39,26 +41,285 @@
     return null;
   }
 
+  const LOCAL_STATE_KEY = 'rotace_supabase_local_state_v1';
+  const LOCAL_QUEUE_KEY = 'rotace_supabase_queue_v1';
+  const LOCAL_ANNOUNCEMENTS_KEY = 'rotace_supabase_announcements_v1';
+  const LOCAL_MACHINE_SETTINGS_KEY = 'rotace_supabase_machine_settings_v1';
+  let flushPromise = null;
 
+  function safeReadJson(key, fallback) {
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) return fallback;
+      const parsed = JSON.parse(raw);
+      return parsed === undefined ? fallback : parsed;
+    } catch (err) {
+      return fallback;
+    }
+  }
+
+  function safeWriteJson(key, value) {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+      return true;
+    } catch (err) {
+      return false;
+    }
+  }
+
+  function saveLocalSnapshot(rotation, machineSettingsRows) {
+    const snapshot = {
+      updatedAt: new Date().toISOString(),
+      rotation: rotation && typeof rotation === 'object' ? rotation : null,
+      machineSettingsRows: Array.isArray(machineSettingsRows) ? machineSettingsRows : [],
+      announcements: Array.isArray(state.announcements) ? state.announcements : []
+    };
+    safeWriteJson(LOCAL_STATE_KEY, snapshot);
+    if (Array.isArray(machineSettingsRows)) safeWriteJson(LOCAL_MACHINE_SETTINGS_KEY, machineSettingsRows);
+    return snapshot;
+  }
+
+  function readLocalSnapshot() {
+    const snapshot = safeReadJson(LOCAL_STATE_KEY, null);
+    if (snapshot && typeof snapshot === 'object') return snapshot;
+    return null;
+  }
+
+  function readQueue() {
+    const queue = safeReadJson(LOCAL_QUEUE_KEY, []);
+    return Array.isArray(queue) ? queue : [];
+  }
+
+  function writeQueue(queue) {
+    safeWriteJson(LOCAL_QUEUE_KEY, Array.isArray(queue) ? queue : []);
+  }
+
+  function enqueueTask(task) {
+    const queue = readQueue();
+    queue.push(Object.assign({ id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, queuedAt: new Date().toISOString() }, task || {}));
+    writeQueue(queue);
+    return queue[queue.length - 1];
+  }
+
+  function isLikelyOfflineError(err) {
+    const msg = String(err && (err.message || err.statusText || err.code) ? (err.message || err.statusText || err.code) : err || '').toLowerCase();
+    return !navigator.onLine || msg.includes('fetch') || msg.includes('network') || msg.includes('offline') || msg.includes('failed to fetch') || msg.includes('load failed');
+  }
+
+  async function upsertMachineSettingsDirect(client, rows) {
+    let savedCount = 0;
+    const list = Array.isArray(rows) ? rows : [];
+    for (const row of list) {
+      const settings = row && typeof row.settings_json === 'object' && row.settings_json !== null
+        ? row.settings_json
+        : (() => {
+            try { return row && row.settings_json ? JSON.parse(String(row.settings_json)) : {}; }
+            catch (err) { return {}; }
+          })();
+
+      const machineCode = String(row && (row.machine_code || row.machine) ? (row.machine_code || row.machine) : settings.machine || '').trim();
+      const machineIndex = String(row && (row.machine_index || row.index) ? (row.machine_index || row.index) : settings.index || '').trim();
+      const label = String(row && row.label ? row.label : '').trim() || (machineCode + (machineIndex ? '-' + machineIndex : ''));
+      const category = String(row && row.category ? row.category : (String(machineCode).toUpperCase().startsWith('TBKR') ? 'brus' : (String(machineCode).toUpperCase().startsWith('TPKW') ? 'pracka' : 'frezka'))).trim();
+      const machine_key = String(row && row.machine_key ? row.machine_key : (machineCode + (machineIndex ? '-' + machineIndex : ''))).trim();
+
+      const cycleTime = row && row.cycle_time !== '' && row.cycle_time !== null && row.cycle_time !== undefined
+        ? Number(row.cycle_time)
+        : (row && row.speed !== '' && row.speed !== null && row.speed !== undefined ? Number(row.speed) : null);
+      const dressTime = row && row.dress_time !== '' && row.dress_time !== null && row.dress_time !== undefined ? Number(row.dress_time) : null;
+      const dressCount = row && row.dress_count !== '' && row.dress_count !== null && row.dress_count !== undefined ? parseInt(row.dress_count, 10) : null;
+      const payload = {
+        machine_key,
+        machine_code: machineCode || null,
+        machine_index: machineIndex || null,
+        label,
+        category,
+        speed: cycleTime,
+        cycle_time: cycleTime,
+        dress_time: dressTime,
+        dress_count: Number.isFinite(dressCount) ? dressCount : null,
+        settings_json: {
+          machine: machineCode,
+          index: machineIndex,
+          cycle_time: row && row.cycle_time !== '' && row.cycle_time !== null && row.cycle_time !== undefined ? String(row.cycle_time) : (row && row.speed !== '' && row.speed !== null && row.speed !== undefined ? String(row.speed) : ''),
+          dress_time: row && row.dress_time !== '' && row.dress_time !== null && row.dress_time !== undefined ? String(row.dress_time) : '',
+          dress_count: row && row.dress_count !== '' && row.dress_count !== null && row.dress_count !== undefined ? String(row.dress_count) : ''
+        },
+        updated_at: new Date().toISOString()
+      };
+      if (!payload.machine_key || !payload.label) continue;
+      const { error } = await client.from('machine_settings').upsert([payload], { onConflict: 'machine_key' });
+      if (error) throw error;
+      savedCount += 1;
+    }
+    return savedCount;
+  }
+
+  async function upsertRotationStateDirect(client, rotation, meta) {
+    const payload = rotation && typeof rotation === 'object' ? rotation : null;
+    const row = {
+      key: 'main',
+      payload,
+      meta: meta && typeof meta === 'object' ? meta : {},
+      updated_at: new Date().toISOString()
+    };
+    const { error } = await client.from('rotation_state').upsert([row], { onConflict: 'key' });
+    if (error) throw error;
+    return row;
+  }
+
+  async function upsertRotationMonthEntriesDirect(client, monthStart, label, rows) {
+    const monthRow = {
+      month_start: monthStart,
+      label: String(label || '').trim() || null,
+      updated_at: new Date().toISOString()
+    };
+    const { error: monthErr } = await client.from('rotation_months').upsert([monthRow], { onConflict: 'month_start' });
+    if (monthErr) throw monthErr;
+
+    const { error: deleteErr } = await client.from('rotation_entries').delete().eq('month_start', monthStart);
+    if (deleteErr) throw deleteErr;
+
+    const payloadRows = (Array.isArray(rows) ? rows : []).map((row, idx) => ({
+      month_start: monthStart,
+      employee_name: String(row && row.employee_name ? row.employee_name : '').trim(),
+      target_machine: String(row && row.target_machine ? row.target_machine : '').trim() || null,
+      assignment_type: String(row && row.assignment_type ? row.assignment_type : 'work').trim(),
+      shift_code: String(row && row.shift_code ? row.shift_code : '').trim() || null,
+      note: String(row && row.note ? row.note : '').trim() || null,
+      row_order: Number.isFinite(Number(row && row.row_order)) ? Number(row.row_order) : idx
+    })).filter(row => row.employee_name || row.target_machine || row.shift_code || row.note || row.assignment_type !== 'work');
+    let inserted = 0;
+    if (payloadRows.length) {
+      const { error: insertErr } = await client.from('rotation_entries').insert(payloadRows);
+      if (insertErr) throw insertErr;
+      inserted = payloadRows.length;
+    }
+    return { months: 1, entries: inserted };
+  }
+
+  async function upsertGomokuWinDirect(client, entry) {
+    const payload = {
+      player_name: String(entry && entry.name ? entry.name : '').trim(),
+      difficulty: String(entry && entry.difficulty ? entry.difficulty : '').trim(),
+      moves: Number(entry && entry.totalMoves ? entry.totalMoves : 0) || 0,
+      app_version: String(window.APP_VERSION || '').trim(),
+      elapsed_ms: Number(entry && entry.elapsedMs ? entry.elapsedMs : 0) || 0,
+      elapsed_text: String(entry && entry.elapsedText ? entry.elapsedText : '').trim(),
+      x_moves: Number(entry && entry.xMoves ? entry.xMoves : 0) || 0,
+      o_moves: Number(entry && entry.oMoves ? entry.oMoves : 0) || 0
+    };
+    const { data, error } = await client.from('gomoku_wins').insert([payload]).select('*');
+    if (error) throw error;
+    return Array.isArray(data) ? data : [];
+  }
+
+  async function flushPendingWrites() {
+    if (flushPromise) return flushPromise;
+    flushPromise = (async () => {
+      const client = getClient();
+      if (!client || !navigator.onLine) return { ok: false, reason: 'offline-or-missing-client', remaining: readQueue().length };
+
+      const queue = readQueue();
+      if (!queue.length) return { ok: true, flushed: 0, remaining: 0 };
+
+      let flushed = 0;
+      const remaining = [];
+      for (let i = 0; i < queue.length; i += 1) {
+        const task = queue[i];
+        try {
+          if (task.type === 'rotation_state') {
+            await upsertRotationStateDirect(client, task.rotation, task.meta);
+            flushed += 1;
+          } else if (task.type === 'machine_settings') {
+            await upsertMachineSettingsDirect(client, task.rows);
+            flushed += 1;
+          } else if (task.type === 'rotation_month_entries') {
+            await upsertRotationMonthEntriesDirect(client, task.monthStart, task.label, task.rows);
+            flushed += 1;
+          } else if (task.type === 'gomoku_win') {
+            await upsertGomokuWinDirect(client, task.entry);
+            flushed += 1;
+          } else {
+            remaining.push(task);
+          }
+        } catch (err) {
+          if (isLikelyOfflineError(err)) {
+            remaining.push(task, ...queue.slice(i + 1));
+            break;
+          }
+          console.warn('Supabase queued sync failed', err);
+          remaining.push(task, ...queue.slice(i + 1));
+          break;
+        }
+      }
+      writeQueue(remaining);
+      return { ok: true, flushed, remaining: remaining.length };
+    })().finally(() => {
+      flushPromise = null;
+    });
+    return flushPromise;
+  }
+
+  async function enqueueAndMaybeFlush(task) {
+    enqueueTask(task);
+    if (navigator.onLine) {
+      void flushPendingWrites();
+    }
+    return { ok: true, queued: true, remaining: readQueue().length };
+  }
+
+  async function seedFromLocalSnapshot(rotation, machineSettingsRows) {
+    saveLocalSnapshot(rotation, machineSettingsRows);
+    if (!navigator.onLine || !getClient()) {
+      enqueueTask({ type: 'rotation_state', rotation, meta: { source: 'local-seed' } });
+      if (Array.isArray(machineSettingsRows) && machineSettingsRows.length) {
+        enqueueTask({ type: 'machine_settings', rows: machineSettingsRows });
+      }
+      return { ok: true, queued: true, seeded: true };
+    }
+    try {
+      const client = getClient();
+      await upsertRotationStateDirect(client, rotation, { source: 'local-seed' });
+      if (Array.isArray(machineSettingsRows) && machineSettingsRows.length) {
+        await upsertMachineSettingsDirect(client, machineSettingsRows);
+      }
+      await flushPendingWrites();
+      return { ok: true, seeded: true, queued: false };
+    } catch (err) {
+      console.warn('Supabase seed from local snapshot failed', err);
+      enqueueTask({ type: 'rotation_state', rotation, meta: { source: 'local-seed' } });
+      if (Array.isArray(machineSettingsRows) && machineSettingsRows.length) {
+        enqueueTask({ type: 'machine_settings', rows: machineSettingsRows });
+      }
+      return { ok: true, queued: true, seeded: true, reason: 'fallback' };
+    }
+  }
 
   async function refreshPublicData() {
     const client = getClient();
-    if (!client) return null;
-
     try {
-      const announcementsRes = await client
-        .from('announcements')
-        .select('*')
-        .eq('is_active', true)
-        .order('created_at', { ascending: false })
-        .limit(5);
+      if (client && navigator.onLine) {
+        const announcementsRes = await client
+          .from('announcements')
+          .select('*')
+          .eq('is_active', true)
+          .order('created_at', { ascending: false })
+          .limit(5);
 
-      if (announcementsRes && !announcementsRes.error) {
-        state.announcements = Array.isArray(announcementsRes.data) ? announcementsRes.data : [];
+        if (announcementsRes && !announcementsRes.error) {
+          state.announcements = Array.isArray(announcementsRes.data) ? announcementsRes.data : [];
+          safeWriteJson(LOCAL_ANNOUNCEMENTS_KEY, state.announcements);
+        }
+        state.ready = true;
+        state.lastError = null;
+      } else {
+        const cachedAnnouncements = safeReadJson(LOCAL_ANNOUNCEMENTS_KEY, []);
+        if (Array.isArray(cachedAnnouncements) && cachedAnnouncements.length) {
+          state.announcements = cachedAnnouncements;
+          state.ready = true;
+        }
       }
-
-      state.ready = true;
-      state.lastError = null;
 
       if (typeof forceHomeRefresh === 'function') forceHomeRefresh();
       if (typeof window.__rotaceBootHomeRefreshLate === 'function') window.__rotaceBootHomeRefreshLate();
@@ -72,6 +333,12 @@
     } catch (err) {
       state.lastError = err;
       console.warn('Supabase public data refresh failed', err);
+      const cachedAnnouncements = safeReadJson(LOCAL_ANNOUNCEMENTS_KEY, []);
+      if (Array.isArray(cachedAnnouncements) && cachedAnnouncements.length) {
+        state.announcements = cachedAnnouncements;
+        state.ready = true;
+        return { announcements: state.announcements, cached: true };
+      }
       return null;
     }
   }
@@ -221,214 +488,176 @@
   }
 
   async function loadMachineSettings() {
-
     const client = getClient();
-    if (!client) return [];
     try {
-      const { data, error } = await client
-        .from('machine_settings')
-        .select('*')
-        .order('category', { ascending: true })
-        .order('machine_key', { ascending: true });
-      if (error) throw error;
-      return Array.isArray(data) ? data : [];
+      if (client && navigator.onLine) {
+        const { data, error } = await client
+          .from('machine_settings')
+          .select('*')
+          .order('category', { ascending: true })
+          .order('machine_key', { ascending: true });
+        if (error) throw error;
+        const rows = Array.isArray(data) ? data : [];
+        if (rows.length) {
+          state.machineSettingsSnapshot = rows;
+          saveLocalSnapshot(state.rotationSnapshot || null, rows);
+          return rows;
+        }
+      }
     } catch (err) {
       state.lastError = err;
       console.error('Supabase machine settings load failed', err);
-      return [];
     }
+    const cached = readLocalSnapshot();
+    if (cached && Array.isArray(cached.machineSettingsRows) && cached.machineSettingsRows.length) {
+      state.machineSettingsSnapshot = cached.machineSettingsRows;
+      return cached.machineSettingsRows;
+    }
+    return [];
   }
 
   async function saveMachineSettings(rows) {
     const client = getClient();
-    if (!client) return { ok: false, reason: 'missing-client' };
     try {
-      const list = Array.isArray(rows) ? rows : [];
-      for (const row of list) {
-        const settings = row && typeof row.settings_json === 'object' && row.settings_json !== null
-          ? row.settings_json
-          : (() => {
-              try { return row && row.settings_json ? JSON.parse(String(row.settings_json)) : {}; }
-              catch (err) { return {}; }
-            })();
-
-        const machineCode = String(row && (row.machine_code || row.machine) ? (row.machine_code || row.machine) : settings.machine || '').trim();
-        const machineIndex = String(row && (row.machine_index || row.index) ? (row.machine_index || row.index) : settings.index || '').trim();
-        const label = String(row && row.label ? row.label : '').trim() || (machineCode + (machineIndex ? '-' + machineIndex : ''));
-        const category = String(row && row.category ? row.category : (String(machineCode).toUpperCase().startsWith('TBKR') ? 'brus' : (String(machineCode).toUpperCase().startsWith('TPKW') ? 'pracka' : 'frezka'))).trim();
-        const machine_key = String(row && row.machine_key ? row.machine_key : (machineCode + (machineIndex ? '-' + machineIndex : ''))).trim();
-
-        const cycleTime = row && row.cycle_time !== '' && row.cycle_time !== null && row.cycle_time !== undefined
-          ? Number(row.cycle_time)
-          : (row && row.speed !== '' && row.speed !== null && row.speed !== undefined ? Number(row.speed) : null);
-        const dressTime = row && row.dress_time !== '' && row.dress_time !== null && row.dress_time !== undefined ? Number(row.dress_time) : null;
-        const dressCount = row && row.dress_count !== '' && row.dress_count !== null && row.dress_count !== undefined ? parseInt(row.dress_count, 10) : null;
-        const payload = {
-          machine_key,
-          machine_code: machineCode || null,
-          machine_index: machineIndex || null,
-          label,
-          category,
-          speed: cycleTime,
-          cycle_time: cycleTime,
-          dress_time: dressTime,
-          dress_count: Number.isFinite(dressCount) ? dressCount : null,
-          settings_json: {
-            machine: machineCode,
-            index: machineIndex,
-            cycle_time: row && row.cycle_time !== '' && row.cycle_time !== null && row.cycle_time !== undefined ? String(row.cycle_time) : (row && row.speed !== '' && row.speed !== null && row.speed !== undefined ? String(row.speed) : ''),
-            dress_time: row && row.dress_time !== '' && row.dress_time !== null && row.dress_time !== undefined ? String(row.dress_time) : '',
-            dress_count: row && row.dress_count !== '' && row.dress_count !== null && row.dress_count !== undefined ? String(row.dress_count) : ''
-          },
-          updated_at: new Date().toISOString()
-        };
-        if (!payload.machine_key || !payload.label) continue;
-        const { error } = await client.from('machine_settings').upsert([payload], { onConflict: 'machine_key' });
-        if (error) throw error;
+      if (client && navigator.onLine) {
+        const savedCount = await upsertMachineSettingsDirect(client, rows);
+        state.machineSettingsSnapshot = Array.isArray(rows) ? rows : [];
+        saveLocalSnapshot(state.rotationSnapshot || null, rows);
+        await flushPendingWrites();
+        return { ok: true, savedCount, queued: false };
       }
-      return { ok: true };
+      return Object.assign(await enqueueAndMaybeFlush({ type: 'machine_settings', rows }), { savedCount: Array.isArray(rows) ? rows.length : 0 });
     } catch (err) {
       state.lastError = err;
       console.error('Supabase machine settings save failed', err);
+      if (isLikelyOfflineError(err)) {
+        return await enqueueAndMaybeFlush({ type: 'machine_settings', rows });
+      }
       return { ok: false, error: err };
     }
   }
 
   async function loadRotationMonthEntries(monthStart) {
     const client = getClient();
-    if (!client) return [];
     try {
-      const { data, error } = await client
-        .from('rotation_entries')
-        .select('*')
-        .eq('month_start', monthStart)
-        .order('row_order', { ascending: true })
-        .order('employee_name', { ascending: true });
-      if (error) throw error;
-      return Array.isArray(data) ? data : [];
+      if (client && navigator.onLine) {
+        const { data, error } = await client
+          .from('rotation_entries')
+          .select('*')
+          .eq('month_start', monthStart)
+          .order('row_order', { ascending: true })
+          .order('employee_name', { ascending: true });
+        if (error) throw error;
+        return Array.isArray(data) ? data : [];
+      }
     } catch (err) {
       state.lastError = err;
       console.error('Supabase rotation entries load failed', err);
-      return [];
     }
+    return [];
   }
 
   async function saveRotationMonthEntries(monthStart, label, rows) {
     const client = getClient();
-    if (!client) return { ok: false, reason: 'missing-client' };
     try {
-      const monthRow = {
-        month_start: monthStart,
-        label: String(label || '').trim() || null,
-        updated_at: new Date().toISOString()
-      };
-      const { error: monthErr } = await client.from('rotation_months').upsert([monthRow], { onConflict: 'month_start' });
-      if (monthErr) throw monthErr;
-
-      const { error: deleteErr } = await client.from('rotation_entries').delete().eq('month_start', monthStart);
-      if (deleteErr) throw deleteErr;
-
-      const payloadRows = (Array.isArray(rows) ? rows : []).map((row, idx) => ({
-        month_start: monthStart,
-        employee_name: String(row && row.employee_name ? row.employee_name : '').trim(),
-        target_machine: String(row && row.target_machine ? row.target_machine : '').trim() || null,
-        assignment_type: String(row && row.assignment_type ? row.assignment_type : 'work').trim(),
-        shift_code: String(row && row.shift_code ? row.shift_code : '').trim() || null,
-        note: String(row && row.note ? row.note : '').trim() || null,
-        row_order: Number.isFinite(Number(row && row.row_order)) ? Number(row.row_order) : idx
-      })).filter(row => row.employee_name || row.target_machine || row.shift_code || row.note || row.assignment_type !== 'work');
-      if (payloadRows.length) {
-        const { error: insertErr } = await client.from('rotation_entries').insert(payloadRows);
-        if (insertErr) throw insertErr;
+      if (client && navigator.onLine) {
+        const summary = await upsertRotationMonthEntriesDirect(client, monthStart, label, rows);
+        await flushPendingWrites();
+        return { ok: true, queued: false, months: summary.months, entries: summary.entries };
       }
-      return { ok: true };
+      return Object.assign(await enqueueAndMaybeFlush({ type: 'rotation_month_entries', monthStart, label, rows }), { months: 1, entries: Array.isArray(rows) ? rows.length : 0 });
     } catch (err) {
       state.lastError = err;
       console.error('Supabase rotation entries save failed', err);
+      if (isLikelyOfflineError(err)) {
+        return await enqueueAndMaybeFlush({ type: 'rotation_month_entries', monthStart, label, rows });
+      }
       return { ok: false, error: err };
     }
   }
 
   async function loadRotationState() {
     const client = getClient();
-    if (!client) return null;
     try {
-      const { data, error } = await client.from('rotation_state').select('*').eq('key', 'main').maybeSingle();
-      if (error) throw error;
+      if (client && navigator.onLine) {
+        const { data, error } = await client.from('rotation_state').select('*').eq('key', 'main').maybeSingle();
+        if (error) throw error;
 
-      const row = data || null;
-      if (row && (row.payload || row.rotation)) {
-        return {
-          id: row.key || 'main',
-          payload: row.payload || row.rotation || null,
-          updatedAt: row.updated_at || null,
-          meta: row.meta || null
-        };
-      }
-
-      if (typeof loadRotationFromTables === 'function') {
-        const rebuilt = await loadRotationFromTables();
-        if (rebuilt && rebuilt.months && Object.keys(rebuilt.months).length) {
+        const row = data || null;
+        if (row && (row.payload || row.rotation)) {
+          const payload = row.payload || row.rotation || null;
+          state.rotationSnapshot = payload;
+          saveLocalSnapshot(payload, state.machineSettingsSnapshot || []);
           return {
-            id: row && row.key ? row.key : 'main',
-            payload: rebuilt,
-            updatedAt: row && row.updated_at ? row.updated_at : null,
-            meta: { source: 'tables' }
+            id: row.key || 'main',
+            payload,
+            updatedAt: row.updated_at || null,
+            meta: row.meta || null
           };
         }
-      }
 
-      return row ? {
-        id: row.key || 'main',
-        payload: row.payload || row.rotation || null,
-        updatedAt: row.updated_at || null,
-        meta: row.meta || null
-      } : null;
+        if (typeof loadRotationFromTables === 'function') {
+          const rebuilt = await loadRotationFromTables();
+          if (rebuilt && rebuilt.months && Object.keys(rebuilt.months).length) {
+            state.rotationSnapshot = rebuilt;
+            saveLocalSnapshot(rebuilt, state.machineSettingsSnapshot || []);
+            return {
+              id: row && row.key ? row.key : 'main',
+              payload: rebuilt,
+              updatedAt: row && row.updated_at ? row.updated_at : null,
+              meta: { source: 'tables' }
+            };
+          }
+        }
+      }
     } catch (err) {
       state.lastError = err;
       console.warn('Supabase rotation load failed', err);
-      return null;
     }
+
+    const snapshot = readLocalSnapshot();
+    if (snapshot && snapshot.rotation) {
+      state.rotationSnapshot = snapshot.rotation;
+      return {
+        id: 'main',
+        payload: snapshot.rotation,
+        updatedAt: snapshot.updatedAt || null,
+        meta: { source: 'local-cache' }
+      };
+    }
+
+    return null;
   }
 
   async function saveRotationState(rotation, meta) {
     const client = getClient();
-    if (!client) return { ok: false, reason: 'missing-client' };
     try {
-      const payload = rotation && typeof rotation === 'object' ? rotation : null;
-      const row = {
-        key: 'main',
-        payload,
-        meta: meta && typeof meta === 'object' ? meta : {},
-        updated_at: new Date().toISOString()
-      };
-      const { error } = await client.from('rotation_state').upsert([row], { onConflict: 'key' });
-      if (error) throw error;
-
-      let verifiedRow = null;
-      try {
-        const verify = await client.from('rotation_state').select('updated_at').eq('key', 'main').maybeSingle();
-        if (verify && verify.error) throw verify.error;
-        verifiedRow = verify && verify.data ? verify.data : null;
-      } catch (verifyErr) {
-        console.warn('Supabase rotation save verify skipped', verifyErr);
+      if (client && navigator.onLine) {
+        const row = await upsertRotationStateDirect(client, rotation, meta);
+        state.rotationSnapshot = rotation && typeof rotation === 'object' ? rotation : null;
+        saveLocalSnapshot(state.rotationSnapshot, state.machineSettingsSnapshot || []);
+        await flushPendingWrites();
+        return {
+          ok: true,
+          queued: false,
+          verified: true,
+          updatedAt: row.updated_at
+        };
       }
-
-      return {
-        ok: true,
-        verified: !!verifiedRow,
-        updatedAt: verifiedRow && verifiedRow.updated_at ? verifiedRow.updated_at : row.updated_at
-      };
+      return await enqueueAndMaybeFlush({ type: 'rotation_state', rotation, meta });
     } catch (err) {
       state.lastError = err;
       console.warn('Supabase rotation save failed', err);
+      if (isLikelyOfflineError(err)) {
+        return await enqueueAndMaybeFlush({ type: 'rotation_state', rotation, meta });
+      }
       return { ok: false, error: err };
     }
   }
 
   async function loadGomokuWins(limit) {
     const client = getClient();
-    if (!client) return [];
+    if (!client || !navigator.onLine) return [];
     try {
       const res = await client
         .from('gomoku_wins')
@@ -446,24 +675,19 @@
 
   async function sendGomokuWin(entry) {
     const client = getClient();
-    if (!client) return { ok: false, reason: 'missing-client' };
     try {
-      const payload = {
-        player_name: String(entry && entry.name ? entry.name : '').trim(),
-        difficulty: String(entry && entry.difficulty ? entry.difficulty : '').trim(),
-        moves: Number(entry && entry.totalMoves ? entry.totalMoves : 0) || 0,
-        app_version: String(window.APP_VERSION || '').trim(),
-        elapsed_ms: Number(entry && entry.elapsedMs ? entry.elapsedMs : 0) || 0,
-        elapsed_text: String(entry && entry.elapsedText ? entry.elapsedText : '').trim(),
-        x_moves: Number(entry && entry.xMoves ? entry.xMoves : 0) || 0,
-        o_moves: Number(entry && entry.oMoves ? entry.oMoves : 0) || 0
-      };
-      const { data, error } = await client.from('gomoku_wins').insert([payload]).select('*');
-      if (error) throw error;
-      return { ok: true, data: Array.isArray(data) ? data : [] };
+      if (client && navigator.onLine) {
+        const data = await upsertGomokuWinDirect(client, entry);
+        await flushPendingWrites();
+        return { ok: true, queued: false, data };
+      }
+      return await enqueueAndMaybeFlush({ type: 'gomoku_win', entry });
     } catch (err) {
       state.lastError = err;
       console.error('Supabase win insert failed', err);
+      if (isLikelyOfflineError(err)) {
+        return await enqueueAndMaybeFlush({ type: 'gomoku_win', entry });
+      }
       return { ok: false, error: err };
     }
   }
@@ -474,8 +698,9 @@
   function init() {
     if (state.ready) return refreshPublicData();
     if (!hasClient()) {
-      return null;
+      return refreshPublicData();
     }
+    void flushPendingWrites();
     return refreshPublicData();
   }
 
@@ -492,13 +717,23 @@
     saveMachineSettings,
     loadRotationMonthEntries,
     saveRotationMonthEntries,
+    seedFromLocalSnapshot,
+    flushPendingWrites,
     getBridgeText,
     getCanteenStatus,
     getState: () => ({ ...state })
   };
 
+  window.flushSupabaseSyncQueue = flushPendingWrites;
+  window.seedSupabaseFromLocalSnapshot = seedFromLocalSnapshot;
+
   window.getSupabaseAnnouncement = getBridgeText;
   window.getSupabaseCanteenStatus = getCanteenStatus;
+
+  window.addEventListener('online', () => {
+    void flushPendingWrites();
+    void refreshPublicData();
+  });
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init, { once: true });
