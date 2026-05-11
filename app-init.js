@@ -7,7 +7,7 @@ function bindAdminSecretUnlock() {
 
   document.addEventListener('click', (event) => {
     const target = event.target && typeof event.target.closest === 'function'
-      ? event.target.closest('[data-admin-secret="contact"]')
+      ? event.target.closest('.bottomNavMenuBtn')
       : null;
     if (!target) return;
     if (typeof app !== 'undefined' && app.adminUnlocked) return;
@@ -16,12 +16,12 @@ function bindAdminSecretUnlock() {
     clearTimeout(tapTimer);
     tapTimer = setTimeout(() => { tapCount = 0; }, 1200);
 
-    if (tapCount < 5) return;
+    if (tapCount < 3) return;
     tapCount = 0;
 
     const user = prompt('Jméno:') || '';
     const pass = prompt('Heslo:') || '';
-    if (user.trim() === 'Spada' && pass.trim() === 'Sp4d4M772326') {
+    if (pass.trim() === '772326') {
       if (typeof app !== 'undefined') {
         app.adminUnlocked = true;
         app.contactTapCount = 0;

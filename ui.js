@@ -1059,7 +1059,9 @@ function tttBestMove(board, difficulty) {
   const immediateWin = tttWinningMove(board, 'O');
   if (immediateWin >= 0) return immediateWin;
   const immediateBlock = tttWinningMove(board, 'X');
+  const dangerMoves = tttCriticalThreatMoves(board, 'X');
   if (immediateBlock >= 0) return immediateBlock;
+  if (dangerMoves && dangerMoves.length) return dangerMoves[0];
 
   const forcedWin = tttOpenThreeThreatMoves(board, 'O');
   if (forcedWin.length === 1) return forcedWin[0];
@@ -2715,6 +2717,7 @@ function refreshHomeScreen() {
   }
   try {
     if (typeof updateEportalTile === 'function') updateEportalTile();
+    if (typeof updateDashboardTttCard === 'function') updateDashboardTttCard();
   } catch (err) {
     console.warn('Eportal tile refresh failed', err);
   }
@@ -2813,4 +2816,21 @@ function ensureFoodScheduleModal() {
 
   document.body.appendChild(overlay);
   return overlay;
+}
+
+async function updateDashboardTttCard() {
+  try {
+    if (typeof tttRefreshHardWinRows === 'function') {
+      await tttRefreshHardWinRows(false);
+    }
+    const rows = typeof tttGetHardWinRows === 'function' ? tttGetHardWinRows().slice(0,3) : [];
+    const meta = document.getElementById('dashTttMeta');
+    if (meta) {
+      meta.textContent = rows.length
+        ? rows.map((r,i)=> `${i+1}. ${r.name} (${r.totalMoves} tahů)`).join(' • ')
+        : 'Zatím žádné výhry';
+    }
+  } catch (err) {
+    console.warn('TTT dashboard failed', err);
+  }
 }
