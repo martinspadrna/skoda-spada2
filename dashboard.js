@@ -1,4 +1,4 @@
-// Extracted dashboard logic (v1(316))
+// Extracted dashboard logic (v1(317))
 function updateDashboard() {
   const now = typeof getPragueNow === 'function' ? getPragueNow(new Date()) : new Date();
   const active = typeof getActiveShiftNow === 'function' ? getActiveShiftNow(now) : null;
@@ -93,6 +93,7 @@ function updateDashboard() {
   const palmIcon = iconImg(DASHBOARD_ICON_SRC.palm);
   const bookIcon = iconImg(DASHBOARD_ICON_SRC.document);
   const eportalIcon = iconImg(DASHBOARD_ICON_SRC.eportal);
+  const tttIcon = iconImg('data:image/svg+xml;charset=UTF-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4.2" y="4.2" width="15.6" height="15.6" rx="3.2"></rect><path d="M8 8l4 4"></path><path d="M12 8l-4 4"></path><path d="M8 16l4-4"></path><circle cx="16" cy="8.8" r="1.7"></circle></svg>'));
 
   const payDate = typeof getNextPayrollDate === 'function' ? getNextPayrollDate(now) : null;
   const payDateText = payDate
@@ -110,14 +111,13 @@ function updateDashboard() {
   const foodText = status => status.isOpen && status.active ? ('Otevřeno do ' + formatFoodTime(status.active.end)) : 'Zavřeno';
   const foodDot = status => status.isOpen ? 'is-open' : 'is-closed';
   const foodMeta = status => {
-    if (!status.next) return 'otevření není známé';
-    const today = new Date(now);
-    today.setHours(0, 0, 0, 0);
-    const nextStart = new Date(status.next.start);
-    nextStart.setHours(0, 0, 0, 0);
-    const diffDays = Math.round((nextStart - today) / 86400000);
-    const time = formatFoodTime(status.next.start);
-    return diffDays <= 0 ? ('otevřeno dnes v ' + time) : (diffDays === 1 ? ('otevřeno zítra v ' + time) : ('otevřeno ' + formatFoodRelativeLabel(status.next.start, now) + ' v ' + time));
+    if (status.isOpen && status.active) {
+      const openUntil = 'do ' + formatFoodTime(status.active.end);
+      if (!status.next) return openUntil;
+      return openUntil + '; poté otevřeno od ' + formatFoodTime(status.next.start) + ' do ' + formatFoodTime(status.next.end);
+    }
+    if (!status.next) return 'Rozpis není dostupný.';
+    return 'poté otevřeno od ' + formatFoodTime(status.next.start) + ' do ' + formatFoodTime(status.next.end);
   };
   setCard('dashKantyna', 'Kantýna', foodText(kantyna), foodMeta(kantyna), foodDot(kantyna), true, croissantIcon);
   setCard('dashJidelna', 'Jídelna', foodText(jidelna), foodMeta(jidelna), foodDot(jidelna), true, plateIcon);
@@ -125,6 +125,7 @@ function updateDashboard() {
   setCard('dashCzd', 'Odpočet do dovolené', vacationCountdown.text, vacationCountdown.meta, '', false, palmIcon);
   setCard('dashFoodLink', 'Jídelní lístek', 'Otevřít', 'Aktuální menu', '', true, bookIcon);
   setCard('dashEportalLink', 'Eportal', 'Otevřít', 'Firemní portál', '', true, eportalIcon);
+  setCard('dashTttLink', 'Piškvorky', 'Hrát', '', '', true, tttIcon);
 }
 
 function scheduleDashboardInitialPaint() {

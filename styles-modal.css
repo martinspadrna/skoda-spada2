@@ -165,6 +165,17 @@ body.foodModalOpen{
   color:var(--text);
   line-height:1.35;
   text-align:left;
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+}
+
+.foodScheduleWindowLine{
+  font-weight:700;
+}
+
+.foodScheduleWindowEmpty{
+  opacity:.8;
 }
 
 

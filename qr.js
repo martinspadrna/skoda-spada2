@@ -208,22 +208,15 @@ function foodStatusText(status) {
 
 function foodStatusMeta(status, location) {
   if (status.isOpen && status.active) {
-    return "do " + formatFoodTime(status.active.end);
+    const openUntil = "do " + formatFoodTime(status.active.end);
+    if (!status.next) return openUntil;
+    return openUntil + "; poté otevřeno od " + formatFoodTime(status.next.start) + " do " + formatFoodTime(status.next.end);
   }
   if (!status.next) {
     return "Rozpis není dostupný.";
   }
 
-  const today = getPragueNow(new Date());
-  today.setHours(0, 0, 0, 0);
-  const nextStart = new Date(status.next.start);
-  nextStart.setHours(0, 0, 0, 0);
-  const diffDays = Math.round((nextStart - today) / 86400000);
-  const range = formatFoodRange(status.next.start, status.next.end);
-
-  if (diffDays <= 0) return "poté v " + range;
-  if (diffDays === 1) return "poté zítra v " + range;
-  return "poté " + formatFoodRelativeLabel(status.next.start, new Date()) + " v " + range;
+  return "poté otevřeno od " + formatFoodTime(status.next.start) + " do " + formatFoodTime(status.next.end);
 }
 
 function isPayrollWorkday(date) {
@@ -340,7 +333,7 @@ function getFoodScheduleLocation(which) {
 
 function formatFoodWindowsList(windows) {
   if (!Array.isArray(windows) || !windows.length) return 'Zavřeno';
-  return windows.map(item => item[0] + '–' + item[1]).join(', ');
+  return windows.map(item => item[0] + '–' + item[1]).join('\n');
 }
 
 function formatFoodDayLabel(dayIndex) {
@@ -383,9 +376,10 @@ function buildFoodScheduleGroups(location) {
 function buildFoodScheduleHtml(location) {
   const rows = buildFoodScheduleGroups(location).map((group) => {
     const dayLabel = formatFoodDayRangeLabel(group.startDay, group.endDay);
+    const windowsHtml = (Array.isArray(group.windows) && group.windows.length ? group.windows.map(window => '<div class="foodScheduleWindowLine">' + escapeHtml(window[0] + '–' + window[1]) + '</div>').join('') : '<div class="foodScheduleWindowLine foodScheduleWindowEmpty">Zavřeno</div>');
     return '<div class="foodScheduleRow">' +
       '<div class="foodScheduleDay">' + escapeHtml(dayLabel) + '</div>' +
-      '<div class="foodScheduleWindows">' + escapeHtml(formatFoodWindowsList(group.windows)) + '</div>' +
+      '<div class="foodScheduleWindows">' + windowsHtml + '</div>' +
     '</div>';
   }).join('');
 

@@ -1235,15 +1235,8 @@ function tttGetHardWinRows() {
 function tttUpdateDashboardMeta() {
   const el = document.getElementById('dashTttMeta');
   if (!el) return;
-  const state = tttGetState();
-  if (state.hardWinLoading) {
-    el.classList.add('isLoading');
-    el.textContent = 'Načítám Top 3…';
-    return;
-  }
   el.classList.remove('isLoading');
-  const rows = tttGetHardWinRows();
-  el.textContent = rows.length ? 'Top 3 online připravené' : 'Top 3 online: zatím bez výsledků';
+  el.textContent = '';
 }
 
 async function tttRefreshHardWinRows(forceRender) {
@@ -1713,22 +1706,12 @@ function tttLayoutBoard() {
 
 function triggerAboutAction() {
   const state = typeof app !== 'undefined' ? app : null;
-  if (!state) {
-    openAppMenu('about');
-    return;
-  }
-  state.aboutTapCount = (state.aboutTapCount || 0) + 1;
-  if (state.aboutTapTimer) clearTimeout(state.aboutTapTimer);
-  if (state.aboutTapCount >= 3) {
+  if (state) {
     state.aboutTapCount = 0;
-    openTicTacToeGame();
-    return;
+    if (state.aboutTapTimer) clearTimeout(state.aboutTapTimer);
+    state.aboutTapTimer = null;
   }
-  state.aboutTapTimer = setTimeout(() => {
-    const taps = state.aboutTapCount || 0;
-    state.aboutTapCount = 0;
-    if (taps > 0) openAppMenu('about');
-  }, 320);
+  openAppMenu('about');
 }
 
 function buildAppHistoryHtml(versionText) {
@@ -1741,7 +1724,7 @@ function buildAppHistoryHtml(versionText) {
         'Dashboard ukazuje další směnu D, kdo na ní chybí, a u průběhu směny i procenta.',
         'Odpočet do dovolené doplňuje, jestli jde o CZD nebo Vánoce.',
         'Kalkulačky pro frézky a brusy umí dopočítat i čas hotovosti.',
-        'Bonus: piškvorky se otevírají po trojkliku na O aplikaci.'
+        'Piškvorky najdeš přímo na dashboardu.'
       ]
     },
     {
@@ -2563,14 +2546,12 @@ function showFoodSchedule(which) {
     const overlay = ensureFoodScheduleModal();
     overlay.classList.add('isVisible');
     document.body.classList.add('foodModalOpen');
-    setBottomNavActive('home');
     return;
   }
   if (typeof renderFoodSchedulePage === 'function') {
     renderFoodSchedulePage();
   }
   showPage('jidlo');
-  setBottomNavActive('home');
 }
 
 
