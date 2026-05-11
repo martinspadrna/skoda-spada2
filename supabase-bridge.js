@@ -166,322 +166,26 @@
     return { months };
   }
 
+
   function defaultMachineSettingsRows() {
     return [
-      { machine_key: 'FZK01', label: 'Frézka 01', category: 'frezka', speed: null, settings_json: { machine: '', index: '', dress_time: '', dress_count: '' } },
-      { machine_key: 'FZK02', label: 'Frézka 02', category: 'frezka', speed: null, settings_json: { machine: '', index: '', dress_time: '', dress_count: '' } },
-      { machine_key: 'TPKW01', label: 'Pračka TPKW01', category: 'pracka', speed: null, settings_json: { machine: '', index: '', dress_time: '', dress_count: '' } },
-      { machine_key: 'TPKW02', label: 'Pračka TPKW02', category: 'pracka', speed: null, settings_json: { machine: '', index: '', dress_time: '', dress_count: '' } },
-
-      { machine_key: 'TBKR01_AD', label: 'TBKR01 / AD', category: 'brus', speed: 58.2, settings_json: { machine: 'TBKR01', index: 'AD', dress_time: 323, dress_count: 59 } },
-      { machine_key: 'TBKR01_ADV', label: 'TBKR01 / ADV', category: 'brus', speed: 62.7, settings_json: { machine: 'TBKR01', index: 'ADV', dress_time: 240, dress_count: 45 } },
-      { machine_key: 'TBKR01_AE', label: 'TBKR01 / AE', category: 'brus', speed: 57.0, settings_json: { machine: 'TBKR01', index: 'AE', dress_time: 240, dress_count: 58 } },
-      { machine_key: 'TBKR01_AEV', label: 'TBKR01 / AEV', category: 'brus', speed: 60.0, settings_json: { machine: 'TBKR01', index: 'AEV', dress_time: 240, dress_count: 45 } },
-      { machine_key: 'TBKR01_AH', label: 'TBKR01 / AH', category: 'brus', speed: 66.0, settings_json: { machine: 'TBKR01', index: 'AH', dress_time: 400, dress_count: 87 } },
-
-      { machine_key: 'TBKR07_AD', label: 'TBKR07 / AD', category: 'brus', speed: 58.2, settings_json: { machine: 'TBKR07', index: 'AD', dress_time: 298, dress_count: 59 } },
-      { machine_key: 'TBKR07_ADV', label: 'TBKR07 / ADV', category: 'brus', speed: 60.3, settings_json: { machine: 'TBKR07', index: 'ADV', dress_time: 240, dress_count: 45 } },
-      { machine_key: 'TBKR07_AE', label: 'TBKR07 / AE', category: 'brus', speed: 56.4, settings_json: { machine: 'TBKR07', index: 'AE', dress_time: 325, dress_count: 59 } },
-      { machine_key: 'TBKR07_AEV', label: 'TBKR07 / AEV', category: 'brus', speed: 60.0, settings_json: { machine: 'TBKR07', index: 'AEV', dress_time: 240, dress_count: 45 } },
-      { machine_key: 'TBKR07_AH', label: 'TBKR07 / AH', category: 'brus', speed: 63.0, settings_json: { machine: 'TBKR07', index: 'AH', dress_time: 240, dress_count: 65 } }
+      { machine_key: 'FREZKY', machine_code: 'FREZKY', machine_index: '', label: 'Frezky', category: 'frezka', cycle_time: null, dress_time: null, dress_count: null, settings_json: { machine: 'FREZKY', index: '', cycle_time: '', dress_time: '', dress_count: '' } },
+      { machine_key: 'TPKW01', machine_code: 'TPKW01', machine_index: '', label: 'Pračka', category: 'pracka', cycle_time: null, dress_time: null, dress_count: null, settings_json: { machine: 'TPKW01', index: '', cycle_time: '', dress_time: '', dress_count: '' } },
+      { machine_key: 'TBKR01-AD', machine_code: 'TBKR01', machine_index: 'AD', label: 'TBKR01-AD', category: 'brus', cycle_time: 58.2, dress_time: 323, dress_count: 59, settings_json: { machine: 'TBKR01', index: 'AD', cycle_time: '58.2', dress_time: '323', dress_count: '59' } },
+      { machine_key: 'TBKR01-AE', machine_code: 'TBKR01', machine_index: 'AE', label: 'TBKR01-AE', category: 'brus', cycle_time: 57.0, dress_time: 240, dress_count: 58, settings_json: { machine: 'TBKR01', index: 'AE', cycle_time: '57.0', dress_time: '240', dress_count: '58' } },
+      { machine_key: 'TBKR01-AH', machine_code: 'TBKR01', machine_index: 'AH', label: 'TBKR01-AH', category: 'brus', cycle_time: 66.0, dress_time: 400, dress_count: 87, settings_json: { machine: 'TBKR01', index: 'AH', cycle_time: '66.0', dress_time: '400', dress_count: '87' } },
+      { machine_key: 'TBKR01-AD volné', machine_code: 'TBKR01', machine_index: 'AD volné', label: 'TBKR01-AD volné', category: 'brus', cycle_time: 62.7, dress_time: 240, dress_count: 45, settings_json: { machine: 'TBKR01', index: 'AD volné', cycle_time: '62.7', dress_time: '240', dress_count: '45' } },
+      { machine_key: 'TBKR01-AE volné', machine_code: 'TBKR01', machine_index: 'AE volné', label: 'TBKR01-AE volné', category: 'brus', cycle_time: 60.0, dress_time: 240, dress_count: 45, settings_json: { machine: 'TBKR01', index: 'AE volné', cycle_time: '60.0', dress_time: '240', dress_count: '45' } },
+      { machine_key: 'TBKR07-AD', machine_code: 'TBKR07', machine_index: 'AD', label: 'TBKR07-AD', category: 'brus', cycle_time: 58.2, dress_time: 298, dress_count: 59, settings_json: { machine: 'TBKR07', index: 'AD', cycle_time: '58.2', dress_time: '298', dress_count: '59' } },
+      { machine_key: 'TBKR07-AE', machine_code: 'TBKR07', machine_index: 'AE', label: 'TBKR07-AE', category: 'brus', cycle_time: 56.4, dress_time: 325, dress_count: 59, settings_json: { machine: 'TBKR07', index: 'AE', cycle_time: '56.4', dress_time: '325', dress_count: '59' } },
+      { machine_key: 'TBKR07-AH', machine_code: 'TBKR07', machine_index: 'AH', label: 'TBKR07-AH', category: 'brus', cycle_time: 63.0, dress_time: 240, dress_count: 65, settings_json: { machine: 'TBKR07', index: 'AH', cycle_time: '63.0', dress_time: '240', dress_count: '65' } },
+      { machine_key: 'TBKR07-AD volné', machine_code: 'TBKR07', machine_index: 'AD volné', label: 'TBKR07-AD volné', category: 'brus', cycle_time: 60.3, dress_time: 240, dress_count: 45, settings_json: { machine: 'TBKR07', index: 'AD volné', cycle_time: '60.3', dress_time: '240', dress_count: '45' } },
+      { machine_key: 'TBKR07-AE volné', machine_code: 'TBKR07', machine_index: 'AE volné', label: 'TBKR07-AE volné', category: 'brus', cycle_time: 60.0, dress_time: 240, dress_count: 45, settings_json: { machine: 'TBKR07', index: 'AE volné', cycle_time: '60.0', dress_time: '240', dress_count: '45' } }
     ];
   }
 
-  function buildRotationProjection(rotation) {
-    const months = rotation && rotation.months && typeof rotation.months === 'object' ? rotation.months : {};
-    const monthRows = [];
-    const entryRows = [];
-    const now = new Date().toISOString();
-
-    Object.entries(months).forEach(([monthKey, month]) => {
-      const monthStart = monthKeyToMonthStart(monthKey);
-      if (!monthStart || !month || typeof month !== 'object') return;
-      monthRows.push({
-        month_start: monthStart,
-        label: String(monthKey || '').trim() || null,
-        updated_at: now
-      });
-
-      const pushRow = (section, row, rowIndex, machineName, cellIndex, cellValue) => {
-        const value = String(cellValue || '').trim();
-        if (!value) return;
-        entryRows.push({
-          month_start: monthStart,
-          employee_name: value,
-          target_machine: String(machineName || '').trim() || null,
-          assignment_type: String(section || 'work').trim(),
-          shift_code: String(row && row.date ? row.date : '').trim() || null,
-          note: row && row.text ? String(row.text).trim() : null,
-          row_order: (rowIndex * 100) + cellIndex,
-          updated_at: now
-        });
-      };
-
-      const hard = month.hard && Array.isArray(month.hard.rows) ? month.hard.rows : [];
-      const hardMachines = month.hard && Array.isArray(month.hard.machines) ? month.hard.machines : [];
-      hard.forEach((row, rowIndex) => {
-        const cells = Array.isArray(row && row.cells) ? row.cells : [];
-        cells.forEach((cellValue, cellIndex) => pushRow('hard', row, rowIndex, hardMachines[cellIndex], cellIndex, cellValue));
-      });
-
-      const soft = month.soft && Array.isArray(month.soft.rows) ? month.soft.rows : [];
-      const softMachines = month.soft && Array.isArray(month.soft.machines) ? month.soft.machines : [];
-      soft.forEach((row, rowIndex) => {
-        const cells = Array.isArray(row && row.cells) ? row.cells : [];
-        cells.forEach((cellValue, cellIndex) => pushRow('soft', row, rowIndex, softMachines[cellIndex], cellIndex, cellValue));
-      });
-
-      const notes = Array.isArray(month.notes) ? month.notes : [];
-      notes.forEach((note, rowIndex) => {
-        const person = String(note && note.person ? note.person : '').trim();
-        if (!person) return;
-        entryRows.push({
-          month_start: monthStart,
-          employee_name: person,
-          target_machine: String(note && note.code ? note.code : '').trim() || null,
-          assignment_type: 'note',
-          shift_code: String(note && note.date ? note.date : '').trim() || null,
-          note: String(note && note.text ? note.text : '').trim() || null,
-          row_order: 9000 + rowIndex,
-          updated_at: now
-        });
-      });
-    });
-
-    return { monthRows, entryRows };
-  }
-
-  async function saveRotationProjection(rotation) {
-    const client = getClient();
-    if (!client) return { ok: false, reason: 'missing-client' };
-    try {
-      const { monthRows, entryRows } = buildRotationProjection(rotation);
-      if (monthRows.length) {
-        const { error: monthErr } = await client.from('rotation_months').upsert(monthRows, { onConflict: 'month_start' });
-        if (monthErr) throw monthErr;
-      }
-      if (monthRows.length) {
-        const monthStarts = [...new Set(monthRows.map(row => row.month_start))];
-        if (monthStarts.length) {
-          const { error: deleteErr } = await client.from('rotation_entries').delete().in('month_start', monthStarts);
-          if (deleteErr) throw deleteErr;
-        }
-      }
-      if (entryRows.length) {
-        for (let i = 0; i < entryRows.length; i += 500) {
-          const chunk = entryRows.slice(i, i + 500);
-          const { error: insertErr } = await client.from('rotation_entries').insert(chunk);
-          if (insertErr) throw insertErr;
-        }
-      }
-      return { ok: true, months: monthRows.length, entries: entryRows.length };
-    } catch (err) {
-      state.lastError = err;
-      console.error('Supabase rotation projection save failed', err);
-      return { ok: false, error: err };
-    }
-  }
-
-  async function seedFromLocalSnapshot(rotation, machineRows) {
-    const client = getClient();
-    if (!client) return { ok: false, reason: 'missing-client' };
-    try {
-      const [monthCountRes, entryCountRes, machineCountRes] = await Promise.all([
-        client.from('rotation_months').select('month_start', { count: 'exact', head: true }),
-        client.from('rotation_entries').select('id', { count: 'exact', head: true }),
-        client.from('machine_settings').select('id', { count: 'exact', head: true })
-      ]);
-      const monthCount = Number(monthCountRes && monthCountRes.count) || 0;
-      const entryCount = Number(entryCountRes && entryCountRes.count) || 0;
-      const machineCount = Number(machineCountRes && machineCountRes.count) || 0;
-
-      const payload = rotation && rotation.months ? rotation : null;
-      if (!payload) return { ok: false, reason: 'missing-rotation' };
-
-      let seeded = false;
-      if (!machineCount) {
-        const machines = Array.isArray(machineRows) && machineRows.length ? machineRows : defaultMachineSettingsRows();
-        const machineResult = await saveMachineSettings(machines);
-        if (!machineResult || machineResult.ok !== true) throw (machineResult && machineResult.error ? machineResult.error : new Error('Seed machine settings failed.'));
-        seeded = true;
-      }
-
-      if (!monthCount || !entryCount) {
-        const rotationResult = await saveRotationState(payload, { source: 'seed' });
-        if (!rotationResult || rotationResult.ok !== true) throw (rotationResult && rotationResult.error ? rotationResult.error : new Error('Seed rotation failed.'));
-        seeded = true;
-      }
-
-      return {
-        ok: true,
-        seeded,
-        months: monthCount,
-        entries: entryCount,
-        machines: machineCount
-      };
-    } catch (err) {
-      state.lastError = err;
-      console.error('Supabase seed failed', err);
-      return { ok: false, error: err };
-    }
-  }
-
-  async function loadRotationState() {
-    const client = getClient();
-    if (!client) return null;
-    try {
-      const { data, error } = await client.from('rotation_state').select('*').eq('key', 'main').maybeSingle();
-      if (error) throw error;
-      const row = data || null;
-      const payload = row ? (row.payload || row.rotation || null) : null;
-      const normalizedPayload = payload && typeof payload === 'object' && !Array.isArray(payload) && Object.keys(payload).length ? payload : null;
-      if (row && normalizedPayload) {
-        return {
-          id: row.key || 'main',
-          payload: normalizedPayload,
-          updatedAt: row.updated_at || null,
-          meta: row.meta || null
-        };
-      }
-
-      const [monthRowsRes, entryRowsRes] = await Promise.all([
-        client.from('rotation_months').select('*').order('month_start', { ascending: true }),
-        client.from('rotation_entries').select('*').order('month_start', { ascending: true }).order('row_order', { ascending: true })
-      ]);
-      const monthRows = monthRowsRes && !monthRowsRes.error ? (Array.isArray(monthRowsRes.data) ? monthRowsRes.data : []) : [];
-      const entryRows = entryRowsRes && !entryRowsRes.error ? (Array.isArray(entryRowsRes.data) ? entryRowsRes.data : []) : [];
-      const reconstructed = rebuildRotationFromTables(monthRows, entryRows);
-      return reconstructed && reconstructed.months && Object.keys(reconstructed.months).length ? {
-        id: row && row.key ? row.key : 'main',
-        payload: reconstructed,
-        updatedAt: row && row.updated_at ? row.updated_at : null,
-        meta: row && row.meta ? row.meta : null,
-        source: 'tables'
-      } : null;
-    } catch (err) {
-      state.lastError = err;
-      console.warn('Supabase rotation load failed', err);
-      return null;
-    }
-  }
-
-  async function saveRotationState(rotation, meta) {
-    const client = getClient();
-    if (!client) return { ok: false, reason: 'missing-client' };
-    try {
-      const payload = rotation && typeof rotation === 'object' ? rotation : null;
-      const row = {
-        key: 'main',
-        payload,
-        meta: meta && typeof meta === 'object' ? meta : {},
-        updated_at: new Date().toISOString()
-      };
-      const { error } = await client.from('rotation_state').upsert([row], { onConflict: 'key' });
-      if (error) throw error;
-
-      const verify = await client.from('rotation_state').select('*').eq('key', 'main').maybeSingle();
-      if (verify && verify.error) throw verify.error;
-      const verifiedRow = verify && verify.data ? verify.data : null;
-
-      const projection = payload ? await saveRotationProjection(payload) : { ok: true, months: 0, entries: 0 };
-      if (!projection || projection.ok !== true) throw (projection && projection.error ? projection.error : new Error('Rotation projection save failed.'));
-
-      return {
-        ok: true,
-        verified: !!verifiedRow,
-        updatedAt: verifiedRow && verifiedRow.updated_at ? verifiedRow.updated_at : row.updated_at,
-        months: projection.months || 0,
-        entries: projection.entries || 0
-      };
-    } catch (err) {
-      state.lastError = err;
-      console.warn('Supabase rotation save failed', err);
-      return { ok: false, error: err };
-    }
-  }
-
-  async function loadGomokuWins(limit) {
-    const client = getClient();
-    if (!client) return [];
-    try {
-      const res = await client
-        .from('gomoku_wins')
-        .select('player_name,difficulty,moves,elapsed_ms,elapsed_text,x_moves,o_moves,created_at,app_version')
-        .order('created_at', { ascending: false })
-        .limit(Math.max(1, Math.min(100, Number(limit) || 20)));
-      if (res && res.error) throw res.error;
-      return Array.isArray(res && res.data) ? res.data : [];
-    } catch (err) {
-      state.lastError = err;
-      console.error('Supabase win list load failed', err);
-      return [];
-    }
-  }
-
-  async function refreshPublicData() {
-    const client = getClient();
-    if (!client) return null;
-
-    try {
-      const announcementsRes = await client.from('announcements').select('*').eq('is_active', true).order('created_at', { ascending: false }).limit(5);
-
-      if (announcementsRes && !announcementsRes.error) {
-        state.announcements = Array.isArray(announcementsRes.data) ? announcementsRes.data : [];
-      }
-
-      state.ready = true;
-      state.lastError = null;
-
-      if (typeof forceHomeRefresh === 'function') forceHomeRefresh();
-      if (typeof window.__rotaceBootHomeRefreshLate === 'function') window.__rotaceBootHomeRefreshLate();
-      else {
-        if (typeof updateDashboard === 'function') updateDashboard();
-        if (typeof updateFoodTile === 'function') updateFoodTile();
-        if (typeof updateEportalTile === 'function') updateEportalTile();
-      }
-
-      return { announcements: state.announcements };
-    } catch (err) {
-      state.lastError = err;
-      console.warn('Supabase public data refresh failed', err);
-      return null;
-    }
-  }
-
-  async function sendGomokuWin(entry) {
-    const client = getClient();
-    if (!client) return { ok: false, reason: 'missing-client' };
-    try {
-      const payload = {
-        player_name: String(entry && entry.name ? entry.name : '').trim(),
-        difficulty: String(entry && entry.difficulty ? entry.difficulty : '').trim(),
-        moves: Number(entry && entry.totalMoves ? entry.totalMoves : 0) || 0,
-        app_version: String(window.APP_VERSION || '').trim(),
-        elapsed_ms: Number(entry && entry.elapsedMs ? entry.elapsedMs : 0) || 0,
-        elapsed_text: String(entry && entry.elapsedText ? entry.elapsedText : '').trim(),
-        x_moves: Number(entry && entry.xMoves ? entry.xMoves : 0) || 0,
-        o_moves: Number(entry && entry.oMoves ? entry.oMoves : 0) || 0,
-      };
-      const { error } = await client.from('gomoku_wins').insert([payload]);
-      if (error) throw error;
-      try {
-        if (typeof window.loadTTTLeaderboard === 'function') {
-          setTimeout(() => {
-            try { window.loadTTTLeaderboard(true); } catch (err) { console.warn(err); }
-          }, 150);
-        }
-      } catch (err) {
-        console.warn(err);
-      }
-      return { ok: true, savedCount: 1 };
-    } catch (err) {
-      state.lastError = err;
-      console.error('Supabase win insert failed', err);
-      return { ok: false, error: err };
-    }
-  }
-
   async function loadMachineSettings() {
+
     const client = getClient();
     if (!client) return [];
     try {
@@ -505,17 +209,41 @@
     try {
       const list = Array.isArray(rows) ? rows : [];
       for (const row of list) {
+        const settings = row && typeof row.settings_json === 'object' && row.settings_json !== null
+          ? row.settings_json
+          : (() => {
+              try { return row && row.settings_json ? JSON.parse(String(row.settings_json)) : {}; }
+              catch (err) { return {}; }
+            })();
+
+        const machineCode = String(row && (row.machine_code || row.machine) ? (row.machine_code || row.machine) : settings.machine || '').trim();
+        const machineIndex = String(row && (row.machine_index || row.index) ? (row.machine_index || row.index) : settings.index || '').trim();
+        const label = String(row && row.label ? row.label : '').trim() || (machineCode + (machineIndex ? '-' + machineIndex : ''));
+        const category = String(row && row.category ? row.category : (String(machineCode).toUpperCase().startsWith('TBKR') ? 'brus' : (String(machineCode).toUpperCase().startsWith('TPKW') ? 'pracka' : 'frezka'))).trim();
+        const machine_key = String(row && row.machine_key ? row.machine_key : (machineCode + (machineIndex ? '-' + machineIndex : ''))).trim();
+
+        const cycleTime = row && row.cycle_time !== '' && row.cycle_time !== null && row.cycle_time !== undefined
+          ? Number(row.cycle_time)
+          : (row && row.speed !== '' && row.speed !== null && row.speed !== undefined ? Number(row.speed) : null);
+        const dressTime = row && row.dress_time !== '' && row.dress_time !== null && row.dress_time !== undefined ? Number(row.dress_time) : null;
+        const dressCount = row && row.dress_count !== '' && row.dress_count !== null && row.dress_count !== undefined ? parseInt(row.dress_count, 10) : null;
         const payload = {
-          machine_key: String(row && row.machine_key ? row.machine_key : '').trim(),
-          label: String(row && row.label ? row.label : '').trim(),
-          category: String(row && row.category ? row.category : 'general').trim(),
-          speed: row && row.speed !== '' && row.speed !== null && row.speed !== undefined ? Number(row.speed) : null,
-          settings_json: row && typeof row.settings_json === 'object' && row.settings_json !== null
-            ? row.settings_json
-            : (() => {
-                try { return row && row.settings_json ? JSON.parse(String(row.settings_json)) : {}; }
-                catch (err) { return {}; }
-              })(),
+          machine_key,
+          machine_code: machineCode || null,
+          machine_index: machineIndex || null,
+          label,
+          category,
+          speed: cycleTime,
+          cycle_time: cycleTime,
+          dress_time: dressTime,
+          dress_count: Number.isFinite(dressCount) ? dressCount : null,
+          settings_json: {
+            machine: machineCode,
+            index: machineIndex,
+            cycle_time: row && row.cycle_time !== '' && row.cycle_time !== null && row.cycle_time !== undefined ? String(row.cycle_time) : (row && row.speed !== '' && row.speed !== null && row.speed !== undefined ? String(row.speed) : ''),
+            dress_time: row && row.dress_time !== '' && row.dress_time !== null && row.dress_time !== undefined ? String(row.dress_time) : '',
+            dress_count: row && row.dress_count !== '' && row.dress_count !== null && row.dress_count !== undefined ? String(row.dress_count) : ''
+          },
           updated_at: new Date().toISOString()
         };
         if (!payload.machine_key || !payload.label) continue;

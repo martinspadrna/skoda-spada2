@@ -1952,46 +1952,35 @@ function adminNotesRowTemplate(row, rowIndex, allowBlankTail) {
 function buildAdminMachineSettingsTableHtml() {
   const rows = Array.isArray(app.machineSettingsRows) ? app.machineSettingsRows : [];
   const dataRows = rows.length ? rows : [
-    { machine_key: 'FZK01', label: 'Frézka 01', category: 'frezka', speed: '', settings_json: { machine: '', index: '', dress_time: '', dress_count: '' } },
-    { machine_key: 'FZK02', label: 'Frézka 02', category: 'frezka', speed: '', settings_json: { machine: '', index: '', dress_time: '', dress_count: '' } },
-    { machine_key: 'TPKW01', label: 'Pračka TPKW01', category: 'pracka', speed: '', settings_json: { machine: '', index: '', dress_time: '', dress_count: '' } },
-    { machine_key: 'TPKW02', label: 'Pračka TPKW02', category: 'pracka', speed: '', settings_json: { machine: '', index: '', dress_time: '', dress_count: '' } },
-    { machine_key: 'TBKR01_AD', label: 'TBKR01 / AD', category: 'brus', speed: '58.2', settings_json: { machine: 'TBKR01', index: 'AD', dress_time: '323', dress_count: '59' } },
-    { machine_key: 'TBKR01_ADV', label: 'TBKR01 / ADV', category: 'brus', speed: '62.7', settings_json: { machine: 'TBKR01', index: 'ADV', dress_time: '240', dress_count: '45' } },
-    { machine_key: 'TBKR01_AE', label: 'TBKR01 / AE', category: 'brus', speed: '57.0', settings_json: { machine: 'TBKR01', index: 'AE', dress_time: '240', dress_count: '58' } },
-    { machine_key: 'TBKR01_AEV', label: 'TBKR01 / AEV', category: 'brus', speed: '60.0', settings_json: { machine: 'TBKR01', index: 'AEV', dress_time: '240', dress_count: '45' } },
-    { machine_key: 'TBKR01_AH', label: 'TBKR01 / AH', category: 'brus', speed: '66.0', settings_json: { machine: 'TBKR01', index: 'AH', dress_time: '400', dress_count: '87' } },
-    { machine_key: 'TBKR07_AD', label: 'TBKR07 / AD', category: 'brus', speed: '58.2', settings_json: { machine: 'TBKR07', index: 'AD', dress_time: '298', dress_count: '59' } },
-    { machine_key: 'TBKR07_ADV', label: 'TBKR07 / ADV', category: 'brus', speed: '60.3', settings_json: { machine: 'TBKR07', index: 'ADV', dress_time: '240', dress_count: '45' } },
-    { machine_key: 'TBKR07_AE', label: 'TBKR07 / AE', category: 'brus', speed: '56.4', settings_json: { machine: 'TBKR07', index: 'AE', dress_time: '325', dress_count: '59' } },
-    { machine_key: 'TBKR07_AEV', label: 'TBKR07 / AEV', category: 'brus', speed: '60.0', settings_json: { machine: 'TBKR07', index: 'AEV', dress_time: '240', dress_count: '45' } },
-    { machine_key: 'TBKR07_AH', label: 'TBKR07 / AH', category: 'brus', speed: '63.0', settings_json: { machine: 'TBKR07', index: 'AH', dress_time: '240', dress_count: '65' } },
-    { machine_key: '', label: '', category: 'general', speed: '', settings_json: { machine: '', index: '', dress_time: '', dress_count: '' } }
+    { machine_key: 'FREZKY', machine_code: 'FREZKY', machine_index: '', label: 'Frezky', category: 'frezka', cycle_time: '', dress_time: '', dress_count: '' },
+    { machine_key: 'TPKW01', machine_code: 'TPKW01', machine_index: '', label: 'Pračka', category: 'pracka', cycle_time: '', dress_time: '', dress_count: '' },
+    { machine_key: 'TBKR01-AD', machine_code: 'TBKR01', machine_index: 'AD', label: 'TBKR01-AD', category: 'brus', cycle_time: '58.2', dress_time: '323', dress_count: '59' },
+    { machine_key: 'TBKR01-AE', machine_code: 'TBKR01', machine_index: 'AE', label: 'TBKR01-AE', category: 'brus', cycle_time: '57.0', dress_time: '240', dress_count: '58' },
+    { machine_key: 'TBKR01-AH', machine_code: 'TBKR01', machine_index: 'AH', label: 'TBKR01-AH', category: 'brus', cycle_time: '66.0', dress_time: '400', dress_count: '87' },
+    { machine_key: 'TBKR01-AD volné', machine_code: 'TBKR01', machine_index: 'AD volné', label: 'TBKR01-AD volné', category: 'brus', cycle_time: '62.7', dress_time: '240', dress_count: '45' },
+    { machine_key: 'TBKR01-AE volné', machine_code: 'TBKR01', machine_index: 'AE volné', label: 'TBKR01-AE volné', category: 'brus', cycle_time: '60.0', dress_time: '240', dress_count: '45' },
+    { machine_key: 'TBKR07-AD', machine_code: 'TBKR07', machine_index: 'AD', label: 'TBKR07-AD', category: 'brus', cycle_time: '58.2', dress_time: '298', dress_count: '59' },
+    { machine_key: 'TBKR07-AE', machine_code: 'TBKR07', machine_index: 'AE', label: 'TBKR07-AE', category: 'brus', cycle_time: '56.4', dress_time: '325', dress_count: '59' },
+    { machine_key: 'TBKR07-AH', machine_code: 'TBKR07', machine_index: 'AH', label: 'TBKR07-AH', category: 'brus', cycle_time: '63.0', dress_time: '240', dress_count: '65' },
+    { machine_key: 'TBKR07-AD volné', machine_code: 'TBKR07', machine_index: 'AD volné', label: 'TBKR07-AD volné', category: 'brus', cycle_time: '60.3', dress_time: '240', dress_count: '45' },
+    { machine_key: 'TBKR07-AE volné', machine_code: 'TBKR07', machine_index: 'AE volné', label: 'TBKR07-AE volné', category: 'brus', cycle_time: '60.0', dress_time: '240', dress_count: '45' }
   ];
 
   const tr = dataRows.map((row, idx) => {
     const settings = row && typeof row.settings_json === 'object' && row.settings_json !== null ? row.settings_json : {};
-    const cycleTime = row.speed ?? settings.cycle_time ?? settings.cycleTime ?? '';
-    const machine = settings.machine ?? settings.wheel ?? settings.brus ?? settings.grind ?? '';
-    const index = settings.index ?? settings.grind_index ?? '';
-    const dressTime = settings.dress_time ?? settings.orovnani_time ?? settings.dressTime ?? '';
-    const dressCount = settings.dress_count ?? settings.orovnani_count ?? settings.dressCount ?? '';
+    const machineCode = String(row.machine_code || settings.machine || splitMachineKey(row.machine_key).machine || '').trim();
+    const machineIndex = String(row.machine_index || settings.index || splitMachineKey(row.machine_key).index || '').trim();
+    const cycleTime = row.cycle_time ?? row.speed ?? settings.cycle_time ?? settings.cycleTime ?? '';
+    const dressTime = row.dress_time ?? settings.dress_time ?? settings.orovnani_time ?? settings.dressTime ?? '';
+    const dressCount = row.dress_count ?? settings.dress_count ?? settings.orovnani_count ?? settings.dressCount ?? '';
     return [
       '<tr data-machine-row-index="' + String(idx) + '">',
-      '  <td><input class="appMenuInlineInput" data-machine-field="machine_key" value="' + escapeHtml(String(row.machine_key || '')) + '" placeholder="kód"></td>',
-      '  <td><input class="appMenuInlineInput" data-machine-field="label" value="' + escapeHtml(String(row.label || '')) + '" placeholder="název"></td>',
-      '  <td><select class="appMenuInlineInput" data-machine-field="category">',
-      '    <option value="frezka"' + (String(row.category || '') === 'frezka' ? ' selected' : '') + '>frézka</option>',
-      '    <option value="brus"' + (String(row.category || '') === 'brus' ? ' selected' : '') + '>brus</option>',
-      '    <option value="pracka"' + (String(row.category || '') === 'pracka' ? ' selected' : '') + '>pračka</option>',
-      '    <option value="general"' + (String(row.category || 'general') === 'general' ? ' selected' : '') + '>ostatní</option>',
-      '  </select></td>',
-      '  <td><input class="appMenuInlineInput" data-machine-field="machine" value="' + escapeHtml(String(machine ?? '')) + '" placeholder="stroj"></td>',
-      '  <td><input class="appMenuInlineInput" data-machine-field="index" value="' + escapeHtml(String(index ?? '')) + '" placeholder="index"></td>',
-      '  <td><input class="appMenuInlineInput" data-machine-field="speed" value="' + escapeHtml(String(cycleTime ?? '')) + '" placeholder="čas kola"></td>',
-      
-      '  <td><input class="appMenuInlineInput" data-machine-field="dress_time" value="' + escapeHtml(String(dressTime ?? '')) + '" placeholder="orovnání"></td>',
-      '  <td><input class="appMenuInlineInput" data-machine-field="dress_count" value="' + escapeHtml(String(dressCount ?? '')) + '" placeholder="kusů"></td>',
+      '  <td><input class="appMenuInlineInput" data-machine-field="label" value="' + escapeHtml(String(row.label || '')) + '" placeholder="Název"></td>',
+      '  <td><input class="appMenuInlineInput" data-machine-field="machine_code" value="' + escapeHtml(machineCode) + '" placeholder="Stroj"></td>',
+      '  <td><input class="appMenuInlineInput" data-machine-field="machine_index" value="' + escapeHtml(machineIndex) + '" placeholder="Index"></td>',
+      '  <td><input class="appMenuInlineInput" data-machine-field="cycle_time" value="' + escapeHtml(String(cycleTime ?? '')) + '" placeholder="Čas výroby kola"></td>',
+      '  <td><input class="appMenuInlineInput" data-machine-field="dress_time" value="' + escapeHtml(String(dressTime ?? '')) + '" placeholder="Čas orovnání"></td>',
+      '  <td><input class="appMenuInlineInput" data-machine-field="dress_count" value="' + escapeHtml(String(dressCount ?? '')) + '" placeholder="Po kolika ks"></td>',
       '</tr>'
     ].join('');
   }).join('');
@@ -1999,17 +1988,19 @@ function buildAdminMachineSettingsTableHtml() {
   return [
     '<div class="appMenuSubSection">',
     '  <div class="appMenuSubTitle">Nastavení strojů</div>',
-    '  <div class="appMenuText">Vyplň hodnoty do tabulky a ulož online. Bez kódování a bez JSON editoru.</div>',
+    '  <div class="appMenuText">Každý stroj je jeden řádek. U brusů se zapisuje stroj + index + parametry.</div>',
     '  <div class="tableWrap appMenuTableWrap">',
     '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense">',
-    '      <thead><tr><th>Kód</th><th>Název</th><th>Typ</th><th>Stroj</th><th>Index</th><th>Čas kola</th><th>Čas orovnání</th><th>Kusů po orovnání</th></tr></thead>',
+    '      <thead><tr><th>Název</th><th>Stroj</th><th>Index</th><th>Čas výroby kola</th><th>Čas orovnání</th><th>Po kolika ks</th></tr></thead>',
     '      <tbody>' + tr + '</tbody>',
     '    </table>',
     '  </div>',
     '</div>'
   ].join('');
 }
+
 function buildAdminRotationTableHtml(monthKey) {
+
   const month = app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
   if (!month) {
     return '<div class="smallText">Pro tenhle měsíc zatím nejsou data.</div>';
@@ -2062,22 +2053,27 @@ function readAdminMachineSettingsFromDom() {
   const rows = [];
   document.querySelectorAll('#appMenuBody tr[data-machine-row-index]').forEach((tr) => {
     const get = (field) => tr.querySelector('[data-machine-field="' + field + '"]')?.value ?? '';
-    const machine_key = String(get('machine_key')).trim();
     const label = String(get('label')).trim();
-    const category = String(get('category')).trim() || 'general';
-    const speedRaw = String(get('speed')).trim();
-    const machine = String(get('machine')).trim();
-    const index = String(get('index')).trim();
+    const machine_code = String(get('machine_code')).trim();
+    const machine_index = String(get('machine_index')).trim();
+    const cycle_time = String(get('cycle_time')).trim();
     const dress_time = String(get('dress_time')).trim();
     const dress_count = String(get('dress_count')).trim();
-    if (!machine_key && !label && !speedRaw && !machine && !index && !dress_time && !dress_count) return;
+    const category = machine_code.toUpperCase().startsWith('TBKR') ? 'brus' : (machine_code.toUpperCase().startsWith('TPKW') ? 'pracka' : 'frezka');
+    const machine_key = makeMachineKey(machine_code, machine_index, category);
+    if (!machine_key && !label && !cycle_time && !dress_time && !dress_count) return;
 
     rows.push({
       machine_key,
+      machine_code,
+      machine_index,
       label: label || machine_key,
       category,
-      speed: speedRaw,
-      settings_json: { machine, index, dress_time, dress_count }
+      cycle_time,
+      speed: cycle_time,
+      dress_time,
+      dress_count,
+      settings_json: { machine: machine_code, index: machine_index, cycle_time, dress_time, dress_count }
     });
   });
   return rows;
@@ -2171,22 +2167,51 @@ async function saveAdminRotationFromDom(monthKey) {
 }
 
 
-function renderAdminMenuBody(body) {
+
+function renderAdminMenuBody(body, section) {
+  const mode = String(section || 'home').trim() || 'home';
   const months = getAdminRotationMonthKeys();
   const monthKey = getAdminSelectedMonthKey();
-  const title = months.length ? 'Administrace' : 'Administrace';
-  const machineRows = Array.isArray(app.machineSettingsRows) ? app.machineSettingsRows : [];
-  body.innerHTML = [
+  body.dataset.adminView = mode;
+
+  const homeHtml = [
     '<div class="appMenuCard appMenuAdminCard">',
-    '  <div class="appMenuCardTitle">' + escapeHtml(title) + '</div>',
+    '  <div class="appMenuCardTitle">Administrace</div>',
     '  <div class="appMenuText">',
-    '    <div>Nejprve stroje, pak rozpisy, a export až úplně dole. Všechno se ukládá online přes Supabase.</div>',
-    '    <div class="smallText" id="adminOnlineSaveStatus">Stav uložení se zobrazí po každém kliknutí na Uložit.</div>',
+    '    <div>Nejprve stroje, pak rozpisy a export až nakonec. Všechno se ukládá online přes Supabase.</div>',
+    '    <div class="smallText" id="adminOnlineSaveStatus">Vyber sekci, kterou chceš upravit.</div>',
+    '  </div>',
+    '  <div class="appMenuSettingsList">',
+    '    <button type="button" class="appMenuAction" data-admin-action="open-machines">Nastavení strojů</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="open-rotation">Rozpisy</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="open-export">Export / import</button>',
+    '  </div>',
+    '  <button type="button" class="appMenuAction appMenuBack" data-menu-back="1">Zpět</button>',
+    '</div>'
+  ].join('');
+
+  const machinesHtml = [
+    '<div class="appMenuCard appMenuAdminCard">',
+    '  <div class="appMenuCardTitle">Nastavení strojů</div>',
+    '  <div class="appMenuText">',
+    '    <div>Každý stroj je jeden řádek. U brusů se zapisuje stroj + index + parametry.</div>',
+    '    <div class="smallText" id="adminOnlineSaveStatus">Stav uložení se zobrazí po kliknutí na Uložit stroje.</div>',
     '  </div>',
     buildAdminMachineSettingsTableHtml(),
     '  <div class="appMenuActionRow">',
-    '    <button type="button" class="appMenuAction" data-admin-action="load-machines">Načíst stroje</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="load-machines">Načíst online</button>',
     '    <button type="button" class="appMenuAction isActive" data-admin-action="save-machines">Uložit stroje</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
+    '  </div>',
+    '</div>'
+  ].join('');
+
+  const rotationHtml = [
+    '<div class="appMenuCard appMenuAdminCard">',
+    '  <div class="appMenuCardTitle">Rozpisy</div>',
+    '  <div class="appMenuText">',
+    '    <div>Vyber měsíc a uprav si rozpis. Změny se ukládají online a hned se promítnou zpět do aplikace.</div>',
+    '    <div class="smallText" id="adminOnlineSaveStatus">Stav uložení se zobrazí po kliknutí na Uložit rozpis.</div>',
     '  </div>',
     '  <label class="appMenuLabel" for="adminMonthSelect">Měsíc</label>',
     '  <select id="adminMonthSelect" class="appMenuSelect">' + months.map(m => '<option value="' + escapeHtml(m) + '"' + (m === monthKey ? ' selected' : '') + '>' + escapeHtml(m) + '</option>').join('') + '</select>',
@@ -2194,22 +2219,36 @@ function renderAdminMenuBody(body) {
     '    <button type="button" class="appMenuAction" data-admin-action="load-month">Načíst měsíc</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="load-online">Načíst online</button>',
     '    <button type="button" class="appMenuAction isActive" data-admin-action="save-rotation">Uložit rozpis</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
     '  </div>',
     buildAdminRotationTableHtml(monthKey),
-    '  <div class="appMenuCard appMenuSubSection">',
-    '    <div class="appMenuSubTitle">Export celé aplikace</div>',
-    '    <div class="appMenuActionRow">',
-    '      <button type="button" class="appMenuAction" data-admin-action="import">Import Excelu</button>',
-    '      <button type="button" class="appMenuAction" data-admin-action="export">Export ZIP</button>',
-    '    </div>',
+    '</div>'
+  ].join('');
+
+  const exportHtml = [
+    '<div class="appMenuCard appMenuAdminCard">',
+    '  <div class="appMenuCardTitle">Export / import</div>',
+    '  <div class="appMenuText">',
+    '    <div>Tahle část je schovaná jen tady, aby běžné menu zůstalo čisté.</div>',
     '  </div>',
     '  <div class="appMenuActionRow">',
-    '    <button type="button" class="appMenuAction" data-menu-back="1">Zpět</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="import">Import Excelu</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="export">Export ZIP</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
     '  </div>',
     '</div>'
   ].join('');
-}
 
+  if (mode === 'machines') {
+    body.innerHTML = machinesHtml;
+  } else if (mode === 'rotation') {
+    body.innerHTML = rotationHtml;
+  } else if (mode === 'export') {
+    body.innerHTML = exportHtml;
+  } else {
+    body.innerHTML = homeHtml;
+  }
+}
 
 function openAppMenu(view) {
   const page = ensureAppMenuOverlay();
@@ -2267,13 +2306,35 @@ function openAppMenu(view) {
       void (async () => {
         try {
           await loadAdminMachineSettingsFromSupabase();
-          await loadAdminRotationFromSupabase();
-          renderAdminMenuBody(body);
+          renderAdminMenuBody(body, 'home');
         } catch (err) {
           console.warn('Admin preload failed', err);
-          renderAdminMenuBody(body);
+          renderAdminMenuBody(body, 'home');
         }
       })();
+    } else if (v === 'admin-machines') {
+      void (async () => {
+        try {
+          await loadAdminMachineSettingsFromSupabase();
+          renderAdminMenuBody(body, 'machines');
+        } catch (err) {
+          console.warn('Admin machines preload failed', err);
+          renderAdminMenuBody(body, 'machines');
+        }
+      })();
+    } else if (v === 'admin-rotation') {
+      void (async () => {
+        try {
+          await loadAdminRotationFromSupabase();
+          await loadAdminMachineSettingsFromSupabase();
+          renderAdminMenuBody(body, 'rotation');
+        } catch (err) {
+          console.warn('Admin rotation preload failed', err);
+          renderAdminMenuBody(body, 'rotation');
+        }
+      })();
+    } else if (v === 'admin-export') {
+      renderAdminMenuBody(body, 'export');
     } else {
       body.innerHTML = [
         '<div class="appMenuGrid">',
@@ -2300,6 +2361,12 @@ function openAppMenu(view) {
           openAppMenu('contact');
         } else if (action === 'admin') {
           openAppMenu('admin');
+        } else if (action === 'admin-machines') {
+          openAppMenu('admin-machines');
+        } else if (action === 'admin-rotation') {
+          openAppMenu('admin-rotation');
+        } else if (action === 'admin-export') {
+          openAppMenu('admin-export');
         } else if (action === 'reset-state') {
           if (confirm('Smazat uložený stav aplikace?')) {
             try {
@@ -2320,9 +2387,26 @@ function openAppMenu(view) {
 body.querySelectorAll('[data-admin-action]').forEach(btn => {
   btn.addEventListener('click', async () => {
     const action = btn.getAttribute('data-admin-action');
+    const currentView = String(body.dataset.adminView || 'home');
     const select = body.querySelector('#adminMonthSelect');
     const monthKey = select ? select.value : getAdminSelectedMonthKey();
     try {
+      if (action === 'back-admin') {
+        openAppMenu('admin');
+        return;
+      }
+      if (action === 'open-machines') {
+        openAppMenu('admin-machines');
+        return;
+      }
+      if (action === 'open-rotation') {
+        openAppMenu('admin-rotation');
+        return;
+      }
+      if (action === 'open-export') {
+        openAppMenu('admin-export');
+        return;
+      }
       if (action === 'load-month') {
         if (monthKey) {
           app.selectedMonth = monthKey;
@@ -2332,15 +2416,23 @@ body.querySelectorAll('[data-admin-action]').forEach(btn => {
         }
       } else if (action === 'load-online') {
         await loadAdminRotationFromSupabase();
-        renderAdminMenuBody(body);
+        renderAdminMenuBody(body, currentView);
         return;
       } else if (action === 'save-rotation') {
-        await saveAdminRotationFromDom(monthKey);
-        alert('Rozpis uložený online.');
+        const result = await saveAdminRotationFromDom(monthKey);
+        const statusEl = document.getElementById('adminOnlineSaveStatus');
+        if (statusEl) {
+          statusEl.textContent = result && result.saveResult && result.saveResult.ok === true
+            ? ('Rozpis uložený online ✓ · měsíců: ' + String(result.saveResult.months || 0) + ' · řádků: ' + String(result.saveResult.entries || 0))
+            : 'Rozpis se nepodařilo uložit online.';
+        }
+        alert(result && result.saveResult && result.saveResult.ok === true
+          ? ('Rozpis uložený online ✓ · měsíců: ' + String(result.saveResult.months || 0) + ' · řádků: ' + String(result.saveResult.entries || 0))
+          : 'Rozpis se nepodařilo uložit online.');
       } else if (action === 'load-machines') {
         if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.loadMachineSettings === 'function') {
           app.machineSettingsRows = await window.RotationSupabaseBridge.loadMachineSettings();
-          renderAdminMenuBody(body);
+          renderAdminMenuBody(body, currentView);
           return;
         }
       } else if (action === 'save-machines') {
@@ -2349,7 +2441,7 @@ body.querySelectorAll('[data-admin-action]').forEach(btn => {
           const result = await window.RotationSupabaseBridge.saveMachineSettings(rows);
           if (result && result.ok === false) throw (result.error || new Error('Uložení strojů selhalo.'));
           app.machineSettingsRows = rows;
-          renderAdminMenuBody(body);
+          renderAdminMenuBody(body, currentView);
           const statusEl = document.getElementById('adminOnlineSaveStatus');
           if (statusEl) statusEl.textContent = 'Stroje uložené online ✓' + ((result && result.savedCount) ? (' · řádků: ' + result.savedCount) : '');
           alert('Nastavení strojů uložené online ✓' + ((result && result.savedCount) ? (' · řádků: ' + result.savedCount) : ''));
@@ -2362,7 +2454,7 @@ body.querySelectorAll('[data-admin-action]').forEach(btn => {
         document.getElementById('exportBtn')?.click();
         return;
       }
-      renderAdminMenuBody(body);
+      renderAdminMenuBody(body, currentView);
     } catch (err) {
       console.error('Admin action failed', err);
       alert(err && err.message ? err.message : 'Administrace se nepodařila uložit.');

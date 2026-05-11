@@ -31,6 +31,20 @@ if (typeof window.normalizeShiftText !== 'function') {
   };
 }
 
+
+if (typeof window.parseDateToken !== 'function') {
+  window.parseDateToken = function parseDateToken(token) {
+    const m = /^(\d{1,2})\.(\d{1,2})\.\s*(.*)$/.exec(String(token || ''));
+    if (!m) return null;
+    return {
+      day: parseInt(m[1], 10),
+      month: parseInt(m[2], 10),
+      shift: typeof normalizeShiftText === 'function' ? normalizeShiftText(m[3] || '') : String(m[3] || '').trim().replace(/\s+/g, ' '),
+      sortDate: new Date(2026, parseInt(m[2], 10) - 1, parseInt(m[1], 10)).toISOString()
+    };
+  };
+}
+
 if (typeof window.absenceLabelFromCode !== 'function') {
   window.absenceLabelFromCode = function absenceLabelFromCode(code) {
     const raw = String(code || '').trim();
@@ -238,7 +252,7 @@ function buildStatsForYear(year) {
       if (!sec || !Array.isArray(sec.rows)) return;
 
       sec.rows.forEach(row => {
-        const parsedDate = parseDateToken(row.date);
+        const parsedDate = typeof parseDateToken === 'function' ? parseDateToken(row.date) : null;
         if (!parsedDate) return;
         const isSunday = isSundayForMonthKey(monthKey, parsedDate.day);
         const isSundayMorning = isSunday && /^R/.test(parsedDate.shift || "");
@@ -306,7 +320,7 @@ function buildStatsForYear(year) {
       const n = normalizeNoteEntry(note);
       if (!n.isAbsence || !n.people || !n.people.length) return;
 
-      const parsedDate = parseDateToken(n.date);
+      const parsedDate = typeof parseDateToken === 'function' ? parseDateToken(n.date) : null;
       const shift = n.shift || (parsedDate ? parsedDate.shift : "");
 
       n.people.forEach(personName => {
@@ -616,7 +630,7 @@ function getAbsenceNamesForDate(date) {
   month.notes.forEach(note => {
     const n = normalizeNoteEntry(note);
     if (!n || !n.isAbsence || !Array.isArray(n.people) || !n.people.length) return;
-    const parsed = parseDateToken(n.date);
+    const parsed = typeof parseDateToken === 'function' ? parseDateToken(n.date) : null;
     if (!parsed || parsed.day !== target.getDate() || parsed.month !== (target.getMonth() + 1)) return;
     n.people.forEach(person => {
       const name = String(person || "").trim();

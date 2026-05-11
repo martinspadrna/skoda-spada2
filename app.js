@@ -1,4 +1,4 @@
-// v.1(296) – robustness: globální error handler, ring buffer chyb, self-test po načtení, Supabase bridge.
+// v.1(298) – robustness: globální error handler, ring buffer chyb, self-test po načtení, Supabase bridge.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
@@ -58,10 +58,10 @@
     "core.js",
     "qr.js",
     "payroll.js",
+    "brusy.js",
     "stats.js",
     "dashboard.js",
     "soustruhy.js",
-    "brusy.js",
     "rotace.js",
     "ui.js",
     "export.js",
