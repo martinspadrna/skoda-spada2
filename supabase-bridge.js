@@ -6,7 +6,8 @@
     announcements: [],
     rotationSnapshot: null,
     machineSettingsSnapshot: [],
-    lastError: null
+    lastError: null,
+    syncStatus: { mode: 'online', text: '🟢 Online synchronizováno' }
   };
 
   function hasClient() {
@@ -45,6 +46,8 @@
   const LOCAL_QUEUE_KEY = 'rotace_supabase_queue_v1';
   const LOCAL_ANNOUNCEMENTS_KEY = 'rotace_supabase_announcements_v1';
   const LOCAL_MACHINE_SETTINGS_KEY = 'rotace_supabase_machine_settings_v1';
+  const MACHINE_SETTINGS_CACHE_KEY = 'machine_settings_cache';
+  const ANNOUNCEMENTS_CACHE_KEY = 'announcements_cache';
   let flushPromise = null;
 
   function safeReadJson(key, fallback) {
@@ -67,15 +70,63 @@
     }
   }
 
+  function buildCacheEnvelope(data) {
+    return {
+      updatedAt: Date.now(),
+      version: String(window.APP_VERSION || '').trim(),
+      data
+    };
+  }
+
+  function readCacheEnvelope(key, fallback) {
+    const raw = safeReadJson(key, null);
+    if (raw == null) return { updatedAt: null, version: '', data: fallback };
+    if (Array.isArray(raw)) return { updatedAt: null, version: '', data: raw };
+    if (raw && typeof raw === 'object') {
+      if (Array.isArray(raw.data)) {
+        return {
+          updatedAt: Number(raw.updatedAt || raw.updated_at || 0) || null,
+          version: String(raw.version || raw.appVersion || '').trim(),
+          data: raw.data
+        };
+      }
+      return {
+        updatedAt: Number(raw.updatedAt || raw.updated_at || 0) || null,
+        version: String(raw.version || raw.appVersion || '').trim(),
+        data: fallback
+      };
+    }
+    return { updatedAt: null, version: '', data: fallback };
+  }
+
+  function writeCacheEnvelope(key, data) {
+    safeWriteJson(key, buildCacheEnvelope(data));
+  }
+
+  function notifySyncStatus(mode, detail) {
+    const text = String(detail || '').trim();
+    state.syncStatus = { mode: mode || 'online', text };
+    if (typeof window.setSyncStatusIndicator === 'function') {
+      window.setSyncStatusIndicator(mode || 'online', text);
+    } else if (typeof app !== 'undefined') {
+      app.syncStatus = { mode: mode || 'online', text };
+    }
+    return state.syncStatus;
+  }
+
+
   function saveLocalSnapshot(rotation, machineSettingsRows) {
     const snapshot = {
-      updatedAt: new Date().toISOString(),
+      updatedAt: Date.now(),
+      version: String(window.APP_VERSION || '').trim(),
       rotation: rotation && typeof rotation === 'object' ? rotation : null,
       machineSettingsRows: Array.isArray(machineSettingsRows) ? machineSettingsRows : [],
       announcements: Array.isArray(state.announcements) ? state.announcements : []
     };
     safeWriteJson(LOCAL_STATE_KEY, snapshot);
-    if (Array.isArray(machineSettingsRows)) safeWriteJson(LOCAL_MACHINE_SETTINGS_KEY, machineSettingsRows);
+    if (Array.isArray(machineSettingsRows)) writeCacheEnvelope(MACHINE_SETTINGS_CACHE_KEY, machineSettingsRows);
+    if (Array.isArray(state.announcements)) writeCacheEnvelope(ANNOUNCEMENTS_CACHE_KEY, state.announcements);
+    if (Array.isArray(machineSettingsRows)) writeCacheEnvelope(LOCAL_MACHINE_SETTINGS_KEY, machineSettingsRows);
     return snapshot;
   }
 
@@ -309,15 +360,23 @@
 
         if (announcementsRes && !announcementsRes.error) {
           state.announcements = Array.isArray(announcementsRes.data) ? announcementsRes.data : [];
-          safeWriteJson(LOCAL_ANNOUNCEMENTS_KEY, state.announcements);
+          writeCacheEnvelope(LOCAL_ANNOUNCEMENTS_KEY, state.announcements);
+          writeCacheEnvelope(ANNOUNCEMENTS_CACHE_KEY, state.announcements);
+          notifySyncStatus('online', '🟢 Online synchronizováno');
+        } else if (announcementsRes && announcementsRes.error) {
+          state.lastError = announcementsRes.error;
+          notifySyncStatus('error', '🔴 Nepodařilo se synchronizovat');
         }
         state.ready = true;
-        state.lastError = null;
+        if (!(announcementsRes && announcementsRes.error)) {
+          state.lastError = null;
+        }
       } else {
-        const cachedAnnouncements = safeReadJson(LOCAL_ANNOUNCEMENTS_KEY, []);
+        const cachedAnnouncements = readCacheEnvelope(ANNOUNCEMENTS_CACHE_KEY, []).data || readCacheEnvelope(LOCAL_ANNOUNCEMENTS_KEY, []).data || [];
         if (Array.isArray(cachedAnnouncements) && cachedAnnouncements.length) {
           state.announcements = cachedAnnouncements;
           state.ready = true;
+          notifySyncStatus('offline', '🟡 Offline cache');
         }
       }
 
@@ -333,12 +392,14 @@
     } catch (err) {
       state.lastError = err;
       console.warn('Supabase public data refresh failed', err);
-      const cachedAnnouncements = safeReadJson(LOCAL_ANNOUNCEMENTS_KEY, []);
+      const cachedAnnouncements = readCacheEnvelope(ANNOUNCEMENTS_CACHE_KEY, []).data || readCacheEnvelope(LOCAL_ANNOUNCEMENTS_KEY, []).data || [];
       if (Array.isArray(cachedAnnouncements) && cachedAnnouncements.length) {
         state.announcements = cachedAnnouncements;
         state.ready = true;
+        notifySyncStatus('offline', '🟡 Offline cache');
         return { announcements: state.announcements, cached: true };
       }
+      notifySyncStatus('error', '🔴 Nepodařilo se synchronizovat');
       return null;
     }
   }
@@ -501,6 +562,8 @@
         if (rows.length) {
           state.machineSettingsSnapshot = rows;
           saveLocalSnapshot(state.rotationSnapshot || null, rows);
+          writeCacheEnvelope(MACHINE_SETTINGS_CACHE_KEY, rows);
+          notifySyncStatus('online', '🟢 Online synchronizováno');
           return rows;
         }
       }
@@ -508,12 +571,22 @@
       state.lastError = err;
       console.error('Supabase machine settings load failed', err);
     }
-    const cached = readLocalSnapshot();
-    if (cached && Array.isArray(cached.machineSettingsRows) && cached.machineSettingsRows.length) {
-      state.machineSettingsSnapshot = cached.machineSettingsRows;
-      return cached.machineSettingsRows;
+    const cachedEnvelope = readCacheEnvelope(MACHINE_SETTINGS_CACHE_KEY, []);
+    const cached = cachedEnvelope.data;
+    if (Array.isArray(cached) && cached.length) {
+      state.machineSettingsSnapshot = cached;
+      notifySyncStatus('offline', '🟡 Offline cache');
+      return cached;
     }
-    return [];
+    const local = readLocalSnapshot();
+    if (local && Array.isArray(local.machineSettingsRows) && local.machineSettingsRows.length) {
+      state.machineSettingsSnapshot = local.machineSettingsRows;
+      notifySyncStatus('offline', '🟡 Offline cache');
+      return local.machineSettingsRows;
+    }
+    const defaults = defaultMachineSettingsRows();
+    notifySyncStatus('offline', '🟡 Offline cache');
+    return defaults;
   }
 
   async function saveMachineSettings(rows) {
@@ -523,16 +596,28 @@
         const savedCount = await upsertMachineSettingsDirect(client, rows);
         state.machineSettingsSnapshot = Array.isArray(rows) ? rows : [];
         saveLocalSnapshot(state.rotationSnapshot || null, rows);
+        writeCacheEnvelope(MACHINE_SETTINGS_CACHE_KEY, Array.isArray(rows) ? rows : []);
+        notifySyncStatus('online', '🟢 Online synchronizováno');
         await flushPendingWrites();
         return { ok: true, savedCount, queued: false };
       }
+
+      if (Array.isArray(rows) && rows.length) {
+        writeCacheEnvelope(MACHINE_SETTINGS_CACHE_KEY, rows);
+      }
+      notifySyncStatus('offline', '🟡 Offline cache');
       return Object.assign(await enqueueAndMaybeFlush({ type: 'machine_settings', rows }), { savedCount: Array.isArray(rows) ? rows.length : 0 });
     } catch (err) {
       state.lastError = err;
       console.error('Supabase machine settings save failed', err);
       if (isLikelyOfflineError(err)) {
+        if (Array.isArray(rows) && rows.length) {
+          writeCacheEnvelope(MACHINE_SETTINGS_CACHE_KEY, rows);
+        }
+        notifySyncStatus('offline', '🟡 Offline cache');
         return await enqueueAndMaybeFlush({ type: 'machine_settings', rows });
       }
+      notifySyncStatus('error', '🔴 Nepodařilo se synchronizovat');
       return { ok: false, error: err };
     }
   }
@@ -563,15 +648,20 @@
       if (client && navigator.onLine) {
         const summary = await upsertRotationMonthEntriesDirect(client, monthStart, label, rows);
         await flushPendingWrites();
+        notifySyncStatus('online', '🟢 Online synchronizováno');
         return { ok: true, queued: false, months: summary.months, entries: summary.entries };
       }
+
+      notifySyncStatus('offline', '🟡 Offline cache');
       return Object.assign(await enqueueAndMaybeFlush({ type: 'rotation_month_entries', monthStart, label, rows }), { months: 1, entries: Array.isArray(rows) ? rows.length : 0 });
     } catch (err) {
       state.lastError = err;
       console.error('Supabase rotation entries save failed', err);
       if (isLikelyOfflineError(err)) {
+        notifySyncStatus('offline', '🟡 Offline cache');
         return await enqueueAndMaybeFlush({ type: 'rotation_month_entries', monthStart, label, rows });
       }
+      notifySyncStatus('error', '🔴 Nepodařilo se synchronizovat');
       return { ok: false, error: err };
     }
   }
@@ -588,6 +678,7 @@
           const payload = row.payload || row.rotation || null;
           state.rotationSnapshot = payload;
           saveLocalSnapshot(payload, state.machineSettingsSnapshot || []);
+          notifySyncStatus('online', '🟢 Online synchronizováno');
           return {
             id: row.key || 'main',
             payload,
@@ -618,6 +709,7 @@
     const snapshot = readLocalSnapshot();
     if (snapshot && snapshot.rotation) {
       state.rotationSnapshot = snapshot.rotation;
+      notifySyncStatus('offline', '🟡 Offline cache');
       return {
         id: 'main',
         payload: snapshot.rotation,
@@ -636,6 +728,7 @@
         const row = await upsertRotationStateDirect(client, rotation, meta);
         state.rotationSnapshot = rotation && typeof rotation === 'object' ? rotation : null;
         saveLocalSnapshot(state.rotationSnapshot, state.machineSettingsSnapshot || []);
+        notifySyncStatus('online', '🟢 Online synchronizováno');
         await flushPendingWrites();
         return {
           ok: true,
@@ -644,13 +737,23 @@
           updatedAt: row.updated_at
         };
       }
+
+      if (rotation && typeof rotation === 'object') {
+        saveLocalSnapshot(rotation, state.machineSettingsSnapshot || []);
+      }
+      notifySyncStatus('offline', '🟡 Offline cache');
       return await enqueueAndMaybeFlush({ type: 'rotation_state', rotation, meta });
     } catch (err) {
       state.lastError = err;
       console.warn('Supabase rotation save failed', err);
       if (isLikelyOfflineError(err)) {
+        if (rotation && typeof rotation === 'object') {
+          saveLocalSnapshot(rotation, state.machineSettingsSnapshot || []);
+        }
+        notifySyncStatus('offline', '🟡 Offline cache');
         return await enqueueAndMaybeFlush({ type: 'rotation_state', rotation, meta });
       }
+      notifySyncStatus('error', '🔴 Nepodařilo se synchronizovat');
       return { ok: false, error: err };
     }
   }
@@ -665,7 +768,9 @@
         .order('created_at', { ascending: false })
         .limit(Math.max(1, Math.min(100, Number(limit) || 20)));
       if (res && res.error) throw res.error;
-      return Array.isArray(res && res.data) ? res.data : [];
+      const rows = Array.isArray(res && res.data) ? res.data : [];
+      if (rows.length) notifySyncStatus('online', '🟢 Online synchronizováno');
+      return rows;
     } catch (err) {
       state.lastError = err;
       console.error('Supabase win list load failed', err);
@@ -679,15 +784,19 @@
       if (client && navigator.onLine) {
         const data = await upsertGomokuWinDirect(client, entry);
         await flushPendingWrites();
+        notifySyncStatus('online', '🟢 Online synchronizováno');
         return { ok: true, queued: false, data };
       }
+      notifySyncStatus('offline', '🟡 Offline cache');
       return await enqueueAndMaybeFlush({ type: 'gomoku_win', entry });
     } catch (err) {
       state.lastError = err;
       console.error('Supabase win insert failed', err);
       if (isLikelyOfflineError(err)) {
+        notifySyncStatus('offline', '🟡 Offline cache');
         return await enqueueAndMaybeFlush({ type: 'gomoku_win', entry });
       }
+      notifySyncStatus('error', '🔴 Nepodařilo se synchronizovat');
       return { ok: false, error: err };
     }
   }
@@ -698,6 +807,7 @@
   function init() {
     if (state.ready) return refreshPublicData();
     if (!hasClient()) {
+      notifySyncStatus('offline', '🟡 Offline cache');
       return refreshPublicData();
     }
     void flushPendingWrites();
@@ -731,6 +841,7 @@
   window.getSupabaseCanteenStatus = getCanteenStatus;
 
   window.addEventListener('online', () => {
+    notifySyncStatus('syncing', '🟡 Synchronizuji…');
     void flushPendingWrites();
     void refreshPublicData();
   });

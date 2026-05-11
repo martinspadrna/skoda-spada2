@@ -7,11 +7,13 @@
 <meta name="theme-color" content="#0b0f0c">
 <meta name="apple-mobile-web-app-title" content="Rotace a kalkulačky">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+<link rel="apple-touch-icon" href="icon-180.png">
 
 <title>Rotace a kalkulačky</title>
 
-<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&amp;display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -26,6 +28,7 @@
 <div id="home" class="page active">
   <div class="dashboardShell">
     <div class="dashboardAppTitle">Rotace a kalkulačky</div>
+    <div id="syncStatusBadge" class="syncStatusBadge">🟡 Offline cache</div>
 
     <div class="dashboardHeroCard" id="dashHero">
       <div class="dashboardHeroLine1"><span class="dashboardHeroLine1Text">V práci: směna A (noční)</span></div>

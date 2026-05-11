@@ -2259,3 +2259,37 @@ body.reduceMotion *::after{
   opacity:.72;
 }
 
+
+
+.syncStatusBadge{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  margin:8px 0 14px;
+  padding:8px 12px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:.01em;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(124,255,124,.10);
+  color:var(--text);
+}
+
+.syncStatusBadge.is-online{
+  background:rgba(124,255,124,.12);
+  border-color:rgba(124,255,124,.34);
+  color:#bfffbf;
+}
+
+.syncStatusBadge.is-offline{
+  background:rgba(255,204,92,.10);
+  border-color:rgba(255,204,92,.28);
+  color:#ffe4a3;
+}
+
+.syncStatusBadge.is-error{
+  background:rgba(255,98,98,.10);
+  border-color:rgba(255,98,98,.28);
+  color:#ffc1c1;
+}

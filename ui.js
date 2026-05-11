@@ -884,7 +884,7 @@ function tttMoveHeuristic(board, index, mark) {
   board[index] = mark;
 
   const occupied = board.reduce((sum, cell) => sum + (cell ? 1 : 0), 0);
-  const forkRisk = occupied >= 5 ? tttOpponentForkRisk(board, opponent, 8) : 0;
+  const forkRisk = occupied >= 8 ? tttOpponentForkRisk(board, opponent, 6) : 0;
   if (forkRisk >= 2) score -= 650000;
   else if (forkRisk >= 1) score -= 320000;
 
@@ -1081,13 +1081,13 @@ function tttBestMove(board, difficulty) {
   const occupied = board.length - free.length;
   const center = tttIndex(Math.floor(TTT_ROWS / 2), Math.floor(TTT_COLS / 2));
 
-  if (difficulty === 'ai' && occupied <= 1) {
+  if (difficulty === 'ai' && occupied <= 4) {
     const opening = tttOpeningBookMove(board);
     if (opening >= 0 && !board[opening]) return opening;
     if (!board[center]) return center;
   }
 
-  const candidateLimit = difficulty === 'ai' ? (occupied < 10 ? 28 : 40) : difficulty === 'medium' ? 14 : 10;
+  const candidateLimit = difficulty === 'ai' ? (occupied < 8 ? 16 : 24) : difficulty === 'medium' ? 10 : 8;
   const candidates = tttOrderedCandidates(board, 'O', candidateLimit);
 
   if (difficulty === 'noob') {
@@ -1136,8 +1136,8 @@ function tttBestMove(board, difficulty) {
     }
 
     const memo = {};
-    const depth = occupied < 8 ? 4 : occupied < 18 ? 5 : 6;
-    const searchScore = tttSearch(board, depth, -Infinity, Infinity, false, memo, (typeof performance !== "undefined" ? performance.now() : Date.now()) + 10);
+    const depth = occupied < 8 ? 2 : occupied < 16 ? 3 : 4;
+    const searchScore = tttSearch(board, depth, -Infinity, Infinity, false, memo, (typeof performance !== "undefined" ? performance.now() : Date.now()) + 6);
     board[idx] = '';
     return score + searchScore;
   };
@@ -1268,7 +1268,7 @@ function tttBuildHardWinTableHtml() {
   const state = tttGetState();
   const rows = tttGetHardWinRows();
   if (state.hardWinLoading && !rows.length) {
-    return '<div class="smallText">Načítám online výsledky…</div>';
+    return '<div class="smallText">Načítám výsledky…</div>';
   }
   if (!rows.length) {
     return '<div class="smallText">Zatím žádné online výsledky.</div>';
@@ -1724,7 +1724,7 @@ function buildAppHistoryHtml(versionText) {
         'Dashboard ukazuje další směnu D, kdo na ní chybí, a u průběhu směny i procenta.',
         'Odpočet do dovolené doplňuje, jestli jde o CZD nebo Vánoce.',
         'Kalkulačky pro frézky a brusy umí dopočítat i čas hotovosti.',
-        'Piškvorky najdeš přímo na dashboardu.'
+        'Piškvorky jsou přímo na dashboardu.'
       ]
     },
     {
@@ -2558,6 +2558,7 @@ function showFoodSchedule(which) {
 function showPage(id) {
   if (typeof app !== 'undefined') {
     app.homeBootSuppressed = id !== 'home';
+    app.lastPageChangeAt = Date.now();
   }
 
   const navPage = id === 'rotace'

@@ -108,7 +108,7 @@ function updateDashboard() {
   setCard('dashCalendar', 'Kalendář', formatCalendarDateLabel(now), getCalendarSpecialText(now), '', false, calendarIcon);
   setCard('dashCountdown', 'Zbývá', active && !showSpecial ? formatDuration(active.end - now) : '—', '', '', false, clockIcon);
 
-  const foodText = status => status.isOpen && status.active ? ('Otevřeno do ' + formatFoodTime(status.active.end)) : 'Zavřeno';
+  const foodText = status => status && status.isOpen && status.active ? 'Otevřeno' : 'Zavřeno';
   const foodDot = status => status.isOpen ? 'is-open' : 'is-closed';
   const foodMeta = status => {
     if (status.isOpen && status.active) {
@@ -162,7 +162,9 @@ function scheduleDashboardInitialPaint() {
 
 function forceHomeRefresh() {
   const activePage = document.querySelector('.page.active')?.id || "";
+  const lastChange = typeof app !== 'undefined' && app ? Number(app.lastPageChangeAt || 0) : 0;
   if (typeof app !== 'undefined' && app.homeBootSuppressed && activePage !== "home") return;
+  if (activePage !== 'home' && lastChange && Date.now() - lastChange < 2500) return;
   if (typeof showPage === 'function') showPage('home');
   if (typeof refreshHomeScreen === 'function') refreshHomeScreen();
   else if (typeof updateDashboard === 'function') updateDashboard();
@@ -288,6 +290,27 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
     ].join('');
   }
 
+
+  function setSyncStatusIndicator(mode, detail) {
+    const el = document.getElementById('syncStatusBadge');
+    const states = {
+      online: { cls: 'is-online', text: '🟢 Online synchronizováno' },
+      offline: { cls: 'is-offline', text: '🟡 Offline cache' },
+      error: { cls: 'is-error', text: '🔴 Nepodařilo se synchronizovat' },
+      syncing: { cls: 'is-offline', text: '🟡 Synchronizuji…' }
+    };
+    const info = states[mode] || states.online;
+    const text = String(detail || info.text || '').trim();
+    if (el) {
+      el.className = 'syncStatusBadge ' + info.cls;
+      el.textContent = text;
+    }
+    if (typeof app !== 'undefined') {
+      app.syncStatus = { mode: mode || 'online', text };
+    }
+    return { mode: mode || 'online', text };
+  }
+
   function renderDashboardFallback(err) {
     const now = nowInPrague();
     const active = safeCall(() => typeof getActiveShiftNow === 'function' ? getActiveShiftNow(now) : null, null);
@@ -317,16 +340,16 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
     const foodText = (status) => {
       if (!status) return '—';
       if (status.isOpen && status.active) {
-        return typeof formatFoodTime === 'function' ? ('Otevřeno do ' + formatFoodTime(status.active.end)) : 'Otevřeno';
+        return 'Otevřeno';
       }
       return 'Zavřeno';
     };
     const foodMeta = (status) => {
       if (!status) return '';
       if (status.isOpen && status.active && typeof formatFoodTime === 'function') {
-        return 'do ' + formatFoodTime(status.active.end);
+        return 'Poté otevřeno od ' + formatFoodTime(status.next.start) + ' do ' + formatFoodTime(status.next.end);
       }
-      return status.next && typeof formatFoodTime === 'function' ? ('otevřeno v ' + formatFoodTime(status.next.start)) : '';
+      return status.next && typeof formatFoodTime === 'function' ? ('Otevřeno od ' + formatFoodTime(status.next.start) + ' do ' + formatFoodTime(status.next.end)) : '';
     };
 
     const hero = document.getElementById('dashHero');
@@ -348,6 +371,11 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
     setCardSimple('dashFoodLink', 'Jídelní lístek', 'Otevřít', 'Aktuální menu', '', true);
     setCardSimple('dashEportalLink', 'Eportal', 'Otevřít', 'Firemní portál', '', true);
 
+    if (typeof setSyncStatusIndicator === 'function') {
+      if (!navigator.onLine) setSyncStatusIndicator('offline');
+      else if (err) setSyncStatusIndicator('error');
+      else setSyncStatusIndicator('online');
+    }
     if (err) {
       console.warn('Dashboard fallback activated', err);
     }
@@ -370,3 +398,5 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
     }
   };
 })();
+
+window.setSyncStatusIndicator = setSyncStatusIndicator;
