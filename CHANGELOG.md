@@ -1,5 +1,11 @@
 # Changelog
 
+## v.1(370)
+- Spodní panel je ještě o chlup čistší, s rovnoměrnějším vnitřním odsazením a lepším safe-area odstupem na iPhonu.
+- Rotace drží příští směnu nahoře v jedné řádce a pod ní ukazuje jméno + stroj.
+- Statistiky mají těsnější rozestupy mezi stroji a součet práce + absence drží 73 i u částečných absencí.
+- Ve hrách se jméno účtu dotahuje ze Supabase i při přepnutí na jiný účet a druhý blok s přihlášením je pryč.
+
 ## v.1(369)
 - Spodní lišta má upravené bloky, aktivní stav a menší mezeru u iPhonu.
 - Rotace teď ukazuje příští směnu jako jeden řádek a pod ní jména s jejich stroji.

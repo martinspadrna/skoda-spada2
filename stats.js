@@ -138,6 +138,7 @@ if (typeof window.estimateAbsenceWeight !== 'function') {
     const haystack = (text + ' ' + code).trim();
     if (!haystack) return 1;
     if (/\b(?:od|do)\b/i.test(haystack)) return 0.5;
+    if (/\b(?:0[,\.]5|1\/2|půl|pul|polovina)\b/i.test(haystack)) return 0.5;
     return 1;
   };
 }
@@ -361,16 +362,17 @@ function buildStatsForYear(year) {
         person.totalWork = Math.max(0, (Number(person.totalWork || 0) || 0) - weight);
       });
     });
-  });  Object.values(stats.people).forEach(person => {
+  });  const expectedTotalUnits = 73;
+  Object.values(stats.people).forEach(person => {
     Object.keys(person.work).forEach(column => {
       if (typeof person.work[column] === "number") person.work[column] = Math.round(person.work[column] * 10) / 10;
     });
     Object.keys(person.absence).forEach(column => {
       if (typeof person.absence[column] === "number") person.absence[column] = Math.round(person.absence[column] * 10) / 10;
     });
-    person.totalWork = Math.round((Number(person.totalWork) || 0) * 10) / 10;
-    person.totalClean = Math.round((Number(person.totalClean) || 0) * 10) / 10;
     person.totalAbsence = Math.round((Number(person.totalAbsence) || 0) * 10) / 10;
+    person.totalWork = Math.round((Math.max(0, expectedTotalUnits - person.totalAbsence)) * 10) / 10;
+    person.totalClean = Math.round((Number(person.totalClean) || 0) * 10) / 10;
 
     person.topWorkMachine = getBestEntry(person.work);
     person.topCleanMachine = getBestEntry(person.clean);

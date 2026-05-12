@@ -3796,7 +3796,15 @@ async function gamesSyncProfileFromRemote(force = false) {
       bridge.loadGameStats('flap', 50).catch(() => [])
     ]);
 
-    const remoteNameMap = new Map((Array.isArray(remoteAccounts) ? remoteAccounts : []).map((row) => [String(row && row.account_number ? row.account_number : '').trim(), String(row && row.full_name ? row.full_name : '').trim()]));
+    const remoteNameMap = new Map((Array.isArray(remoteAccounts) ? remoteAccounts : []).map((row) => {
+      const id = String(row && row.account_number ? row.account_number : '').trim();
+      const name = String(
+        row && (row.full_name || row.player_name || row.name || row.account_name || row.nickname || row.username || row.account_number)
+          ? (row.full_name || row.player_name || row.name || row.account_name || row.nickname || row.username || row.account_number)
+          : ''
+      ).trim();
+      return [id, name];
+    }));
     const remoteMap = {
       ttt: new Map(),
       g2048: new Map(),
@@ -3840,7 +3848,11 @@ async function gamesSyncProfileFromRemote(force = false) {
     (Array.isArray(remoteAccounts) ? remoteAccounts : []).forEach((row) => {
       const accountId = String(row && row.account_number ? row.account_number : '').trim();
       if (!accountId) return;
-      const remoteName = String(row && row.full_name ? row.full_name : accountId).trim() || accountId;
+      const remoteName = String(
+        row && (row.full_name || row.player_name || row.name || row.account_name || row.nickname || row.username || row.account_number)
+          ? (row.full_name || row.player_name || row.name || row.account_name || row.nickname || row.username || row.account_number)
+          : accountId
+      ).trim() || accountId;
       if (!profile.accounts[accountId]) {
         profile.accounts[accountId] = gamesMakeAccountEntry(accountId, remoteName);
         changed = true;
@@ -3934,8 +3946,9 @@ function gamesApplyActiveAccountUI(account) {
   entryRow.style.display = '';
   hintEl.style.display = '';
   hintEl.hidden = false;
-  currentEl.style.display = next ? 'flex' : 'none';
-  currentEl.textContent = next ? ('Přihlášeno jako ' + next.name + ' · ' + next.id) : '';
+  currentEl.style.display = 'none';
+  currentEl.hidden = true;
+  currentEl.textContent = '';
   if (next) {
     inputEl.value = '';
     inputEl.placeholder = 'Zadej jiné číslo účtu';
@@ -3943,21 +3956,20 @@ function gamesApplyActiveAccountUI(account) {
     inputEl.placeholder = 'Zadej číslo účtu';
   }
   clearBtn.textContent = next ? 'Odhlásit' : 'Bez účtu';
-  gamesRenderActiveAccountBar(next);
+  clearBtn.style.minWidth = next ? '46px' : '';
+  clearBtn.style.paddingInline = next ? '8px' : '';
 }
 
 function gamesRenderActiveAccountBar(account) {
   const bar = document.getElementById('gamesActiveAccountBar');
   const textEl = document.getElementById('gamesActiveAccountText');
   const clearBtn = document.getElementById('gamesActiveAccountClearBtn');
-  if (!bar || !textEl || !clearBtn) return;
-
-  const active = account || null;
-  bar.hidden = !active;
-  bar.classList.toggle('isVisible', !!active);
-  textEl.textContent = active ? ('Přihlášeno jako ' + active.name + ' · ' + active.id) : '';
-
-  if (!clearBtn.dataset.bound) {
+  if (bar) {
+    bar.hidden = true;
+    bar.classList.remove('isVisible');
+  }
+  if (textEl) textEl.textContent = '';
+  if (clearBtn && !clearBtn.dataset.bound) {
     clearBtn.dataset.bound = '1';
     clearBtn.addEventListener('click', () => {
       gamesClearActiveAccount();
@@ -4071,11 +4083,10 @@ function gamesRenderAccountChips() {
         inputEl.focus();
         return;
       }
-      let found = gamesAccountById(typed);
-      if (!found && window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.loadGameAccounts === 'function') {
+      if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.loadGameAccounts === 'function') {
         await gamesSyncProfileFromRemote(true);
-        found = gamesAccountById(typed);
       }
+      let found = gamesAccountById(typed);
       if (!found) {
         try {
           gamesSetActiveAccount(typed);

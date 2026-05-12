@@ -909,7 +909,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
 
 <style id="v363-pre-mobile-polish">
   #games{padding-bottom:154px !important;}
-  /* v1(369) mobile polish: tighter bottom bar + names at the bottom on rotace */
+  /* v1(370) mobile polish: tighter bottom bar + names at the bottom on rotace */
   .bottomNav{
     padding:3px 5px calc(3px + env(safe-area-inset-bottom)) !important;
     gap:5px !important;
@@ -966,7 +966,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
     }
   }
 <style id="v363-legacy-mobile-polish">
-  /* v1(369) final mobile polish: tighter bottom bar, rotace preview and stats spacing */
+  /* v1(370) final mobile polish: tighter bottom bar, rotace preview and stats spacing */
   .bottomNav{
     padding:2px 4px calc(2px + env(safe-area-inset-bottom)) !important;
     gap:3px !important;
@@ -1079,7 +1079,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
 
 
 <style id="v363-final-mobile-polish">
-  /* v1(369) final mobile polish: bottom bar, games padding, rotace preview, stats compact, snake joystick */
+  /* v1(370) final mobile polish: bottom bar, games padding, rotace preview, stats compact, snake joystick */
   .bottomNav{
     width:calc(100% - 4px) !important;
     padding:1px 0 calc(1px + env(safe-area-inset-bottom)) !important;
@@ -2717,6 +2717,42 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
       padding:0 1px 0 !important;
     }
   }
+
+  /* v1(370) freeze polish: nav border, tighter stats grid, clearer game account block */
+  .bottomNav{
+    padding:2px 1px calc(2px + env(safe-area-inset-bottom)) !important;
+  }
+  @supports (-webkit-touch-callout: none){
+    .bottomNav{
+      bottom:24px !important;
+      padding:3px 1px calc(3px + env(safe-area-inset-bottom)) !important;
+    }
+  }
+  #statsMachineGrid.listGrid{
+    gap:0 !important;
+  }
+  #statsMachineGrid .listItem,
+  #statsMachineGrid .statsMachineTile{
+    padding:5px 3px !important;
+  }
+  #games .gamesActiveAccountBar{
+    display:none !important;
+  }
+  #games .gamesAccountCard.isLoggedIn .gamesAccountTop .gamesTinyBtn{
+    min-height:24px !important;
+    padding:0 7px !important;
+    font-size:11px !important;
+  }
+  #games .gamesAccountCard.isLoggedIn .gamesAccountCurrent{
+    display:none !important;
+  }
+  #games .gamesAccountCard.isLoggedIn .gamesAccountHint{
+    display:none !important;
+  }
+  #games .gamesAccountCard.isLoggedIn .gamesAccountRow{
+    display:none !important;
+  }
+
 </style>
 
 </body></html>

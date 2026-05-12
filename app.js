@@ -1,4 +1,4 @@
-// v.1(369) – další mobilní ladění, rotace, statistiky, Snake a přihlášení ve hrách.
+// v.1(370) – další úpravy lišty, rotace, statistik a přihlášení ve hrách.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
