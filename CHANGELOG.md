@@ -1,3 +1,10 @@
+# Changelog
+
+## v.1(365)
+- Zmenšená lišta, větší ikonky, upravená Rotace a Statistiky.
+- Snake dostal funkční virtuální joystick mimo herní plochu.
+- Piškvorky mají oddělené menu režimů a lepší online invite flow s přímým otevřením z odkazu.
+
 ## v.1(363)
 
 - Dashboard teď u kantýny a jídelny skrývá dnešní datum, zítra ukazuje jako „Zítra“ a další termín drží na vlastním řádku.

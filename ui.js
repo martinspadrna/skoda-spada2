@@ -659,6 +659,42 @@ function tttGetInviteUrl(code) {
   return url.toString();
 }
 
+function tttReadHashInviteCode() {
+  try {
+    const hash = String(window.location.hash || '').replace(/^#/, '');
+    if (!hash) return '';
+    const params = new URLSearchParams(hash.replace(/&/g, '&'));
+    const invite = params.get('invite') || params.get('code') || '';
+    return String(invite || '').trim().toUpperCase();
+  } catch (err) {
+    return '';
+  }
+}
+
+async function tttOpenFromInviteCode(code) {
+  const inviteCode = String(code || '').trim().toUpperCase();
+  if (!inviteCode) return false;
+  try {
+    showPage('games');
+  } catch (err) {}
+  openGameShell('ttt');
+  const result = await tttJoinInviteSession(inviteCode);
+  if (result && result.ok) {
+    const state = tttGetState();
+    state.screen = 'game';
+    state.gameOver = false;
+    state.winner = null;
+    state.startedAt = Date.now();
+    state.message = 'Pozvánka přijata. Hraješ proti spoluhráči.';
+    tttRender();
+    scheduleTttLayout();
+    tttStartOnlineSyncLoop();
+    void tttSyncOnlineSession(true);
+    return true;
+  }
+  return false;
+}
+
 function tttSetOnlineStatus(text, kind) {
   const state = tttGetState();
   state.onlineStatus = String(text || '').trim();
@@ -1674,12 +1710,12 @@ function tttBestMove(board, difficulty) {
 
   const isStrong = difficulty === 'ai' || difficulty === 'medium';
   if (isStrong) {
-    const searchLimit = difficulty === 'ai' ? 16 : 10;
-    const searchDepth = difficulty === 'ai' ? 5 : 4;
+    const searchLimit = difficulty === 'ai' ? 24 : 12;
+    const searchDepth = difficulty === 'ai' ? 6 : 4;
     const searchMoves = tttOrderedCandidates(board, 'O', searchLimit).slice(0, searchLimit);
     if (searchMoves.length) {
       const memo = Object.create(null);
-      const deadline = (typeof performance !== 'undefined' ? performance.now() : Date.now()) + (difficulty === 'ai' ? 44 : 24);
+      const deadline = (typeof performance !== 'undefined' ? performance.now() : Date.now()) + (difficulty === 'ai' ? 70 : 28);
       let bestSearchIdx = -1;
       let bestSearchScore = -Infinity;
       for (const idx of searchMoves) {
@@ -2060,23 +2096,25 @@ function tttRender() {
     start.style.display = 'flex';
     game.style.display = 'none';
     start.innerHTML = [
-      '<div class="tttCard">',
+      '<div class="tttCard tttModeCard">',
       '  <div class="tttSectionTitle">Režim hry</div>',
       '  <div class="tttToggleRow">',
       '    <button type="button" class="tttBtn' + (state.mode === 'ai' ? ' isActive' : '') + '" data-ttt-mode="ai">Proti AI</button>',
       '    <button type="button" class="tttBtn' + (state.mode === 'local' ? ' isActive' : '') + '" data-ttt-mode="local">Na jednom mobilu</button>',
-      '  </div>',
-      '  <div class="tttToggleRow" style="margin-top:10px;">',
       '    <button type="button" class="tttBtn' + (state.mode === 'pvp' ? ' isActive' : '') + '" data-ttt-mode="pvp">Online pozvánka</button>',
-      '    <button type="button" class="tttBtn" id="tttStartBtn" style="width:100%;">' + (state.mode === 'pvp' ? 'Spustit online duel' : (state.mode === 'local' ? 'Hrát na mobilu' : 'Hrát proti AI')) + '</button>',
       '  </div>',
-      tttHasResumeGame() ? '<button type="button" class="tttBtn" id="tttResumeBtn">Pokračovat v rozehrané hře</button>' : '',
+      '</div>',
+      '<div class="tttCard tttActionCard">',
+      '  <div class="tttSectionTitle">Hrát</div>',
+      '  <div class="tttNote">Vybraný režim spusť níž jedním tlačítkem. Když je rozehraná hra, můžeš se k ní vrátit přes pokračování.</div>',
+      '  <button type="button" class="tttBtn tttPrimaryBtn" id="tttStartBtn">' + (state.mode === 'pvp' ? 'Spustit online duel' : (state.mode === 'local' ? 'Hrát na mobilu' : 'Hrát proti AI')) + '</button>',
+      tttHasResumeGame() ? '<button type="button" class="tttBtn tttSecondaryBtn" id="tttResumeBtn">Pokračovat v rozehrané hře</button>' : '',
       '</div>',
       '<div class="tttCard"' + (state.mode === 'ai' ? '' : ' style="display:none;"') + '>',
       '  <div class="tttSectionTitle">AI režim</div>',
       '  <div class="tttNote">Používá se jen nejtvrdší AI. Hrací pole má 10 × 18 políček a vyhrává 5 spojených v řadě.</div>',
       '</div>',
-      state.mode === 'pvp' ? '<div class="tttCard"><div id="tttInviteInfo" class="tttNote">Nejdřív vytvoř pozvánku. Odkaz pošli spoluhráči až potom.</div><div class="tttToggleRow"><button type="button" class="tttBtn" id="tttCreateInviteBtn">Vytvořit pozvánku</button><button type="button" class="tttBtn" id="tttJoinInviteBtn">Přijmout pozvánku</button></div><div class="tttCard" style="margin-top:10px;padding:10px 12px;"><div class="tttSectionTitle" style="margin-bottom:6px;">Odkaz na hru</div><div class="tttNote" id="tttInviteUrl" style="word-break:break-all;display:none;"></div><div class="tttToggleRow" style="margin-top:8px;grid-template-columns:1fr 1fr;"><button type="button" class="tttBtn" id="tttCopyInviteBtn">Kopírovat odkaz</button><button type="button" class="tttBtn" id="tttShareInviteBtn">Sdílet</button></div></div></div>' : '',
+      state.mode === 'pvp' ? '<div class="tttCard tttInviteCard"><div class="tttSectionTitle">Online pozvánka</div><div id="tttInviteInfo" class="tttNote">Nejdřív vytvoř pozvánku. Odkaz pošli spoluhráči až potom.</div><div class="tttToggleRow" style="margin-top:10px;"><button type="button" class="tttBtn" id="tttCreateInviteBtn">Vytvořit pozvánku</button><button type="button" class="tttBtn" id="tttJoinInviteBtn">Přijmout pozvánku</button></div><div class="tttCard" style="margin-top:10px;padding:10px 12px;"><div class="tttSectionTitle" style="margin-bottom:6px;">Odkaz na hru</div><div class="tttNote" id="tttInviteUrl" style="word-break:break-all;display:none;"></div><div class="tttToggleRow" style="margin-top:8px;grid-template-columns:1fr 1fr;"><button type="button" class="tttBtn" id="tttCopyInviteBtn">Kopírovat odkaz</button><button type="button" class="tttBtn" id="tttShareInviteBtn">Sdílet</button></div></div></div>' : '',
       '</div>',
       '<div class="tttCard tttWinHistory">',
       '  <div class="tttSectionTitle">Kdo porazil nejtvrdší AI</div>',
@@ -2449,6 +2487,20 @@ function closeTicTacToeGame() {
   tttStopOnlineSync();
   app.activeGameShell = '';
   renderGamesHub();
+}
+
+async function tttAutoOpenFromHash() {
+  const code = tttReadHashInviteCode();
+  if (!code) return false;
+  const opened = await tttOpenFromInviteCode(code);
+  if (opened) {
+    try {
+      const url = new URL(window.location.href);
+      url.hash = '';
+      history.replaceState(null, '', url.toString());
+    } catch (err) {}
+  }
+  return opened;
 }
 
 let tttLayoutPending = false;
@@ -3966,7 +4018,7 @@ function renderGamesHub() {
   gamesGetProfile();
   gamesRenderAccountChips();
   gamesRenderStats();
-  void gamesSyncProfileFromRemote();
+  void gamesSyncProfileFromRemote().then(() => { gamesRenderStats(); });
   void gamesRefreshRemoteLeaderboards();
   gamesEnsureKeyBindings();
   gamesEnsureResizeBinding();
@@ -4309,11 +4361,11 @@ function snakeSetJoystickEnabled(enabled) {
   renderGameSnake();
 }
 
-function snakeBuildJoystickMarkup(isOn) {
+function snakeBuildJoystickMarkup() {
   return [
-    '<div class="snakeJoystickDock' + (isOn ? ' isOn' : '') + '" id="snakeJoystickDock">',
-    '  <button type="button" class="gameControlBtn snakeJoystickToggle" id="snakeJoystickToggleBtn" aria-label="Zapnout nebo vypnout joystick">Joy</button>',
-    '  <div class="gamePad snakeJoystickPad" id="snakeJoystickPad" aria-label="Joystick hada">',
+    '<div class="snakeJoystickDock" id="snakeJoystickDock" aria-label="Joystick hada">',
+    '  <div class="snakeJoystickLabel">Joystick</div>',
+    '  <div class="gamePad snakeJoystickPad" id="snakeJoystickPad" role="group" aria-label="Joystick hada">',
     '    <span></span>',
     '    <button type="button" class="gameControlBtn" data-game-dir="up" aria-label="Nahoru">▲</button>',
     '    <span></span>',
@@ -4331,15 +4383,9 @@ function snakeBuildJoystickMarkup(isOn) {
 function snakeBindJoystickControls(root, resetSnake) {
   if (!root) return;
   const dock = root.querySelector('#snakeJoystickDock');
-  const toggle = root.querySelector('#snakeJoystickToggleBtn');
   const pad = root.querySelector('#snakeJoystickPad');
 
-  if (toggle && !toggle.dataset.bound) {
-    toggle.dataset.bound = '1';
-    toggle.addEventListener('click', () => snakeSetJoystickEnabled(!snakeIsJoystickEnabled()));
-  }
-
-  if (!dock || !pad || !snakeIsJoystickEnabled()) return;
+  if (!dock || !pad) return;
   gamesBindDirectionPad(pad, (dir) => {
     const current = app.gamesSnake;
     if (current && current.over) {
@@ -4398,7 +4444,16 @@ function gamesBindDirectionPad(root, handler) {
   root.querySelectorAll('[data-game-dir]').forEach((btn) => {
     if (btn.dataset.dirBound) return;
     btn.dataset.dirBound = '1';
-    btn.addEventListener('click', () => handler(btn.dataset.gameDir));
+    const fire = (ev) => {
+      if (ev) {
+        ev.preventDefault?.();
+        ev.stopPropagation?.();
+      }
+      handler(btn.dataset.gameDir);
+    };
+    btn.addEventListener('click', fire);
+    btn.addEventListener('pointerdown', fire, { passive: false });
+    btn.addEventListener('touchstart', fire, { passive: false });
   });
 }
 
@@ -4568,7 +4623,7 @@ function renderGameSnake() {
   const state = app.gamesSnake || (app.gamesSnake = snakeDefaultState());
   if (!state.food || !state.snake.length) snakePlaceFood(state);
   const compact = gamesIsCompactMode();
-  const boardSize = gamesFitSquareSize({ min: compact ? 230 : 250, max: Math.min(compact ? 540 : 480, gamesViewportSize().width - (compact ? 14 : 20)), reserve: compact ? 214 : 220, shellPad: compact ? 6 : 10 });
+  const boardSize = gamesFitSquareSize({ min: compact ? 226 : 246, max: Math.min(compact ? 540 : 480, gamesViewportSize().width - (compact ? 14 : 20)), reserve: compact ? 250 : 258, shellPad: compact ? 6 : 10 });
   const cells = [];
   for (let y = 0; y < state.size; y += 1) {
     for (let x = 0; x < state.size; x += 1) {
@@ -4580,9 +4635,10 @@ function renderGameSnake() {
   const activeAccount = gamesGetActiveAccount();
   const bestLength = activeAccount?.stats?.snake?.bestLength || 0;
   body.innerHTML = [
-    '<div class="gamesGamePanel">',
-    '  <div class="gameInfoRow gameInfoRowCompact gameInfoRowDense"><span>Skóre <strong>' + state.score + '</strong></span><span>Nejdelší <strong>' + String(bestLength) + '</strong></span><span>' + (state.over ? 'Klepni na pole pro novou hru' : 'Táhni po ploše nebo Joy') + '</span></div>',
-    '  <div class="gameBoard gameSnakeBoard" id="gameSnakeBoard" style="width:' + boardSize + 'px;height:' + boardSize + 'px;grid-template-columns:repeat(20,minmax(0,1fr));">' + cells.join('') + snakeBuildJoystickMarkup(snakeIsJoystickEnabled()) + '</div>',
+    '<div class="gamesGamePanel gamesSnakePanel">',
+    '  <div class="gameInfoRow gameInfoRowCompact gameInfoRowDense"><span>Skóre <strong>' + state.score + '</strong></span><span>Nejdelší <strong>' + String(bestLength) + '</strong></span><span>' + (state.over ? 'Klepni na pole pro novou hru' : 'Táhni po ploše nebo joystickem') + '</span></div>',
+    '  <div class="gameBoard gameSnakeBoard" id="gameSnakeBoard" style="width:' + boardSize + 'px;height:' + boardSize + 'px;grid-template-columns:repeat(20,minmax(0,1fr));">' + cells.join('') + '</div>',
+    snakeBuildJoystickMarkup(),
     gamesTop3Block('snake', 'bodů', 10),
     '</div>'
   ].join('');
@@ -4969,3 +5025,10 @@ function renderGamesTttShell() {
     if (info) info.textContent = 'Odkaz na piškvorky je zkopírovaný do schránky.';
   });
 }
+
+
+if (!window.__tttHashInviteBound) {
+  window.__tttHashInviteBound = true;
+  window.addEventListener('load', () => { void tttAutoOpenFromHash(); }, { once: true });
+}
+
