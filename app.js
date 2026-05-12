@@ -1,4 +1,4 @@
-// v.1(364) – PWA/service worker, online refresh hooks, self-test po načtení, Supabase bridge.
+// v.1(366) – doladění spodní lišty, Rotace, Statistik a herního ovládání.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
