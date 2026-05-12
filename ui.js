@@ -417,8 +417,13 @@ body.tttOpen{
   overflow:hidden;
 }
 @media (max-width: 520px){
-  .tttHeader{padding:12px 12px 10px;}
-  .tttStartScreen{padding:12px;}
+  .tttHeader{padding:10px 12px 8px;}
+  .tttHeaderTitle h2{font-size:18px;}
+  .tttStartScreen{padding:10px;}
+  .tttCard{padding:12px;}
+  .tttStatus{left:10px; right:10px; top:10px; font-size:13px; padding:7px 10px;}
+  .tttBoardWrap{inset:48px 10px 78px;}
+  .tttFooter{left:10px; right:10px; bottom:calc(10px + env(safe-area-inset-bottom));}
   .tttLevelRow{grid-template-columns:1fr;}
   .tttToggleRow{grid-template-columns:1fr;}
   .tttCell{font-size:clamp(18px, 7.2vw, 34px);}
@@ -452,24 +457,6 @@ function ensureTicTacToeOverlay() {
     '      <div class="tttBoardWrap"><div class="tttBoard" id="tttBoard"></div></div>',
     '      <div class="tttFooter">',
     '        <button type="button" class="tttBtn" id="tttRestartBtn">Nová hra</button>',
-    '        <button type="button" class="tttBtn" id="tttBackBtn">Zpět</button>',
-    '      </div>',
-    '      <div class="tttWinModal" id="tttWinModal" style="display:none;">',
-    '        <div class="tttWinCard">',
-    '          <div class="tttSectionTitle">Výsledek</div>',
-    '          <div class="tttWinText">Napiš jméno a odešli výsledek výhry nad nejtvrdší AI.</div>',
-    '          <label class="tttWinLabel" for="tttWinName">Jméno</label>',
-    '          <input id="tttWinName" class="tttWinInput" type="text" autocomplete="name" maxlength="32" placeholder="Tvoje jméno">',
-    '          <div class="tttWinStats">',
-    '            <div><span>Herní režim</span><strong id="tttWinMode">—</strong></div>',
-    '            <div><span>Tahy celkem</span><strong id="tttWinMoves">—</strong></div>',
-    '            <div><span>Čas</span><strong id="tttWinTime">—</strong></div>',
-    '          </div>',
-    '          <div class="tttWinActions">',
-    '            <button type="button" class="tttBtn isActive" id="tttWinSubmit">Odeslat</button>',
-    '            <button type="button" class="tttBtn" id="tttWinCancel">Nechat být</button>',
-    '          </div>',
-    '        </div>',
     '      </div>',
     '    </div>',
     '  </div>',
@@ -482,7 +469,6 @@ function ensureTicTacToeOverlay() {
     if (event.target === overlay) close();
   });
   overlay.querySelector('.tttClose')?.addEventListener('click', close);
-  overlay.querySelector('#tttBackBtn')?.addEventListener('click', close);
   overlay.querySelector('#tttRestartBtn')?.addEventListener('click', () => {
     resetTicTacToeGame(true);
   });
@@ -501,6 +487,8 @@ function ensureTicTacToeOverlay() {
     window.addEventListener('resize', tttLayoutBoard, { passive: true });
     window.addEventListener('orientationchange', tttLayoutBoard, { passive: true });
   }
+
+  tttBindOnlineLifecycle();
 
   return overlay;
 }
@@ -533,7 +521,22 @@ function tttGetState() {
       hardWinRemote: [],
       hardWinLoading: false,
       hardWinLoaded: false,
-      online: null,
+      online: {
+        code: '',
+        inviteId: null,
+        sessionId: null,
+        role: '',
+        status: 'idle',
+        revision: 0,
+        lastUpdatedAt: 0,
+        lastRemoteUpdatedAt: 0,
+        dirty: false,
+        pendingRevision: 0,
+        playerXAccountNumber: null,
+        playerOAccountNumber: null,
+        connected: false,
+        resultSavedKey: ''
+      },
       onlineSyncTimer: null,
       onlineStatus: '',
       onlineKind: 'idle'
@@ -559,6 +562,159 @@ function tttSetOnlineStatus(text, kind) {
   state.onlineKind = String(kind || 'waiting');
 }
 
+const TTT_ONLINE_POLL_MS = 650;
+const TTT_ONLINE_RESULT_STORE_KEY = 'rotace_ttt_online_results_v1';
+
+function tttReadOnlineResultStore() {
+  try {
+    const raw = localStorage.getItem(TTT_ONLINE_RESULT_STORE_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch (err) {
+    return {};
+  }
+}
+
+function tttWriteOnlineResultStore(store) {
+  try {
+    localStorage.setItem(TTT_ONLINE_RESULT_STORE_KEY, JSON.stringify(store && typeof store === 'object' ? store : {}));
+  } catch (err) {}
+}
+
+function tttBuildOnlineResultKey(code, revision, winner, role) {
+  return [
+    String(code || '').trim().toUpperCase(),
+    String(role || '').trim().toUpperCase() || 'N',
+    String(winner || 'draw').trim().toUpperCase() || 'DRAW',
+    String(Number(revision) || 0)
+  ].join(':');
+}
+
+function tttMarkOnlineResultSeen(code, revision, winner, role) {
+  const key = tttBuildOnlineResultKey(code, revision, winner, role);
+  const store = tttReadOnlineResultStore();
+  if (store[key]) return false;
+  store[key] = Date.now();
+  tttWriteOnlineResultStore(store);
+  return true;
+}
+
+function tttMakeOnlineStatePatch(extraPatch) {
+  const state = tttGetState();
+  const online = state.online || {};
+  const now = Date.now();
+  const revision = Number(online.pendingRevision || online.revision || 0) || 0;
+  const patch = {
+    board: state.board.slice(),
+    turn: state.turn,
+    gameOver: !!state.gameOver,
+    winner: state.winner || null,
+    message: state.message || '',
+    moveCount: state.moveCount || 0,
+    moveCountX: state.moveCountX || 0,
+    moveCountO: state.moveCountO || 0,
+    startedAt: state.startedAt || 0,
+    status: state.gameOver ? 'finished' : (online.status || 'active'),
+    revision,
+    updatedAtTs: now,
+    updatedAt: new Date(now).toISOString(),
+    lastMoveIndex: Number.isFinite(Number(state.lastMoveIndex)) ? Number(state.lastMoveIndex) : null,
+    lastMoveMark: state.lastMoveMark || null,
+    lastMoveByRole: online.role || null,
+    playerXAccountNumber: online.playerXAccountNumber || null,
+    playerOAccountNumber: online.playerOAccountNumber || null,
+    winnerRole: state.gameOver ? (state.winner || null) : null,
+    winnerAccountNumber: null
+  };
+  if (patch.winner && online && online.role && patch.winner === online.role.toUpperCase()) {
+    patch.winnerAccountNumber = typeof gamesGetActiveAccount === 'function' && gamesGetActiveAccount() ? gamesGetActiveAccount().id : null;
+  }
+  return Object.assign(patch, extraPatch && typeof extraPatch === 'object' ? extraPatch : {});
+}
+
+function tttApplyOnlineState(statePatch, remote) {
+  const state = tttGetState();
+  if (!statePatch || typeof statePatch !== 'object') return false;
+
+  if (Array.isArray(statePatch.board) && statePatch.board.length === TTT_TOTAL_CELLS) {
+    state.board = statePatch.board.slice();
+  }
+  state.turn = statePatch.turn === 'O' ? 'O' : 'X';
+  state.gameOver = !!statePatch.gameOver;
+  state.winner = statePatch.winner || null;
+  state.message = statePatch.message || (state.gameOver
+    ? (state.winner === 'draw' ? 'Remíza. Dobře hrané.' : ('Vyhrál hráč ' + state.winner + '.'))
+    : (state.turn === 'X' ? 'Hraje hráč X.' : 'Hraje hráč O.'));
+  state.moveCount = Number(statePatch.moveCount || 0) || 0;
+  state.moveCountX = Number(statePatch.moveCountX || 0) || 0;
+  state.moveCountO = Number(statePatch.moveCountO || 0) || 0;
+  state.startedAt = Number(statePatch.startedAt || state.startedAt || 0) || 0;
+  state.lastMoveIndex = Number.isFinite(Number(statePatch.lastMoveIndex)) ? Number(statePatch.lastMoveIndex) : null;
+  state.lastMoveMark = statePatch.lastMoveMark || null;
+
+  if (!state.online) state.online = {};
+  state.online.code = String((remote && remote.code) || state.online.code || '').trim().toUpperCase();
+  state.online.inviteId = remote && remote.inviteId ? remote.inviteId : (state.online.inviteId || null);
+  state.online.sessionId = remote && remote.sessionId ? remote.sessionId : (state.online.sessionId || null);
+  state.online.role = state.online.role || (remote && remote.role) || '';
+  state.online.status = statePatch.status || state.online.status || 'active';
+  state.online.revision = Number(statePatch.revision || state.online.revision || 0) || 0;
+  state.online.pendingRevision = Math.max(Number(state.online.pendingRevision || 0) || 0, state.online.revision);
+  state.online.lastUpdatedAt = Number(statePatch.updatedAtTs || state.online.lastUpdatedAt || Date.now()) || Date.now();
+  state.online.lastRemoteUpdatedAt = state.online.lastUpdatedAt;
+  state.online.playerXAccountNumber = statePatch.playerXAccountNumber || state.online.playerXAccountNumber || null;
+  state.online.playerOAccountNumber = statePatch.playerOAccountNumber || state.online.playerOAccountNumber || null;
+  state.online.connected = true;
+  state.online.dirty = false;
+  state.online.resultSavedKey = state.online.resultSavedKey || '';
+  tttSetOnlineStatus(state.message, state.gameOver ? 'finished' : state.online.status);
+  return true;
+}
+
+function tttMaybeRecordOnlineResult(winner) {
+  const state = tttGetState();
+  const online = state.online || null;
+  if (!online || !online.code) return false;
+  if (!['X', 'O', 'draw'].includes(String(winner || '').trim())) return false;
+  const key = tttBuildOnlineResultKey(online.code, online.revision || online.pendingRevision || 0, winner, online.role || '');
+  if (online.resultSavedKey === key) return false;
+  const store = tttReadOnlineResultStore();
+  if (store[key]) {
+    online.resultSavedKey = key;
+    return false;
+  }
+  store[key] = Date.now();
+  tttWriteOnlineResultStore(store);
+  online.resultSavedKey = key;
+
+  const active = typeof gamesGetActiveAccount === 'function' ? gamesGetActiveAccount() : null;
+  if (!active || !active.stats || !active.stats.ttt) return true;
+
+  const stats = active.stats.ttt || {};
+  const played = (stats.plays || 0) + 1;
+  const isDraw = winner === 'draw';
+  const role = String(online.role || '').toUpperCase();
+  const won = !isDraw && String(winner || '').toUpperCase() === role;
+
+  gamesRecordStat('ttt', isDraw
+    ? {
+        plays: played,
+        draws: (stats.draws || 0) + 1,
+        bestMoves: stats.bestMoves || null,
+        bestTimeMs: stats.bestTimeMs || null
+      }
+    : {
+        plays: played,
+        wins: won ? (stats.wins || 0) + 1 : (stats.wins || 0),
+        losses: won ? (stats.losses || 0) : (stats.losses || 0) + 1,
+        draws: stats.draws || 0,
+        bestMoves: won ? Math.min(stats.bestMoves || 9999, state.moveCount || 0) : stats.bestMoves || null,
+        bestTimeMs: won ? Math.min(stats.bestTimeMs || 999999999, Date.now() - (state.startedAt || Date.now())) : stats.bestTimeMs || null
+      });
+  return true;
+}
+
 async function tttCreateInviteSession() {
   const state = tttGetState();
   const code = tttMakeInviteCode();
@@ -572,7 +728,9 @@ async function tttCreateInviteSession() {
     code,
     x: inviter,
     o: null,
-    createdAt: Date.now()
+    createdAt: Date.now(),
+    revision: 0,
+    updatedAtTs: Date.now()
   };
   if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.createGameInvite === 'function') {
     const result = await window.RotationSupabaseBridge.createGameInvite({
@@ -584,18 +742,41 @@ async function tttCreateInviteSession() {
     if (result && result.ok) {
       state.online = {
         code,
-        inviteId: result.inviteId || null,
-        sessionId: result.sessionId || null,
+        inviteId: result.inviteId || (result.result && result.result.invite && result.result.invite.id) || null,
+        sessionId: result.sessionId || (result.result && result.result.session && result.result.session.id) || null,
         role: 'x',
         status: 'waiting',
-        lastUpdatedAt: Date.now()
+        revision: 0,
+        lastUpdatedAt: Date.now(),
+        lastRemoteUpdatedAt: 0,
+        dirty: false,
+        pendingRevision: 0,
+        playerXAccountNumber: inviter,
+        playerOAccountNumber: null,
+        connected: true,
+        resultSavedKey: ''
       };
-      tttSetOnlineStatus('Pozvánka vytvořena. Pošli odkaz spoluhráči.', 'waiting');
+      tttSetOnlineStatus('Pozvánka vytvořená. Pošli odkaz spoluhráči.', 'waiting');
       return { ok: true, code, url: tttGetInviteUrl(code), result };
     }
   }
-  state.online = { code, role: 'x', status: 'waiting', lastUpdatedAt: Date.now() };
-  tttSetOnlineStatus('Pozvánka vytvořena lokálně. Odkaz pošli spoluhráči.', 'waiting');
+  state.online = {
+    code,
+    inviteId: null,
+    sessionId: null,
+    role: 'x',
+    status: 'waiting',
+    revision: 0,
+    lastUpdatedAt: Date.now(),
+    lastRemoteUpdatedAt: 0,
+    dirty: false,
+    pendingRevision: 0,
+    playerXAccountNumber: inviter,
+    playerOAccountNumber: null,
+    connected: true,
+    resultSavedKey: ''
+  };
+  tttSetOnlineStatus('Pozvánka vytvořená lokálně. Odkaz pošli spoluhráči.', 'waiting');
   return { ok: true, code, url: tttGetInviteUrl(code), local: true };
 }
 
@@ -603,22 +784,47 @@ async function tttJoinInviteSession(code) {
   const state = tttGetState();
   const inviteCode = String(code || '').trim().toUpperCase();
   if (!inviteCode) return { ok: false, error: new Error('Chybí kód pozvánky.') };
+  const active = typeof gamesGetActiveAccount === 'function' ? gamesGetActiveAccount() : null;
+  const joiner = active && active.id ? String(active.id) : null;
   if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.acceptGameInvite === 'function') {
-    const result = await window.RotationSupabaseBridge.acceptGameInvite(inviteCode, (typeof gamesGetActiveAccount === 'function' && gamesGetActiveAccount() && gamesGetActiveAccount().id) ? gamesGetActiveAccount().id : null);
+    const result = await window.RotationSupabaseBridge.acceptGameInvite(inviteCode, joiner);
     if (result && result.ok) {
       state.online = {
         code: inviteCode,
-        inviteId: result.inviteId || null,
-        sessionId: result.sessionId || null,
+        inviteId: result.inviteId || (result.result && result.result.invite && result.result.invite.id) || null,
+        sessionId: result.sessionId || (result.result && result.result.session && result.result.session.id) || null,
         role: 'o',
         status: 'active',
-        lastUpdatedAt: Date.now()
+        revision: Number(result.revision || 0) || 0,
+        lastUpdatedAt: Date.now(),
+        lastRemoteUpdatedAt: 0,
+        dirty: false,
+        pendingRevision: Number(result.revision || 0) || 0,
+        playerXAccountNumber: (result.result && result.result.session && result.result.session.player_x_account_number) || null,
+        playerOAccountNumber: joiner,
+        connected: true,
+        resultSavedKey: ''
       };
       tttSetOnlineStatus('Pozvánka přijata. Hraješ proti spoluhráči.', 'active');
       return { ok: true, code: inviteCode, result };
     }
   }
-  state.online = { code: inviteCode, role: 'o', status: 'active', lastUpdatedAt: Date.now() };
+  state.online = {
+    code: inviteCode,
+    inviteId: null,
+    sessionId: null,
+    role: 'o',
+    status: 'active',
+    revision: 0,
+    lastUpdatedAt: Date.now(),
+    lastRemoteUpdatedAt: 0,
+    dirty: false,
+    pendingRevision: 0,
+    playerXAccountNumber: null,
+    playerOAccountNumber: joiner,
+    connected: true,
+    resultSavedKey: ''
+  };
   tttSetOnlineStatus('Pozvánka přijata lokálně. Odkaz načten.', 'active');
   return { ok: true, code: inviteCode, local: true };
 }
@@ -641,25 +847,39 @@ async function tttSyncOnlineSession(force) {
       if (remote && remote.ok && remote.session) {
         const session = remote.session;
         const boardState = session.board_state && typeof session.board_state === 'object' ? session.board_state : {};
-        const remoteStamp = Number(session.updated_at_ts || session.updatedAtTs || new Date(session.updated_at || 0).getTime() || 0) || 0;
-        if (force || remoteStamp >= (state.online.lastUpdatedAt || 0)) {
-          state.online.lastUpdatedAt = remoteStamp || Date.now();
-          if (Array.isArray(boardState.board) && boardState.board.length === TTT_TOTAL_CELLS) {
-            state.board = boardState.board.slice();
-          }
-          state.turn = boardState.turn === 'O' ? 'O' : 'X';
-          state.gameOver = !!boardState.gameOver;
-          state.winner = boardState.winner || null;
-          state.message = boardState.message || (session.status === 'waiting' ? 'Čekám na přijetí pozvánky.' : (state.turn === 'X' ? 'Hraje hráč X.' : 'Hraje hráč O.'));
-          if (session.status === 'active') {
-            state.online.status = 'active';
-          }
+        const remoteRevision = Number(boardState.revision || 0) || 0;
+        const remoteStamp = Number(boardState.updatedAtTs || session.updated_at_ts || new Date(session.updated_at || 0).getTime() || 0) || 0;
+        const localRevision = Number(state.online.revision || 0) || 0;
+        const localStamp = Number(state.online.lastUpdatedAt || 0) || 0;
+        const shouldAdopt = force || remoteRevision > localRevision || (remoteRevision === localRevision && remoteStamp > localStamp) || (!state.board.some(Boolean) && Array.isArray(boardState.board) && boardState.board.some(Boolean));
+        if (shouldAdopt) {
+          state.online.lastRemoteUpdatedAt = remoteStamp;
+          tttApplyOnlineState(Object.assign({}, boardState, {
+            revision: remoteRevision,
+            updatedAtTs: remoteStamp,
+            status: session.status || boardState.status || 'active',
+            playerXAccountNumber: session.player_x_account_number || boardState.playerXAccountNumber || null,
+            playerOAccountNumber: session.player_o_account_number || boardState.playerOAccountNumber || null
+          }), {
+            code,
+            inviteId: remote.invite && remote.invite.id ? remote.invite.id : state.online.inviteId,
+            sessionId: session.id || state.online.sessionId || null,
+            role: state.online.role || '',
+            status: session.status || boardState.status || 'active'
+          });
           tttRender();
           scheduleTttLayout();
+          if (state.gameOver) {
+            tttMaybeRecordOnlineResult(state.winner || boardState.winner || 'draw');
+          }
+        }
+        if (state.online.dirty && Number(state.online.pendingRevision || 0) > remoteRevision) {
+          await tttPushOnlineSession({ status: state.gameOver ? 'finished' : (state.online.status || 'active') });
         }
       }
     } catch (err) {
       console.warn('TTT online sync failed', err);
+      state.online.connected = false;
     }
   }
 }
@@ -667,34 +887,60 @@ async function tttSyncOnlineSession(force) {
 function tttStartOnlineSyncLoop() {
   const state = tttGetState();
   if (!state.online || !state.online.code) return;
+  tttBindOnlineLifecycle();
   if (state.onlineSyncTimer) return;
-  state.onlineSyncTimer = setInterval(() => { void tttSyncOnlineSession(false); }, 1000);
+  state.onlineSyncTimer = setInterval(() => { void tttSyncOnlineSession(false); }, TTT_ONLINE_POLL_MS);
+}
+
+function tttBindOnlineLifecycle() {
+  if (window.__tttOnlineLifecycleBound) return;
+  window.__tttOnlineLifecycleBound = true;
+  window.addEventListener('online', () => {
+    const state = tttGetState();
+    if (!state.online || !state.online.code) return;
+    state.online.connected = true;
+    void tttSyncOnlineSession(true);
+    if (state.online.dirty) {
+      setTimeout(() => { void tttPushOnlineSession({ status: state.gameOver ? 'finished' : (state.online.status || 'active') }); }, 220);
+    }
+  }, { passive: true });
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) return;
+    const state = tttGetState();
+    if (!state.online || !state.online.code) return;
+    void tttSyncOnlineSession(true);
+    if (state.online.dirty) {
+      setTimeout(() => { void tttPushOnlineSession({ status: state.gameOver ? 'finished' : (state.online.status || 'active') }); }, 180);
+    }
+  });
 }
 
 async function tttPushOnlineSession(extraPatch) {
   const state = tttGetState();
   if (!state.online || !state.online.code) return;
-  const payload = {
-    board: state.board.slice(),
-    turn: state.turn,
-    gameOver: !!state.gameOver,
-    winner: state.winner || null,
-    message: state.message || '',
-    moveCount: state.moveCount || 0,
-    moveCountX: state.moveCountX || 0,
-    moveCountO: state.moveCountO || 0,
-    ...(extraPatch && typeof extraPatch === 'object' ? extraPatch : {})
-  };
+  const nextRevision = Math.max(Number(state.online.revision || 0) || 0, Number(state.online.pendingRevision || 0) || 0) + 1;
+  const payload = tttMakeOnlineStatePatch(Object.assign({}, extraPatch, {
+    revision: nextRevision,
+    status: (extraPatch && extraPatch.status) || state.message || (state.gameOver ? 'finished' : (state.online.status || 'active'))
+  }));
   if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.saveGameSessionByInviteCode === 'function') {
     try {
       const result = await window.RotationSupabaseBridge.saveGameSessionByInviteCode(state.online.code, payload);
       if (result && result.ok) {
-        state.online.lastUpdatedAt = Date.now();
-        state.online.status = result.status || state.online.status || 'active';
+        state.online.lastUpdatedAt = payload.updatedAtTs || Date.now();
+        state.online.revision = nextRevision;
+        state.online.pendingRevision = nextRevision;
+        state.online.dirty = false;
+        state.online.connected = true;
+        state.online.status = result.status || payload.status || state.online.status || 'active';
+        if (payload.status === 'finished' || payload.gameOver) {
+          state.online.resultSavedKey = tttBuildOnlineResultKey(state.online.code, nextRevision, payload.winner || state.winner || 'draw', state.online.role || '');
+        }
       }
       return result;
     } catch (err) {
       console.warn('TTT online save failed', err);
+      state.online.connected = false;
     }
   }
   return { ok: true, queued: true, local: true };
@@ -1515,24 +1761,12 @@ function tttCloseHardWinPrompt() {
   const state = tttGetState();
   state.hardWinPrompt = false;
   state.hardWinStats = null;
-  const overlay = document.getElementById('tttOverlay');
-  const modal = overlay ? overlay.querySelector('#tttWinModal') : null;
-  if (modal) {
-    modal.classList.remove('isVisible');
-    modal.style.display = 'none';
-  }
   tttRender();
   scheduleTttLayout();
 }
 
 function tttOpenHardWinPrompt() {
-  const state = tttGetState();
-  state.hardWinPrompt = true;
-  state.hardWinStats = tttReadHardWinStats();
-  state.hardWinName = state.hardWinName || localStorage.getItem('tttHardWinName') || '';
-  tttRender();
-  void tttRefreshHardWinRows();
-    scheduleTttLayout();
+  void tttSubmitHardWin();
 }
 
 async function tttSendHardWinEntry(entry) {
@@ -1554,25 +1788,17 @@ async function tttSendHardWinEntry(entry) {
 
 async function tttSubmitHardWin() {
   const state = tttGetState();
-  const overlay = document.getElementById('tttOverlay');
-  const nameInput = overlay ? overlay.querySelector('#tttWinName') : null;
-  const submitBtn = overlay ? overlay.querySelector('#tttWinSubmit') : null;
-  const name = String(nameInput && nameInput.value ? nameInput.value : '').trim();
-  if (!name) {
-    alert('Napiš jméno, ať je to zapsané správně.');
-    return;
-  }
-
-  state.hardWinName = name;
+  const fallbackName = String(gamesGetActiveAccount()?.name || state.hardWinName || localStorage.getItem('tttHardWinName') || 'Hráč').trim() || 'Hráč';
+  state.hardWinName = fallbackName;
   try {
-    localStorage.setItem('tttHardWinName', name);
+    localStorage.setItem('tttHardWinName', fallbackName);
   } catch (err) {
     console.warn(err);
   }
 
   const stats = state.hardWinStats || tttReadHardWinStats();
   const entry = {
-    name,
+    name: fallbackName,
     date: new Date().toISOString(),
     mode: state.mode,
     difficulty: state.difficulty,
@@ -1584,20 +1810,16 @@ async function tttSubmitHardWin() {
     note: 'Výhra nad nejtvrdší AI'
   };
 
-  if (submitBtn) submitBtn.disabled = true;
   const result = await tttSendHardWinEntry(entry);
-  await new Promise(resolve => setTimeout(resolve, 300));
+  await new Promise(resolve => setTimeout(resolve, 180));
 
   if (result && result.ok === false) {
-    if (submitBtn) submitBtn.disabled = false;
     alert('Výhru se nepodařilo uložit online.');
     return;
   }
 
-  tttCloseHardWinPrompt();
   await tttRefreshHardWinRows(true);
   if (typeof tttRender === 'function') tttRender();
-  if (submitBtn) submitBtn.disabled = false;
   alert('Výhra uložená online.');
 }
 
@@ -1646,8 +1868,8 @@ function tttRender() {
         state.mode = btn.getAttribute('data-ttt-mode') || 'ai';
         if (state.mode === 'pvp') state.difficulty = 'ai';
         tttRender();
-          scheduleTttLayout();
-});
+        scheduleTttLayout();
+      });
     });
     start.querySelectorAll('[data-ttt-difficulty]').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -1747,6 +1969,7 @@ function tttRender() {
       scheduleTttLayout();
       if (state.mode === 'pvp' && state.online && state.online.code) {
         tttStartOnlineSyncLoop();
+        void tttSyncOnlineSession(true);
         void tttPushOnlineSession({ status: state.online.status || 'waiting' });
       }
     });
@@ -1783,41 +2006,31 @@ function tttRender() {
     });
   });
 
-  tttFillHardWinPrompt();
-  const modal = overlay.querySelector('#tttWinModal');
-  if (modal) {
-    const submit = overlay.querySelector('#tttWinSubmit');
-    const cancel = overlay.querySelector('#tttWinCancel');
-    const nameInput = overlay.querySelector('#tttWinName');
-    if (submit && !submit.dataset.bound) {
-      submit.dataset.bound = '1';
-      submit.addEventListener('click', tttSubmitHardWin);
-    }
-    if (cancel && !cancel.dataset.bound) {
-      cancel.dataset.bound = '1';
-      cancel.addEventListener('click', tttCloseHardWinPrompt);
-    }
-    if (nameInput && !nameInput.dataset.bound) {
-      nameInput.dataset.bound = '1';
-      nameInput.addEventListener('input', () => {
-        tttGetState().hardWinName = nameInput.value;
-      });
-    }
-  }
+
+
 }
 
 function tttHandleMove(index) {
   const state = tttGetState();
   if (state.gameOver || state.board[index]) return;
   if (state.mode === 'ai' && (state.turn !== 'X' || state.aiBusy)) return;
-  if (state.mode === 'pvp' && state.online && state.online.status === 'waiting') return;
-  if (state.mode === 'pvp' && state.online && state.online.status === 'waiting' && state.turn !== 'X') return;
+  if (state.mode === 'pvp') {
+    if (!state.online || !state.online.code || state.online.status === 'waiting') return;
+    const role = String(state.online.role || '').toUpperCase();
+    if (role && state.turn !== role) return;
+  }
 
   const mark = state.turn;
   state.board[index] = mark;
+  state.lastMoveIndex = index;
+  state.lastMoveMark = mark;
   state.moveCount += 1;
   if (mark === 'X') state.moveCountX += 1;
   else state.moveCountO += 1;
+  if (state.mode === 'pvp' && state.online && state.online.code) {
+    state.online.dirty = true;
+    state.online.pendingRevision = Math.max(Number(state.online.pendingRevision || 0) || 0, Number(state.online.revision || 0) || 0) + 1;
+  }
 
   const after = tttWinner(state.board);
   if (after.winner) {
@@ -1844,9 +2057,8 @@ function tttHandleMove(index) {
         });
       }
       if (state.mode === 'ai' && state.difficulty === 'ai') {
-        state.hardWinPrompt = true;
         state.hardWinStats = tttReadHardWinStats();
-        tttOpenHardWinPrompt();
+        void tttSubmitHardWin();
         return;
       }
     } else {
@@ -1860,7 +2072,10 @@ function tttHandleMove(index) {
     }
     tttRender();
     scheduleTttLayout();
-    if (state.mode === 'pvp' && state.online && state.online.code) void tttPushOnlineSession({ status: 'active' });
+    if (state.mode === 'pvp' && state.online && state.online.code) {
+      void tttPushOnlineSession({ status: 'finished', gameOver: true, winner: after.winner, winnerRole: after.winner, finishedAt: Date.now() });
+      tttMaybeRecordOnlineResult(after.winner);
+    }
     return;
   }
 
@@ -1871,7 +2086,9 @@ function tttHandleMove(index) {
       : (state.turn === 'X' ? 'Hraje hráč X.' : 'Hraje hráč O.');
     tttRender();
     scheduleTttLayout();
-    if (state.online && state.online.code) void tttPushOnlineSession({ status: state.online.status || 'active' });
+    if (state.online && state.online.code) {
+      void tttPushOnlineSession({ status: state.online.status || 'active' });
+    }
     return;
   }
 
@@ -1897,6 +2114,8 @@ function tttHandleMove(index) {
         return;
       }
       fresh.board[aiMove] = 'O';
+      fresh.lastMoveIndex = aiMove;
+      fresh.lastMoveMark = 'O';
       fresh.moveCount += 1;
       fresh.moveCountO += 1;
       const afterAi = tttWinner(fresh.board);
@@ -1947,15 +2166,31 @@ function resetTicTacToeGame(keepScreen) {
   state.moveCount = 0;
   state.moveCountX = 0;
   state.moveCountO = 0;
+  state.lastMoveIndex = null;
+  state.lastMoveMark = null;
   state.hardWinPrompt = false;
   state.hardWinStats = null;
   state.message = state.mode === 'pvp' ? 'Hraje hráč X.' : 'Hraješ za X. AI je O.';
   if (!keepScreen) state.screen = 'start';
   tttRender();
   scheduleTttLayout();
+  if (state.mode === 'pvp' && state.online && state.online.code) {
+    state.online.dirty = true;
+    state.online.pendingRevision = Math.max(Number(state.online.pendingRevision || 0) || 0, Number(state.online.revision || 0) || 0) + 1;
+    void tttPushOnlineSession({ status: state.online.status || 'waiting', gameOver: false, winner: null, winnerRole: null, finishedAt: null, moveCount: 0, moveCountX: 0, moveCountO: 0, lastMoveIndex: null, lastMoveMark: null });
+  }
 }
 
 function openGamesPage() {
+  if (typeof tttStopOnlineSync === 'function') tttStopOnlineSync();
+  if (typeof closeTicTacToeGame === 'function' && document.body.classList.contains('tttOpen')) {
+    closeTicTacToeGame();
+    return;
+  }
+  if (typeof gamesStopActiveLoops === 'function') gamesStopActiveLoops();
+  if (typeof app !== 'undefined') app.activeGameShell = '';
+  document.body.classList.remove('gamesOpen');
+  document.body.classList.remove('tttOpen');
   showPage('games');
   if (typeof renderGamesHub === 'function') renderGamesHub();
 }
@@ -1964,21 +2199,32 @@ function openTicTacToeGame() {
   const overlay = ensureTicTacToeOverlay();
   document.body.classList.remove('gamesOpen');
   const state = tttGetState();
-  state.screen = 'start';
-  state.board = Array(TTT_TOTAL_CELLS).fill('');
-  state.turn = 'X';
-  state.gameOver = false;
-  state.winner = null;
-  state.startedAt = 0;
-  state.moveCount = 0;
-  state.moveCountX = 0;
-  state.moveCountO = 0;
-  state.hardWinPrompt = false;
-  state.hardWinStats = null;
-  state.message = '';
+  const hasOnlineSession = !!(state.online && state.online.code);
+  if (!hasOnlineSession) {
+    state.screen = 'start';
+    state.board = Array(TTT_TOTAL_CELLS).fill('');
+    state.turn = 'X';
+    state.gameOver = false;
+    state.winner = null;
+    state.startedAt = 0;
+    state.moveCount = 0;
+    state.moveCountX = 0;
+    state.moveCountO = 0;
+    state.lastMoveIndex = null;
+    state.lastMoveMark = null;
+    state.hardWinPrompt = false;
+    state.hardWinStats = null;
+    state.message = '';
+  } else {
+    state.screen = 'game';
+    state.message = state.message || (state.online.status === 'waiting' ? 'Čekám na přijetí pozvánky.' : 'Připojuji probíhající duel.');
+  }
   overlay.classList.add('isVisible');
   document.body.classList.add('tttOpen');
-  if (state.online && state.online.code) tttStartOnlineSyncLoop();
+  if (hasOnlineSession) {
+    tttStartOnlineSyncLoop();
+    void tttSyncOnlineSession(true);
+  }
   tttRender();
   scheduleTttLayout();
 }
@@ -2038,7 +2284,7 @@ function triggerAboutAction() {
 function buildAppHistoryHtml(versionText) {
   const fallbackSections = [
     {
-      range: 'v.1(323)–v.1(336)',
+      range: 'v.1(323)–v.1(342)',
       title: 'Stabilizace a hry',
       lines: [
         'Spodní lišta se dorovnávala na mobilní rozložení a „Více“ bylo pevně vpravo.',
@@ -2874,6 +3120,17 @@ function showPage(id) {
       ? 'kalkulacky'
       : (id === 'jidlo' ? 'home' : id);
 
+  if (id === 'games') {
+    try {
+      if (typeof tttStopOnlineSync === 'function') tttStopOnlineSync();
+      if (typeof app !== 'undefined') app.activeGameShell = '';
+      document.body.classList.remove('tttOpen');
+      document.body.classList.remove('gamesOpen');
+    } catch (err) {
+      console.warn('games page reset failed', err);
+    }
+  }
+
   try {
     const modal = document.getElementById('foodScheduleModal');
     if (modal) {
@@ -2907,6 +3164,8 @@ function showPage(id) {
       if (typeof renderFoodSchedulePage === 'function') {
         renderFoodSchedulePage();
       }
+    } else if (id === 'games') {
+      if (typeof renderGamesHub === 'function') renderGamesHub();
     } else if (id === 'home') {
       if (typeof scheduleHomeRefresh === 'function') {
         scheduleHomeRefresh();
@@ -3159,6 +3418,7 @@ function gamesAccountById(accountId) {
 }
 
 function gamesApplyActiveAccountUI(account) {
+  const cardEl = document.getElementById('gamesAccountCard');
   const nameEl = document.getElementById('gamesAccountName');
   const hintEl = document.getElementById('gamesAccountHint');
   const inputEl = document.getElementById('gamesAccountInput');
@@ -3168,16 +3428,19 @@ function gamesApplyActiveAccountUI(account) {
   if (!nameEl || !hintEl || !inputEl || !entryRow || !currentEl || !clearBtn) return;
 
   const next = account || null;
+  if (cardEl) cardEl.classList.toggle('isLoggedIn', !!next);
   nameEl.textContent = next ? next.name : 'Bez přihlášení';
   hintEl.textContent = next
     ? 'Přihlášeno. Statistiky se ukládají pod tímto číslem.'
     : 'Bez účtu můžeš hrát dál. Statistiky se ukládají jen po přihlášení číslem.';
   entryRow.style.display = next ? 'none' : '';
+  hintEl.style.display = next ? 'none' : '';
   currentEl.style.display = next ? 'flex' : 'none';
   currentEl.textContent = next ? next.name : '';
   if (next) inputEl.value = '';
   clearBtn.textContent = next ? 'Odhlásit' : 'Bez účtu';
 }
+
 
 function gamesSetActiveAccount(accountId) {
   const profile = gamesGetProfile();
@@ -3189,6 +3452,7 @@ function gamesSetActiveAccount(accountId) {
   gamesApplyActiveAccountUI(active);
   gamesRenderStats();
   renderGamesHub();
+  requestAnimationFrame(() => gamesApplyActiveAccountUI(active));
   return true;
 }
 
@@ -3200,6 +3464,7 @@ function gamesClearActiveAccount() {
   gamesApplyActiveAccountUI(null);
   gamesRenderStats();
   renderGamesHub();
+  requestAnimationFrame(() => gamesApplyActiveAccountUI(null));
 }
 
 function gamesStatLine(label, value) {
@@ -3238,9 +3503,12 @@ function gamesRenderAccountChips() {
           console.warn('games account save failed', err);
         }
         syncVisibleAccount(found);
+        gamesApplyActiveAccountUI(found);
+        gamesRenderStats();
         requestAnimationFrame(() => {
           gamesRenderAccountChips();
           gamesRenderStats();
+          document.getElementById('gamesAccountCard')?.scrollIntoView({ block: 'start', behavior: 'smooth' });
         });
         return;
       }
@@ -3309,6 +3577,7 @@ function renderGamesHub() {
   gamesRenderAccountChips();
   gamesRenderStats();
   gamesEnsureKeyBindings();
+  gamesEnsureResizeBinding();
   const stage = document.getElementById('gamesStage');
   if (!stage) return;
   if (!app.activeGameShell) {
@@ -3343,16 +3612,16 @@ function renderGameShell(gameId) {
   const titleMap = { ttt: 'Piškvorky', '2048': '2048', snake: 'Snake', flap: 'Flap Bird' };
   const title = titleMap[gameId] || 'Hra';
   document.body.classList.add('gamesOpen');
+  gamesApplyCompactMode();
+  gamesEnsureResizeBinding();
   stage.innerHTML = [
     '<div class="gamesShell">',
     '  <div class="gamesShellTop">',
     '    <div class="gamesShellTitle">' + escapeHtml(title) + '</div>',
-    '    <button type="button" class="gamesShellBack" id="gamesShellBackBtn">Zpět</button>',
     '  </div>',
     '  <div id="gamesShellBody"></div>',
     '</div>'
   ].join('');
-  stage.querySelector('#gamesShellBackBtn')?.addEventListener('click', closeGameShell);
   if (gameId === 'ttt') renderGamesTttShell();
   else if (gameId === '2048') renderGame2048();
   else if (gameId === 'snake') renderGameSnake();
@@ -3375,6 +3644,42 @@ function gamesRecordStat(gameId, patch) {
   }
   gamesSaveProfile(profile);
   gamesRenderStats();
+}
+
+function gamesGetGameLeaderboard(gameId, limit = 10) {
+  const profile = gamesGetProfile();
+  const accounts = Object.values(profile.accounts || {});
+  const getValue = (acc) => {
+    const stats = acc && acc.stats ? acc.stats : {};
+    if (gameId === '2048') return Number(stats.g2048 && stats.g2048.bestScore || 0);
+    if (gameId === 'snake') return Number(stats.snake && stats.snake.bestScore || 0);
+    if (gameId === 'flap') return Number(stats.flap && stats.flap.bestScore || 0);
+    if (gameId === 'ttt') return Number(stats.ttt && stats.ttt.plays || 0);
+    return 0;
+  };
+  return accounts.map((acc) => ({
+    id: acc.id,
+    name: acc.name || ('Hráč ' + String(acc.id || '')),
+    value: getValue(acc)
+  })).filter((row) => row.value > 0).sort((a, b) => b.value - a.value || String(a.name).localeCompare(String(b.name), 'cs')).slice(0, limit);
+}
+
+
+function gamesTop3Block(gameId, label, limit = 10) {
+  const rows = gamesGetGameLeaderboard(gameId, limit);
+  const body = rows.length ? rows.map((row, idx) => (
+    '<div class="gamesTop3Row">' +
+      '<div class="gamesTop3Rank">' + String(idx + 1) + '.</div>' +
+      '<div class="gamesTop3Name">' + escapeHtml(row.name) + '</div>' +
+      '<div class="gamesTop3Value">' + String(row.value) + ' ' + escapeHtml(label) + '</div>' +
+    '</div>'
+  )).join('') : '<div class="gamesTop3Empty">Zatím žádné výsledky.</div>';
+  return [
+    '<div class="gamesTop3Card">',
+    '  <div class="gamesTop3Title">Top ' + String(limit) + ' výsledků</div>',
+    '  <div class="gamesTop3Body">' + body + '</div>',
+    '</div>'
+  ].join('');
 }
 
 function gamesEnsureKeyBindings() {
@@ -3431,43 +3736,114 @@ function gamesBindSwipeControl(el, onSwipe) {
     }
   };
 
-  el.addEventListener('touchstart', (ev) => {
-    if (!ev.touches || ev.touches.length !== 1) return;
-    const touch = ev.touches[0];
-    startX = touch.clientX;
-    startY = touch.clientY;
-    active = true;
-  }, { passive: true });
+  const usePointer = 'PointerEvent' in window;
+  if (usePointer) {
+    el.addEventListener('pointerdown', (ev) => {
+      if (ev.pointerType && ev.pointerType !== 'touch' && ev.pointerType !== 'pen') return;
+      startX = ev.clientX;
+      startY = ev.clientY;
+      active = true;
+    }, { passive: true });
 
-  el.addEventListener('touchend', (ev) => {
-    const touch = ev.changedTouches && ev.changedTouches[0];
-    if (!touch) return;
-    finish(touch.clientX, touch.clientY);
-  }, { passive: true });
+    el.addEventListener('pointerup', (ev) => {
+      if (ev.pointerType && ev.pointerType !== 'touch' && ev.pointerType !== 'pen') return;
+      finish(ev.clientX, ev.clientY);
+    }, { passive: true });
 
-  el.addEventListener('touchcancel', () => {
-    active = false;
-  }, { passive: true });
+    el.addEventListener('pointercancel', () => {
+      active = false;
+    }, { passive: true });
+  } else {
+    el.addEventListener('touchstart', (ev) => {
+      if (!ev.touches || ev.touches.length !== 1) return;
+      const touch = ev.touches[0];
+      startX = touch.clientX;
+      startY = touch.clientY;
+      active = true;
+    }, { passive: true });
 
-  el.addEventListener('pointerdown', (ev) => {
-    if (ev.pointerType && ev.pointerType !== 'touch' && ev.pointerType !== 'pen') return;
-    startX = ev.clientX;
-    startY = ev.clientY;
-    active = true;
-  }, { passive: true });
+    el.addEventListener('touchend', (ev) => {
+      const touch = ev.changedTouches && ev.changedTouches[0];
+      if (!touch) return;
+      finish(touch.clientX, touch.clientY);
+    }, { passive: true });
 
-  el.addEventListener('pointerup', (ev) => {
-    if (ev.pointerType && ev.pointerType !== 'touch' && ev.pointerType !== 'pen') return;
-    finish(ev.clientX, ev.clientY);
-  }, { passive: true });
+    el.addEventListener('touchcancel', () => {
+      active = false;
+    }, { passive: true });
+  }
 }
 // ---- 2048 ----
+function gamesViewportSize() {
+  const vv = window.visualViewport;
+  const width = Math.max(320, Math.floor((vv ? vv.width : window.innerWidth) || window.innerWidth || 320));
+  const height = Math.max(480, Math.floor((vv ? vv.height : window.innerHeight) || window.innerHeight || 480));
+  return { width, height };
+}
+
+function gamesFitSquareSize(options) {
+  const opts = options || {};
+  const min = Number(opts.min || 240);
+  const max = Number(opts.max || 460);
+  const reserve = Number(opts.reserve || 260);
+  const shellPad = Number(opts.shellPad || 16);
+  const vp = gamesViewportSize();
+  const widthFit = Math.max(min, vp.width - shellPad * 2);
+  const heightFit = Math.max(min, vp.height - reserve);
+  return Math.round(Math.max(min, Math.min(max, widthFit, heightFit)));
+}
+
+function gamesFitFlapSize() {
+  const vp = gamesViewportSize();
+  const compact = gamesIsCompactMode();
+  const width = Math.max(320, Math.min(compact ? 640 : 620, vp.width - (compact ? 10 : 14)));
+  const height = Math.max(compact ? 330 : 300, Math.min(compact ? 560 : 520, vp.height - (compact ? 128 : 154)));
+  return {
+    width: Math.round(width),
+    height: Math.round(height)
+  };
+}
+
+function gamesIsCompactMode() {
+  const vp = gamesViewportSize();
+  return vp.height < 760 || vp.width < 390;
+}
+
+function gamesApplyCompactMode() {
+  if (!document.body) return false;
+  const compact = gamesIsCompactMode();
+  document.body.classList.toggle('gamesCompactMode', compact);
+  return compact;
+}
+
+function gamesBindDirectionPad(root, handler) {
+  if (!root) return;
+  root.querySelectorAll('[data-game-dir]').forEach((btn) => {
+    if (btn.dataset.dirBound) return;
+    btn.dataset.dirBound = '1';
+    btn.addEventListener('click', () => handler(btn.dataset.gameDir));
+  });
+}
+
+function gamesEnsureResizeBinding() {
+  if (window.__rotaceGamesResizeBound) return;
+  window.__rotaceGamesResizeBound = true;
+  const onResize = () => {
+    gamesApplyCompactMode();
+    if (app.activeGameShell === '2048') renderGame2048();
+    else if (app.activeGameShell === 'snake') renderGameSnake();
+    else if (app.activeGameShell === 'flap' && app.gamesFlap) flapSyncCanvas(app.gamesFlap, true);
+  };
+  window.addEventListener('resize', onResize, { passive: true });
+  window.addEventListener('orientationchange', onResize, { passive: true });
+}
+
 function game2048InitialState() {
-  return { board: Array(16).fill(0), score: 0, over: false, best: 0, spawned: false };
+  return { board: Array(16).fill(0), score: 0, over: false, best: 0, spawned: false, moves: 0 };
 }
 
 function game2048Spawn(state) {
-  const empties = state.board.map((v, i) => v ? -1 : i).filter(i => i >= 0);
+  const empties = state.board.map((v, i) => (v ? -1 : i)).filter(i => i >= 0);
   if (!empties.length) return false;
   const idx = empties[Math.floor(Math.random() * empties.length)];
   state.board[idx] = Math.random() < 0.9 ? 2 : 4;
@@ -3475,10 +3851,13 @@ function game2048Spawn(state) {
 }
 
 function game2048CanMove(board) {
-  for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) {
-    const v = board[game2048Index(i,j)]; if (!v) return true;
-    if (j < 3 && v === board[game2048Index(i,j+1)]) return true;
-    if (i < 3 && v === board[game2048Index(i+1,j)]) return true;
+  for (let r = 0; r < 4; r += 1) {
+    for (let c = 0; c < 4; c += 1) {
+      const v = board[game2048Index(r, c)];
+      if (!v) return true;
+      if (c < 3 && v === board[game2048Index(r, c + 1)]) return true;
+      if (r < 3 && v === board[game2048Index(r + 1, c)]) return true;
+    }
   }
   return false;
 }
@@ -3494,48 +3873,88 @@ function renderGame2048() {
     game2048Spawn(state);
     state.spawned = true;
   }
+  const compact = gamesIsCompactMode();
+  const boardSize = gamesFitSquareSize({ min: compact ? 250 : 266, max: Math.min(compact ? 540 : 480, gamesViewportSize().width - (compact ? 14 : 20)), reserve: compact ? 170 : 186, shellPad: compact ? 6 : 10 });
+  const activeAccount = gamesGetActiveAccount();
+  const bestScore = activeAccount?.stats?.g2048?.bestScore || 0;
   body.innerHTML = [
-    '<div class="gameInfoRow"><span>Skóre: <strong>' + state.score + '</strong></span><span>' + (state.over ? 'Konec hry' : 'Táhni po ploše') + '</span></div>',
-    '<div class="gameBoard game2048Board" id="game2048Board">' + state.board.map(v => '<div class="gameBoardCell ' + (v ? 'n' + v : '') + '" data-value="' + (v || '') + '">' + (v || '') + '</div>').join('') + '</div>',
-    '<div class="gameInfoRow"><span>Nejvyšší: ' + (state.best || 0) + '</span><button class="gameControlBtn" id="game2048Restart">Nová hra</button></div>'
+    '<div class="gamesGamePanel">',
+    '  <div class="gameInfoRow gameInfoRowCompact gameInfoRowDense"><span>Skóre <strong>' + state.score + '</strong></span><span>Nejlepší <strong>' + String(bestScore) + '</strong></span><span>' + (state.over ? 'Klepni na pole pro novou hru' : 'Táhni po ploše') + '</span></div>',
+    '  <div class="gameBoard game2048Board" id="game2048Board" style="width:' + boardSize + 'px;height:' + boardSize + 'px;">' + state.board.map(v => '<div class="gameBoardCell ' + (v ? 'n' + v : '') + '" data-value="' + (v || '') + '">' + (v || '') + '</div>').join('') + '</div>',
+    gamesTop3Block('2048', 'bodů', 10),
+    '</div>'
   ].join('');
   const board = body.querySelector('#game2048Board');
-  gamesBindSwipeControl(board, game2048Move);
-  body.querySelector('#game2048Restart')?.addEventListener('click', () => { app.games2048 = game2048InitialState(); renderGame2048(); });
+  if (board) {
+    board.style.setProperty('width', boardSize + 'px', 'important');
+    board.style.setProperty('height', boardSize + 'px', 'important');
+  }
+  const reset2048 = () => {
+    app.games2048 = game2048InitialState();
+    renderGame2048();
+  };
+  gamesBindSwipeControl(board, (dir) => {
+    const current = app.games2048;
+    if (current && current.over) {
+      reset2048();
+      return;
+    }
+    game2048Move(dir);
+  });
+  board?.addEventListener('click', () => {
+    if (app.games2048 && app.games2048.over) reset2048();
+  });
 }
 
 function game2048Move(dir) {
-  const state = app.games2048; if (!state || state.over) return;
+  const state = app.games2048;
+  if (!state || state.over) return;
   const old = state.board.slice();
   let moved = false;
   const pull = (vals) => {
-    const arr = vals.filter(v => v);
+    const arr = vals.filter(Boolean);
     const out = [];
-    for (let i = 0; i < arr.length; i++) {
-      if (i < arr.length - 1 && arr[i] === arr[i + 1]) { out.push(arr[i] * 2); state.score += arr[i] * 2; state.best = Math.max(state.best, arr[i] * 2); i++; }
-      else out.push(arr[i]);
+    for (let i = 0; i < arr.length; i += 1) {
+      if (i < arr.length - 1 && arr[i] === arr[i + 1]) {
+        const merged = arr[i] * 2;
+        out.push(merged);
+        state.score += merged;
+        state.best = Math.max(state.best, merged);
+        i += 1;
+      } else {
+        out.push(arr[i]);
+      }
     }
     while (out.length < 4) out.push(0);
     return out;
   };
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < 4; i += 1) {
     let line = [];
-    if (dir === 'left') line = [0,1,2,3].map(c => old[game2048Index(i,c)]);
-    else if (dir === 'right') line = [3,2,1,0].map(c => old[game2048Index(i,c)]);
-    else if (dir === 'up') line = [0,1,2,3].map(r => old[game2048Index(r,i)]);
-    else if (dir === 'down') line = [3,2,1,0].map(r => old[game2048Index(r,i)]);
+    if (dir === 'left') line = [0, 1, 2, 3].map(c => old[game2048Index(i, c)]);
+    else if (dir === 'right') line = [3, 2, 1, 0].map(c => old[game2048Index(i, c)]);
+    else if (dir === 'up') line = [0, 1, 2, 3].map(r => old[game2048Index(r, i)]);
+    else if (dir === 'down') line = [3, 2, 1, 0].map(r => old[game2048Index(r, i)]);
+    else return;
     const next = pull(line);
-    if (dir === 'left') [0,1,2,3].forEach((c, idx) => { state.board[game2048Index(i,c)] = next[idx]; if (next[idx] !== old[game2048Index(i,c)]) moved = true; });
-    else if (dir === 'right') [3,2,1,0].forEach((c, idx) => { state.board[game2048Index(i,c)] = next[idx]; if (next[idx] !== old[game2048Index(i,c)]) moved = true; });
-    else if (dir === 'up') [0,1,2,3].forEach((r, idx) => { state.board[game2048Index(r,i)] = next[idx]; if (next[idx] !== old[game2048Index(r,i)]) moved = true; });
-    else if (dir === 'down') [3,2,1,0].forEach((r, idx) => { state.board[game2048Index(r,i)] = next[idx]; if (next[idx] !== old[game2048Index(r,i)]) moved = true; });
+    if (dir === 'left') [0, 1, 2, 3].forEach((c, idx) => { state.board[game2048Index(i, c)] = next[idx]; if (next[idx] !== old[game2048Index(i, c)]) moved = true; });
+    else if (dir === 'right') [3, 2, 1, 0].forEach((c, idx) => { state.board[game2048Index(i, c)] = next[idx]; if (next[idx] !== old[game2048Index(i, c)]) moved = true; });
+    else if (dir === 'up') [0, 1, 2, 3].forEach((r, idx) => { state.board[game2048Index(r, i)] = next[idx]; if (next[idx] !== old[game2048Index(r, i)]) moved = true; });
+    else if (dir === 'down') [3, 2, 1, 0].forEach((r, idx) => { state.board[game2048Index(r, i)] = next[idx]; if (next[idx] !== old[game2048Index(r, i)]) moved = true; });
   }
   if (moved) {
+    state.moves += 1;
     game2048Spawn(state);
     state.best = Math.max(state.best, ...state.board);
     if (!state.board.includes(0) && !game2048CanMove(state.board)) state.over = true;
     renderGame2048();
-    if (state.over) gamesRecordStat('2048', { plays: (gamesGetActiveAccount()?.stats.g2048.plays || 0) + 1, bestScore: Math.max(gamesGetActiveAccount()?.stats.g2048.bestScore || 0, state.score), bestTile: Math.max(gamesGetActiveAccount()?.stats.g2048.bestTile || 0, state.best) });
+    if (state.over) {
+      const account = gamesGetActiveAccount();
+      gamesRecordStat('2048', {
+        plays: (account?.stats?.g2048?.plays || 0) + 1,
+        bestScore: Math.max(account?.stats?.g2048?.bestScore || 0, state.score),
+        bestTile: Math.max(account?.stats?.g2048?.bestTile || 0, state.best)
+      });
+    }
   }
 }
 
@@ -3544,6 +3963,7 @@ function snakeDefaultState() {
   const head = { x: 10, y: 10 };
   return { size: 20, snake: [head, { x: 9, y: 10 }, { x: 8, y: 10 }], dir: { x: 1, y: 0 }, pending: null, food: { x: 5, y: 5 }, over: false, score: 0, timer: null };
 }
+
 function snakePlaceFood(state) {
   let x, y, ok = false;
   while (!ok) {
@@ -3553,129 +3973,388 @@ function snakePlaceFood(state) {
   }
   state.food = { x, y };
 }
+
+function snakeBuildCellClasses(state, x, y) {
+  if (state.food.x === x && state.food.y === y) return 'snakeFood';
+  if (state.snake[0].x === x && state.snake[0].y === y) return 'snakeHead';
+  if (state.snake.some((p, idx) => idx > 0 && p.x === x && p.y === y)) return 'snakeBody';
+  return 'snakeEmpty';
+}
+
 function renderGameSnake() {
-  const body = document.getElementById('gamesShellBody'); if (!body) return;
+  const body = document.getElementById('gamesShellBody');
+  if (!body) return;
   const state = app.gamesSnake || (app.gamesSnake = snakeDefaultState());
   if (!state.food || !state.snake.length) snakePlaceFood(state);
+  const compact = gamesIsCompactMode();
+  const boardSize = gamesFitSquareSize({ min: compact ? 250 : 266, max: Math.min(compact ? 540 : 480, gamesViewportSize().width - (compact ? 14 : 20)), reserve: compact ? 176 : 192, shellPad: compact ? 6 : 10 });
   const cells = [];
-  for (let y = 0; y < state.size; y++) {
-    for (let x = 0; x < state.size; x++) {
-      const idx = state.snake.findIndex(p => p.x === x && p.y === y);
-      let content = '';
-      if (state.food.x === x && state.food.y === y) content = '●';
-      else if (idx === 0) content = '◉';
-      else if (idx > 0) content = '•';
-      cells.push('<div class="gameBoardCell" style="font-size:' + (idx === 0 ? '16px' : '12px') + '">' + content + '</div>');
+  for (let y = 0; y < state.size; y += 1) {
+    for (let x = 0; x < state.size; x += 1) {
+      const cls = snakeBuildCellClasses(state, x, y);
+      const content = cls === 'snakeFood' ? '●' : cls === 'snakeHead' ? '◉' : cls === 'snakeBody' ? '•' : '';
+      cells.push('<div class="gameBoardCell ' + cls + '">' + content + '</div>');
     }
   }
+  const activeAccount = gamesGetActiveAccount();
+  const bestLength = activeAccount?.stats?.snake?.bestLength || 0;
   body.innerHTML = [
-    '<div class="gameInfoRow"><span>Skóre: <strong>' + state.score + '</strong></span><span>' + (state.over ? 'Konec hry' : 'Táhni po ploše') + '</span></div>',
-    '<div class="gameBoard gameSnakeBoard" id="gameSnakeBoard" style="grid-template-columns:repeat(20,1fr);">' + cells.join('') + '</div>',
-    '<div class="gameInfoRow"><span>Délka: ' + state.snake.length + '</span><button class="gameControlBtn" id="snakeRestart">Nová hra</button></div>'
+    '<div class="gamesGamePanel">',
+    '  <div class="gameInfoRow gameInfoRowCompact gameInfoRowDense"><span>Skóre <strong>' + state.score + '</strong></span><span>Nejdelší <strong>' + String(bestLength) + '</strong></span><span>' + (state.over ? 'Klepni na pole pro novou hru' : 'Had prochází skrz okraje') + '</span></div>',
+    '  <div class="gameBoard gameSnakeBoard" id="gameSnakeBoard" style="width:' + boardSize + 'px;height:' + boardSize + 'px;grid-template-columns:repeat(20,minmax(0,1fr));">' + cells.join('') + '</div>',
+    gamesTop3Block('snake', 'bodů', 10),
+    '</div>'
   ].join('');
   const board = body.querySelector('#gameSnakeBoard');
-  gamesBindSwipeControl(board, snakeSetDirection);
-  body.querySelector('#snakeRestart')?.addEventListener('click', () => { if (state.timer) clearInterval(state.timer); app.gamesSnake = snakeDefaultState(); snakePlaceFood(app.gamesSnake); snakeStart(); renderGameSnake(); });
-  snakeStart();
+  if (board) {
+    board.style.setProperty('width', boardSize + 'px', 'important');
+    board.style.setProperty('height', boardSize + 'px', 'important');
+  }
+  const resetSnake = () => {
+    if (state.timer) clearInterval(state.timer);
+    app.gamesSnake = snakeDefaultState();
+    snakePlaceFood(app.gamesSnake);
+    snakeStart();
+    renderGameSnake();
+  };
+  gamesBindSwipeControl(board, (dir) => {
+    const current = app.gamesSnake;
+    if (current && current.over) {
+      resetSnake();
+      return;
+    }
+    snakeSetDirection(dir);
+  });
+  board?.addEventListener('click', () => {
+    if (app.gamesSnake && app.gamesSnake.over) resetSnake();
+  });
+  if (!state.timer) snakeStart();
 }
+
 function snakeSetDirection(dir) {
-  const state = app.gamesSnake; if (!state || state.over) return;
-  const next = dir === 'up' ? { x:0,y:-1 } : dir === 'down' ? { x:0,y:1 } : dir === 'left' ? { x:-1,y:0 } : { x:1,y:0 };
+  const state = app.gamesSnake;
+  if (!state || state.over) return;
+  const next = dir === 'up' ? { x: 0, y: -1 } : dir === 'down' ? { x: 0, y: 1 } : dir === 'left' ? { x: -1, y: 0 } : { x: 1, y: 0 };
   if (state.dir.x + next.x === 0 && state.dir.y + next.y === 0) return;
   state.pending = next;
+  if (!state.timer) snakeStart();
 }
+
 function snakeTick() {
-  const state = app.gamesSnake; if (!state || state.over) return;
-  if (state.pending) { state.dir = state.pending; state.pending = null; }
-  const head = { x: state.snake[0].x + state.dir.x, y: state.snake[0].y + state.dir.y };
-  if (head.x < 0 || head.y < 0 || head.x >= state.size || head.y >= state.size || state.snake.some(p => p.x === head.x && p.y === head.y)) {
-    state.over = true; renderGameSnake(); gamesRecordStat('snake', { plays: (gamesGetActiveAccount()?.stats.snake.plays || 0) + 1, bestScore: Math.max(gamesGetActiveAccount()?.stats.snake.bestScore || 0, state.score), bestLength: Math.max(gamesGetActiveAccount()?.stats.snake.bestLength || 0, state.snake.length) }); return;
+  const state = app.gamesSnake;
+  if (!state || state.over) return;
+  if (state.pending) {
+    state.dir = state.pending;
+    state.pending = null;
+  }
+  const head = {
+    x: (state.snake[0].x + state.dir.x + state.size) % state.size,
+    y: (state.snake[0].y + state.dir.y + state.size) % state.size
+  };
+  if (state.snake.some(p => p.x === head.x && p.y === head.y)) {
+    state.over = true;
+    renderGameSnake();
+    const account = gamesGetActiveAccount();
+    gamesRecordStat('snake', {
+      plays: (account?.stats?.snake?.plays || 0) + 1,
+      bestScore: Math.max(account?.stats?.snake?.bestScore || 0, state.score),
+      bestLength: Math.max(account?.stats?.snake?.bestLength || 0, state.snake.length)
+    });
+    return;
   }
   state.snake.unshift(head);
-  if (head.x === state.food.x && head.y === state.food.y) { state.score += 1; snakePlaceFood(state); }
-  else state.snake.pop();
+  if (head.x === state.food.x && head.y === state.food.y) {
+    state.score += 1;
+    snakePlaceFood(state);
+  } else {
+    state.snake.pop();
+  }
   renderGameSnake();
 }
+
 function snakeStart() {
   const state = app.gamesSnake || (app.gamesSnake = snakeDefaultState());
   if (state.timer) clearInterval(state.timer);
-  state.timer = setInterval(snakeTick, 140);
+  state.timer = setInterval(snakeTick, 120);
 }
 
 // ---- Flap Bird ----
 function flapDefaultState() {
-  return { y: 120, v: 0, gravity: 0.45, lift: -6.2, pipes: [], score: 0, over: false, timer: null, frame: 0 };
+  return {
+    y: 0,
+    v: 0,
+    gravity: 0.38,
+    lift: -6.8,
+    pipes: [],
+    score: 0,
+    over: false,
+    timer: null,
+    frame: 0,
+    started: false,
+    lastTs: 0,
+    nextPipeAt: 0,
+    dpr: 1,
+    canvasW: 0,
+    canvasH: 0,
+    refs: null
+  };
 }
-function renderGameFlap() {
-  const body = document.getElementById('gamesShellBody'); if (!body) return;
-  const state = app.gamesFlap || (app.gamesFlap = flapDefaultState());
-  body.innerHTML = [
-    '<div class="gameInfoRow"><span>Skóre: <strong>' + state.score + '</strong></span><span>' + (state.over ? 'Konec hry' : 'Klepni nebo ťukni na tlačítko') + '</span></div>',
-    '<div class="gameBoard gameFlapBoard" id="gameFlapBoard" style="grid-template-columns:1fr;min-height:clamp(260px, 42vh, 420px);height:clamp(260px, 42vh, 420px);position:relative;overflow:hidden;">',
-    '  <div id="flapPipes"></div>',
-    '  <div id="flapBird" style="position:absolute;left:18%;top:' + Math.max(0, state.y) + 'px;width:22px;height:18px;border-radius:50% 50% 45% 45%;background:linear-gradient(180deg, rgba(124,255,124,.95), rgba(34,56,32,.9));box-shadow:0 0 18px rgba(124,255,124,.18);"></div>',
-    '</div>',
-    '<div class="gameControls">',
-    '  <button class="gameControlBtn" id="flapTapBtn">Skok</button>',
-    '  <button class="gameControlBtn" id="flapRestartBtn">Nová hra</button>',
-    '</div>'
-  ].join('');
-  const board = body.querySelector('#gameFlapBoard');
-  board?.addEventListener('pointerdown', () => {
-    flapTap();
-  }, { passive: true });
-  body.querySelector('#flapTapBtn')?.addEventListener('click', flapTap);
-  body.querySelector('#flapRestartBtn')?.addEventListener('click', () => { if (state.timer) cancelAnimationFrame(state.timer); app.gamesFlap = flapDefaultState(); flapStart(); renderGameFlap(); });
-  flapStart();
+
+function flapResetState(state) {
+  state.y = 0;
+  state.v = 0;
+  state.pipes = [];
+  state.score = 0;
+  state.over = false;
+  state.frame = 0;
+  state.started = false;
+  state.lastTs = 0;
+  state.nextPipeAt = 0;
 }
-function flapTap() { const state = app.gamesFlap; if (!state || state.over) return; state.v = state.lift; }
-function flapStart() {
-  const state = app.gamesFlap || (app.gamesFlap = flapDefaultState());
-  if (state.timer) cancelAnimationFrame(state.timer);
-  const loop = () => {
-    if (state.over) return;
-    const boardEl = document.getElementById('gameFlapBoard');
-    const boardHeight = Math.max(240, Math.min(420, Math.round(boardEl?.getBoundingClientRect().height || 320)));
-    const gapSize = 70;
-    const birdSize = 20;
-    state.frame += 1;
-    state.v += state.gravity;
-    state.y += state.v;
-    if (state.frame % 75 === 0) {
-      const safeTop = 48;
-      const maxGapTop = Math.max(safeTop + 16, boardHeight - gapSize - safeTop);
-      const gapY = Math.max(safeTop, Math.min(maxGapTop, Math.floor(boardHeight * 0.25 + Math.random() * boardHeight * 0.18)));
-      state.pipes.push({ x: 100, gapY, passed: false });
-    }
-    state.pipes.forEach(p => { p.x -= 2.3; if (!p.passed && p.x < 15) { p.passed = true; state.score += 1; } });
-    state.pipes = state.pipes.filter(p => p.x > -20);
-    if (state.y < 0 || state.y > boardHeight - birdSize) state.over = true;
-    const birdTop = state.y, birdBottom = state.y + birdSize;
-    for (const p of state.pipes) {
-      if (18 + birdSize > p.x && 18 < p.x + 22) {
-        if (birdTop < p.gapY || birdBottom > p.gapY + gapSize) state.over = true;
+
+function flapSyncCanvas(state, force) {
+  const refs = state.refs;
+  const canvas = refs && refs.canvas;
+  if (!canvas) return { width: 0, height: 0 };
+  const rect = canvas.parentElement ? canvas.parentElement.getBoundingClientRect() : canvas.getBoundingClientRect();
+  const width = Math.max(280, Math.floor(rect.width || canvas.clientWidth || 280));
+  const height = Math.max(240, Math.floor(rect.height || canvas.clientHeight || 240));
+  const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+  if (force || width !== state.canvasW || height !== state.canvasH || dpr !== state.dpr) {
+    state.canvasW = width;
+    state.canvasH = height;
+    state.dpr = dpr;
+    canvas.width = Math.floor(width * dpr);
+    canvas.height = Math.floor(height * dpr);
+    canvas.style.width = width + 'px';
+    canvas.style.height = height + 'px';
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (!state.started && !state.over && !state.y) state.y = height * 0.42;
+    state.y = Math.max(20, Math.min(height - 24, state.y || height * 0.42));
+  }
+  return { width: state.canvasW, height: state.canvasH };
+}
+
+function flapDraw(state) {
+  const refs = state.refs || {};
+  const canvas = refs.canvas;
+  const ctx = canvas && canvas.getContext ? canvas.getContext('2d') : null;
+  if (!ctx) return;
+  const width = state.canvasW || canvas.clientWidth || 320;
+  const height = state.canvasH || canvas.clientHeight || 280;
+  const pipeWidth = Math.max(26, Math.round(width * 0.085));
+  const gap = Math.max(118, Math.min(170, Math.round(height * 0.28)));
+  const birdX = Math.round(width * 0.22);
+  const birdSize = Math.max(18, Math.round(Math.min(width, height) * 0.055));
+  ctx.clearRect(0, 0, width, height);
+  const sky = ctx.createLinearGradient(0, 0, 0, height);
+  sky.addColorStop(0, 'rgba(92, 168, 112, 0.42)');
+  sky.addColorStop(0.5, 'rgba(27, 44, 39, 0.92)');
+  sky.addColorStop(1, 'rgba(6, 10, 12, 0.98)');
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, width, height);
+  ctx.fillStyle = 'rgba(255,255,255,0.08)';
+  for (let i = 0; i < 4; i += 1) {
+    const px = (i * 91 + state.frame * 0.22) % (width + 60) - 30;
+    ctx.beginPath();
+    ctx.ellipse(px, 30 + i * 14, 18, 8, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.fillStyle = 'rgba(0,0,0,0.18)';
+  ctx.fillRect(0, height - 18, width, 18);
+  const floorY = height - 18;
+  const pipeBase = 'rgba(83, 190, 110, 0.82)';
+  const pipeEdge = 'rgba(124,255,124,0.34)';
+  state.pipes.forEach((pipe) => {
+    const topH = pipe.gapY;
+    const bottomY = pipe.gapY + gap;
+    ctx.fillStyle = pipeBase;
+    ctx.strokeStyle = pipeEdge;
+    ctx.lineWidth = 1;
+    const rounded = Math.max(8, Math.round(pipeWidth * 0.34));
+    const topX = pipe.x;
+    const drawPipe = (x, y, w, h, topRound, bottomRound) => {
+      ctx.beginPath();
+      if (topRound && bottomRound) {
+        if (typeof ctx.roundRect === 'function') ctx.roundRect(x, y, w, h, rounded);
+        else ctx.rect(x, y, w, h);
+      } else if (topRound) {
+        ctx.moveTo(x, y + rounded);
+        ctx.arcTo(x, y, x + rounded, y, rounded);
+        ctx.lineTo(x + w - rounded, y);
+        ctx.arcTo(x + w, y, x + w, y + rounded, rounded);
+        ctx.lineTo(x + w, y + h);
+        ctx.lineTo(x, y + h);
+      } else {
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + w, y);
+        ctx.lineTo(x + w, y + h - rounded);
+        ctx.arcTo(x + w, y + h, x + w - rounded, y + h, rounded);
+        ctx.lineTo(x + rounded, y + h);
+        ctx.arcTo(x, y + h, x, y + h - rounded, rounded);
+        ctx.closePath();
+      }
+      ctx.fill();
+      ctx.stroke();
+    };
+    drawPipe(topX, 0, pipeWidth, topH, false, true);
+    drawPipe(topX, bottomY, pipeWidth, height - bottomY - 18, true, false);
+  });
+  const birdY = state.y;
+  const birdGlow = ctx.createRadialGradient(birdX + birdSize * 0.5, birdY + birdSize * 0.5, 4, birdX + birdSize * 0.5, birdY + birdSize * 0.5, birdSize * 2.2);
+  birdGlow.addColorStop(0, 'rgba(124,255,124,0.45)');
+  birdGlow.addColorStop(1, 'rgba(124,255,124,0)');
+  ctx.fillStyle = birdGlow;
+  ctx.beginPath();
+  ctx.arc(birdX + birdSize * 0.5, birdY + birdSize * 0.5, birdSize * 2.2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = 'rgba(128, 255, 154, 0.96)';
+  ctx.beginPath();
+  if (typeof ctx.roundRect === 'function') ctx.roundRect(birdX, birdY, birdSize, birdSize * 0.78, birdSize * 0.35);
+  else ctx.rect(birdX, birdY, birdSize, birdSize * 0.78);
+  ctx.fill();
+  ctx.fillStyle = 'rgba(18, 32, 25, 0.92)';
+  ctx.beginPath();
+  ctx.arc(birdX + birdSize * 0.72, birdY + birdSize * 0.28, Math.max(1.6, birdSize * 0.09), 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = 'rgba(232,255,240,0.92)';
+  ctx.beginPath();
+  ctx.arc(birdX + birdSize * 0.7, birdY + birdSize * 0.27, Math.max(0.9, birdSize * 0.04), 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = 'rgba(0,0,0,0.18)';
+  ctx.fillRect(0, floorY, width, 1);
+}
+
+function flapUpdateScoreUI(state) {
+  if (!state.refs) return;
+  if (state.refs.scoreEl) state.refs.scoreEl.textContent = String(state.score);
+  if (state.refs.bestEl) state.refs.bestEl.textContent = String(state.refs.best || 0);
+  if (state.refs.statusEl) {
+    state.refs.statusEl.textContent = state.over ? 'Konec hry' : (state.started ? 'Klepni pro skok' : 'Klepni pro start');
+  }
+}
+
+function flapEnsureLoop(state) {
+  if (state.timer) return;
+  const loop = (ts) => {
+    state.timer = requestAnimationFrame(loop);
+    if (!state.refs || !state.refs.canvas) return;
+    const size = flapSyncCanvas(state);
+    if (!size.width || !size.height) return;
+    const now = ts || performance.now();
+    if (!state.lastTs) state.lastTs = now;
+    const dt = Math.min(2.2, Math.max(0.35, (now - state.lastTs) / 16.666));
+    state.lastTs = now;
+    const pipeWidth = Math.max(26, Math.round(size.width * 0.085));
+    const gap = Math.max(118, Math.min(170, Math.round(size.height * 0.28)));
+    const birdX = Math.round(size.width * 0.22);
+    const birdSize = Math.max(18, Math.round(Math.min(size.width, size.height) * 0.055));
+    const pipeSpeed = Math.max(2.2, size.width * 0.0044);
+    if (state.started && !state.over) {
+      state.frame += 1;
+      state.v += state.gravity * dt;
+      state.y += state.v * dt;
+      if (!state.nextPipeAt) state.nextPipeAt = now + 850;
+      if (now >= state.nextPipeAt) {
+        const margin = Math.max(34, Math.round(size.height * 0.11));
+        const gapMin = margin;
+        const gapMax = Math.max(gapMin + 10, size.height - gap - margin - 18);
+        const gapY = Math.max(gapMin, Math.min(gapMax, Math.floor(margin + Math.random() * Math.max(20, gapMax - gapMin))));
+        state.pipes.push({ x: size.width + 12, gapY, passed: false });
+        state.nextPipeAt = now + Math.max(1260, 1480 - Math.min(360, state.score * 10));
+      }
+      state.pipes.forEach((pipe) => {
+        pipe.x -= pipeSpeed * dt;
+        if (!pipe.passed && pipe.x + pipeWidth < birdX) {
+          pipe.passed = true;
+          state.score += 1;
+          if ((gamesGetActiveAccount()?.stats?.flap?.bestScore || 0) < state.score) state.best = Math.max(state.best || 0, state.score);
+        }
+      });
+      state.pipes = state.pipes.filter((pipe) => pipe.x > -pipeWidth - 10);
+      if (state.y < 0) state.y = 0;
+      if (state.y > size.height - birdSize - 18) state.over = true;
+      const birdTop = state.y;
+      const birdBottom = state.y + birdSize * 0.78;
+      for (const pipe of state.pipes) {
+        const withinX = birdX + birdSize > pipe.x && birdX < pipe.x + pipeWidth;
+        if (withinX) {
+          if (birdTop < pipe.gapY || birdBottom > pipe.gapY + gap) {
+            state.over = true;
+            break;
+          }
+        }
+      }
+      if (state.over) {
+        const account = gamesGetActiveAccount();
+        gamesRecordStat('flap', {
+          plays: (account?.stats?.flap?.plays || 0) + 1,
+          bestScore: Math.max(account?.stats?.flap?.bestScore || 0, state.score),
+          bestPipes: Math.max(account?.stats?.flap?.bestPipes || 0, state.score)
+        });
       }
     }
-    const bird = document.getElementById('flapBird');
-    const pipesEl = document.getElementById('flapPipes');
-    if (bird) bird.style.top = Math.max(0, state.y) + 'px';
-    if (pipesEl) {
-      pipesEl.innerHTML = state.pipes.map(p => '<div style="position:absolute;left:' + p.x + '%;top:0;bottom:0;width:22px;">' +
-        '<div style="position:absolute;left:0;top:0;width:100%;height:' + p.gapY + 'px;background:linear-gradient(180deg, rgba(80,190,110,.55), rgba(42,120,72,.85));border:1px solid rgba(124,255,124,.24);border-top:none;border-radius:0 0 12px 12px;"></div>' +
-        '<div style="position:absolute;left:0;top:' + (p.gapY + gapSize) + 'px;width:100%;bottom:0;background:linear-gradient(180deg, rgba(80,190,110,.55), rgba(42,120,72,.85));border:1px solid rgba(124,255,124,.24);border-bottom:none;border-radius:12px 12px 0 0;"></div>' +
-      '</div>').join('');
-    }
-    if (state.over) {
-      gamesRecordStat('flap', { plays: (gamesGetActiveAccount()?.stats.flap.plays || 0) + 1, bestScore: Math.max(gamesGetActiveAccount()?.stats.flap.bestScore || 0, state.score), bestPipes: Math.max(gamesGetActiveAccount()?.stats.flap.bestPipes || 0, state.score) });
-      renderGameFlap();
-      return;
-    }
-    state.timer = requestAnimationFrame(loop);
+    flapDraw(state);
+    flapUpdateScoreUI(state);
   };
   state.timer = requestAnimationFrame(loop);
 }
 
+function flapTap() {
+  const state = app.gamesFlap;
+  if (!state) return;
+  if (state.over) {
+    flapResetState(state);
+    if (state.refs) {
+      flapSyncCanvas(state, true);
+      state.y = Math.max(20, Math.min((state.canvasH || 280) - 24, (state.canvasH || 280) * 0.42));
+    }
+  }
+  state.started = true;
+  state.v = state.lift;
+  if (!state.timer) flapEnsureLoop(state);
+  flapUpdateScoreUI(state);
+}
+
+function renderGameFlap() {
+  const body = document.getElementById('gamesShellBody');
+  if (!body) return;
+  const state = app.gamesFlap || (app.gamesFlap = flapDefaultState());
+  const fit = gamesFitFlapSize();
+  body.innerHTML = [
+    '<div class="gamesGamePanel">',
+    '  <div class="gameInfoRow gameInfoRowCompact gameInfoRowDense"><span>Skóre <strong id="flapScore">' + String(state.score || 0) + '</strong></span><span>Nejlepší <strong id="flapBest">' + String(state.best || 0) + '</strong></span><span id="flapStatus">' + (state.over ? 'Klepni na plochu pro novou hru' : (state.started ? 'Klepni pro skok' : 'Klepni pro start')) + '</span></div>',
+    '  <div class="gameBoard gameFlapBoard" id="gameFlapBoard" style="width:' + fit.width + 'px;height:' + fit.height + 'px;">',
+    '    <canvas id="flapCanvas" class="gameFlapCanvas"></canvas>',
+    '  </div>',
+    gamesTop3Block('flap', 'bodů', 10),
+    '</div>'
+  ].join('');
+  state.refs = {
+    board: body.querySelector('#gameFlapBoard'),
+    canvas: body.querySelector('#flapCanvas'),
+    scoreEl: body.querySelector('#flapScore'),
+    statusEl: body.querySelector('#flapStatus'),
+    bestEl: body.querySelector('#flapBest')
+  };
+  if (state.refs.board) {
+    state.refs.board.style.setProperty('width', fit.width + 'px', 'important');
+    state.refs.board.style.setProperty('height', fit.height + 'px', 'important');
+  }
+  state.best = Math.max(state.best || 0, gamesGetActiveAccount()?.stats?.flap?.bestScore || 0);
+  flapSyncCanvas(state, true);
+  if (!state.y) state.y = Math.max(20, Math.min((state.canvasH || fit.height) - 24, (state.canvasH || fit.height) * 0.42));
+  flapUpdateScoreUI(state);
+  flapEnsureLoop(state);
+  state.refs.canvas?.addEventListener('pointerdown', (ev) => {
+    ev.preventDefault();
+    flapTap();
+  }, { passive: false });
+}
+
 function renderGamesTttShell() {
+
   const body = document.getElementById('gamesShellBody');
   if (!body) return;
   body.innerHTML = [
