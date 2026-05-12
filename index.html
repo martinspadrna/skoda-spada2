@@ -909,7 +909,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
 
 <style id="v363-pre-mobile-polish">
   #games{padding-bottom:154px !important;}
-  /* v1(370) mobile polish: tighter bottom bar + names at the bottom on rotace */
+  /* v1(371) mobile polish: tighter bottom bar + names at the bottom on rotace */
   .bottomNav{
     padding:3px 5px calc(3px + env(safe-area-inset-bottom)) !important;
     gap:5px !important;
@@ -966,7 +966,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
     }
   }
 <style id="v363-legacy-mobile-polish">
-  /* v1(370) final mobile polish: tighter bottom bar, rotace preview and stats spacing */
+  /* v1(371) final mobile polish: tighter bottom bar, rotace preview and stats spacing */
   .bottomNav{
     padding:2px 4px calc(2px + env(safe-area-inset-bottom)) !important;
     gap:3px !important;
@@ -1079,7 +1079,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
 
 
 <style id="v363-final-mobile-polish">
-  /* v1(370) final mobile polish: bottom bar, games padding, rotace preview, stats compact, snake joystick */
+  /* v1(371) final mobile polish: bottom bar, games padding, rotace preview, stats compact, snake joystick */
   .bottomNav{
     width:calc(100% - 4px) !important;
     padding:1px 0 calc(1px + env(safe-area-inset-bottom)) !important;
@@ -2718,7 +2718,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
     }
   }
 
-  /* v1(370) freeze polish: nav border, tighter stats grid, clearer game account block */
+  /* v1(371) freeze polish: nav border, tighter stats grid, clearer game account block */
   .bottomNav{
     padding:2px 1px calc(2px + env(safe-area-inset-bottom)) !important;
   }
@@ -2753,6 +2753,32 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
     display:none !important;
   }
 
+</style>
+
+
+<style id="v371-freeze-polish">
+@media (display-mode: standalone){
+  .bottomNav{
+    bottom:calc(env(safe-area-inset-bottom) + 8px) !important;
+  }
+}
+.bottomNav{
+  padding:2px 2px 2px !important;
+}
+.bottomNavScroll{
+  padding-bottom:2px !important;
+}
+.statsMachinesGrid,
+.machineStatsGrid,
+#statsMachinesGrid,
+#stats .machineGrid{
+  gap:2px !important;
+}
+#stats .machineTile,
+#stats .statsMachineTile,
+#stats .machineChip{
+  margin:0 !important;
+}
 </style>
 
 </body></html>

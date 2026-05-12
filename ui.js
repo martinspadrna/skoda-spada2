@@ -3668,18 +3668,7 @@ function ensureFoodScheduleModal() {
 // Games hub + account profile
 // -------------------------
 const GAMES_PROFILE_KEY = APP_KEY + ':games_profile_v1';
-const GAMES_ACCOUNT_LIST = [
-  { id: '1883', name: 'Střížek Jan' },
-  { id: '2652', name: 'Kmínek Michal' },
-  { id: '2202', name: 'Novotný Miroslav' },
-  { id: '2602', name: 'Třasák Marek' },
-  { id: '9811', name: 'Špadrna Martin' },
-  { id: '1496', name: 'Kříž Pavel' },
-  { id: '4789', name: 'Synek Jan' },
-  { id: '3037', name: 'Pech Lukáš' },
-  { id: '3808', name: 'Starý Pavel' },
-  { id: '6235', name: 'Blažek Ladislav' }
-];
+const GAMES_ACCOUNT_LIST = [];
 
 function gamesMakeAccountEntry(accountId, name) {
   const id = String(accountId || '').trim();
@@ -4086,20 +4075,17 @@ function gamesRenderAccountChips() {
       if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.loadGameAccounts === 'function') {
         await gamesSyncProfileFromRemote(true);
       }
-      let found = gamesAccountById(typed);
+      const found = gamesAccountById(typed);
       if (!found) {
-        try {
-          gamesSetActiveAccount(typed);
-          found = gamesAccountById(typed) || { id: typed, name: typed };
-        } catch (err) {
-          console.warn('games account save failed', err);
-        }
-      } else {
-        try {
-          gamesSetActiveAccount(found.id);
-        } catch (err) {
-          console.warn('games account save failed', err);
-        }
+        hintEl.textContent = 'Takový uživatel na serveru neexistuje.';
+        inputEl.focus();
+        inputEl.select();
+        return;
+      }
+      try {
+        gamesSetActiveAccount(found.id);
+      } catch (err) {
+        console.warn('games account save failed', err);
       }
       syncVisibleAccount(found);
       gamesApplyActiveAccountUI(found);
@@ -4108,11 +4094,7 @@ function gamesRenderAccountChips() {
         gamesRenderAccountChips();
         gamesRenderStats();
       });
-      if (!window.RotationSupabaseBridge || typeof window.RotationSupabaseBridge.loadGameAccounts !== 'function') {
-        hintEl.textContent = 'Přihlášeno jako ' + found.id + '.';
-      } else if (!gamesAccountById(typed)) {
-        hintEl.textContent = 'Tento účet jsem nenašel online, ale nechal jsem ho přihlášený lokálně.';
-      }
+      hintEl.textContent = 'Přihlášeno jako ' + found.name + '.';
       return;
     };
     inputEl.addEventListener('keydown', (ev) => {

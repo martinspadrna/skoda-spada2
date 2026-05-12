@@ -1,3 +1,8 @@
+- v1(371)
+- Herní účty se už ověřují jen proti Supabase game_accounts.
+- iOS standalone režim má srovnaný spodní panel a safe-area.
+- Statistiky mají ještě těsnější rozestupy mezi stroji.
+
 # Changelog
 
 ## v.1(370)
