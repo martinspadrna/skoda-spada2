@@ -174,11 +174,21 @@
   .noteTable th,
   .noteTable td {
     font-size: 12px;
-    padding: 7px 5px;
+    padding: 6px 4px;
   }
 
   table.rotTable {
-    min-width: 520px;
+    min-width: 480px;
+  }
+
+  .noteDateCell{
+    width:56px;
+    min-width:56px;
+  }
+
+  .noteShiftCell{
+    width:40px;
+    min-width:40px;
   }
 }
 

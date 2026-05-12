@@ -452,7 +452,7 @@ function renderMonth(monthKey) {
     html += "<div class='tableWrap'><table class='noteTable'><thead><tr>";
     for (let i = 0; i < maxPairs; i += 1) {
       if (i > 0) html += "<th class='noteSpacer'></th>";
-      html += "<th>Datum</th><th>Směna</th><th>Jméno</th><th>Důvod</th>";
+      html += "<th class='noteDateCell'>Datum</th><th class='noteShiftCell'>Směna</th><th class='notePersonCell'>Jméno</th><th class='noteReasonCell'>Důvod</th>";
     }
     html += "</tr></thead><tbody>";
 
@@ -467,9 +467,9 @@ function renderMonth(monthKey) {
           const shift = n.shift || (parsed ? parsed.shift : "");
           const people = (n.people && n.people.length) ? n.people.join(" a ") : (n.person || "");
           const reason = n.label || n.code || "";
-          html += "<td>" + escapeHtml(dateOnly) + "</td><td>" + escapeHtml(shift) + "</td><td>" + escapeHtml(people) + "</td><td>" + escapeHtml(reason) + "</td>";
+          html += "<td class='noteDateCell'>" + escapeHtml(dateOnly) + "</td><td class='noteShiftCell'>" + escapeHtml(shift) + "</td><td class='notePersonCell'>" + escapeHtml(people) + "</td><td class='noteReasonCell'>" + escapeHtml(reason) + "</td>";
         } else {
-          html += "<td class='emptyCell'>—</td><td class='emptyCell'>—</td><td class='emptyCell'>—</td><td class='emptyCell'>—</td>";
+          html += "<td class='emptyCell noteDateCell'>—</td><td class='emptyCell noteShiftCell'>—</td><td class='emptyCell notePersonCell'>—</td><td class='emptyCell noteReasonCell'>—</td>";
         }
       }
       html += "</tr>";

@@ -1,5 +1,11 @@
 # Rotace a kalkulačky
 
+## v.1(376)
+- Rozpisy mají zavřenou volbu roku a měsíce, ale aktuální měsíc zůstává předvolený.
+- Tvrdota, měkkota i absence jsou užší, aby se rozpisy líp vešly na šířku obrazovky.
+- U absence je zúžený sloupec „Směna“, aby se tabulka tolik neroztahovala.
+- Verze i cache jsou posunuté na 376.
+
 ## v.1(375)
 - Frézky i Brusy jsou po otevření zavřené a jejich rozbalování je přehlednější.
 - U Brusů má teď i sekce „Kdy bude hotovo“ vlastní přesnější výpočet, nejen odkaz na horní kalkulačku.

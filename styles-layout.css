@@ -57,7 +57,7 @@
 }
 
 .foodTileLive{
-  font-size:13px;
+  font-size:12px;
   line-height:1.25;
   font-weight:700;
   color:#d8ffd8;
@@ -74,7 +74,7 @@
 }
 
 .foodTileLabel{
-  font-size:13px;
+  font-size:12px;
   font-weight:700;
   line-height:1.2;
   color:var(--green2);
@@ -295,16 +295,16 @@ label{
 table.rotTable{
  width:100%;
  border-collapse:collapse;
- min-width:560px;
+ min-width:500px;
  background:var(--panel2);
 }
 
 table.rotTable th,
 table.rotTable td{
  border:1px solid #333;
- padding:8px 6px;
+ padding:7px 4px;
  text-align:center;
- font-size:13px;
+ font-size:12px;
  white-space:nowrap;
 }
 
@@ -358,7 +358,7 @@ td.missingCell{
 
 .smallText{
  color:#aab3ad;
- font-size:13px;
+ font-size:12px;
  line-height:1.35;
 }
 
@@ -392,9 +392,9 @@ td.missingCell{
 .statsTable th,
 .statsTable td{
  border:1px solid #333;
- padding:8px 6px;
+ padding:7px 4px;
  text-align:center;
- font-size:13px;
+ font-size:12px;
  white-space:nowrap;
 }
 
@@ -407,14 +407,15 @@ td.missingCell{
  width:100%;
  border-collapse:collapse;
  margin-top:10px;
+ table-layout:fixed;
 }
 
 .noteTable th,
 .noteTable td{
  border:1px solid #333;
- padding:8px 6px;
+ padding:7px 4px;
  text-align:left;
- font-size:13px;
+ font-size:12px;
  white-space:nowrap;
 }
 
@@ -424,13 +425,29 @@ td.missingCell{
  text-align:center;
 }
 
-.noteTable td:nth-child(1){
- width:110px;
+.noteDateCell{
+ width:62px;
+ min-width:62px;
  font-weight:bold;
 }
 
-.noteTable td:nth-child(3){
+.noteShiftCell{
+ width:44px;
+ min-width:44px;
+ text-align:center;
+}
+
+.notePersonCell,
+.noteReasonCell{
  white-space:normal;
+}
+
+.notePersonCell{
+ min-width:84px;
+}
+
+.noteReasonCell{
+ min-width:78px;
 }
 
 .noteTable th.noteSpacer,
@@ -445,6 +462,42 @@ td.missingCell{
 .noteTable td.emptyCell{
  color:var(--muted);
  text-align:center;
+}
+
+.rotaceMonthPicker.card{
+ padding:0;
+ overflow:hidden;
+}
+
+.rotaceMonthPicker > summary{
+ list-style:none;
+ cursor:pointer;
+ padding:12px 14px;
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ gap:10px;
+ font-weight:800;
+ color:#e7fff0;
+ user-select:none;
+}
+
+.rotaceMonthPicker > summary::-webkit-details-marker{
+ display:none;
+}
+
+.rotaceMonthPicker > summary::after{
+ content:"▾";
+ opacity:.78;
+ transition:transform .2s ease;
+}
+
+.rotaceMonthPicker[open] > summary::after{
+ transform:rotate(180deg);
+}
+
+.rotaceMonthPickerBody{
+ padding:0 12px 12px;
 }
 
 .statsSummary{

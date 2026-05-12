@@ -1,4 +1,4 @@
-// v.1(375) – doladění kalkulaček frézek a brusů, výchozí zavření a přesnější výpočet u Brusů.
+// v.1(376) – zavřený filtr rozpisů, užší tabulky a přesnější absence v rozpisu.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
