@@ -363,6 +363,9 @@
           } else if (task.type === 'gomoku_win') {
             await upsertGomokuWinDirect(client, task.entry);
             flushed += 1;
+          } else if (task.type === 'game_stat') {
+            await saveGameStatDirect(client, task.entry);
+            flushed += 1;
           } else {
             remaining.push(task);
           }
@@ -701,6 +704,87 @@
     }
   }
 
+  async function loadGameAccountsDirect(client) {
+    const { data, error } = await client
+      .from('game_accounts')
+      .select('account_number, full_name, updated_at')
+      .order('account_number', { ascending: true });
+    if (error) throw error;
+    return Array.isArray(data) ? data : [];
+  }
+
+  async function loadGameStatsDirect(client, gameType, limit) {
+    const type = String(gameType || '').trim();
+    if (!type) return [];
+    const [accounts, statsRes] = await Promise.all([
+      loadGameAccountsDirect(client).catch(() => []),
+      client
+        .from('game_stats')
+        .select('id,account_number,game_type,games_played,wins,losses,draws,points,last_played_at,updated_at')
+        .eq('game_type', type)
+        .order('points', { ascending: false })
+        .order('updated_at', { ascending: false })
+        .limit(Math.max(1, Math.min(50, Number(limit) || 10)))
+    ]);
+    if (statsRes && statsRes.error) throw statsRes.error;
+    const nameMap = new Map((Array.isArray(accounts) ? accounts : []).map(row => [String(row.account_number || '').trim(), String(row.full_name || '').trim()]));
+    return (Array.isArray(statsRes && statsRes.data) ? statsRes.data : [])
+      .map(row => ({
+        id: row.id,
+        account_number: String(row.account_number || '').trim(),
+        game_type: String(row.game_type || '').trim(),
+        games_played: Number(row.games_played || 0) || 0,
+        wins: Number(row.wins || 0) || 0,
+        losses: Number(row.losses || 0) || 0,
+        draws: Number(row.draws || 0) || 0,
+        points: Number(row.points || 0) || 0,
+        last_played_at: row.last_played_at || null,
+        updated_at: row.updated_at || null,
+        player_name: nameMap.get(String(row.account_number || '').trim()) || String(row.account_number || '').trim()
+      }))
+      .filter(row => row.points > 0)
+      .sort((a, b) => (b.points - a.points) || String(b.updated_at || '').localeCompare(String(a.updated_at || '')) || String(a.player_name || '').localeCompare(String(b.player_name || ''), 'cs'))
+      .slice(0, Math.max(1, Math.min(50, Number(limit) || 10)));
+  }
+
+  async function saveGameStatDirect(client, entry) {
+    const accountNumber = String(entry && entry.account_number ? entry.account_number : '').trim();
+    const gameType = String(entry && entry.game_type ? entry.game_type : '').trim();
+    if (!accountNumber || !gameType) throw new Error('Chybí účet nebo typ hry.');
+
+    const existingRes = await client
+      .from('game_stats')
+      .select('id,games_played,wins,losses,draws,points,last_played_at,updated_at')
+      .eq('account_number', accountNumber)
+      .eq('game_type', gameType)
+      .order('updated_at', { ascending: false })
+      .limit(1);
+    if (existingRes && existingRes.error) throw existingRes.error;
+    const existing = Array.isArray(existingRes && existingRes.data) && existingRes.data.length ? existingRes.data[0] : null;
+
+    const next = {
+      account_number: accountNumber,
+      game_type: gameType,
+      games_played: Math.max(Number(existing && existing.games_played || 0) || 0, Number(entry && (entry.games_played ?? entry.plays) || 0) || 0),
+      wins: Math.max(Number(existing && existing.wins || 0) || 0, Number(entry && entry.wins || 0) || 0),
+      losses: Math.max(Number(existing && existing.losses || 0) || 0, Number(entry && entry.losses || 0) || 0),
+      draws: Math.max(Number(existing && existing.draws || 0) || 0, Number(entry && entry.draws || 0) || 0),
+      points: Math.max(Number(existing && existing.points || 0) || 0, Number(entry && (entry.points ?? entry.bestScore ?? entry.score) || 0) || 0),
+      last_played_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    if (existing && existing.id) {
+      const { data, error } = await client.from('game_stats').update(next).eq('id', existing.id).select('*').maybeSingle();
+      if (error) throw error;
+      return data || next;
+    }
+
+    const { data, error } = await client.from('game_stats').insert([next]).select('*').maybeSingle();
+    if (error) throw error;
+    return data || next;
+  }
+
   async function loadRotationState() {
     const client = getClient();
     try {
@@ -888,6 +972,24 @@
     saveMachineSettings,
     loadRotationMonthEntries,
     saveRotationMonthEntries,
+    loadGameStats: async (gameType, limit = 10) => {
+      const client = getClient();
+      if (!client || !navigator.onLine) return [];
+      try { return await loadGameStatsDirect(client, gameType, limit); }
+      catch (err) { state.lastError = err; console.error('Game stats load failed', err); return []; }
+    },
+    saveGameStat: async (payload) => {
+      const client = getClient();
+      if (!client || !navigator.onLine) return { ok: false, reason: 'offline-or-missing-client' };
+      try { return Object.assign({ ok: true }, await saveGameStatDirect(client, payload)); }
+      catch (err) { state.lastError = err; console.error('Game stat save failed', err); return { ok: false, error: err }; }
+    },
+    loadGameAccounts: async () => {
+      const client = getClient();
+      if (!client || !navigator.onLine) return [];
+      try { return await loadGameAccountsDirect(client); }
+      catch (err) { state.lastError = err; console.error('Game accounts load failed', err); return []; }
+    },
     seedFromLocalSnapshot,
     flushPendingWrites,
     getBridgeText,

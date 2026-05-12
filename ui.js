@@ -1174,6 +1174,52 @@ function tttOpenThreeThreatMoves(board, mark) {
   return Array.from(moves);
 }
 
+function tttOpenTwoThreatMoves(board, mark) {
+  const directions = [
+    [0, 1],
+    [1, 0],
+    [1, 1],
+    [1, -1]
+  ];
+  const moves = new Set();
+
+  for (let row = 0; row < TTT_ROWS; row += 1) {
+    for (let col = 0; col < TTT_COLS; col += 1) {
+      const idx = tttIndex(row, col);
+      if (board[idx] !== mark) continue;
+
+      for (const [dr, dc] of directions) {
+        const prevRow = row - dr;
+        const prevCol = col - dc;
+        if (tttInBounds(prevRow, prevCol) && board[tttIndex(prevRow, prevCol)] === mark) continue;
+
+        let length = 0;
+        let r = row;
+        let c = col;
+        while (tttInBounds(r, c) && board[tttIndex(r, c)] === mark) {
+          length += 1;
+          r += dr;
+          c += dc;
+        }
+
+        const beforeRow = row - dr;
+        const beforeCol = col - dc;
+        const afterRow = r;
+        const afterCol = c;
+        const beforeOpen = tttInBounds(beforeRow, beforeCol) && !board[tttIndex(beforeRow, beforeCol)];
+        const afterOpen = tttInBounds(afterRow, afterCol) && !board[tttIndex(afterRow, afterCol)];
+
+        if (length === 2 && beforeOpen && afterOpen) {
+          moves.add(tttIndex(beforeRow, beforeCol));
+          moves.add(tttIndex(afterRow, afterCol));
+        }
+      }
+    }
+  }
+
+  return Array.from(moves);
+}
+
 function tttThreatWindowMoves(board, mark) {
   const opponent = mark === 'O' ? 'X' : 'O';
   const moves = new Set();
@@ -1510,6 +1556,12 @@ function tttBestMove(board, difficulty) {
   if (forcedBlock.length) return forcedBlock[0];
   const openThreeBlock = tttOpenThreeThreatMoves(board, 'X');
   if (openThreeBlock.length) return openThreeBlock[0];
+  const openTwoBlock = tttOpenTwoThreatMoves(board, 'X');
+  if (openTwoBlock.length) return openTwoBlock[0];
+  const forkBlock = tttForkMove(board, 'X');
+  if (forkBlock >= 0) return forkBlock;
+  const ownFork = tttForkMove(board, 'O');
+  if (ownFork >= 0 && (difficulty === 'ai' || difficulty === 'medium')) return ownFork;
 
   const occupied = board.length - free.length;
   const center = tttIndex(Math.floor(TTT_ROWS / 2), Math.floor(TTT_COLS / 2));
@@ -1517,8 +1569,66 @@ function tttBestMove(board, difficulty) {
     return center;
   }
 
+  const isStrong = difficulty === 'ai' || difficulty === 'medium';
+  if (isStrong) {
+    const searchLimit = difficulty === 'ai' ? 16 : 10;
+    const searchDepth = difficulty === 'ai' ? 5 : 4;
+    const searchMoves = tttOrderedCandidates(board, 'O', searchLimit).slice(0, searchLimit);
+    if (searchMoves.length) {
+      const memo = Object.create(null);
+      const deadline = (typeof performance !== 'undefined' ? performance.now() : Date.now()) + (difficulty === 'ai' ? 44 : 24);
+      let bestSearchIdx = -1;
+      let bestSearchScore = -Infinity;
+      for (const idx of searchMoves) {
+        if (board[idx]) continue;
+        board[idx] = 'O';
+        const immediate = tttWinner(board).winner === 'O';
+        let score = immediate
+          ? 10000000
+          : tttSearch(board, searchDepth - 1, -Infinity, Infinity, false, memo, deadline);
+        board[idx] = '';
+        score += tttMoveHeuristic(board, idx, 'O') * 0.015;
+        if (score > bestSearchScore) {
+          bestSearchScore = score;
+          bestSearchIdx = idx;
+        }
+      }
+      if (bestSearchIdx >= 0) return bestSearchIdx;
+    }
+  }
+
   const candidates = tttCandidateMoves(board, occupied < 8 ? 1 : 1).slice(0, 10);
   const movePool = candidates.length ? candidates : free.slice(0, 14);
+
+  if (difficulty === 'ai' || difficulty === 'medium' || difficulty === 'easy') {
+    const hardBlocks = [
+      ...tttCriticalThreatMoves(board, 'X'),
+      ...tttThreatWindowMoves(board, 'X'),
+      ...tttOpenThreeThreatMoves(board, 'X'),
+      ...tttOpenTwoThreatMoves(board, 'X')
+    ].filter((idx, pos, arr) => arr.indexOf(idx) === pos && !board[idx]);
+    if (hardBlocks.length) {
+      let bestBlock = hardBlocks[0];
+      let bestBlockScore = -Infinity;
+      for (const idx of hardBlocks) {
+        board[idx] = 'O';
+        const risk = tttOpponentForkRisk(board, 'X', 8);
+        const immediate = tttWinningMove(board, 'X');
+        const row = Math.floor(idx / TTT_COLS);
+        const col = idx % TTT_COLS;
+        let score = 0;
+        score -= risk * 60000;
+        if (immediate >= 0) score += 180000;
+        score += Math.max(0, 120 - (Math.abs(row - Math.floor(TTT_ROWS / 2)) + Math.abs(col - Math.floor(TTT_COLS / 2))) * 8);
+        board[idx] = '';
+        if (score > bestBlockScore) {
+          bestBlockScore = score;
+          bestBlock = idx;
+        }
+      }
+      return bestBlock;
+    }
+  }
 
   let bestIdx = movePool[0] ?? free[0];
   let bestScore = -Infinity;
@@ -1534,6 +1644,7 @@ function tttBestMove(board, difficulty) {
     board[idx] = 'O';
     const winNow = tttWinner(board).winner === 'O';
     const oppWin = tttWinningMove(board, 'X');
+    const oppForkRisk = tttOpponentForkRisk(board, 'X', 8);
 
     const row = Math.floor(idx / TTT_COLS);
     const col = idx % TTT_COLS;
@@ -1541,6 +1652,7 @@ function tttBestMove(board, difficulty) {
 
     if (winNow) score += 1000000;
     if (oppWin >= 0) score -= 240000;
+    score -= oppForkRisk * 45000;
 
     const distance = Math.abs(row - centerRow) + Math.abs(col - centerCol);
     score += Math.max(0, 120 - distance * 18);
@@ -1549,33 +1661,38 @@ function tttBestMove(board, difficulty) {
     let oppAdj = 0;
     for (let dr = -1; dr <= 1; dr += 1) {
       for (let dc = -1; dc <= 1; dc += 1) {
-        if (!dr && !dc) continue;
+        if (dr === 0 && dc === 0) continue;
         const nr = row + dr;
         const nc = col + dc;
         if (!tttInBounds(nr, nc)) continue;
         const cell = board[tttIndex(nr, nc)];
-        if (cell === 'O') ownAdj += 18;
-        else if (cell === 'X') oppAdj += 12;
+        if (cell === 'O') ownAdj += 1;
+        else if (cell === 'X') oppAdj += 1;
       }
     }
-    score += ownAdj + oppAdj;
+    score += ownAdj * 28;
+    score += oppAdj * 20;
 
-    for (const [dr, dc] of [[0,1],[1,0],[1,1],[1,-1]]) {
-      let same = 1;
-      let openEnds = 0;
-      let r = row + dr;
-      let c = col + dc;
-      while (tttInBounds(r, c) && board[tttIndex(r, c)] === 'O') { same += 1; r += dr; c += dc; }
-      if (tttInBounds(r, c) && !board[tttIndex(r, c)]) openEnds += 1;
-      r = row - dr;
-      c = col - dc;
-      while (tttInBounds(r, c) && board[tttIndex(r, c)] === 'O') { same += 1; r -= dr; c -= dc; }
-      if (tttInBounds(r, c) && !board[tttIndex(r, c)]) openEnds += 1;
-      if (same >= 4 && openEnds >= 1) score += 45000;
-      else if (same === 3 && openEnds === 2) score += 12000;
-      else if (same === 3 && openEnds === 1) score += 4200;
-      else if (same === 2 && openEnds === 2) score += 900;
+    const rows = [row];
+    if (row > 0) rows.push(row - 1);
+    if (row < TTT_ROWS - 1) rows.push(row + 1);
+    const cols = [col];
+    if (col > 0) cols.push(col - 1);
+    if (col < TTT_COLS - 1) cols.push(col + 1);
+    let localLines = 0;
+    for (const r of rows) {
+      for (const c of cols) {
+        const idx2 = tttIndex(r, c);
+        if (board[idx2] === 'O') localLines += 3;
+        else if (board[idx2] === 'X') localLines -= 2;
+      }
     }
+    score += localLines;
+
+    const openThreeThreat = tttOpenThreeThreatMoves(board, 'O');
+    const openTwoThreat = tttOpenTwoThreatMoves(board, 'O');
+    if (openThreeThreat.includes(idx)) score += 160;
+    if (openTwoThreat.includes(idx)) score += 80;
 
     board[idx] = '';
 
@@ -1585,8 +1702,8 @@ function tttBestMove(board, difficulty) {
     }
   }
 
-  if (bestIdx >= 0) return bestIdx;
-  return free[Math.floor(Math.random() * free.length)] ?? -1;
+  if (bestIdx < 0 && movePool.length) bestIdx = movePool[0];
+  return bestIdx;
 }
 
 function tttHardWinLog() {
@@ -1811,16 +1928,15 @@ async function tttSubmitHardWin() {
   };
 
   const result = await tttSendHardWinEntry(entry);
-  await new Promise(resolve => setTimeout(resolve, 180));
+  await new Promise(resolve => setTimeout(resolve, 120));
 
   if (result && result.ok === false) {
-    alert('Výhru se nepodařilo uložit online.');
+    console.warn('TTT hard win save failed', result.error || result.reason || result);
     return;
   }
 
   await tttRefreshHardWinRows(true);
   if (typeof tttRender === 'function') tttRender();
-  alert('Výhra uložená online.');
 }
 
 function tttRender() {
@@ -1918,7 +2034,7 @@ function tttRender() {
               }
             }, { once: true });
           }
-          if (copyBtn) copyBtn.addEventListener('click', () => { void copyInviteUrl(); }, { once: true });
+          if (copyBtn) copyBtn.addEventListener('click', () => { void copyInviteUrl(); if (info) info.textContent = 'Odkaz na pozvánku je zkopírovaný ve schránce.'; }, { once: true });
           state.screen = 'game';
           state.gameOver = false;
           state.winner = null;
@@ -2183,10 +2299,16 @@ function resetTicTacToeGame(keepScreen) {
 
 function openGamesPage() {
   if (typeof tttStopOnlineSync === 'function') tttStopOnlineSync();
-  if (typeof closeTicTacToeGame === 'function' && document.body.classList.contains('tttOpen')) {
+  const hasTttOverlay = typeof document !== 'undefined' && document.body.classList.contains('tttOpen');
+  const hasGameShell = typeof app !== 'undefined' && !!app.activeGameShell;
+
+  if (hasTttOverlay && typeof closeTicTacToeGame === 'function') {
     closeTicTacToeGame();
-    return;
   }
+  if (hasGameShell && typeof closeGameShell === 'function') {
+    closeGameShell();
+  }
+
   if (typeof gamesStopActiveLoops === 'function') gamesStopActiveLoops();
   if (typeof app !== 'undefined') app.activeGameShell = '';
   document.body.classList.remove('gamesOpen');
@@ -2284,22 +2406,32 @@ function triggerAboutAction() {
 function buildAppHistoryHtml(versionText) {
   const fallbackSections = [
     {
-      range: 'v.1(323)–v.1(342)',
+      range: 'v.1(345)–v.1(350)',
+      title: 'Herní polish a freeze cleanup',
+      lines: [
+        'Hry jsou kompaktnější, mobilnější a bez zbytečných ovládacích křížů.',
+        'Piškvorky mají online sync, top 10 leaderboardy a tvrdší AI blokování.',
+        'Supabase dostal další cleanup, indexy pro herní lookupy a bezpečnější napojení.',
+        'Changelog je zkrácený do větších milníků místo dlouhého seznamu každé verze.'
+      ]
+    },
+    {
+      range: 'v.1(323)–v.1(344)',
       title: 'Stabilizace a hry',
       lines: [
-        'Spodní lišta se dorovnávala na mobilní rozložení a „Více“ bylo pevně vpravo.',
-        'Hry dostaly vlastní sekci, lepší účty a samostatné statistiky.',
-        'Piškvorky dostaly silnější blokování a invite flow.',
-        'Inline skripty se začaly přesouvat ven z index.html do samostatných modulů.'
+        'Stabilizovala se herní sekce, invite flow a herní statistiky.',
+        'Přibyly 2048, Snake a Flap Bird v mobilním layoutu.',
+        'Spodní lišta, přihlášení a online/offline sync dostaly kompaktnější chování.',
+        'Inline skripty se začaly rozdělovat do samostatných modulů.'
       ]
     },
     {
       range: 'v.1(310)–v.1(322)',
       title: 'PWA, offline a herní základ',
       lines: [
-        'Service worker, manifest a offline fallback jsou v appce.',
+        'Service worker, manifest a offline fallback se ustálily do PWA základu.',
         'Přibyly online/offline refresh hooky a sync queue.',
-        'Vznikla první herní sekce se Snake, 2048, Flappy a Piškvorkami.'
+        'Rotace a kalkulačky se dál refaktorovaly do stabilnějšího runtime.'
       ]
     },
     {
@@ -2307,27 +2439,17 @@ function buildAppHistoryHtml(versionText) {
       title: 'Dashboard polish a rotace',
       lines: [
         'Dashboard dostal čistší loading stavy a menší vizuální chaos.',
-        'Rotace a kalkulačky se dál refaktorovaly do stabilního runtime.',
-        'Piškvorky se průběžně ladily proti zamrznutí po tahu AI.'
+        'Piškvorky se průběžně ladily proti zamrznutí po tahu AI.',
+        'Layout aplikace se dál zjemňoval pro mobil.'
       ]
     },
     {
       range: 'v.1(250)–v.1(289)',
       title: 'Aktuální úpravy',
       lines: [
-        'Jídelna a kantýna používají shodné dny na jednom řádku.',
-        'Dashboard ukazuje další směnu D, kdo na ní chybí, a u průběhu směny i procenta.',
-        'Odpočet do dovolené doplňuje, jestli jde o CZD nebo Vánoce.',
-        'Kalkulačky pro frézky a brusy umí dopočítat i čas hotovosti.'
-      ]
-    },
-    {
-      range: 'v.1(233)–v.1(242)',
-      title: 'Dashboard, lišta a statistiky',
-      lines: [
-        'Dashboard se ladil pro přehlednější stav směn a absencí.',
-        'Spodní lišta dostala glass styl a přesnější velikosti.',
-        'Statistiky přidaly top 3 přehled a čistší rozpad jmen.'
+        'Jídelna a kantýna se sjednocovaly do přehlednějšího zobrazení.',
+        'Dashboard ukazoval další směny, absenci a procenta průběhu.',
+        'Kalkulačky pro frézky a brusy se postupně zpřesňovaly.'
       ]
     }
   ];
@@ -2924,11 +3046,6 @@ function bindAppMenuHandlers(body) {
                 : ('Rozpis uložený online ✓ · měsíců: ' + String(saveResult.months || 0) + ' · řádků: ' + String(saveResult.entries || 0)))
             : 'Rozpis se nepodařilo uložit online.';
         }
-        alert(saveResult && saveResult.ok === true
-          ? (saveResult.queued
-              ? 'Rozpis uložený lokálně ✓ · po připojení se synchronizuje.'
-              : ('Rozpis uložený online ✓ · měsíců: ' + String(saveResult.months || 0) + ' · řádků: ' + String(saveResult.entries || 0)))
-          : (navigator.onLine ? 'Rozpis se nepodařilo uložit online.' : 'Rozpis uložený lokálně. Po připojení se synchronizuje.'));
         renderAdminMenuBody(body, currentView);
         return;
       }
@@ -2950,9 +3067,6 @@ function bindAppMenuHandlers(body) {
           if (statusEl) statusEl.textContent = (result && result.queued)
             ? ('Stroje uložené lokálně ✓ · po připojení se synchronizují' + ((result && result.savedCount) ? (' · řádků: ' + result.savedCount) : ''))
             : ('Stroje uložené online ✓' + ((result && result.savedCount) ? (' · řádků: ' + result.savedCount) : ''));
-          alert((result && result.queued)
-            ? ('Nastavení strojů uložené lokálně ✓ · po připojení se synchronizují' + ((result && result.savedCount) ? (' · řádků: ' + result.savedCount) : ''))
-            : ('Nastavení strojů uložené online ✓' + ((result && result.savedCount) ? (' · řádků: ' + result.savedCount) : '')));
           return;
         }
       }
@@ -3123,6 +3237,8 @@ function showPage(id) {
   if (id === 'games') {
     try {
       if (typeof tttStopOnlineSync === 'function') tttStopOnlineSync();
+      if (typeof closeTicTacToeGame === 'function' && document.body.classList.contains('tttOpen')) closeTicTacToeGame();
+      if (typeof closeGameShell === 'function' && ((typeof app !== 'undefined' && !!app.activeGameShell) || document.body.classList.contains('gamesOpen'))) closeGameShell();
       if (typeof app !== 'undefined') app.activeGameShell = '';
       document.body.classList.remove('tttOpen');
       document.body.classList.remove('gamesOpen');
@@ -3165,6 +3281,10 @@ function showPage(id) {
         renderFoodSchedulePage();
       }
     } else if (id === 'games') {
+      if (typeof gamesStopActiveLoops === 'function') gamesStopActiveLoops();
+      if (typeof app !== 'undefined') app.activeGameShell = '';
+      document.body.classList.remove('gamesOpen');
+      document.body.classList.remove('tttOpen');
       if (typeof renderGamesHub === 'function') renderGamesHub();
     } else if (id === 'home') {
       if (typeof scheduleHomeRefresh === 'function') {
@@ -3428,17 +3548,41 @@ function gamesApplyActiveAccountUI(account) {
   if (!nameEl || !hintEl || !inputEl || !entryRow || !currentEl || !clearBtn) return;
 
   const next = account || null;
-  if (cardEl) cardEl.classList.toggle('isLoggedIn', !!next);
+  if (cardEl) {
+    cardEl.classList.toggle('isLoggedIn', !!next);
+    cardEl.style.display = next ? 'none' : '';
+  }
   nameEl.textContent = next ? next.name : 'Bez přihlášení';
   hintEl.textContent = next
     ? 'Přihlášeno. Statistiky se ukládají pod tímto číslem.'
     : 'Bez účtu můžeš hrát dál. Statistiky se ukládají jen po přihlášení číslem.';
   entryRow.style.display = next ? 'none' : '';
-  hintEl.style.display = next ? 'none' : '';
+  hintEl.style.display = 'none';
   currentEl.style.display = next ? 'flex' : 'none';
-  currentEl.textContent = next ? next.name : '';
+  currentEl.textContent = next ? ('Přihlášeno jako ' + next.name + ' · ' + next.id) : '';
   if (next) inputEl.value = '';
   clearBtn.textContent = next ? 'Odhlásit' : 'Bez účtu';
+  gamesRenderActiveAccountBar(next);
+}
+
+function gamesRenderActiveAccountBar(account) {
+  const bar = document.getElementById('gamesActiveAccountBar');
+  const textEl = document.getElementById('gamesActiveAccountText');
+  const clearBtn = document.getElementById('gamesActiveAccountClearBtn');
+  if (!bar || !textEl || !clearBtn) return;
+
+  const active = account || null;
+  bar.hidden = !active;
+  bar.classList.toggle('isVisible', !!active);
+  textEl.textContent = active ? ('Přihlášeno jako ' + active.name + ' · ' + active.id) : '';
+
+  if (!clearBtn.dataset.bound) {
+    clearBtn.dataset.bound = '1';
+    clearBtn.addEventListener('click', () => {
+      gamesClearActiveAccount();
+      renderGamesHub();
+    });
+  }
 }
 
 
@@ -3452,7 +3596,6 @@ function gamesSetActiveAccount(accountId) {
   gamesApplyActiveAccountUI(active);
   gamesRenderStats();
   renderGamesHub();
-  requestAnimationFrame(() => gamesApplyActiveAccountUI(active));
   return true;
 }
 
@@ -3464,7 +3607,6 @@ function gamesClearActiveAccount() {
   gamesApplyActiveAccountUI(null);
   gamesRenderStats();
   renderGamesHub();
-  requestAnimationFrame(() => gamesApplyActiveAccountUI(null));
 }
 
 function gamesStatLine(label, value) {
@@ -3508,7 +3650,6 @@ function gamesRenderAccountChips() {
         requestAnimationFrame(() => {
           gamesRenderAccountChips();
           gamesRenderStats();
-          document.getElementById('gamesAccountCard')?.scrollIntoView({ block: 'start', behavior: 'smooth' });
         });
         return;
       }
@@ -3576,6 +3717,7 @@ function renderGamesHub() {
   gamesGetProfile();
   gamesRenderAccountChips();
   gamesRenderStats();
+  void gamesRefreshRemoteLeaderboards();
   gamesEnsureKeyBindings();
   gamesEnsureResizeBinding();
   const stage = document.getElementById('gamesStage');
@@ -3644,9 +3786,91 @@ function gamesRecordStat(gameId, patch) {
   }
   gamesSaveProfile(profile);
   gamesRenderStats();
+  void gamesSyncStatOnline(gameId, patch);
+  void gamesRefreshRemoteLeaderboards(gameId);
+}
+
+
+function gamesNormalizeRemoteLeaderboardRows(gameId, rows, limit = 10) {
+  const key = String(gameId || '').trim();
+  return (Array.isArray(rows) ? rows : [])
+    .map((row) => {
+      const accountNumber = String(row && (row.account_number ?? row.accountNumber ?? row.id) ? (row.account_number ?? row.accountNumber ?? row.id) : '').trim();
+      const name = String(row && (row.player_name ?? row.full_name ?? row.name) ? (row.player_name ?? row.full_name ?? row.name) : accountNumber || '').trim();
+      const points = Number(row && (row.points ?? row.best_score ?? row.bestScore ?? row.value) ? (row.points ?? row.best_score ?? row.bestScore ?? row.value) : 0) || 0;
+      const updatedAt = String(row && (row.updated_at ?? row.last_played_at ?? row.created_at) ? (row.updated_at ?? row.last_played_at ?? row.created_at) : '').trim();
+      return {
+        id: accountNumber || name,
+        name: name || accountNumber || 'Hráč',
+        value: points,
+        updatedAt,
+        gameId: key
+      };
+    })
+    .filter((row) => row.value > 0)
+    .sort((a, b) => b.value - a.value || String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')) || String(a.name || '').localeCompare(String(b.name || ''), 'cs'))
+    .slice(0, limit);
+}
+
+async function gamesRefreshRemoteLeaderboards(gameId) {
+  if (!window.RotationSupabaseBridge || typeof window.RotationSupabaseBridge.loadGameStats !== 'function') return [];
+  const ids = gameId ? [gameId] : ['ttt', '2048', 'snake', 'flap'];
+  app.gamesLeaderboardCache = app.gamesLeaderboardCache || { ttt: [], '2048': [], snake: [], flap: [] };
+  try {
+    const results = await Promise.all(ids.map(async (id) => {
+      try {
+        const rows = await window.RotationSupabaseBridge.loadGameStats(id, 10);
+        const normalized = gamesNormalizeRemoteLeaderboardRows(id, rows, 10);
+        app.gamesLeaderboardCache[id] = normalized;
+        return { id, rows: normalized };
+      } catch (err) {
+        console.warn('games leaderboard refresh failed', id, err);
+        return { id, rows: app.gamesLeaderboardCache[id] || [] };
+      }
+    }));
+    if (!gameId) {
+      if (app.activeGameShell) {
+        renderGameShell(app.activeGameShell);
+      } else {
+        gamesRenderStats();
+      }
+    } else if (app.activeGameShell === gameId) {
+      renderGameShell(gameId);
+    } else if (!app.activeGameShell) {
+      gamesRenderStats();
+    }
+    return results;
+  } catch (err) {
+    console.warn('gamesRefreshRemoteLeaderboards failed', err);
+    return [];
+  }
+}
+
+async function gamesSyncStatOnline(gameId, patch) {
+  const account = gamesGetActiveAccount();
+  if (!account || !window.RotationSupabaseBridge || typeof window.RotationSupabaseBridge.saveGameStat !== 'function') return null;
+  try {
+    return await window.RotationSupabaseBridge.saveGameStat({
+      account_number: String(account.id || '').trim(),
+      player_name: String(account.name || '').trim(),
+      game_type: String(gameId || '').trim(),
+      games_played: Number(patch && patch.games_played !== undefined ? patch.games_played : (patch && patch.plays !== undefined ? patch.plays : 0)) || 0,
+      wins: Number(patch && patch.wins !== undefined ? patch.wins : 0) || 0,
+      losses: Number(patch && patch.losses !== undefined ? patch.losses : 0) || 0,
+      draws: Number(patch && patch.draws !== undefined ? patch.draws : 0) || 0,
+      points: Number(patch && patch.points !== undefined ? patch.points : (patch && patch.bestScore !== undefined ? patch.bestScore : 0)) || 0
+    });
+  } catch (err) {
+    console.warn('gamesSyncStatOnline failed', err);
+    return null;
+  }
 }
 
 function gamesGetGameLeaderboard(gameId, limit = 10) {
+  app.gamesLeaderboardCache = app.gamesLeaderboardCache || { ttt: [], '2048': [], snake: [], flap: [] };
+  const cached = Array.isArray(app.gamesLeaderboardCache[gameId]) ? app.gamesLeaderboardCache[gameId] : [];
+  if (cached.length) return cached.slice(0, limit);
+
   const profile = gamesGetProfile();
   const accounts = Object.values(profile.accounts || {});
   const getValue = (acc) => {
@@ -3773,6 +3997,72 @@ function gamesBindSwipeControl(el, onSwipe) {
     }, { passive: true });
   }
 }
+const SNAKE_JOYSTICK_KEY = APP_KEY + ':snake_joystick_v1';
+
+function snakeLoadJoystickEnabled() {
+  try {
+    return localStorage.getItem(SNAKE_JOYSTICK_KEY) === '1';
+  } catch (err) {
+    return false;
+  }
+}
+
+function snakeIsJoystickEnabled() {
+  if (typeof app.gamesSnakeJoystickEnabled !== 'boolean') {
+    app.gamesSnakeJoystickEnabled = snakeLoadJoystickEnabled();
+  }
+  return !!app.gamesSnakeJoystickEnabled;
+}
+
+function snakeSetJoystickEnabled(enabled) {
+  app.gamesSnakeJoystickEnabled = !!enabled;
+  try {
+    localStorage.setItem(SNAKE_JOYSTICK_KEY, enabled ? '1' : '0');
+  } catch (err) {}
+  renderGameSnake();
+}
+
+function snakeBuildJoystickMarkup(isOn) {
+  return [
+    '<div class="snakeJoystickDock' + (isOn ? ' isOn' : '') + '" id="snakeJoystickDock">',
+    '  <button type="button" class="gameControlBtn snakeJoystickToggle" id="snakeJoystickToggleBtn" aria-label="Zapnout nebo vypnout joystick">Joy</button>',
+    '  <div class="gamePad snakeJoystickPad" id="snakeJoystickPad" aria-label="Joystick hada">',
+    '    <span></span>',
+    '    <button type="button" class="gameControlBtn" data-game-dir="up" aria-label="Nahoru">▲</button>',
+    '    <span></span>',
+    '    <button type="button" class="gameControlBtn" data-game-dir="left" aria-label="Doleva">◀</button>',
+    '    <div class="snakeJoystickCenter" aria-hidden="true">●</div>',
+    '    <button type="button" class="gameControlBtn" data-game-dir="right" aria-label="Doprava">▶</button>',
+    '    <span></span>',
+    '    <button type="button" class="gameControlBtn" data-game-dir="down" aria-label="Dolů">▼</button>',
+    '    <span></span>',
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
+function snakeBindJoystickControls(root, resetSnake) {
+  if (!root) return;
+  const dock = root.querySelector('#snakeJoystickDock');
+  const toggle = root.querySelector('#snakeJoystickToggleBtn');
+  const pad = root.querySelector('#snakeJoystickPad');
+
+  if (toggle && !toggle.dataset.bound) {
+    toggle.dataset.bound = '1';
+    toggle.addEventListener('click', () => snakeSetJoystickEnabled(!snakeIsJoystickEnabled()));
+  }
+
+  if (!dock || !pad || !snakeIsJoystickEnabled()) return;
+  gamesBindDirectionPad(pad, (dir) => {
+    const current = app.gamesSnake;
+    if (current && current.over) {
+      resetSnake();
+      return;
+    }
+    snakeSetDirection(dir);
+  });
+}
+
 // ---- 2048 ----
 function gamesViewportSize() {
   const vv = window.visualViewport;
@@ -3879,7 +4169,10 @@ function renderGame2048() {
   const bestScore = activeAccount?.stats?.g2048?.bestScore || 0;
   body.innerHTML = [
     '<div class="gamesGamePanel">',
-    '  <div class="gameInfoRow gameInfoRowCompact gameInfoRowDense"><span>Skóre <strong>' + state.score + '</strong></span><span>Nejlepší <strong>' + String(bestScore) + '</strong></span><span>' + (state.over ? 'Klepni na pole pro novou hru' : 'Táhni po ploše') + '</span></div>',
+    '  <div class="gameInfoRow gameInfoRowCompact gameInfoRowDense"><span>Skóre <strong>' + state.score + '</strong></span><span>Nejlepší <strong>' + String(bestScore) + '</strong></span><span>' + (state.over ? 'Klepni na Nová hra' : 'Táhni po ploše') + '</span></div>',
+    '  <div class="gameControls" style="margin-top:2px;">',
+    '    <button type="button" class="gameControlBtn" id="game2048NewBtn">Nová hra</button>',
+    '  </div>',
     '  <div class="gameBoard game2048Board" id="game2048Board" style="width:' + boardSize + 'px;height:' + boardSize + 'px;">' + state.board.map(v => '<div class="gameBoardCell ' + (v ? 'n' + v : '') + '" data-value="' + (v || '') + '">' + (v || '') + '</div>').join('') + '</div>',
     gamesTop3Block('2048', 'bodů', 10),
     '</div>'
@@ -3893,6 +4186,7 @@ function renderGame2048() {
     app.games2048 = game2048InitialState();
     renderGame2048();
   };
+  body.querySelector('#game2048NewBtn')?.addEventListener('click', reset2048);
   gamesBindSwipeControl(board, (dir) => {
     const current = app.games2048;
     if (current && current.over) {
@@ -4028,6 +4322,7 @@ function renderGameSnake() {
   board?.addEventListener('click', () => {
     if (app.gamesSnake && app.gamesSnake.over) resetSnake();
   });
+  snakeBindJoystickControls(body, resetSnake);
   if (!state.timer) snakeStart();
 }
 
@@ -4372,6 +4667,7 @@ function renderGamesTttShell() {
     const url = new URL(window.location.href);
     url.hash = 'games=ttt';
     navigator.clipboard?.writeText(url.toString()).catch(()=>{});
-    alert('Odkaz na piškvorky zkopírovaný do schránky.');
+    const info = body.querySelector('#tttInviteInfo');
+    if (info) info.textContent = 'Odkaz na piškvorky je zkopírovaný do schránky.';
   });
 }

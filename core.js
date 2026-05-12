@@ -1,6 +1,6 @@
 
 const APP_KEY = "rotace_kalkulacky_state_v122";
-const APP_VERSION = "v.1(342)";
+const APP_VERSION = "v.1(355)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-05-10-" + APP_VERSION + "-" + Date.now();
 
@@ -89,6 +89,8 @@ const app = {
   contactTapCount: 0,
   homeBootSuppressed: false,
   tttState: null,
+  gamesLeaderboardCache: { "ttt": [], "2048": [], "snake": [], "flap": [] },
+  gamesSnakeJoystickEnabled: false,
   pendingMenuImport: false,
   adminUnlocked: false,
   machine: localStorage.getItem("machine") || "TBKR01",

@@ -979,3 +979,12 @@ body.gamesCompactMode #games .gameControlsFlap{gap:8px !important;}
 body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !important;min-width:92px !important;}
 @media (max-height: 760px){#games .gamesAccountTop .dashboardLabel{display:none !important;}#games .gamesGrid{gap:8px !important;}#games .gamesLaunchTile{min-height:94px !important;}#games .gamesAccountCard{padding:8px 10px !important;}#games .gamesAccountHint{display:none !important;}body.gamesOpen #games .gamesStage{padding:6px 6px calc(6px + env(safe-area-inset-bottom)) !important;}body.gamesOpen #games .gamesShellTop{padding:8px 10px !important;}#games .gamesGamePanel{gap:8px !important;}#games .gameInfoRow{padding:0 !important;}#games .gamePad .gameControlBtn{min-height:48px !important;min-width:48px !important;}}
 @media (max-width: 700px){#games .gamesGrid{grid-template-columns:repeat(2, minmax(0, 1fr)) !important;gap:8px !important;}#games .gamesLaunchTile{min-height:96px !important;}#games .gamesStatsGrid{grid-template-columns:repeat(2, minmax(0, 1fr)) !important;}#games .gamesAccountCard{padding:8px 10px !important;}#games .gamesAccountHint{display:none !important;}.bottomNavBtn{flex-basis:56px !important;width:56px !important;min-width:56px !important;max-width:56px !important;}.bottomNavMenuBtn{flex-basis:38px !important;width:38px !important;min-width:38px !important;max-width:38px !important;}}
+
+/* v1(353) games hub and stats tweaks */
+#games{padding-bottom:128px !important;}
+#games .gamesStatsFolder{margin-bottom:8px !important;}
+#statsNameGrid .statsTileTitle,
+#statsMachineGrid .statsTileTitle{font-size:13px !important;line-height:1.05 !important;}
+#statsMachineGrid.listGrid{gap:3px !important;}
+#statsMachineGrid .listItem{padding:3px 1px !important;min-height:32px !important;}
+#statsMachineGrid .statsMachineTile{padding:3px 1px !important;}

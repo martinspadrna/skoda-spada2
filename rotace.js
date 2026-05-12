@@ -39,7 +39,7 @@ function renderRotace() {
   if (app.selectedName && nameIndex[app.selectedName]) {
     renderPerson(app.selectedName);
   } else {
-    personView.innerHTML = "<div class='smallText'>Klepni na jméno a pod ním se ukáže přehled směn.</div>";
+    renderUpcomingShiftsPreview();
   }
 
   if (app.selectedMonth && app.rotation.months[app.selectedMonth]) {
@@ -296,6 +296,72 @@ function ensurePersonScheduleModal() {
 
 
 
+
+function renderUpcomingShiftsPreview(limit = 10) {
+  const personView = document.getElementById("personView");
+  if (!personView) return;
+
+  const index = buildNameIndex(app.rotation);
+  const names = Object.keys(index || {});
+  const now = typeof getPragueNow === 'function' ? getPragueNow(new Date()) : new Date();
+  const nowMs = now.getTime();
+  const dayKey = (date) => {
+    const d = date instanceof Date ? date : new Date(date);
+    return [
+      String(d.getFullYear()),
+      String(d.getMonth() + 1).padStart(2, '0'),
+      String(d.getDate()).padStart(2, '0')
+    ].join('-');
+  };
+  const items = [];
+  const seen = new Set();
+
+  names.forEach(name => {
+    const model = getPersonScheduleEntries(name);
+    (model.entries || []).forEach(entry => {
+      const end = getPersonScheduleEntryEnd(entry);
+      if (!end || end.getTime() <= nowMs) return;
+      const key = [name, entry.dateLabel || '', entry.shift || '', entry.target || ''].join('|');
+      if (seen.has(key)) return;
+      seen.add(key);
+      items.push({
+        name,
+        dateLabel: entry.dateLabel || '',
+        shift: entry.shift || '',
+        target: entry.target || '',
+        endMs: end.getTime(),
+        dateKey: dayKey(new Date(entry.sortDate || end))
+      });
+    });
+  });
+
+  items.sort((a, b) => {
+    if (a.endMs !== b.endMs) return a.endMs - b.endMs;
+    return String(a.name).localeCompare(String(b.name), 'cs');
+  });
+
+  const nowKey = dayKey(typeof getPragueNow === 'function' ? getPragueNow(new Date()) : new Date());
+  const next = items.slice(0, Math.max(1, limit));
+  if (!next.length) {
+    personView.innerHTML = "<div class='smallText'>Pro teď tu ještě nejsou žádné budoucí směny.</div>";
+    return;
+  }
+
+  const hasToday = next.some(entry => entry.dateKey === nowKey);
+  const previewTitle = hasToday ? 'Dnešní směny' : 'Nejbližší směny';
+  personView.innerHTML = [
+    '<div class="rotacePersonTitle">' + previewTitle + '</div>',
+    '<div class="rotaceQuickCards rotaceQuickStack">',
+    next.map(entry => [
+      '<div class="rotaceMiniCard">',
+      '  <div class="rotaceMiniDate">' + escapeHtml(entry.dateLabel || '') + (entry.shift ? ' ' + escapeHtml(entry.shift) : '') + '</div>',
+      '  <div class="rotaceMiniTarget">' + escapeHtml(entry.name || '') + (entry.target ? ' · ' + escapeHtml(entry.target) : '') + '</div>',
+      '</div>'
+    ].join('')).join(''),
+    '</div>'
+  ].join('');
+}
+
 function renderPerson(name) {
   const personView = document.getElementById("personView");
   const schedule = getPersonScheduleEntries(name);
@@ -308,7 +374,7 @@ function renderPerson(name) {
   }
 
   const startIdx = Math.max(0, currentIdx - 1);
-  const endIdx = Math.min(entries.length, currentIdx + 4);
+  const endIdx = Math.min(entries.length, currentIdx + 10);
   const visibleEntries = entries.slice(startIdx, endIdx);
 
   const formatEntry = (entry, isCurrent) => [
