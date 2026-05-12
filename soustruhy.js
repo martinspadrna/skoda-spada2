@@ -152,8 +152,19 @@ function calcBrusy() {
 
 function calcBrusyFinish() {
   const target = resolveTargetPieces("b_finish_kusy", "b_finish_davky");
-  const doneInBatch = Math.max(0, parseInt(document.getElementById("davka")?.value, 10) || 0);
-  const piecesToDress = Math.max(0, parseInt(document.getElementById("orovnani")?.value, 10) || 0);
+  const readFirstInt = (...ids) => {
+    for (const id of ids) {
+      const el = document.getElementById(id);
+      if (!el) continue;
+      const raw = String(el.value ?? "").trim();
+      if (raw === "") continue;
+      const val = parseInt(raw, 10);
+      if (!Number.isNaN(val)) return val;
+    }
+    return 0;
+  };
+  const doneInBatch = Math.max(0, readFirstInt("b_finish_davka", "davka"));
+  const piecesToDress = Math.max(0, readFirstInt("b_finish_orovnani", "orovnani"));
   const out = document.getElementById("outBTime");
   if (!out) return;
   if (!target.pieces) {
@@ -168,10 +179,14 @@ function calcBrusyFinish() {
   const preciseNote = (doneInBatch > 0 || piecesToDress > 0)
     ? (" · přesněji s rozdělanou dávkou" + (doneInBatch > 0 ? (" " + formatCount(doneInBatch) + " ks hotovo") : "") + (piecesToDress > 0 ? (", do orovnání " + formatCount(piecesToDress) + " ks") : ""))
     : "";
+  const preciseDetails = (doneInBatch > 0 || piecesToDress > 0)
+    ? ("<div class='smallText'>Přesnější výpočet: " + (doneInBatch > 0 ? ("rozpracovaná dávka má " + formatCount(doneInBatch) + " ks hotovo") : "bez rozdělané dávky") + (piecesToDress > 0 ? (", do orovnání zbývá " + formatCount(piecesToDress) + " ks") : "") + ".</div>")
+    : "<div class='smallText'>Přesnější výpočet si můžeš rozkliknout a doplnit podle rozdělané dávky.</div>";
   out.innerHTML =
     "<div><b>" + escapeHtml(app.machine + " / " + cfg.label) + "</b></div>" +
     "<div style='margin-top:6px;'>Hotovo v <b>" + formatClockTime(finish) + "</b></div>" +
-    "<div class='smallText'>Za " + formatDuration(seconds * 1000) + " · " + formatCount(remainingPieces) + " ks / " + formatDoses(remainingPieces) + " dávek" + escapeHtml(preciseNote) + "</div>";
+    "<div class='smallText'>Za " + formatDuration(seconds * 1000) + " · " + formatCount(remainingPieces) + " ks / " + formatDoses(remainingPieces) + " dávek" + escapeHtml(preciseNote) + "</div>" +
+    preciseDetails;
   saveRotationData();
 }
 

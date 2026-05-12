@@ -482,17 +482,24 @@
 </div>
 
 <!-- FREZKY -->
-<div id="frezky" class="page">
+<div id="frezky" class="page calcPage">
   <div class="headerBar">
     <div></div>
     <h3>Frézky</h3>
     <button class="resetBtn" onclick="resetFields(['f_kusy'])" title="Reset polí" aria-label="Reset polí">↻</button>
   </div>
 
-  <label>Hotovo kusů:</label>
-  <input id="f_kusy" type="number">
+  <details class="brusDetails calcDetails">
+    <summary>Kolik ještě stihnu</summary>
+    <div class="brusDetailsBody">
+      <label>Hotovo kusů:</label>
+      <input id="f_kusy" type="number">
+      <button onclick="calcF()">Spočítej kolik ještě stihnu</button>
+      <div class="card" id="outF"></div>
+    </div>
+  </details>
 
-  <details class="brusDetails">
+  <details class="brusDetails calcDetails">
     <summary>Kdy bude hotovo</summary>
     <div class="brusDetailsBody">
       <label>Kolik kusů ještě děláš:</label>
@@ -503,14 +510,10 @@
       <div class="card" id="outFTime"></div>
     </div>
   </details>
-
-  <button onclick="calcF()">Spočítej kolik ještě stihnu</button>
-
-  <div class="card" id="outF"></div>
 </div>
 
 <!-- BRUSY -->
-<div id="brusy" class="page">
+<div id="brusy" class="page calcPage">
   <div class="headerBar">
     <div></div>
     <h3>Brusy</h3>
@@ -535,35 +538,52 @@
 
   <div class="card" id="brusyInfo"><div><b>TBKR01 / AD</b></div><div class="smallText">Výroba kusu: 58,5 s · Orovnává po 58 ks · Orovnává 4 min</div></div>
 
-  <label>Celkem zatím nabroušeno:</label>
-  <input id="celkem" type="number">
-
-  <details class="brusDetails">
-    <summary>Přesnější výpočet</summary>
+  <details class="brusDetails calcDetails">
+    <summary>Kolik ještě stihnu</summary>
     <div class="brusDetailsBody">
-      <label>Hotových kusů v rozdělané dávce:</label>
-      <input id="davka" type="number">
+      <label>Celkem zatím nabroušeno:</label>
+      <input id="celkem" type="number">
 
-      <label>Kusů do orovnání:</label>
-      <input id="orovnani" type="number">
+      <details class="brusDetails calcDetails calcDetailsInner">
+        <summary>Přesnější výpočet</summary>
+        <div class="brusDetailsBody">
+          <label>Hotových kusů v rozdělané dávce:</label>
+          <input id="davka" type="number">
+
+          <label>Kusů do orovnání:</label>
+          <input id="orovnani" type="number">
+        </div>
+      </details>
+
+      <button onclick="calcBrusy()">Spočítej kolik ještě stihnu</button>
+
+      <div class="card" id="outB"></div>
     </div>
   </details>
 
-  <details class="brusDetails">
+  <details class="brusDetails calcDetails">
     <summary>Kdy bude hotovo</summary>
     <div class="brusDetailsBody">
       <label>Kolik kusů ještě děláš:</label>
       <input id="b_finish_kusy" type="number" autocomplete="off">
       <label>nebo kolik dávek:</label>
       <input id="b_finish_davky" type="number" autocomplete="off">
+
+      <details class="brusDetails calcDetails calcDetailsInner">
+        <summary>Přesnější výpočet</summary>
+        <div class="brusDetailsBody">
+          <label>Hotových kusů v rozdělané dávce:</label>
+          <input id="b_finish_davka" type="number" autocomplete="off">
+
+          <label>Kusů do orovnání:</label>
+          <input id="b_finish_orovnani" type="number" autocomplete="off">
+        </div>
+      </details>
+
       <button onclick="calcBrusyFinish()">Ukázat čas dokončení</button>
       <div class="card" id="outBTime"></div>
     </div>
   </details>
-
-  <button onclick="calcBrusy()">Spočítej kolik ještě stihnu</button>
-
-  <div class="card" id="outB"></div>
 </div>
 
 <!-- PRAČKA -->

@@ -176,3 +176,18 @@ body > .version{
   width:min(100%, 460px);
   margin:0 auto;
 }
+
+#frezky.active,
+#brusy.active{
+  display:grid;
+  gap:12px;
+}
+
+#frezky .calcDetails,
+#brusy .calcDetails{
+  margin-top:0;
+}
+
+#brusy .calcDetailsInner{
+  margin-top:6px;
+}

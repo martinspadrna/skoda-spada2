@@ -1,4 +1,11 @@
-- v1(372)
+# Rotace a kalkulačky
+
+## v.1(375)
+- Frézky i Brusy jsou po otevření zavřené a jejich rozbalování je přehlednější.
+- U Brusů má teď i sekce „Kdy bude hotovo“ vlastní přesnější výpočet, nejen odkaz na horní kalkulačku.
+- Verze i cache jsou posunuté na 375.
+
+## v.1(372)
 - Statistiky mají ještě menší rozestupy mezi stroji, aby se vešlo všech 6 do jednoho řádku.
 - Build a cache verze jsou srovnané na 372.
 

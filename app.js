@@ -1,4 +1,4 @@
-// v.1(372) – úprava statistik a finální ladění před freeze kandidátem.
+// v.1(375) – doladění kalkulaček frézek a brusů, výchozí zavření a přesnější výpočet u Brusů.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
