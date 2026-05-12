@@ -466,12 +466,12 @@ function renderStatsPanel() {
       statsNameView.innerHTML =
         "<div class='sectionTitle'>" + escapeHtml(person.name) + " — " + escapeHtml(String(year)) + "</div>" +
         "<div class='statsSummary'>" +
-        "<div class='tile'><div class='smallText'>Práce celkem</div><div style='font-size:14px;margin-top:4px;'>" + formatCount(person.totalWork) + "</div></div>" +
-        "<div class='tile'><div class='smallText'>Úklid celkem</div><div style='font-size:14px;margin-top:4px;'>" + formatCount(person.totalClean) + "</div></div>" +
-        "<div class='tile'><div class='smallText'>Absence celkem</div><div style='font-size:14px;margin-top:4px;'>" + formatCount(person.totalAbsence) + "</div></div>" +
-        "<div class='tile'><div class='smallText'>Práce + absence</div><div style='font-size:14px;margin-top:4px;'>" + formatCount(person.totalWork + person.totalAbsence) + "</div></div>" +
-        "<div class='tile'><div class='smallText'>Nejvíc pracoval na</div><div class='statsMultiLine' style='font-size:14px;margin-top:6px;font-weight:800;text-align:center;'>" + escapeHtml(topWork) + "</div></div>" +
-        "<div class='tile'><div class='smallText'>Nejvíc uklízel na</div><div class='statsMultiLine' style='font-size:14px;margin-top:6px;font-weight:800;text-align:center;'>" + escapeHtml(topClean) + "</div></div>" +
+        "<div class='tile'><div class='smallText'>Práce celkem</div><div class='statsSummaryValue'>" + formatCount(person.totalWork) + "</div></div>" +
+        "<div class='tile'><div class='smallText'>Úklid celkem</div><div class='statsSummaryValue'>" + formatCount(person.totalClean) + "</div></div>" +
+        "<div class='tile'><div class='smallText'>Absence celkem</div><div class='statsSummaryValue'>" + formatCount(person.totalAbsence) + "</div></div>" +
+        "<div class='tile'><div class='smallText'>Práce + absence</div><div class='statsSummaryValue'>" + formatCount(person.totalWork + person.totalAbsence) + "</div></div>" +
+        "<div class='tile'><div class='smallText'>Nejvíc pracoval na</div><div class='statsMultiLine statsSummaryValueCompact'>" + escapeHtml(topWork) + "</div></div>" +
+        "<div class='tile'><div class='smallText'>Nejvíc uklízel na</div><div class='statsMultiLine statsSummaryValueCompact'>" + escapeHtml(topClean) + "</div></div>" +
         "</div>" +
         "<div class='tableWrap'><table class='statsTable'><thead><tr><th>Stroj</th><th>Práce</th><th>Úklid</th></tr></thead><tbody>" +
         stats.machineOrder.map(machine => "<tr><td>" + escapeHtml(machine) + "</td><td>" + formatCount(person.work[machine] || 0) + "</td><td>" + formatCount(person.clean[machine] || 0) + "</td></tr>").join("") +
@@ -504,8 +504,8 @@ function renderStatsPanel() {
     statsMachineView.innerHTML = [
       "<div class='sectionTitle'>" + escapeHtml(machine) + "</div>",
       "<div class='statsSummary'>",
-      "<div class='tile'><div class='smallText'>Letos nejvíc uklízeli</div><div class='statsMultiLine' style='font-size:11px;margin-top:6px;line-height:1.2;font-weight:700;text-align:center;'>" + escapeHtml(leaderNames) + "</div></div>",
-      "<div class='tile'><div class='smallText'>Top 3 práce</div><div class='statsMultiLine' style='font-size:11px;margin-top:6px;line-height:1.2;font-weight:700;text-align:center;'>" + escapeHtml(topWorkersText) + "</div></div>",
+      "<div class='tile'><div class='smallText'>Letos nejvíc uklízeli</div><div class='statsMultiLine statsSummaryValueCompact'>" + escapeHtml(leaderNames) + "</div></div>",
+      "<div class='tile'><div class='smallText'>Top 3 práce</div><div class='statsMultiLine statsSummaryValueCompact'>" + escapeHtml(topWorkersText) + "</div></div>",
       "</div>"
     ].join('');
   } else {
