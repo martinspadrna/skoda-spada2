@@ -1,5 +1,10 @@
 # Changelog
 
+## v.1(366)
+- Spodní lišta je nižší, ale ikonky jsou výraznější a aktivní položka víc vystupuje.
+- Rotace má menší text ve výběru jmen, Statistiky širší a přehlednější tile prvky a Snake posunuté ovládání výš.
+- Piškvorky se dají opustit přes spodní lištu bez křížku, mají upravenější menu a jasnější invite flow.
+
 ## v.1(365)
 - Zmenšená lišta, větší ikonky, upravená Rotace a Statistiky.
 - Snake dostal funkční virtuální joystick mimo herní plochu.

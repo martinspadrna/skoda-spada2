@@ -166,7 +166,7 @@
 <div id="home" class="page active">
   <div class="dashboardShell">
     <div class="dashboardAppTitleRow">
-      <div class="dashboardAppTitle">Rotace a kalkulačky</div>
+      <div class="dashboardAppTitle">Rotace a<br>Kalkulačky</div>
       <div class="dashboardSyncBadge dashboardSyncBadge--offline" id="dashboardSyncBadge">🟡 Offline cache</div>
     </div>
 
@@ -2272,6 +2272,190 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   #games .gamesStatsCardLine,
   #games .gamesStatsCardMeta{
     font-size:10px !important;
+  }
+</style>
+
+
+<style id="v366-hotfix">
+  .bottomNav{
+    padding:0 2px calc(0px + env(safe-area-inset-bottom)) !important;
+    gap:2px !important;
+    border-radius:16px !important;
+  }
+  .bottomNavBtn{
+    flex:0 0 60px !important;
+    width:60px !important;
+    min-width:60px !important;
+    max-width:60px !important;
+    min-height:36px !important;
+    padding:0 1px 0 !important;
+  }
+  .bottomNavBtn .bottomNavIcon,
+  .bottomNavBtn .bottomNavIcon svg{
+    width:31px !important;
+    height:31px !important;
+  }
+  .bottomNavBtn .bottomNavIcon{
+    flex:0 0 31px !important;
+  }
+  .bottomNavBtn .bottomNavLabel{
+    font-size:8px !important;
+    line-height:1 !important;
+  }
+  .bottomNavBtn.active{
+    transform:translateY(-7px) scale(1.09) !important;
+    z-index:12 !important;
+  }
+  .bottomNavBtn.active::before{
+    inset:-4px !important;
+  }
+  .bottomNavMenuBtn{
+    flex:0 0 24px !important;
+    width:24px !important;
+    min-width:24px !important;
+    max-width:24px !important;
+    padding:0 !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+  }
+  .bottomNavMenuBtn .moreIcon{
+    width:16px !important;
+    height:16px !important;
+    margin:0 auto !important;
+  }
+
+  #rotaceNamesPanel .listItem{
+    font-size:10px !important;
+    min-height:26px !important;
+    padding:3px 5px !important;
+    line-height:1.05 !important;
+  }
+
+  #statsNameGrid .listItem,
+  #statsNameGrid .statsNameTile,
+  #statsMachineGrid .listItem,
+  #statsMachineGrid .statsMachineTile{
+    min-height:42px !important;
+    padding:6px 4px !important;
+  }
+  #statsNameGrid .statsTileTitle,
+  #statsMachineGrid .statsTileTitle{
+    font-size:13px !important;
+    line-height:1.03 !important;
+  }
+  #statsMachineGrid .listItem,
+  #statsMachineGrid .statsMachineTile{
+    width:80% !important;
+    justify-self:center !important;
+  }
+
+  #games .gamesGamePanel{
+    position:relative !important;
+    padding-bottom:96px !important;
+  }
+  #games .gamesSnakePanel{
+    padding-bottom:186px !important;
+  }
+  #games .gameBoard.gameSnakeBoard{
+    margin-bottom:6px !important;
+  }
+  #games .snakeJoystickDock{
+    position:absolute !important;
+    right:2px !important;
+    bottom:72px !important;
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:flex-end !important;
+    gap:6px !important;
+    z-index:10 !important;
+    pointer-events:auto !important;
+  }
+  #games .snakeJoystickLabel{
+    align-self:flex-end !important;
+    font-size:11px !important;
+    color:rgba(231,255,240,.62) !important;
+    letter-spacing:.12em !important;
+    text-transform:uppercase !important;
+    padding:0 8px 0 0 !important;
+  }
+  #games .snakeJoystickPad{
+    grid-template-columns:repeat(3, 48px) !important;
+    grid-template-rows:repeat(3, 48px) !important;
+    gap:6px !important;
+    padding:8px !important;
+    border-radius:22px !important;
+    background:rgba(12,16,14,.78) !important;
+    box-shadow:0 16px 34px rgba(0,0,0,.32) !important;
+  }
+  #games .snakeJoystickPad .gameControlBtn,
+  #games .snakeJoystickCenter{
+    width:48px !important;
+    height:48px !important;
+    min-width:48px !important;
+    min-height:48px !important;
+    border-radius:16px !important;
+  }
+  #games .snakeJoystickCenter{
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    color:#bff5c9 !important;
+    font-size:14px !important;
+    background:rgba(124,255,124,.10) !important;
+    box-shadow:inset 0 0 0 1px rgba(124,255,124,.10) !important;
+  }
+
+  .tttHeader{
+    justify-content:flex-start !important;
+    gap:8px !important;
+  }
+  .tttClose{
+    display:none !important;
+  }
+  .tttCard{
+    border-radius:20px !important;
+  }
+  .tttBtn{
+    border-radius:18px !important;
+  }
+  .tttStartScreen .tttCard{
+    padding:12px !important;
+  }
+  .tttToggleRow{
+    grid-template-columns:repeat(1, minmax(0, 1fr)) !important;
+  }
+  .tttModeCard .tttToggleRow{
+    grid-template-columns:repeat(3, minmax(0, 1fr)) !important;
+  }
+  .tttActionCard .tttPrimaryBtn{
+    min-height:52px !important;
+    font-size:17px !important;
+    font-weight:800 !important;
+    background:linear-gradient(180deg, rgba(124,255,124,.24), rgba(124,255,124,.12)) !important;
+    border:1px solid rgba(124,255,124,.28) !important;
+  }
+  .tttActionCard .tttSecondaryBtn{
+    margin-top:10px !important;
+  }
+  .tttInviteCard .tttToggleRow{
+    grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
+  }
+  .tttInviteCard .tttBtn{
+    min-height:46px !important;
+  }
+  .tttBoard{
+    gap:0 !important;
+    background:rgba(124,255,124,.05) !important;
+  }
+  .tttCell{
+    border-width:1px !important;
+  }
+  body.tttOpen .bottomNav{
+    z-index:10020 !important;
+  }
+  body.tttOpen #tttOverlay{
+    inset:0 0 calc(60px + env(safe-area-inset-bottom)) 0 !important;
   }
 </style>
 

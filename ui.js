@@ -551,7 +551,6 @@ function ensureTicTacToeOverlay() {
     '      <h2 id="tttTitle" style="display:none;">Piškvorky</h2>',
     '      <span></span>',
     '    </div>',
-    '    <button type="button" class="tttClose" aria-label="Zavřít">×</button>',
     '  </div>',
     '  <div class="tttContent">',
     '    <div class="tttStartScreen" id="tttStartScreen"></div>',
@@ -3369,6 +3368,14 @@ function showPage(id) {
   window.__rotaceHomeBootLocked = id !== 'home';
   window.__rotaceUserNavigated = id !== 'home';
   if (id !== 'home') window.__rotaceHomeBootLocked = true;
+  if (id !== 'games' && typeof document !== 'undefined' && document.body.classList.contains('tttOpen')) {
+    try {
+      if (typeof closeTicTacToeGame === 'function') closeTicTacToeGame();
+      else document.body.classList.remove('tttOpen');
+    } catch (err) {
+      console.warn('close TTT before nav failed', err);
+    }
+  }
 
   const navPage = id === 'rotace'
     ? 'rotace'
