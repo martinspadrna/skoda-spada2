@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v1-355';
+const CACHE_VERSION = 'v1-359';
 const STATIC_CACHE = `rotace-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `rotace-runtime-${CACHE_VERSION}`;
 const APP_SHELL = [
@@ -32,6 +32,7 @@ const APP_SHELL = [
   './icon-512.png',
   './icon-32.png',
   './icon-180.png',
+  './icon-16.png',
   './icon-1024.png'
 ];
 

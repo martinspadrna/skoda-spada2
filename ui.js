@@ -39,12 +39,26 @@ function hideAppMenu() {
   page.classList.remove('active');
 }
 
+function ensureExcelFileInput() {
+  let input = document.getElementById('excelFile');
+  if (input) return input;
+  input = document.createElement('input');
+  input.type = 'file';
+  input.id = 'excelFile';
+  input.accept = '.xlsx,.xls';
+  input.hidden = true;
+  input.style.display = 'none';
+  document.body.appendChild(input);
+  return input;
+}
+
 function startMenuImport() {
-  const input = document.getElementById('excelFile');
+  const input = ensureExcelFileInput();
   if (!input) {
     alert('Import není připravený.');
     return;
   }
+  input.value = '';
   app.pendingMenuImport = true;
   input.click();
 }
@@ -3468,10 +3482,10 @@ function gamesDefaultProfile() {
       id: acc.id,
       name: acc.name,
       stats: {
-        ttt: { plays: 0, wins: 0, losses: 0, draws: 0, bestMoves: null, bestTimeMs: null },
-        g2048: { plays: 0, bestScore: 0, bestTile: 0 },
-        snake: { plays: 0, bestScore: 0, bestLength: 0 },
-        flap: { plays: 0, bestScore: 0, bestPipes: 0 }
+        ttt: { plays: 0, wins: 0, losses: 0, draws: 0, bestMoves: null, bestTimeMs: null, lastPlayedAt: 0 },
+        g2048: { plays: 0, bestScore: 0, bestTile: 0, lastPlayedAt: 0 },
+        snake: { plays: 0, bestScore: 0, bestLength: 0, lastPlayedAt: 0 },
+        flap: { plays: 0, bestScore: 0, bestPipes: 0, lastPlayedAt: 0 }
       },
       achievements: [],
       updatedAt: 0
@@ -3494,10 +3508,10 @@ function gamesLoadProfile() {
         id: acc.id,
         name: acc.name,
         stats: {
-          ttt: Object.assign({ plays: 0, wins: 0, losses: 0, draws: 0, bestMoves: null, bestTimeMs: null }, incoming.stats && incoming.stats.ttt ? incoming.stats.ttt : {}),
-          g2048: Object.assign({ plays: 0, bestScore: 0, bestTile: 0 }, incoming.stats && incoming.stats.g2048 ? incoming.stats.g2048 : {}),
-          snake: Object.assign({ plays: 0, bestScore: 0, bestLength: 0 }, incoming.stats && incoming.stats.snake ? incoming.stats.snake : {}),
-          flap: Object.assign({ plays: 0, bestScore: 0, bestPipes: 0 }, incoming.stats && incoming.stats.flap ? incoming.stats.flap : {})
+          ttt: Object.assign({ plays: 0, wins: 0, losses: 0, draws: 0, bestMoves: null, bestTimeMs: null, lastPlayedAt: 0 }, incoming.stats && incoming.stats.ttt ? incoming.stats.ttt : {}),
+          g2048: Object.assign({ plays: 0, bestScore: 0, bestTile: 0, lastPlayedAt: 0 }, incoming.stats && incoming.stats.g2048 ? incoming.stats.g2048 : {}),
+          snake: Object.assign({ plays: 0, bestScore: 0, bestLength: 0, lastPlayedAt: 0 }, incoming.stats && incoming.stats.snake ? incoming.stats.snake : {}),
+          flap: Object.assign({ plays: 0, bestScore: 0, bestPipes: 0, lastPlayedAt: 0 }, incoming.stats && incoming.stats.flap ? incoming.stats.flap : {})
         },
         achievements: Array.isArray(incoming.achievements) ? incoming.achievements.slice(0, 20) : [],
         updatedAt: Number(incoming.updatedAt || 0) || 0
@@ -3558,6 +3572,7 @@ function gamesApplyActiveAccountUI(account) {
     : 'Bez účtu můžeš hrát dál. Statistiky se ukládají jen po přihlášení číslem.';
   entryRow.style.display = next ? 'none' : '';
   hintEl.style.display = 'none';
+  hintEl.hidden = true;
   currentEl.style.display = next ? 'flex' : 'none';
   currentEl.textContent = next ? ('Přihlášeno jako ' + next.name + ' · ' + next.id) : '';
   if (next) inputEl.value = '';
@@ -3611,6 +3626,48 @@ function gamesClearActiveAccount() {
 
 function gamesStatLine(label, value) {
   return '<div class="gamesStatCard"><div class="gamesStatLabel">' + escapeHtml(label) + '</div><div class="gamesStatValue">' + escapeHtml(String(value)) + '</div></div>';
+}
+
+function gamesFormatTimeLabel(value) {
+  const ms = Number(value);
+  if (!Number.isFinite(ms) || ms <= 0) return '';
+  try {
+    return new Intl.DateTimeFormat('cs-CZ', {
+      timeZone: 'Europe/Prague',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    }).format(new Date(ms));
+  } catch (err) {
+    const d = new Date(ms);
+    const hh = String(d.getHours()).padStart(2, '0');
+    const mm = String(d.getMinutes()).padStart(2, '0');
+    return hh + ':' + mm;
+  }
+}
+
+function gamesFormatPlayedLabel(value) {
+  const ms = Number(value);
+  if (!Number.isFinite(ms) || ms <= 0) return '';
+  try {
+    return new Intl.DateTimeFormat('cs-CZ', {
+      timeZone: 'Europe/Prague',
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    }).format(new Date(ms));
+  } catch (err) {
+    const d = new Date(ms);
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const yy = String(d.getFullYear());
+    const hh = String(d.getHours()).padStart(2, '0');
+    const mi = String(d.getMinutes()).padStart(2, '0');
+    return `${dd}.${mm}.${yy} ${hh}:${mi}`;
+  }
 }
 
 function gamesRenderAccountChips() {
@@ -3703,7 +3760,6 @@ function gamesRenderStats() {
         '<div class="gamesStatsCardHead">' +
           '<div>' +
             '<div class="gamesStatsCardName">' + escapeHtml(acc.name || '') + '</div>' +
-
           '</div>' +
           '<div class="gamesStatsCardTotal">' + String(totalPlays) + ' her</div>' +
         '</div>' +
@@ -3774,19 +3830,20 @@ function gamesRecordStat(gameId, patch) {
   const profile = gamesGetProfile();
   const active = profile.accounts[profile.activeAccountId];
   if (!active) return;
-  active.updatedAt = Date.now();
+  const nextPatch = Object.assign({ lastPlayedAt: Date.now() }, patch || {});
+  active.updatedAt = nextPatch.lastPlayedAt;
   if (gameId === 'ttt') {
-    active.stats.ttt = Object.assign({}, active.stats.ttt, patch);
+    active.stats.ttt = Object.assign({}, active.stats.ttt, nextPatch);
   } else if (gameId === '2048') {
-    active.stats.g2048 = Object.assign({}, active.stats.g2048, patch);
+    active.stats.g2048 = Object.assign({}, active.stats.g2048, nextPatch);
   } else if (gameId === 'snake') {
-    active.stats.snake = Object.assign({}, active.stats.snake, patch);
+    active.stats.snake = Object.assign({}, active.stats.snake, nextPatch);
   } else if (gameId === 'flap') {
-    active.stats.flap = Object.assign({}, active.stats.flap, patch);
+    active.stats.flap = Object.assign({}, active.stats.flap, nextPatch);
   }
   gamesSaveProfile(profile);
   gamesRenderStats();
-  void gamesSyncStatOnline(gameId, patch);
+  void gamesSyncStatOnline(gameId, nextPatch);
   void gamesRefreshRemoteLeaderboards(gameId);
 }
 
@@ -3804,6 +3861,7 @@ function gamesNormalizeRemoteLeaderboardRows(gameId, rows, limit = 10) {
         name: name || accountNumber || 'Hráč',
         value: points,
         updatedAt,
+        playedText: gamesFormatPlayedLabel(updatedAt),
         gameId: key
       };
     })
@@ -3850,6 +3908,7 @@ async function gamesSyncStatOnline(gameId, patch) {
   const account = gamesGetActiveAccount();
   if (!account || !window.RotationSupabaseBridge || typeof window.RotationSupabaseBridge.saveGameStat !== 'function') return null;
   try {
+    const lastPlayedAt = patch && patch.lastPlayedAt ? new Date(patch.lastPlayedAt).toISOString() : new Date().toISOString();
     return await window.RotationSupabaseBridge.saveGameStat({
       account_number: String(account.id || '').trim(),
       player_name: String(account.name || '').trim(),
@@ -3858,7 +3917,8 @@ async function gamesSyncStatOnline(gameId, patch) {
       wins: Number(patch && patch.wins !== undefined ? patch.wins : 0) || 0,
       losses: Number(patch && patch.losses !== undefined ? patch.losses : 0) || 0,
       draws: Number(patch && patch.draws !== undefined ? patch.draws : 0) || 0,
-      points: Number(patch && patch.points !== undefined ? patch.points : (patch && patch.bestScore !== undefined ? patch.bestScore : 0)) || 0
+      points: Number(patch && patch.points !== undefined ? patch.points : (patch && patch.bestScore !== undefined ? patch.bestScore : 0)) || 0,
+      last_played_at: lastPlayedAt
     });
   } catch (err) {
     console.warn('gamesSyncStatOnline failed', err);
@@ -3881,10 +3941,19 @@ function gamesGetGameLeaderboard(gameId, limit = 10) {
     if (gameId === 'ttt') return Number(stats.ttt && stats.ttt.plays || 0);
     return 0;
   };
+  const getTime = (acc) => {
+    const stats = acc && acc.stats ? acc.stats : {};
+    if (gameId === '2048') return stats.g2048 && stats.g2048.lastPlayedAt ? stats.g2048.lastPlayedAt : acc.updatedAt;
+    if (gameId === 'snake') return stats.snake && stats.snake.lastPlayedAt ? stats.snake.lastPlayedAt : acc.updatedAt;
+    if (gameId === 'flap') return stats.flap && stats.flap.lastPlayedAt ? stats.flap.lastPlayedAt : acc.updatedAt;
+    if (gameId === 'ttt') return stats.ttt && stats.ttt.lastPlayedAt ? stats.ttt.lastPlayedAt : acc.updatedAt;
+    return acc.updatedAt;
+  };
   return accounts.map((acc) => ({
     id: acc.id,
     name: acc.name || ('Hráč ' + String(acc.id || '')),
-    value: getValue(acc)
+    value: getValue(acc),
+    playedText: gamesFormatPlayedLabel(getTime(acc))
   })).filter((row) => row.value > 0).sort((a, b) => b.value - a.value || String(a.name).localeCompare(String(b.name), 'cs')).slice(0, limit);
 }
 
@@ -3895,7 +3964,7 @@ function gamesTop3Block(gameId, label, limit = 10) {
     '<div class="gamesTop3Row">' +
       '<div class="gamesTop3Rank">' + String(idx + 1) + '.</div>' +
       '<div class="gamesTop3Name">' + escapeHtml(row.name) + '</div>' +
-      '<div class="gamesTop3Value">' + String(row.value) + ' ' + escapeHtml(label) + '</div>' +
+      '<div class="gamesTop3Value">' + String(row.value) + ' ' + escapeHtml(label) + (row.playedText ? ' · ' + escapeHtml(row.playedText) : '') + '</div>' +
     '</div>'
   )).join('') : '<div class="gamesTop3Empty">Zatím žádné výsledky.</div>';
   return [
@@ -3952,10 +4021,10 @@ function gamesBindSwipeControl(el, onSwipe) {
     const dy = clientY - startY;
     const absX = Math.abs(dx);
     const absY = Math.abs(dy);
-    if (Math.max(absX, absY) < 24) return;
-    if (absX > absY && absY < 48) {
+    if (Math.max(absX, absY) < 18) return;
+    if (absX > absY && absY < 36) {
       onSwipe(dx > 0 ? 'right' : 'left');
-    } else if (absY > absX && absX < 48) {
+    } else if (absY > absX && absX < 36) {
       onSwipe(dy > 0 ? 'down' : 'up');
     }
   };
@@ -4001,10 +4070,10 @@ const SNAKE_JOYSTICK_KEY = APP_KEY + ':snake_joystick_v1';
 
 function snakeLoadJoystickEnabled() {
   try {
-    return localStorage.getItem(SNAKE_JOYSTICK_KEY) === '1';
-  } catch (err) {
-    return false;
-  }
+    const saved = localStorage.getItem(SNAKE_JOYSTICK_KEY);
+    if (saved !== null) return saved === '1';
+  } catch (err) {}
+  return !!(navigator && navigator.maxTouchPoints > 0);
 }
 
 function snakeIsJoystickEnabled() {
@@ -4294,7 +4363,7 @@ function renderGameSnake() {
   const bestLength = activeAccount?.stats?.snake?.bestLength || 0;
   body.innerHTML = [
     '<div class="gamesGamePanel">',
-    '  <div class="gameInfoRow gameInfoRowCompact gameInfoRowDense"><span>Skóre <strong>' + state.score + '</strong></span><span>Nejdelší <strong>' + String(bestLength) + '</strong></span><span>' + (state.over ? 'Klepni na pole pro novou hru' : 'Had prochází skrz okraje') + '</span></div>',
+    '  <div class="gameInfoRow gameInfoRowCompact gameInfoRowDense"><span>Skóre <strong>' + state.score + '</strong></span><span>Nejdelší <strong>' + String(bestLength) + '</strong></span><span>' + (state.over ? 'Klepni na pole pro novou hru' : 'Táhni po ploše nebo Joy') + '</span></div>',
     '  <div class="gameBoard gameSnakeBoard" id="gameSnakeBoard" style="width:' + boardSize + 'px;height:' + boardSize + 'px;grid-template-columns:repeat(20,minmax(0,1fr));">' + cells.join('') + '</div>',
     gamesTop3Block('snake', 'bodů', 10),
     '</div>'
@@ -4303,6 +4372,13 @@ function renderGameSnake() {
   if (board) {
     board.style.setProperty('width', boardSize + 'px', 'important');
     board.style.setProperty('height', boardSize + 'px', 'important');
+    board.style.touchAction = 'none';
+    board.style.webkitTouchCallout = 'none';
+    board.style.userSelect = 'none';
+  }
+  if (navigator && navigator.maxTouchPoints > 0 && !snakeIsJoystickEnabled()) {
+    snakeSetJoystickEnabled(true);
+    return;
   }
   const resetSnake = () => {
     if (state.timer) clearInterval(state.timer);

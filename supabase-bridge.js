@@ -762,6 +762,10 @@
     if (existingRes && existingRes.error) throw existingRes.error;
     const existing = Array.isArray(existingRes && existingRes.data) && existingRes.data.length ? existingRes.data[0] : null;
 
+    const lastPlayedRaw = entry && (entry.last_played_at ?? entry.lastPlayedAt ?? entry.updated_at ?? entry.updatedAt);
+    const lastPlayedDate = lastPlayedRaw ? new Date(lastPlayedRaw) : new Date();
+    const lastPlayedIso = Number.isNaN(lastPlayedDate.getTime()) ? new Date().toISOString() : lastPlayedDate.toISOString();
+
     const next = {
       account_number: accountNumber,
       game_type: gameType,
@@ -770,8 +774,8 @@
       losses: Math.max(Number(existing && existing.losses || 0) || 0, Number(entry && entry.losses || 0) || 0),
       draws: Math.max(Number(existing && existing.draws || 0) || 0, Number(entry && entry.draws || 0) || 0),
       points: Math.max(Number(existing && existing.points || 0) || 0, Number(entry && (entry.points ?? entry.bestScore ?? entry.score) || 0) || 0),
-      last_played_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      last_played_at: lastPlayedIso,
+      updated_at: lastPlayedIso
     };
 
     if (existing && existing.id) {

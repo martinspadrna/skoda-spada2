@@ -39,7 +39,7 @@ function renderRotace() {
   if (app.selectedName && nameIndex[app.selectedName]) {
     renderPerson(app.selectedName);
   } else {
-    renderUpcomingShiftsPreview();
+    renderUpcomingShiftsPreview(10);
   }
 
   if (app.selectedMonth && app.rotation.months[app.selectedMonth]) {
@@ -78,6 +78,13 @@ function getSoftMachineDisplayLabel(entry, rotation) {
 
 function handlePersonTap(name) {
   const now = Date.now();
+  if (app.selectedName === name) {
+    app.selectedName = null;
+    app.nameTapState = { name, count: 0, lastTap: 0 };
+    renderRotace();
+    return;
+  }
+
   if (!app.nameTapState || app.nameTapState.name !== name || now - app.nameTapState.lastTap > 750) {
     app.nameTapState = { name, count: 1, lastTap: now };
   } else {
@@ -302,7 +309,7 @@ function renderUpcomingShiftsPreview(limit = 10) {
   if (!personView) return;
 
   const index = buildNameIndex(app.rotation);
-  const names = Object.keys(index || {});
+  const names = Object.keys(index || {}).sort((a, b) => String(a).localeCompare(String(b), 'cs'));
   const now = typeof getPragueNow === 'function' ? getPragueNow(new Date()) : new Date();
   const nowMs = now.getTime();
   const dayKey = (date) => {
@@ -313,46 +320,55 @@ function renderUpcomingShiftsPreview(limit = 10) {
       String(d.getDate()).padStart(2, '0')
     ].join('-');
   };
-  const items = [];
-  const seen = new Set();
 
+  const nextByName = [];
   names.forEach(name => {
     const model = getPersonScheduleEntries(name);
-    (model.entries || []).forEach(entry => {
+    const nextEntry = (model.entries || []).find(entry => {
       const end = getPersonScheduleEntryEnd(entry);
-      if (!end || end.getTime() <= nowMs) return;
-      const key = [name, entry.dateLabel || '', entry.shift || '', entry.target || ''].join('|');
-      if (seen.has(key)) return;
-      seen.add(key);
-      items.push({
-        name,
-        dateLabel: entry.dateLabel || '',
-        shift: entry.shift || '',
-        target: entry.target || '',
-        endMs: end.getTime(),
-        dateKey: dayKey(new Date(entry.sortDate || end))
-      });
+      return end && end.getTime() > nowMs;
+    });
+    if (!nextEntry) return;
+    const end = getPersonScheduleEntryEnd(nextEntry);
+    if (!end) return;
+    nextByName.push({
+      name,
+      dateLabel: nextEntry.dateLabel || '',
+      shift: nextEntry.shift || '',
+      target: nextEntry.target || '',
+      endMs: end.getTime(),
+      dateKey: dayKey(new Date(nextEntry.sortDate || end))
     });
   });
 
-  items.sort((a, b) => {
-    if (a.endMs !== b.endMs) return a.endMs - b.endMs;
-    return String(a.name).localeCompare(String(b.name), 'cs');
-  });
-
-  const nowKey = dayKey(typeof getPragueNow === 'function' ? getPragueNow(new Date()) : new Date());
-  const next = items.slice(0, Math.max(1, limit));
-  if (!next.length) {
+  if (!nextByName.length) {
     personView.innerHTML = "<div class='smallText'>Pro teď tu ještě nejsou žádné budoucí směny.</div>";
     return;
   }
 
-  const hasToday = next.some(entry => entry.dateKey === nowKey);
-  const previewTitle = hasToday ? 'Dnešní směny' : 'Nejbližší směny';
+  nextByName.sort((a, b) => {
+    if (a.endMs !== b.endMs) return a.endMs - b.endMs;
+    return String(a.name).localeCompare(String(b.name), 'cs');
+  });
+
+  const firstDateKey = nextByName[0].dateKey;
+  const sameShift = nextByName
+    .filter(entry => entry.dateKey === firstDateKey)
+    .sort((a, b) => String(a.name).localeCompare(String(b.name), 'cs'));
+
+  const previewTitle = firstDateKey === dayKey(now)
+    ? 'Dnešní směny'
+    : 'Nejbližší směna';
+
+  const visible = sameShift.slice(0, Math.max(1, limit));
+  const totalPeople = names.length || 10;
+  const presentCount = sameShift.filter(entry => !entry.absence).length;
+
   personView.innerHTML = [
     '<div class="rotacePersonTitle">' + previewTitle + '</div>',
+    '<div class="rotacePersonMeta">Přítomno ' + String(presentCount) + ' z ' + String(totalPeople) + ' lidí</div>',
     '<div class="rotaceQuickCards rotacePreviewGrid">',
-    next.map(entry => [
+    visible.map(entry => [
       '<div class="rotaceMiniCard">',
       '  <div class="rotaceMiniDate">' + escapeHtml(entry.dateLabel || '') + (entry.shift ? ' ' + escapeHtml(entry.shift) : '') + '</div>',
       '  <div class="rotaceMiniTarget">' + escapeHtml(entry.name || '') + (entry.target ? ' · ' + escapeHtml(entry.target) : '') + '</div>',
@@ -373,8 +389,8 @@ function renderPerson(name) {
     return;
   }
 
-  const startIdx = Math.max(0, currentIdx - 1);
-  const endIdx = Math.min(entries.length, currentIdx + 10);
+  const startIdx = Math.max(0, currentIdx >= 0 ? currentIdx : 0);
+  const endIdx = Math.min(entries.length, startIdx + 8);
   const visibleEntries = entries.slice(startIdx, endIdx);
 
   const formatEntry = (entry, isCurrent) => [

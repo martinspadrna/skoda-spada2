@@ -190,6 +190,7 @@ function initAppInitBindings() {
       if (!added && !(overwriteMonth && overwritten)) {
         msg.push("Žádné změny.");
       }
+      if (input) input.value = '';
       alert(msg.join(" | "));
     });
   }

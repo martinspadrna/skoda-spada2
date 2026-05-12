@@ -8,6 +8,7 @@ const EXPORT_SOURCE_IDS = {
   "soustruhy.js": "src-soustruhy-js",
   "brusy.js": "src-brusy-js",
   "rotace.js": "src-rotace-js",
+  "changelog.js": "src-changelog-js",
   "ui.js": "src-ui-js",
   "export.js": "src-export-js",
   "app-init.js": "src-app-init-js",
@@ -19,10 +20,28 @@ const EXPORT_SOURCE_IDS = {
   "styles-responsive.css": "src-styles-responsive-css",
   "styles-modal.css": "src-styles-modal-css",
   "supabase-config.js": "src-supabase-config-js",
-  "supabase-bridge.js": "src-supabase-bridge-js"
+  "supabase-bridge.js": "src-supabase-bridge-js",
+  "CHANGELOG.md": "src-changelog-md",
+  "manifest.webmanifest": "src-manifest-webmanifest",
+  "sw.js": "src-sw-js",
+  "icon-16.png": "src-icon-16-png",
+  "icon-32.png": "src-icon-32-png",
+  "icon-180.png": "src-icon-180-png",
+  "icon-192.png": "src-icon-192-png",
+  "icon-512.png": "src-icon-512-png",
+  "icon-1024.png": "src-icon-1024-png"
 };
 
 const SOURCE_CACHE = window.__ROTACE_SOURCE_CACHE__ || (window.__ROTACE_SOURCE_CACHE__ = {});
+
+const EXPORT_BINARY_FILES = new Set([
+  'icon-16.png',
+  'icon-32.png',
+  'icon-180.png',
+  'icon-192.png',
+  'icon-512.png',
+  'icon-1024.png'
+]);
 
 function primeSourceCache() {
   // Keep the cache empty here so exports always read the current files first.
@@ -36,7 +55,7 @@ async function readExportText(relativePath) {
   }
 
   try {
-    const response = await fetch(new URL(relativePath, window.location.href).toString(), { cache: "no-store" });
+    const response = await fetch(new URL(relativePath, window.location.href).toString(), { cache: 'no-store' });
     if (response.ok) {
       const text = await response.text();
       SOURCE_CACHE[relativePath] = text;
@@ -49,11 +68,23 @@ async function readExportText(relativePath) {
   const id = EXPORT_SOURCE_IDS[relativePath];
   const embedded = id ? document.getElementById(id) : null;
   if (embedded && embedded.textContent) {
-    const text = embedded.textContent.replace(/^\s+|\s+$/g, "");
+    const text = embedded.textContent.replace(/^\s+|\s+$/g, '');
     SOURCE_CACHE[relativePath] = text;
     return text;
   }
 
+  throw new Error(`Nepodařilo se načíst ${relativePath}`);
+}
+
+async function readExportBinary(relativePath) {
+  try {
+    const response = await fetch(new URL(relativePath, window.location.href).toString(), { cache: 'no-store' });
+    if (response.ok) {
+      return await response.arrayBuffer();
+    }
+  } catch (err) {
+    console.warn(err);
+  }
   throw new Error(`Nepodařilo se načíst ${relativePath}`);
 }
 
@@ -65,37 +96,64 @@ async function exportCurrentHtml() {
 
   try {
     const jsFiles = [
-      "app.js",
-      "core.js",
-      "qr.js",
-      "payroll.js",
-      "stats.js",
-      "soustruhy.js",
-      "brusy.js",
-      "rotace.js",
-      "ui.js",
-      "export.js",
-      "app-init.js"
+      'app.js',
+      'core.js',
+      'qr.js',
+      'payroll.js',
+      'stats.js',
+      'dashboard.js',
+      'soustruhy.js',
+      'brusy.js',
+      'rotace.js',
+      'changelog.js',
+      'ui.js',
+      'export.js',
+      'app-init.js',
+      'supabase-config.js',
+      'supabase-bridge.js'
     ];
 
-    const cssFiles = [
-      "styles.css",
-      "styles-base.css",
-      "styles-layout.css",
-      "styles-theme.css",
-      "styles-responsive.css",
-      "styles-modal.css"
+    const textFiles = [
+      'styles.css',
+      'styles-base.css',
+      'styles-layout.css',
+      'styles-theme.css',
+      'styles-responsive.css',
+      'styles-modal.css',
+      'CHANGELOG.md',
+      'manifest.webmanifest',
+      'sw.js',
+      'data.js'
     ];
 
-    const stylesSource = await readExportText("styles.css");
+    const binaryFiles = [
+      'icon-16.png',
+      'icon-32.png',
+      'icon-180.png',
+      'icon-192.png',
+      'icon-512.png',
+      'icon-1024.png'
+    ];
+
+    const stylesSource = await readExportText('styles.css');
     const cssSources = {};
-    for (const file of cssFiles.slice(1)) {
+    for (const file of textFiles.filter((file) => file.startsWith('styles-'))) {
       cssSources[file] = await readExportText(file);
     }
 
     const moduleSources = {};
     for (const file of jsFiles) {
       moduleSources[file] = await readExportText(file);
+    }
+
+    const textSources = {};
+    for (const file of textFiles.filter((file) => !file.startsWith('styles-') && file !== 'data.js')) {
+      textSources[file] = await readExportText(file);
+    }
+
+    const binarySources = {};
+    for (const file of binaryFiles) {
+      binarySources[file] = await readExportBinary(file);
     }
 
     const pages = [...document.querySelectorAll(".page")];
@@ -106,10 +164,13 @@ async function exportCurrentHtml() {
 
     const clone = document.documentElement.cloneNode(true);
     for (const [file, id] of Object.entries(EXPORT_SOURCE_IDS)) {
-      const text = file === 'styles.css'
-        ? stylesSource
-        : (moduleSources[file] || cssSources[file] || (file === 'data.js' ? `const initialRotationData = ${JSON.stringify(app.rotation)};
-` : null));
+      let text = null;
+      if (file === 'styles.css') text = stylesSource;
+      else if (moduleSources[file]) text = moduleSources[file];
+      else if (cssSources[file]) text = cssSources[file];
+      else if (textSources[file]) text = textSources[file];
+      else if (file === 'data.js') text = `const initialRotationData = ${JSON.stringify(app.rotation)};
+`;
       if (!text) continue;
       const node = clone.querySelector('[id="' + id + '"]');
       if (node) node.textContent = text;
@@ -122,22 +183,31 @@ ${clone.outerHTML}`;
     if (restore) restore.classList.add("active");
 
     const zip = new JSZip();
-    zip.file("index.html", indexText);
-    zip.file("styles.css", stylesSource);
-    for (const file of cssFiles.slice(1)) {
+    zip.file('index.html', indexText);
+    zip.file('styles.css', stylesSource);
+    for (const file of textFiles.filter((file) => file.startsWith('styles-'))) {
       zip.file(file, cssSources[file]);
     }
-    zip.file("data.js", `const initialRotationData = ${JSON.stringify(app.rotation)};
+    zip.file('data.js', `const initialRotationData = ${JSON.stringify(app.rotation)};
 `);
     for (const file of jsFiles) {
       zip.file(file, moduleSources[file]);
     }
+    for (const file of Object.keys(textSources)) {
+      if (file === 'styles.css' || file.startsWith('styles-')) continue;
+      zip.file(file, textSources[file]);
+    }
+    for (const file of binaryFiles) {
+      zip.file(file, binarySources[file]);
+    }
 
-    const blob = await zip.generateAsync({ type: "blob" });
+    const blob = await zip.generateAsync({ type: 'blob' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
+    const a = document.createElement('a');
     a.href = url;
-    a.download = "rotace_a_kalkulacky_v1_347.zip";
+    const versionMatch = String(window.APP_VERSION || '').match(/\((\d+)\)/);
+    const versionSuffix = versionMatch ? versionMatch[1] : 'current';
+    a.download = `rotace_a_kalkulacky_v1_${versionSuffix}.zip`;
     document.body.appendChild(a);
     a.click();
     a.remove();

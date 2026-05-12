@@ -24,6 +24,8 @@
 
 <body>
 
+<input type="file" id="excelFile" accept=".xlsx,.xls" hidden>
+
 <!-- HOME -->
 <div id="home" class="page active">
   <div class="dashboardShell">
@@ -662,9 +664,9 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
 </style>
 
 
-<style id="v356-pre-mobile-polish">
+<style id="v359-pre-mobile-polish">
   #games{padding-bottom:128px !important;}
-  /* v1(356) mobile polish: tighter bottom bar + names at the bottom on rotace */
+  /* v1(359) mobile polish: tighter bottom bar + names at the bottom on rotace */
   .bottomNav{
     padding:3px 5px calc(3px + env(safe-area-inset-bottom)) !important;
     gap:5px !important;
@@ -691,7 +693,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   .bottomNavMenuBtn .moreIcon{
     width:20px !important;
     height:20px !important;
-    transform:translateY(-4px) !important;
+    transform:translateY(-6px) !important;
   }
   .bottomNavGamesBtn{
     margin-right:0 !important;
@@ -720,8 +722,8 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
       gap:7px !important;
     }
   }
-<style id="v356-legacy-mobile-polish">
-  /* v1(356) final mobile polish: tighter bottom bar, rotace preview and stats spacing */
+<style id="v359-legacy-mobile-polish">
+  /* v1(359) final mobile polish: tighter bottom bar, rotace preview and stats spacing */
   .bottomNav{
     padding:2px 4px calc(2px + env(safe-area-inset-bottom)) !important;
     gap:3px !important;
@@ -737,17 +739,17 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   }
   .bottomNavBtn{
     min-height:44px !important;
-    padding:0 !important;
+    padding:0 1px 0 !important;
     flex:0 0 58px !important;
     width:58px !important;
     min-width:58px !important;
     max-width:58px !important;
-    border-radius:14px !important;
+    border-radius:12px !important;
   }
   .bottomNavBtn .bottomNavIcon,
   .bottomNavBtn .bottomNavIcon svg{
-    width:26px !important;
-    height:26px !important;
+    width:28px !important;
+    height:28px !important;
   }
   .bottomNavBtn .bottomNavLabel{
     font-size:8.5px !important;
@@ -833,29 +835,31 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
 </style>
 
 
-<style id="v356-final-mobile-polish">
-  /* v1(356) final mobile polish: bottom bar, games padding, rotace preview, stats compact, snake joystick */
+<style id="v359-final-mobile-polish">
+  /* v1(359) final mobile polish: bottom bar, games padding, rotace preview, stats compact, snake joystick */
   .bottomNav{
-    padding:1px 3px calc(1px + env(safe-area-inset-bottom)) !important;
-    gap:2px !important;
-    border-radius:14px !important;
+    width:calc(100% - 4px) !important;
+    padding:1px 0 calc(1px + env(safe-area-inset-bottom)) !important;
+    gap:0 !important;
+    border-radius:11px !important;
   }
   .bottomNavScroll{
-    gap:2px !important;
+    gap:0 !important;
     min-width:0 !important;
+    padding-right:0 !important;
   }
   .bottomNavInner{
-    gap:2px !important;
+    gap:0 !important;
     padding-right:0 !important;
   }
   .bottomNavBtn{
-    min-height:42px !important;
+    min-height:36px !important;
     padding:0 !important;
-    flex:0 0 60px !important;
-    width:60px !important;
-    min-width:60px !important;
-    max-width:60px !important;
-    border-radius:13px !important;
+    flex:0 0 61px !important;
+    width:61px !important;
+    min-width:61px !important;
+    max-width:61px !important;
+    border-radius:10px !important;
   }
   .bottomNavBtn .bottomNavIcon,
   .bottomNavBtn .bottomNavIcon svg{
@@ -866,11 +870,11 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
     flex:0 0 26px !important;
   }
   .bottomNavBtn .bottomNavLabel{
-    font-size:8.4px !important;
+    font-size:8px !important;
     line-height:1.02 !important;
   }
   .bottomNavBtn.active{
-    transform:translateY(-5px) scale(1.06) !important;
+    transform:translateY(-8px) scale(1.14) !important;
     z-index:10 !important;
     box-shadow:0 14px 30px rgba(124,255,124,.18), inset 0 1px 0 rgba(255,255,255,.05) !important;
   }
@@ -878,23 +882,28 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
     inset:-2px !important;
   }
   .bottomNavMenuBtn{
-    flex:0 0 32px !important;
-    width:32px !important;
-    min-width:32px !important;
-    max-width:32px !important;
+    flex:0 0 20px !important;
+    width:20px !important;
+    min-width:20px !important;
+    max-width:20px !important;
     margin-left:0 !important;
     position:static !important;
     inset:auto !important;
     transform:none !important;
+    padding:0 !important;
+    display:grid !important;
+    place-items:center !important;
   }
   .bottomNavMenuBtn .moreIcon{
-    width:18px !important;
-    height:18px !important;
-    transform:translateY(-7px) !important;
+    width:14px !important;
+    height:14px !important;
+    display:block !important;
+    margin:0 auto !important;
+    transform:none !important;
   }
   .bottomNavGamesBtn{margin-right:0 !important;}
 
-  #games{padding-bottom:208px !important;}
+  #games{padding-bottom:196px !important;}
   #games .gamesAccountHint{display:none !important;}
   #games .gamesAccountCard{padding-bottom:8px !important;}
   #games .gamesAccountCurrent{display:none !important;}
@@ -930,6 +939,17 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   #games .gamesStatsCardLine{
     font-size:10px !important;
   }
+  #games .gamesTop3Title{
+    font-size:12px !important;
+  }
+  #games .gamesTop3Name{
+    font-size:11px !important;
+    font-weight:700 !important;
+  }
+  #games .gamesTop3Value{
+    font-size:10px !important;
+    line-height:1.15 !important;
+  }
 
   #rotaceNamesPanel.active{
     display:flex !important;
@@ -944,21 +964,67 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
     order:2 !important;
     margin-top:auto !important;
   }
+  #rotace .rotacePersonMeta{
+    font-size:11px !important;
+    margin-top:2px !important;
+    margin-bottom:4px !important;
+  }
+  #rotace .rotacePreviewGrid,
+  #rotace .rotaceQuickStack{
+    display:grid !important;
+    grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
+    gap:6px !important;
+  }
+  #rotace .rotaceMiniCard{
+    min-height:52px !important;
+    padding:6px 7px !important;
+  }
+  #rotace .rotaceMiniDate{
+    font-size:10px !important;
+    line-height:1.08 !important;
+  }
+  #rotace .rotaceMiniTarget{
+    font-size:10px !important;
+    line-height:1.08 !important;
+  }
 
   #statsNameGrid .statsTileTitle,
   #statsMachineGrid .statsTileTitle{
     font-size:13px !important;
     line-height:1.05 !important;
   }
+  #statsMachineGrid .statsTileTitle{
+    transform:scaleX(.94) !important;
+    transform-origin:center !important;
+    display:inline-block !important;
+  }
   #statsMachineGrid.listGrid{
     grid-template-columns:repeat(5, minmax(0, 1fr)) !important;
     gap:1px !important;
   }
+  #statsNameGrid .listItem,
+  #statsNameGrid .statsNameTile,
   #statsMachineGrid .listItem,
   #statsMachineGrid .statsMachineTile{
-    min-height:28px !important;
-    padding:1px !important;
+    min-height:34px !important;
+    padding:3px 1px !important;
     min-width:0 !important;
+  }
+  #stats .statsSummary .tile{
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:center !important;
+    justify-content:center !important;
+    text-align:center !important;
+  }
+  #stats .statsSummary .smallText,
+  #stats .statsSummary .statsMultiLine{
+    text-align:center !important;
+  }
+  #stats .statsSummary .tile .statsMultiLine{
+    font-size:12px !important;
+    line-height:1.2 !important;
+    font-weight:700 !important;
   }
 
   #games .gamesGrid{
@@ -984,7 +1050,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
     gap:8px !important;
   }
   #games .gameInfoRow{
-    padding:0 !important;
+    padding:0 1px 0 !important;
   }
   #games .gameInfoRow span{
     white-space:nowrap !important;
@@ -994,6 +1060,8 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
 
   #games .gameBoard.gameSnakeBoard{
     position:relative !important;
+    touch-action:none !important;
+    overscroll-behavior:contain !important;
   }
   #games .snakeJoystickDock{
     position:absolute !important;
@@ -1015,7 +1083,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
     height:52px !important;
     min-height:52px !important;
     border-radius:18px !important;
-    padding:0 !important;
+    padding:0 1px 0 !important;
     display:grid !important;
     place-items:center !important;
     font-size:12px !important;
@@ -1051,14 +1119,14 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   #games .snakeJoystickPad .gameControlBtn{
     min-width:40px !important;
     min-height:40px !important;
-    padding:0 !important;
-    border-radius:14px !important;
+    padding:0 1px 0 !important;
+    border-radius:12px !important;
     font-size:13px !important;
   }
   #games .snakeJoystickCenter{
     width:40px !important;
     height:40px !important;
-    border-radius:14px !important;
+    border-radius:12px !important;
     display:grid !important;
     place-items:center !important;
     background:rgba(255,255,255,.04) !important;
@@ -1083,55 +1151,59 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
       grid-template-columns:repeat(5, minmax(0, 1fr)) !important;
       gap:1px !important;
     }
+    #statsNameGrid .listItem,
+    #statsNameGrid .statsNameTile,
     #statsMachineGrid .listItem,
     #statsMachineGrid .statsMachineTile{
-      min-height:28px !important;
-      padding:1px !important;
+      min-height:34px !important;
+      padding:3px 1px !important;
       min-width:0 !important;
     }
   }
 </style>
 
 
-<style id="v356-nav-rotace-overrides">
+<style id="v359-nav-rotace-overrides">
   .bottomNav{
-    padding:0 2px calc(0px + env(safe-area-inset-bottom)) !important;
-    gap:2px !important;
-    border-radius:14px !important;
+    padding:0 0 calc(0px + env(safe-area-inset-bottom)) !important;
+    gap:0 !important;
+    border-radius:10px !important;
   }
   .bottomNavScroll{
     gap:0 !important;
     padding-right:0 !important;
+    min-width:0 !important;
   }
   .bottomNavInner{
     gap:0 !important;
     padding-right:0 !important;
   }
   .bottomNavBtn{
-    flex:0 0 60px !important;
-    width:60px !important;
-    min-width:60px !important;
-    max-width:60px !important;
-    min-height:40px !important;
+    flex:0 0 72px !important;
+    width:72px !important;
+    min-width:72px !important;
+    max-width:72px !important;
+    min-height:42px !important;
     padding:0 1px 0 !important;
   }
   .bottomNavBtn .bottomNavIcon,
   .bottomNavBtn .bottomNavIcon svg{
-    width:26px !important;
-    height:26px !important;
+    width:30px !important;
+    height:30px !important;
   }
   .bottomNavBtn .bottomNavLabel{
-    font-size:8.4px !important;
+    font-size:8.2px !important;
     line-height:1 !important;
   }
   .bottomNavBtn.active{
-    transform:translateY(-5px) scale(1.08) !important;
+    transform:translateY(-8px) scale(1.12) !important;
+    z-index:10 !important;
   }
   .bottomNavMenuBtn{
-    flex:0 0 34px !important;
-    width:34px !important;
-    min-width:34px !important;
-    max-width:34px !important;
+    flex:0 0 24px !important;
+    width:24px !important;
+    min-width:24px !important;
+    max-width:24px !important;
     padding:0 !important;
   }
   .bottomNavMenuBtn .bottomNavLabel{
@@ -1148,6 +1220,13 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
     display:grid !important;
     grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
     gap:6px !important;
+  }
+  #rotaceNamesPanel .rotacePersonMeta{
+    margin-top:4px !important;
+    margin-bottom:6px !important;
+    font-size:11px !important;
+    line-height:1.1 !important;
+    color:rgba(233,245,233,.78) !important;
   }
   #rotaceNamesPanel .rotaceQuickCards.rotacePreviewGrid .rotaceMiniCard{
     min-height:58px !important;

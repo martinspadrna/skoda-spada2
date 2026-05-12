@@ -118,13 +118,13 @@ function updateDashboard() {
   const foodText = status => status.isOpen && status.active ? ('Otevřeno do ' + formatFoodTime(status.active.end)) : 'Zavřeno';
   const foodDot = status => status.isOpen ? 'is-open' : 'is-closed';
   const foodMeta = status => {
+    if (!status) return '';
     if (status.isOpen && status.active) {
-      const openUntil = 'do ' + formatFoodTime(status.active.end);
-      if (!status.next) return openUntil;
-      return openUntil + '; poté otevřeno od ' + formatFoodTime(status.next.start) + ' do ' + formatFoodTime(status.next.end);
+      if (!status.next) return 'Dnes už nic dalšího.';
+      return 'Další termín: ' + formatFoodTime(status.next.start) + ' – ' + formatFoodTime(status.next.end);
     }
     if (!status.next) return 'Rozpis není dostupný.';
-    return 'poté otevřeno od ' + formatFoodTime(status.next.start) + ' do ' + formatFoodTime(status.next.end);
+    return 'Další termín: ' + formatFoodTime(status.next.start) + ' – ' + formatFoodTime(status.next.end);
   };
   setCard('dashKantyna', 'Kantýna', foodText(kantyna), foodMeta(kantyna), foodDot(kantyna), true, croissantIcon);
   setCard('dashJidelna', 'Jídelna', foodText(jidelna), foodMeta(jidelna), foodDot(jidelna), true, plateIcon);
@@ -331,9 +331,10 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
     const foodMeta = (status) => {
       if (!status) return '';
       if (status.isOpen && status.active && typeof formatFoodTime === 'function') {
-        return 'do ' + formatFoodTime(status.active.end);
+        if (!status.next) return 'Dnes už nic dalšího.';
+        return 'Další termín: ' + formatFoodTime(status.next.start) + ' – ' + formatFoodTime(status.next.end);
       }
-      return status.next && typeof formatFoodTime === 'function' ? ('otevřeno v ' + formatFoodTime(status.next.start)) : '';
+      return status.next && typeof formatFoodTime === 'function' ? ('Další termín: ' + formatFoodTime(status.next.start) + ' – ' + formatFoodTime(status.next.end)) : '';
     };
 
     const hero = document.getElementById('dashHero');
