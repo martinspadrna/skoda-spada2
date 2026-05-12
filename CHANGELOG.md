@@ -27,6 +27,11 @@
 
 # Rotace a kalkulačky
 
+## v.1(367)
+- Dashboard a spodní lišta dostaly další kompaktější ladění, titul Rotace a Kalkulačky je zřetelněji rozdělený do dvou řádků.
+- Rotace má vyšší výběrové bloky jmen a přehled příští směny je čistší: nahoře je jedna souhrnná budoucí směna, pod ní už jen bloky jméno + stroj.
+- Statistiky mají užší stroje, menší písmo a Piškvorky dostaly upravený invite flow, těsnější hrací pole a výš posunuté Snake ovládání.
+
 ## v.1(362)
 - Ztišily se zbytečné alerty v herní části a admin ukládání běží víc inline.
 - Piškvorky, 2048, Snake i Flap Bird zůstávají v kompaktním mobile-first layoutu.

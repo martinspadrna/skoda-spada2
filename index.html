@@ -5,13 +5,13 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0b0f0c">
-<meta name="apple-mobile-web-app-title" content="Rotace a kalkulačky">
+<meta name="apple-mobile-web-app-title" content="Rotace a Kalkulačky">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 
-<title>Rotace a kalkulačky</title>
+<title>Rotace a Kalkulačky</title>
 
 <link rel="icon" type="image/png" href="icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&amp;display=swap" rel="stylesheet">
@@ -2113,11 +2113,11 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   }
   .bottomNavBtn .bottomNavIcon,
   .bottomNavBtn .bottomNavIcon svg{
-    width:31px !important;
-    height:31px !important;
+    width:34px !important;
+    height:34px !important;
   }
   .bottomNavBtn .bottomNavIcon{
-    flex:0 0 31px !important;
+    flex:0 0 34px !important;
   }
   .bottomNavBtn .bottomNavLabel{
     font-size:8px !important;
@@ -2276,7 +2276,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
 </style>
 
 
-<style id="v366-hotfix">
+<style id="v366-hotfix-legacy">
   .bottomNav{
     padding:0 2px calc(0px + env(safe-area-inset-bottom)) !important;
     gap:2px !important;
@@ -2456,6 +2456,216 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   }
   body.tttOpen #tttOverlay{
     inset:0 0 calc(60px + env(safe-area-inset-bottom)) 0 !important;
+  }
+</style>
+
+
+<style id="v367-hotfix">
+  /* Dashboard a hlavní škrtnutí výš */
+  #home .dashboardShell{
+    margin-top:4px !important;
+    transform:translateY(-6px) !important;
+  }
+
+  /* Spodní lišta: nižší, ale ikonky větší a vyplní ji víc */
+  .bottomNav{
+    width:calc(100% - 8px) !important;
+    padding:0 2px calc(0px + env(safe-area-inset-bottom)) !important;
+    border-radius:14px !important;
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) auto !important;
+    align-items:center !important;
+    gap:2px !important;
+  }
+  .bottomNavScroll{
+    display:flex !important;
+    grid-column:1 !important;
+    min-width:0 !important;
+    overflow-x:auto !important;
+    overflow-y:hidden !important;
+    -webkit-overflow-scrolling:touch !important;
+    scrollbar-width:none !important;
+    scroll-snap-type:x proximity !important;
+    padding-right:2px !important;
+  }
+  .bottomNavScroll::-webkit-scrollbar{display:none !important;}
+  .bottomNavInner{
+    display:flex !important;
+    align-items:center !important;
+    flex-wrap:nowrap !important;
+    gap:2px !important;
+    min-width:max-content !important;
+    padding-right:2px !important;
+  }
+  .bottomNavBtn{
+    flex:0 0 72px !important;
+    width:72px !important;
+    min-width:72px !important;
+    max-width:72px !important;
+    min-height:40px !important;
+    padding:0 1px 0 !important;
+    border-radius:14px !important;
+  }
+  .bottomNavBtn .bottomNavIcon,
+  .bottomNavBtn .bottomNavIcon svg{
+    width:31px !important;
+    height:31px !important;
+    display:block !important;
+  }
+  .bottomNavBtn .bottomNavIcon{
+    flex:0 0 31px !important;
+  }
+  .bottomNavBtn .bottomNavLabel{
+    font-size:8px !important;
+    line-height:1 !important;
+  }
+  .bottomNavBtn.active{
+    transform:translateY(-7px) scale(1.15) !important;
+    z-index:12 !important;
+  }
+  .bottomNavBtn.active::before{
+    inset:-3px !important;
+  }
+  .bottomNavMenuBtn{
+    flex:0 0 24px !important;
+    width:24px !important;
+    min-width:24px !important;
+    max-width:24px !important;
+    padding:0 !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+  }
+  .bottomNavMenuBtn .moreIcon{
+    width:17px !important;
+    height:17px !important;
+    margin:0 auto !important;
+    transform:none !important;
+  }
+
+  /* Piškvorky mají být dostupné přes lištu i bez křížku */
+  body.tttOpen .bottomNav{
+    z-index:12050 !important;
+  }
+  body.tttOpen #tttOverlay{
+    inset:0 0 calc(48px + env(safe-area-inset-bottom)) 0 !important;
+  }
+
+  /* Rotace: vyšší výběr jmen, bez změny velikosti písma */
+  #rotaceNamesPanel .listItem{
+    min-height:46px !important;
+    padding:9px 8px !important;
+  }
+  #rotaceNamesPanel .rotaceHint{
+    display:none !important;
+  }
+  .rotacePersonTitle{
+    margin-bottom:8px !important;
+  }
+  .rotacePreviewGrid{
+    grid-template-columns:1fr !important;
+    gap:8px !important;
+  }
+  .rotacePreviewGrid .rotaceMiniCard{
+    min-height:58px !important;
+  }
+  .rotacePreviewGrid .rotaceMiniDate{
+    font-size:13px !important;
+  }
+
+  /* Statistiky: menší písmo, stroje užší o cca 20 % */
+  #statsNameGrid .listItem,
+  #statsNameGrid .statsNameTile{
+    min-height:42px !important;
+    padding:6px 5px !important;
+  }
+  #statsMachineGrid .listItem,
+  #statsMachineGrid .statsMachineTile{
+    width:80% !important;
+    justify-self:center !important;
+    min-height:42px !important;
+    padding:6px 4px !important;
+  }
+  #statsNameGrid .statsTileTitle,
+  #statsMachineGrid .statsTileTitle{
+    font-size:12px !important;
+    line-height:1.05 !important;
+  }
+  #statsNameGrid .statsTileMain,
+  #statsMachineGrid .statsTileMain{
+    align-items:center !important;
+    justify-content:center !important;
+    text-align:center !important;
+  }
+  #statsMachineGrid.listGrid{
+    grid-template-columns:repeat(5, minmax(0, 1fr)) !important;
+    gap:3px !important;
+  }
+
+  /* Rozpis: stroje na jedné řádce, menší mezery mezi bloky */
+  #monthsGrid{
+    grid-template-columns:repeat(auto-fit, minmax(0, 1fr)) !important;
+    gap:4px !important;
+  }
+  #rotace .rotaceMachineTile,
+  #rotace .rotaceMonthTile,
+  #rotace .monthTile{
+    margin:0 !important;
+  }
+  #rotace .rotaceMachineTile .rotaceTileTitle,
+  #rotace .rotaceMonthTile .rotaceTileTitle,
+  #rotace .monthTile .rotaceTileTitle{
+    font-size:13px !important;
+  }
+
+  /* Snake joystick výš nad lištou */
+  #games .gamesSnakePanel{
+    padding-bottom:186px !important;
+  }
+  #games .gameBoard.gameSnakeBoard{
+    margin-bottom:6px !important;
+  }
+  #games .snakeJoystickDock{
+    right:8px !important;
+    bottom:78px !important;
+  }
+
+  /* Piškvorky: žádné mezery mezi políčky a čistší invite flow */
+  #games .tttBoard{
+    gap:0 !important;
+    background:rgba(124,255,124,.06) !important;
+    padding:0 !important;
+  }
+  #games .tttCell{
+    border:0 !important;
+    box-shadow:inset 0 0 0 1px rgba(124,255,124,.16) !important;
+  }
+  #games .tttInviteCard{
+    border-radius:0 !important;
+  }
+  #games .tttInviteCode{
+    margin-top:10px !important;
+    padding:12px 10px !important;
+    border-radius:0 !important;
+    border:1px solid rgba(124,255,124,.16) !important;
+    background:rgba(255,255,255,.04) !important;
+    color:#eaffea !important;
+    font-size:28px !important;
+    font-weight:900 !important;
+    letter-spacing:.18em !important;
+    text-align:center !important;
+    text-transform:uppercase !important;
+    overflow-wrap:anywhere !important;
+  }
+  #games .tttInviteUrl{
+    margin-top:8px !important;
+    word-break:break-all !important;
+  }
+  #games .tttInviteActions{
+    grid-template-columns:1fr 1fr !important;
+  }
+  #games .tttInviteCard .tttBtn{
+    min-height:48px !important;
   }
 </style>
 
