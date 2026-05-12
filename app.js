@@ -1,4 +1,4 @@
-// v.1(367) – spodní lišta, dashboard, Rotace, Statistiky, Snake a piškvorky.
+// v.1(368) – další mobilní ladění, rotace, statistiky, Snake a přihlášení ve hrách.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

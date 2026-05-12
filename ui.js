@@ -3887,18 +3887,23 @@ function gamesApplyActiveAccountUI(account) {
   const next = account || null;
   if (cardEl) {
     cardEl.classList.toggle('isLoggedIn', !!next);
-    cardEl.style.display = next ? 'none' : '';
+    cardEl.style.display = '';
   }
   nameEl.textContent = next ? next.name : 'Bez přihlášení';
   hintEl.textContent = next
-    ? 'Přihlášeno. Statistiky se ukládají pod tímto číslem.'
+    ? 'Přihlášeno. Můžeš hned zadat jiné číslo a účet přepsat.'
     : 'Bez účtu můžeš hrát dál. Statistiky se ukládají jen po přihlášení číslem.';
-  entryRow.style.display = next ? 'none' : '';
-  hintEl.style.display = 'none';
-  hintEl.hidden = true;
+  entryRow.style.display = '';
+  hintEl.style.display = '';
+  hintEl.hidden = false;
   currentEl.style.display = next ? 'flex' : 'none';
   currentEl.textContent = next ? ('Přihlášeno jako ' + next.name + ' · ' + next.id) : '';
-  if (next) inputEl.value = '';
+  if (next) {
+    inputEl.value = '';
+    inputEl.placeholder = 'Zadej jiné číslo účtu';
+  } else {
+    inputEl.placeholder = 'Zadej číslo účtu';
+  }
   clearBtn.textContent = next ? 'Odhlásit' : 'Bez účtu';
   gamesRenderActiveAccountBar(next);
 }
@@ -4441,7 +4446,7 @@ function snakeSetJoystickEnabled(enabled) {
 
 function snakeBuildJoystickMarkup() {
   return [
-    '<div class="snakeJoystickDock" id="snakeJoystickDock" aria-label="Joystick hada">',
+    '<div class="snakeJoystickDock isOn" id="snakeJoystickDock" aria-label="Joystick hada">',
     '  <div class="snakeJoystickLabel">Joystick</div>',
     '  <div class="gamePad snakeJoystickPad" id="snakeJoystickPad" role="group" aria-label="Joystick hada">',
     '    <span></span>',
@@ -4464,6 +4469,7 @@ function snakeBindJoystickControls(root, resetSnake) {
   const pad = root.querySelector('#snakeJoystickPad');
 
   if (!dock || !pad) return;
+  dock.classList.add('isOn');
   gamesBindDirectionPad(pad, (dir) => {
     const current = app.gamesSnake;
     if (current && current.over) {

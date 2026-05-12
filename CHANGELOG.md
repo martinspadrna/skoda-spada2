@@ -1,5 +1,11 @@
 # Changelog
 
+## v.1(368)
+- Přihlášení ve hrách teď dovolí přepsat aktivní účet bez schovávání formuláře.
+- Spodní lišta je na iPhonu výš, ale vypadá kompaktněji; bloky jsou o něco menší.
+- Rotace ukazuje příští směnu čistěji vedle nadpisu, Statistiky mají menší mezery mezi stroji.
+- Snake má viditelný a funkční virtuální joystick, který není schovaný za lištou.
+
 ## v.1(366)
 - Spodní lišta je nižší, ale ikonky jsou výraznější a aktivní položka víc vystupuje.
 - Rotace má menší text ve výběru jmen, Statistiky širší a přehlednější tile prvky a Snake posunuté ovládání výš.

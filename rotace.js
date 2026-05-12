@@ -344,22 +344,19 @@ function renderUpcomingShiftsPreview(limit = 10) {
   const nextShift = visible[0] || previewEntries[0];
   const totalPeople = names.length || 10;
   const presentCount = previewEntries.filter(entry => !entry.absence).length;
-  const title = 'Příští směny';
+  const title = 'Příští směna';
+  const nextShiftText = [nextShift && nextShift.dateLabel ? nextShift.dateLabel : '', nextShift && nextShift.shift ? nextShift.shift : ''].filter(Boolean).join(' ');
 
   personView.innerHTML = [
-    '<div class="rotacePersonTitle">' + title + '</div>',
+    '<div class="rotacePersonHeader">',
+    '  <div class="rotacePersonTitle">' + title + '</div>',
+    nextShiftText ? '<div class="rotacePersonTitleDate">' + escapeHtml(nextShiftText) + '</div>' : '',
+    '</div>',
     '<div class="rotacePersonMeta">Přítomno ' + String(presentCount) + ' z ' + String(totalPeople) + ' lidí</div>',
-    nextShift ? [
-      '<div class="rotaceMiniCard rotaceUpcomingShiftCard current">',
-      '  <div class="rotaceMiniLabel">Nejbližší směna</div>',
-      '  <div class="rotaceMiniDate">' + escapeHtml(nextShift.dateLabel || '') + (nextShift.shift ? ' ' + escapeHtml(nextShift.shift) : '') + '</div>',
-      '  <div class="rotaceMiniTarget">' + escapeHtml(nextShift.target || '') + '</div>',
-      '</div>'
-    ].join('') : '',
     '<div class="rotaceQuickCards rotacePreviewGrid">',
     visible.map(entry => [
       '<div class="rotaceMiniCard">',
-      '  <div class="rotaceMiniTarget">' + escapeHtml(entry.name || '') + (entry.target ? ' · ' + escapeHtml(entry.target) : '') + '</div>',
+      '  <div class="rotaceMiniTarget">' + escapeHtml(entry.name || '') + '</div>',
       '</div>'
     ].join('')).join(''),
     '</div>'
