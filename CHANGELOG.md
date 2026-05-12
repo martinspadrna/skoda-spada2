@@ -1,5 +1,11 @@
 # Changelog
 
+## v.1(369)
+- Spodní lišta má upravené bloky, aktivní stav a menší mezeru u iPhonu.
+- Rotace teď ukazuje příští směnu jako jeden řádek a pod ní jména s jejich stroji.
+- Statistiky počítají částečné absence jako 0,5 práce a 0,5 absence a úpravy mezer jsou těsnější.
+- Hry umí dohledat i jiné účty ze Supabase a Snake má joystick posunutý výš.
+
 ## v.1(368)
 - Přihlášení ve hrách teď dovolí přepsat aktivní účet bez schovávání formuláře.
 - Spodní lišta je na iPhonu výš, ale vypadá kompaktněji; bloky jsou o něco menší.

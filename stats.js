@@ -130,6 +130,17 @@ if (typeof window.normalizeNoteEntry !== 'function') {
   };
 }
 
+
+if (typeof window.estimateAbsenceWeight !== 'function') {
+  window.estimateAbsenceWeight = function estimateAbsenceWeight(note) {
+    const text = String(note && note.text ? note.text : '').trim();
+    const code = String(note && note.code ? note.code : '').trim();
+    const haystack = (text + ' ' + code).trim();
+    if (!haystack) return 1;
+    if (/\b(?:od|do)\b/i.test(haystack)) return 0.5;
+    return 1;
+  };
+}
 function getStatsMachineLabel(machine) {
   const name = String(machine || "").trim();
   if (!name) return "";
@@ -322,7 +333,7 @@ function buildStatsForYear(year) {
 
       const parsedDate = typeof parseDateToken === 'function' ? parseDateToken(n.date) : null;
       const shift = n.shift || (parsedDate ? parsedDate.shift : "");
-
+      const weight = typeof estimateAbsenceWeight === 'function' ? estimateAbsenceWeight(n) : 1;
       n.people.forEach(personName => {
         const name = String(personName || "").trim();
         if (!name || !knownStatNames.has(name)) return;
@@ -340,27 +351,40 @@ function buildStatsForYear(year) {
         if (chosen && chosen.machine) {
           const column = ensureColumn(getStatsMachineLabel(chosen.machine));
           if (column) {
-            person.absence[column] = (person.absence[column] || 0) + 1;
-            stats.absenceTotals[column] = (stats.absenceTotals[column] || 0) + 1;
+            person.absence[column] = (person.absence[column] || 0) + weight;
+            stats.absenceTotals[column] = (stats.absenceTotals[column] || 0) + weight;
+            person.work[column] = Math.max(0, (Number(person.work[column] || 0) || 0) - weight);
+            stats.machineTotals[column] = Math.max(0, (Number(stats.machineTotals[column] || 0) || 0) - weight);
           }
         }
-        person.totalAbsence += 1;
+        person.totalAbsence += weight;
+        person.totalWork = Math.max(0, (Number(person.totalWork || 0) || 0) - weight);
       });
     });
-  });
-
-  Object.values(stats.people).forEach(person => {
-    ["TNK", "W01"].forEach(column => {
-      if (typeof person.work[column] === "number") person.work[column] = Math.round(person.work[column]);
+  });  Object.values(stats.people).forEach(person => {
+    Object.keys(person.work).forEach(column => {
+      if (typeof person.work[column] === "number") person.work[column] = Math.round(person.work[column] * 10) / 10;
     });
+    Object.keys(person.absence).forEach(column => {
+      if (typeof person.absence[column] === "number") person.absence[column] = Math.round(person.absence[column] * 10) / 10;
+    });
+    person.totalWork = Math.round((Number(person.totalWork) || 0) * 10) / 10;
+    person.totalClean = Math.round((Number(person.totalClean) || 0) * 10) / 10;
+    person.totalAbsence = Math.round((Number(person.totalAbsence) || 0) * 10) / 10;
 
     person.topWorkMachine = getBestEntry(person.work);
     person.topCleanMachine = getBestEntry(person.clean);
     person.topWorkMachines = getBestEntries(person.work);
     person.topCleanMachines = getBestEntries(person.clean);
   });
-  ["TNK", "W01"].forEach(column => {
-    if (typeof stats.machineTotals[column] === "number") stats.machineTotals[column] = Math.round(stats.machineTotals[column]);
+  Object.keys(stats.machineTotals).forEach(column => {
+    if (typeof stats.machineTotals[column] === "number") stats.machineTotals[column] = Math.round(stats.machineTotals[column] * 10) / 10;
+  });
+  Object.keys(stats.absenceTotals).forEach(column => {
+    if (typeof stats.absenceTotals[column] === "number") stats.absenceTotals[column] = Math.round(stats.absenceTotals[column] * 10) / 10;
+  });
+  Object.keys(stats.cleanTotals).forEach(column => {
+    if (typeof stats.cleanTotals[column] === "number") stats.cleanTotals[column] = Math.round(stats.cleanTotals[column] * 10) / 10;
   });
 
   stats.names = Object.keys(stats.people).filter(name => KNOWN_STAT_NAMES.has(name)).sort((a, b) => a.localeCompare(b, "cs"));
@@ -505,7 +529,7 @@ function renderStatsPanel() {
       "<div class='sectionTitle'>" + escapeHtml(machine) + "</div>",
       "<div class='statsSummary'>",
       "<div class='tile'><div class='smallText'>Letos nejvíc uklízeli</div><div class='statsMultiLine statsSummaryValueCompact'>" + escapeHtml(leaderNames) + "</div></div>",
-      "<div class='tile'><div class='smallText'>Top 3 práce</div><div class='statsMultiLine statsSummaryValueCompact'>" + escapeHtml(topWorkersText) + "</div></div>",
+      "<div class='tile'><div class='smallText'>Nejvíce tu byl</div><div class='statsMultiLine statsSummaryValueCompact'>" + escapeHtml(topWorkersText) + "</div></div>",
       "</div>"
     ].join('');
   } else {

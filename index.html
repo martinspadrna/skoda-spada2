@@ -21,7 +21,7 @@
 
 <link rel="stylesheet" href="styles.css">
 
-<style id="v368-hotfix-overrides">
+<style id="v369-hotfix-overrides">
   /* Dashboard food dots */
   #home .dashboardDot,
   #dashKantyna .dashboardDot,
@@ -48,18 +48,8 @@
   }
 
   /* Bottom bar: 50% bigger icons, still compact */
-  .bottomNav{
-    padding:1px 2px calc(1px + env(safe-area-inset-bottom)) !important;
-    gap:2px !important;
-  }
-  .bottomNavBtn{
-    flex:0 0 62px !important;
-    width:62px !important;
-    min-width:62px !important;
-    max-width:62px !important;
-    min-height:42px !important;
-    padding:0 1px 0 !important;
-  }
+  .bottomNav{    padding:0 2px calc(0px + env(safe-area-inset-bottom)) !important;    gap:2px !important;  }
+  .bottomNavBtn{    flex:0 0 65px !important;    width:65px !important;    min-width:65px !important;    max-width:65px !important;    min-height:42px !important;    padding:0 1px 0 !important;  }
   .bottomNavBtn .bottomNavIcon,
   .bottomNavBtn .bottomNavIcon svg{
     width:33px !important;
@@ -72,28 +62,12 @@
     font-size:8px !important;
     line-height:1 !important;
   }
-  .bottomNavBtn.active{
-    transform:translateY(-4px) scale(1.08) !important;
-    z-index:12 !important;
-  }
+  .bottomNavBtn.active{    transform:translateY(-4px) scale(1.2) !important;    z-index:12 !important;  }
   .bottomNavBtn.active::before{
     inset:-3px !important;
   }
-  .bottomNavMenuBtn{
-    flex:0 0 24px !important;
-    width:24px !important;
-    min-width:24px !important;
-    max-width:24px !important;
-    padding:0 !important;
-    display:flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-  }
-  .bottomNavMenuBtn .moreIcon{
-    width:16px !important;
-    height:16px !important;
-    margin:0 auto !important;
-  }
+  .bottomNavMenuBtn{    flex:0 0 17px !important;    width:17px !important;    min-width:17px !important;    max-width:17px !important;    padding:0 !important;    display:flex !important;    align-items:center !important;    justify-content:center !important;  }
+  .bottomNavMenuBtn .moreIcon{    width:11px !important;    height:11px !important;    margin:0 auto !important;  }
 
   /* Rotace: trochu menší jména dole */
   #rotaceNamesPanel .listItem{
@@ -934,8 +908,8 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
 
 
 <style id="v363-pre-mobile-polish">
-  #games{padding-bottom:128px !important;}
-  /* v1(368) mobile polish: tighter bottom bar + names at the bottom on rotace */
+  #games{padding-bottom:154px !important;}
+  /* v1(369) mobile polish: tighter bottom bar + names at the bottom on rotace */
   .bottomNav{
     padding:3px 5px calc(3px + env(safe-area-inset-bottom)) !important;
     gap:5px !important;
@@ -992,7 +966,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
     }
   }
 <style id="v363-legacy-mobile-polish">
-  /* v1(368) final mobile polish: tighter bottom bar, rotace preview and stats spacing */
+  /* v1(369) final mobile polish: tighter bottom bar, rotace preview and stats spacing */
   .bottomNav{
     padding:2px 4px calc(2px + env(safe-area-inset-bottom)) !important;
     gap:3px !important;
@@ -1105,7 +1079,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
 
 
 <style id="v363-final-mobile-polish">
-  /* v1(368) final mobile polish: bottom bar, games padding, rotace preview, stats compact, snake joystick */
+  /* v1(369) final mobile polish: bottom bar, games padding, rotace preview, stats compact, snake joystick */
   .bottomNav{
     width:calc(100% - 4px) !important;
     padding:1px 0 calc(1px + env(safe-area-inset-bottom)) !important;
@@ -2627,7 +2601,12 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   }
   #games .snakeJoystickDock{
     right:8px !important;
-    bottom:96px !important;
+    bottom:154px !important;
+  }
+  #games .snakeJoystickLabel{
+    font-size:12px !important;
+    font-weight:800 !important;
+    letter-spacing:.03em !important;
   }
   #games .snakeJoystickPad{
     display:grid !important;
@@ -2671,17 +2650,10 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
     min-height:48px !important;
   }
 
-  /* Hry: přihlášení jiného účtu bez skrývání formuláře */
+  /* Hry: po přihlášení zůstane jen jméno a odhlášení */
   #games .gamesAccountCard.isLoggedIn .gamesAccountRow,
   #games .gamesAccountCard.isLoggedIn .gamesAccountHint{
-    display:flex !important;
-  }
-  #games .gamesAccountCard.isLoggedIn .gamesAccountRow{
-    flex-wrap:wrap !important;
-    gap:8px !important;
-  }
-  #games .gamesAccountCard.isLoggedIn .gamesAccountInput{
-    min-width:0 !important;
+    display:none !important;
   }
   #games .gamesAccountCard.isLoggedIn .gamesAccountCurrent{
     margin-top:8px !important;
@@ -2692,12 +2664,12 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
     gap:1px !important;
   }
 
-  /* Rotace: příští směna vedle nadpisu */
+  /* Rotace: příští směna na jednom řádku a pod ní stroje */
   #personView .rotacePersonHeader{
     display:flex !important;
     align-items:baseline !important;
-    justify-content:space-between !important;
-    gap:10px !important;
+    justify-content:flex-start !important;
+    gap:8px !important;
     flex-wrap:wrap !important;
   }
   #personView .rotacePersonTitleDate{
@@ -2705,42 +2677,44 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
     line-height:1.1 !important;
     color:rgba(238,246,238,.78) !important;
     font-weight:700 !important;
-    margin-top:2px !important;
+    margin-top:0 !important;
   }
   #personView .rotacePersonMeta{
     margin-top:4px !important;
   }
 
-  /* Spodní lišta: o trochu menší bloky, ale vyšší nad iPhonem */
+  /* Spodní lišta: bloky o trochu širší, aktivní stav výraznější */
   .bottomNavBtn{
-    flex-basis:56px !important;
-    width:56px !important;
-    min-width:56px !important;
-    max-width:56px !important;
+    flex-basis:65px !important;
+    width:65px !important;
+    min-width:65px !important;
+    max-width:65px !important;
     min-height:40px !important;
   }
   .bottomNavBtn .bottomNavIcon,
   .bottomNavBtn .bottomNavIcon svg{
-    width:30px !important;
-    height:30px !important;
+    width:31px !important;
+    height:31px !important;
   }
-  .bottomNavBtn .bottomNavIcon{flex:0 0 30px !important;}
+  .bottomNavBtn .bottomNavIcon{flex:0 0 31px !important;}
   .bottomNavBtn.active{
-    transform:translateY(-5px) scale(1.08) !important;
+    transform:translateY(-4px) scale(1.2) !important;
   }
   .bottomNavMenuBtn{
-    flex-basis:40px !important;
-    width:40px !important;
-    min-width:40px !important;
-    max-width:40px !important;
+    flex-basis:17px !important;
+    width:17px !important;
+    min-width:17px !important;
+    max-width:17px !important;
+    min-height:40px !important;
   }
   .bottomNavMenuBtn .moreIcon{
-    width:18px !important;
-    height:18px !important;
+    width:11px !important;
+    height:11px !important;
   }
   @supports (-webkit-touch-callout: none){
     .bottomNav{
-      bottom:20px !important;
+      bottom:24px !important;
+      padding:0 1px 0 !important;
     }
   }
 </style>

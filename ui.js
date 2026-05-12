@@ -3681,21 +3681,27 @@ const GAMES_ACCOUNT_LIST = [
   { id: '6235', name: 'Blažek Ladislav' }
 ];
 
+function gamesMakeAccountEntry(accountId, name) {
+  const id = String(accountId || '').trim();
+  const label = String(name || id || '').trim() || id;
+  return {
+    id,
+    name: label,
+    stats: {
+      ttt: { plays: 0, wins: 0, losses: 0, draws: 0, bestMoves: null, bestTimeMs: null, lastPlayedAt: 0 },
+      g2048: { plays: 0, bestScore: 0, bestTile: 0, lastPlayedAt: 0 },
+      snake: { plays: 0, bestScore: 0, bestLength: 0, lastPlayedAt: 0 },
+      flap: { plays: 0, bestScore: 0, bestPipes: 0, lastPlayedAt: 0 }
+    },
+    achievements: [],
+    updatedAt: 0
+  };
+}
+
 function gamesDefaultProfile() {
   const accounts = {};
   GAMES_ACCOUNT_LIST.forEach(acc => {
-    accounts[acc.id] = {
-      id: acc.id,
-      name: acc.name,
-      stats: {
-        ttt: { plays: 0, wins: 0, losses: 0, draws: 0, bestMoves: null, bestTimeMs: null, lastPlayedAt: 0 },
-        g2048: { plays: 0, bestScore: 0, bestTile: 0, lastPlayedAt: 0 },
-        snake: { plays: 0, bestScore: 0, bestLength: 0, lastPlayedAt: 0 },
-        flap: { plays: 0, bestScore: 0, bestPipes: 0, lastPlayedAt: 0 }
-      },
-      achievements: [],
-      updatedAt: 0
-    };
+    accounts[acc.id] = gamesMakeAccountEntry(acc.id, acc.name);
   });
   return { activeAccountId: '', accounts };
 }
@@ -3713,6 +3719,23 @@ function gamesLoadProfile() {
       base.accounts[acc.id] = {
         id: acc.id,
         name: acc.name,
+        stats: {
+          ttt: Object.assign({ plays: 0, wins: 0, losses: 0, draws: 0, bestMoves: null, bestTimeMs: null, lastPlayedAt: 0 }, incoming.stats && incoming.stats.ttt ? incoming.stats.ttt : {}),
+          g2048: Object.assign({ plays: 0, bestScore: 0, bestTile: 0, lastPlayedAt: 0 }, incoming.stats && incoming.stats.g2048 ? incoming.stats.g2048 : {}),
+          snake: Object.assign({ plays: 0, bestScore: 0, bestLength: 0, lastPlayedAt: 0 }, incoming.stats && incoming.stats.snake ? incoming.stats.snake : {}),
+          flap: Object.assign({ plays: 0, bestScore: 0, bestPipes: 0, lastPlayedAt: 0 }, incoming.stats && incoming.stats.flap ? incoming.stats.flap : {})
+        },
+        achievements: Array.isArray(incoming.achievements) ? incoming.achievements.slice(0, 20) : [],
+        updatedAt: Number(incoming.updatedAt || 0) || 0
+      };
+    });
+    Object.keys(srcAccounts).forEach((id) => {
+      const accountId = String(id || '').trim();
+      if (!accountId || base.accounts[accountId]) return;
+      const incoming = srcAccounts[accountId] || {};
+      base.accounts[accountId] = {
+        id: accountId,
+        name: String(incoming.name || accountId).trim() || accountId,
         stats: {
           ttt: Object.assign({ plays: 0, wins: 0, losses: 0, draws: 0, bestMoves: null, bestTimeMs: null, lastPlayedAt: 0 }, incoming.stats && incoming.stats.ttt ? incoming.stats.ttt : {}),
           g2048: Object.assign({ plays: 0, bestScore: 0, bestTile: 0, lastPlayedAt: 0 }, incoming.stats && incoming.stats.g2048 ? incoming.stats.g2048 : {}),
@@ -3814,6 +3837,18 @@ async function gamesSyncProfileFromRemote(force = false) {
     }));
 
     let changed = false;
+    (Array.isArray(remoteAccounts) ? remoteAccounts : []).forEach((row) => {
+      const accountId = String(row && row.account_number ? row.account_number : '').trim();
+      if (!accountId) return;
+      const remoteName = String(row && row.full_name ? row.full_name : accountId).trim() || accountId;
+      if (!profile.accounts[accountId]) {
+        profile.accounts[accountId] = gamesMakeAccountEntry(accountId, remoteName);
+        changed = true;
+      } else if (remoteName && remoteName !== profile.accounts[accountId].name) {
+        profile.accounts[accountId].name = remoteName;
+        changed = true;
+      }
+    });
     Object.values(profile.accounts || {}).forEach((acc) => {
       if (!acc) return;
       const remoteName = remoteNameMap.get(String(acc.id || '').trim());
@@ -3871,7 +3906,10 @@ async function gamesSyncProfileFromRemote(force = false) {
 }
 
 function gamesAccountById(accountId) {
-  return GAMES_ACCOUNT_LIST.find(acc => acc.id === String(accountId || '').trim()) || null;
+  const id = String(accountId || '').trim();
+  if (!id) return null;
+  const profile = gamesGetProfile();
+  return (profile.accounts && profile.accounts[id]) || GAMES_ACCOUNT_LIST.find(acc => acc.id === id) || null;
 }
 
 function gamesApplyActiveAccountUI(account) {
@@ -3931,8 +3969,12 @@ function gamesRenderActiveAccountBar(account) {
 
 function gamesSetActiveAccount(accountId) {
   const profile = gamesGetProfile();
-  if (!profile.accounts[accountId]) return false;
-  profile.activeAccountId = String(accountId);
+  const id = String(accountId || '').trim();
+  if (!id) return false;
+  if (!profile.accounts[id]) {
+    profile.accounts[id] = gamesMakeAccountEntry(id, id);
+  }
+  profile.activeAccountId = id;
   gamesSaveProfile(profile);
   app.gamesProfile = profile;
   const active = profile.accounts[profile.activeAccountId] || null;
@@ -4022,27 +4064,45 @@ function gamesRenderAccountChips() {
   if (!inputEl.dataset.bound) {
     inputEl.dataset.bound = '1';
     const submit = async () => {
-      const found = gamesAccountById(inputEl.value);
-      if (found) {
+      const typed = String(inputEl.value || '').trim();
+      if (!typed) {
+        syncVisibleAccount(null);
+        hintEl.textContent = 'Zadej číslo účtu.';
+        inputEl.focus();
+        return;
+      }
+      let found = gamesAccountById(typed);
+      if (!found && window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.loadGameAccounts === 'function') {
+        await gamesSyncProfileFromRemote(true);
+        found = gamesAccountById(typed);
+      }
+      if (!found) {
+        try {
+          gamesSetActiveAccount(typed);
+          found = gamesAccountById(typed) || { id: typed, name: typed };
+        } catch (err) {
+          console.warn('games account save failed', err);
+        }
+      } else {
         try {
           gamesSetActiveAccount(found.id);
         } catch (err) {
           console.warn('games account save failed', err);
         }
-        syncVisibleAccount(found);
-        gamesApplyActiveAccountUI(found);
-        gamesRenderStats();
-        requestAnimationFrame(() => {
-          gamesRenderAccountChips();
-          gamesRenderStats();
-        });
-        return;
       }
-      syncVisibleAccount(null);
-      hintEl.textContent = inputEl.value.trim()
-        ? 'Neplatné číslo účtu. Hraješ bez přihlášení.'
-        : 'Bez účtu můžeš hrát dál. Statistiky se ukládají jen po přihlášení číslem.';
-      inputEl.focus();
+      syncVisibleAccount(found);
+      gamesApplyActiveAccountUI(found);
+      gamesRenderStats();
+      requestAnimationFrame(() => {
+        gamesRenderAccountChips();
+        gamesRenderStats();
+      });
+      if (!window.RotationSupabaseBridge || typeof window.RotationSupabaseBridge.loadGameAccounts !== 'function') {
+        hintEl.textContent = 'Přihlášeno jako ' + found.id + '.';
+      } else if (!gamesAccountById(typed)) {
+        hintEl.textContent = 'Tento účet jsem nenašel online, ale nechal jsem ho přihlášený lokálně.';
+      }
+      return;
     };
     inputEl.addEventListener('keydown', (ev) => {
       if (ev.key === 'Enter') { ev.preventDefault(); void submit(); }
