@@ -1,4 +1,4 @@
-// v.1(371) – další úpravy lišty, rotace, statistik a přihlášení ve hrách.
+// v.1(372) – úprava statistik a finální ladění před freeze kandidátem.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
