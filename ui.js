@@ -2038,7 +2038,7 @@ function triggerAboutAction() {
 function buildAppHistoryHtml(versionText) {
   const fallbackSections = [
     {
-      range: 'v.1(323)–v.1(334)',
+      range: 'v.1(323)–v.1(336)',
       title: 'Stabilizace a hry',
       lines: [
         'Spodní lišta se dorovnávala na mobilní rozložení a „Více“ bylo pevně vpravo.',
@@ -3407,6 +3407,60 @@ function gamesStopActiveLoops() {
     app.gamesFlap.timer = null;
   }
 }
+
+function gamesBindSwipeControl(el, onSwipe) {
+  if (!el || el.dataset.swipeBound) return;
+  el.dataset.swipeBound = '1';
+
+  let startX = 0;
+  let startY = 0;
+  let active = false;
+
+  const finish = (clientX, clientY) => {
+    if (!active) return;
+    active = false;
+    const dx = clientX - startX;
+    const dy = clientY - startY;
+    const absX = Math.abs(dx);
+    const absY = Math.abs(dy);
+    if (Math.max(absX, absY) < 24) return;
+    if (absX > absY && absY < 48) {
+      onSwipe(dx > 0 ? 'right' : 'left');
+    } else if (absY > absX && absX < 48) {
+      onSwipe(dy > 0 ? 'down' : 'up');
+    }
+  };
+
+  el.addEventListener('touchstart', (ev) => {
+    if (!ev.touches || ev.touches.length !== 1) return;
+    const touch = ev.touches[0];
+    startX = touch.clientX;
+    startY = touch.clientY;
+    active = true;
+  }, { passive: true });
+
+  el.addEventListener('touchend', (ev) => {
+    const touch = ev.changedTouches && ev.changedTouches[0];
+    if (!touch) return;
+    finish(touch.clientX, touch.clientY);
+  }, { passive: true });
+
+  el.addEventListener('touchcancel', () => {
+    active = false;
+  }, { passive: true });
+
+  el.addEventListener('pointerdown', (ev) => {
+    if (ev.pointerType && ev.pointerType !== 'touch' && ev.pointerType !== 'pen') return;
+    startX = ev.clientX;
+    startY = ev.clientY;
+    active = true;
+  }, { passive: true });
+
+  el.addEventListener('pointerup', (ev) => {
+    if (ev.pointerType && ev.pointerType !== 'touch' && ev.pointerType !== 'pen') return;
+    finish(ev.clientX, ev.clientY);
+  }, { passive: true });
+}
 // ---- 2048 ----
 function game2048InitialState() {
   return { board: Array(16).fill(0), score: 0, over: false, best: 0, spawned: false };
@@ -3441,11 +3495,12 @@ function renderGame2048() {
     state.spawned = true;
   }
   body.innerHTML = [
-    '<div class="gameInfoRow"><span>Skóre: <strong>' + state.score + '</strong></span><span>' + (state.over ? 'Konec hry' : 'Táhni prstem nebo šipkami') + '</span></div>',
+    '<div class="gameInfoRow"><span>Skóre: <strong>' + state.score + '</strong></span><span>' + (state.over ? 'Konec hry' : 'Táhni po ploše') + '</span></div>',
     '<div class="gameBoard game2048Board" id="game2048Board">' + state.board.map(v => '<div class="gameBoardCell ' + (v ? 'n' + v : '') + '" data-value="' + (v || '') + '">' + (v || '') + '</div>').join('') + '</div>',
     '<div class="gameInfoRow"><span>Nejvyšší: ' + (state.best || 0) + '</span><button class="gameControlBtn" id="game2048Restart">Nová hra</button></div>'
   ].join('');
-  body.querySelectorAll('[data-2048-dir]').forEach(btn => btn.addEventListener('click', () => game2048Move(btn.getAttribute('data-2048-dir'))));
+  const board = body.querySelector('#game2048Board');
+  gamesBindSwipeControl(board, game2048Move);
   body.querySelector('#game2048Restart')?.addEventListener('click', () => { app.games2048 = game2048InitialState(); renderGame2048(); });
 }
 
@@ -3514,11 +3569,12 @@ function renderGameSnake() {
     }
   }
   body.innerHTML = [
-    '<div class="gameInfoRow"><span>Skóre: <strong>' + state.score + '</strong></span><span>' + (state.over ? 'Konec hry' : 'Pohybuj hadem') + '</span></div>',
+    '<div class="gameInfoRow"><span>Skóre: <strong>' + state.score + '</strong></span><span>' + (state.over ? 'Konec hry' : 'Táhni po ploše') + '</span></div>',
     '<div class="gameBoard gameSnakeBoard" id="gameSnakeBoard" style="grid-template-columns:repeat(20,1fr);">' + cells.join('') + '</div>',
     '<div class="gameInfoRow"><span>Délka: ' + state.snake.length + '</span><button class="gameControlBtn" id="snakeRestart">Nová hra</button></div>'
   ].join('');
-  body.querySelectorAll('[data-snake-dir]').forEach(btn => btn.addEventListener('click', () => snakeSetDirection(btn.getAttribute('data-snake-dir'))));
+  const board = body.querySelector('#gameSnakeBoard');
+  gamesBindSwipeControl(board, snakeSetDirection);
   body.querySelector('#snakeRestart')?.addEventListener('click', () => { if (state.timer) clearInterval(state.timer); app.gamesSnake = snakeDefaultState(); snakePlaceFood(app.gamesSnake); snakeStart(); renderGameSnake(); });
   snakeStart();
 }
@@ -3554,17 +3610,20 @@ function renderGameFlap() {
   const body = document.getElementById('gamesShellBody'); if (!body) return;
   const state = app.gamesFlap || (app.gamesFlap = flapDefaultState());
   body.innerHTML = [
-    '<div class="gameInfoRow"><span>Skóre: <strong>' + state.score + '</strong></span><span>' + (state.over ? 'Konec hry' : 'Klepni pro skok') + '</span></div>',
-    '<div class="gameBoard gameFlapBoard" id="gameFlapBoard" style="grid-template-columns:1fr;min-height:280px;position:relative;overflow:hidden;">',
+    '<div class="gameInfoRow"><span>Skóre: <strong>' + state.score + '</strong></span><span>' + (state.over ? 'Konec hry' : 'Klepni nebo ťukni na tlačítko') + '</span></div>',
+    '<div class="gameBoard gameFlapBoard" id="gameFlapBoard" style="grid-template-columns:1fr;min-height:clamp(260px, 42vh, 420px);height:clamp(260px, 42vh, 420px);position:relative;overflow:hidden;">',
     '  <div id="flapPipes"></div>',
     '  <div id="flapBird" style="position:absolute;left:18%;top:' + Math.max(0, state.y) + 'px;width:22px;height:18px;border-radius:50% 50% 45% 45%;background:linear-gradient(180deg, rgba(124,255,124,.95), rgba(34,56,32,.9));box-shadow:0 0 18px rgba(124,255,124,.18);"></div>',
     '</div>',
     '<div class="gameControls">',
     '  <button class="gameControlBtn" id="flapTapBtn">Skok</button>',
     '  <button class="gameControlBtn" id="flapRestartBtn">Nová hra</button>',
-    '</div>',
-    '<div class="gameInfoRow"><span>Trubky: ' + state.pipes.length + '</span><span>Skóre: ' + state.score + '</span></div>'
+    '</div>'
   ].join('');
+  const board = body.querySelector('#gameFlapBoard');
+  board?.addEventListener('pointerdown', () => {
+    flapTap();
+  }, { passive: true });
   body.querySelector('#flapTapBtn')?.addEventListener('click', flapTap);
   body.querySelector('#flapRestartBtn')?.addEventListener('click', () => { if (state.timer) cancelAnimationFrame(state.timer); app.gamesFlap = flapDefaultState(); flapStart(); renderGameFlap(); });
   flapStart();
@@ -3575,20 +3634,26 @@ function flapStart() {
   if (state.timer) cancelAnimationFrame(state.timer);
   const loop = () => {
     if (state.over) return;
+    const boardEl = document.getElementById('gameFlapBoard');
+    const boardHeight = Math.max(240, Math.min(420, Math.round(boardEl?.getBoundingClientRect().height || 320)));
+    const gapSize = 70;
+    const birdSize = 20;
     state.frame += 1;
     state.v += state.gravity;
     state.y += state.v;
     if (state.frame % 75 === 0) {
-      const gapY = 90 + Math.floor(Math.random() * 90);
+      const safeTop = 48;
+      const maxGapTop = Math.max(safeTop + 16, boardHeight - gapSize - safeTop);
+      const gapY = Math.max(safeTop, Math.min(maxGapTop, Math.floor(boardHeight * 0.25 + Math.random() * boardHeight * 0.18)));
       state.pipes.push({ x: 100, gapY, passed: false });
     }
     state.pipes.forEach(p => { p.x -= 2.3; if (!p.passed && p.x < 15) { p.passed = true; state.score += 1; } });
     state.pipes = state.pipes.filter(p => p.x > -20);
-    if (state.y < 0 || state.y > 260) state.over = true;
-    const birdTop = state.y, birdBottom = state.y + 20;
+    if (state.y < 0 || state.y > boardHeight - birdSize) state.over = true;
+    const birdTop = state.y, birdBottom = state.y + birdSize;
     for (const p of state.pipes) {
-      if (18 + 20 > p.x && 18 < p.x + 22) {
-        if (birdTop < p.gapY || birdBottom > p.gapY + 70) state.over = true;
+      if (18 + birdSize > p.x && 18 < p.x + 22) {
+        if (birdTop < p.gapY || birdBottom > p.gapY + gapSize) state.over = true;
       }
     }
     const bird = document.getElementById('flapBird');
@@ -3597,7 +3662,7 @@ function flapStart() {
     if (pipesEl) {
       pipesEl.innerHTML = state.pipes.map(p => '<div style="position:absolute;left:' + p.x + '%;top:0;bottom:0;width:22px;">' +
         '<div style="position:absolute;left:0;top:0;width:100%;height:' + p.gapY + 'px;background:linear-gradient(180deg, rgba(80,190,110,.55), rgba(42,120,72,.85));border:1px solid rgba(124,255,124,.24);border-top:none;border-radius:0 0 12px 12px;"></div>' +
-        '<div style="position:absolute;left:0;top:' + (p.gapY + 70) + 'px;width:100%;bottom:0;background:linear-gradient(180deg, rgba(80,190,110,.55), rgba(42,120,72,.85));border:1px solid rgba(124,255,124,.24);border-bottom:none;border-radius:12px 12px 0 0;"></div>' +
+        '<div style="position:absolute;left:0;top:' + (p.gapY + gapSize) + 'px;width:100%;bottom:0;background:linear-gradient(180deg, rgba(80,190,110,.55), rgba(42,120,72,.85));border:1px solid rgba(124,255,124,.24);border-bottom:none;border-radius:12px 12px 0 0;"></div>' +
       '</div>').join('');
     }
     if (state.over) {
