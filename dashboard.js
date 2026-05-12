@@ -115,16 +115,24 @@ function updateDashboard() {
   setCard('dashCalendar', 'Kalendář', formatCalendarDateLabel(now), getCalendarSpecialText(now), '', false, calendarIcon);
   setCard('dashCountdown', 'Zbývá', active && !showSpecial ? formatDuration(active.end - now) : '—', '', '', false, clockIcon);
 
-  const foodText = status => status.isOpen && status.active ? ('Otevřeno do ' + formatFoodTime(status.active.end)) : 'Zavřeno';
+  const foodText = status => status.isOpen && status.active ? 'Otevřeno' : 'Zavřeno';
   const foodDot = status => status.isOpen ? 'is-open' : 'is-closed';
+  const foodDate = value => {
+    try {
+      return new Intl.DateTimeFormat('cs-CZ', { day: '2-digit', month: '2-digit' }).format(new Date(value)).replace(/\s+/g, '');
+    } catch (err) {
+      const d = new Date(value);
+      return String(d.getDate()).padStart(2, '0') + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.';
+    }
+  };
   const foodMeta = status => {
     if (!status) return '';
     if (status.isOpen && status.active) {
       if (!status.next) return 'Dnes už nic dalšího.';
-      return 'Další termín: ' + formatFoodTime(status.next.start) + ' – ' + formatFoodTime(status.next.end);
+      return 'Další termín\n' + foodDate(status.next.start) + ' ' + formatFoodTime(status.next.start) + ' – ' + formatFoodTime(status.next.end);
     }
     if (!status.next) return 'Rozpis není dostupný.';
-    return 'Další termín: ' + formatFoodTime(status.next.start) + ' – ' + formatFoodTime(status.next.end);
+    return 'Další termín\n' + foodDate(status.next.start) + ' ' + formatFoodTime(status.next.start) + ' – ' + formatFoodTime(status.next.end);
   };
   setCard('dashKantyna', 'Kantýna', foodText(kantyna), foodMeta(kantyna), foodDot(kantyna), true, croissantIcon);
   setCard('dashJidelna', 'Jídelna', foodText(jidelna), foodMeta(jidelna), foodDot(jidelna), true, plateIcon);
@@ -324,17 +332,25 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
     const foodText = (status) => {
       if (!status) return '—';
       if (status.isOpen && status.active) {
-        return typeof formatFoodTime === 'function' ? ('Otevřeno do ' + formatFoodTime(status.active.end)) : 'Otevřeno';
+        return 'Otevřeno';
       }
       return 'Zavřeno';
     };
+    const foodDate = value => {
+      try {
+        return new Intl.DateTimeFormat('cs-CZ', { day: '2-digit', month: '2-digit' }).format(new Date(value)).replace(/\s+/g, '');
+      } catch (err) {
+        const d = new Date(value);
+        return String(d.getDate()).padStart(2, '0') + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.';
+      }
+    };
     const foodMeta = (status) => {
       if (!status) return '';
-      if (status.isOpen && status.active && typeof formatFoodTime === 'function') {
-        if (!status.next) return 'Dnes už nic dalšího.';
-        return 'Další termín: ' + formatFoodTime(status.next.start) + ' – ' + formatFoodTime(status.next.end);
+      if (status.isOpen && status.active) {
+        if (!status.next) return 'Další termín: —';
+        return 'Další termín\n' + foodDate(status.next.start) + ' ' + formatFoodTime(status.next.start) + ' – ' + formatFoodTime(status.next.end);
       }
-      return status.next && typeof formatFoodTime === 'function' ? ('Další termín: ' + formatFoodTime(status.next.start) + ' – ' + formatFoodTime(status.next.end)) : '';
+      return status.next && typeof formatFoodTime === 'function' ? ('Další termín\n' + foodDate(status.next.start) + ' ' + formatFoodTime(status.next.start) + ' – ' + formatFoodTime(status.next.end)) : '';
     };
 
     const hero = document.getElementById('dashHero');

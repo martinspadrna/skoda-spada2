@@ -9,7 +9,96 @@ function setBottomNavActive(pageId) {
   });
 }
 
+function appGoBackFromGesture() {
+  try {
+    const activePage = document.querySelector('.page.active')?.id || 'home';
+    if (document.body.classList.contains('tttOpen') && typeof closeTicTacToeGame === 'function') {
+      closeTicTacToeGame();
+      return true;
+    }
+    if (typeof app !== 'undefined' && app.activeGameShell) {
+      openGamesPage();
+      return true;
+    }
+    if (activePage === 'menu') {
+      hideAppMenu();
+      showPage('home');
+      return true;
+    }
+    if (activePage === 'games') {
+      showPage('home');
+      return true;
+    }
+    if (activePage === 'rotace') {
+      if (typeof app !== 'undefined') {
+        if (app.selectedName) {
+          app.selectedName = null;
+          app.nameTapState = { name: '', count: 0, lastTap: 0 };
+          renderRotace();
+          return true;
+        }
+        if (app.selectedStatsName || app.selectedStatsMachine) {
+          app.selectedStatsName = null;
+          app.selectedStatsMachine = null;
+          if (typeof renderStatsPanel === 'function') renderStatsPanel();
+          return true;
+        }
+        if (app.rotationView && app.rotationView !== 'names') {
+          setRotaceView('names');
+          renderRotace();
+          return true;
+        }
+        if (app.selectedMonth) {
+          app.selectedMonth = null;
+          renderRotace();
+          return true;
+        }
+      }
+      showPage('home');
+      return true;
+    }
+    if (['jidlo', 'soustruhy', 'brusy', 'frezky', 'kalkulacky', 'statistiky'].includes(activePage)) {
+      showPage('home');
+      return true;
+    }
+    if (activePage !== 'home') {
+      showPage('home');
+      return true;
+    }
+  } catch (err) {
+    console.warn('appGoBackFromGesture failed', err);
+  }
+  return false;
+}
 
+(function installAppBackGesture() {
+  if (window.__rotaceAppBackGestureBound) return;
+  window.__rotaceAppBackGestureBound = true;
+  let startX = 0;
+  let startY = 0;
+  let active = false;
+  const reset = () => { active = false; };
+  document.addEventListener('touchstart', (ev) => {
+    if (!ev.touches || ev.touches.length !== 1) return;
+    if (['INPUT', 'TEXTAREA', 'SELECT'].includes((ev.target && ev.target.tagName) || '')) return;
+    const touch = ev.touches[0];
+    if (!touch || touch.clientX > 26) return;
+    startX = touch.clientX;
+    startY = touch.clientY;
+    active = true;
+  }, { passive: true });
+  document.addEventListener('touchend', (ev) => {
+    if (!active) return;
+    const touch = ev.changedTouches && ev.changedTouches[0];
+    reset();
+    if (!touch) return;
+    const dx = touch.clientX - startX;
+    const dy = touch.clientY - startY;
+    if (dx < 72 || Math.abs(dy) > 60 || dx <= Math.abs(dy) * 1.15) return;
+    appGoBackFromGesture();
+  }, { passive: true });
+  document.addEventListener('touchcancel', reset, { passive: true });
+})();
 
 function ensureAppMenuOverlay() {
   let page = document.getElementById('menu');
@@ -1969,22 +2058,18 @@ function tttRender() {
       '  <div class="tttSectionTitle">Režim hry</div>',
       '  <div class="tttToggleRow">',
       '    <button type="button" class="tttBtn' + (state.mode === 'ai' ? ' isActive' : '') + '" data-ttt-mode="ai">Proti AI</button>',
-      '    <button type="button" class="tttBtn' + (state.mode === 'pvp' ? ' isActive' : '') + '" data-ttt-mode="pvp">Proti spoluhráči</button>',
+      '    <button type="button" class="tttBtn' + (state.mode === 'local' ? ' isActive' : '') + '" data-ttt-mode="local">Na jednom mobilu</button>',
+      '  </div>',
+      '  <div class="tttToggleRow" style="margin-top:10px;">',
+      '    <button type="button" class="tttBtn' + (state.mode === 'pvp' ? ' isActive' : '') + '" data-ttt-mode="pvp">Online pozvánka</button>',
+      '    <button type="button" class="tttBtn" id="tttStartBtn" style="width:100%;">' + (state.mode === 'pvp' ? 'Spustit online duel' : (state.mode === 'local' ? 'Hrát na mobilu' : 'Hrát proti AI')) + '</button>',
       '  </div>',
       '</div>',
       '<div class="tttCard"' + (state.mode === 'ai' ? '' : ' style="display:none;"') + '>',
-      '  <div class="tttSectionTitle">Obtížnost AI</div>',
-      '  <div class="tttLevelRow">',
-      '    <button type="button" class="tttBtn' + (state.difficulty === 'noob' ? ' isActive' : '') + '" data-ttt-difficulty="noob">Noob</button>',
-      '    <button type="button" class="tttBtn' + (state.difficulty === 'medium' ? ' isActive' : '') + '" data-ttt-difficulty="medium">Medium</button>',
-      '    <button type="button" class="tttBtn' + (state.difficulty === 'ai' ? ' isActive' : '') + '" data-ttt-difficulty="ai">AI</button>',
-      '  </div>',
-      '  <div class="tttNote">Hrací pole má 10 × 18 políček a vyhrává 5 spojených v řadě.</div>',
+      '  <div class="tttSectionTitle">AI režim</div>',
+      '  <div class="tttNote">Používá se jen nejtvrdší AI. Hrací pole má 10 × 18 políček a vyhrává 5 spojených v řadě.</div>',
       '</div>',
-      '<div class="tttCard">',
-      '  <div class="tttSectionTitle">Spuštění</div>',
-      state.mode === 'pvp' ? '<div id="tttInviteInfo" class="tttNote">Nejdřív vytvoř pozvánku. Odkaz pošli spoluhráči až potom.</div><div class="tttToggleRow"><button type="button" class="tttBtn" id="tttCreateInviteBtn">Vytvořit pozvánku</button><button type="button" class="tttBtn" id="tttJoinInviteBtn">Přijmout pozvánku</button></div><div class="tttCard" style="margin-top:10px;padding:10px 12px;"><div class="tttSectionTitle" style="margin-bottom:6px;">Odkaz na hru</div><div class="tttNote" id="tttInviteUrl" style="word-break:break-all;display:none;"></div><div class="tttToggleRow" style="margin-top:8px;grid-template-columns:1fr 1fr;"><button type="button" class="tttBtn" id="tttCopyInviteBtn">Kopírovat odkaz</button><button type="button" class="tttBtn" id="tttShareInviteBtn">Sdílet</button></div></div>' : '',
-      '  <button type="button" class="tttBtn" id="tttStartBtn" style="width:100%;">' + (state.mode === 'pvp' ? 'Spustit duel' : 'Hrát') + '</button>',
+      state.mode === 'pvp' ? '<div class="tttCard"><div id="tttInviteInfo" class="tttNote">Nejdřív vytvoř pozvánku. Odkaz pošli spoluhráči až potom.</div><div class="tttToggleRow"><button type="button" class="tttBtn" id="tttCreateInviteBtn">Vytvořit pozvánku</button><button type="button" class="tttBtn" id="tttJoinInviteBtn">Přijmout pozvánku</button></div><div class="tttCard" style="margin-top:10px;padding:10px 12px;"><div class="tttSectionTitle" style="margin-bottom:6px;">Odkaz na hru</div><div class="tttNote" id="tttInviteUrl" style="word-break:break-all;display:none;"></div><div class="tttToggleRow" style="margin-top:8px;grid-template-columns:1fr 1fr;"><button type="button" class="tttBtn" id="tttCopyInviteBtn">Kopírovat odkaz</button><button type="button" class="tttBtn" id="tttShareInviteBtn">Sdílet</button></div></div></div>' : '',
       '</div>',
       '<div class="tttCard tttWinHistory">',
       '  <div class="tttSectionTitle">Kdo porazil nejtvrdší AI</div>',
@@ -1996,15 +2081,7 @@ function tttRender() {
     start.querySelectorAll('[data-ttt-mode]').forEach(btn => {
       btn.addEventListener('click', () => {
         state.mode = btn.getAttribute('data-ttt-mode') || 'ai';
-        if (state.mode === 'pvp') state.difficulty = 'ai';
-        tttRender();
-        scheduleTttLayout();
-      });
-    });
-    start.querySelectorAll('[data-ttt-difficulty]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        if (state.mode === 'pvp') return;
-        state.difficulty = btn.getAttribute('data-ttt-difficulty') || 'ai';
+        state.difficulty = 'ai';
         tttRender();
         scheduleTttLayout();
       });
@@ -2094,7 +2171,7 @@ function tttRender() {
       state.hardWinStats = null;
       state.message = state.mode === 'pvp'
         ? (state.online && state.online.status === 'waiting' ? 'Čekám na přijetí pozvánky.' : 'Hraje hráč X.')
-        : 'Hraješ za X. AI je O.';
+        : (state.mode === 'local' ? 'Na řadě je X.' : 'Hraješ za X. AI je O.');
       tttRender();
       scheduleTttLayout();
       if (state.mode === 'pvp' && state.online && state.online.code) {
@@ -2113,7 +2190,7 @@ function tttRender() {
 
   start.style.display = 'none';
   game.style.display = 'flex';
-  status.textContent = state.message || state.onlineStatus || (state.mode === 'pvp' ? 'Hraje hráč X.' : 'Hraješ za X. AI je O.');
+  status.textContent = state.message || state.onlineStatus || (state.mode === 'pvp' ? 'Hraje hráč X.' : (state.mode === 'local' ? 'Na řadě je X.' : 'Hraješ za X. AI je O.'));
 
   const result = tttWinner(state.board);
   const winnerLine = result.line || [];
@@ -2209,14 +2286,14 @@ function tttHandleMove(index) {
     return;
   }
 
-  if (state.mode === 'pvp') {
+  if (state.mode === 'pvp' || state.mode === 'local') {
     state.turn = state.turn === 'X' ? 'O' : 'X';
-    state.message = state.online && state.online.status === 'waiting'
-      ? 'Čekám na přijetí pozvánky.'
-      : (state.turn === 'X' ? 'Hraje hráč X.' : 'Hraje hráč O.');
+    state.message = state.mode === 'pvp'
+      ? (state.online && state.online.status === 'waiting' ? 'Čekám na přijetí pozvánky.' : (state.turn === 'X' ? 'Hraje hráč X.' : 'Hraje hráč O.'))
+      : (state.turn === 'X' ? 'Na řadě je X.' : 'Na řadě je O.');
     tttRender();
     scheduleTttLayout();
-    if (state.online && state.online.code) {
+    if (state.mode === 'pvp' && state.online && state.online.code) {
       void tttPushOnlineSession({ status: state.online.status || 'active' });
     }
     return;
@@ -2300,7 +2377,7 @@ function resetTicTacToeGame(keepScreen) {
   state.lastMoveMark = null;
   state.hardWinPrompt = false;
   state.hardWinStats = null;
-  state.message = state.mode === 'pvp' ? 'Hraje hráč X.' : 'Hraješ za X. AI je O.';
+  state.message = state.mode === 'pvp' ? 'Hraje hráč X.' : (state.mode === 'local' ? 'Na řadě je X.' : 'Hraješ za X. AI je O.');
   if (!keepScreen) state.screen = 'start';
   tttRender();
   scheduleTttLayout();
@@ -4036,6 +4113,9 @@ function gamesBindSwipeControl(el, onSwipe) {
       startX = ev.clientX;
       startY = ev.clientY;
       active = true;
+      try {
+        if (typeof el.setPointerCapture === 'function') el.setPointerCapture(ev.pointerId);
+      } catch (err) {}
     }, { passive: true });
 
     el.addEventListener('pointerup', (ev) => {
@@ -4044,6 +4124,10 @@ function gamesBindSwipeControl(el, onSwipe) {
     }, { passive: true });
 
     el.addEventListener('pointercancel', () => {
+      active = false;
+    }, { passive: true });
+
+    el.addEventListener('lostpointercapture', () => {
       active = false;
     }, { passive: true });
   } else {
@@ -4376,9 +4460,12 @@ function renderGameSnake() {
     board.style.webkitTouchCallout = 'none';
     board.style.userSelect = 'none';
   }
+  body.style.touchAction = 'none';
+  body.style.webkitTouchCallout = 'none';
+  body.style.userSelect = 'none';
+  body.style.overscrollBehavior = 'contain';
   if (navigator && navigator.maxTouchPoints > 0 && !snakeIsJoystickEnabled()) {
     snakeSetJoystickEnabled(true);
-    return;
   }
   const resetSnake = () => {
     if (state.timer) clearInterval(state.timer);
@@ -4387,7 +4474,7 @@ function renderGameSnake() {
     snakeStart();
     renderGameSnake();
   };
-  gamesBindSwipeControl(board, (dir) => {
+  gamesBindSwipeControl(board || body, (dir) => {
     const current = app.gamesSnake;
     if (current && current.over) {
       resetSnake();

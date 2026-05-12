@@ -666,9 +666,9 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
 </style>
 
 
-<style id="v360-pre-mobile-polish">
+<style id="v362-pre-mobile-polish">
   #games{padding-bottom:128px !important;}
-  /* v1(360) mobile polish: tighter bottom bar + names at the bottom on rotace */
+  /* v1(361) mobile polish: tighter bottom bar + names at the bottom on rotace */
   .bottomNav{
     padding:3px 5px calc(3px + env(safe-area-inset-bottom)) !important;
     gap:5px !important;
@@ -724,8 +724,8 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
       gap:7px !important;
     }
   }
-<style id="v360-legacy-mobile-polish">
-  /* v1(360) final mobile polish: tighter bottom bar, rotace preview and stats spacing */
+<style id="v362-legacy-mobile-polish">
+  /* v1(361) final mobile polish: tighter bottom bar, rotace preview and stats spacing */
   .bottomNav{
     padding:2px 4px calc(2px + env(safe-area-inset-bottom)) !important;
     gap:3px !important;
@@ -837,8 +837,8 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
 </style>
 
 
-<style id="v360-final-mobile-polish">
-  /* v1(360) final mobile polish: bottom bar, games padding, rotace preview, stats compact, snake joystick */
+<style id="v362-final-mobile-polish">
+  /* v1(361) final mobile polish: bottom bar, games padding, rotace preview, stats compact, snake joystick */
   .bottomNav{
     width:calc(100% - 4px) !important;
     padding:1px 0 calc(1px + env(safe-area-inset-bottom)) !important;
@@ -1165,7 +1165,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
 </style>
 
 
-<style id="v360-nav-rotace-overrides">
+<style id="v362-nav-rotace-overrides">
   .bottomNav{
     padding:0 0 calc(0px + env(safe-area-inset-bottom)) !important;
     gap:0 !important;
@@ -1244,7 +1244,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   }
 </style>
 
-<style id="v360-final-mobile-polish">
+<style id="v362-final-mobile-polish">
   .bottomNav{
     padding:1px 2px calc(1px + env(safe-area-inset-bottom)) !important;
     gap:2px !important;
@@ -1412,6 +1412,408 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
       grid-template-columns:repeat(auto-fit, minmax(70px, 1fr)) !important;
       gap:7px !important;
     }
+  }
+</style>
+
+
+
+<style id="v362-mobile-polish">
+  .bottomNav{
+    padding:1px 1px calc(1px + env(safe-area-inset-bottom)) !important;
+    gap:2px !important;
+    border-radius:14px !important;
+  }
+  .bottomNavScroll{
+    gap:2px !important;
+  }
+  .bottomNavBtn{
+    flex:0 0 50px !important;
+    width:50px !important;
+    min-width:50px !important;
+    max-width:50px !important;
+    min-height:40px !important;
+    padding:0 0 0 !important;
+  }
+  .bottomNavBtn .bottomNavIcon,
+  .bottomNavBtn .bottomNavIcon svg{
+    width:22px !important;
+    height:22px !important;
+  }
+  .bottomNavBtn .bottomNavIcon{
+    flex:0 0 22px !important;
+  }
+  .bottomNavBtn .bottomNavLabel{
+    font-size:8px !important;
+    line-height:1 !important;
+  }
+  .bottomNavBtn.active{
+    transform:translateY(-4px) scale(1.12) !important;
+    z-index:12 !important;
+  }
+  .bottomNavBtn.active::before{
+    inset:-3px !important;
+  }
+  .bottomNavMenuBtn{
+    flex:0 0 20px !important;
+    width:20px !important;
+    min-width:20px !important;
+    max-width:20px !important;
+    padding:0 !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+  }
+  .bottomNavMenuBtn .moreIcon{
+    width:14px !important;
+    height:14px !important;
+    transform:translateY(-1px) !important;
+    margin:0 auto !important;
+  }
+
+  #rotaceNamesPanel .personCard{
+    align-items:flex-start !important;
+  }
+  #rotaceNamesPanel .rotaceQuickCards.rotacePreviewGrid{
+    display:grid !important;
+    grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
+    gap:6px !important;
+  }
+  #rotaceNamesPanel .rotacePersonMeta{
+    margin-top:4px !important;
+    margin-bottom:6px !important;
+    font-size:11px !important;
+    line-height:1.1 !important;
+  }
+  #rotace .rotaceQuickStack{
+    display:flex !important;
+    flex-direction:column !important;
+    gap:6px !important;
+  }
+  #rotace .rotaceQuickStack .rotaceMiniCard{
+    width:100% !important;
+  }
+
+  #statsNameGrid .listItem,
+  #statsNameGrid .statsNameTile,
+  #statsMachineGrid .listItem,
+  #statsMachineGrid .statsMachineTile{
+    min-height:40px !important;
+    padding:6px 2px !important;
+    min-width:0 !important;
+  }
+  #statsNameGrid .statsTileTitle,
+  #statsMachineGrid .statsTileTitle{
+    font-size:13px !important;
+    line-height:1.05 !important;
+    text-align:center !important;
+  }
+  #statsMachineGrid .statsTileTitle{
+    transform:scaleX(.89) !important;
+    transform-origin:center !important;
+    display:inline-block !important;
+  }
+  #statsMachineGrid.listGrid{
+    grid-template-columns:repeat(5, minmax(0, 1fr)) !important;
+    gap:2px !important;
+  }
+  #stats .statsSummary,
+  #statsNameView .statsSummary,
+  #statsMachineView .statsSummary{
+    display:grid !important;
+    grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
+    gap:8px !important;
+  }
+  #stats .statsSummary .tile,
+  #statsNameView .statsSummary .tile,
+  #statsMachineView .statsSummary .tile{
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:center !important;
+    justify-content:center !important;
+    text-align:center !important;
+  }
+  #stats .statsSummary .smallText,
+  #statsNameView .statsSummary .smallText,
+  #statsMachineView .statsSummary .smallText{
+    text-align:center !important;
+  }
+  .statsSummaryValue,
+  .statsSummaryValueCompact{
+    text-align:center !important;
+  }
+
+  #games .gamesGrid{
+    gap:7px !important;
+  }
+  #games .gamesLaunchTile{
+    min-height:92px !important;
+  }
+  #games .gamesStatsFolder{
+    margin-top:8px !important;
+    margin-bottom:10px !important;
+  }
+  #games .gamesStatsFolder > summary{
+    padding:8px 10px !important;
+  }
+  #games .gamesStatsGrid{
+    gap:7px !important;
+    padding:0 8px 8px !important;
+  }
+  #games .gamesStatsCard{
+    padding:9px !important;
+  }
+  #games .gamesStatsCardName{
+    font-size:12px !important;
+  }
+  #games .gamesStatsCardTotal{
+    font-size:10px !important;
+  }
+  #games .gamesStatsCardLine{
+    font-size:9px !important;
+  }
+  #games .gamesStatsCardMeta{
+    font-size:9px !important;
+    line-height:1.15 !important;
+    color:rgba(231,255,240,.68) !important;
+  }
+  #games .gameBoard.gameSnakeBoard{
+    touch-action:none !important;
+    overscroll-behavior:contain !important;
+  }
+  #games .snakeJoystickDock{
+    right:6px !important;
+    bottom:6px !important;
+  }
+  #games .snakeJoystickToggle{
+    width:56px !important;
+    min-width:56px !important;
+    height:56px !important;
+    min-height:56px !important;
+  }
+  #games .snakeJoystickPad{
+    grid-template-columns:repeat(3, 42px) !important;
+    grid-template-rows:repeat(3, 42px) !important;
+  }
+  #games .snakeJoystickPad .gameControlBtn,
+  #games .snakeJoystickCenter{
+    min-width:42px !important;
+    min-height:42px !important;
+    width:42px !important;
+    height:42px !important;
+  }
+  #games .gamePad .gameControlBtn{
+    min-width:50px !important;
+    min-height:50px !important;
+  }
+
+  .tttStartScreen .tttCard{
+    padding:12px !important;
+  }
+  .tttStartScreen .tttSectionTitle{
+    margin-bottom:10px !important;
+  }
+  .tttToggleRow,
+  .tttLevelRow{
+    grid-template-columns:repeat(1, minmax(0, 1fr)) !important;
+  }
+  .tttBoardWrap{
+    inset:52px 8px 74px !important;
+  }
+  .tttBoard{
+    --tttCellSize: clamp(19px, 5.2vw, 24px) !important;
+  }
+}
+</style>
+
+
+<style id="v362-final-fix">
+  .bottomNav{
+    padding:0 0 calc(0px + env(safe-area-inset-bottom)) !important;
+    gap:1px !important;
+    border-radius:12px !important;
+  }
+  .bottomNavScroll{
+    gap:1px !important;
+    padding:0 2px !important;
+  }
+  .bottomNavBtn{
+    flex:0 0 46px !important;
+    width:46px !important;
+    min-width:46px !important;
+    max-width:46px !important;
+    min-height:38px !important;
+    padding:0 !important;
+  }
+  .bottomNavBtn .bottomNavIcon,
+  .bottomNavBtn .bottomNavIcon svg{
+    width:21px !important;
+    height:21px !important;
+  }
+  .bottomNavBtn .bottomNavIcon{
+    flex:0 0 21px !important;
+  }
+  .bottomNavBtn .bottomNavLabel{
+    font-size:8px !important;
+    line-height:1 !important;
+  }
+  .bottomNavBtn.active{
+    transform:translateY(-5px) scale(1.15) !important;
+    z-index:12 !important;
+  }
+  .bottomNavBtn.active::before{
+    inset:-4px !important;
+  }
+  .bottomNavMenuBtn{
+    flex:0 0 18px !important;
+    width:18px !important;
+    min-width:18px !important;
+    max-width:18px !important;
+    padding:0 !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+  }
+  .bottomNavMenuBtn .moreIcon{
+    width:12px !important;
+    height:12px !important;
+    transform:translateY(0) !important;
+    margin:0 auto !important;
+    display:block !important;
+  }
+  .bottomNavGamesBtn{margin-right:0 !important;}
+
+  .dashboardMeta{
+    white-space:pre-line !important;
+    line-height:1.08 !important;
+  }
+
+  #rotace #personView.rotaceQuickStack,
+  #rotace .rotaceQuickStack{
+    display:flex !important;
+    flex-direction:column !important;
+    gap:6px !important;
+  }
+  #rotace .rotaceQuickStack .rotaceMiniCard{
+    width:100% !important;
+  }
+
+  #statsNameGrid .listItem,
+  #statsNameGrid .statsNameTile,
+  #statsMachineGrid .listItem,
+  #statsMachineGrid .statsMachineTile{
+    min-height:34px !important;
+    padding:4px 2px !important;
+    min-width:0 !important;
+  }
+  #statsNameGrid .statsTileTitle,
+  #statsMachineGrid .statsTileTitle{
+    font-size:13px !important;
+    line-height:1.05 !important;
+    text-align:center !important;
+  }
+  #statsMachineGrid .statsTileTitle{
+    transform:scaleX(.84) !important;
+    transform-origin:center !important;
+    display:inline-block !important;
+    white-space:nowrap !important;
+  }
+  #statsMachineGrid.listGrid{
+    grid-template-columns:repeat(5, minmax(0, 1fr)) !important;
+    gap:2px !important;
+  }
+  #stats .statsSummary,
+  #statsNameView .statsSummary,
+  #statsMachineView .statsSummary{
+    display:grid !important;
+    grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
+    gap:8px !important;
+  }
+  #stats .statsSummary .tile,
+  #statsNameView .statsSummary .tile,
+  #statsMachineView .statsSummary .tile{
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:center !important;
+    justify-content:center !important;
+    text-align:center !important;
+  }
+  #stats .statsSummary .smallText,
+  #statsNameView .statsSummary .smallText,
+  #statsMachineView .statsSummary .smallText,
+  #stats .statsSummaryValue,
+  #statsNameView .statsSummaryValue,
+  #statsMachineView .statsSummaryValue,
+  #stats .statsSummaryValueCompact,
+  #statsNameView .statsSummaryValueCompact,
+  #statsMachineView .statsSummaryValueCompact{
+    text-align:center !important;
+  }
+
+  #games .gamesStatsFolder{
+    margin-top:6px !important;
+    margin-bottom:6px !important;
+  }
+  #games .gamesStatsFolder > summary{
+    padding:8px 10px !important;
+  }
+  #games .gamesStatsGrid{
+    padding:0 8px 8px !important;
+    gap:6px !important;
+  }
+  #games .gamesStatsCard{
+    padding:8px !important;
+  }
+  #games .gamesStatsCardName{
+    font-size:12px !important;
+  }
+  #games .gamesStatsCardTotal,
+  #games .gamesStatsCardLine,
+  #games .gamesStatsCardMeta{
+    font-size:9px !important;
+    line-height:1.12 !important;
+  }
+
+  #games .gameSnakeBoard{
+    touch-action:none !important;
+    overscroll-behavior:contain !important;
+  }
+  #games .snakeJoystickDock{
+    right:6px !important;
+    bottom:6px !important;
+  }
+  #games .snakeJoystickToggle{
+    width:56px !important;
+    min-width:56px !important;
+    height:56px !important;
+    min-height:56px !important;
+  }
+  #games .snakeJoystickPad{
+    grid-template-columns:repeat(3, 42px) !important;
+    grid-template-rows:repeat(3, 42px) !important;
+  }
+  #games .snakeJoystickPad .gameControlBtn,
+  #games .snakeJoystickCenter{
+    min-width:42px !important;
+    min-height:42px !important;
+    width:42px !important;
+    height:42px !important;
+  }
+
+  .tttStartScreen .tttCard{
+    padding:12px !important;
+  }
+  .tttStartScreen .tttSectionTitle{
+    margin-bottom:10px !important;
+  }
+  .tttToggleRow,
+  .tttLevelRow{
+    grid-template-columns:repeat(1, minmax(0, 1fr)) !important;
+  }
+  .tttBoardWrap{
+    inset:52px 8px 74px !important;
+  }
+  .tttBoard{
+    --tttCellSize: clamp(19px, 5.2vw, 24px) !important;
   }
 </style>
 

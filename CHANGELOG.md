@@ -1,6 +1,6 @@
 # Rotace a kalkulačky
 
-## v.1(360)
+## v.1(362)
 - Ztišily se zbytečné alerty v herní části a admin ukládání běží víc inline.
 - Piškvorky, 2048, Snake i Flap Bird zůstávají v kompaktním mobile-first layoutu.
 - Herní sync, leaderboardy a Supabase napojení dál drží poslední stabilní základ.

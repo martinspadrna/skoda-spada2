@@ -342,7 +342,7 @@ function renderUpcomingShiftsPreview(limit = 10) {
 
   const visible = previewEntries.slice(0, Math.max(1, limit));
   const totalPeople = names.length || 10;
-  const presentCount = visible.filter(entry => !entry.absence).length;
+  const presentCount = previewEntries.filter(entry => !entry.absence).length;
   const title = 'Příští směny';
 
   personView.innerHTML = [
