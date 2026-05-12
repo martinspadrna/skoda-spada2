@@ -20,6 +20,140 @@
 <script src="data.js"></script>
 
 <link rel="stylesheet" href="styles.css">
+
+<style id="v364-hotfix-overrides">
+  /* Dashboard food dots */
+  #home .dashboardDot,
+  #dashKantyna .dashboardDot,
+  #dashJidelna .dashboardDot{
+    width:18px !important;
+    height:18px !important;
+    min-width:18px !important;
+    min-height:18px !important;
+    border-radius:999px !important;
+    box-shadow:0 0 0 1px rgba(255,255,255,.10), 0 0 10px rgba(124,255,124,.18) !important;
+  }
+  #home .dashboardDot.is-open,
+  #dashKantyna .dashboardDot.is-open,
+  #dashJidelna .dashboardDot.is-open{
+    background:radial-gradient(circle at 35% 35%, #f6fff6 0%, #6bff6b 28%, #17c617 60%, #0b6e0b 100%) !important;
+    box-shadow:0 0 0 1px rgba(255,255,255,.14), 0 0 12px rgba(71,255,71,.42), 0 0 24px rgba(71,255,71,.24) !important;
+  }
+  #home .dashboardDot.is-closed,
+  #dashKantyna .dashboardDot.is-closed,
+  #dashJidelna .dashboardDot.is-closed{
+    background:radial-gradient(circle at 35% 35%, #ffd9d9 0%, #ff4f4f 24%, #ff1111 56%, #b00000 100%) !important;
+    box-shadow:0 0 0 1px rgba(255,255,255,.14), 0 0 12px rgba(255,34,34,.64), 0 0 28px rgba(255,0,0,.36) !important;
+    filter:saturate(1.45) brightness(1.04) contrast(1.12) !important;
+  }
+
+  /* Bottom bar: 50% bigger icons, still compact */
+  .bottomNav{
+    padding:1px 2px calc(1px + env(safe-area-inset-bottom)) !important;
+    gap:2px !important;
+  }
+  .bottomNavBtn{
+    flex:0 0 62px !important;
+    width:62px !important;
+    min-width:62px !important;
+    max-width:62px !important;
+    min-height:42px !important;
+    padding:0 1px 0 !important;
+  }
+  .bottomNavBtn .bottomNavIcon,
+  .bottomNavBtn .bottomNavIcon svg{
+    width:33px !important;
+    height:33px !important;
+  }
+  .bottomNavBtn .bottomNavIcon{
+    flex:0 0 33px !important;
+  }
+  .bottomNavBtn .bottomNavLabel{
+    font-size:8px !important;
+    line-height:1 !important;
+  }
+  .bottomNavBtn.active{
+    transform:translateY(-4px) scale(1.08) !important;
+    z-index:12 !important;
+  }
+  .bottomNavBtn.active::before{
+    inset:-3px !important;
+  }
+  .bottomNavMenuBtn{
+    flex:0 0 24px !important;
+    width:24px !important;
+    min-width:24px !important;
+    max-width:24px !important;
+    padding:0 !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+  }
+  .bottomNavMenuBtn .moreIcon{
+    width:16px !important;
+    height:16px !important;
+    margin:0 auto !important;
+  }
+
+  /* Rotace: trochu menší jména dole */
+  #rotaceNamesPanel .listItem{
+    font-size:11px !important;
+    min-height:30px !important;
+    padding:4px 6px !important;
+    line-height:1.05 !important;
+  }
+
+  /* Statistiky: větší tile prvky pro jména i stroje */
+  #statsNameGrid .listItem,
+  #statsNameGrid .statsNameTile,
+  #statsMachineGrid .listItem,
+  #statsMachineGrid .statsMachineTile{
+    min-height:42px !important;
+    padding:6px 4px !important;
+  }
+  #statsNameGrid .statsTileMain,
+  #statsMachineGrid .statsTileMain{
+    align-items:center !important;
+    justify-content:center !important;
+    text-align:center !important;
+  }
+  #statsNameGrid .statsTileTitle,
+  #statsMachineGrid .statsTileTitle{
+    font-size:14px !important;
+    line-height:1.05 !important;
+  }
+  #statsMachineGrid .statsTileTitle{
+    transform:scaleX(.95) !important;
+    transform-origin:center !important;
+    display:inline-block !important;
+  }
+  #statsMachineGrid.listGrid{
+    grid-template-columns:repeat(5, minmax(0, 1fr)) !important;
+    gap:3px !important;
+  }
+  #stats .statsSummary,
+  #statsNameView .statsSummary,
+  #statsMachineView .statsSummary{
+    display:grid !important;
+    grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
+    gap:8px !important;
+  }
+  #stats .statsSummary .tile,
+  #statsNameView .statsSummary .tile,
+  #statsMachineView .statsSummary .tile{
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:center !important;
+    justify-content:center !important;
+    text-align:center !important;
+  }
+
+  /* tiny extra insurance for mobile safe-area */
+  #rotaceNamesPanel.active{
+    padding-bottom:calc(14px + env(safe-area-inset-bottom)) !important;
+  }
+</style>
+
 </head>
 
 <body>
@@ -477,6 +611,139 @@
 </div>
 
 
+
+<style id="v363-overrides">
+  .bottomNav{
+    z-index: 1200 !important;
+  }
+  .bottomNavBtn{
+    flex:0 0 66px !important;
+    width:66px !important;
+    min-width:66px !important;
+    max-width:66px !important;
+    min-height:48px !important;
+    padding:2px 4px 1px !important;
+  }
+  .bottomNavBtn .bottomNavIcon,
+  .bottomNavBtn .bottomNavIcon svg{
+    width:34px !important;
+    height:34px !important;
+  }
+  .bottomNavBtn .bottomNavIcon{
+    flex:0 0 34px !important;
+  }
+  .bottomNavBtn .bottomNavLabel{
+    font-size:9px !important;
+    line-height:1 !important;
+  }
+  .bottomNavBtn.active{
+    transform:translateY(-4px) scale(1.04) !important;
+  }
+  .bottomNavBtn.active .bottomNavIcon{
+    transform:translateY(-1px) scale(1.08) !important;
+  }
+  .bottomNavMenuBtn{
+    flex:0 0 42px !important;
+    width:42px !important;
+    min-width:42px !important;
+    max-width:42px !important;
+  }
+  .bottomNavMenuBtn .moreIcon{
+    width:18px !important;
+    height:18px !important;
+    transform:translateY(-2px) !important;
+  }
+
+  body.tttOpen .bottomNav{
+    z-index: 10020 !important;
+  }
+  body.tttOpen #tttOverlay{
+    inset: 0 0 calc(70px + env(safe-area-inset-bottom)) 0 !important;
+  }
+
+  #rotaceNamesPanel{
+    padding-bottom: calc(10px + env(safe-area-inset-bottom)) !important;
+  }
+  #rotaceNamesPanel .listItem{
+    min-height:52px !important;
+    padding:8px 10px !important;
+  }
+  #rotaceNamesPanel .rotaceTileTitle{
+    font-size:15px !important;
+    line-height:1.05 !important;
+  }
+
+  #statsNameGrid .listItem,
+  #statsMachineGrid .listItem{
+    min-height:52px !important;
+    padding:8px 10px !important;
+    justify-content:center !important;
+    text-align:center !important;
+  }
+  #statsNameGrid .statsTileMain,
+  #statsMachineGrid .statsTileMain{
+    width:100% !important;
+    justify-content:center !important;
+    align-items:center !important;
+  }
+  #statsNameGrid .statsTileTitle,
+  #statsMachineGrid .statsTileTitle{
+    font-size:15px !important;
+    line-height:1.05 !important;
+    text-align:center !important;
+  }
+  #statsMachineGrid.listGrid,
+  #statsNameGrid.listGrid{
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    gap:6px !important;
+  }
+
+  #games .gameSnakeBoard{
+    position:relative !important;
+  }
+  #games .snakeJoystickDock{
+    right:6px !important;
+    bottom:6px !important;
+  }
+  #games .snakeJoystickToggle{
+    width:58px !important;
+    min-width:58px !important;
+    height:58px !important;
+    min-height:58px !important;
+  }
+  #games .snakeJoystickPad{
+    grid-template-columns:repeat(3, 44px) !important;
+    grid-template-rows:repeat(3, 44px) !important;
+  }
+  #games .snakeJoystickPad .gameControlBtn,
+  #games .snakeJoystickCenter{
+    min-width:44px !important;
+    min-height:44px !important;
+    width:44px !important;
+    height:44px !important;
+  }
+
+  @media (max-width: 700px){
+    #rotaceNamesPanel .listItem,
+    #statsNameGrid .listItem,
+    #statsMachineGrid .listItem{
+      min-height:48px !important;
+    }
+    .bottomNavBtn{
+      flex-basis:62px !important;
+      width:62px !important;
+      min-width:62px !important;
+      max-width:62px !important;
+    }
+    .bottomNavMenuBtn{
+      flex-basis:42px !important;
+      width:42px !important;
+      min-width:42px !important;
+      max-width:42px !important;
+    }
+  }
+</style>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="app.js"></script>
 <nav class="bottomNav" aria-label="Spodní navigace">
@@ -666,7 +933,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
 </style>
 
 
-<style id="v362-pre-mobile-polish">
+<style id="v363-pre-mobile-polish">
   #games{padding-bottom:128px !important;}
   /* v1(361) mobile polish: tighter bottom bar + names at the bottom on rotace */
   .bottomNav{
@@ -724,7 +991,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
       gap:7px !important;
     }
   }
-<style id="v362-legacy-mobile-polish">
+<style id="v363-legacy-mobile-polish">
   /* v1(361) final mobile polish: tighter bottom bar, rotace preview and stats spacing */
   .bottomNav{
     padding:2px 4px calc(2px + env(safe-area-inset-bottom)) !important;
@@ -837,7 +1104,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
 </style>
 
 
-<style id="v362-final-mobile-polish">
+<style id="v363-final-mobile-polish">
   /* v1(361) final mobile polish: bottom bar, games padding, rotace preview, stats compact, snake joystick */
   .bottomNav{
     width:calc(100% - 4px) !important;
@@ -1165,7 +1432,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
 </style>
 
 
-<style id="v362-nav-rotace-overrides">
+<style id="v363-nav-rotace-overrides">
   .bottomNav{
     padding:0 0 calc(0px + env(safe-area-inset-bottom)) !important;
     gap:0 !important;
@@ -1244,7 +1511,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   }
 </style>
 
-<style id="v362-final-mobile-polish">
+<style id="v363-final-mobile-polish">
   .bottomNav{
     padding:1px 2px calc(1px + env(safe-area-inset-bottom)) !important;
     gap:2px !important;
@@ -1417,7 +1684,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
 
 
 
-<style id="v362-mobile-polish">
+<style id="v363-mobile-polish">
   .bottomNav{
     padding:1px 1px calc(1px + env(safe-area-inset-bottom)) !important;
     gap:2px !important;
@@ -1626,7 +1893,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
 </style>
 
 
-<style id="v362-final-fix">
+<style id="v363-final-fix">
   .bottomNav{
     padding:0 0 calc(0px + env(safe-area-inset-bottom)) !important;
     gap:1px !important;

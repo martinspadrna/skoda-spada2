@@ -2050,6 +2050,12 @@ function tttRender() {
   const status = overlay.querySelector('#tttStatus');
   const boardEl = overlay.querySelector('#tttBoard');
 
+  const tttHasResumeGame = () => {
+    if (state.gameOver) return false;
+    if (state.mode === 'pvp' && state.online && state.online.code) return true;
+    return Array.isArray(state.board) && state.board.some(cell => !!cell);
+  };
+
   if (state.screen === 'start') {
     start.style.display = 'flex';
     game.style.display = 'none';
@@ -2064,6 +2070,7 @@ function tttRender() {
       '    <button type="button" class="tttBtn' + (state.mode === 'pvp' ? ' isActive' : '') + '" data-ttt-mode="pvp">Online pozvánka</button>',
       '    <button type="button" class="tttBtn" id="tttStartBtn" style="width:100%;">' + (state.mode === 'pvp' ? 'Spustit online duel' : (state.mode === 'local' ? 'Hrát na mobilu' : 'Hrát proti AI')) + '</button>',
       '  </div>',
+      tttHasResumeGame() ? '<button type="button" class="tttBtn" id="tttResumeBtn">Pokračovat v rozehrané hře</button>' : '',
       '</div>',
       '<div class="tttCard"' + (state.mode === 'ai' ? '' : ' style="display:none;"') + '>',
       '  <div class="tttSectionTitle">AI režim</div>',
@@ -2138,6 +2145,16 @@ function tttRender() {
         }
       } catch (err) {
         console.warn('TTT create invite failed', err);
+      }
+    });
+    start.querySelector('#tttResumeBtn')?.addEventListener('click', () => {
+      state.screen = 'game';
+      state.message = state.message || (state.mode === 'pvp' ? 'Hraje hráč X.' : (state.mode === 'local' ? 'Na řadě je X.' : 'Hraješ za X. AI je O.'));
+      tttRender();
+      scheduleTttLayout();
+      if (state.mode === 'pvp' && state.online && state.online.code) {
+        tttStartOnlineSyncLoop();
+        void tttSyncOnlineSession(true);
       }
     });
     start.querySelector('#tttJoinInviteBtn')?.addEventListener('click', async () => {
@@ -2412,29 +2429,11 @@ function openTicTacToeGame() {
   const overlay = ensureTicTacToeOverlay();
   document.body.classList.remove('gamesOpen');
   const state = tttGetState();
-  const hasOnlineSession = !!(state.online && state.online.code);
-  if (!hasOnlineSession) {
-    state.screen = 'start';
-    state.board = Array(TTT_TOTAL_CELLS).fill('');
-    state.turn = 'X';
-    state.gameOver = false;
-    state.winner = null;
-    state.startedAt = 0;
-    state.moveCount = 0;
-    state.moveCountX = 0;
-    state.moveCountO = 0;
-    state.lastMoveIndex = null;
-    state.lastMoveMark = null;
-    state.hardWinPrompt = false;
-    state.hardWinStats = null;
-    state.message = '';
-  } else {
-    state.screen = 'game';
-    state.message = state.message || (state.online.status === 'waiting' ? 'Čekám na přijetí pozvánky.' : 'Připojuji probíhající duel.');
-  }
+  state.screen = 'start';
+  state.message = state.message || '';
   overlay.classList.add('isVisible');
   document.body.classList.add('tttOpen');
-  if (hasOnlineSession) {
+  if (state.online && state.online.code) {
     tttStartOnlineSyncLoop();
     void tttSyncOnlineSession(true);
   }
@@ -3624,6 +3623,123 @@ function gamesGetActiveAccount() {
   return profile.accounts[profile.activeAccountId] || null;
 }
 
+function gamesParseRemoteTimestamp(value) {
+  const ts = Date.parse(String(value || ''));
+  return Number.isFinite(ts) ? ts : 0;
+}
+
+async function gamesSyncProfileFromRemote(force = false) {
+  const bridge = window.RotationSupabaseBridge;
+  if (!bridge || typeof bridge.loadGameAccounts !== 'function' || typeof bridge.loadGameStats !== 'function') return null;
+  if (typeof navigator !== 'undefined' && !navigator.onLine) return null;
+
+  try {
+    const profile = gamesGetProfile();
+    const [remoteAccounts, tttRows, g2048Rows, snakeRows, flapRows] = await Promise.all([
+      bridge.loadGameAccounts().catch(() => []),
+      bridge.loadGameStats('ttt', 50).catch(() => []),
+      bridge.loadGameStats('2048', 50).catch(() => []),
+      bridge.loadGameStats('snake', 50).catch(() => []),
+      bridge.loadGameStats('flap', 50).catch(() => [])
+    ]);
+
+    const remoteNameMap = new Map((Array.isArray(remoteAccounts) ? remoteAccounts : []).map((row) => [String(row && row.account_number ? row.account_number : '').trim(), String(row && row.full_name ? row.full_name : '').trim()]));
+    const remoteMap = {
+      ttt: new Map(),
+      g2048: new Map(),
+      snake: new Map(),
+      flap: new Map()
+    };
+
+    const addRows = (key, rows, toValue) => {
+      (Array.isArray(rows) ? rows : []).forEach((row) => {
+        const accountId = String(row && (row.account_number ?? row.accountNumber ?? row.id) ? (row.account_number ?? row.accountNumber ?? row.id) : '').trim();
+        if (!accountId) return;
+        const updatedAt = gamesParseRemoteTimestamp(row && (row.updated_at ?? row.last_played_at ?? row.created_at));
+        const value = toValue(row);
+        const current = remoteMap[key].get(accountId);
+        if (!current || updatedAt >= current.updatedAt) {
+          remoteMap[key].set(accountId, { row, updatedAt, value });
+        }
+      });
+    };
+
+    addRows('ttt', tttRows, (row) => ({
+      plays: Number(row.games_played || row.plays || row.points || 0) || 0,
+      wins: Number(row.wins || 0) || 0,
+      losses: Number(row.losses || 0) || 0,
+      draws: Number(row.draws || 0) || 0
+    }));
+    addRows('g2048', g2048Rows, (row) => ({
+      plays: Number(row.games_played || row.plays || 0) || 0,
+      bestScore: Number(row.points || row.best_score || row.bestScore || 0) || 0
+    }));
+    addRows('snake', snakeRows, (row) => ({
+      plays: Number(row.games_played || row.plays || 0) || 0,
+      bestScore: Number(row.points || row.best_score || row.bestScore || 0) || 0
+    }));
+    addRows('flap', flapRows, (row) => ({
+      plays: Number(row.games_played || row.plays || 0) || 0,
+      bestScore: Number(row.points || row.best_score || row.bestScore || 0) || 0
+    }));
+
+    let changed = false;
+    Object.values(profile.accounts || {}).forEach((acc) => {
+      if (!acc) return;
+      const remoteName = remoteNameMap.get(String(acc.id || '').trim());
+      if (remoteName && remoteName !== acc.name) {
+        acc.name = remoteName;
+        changed = true;
+      }
+      const localUpdated = Number(acc.updatedAt || 0) || 0;
+
+      const sync = (key, apply) => {
+        const remote = remoteMap[key].get(String(acc.id || '').trim());
+        if (!remote) return;
+        if (!force && remote.updatedAt < localUpdated) return;
+        const next = apply(remote.row, remote.value);
+        if (!next) return;
+        acc.stats[key] = Object.assign({}, acc.stats[key], next);
+        acc.updatedAt = Math.max(Number(acc.updatedAt || 0) || 0, remote.updatedAt || Date.now());
+        changed = true;
+      };
+
+      sync('ttt', (row, value) => ({
+        plays: value.plays,
+        wins: value.wins,
+        losses: value.losses,
+        draws: value.draws,
+        lastPlayedAt: gamesParseRemoteTimestamp(row.last_played_at || row.updated_at || row.created_at) || acc.updatedAt || Date.now()
+      }));
+      sync('g2048', (row, value) => ({
+        plays: value.plays,
+        bestScore: Math.max(Number(acc.stats && acc.stats.g2048 && acc.stats.g2048.bestScore || 0) || 0, value.bestScore || 0),
+        lastPlayedAt: gamesParseRemoteTimestamp(row.last_played_at || row.updated_at || row.created_at) || acc.updatedAt || Date.now()
+      }));
+      sync('snake', (row, value) => ({
+        plays: value.plays,
+        bestScore: Math.max(Number(acc.stats && acc.stats.snake && acc.stats.snake.bestScore || 0) || 0, value.bestScore || 0),
+        lastPlayedAt: gamesParseRemoteTimestamp(row.last_played_at || row.updated_at || row.created_at) || acc.updatedAt || Date.now()
+      }));
+      sync('flap', (row, value) => ({
+        plays: value.plays,
+        bestScore: Math.max(Number(acc.stats && acc.stats.flap && acc.stats.flap.bestScore || 0) || 0, value.bestScore || 0),
+        lastPlayedAt: gamesParseRemoteTimestamp(row.last_played_at || row.updated_at || row.created_at) || acc.updatedAt || Date.now()
+      }));
+    });
+
+    if (changed) {
+      gamesSaveProfile(profile);
+      app.gamesProfile = profile;
+      gamesRenderStats();
+    }
+    return profile;
+  } catch (err) {
+    console.warn('gamesSyncProfileFromRemote failed', err);
+    return null;
+  }
+}
+
 function gamesAccountById(accountId) {
   return GAMES_ACCOUNT_LIST.find(acc => acc.id === String(accountId || '').trim()) || null;
 }
@@ -3850,6 +3966,7 @@ function renderGamesHub() {
   gamesGetProfile();
   gamesRenderAccountChips();
   gamesRenderStats();
+  void gamesSyncProfileFromRemote();
   void gamesRefreshRemoteLeaderboards();
   gamesEnsureKeyBindings();
   gamesEnsureResizeBinding();
@@ -3931,7 +4048,10 @@ function gamesNormalizeRemoteLeaderboardRows(gameId, rows, limit = 10) {
     .map((row) => {
       const accountNumber = String(row && (row.account_number ?? row.accountNumber ?? row.id) ? (row.account_number ?? row.accountNumber ?? row.id) : '').trim();
       const name = String(row && (row.player_name ?? row.full_name ?? row.name) ? (row.player_name ?? row.full_name ?? row.name) : accountNumber || '').trim();
-      const points = Number(row && (row.points ?? row.best_score ?? row.bestScore ?? row.value) ? (row.points ?? row.best_score ?? row.bestScore ?? row.value) : 0) || 0;
+      const rawPoints = gameId === 'ttt'
+        ? (row && (row.games_played ?? row.plays ?? row.points ?? row.best_score ?? row.bestScore ?? row.value))
+        : (row && (row.points ?? row.best_score ?? row.bestScore ?? row.value));
+      const points = Number(rawPoints || 0) || 0;
       const updatedAt = String(row && (row.updated_at ?? row.last_played_at ?? row.created_at) ? (row.updated_at ?? row.last_played_at ?? row.created_at) : '').trim();
       return {
         id: accountNumber || name,
@@ -4110,18 +4230,25 @@ function gamesBindSwipeControl(el, onSwipe) {
   if (usePointer) {
     el.addEventListener('pointerdown', (ev) => {
       if (ev.pointerType && ev.pointerType !== 'touch' && ev.pointerType !== 'pen') return;
+      ev.preventDefault?.();
       startX = ev.clientX;
       startY = ev.clientY;
       active = true;
       try {
         if (typeof el.setPointerCapture === 'function') el.setPointerCapture(ev.pointerId);
       } catch (err) {}
-    }, { passive: true });
+    }, { passive: false });
 
     el.addEventListener('pointerup', (ev) => {
       if (ev.pointerType && ev.pointerType !== 'touch' && ev.pointerType !== 'pen') return;
+      ev.preventDefault?.();
       finish(ev.clientX, ev.clientY);
-    }, { passive: true });
+    }, { passive: false });
+
+    el.addEventListener('pointermove', (ev) => {
+      if (!active || (ev.pointerType && ev.pointerType !== 'touch' && ev.pointerType !== 'pen')) return;
+      ev.preventDefault?.();
+    }, { passive: false });
 
     el.addEventListener('pointercancel', () => {
       active = false;
@@ -4137,13 +4264,20 @@ function gamesBindSwipeControl(el, onSwipe) {
       startX = touch.clientX;
       startY = touch.clientY;
       active = true;
-    }, { passive: true });
+      ev.preventDefault?.();
+    }, { passive: false });
+
+    el.addEventListener('touchmove', (ev) => {
+      if (!active) return;
+      ev.preventDefault?.();
+    }, { passive: false });
 
     el.addEventListener('touchend', (ev) => {
       const touch = ev.changedTouches && ev.changedTouches[0];
       if (!touch) return;
+      ev.preventDefault?.();
       finish(touch.clientX, touch.clientY);
-    }, { passive: true });
+    }, { passive: false });
 
     el.addEventListener('touchcancel', () => {
       active = false;
@@ -4434,7 +4568,7 @@ function renderGameSnake() {
   const state = app.gamesSnake || (app.gamesSnake = snakeDefaultState());
   if (!state.food || !state.snake.length) snakePlaceFood(state);
   const compact = gamesIsCompactMode();
-  const boardSize = gamesFitSquareSize({ min: compact ? 250 : 266, max: Math.min(compact ? 540 : 480, gamesViewportSize().width - (compact ? 14 : 20)), reserve: compact ? 176 : 192, shellPad: compact ? 6 : 10 });
+  const boardSize = gamesFitSquareSize({ min: compact ? 230 : 250, max: Math.min(compact ? 540 : 480, gamesViewportSize().width - (compact ? 14 : 20)), reserve: compact ? 214 : 220, shellPad: compact ? 6 : 10 });
   const cells = [];
   for (let y = 0; y < state.size; y += 1) {
     for (let x = 0; x < state.size; x += 1) {
@@ -4448,7 +4582,7 @@ function renderGameSnake() {
   body.innerHTML = [
     '<div class="gamesGamePanel">',
     '  <div class="gameInfoRow gameInfoRowCompact gameInfoRowDense"><span>Skóre <strong>' + state.score + '</strong></span><span>Nejdelší <strong>' + String(bestLength) + '</strong></span><span>' + (state.over ? 'Klepni na pole pro novou hru' : 'Táhni po ploše nebo Joy') + '</span></div>',
-    '  <div class="gameBoard gameSnakeBoard" id="gameSnakeBoard" style="width:' + boardSize + 'px;height:' + boardSize + 'px;grid-template-columns:repeat(20,minmax(0,1fr));">' + cells.join('') + '</div>',
+    '  <div class="gameBoard gameSnakeBoard" id="gameSnakeBoard" style="width:' + boardSize + 'px;height:' + boardSize + 'px;grid-template-columns:repeat(20,minmax(0,1fr));">' + cells.join('') + snakeBuildJoystickMarkup(snakeIsJoystickEnabled()) + '</div>',
     gamesTop3Block('snake', 'bodů', 10),
     '</div>'
   ].join('');
@@ -4464,6 +4598,7 @@ function renderGameSnake() {
   body.style.webkitTouchCallout = 'none';
   body.style.userSelect = 'none';
   body.style.overscrollBehavior = 'contain';
+  body.style.touchAction = 'none';
   if (navigator && navigator.maxTouchPoints > 0 && !snakeIsJoystickEnabled()) {
     snakeSetJoystickEnabled(true);
   }

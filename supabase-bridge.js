@@ -737,7 +737,7 @@
         wins: Number(row.wins || 0) || 0,
         losses: Number(row.losses || 0) || 0,
         draws: Number(row.draws || 0) || 0,
-        points: Number(row.points || 0) || 0,
+        points: Number(row.game_type === 'ttt' ? (row.games_played || row.points || 0) : (row.points || 0)) || 0,
         last_played_at: row.last_played_at || null,
         updated_at: row.updated_at || null,
         player_name: nameMap.get(String(row.account_number || '').trim()) || String(row.account_number || '').trim()
@@ -766,14 +766,18 @@
     const lastPlayedDate = lastPlayedRaw ? new Date(lastPlayedRaw) : new Date();
     const lastPlayedIso = Number.isNaN(lastPlayedDate.getTime()) ? new Date().toISOString() : lastPlayedDate.toISOString();
 
+    const gamesPlayed = Math.max(Number(existing && existing.games_played || 0) || 0, Number(entry && (entry.games_played ?? entry.plays) || 0) || 0);
+    const derivedPoints = gameType === 'ttt'
+      ? gamesPlayed
+      : Number(entry && (entry.points ?? entry.bestScore ?? entry.score) || 0) || 0;
     const next = {
       account_number: accountNumber,
       game_type: gameType,
-      games_played: Math.max(Number(existing && existing.games_played || 0) || 0, Number(entry && (entry.games_played ?? entry.plays) || 0) || 0),
+      games_played: gamesPlayed,
       wins: Math.max(Number(existing && existing.wins || 0) || 0, Number(entry && entry.wins || 0) || 0),
       losses: Math.max(Number(existing && existing.losses || 0) || 0, Number(entry && entry.losses || 0) || 0),
       draws: Math.max(Number(existing && existing.draws || 0) || 0, Number(entry && entry.draws || 0) || 0),
-      points: Math.max(Number(existing && existing.points || 0) || 0, Number(entry && (entry.points ?? entry.bestScore ?? entry.score) || 0) || 0),
+      points: Math.max(Number(existing && existing.points || 0) || 0, derivedPoints),
       last_played_at: lastPlayedIso,
       updated_at: lastPlayedIso
     };

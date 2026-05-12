@@ -1,3 +1,18 @@
+## v.1(363)
+
+- Dashboard teď u kantýny a jídelny skrývá dnešní datum, zítra ukazuje jako „Zítra“ a další termín drží na vlastním řádku.
+- Spodní lišta dostala větší ikonky, kompaktnější vyvážení a výraznější aktivní stav.
+- Rotace a Statistiky mají srovnanější výšku tile prvků, plus seznam ve spodku rotace je posunutý výš nad lištu.
+- Snake dostal skutečně vložený joystick i tvrdší swipe/touch ovládání.
+- Piškvorky se po otevření vrací do menu, umí pokračovat v rozehrané hře a AI víc hlídá hrozby.
+
+## v.1(364)
+
+- Doty u kantýny a jídelny jsou větší a červená je výraznější fosforově rudá.
+- Spodní lišta dostala ještě větší ikonky a „Více“ zůstalo úzké a vycentrované.
+- Rotace má menší spodní seznam jmen a Statistiky větší tile prvky.
+- Herní přehled na první stránce se teď dotahuje i z online dat, aby všichni viděli aktuální stav.
+
 # Rotace a kalkulačky
 
 ## v.1(362)
