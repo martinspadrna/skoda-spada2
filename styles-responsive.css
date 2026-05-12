@@ -218,18 +218,18 @@
   }
 
   .bottomNav{
-    width:min(calc(100% - 16px), 430px);
+    width:min(calc(100% - 12px), 430px);
     padding:5px 6px calc(5px + env(safe-area-inset-bottom));
     border-radius:20px;
-  }
-
-  .bottomNavInner{
-    gap:3px;
-    grid-template-columns:repeat(5, minmax(0, 1fr)) 30px;
+    gap:5px;
   }
 
   .bottomNavBtn{
     min-height:48px;
+    flex-basis:49px;
+    width:49px;
+    min-width:49px;
+    max-width:49px;
     padding:3px 2px;
   }
 
@@ -844,3 +844,59 @@ body.gamesOpen #games .gamesShell > #gamesShellBody{flex:1 1 auto !important;}
   .bottomNavBtn{flex-basis:56px !important; width:56px !important; min-width:56px !important; max-width:56px !important;}
   .bottomNavMenuBtn{flex-basis:38px !important; width:38px !important; min-width:38px !important; max-width:38px !important;}
 }
+
+
+/* v1(333) final bottom nav override */
+.bottomNav{
+  display:flex !important;
+  align-items:center !important;
+  gap:6px !important;
+}
+.bottomNavScroll{
+  flex:1 1 auto !important;
+  min-width:0 !important;
+  display:flex !important;
+  align-items:center !important;
+  gap:2px !important;
+  overflow-x:auto !important;
+  overflow-y:hidden !important;
+  -webkit-overflow-scrolling:touch !important;
+  scrollbar-width:none !important;
+  scroll-snap-type:x proximity !important;
+}
+.bottomNavScroll::-webkit-scrollbar{display:none !important;}
+.bottomNavBtn{
+  flex:0 0 49px !important;
+  width:49px !important;
+  min-width:49px !important;
+  max-width:49px !important;
+  min-height:52px !important;
+  padding:2px 2px 1px !important;
+}
+.bottomNavBtn .bottomNavIcon,
+.bottomNavBtn .bottomNavIcon svg{
+  width:21px !important;
+  height:21px !important;
+  display:block !important;
+}
+.bottomNavBtn .bottomNavIcon{flex:0 0 21px !important;}
+.bottomNavBtn .bottomNavLabel{font-size:8.8px !important;line-height:1.03 !important;}
+.bottomNavMenuBtn{
+  flex:0 0 52px !important;
+  width:52px !important;
+  min-width:52px !important;
+  max-width:52px !important;
+  margin-left:auto !important;
+  position:static !important;
+  right:auto !important;
+  left:auto !important;
+  transform:none !important;
+  z-index:6 !important;
+}
+.bottomNavMenuBtn .moreIcon{
+  width:20px !important;
+  height:20px !important;
+  transform:none !important;
+  display:block !important;
+}
+.bottomNavGamesBtn{margin-right:2px !important;}

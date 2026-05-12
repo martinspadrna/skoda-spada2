@@ -282,24 +282,39 @@ input{
   transform:translateX(-50%);
   bottom:14px;
   z-index:3000;
-  width:min(calc(100% - 16px), 470px);
+  width:min(calc(100% - 12px), 470px);
   padding:3px 6px calc(2px + env(safe-area-inset-bottom));
   background:rgba(7,10,8,.46);
   backdrop-filter:blur(24px) saturate(180%);
   border:1px solid rgba(124,255,124,.10);
   border-radius:26px;
   box-shadow:0 18px 40px rgba(0,0,0,.42);
+  display:flex;
+  align-items:center;
+  gap:6px;
 }
 
-.bottomNavInner{
-  display:grid;
-  grid-template-columns:repeat(5, minmax(0, 1fr)) 32px;
+.bottomNavScroll{
+  flex:1 1 auto;
+  min-width:0;
+  display:flex;
+  align-items:center;
   gap:2px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+  scroll-snap-type:x proximity;
 }
+.bottomNavScroll::-webkit-scrollbar{display:none;}
 
 .bottomNavBtn{
   position:relative;
   overflow:hidden;
+  flex:0 0 49px;
+  width:49px;
+  min-width:49px;
+  max-width:49px;
   min-height:52px;
   border-radius:14px;
   border:1px solid rgba(124,255,124,.16);
@@ -311,7 +326,7 @@ input{
   gap:2px;
   align-items:center;
   justify-content:center;
-  padding:2px 3px;
+  padding:2px 2px 1px;
   font-size:10px;
   font-weight:700;
   line-height:1.05;
@@ -319,7 +334,7 @@ input{
 }
 
 .bottomNavBtn span{
-  font-size:17px;
+  font-size:16px;
   line-height:1;
   transition:transform .18s ease;
 }
@@ -345,9 +360,22 @@ input{
 }
 
 .bottomNavLabel{
-  font-size:10px;
+  font-size:9px;
   font-weight:700;
   white-space:nowrap;
+}
+
+.bottomNavMenuBtn{
+  flex:0 0 52px;
+  width:52px;
+  min-width:52px;
+  max-width:52px;
+  margin-left:auto;
+}
+
+.bottomNavMenuBtn .moreIcon{
+  width:20px;
+  height:20px;
 }
 
 

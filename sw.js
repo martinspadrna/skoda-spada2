@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v1-324';
+const CACHE_VERSION = 'v1-334';
 const STATIC_CACHE = `rotace-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `rotace-runtime-${CACHE_VERSION}`;
 const APP_SHELL = [
@@ -16,6 +16,8 @@ const APP_SHELL = [
   './qr.js',
   './export.js',
   './app-init.js',
+  './changelog.js',
+  './CHANGELOG.md',
   './data.js',
   './styles.css',
   './styles-base.css',

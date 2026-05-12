@@ -3,8 +3,8 @@ function setBottomNavActive(pageId) {
   buttons.forEach(btn => {
     const isActive = btn.dataset.page === pageId;
     btn.classList.toggle('active', isActive);
-    if (isActive && typeof btn.scrollIntoView === 'function') {
-      try { btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); } catch (err) {}
+    if (isActive && typeof btn.scrollIntoView === 'function' && btn.dataset.page !== 'menu') {
+      try { btn.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' }); } catch (err) {}
     }
   });
 }
@@ -1216,6 +1216,34 @@ function tttOpeningBookMove(board) {
 
 
 
+function tttEmergencyBlockMoves(board, mark) {
+  const moves = [];
+  for (let row = 0; row < TTT_ROWS; row += 1) {
+    for (let col = 0; col < TTT_COLS; col += 1) {
+      if (board[tttIndex(row, col)] !== mark) continue;
+      for (const [dr, dc] of [[0,1],[1,0],[1,1],[1,-1]]) {
+        const prevRow = row - dr;
+        const prevCol = col - dc;
+        if (tttInBounds(prevRow, prevCol) && board[tttIndex(prevRow, prevCol)] === mark) continue;
+        let len = 0;
+        let r = row;
+        let c = col;
+        while (tttInBounds(r, c) && board[tttIndex(r, c)] === mark) {
+          len += 1;
+          r += dr;
+          c += dc;
+        }
+        if (len < 3) continue;
+        const beforeOpen = tttInBounds(prevRow, prevCol) && !board[tttIndex(prevRow, prevCol)];
+        const afterOpen = tttInBounds(r, c) && !board[tttIndex(r, c)];
+        if (beforeOpen) moves.push(tttIndex(prevRow, prevCol));
+        if (afterOpen) moves.push(tttIndex(r, c));
+      }
+    }
+  }
+  return Array.from(new Set(moves));
+}
+
 function tttBestMove(board, difficulty) {
   const free = [];
   for (let i = 0; i < board.length; i += 1) {
@@ -1228,6 +1256,10 @@ function tttBestMove(board, difficulty) {
 
   const immediateBlock = tttWinningMove(board, 'X');
   if (immediateBlock >= 0) return immediateBlock;
+  const urgentThreatBlock = tttThreatWindowMoves(board, 'X');
+  if (urgentThreatBlock.length) return urgentThreatBlock[0];
+  const emergencyBlock = tttEmergencyBlockMoves(board, 'X');
+  if (emergencyBlock.length) return emergencyBlock[0];
   const forcedBlock = tttCriticalThreatMoves(board, 'X');
   if (forcedBlock.length) return forcedBlock[0];
   const openThreeBlock = tttOpenThreeThreatMoves(board, 'X');
@@ -1239,14 +1271,14 @@ function tttBestMove(board, difficulty) {
     return center;
   }
 
-  const candidates = tttCandidateMoves(board, occupied < 8 ? 2 : 1).slice(0, 14);
+  const candidates = tttCandidateMoves(board, occupied < 8 ? 1 : 1).slice(0, 10);
   const movePool = candidates.length ? candidates : free.slice(0, 14);
 
   let bestIdx = movePool[0] ?? free[0];
   let bestScore = -Infinity;
   const centerRow = Math.floor(TTT_ROWS / 2);
   const centerCol = Math.floor(TTT_COLS / 2);
-  const deadline = (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 8;
+  const deadline = (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 5;
 
   for (const idx of movePool) {
     const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
@@ -1599,7 +1631,7 @@ function tttRender() {
       '</div>',
       '<div class="tttCard">',
       '  <div class="tttSectionTitle">Spuštění</div>',
-      state.mode === 'pvp' ? '<div id="tttInviteInfo" class="tttNote">Nejdřív vytvoř pozvánku. Odkaz pošli spoluhráči až potom.</div><div class="tttToggleRow"><button type="button" class="tttBtn" id="tttCreateInviteBtn">Vytvořit pozvánku</button><button type="button" class="tttBtn" id="tttJoinInviteBtn">Přijmout pozvánku</button></div><div class="tttNote" id="tttInviteUrl" style="margin-top:10px;display:none;"></div>' : '',
+      state.mode === 'pvp' ? '<div id="tttInviteInfo" class="tttNote">Nejdřív vytvoř pozvánku. Odkaz pošli spoluhráči až potom.</div><div class="tttToggleRow"><button type="button" class="tttBtn" id="tttCreateInviteBtn">Vytvořit pozvánku</button><button type="button" class="tttBtn" id="tttJoinInviteBtn">Přijmout pozvánku</button></div><div class="tttCard" style="margin-top:10px;padding:10px 12px;"><div class="tttSectionTitle" style="margin-bottom:6px;">Odkaz na hru</div><div class="tttNote" id="tttInviteUrl" style="word-break:break-all;display:none;"></div><div class="tttToggleRow" style="margin-top:8px;grid-template-columns:1fr 1fr;"><button type="button" class="tttBtn" id="tttCopyInviteBtn">Kopírovat odkaz</button><button type="button" class="tttBtn" id="tttShareInviteBtn">Sdílet</button></div></div>' : '',
       '  <button type="button" class="tttBtn" id="tttStartBtn" style="width:100%;">' + (state.mode === 'pvp' ? 'Spustit duel' : 'Hrát') + '</button>',
       '</div>',
       '<div class="tttCard tttWinHistory">',
@@ -1625,18 +1657,46 @@ function tttRender() {
         scheduleTttLayout();
       });
     });
+    let lastInviteUrl = '';
+    const copyInviteUrl = async () => {
+      if (!lastInviteUrl) return;
+      try {
+        await navigator.clipboard.writeText(lastInviteUrl);
+      } catch (err) {
+        console.warn('TTT copy invite failed', err);
+      }
+    };
     start.querySelector('#tttCreateInviteBtn')?.addEventListener('click', async () => {
       try {
         const result = await tttCreateInviteSession();
         const info = start.querySelector('#tttInviteInfo');
         const urlEl = start.querySelector('#tttInviteUrl');
+        const copyBtn = start.querySelector('#tttCopyInviteBtn');
+        const shareBtn = start.querySelector('#tttShareInviteBtn');
         if (result && result.ok) {
+          lastInviteUrl = result.url || '';
           if (info) info.textContent = 'Pozvánka připravená. Odkaz pošli spoluhráči.';
           if (urlEl) {
             urlEl.style.display = 'block';
             urlEl.textContent = result.url;
           }
+          if (copyBtn) copyBtn.disabled = !lastInviteUrl;
+          if (shareBtn) shareBtn.disabled = !lastInviteUrl;
           try { await navigator.clipboard.writeText(result.url); } catch (e) {}
+          if (shareBtn && result.url) {
+            shareBtn.addEventListener('click', async () => {
+              try {
+                if (navigator.share) {
+                  await navigator.share({ title: 'Piškvorky', text: 'Přidej se do hry:', url: result.url });
+                } else {
+                  await copyInviteUrl();
+                }
+              } catch (err) {
+                await copyInviteUrl();
+              }
+            }, { once: true });
+          }
+          if (copyBtn) copyBtn.addEventListener('click', () => { void copyInviteUrl(); }, { once: true });
           state.screen = 'game';
           state.gameOver = false;
           state.winner = null;
@@ -1828,7 +1888,7 @@ function tttHandleMove(index) {
       const fresh = tttGetState();
       if (fresh.gameOver || fresh.aiToken !== aiToken) return;
       const snapshot = fresh.board.slice();
-      const aiMove = (fresh.difficulty === 'ai' && fresh.moveCount > 8) ? (tttCandidateMoves(snapshot,1)[0] ?? tttBestMove(snapshot, fresh.difficulty || 'ai')) : tttBestMove(snapshot, fresh.difficulty || 'ai');
+      const aiMove = tttBestMove(snapshot, fresh.difficulty || 'ai');
       if (aiMove < 0 || fresh.board[aiMove]) {
         fresh.turn = 'X';
         fresh.message = 'Hraješ za X.';
@@ -1974,17 +2034,45 @@ function triggerAboutAction() {
   openAppMenu('about');
 }
 
+
 function buildAppHistoryHtml(versionText) {
-  const sections = [
+  const fallbackSections = [
+    {
+      range: 'v.1(323)–v.1(334)',
+      title: 'Stabilizace a hry',
+      lines: [
+        'Spodní lišta se dorovnávala na mobilní rozložení a „Více“ bylo pevně vpravo.',
+        'Hry dostaly vlastní sekci, lepší účty a samostatné statistiky.',
+        'Piškvorky dostaly silnější blokování a invite flow.',
+        'Inline skripty se začaly přesouvat ven z index.html do samostatných modulů.'
+      ]
+    },
+    {
+      range: 'v.1(310)–v.1(322)',
+      title: 'PWA, offline a herní základ',
+      lines: [
+        'Service worker, manifest a offline fallback jsou v appce.',
+        'Přibyly online/offline refresh hooky a sync queue.',
+        'Vznikla první herní sekce se Snake, 2048, Flappy a Piškvorkami.'
+      ]
+    },
+    {
+      range: 'v.1(291)–v.1(309)',
+      title: 'Dashboard polish a rotace',
+      lines: [
+        'Dashboard dostal čistší loading stavy a menší vizuální chaos.',
+        'Rotace a kalkulačky se dál refaktorovaly do stabilního runtime.',
+        'Piškvorky se průběžně ladily proti zamrznutí po tahu AI.'
+      ]
+    },
     {
       range: 'v.1(250)–v.1(289)',
       title: 'Aktuální úpravy',
       lines: [
-        'Jídelna a kantýna teď používají shodné dny na jednom řádku.',
+        'Jídelna a kantýna používají shodné dny na jednom řádku.',
         'Dashboard ukazuje další směnu D, kdo na ní chybí, a u průběhu směny i procenta.',
         'Odpočet do dovolené doplňuje, jestli jde o CZD nebo Vánoce.',
-        'Kalkulačky pro frézky a brusy umí dopočítat i čas hotovosti.',
-        'Piškvorky najdeš ve složce Hry dole v liště.'
+        'Kalkulačky pro frézky a brusy umí dopočítat i čas hotovosti.'
       ]
     },
     {
@@ -1995,57 +2083,12 @@ function buildAppHistoryHtml(versionText) {
         'Spodní lišta dostala glass styl a přesnější velikosti.',
         'Statistiky přidaly top 3 přehled a čistší rozpad jmen.'
       ]
-    },
-    {
-      range: 'v.1(221)–v.1(232)',
-      title: 'Rotace, kalkulačky a menu',
-      lines: [
-        'Rotace přešla na tiles a QR po trojkliku.',
-        'Kalkulačky dostaly nové pořadí a ikony.',
-        'Menu „Více“ se sjednotilo do vlastní stránky.'
-      ]
-    },
-    {
-      range: 'v.1(215)–v.1(220)',
-      title: 'Refaktorace a stabilita',
-      lines: [
-        'Čištění kódu, exportů a modularita.',
-        'Příprava na další rozšíření dashboardu a statistik.'
-      ]
-    },
-    {
-      range: 'v0.151–v0.157-rc',
-      title: 'Velká refaktorace',
-      lines: [
-        'Nový základ projektu.',
-        'Vyčištění starého kódu a stabilnější exporty.'
-      ]
-    },
-    {
-      range: 'v0.91–v0.150',
-      title: 'Přechod na modernější architekturu',
-      lines: [
-        'Rozdělení logiky aplikace a čistší struktura.',
-        'Lepší mobilní navigace, dashboard a PWA příprava.'
-      ]
-    },
-    {
-      range: 'v0.41–v0.90',
-      title: 'Rotace, statistiky a vzhled',
-      lines: [
-        'Rozšíření rotací a statistik.',
-        'Modernější dark styl, karty a mobilní ergonomie.'
-      ]
-    },
-    {
-      range: 'v0.01–v0.40',
-      title: 'Začátek projektu',
-      lines: [
-        'První funkční základ aplikace.',
-        'Základní navigace, první kalkulačky a jednoduchý dark vzhled.'
-      ]
     }
   ];
+
+  const sections = Array.isArray(window.APP_CHANGELOG_SECTIONS) && window.APP_CHANGELOG_SECTIONS.length
+    ? window.APP_CHANGELOG_SECTIONS
+    : fallbackSections;
 
   return [
     '<div class="appMenuHistory">',
@@ -2053,12 +2096,13 @@ function buildAppHistoryHtml(versionText) {
       '<div class="appMenuHistoryGroup">',
       '  <div class="appMenuHistoryRange">' + escapeHtml(section.range) + '</div>',
       '  <div class="appMenuHistoryTitle">' + escapeHtml(section.title) + '</div>',
-      '  <div class="appMenuHistoryList">' + section.lines.map(line => '<div class="appMenuHistoryItem">' + escapeHtml(line) + '</div>').join('') + '</div>',
+      '  <div class="appMenuHistoryList">' + (section.lines || []).map(line => '<div class="appMenuHistoryItem">' + escapeHtml(line) + '</div>').join('') + '</div>',
       '</div>'
     ].join('')).join(''),
     '</div>'
   ].join('');
 }
+
 
 function getAdminRotationMonthKeys() {
   return Object.keys(app.rotation && app.rotation.months ? app.rotation.months : {}).sort((a, b) => a.localeCompare(b, 'cs'));
@@ -3114,11 +3158,36 @@ function gamesAccountById(accountId) {
   return GAMES_ACCOUNT_LIST.find(acc => acc.id === String(accountId || '').trim()) || null;
 }
 
+function gamesApplyActiveAccountUI(account) {
+  const nameEl = document.getElementById('gamesAccountName');
+  const hintEl = document.getElementById('gamesAccountHint');
+  const inputEl = document.getElementById('gamesAccountInput');
+  const entryRow = document.getElementById('gamesAccountEntryRow');
+  const currentEl = document.getElementById('gamesAccountCurrent');
+  const clearBtn = document.getElementById('gamesAccountClearBtn');
+  if (!nameEl || !hintEl || !inputEl || !entryRow || !currentEl || !clearBtn) return;
+
+  const next = account || null;
+  nameEl.textContent = next ? next.name : 'Bez přihlášení';
+  hintEl.textContent = next
+    ? 'Přihlášeno. Statistiky se ukládají pod tímto číslem.'
+    : 'Bez účtu můžeš hrát dál. Statistiky se ukládají jen po přihlášení číslem.';
+  entryRow.style.display = next ? 'none' : '';
+  currentEl.style.display = next ? 'flex' : 'none';
+  currentEl.textContent = next ? next.name : '';
+  if (next) inputEl.value = '';
+  clearBtn.textContent = next ? 'Odhlásit' : 'Bez účtu';
+}
+
 function gamesSetActiveAccount(accountId) {
   const profile = gamesGetProfile();
   if (!profile.accounts[accountId]) return false;
-  profile.activeAccountId = accountId;
+  profile.activeAccountId = String(accountId);
   gamesSaveProfile(profile);
+  app.gamesProfile = profile;
+  const active = profile.accounts[profile.activeAccountId] || null;
+  gamesApplyActiveAccountUI(active);
+  gamesRenderStats();
   renderGamesHub();
   return true;
 }
@@ -3127,6 +3196,9 @@ function gamesClearActiveAccount() {
   const profile = gamesGetProfile();
   profile.activeAccountId = '';
   gamesSaveProfile(profile);
+  app.gamesProfile = profile;
+  gamesApplyActiveAccountUI(null);
+  gamesRenderStats();
   renderGamesHub();
 }
 
@@ -3148,28 +3220,11 @@ function gamesRenderAccountChips() {
   const active = profile.accounts[profile.activeAccountId] || null;
   const hasAccount = !!active;
 
-  nameEl.textContent = hasAccount ? active.name : 'Bez přihlášení';
-  hintEl.textContent = hasAccount
-    ? 'Přihlášeno. Statistiky se ukládají pod tímto číslem.'
-    : 'Bez účtu můžeš hrát dál. Statistiky se ukládají jen po přihlášení číslem.';
-
-  entryRow.style.display = hasAccount ? 'none' : '';
-  currentEl.style.display = hasAccount ? 'flex' : 'none';
-  currentEl.textContent = hasAccount ? active.name : '';
+  gamesApplyActiveAccountUI(active);
   inputEl.value = hasAccount ? '' : inputEl.value;
-  clearBtn.textContent = hasAccount ? 'Odhlásit' : 'Bez účtu';
 
   const syncVisibleAccount = (account) => {
-    const next = account || null;
-    nameEl.textContent = next ? next.name : 'Bez přihlášení';
-    hintEl.textContent = next
-      ? 'Přihlášeno. Statistiky se ukládají pod tímto číslem.'
-      : 'Bez účtu můžeš hrát dál. Statistiky se ukládají jen po přihlášení číslem.';
-    entryRow.style.display = next ? 'none' : '';
-    currentEl.style.display = next ? 'flex' : 'none';
-    currentEl.textContent = next ? next.name : '';
-    if (next) inputEl.value = '';
-    clearBtn.textContent = next ? 'Odhlásit' : 'Bez účtu';
+    gamesApplyActiveAccountUI(account || null);
   };
 
   if (!inputEl.dataset.bound) {
@@ -3177,11 +3232,16 @@ function gamesRenderAccountChips() {
     const submit = async () => {
       const found = gamesAccountById(inputEl.value);
       if (found) {
-        if (gamesSetActiveAccount(found.id)) {
-          syncVisibleAccount(found);
-          gamesRenderStats();
-          await Promise.resolve();
+        try {
+          gamesSetActiveAccount(found.id);
+        } catch (err) {
+          console.warn('games account save failed', err);
         }
+        syncVisibleAccount(found);
+        requestAnimationFrame(() => {
+          gamesRenderAccountChips();
+          gamesRenderStats();
+        });
         return;
       }
       syncVisibleAccount(null);
