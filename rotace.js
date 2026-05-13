@@ -95,7 +95,7 @@ function handlePersonTap(name) {
   app.selectedName = name;
   renderRotace();
 
-  if (app.nameTapState.count >= 3) {
+  if (app.nameTapState.count >= 2) {
     app.nameTapState = { name, count: 0, lastTap: 0 };
     showPersonQrModal(name);
   }

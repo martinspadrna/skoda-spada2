@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="cs" data-adreal-did="1777903232258503" data-app-theme="skoda"><head>
+<html lang="cs" data-adreal-did="1777903232258503"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -126,13 +126,6 @@
   #rotaceNamesPanel.active{
     padding-bottom:calc(14px + env(safe-area-inset-bottom)) !important;
   }
-
-.gamesListFolder{margin-top:8px;}
-.gamesListFolder > summary{list-style:none;cursor:pointer;padding:0 12px 8px;color:#eef7ee;font-weight:800;letter-spacing:.01em;}
-.gamesListFolder > summary::-webkit-details-marker{display:none;}
-.gamesListFolder > summary::after{content:'▾';float:right;color:rgba(231,255,240,.6);font-size:12px;transition:transform .18s ease;}
-.gamesListFolder[open] > summary::after{transform:rotate(180deg);}
-
 </style>
 
 </head>
@@ -201,13 +194,13 @@
         <div class="dashboardMeta"></div>
       </div>
 
-      <div class="tile dashboardCard dashboardLinkCard" id="dashFoodLink" onclick="showPage('jidlo')" role="button" tabindex="0" aria-label="Jídelní lístek">
+      <div class="tile dashboardCard dashboardLinkCard" id="dashFoodLink" onclick="window.open('https://sa.gthcatering.cz/restaurant/c1/', '_blank', 'noopener')" role="button" tabindex="0" aria-label="Jídelní lístek">
         <div class="dashboardLabelRow">
           <span class="dashboardIcon dashboardIconInline" aria-hidden="true"><img class="dashboardIconImage" src="data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 4h14v16H5z'/%3E%3Cpath d='M8 8h8M8 12h6M8 16h5'/%3E%3C/svg%3E" alt="" aria-hidden="true" loading="eager" decoding="sync"></span>
           <div class="dashboardLabel">Jídelní lístek</div>
         </div>
         <div class="dashboardValue">Otevřít</div>
-        <div class="dashboardMeta">Aktuální menu</div>
+        <div class="dashboardMeta">Přímý odkaz</div>
       </div>
       <div class="tile dashboardCard dashboardLinkCard" id="dashEportalLink" onclick="showPage('eportal')" role="button" tabindex="0" aria-label="Eportal">
         <div class="dashboardLabelRow">
@@ -221,7 +214,6 @@
     </div>
   </div>
 </div>
-
 
 <div id="games" class="page">
   <div class="headerBar">
@@ -250,114 +242,96 @@
     <div class="gamesAccountCurrent" id="gamesAccountCurrent" style="display:none;"></div>
     <div class="gamesAccountHint" id="gamesAccountHint">Bez účtu můžeš hrát dál. Statistiky se ukládají jen po přihlášení číslem.</div>
   </div>
-
-  <details class="gamesProfilesFolder">
+  <details class="gamesProfilesFolder" hidden>
     <summary>Hráčské profily</summary>
     <div class="gamesProfilesGrid" id="gamesProfilesGrid"></div>
   </details>
 
-  <details class="gamesAchievementsFolder">
+  <details class="gamesAchievementsFolder" hidden>
     <summary>Achievement centrum</summary>
     <div class="gamesAchievementsGrid" id="gamesAchievementsGrid"></div>
   </details>
+
+  <details class="gamesStatsFolder" hidden>
+    <summary>Herní statistiky</summary>
+    <div class="gamesStatsGrid" id="gamesStatsGrid"></div>
+  </details>
+
+
+  <div class="gamesGrid" id="gamesGrid">
+    <div class="tile calcTile calcTileStack gamesLaunchTile" onclick="openGameShell('ttt')" data-game="ttt">
+      <div class="calcTileIcon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="5.3" y="5.3" width="13.4" height="13.4" rx="3"></rect>
+          <path d="M9 9.1l3 3 3-3"></path>
+          <circle cx="9.1" cy="15" r="1.1"></circle>
+          <circle cx="14.9" cy="15" r="1.1"></circle>
+          <path d="M8.1 6.5v11M11.9 6.5v11M15.7 6.5v11M6.5 10.1h11M6.5 13.9h11"></path>
+        </svg>
+      </div>
+      <div>
+        <div class="calcTileText">Piškvorky</div>
+        <div class="smallText">AI, lokální duel a pozvánka do hry</div>
+      </div>
+    </div>
+
+    <div class="tile calcTile calcTileStack gamesLaunchTile" onclick="openGameShell('2048')" data-game="2048">
+      <div class="calcTileIcon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="4.8" y="4.8" width="5.8" height="5.8" rx="1.8"></rect>
+          <rect x="13.4" y="4.8" width="5.8" height="5.8" rx="1.8"></rect>
+          <rect x="4.8" y="13.4" width="5.8" height="5.8" rx="1.8"></rect>
+          <rect x="13.4" y="13.4" width="5.8" height="5.8" rx="1.8"></rect>
+          <path d="M8.8 8.8h.1M17.4 8.8h.1M8.8 17.4h.1M17.4 17.4h.1"></path>
+        </svg>
+      </div>
+      <div>
+        <div class="calcTileText">2048</div>
+        <div class="smallText">Skládej čísla do sebe</div>
+      </div>
+    </div>
+
+    <div class="tile calcTile calcTileStack gamesLaunchTile" onclick="openGameShell('snake')" data-game="snake">
+      <div class="calcTileIcon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5.5 16.5c1.8-5 4.3-8 8.1-8 2.5 0 4.5 1.1 5.9 3"></path>
+          <circle cx="18.3" cy="11.7" r="2"></circle>
+          <path d="M7 17.8v-2.5"></path>
+          <path d="M11.7 14l1.5-1"></path>
+          <path d="M15 13l1.1 1.2"></path>
+        </svg>
+      </div>
+      <div>
+        <div class="calcTileText">Snake</div>
+        <div class="smallText">Klasická hadí hra</div>
+      </div>
+    </div>
+
+    <div class="tile calcTile calcTileStack gamesLaunchTile" onclick="openGameShell('flap')" data-game="flap">
+      <div class="calcTileIcon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5.8 14.8c2.2-4.8 5.8-7 8.4-7 1.8 0 3.4.7 4.8 2"></path>
+          <path d="M9.2 11.2c1.6 0 3.2.4 4.8 1.5"></path>
+          <path d="M14.2 14.5c1.4 0 2.8.6 4.2 1.9"></path>
+          <path d="M18.2 16.4c.6-.8.8-1.7.8-2.7"></path>
+          <path d="M7.3 13.2h0"></path>
+          <path d="M6.4 8.7l1.3 1.1"></path>
+        </svg>
+      </div>
+      <div>
+        <div class="calcTileText">Flap Bird</div>
+        <div class="smallText">Klikni a leť mezi trubkami</div>
+      </div>
+    </div>
+  </div>
 
   <details class="gamesStatsFolder">
     <summary>Herní statistiky</summary>
     <div class="gamesStatsGrid" id="gamesStatsGrid"></div>
   </details>
 
-  <details class="gamesListFolder" open>
-    <summary>Seznam her</summary>
-    <div class="gamesGrid" id="gamesGrid">
-      <div class="tile calcTile calcTileStack gamesLaunchTile" onclick="openGameShell('ttt')" data-game="ttt">
-        <div class="calcTileIcon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="5.3" y="5.3" width="13.4" height="13.4" rx="3"></rect>
-            <path d="M9 9.1l3 3 3-3"></path>
-            <circle cx="9.1" cy="15" r="1.1"></circle>
-            <circle cx="14.9" cy="15" r="1.1"></circle>
-            <path d="M8.1 6.5v11M11.9 6.5v11M15.7 6.5v11M6.5 10.1h11M6.5 13.9h11"></path>
-          </svg>
-        </div>
-        <div>
-          <div class="calcTileText">Piškvorky</div>
-          <div class="smallText">AI, lokální duel a pozvánka do hry</div>
-        </div>
-      </div>
-
-      <div class="tile calcTile calcTileStack gamesLaunchTile" onclick="openGameShell('2048')" data-game="2048">
-        <div class="calcTileIcon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="4.8" y="4.8" width="5.8" height="5.8" rx="1.8"></rect>
-            <rect x="13.4" y="4.8" width="5.8" height="5.8" rx="1.8"></rect>
-            <rect x="4.8" y="13.4" width="5.8" height="5.8" rx="1.8"></rect>
-            <rect x="13.4" y="13.4" width="5.8" height="5.8" rx="1.8"></rect>
-            <path d="M8.8 8.8h.1M17.4 8.8h.1M8.8 17.4h.1M17.4 17.4h.1"></path>
-          </svg>
-        </div>
-        <div>
-          <div class="calcTileText">2048</div>
-          <div class="smallText">Skládej čísla do sebe</div>
-        </div>
-      </div>
-
-      <div class="tile calcTile calcTileStack gamesLaunchTile" onclick="openGameShell('snake')" data-game="snake">
-        <div class="calcTileIcon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M5.5 16.5c1.8-5 4.3-8 8.1-8 2.5 0 4.5 1.1 5.9 3"></path>
-            <circle cx="18.3" cy="11.7" r="2"></circle>
-            <path d="M8.1 11.2c1.3 1.7 2.2 3.7 2.6 5.9"></path>
-          </svg>
-        </div>
-        <div>
-          <div class="calcTileText">Snake</div>
-          <div class="smallText">Klasika do kapsy</div>
-        </div>
-      </div>
-
-      <div class="tile calcTile calcTileStack gamesLaunchTile" onclick="openGameShell('flappy')" data-game="flappy">
-        <div class="calcTileIcon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M6 14c4-7 9-8 12-6-2 1-3 3-3 5 0 2 1 3 2 4-3 0-6-1-9-3"></path>
-            <circle cx="16.8" cy="10.3" r="1.1"></circle>
-          </svg>
-        </div>
-        <div>
-          <div class="calcTileText">Flappy Car</div>
-          <div class="smallText">Neonová arkáda</div>
-        </div>
-      </div>
-
-      <div class="tile calcTile calcTileStack gamesLaunchTile" onclick="openGameShell('reaction')" data-game="reaction">
-        <div class="calcTileIcon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 3v3M12 18v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M3 12h3M18 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"></path>
-            <circle cx="12" cy="12" r="4.2"></circle>
-          </svg>
-        </div>
-        <div>
-          <div class="calcTileText">Reaction Test</div>
-          <div class="smallText">Rychlost reakce</div>
-        </div>
-      </div>
-
-      <div class="tile calcTile calcTileStack gamesLaunchTile" onclick="openGameShell('aim')" data-game="aim">
-        <div class="calcTileIcon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="7.6"></circle>
-            <circle cx="12" cy="12" r="2.2"></circle>
-            <path d="M12 3v3M21 12h-3M12 21v-3M3 12h3"></path>
-          </svg>
-        </div>
-        <div>
-          <div class="calcTileText">Aim Trainer</div>
-          <div class="smallText">Klikání na cíle</div>
-        </div>
-      </div>
-    </div>
-  </details>
+  <div class="gamesStage" id="gamesStage"></div>
 </div>
-
 
 <div id="kalkulacky" class="page">
   <div class="headerBar">
@@ -2989,7 +2963,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   color:rgba(242,248,245,.88) !important;
   word-break:break-word !important;
 }
-/* v1.1 (398) polish: player profiles, achievement center, version 1.1 update */
+/* v1.1 (394) polish: smaller games login text, about page milestones, version 1.1 update */
 .bottomNav{
   bottom:10px !important;
 }

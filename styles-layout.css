@@ -563,24 +563,3 @@ td.missingCell{
 }
 
 .bbtn.activeChoice{outline:3px solid var(--green2);}
-
-
-.page{
-  transition: opacity .2s ease, transform .24s ease;
-  will-change: opacity, transform;
-}
-
-.active{
-  animation:pageEnter .24s ease both;
-}
-
-@keyframes pageEnter{
-  from{
-    opacity:.72;
-    transform:translateY(10px) scale(.994);
-  }
-  to{
-    opacity:1;
-    transform:translateY(0) scale(1);
-  }
-}

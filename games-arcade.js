@@ -92,63 +92,6 @@
 #games .arcadeBomberCell.player{background:rgba(124,255,124,.22);}
 #games .arcadeBomberCell.bomb{background:rgba(255,115,115,.18);}
 #games .arcadeBomberCell.fire{background:rgba(255,170,80,.25);}
-#games .gamesProfilesFolder,#games .gamesAchievementsFolder{margin-top:8px;}
-#games .gamesProfilesFolder > summary,#games .gamesAchievementsFolder > summary{list-style:none;cursor:pointer;padding:0 12px 8px;color:#eef7ee;font-weight:800;letter-spacing:.01em;}
-#games .gamesProfilesFolder > summary::-webkit-details-marker,#games .gamesAchievementsFolder > summary::-webkit-details-marker{display:none;}
-#games .gamesProfilesFolder > summary::after,#games .gamesAchievementsFolder > summary::after{content:'▾';float:right;color:rgba(231,255,240,.6);font-size:12px;transform:translateY(1px);transition:transform .18s ease;}
-#games .gamesProfilesFolder[open] > summary::after,#games .gamesAchievementsFolder[open] > summary::after{transform:rotate(180deg) translateY(-1px);}
-#games .gamesProfilesGrid,#games .gamesAchievementsGrid{display:grid;gap:8px;padding:0 10px 10px;grid-template-columns:repeat(2,minmax(0,1fr));}
-#games .gamesProfileCard,#games .gamesAchievementHero,#games .gamesAchievementCard{border-radius:22px;border:1px solid rgba(124,255,124,.12);background:rgba(255,255,255,.04);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 16px 40px rgba(0,0,0,.22);overflow:hidden;}
-#games .gamesProfileCard{padding:12px;display:grid;gap:10px;grid-column:span 1;position:relative;}
-#games .gamesProfileCard::before{content:'';position:absolute;inset:0;pointer-events:none;border-radius:22px;border:1px solid transparent;opacity:.85;}
-#games .gamesProfileCard--rookie::before{border-color:rgba(124,255,124,.18);}#games .gamesProfileCard--bronze::before{border-color:rgba(205,127,50,.25);}#games .gamesProfileCard--silver::before{border-color:rgba(192,192,192,.24);}#games .gamesProfileCard--gold::before{border-color:rgba(255,215,0,.22);}#games .gamesProfileCard--platinum::before{border-color:rgba(124,255,124,.28);}
-#games .gamesProfileHeader{display:flex;align-items:center;gap:10px;min-width:0;}
-#games .gamesProfileAvatar{width:56px;height:56px;border-radius:18px;display:grid;place-items:center;font-size:19px;font-weight:900;letter-spacing:.02em;color:#effff2;background:linear-gradient(145deg, rgba(124,255,124,.25), rgba(255,255,255,.06));border:1px solid rgba(124,255,124,.16);box-shadow:0 10px 20px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.04);flex:0 0 auto;}
-#games .gamesProfileMain{min-width:0;flex:1 1 auto;display:grid;gap:5px;}
-#games .gamesProfileNameRow{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;min-width:0;}
-#games .gamesProfileName{font-size:15px;font-weight:900;line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-#games .gamesProfileBorder{font-size:11px;font-weight:800;line-height:1;white-space:nowrap;padding:4px 8px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(124,255,124,.12);color:#eef7ee;}
-#games .gamesProfileBadges{display:flex;flex-wrap:wrap;gap:6px;}
-#games .gamesProfileBadge{padding:4px 8px;border-radius:999px;font-size:10px;font-weight:800;line-height:1.1;letter-spacing:.01em;border:1px solid rgba(124,255,124,.12);background:rgba(255,255,255,.04);color:#eef7ee;}
-#games .gamesProfileBadge--level{background:rgba(124,255,124,.08);}#games .gamesProfileBadge--rank{background:rgba(255,255,255,.05);}#games .gamesProfileBadge--xp{background:rgba(255,255,255,.05);}
-#games .gamesProfileXp{display:grid;gap:6px;}
-#games .gamesProfileXpLine,#games .gamesAchievementProgressLine{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;line-height:1.2;color:rgba(231,255,240,.76);}
-#games .gamesProfileXpLine b,#games .gamesAchievementProgressLine b{color:#effff2;font-weight:800;}
-#games .gamesProfileXpTrack,#games .gamesAchievementProgress{height:8px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(124,255,124,.10);overflow:hidden;}
-#games .gamesProfileXpFill,#games .gamesAchievementProgressFill{height:100%;border-radius:inherit;background:linear-gradient(90deg, rgba(124,255,124,.25), rgba(124,255,124,.98));box-shadow:0 0 18px rgba(124,255,124,.22);}
-#games .gamesProfileStats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;}
-#games .gamesProfileStat{padding:8px;border-radius:16px;background:rgba(255,255,255,.03);border:1px solid rgba(124,255,124,.10);display:grid;gap:3px;min-width:0;}
-#games .gamesProfileStat span{font-size:10px;line-height:1.1;color:rgba(231,255,240,.68);}#games .gamesProfileStat b{font-size:13px;line-height:1.1;color:#effff2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-#games .gamesProfileShowcase{display:flex;flex-wrap:wrap;gap:6px;}
-#games .gamesAchievementChip{padding:5px 8px;border-radius:999px;font-size:10px;font-weight:800;line-height:1;display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(124,255,124,.12);background:rgba(255,255,255,.04);color:#eef7ee;}
-#games .gamesAchievementChip.isLocked{opacity:.64;}
-#games .gamesAchievementHero{grid-column:1/-1;padding:12px;display:grid;gap:10px;position:relative;overflow:hidden;}
-#games .gamesAchievementHero::after{content:'';position:absolute;inset:auto -12% -55% -12%;height:160px;background:radial-gradient(circle, rgba(124,255,124,.18), transparent 68%);pointer-events:none;}
-#games .gamesAchievementHeroTop{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;position:relative;z-index:1;}
-#games .gamesAchievementHeroTitle{font-size:16px;font-weight:900;line-height:1.1;}
-#games .gamesAchievementHeroSub{font-size:11px;line-height:1.35;color:rgba(231,255,240,.74);margin-top:4px;}
-#games .gamesAchievementHeroMeta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:flex-end;}
-#games .gamesAchievementPill{padding:5px 8px;border-radius:999px;font-size:10px;font-weight:800;line-height:1;background:rgba(255,255,255,.05);border:1px solid rgba(124,255,124,.12);color:#eef7ee;}
-#games .gamesAchievementGrid{display:grid;gap:8px;grid-template-columns:repeat(2,minmax(0,1fr));padding:0 10px 10px;}
-#games .gamesAchievementCard{padding:12px;display:grid;gap:8px;position:relative;}
-#games .gamesAchievementCard.isUnlocked{animation:arcadeUnlockPop .45s ease;}
-#games .gamesAchievementTop{display:flex;align-items:flex-start;gap:10px;min-width:0;}
-#games .gamesAchievementIcon{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;font-size:18px;background:rgba(255,255,255,.05);border:1px solid rgba(124,255,124,.10);flex:0 0 auto;}
-#games .gamesAchievementMain{min-width:0;flex:1 1 auto;display:grid;gap:4px;}
-#games .gamesAchievementTitle{font-size:14px;font-weight:900;line-height:1.15;}
-#games .gamesAchievementDesc{font-size:11px;line-height:1.35;color:rgba(231,255,240,.74);}
-#games .gamesAchievementRarity{font-size:10px;font-weight:900;line-height:1;white-space:nowrap;padding:5px 8px;border-radius:999px;border:1px solid rgba(124,255,124,.12);background:rgba(255,255,255,.05);text-transform:uppercase;letter-spacing:.03em;}
-#games .gamesAchievementCard--bronze{box-shadow:0 16px 40px rgba(0,0,0,.22), inset 0 0 0 1px rgba(205,127,50,.10);}#games .gamesAchievementCard--silver{box-shadow:0 16px 40px rgba(0,0,0,.22), inset 0 0 0 1px rgba(192,192,192,.10);}#games .gamesAchievementCard--gold{box-shadow:0 16px 40px rgba(0,0,0,.22), inset 0 0 0 1px rgba(255,215,0,.10);}#games .gamesAchievementCard--platinum{box-shadow:0 16px 40px rgba(0,0,0,.22), inset 0 0 0 1px rgba(124,255,124,.14);}#games .gamesAchievementCard.isUnlocked.gamesAchievementCard--bronze{background:linear-gradient(180deg, rgba(205,127,50,.09), rgba(255,255,255,.04));}#games .gamesAchievementCard.isUnlocked.gamesAchievementCard--silver{background:linear-gradient(180deg, rgba(192,192,192,.09), rgba(255,255,255,.04));}#games .gamesAchievementCard.isUnlocked.gamesAchievementCard--gold{background:linear-gradient(180deg, rgba(255,215,0,.10), rgba(255,255,255,.04));}#games .gamesAchievementCard.isUnlocked.gamesAchievementCard--platinum{background:linear-gradient(180deg, rgba(124,255,124,.10), rgba(255,255,255,.04));}
-#games .gamesAchievementCard.isLocked{opacity:.76;}
-#games .gamesAchievementCard.isLocked .gamesAchievementIcon{filter:saturate(.7) grayscale(.2);}#games .gamesAchievementCard.isUnlocked .gamesAchievementRarity{background:rgba(124,255,124,.08);}
-@keyframes arcadeUnlockPop{0%{transform:scale(.97);filter:brightness(.92);}60%{transform:scale(1.015);filter:brightness(1.08);}100%{transform:scale(1);filter:brightness(1);}}
-@media (max-width: 700px){
-  #games .gamesProfilesGrid,#games .gamesAchievementsGrid{grid-template-columns:1fr;}
-  #games .gamesProfileStats{grid-template-columns:repeat(2,minmax(0,1fr));}
-  #games .gamesAchievementHeroTop{flex-direction:column;align-items:flex-start;}
-  #games .gamesAchievementHeroMeta{justify-content:flex-start;}
-}
-#games .arcadeBomberCell.fire{background:rgba(255,170,80,.25);}
 @media (max-width: 700px){
   #games .arcadeHud{grid-template-columns:repeat(2,minmax(0,1fr));}
   #games .arcadeBoard.grid-9{gap:4px;}
@@ -342,318 +285,23 @@
     return `<div class="gamesStatsCardLine"><strong>${escapeHtml(meta.title)}</strong> · ${escapeHtml(value)}</div>`;
   }
 
-  function clamp01(value) {
-    return Math.max(0, Math.min(1, Number(value) || 0));
-  }
-
-  function getAccountDisplayName(acc) {
-    return String(acc && acc.name ? acc.name : '').trim() || 'Hráč';
-  }
-
-  function getAccountInitials(acc) {
-    const raw = getAccountDisplayName(acc).trim();
-    if (!raw) return 'RK';
-    const parts = raw.split(/\s+/).filter(Boolean);
-    const first = parts[0] ? parts[0][0] : '';
-    const last = parts.length > 1 ? parts[parts.length - 1][0] : (parts[0] && parts[0][1] ? parts[0][1] : '');
-    const initials = (first + last).toUpperCase();
-    return initials || raw.slice(0, 2).toUpperCase();
-  }
-
-  function rankFromLevel(level) {
-    const n = Math.max(1, Number(level) || 1);
-    if (n >= 30) return { tier: 'platinum', label: 'Legenda RaK', role: 'Champion border' };
-    if (n >= 20) return { tier: 'gold', label: 'Veterán', role: 'Veteran badge' };
-    if (n >= 12) return { tier: 'silver', label: 'Mistr směny', role: 'Steam badge' };
-    if (n >= 6) return { tier: 'bronze', label: 'Technik', role: 'Starter badge' };
-    return { tier: 'rookie', label: 'Rookie', role: 'Fresh badge' };
-  }
-
-  function arcadeAchievementDefs(metrics) {
-    return [
-      { id: 'first-game', title: 'První krok', desc: 'Odehraj první hru a rozjedeš profil.', rarity: 'bronze', icon: '①', unlocked: metrics.totalPlays >= 1, progress: clamp01(metrics.totalPlays / 1), progressText: metrics.totalPlays >= 1 ? 'Odemčeno' : `${metrics.totalPlays} / 1` },
-      { id: 'ten-games', title: 'Desítka', desc: 'Nasbírej 10 odehraných her napříč RaK.', rarity: 'bronze', icon: '10', unlocked: metrics.totalPlays >= 10, progress: clamp01(metrics.totalPlays / 10), progressText: metrics.totalPlays >= 10 ? 'Odemčeno' : `${metrics.totalPlays} / 10` },
-      { id: 'first-win', title: 'První výhra', desc: 'Získej první vítězství v jakékoliv hře.', rarity: 'silver', icon: 'W', unlocked: metrics.totalWins >= 1, progress: clamp01(metrics.totalWins / 1), progressText: metrics.totalWins >= 1 ? 'Odemčeno' : `${metrics.totalWins} / 1` },
-      { id: 'hundred-games', title: 'Stovka', desc: 'Nahraj 100 her a získej stabilní ritmus.', rarity: 'silver', icon: '100', unlocked: metrics.totalPlays >= 100, progress: clamp01(metrics.totalPlays / 100), progressText: metrics.totalPlays >= 100 ? 'Odemčeno' : `${metrics.totalPlays} / 100` },
-      { id: 'reaction-fast', title: 'Rychlá reakce', desc: 'Dostaň se pod 200 ms v Reaction Testu.', rarity: 'gold', icon: '⚡', unlocked: metrics.reactionBestMs > 0 && metrics.reactionBestMs <= 200, progress: metrics.reactionBestMs > 0 ? clamp01(200 / metrics.reactionBestMs) : 0, progressText: metrics.reactionBestMs > 0 ? fmtTime(metrics.reactionBestMs) : '—' },
-      { id: 'snake-master', title: 'Snake master', desc: 'V Snake nasbírej aspoň 50 bodů.', rarity: 'gold', icon: '🐍', unlocked: metrics.snakeBestScore >= 50, progress: clamp01(metrics.snakeBestScore / 50), progressText: metrics.snakeBestScore >= 50 ? 'Odemčeno' : `${metrics.snakeBestScore} / 50` },
-      { id: 'tetris-master', title: 'Tetris master', desc: 'V Tetrisu přeskoč hranici 1 000 bodů.', rarity: 'gold', icon: '▣', unlocked: metrics.tetrisBestScore >= 1000, progress: clamp01(metrics.tetrisBestScore / 1000), progressText: metrics.tetrisBestScore >= 1000 ? 'Odemčeno' : `${metrics.tetrisBestScore} / 1000` },
-      { id: 'daily-grinder', title: 'Daily grinder', desc: 'Buď aktivní a drž si dlouhodobý tah.', rarity: 'platinum', icon: '✦', unlocked: metrics.totalPlays >= 250, progress: clamp01(metrics.totalPlays / 250), progressText: metrics.totalPlays >= 250 ? 'Odemčeno' : `${metrics.totalPlays} / 250` }
-    ];
-  }
-
-  function getArcadeMetrics(acc) {
-    const stats = ALL_GAMES.map((gid) => ({ id: gid, stat: getAccountStat(acc, gid), meta: gameMeta(gid) }));
-    const totalPlays = stats.reduce((sum, row) => sum + Number(row.stat && row.stat.plays || 0), 0);
-    const totalWins = stats.reduce((sum, row) => sum + Number(row.stat && row.stat.wins || 0), 0);
-    const totalLosses = stats.reduce((sum, row) => sum + Number(row.stat && row.stat.losses || 0), 0);
-    const totalDraws = stats.reduce((sum, row) => sum + Number(row.stat && row.stat.draws || 0), 0);
-    const bestScoreRow = stats.filter((row) => !isLowBetter(row.id) && Number(row.stat && row.stat.bestScore || 0) > 0).sort((a, b) => Number(b.stat.bestScore || 0) - Number(a.stat.bestScore || 0))[0] || null;
-    const bestTimeRow = stats.filter((row) => isLowBetter(row.id) && Number(row.stat && row.stat.bestTimeMs || 0) > 0).sort((a, b) => Number(a.stat.bestTimeMs || 0) - Number(b.stat.bestTimeMs || 0))[0] || null;
-    const favoriteRow = stats.slice().sort((a, b) => Number(b.stat && b.stat.plays || 0) - Number(a.stat && a.stat.plays || 0) || String(a.meta.title).localeCompare(String(b.meta.title), 'cs'))[0] || null;
-    const reactionBestMs = Number(getAccountStat(acc, 'reaction').bestTimeMs || 0) || 0;
-    const snakeBestScore = Number(getAccountStat(acc, 'snake').bestScore || 0) || 0;
-    const tetrisBestScore = Number(getAccountStat(acc, 'tetris').bestScore || 0) || 0;
-    const tttWins = Number(getAccountStat(acc, 'ttt').wins || 0) || 0;
-    const prelim = { totalPlays, totalWins, totalLosses, totalDraws, bestScoreRow, bestTimeRow, favoriteRow, reactionBestMs, snakeBestScore, tetrisBestScore, tttWins };
-    const achievements = arcadeAchievementDefs(prelim);
-    const unlockedAchievements = achievements.filter((a) => a.unlocked);
-    const achievementCount = unlockedAchievements.length;
-    const bestMetricBonus = bestScoreRow ? Math.min(900, Number(bestScoreRow.stat.bestScore || bestScoreRow.stat.leaderboardValue || 0) || 0) : 0;
-    const speedBonus = bestTimeRow && Number(bestTimeRow.stat.bestTimeMs || 0) > 0 ? Math.max(0, 1200 - Number(bestTimeRow.stat.bestTimeMs || 0)) : 0;
-    const xp = Math.max(0, Math.round(totalPlays * 22 + totalWins * 110 + totalDraws * 30 + achievementCount * 160 + bestMetricBonus * 0.35 + speedBonus * 0.15 + tttWins * 90));
-    const level = Math.max(1, Math.floor(xp / 500) + 1);
-    const nextLevelXp = level * 500;
-    const progress = clamp01((xp - ((level - 1) * 500)) / 500);
-    const rank = rankFromLevel(level);
-    const bestText = bestScoreRow ? `${bestScoreRow.meta.title} · ${String(bestScoreRow.stat.bestScore || bestScoreRow.stat.leaderboardValue || 0)}` : (bestTimeRow ? `${bestTimeRow.meta.title} · ${fmtTime(bestTimeRow.stat.bestTimeMs)}` : '—');
-    return Object.assign(prelim, { achievements, unlockedAchievements, achievementCount, xp, level, nextLevelXp, progress, rank, bestText, favoriteText: favoriteRow ? favoriteRow.meta.title : '—' });
-  }
-
-  function renderAchievementChip(achievement, compact) {
-    const cls = ['gamesAchievementChip', 'gamesAchievementChip--' + achievement.rarity, achievement.unlocked ? 'isUnlocked' : 'isLocked'].join(' ');
-    const label = achievement.unlocked ? '✓ ' + achievement.title : achievement.title;
-    return `<span class="${cls}" title="${escapeHtml(achievement.desc)}">${compact ? '' : `<span aria-hidden="true">${escapeHtml(achievement.icon)}</span>`}${escapeHtml(label)}</span>`;
-  }
-
-
-
-  function getThemeDefs() {
-    return Array.isArray(window.RAK_THEME_DEFS) && window.RAK_THEME_DEFS.length ? window.RAK_THEME_DEFS : [
-      { id: 'skoda', label: 'Škoda green', subtitle: 'Současný vzhled, jak ho znáš teď.', emoji: '🚗', color: '#0b0f0c', unlockText: 'Výchozí vzhled', condition: () => true },
-      { id: 'neon-blue', label: 'Neon blue', subtitle: 'Chladný glow pro čistý noční vibe.', emoji: '💠', color: '#071321', unlockText: 'Odemkne se na level 6', condition: (metrics) => Number(metrics && metrics.level || 0) >= 6 },
-      { id: 'amoled-black', label: 'AMOLED black', subtitle: 'Nejdarkší varianta s minimem světla.', emoji: '◼', color: '#050505', unlockText: 'Odemkne se na level 12', condition: (metrics) => Number(metrics && metrics.level || 0) >= 12 },
-      { id: 'orange-night', label: 'Orange night shift', subtitle: 'Teplý noční režim s jemným oranžovým nádechem.', emoji: '🟠', color: '#130c08', unlockText: 'Odemkne se na level 15', condition: (metrics) => Number(metrics && metrics.level || 0) >= 15 },
-      { id: 'retro-arcade', label: 'Retro arcade', subtitle: 'Trochu víc herní, trochu víc old-school.', emoji: '🎮', color: '#150d1f', unlockText: 'Odemkne se po 4 achievementech', condition: (metrics) => Number(metrics && metrics.achievementCount || 0) >= 4 },
-      { id: 'matrix', label: 'Matrix', subtitle: 'Zelený datový vibe, když chceš úplný neon.', emoji: '⌁', color: '#030903', unlockText: 'Odemkne se na level 20 a 8 achievementů', condition: (metrics) => Number(metrics && metrics.level || 0) >= 20 && Number(metrics && metrics.achievementCount || 0) >= 8 }
-    ];
-  }
-
-  function getThemeById(themeId) {
-    const id = String(themeId || '').trim();
-    return getThemeDefs().find((item) => item.id === id) || getThemeDefs()[0];
-  }
-
-  function getAccountThemeId(account) {
-    const raw = String(account && account.themeId ? account.themeId : '').trim();
-    return getThemeById(raw).id;
-  }
-
-  function isThemeUnlocked(theme, metrics) {
-    try {
-      if (!theme) return false;
-      if (theme.id === 'skoda') return true;
-      return !!theme.condition && !!theme.condition(metrics);
-    } catch (err) {
-      return false;
-    }
-  }
-
-  function themeBadgeText(theme, metrics) {
-    if (!theme) return '';
-    return theme.id === 'skoda' ? 'Výchozí vzhled' : (theme.unlockText || '');
-  }
-
-  function themePersistForAccount(account, themeId) {
-    const profile = gamesGetProfile();
-    const activeId = profile.activeAccountId;
-    if (!account || !account.id) return false;
-    const id = String(account.id || '').trim();
-    if (!profile.accounts[id]) return false;
-    profile.accounts[id].themeId = getThemeById(themeId).id;
-    profile.accounts[id].updatedAt = Date.now();
-    gamesSaveProfile(profile);
-    app.gamesProfile = profile;
-    if (String(activeId) === String(id) && typeof syncThemeFromActiveAccount === 'function') {
-      syncThemeFromActiveAccount();
-    }
-    renderStatsExtended();
-    return true;
-  }
-
-  function previewThemeChange(account, themeId) {
-    const next = getThemeById(themeId);
-    const currentId = getAccountThemeId(account);
-    if (next.id === currentId) return;
-    const metrics = getArcadeMetrics(account);
-    if (!isThemeUnlocked(next, metrics)) return;
-    const previousId = currentId || 'skoda';
-    if (typeof applyAppTheme === 'function') applyAppTheme(next.id, { skipStateSave: true });
-    if (typeof showThemePreviewToast === 'function') {
-      showThemePreviewToast({
-        title: `Vzhled ${next.label} je připravený`,
-        text: `Teď běží jen náhled. Když ho necháš, uloží se na účet a bude platit pro celou appku.`,
-        seconds: 5,
-        keepThemeId: next.id,
-        fallbackThemeId: previousId,
-        accountId: String(account && account.id ? account.id : '').trim(),
-        onConfirm: () => {
-          themePersistForAccount(account, next.id);
-          if (typeof applyAppTheme === 'function') applyAppTheme(next.id, { skipStateSave: true });
-        },
-        onCancel: () => {
-          if (typeof applyAppTheme === 'function') applyAppTheme(previousId, { skipStateSave: true });
-        }
-      });
-    }
-  }
-
-  function renderThemeCard(theme, account, metrics) {
-    const unlocked = isThemeUnlocked(theme, metrics);
-    const currentId = getAccountThemeId(account);
-    const active = unlocked && theme.id === currentId;
-    const locked = !unlocked;
-    const status = active ? 'Aktivní' : (locked ? 'Zamčeno' : 'K dispozici');
-    const actionLabel = active ? 'Používáš' : (locked ? 'Uzamčeno' : 'Vyzkoušet');
-    return `
-      <button type="button" class="gamesThemeCard ${active ? 'isActive' : ''} ${locked ? 'isLocked' : 'isUnlocked'} gamesThemeCard--${escapeHtml(theme.id)}" data-theme-id="${escapeHtml(theme.id)}" ${locked ? 'disabled' : ''}>
-        <div class="gamesThemeSwatch" aria-hidden="true">
-          <span class="gamesThemeSwatchAccent"></span>
-        </div>
-        <div class="gamesThemeMain">
-          <div class="gamesThemeTop">
-            <div class="gamesThemeEmoji" aria-hidden="true">${escapeHtml(theme.emoji)}</div>
-            <div class="gamesThemeTextWrap">
-              <div class="gamesThemeTitle">${escapeHtml(theme.label)}</div>
-              <div class="gamesThemeSub">${escapeHtml(theme.subtitle)}</div>
-            </div>
-            <div class="gamesThemeStatus">${escapeHtml(status)}</div>
-          </div>
-          <div class="gamesThemeUnlock">${escapeHtml(themeBadgeText(theme, metrics))}</div>
-          <div class="gamesThemeAction">${escapeHtml(actionLabel)}</div>
-        </div>
-      </button>`;
-  }
-
-  function renderThemeSystem(account) {
-    const grid = document.getElementById('gamesThemesGrid');
-    const hint = document.getElementById('gamesThemeHint');
-    if (!grid || !hint) return;
-    if (!account) {
-      grid.innerHTML = '<div class="smallText">Přihlas se, ať se zpřístupní vzhledy pro tvůj účet.</div>';
-      hint.textContent = 'Výchozí vzhled je pořád stejný jako teď. Po přihlášení se odemykají další vzhledy podle levelu a achievementů.';
-      return;
-    }
-    const metrics = getArcadeMetrics(account);
-    const defs = getThemeDefs();
-    grid.innerHTML = defs.map((theme) => renderThemeCard(theme, account, metrics)).join('');
-    hint.textContent = `Aktivní účet ${escapeHtml(getAccountDisplayName(account))} má ${String(metrics.level)} level a ${String(metrics.achievementCount)} achievementů.`;
-    grid.querySelectorAll('.gamesThemeCard').forEach((btn) => {
-      if (btn.dataset.bound) return;
-      btn.dataset.bound = '1';
-      btn.addEventListener('click', () => {
-        const themeId = String(btn.dataset.themeId || '').trim();
-        if (!themeId) return;
-        previewThemeChange(account, themeId);
-      });
-    });
-  }
-
-  function renderProfileCard(acc, activeId) {
-    const metrics = getArcadeMetrics(acc);
-    const name = getAccountDisplayName(acc);
-    const avatar = getAccountInitials(acc);
-    const rank = metrics.rank;
-    const topAchievements = metrics.achievements.slice().sort((a, b) => Number(b.unlocked) - Number(a.unlocked) || b.progress - a.progress).slice(0, 4);
-    const topAchievementsHtml = topAchievements.length ? topAchievements.map((a) => renderAchievementChip(a, false)).join('') : '<span class="gamesAchievementChip isLocked">Zatím nic</span>';
-    return `
-      <div class="gamesProfileCard gamesProfileCard--${rank.tier}${String(acc && acc.id) === String(activeId) ? ' isActive' : ''}">
-        <div class="gamesProfileHeader">
-          <div class="gamesProfileAvatar" aria-hidden="true">${escapeHtml(avatar)}</div>
-          <div class="gamesProfileMain">
-            <div class="gamesProfileNameRow">
-              <div class="gamesProfileName">${escapeHtml(name)}</div>
-              <div class="gamesProfileBorder">${escapeHtml(rank.label)}</div>
-            </div>
-            <div class="gamesProfileBadges">
-              <span class="gamesProfileBadge gamesProfileBadge--level">Lv ${String(metrics.level)}</span>
-              <span class="gamesProfileBadge gamesProfileBadge--rank">${escapeHtml(rank.role)}</span>
-              <span class="gamesProfileBadge gamesProfileBadge--xp">${String(metrics.xp)} XP</span>
-            </div>
-          </div>
-        </div>
-        <div class="gamesProfileXp">
-          <div class="gamesProfileXpLine"><span>XP do dalšího levelu</span><b>${String(metrics.xp)} / ${String(metrics.nextLevelXp)}</b></div>
-          <div class="gamesProfileXpTrack"><div class="gamesProfileXpFill" style="width:${Math.max(4, Math.round(metrics.progress * 100))}%"></div></div>
-        </div>
-        <div class="gamesProfileStats">
-          <div class="gamesProfileStat"><span>Hry</span><b>${String(metrics.totalPlays)}</b></div>
-          <div class="gamesProfileStat"><span>Výhry</span><b>${String(metrics.totalWins)}</b></div>
-          <div class="gamesProfileStat"><span>Nejlepší</span><b>${escapeHtml(metrics.bestText)}</b></div>
-          <div class="gamesProfileStat"><span>Favorit</span><b>${escapeHtml(metrics.favoriteText)}</b></div>
-        </div>
-        <div class="gamesProfileShowcase">${topAchievementsHtml}</div>
-      </div>`;
-  }
-
-  function renderAchievementCard(achievement) {
-    const progressPct = Math.max(0, Math.min(100, Math.round((Number(achievement.progress) || 0) * 100)));
-    return `
-      <div class="gamesAchievementCard gamesAchievementCard--${achievement.rarity}${achievement.unlocked ? ' isUnlocked' : ' isLocked'}">
-        <div class="gamesAchievementTop">
-          <div class="gamesAchievementIcon" aria-hidden="true">${escapeHtml(achievement.icon)}</div>
-          <div class="gamesAchievementMain">
-            <div class="gamesAchievementTitle">${escapeHtml(achievement.title)}</div>
-            <div class="gamesAchievementDesc">${escapeHtml(achievement.desc)}</div>
-          </div>
-          <div class="gamesAchievementRarity">${escapeHtml(achievement.rarity)}</div>
-        </div>
-        <div class="gamesAchievementProgressLine"><span>${escapeHtml(achievement.progressText)}</span><b>${String(progressPct)}%</b></div>
-        <div class="gamesAchievementProgress"><div class="gamesAchievementProgressFill" style="width:${progressPct}%"></div></div>
-      </div>`;
-  }
-
   function renderStatsExtended() {
-    const profilesGrid = document.getElementById('gamesProfilesGrid');
-    const achievementsGrid = document.getElementById('gamesAchievementsGrid');
-    const statsGrid = document.getElementById('gamesStatsGrid');
+    const grid = document.getElementById('gamesStatsGrid');
+    if (!grid) return;
     const profile = gamesGetProfile();
     const accounts = Object.values(profile.accounts || {}).sort((a, b) => (Number(a && a.id || 0) - Number(b && b.id || 0)));
     const activeId = profile.activeAccountId;
-    const activeAccount = (activeId && profile.accounts && profile.accounts[activeId]) || accounts[0] || null;
-
-    if (profilesGrid) {
-      if (!accounts.length) profilesGrid.innerHTML = '<div class="smallText">Zatím nejsou žádné herní profily.</div>';
-      else profilesGrid.innerHTML = accounts.map((acc) => renderProfileCard(acc, activeId)).join('');
-    }
-
-    if (achievementsGrid) {
-      if (!activeAccount) {
-        achievementsGrid.innerHTML = '<div class="smallText">Přihlas se, ať se zobrazí achievement centrum.</div>';
-      } else {
-        const metrics = getArcadeMetrics(activeAccount);
-        const raritySummary = ['bronze', 'silver', 'gold', 'platinum'].map((rarity) => {
-          const count = metrics.unlockedAchievements.filter((a) => a.rarity === rarity).length;
-          return `<span class="gamesAchievementPill">${rarity} · ${String(count)}</span>`;
-        }).join('');
-        const unlockedCount = metrics.unlockedAchievements.length;
-        const header = `
-          <div class="gamesAchievementHero">
-            <div class="gamesAchievementHeroTop">
-              <div>
-                <div class="gamesAchievementHeroTitle">Achievement centrum</div>
-                <div class="gamesAchievementHeroSub">Aktivní účet ${escapeHtml(getAccountDisplayName(activeAccount))} · ${String(unlockedCount)} / ${String(metrics.achievements.length)} odemčeno · ${escapeHtml(metrics.rank.label)}</div>
-              </div>
-              <div class="gamesAchievementHeroMeta">${raritySummary}</div>
-            </div>
-          </div>`;
-        achievementsGrid.innerHTML = header + metrics.achievements.map((achievement) => renderAchievementCard(achievement)).join('');
-      }
-    }
-
-    renderThemeSystem(activeId && profile.accounts && profile.accounts[activeId] ? profile.accounts[activeId] : null);
-
-    if (!statsGrid) return;
     if (!accounts.length) {
-      statsGrid.innerHTML = '<div class="smallText">Zatím nejsou žádné herní statistiky.</div>';
+      grid.innerHTML = '<div class="smallText">Zatím nejsou žádné herní statistiky.</div>';
       return;
     }
-    statsGrid.innerHTML = accounts.map((acc) => {
+    grid.innerHTML = accounts.map((acc) => {
       const totalPlays = ALL_GAMES.reduce((sum, gid) => sum + Number(getAccountStat(acc, gid).plays || 0), 0);
       const lines = ALL_GAMES.map((gid) => summaryLine(acc, gid)).join('');
       return `<div class="gamesStatsCard${String(acc.id) === String(activeId) ? ' isActive' : ''}"><div class="gamesStatsCardHead"><div><div class="gamesStatsCardName">${escapeHtml(acc.name || '')}</div></div><div class="gamesStatsCardTotal">${String(totalPlays)} her</div></div><div class="gamesStatsCardBody">${lines}</div></div>`;
     }).join('');
   }
+
   const originalRenderStats = window.gamesRenderStats;
   window.gamesRenderStats = function gamesRenderStatsArcade() {
     renderStatsExtended();
@@ -871,9 +519,6 @@
     if (typeof origRenderHub === 'function') origRenderHub();
     renderLaunchTiles();
     renderStatsExtended();
-    if (typeof syncThemeFromActiveAccount === 'function') {
-      try { syncThemeFromActiveAccount(); } catch (err) {}
-    }
     if (window.app && window.app.activeGameShell) {
       if (EXTRA_GAMES.indexOf(key(window.app.activeGameShell)) >= 0) {
         window.renderGameShell(window.app.activeGameShell);
@@ -1515,7 +1160,7 @@
   const SUDOKU_PUZZLES = [
     { difficulty: 'easy', puzzle: ['530070000','600195000','098000060','800060003','400803001','700020006','060000280','000419005','000080079'], solution: ['534678912','672195348','198342567','859761423','426853791','713924856','961537284','287419635','345286179'] },
     { difficulty: 'medium', puzzle: ['003020600','900305001','001806400','008102900','700000008','006708200','002609500','800203009','005010300'], solution: ['483921657','967345821','251876493','548132976','729564138','136798245','372689514','814253769','695417382'] },
-    { difficulty: 'hard', puzzle: ['000000907','000420180','000705026','100904000','050000040','000507009','920108000','034059000','507000000'], solution: ['462831957','398426185','851795326','176984253','259673841','483517629','925148763','634259718','517362494'] }
+    { difficulty: 'hard', puzzle: ['000000907','000420180','000705026','100904000','050000040','000507009','920108000','034059000','507000000'], solution: ['462831957','397426185','851795326','176984253','259673841','483517629','925148763','634259718','517362494'] }
   ];
   function renderSudoku(body) {
     const state = getState('sudoku', () => ({ index: 0, startAt: 0, finished: false, selected: 'easy', mistakes: 0, solution: null, puzzle: null }));
@@ -1853,8 +1498,3 @@
   }
 
 })();
-
-
-window.gamesThemeById = getThemeById;
-window.gamesPreviewThemeChange = previewThemeChange;
-window.gamesRenderThemeSystem = renderThemeSystem;
