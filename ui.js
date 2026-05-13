@@ -2769,22 +2769,158 @@ function adminNotesRowTemplate(row, rowIndex, allowBlankTail) {
   const date = String(note.date || '').trim();
   const person = String(note.person || '').trim();
   const code = String(note.code || '').trim();
-  const text = String(note.text || '').trim();
-  const shift = String(note.shift || '').trim();
-  const hasAny = !!(date || person || code || text || shift);
+  const hasAny = !!(date || person || code);
   if (!hasAny && !allowBlankTail) return '';
   return [
     '<tr data-note-row-index="' + String(rowIndex) + '">',
     '  <td><input class="appMenuInlineInput" data-note-field="date" value="' + escapeHtml(date) + '" placeholder="datum"></td>',
     '  <td><input class="appMenuInlineInput" data-note-field="person" value="' + escapeHtml(person) + '" placeholder="jméno"></td>',
     '  <td><input class="appMenuInlineInput" data-note-field="code" value="' + escapeHtml(code) + '" placeholder="kód"></td>',
-    '  <td><input class="appMenuInlineInput" data-note-field="shift" value="' + escapeHtml(shift) + '" placeholder="směna"></td>',
-    '  <td><input class="appMenuInlineInput" data-note-field="text" value="' + escapeHtml(text) + '" placeholder="poznámka"></td>',
     '</tr>'
   ].join('');
 }
 
 
+
+function adminRotationDateKey(rawDate) {
+  const parsed = typeof parseDateToken === 'function' ? parseDateToken(rawDate) : null;
+  if (parsed && Number.isFinite(parsed.day) && Number.isFinite(parsed.month)) return String(parsed.day) + '.' + String(parsed.month);
+  return String(rawDate || '').trim().toLowerCase();
+}
+
+function adminGetKnownNames() {
+  if (typeof getKnownStatNames === 'function') {
+    return Array.from(getKnownStatNames()).filter(Boolean).sort((a, b) => String(a).localeCompare(String(b), 'cs'));
+  }
+  if (typeof KNOWN_STAT_NAMES !== 'undefined' && KNOWN_STAT_NAMES && typeof KNOWN_STAT_NAMES.forEach === 'function') {
+    return Array.from(KNOWN_STAT_NAMES).filter(Boolean).sort((a, b) => String(a).localeCompare(String(b), 'cs'));
+  }
+  return [];
+}
+
+function adminSplitPeopleList(text) {
+  if (typeof splitAbsencePeople === 'function') {
+    return splitAbsencePeople(text).map(sanitizeAbsencePersonName).filter(Boolean);
+  }
+  const raw = String(text || '').trim();
+  if (!raw) return [];
+  return raw.split(/\s*(?:,|;|\/|\||&|\ba\b|\bi\b)\s*/gi).map(part => part.trim()).filter(Boolean);
+}
+
+function adminBuildUsedNamesByDate(root) {
+  const usedByDate = new Map();
+
+  const add = (dateKey, name) => {
+    const key = String(dateKey || '').trim();
+    const person = String(name || '').trim();
+    if (!key || !person) return;
+    if (!usedByDate.has(key)) usedByDate.set(key, new Set());
+    usedByDate.get(key).add(person);
+  };
+
+  root.querySelectorAll('tr[data-rotation-section]').forEach((tr) => {
+    const date = tr.querySelector('[data-rot-field="date"]')?.value || '';
+    const dateKey = adminRotationDateKey(date);
+    tr.querySelectorAll('[data-rot-field^="cell-"]').forEach((input) => {
+      const name = String(input && input.value ? input.value : '').trim();
+      if (name && !['dát pryč','odebrat','remove','pryc','pryč'].includes(name.toLowerCase())) add(dateKey, name);
+    });
+  });
+
+  root.querySelectorAll('tr[data-note-row-index]').forEach((tr) => {
+    const date = tr.querySelector('[data-note-field="date"]')?.value || '';
+    const dateKey = adminRotationDateKey(date);
+    const names = adminSplitPeopleList(tr.querySelector('[data-note-field="person"]')?.value || '');
+    names.forEach((name) => add(dateKey, name));
+  });
+
+  return usedByDate;
+}
+
+function adminGetRotationActiveDateKey(root) {
+  if (!root) return '';
+  const focused = root.querySelector('[data-rot-field]:focus, [data-note-field]:focus');
+  const row = focused && typeof focused.closest === 'function'
+    ? focused.closest('tr[data-rotation-section], tr[data-note-row-index]')
+    : null;
+  if (!row) return '';
+  const dateInput = row.querySelector('[data-rot-field="date"], [data-note-field="date"]');
+  return adminRotationDateKey(dateInput ? dateInput.value : '');
+}
+
+function adminRenderRotationAvailabilitySummary(root) {
+  if (!root || root.dataset.adminView !== 'rotation') return;
+  const box = root.querySelector('#adminRotationFreeNamesSummary');
+  if (!box) return;
+  const dateKey = adminGetRotationActiveDateKey(root);
+  if (!dateKey) {
+    box.innerHTML = '<div class="appMenuFreeNamesTitle">Kontrola volných jmen</div><div class="appMenuFreeNamesText">Klikni do nějakého data nebo jména v rozpisu a ukáže se seznam lidí, kteří nejsou ten den zapsaní ani v rozpisu, ani v absenci.</div>';
+    return;
+  }
+  const knownNames = adminGetKnownNames();
+  const usedByDate = adminBuildUsedNamesByDate(root);
+  const used = usedByDate.get(dateKey) || new Set();
+  const free = knownNames.filter((name) => !used.has(name));
+  const title = '<div class="appMenuFreeNamesTitle">Volná jména pro ' + escapeHtml(dateKey) + '</div>';
+  const text = free.length
+    ? '<div class="appMenuFreeNamesText">' + free.map(escapeHtml).join(', ') + '</div>'
+    : '<div class="appMenuFreeNamesText">Pro tenhle den už jsou všechna známá jména někde zapsaná.</div>';
+  box.innerHTML = title + text;
+}
+
+function adminRefreshRotationSuggestions(root) {
+  if (!root || root.dataset.adminView !== 'rotation') return;
+  root.querySelectorAll('datalist[data-admin-rotation-suggest]').forEach((el) => el.remove());
+
+  const knownNames = adminGetKnownNames();
+  const usedByDate = adminBuildUsedNamesByDate(root);
+
+  const buildList = (id, dateKey, currentValue) => {
+    const used = usedByDate.get(dateKey) || new Set();
+    const current = String(currentValue || '').trim();
+    const options = [];
+    const addOption = (value) => {
+      const v = String(value || '').trim();
+      if (!v) return;
+      if (!options.includes(v)) options.push(v);
+    };
+
+    addOption('odebrat');
+    knownNames.forEach((name) => {
+      if (!used.has(name) || name === current) addOption(name);
+    });
+    if (current && !options.includes(current)) addOption(current);
+
+    const list = document.createElement('datalist');
+    list.id = id;
+    list.dataset.adminRotationSuggest = '1';
+    list.innerHTML = options.map((value) => '<option value="' + escapeHtml(value) + '"></option>').join('');
+    root.appendChild(list);
+  };
+
+  root.querySelectorAll('tr[data-rotation-section]').forEach((tr, rowIndex) => {
+    const dateInput = tr.querySelector('[data-rot-field="date"]');
+    const dateKey = adminRotationDateKey(dateInput ? dateInput.value : '');
+    tr.querySelectorAll('[data-rot-field^="cell-"]').forEach((input, cellIndex) => {
+      const current = String(input.value || '').trim();
+      const listId = 'admin-rot-suggest-' + String(rowIndex) + '-' + String(cellIndex);
+      input.setAttribute('list', listId);
+      buildList(listId, dateKey, current);
+    });
+  });
+
+  root.querySelectorAll('tr[data-note-row-index]').forEach((tr, rowIndex) => {
+    const dateInput = tr.querySelector('[data-note-field="date"]');
+    const dateKey = adminRotationDateKey(dateInput ? dateInput.value : '');
+    const personInput = tr.querySelector('[data-note-field="person"]');
+    if (!personInput) return;
+    const current = String(personInput.value || '').trim();
+    const listId = 'admin-note-suggest-' + String(rowIndex);
+    personInput.setAttribute('list', listId);
+    buildList(listId, dateKey, current);
+  });
+  adminRenderRotationAvailabilitySummary(root);
+}
 
 function splitMachineKey(rawKey) {
   const raw = String(rawKey || '').trim();
@@ -2898,7 +3034,7 @@ function buildAdminRotationTableHtml(monthKey) {
   };
 
   const renderNotes = () => {
-    const withBlank = notesRows.concat([ { date: '', person: '', code: '', shift: '', text: '' } ]);
+    const withBlank = notesRows.concat([ { date: '', person: '', code: '' } ]);
     return withBlank.map((row, idx) => adminNotesRowTemplate(row, idx, true)).join('');
   };
 
@@ -2906,6 +3042,10 @@ function buildAdminRotationTableHtml(monthKey) {
     '<div class="appMenuSubSection" id="adminRotationEditor">',
     '  <div class="appMenuSubTitle">Rozpis – ' + escapeHtml(monthKey) + '</div>',
     '  <div class="appMenuText">Stejný rozpis, jen editovatelný. Vyplňuj rovnou v mřížce, jako bys upravoval samotný rozpis. Prázdné řádky se při uložení ignorují.</div>',
+    '  <div class="appMenuFreeNamesBox" id="adminRotationFreeNamesSummary">',
+    '    <div class="appMenuFreeNamesTitle">Kontrola volných jmen</div>',
+    '    <div class="appMenuFreeNamesText">Klikni do nějakého data nebo jména v rozpisu a ukáže se seznam lidí, kteří nejsou ten den zapsaní ani v rozpisu, ani v absenci.</div>',
+    '  </div>',
     '  <div class="tableWrap appMenuTableWrap">',
     '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense">',
     '      <thead><tr><th colspan="' + String(1 + hardMachines.length) + '">Tvrdota</th></tr><tr><th>Datum</th>' + hardMachines.map(m => '<th>' + escapeHtml(m) + '</th>').join('') + '</tr></thead>',
@@ -2920,7 +3060,7 @@ function buildAdminRotationTableHtml(monthKey) {
     '  </div>',
     '  <div class="tableWrap appMenuTableWrap">',
     '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense">',
-    '      <thead><tr><th>Datum</th><th>Jméno</th><th>Kód</th><th>Směna</th><th>Poznámka</th></tr></thead>',
+    '      <thead><tr><th>Datum</th><th>Jméno</th><th>Kód</th></tr></thead>',
     '      <tbody>' + renderNotes() + '</tbody>',
     '    </table>',
     '  </div>',
@@ -3016,13 +3156,13 @@ function readAdminRotationFromDom(monthKey) {
   const seenNotes = new Set();
   root.querySelectorAll('tr[data-note-row-index]').forEach((tr) => {
     const get = (field) => String(tr.querySelector('[data-note-field="' + field + '"]')?.value || '').trim();
-    const note = {
-      date: get('date'),
-      person: get('person'),
-      code: get('code'),
-      shift: get('shift'),
-      text: get('text')
-    };
+    const date = get('date');
+    const person = get('person');
+    const code = get('code');
+    const parsed = typeof parseDateToken === 'function' ? parseDateToken(date) : null;
+    const shift = parsed && parsed.shift ? parsed.shift : '';
+    const text = [person, code].filter(Boolean).join(' ').trim();
+    const note = { date, person, code, shift, text };
     if (!note.date && !note.person && !note.code && !note.shift && !note.text) return;
     const key = makeNoteRowKey(note);
     if (seenNotes.has(key)) return;
@@ -3060,6 +3200,8 @@ function renderAdminMenuBody(body, section) {
   const months = getAdminRotationMonthKeys();
   const monthKey = getAdminSelectedMonthKey();
   body.dataset.adminView = mode;
+  const page = document.getElementById('menu');
+  if (page) page.dataset.adminView = mode;
 
   const homeHtml = [
     '<div class="appMenuCard appMenuAdminCard">',
@@ -3078,7 +3220,7 @@ function renderAdminMenuBody(body, section) {
   ].join('');
 
   const machinesHtml = [
-    '<div class="appMenuCard appMenuAdminCard">',
+    '<div class="appMenuCard appMenuAdminCard adminMachinesCard">',
     '  <div class="appMenuCardTitle">Nastavení strojů</div>',
     '  <div class="appMenuText">',
     '    <div>Každý stroj je jeden řádek. U brusů se zapisuje stroj + index + parametry.</div>',
@@ -3134,6 +3276,11 @@ function renderAdminMenuBody(body, section) {
     body.innerHTML = exportHtml;
   } else {
     body.innerHTML = homeHtml;
+  }
+
+  if (mode === 'rotation') {
+    adminRefreshRotationSuggestions(body);
+    adminRenderRotationAvailabilitySummary(body);
   }
 }
 
@@ -3298,6 +3445,30 @@ function bindAppMenuHandlers(body) {
       alert(err && err.message ? err.message : 'Akce se nepodařila.');
     }
   });
+
+  body.addEventListener('input', (event) => {
+    const target = event.target;
+    if (!target || typeof target.matches !== 'function') return;
+    if (!target.matches('[data-rot-field], [data-note-field]')) return;
+    const value = String(target.value || '').trim().toLowerCase();
+    if (value === 'dát pryč' || value === 'dat pryc' || value === 'pryč' || value === 'pryc' || value === 'odebrat' || value === 'remove') {
+      target.value = '';
+    }
+    if (body.dataset.adminView === 'rotation') {
+      adminRefreshRotationSuggestions(body);
+      adminRenderRotationAvailabilitySummary(body);
+    }
+  });
+
+  body.addEventListener('focusin', (event) => {
+    const target = event.target;
+    if (!target || typeof target.matches !== 'function') return;
+    if (!target.matches('[data-rot-field], [data-note-field]')) return;
+    if (body.dataset.adminView === 'rotation') {
+      adminRefreshRotationSuggestions(body);
+      adminRenderRotationAvailabilitySummary(body);
+    }
+  });
 }
 
 function openAppMenu(view) {
@@ -3312,6 +3483,7 @@ function openAppMenu(view) {
   const contactEmail = 'martinspadrna@gmail.com';
 
   if (body) {
+    bindAppMenuHandlers(body);
     if (v === 'about') {
       body.innerHTML = [
         '<div class="appMenuCard">',
@@ -3669,11 +3841,6 @@ function ensureFoodScheduleModal() {
 // -------------------------
 const GAMES_PROFILE_KEY = APP_KEY + ':games_profile_v1';
 const GAMES_ACCOUNT_LIST = [];
-const GAMES_BLOCKED_ACCOUNT_IDS = new Set(['4157']);
-
-function gamesIsBlockedAccountId(accountId) {
-  return GAMES_BLOCKED_ACCOUNT_IDS.has(String(accountId || '').trim());
-}
 
 function gamesMakeAccountEntry(accountId, name) {
   const id = String(accountId || '').trim();
@@ -3725,7 +3892,7 @@ function gamesLoadProfile() {
     });
     Object.keys(srcAccounts).forEach((id) => {
       const accountId = String(id || '').trim();
-      if (!accountId || base.accounts[accountId] || gamesIsBlockedAccountId(accountId)) return;
+      if (!accountId || base.accounts[accountId]) return;
       const incoming = srcAccounts[accountId] || {};
       base.accounts[accountId] = {
         id: accountId,
@@ -3740,10 +3907,7 @@ function gamesLoadProfile() {
         updatedAt: Number(incoming.updatedAt || 0) || 0
       };
     });
-    Object.keys(base.accounts).forEach((id) => {
-      if (gamesIsBlockedAccountId(id)) delete base.accounts[id];
-    });
-    if (!base.activeAccountId || !base.accounts[base.activeAccountId] || gamesIsBlockedAccountId(base.activeAccountId)) {
+    if (!base.activeAccountId || !base.accounts[base.activeAccountId]) {
       base.activeAccountId = '';
     }
     return base;
@@ -3812,7 +3976,7 @@ async function gamesSyncProfileFromRemote(force = false) {
     const addRows = (key, rows, toValue) => {
       (Array.isArray(rows) ? rows : []).forEach((row) => {
         const accountId = String(row && (row.account_number ?? row.accountNumber ?? row.id) ? (row.account_number ?? row.accountNumber ?? row.id) : '').trim();
-        if (!accountId || gamesIsBlockedAccountId(accountId)) return;
+        if (!accountId) return;
         const updatedAt = gamesParseRemoteTimestamp(row && (row.updated_at ?? row.last_played_at ?? row.created_at));
         const value = toValue(row);
         const current = remoteMap[key].get(accountId);
@@ -3844,7 +4008,7 @@ async function gamesSyncProfileFromRemote(force = false) {
     let changed = false;
     (Array.isArray(remoteAccounts) ? remoteAccounts : []).forEach((row) => {
       const accountId = String(row && row.account_number ? row.account_number : '').trim();
-      if (!accountId || gamesIsBlockedAccountId(accountId)) return;
+      if (!accountId) return;
       const remoteName = String(
         row && (row.full_name || row.player_name || row.name || row.account_name || row.nickname || row.username || row.account_number)
           ? (row.full_name || row.player_name || row.name || row.account_name || row.nickname || row.username || row.account_number)
@@ -3859,7 +4023,7 @@ async function gamesSyncProfileFromRemote(force = false) {
       }
     });
     Object.values(profile.accounts || {}).forEach((acc) => {
-      if (!acc || gamesIsBlockedAccountId(acc.id)) return;
+      if (!acc) return;
       const remoteName = remoteNameMap.get(String(acc.id || '').trim());
       if (remoteName && remoteName !== acc.name) {
         acc.name = remoteName;
@@ -3916,7 +4080,7 @@ async function gamesSyncProfileFromRemote(force = false) {
 
 function gamesAccountById(accountId) {
   const id = String(accountId || '').trim();
-  if (!id || gamesIsBlockedAccountId(id)) return null;
+  if (!id) return null;
   const profile = gamesGetProfile();
   return (profile.accounts && profile.accounts[id]) || GAMES_ACCOUNT_LIST.find(acc => acc.id === id) || null;
 }
@@ -3979,7 +4143,7 @@ function gamesRenderActiveAccountBar(account) {
 function gamesSetActiveAccount(accountId) {
   const profile = gamesGetProfile();
   const id = String(accountId || '').trim();
-  if (!id || gamesIsBlockedAccountId(id)) return false;
+  if (!id) return false;
   if (!profile.accounts[id]) {
     profile.accounts[id] = gamesMakeAccountEntry(id, id);
   }
@@ -4122,13 +4286,11 @@ function gamesRenderStats() {
   const grid = document.getElementById('gamesStatsGrid');
   if (!grid) return;
   const profile = gamesGetProfile();
-  const accounts = Object.values(profile.accounts || {})
-    .filter(acc => acc && !gamesIsBlockedAccountId(acc.id))
-    .sort((a, b) => {
-      const ai = Number(a && a.id ? a.id : 0) || 0;
-      const bi = Number(b && b.id ? b.id : 0) || 0;
-      return ai - bi;
-    });
+  const accounts = Object.values(profile.accounts || {}).sort((a, b) => {
+    const ai = Number(a && a.id ? a.id : 0) || 0;
+    const bi = Number(b && b.id ? b.id : 0) || 0;
+    return ai - bi;
+  });
   const activeId = profile.activeAccountId;
 
   if (!accounts.length) {

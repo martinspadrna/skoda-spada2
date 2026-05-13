@@ -2153,6 +2153,27 @@ body.reduceMotion *::after{
 .appMenuAdminCard{
   gap:10px;
 }
+.appMenuPage[data-admin-view="machines"] .adminMachinesCard{
+  padding-bottom:88px;
+}
+.appMenuFreeNamesBox{
+  display:grid;
+  gap:6px;
+  margin-top:2px;
+}
+.appMenuFreeNamesTitle{
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:rgba(124,255,124,.72);
+}
+.appMenuFreeNamesText{
+  font-size:12px;
+  line-height:1.35;
+  color:rgba(242,248,245,.88);
+  word-break:break-word;
+}
 .appMenuLabel{
   display:block;
   font-size:12px;
@@ -2200,9 +2221,10 @@ body.reduceMotion *::after{
 }
 .appMenuAdminTable{
   width:100%;
-  min-width:760px;
+  min-width:640px;
   border-collapse:separate;
   border-spacing:0;
+  table-layout:fixed;
 }
 .appMenuAdminTable thead th{
   position:sticky;
@@ -2212,35 +2234,35 @@ body.reduceMotion *::after{
   color:rgba(231,255,240,.78);
   font-size:11px;
   text-align:left;
-  padding:10px 8px;
+  padding:8px 6px;
   border-bottom:1px solid rgba(124,255,124,.10);
 }
 .appMenuAdminTable td{
-  padding:6px 6px;
+  padding:4px 4px;
   border-bottom:1px solid rgba(124,255,124,.08);
   vertical-align:top;
 }
 .appMenuInlineInput{
   width:100%;
-  min-height:34px;
+  min-height:32px;
   border:1px solid rgba(124,255,124,.14);
   border-radius:12px;
   background:rgba(255,255,255,.04);
   color:#f4f9f5;
-  padding:8px 10px;
-  font-size:13px;
+  padding:7px 8px;
+  font-size:12px;
   box-sizing:border-box;
 }
 .appMenuInlineInputTiny{
-  min-width:72px;
+  min-width:58px;
   text-align:center;
-  padding:8px 6px;
+  padding:7px 4px;
 }
 .appMenuAdminTableDense{
-  min-width:840px;
+  min-width:560px;
 }
 .appMenuAdminTableDense td{
-  padding:5px 4px;
+  padding:3px 3px;
 }
 .appMenuActionRow{
   display:flex;

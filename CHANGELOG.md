@@ -1,19 +1,23 @@
 # Rotace a kalkulačky
 
-## v.1(379)
-- Rozpisy Tvrdoty a Měkoty jsou zase o něco užší a u absence je zúžený datum, rozšířená jména a menší mezera mezi oběma tabulkami.
-- Spodní lišta je srovnaná víc na střed i na širších displejích a na tabletu už neleze tolik doleva.
-- Dole v rozpisu je víc prostoru pro scroll, aby text zbytečně nebouchal do panelu.
-- Z herních statistik dál mizí účet 4157, protože není součástí přihlášení.
-- Verze i cache jsou posunuté na 379.
+## v.1(386)
+- Rozpisy v administraci jsou kompaktnější a líp se vejdou na šířku.
+- Nové hry mají bezpečnější druhý pokus při vykreslení, aby se hned po otevření neukázala prázdná obrazovka.
+- U absencí je zadávání jednodušší: zůstalo to hlavně na datum, jméno a kód.
+- V rozpisových polích jsou nápovědy jmen podle dne, takže se snáz hlídají kolize.
+- Verze i cache jsou posunuté na 386.
 
-## v.1(378)
-- Rozpisy mají zavřenou volbu roku a měsíce, ale aktuální měsíc zůstává předvolený.
-- Tvrdota, měkkota i absence jsou užší, aby se rozpisy líp vešly na šířku obrazovky.
-- U absence je zúžený sloupec „Směna“, mezi tabulkami je menší mezera a dole je víc místa pro scroll.
-- Spodní lišta je vycentrovaná i na širších displejích a sedí níž bez rozhození borderu.
-- Z herních statistik zmizel účet 4157, protože není součástí přihlášení.
-- Verze i cache jsou posunuté na 378.
+
+## v.1(383)
+- Opravené centrování spodní lišty na širších displejích.
+- Vrácené a zúžené šířky rozpisů pro tvrdotu, měkotu i absence.
+- Hry už se nenačítají do prázdna a mají bezpečnější render fallback.
+- Verze i cache jsou posunuté na 383.
+
+## v.1(382)
+- Ve hrách přibyly všechny plánované nové moduly v jednotném glass/iOS stylu, včetně hubu, statistik a leaderboardů.
+- Aim Trainer, Reaction Test, Tetris, Space Shooter, Brick Breaker, Doodle Jump, Bubble Shooter, Sudoku, Minesweeper, Memory, Bomberman mini i denní challenge jsou nově součástí herní části.
+- Verze i cache jsou posunuté na 382.
 
 ## v.1(375)
 - Frézky i Brusy jsou po otevření zavřené a jejich rozbalování je přehlednější.

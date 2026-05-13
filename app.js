@@ -1,4 +1,4 @@
-// v.1(379) – užší rozpisy, vycentrovaná lišta na tabletu a přesnější absence v rozpisu.
+// v.1(386) – herní expanze, all games a zachovaný mobile-first styl.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
@@ -65,6 +65,7 @@
     "rotace.js",
     "changelog.js",
     "ui.js",
+    "games-arcade.js",
     "export.js",
     "supabase-config.js",
     "supabase-bridge.js",

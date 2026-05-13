@@ -930,9 +930,9 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
 </style>
 
 
-<style id="v363-pre-mobile-polish">
+<style id="v386-pre-mobile-polish">
   #games{padding-bottom:154px !important;}
-  /* v1(379) mobile polish: tighter bottom bar + names at the bottom on rotace */
+  /* v1(386) mobile polish: tighter bottom bar + names at the bottom on rotace */
   .bottomNav{
     padding:3px 5px calc(3px + env(safe-area-inset-bottom)) !important;
     gap:5px !important;
@@ -988,8 +988,11 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
       gap:7px !important;
     }
   }
-<style id="v363-legacy-mobile-polish">
-  /* v1(379) final mobile polish: tighter bottom bar, rotace preview and stats spacing */
+</style>
+
+
+<style id="v386-legacy-mobile-polish">
+  /* v1(386) final mobile polish: tighter bottom bar, rotace preview and stats spacing */
   .bottomNav{
     padding:2px 4px calc(2px + env(safe-area-inset-bottom)) !important;
     gap:3px !important;
@@ -1101,8 +1104,8 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
 </style>
 
 
-<style id="v363-final-mobile-polish">
-  /* v1(379) final mobile polish: bottom bar, games padding, rotace preview, stats compact, snake joystick */
+<style id="v386-final-mobile-polish">
+  /* v1(386) final mobile polish: bottom bar, games padding, rotace preview, stats compact, snake joystick */
   .bottomNav{
     width:calc(100% - 4px) !important;
     padding:1px 0 calc(1px + env(safe-area-inset-bottom)) !important;
@@ -1508,7 +1511,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   }
 </style>
 
-<style id="v363-final-mobile-polish">
+<style id="v386-final-mobile-polish">
   .bottomNav{
     padding:1px 2px calc(1px + env(safe-area-inset-bottom)) !important;
     gap:2px !important;
@@ -2741,7 +2744,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
     }
   }
 
-  /* v1(379) freeze polish: nav border, tighter stats grid, clearer game account block */
+  /* v1(386) freeze polish: nav border, tighter stats grid, clearer game account block */
   .bottomNav{
     padding:2px 1px calc(2px + env(safe-area-inset-bottom)) !important;
   }
@@ -2779,17 +2782,25 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
 </style>
 
 
-<style id="v379-freeze-polish">
+<style id="v386-freeze-polish">
 @media (display-mode: standalone){
   .bottomNav{
     bottom:calc(env(safe-area-inset-bottom) + 8px) !important;
   }
 }
 .bottomNav{
+  width:min(calc(100vw - 8px), 880px) !important;
+  left:50% !important;
+  right:auto !important;
+  transform:translateX(-50%) !important;
+  margin:0 !important;
   padding:2px 2px 2px !important;
+  box-sizing:border-box !important;
 }
 .bottomNavScroll{
   padding-bottom:2px !important;
+  justify-content:center !important;
+  margin:0 auto !important;
 }
 #statsMachineGrid.listGrid{
   grid-template-columns:repeat(6, minmax(0, 1fr)) !important;
@@ -2811,62 +2822,65 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   padding-left:1px !important;
   padding-right:1px !important;
 }
-.bottomNav{
-  bottom:18px !important;
-  left:50% !important;
-  right:auto !important;
-  transform:translateX(-50%) !important;
-  width:min(calc(100% - 12px), 470px) !important;
+#adminRotationEditor .appMenuTableWrap:nth-of-type(1) .appMenuAdminTable,
+#adminRotationEditor .appMenuTableWrap:nth-of-type(2) .appMenuAdminTable{
+  min-width:544px !important;
 }
-.bottomNavScroll,
-.bottomNavInner{
-  justify-content:center !important;
+#adminRotationEditor .appMenuTableWrap:nth-of-type(1) .appMenuInlineInputTiny,
+#adminRotationEditor .appMenuTableWrap:nth-of-type(2) .appMenuInlineInputTiny{
+  min-width:46px !important;
+  padding:5px 3px !important;
+  font-size:11px !important;
 }
-.bottomNavScroll{
-  padding-left:2px !important;
-  padding-right:2px !important;
+#adminRotationEditor .appMenuTableWrap:nth-of-type(1) .appMenuInlineInput,
+#adminRotationEditor .appMenuTableWrap:nth-of-type(2) .appMenuInlineInput{
+  min-height:26px !important;
+  padding:5px 6px !important;
+  font-size:11px !important;
 }
-#monthView{
-  padding-bottom:180px !important;
+#adminRotationEditor .appMenuFreeNamesBox{
+  padding:10px 12px !important;
+  border:1px solid rgba(124,255,124,.12) !important;
+  border-radius:16px !important;
+  background:rgba(255,255,255,.03) !important;
 }
-table.rotTable{
-  min-width:378px !important;
+#adminRotationEditor .appMenuFreeNamesTitle{
+  font-size:11px !important;
+  font-weight:800 !important;
+  letter-spacing:.06em !important;
+  text-transform:uppercase !important;
+  color:rgba(124,255,124,.72) !important;
 }
-table.rotTable th,
-table.rotTable td{
-  padding:4px 1px !important;
+#adminRotationEditor .appMenuFreeNamesText{
+  margin-top:6px !important;
+  font-size:11px !important;
+  line-height:1.35 !important;
+  color:rgba(242,248,245,.88) !important;
+  word-break:break-word !important;
 }
-.noteTable th,
-.noteTable td{
-  padding:6px 3px !important;
+#adminRotationEditor .appMenuTableWrap:nth-of-type(3) .appMenuAdminTable{
+  min-width:432px !important;
 }
-.noteDateCell{
-  width:50px !important;
-  min-width:50px !important;
+#adminRotationEditor .appMenuTableWrap:nth-of-type(3) th:nth-child(1),
+#adminRotationEditor .appMenuTableWrap:nth-of-type(3) td:nth-child(1){
+  width:64px !important;
 }
-.noteShiftCell{
-  width:28px !important;
-  min-width:28px !important;
+#adminRotationEditor .appMenuTableWrap:nth-of-type(3) th:nth-child(2),
+#adminRotationEditor .appMenuTableWrap:nth-of-type(3) td:nth-child(2){
+  width:48% !important;
 }
-.notePersonCell{
-  min-width:101px !important;
+#adminRotationEditor .appMenuTableWrap:nth-of-type(3) th:nth-child(3),
+#adminRotationEditor .appMenuTableWrap:nth-of-type(3) td:nth-child(3){
+  width:78px !important;
 }
-.noteReasonCell{
-  min-width:95px !important;
+#adminRotationEditor .appMenuTableWrap:nth-of-type(3) .appMenuInlineInput{
+  min-width:0 !important;
+  min-height:26px !important;
+  padding:5px 6px !important;
+  font-size:11px !important;
 }
-.noteTable th.noteSpacer,
-.noteTable td.noteSpacer{
-  width:3px !important;
-  min-width:3px !important;
-}
-.bottomNavScroll{
-  justify-content:center !important;
-  width:100% !important;
-}
-@media (display-mode: standalone){
-  .bottomNav{
-    bottom:calc(env(safe-area-inset-bottom) + 14px) !important;
-  }
+#adminRotationEditor .appMenuTableWrap:nth-of-type(3) .appMenuInlineInputTiny{
+  min-width:40px !important;
 }
 </style>
 

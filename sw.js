@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v1-379';
+const CACHE_VERSION = 'v1-386';
 const STATIC_CACHE = `rotace-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `rotace-runtime-${CACHE_VERSION}`;
 const APP_SHELL = [
@@ -7,6 +7,7 @@ const APP_SHELL = [
   './app.js',
   './core.js',
   './ui.js',
+  './games-arcade.js',
   './dashboard.js',
   './rotace.js',
   './stats.js',
