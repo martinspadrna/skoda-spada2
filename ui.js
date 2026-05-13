@@ -2616,59 +2616,73 @@ function triggerAboutAction() {
 
 
 function buildAppHistoryHtml(versionText) {
-  const fallbackSections = [
+  const sections = [
     {
-      range: 'v.1(345)–v.1(350)',
-      title: 'Herní polish a freeze cleanup',
+      range: 'v0.1–v0.50',
+      title: 'Základ aplikace',
       lines: [
-        'Hry jsou kompaktnější, mobilnější a bez zbytečných ovládacích křížů.',
-        'Piškvorky mají online sync, top 10 leaderboardy a tvrdší AI blokování.',
-        'Supabase dostal další cleanup, indexy pro herní lookupy a bezpečnější napojení.',
-        'Changelog je zkrácený do větších milníků místo dlouhého seznamu každé verze.'
+        'Vznikl první základ rozpisů, dashboardu a jednoduchého mobilního layoutu.',
+        'Cíl byl mít jednu čistou appku, která se dá použít i v mobilu bez zbytečného bordelu.'
       ]
     },
     {
-      range: 'v.1(323)–v.1(344)',
-      title: 'Stabilizace a hry',
+      range: 'v0.51–v0.100',
+      title: 'První větší rozšíření',
       lines: [
-        'Stabilizovala se herní sekce, invite flow a herní statistiky.',
-        'Přibyly 2048, Snake a Flap Bird v mobilním layoutu.',
-        'Spodní lišta, přihlášení a online/offline sync dostaly kompaktnější chování.',
-        'Inline skripty se začaly rozdělovat do samostatných modulů.'
+        'Přibyly první stabilnější bloky pro kalkulačky, statistiky a rychlé akce.',
+        'Začal se ladit tmavý glass styl a chování spodní navigace.'
       ]
     },
     {
-      range: 'v.1(310)–v.1(322)',
-      title: 'PWA, offline a herní základ',
+      range: 'v0.101–v0.150',
+      title: 'Dashboard a rozpisy',
       lines: [
-        'Service worker, manifest a offline fallback se ustálily do PWA základu.',
-        'Přibyly online/offline refresh hooky a sync queue.',
-        'Rotace a kalkulačky se dál refaktorovaly do stabilnějšího runtime.'
+        'Dashboard dostal přehlednější kartu s důležitými informacemi.',
+        'Rozpisy se začaly víc stáčet do kompaktního mobilního layoutu.'
       ]
     },
     {
-      range: 'v.1(291)–v.1(309)',
-      title: 'Dashboard polish a rotace',
+      range: 'v0.151–v0.200',
+      title: 'Kalkulačky a administrace',
       lines: [
-        'Dashboard dostal čistší loading stavy a menší vizuální chaos.',
-        'Piškvorky se průběžně ladily proti zamrznutí po tahu AI.',
-        'Layout aplikace se dál zjemňoval pro mobil.'
+        'Kalkulačky pro stroje dostaly vlastní podobu a lepší pořádek v rozložení.',
+        'Administrace se začala připravovat na jemnější úpravy bez zásahů do kódu.'
       ]
     },
     {
-      range: 'v.1(250)–v.1(289)',
-      title: 'Aktuální úpravy',
+      range: 'v0.201–v0.250',
+      title: 'Supabase a sdílená data',
       lines: [
-        'Jídelna a kantýna se sjednocovaly do přehlednějšího zobrazení.',
-        'Dashboard ukazoval další směny, absenci a procenta průběhu.',
-        'Kalkulačky pro frézky a brusy se postupně zpřesňovaly.'
+        'Data se začala opírat o Supabase a přibyly první online synchronizace.',
+        'Herní a pracovní data se začala držet pohromadě v jednom systému.'
+      ]
+    },
+    {
+      range: 'v0.251–v0.300',
+      title: 'PWA a offline režim',
+      lines: [
+        'Přibyl service worker, cache a offline fallback pro použití bez signálu.',
+        'Appka se začala chovat víc jako nativní mobilní aplikace.'
+      ]
+    },
+    {
+      range: 'v0.301–v0.350',
+      title: 'Hry a první profilový základ',
+      lines: [
+        'Rozjela se herní část, přihlášení hráčů a první statistiky výsledků.',
+        'Začaly se připravovat leaderboardy, rekordy a další herní rozšíření.'
+      ]
+    },
+    {
+      range: versionText,
+      title: 'Současná verze a další směr',
+      lines: [
+        'Update manager hlídá novou cache a umí nabídnout aktualizaci bez reinstalace PWA.',
+        'Hry se budou v dalších verzích dál ladit, zpřesňovat a postupně rozšiřovat.',
+        'Zachovává se mobilní glassmorphism styl a čistý app-like feel.'
       ]
     }
   ];
-
-  const sections = Array.isArray(window.APP_CHANGELOG_SECTIONS) && window.APP_CHANGELOG_SECTIONS.length
-    ? window.APP_CHANGELOG_SECTIONS
-    : fallbackSections;
 
   return [
     '<div class="appMenuHistory">',
@@ -2682,7 +2696,6 @@ function buildAppHistoryHtml(versionText) {
     '</div>'
   ].join('');
 }
-
 
 function getAdminRotationMonthKeys() {
   return Object.keys(app.rotation && app.rotation.months ? app.rotation.months : {}).sort((a, b) => a.localeCompare(b, 'cs'));
@@ -3024,6 +3037,23 @@ function makeMachineKey(machineCode, machineIndex, category) {
 }
 
 
+function buildAdminRotationColgroupHtml(columnCount, firstWidthPx, otherWidthPx) {
+  const cols = [];
+  cols.push('<col style="width:' + String(firstWidthPx) + 'px;">');
+  for (let i = 0; i < columnCount; i += 1) {
+    cols.push('<col style="width:' + String(otherWidthPx) + 'px;">');
+  }
+  return '<colgroup>' + cols.join('') + '</colgroup>';
+}
+
+function buildAdminAbsenceColgroupHtml() {
+  return '<colgroup>' +
+    '<col style="width:44px;">' +
+    '<col style="width:128px;">' +
+    '<col style="width:44px;">' +
+    '</colgroup>';
+}
+
 function buildAdminMachineSettingsTableHtml() {
   const rows = Array.isArray(app.machineSettingsRows) ? app.machineSettingsRows : [];
   const machineRows = rows.filter(row => String(row && row.category ? row.category : '').trim() !== 'brus');
@@ -3121,6 +3151,10 @@ function buildAdminRotationTableHtml(monthKey) {
     return withBlank.map((row, idx) => adminNotesRowTemplate(row, idx, true)).join('');
   };
 
+  const hardColgroup = buildAdminRotationColgroupHtml(hardMachines.length, 56, 68);
+  const softColgroup = buildAdminRotationColgroupHtml(softMachines.length, 56, 68);
+  const absenceColgroup = buildAdminAbsenceColgroupHtml();
+
   return [
     '<div class="appMenuSubSection" id="adminRotationEditor">',
     '  <div class="appMenuSubTitle">Rozpis – ' + escapeHtml(monthKey) + '</div>',
@@ -3130,19 +3164,22 @@ function buildAdminRotationTableHtml(monthKey) {
     '    <div class="appMenuFreeNamesText">Vyber měsíc a hned uvidíš, kdo v něm není zapsaný ani jednou a na kterých dnech ještě někdo chybí.</div>',
     '  </div>',
     '  <div class="tableWrap appMenuTableWrap">',
-    '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense">',
+    '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense appMenuAdminRotationTable">',
+    '      ' + hardColgroup,
     '      <thead><tr><th colspan="' + String(1 + hardMachines.length) + '">Tvrdota</th></tr><tr><th>Datum</th>' + hardMachines.map(m => '<th>' + escapeHtml(m) + '</th>').join('') + '</tr></thead>',
     '      <tbody>' + renderRows('hard', hardRows, hardMachines.length) + '</tbody>',
     '    </table>',
     '  </div>',
     '  <div class="tableWrap appMenuTableWrap">',
-    '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense">',
+    '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense appMenuAdminRotationTable">',
+    '      ' + softColgroup,
     '      <thead><tr><th colspan="' + String(1 + softMachines.length) + '">Měkota</th></tr><tr><th>Datum</th>' + softMachines.map(m => '<th>' + escapeHtml(m) + '</th>').join('') + '</tr></thead>',
     '      <tbody>' + renderRows('soft', softRows, softMachines.length) + '</tbody>',
     '    </table>',
     '  </div>',
     '  <div class="tableWrap appMenuTableWrap">',
-    '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense">',
+    '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense appMenuAdminAbsenceTable">',
+    '      ' + absenceColgroup,
     '      <thead><tr><th>Datum</th><th>Jméno</th><th>Kód</th></tr></thead>',
     '      <tbody>' + renderNotes() + '</tbody>',
     '    </table>',
@@ -3575,6 +3612,7 @@ function openAppMenu(view) {
         '  <div class="appMenuText">',
         '    <div>Aktuální verze je nahoře, starší novinky jsou pod ní od nejnovějších po nejstarší.</div>',
         '    <div>Import i export jsou schované v administraci, aby zbytek aplikace působil čistě.</div>',
+        '    <div>Hry se budou v dalších verzích dál ladit a postupně rozšiřovat.</div>',
         '  </div>',
         '  ' + buildAppHistoryHtml(versionText),
         '  <button type="button" class="appMenuAction appMenuBack" data-menu-back="1">Zpět</button>',
@@ -4195,9 +4233,9 @@ function gamesApplyActiveAccountUI(account) {
   currentEl.textContent = '';
   if (next) {
     inputEl.value = '';
-    inputEl.placeholder = 'Zadej jiné číslo účtu';
+    inputEl.placeholder = 'Zadej poslední 4 číslice os.č.';
   } else {
-    inputEl.placeholder = 'Zadej číslo účtu';
+    inputEl.placeholder = 'Zadej poslední 4 číslice os.č.';
   }
   clearBtn.textContent = next ? 'Odhlásit' : 'Bez účtu';
   clearBtn.style.minWidth = next ? '46px' : '';
@@ -4323,7 +4361,7 @@ function gamesRenderAccountChips() {
       const typed = String(inputEl.value || '').trim();
       if (!typed) {
         syncVisibleAccount(null);
-        hintEl.textContent = 'Zadej číslo účtu.';
+        hintEl.textContent = 'Zadej poslední 4 číslice os.č.';
         inputEl.focus();
         return;
       }

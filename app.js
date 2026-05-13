@@ -1,4 +1,4 @@
-// v.1(390) – update manager pro novou verzi a zachovaný mobile-first styl.
+// v.1.1 (394) – update manager pro novou verzi a zachovaný mobile-first styl.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
@@ -265,12 +265,10 @@ function installPwaAndConnectivityHooks() {
     toast.setAttribute('role', 'status');
     toast.setAttribute('aria-live', 'polite');
     toast.innerHTML = `
-      <div class="rakUpdateToastTop">
-        <div class="rakUpdateToastBadge" aria-hidden="true">RaK</div>
-        <div class="rakUpdateToastBody">
-          <div class="rakUpdateToastTitle">K dispozici je nová verze aplikace</div>
-          <div class="rakUpdateToastText">Stačí kliknout na Aktualizovat a appka si načte novou cache sama.</div>
-        </div>
+      <div class="rakUpdateToastBadge" aria-hidden="true">RaK</div>
+      <div class="rakUpdateToastBody">
+        <div class="rakUpdateToastTitle">K dispozici je nová verze aplikace</div>
+        <div class="rakUpdateToastText">Stačí kliknout na Aktualizovat a appka si načte novou cache sama.</div>
       </div>
       <button type="button" class="rakUpdateToastAction">Aktualizovat</button>
     `;
