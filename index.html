@@ -47,27 +47,60 @@
     filter:saturate(1.45) brightness(1.04) contrast(1.12) !important;
   }
 
-  /* Bottom bar: 50% bigger icons, still compact */
-  .bottomNav{    padding:0 2px calc(0px + env(safe-area-inset-bottom)) !important;    gap:2px !important;  }
-  .bottomNavBtn{    flex:0 0 65px !important;    width:65px !important;    min-width:65px !important;    max-width:65px !important;    min-height:42px !important;    padding:0 1px 0 !important;  }
-  .bottomNavBtn .bottomNavIcon,
-  .bottomNavBtn .bottomNavIcon svg{
-    width:33px !important;
-    height:33px !important;
-  }
-  .bottomNavBtn .bottomNavIcon{
-    flex:0 0 33px !important;
-  }
-  .bottomNavBtn .bottomNavLabel{
-    font-size:8px !important;
-    line-height:1 !important;
-  }
-  .bottomNavBtn.active{    transform:translateY(-4px) scale(1.2) !important;    z-index:12 !important;  }
-  .bottomNavBtn.active::before{
-    inset:-3px !important;
-  }
-  .bottomNavMenuBtn{    flex:0 0 17px !important;    width:17px !important;    min-width:17px !important;    max-width:17px !important;    padding:0 !important;    display:flex !important;    align-items:center !important;    justify-content:center !important;  }
-  .bottomNavMenuBtn .moreIcon{    width:11px !important;    height:11px !important;    margin:0 auto !important;  }
+  /* Bottom bar: adaptive across screens */
+.bottomNav{
+  width:min(calc(100vw - 10px), 760px) !important;
+  bottom:calc(10px + env(safe-area-inset-bottom)) !important;
+  padding:5px 6px calc(5px + env(safe-area-inset-bottom)) !important;
+  gap:clamp(2px, 1vw, 8px) !important;
+}
+.bottomNavScroll{
+  gap:clamp(2px, .4vw, 6px) !important;
+  padding-inline:2px !important;
+  scroll-padding-inline:8px !important;
+}
+.bottomNavBtn{
+  flex:0 0 clamp(42px, 7vw, 55px) !important;
+  width:clamp(42px, 7vw, 55px) !important;
+  min-width:clamp(42px, 7vw, 55px) !important;
+  max-width:clamp(42px, 7vw, 55px) !important;
+  min-height:clamp(46px, 7.6vw, 56px) !important;
+  padding:2px 1px 1px !important;
+}
+.bottomNavBtn .bottomNavIcon,
+.bottomNavBtn .bottomNavIcon svg{
+  width:clamp(20px, 6.8vw, 31px) !important;
+  height:clamp(20px, 6.8vw, 31px) !important;
+}
+.bottomNavBtn .bottomNavIcon{
+  flex:0 0 clamp(20px, 6.8vw, 31px) !important;
+}
+.bottomNavBtn .bottomNavLabel{
+  font-size:clamp(7px, 1.8vw, 9px) !important;
+  line-height:1 !important;
+}
+.bottomNavBtn.active{
+  transform:translateY(-4px) scale(1.12) !important;
+  z-index:12 !important;
+}
+.bottomNavBtn.active::before{
+  inset:-3px !important;
+}
+.bottomNavMenuBtn{
+  flex:0 0 17px !important;
+  width:17px !important;
+  min-width:17px !important;
+  max-width:17px !important;
+  padding:0 !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+}
+.bottomNavMenuBtn .moreIcon{
+  width:11px !important;
+  height:11px !important;
+  margin:0 auto !important;
+}
 
   /* Rotace: trochu menší jména dole */
   #rotaceNamesPanel .listItem{

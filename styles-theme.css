@@ -280,10 +280,11 @@ input{
   left:50%;
   right:auto;
   transform:translateX(-50%);
-  bottom:14px;
+  bottom:calc(10px + env(safe-area-inset-bottom));
   z-index:3000;
-  width:min(calc(100% - 12px), 470px);
-  padding:3px 6px calc(2px + env(safe-area-inset-bottom));
+  width:min(calc(100vw - 10px), 760px);
+  max-width:760px;
+  padding:5px 6px calc(5px + env(safe-area-inset-bottom));
   background:rgba(7,10,8,.46);
   backdrop-filter:blur(24px) saturate(180%);
   border:1px solid rgba(124,255,124,.10);
@@ -291,7 +292,7 @@ input{
   box-shadow:0 18px 40px rgba(0,0,0,.42);
   display:flex;
   align-items:center;
-  gap:6px;
+  gap:clamp(2px, 1vw, 8px);
 }
 
 .bottomNavScroll{
@@ -299,23 +300,25 @@ input{
   min-width:0;
   display:flex;
   align-items:center;
-  gap:2px;
+  gap:clamp(2px, .4vw, 6px);
   overflow-x:auto;
   overflow-y:hidden;
   -webkit-overflow-scrolling:touch;
   scrollbar-width:none;
   scroll-snap-type:x proximity;
+  scroll-padding-inline:8px;
+  padding-inline:2px;
 }
 .bottomNavScroll::-webkit-scrollbar{display:none;}
 
 .bottomNavBtn{
   position:relative;
   overflow:hidden;
-  flex:0 0 49px;
-  width:49px;
-  min-width:49px;
-  max-width:49px;
-  min-height:52px;
+  flex:0 0 clamp(42px, 7vw, 55px);
+  width:clamp(42px, 7vw, 55px);
+  min-width:clamp(42px, 7vw, 55px);
+  max-width:clamp(42px, 7vw, 55px);
+  min-height:clamp(46px, 7.6vw, 56px);
   border-radius:14px;
   border:1px solid rgba(124,255,124,.16);
   background:rgba(20,24,22,.96);
@@ -326,7 +329,7 @@ input{
   gap:2px;
   align-items:center;
   justify-content:center;
-  padding:2px 2px 1px;
+  padding:2px 1px 1px;
   font-size:10px;
   font-weight:700;
   line-height:1.05;
