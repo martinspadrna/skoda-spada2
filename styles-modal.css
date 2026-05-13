@@ -571,3 +571,17 @@ body.appMenuOpen{
 #dashTttMeta {
   min-width: 120px;
 }
+
+
+.foodScheduleModal,
+.personScheduleModal{
+  transform:translateY(16px) scale(.98);
+  opacity:0;
+  transition:transform .24s ease, opacity .24s ease;
+}
+
+.foodScheduleOverlay.isVisible .foodScheduleModal,
+.personScheduleOverlay.isVisible .personScheduleModal{
+  opacity:1;
+  transform:translateY(0) scale(1);
+}

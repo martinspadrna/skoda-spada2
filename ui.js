@@ -204,6 +204,211 @@ function resetUiPrefs() {
 }
 
 
+const APP_THEME_DEFAULT = 'skoda';
+const APP_THEME_META_COLOR = {
+  skoda: '#0b0f0c',
+  'neon-blue': '#071321',
+  'amoled-black': '#050505',
+  'orange-night': '#130c08',
+  'retro-arcade': '#150d1f',
+  matrix: '#030903'
+};
+
+const RAK_THEME_DEFS = [
+  {
+    id: 'skoda',
+    label: 'Škoda green',
+    subtitle: 'Současný vzhled, jak ho znáš teď.',
+    emoji: '🚗',
+    color: '#0b0f0c',
+    unlockText: 'Výchozí vzhled',
+    accent: '#7CFF7C',
+    accentRgb: '124,255,124',
+    condition: () => true
+  },
+  {
+    id: 'neon-blue',
+    label: 'Neon blue',
+    subtitle: 'Chladný glow pro čistý noční vibe.',
+    emoji: '💠',
+    color: '#071321',
+    unlockText: 'Odemkne se na level 6',
+    accent: '#6bb7ff',
+    accentRgb: '107,183,255',
+    condition: (metrics) => Number(metrics && metrics.level || 0) >= 6
+  },
+  {
+    id: 'amoled-black',
+    label: 'AMOLED black',
+    subtitle: 'Nejdarkší varianta s minimem světla.',
+    emoji: '◼',
+    color: '#050505',
+    unlockText: 'Odemkne se na level 12',
+    accent: '#d9ffe2',
+    accentRgb: '217,255,226',
+    condition: (metrics) => Number(metrics && metrics.level || 0) >= 12
+  },
+  {
+    id: 'orange-night',
+    label: 'Orange night shift',
+    subtitle: 'Teplý noční režim s jemným oranžovým nádechem.',
+    emoji: '🟠',
+    color: '#130c08',
+    unlockText: 'Odemkne se na level 15',
+    accent: '#ffb15a',
+    accentRgb: '255,177,90',
+    condition: (metrics) => Number(metrics && metrics.level || 0) >= 15
+  },
+  {
+    id: 'retro-arcade',
+    label: 'Retro arcade',
+    subtitle: 'Trochu víc herní, trochu víc old-school.',
+    emoji: '🎮',
+    color: '#150d1f',
+    unlockText: 'Odemkne se po 4 achievementech',
+    accent: '#ff8cff',
+    accentRgb: '255,140,255',
+    condition: (metrics) => Number(metrics && metrics.achievementCount || 0) >= 4
+  },
+  {
+    id: 'matrix',
+    label: 'Matrix',
+    subtitle: 'Zelený datový vibe, když chceš úplný neon.',
+    emoji: '⌁',
+    color: '#030903',
+    unlockText: 'Odemkne se na level 20 a 8 achievementů',
+    accent: '#7CFF7C',
+    accentRgb: '124,255,124',
+    condition: (metrics) => Number(metrics && metrics.level || 0) >= 20 && Number(metrics && metrics.achievementCount || 0) >= 8
+  }
+];
+
+window.RAK_THEME_DEFS = RAK_THEME_DEFS;
+
+function gamesThemeById(themeId) {
+  const id = String(themeId || '').trim();
+  return RAK_THEME_DEFS.find(item => item.id === id) || RAK_THEME_DEFS[0];
+}
+
+function gamesApplyTheme(themeId, opts) {
+  const next = gamesThemeById(themeId);
+  const root = document.documentElement;
+  root.dataset.appTheme = next.id;
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute('content', next.color || APP_THEME_META_COLOR[next.id] || '#0b0f0c');
+  if (typeof app !== 'undefined') {
+    app.currentThemeId = next.id;
+  }
+  if (!opts || !opts.skipStateSave) {
+    try { localStorage.setItem(APP_KEY + ':theme_preview_base', next.id); } catch (err) {}
+  }
+  return next.id;
+}
+
+function gamesSyncThemeFromActiveAccount() {
+  try {
+    const profile = typeof gamesGetProfile === 'function' ? gamesGetProfile() : null;
+    const active = profile && profile.accounts && profile.activeAccountId ? profile.accounts[profile.activeAccountId] : null;
+    const themeId = active && String(active.themeId || '').trim() ? active.themeId : APP_THEME_DEFAULT;
+    gamesApplyTheme(themeId, { skipStateSave: true });
+    return themeId;
+  } catch (err) {
+    gamesApplyTheme(APP_THEME_DEFAULT, { skipStateSave: true });
+    return APP_THEME_DEFAULT;
+  }
+}
+
+function ensureThemeToast() {
+  let toast = document.getElementById('rakThemeToast');
+  if (toast) return toast;
+  toast = document.createElement('div');
+  toast.id = 'rakThemeToast';
+  toast.className = 'rakThemeToast';
+  toast.innerHTML = `
+    <div class="rakThemeToastBadge" aria-hidden="true">RaK</div>
+    <div class="rakThemeToastBody">
+      <div class="rakThemeToastTitle" id="rakThemeToastTitle">Nový vzhled je připravený</div>
+      <div class="rakThemeToastText" id="rakThemeToastText">Změna se po chvíli vrátí zpět, pokud ji nepotvrdíš.</div>
+      <div class="rakThemeToastCountdown" id="rakThemeToastCountdown"></div>
+    </div>
+    <div class="rakThemeToastActions">
+      <button type="button" class="rakThemeToastAction" id="rakThemeToastConfirm">Nechat</button>
+      <button type="button" class="rakThemeToastCancel" id="rakThemeToastCancel">Vrátit</button>
+    </div>
+  `;
+  document.body.appendChild(toast);
+  return toast;
+}
+
+let __rakThemeToastState = null;
+window.hideThemePreviewToast = function hideThemePreviewToast() {
+  const toast = document.getElementById('rakThemeToast');
+  if (toast) toast.classList.remove('isVisible');
+  if (__rakThemeToastState && __rakThemeToastState.timer) clearInterval(__rakThemeToastState.timer);
+  __rakThemeToastState = null;
+};
+
+window.showThemePreviewToast = function showThemePreviewToast(payload) {
+  const toast = ensureThemeToast();
+  const titleEl = toast.querySelector('#rakThemeToastTitle');
+  const textEl = toast.querySelector('#rakThemeToastText');
+  const countdownEl = toast.querySelector('#rakThemeToastCountdown');
+  const confirmBtn = toast.querySelector('#rakThemeToastConfirm');
+  const cancelBtn = toast.querySelector('#rakThemeToastCancel');
+  const secondsTotal = Math.max(1, Number(payload && payload.seconds || 5) || 5);
+  const onConfirm = typeof (payload && payload.onConfirm) === 'function' ? payload.onConfirm : null;
+  const onCancel = typeof (payload && payload.onCancel) === 'function' ? payload.onCancel : null;
+  const title = String(payload && payload.title ? payload.title : 'K dispozici je nový vzhled').trim();
+  const text = String(payload && payload.text ? payload.text : 'Pokud se ti líbí, nech ho zapnutý. Za chvíli se vrátí zpět, když to nepotvrdíš.').trim();
+
+  if (__rakThemeToastState && __rakThemeToastState.timer) clearInterval(__rakThemeToastState.timer);
+  __rakThemeToastState = {
+    remaining: secondsTotal,
+    timer: null,
+    onConfirm,
+    onCancel,
+    fallbackThemeId: String(payload && payload.fallbackThemeId ? payload.fallbackThemeId : APP_THEME_DEFAULT).trim() || APP_THEME_DEFAULT,
+    keepThemeId: String(payload && payload.keepThemeId ? payload.keepThemeId : APP_THEME_DEFAULT).trim() || APP_THEME_DEFAULT,
+    accountId: String(payload && payload.accountId ? payload.accountId : '').trim()
+  };
+
+  if (titleEl) titleEl.textContent = title;
+  if (textEl) textEl.textContent = text;
+  if (countdownEl) countdownEl.textContent = `Vrátí se zpět za ${secondsTotal} s, pokud nic nezvolíš.`;
+  if (confirmBtn) {
+    confirmBtn.textContent = 'Nechat';
+    confirmBtn.onclick = () => {
+      const state = __rakThemeToastState;
+      window.hideThemePreviewToast();
+      if (state && state.onConfirm) state.onConfirm();
+    };
+  }
+  if (cancelBtn) {
+    cancelBtn.textContent = 'Vrátit';
+    cancelBtn.onclick = () => {
+      const state = __rakThemeToastState;
+      if (state && state.onCancel) state.onCancel();
+      window.hideThemePreviewToast();
+    };
+  }
+
+  toast.classList.add('isVisible');
+  __rakThemeToastState.timer = setInterval(() => {
+    if (!__rakThemeToastState) return;
+    __rakThemeToastState.remaining -= 1;
+    if (countdownEl) countdownEl.textContent = `Vrátí se zpět za ${Math.max(0, __rakThemeToastState.remaining)} s, pokud nic nezvolíš.`;
+    if (__rakThemeToastState.remaining <= 0) {
+      const state = __rakThemeToastState;
+      window.hideThemePreviewToast();
+      if (state && state.onCancel) state.onCancel();
+    }
+  }, 1000);
+  requestAnimationFrame(() => toast.classList.add('isVisible'));
+};
+
+window.applyAppTheme = gamesApplyTheme;
+window.syncThemeFromActiveAccount = gamesSyncThemeFromActiveAccount;
+
 
 function ensureTicTacToeStyles() {
   if (document.getElementById('tttStyles')) return;
@@ -3125,6 +3330,36 @@ function buildAdminMachineSettingsTableHtml() {
     '      <tbody>' + brusRowsHtml + '</tbody>',
     '    </table>',
     '  </div>',
+    '</div>',
+    buildThemeSystemSettingsHtml()
+  ].join('');
+}
+
+
+
+function buildThemeSystemSettingsHtml() {
+  const defs = Array.isArray(window.RAK_THEME_DEFS) && window.RAK_THEME_DEFS.length ? window.RAK_THEME_DEFS : [];
+  const cards = defs.map(theme => {
+    const accent = theme && theme.accent ? String(theme.accent) : '';
+    const subtitle = String(theme.subtitle || '');
+    const title = String(theme.label || '');
+    return [
+      '<button type="button" class="appMenuThemeCard" data-theme-id="' + escapeHtml(String(theme.id || '')) + '">',
+      '  <div class="appMenuThemeSwatch" style="--theme-swatch:' + escapeHtml(accent || '#7CFF7C') + '"></div>',
+      '  <div class="appMenuThemeInfo">',
+      '    <div class="appMenuThemeTitle">' + escapeHtml(title) + '</div>',
+      '    <div class="appMenuThemeSub">' + escapeHtml(subtitle) + '</div>',
+      '    <div class="appMenuThemeBadge">' + escapeHtml(String(theme.unlockText || '')) + '</div>',
+      '  </div>',
+      '</button>'
+    ].join('');
+  }).join('');
+  return [
+    '<div class="appMenuSubSection" id="themeSystemSection">',
+    '  <div class="appMenuSubTitle">Theme systém</div>',
+    '  <div class="appMenuText">Vzhled celé aplikace se váže na přihlášený herní účet. Výchozí vzhled zůstává stejný, další se odemykají podle levelu a achievementů.</div>',
+    '  <div class="appMenuThemeGrid" id="appMenuThemeGrid">' + cards + '</div>',
+    '  <div class="appMenuThemeHint" id="appMenuThemeHint"></div>',
     '</div>'
   ].join('');
 }
@@ -3960,7 +4195,7 @@ function ensureFoodScheduleModal() {
 // -------------------------
 // Games hub + account profile
 // -------------------------
-const GAMES_PROFILE_KEY = APP_KEY + ':games_profile_v1';
+const GAMES_PROFILE_KEY = APP_KEY + ':games_profile_v2';
 const GAMES_ACCOUNT_LIST = [];
 
 function gamesMakeAccountEntry(accountId, name) {
@@ -3976,6 +4211,7 @@ function gamesMakeAccountEntry(accountId, name) {
       flap: { plays: 0, bestScore: 0, bestPipes: 0, lastPlayedAt: 0 }
     },
     achievements: [],
+    themeId: '',
     updatedAt: 0
   };
 }
@@ -4008,6 +4244,9 @@ function gamesLoadProfile() {
           flap: Object.assign({ plays: 0, bestScore: 0, bestPipes: 0, lastPlayedAt: 0 }, incoming.stats && incoming.stats.flap ? incoming.stats.flap : {})
         },
         achievements: Array.isArray(incoming.achievements) ? incoming.achievements.slice(0, 20) : [],
+        themeId: String(incoming.themeId || '').trim(),
+        themeId: String(incoming.themeId || '').trim(),
+        themeId: String(incoming.themeId || '').trim(),
         updatedAt: Number(incoming.updatedAt || 0) || 0
       };
     });
@@ -4025,6 +4264,9 @@ function gamesLoadProfile() {
           flap: Object.assign({ plays: 0, bestScore: 0, bestPipes: 0, lastPlayedAt: 0 }, incoming.stats && incoming.stats.flap ? incoming.stats.flap : {})
         },
         achievements: Array.isArray(incoming.achievements) ? incoming.achievements.slice(0, 20) : [],
+        themeId: String(incoming.themeId || '').trim(),
+        themeId: String(incoming.themeId || '').trim(),
+        themeId: String(incoming.themeId || '').trim(),
         updatedAt: Number(incoming.updatedAt || 0) || 0
       };
     });
@@ -4273,6 +4515,12 @@ function gamesSetActiveAccount(accountId) {
   app.gamesProfile = profile;
   const active = profile.accounts[profile.activeAccountId] || null;
   gamesApplyActiveAccountUI(active);
+  if (typeof syncThemeFromActiveAccount === 'function') {
+    try { syncThemeFromActiveAccount(); } catch (err) {}
+  }
+  if (typeof renderThemeSettingsCards === 'function') {
+    try { renderThemeSettingsCards(); } catch (err) {}
+  }
   gamesRenderStats();
   renderGamesHub();
   return true;
@@ -4284,6 +4532,12 @@ function gamesClearActiveAccount() {
   gamesSaveProfile(profile);
   app.gamesProfile = profile;
   gamesApplyActiveAccountUI(null);
+  if (typeof applyAppTheme === 'function') {
+    try { applyAppTheme(APP_THEME_DEFAULT, { skipStateSave: true }); } catch (err) {}
+  }
+  if (typeof renderThemeSettingsCards === 'function') {
+    try { renderThemeSettingsCards(); } catch (err) {}
+  }
   gamesRenderStats();
   renderGamesHub();
 }
@@ -5462,3 +5716,58 @@ if (!window.__tttHashInviteBound) {
   window.addEventListener('load', () => { void tttAutoOpenFromHash(); }, { once: true });
 }
 
+window.addEventListener('load', () => {
+  try {
+    if (typeof syncThemeFromActiveAccount === 'function') syncThemeFromActiveAccount();
+  } catch (err) {}
+}, { once: true });
+
+
+
+function buildAdminSettingsSectionHtml() {
+  return buildAdminMachineSettingsTableHtml();
+}
+
+
+function renderThemeSettingsCards() {
+  const grid = document.getElementById('appMenuThemeGrid');
+  const hint = document.getElementById('appMenuThemeHint');
+  if (!grid || !hint) return;
+  const profile = typeof gamesGetProfile === 'function' ? gamesGetProfile() : null;
+  const active = profile && profile.activeAccountId && profile.accounts ? profile.accounts[profile.activeAccountId] : null;
+  if (!active) {
+    grid.innerHTML = '<div class="smallText">Přihlas se v Hrách a tady pak půjde měnit vzhled celé appky podle účtu.</div>';
+    hint.textContent = 'Základní vzhled zůstává stejný. Odemknuté vzhledy závisí na levelu a achievementech herního účtu.';
+    return;
+  }
+  const metrics = typeof getArcadeMetrics === 'function' ? getArcadeMetrics(active) : { level: 1, achievementCount: 0 };
+  const defs = Array.isArray(window.RAK_THEME_DEFS) ? window.RAK_THEME_DEFS : [];
+  grid.innerHTML = defs.map((theme) => {
+    const unlocked = theme && theme.condition ? !!theme.condition(metrics) || theme.id === 'skoda' : theme.id === 'skoda';
+    const current = String(active.themeId || 'skoda');
+    const isActive = current === theme.id;
+    return '<button type="button" class="appMenuThemeCard ' + (isActive ? 'isActive' : '') + '" data-theme-id="' + escapeHtml(theme.id) + '" ' + (unlocked ? '' : 'disabled') + '>' +
+      '<div class="appMenuThemeSwatch" style="--theme-swatch:' + escapeHtml(theme.color || '#7CFF7C') + '"></div>' +
+      '<div class="appMenuThemeInfo">' +
+      '<div class="appMenuThemeTitle">' + escapeHtml(theme.label || '') + '</div>' +
+      '<div class="appMenuThemeSub">' + escapeHtml(theme.subtitle || '') + '</div>' +
+      '<div class="appMenuThemeBadge">' + escapeHtml(unlocked ? (isActive ? 'Používáš' : 'Vyzkoušet') : (theme.unlockText || 'Zamčeno')) + '</div>' +
+      '</div>' +
+    '</button>';
+  }).join('');
+  hint.textContent = 'Aktivní účet ' + escapeHtml(String(active.fullName || active.accountNumber || '')) + ' · level ' + String(metrics.level || 1) + ' · achievementů ' + String(metrics.achievementCount || 0);
+  grid.querySelectorAll('[data-theme-id]').forEach((btn) => {
+    if (btn.dataset.bound) return;
+    btn.dataset.bound = '1';
+    btn.addEventListener('click', () => {
+      if (typeof gamesPreviewThemeChange === 'function') {
+        gamesPreviewThemeChange(active, String(btn.dataset.themeId || ''));
+      }
+    });
+  });
+}
+
+
+window.addEventListener('load', () => {
+  try { renderThemeSettingsCards(); } catch (err) {}
+}, { once: true });

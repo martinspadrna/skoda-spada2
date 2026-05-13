@@ -1,13 +1,9 @@
 # Rotace a kalkulačky
 
-## v.1.1 (394)
-- Login v hrách má menší písmo, aby byl celý text nápovědy vidět.
-- O aplikaci je přepracované na milníky od v0.1 a s přehledem větších posunů po zhruba 50 verzích.
-- V dalších verzích se budou dál ladit hry a herní systém.
-- Update toast je upravený tak, aby text byl nad tlačítkem a bez smajlíku.
-- Přidána detekce nové verze aplikace přes waiting service worker.
-- Po nasazení nové cache se zobrazí moderní update popup s tlačítkem Aktualizovat.
-- Po potvrzení se appka sama přepne na novou verzi bez ruční reinstalace PWA.
+## v.1.1 (398)
+- Ve hrách přibyly opravdové hráčské profily s avatarem, levelem, rankem, XP pruhem a výběrem achievementů.
+- Achievement centrum ukazuje odemčené i zamčené achievementy s raritami bronze/silver/gold/platinum a průběžným progressem.
+- Build, cache i verze jsou srovnané na 398.
 
 ## v.1(387)
 - Statistiky už neukazují popisky typu „Klepni na …“.
