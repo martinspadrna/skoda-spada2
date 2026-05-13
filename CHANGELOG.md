@@ -1,6 +1,7 @@
 # Rotace a kalkulačky
 
-## v.1.1 (394)
+## v.1.1 (402)
+- Eportal ikonka je zjednodušená do čistšího neonového stylu, aby víc seděla k celé appce.
 - Login v hrách má menší písmo, aby byl celý text nápovědy vidět.
 - O aplikaci je přepracované na milníky od v0.1 a s přehledem větších posunů po zhruba 50 verzích.
 - V dalších verzích se budou dál ladit hry a herní systém.

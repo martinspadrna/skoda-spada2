@@ -78,12 +78,7 @@ function getSoftMachineDisplayLabel(entry, rotation) {
 
 function handlePersonTap(name) {
   const now = Date.now();
-  if (app.selectedName === name) {
-    app.selectedName = null;
-    app.nameTapState = { name, count: 0, lastTap: 0 };
-    renderRotace();
-    return;
-  }
+  const sameName = app.selectedName === name;
 
   if (!app.nameTapState || app.nameTapState.name !== name || now - app.nameTapState.lastTap > 750) {
     app.nameTapState = { name, count: 1, lastTap: now };
@@ -95,7 +90,7 @@ function handlePersonTap(name) {
   app.selectedName = name;
   renderRotace();
 
-  if (app.nameTapState.count >= 2) {
+  if (sameName && app.nameTapState.count >= 2) {
     app.nameTapState = { name, count: 0, lastTap: 0 };
     showPersonQrModal(name);
   }
