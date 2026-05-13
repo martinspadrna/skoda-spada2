@@ -1,14 +1,12 @@
 # Rotace a kalkulačky
 
-## v.1.1 (404)
-- Dashboardové ikonky Kalendář a Jídelna jsou přepsané na čistší jednoduché SVG, aby nepůsobily rozsypaně.
-- V Hrách zůstává jen jedna sekce Herní statistiky nahoře, ve stylu jako profily a achievementy.
-- Spodní lišta dostala pevnější fixaci dole, aby při scrollu neodjížděla nahoru.
-- Eportal ikonka je pořád ve zjednodušeném neonovém stylu.
-- Update toast je upravený tak, aby text byl nad tlačítkem a bez smajlíku.
-- Přidána detekce nové verze aplikace přes waiting service worker.
-- Po nasazení nové cache se zobrazí moderní update popup s tlačítkem Aktualizovat.
-- Po potvrzení se appka sama přepne na novou verzi bez ruční reinstalace PWA.
+## v.1.1 (405)
+- Dashboardové ikonky Kalendář a Jídelna jsou přiblížené původnímu stylu a jsou jednodušší, aby nepůsobily rozsypaně.
+- Herní statistiky se po této verzi resetují na nulu, hráč 4157 je z profilu vyhozený a další sync už tenhle starý balast netahá zpátky.
+- Profily, achievementy i herní statistiky mají stejný obal a po přihlášení se správně odemykají.
+- Spodní lišta drží pevně dole i na stránkách se scrollováním.
+- Eportal ikonka zůstává ve zjednodušeném neonovém stylu.
+- Update manager a popup zůstávají aktivní pro novou cache.
 
 ## v.1(387)
 - Statistiky už neukazují popisky typu „Klepni na …“.

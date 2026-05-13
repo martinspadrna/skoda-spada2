@@ -3966,7 +3966,18 @@ function ensureFoodScheduleModal() {
 // Games hub + account profile
 // -------------------------
 const GAMES_PROFILE_KEY = APP_KEY + ':games_profile_v1';
+const GAMES_PROFILE_RESET_VERSION = 405;
+const GAMES_ACCOUNT_BLOCKLIST = new Set(['4157']);
 const GAMES_ACCOUNT_LIST = [];
+
+function gamesEmptyStats() {
+  return {
+    ttt: { plays: 0, wins: 0, losses: 0, draws: 0, bestMoves: null, bestTimeMs: null, lastPlayedAt: 0 },
+    g2048: { plays: 0, bestScore: 0, bestTile: 0, lastPlayedAt: 0 },
+    snake: { plays: 0, bestScore: 0, bestLength: 0, lastPlayedAt: 0 },
+    flap: { plays: 0, bestScore: 0, bestPipes: 0, lastPlayedAt: 0 }
+  };
+}
 
 function gamesMakeAccountEntry(accountId, name) {
   const id = String(accountId || '').trim();
@@ -3974,23 +3985,51 @@ function gamesMakeAccountEntry(accountId, name) {
   return {
     id,
     name: label,
-    stats: {
-      ttt: { plays: 0, wins: 0, losses: 0, draws: 0, bestMoves: null, bestTimeMs: null, lastPlayedAt: 0 },
-      g2048: { plays: 0, bestScore: 0, bestTile: 0, lastPlayedAt: 0 },
-      snake: { plays: 0, bestScore: 0, bestLength: 0, lastPlayedAt: 0 },
-      flap: { plays: 0, bestScore: 0, bestPipes: 0, lastPlayedAt: 0 }
-    },
+    stats: gamesEmptyStats(),
     achievements: [],
     updatedAt: 0
   };
 }
 
 function gamesDefaultProfile() {
-  const accounts = {};
-  GAMES_ACCOUNT_LIST.forEach(acc => {
-    accounts[acc.id] = gamesMakeAccountEntry(acc.id, acc.name);
-  });
-  return { activeAccountId: '', accounts };
+  return { activeAccountId: '', accounts: {}, profileVersion: GAMES_PROFILE_RESET_VERSION };
+}
+
+function gamesNormalizeStoredAccount(account, fallbackName) {
+  const id = String(account && account.id || '').trim();
+  const name = String(account && account.name || fallbackName || id).trim() || id;
+  const incoming = account && account.stats && typeof account.stats === 'object' ? account.stats : {};
+  const stats = gamesEmptyStats();
+  const ttt = incoming.ttt && typeof incoming.ttt === 'object' ? incoming.ttt : {};
+  const g2048 = incoming.g2048 && typeof incoming.g2048 === 'object' ? incoming.g2048 : {};
+  const snake = incoming.snake && typeof incoming.snake === 'object' ? incoming.snake : {};
+  const flap = incoming.flap && typeof incoming.flap === 'object' ? incoming.flap : {};
+  stats.ttt.plays = Number(ttt.plays || 0) || 0;
+  stats.ttt.wins = Number(ttt.wins || 0) || 0;
+  stats.ttt.losses = Number(ttt.losses || 0) || 0;
+  stats.ttt.draws = Number(ttt.draws || 0) || 0;
+  stats.ttt.bestMoves = typeof ttt.bestMoves === 'undefined' ? null : ttt.bestMoves;
+  stats.ttt.bestTimeMs = typeof ttt.bestTimeMs === 'undefined' ? null : ttt.bestTimeMs;
+  stats.ttt.lastPlayedAt = Number(ttt.lastPlayedAt || 0) || 0;
+  stats.g2048.plays = Number(g2048.plays || 0) || 0;
+  stats.g2048.bestScore = Number(g2048.bestScore || 0) || 0;
+  stats.g2048.bestTile = Number(g2048.bestTile || 0) || 0;
+  stats.g2048.lastPlayedAt = Number(g2048.lastPlayedAt || 0) || 0;
+  stats.snake.plays = Number(snake.plays || 0) || 0;
+  stats.snake.bestScore = Number(snake.bestScore || 0) || 0;
+  stats.snake.bestLength = Number(snake.bestLength || 0) || 0;
+  stats.snake.lastPlayedAt = Number(snake.lastPlayedAt || 0) || 0;
+  stats.flap.plays = Number(flap.plays || 0) || 0;
+  stats.flap.bestScore = Number(flap.bestScore || 0) || 0;
+  stats.flap.bestPipes = Number(flap.bestPipes || 0) || 0;
+  stats.flap.lastPlayedAt = Number(flap.lastPlayedAt || 0) || 0;
+  return {
+    id,
+    name,
+    stats,
+    achievements: Array.isArray(account && account.achievements) ? account.achievements.slice(0, 20) : [],
+    updatedAt: Number(account && account.updatedAt || 0) || 0
+  };
 }
 
 function gamesLoadProfile() {
@@ -3999,42 +4038,27 @@ function gamesLoadProfile() {
     if (!raw) return gamesDefaultProfile();
     const parsed = JSON.parse(raw);
     const base = gamesDefaultProfile();
-    base.activeAccountId = String(parsed.activeAccountId || '').trim();
     const srcAccounts = parsed.accounts && typeof parsed.accounts === 'object' ? parsed.accounts : {};
-    GAMES_ACCOUNT_LIST.forEach(acc => {
-      const incoming = srcAccounts[acc.id] || {};
-      base.accounts[acc.id] = {
-        id: acc.id,
-        name: acc.name,
-        stats: {
-          ttt: Object.assign({ plays: 0, wins: 0, losses: 0, draws: 0, bestMoves: null, bestTimeMs: null, lastPlayedAt: 0 }, incoming.stats && incoming.stats.ttt ? incoming.stats.ttt : {}),
-          g2048: Object.assign({ plays: 0, bestScore: 0, bestTile: 0, lastPlayedAt: 0 }, incoming.stats && incoming.stats.g2048 ? incoming.stats.g2048 : {}),
-          snake: Object.assign({ plays: 0, bestScore: 0, bestLength: 0, lastPlayedAt: 0 }, incoming.stats && incoming.stats.snake ? incoming.stats.snake : {}),
-          flap: Object.assign({ plays: 0, bestScore: 0, bestPipes: 0, lastPlayedAt: 0 }, incoming.stats && incoming.stats.flap ? incoming.stats.flap : {})
-        },
-        achievements: Array.isArray(incoming.achievements) ? incoming.achievements.slice(0, 20) : [],
-        updatedAt: Number(incoming.updatedAt || 0) || 0
-      };
-    });
+    const storedVersion = Number(parsed.profileVersion || parsed.schemaVersion || parsed.dataVersion || 0) || 0;
+    const shouldResetStats = storedVersion < GAMES_PROFILE_RESET_VERSION;
+
     Object.keys(srcAccounts).forEach((id) => {
       const accountId = String(id || '').trim();
-      if (!accountId || base.accounts[accountId]) return;
+      if (!accountId || GAMES_ACCOUNT_BLOCKLIST.has(accountId)) return;
       const incoming = srcAccounts[accountId] || {};
-      base.accounts[accountId] = {
-        id: accountId,
-        name: String(incoming.name || accountId).trim() || accountId,
-        stats: {
-          ttt: Object.assign({ plays: 0, wins: 0, losses: 0, draws: 0, bestMoves: null, bestTimeMs: null, lastPlayedAt: 0 }, incoming.stats && incoming.stats.ttt ? incoming.stats.ttt : {}),
-          g2048: Object.assign({ plays: 0, bestScore: 0, bestTile: 0, lastPlayedAt: 0 }, incoming.stats && incoming.stats.g2048 ? incoming.stats.g2048 : {}),
-          snake: Object.assign({ plays: 0, bestScore: 0, bestLength: 0, lastPlayedAt: 0 }, incoming.stats && incoming.stats.snake ? incoming.stats.snake : {}),
-          flap: Object.assign({ plays: 0, bestScore: 0, bestPipes: 0, lastPlayedAt: 0 }, incoming.stats && incoming.stats.flap ? incoming.stats.flap : {})
-        },
-        achievements: Array.isArray(incoming.achievements) ? incoming.achievements.slice(0, 20) : [],
-        updatedAt: Number(incoming.updatedAt || 0) || 0
-      };
+      const next = shouldResetStats
+        ? gamesMakeAccountEntry(accountId, incoming.name || accountId)
+        : gamesNormalizeStoredAccount({ id: accountId, name: incoming.name || accountId, stats: incoming.stats, achievements: incoming.achievements, updatedAt: incoming.updatedAt }, incoming.name || accountId);
+      base.accounts[accountId] = next;
     });
-    if (!base.activeAccountId || !base.accounts[base.activeAccountId]) {
-      base.activeAccountId = '';
+
+    base.activeAccountId = String(parsed.activeAccountId || '').trim();
+    if (!base.activeAccountId || !base.accounts[base.activeAccountId] || GAMES_ACCOUNT_BLOCKLIST.has(base.activeAccountId)) base.activeAccountId = '';
+    if (shouldResetStats) {
+      base.profileVersion = GAMES_PROFILE_RESET_VERSION;
+      gamesSaveProfile(base);
+    } else {
+      base.profileVersion = GAMES_PROFILE_RESET_VERSION;
     }
     return base;
   } catch (err) {
@@ -4070,76 +4094,20 @@ function gamesParseRemoteTimestamp(value) {
 
 async function gamesSyncProfileFromRemote(force = false) {
   const bridge = window.RotationSupabaseBridge;
-  if (!bridge || typeof bridge.loadGameAccounts !== 'function' || typeof bridge.loadGameStats !== 'function') return null;
+  if (!bridge || typeof bridge.loadGameAccounts !== 'function') return null;
   if (typeof navigator !== 'undefined' && !navigator.onLine) return null;
 
   try {
     const profile = gamesGetProfile();
-    const [remoteAccounts, tttRows, g2048Rows, snakeRows, flapRows] = await Promise.all([
-      bridge.loadGameAccounts().catch(() => []),
-      bridge.loadGameStats('ttt', 50).catch(() => []),
-      bridge.loadGameStats('2048', 50).catch(() => []),
-      bridge.loadGameStats('snake', 50).catch(() => []),
-      bridge.loadGameStats('flap', 50).catch(() => [])
-    ]);
-
-    const remoteNameMap = new Map((Array.isArray(remoteAccounts) ? remoteAccounts : []).map((row) => {
-      const id = String(row && row.account_number ? row.account_number : '').trim();
-      const name = String(
-        row && (row.full_name || row.player_name || row.name || row.account_name || row.nickname || row.username || row.account_number)
-          ? (row.full_name || row.player_name || row.name || row.account_name || row.nickname || row.username || row.account_number)
-          : ''
-      ).trim();
-      return [id, name];
-    }));
-    const remoteMap = {
-      ttt: new Map(),
-      g2048: new Map(),
-      snake: new Map(),
-      flap: new Map()
-    };
-
-    const addRows = (key, rows, toValue) => {
-      (Array.isArray(rows) ? rows : []).forEach((row) => {
-        const accountId = String(row && (row.account_number ?? row.accountNumber ?? row.id) ? (row.account_number ?? row.accountNumber ?? row.id) : '').trim();
-        if (!accountId) return;
-        const updatedAt = gamesParseRemoteTimestamp(row && (row.updated_at ?? row.last_played_at ?? row.created_at));
-        const value = toValue(row);
-        const current = remoteMap[key].get(accountId);
-        if (!current || updatedAt >= current.updatedAt) {
-          remoteMap[key].set(accountId, { row, updatedAt, value });
-        }
-      });
-    };
-
-    addRows('ttt', tttRows, (row) => ({
-      plays: Number(row.games_played || row.plays || row.points || 0) || 0,
-      wins: Number(row.wins || 0) || 0,
-      losses: Number(row.losses || 0) || 0,
-      draws: Number(row.draws || 0) || 0
-    }));
-    addRows('g2048', g2048Rows, (row) => ({
-      plays: Number(row.games_played || row.plays || 0) || 0,
-      bestScore: Number(row.points || row.best_score || row.bestScore || 0) || 0
-    }));
-    addRows('snake', snakeRows, (row) => ({
-      plays: Number(row.games_played || row.plays || 0) || 0,
-      bestScore: Number(row.points || row.best_score || row.bestScore || 0) || 0
-    }));
-    addRows('flap', flapRows, (row) => ({
-      plays: Number(row.games_played || row.plays || 0) || 0,
-      bestScore: Number(row.points || row.best_score || row.bestScore || 0) || 0
-    }));
-
+    const remoteAccounts = await bridge.loadGameAccounts().catch(() => []);
     let changed = false;
+
     (Array.isArray(remoteAccounts) ? remoteAccounts : []).forEach((row) => {
       const accountId = String(row && row.account_number ? row.account_number : '').trim();
-      if (!accountId) return;
-      const remoteName = String(
-        row && (row.full_name || row.player_name || row.name || row.account_name || row.nickname || row.username || row.account_number)
-          ? (row.full_name || row.player_name || row.name || row.account_name || row.nickname || row.username || row.account_number)
-          : accountId
-      ).trim() || accountId;
+      if (!accountId || GAMES_ACCOUNT_BLOCKLIST.has(accountId)) return;
+      const remoteName = String(row && (row.full_name || row.player_name || row.name || row.account_name || row.nickname || row.username || row.account_number)
+        ? (row.full_name || row.player_name || row.name || row.account_name || row.nickname || row.username || row.account_number)
+        : accountId).trim() || accountId;
       if (!profile.accounts[accountId]) {
         profile.accounts[accountId] = gamesMakeAccountEntry(accountId, remoteName);
         changed = true;
@@ -4148,54 +4116,27 @@ async function gamesSyncProfileFromRemote(force = false) {
         changed = true;
       }
     });
-    Object.values(profile.accounts || {}).forEach((acc) => {
+
+    Object.keys(profile.accounts || {}).forEach((id) => {
+      const accountId = String(id || '').trim();
+      if (!accountId || GAMES_ACCOUNT_BLOCKLIST.has(accountId)) return;
+      const acc = profile.accounts[accountId];
       if (!acc) return;
-      const remoteName = remoteNameMap.get(String(acc.id || '').trim());
-      if (remoteName && remoteName !== acc.name) {
-        acc.name = remoteName;
-        changed = true;
-      }
-      const localUpdated = Number(acc.updatedAt || 0) || 0;
-
-      const sync = (key, apply) => {
-        const remote = remoteMap[key].get(String(acc.id || '').trim());
-        if (!remote) return;
-        if (!force && remote.updatedAt < localUpdated) return;
-        const next = apply(remote.row, remote.value);
-        if (!next) return;
-        acc.stats[key] = Object.assign({}, acc.stats[key], next);
-        acc.updatedAt = Math.max(Number(acc.updatedAt || 0) || 0, remote.updatedAt || Date.now());
-        changed = true;
-      };
-
-      sync('ttt', (row, value) => ({
-        plays: value.plays,
-        wins: value.wins,
-        losses: value.losses,
-        draws: value.draws,
-        lastPlayedAt: gamesParseRemoteTimestamp(row.last_played_at || row.updated_at || row.created_at) || acc.updatedAt || Date.now()
-      }));
-      sync('g2048', (row, value) => ({
-        plays: value.plays,
-        bestScore: Math.max(Number(acc.stats && acc.stats.g2048 && acc.stats.g2048.bestScore || 0) || 0, value.bestScore || 0),
-        lastPlayedAt: gamesParseRemoteTimestamp(row.last_played_at || row.updated_at || row.created_at) || acc.updatedAt || Date.now()
-      }));
-      sync('snake', (row, value) => ({
-        plays: value.plays,
-        bestScore: Math.max(Number(acc.stats && acc.stats.snake && acc.stats.snake.bestScore || 0) || 0, value.bestScore || 0),
-        lastPlayedAt: gamesParseRemoteTimestamp(row.last_played_at || row.updated_at || row.created_at) || acc.updatedAt || Date.now()
-      }));
-      sync('flap', (row, value) => ({
-        plays: value.plays,
-        bestScore: Math.max(Number(acc.stats && acc.stats.flap && acc.stats.flap.bestScore || 0) || 0, value.bestScore || 0),
-        lastPlayedAt: gamesParseRemoteTimestamp(row.last_played_at || row.updated_at || row.created_at) || acc.updatedAt || Date.now()
-      }));
+      if (!acc.stats || typeof acc.stats !== 'object') acc.stats = gamesEmptyStats();
+      if (!acc.stats.ttt) acc.stats.ttt = gamesEmptyStats().ttt;
+      if (!acc.stats.g2048) acc.stats.g2048 = gamesEmptyStats().g2048;
+      if (!acc.stats.snake) acc.stats.snake = gamesEmptyStats().snake;
+      if (!acc.stats.flap) acc.stats.flap = gamesEmptyStats().flap;
+      if (!Array.isArray(acc.achievements)) acc.achievements = [];
+      acc.achievements = acc.achievements.slice(0, 20);
     });
 
     if (changed) {
+      profile.profileVersion = GAMES_PROFILE_RESET_VERSION;
       gamesSaveProfile(profile);
       app.gamesProfile = profile;
       gamesRenderStats();
+      if (typeof syncGamesLockedSections === 'function') syncGamesLockedSections();
     }
     return profile;
   } catch (err) {
@@ -4206,7 +4147,7 @@ async function gamesSyncProfileFromRemote(force = false) {
 
 function gamesAccountById(accountId) {
   const id = String(accountId || '').trim();
-  if (!id) return null;
+  if (!id || GAMES_ACCOUNT_BLOCKLIST.has(id)) return null;
   const profile = gamesGetProfile();
   return (profile.accounts && profile.accounts[id]) || GAMES_ACCOUNT_LIST.find(acc => acc.id === id) || null;
 }
@@ -4245,6 +4186,7 @@ function gamesApplyActiveAccountUI(account) {
   clearBtn.textContent = next ? 'Odhlásit' : 'Bez účtu';
   clearBtn.style.minWidth = next ? '46px' : '';
   clearBtn.style.paddingInline = next ? '8px' : '';
+  if (typeof syncGamesLockedSections === 'function') syncGamesLockedSections();
 }
 
 function gamesRenderActiveAccountBar(account) {
@@ -4263,34 +4205,38 @@ function gamesRenderActiveAccountBar(account) {
       renderGamesHub();
     });
   }
+  if (typeof syncGamesLockedSections === 'function') syncGamesLockedSections();
 }
-
 
 function gamesSetActiveAccount(accountId) {
   const profile = gamesGetProfile();
   const id = String(accountId || '').trim();
-  if (!id) return false;
+  if (!id || GAMES_ACCOUNT_BLOCKLIST.has(id)) return false;
   if (!profile.accounts[id]) {
     profile.accounts[id] = gamesMakeAccountEntry(id, id);
   }
   profile.activeAccountId = id;
+  profile.profileVersion = GAMES_PROFILE_RESET_VERSION;
   gamesSaveProfile(profile);
   app.gamesProfile = profile;
   const active = profile.accounts[profile.activeAccountId] || null;
   gamesApplyActiveAccountUI(active);
   gamesRenderStats();
   renderGamesHub();
+  if (typeof syncGamesLockedSections === 'function') syncGamesLockedSections();
   return true;
 }
 
 function gamesClearActiveAccount() {
   const profile = gamesGetProfile();
   profile.activeAccountId = '';
+  profile.profileVersion = GAMES_PROFILE_RESET_VERSION;
   gamesSaveProfile(profile);
   app.gamesProfile = profile;
   gamesApplyActiveAccountUI(null);
   gamesRenderStats();
   renderGamesHub();
+  if (typeof syncGamesLockedSections === 'function') syncGamesLockedSections();
 }
 
 function gamesStatLine(label, value) {
@@ -4388,9 +4334,11 @@ function gamesRenderAccountChips() {
       syncVisibleAccount(found);
       gamesApplyActiveAccountUI(found);
       gamesRenderStats();
+      if (typeof syncGamesLockedSections === 'function') syncGamesLockedSections();
       requestAnimationFrame(() => {
         gamesRenderAccountChips();
         gamesRenderStats();
+        if (typeof syncGamesLockedSections === 'function') syncGamesLockedSections();
       });
       hintEl.textContent = 'Přihlášeno jako ' + found.name + '.';
       return;
@@ -4404,6 +4352,7 @@ function gamesRenderAccountChips() {
       gamesClearActiveAccount();
       syncVisibleAccount(null);
       hintEl.textContent = 'Bez účtu můžeš hrát dál. Statistiky se ukládají jen po přihlášení číslem.';
+      if (typeof syncGamesLockedSections === 'function') syncGamesLockedSections();
     });
   }
 }
@@ -4412,7 +4361,7 @@ function gamesRenderStats() {
   const grid = document.getElementById('gamesStatsGrid');
   if (!grid) return;
   const profile = gamesGetProfile();
-  const accounts = Object.values(profile.accounts || {}).sort((a, b) => {
+  const accounts = Object.values(profile.accounts || {}).filter(acc => !GAMES_ACCOUNT_BLOCKLIST.has(String(acc && acc.id || '').trim())).sort((a, b) => {
     const ai = Number(a && a.id ? a.id : 0) || 0;
     const bi = Number(b && b.id ? b.id : 0) || 0;
     return ai - bi;
@@ -4452,7 +4401,8 @@ function renderGamesHub() {
   gamesGetProfile();
   gamesRenderAccountChips();
   gamesRenderStats();
-  void gamesSyncProfileFromRemote().then(() => { gamesRenderStats(); });
+  if (typeof syncGamesLockedSections === 'function') syncGamesLockedSections();
+  void gamesSyncProfileFromRemote().then(() => { gamesRenderStats(); if (typeof syncGamesLockedSections === 'function') syncGamesLockedSections(); });
   void gamesRefreshRemoteLeaderboards();
   gamesEnsureKeyBindings();
   gamesEnsureResizeBinding();

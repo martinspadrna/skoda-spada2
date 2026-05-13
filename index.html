@@ -923,8 +923,11 @@
 
 #games .gamesAccountRow{display:flex !important;align-items:center !important;gap:10px !important;margin-top:10px !important;}
 #games .gamesAccountCurrent{display:flex !important;align-items:center !important;justify-content:center !important;min-height:44px !important;padding:0 14px !important;border-radius:14px !important;border:1px solid rgba(124,255,124,.18) !important;background:rgba(255,255,255,.04) !important;color:#e7fff0 !important;font-weight:650 !important;letter-spacing:.02em !important;}
-#games .gamesAccountCard.isLoggedIn{padding:6px 10px !important;min-height:0 !important;}#games .gamesAccountCard.isLoggedIn .gamesAccountRow,#games .gamesAccountCard.isLoggedIn .gamesAccountHint{display:none !important;}#games .gamesAccountCard.isLoggedIn .gamesAccountCurrent{display:flex !important;margin-top:0 !important;min-height:32px !important;padding:0 10px !important;font-size:12px !important;}#games .gamesAccountCard.isLoggedIn .gamesAccountTop{margin-bottom:0 !important;}#games .gamesAccountCard.isLoggedIn .dashboardLabel{display:none !important;}#games .gamesAccountCard.isLoggedIn .gamesAccountName{font-size:14px !important;line-height:1.1 !important;}#games .gamesAccountCard.isLoggedIn .gamesTinyBtn{min-height:30px !important;padding:0 10px !important;font-size:12px !important;}#games .gamesActiveAccountBar{margin:0 12px 10px !important;padding:10px 12px !important;border-radius:18px !important;background:rgba(255,255,255,.06) !important;border:1px solid rgba(124,255,124,.10) !important;backdrop-filter:blur(18px) !important;-webkit-backdrop-filter:blur(18px) !important;}#games .gamesActiveAccountBar.isVisible{display:flex !important;}#games .gamesActiveAccountBarText{font-size:13px !important;line-height:1.2 !important;font-weight:700 !important;color:#eef7ee !important;}#games .gamesActiveAccountBar .gamesTinyBtn{min-height:30px !important;padding:0 10px !important;font-size:12px !important;}#games .gamesStatsFolder{margin-top:8px !important;}#games .gamesStatsFolder[open] .gamesStatsGrid{padding-top:4px !important;}
-#games .gamesStatsFolder{margin-bottom:8px !important;}
+#games .gamesAccountCard.isLoggedIn{padding:6px 10px !important;min-height:0 !important;}#games .gamesAccountCard.isLoggedIn .gamesAccountRow,#games .gamesAccountCard.isLoggedIn .gamesAccountHint{display:none !important;}#games .gamesAccountCard.isLoggedIn .gamesAccountCurrent{display:flex !important;margin-top:0 !important;min-height:32px !important;padding:0 10px !important;font-size:12px !important;}#games .gamesAccountCard.isLoggedIn .gamesAccountTop{margin-bottom:0 !important;}#games .gamesAccountCard.isLoggedIn .dashboardLabel{display:none !important;}#games .gamesAccountCard.isLoggedIn .gamesAccountName{font-size:14px !important;line-height:1.1 !important;}#games .gamesAccountCard.isLoggedIn .gamesTinyBtn{min-height:30px !important;padding:0 10px !important;font-size:12px !important;}#games .gamesActiveAccountBar{margin:0 12px 10px !important;padding:10px 12px !important;border-radius:18px !important;background:rgba(255,255,255,.06) !important;border:1px solid rgba(124,255,124,.10) !important;backdrop-filter:blur(18px) !important;-webkit-backdrop-filter:blur(18px) !important;}#games .gamesActiveAccountBar.isVisible{display:flex !important;}#games .gamesActiveAccountBarText{font-size:13px !important;line-height:1.2 !important;font-weight:700 !important;color:#eef7ee !important;}#games .gamesActiveAccountBar .gamesTinyBtn{min-height:30px !important;padding:0 10px !important;font-size:12px !important;}#games .gamesProfilesFolder,#games .gamesAchievementsFolder,#games .gamesStatsFolder{margin-top:10px !important;border-radius:18px !important;border:1px solid rgba(124,255,124,.14) !important;background:rgba(11,15,13,.58) !important;overflow:hidden !important;}
+#games .gamesProfilesFolder[hidden],#games .gamesAchievementsFolder[hidden],#games .gamesStatsFolder[hidden]{display:none !important;}
+#games .gamesProfilesFolder > summary,#games .gamesAchievementsFolder > summary,#games .gamesStatsFolder > summary{list-style:none !important;cursor:pointer !important;padding:10px 12px !important;font-weight:700 !important;color:#e8ffe8 !important;}
+#games .gamesProfilesFolder > summary::-webkit-details-marker,#games .gamesAchievementsFolder > summary::-webkit-details-marker,#games .gamesStatsFolder > summary::-webkit-details-marker{display:none !important;}
+#games .gamesProfilesFolder[open] .gamesProfilesGrid,#games .gamesAchievementsFolder[open] .gamesAchievementsGrid,#games .gamesStatsFolder[open] .gamesStatsGrid{padding-top:4px !important;}
 #statsNameGrid .statsTileTitle,
 #statsMachineGrid .statsTileTitle{
   font-size:13px !important;
@@ -1144,9 +1147,9 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   .bottomNavGamesBtn{margin-right:0 !important;}
 
   #games{padding-bottom:170px !important;}
-  #games .gamesStatsFolder{margin-top:6px !important;margin-bottom:6px !important;}
-  #games .gamesStatsFolder > summary{padding:8px 10px !important;}
-  #games .gamesStatsGrid{padding:0 8px 8px !important;gap:6px !important;}
+  #games .gamesProfilesFolder,#games .gamesAchievementsFolder,#games .gamesStatsFolder{margin-top:6px !important;margin-bottom:6px !important;}
+  #games .gamesProfilesFolder > summary,#games .gamesAchievementsFolder > summary,#games .gamesStatsFolder > summary{padding:8px 10px !important;}
+  #games .gamesProfilesGrid,#games .gamesAchievementsGrid,#games .gamesStatsGrid{padding:0 8px 8px !important;gap:6px !important;}
   #games .gamesStatsCard{padding:8px !important;}
   #games .gamesStatsCardName{font-size:12px !important;}
   #games .gamesStatsCardTotal{font-size:11px !important;}
@@ -1274,19 +1277,19 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   #games .gamesAccountCard{padding-bottom:8px !important;}
   #games .gamesAccountCurrent{display:none !important;}
 
-  #games .gamesStatsFolder{
+  #games .gamesProfilesFolder,#games .gamesAchievementsFolder,#games .gamesStatsFolder{
     margin-top:6px !important;
     margin-bottom:10px !important;
     border-radius:18px !important;
   }
-  #games .gamesStatsFolder > summary{
+  #games .gamesProfilesFolder > summary,#games .gamesAchievementsFolder > summary,#games .gamesStatsFolder > summary{
     padding:8px 10px !important;
   }
-  #games .gamesStatsFolder[open] .gamesStatsGrid{
+  #games .gamesProfilesFolder[open] .gamesProfilesGrid,#games .gamesAchievementsFolder[open] .gamesAchievementsGrid,#games .gamesStatsFolder[open] .gamesStatsGrid{
     padding-top:4px !important;
     padding-bottom:18px !important;
   }
-  #games .gamesStatsGrid{
+  #games .gamesProfilesGrid,#games .gamesAchievementsGrid,#games .gamesStatsGrid{
     padding:0 8px 8px !important;
     gap:6px !important;
   }
@@ -1912,14 +1915,14 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   #games .gamesLaunchTile{
     min-height:92px !important;
   }
-  #games .gamesStatsFolder{
+  #games .gamesProfilesFolder,#games .gamesAchievementsFolder,#games .gamesStatsFolder{
     margin-top:8px !important;
     margin-bottom:10px !important;
   }
-  #games .gamesStatsFolder > summary{
+  #games .gamesProfilesFolder > summary,#games .gamesAchievementsFolder > summary,#games .gamesStatsFolder > summary{
     padding:8px 10px !important;
   }
-  #games .gamesStatsGrid{
+  #games .gamesProfilesGrid,#games .gamesAchievementsGrid,#games .gamesStatsGrid{
     gap:7px !important;
     padding:0 8px 8px !important;
   }
@@ -3051,7 +3054,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   color:rgba(242,248,245,.88) !important;
   word-break:break-word !important;
 }
-/* v1.1 (404) polish: dashboard icons simplified, games section styling, bottom bar fixed, version 1.1 update */
+/* v1.1 (405) polish: dashboard icons simplified, games section styling, bottom bar fixed, version 1.1 update */
 .bottomNav{
   bottom:10px !important;
 }

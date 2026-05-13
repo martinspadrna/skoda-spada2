@@ -99,10 +99,10 @@ function updateDashboard() {
 <svg class="dashboardIconSvg" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M6 11.9c1.2-3.3 4.3-5.9 8.1-5.9 2.8 0 4.9 1.1 6 2.8-2.2.5-3.8 2.3-3.8 4.4 0 2-1.6 3.8-3.6 4.4-3.6 1.1-7.2-1.4-8.1-5.7Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
 `);
   const plateIcon = iconSvg(`
-<svg class="dashboardIconSvg" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="7.4" stroke="currentColor" stroke-width="1.8"/><path d="M8.5 9.2h7M8.5 12h6M8.5 14.8h4.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+<svg class="dashboardIconSvg" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="7.2" stroke="currentColor" stroke-width="1.8"/><path d="M9 8.9h6M9 12h5.2M9 15.1h3.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
 `);
   const calendarIcon = iconSvg(`
-<svg class="dashboardIconSvg" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><rect x="4.2" y="5.2" width="15.6" height="14.6" rx="3.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 3.8v3.2M17 3.8v3.2M4.8 9h14.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 12.5h3.4M8 15.8h6.1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+<svg class="dashboardIconSvg" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><rect x="4.5" y="5.2" width="15" height="14.3" rx="3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.2 3.9v3M16.8 3.9v3M4.9 9h14.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 12.3h4M8 15.5h5.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
 `);
   const clockIcon = iconSvg(`
 <svg class="dashboardIconSvg" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M7.2 4.7h9.6c0 2.7-2 4.5-4.8 6.2 2.8 1.7 4.8 3.5 4.8 6.2H7.2c0-2.7 2-4.5 4.8-6.2-2.8-1.7-4.8-3.5-4.8-6.2Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
