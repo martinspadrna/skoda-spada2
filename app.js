@@ -1,4 +1,4 @@
-// v.1(388) – update manager pro novou verzi a zachovaný mobile-first styl.
+// v.1(389) – update manager pro novou verzi a zachovaný mobile-first styl.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

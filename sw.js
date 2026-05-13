@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v1-388';
+const CACHE_VERSION = 'v1-389';
 const STATIC_CACHE = `rotace-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `rotace-runtime-${CACHE_VERSION}`;
 const APP_SHELL = [

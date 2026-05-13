@@ -1,6 +1,9 @@
 # Rotace a kalkulačky
 
-## v.1(388)
+## v.1(389)
+- Spodní lišta je posunutá o trochu níž.
+- Rozpisy mají větší spodní odsazení, aby texty nepadaly pod lištu.
+- Administrace má užší rozpisové tabulky a kompaktnější absence.
 - Přidána detekce nové verze aplikace přes waiting service worker.
 - Po nasazení nové cache se zobrazí moderní update popup s tlačítkem Aktualizovat.
 - Po potvrzení se appka sama přepne na novou verzi bez ruční reinstalace PWA.
