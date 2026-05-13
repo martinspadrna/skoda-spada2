@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v1.1-406';
+const CACHE_VERSION = 'v1.1-407';
 const STATIC_CACHE = `rotace-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `rotace-runtime-${CACHE_VERSION}`;
 const APP_SHELL = [
@@ -57,6 +57,7 @@ self.addEventListener('message', (event) => {
   const data = event && event.data ? event.data : null;
   if (!data) return;
   if (data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
   }
 });
 

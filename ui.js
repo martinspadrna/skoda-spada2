@@ -4143,6 +4143,7 @@ async function gamesSyncProfileFromRemote(force = false) {
       gamesRenderProfiles();
       gamesRenderAchievements();
       gamesRenderStats();
+      if (typeof renderThemeSettingsCards === 'function') renderThemeSettingsCards();
       if (typeof syncGamesLockedSections === 'function') syncGamesLockedSections();
     }
     return profile;
@@ -4349,6 +4350,7 @@ function gamesRenderAccountChips() {
         gamesRenderProfiles();
         gamesRenderAchievements();
         gamesRenderStats();
+        if (typeof renderThemeSettingsCards === 'function') renderThemeSettingsCards();
         if (typeof syncGamesLockedSections === 'function') syncGamesLockedSections();
       });
       hintEl.textContent = 'Přihlášeno jako ' + found.name + '.';
@@ -4386,6 +4388,15 @@ function gamesGetTotals(acc) {
   };
 }
 
+const GAMES_PROFILE_GAME_DEFS = [
+  { id: 'ttt', title: 'Piškvorky', unit: 'her' },
+  { id: '2048', title: '2048', unit: 'bodů' },
+  { id: 'snake', title: 'Snake', unit: 'bodů' },
+  { id: 'flap', title: 'Flappy Car', unit: 'bodů' },
+  { id: 'aim', title: 'Aim Trainer', unit: 'bodů' },
+  { id: 'reaction', title: 'Reaction Test', unit: 'ms' }
+];
+
 function gamesRenderProfiles() {
   const grid = document.getElementById('gamesProfilesGrid');
   if (!grid) return;
@@ -4405,6 +4416,17 @@ function gamesRenderProfiles() {
   grid.innerHTML = accounts.map((acc) => {
     const total = gamesGetTotals(acc);
     const last = acc.updatedAt ? gamesFormatPlayedLabel(acc.updatedAt) : 'Ještě bez hry';
+    const profileRows = GAMES_PROFILE_GAME_DEFS.map((game) => {
+      const stats = acc && acc.stats ? acc.stats : {};
+      let value = 0;
+      if (game.id === 'ttt') value = Number(total.ttt.plays || 0) || 0;
+      else if (game.id === '2048') value = Number(total.g2048.bestScore || 0) || 0;
+      else if (game.id === 'snake') value = Number(total.snake.bestScore || 0) || 0;
+      else if (game.id === 'flap') value = Number(total.flap.bestScore || 0) || 0;
+      else if (stats[game.id]) value = Number(stats[game.id].bestScore || stats[game.id].plays || stats[game.id].bestTimeMs || 0) || 0;
+      const display = game.id === 'ttt' ? (String(value) + '×') : (String(value) + ' ' + game.unit);
+      return '<div class="gamesProfileRow"><strong>' + escapeHtml(game.title) + '</strong><span>' + escapeHtml(display) + '</span></div>';
+    }).join('');
     return [
       '<div class="gamesStatsCard' + (String(acc.id) === String(activeId) ? ' isActive' : '') + '">',
       '  <div class="gamesStatsCardHead">',
@@ -4415,10 +4437,7 @@ function gamesRenderProfiles() {
       '    <div class="gamesStatsCardTotal">' + String(total.totalPlays) + ' her</div>',
       '  </div>',
       '  <div class="gamesStatsCardBody">',
-      '    <div class="gamesStatsCardLine"><strong>Piškvorky</strong> · ' + String(total.ttt.plays || 0) + '×</div>',
-      '    <div class="gamesStatsCardLine"><strong>2048</strong> · ' + String(total.g2048.bestScore || 0) + '</div>',
-      '    <div class="gamesStatsCardLine"><strong>Snake</strong> · ' + String(total.snake.bestScore || 0) + '</div>',
-      '    <div class="gamesStatsCardLine"><strong>Flap</strong> · ' + String(total.flap.bestScore || 0) + '</div>',
+      profileRows,
       '    <div class="gamesStatsCardMeta">' + escapeHtml(last) + '</div>',
       '  </div>',
       '</div>'
@@ -5537,7 +5556,68 @@ if (!window.__tttHashInviteBound) {
 
 
 
+const RAK_THEME_STORAGE_KEY = APP_KEY + ':theme_v1';
+const RAK_THEME_BASE_VARS = {
+  '--bg': '#0b0f0c',
+  '--panel': '#151a17',
+  '--panel2': '#1c1f1d',
+  '--green': '#4CAF50',
+  '--green2': '#7CFF7C',
+  '--text': '#ffffff',
+  '--muted': '#777',
+  '--soft': '#ccc'
+};
+const RAK_THEME_DEFS = [
+  { id: 'default', label: 'Výchozí', subtitle: 'Bezpečný základ appky', color: '#7CFF7C', unlockText: 'Vždy dostupné', minPlays: 0, vars: {} },
+  { id: 'emerald', label: 'Emerald glass', subtitle: 'O něco jasnější a živější', color: '#8CFF98', unlockText: 'Odemkne se po 5 hrách', minPlays: 5, vars: { '--bg': '#09110b', '--panel': '#101814', '--panel2': '#18211c', '--green': '#5ae36a', '--green2': '#a7ffb0', '--muted': '#8aa08f', '--soft': '#d5e6d6' } },
+  { id: 'midnight', label: 'Midnight', subtitle: 'Tmavší chladný skin', color: '#8fb4ff', unlockText: 'Odemkne se po 15 hrách', minPlays: 15, vars: { '--bg': '#071018', '--panel': '#101824', '--panel2': '#17202b', '--green': '#55c7ff', '--green2': '#a9ddff', '--muted': '#8aa6b7', '--soft': '#d5e7f4' } },
+  { id: 'neon', label: 'Neon pulse', subtitle: 'Výraznější glow a kontrast', color: '#ff9eff', unlockText: 'Odemkne se po 30 hrách', minPlays: 30, vars: { '--bg': '#120a15', '--panel': '#1a1020', '--panel2': '#24142d', '--green': '#d35cff', '--green2': '#ffb3ff', '--muted': '#ad93b8', '--soft': '#eadbf0' } },
+  { id: 'ice', label: 'Ice neon', subtitle: 'Studený iOS styl', color: '#7ee7ff', unlockText: 'Odemkne se po 50 hrách', minPlays: 50, vars: { '--bg': '#081118', '--panel': '#101b24', '--panel2': '#172532', '--green': '#60d8ff', '--green2': '#bdeeff', '--muted': '#8ea8b6', '--soft': '#dbeaf2' } }
+];
+window.RAK_THEME_DEFS = RAK_THEME_DEFS;
+
+function getThemePreference() {
+  try {
+    const saved = localStorage.getItem(RAK_THEME_STORAGE_KEY) || 'default';
+    return RAK_THEME_DEFS.some(t => t.id === saved) ? saved : 'default';
+  } catch (err) {
+    return 'default';
+  }
+}
+
+function applyThemePreference(themeId, persist = true) {
+  const theme = RAK_THEME_DEFS.find(t => t.id === themeId) || RAK_THEME_DEFS[0];
+  const root = document.documentElement;
+  root.dataset.rakTheme = theme.id;
+  Object.entries(RAK_THEME_BASE_VARS).forEach(([key, value]) => {
+    root.style.setProperty(key, value);
+  });
+  Object.entries(theme.vars || {}).forEach(([key, value]) => {
+    root.style.setProperty(key, value);
+  });
+  if (persist) {
+    try { localStorage.setItem(RAK_THEME_STORAGE_KEY, theme.id); } catch (err) {}
+  }
+  return theme.id;
+}
+
+function getThemeUnlockScore(profile) {
+  if (!profile || !profile.activeAccountId || !profile.accounts) return 0;
+  const active = profile.accounts[profile.activeAccountId] || null;
+  if (!active) return 0;
+  const totals = typeof gamesGetTotals === 'function' ? gamesGetTotals(active) : null;
+  const totalPlays = Number(totals && totals.totalPlays || 0) || 0;
+  const bestScore = Number(totals && totals.bestScore || 0) || 0;
+  const achievements = Array.isArray(active.achievements) ? active.achievements.length : 0;
+  return totalPlays + Math.floor(bestScore / 50) + (achievements * 2);
+}
+
+(function initThemePreference() {
+  try { applyThemePreference(getThemePreference(), false); } catch (err) {}
+})();
+
 function buildThemeSystemSettingsHtml() {
+
   const defs = Array.isArray(window.RAK_THEME_DEFS) ? window.RAK_THEME_DEFS : [];
   const cards = defs.map(theme => {
     const unlockedText = theme && theme.unlockText ? String(theme.unlockText) : '';
@@ -5561,7 +5641,50 @@ function buildThemeSystemSettingsHtml() {
 }
 
 
-function renderThemeSettingsCards() {}
+function renderThemeSettingsCards() {
+  const grid = document.getElementById('appMenuThemeGrid');
+  const hint = document.getElementById('appMenuThemeHint');
+  if (!grid) return;
+  const profile = typeof gamesGetProfile === 'function' ? gamesGetProfile() : null;
+  const score = getThemeUnlockScore(profile);
+  const current = getThemePreference();
+  const themeList = Array.isArray(window.RAK_THEME_DEFS) ? window.RAK_THEME_DEFS : [];
+  const themeById = new Map(themeList.map(theme => [String(theme.id || ''), theme]));
+
+  Array.from(grid.querySelectorAll('.appMenuThemeCard')).forEach(card => {
+    const id = String(card.dataset.themeId || '').trim();
+    const theme = themeById.get(id) || null;
+    const unlocked = !!theme && (id === 'default' || (theme.minPlays || 0) <= score);
+    card.classList.toggle('isActive', id === current);
+    card.classList.toggle('isLocked', !unlocked && id !== 'default');
+    card.setAttribute('aria-pressed', id === current ? 'true' : 'false');
+    const badge = card.querySelector('.appMenuThemeBadge');
+    if (badge && theme) badge.textContent = unlocked ? (theme.unlockText || 'Odemčeno') : (theme.unlockText || 'Zamčeno');
+    if (!card.dataset.bound) {
+      card.dataset.bound = '1';
+      card.addEventListener('click', () => {
+        const nextTheme = themeById.get(id) || null;
+        if (!nextTheme) return;
+        const canUse = id === 'default' || ((nextTheme.minPlays || 0) <= getThemeUnlockScore(typeof gamesGetProfile === 'function' ? gamesGetProfile() : null));
+        if (!canUse) {
+          if (hint) hint.textContent = nextTheme.unlockText || 'Tento theme je zatím zamčený.';
+          return;
+        }
+        applyThemePreference(id, true);
+        renderThemeSettingsCards();
+        if (hint) hint.textContent = 'Theme „' + String(nextTheme.label || id) + '“ je teď aktivní.';
+      });
+    }
+  });
+
+  if (hint) {
+    const activeName = (themeById.get(current) || themeList[0] || { label: 'Výchozí' }).label;
+    hint.textContent = profile && profile.activeAccountId
+      ? 'Theme se váže na přihlášený herní účet. Aktivní: ' + activeName + '.'
+      : 'Přihlas se do herního účtu a další themes se budou odemykat podle profilu.';
+  }
+}
+
 
 
 window.openGameShell = function openGameShell(gameId) {
@@ -5596,6 +5719,7 @@ function syncGamesLockedSections() {
 
 window.addEventListener('load', () => {
   try {
+    if (typeof applyThemePreference === 'function') applyThemePreference(getThemePreference(), false);
     if (typeof syncGamesLockedSections === 'function') syncGamesLockedSections();
     if (typeof renderThemeSettingsCards === 'function') renderThemeSettingsCards();
   } catch (err) {}

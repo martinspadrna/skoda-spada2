@@ -79,21 +79,48 @@ function getSoftMachineDisplayLabel(entry, rotation) {
 function handlePersonTap(name) {
   const now = Date.now();
   const sameName = app.selectedName === name;
+  const state = app.nameTapState && app.nameTapState.name === name ? app.nameTapState : { name: '', count: 0, lastTap: 0, qrShownAt: 0 };
+  const freshTap = state.name !== name || now - (state.lastTap || 0) > 750;
 
-  if (!app.nameTapState || app.nameTapState.name !== name || now - app.nameTapState.lastTap > 750) {
-    app.nameTapState = { name, count: 1, lastTap: now };
-  } else {
-    app.nameTapState.count += 1;
-    app.nameTapState.lastTap = now;
+  if (freshTap) {
+    app.nameTapState = { name, count: 1, lastTap: now, qrShownAt: 0 };
+    app.selectedName = name;
+    renderRotace();
+    return;
+  }
+
+  state.count = (state.count || 0) + 1;
+  state.lastTap = now;
+  app.nameTapState = state;
+
+  if (!sameName) {
+    app.selectedName = name;
+    renderRotace();
+    return;
+  }
+
+  if (state.qrShownAt) {
+    if (now - state.qrShownAt >= 450) {
+      app.selectedName = null;
+      app.nameTapState = { name: '', count: 0, lastTap: 0, qrShownAt: 0 };
+      renderRotace();
+      return;
+    }
+    renderRotace();
+    return;
+  }
+
+  if (state.count >= 2) {
+    state.qrShownAt = now;
+    app.nameTapState = state;
+    app.selectedName = name;
+    renderRotace();
+    showPersonQrModal(name);
+    return;
   }
 
   app.selectedName = name;
   renderRotace();
-
-  if (sameName && app.nameTapState.count >= 2) {
-    app.nameTapState = { name, count: 0, lastTap: 0 };
-    showPersonQrModal(name);
-  }
 }
 
 

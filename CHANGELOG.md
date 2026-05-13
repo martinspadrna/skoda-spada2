@@ -1,6 +1,6 @@
 # Rotace a kalkulačky
 
-## v.1.1 (406)
+## v.1.1 (407)
 - Dashboardové ikonky Kalendář a Jídelna jsou přiblížené původnímu stylu a jsou jednodušší, aby nepůsobily rozsypaně.
 - Herní statistiky se po této verzi resetují na nulu, hráč 4157 je z profilu vyhozený a další sync už tenhle starý balast netahá zpátky.
 - Profily, achievementy i herní statistiky mají stejný obal a po přihlášení se správně odemykají.

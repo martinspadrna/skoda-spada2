@@ -1,4 +1,4 @@
-// v.1.1 (406) – update manager pro novou verzi a zachovaný mobile-first styl.
+// v.1.1 (407) – update manager pro novou verzi, responsive audit a zachovaný mobile-first styl.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
@@ -146,6 +146,7 @@ function installPwaAndConnectivityHooks() {
   const LIVE_CHANNEL_NAME = 'rotace-live-updates';
   const SW_UPDATE_NOTICE_KEY = 'rotace_sw_update_notice_v1';
   const SW_UPDATE_PENDING_KEY = 'rotace_sw_update_pending_v1';
+  const SW_UPDATE_SUPPRESS_KEY = 'rotace_sw_update_suppress_v1';
   const tabId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   let liveRefreshPromise = null;
   let lastLiveRefreshAt = 0;
@@ -228,6 +229,17 @@ function installPwaAndConnectivityHooks() {
     } catch (err) {}
   };
 
+  const getSuppressUpdateToast = () => {
+    try { return localStorage.getItem(SW_UPDATE_SUPPRESS_KEY) || ''; } catch (err) { return ''; }
+  };
+
+  const setSuppressUpdateToast = (value) => {
+    try {
+      if (value) localStorage.setItem(SW_UPDATE_SUPPRESS_KEY, value);
+      else localStorage.removeItem(SW_UPDATE_SUPPRESS_KEY);
+    } catch (err) {}
+  };
+
   const removeUpdateToast = () => {
     if (swUpdateToastEl && swUpdateToastEl.parentNode) {
       swUpdateToastEl.parentNode.removeChild(swUpdateToastEl);
@@ -240,8 +252,10 @@ function installPwaAndConnectivityHooks() {
     const version = getAppVersionTag();
     const seen = getStoredUpdateNoticeVersion();
     const pending = getPendingUpdateVersion();
+    const suppress = getSuppressUpdateToast();
     if (seen && seen !== version && pending !== version) setStoredUpdateNoticeVersion('');
     if (pending && pending !== version) setPendingUpdateVersion('');
+    if (suppress && suppress !== version) setSuppressUpdateToast('');
   };
 
   const scheduleUpdateReload = (reason) => {
@@ -250,6 +264,7 @@ function installPwaAndConnectivityHooks() {
     swUpdateReloading = true;
     removeUpdateToast();
     try { setPendingUpdateVersion(getAppVersionTag()); } catch (err) {}
+    try { setSuppressUpdateToast(getAppVersionTag()); } catch (err) {}
     window.setTimeout(() => {
       try { window.location.reload(); } catch (err) {
         window.location.href = window.location.href;
@@ -267,8 +282,8 @@ function installPwaAndConnectivityHooks() {
     toast.innerHTML = `
       <div class="rakUpdateToastBadge" aria-hidden="true">RaK</div>
       <div class="rakUpdateToastBody">
-        <div class="rakUpdateToastTitle">K dispozici je nová verze aplikace</div>
-        <div class="rakUpdateToastText">Stačí kliknout na Aktualizovat a appka si načte novou cache sama.</div>
+        <div class="rakUpdateToastTitle">K dispozici je nová verze aplikace 😄</div>
+        <div class="rakUpdateToastText">Klikni na Aktualizovat a appka načte novou cache bez přeinstalace.</div>
       </div>
       <button type="button" class="rakUpdateToastAction">Aktualizovat</button>
     `;
@@ -280,6 +295,7 @@ function installPwaAndConnectivityHooks() {
       const version = getAppVersionTag();
       setStoredUpdateNoticeVersion(version);
       setPendingUpdateVersion(version);
+      setSuppressUpdateToast(getAppVersionTag());
       swUpdateButtonEl.disabled = true;
       swUpdateButtonEl.textContent = 'Aktualizuji…';
       try {
@@ -312,8 +328,10 @@ function installPwaAndConnectivityHooks() {
       return false;
     }
     if (!navigator.serviceWorker.controller) return false;
-    if (seen === currentVersion) return true;
     if (swUpdateReloading) return true;
+    const suppress = getSuppressUpdateToast();
+    if (suppress) return true;
+    if (seen === currentVersion) return true;
     ensureUpdateToast();
     setStoredUpdateNoticeVersion(currentVersion);
     setPendingUpdateVersion(currentVersion);
@@ -395,6 +413,16 @@ function installPwaAndConnectivityHooks() {
     return swRegistrationPromise;
   };
 
+  if ('serviceWorker' in navigator && !window.__rotaceSwControllerChangeBound) {
+    window.__rotaceSwControllerChangeBound = true;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      const pending = getPendingUpdateVersion();
+      if (pending && !swUpdateReloading) {
+        scheduleUpdateReload('controllerchange');
+      }
+    });
+  }
+
   setConnectionFlag();
 
   window.__rotaceTriggerLiveRefresh = runLiveRefresh;
@@ -462,10 +490,6 @@ function installPwaAndConnectivityHooks() {
       }
     });
 
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      void runLiveRefresh('controllerchange', { force: true });
-      scheduleUpdateReload('controllerchange');
-    });
   }
 
   window.addEventListener('online', () => {
