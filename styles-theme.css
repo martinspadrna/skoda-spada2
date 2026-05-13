@@ -944,11 +944,13 @@ input{
   justify-content:center;
 }
 
-.dashboardIcon svg{
+.dashboardIcon svg,
+.dashboardIconSvg{
   width:100%;
   height:100%;
   display:block;
   stroke:currentColor;
+  fill:none;
 }
 
 .dashboardIconImage{

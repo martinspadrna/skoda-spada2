@@ -1,6 +1,6 @@
 # Rotace a kalkulačky
 
-## v.1.1 (403)
+## v.1.1 (404)
 - Dashboardové ikonky Kalendář a Jídelna jsou přepsané na čistší jednoduché SVG, aby nepůsobily rozsypaně.
 - V Hrách zůstává jen jedna sekce Herní statistiky nahoře, ve stylu jako profily a achievementy.
 - Spodní lišta dostala pevnější fixaci dole, aby při scrollu neodjížděla nahoru.
