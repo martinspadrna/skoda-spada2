@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v1-386';
+const CACHE_VERSION = 'v1-388';
 const STATIC_CACHE = `rotace-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `rotace-runtime-${CACHE_VERSION}`;
 const APP_SHELL = [
@@ -50,7 +50,6 @@ self.addEventListener('install', (event) => {
       // Some cross-origin assets may fail to precache; ignore and keep the app shell.
       console.warn('[sw] precache partial fail', err);
     }
-    self.skipWaiting();
   })());
 });
 
@@ -58,7 +57,6 @@ self.addEventListener('message', (event) => {
   const data = event && event.data ? event.data : null;
   if (!data) return;
   if (data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
   }
 });
 

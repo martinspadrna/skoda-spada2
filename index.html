@@ -930,9 +930,9 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
 </style>
 
 
-<style id="v386-pre-mobile-polish">
+<style id="v387-pre-mobile-polish">
   #games{padding-bottom:154px !important;}
-  /* v1(386) mobile polish: tighter bottom bar + names at the bottom on rotace */
+  /* v1(387) mobile polish: tighter bottom bar + names at the bottom on rotace */
   .bottomNav{
     padding:3px 5px calc(3px + env(safe-area-inset-bottom)) !important;
     gap:5px !important;
@@ -991,8 +991,8 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
 </style>
 
 
-<style id="v386-legacy-mobile-polish">
-  /* v1(386) final mobile polish: tighter bottom bar, rotace preview and stats spacing */
+<style id="v387-legacy-mobile-polish">
+  /* v1(387) final mobile polish: tighter bottom bar, rotace preview and stats spacing */
   .bottomNav{
     padding:2px 4px calc(2px + env(safe-area-inset-bottom)) !important;
     gap:3px !important;
@@ -1104,8 +1104,8 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
 </style>
 
 
-<style id="v386-final-mobile-polish">
-  /* v1(386) final mobile polish: bottom bar, games padding, rotace preview, stats compact, snake joystick */
+<style id="v387-final-mobile-polish">
+  /* v1(387) final mobile polish: bottom bar, games padding, rotace preview, stats compact, snake joystick */
   .bottomNav{
     width:calc(100% - 4px) !important;
     padding:1px 0 calc(1px + env(safe-area-inset-bottom)) !important;
@@ -1511,7 +1511,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   }
 </style>
 
-<style id="v386-final-mobile-polish">
+<style id="v387-final-mobile-polish">
   .bottomNav{
     padding:1px 2px calc(1px + env(safe-area-inset-bottom)) !important;
     gap:2px !important;
@@ -2744,7 +2744,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
     }
   }
 
-  /* v1(386) freeze polish: nav border, tighter stats grid, clearer game account block */
+  /* v1(387) freeze polish: nav border, tighter stats grid, clearer game account block */
   .bottomNav{
     padding:2px 1px calc(2px + env(safe-area-inset-bottom)) !important;
   }
@@ -2782,10 +2782,10 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
 </style>
 
 
-<style id="v386-freeze-polish">
+<style id="v387-freeze-polish">
 @media (display-mode: standalone){
   .bottomNav{
-    bottom:calc(env(safe-area-inset-bottom) + 8px) !important;
+    bottom:calc(env(safe-area-inset-bottom) + 4px) !important;
   }
 }
 .bottomNav{
@@ -2881,6 +2881,72 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
 }
 #adminRotationEditor .appMenuTableWrap:nth-of-type(3) .appMenuInlineInputTiny{
   min-width:40px !important;
+}
+#adminRotationEditor .appMenuTableWrap:nth-of-type(1) .appMenuAdminTable,
+#adminRotationEditor .appMenuTableWrap:nth-of-type(2) .appMenuAdminTable{
+  min-width:438px !important;
+}
+#adminRotationEditor .appMenuTableWrap:nth-of-type(1) .appMenuInlineInputTiny,
+#adminRotationEditor .appMenuTableWrap:nth-of-type(2) .appMenuInlineInputTiny{
+  min-width:40px !important;
+  padding:4px 3px !important;
+  font-size:10px !important;
+}
+#adminRotationEditor .appMenuTableWrap:nth-of-type(1) .appMenuInlineInput,
+#adminRotationEditor .appMenuTableWrap:nth-of-type(2) .appMenuInlineInput{
+  min-height:24px !important;
+  padding:4px 5px !important;
+  font-size:10px !important;
+}
+#adminRotationEditor .appMenuTableWrap:nth-of-type(3) .appMenuAdminTable{
+  min-width:346px !important;
+}
+#adminRotationEditor .appMenuTableWrap:nth-of-type(3) .appMenuInlineInput{
+  min-height:24px !important;
+  padding:4px 5px !important;
+  font-size:10px !important;
+}
+#adminRotationEditor .appMenuTableWrap:nth-of-type(3) .appMenuInlineInputTiny{
+  min-width:36px !important;
+}
+#adminMachinesSection .appMenuAdminTable{
+  width:100% !important;
+  min-width:0 !important;
+  table-layout:fixed !important;
+}
+#adminMachinesSection .appMenuInlineInput{
+  min-height:24px !important;
+  padding:4px 5px !important;
+  font-size:10px !important;
+}
+#adminMachinesSection .appMenuTableWrap:nth-of-type(1) th:nth-child(1),
+#adminMachinesSection .appMenuTableWrap:nth-of-type(1) td:nth-child(1){width:28% !important;}
+#adminMachinesSection .appMenuTableWrap:nth-of-type(1) th:nth-child(2),
+#adminMachinesSection .appMenuTableWrap:nth-of-type(1) td:nth-child(2){width:42% !important;}
+#adminMachinesSection .appMenuTableWrap:nth-of-type(1) th:nth-child(3),
+#adminMachinesSection .appMenuTableWrap:nth-of-type(1) td:nth-child(3){width:30% !important;}
+#adminMachinesSection .appMenuTableWrap:nth-of-type(2) th:nth-child(1),
+#adminMachinesSection .appMenuTableWrap:nth-of-type(2) td:nth-child(1){width:14% !important;}
+#adminMachinesSection .appMenuTableWrap:nth-of-type(2) th:nth-child(2),
+#adminMachinesSection .appMenuTableWrap:nth-of-type(2) td:nth-child(2){width:16% !important;}
+#adminMachinesSection .appMenuTableWrap:nth-of-type(2) th:nth-child(3),
+#adminMachinesSection .appMenuTableWrap:nth-of-type(2) td:nth-child(3){width:18% !important;}
+#adminMachinesSection .appMenuTableWrap:nth-of-type(2) th:nth-child(4),
+#adminMachinesSection .appMenuTableWrap:nth-of-type(2) td:nth-child(4){width:18% !important;}
+#adminMachinesSection .appMenuTableWrap:nth-of-type(2) th:nth-child(5),
+#adminMachinesSection .appMenuTableWrap:nth-of-type(2) td:nth-child(5){width:17% !important;}
+#adminMachinesSection .appMenuTableWrap:nth-of-type(2) th:nth-child(6),
+#adminMachinesSection .appMenuTableWrap:nth-of-type(2) td:nth-child(6){width:17% !important;}
+#adminRotationEditor .appMenuMonthCheckList{
+  display:grid !important;
+  gap:4px !important;
+  margin-top:6px !important;
+}
+#adminRotationEditor .appMenuMonthCheckRow{
+  font-size:11px !important;
+  line-height:1.35 !important;
+  color:rgba(242,248,245,.88) !important;
+  word-break:break-word !important;
 }
 </style>
 

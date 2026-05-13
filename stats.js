@@ -506,7 +506,7 @@ function renderStatsPanel() {
       statsNameView.innerHTML = "";
     }
   } else {
-    statsNameView.innerHTML = "<div class='smallText'>Klepni na jméno nahoře.</div>";
+    statsNameView.innerHTML = "";
   }
 
   if (app.selectedStatsMachine) {
@@ -535,7 +535,7 @@ function renderStatsPanel() {
       "</div>"
     ].join('');
   } else {
-    statsMachineView.innerHTML = "<div class='smallText'>Klepni na stroj nahoře.</div>";
+    statsMachineView.innerHTML = "";
   }
 }
 

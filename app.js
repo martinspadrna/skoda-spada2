@@ -1,4 +1,4 @@
-// v.1(386) – herní expanze, all games a zachovaný mobile-first styl.
+// v.1(388) – update manager pro novou verzi a zachovaný mobile-first styl.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
@@ -141,14 +141,22 @@ function installPwaAndConnectivityHooks() {
   };
 
   const LIVE_REFRESH_INTERVAL_MS = 4 * 60 * 1000;
+  const SW_UPDATE_CHECK_INTERVAL_MS = 10 * 60 * 1000;
   const STALE_REFRESH_GUARD_MS = 15 * 1000;
   const LIVE_CHANNEL_NAME = 'rotace-live-updates';
+  const SW_UPDATE_NOTICE_KEY = 'rotace_sw_update_notice_v1';
+  const SW_UPDATE_PENDING_KEY = 'rotace_sw_update_pending_v1';
   const tabId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   let liveRefreshPromise = null;
   let lastLiveRefreshAt = 0;
   let liveRefreshTimer = null;
   let liveChannel = null;
   let swRegistrationPromise = null;
+  let swRegistrationInstance = null;
+  let swUpdateTimer = null;
+  let swUpdateToastEl = null;
+  let swUpdateButtonEl = null;
+  let swUpdateReloading = false;
   let deferredInstallPrompt = null;
 
   const runLiveRefresh = async (reason, opts = {}) => {
@@ -196,6 +204,155 @@ function installPwaAndConnectivityHooks() {
     } catch (err) {}
   };
 
+  const getAppVersionTag = () => String(window.APP_VERSION || '').trim() || 'unknown';
+
+  const getStoredUpdateNoticeVersion = () => {
+    try { return sessionStorage.getItem(SW_UPDATE_NOTICE_KEY) || ''; } catch (err) { return ''; }
+  };
+
+  const setStoredUpdateNoticeVersion = (value) => {
+    try {
+      if (value) sessionStorage.setItem(SW_UPDATE_NOTICE_KEY, value);
+      else sessionStorage.removeItem(SW_UPDATE_NOTICE_KEY);
+    } catch (err) {}
+  };
+
+  const getPendingUpdateVersion = () => {
+    try { return sessionStorage.getItem(SW_UPDATE_PENDING_KEY) || ''; } catch (err) { return ''; }
+  };
+
+  const setPendingUpdateVersion = (value) => {
+    try {
+      if (value) sessionStorage.setItem(SW_UPDATE_PENDING_KEY, value);
+      else sessionStorage.removeItem(SW_UPDATE_PENDING_KEY);
+    } catch (err) {}
+  };
+
+  const removeUpdateToast = () => {
+    if (swUpdateToastEl && swUpdateToastEl.parentNode) {
+      swUpdateToastEl.parentNode.removeChild(swUpdateToastEl);
+    }
+    swUpdateToastEl = null;
+    swUpdateButtonEl = null;
+  };
+
+  const clearUpdatePromptIfStale = () => {
+    const version = getAppVersionTag();
+    const seen = getStoredUpdateNoticeVersion();
+    const pending = getPendingUpdateVersion();
+    if (seen && seen !== version && pending !== version) setStoredUpdateNoticeVersion('');
+    if (pending && pending !== version) setPendingUpdateVersion('');
+  };
+
+  const scheduleUpdateReload = (reason) => {
+    if (swUpdateReloading) return;
+    if (!getPendingUpdateVersion()) return;
+    swUpdateReloading = true;
+    removeUpdateToast();
+    try { setPendingUpdateVersion(getAppVersionTag()); } catch (err) {}
+    window.setTimeout(() => {
+      try { window.location.reload(); } catch (err) {
+        window.location.href = window.location.href;
+      }
+    }, reason === 'sw-activated' ? 80 : 160);
+  };
+
+  const ensureUpdateToast = () => {
+    if (swUpdateToastEl && document.body.contains(swUpdateToastEl)) return swUpdateToastEl;
+    removeUpdateToast();
+    const toast = document.createElement('div');
+    toast.className = 'rakUpdateToast';
+    toast.setAttribute('role', 'status');
+    toast.setAttribute('aria-live', 'polite');
+    toast.innerHTML = `
+      <div class="rakUpdateToastBadge" aria-hidden="true">RaK</div>
+      <div class="rakUpdateToastBody">
+        <div class="rakUpdateToastTitle">K dispozici je nová verze aplikace 😄</div>
+        <div class="rakUpdateToastText">Stačí kliknout na Aktualizovat a appka si načte novou cache sama.</div>
+      </div>
+      <button type="button" class="rakUpdateToastAction">Aktualizovat</button>
+    `;
+    document.body.appendChild(toast);
+    swUpdateToastEl = toast;
+    swUpdateButtonEl = toast.querySelector('.rakUpdateToastAction');
+    swUpdateButtonEl.addEventListener('click', async () => {
+      const registration = swRegistrationInstance;
+      const version = getAppVersionTag();
+      setStoredUpdateNoticeVersion(version);
+      setPendingUpdateVersion(version);
+      swUpdateButtonEl.disabled = true;
+      swUpdateButtonEl.textContent = 'Aktualizuji…';
+      try {
+        if (registration && registration.waiting) {
+          registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+        } else if (registration && registration.update) {
+          await registration.update();
+        }
+      } catch (err) {
+        console.warn('[Rotace] Update confirm failed', err);
+      }
+      scheduleUpdateReload('manual');
+    });
+    requestAnimationFrame(() => toast.classList.add('isVisible'));
+    return toast;
+  };
+
+  const hideUpdateToast = () => {
+    if (swUpdateToastEl) swUpdateToastEl.classList.remove('isVisible');
+  };
+
+  const maybeShowUpdateToast = (registration, reason) => {
+    const currentVersion = getAppVersionTag();
+    const seen = getStoredUpdateNoticeVersion();
+    clearUpdatePromptIfStale();
+    if (!registration || !registration.waiting) {
+      if (!swUpdateReloading && getPendingUpdateVersion() === currentVersion) {
+        setPendingUpdateVersion('');
+      }
+      return false;
+    }
+    if (!navigator.serviceWorker.controller) return false;
+    if (seen === currentVersion) return true;
+    if (swUpdateReloading) return true;
+    ensureUpdateToast();
+    setStoredUpdateNoticeVersion(currentVersion);
+    setPendingUpdateVersion(currentVersion);
+    if (reason) {
+      try { console.info('[Rotace] Update ready via', reason); } catch (err) {}
+    }
+    return true;
+  };
+
+  const checkForWaitingServiceWorker = async (source) => {
+    if (!('serviceWorker' in navigator)) return null;
+    try {
+      const registration = swRegistrationInstance || await navigator.serviceWorker.getRegistration('./');
+      if (registration) {
+        swRegistrationInstance = registration;
+        maybeShowUpdateToast(registration, source || 'check');
+      }
+      return registration || null;
+    } catch (err) {
+      console.warn('[Rotace] SW check failed', err);
+      return null;
+    }
+  };
+
+  const refreshServiceWorkerRegistration = async (source) => {
+    if (!('serviceWorker' in navigator)) return null;
+    try {
+      const registration = await registerServiceWorker();
+      if (registration && registration.update) {
+        await registration.update();
+      }
+      await checkForWaitingServiceWorker(source || 'refresh');
+      return registration || null;
+    } catch (err) {
+      console.warn('[Rotace] SW refresh failed', err);
+      return null;
+    }
+  };
+
   const signalStateChange = (reason) => {
     broadcastState({
       type: 'state-change',
@@ -209,10 +366,8 @@ function installPwaAndConnectivityHooks() {
     if (!('serviceWorker' in navigator)) return null;
     if (swRegistrationPromise) return swRegistrationPromise;
 
-    swRegistrationPromise = navigator.serviceWorker.register('sw.js', { scope: './' }).then((registration) => {
-      if (registration && registration.update) {
-        registration.update().catch(() => {});
-      }
+    swRegistrationPromise = navigator.serviceWorker.register('sw.js', { scope: './' }).then(async (registration) => {
+      swRegistrationInstance = registration || null;
       if (registration && !registration.__rotaceUpdateHooked) {
         registration.__rotaceUpdateHooked = true;
         registration.addEventListener('updatefound', () => {
@@ -220,16 +375,16 @@ function installPwaAndConnectivityHooks() {
           if (!installing) return;
           installing.addEventListener('statechange', () => {
             if (installing.state === 'installed') {
-              if (navigator.serviceWorker.controller && registration.waiting) {
-                try {
-                  registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-                } catch (err) {}
-              }
               void runLiveRefresh('sw-installed', { force: true });
+              void checkForWaitingServiceWorker('updatefound');
             }
           });
         });
       }
+      if (registration && registration.update) {
+        try { await registration.update(); } catch (err) {}
+      }
+      void checkForWaitingServiceWorker('register');
       return registration;
     }).catch((err) => {
       console.warn('Service worker registration failed', err);
@@ -296,13 +451,20 @@ function installPwaAndConnectivityHooks() {
     navigator.serviceWorker.addEventListener('message', (event) => {
       const data = event && event.data ? event.data : null;
       if (!data) return;
-      if (data.type === 'sw-activated' || data.type === 'refresh-ui' || data.type === 'sw-ready') {
+      if (data.type === 'sw-activated') {
+        hideUpdateToast();
+        void runLiveRefresh(data.reason || data.type || 'sw-message', { force: true });
+        scheduleUpdateReload('sw-activated');
+        return;
+      }
+      if (data.type === 'refresh-ui' || data.type === 'sw-ready') {
         void runLiveRefresh(data.reason || data.type || 'sw-message', { force: true });
       }
     });
 
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       void runLiveRefresh('controllerchange', { force: true });
+      scheduleUpdateReload('controllerchange');
     });
   }
 
@@ -310,6 +472,7 @@ function installPwaAndConnectivityHooks() {
     setConnectionFlag();
     if (typeof flushSupabaseSyncQueue === 'function') void flushSupabaseSyncQueue();
     void runLiveRefresh('online', { force: true });
+    void refreshServiceWorkerRegistration('online');
     signalStateChange('online');
   });
   window.addEventListener('offline', () => {
@@ -322,14 +485,21 @@ function installPwaAndConnectivityHooks() {
     if (navigator.onLine) {
       if (typeof flushSupabaseSyncQueue === 'function') void flushSupabaseSyncQueue();
       void runLiveRefresh('pageshow');
+      void refreshServiceWorkerRegistration('pageshow');
     }
   });
   window.addEventListener('focus', () => {
-    if (!document.hidden && navigator.onLine) void runLiveRefresh('focus');
+    if (!document.hidden && navigator.onLine) {
+      void runLiveRefresh('focus');
+      void refreshServiceWorkerRegistration('focus');
+    }
   });
   window.addEventListener('visibilitychange', () => {
     setConnectionFlag();
-    if (!document.hidden && navigator.onLine) void runLiveRefresh('visible');
+    if (!document.hidden && navigator.onLine) {
+      void runLiveRefresh('visible');
+      void refreshServiceWorkerRegistration('visible');
+    }
   });
   window.addEventListener('storage', (event) => {
     if (!event || !event.key) return;
@@ -345,8 +515,13 @@ function installPwaAndConnectivityHooks() {
     if (!document.hidden && navigator.onLine) void runLiveRefresh('interval');
   }, LIVE_REFRESH_INTERVAL_MS);
 
+  swUpdateTimer = window.setInterval(() => {
+    if (!document.hidden && navigator.onLine) void refreshServiceWorkerRegistration('interval');
+  }, SW_UPDATE_CHECK_INTERVAL_MS);
+
   window.addEventListener('beforeunload', () => {
     if (liveRefreshTimer) window.clearInterval(liveRefreshTimer);
+    if (swUpdateTimer) window.clearInterval(swUpdateTimer);
     try { if (liveChannel) liveChannel.close(); } catch (err) {}
   });
 }

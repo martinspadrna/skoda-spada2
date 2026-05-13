@@ -1,5 +1,15 @@
 # Rotace a kalkulačky
 
+## v.1(388)
+- Přidána detekce nové verze aplikace přes waiting service worker.
+- Po nasazení nové cache se zobrazí moderní update popup s tlačítkem Aktualizovat.
+- Po potvrzení se appka sama přepne na novou verzi bez ruční reinstalace PWA.
+
+## v.1(387)
+- Statistiky už neukazují popisky typu „Klepni na …“.
+- Spodní lišta je posunutá o chlup níž a rozpisy mají víc prostoru pod sebou.
+- Administrace má užší a sjednocenější pole pro stroje i rozpisy, včetně měsíční kontroly volných jmen.
+
 ## v.1(386)
 - Rozpisy v administraci jsou kompaktnější a líp se vejdou na šířku.
 - Nové hry mají bezpečnější druhý pokus při vykreslení, aby se hned po otevření neukázala prázdná obrazovka.

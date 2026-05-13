@@ -2788,6 +2788,16 @@ function adminRotationDateKey(rawDate) {
   return String(rawDate || '').trim().toLowerCase();
 }
 
+function adminRotationDateLabel(rawDate) {
+  const raw = String(rawDate || '').trim().replace(/\s+/g, ' ');
+  if (!raw) return '';
+  const parsed = typeof parseDateToken === 'function' ? parseDateToken(raw) : null;
+  if (parsed && Number.isFinite(parsed.day) && Number.isFinite(parsed.month)) {
+    return String(parsed.day) + '.' + String(parsed.month) + '.' + (parsed.shift ? ' ' + parsed.shift : '');
+  }
+  return raw;
+}
+
 function adminGetKnownNames() {
   if (typeof getKnownStatNames === 'function') {
     return Array.from(getKnownStatNames()).filter(Boolean).sort((a, b) => String(a).localeCompare(String(b), 'cs'));
@@ -2810,8 +2820,8 @@ function adminSplitPeopleList(text) {
 function adminBuildUsedNamesByDate(root) {
   const usedByDate = new Map();
 
-  const add = (dateKey, name) => {
-    const key = String(dateKey || '').trim();
+  const add = (dateLabel, name) => {
+    const key = String(dateLabel || '').trim().replace(/\s+/g, ' ');
     const person = String(name || '').trim();
     if (!key || !person) return;
     if (!usedByDate.has(key)) usedByDate.set(key, new Set());
@@ -2819,22 +2829,90 @@ function adminBuildUsedNamesByDate(root) {
   };
 
   root.querySelectorAll('tr[data-rotation-section]').forEach((tr) => {
-    const date = tr.querySelector('[data-rot-field="date"]')?.value || '';
-    const dateKey = adminRotationDateKey(date);
+    const date = adminRotationDateLabel(tr.querySelector('[data-rot-field="date"]')?.value || '');
     tr.querySelectorAll('[data-rot-field^="cell-"]').forEach((input) => {
       const name = String(input && input.value ? input.value : '').trim();
-      if (name && !['dát pryč','odebrat','remove','pryc','pryč'].includes(name.toLowerCase())) add(dateKey, name);
+      if (name && !['dát pryč','odebrat','remove','pryc','pryč'].includes(name.toLowerCase())) add(date, name);
     });
   });
 
   root.querySelectorAll('tr[data-note-row-index]').forEach((tr) => {
-    const date = tr.querySelector('[data-note-field="date"]')?.value || '';
-    const dateKey = adminRotationDateKey(date);
+    const date = adminRotationDateLabel(tr.querySelector('[data-note-field="date"]')?.value || '');
     const names = adminSplitPeopleList(tr.querySelector('[data-note-field="person"]')?.value || '');
-    names.forEach((name) => add(dateKey, name));
+    names.forEach((name) => add(date, name));
   });
 
   return usedByDate;
+}
+
+function adminBuildMonthUsageSummary(monthKey) {
+  const month = app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
+  const knownNames = adminGetKnownNames();
+  const usedByDate = new Map();
+  const allUsed = new Set();
+  const dateOrder = [];
+
+  const register = (dateLabel) => {
+    const label = adminRotationDateLabel(dateLabel);
+    if (!label) return null;
+    if (!usedByDate.has(label)) {
+      usedByDate.set(label, new Set());
+      dateOrder.push(label);
+    }
+    return usedByDate.get(label);
+  };
+
+  const addName = (dateLabel, name) => {
+    const labelSet = register(dateLabel);
+    const person = String(name || '').trim();
+    if (!labelSet || !person) return;
+    labelSet.add(person);
+    allUsed.add(person);
+  };
+
+  if (month) {
+    const hardRows = Array.isArray(month.hard && month.hard.rows) ? month.hard.rows : [];
+    const softRows = Array.isArray(month.soft && month.soft.rows) ? month.soft.rows : [];
+    const notesRows = Array.isArray(month.notes) ? month.notes : [];
+
+    hardRows.forEach((row) => {
+      const label = adminRotationDateLabel(row && row.date ? row.date : '');
+      if (!label) return;
+      register(label);
+      const cells = Array.isArray(row && row.cells ? row.cells : []) ? row.cells : [];
+      cells.forEach((cell) => {
+        const name = String(cell || '').trim();
+        if (name && !['dát pryč','odebrat','remove','pryc','pryč'].includes(name.toLowerCase())) addName(label, name);
+      });
+    });
+
+    softRows.forEach((row) => {
+      const label = adminRotationDateLabel(row && row.date ? row.date : '');
+      if (!label) return;
+      register(label);
+      const cells = Array.isArray(row && row.cells ? row.cells : []) ? row.cells : [];
+      cells.forEach((cell) => {
+        const name = String(cell || '').trim();
+        if (name && !['dát pryč','odebrat','remove','pryc','pryč'].includes(name.toLowerCase())) addName(label, name);
+      });
+    });
+
+    notesRows.forEach((row) => {
+      const label = adminRotationDateLabel(row && row.date ? row.date : '');
+      if (!label) return;
+      register(label);
+      const names = adminSplitPeopleList(row && row.person ? row.person : '');
+      names.forEach((name) => addName(label, name));
+    });
+  }
+
+  const freeOverall = knownNames.filter((name) => !allUsed.has(name));
+  const missingByDate = dateOrder.map((label) => ({
+    label,
+    missing: knownNames.filter((name) => !(usedByDate.get(label) || new Set()).has(name))
+  })).filter((item) => item.missing.length);
+
+  return { month, knownNames, usedByDate, allUsed, dateOrder, freeOverall, missingByDate };
 }
 
 function adminGetRotationActiveDateKey(root) {
@@ -2845,27 +2923,32 @@ function adminGetRotationActiveDateKey(root) {
     : null;
   if (!row) return '';
   const dateInput = row.querySelector('[data-rot-field="date"], [data-note-field="date"]');
-  return adminRotationDateKey(dateInput ? dateInput.value : '');
+  return adminRotationDateLabel(dateInput ? dateInput.value : '');
 }
 
 function adminRenderRotationAvailabilitySummary(root) {
   if (!root || root.dataset.adminView !== 'rotation') return;
   const box = root.querySelector('#adminRotationFreeNamesSummary');
   if (!box) return;
-  const dateKey = adminGetRotationActiveDateKey(root);
-  if (!dateKey) {
-    box.innerHTML = '<div class="appMenuFreeNamesTitle">Kontrola volných jmen</div><div class="appMenuFreeNamesText">Klikni do nějakého data nebo jména v rozpisu a ukáže se seznam lidí, kteří nejsou ten den zapsaní ani v rozpisu, ani v absenci.</div>';
+  const monthSelect = root.querySelector('#adminMonthSelect');
+  const monthKey = monthSelect ? monthSelect.value : getAdminSelectedMonthKey();
+  const summary = adminBuildMonthUsageSummary(monthKey);
+  if (!summary.month) {
+    box.innerHTML = '<div class="appMenuFreeNamesTitle">Kontrola měsíce</div><div class="appMenuFreeNamesText">Pro tenhle měsíc zatím nejsou data.</div>';
     return;
   }
-  const knownNames = adminGetKnownNames();
-  const usedByDate = adminBuildUsedNamesByDate(root);
-  const used = usedByDate.get(dateKey) || new Set();
-  const free = knownNames.filter((name) => !used.has(name));
-  const title = '<div class="appMenuFreeNamesTitle">Volná jména pro ' + escapeHtml(dateKey) + '</div>';
-  const text = free.length
-    ? '<div class="appMenuFreeNamesText">' + free.map(escapeHtml).join(', ') + '</div>'
-    : '<div class="appMenuFreeNamesText">Pro tenhle den už jsou všechna známá jména někde zapsaná.</div>';
-  box.innerHTML = title + text;
+  const freeOverall = summary.freeOverall.length
+    ? summary.freeOverall.map(escapeHtml).join(', ')
+    : '—';
+  const missingByDateHtml = summary.missingByDate.length
+    ? summary.missingByDate.map((item) => '<div class="appMenuMonthCheckRow"><b>' + escapeHtml(item.label) + ':</b> ' + escapeHtml(item.missing.join(', ')) + '</div>').join('')
+    : '<div class="appMenuMonthCheckRow">V tomhle měsíci nechybí žádné známé jméno.</div>';
+
+  box.innerHTML =
+    '<div class="appMenuFreeNamesTitle">Kontrola měsíce ' + escapeHtml(monthKey || '') + '</div>' +
+    '<div class="appMenuFreeNamesText"><b>V celém měsíci nikde nejsou:</b> ' + freeOverall + '</div>' +
+    '<div class="appMenuFreeNamesText" style="margin-top:8px;"><b>Chybějící jména podle dnů:</b></div>' +
+    '<div class="appMenuMonthCheckList">' + missingByDateHtml + '</div>';
 }
 
 function adminRefreshRotationSuggestions(root) {
@@ -2900,7 +2983,7 @@ function adminRefreshRotationSuggestions(root) {
 
   root.querySelectorAll('tr[data-rotation-section]').forEach((tr, rowIndex) => {
     const dateInput = tr.querySelector('[data-rot-field="date"]');
-    const dateKey = adminRotationDateKey(dateInput ? dateInput.value : '');
+    const dateKey = adminRotationDateLabel(dateInput ? dateInput.value : '');
     tr.querySelectorAll('[data-rot-field^="cell-"]').forEach((input, cellIndex) => {
       const current = String(input.value || '').trim();
       const listId = 'admin-rot-suggest-' + String(rowIndex) + '-' + String(cellIndex);
@@ -2911,7 +2994,7 @@ function adminRefreshRotationSuggestions(root) {
 
   root.querySelectorAll('tr[data-note-row-index]').forEach((tr, rowIndex) => {
     const dateInput = tr.querySelector('[data-note-field="date"]');
-    const dateKey = adminRotationDateKey(dateInput ? dateInput.value : '');
+    const dateKey = adminRotationDateLabel(dateInput ? dateInput.value : '');
     const personInput = tr.querySelector('[data-note-field="person"]');
     if (!personInput) return;
     const current = String(personInput.value || '').trim();
@@ -3043,8 +3126,8 @@ function buildAdminRotationTableHtml(monthKey) {
     '  <div class="appMenuSubTitle">Rozpis – ' + escapeHtml(monthKey) + '</div>',
     '  <div class="appMenuText">Stejný rozpis, jen editovatelný. Vyplňuj rovnou v mřížce, jako bys upravoval samotný rozpis. Prázdné řádky se při uložení ignorují.</div>',
     '  <div class="appMenuFreeNamesBox" id="adminRotationFreeNamesSummary">',
-    '    <div class="appMenuFreeNamesTitle">Kontrola volných jmen</div>',
-    '    <div class="appMenuFreeNamesText">Klikni do nějakého data nebo jména v rozpisu a ukáže se seznam lidí, kteří nejsou ten den zapsaní ani v rozpisu, ani v absenci.</div>',
+    '    <div class="appMenuFreeNamesTitle">Kontrola měsíce</div>',
+    '    <div class="appMenuFreeNamesText">Vyber měsíc a hned uvidíš, kdo v něm není zapsaný ani jednou a na kterých dnech ještě někdo chybí.</div>',
     '  </div>',
     '  <div class="tableWrap appMenuTableWrap">',
     '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense">',
