@@ -3826,8 +3826,13 @@ function showPage(id) {
 
 function openRotaceNames() {
 
+  if (typeof app !== 'undefined') {
+    app.selectedName = null;
+    app.nameTapState = null;
+  }
   showPage('rotace');
   setRotaceView('names');
+  if (typeof renderRotace === 'function') renderRotace();
   setBottomNavActive('rotace');
 }
 
@@ -3966,7 +3971,7 @@ function ensureFoodScheduleModal() {
 // Games hub + account profile
 // -------------------------
 const GAMES_PROFILE_KEY = APP_KEY + ':games_profile_v1';
-const GAMES_PROFILE_RESET_VERSION = 405;
+const GAMES_PROFILE_RESET_VERSION = 406;
 const GAMES_ACCOUNT_BLOCKLIST = new Set(['4157']);
 const GAMES_ACCOUNT_LIST = [];
 
@@ -4135,6 +4140,8 @@ async function gamesSyncProfileFromRemote(force = false) {
       profile.profileVersion = GAMES_PROFILE_RESET_VERSION;
       gamesSaveProfile(profile);
       app.gamesProfile = profile;
+      gamesRenderProfiles();
+      gamesRenderAchievements();
       gamesRenderStats();
       if (typeof syncGamesLockedSections === 'function') syncGamesLockedSections();
     }
@@ -4333,10 +4340,14 @@ function gamesRenderAccountChips() {
       }
       syncVisibleAccount(found);
       gamesApplyActiveAccountUI(found);
+      gamesRenderProfiles();
+      gamesRenderAchievements();
       gamesRenderStats();
       if (typeof syncGamesLockedSections === 'function') syncGamesLockedSections();
       requestAnimationFrame(() => {
         gamesRenderAccountChips();
+        gamesRenderProfiles();
+        gamesRenderAchievements();
         gamesRenderStats();
         if (typeof syncGamesLockedSections === 'function') syncGamesLockedSections();
       });
@@ -4355,6 +4366,111 @@ function gamesRenderAccountChips() {
       if (typeof syncGamesLockedSections === 'function') syncGamesLockedSections();
     });
   }
+}
+
+function gamesGetTotals(acc) {
+  const stats = acc && acc.stats ? acc.stats : {};
+  const ttt = stats.ttt || {};
+  const g2048 = stats.g2048 || {};
+  const snake = stats.snake || {};
+  const flap = stats.flap || {};
+  const totalPlays = (Number(ttt.plays || 0) || 0) + (Number(g2048.plays || 0) || 0) + (Number(snake.plays || 0) || 0) + (Number(flap.plays || 0) || 0);
+  return {
+    stats,
+    ttt,
+    g2048,
+    snake,
+    flap,
+    totalPlays,
+    bestScore: Math.max(Number(g2048.bestScore || 0) || 0, Number(snake.bestScore || 0) || 0, Number(flap.bestScore || 0) || 0)
+  };
+}
+
+function gamesRenderProfiles() {
+  const grid = document.getElementById('gamesProfilesGrid');
+  if (!grid) return;
+  const profile = gamesGetProfile();
+  const accounts = Object.values(profile.accounts || {}).filter(acc => !GAMES_ACCOUNT_BLOCKLIST.has(String(acc && acc.id || '').trim())).sort((a, b) => {
+    const ai = Number(a && a.id ? a.id : 0) || 0;
+    const bi = Number(b && b.id ? b.id : 0) || 0;
+    return ai - bi;
+  });
+  const activeId = profile.activeAccountId;
+
+  if (!accounts.length) {
+    grid.innerHTML = '<div class="smallText">Zatím nejsou žádné profily.</div>';
+    return;
+  }
+
+  grid.innerHTML = accounts.map((acc) => {
+    const total = gamesGetTotals(acc);
+    const last = acc.updatedAt ? gamesFormatPlayedLabel(acc.updatedAt) : 'Ještě bez hry';
+    return [
+      '<div class="gamesStatsCard' + (String(acc.id) === String(activeId) ? ' isActive' : '') + '">',
+      '  <div class="gamesStatsCardHead">',
+      '    <div>',
+      '      <div class="gamesStatsCardName">' + escapeHtml(acc.name || ('Hráč ' + String(acc.id || ''))) + '</div>',
+      '      <div class="gamesStatsCardId">' + escapeHtml(acc.id || '') + '</div>',
+      '    </div>',
+      '    <div class="gamesStatsCardTotal">' + String(total.totalPlays) + ' her</div>',
+      '  </div>',
+      '  <div class="gamesStatsCardBody">',
+      '    <div class="gamesStatsCardLine"><strong>Piškvorky</strong> · ' + String(total.ttt.plays || 0) + '×</div>',
+      '    <div class="gamesStatsCardLine"><strong>2048</strong> · ' + String(total.g2048.bestScore || 0) + '</div>',
+      '    <div class="gamesStatsCardLine"><strong>Snake</strong> · ' + String(total.snake.bestScore || 0) + '</div>',
+      '    <div class="gamesStatsCardLine"><strong>Flap</strong> · ' + String(total.flap.bestScore || 0) + '</div>',
+      '    <div class="gamesStatsCardMeta">' + escapeHtml(last) + '</div>',
+      '  </div>',
+      '</div>'
+    ].join('');
+  }).join('');
+}
+
+const GAMES_ACHIEVEMENT_DEFS = [
+  { id: 'start', title: 'První krok', desc: 'Zahraj si první hru', goalText: '1 hra', progress: (a) => a.totalPlays, target: 1 },
+  { id: 'ten', title: 'Desítka', desc: 'Nasbírej 10 her', goalText: '10 her', progress: (a) => a.totalPlays, target: 10 },
+  { id: 'ttt', title: 'Piškvorky', desc: 'Odehraj 5 kol', goalText: '5 kol', progress: (a) => a.ttt.plays || 0, target: 5 },
+  { id: '2048', title: '2048', desc: 'Dostaň se na 1000 bodů', goalText: '1000 bodů', progress: (a) => a.g2048.bestScore || 0, target: 1000 },
+  { id: 'snake', title: 'Hadík', desc: 'Dostaň snake na délku 15', goalText: '15 bodů', progress: (a) => a.snake.bestScore || 0, target: 15 },
+  { id: 'flap', title: 'Letec', desc: 'Dej ve Flapu 10 bodů', goalText: '10 bodů', progress: (a) => a.flap.bestScore || 0, target: 10 }
+];
+
+function gamesRenderAchievements() {
+  const grid = document.getElementById('gamesAchievementsGrid');
+  if (!grid) return;
+  const account = gamesGetActiveAccount();
+  if (!account) {
+    grid.innerHTML = '<div class="smallText">Přihlas se a achievementy se začnou počítat.</div>';
+    return;
+  }
+
+  const total = gamesGetTotals(account);
+  const unlocked = GAMES_ACHIEVEMENT_DEFS.filter((def) => Number(def.progress(total) || 0) >= Number(def.target || 0)).length;
+
+  grid.innerHTML = GAMES_ACHIEVEMENT_DEFS.map((def) => {
+    const current = Number(def.progress(total) || 0);
+    const target = Number(def.target || 1) || 1;
+    const pct = Math.max(0, Math.min(100, Math.round((current / target) * 100)));
+    const isUnlocked = current >= target;
+    return [
+      '<div class="gamesStatsCard' + (isUnlocked ? ' isActive' : '') + '">',
+      '  <div class="gamesStatsCardHead">',
+      '    <div>',
+      '      <div class="gamesStatsCardName">' + escapeHtml(def.title) + '</div>',
+      '      <div class="gamesStatsCardId">' + escapeHtml(def.id) + '</div>',
+      '    </div>',
+      '    <div class="gamesStatsCardTotal">' + String(Math.min(current, target)) + '/' + String(target) + '</div>',
+      '  </div>',
+      '  <div class="gamesStatsCardBody">',
+      '    <div class="gamesStatsCardLine">' + escapeHtml(def.desc) + '</div>',
+      '    <div class="gamesStatsCardLine">' + escapeHtml(def.goalText) + '</div>',
+      '    <div class="gamesAchievementBar"><span style="width:' + String(pct) + '%"></span></div>',
+      '  </div>',
+      '</div>'
+    ].join('');
+  }).join('');
+  const folder = document.querySelector('#games .gamesAchievementsFolder');
+  if (folder) folder.dataset.unlocked = String(unlocked);
 }
 
 function gamesRenderStats() {
@@ -4400,9 +4516,11 @@ function gamesRenderStats() {
 function renderGamesHub() {
   gamesGetProfile();
   gamesRenderAccountChips();
+  gamesRenderProfiles();
+  gamesRenderAchievements();
   gamesRenderStats();
   if (typeof syncGamesLockedSections === 'function') syncGamesLockedSections();
-  void gamesSyncProfileFromRemote().then(() => { gamesRenderStats(); if (typeof syncGamesLockedSections === 'function') syncGamesLockedSections(); });
+  void gamesSyncProfileFromRemote().then(() => { gamesRenderProfiles(); gamesRenderAchievements(); gamesRenderStats(); if (typeof syncGamesLockedSections === 'function') syncGamesLockedSections(); });
   void gamesRefreshRemoteLeaderboards();
   gamesEnsureKeyBindings();
   gamesEnsureResizeBinding();

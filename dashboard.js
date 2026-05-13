@@ -93,13 +93,13 @@ function updateDashboard() {
   };
   const iconSvg = (svg) => svg;
   const walletIcon = iconSvg(`
-<svg class="dashboardIconSvg" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M7 7.2h10a2.2 2.2 0 0 1 2.2 2.2v5.2A2.2 2.2 0 0 1 17 16.8H7A2.2 2.2 0 0 1 4.8 14.6V9.4A2.2 2.2 0 0 1 7 7.2Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M15.6 11.9h1.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M7.6 9.9h6.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M7.6 13.1h4.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+<svg class="dashboardIconSvg" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M5.2 9h11.8a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H5.2a1.7 1.7 0 0 1-1.7-1.7v-4.6A1.7 1.7 0 0 1 5.2 9Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M14.7 13h2.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M6.8 11.2h6.1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
 `);
   const croissantIcon = iconSvg(`
-<svg class="dashboardIconSvg" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M6 11.9c1.2-3.3 4.3-5.9 8.1-5.9 2.8 0 4.9 1.1 6 2.8-2.2.5-3.8 2.3-3.8 4.4 0 2-1.6 3.8-3.6 4.4-3.6 1.1-7.2-1.4-8.1-5.7Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+<svg class="dashboardIconSvg" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M5.4 12.2c1.3-3.3 4.2-5.2 7.8-5.2 3 0 5.4 1.3 6.8 3.4-1.9.2-3.4 1.6-3.9 3.4-.6 2-2.2 3.2-4.2 3.7-3.1.8-5.8-.5-6.5-5.3Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
 `);
   const plateIcon = iconSvg(`
-<svg class="dashboardIconSvg" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="7.2" stroke="currentColor" stroke-width="1.8"/><path d="M9 8.9h6M9 12h5.2M9 15.1h3.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+<svg class="dashboardIconSvg" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="7" stroke="currentColor" stroke-width="1.8"/><path d="M8.8 9h6.4M8.8 12h5.2M8.8 15h3.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
 `);
   const calendarIcon = iconSvg(`
 <svg class="dashboardIconSvg" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><rect x="4.5" y="5.2" width="15" height="14.3" rx="3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.2 3.9v3M16.8 3.9v3M4.9 9h14.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 12.3h4M8 15.5h5.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
@@ -108,7 +108,7 @@ function updateDashboard() {
 <svg class="dashboardIconSvg" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M7.2 4.7h9.6c0 2.7-2 4.5-4.8 6.2 2.8 1.7 4.8 3.5 4.8 6.2H7.2c0-2.7 2-4.5 4.8-6.2-2.8-1.7-4.8-3.5-4.8-6.2Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
 `);
   const palmIcon = iconSvg(`
-<svg class="dashboardIconSvg" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M7.8 16.8c1.2-3.4 2.2-6 4.2-9.8.6-1.1 2.2-1.3 2.9-.2.8 1.3.1 3.1-.7 4.4 1.6-1.4 3.2-2 4.6-2.1.8 0 1.4.6 1.3 1.4-.1 1.7-1.4 3.4-3.1 4.4-1.4.8-2.9 1.1-4.4 1.2-1.1 0-2.4-.2-4.8.7Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+<svg class="dashboardIconSvg" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M12 17.8V11.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M12 11.4c-2.1-4-4.9-5.8-7.7-6 1.9 1.1 3.2 2.8 4 4.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 11.4c2.1-4 4.9-5.8 7.7-6-1.9 1.1-3.2 2.8-4 4.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="8" r="1.3" stroke="currentColor" stroke-width="1.6"/></svg>
 `);
   const bookIcon = iconSvg(`
 <svg class="dashboardIconSvg" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M6.2 4.8h9.1A2.7 2.7 0 0 1 18 7.5v11H8.7a2.5 2.5 0 0 0-2.5 2.5V4.8Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.2 8.2h6.6M8.2 11.2h4.8M8.2 14.2h5.9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
@@ -162,7 +162,7 @@ function updateDashboard() {
   setCard('dashKantyna', 'Kantýna', foodText(kantyna), foodMeta(kantyna), foodDot(kantyna), true, croissantIcon);
   setCard('dashJidelna', 'Jídelna', foodText(jidelna), foodMeta(jidelna), foodDot(jidelna), true, plateIcon);
   setCard('dashVyplata', 'Další výplata', payDateText, payMeta, '', false, walletIcon);
-  setCard('dashCzd', 'Odpočet do dovolené', vacationCountdown.text, vacationCountdown.meta, '', false, palmIcon);
+  setCard('dashCzd', 'Dovolená', vacationCountdown.text, vacationCountdown.meta || 'Odpočet do dovolené', '', false, palmIcon);
   setCard('dashFoodLink', 'Jídelní lístek', 'Otevřít', 'Aktuální menu', '', true, bookIcon);
   setCard('dashEportalLink', 'Eportal', 'Otevřít', 'Firemní portál', '', true, eportalIcon);
 }
@@ -401,7 +401,7 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
     setCardSimple('dashKantyna', 'Kantýna', foodText(foodA), foodMeta(foodA), foodA && foodA.isOpen ? 'is-open' : 'is-closed', true);
     setCardSimple('dashJidelna', 'Jídelna', foodText(foodB), foodMeta(foodB), foodB && foodB.isOpen ? 'is-open' : 'is-closed', true);
     setCardSimple('dashVyplata', 'Další výplata', payText, payMeta, '', false);
-    setCardSimple('dashCzd', 'Odpočet do dovolené', vacationCountdown.text || '--', vacationCountdown.meta || '', '', false);
+    setCardSimple('dashCzd', 'Dovolená', vacationCountdown.text || '--', vacationCountdown.meta || 'Odpočet do dovolené', '', false);
     setCardSimple('dashFoodLink', 'Jídelní lístek', 'Otevřít', 'Aktuální menu', '', true);
     setCardSimple('dashEportalLink', 'Eportal', 'Otevřít', 'Firemní portál', '', true);
 
