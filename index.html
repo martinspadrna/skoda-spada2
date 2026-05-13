@@ -285,7 +285,7 @@
     <div class="gamesAchievementsGrid" id="gamesAchievementsGrid"></div>
   </details>
 
-  <details class="gamesStatsFolder" hidden>
+  <details class="gamesStatsFolder">
     <summary>Herní statistiky</summary>
     <div class="gamesStatsGrid" id="gamesStatsGrid"></div>
   </details>
@@ -357,11 +357,6 @@
       </div>
     </div>
   </div>
-
-  <details class="gamesStatsFolder">
-    <summary>Herní statistiky</summary>
-    <div class="gamesStatsGrid" id="gamesStatsGrid"></div>
-  </details>
 
   <div class="gamesStage" id="gamesStage"></div>
 </div>
@@ -2837,13 +2832,17 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   }
 }
 .bottomNav{
+  position:fixed !important;
   width:min(calc(100vw - 8px), 880px) !important;
   left:50% !important;
   right:auto !important;
-  transform:translateX(-50%) !important;
+  bottom:calc(10px + env(safe-area-inset-bottom)) !important;
+  transform:translate3d(-50%,0,0) !important;
   margin:0 !important;
   padding:2px 2px 2px !important;
   box-sizing:border-box !important;
+  will-change:transform !important;
+  backface-visibility:hidden !important;
 }
 .bottomNavScroll{
   padding-bottom:2px !important;
@@ -2996,7 +2995,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   color:rgba(242,248,245,.88) !important;
   word-break:break-word !important;
 }
-/* v1.1 (402) polish: smaller games login text, about page milestones, version 1.1 update */
+/* v1.1 (403) polish: smaller games login text, about page milestones, version 1.1 update */
 .bottomNav{
   bottom:10px !important;
 }

@@ -1,10 +1,10 @@
 # Rotace a kalkulačky
 
-## v.1.1 (402)
-- Eportal ikonka je zjednodušená do čistšího neonového stylu, aby víc seděla k celé appce.
-- Login v hrách má menší písmo, aby byl celý text nápovědy vidět.
-- O aplikaci je přepracované na milníky od v0.1 a s přehledem větších posunů po zhruba 50 verzích.
-- V dalších verzích se budou dál ladit hry a herní systém.
+## v.1.1 (403)
+- Dashboardové ikonky Kalendář a Jídelna jsou přepsané na čistší jednoduché SVG, aby nepůsobily rozsypaně.
+- V Hrách zůstává jen jedna sekce Herní statistiky nahoře, ve stylu jako profily a achievementy.
+- Spodní lišta dostala pevnější fixaci dole, aby při scrollu neodjížděla nahoru.
+- Eportal ikonka je pořád ve zjednodušeném neonovém stylu.
 - Update toast je upravený tak, aby text byl nad tlačítkem a bez smajlíku.
 - Přidána detekce nové verze aplikace přes waiting service worker.
 - Po nasazení nové cache se zobrazí moderní update popup s tlačítkem Aktualizovat.
