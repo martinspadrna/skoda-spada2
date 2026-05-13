@@ -2948,7 +2948,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   color:rgba(242,248,245,.88) !important;
   word-break:break-word !important;
 }
-/* v1(389) polish: lower bottom nav slightly, extra bottom room on rozpisy, tighter admin tables */
+/* v1(390) polish: lower bottom nav slightly, extra bottom room on rozpisy, tighter admin tables */
 .bottomNav{
   bottom:10px !important;
 }
@@ -2959,13 +2959,39 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   margin-bottom:22px !important;
 }
 
+/* Admin rozpisy: hard/soft o ~20 % menší a absence výrazně užší */
+#adminRotationEditor .appMenuTableWrap:nth-of-type(1),
+#adminRotationEditor .appMenuTableWrap:nth-of-type(2){
+  overflow-x:auto !important;
+}
 #adminRotationEditor .appMenuTableWrap:nth-of-type(1) .appMenuAdminTable,
 #adminRotationEditor .appMenuTableWrap:nth-of-type(2) .appMenuAdminTable{
-  min-width:280px !important;
+  width:80% !important;
+  min-width:0 !important;
+  table-layout:fixed !important;
+  font-size:0.82em !important;
+}
+#adminRotationEditor .appMenuTableWrap:nth-of-type(1) th,
+#adminRotationEditor .appMenuTableWrap:nth-of-type(1) td,
+#adminRotationEditor .appMenuTableWrap:nth-of-type(2) th,
+#adminRotationEditor .appMenuTableWrap:nth-of-type(2) td{
+  padding:3px 4px !important;
+}
+#adminRotationEditor .appMenuTableWrap:nth-of-type(1) th:nth-child(1),
+#adminRotationEditor .appMenuTableWrap:nth-of-type(1) td:nth-child(1),
+#adminRotationEditor .appMenuTableWrap:nth-of-type(2) th:nth-child(1),
+#adminRotationEditor .appMenuTableWrap:nth-of-type(2) td:nth-child(1){
+  width:16% !important;
+}
+#adminRotationEditor .appMenuTableWrap:nth-of-type(1) th:nth-child(n+2),
+#adminRotationEditor .appMenuTableWrap:nth-of-type(1) td:nth-child(n+2),
+#adminRotationEditor .appMenuTableWrap:nth-of-type(2) th:nth-child(n+2),
+#adminRotationEditor .appMenuTableWrap:nth-of-type(2) td:nth-child(n+2){
+  width:16.8% !important;
 }
 #adminRotationEditor .appMenuTableWrap:nth-of-type(1) .appMenuInlineInputTiny,
 #adminRotationEditor .appMenuTableWrap:nth-of-type(2) .appMenuInlineInputTiny{
-  min-width:34px !important;
+  min-width:32px !important;
   padding:3px 2px !important;
   font-size:9px !important;
 }
@@ -2975,20 +3001,32 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   padding:3px 4px !important;
   font-size:9px !important;
 }
+
+/* Absence: 50 % užší blok, přizpůsobeno administraci */
+#adminRotationEditor .appMenuTableWrap:nth-of-type(3){
+  overflow-x:auto !important;
+}
 #adminRotationEditor .appMenuTableWrap:nth-of-type(3) .appMenuAdminTable{
-  min-width:260px !important;
+  width:50% !important;
+  min-width:240px !important;
+  table-layout:fixed !important;
+  font-size:0.82em !important;
+}
+#adminRotationEditor .appMenuTableWrap:nth-of-type(3) th,
+#adminRotationEditor .appMenuTableWrap:nth-of-type(3) td{
+  padding:3px 4px !important;
 }
 #adminRotationEditor .appMenuTableWrap:nth-of-type(3) th:nth-child(1),
 #adminRotationEditor .appMenuTableWrap:nth-of-type(3) td:nth-child(1){
-  width:46px !important;
+  width:16% !important;
 }
 #adminRotationEditor .appMenuTableWrap:nth-of-type(3) th:nth-child(2),
 #adminRotationEditor .appMenuTableWrap:nth-of-type(3) td:nth-child(2){
-  width:56% !important;
+  width:54% !important;
 }
 #adminRotationEditor .appMenuTableWrap:nth-of-type(3) th:nth-child(3),
 #adminRotationEditor .appMenuTableWrap:nth-of-type(3) td:nth-child(3){
-  width:52px !important;
+  width:30% !important;
 }
 #adminRotationEditor .appMenuTableWrap:nth-of-type(3) .appMenuInlineInput{
   min-height:20px !important;
@@ -2996,7 +3034,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   font-size:9px !important;
 }
 #adminRotationEditor .appMenuTableWrap:nth-of-type(3) .appMenuInlineInputTiny{
-  min-width:30px !important;
+  min-width:28px !important;
 }
 </style>
 

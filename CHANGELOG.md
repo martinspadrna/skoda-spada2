@@ -1,6 +1,6 @@
 # Rotace a kalkulačky
 
-## v.1(389)
+## v.1(390)
 - Spodní lišta je posunutá o trochu níž.
 - Rozpisy mají větší spodní odsazení, aby texty nepadaly pod lištu.
 - Administrace má užší rozpisové tabulky a kompaktnější absence.

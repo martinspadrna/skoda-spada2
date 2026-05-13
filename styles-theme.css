@@ -2355,14 +2355,15 @@ body.reduceMotion *::after{
 .gamesAccountSelected{flex:1 1 auto !important; min-width:0 !important; min-height:44px !important; display:flex !important; align-items:center !important; justify-content:center !important; padding:0 14px !important; border-radius:14px !important; border:1px solid rgba(124,255,124,.18) !important; background:rgba(255,255,255,.04) !important; color:#e7fff0 !important; font-weight:650 !important; letter-spacing:.02em !important;}
 
 
-/* v1(388) PWA update toast */
-.rakUpdateToast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(18px);width:min(560px, calc(100vw - 16px));z-index:260;display:flex;align-items:center;gap:12px;padding:12px 12px 12px 11px;border-radius:22px;border:1px solid rgba(124,255,124,.18);background:rgba(9,13,11,.76);backdrop-filter:blur(18px) saturate(155%);-webkit-backdrop-filter:blur(18px) saturate(155%);box-shadow:0 20px 46px rgba(0,0,0,.36), inset 0 1px 0 rgba(255,255,255,.04);color:#eef7ee;opacity:0;pointer-events:none;transition:transform .24s ease, opacity .24s ease;contain:layout style paint;}
+/* v1(390) PWA update toast */
+.rakUpdateToast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(18px);width:min(560px, calc(100vw - 16px));z-index:260;display:flex;flex-direction:column;align-items:stretch;gap:11px;padding:12px;border-radius:22px;border:1px solid rgba(124,255,124,.18);background:rgba(9,13,11,.76);backdrop-filter:blur(18px) saturate(155%);-webkit-backdrop-filter:blur(18px) saturate(155%);box-shadow:0 20px 46px rgba(0,0,0,.36), inset 0 1px 0 rgba(255,255,255,.04);color:#eef7ee;opacity:0;pointer-events:none;transition:transform .24s ease, opacity .24s ease;contain:layout style paint;}
 .rakUpdateToast.isVisible{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto;}
+.rakUpdateToastTop{display:flex;align-items:center;gap:12px;min-width:0;}
 .rakUpdateToastBadge{width:42px;height:42px;border-radius:15px;display:grid;place-items:center;flex:0 0 42px;background:linear-gradient(180deg, rgba(124,255,124,.14), rgba(124,255,124,.06));border:1px solid rgba(124,255,124,.16);box-shadow:0 10px 20px rgba(0,0,0,.18) inset, 0 0 24px rgba(124,255,124,.10);font-weight:800;letter-spacing:.03em;color:#dfffe3;font-size:13px;}
 .rakUpdateToastBody{flex:1 1 auto;min-width:0;display:grid;gap:3px;}
 .rakUpdateToastTitle{font-size:14px;line-height:1.2;font-weight:800;letter-spacing:.01em;color:#f2fff2;}
 .rakUpdateToastText{font-size:12px;line-height:1.25;color:rgba(231,255,240,.76);}
-.rakUpdateToastAction{flex:0 0 auto;min-height:42px;padding:0 16px;border-radius:16px;border:1px solid rgba(124,255,124,.24);background:linear-gradient(180deg, rgba(124,255,124,.96), rgba(84,201,104,.92));color:#07200f;font-weight:900;letter-spacing:.01em;box-shadow:0 10px 26px rgba(0,0,0,.20), 0 0 18px rgba(124,255,124,.18);}
+.rakUpdateToastAction{align-self:stretch;min-height:42px;width:100%;padding:0 16px;border-radius:16px;border:1px solid rgba(124,255,124,.24);background:linear-gradient(180deg, rgba(124,255,124,.96), rgba(84,201,104,.92));color:#07200f;font-weight:900;letter-spacing:.01em;box-shadow:0 10px 26px rgba(0,0,0,.20), 0 0 18px rgba(124,255,124,.18);}
 .rakUpdateToastAction:active{transform:translateY(1px);}
 .rakUpdateToastAction[disabled]{opacity:.72;cursor:wait;filter:saturate(.72);}
 @media (max-width: 420px){.rakUpdateToast{width:calc(100vw - 14px);padding:11px;gap:10px;bottom:calc(80px + env(safe-area-inset-bottom));}.rakUpdateToastBadge{width:38px;height:38px;flex-basis:38px;border-radius:14px;font-size:12px;}.rakUpdateToastAction{min-height:38px;padding:0 12px;font-size:12px;}}
