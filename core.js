@@ -1,8 +1,8 @@
 
 const APP_KEY = "rotace_kalkulacky_state_v122";
-const APP_VERSION = "v.1(377)";
+const APP_VERSION = "v.1(379)";
 window.APP_VERSION = APP_VERSION;
-const ROTATION_BUILD = "2026-05-12-" + APP_VERSION + "-" + Date.now();
+const ROTATION_BUILD = "2026-05-13-" + APP_VERSION + "-" + Date.now();
 
 const HARD_MACHINE_HEADERS = ["TNKS01", "TBKR07", "TPKW01", "TPKW02", "TBKR01"];
 const SOFT_MACHINE_HEADERS = ["MSKC01", "MSKC03", "MSKC04", "MFKF06", "MFKF10"];

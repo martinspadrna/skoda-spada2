@@ -178,17 +178,17 @@
   }
 
   table.rotTable {
-    min-width: 452px;
+    min-width: 420px;
   }
 
   .noteDateCell{
-    width:56px;
-    min-width:56px;
+    width:52px;
+    min-width:52px;
   }
 
   .noteShiftCell{
-    width:34px;
-    min-width:34px;
+    width:31px;
+    min-width:31px;
   }
 }
 

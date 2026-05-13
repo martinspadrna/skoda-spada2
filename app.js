@@ -1,4 +1,4 @@
-// v.1(377) – zavřený filtr rozpisů, užší tabulky a přesnější absence v rozpisu.
+// v.1(379) – užší rozpisy, vycentrovaná lišta na tabletu a přesnější absence v rozpisu.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

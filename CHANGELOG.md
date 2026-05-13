@@ -1,10 +1,19 @@
 # Rotace a kalkulačky
 
-## v.1(377)
+## v.1(379)
+- Rozpisy Tvrdoty a Měkoty jsou zase o něco užší a u absence je zúžený datum, rozšířená jména a menší mezera mezi oběma tabulkami.
+- Spodní lišta je srovnaná víc na střed i na širších displejích a na tabletu už neleze tolik doleva.
+- Dole v rozpisu je víc prostoru pro scroll, aby text zbytečně nebouchal do panelu.
+- Z herních statistik dál mizí účet 4157, protože není součástí přihlášení.
+- Verze i cache jsou posunuté na 379.
+
+## v.1(378)
 - Rozpisy mají zavřenou volbu roku a měsíce, ale aktuální měsíc zůstává předvolený.
 - Tvrdota, měkkota i absence jsou užší, aby se rozpisy líp vešly na šířku obrazovky.
-- U absence je zúžený sloupec „Směna“, aby se tabulka tolik neroztahovala.
-- Verze i cache jsou posunuté na 377.
+- U absence je zúžený sloupec „Směna“, mezi tabulkami je menší mezera a dole je víc místa pro scroll.
+- Spodní lišta je vycentrovaná i na širších displejích a sedí níž bez rozhození borderu.
+- Z herních statistik zmizel účet 4157, protože není součástí přihlášení.
+- Verze i cache jsou posunuté na 378.
 
 ## v.1(375)
 - Frézky i Brusy jsou po otevření zavřené a jejich rozbalování je přehlednější.

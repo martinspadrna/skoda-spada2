@@ -932,7 +932,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
 
 <style id="v363-pre-mobile-polish">
   #games{padding-bottom:154px !important;}
-  /* v1(377) mobile polish: tighter bottom bar + names at the bottom on rotace */
+  /* v1(379) mobile polish: tighter bottom bar + names at the bottom on rotace */
   .bottomNav{
     padding:3px 5px calc(3px + env(safe-area-inset-bottom)) !important;
     gap:5px !important;
@@ -989,7 +989,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
     }
   }
 <style id="v363-legacy-mobile-polish">
-  /* v1(377) final mobile polish: tighter bottom bar, rotace preview and stats spacing */
+  /* v1(379) final mobile polish: tighter bottom bar, rotace preview and stats spacing */
   .bottomNav{
     padding:2px 4px calc(2px + env(safe-area-inset-bottom)) !important;
     gap:3px !important;
@@ -1102,7 +1102,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
 
 
 <style id="v363-final-mobile-polish">
-  /* v1(377) final mobile polish: bottom bar, games padding, rotace preview, stats compact, snake joystick */
+  /* v1(379) final mobile polish: bottom bar, games padding, rotace preview, stats compact, snake joystick */
   .bottomNav{
     width:calc(100% - 4px) !important;
     padding:1px 0 calc(1px + env(safe-area-inset-bottom)) !important;
@@ -2741,7 +2741,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
     }
   }
 
-  /* v1(377) freeze polish: nav border, tighter stats grid, clearer game account block */
+  /* v1(379) freeze polish: nav border, tighter stats grid, clearer game account block */
   .bottomNav{
     padding:2px 1px calc(2px + env(safe-area-inset-bottom)) !important;
   }
@@ -2779,7 +2779,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
 </style>
 
 
-<style id="v377-freeze-polish">
+<style id="v379-freeze-polish">
 @media (display-mode: standalone){
   .bottomNav{
     bottom:calc(env(safe-area-inset-bottom) + 8px) !important;
@@ -2810,6 +2810,63 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
 #statsMachineGrid .statsMachineTile{
   padding-left:1px !important;
   padding-right:1px !important;
+}
+.bottomNav{
+  bottom:18px !important;
+  left:50% !important;
+  right:auto !important;
+  transform:translateX(-50%) !important;
+  width:min(calc(100% - 12px), 470px) !important;
+}
+.bottomNavScroll,
+.bottomNavInner{
+  justify-content:center !important;
+}
+.bottomNavScroll{
+  padding-left:2px !important;
+  padding-right:2px !important;
+}
+#monthView{
+  padding-bottom:180px !important;
+}
+table.rotTable{
+  min-width:378px !important;
+}
+table.rotTable th,
+table.rotTable td{
+  padding:4px 1px !important;
+}
+.noteTable th,
+.noteTable td{
+  padding:6px 3px !important;
+}
+.noteDateCell{
+  width:50px !important;
+  min-width:50px !important;
+}
+.noteShiftCell{
+  width:28px !important;
+  min-width:28px !important;
+}
+.notePersonCell{
+  min-width:101px !important;
+}
+.noteReasonCell{
+  min-width:95px !important;
+}
+.noteTable th.noteSpacer,
+.noteTable td.noteSpacer{
+  width:3px !important;
+  min-width:3px !important;
+}
+.bottomNavScroll{
+  justify-content:center !important;
+  width:100% !important;
+}
+@media (display-mode: standalone){
+  .bottomNav{
+    bottom:calc(env(safe-area-inset-bottom) + 14px) !important;
+  }
 }
 </style>
 

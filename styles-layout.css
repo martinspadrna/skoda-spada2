@@ -295,14 +295,14 @@ label{
 table.rotTable{
  width:100%;
  border-collapse:collapse;
- min-width:470px;
+ min-width:432px;
  background:var(--panel2);
 }
 
 table.rotTable th,
 table.rotTable td{
  border:1px solid #333;
- padding:6px 3px;
+ padding:5px 2px;
  text-align:center;
  font-size:11px;
  white-space:nowrap;
@@ -426,14 +426,14 @@ td.missingCell{
 }
 
 .noteDateCell{
- width:62px;
- min-width:62px;
+ width:56px;
+ min-width:56px;
  font-weight:bold;
 }
 
 .noteShiftCell{
- width:36px;
- min-width:36px;
+ width:32px;
+ min-width:32px;
  text-align:center;
 }
 
@@ -443,17 +443,17 @@ td.missingCell{
 }
 
 .notePersonCell{
- min-width:84px;
+ min-width:92px;
 }
 
 .noteReasonCell{
- min-width:78px;
+ min-width:86px;
 }
 
 .noteTable th.noteSpacer,
 .noteTable td.noteSpacer{
- width:14px;
- min-width:14px;
+ width:7px;
+ min-width:7px;
  padding:0;
  background:transparent;
  border:none;

@@ -3669,6 +3669,11 @@ function ensureFoodScheduleModal() {
 // -------------------------
 const GAMES_PROFILE_KEY = APP_KEY + ':games_profile_v1';
 const GAMES_ACCOUNT_LIST = [];
+const GAMES_BLOCKED_ACCOUNT_IDS = new Set(['4157']);
+
+function gamesIsBlockedAccountId(accountId) {
+  return GAMES_BLOCKED_ACCOUNT_IDS.has(String(accountId || '').trim());
+}
 
 function gamesMakeAccountEntry(accountId, name) {
   const id = String(accountId || '').trim();
@@ -3720,7 +3725,7 @@ function gamesLoadProfile() {
     });
     Object.keys(srcAccounts).forEach((id) => {
       const accountId = String(id || '').trim();
-      if (!accountId || base.accounts[accountId]) return;
+      if (!accountId || base.accounts[accountId] || gamesIsBlockedAccountId(accountId)) return;
       const incoming = srcAccounts[accountId] || {};
       base.accounts[accountId] = {
         id: accountId,
@@ -3735,7 +3740,10 @@ function gamesLoadProfile() {
         updatedAt: Number(incoming.updatedAt || 0) || 0
       };
     });
-    if (!base.activeAccountId || !base.accounts[base.activeAccountId]) {
+    Object.keys(base.accounts).forEach((id) => {
+      if (gamesIsBlockedAccountId(id)) delete base.accounts[id];
+    });
+    if (!base.activeAccountId || !base.accounts[base.activeAccountId] || gamesIsBlockedAccountId(base.activeAccountId)) {
       base.activeAccountId = '';
     }
     return base;
@@ -3804,7 +3812,7 @@ async function gamesSyncProfileFromRemote(force = false) {
     const addRows = (key, rows, toValue) => {
       (Array.isArray(rows) ? rows : []).forEach((row) => {
         const accountId = String(row && (row.account_number ?? row.accountNumber ?? row.id) ? (row.account_number ?? row.accountNumber ?? row.id) : '').trim();
-        if (!accountId) return;
+        if (!accountId || gamesIsBlockedAccountId(accountId)) return;
         const updatedAt = gamesParseRemoteTimestamp(row && (row.updated_at ?? row.last_played_at ?? row.created_at));
         const value = toValue(row);
         const current = remoteMap[key].get(accountId);
@@ -3836,7 +3844,7 @@ async function gamesSyncProfileFromRemote(force = false) {
     let changed = false;
     (Array.isArray(remoteAccounts) ? remoteAccounts : []).forEach((row) => {
       const accountId = String(row && row.account_number ? row.account_number : '').trim();
-      if (!accountId) return;
+      if (!accountId || gamesIsBlockedAccountId(accountId)) return;
       const remoteName = String(
         row && (row.full_name || row.player_name || row.name || row.account_name || row.nickname || row.username || row.account_number)
           ? (row.full_name || row.player_name || row.name || row.account_name || row.nickname || row.username || row.account_number)
@@ -3851,7 +3859,7 @@ async function gamesSyncProfileFromRemote(force = false) {
       }
     });
     Object.values(profile.accounts || {}).forEach((acc) => {
-      if (!acc) return;
+      if (!acc || gamesIsBlockedAccountId(acc.id)) return;
       const remoteName = remoteNameMap.get(String(acc.id || '').trim());
       if (remoteName && remoteName !== acc.name) {
         acc.name = remoteName;
@@ -3908,7 +3916,7 @@ async function gamesSyncProfileFromRemote(force = false) {
 
 function gamesAccountById(accountId) {
   const id = String(accountId || '').trim();
-  if (!id) return null;
+  if (!id || gamesIsBlockedAccountId(id)) return null;
   const profile = gamesGetProfile();
   return (profile.accounts && profile.accounts[id]) || GAMES_ACCOUNT_LIST.find(acc => acc.id === id) || null;
 }
@@ -3971,7 +3979,7 @@ function gamesRenderActiveAccountBar(account) {
 function gamesSetActiveAccount(accountId) {
   const profile = gamesGetProfile();
   const id = String(accountId || '').trim();
-  if (!id) return false;
+  if (!id || gamesIsBlockedAccountId(id)) return false;
   if (!profile.accounts[id]) {
     profile.accounts[id] = gamesMakeAccountEntry(id, id);
   }
@@ -4114,11 +4122,13 @@ function gamesRenderStats() {
   const grid = document.getElementById('gamesStatsGrid');
   if (!grid) return;
   const profile = gamesGetProfile();
-  const accounts = Object.values(profile.accounts || {}).sort((a, b) => {
-    const ai = Number(a && a.id ? a.id : 0) || 0;
-    const bi = Number(b && b.id ? b.id : 0) || 0;
-    return ai - bi;
-  });
+  const accounts = Object.values(profile.accounts || {})
+    .filter(acc => acc && !gamesIsBlockedAccountId(acc.id))
+    .sort((a, b) => {
+      const ai = Number(a && a.id ? a.id : 0) || 0;
+      const bi = Number(b && b.id ? b.id : 0) || 0;
+      return ai - bi;
+    });
   const activeId = profile.activeAccountId;
 
   if (!accounts.length) {
