@@ -4441,4 +4441,62 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   }
 </style>
 
+<style id="v428-bottomnav-calc-tightening">
+  /* v.1.1 (428) – iPhone 13 Pro Max: spodní lišta blíž ke krajům i ke spodku;
+     kompaktnější sbalená pole kalkulaček brusů a frézek. */
+  .bottomNav{
+    bottom: calc(2px + env(safe-area-inset-bottom)) !important;
+    padding: 4px 4px 4px !important;
+    width: calc(100vw - 4px) !important;
+    max-width: 760px !important;
+    border-radius: 20px !important;
+  }
+  @media (max-width: 560px){
+    .bottomNav{
+      width: calc(100vw - 4px) !important;
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+      bottom: calc(2px + env(safe-area-inset-bottom)) !important;
+      padding: 3px 3px 3px !important;
+      border-radius: 16px !important;
+    }
+  }
+
+  /* Kompaktní sbalená pole kalkulaček – brusy + frézky */
+  #frezky .brusDetails,
+  #brusy .brusDetails{
+    margin-top: 6px !important;
+    border-radius: 10px !important;
+  }
+  #frezky .brusDetails > summary,
+  #brusy .brusDetails > summary{
+    padding: 6px 10px !important;
+    min-height: 34px !important;
+    gap: 0 !important;
+    line-height: 1.05 !important;
+  }
+  #frezky .calcSummaryTitle,
+  #brusy .calcSummaryTitle{
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    line-height: 1.05 !important;
+  }
+  #frezky .calcSummarySub,
+  #brusy .calcSummarySub{
+    font-size: 10px !important;
+    line-height: 1.04 !important;
+  }
+  #frezky .brusDetails > summary::after,
+  #brusy .brusDetails > summary::after{
+    font-size: 11px !important;
+    margin-left: 4px !important;
+    align-self: center !important;
+  }
+  #frezky .brusDetailsBody,
+  #brusy .brusDetailsBody{
+    padding: 0 10px 10px 10px !important;
+    gap: 6px !important;
+  }
+</style>
+
 </body></html>

@@ -1,3 +1,8 @@
+## v.1.1 (428)
+
+- Spodní lišta je na iPhonech (vč. 13 Pro Max) blíž ke spodnímu okraji a po stranách – konec zbytečně velkého rámu kolem nav baru.
+- Sbalená rozklikávací pole parametrů kalkulaček (brusy + frézky) jsou výrazně nižší a kompaktnější, aby zabírala méně místa.
+
 ## v.1.1 (427)
 
 - Spodní lišta je přizpůsobená víc na šířku, položka „Více“ je užší a zbytek tlačítek se rozprostírá přirozeněji.
