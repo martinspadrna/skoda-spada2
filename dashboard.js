@@ -82,15 +82,15 @@ function updateDashboard() {
   };
 
 
-  const dashboardIconImg = (src) => '<img class="dashboardIconImg" src="' + src + '" alt="" aria-hidden="true" decoding="async" loading="lazy">';
-  const calendarIcon = dashboardIconImg('assets/dashboard-icons/calendar.png');
-  const clockIcon = dashboardIconImg('assets/dashboard-icons/hourglass.png');
-  const walletIcon = dashboardIconImg('assets/dashboard-icons/wallet.png');
-  const croissantIcon = dashboardIconImg('assets/dashboard-icons/croissant.png');
-  const plateIcon = dashboardIconImg('assets/dashboard-icons/plate.png');
-  const palmIcon = dashboardIconImg('assets/dashboard-icons/suitcase.png');
-  const bookIcon = dashboardIconImg('assets/dashboard-icons/book.png');
-  const eportalIcon = dashboardIconImg('assets/dashboard-icons/eportal.png');
+  const dashboardIconImg = (src) => '<img class="dashboardIconImg" src="' + src + '" alt="" aria-hidden="true" decoding="async" loading="eager" width="512" height="512">';
+  const calendarIcon = dashboardIconImg('assets/dashboard-icons/calendar.svg');
+  const clockIcon = dashboardIconImg('assets/dashboard-icons/hourglass.svg');
+  const walletIcon = dashboardIconImg('assets/dashboard-icons/wallet.svg');
+  const croissantIcon = dashboardIconImg('assets/dashboard-icons/croissant.svg');
+  const plateIcon = dashboardIconImg('assets/dashboard-icons/plate.svg');
+  const palmIcon = dashboardIconImg('assets/dashboard-icons/suitcase.svg');
+  const bookIcon = dashboardIconImg('assets/dashboard-icons/book.svg');
+  const eportalIcon = dashboardIconImg('assets/dashboard-icons/eportal.svg');
 
   const payDate = typeof getNextPayrollDate === 'function' ? getNextPayrollDate(now) : null;
   const payDateText = payDate

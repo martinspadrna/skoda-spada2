@@ -380,6 +380,7 @@
         }
       }
       writeQueue(remaining);
+      if (remaining.length === 0) state.lastError = null;
       return { ok: true, flushed, remaining: remaining.length };
     })().finally(() => {
       flushPromise = null;
@@ -625,6 +626,7 @@
         const rows = Array.isArray(data) ? data : [];
         if (rows.length) {
           state.machineSettingsSnapshot = rows;
+          state.lastError = null;
           saveLocalSnapshot(state.rotationSnapshot || null, rows);
           return rows;
         }
@@ -636,10 +638,12 @@
     const cached = readLocalSnapshot();
     if (cached && Array.isArray(cached.machineSettingsRows) && cached.machineSettingsRows.length) {
       state.machineSettingsSnapshot = cached.machineSettingsRows;
+      state.lastError = null;
       return cached.machineSettingsRows;
     }
     const defaults = defaultMachineSettingsRows();
     state.machineSettingsSnapshot = defaults;
+    state.lastError = null;
     saveLocalSnapshot(state.rotationSnapshot || null, defaults);
     return defaults;
   }
@@ -804,6 +808,7 @@
         if (row && (row.payload || row.rotation)) {
           const payload = row.payload || row.rotation || null;
           state.rotationSnapshot = payload;
+          state.lastError = null;
           saveLocalSnapshot(payload, state.machineSettingsSnapshot || []);
           return {
             id: row.key || 'main',
@@ -817,6 +822,7 @@
           const rebuilt = await loadRotationFromTables();
           if (rebuilt && rebuilt.months && Object.keys(rebuilt.months).length) {
             state.rotationSnapshot = rebuilt;
+            state.lastError = null;
             saveLocalSnapshot(rebuilt, state.machineSettingsSnapshot || []);
             return {
               id: row && row.key ? row.key : 'main',
@@ -835,6 +841,7 @@
     const snapshot = readLocalSnapshot();
     if (snapshot && snapshot.rotation) {
       state.rotationSnapshot = snapshot.rotation;
+      state.lastError = null;
       return {
         id: 'main',
         payload: snapshot.rotation,
@@ -852,6 +859,7 @@
       if (client && navigator.onLine) {
         const row = await upsertRotationStateDirect(client, rotation, meta);
         state.rotationSnapshot = rotation && typeof rotation === 'object' ? rotation : null;
+        state.lastError = null;
         saveLocalSnapshot(state.rotationSnapshot, state.machineSettingsSnapshot || []);
         await flushPendingWrites();
         return {
@@ -983,19 +991,19 @@
     loadGameStats: async (gameType, limit = 10) => {
       const client = getClient();
       if (!client || !navigator.onLine) return [];
-      try { return await loadGameStatsDirect(client, gameType, limit); }
+      try { const rows = await loadGameStatsDirect(client, gameType, limit); state.lastError = null; return rows; }
       catch (err) { state.lastError = err; console.error('Game stats load failed', err); return []; }
     },
     saveGameStat: async (payload) => {
       const client = getClient();
       if (!client || !navigator.onLine) return { ok: false, reason: 'offline-or-missing-client' };
-      try { return Object.assign({ ok: true }, await saveGameStatDirect(client, payload)); }
+      try { const result = Object.assign({ ok: true }, await saveGameStatDirect(client, payload)); state.lastError = null; return result; }
       catch (err) { state.lastError = err; console.error('Game stat save failed', err); return { ok: false, error: err }; }
     },
     loadGameAccounts: async () => {
       const client = getClient();
       if (!client || !navigator.onLine) return [];
-      try { return await loadGameAccountsDirect(client); }
+      try { const rows = await loadGameAccountsDirect(client); state.lastError = null; return rows; }
       catch (err) { state.lastError = err; console.error('Game accounts load failed', err); return []; }
     },
     seedFromLocalSnapshot,
@@ -1006,25 +1014,25 @@
     createGameInvite: async (payload) => {
       const client = getClient();
       if (!client || !navigator.onLine) return { ok: false, reason: 'offline-or-missing-client' };
-      try { return Object.assign({ ok: true }, await createGameInviteDirect(client, payload)); }
+      try { const result = Object.assign({ ok: true }, await createGameInviteDirect(client, payload)); state.lastError = null; return result; }
       catch (err) { state.lastError = err; console.error('TTT invite create failed', err); return { ok: false, error: err }; }
     },
     acceptGameInvite: async (code, inviteeAccountNumber) => {
       const client = getClient();
       if (!client || !navigator.onLine) return { ok: false, reason: 'offline-or-missing-client' };
-      try { return Object.assign({ ok: true }, await acceptGameInviteDirect(client, code, inviteeAccountNumber)); }
+      try { const result = Object.assign({ ok: true }, await acceptGameInviteDirect(client, code, inviteeAccountNumber)); state.lastError = null; return result; }
       catch (err) { state.lastError = err; console.error('TTT invite accept failed', err); return { ok: false, error: err }; }
     },
     loadGameSessionByInviteCode: async (code) => {
       const client = getClient();
       if (!client || !navigator.onLine) return { ok: false, reason: 'offline-or-missing-client' };
-      try { return Object.assign({ ok: true }, await loadGameSessionByInviteCodeDirect(client, code)); }
+      try { const result = Object.assign({ ok: true }, await loadGameSessionByInviteCodeDirect(client, code)); state.lastError = null; return result; }
       catch (err) { state.lastError = err; console.error('TTT session load failed', err); return { ok: false, error: err }; }
     },
     saveGameSessionByInviteCode: async (code, payload) => {
       const client = getClient();
       if (!client || !navigator.onLine) return { ok: false, reason: 'offline-or-missing-client' };
-      try { return Object.assign({ ok: true }, await saveGameSessionByInviteCodeDirect(client, code, payload)); }
+      try { const result = Object.assign({ ok: true }, await saveGameSessionByInviteCodeDirect(client, code, payload)); state.lastError = null; return result; }
       catch (err) { state.lastError = err; console.error('TTT session save failed', err); return { ok: false, error: err }; }
     },
     getState: () => ({ ...state })

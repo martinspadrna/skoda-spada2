@@ -1,4 +1,4 @@
-## v.1.1 (412)
+## v.1.1 (413)
 
 - Cleanup: odstraněné mrtvé bloky v dashboard.js a zjednodušený icon helper.
 - Mobile base: `100vh` doplněno o `100dvh` pro iOS Safari.

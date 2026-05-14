@@ -668,7 +668,7 @@
 .bottomNav{display:flex !important;align-items:center !important;gap:6px !important;}
 .bottomNavScroll{display:flex !important;align-items:center !important;gap:4px !important;flex:1 1 auto !important;min-width:0 !important;overflow-x:auto !important;overflow-y:hidden !important;-webkit-overflow-scrolling:touch !important;scroll-snap-type:x proximity !important;scrollbar-width:none !important;}
 .bottomNavScroll::-webkit-scrollbar{display:none !important;}
-.bottomNavInner{display:flex !important;align-items:center !important;gap:4px !important;flex-wrap:nowrap !important;min-width:max-content !important;padding-right:8px !important;}
+.bottomNavInner{display:flex !important;align-items:center !important;gap:4px !important;flex-wrap:nowrap !important;min-width:max-content !important;padding-right:12px !important; scroll-padding-right:12px !important;}
 .bottomNavBtn{flex:0 0 auto !important;scroll-snap-align:center !important;min-width:58px !important;}
 .bottomNavMenuBtn{flex:0 0 auto !important;position:sticky !important;right:0 !important;z-index:4 !important;background:linear-gradient(180deg, rgba(14,19,16,.92), rgba(10,14,12,.98)) !important;box-shadow:-8px 0 18px rgba(0,0,0,.18) !important;}
 .bottomNavGamesBtn{margin-right:4px !important;}
@@ -689,7 +689,7 @@
 .bottomNav{display:flex !important;align-items:center !important;gap:6px !important;}
 .bottomNavScroll{display:flex !important;align-items:center !important;gap:4px !important;flex:1 1 auto !important;min-width:0 !important;overflow-x:auto !important;overflow-y:hidden !important;-webkit-overflow-scrolling:touch !important;scroll-snap-type:x proximity !important;scrollbar-width:none !important;}
 .bottomNavScroll::-webkit-scrollbar{display:none !important;}
-.bottomNavInner{display:flex !important;align-items:center !important;gap:4px !important;flex-wrap:nowrap !important;min-width:max-content !important;padding-right:8px !important;}
+.bottomNavInner{display:flex !important;align-items:center !important;gap:4px !important;flex-wrap:nowrap !important;min-width:max-content !important;padding-right:12px !important; scroll-padding-right:12px !important;}
 .bottomNavBtn{flex:0 0 auto !important;scroll-snap-align:center !important;min-width:58px !important;min-height:52px !important;padding:2px 2px 1px !important;}
 .bottomNavBtn .bottomNavIcon,.bottomNavBtn .bottomNavIcon svg{width:22px !important;height:22px !important;display:block !important;}
 .bottomNavBtn .bottomNavIcon{flex:0 0 22px !important;}
@@ -705,9 +705,9 @@
 .bottomNav{gap:4px !important;}
 .bottomNavScroll{display:flex !important;flex:1 1 auto !important; min-width:0 !important; overflow-x:auto !important; overflow-y:hidden !important; -webkit-overflow-scrolling:touch !important; scroll-snap-type:x mandatory !important; scrollbar-width:none !important;}
 .bottomNavScroll::-webkit-scrollbar{display:none !important;}
-.bottomNavInner{display:flex !important; align-items:center !important; gap:3px !important; min-width:max-content !important; flex-wrap:nowrap !important; padding-right:6px !important;}
+.bottomNavInner{display:flex !important; align-items:center !important; gap:3px !important; min-width:max-content !important; flex-wrap:nowrap !important; padding-right:12px !important; scroll-padding-right:12px !important;}
 .bottomNavBtn{flex:0 0 52px !important; width:52px !important; min-width:52px !important; max-width:52px !important; min-height:50px !important; padding:2px 2px 1px !important;}
-.bottomNavBtn .bottomNavIcon,.bottomNavBtn .bottomNavIcon svg{width:21px !important;height:21px !important;display:block !important;}
+.bottomNavBtn .bottomNavIcon,.bottomNavBtn .bottomNavIcon svg{width:22px !important;height:22px !important;display:block !important;}
 .bottomNavBtn .bottomNavIcon{flex:0 0 21px !important;}
 .bottomNavBtn .bottomNavLabel{font-size:8.8px !important;line-height:1.03 !important;}
 .bottomNavMenuBtn{flex:0 0 38px !important; position:sticky !important; right:0 !important;  z-index:5 !important; width:38px !important; min-width:38px !important; max-width:38px !important;}
@@ -738,7 +738,7 @@
   flex-wrap:nowrap !important;
   gap:4px !important;
   min-width:max-content !important;
-  padding-right:6px !important;
+  padding-right:12px !important; scroll-padding-right:12px !important;
 }
 .bottomNavBtn{
   flex:0 0 58px !important;
@@ -865,8 +865,8 @@ body.gamesOpen #games .gamesShell > #gamesShellBody{flex:1 1 auto !important;}
   #games .gamesGrid{grid-template-columns:repeat(2, minmax(0, 1fr)) !important; gap:8px !important;}
   #games .gamesLaunchTile{min-height:104px !important;}
   #games .gamesStatsGrid{grid-template-columns:repeat(2, minmax(0, 1fr)) !important;}
-  .bottomNavBtn{flex-basis:56px !important; width:56px !important; min-width:56px !important; max-width:56px !important;}
-  .bottomNavMenuBtn{flex-basis:38px !important; width:38px !important; min-width:38px !important; max-width:38px !important;}
+  .bottomNavBtn{flex-basis:52px !important; width:52px !important; min-width:52px !important; max-width:52px !important;}
+  .bottomNavMenuBtn{flex-basis:40px !important; width:40px !important; min-width:40px !important; max-width:40px !important;}
 }
 
 

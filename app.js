@@ -1,4 +1,4 @@
-// v.1.1 (412) – cleanup modularity, mobile audit a doladění Supabase/sidequestů.
+// v.1.1 (413) – cleanup modularity, mobile audit a doladění Supabase/sidequestů.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
