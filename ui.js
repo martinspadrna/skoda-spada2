@@ -3848,6 +3848,7 @@ function openAppMenu(view) {
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="clear-cache">Vymazat cache a obnovit</button>',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="app-diagnostics">Diagnostika aplikace</button>',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="hard-reload">Tvrdé obnovení</button>',
+        '    <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="set-eportal">Nastavit Eportal odkaz</button>',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-reset="1">Obnovit výchozí nastavení</button>',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="reset-state">Smazat lokální data</button>',
         '  </div>',
@@ -3948,11 +3949,17 @@ function showPage(id) {
     }
   }
 
-  const navPage = id === 'rotace'
+  let navPage = id === 'rotace'
     ? 'rotace'
     : (id === 'brusy' || id === 'soustruhy' || id === 'frezky' || id === 'kalkulacky')
       ? 'kalkulacky'
       : (id === 'jidlo' ? 'home' : id);
+
+  if (id === 'eportal') {
+    if (openEportal()) return;
+    id = 'home';
+    navPage = 'home';
+  }
 
   if (id === 'games') {
     try {
@@ -4054,6 +4061,52 @@ function openKalkulacky() {
   showPage('kalkulacky');
   setBottomNavActive('kalkulacky');
 }
+
+
+function getStoredEportalUrl() {
+  try {
+    return String(
+      (typeof app !== 'undefined' && app.eportalUrl) ||
+      localStorage.getItem('rak_eportal_url') ||
+      window.RAK_EPORTAL_URL ||
+      ''
+    ).trim();
+  } catch (err) {
+    return String((typeof app !== 'undefined' && app.eportalUrl) || window.RAK_EPORTAL_URL || '').trim();
+  }
+}
+
+function setStoredEportalUrl(url) {
+  const clean = String(url || '').trim();
+  if (!clean) return '';
+  try {
+    localStorage.setItem('rak_eportal_url', clean);
+  } catch (err) {}
+  if (typeof app !== 'undefined') app.eportalUrl = clean;
+  return clean;
+}
+
+function openEportal(forcePrompt) {
+  let url = getStoredEportalUrl();
+  if (forcePrompt || !url) {
+    const entered = prompt('Vlož adresu Eportalu', url || '');
+    if (!entered || !String(entered).trim()) return false;
+    url = setStoredEportalUrl(entered);
+  }
+  if (!url) return false;
+  try {
+    const opened = window.open(url, '_blank', 'noopener,noreferrer');
+    if (opened) return true;
+  } catch (err) {}
+  try {
+    window.location.href = url;
+    return true;
+  } catch (err) {
+    console.warn('Eportal open failed', err);
+    return false;
+  }
+}
+
 
 function refreshHomeScreen() {
   try {

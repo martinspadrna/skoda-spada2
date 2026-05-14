@@ -1,4 +1,4 @@
-// v.1.1 (426) – kompaktnější dashboard, spodní lišta a servisní nastavení.
+// v.1.1 (427) – kompaktnější dashboard, spodní lišta a servisní nastavení.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

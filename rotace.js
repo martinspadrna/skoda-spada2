@@ -415,7 +415,7 @@ function renderPerson(name) {
   }
 
   const startIdx = Math.max(0, currentIdx >= 0 ? currentIdx - 1 : 0);
-  const endIdx = Math.min(entries.length, startIdx + 9);
+  const endIdx = Math.min(entries.length, startIdx + 8);
   const visibleEntries = entries.slice(startIdx, endIdx);
   const previousEntry = currentIdx > 0 ? entries[currentIdx - 1] : null;
   const currentEntry = currentIdx >= 0 ? entries[currentIdx] : null;
