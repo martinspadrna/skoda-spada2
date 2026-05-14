@@ -1,4 +1,4 @@
-## v.1.1 (431)
+## v.1.1 (433)
 - Frézky a Brusy mají ještě kompaktnější sbalené panely.
 - U kalkulaček se zmenšil zavřený stav polí a vnitřní rozklikávací části.
 - E-portál zůstává pevně napojený na firemní odkaz.

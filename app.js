@@ -1,4 +1,4 @@
-// v.1.1 (431) – ještě kompaktnější sbalené frézky/brusy a stabilizační úpravy.
+// v.1.1 (433) – kalkulačky vrácené na 2 řádky, sjednocené volby brusu/indexu a stabilizační úpravy.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

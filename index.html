@@ -4686,8 +4686,8 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
 
 
 
-<style id="v431-calc-compact-tight">
-  /* v.1.1 (431) – ještě menší sbalené kalkulačky pro frézky a brusy. */
+<style id="v432-calc-compact-tight">
+  /* v.1.1 (433) – kalkulačky znovu na 2 řádky, plnou šířku a sjednocené volby brusu/indexu. */
   #frezky .brusDetails,
   #brusy .brusDetails{
     margin-top:2px !important;
@@ -4790,4 +4790,140 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   }
 </style>
 
+
+<style id="v432-brusy-calc-fullwidth-compact">
+  /* v.1.1 (433) – kalkulačky vrácené do 2 řádků, plné šířky a sjednocené volby brusu/indexu. */
+  #frezky .brusDetails,
+  #brusy .brusDetails{
+    width:100% !important;
+    box-sizing:border-box !important;
+  }
+
+  #frezky .brusDetails:not([open]),
+  #brusy .brusDetails:not([open]){
+    width:100% !important;
+    max-width:100% !important;
+  }
+
+  #frezky .brusDetails:not([open]) > summary,
+  #brusy .brusDetails:not([open]) > summary{
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:flex-start !important;
+    justify-content:center !important;
+    width:100% !important;
+    max-width:100% !important;
+    min-height:0 !important;
+    padding:6px 34px 6px 10px !important;
+    gap:2px !important;
+    position:relative !important;
+    box-sizing:border-box !important;
+    line-height:1.05 !important;
+  }
+
+  #frezky .brusDetails:not([open]) > summary .calcSummaryTitle,
+  #brusy .brusDetails:not([open]) > summary .calcSummaryTitle{
+    display:block !important;
+    width:100% !important;
+    font-size:12px !important;
+    font-weight:700 !important;
+    line-height:1.08 !important;
+    white-space:normal !important;
+    overflow:visible !important;
+    text-overflow:clip !important;
+  }
+
+  #frezky .brusDetails:not([open]) > summary .calcSummarySub,
+  #brusy .brusDetails:not([open]) > summary .calcSummarySub{
+    display:block !important;
+    width:100% !important;
+    font-size:10px !important;
+    line-height:1.08 !important;
+    white-space:normal !important;
+    overflow:visible !important;
+    text-overflow:clip !important;
+  }
+
+  #frezky .brusDetails:not([open]) > summary::after,
+  #brusy .brusDetails:not([open]) > summary::after{
+    position:absolute !important;
+    right:10px !important;
+    top:50% !important;
+    transform:translateY(-50%) scale(.9) !important;
+    margin-left:0 !important;
+  }
+
+  #frezky .brusDetails[open] > summary,
+  #brusy .brusDetails[open] > summary{
+    min-height:28px !important;
+    padding:6px 10px !important;
+  }
+
+  #frezky .brusDetailsBody,
+  #brusy .brusDetailsBody{
+    padding:8px 10px 10px !important;
+    gap:6px !important;
+  }
+
+  #brusyInfo{
+    width:100% !important;
+    box-sizing:border-box !important;
+    min-height:auto !important;
+    padding:8px 10px !important;
+    margin:8px 0 10px !important;
+  }
+
+  #brusyInfo > div:first-child{
+    width:100% !important;
+  }
+
+  #brusyInfo b,
+  #brusyInfo .smallText{
+    display:block !important;
+    width:100% !important;
+    white-space:normal !important;
+    overflow:visible !important;
+    text-overflow:clip !important;
+  }
+
+  #brusyInfo b{
+    font-size:13px !important;
+    line-height:1.1 !important;
+  }
+
+  #brusyInfo .smallText{
+    font-size:11px !important;
+    line-height:1.18 !important;
+    margin-top:2px !important;
+  }
+
+  #brusy .bgrid,
+  #brusy .indexGrid{
+    width:100% !important;
+  }
+
+  #brusy .bgrid .bbtn,
+  #brusy .indexGrid .bbtn{
+    min-height:34px !important;
+    padding:6px 8px !important;
+    font-size:12px !important;
+    line-height:1.06 !important;
+    border-radius:14px !important;
+  }
+</style>
+<style id="v433-bottomnav-icon-tighten">
+  /* v.1.1 (433) – spodní lišta: ikonky zmenšené o 10 %, tlačítka beze změny. */
+  .bottomNavBtn .bottomNavIcon,
+  .bottomNavBtn .bottomNavIcon svg{
+    width:19px !important;
+    height:19px !important;
+  }
+  .bottomNavBtn .bottomNavIcon{
+    flex:0 0 19px !important;
+  }
+  .bottomNavMenuBtn .moreIcon{
+    width:18px !important;
+    height:18px !important;
+  }
+</style>
 </body></html>
