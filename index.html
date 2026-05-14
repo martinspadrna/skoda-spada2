@@ -58,9 +58,14 @@
     width:44px !important;
     height:44px !important;
   }
-  #home .dashboardIconInline svg{
+  #home .dashboardIconInline svg,
+  #home .dashboardIconInline img{
     width:100% !important;
     height:100% !important;
+  }
+  #home .dashboardIconInline img{
+    display:block !important;
+    object-fit:contain !important;
   }
   #games .gamesFolderSummary{
     list-style:none !important;
@@ -206,7 +211,7 @@
 </style>
 
 
-<style id="v407-games-overrides">
+<style id="v409-games-overrides">
   #games .gamesProfilesFolder,
   #games .gamesAchievementsFolder,
   #games .gamesStatsFolder{
@@ -230,7 +235,7 @@
 </style>
 
 
-<style id="v407-responsive-audit-overrides">
+<style id="v409-responsive-audit-overrides">
   html, body {
     min-height: 100dvh !important;
   }
@@ -1130,12 +1135,12 @@
 <script src="app.js"></script>
 <nav class="bottomNav" aria-label="Spodní navigace">
   <div class="bottomNavScroll" id="bottomNavScroll">
-    <button class="bottomNavBtn active" data-page="home" onclick="showPage('home'); setBottomNavActive('home')"><span class="bottomNavIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 11.2 12 4l9 7.2"></path><path d="M5.5 10.8V20h13V10.8"></path><path d="M9.2 20v-5.4h5.6V20"></path></svg></span><div class="bottomNavLabel">Home</div></button>
-    <button class="bottomNavBtn" data-page="rotace" onclick="openRotaceNames()"><span class="bottomNavIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="8.2" cy="8.1" r="3"></circle><circle cx="15.8" cy="8.1" r="3"></circle><path d="M3.8 19.2c.8-3 2.9-4.8 4.4-4.8s3.6 1.8 4.4 4.8"></path><path d="M11.8 19.2c.8-3 2.9-4.8 4.4-4.8s3.6 1.8 4.4 4.8"></path></svg></span><div class="bottomNavLabel">Rotace</div></button>
-    <button class="bottomNavBtn" data-page="kalkulacky" onclick="openKalkulacky()"><span class="bottomNavIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="3.8" width="14" height="16.4" rx="2.2"></rect><path d="M8 7h8M8 11h2M12 11h2M16 11h0M8 14.8h2M12 14.8h2M16 14.8h0"></path><path d="M8 18.2h2M12 18.2h2M16 18.2h0"></path></svg></span><div class="bottomNavLabel">Kalkulačky</div></button>
-    <button class="bottomNavBtn" data-page="rozpisy" onclick="openRotaceMonths()"><span class="bottomNavIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4.5 6.5h15M7 4v5M17 4v5M6.2 10.8h11.6M6.2 14h11.6M6.2 17.2h8.8"></path></svg></span><div class="bottomNavLabel">Rozpisy</div></button>
-    <button class="bottomNavBtn" data-page="statistiky" onclick="openRotaceStats()"><span class="bottomNavIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 19.2V10.8"></path><path d="M10 19.2V6.8"></path><path d="M15 19.2V13.2"></path><path d="M20 19.2H4"></path></svg></span><div class="bottomNavLabel">Statistiky</div></button>
-    <button class="bottomNavBtn bottomNavGamesBtn" data-page="games" onclick="openGamesPage()"><span class="bottomNavIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8.2 6.8h7.6a2 2 0 0 1 2 2v7.8a2 2 0 0 1-2 2H8.2a2 2 0 0 1-2-2V8.8a2 2 0 0 1 2-2Z"></path><path d="M9.6 9.2h4.8"></path><path d="M9.2 12h5.6"></path><path d="M8.8 14.8h6.4"></path><path d="M15.7 3.7c1.1 1 .9 2.7-.6 3.3"></path><path d="M6.6 3.8c-1 1.1-.8 2.7.7 3.2"></path><path d="M16 3.8c.4 1.2.3 2.2-.2 2.9"></path><path d="M7.8 3.7c-.4 1.1-.3 2.1.2 2.9"></path></svg></span><div class="bottomNavLabel">Hry</div></button>
+    <button class="bottomNavBtn active" data-page="home" onclick="showPage('home'); setBottomNavActive('home')"><span class="bottomNavIcon" aria-hidden="true"><img class="bottomNavIconImg bottomNavIconImg--off" src="assets/nav-icons/home-gray.png" alt="" decoding="async" loading="eager"><img class="bottomNavIconImg bottomNavIconImg--on" src="assets/nav-icons/home-green.png" alt="" decoding="async" loading="eager"></span><div class="bottomNavLabel">Home</div></button>
+    <button class="bottomNavBtn" data-page="rotace" onclick="openRotaceNames()"><span class="bottomNavIcon" aria-hidden="true"><img class="bottomNavIconImg bottomNavIconImg--off" src="assets/nav-icons/rotace-gray.png" alt="" decoding="async" loading="eager"><img class="bottomNavIconImg bottomNavIconImg--on" src="assets/nav-icons/rotace-green.png" alt="" decoding="async" loading="eager"></span><div class="bottomNavLabel">Rotace</div></button>
+    <button class="bottomNavBtn" data-page="kalkulacky" onclick="openKalkulacky()"><span class="bottomNavIcon" aria-hidden="true"><img class="bottomNavIconImg bottomNavIconImg--off" src="assets/nav-icons/kalkulacky-gray.png" alt="" decoding="async" loading="eager"><img class="bottomNavIconImg bottomNavIconImg--on" src="assets/nav-icons/kalkulacky-green.png" alt="" decoding="async" loading="eager"></span><div class="bottomNavLabel">Kalkulačky</div></button>
+    <button class="bottomNavBtn" data-page="rozpisy" onclick="openRotaceMonths()"><span class="bottomNavIcon" aria-hidden="true"><img class="bottomNavIconImg bottomNavIconImg--off" src="assets/nav-icons/rozpisy-gray.png" alt="" decoding="async" loading="eager"><img class="bottomNavIconImg bottomNavIconImg--on" src="assets/nav-icons/rozpisy-green.png" alt="" decoding="async" loading="eager"></span><div class="bottomNavLabel">Rozpisy</div></button>
+    <button class="bottomNavBtn" data-page="statistiky" onclick="openRotaceStats()"><span class="bottomNavIcon" aria-hidden="true"><img class="bottomNavIconImg bottomNavIconImg--off" src="assets/nav-icons/statistiky-gray.png" alt="" decoding="async" loading="eager"><img class="bottomNavIconImg bottomNavIconImg--on" src="assets/nav-icons/statistiky-green.png" alt="" decoding="async" loading="eager"></span><div class="bottomNavLabel">Statistiky</div></button>
+    <button class="bottomNavBtn bottomNavGamesBtn" data-page="games" onclick="openGamesPage()"><span class="bottomNavIcon" aria-hidden="true"><img class="bottomNavIconImg bottomNavIconImg--off" src="assets/nav-icons/games-gray.png" alt="" decoding="async" loading="eager"><img class="bottomNavIconImg bottomNavIconImg--on" src="assets/nav-icons/games-green.png" alt="" decoding="async" loading="eager"></span><div class="bottomNavLabel">Hry</div></button>
   </div>
   <button class="bottomNavBtn bottomNavMenuBtn" data-page="menu" type="button" aria-label="Více" onclick="toggleAppMenu()"><svg class="moreIcon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="2.15"></circle><circle cx="12" cy="12" r="2.15"></circle><circle cx="12" cy="16" r="2.15"></circle></svg><div class="bottomNavLabel">Více</div></button>
 </nav>
@@ -3343,7 +3348,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   color:rgba(242,248,245,.88) !important;
   word-break:break-word !important;
 }
-/* v1.1 (407) polish: dashboard icons refined, games profiles/achievements filled, bottom bar fixed, version 1.1 update */
+/* v1.1 (412) polish: dashboard icons refined, games profiles/achievements filled, bottom bar fixed, version 1.1 update */
 .bottomNav{
   bottom:10px !important;
 }
@@ -3393,6 +3398,29 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
 #adminRotationEditor .appMenuTableWrap:nth-of-type(3) .appMenuInlineInputTiny{
   min-width:30px !important;
 }
+</style>
+
+
+<style id="v409-bottom-nav-icon-overrides">
+  .bottomNavIcon{position:relative !important; display:block !important; overflow:visible !important;}
+  .bottomNavIconImg{
+    position:absolute !important;
+    inset:0 !important;
+    width:100% !important;
+    height:100% !important;
+    object-fit:contain !important;
+    display:block !important;
+    opacity:0 !important;
+    transition:opacity .18s ease, transform .18s ease, filter .18s ease !important;
+    pointer-events:none !important;
+    transform:translateZ(0) !important;
+  }
+  .bottomNavIconImg--off{opacity:1 !important; filter:grayscale(1) brightness(1.45) contrast(.98) !important;}
+  .bottomNavBtn.active .bottomNavIconImg--off{opacity:0 !important;}
+  .bottomNavBtn.active .bottomNavIconImg--on{opacity:1 !important; filter:drop-shadow(0 0 7px rgba(182,255,74,.45)) !important;}
+  .bottomNavBtn:not(.active) .bottomNavIconImg--on{opacity:0 !important;}
+  .bottomNavBtn:not(.active) .bottomNavIconImg--off{opacity:1 !important;}
+  .bottomNavBtn.active .bottomNavIcon{transform:translateY(0) scale(1) !important;}
 </style>
 
 </body></html>

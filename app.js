@@ -1,4 +1,4 @@
-// v.1.1 (407) – update manager pro novou verzi, responsive audit a zachovaný mobile-first styl.
+// v.1.1 (412) – cleanup modularity, mobile audit a doladění Supabase/sidequestů.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
@@ -41,7 +41,6 @@
       time: new Date().toISOString(),
       errors: log
     };
-    console.log("[Rotace] Diagnostika:", info);
     try {
       navigator.clipboard && navigator.clipboard.writeText(JSON.stringify(info, null, 2));
     } catch (e) {}
@@ -49,7 +48,6 @@
   };
   window.__rotaceClearLog = function () {
     writeLog([]);
-    console.log("[Rotace] Log chyb vymazán.");
   };
 })();
 
@@ -123,7 +121,6 @@
         localStorage.setItem("rotace_err_log_v1", JSON.stringify(log.slice(-50)));
       } catch (e) {}
     } else {
-      console.log("[Rotace] Self-test OK –", window.APP_VERSION);
     }
   } catch (err) {
     console.warn("Self-test selhal", err);

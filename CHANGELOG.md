@@ -1,3 +1,10 @@
+## v.1.1 (412)
+
+- Cleanup: odstraněné mrtvé bloky v dashboard.js a zjednodušený icon helper.
+- Mobile base: `100vh` doplněno o `100dvh` pro iOS Safari.
+- Supabase security: phase 1 už proběhla, backend je méně otevřený.
+- Dashboard ikony jídelna/kantýna/výplata/dovolená/jídelní lístek/ePortál/kalendář/zbývá jsou nově ve stejném stylu a s vyčištěným pozadím.
+
 # Rotace a kalkulačky
 
 ## v.1.1 (407)
