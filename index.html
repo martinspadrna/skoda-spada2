@@ -901,8 +901,8 @@
 
 
 
-<style id="v435-bottomnav-calc-tweak">
-  /* v.1.1 (435) – drobné vychytání spodní lišty a kalkulaček podle posledního ladění. */
+<style id="v436-bottomnav-calc-tweak">
+  /* v.1.1 (436) – drobné vychytání spodní lišty a kalkulaček podle posledního ladění. */
   .bottomNav{
     bottom:calc(5px + env(safe-area-inset-bottom)) !important;
   }
@@ -4824,7 +4824,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
 
 
 <style id="v432-calc-compact-tight">
-  /* v.1.1 (435) – kalkulačky a lišta doladěné podle poslední úpravy. */
+  /* v.1.1 (436) – kalkulačky a lišta doladěné podle poslední úpravy. */
   #frezky .brusDetails,
   #brusy .brusDetails{
     margin-top:2px !important;
@@ -4929,7 +4929,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
 
 
 <style id="v432-brusy-calc-fullwidth-compact">
-  /* v.1.1 (435) – kalkulačky a lišta doladěné podle poslední úpravy. */
+  /* v.1.1 (436) – kalkulačky a lišta doladěné podle poslední úpravy. */
   #frezky .brusDetails,
   #brusy .brusDetails{
     width:100% !important;
@@ -5048,8 +5048,8 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
     border-radius:14px !important;
   }
 </style>
-<style id="v435-bottomnav-icon-tighten">
-  /* v.1.1 (435) – spodní lišta: ikonky a panel jsou znovu doladěné. */
+<style id="v436-bottomnav-icon-tighten">
+  /* v.1.1 (436) – spodní lišta: ikonky a panel jsou znovu doladěné. */
   .bottomNavBtn .bottomNavIcon,
   .bottomNavBtn .bottomNavIcon svg{
     width:19px !important;
@@ -5064,8 +5064,8 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   }
 </style>
 
-<style id="v435-calc-and-nav-polish-final">
-  /* v.1.1 (435) – kalkulačky na Frézkách/Brusech a spodní panel doladěné podle poslední úpravy. */
+<style id="v436-calc-and-nav-polish-final">
+  /* v.1.1 (436) – kalkulačky na Frézkách/Brusech a spodní panel doladěné podle poslední úpravy. */
   #frezky .brusDetails,
   #brusy .brusDetails{
     width:100% !important;
@@ -5190,8 +5190,8 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
 </style>
 
 
-<style id="v435-bottomnav-calc-tweak-final">
-  /* v.1.1 (435) – finální override, aby se neztratil pod staršími vrstvami stylů. */
+<style id="v436-bottomnav-calc-tweak-final">
+  /* v.1.1 (436) – finální override, aby se neztratil pod staršími vrstvami stylů. */
   .bottomNav{
     bottom:calc(5px + env(safe-area-inset-bottom)) !important;
   }
@@ -5322,6 +5322,175 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   #brusyInfo .smallText{
     font-size:10px !important;
     line-height:1.03 !important;
+    margin-top:0 !important;
+  }
+</style>
+
+
+
+<style id="v436-bottomnav-calc-final-fix">
+  /* v.1.1 (436) – finální doladění spodní lišty a kalkulaček podle poslední zpětné vazby. */
+  .bottomNav{
+    bottom:calc(5px + env(safe-area-inset-bottom)) !important;
+  }
+  .bottomNavScroll{
+    gap:6px !important;
+    padding:2px 16px 2px 8px !important;
+    scroll-padding-right:16px !important;
+  }
+  .bottomNavBtn:not(.bottomNavMenuBtn){
+    flex:0 0 clamp(58px, 8.8vw, 75px) !important;
+    width:clamp(58px, 8.8vw, 75px) !important;
+    min-width:clamp(58px, 8.8vw, 75px) !important;
+    max-width:clamp(58px, 8.8vw, 75px) !important;
+    min-height:clamp(48px, 7.6vw, 62px) !important;
+    padding:3px 3px 2px !important;
+  }
+  .bottomNavBtn:not(.bottomNavMenuBtn) .bottomNavIcon,
+  .bottomNavBtn:not(.bottomNavMenuBtn) .bottomNavIcon svg{
+    width:clamp(25px, 6.6vw, 34px) !important;
+    height:clamp(25px, 6.6vw, 34px) !important;
+  }
+  .bottomNavBtn:not(.bottomNavMenuBtn) .bottomNavIcon{
+    flex:0 0 clamp(25px, 6.6vw, 34px) !important;
+  }
+  .bottomNavBtn:not(.bottomNavMenuBtn) .bottomNavLabel{
+    font-size:clamp(7.5px, 1.8vw, 9.2px) !important;
+    line-height:1 !important;
+  }
+  .bottomNavBtn.active{
+    transform:translateY(-4px) scale(1.04) !important;
+    z-index:30 !important;
+  }
+  .bottomNavBtn.active::before{
+    inset:-4px !important;
+  }
+  .bottomNavBtn.active .bottomNavIcon{
+    transform:translateY(-1px) scale(1.02) !important;
+  }
+  .bottomNavMenuBtn{
+    /* Více beze změny velikosti */
+    width:21px !important;
+    min-width:21px !important;
+    max-width:21px !important;
+    flex:0 0 21px !important;
+  }
+  .bottomNavMenuBtn .moreIcon{
+    width:18px !important;
+    height:18px !important;
+    transform:none !important;
+    margin:0 auto !important;
+    position:relative !important;
+    top:0 !important;
+  }
+
+  #frezky .brusDetails,
+  #brusy .brusDetails{
+    width:100% !important;
+    max-width:100% !important;
+    margin:2px 0 0 !important;
+    box-sizing:border-box !important;
+  }
+  #frezky .brusDetails + .brusDetails,
+  #brusy .brusDetails + .brusDetails{
+    margin-top:1px !important;
+  }
+  #frezky .brusDetails:not([open]) > summary,
+  #brusy .brusDetails:not([open]) > summary{
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:flex-start !important;
+    justify-content:center !important;
+    width:100% !important;
+    max-width:100% !important;
+    min-height:0 !important;
+    padding:6px 10px !important;
+    gap:2px !important;
+    box-sizing:border-box !important;
+    line-height:1.05 !important;
+  }
+  #frezky .brusDetails:not([open]) > summary .calcSummaryTitle,
+  #brusy .brusDetails:not([open]) > summary .calcSummaryTitle{
+    display:block !important;
+    width:100% !important;
+    font-size:12px !important;
+    font-weight:700 !important;
+    line-height:1.05 !important;
+    white-space:normal !important;
+  }
+  #frezky .brusDetails:not([open]) > summary .calcSummarySub,
+  #brusy .brusDetails:not([open]) > summary .calcSummarySub{
+    display:block !important;
+    width:100% !important;
+    font-size:10px !important;
+    line-height:1.05 !important;
+    white-space:normal !important;
+  }
+  #frezky .brusDetails:not([open]) > summary::after,
+  #brusy .brusDetails:not([open]) > summary::after{
+    transform:translateY(-50%) scale(.9) !important;
+    right:10px !important;
+    top:50% !important;
+    margin-left:0 !important;
+  }
+  #frezky .brusDetails[open] > summary,
+  #brusy .brusDetails[open] > summary{
+    min-height:28px !important;
+    padding:6px 10px !important;
+  }
+  #frezky .brusDetailsBody,
+  #brusy .brusDetailsBody{
+    padding:7px 10px 9px !important;
+    gap:5px !important;
+  }
+  #frezky .brusDetailsBody > label,
+  #brusy .brusDetailsBody > label{
+    margin-top:0 !important;
+    line-height:1.05 !important;
+    font-size:12px !important;
+  }
+  #frezky .brusDetailsBody input,
+  #brusy .brusDetailsBody input{
+    min-height:34px !important;
+    padding:6px 8px !important;
+    font-size:14px !important;
+  }
+  #frezky .calcDetailsInner > summary,
+  #brusy .calcDetailsInner > summary{
+    min-height:28px !important;
+    padding:5px 10px !important;
+  }
+  #frezky .calcDetailsInner > summary::after,
+  #brusy .calcDetailsInner > summary::after{
+    transform:scale(1.08) translateY(-1px) !important;
+  }
+  #brusy .bgrid,
+  #brusy .indexGrid{
+    width:100% !important;
+    gap:6px !important;
+  }
+  #brusy .bgrid .bbtn,
+  #brusy .indexGrid .bbtn{
+    min-height:34px !important;
+    padding:6px 10px !important;
+    font-size:12px !important;
+    line-height:1.02 !important;
+    flex:1 1 0 !important;
+  }
+  #brusyInfo{
+    width:100% !important;
+    box-sizing:border-box !important;
+    min-height:0 !important;
+    padding:4px 8px !important;
+    margin:4px 0 5px !important;
+  }
+  #brusyInfo b{
+    font-size:12px !important;
+    line-height:1.02 !important;
+  }
+  #brusyInfo .smallText{
+    font-size:10px !important;
+    line-height:1.06 !important;
     margin-top:0 !important;
   }
 </style>
