@@ -1,4 +1,7 @@
-## v.1.1 (423)
+## v.1.1 (425)
+- iPhone Pro Max safe-area úpravy spodní lišty
+- zkrácená výška a menší mezery pod ikonami
+- zachované globální kompaktní přepínače napříč appkou
 
 - Spodní lišta je přizpůsobená víc na šířku, položka „Více“ je užší a zbytek tlačítek se rozprostírá přirozeněji.
 - Aktivní první položka už není useknutá vlevo a lišta drží líp na menších displejích.

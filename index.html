@@ -662,7 +662,7 @@
 </style>
 
 
-<style id="v423-size-and-admin-fix">
+<style id="v424-size-and-admin-fix">
   #home .dashboardIconInline{
     width:74px !important;
     height:74px !important;
@@ -777,7 +777,7 @@
 
 
 
-<style id="v423-final-fixes">
+<style id="v424-final-fixes">
   #home .dashboardIconInline{
     width:74px !important;
     height:74px !important;
@@ -4115,6 +4115,200 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
     .bottomNavMenuBtn .moreIcon{
       width:clamp(18px, 4.8vw, 22px) !important;
       height:clamp(18px, 4.8vw, 22px) !important;
+    }
+  }
+</style>
+
+
+
+<style id="v424-global-compact-fix">
+  body.compactUI .dashboardShell{
+    padding:10px !important;
+  }
+  body.compactUI .dashboardCard{
+    min-height:80px !important;
+    padding:10px 12px !important;
+    gap:8px !important;
+  }
+  body.compactUI #home .dashboardCard .dashboardIcon.dashboardIconInline,
+  body.compactUI .dashboardCard .dashboardIcon.dashboardIconInline{
+    width:59px !important;
+    height:59px !important;
+    flex:0 0 59px !important;
+  }
+  body.compactUI #home .dashboardCard .dashboardIcon.dashboardIconInline img,
+  body.compactUI #home .dashboardCard .dashboardIcon.dashboardIconInline svg,
+  body.compactUI .dashboardCard .dashboardIcon.dashboardIconInline img,
+  body.compactUI .dashboardCard .dashboardIcon.dashboardIconInline svg{
+    width:100% !important;
+    height:100% !important;
+  }
+  body.compactUI .calcTile,
+  body.compactUI .tile{
+    min-height:74px !important;
+    padding:10px 11px !important;
+    gap:8px !important;
+  }
+  body.compactUI .calcTileIcon{
+    width:46px !important;
+    height:46px !important;
+  }
+  body.compactUI .bottomNavBtn .bottomNavIcon,
+  body.compactUI .bottomNavBtn .bottomNavIcon svg{
+    width:29px !important;
+    height:29px !important;
+  }
+  body.compactUI .bottomNavBtn .bottomNavIcon{
+    flex:0 0 29px !important;
+  }
+  body.compactUI .bottomNavMenuBtn{
+    width:34px !important;
+    min-width:34px !important;
+    max-width:34px !important;
+  }
+  body.compactUI .bottomNavMenuBtn .moreIcon{
+    width:15px !important;
+    height:15px !important;
+    transform:translateY(-1px) !important;
+  }
+  body.compactUI #frezky .brusDetails > summary,
+  body.compactUI #brusy .brusDetails > summary{
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) !important;
+    gap:1px !important;
+    align-items:start !important;
+    min-height:42px !important;
+    padding:8px 10px !important;
+  }
+  body.compactUI #frezky .calcSummaryTitle,
+  body.compactUI #brusy .calcSummaryTitle{
+    display:block !important;
+    font-size:13px !important;
+    line-height:1.02 !important;
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+  }
+  body.compactUI #frezky .calcSummarySub,
+  body.compactUI #brusy .calcSummarySub{
+    display:block !important;
+    font-size:10px !important;
+    line-height:1.02 !important;
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+  }
+  body.compactUI #brusyInfo{
+    padding:8px 10px !important;
+    gap:1px !important;
+  }
+  body.compactUI #brusyInfo b{
+    font-size:13px !important;
+    line-height:1.02 !important;
+  }
+  body.compactUI #brusyInfo .smallText{
+    font-size:10px !important;
+    line-height:1.02 !important;
+  }
+  body.compactUI .appMenuCard{
+    padding:12px !important;
+  }
+  body.compactUI .appMenuAction{
+    min-height:42px !important;
+  }
+  body.compactUI .appMenuSettingsList,
+  body.compactUI .appMenuActionRow,
+  body.compactUI .appMenuMonthYearButtons{
+    gap:8px !important;
+  }
+  body.reduceMotion .dashboardCard,
+  body.reduceMotion .calcTile,
+  body.reduceMotion .appMenuAction,
+  body.reduceMotion .bottomNavBtn,
+  body.reduceMotion .brusDetails,
+  body.reduceMotion .brusDetails *{
+    transition:none !important;
+    animation:none !important;
+  }
+</style>
+
+
+<style id="v425-bottom-nav-safearea-fix">
+  @media (max-width: 430px) and (min-height: 820px) {
+    .bottomNav{
+      width: calc(100vw - 8px) !important;
+      padding: 3px 4px calc(3px + env(safe-area-inset-bottom)) !important;
+      bottom: calc(6px + env(safe-area-inset-bottom)) !important;
+      border-radius: 20px !important;
+      gap: 4px !important;
+    }
+    .bottomNavScroll{
+      padding-inline: 0 !important;
+      scroll-padding-inline: 4px !important;
+    }
+    .bottomNavInner{
+      gap: 2px !important;
+      padding-right: 8px !important;
+    }
+    .bottomNavBtn{
+      flex-basis: 52px !important;
+      width: 52px !important;
+      min-width: 52px !important;
+      max-width: 52px !important;
+      min-height: 42px !important;
+      padding: 1px 1px 0 !important;
+      gap: 1px !important;
+      justify-content: center !important;
+    }
+    .bottomNavBtn .bottomNavIcon,
+    .bottomNavBtn .bottomNavIcon svg{
+      width: 27px !important;
+      height: 27px !important;
+    }
+    .bottomNavBtn .bottomNavIcon{
+      flex: 0 0 27px !important;
+      margin-top: -1px !important;
+    }
+    .bottomNavBtn .bottomNavLabel{
+      font-size: 8px !important;
+      line-height: 1 !important;
+      margin-top: -2px !important;
+    }
+    .bottomNavMenuBtn{
+      width: 34px !important;
+      min-width: 34px !important;
+      max-width: 34px !important;
+      flex-basis: 34px !important;
+    }
+    .bottomNavMenuBtn .moreIcon{
+      width: 16px !important;
+      height: 16px !important;
+      transform: translateY(-2px) !important;
+    }
+    .bottomNavGamesBtn{
+      margin-right: 0 !important;
+    }
+  }
+
+  @media (max-width: 430px) and (min-height: 860px) {
+    .bottomNav{
+      padding-top: 2px !important;
+      padding-bottom: calc(2px + env(safe-area-inset-bottom)) !important;
+    }
+    .bottomNavBtn .bottomNavIcon,
+    .bottomNavBtn .bottomNavIcon svg{
+      width: 28px !important;
+      height: 28px !important;
+    }
+  }
+
+  @media (min-width: 431px) and (max-width: 700px) and (min-height: 820px) {
+    .bottomNav{
+      padding-top: 3px !important;
+      padding-bottom: calc(3px + env(safe-area-inset-bottom)) !important;
+    }
+    .bottomNavBtn{
+      min-height: 44px !important;
     }
   }
 </style>

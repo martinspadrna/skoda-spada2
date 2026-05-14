@@ -1,4 +1,4 @@
-// v.1.1 (423) – opravené datumy v administraci, větší ikonky a jemnější rozložení kalkulaček.
+// v.1.1 (425) – iPhone safe-area úpravy spodní lišty, kompaktnější nav na vyšších telefonech a další UI audit.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

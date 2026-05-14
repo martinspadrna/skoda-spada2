@@ -3798,7 +3798,7 @@ function openAppMenu(view) {
         '<div class="appMenuCard appMenuSettingsCard">',
         '  <div class="appMenuCardTitle">Nastavení</div>',
         '  <div class="appMenuText">',
-        '    <div>Kompaktní režim a méně animací se ukládají jen do tohoto zařízení.</div>',
+        '    <div>Kompaktní režim a méně animací se ukládají jen do tohoto zařízení a promítnou se napříč celou appkou.</div>',
         '  </div>',
         '  <div class="appMenuSettingsList">',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-pref="compact">' + (prefs.compact ? '✓ ' : '') + 'Kompaktní režim</button>',
