@@ -2618,51 +2618,13 @@ function triggerAboutAction() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v0.1–v0.50',
-      title: 'Základ aplikace',
+      range: versionText,
+      title: 'Současná verze a další směr',
       lines: [
-        'Vznikl první základ rozpisů, dashboardu a jednoduchého mobilního layoutu.',
-        'Cíl byl mít jednu čistou appku, která se dá použít i v mobilu bez zbytečného bordelu.'
-      ]
-    },
-    {
-      range: 'v0.51–v0.100',
-      title: 'První větší rozšíření',
-      lines: [
-        'Přibyly první stabilnější bloky pro kalkulačky, statistiky a rychlé akce.',
-        'Začal se ladit tmavý glass styl a chování spodní navigace.'
-      ]
-    },
-    {
-      range: 'v0.101–v0.150',
-      title: 'Dashboard a rozpisy',
-      lines: [
-        'Dashboard dostal přehlednější kartu s důležitými informacemi.',
-        'Rozpisy se začaly víc stáčet do kompaktního mobilního layoutu.'
-      ]
-    },
-    {
-      range: 'v0.151–v0.200',
-      title: 'Kalkulačky a administrace',
-      lines: [
-        'Kalkulačky pro stroje dostaly vlastní podobu a lepší pořádek v rozložení.',
-        'Administrace se začala připravovat na jemnější úpravy bez zásahů do kódu.'
-      ]
-    },
-    {
-      range: 'v0.201–v0.250',
-      title: 'Supabase a sdílená data',
-      lines: [
-        'Data se začala opírat o Supabase a přibyly první online synchronizace.',
-        'Herní a pracovní data se začala držet pohromadě v jednom systému.'
-      ]
-    },
-    {
-      range: 'v0.251–v0.300',
-      title: 'PWA a offline režim',
-      lines: [
-        'Přibyl service worker, cache a offline fallback pro použití bez signálu.',
-        'Appka se začala chovat víc jako nativní mobilní aplikace.'
+        'Nejnovější build je vždy nahoře a starší verze jdou hezky směrem dolů.',
+        'Update manager hlídá novou cache a umí nabídnout aktualizaci bez reinstalace PWA.',
+        'Herní vrstva se bude dál rozšiřovat o XP, ranky, achievementy i leaderboardy.',
+        'Zachovává se mobilní glassmorphism styl, smooth animace a app-like feel.'
       ]
     },
     {
@@ -2674,12 +2636,51 @@ function buildAppHistoryHtml(versionText) {
       ]
     },
     {
-      range: versionText,
-      title: 'Současná verze a další směr',
+      range: 'v0.251–v0.300',
+      title: 'PWA a offline režim',
       lines: [
-        'Update manager hlídá novou cache a umí nabídnout aktualizaci bez reinstalace PWA.',
-        'Hry se budou v dalších verzích dál ladit, zpřesňovat a postupně rozšiřovat.',
-        'Zachovává se mobilní glassmorphism styl a čistý app-like feel.'
+        'Přibyl service worker, cache a offline fallback pro použití bez signálu.',
+        'Appka se začala chovat víc jako nativní mobilní aplikace.'
+      ]
+    },
+    {
+      range: 'v0.201–v0.250',
+      title: 'Supabase a sdílená data',
+      lines: [
+        'Data se začala opírat o Supabase a přibyly první online synchronizace.',
+        'Herní a pracovní data se začala držet pohromadě v jednom systému.'
+      ]
+    },
+    {
+      range: 'v0.151–v0.200',
+      title: 'Kalkulačky a administrace',
+      lines: [
+        'Kalkulačky pro stroje dostaly vlastní podobu a lepší pořádek v rozložení.',
+        'Administrace se začala připravovat na jemnější úpravy bez zásahů do kódu.'
+      ]
+    },
+    {
+      range: 'v0.101–v0.150',
+      title: 'Dashboard a rozpisy',
+      lines: [
+        'Dashboard dostal přehlednější kartu s důležitými informacemi.',
+        'Rozpisy se začaly víc stáčet do kompaktního mobilního layoutu.'
+      ]
+    },
+    {
+      range: 'v0.51–v0.100',
+      title: 'První větší rozšíření',
+      lines: [
+        'Přibyly první stabilnější bloky pro kalkulačky, statistiky a rychlé akce.',
+        'Začal se ladit tmavý glass styl a chování spodní navigace.'
+      ]
+    },
+    {
+      range: 'v0.1–v0.50',
+      title: 'Základ aplikace',
+      lines: [
+        'Vznikl první základ rozpisů, dashboardu a jednoduchého mobilního layoutu.',
+        'Cíl byl mít jednu čistou appku, která se dá použít i v mobilu bez zbytečného bordelu.'
       ]
     }
   ];
@@ -2712,10 +2713,72 @@ function getAdminSelectedMonthKey() {
   return months[0];
 }
 
-function getAdminMonthEditorValue(monthKey) {
-  const key = monthKey || getAdminSelectedMonthKey();
-  const month = key && app.rotation && app.rotation.months ? app.rotation.months[key] : null;
-  return month ? JSON.stringify(month, null, 2) : '';
+function getAdminRotationYears() {
+  const years = new Set();
+  getAdminRotationMonthKeys().forEach((monthKey) => {
+    const parsed = typeof parseMonthKey === 'function' ? parseMonthKey(monthKey) : null;
+    if (parsed && Number.isFinite(parsed.year)) years.add(parsed.year);
+  });
+  return [...years].sort((a, b) => a - b);
+}
+
+function renderAdminInlineFieldHtml(fieldAttr, fieldName, value, placeholder, tiny) {
+  const safeValue = String(value || '');
+  const classes = ['appMenuInlineFieldWrap'];
+  if (tiny) classes.push('appMenuInlineFieldWrapTiny');
+  const isDateField = String(fieldName || '') === 'date';
+  const inputAttrs = [
+    'class="appMenuInlineInput' + (tiny ? ' appMenuInlineInputTiny' : '') + '"',
+    fieldAttr ? fieldAttr + '="' + escapeHtml(fieldName) + '"' : '',
+    'value="' + escapeHtml(safeValue) + '"',
+    'placeholder="' + escapeHtml(placeholder || '') + '"',
+    'title="' + escapeHtml(isDateField ? 'Datum upravíš ručně.' : 'Klikni pro odebrání nebo uprav text.') + '"'
+  ].filter(Boolean).join(' ');
+  return [
+    '<div class="' + classes.join(' ') + '">',
+    '  <input ' + inputAttrs + '>',
+    '</div>'
+  ].join('');
+}
+
+function renderAdminMonthPickerHtml(selectedMonthKey) {
+  const years = getAdminRotationYears();
+  const selectedParsed = typeof parseMonthKey === 'function' ? parseMonthKey(selectedMonthKey || '') : null;
+  const fallbackYear = selectedParsed && Number.isFinite(selectedParsed.year)
+    ? selectedParsed.year
+    : (app.selectedYear && years.includes(Number(app.selectedYear)) ? Number(app.selectedYear) : (years[0] || null));
+  const selectedYear = Number.isFinite(fallbackYear) ? fallbackYear : (years[0] || null);
+  const yearMonths = selectedYear ? getMonthsForYear(app.rotation, selectedYear) : [];
+  const selectedMonth = (selectedMonthKey && yearMonths.includes(selectedMonthKey))
+    ? selectedMonthKey
+    : (yearMonths.includes(getAdminSelectedMonthKey()) ? getAdminSelectedMonthKey() : (yearMonths[0] || selectedMonthKey || ''));
+
+  if (!years.length) {
+    return '<div class="smallText">Žádné měsíce zatím nejsou k dispozici.</div>';
+  }
+
+  const yearButtons = years.map((year) => {
+    const active = Number(year) === Number(selectedYear);
+    return '<button type="button" class="appMenuMonthChip' + (active ? ' isActive' : '') + '" data-admin-year-key="' + escapeHtml(String(year)) + '">' + escapeHtml(String(year)) + '</button>';
+  }).join('');
+
+  const monthButtons = yearMonths.map((monthKey) => {
+    const active = monthKey === selectedMonth;
+    return '<button type="button" class="appMenuMonthChip' + (active ? ' isActive' : '') + '" data-admin-month-key="' + escapeHtml(monthKey) + '">' + escapeHtml(monthKey) + '</button>';
+  }).join('') || '<div class="smallText">Pro tenhle rok zatím nejsou žádné měsíce.</div>';
+
+  return [
+    '<div class="appMenuMonthYearPicker">',
+    '  <details class="appMenuMonthYearGroup">',
+    '    <summary><span>Rok</span><span>' + escapeHtml(String(selectedYear || '—')) + '</span></summary>',
+    '    <div class="appMenuMonthYearButtons">' + yearButtons + '</div>',
+    '  </details>',
+    '  <details class="appMenuMonthYearGroup">',
+    '    <summary><span>Měsíc</span><span>' + escapeHtml(String(selectedMonth || '—')) + '</span></summary>',
+    '    <div class="appMenuMonthYearButtons">' + monthButtons + '</div>',
+    '  </details>',
+    '</div>'
+  ].join('');
 }
 
 async function loadAdminRotationFromSupabase() {
@@ -2771,8 +2834,8 @@ function adminRotationRowTemplate(section, row, rowIndex, machineCount, allowBla
   if (!hasAny && !allowBlankTail) return '';
   return [
     '<tr data-rotation-section="' + escapeHtml(section) + '" data-rotation-row-index="' + String(rowIndex) + '">',
-    '  <td><input class="appMenuInlineInput" data-rot-field="date" value="' + escapeHtml(date) + '" placeholder="datum"></td>',
-    cells.map((value, idx) => '<td><input class="appMenuInlineInput appMenuInlineInputTiny" data-rot-field="cell-' + String(idx) + '" value="' + escapeHtml(value) + '" placeholder="' + escapeHtml(String(idx + 1)) + '"></td>').join(''),
+    '  <td>' + renderAdminInlineFieldHtml('data-rot-field', 'date', date, 'datum', false) + '</td>',
+    cells.map((value, idx) => '<td>' + renderAdminInlineFieldHtml('data-rot-field', 'cell-' + String(idx), value, String(idx + 1), true) + '</td>').join(''),
     '</tr>'
   ].join('');
 }
@@ -2786,9 +2849,9 @@ function adminNotesRowTemplate(row, rowIndex, allowBlankTail) {
   if (!hasAny && !allowBlankTail) return '';
   return [
     '<tr data-note-row-index="' + String(rowIndex) + '">',
-    '  <td><input class="appMenuInlineInput" data-note-field="date" value="' + escapeHtml(date) + '" placeholder="datum"></td>',
-    '  <td><input class="appMenuInlineInput" data-note-field="person" value="' + escapeHtml(person) + '" placeholder="jméno"></td>',
-    '  <td><input class="appMenuInlineInput" data-note-field="code" value="' + escapeHtml(code) + '" placeholder="kód"></td>',
+    '  <td>' + renderAdminInlineFieldHtml('data-rot-field', 'date', date, 'datum', false) + '</td>',
+    '  <td>' + renderAdminInlineFieldHtml('data-note-field', 'person', person, 'jméno', false) + '</td>',
+    '  <td>' + renderAdminInlineFieldHtml('data-note-field', 'code', code, 'kód', false) + '</td>',
     '</tr>'
   ].join('');
 }
@@ -2842,7 +2905,7 @@ function adminBuildUsedNamesByDate(root) {
   };
 
   root.querySelectorAll('tr[data-rotation-section]').forEach((tr) => {
-    const date = adminRotationDateLabel(tr.querySelector('[data-rot-field="date"]')?.value || '');
+    const date = adminRotationDateLabel(tr.querySelector('[data-rot-field="date"], [data-note-field="date"]')?.value || '');
     tr.querySelectorAll('[data-rot-field^="cell-"]').forEach((input) => {
       const name = String(input && input.value ? input.value : '').trim();
       if (name && !['dát pryč','odebrat','remove','pryc','pryč'].includes(name.toLowerCase())) add(date, name);
@@ -2995,7 +3058,7 @@ function adminRefreshRotationSuggestions(root) {
   };
 
   root.querySelectorAll('tr[data-rotation-section]').forEach((tr, rowIndex) => {
-    const dateInput = tr.querySelector('[data-rot-field="date"]');
+    const dateInput = tr.querySelector('[data-rot-field="date"], [data-note-field="date"]');
     const dateKey = adminRotationDateLabel(dateInput ? dateInput.value : '');
     tr.querySelectorAll('[data-rot-field^="cell-"]').forEach((input, cellIndex) => {
       const current = String(input.value || '').trim();
@@ -3048,10 +3111,56 @@ function buildAdminRotationColgroupHtml(columnCount, firstWidthPx, otherWidthPx)
 
 function buildAdminAbsenceColgroupHtml() {
   return '<colgroup>' +
-    '<col style="width:44px;">' +
-    '<col style="width:128px;">' +
-    '<col style="width:44px;">' +
+    '<col style="width:40px;">' +
+    '<col style="width:118px;">' +
+    '<col style="width:40px;">' +
     '</colgroup>';
+}
+
+function buildAdminAbsenceSummaryHtml(notesRows) {
+  const absNotes = Array.isArray(notesRows) ? notesRows.map(normalizeNoteEntry).filter(n => n.isAbsence) : [];
+  if (!absNotes.length) return '<div class="smallText">Bez poznámek.</div>';
+
+  const grouped = new Map();
+  absNotes.forEach(n => {
+    const key = n.date || '';
+    if (!grouped.has(key)) grouped.set(key, []);
+    grouped.get(key).push(n);
+  });
+
+  const rows = [...grouped.entries()].map(([date, items]) => ({
+    date,
+    items: items.slice().sort((a, b) => String(a.person || '').localeCompare(String(b.person || ''), 'cs'))
+  }));
+
+  const maxPairs = Math.max(1, ...rows.map(r => r.items.length));
+  let html = "<div class='smallText' style='margin-top:12px;font-weight:bold;'>Absence podle dne</div>";
+  html += "<div class='tableWrap'><table class='noteTable noteTableCompact'><thead><tr>";
+  for (let i = 0; i < maxPairs; i += 1) {
+    if (i > 0) html += "<th class='noteSpacer'></th>";
+    html += "<th class='noteDateCell'>Datum</th><th class='noteShiftCell'>Směna</th><th class='notePersonCell'>Jméno</th><th class='noteReasonCell'>Důvod</th>";
+  }
+  html += "</tr></thead><tbody>";
+  rows.forEach(row => {
+    html += "<tr>";
+    for (let i = 0; i < maxPairs; i += 1) {
+      if (i > 0) html += "<td class='noteSpacer'></td>";
+      const n = row.items[i];
+      if (n) {
+        const parsed = parseDateToken(n.date);
+        const dateOnly = parsed ? String(parsed.day) + "." + String(parsed.month) + "." : n.date;
+        const shift = n.shift || (parsed ? parsed.shift : "");
+        const people = (n.people && n.people.length) ? n.people.join(" a ") : (n.person || "");
+        const reason = n.label || n.code || "";
+        html += "<td class='noteDateCell'>" + escapeHtml(dateOnly) + "</td><td class='noteShiftCell'>" + escapeHtml(shift) + "</td><td class='notePersonCell'>" + escapeHtml(people) + "</td><td class='noteReasonCell'>" + escapeHtml(reason) + "</td>";
+      } else {
+        html += "<td class='emptyCell noteDateCell'>—</td><td class='emptyCell noteShiftCell'>—</td><td class='emptyCell notePersonCell'>—</td><td class='emptyCell noteReasonCell'>—</td>";
+      }
+    }
+    html += "</tr>";
+  });
+  html += "</tbody></table></div>";
+  return html;
 }
 
 function buildAdminMachineSettingsTableHtml() {
@@ -3151,8 +3260,8 @@ function buildAdminRotationTableHtml(monthKey) {
     return withBlank.map((row, idx) => adminNotesRowTemplate(row, idx, true)).join('');
   };
 
-  const hardColgroup = buildAdminRotationColgroupHtml(hardMachines.length, 56, 68);
-  const softColgroup = buildAdminRotationColgroupHtml(softMachines.length, 56, 68);
+  const hardColgroup = buildAdminRotationColgroupHtml(hardMachines.length, 50, 61);
+  const softColgroup = buildAdminRotationColgroupHtml(softMachines.length, 50, 61);
   const absenceColgroup = buildAdminAbsenceColgroupHtml();
 
   return [
@@ -3184,6 +3293,7 @@ function buildAdminRotationTableHtml(monthKey) {
     '      <tbody>' + renderNotes() + '</tbody>',
     '    </table>',
     '  </div>',
+    buildAdminAbsenceSummaryHtml(notesRows),
     '</div>'
   ].join('');
 }
@@ -3362,8 +3472,8 @@ function renderAdminMenuBody(body, section) {
     '    <div>Vyber měsíc a uprav si rozpis. Změny se ukládají online a hned se promítnou zpět do aplikace.</div>',
     '    <div class="smallText" id="adminOnlineSaveStatus">Stav uložení se zobrazí po kliknutí na Uložit rozpis.</div>',
     '  </div>',
-    '  <label class="appMenuLabel" for="adminMonthSelect">Měsíc</label>',
-    '  <select id="adminMonthSelect" class="appMenuSelect">' + months.map(m => '<option value="' + escapeHtml(m) + '"' + (m === monthKey ? ' selected' : '') + '>' + escapeHtml(m) + '</option>').join('') + '</select>',
+    renderAdminMonthPickerHtml(monthKey),
+    '  <select id="adminMonthSelect" class="appMenuSelect appMenuHiddenSelect">' + months.map(m => '<option value="' + escapeHtml(m) + '"' + (m === monthKey ? ' selected' : '') + '>' + escapeHtml(m) + '</option>').join('') + '</select>',
     '  <div class="appMenuActionRow">',
     '    <button type="button" class="appMenuAction" data-admin-action="load-month">Načíst měsíc</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="load-online">Načíst online</button>',
@@ -3411,7 +3521,7 @@ function bindAppMenuHandlers(body) {
 
   body.addEventListener('click', async (event) => {
     const target = event.target && typeof event.target.closest === 'function'
-      ? event.target.closest('[data-menu-action], [data-admin-action], [data-ui-pref], [data-ui-reset], [data-menu-back]')
+      ? event.target.closest('[data-menu-action], [data-admin-action], [data-admin-month-key], [data-admin-year-key], [data-admin-clear-field], [data-ui-pref], [data-ui-reset], [data-menu-back], [data-rot-field], [data-note-field]')
       : null;
     if (!target || !body.contains(target)) return;
 
@@ -3423,11 +3533,25 @@ function bindAppMenuHandlers(body) {
     const currentView = String(body.dataset.adminView || 'home');
     const select = body.querySelector('#adminMonthSelect');
     const monthKey = select ? select.value : getAdminSelectedMonthKey();
+    const adminMonthKey = target.getAttribute('data-admin-month-key');
 
     try {
       if (menuBack) {
         openAppMenu('menu');
         return;
+      }
+
+      if (target.matches && target.matches('[data-rot-field], [data-note-field]')) {
+        const fieldName = target.getAttribute('data-rot-field') || target.getAttribute('data-note-field') || '';
+        const value = String(target.value || '').trim();
+        if (fieldName !== 'date' && value) {
+          const ok = confirm('Odebrat "' + value + '" z rozpisu?');
+          if (ok) {
+            target.value = '';
+            target.dispatchEvent(new Event('input', { bubbles: true }));
+            return;
+          }
+        }
       }
 
       if (menuAction === 'import') {
@@ -3460,6 +3584,39 @@ function bindAppMenuHandlers(body) {
       }
       if (menuAction === 'admin-rotation') {
         openAppMenu('admin-rotation');
+        return;
+      }
+      const adminYearKey = target.getAttribute('data-admin-year-key');
+      if (adminYearKey) {
+        const parsedYear = parseInt(adminYearKey, 10);
+        if (Number.isFinite(parsedYear)) {
+          app.selectedYear = parsedYear;
+          const monthsForYear = typeof getMonthsForYear === 'function' ? getMonthsForYear(app.rotation, parsedYear) : [];
+          if (!app.selectedMonth || !monthsForYear.includes(app.selectedMonth)) {
+            app.selectedMonth = monthsForYear[0] || app.selectedMonth || null;
+          }
+          renderAdminMenuBody(body, currentView);
+        }
+        return;
+      }
+      if (adminMonthKey) {
+        if (select) select.value = adminMonthKey;
+        app.selectedMonth = adminMonthKey;
+        const parsedMonth = typeof parseMonthKey === 'function' ? parseMonthKey(adminMonthKey) : null;
+        if (parsedMonth && Number.isFinite(parsedMonth.year)) app.selectedYear = parsedMonth.year;
+        renderAdminMenuBody(body, currentView);
+        return;
+      }
+      if (target.hasAttribute('data-admin-clear-field')) {
+        const wrap = target.closest('.appMenuInlineFieldWrap');
+        const input = wrap ? wrap.querySelector('input') : null;
+        if (input) {
+          input.value = '';
+          const clearBtn = wrap ? wrap.querySelector('.appMenuInlineClearBtn') : null;
+          if (clearBtn) clearBtn.remove();
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          input.focus();
+        }
         return;
       }
       if (menuAction === 'admin-export') {
@@ -3610,9 +3767,9 @@ function openAppMenu(view) {
         '  <div class="appMenuCardTitle">O aplikaci</div>',
         '  <div class="appMenuVersion">' + escapeHtml(versionText || '—') + '</div>',
         '  <div class="appMenuText">',
-        '    <div>Aktuální verze je nahoře, starší novinky jsou pod ní od nejnovějších po nejstarší.</div>',
+        '    <div>Aktuální verze je nahoře, starší novinky jsou pod ní seřazené od nejnovějších po nejstarší.</div>',
         '    <div>Import i export jsou schované v administraci, aby zbytek aplikace působil čistě.</div>',
-        '    <div>Hry se budou v dalších verzích dál ladit a postupně rozšiřovat.</div>',
+        '    <div>Hry se budou v dalších verzích dál ladit, zpřesňovat a rozšiřovat.</div>',
         '  </div>',
         '  ' + buildAppHistoryHtml(versionText),
         '  <button type="button" class="appMenuAction appMenuBack" data-menu-back="1">Zpět</button>',
@@ -3980,7 +4137,8 @@ function gamesEmptyStats() {
     ttt: { plays: 0, wins: 0, losses: 0, draws: 0, bestMoves: null, bestTimeMs: null, lastPlayedAt: 0 },
     g2048: { plays: 0, bestScore: 0, bestTile: 0, lastPlayedAt: 0 },
     snake: { plays: 0, bestScore: 0, bestLength: 0, lastPlayedAt: 0 },
-    flap: { plays: 0, bestScore: 0, bestPipes: 0, lastPlayedAt: 0 }
+    flap: { plays: 0, bestScore: 0, bestPipes: 0, lastPlayedAt: 0 },
+    arcade: {}
   };
 }
 
@@ -4009,6 +4167,7 @@ function gamesNormalizeStoredAccount(account, fallbackName) {
   const g2048 = incoming.g2048 && typeof incoming.g2048 === 'object' ? incoming.g2048 : {};
   const snake = incoming.snake && typeof incoming.snake === 'object' ? incoming.snake : {};
   const flap = incoming.flap && typeof incoming.flap === 'object' ? incoming.flap : {};
+  const arcade = incoming.arcade && typeof incoming.arcade === 'object' ? incoming.arcade : {};
   stats.ttt.plays = Number(ttt.plays || 0) || 0;
   stats.ttt.wins = Number(ttt.wins || 0) || 0;
   stats.ttt.losses = Number(ttt.losses || 0) || 0;
@@ -4028,6 +4187,7 @@ function gamesNormalizeStoredAccount(account, fallbackName) {
   stats.flap.bestScore = Number(flap.bestScore || 0) || 0;
   stats.flap.bestPipes = Number(flap.bestPipes || 0) || 0;
   stats.flap.lastPlayedAt = Number(flap.lastPlayedAt || 0) || 0;
+  stats.arcade = arcade;
   return {
     id,
     name,
@@ -4132,6 +4292,7 @@ async function gamesSyncProfileFromRemote(force = false) {
       if (!acc.stats.g2048) acc.stats.g2048 = gamesEmptyStats().g2048;
       if (!acc.stats.snake) acc.stats.snake = gamesEmptyStats().snake;
       if (!acc.stats.flap) acc.stats.flap = gamesEmptyStats().flap;
+      if (!acc.stats.arcade || typeof acc.stats.arcade !== 'object') acc.stats.arcade = {};
       if (!Array.isArray(acc.achievements)) acc.achievements = [];
       acc.achievements = acc.achievements.slice(0, 20);
     });
@@ -4376,15 +4537,23 @@ function gamesGetTotals(acc) {
   const g2048 = stats.g2048 || {};
   const snake = stats.snake || {};
   const flap = stats.flap || {};
-  const totalPlays = (Number(ttt.plays || 0) || 0) + (Number(g2048.plays || 0) || 0) + (Number(snake.plays || 0) || 0) + (Number(flap.plays || 0) || 0);
+  const arcade = stats.arcade && typeof stats.arcade === 'object' ? stats.arcade : {};
+  const arcadeEntries = Object.values(arcade);
+  const totalPlays = (Number(ttt.plays || 0) || 0) + (Number(g2048.plays || 0) || 0) + (Number(snake.plays || 0) || 0) + (Number(flap.plays || 0) || 0) + arcadeEntries.reduce((sum, entry) => sum + (Number(entry && entry.plays || 0) || 0), 0);
   return {
     stats,
     ttt,
     g2048,
     snake,
     flap,
+    arcade,
     totalPlays,
-    bestScore: Math.max(Number(g2048.bestScore || 0) || 0, Number(snake.bestScore || 0) || 0, Number(flap.bestScore || 0) || 0)
+    bestScore: Math.max(
+      Number(g2048.bestScore || 0) || 0,
+      Number(snake.bestScore || 0) || 0,
+      Number(flap.bestScore || 0) || 0,
+      ...arcadeEntries.map(entry => Number(entry && entry.bestScore || 0) || 0)
+    )
   };
 }
 
@@ -4394,7 +4563,17 @@ const GAMES_PROFILE_GAME_DEFS = [
   { id: 'snake', title: 'Snake', unit: 'bodů' },
   { id: 'flap', title: 'Flappy Car', unit: 'bodů' },
   { id: 'aim', title: 'Aim Trainer', unit: 'bodů' },
-  { id: 'reaction', title: 'Reaction Test', unit: 'ms' }
+  { id: 'reaction', title: 'Reaction Test', unit: 'ms' },
+  { id: 'tetris', title: 'Tetris', unit: 'bodů' },
+  { id: 'shooter', title: 'Space Shooter', unit: 'bodů' },
+  { id: 'brick', title: 'Brick Breaker', unit: 'bodů' },
+  { id: 'doodle', title: 'Doodle Jump', unit: 'bodů' },
+  { id: 'bubble', title: 'Bubble Shooter', unit: 'bodů' },
+  { id: 'sudoku', title: 'Sudoku', unit: 'bodů' },
+  { id: 'mines', title: 'Minesweeper', unit: 'bodů' },
+  { id: 'memory', title: 'Memory / Pexeso', unit: 'bodů' },
+  { id: 'bomber', title: 'Bomberman mini', unit: 'bodů' },
+  { id: 'daily', title: 'Denní challenge', unit: 'bodů' }
 ];
 
 function gamesRenderProfiles() {
@@ -4418,13 +4597,16 @@ function gamesRenderProfiles() {
     const last = acc.updatedAt ? gamesFormatPlayedLabel(acc.updatedAt) : 'Ještě bez hry';
     const profileRows = GAMES_PROFILE_GAME_DEFS.map((game) => {
       const stats = acc && acc.stats ? acc.stats : {};
+      const gameStats = stats[game.id] && typeof stats[game.id] === 'object'
+        ? stats[game.id]
+        : (stats.arcade && typeof stats.arcade[game.id] === 'object' ? stats.arcade[game.id] : null);
       let value = 0;
       if (game.id === 'ttt') value = Number(total.ttt.plays || 0) || 0;
       else if (game.id === '2048') value = Number(total.g2048.bestScore || 0) || 0;
       else if (game.id === 'snake') value = Number(total.snake.bestScore || 0) || 0;
       else if (game.id === 'flap') value = Number(total.flap.bestScore || 0) || 0;
-      else if (stats[game.id]) value = Number(stats[game.id].bestScore || stats[game.id].plays || stats[game.id].bestTimeMs || 0) || 0;
-      const display = game.id === 'ttt' ? (String(value) + '×') : (String(value) + ' ' + game.unit);
+      else if (gameStats) value = Number(gameStats.bestScore || gameStats.plays || gameStats.bestTimeMs || 0) || 0;
+      const display = game.id === 'ttt' ? (String(value) + '×') : (game.id === 'reaction' ? (value ? (String(value) + ' ms') : '—') : (String(value) + ' ' + game.unit));
       return '<div class="gamesProfileRow"><strong>' + escapeHtml(game.title) + '</strong><span>' + escapeHtml(display) + '</span></div>';
     }).join('');
     return [
@@ -4448,11 +4630,31 @@ function gamesRenderProfiles() {
 const GAMES_ACHIEVEMENT_DEFS = [
   { id: 'start', title: 'První krok', desc: 'Zahraj si první hru', goalText: '1 hra', progress: (a) => a.totalPlays, target: 1 },
   { id: 'ten', title: 'Desítka', desc: 'Nasbírej 10 her', goalText: '10 her', progress: (a) => a.totalPlays, target: 10 },
-  { id: 'ttt', title: 'Piškvorky', desc: 'Odehraj 5 kol', goalText: '5 kol', progress: (a) => a.ttt.plays || 0, target: 5 },
-  { id: '2048', title: '2048', desc: 'Dostaň se na 1000 bodů', goalText: '1000 bodů', progress: (a) => a.g2048.bestScore || 0, target: 1000 },
-  { id: 'snake', title: 'Hadík', desc: 'Dostaň snake na délku 15', goalText: '15 bodů', progress: (a) => a.snake.bestScore || 0, target: 15 },
-  { id: 'flap', title: 'Letec', desc: 'Dej ve Flapu 10 bodů', goalText: '10 bodů', progress: (a) => a.flap.bestScore || 0, target: 10 }
+  { id: 'twentyfive', title: 'Rozjezd', desc: 'Nasbírej 25 her', goalText: '25 her', progress: (a) => a.totalPlays, target: 25 },
+  { id: 'fifty', title: 'Mazák', desc: 'Nasbírej 50 her', goalText: '50 her', progress: (a) => a.totalPlays, target: 50 },
+  { id: 'hundred', title: 'Veterán', desc: 'Nasbírej 100 her', goalText: '100 her', progress: (a) => a.totalPlays, target: 100 },
+  { id: 'ttt_5', title: 'Piškvorky', desc: 'Odehraj 5 kol', goalText: '5 kol', progress: (a) => a.ttt.plays || 0, target: 5 },
+  { id: 'ttt_10_wins', title: 'Piškvorkový boss', desc: 'Vyhraj 10krát v piškvorkách', goalText: '10 výher', progress: (a) => a.ttt.wins || 0, target: 10 },
+  { id: '2048_500', title: '2048 start', desc: 'Dostaň se na 500 bodů', goalText: '500 bodů', progress: (a) => a.g2048.bestScore || 0, target: 500 },
+  { id: '2048_tile', title: '2048 tile', desc: 'Dostaň tile 256', goalText: 'tile 256', progress: (a) => a.g2048.bestTile || 0, target: 256 },
+  { id: 'snake_15', title: 'Snake master', desc: 'Dostaň snake na délku 15', goalText: '15 bodů', progress: (a) => a.snake.bestScore || 0, target: 15 },
+  { id: 'snake_30', title: 'Hadí legenda', desc: 'Dostaň snake na délku 30', goalText: '30 bodů', progress: (a) => a.snake.bestScore || 0, target: 30 },
+  { id: 'flap_10', title: 'Flappy pilot', desc: 'Dej ve Flapu 10 bodů', goalText: '10 bodů', progress: (a) => a.flap.bestScore || 0, target: 10 },
+  { id: 'flap_20', title: 'Letecký boss', desc: 'Dej ve Flapu 20 bodů', goalText: '20 bodů', progress: (a) => a.flap.bestScore || 0, target: 20 },
+  { id: 'aim_250', title: 'Rychlá ruka', desc: 'Nahraj 250 bodů v Aim Traineru', goalText: '250 bodů', progress: (a) => Number((a.arcade && a.arcade.aim && a.arcade.aim.bestScore) || 0), target: 250 },
+  { id: 'reaction_200', title: 'Blesk', desc: 'Zasaž reakci pod 200 ms', goalText: '200 ms', progress: (a) => Number((a.arcade && a.arcade.reaction && a.arcade.reaction.bestTimeMs) || 0) ? (1000 - Number((a.arcade && a.arcade.reaction && a.arcade.reaction.bestTimeMs) || 0)) : 0, target: 800 },
+  { id: 'tetris_500', title: 'Tetris master', desc: 'Nasbírej 500 bodů v Tetrisu', goalText: '500 bodů', progress: (a) => Number((a.arcade && a.arcade.tetris && a.arcade.tetris.bestScore) || 0), target: 500 },
+  { id: 'shooter_500', title: 'Space ace', desc: 'Nasbírej 500 bodů ve Space Shooteru', goalText: '500 bodů', progress: (a) => Number((a.arcade && a.arcade.shooter && a.arcade.shooter.bestScore) || 0), target: 500 },
+  { id: 'brick_500', title: 'Brick breaker', desc: 'Nasbírej 500 bodů v Brick Breakeru', goalText: '500 bodů', progress: (a) => Number((a.arcade && a.arcade.brick && a.arcade.brick.bestScore) || 0), target: 500 },
+  { id: 'doodle_500', title: 'Doodle jumper', desc: 'Nasbírej 500 bodů v Doodle Jumpu', goalText: '500 bodů', progress: (a) => Number((a.arcade && a.arcade.doodle && a.arcade.doodle.bestScore) || 0), target: 500 },
+  { id: 'bubble_250', title: 'Bubble pop', desc: 'Nasbírej 250 bodů v Bubble Shooteru', goalText: '250 bodů', progress: (a) => Number((a.arcade && a.arcade.bubble && a.arcade.bubble.bestScore) || 0), target: 250 },
+  { id: 'sudoku_1', title: 'Sudoku solver', desc: 'Vyřeš první Sudoku', goalText: '1 dokončení', progress: (a) => Number((a.arcade && a.arcade.sudoku && a.arcade.sudoku.plays) || 0), target: 1 },
+  { id: 'mines_10', title: 'Mines hunter', desc: 'Dej 10 bodů v Minesweeperu', goalText: '10 bodů', progress: (a) => Number((a.arcade && a.arcade.mines && a.arcade.mines.bestScore) || 0), target: 10 },
+  { id: 'memory_10', title: 'Memory king', desc: 'Dostaň 10 bodů v Memory', goalText: '10 bodů', progress: (a) => Number((a.arcade && a.arcade.memory && a.arcade.memory.bestScore) || 0), target: 10 },
+  { id: 'bomber_5', title: 'Bomber pilot', desc: 'Nasbírej 5 her v Bomberman mini', goalText: '5 her', progress: (a) => Number((a.arcade && a.arcade.bomber && a.arcade.bomber.plays) || 0), target: 5 },
+  { id: 'daily_1', title: 'Daily grinder', desc: 'Splň první denní challenge', goalText: '1 challenge', progress: (a) => Number((a.arcade && a.arcade.daily && a.arcade.daily.plays) || 0), target: 1 }
 ];
+
 
 function gamesRenderAchievements() {
   const grid = document.getElementById('gamesAchievementsGrid');
@@ -4490,6 +4692,12 @@ function gamesRenderAchievements() {
   }).join('');
   const folder = document.querySelector('#games .gamesAchievementsFolder');
   if (folder) folder.dataset.unlocked = String(unlocked);
+}
+
+function gamesGetAchievementCount(account) {
+  if (!account) return 0;
+  const total = gamesGetTotals(account);
+  return GAMES_ACHIEVEMENT_DEFS.filter((def) => Number(def.progress(total) || 0) >= Number(def.target || 0)).length;
 }
 
 function gamesRenderStats() {
@@ -5568,11 +5776,14 @@ const RAK_THEME_BASE_VARS = {
   '--soft': '#ccc'
 };
 const RAK_THEME_DEFS = [
-  { id: 'default', label: 'Výchozí', subtitle: 'Bezpečný základ appky', color: '#7CFF7C', unlockText: 'Vždy dostupné', minPlays: 0, vars: {} },
-  { id: 'emerald', label: 'Emerald glass', subtitle: 'O něco jasnější a živější', color: '#8CFF98', unlockText: 'Odemkne se po 5 hrách', minPlays: 5, vars: { '--bg': '#09110b', '--panel': '#101814', '--panel2': '#18211c', '--green': '#5ae36a', '--green2': '#a7ffb0', '--muted': '#8aa08f', '--soft': '#d5e6d6' } },
-  { id: 'midnight', label: 'Midnight', subtitle: 'Tmavší chladný skin', color: '#8fb4ff', unlockText: 'Odemkne se po 15 hrách', minPlays: 15, vars: { '--bg': '#071018', '--panel': '#101824', '--panel2': '#17202b', '--green': '#55c7ff', '--green2': '#a9ddff', '--muted': '#8aa6b7', '--soft': '#d5e7f4' } },
-  { id: 'neon', label: 'Neon pulse', subtitle: 'Výraznější glow a kontrast', color: '#ff9eff', unlockText: 'Odemkne se po 30 hrách', minPlays: 30, vars: { '--bg': '#120a15', '--panel': '#1a1020', '--panel2': '#24142d', '--green': '#d35cff', '--green2': '#ffb3ff', '--muted': '#ad93b8', '--soft': '#eadbf0' } },
-  { id: 'ice', label: 'Ice neon', subtitle: 'Studený iOS styl', color: '#7ee7ff', unlockText: 'Odemkne se po 50 hrách', minPlays: 50, vars: { '--bg': '#081118', '--panel': '#101b24', '--panel2': '#172532', '--green': '#60d8ff', '--green2': '#bdeeff', '--muted': '#8ea8b6', '--soft': '#dbeaf2' } }
+  { id: 'default', label: 'Výchozí', subtitle: 'Bezpečný základ appky', color: '#7CFF7C', unlockText: 'Vždy dostupné', minPlays: 0, minAchievements: 0, vars: {} },
+  { id: 'emerald', label: 'Emerald glass', subtitle: 'Jasnější zelený lesk', color: '#8CFF98', unlockText: 'Odemkne se po 5 hrách', minPlays: 5, minAchievements: 0, vars: { '--bg': '#09110b', '--panel': '#101814', '--panel2': '#18211c', '--green': '#5ae36a', '--green2': '#a7ffb0', '--muted': '#8aa08f', '--soft': '#d5e6d6' } },
+  { id: 'midnight', label: 'Midnight', subtitle: 'Tmavší chladný skin', color: '#8fb4ff', unlockText: 'Odemkne se po 12 hrách', minPlays: 12, minAchievements: 0, vars: { '--bg': '#071018', '--panel': '#101824', '--panel2': '#17202b', '--green': '#55c7ff', '--green2': '#a9ddff', '--muted': '#8aa6b7', '--soft': '#d5e7f4' } },
+  { id: 'aurora', label: 'Aurora', subtitle: 'Zeleno-modrý glow', color: '#7ee7ff', unlockText: 'Odemkne se po 20 hrách', minPlays: 20, minAchievements: 0, vars: { '--bg': '#081219', '--panel': '#101d25', '--panel2': '#162a35', '--green': '#61e0ff', '--green2': '#bdf2ff', '--muted': '#8ea9b6', '--soft': '#dbeef5' } },
+  { id: 'neon', label: 'Neon pulse', subtitle: 'Výraznější glow a kontrast', color: '#ff9eff', unlockText: 'Odemkne se po 30 hrách', minPlays: 30, minAchievements: 0, vars: { '--bg': '#120a15', '--panel': '#1a1020', '--panel2': '#24142d', '--green': '#d35cff', '--green2': '#ffb3ff', '--muted': '#ad93b8', '--soft': '#eadbf0' } },
+  { id: 'graphite', label: 'Graphite', subtitle: 'Čistý uhlíkový dark', color: '#b6c0ca', unlockText: 'Odemkne se po 40 hrách', minPlays: 40, minAchievements: 0, vars: { '--bg': '#090b0f', '--panel': '#11161c', '--panel2': '#171d24', '--green': '#b8c6d1', '--green2': '#e7eef5', '--muted': '#95a0aa', '--soft': '#dce5ed' } },
+  { id: 'ice', label: 'Ice neon', subtitle: 'Studený iOS styl', color: '#7ee7ff', unlockText: 'Odemkne se po 55 hrách', minPlays: 55, minAchievements: 0, vars: { '--bg': '#081118', '--panel': '#101b24', '--panel2': '#172532', '--green': '#60d8ff', '--green2': '#bdeeff', '--muted': '#8ea8b6', '--soft': '#dbeaf2' } },
+  { id: 'amoled', label: 'Super AMOLED Dark', subtitle: 'Téměř čistá černá pro profíky', color: '#7cff7c', unlockText: 'Odemkne se po 8 achievementech', minPlays: 60, minAchievements: 8, vars: { '--bg': '#000000', '--panel': '#090909', '--panel2': '#111111', '--green': '#6dff6d', '--green2': '#b8ffb8', '--muted': '#909090', '--soft': '#f0f0f0' } }
 ];
 window.RAK_THEME_DEFS = RAK_THEME_DEFS;
 
@@ -5583,6 +5794,23 @@ function getThemePreference() {
   } catch (err) {
     return 'default';
   }
+}
+
+function getThemeUnlockMetrics(profile) {
+  const active = profile && profile.activeAccountId && profile.accounts ? profile.accounts[profile.activeAccountId] : null;
+  if (!active) return { totalPlays: 0, bestScore: 0, achievements: 0 };
+  const total = typeof gamesGetTotals === 'function' ? gamesGetTotals(active) : { totalPlays: 0, bestScore: 0 };
+  const achievements = typeof gamesGetAchievementCount === 'function' ? gamesGetAchievementCount(active) : 0;
+  return {
+    totalPlays: Number(total.totalPlays || 0) || 0,
+    bestScore: Number(total.bestScore || 0) || 0,
+    achievements: Number(achievements || 0) || 0
+  };
+}
+
+function getThemeUnlockScore(profile) {
+  const metrics = getThemeUnlockMetrics(profile);
+  return metrics.totalPlays + Math.floor(metrics.bestScore / 50) + (metrics.achievements * 2);
 }
 
 function applyThemePreference(themeId, persist = true) {
@@ -5601,24 +5829,14 @@ function applyThemePreference(themeId, persist = true) {
   return theme.id;
 }
 
-function getThemeUnlockScore(profile) {
-  if (!profile || !profile.activeAccountId || !profile.accounts) return 0;
-  const active = profile.accounts[profile.activeAccountId] || null;
-  if (!active) return 0;
-  const totals = typeof gamesGetTotals === 'function' ? gamesGetTotals(active) : null;
-  const totalPlays = Number(totals && totals.totalPlays || 0) || 0;
-  const bestScore = Number(totals && totals.bestScore || 0) || 0;
-  const achievements = Array.isArray(active.achievements) ? active.achievements.length : 0;
-  return totalPlays + Math.floor(bestScore / 50) + (achievements * 2);
-}
-
 (function initThemePreference() {
   try { applyThemePreference(getThemePreference(), false); } catch (err) {}
 })();
 
 function buildThemeSystemSettingsHtml() {
-
   const defs = Array.isArray(window.RAK_THEME_DEFS) ? window.RAK_THEME_DEFS : [];
+  const currentId = getThemePreference();
+  const currentTheme = defs.find(theme => String(theme.id || '') === String(currentId)) || defs[0] || { label: 'Výchozí' };
   const cards = defs.map(theme => {
     const unlockedText = theme && theme.unlockText ? String(theme.unlockText) : '';
     return '<button type="button" class="appMenuThemeCard" data-theme-id="' + escapeHtml(String(theme.id || '')) + '">' +
@@ -5632,21 +5850,32 @@ function buildThemeSystemSettingsHtml() {
   }).join('');
   return [
     '<div class="appMenuCard appMenuSettingsCard appMenuThemeCardWrap">',
-    '  <div class="appMenuCardTitle">Theme systém</div>',
-    '  <div class="appMenuText">Vzhled celé aplikace se váže na přihlášený herní účet. Výchozí vzhled zůstává stejný, další se odemykají podle levelu a achievementů.</div>',
-    '  <div class="appMenuThemeGrid" id="appMenuThemeGrid">' + cards + '</div>',
-    '  <div class="appMenuThemeHint" id="appMenuThemeHint"></div>',
+    '  <div class="appMenuCardTitle">Theme</div>',
+    '  <div class="appMenuText">Vzhled celé aplikace se váže na přihlášený herní účet. Další themes se odemykají podle profilu a achievementů.</div>',
+    '  <details class="appMenuThemeAccordion" id="appMenuThemeAccordion">',
+    '    <summary class="appMenuAction appMenuSettingBtn appMenuThemeSummary">',
+    '      <span class="appMenuThemeSummaryLeft">',
+    '        <span class="appMenuThemeSummaryTitle">Theme</span>',
+    '        <span class="appMenuThemeSummaryMeta" id="appMenuThemeSummaryMeta">Aktivní: ' + escapeHtml(String(currentTheme.label || 'Výchozí')) + '</span>',
+    '      </span>',
+    '      <span class="appMenuThemeSummaryChevron" aria-hidden="true">⌄</span>',
+    '    </summary>',
+    '    <div class="appMenuThemeAccordionBody">',
+    '      <div class="appMenuThemeGrid" id="appMenuThemeGrid">' + cards + '</div>',
+    '      <div class="appMenuThemeHint" id="appMenuThemeHint"></div>',
+    '    </div>',
+    '  </details>',
     '</div>'
   ].join('');
 }
 
-
 function renderThemeSettingsCards() {
   const grid = document.getElementById('appMenuThemeGrid');
   const hint = document.getElementById('appMenuThemeHint');
+  const summaryMeta = document.getElementById('appMenuThemeSummaryMeta');
   if (!grid) return;
   const profile = typeof gamesGetProfile === 'function' ? gamesGetProfile() : null;
-  const score = getThemeUnlockScore(profile);
+  const metrics = getThemeUnlockMetrics(profile);
   const current = getThemePreference();
   const themeList = Array.isArray(window.RAK_THEME_DEFS) ? window.RAK_THEME_DEFS : [];
   const themeById = new Map(themeList.map(theme => [String(theme.id || ''), theme]));
@@ -5654,19 +5883,22 @@ function renderThemeSettingsCards() {
   Array.from(grid.querySelectorAll('.appMenuThemeCard')).forEach(card => {
     const id = String(card.dataset.themeId || '').trim();
     const theme = themeById.get(id) || null;
-    const unlocked = !!theme && (id === 'default' || (theme.minPlays || 0) <= score);
+    const unlocked = !!theme && (id === 'default' || (Number(theme.minPlays || 0) <= metrics.totalPlays && Number(theme.minAchievements || 0) <= metrics.achievements));
     card.classList.toggle('isActive', id === current);
     card.classList.toggle('isLocked', !unlocked && id !== 'default');
     card.setAttribute('aria-pressed', id === current ? 'true' : 'false');
     const badge = card.querySelector('.appMenuThemeBadge');
-    if (badge && theme) badge.textContent = unlocked ? (theme.unlockText || 'Odemčeno') : (theme.unlockText || 'Zamčeno');
+    if (badge && theme) {
+      badge.textContent = unlocked ? (theme.unlockText || 'Odemčeno') : ('Zamčeno · ' + (theme.unlockText || 'podmínka nesplněna'));
+    }
     if (!card.dataset.bound) {
       card.dataset.bound = '1';
       card.addEventListener('click', () => {
         const nextTheme = themeById.get(id) || null;
         if (!nextTheme) return;
-        const canUse = id === 'default' || ((nextTheme.minPlays || 0) <= getThemeUnlockScore(typeof gamesGetProfile === 'function' ? gamesGetProfile() : null));
-        if (!canUse) {
+        const nextMetrics = getThemeUnlockMetrics(typeof gamesGetProfile === 'function' ? gamesGetProfile() : null);
+        const nextUnlocked = id === 'default' || (Number(nextTheme.minPlays || 0) <= nextMetrics.totalPlays && Number(nextTheme.minAchievements || 0) <= nextMetrics.achievements);
+        if (!nextUnlocked) {
           if (hint) hint.textContent = nextTheme.unlockText || 'Tento theme je zatím zamčený.';
           return;
         }
@@ -5677,6 +5909,11 @@ function renderThemeSettingsCards() {
     }
   });
 
+  if (summaryMeta) {
+    const activeName = (themeById.get(current) || themeList[0] || { label: 'Výchozí' }).label;
+    summaryMeta.textContent = 'Aktivní: ' + String(activeName) + ' · ' + String(metrics.totalPlays) + ' her / ' + String(metrics.achievements) + ' achievementů';
+  }
+
   if (hint) {
     const activeName = (themeById.get(current) || themeList[0] || { label: 'Výchozí' }).label;
     hint.textContent = profile && profile.activeAccountId
@@ -5684,8 +5921,6 @@ function renderThemeSettingsCards() {
       : 'Přihlas se do herního účtu a další themes se budou odemykat podle profilu.';
   }
 }
-
-
 
 window.openGameShell = function openGameShell(gameId) {
   if (typeof renderGameShell === 'function') {

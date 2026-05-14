@@ -41,6 +41,7 @@ function renderRotace() {
   } else {
     renderUpcomingShiftsPreview(10);
   }
+  bindRotaceOverviewTap();
 
   if (app.selectedMonth && app.rotation.months[app.selectedMonth]) {
     renderMonth(app.selectedMonth);
@@ -51,6 +52,22 @@ function renderRotace() {
   renderStatsPanel();
   const adminBox = document.getElementById('adminBox');
   if (adminBox) adminBox.style.display = 'none';
+}
+
+function bindRotaceOverviewTap() {
+  const personView = document.getElementById('personView');
+  if (!personView || personView.dataset.rotaceBlankTapBound === '1') return;
+  personView.dataset.rotaceBlankTapBound = '1';
+  personView.addEventListener('click', (event) => {
+    if (!app.selectedName) return;
+    const target = event.target;
+    if (target && typeof target.closest === 'function') {
+      if (target.closest('.rotaceMiniCard') || target.closest('button, a, input, select, textarea, label')) return;
+    }
+    app.selectedName = null;
+    app.nameTapState = { name: '', count: 0, lastTap: 0, qrShownAt: 0 };
+    renderRotace();
+  });
 }
 
 function getSoftMachineDisplayLabel(entry, rotation) {
@@ -397,9 +414,11 @@ function renderPerson(name) {
     return;
   }
 
-  const startIdx = Math.max(0, currentIdx >= 0 ? currentIdx : 0);
+  const startIdx = Math.max(0, currentIdx >= 0 ? currentIdx - 1 : 0);
   const endIdx = Math.min(entries.length, startIdx + 9);
   const visibleEntries = entries.slice(startIdx, endIdx);
+  const previousEntry = currentIdx > 0 ? entries[currentIdx - 1] : null;
+  const currentEntry = currentIdx >= 0 ? entries[currentIdx] : null;
 
   const formatEntry = (entry, isCurrent) => [
     '<div class="rotaceMiniCard' + (isCurrent ? ' current' : '') + '">',
@@ -410,6 +429,8 @@ function renderPerson(name) {
 
   personView.innerHTML = [
     '<div class="rotacePersonTitle">' + escapeHtml(name) + '</div>',
+    previousEntry ? '<div class="rotacePersonMeta">Minulá směna: ' + escapeHtml((previousEntry.dateLabel || '') + (previousEntry.shift ? ' ' + previousEntry.shift : '') + (previousEntry.target ? ' · ' + previousEntry.target : '')) + '</div>' : '',
+    currentEntry ? '<div class="rotacePersonMeta">Aktuálně: ' + escapeHtml((currentEntry.dateLabel || '') + (currentEntry.shift ? ' ' + currentEntry.shift : '') + (currentEntry.target ? ' · ' + currentEntry.target : '')) + '</div>' : '',
     '<div class="rotaceQuickCards rotaceQuickStack">',
     visibleEntries.map((entry, idx) => formatEntry(entry, (startIdx + idx) === currentIdx)).join(''),
     '</div>'

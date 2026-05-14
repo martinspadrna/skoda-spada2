@@ -1,10 +1,22 @@
-## v.1.1 (414)
+## v.1.1 (423)
 
-- Dashboard a spodní lišta dostaly nový set ikon ve stejném neon stylu.
-- Nepoužívané PNG varianty ikon byly odstraněné, build je lehčí.
-- Update popup je na mobilech přepnutý do vertikálního layoutu.
-- Spodní lišta má větší prostor pro poslední ikonu na menších telefonech.
-- Supabase napojení bylo znovu zkontrolováno včetně rotačních dat a brusů.
+- Spodní lišta je přizpůsobená víc na šířku, položka „Více“ je užší a zbytek tlačítek se rozprostírá přirozeněji.
+- Aktivní první položka už není useknutá vlevo a lišta drží líp na menších displejích.
+- V administraci rozpisů jsou roky a měsíce oddělené do dvou rozklikávacích menu s aktuálním měsícem předvybraným v základu.
+- Z editovatelných rozpisů mizí ruční křížky a odstranění jména je řešené rovnou klikem na konkrétní vyplněné pole.
+- Verze, cache i build labely jsou posunuté na novou 421.
+
+# Rotace a kalkulačky
+
+## v.1.1 (418)
+
+- Dashboardové ikonky jsou větší a výraznější, včetně výplaty, a spodní lišta má o něco větší záložky.
+- V Rotaci jde kliknout do prázdného prostoru a vrátit se zpět do přehledu; po výběru jména se ukazuje i jedna minulá směna.
+- Kalkulačky Brusy a Frézky jsou kompaktnější: dvouřádkový přehled, menší rozklikávací bloky a těsnější layout.
+- Herní profily a achievementy se rozšiřují na všechny hry a profilový systém se připravuje na rank/XP vrstvu.
+- O aplikaci má jemnější skupiny verzí a jasnější popisky od nejnovějších buildů po nejstarší.
+- Supabase propojení a sync flow zůstávají zkontrolované.
+
 
 # Rotace a kalkulačky
 

@@ -28,6 +28,206 @@
     daily: { title: 'Denní challenge', subtitle: 'Stejné podmínky pro všechny', unit: 'bodů', mode: 'high', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="6.5" width="15" height="13" rx="2"></rect><path d="M8 4.5v4M16 4.5v4M4.5 10h15"></path><path d="M8 14l2.1 2.1L16.3 10"></path></svg>' }
   };
 
+  window.RAK_ARCADE_GAMES = {
+    core: CORE_GAMES.slice(),
+    extra: EXTRA_GAMES.slice(),
+    all: ALL_GAMES.slice(),
+    meta: META
+  };
+
+  function getArcadeProfileStat(account, gameId) {
+    const id = key(gameId);
+    const acc = account || null;
+    if (!acc || !acc.stats) return arcadeDefaults(id);
+    if (id === 'ttt') return Object.assign({ plays: 0, wins: 0, losses: 0, draws: 0, bestMoves: null, bestTimeMs: null, lastPlayedAt: 0 }, acc.stats.ttt || {});
+    if (id === '2048') return Object.assign({ plays: 0, bestScore: 0, bestTile: 0, lastPlayedAt: 0 }, acc.stats.g2048 || {});
+    if (id === 'snake') return Object.assign({ plays: 0, bestScore: 0, bestLength: 0, lastPlayedAt: 0 }, acc.stats.snake || {});
+    if (id === 'flap') return Object.assign({ plays: 0, bestScore: 0, bestPipes: 0, lastPlayedAt: 0 }, acc.stats.flap || {});
+    acc.stats[ARC_KEY] = acc.stats[ARC_KEY] || {};
+    return Object.assign(arcadeDefaults(id), acc.stats[ARC_KEY][id] || {});
+  }
+
+  function getArcadeProfileValue(account, gameId) {
+    const id = key(gameId);
+    const meta = META[id] || {};
+    const st = getArcadeProfileStat(account, id);
+    if (id === 'ttt') return Number(st.plays || 0) || 0;
+    if (meta.mode === 'low') return Number(st.bestTimeMs || st.leaderboardValue || 0) || 0;
+    return Number(st.bestScore || st.leaderboardValue || 0) || 0;
+  }
+
+  function getArcadeProfileDisplay(account, gameId) {
+    const id = key(gameId);
+    const meta = META[id] || {};
+    const st = getArcadeProfileStat(account, id);
+    if (id === 'ttt') return `${Number(st.plays || 0) || 0}×`;
+    if (meta.mode === 'low') return st.bestTimeMs ? fmtTime(st.bestTimeMs) : '—';
+    return `${Number(st.bestScore || st.leaderboardValue || 0) || 0}`;
+  }
+
+
+  const GAMES_RANK_DEFS = [
+    { name: 'Vemeno', minXp: 0 },
+    { name: 'Učeň', minXp: 250 },
+    { name: 'Seřizovač', minXp: 700 },
+    { name: 'Týmař', minXp: 1500 },
+    { name: 'Mistr', minXp: 2800 },
+    { name: 'Senior', minXp: 4500 },
+    { name: 'Legenda RaK', minXp: 7000 }
+  ];
+
+  function gamesBuildProgressSummary(account) {
+    const total = gamesGetTotals(account);
+    const achievements = gamesGetAchievementCount(account);
+    const wins = Number(total.ttt && total.ttt.wins || 0) + Math.max(Number(total.g2048 && total.g2048.bestScore || 0) > 0 ? 1 : 0, 0) + Math.max(Number(total.snake && total.snake.bestScore || 0) > 0 ? 1 : 0, 0) + Math.max(Number(total.flap && total.flap.bestScore || 0) > 0 ? 1 : 0, 0);
+    const plays = Number(total.totalPlays || 0) || 0;
+    const bestScore = Number(total.bestScore || 0) || 0;
+    const xp = Math.max(0, Math.round((plays * 12) + (wins * 35) + (achievements * 80) + Math.min(500, Math.floor(bestScore / 2))));
+    const level = Math.max(1, Math.floor(xp / 250) + 1);
+    const levelBase = (level - 1) * 250;
+    const currentXp = xp - levelBase;
+    const nextXp = level * 250;
+    const rank = [...GAMES_RANK_DEFS].reverse().find(r => xp >= r.minXp) || GAMES_RANK_DEFS[0];
+    const favorite = (() => {
+      const defs = ALL_GAMES.map((id) => Object.assign({ id }, META[id] || { title: id, subtitle: '', unit: 'bodů', mode: 'high' }));
+      let best = defs[0] || null;
+      let bestScoreLocal = -1;
+      defs.forEach((game) => {
+        const stat = getArcadeProfileStat(account, game.id);
+        const value = game.id === 'ttt' ? Number(stat.plays || 0) || 0 : (game.mode === 'low' ? Number(stat.bestTimeMs || 0) : Number(stat.bestScore || 0));
+        if (value > bestScoreLocal) {
+          bestScoreLocal = value;
+          best = game;
+        }
+      });
+      return best ? best.title : '—';
+    })();
+    const winRate = plays > 0 ? Math.round((wins / plays) * 100) : 0;
+    return { xp, level, currentXp, nextXp, rank: rank.name, plays, achievements, wins, winRate, favorite, bestScore };
+  }
+
+  function renderProfilesExtended() {
+    const grid = document.getElementById('gamesProfilesGrid');
+    if (!grid) return;
+    const profile = gamesGetProfile();
+    const accounts = Object.values(profile.accounts || {}).filter(acc => !GAMES_ACCOUNT_BLOCKLIST.has(String(acc && acc.id || '').trim())).sort((a, b) => {
+      const ai = Number(a && a.id ? a.id : 0) || 0;
+      const bi = Number(b && b.id ? b.id : 0) || 0;
+      return ai - bi;
+    });
+    const activeId = profile.activeAccountId;
+
+    if (!accounts.length) {
+      grid.innerHTML = '<div class="smallText">Zatím nejsou žádné profily.</div>';
+      return;
+    }
+
+    const defs = ALL_GAMES.map((id) => Object.assign({ id }, META[id] || { title: id, subtitle: '', unit: 'bodů', mode: 'high' }));
+
+    grid.innerHTML = accounts.map((acc) => {
+      const progress = gamesBuildProgressSummary(acc);
+      const last = acc.updatedAt ? gamesFormatPlayedLabel(acc.updatedAt) : 'Ještě bez hry';
+      const profileRows = defs.map((game) => {
+        const display = getArcadeProfileDisplay(acc, game.id);
+        const unit = game.unit || '';
+        const suffix = game.id === 'ttt' ? '' : (unit ? ' ' + unit : '');
+        return '<div class="gamesProfileRow"><strong>' + escapeHtml(game.title) + '</strong><span>' + escapeHtml(display + suffix) + '</span></div>';
+      }).join('');
+      const initials = String(acc.name || acc.id || '?').trim().slice(0, 2).toUpperCase();
+      const xpPct = Math.max(0, Math.min(100, Math.round((progress.currentXp / 250) * 100)));
+      return [
+        '<div class="gamesStatsCard' + (String(acc.id) === String(activeId) ? ' isActive' : '') + '">',
+        '  <div class="gamesStatsCardHead">',
+        '    <div class="gamesProfileAvatar">' + escapeHtml(initials) + '</div>',
+        '    <div class="gamesStatsCardHeadMain">',
+        '      <div class="gamesStatsCardName">' + escapeHtml(acc.name || ('Hráč ' + String(acc.id || ''))) + '</div>',
+        '      <div class="gamesStatsCardId">' + escapeHtml(acc.id || '') + '</div>',
+        '      <div class="gamesStatsCardMeta gamesStatsCardMetaDense">' + escapeHtml(progress.rank) + ' · Level ' + String(progress.level) + ' · XP ' + String(progress.xp) + ' · Win rate ' + String(progress.winRate) + '%</div>',
+        '    </div>',
+        '    <div class="gamesStatsCardTotal">' + String(progress.plays) + ' her</div>',
+        '  </div>',
+        '  <div class="gamesStatsCardBody">',
+        '    <div class="gamesStatsXpBar"><span style="width:' + String(xpPct) + '%"></span></div>',
+        '    <div class="gamesStatsCardMeta gamesStatsCardMetaDense">Nejoblíbenější hra: ' + escapeHtml(progress.favorite) + ' · Achievementy: ' + String(progress.achievements) + '</div>',
+        profileRows,
+        '    <div class="gamesStatsCardMeta">' + escapeHtml(last) + '</div>',
+        '  </div>',
+        '</div>'
+      ].join('');
+    }).join('');
+  }
+
+  function renderAchievementsExtended() {
+    const grid = document.getElementById('gamesAchievementsGrid');
+    if (!grid) return;
+    const profile = gamesGetProfile();
+    const account = gamesGetActiveAccount();
+    if (!account) {
+      grid.innerHTML = '<div class="smallText">Přihlas se a achievementy se začnou počítat.</div>';
+      return;
+    }
+
+    const total = gamesGetTotals(account);
+    const baseAchievements = [
+      { id: 'start', title: 'První krok', desc: 'Zahraj si první hru', goalText: '1 hra', progress: (a) => a.totalPlays, target: 1 },
+      { id: 'ten', title: 'Desítka', desc: 'Nasbírej 10 her', goalText: '10 her', progress: (a) => a.totalPlays, target: 10 }
+    ];
+    const gameAchievements = ALL_GAMES.map((gameId) => {
+      const meta = META[gameId] || { title: gameId, subtitle: '', unit: '' };
+      return {
+        id: 'game-' + gameId,
+        title: meta.title,
+        desc: meta.subtitle || 'Zahraj si a ulož první výsledek.',
+        goalText: '1 spuštění',
+        progress: (a) => {
+          const st = getArcadeProfileStat(a && a.account ? a.account : a, gameId);
+          return Number(st.plays || 0) || 0;
+        },
+        target: 1
+      };
+    });
+
+    const defs = baseAchievements.concat(gameAchievements).map(def => Object.assign({}, def));
+    const unlocked = defs.filter((def) => Number(def.progress({ totalPlays: total.totalPlays, account })) >= Number(def.target || 0)).length;
+
+    grid.innerHTML = defs.map((def) => {
+      const current = Number(def.progress({ totalPlays: total.totalPlays, account }) || 0);
+      const target = Number(def.target || 1) || 1;
+      const pct = Math.max(0, Math.min(100, Math.round((current / target) * 100)));
+      const isUnlocked = current >= target;
+      return [
+        '<div class="gamesStatsCard' + (isUnlocked ? ' isActive' : '') + '">',
+        '  <div class="gamesStatsCardHead">',
+        '    <div>',
+        '      <div class="gamesStatsCardName">' + escapeHtml(def.title) + '</div>',
+        '      <div class="gamesStatsCardId">' + escapeHtml(def.id) + '</div>',
+        '    </div>',
+        '    <div class="gamesStatsCardTotal">' + String(Math.min(current, target)) + '/' + String(target) + '</div>',
+        '  </div>',
+        '  <div class="gamesStatsCardBody">',
+        '    <div class="gamesStatsCardLine">' + escapeHtml(def.desc) + '</div>',
+        '    <div class="gamesStatsCardLine">' + escapeHtml(def.goalText) + '</div>',
+        '    <div class="gamesAchievementBar"><span style="width:' + String(pct) + '%"></span></div>',
+        '  </div>',
+        '</div>'
+      ].join('');
+    }).join('');
+    const folder = document.querySelector('#games .gamesAchievementsFolder');
+    if (folder) folder.dataset.unlocked = String(unlocked);
+  }
+
+  const originalRenderProfiles = window.gamesRenderProfiles;
+  window.gamesRenderProfiles = function gamesRenderProfilesArcade() {
+    renderProfilesExtended();
+    if (typeof syncGamesLockedSections === 'function') syncGamesLockedSections();
+  };
+
+  const originalRenderAchievements = window.gamesRenderAchievements;
+  window.gamesRenderAchievements = function gamesRenderAchievementsArcade() {
+    renderAchievementsExtended();
+    if (typeof syncGamesLockedSections === 'function') syncGamesLockedSections();
+  };
+
   const CSS = `
 #games .gamesLaunchTile{cursor:pointer;transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;}
 #games .gamesLaunchTile:active{transform:scale(.985);}

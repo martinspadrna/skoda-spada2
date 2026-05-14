@@ -26,10 +26,10 @@
   #home .dashboardDot,
   #dashKantyna .dashboardDot,
   #dashJidelna .dashboardDot{
-    width:18px !important;
-    height:18px !important;
-    min-width:18px !important;
-    min-height:18px !important;
+    width:27px !important;
+    height:27px !important;
+    min-width:27px !important;
+    min-height:27px !important;
     border-radius:999px !important;
     box-shadow:0 0 0 1px rgba(255,255,255,.10), 0 0 10px rgba(124,255,124,.18) !important;
   }
@@ -55,8 +55,8 @@
     fill:none;
   }
   #home .dashboardIconInline{
-    width:44px !important;
-    height:44px !important;
+    width:64px !important;
+    height:64px !important;
   }
   #home .dashboardIconInline svg,
   #home .dashboardIconInline img{
@@ -75,13 +75,13 @@
   }
   #games .gamesFolderSummary::-webkit-details-marker{display:none !important;}
   #games .gamesFolderSummaryIcon{
-    width:24px !important;
-    height:24px !important;
+    width:27px !important;
+    height:27px !important;
     color:var(--green2) !important;
     display:flex !important;
     align-items:center !important;
     justify-content:center !important;
-    flex:0 0 24px !important;
+    flex:0 0 27px !important;
     opacity:.95 !important;
   }
   #games .gamesFolderSummaryIcon svg{
@@ -499,6 +499,407 @@
   }
 </style>
 
+
+
+<style id="v418-games-and-calcs">
+  #games .gamesStatsCardHead{
+    display:flex !important;
+    align-items:flex-start !important;
+    gap:10px !important;
+  }
+  #games .gamesProfileAvatar{
+    width:42px !important;
+    height:42px !important;
+    border-radius:15px !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    flex:0 0 42px !important;
+    background:linear-gradient(180deg, rgba(124,255,124,.20), rgba(124,255,124,.06)) !important;
+    border:1px solid rgba(124,255,124,.16) !important;
+    color:#effff0 !important;
+    font-weight:800 !important;
+    letter-spacing:.04em !important;
+    box-shadow:0 12px 24px rgba(0,0,0,.18) inset, 0 0 0 1px rgba(255,255,255,.03) !important;
+  }
+  #games .gamesStatsCardHeadMain{
+    flex:1 1 auto !important;
+    min-width:0 !important;
+  }
+  #games .gamesStatsCardMetaDense{
+    font-size:11px !important;
+    line-height:1.15 !important;
+  }
+  #games .gamesStatsXpBar{
+    width:100% !important;
+    height:8px !important;
+    border-radius:999px !important;
+    background:rgba(255,255,255,.06) !important;
+    overflow:hidden !important;
+    margin:2px 0 6px !important;
+    border:1px solid rgba(124,255,124,.10) !important;
+  }
+  #games .gamesStatsXpBar span{
+    display:block !important;
+    height:100% !important;
+    border-radius:inherit !important;
+    background:linear-gradient(90deg, rgba(124,255,124,.35), rgba(124,255,124,.95)) !important;
+    box-shadow:0 0 14px rgba(124,255,124,.16) !important;
+  }
+  #frezky .brusDetailsBody,
+  #brusy .brusDetailsBody{
+    gap:8px !important;
+  }
+  #frezky .card,
+  #brusy .card{
+    min-height:0 !important;
+  }
+  #frezky .brusDetails > summary,
+  #brusy .brusDetails > summary{
+    user-select:none !important;
+  }
+  #brusyInfo .brusyInfoTitle,
+  #brusyInfo .brusyInfoSub{
+    display:block !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+  }
+  #brusyInfo .brusyInfoSub{
+    font-size:12px !important;
+    line-height:1.08 !important;
+    color:rgba(228,255,231,.78) !important;
+  }
+</style>
+
+<style id="v418-ui-polish">
+  #home .dashboardIconInline,
+  .dashboardCard .dashboardIcon.dashboardIconInline{
+    width:77px !important;
+    height:77px !important;
+    flex:0 0 77px !important;
+    align-self:center !important;
+  }
+  #home .dashboardCard .dashboardIcon.dashboardIconInline img,
+  #home .dashboardCard .dashboardIcon.dashboardIconInline svg,
+  .dashboardCard .dashboardIcon.dashboardIconInline img,
+  .dashboardCard .dashboardIcon.dashboardIconInline svg{
+    width:100% !important;
+    height:100% !important;
+    object-fit:contain !important;
+    display:block !important;
+    filter:drop-shadow(0 0 5px rgba(124,255,124,.16)) saturate(1.08) contrast(1.04) !important;
+  }
+  .bottomNavBtn{
+    flex:0 0 62px !important;
+    width:62px !important;
+    min-width:62px !important;
+    max-width:62px !important;
+    min-height:54px !important;
+  }
+  .bottomNavBtn .bottomNavIcon,
+  .bottomNavBtn .bottomNavIcon svg{
+    width:30px !important;
+    height:30px !important;
+  }
+  .bottomNavBtn .bottomNavIcon{
+    flex:0 0 30px !important;
+  }
+  .bottomNavBtn .bottomNavLabel{
+    font-size:clamp(7.3px, 1.85vw, 9.3px) !important;
+  }
+  .bottomNavMenuBtn{
+    flex:0 0 46px !important;
+    width:46px !important;
+    min-width:46px !important;
+    max-width:46px !important;
+  }
+  .bottomNavMenuBtn .moreIcon{
+    width:13px !important;
+    height:13px !important;
+  }
+  #frezky .brusDetails > summary,
+  #brusy .brusDetails > summary{
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:flex-start !important;
+    gap:1px !important;
+    padding:10px 12px !important;
+    min-height:52px !important;
+    line-height:1.02 !important;
+  }
+  #frezky .calcSummaryTitle,
+  #brusy .calcSummaryTitle{
+    font-weight:800 !important;
+    font-size:14px !important;
+    line-height:1.02 !important;
+  }
+  #frezky .calcSummarySub,
+  #brusy .calcSummarySub{
+    font-size:11px !important;
+    line-height:1.02 !important;
+    color:rgba(228,255,231,.72) !important;
+  }
+  #brusyInfo{
+    display:flex !important;
+    flex-direction:column !important;
+    gap:2px !important;
+    padding:10px 12px !important;
+    line-height:1.08 !important;
+  }
+  #brusyInfo b{
+    font-size:14px !important;
+  }
+  #brusyInfo .smallText{
+    font-size:12px !important;
+    line-height:1.08 !important;
+  }
+  @media (max-width:700px){
+    .bottomNavBtn{flex-basis:62px !important;}
+    .bottomNavMenuBtn{flex-basis:46px !important;}
+    #games .gamesGrid{gap:10px !important;}
+    #games .gamesStatsGrid{gap:10px !important;}
+  }
+</style>
+
+
+<style id="v423-size-and-admin-fix">
+  #home .dashboardIconInline{
+    width:74px !important;
+    height:74px !important;
+  }
+  #home .dashboardIconInline svg,
+  #home .dashboardIconInline img{
+    width:100% !important;
+    height:100% !important;
+  }
+  #home .dashboardCard .dashboardIcon.dashboardIconInline,
+  .dashboardCard .dashboardIcon.dashboardIconInline{
+    width:51px !important;
+    height:51px !important;
+    flex:0 0 51px !important;
+  }
+  #home .dashboardCard .dashboardIcon.dashboardIconInline img,
+  #home .dashboardCard .dashboardIcon.dashboardIconInline svg,
+  .dashboardCard .dashboardIcon.dashboardIconInline img,
+  .dashboardCard .dashboardIcon.dashboardIconInline svg{
+    width:100% !important;
+    height:100% !important;
+  }
+
+  .bottomNavBtn{
+    flex-basis:62px !important;
+    width:62px !important;
+    min-width:62px !important;
+    max-width:62px !important;
+  }
+  .bottomNavBtn .bottomNavIcon,
+  .bottomNavBtn .bottomNavIcon svg{
+    width:25px !important;
+    height:25px !important;
+  }
+  .bottomNavBtn .bottomNavIcon{
+    flex:0 0 25px !important;
+  }
+  .bottomNavMenuBtn{
+    flex-basis:30px !important;
+    width:30px !important;
+    min-width:30px !important;
+    max-width:30px !important;
+  }
+  .bottomNavMenuBtn .moreIcon{
+    width:13px !important;
+    height:13px !important;
+  }
+
+  #frezky .brusDetails > summary,
+  #brusy .brusDetails > summary{
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) !important;
+    gap:2px !important;
+    align-items:start !important;
+    min-height:48px !important;
+  }
+  #frezky .calcSummaryTitle,
+  #brusy .calcSummaryTitle{
+    display:block !important;
+    font-size:13px !important;
+    line-height:1.02 !important;
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+  }
+  #frezky .calcSummarySub,
+  #brusy .calcSummarySub{
+    display:block !important;
+    font-size:10px !important;
+    line-height:1.02 !important;
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+  }
+  #brusyInfo{
+    min-height:auto !important;
+    gap:1px !important;
+  }
+  #brusyInfo b{
+    font-size:13px !important;
+    line-height:1.02 !important;
+    display:block !important;
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+  }
+  #brusyInfo .smallText{
+    font-size:11px !important;
+    line-height:1.02 !important;
+    display:block !important;
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+  }
+
+  #brusy .bgrid .bbtn,
+  #brusy .indexGrid .bbtn{
+    min-height:38px !important;
+  }
+
+  #adminRotationEditor .appMenuMonthYearPicker{
+    display:grid !important;
+    gap:8px !important;
+  }
+  #adminRotationEditor .appMenuMonthYearGroup{
+    margin:0 !important;
+  }
+  #adminRotationEditor .appMenuMonthYearGroup > summary{
+    cursor:pointer !important;
+  }
+</style>
+
+
+
+<style id="v423-final-fixes">
+  #home .dashboardIconInline{
+    width:74px !important;
+    height:74px !important;
+  }
+  #home .dashboardIconInline svg,
+  #home .dashboardIconInline img{
+    width:100% !important;
+    height:100% !important;
+  }
+  #home .dashboardCard .dashboardIcon.dashboardIconInline,
+  .dashboardCard .dashboardIcon.dashboardIconInline{
+    width:51px !important;
+    height:51px !important;
+    flex:0 0 51px !important;
+  }
+  #home .dashboardCard .dashboardIcon.dashboardIconInline img,
+  #home .dashboardCard .dashboardIcon.dashboardIconInline svg,
+  .dashboardCard .dashboardIcon.dashboardIconInline img,
+  .dashboardCard .dashboardIcon.dashboardIconInline svg{
+    width:100% !important;
+    height:100% !important;
+  }
+
+  .bottomNav{
+    width:min(calc(100vw - 8px), 960px) !important;
+  }
+  .bottomNavBtn{
+    flex:0 0 62px !important;
+    width:62px !important;
+    min-width:62px !important;
+    max-width:62px !important;
+  }
+  .bottomNavBtn .bottomNavIcon,
+  .bottomNavBtn .bottomNavIcon svg{
+    width:25px !important;
+    height:25px !important;
+  }
+  .bottomNavBtn .bottomNavIcon{
+    flex:0 0 25px !important;
+  }
+  .bottomNavMenuBtn{
+    flex:0 0 30px !important;
+    width:30px !important;
+    min-width:30px !important;
+    max-width:30px !important;
+  }
+  .bottomNavMenuBtn .moreIcon{
+    width:13px !important;
+    height:13px !important;
+  }
+
+  #frezky .brusDetails > summary,
+  #brusy .brusDetails > summary{
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) !important;
+    gap:2px !important;
+    align-items:start !important;
+    min-height:48px !important;
+  }
+  #frezky .calcSummaryTitle,
+  #brusy .calcSummaryTitle{
+    display:block !important;
+    font-size:13px !important;
+    line-height:1.02 !important;
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+  }
+  #frezky .calcSummarySub,
+  #brusy .calcSummarySub{
+    display:block !important;
+    font-size:10px !important;
+    line-height:1.02 !important;
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+  }
+  #brusyInfo{
+    min-height:auto !important;
+    gap:1px !important;
+  }
+  #brusyInfo b{
+    font-size:13px !important;
+    line-height:1.02 !important;
+    display:block !important;
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+  }
+  #brusyInfo .smallText{
+    font-size:11px !important;
+    line-height:1.02 !important;
+    display:block !important;
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+  }
+
+  @media (max-width: 560px){
+    .bottomNav{
+      width:calc(100vw - 6px) !important;
+    }
+    .bottomNavBtn{
+      flex-basis:56px !important;
+      width:56px !important;
+      min-width:56px !important;
+      max-width:56px !important;
+    }
+    .bottomNavMenuBtn{
+      flex-basis:28px !important;
+      width:28px !important;
+      min-width:28px !important;
+      max-width:28px !important;
+    }
+    .bottomNavMenuBtn .moreIcon{
+      width:12px !important;
+      height:12px !important;
+    }
+  }
+</style>
+
+
 </head>
 
 <body>
@@ -883,7 +1284,7 @@
   </div>
 
   <details class="brusDetails calcDetails">
-    <summary>Kolik ještě stihnu</summary>
+    <summary><span class="calcSummaryTitle">Kolik ještě stihnu</span><span class="calcSummarySub">Rychlý přehled kusů</span></summary>
     <div class="brusDetailsBody">
       <label>Hotovo kusů:</label>
       <input id="f_kusy" type="number">
@@ -893,7 +1294,7 @@
   </details>
 
   <details class="brusDetails calcDetails">
-    <summary>Kdy bude hotovo</summary>
+    <summary><span class="calcSummaryTitle">Kdy bude hotovo</span><span class="calcSummarySub">Odhad dokončení a času</span></summary>
     <div class="brusDetailsBody">
       <label>Kolik kusů ještě děláš:</label>
       <input id="f_finish_kusy" type="number" autocomplete="off">
@@ -932,7 +1333,7 @@
   <div class="card" id="brusyInfo"><div><b>TBKR01 / AD</b></div><div class="smallText">Výroba kusu: 58,5 s · Orovnává po 58 ks · Orovnává 4 min</div></div>
 
   <details class="brusDetails calcDetails">
-    <summary>Kolik ještě stihnu</summary>
+    <summary><span class="calcSummaryTitle">Kolik ještě stihnu</span><span class="calcSummarySub">Rychlý přehled kusů</span></summary>
     <div class="brusDetailsBody">
       <label>Celkem zatím nabroušeno:</label>
       <input id="celkem" type="number">
@@ -955,7 +1356,7 @@
   </details>
 
   <details class="brusDetails calcDetails">
-    <summary>Kdy bude hotovo</summary>
+    <summary><span class="calcSummaryTitle">Kdy bude hotovo</span><span class="calcSummarySub">Odhad dokončení a času</span></summary>
     <div class="brusDetailsBody">
       <label>Kolik kusů ještě děláš:</label>
       <input id="b_finish_kusy" type="number" autocomplete="off">
@@ -1106,8 +1507,8 @@
   #games .snakeJoystickCenter{
     min-width:44px !important;
     min-height:44px !important;
-    width:44px !important;
-    height:44px !important;
+    width:64px !important;
+    height:64px !important;
   }
 
   @media (max-width: 700px){
@@ -1135,14 +1536,14 @@
 <script src="app.js"></script>
 <nav class="bottomNav" aria-label="Spodní navigace">
   <div class="bottomNavScroll" id="bottomNavScroll">
-    <button class="bottomNavBtn active" data-page="home" onclick="showPage('home'); setBottomNavActive('home')"><span class="bottomNavIcon" aria-hidden="true"><img class="bottomNavIconImg bottomNavIconImg--off" src="assets/nav-icons/home-gray.svg" alt="" decoding="async" loading="eager"><img class="bottomNavIconImg bottomNavIconImg--on" src="assets/nav-icons/home-green.svg" alt="" decoding="async" loading="eager"></span><div class="bottomNavLabel">Home</div></button>
-    <button class="bottomNavBtn" data-page="rotace" onclick="openRotaceNames()"><span class="bottomNavIcon" aria-hidden="true"><img class="bottomNavIconImg bottomNavIconImg--off" src="assets/nav-icons/rotace-gray.svg" alt="" decoding="async" loading="eager"><img class="bottomNavIconImg bottomNavIconImg--on" src="assets/nav-icons/rotace-green.svg" alt="" decoding="async" loading="eager"></span><div class="bottomNavLabel">Rotace</div></button>
-    <button class="bottomNavBtn" data-page="kalkulacky" onclick="openKalkulacky()"><span class="bottomNavIcon" aria-hidden="true"><img class="bottomNavIconImg bottomNavIconImg--off" src="assets/nav-icons/kalkulacky-gray.svg" alt="" decoding="async" loading="eager"><img class="bottomNavIconImg bottomNavIconImg--on" src="assets/nav-icons/kalkulacky-green.svg" alt="" decoding="async" loading="eager"></span><div class="bottomNavLabel">Kalkulačky</div></button>
-    <button class="bottomNavBtn" data-page="rozpisy" onclick="openRotaceMonths()"><span class="bottomNavIcon" aria-hidden="true"><img class="bottomNavIconImg bottomNavIconImg--off" src="assets/nav-icons/rozpisy-gray.svg" alt="" decoding="async" loading="eager"><img class="bottomNavIconImg bottomNavIconImg--on" src="assets/nav-icons/rozpisy-green.svg" alt="" decoding="async" loading="eager"></span><div class="bottomNavLabel">Rozpisy</div></button>
-    <button class="bottomNavBtn" data-page="statistiky" onclick="openRotaceStats()"><span class="bottomNavIcon" aria-hidden="true"><img class="bottomNavIconImg bottomNavIconImg--off" src="assets/nav-icons/statistiky-gray.svg" alt="" decoding="async" loading="eager"><img class="bottomNavIconImg bottomNavIconImg--on" src="assets/nav-icons/statistiky-green.svg" alt="" decoding="async" loading="eager"></span><div class="bottomNavLabel">Statistiky</div></button>
-    <button class="bottomNavBtn bottomNavGamesBtn" data-page="games" onclick="openGamesPage()"><span class="bottomNavIcon" aria-hidden="true"><img class="bottomNavIconImg bottomNavIconImg--off" src="assets/nav-icons/games-gray.svg" alt="" decoding="async" loading="eager"><img class="bottomNavIconImg bottomNavIconImg--on" src="assets/nav-icons/games-green.svg" alt="" decoding="async" loading="eager"></span><div class="bottomNavLabel">Hry</div></button>
+    <button class="bottomNavBtn active" data-page="home" onclick="showPage('home'); setBottomNavActive('home')"><span class="bottomNavIcon" aria-hidden="true"><img class="bottomNavIconImg bottomNavIconImg--off" src="assets/nav-icons/home-gray.png" alt="" decoding="async" loading="eager"><img class="bottomNavIconImg bottomNavIconImg--on" src="assets/nav-icons/home-green.png" alt="" decoding="async" loading="eager"></span><div class="bottomNavLabel">Home</div></button>
+    <button class="bottomNavBtn" data-page="rotace" onclick="openRotaceNames()"><span class="bottomNavIcon" aria-hidden="true"><img class="bottomNavIconImg bottomNavIconImg--off" src="assets/nav-icons/rotace-gray.png" alt="" decoding="async" loading="eager"><img class="bottomNavIconImg bottomNavIconImg--on" src="assets/nav-icons/rotace-green.png" alt="" decoding="async" loading="eager"></span><div class="bottomNavLabel">Rotace</div></button>
+    <button class="bottomNavBtn" data-page="kalkulacky" onclick="openKalkulacky()"><span class="bottomNavIcon" aria-hidden="true"><img class="bottomNavIconImg bottomNavIconImg--off" src="assets/nav-icons/kalkulacky-gray.png" alt="" decoding="async" loading="eager"><img class="bottomNavIconImg bottomNavIconImg--on" src="assets/nav-icons/kalkulacky-green.png" alt="" decoding="async" loading="eager"></span><div class="bottomNavLabel">Kalkulačky</div></button>
+    <button class="bottomNavBtn" data-page="rozpisy" onclick="openRotaceMonths()"><span class="bottomNavIcon" aria-hidden="true"><img class="bottomNavIconImg bottomNavIconImg--off" src="assets/nav-icons/rozpisy-gray.png" alt="" decoding="async" loading="eager"><img class="bottomNavIconImg bottomNavIconImg--on" src="assets/nav-icons/rozpisy-green.png" alt="" decoding="async" loading="eager"></span><div class="bottomNavLabel">Rozpisy</div></button>
+    <button class="bottomNavBtn" data-page="statistiky" onclick="openRotaceStats()"><span class="bottomNavIcon" aria-hidden="true"><img class="bottomNavIconImg bottomNavIconImg--off" src="assets/nav-icons/statistiky-gray.png" alt="" decoding="async" loading="eager"><img class="bottomNavIconImg bottomNavIconImg--on" src="assets/nav-icons/statistiky-green.png" alt="" decoding="async" loading="eager"></span><div class="bottomNavLabel">Statistiky</div></button>
+    <button class="bottomNavBtn bottomNavGamesBtn" data-page="games" onclick="openGamesPage()"><span class="bottomNavIcon" aria-hidden="true"><img class="bottomNavIconImg bottomNavIconImg--off" src="assets/nav-icons/games-gray.png" alt="" decoding="async" loading="eager"><img class="bottomNavIconImg bottomNavIconImg--on" src="assets/nav-icons/games-green.png" alt="" decoding="async" loading="eager"></span><div class="bottomNavLabel">Hry</div></button>
+    <button class="bottomNavBtn bottomNavMenuBtn" data-page="menu" type="button" aria-label="Více" onclick="toggleAppMenu()"><svg class="moreIcon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="2.15"></circle><circle cx="12" cy="12" r="2.15"></circle><circle cx="12" cy="16" r="2.15"></circle></svg><div class="bottomNavLabel">Více</div></button>
   </div>
-  <button class="bottomNavBtn bottomNavMenuBtn" data-page="menu" type="button" aria-label="Více" onclick="toggleAppMenu()"><svg class="moreIcon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="2.15"></circle><circle cx="12" cy="12" r="2.15"></circle><circle cx="12" cy="16" r="2.15"></circle></svg><div class="bottomNavLabel">Více</div></button>
 </nav>
 
 <style id="v330-overrides">
@@ -1184,11 +1585,11 @@
 }
 .bottomNavBtn .bottomNavIcon,
 .bottomNavBtn .bottomNavIcon svg{
-  width:24px !important;
-  height:24px !important;
+  width:27px !important;
+  height:27px !important;
   display:block !important;
 }
-.bottomNavBtn .bottomNavIcon{flex:0 0 24px !important;}
+.bottomNavBtn .bottomNavIcon{flex:0 0 27px !important;}
 .bottomNavBtn .bottomNavLabel{
   font-size:8.8px !important;
   line-height:1.02 !important;
@@ -1337,11 +1738,11 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   }
   .bottomNavBtn .bottomNavIcon,
   .bottomNavBtn .bottomNavIcon svg{
-    width:24px !important;
-    height:24px !important;
+    width:27px !important;
+    height:27px !important;
   }
   .bottomNavBtn .bottomNavIcon{
-    flex:0 0 24px !important;
+    flex:0 0 27px !important;
   }
   .bottomNavBtn .bottomNavLabel{
     font-size:8.6px !important;
@@ -1851,8 +2252,8 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   }
   .bottomNavBtn .bottomNavIcon,
   .bottomNavBtn .bottomNavIcon svg{
-    width:30px !important;
-    height:30px !important;
+    width:27px !important;
+    height:27px !important;
   }
   .bottomNavBtn .bottomNavLabel{
     font-size:8.2px !important;
@@ -1863,7 +2264,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
     z-index:10 !important;
   }
   .bottomNavMenuBtn{
-    flex:0 0 24px !important;
+    flex:0 0 27px !important;
     width:24px !important;
     min-width:24px !important;
     max-width:24px !important;
@@ -2528,7 +2929,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
     transform:translateY(-1px) scale(1.08) !important;
   }
   .bottomNavMenuBtn{
-    flex:0 0 24px !important;
+    flex:0 0 27px !important;
     width:24px !important;
     min-width:24px !important;
     max-width:24px !important;
@@ -2704,7 +3105,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
     inset:-4px !important;
   }
   .bottomNavMenuBtn{
-    flex:0 0 24px !important;
+    flex:0 0 27px !important;
     width:24px !important;
     min-width:24px !important;
     max-width:24px !important;
@@ -2921,7 +3322,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
     inset:-3px !important;
   }
   .bottomNavMenuBtn{
-    flex:0 0 24px !important;
+    flex:0 0 27px !important;
     width:24px !important;
     min-width:24px !important;
     max-width:24px !important;
@@ -3348,7 +3749,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   color:rgba(242,248,245,.88) !important;
   word-break:break-word !important;
 }
-/* v1.1 (414) polish: new dashboard/nav icons, cleaned assets, mobile update popup fix, version 1.1 update */
+/* v1.1 (421) polish: wider bottom nav, clearer admin pickers, tighter mobile fit and cleaner removal flow */
 .bottomNav{
   bottom:10px !important;
 }
@@ -3401,7 +3802,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
 </style>
 
 
-<style id="v409-bottom-nav-icon-overrides">
+<style id="v418-bottom-nav-icon-overrides">
   .bottomNavIcon{position:relative !important; display:block !important; overflow:visible !important;}
   .bottomNavIconImg{
     position:absolute !important;
@@ -3415,12 +3816,307 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
     pointer-events:none !important;
     transform:translateZ(0) !important;
   }
-  .bottomNavIconImg--off{opacity:1 !important; filter:grayscale(1) brightness(1.45) contrast(.98) !important;}
+  .bottomNavIconImg--off{opacity:1 !important; filter:none !important;}
   .bottomNavBtn.active .bottomNavIconImg--off{opacity:0 !important;}
   .bottomNavBtn.active .bottomNavIconImg--on{opacity:1 !important; filter:drop-shadow(0 0 7px rgba(182,255,74,.45)) !important;}
   .bottomNavBtn:not(.active) .bottomNavIconImg--on{opacity:0 !important;}
   .bottomNavBtn:not(.active) .bottomNavIconImg--off{opacity:1 !important;}
   .bottomNavBtn.active .bottomNavIcon{transform:translateY(0) scale(1) !important;}
+</style>
+
+<style id="v418-polish-overrides">
+  #home .dashboardIconInline,
+  .dashboardCard .dashboardIcon.dashboardIconInline{
+    width:64px !important;
+    height:64px !important;
+    flex:0 0 64px !important;
+    align-self:center !important;
+  }
+  #home .dashboardCard .dashboardIcon.dashboardIconInline img,
+  #home .dashboardCard .dashboardIcon.dashboardIconInline svg,
+  .dashboardCard .dashboardIcon.dashboardIconInline img,
+  .dashboardCard .dashboardIcon.dashboardIconInline svg{
+    width:100% !important;
+    height:100% !important;
+    object-fit:contain !important;
+    display:block !important;
+  }
+  .bottomNavBtn{
+    flex:0 0 clamp(42px, 7vw, 55px) !important;
+    width:clamp(42px, 7vw, 55px) !important;
+    min-width:clamp(42px, 7vw, 55px) !important;
+    max-width:clamp(42px, 7vw, 55px) !important;
+    min-height:clamp(46px, 7.6vw, 56px) !important;
+    padding:2px 1px 1px !important;
+  }
+  .bottomNavBtn .bottomNavIcon,
+  .bottomNavBtn .bottomNavIcon svg{
+    width:27px !important;
+    height:27px !important;
+    display:block !important;
+  }
+  .bottomNavBtn .bottomNavIcon{
+    flex:0 0 27px !important;
+  }
+  .bottomNavBtn .bottomNavLabel{
+    font-size:clamp(7px, 1.8vw, 9px) !important;
+    line-height:1 !important;
+  }
+  .bottomNavMenuBtn{
+    flex:0 0 17px !important;
+    width:17px !important;
+    min-width:17px !important;
+    max-width:17px !important;
+    padding:0 !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+  }
+  .bottomNavMenuBtn .moreIcon{
+    width:11px !important;
+    height:11px !important;
+    margin:0 auto !important;
+  }
+  .rakUpdateToast{
+    justify-content:center !important;
+    flex-wrap:nowrap !important;
+    flex-direction:column !important;
+    align-items:stretch !important;
+    text-align:center !important;
+  }
+  .rakUpdateToastMain{
+    display:flex !important;
+    align-items:center !important;
+    gap:10px !important;
+    justify-content:center !important;
+  }
+  .rakUpdateToastBadge{
+    align-self:center !important;
+  }
+  .rakUpdateToastBody{
+    text-align:center !important;
+  }
+  .rakUpdateToastAction{
+    width:100% !important;
+  }
+  @media (max-width: 560px){
+    .rakUpdateToast{
+      flex-direction:column !important;
+      align-items:stretch !important;
+      text-align:center !important;
+      gap:10px !important;
+    }
+    .rakUpdateToastBadge{
+      align-self:center !important;
+    }
+    .rakUpdateToastBody{
+      text-align:center !important;
+    }
+    .rakUpdateToastAction{
+      width:100% !important;
+    }
+  }
+</style>
+
+
+<style id="v421-nav-admin-overrides">
+  #dashVyplata .dashboardIcon{
+    color:var(--green2) !important;
+    opacity:.98 !important;
+    filter:none !important;
+  }
+  #dashVyplata .dashboardIcon svg{
+    stroke:currentColor !important;
+  }
+
+  .appMenuHiddenSelect{
+    display:none !important;
+  }
+  .appMenuMonthYearPicker{
+    display:grid !important;
+    gap:8px !important;
+    margin-top:6px !important;
+  }
+  .appMenuMonthYearGroup{
+    border:1px solid rgba(124,255,124,.14) !important;
+    border-radius:16px !important;
+    background:rgba(255,255,255,.03) !important;
+    overflow:hidden !important;
+  }
+  .appMenuMonthYearGroup > summary{
+    list-style:none !important;
+    cursor:pointer !important;
+    padding:10px 12px !important;
+    font-weight:750 !important;
+    color:#e9ffe9 !important;
+    user-select:none !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:space-between !important;
+    gap:10px !important;
+  }
+  .appMenuMonthYearGroup > summary::-webkit-details-marker{display:none !important;}
+  .appMenuMonthYearButtons{
+    display:flex !important;
+    flex-wrap:wrap !important;
+    gap:6px !important;
+    padding:0 12px 12px !important;
+  }
+  .appMenuMonthChip{
+    min-height:30px !important;
+    padding:0 11px !important;
+    border-radius:999px !important;
+    border:1px solid rgba(124,255,124,.16) !important;
+    background:rgba(255,255,255,.04) !important;
+    color:#eef8ee !important;
+    font-size:12px !important;
+    font-weight:650 !important;
+    line-height:1 !important;
+    white-space:nowrap !important;
+  }
+  .appMenuMonthChip.isActive{
+    background:rgba(124,255,124,.16) !important;
+    border-color:rgba(124,255,124,.36) !important;
+    color:#dcffdc !important;
+    box-shadow:0 0 0 1px rgba(124,255,124,.08) inset !important;
+  }
+
+  .appMenuInlineFieldWrap{
+    display:flex !important;
+    align-items:stretch !important;
+    gap:4px !important;
+    width:100% !important;
+    min-width:0 !important;
+  }
+  .appMenuInlineFieldWrap .appMenuInlineInput{
+    flex:1 1 auto !important;
+    min-width:0 !important;
+    appearance:textfield !important;
+    -webkit-appearance:none !important;
+  }
+  .appMenuInlineFieldWrap .appMenuInlineInput::-webkit-search-cancel-button,
+  .appMenuInlineFieldWrap .appMenuInlineInput::-webkit-search-decoration,
+  .appMenuInlineFieldWrap .appMenuInlineInput::-webkit-clear-button,
+  .appMenuInlineFieldWrap .appMenuInlineInput::-ms-clear{
+    display:none !important;
+    width:0 !important;
+    height:0 !important;
+  }
+  .appMenuInlineFieldWrap .appMenuInlineInput:not([data-note-field="date"]):not([data-rot-field="date"]){
+    cursor:pointer !important;
+  }
+  .appMenuInlineFieldWrap .appMenuInlineInput:focus{
+    cursor:text !important;
+  }
+  .appMenuInlineClearBtn{
+    display:none !important;
+  }
+
+  .bottomNav{
+    width:min(calc(100vw - 8px), 960px) !important;
+    overflow:visible !important;
+    gap:5px !important;
+    padding:5px 5px calc(5px + env(safe-area-inset-bottom)) !important;
+  }
+  .bottomNavScroll{
+    overflow-x:auto !important;
+    overflow-y:visible !important;
+    padding-left:10px !important;
+    padding-right:10px !important;
+    gap:6px !important;
+    scroll-padding-inline:12px !important;
+    -webkit-overflow-scrolling:touch !important;
+    scrollbar-width:none !important;
+  }
+  #bottomNavScroll .bottomNavBtn:first-child{
+    margin-left:8px !important;
+  }
+  .bottomNavBtn{
+    flex:0 0 clamp(52px, 8.6vw, 70px) !important;
+    width:clamp(52px, 8.6vw, 70px) !important;
+    min-width:clamp(52px, 8.6vw, 70px) !important;
+    max-width:clamp(52px, 8.6vw, 70px) !important;
+    min-height:clamp(50px, 8vw, 62px) !important;
+    padding:2px 3px 1px !important;
+    overflow:visible !important;
+    transform-origin:center center !important;
+  }
+  .bottomNavBtn .bottomNavIcon,
+  .bottomNavBtn .bottomNavIcon svg{
+    width:clamp(24px, 6.9vw, 34px) !important;
+    height:clamp(24px, 6.9vw, 34px) !important;
+    display:block !important;
+    overflow:visible !important;
+  }
+  .bottomNavBtn .bottomNavIcon{
+    flex:0 0 clamp(24px, 6.9vw, 34px) !important;
+  }
+  .bottomNavBtn .bottomNavIconImg{
+    transform:translateZ(0) scale(1.04) !important;
+  }
+  .bottomNavBtn .bottomNavLabel{
+    font-size:clamp(7.4px, 1.85vw, 9.4px) !important;
+    line-height:1 !important;
+  }
+  .bottomNavBtn.active{
+    transform:translateY(-5px) scale(1.07) !important;
+    z-index:30 !important;
+  }
+  .bottomNavBtn.active::before{
+    inset:-6px !important;
+  }
+  .bottomNavBtn.active .bottomNavIcon{
+    transform:translateY(-1px) scale(1.03) !important;
+  }
+  .bottomNavMenuBtn{
+    flex:0 0 clamp(28px, 4.8vw, 34px) !important;
+    width:clamp(28px, 4.8vw, 34px) !important;
+    min-width:clamp(28px, 4.8vw, 34px) !important;
+    max-width:clamp(28px, 4.8vw, 34px) !important;
+    overflow:visible !important;
+    position:relative !important;
+    right:auto !important;
+    margin-left:0 !important;
+    justify-content:center !important;
+  }
+  .bottomNavMenuBtn .moreIcon{
+    width:clamp(18px, 4vw, 26px) !important;
+    height:clamp(18px, 4vw, 26px) !important;
+    transform:translateY(-1px) !important;
+  }
+  .bottomNavMenuBtn .bottomNavLabel{
+    font-size:clamp(7.4px, 1.85vw, 9.2px) !important;
+  }
+  .bottomNavGamesBtn{margin-right:0 !important;}
+
+  @media (max-width: 560px){
+    .bottomNav{
+      width:calc(100vw - 6px) !important;
+      gap:4px !important;
+    }
+    .bottomNavScroll{
+      padding-left:8px !important;
+      padding-right:8px !important;
+      gap:4px !important;
+      scroll-padding-inline:10px !important;
+    }
+    .bottomNavBtn{
+      flex-basis:clamp(50px, 9vw, 62px) !important;
+      width:clamp(50px, 9vw, 62px) !important;
+      min-width:clamp(50px, 9vw, 62px) !important;
+      max-width:clamp(50px, 9vw, 62px) !important;
+    }
+    .bottomNavMenuBtn{
+      flex-basis:clamp(26px, 4.8vw, 31px) !important;
+      width:clamp(26px, 4.8vw, 31px) !important;
+      min-width:clamp(26px, 4.8vw, 31px) !important;
+      max-width:clamp(26px, 4.8vw, 31px) !important;
+    }
+    .bottomNavMenuBtn .moreIcon{
+      width:clamp(18px, 4.8vw, 22px) !important;
+      height:clamp(18px, 4.8vw, 22px) !important;
+    }
+  }
 </style>
 
 </body></html>

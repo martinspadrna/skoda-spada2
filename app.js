@@ -1,4 +1,4 @@
-// v.1.1 (414) – nové ikonky, cleanup assets, fix update popupu a doladění mobile/Supabase.
+// v.1.1 (423) – opravené datumy v administraci, větší ikonky a jemnější rozložení kalkulaček.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
@@ -277,10 +277,12 @@ function installPwaAndConnectivityHooks() {
     toast.setAttribute('role', 'status');
     toast.setAttribute('aria-live', 'polite');
     toast.innerHTML = `
-      <div class="rakUpdateToastBadge" aria-hidden="true">😄</div>
-      <div class="rakUpdateToastBody">
-        <div class="rakUpdateToastTitle">K dispozici je nová verze aplikace</div>
-        <div class="rakUpdateToastText">Klikni na Aktualizovat a appka načte novou cache bez přeinstalace.</div>
+      <div class="rakUpdateToastMain">
+        <div class="rakUpdateToastBadge" aria-hidden="true">😄</div>
+        <div class="rakUpdateToastBody">
+          <div class="rakUpdateToastTitle">K dispozici je nová verze aplikace</div>
+          <div class="rakUpdateToastText">Klikni na Aktualizovat a appka načte novou cache bez přeinstalace.</div>
+        </div>
       </div>
       <button type="button" class="rakUpdateToastAction">Aktualizovat</button>
     `;

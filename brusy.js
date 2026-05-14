@@ -11,8 +11,8 @@ function renderBrusy() {
   if (info) {
     const cfg = getBrusConfig(app.machine, app.prog);
     info.innerHTML =
-      "<div><b>" + escapeHtml(app.machine) + " / " + escapeHtml(cfg.label) + "</b></div>" +
-      "<div class='smallText'>Výroba kusu: " + formatBrusSeconds(cfg.pieceSec) + " · Orovnává po " + formatCount(cfg.dressEvery) + " ks · Orovnává " + formatBrusDuration(cfg.dressSec) + "</div>";
+      "<div class='brusyInfoTitle'><b>" + escapeHtml(app.machine) + " / " + escapeHtml(cfg.label) + "</b></div>" +
+      "<div class='brusyInfoSub'>Kus: " + formatBrusSeconds(cfg.pieceSec) + " · Orovnává po " + formatCount(cfg.dressEvery) + " ks · Orovnává " + formatBrusDuration(cfg.dressSec) + "</div>";
   }
 }
 
