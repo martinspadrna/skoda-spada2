@@ -1,4 +1,9 @@
-## v.1.1 (429)
+## v.1.1 (430)
+- Bottom nav: buttons larger, More button slimmer.
+- Calc panels: compact collapsed state for Frezky/Brusy.
+- Settings: removed Eportal setup and hard reload buttons.
+- Added Games roadmap block.
+
 - E-portál má pevný externí odkaz na firemní portál.
 - Frézky a Brusy mají zmenšené sbalené panely a kompaktnější výšku.
 - Brusy info panel se roztahuje na celou šířku a je nižší.

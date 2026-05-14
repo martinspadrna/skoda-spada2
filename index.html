@@ -4500,8 +4500,8 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
 </style>
 
 
-<style id="v429-eportal-calc-compact-fixes">
-  /* v.1.1 (429) – E-portál fix a kompaktnější sbalené kalkulačky pro frézky/brusy. */
+<style id="v430-eportal-calc-compact-fixes">
+  /* v.1.1 (430) – E-portál fix a kompaktnější sbalené kalkulačky pro frézky/brusy. */
 
   #frezky .brusDetails,
   #brusy .brusDetails{
@@ -4589,6 +4589,98 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
     #brusyInfo{
       padding:9px 10px !important;
     }
+  }
+</style>
+
+
+<style id="v430-bottomnav-calc-settings-fixes">
+  /* v.1.1 (430) – zvětšené tlačítka spodní lišty, užší Více a kompaktnější kalkulačky. */
+  .bottomNavBtn{
+    flex:0 0 56px !important;
+    width:56px !important;
+    min-width:56px !important;
+    max-width:56px !important;
+    min-height:56px !important;
+    padding:3px 2px 2px !important;
+  }
+  .bottomNavBtn .bottomNavIcon,
+  .bottomNavBtn .bottomNavIcon svg{
+    width:25px !important;
+    height:25px !important;
+  }
+  .bottomNavBtn .bottomNavIcon{
+    flex:0 0 25px !important;
+  }
+  .bottomNavBtn .bottomNavLabel{
+    font-size:9px !important;
+    line-height:1.02 !important;
+  }
+  .bottomNavMenuBtn{
+    flex:0 0 19px !important;
+    width:19px !important;
+    min-width:19px !important;
+    max-width:19px !important;
+    min-height:56px !important;
+    padding-left:0 !important;
+    padding-right:0 !important;
+  }
+  .bottomNavMenuBtn .moreIcon{
+    width:12px !important;
+    height:12px !important;
+    transform:translateY(-10px) !important;
+  }
+
+  #frezky .brusDetails,
+  #brusy .brusDetails{
+    margin-top:4px !important;
+  }
+  #frezky .brusDetails:not([open]) > summary,
+  #brusy .brusDetails:not([open]) > summary{
+    display:inline-flex !important;
+    width:max-content !important;
+    max-width:100% !important;
+    min-height:12px !important;
+    padding:2px 6px !important;
+    gap:4px !important;
+    align-items:center !important;
+    justify-content:flex-start !important;
+  }
+  #frezky .brusDetails:not([open]) > summary .calcSummaryTitle,
+  #brusy .brusDetails:not([open]) > summary .calcSummaryTitle{
+    font-size:10.5px !important;
+    line-height:1 !important;
+  }
+  #frezky .brusDetails:not([open]) > summary .calcSummarySub,
+  #brusy .brusDetails:not([open]) > summary .calcSummarySub{
+    display:none !important;
+  }
+  #frezky .brusDetails:not([open]) > summary::after,
+  #brusy .brusDetails:not([open]) > summary::after{
+    transform:scale(.82) !important;
+    margin-left:2px !important;
+  }
+  #frezky .brusDetails[open] > summary,
+  #brusy .brusDetails[open] > summary{
+    min-height:24px !important;
+    padding:4px 8px !important;
+  }
+  #frezky .brusDetailsBody,
+  #brusy .brusDetailsBody{
+    padding:8px 10px 10px !important;
+    gap:6px !important;
+  }
+  #brusyInfo{
+    width:100% !important;
+    box-sizing:border-box !important;
+    min-height:0 !important;
+    padding:8px 10px !important;
+  }
+  #brusyInfo .smallText{
+    line-height:1.1 !important;
+  }
+  #brusy .bgrid,
+  #brusy .indexGrid{
+    width:100% !important;
   }
 </style>
 

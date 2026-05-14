@@ -1,4 +1,4 @@
-// v.1.1 (429) – fix E-portálu, kompaktnější frézky/brusy a stabilizační úpravy.
+// v.1.1 (430) – fix E-portálu, kompaktnější frézky/brusy a stabilizační úpravy.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
