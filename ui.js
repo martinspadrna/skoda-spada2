@@ -4064,15 +4064,16 @@ function openKalkulacky() {
 
 
 function getStoredEportalUrl() {
+  const defaultUrl = 'https://space.skoda.vwgroup.com/group/b2eportal/home-page';
   try {
     return String(
       (typeof app !== 'undefined' && app.eportalUrl) ||
       localStorage.getItem('rak_eportal_url') ||
       window.RAK_EPORTAL_URL ||
-      ''
+      defaultUrl
     ).trim();
   } catch (err) {
-    return String((typeof app !== 'undefined' && app.eportalUrl) || window.RAK_EPORTAL_URL || '').trim();
+    return String((typeof app !== 'undefined' && app.eportalUrl) || window.RAK_EPORTAL_URL || defaultUrl).trim();
   }
 }
 
@@ -4088,10 +4089,13 @@ function setStoredEportalUrl(url) {
 
 function openEportal(forcePrompt) {
   let url = getStoredEportalUrl();
-  if (forcePrompt || !url) {
-    const entered = prompt('Vlož adresu Eportalu', url || '');
+  if (forcePrompt) {
+    const entered = prompt('Vlož adresu Eportalu', url || 'https://space.skoda.vwgroup.com/group/b2eportal/home-page');
     if (!entered || !String(entered).trim()) return false;
     url = setStoredEportalUrl(entered);
+  }
+  if (!url) {
+    url = setStoredEportalUrl('https://space.skoda.vwgroup.com/group/b2eportal/home-page');
   }
   if (!url) return false;
   try {

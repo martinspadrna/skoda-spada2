@@ -1,3 +1,8 @@
+## v.1.1 (429)
+- E-portál má pevný externí odkaz na firemní portál.
+- Frézky a Brusy mají zmenšené sbalené panely a kompaktnější výšku.
+- Brusy info panel se roztahuje na celou šířku a je nižší.
+
 ## v.1.1 (428)
 
 - Spodní lišta je na iPhonech (vč. 13 Pro Max) blíž ke spodnímu okraji a po stranách – konec zbytečně velkého rámu kolem nav baru.

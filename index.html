@@ -4499,4 +4499,97 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   }
 </style>
 
+
+<style id="v429-eportal-calc-compact-fixes">
+  /* v.1.1 (429) – E-portál fix a kompaktnější sbalené kalkulačky pro frézky/brusy. */
+
+  #frezky .brusDetails,
+  #brusy .brusDetails{
+    width:100% !important;
+    box-sizing:border-box !important;
+  }
+
+  #frezky .brusDetails:not([open]) > summary,
+  #brusy .brusDetails:not([open]) > summary{
+    display:inline-flex !important;
+    width:fit-content !important;
+    max-width:100% !important;
+    min-height:22px !important;
+    padding:4px 8px !important;
+    gap:6px !important;
+    align-items:center !important;
+    justify-content:flex-start !important;
+    border-radius:10px !important;
+  }
+
+  #frezky .brusDetails:not([open]) > summary .calcSummaryTitle,
+  #brusy .brusDetails:not([open]) > summary .calcSummaryTitle{
+    font-size:12px !important;
+    line-height:1.04 !important;
+  }
+
+  #frezky .brusDetails:not([open]) > summary .calcSummarySub,
+  #brusy .brusDetails:not([open]) > summary .calcSummarySub{
+    display:none !important;
+  }
+
+  #frezky .brusDetails:not([open]) > summary::after,
+  #brusy .brusDetails:not([open]) > summary::after{
+    transform:scale(.92) !important;
+    margin-left:3px !important;
+  }
+
+  #frezky .brusDetails[open] > summary,
+  #brusy .brusDetails[open] > summary{
+    min-height:28px !important;
+    padding:6px 10px !important;
+  }
+
+  #frezky .brusDetailsBody,
+  #brusy .brusDetailsBody{
+    padding:10px 10px 10px 10px !important;
+    gap:7px !important;
+  }
+
+  #brusy .bgrid,
+  #brusy .indexGrid{
+    width:100% !important;
+  }
+
+  #brusyInfo{
+    width:100% !important;
+    box-sizing:border-box !important;
+    min-height:0 !important;
+    padding:10px 12px !important;
+    margin:8px 0 10px !important;
+  }
+
+  #brusyInfo > div:first-child,
+  #brusyInfo b,
+  #brusyInfo .smallText{
+    width:100% !important;
+  }
+
+  #brusyInfo .smallText{
+    display:block !important;
+    margin-top:3px !important;
+    line-height:1.15 !important;
+  }
+
+  #brusy .brusDetails.calcDetailsInner{
+    margin-top:4px !important;
+  }
+
+  @media (max-width: 560px){
+    #frezky .brusDetails:not([open]) > summary,
+    #brusy .brusDetails:not([open]) > summary{
+      max-width: calc(100vw - 32px) !important;
+    }
+
+    #brusyInfo{
+      padding:9px 10px !important;
+    }
+  }
+</style>
+
 </body></html>
