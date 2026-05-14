@@ -1,13 +1,10 @@
-## v.1.1 (425)
-- iPhone Pro Max safe-area úpravy spodní lišty
-- zkrácená výška a menší mezery pod ikonami
-- zachované globální kompaktní přepínače napříč appkou
+## v.1.1 (426)
 
 - Spodní lišta je přizpůsobená víc na šířku, položka „Více“ je užší a zbytek tlačítek se rozprostírá přirozeněji.
 - Aktivní první položka už není useknutá vlevo a lišta drží líp na menších displejích.
 - V administraci rozpisů jsou roky a měsíce oddělené do dvou rozklikávacích menu s aktuálním měsícem předvybraným v základu.
 - Z editovatelných rozpisů mizí ruční křížky a odstranění jména je řešené rovnou klikem na konkrétní vyplněné pole.
-- Verze, cache i build labely jsou posunuté na novou 421.
+- Verze, cache i build labely jsou posunuté na novou 426.
 
 # Rotace a kalkulačky
 

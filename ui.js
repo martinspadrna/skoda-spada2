@@ -3623,6 +3623,47 @@ function bindAppMenuHandlers(body) {
         openAppMenu('admin-export');
         return;
       }
+      if (menuAction === 'clear-cache') {
+        if (!confirm('Vymazat aplikační cache a znovu načíst appku?')) return;
+        try {
+          if ('caches' in window && typeof caches.keys === 'function') {
+            const keys = await caches.keys();
+            await Promise.all(keys.map((key) => caches.delete(key)));
+          }
+          if ('serviceWorker' in navigator && navigator.serviceWorker && typeof navigator.serviceWorker.getRegistrations === 'function') {
+            const regs = await navigator.serviceWorker.getRegistrations();
+            await Promise.all(regs.map((reg) => reg && reg.update ? reg.update().catch(() => {}) : Promise.resolve()));
+          }
+          alert('Cache byla vymazaná. Appka se teď načte znovu.');
+          window.location.reload();
+        } catch (err) {
+          console.error('Cache clear failed', err);
+          alert('Cache se nepodařilo vymazat.');
+        }
+        return;
+      }
+      if (menuAction === 'app-diagnostics') {
+        const diag = [
+          'Verze: ' + String((typeof app !== "undefined" && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '—')),
+          'Online: ' + (navigator.onLine ? 'ano' : 'ne'),
+          'Kompaktní režim: ' + (document.body.classList.contains('compactUI') ? 'zapnutý' : 'vypnutý'),
+          'Méně animací: ' + (document.body.classList.contains('reduceMotion') ? 'zapnuté' : 'vypnuté'),
+          'Aktuální stránka: ' + String(document.querySelector('.page.active')?.id || '—'),
+          'Bottom lišta: ' + String(getComputedStyle(document.querySelector('.bottomNav') || document.body).bottom || '—')
+        ].join('\n');
+        alert(diag);
+        return;
+      }
+      if (menuAction === 'hard-reload') {
+        if (confirm('Načíst appku znovu bez uložené cache?')) {
+          try {
+            window.location.reload();
+          } catch (err) {
+            window.location.href = window.location.href;
+          }
+        }
+        return;
+      }
       if (menuAction === 'reset-state') {
         if (confirm('Smazat uložený stav aplikace?')) {
           try {
@@ -3799,10 +3840,14 @@ function openAppMenu(view) {
         '  <div class="appMenuCardTitle">Nastavení</div>',
         '  <div class="appMenuText">',
         '    <div>Kompaktní režim a méně animací se ukládají jen do tohoto zařízení a promítnou se napříč celou appkou.</div>',
+        '    <div>Pro rychlé servisní zásahy tu jsou ještě vyčištění cache, diagnostika a tvrdé obnovení aplikace.</div>',
         '  </div>',
         '  <div class="appMenuSettingsList">',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-pref="compact">' + (prefs.compact ? '✓ ' : '') + 'Kompaktní režim</button>',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-pref="reduceMotion">' + (prefs.reduceMotion ? '✓ ' : '') + 'Méně animací</button>',
+        '    <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="clear-cache">Vymazat cache a obnovit</button>',
+        '    <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="app-diagnostics">Diagnostika aplikace</button>',
+        '    <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="hard-reload">Tvrdé obnovení</button>',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-reset="1">Obnovit výchozí nastavení</button>',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="reset-state">Smazat lokální data</button>',
         '  </div>',

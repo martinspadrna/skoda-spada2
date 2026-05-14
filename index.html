@@ -662,7 +662,7 @@
 </style>
 
 
-<style id="v424-size-and-admin-fix">
+<style id="v426-size-and-admin-fix">
   #home .dashboardIconInline{
     width:74px !important;
     height:74px !important;
@@ -777,7 +777,7 @@
 
 
 
-<style id="v424-final-fixes">
+<style id="v426-final-fixes">
   #home .dashboardIconInline{
     width:74px !important;
     height:74px !important;
@@ -3749,7 +3749,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   color:rgba(242,248,245,.88) !important;
   word-break:break-word !important;
 }
-/* v1.1 (421) polish: wider bottom nav, clearer admin pickers, tighter mobile fit and cleaner removal flow */
+/* v1.1 (426) polish: wider bottom nav, clearer admin pickers, tighter mobile fit and cleaner removal flow */
 .bottomNav{
   bottom:10px !important;
 }
@@ -3919,7 +3919,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
 </style>
 
 
-<style id="v421-nav-admin-overrides">
+<style id="v426-nav-admin-overrides">
   #dashVyplata .dashboardIcon{
     color:var(--green2) !important;
     opacity:.98 !important;
@@ -4121,7 +4121,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
 
 
 
-<style id="v424-global-compact-fix">
+<style id="v426-global-compact-fix">
   body.compactUI .dashboardShell{
     padding:10px !important;
   }
@@ -4233,82 +4233,107 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
 </style>
 
 
-<style id="v425-bottom-nav-safearea-fix">
-  @media (max-width: 430px) and (min-height: 820px) {
+
+<style id="v426-last-mile-fixes">
+  /* Dashboard icons -10% */
+  #home .dashboardIconInline,
+  .dashboardCard .dashboardIcon.dashboardIconInline{
+    width:60px !important;
+    height:60px !important;
+    flex:0 0 60px !important;
+  }
+  #home .dashboardCard .dashboardIcon.dashboardIconInline img,
+  #home .dashboardCard .dashboardIcon.dashboardIconInline svg,
+  .dashboardCard .dashboardIcon.dashboardIconInline img,
+  .dashboardCard .dashboardIcon.dashboardIconInline svg{
+    width:100% !important;
+    height:100% !important;
+  }
+
+  /* Food status dots -30% */
+  #home .dashboardDot,
+  #dashKantyna .dashboardDot,
+  #dashJidelna .dashboardDot{
+    width:19px !important;
+    height:19px !important;
+    min-width:19px !important;
+    min-height:19px !important;
+  }
+
+  /* Bottom bar closer to screen edge */
+  .bottomNav{
+    bottom:calc(4px + env(safe-area-inset-bottom)) !important;
+    padding:1px 1px calc(1px + env(safe-area-inset-bottom)) !important;
+  }
+  .bottomNavScroll,
+  .bottomNavInner{
+    gap:2px !important;
+  }
+  .bottomNavBtn{
+    min-height:44px !important;
+    padding:1px 1px 0 !important;
+  }
+  .bottomNavBtn .bottomNavLabel{
+    margin-top:1px !important;
+  }
+  .bottomNavMenuBtn{
+    min-height:44px !important;
+  }
+
+  /* Frezky / brusy: narrow collapsed summary only around label */
+  #frezky .brusDetails > summary,
+  #brusy .brusDetails > summary{
+    display:inline-flex !important;
+    width:fit-content !important;
+    max-width:min(100%, 260px) !important;
+    flex-direction:column !important;
+    align-items:flex-start !important;
+    gap:1px !important;
+    min-height:0 !important;
+    padding:7px 11px !important;
+  }
+  #frezky .calcSummaryTitle,
+  #brusy .calcSummaryTitle{
+    white-space:normal !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+    line-height:1.02 !important;
+  }
+  #frezky .calcSummarySub,
+  #brusy .calcSummarySub{
+    white-space:normal !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+    line-height:1.02 !important;
+  }
+  #brusyInfo{
+    display:inline-grid !important;
+    grid-template-columns:minmax(0,1fr) !important;
+    width:fit-content !important;
+    max-width:100% !important;
+    gap:1px !important;
+    padding:7px 10px !important;
+  }
+  #brusyInfo b,
+  #brusyInfo .smallText{
+    white-space:normal !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+  }
+
+  @media (max-width: 560px){
     .bottomNav{
-      width: calc(100vw - 8px) !important;
-      padding: 3px 4px calc(3px + env(safe-area-inset-bottom)) !important;
-      bottom: calc(6px + env(safe-area-inset-bottom)) !important;
-      border-radius: 20px !important;
-      gap: 4px !important;
-    }
-    .bottomNavScroll{
-      padding-inline: 0 !important;
-      scroll-padding-inline: 4px !important;
-    }
-    .bottomNavInner{
-      gap: 2px !important;
-      padding-right: 8px !important;
+      bottom:calc(2px + env(safe-area-inset-bottom)) !important;
     }
     .bottomNavBtn{
-      flex-basis: 52px !important;
-      width: 52px !important;
-      min-width: 52px !important;
-      max-width: 52px !important;
-      min-height: 42px !important;
-      padding: 1px 1px 0 !important;
-      gap: 1px !important;
-      justify-content: center !important;
-    }
-    .bottomNavBtn .bottomNavIcon,
-    .bottomNavBtn .bottomNavIcon svg{
-      width: 27px !important;
-      height: 27px !important;
-    }
-    .bottomNavBtn .bottomNavIcon{
-      flex: 0 0 27px !important;
-      margin-top: -1px !important;
-    }
-    .bottomNavBtn .bottomNavLabel{
-      font-size: 8px !important;
-      line-height: 1 !important;
-      margin-top: -2px !important;
+      min-height:42px !important;
     }
     .bottomNavMenuBtn{
-      width: 34px !important;
-      min-width: 34px !important;
-      max-width: 34px !important;
-      flex-basis: 34px !important;
+      min-height:42px !important;
     }
-    .bottomNavMenuBtn .moreIcon{
-      width: 16px !important;
-      height: 16px !important;
-      transform: translateY(-2px) !important;
-    }
-    .bottomNavGamesBtn{
-      margin-right: 0 !important;
-    }
-  }
-
-  @media (max-width: 430px) and (min-height: 860px) {
-    .bottomNav{
-      padding-top: 2px !important;
-      padding-bottom: calc(2px + env(safe-area-inset-bottom)) !important;
-    }
-    .bottomNavBtn .bottomNavIcon,
-    .bottomNavBtn .bottomNavIcon svg{
-      width: 28px !important;
-      height: 28px !important;
-    }
-  }
-
-  @media (min-width: 431px) and (max-width: 700px) and (min-height: 820px) {
-    .bottomNav{
-      padding-top: 3px !important;
-      padding-bottom: calc(3px + env(safe-area-inset-bottom)) !important;
-    }
-    .bottomNavBtn{
-      min-height: 44px !important;
+    #frezky .brusDetails > summary,
+    #brusy .brusDetails > summary{
+      max-width:min(100%, 230px) !important;
     }
   }
 </style>
