@@ -1,3 +1,8 @@
+## v.1.1 (431)
+- Frézky a Brusy mají ještě kompaktnější sbalené panely.
+- U kalkulaček se zmenšil zavřený stav polí a vnitřní rozklikávací části.
+- E-portál zůstává pevně napojený na firemní odkaz.
+
 ## v.1.1 (430)
 - Bottom nav: buttons larger, More button slimmer.
 - Calc panels: compact collapsed state for Frezky/Brusy.

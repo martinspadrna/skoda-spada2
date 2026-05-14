@@ -4684,4 +4684,110 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   }
 </style>
 
+
+
+<style id="v431-calc-compact-tight">
+  /* v.1.1 (431) – ještě menší sbalené kalkulačky pro frézky a brusy. */
+  #frezky .brusDetails,
+  #brusy .brusDetails{
+    margin-top:2px !important;
+    border-radius:10px !important;
+    overflow:hidden !important;
+  }
+  #frezky .brusDetails:not([open]),
+  #brusy .brusDetails:not([open]){
+    width:fit-content !important;
+    max-width:calc(100% - 12px) !important;
+    align-self:flex-start !important;
+  }
+  #frezky .brusDetails:not([open]) > summary,
+  #brusy .brusDetails:not([open]) > summary{
+    display:inline-flex !important;
+    width:fit-content !important;
+    max-width:100% !important;
+    min-height:0 !important;
+    padding:1px 6px !important;
+    gap:3px !important;
+    line-height:1 !important;
+    align-items:center !important;
+    justify-content:flex-start !important;
+    border-radius:10px !important;
+  }
+  #frezky .brusDetails:not([open]) > summary .calcSummaryTitle,
+  #brusy .brusDetails:not([open]) > summary .calcSummaryTitle,
+  #frezky .brusDetails.calcDetailsInner:not([open]) > summary,
+  #brusy .brusDetails.calcDetailsInner:not([open]) > summary{
+    font-size:9px !important;
+    font-weight:700 !important;
+    line-height:1 !important;
+  }
+  #frezky .brusDetails:not([open]) > summary .calcSummarySub,
+  #brusy .brusDetails:not([open]) > summary .calcSummarySub{
+    display:none !important;
+  }
+  #frezky .brusDetails:not([open]) > summary::after,
+  #brusy .brusDetails:not([open]) > summary::after{
+    transform:scale(.72) !important;
+    margin-left:1px !important;
+  }
+  #frezky .brusDetails[open] > summary,
+  #brusy .brusDetails[open] > summary{
+    min-height:24px !important;
+    padding:4px 8px !important;
+  }
+  #frezky .brusDetailsBody,
+  #brusy .brusDetailsBody{
+    padding:5px 8px 8px !important;
+    gap:4px !important;
+  }
+  #frezky .brusDetailsBody > label,
+  #brusy .brusDetailsBody > label{
+    margin-top:0 !important;
+    line-height:1.05 !important;
+    font-size:12px !important;
+  }
+  #frezky .brusDetailsBody input,
+  #brusy .brusDetailsBody input{
+    min-height:34px !important;
+    padding:6px 8px !important;
+    font-size:14px !important;
+  }
+  #frezky .brusDetails.calcDetailsInner,
+  #brusy .brusDetails.calcDetailsInner{
+    margin-top:2px !important;
+  }
+  #frezky .brusDetails.calcDetailsInner > summary,
+  #brusy .brusDetails.calcDetailsInner > summary{
+    min-height:0 !important;
+    padding:1px 5px !important;
+    width:fit-content !important;
+    max-width:100% !important;
+  }
+  #frezky .brusDetails.calcDetailsInner > summary::after,
+  #brusy .brusDetails.calcDetailsInner > summary::after{
+    transform:scale(.68) !important;
+    margin-left:1px !important;
+  }
+  #frezky .brusDetails.calcDetailsInner .brusDetailsBody,
+  #brusy .brusDetails.calcDetailsInner .brusDetailsBody{
+    padding:4px 6px 6px !important;
+    gap:3px !important;
+  }
+  #brusyInfo{
+    width:100% !important;
+    box-sizing:border-box !important;
+    min-height:0 !important;
+    padding:6px 8px !important;
+    margin:6px 0 8px !important;
+  }
+  #brusyInfo .smallText{
+    line-height:1.05 !important;
+    font-size:11px !important;
+  }
+  #brusy .bgrid,
+  #brusy .indexGrid{
+    width:100% !important;
+  }
+</style>
+
 </body></html>
