@@ -210,7 +210,6 @@
   }
 </style>
 
-
 <style id="v409-games-overrides">
   #games .gamesProfilesFolder,
   #games .gamesAchievementsFolder,
@@ -233,7 +232,6 @@
     background:linear-gradient(90deg, rgba(124,255,124,.88), rgba(124,255,124,.48)) !important;
   }
 </style>
-
 
 <style id="v409-responsive-audit-overrides">
   html, body {
@@ -499,8 +497,6 @@
   }
 </style>
 
-
-
 <style id="v418-games-and-calcs">
   #games .gamesStatsCardHead{
     display:flex !important;
@@ -546,17 +542,15 @@
     background:linear-gradient(90deg, rgba(124,255,124,.35), rgba(124,255,124,.95)) !important;
     box-shadow:0 0 14px rgba(124,255,124,.16) !important;
   }
-  .calcPage .brusDetailsBody{
+  #frezky .brusDetailsBody,
+  #brusy .brusDetailsBody{
     gap:8px !important;
   }
   #frezky .card,
   #brusy .card{
     min-height:0 !important;
   }
-  #frezky .brusDetails > summary,
-  #brusy .brusDetails > summary{
-    user-select:none !important;
-  }
+
   #brusyInfo .brusyInfoTitle,
   #brusyInfo .brusyInfoSub{
     display:block !important;
@@ -616,42 +610,7 @@
     width:13px !important;
     height:13px !important;
   }
-  #frezky .brusDetails > summary,
-  #brusy .brusDetails > summary{
-    display:flex !important;
-    flex-direction:column !important;
-    align-items:flex-start !important;
-    gap:1px !important;
-    padding:10px 12px !important;
-    min-height:52px !important;
-    line-height:1.02 !important;
-  }
-  #frezky .calcSummaryTitle,
-  #brusy .calcSummaryTitle{
-    font-weight:800 !important;
-    font-size:14px !important;
-    line-height:1.02 !important;
-  }
-  #frezky .calcSummarySub,
-  #brusy .calcSummarySub{
-    font-size:11px !important;
-    line-height:1.02 !important;
-    color:rgba(228,255,231,.72) !important;
-  }
-  .calcPage .calcPanelInfo{
-    display:flex !important;
-    flex-direction:column !important;
-    gap:2px !important;
-    padding:10px 12px !important;
-    line-height:1.08 !important;
-  }
-  .calcPage .calcPanelInfo b{
-    font-size:14px !important;
-  }
-  .calcPage .calcPanelInfo .smallText{
-    font-size:12px !important;
-    line-height:1.08 !important;
-  }
+
   @media (max-width:700px){
     .bottomNavBtn{flex-basis:62px !important;}
     .bottomNavMenuBtn{flex-basis:46px !important;}
@@ -659,7 +618,6 @@
     #games .gamesStatsGrid{gap:10px !important;}
   }
 </style>
-
 
 <style id="v427-size-and-admin-fix">
   #home .dashboardIconInline{
@@ -710,58 +668,6 @@
     height:13px !important;
   }
 
-  #frezky .brusDetails > summary,
-  #brusy .brusDetails > summary{
-    display:grid !important;
-    grid-template-columns:minmax(0,1fr) !important;
-    gap:2px !important;
-    align-items:start !important;
-    min-height:48px !important;
-  }
-  #frezky .calcSummaryTitle,
-  #brusy .calcSummaryTitle{
-    display:block !important;
-    font-size:13px !important;
-    line-height:1.02 !important;
-    white-space:nowrap !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important;
-  }
-  #frezky .calcSummarySub,
-  #brusy .calcSummarySub{
-    display:block !important;
-    font-size:10px !important;
-    line-height:1.02 !important;
-    white-space:nowrap !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important;
-  }
-  .calcPage .calcPanelInfo{
-    min-height:auto !important;
-    gap:1px !important;
-  }
-  .calcPage .calcPanelInfo b{
-    font-size:13px !important;
-    line-height:1.02 !important;
-    display:block !important;
-    white-space:nowrap !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important;
-  }
-  .calcPage .calcPanelInfo .smallText{
-    font-size:11px !important;
-    line-height:1.02 !important;
-    display:block !important;
-    white-space:nowrap !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important;
-  }
-
-  .calcPage .bgrid .bbtn,
-  .calcPage .indexGrid .bbtn{
-    min-height:38px !important;
-  }
-
   #adminRotationEditor .appMenuMonthYearPicker{
     display:grid !important;
     gap:8px !important;
@@ -773,8 +679,6 @@
     cursor:pointer !important;
   }
 </style>
-
-
 
 <style id="v427-final-fixes">
   #home .dashboardIconInline{
@@ -828,53 +732,6 @@
     height:13px !important;
   }
 
-  #frezky .brusDetails > summary,
-  #brusy .brusDetails > summary{
-    display:grid !important;
-    grid-template-columns:minmax(0,1fr) !important;
-    gap:2px !important;
-    align-items:start !important;
-    min-height:48px !important;
-  }
-  #frezky .calcSummaryTitle,
-  #brusy .calcSummaryTitle{
-    display:block !important;
-    font-size:13px !important;
-    line-height:1.02 !important;
-    white-space:nowrap !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important;
-  }
-  #frezky .calcSummarySub,
-  #brusy .calcSummarySub{
-    display:block !important;
-    font-size:10px !important;
-    line-height:1.02 !important;
-    white-space:nowrap !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important;
-  }
-  .calcPage .calcPanelInfo{
-    min-height:auto !important;
-    gap:1px !important;
-  }
-  .calcPage .calcPanelInfo b{
-    font-size:13px !important;
-    line-height:1.02 !important;
-    display:block !important;
-    white-space:nowrap !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important;
-  }
-  .calcPage .calcPanelInfo .smallText{
-    font-size:11px !important;
-    line-height:1.02 !important;
-    display:block !important;
-    white-space:nowrap !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important;
-  }
-
   @media (max-width: 560px){
     .bottomNav{
       width:calc(100vw - 6px) !important;
@@ -894,176 +751,6 @@
     .bottomNavMenuBtn .moreIcon{
       width:12px !important;
       height:12px !important;
-    }
-  }
-</style>
-
-
-
-<style id="v440-calc-panel-system">
-  /* v.1.1 (440) – společná komponenta pro kalkulačkové panely a sloučené bottom nav styly. */
-  .bottomNav{
-    width:calc(100vw - 4px) !important;
-    max-width:760px !important;
-    bottom:calc(2px + env(safe-area-inset-bottom)) !important;
-    padding:4px 4px 4px !important;
-    border-radius:20px !important;
-  }
-  @media (max-width: 560px){
-    .bottomNav{
-      width:calc(100vw - 4px) !important;
-      margin-left:0 !important;
-      margin-right:0 !important;
-      bottom:calc(2px + env(safe-area-inset-bottom)) !important;
-      padding:3px 3px 3px !important;
-      border-radius:16px !important;
-    }
-  }
-  .bottomNavScroll{
-    padding-left:0 !important;
-    padding-right:0 !important;
-  }
-  .bottomNavInner{
-    gap:2px !important;
-    padding-right:6px !important;
-    scroll-padding-right:6px !important;
-  }
-  .bottomNavBtn{
-    flex:0 0 56px !important;
-    width:56px !important;
-    min-width:56px !important;
-    max-width:56px !important;
-    min-height:56px !important;
-    padding:3px 2px 2px !important;
-  }
-  .bottomNavBtn .bottomNavIcon,
-  .bottomNavBtn .bottomNavIcon svg{
-    width:19px !important;
-    height:19px !important;
-  }
-  .bottomNavBtn .bottomNavIcon{
-    flex:0 0 19px !important;
-  }
-  .bottomNavBtn .bottomNavLabel{
-    font-size:9px !important;
-    line-height:1.02 !important;
-  }
-  .bottomNavMenuBtn{
-    flex:0 0 19px !important;
-    width:19px !important;
-    min-width:19px !important;
-    max-width:19px !important;
-    min-height:56px !important;
-    padding-left:0 !important;
-    padding-right:0 !important;
-  }
-  .bottomNavMenuBtn .moreIcon{
-    width:18px !important;
-    height:18px !important;
-    transform:translateY(-10px) !important;
-  }
-
-  .calcPage .calcPanel{
-    width:100% !important;
-    box-sizing:border-box !important;
-  }
-  .calcPage .calcPanel:not([open]){
-    width:100% !important;
-    max-width:100% !important;
-  }
-  .calcPage .calcPanel:not([open]) > summary{
-    display:flex !important;
-    flex-direction:column !important;
-    align-items:flex-start !important;
-    justify-content:center !important;
-    width:100% !important;
-    max-width:100% !important;
-    min-height:0 !important;
-    padding:6px 34px 6px 10px !important;
-    gap:2px !important;
-    position:relative !important;
-    box-sizing:border-box !important;
-    line-height:1.05 !important;
-  }
-  .calcPage .calcPanel:not([open]) > summary .calcSummaryTitle{
-    display:block !important;
-    width:100% !important;
-    font-size:12px !important;
-    font-weight:700 !important;
-    line-height:1.08 !important;
-    white-space:normal !important;
-    overflow:visible !important;
-    text-overflow:clip !important;
-  }
-  .calcPage .calcPanel:not([open]) > summary .calcSummarySub{
-    display:block !important;
-    width:100% !important;
-    font-size:10px !important;
-    line-height:1.08 !important;
-    white-space:normal !important;
-    overflow:visible !important;
-    text-overflow:clip !important;
-  }
-  .calcPage .calcPanel:not([open]) > summary::after{
-    position:absolute !important;
-    right:10px !important;
-    top:50% !important;
-    transform:translateY(-50%) scale(.9) !important;
-    margin-left:0 !important;
-  }
-  .calcPage .calcPanel[open] > summary{
-    min-height:28px !important;
-    padding:6px 10px !important;
-  }
-  .calcPage .brusDetailsBody{
-    padding:8px 10px 10px !important;
-    gap:6px !important;
-  }
-  .calcPage .calcPanelInfo{
-    width:100% !important;
-    box-sizing:border-box !important;
-    min-height:auto !important;
-    padding:8px 10px !important;
-    margin:8px 0 10px !important;
-  }
-  .calcPage .calcPanelInfo > div:first-child{
-    width:100% !important;
-  }
-  .calcPage .calcPanelInfo b,
-  .calcPage .calcPanelInfo .smallText{
-    display:block !important;
-    width:100% !important;
-    white-space:normal !important;
-    overflow:visible !important;
-    text-overflow:clip !important;
-  }
-  .calcPage .calcPanelInfo b{
-    font-size:13px !important;
-    line-height:1.1 !important;
-  }
-  .calcPage .calcPanelInfo .smallText{
-    font-size:11px !important;
-    line-height:1.18 !important;
-    margin-top:2px !important;
-  }
-  .calcPage .bgrid,
-  .calcPage .indexGrid{
-    width:100% !important;
-  }
-  .calcPage .bgrid .bbtn,
-  .calcPage .indexGrid .bbtn{
-    min-height:34px !important;
-    padding:6px 8px !important;
-    font-size:12px !important;
-    line-height:1.06 !important;
-    border-radius:14px !important;
-  }
-  @media (max-width: 560px){
-    .calcPage .calcPanel:not([open]) > summary{
-      max-width:calc(100vw - 32px) !important;
-    }
-    .calcPage .calcPanelInfo{
-      padding:9px 10px !important;
     }
   }
 </style>
@@ -1092,7 +779,7 @@
     </div>
 
     <div class="dashboardGrid">
-      <div class="tile dashboardCard" id="dashCalendar">
+      <div class="tile dashboardCard dashboardCardClickable" id="dashCalendar" onclick="openCalendarInRak()" role="button" tabindex="0" aria-label="Kalendář">
         <div class="dashboardLabel">Kalendář</div>
         <div class="dashboardValue">--</div>
         <div class="dashboardMeta"></div>
@@ -1134,22 +821,22 @@
         <div class="dashboardMeta"></div>
       </div>
 
-      <div class="tile dashboardCard dashboardLinkCard" id="dashFoodLink" onclick="window.open('https://sa.gthcatering.cz/restaurant/c1/', '_blank', 'noopener')" role="button" tabindex="0" aria-label="Jídelní lístek">
+      <a class="tile dashboardCard dashboardLinkCard" id="dashFoodLink" href="https://sa.gthcatering.cz/restaurant/c1/" target="_blank" rel="noopener noreferrer" role="button" tabindex="0" aria-label="Jídelní lístek">
         <div class="dashboardLabelRow">
           <span class="dashboardIcon dashboardIconInline" aria-hidden="true"><svg class="dashboardIconSvg" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M6.2 4.8h9.1A2.7 2.7 0 0 1 18 7.5v11H8.7a2.5 2.5 0 0 0-2.5 2.5V4.8Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.2 8.2h6.6M8.2 11.2h4.8M8.2 14.2h5.9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
           <div class="dashboardLabel">Jídelní lístek</div>
         </div>
         <div class="dashboardValue">Otevřít</div>
         <div class="dashboardMeta">Přímý odkaz</div>
-      </div>
-      <div class="tile dashboardCard dashboardLinkCard" id="dashEportalLink" onclick="openEportal()" role="button" tabindex="0" aria-label="Eportal">
+      </a>
+      <a class="tile dashboardCard dashboardLinkCard" id="dashEportalLink" href="https://space.skoda.vwgroup.com/group/b2eportal/home-page" target="_blank" rel="noopener noreferrer" role="button" tabindex="0" aria-label="Eportal">
         <div class="dashboardLabelRow">
-          <span class="dashboardIcon dashboardIconInline" aria-hidden="true"><svg class="dashboardIconSvg" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="7.5" stroke="currentColor" stroke-width="1.8"/><path d="M4.5 12h15M12 4.5v15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+          <span class="dashboardIcon dashboardIconInline" aria-hidden="true"><svg class="dashboardIconSvg" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="7.5" stroke="currentColor" stroke-width="1.8"/><path d="M4.5 12h15M12 4.5v15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
           <div class="dashboardLabel">Eportal</div>
         </div>
         <div class="dashboardValue">Otevřít</div>
         <div class="dashboardMeta">Firemní portál</div>
-      </div>
+      </a>
 
     </div>
   </div>
@@ -1205,7 +892,6 @@
     </summary>
     <div class="gamesStatsGrid" id="gamesStatsGrid"></div>
   </details>
-
 
   <div class="gamesGrid" id="gamesGrid">
     <div class="tile calcTile calcTileStack gamesLaunchTile" onclick="openGameShell('ttt')" data-game="ttt">
@@ -1451,7 +1137,7 @@
     <button class="resetBtn" onclick="resetFields(['f_kusy'])" title="Reset polí" aria-label="Reset polí">↻</button>
   </div>
 
-  <details class="brusDetails calcDetails calcPanel calcPanelFold">
+  <details class="brusDetails calcDetails">
     <summary><span class="calcSummaryTitle">Kolik ještě stihnu</span><span class="calcSummarySub">Rychlý přehled kusů</span></summary>
     <div class="brusDetailsBody">
       <label>Hotovo kusů:</label>
@@ -1461,7 +1147,7 @@
     </div>
   </details>
 
-  <details class="brusDetails calcDetails calcPanel calcPanelFold">
+  <details class="brusDetails calcDetails">
     <summary><span class="calcSummaryTitle">Kdy bude hotovo</span><span class="calcSummarySub">Odhad dokončení a času</span></summary>
     <div class="brusDetailsBody">
       <label>Kolik kusů ještě děláš:</label>
@@ -1498,15 +1184,15 @@
     </div>
   </div>
 
-  <div class="card calcPanel calcPanelInfo" id="brusyInfo"><div><b>TBKR01 / AD</b></div><div class="smallText">Výroba kusu: 58,5 s · Orovnává po 58 ks · Orovnává 4 min</div></div>
+  <div class="card" id="brusyInfo"><div><b>TBKR01 / AD</b></div><div class="smallText">Výroba kusu: 58,5 s · Orovnává po 58 ks · Orovnává 4 min</div></div>
 
-  <details class="brusDetails calcDetails calcPanel calcPanelFold">
+  <details class="brusDetails calcDetails">
     <summary><span class="calcSummaryTitle">Kolik ještě stihnu</span><span class="calcSummarySub">Rychlý přehled kusů</span></summary>
     <div class="brusDetailsBody">
       <label>Celkem zatím nabroušeno:</label>
       <input id="celkem" type="number">
 
-      <details class="brusDetails calcDetails calcDetailsInner calcPanel calcPanelFold calcPanelInner">
+      <details class="brusDetails calcDetails calcDetailsInner">
         <summary>Přesnější výpočet</summary>
         <div class="brusDetailsBody">
           <label>Hotových kusů v rozdělané dávce:</label>
@@ -1523,7 +1209,7 @@
     </div>
   </details>
 
-  <details class="brusDetails calcDetails calcPanel calcPanelFold">
+  <details class="brusDetails calcDetails">
     <summary><span class="calcSummaryTitle">Kdy bude hotovo</span><span class="calcSummarySub">Odhad dokončení a času</span></summary>
     <div class="brusDetailsBody">
       <label>Kolik kusů ještě děláš:</label>
@@ -1531,7 +1217,7 @@
       <label>nebo kolik dávek:</label>
       <input id="b_finish_davky" type="number" autocomplete="off">
 
-      <details class="brusDetails calcDetails calcDetailsInner calcPanel calcPanelFold calcPanelInner">
+      <details class="brusDetails calcDetails calcDetailsInner">
         <summary>Přesnější výpočet</summary>
         <div class="brusDetailsBody">
           <label>Hotových kusů v rozdělané dávce:</label>
@@ -1565,8 +1251,6 @@
 
   <div class="card" id="outP"></div>
 </div>
-
-
 
 <style id="v363-overrides">
   .bottomNav{
@@ -1892,7 +1576,6 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
 
 </style>
 
-
 <style id="v387-pre-mobile-polish">
   #games{padding-bottom:154px !important;}
   /* v1(387) mobile polish: tighter bottom bar + names at the bottom on rotace */
@@ -1952,7 +1635,6 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
     }
   }
 </style>
-
 
 <style id="v387-legacy-mobile-polish">
   /* v1(387) final mobile polish: tighter bottom bar, rotace preview and stats spacing */
@@ -2065,7 +1747,6 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
     }
   }
 </style>
-
 
 <style id="v387-final-mobile-polish">
   /* v1(387) final mobile polish: bottom bar, games padding, rotace preview, stats compact, snake joystick */
@@ -2394,7 +2075,6 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   }
 </style>
 
-
 <style id="v363-nav-rotace-overrides">
   .bottomNav{
     padding:0 0 calc(0px + env(safe-area-inset-bottom)) !important;
@@ -2645,8 +2325,6 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   }
 </style>
 
-
-
 <style id="v363-mobile-polish">
   .bottomNav{
     padding:1px 1px calc(1px + env(safe-area-inset-bottom)) !important;
@@ -2855,7 +2533,6 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
 }
 </style>
 
-
 <style id="v363-final-fix">
   .bottomNav{
     padding:0 0 calc(0px + env(safe-area-inset-bottom)) !important;
@@ -3047,7 +2724,6 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   }
 </style>
 
-
 <style id="v365-ui-overrides">
   :root{
     --bottom-nav-h: 44px;
@@ -3238,7 +2914,6 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   }
 </style>
 
-
 <style id="v366-hotfix-legacy">
   .bottomNav{
     padding:0 2px calc(0px + env(safe-area-inset-bottom)) !important;
@@ -3421,7 +3096,6 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
     inset:0 0 calc(60px + env(safe-area-inset-bottom)) 0 !important;
   }
 </style>
-
 
 <style id="v367-hotfix">
   /* Dashboard a hlavní škrtnutí výš */
@@ -3744,7 +3418,6 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
 
 </style>
 
-
 <style id="v387-freeze-polish">
 @media (display-mode: standalone){
   .bottomNav{
@@ -3917,7 +3590,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   color:rgba(242,248,245,.88) !important;
   word-break:break-word !important;
 }
-/* v1.1 (440) polish: tighter bottom nav, cleaner eportal handling, compact calc summaries and mobile fit */
+/* v1.1 (427) polish: tighter bottom nav, cleaner eportal handling, compact calc summaries and mobile fit */
 .bottomNav{
   bottom:10px !important;
 }
@@ -3968,7 +3641,6 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   min-width:30px !important;
 }
 </style>
-
 
 <style id="v418-bottom-nav-icon-overrides">
   .bottomNavIcon{position:relative !important; display:block !important; overflow:visible !important;}
@@ -4085,7 +3757,6 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
     }
   }
 </style>
-
 
 <style id="v427-nav-admin-overrides">
   #dashVyplata .dashboardIcon{
@@ -4287,8 +3958,6 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   }
 </style>
 
-
-
 <style id="v427-global-compact-fix">
   body.compactUI .dashboardShell{
     padding:10px !important;
@@ -4339,45 +4008,6 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
     height:15px !important;
     transform:translateY(-1px) !important;
   }
-  body.compactUI #frezky .brusDetails > summary,
-  body.compactUI #brusy .brusDetails > summary{
-    display:grid !important;
-    grid-template-columns:minmax(0,1fr) !important;
-    gap:1px !important;
-    align-items:start !important;
-    min-height:42px !important;
-    padding:8px 10px !important;
-  }
-  body.compactUI #frezky .calcSummaryTitle,
-  body.compactUI #brusy .calcSummaryTitle{
-    display:block !important;
-    font-size:13px !important;
-    line-height:1.02 !important;
-    white-space:nowrap !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important;
-  }
-  body.compactUI #frezky .calcSummarySub,
-  body.compactUI #brusy .calcSummarySub{
-    display:block !important;
-    font-size:10px !important;
-    line-height:1.02 !important;
-    white-space:nowrap !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important;
-  }
-  body.compactUI .calcPage .calcPanelInfo{
-    padding:8px 10px !important;
-    gap:1px !important;
-  }
-  body.compactUI .calcPage .calcPanelInfo b{
-    font-size:13px !important;
-    line-height:1.02 !important;
-  }
-  body.compactUI .calcPage .calcPanelInfo .smallText{
-    font-size:10px !important;
-    line-height:1.02 !important;
-  }
   body.compactUI .appMenuCard{
     padding:12px !important;
   }
@@ -4399,8 +4029,6 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
     animation:none !important;
   }
 </style>
-
-
 
 <style id="v427-last-mile-fixes">
   /* Dashboard icons -10% */
@@ -4446,58 +4074,11 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   }
   .bottomNavMenuBtn{
     min-height:44px !important;
-    width:26px !important;
-    min-width:26px !important;
-    max-width:26px !important;
-    flex-basis:26px !important;
-    padding-left:0 !important;
-    padding-right:0 !important;
-    justify-content:center !important;
-  }
-  .bottomNavMenuBtn .moreIcon{
-    margin:0 auto !important;
   }
 
-  /* Kalkulačkové panely: společná komponenta pro Frezky a Brusy */
-  #frezky .brusDetails > summary,
-  #brusy .brusDetails > summary{
-    display:inline-flex !important;
-    width:fit-content !important;
-    max-width:min(100%, 260px) !important;
-    flex-direction:column !important;
-    align-items:flex-start !important;
-    gap:1px !important;
-    min-height:0 !important;
-    padding:7px 11px !important;
-  }
-  #frezky .calcSummaryTitle,
-  #brusy .calcSummaryTitle{
-    white-space:normal !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important;
-    line-height:1.02 !important;
-  }
-  #frezky .calcSummarySub,
-  #brusy .calcSummarySub{
-    white-space:normal !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important;
-    line-height:1.02 !important;
-  }
-  .calcPage .calcPanelInfo{
-    display:inline-grid !important;
-    grid-template-columns:minmax(0,1fr) !important;
-    width:fit-content !important;
-    max-width:100% !important;
-    gap:1px !important;
-    padding:7px 10px !important;
-  }
-  .calcPage .calcPanelInfo b,
-  .calcPage .calcPanelInfo .smallText{
-    white-space:normal !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important;
-  }
+  /* Frezky / brusy: narrow collapsed summary only around label */
+
+  #brusyInfo b,
 
   @media (max-width: 560px){
     .bottomNav{
@@ -4509,22 +4090,73 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
     .bottomNavMenuBtn{
       min-height:42px !important;
     }
-    #frezky .brusDetails > summary,
-    #brusy .brusDetails > summary{
-      max-width:min(100%, 230px) !important;
-    }
+
   }
 </style>
 
+<style id="v427-bottomnav-calc-eportal-fixes">
+  .bottomNav{
+    width:calc(100% + 10px) !important;
+    margin-left:-5px !important;
+    margin-right:-5px !important;
+    bottom:calc(0px + env(safe-area-inset-bottom)) !important;
+    padding:1px 2px calc(1px + env(safe-area-inset-bottom)) !important;
+    border-radius:15px !important;
+  }
+  .bottomNavScroll{
+    padding-left:0 !important;
+    padding-right:0 !important;
+  }
+  .bottomNavInner{
+    gap:2px !important;
+    padding-right:6px !important;
+    scroll-padding-right:6px !important;
+  }
+  .bottomNavBtn{
+    min-height:42px !important;
+    padding:0 1px 0 !important;
+  }
+  .bottomNavBtn .bottomNavIcon,
+  .bottomNavBtn .bottomNavIcon svg{
+    width:28px !important;
+    height:28px !important;
+  }
+  .bottomNavBtn .bottomNavIcon{
+    flex:0 0 28px !important;
+  }
+  .bottomNavBtn .bottomNavLabel{
+    font-size:8.4px !important;
+    line-height:1.02 !important;
+  }
+  .bottomNavMenuBtn{
+    min-height:42px !important;
+    width:46px !important;
+    min-width:46px !important;
+    max-width:46px !important;
+    flex:0 0 46px !important;
+  }
+  .bottomNavMenuBtn .moreIcon{
+    width:18px !important;
+    height:18px !important;
+    transform:translateY(-2px) !important;
+  }
 
+  @media (max-width: 560px){
+    .bottomNav{
+      width:calc(100% + 14px) !important;
+      margin-left:-7px !important;
+      margin-right:-7px !important;
+      border-radius:14px !important;
+    }
+    .bottomNavBtn{
+      min-height:40px !important;
+    }
+    .bottomNavMenuBtn{
+      min-height:40px !important;
+    }
 
+  }
+</style>
 
-
-
-
-
-
-
-
-
+<link rel="stylesheet" href="styles-overrides.css">
 </body></html>

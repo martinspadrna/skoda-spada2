@@ -1,0 +1,165 @@
+/* v.1.1 (447) — final overrides / calcPanel compact source of truth */
+:root{
+  --calc-compact-gap:4px;
+  --calc-compact-pad-x:10px;
+  --calc-compact-pad-y:5px;
+  --calc-compact-min-h:34px;
+  --calc-compact-line:1.02;
+}
+
+.bottomNav{
+    gap:3px !important;
+    padding:3px 3px calc(3px + env(safe-area-inset-bottom)) !important;
+  }
+  .bottomNavScroll{
+    gap:3px !important;
+    padding-left:0 !important;
+    padding-right:0 !important;
+  }
+  .bottomNavInner{
+    gap:3px !important;
+    padding-right:4px !important;
+    scroll-padding-right:4px !important;
+  }
+  .bottomNavBtn{
+    flex:0 0 clamp(47px, 7.9vw, 63px) !important;
+    width:clamp(47px, 7.9vw, 63px) !important;
+    min-width:clamp(47px, 7.9vw, 63px) !important;
+    max-width:clamp(47px, 7.9vw, 63px) !important;
+    min-height:clamp(43px, 7.2vw, 56px) !important;
+    padding:1px 2px 0 !important;
+  }
+  .bottomNavBtn .bottomNavIcon,
+  .bottomNavBtn .bottomNavIcon svg{
+    width:clamp(22px, 6.2vw, 31px) !important;
+    height:clamp(22px, 6.2vw, 31px) !important;
+    display:block !important;
+    overflow:visible !important;
+  }
+  .bottomNavBtn .bottomNavIcon{
+    flex:0 0 clamp(22px, 6.2vw, 31px) !important;
+  }
+  .bottomNavBtn .bottomNavLabel{
+    font-size:clamp(7.2px, 1.75vw, 9px) !important;
+    line-height:1 !important;
+  }
+  .bottomNavBtn.active{
+    transform:translateY(-4px) scale(1.05) !important;
+    z-index:30 !important;
+  }
+  .bottomNavBtn.active::before{
+    inset:-5px !important;
+  }
+
+  #frezky .brusDetails,
+  #brusy .brusDetails{
+    width:100% !important;
+    margin-top:4px !important;
+    border-radius:10px !important;
+  }
+  #frezky .brusDetails + .brusDetails,
+  #brusy .brusDetails + .brusDetails{
+    margin-top:4px !important;
+  }
+  #frezky .brusDetails > summary,
+  #brusy .brusDetails > summary{
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:flex-start !important;
+    justify-content:center !important;
+    width:100% !important;
+    max-width:none !important;
+    min-height:var(--calc-compact-min-h) !important;
+    padding:var(--calc-compact-pad-y) var(--calc-compact-pad-x) !important;
+    gap:1px !important;
+    line-height:var(--calc-compact-line) !important;
+  }
+  #frezky .brusDetails > summary::after,
+  #brusy .brusDetails > summary::after{
+    float:none !important;
+    align-self:flex-end !important;
+    margin-left:6px !important;
+  }
+  #frezky .brusDetails.calcDetails[open] > summary,
+  #brusy .brusDetails.calcDetails[open] > summary{
+    width:100% !important;
+    max-width:none !important;
+  }
+  #frezky .calcSummaryTitle,
+  #brusy .calcSummaryTitle{
+    display:block !important;
+    font-size:11px !important;
+    font-weight:700 !important;
+    line-height:1.04 !important;
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+  }
+  #frezky .calcSummarySub,
+  #brusy .calcSummarySub{
+    display:block !important;
+    font-size:9px !important;
+    line-height:1.02 !important;
+    opacity:.8 !important;
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+  }
+  #frezky .brusDetailsBody,
+  #brusy .brusDetailsBody{
+    padding:0 10px 10px 10px !important;
+    gap:6px !important;
+  }
+  #brusyInfo{
+    display:block !important;
+    width:100% !important;
+    max-width:none !important;
+    padding:3px 8px !important;
+    gap:0 !important;
+    min-height:0 !important;
+  }
+  #brusyInfo b{
+    font-size:11px !important;
+    line-height:1.02 !important;
+  }
+  #brusyInfo .smallText{
+    font-size:9px !important;
+    line-height:1.02 !important;
+  }
+  #brusy .bgrid .bbtn,
+  #brusy .indexGrid .bbtn,
+  #brusy .indexGrid .freeWrap .bbtn{
+    min-height:var(--calc-compact-min-h) !important;
+    height:34px !important;
+    padding:0 8px !important;
+    font-size:13px !important;
+  }
+  #brusy .bgrid,
+  #brusy .indexGrid{
+    gap:6px !important;
+  }
+  #frezky .brusDetails.calcDetailsInner > summary,
+  #brusy .brusDetails.calcDetailsInner > summary{
+    min-height:36px !important;
+    padding:7px 11px !important;
+    width:100% !important;
+    max-width:none !important;
+  }
+  #frezky .brusDetails.calcDetailsInner > summary::after,
+  #brusy .brusDetails.calcDetailsInner > summary::after{
+    font-size:13px !important;
+  }
+
+
+.calcPanel{
+  gap:var(--calc-compact-gap);
+}
+.calcPanel--compact > summary,
+.calcPanel--compact .calcPanel-summary,
+.calcPanel--compact .calcDetails > summary,
+.calcPanel--compact .calcDetailsInner > summary{
+  min-height:var(--calc-compact-min-h);
+  padding:var(--calc-compact-pad-y) var(--calc-compact-pad-x);
+  gap:var(--calc-compact-gap);
+  line-height:var(--calc-compact-line);
+}

@@ -1,4 +1,4 @@
-// v.1.1 (440) – kalkulačky vrácené na 2 řádky, sjednocené volby brusu/indexu a stabilizační úpravy.
+// v.1.1 (447) – E-portal jako pevný externí odkaz, kalendář jako in-app iframe modal a další CSS stabilizace bez zásahu do UX.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

@@ -3659,7 +3659,7 @@ function bindAppMenuHandlers(body) {
           try {
             window.location.reload();
           } catch (err) {
-            window.location.href = window.location.href;
+            window.location.reload();
           }
         }
         return;
@@ -3840,21 +3840,16 @@ function openAppMenu(view) {
         '  <div class="appMenuCardTitle">Nastavení</div>',
         '  <div class="appMenuText">',
         '    <div>Kompaktní režim a méně animací se ukládají jen do tohoto zařízení a promítnou se napříč celou appkou.</div>',
+        '    <div>Pro rychlé servisní zásahy tu jsou ještě vyčištění cache, diagnostika a tvrdé obnovení aplikace.</div>',
         '  </div>',
         '  <div class="appMenuSettingsList">',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-pref="compact">' + (prefs.compact ? '✓ ' : '') + 'Kompaktní režim</button>',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-pref="reduceMotion">' + (prefs.reduceMotion ? '✓ ' : '') + 'Méně animací</button>',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="clear-cache">Vymazat cache a obnovit</button>',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="app-diagnostics">Diagnostika aplikace</button>',
-        '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-reset="1">Obnovit výchozí nastavení</button>',
+        '    <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="hard-reload">Tvrdé obnovení</button>',
+                '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-reset="1">Obnovit výchozí nastavení</button>',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="reset-state">Smazat lokální data</button>',
-        '  </div>',
-        '  <div class="appMenuCard appMenuRoadmapCard">',
-        '    <div class="appMenuCardTitle">Hry</div>',
-        '    <div class="appMenuText">',
-        '      <div>Herní sekce bude další větší oblast vývoje.</div>',
-        '      <div>Budeme postupně ladit: funkčnost her, responzivitu, UI/UX, výkon, ukládání statistik, XP systém, achievementy, leaderboardy a sjednocený herní backend.</div>',
-        '    </div>',
         '  </div>',
         '  <button type="button" class="appMenuAction appMenuBack" data-menu-back="1">Zpět</button>',
         '</div>',
@@ -3989,6 +3984,11 @@ function showPage(id) {
       personModal.classList.remove('isVisible');
       document.body.classList.remove('personModalOpen');
     }
+    const calendarModal = document.getElementById('calendarModal');
+    if (calendarModal) {
+      calendarModal.classList.remove('isVisible');
+      document.body.classList.remove('calendarModalOpen');
+    }
 
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     if (id === 'menu') {
@@ -4067,19 +4067,34 @@ function openKalkulacky() {
 }
 
 
-const EPORTAL_URL = 'https://space.skoda.vwgroup.com/group/b2eportal/home-page';
+function getStoredEportalUrl() {
+  return String(window.RAK_EPORTAL_URL || 'https://space.skoda.vwgroup.com/group/b2eportal/home-page').trim();
+}
+
+function setStoredEportalUrl() {
+  return getStoredEportalUrl();
+}
 
 function openEportal() {
-  const url = EPORTAL_URL;
+  const url = getStoredEportalUrl();
+  if (!url) return false;
   try {
     const opened = window.open(url, '_blank', 'noopener,noreferrer');
-    if (opened) return true;
-  } catch (err) {}
-  try {
-    window.location.href = url;
-    return true;
+    return !!opened;
   } catch (err) {
     console.warn('Eportal open failed', err);
+    return false;
+  }
+}
+
+function openExternalTile(url) {
+  const normalized = String(url || '').trim();
+  if (!normalized) return false;
+  try {
+    const opened = window.open(normalized, '_blank', 'noopener,noreferrer');
+    return !!opened;
+  } catch (err) {
+    console.warn('External tile open failed', err);
     return false;
   }
 }
@@ -4198,6 +4213,55 @@ function ensureFoodScheduleModal() {
   return overlay;
 }
 
+
+
+function hideCalendarModal() {
+  const overlay = document.getElementById('calendarModal');
+  if (!overlay) return;
+  overlay.classList.remove('isVisible');
+  document.body.classList.remove('calendarModalOpen');
+}
+
+function ensureCalendarModal() {
+  let overlay = document.getElementById('calendarModal');
+  if (overlay) return overlay;
+
+  overlay = document.createElement('div');
+  overlay.id = 'calendarModal';
+  overlay.className = 'calendarOverlay';
+  overlay.innerHTML = [
+    '<div class="calendarModal" role="dialog" aria-modal="true" aria-labelledby="calendarModalTitle">',
+    '<button type="button" class="calendarModalClose" aria-label="Zavřít">×</button>',
+    '<div class="calendarModalTitle" id="calendarModalTitle">Kalendář</div>',
+    '<div class="calendarModalFrameWrap">',
+    '<iframe class="calendarModalFrame" title="Google kalendář" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://calendar.google.com/calendar/embed?height=900&wkst=2&ctz=Europe%2FPrague&showPrint=0&showTitle=0&showTabs=0&showCalendars=0&showTz=0&src=MzFlZWE5OWVkZmYxNzcxYmUxNWJhODc3ZjdjMmY1YjEzNzFlMGE3NDJhZDlkNTRmY2E1MjZkNDFlYWZhNTk5NUBncm91cC5jYWxlbmRhci5nb29nbGUuY29t&color=%230157ff"></iframe>',
+    '</div>',
+    '</div>'
+  ].join('');
+
+  overlay.addEventListener('click', (event) => {
+    if (event.target === overlay) hideCalendarModal();
+  });
+
+  overlay.querySelector('.calendarModalClose')?.addEventListener('click', hideCalendarModal);
+
+  if (!document.body.dataset.calendarModalKeydownBound) {
+    document.body.dataset.calendarModalKeydownBound = '1';
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') hideCalendarModal();
+    });
+  }
+
+  document.body.appendChild(overlay);
+  return overlay;
+}
+
+function openCalendarInRak() {
+  const overlay = ensureCalendarModal();
+  overlay.classList.add('isVisible');
+  document.body.classList.add('calendarModalOpen');
+  return true;
+}
 
 // -------------------------
 // Games hub + account profile

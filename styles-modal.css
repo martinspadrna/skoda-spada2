@@ -183,6 +183,84 @@ body.personModalOpen{
   overflow:hidden;
 }
 
+body.calendarModalOpen{
+  overflow:hidden;
+}
+
+.calendarOverlay{
+  position:fixed;
+  inset:0;
+  z-index:3975;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  background:rgba(7,10,8,.72);
+  backdrop-filter:blur(16px) saturate(160%);
+}
+
+.calendarOverlay.isVisible{
+  display:flex;
+}
+
+.calendarModal{
+  width:min(94vw, 980px);
+  height:min(88vh, 860px);
+  border-radius:24px;
+  background:rgba(20,24,22,.88);
+  border:1px solid rgba(124,255,124,.16);
+  box-shadow:0 24px 60px rgba(0,0,0,.45);
+  backdrop-filter:blur(18px) saturate(160%);
+  padding:18px 18px 16px;
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.calendarModalClose{
+  position:sticky;
+  float:right;
+  top:0;
+  margin-left:auto;
+  width:36px;
+  height:36px;
+  padding:0;
+  margin-top:0;
+  border-radius:50%;
+  background:rgba(255,255,255,.06);
+  color:var(--text);
+  font-size:22px;
+  line-height:1;
+  z-index:1;
+}
+
+.calendarModalTitle{
+  clear:both;
+  font-size:18px;
+  font-weight:700;
+  line-height:1.2;
+  margin:4px 34px 0 0;
+}
+
+.calendarModalFrameWrap{
+  flex:1;
+  min-height:0;
+  border-radius:18px;
+  overflow:hidden;
+  border:1px solid rgba(124,255,124,.10);
+  background:rgba(255,255,255,.03);
+}
+
+.calendarModalFrame{
+  width:100%;
+  height:100%;
+  border:0;
+  display:block;
+  background:#fff;
+}
+
+
 .personScheduleOverlay{
   position:fixed;
   inset:0;

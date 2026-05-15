@@ -1,7 +1,9 @@
 
 const APP_KEY = "rotace_kalkulacky_state_v122";
-const APP_VERSION = "v.1.1 (440)";
+const APP_VERSION = "v.1.1 (447)";
 window.APP_VERSION = APP_VERSION;
+const RAK_EPORTAL_URL = "https://space.skoda.vwgroup.com/group/b2eportal/home-page";
+window.RAK_EPORTAL_URL = RAK_EPORTAL_URL;
 const ROTATION_BUILD = "2026-05-12-" + APP_VERSION + "-" + Date.now();
 
 const HARD_MACHINE_HEADERS = ["TNKS01", "TBKR07", "TPKW01", "TPKW02", "TBKR01"];
