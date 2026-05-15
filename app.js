@@ -1,4 +1,4 @@
-// v.1.1 (441) – stabilizační úpravy spodní lišty a kalkulaček.
+// v.1.1 (440) – kalkulačky vrácené na 2 řádky, sjednocené volby brusu/indexu a stabilizační úpravy.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

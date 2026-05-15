@@ -1,8 +1,17 @@
-## v.1.1 (441)
+## v.1.1 (440)
+- Společná komponenta kalkulačkových panelů pro Frézky a Brusy.
+- Jednotnější collapsed/expanded styl pro panel summary a info card.
+- Verze a build labely jsou srovnané na 437.
 
-- Spodní panel má menší tlačítka a těsnější mezery mezi nimi.
-- Kalkulačky na Frézkách a Brusech jsou znovu vyrovnané: sbalené bloky sedí pod sebou, Brusy mají stejné navolení brusu i indexu a panel s aktivním brusem/indexem je kompaktnější.
-- Pole pro přesnější výpočet je větší a přehlednější.
+## v.1.1 (430)
+- Bottom nav: buttons larger, More button slimmer.
+- Calc panels: compact collapsed state for Frezky/Brusy.
+- Settings: removed Eportal setup and hard reload buttons.
+- Added Games roadmap block.
+
+- E-portál má pevný externí odkaz na firemní portál.
+- Frézky a Brusy mají zmenšené sbalené panely a kompaktnější výšku.
+- Brusy info panel se roztahuje na celou šířku a je nižší.
 
 ## v.1.1 (428)
 

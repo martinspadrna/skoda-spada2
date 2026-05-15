@@ -116,30 +116,35 @@ h1{
  cursor:pointer;
 }
 
-.brusDetails{
+.brusDetails,
+.calcPanel{
  margin-top:10px;
  border:1px solid rgba(76,175,80,.35);
  border-radius:12px;
  background:rgba(21,26,23,.72);
  overflow:hidden;
 }
-.brusDetails summary{
+.brusDetails summary,
+.calcPanel > summary{
  list-style:none;
  cursor:pointer;
  padding:12px 14px;
  font-weight:700;
  color:var(--text);
 }
-.brusDetails summary::-webkit-details-marker{
+.brusDetails summary::-webkit-details-marker,
+.calcPanel > summary::-webkit-details-marker{
  display:none;
 }
-.brusDetails summary::after{
+.brusDetails summary::after,
+.calcPanel > summary::after{
  content:"▾";
  float:right;
  color:var(--muted);
  transition:transform .2s ease;
 }
-.brusDetails[open] summary::after{
+.brusDetails[open] summary::after,
+.calcPanel[open] > summary::after{
  transform:rotate(180deg);
 }
 .brusDetailsBody{

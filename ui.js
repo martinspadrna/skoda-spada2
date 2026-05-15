@@ -3840,17 +3840,21 @@ function openAppMenu(view) {
         '  <div class="appMenuCardTitle">Nastavení</div>',
         '  <div class="appMenuText">',
         '    <div>Kompaktní režim a méně animací se ukládají jen do tohoto zařízení a promítnou se napříč celou appkou.</div>',
-        '    <div>Pro rychlé servisní zásahy tu jsou ještě vyčištění cache, diagnostika a tvrdé obnovení aplikace.</div>',
         '  </div>',
         '  <div class="appMenuSettingsList">',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-pref="compact">' + (prefs.compact ? '✓ ' : '') + 'Kompaktní režim</button>',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-pref="reduceMotion">' + (prefs.reduceMotion ? '✓ ' : '') + 'Méně animací</button>',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="clear-cache">Vymazat cache a obnovit</button>',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="app-diagnostics">Diagnostika aplikace</button>',
-        '    <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="hard-reload">Tvrdé obnovení</button>',
-        '    <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="set-eportal">Nastavit Eportal odkaz</button>',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-reset="1">Obnovit výchozí nastavení</button>',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="reset-state">Smazat lokální data</button>',
+        '  </div>',
+        '  <div class="appMenuCard appMenuRoadmapCard">',
+        '    <div class="appMenuCardTitle">Hry</div>',
+        '    <div class="appMenuText">',
+        '      <div>Herní sekce bude další větší oblast vývoje.</div>',
+        '      <div>Budeme postupně ladit: funkčnost her, responzivitu, UI/UX, výkon, ukládání statistik, XP systém, achievementy, leaderboardy a sjednocený herní backend.</div>',
+        '    </div>',
         '  </div>',
         '  <button type="button" class="appMenuAction appMenuBack" data-menu-back="1">Zpět</button>',
         '</div>',
@@ -4063,37 +4067,10 @@ function openKalkulacky() {
 }
 
 
-function getStoredEportalUrl() {
-  try {
-    return String(
-      (typeof app !== 'undefined' && app.eportalUrl) ||
-      localStorage.getItem('rak_eportal_url') ||
-      window.RAK_EPORTAL_URL ||
-      ''
-    ).trim();
-  } catch (err) {
-    return String((typeof app !== 'undefined' && app.eportalUrl) || window.RAK_EPORTAL_URL || '').trim();
-  }
-}
+const EPORTAL_URL = 'https://space.skoda.vwgroup.com/group/b2eportal/home-page';
 
-function setStoredEportalUrl(url) {
-  const clean = String(url || '').trim();
-  if (!clean) return '';
-  try {
-    localStorage.setItem('rak_eportal_url', clean);
-  } catch (err) {}
-  if (typeof app !== 'undefined') app.eportalUrl = clean;
-  return clean;
-}
-
-function openEportal(forcePrompt) {
-  let url = getStoredEportalUrl();
-  if (forcePrompt || !url) {
-    const entered = prompt('Vlož adresu Eportalu', url || '');
-    if (!entered || !String(entered).trim()) return false;
-    url = setStoredEportalUrl(entered);
-  }
-  if (!url) return false;
+function openEportal() {
+  const url = EPORTAL_URL;
   try {
     const opened = window.open(url, '_blank', 'noopener,noreferrer');
     if (opened) return true;

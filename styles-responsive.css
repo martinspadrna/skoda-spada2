@@ -196,13 +196,11 @@
   }
 }
 
-
 @media (max-width: 700px) {
   .dashboardAppTitle {
     font-size: 23px;
   }
 }
-
 
 @media (max-width: 700px) {
   .page{
@@ -231,22 +229,6 @@
     font-size:clamp(14px, 5.5vw, 20px);
   }
 
-  .bottomNav{
-    width:min(calc(100% - 12px), 430px);
-    padding:5px 6px calc(5px + env(safe-area-inset-bottom));
-    border-radius:20px;
-    gap:5px;
-  }
-
-  .bottomNavBtn{
-    min-height:48px;
-    flex-basis:49px;
-    width:49px;
-    min-width:49px;
-    max-width:49px;
-    padding:3px 2px;
-  }
-
   #kalkulacky .tile,
   #rotaceNamesPanel .listItem,
   #statsNameGrid .listItem,
@@ -256,7 +238,6 @@
     padding-right:2px;
   }
 }
-
 
 @media (max-width: 700px) {
   #rotaceNamesPanel .listGrid {
@@ -319,9 +300,10 @@
   }
 }
 
-
 @media (max-width: 700px) {
   #kalkulacky .grid{
+    display:flex !important;
+    flex-direction:column !important;
     gap:8px;
   }
 
@@ -334,279 +316,20 @@
     font-size:16px;
   }
 
-  .bottomNav{
-    width:min(calc(100% - 10px), 460px);
-    padding:5px 6px calc(5px + env(safe-area-inset-bottom));
-    border-radius:18px;
-  }
-
-  .bottomNavInner{
-    display:grid;
-    grid-template-columns:repeat(5, minmax(0, 1fr)) 30px;
-    gap:4px;
-  }
-
-  .bottomNavBtn{
-    min-height:48px;
-    padding:2px 2px;
-  }
-
-  .bottomNavMenuBtn{
-    width:30px;
-    min-width:30px;
-    max-width:30px;
-  }
-
-  .bottomNavBtn span{
-    font-size:16px;
-  }
-}
-
-
-@media (max-width: 700px) {
   #home .dashboardValue{
     font-size:13px !important;
   }
 
-  .bottomNav{
-    width:min(calc(100% - 8px), 460px);
-    bottom:14px;
-    padding:2px 5px 0;
-    border-radius:18px;
-  }
-
-  .bottomNavInner{
-    display:grid;
-    grid-template-columns:repeat(5, minmax(0, 1fr)) 28px;
-    gap:3px;
-  }
-
-  .bottomNavBtn{
-    min-height:48px;
-    padding:2px 2px;
-  }
-
-  .bottomNavBtn.active{
-    transform:translateY(-4px) scale(1.05);
-  }
-
-  .bottomNavBtn span{
-    font-size:16px;
-  }
-
-  .bottomNavMenuBtn{
-    width:30px;
-    min-width:30px;
-    max-width:30px;
-  }
-
-  .bottomNavMenuBtn .moreIcon{
-    width:14px;
-    height:24px;
-  }
-}
-
-
-@media (max-width: 700px){#games .gamesAccountTop .dashboardLabel{display:none !important;}
-  .bottomNav{
-    padding:4px 5px calc(4px + env(safe-area-inset-bottom));
-  }
-
-  .bottomNavInner{
-    gap:3px;
-  }
-
-  .bottomNavBtn{
-    min-height:40px;
-    padding:0 3px;
-  }
-
-  .bottomNavBtn.active{
-    transform:translateY(-5px) scale(1.08);
-  }
-}
-
-
-@media (max-width: 700px) {
   .dashboardHeroLine3{
     font-size:11px;
   }
 
-  #kalkulacky .grid{
-    grid-template-columns:1fr !important;
-  }
-
-  .bottomNav{
-    padding:2px 5px calc(2px + env(safe-area-inset-bottom));
-  }
-
-  .bottomNavBtn{
-    min-height:38px;
-  }
-
-  .bottomNavMenuBtn{
-    width:28px;
-    min-width:28px;
-    max-width:28px;
+  #games .gamesAccountTop .dashboardLabel{
+    display:none !important;
   }
 }
-
-
-@media (max-width: 700px){
-  #kalkulacky .grid{
-    display:flex !important;
-    flex-direction:column !important;
-    gap:10px;
-  }
-}
-
-
-@media (max-width: 700px) {
-  .bottomNav{
-    width:min(calc(100% - 8px), 760px) !important;
-    padding:2px 3px calc(2px + env(safe-area-inset-bottom)) !important;
-  }
-
-  .bottomNavInner{
-    gap:4px !important;
-  }
-
-  .bottomNavBtn{
-    min-height:54px !important;
-    padding:2px 2px !important;
-  }
-
-  .bottomNavMenuBtn{
-    width:34px !important;
-    min-width:34px !important;
-    max-width:34px !important;
-  }
-
-  .bottomNavMenuBtn .moreIcon{
-    width:14px !important;
-    height:24px !important;
-  }
-
-  .bottomNavBtn.active{
-    transform:translateY(-8px) scale(1.08) !important;
-  }
-}
-
-
-@media (max-width: 700px) {
-  .bottomNav{
-    bottom:14px !important;
-    width:min(calc(100% - 8px), 430px) !important;
-    padding:2px 4px 0 !important;
-  }
-
-  .bottomNavInner{
-    align-items:flex-end !important;
-    gap:3px !important;
-  }
-
-  .bottomNavBtn{
-    min-height:34px !important;
-    padding:0 2px 0 !important;
-    justify-content:flex-end !important;
-  }
-
-  .bottomNavBtn span{
-    margin-bottom:0 !important;
-    font-size:16px !important;
-  }
-
-  .bottomNavBtn.active{
-    transform:translateY(-6px) scale(1.08) !important;
-  }
-
-  .bottomNavMenuBtn{
-    width:28px !important;
-    min-width:28px !important;
-    max-width:28px !important;
-  }
-
-  .bottomNavMenuBtn .moreIcon{
-    width:14px !important;
-    height:24px !important;
-  }
-}
-
-@media (max-width: 700px) {
-  #kalkulacky .grid{
-    display:flex !important;
-    flex-direction:column !important;
-    gap:10px;
-  }
-}
-
-
-@media (max-width: 700px) {
-  .bottomNav{
-    bottom:18px !important;
-    padding:2px 3px calc(1px + env(safe-area-inset-bottom)) !important;
-  }
-
-  .bottomNavBtn{
-    min-height:54px !important;
-    padding:3px 2px 1px !important;
-  }
-
-  .bottomNavBtn span{
-    font-size:17px !important;
-  }
-
-  .bottomNavBtn.active{
-    transform:translateY(-8px) scale(1.08) !important;
-  }
-}
-
 
 /* v1(246) bottom nav tighter and higher */
-.bottomNav{
-  bottom: 14px !important;
-  padding: 1px 4px 0 !important;
-}
-
-.bottomNavInner{
-  gap: 3px !important;
-}
-
-.bottomNavBtn{
-  min-height: 46px !important;
-  padding: 1px 2px 0 !important;
-}
-
-.bottomNavBtn span{
-  font-size: 18px !important;
-  line-height: 1 !important;
-}
-
-.bottomNavBtn.active{
-  transform: translateY(-8px) scale(1.08) !important;
-}
-
-.bottomNavBtn.active::before{
-  inset: -5px !important;
-}
-
-.bottomNavMenuBtn{
-  width: 30px !important;
-  min-width: 30px !important;
-  max-width: 44px !important;
-}
-
-.bottomNavMenuBtn .moreIcon{
-  width:24px !important;
-  height:24px !important;
-  transform:translateY(-12px) !important;
-  display:block !important;
-  color:var(--green2);
-}
-
-.bottomNavMenuBtn .moreIcon circle{
-  fill:currentColor;
-}
 
 /* icons fill their boxes a bit more */
 .dashboardIconInline,
@@ -626,7 +349,6 @@
   transform-origin:center;
 }
 
-
 /* v1(259) dashboard icon sizing fix */
 #home .dashboardCard .dashboardIcon.dashboardIconInline,
 .dashboardCard .dashboardIcon.dashboardIconInline{
@@ -643,18 +365,6 @@
   object-fit:contain !important;
 }
 
-.bottomNavBtn span{
-  font-size:21px !important;
-  line-height:1 !important;
-}
-
-.bottomNavMenuBtn .moreIcon{
-  width:24px !important;
-  height:24px !important;
-  transform:translateY(-12px) !important;
-  display:block !important;
-}
-
 #statsMachineGrid .listBtn{padding:8px 6px;min-width:62px;}
 
 /* v1(326) cleanup: games, sync badge, scrollable bottom nav */
@@ -665,19 +375,6 @@
 .dashboardSyncBadge--online{border-color:rgba(124,255,124,.22) !important;background:rgba(10,28,16,.70) !important;color:#d7ffe0 !important;}
 .dashboardSyncBadge--offline,.dashboardSyncBadge--pending{border-color:rgba(255,214,102,.22) !important;background:rgba(28,24,10,.70) !important;color:#f7f0cd !important;}
 .dashboardSyncBadge--error{border-color:rgba(255,124,124,.22) !important;background:rgba(28,10,10,.72) !important;color:#ffdcdc !important;}
-.bottomNav{display:flex !important;align-items:center !important;gap:6px !important;}
-.bottomNavScroll{display:flex !important;align-items:center !important;gap:4px !important;flex:1 1 auto !important;min-width:0 !important;overflow-x:auto !important;overflow-y:hidden !important;-webkit-overflow-scrolling:touch !important;scroll-snap-type:x proximity !important;scrollbar-width:none !important;}
-.bottomNavScroll::-webkit-scrollbar{display:none !important;}
-.bottomNavInner{display:flex !important;align-items:center !important;gap:4px !important;flex-wrap:nowrap !important;min-width:max-content !important;padding-right:12px !important; scroll-padding-right:12px !important;}
-.bottomNavBtn{flex:0 0 auto !important;scroll-snap-align:center !important;min-width:58px !important;}
-.bottomNavMenuBtn{flex:0 0 auto !important;position:sticky !important;right:0 !important;z-index:4 !important;background:linear-gradient(180deg, rgba(14,19,16,.92), rgba(10,14,12,.98)) !important;box-shadow:-8px 0 18px rgba(0,0,0,.18) !important;}
-.bottomNavGamesBtn{margin-right:4px !important;}
-.bottomNavGamesBtn .bottomNavIcon svg{stroke-width:1.8 !important;}
-.bottomNavBtn .bottomNavIcon,
-.bottomNavBtn .bottomNavIcon svg{width:24px !important;height:24px !important;}
-.bottomNavBtn .bottomNavIcon{flex:0 0 26px !important;}
-.bottomNavBtn .bottomNavLabel{font-size:10px !important;line-height:1.05 !important;}
-.bottomNavMenuBtn .moreIcon{width:24px !important;height:24px !important;transform:translateY(-11px) !important;}
 #games .calcTileIcon svg{stroke:currentColor !important;}
 .gamesAccountRow{display:flex !important;align-items:center !important;gap:10px !important;margin-top:10px !important;}
 .gamesAccountInput{flex:1 1 auto !important;min-width:0 !important;height:42px !important;border-radius:14px !important;border:1px solid rgba(124,255,124,.14) !important;background:rgba(255,255,255,.04) !important;color:#e7fff0 !important;padding:0 12px !important;font:inherit !important;font-size:12px !important;letter-spacing:.01em !important;}
@@ -686,84 +383,11 @@
 #games .gamesAccountHint{font-size:11px !important;line-height:1.25 !important;}
 
 /* v1(326) bottom nav compact icons + hidden games */
-.bottomNav{display:flex !important;align-items:center !important;gap:6px !important;}
-.bottomNavScroll{display:flex !important;align-items:center !important;gap:4px !important;flex:1 1 auto !important;min-width:0 !important;overflow-x:auto !important;overflow-y:hidden !important;-webkit-overflow-scrolling:touch !important;scroll-snap-type:x proximity !important;scrollbar-width:none !important;}
-.bottomNavScroll::-webkit-scrollbar{display:none !important;}
-.bottomNavInner{display:flex !important;align-items:center !important;gap:4px !important;flex-wrap:nowrap !important;min-width:max-content !important;padding-right:12px !important; scroll-padding-right:12px !important;}
-.bottomNavBtn{flex:0 0 auto !important;scroll-snap-align:center !important;min-width:58px !important;min-height:52px !important;padding:2px 2px 1px !important;}
-.bottomNavBtn .bottomNavIcon,.bottomNavBtn .bottomNavIcon svg{width:22px !important;height:22px !important;display:block !important;}
-.bottomNavBtn .bottomNavIcon{flex:0 0 22px !important;}
-.bottomNavBtn .bottomNavLabel{font-size:9px !important;line-height:1.04 !important;}
-.bottomNavBtn span{font-size:17px !important;line-height:1 !important;}
-.bottomNavMenuBtn{flex:0 0 38px !important;position:sticky !important;right:0 !important;z-index:4 !important;width:38px !important;min-width:38px !important;max-width:44px !important;}
-.bottomNavMenuBtn .moreIcon{width:24px !important;height:24px !important;transform:translateY(-11px) !important;display:block !important;}
-.bottomNavGamesBtn{margin-right:4px !important;}
-.bottomNavGamesBtn .bottomNavIcon svg{stroke-width:1.8 !important;}
-
 
 /* v1(326) bottom nav fit + menu right + games hidden */
-.bottomNav{gap:4px !important;}
-.bottomNavScroll{display:flex !important;flex:1 1 auto !important; min-width:0 !important; overflow-x:auto !important; overflow-y:hidden !important; -webkit-overflow-scrolling:touch !important; scroll-snap-type:x mandatory !important; scrollbar-width:none !important;}
-.bottomNavScroll::-webkit-scrollbar{display:none !important;}
-.bottomNavInner{display:flex !important; align-items:center !important; gap:3px !important; min-width:max-content !important; flex-wrap:nowrap !important; padding-right:12px !important; scroll-padding-right:12px !important;}
-.bottomNavBtn{flex:0 0 52px !important; width:52px !important; min-width:52px !important; max-width:52px !important; min-height:50px !important; padding:2px 2px 1px !important;}
-.bottomNavBtn .bottomNavIcon,.bottomNavBtn .bottomNavIcon svg{width:22px !important;height:22px !important;display:block !important;}
-.bottomNavBtn .bottomNavIcon{flex:0 0 21px !important;}
-.bottomNavBtn .bottomNavLabel{font-size:8.8px !important;line-height:1.03 !important;}
-.bottomNavMenuBtn{flex:0 0 38px !important; position:sticky !important; right:0 !important;  z-index:5 !important; width:38px !important; min-width:38px !important; max-width:38px !important;}
-.bottomNavMenuBtn .moreIcon{width:22px !important;height:22px !important;transform:translateY(-11px) !important;display:block !important;}
-.bottomNavGamesBtn{margin-right:2px !important;}
 .gamesAccountSelected{flex:1 1 auto !important; min-width:0 !important; min-height:44px !important; display:flex !important; align-items:center !important; justify-content:center !important; padding:0 14px !important; border-radius:14px !important; border:1px solid rgba(124,255,124,.18) !important; background:rgba(255,255,255,.04) !important; color:#e7fff0 !important; font-weight:650 !important; letter-spacing:.02em !important;}
 
-
 /* v1(326) bottom nav compact row, games full-screen, games hub layout */
-.bottomNav{
-  width:min(calc(100% - 10px), 760px) !important;
-  padding:4px 5px calc(4px + env(safe-area-inset-bottom)) !important;
-  border-radius:18px !important;
-}
-.bottomNavScroll{
-  flex:1 1 auto !important;
-  min-width:0 !important;
-  overflow-x:auto !important;
-  overflow-y:hidden !important;
-  -webkit-overflow-scrolling:touch !important;
-  scroll-snap-type:x proximity !important;
-  scrollbar-width:none !important;
-}
-.bottomNavScroll::-webkit-scrollbar{display:none !important;}
-.bottomNavInner{
-  display:flex !important;
-  align-items:center !important;
-  flex-wrap:nowrap !important;
-  gap:4px !important;
-  min-width:max-content !important;
-  padding-right:12px !important; scroll-padding-right:12px !important;
-}
-.bottomNavBtn{
-  flex:0 0 58px !important;
-  width:58px !important;
-  min-width:58px !important;
-  max-width:58px !important;
-  min-height:48px !important;
-  padding:2px 2px 1px !important;
-}
-.bottomNavBtn .bottomNavIcon,
-.bottomNavBtn .bottomNavIcon svg{width:22px !important;height:22px !important;display:block !important;}
-.bottomNavBtn .bottomNavIcon{flex:0 0 22px !important;}
-.bottomNavBtn .bottomNavLabel{font-size:8.8px !important;line-height:1.02 !important;}
-.bottomNavMenuBtn{
-  flex:0 0 38px !important;
-  width:38px !important;
-  min-width:38px !important;
-  max-width:38px !important;
-  
-  position:sticky !important;
-  right:0 !important;
-  z-index:6 !important;
-}
-.bottomNavMenuBtn .moreIcon{width:22px !important;height:22px !important;transform:translateY(-11px) !important;display:block !important;}
-.bottomNavGamesBtn{margin-right:2px !important;}
 
 #games .gamesAccountRow{display:flex !important;align-items:center !important;gap:8px !important;margin-top:8px !important;}
 #games .gamesAccountCurrent{
@@ -865,66 +489,9 @@ body.gamesOpen #games .gamesShell > #gamesShellBody{flex:1 1 auto !important;}
   #games .gamesGrid{grid-template-columns:repeat(2, minmax(0, 1fr)) !important; gap:8px !important;}
   #games .gamesLaunchTile{min-height:104px !important;}
   #games .gamesStatsGrid{grid-template-columns:repeat(2, minmax(0, 1fr)) !important;}
-  .bottomNavBtn{flex-basis:52px !important; width:52px !important; min-width:52px !important; max-width:52px !important;}
-  .bottomNavMenuBtn{flex-basis:40px !important; width:40px !important; min-width:40px !important; max-width:40px !important;}
 }
-
 
 /* v1(341) final bottom nav override */
-.bottomNav{
-  display:flex !important;
-  align-items:center !important;
-  gap:6px !important;
-}
-.bottomNavScroll{
-  flex:1 1 auto !important;
-  min-width:0 !important;
-  display:flex !important;
-  align-items:center !important;
-  gap:2px !important;
-  overflow-x:auto !important;
-  overflow-y:hidden !important;
-  -webkit-overflow-scrolling:touch !important;
-  scrollbar-width:none !important;
-  scroll-snap-type:x proximity !important;
-}
-.bottomNavScroll::-webkit-scrollbar{display:none !important;}
-.bottomNavBtn{
-  flex:0 0 49px !important;
-  width:49px !important;
-  min-width:49px !important;
-  max-width:49px !important;
-  min-height:52px !important;
-  padding:2px 2px 1px !important;
-}
-.bottomNavBtn .bottomNavIcon,
-.bottomNavBtn .bottomNavIcon svg{
-  width:21px !important;
-  height:21px !important;
-  display:block !important;
-}
-.bottomNavBtn .bottomNavIcon{flex:0 0 21px !important;}
-.bottomNavBtn .bottomNavLabel{font-size:8.8px !important;line-height:1.03 !important;}
-.bottomNavMenuBtn{
-  flex:0 0 52px !important;
-  width:52px !important;
-  min-width:52px !important;
-  max-width:52px !important;
-  margin-left:auto !important;
-  position:static !important;
-  right:auto !important;
-  left:auto !important;
-  transform:none !important;
-  z-index:6 !important;
-}
-.bottomNavMenuBtn .moreIcon{
-  width:20px !important;
-  height:20px !important;
-  transform:none !important;
-  display:block !important;
-}
-.bottomNavGamesBtn{margin-right:2px !important;}
-
 
 /* v1(341) mobile games redesign */
 #games .gameBoard{width:100% !important;max-width:100% !important;touch-action:none !important;overscroll-behavior:contain !important;user-select:none !important;-webkit-user-select:none !important;box-sizing:border-box !important;display:grid !important;place-items:stretch !important;}
@@ -992,7 +559,7 @@ body.gamesCompactMode #games .gameBoard.gameFlapBoard{max-width:100% !important;
 body.gamesCompactMode #games .gameControlsFlap{gap:8px !important;}
 body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !important;min-width:92px !important;}
 @media (max-height: 760px){#games .gamesAccountTop .dashboardLabel{display:none !important;}#games .gamesGrid{gap:8px !important;}#games .gamesLaunchTile{min-height:94px !important;}#games .gamesAccountCard{padding:8px 10px !important;}#games .gamesAccountHint{display:none !important;}body.gamesOpen #games .gamesStage{padding:6px 6px calc(6px + env(safe-area-inset-bottom)) !important;}body.gamesOpen #games .gamesShellTop{padding:8px 10px !important;}#games .gamesGamePanel{gap:8px !important;}#games .gameInfoRow{padding:0 !important;}#games .gamePad .gameControlBtn{min-height:48px !important;min-width:48px !important;}}
-@media (max-width: 700px){#games .gamesGrid{grid-template-columns:repeat(2, minmax(0, 1fr)) !important;gap:8px !important;}#games .gamesLaunchTile{min-height:96px !important;}#games .gamesStatsGrid{grid-template-columns:repeat(2, minmax(0, 1fr)) !important;}#games .gamesAccountCard{padding:8px 10px !important;}#games .gamesAccountHint{display:none !important;}.bottomNavBtn{flex-basis:56px !important;width:56px !important;min-width:56px !important;max-width:56px !important;}.bottomNavMenuBtn{flex-basis:38px !important;width:38px !important;min-width:38px !important;max-width:38px !important;}}
+@media (max-width: 700px){#games .gamesGrid{grid-template-columns:repeat(2, minmax(0, 1fr)) !important;gap:8px !important;}#games .gamesLaunchTile{min-height:96px !important;}#games .gamesStatsGrid{grid-template-columns:repeat(2, minmax(0, 1fr)) !important;}#games .gamesAccountCard{padding:8px 10px !important;}#games .gamesAccountHint{display:none !important;}}
 
 /* v1(353) games hub and stats tweaks */
 #games{padding-bottom:128px !important;}
