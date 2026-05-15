@@ -1,6 +1,8 @@
-## v.1.1 (433)
-- Self-test stats panel fixed to avoid false DOM #stats warning.
-- Cleanup step: redundant bottom-nav override layers were removed from the responsive stylesheet and the final layer was kept in one place.
+## v.1.1 (441)
+
+- Spodní panel má menší tlačítka a těsnější mezery mezi nimi.
+- Kalkulačky na Frézkách a Brusech jsou znovu vyrovnané: sbalené bloky sedí pod sebou, Brusy mají stejné navolení brusu i indexu a panel s aktivním brusem/indexem je kompaktnější.
+- Pole pro přesnější výpočet je větší a přehlednější.
 
 ## v.1.1 (428)
 
