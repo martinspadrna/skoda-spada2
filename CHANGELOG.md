@@ -1,4 +1,4 @@
-## v.1.1 (437)
+## v.1.1 (438)
 - Frézky a Brusy mají širší a blíž u sebe poskládané sbalené kalkulačky.
 - Panel s aktivním brusem a indexem je nižší a volby mají sjednocenou výšku.
 - Spodní panel má větší ikonky a lehce jiný poměr šířky/výšky tlačítek.
