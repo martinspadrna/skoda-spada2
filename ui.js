@@ -3840,12 +3840,15 @@ function openAppMenu(view) {
         '  <div class="appMenuCardTitle">Nastavení</div>',
         '  <div class="appMenuText">',
         '    <div>Kompaktní režim a méně animací se ukládají jen do tohoto zařízení a promítnou se napříč celou appkou.</div>',
+        '    <div>Pro rychlé servisní zásahy tu jsou ještě vyčištění cache, diagnostika a tvrdé obnovení aplikace.</div>',
         '  </div>',
         '  <div class="appMenuSettingsList">',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-pref="compact">' + (prefs.compact ? '✓ ' : '') + 'Kompaktní režim</button>',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-pref="reduceMotion">' + (prefs.reduceMotion ? '✓ ' : '') + 'Méně animací</button>',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="clear-cache">Vymazat cache a obnovit</button>',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="app-diagnostics">Diagnostika aplikace</button>',
+        '    <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="hard-reload">Tvrdé obnovení</button>',
+        '    <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="set-eportal">Nastavit Eportal odkaz</button>',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-reset="1">Obnovit výchozí nastavení</button>',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="reset-state">Smazat lokální data</button>',
         '  </div>',
@@ -4061,16 +4064,15 @@ function openKalkulacky() {
 
 
 function getStoredEportalUrl() {
-  const defaultUrl = 'https://space.skoda.vwgroup.com/group/b2eportal/home-page';
   try {
     return String(
       (typeof app !== 'undefined' && app.eportalUrl) ||
       localStorage.getItem('rak_eportal_url') ||
       window.RAK_EPORTAL_URL ||
-      defaultUrl
+      ''
     ).trim();
   } catch (err) {
-    return String((typeof app !== 'undefined' && app.eportalUrl) || window.RAK_EPORTAL_URL || defaultUrl).trim();
+    return String((typeof app !== 'undefined' && app.eportalUrl) || window.RAK_EPORTAL_URL || '').trim();
   }
 }
 
@@ -4086,13 +4088,10 @@ function setStoredEportalUrl(url) {
 
 function openEportal(forcePrompt) {
   let url = getStoredEportalUrl();
-  if (forcePrompt) {
-    const entered = prompt('Vlož adresu Eportalu', url || 'https://space.skoda.vwgroup.com/group/b2eportal/home-page');
+  if (forcePrompt || !url) {
+    const entered = prompt('Vlož adresu Eportalu', url || '');
     if (!entered || !String(entered).trim()) return false;
     url = setStoredEportalUrl(entered);
-  }
-  if (!url) {
-    url = setStoredEportalUrl('https://space.skoda.vwgroup.com/group/b2eportal/home-page');
   }
   if (!url) return false;
   try {

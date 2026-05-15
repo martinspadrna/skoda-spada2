@@ -1,21 +1,3 @@
-## v.1.1 (438)
-- Frézky a Brusy mají širší a blíž u sebe poskládané sbalené kalkulačky.
-- Panel s aktivním brusem a indexem je nižší a volby mají sjednocenou výšku.
-- Spodní panel má větší ikonky a lehce jiný poměr šířky/výšky tlačítek.
-- Frézky a Brusy mají ještě kompaktnější sbalené panely.
-- U kalkulaček se zmenšil zavřený stav polí a vnitřní rozklikávací části.
-- E-portál zůstává pevně napojený na firemní odkaz.
-
-## v.1.1 (430)
-- Bottom nav: buttons larger, More button slimmer.
-- Calc panels: compact collapsed state for Frezky/Brusy.
-- Settings: removed Eportal setup and hard reload buttons.
-- Added Games roadmap block.
-
-- E-portál má pevný externí odkaz na firemní portál.
-- Frézky a Brusy mají zmenšené sbalené panely a kompaktnější výšku.
-- Brusy info panel se roztahuje na celou šířku a je nižší.
-
 ## v.1.1 (428)
 
 - Spodní lišta je na iPhonech (vč. 13 Pro Max) blíž ke spodnímu okraji a po stranách – konec zbytečně velkého rámu kolem nav baru.

@@ -1,4 +1,4 @@
-// v.1.1 (438) – kalkulačky vrácené na 2 řádky, sjednocené volby brusu/indexu a stabilizační úpravy.
+// v.1.1 (428) – kompaktnější dashboard, spodní lišta a servisní nastavení.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
