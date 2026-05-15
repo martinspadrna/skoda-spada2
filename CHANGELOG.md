@@ -1,3 +1,7 @@
+## v.1.1 (433)
+- Self-test stats panel fixed to avoid false DOM #stats warning.
+- Cleanup step: redundant bottom-nav override layers were removed from the responsive stylesheet and the final layer was kept in one place.
+
 ## v.1.1 (428)
 
 - Spodní lišta je na iPhonech (vč. 13 Pro Max) blíž ke spodnímu okraji a po stranách – konec zbytečně velkého rámu kolem nav baru.

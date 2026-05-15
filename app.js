@@ -1,4 +1,4 @@
-// v.1.1 (428) – kompaktnější dashboard, spodní lišta a servisní nastavení.
+// v.1.1 (433) – stabilizace self-testu, Supabase permissions a cleanup override vrstev.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
@@ -105,7 +105,7 @@
       "saveRotationData": typeof saveRotationData === "function",
       "DOM #home": !!document.getElementById("home"),
       "DOM #rotace": !!document.getElementById("rotace"),
-      "DOM #stats": !!document.getElementById("stats")
+      "DOM stats panel": !!(document.getElementById("rotaceStatsPanel") || document.getElementById("statsNameGrid") || document.getElementById("statsMachineGrid"))
     };
     const missing = Object.entries(required).filter(([_, v]) => !v).map(([k]) => k);
     if (missing.length) {
