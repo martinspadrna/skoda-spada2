@@ -21,7 +21,7 @@
 
 <link rel="stylesheet" href="styles.css">
 
-<style id="v369-hotfix-overrides">
+<style id="v457-hotfix-overrides">
   /* Dashboard food dots */
   #home .dashboardDot,
   #dashKantyna .dashboardDot,
@@ -210,7 +210,7 @@
   }
 </style>
 
-<style id="v409-games-overrides">
+<style id="v457-games-overrides">
   #games .gamesProfilesFolder,
   #games .gamesAchievementsFolder,
   #games .gamesStatsFolder{
@@ -233,7 +233,7 @@
   }
 </style>
 
-<style id="v409-responsive-audit-overrides">
+<style id="v457-responsive-audit-overrides">
   html, body {
     min-height: 100dvh !important;
   }
@@ -619,7 +619,7 @@
   }
 </style>
 
-<style id="v427-size-and-admin-fix">
+<style id="v457-size-and-admin-fix">
   #home .dashboardIconInline{
     width:74px !important;
     height:74px !important;
@@ -680,7 +680,7 @@
   }
 </style>
 
-<style id="v427-final-fixes">
+<style id="v457-final-fixes">
   #home .dashboardIconInline{
     width:74px !important;
     height:74px !important;
@@ -779,7 +779,7 @@
     </div>
 
     <div class="dashboardGrid">
-      <div class="tile dashboardCard dashboardCardClickable" id="dashCalendar" onclick="openCalendarInRak()" role="button" tabindex="0" aria-label="Kalendář">
+      <div class="tile dashboardCard dashboardCardClickable" id="dashCalendar" role="button" tabindex="0" aria-label="Kalendář" data-rak-open-calendar="1">
         <div class="dashboardLabel">Kalendář</div>
         <div class="dashboardValue">--</div>
         <div class="dashboardMeta"></div>
@@ -1137,7 +1137,7 @@
     <button class="resetBtn" onclick="resetFields(['f_kusy'])" title="Reset polí" aria-label="Reset polí">↻</button>
   </div>
 
-  <details class="brusDetails calcDetails">
+  <details class="brusDetails calcDetails calcPanel calcPanel--compact">
     <summary><span class="calcSummaryTitle">Kolik ještě stihnu</span><span class="calcSummarySub">Rychlý přehled kusů</span></summary>
     <div class="brusDetailsBody">
       <label>Hotovo kusů:</label>
@@ -1147,7 +1147,7 @@
     </div>
   </details>
 
-  <details class="brusDetails calcDetails">
+  <details class="brusDetails calcDetails calcPanel calcPanel--compact">
     <summary><span class="calcSummaryTitle">Kdy bude hotovo</span><span class="calcSummarySub">Odhad dokončení a času</span></summary>
     <div class="brusDetailsBody">
       <label>Kolik kusů ještě děláš:</label>
@@ -1186,7 +1186,7 @@
 
   <div class="card" id="brusyInfo"><div><b>TBKR01 / AD</b></div><div class="smallText">Výroba kusu: 58,5 s · Orovnává po 58 ks · Orovnává 4 min</div></div>
 
-  <details class="brusDetails calcDetails">
+  <details class="brusDetails calcDetails calcPanel calcPanel--compact">
     <summary><span class="calcSummaryTitle">Kolik ještě stihnu</span><span class="calcSummarySub">Rychlý přehled kusů</span></summary>
     <div class="brusDetailsBody">
       <label>Celkem zatím nabroušeno:</label>
@@ -1209,7 +1209,7 @@
     </div>
   </details>
 
-  <details class="brusDetails calcDetails">
+  <details class="brusDetails calcDetails calcPanel calcPanel--compact">
     <summary><span class="calcSummaryTitle">Kdy bude hotovo</span><span class="calcSummarySub">Odhad dokončení a času</span></summary>
     <div class="brusDetailsBody">
       <label>Kolik kusů ještě děláš:</label>
@@ -3590,7 +3590,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   color:rgba(242,248,245,.88) !important;
   word-break:break-word !important;
 }
-/* v1.1 (427) polish: tighter bottom nav, cleaner eportal handling, compact calc summaries and mobile fit */
+/* v1.1 (457) polish: tighter bottom nav, cleaner eportal handling, compact calc summaries and mobile fit */
 .bottomNav{
   bottom:10px !important;
 }
@@ -3758,7 +3758,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   }
 </style>
 
-<style id="v427-nav-admin-overrides">
+<style id="v457-nav-admin-overrides">
   #dashVyplata .dashboardIcon{
     color:var(--green2) !important;
     opacity:.98 !important;
@@ -3958,7 +3958,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   }
 </style>
 
-<style id="v427-global-compact-fix">
+<style id="v457-global-compact-fix">
   body.compactUI .dashboardShell{
     padding:10px !important;
   }
@@ -4030,7 +4030,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   }
 </style>
 
-<style id="v427-last-mile-fixes">
+<style id="v457-last-mile-fixes">
   /* Dashboard icons -10% */
   #home .dashboardIconInline,
   .dashboardCard .dashboardIcon.dashboardIconInline{
@@ -4094,7 +4094,7 @@ body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !
   }
 </style>
 
-<style id="v427-bottomnav-calc-eportal-fixes">
+<style id="v457-bottomnav-calc-eportal-fixes">
   .bottomNav{
     width:calc(100% + 10px) !important;
     margin-left:-5px !important;

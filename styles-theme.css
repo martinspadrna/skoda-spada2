@@ -2521,7 +2521,7 @@ body.reduceMotion *::after{
 .rakUpdateToastAction[disabled]{opacity:.72;cursor:wait;filter:saturate(.72);}
 @media (max-width: 420px){.rakUpdateToast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(16px);width:min(560px, calc(100vw - 16px));z-index:260;display:flex;align-items:center;gap:10px;padding:12px 12px 12px 11px;border-radius:22px;border:1px solid rgba(124,255,124,.18);background:rgba(9,13,11,.80);backdrop-filter:blur(18px) saturate(155%);-webkit-backdrop-filter:blur(18px) saturate(155%);box-shadow:0 20px 46px rgba(0,0,0,.36), inset 0 1px 0 rgba(255,255,255,.04);color:#eef7ee;opacity:0;pointer-events:none;transition:transform .24s ease, opacity .24s ease;contain:layout style paint;}
 
-/* v1.1 (414) final overrides: icon polish, update popup vertical mobile layout, bottom nav visibility */
+/* v1.1 (456) final overrides: icon polish, update popup vertical mobile layout, bottom nav visibility */
 .rakUpdateToast{
   flex-direction:column !important;
   align-items:stretch !important;

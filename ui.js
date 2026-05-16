@@ -3932,6 +3932,9 @@ function showFoodSchedule(which) {
 
 
 function showPage(id) {
+  const currentPage = typeof document !== 'undefined' ? document.querySelector('.page.active')?.id || '' : '';
+  const isSamePageRefresh = currentPage === id;
+  const shouldClosePageModals = id !== 'home' || !isSamePageRefresh;
   if (typeof app !== 'undefined') {
     app.homeBootSuppressed = id !== 'home';
   }
@@ -3974,20 +3977,22 @@ function showPage(id) {
   }
 
   try {
-    const modal = document.getElementById('foodScheduleModal');
-    if (modal) {
-      modal.classList.remove('isVisible');
-      document.body.classList.remove('foodModalOpen');
-    }
-    const personModal = document.getElementById('personScheduleModal');
-    if (personModal) {
-      personModal.classList.remove('isVisible');
-      document.body.classList.remove('personModalOpen');
-    }
-    const calendarModal = document.getElementById('calendarModal');
-    if (calendarModal) {
-      calendarModal.classList.remove('isVisible');
-      document.body.classList.remove('calendarModalOpen');
+    if (shouldClosePageModals) {
+      const modal = document.getElementById('foodScheduleModal');
+      if (modal) {
+        modal.classList.remove('isVisible');
+        document.body.classList.remove('foodModalOpen');
+      }
+      const personModal = document.getElementById('personScheduleModal');
+      if (personModal) {
+        personModal.classList.remove('isVisible');
+        document.body.classList.remove('personModalOpen');
+      }
+      const calendarModal = document.getElementById('calendarModal');
+      if (calendarModal) {
+        calendarModal.classList.remove('isVisible');
+        document.body.classList.remove('calendarModalOpen');
+      }
     }
 
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -4100,7 +4105,50 @@ function openExternalTile(url) {
 }
 
 
+
+function bindReliableExternalLink(linkOrId, fallbackUrl) {
+  const el = typeof linkOrId === 'string' ? document.getElementById(linkOrId) : linkOrId;
+  if (!el || el.dataset.rakExternalBound === '1') return false;
+  el.dataset.rakExternalBound = '1';
+
+  let lastOpenAt = 0;
+  const resolveUrl = () => String(el.getAttribute('href') || fallbackUrl || '').trim();
+
+  const openNow = (event) => {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    const now = Date.now();
+    if (now - lastOpenAt < 650) return false;
+    lastOpenAt = now;
+    return openExternalTile(resolveUrl());
+  };
+
+  el.addEventListener('pointerup', openNow, { passive: false });
+  el.addEventListener('click', openNow, { passive: false });
+  el.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' || event.key === ' ') openNow(event);
+  });
+  return true;
+}
+
+function bindDashboardExternalLinks() {
+  const foodUrl = 'https://sa.gthcatering.cz/restaurant/c1/';
+  const eportalUrl = String(window.RAK_EPORTAL_URL || 'https://space.skoda.vwgroup.com/group/b2eportal/home-page').trim();
+  bindReliableExternalLink('dashFoodLink', foodUrl);
+  bindReliableExternalLink('dashEportalLink', eportalUrl);
+  bindCalendarTile();
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', bindDashboardExternalLinks, { once: true });
+} else {
+  bindDashboardExternalLinks();
+}
+
 function refreshHomeScreen() {
+  if (typeof isAnyModalOpen === 'function' && isAnyModalOpen()) return false;
   try {
     if (typeof updateDashboard === 'function') updateDashboard();
   } catch (err) {
@@ -4116,10 +4164,14 @@ function refreshHomeScreen() {
   } catch (err) {
     console.warn('Eportal tile refresh failed', err);
   }
+  return true;
 }
 
 function scheduleHomeRefresh() {
-  const run = () => refreshHomeScreen();
+  const run = () => {
+    if (typeof isAnyModalOpen === 'function' && isAnyModalOpen()) return false;
+    return refreshHomeScreen();
+  };
   if (typeof requestAnimationFrame === 'function') {
     requestAnimationFrame(() => {
       run();
@@ -4220,6 +4272,7 @@ function hideCalendarModal() {
   if (!overlay) return;
   overlay.classList.remove('isVisible');
   document.body.classList.remove('calendarModalOpen');
+  document.body.classList.remove('calendarModalOpening');
 }
 
 function ensureCalendarModal() {
@@ -4258,8 +4311,53 @@ function ensureCalendarModal() {
 
 function openCalendarInRak() {
   const overlay = ensureCalendarModal();
+  const body = document.body;
+  if (overlay.classList.contains('isVisible')) {
+    body.classList.add('calendarModalOpen');
+    body.classList.remove('calendarModalOpening');
+    return true;
+  }
+  body.classList.add('calendarModalOpening');
   overlay.classList.add('isVisible');
-  document.body.classList.add('calendarModalOpen');
+  body.classList.add('calendarModalOpen');
+  if (typeof requestAnimationFrame === 'function') {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        body.classList.remove('calendarModalOpening');
+      });
+    });
+  } else {
+    setTimeout(() => body.classList.remove('calendarModalOpening'), 32);
+  }
+  return true;
+}
+
+function bindCalendarTile() {
+  const el = document.getElementById('dashCalendar');
+  if (!el || el.dataset.rakCalendarBound === '1') return false;
+  el.dataset.rakCalendarBound = '1';
+  el.style.touchAction = 'manipulation';
+  let openLockUntil = 0;
+  const handler = (event) => {
+    const now = Date.now();
+    if (now < openLockUntil) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      return false;
+    }
+    openLockUntil = now + 900;
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    return openCalendarInRak();
+  };
+  el.addEventListener('click', handler, { passive: false });
+  el.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' || event.key === ' ') handler(event);
+  });
   return true;
 }
 

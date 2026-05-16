@@ -1,4 +1,4 @@
-/* v.1.1 (447) — final overrides / calcPanel compact source of truth */
+/* v.1.1 (456) — final overrides / calcPanel compact source of truth */
 :root{
   --calc-compact-gap:4px;
   --calc-compact-pad-x:10px;
@@ -154,12 +154,32 @@
 .calcPanel{
   gap:var(--calc-compact-gap);
 }
+.calcPanel--compact{
+  width:100%;
+}
 .calcPanel--compact > summary,
 .calcPanel--compact .calcPanel-summary,
 .calcPanel--compact .calcDetails > summary,
 .calcPanel--compact .calcDetailsInner > summary{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  width:100%;
   min-height:var(--calc-compact-min-h);
   padding:var(--calc-compact-pad-y) var(--calc-compact-pad-x);
   gap:var(--calc-compact-gap);
   line-height:var(--calc-compact-line);
+  box-sizing:border-box;
+}
+.calcPanel--compact .calcSummaryTitle{
+  font-size:11px;
+  line-height:1.04;
+}
+.calcPanel--compact .calcSummarySub{
+  font-size:9px;
+  line-height:1.02;
+}
+.calcPanel--compact .brusDetailsBody{
+  padding:0 10px 10px 10px;
+  gap:6px;
 }

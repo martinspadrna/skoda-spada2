@@ -173,8 +173,9 @@ function scheduleDashboardInitialPaint() {
 
 function forceHomeRefresh() {
   const activePage = document.querySelector('.page.active')?.id || "";
+  if (isAnyModalOpen()) return;
   if ((typeof app !== 'undefined' && app.homeBootSuppressed && activePage !== "home") || (window.__rotaceUserNavigated && activePage !== 'home')) return;
-  if (typeof showPage === 'function') showPage('home');
+  if (activePage !== 'home' && typeof showPage === 'function') showPage('home');
   if (typeof refreshHomeScreen === 'function') refreshHomeScreen();
   else if (typeof updateDashboard === 'function') updateDashboard();
   if (typeof updateFoodTile === 'function') updateFoodTile();
@@ -222,6 +223,7 @@ function watchHomePaint() {
 }
 
 function bootHomeRefresh() {
+  if (isAnyModalOpen()) return;
   forceHomeRefresh();
   hammerHomeRefresh();
   scheduleDashboardInitialPaint();
@@ -236,6 +238,18 @@ function bootHomeRefreshLate() {
       console.warn('Late home refresh failed', err);
     }
   }, 0);
+}
+
+function isAnyModalOpen() {
+  if (typeof document === 'undefined' || !document.body) return false;
+  return !!(
+    document.body.classList.contains('calendarModalOpen') ||
+    document.body.classList.contains('calendarModalOpening') ||
+    document.body.classList.contains('foodModalOpen') ||
+    document.body.classList.contains('personModalOpen') ||
+    document.body.classList.contains('appMenuOpen') ||
+    document.body.classList.contains('menuOpen')
+  );
 }
 
 if (document.readyState === 'loading') {

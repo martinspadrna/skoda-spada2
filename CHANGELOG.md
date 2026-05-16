@@ -1,4 +1,14 @@
-## v.1.1 (447)
+## v.1.1 (457)
+- Sjednocené build metadata: verze, cache a viditelnější komentáře teď sedí napříč HTML, JS, CSS i changelogem.
+- Kalendář, E-portal a jídelní lístek zůstávají na stabilním napojení; bez zásahu do layoutu.
+- CSS cleanup pokračuje bez rozbití baseline UI.
+
+## v.1.1 (454)
+- Kalendář na dashboardu je napojený přes samostatný binding s lockem proti dvojímu spuštění a bez inline onclick.
+- E-portal a jídelní lístek zůstávají přes tvrdý externí handler s pevným cílovým odkazem.
+- Verze a cache byly posunuty na 449.
+
+## v.1.1 (448)
 
 - E-portal fix + in-app calendar iframe + CSS stabilization: poslední override vrstva byla vytažená do samostatného souboru.
 - Zatím bez změny layoutu, bottom nav i kalkulačky zůstávají v baseline stavu.

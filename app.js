@@ -1,4 +1,4 @@
-// v.1.1 (447) – E-portal jako pevný externí odkaz, kalendář jako in-app iframe modal a další CSS stabilizace bez zásahu do UX.
+// v.1.1 (457) – Home refresh, kalendář i externí odkazy jsou stabilizované; verze a metadata jsou sjednocené.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
