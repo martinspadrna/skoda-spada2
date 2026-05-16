@@ -78,7 +78,6 @@ body.qrModalOpen{
   color:var(--green2);
 }
 
-
 body.foodModalOpen{
   overflow:hidden;
 }
@@ -178,7 +177,6 @@ body.foodModalOpen{
   opacity:.8;
 }
 
-
 body.personModalOpen{
   overflow:hidden;
 }
@@ -259,7 +257,6 @@ body.calendarModalOpen{
   display:block;
   background:#fff;
 }
-
 
 .personScheduleOverlay{
   position:fixed;
@@ -359,7 +356,6 @@ body.calendarModalOpen{
 .personScheduleTable td:nth-child(3){
   color:var(--text);
 }
-
 
 body.appMenuOpen{
   overflow:hidden;
@@ -521,14 +517,10 @@ body.appMenuOpen{
   font-weight:800;
 }
 
-@media (max-width: 420px){
-  .appMenuGrid{
+@media (max-width: 420px){.appMenuGrid{
     grid-template-columns:1fr;
-  }
-}
+  }}
 
-
-/* v1(230) food schedule glass */
 .foodScheduleOverlay{
   background:rgba(7,10,8,.38);
   backdrop-filter:blur(22px) saturate(170%);
@@ -546,17 +538,13 @@ body.appMenuOpen{
   border:1px solid rgba(124,255,124,.12);
 }
 
-@media (max-width: 420px){
-  .foodScheduleRow{flex-direction:column;gap:4px;}
-  .foodScheduleDay,.foodScheduleWindows{text-align:left;min-width:0;}
-}
+@media (max-width: 420px){.foodScheduleRow{flex-direction:column;gap:4px;}
 
+.foodScheduleDay,.foodScheduleWindows{text-align:left;min-width:0;}}
 
-/* v1(309) app-like polish */
-@keyframes rotaceShimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
+@keyframes rotaceShimmer {0% { background-position: 200% 0; }
+
+100% { background-position: -200% 0; }}
 
 .dashboardHeroCard,
 .dashboardCard,
@@ -608,7 +596,7 @@ body.appMenuOpen{
 }
 
 .dashboardMeta.isLoading::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 2px 18% 2px 18%;
   border-radius: inherit;

@@ -1,19 +1,21 @@
-/* v.1.1 (469) — final overrides / bottom-nav and misc */
 .bottomNav{
     gap:3px !important;
     padding:3px 3px calc(3px + env(safe-area-inset-bottom)) !important;
   }
-  .bottomNavScroll{
+
+.bottomNavScroll{
     gap:3px !important;
     padding-left:0 !important;
     padding-right:0 !important;
   }
-  .bottomNavInner{
+
+.bottomNavInner{
     gap:3px !important;
     padding-right:4px !important;
     scroll-padding-right:4px !important;
   }
-  .bottomNavBtn{
+
+.bottomNavBtn{
     flex:0 0 clamp(47px, 7.9vw, 63px) !important;
     width:clamp(47px, 7.9vw, 63px) !important;
     min-width:clamp(47px, 7.9vw, 63px) !important;
@@ -21,35 +23,34 @@
     min-height:clamp(43px, 7.2vw, 56px) !important;
     padding:1px 2px 0 !important;
   }
-  .bottomNavBtn .bottomNavIcon,
+
+.bottomNavBtn .bottomNavIcon,
   .bottomNavBtn .bottomNavIcon svg{
     width:clamp(22px, 6.2vw, 31px) !important;
     height:clamp(22px, 6.2vw, 31px) !important;
     display:block !important;
     overflow:visible !important;
   }
-  .bottomNavBtn .bottomNavIcon{
+
+.bottomNavBtn .bottomNavIcon{
     flex:0 0 clamp(22px, 6.2vw, 31px) !important;
   }
-  .bottomNavBtn .bottomNavLabel{
+
+.bottomNavBtn .bottomNavLabel{
     font-size:clamp(7.2px, 1.75vw, 9px) !important;
     line-height:1 !important;
   }
-  .bottomNavBtn.active{
+
+.bottomNavBtn.active{
     transform:translateY(-4px) scale(1.05) !important;
     z-index:30 !important;
   }
-  .bottomNavBtn.active::before{
+
+.bottomNavBtn.active::before{
     inset:-5px !important;
   }
 
-/* calc panel source moved to styles-calc-panels.css */
-
-/* === v.1.1 (462) moved inline overrides from index.html === */
-
-/* moved inline override block */
-/* Dashboard food dots */
-  #home .dashboardDot,
+#home .dashboardDot,
   #dashKantyna .dashboardDot,
   #dashJidelna .dashboardDot{
     width:27px !important;
@@ -59,13 +60,15 @@
     border-radius:999px !important;
     box-shadow:0 0 0 1px rgba(255,255,255,.10), 0 0 10px rgba(124,255,124,.18) !important;
   }
-  #home .dashboardDot.is-open,
+
+#home .dashboardDot.is-open,
   #dashKantyna .dashboardDot.is-open,
   #dashJidelna .dashboardDot.is-open{
     background:radial-gradient(circle at 35% 35%, #f6fff6 0%, #6bff6b 28%, #17c617 60%, #0b6e0b 100%) !important;
     box-shadow:0 0 0 1px rgba(255,255,255,.14), 0 0 12px rgba(71,255,71,.42), 0 0 24px rgba(71,255,71,.24) !important;
   }
-  #home .dashboardDot.is-closed,
+
+#home .dashboardDot.is-closed,
   #dashKantyna .dashboardDot.is-closed,
   #dashJidelna .dashboardDot.is-closed{
     background:radial-gradient(circle at 35% 35%, #ffd9d9 0%, #ff4f4f 24%, #ff1111 56%, #b00000 100%) !important;
@@ -73,34 +76,40 @@
     filter:saturate(1.45) brightness(1.04) contrast(1.12) !important;
   }
 
-  .dashboardIconSvg{
+.dashboardIconSvg{
     width:100%;
     height:100%;
     display:block;
     stroke:currentColor;
     fill:none;
   }
-  #home .dashboardIconInline{
+
+#home .dashboardIconInline{
     width:64px !important;
     height:64px !important;
   }
-  #home .dashboardIconInline svg,
+
+#home .dashboardIconInline svg,
   #home .dashboardIconInline img{
     width:100% !important;
     height:100% !important;
   }
-  #home .dashboardIconInline img{
+
+#home .dashboardIconInline img{
     display:block !important;
     object-fit:contain !important;
   }
-  #games .gamesFolderSummary{
+
+#games .gamesFolderSummary{
     list-style:none !important;
     display:flex !important;
     align-items:center !important;
     gap:10px !important;
   }
-  #games .gamesFolderSummary::-webkit-details-marker{display:none !important;}
-  #games .gamesFolderSummaryIcon{
+
+#games .gamesFolderSummary::-webkit-details-marker{display:none !important;}
+
+#games .gamesFolderSummaryIcon{
     width:27px !important;
     height:27px !important;
     color:var(--green2) !important;
@@ -110,7 +119,8 @@
     flex:0 0 27px !important;
     opacity:.95 !important;
   }
-  #games .gamesFolderSummaryIcon svg{
+
+#games .gamesFolderSummaryIcon svg{
     width:100% !important;
     height:100% !important;
     display:block !important;
@@ -120,20 +130,22 @@
     stroke-linecap:round !important;
     stroke-linejoin:round !important;
   }
-  #games .gamesFolderSummaryText{display:block !important;}
 
-  /* Bottom bar: adaptive across screens */
+#games .gamesFolderSummaryText{display:block !important;}
+
 .bottomNav{
   width:min(calc(100vw - 10px), 760px) !important;
   bottom:calc(10px + env(safe-area-inset-bottom)) !important;
   padding:5px 6px calc(5px + env(safe-area-inset-bottom)) !important;
   gap:clamp(2px, 1vw, 8px) !important;
 }
+
 .bottomNavScroll{
   gap:clamp(2px, .4vw, 6px) !important;
   padding-inline:2px !important;
   scroll-padding-inline:8px !important;
 }
+
 .bottomNavBtn{
   flex:0 0 clamp(42px, 7vw, 55px) !important;
   width:clamp(42px, 7vw, 55px) !important;
@@ -142,25 +154,31 @@
   min-height:clamp(46px, 7.6vw, 56px) !important;
   padding:2px 1px 1px !important;
 }
+
 .bottomNavBtn .bottomNavIcon,
 .bottomNavBtn .bottomNavIcon svg{
   width:clamp(20px, 6.8vw, 31px) !important;
   height:clamp(20px, 6.8vw, 31px) !important;
 }
+
 .bottomNavBtn .bottomNavIcon{
   flex:0 0 clamp(20px, 6.8vw, 31px) !important;
 }
+
 .bottomNavBtn .bottomNavLabel{
   font-size:clamp(7px, 1.8vw, 9px) !important;
   line-height:1 !important;
 }
+
 .bottomNavBtn.active{
   transform:translateY(-4px) scale(1.12) !important;
   z-index:12 !important;
 }
+
 .bottomNavBtn.active::before{
   inset:-3px !important;
 }
+
 .bottomNavMenuBtn{
   flex:0 0 17px !important;
   width:17px !important;
@@ -171,56 +189,61 @@
   align-items:center !important;
   justify-content:center !important;
 }
+
 .bottomNavMenuBtn .moreIcon{
   width:11px !important;
   height:11px !important;
   margin:0 auto !important;
 }
 
-  /* Rotace: trochu menší jména dole */
-  #rotaceNamesPanel .listItem{
+#rotaceNamesPanel .listItem{
     font-size:11px !important;
     min-height:30px !important;
     padding:4px 6px !important;
     line-height:1.05 !important;
   }
 
-  /* Statistiky: větší tile prvky pro jména i stroje */
-  #statsNameGrid .listItem,
+#statsNameGrid .listItem,
   #statsNameGrid .statsNameTile,
   #statsMachineGrid .listItem,
   #statsMachineGrid .statsMachineTile{
     min-height:42px !important;
     padding:6px 4px !important;
   }
-  #statsNameGrid .statsTileMain,
+
+#statsNameGrid .statsTileMain,
   #statsMachineGrid .statsTileMain{
     align-items:center !important;
     justify-content:center !important;
     text-align:center !important;
   }
-  #statsNameGrid .statsTileTitle,
+
+#statsNameGrid .statsTileTitle,
   #statsMachineGrid .statsTileTitle{
     font-size:14px !important;
     line-height:1.05 !important;
   }
-  #statsMachineGrid .statsTileTitle{
+
+#statsMachineGrid .statsTileTitle{
     transform:scaleX(.95) !important;
     transform-origin:center !important;
     display:inline-block !important;
   }
-  #statsMachineGrid.listGrid{
+
+#statsMachineGrid.listGrid{
     grid-template-columns:repeat(5, minmax(0, 1fr)) !important;
     gap:3px !important;
   }
-  #stats .statsSummary,
+
+#stats .statsSummary,
   #statsNameView .statsSummary,
   #statsMachineView .statsSummary{
     display:grid !important;
     grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
     gap:8px !important;
   }
-  #stats .statsSummary .tile,
+
+#stats .statsSummary .tile,
   #statsNameView .statsSummary .tile,
   #statsMachineView .statsSummary .tile{
     display:flex !important;
@@ -230,19 +253,18 @@
     text-align:center !important;
   }
 
-  /* tiny extra insurance for mobile safe-area */
-  #rotaceNamesPanel.active{
+#rotaceNamesPanel.active{
     padding-bottom:calc(14px + env(safe-area-inset-bottom)) !important;
   }
 
-/* moved inline override block */
 #games .gamesProfilesFolder,
   #games .gamesAchievementsFolder,
   #games .gamesStatsFolder{
     border:1px solid rgba(124,255,124,.14) !important;
     background:rgba(11,15,13,.58) !important;
   }
-  #games .gamesAchievementBar{
+
+#games .gamesAchievementBar{
     width:100% !important;
     height:8px !important;
     border-radius:999px !important;
@@ -250,18 +272,19 @@
     background:rgba(255,255,255,.06) !important;
     border:1px solid rgba(255,255,255,.06) !important;
   }
-  #games .gamesAchievementBar span{
+
+#games .gamesAchievementBar span{
     display:block !important;
     height:100% !important;
     border-radius:inherit !important;
     background:linear-gradient(90deg, rgba(124,255,124,.88), rgba(124,255,124,.48)) !important;
   }
 
-/* moved inline override block */
 html, body {
     min-height: 100dvh !important;
   }
-  body {
+
+body {
     min-height: 100dvh !important;
     padding-top: calc(clamp(12px, 2vh, 18px) + env(safe-area-inset-top)) !important;
     padding-right: calc(clamp(12px, 2vw, 18px) + env(safe-area-inset-right)) !important;
@@ -269,11 +292,13 @@ html, body {
     padding-bottom: calc(clamp(156px, 19dvh, 196px) + env(safe-area-inset-bottom)) !important;
     overflow-x: hidden !important;
   }
-  .page,
+
+.page,
   .page.active {
     min-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
   }
-  .card,
+
+.card,
   .tile,
   .listItem,
   .bbtn,
@@ -285,19 +310,22 @@ html, body {
     backdrop-filter: blur(18px) saturate(145%) !important;
     -webkit-backdrop-filter: blur(18px) saturate(145%) !important;
   }
-  #home .dashboardLabelRow {
+
+#home .dashboardLabelRow {
     flex-wrap: wrap !important;
     align-items: center !important;
     gap: 6px !important;
   }
-  #home .dashboardLabel {
+
+#home .dashboardLabel {
     white-space: normal !important;
     overflow: visible !important;
     text-overflow: clip !important;
     line-height: 1.05 !important;
     font-size: clamp(12px, 3.4vw, 16px) !important;
   }
-  #dashCzd .dashboardLabel,
+
+#dashCzd .dashboardLabel,
   #dashFoodLink .dashboardLabel,
   #dashEportalLink .dashboardLabel,
   #dashKantyna .dashboardLabel,
@@ -305,23 +333,28 @@ html, body {
   #dashVyplata .dashboardLabel {
     font-size: clamp(12px, 3.4vw, 16px) !important;
   }
-  #dashCzd .dashboardValue {
+
+#dashCzd .dashboardValue {
     font-size: clamp(14px, 4.6vw, 19px) !important;
   }
-  #dashCzd .dashboardMeta {
+
+#dashCzd .dashboardMeta {
     font-size: clamp(10px, 2.8vw, 12px) !important;
   }
-  #rotaceNamesPanel .listGrid {
+
+#rotaceNamesPanel .listGrid {
     grid-template-columns: repeat(auto-fit, minmax(clamp(84px, 18vw, 128px), 1fr)) !important;
     gap: clamp(8px, 1.8vw, 12px) !important;
   }
-  #rotaceNamesPanel .listItem {
+
+#rotaceNamesPanel .listItem {
     min-height: clamp(36px, 6dvh, 52px) !important;
     padding: clamp(6px, 1.2vw, 10px) !important;
     font-size: clamp(11px, 3.1vw, 15px) !important;
     line-height: 1.08 !important;
   }
-  #rotaceNamesPanel .rotaceTileTitle {
+
+#rotaceNamesPanel .rotaceTileTitle {
     display: -webkit-box !important;
     -webkit-line-clamp: 2 !important;
     -webkit-box-orient: vertical !important;
@@ -329,27 +362,32 @@ html, body {
     word-break: break-word !important;
     text-align: center !important;
   }
-  #rotace .card,
+
+#rotace .card,
   #statistiky .card,
   #games .card,
   #menu .card {
     margin-bottom: clamp(8px, 1.6vw, 14px) !important;
   }
-  #games .gamesGrid {
+
+#games .gamesGrid {
     gap: clamp(8px, 1.8vw, 12px) !important;
   }
-  #games .gamesProfilesFolder,
+
+#games .gamesProfilesFolder,
   #games .gamesAchievementsFolder,
   #games .gamesStatsFolder {
     margin-top: clamp(8px, 1.5vw, 12px) !important;
   }
-  #games .gamesProfilesGrid,
+
+#games .gamesProfilesGrid,
   #games .gamesAchievementsGrid,
   #games .gamesStatsGrid {
     display: grid !important;
     gap: clamp(8px, 1.5vw, 12px) !important;
   }
-  #games .gamesProfileRow {
+
+#games .gamesProfileRow {
     display: flex !important;
     justify-content: space-between !important;
     align-items: baseline !important;
@@ -358,70 +396,86 @@ html, body {
     font-size: 12px !important;
     color: rgba(238,247,238,.88) !important;
   }
-  #games .gamesProfileRow strong {
+
+#games .gamesProfileRow strong {
     font-weight: 800 !important;
   }
-  #games .gamesProfileRow span {
+
+#games .gamesProfileRow span {
     color: rgba(238,247,238,.76) !important;
     white-space: nowrap !important;
   }
-  #games .gamesStatsCardBody {
+
+#games .gamesStatsCardBody {
     display: grid !important;
     gap: 6px !important;
   }
-  body.gamesOpen #games .gamesStage {
+
+body.gamesOpen #games .gamesStage {
     padding: clamp(8px, 1.8vw, 12px) clamp(8px, 1.8vw, 12px) calc(clamp(8px, 1.8vw, 12px) + env(safe-area-inset-bottom)) !important;
   }
-  body.gamesOpen #games .gamesShell > #gamesShellBody {
+
+body.gamesOpen #games .gamesShell > #gamesShellBody {
     overflow: auto !important;
     -webkit-overflow-scrolling: touch !important;
     padding-bottom: calc(18px + env(safe-area-inset-bottom)) !important;
   }
-  #games .gameBoard.game2048Board {
+
+#games .gameBoard.game2048Board {
     width: min(100%, calc(100vw - 16px)) !important;
     max-width: min(100%, 440px) !important;
   }
-  #games .gameBoard.gameSnakeBoard {
+
+#games .gameBoard.gameSnakeBoard {
     width: min(100%, calc(100vw - 16px)) !important;
     max-width: min(100%, 390px) !important;
   }
-  #games .gameBoard.gameFlapBoard {
+
+#games .gameBoard.gameFlapBoard {
     width: min(100%, calc(100vw - 16px)) !important;
     max-width: min(100%, 520px) !important;
     height: clamp(220px, 34dvh, 360px) !important;
   }
-  #games .arcadeAimBoard {
+
+#games .arcadeAimBoard {
     height: clamp(260px, 48dvh, 420px) !important;
   }
-  #games .gamesShell,
+
+#games .gamesShell,
   #games .arcadeStage,
   #games .arcadePanel,
   #games .arcadeBoardWrap {
     min-height: 0 !important;
   }
-  .bottomNav {
+
+.bottomNav {
     width: min(calc(100vw - 10px), 760px) !important;
     bottom: calc(8px + env(safe-area-inset-bottom)) !important;
     padding: 5px 6px calc(5px + env(safe-area-inset-bottom)) !important;
   }
-  .bottomNavScroll,
+
+.bottomNavScroll,
   .bottomNavInner {
     min-width: 0 !important;
   }
-  .bottomNavBtn {
+
+.bottomNavBtn {
     min-height: clamp(46px, 7.8vw, 56px) !important;
     flex-basis: clamp(42px, 7.2vw, 58px) !important;
     width: clamp(42px, 7.2vw, 58px) !important;
     min-width: clamp(42px, 7.2vw, 58px) !important;
     max-width: clamp(42px, 7.2vw, 58px) !important;
   }
-  .bottomNavBtn .bottomNavLabel {
+
+.bottomNavBtn .bottomNavLabel {
     font-size: clamp(7px, 1.8vw, 9px) !important;
   }
-  .bottomNavBtn.active {
+
+.bottomNavBtn.active {
     transform: translateY(-4px) scale(1.08) !important;
   }
-  .rakUpdateToast {
+
+.rakUpdateToast {
     left: 50% !important;
     bottom: calc(92px + env(safe-area-inset-bottom)) !important;
     width: min(560px, calc(100vw - 14px)) !important;
@@ -431,24 +485,29 @@ html, body {
     align-items: center !important;
     gap: 10px !important;
   }
-  .rakUpdateToastBody {
+
+.rakUpdateToastBody {
     text-align: left !important;
   }
-  .rakUpdateToastTitle {
+
+.rakUpdateToastTitle {
     font-size: clamp(13px, 3.4vw, 15px) !important;
   }
-  .rakUpdateToastAction {
+
+.rakUpdateToastAction {
     background: linear-gradient(180deg, #9bff9c, #3bd14f) !important;
     color: #06200d !important;
     box-shadow: 0 12px 30px rgba(0,0,0,.22), 0 0 18px rgba(124,255,124,.22) !important;
   }
-  .appMenuThemeGrid {
+
+.appMenuThemeGrid {
     display: grid !important;
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     gap: 10px !important;
     margin-top: 12px !important;
   }
-  .appMenuThemeCard {
+
+.appMenuThemeCard {
     position: relative !important;
     display: grid !important;
     grid-template-columns: 56px 1fr !important;
@@ -461,82 +520,89 @@ html, body {
     color: #eef7ee !important;
     text-align: left !important;
   }
-  .appMenuThemeCard.isActive {
+
+.appMenuThemeCard.isActive {
     outline: 2px solid rgba(124,255,124,.45) !important;
     box-shadow: 0 0 0 1px rgba(124,255,124,.12), 0 14px 30px rgba(0,0,0,.25) !important;
   }
-  .appMenuThemeCard.isLocked {
+
+.appMenuThemeCard.isLocked {
     opacity: .78 !important;
   }
-  .appMenuThemeSwatch {
+
+.appMenuThemeSwatch {
     width: 56px !important;
     height: 56px !important;
     border-radius: 18px !important;
     background: linear-gradient(135deg, var(--theme-swatch), rgba(255,255,255,.08)) !important;
     box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 0 20px rgba(124,255,124,.10) !important;
   }
-  .appMenuThemeInfo {
+
+.appMenuThemeInfo {
     min-width: 0 !important;
     display: grid !important;
     gap: 4px !important;
   }
-  .appMenuThemeTitle {
+
+.appMenuThemeTitle {
     font-size: 14px !important;
     font-weight: 800 !important;
     line-height: 1.1 !important;
   }
-  .appMenuThemeSub,
+
+.appMenuThemeSub,
   .appMenuThemeBadge {
     font-size: 11px !important;
     line-height: 1.2 !important;
     color: rgba(231,255,240,.74) !important;
   }
-  .appMenuThemeBadge {
+
+.appMenuThemeBadge {
     color: rgba(193,255,195,.86) !important;
   }
-  @media (max-height: 700px) {
-    body {
+
+@media (max-height: 700px) {body {
       padding-top: calc(10px + env(safe-area-inset-top)) !important;
       padding-bottom: calc(168px + env(safe-area-inset-bottom)) !important;
     }
-    h1 {
+
+h1 {
       font-size: 22px !important;
       margin: 6px 0 !important;
     }
-    .grid {
+
+.grid {
       gap: 10px !important;
       margin-top: 10px !important;
     }
-    .tile {
+
+.tile {
       min-height: 96px !important;
       font-size: 16px !important;
     }
-    .big {
+
+.big {
       min-height: 126px !important;
       font-size: 20px !important;
     }
-    .card {
-      padding: 10px !important;
-    }
-  }
 
-/* moved inline override block */
+.card {
+      padding: 10px !important;
+    }}
+
 #home .dashboardIconInline{
     width:74px !important;
     height:74px !important;
   }
-  #home .dashboardIconInline svg,
-  #home .dashboardIconInline img{
-    width:100% !important;
-    height:100% !important;
-  }
-  #home .dashboardCard .dashboardIcon.dashboardIconInline,
+
+#home .dashboardCard .dashboardIcon.dashboardIconInline,
   .dashboardCard .dashboardIcon.dashboardIconInline{
     width:51px !important;
     height:51px !important;
     flex:0 0 51px !important;
   }
-  #home .dashboardCard .dashboardIcon.dashboardIconInline img,
+
+#home .dashboardCard .dashboardIcon.dashboardIconInline img,
   #home .dashboardCard .dashboardIcon.dashboardIconInline svg,
   .dashboardCard .dashboardIcon.dashboardIconInline img,
   .dashboardCard .dashboardIcon.dashboardIconInline svg{
@@ -544,141 +610,117 @@ html, body {
     height:100% !important;
   }
 
-  .bottomNavBtn{
+.bottomNavBtn{
     flex-basis:62px !important;
     width:62px !important;
     min-width:62px !important;
     max-width:62px !important;
   }
-  .bottomNavBtn .bottomNavIcon,
+
+.bottomNavBtn .bottomNavIcon,
   .bottomNavBtn .bottomNavIcon svg{
     width:25px !important;
     height:25px !important;
   }
-  .bottomNavBtn .bottomNavIcon{
+
+.bottomNavBtn .bottomNavIcon{
     flex:0 0 25px !important;
   }
-  .bottomNavMenuBtn{
+
+.bottomNavMenuBtn{
     flex-basis:30px !important;
     width:30px !important;
     min-width:30px !important;
     max-width:30px !important;
   }
-  .bottomNavMenuBtn .moreIcon{
+
+.bottomNavMenuBtn .moreIcon{
     width:13px !important;
     height:13px !important;
   }
 
-  #adminRotationEditor .appMenuMonthYearPicker{
+#adminRotationEditor .appMenuMonthYearPicker{
     display:grid !important;
     gap:8px !important;
   }
-  #adminRotationEditor .appMenuMonthYearGroup{
+
+#adminRotationEditor .appMenuMonthYearGroup{
     margin:0 !important;
   }
-  #adminRotationEditor .appMenuMonthYearGroup > summary{
+
+#adminRotationEditor .appMenuMonthYearGroup > summary{
     cursor:pointer !important;
   }
 
-/* moved inline override block */
-#home .dashboardIconInline{
-    width:74px !important;
-    height:74px !important;
-  }
-  #home .dashboardIconInline svg,
-  #home .dashboardIconInline img{
-    width:100% !important;
-    height:100% !important;
-  }
-  #home .dashboardCard .dashboardIcon.dashboardIconInline,
-  .dashboardCard .dashboardIcon.dashboardIconInline{
-    width:51px !important;
-    height:51px !important;
-    flex:0 0 51px !important;
-  }
-  #home .dashboardCard .dashboardIcon.dashboardIconInline img,
-  #home .dashboardCard .dashboardIcon.dashboardIconInline svg,
-  .dashboardCard .dashboardIcon.dashboardIconInline img,
-  .dashboardCard .dashboardIcon.dashboardIconInline svg{
-    width:100% !important;
-    height:100% !important;
-  }
-
-  .bottomNav{
+.bottomNav{
     width:min(calc(100vw - 8px), 960px) !important;
   }
-  .bottomNavBtn{
+
+.bottomNavBtn{
     flex:0 0 62px !important;
     width:62px !important;
     min-width:62px !important;
     max-width:62px !important;
   }
-  .bottomNavBtn .bottomNavIcon,
-  .bottomNavBtn .bottomNavIcon svg{
-    width:25px !important;
-    height:25px !important;
-  }
-  .bottomNavBtn .bottomNavIcon{
-    flex:0 0 25px !important;
-  }
-  .bottomNavMenuBtn{
+
+.bottomNavMenuBtn{
     flex:0 0 30px !important;
     width:30px !important;
     min-width:30px !important;
     max-width:30px !important;
   }
-  .bottomNavMenuBtn .moreIcon{
-    width:13px !important;
-    height:13px !important;
-  }
 
-  @media (max-width: 560px){
-    .bottomNav{
+@media (max-width: 560px){.bottomNav{
       width:calc(100vw - 6px) !important;
     }
-    .bottomNavBtn{
+
+.bottomNavBtn{
       flex-basis:56px !important;
       width:56px !important;
       min-width:56px !important;
       max-width:56px !important;
     }
-    .bottomNavMenuBtn{
+
+.bottomNavMenuBtn{
       flex-basis:28px !important;
       width:28px !important;
       min-width:28px !important;
       max-width:28px !important;
     }
-    .bottomNavMenuBtn .moreIcon{
+
+.bottomNavMenuBtn .moreIcon{
       width:12px !important;
       height:12px !important;
-    }
-  }
+    }}
 
-/* moved inline override block */
 #dashVyplata .dashboardIcon{
     color:var(--green2) !important;
     opacity:.98 !important;
     filter:none !important;
   }
-  #dashVyplata .dashboardIcon svg{
+
+#dashVyplata .dashboardIcon svg{
     stroke:currentColor !important;
   }
 
-  .appMenuHiddenSelect{
+.appMenuHiddenSelect{
     display:none !important;
   }
-  .appMenuMonthYearPicker{
+
+.appMenuMonthYearPicker{
     display:grid !important;
     gap:8px !important;
     margin-top:6px !important;
   }
-  .appMenuMonthYearGroup{
+
+.appMenuMonthYearGroup{
     border:1px solid rgba(124,255,124,.14) !important;
     border-radius:16px !important;
     background:rgba(255,255,255,.03) !important;
     overflow:hidden !important;
   }
-  .appMenuMonthYearGroup > summary{
+
+.appMenuMonthYearGroup > summary{
     list-style:none !important;
     cursor:pointer !important;
     padding:10px 12px !important;
@@ -690,14 +732,17 @@ html, body {
     justify-content:space-between !important;
     gap:10px !important;
   }
-  .appMenuMonthYearGroup > summary::-webkit-details-marker{display:none !important;}
-  .appMenuMonthYearButtons{
+
+.appMenuMonthYearGroup > summary::-webkit-details-marker{display:none !important;}
+
+.appMenuMonthYearButtons{
     display:flex !important;
     flex-wrap:wrap !important;
     gap:6px !important;
     padding:0 12px 12px !important;
   }
-  .appMenuMonthChip{
+
+.appMenuMonthChip{
     min-height:30px !important;
     padding:0 11px !important;
     border-radius:999px !important;
@@ -709,27 +754,30 @@ html, body {
     line-height:1 !important;
     white-space:nowrap !important;
   }
-  .appMenuMonthChip.isActive{
+
+.appMenuMonthChip.isActive{
     background:rgba(124,255,124,.16) !important;
     border-color:rgba(124,255,124,.36) !important;
     color:#dcffdc !important;
     box-shadow:0 0 0 1px rgba(124,255,124,.08) inset !important;
   }
 
-  .appMenuInlineFieldWrap{
+.appMenuInlineFieldWrap{
     display:flex !important;
     align-items:stretch !important;
     gap:4px !important;
     width:100% !important;
     min-width:0 !important;
   }
-  .appMenuInlineFieldWrap .appMenuInlineInput{
+
+.appMenuInlineFieldWrap .appMenuInlineInput{
     flex:1 1 auto !important;
     min-width:0 !important;
     appearance:textfield !important;
     -webkit-appearance:none !important;
   }
-  .appMenuInlineFieldWrap .appMenuInlineInput::-webkit-search-cancel-button,
+
+.appMenuInlineFieldWrap .appMenuInlineInput::-webkit-search-cancel-button,
   .appMenuInlineFieldWrap .appMenuInlineInput::-webkit-search-decoration,
   .appMenuInlineFieldWrap .appMenuInlineInput::-webkit-clear-button,
   .appMenuInlineFieldWrap .appMenuInlineInput::-ms-clear{
@@ -737,23 +785,27 @@ html, body {
     width:0 !important;
     height:0 !important;
   }
-  .appMenuInlineFieldWrap .appMenuInlineInput:not([data-note-field="date"]):not([data-rot-field="date"]){
+
+.appMenuInlineFieldWrap .appMenuInlineInput:not([data-note-field="date"]):not([data-rot-field="date"]){
     cursor:pointer !important;
   }
-  .appMenuInlineFieldWrap .appMenuInlineInput:focus{
+
+.appMenuInlineFieldWrap .appMenuInlineInput:focus{
     cursor:text !important;
   }
-  .appMenuInlineClearBtn{
+
+.appMenuInlineClearBtn{
     display:none !important;
   }
 
-  .bottomNav{
+.bottomNav{
     width:min(calc(100vw - 8px), 960px) !important;
     overflow:visible !important;
     gap:5px !important;
     padding:5px 5px calc(5px + env(safe-area-inset-bottom)) !important;
   }
-  .bottomNavScroll{
+
+.bottomNavScroll{
     overflow-x:auto !important;
     overflow-y:visible !important;
     padding-left:10px !important;
@@ -763,10 +815,12 @@ html, body {
     -webkit-overflow-scrolling:touch !important;
     scrollbar-width:none !important;
   }
-  #bottomNavScroll .bottomNavBtn:first-child{
+
+#bottomNavScroll .bottomNavBtn:first-child{
     margin-left:8px !important;
   }
-  .bottomNavBtn{
+
+.bottomNavBtn{
     flex:0 0 clamp(52px, 8.6vw, 70px) !important;
     width:clamp(52px, 8.6vw, 70px) !important;
     min-width:clamp(52px, 8.6vw, 70px) !important;
@@ -776,34 +830,42 @@ html, body {
     overflow:visible !important;
     transform-origin:center center !important;
   }
-  .bottomNavBtn .bottomNavIcon,
+
+.bottomNavBtn .bottomNavIcon,
   .bottomNavBtn .bottomNavIcon svg{
     width:clamp(24px, 6.9vw, 34px) !important;
     height:clamp(24px, 6.9vw, 34px) !important;
     display:block !important;
     overflow:visible !important;
   }
-  .bottomNavBtn .bottomNavIcon{
+
+.bottomNavBtn .bottomNavIcon{
     flex:0 0 clamp(24px, 6.9vw, 34px) !important;
   }
-  .bottomNavBtn .bottomNavIconImg{
+
+.bottomNavBtn .bottomNavIconImg{
     transform:translateZ(0) scale(1.04) !important;
   }
-  .bottomNavBtn .bottomNavLabel{
+
+.bottomNavBtn .bottomNavLabel{
     font-size:clamp(7.4px, 1.85vw, 9.4px) !important;
     line-height:1 !important;
   }
-  .bottomNavBtn.active{
+
+.bottomNavBtn.active{
     transform:translateY(-5px) scale(1.07) !important;
     z-index:30 !important;
   }
-  .bottomNavBtn.active::before{
+
+.bottomNavBtn.active::before{
     inset:-6px !important;
   }
-  .bottomNavBtn.active .bottomNavIcon{
+
+.bottomNavBtn.active .bottomNavIcon{
     transform:translateY(-1px) scale(1.03) !important;
   }
-  .bottomNavMenuBtn{
+
+.bottomNavMenuBtn{
     flex:0 0 clamp(28px, 4.8vw, 34px) !important;
     width:clamp(28px, 4.8vw, 34px) !important;
     min-width:clamp(28px, 4.8vw, 34px) !important;
@@ -814,107 +876,124 @@ html, body {
     margin-left:0 !important;
     justify-content:center !important;
   }
-  .bottomNavMenuBtn .moreIcon{
+
+.bottomNavMenuBtn .moreIcon{
     width:clamp(18px, 4vw, 26px) !important;
     height:clamp(18px, 4vw, 26px) !important;
     transform:translateY(-1px) !important;
   }
-  .bottomNavMenuBtn .bottomNavLabel{
+
+.bottomNavMenuBtn .bottomNavLabel{
     font-size:clamp(7.4px, 1.85vw, 9.2px) !important;
   }
-  .bottomNavGamesBtn{margin-right:0 !important;}
 
-  @media (max-width: 560px){
-    .bottomNav{
+.bottomNavGamesBtn{margin-right:0 !important;}
+
+@media (max-width: 560px){.bottomNav{
       width:calc(100vw - 6px) !important;
       gap:4px !important;
     }
-    .bottomNavScroll{
+
+.bottomNavScroll{
       padding-left:8px !important;
       padding-right:8px !important;
       gap:4px !important;
       scroll-padding-inline:10px !important;
     }
-    .bottomNavBtn{
+
+.bottomNavBtn{
       flex-basis:clamp(50px, 9vw, 62px) !important;
       width:clamp(50px, 9vw, 62px) !important;
       min-width:clamp(50px, 9vw, 62px) !important;
       max-width:clamp(50px, 9vw, 62px) !important;
     }
-    .bottomNavMenuBtn{
+
+.bottomNavMenuBtn{
       flex-basis:clamp(26px, 4.8vw, 31px) !important;
       width:clamp(26px, 4.8vw, 31px) !important;
       min-width:clamp(26px, 4.8vw, 31px) !important;
       max-width:clamp(26px, 4.8vw, 31px) !important;
     }
-    .bottomNavMenuBtn .moreIcon{
+
+.bottomNavMenuBtn .moreIcon{
       width:clamp(18px, 4.8vw, 22px) !important;
       height:clamp(18px, 4.8vw, 22px) !important;
-    }
-  }
+    }}
 
-/* moved inline override block */
 body.compactUI .dashboardShell{
     padding:10px !important;
   }
-  body.compactUI .dashboardCard{
+
+body.compactUI .dashboardCard{
     min-height:80px !important;
     padding:10px 12px !important;
     gap:8px !important;
   }
-  body.compactUI #home .dashboardCard .dashboardIcon.dashboardIconInline,
+
+body.compactUI #home .dashboardCard .dashboardIcon.dashboardIconInline,
   body.compactUI .dashboardCard .dashboardIcon.dashboardIconInline{
     width:59px !important;
     height:59px !important;
     flex:0 0 59px !important;
   }
-  body.compactUI #home .dashboardCard .dashboardIcon.dashboardIconInline img,
+
+body.compactUI #home .dashboardCard .dashboardIcon.dashboardIconInline img,
   body.compactUI #home .dashboardCard .dashboardIcon.dashboardIconInline svg,
   body.compactUI .dashboardCard .dashboardIcon.dashboardIconInline img,
   body.compactUI .dashboardCard .dashboardIcon.dashboardIconInline svg{
     width:100% !important;
     height:100% !important;
   }
-  body.compactUI .calcTile,
+
+body.compactUI .calcTile,
   body.compactUI .tile{
     min-height:74px !important;
     padding:10px 11px !important;
     gap:8px !important;
   }
-  body.compactUI .calcTileIcon{
+
+body.compactUI .calcTileIcon{
     width:46px !important;
     height:46px !important;
   }
-  body.compactUI .bottomNavBtn .bottomNavIcon,
+
+body.compactUI .bottomNavBtn .bottomNavIcon,
   body.compactUI .bottomNavBtn .bottomNavIcon svg{
     width:29px !important;
     height:29px !important;
   }
-  body.compactUI .bottomNavBtn .bottomNavIcon{
+
+body.compactUI .bottomNavBtn .bottomNavIcon{
     flex:0 0 29px !important;
   }
-  body.compactUI .bottomNavMenuBtn{
+
+body.compactUI .bottomNavMenuBtn{
     width:34px !important;
     min-width:34px !important;
     max-width:34px !important;
   }
-  body.compactUI .bottomNavMenuBtn .moreIcon{
+
+body.compactUI .bottomNavMenuBtn .moreIcon{
     width:15px !important;
     height:15px !important;
     transform:translateY(-1px) !important;
   }
-  body.compactUI .appMenuCard{
+
+body.compactUI .appMenuCard{
     padding:12px !important;
   }
-  body.compactUI .appMenuAction{
+
+body.compactUI .appMenuAction{
     min-height:42px !important;
   }
-  body.compactUI .appMenuSettingsList,
+
+body.compactUI .appMenuSettingsList,
   body.compactUI .appMenuActionRow,
   body.compactUI .appMenuMonthYearButtons{
     gap:8px !important;
   }
-  body.reduceMotion .dashboardCard,
+
+body.reduceMotion .dashboardCard,
   body.reduceMotion .calcTile,
   body.reduceMotion .appMenuAction,
   body.reduceMotion .bottomNavBtn,
@@ -924,24 +1003,14 @@ body.compactUI .dashboardShell{
     animation:none !important;
   }
 
-/* moved inline override block */
-/* Dashboard icons -10% */
-  #home .dashboardIconInline,
+#home .dashboardIconInline,
   .dashboardCard .dashboardIcon.dashboardIconInline{
     width:60px !important;
     height:60px !important;
     flex:0 0 60px !important;
   }
-  #home .dashboardCard .dashboardIcon.dashboardIconInline img,
-  #home .dashboardCard .dashboardIcon.dashboardIconInline svg,
-  .dashboardCard .dashboardIcon.dashboardIconInline img,
-  .dashboardCard .dashboardIcon.dashboardIconInline svg{
-    width:100% !important;
-    height:100% !important;
-  }
 
-  /* Food status dots -30% */
-  #home .dashboardDot,
+#home .dashboardDot,
   #dashKantyna .dashboardDot,
   #dashJidelna .dashboardDot{
     width:19px !important;
@@ -950,29 +1019,30 @@ body.compactUI .dashboardShell{
     min-height:19px !important;
   }
 
-  /* Bottom bar closer to screen edge */
-  .bottomNav{
+.bottomNav{
     bottom:calc(4px + env(safe-area-inset-bottom)) !important;
     padding:1px 1px calc(1px + env(safe-area-inset-bottom)) !important;
   }
-  .bottomNavScroll,
+
+.bottomNavScroll,
   .bottomNavInner{
     gap:2px !important;
   }
-  .bottomNavBtn{
+
+.bottomNavBtn{
     min-height:44px !important;
     padding:1px 1px 0 !important;
   }
-  .bottomNavBtn .bottomNavLabel{
+
+.bottomNavBtn .bottomNavLabel{
     margin-top:1px !important;
   }
-  .bottomNavMenuBtn{
+
+.bottomNavMenuBtn{
     min-height:44px !important;
   }
 
-  /* Frezky / brusy: narrow collapsed summary only around label */
-
-  #brusyInfo b,
+#brusyInfo b,
 
   @media (max-width: 560px){
     .bottomNav{
@@ -987,7 +1057,6 @@ body.compactUI .dashboardShell{
 
   }
 
-/* moved inline override block */
 .bottomNav{
     width:calc(100% + 10px) !important;
     margin-left:-5px !important;
@@ -996,79 +1065,103 @@ body.compactUI .dashboardShell{
     padding:1px 2px calc(1px + env(safe-area-inset-bottom)) !important;
     border-radius:15px !important;
   }
-  .bottomNavScroll{
+
+.bottomNavScroll{
     padding-left:0 !important;
     padding-right:0 !important;
   }
-  .bottomNavInner{
+
+.bottomNavInner{
     gap:2px !important;
     padding-right:6px !important;
     scroll-padding-right:6px !important;
   }
-  .bottomNavBtn{
+
+.bottomNavBtn{
     min-height:42px !important;
     padding:0 1px 0 !important;
   }
-  .bottomNavBtn .bottomNavIcon,
+
+.bottomNavBtn .bottomNavIcon,
   .bottomNavBtn .bottomNavIcon svg{
     width:28px !important;
     height:28px !important;
   }
-  .bottomNavBtn .bottomNavIcon{
+
+.bottomNavBtn .bottomNavIcon{
     flex:0 0 28px !important;
   }
-  .bottomNavBtn .bottomNavLabel{
+
+.bottomNavBtn .bottomNavLabel{
     font-size:8.4px !important;
     line-height:1.02 !important;
   }
-  .bottomNavMenuBtn{
+
+.bottomNavMenuBtn{
     min-height:42px !important;
     width:46px !important;
     min-width:46px !important;
     max-width:46px !important;
     flex:0 0 46px !important;
   }
-  .bottomNavMenuBtn .moreIcon{
+
+.bottomNavMenuBtn .moreIcon{
     width:18px !important;
     height:18px !important;
     transform:translateY(-2px) !important;
   }
 
-  @media (max-width: 560px){
-    .bottomNav{
+@media (max-width: 560px){.bottomNav{
       width:calc(100% + 14px) !important;
       margin-left:-7px !important;
       margin-right:-7px !important;
       border-radius:14px !important;
     }
-    .bottomNavBtn{
-      min-height:40px !important;
-    }
-    .bottomNavMenuBtn{
+
+.bottomNavBtn{
       min-height:40px !important;
     }
 
-  }
+.bottomNavMenuBtn{
+      min-height:40px !important;
+    }}
 
-/* compact utilities */
 .appMenuTitleSpacer{width:34px;}
+
 .uHidden{display:none !important;}
+
 .uWordBreakAll{word-break:break-all;}
+
 .uMt0{margin-top:0;}
+
 .uMt2{margin-top:2px;}
+
 .uMt4{margin-top:4px;}
+
 .uMt6{margin-top:6px;}
+
 .uMt8{margin-top:8px;}
+
 .uMt10{margin-top:10px;}
+
 .uMt12{margin-top:12px;}
+
 .uMb10{margin-bottom:10px;}
+
 .uPad8{padding:8px;}
+
 .uPad12{padding:12px;}
+
 .uPad10x12{padding:10px 12px;}
+
 .uPad14{padding:14px;}
+
 .uBold{font-weight:700;}
+
 .colW40{width:40px;}
+
 .colW118{width:118px;}
+
 .dashboardHeroBarFill{width:0;}
 
 .uFs22{font-size:22px;}

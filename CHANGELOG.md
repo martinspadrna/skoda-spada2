@@ -1,7 +1,8 @@
-## v.1.1 (469)
-- Opravený `openExternalTile()` pro Jídelní lístek a E-portal.
-- Build metadata, cache i assets byly srovnány na `469`.
-- Drobné HTML cleanup pokračuje beze změny layoutu.
+## v.1.1 (471)
+- Exact duplicate CSS rule blocks were removed from the active stylesheets to reduce override noise.
+- Build metadata, cache i assets were srovnány na `471`.
+- HTML/JS cleanup pokračuje bez zásahu do layout baseline.
+
 
 ## v.1.1 (457)
 - Sjednocené build metadata: verze, cache a viditelnější komentáře teď sedí napříč HTML, JS, CSS i changelogem.

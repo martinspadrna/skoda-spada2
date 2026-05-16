@@ -14,10 +14,9 @@ body{
   animation: pageIn .16s ease-out;
 }
 
-@keyframes pageIn{
-  from{ opacity:0; transform: translateY(4px); }
-  to{ opacity:1; transform: translateY(0); }
-}
+@keyframes pageIn{from{ opacity:0; transform: translateY(4px); }
+
+to{ opacity:1; transform: translateY(0); }}
 
 .headerBar{
   padding-bottom: 6px;
@@ -83,8 +82,7 @@ input{
   touch-action: manipulation;
 }
 
-@media (hover:hover) and (pointer:fine){
-  .tile:hover,
+@media (hover:hover) and (pointer:fine){.tile:hover,
   .listItem:hover,
   .bbtn:hover,
   button:hover,
@@ -92,11 +90,8 @@ input{
   .resetBtn:hover{
     filter: brightness(1.05);
     transform: translateY(-1px);
-  }
-}
+  }}
 
-
-/* Dashboard refresh v1(208) */
 .dashboardShell{
   margin-top:12px;
   padding:14px;
@@ -244,7 +239,6 @@ input{
   display:none;
 }
 
-
 .dashboardTop{
   width:100%;
   display:flex;
@@ -273,7 +267,6 @@ input{
 }
 
 .dashboardCardClickable{ cursor:pointer; }
-
 
 .bottomNav{
   position:fixed;
@@ -309,6 +302,7 @@ input{
   scroll-padding-inline:8px;
   padding-inline:2px;
 }
+
 .bottomNavScroll::-webkit-scrollbar{display:none;}
 
 .bottomNavBtn{
@@ -350,7 +344,7 @@ input{
 }
 
 .bottomNavBtn.active::before{
-  content:'';
+  content:"";
   position:absolute;
   inset:-2px;
   border-radius:inherit;
@@ -381,8 +375,6 @@ input{
   height:20px;
 }
 
-
-/* App-style refresh v1(214) */
 .page{
   width:min(100%, 460px);
   margin:0 auto;
@@ -422,7 +414,7 @@ input{
 }
 
 #dashHero::before{
-  content:'🌙';
+  content:"🌙";
   position:absolute;
   left:16px;
   top:16px;
@@ -526,9 +518,6 @@ input{
   color:rgba(255,255,255,.56);
 }
 
-.dashboardCardClickable{
-  cursor:pointer;
-}
 .dashboardLinkCard{
   color:inherit;
   text-decoration:none;
@@ -614,31 +603,37 @@ input{
 #brusy .indexGrid .bbtn{
   box-shadow:0 10px 22px rgba(0,0,0,.20);
 }
+
 #brusy .indexGrid .bbtn.ad{
   background:linear-gradient(180deg, rgba(57,110,168,.82), rgba(17,24,33,.98));
   border-color:rgba(109,175,255,.74);
   color:#eef6ff;
 }
+
 #brusy .indexGrid .bbtn.ae{
   background:linear-gradient(180deg, rgba(49,144,86,.82), rgba(17,24,20,.98));
   border-color:rgba(111,219,143,.72);
   color:#effff2;
 }
+
 #brusy .indexGrid .bbtn.ah{
   background:linear-gradient(180deg, rgba(191,122,44,.84), rgba(25,20,15,.98));
   border-color:rgba(255,188,103,.72);
   color:#fff4e4;
 }
+
 #brusy .indexGrid .bbtn.adv{
   background:linear-gradient(180deg, rgba(58,79,101,.24), rgba(16,20,24,.98));
   border-color:rgba(128,150,170,.18);
   color:rgba(228,236,242,.82);
 }
+
 #brusy .indexGrid .bbtn.aev{
   background:linear-gradient(180deg, rgba(44,68,50,.22), rgba(16,20,18,.98));
   border-color:rgba(104,132,114,.16);
   color:rgba(226,240,230,.82);
 }
+
 #brusy .indexGrid .bbtn.activeIndex{
   outline:2px solid rgba(124,255,124,.70);
   box-shadow:0 0 0 1px rgba(124,255,124,.20), 0 12px 24px rgba(0,0,0,.22);
@@ -695,7 +690,7 @@ input{
 #rotaceNamesPanel .listItem::after,
 #statsNameGrid .listItem::after,
 #statsMachineGrid .listItem::after{
-  content:'';
+  content:"";
   display:none;
 }
 
@@ -735,7 +730,6 @@ input{
   border-radius:18px;
 }
 
-
 .foodTile,
 .eportalTile{
   border-radius:20px;
@@ -757,7 +751,6 @@ input{
   text-transform:none;
   letter-spacing:0;
 }
-
 
 .bottomNavMenuBtn{
   min-width:30px;
@@ -911,8 +904,6 @@ input{
   color:rgba(255,255,255,.78);
 }
 
-
-/* v1(221) compact dashboard + menu + kalkulačky */
 .dashboardShell{
   padding:12px;
   border-radius:26px;
@@ -1053,38 +1044,10 @@ input{
   stroke:currentColor;
 }
 
-.appMenuPage .appMenuPageCard{
-  padding:14px;
-}
-
-.appMenuPage .appMenuGrid{
-  display:grid;
-  grid-template-columns:repeat(2, minmax(0, 1fr));
-  gap:10px;
-}
-
 .appMenuPage .appMenuAction{
   min-height:54px;
   border-radius:16px;
   font-size:14px;
-}
-
-.appMenuPage .appMenuCardTitle{
-  font-size:18px;
-  font-weight:800;
-}
-
-.appMenuPage .appMenuVersion{
-  margin-top:6px;
-  font-size:15px;
-  font-weight:800;
-  color:var(--green2);
-}
-
-.appMenuPage .appMenuText{
-  margin-top:10px;
-  display:grid;
-  gap:8px;
 }
 
 .appMenuPage .appMenuBody{
@@ -1112,16 +1075,16 @@ input{
   color:var(--soft);
 }
 
-
-/* v1(221) rotace/statistics compact tiles */
 #rotaceNamesPanel .listGrid{
   grid-template-columns:repeat(auto-fit, minmax(68px, 1fr));
   gap:8px;
 }
+
 #statsNameGrid.listGrid{
   grid-template-columns:repeat(5, minmax(0, 1fr));
   gap:7px;
 }
+
 #statsMachineGrid.listGrid{
   grid-template-columns:repeat(auto-fit, minmax(60px, 1fr));
   gap:7px;
@@ -1209,8 +1172,6 @@ input{
   display:none;
 }
 
-
-/* v1(223) overrides */
 .dashboardTop{
   width:100%;
   display:flex;
@@ -1265,10 +1226,6 @@ input{
   color:var(--green2);
 }
 
-.dashboardMeta{
-  display:none;
-}
-
 #dashVyplata .dashboardValue,
 #dashCzd .dashboardValue{
   font-size:17px;
@@ -1294,12 +1251,6 @@ input{
   min-height:72px;
 }
 
-.calcTileText{
-  font-size:17px;
-  font-weight:800;
-  line-height:1.05;
-}
-
 .calcTileIcon{
   width:38px;
   height:38px;
@@ -1308,13 +1259,6 @@ input{
   align-items:center;
   justify-content:center;
   flex:none;
-}
-
-.calcTileIcon svg{
-  width:100%;
-  height:100%;
-  display:block;
-  stroke:currentColor;
 }
 
 .rotaceQuickCards,
@@ -1336,11 +1280,6 @@ input{
   justify-content:center;
 }
 
-.rotaceMiniCard.current{
-  border-color:rgba(124,255,124,.34);
-  background:rgba(124,255,124,.06);
-}
-
 .rotaceMiniLabel{
   display:none;
 }
@@ -1350,12 +1289,6 @@ input{
   font-size:15px;
   font-weight:800;
   line-height:1.2;
-}
-
-.rotaceMiniTarget{
-  font-size:12px;
-  line-height:1.25;
-  color:rgba(255,255,255,.70);
 }
 
 .appMenuPageTitleBar h3{
@@ -1408,15 +1341,6 @@ input{
   justify-self:end;
 }
 
-.bottomNavMenuBtn .moreIcon{
-  width:24px;
-  height:24px;
-  display:block;
-}
-
-
-
-/* v1(225) dashboard/menu/rotace refinements */
 #home .dashboardValue{
   font-size:13px !important;
   line-height:1.12 !important;
@@ -1551,8 +1475,6 @@ input{
   box-shadow:0 18px 40px rgba(0,0,0,.22);
 }
 
-
-/* v1(230) bottom nav tighter glass */
 .bottomNav{
   overflow:visible;
   padding:4px 6px calc(4px + env(safe-area-inset-bottom));
@@ -1590,13 +1512,6 @@ input{
   padding:0;
 }
 
-.bottomNavMenuBtn .moreIcon{
-  width:24px;
-  height:24px;
-}
-
-
-/* v1(231) final tweaks */
 .dashboardHeroLine3{
   margin-top:6px;
   font-size:12px;
@@ -1608,10 +1523,6 @@ input{
   display:grid !important;
   grid-template-columns:1fr !important;
   gap:8px !important;
-}
-
-#kalkulacky .calcTile{
-  width:100%;
 }
 
 #kalkulacky .calcTile{
@@ -1643,12 +1554,6 @@ input{
   min-width:28px;
   max-width:28px;
 }
-
-.bottomNavMenuBtn .moreIcon{
-  width:24px;
-  height:24px;
-}
-
 
 .dashboardHeroLine1{
   display:flex;
@@ -1696,8 +1601,6 @@ input{
   width:100%;
 }
 
-
-/* v1(234) overrides */
 #kalkulacky .grid{
   display:flex !important;
   flex-direction:column !important;
@@ -1764,13 +1667,16 @@ body.reduceMotion *::after{
   display:grid;
   gap:12px;
 }
+
 .appMenuThemeAccordion > summary{
   list-style:none;
   cursor:pointer;
 }
+
 .appMenuThemeAccordion > summary::-webkit-details-marker{
   display:none;
 }
+
 .appMenuThemeSummary{
   width:100%;
   display:flex;
@@ -1778,40 +1684,48 @@ body.reduceMotion *::after{
   justify-content:space-between;
   gap:12px;
 }
+
 .appMenuThemeSummaryLeft{
   display:grid;
   gap:2px;
   min-width:0;
 }
+
 .appMenuThemeSummaryTitle{
   font-size:14px;
   font-weight:800;
   line-height:1.15;
 }
+
 .appMenuThemeSummaryMeta{
   font-size:12px;
   line-height:1.2;
   color:rgba(231,255,240,.74);
 }
+
 .appMenuThemeSummaryChevron{
   font-size:14px;
   line-height:1;
   opacity:.8;
   transition:transform .22s ease;
 }
+
 .appMenuThemeAccordion[open] .appMenuThemeSummaryChevron{
   transform:rotate(180deg);
 }
+
 .appMenuThemeAccordionBody{
   display:grid;
   gap:12px;
   padding-top:4px;
 }
+
 .appMenuThemeGrid{
   display:grid;
   gap:10px;
   grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
 }
+
 .appMenuThemeCard{
   position:relative;
   display:grid;
@@ -1825,13 +1739,16 @@ body.reduceMotion *::after{
   color:#eef7ee;
   text-align:left;
 }
+
 .appMenuThemeCard.isActive{
   outline:2px solid rgba(124,255,124,.45);
   box-shadow:0 0 0 1px rgba(124,255,124,.12), 0 14px 30px rgba(0,0,0,.25);
 }
+
 .appMenuThemeCard.isLocked{
   opacity:.78;
 }
+
 .appMenuThemeSwatch{
   width:56px;
   height:56px;
@@ -1839,28 +1756,30 @@ body.reduceMotion *::after{
   background:linear-gradient(135deg, var(--theme-swatch), rgba(255,255,255,.08));
   box-shadow:inset 0 1px 0 rgba(255,255,255,.08), 0 0 20px rgba(124,255,124,.10);
 }
+
 .appMenuThemeInfo{
   min-width:0;
   display:grid;
   gap:4px;
 }
+
 .appMenuThemeTitle{
   font-size:14px;
   font-weight:800;
   line-height:1.1;
 }
+
 .appMenuThemeSub,
 .appMenuThemeBadge{
   font-size:11px;
   line-height:1.2;
   color:rgba(231,255,240,.74);
 }
+
 .appMenuThemeBadge{
   color:rgba(193,255,195,.86);
 }
 
-
-/* v1(236) bottom nav compact glass */
 .bottomNav{
   width:min(calc(100% - 10px), 760px) !important;
   padding:3px 4px calc(3px + env(safe-area-inset-bottom)) !important;
@@ -1923,8 +1842,6 @@ body.reduceMotion *::after{
   display:none !important;
 }
 
-
-/* v1(237) bottom nav closer to edge */
 .bottomNav{
   padding-top:1px !important;
   padding-bottom:0 !important;
@@ -1955,15 +1872,6 @@ body.reduceMotion *::after{
   max-width:28px !important;
 }
 
-.bottomNavMenuBtn .moreIcon{
-  width:24px !important;
-  height:24px !important;
-  transform:translateY(-12px) !important;
-  display:block !important;
-}
-
-
-/* v1(240) tweaks */
 #dashHero::before{
   content:none !important;
   display:none !important;
@@ -2012,20 +1920,11 @@ body.reduceMotion *::after{
   max-width:26px !important;
 }
 
-.bottomNavMenuBtn .moreIcon{
-  width:24px !important;
-  height:24px !important;
-  transform:translateY(-12px) !important;
-  display:block !important;
-}
-
 #statsMachineGrid .statsMachineTile,
 #statsNameGrid .statsNameTile{
   align-items:flex-start;
 }
 
-
-/* v1(245) bottom nav raise + compact footroom */
 .bottomNav{
   bottom:30px !important;
   padding:2px 4px calc(1px + env(safe-area-inset-bottom)) !important;
@@ -2070,8 +1969,6 @@ body.reduceMotion *::after{
   fill:currentColor;
 }
 
-
-/* v1(247) adjust dashboard icon size and bottom nav icon fill */
 #home .dashboardCard .dashboardIcon.dashboardIconInline,
 .dashboardCard .dashboardIcon.dashboardIconInline{
   width:20px !important;
@@ -2095,87 +1992,91 @@ body.reduceMotion *::after{
   line-height:1 !important;
 }
 
-.bottomNavMenuBtn .moreIcon{
-  width:24px !important;
-  height:24px !important;
-  transform:translateY(-12px) !important;
-  display:block !important;
-}
-
-
-/* v1(259) dashboard + nav icon polish */
 .dashboardTop{align-items:center !important;}
+
 .dashboardLabelRow{gap:8px !important; align-items:center !important;}
+
 #home .dashboardCard .dashboardIcon.dashboardIconInline,
 .dashboardCard .dashboardIcon.dashboardIconInline{width:44px !important; height:44px !important; flex:0 0 44px !important; align-self:center !important;}
+
 #home .dashboardCard .dashboardIcon.dashboardIconInline img,
 #home .dashboardCard .dashboardIcon.dashboardIconInline svg,
 .dashboardCard .dashboardIcon.dashboardIconInline img,
 .dashboardCard .dashboardIcon.dashboardIconInline svg{width:100% !important; height:100% !important; object-fit:contain !important; display:block !important;}
+
 .bottomNavBtn{color:rgba(186,190,186,.58) !important;}
+
 .bottomNavBtn.active{color:var(--green2) !important;}
+
 .bottomNavBtn .bottomNavIcon,
 .bottomNavBtn .bottomNavIcon svg{width:22px !important; height:22px !important; display:block !important; color:currentColor !important; fill:none !important; stroke:currentColor !important; stroke-width:1.9 !important; stroke-linecap:round !important; stroke-linejoin:round !important;}
+
 .bottomNavBtn .bottomNavIcon{flex:0 0 22px !important; line-height:0 !important; font-size:0 !important;}
+
 .bottomNavBtn .bottomNavLabel{color:currentColor !important;}
+
 .bottomNavBtn:not(.active) .bottomNavIcon,
 .bottomNavBtn:not(.active) .bottomNavLabel,
 .bottomNavMenuBtn:not(.active) .moreIcon{color:rgba(186,190,186,.58) !important;}
+
 .bottomNavBtn.active .bottomNavIcon,
 .bottomNavBtn.active .bottomNavLabel,
 .bottomNavMenuBtn.active .moreIcon{color:var(--green2) !important;}
-.bottomNavMenuBtn .moreIcon{width:24px !important; height:24px !important; transform:translateY(-12px) !important; display:block !important;}
 
-
-/* v.1(285) tweaks */
 #brusy .indexGrid .bbtn.adv{
   background:linear-gradient(180deg, rgba(72,92,116,.38), rgba(18,22,26,.98));
   border-color:rgba(160,182,200,.34);
   color:rgba(239,245,249,.92);
 }
+
 #brusy .indexGrid .bbtn.aev{
   background:linear-gradient(180deg, rgba(58,92,66,.36), rgba(18,22,19,.98));
   border-color:rgba(150,184,156,.30);
   color:rgba(234,243,236,.90);
 }
+
 #statsNameGrid .listItem,
 #statsMachineGrid .listItem{
   min-height:40px;
   padding:6px 5px;
 }
+
 #statsNameGrid .statsNameTile,
 #statsMachineGrid .statsMachineTile{
   min-height:40px;
   align-items:center;
 }
+
 #statsNameGrid .statsTileMain,
 #statsMachineGrid .statsTileMain{
   justify-content:center;
 }
+
 #statsNameGrid .statsTileTitle,
 #statsMachineGrid .statsTileTitle{
   font-size:12px;
   line-height:1.05;
 }
+
 #statsNameGrid .statsTileSub,
 #statsMachineGrid .statsTileSub{
   font-size:9px;
   line-height:1.15;
 }
+
 #statsNameView .statsSummary .tile,
 #statsMachineView .statsSummary .tile{
   justify-content:center;
   align-items:center;
   text-align:center;
 }
+
 #statsNameView .statsSummary .tile .statsMultiLine,
 #statsMachineView .statsSummary .tile .statsMultiLine{
   font-size:13px !important;
   line-height:1.25;
 }
 
-
-/* v1(277) stats + selection polish */
 #rotaceNamesPanel .listGrid,
 #statsNameGrid.listGrid,
 #statsMachineGrid.listGrid{
@@ -2208,75 +2109,84 @@ body.reduceMotion *::after{
   padding:10px 8px;
 }
 
-@media (max-width: 700px){
-  #rotaceNamesPanel .listGrid{
+@media (max-width: 700px){#rotaceNamesPanel .listGrid{
     grid-template-columns:repeat(auto-fit, minmax(74px, 1fr));
   }
-  #statsNameGrid.listGrid{
+
+#statsNameGrid.listGrid{
     grid-template-columns:repeat(5, minmax(0, 1fr));
   }
-  #statsMachineGrid.listGrid{
+
+#statsMachineGrid.listGrid{
     grid-template-columns:repeat(5, minmax(0, 1fr));
     gap:5px;
   }
-  #statsMachineGrid .listItem{
+
+#statsMachineGrid .listItem{
     min-height:36px;
     padding:5px 2px;
   }
-  #statsMachineGrid .statsTileTitle{
+
+#statsMachineGrid .statsTileTitle{
     font-size:10.5px;
     letter-spacing:-0.2px;
-  }
-}
+  }}
 
-/* v.1(280) — strojové dlaždice se musí vejít na jeden řádek i na malých telefonech */
-@media (max-width: 380px){
-  #statsMachineGrid.listGrid{
+@media (max-width: 380px){#statsMachineGrid.listGrid{
     gap:4px;
   }
-  #statsMachineGrid .listItem{
+
+#statsMachineGrid .listItem{
     padding:4px 1px;
   }
-  #statsMachineGrid .statsTileTitle{
+
+#statsMachineGrid .statsTileTitle{
     font-size:9.5px;
     letter-spacing:-0.3px;
-  }
-}
+  }}
 
-/* v.1(285) admin + leaderboard + tighter machine tiles */
 #statsMachineGrid.listGrid{
   grid-template-columns:repeat(5, minmax(0, 1fr));
   gap:4px;
 }
+
 #statsMachineGrid .listItem{
   padding:4px 1px;
   min-height:34px;
 }
+
 #statsMachineGrid .statsMachineTile{
   padding:4px 1px;
 }
+
 #statsMachineGrid .statsTileTitle{
   font-size:9.5px;
   line-height:1.02;
   letter-spacing:-0.38px;
 }
+
 #statsMachineGrid .statsTileMain{
   justify-content:center;
 }
+
 #statsMachineGrid .statsTileSub{
   font-size:8px;
 }
+
 .appMenuAdminCard{
   gap:10px;
 }
+
 .appMenuPage[data-admin-view="machines"] .adminMachinesCard{
   padding-bottom:88px;
 }
+
 .appMenuFreeNamesBox{
   display:grid;
   gap:6px;
   margin-top:2px;
 }
+
 .appMenuFreeNamesTitle{
   font-size:11px;
   font-weight:800;
@@ -2284,12 +2194,14 @@ body.reduceMotion *::after{
   text-transform:uppercase;
   color:rgba(124,255,124,.72);
 }
+
 .appMenuFreeNamesText{
   font-size:12px;
   line-height:1.35;
   color:rgba(242,248,245,.88);
   word-break:break-word;
 }
+
 .appMenuLabel{
   display:block;
   font-size:12px;
@@ -2297,6 +2209,7 @@ body.reduceMotion *::after{
   color:rgba(242,248,245,.88);
   margin:4px 2px 6px;
 }
+
 .appMenuSelect,
 .appMenuTextarea{
   width:100%;
@@ -2306,10 +2219,12 @@ body.reduceMotion *::after{
   color:#f4f9f5;
   box-shadow:0 12px 28px rgba(0,0,0,.22) inset, 0 10px 24px rgba(0,0,0,.16);
 }
+
 .appMenuSelect{
   min-height:44px;
   padding:11px 14px;
 }
+
 .appMenuTextarea{
   min-height:180px;
   padding:12px 14px;
@@ -2323,18 +2238,21 @@ body.reduceMotion *::after{
   gap:10px;
   margin-top:4px;
 }
+
 .appMenuSubTitle{
   font-size:13px;
   font-weight:800;
   letter-spacing:.02em;
   color:rgba(244,249,245,.92);
 }
+
 .appMenuTableWrap{
   overflow:auto;
   border:1px solid rgba(124,255,124,.12);
   border-radius:18px;
   background:rgba(7,10,8,.48);
 }
+
 .appMenuAdminTable{
   width:100%;
   min-width:640px;
@@ -2342,6 +2260,7 @@ body.reduceMotion *::after{
   border-spacing:0;
   table-layout:fixed;
 }
+
 .appMenuAdminTable thead th{
   position:sticky;
   top:0;
@@ -2353,11 +2272,13 @@ body.reduceMotion *::after{
   padding:8px 6px;
   border-bottom:1px solid rgba(124,255,124,.10);
 }
+
 .appMenuAdminTable td{
   padding:4px 4px;
   border-bottom:1px solid rgba(124,255,124,.08);
   vertical-align:top;
 }
+
 .appMenuInlineInput{
   width:100%;
   min-height:32px;
@@ -2369,81 +2290,102 @@ body.reduceMotion *::after{
   font-size:12px;
   box-sizing:border-box;
 }
+
 .appMenuInlineInputTiny{
   min-width:58px;
   text-align:center;
   padding:7px 4px;
 }
+
 .appMenuAdminTableDense{
   min-width:560px;
 }
+
 .appMenuAdminTableDense td{
   padding:3px 3px;
 }
+
 .appMenuAdminRotationTable,
 .appMenuAdminAbsenceTable{
   width:max-content;
   min-width:0;
   table-layout:fixed;
 }
+
 .appMenuAdminRotationTable thead th,
 .appMenuAdminAbsenceTable thead th{
   white-space:nowrap;
 }
+
 .appMenuAdminRotationTable th,
 .appMenuAdminRotationTable td{
   padding:3px 2px;
 }
+
 .appMenuAdminRotationTable .appMenuInlineInput{
   min-height:28px;
   padding:5px 5px;
   font-size:11px;
 }
+
 .appMenuAdminRotationTable .appMenuInlineInputTiny{
   min-width:48px;
   padding:5px 3px;
 }
+
 .appMenuAdminRotationTable col{
   width:auto;
 }
+
 .appMenuAdminAbsenceTable th,
 .appMenuAdminAbsenceTable td{
   padding:3px 2px;
 }
+
 .appMenuAdminAbsenceTable .appMenuInlineInput{
   min-height:28px;
   padding:5px 6px;
   font-size:11px;
 }
+
 .appMenuAdminAbsenceTable col:nth-child(1){width:44px;}
+
 .appMenuAdminAbsenceTable col:nth-child(2){width:128px;}
+
 .appMenuAdminAbsenceTable col:nth-child(3){width:44px;}
+
 .appMenuActionRow{
   display:flex;
   gap:8px;
   flex-wrap:wrap;
 }
+
 .appMenuActionRow .appMenuAction{
   flex:1 1 140px;
 }
+
 .appMenuSecretHint{
   font-size:12px;
   opacity:.72;
 }
+
 .tttWinHistory{
   margin-top:12px;
 }
+
 .tttWinTable{
   width:100%;
   border-collapse:separate;
   border-spacing:0 8px;
 }
+
 .tttWinTable th{
   font-size:11px;
   text-align:left;
   color:rgba(239,246,241,.70);
   padding:0 8px 3px;
 }
+
 .tttWinTable td{
   background:rgba(12,16,13,.82);
   border-top:1px solid rgba(124,255,124,.08);
@@ -2451,77 +2393,111 @@ body.reduceMotion *::after{
   padding:8px 8px;
   font-size:12px;
 }
+
 .tttWinTable tr td:first-child{
   border-left:1px solid rgba(124,255,124,.08);
   border-radius:14px 0 0 14px;
 }
+
 .tttWinTable tr td:last-child{
   border-right:1px solid rgba(124,255,124,.08);
   border-radius:0 14px 14px 0;
 }
+
 .tttWinTable .muted{
   opacity:.72;
 }
 
-
-/* v1(320) cleanup: games, sync badge, scrollable bottom nav */
 .dashboardHeroCard{position:relative !important;padding-right:128px !important;}
+
 .dashboardSyncBadge{position:absolute !important;top:12px !important;right:12px !important;z-index:3 !important;display:inline-flex !important;align-items:center !important;gap:6px !important;padding:7px 10px !important;border-radius:999px !important;border:1px solid rgba(124,255,124,.18) !important;background:rgba(12,16,14,.66) !important;backdrop-filter:blur(14px) saturate(150%) !important;-webkit-backdrop-filter:blur(14px) saturate(150%) !important;color:rgba(238,247,238,.82) !important;font-size:11px !important;line-height:1 !important;font-weight:700 !important;letter-spacing:.02em !important;box-shadow:0 10px 30px rgba(0,0,0,.18) !important;pointer-events:none !important;max-width:calc(100% - 24px) !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important;}
+
 .dashboardSyncBadge--online{border-color:rgba(124,255,124,.22) !important;background:rgba(10,28,16,.70) !important;color:#d7ffe0 !important;}
+
 .dashboardSyncBadge--offline,.dashboardSyncBadge--pending{border-color:rgba(255,214,102,.22) !important;background:rgba(28,24,10,.70) !important;color:#f7f0cd !important;}
+
 .dashboardSyncBadge--error{border-color:rgba(255,124,124,.22) !important;background:rgba(28,10,10,.72) !important;color:#ffdcdc !important;}
+
 .bottomNavInner{overflow-x:auto !important;overflow-y:hidden !important;-webkit-overflow-scrolling:touch !important;scroll-snap-type:x proximity !important;flex-wrap:nowrap !important;scrollbar-width:none !important;gap:8px !important;padding-right:8px !important;}
+
 .bottomNavInner::-webkit-scrollbar{display:none !important;}
+
 .bottomNavBtn{flex:0 0 auto !important;scroll-snap-align:center !important;}
+
 .bottomNavMenuBtn{position:sticky !important;right:0 !important;margin-left:auto !important;z-index:4 !important;background:linear-gradient(180deg, rgba(14,19,16,.92), rgba(10,14,12,.98)) !important;box-shadow:-8px 0 18px rgba(0,0,0,.18) !important;}
+
 .bottomNavGamesBtn{margin-right:8px !important;}
+
 .bottomNavGamesBtn .bottomNavIcon svg{stroke-width:1.8 !important;}
+
 #games .calcTileIcon svg{stroke:currentColor !important;}
 
-/* v1(326) bottom nav compact icons + hidden games */
 .bottomNav{display:flex !important;align-items:center !important;gap:6px !important;}
+
 .bottomNavScroll{display:flex !important;align-items:center !important;gap:4px !important;flex:1 1 auto !important;min-width:0 !important;overflow-x:auto !important;overflow-y:hidden !important;-webkit-overflow-scrolling:touch !important;scroll-snap-type:x proximity !important;scrollbar-width:none !important;}
+
 .bottomNavScroll::-webkit-scrollbar{display:none !important;}
+
 .bottomNavInner{display:flex !important;align-items:center !important;gap:4px !important;flex-wrap:nowrap !important;min-width:max-content !important;padding-right:8px !important;}
+
 .bottomNavBtn{flex:0 0 auto !important;scroll-snap-align:center !important;min-width:58px !important;min-height:52px !important;padding:2px 2px 1px !important;}
+
 .bottomNavBtn .bottomNavIcon,.bottomNavBtn .bottomNavIcon svg{width:22px !important;height:22px !important;display:block !important;}
+
 .bottomNavBtn .bottomNavIcon{flex:0 0 22px !important;}
+
 .bottomNavBtn .bottomNavLabel{font-size:9px !important;line-height:1.04 !important;}
+
 .bottomNavBtn span{font-size:17px !important;line-height:1 !important;}
+
 .bottomNavMenuBtn{flex:0 0 38px !important;position:sticky !important;right:0 !important;z-index:4 !important;margin-left:auto !important;width:38px !important;min-width:38px !important;max-width:44px !important;}
+
 .bottomNavMenuBtn .moreIcon{width:24px !important;height:24px !important;transform:translateY(-11px) !important;display:block !important;}
+
 .bottomNavGamesBtn{margin-right:4px !important;}
-.bottomNavGamesBtn .bottomNavIcon svg{stroke-width:1.8 !important;}
 
-
-/* v1(326) bottom nav fit + menu right + games hidden */
 .bottomNav{gap:4px !important;}
+
 .bottomNavScroll{flex:1 1 auto !important; min-width:0 !important; overflow-x:auto !important; overflow-y:hidden !important; -webkit-overflow-scrolling:touch !important; scroll-snap-type:x mandatory !important; scrollbar-width:none !important;}
-.bottomNavScroll::-webkit-scrollbar{display:none !important;}
+
 .bottomNavInner{display:flex !important; align-items:center !important; gap:3px !important; min-width:max-content !important; flex-wrap:nowrap !important; padding-right:6px !important;}
+
 .bottomNavBtn{flex:0 0 52px !important; width:52px !important; min-width:52px !important; max-width:52px !important; min-height:50px !important; padding:2px 2px 1px !important;}
+
 .bottomNavBtn .bottomNavIcon,.bottomNavBtn .bottomNavIcon svg{width:21px !important;height:21px !important;display:block !important;}
+
 .bottomNavBtn .bottomNavIcon{flex:0 0 21px !important;}
+
 .bottomNavBtn .bottomNavLabel{font-size:8.8px !important;line-height:1.03 !important;}
+
 .bottomNavMenuBtn{flex:0 0 38px !important; position:sticky !important; right:0 !important; margin-left:auto !important; z-index:5 !important; width:38px !important; min-width:38px !important; max-width:38px !important;}
+
 .bottomNavMenuBtn .moreIcon{width:22px !important;height:22px !important;transform:translateY(-11px) !important;display:block !important;}
+
 .bottomNavGamesBtn{margin-right:2px !important;}
+
 .gamesAccountSelected{flex:1 1 auto !important; min-width:0 !important; min-height:44px !important; display:flex !important; align-items:center !important; justify-content:center !important; padding:0 14px !important; border-radius:14px !important; border:1px solid rgba(124,255,124,.18) !important; background:rgba(255,255,255,.04) !important; color:#e7fff0 !important; font-weight:650 !important; letter-spacing:.02em !important;}
 
-
-/* v1(388) PWA update toast */
 .rakUpdateToast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(16px);width:min(560px, calc(100vw - 16px));z-index:260;display:flex;align-items:center;gap:10px;padding:12px 12px 12px 11px;border-radius:22px;border:1px solid rgba(124,255,124,.18);background:rgba(9,13,11,.80);backdrop-filter:blur(18px) saturate(155%);-webkit-backdrop-filter:blur(18px) saturate(155%);box-shadow:0 20px 46px rgba(0,0,0,.36), inset 0 1px 0 rgba(255,255,255,.04);color:#eef7ee;opacity:0;pointer-events:none;transition:transform .24s ease, opacity .24s ease;contain:layout style paint;}
-.rakUpdateToast.isVisible{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto;}
-.rakUpdateToastBadge{width:42px;height:42px;border-radius:15px;display:grid;place-items:center;flex:0 0 42px;background:linear-gradient(180deg, rgba(124,255,124,.14), rgba(124,255,124,.06));border:1px solid rgba(124,255,124,.16);box-shadow:0 10px 20px rgba(0,0,0,.18) inset, 0 0 24px rgba(124,255,124,.10);font-weight:800;letter-spacing:.03em;color:#dfffe3;font-size:13px;}
-.rakUpdateToastBody{flex:1 1 auto;min-width:0;display:grid;gap:3px;text-align:left;}
-.rakUpdateToastTitle{font-size:14px;line-height:1.2;font-weight:800;letter-spacing:.01em;color:#f2fff2;}
-.rakUpdateToastText{font-size:12px;line-height:1.25;color:rgba(231,255,240,.76);}
-.rakUpdateToastAction{flex:0 0 auto;min-height:42px;padding:0 16px;border-radius:16px;border:1px solid rgba(124,255,124,.24);background:linear-gradient(180deg, rgba(124,255,124,.96), rgba(84,201,104,.92));color:#07200f;font-weight:900;letter-spacing:.01em;box-shadow:0 10px 26px rgba(0,0,0,.20), 0 0 18px rgba(124,255,124,.18);align-self:center;}
-.rakUpdateToastAction:active{transform:translateY(1px);}
-.rakUpdateToastAction[disabled]{opacity:.72;cursor:wait;filter:saturate(.72);}
-@media (max-width: 420px){.rakUpdateToast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(16px);width:min(560px, calc(100vw - 16px));z-index:260;display:flex;align-items:center;gap:10px;padding:12px 12px 12px 11px;border-radius:22px;border:1px solid rgba(124,255,124,.18);background:rgba(9,13,11,.80);backdrop-filter:blur(18px) saturate(155%);-webkit-backdrop-filter:blur(18px) saturate(155%);box-shadow:0 20px 46px rgba(0,0,0,.36), inset 0 1px 0 rgba(255,255,255,.04);color:#eef7ee;opacity:0;pointer-events:none;transition:transform .24s ease, opacity .24s ease;contain:layout style paint;}
 
-/* v1.1 (460) final overrides: icon polish, update popup vertical mobile layout, bottom nav visibility */
+.rakUpdateToast.isVisible{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto;}
+
+.rakUpdateToastBadge{width:42px;height:42px;border-radius:15px;display:grid;place-items:center;flex:0 0 42px;background:linear-gradient(180deg, rgba(124,255,124,.14), rgba(124,255,124,.06));border:1px solid rgba(124,255,124,.16);box-shadow:0 10px 20px rgba(0,0,0,.18) inset, 0 0 24px rgba(124,255,124,.10);font-weight:800;letter-spacing:.03em;color:#dfffe3;font-size:13px;}
+
+.rakUpdateToastBody{flex:1 1 auto;min-width:0;display:grid;gap:3px;text-align:left;}
+
+.rakUpdateToastTitle{font-size:14px;line-height:1.2;font-weight:800;letter-spacing:.01em;color:#f2fff2;}
+
+.rakUpdateToastText{font-size:12px;line-height:1.25;color:rgba(231,255,240,.76);}
+
+.rakUpdateToastAction{flex:0 0 auto;min-height:42px;padding:0 16px;border-radius:16px;border:1px solid rgba(124,255,124,.24);background:linear-gradient(180deg, rgba(124,255,124,.96), rgba(84,201,104,.92));color:#07200f;font-weight:900;letter-spacing:.01em;box-shadow:0 10px 26px rgba(0,0,0,.20), 0 0 18px rgba(124,255,124,.18);align-self:center;}
+
+.rakUpdateToastAction:active{transform:translateY(1px);}
+
+.rakUpdateToastAction[disabled]{opacity:.72;cursor:wait;filter:saturate(.72);}
+
+@media (max-width: 420px){
+
 .rakUpdateToast{
   flex-direction:column !important;
   align-items:stretch !important;
@@ -2529,50 +2505,60 @@ body.reduceMotion *::after{
   padding:14px 14px 13px !important;
   text-align:center !important;
 }
+
 .rakUpdateToastBadge{
   align-self:center !important;
 }
+
 .rakUpdateToastBody{
   text-align:center !important;
 }
+
 .rakUpdateToastAction{
   width:100% !important;
   align-self:stretch !important;
 }
-@media (min-width: 560px){
-  .rakUpdateToast{
+
+@media (min-width: 560px){.rakUpdateToast{
     flex-direction:row !important;
     align-items:center !important;
     text-align:left !important;
   }
-  .rakUpdateToastBody{
+
+.rakUpdateToastBody{
     text-align:left !important;
   }
-  .rakUpdateToastAction{
+
+.rakUpdateToastAction{
     width:auto !important;
     align-self:center !important;
-  }
-}
+  }}
+
 .bottomNav{
   padding-bottom: calc(8px + env(safe-area-inset-bottom)) !important;
 }
+
 .bottomNavScroll{
   padding-inline: 6px !important;
 }
+
 .bottomNavInner{
   padding-right: 20px !important;
 }
+
 .bottomNavGamesBtn{
   margin-right: 14px !important;
 }
-@media (max-width: 430px){
-  .bottomNavBtn{
+
+@media (max-width: 430px){.bottomNavBtn{
     flex-basis: 50px !important;
     width: 50px !important;
     min-width: 50px !important;
     max-width: 50px !important;
   }
-  .bottomNavBtn .bottomNavLabel{
+
+.bottomNavBtn .bottomNavLabel{
     font-size: 8px !important;
-  }
-}
+  }}}@media (min-width: 560px){}
+
+@media (max-width: 430px){}}
