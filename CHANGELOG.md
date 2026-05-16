@@ -1,7 +1,7 @@
-## v.1.1 (467)
-- Fáze 1 pokračuje: dashboard externí odkazy jsou centralizované, custom E-portal plumbing je pryč a klikání je jednotné.
-- Build metadata, cache i assets byly srovnány na `467`.
-- Drobné HTML cleanup: soustruhy dostaly odstraněné duplicitní data atributy a pár inline layout stylů se přesunulo do utility tříd.
+## v.1.1 (469)
+- Opravený `openExternalTile()` pro Jídelní lístek a E-portal.
+- Build metadata, cache i assets byly srovnány na `469`.
+- Drobné HTML cleanup pokračuje beze změny layoutu.
 
 ## v.1.1 (457)
 - Sjednocené build metadata: verze, cache a viditelnější komentáře teď sedí napříč HTML, JS, CSS i changelogem.

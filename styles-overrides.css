@@ -1,12 +1,4 @@
-/* v.1.1 (467) — final overrides / calcPanel compact source of truth */
-:root{
-  --calc-compact-gap:4px;
-  --calc-compact-pad-x:10px;
-  --calc-compact-pad-y:5px;
-  --calc-compact-min-h:34px;
-  --calc-compact-line:1.02;
-}
-
+/* v.1.1 (469) — final overrides / bottom-nav and misc */
 .bottomNav{
     gap:3px !important;
     padding:3px 3px calc(3px + env(safe-area-inset-bottom)) !important;
@@ -51,132 +43,9 @@
     inset:-5px !important;
   }
 
-  :is(#frezky, #brusy) .brusDetails{
-    width:100% !important;
-    margin-top:4px !important;
-    border-radius:10px !important;
-  }
-  :is(#frezky, #brusy) .brusDetails + .brusDetails{
-    margin-top:4px !important;
-  }
-  :is(#frezky, #brusy) .brusDetails > summary{
-    display:flex !important;
-    flex-direction:column !important;
-    align-items:flex-start !important;
-    justify-content:center !important;
-    width:100% !important;
-    max-width:none !important;
-    min-height:var(--calc-compact-min-h) !important;
-    padding:var(--calc-compact-pad-y) var(--calc-compact-pad-x) !important;
-    gap:1px !important;
-    line-height:var(--calc-compact-line) !important;
-  }
-  :is(#frezky, #brusy) .brusDetails > summary::after{
-    float:none !important;
-    align-self:flex-end !important;
-    margin-left:6px !important;
-  }
-  :is(#frezky, #brusy) .brusDetails.calcDetails[open] > summary{
-    width:100% !important;
-    max-width:none !important;
-  }
-  :is(#frezky, #brusy) .calcSummaryTitle{
-    display:block !important;
-    font-size:11px !important;
-    font-weight:700 !important;
-    line-height:1.04 !important;
-    white-space:nowrap !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important;
-  }
-  :is(#frezky, #brusy) .calcSummarySub{
-    display:block !important;
-    font-size:9px !important;
-    line-height:1.02 !important;
-    opacity:.8 !important;
-    white-space:nowrap !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important;
-  }
-  :is(#frezky, #brusy) .brusDetailsBody{
-    padding:0 10px 10px 10px !important;
-    gap:6px !important;
-    min-height:0 !important;
-  }
-  :is(#frezky, #brusy) .card{
-    min-height:0 !important;
-  }
-  #brusyInfo{
-    display:block !important;
-    width:100% !important;
-    max-width:none !important;
-    padding:3px 8px !important;
-    gap:0 !important;
-    min-height:0 !important;
-  }
-  #brusyInfo b{
-    font-size:11px !important;
-    line-height:1.02 !important;
-  }
-  #brusyInfo .smallText{
-    font-size:9px !important;
-    line-height:1.02 !important;
-  }
-  #brusy :is(.bgrid .bbtn, .indexGrid .bbtn, .indexGrid .freeWrap .bbtn){
-    min-height:var(--calc-compact-min-h) !important;
-    height:34px !important;
-    padding:0 8px !important;
-    font-size:13px !important;
-  }
-  #brusy .bgrid,
-  #brusy .indexGrid{
-    gap:6px !important;
-  }
-  :is(#frezky, #brusy) .brusDetails.calcDetailsInner > summary{
-    min-height:36px !important;
-    padding:7px 11px !important;
-    width:100% !important;
-    max-width:none !important;
-  }
-  :is(#frezky, #brusy) .brusDetails.calcDetailsInner > summary::after{
-    font-size:13px !important;
-  }
+/* calc panel source moved to styles-calc-panels.css */
 
-
-.calcPanel{
-  gap:var(--calc-compact-gap);
-}
-.calcPanel--compact{
-  width:100%;
-}
-.calcPanel--compact > summary,
-.calcPanel--compact .calcPanel-summary,
-.calcPanel--compact .calcDetails > summary,
-.calcPanel--compact .calcDetailsInner > summary{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  width:100%;
-  min-height:var(--calc-compact-min-h);
-  padding:var(--calc-compact-pad-y) var(--calc-compact-pad-x);
-  gap:var(--calc-compact-gap);
-  line-height:var(--calc-compact-line);
-  box-sizing:border-box;
-}
-.calcPanel--compact .calcSummaryTitle{
-  font-size:11px;
-  line-height:1.04;
-}
-.calcPanel--compact .calcSummarySub{
-  font-size:9px;
-  line-height:1.02;
-}
-.calcPanel--compact .brusDetailsBody{
-  padding:0 10px 10px 10px;
-  gap:6px;
-}
 /* === v.1.1 (462) moved inline overrides from index.html === */
-
 
 /* moved inline override block */
 /* Dashboard food dots */
@@ -366,7 +235,6 @@
     padding-bottom:calc(14px + env(safe-area-inset-bottom)) !important;
   }
 
-
 /* moved inline override block */
 #games .gamesProfilesFolder,
   #games .gamesAchievementsFolder,
@@ -388,7 +256,6 @@
     border-radius:inherit !important;
     background:linear-gradient(90deg, rgba(124,255,124,.88), rgba(124,255,124,.48)) !important;
   }
-
 
 /* moved inline override block */
 html, body {
@@ -653,7 +520,6 @@ html, body {
     }
   }
 
-
 /* moved inline override block */
 #home .dashboardIconInline{
     width:74px !important;
@@ -713,7 +579,6 @@ html, body {
   #adminRotationEditor .appMenuMonthYearGroup > summary{
     cursor:pointer !important;
   }
-
 
 /* moved inline override block */
 #home .dashboardIconInline{
@@ -788,7 +653,6 @@ html, body {
       height:12px !important;
     }
   }
-
 
 /* moved inline override block */
 #dashVyplata .dashboardIcon{
@@ -989,7 +853,6 @@ html, body {
     }
   }
 
-
 /* moved inline override block */
 body.compactUI .dashboardShell{
     padding:10px !important;
@@ -1061,7 +924,6 @@ body.compactUI .dashboardShell{
     animation:none !important;
   }
 
-
 /* moved inline override block */
 /* Dashboard icons -10% */
   #home .dashboardIconInline,
@@ -1125,7 +987,6 @@ body.compactUI .dashboardShell{
 
   }
 
-
 /* moved inline override block */
 .bottomNav{
     width:calc(100% + 10px) !important;
@@ -1188,8 +1049,6 @@ body.compactUI .dashboardShell{
     }
 
   }
-
-
 
 /* compact utilities */
 .appMenuTitleSpacer{width:34px;}

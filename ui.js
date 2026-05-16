@@ -4074,6 +4074,21 @@ function openKalkulacky() {
 
 const EPORTAL_URL = 'https://space.skoda.vwgroup.com/group/b2eportal/home-page';
 
+function openExternalTile(url) {
+  const target = String(url || '').trim();
+  if (!target) return false;
+  try {
+    const win = window.open(target, '_blank', 'noopener,noreferrer');
+    if (win) {
+      try { win.opener = null; } catch (e) {}
+      return true;
+    }
+  } catch (err) {
+    console.warn('External tile open failed', err);
+  }
+  return false;
+}
+
 function openEportal() {
   return openExternalTile(EPORTAL_URL);
 }
