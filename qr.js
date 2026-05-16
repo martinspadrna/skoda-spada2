@@ -386,7 +386,7 @@ function buildFoodScheduleHtml(location) {
   return [
     '<div class="foodScheduleTitleBlock">',
     '<div class="sectionTitle">Otevírací doba</div>',
-    '<div class="smallText" style="margin-top:0; margin-bottom:10px;">' + escapeHtml(location.label) + '</div>',
+    '<div class="smallText uMt0 uMb10">' + escapeHtml(location.label) + '</div>',
     '</div>',
     rows
   ].join('');

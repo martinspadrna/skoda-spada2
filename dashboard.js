@@ -156,7 +156,7 @@ function scheduleDashboardInitialPaint() {
   const retry = () => {
     const ok = run();
     if (!ok && attempts < 6) {
-      setTimeout(retry, 180);
+      if (typeof registerTimeout === 'function') registerTimeout(retry, 180); else setTimeout(retry, 180);
     }
   };
   retry();
@@ -164,11 +164,21 @@ function scheduleDashboardInitialPaint() {
     requestAnimationFrame(retry);
     requestAnimationFrame(() => requestAnimationFrame(retry));
   } else {
-    setTimeout(retry, 0);
-    setTimeout(retry, 120);
+    if (typeof registerTimeout === 'function') {
+      registerTimeout(retry, 0);
+      registerTimeout(retry, 120);
+    } else {
+      setTimeout(retry, 0);
+      setTimeout(retry, 120);
+    }
   }
-  setTimeout(retry, 360);
-  setTimeout(retry, 900);
+  if (typeof registerTimeout === 'function') {
+    registerTimeout(retry, 360);
+    registerTimeout(retry, 900);
+  } else {
+    setTimeout(retry, 360);
+    setTimeout(retry, 900);
+  }
 }
 
 function forceHomeRefresh() {
@@ -198,7 +208,7 @@ function homeLooksUnpainted() {
 
 function hammerHomeRefresh() {
   [0, 40, 120, 240, 480, 900, 1500, 2500].forEach((delay) => {
-    setTimeout(() => {
+    if (typeof registerTimeout === 'function') registerTimeout(() => {
       try {
         forceHomeRefresh();
       } catch (err) {
@@ -210,7 +220,7 @@ function hammerHomeRefresh() {
 
 function watchHomePaint() {
   [80, 180, 360, 700, 1200, 2000, 3000].forEach((delay) => {
-    setTimeout(() => {
+    if (typeof registerTimeout === 'function') registerTimeout(() => {
       try {
         if (typeof document !== 'undefined' && document.body && !document.hidden && homeLooksUnpainted()) {
           forceHomeRefresh();
@@ -253,13 +263,13 @@ function isAnyModalOpen() {
 }
 
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', bootHomeRefresh, { once: true });
+  registerListener(document, 'DOMContentLoaded', bootHomeRefresh, { once: true });
 } else {
   bootHomeRefresh();
 }
-window.addEventListener('load', bootHomeRefresh, { once: true });
-window.addEventListener('pageshow', bootHomeRefresh);
-window.addEventListener('visibilitychange', () => {
+registerListener(window, 'load', bootHomeRefresh, { once: true });
+registerListener(window, 'pageshow', bootHomeRefresh);
+registerListener(window, 'visibilitychange', () => {
   if (!document.hidden) {
     bootHomeRefresh();
   }

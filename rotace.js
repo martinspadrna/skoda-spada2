@@ -329,12 +329,7 @@ function ensurePersonScheduleModal() {
   });
   overlay.querySelector('.personScheduleClose')?.addEventListener('click', hidePersonScheduleModal);
 
-  if (!document.body.dataset.personModalKeydownBound) {
-    document.body.dataset.personModalKeydownBound = '1';
-    document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape') hidePersonScheduleModal();
-    });
-  }
+  bindGlobalEscapeOnce('personModalKeydownBound', hidePersonScheduleModal);
 
   document.body.appendChild(overlay);
   return overlay;
@@ -448,7 +443,7 @@ function renderMonth(monthKey) {
   const renderTable = (section, label) => {
     const sec = month[section];
     if (!sec) return "";
-    let out = "<div class='smallText' style='margin-top:10px;font-weight:bold;'>" + label + "</div>";
+    let out = "<div class='smallText uMt10 uBold'>" + label + "</div>";
     out += "<div class='tableWrap'><table class='rotTable'><thead><tr><th>Datum</th>";
     (sec.machines || []).forEach(m => {
       out += "<th>" + escapeHtml(m) + "</th>";
@@ -475,7 +470,7 @@ function renderMonth(monthKey) {
   html += renderTable("hard", "Tvrdota");
   html += renderTable("soft", "Měkota");
 
-  html += "<div class='smallText' style='margin-top:12px;font-weight:bold;'>Dovolené / absence</div>";
+  html += "<div class='smallText uMt12 uBold'>Dovolené / absence</div>";
   const absNotes = (month.notes || []).map(normalizeNoteEntry).filter(n => n.isAbsence);
 
   if (absNotes.length) {

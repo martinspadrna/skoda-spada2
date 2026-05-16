@@ -461,7 +461,7 @@
     const tile = (id) => {
       const meta = gameMeta(id);
       return `
-        <div class="tile calcTile calcTileStack gamesLaunchTile" onclick="openGameShell('${id}')" data-game="${id}">
+        <div class="tile calcTile calcTileStack gamesLaunchTile" data-action="open-game" data-game="${id}">
           <div class="calcTileIcon" aria-hidden="true">${meta.icon}</div>
           <div>
             <div class="calcTileText">${escapeHtml(meta.title)}</div>
@@ -781,7 +781,7 @@
           ${gamesStatLine('Combo', state.combo)}
           ${gamesStatLine('Accuracy', `${Math.round(state.accuracy)} %`)}
         </div>
-        <div class="arcadeBar arcadePanel" style="padding:10px 12px;">
+        <div class="arcadeBar arcadePanel uPad10x12">
           <div class="arcadeStatus">${state.challenge ? '<strong>Denní challenge:</strong> stejné cíle pro všechny.' : '<strong>Aim Trainer:</strong> klikni na cíle, drž combo.'}</div>
           <div class="arcadeStatus">Zbývá: <strong id="aimTimeLeft">${fmtTime(state.duration)}</strong></div>
         </div>
@@ -820,7 +820,7 @@
       const payload = { plays: 1, bestScore: points, bestAccuracy: Math.round(state.accuracy), bestCombo: state.bestCombo, lastResult: `${state.hits}/${total}` };
       if (state.challenge) payload.game_type = 'daily';
       gamesRecordStat(state.challenge ? 'daily' : 'aim', payload);
-      body.querySelector('.arcadeStatus')?.insertAdjacentHTML('afterend', `<div class="arcadeBanner arcadePanel isGo" style="padding:14px;"> <div class="arcadeBannerTitle">Konec kola</div><div class="arcadeBannerText">Skóre ${points} · Accuracy ${Math.round(state.accuracy)} % · Max combo ${state.bestCombo}</div></div>`);
+      body.querySelector('.arcadeStatus')?.insertAdjacentHTML('afterend', `<div class="arcadeBanner arcadePanel isGo uPad14"> <div class="arcadeBannerTitle">Konec kola</div><div class="arcadeBannerText">Skóre ${points} · Accuracy ${Math.round(state.accuracy)} % · Max combo ${state.bestCombo}</div></div>`);
     };
     const tick = () => {
       if (!state.running) return;
@@ -1009,7 +1009,7 @@
   function renderTetris(body) {
     const state = getState('tetris', tetrisState);
     const stage = createCanvas(body, 'clamp(320px, 58dvh, 560px)');
-    body.insertAdjacentHTML('afterbegin', `<div class="arcadeHud">${gamesStatLine('Skóre', state.score)}${gamesStatLine('Řádky', state.lines)}${gamesStatLine('Level', state.level)}</div><div class="arcadeBar arcadePanel" style="padding:10px 12px;"><div class="arcadeStatus">Swipe nebo tlačítka. Ghost piece a combo efekt jsou v klasickém RaK stylu.</div></div><div class="arcadeControls"><button type="button" class="gameControlBtn" data-act="left">◀</button><button type="button" class="gameControlBtn" data-act="right">▶</button><button type="button" class="gameControlBtn" data-act="rotate">⟳</button><button type="button" class="gameControlBtn" data-act="down">▼</button><button type="button" class="gameControlBtn" data-act="drop">⤓</button><button type="button" class="gameControlBtn" data-act="restart">Nová hra</button></div>${gamesTop3Block('tetris', 'bodů', 5)}`);
+    body.insertAdjacentHTML('afterbegin', `<div class="arcadeHud">${gamesStatLine('Skóre', state.score)}${gamesStatLine('Řádky', state.lines)}${gamesStatLine('Level', state.level)}</div><div class="arcadeBar arcadePanel uPad10x12"><div class="arcadeStatus">Swipe nebo tlačítka. Ghost piece a combo efekt jsou v klasickém RaK stylu.</div></div><div class="arcadeControls"><button type="button" class="gameControlBtn" data-act="left">◀</button><button type="button" class="gameControlBtn" data-act="right">▶</button><button type="button" class="gameControlBtn" data-act="rotate">⟳</button><button type="button" class="gameControlBtn" data-act="down">▼</button><button type="button" class="gameControlBtn" data-act="drop">⤓</button><button type="button" class="gameControlBtn" data-act="restart">Nová hra</button></div>${gamesTop3Block('tetris', 'bodů', 5)}`);
     const canvas = stage.canvas; const ctx = stage.ctx;
     const resize = () => stage.resize();
     const draw = () => {
@@ -1383,10 +1383,10 @@
           ${gamesStatLine('Čas', fmtTime(state.startAt ? Date.now() - state.startAt : 0))}
           ${gamesStatLine('Chyby', state.mistakes)}
         </div>
-        <div class="arcadeBar arcadePanel" style="padding:10px 12px;">
+        <div class="arcadeBar arcadePanel uPad10x12">
           <div class="arcadeStatus">Vyplň čísla 1–9. Hotovo se uloží automaticky po správném doplnění.</div>
         </div>
-        <div class="arcadeBoard grid-9 arcadePanel" id="sudokuGrid" style="padding:8px;">${gridHtml}</div>
+        <div class="arcadeBoard grid-9 arcadePanel" id="sudokuGrid" class="uPad8">${gridHtml}</div>
         <div class="arcadeControls">
           <button type="button" class="gameControlBtn" data-sudoku="easy">Easy</button>
           <button type="button" class="gameControlBtn" data-sudoku="medium">Medium</button>
@@ -1459,8 +1459,8 @@
     body.innerHTML = `
       <div class="arcadeStage">
         <div class="arcadeHud">${gamesStatLine('Mines', state.mines)}${gamesStatLine('Otevřeno', state.opened)}${gamesStatLine('Režim', state.mode === 'flag' ? 'Vlajka' : 'Otevřít')}</div>
-        <div class="arcadeBar arcadePanel" style="padding:10px 12px;"><div class="arcadeStatus">Klepni na pole. Dlouhé držení nebo režim Vlajka přepne značku.</div></div>
-        <div class="arcadeBoard grid-9 arcadePanel" id="minesGrid" style="padding:8px;">${cells.join('')}</div>
+        <div class="arcadeBar arcadePanel uPad10x12"><div class="arcadeStatus">Klepni na pole. Dlouhé držení nebo režim Vlajka přepne značku.</div></div>
+        <div class="arcadeBoard grid-9 arcadePanel" id="minesGrid" class="uPad8">${cells.join('')}</div>
         <div class="arcadeControls"><button type="button" class="gameControlBtn" data-mines="mode">${state.mode === 'flag' ? 'Vlajka' : 'Otevřít'}</button><button type="button" class="gameControlBtn" data-mines="restart">Nová hra</button></div>
         ${gamesTop3Block('mines', 'ms', 5)}
       </div>`;
@@ -1505,8 +1505,8 @@
     body.innerHTML = `
       <div class="arcadeStage">
         <div class="arcadeHud">${gamesStatLine('Pohyby', state.moves)}${gamesStatLine('Páry', state.matched.size / 2)}${gamesStatLine('Čas', fmtTime(Date.now() - state.startAt))}</div>
-        <div class="arcadeBar arcadePanel" style="padding:10px 12px;"><div class="arcadeStatus">Najdi dvojice co nejrychleji. Moderní pexeso v RaK stylu.</div></div>
-        <div class="arcadeGridList grid-4 arcadePanel" id="memoryGrid" style="padding:8px;">${cells}</div>
+        <div class="arcadeBar arcadePanel uPad10x12"><div class="arcadeStatus">Najdi dvojice co nejrychleji. Moderní pexeso v RaK stylu.</div></div>
+        <div class="arcadeGridList grid-4 arcadePanel" id="memoryGrid" class="uPad8">${cells}</div>
         <div class="arcadeControls"><button type="button" class="gameControlBtn" data-memory="restart">Nová hra</button></div>
         ${gamesTop3Block('memory', 'ms', 5)}
       </div>`;
@@ -1577,8 +1577,8 @@
       body.innerHTML = `
         <div class="arcadeStage">
           <div class="arcadeHud">${gamesStatLine('Skóre', state.score)}${gamesStatLine('Bomby', state.bombs.filter(b => !b.exploded).length)}${gamesStatLine('Stav', state.over ? 'Konec' : 'Běží')}</div>
-          <div class="arcadeBar arcadePanel" style="padding:10px 12px;"><div class="arcadeStatus">Pohybuj se šipkami nebo tlačítky, bombu položíš středem. Cíl je čistit bedny.</div></div>
-          <div class="arcadeTable arcadePanel" id="bomberGrid" style="padding:8px;">${build()}</div>
+          <div class="arcadeBar arcadePanel uPad10x12"><div class="arcadeStatus">Pohybuj se šipkami nebo tlačítky, bombu položíš středem. Cíl je čistit bedny.</div></div>
+          <div class="arcadeTable arcadePanel" id="bomberGrid" class="uPad8">${build()}</div>
           <div class="arcadeControls"><button type="button" class="gameControlBtn" data-bomber="up">▲</button><button type="button" class="gameControlBtn" data-bomber="left">◀</button><button type="button" class="gameControlBtn" data-bomber="bomb">💣</button><button type="button" class="gameControlBtn" data-bomber="right">▶</button><button type="button" class="gameControlBtn" data-bomber="down">▼</button><button type="button" class="gameControlBtn" data-bomber="restart">Nová hra</button></div>
           ${gamesTop3Block('bomber', 'bodů', 5)}
         </div>`;
@@ -1672,7 +1672,7 @@
   function renderDaily(body) {
     const mode = dailyChallengeId();
     const meta = gameMeta('daily');
-    body.innerHTML = `<div class="arcadeStage"><div class="arcadeHud">${gamesStatLine('Dnešní', mode === 'aim' ? 'Aim' : mode === 'reaction' ? 'Reaction' : 'Memory')}${gamesStatLine('Datum', new Date().toLocaleDateString('cs-CZ'))}${gamesStatLine('Rekord', '—')}</div><div class="arcadeBar arcadePanel" style="padding:12px;"> <div class="arcadeStatus"><strong>Denní challenge:</strong> ${mode === 'aim' ? '20 cílů za 30 sekund' : mode === 'reaction' ? '5 rychlých reakcí' : 'najdi všech 8 dvojic co nejrychleji'}. Podmínky jsou stejné pro všechny.</div></div><div class="arcadeControls"><button type="button" class="gameControlBtn" id="dailyStartBtn">Spustit challenge</button><button type="button" class="gameControlBtn" id="dailyResetBtn">Obnovit</button></div>${gamesTop3Block('daily', 'bodů', 5)}</div>`;
+    body.innerHTML = `<div class="arcadeStage"><div class="arcadeHud">${gamesStatLine('Dnešní', mode === 'aim' ? 'Aim' : mode === 'reaction' ? 'Reaction' : 'Memory')}${gamesStatLine('Datum', new Date().toLocaleDateString('cs-CZ'))}${gamesStatLine('Rekord', '—')}</div><div class="arcadeBar arcadePanel uPad12"> <div class="arcadeStatus"><strong>Denní challenge:</strong> ${mode === 'aim' ? '20 cílů za 30 sekund' : mode === 'reaction' ? '5 rychlých reakcí' : 'najdi všech 8 dvojic co nejrychleji'}. Podmínky jsou stejné pro všechny.</div></div><div class="arcadeControls"><button type="button" class="gameControlBtn" id="dailyStartBtn">Spustit challenge</button><button type="button" class="gameControlBtn" id="dailyResetBtn">Obnovit</button></div>${gamesTop3Block('daily', 'bodů', 5)}</div>`;
     let subState = null;
     const start = () => {
       if (mode === 'aim') { subState = { challenge: true, duration: 30000 }; renderAim(body, subState); }

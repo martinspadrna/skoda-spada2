@@ -1,4 +1,4 @@
-// v.1.1 (457) – Home refresh, kalendář i externí odkazy jsou stabilizované; verze a metadata jsou sjednocené.
+// v.1.1 (467) – Fáze 1 pokračuje: centralizované externí odkazy a cleanup registry zpřehledňují runtime logiku.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
@@ -51,9 +51,123 @@
   };
 })();
 
+
+function installDelegatedAppActions() {
+  if (window.__rotaceDelegatedAppActionsBound) return;
+  window.__rotaceDelegatedAppActionsBound = true;
+
+  const clickActions = {
+    'show-food-kantyna': () => showFoodSchedule('kantyna'),
+    'show-food-jidelna': () => showFoodSchedule('jidelna'),
+    'page-soustruhy': () => showPage('soustruhy'),
+    'page-frezky': () => showPage('frezky'),
+    'page-brusy': () => showPage('brusy'),
+    'reset-soustruhy': () => resetSoustruhy(),
+    'soustruh-mode': (el) => setSoustruhMode(String(el.dataset.soustruhMode || '')),
+    'calc-soustruhy-lis': () => calcSoustruhyLis(),
+    'soustruh126-start': (el) => {
+      const start = parseInt(el.dataset.startsize || '', 10);
+      if (Number.isFinite(start)) setSoustruh126Start(start);
+    },
+    'calc-soustruhy-126': () => calcSoustruhy126(),
+    'calc-soustruhy-106': () => calcSoustruhy106(),
+    'open-food-link': () => openExternalTile('https://sa.gthcatering.cz/restaurant/c1/'),
+    'open-eportal-link': () => openEportal(),
+    'calc-f': () => calcF(),
+    'calc-f-finish': () => calcFFinish(),
+    'calc-brusy': () => calcBrusy(),
+    'calc-brusy-finish': () => calcBrusyFinish(),
+    'calc-p': () => calcP(),
+    'set-machine': (el) => setMachine(String(el.dataset.machine || '')),
+    'set-prog': (el) => setProg(String(el.dataset.prog || '')),
+    'reset-fields': (el) => {
+      const raw = String(el.dataset.resetFields || '');
+      const fields = raw.split(',').map((s) => s.trim()).filter(Boolean);
+      if (fields.length) resetFields(fields);
+    },
+    'open-game': (el) => {
+      const gameId = String(el.dataset.game || '').trim();
+      if (gameId) openGameShell(gameId);
+    },
+    'calendar-open': () => openCalendarInRak()
+  };
+
+  document.addEventListener('click', (event) => {
+    const target = event.target && typeof event.target.closest === 'function'
+      ? event.target.closest('[data-action], [data-rak-open-calendar]')
+      : null;
+    if (!target) return;
+
+    const direct = target.hasAttribute('data-rak-open-calendar') ? 'calendar-open' : String(target.getAttribute('data-action') || '').trim();
+    const action = direct || '';
+    const handler = clickActions[action];
+    if (!handler) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    handler(target);
+  }, { passive: false });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.defaultPrevented) return;
+    const key = event.key;
+    if (key !== 'Enter' && key !== ' ') return;
+    const target = event.target && typeof event.target.closest === 'function'
+      ? event.target.closest('[data-action], [data-rak-open-calendar]')
+      : null;
+    if (!target) return;
+    const tag = String(target.tagName || '').toUpperCase();
+    if (tag === 'BUTTON' || tag === 'A' || tag === 'SELECT' || tag === 'INPUT') return;
+    const action = target.hasAttribute('data-rak-open-calendar') ? 'calendar-open' : String(target.getAttribute('data-action') || '').trim();
+    const handler = clickActions[action];
+    if (!handler) return;
+    event.preventDefault();
+    handler(target);
+  });
+
+  document.addEventListener('change', (event) => {
+    const target = event.target && typeof event.target.closest === 'function'
+      ? event.target.closest('select[data-action="month-select"]')
+      : null;
+    if (!target) return;
+    app.selectedMonth = target.value || null;
+    if (target.value) {
+      renderMonth(target.value);
+    }
+    renderRotace();
+    setRotaceView('months');
+  });
+}
+
+function installBottomNavBindings() {
+  const nav = document.querySelector('.bottomNav');
+  if (!nav || nav.__rotaceBound) return;
+  nav.__rotaceBound = true;
+
+  const actionMap = {
+    home: () => { showPage('home'); setBottomNavActive('home'); },
+    rotace: () => { openRotaceNames(); },
+    kalkulacky: () => { openKalkulacky(); },
+    rozpisy: () => { openRotaceMonths(); },
+    statistiky: () => { openRotaceStats(); },
+    games: () => { openGamesPage(); },
+    menu: () => { toggleAppMenu(); }
+  };
+
+  nav.addEventListener('click', (event) => {
+    const btn = event.target && event.target.closest ? event.target.closest('button[data-action]') : null;
+    if (!btn || !nav.contains(btn)) return;
+    const handler = actionMap[btn.dataset.action];
+    if (!handler) return;
+    event.preventDefault();
+    handler();
+  }, { passive: false });
+}
+
 (async () => {
   const files = [
     "core.js",
+    "lifecycle.js",
     "qr.js",
     "payroll.js",
     "brusy.js",
@@ -84,6 +198,8 @@
   }
 
   installPwaAndConnectivityHooks();
+  installBottomNavBindings();
+  installDelegatedAppActions();
 
   try {
     if (typeof window.__rotaceBootHomeRefreshLate === 'function') {
@@ -262,11 +378,13 @@ function installPwaAndConnectivityHooks() {
     removeUpdateToast();
     try { setPendingUpdateVersion(getAppVersionTag()); } catch (err) {}
     try { setSuppressUpdateToast(getAppVersionTag()); } catch (err) {}
-    window.setTimeout(() => {
+    const reloadFn = () => {
       try { window.location.reload(); } catch (err) {
         window.location.href = window.location.href;
       }
-    }, reason === 'sw-activated' ? 80 : 160);
+    };
+    if (typeof registerTimeout === 'function') registerTimeout(reloadFn, reason === 'sw-activated' ? 80 : 160);
+    else window.setTimeout(reloadFn, reason === 'sw-activated' ? 80 : 160);
   };
 
   const ensureUpdateToast = () => {
@@ -414,7 +532,7 @@ function installPwaAndConnectivityHooks() {
 
   if ('serviceWorker' in navigator && !window.__rotaceSwControllerChangeBound) {
     window.__rotaceSwControllerChangeBound = true;
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
+    registerListener(navigator.serviceWorker, 'controllerchange', () => {
       const pending = getPendingUpdateVersion();
       if (pending && !swUpdateReloading) {
         scheduleUpdateReload('controllerchange');
@@ -442,14 +560,14 @@ function installPwaAndConnectivityHooks() {
     }
   };
 
-  window.addEventListener('beforeinstallprompt', (event) => {
+  registerListener(window, 'beforeinstallprompt', (event) => {
     event.preventDefault();
     deferredInstallPrompt = event;
     window.__rotaceDeferredInstallPrompt = event;
     document.documentElement.dataset.installable = '1';
   });
 
-  window.addEventListener('appinstalled', () => {
+  registerListener(window, 'appinstalled', () => {
     deferredInstallPrompt = null;
     window.__rotaceDeferredInstallPrompt = null;
     delete document.documentElement.dataset.installable;
@@ -459,6 +577,7 @@ function installPwaAndConnectivityHooks() {
   if ('BroadcastChannel' in window) {
     try {
       liveChannel = new BroadcastChannel(LIVE_CHANNEL_NAME);
+      registerSubscription(() => { try { if (liveChannel) liveChannel.close(); } catch (err) {} });
       liveChannel.onmessage = (event) => {
         const data = event && event.data ? event.data : null;
         if (!data || data.tabId === tabId) return;
@@ -475,7 +594,7 @@ function installPwaAndConnectivityHooks() {
   if ('serviceWorker' in navigator) {
     registerServiceWorker();
 
-    navigator.serviceWorker.addEventListener('message', (event) => {
+    registerListener(navigator.serviceWorker, 'message', (event) => {
       const data = event && event.data ? event.data : null;
       if (!data) return;
       if (data.type === 'sw-activated') {
@@ -491,19 +610,19 @@ function installPwaAndConnectivityHooks() {
 
   }
 
-  window.addEventListener('online', () => {
+  registerListener(window, 'online', () => {
     setConnectionFlag();
     if (typeof flushSupabaseSyncQueue === 'function') void flushSupabaseSyncQueue();
     void runLiveRefresh('online', { force: true });
     void refreshServiceWorkerRegistration('online');
     signalStateChange('online');
   });
-  window.addEventListener('offline', () => {
+  registerListener(window, 'offline', () => {
     setConnectionFlag();
     if (typeof updateDashboard === 'function') updateDashboard();
     signalStateChange('offline');
   });
-  window.addEventListener('pageshow', () => {
+  registerListener(window, 'pageshow', () => {
     setConnectionFlag();
     if (navigator.onLine) {
       if (typeof flushSupabaseSyncQueue === 'function') void flushSupabaseSyncQueue();
@@ -511,20 +630,20 @@ function installPwaAndConnectivityHooks() {
       void refreshServiceWorkerRegistration('pageshow');
     }
   });
-  window.addEventListener('focus', () => {
+  registerListener(window, 'focus', () => {
     if (!document.hidden && navigator.onLine) {
       void runLiveRefresh('focus');
       void refreshServiceWorkerRegistration('focus');
     }
   });
-  window.addEventListener('visibilitychange', () => {
+  registerListener(window, 'visibilitychange', () => {
     setConnectionFlag();
     if (!document.hidden && navigator.onLine) {
       void runLiveRefresh('visible');
       void refreshServiceWorkerRegistration('visible');
     }
   });
-  window.addEventListener('storage', (event) => {
+  registerListener(window, 'storage', (event) => {
     if (!event || !event.key) return;
     if (event.key === 'rotationBuild' || event.key === 'rotace_state_v1' || event.key === 'adminUnlocked' || event.key === 'rotace_live_signal_v1') {
       void runLiveRefresh('storage', { force: true });
@@ -534,18 +653,16 @@ function installPwaAndConnectivityHooks() {
     }
   });
 
-  liveRefreshTimer = window.setInterval(() => {
+  liveRefreshTimer = registerInterval(() => {
     if (!document.hidden && navigator.onLine) void runLiveRefresh('interval');
   }, LIVE_REFRESH_INTERVAL_MS);
 
-  swUpdateTimer = window.setInterval(() => {
+  swUpdateTimer = registerInterval(() => {
     if (!document.hidden && navigator.onLine) void refreshServiceWorkerRegistration('interval');
   }, SW_UPDATE_CHECK_INTERVAL_MS);
 
-  window.addEventListener('beforeunload', () => {
-    if (liveRefreshTimer) window.clearInterval(liveRefreshTimer);
-    if (swUpdateTimer) window.clearInterval(swUpdateTimer);
-    try { if (liveChannel) liveChannel.close(); } catch (err) {}
+  registerListener(window, 'beforeunload', () => {
+    cleanupAllLifecycle();
   });
 }
 

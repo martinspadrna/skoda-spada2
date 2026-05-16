@@ -111,7 +111,7 @@ function ensureAppMenuOverlay() {
     '<div class="headerBar appMenuPageTitleBar">',
     '  <div></div>',
     '  <h3>Více</h3>',
-    '  <div style="width:34px;"></div>',
+    '  <div class="appMenuTitleSpacer"></div>',
     '</div>',
     '<div class="card appMenuPageCard">',
     '  <div class="appMenuBody" id="appMenuBody"></div>',
@@ -567,13 +567,13 @@ function ensureTicTacToeOverlay() {
     '<div class="tttShell" role="dialog" aria-modal="true" aria-labelledby="tttTitle">',
     '  <div class="tttHeader">',
     '    <div class="tttHeaderTitle">',
-    '      <h2 id="tttTitle" style="display:none;">Piškvorky</h2>',
+    '      <h2 id="tttTitle" class="uHidden">Piškvorky</h2>',
     '      <span></span>',
     '    </div>',
     '  </div>',
     '  <div class="tttContent">',
     '    <div class="tttStartScreen" id="tttStartScreen"></div>',
-    '    <div class="tttGameScreen" id="tttGameScreen" style="display:none;">',
+    '    <div class="tttGameScreen uHidden" id="tttGameScreen">',
     '      <div class="tttStatus" id="tttStatus"></div>',
     '      <div class="tttBoardWrap"><div class="tttBoard" id="tttBoard"></div></div>',
     '      <div class="tttFooter">',
@@ -2132,11 +2132,11 @@ function tttRender() {
       '  <button type="button" class="tttBtn tttPrimaryBtn" id="tttStartBtn">' + (state.mode === 'pvp' ? 'Spustit online duel' : (state.mode === 'local' ? 'Hrát na mobilu' : 'Hrát proti AI')) + '</button>',
       tttHasResumeGame() ? '<button type="button" class="tttBtn tttSecondaryBtn" id="tttResumeBtn">Pokračovat v rozehrané hře</button>' : '',
       '</div>',
-      '<div class="tttCard"' + (state.mode === 'ai' ? '' : ' style="display:none;"') + '>',
+      '<div class="tttCard' + (state.mode === 'ai' ? '' : ' uHidden') + '">',
       '  <div class="tttSectionTitle">AI režim</div>',
       '  <div class="tttNote">Používá se jen nejtvrdší AI. Hrací pole má 10 × 18 políček a vyhrává 5 spojených v řadě.</div>',
       '</div>',
-      state.mode === 'pvp' ? '<div class="tttCard tttInviteCard"><div class="tttSectionTitle">Online pozvánka</div><div id="tttInviteInfo" class="tttNote">Nejdřív vytvoř pozvánku. Druhý hráč pak zadá kód do "Přijmout pozvánku".</div><div id="tttInviteCode" class="tttInviteCode" style="display:' + ((state.online && state.online.code) ? 'block' : 'none') + ';">' + escapeHtml((state.online && state.online.code) || '') + '</div><div class="tttNote" id="tttInviteUrl" style="word-break:break-all;display:' + ((state.online && state.online.code) ? 'block' : 'none') + ';margin-top:8px;"></div><div class="tttToggleRow tttInviteActions" style="margin-top:10px;"><button type="button" class="tttBtn" id="tttCreateInviteBtn">Vytvořit kód</button><button type="button" class="tttBtn" id="tttJoinInviteBtn">Přijmout pozvánku</button><button type="button" class="tttBtn" id="tttCopyInviteBtn">Kopírovat odkaz</button><button type="button" class="tttBtn" id="tttShareInviteBtn">Sdílet</button></div></div>' : '',
+      state.mode === 'pvp' ? '<div class="tttCard tttInviteCard"><div class="tttSectionTitle">Online pozvánka</div><div id="tttInviteInfo" class="tttNote">Nejdřív vytvoř pozvánku. Druhý hráč pak zadá kód do "Přijmout pozvánku".</div><div id="tttInviteCode" class="tttInviteCode' + ((state.online && state.online.code) ? '' : ' uHidden') + '">' + escapeHtml((state.online && state.online.code) || '') + '</div><div class="tttNote uWordBreakAll uMt8' + ((state.online && state.online.code) ? '' : ' uHidden') + '" id="tttInviteUrl"></div><div class="tttToggleRow tttInviteActions uMt10"><button type="button" class="tttBtn" id="tttCreateInviteBtn">Vytvořit kód</button><button type="button" class="tttBtn" id="tttJoinInviteBtn">Přijmout pozvánku</button><button type="button" class="tttBtn" id="tttCopyInviteBtn">Kopírovat odkaz</button><button type="button" class="tttBtn" id="tttShareInviteBtn">Sdílet</button></div></div>' : '',
       '</div>',
       '<div class="tttCard tttWinHistory">',
       '  <div class="tttSectionTitle">Kdo porazil nejtvrdší AI</div>',
@@ -3023,7 +3023,7 @@ function adminRenderRotationAvailabilitySummary(root) {
   box.innerHTML =
     '<div class="appMenuFreeNamesTitle">Kontrola měsíce ' + escapeHtml(monthKey || '') + '</div>' +
     '<div class="appMenuFreeNamesText"><b>V celém měsíci nikde nejsou:</b> ' + freeOverall + '</div>' +
-    '<div class="appMenuFreeNamesText" style="margin-top:8px;"><b>Chybějící jména podle dnů:</b></div>' +
+    '<div class="appMenuFreeNamesText uMt8"><b>Chybějící jména podle dnů:</b></div>' +
     '<div class="appMenuMonthCheckList">' + missingByDateHtml + '</div>';
 }
 
@@ -3111,9 +3111,9 @@ function buildAdminRotationColgroupHtml(columnCount, firstWidthPx, otherWidthPx)
 
 function buildAdminAbsenceColgroupHtml() {
   return '<colgroup>' +
-    '<col style="width:40px;">' +
-    '<col style="width:118px;">' +
-    '<col style="width:40px;">' +
+    '<col class="colW40">' +
+    '<col class="colW118">' +
+    '<col class="colW40">' +
     '</colgroup>';
 }
 
@@ -3134,7 +3134,7 @@ function buildAdminAbsenceSummaryHtml(notesRows) {
   }));
 
   const maxPairs = Math.max(1, ...rows.map(r => r.items.length));
-  let html = "<div class='smallText' style='margin-top:12px;font-weight:bold;'>Absence podle dne</div>";
+  let html = "<div class='smallText uMt12 uBold'>Absence podle dne</div>";
   html += "<div class='tableWrap'><table class='noteTable noteTableCompact'><thead><tr>";
   for (let i = 0; i < maxPairs; i += 1) {
     if (i > 0) html += "<th class='noteSpacer'></th>";
@@ -3227,7 +3227,7 @@ function buildAdminMachineSettingsTableHtml() {
     '      <tbody>' + machineRowsHtml + '</tbody>',
     '    </table>',
     '  </div>',
-    '  <div class="tableWrap appMenuTableWrap" style="margin-top:12px;">',
+    '  <div class="tableWrap appMenuTableWrap uMt12">',
     '    <div class="smallText">Brusy</div>',
     '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense">',
     '      <thead><tr><th>Stroj</th><th>Index</th><th>Název</th><th>Čas výroby kola</th><th>Čas orovnání</th><th>Po kolika ks</th></tr></thead>',
@@ -4072,79 +4072,10 @@ function openKalkulacky() {
 }
 
 
-function getStoredEportalUrl() {
-  return String(window.RAK_EPORTAL_URL || 'https://space.skoda.vwgroup.com/group/b2eportal/home-page').trim();
-}
-
-function setStoredEportalUrl() {
-  return getStoredEportalUrl();
-}
+const EPORTAL_URL = 'https://space.skoda.vwgroup.com/group/b2eportal/home-page';
 
 function openEportal() {
-  const url = getStoredEportalUrl();
-  if (!url) return false;
-  try {
-    const opened = window.open(url, '_blank', 'noopener,noreferrer');
-    return !!opened;
-  } catch (err) {
-    console.warn('Eportal open failed', err);
-    return false;
-  }
-}
-
-function openExternalTile(url) {
-  const normalized = String(url || '').trim();
-  if (!normalized) return false;
-  try {
-    const opened = window.open(normalized, '_blank', 'noopener,noreferrer');
-    return !!opened;
-  } catch (err) {
-    console.warn('External tile open failed', err);
-    return false;
-  }
-}
-
-
-
-function bindReliableExternalLink(linkOrId, fallbackUrl) {
-  const el = typeof linkOrId === 'string' ? document.getElementById(linkOrId) : linkOrId;
-  if (!el || el.dataset.rakExternalBound === '1') return false;
-  el.dataset.rakExternalBound = '1';
-
-  let lastOpenAt = 0;
-  const resolveUrl = () => String(el.getAttribute('href') || fallbackUrl || '').trim();
-
-  const openNow = (event) => {
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-    const now = Date.now();
-    if (now - lastOpenAt < 650) return false;
-    lastOpenAt = now;
-    return openExternalTile(resolveUrl());
-  };
-
-  el.addEventListener('pointerup', openNow, { passive: false });
-  el.addEventListener('click', openNow, { passive: false });
-  el.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter' || event.key === ' ') openNow(event);
-  });
-  return true;
-}
-
-function bindDashboardExternalLinks() {
-  const foodUrl = 'https://sa.gthcatering.cz/restaurant/c1/';
-  const eportalUrl = String(window.RAK_EPORTAL_URL || 'https://space.skoda.vwgroup.com/group/b2eportal/home-page').trim();
-  bindReliableExternalLink('dashFoodLink', foodUrl);
-  bindReliableExternalLink('dashEportalLink', eportalUrl);
-  bindCalendarTile();
-}
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', bindDashboardExternalLinks, { once: true });
-} else {
-  bindDashboardExternalLinks();
+  return openExternalTile(EPORTAL_URL);
 }
 
 function refreshHomeScreen() {
@@ -4254,12 +4185,7 @@ function ensureFoodScheduleModal() {
 
   overlay.querySelector('.foodScheduleClose')?.addEventListener('click', hideFoodScheduleModal);
 
-  if (!document.body.dataset.foodModalKeydownBound) {
-    document.body.dataset.foodModalKeydownBound = '1';
-    document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape') hideFoodScheduleModal();
-    });
-  }
+  bindGlobalEscapeOnce('foodModalKeydownBound', hideFoodScheduleModal);
 
   document.body.appendChild(overlay);
   return overlay;
@@ -4298,12 +4224,7 @@ function ensureCalendarModal() {
 
   overlay.querySelector('.calendarModalClose')?.addEventListener('click', hideCalendarModal);
 
-  if (!document.body.dataset.calendarModalKeydownBound) {
-    document.body.dataset.calendarModalKeydownBound = '1';
-    document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape') hideCalendarModal();
-    });
-  }
+  bindGlobalEscapeOnce('calendarModalKeydownBound', hideCalendarModal);
 
   document.body.appendChild(overlay);
   return overlay;
@@ -4327,7 +4248,8 @@ function openCalendarInRak() {
       });
     });
   } else {
-    setTimeout(() => body.classList.remove('calendarModalOpening'), 32);
+    if (typeof registerTimeout === 'function') registerTimeout(() => body.classList.remove('calendarModalOpening'), 32);
+    else setTimeout(() => body.classList.remove('calendarModalOpening'), 32);
   }
   return true;
 }
@@ -5479,7 +5401,7 @@ function renderGame2048() {
   body.innerHTML = [
     '<div class="gamesGamePanel">',
     '  <div class="gameInfoRow gameInfoRowCompact gameInfoRowDense"><span>Skóre <strong>' + state.score + '</strong></span><span>Nejlepší <strong>' + String(bestScore) + '</strong></span><span>' + (state.over ? 'Klepni na Nová hra' : 'Táhni po ploše') + '</span></div>',
-    '  <div class="gameControls" style="margin-top:2px;">',
+    '  <div class="gameControls uMt2">',
     '    <button type="button" class="gameControlBtn" id="game2048NewBtn">Nová hra</button>',
     '  </div>',
     '  <div class="gameBoard game2048Board" id="game2048Board" style="width:' + boardSize + 'px;height:' + boardSize + 'px;">' + state.board.map(v => '<div class="gameBoardCell ' + (v ? 'n' + v : '') + '" data-value="' + (v || '') + '">' + (v || '') + '</div>').join('') + '</div>',
@@ -5975,9 +5897,9 @@ function renderGamesTttShell() {
   if (!body) return;
   body.innerHTML = [
     '<div class="gameInfoRow"><span>Piškvorky běží na celou obrazovku.</span><span>Odkaz můžeš poslat dál.</span></div>',
-    '<div class="gamesShell" style="padding:12px;margin-top:10px;">',
+    '<div class="gamesShell uPad12 uMt10">',
     '  <div class="smallText">Spustí se plná hra a odkaz můžeš sdílet dál.</div>',
-    '  <div class="gameControls" style="margin-top:10px;">',
+    '  <div class="gameControls uMt10">',
     '    <button type="button" class="gameControlBtn" id="openTttOverlayBtn">Otevřít piškvorky</button>',
     '    <button type="button" class="gameControlBtn" id="copyTttInviteBtn">Kopírovat odkaz</button>',
     '  </div>',

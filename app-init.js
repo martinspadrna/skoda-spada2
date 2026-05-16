@@ -5,7 +5,7 @@ function bindAdminSecretUnlock() {
   let tapCount = 0;
   let tapTimer = null;
 
-  document.addEventListener('click', (event) => {
+  registerListener(document, 'click', (event) => {
     const target = event.target && typeof event.target.closest === 'function'
       ? event.target.closest('.bottomNavMenuBtn')
       : null;
@@ -36,7 +36,7 @@ function bindAdminSecretUnlock() {
     } else {
       alert('Špatné přihlášení.');
     }
-  }, true);
+  }, { capture: true });
 
   return true;
 }
@@ -102,27 +102,27 @@ async function saveRotationToSupabase(rotation, meta) {
 }
 
 if (!bindAdminSecretUnlock()) {
-  document.addEventListener('DOMContentLoaded', bindAdminSecretUnlock, { once: true });
+  registerListener(document, 'DOMContentLoaded', bindAdminSecretUnlock, { once: true });
 }
 
 
 function initAppInitBindings() {
-  document.getElementById("monthYearSelect")?.addEventListener("change", (e) => {
+  registerListener(document.getElementById("monthYearSelect"), "change", (e) => {
     setSelectedYear(e.target.value);
   });
 
-  document.getElementById("statsYearSelect")?.addEventListener("change", (e) => {
+  registerListener(document.getElementById("statsYearSelect"), "change", (e) => {
     setSelectedYear(e.target.value);
   });
 
-  document.getElementById("importYearSelect")?.addEventListener("change", (e) => {
+  registerListener(document.getElementById("importYearSelect"), "change", (e) => {
     app.importYear = parseInt(e.target.value, 10) || getInitialSelectedYear(app.rotation);
     syncYearControls();
   });
 
   const excelFileInput = document.getElementById("excelFile");
   if (excelFileInput) {
-    excelFileInput.addEventListener("change", () => {
+    registerListener(excelFileInput, "change", () => {
       if (!app.pendingMenuImport) return;
       app.pendingMenuImport = false;
       document.getElementById("importBtn")?.click();
@@ -131,7 +131,7 @@ function initAppInitBindings() {
 
   const importBtn = document.getElementById("importBtn");
   if (importBtn) {
-    importBtn.addEventListener("click", async () => {
+    registerListener(importBtn, "click", async () => {
       const input = document.getElementById("excelFile");
       const file = input && input.files && input.files[0];
       if (!file) {

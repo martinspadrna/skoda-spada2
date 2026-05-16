@@ -57,7 +57,7 @@ function renderFinishResult(outId, label, pieces, seconds, extraLine) {
   const dosesText = formatDoses(pieces);
   out.innerHTML =
     "<div><b>" + escapeHtml(label) + "</b></div>" +
-    "<div style='margin-top:6px;'>Hotovo v <b>" + formatClockTime(finish) + "</b></div>" +
+    "<div class='uMt6'>Hotovo v <b>" + formatClockTime(finish) + "</b></div>" +
     "<div class='smallText'>Za " + durationText + " · " + formatCount(pieces) + " ks / " + dosesText + " dávek" + (extraLine ? " · " + escapeHtml(extraLine) : "") + "</div>";
 }
 
@@ -120,7 +120,7 @@ function calcFFinish() {
   const finish = new Date(now.getTime() + seconds * 1000);
   out.innerHTML =
     "<div><b>Frézky</b></div>" +
-    "<div style='margin-top:6px;'>Hotovo v <b>" + formatClockTime(finish) + "</b></div>" +
+    "<div class='uMt6'>Hotovo v <b>" + formatClockTime(finish) + "</b></div>" +
     "<div class='smallText'>Za " + formatDuration(seconds * 1000) + " · " + formatCount(target.pieces) + " ks / " + formatDoses(target.pieces) + " dávek</div>";
   saveRotationData();
 }
@@ -184,7 +184,7 @@ function calcBrusyFinish() {
     : "<div class='smallText'>Přesnější výpočet si můžeš rozkliknout a doplnit podle rozdělané dávky.</div>";
   out.innerHTML =
     "<div><b>" + escapeHtml(app.machine + " / " + cfg.label) + "</b></div>" +
-    "<div style='margin-top:6px;'>Hotovo v <b>" + formatClockTime(finish) + "</b></div>" +
+    "<div class='uMt6'>Hotovo v <b>" + formatClockTime(finish) + "</b></div>" +
     "<div class='smallText'>Za " + formatDuration(seconds * 1000) + " · " + formatCount(remainingPieces) + " ks / " + formatDoses(remainingPieces) + " dávek" + escapeHtml(preciseNote) + "</div>" +
     preciseDetails;
   saveRotationData();
@@ -293,11 +293,11 @@ function renderBatchResult(title, batches, target, firstBatch) {
   if (!batches.length) return "<div class='smallText'>Doplň vstupy, ať se to spočítá.</div>";
   const lastBatch = batches[batches.length - 1].batchNo;
   const total = batches[batches.length - 1].produced;
-  let html = "<div class='smallText' style='margin-bottom:10px;'>" + escapeHtml(title) + "</div>";
+  let html = "<div class='smallText uMb10'>" + escapeHtml(title) + "</div>";
   html += "<div class='statsSummary'>";
-  html += "<div class='tile'><div class='smallText'>Dávek</div><div style='font-size:22px;margin-top:4px;'>" + formatCount(batches.length) + "</div></div>";
-  html += "<div class='tile'><div class='smallText'>Poslední dávka</div><div style='font-size:22px;margin-top:4px;'>" + formatCount(lastBatch) + "</div></div>";
-  html += "<div class='tile'><div class='smallText'>Vyrobeno</div><div style='font-size:22px;margin-top:4px;'>" + formatCount(total) + "</div></div>";
+  html += "<div class='tile'><div class='smallText'>Dávek</div><div class='uFs22 uMt4'>" + formatCount(batches.length) + "</div></div>";
+  html += "<div class='tile'><div class='smallText'>Poslední dávka</div><div class='uFs22 uMt4'>" + formatCount(lastBatch) + "</div></div>";
+  html += "<div class='tile'><div class='smallText'>Vyrobeno</div><div class='uFs22 uMt4'>" + formatCount(total) + "</div></div>";
   html += "</div>";
   html += "<div class='tableWrap'><table class='statsTable'><thead><tr><th>Dávka</th><th>Ks</th><th>Součet</th></tr></thead><tbody>";
   batches.forEach(item => {
