@@ -462,6 +462,7 @@ input{
 
 .dashboardHeroBar span{
   display:block;
+  width:var(--fill, 0%);
   height:100%;
   border-radius:inherit;
   background:linear-gradient(90deg, #8cff8f, #69f06f);

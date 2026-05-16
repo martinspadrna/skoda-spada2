@@ -1,4 +1,4 @@
-// v.1.1 (471) – Fáze 1 pokračuje: externí odkazy a cleanup registry zpřehledňují runtime logiku.
+// v.1.1 (475) – Fáze 1 pokračuje: externí odkazy a cleanup registry zpřehledňují runtime logiku.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

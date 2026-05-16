@@ -54,7 +54,7 @@ function updateDashboard() {
       heroLine2 ? '<div class="dashboardHeroLine2">' + esc(heroLine2) + '</div>' : '',
       heroLine3 ? '<div class="dashboardHeroLine3">' + esc(heroLine3) + '</div>' : '',
       '<div class="dashboardHeroBarRow">',
-      '<div class="dashboardHeroBar"><span style="width:' + heroProgress.toFixed(1) + '%"></span></div>',
+      '<div class="dashboardHeroBar"><span style="--fill:' + heroProgress.toFixed(1) + '%"></span></div>',
       heroProgressText ? '<div class="dashboardHeroBarPercent">' + esc(heroProgressText) + '</div>' : '',
       '</div>'
     ].join('');
@@ -388,7 +388,7 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
         '<div class="dashboardHeroLine1"><span class="dashboardHeroLine1Text">' + esc(activeText) + '</span></div>',
         '<div class="dashboardHeroLine2">' + esc(countdownText) + '</div>',
         '<div class="dashboardHeroLine3">' + esc(special ? special.label || '' : '') + '</div>',
-        '<div class="dashboardHeroBarRow"><div class="dashboardHeroBar"><span style="width:' + (active && active.start && active.end ? '50%' : '0%') + '"></span></div></div>'
+        '<div class="dashboardHeroBarRow"><div class="dashboardHeroBar"><span style="--fill:' + (active && active.start && active.end ? '50%' : '0%') + '"></span></div></div>'
       ].join('');
     }
 

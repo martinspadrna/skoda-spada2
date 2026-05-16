@@ -154,25 +154,36 @@ function startMenuImport() {
 
 const UI_PREFS_KEY = APP_KEY + ':uiPrefs';
 
+function isLowEndDevice() {
+  try {
+    const cores = Number(navigator.hardwareConcurrency || 0);
+    return cores > 0 && cores <= 4;
+  } catch (err) {
+    return false;
+  }
+}
+
 function loadUiPrefs() {
   try {
     const raw = localStorage.getItem(UI_PREFS_KEY);
-    if (!raw) return { compact: false, reduceMotion: false };
+    if (!raw) return { compact: false, reduceMotion: false, lightweight: isLowEndDevice() };
     const parsed = JSON.parse(raw);
     return {
       compact: !!parsed.compact,
-      reduceMotion: !!parsed.reduceMotion
+      reduceMotion: !!parsed.reduceMotion,
+      lightweight: !!parsed.lightweight
     };
   } catch (err) {
     console.warn(err);
-    return { compact: false, reduceMotion: false };
+    return { compact: false, reduceMotion: false, lightweight: isLowEndDevice() };
   }
 }
 
 function saveUiPrefs(prefs) {
   const next = {
     compact: !!prefs.compact,
-    reduceMotion: !!prefs.reduceMotion
+    reduceMotion: !!prefs.reduceMotion,
+    lightweight: !!prefs.lightweight
   };
   try {
     localStorage.setItem(UI_PREFS_KEY, JSON.stringify(next));
@@ -186,6 +197,7 @@ function applyUiPrefs(prefs) {
   const next = saveUiPrefs(prefs || loadUiPrefs());
   document.body.classList.toggle('compactUI', !!next.compact);
   document.body.classList.toggle('reduceMotion', !!next.reduceMotion);
+  document.body.classList.toggle('lightweightMode', !!next.lightweight);
   if (typeof app !== 'undefined') {
     app.uiPrefs = next;
   }
@@ -200,8 +212,10 @@ function toggleUiPref(key) {
 }
 
 function resetUiPrefs() {
-  applyUiPrefs({ compact: false, reduceMotion: false });
+  applyUiPrefs({ compact: false, reduceMotion: false, lightweight: false });
 }
+
+applyUiPrefs(loadUiPrefs());
 
 
 
@@ -3648,6 +3662,7 @@ function bindAppMenuHandlers(body) {
           'Online: ' + (navigator.onLine ? 'ano' : 'ne'),
           'Kompaktní režim: ' + (document.body.classList.contains('compactUI') ? 'zapnutý' : 'vypnutý'),
           'Méně animací: ' + (document.body.classList.contains('reduceMotion') ? 'zapnuté' : 'vypnuté'),
+          'Lehký režim: ' + (document.body.classList.contains('lightweightMode') ? 'zapnutý' : 'vypnutý'),
           'Aktuální stránka: ' + String(document.querySelector('.page.active')?.id || '—'),
           'Bottom lišta: ' + String(getComputedStyle(document.querySelector('.bottomNav') || document.body).bottom || '—')
         ].join('\n');
@@ -3845,6 +3860,7 @@ function openAppMenu(view) {
         '  <div class="appMenuSettingsList">',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-pref="compact">' + (prefs.compact ? '✓ ' : '') + 'Kompaktní režim</button>',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-pref="reduceMotion">' + (prefs.reduceMotion ? '✓ ' : '') + 'Méně animací</button>',
+        '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-pref="lightweight">' + (prefs.lightweight ? '✓ ' : '') + 'Lehký režim</button>',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="clear-cache">Vymazat cache a obnovit</button>',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="app-diagnostics">Diagnostika aplikace</button>',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="hard-reload">Tvrdé obnovení</button>',
@@ -4859,7 +4875,7 @@ function gamesRenderAchievements() {
       '  <div class="gamesStatsCardBody">',
       '    <div class="gamesStatsCardLine">' + escapeHtml(def.desc) + '</div>',
       '    <div class="gamesStatsCardLine">' + escapeHtml(def.goalText) + '</div>',
-      '    <div class="gamesAchievementBar"><span style="width:' + String(pct) + '%"></span></div>',
+      '    <div class="gamesAchievementBar"><span style="--fill:' + String(pct) + '%"></span></div>',
       '  </div>',
       '</div>'
     ].join('');

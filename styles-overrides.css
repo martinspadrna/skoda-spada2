@@ -275,6 +275,7 @@
 
 #games .gamesAchievementBar span{
     display:block !important;
+    width:var(--fill, 0%) !important;
     height:100% !important;
     border-radius:inherit !important;
     background:linear-gradient(90deg, rgba(124,255,124,.88), rgba(124,255,124,.48)) !important;
@@ -1165,3 +1166,107 @@ body.reduceMotion .dashboardCard,
 .dashboardHeroBarFill{width:0;}
 
 .uFs22{font-size:22px;}
+
+body.lightweightMode .dashboardCard,
+body.lightweightMode .dashboardShell,
+body.lightweightMode .appMenuCard,
+body.lightweightMode .appMenuAction,
+body.lightweightMode .appMenuThemeCard,
+body.lightweightMode .appMenuThemeSummary,
+body.lightweightMode .calcTile,
+body.lightweightMode .tile,
+body.lightweightMode .bottomNav,
+body.lightweightMode .bottomNavBtn,
+body.lightweightMode .bottomNavMenuBtn,
+body.lightweightMode .rakUpdateToast,
+body.lightweightMode .dashboardSyncBadge,
+body.lightweightMode .tttOverlay,
+body.lightweightMode .calendarOverlay,
+body.lightweightMode .foodScheduleOverlay,
+body.lightweightMode .personScheduleOverlay,
+body.lightweightMode .qrModalOverlay,
+body.lightweightMode #games .gamesStage,
+body.lightweightMode #games .gamesShellTop,
+body.lightweightMode #games .gamesActiveAccountBar,
+body.lightweightMode #games .arcadePanel,
+body.lightweightMode #games .gameBoard,
+body.lightweightMode #games .gamesStatsCard{
+  backdrop-filter:blur(6px) saturate(120%) !important;
+  -webkit-backdrop-filter:blur(6px) saturate(120%) !important;
+  box-shadow:0 8px 18px rgba(0,0,0,.16) !important;
+}
+
+body.lightweightMode .dashboardCard,
+body.lightweightMode .appMenuCard,
+body.lightweightMode .appMenuThemeCard,
+body.lightweightMode .calcTile,
+body.lightweightMode .tile,
+body.lightweightMode .bottomNavBtn,
+body.lightweightMode .bottomNavMenuBtn{
+  transition:none !important;
+}
+
+body.lightweightMode .bottomNavBtn.active{
+  transform:translateY(-2px) scale(1.02) !important;
+}
+
+body.lightweightMode .bottomNavBtn.active .bottomNavIcon{
+  transform:translateY(-1px) scale(1.05) !important;
+}
+
+body.lightweightMode #games .gameBoard,
+body.lightweightMode #games .arcadePanel{
+  box-shadow:0 6px 14px rgba(0,0,0,.14) !important;
+}
+
+body.lightweightMode #games .gamesStage{
+  background:linear-gradient(180deg, rgba(7,10,8,.92), rgba(7,10,8,.97)) !important;
+}
+
+body.lightweightMode .tttOverlay,
+body.lightweightMode .calendarOverlay,
+body.lightweightMode .foodScheduleOverlay,
+body.lightweightMode .personScheduleOverlay,
+body.lightweightMode .qrModalOverlay{
+  background:rgba(5,8,6,.78) !important;
+}
+
+body.lightweightMode .dashboardSyncBadge{
+  backdrop-filter:blur(4px) saturate(110%) !important;
+  -webkit-backdrop-filter:blur(4px) saturate(110%) !important;
+}
+
+
+#games .gamesDevFolder{
+  grid-column:1 / -1 !important;
+  margin-top:10px !important;
+  border-radius:18px !important;
+  border:1px solid rgba(124,255,124,.14) !important;
+  background:rgba(11,15,13,.58) !important;
+  overflow:hidden !important;
+}
+
+#games .gamesDevFolder[hidden]{display:none !important;}
+
+#games .gamesDevFolder > summary{
+  list-style:none !important;
+  cursor:pointer !important;
+  padding:10px 12px !important;
+  font-weight:700 !important;
+  color:#e8ffe8 !important;
+}
+
+#games .gamesDevFolder > summary::-webkit-details-marker{display:none !important;}
+
+#games .gamesDevFolderBody{
+  display:grid !important;
+  grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
+  gap:10px !important;
+  padding:0 10px 10px !important;
+}
+
+#games .gamesDevFolder[open] .gamesDevFolderBody{padding-top:4px !important;}
+
+@media (max-width:700px){
+  #games .gamesDevFolderBody{gap:8px !important;}
+}

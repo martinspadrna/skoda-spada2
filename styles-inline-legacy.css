@@ -1,313 +1,153 @@
-#games .gamesStatsCardHead{
-    display:flex !important;
-    align-items:flex-start !important;
-    gap:10px !important;
-  }
-
-#games .gamesProfileAvatar{
-    width:42px !important;
-    height:42px !important;
-    border-radius:15px !important;
-    display:flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    flex:0 0 42px !important;
-    background:linear-gradient(180deg, rgba(124,255,124,.20), rgba(124,255,124,.06)) !important;
-    border:1px solid rgba(124,255,124,.16) !important;
-    color:#effff0 !important;
-    font-weight:800 !important;
-    letter-spacing:.04em !important;
-    box-shadow:0 12px 24px rgba(0,0,0,.18) inset, 0 0 0 1px rgba(255,255,255,.03) !important;
-  }
-
-#games .gamesStatsCardHeadMain{
-    flex:1 1 auto !important;
-    min-width:0 !important;
-  }
-
-#games .gamesStatsCardMetaDense{
-    font-size:11px !important;
-    line-height:1.15 !important;
-  }
-
-#games .gamesStatsXpBar{
-    width:100% !important;
-    height:8px !important;
-    border-radius:999px !important;
-    background:rgba(255,255,255,.06) !important;
-    overflow:hidden !important;
-    margin:2px 0 6px !important;
-    border:1px solid rgba(124,255,124,.10) !important;
-  }
-
-#games .gamesStatsXpBar span{
-    display:block !important;
-    height:100% !important;
-    border-radius:inherit !important;
-    background:linear-gradient(90deg, rgba(124,255,124,.35), rgba(124,255,124,.95)) !important;
-    box-shadow:0 0 14px rgba(124,255,124,.16) !important;
-  }
-
 #brusyInfo .brusyInfoTitle,
-  #brusyInfo .brusyInfoSub{
-    display:block !important;
+  #brusyInfo .brusyInfoSub{display:block !important;
     overflow:hidden !important;
-    text-overflow:ellipsis !important;
-  }
+    text-overflow:ellipsis !important;}
 
-#brusyInfo .brusyInfoSub{
-    font-size:12px !important;
+#brusyInfo .brusyInfoSub{font-size:12px !important;
     line-height:1.08 !important;
-    color:rgba(228,255,231,.78) !important;
-  }
+    color:rgba(228,255,231,.78) !important;}
 
-.bottomNavBtn{
-    flex:0 0 62px !important;
+.bottomNavBtn{flex:0 0 62px !important;
     width:62px !important;
     min-width:62px !important;
     max-width:62px !important;
-    min-height:54px !important;
-  }
+    min-height:54px !important;}
 
 .bottomNavBtn .bottomNavIcon,
-  .bottomNavBtn .bottomNavIcon svg{
-    width:30px !important;
-    height:30px !important;
-  }
+  .bottomNavBtn .bottomNavIcon svg{width:30px !important;
+    height:30px !important;}
 
-.bottomNavBtn .bottomNavIcon{
-    flex:0 0 30px !important;
-  }
+.bottomNavBtn .bottomNavIcon{flex:0 0 30px !important;}
 
-.bottomNavBtn .bottomNavLabel{
-    font-size:clamp(7.3px, 1.85vw, 9.3px) !important;
-  }
+.bottomNavBtn .bottomNavLabel{font-size:clamp(7.3px, 1.85vw, 9.3px) !important;}
 
-.bottomNavMenuBtn{
-    flex:0 0 46px !important;
+.bottomNavMenuBtn{flex:0 0 46px !important;
     width:46px !important;
     min-width:46px !important;
-    max-width:46px !important;
-  }
+    max-width:46px !important;}
 
-.bottomNavMenuBtn .moreIcon{
-    width:13px !important;
-    height:13px !important;
-  }
+.bottomNavMenuBtn .moreIcon{width:13px !important;
+    height:13px !important;}
 
-@media (max-width:700px){.bottomNavBtn{flex-basis:62px !important;}
+@media (max-width:700px){.bottomNavBtn{flex-basis:62px !important;} .bottomNavMenuBtn{flex-basis:46px !important;}}
 
-.bottomNavMenuBtn{flex-basis:46px !important;}
+.bottomNav{z-index: 1200 !important;}
 
-#games .gamesGrid{gap:10px !important;}
-
-#games .gamesStatsGrid{gap:10px !important;}}
-
-.bottomNav{
-    z-index: 1200 !important;
-  }
-
-.bottomNavBtn{
-    flex:0 0 66px !important;
+.bottomNavBtn{flex:0 0 66px !important;
     width:66px !important;
     min-width:66px !important;
     max-width:66px !important;
     min-height:48px !important;
-    padding:2px 4px 1px !important;
-  }
+    padding:2px 4px 1px !important;}
 
 .bottomNavBtn .bottomNavIcon,
-  .bottomNavBtn .bottomNavIcon svg{
-    width:34px !important;
-    height:34px !important;
-  }
+  .bottomNavBtn .bottomNavIcon svg{width:34px !important;
+    height:34px !important;}
 
-.bottomNavBtn .bottomNavIcon{
-    flex:0 0 34px !important;
-  }
+.bottomNavBtn .bottomNavIcon{flex:0 0 34px !important;}
 
-.bottomNavBtn .bottomNavLabel{
-    font-size:9px !important;
-    line-height:1 !important;
-  }
+.bottomNavBtn .bottomNavLabel{font-size:9px !important;
+    line-height:1 !important;}
 
-.bottomNavBtn.active{
-    transform:translateY(-4px) scale(1.04) !important;
-  }
+.bottomNavBtn.active{transform:translateY(-4px) scale(1.04) !important;}
 
-.bottomNavBtn.active .bottomNavIcon{
-    transform:translateY(-1px) scale(1.08) !important;
-  }
+.bottomNavBtn.active .bottomNavIcon{transform:translateY(-1px) scale(1.08) !important;}
 
-.bottomNavMenuBtn{
-    flex:0 0 42px !important;
+.bottomNavMenuBtn{flex:0 0 42px !important;
     width:42px !important;
     min-width:42px !important;
-    max-width:42px !important;
-  }
+    max-width:42px !important;}
 
-.bottomNavMenuBtn .moreIcon{
-    width:18px !important;
+.bottomNavMenuBtn .moreIcon{width:18px !important;
     height:18px !important;
-    transform:translateY(-2px) !important;
-  }
+    transform:translateY(-2px) !important;}
 
-body.tttOpen .bottomNav{
-    z-index: 10020 !important;
-  }
+body.tttOpen .bottomNav{z-index: 10020 !important;}
 
-body.tttOpen #tttOverlay{
-    inset: 0 0 calc(70px + env(safe-area-inset-bottom)) 0 !important;
-  }
+body.tttOpen #tttOverlay{inset: 0 0 calc(70px + env(safe-area-inset-bottom)) 0 !important;}
 
-#rotaceNamesPanel{
-    padding-bottom: calc(10px + env(safe-area-inset-bottom)) !important;
-  }
+#rotaceNamesPanel{padding-bottom: calc(10px + env(safe-area-inset-bottom)) !important;}
 
-#rotaceNamesPanel .listItem{
-    min-height:52px !important;
-    padding:8px 10px !important;
-  }
+#rotaceNamesPanel .listItem{min-height:52px !important;
+    padding:8px 10px !important;}
 
-#rotaceNamesPanel .rotaceTileTitle{
-    font-size:15px !important;
-    line-height:1.05 !important;
-  }
+#rotaceNamesPanel .rotaceTileTitle{font-size:15px !important;
+    line-height:1.05 !important;}
 
 #statsNameGrid .listItem,
-  #statsMachineGrid .listItem{
-    min-height:52px !important;
+  #statsMachineGrid .listItem{min-height:52px !important;
     padding:8px 10px !important;
     justify-content:center !important;
-    text-align:center !important;
-  }
+    text-align:center !important;}
 
 #statsNameGrid .statsTileMain,
-  #statsMachineGrid .statsTileMain{
-    width:100% !important;
+  #statsMachineGrid .statsTileMain{width:100% !important;
     justify-content:center !important;
-    align-items:center !important;
-  }
+    align-items:center !important;}
 
 #statsNameGrid .statsTileTitle,
-  #statsMachineGrid .statsTileTitle{
-    font-size:15px !important;
+  #statsMachineGrid .statsTileTitle{font-size:15px !important;
     line-height:1.05 !important;
-    text-align:center !important;
-  }
+    text-align:center !important;}
 
 #statsMachineGrid.listGrid,
-  #statsNameGrid.listGrid{
-    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-    gap:6px !important;
-  }
-
-#games .gameSnakeBoard{
-    position:relative !important;
-  }
-
-#games .snakeJoystickDock{
-    right:6px !important;
-    bottom:6px !important;
-  }
-
-#games .snakeJoystickToggle{
-    width:58px !important;
-    min-width:58px !important;
-    height:58px !important;
-    min-height:58px !important;
-  }
-
-#games .snakeJoystickPad{
-    grid-template-columns:repeat(3, 44px) !important;
-    grid-template-rows:repeat(3, 44px) !important;
-  }
-
-#games .snakeJoystickPad .gameControlBtn,
-  #games .snakeJoystickCenter{
-    min-width:44px !important;
-    min-height:44px !important;
-    width:64px !important;
-    height:64px !important;
-  }
+  #statsNameGrid.listGrid{grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    gap:6px !important;}
 
 @media (max-width: 700px){#rotaceNamesPanel .listItem,
     #statsNameGrid .listItem,
-    #statsMachineGrid .listItem{
-      min-height:48px !important;
-    }
-
-.bottomNavBtn{
-      flex-basis:62px !important;
+    #statsMachineGrid .listItem{min-height:48px !important;} .bottomNavBtn{flex-basis:62px !important;
       width:62px !important;
       min-width:62px !important;
-      max-width:62px !important;
-    }
-
-.bottomNavMenuBtn{
-      flex-basis:42px !important;
+      max-width:62px !important;} .bottomNavMenuBtn{flex-basis:42px !important;
       width:42px !important;
       min-width:42px !important;
-      max-width:42px !important;
-    }}
+      max-width:42px !important;}}
 
-.bottomNav{
-  width:calc(100% - 6px) !important;
+.bottomNav{width:calc(100% - 6px) !important;
   padding:3px 5px calc(3px + env(safe-area-inset-bottom)) !important;
   border-radius:18px !important;
   display:grid !important;
   grid-template-columns:minmax(0,1fr) auto !important;
   align-items:center !important;
-  gap:4px !important;
-}
+  gap:4px !important;}
 
-.bottomNavScroll{
-  display:flex !important;
+.bottomNavScroll{display:flex !important;
   grid-column:1 !important;
   min-width:0 !important;
   overflow-x:auto !important;
   overflow-y:hidden !important;
   -webkit-overflow-scrolling:touch !important;
   scrollbar-width:none !important;
-  scroll-snap-type:x proximity !important;
-}
+  scroll-snap-type:x proximity !important;}
 
 .bottomNavScroll::-webkit-scrollbar{display:none !important;}
 
-.bottomNavInner{
-  display:flex !important;
+.bottomNavInner{display:flex !important;
   align-items:center !important;
   flex-wrap:nowrap !important;
   gap:4px !important;
   min-width:max-content !important;
-  padding-right:12px !important; scroll-padding-right:12px !important;
-}
+  padding-right:12px !important; scroll-padding-right:12px !important;}
 
-.bottomNavBtn{
-  flex:0 0 52px !important;
+.bottomNavBtn{flex:0 0 52px !important;
   width:52px !important;
   min-width:52px !important;
   max-width:52px !important;
   min-height:45px !important;
-  padding:1px 2px 0 !important;
-}
+  padding:1px 2px 0 !important;}
 
 .bottomNavBtn .bottomNavIcon,
-.bottomNavBtn .bottomNavIcon svg{
-  width:27px !important;
+.bottomNavBtn .bottomNavIcon svg{width:27px !important;
   height:27px !important;
-  display:block !important;
-}
+  display:block !important;}
 
 .bottomNavBtn .bottomNavIcon{flex:0 0 27px !important;}
 
-.bottomNavBtn .bottomNavLabel{
-  font-size:8.8px !important;
-  line-height:1.02 !important;
-}
+.bottomNavBtn .bottomNavLabel{font-size:8.8px !important;
+  line-height:1.02 !important;}
 
-.bottomNavMenuBtn{
-  grid-column:2 !important;
+.bottomNavMenuBtn{grid-column:2 !important;
   justify-self:end !important;
   flex:0 0 52px !important;
   width:52px !important;
@@ -318,92 +158,25 @@ body.tttOpen #tttOverlay{
   right:auto !important;
   left:auto !important;
   inset:auto !important;
-  transform:none !important;
-}
+  transform:none !important;}
 
-.bottomNavMenuBtn .moreIcon{
-  width:20px !important;
+.bottomNavMenuBtn .moreIcon{width:20px !important;
   height:20px !important;
   transform:translateY(-3px) !important;
-  display:block !important;
-}
+  display:block !important;}
 
 .bottomNavGamesBtn{margin-right:0 !important;}
 
-#games .gamesAccountRow{display:flex !important;align-items:center !important;gap:10px !important;margin-top:10px !important;}
-
-#games .gamesAccountCurrent{display:flex !important;align-items:center !important;justify-content:center !important;min-height:44px !important;padding:0 14px !important;border-radius:14px !important;border:1px solid rgba(124,255,124,.18) !important;background:rgba(255,255,255,.04) !important;color:#e7fff0 !important;font-weight:650 !important;letter-spacing:.02em !important;}
-
-#games .gamesAccountCard.isLoggedIn{padding:6px 10px !important;min-height:0 !important;}
-
-#games .gamesAccountCard.isLoggedIn .gamesAccountRow,#games .gamesAccountCard.isLoggedIn .gamesAccountHint{display:none !important;}
-
-#games .gamesAccountCard.isLoggedIn .gamesAccountCurrent{display:flex !important;margin-top:0 !important;min-height:32px !important;padding:0 10px !important;font-size:12px !important;}
-
-#games .gamesAccountCard.isLoggedIn .gamesAccountTop{margin-bottom:0 !important;}
-
-#games .gamesAccountCard.isLoggedIn .dashboardLabel{display:none !important;}
-
-#games .gamesAccountCard.isLoggedIn .gamesAccountName{font-size:14px !important;line-height:1.1 !important;}
-
-#games .gamesAccountCard.isLoggedIn .gamesTinyBtn{min-height:30px !important;padding:0 10px !important;font-size:12px !important;}
-
-#games .gamesActiveAccountBar{margin:0 12px 10px !important;padding:10px 12px !important;border-radius:18px !important;background:rgba(255,255,255,.06) !important;border:1px solid rgba(124,255,124,.10) !important;backdrop-filter:blur(18px) !important;-webkit-backdrop-filter:blur(18px) !important;}
-
-#games .gamesActiveAccountBar.isVisible{display:flex !important;}
-
-#games .gamesActiveAccountBarText{font-size:13px !important;line-height:1.2 !important;font-weight:700 !important;color:#eef7ee !important;}
-
-#games .gamesActiveAccountBar .gamesTinyBtn{min-height:30px !important;padding:0 10px !important;font-size:12px !important;}
-
-#games .gamesProfilesFolder,#games .gamesAchievementsFolder,#games .gamesStatsFolder{margin-top:10px !important;border-radius:18px !important;border:1px solid rgba(124,255,124,.14) !important;background:rgba(11,15,13,.58) !important;overflow:hidden !important;}
-
-#games .gamesProfilesFolder[hidden],#games .gamesAchievementsFolder[hidden],#games .gamesStatsFolder[hidden]{display:none !important;}
-
-#games .gamesProfilesFolder > summary,#games .gamesAchievementsFolder > summary,#games .gamesStatsFolder > summary{list-style:none !important;cursor:pointer !important;padding:10px 12px !important;font-weight:700 !important;color:#e8ffe8 !important;}
-
-#games .gamesProfilesFolder > summary::-webkit-details-marker,#games .gamesAchievementsFolder > summary::-webkit-details-marker,#games .gamesStatsFolder > summary::-webkit-details-marker{display:none !important;}
-
-#games .gamesProfilesFolder[open] .gamesProfilesGrid,#games .gamesAchievementsFolder[open] .gamesAchievementsGrid,#games .gamesStatsFolder[open] .gamesStatsGrid{padding-top:4px !important;}
-
 #statsNameGrid .statsTileTitle,
-#statsMachineGrid .statsTileTitle{
-  font-size:13px !important;
-  line-height:1.05 !important;
-}
+#statsMachineGrid .statsTileTitle{font-size:13px !important;
+  line-height:1.05 !important;}
 
-#statsMachineGrid.listGrid{
-  gap:3px !important;
-}
+#statsMachineGrid.listGrid{gap:3px !important;}
 
-#statsMachineGrid .listItem{
-  padding:3px 1px !important;
-  min-height:32px !important;
-}
+#statsMachineGrid .listItem{padding:3px 1px !important;
+  min-height:32px !important;}
 
-#statsMachineGrid .statsMachineTile{
-  padding:3px 1px !important;
-}
-
-#games .gamesGrid{display:grid !important;grid-template-columns:repeat(2, minmax(0, 1fr)) !important;gap:10px !important;}
-
-#games .gamesLaunchTile{min-height:110px !important;padding:12px !important;align-items:flex-start !important;}
-
-#games .gamesLaunchTile .calcTileText{font-size:16px !important;}
-
-#games .gamesLaunchTile .smallText{font-size:11px !important;line-height:1.2 !important;}
-
-#games .gamesLaunchTile .calcTileIcon{width:42px !important;height:42px !important;border-radius:14px !important;background:linear-gradient(180deg, rgba(124,255,124,.10), rgba(124,255,124,.04)) !important;border:1px solid rgba(124,255,124,.12) !important;box-shadow:0 10px 20px rgba(0,0,0,.18) inset, 0 8px 20px rgba(0,0,0,.10) !important;}
-
-#games .gamesLaunchTile .calcTileIcon svg{width:24px !important;height:24px !important;color:var(--green2) !important;opacity:.96 !important;}
-
-#games .gamesStatsFolder{margin-top:10px !important;border-radius:18px !important;border:1px solid rgba(124,255,124,.14) !important;background:rgba(11,15,13,.58) !important;overflow:hidden !important;}
-
-#games .gamesStatsFolder > summary{list-style:none !important;cursor:pointer !important;padding:10px 12px !important;font-weight:700 !important;color:#e8ffe8 !important;}
-
-#games .gamesStatsFolder > summary::-webkit-details-marker{display:none !important;}
-
-#games .gamesStatsGrid{display:grid !important;grid-template-columns:repeat(2, minmax(0, 1fr)) !important;gap:8px !important;padding:0 10px 10px !important;}
+#statsMachineGrid .statsMachineTile{padding:3px 1px !important;}
 
 .gamesStatsCard{border-radius:16px !important;border:1px solid rgba(124,255,124,.12) !important;background:rgba(255,255,255,.035) !important;padding:10px !important;box-shadow:0 10px 28px rgba(0,0,0,.16) !important;}
 
@@ -421,370 +194,131 @@ body.tttOpen #tttOverlay{
 
 .gamesStatsCardLine{font-size:10px !important;line-height:1.2 !important;color:rgba(231,255,240,.82) !important;}
 
-#games .gameBoard{width:100% !important;max-width:100% !important;touch-action:none !important;overscroll-behavior:contain !important;user-select:none !important;-webkit-user-select:none !important;box-sizing:border-box !important;display:grid !important;place-items:stretch !important;}
+@media (max-width: 700px){.bottomNavBtn{flex-basis:56px !important;width:56px !important;min-width:56px !important;max-width:56px !important;} .bottomNavMenuBtn{flex-basis:38px !important;width:38px !important;min-width:38px !important;max-width:38px !important;}}
 
-#games .gameInfoRow{display:flex !important;justify-content:space-between !important;align-items:center !important;gap:10px !important;padding:0 2px !important;font-size:12px !important;line-height:1.25 !important;flex-wrap:wrap !important;}
+.bottomNav{padding:3px 5px calc(3px + env(safe-area-inset-bottom)) !important;
+    gap:5px !important;}
 
-#games .gameInfoRowCompact{font-size:12px !important;}
-
-#games .gamesGamePanel{display:flex !important;flex-direction:column !important;gap:10px !important;align-items:center !important;justify-content:flex-start !important;flex:1 1 auto !important;min-height:0 !important;width:100% !important;}
-
-#games .gameControls{display:flex !important;flex-wrap:wrap !important;gap:8px !important;justify-content:center !important;align-items:center !important;}
-
-#games .gamePad{display:grid !important;grid-template-columns:repeat(3, 54px) !important;grid-template-rows:repeat(3, 54px) !important;gap:6px !important;justify-content:center !important;align-items:center !important;touch-action:manipulation !important;}
-
-#games .gamePad .gameControlBtn{min-height:54px !important;min-width:54px !important;padding:0 12px !important;border-radius:18px !important;}
-
-#games .gamePadCenter{font-size:18px !important;}
-
-#games .gameBoard.game2048Board{width:min(100%, calc(100vw - 24px)) !important;max-width:min(100%, 460px) !important;aspect-ratio:1 / 1 !important;grid-template-columns:repeat(4,minmax(0,1fr)) !important;grid-template-rows:repeat(4,minmax(0,1fr)) !important;gap:clamp(6px, 1.6vw, 10px) !important;padding:clamp(8px, 2vw, 12px) !important;border-radius:26px !important;background:rgba(255,255,255,.06) !important;border:1px solid rgba(255,255,255,.10) !important;backdrop-filter:blur(18px) !important;box-shadow:0 20px 40px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.05) !important;place-items:stretch !important;}
-
-#games .game2048Board .gameBoardCell{aspect-ratio:1 / 1 !important;border-radius:16px !important;display:flex !important;align-items:center !important;justify-content:center !important;font-weight:800 !important;font-size:clamp(18px, 5vw, 30px) !important;color:#26313d !important;background:rgba(255,255,255,.06) !important;border:1px solid rgba(255,255,255,.06) !important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08) !important;transition:transform .12s ease, background .12s ease, box-shadow .12s ease !important;}
-
-#games .game2048Board .gameBoardCell[data-value=""]{color:transparent !important;}
-
-#games .game2048Board .gameBoardCell.n2{background:#dce7ff !important;color:#203040 !important;}
-
-#games .game2048Board .gameBoardCell.n4{background:#bfd3ff !important;color:#203040 !important;}
-
-#games .game2048Board .gameBoardCell.n8{background:#91b6ff !important;color:#fff !important;}
-
-#games .game2048Board .gameBoardCell.n16{background:#6d9dff !important;color:#fff !important;}
-
-#games .game2048Board .gameBoardCell.n32{background:#5f88ff !important;color:#fff !important;}
-
-#games .game2048Board .gameBoardCell.n64{background:#546fff !important;color:#fff !important;}
-
-#games .game2048Board .gameBoardCell.n128{background:#7f66ff !important;color:#fff !important;font-size:26px !important;}
-
-#games .game2048Board .gameBoardCell.n256{background:#9c61ff !important;color:#fff !important;font-size:26px !important;}
-
-#games .game2048Board .gameBoardCell.n512{background:#c15dff !important;color:#fff !important;font-size:24px !important;}
-
-#games .game2048Board .gameBoardCell.n1024{background:#f65eff !important;color:#fff !important;font-size:20px !important;}
-
-#games .game2048Board .gameBoardCell.n2048{background:linear-gradient(135deg,#ffe27a,#ffb347) !important;color:#222 !important;font-size:20px !important;box-shadow:0 0 30px rgba(255,200,80,.5) !important;}
-
-#games .gameBoard.gameSnakeBoard{width:min(100%, calc(100vw - 24px)) !important;max-width:min(100%, 420px) !important;aspect-ratio:1 / 1 !important;grid-template-columns:repeat(20,minmax(0,1fr)) !important;grid-template-rows:repeat(20,minmax(0,1fr)) !important;gap:clamp(1px, .55vw, 3px) !important;padding:clamp(7px, 1.8vw, 11px) !important;border-radius:26px !important;background:rgba(255,255,255,.06) !important;border:1px solid rgba(255,255,255,.08) !important;backdrop-filter:blur(18px) !important;box-shadow:0 20px 40px rgba(0,0,0,.30) !important;place-items:stretch !important;}
-
-#games .gameSnakeBoard .gameBoardCell{aspect-ratio:1 / 1 !important;border-radius:7px !important;background:rgba(255,255,255,.035) !important;display:flex !important;align-items:center !important;justify-content:center !important;color:#dfffe3 !important;font-size:clamp(9px, 2.6vw, 13px) !important;line-height:1 !important;}
-
-#games .gameSnakeBoard .snakeEmpty:nth-child(odd){background:rgba(255,255,255,.02) !important;}
-
-#games .gameSnakeBoard .snakeFood{background:rgba(124,255,124,.22) !important;color:#d7ffe0 !important;box-shadow:0 0 0 1px rgba(124,255,124,.12) inset !important;}
-
-#games .gameSnakeBoard .snakeHead{background:linear-gradient(180deg, rgba(124,255,124,.42), rgba(84,190,104,.20)) !important;color:#f4fff4 !important;box-shadow:0 0 16px rgba(124,255,124,.18) inset !important;}
-
-#games .gameSnakeBoard .snakeBody{background:rgba(124,255,124,.12) !important;color:#eaffef !important;}
-
-#games .gameBoard.gameFlapBoard{width:min(100%, calc(100vw - 24px)) !important;max-width:min(100%, 520px) !important;height:clamp(240px, 38dvh, 360px) !important;min-height:240px !important;padding:0 !important;border-radius:26px !important;border:1px solid rgba(255,255,255,.08) !important;background:linear-gradient(180deg, rgba(73,132,89,.35), rgba(11,17,23,.96)) !important;box-shadow:0 20px 40px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.04) !important;position:relative !important;overflow:hidden !important;}
-
-#games .gameFlapCanvas{display:block !important;width:100% !important;height:100% !important;touch-action:none !important;}
-
-#games .gamesShell{display:flex !important;flex-direction:column !important;gap:8px !important;min-height:100% !important;height:100% !important;overflow:hidden !important;}
-
-body.gamesOpen #games .gamesStage{display:block !important;position:fixed !important;inset:0 !important;z-index:170 !important;background:linear-gradient(180deg, rgba(7,10,8,.94), rgba(7,10,8,.98)) !important;backdrop-filter:blur(18px) saturate(140%) !important;-webkit-backdrop-filter:blur(18px) saturate(140%) !important;padding:8px 8px calc(8px + env(safe-area-inset-bottom)) !important;overflow:hidden !important;}
-
-body.gamesOpen #games .gamesShellTop{position:sticky !important;top:0 !important;z-index:2 !important;padding:10px 12px !important;border:1px solid rgba(124,255,124,.12) !important;border-radius:18px !important;background:rgba(12,15,13,.74) !important;backdrop-filter:blur(16px) saturate(145%) !important;-webkit-backdrop-filter:blur(16px) saturate(145%) !important;}
-
-body.gamesOpen #games .gamesShellTitle{font-size:18px !important;line-height:1.1 !important;}
-
-body.gamesOpen #games .gamesShellBack{min-height:42px !important;padding:0 12px !important;}
-
-body.gamesOpen #games .gamesShell > #gamesShellBody{flex:1 1 auto !important;min-height:0 !important;overflow:hidden !important;display:flex !important;}
-
-#games .gamesGamePanel > *{max-width:100% !important;}
-
-#games .gameInfoRow span{white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important;}
-
-#games .gameInfoRowDense{gap:8px !important;}
-
-#games .gameInfoRowStatus{padding-top:0 !important;margin-top:-2px !important;justify-content:flex-start !important;}
-
-#games .gameInfoRowDense .gameControlBtnSmall{min-height:36px !important;min-width:92px !important;padding:0 12px !important;border-radius:14px !important;font-size:12px !important;}
-
-body.gamesCompactMode #games .gamesShell{gap:6px !important;}
-
-body.gamesCompactMode #games .gamesShellTop{padding:8px 10px !important;border-radius:16px !important;}
-
-body.gamesCompactMode #games .gamesShellTitle{font-size:17px !important;}
-
-body.gamesCompactMode #games .gamesShellBack{min-height:38px !important;padding:0 10px !important;}
-
-body.gamesCompactMode #games .gameInfoRow{font-size:11px !important;gap:8px !important;}
-
-body.gamesCompactMode #games .gamePad{grid-template-columns:repeat(3, 46px) !important;grid-template-rows:repeat(3, 46px) !important;gap:5px !important;}
-
-body.gamesCompactMode #games .gamePad .gameControlBtn{min-width:46px !important;min-height:46px !important;border-radius:16px !important;font-size:13px !important;}
-
-body.gamesCompactMode #games .gamePadCenter{font-size:16px !important;}
-
-body.gamesCompactMode #games .gameBoard.game2048Board{border-radius:22px !important;gap:clamp(5px, 1.2vw, 8px) !important;padding:clamp(7px, 1.5vw, 10px) !important;}
-
-body.gamesCompactMode #games .game2048Board .gameBoardCell{border-radius:14px !important;font-size:clamp(15px, 4.4vw, 26px) !important;}
-
-body.gamesCompactMode #games .game2048Board .gameBoardCell.n128,
-body.gamesCompactMode #games .game2048Board .gameBoardCell.n256{font-size:22px !important;}
-
-body.gamesCompactMode #games .game2048Board .gameBoardCell.n512{font-size:20px !important;}
-
-body.gamesCompactMode #games .game2048Board .gameBoardCell.n1024,
-body.gamesCompactMode #games .game2048Board .gameBoardCell.n2048{font-size:18px !important;}
-
-body.gamesCompactMode #games .gameBoard.gameSnakeBoard{border-radius:22px !important;gap:clamp(1px, .35vw, 2px) !important;padding:clamp(6px, 1.4vw, 9px) !important;}
-
-body.gamesCompactMode #games .gameSnakeBoard .gameBoardCell{border-radius:6px !important;font-size:clamp(8px, 2.2vw, 12px) !important;}
-
-body.gamesCompactMode #games .gameBoard.gameFlapBoard{max-width:100% !important;border-radius:22px !important;}
-
-body.gamesCompactMode #games .gameControlsFlap{gap:8px !important;}
-
-body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !important;min-width:92px !important;}
-
-@media (max-height: 760px){#games .gamesGrid{gap:8px !important;}
-
-#games .gamesLaunchTile{min-height:94px !important;}
-
-#games .gamesAccountCard{padding:10px !important;}
-
-body.gamesOpen #games .gamesStage{padding:6px 6px calc(6px + env(safe-area-inset-bottom)) !important;}
-
-body.gamesOpen #games .gamesShellTop{padding:8px 10px !important;}
-
-#games .gamesGamePanel{gap:8px !important;}
-
-#games .gameInfoRow{padding:0 !important;}
-
-#games .gamePad .gameControlBtn{min-height:48px !important;min-width:48px !important;}}
-
-@media (max-width: 700px){#games .gamesGrid{grid-template-columns:repeat(2, minmax(0, 1fr)) !important;gap:8px !important;}
-
-#games .gamesLaunchTile{min-height:96px !important;}
-
-#games .gamesStatsGrid{grid-template-columns:repeat(2, minmax(0, 1fr)) !important;gap:8px !important;}
-
-.bottomNavBtn{flex-basis:56px !important;width:56px !important;min-width:56px !important;max-width:56px !important;}
-
-.bottomNavMenuBtn{flex-basis:38px !important;width:38px !important;min-width:38px !important;max-width:38px !important;}}
-
-#games{padding-bottom:154px !important;}
-
-.bottomNav{
-    padding:3px 5px calc(3px + env(safe-area-inset-bottom)) !important;
-    gap:5px !important;
-  }
-
-.bottomNavBtn{
-    min-height:46px !important;
-    padding:1px 2px 0 !important;
-  }
+.bottomNavBtn{min-height:46px !important;
+    padding:1px 2px 0 !important;}
 
 .bottomNavBtn .bottomNavIcon,
-  .bottomNavBtn .bottomNavIcon svg{
-    width:27px !important;
-    height:27px !important;
-  }
+  .bottomNavBtn .bottomNavIcon svg{width:27px !important;
+    height:27px !important;}
 
-.bottomNavBtn .bottomNavLabel{
-    font-size:8.6px !important;
-    line-height:1.02 !important;
-  }
+.bottomNavBtn .bottomNavLabel{font-size:8.6px !important;
+    line-height:1.02 !important;}
 
-.bottomNavMenuBtn{
-    margin-left:0 !important;
-  }
+.bottomNavMenuBtn{margin-left:0 !important;}
 
-.bottomNavMenuBtn .moreIcon{
-    width:20px !important;
+.bottomNavMenuBtn .moreIcon{width:20px !important;
     height:20px !important;
-    transform:translateY(-6px) !important;
-  }
+    transform:translateY(-6px) !important;}
 
-#rotaceNamesPanel.active{
-    display:flex !important;
+#rotaceNamesPanel.active{display:flex !important;
     flex-direction:column !important;
-    min-height:calc(100dvh - 176px - env(safe-area-inset-bottom)) !important;
-  }
+    min-height:calc(100dvh - 176px - env(safe-area-inset-bottom)) !important;}
 
-#rotaceNamesPanel .personCard{
-    order:1 !important;
-    flex:0 0 auto !important;
-  }
+#rotaceNamesPanel .personCard{order:1 !important;
+    flex:0 0 auto !important;}
 
-#rotaceNamesPanel .listGrid{
-    order:2 !important;
-    margin-top:auto !important;
-  }
+#rotaceNamesPanel .listGrid{order:2 !important;
+    margin-top:auto !important;}
 
-@media (max-width: 700px){#rotaceNamesPanel.active{
-      min-height:calc(100dvh - 164px - env(safe-area-inset-bottom)) !important;
-    }
+@media (max-width: 700px){#rotaceNamesPanel.active{min-height:calc(100dvh - 164px - env(safe-area-inset-bottom)) !important;} #rotaceNamesPanel .listGrid{grid-template-columns:repeat(auto-fit, minmax(70px, 1fr)) !important;
+      gap:7px !important;}}
 
-#rotaceNamesPanel .listGrid{
-      grid-template-columns:repeat(auto-fit, minmax(70px, 1fr)) !important;
-      gap:7px !important;
-    }}
-
-.bottomNav{
-    padding:2px 4px calc(2px + env(safe-area-inset-bottom)) !important;
+.bottomNav{padding:2px 4px calc(2px + env(safe-area-inset-bottom)) !important;
     gap:3px !important;
     border-radius:16px !important;
-    border-width:1px !important;
-  }
+    border-width:1px !important;}
 
-.bottomNavScroll{
-    gap:1px !important;
-  }
+.bottomNavScroll{gap:1px !important;}
 
-.bottomNavInner{
-    gap:1px !important;
-    padding-right:0 !important;
-  }
+.bottomNavInner{gap:1px !important;
+    padding-right:0 !important;}
 
-.bottomNavBtn{
-    min-height:44px !important;
+.bottomNavBtn{min-height:44px !important;
     padding:0 1px 0 !important;
     flex:0 0 58px !important;
     width:58px !important;
     min-width:58px !important;
     max-width:58px !important;
-    border-radius:12px !important;
-  }
+    border-radius:12px !important;}
 
 .bottomNavBtn .bottomNavIcon,
-  .bottomNavBtn .bottomNavIcon svg{
-    width:28px !important;
-    height:28px !important;
-  }
+  .bottomNavBtn .bottomNavIcon svg{width:28px !important;
+    height:28px !important;}
 
-.bottomNavBtn .bottomNavLabel{
-    font-size:8.5px !important;
-    line-height:1.02 !important;
-  }
+.bottomNavBtn .bottomNavLabel{font-size:8.5px !important;
+    line-height:1.02 !important;}
 
-.bottomNavBtn.active{
-    transform:translateY(-4px) scale(1.05) !important;
+.bottomNavBtn.active{transform:translateY(-4px) scale(1.05) !important;
     z-index:10 !important;
-    box-shadow:0 14px 30px rgba(124,255,124,.18), inset 0 1px 0 rgba(255,255,255,.05) !important;
-  }
+    box-shadow:0 14px 30px rgba(124,255,124,.18), inset 0 1px 0 rgba(255,255,255,.05) !important;}
 
-.bottomNavBtn.active::before{
-    inset:-2px !important;
-  }
+.bottomNavBtn.active::before{inset:-2px !important;}
 
-.bottomNavMenuBtn{
-    flex:0 0 52px !important;
+.bottomNavMenuBtn{flex:0 0 52px !important;
     width:52px !important;
     min-width:52px !important;
     max-width:52px !important;
-    margin-left:0 !important;
-  }
+    margin-left:0 !important;}
 
-.bottomNavMenuBtn .moreIcon{
-    width:20px !important;
+.bottomNavMenuBtn .moreIcon{width:20px !important;
     height:20px !important;
-    transform:translateY(-9px) !important;
-  }
+    transform:translateY(-9px) !important;}
 
-#games{padding-bottom:170px !important;}
+#rotaceNamesPanel.active{min-height:calc(100dvh - 168px - env(safe-area-inset-bottom)) !important;}
 
-#games .gamesProfilesFolder,#games .gamesAchievementsFolder,#games .gamesStatsFolder{margin-top:6px !important;margin-bottom:6px !important;}
-
-#games .gamesProfilesFolder > summary,#games .gamesAchievementsFolder > summary,#games .gamesStatsFolder > summary{padding:8px 10px !important;}
-
-#games .gamesProfilesGrid,#games .gamesAchievementsGrid,#games .gamesStatsGrid{padding:0 8px 8px !important;gap:6px !important;}
-
-#games .gamesStatsCard{padding:8px !important;}
-
-#games .gamesStatsCardName{font-size:12px !important;}
-
-#games .gamesStatsCardTotal{font-size:11px !important;}
-
-#games .gamesStatsCardLine{font-size:10px !important;}
-
-#games .gamesAccountCard.isLoggedIn .gamesAccountCurrent{min-height:30px !important;font-size:12px !important;}
-
-#rotaceNamesPanel.active{
-    min-height:calc(100dvh - 168px - env(safe-area-inset-bottom)) !important;
-  }
-
-#statsMachineGrid.listGrid{
-    grid-template-columns:repeat(5, minmax(0, 1fr)) !important;
-    gap:1px !important;
-  }
+#statsMachineGrid.listGrid{grid-template-columns:repeat(5, minmax(0, 1fr)) !important;
+    gap:1px !important;}
 
 #statsMachineGrid .listItem,
-  #statsMachineGrid .statsMachineTile{
-    min-height:28px !important;
-    padding:2px 1px !important;
-  }
+  #statsMachineGrid .statsMachineTile{min-height:28px !important;
+    padding:2px 1px !important;}
 
-#statsMachineGrid .statsTileTitle{
-    font-size:13px !important;
-    line-height:1.05 !important;
-  }
+#statsMachineGrid .statsTileTitle{font-size:13px !important;
+    line-height:1.05 !important;}
 
-@media (max-width: 700px){#rotaceNamesPanel.active{
-      min-height:calc(100dvh - 160px - env(safe-area-inset-bottom)) !important;
-    }
+@media (max-width: 700px){#rotaceNamesPanel.active{min-height:calc(100dvh - 160px - env(safe-area-inset-bottom)) !important;} #statsMachineGrid .listItem,
+    #statsMachineGrid .statsMachineTile{min-height:28px !important;
+      padding:1px !important;}}
 
-#statsMachineGrid .listItem,
-    #statsMachineGrid .statsMachineTile{
-      min-height:28px !important;
-      padding:1px !important;
-    }}
-
-.bottomNav{
-    width:calc(100% - 4px) !important;
+.bottomNav{width:calc(100% - 4px) !important;
     padding:1px 0 calc(1px + env(safe-area-inset-bottom)) !important;
     gap:0 !important;
-    border-radius:11px !important;
-  }
+    border-radius:11px !important;}
 
-.bottomNavScroll{
-    gap:0 !important;
+.bottomNavScroll{gap:0 !important;
     min-width:0 !important;
-    padding-right:0 !important;
-  }
+    padding-right:0 !important;}
 
-.bottomNavInner{
-    gap:0 !important;
-    padding-right:0 !important;
-  }
+.bottomNavInner{gap:0 !important;
+    padding-right:0 !important;}
 
-.bottomNavBtn{
-    min-height:36px !important;
+.bottomNavBtn{min-height:36px !important;
     padding:0 !important;
     flex:0 0 61px !important;
     width:61px !important;
     min-width:61px !important;
     max-width:61px !important;
-    border-radius:10px !important;
-  }
+    border-radius:10px !important;}
 
 .bottomNavBtn .bottomNavIcon,
-  .bottomNavBtn .bottomNavIcon svg{
-    width:26px !important;
-    height:26px !important;
-  }
+  .bottomNavBtn .bottomNavIcon svg{width:26px !important;
+    height:26px !important;}
 
-.bottomNavBtn .bottomNavIcon{
-    flex:0 0 26px !important;
-  }
+.bottomNavBtn .bottomNavIcon{flex:0 0 26px !important;}
 
-.bottomNavBtn .bottomNavLabel{
-    font-size:8px !important;
-    line-height:1.02 !important;
-  }
+.bottomNavBtn .bottomNavLabel{font-size:8px !important;
+    line-height:1.02 !important;}
 
-.bottomNavBtn.active{
-    transform:translateY(-8px) scale(1.14) !important;
+.bottomNavBtn.active{transform:translateY(-8px) scale(1.14) !important;
     z-index:10 !important;
-    box-shadow:0 14px 30px rgba(124,255,124,.18), inset 0 1px 0 rgba(255,255,255,.05) !important;
-  }
+    box-shadow:0 14px 30px rgba(124,255,124,.18), inset 0 1px 0 rgba(255,255,255,.05) !important;}
 
-.bottomNavMenuBtn{
-    flex:0 0 20px !important;
+.bottomNavMenuBtn{flex:0 0 20px !important;
     width:20px !important;
     min-width:20px !important;
     max-width:20px !important;
@@ -794,722 +328,342 @@ body.gamesOpen #games .gamesShellTop{padding:8px 10px !important;}
     transform:none !important;
     padding:0 !important;
     display:grid !important;
-    place-items:center !important;
-  }
+    place-items:center !important;}
 
-.bottomNavMenuBtn .moreIcon{
-    width:14px !important;
+.bottomNavMenuBtn .moreIcon{width:14px !important;
     height:14px !important;
     display:block !important;
     margin:0 auto !important;
-    transform:none !important;
-  }
+    transform:none !important;}
 
-#games{padding-bottom:196px !important;}
-
-#games .gamesAccountHint{display:none !important;}
-
-#games .gamesAccountCard{padding-bottom:8px !important;}
-
-#games .gamesAccountCurrent{display:none !important;}
-
-#games .gamesProfilesFolder,#games .gamesAchievementsFolder,#games .gamesStatsFolder{
-    margin-top:6px !important;
-    margin-bottom:10px !important;
-    border-radius:18px !important;
-  }
-
-#games .gamesProfilesFolder[open] .gamesProfilesGrid,#games .gamesAchievementsFolder[open] .gamesAchievementsGrid,#games .gamesStatsFolder[open] .gamesStatsGrid{
-    padding-top:4px !important;
-    padding-bottom:18px !important;
-  }
-
-#games .gamesProfilesGrid,#games .gamesAchievementsGrid,#games .gamesStatsGrid{
-    padding:0 8px 8px !important;
-    gap:6px !important;
-  }
-
-#games .gamesStatsCardHead{
-    margin-bottom:5px !important;
-  }
-
-#games .gamesTop3Title{
-    font-size:12px !important;
-  }
-
-#games .gamesTop3Name{
-    font-size:11px !important;
-    font-weight:700 !important;
-  }
-
-#games .gamesTop3Value{
-    font-size:10px !important;
-    line-height:1.15 !important;
-  }
-
-#rotaceNamesPanel.active{
-    display:flex !important;
+#rotaceNamesPanel.active{display:flex !important;
     flex-direction:column !important;
-    min-height:calc(100dvh - 168px - env(safe-area-inset-bottom)) !important;
-  }
+    min-height:calc(100dvh - 168px - env(safe-area-inset-bottom)) !important;}
 
-#rotace .rotacePersonMeta{
-    font-size:11px !important;
+#rotace .rotacePersonMeta{font-size:11px !important;
     margin-top:2px !important;
-    margin-bottom:4px !important;
-  }
+    margin-bottom:4px !important;}
 
 #rotace .rotacePreviewGrid,
-  #rotace .rotaceQuickStack{
-    display:grid !important;
+  #rotace .rotaceQuickStack{display:grid !important;
     grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
-    gap:6px !important;
-  }
+    gap:6px !important;}
 
-#rotace .rotaceMiniCard{
-    min-height:52px !important;
-    padding:6px 7px !important;
-  }
+#rotace .rotaceMiniCard{min-height:52px !important;
+    padding:6px 7px !important;}
 
-#rotace .rotaceMiniDate{
-    font-size:10px !important;
-    line-height:1.08 !important;
-  }
+#rotace .rotaceMiniDate{font-size:10px !important;
+    line-height:1.08 !important;}
 
-#rotace .rotaceMiniTarget{
-    font-size:10px !important;
-    line-height:1.08 !important;
-  }
+#rotace .rotaceMiniTarget{font-size:10px !important;
+    line-height:1.08 !important;}
 
 #statsNameGrid .statsTileTitle,
-  #statsMachineGrid .statsTileTitle{
-    font-size:13px !important;
-    line-height:1.05 !important;
-  }
+  #statsMachineGrid .statsTileTitle{font-size:13px !important;
+    line-height:1.05 !important;}
 
-#statsMachineGrid .statsTileTitle{
-    transform:scaleX(.94) !important;
+#statsMachineGrid .statsTileTitle{transform:scaleX(.94) !important;
     transform-origin:center !important;
-    display:inline-block !important;
-  }
+    display:inline-block !important;}
 
 #statsNameGrid .listItem,
   #statsNameGrid .statsNameTile,
   #statsMachineGrid .listItem,
-  #statsMachineGrid .statsMachineTile{
-    min-height:34px !important;
+  #statsMachineGrid .statsMachineTile{min-height:34px !important;
     padding:3px 1px !important;
-    min-width:0 !important;
-  }
+    min-width:0 !important;}
 
-#stats .statsSummary .tile{
-    display:flex !important;
+#stats .statsSummary .tile{display:flex !important;
     flex-direction:column !important;
     align-items:center !important;
     justify-content:center !important;
-    text-align:center !important;
-  }
+    text-align:center !important;}
 
 #stats .statsSummary .smallText,
-  #stats .statsSummary .statsMultiLine{
-    text-align:center !important;
-  }
+  #stats .statsSummary .statsMultiLine{text-align:center !important;}
 
-#stats .statsSummary .tile .statsMultiLine{
-    font-size:12px !important;
+#stats .statsSummary .tile .statsMultiLine{font-size:12px !important;
     line-height:1.2 !important;
-    font-weight:700 !important;
-  }
+    font-weight:700 !important;}
 
-#games .gamesGrid{
-    grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
-    gap:8px !important;
-  }
-
-#games .gamesLaunchTile .calcTileIcon{
-    width:42px !important;
-    height:42px !important;
-  }
-
-body.gamesOpen #games .gamesStage{
-    padding:6px 6px calc(14px + env(safe-area-inset-bottom)) !important;
-    overflow:hidden !important;
-  }
-
-#games .gameInfoRow{
-    padding:0 1px 0 !important;
-  }
-
-#games .gameInfoRow span{
-    white-space:nowrap !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important;
-  }
-
-#games .gameBoard.gameSnakeBoard{
-    position:relative !important;
-    touch-action:none !important;
-    overscroll-behavior:contain !important;
-  }
-
-#games .snakeJoystickDock{
-    position:absolute !important;
-    right:8px !important;
-    bottom:8px !important;
-    z-index:20 !important;
-    display:flex !important;
-    flex-direction:column !important;
-    align-items:flex-end !important;
-    gap:8px !important;
-    pointer-events:none !important;
-  }
-
-#games .snakeJoystickDock *{
-    pointer-events:auto !important;
-  }
-
-#games .snakeJoystickToggle{
-    width:52px !important;
-    min-width:52px !important;
-    height:52px !important;
-    min-height:52px !important;
-    border-radius:18px !important;
-    padding:0 1px 0 !important;
-    display:grid !important;
-    place-items:center !important;
-    font-size:12px !important;
-    font-weight:800 !important;
-    letter-spacing:.01em !important;
-    background:rgba(12,16,14,.82) !important;
-    border:1px solid rgba(124,255,124,.16) !important;
-    box-shadow:0 14px 28px rgba(0,0,0,.24) !important;
-  }
-
-#games .snakeJoystickDock.isOn .snakeJoystickToggle{
-    background:rgba(124,255,124,.14) !important;
-    color:#eaffea !important;
-    border-color:rgba(124,255,124,.22) !important;
-  }
-
-#games .snakeJoystickPad{
-    display:none !important;
-    grid-template-columns:repeat(3, 40px) !important;
-    grid-template-rows:repeat(3, 40px) !important;
-    gap:6px !important;
-    align-items:center !important;
-    justify-items:center !important;
-    padding:8px !important;
-    border-radius:22px !important;
-    border:1px solid rgba(124,255,124,.14) !important;
-    background:rgba(11,15,13,.75) !important;
-    backdrop-filter:blur(18px) saturate(135%) !important;
-    -webkit-backdrop-filter:blur(18px) saturate(135%) !important;
-    box-shadow:0 18px 30px rgba(0,0,0,.22) !important;
-  }
-
-#games .snakeJoystickDock.isOn .snakeJoystickPad{
-    display:grid !important;
-  }
-
-#games .snakeJoystickPad .gameControlBtn{
-    min-width:40px !important;
-    min-height:40px !important;
-    padding:0 1px 0 !important;
-    border-radius:12px !important;
-    font-size:13px !important;
-  }
-
-#games .snakeJoystickCenter{
-    width:40px !important;
-    height:40px !important;
-    border-radius:12px !important;
-    display:grid !important;
-    place-items:center !important;
-    background:rgba(255,255,255,.04) !important;
-    color:rgba(231,255,240,.7) !important;
-    font-size:14px !important;
-    font-weight:700 !important;
-  }
-
-@media (max-width: 700px){
-
-#games .gamesStatsGrid{
-      grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
-      gap:6px !important;
-    }
-
-#statsNameGrid .listItem,
+@media (max-width: 700px){#statsNameGrid .listItem,
     #statsNameGrid .statsNameTile,
     #statsMachineGrid .listItem,
-    #statsMachineGrid .statsMachineTile{
-      min-height:34px !important;
+    #statsMachineGrid .statsMachineTile{min-height:34px !important;
       padding:3px 1px !important;
-      min-width:0 !important;
-    }}
+      min-width:0 !important;}}
 
-.bottomNav{
-    padding:0 0 calc(0px + env(safe-area-inset-bottom)) !important;
+.bottomNav{padding:0 0 calc(0px + env(safe-area-inset-bottom)) !important;
     gap:0 !important;
-    border-radius:10px !important;
-  }
+    border-radius:10px !important;}
 
-.bottomNavScroll{
-    gap:0 !important;
+.bottomNavScroll{gap:0 !important;
     padding-right:0 !important;
-    min-width:0 !important;
-  }
+    min-width:0 !important;}
 
-.bottomNavBtn{
-    flex:0 0 72px !important;
+.bottomNavBtn{flex:0 0 72px !important;
     width:72px !important;
     min-width:72px !important;
     max-width:72px !important;
     min-height:42px !important;
-    padding:0 1px 0 !important;
-  }
+    padding:0 1px 0 !important;}
 
-.bottomNavBtn .bottomNavLabel{
-    font-size:8.2px !important;
-    line-height:1 !important;
-  }
+.bottomNavBtn .bottomNavLabel{font-size:8.2px !important;
+    line-height:1 !important;}
 
-.bottomNavBtn.active{
-    transform:translateY(-8px) scale(1.12) !important;
-    z-index:10 !important;
-  }
+.bottomNavBtn.active{transform:translateY(-8px) scale(1.12) !important;
+    z-index:10 !important;}
 
-.bottomNavMenuBtn{
-    flex:0 0 27px !important;
+.bottomNavMenuBtn{flex:0 0 27px !important;
     width:24px !important;
     min-width:24px !important;
     max-width:24px !important;
-    padding:0 !important;
-  }
+    padding:0 !important;}
 
-.bottomNavMenuBtn .bottomNavLabel{
-    display:none !important;
-  }
+.bottomNavMenuBtn .bottomNavLabel{display:none !important;}
 
-.bottomNavMenuBtn .moreIcon{
-    width:18px !important;
+.bottomNavMenuBtn .moreIcon{width:18px !important;
     height:18px !important;
-    transform:translateY(-4px) !important;
-  }
+    transform:translateY(-4px) !important;}
 
-#rotaceNamesPanel .rotaceQuickCards.rotacePreviewGrid{
-    display:grid !important;
+#rotaceNamesPanel .rotaceQuickCards.rotacePreviewGrid{display:grid !important;
     grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
-    gap:6px !important;
-  }
+    gap:6px !important;}
 
-#rotaceNamesPanel .rotacePersonMeta{
-    margin-top:4px !important;
+#rotaceNamesPanel .rotacePersonMeta{margin-top:4px !important;
     margin-bottom:6px !important;
     font-size:11px !important;
     line-height:1.1 !important;
-    color:rgba(233,245,233,.78) !important;
-  }
+    color:rgba(233,245,233,.78) !important;}
 
-#rotaceNamesPanel .rotaceQuickCards.rotacePreviewGrid .rotaceMiniCard{
-    min-height:58px !important;
-    padding:8px 8px !important;
-  }
+#rotaceNamesPanel .rotaceQuickCards.rotacePreviewGrid .rotaceMiniCard{min-height:58px !important;
+    padding:8px 8px !important;}
 
-#rotaceNamesPanel .rotaceQuickCards.rotacePreviewGrid .rotaceMiniDate{
-    font-size:11px !important;
-    margin-top:4px !important;
-  }
+#rotaceNamesPanel .rotaceQuickCards.rotacePreviewGrid .rotaceMiniDate{font-size:11px !important;
+    margin-top:4px !important;}
 
-#rotaceNamesPanel .rotaceQuickCards.rotacePreviewGrid .rotaceMiniTarget{
-    font-size:12px !important;
-    margin-top:6px !important;
-  }
+#rotaceNamesPanel .rotaceQuickCards.rotacePreviewGrid .rotaceMiniTarget{font-size:12px !important;
+    margin-top:6px !important;}
 
-.bottomNav{
-    padding:1px 2px calc(1px + env(safe-area-inset-bottom)) !important;
+.bottomNav{padding:1px 2px calc(1px + env(safe-area-inset-bottom)) !important;
     gap:2px !important;
-    border-radius:15px !important;
-  }
+    border-radius:15px !important;}
 
-.bottomNavScroll{
-    gap:2px !important;
-  }
+.bottomNavScroll{gap:2px !important;}
 
-.bottomNavBtn{
-    flex:0 0 52px !important;
+.bottomNavBtn{flex:0 0 52px !important;
     width:52px !important;
     min-width:52px !important;
     max-width:52px !important;
     min-height:42px !important;
-    padding:0 1px 0 !important;
-  }
+    padding:0 1px 0 !important;}
 
 .bottomNavBtn .bottomNavIcon,
-  .bottomNavBtn .bottomNavIcon svg{
-    width:22px !important;
-    height:22px !important;
-  }
+  .bottomNavBtn .bottomNavIcon svg{width:22px !important;
+    height:22px !important;}
 
-.bottomNavBtn .bottomNavIcon{
-    flex:0 0 22px !important;
-  }
+.bottomNavBtn .bottomNavIcon{flex:0 0 22px !important;}
 
-.bottomNavBtn.active{
-    transform:translateY(-3px) scale(1.08) !important;
-    z-index:10 !important;
-  }
+.bottomNavBtn.active{transform:translateY(-3px) scale(1.08) !important;
+    z-index:10 !important;}
 
-.bottomNavMenuBtn{
-    flex:0 0 22px !important;
+.bottomNavMenuBtn{flex:0 0 22px !important;
     width:22px !important;
     min-width:22px !important;
     max-width:22px !important;
     padding:0 !important;
     display:flex !important;
     align-items:center !important;
-    justify-content:center !important;
-  }
+    justify-content:center !important;}
 
-.bottomNavMenuBtn .moreIcon{
-    width:16px !important;
+.bottomNavMenuBtn .moreIcon{width:16px !important;
     height:16px !important;
     transform:translateY(0) !important;
-    margin:0 auto !important;
-  }
+    margin:0 auto !important;}
 
-#rotace .rotaceQuickStack{
-    display:flex !important;
+#rotace .rotaceQuickStack{display:flex !important;
     flex-direction:column !important;
-    gap:6px !important;
-  }
+    gap:6px !important;}
 
-#rotace .rotaceQuickStack .rotaceMiniCard{
-    width:100% !important;
-  }
+#rotace .rotaceQuickStack .rotaceMiniCard{width:100% !important;}
 
-#statsMachineGrid .statsTileTitle{
-    transform:scaleX(.92) !important;
+#statsMachineGrid .statsTileTitle{transform:scaleX(.92) !important;
     transform-origin:center !important;
-    display:inline-block !important;
-  }
+    display:inline-block !important;}
 
-#statsMachineGrid.listGrid{
-    grid-template-columns:repeat(5, minmax(0, 1fr)) !important;
-    gap:2px !important;
-  }
+#statsMachineGrid.listGrid{grid-template-columns:repeat(5, minmax(0, 1fr)) !important;
+    gap:2px !important;}
 
 #stats .statsSummary,
   #statsNameView .statsSummary,
-  #statsMachineView .statsSummary{
-    display:grid !important;
+  #statsMachineView .statsSummary{display:grid !important;
     grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
-    gap:8px !important;
-  }
+    gap:8px !important;}
 
 #stats .statsSummary .tile,
   #statsNameView .statsSummary .tile,
-  #statsMachineView .statsSummary .tile{
-    display:flex !important;
+  #statsMachineView .statsSummary .tile{display:flex !important;
     flex-direction:column !important;
     align-items:center !important;
     justify-content:center !important;
-    text-align:center !important;
-  }
+    text-align:center !important;}
 
 #stats .statsSummary .smallText,
   #statsNameView .statsSummary .smallText,
-  #statsMachineView .statsSummary .smallText{
-    text-align:center !important;
-  }
+  #statsMachineView .statsSummary .smallText{text-align:center !important;}
 
-.statsSummaryValue{
-    font-size:13px !important;
+.statsSummaryValue{font-size:13px !important;
     line-height:1.15 !important;
     font-weight:800 !important;
     text-align:center !important;
     white-space:pre-line !important;
-    word-break:break-word !important;
-  }
+    word-break:break-word !important;}
 
-.statsSummaryValueCompact{
-    font-size:12px !important;
+.statsSummaryValueCompact{font-size:12px !important;
     line-height:1.15 !important;
     font-weight:700 !important;
     text-align:center !important;
     white-space:pre-line !important;
-    word-break:break-word !important;
-  }
+    word-break:break-word !important;}
 
-@media (max-width: 700px){
-
-#statsNameGrid .listItem,
+@media (max-width: 700px){#statsNameGrid .listItem,
     #statsNameGrid .statsNameTile,
     #statsMachineGrid .listItem,
-    #statsMachineGrid .statsMachineTile{
-      min-height:34px !important;
-      padding:3px 1px !important;
-    }}
+    #statsMachineGrid .statsMachineTile{min-height:34px !important;
+      padding:3px 1px !important;}}
 
-.bottomNav{
-    padding:1px 1px calc(1px + env(safe-area-inset-bottom)) !important;
+.bottomNav{padding:1px 1px calc(1px + env(safe-area-inset-bottom)) !important;
     gap:2px !important;
-    border-radius:14px !important;
-  }
+    border-radius:14px !important;}
 
-.bottomNavBtn{
-    flex:0 0 50px !important;
+.bottomNavBtn{flex:0 0 50px !important;
     width:50px !important;
     min-width:50px !important;
     max-width:50px !important;
     min-height:40px !important;
-    padding:0 0 0 !important;
-  }
+    padding:0 0 0 !important;}
 
-.bottomNavBtn .bottomNavLabel{
-    font-size:8px !important;
-    line-height:1 !important;
-  }
+.bottomNavBtn .bottomNavLabel{font-size:8px !important;
+    line-height:1 !important;}
 
-.bottomNavBtn.active{
-    transform:translateY(-4px) scale(1.12) !important;
-    z-index:12 !important;
-  }
+.bottomNavBtn.active{transform:translateY(-4px) scale(1.12) !important;
+    z-index:12 !important;}
 
-.bottomNavBtn.active::before{
-    inset:-3px !important;
-  }
+.bottomNavBtn.active::before{inset:-3px !important;}
 
-.bottomNavMenuBtn{
-    flex:0 0 20px !important;
+.bottomNavMenuBtn{flex:0 0 20px !important;
     width:20px !important;
     min-width:20px !important;
     max-width:20px !important;
     padding:0 !important;
     display:flex !important;
     align-items:center !important;
-    justify-content:center !important;
-  }
+    justify-content:center !important;}
 
-.bottomNavMenuBtn .moreIcon{
-    width:14px !important;
+.bottomNavMenuBtn .moreIcon{width:14px !important;
     height:14px !important;
     transform:translateY(-1px) !important;
-    margin:0 auto !important;
-  }
+    margin:0 auto !important;}
 
-#rotaceNamesPanel .personCard{
-    align-items:flex-start !important;
-  }
+#rotaceNamesPanel .personCard{align-items:flex-start !important;}
 
-#rotaceNamesPanel .rotacePersonMeta{
-    margin-top:4px !important;
+#rotaceNamesPanel .rotacePersonMeta{margin-top:4px !important;
     margin-bottom:6px !important;
     font-size:11px !important;
-    line-height:1.1 !important;
-  }
+    line-height:1.1 !important;}
 
 #statsNameGrid .listItem,
   #statsNameGrid .statsNameTile,
   #statsMachineGrid .listItem,
-  #statsMachineGrid .statsMachineTile{
-    min-height:40px !important;
+  #statsMachineGrid .statsMachineTile{min-height:40px !important;
     padding:6px 2px !important;
-    min-width:0 !important;
-  }
+    min-width:0 !important;}
 
 #statsNameGrid .statsTileTitle,
-  #statsMachineGrid .statsTileTitle{
-    font-size:13px !important;
+  #statsMachineGrid .statsTileTitle{font-size:13px !important;
     line-height:1.05 !important;
-    text-align:center !important;
-  }
+    text-align:center !important;}
 
-#statsMachineGrid .statsTileTitle{
-    transform:scaleX(.89) !important;
+#statsMachineGrid .statsTileTitle{transform:scaleX(.89) !important;
     transform-origin:center !important;
-    display:inline-block !important;
-  }
+    display:inline-block !important;}
 
 .statsSummaryValue,
-  .statsSummaryValueCompact{
-    text-align:center !important;
-  }
+  .statsSummaryValueCompact{text-align:center !important;}
 
-#games .gamesGrid{
-    gap:7px !important;
-  }
+.tttStartScreen .tttCard{padding:12px !important;}
 
-#games .gamesLaunchTile{
-    min-height:92px !important;
-  }
-
-#games .gamesProfilesFolder,#games .gamesAchievementsFolder,#games .gamesStatsFolder{
-    margin-top:8px !important;
-    margin-bottom:10px !important;
-  }
-
-#games .gamesProfilesGrid,#games .gamesAchievementsGrid,#games .gamesStatsGrid{
-    gap:7px !important;
-    padding:0 8px 8px !important;
-  }
-
-#games .gamesStatsCard{
-    padding:9px !important;
-  }
-
-#games .gamesStatsCardTotal{
-    font-size:10px !important;
-  }
-
-#games .gamesStatsCardLine{
-    font-size:9px !important;
-  }
-
-#games .gamesStatsCardMeta{
-    font-size:9px !important;
-    line-height:1.15 !important;
-    color:rgba(231,255,240,.68) !important;
-  }
-
-#games .gameBoard.gameSnakeBoard{
-    touch-action:none !important;
-    overscroll-behavior:contain !important;
-  }
-
-#games .snakeJoystickToggle{
-    width:56px !important;
-    min-width:56px !important;
-    height:56px !important;
-    min-height:56px !important;
-  }
-
-#games .snakeJoystickPad{
-    grid-template-columns:repeat(3, 42px) !important;
-    grid-template-rows:repeat(3, 42px) !important;
-  }
-
-#games .snakeJoystickPad .gameControlBtn,
-  #games .snakeJoystickCenter{
-    min-width:42px !important;
-    min-height:42px !important;
-    width:42px !important;
-    height:42px !important;
-  }
-
-#games .gamePad .gameControlBtn{
-    min-width:50px !important;
-    min-height:50px !important;
-  }
-
-.tttStartScreen .tttCard{
-    padding:12px !important;
-  }
-
-.tttStartScreen .tttSectionTitle{
-    margin-bottom:10px !important;
-  }
+.tttStartScreen .tttSectionTitle{margin-bottom:10px !important;}
 
 .tttToggleRow,
-  .tttLevelRow{
-    grid-template-columns:repeat(1, minmax(0, 1fr)) !important;
-  }
+  .tttLevelRow{grid-template-columns:repeat(1, minmax(0, 1fr)) !important;}
 
-.tttBoardWrap{
-    inset:52px 8px 74px !important;
-  }
+.tttBoardWrap{inset:52px 8px 74px !important;}
 
-.tttBoard{
-    --tttCellSize: clamp(19px, 5.2vw, 24px) !important;
-  }
+.tttBoard{--tttCellSize: clamp(19px, 5.2vw, 24px) !important;}
 
 }
 
-/* extracted from v363-final-fix */
-.bottomNav{
-    padding:0 0 calc(0px + env(safe-area-inset-bottom)) !important;
-    gap:1px !important;
-    border-radius:12px !important;
-  }
 
-.bottomNavScroll{
+.bottomNav{padding:0 0 calc(0px + env(safe-area-inset-bottom)) !important;
     gap:1px !important;
-    padding:0 2px !important;
-  }
+    border-radius:12px !important;}
 
-.bottomNavBtn{
-    flex:0 0 46px !important;
+.bottomNavScroll{gap:1px !important;
+    padding:0 2px !important;}
+
+.bottomNavBtn{flex:0 0 46px !important;
     width:46px !important;
     min-width:46px !important;
     max-width:46px !important;
     min-height:38px !important;
-    padding:0 !important;
-  }
+    padding:0 !important;}
 
 .bottomNavBtn .bottomNavIcon,
-  .bottomNavBtn .bottomNavIcon svg{
-    width:21px !important;
-    height:21px !important;
-  }
+  .bottomNavBtn .bottomNavIcon svg{width:21px !important;
+    height:21px !important;}
 
-.bottomNavBtn .bottomNavIcon{
-    flex:0 0 21px !important;
-  }
+.bottomNavBtn .bottomNavIcon{flex:0 0 21px !important;}
 
-.bottomNavBtn.active{
-    transform:translateY(-5px) scale(1.15) !important;
-    z-index:12 !important;
-  }
+.bottomNavBtn.active{transform:translateY(-5px) scale(1.15) !important;
+    z-index:12 !important;}
 
-.bottomNavBtn.active::before{
-    inset:-4px !important;
-  }
+.bottomNavBtn.active::before{inset:-4px !important;}
 
-.bottomNavMenuBtn{
-    flex:0 0 18px !important;
+.bottomNavMenuBtn{flex:0 0 18px !important;
     width:18px !important;
     min-width:18px !important;
     max-width:18px !important;
     padding:0 !important;
     display:flex !important;
     align-items:center !important;
-    justify-content:center !important;
-  }
+    justify-content:center !important;}
 
-.bottomNavMenuBtn .moreIcon{
-    width:12px !important;
+.bottomNavMenuBtn .moreIcon{width:12px !important;
     height:12px !important;
     transform:translateY(0) !important;
     margin:0 auto !important;
-    display:block !important;
-  }
+    display:block !important;}
 
-.dashboardMeta{
-    white-space:pre-line !important;
-    line-height:1.08 !important;
-  }
+.dashboardMeta{white-space:pre-line !important;
+    line-height:1.08 !important;}
 
 #rotace #personView.rotaceQuickStack,
-  #rotace .rotaceQuickStack{
-    display:flex !important;
+  #rotace .rotaceQuickStack{display:flex !important;
     flex-direction:column !important;
-    gap:6px !important;
-  }
+    gap:6px !important;}
 
 #statsNameGrid .listItem,
   #statsNameGrid .statsNameTile,
   #statsMachineGrid .listItem,
-  #statsMachineGrid .statsMachineTile{
-    min-height:34px !important;
+  #statsMachineGrid .statsMachineTile{min-height:34px !important;
     padding:4px 2px !important;
-    min-width:0 !important;
-  }
+    min-width:0 !important;}
 
-#statsMachineGrid .statsTileTitle{
-    transform:scaleX(.84) !important;
+#statsMachineGrid .statsTileTitle{transform:scaleX(.84) !important;
     transform-origin:center !important;
     display:inline-block !important;
-    white-space:nowrap !important;
-  }
+    white-space:nowrap !important;}
 
 #stats .statsSummary .smallText,
   #statsNameView .statsSummary .smallText,
@@ -1519,359 +673,157 @@ body.gamesOpen #games .gamesStage{
   #statsMachineView .statsSummaryValue,
   #stats .statsSummaryValueCompact,
   #statsNameView .statsSummaryValueCompact,
-  #statsMachineView .statsSummaryValueCompact{
-    text-align:center !important;
-  }
+  #statsMachineView .statsSummaryValueCompact{text-align:center !important;}
 
-#games .gamesStatsFolder{
-    margin-top:6px !important;
-    margin-bottom:6px !important;
-  }
+:root{--bottom-nav-h: 44px;}
 
-#games .gamesStatsFolder > summary{
-    padding:8px 10px !important;
-  }
-
-#games .gamesStatsGrid{
-    padding:0 8px 8px !important;
-    gap:6px !important;
-  }
-
-#games .gamesStatsCardTotal,
-  #games .gamesStatsCardLine,
-  #games .gamesStatsCardMeta{
-    font-size:9px !important;
-    line-height:1.12 !important;
-  }
-
-#games .gameSnakeBoard{
-    touch-action:none !important;
-    overscroll-behavior:contain !important;
-  }
-
-:root{
-    --bottom-nav-h: 44px;
-  }
-
-.bottomNav{
-    padding:1px 2px calc(1px + env(safe-area-inset-bottom)) !important;
+.bottomNav{padding:1px 2px calc(1px + env(safe-area-inset-bottom)) !important;
     border-radius:12px !important;
-    overflow:visible !important;
-  }
+    overflow:visible !important;}
 
-.bottomNavScroll{
-    gap:1px !important;
-    overflow:visible !important;
-  }
+.bottomNavScroll{gap:1px !important;
+    overflow:visible !important;}
 
-.bottomNavInner{
-    gap:1px !important;
-    overflow:visible !important;
-  }
+.bottomNavInner{gap:1px !important;
+    overflow:visible !important;}
 
-.bottomNavBtn{
-    flex:0 0 58px !important;
+.bottomNavBtn{flex:0 0 58px !important;
     width:58px !important;
     min-width:58px !important;
     max-width:58px !important;
     min-height:40px !important;
     padding:0 !important;
-    overflow:visible !important;
-  }
+    overflow:visible !important;}
 
-.bottomNavBtn.active{
-    transform:translateY(-7px) scale(1.12) !important;
-    z-index:20 !important;
-  }
+.bottomNavBtn.active{transform:translateY(-7px) scale(1.12) !important;
+    z-index:20 !important;}
 
-.bottomNavBtn.active::before{
-    inset:-6px !important;
-  }
+.bottomNavBtn.active::before{inset:-6px !important;}
 
-.bottomNavMenuBtn{
-    flex:0 0 27px !important;
+.bottomNavMenuBtn{flex:0 0 27px !important;
     width:24px !important;
     min-width:24px !important;
     max-width:24px !important;
-    overflow:visible !important;
-  }
+    overflow:visible !important;}
 
-.bottomNavMenuBtn .moreIcon{
-    width:14px !important;
+.bottomNavMenuBtn .moreIcon{width:14px !important;
     height:14px !important;
-    transform:translateY(0) !important;
-  }
+    transform:translateY(0) !important;}
 
-#rotaceNamesPanel .listItem{
-    min-height:44px !important;
-    padding:6px 8px !important;
-  }
+#rotaceNamesPanel .listItem{min-height:44px !important;
+    padding:6px 8px !important;}
 
-#rotaceNamesPanel .rotaceTileTitle{
-    font-size:13px !important;
-    line-height:1.02 !important;
-  }
+#rotaceNamesPanel .rotaceTileTitle{font-size:13px !important;
+    line-height:1.02 !important;}
 
 #statsNameGrid .listItem,
   #statsMachineGrid .listItem,
   #statsNameGrid .statsNameTile,
-  #statsMachineGrid .statsMachineTile{
-    min-height:44px !important;
-    padding:6px 6px !important;
-  }
+  #statsMachineGrid .statsMachineTile{min-height:44px !important;
+    padding:6px 6px !important;}
 
 #statsNameGrid .statsTileTitle,
-  #statsMachineGrid .statsTileTitle{
-    font-size:14px !important;
-    line-height:1.03 !important;
-  }
+  #statsMachineGrid .statsTileTitle{font-size:14px !important;
+    line-height:1.03 !important;}
 
-#games .gamesGamePanel{
-    position:relative !important;
-    padding-bottom:96px !important;
-  }
+.tttToggleRow{grid-template-columns:repeat(1, minmax(0, 1fr)) !important;}
 
-#games .gamesSnakePanel{
-    padding-bottom:146px !important;
-  }
+.tttModeCard .tttToggleRow{grid-template-columns:repeat(3, minmax(0, 1fr)) !important;}
 
-#games .gameBoard.gameSnakeBoard{
-    margin-bottom:6px !important;
-  }
-
-#games .snakeJoystickDock{
-    position:absolute !important;
-    right:2px !important;
-    bottom:4px !important;
-    display:flex !important;
-    flex-direction:column !important;
-    align-items:flex-end !important;
-    gap:6px !important;
-    z-index:10 !important;
-    pointer-events:auto !important;
-  }
-
-#games .snakeJoystickLabel{
-    align-self:flex-end !important;
-    font-size:11px !important;
-    color:rgba(231,255,240,.62) !important;
-    letter-spacing:.12em !important;
-    text-transform:uppercase !important;
-    padding:0 8px 0 0 !important;
-  }
-
-#games .snakeJoystickPad{
-    grid-template-columns:repeat(3, 48px) !important;
-    grid-template-rows:repeat(3, 48px) !important;
-    gap:6px !important;
-    padding:8px !important;
-    border-radius:22px !important;
-    background:rgba(12,16,14,.78) !important;
-    box-shadow:0 16px 34px rgba(0,0,0,.32) !important;
-  }
-
-#games .snakeJoystickPad .gameControlBtn,
-  #games .snakeJoystickCenter{
-    width:48px !important;
-    height:48px !important;
-    min-width:48px !important;
-    min-height:48px !important;
-    border-radius:16px !important;
-  }
-
-#games .snakeJoystickCenter{
-    display:flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    color:#bff5c9 !important;
-    font-size:14px !important;
-    background:rgba(124,255,124,.10) !important;
-    box-shadow:inset 0 0 0 1px rgba(124,255,124,.10) !important;
-  }
-
-.tttToggleRow{
-    grid-template-columns:repeat(1, minmax(0, 1fr)) !important;
-  }
-
-.tttModeCard .tttToggleRow{
-    grid-template-columns:repeat(3, minmax(0, 1fr)) !important;
-  }
-
-.tttActionCard .tttPrimaryBtn{
-    min-height:52px !important;
+.tttActionCard .tttPrimaryBtn{min-height:52px !important;
     font-size:17px !important;
     font-weight:800 !important;
     background:linear-gradient(180deg, rgba(124,255,124,.24), rgba(124,255,124,.12)) !important;
-    border:1px solid rgba(124,255,124,.28) !important;
-  }
+    border:1px solid rgba(124,255,124,.28) !important;}
 
-.tttActionCard .tttSecondaryBtn{
-    margin-top:10px !important;
-  }
+.tttActionCard .tttSecondaryBtn{margin-top:10px !important;}
 
-.tttInviteCard .tttToggleRow{
-    grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
-  }
+.tttInviteCard .tttToggleRow{grid-template-columns:repeat(2, minmax(0, 1fr)) !important;}
 
-.tttInviteCard .tttBtn{
-    min-height:46px !important;
-  }
+.tttInviteCard .tttBtn{min-height:46px !important;}
 
-body.tttOpen .bottomNav{
-    z-index:10020 !important;
-  }
+body.tttOpen .bottomNav{z-index:10020 !important;}
 
-body.tttOpen #tttOverlay{
-    inset:0 0 calc(60px + env(safe-area-inset-bottom)) 0 !important;
-  }
+body.tttOpen #tttOverlay{inset:0 0 calc(60px + env(safe-area-inset-bottom)) 0 !important;}
 
-#games .gamesStatsCard{
-    padding:10px !important;
-  }
-
-#games .gamesStatsCardName{
-    font-size:13px !important;
-  }
-
-#games .gamesStatsCardTotal,
-  #games .gamesStatsCardLine,
-  #games .gamesStatsCardMeta{
-    font-size:10px !important;
-  }
-
-.bottomNav{
-    padding:0 2px calc(0px + env(safe-area-inset-bottom)) !important;
+.bottomNav{padding:0 2px calc(0px + env(safe-area-inset-bottom)) !important;
     gap:2px !important;
-    border-radius:16px !important;
-  }
+    border-radius:16px !important;}
 
-.bottomNavBtn{
-    flex:0 0 60px !important;
+.bottomNavBtn{flex:0 0 60px !important;
     width:60px !important;
     min-width:60px !important;
     max-width:60px !important;
     min-height:36px !important;
-    padding:0 1px 0 !important;
-  }
+    padding:0 1px 0 !important;}
 
 .bottomNavBtn .bottomNavIcon,
-  .bottomNavBtn .bottomNavIcon svg{
-    width:31px !important;
-    height:31px !important;
-  }
+  .bottomNavBtn .bottomNavIcon svg{width:31px !important;
+    height:31px !important;}
 
-.bottomNavBtn .bottomNavIcon{
-    flex:0 0 31px !important;
-  }
+.bottomNavBtn .bottomNavIcon{flex:0 0 31px !important;}
 
-.bottomNavBtn.active{
-    transform:translateY(-7px) scale(1.09) !important;
-    z-index:12 !important;
-  }
+.bottomNavBtn.active{transform:translateY(-7px) scale(1.09) !important;
+    z-index:12 !important;}
 
-.bottomNavMenuBtn{
-    flex:0 0 27px !important;
+.bottomNavMenuBtn{flex:0 0 27px !important;
     width:24px !important;
     min-width:24px !important;
     max-width:24px !important;
     padding:0 !important;
     display:flex !important;
     align-items:center !important;
-    justify-content:center !important;
-  }
+    justify-content:center !important;}
 
-.bottomNavMenuBtn .moreIcon{
-    width:16px !important;
+.bottomNavMenuBtn .moreIcon{width:16px !important;
     height:16px !important;
-    margin:0 auto !important;
-  }
+    margin:0 auto !important;}
 
-#rotaceNamesPanel .listItem{
-    font-size:10px !important;
+#rotaceNamesPanel .listItem{font-size:10px !important;
     min-height:26px !important;
     padding:3px 5px !important;
-    line-height:1.05 !important;
-  }
+    line-height:1.05 !important;}
 
 #statsNameGrid .listItem,
   #statsNameGrid .statsNameTile,
   #statsMachineGrid .listItem,
-  #statsMachineGrid .statsMachineTile{
-    min-height:42px !important;
-    padding:6px 4px !important;
-  }
+  #statsMachineGrid .statsMachineTile{min-height:42px !important;
+    padding:6px 4px !important;}
 
 #statsNameGrid .statsTileTitle,
-  #statsMachineGrid .statsTileTitle{
-    font-size:13px !important;
-    line-height:1.03 !important;
-  }
+  #statsMachineGrid .statsTileTitle{font-size:13px !important;
+    line-height:1.03 !important;}
 
 #statsMachineGrid .listItem,
-  #statsMachineGrid .statsMachineTile{
-    width:80% !important;
-    justify-self:center !important;
-  }
+  #statsMachineGrid .statsMachineTile{width:80% !important;
+    justify-self:center !important;}
 
-#games .gamesSnakePanel{
-    padding-bottom:186px !important;
-  }
+.tttHeader{justify-content:flex-start !important;
+    gap:8px !important;}
 
-#games .snakeJoystickDock{
-    position:absolute !important;
-    right:2px !important;
-    bottom:72px !important;
-    display:flex !important;
-    flex-direction:column !important;
-    align-items:flex-end !important;
-    gap:6px !important;
-    z-index:10 !important;
-    pointer-events:auto !important;
-  }
+.tttClose{display:none !important;}
 
-.tttHeader{
-    justify-content:flex-start !important;
-    gap:8px !important;
-  }
+.tttCard{border-radius:20px !important;}
 
-.tttClose{
-    display:none !important;
-  }
+.tttBtn{border-radius:18px !important;}
 
-.tttCard{
-    border-radius:20px !important;
-  }
+.tttBoard{gap:0 !important;
+    background:rgba(124,255,124,.05) !important;}
 
-.tttBtn{
-    border-radius:18px !important;
-  }
+.tttCell{border-width:1px !important;}
 
-.tttBoard{
-    gap:0 !important;
-    background:rgba(124,255,124,.05) !important;
-  }
+#home .dashboardShell{margin-top:4px !important;
+    transform:translateY(-6px) !important;}
 
-.tttCell{
-    border-width:1px !important;
-  }
-
-#home .dashboardShell{
-    margin-top:4px !important;
-    transform:translateY(-6px) !important;
-  }
-
-.bottomNav{
-    width:calc(100% - 8px) !important;
+.bottomNav{width:calc(100% - 8px) !important;
     padding:0 2px calc(0px + env(safe-area-inset-bottom)) !important;
     border-radius:14px !important;
     display:grid !important;
     grid-template-columns:minmax(0,1fr) auto !important;
     align-items:center !important;
-    gap:2px !important;
-  }
+    gap:2px !important;}
 
-.bottomNavScroll{
-    display:flex !important;
+.bottomNavScroll{display:flex !important;
     grid-column:1 !important;
     min-width:0 !important;
     overflow-x:auto !important;
@@ -1879,297 +831,136 @@ body.tttOpen #tttOverlay{
     -webkit-overflow-scrolling:touch !important;
     scrollbar-width:none !important;
     scroll-snap-type:x proximity !important;
-    padding-right:2px !important;
-  }
+    padding-right:2px !important;}
 
-.bottomNavInner{
-    display:flex !important;
+.bottomNavInner{display:flex !important;
     align-items:center !important;
     flex-wrap:nowrap !important;
     gap:2px !important;
     min-width:max-content !important;
-    padding-right:2px !important;
-  }
+    padding-right:2px !important;}
 
-.bottomNavBtn{
-    flex:0 0 72px !important;
+.bottomNavBtn{flex:0 0 72px !important;
     width:72px !important;
     min-width:72px !important;
     max-width:72px !important;
     min-height:40px !important;
     padding:0 1px 0 !important;
-    border-radius:14px !important;
-  }
+    border-radius:14px !important;}
 
 .bottomNavBtn .bottomNavIcon,
-  .bottomNavBtn .bottomNavIcon svg{
-    width:31px !important;
+  .bottomNavBtn .bottomNavIcon svg{width:31px !important;
     height:31px !important;
-    display:block !important;
-  }
+    display:block !important;}
 
-.bottomNavBtn.active{
-    transform:translateY(-7px) scale(1.15) !important;
-    z-index:12 !important;
-  }
+.bottomNavBtn.active{transform:translateY(-7px) scale(1.15) !important;
+    z-index:12 !important;}
 
-.bottomNavMenuBtn .moreIcon{
-    width:17px !important;
+.bottomNavMenuBtn .moreIcon{width:17px !important;
     height:17px !important;
     margin:0 auto !important;
-    transform:none !important;
-  }
+    transform:none !important;}
 
-body.tttOpen .bottomNav{
-    z-index:12050 !important;
-  }
+body.tttOpen .bottomNav{z-index:12050 !important;}
 
-body.tttOpen #tttOverlay{
-    inset:0 0 calc(48px + env(safe-area-inset-bottom)) 0 !important;
-  }
+body.tttOpen #tttOverlay{inset:0 0 calc(48px + env(safe-area-inset-bottom)) 0 !important;}
 
-#rotaceNamesPanel .listItem{
-    min-height:46px !important;
-    padding:9px 8px !important;
-  }
+#rotaceNamesPanel .listItem{min-height:46px !important;
+    padding:9px 8px !important;}
 
-#rotaceNamesPanel .rotaceHint{
-    display:none !important;
-  }
+#rotaceNamesPanel .rotaceHint{display:none !important;}
 
-.rotacePersonTitle{
-    margin-bottom:8px !important;
-  }
+.rotacePersonTitle{margin-bottom:8px !important;}
 
-.rotacePreviewGrid{
-    grid-template-columns:1fr !important;
-    gap:8px !important;
-  }
+.rotacePreviewGrid{grid-template-columns:1fr !important;
+    gap:8px !important;}
 
-.rotacePreviewGrid .rotaceMiniCard{
-    min-height:58px !important;
-  }
+.rotacePreviewGrid .rotaceMiniCard{min-height:58px !important;}
 
-.rotacePreviewGrid .rotaceMiniDate{
-    font-size:13px !important;
-  }
+.rotacePreviewGrid .rotaceMiniDate{font-size:13px !important;}
 
 #statsNameGrid .listItem,
-  #statsNameGrid .statsNameTile{
-    min-height:42px !important;
-    padding:6px 5px !important;
-  }
+  #statsNameGrid .statsNameTile{min-height:42px !important;
+    padding:6px 5px !important;}
 
 #statsMachineGrid .listItem,
-  #statsMachineGrid .statsMachineTile{
-    width:80% !important;
+  #statsMachineGrid .statsMachineTile{width:80% !important;
     justify-self:center !important;
     min-height:42px !important;
-    padding:6px 4px !important;
-  }
+    padding:6px 4px !important;}
 
 #statsNameGrid .statsTileTitle,
-  #statsMachineGrid .statsTileTitle{
-    font-size:12px !important;
-    line-height:1.05 !important;
-  }
+  #statsMachineGrid .statsTileTitle{font-size:12px !important;
+    line-height:1.05 !important;}
 
 #statsNameGrid .statsTileMain,
-  #statsMachineGrid .statsTileMain{
-    align-items:center !important;
+  #statsMachineGrid .statsTileMain{align-items:center !important;
     justify-content:center !important;
-    text-align:center !important;
-  }
+    text-align:center !important;}
 
-#statsMachineGrid.listGrid{
-    grid-template-columns:repeat(5, minmax(0, 1fr)) !important;
-    gap:3px !important;
-  }
+#statsMachineGrid.listGrid{grid-template-columns:repeat(5, minmax(0, 1fr)) !important;
+    gap:3px !important;}
 
-#monthsGrid{
-    grid-template-columns:repeat(auto-fit, minmax(0, 1fr)) !important;
-    gap:4px !important;
-  }
+#monthsGrid{grid-template-columns:repeat(auto-fit, minmax(0, 1fr)) !important;
+    gap:4px !important;}
 
 #rotace .rotaceMachineTile,
   #rotace .rotaceMonthTile,
-  #rotace .monthTile{
-    margin:0 !important;
-  }
+  #rotace .monthTile{margin:0 !important;}
 
 #rotace .rotaceMachineTile .rotaceTileTitle,
   #rotace .rotaceMonthTile .rotaceTileTitle,
-  #rotace .monthTile .rotaceTileTitle{
-    font-size:13px !important;
-  }
+  #rotace .monthTile .rotaceTileTitle{font-size:13px !important;}
 
-#games .snakeJoystickDock{
-    right:8px !important;
-    bottom:154px !important;
-  }
+#statsMachineGrid.listGrid{gap:1px !important;}
 
-#games .snakeJoystickLabel{
-    font-size:12px !important;
-    font-weight:800 !important;
-    letter-spacing:.03em !important;
-  }
-
-#games .snakeJoystickPad{
-    display:grid !important;
-  }
-
-#games .tttBoard{
-    gap:0 !important;
-    background:rgba(124,255,124,.06) !important;
-    padding:0 !important;
-  }
-
-#games .tttCell{
-    border:0 !important;
-    box-shadow:inset 0 0 0 1px rgba(124,255,124,.16) !important;
-  }
-
-#games .tttInviteCard{
-    border-radius:0 !important;
-  }
-
-#games .tttInviteCode{
-    margin-top:10px !important;
-    padding:12px 10px !important;
-    border-radius:0 !important;
-    border:1px solid rgba(124,255,124,.16) !important;
-    background:rgba(255,255,255,.04) !important;
-    color:#eaffea !important;
-    font-size:28px !important;
-    font-weight:900 !important;
-    letter-spacing:.18em !important;
-    text-align:center !important;
-    text-transform:uppercase !important;
-    overflow-wrap:anywhere !important;
-  }
-
-#games .tttInviteUrl{
-    margin-top:8px !important;
-    word-break:break-all !important;
-  }
-
-#games .tttInviteActions{
-    grid-template-columns:1fr 1fr !important;
-  }
-
-#games .tttInviteCard .tttBtn{
-    min-height:48px !important;
-  }
-
-#games .gamesAccountCard.isLoggedIn .gamesAccountRow,
-  #games .gamesAccountCard.isLoggedIn .gamesAccountHint{
-    display:none !important;
-  }
-
-#games .gamesAccountCard.isLoggedIn .gamesAccountCurrent{
-    margin-top:8px !important;
-  }
-
-#statsMachineGrid.listGrid{
-    gap:1px !important;
-  }
-
-#personView .rotacePersonHeader{
-    display:flex !important;
+#personView .rotacePersonHeader{display:flex !important;
     align-items:baseline !important;
     justify-content:flex-start !important;
     gap:8px !important;
-    flex-wrap:wrap !important;
-  }
+    flex-wrap:wrap !important;}
 
-#personView .rotacePersonTitleDate{
-    font-size:13px !important;
+#personView .rotacePersonTitleDate{font-size:13px !important;
     line-height:1.1 !important;
     color:rgba(238,246,238,.78) !important;
     font-weight:700 !important;
-    margin-top:0 !important;
-  }
+    margin-top:0 !important;}
 
-#personView .rotacePersonMeta{
-    margin-top:4px !important;
-  }
+#personView .rotacePersonMeta{margin-top:4px !important;}
 
-.bottomNavBtn{
-    flex-basis:65px !important;
+.bottomNavBtn{flex-basis:65px !important;
     width:65px !important;
     min-width:65px !important;
     max-width:65px !important;
-    min-height:40px !important;
-  }
+    min-height:40px !important;}
 
-.bottomNavBtn.active{
-    transform:translateY(-4px) scale(1.2) !important;
-  }
+.bottomNavBtn.active{transform:translateY(-4px) scale(1.2) !important;}
 
-.bottomNavMenuBtn{
-    flex-basis:17px !important;
+.bottomNavMenuBtn{flex-basis:17px !important;
     width:17px !important;
     min-width:17px !important;
     max-width:17px !important;
-    min-height:40px !important;
-  }
+    min-height:40px !important;}
 
-.bottomNavMenuBtn .moreIcon{
-    width:11px !important;
-    height:11px !important;
-  }
+.bottomNavMenuBtn .moreIcon{width:11px !important;
+    height:11px !important;}
 
-@supports (-webkit-touch-callout: none){.bottomNav{
-      bottom:24px !important;
-      padding:0 1px 0 !important;
-    }}
+@supports (-webkit-touch-callout: none){.bottomNav{bottom:24px !important;
+      padding:0 1px 0 !important;}}
 
-.bottomNav{
-    padding:2px 1px calc(2px + env(safe-area-inset-bottom)) !important;
-  }
+.bottomNav{padding:2px 1px calc(2px + env(safe-area-inset-bottom)) !important;}
 
-@supports (-webkit-touch-callout: none){.bottomNav{
-      bottom:24px !important;
-      padding:3px 1px calc(3px + env(safe-area-inset-bottom)) !important;
-    }}
+@supports (-webkit-touch-callout: none){.bottomNav{bottom:24px !important;
+      padding:3px 1px calc(3px + env(safe-area-inset-bottom)) !important;}}
 
-#statsMachineGrid.listGrid{
-    gap:0 !important;
-  }
+#statsMachineGrid.listGrid{gap:0 !important;}
 
 #statsMachineGrid .listItem,
-  #statsMachineGrid .statsMachineTile{
-    padding:5px 3px !important;
-  }
+  #statsMachineGrid .statsMachineTile{padding:5px 3px !important;}
 
-#games .gamesActiveAccountBar{
-    display:none !important;
-  }
+@media (display-mode: standalone){.bottomNav{bottom:calc(env(safe-area-inset-bottom) + 4px) !important;}}
 
-#games .gamesAccountCard.isLoggedIn .gamesAccountTop .gamesTinyBtn{
-    min-height:24px !important;
-    padding:0 7px !important;
-    font-size:11px !important;
-  }
-
-#games .gamesAccountCard.isLoggedIn .gamesAccountCurrent{
-    display:none !important;
-  }
-
-#games .gamesAccountCard.isLoggedIn .gamesAccountHint{
-    display:none !important;
-  }
-
-#games .gamesAccountCard.isLoggedIn .gamesAccountRow{
-    display:none !important;
-  }
-
-@media (display-mode: standalone){.bottomNav{
-    bottom:calc(env(safe-area-inset-bottom) + 4px) !important;
-  }}
-
-.bottomNav{
-  position:fixed !important;
+.bottomNav{position:fixed !important;
   width:min(calc(100vw - 8px), 880px) !important;
   left:50% !important;
   right:auto !important;
@@ -2181,155 +972,104 @@ body.tttOpen #tttOverlay{
   will-change:transform !important;
   backface-visibility:hidden !important;
   position:fixed !important;
-  z-index:1200 !important;
-}
+  z-index:1200 !important;}
 
-.bottomNavScroll{
-  padding-bottom:2px !important;
+.bottomNavScroll{padding-bottom:2px !important;
   justify-content:center !important;
-  margin:0 auto !important;
-}
+  margin:0 auto !important;}
 
-#statsMachineGrid.listGrid{
-  grid-template-columns:repeat(6, minmax(0, 1fr)) !important;
-  gap:1px !important;
-}
+#statsMachineGrid.listGrid{grid-template-columns:repeat(6, minmax(0, 1fr)) !important;
+  gap:1px !important;}
 
 .statsMachinesGrid,
 .machineStatsGrid,
 #statsMachinesGrid,
-#stats .machineGrid{
-  gap:1px !important;
-}
+#stats .machineGrid{gap:1px !important;}
 
 #stats .machineTile,
 #stats .statsMachineTile,
-#stats .machineChip{
-  margin:0 !important;
-}
+#stats .machineChip{margin:0 !important;}
 
 #statsMachineGrid .listItem,
-#statsMachineGrid .statsMachineTile{
-  padding-left:1px !important;
-  padding-right:1px !important;
-}
+#statsMachineGrid .statsMachineTile{padding-left:1px !important;
+  padding-right:1px !important;}
 
 #adminRotationEditor .appMenuTableWrap:nth-of-type(1) .appMenuAdminTable,
-#adminRotationEditor .appMenuTableWrap:nth-of-type(2) .appMenuAdminTable{
-  min-width:544px !important;
-}
+#adminRotationEditor .appMenuTableWrap:nth-of-type(2) .appMenuAdminTable{min-width:544px !important;}
 
 #adminRotationEditor .appMenuTableWrap:nth-of-type(1) .appMenuInlineInputTiny,
-#adminRotationEditor .appMenuTableWrap:nth-of-type(2) .appMenuInlineInputTiny{
-  min-width:46px !important;
+#adminRotationEditor .appMenuTableWrap:nth-of-type(2) .appMenuInlineInputTiny{min-width:46px !important;
   padding:5px 3px !important;
-  font-size:11px !important;
-}
+  font-size:11px !important;}
 
 #adminRotationEditor .appMenuTableWrap:nth-of-type(1) .appMenuInlineInput,
-#adminRotationEditor .appMenuTableWrap:nth-of-type(2) .appMenuInlineInput{
-  min-height:26px !important;
+#adminRotationEditor .appMenuTableWrap:nth-of-type(2) .appMenuInlineInput{min-height:26px !important;
   padding:5px 6px !important;
-  font-size:11px !important;
-}
+  font-size:11px !important;}
 
-#adminRotationEditor .appMenuFreeNamesBox{
-  padding:10px 12px !important;
+#adminRotationEditor .appMenuFreeNamesBox{padding:10px 12px !important;
   border:1px solid rgba(124,255,124,.12) !important;
   border-radius:16px !important;
-  background:rgba(255,255,255,.03) !important;
-}
+  background:rgba(255,255,255,.03) !important;}
 
-#adminRotationEditor .appMenuFreeNamesTitle{
-  font-size:11px !important;
+#adminRotationEditor .appMenuFreeNamesTitle{font-size:11px !important;
   font-weight:800 !important;
   letter-spacing:.06em !important;
   text-transform:uppercase !important;
-  color:rgba(124,255,124,.72) !important;
-}
+  color:rgba(124,255,124,.72) !important;}
 
-#adminRotationEditor .appMenuFreeNamesText{
-  margin-top:6px !important;
+#adminRotationEditor .appMenuFreeNamesText{margin-top:6px !important;
   font-size:11px !important;
   line-height:1.35 !important;
   color:rgba(242,248,245,.88) !important;
-  word-break:break-word !important;
-}
+  word-break:break-word !important;}
 
-#adminRotationEditor .appMenuTableWrap:nth-of-type(3) .appMenuAdminTable{
-  min-width:432px !important;
-}
+#adminRotationEditor .appMenuTableWrap:nth-of-type(3) .appMenuAdminTable{min-width:432px !important;}
 
 #adminRotationEditor .appMenuTableWrap:nth-of-type(3) th:nth-child(1),
-#adminRotationEditor .appMenuTableWrap:nth-of-type(3) td:nth-child(1){
-  width:64px !important;
-}
+#adminRotationEditor .appMenuTableWrap:nth-of-type(3) td:nth-child(1){width:64px !important;}
 
 #adminRotationEditor .appMenuTableWrap:nth-of-type(3) th:nth-child(2),
-#adminRotationEditor .appMenuTableWrap:nth-of-type(3) td:nth-child(2){
-  width:48% !important;
-}
+#adminRotationEditor .appMenuTableWrap:nth-of-type(3) td:nth-child(2){width:48% !important;}
 
 #adminRotationEditor .appMenuTableWrap:nth-of-type(3) th:nth-child(3),
-#adminRotationEditor .appMenuTableWrap:nth-of-type(3) td:nth-child(3){
-  width:78px !important;
-}
+#adminRotationEditor .appMenuTableWrap:nth-of-type(3) td:nth-child(3){width:78px !important;}
 
-#adminRotationEditor .appMenuTableWrap:nth-of-type(3) .appMenuInlineInput{
-  min-width:0 !important;
+#adminRotationEditor .appMenuTableWrap:nth-of-type(3) .appMenuInlineInput{min-width:0 !important;
   min-height:26px !important;
   padding:5px 6px !important;
-  font-size:11px !important;
-}
+  font-size:11px !important;}
 
-#adminRotationEditor .appMenuTableWrap:nth-of-type(3) .appMenuInlineInputTiny{
-  min-width:40px !important;
-}
+#adminRotationEditor .appMenuTableWrap:nth-of-type(3) .appMenuInlineInputTiny{min-width:40px !important;}
 
 #adminRotationEditor .appMenuTableWrap:nth-of-type(1) .appMenuAdminTable,
-#adminRotationEditor .appMenuTableWrap:nth-of-type(2) .appMenuAdminTable{
-  min-width:438px !important;
-}
+#adminRotationEditor .appMenuTableWrap:nth-of-type(2) .appMenuAdminTable{min-width:438px !important;}
 
 #adminRotationEditor .appMenuTableWrap:nth-of-type(1) .appMenuInlineInputTiny,
-#adminRotationEditor .appMenuTableWrap:nth-of-type(2) .appMenuInlineInputTiny{
-  min-width:40px !important;
+#adminRotationEditor .appMenuTableWrap:nth-of-type(2) .appMenuInlineInputTiny{min-width:40px !important;
   padding:4px 3px !important;
-  font-size:10px !important;
-}
+  font-size:10px !important;}
 
 #adminRotationEditor .appMenuTableWrap:nth-of-type(1) .appMenuInlineInput,
-#adminRotationEditor .appMenuTableWrap:nth-of-type(2) .appMenuInlineInput{
-  min-height:24px !important;
+#adminRotationEditor .appMenuTableWrap:nth-of-type(2) .appMenuInlineInput{min-height:24px !important;
   padding:4px 5px !important;
-  font-size:10px !important;
-}
+  font-size:10px !important;}
 
-#adminRotationEditor .appMenuTableWrap:nth-of-type(3) .appMenuAdminTable{
-  min-width:346px !important;
-}
+#adminRotationEditor .appMenuTableWrap:nth-of-type(3) .appMenuAdminTable{min-width:346px !important;}
 
-#adminRotationEditor .appMenuTableWrap:nth-of-type(3) .appMenuInlineInput{
-  min-height:24px !important;
+#adminRotationEditor .appMenuTableWrap:nth-of-type(3) .appMenuInlineInput{min-height:24px !important;
   padding:4px 5px !important;
-  font-size:10px !important;
-}
+  font-size:10px !important;}
 
-#adminRotationEditor .appMenuTableWrap:nth-of-type(3) .appMenuInlineInputTiny{
-  min-width:36px !important;
-}
+#adminRotationEditor .appMenuTableWrap:nth-of-type(3) .appMenuInlineInputTiny{min-width:36px !important;}
 
-#adminMachinesSection .appMenuAdminTable{
-  width:100% !important;
+#adminMachinesSection .appMenuAdminTable{width:100% !important;
   min-width:0 !important;
-  table-layout:fixed !important;
-}
+  table-layout:fixed !important;}
 
-#adminMachinesSection .appMenuInlineInput{
-  min-height:24px !important;
+#adminMachinesSection .appMenuInlineInput{min-height:24px !important;
   padding:4px 5px !important;
-  font-size:10px !important;
-}
+  font-size:10px !important;}
 
 #adminMachinesSection .appMenuTableWrap:nth-of-type(1) th:nth-child(1),
 #adminMachinesSection .appMenuTableWrap:nth-of-type(1) td:nth-child(1){width:28% !important;}
@@ -2358,83 +1098,54 @@ body.tttOpen #tttOverlay{
 #adminMachinesSection .appMenuTableWrap:nth-of-type(2) th:nth-child(6),
 #adminMachinesSection .appMenuTableWrap:nth-of-type(2) td:nth-child(6){width:17% !important;}
 
-#adminRotationEditor .appMenuMonthCheckList{
-  display:grid !important;
+#adminRotationEditor .appMenuMonthCheckList{display:grid !important;
   gap:4px !important;
-  margin-top:6px !important;
-}
+  margin-top:6px !important;}
 
-#adminRotationEditor .appMenuMonthCheckRow{
-  font-size:11px !important;
+#adminRotationEditor .appMenuMonthCheckRow{font-size:11px !important;
   line-height:1.35 !important;
   color:rgba(242,248,245,.88) !important;
-  word-break:break-word !important;
-}
+  word-break:break-word !important;}
 
-.bottomNav{
-  bottom:10px !important;
-}
+.bottomNav{bottom:10px !important;}
 
-#rotaceMonthsPanel{
-  padding-bottom:150px !important;
-}
+#rotaceMonthsPanel{padding-bottom:150px !important;}
 
-#rotaceMonthsPanel .card:last-child{
-  margin-bottom:22px !important;
-}
+#rotaceMonthsPanel .card:last-child{margin-bottom:22px !important;}
 
 #adminRotationEditor .appMenuTableWrap:nth-of-type(1) .appMenuAdminTable,
-#adminRotationEditor .appMenuTableWrap:nth-of-type(2) .appMenuAdminTable{
-  min-width:280px !important;
-}
+#adminRotationEditor .appMenuTableWrap:nth-of-type(2) .appMenuAdminTable{min-width:280px !important;}
 
 #adminRotationEditor .appMenuTableWrap:nth-of-type(1) .appMenuInlineInputTiny,
-#adminRotationEditor .appMenuTableWrap:nth-of-type(2) .appMenuInlineInputTiny{
-  min-width:34px !important;
+#adminRotationEditor .appMenuTableWrap:nth-of-type(2) .appMenuInlineInputTiny{min-width:34px !important;
   padding:3px 2px !important;
-  font-size:9px !important;
-}
+  font-size:9px !important;}
 
 #adminRotationEditor .appMenuTableWrap:nth-of-type(1) .appMenuInlineInput,
-#adminRotationEditor .appMenuTableWrap:nth-of-type(2) .appMenuInlineInput{
-  min-height:20px !important;
+#adminRotationEditor .appMenuTableWrap:nth-of-type(2) .appMenuInlineInput{min-height:20px !important;
   padding:3px 4px !important;
-  font-size:9px !important;
-}
+  font-size:9px !important;}
 
-#adminRotationEditor .appMenuTableWrap:nth-of-type(3) .appMenuAdminTable{
-  min-width:260px !important;
-}
+#adminRotationEditor .appMenuTableWrap:nth-of-type(3) .appMenuAdminTable{min-width:260px !important;}
 
 #adminRotationEditor .appMenuTableWrap:nth-of-type(3) th:nth-child(1),
-#adminRotationEditor .appMenuTableWrap:nth-of-type(3) td:nth-child(1){
-  width:46px !important;
-}
+#adminRotationEditor .appMenuTableWrap:nth-of-type(3) td:nth-child(1){width:46px !important;}
 
 #adminRotationEditor .appMenuTableWrap:nth-of-type(3) th:nth-child(2),
-#adminRotationEditor .appMenuTableWrap:nth-of-type(3) td:nth-child(2){
-  width:56% !important;
-}
+#adminRotationEditor .appMenuTableWrap:nth-of-type(3) td:nth-child(2){width:56% !important;}
 
 #adminRotationEditor .appMenuTableWrap:nth-of-type(3) th:nth-child(3),
-#adminRotationEditor .appMenuTableWrap:nth-of-type(3) td:nth-child(3){
-  width:52px !important;
-}
+#adminRotationEditor .appMenuTableWrap:nth-of-type(3) td:nth-child(3){width:52px !important;}
 
-#adminRotationEditor .appMenuTableWrap:nth-of-type(3) .appMenuInlineInput{
-  min-height:20px !important;
+#adminRotationEditor .appMenuTableWrap:nth-of-type(3) .appMenuInlineInput{min-height:20px !important;
   padding:3px 4px !important;
-  font-size:9px !important;
-}
+  font-size:9px !important;}
 
-#adminRotationEditor .appMenuTableWrap:nth-of-type(3) .appMenuInlineInputTiny{
-  min-width:30px !important;
-}
+#adminRotationEditor .appMenuTableWrap:nth-of-type(3) .appMenuInlineInputTiny{min-width:30px !important;}
 
 .bottomNavIcon{position:relative !important; display:block !important; overflow:visible !important;}
 
-.bottomNavIconImg{
-    position:absolute !important;
+.bottomNavIconImg{position:absolute !important;
     inset:0 !important;
     width:100% !important;
     height:100% !important;
@@ -2443,8 +1154,7 @@ body.tttOpen #tttOverlay{
     opacity:0 !important;
     transition:opacity .18s ease, transform .18s ease, filter .18s ease !important;
     pointer-events:none !important;
-    transform:translateZ(0) !important;
-  }
+    transform:translateZ(0) !important;}
 
 .bottomNavIconImg--off{opacity:1 !important; filter:none !important;}
 
@@ -2459,91 +1169,65 @@ body.tttOpen #tttOverlay{
 .bottomNavBtn.active .bottomNavIcon{transform:translateY(0) scale(1) !important;}
 
 #home .dashboardIconInline,
-  .dashboardCard .dashboardIcon.dashboardIconInline{
-    width:64px !important;
+  .dashboardCard .dashboardIcon.dashboardIconInline{width:64px !important;
     height:64px !important;
     flex:0 0 64px !important;
-    align-self:center !important;
-  }
+    align-self:center !important;}
 
 #home .dashboardCard .dashboardIcon.dashboardIconInline img,
   #home .dashboardCard .dashboardIcon.dashboardIconInline svg,
   .dashboardCard .dashboardIcon.dashboardIconInline img,
-  .dashboardCard .dashboardIcon.dashboardIconInline svg{
-    width:100% !important;
+  .dashboardCard .dashboardIcon.dashboardIconInline svg{width:100% !important;
     height:100% !important;
     object-fit:contain !important;
-    display:block !important;
-  }
+    display:block !important;}
 
-.bottomNavBtn{
-    flex:0 0 clamp(42px, 7vw, 55px) !important;
+.bottomNavBtn{flex:0 0 clamp(42px, 7vw, 55px) !important;
     width:clamp(42px, 7vw, 55px) !important;
     min-width:clamp(42px, 7vw, 55px) !important;
     max-width:clamp(42px, 7vw, 55px) !important;
     min-height:clamp(46px, 7.6vw, 56px) !important;
-    padding:2px 1px 1px !important;
-  }
+    padding:2px 1px 1px !important;}
 
 .bottomNavBtn .bottomNavIcon,
-  .bottomNavBtn .bottomNavIcon svg{
-    width:27px !important;
+  .bottomNavBtn .bottomNavIcon svg{width:27px !important;
     height:27px !important;
-    display:block !important;
-  }
+    display:block !important;}
 
-.bottomNavBtn .bottomNavLabel{
-    font-size:clamp(7px, 1.8vw, 9px) !important;
-    line-height:1 !important;
-  }
+.bottomNavBtn .bottomNavLabel{font-size:clamp(7px, 1.8vw, 9px) !important;
+    line-height:1 !important;}
 
-.bottomNavMenuBtn{
-    flex:0 0 17px !important;
+.bottomNavMenuBtn{flex:0 0 17px !important;
     width:17px !important;
     min-width:17px !important;
     max-width:17px !important;
     padding:0 !important;
     display:flex !important;
     align-items:center !important;
-    justify-content:center !important;
-  }
+    justify-content:center !important;}
 
-.bottomNavMenuBtn .moreIcon{
-    width:11px !important;
+.bottomNavMenuBtn .moreIcon{width:11px !important;
     height:11px !important;
-    margin:0 auto !important;
-  }
+    margin:0 auto !important;}
 
-.rakUpdateToast{
-    justify-content:center !important;
+.rakUpdateToast{justify-content:center !important;
     flex-wrap:nowrap !important;
     flex-direction:column !important;
     align-items:stretch !important;
-    text-align:center !important;
-  }
+    text-align:center !important;}
 
-.rakUpdateToastMain{
-    display:flex !important;
+.rakUpdateToastMain{display:flex !important;
     align-items:center !important;
     gap:10px !important;
-    justify-content:center !important;
-  }
+    justify-content:center !important;}
 
-.rakUpdateToastBadge{
-    align-self:center !important;
-  }
+.rakUpdateToastBadge{align-self:center !important;}
 
-.rakUpdateToastBody{
-    text-align:center !important;
-  }
+.rakUpdateToastBody{text-align:center !important;}
 
-.rakUpdateToastAction{
-    width:100% !important;
-  }
+.rakUpdateToastAction{width:100% !important;}
 
-@media (max-width: 560px){.rakUpdateToast{
-      flex-direction:column !important;
+@media (max-width: 560px){.rakUpdateToast{flex-direction:column !important;
       align-items:stretch !important;
       text-align:center !important;
-      gap:10px !important;
-    }}
+      gap:10px !important;}}

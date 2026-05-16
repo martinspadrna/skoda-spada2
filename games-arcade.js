@@ -147,7 +147,7 @@
         '    <div class="gamesStatsCardTotal">' + String(progress.plays) + ' her</div>',
         '  </div>',
         '  <div class="gamesStatsCardBody">',
-        '    <div class="gamesStatsXpBar"><span style="width:' + String(xpPct) + '%"></span></div>',
+        '    <div class="gamesStatsXpBar"><span style="--fill:' + String(xpPct) + '%"></span></div>',
         '    <div class="gamesStatsCardMeta gamesStatsCardMetaDense">Nejoblíbenější hra: ' + escapeHtml(progress.favorite) + ' · Achievementy: ' + String(progress.achievements) + '</div>',
         profileRows,
         '    <div class="gamesStatsCardMeta">' + escapeHtml(last) + '</div>',
@@ -207,7 +207,7 @@
         '  <div class="gamesStatsCardBody">',
         '    <div class="gamesStatsCardLine">' + escapeHtml(def.desc) + '</div>',
         '    <div class="gamesStatsCardLine">' + escapeHtml(def.goalText) + '</div>',
-        '    <div class="gamesAchievementBar"><span style="width:' + String(pct) + '%"></span></div>',
+        '    <div class="gamesAchievementBar"><span style="--fill:' + String(pct) + '%"></span></div>',
         '  </div>',
         '</div>'
       ].join('');
@@ -471,7 +471,21 @@
     };
     const coreHtml = CORE_GAMES.map(tile).join('');
     const extraHtml = EXTRA_GAMES.map(tile).join('');
-    grid.innerHTML = coreHtml + extraHtml;
+    grid.innerHTML = [
+      coreHtml,
+      `<details class="gamesDevFolder">
+        <summary class="gamesFolderSummary">
+          <span class="gamesFolderSummaryIcon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4.5 8.2A2.2 2.2 0 0 1 6.7 6h3.2l1.3 1.5h6.1A2.2 2.2 0 0 1 19.5 9.7v6.1A2.2 2.2 0 0 1 17.3 18H6.7A2.2 2.2 0 0 1 4.5 15.8V8.2Z"></path>
+              <path d="M7 11.2h10"></path>
+            </svg>
+          </span>
+          <span class="gamesFolderSummaryText">Ve vývoji</span>
+        </summary>
+        <div class="gamesDevFolderBody">${extraHtml}</div>
+      </details>`
+    ].join('');
   }
 
   function summaryLine(account, gameId) {
