@@ -446,7 +446,7 @@ function renderPerson(name) {
   personView.innerHTML = [
     '<div class="rotacePersonHeader">',
     '  <div class="rotacePersonTitle">' + escapeHtml(name) + '</div>',
-    '  <div class="rotacePersonMeta">1 klepnutí ukáže nejbližší směny, 3 klepnutí otevřou QR.</div>',
+    '  <div class="rotacePersonMeta">3× rychle klepni na jméno pro QR kód.</div>',
     '</div>',
     '<div class="rotaceQuickCards rotaceQuickStack">',
     visibleEntries.map((entry) => formatEntry(entry, entry === entries[currentIdx])).join(''),

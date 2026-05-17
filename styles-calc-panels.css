@@ -359,3 +359,43 @@
   :is(#frezky, #brusy) .brusDetails[open] > .brusDetailsBody{animation:none !important;}
 }
 
+
+/* F2 v.507: finální uzavření calcPanel systému – stabilní šířky, scroll a spodní rezerva. */
+:is(#soustruhy, #frezky, #brusy, #pracka).calcPage{
+  width:100% !important;
+  max-width:720px !important;
+  margin-left:auto !important;
+  margin-right:auto !important;
+  align-content:start !important;
+  grid-auto-rows:max-content !important;
+  overflow-x:hidden !important;
+  overscroll-behavior:contain;
+}
+:is(#soustruhy, #frezky, #brusy, #pracka).calcPage *{
+  box-sizing:border-box;
+}
+:is(#soustruhy, #frezky, #brusy, #pracka).calcPage :is(.card, .brusDetails, .brusDetailsBody, .calcPanel, .calcResultCard, .calcInfoCard, .bgrid, .indexGrid, .grid){
+  min-width:0 !important;
+}
+:is(#soustruhy, #frezky, #brusy, #pracka).calcPage :is(.calcPrimaryBtn, button[data-action^="calc-"], .resetBtn){
+  touch-action:manipulation;
+}
+:is(#frezky, #brusy) .brusDetailsBody > :last-child{
+  margin-bottom:0 !important;
+}
+#pracka.calcPage{
+  gap:7px !important;
+}
+#pracka.calcPage > :not(.headerBar){
+  width:100% !important;
+  max-width:100% !important;
+}
+@media (max-width: 380px){
+  :is(#soustruhy, #frezky, #brusy, #pracka).calcPage{
+    padding-left:max(10px, env(safe-area-inset-left)) !important;
+    padding-right:max(10px, env(safe-area-inset-right)) !important;
+  }
+  #brusy .indexGrid .freeWrap{
+    min-width:0 !important;
+  }
+}

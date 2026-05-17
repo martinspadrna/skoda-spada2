@@ -1,3 +1,14 @@
+## v.1.1 (507)
+- Fáze 2 calcPanel system uzavřena: finální sjednocení šířek, scroll ochrany a vnitřních stacků kalkulaček.
+- Přidaný finální runtime audit kalkulaček: hlídá viditelnost neaktivních kalkulaček, chybějící výsledkové boxy a chybějící jednotné třídy tlačítek.
+- Doplněné závěrečné CSS guard rails pro kalkulačkové stránky, aby panely neroztahovaly layout a nepřekrývala je spodní lišta.
+
+## v.1.1 (506)
+- Rotace: klikací seznam jmen je pevně ukotvený dole nad spodní lištou.
+- Rotace: po kliknutí na jméno zůstává jen nápověda k QR kódu, bez popisku pro jedno klepnutí.
+- Rotace: sjednocená barva jména/směny a stroje v přehledu/detailu.
+- Fáze 2: doplněný finální guard pro dlouhé texty ve výsledcích kalkulaček.
+
 ## v.1.1 (505)
 - Dashboard hero text mimo aktivní směnu zkrácený na „Další směna v práci…“ a samostatně „Začíná za…“.
 - Rotace: klikací seznam jmen je posunutý dolů nad spodní lištu.

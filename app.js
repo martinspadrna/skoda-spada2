@@ -1,4 +1,4 @@
-// v.1.1 (505) – Fáze 2: Dashboard text, Rotace přehled + další calcPanel cleanup.
+// v.1.1 (507) – Fáze 2: finální audit calcPanel systému a uzavření fáze.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
@@ -255,39 +255,69 @@ function runPhaseOneFinalAudit() {
 }
 
 function runPhaseTwoCalcScopeAudit() {
+  const calcPageIds = ['soustruhy', 'frezky', 'brusy', 'pracka'];
+  const requiredResults = ['soustruhyLisResult', 'soustruhy126Result', 'soustruhy106Result', 'outF', 'outFTime', 'outB', 'outBTime', 'outP'];
+
   const run = () => {
-    const calcPageIds = ['soustruhy', 'frezky', 'brusy', 'pracka'];
     const report = {
       version: window.APP_VERSION || 'unknown',
       phase: 'phase-2-calc-system',
       checkedAt: new Date().toISOString(),
       ok: true,
-      visibleInactive: []
+      visibleInactive: [],
+      missingResultCards: [],
+      unscopedCalcButtons: [],
+      overflowingPages: []
     };
 
     calcPageIds.forEach((id) => {
       const el = document.getElementById(id);
-      if (!el || el.classList.contains('active')) return;
+      if (!el) return;
       const style = window.getComputedStyle ? window.getComputedStyle(el) : null;
-      const isVisible = style && style.display !== 'none' && style.visibility !== 'hidden' && el.offsetParent !== null;
-      if (isVisible) report.visibleInactive.push(id);
+
+      if (!el.classList.contains('active')) {
+        const isVisible = style && style.display !== 'none' && style.visibility !== 'hidden' && el.offsetParent !== null;
+        if (isVisible) report.visibleInactive.push(id);
+      }
+
+      if (el.classList.contains('active')) {
+        const viewportWidth = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+        if (viewportWidth && el.scrollWidth > viewportWidth + 2) {
+          report.overflowingPages.push({ id, scrollWidth: el.scrollWidth, viewportWidth });
+        }
+      }
+
+      el.querySelectorAll('button[data-action^="calc-"]').forEach((button) => {
+        if (!button.classList.contains('calcPrimaryBtn')) {
+          report.unscopedCalcButtons.push(button.getAttribute('data-action') || button.id || 'unknown');
+        }
+      });
     });
 
-    report.ok = report.visibleInactive.length === 0;
+    requiredResults.forEach((id) => {
+      const el = document.getElementById(id);
+      if (!el || !el.classList.contains('calcResultCard')) report.missingResultCards.push(id);
+    });
+
+    report.ok = !report.visibleInactive.length && !report.missingResultCards.length && !report.unscopedCalcButtons.length && !report.overflowingPages.length;
     try {
       document.documentElement.dataset.rakCalcScope = report.ok ? 'ok' : 'check';
+      document.documentElement.dataset.rakPhase2 = report.ok ? 'complete' : 'check';
       window.__rakPhase2CalcScopeAudit = report;
     } catch (err) {}
 
     if (!report.ok) {
-      console.warn('[RaK] Phase 2 calc scope audit', report);
+      console.warn('[RaK] Phase 2 calc final audit', report);
       try {
         const log = JSON.parse(localStorage.getItem('rotace_err_log_v1') || '[]');
         log.push({
           ts: report.checkedAt,
           ver: report.version,
-          type: 'phase2-calc-scope',
-          visibleInactive: report.visibleInactive
+          type: 'phase2-calc-final-audit',
+          visibleInactive: report.visibleInactive,
+          missingResultCards: report.missingResultCards,
+          unscopedCalcButtons: report.unscopedCalcButtons,
+          overflowingPages: report.overflowingPages
         });
         localStorage.setItem('rotace_err_log_v1', JSON.stringify(log.slice(-50)));
       } catch (err) {}
