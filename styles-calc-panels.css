@@ -304,3 +304,25 @@
 .calcDetails:not([open]) > .brusDetailsBody{
   display:none !important;
 }
+
+/* F2 v.503: další sjednocení sbalených panelů a ochrana spodní části kalkulaček před lištou. */
+:is(#soustruhy, #frezky, #brusy, #pracka).calcPage{
+  padding-bottom:calc(112px + env(safe-area-inset-bottom)) !important;
+}
+:is(#frezky, #brusy) .calcDetails:not([open]){
+  overflow:hidden !important;
+}
+:is(#frezky, #brusy) .calcDetails:not([open]) > summary{
+  border-radius:var(--calc-panel-radius) !important;
+}
+:is(#frezky, #brusy) .calcDetails[open] > summary{
+  margin-bottom:6px !important;
+  border-bottom:1px solid rgba(124,255,124,.10) !important;
+}
+:is(#frezky, #brusy) .calcDetailsInner[open] > summary{
+  margin-bottom:4px !important;
+}
+.calcPanel--form > .calcResultCard:last-child,
+.calcPage .calcResultCard:last-child{
+  margin-bottom:0 !important;
+}

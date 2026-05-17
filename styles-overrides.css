@@ -452,15 +452,18 @@ body.reduceMotion .dashboardCard, body.reduceMotion .calcTile, body.reduceMotion
     padding:1px 1px 0 !important;}
 .bottomNavBtn .bottomNavLabel{margin-top:1px !important;}
 .bottomNavMenuBtn{min-height:44px !important;}
-#brusyInfo b, @media (max-width: 560px){.bottomNav{
-      bottom:calc(2px + env(safe-area-inset-bottom)) !important;
-    }
-    .bottomNavBtn{
-      min-height:42px !important;
-    }
-    .bottomNavMenuBtn{
-      min-height:42px !important;
-    }}
+#brusyInfo b{font-weight:850;}
+@media (max-width: 560px){
+  .bottomNav{
+    bottom:calc(2px + env(safe-area-inset-bottom)) !important;
+  }
+  .bottomNavBtn{
+    min-height:42px !important;
+  }
+  .bottomNavMenuBtn{
+    min-height:42px !important;
+  }
+}
 .bottomNav{width:calc(100% + 10px) !important;
     margin-left:-5px !important;
     margin-right:-5px !important;
@@ -864,3 +867,123 @@ html[data-rak-phase1="complete"] body{min-height:100svh;}
 #rotace #personView .rotaceShiftLeft{
   gap:2px !important;
 }
+
+/* v.1.1 (503) – spodní lišta: pevně dole, centrovaná, bez ujetí do strany.
+   Finální guard musí být úplně na konci override CSS, protože staré buildy mají víc historických nav pravidel. */
+:root{
+  --rak-nav-edge-gap:6px;
+  --rak-nav-bottom-gap:2px;
+}
+.bottomNav{
+  position:fixed !important;
+  z-index:1200 !important;
+  left:50% !important;
+  right:auto !important;
+  top:auto !important;
+  bottom:max(var(--rak-nav-bottom-gap), calc(env(safe-area-inset-bottom) * .42)) !important;
+  width:min(760px, calc(100vw - 12px - env(safe-area-inset-left) - env(safe-area-inset-right))) !important;
+  max-width:none !important;
+  margin:0 !important;
+  transform:translate3d(-50%, 0, 0) !important;
+  padding:4px 5px max(4px, calc(env(safe-area-inset-bottom) * .14)) !important;
+  box-sizing:border-box !important;
+  overflow:visible !important;
+  contain:layout paint !important;
+  will-change:transform !important;
+  touch-action:manipulation !important;
+}
+@supports (width:100dvw){
+  .bottomNav{
+    width:min(760px, calc(100dvw - 12px - env(safe-area-inset-left) - env(safe-area-inset-right))) !important;
+  }
+}
+.bottomNavScroll{
+  display:flex !important;
+  width:100% !important;
+  min-width:0 !important;
+  max-width:100% !important;
+  gap:3px !important;
+  padding:0 !important;
+  margin:0 auto !important;
+  overflow:visible !important;
+  justify-content:center !important;
+  align-items:center !important;
+  scroll-snap-type:none !important;
+}
+.bottomNavInner{
+  width:100% !important;
+  min-width:0 !important;
+  max-width:100% !important;
+  gap:3px !important;
+  padding:0 !important;
+  margin:0 !important;
+  overflow:visible !important;
+  justify-content:center !important;
+}
+.bottomNavBtn:not(.bottomNavMenuBtn){
+  flex:1 1 0 !important;
+  width:auto !important;
+  min-width:0 !important;
+  max-width:66px !important;
+  min-height:46px !important;
+  padding:2px 1px 1px !important;
+}
+.bottomNavMenuBtn{
+  flex:0 0 31px !important;
+  width:31px !important;
+  min-width:31px !important;
+  max-width:31px !important;
+  min-height:46px !important;
+  padding:0 !important;
+  margin:0 !important;
+  right:auto !important;
+}
+.bottomNavBtn.active{
+  transform:translateY(-3px) scale(1.06) !important;
+}
+.bottomNavBtn.active::before{
+  inset:-3px !important;
+}
+.bottomNavBtn .bottomNavIcon,
+.bottomNavBtn .bottomNavIcon svg,
+.bottomNavBtn .bottomNavIcon img{
+  width:24px !important;
+  height:24px !important;
+}
+.bottomNavBtn .bottomNavIcon{
+  flex:0 0 24px !important;
+}
+.bottomNavBtn .bottomNavLabel{
+  font-size:clamp(7.2px, 1.75vw, 8.8px) !important;
+  line-height:1.02 !important;
+}
+.bottomNavMenuBtn .moreIcon{
+  width:17px !important;
+  height:17px !important;
+  transform:none !important;
+}
+@media (max-width:390px){
+  .bottomNav{
+    bottom:max(2px, calc(env(safe-area-inset-bottom) * .36)) !important;
+    width:min(760px, calc(100vw - 8px - env(safe-area-inset-left) - env(safe-area-inset-right))) !important;
+    padding:3px 4px max(3px, calc(env(safe-area-inset-bottom) * .12)) !important;
+  }
+  @supports (width:100dvw){
+    .bottomNav{width:min(760px, calc(100dvw - 8px - env(safe-area-inset-left) - env(safe-area-inset-right))) !important;}
+  }
+  .bottomNavScroll,
+  .bottomNavInner{gap:2px !important;}
+  .bottomNavBtn:not(.bottomNavMenuBtn){min-height:44px !important;max-width:none !important;}
+  .bottomNavMenuBtn{flex-basis:28px !important;width:28px !important;min-width:28px !important;max-width:28px !important;min-height:44px !important;}
+  .bottomNavBtn .bottomNavIcon,
+  .bottomNavBtn .bottomNavIcon svg,
+  .bottomNavBtn .bottomNavIcon img{width:22px !important;height:22px !important;}
+  .bottomNavBtn .bottomNavLabel{font-size:7.6px !important;}
+}
+@media (display-mode:standalone){
+  .bottomNav{bottom:max(2px, calc(env(safe-area-inset-bottom) * .38)) !important;}
+}
+body{
+  padding-bottom:calc(92px + env(safe-area-inset-bottom)) !important;
+}
+

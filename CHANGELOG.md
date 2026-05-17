@@ -1,3 +1,8 @@
+## v.1.1 (503)
+- Opravená spodní lišta: pevně fixovaná dole, centrovaná a bez ujetí/odříznutí levého kraje.
+- Vyčištěné poškozené CSS pravidlo ve starších overridech spodní lišty.
+- Fáze 2 pokračuje: kalkulačkové stránky mají větší spodní rezervu a sbalené/rozbalené calcPanel detaily jsou sjednocené.
+
 ## v.1.1 (502)
 - Fáze 2 calcPanel system: sjednocené reset chování kalkulaček.
 - Reset u Frézek, Brusů a Pračky čistí i výsledkové karty.

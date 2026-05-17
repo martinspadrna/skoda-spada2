@@ -1,4 +1,4 @@
-// v.1.1 (502) – Fáze 2: sjednocení resetů, výsledkových karet a kompaktních calcPanel stavů.
+// v.1.1 (503) – Fáze 2: fix spodní lišty + pokračování calcPanel sjednocení.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
