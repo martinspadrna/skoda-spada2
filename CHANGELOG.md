@@ -1,3 +1,9 @@
+## v.1.1 (501)
+- Fáze 2: opraven scope kalkulačkových stránek, aby se Soustruhy/Frézky/Brusy/Pračka nezobrazovaly dole na ostatních stránkách.
+- Kalkulačkové stránky jsou nově viditelné jen jako `.page.active`, samotný `calcPage` už globálně nepřebíjí skrytí stránky.
+- Přidaný lehký runtime audit `phase-2-calc-scope`, který hlídá únik neaktivních kalkulaček do layoutu.
+- Pokračování sjednocení calcPanel systému: bezpečné šířky panelů, gridů a info karet v kalkulačkách.
+
 ## v.1.1 (500)
 - Start Fáze 2: první společný calcPanel systém pro kalkulačky.
 - Sjednocené kompaktní panely, tlačítka výpočtů, výsledkové karty a vstupy napříč Soustruhy, Frézky, Brusy a Pračka.

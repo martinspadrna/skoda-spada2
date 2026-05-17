@@ -11,13 +11,25 @@
   --calc-result-bg:rgba(9,14,11,.54);
 }
 
-.calcPage{
-  display:grid;
+/* F2 ochrana scope: kalkulačkové stránky nesmí protékat pod ostatní stránky.
+   CalcPanel systém řeší vzhled, viditelnost dál řídí jen .page.active. */
+.page.calcPage{
+  display:none !important;
   gap:10px;
+}
+
+.page.calcPage.active{
+  display:grid !important;
 }
 
 .calcPage .headerBar{
   margin-bottom:2px;
+}
+
+.calcPage > :is(.card, .brusDetails, .bgrid, .indexGrid, .calcInfoCard){
+  width:100%;
+  max-width:100%;
+  box-sizing:border-box;
 }
 
 .calcPanel{

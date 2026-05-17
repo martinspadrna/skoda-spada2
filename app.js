@@ -1,4 +1,4 @@
-// v.1.1 (500) – Fáze 2: první sjednocení calcPanel systému pro kalkulačky.
+// v.1.1 (501) – Fáze 2: oprava scope calcPanel stránek + pokračování sjednocení kalkulaček.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
@@ -252,6 +252,58 @@ function runPhaseOneFinalAudit() {
   return report;
 }
 
+function runPhaseTwoCalcScopeAudit() {
+  const run = () => {
+    const calcPageIds = ['soustruhy', 'frezky', 'brusy', 'pracka'];
+    const report = {
+      version: window.APP_VERSION || 'unknown',
+      phase: 'phase-2-calc-scope',
+      checkedAt: new Date().toISOString(),
+      ok: true,
+      visibleInactive: []
+    };
+
+    calcPageIds.forEach((id) => {
+      const el = document.getElementById(id);
+      if (!el || el.classList.contains('active')) return;
+      const style = window.getComputedStyle ? window.getComputedStyle(el) : null;
+      const isVisible = style && style.display !== 'none' && style.visibility !== 'hidden' && el.offsetParent !== null;
+      if (isVisible) report.visibleInactive.push(id);
+    });
+
+    report.ok = report.visibleInactive.length === 0;
+    try {
+      document.documentElement.dataset.rakCalcScope = report.ok ? 'ok' : 'check';
+      window.__rakPhase2CalcScopeAudit = report;
+    } catch (err) {}
+
+    if (!report.ok) {
+      console.warn('[RaK] Phase 2 calc scope audit', report);
+      try {
+        const log = JSON.parse(localStorage.getItem('rotace_err_log_v1') || '[]');
+        log.push({
+          ts: report.checkedAt,
+          ver: report.version,
+          type: 'phase2-calc-scope',
+          visibleInactive: report.visibleInactive
+        });
+        localStorage.setItem('rotace_err_log_v1', JSON.stringify(log.slice(-50)));
+      } catch (err) {}
+    }
+    return report;
+  };
+
+  if (document.readyState === 'loading') {
+    const rerun = () => setTimeout(run, 0);
+    if (typeof registerListener === 'function') registerListener(document, 'DOMContentLoaded', rerun, { once: true });
+    else document.addEventListener('DOMContentLoaded', rerun, { once: true });
+    return { version: window.APP_VERSION || 'unknown', phase: 'phase-2-calc-scope', ok: true, deferred: true };
+  }
+
+  requestAnimationFrame(() => setTimeout(run, 0));
+  return { version: window.APP_VERSION || 'unknown', phase: 'phase-2-calc-scope', ok: true, deferred: true };
+}
+
 (async () => {
   const files = [
     "core.js",
@@ -289,6 +341,7 @@ function runPhaseOneFinalAudit() {
   installBottomNavBindings();
   installDelegatedAppActions();
   try { runPhaseOneFinalAudit(); } catch (err) { console.warn('Phase 1 final audit failed', err); }
+  try { runPhaseTwoCalcScopeAudit(); } catch (err) { console.warn('Phase 2 calc scope audit failed', err); }
 
   try {
     if (typeof window.__rotaceBootHomeRefreshLate === 'function') {
