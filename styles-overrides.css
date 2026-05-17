@@ -3159,3 +3159,212 @@ body.lightweightMode #games .arcadeHud{
 body.lightweightMode #games .arcadeHud .gamesStatCard{
   padding:6px 8px !important;
 }
+
+
+/* v.1.1 (536) – Rozpisy: bez nápisu „další“ a o 5 % užší jmenné sloupce v Měkota/Tvrdota. */
+#monthView table.rotTable{
+  width:95% !important;
+  min-width:380px !important;
+  table-layout:fixed !important;
+  margin-left:auto !important;
+  margin-right:auto !important;
+}
+#monthView table.rotTable th:not(:first-child),
+#monthView table.rotTable td:not(.dateCell){
+  padding-left:1px !important;
+  padding-right:1px !important;
+}
+#monthView table.rotTable tr.nextShiftRow .dateCell::after{
+  content:"" !important;
+  display:none !important;
+  margin:0 !important;
+  padding:0 !important;
+}
+@media (max-width:390px){
+  #monthView table.rotTable{
+    min-width:376px !important;
+  }
+}
+
+/* v.1.1 (536) – iOS glass polish: kantýna/jídelna popup + první bezpečný glass základ appky. */
+body:not(.lightweightMode) .dashboardHeroCard,
+body:not(.lightweightMode) .dashboardCard,
+body:not(.lightweightMode) .card,
+body:not(.lightweightMode) .personCard,
+body:not(.lightweightMode) .adminBox,
+body:not(.lightweightMode) .appMenuCard,
+body:not(.lightweightMode) .appMenuAction,
+body:not(.lightweightMode) .appMenuThemeCard,
+body:not(.lightweightMode) .appMenuThemeSummary,
+body:not(.lightweightMode) .bottomNav,
+body:not(.lightweightMode) .calendarModal,
+body:not(.lightweightMode) .personScheduleModal,
+body:not(.lightweightMode) .qrModal{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.085), rgba(255,255,255,.026)),
+    rgba(13,18,15,.58) !important;
+  border:1px solid rgba(255,255,255,.105) !important;
+  box-shadow:
+    0 22px 56px rgba(0,0,0,.28),
+    inset 0 1px 0 rgba(255,255,255,.10),
+    inset 0 -1px 0 rgba(124,255,124,.035) !important;
+  backdrop-filter:blur(22px) saturate(180%) !important;
+  -webkit-backdrop-filter:blur(22px) saturate(180%) !important;
+}
+body:not(.lightweightMode) .dashboardCard,
+body:not(.lightweightMode) .tile,
+body:not(.lightweightMode) .listItem,
+body:not(.lightweightMode) .calcTile{
+  border-color:rgba(255,255,255,.095) !important;
+  box-shadow:
+    0 14px 34px rgba(0,0,0,.22),
+    inset 0 1px 0 rgba(255,255,255,.075) !important;
+}
+body:not(.lightweightMode) .foodScheduleOverlay{
+  background:
+    radial-gradient(circle at 50% 10%, rgba(124,255,124,.16), transparent 34%),
+    radial-gradient(circle at 20% 90%, rgba(159,202,255,.12), transparent 38%),
+    rgba(4,7,6,.48) !important;
+  backdrop-filter:blur(28px) saturate(190%) !important;
+  -webkit-backdrop-filter:blur(28px) saturate(190%) !important;
+}
+body:not(.lightweightMode) .foodScheduleModal{
+  width:min(92vw, 430px) !important;
+  border-radius:30px !important;
+  padding:18px 16px 18px !important;
+  overflow:hidden auto !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.11), rgba(255,255,255,.035)),
+    rgba(17,23,20,.58) !important;
+  border:1px solid rgba(255,255,255,.14) !important;
+  box-shadow:
+    0 28px 70px rgba(0,0,0,.38),
+    inset 0 1px 0 rgba(255,255,255,.16),
+    inset 0 -1px 0 rgba(124,255,124,.055) !important;
+  backdrop-filter:blur(30px) saturate(190%) !important;
+  -webkit-backdrop-filter:blur(30px) saturate(190%) !important;
+}
+body:not(.lightweightMode) .foodScheduleModal::before{
+  content:"";
+  position:absolute;
+  inset:0 0 auto 0;
+  height:90px;
+  border-radius:30px 30px 0 0;
+  background:linear-gradient(180deg, rgba(255,255,255,.105), rgba(255,255,255,0));
+  pointer-events:none;
+}
+body:not(.lightweightMode) .foodScheduleClose{
+  position:absolute !important;
+  top:12px !important;
+  right:12px !important;
+  float:none !important;
+  width:34px !important;
+  height:34px !important;
+  border:1px solid rgba(255,255,255,.12) !important;
+  background:rgba(255,255,255,.075) !important;
+  backdrop-filter:blur(18px) saturate(170%) !important;
+  -webkit-backdrop-filter:blur(18px) saturate(170%) !important;
+  z-index:2 !important;
+}
+body:not(.lightweightMode) .foodScheduleModalTitle{
+  clear:none !important;
+  margin:4px 42px 14px !important;
+  text-align:center !important;
+  font-size:20px !important;
+  font-weight:850 !important;
+  color:#f3fff5 !important;
+  letter-spacing:.01em !important;
+}
+body:not(.lightweightMode) .foodScheduleTitleBlock{
+  text-align:center !important;
+  margin:0 8px 12px !important;
+}
+body:not(.lightweightMode) .foodScheduleTitleBlock .sectionTitle{
+  text-align:center !important;
+  justify-content:center !important;
+  font-size:15px !important;
+  color:rgba(233,255,235,.90) !important;
+}
+body:not(.lightweightMode) .foodScheduleTitleBlock .smallText{
+  text-align:center !important;
+  color:rgba(202,255,205,.74) !important;
+}
+body:not(.lightweightMode) .foodScheduleModalBody{
+  gap:9px !important;
+}
+body:not(.lightweightMode) .foodScheduleRow{
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:7px !important;
+  text-align:center !important;
+  padding:12px 12px 11px !important;
+  margin-top:0 !important;
+  border-radius:22px !important;
+  border:1px solid rgba(255,255,255,.105) !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.025)),
+    rgba(255,255,255,.035) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.075), 0 10px 24px rgba(0,0,0,.13) !important;
+}
+body:not(.lightweightMode) .foodScheduleDay{
+  min-width:0 !important;
+  width:100% !important;
+  text-align:center !important;
+  font-size:16px !important;
+  line-height:1.15 !important;
+  font-weight:900 !important;
+  color:#dfffdf !important;
+}
+body:not(.lightweightMode) .foodScheduleWindows{
+  width:100% !important;
+  flex:none !important;
+  align-items:center !important;
+  text-align:center !important;
+  gap:5px !important;
+  color:#f2fff2 !important;
+}
+body:not(.lightweightMode) .foodScheduleWindowLine{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  min-height:26px !important;
+  padding:4px 12px !important;
+  border-radius:999px !important;
+  background:rgba(124,255,124,.105) !important;
+  border:1px solid rgba(124,255,124,.13) !important;
+  font-size:15px !important;
+  font-weight:850 !important;
+}
+body:not(.lightweightMode) .foodScheduleWindowEmpty{
+  background:rgba(255,255,255,.055) !important;
+  border-color:rgba(255,255,255,.10) !important;
+  color:rgba(240,248,240,.70) !important;
+}
+@media (max-width:420px){
+  body:not(.lightweightMode) .foodScheduleModal{
+    width:min(94vw, 390px) !important;
+    padding:16px 12px 14px !important;
+  }
+  body:not(.lightweightMode) .foodScheduleRow{
+    padding:11px 10px !important;
+  }
+}
+body.lightweightMode .foodScheduleRow,
+body.lowEndDevice .foodScheduleRow{
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  text-align:center !important;
+  gap:5px !important;
+}
+body.lightweightMode .foodScheduleDay,
+body.lowEndDevice .foodScheduleDay,
+body.lightweightMode .foodScheduleWindows,
+body.lowEndDevice .foodScheduleWindows{
+  min-width:0 !important;
+  width:100% !important;
+  text-align:center !important;
+  align-items:center !important;
+}

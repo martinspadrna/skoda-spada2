@@ -1,4 +1,4 @@
-// v.1.1 (534) – Fáze 5: game performance guards + safer arcade refresh.
+// v.1.1 (536) – iOS glass polish: food schedule popup + safe app glass foundation.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
@@ -591,10 +591,13 @@ function runPhaseFiveGamePerformanceAudit() {
         shellRenderSkips: Number(window.__rakGamePerfManager && window.__rakGamePerfManager.shellRenderSkips || 0),
         intervalHiddenSkips: Number(window.__rakGamePerfManager && window.__rakGamePerfManager.intervalHiddenSkips || 0),
         activeManagedIntervals: Number(window.__rakGamePerfManager && window.__rakGamePerfManager.activeManagedIntervals || 0),
-        leaderboardTtlMs: Number(window.__rakGamePerfManager && window.__rakGamePerfManager.leaderboardTtlMs || 0)
+        leaderboardTtlMs: Number(window.__rakGamePerfManager && window.__rakGamePerfManager.leaderboardTtlMs || 0),
+        pageLifecycleBound: !!window.__rakGamePerfPageLifecycleBound,
+        pageHideCount: Number(window.__rakGamePerfManager && window.__rakGamePerfManager.pageHideCount || 0),
+        pageShowCount: Number(window.__rakGamePerfManager && window.__rakGamePerfManager.pageShowCount || 0)
       }
     };
-    report.ok = report.games.stopLoops && (report.games.arcadeLoaded ? report.games.perfManager : true);
+    report.ok = report.games.stopLoops && (report.games.arcadeLoaded ? report.games.perfManager && report.games.pageLifecycleBound : true);
     report.games.shellRerenderGuard = report.games.arcadeLoaded ? (typeof window.__rakGamePerfManager === 'object' && 'shellRenderSkips' in window.__rakGamePerfManager) : true;
     try {
       document.documentElement.dataset.rakPhase5 = report.ok ? 'game-performance' : 'game-performance-check';

@@ -2,7 +2,7 @@
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
 
-  // v.1.1 (534): Fáze 5 – ochrana proti zbytečnému překreslení her a lehčí časovače.
+  // v.1.1 (536): Fáze 5 – ochrana proti zbytečnému překreslení her, lehčí časovače a page lifecycle guard.
   const CORE_GAMES = [];
   const EXTRA_GAMES = ['ttt', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);
@@ -378,6 +378,20 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       // Důležité: nespouštět gamesStopActiveLoops(), protože by to u některých her zapsalo výsledek předčasně.
       gamePerf.lastVisibilityAt = Date.now();
       gamePerf.hidden = document.visibilityState === 'hidden';
+    }, { passive: true });
+  }
+
+  if (!window.__rakGamePerfPageLifecycleBound) {
+    window.__rakGamePerfPageLifecycleBound = true;
+    window.addEventListener('pagehide', () => {
+      gamePerf.lastVisibilityAt = Date.now();
+      gamePerf.hidden = true;
+      gamePerf.pageHideCount = Number(gamePerf.pageHideCount || 0) + 1;
+    }, { passive: true });
+    window.addEventListener('pageshow', () => {
+      gamePerf.lastVisibilityAt = Date.now();
+      gamePerf.hidden = document.visibilityState === 'hidden';
+      gamePerf.pageShowCount = Number(gamePerf.pageShowCount || 0) + 1;
     }, { passive: true });
   }
 

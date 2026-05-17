@@ -1,3 +1,14 @@
+## v.1.1 (536)
+- Kantýna/jídelna: popup otevírací doby má nový iOS glass vzhled.
+- V popupu je den uprostřed a otevírací doba je pod ním, ne vedle něj.
+- Přidaný první bezpečný základ pro jednotnější iOS glass styl celé aplikace bez zásahu do výpočtů a herních pravidel.
+- Fáze 5 pokračuje opatrně bez změn herní logiky; vizuální glass polish je oddělený od Láďova režimu.
+
+## v.1.1 (535)
+- Rozpisy: u nejbližší budoucí směny zůstává zelené zvýraznění, ale mizí nápis „další“.
+- Rozpisy / Měkota / Tvrdota: jmenné sloupce jsou cca o 5 % užší, datum/směna zůstává z předchozí úpravy užší.
+- Fáze 5: přidaný page lifecycle guard pro arcade hry, aby se na mobilu po zamknutí / návratu z pozadí chovaly klidněji.
+
 ## v.1.1 (534)
 - Fáze 5: ochrana proti zbytečnému překreslení rozehrané hry při obnově herního hubu nebo online dat.
 - Arcade hry nově používají bezpečnější intervaly, které v pozadí a mimo herní obrazovku šetří výkon.
