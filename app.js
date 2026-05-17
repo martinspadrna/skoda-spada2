@@ -1,4 +1,4 @@
-// v.1.1 (526) – Bottom nav Více runtime hard-fix + Fáze 4 cleanup pokračuje.
+// v.1.1 (527) – Bottom nav výplň panelu + start Fáze 5 game performance audit.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
@@ -377,7 +377,7 @@ function applyBottomNavMoreHardFix() {
 
     const compact = window.matchMedia && window.matchMedia('(max-width: 390px)').matches;
     const lightweight = document.body && (document.body.classList.contains('lightweightMode') || document.body.classList.contains('lowEndDevice'));
-    const width = lightweight ? '34px' : (compact ? '36px' : '38px');
+    const width = lightweight ? '36px' : (compact ? '38px' : '40px');
     const peer = document.querySelector('nav.bottomNav > .bottomNavScroll > .bottomNavBtn:not(.bottomNavMenuBtn):not(.active)')
       || document.querySelector('nav.bottomNav > .bottomNavScroll > .bottomNavBtn:not(.bottomNavMenuBtn)');
     const peerRect = peer && peer.getBoundingClientRect ? peer.getBoundingClientRect() : null;
@@ -440,6 +440,98 @@ function applyBottomNavMoreHardFix() {
   window.addEventListener('resize', () => requestAnimationFrame(apply), { passive: true });
   window.addEventListener('orientationchange', () => setTimeout(apply, 120), { passive: true });
   window.__rakApplyBottomNavMoreHardFix = apply;
+}
+
+
+function applyBottomNavFitPanelGuard() {
+  const apply = () => {
+    const nav = document.querySelector('nav.bottomNav');
+    const scroll = document.getElementById('bottomNavScroll') || (nav && nav.querySelector('.bottomNavScroll'));
+    const more = nav && nav.querySelector('.bottomNavMenuBtn');
+    if (!nav || !scroll || !more || !nav.style || !scroll.style || !more.style) return false;
+
+    const isSmall = window.matchMedia && window.matchMedia('(max-width: 430px)').matches;
+    const lightweight = document.body && document.body.classList && document.body.classList.contains('lightweightMode');
+    const moreWidth = lightweight ? '36px' : (isSmall ? '38px' : '40px');
+    const gap = isSmall || lightweight ? '2px' : '4px';
+
+    nav.style.setProperty('--rak-more-nav-width', moreWidth);
+    nav.style.setProperty('--rak-main-nav-gap', gap);
+    nav.style.setProperty('display', 'grid', 'important');
+    nav.style.setProperty('grid-template-columns', 'minmax(0, 1fr) var(--rak-more-nav-width)', 'important');
+    nav.style.setProperty('align-items', 'center', 'important');
+
+    scroll.style.setProperty('display', 'grid', 'important');
+    scroll.style.setProperty('grid-template-columns', 'repeat(6, minmax(0, 1fr))', 'important');
+    scroll.style.setProperty('width', '100%', 'important');
+    scroll.style.setProperty('min-width', '0', 'important');
+    scroll.style.setProperty('max-width', '100%', 'important');
+    scroll.style.setProperty('overflow', 'visible', 'important');
+    scroll.style.setProperty('gap', 'var(--rak-main-nav-gap)', 'important');
+    scroll.style.setProperty('padding-left', '0', 'important');
+    scroll.style.setProperty('padding-right', '0', 'important');
+
+    Array.from(scroll.querySelectorAll('.bottomNavBtn')).forEach((btn) => {
+      if (!btn || !btn.style) return;
+      btn.style.setProperty('flex', '1 1 auto', 'important');
+      btn.style.setProperty('width', '100%', 'important');
+      btn.style.setProperty('min-width', '0', 'important');
+      btn.style.setProperty('max-width', 'none', 'important');
+      btn.style.setProperty('justify-self', 'stretch', 'important');
+      btn.style.setProperty('margin-left', '0', 'important');
+      btn.style.setProperty('margin-right', '0', 'important');
+    });
+
+    more.style.setProperty('grid-column', '2', 'important');
+    more.style.setProperty('width', moreWidth, 'important');
+    more.style.setProperty('min-width', moreWidth, 'important');
+    more.style.setProperty('max-width', moreWidth, 'important');
+    more.style.setProperty('flex', '0 0 ' + moreWidth, 'important');
+    more.style.setProperty('justify-self', 'stretch', 'important');
+    more.style.setProperty('margin', '0', 'important');
+    return true;
+  };
+
+  const run = () => {
+    apply();
+    requestAnimationFrame(apply);
+    setTimeout(apply, 120);
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', run, { once: true });
+  } else {
+    run();
+  }
+  window.addEventListener('resize', () => requestAnimationFrame(apply), { passive: true });
+  window.addEventListener('orientationchange', () => setTimeout(apply, 120), { passive: true });
+  window.__rakApplyBottomNavFitPanelGuard = apply;
+}
+
+function runPhaseFiveGamePerformanceAudit() {
+  const run = () => {
+    const report = {
+      version: window.APP_VERSION || 'unknown',
+      phase: 'phase-5-game-performance-start',
+      checkedAt: new Date().toISOString(),
+      gamesPageExists: !!document.getElementById('games'),
+      gamesStageExists: !!document.querySelector('#games .gamesStage'),
+      lightweight: !!(document.body && document.body.classList && document.body.classList.contains('lightweightMode')),
+      ok: true
+    };
+    try {
+      document.documentElement.dataset.rakPhase5 = 'game-performance-start';
+      window.__rakPhase5GamePerformanceAudit = report;
+    } catch (err) {}
+    return report;
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => setTimeout(run, 0), { once: true });
+    return { version: window.APP_VERSION || 'unknown', phase: 'phase-5-game-performance-start', ok: true, deferred: true };
+  }
+  requestAnimationFrame(() => setTimeout(run, 0));
+  return { version: window.APP_VERSION || 'unknown', phase: 'phase-5-game-performance-start', ok: true, deferred: true };
 }
 
 function runPhaseFourCleanupManagerAudit() {
@@ -609,11 +701,13 @@ function runPhaseFourCleanupManagerAudit() {
   installPwaAndConnectivityHooks();
   installBottomNavBindings();
   try { applyBottomNavMoreHardFix(); } catch (err) { console.warn('Bottom nav Více hard-fix failed', err); }
+  try { applyBottomNavFitPanelGuard(); } catch (err) { console.warn('Bottom nav fit-panel guard failed', err); }
   installDelegatedAppActions();
   try { runPhaseOneFinalAudit(); } catch (err) { console.warn('Phase 1 final audit failed', err); }
   try { runPhaseTwoCalcScopeAudit(); } catch (err) { console.warn('Phase 2 calc scope audit failed', err); }
   try { runPhaseThreeLightweightAudit(); } catch (err) { console.warn('Phase 3 lightweight audit failed', err); }
   try { runPhaseFourCleanupManagerAudit(); } catch (err) { console.warn('Phase 4 cleanup manager audit failed', err); }
+  try { runPhaseFiveGamePerformanceAudit(); } catch (err) { console.warn('Phase 5 game performance audit failed', err); }
 
   try {
     if (typeof window.__rotaceBootHomeRefreshLate === 'function') {
