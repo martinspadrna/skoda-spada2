@@ -2497,8 +2497,8 @@ body.reduceMotion *::after{
 
 .rakUpdateToastAction[disabled]{opacity:.72;cursor:wait;filter:saturate(.72);}
 
-@media (max-width: 420px){
 
+@media (max-width: 420px){
 .rakUpdateToast{
   flex-direction:column !important;
   align-items:stretch !important;
@@ -2519,21 +2519,24 @@ body.reduceMotion *::after{
   width:100% !important;
   align-self:stretch !important;
 }
+}
 
-@media (min-width: 560px){.rakUpdateToast{
-    flex-direction:row !important;
-    align-items:center !important;
-    text-align:left !important;
-  }
+@media (min-width: 560px){
+.rakUpdateToast{
+  flex-direction:row !important;
+  align-items:center !important;
+  text-align:left !important;
+}
 
 .rakUpdateToastBody{
-    text-align:left !important;
-  }
+  text-align:left !important;
+}
 
 .rakUpdateToastAction{
-    width:auto !important;
-    align-self:center !important;
-  }}
+  width:auto !important;
+  align-self:center !important;
+}
+}
 
 .bottomNav{
   padding-bottom: calc(8px + env(safe-area-inset-bottom)) !important;
@@ -2551,15 +2554,15 @@ body.reduceMotion *::after{
   margin-right: 14px !important;
 }
 
-@media (max-width: 430px){.bottomNavBtn{
-    flex-basis: 50px !important;
-    width: 50px !important;
-    min-width: 50px !important;
-    max-width: 50px !important;
-  }
+@media (max-width: 430px){
+.bottomNavBtn{
+  flex-basis: 50px !important;
+  width: 50px !important;
+  min-width: 50px !important;
+  max-width: 50px !important;
+}
 
 .bottomNavBtn .bottomNavLabel{
-    font-size: 8px !important;
-  }}}@media (min-width: 560px){}
-
-@media (max-width: 430px){}}
+  font-size: 8px !important;
+}
+}
