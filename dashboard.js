@@ -94,6 +94,72 @@ function getDashboardNextTeamShift(now, team = 'D') {
     .sort((a, b) => a.start - b.start)[0] || null;
 }
 
+
+function getDashboardActiveWorkShift(now) {
+  if (typeof getActiveShiftNow === 'function') {
+    try {
+      const active = getActiveShiftNow(now);
+      if (active) return active;
+    } catch (err) {
+      // Fallback níže udrží dashboard použitelný i při chybě jedné směnové kontroly.
+    }
+  }
+  if (typeof getTeamShiftState !== 'function') return null;
+  const teams = getDashboardShiftTeams();
+  for (const team of teams) {
+    try {
+      const state = getTeamShiftState(now, team);
+      if (state && state.active) {
+        return { team, label: state.label || '', start: state.start || null, end: state.end || null };
+      }
+    } catch (err) {
+      // ignore one broken team probe and keep searching
+    }
+  }
+  return null;
+}
+
+function getDashboardTeamDStatus(now) {
+  const team = 'D';
+  if (typeof getTeamShiftState !== 'function') return { active: null, next: null };
+  try {
+    const state = getTeamShiftState(now, team);
+    const active = state && state.active
+      ? { team, label: state.label || '', start: state.start || null, end: state.end || null }
+      : null;
+    const next = !active
+      ? ((state && state.next && state.next.start)
+        ? { team, label: state.next.label || '', start: state.next.start, end: state.next.end || null }
+        : getDashboardNextTeamShift(now, team))
+      : null;
+    return { active, next };
+  } catch (err) {
+    return { active: null, next: getDashboardNextTeamShift(now, team) };
+  }
+}
+
+function formatDashboardAbsenceList(names) {
+  const list = Array.isArray(names) ? names.filter(Boolean) : [];
+  return list.length ? list.join(', ') : 'nikdo';
+}
+
+function formatDashboardTeamDLine(now, teamDStatus) {
+  const status = teamDStatus || getDashboardTeamDStatus(now);
+  const active = status && status.active;
+  const next = status && status.next;
+  if (active) {
+    const names = typeof getAbsenceNamesForDate === 'function' ? getAbsenceNamesForDate(active.start || now) : [];
+    const endText = active.end && typeof formatDuration === 'function' ? ' · končí za ' + formatDuration(active.end - now) : '';
+    return 'Směna D je právě v práci' + endText + ' · chybí: ' + formatDashboardAbsenceList(names);
+  }
+  if (next && next.start) {
+    const names = typeof getAbsenceNamesForDate === 'function' ? getAbsenceNamesForDate(next.start) : [];
+    const startText = typeof formatDuration === 'function' ? formatDuration(next.start - now) : '';
+    return 'Směna D začíná za ' + startText + ' · bude chybět: ' + formatDashboardAbsenceList(names);
+  }
+  return 'Směna D: další směna nenalezena';
+}
+
 function formatDashboardShiftName(shift) {
   if (!shift) return '';
   return String(shift.team || '—') + (shift.label ? ' (' + shift.label + ')' : '');
@@ -117,16 +183,9 @@ function formatDashboardNextShiftMeta(shift) {
 
 function updateDashboard() {
   const now = typeof getPragueNow === 'function' ? getPragueNow(new Date()) : new Date();
-  const dashboardTeam = 'D';
-  const dState = typeof getTeamShiftState === 'function' ? getTeamShiftState(now, dashboardTeam) : null;
-  const active = dState && dState.active
-    ? { team: dashboardTeam, label: dState.label || '', start: dState.start, end: dState.end || null }
-    : null;
-  const nextWorkShift = !active
-    ? ((dState && dState.next && dState.next.start)
-      ? { team: dashboardTeam, label: dState.next.label || '', start: dState.next.start, end: dState.next.end || null }
-      : (typeof getDashboardNextTeamShift === 'function' ? getDashboardNextTeamShift(now, dashboardTeam) : null))
-    : null;
+  const active = typeof getDashboardActiveWorkShift === 'function' ? getDashboardActiveWorkShift(now) : null;
+  const nextWorkShift = !active && typeof getDashboardNextWorkShift === 'function' ? getDashboardNextWorkShift(now) : null;
+  const teamDStatus = typeof getDashboardTeamDStatus === 'function' ? getDashboardTeamDStatus(now) : { active: null, next: null };
   const special = typeof getSpecialWorkInfo === 'function' ? getSpecialWorkInfo(now) : null;
   const sameDay = (a, b) => a && b && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
   const showSpecial = !!(special && (!active || sameDay(active.start, now)));
@@ -158,27 +217,26 @@ function updateDashboard() {
 
   const hero = document.getElementById('dashHero');
   if (hero) {
-    const currentAbsences = active ? getAbsenceNamesForDate(active.start || now) : [];
-    const nextAbsences = nextWorkShift && nextWorkShift.start ? getAbsenceNamesForDate(nextWorkShift.start) : [];
     const activeShiftLabel = active && active.label ? active.label : '';
     const nextShiftLabel = nextWorkShift && nextWorkShift.label ? nextWorkShift.label : '';
-    const heroLine1 = active && !showSpecial
-      ? '<span class="dashboardHeroLine1Text">Směna D je právě v práci' + (activeShiftLabel ? ': ' + esc(activeShiftLabel) : '') + '</span>'
-      : '<span class="dashboardHeroLine1Text">' + (nextWorkShift ? 'Další směna D' + (nextShiftLabel ? ': ' + esc(nextShiftLabel) : '') : (special ? 'Dnes se nepracuje' : '—')) + '</span>';
-    const heroLine2 = active && !showSpecial
+    const heroLine1Text = active
+      ? 'Směna ' + String(active.team || '—') + ' je právě v práci' + (activeShiftLabel ? ': ' + activeShiftLabel : '')
+      : (nextWorkShift
+        ? 'Další směna v práci: ' + String(nextWorkShift.team || '—') + (nextShiftLabel ? ' · ' + nextShiftLabel : '')
+        : (special ? 'Dnes se nepracuje' : '—'));
+    const heroLine1 = '<span class="dashboardHeroLine1Text">' + esc(heroLine1Text) + '</span>';
+    const heroLine2 = active
       ? (active.end ? 'Končí za: ' + formatDuration(active.end - now) : '')
       : (nextWorkShift
         ? 'Začíná za: ' + formatDuration(nextWorkShift.start - now)
         : '');
-    const heroLine3 = active && !showSpecial
-      ? (currentAbsences.length ? 'Aktuálně chybí: ' + currentAbsences.join(', ') : 'Aktuálně nechybí nikdo')
-      : (nextWorkShift
-        ? ('Start: ' + formatDashboardNextShiftMeta(nextWorkShift) + (nextAbsences.length ? ' · Chybí: ' + nextAbsences.join(', ') : ''))
-        : (special ? String(special.label || 'Dnes se nepracuje') : ''));
-    const heroProgress = active && !showSpecial && active.start && active.end
+    const heroLine3 = typeof formatDashboardTeamDLine === 'function'
+      ? formatDashboardTeamDLine(now, teamDStatus)
+      : '';
+    const heroProgress = active && active.start && active.end
       ? Math.max(0, Math.min(100, ((now.getTime() - active.start.getTime()) / (active.end.getTime() - active.start.getTime())) * 100))
       : 0;
-    const heroProgressText = active && !showSpecial ? Math.round(heroProgress) + ' %' : '';
+    const heroProgressText = active ? Math.round(heroProgress) + ' %' : '';
     hero.innerHTML = [
       '<div class="dashboardHeroLine1">' + heroLine1 + '</div>',
       heroLine2 ? '<div class="dashboardHeroLine2">' + esc(heroLine2) + '</div>' : '',
@@ -233,13 +291,13 @@ function updateDashboard() {
     ? ''
     : (payDays === 0 ? 'dnes' : 'za ' + payDays + ' ' + (payDays === 1 ? 'den' : (payDays >= 2 && payDays <= 4 ? 'dny' : 'dní')));
   setCard('dashCalendar', 'Kalendář', formatCalendarDateLabel(now), getCalendarSpecialText(now), '', false, calendarIcon);
-  const shiftCountdownTitle = active && !showSpecial ? 'Zbývá' : (nextWorkShift ? 'Začíná' : 'Zbývá');
-  const shiftCountdownValue = active && !showSpecial
-    ? formatDuration(active.end - now)
+  const shiftCountdownTitle = active ? 'Zbývá' : (nextWorkShift ? 'Začíná' : 'Zbývá');
+  const shiftCountdownValue = active
+    ? (active.end ? formatDuration(active.end - now) : '—')
     : (nextWorkShift ? formatDuration(nextWorkShift.start - now) : '—');
-  const shiftCountdownMeta = active && !showSpecial
-    ? 'Směna D' + (active.label ? ' · ' + active.label : '')
-    : (nextWorkShift ? 'Směna D' + (nextWorkShift.label ? ' · ' + nextWorkShift.label : '') + ' · ' + formatDashboardNextShiftMeta(nextWorkShift) : '');
+  const shiftCountdownMeta = active
+    ? 'Směna ' + String(active.team || '—') + (active.label ? ' · ' + active.label : '')
+    : (nextWorkShift ? 'Směna ' + String(nextWorkShift.team || '—') + (nextWorkShift.label ? ' · ' + nextWorkShift.label : '') + ' · ' + formatDashboardNextShiftMeta(nextWorkShift) : '');
   setCard('dashCountdown', shiftCountdownTitle, shiftCountdownValue, shiftCountdownMeta, '', false, clockIcon);
 
   const foodText = status => status.isOpen && status.active ? 'Otevřeno do ' + formatFoodTime(status.active.end) : 'Zavřeno';
@@ -462,16 +520,9 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
 
   function renderDashboardFallback(err) {
     const now = nowInPrague();
-    const dashboardTeam = 'D';
-    const dState = safeCall(() => typeof getTeamShiftState === 'function' ? getTeamShiftState(now, dashboardTeam) : null, null);
-    const active = dState && dState.active
-      ? { team: dashboardTeam, label: dState.label || '', start: dState.start, end: dState.end || null }
-      : null;
-    const nextWorkShift = !active
-      ? ((dState && dState.next && dState.next.start)
-        ? { team: dashboardTeam, label: dState.next.label || '', start: dState.next.start, end: dState.next.end || null }
-        : safeCall(() => typeof getDashboardNextTeamShift === 'function' ? getDashboardNextTeamShift(now, dashboardTeam) : null, null))
-      : null;
+    const active = safeCall(() => typeof getDashboardActiveWorkShift === 'function' ? getDashboardActiveWorkShift(now) : null, null);
+    const nextWorkShift = !active ? safeCall(() => typeof getDashboardNextWorkShift === 'function' ? getDashboardNextWorkShift(now) : null, null) : null;
+    const teamDStatus = safeCall(() => typeof getDashboardTeamDStatus === 'function' ? getDashboardTeamDStatus(now) : { active: null, next: null }, { active: null, next: null });
     const special = safeCall(() => typeof getSpecialWorkInfo === 'function' ? getSpecialWorkInfo(now) : null, null);
     const vacationCountdown = safeCall(() => typeof getVacationCountdown === 'function' ? getVacationCountdown(now) : { text: '--', meta: '' }, { text: '--', meta: '' });
     const payDate = safeCall(() => typeof getNextPayrollDate === 'function' ? getNextPayrollDate(now) : null, null);
@@ -487,14 +538,14 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
       }
     })();
     const activeText = active
-      ? 'Směna D je právě v práci' + (active.label ? ': ' + active.label : '')
-      : (nextWorkShift ? 'Další směna D' + (nextWorkShift.label ? ': ' + nextWorkShift.label : '') : (special ? 'Dnes se nepracuje' : '—'));
+      ? 'Směna ' + String(active.team || '—') + ' je právě v práci' + (active.label ? ': ' + active.label : '')
+      : (nextWorkShift ? 'Další směna v práci: ' + String(nextWorkShift.team || '—') + (nextWorkShift.label ? ' · ' + nextWorkShift.label : '') : (special ? 'Dnes se nepracuje' : '—'));
     const countdownText = active && active.end
       ? (typeof formatDuration === 'function' ? formatDuration(active.end - now) : '—')
       : (nextWorkShift && nextWorkShift.start && typeof formatDuration === 'function' ? formatDuration(nextWorkShift.start - now) : '—');
     const countdownMeta = active && active.end
-      ? 'Směna D' + (active.label ? ' · ' + active.label : '')
-      : (nextWorkShift ? 'Směna D' + (nextWorkShift.label ? ' · ' + nextWorkShift.label : '') + ' · ' + formatDashboardNextShiftMeta(nextWorkShift) : '');
+      ? 'Směna ' + String(active.team || '—') + (active.label ? ' · ' + active.label : '')
+      : (nextWorkShift ? 'Směna ' + String(nextWorkShift.team || '—') + (nextWorkShift.label ? ' · ' + nextWorkShift.label : '') + ' · ' + formatDashboardNextShiftMeta(nextWorkShift) : '');
     const foodLocations = (typeof FOOD_LOCATIONS !== 'undefined' && Array.isArray(FOOD_LOCATIONS)) ? FOOD_LOCATIONS : [];
   const syncStatus = typeof getSupabaseSyncStatus === 'function' ? getSupabaseSyncStatus() : { kind: 'offline', label: '🟡 Offline cache', detail: '' };
     const foodA = safeCall(() => (typeof findFoodStatus === 'function' && foodLocations[0] ? findFoodStatus(foodLocations[0], now) : null), null);
@@ -536,8 +587,8 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
       hero.innerHTML = [
         '<div class="dashboardHeroLine1"><span class="dashboardHeroLine1Text">' + esc(activeText) + '</span></div>',
         '<div class="dashboardHeroLine2">' + esc(active ? 'Končí za: ' + countdownText : (nextWorkShift ? 'Začíná za: ' + countdownText : countdownText)) + '</div>',
-        '<div class="dashboardHeroLine3">' + esc(nextWorkShift ? (special ? special.label || 'Dnes se nepracuje' : 'Start: ' + formatDashboardNextShiftMeta(nextWorkShift)) : (special ? special.label || '' : '')) + '</div>',
-        '<div class="dashboardHeroBarRow"><div class="dashboardHeroBar"><span style="--fill:' + (active && active.start && active.end ? '50%' : '0%') + '"></span></div></div>'
+        '<div class="dashboardHeroLine3">' + esc(typeof formatDashboardTeamDLine === 'function' ? formatDashboardTeamDLine(now, teamDStatus) : '') + '</div>',
+        '<div class="dashboardHeroBarRow"><div class="dashboardHeroBar"><span style="--fill:' + (active && active.start && active.end ? Math.max(0, Math.min(100, ((now.getTime() - active.start.getTime()) / (active.end.getTime() - active.start.getTime())) * 100)).toFixed(1) + '%' : '0%') + '"></span></div></div>'
       ].join('');
     }
 

@@ -1,4 +1,4 @@
-// v.1.1 (495) – Post-F1: dashboard primárně sleduje směnu D, jídelna/kantýna ukazují „otevřeno do“ a Rotace má užší jmenný seznam.
+// v.1.1 (496) – Post-F1: dashboard ukazuje aktuální směnu + doplňkově směnu D, Rotace má čitelnější detail směn.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

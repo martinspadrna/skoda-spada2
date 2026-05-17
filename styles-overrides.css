@@ -613,3 +613,25 @@ html[data-rak-phase1="complete"] body{min-height:100svh;}
     padding:5px 3px !important;
   }
 }
+
+/* v.1.1 (496) – Rotace detail: větší datum/směna/stroj pro lepší čitelnost. */
+#rotaceNamesPanel #personView .rotaceMiniCard.rotaceShiftCard,
+#rotace #personView .rotaceMiniCard.rotaceShiftCard{
+  min-height:68px !important;
+  padding:11px 13px !important;
+}
+#rotaceNamesPanel #personView .rotaceShiftDate,
+#rotace #personView .rotaceShiftDate{
+  font-size:17px !important;
+  line-height:1.12 !important;
+}
+#rotaceNamesPanel #personView .rotaceShiftName,
+#rotace #personView .rotaceShiftName{
+  font-size:16px !important;
+  line-height:1.12 !important;
+}
+#rotaceNamesPanel #personView .rotaceShiftTarget,
+#rotace #personView .rotaceShiftTarget{
+  font-size:18px !important;
+  line-height:1.12 !important;
+}

@@ -1,3 +1,10 @@
+## v.1.1 (496)
+- Dashboard znovu odděluje aktuální směnu od referenční směny D.
+- Hlavní horní stav ukazuje, která směna je právě v práci a za jak dlouho končí.
+- Pod tím je samostatná informace pro směnu D: kdy začíná a kdo bude chybět.
+- Karta odpočtu už sleduje aktuálně běžící/nejbližší směnu všech týmů, ne pouze směnu D.
+- V Rotaci jsou popisky data, směny a stroje v detailu jména zvětšené pro lepší čitelnost.
+
 ## v.1.1 (495)
 - Dashboard je přepnutý na hlavní referenční směnu D: ukazuje, jestli je D právě v práci, nebo kdy D nastupuje příště.
 - Karta „Zbývá/Začíná“ teď také sleduje směnu D, ne nejbližší libovolnou směnu.
