@@ -5100,29 +5100,30 @@ async function gamesRefreshRemoteLeaderboards(gameId) {
   if (!window.RotationSupabaseBridge || typeof window.RotationSupabaseBridge.loadGameStats !== 'function') return [];
   const ids = gameId ? [gameId] : ['ttt', '2048', 'snake', 'flap'];
   app.gamesLeaderboardCache = app.gamesLeaderboardCache || { ttt: [], '2048': [], snake: [], flap: [] };
+  app.gamesLeaderboardThrottle = app.gamesLeaderboardThrottle || {};
+  const now = Date.now();
+  const ttl = 60000;
+  const freshIds = ids.filter((id) => {
+    const last = Number(app.gamesLeaderboardThrottle[id] || 0) || 0;
+    const hasCache = Array.isArray(app.gamesLeaderboardCache[id]) && app.gamesLeaderboardCache[id].length;
+    return !hasCache || (now - last) > ttl;
+  });
+  if (!freshIds.length) return ids.map((id) => ({ id, rows: (app.gamesLeaderboardCache[id] || []).slice(0, 10), cached: true }));
   try {
-    const results = await Promise.all(ids.map(async (id) => {
+    const results = await Promise.all(freshIds.map(async (id) => {
       try {
         const rows = await window.RotationSupabaseBridge.loadGameStats(id, 10);
         const normalized = gamesNormalizeRemoteLeaderboardRows(id, rows, 10);
         app.gamesLeaderboardCache[id] = normalized;
+        app.gamesLeaderboardThrottle[id] = Date.now();
         return { id, rows: normalized };
       } catch (err) {
         console.warn('games leaderboard refresh failed', id, err);
         return { id, rows: app.gamesLeaderboardCache[id] || [] };
       }
     }));
-    if (!gameId) {
-      if (app.activeGameShell) {
-        renderGameShell(app.activeGameShell);
-      } else {
-        gamesRenderStats();
-      }
-    } else if (app.activeGameShell === gameId) {
-      renderGameShell(gameId);
-    } else if (!app.activeGameShell) {
-      gamesRenderStats();
-    }
+    // Fáze 5: online leaderboard refresh už během rozehrané hry nepřerenderuje shell.
+    if (!app.activeGameShell) gamesRenderStats();
     return results;
   } catch (err) {
     console.warn('gamesRefreshRemoteLeaderboards failed', err);
@@ -5230,6 +5231,16 @@ function gamesStopActiveLoops() {
     cancelAnimationFrame(app.gamesFlap.timer);
     app.gamesFlap.timer = null;
   }
+}
+
+
+if (!window.__rakCoreGamesVisibilityBound) {
+  window.__rakCoreGamesVisibilityBound = true;
+  document.addEventListener('visibilitychange', () => {
+    // Fáze 5: v pozadí hru nepřerenderováváme ani neukončujeme.
+    // Jen uložíme čas změny, aby diagnostika věděla, že aplikace prošla pozadím.
+    window.__rakCoreGamesLastVisibilityAt = Date.now();
+  }, { passive: true });
 }
 
 function gamesBindSwipeControl(el, onSwipe) {

@@ -1,4 +1,4 @@
-// v.1.1 (528) – Supabase Realtime auto-refresh + Fáze 5 pokračování.
+// v.1.1 (529) – Fáze 5: game performance throttle + safer live refresh.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
@@ -573,6 +573,42 @@ function runPhaseFourCleanupManagerAudit() {
 }
 
 
+function runPhaseFiveGamePerformanceAudit() {
+  const run = () => {
+    const report = {
+      version: window.APP_VERSION || 'unknown',
+      phase: 'phase-5-game-performance',
+      checkedAt: new Date().toISOString(),
+      ok: true,
+      games: {
+        activeShell: !!(window.app && window.app.activeGameShell),
+        arcadeLoaded: !!window.__rakArcadeLoaded,
+        perfManager: !!window.__rakGamePerfManager,
+        stopLoops: typeof window.gamesStopActiveLoops === 'function',
+        leaderboardThrottle: !!(window.app && window.app.gamesLeaderboardThrottle)
+      }
+    };
+    report.ok = report.games.stopLoops && (report.games.arcadeLoaded ? report.games.perfManager : true);
+    try {
+      document.documentElement.dataset.rakPhase5 = report.ok ? 'game-performance' : 'game-performance-check';
+      window.__rakPhase5GamePerformanceAudit = report;
+    } catch (err) {}
+    if (!report.ok) console.warn('[RaK] Phase 5 game performance audit', report);
+    return report;
+  };
+
+  if (document.readyState === 'loading') {
+    const rerun = () => setTimeout(run, 260);
+    if (typeof registerListener === 'function') registerListener(document, 'DOMContentLoaded', rerun, { once: true });
+    else document.addEventListener('DOMContentLoaded', rerun, { once: true });
+    return { version: window.APP_VERSION || 'unknown', phase: 'phase-5-game-performance', ok: true, deferred: true };
+  }
+
+  requestAnimationFrame(() => setTimeout(run, 260));
+  return { version: window.APP_VERSION || 'unknown', phase: 'phase-5-game-performance', ok: true, deferred: true };
+}
+
+
 (async () => {
   const files = [
     "core.js",
@@ -614,6 +650,7 @@ function runPhaseFourCleanupManagerAudit() {
   try { runPhaseTwoCalcScopeAudit(); } catch (err) { console.warn('Phase 2 calc scope audit failed', err); }
   try { runPhaseThreeLightweightAudit(); } catch (err) { console.warn('Phase 3 lightweight audit failed', err); }
   try { runPhaseFourCleanupManagerAudit(); } catch (err) { console.warn('Phase 4 cleanup manager audit failed', err); }
+  try { runPhaseFiveGamePerformanceAudit(); } catch (err) { console.warn('Phase 5 game performance audit failed', err); }
 
   try {
     if (typeof window.__rotaceBootHomeRefreshLate === 'function') {

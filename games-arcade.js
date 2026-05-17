@@ -292,6 +292,14 @@
 #games .arcadeBomberCell.player{background:rgba(124,255,124,.22);}
 #games .arcadeBomberCell.bomb{background:rgba(255,115,115,.18);}
 #games .arcadeBomberCell.fire{background:rgba(255,170,80,.25);}
+
+/* v.1.1 (529) – Fáze 5 game performance */
+body.ladaMode #games .arcadePanel,
+html[data-lightweight="1"] #games .arcadePanel{backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:none;}
+body.ladaMode #games .arcadeBoardWrap,
+html[data-lightweight="1"] #games .arcadeBoardWrap{box-shadow:none;}
+body.ladaMode #games .arcadeAimTarget,
+html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124,255,124,.08);}
 @media (max-width: 700px){
   #games .arcadeHud{grid-template-columns:repeat(2,minmax(0,1fr));}
   #games .arcadeBoard.grid-9{gap:4px;}
@@ -315,6 +323,53 @@
   function clearCleanups() { cleanups.forEach((fn) => { try { fn(); } catch (err) {} }); cleanups.clear(); }
   function setActiveState(id, state) { currentState.id = key(id); currentState.state = state || null; }
   function getActiveState() { return currentState.state; }
+
+  const gamePerf = window.__rakGamePerfManager || (window.__rakGamePerfManager = {
+    enabled: true,
+    hiddenSkips: 0,
+    lastVisibilityAt: 0,
+    maxDeltaMs: 34,
+    leaderboardTtlMs: 60000
+  });
+
+  function isGamesPageVisible() {
+    if (document.visibilityState === 'hidden') return false;
+    if (!document.body || !document.body.classList.contains('gamesOpen')) return false;
+    return !!(window.app && window.app.activeGameShell);
+  }
+
+  function rakGameDelta(state, ts) {
+    const last = Number(state && state.lastTs || 0) || ts;
+    if (state) state.lastTs = ts;
+    return Math.max(0, Math.min(gamePerf.maxDeltaMs, ts - last));
+  }
+
+  function rakGameRequestFrame(state, loop) {
+    if (!isGamesPageVisible()) {
+      gamePerf.hiddenSkips += 1;
+      if (state) {
+        state.raf = 0;
+        state.lastTs = 0;
+      }
+      return 0;
+    }
+    return requestAnimationFrame(loop);
+  }
+
+  function rakGameShouldTick() {
+    return isGamesPageVisible();
+  }
+
+  if (!window.__rakGamePerfVisibilityBound) {
+    window.__rakGamePerfVisibilityBound = true;
+    document.addEventListener('visibilitychange', () => {
+      // Jen značkujeme stav. Smyčky přes requestAnimationFrame se v pozadí samy uspí
+      // a delta čas je po návratu oříznutý, takže se hra nesplaší ani nepřepočítá skokově.
+      // Důležité: nespouštět gamesStopActiveLoops(), protože by to u některých her zapsalo výsledek předčasně.
+      gamePerf.lastVisibilityAt = Date.now();
+      gamePerf.hidden = document.visibilityState === 'hidden';
+    }, { passive: true });
+  }
 
   function fmtMs(ms) {
     const n = Number(ms);
@@ -573,8 +628,17 @@
     if (!window.RotationSupabaseBridge || typeof window.RotationSupabaseBridge.loadGameStats !== 'function') return [];
     const ids = gameId ? [key(gameId)] : ALL_GAMES.slice();
     window.app.gamesLeaderboardCache = window.app.gamesLeaderboardCache || {};
+    window.app.gamesLeaderboardThrottle = window.app.gamesLeaderboardThrottle || {};
+    const now = Date.now();
+    const ttl = Number(gamePerf && gamePerf.leaderboardTtlMs || 60000) || 60000;
+    const freshIds = ids.filter((gid) => {
+      const last = Number(window.app.gamesLeaderboardThrottle[gid] || 0) || 0;
+      const hasCache = Array.isArray(window.app.gamesLeaderboardCache[gid]) && window.app.gamesLeaderboardCache[gid].length;
+      return !hasCache || (now - last) > ttl;
+    });
+    if (!freshIds.length) return ids.map((gid) => ({ id: gid, rows: (window.app.gamesLeaderboardCache[gid] || []).slice(0, 10), cached: true }));
     try {
-      const results = await Promise.all(ids.map(async (gid) => {
+      const results = await Promise.all(freshIds.map(async (gid) => {
         try {
           const rows = await window.RotationSupabaseBridge.loadGameStats(gid, 10);
           const normalized = (Array.isArray(rows) ? rows : []).map((row) => {
@@ -586,15 +650,16 @@
             return { id: accountNumber || name, name, value, playedText: formatDate(Date.parse(updatedAt) || 0), gameId: gid };
           }).filter((row) => row.value > 0);
           window.app.gamesLeaderboardCache[gid] = gameLeaderboardSort(gid, normalized).slice(0, 10);
+          window.app.gamesLeaderboardThrottle[gid] = Date.now();
           return { id: gid, rows: window.app.gamesLeaderboardCache[gid] };
         } catch (err) {
           console.warn('arcade leaderboard refresh failed', gid, err);
           return { id: gid, rows: window.app.gamesLeaderboardCache[gid] || [] };
         }
       }));
-      if (!gameId && window.app.activeGameShell) renderGameShell(window.app.activeGameShell);
-      else if (gameId && window.app.activeGameShell === gameId) renderGameShell(gameId);
-      else if (!window.app.activeGameShell) renderStatsExtended();
+      // Fáze 5: během rozehrané hry už leaderboard refresh nespouští render celé hry.
+      // Dřív se tím hra při online obnově zbytečně překreslila/restartovala.
+      if (!window.app.activeGameShell) renderStatsExtended();
       return results;
     } catch (err) {
       console.warn('refreshRemoteLeaderboards failed', err);
@@ -1087,17 +1152,17 @@
     };
     document.addEventListener('keydown', onKey);
     const loop = (ts) => {
-      if (!state.lastTs) state.lastTs = ts;
-      const dt = ts - state.lastTs; state.lastTs = ts;
+      if (!rakGameShouldTick()) { state.lastTs = 0; state.raf = 0; return; }
+      const dt = rakGameDelta(state, ts);
       if (!state.over) {
         state.dropAcc += dt;
         const speed = Math.max(120, 700 - (state.level - 1) * 45);
         if (state.dropAcc >= speed) { state.dropAcc = 0; tetrisMove(state, 0, 1); }
       }
       draw();
-      state.raf = requestAnimationFrame(loop);
+      state.raf = rakGameRequestFrame(state, loop);
     };
-    state.raf = requestAnimationFrame(loop);
+    state.raf = rakGameRequestFrame(state, loop);
     const finishCleanup = () => { cancelAnimationFrame(state.raf); document.removeEventListener('keydown', onKey); gamesRecordStat('tetris', { plays: 1, bestScore: Math.max(state.score, getAccountStat(gamesGetActiveAccount(), 'tetris').bestScore || 0), lastResult: String(state.score) }); };
     addCleanup(() => { cancelAnimationFrame(state.raf); document.removeEventListener('keydown', onKey); });
     body.querySelector('.arcadeControls [data-act="restart"]').addEventListener('click', () => { if (state.over) { gamesRecordStat('tetris', { plays: 1, bestScore: state.score, lastResult: String(state.score) }); state.over = false; } });
@@ -1137,8 +1202,8 @@
       if (state.over) { ctx.fillStyle = 'rgba(7,10,8,.68)'; ctx.fillRect(0, 0, w, h); ctx.fillStyle = '#fff'; ctx.font = '18px system-ui'; ctx.textAlign = 'center'; ctx.fillText('Konec hry', w / 2, h / 2); }
     };
     const loop = (ts) => {
-      if (!state.lastTs) state.lastTs = ts;
-      const dt = ts - state.lastTs; state.lastTs = ts;
+      if (!rakGameShouldTick()) { state.lastTs = 0; state.raf = 0; return; }
+      const dt = rakGameDelta(state, ts);
       const { w, h } = stage.resize();
       if (!state.over) {
         state.shotCooldown = Math.max(0, state.shotCooldown - dt);
@@ -1166,9 +1231,9 @@
       }
       body.querySelector('.arcadeHud').innerHTML = `${gamesStatLine('Skóre', state.score)}${gamesStatLine('Zásahy', state.score ? state.score / 10 : 0)}${gamesStatLine('Stav', state.over ? 'Konec' : 'Boj')}`;
       draw();
-      state.raf = requestAnimationFrame(loop);
+      state.raf = rakGameRequestFrame(state, loop);
     };
-    state.raf = requestAnimationFrame(loop);
+    state.raf = rakGameRequestFrame(state, loop);
     addCleanup(() => { cancelAnimationFrame(state.raf); canvas.removeEventListener('pointermove', pointerMove); gamesRecordStat('shooter', { plays: 1, bestScore: state.score, lastResult: String(state.score) }); });
     setActiveState('shooter', state);
   }
@@ -1199,8 +1264,8 @@
       if (state.over) { ctx.fillStyle = 'rgba(7,10,8,.7)'; ctx.fillRect(0, 0, w, h); ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.font = '18px system-ui'; ctx.fillText('Konec hry', w / 2, h / 2); }
     };
     const loop = (ts) => {
-      if (!state.lastTs) state.lastTs = ts;
-      const dt = ts - state.lastTs; state.lastTs = ts;
+      if (!rakGameShouldTick()) { state.lastTs = 0; state.raf = 0; return; }
+      const dt = rakGameDelta(state, ts);
       const { w, h } = stage.resize();
       const paddleY = h - 24;
       if (!state.over && state.launched) {
@@ -1227,9 +1292,9 @@
       }
       body.querySelector('.arcadeHud').innerHTML = `${gamesStatLine('Skóre', state.score)}${gamesStatLine('Bricky', state.bricks.filter(b => b.alive).length)}${gamesStatLine('Stav', state.over ? 'Konec' : 'Hra')}`;
       draw();
-      state.raf = requestAnimationFrame(loop);
+      state.raf = rakGameRequestFrame(state, loop);
     };
-    state.raf = requestAnimationFrame(loop);
+    state.raf = rakGameRequestFrame(state, loop);
     addCleanup(() => { cancelAnimationFrame(state.raf); gamesRecordStat('brick', { plays: 1, bestScore: state.score, lastResult: String(state.score) }); });
     setActiveState('brick', state);
   }
@@ -1256,8 +1321,8 @@
       if (state.over) { ctx.fillStyle = 'rgba(7,10,8,.7)'; ctx.fillRect(0, 0, w, h); ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.font = '18px system-ui'; ctx.fillText('Konec hry', w / 2, h / 2); }
     };
     const loop = (ts) => {
-      if (!state.lastTs) state.lastTs = ts;
-      const dt = ts - state.lastTs; state.lastTs = ts;
+      if (!rakGameShouldTick()) { state.lastTs = 0; state.raf = 0; return; }
+      const dt = rakGameDelta(state, ts);
       const { w, h } = stage.resize();
       if (!state.over) {
         state.x += state.vx * dt / 16;
@@ -1282,9 +1347,9 @@
       }
       body.querySelector('.arcadeHud').innerHTML = `${gamesStatLine('Skóre', state.score)}${gamesStatLine('Výška', Math.max(0, Math.round((state.highest - state.y) * 1.5)))}${gamesStatLine('Stav', state.over ? 'Konec' : 'Skok')}`;
       draw();
-      state.raf = requestAnimationFrame(loop);
+      state.raf = rakGameRequestFrame(state, loop);
     };
-    state.raf = requestAnimationFrame(loop);
+    state.raf = rakGameRequestFrame(state, loop);
     addCleanup(() => { cancelAnimationFrame(state.raf); gamesRecordStat('doodle', { plays: 1, bestScore: state.score, lastResult: String(state.score) }); });
     setActiveState('doodle', state);
   }
@@ -1329,8 +1394,8 @@
       return cluster;
     };
     const loop = (ts) => {
-      if (!state.lastTs) state.lastTs = ts;
-      const dt = ts - state.lastTs; state.lastTs = ts;
+      if (!rakGameShouldTick()) { state.lastTs = 0; state.raf = 0; return; }
+      const dt = rakGameDelta(state, ts);
       const { w, h } = stage.resize();
       const cell = Math.floor(w / state.cols);
       if (!state.over) {
@@ -1363,9 +1428,9 @@
       }
       body.querySelector('.arcadeHud').innerHTML = `${gamesStatLine('Skóre', state.score)}${gamesStatLine('Combo', state.combo)}${gamesStatLine('Stav', state.over ? 'Konec' : 'Pusť')}`;
       draw();
-      state.raf = requestAnimationFrame(loop);
+      state.raf = rakGameRequestFrame(state, loop);
     };
-    state.raf = requestAnimationFrame(loop);
+    state.raf = rakGameRequestFrame(state, loop);
     addCleanup(() => { cancelAnimationFrame(state.raf); gamesRecordStat('bubble', { plays: 1, bestScore: state.score, lastResult: String(state.score) }); });
     setActiveState('bubble', state);
   }
@@ -1653,6 +1718,7 @@
       });
     };
     const loop = () => {
+      if (!rakGameShouldTick()) return;
       if (!state.over) {
         state.bombs.forEach((b) => { b.life -= 120; if (b.life <= 0 && !b.exploded) explode(b); });
         state.bombs = state.bombs.filter(b => !b.exploded || b.life > -220);
@@ -1699,6 +1765,8 @@
   }
 
   const renderers = { aim: renderAim, reaction: renderReaction, tetris: renderTetris, shooter: renderShooter, brick: renderBrick, doodle: renderDoodle, bubble: renderBubble, sudoku: renderSudoku, mines: renderMines, memory: renderMemory, bomber: renderBomber, daily: renderDaily };
+
+  window.__rakGamePerfManager = gamePerf;
 
   function isExtraGame(id) { return EXTRA_GAMES.includes(key(id)); }
 

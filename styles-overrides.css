@@ -542,7 +542,7 @@ body.lightweightMode .dashboardSyncBadge{backdrop-filter:blur(4px) saturate(110%
 #games .gamesDevFolder[open] .gamesDevFolderBody{padding-top:4px !important;}
 @media (max-width:700px){#games .gamesDevFolderBody{gap:8px !important;}}
 
-/* v.1.1 (528) – Phase 1 final guard rails.
+/* v.1.1 (529) – Phase 1 final guard rails.
    Jen bezpečné stabilizační dorovnání: žádná změna logiky ani větší redesign. */
 :root{--rak-phase1-safe-bottom:max(env(safe-area-inset-bottom), 12px);}
 html[data-rak-phase1="complete"] body{min-height:100svh;}
@@ -551,7 +551,7 @@ html[data-rak-phase1="complete"] body{min-height:100svh;}
 .bottomNavScroll{overscroll-behavior-x:contain !important;}
 .page{scroll-margin-bottom:calc(96px + var(--rak-phase1-safe-bottom)) !important;}
 
-/* v.1.1 (528) – Rotace person detail: 7 směn, vlevo datum/směna, vpravo stroj */
+/* v.1.1 (529) – Rotace person detail: 7 směn, vlevo datum/směna, vpravo stroj */
 #rotaceNamesPanel #personView .rotaceQuickStack{
   gap:8px !important;
 }
@@ -602,7 +602,7 @@ html[data-rak-phase1="complete"] body{min-height:100svh;}
 }
 
 
-/* v.1.1 (528) – Rotace jmenný seznam užší asi o 10 %, aby 10 lidí lépe vyšlo na 2 řádky. */
+/* v.1.1 (529) – Rotace jmenný seznam užší asi o 10 %, aby 10 lidí lépe vyšlo na 2 řádky. */
 #rotaceNamesPanel .listGrid{
   grid-template-columns:repeat(auto-fit, minmax(clamp(76px, 16vw, 115px), 1fr)) !important;
   gap:clamp(6px, 1.4vw, 10px) !important;
@@ -617,7 +617,7 @@ html[data-rak-phase1="complete"] body{min-height:100svh;}
   }
 }
 
-/* v.1.1 (528) – Rotace detail: větší datum/směna/stroj pro lepší čitelnost. */
+/* v.1.1 (529) – Rotace detail: větší datum/směna/stroj pro lepší čitelnost. */
 #rotaceNamesPanel #personView .rotaceMiniCard.rotaceShiftCard,
 #rotace #personView .rotaceMiniCard.rotaceShiftCard{
   min-height:68px !important;
@@ -640,7 +640,7 @@ html[data-rak-phase1="complete"] body{min-height:100svh;}
 }
 
 
-/* v.1.1 (528) – Post-F1 finální polish: Dashboard D řádek, Rotace čitelnost, spodní panel. */
+/* v.1.1 (529) – Post-F1 finální polish: Dashboard D řádek, Rotace čitelnost, spodní panel. */
 #dashHero .dashboardHeroLine2{
   font-size:clamp(13px, 3.3vw, 16px) !important;
   line-height:1.22 !important;
@@ -755,7 +755,7 @@ html[data-rak-phase1="complete"] body{min-height:100svh;}
   .bottomNavMenuBtn{flex-basis:30px !important;width:30px !important;min-width:30px !important;max-width:30px !important;}
 }
 
-/* v.1.1 (528) – Bottom nav final alignment fix.
+/* v.1.1 (529) – Bottom nav final alignment fix.
    Cíl: panel níž u spodního okraje, centrovaný a bez useknutého levého kraje. */
 :root{
   --rak-bottom-nav-side-gap: max(6px, env(safe-area-inset-left));
@@ -852,7 +852,7 @@ html[data-rak-phase1="complete"] body{min-height:100svh;}
   }
 }
 
-/* v.1.1 (528) – Rotace detail: kompaktnější řádky směn bez změny velikosti textu. */
+/* v.1.1 (529) – Rotace detail: kompaktnější řádky směn bez změny velikosti textu. */
 #rotaceNamesPanel #personView .rotaceQuickStack,
 #rotace #personView .rotaceQuickStack{
   gap:6px !important;
@@ -868,7 +868,7 @@ html[data-rak-phase1="complete"] body{min-height:100svh;}
   gap:2px !important;
 }
 
-/* v.1.1 (528) – spodní lišta: pevně dole, centrovaná, bez ujetí do strany.
+/* v.1.1 (529) – spodní lišta: pevně dole, centrovaná, bez ujetí do strany.
    Finální guard musí být úplně na konci override CSS, protože staré buildy mají víc historických nav pravidel. */
 :root{
   --rak-nav-edge-gap:6px;
@@ -988,7 +988,7 @@ body{
 }
 
 
-/* v.1.1 (528) – Dashboard/Rotace polish po F2 fixu. */
+/* v.1.1 (529) – Dashboard/Rotace polish po F2 fixu. */
 #dashVyplata .dashboardLabelRow{
   flex-wrap:nowrap !important;
   align-items:center !important;
@@ -1044,7 +1044,7 @@ body{
   color:rgba(226,255,226,.82) !important;
 }
 
-/* v.1.1 (528) – Dashboard text cleanup + Rotace overview/nav placement. */
+/* v.1.1 (529) – Dashboard text cleanup + Rotace overview/nav placement. */
 #dashHero .dashboardHeroLine2{
   font-weight:850 !important;
 }
@@ -1098,7 +1098,7 @@ body{
 
 
 
-/* v.1.1 (528) – Rotace: pevný spodní dock jmen + sjednocené barvy detailu. */
+/* v.1.1 (529) – Rotace: pevný spodní dock jmen + sjednocené barvy detailu. */
 #rotace.page.active #rotaceNamesPanel.active{
   padding-bottom:calc(174px + env(safe-area-inset-bottom)) !important;
 }
@@ -1159,7 +1159,7 @@ body{
   }
 }
 
-/* v.1.1 (528) – Fáze 2: poslední calcPanel guard pro dlouhé výsledky a scroll. */
+/* v.1.1 (529) – Fáze 2: poslední calcPanel guard pro dlouhé výsledky a scroll. */
 .calcPage .calcPanel,
 .calcPage .calcCard,
 .calcPage .calcResultCard,
@@ -1176,7 +1176,7 @@ body{
 }
 
 
-/* v.1.1 (528) – Dashboard polish + Fáze 3 start: lightweight guard rails. */
+/* v.1.1 (529) – Dashboard polish + Fáze 3 start: lightweight guard rails. */
 #dashHero .dashboardHeroLine3{
   display:block !important;
   width:fit-content !important;
@@ -1239,7 +1239,7 @@ body.lightweightMode #games .game2048Board .gameBoardCell.n2048{
 }
 
 
-/* v.1.1 (528) – Fáze 3 pokračování: Láďův režim + lehčí render guardy. */
+/* v.1.1 (529) – Fáze 3 pokračování: Láďův režim + lehčí render guardy. */
 body.lightweightMode .dashboardHeroCard::before,
 body.lightweightMode .dashboardHeroCard::after,
 body.lightweightMode .dashboardCard::before,
@@ -1289,7 +1289,7 @@ body.lightweightMode .tttOverlay{
   overscroll-behavior:contain !important;
 }
 
-/* v.1.1 (528) – Dashboard D line optical center + Rotace name dock cleanup + Fáze 3 menu polish. */
+/* v.1.1 (529) – Dashboard D line optical center + Rotace name dock cleanup + Fáze 3 menu polish. */
 #dashHero .dashboardHeroLine3{
   display:block !important;
   box-sizing:border-box !important;
@@ -1351,7 +1351,7 @@ body.lightweightMode .appMenuSettingBtn{
   contain:layout paint !important;
   box-shadow:0 8px 18px rgba(0,0,0,.20) !important;
 }
-/* v.1.1 (528) – optical correction for unequal hero padding. */
+/* v.1.1 (529) – optical correction for unequal hero padding. */
 #dashHero .dashboardHeroLine3{
   width:calc(100% + 128px) !important;
   max-width:calc(100% + 128px) !important;
@@ -1369,7 +1369,7 @@ body.lightweightMode .appMenuSettingBtn{
 }
 
 
-/* v.1.1 (528) – Dashboard D řádek zpět na skutečný střed + Rotace aktivní jméno bez oříznutí + Fáze 3 pokračování. */
+/* v.1.1 (529) – Dashboard D řádek zpět na skutečný střed + Rotace aktivní jméno bez oříznutí + Fáze 3 pokračování. */
 #dashHero .dashboardHeroLine3{
   box-sizing:border-box !important;
   display:block !important;
@@ -1413,7 +1413,7 @@ body.lightweightMode #rotaceNamesPanel .rotaceNameTile{
   animation:none !important;
 }
 
-/* v.1.1 (528) – Dashboard D řádek centrovaný přes celou kartu + Láďův režim pro starší Androidy. */
+/* v.1.1 (529) – Dashboard D řádek centrovaný přes celou kartu + Láďův režim pro starší Androidy. */
 #dashHero .dashboardHeroLine3{
   --dash-hero-pad-left:64px;
   --dash-hero-pad-right:128px;
@@ -1557,7 +1557,7 @@ body.lowEndDevice #rotaceNamesPanel .rotaceTileTitle{
 }
 
 
-/* v.1.1 (528) – Dashboard recovery: ikony/data vždy viditelné + D řádek skutečně opticky centrovaný. */
+/* v.1.1 (529) – Dashboard recovery: ikony/data vždy viditelné + D řádek skutečně opticky centrovaný. */
 #dashHero .dashboardHeroLine3{
   display:flex !important;
   align-items:center !important;
@@ -1651,7 +1651,7 @@ body.lowEndDevice #home .dashboardIcon.dashboardIconInline{
 }
 
 
-/* v.1.1 (528) – Dashboard safe recovery: Láďův režim nesmí schovat ikonky ani hodnoty. */
+/* v.1.1 (529) – Dashboard safe recovery: Láďův režim nesmí schovat ikonky ani hodnoty. */
 #home .dashboardCard{
   display:grid !important;
   grid-template-columns:minmax(0,1fr) auto !important;
@@ -1748,7 +1748,7 @@ body.lowEndDevice #home .dashboardIcon.dashboardIconInline{
   text-align:center !important;
 }
 
-/* v.1.1 (528) – Dashboard D řádek: finální optické dorovnání + Fáze 3 finální Láďův režim. */
+/* v.1.1 (529) – Dashboard D řádek: finální optické dorovnání + Fáze 3 finální Láďův režim. */
 #dashHero .dashboardHeroLine3{
   display:flex !important;
   align-items:center !important;
@@ -1829,7 +1829,7 @@ body.lowEndDevice #home .dashboardCard{
 }
 
 
-/* v.1.1 (528) – Láďův režim: bezpečné odlehčení Dashboardu bez schování ikon a hodnot. */
+/* v.1.1 (529) – Láďův režim: bezpečné odlehčení Dashboardu bez schování ikon a hodnot. */
 body.lightweightMode #home .dashboardShell,
 body.lowEndDevice #home .dashboardShell{
   padding:8px !important;
@@ -1945,7 +1945,7 @@ body.lowEndDevice #home .dashboardDot{
   min-width:14px !important;
 }
 
-/* v.1.1 (528) – Dashboard: řádek směny D se centruje podle celé hero karty, ne podle odsazeného textového sloupce. */
+/* v.1.1 (529) – Dashboard: řádek směny D se centruje podle celé hero karty, ne podle odsazeného textového sloupce. */
 #dashHero .dashboardHeroLine3{
   --dash-line3-left-pad:64px;
   --dash-line3-right-pad:128px;
@@ -2001,7 +2001,7 @@ body.lowEndDevice #dashHero .dashboardHeroLine3Pill{
 }
 
 
-/* v.1.1 (528) – Dashboard: D řádek rozdělený na hlavní informaci + chybějící na dalším řádku. */
+/* v.1.1 (529) – Dashboard: D řádek rozdělený na hlavní informaci + chybějící na dalším řádku. */
 #dashHero .dashboardHeroLine3Pill{
   flex-direction:column !important;
   gap:2px !important;
@@ -2025,7 +2025,7 @@ body.lowEndDevice #dashHero .dashboardHeroLine3Pill{
 }
 
 
-/* v.1.1 (528) – Bottom nav: položka Více opticky ve stejné výšce jako ostatní záložky + F4 guard. */
+/* v.1.1 (529) – Bottom nav: položka Více opticky ve stejné výšce jako ostatní záložky + F4 guard. */
 .bottomNavBtn,
 .bottomNavMenuBtn{
   display:flex !important;
@@ -2085,7 +2085,7 @@ body.lowEndDevice .bottomNavMenuBtn .bottomNavLabel{
 }
 
 
-/* v.1.1 (528) – Bottom nav: ostatní záložky dorovnané na výšku položky Více, bez změny samotného panelu. */
+/* v.1.1 (529) – Bottom nav: ostatní záložky dorovnané na výšku položky Více, bez změny samotného panelu. */
 .bottomNavBtn:not(.bottomNavMenuBtn){
   min-height:46px !important;
   padding:2px 1px 1px !important;
@@ -2160,7 +2160,7 @@ body.lowEndDevice .bottomNavBtn:not(.bottomNavMenuBtn) .bottomNavLabel{
   line-height:1 !important;
 }
 
-/* v.1.1 (528) – Bottom nav: „Více“ snížené na stejný výškový rytmus jako ostatní záložky, bez zásahu do panelu. */
+/* v.1.1 (529) – Bottom nav: „Více“ snížené na stejný výškový rytmus jako ostatní záložky, bez zásahu do panelu. */
 .bottomNavMenuBtn{
   align-self:center !important;
   min-height:42px !important;
@@ -2215,7 +2215,7 @@ body.lowEndDevice .bottomNavMenuBtn .moreIcon{
   max-height:18px !important;
 }
 
-/* v.1.1 (528) – Bottom nav: Více dorovnané spodní hranou + Statistiky stroje kompaktně v jednom řádku. */
+/* v.1.1 (529) – Bottom nav: Více dorovnané spodní hranou + Statistiky stroje kompaktně v jednom řádku. */
 .bottomNavMenuBtn{
   align-self:center !important;
   transform:translateY(2px) !important;
@@ -2278,7 +2278,7 @@ body.lowEndDevice .bottomNavMenuBtn.active{
 
 
 
-/* v.1.1 (528) – Bottom nav: „Více“ sjednocené s ostatními položkami podle screenshotu. */
+/* v.1.1 (529) – Bottom nav: „Více“ sjednocené s ostatními položkami podle screenshotu. */
 .bottomNavMenuBtn{
   flex:0 0 clamp(42px, 7vw, 55px) !important;
   width:clamp(42px, 7vw, 55px) !important;
@@ -2360,7 +2360,7 @@ body.lowEndDevice .bottomNavMenuBtn.active{
 }
 
 
-/* v.1.1 (528) – Bottom nav: „Více“ užší, ale stejně vysoké jako ostatní záložky. */
+/* v.1.1 (529) – Bottom nav: „Více“ užší, ale stejně vysoké jako ostatní záložky. */
 .bottomNavMenuBtn{
   flex:0 0 clamp(36px, 5.7vw, 43px) !important;
   width:clamp(36px, 5.7vw, 43px) !important;
@@ -2420,7 +2420,7 @@ body.lowEndDevice .bottomNavMenuBtn.active{
 }
 
 
-/* v.1.1 (528) – Bottom nav: tvrdá pojistka pro „Více“, aby bylo užší a mělo stejnou výšku jako ostatní. */
+/* v.1.1 (529) – Bottom nav: tvrdá pojistka pro „Více“, aby bylo užší a mělo stejnou výšku jako ostatní. */
 nav.bottomNav > .bottomNavScroll > .bottomNavBtn.bottomNavMenuBtn{
   flex:0 0 44px !important;
   width:44px !important;
@@ -2495,7 +2495,7 @@ body.lowEndDevice nav.bottomNav > .bottomNavScroll > .bottomNavBtn.bottomNavMenu
 }
 
 
-/* v.1.1 (528) – Čistý reset položky „Více“: samostatná úzká položka mimo scroll, stejná výška jako ostatní. */
+/* v.1.1 (529) – Čistý reset položky „Více“: samostatná úzká položka mimo scroll, stejná výška jako ostatní. */
 nav.bottomNav{
   --rak-bottom-item-w:clamp(48px, 7.2vw, 58px);
   --rak-bottom-item-h:clamp(46px, 7.8vw, 56px);
@@ -2604,7 +2604,7 @@ body.lowEndDevice nav.bottomNav > .bottomNavBtn.bottomNavMenuBtn .bottomNavLabel
   font-size:7.2px !important;
 }
 
-/* v.1.1 (528) – optické dorovnání spodní hrany „Více“ po oddělení mimo scroll. */
+/* v.1.1 (529) – optické dorovnání spodní hrany „Více“ po oddělení mimo scroll. */
 nav.bottomNav > .bottomNavBtn.bottomNavMenuBtn:not(.active){
   transform:translateY(5px) !important;
 }
