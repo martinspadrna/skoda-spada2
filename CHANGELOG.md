@@ -1,8 +1,3 @@
-## v.1.1 (527)
-- Spodní navigace: běžné záložky se znovu roztahují rovnoměrně do dostupné šířky panelu, aby nebyly namačkané u sebe.
-- Položka „Více“ zůstává samostatná a úzká; panel jako celek zůstává na stejném místě.
-- Zahájená Fáze 5: přidaný první bezpečný audit herní výkonové vrstvy bez zásahu do herních výpočtů/logiky.
-
 ## v.1.1 (525)
 - Spodní navigace: „Více“ má novou tvrdou pojistku přes CSS i runtime, aby bylo opravdu užší a výškově stejné jako ostatní položky.
 - Fáze 4 cleanup manager pokračuje kontrolou, že „Více“ je záměrně užší, ne stejně široké jako běžné záložky.
