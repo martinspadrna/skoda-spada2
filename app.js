@@ -1,4 +1,4 @@
-// v.1.1 (514) – Fáze 3: dashboard recovery + Láďův režim polish.
+// v.1.1 (515) – Fáze 3: dashboard D-line alignment + final lightweight audit.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

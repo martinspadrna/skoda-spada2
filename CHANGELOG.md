@@ -1,3 +1,9 @@
+## v.1.1 (515)
+- Dashboard: finálně dorovnaný řádek směny D mírně doleva, aby opticky neseděl vpravo.
+- Dashboard: řádek směny D má vlastní vnitřní `dashboardHeroLine3Pill` pro stabilnější centrování.
+- Fáze 3: dokončen finální audit Láďova režimu pro starší/slabší Androidy.
+- Láďův režim: doplněné kompaktní guardy pro modaly, dashboard, kalkulačky, Rotace a hry.
+
 ## v.1.1 (514)
 - Dashboard: bezpečná obnova renderu karet, aby se znovu zobrazily ikonky i hodnoty.
 - Dashboard: vrácen stabilnější render z předchozí funkční verze a doplněny nulové pojistky pro jídelnu/kantýnu.

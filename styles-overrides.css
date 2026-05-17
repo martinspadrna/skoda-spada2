@@ -1747,3 +1747,83 @@ body.lowEndDevice #home .dashboardIcon.dashboardIconInline{
   margin:0 auto !important;
   text-align:center !important;
 }
+
+/* v.1.1 (515) – Dashboard D řádek: finální optické dorovnání + Fáze 3 finální Láďův režim. */
+#dashHero .dashboardHeroLine3{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  box-sizing:border-box !important;
+  width:100% !important;
+  max-width:100% !important;
+  margin:8px 0 0 !important;
+  padding:0 !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  text-align:center !important;
+  overflow:visible !important;
+  transform:translateX(-10px) !important;
+}
+@media (max-width:430px){
+  #dashHero .dashboardHeroLine3{transform:translateX(-9px) !important;}
+}
+@media (max-width:390px){
+  #dashHero .dashboardHeroLine3{transform:translateX(-7px) !important;}
+}
+#dashHero .dashboardHeroLine3Pill{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  box-sizing:border-box !important;
+  width:auto !important;
+  max-width:calc(100vw - 44px - env(safe-area-inset-left) - env(safe-area-inset-right)) !important;
+  margin:0 auto !important;
+  padding:7px 10px !important;
+  border-radius:999px !important;
+  border:1px solid rgba(124,255,124,.16) !important;
+  background:rgba(124,255,124,.075) !important;
+  color:rgba(232,255,232,.88) !important;
+  font-size:clamp(12px, 3vw, 14px) !important;
+  line-height:1.2 !important;
+  font-weight:750 !important;
+  text-align:center !important;
+  white-space:normal !important;
+  overflow-wrap:anywhere !important;
+}
+body.lightweightMode,
+body.lowEndDevice{
+  --rak-compact-gap:8px;
+  --rak-compact-card-pad:10px;
+}
+body.lightweightMode .page,
+body.lowEndDevice .page{
+  scroll-behavior:auto !important;
+}
+body.lightweightMode .dashboardShell,
+body.lowEndDevice .dashboardShell,
+body.lightweightMode .calcPage,
+body.lowEndDevice .calcPage,
+body.lightweightMode #rotaceNamesPanel,
+body.lowEndDevice #rotaceNamesPanel{
+  contain:layout paint !important;
+}
+body.lightweightMode .modal,
+body.lowEndDevice .modal,
+body.lightweightMode .personScheduleModal,
+body.lowEndDevice .personScheduleModal,
+body.lightweightMode .foodScheduleModal,
+body.lowEndDevice .foodScheduleModal,
+body.lightweightMode .calendarModal,
+body.lowEndDevice .calendarModal{
+  max-height:calc(100dvh - 28px - env(safe-area-inset-bottom)) !important;
+}
+body.lightweightMode #games canvas,
+body.lowEndDevice #games canvas{
+  image-rendering:auto !important;
+}
+body.lightweightMode #home .dashboardCard,
+body.lowEndDevice #home .dashboardCard{
+  min-height:76px !important;
+}
