@@ -1,4 +1,4 @@
-// v.1.1 (501) – Fáze 2: oprava scope calcPanel stránek + pokračování sjednocení kalkulaček.
+// v.1.1 (502) – Fáze 2: sjednocení resetů, výsledkových karet a kompaktních calcPanel stavů.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
@@ -82,8 +82,10 @@ function installDelegatedAppActions() {
     'set-prog': (el) => setProg(String(el.dataset.prog || '')),
     'reset-fields': (el) => {
       const raw = String(el.dataset.resetFields || '');
+      const resultRaw = String(el.dataset.resetResults || '');
       const fields = raw.split(',').map((s) => s.trim()).filter(Boolean);
-      if (fields.length) resetFields(fields);
+      const results = resultRaw.split(',').map((s) => s.trim()).filter(Boolean);
+      if (fields.length || results.length) resetFields(fields, results);
     },
     'open-game': (el) => {
       const gameId = String(el.dataset.game || '').trim();
@@ -257,7 +259,7 @@ function runPhaseTwoCalcScopeAudit() {
     const calcPageIds = ['soustruhy', 'frezky', 'brusy', 'pracka'];
     const report = {
       version: window.APP_VERSION || 'unknown',
-      phase: 'phase-2-calc-scope',
+      phase: 'phase-2-calc-system',
       checkedAt: new Date().toISOString(),
       ok: true,
       visibleInactive: []
@@ -297,11 +299,11 @@ function runPhaseTwoCalcScopeAudit() {
     const rerun = () => setTimeout(run, 0);
     if (typeof registerListener === 'function') registerListener(document, 'DOMContentLoaded', rerun, { once: true });
     else document.addEventListener('DOMContentLoaded', rerun, { once: true });
-    return { version: window.APP_VERSION || 'unknown', phase: 'phase-2-calc-scope', ok: true, deferred: true };
+    return { version: window.APP_VERSION || 'unknown', phase: 'phase-2-calc-system', ok: true, deferred: true };
   }
 
   requestAnimationFrame(() => setTimeout(run, 0));
-  return { version: window.APP_VERSION || 'unknown', phase: 'phase-2-calc-scope', ok: true, deferred: true };
+  return { version: window.APP_VERSION || 'unknown', phase: 'phase-2-calc-system', ok: true, deferred: true };
 }
 
 (async () => {

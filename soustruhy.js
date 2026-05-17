@@ -15,12 +15,24 @@ function resetSoustruhy() {
   saveRotationData();
 }
 
-function resetFields(ids) {
-  ids.forEach(id => {
+function resetFields(ids, resultIds) {
+  (Array.isArray(ids) ? ids : []).forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = "";
   });
+  (Array.isArray(resultIds) ? resultIds : []).forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = "";
+  });
   saveRotationData();
+}
+
+function renderCalcResult(title, lines, meta) {
+  const safeLines = (Array.isArray(lines) ? lines : []).filter(Boolean);
+  const safeMeta = meta ? String(meta) : "";
+  return "<div class='calcResultTitle'>" + escapeHtml(title) + "</div>" +
+    safeLines.map((line, index) => "<div class='" + (index === 0 ? "calcResultMain" : "calcResultLine") + "'>" + line + "</div>").join("") +
+    (safeMeta ? "<div class='calcResultSub'>" + escapeHtml(safeMeta) + "</div>" : "");
 }
 function formatClockTime(date) {
   const d = date instanceof Date ? date : new Date(date);
@@ -55,10 +67,9 @@ function renderFinishResult(outId, label, pieces, seconds, extraLine) {
   const finish = new Date(now.getTime() + Math.round(seconds * 1000));
   const durationText = formatDuration(Math.round(seconds * 1000));
   const dosesText = formatDoses(pieces);
-  out.innerHTML =
-    "<div><b>" + escapeHtml(label) + "</b></div>" +
-    "<div class='uMt6'>Hotovo v <b>" + formatClockTime(finish) + "</b></div>" +
-    "<div class='smallText'>Za " + durationText + " · " + formatCount(pieces) + " ks / " + dosesText + " dávek" + (extraLine ? " · " + escapeHtml(extraLine) : "") + "</div>";
+  out.innerHTML = renderCalcResult(label, [
+    "Hotovo v <b>" + formatClockTime(finish) + "</b>"
+  ], "Za " + durationText + " · " + formatCount(pieces) + " ks / " + dosesText + " dávek" + (extraLine ? " · " + extraLine : ""));
 }
 
 function estimateBrusSecondsForPieces(pieces, cfg, doneInBatch, piecesToDress) {
@@ -100,10 +111,11 @@ function calcF() {
   const ks = Math.floor(sec / 60);
   const hotovo = parseInt(document.getElementById("f_kusy").value) || 0;
   const celkem = hotovo + ks;
-  document.getElementById("outF").innerHTML =
-    "Do konce směny ještě stihneš " + ks + " ks, tj. " + formatDoses(ks) + " dávek.<br>" +
-    "Celkově budeš mít " + celkem + " ks, tj. " + formatDoses(celkem) + " dávek.<br><br>" +
-    "Na obou frézkách ještě stihneš " + (ks * 2) + " ks, tj. " + formatDoses(ks * 2) + " dávek.";
+  document.getElementById("outF").innerHTML = renderCalcResult("Frézky", [
+    "Do konce směny ještě stihneš <b>" + formatCount(ks) + " ks</b> / " + formatDoses(ks) + " dávek.",
+    "Celkově budeš mít <b>" + formatCount(celkem) + " ks</b> / " + formatDoses(celkem) + " dávek.",
+    "Na obou frézkách ještě stihneš <b>" + formatCount(ks * 2) + " ks</b> / " + formatDoses(ks * 2) + " dávek."
+  ]);
   saveRotationData();
 }
 
@@ -118,10 +130,9 @@ function calcFFinish() {
   const seconds = target.pieces * 60;
   const now = new Date();
   const finish = new Date(now.getTime() + seconds * 1000);
-  out.innerHTML =
-    "<div><b>Frézky</b></div>" +
-    "<div class='uMt6'>Hotovo v <b>" + formatClockTime(finish) + "</b></div>" +
-    "<div class='smallText'>Za " + formatDuration(seconds * 1000) + " · " + formatCount(target.pieces) + " ks / " + formatDoses(target.pieces) + " dávek</div>";
+  out.innerHTML = renderCalcResult("Frézky", [
+    "Hotovo v <b>" + formatClockTime(finish) + "</b>"
+  ], "Za " + formatDuration(seconds * 1000) + " · " + formatCount(target.pieces) + " ks / " + formatDoses(target.pieces) + " dávek");
   saveRotationData();
 }
 
@@ -130,9 +141,10 @@ function calcP() {
   const ks = Math.floor(sec / 30);
   const hotovo = parseInt(document.getElementById("p_kusy").value) || 0;
   const celkem = hotovo + ks;
-  document.getElementById("outP").innerHTML =
-    "Do konce směny ještě stihneš " + ks + " ks, tj. " + formatDoses(ks) + " dávek.<br>" +
-    "Celkově budeš mít " + celkem + " ks, tj. " + formatDoses(celkem) + " dávek.";
+  document.getElementById("outP").innerHTML = renderCalcResult("Pračka", [
+    "Do konce směny ještě stihneš <b>" + formatCount(ks) + " ks</b> / " + formatDoses(ks) + " dávek.",
+    "Celkově budeš mít <b>" + formatCount(celkem) + " ks</b> / " + formatDoses(celkem) + " dávek."
+  ]);
   saveRotationData();
 }
 
@@ -144,9 +156,10 @@ function calcBrusy() {
   const celkem = parseInt(document.getElementById("celkem").value) || 0;
   const doKonce = ks + hotovo;
   const celkove = celkem + doKonce;
-  document.getElementById("outB").innerHTML =
-    "Do konce směny ještě stihneš " + ks + " ks, tj. " + formatDoses(doKonce) + " dávek.<br>" +
-    "Celkově budeš mít " + celkove + " ks, tj. " + formatDoses(celkove) + " dávek.";
+  document.getElementById("outB").innerHTML = renderCalcResult(app.machine + " / " + cfg.label, [
+    "Do konce směny ještě stihneš <b>" + formatCount(ks) + " ks</b> / " + formatDoses(doKonce) + " dávek včetně rozdělané dávky.",
+    "Celkově budeš mít <b>" + formatCount(celkove) + " ks</b> / " + formatDoses(celkove) + " dávek."
+  ]);
   saveRotationData();
 }
 
@@ -182,11 +195,9 @@ function calcBrusyFinish() {
   const preciseDetails = (doneInBatch > 0 || piecesToDress > 0)
     ? ("<div class='smallText'>Přesnější výpočet: " + (doneInBatch > 0 ? ("rozpracovaná dávka má " + formatCount(doneInBatch) + " ks hotovo") : "bez rozdělané dávky") + (piecesToDress > 0 ? (", do orovnání zbývá " + formatCount(piecesToDress) + " ks") : "") + ".</div>")
     : "<div class='smallText'>Přesnější výpočet si můžeš rozkliknout a doplnit podle rozdělané dávky.</div>";
-  out.innerHTML =
-    "<div><b>" + escapeHtml(app.machine + " / " + cfg.label) + "</b></div>" +
-    "<div class='uMt6'>Hotovo v <b>" + formatClockTime(finish) + "</b></div>" +
-    "<div class='smallText'>Za " + formatDuration(seconds * 1000) + " · " + formatCount(remainingPieces) + " ks / " + formatDoses(remainingPieces) + " dávek" + escapeHtml(preciseNote) + "</div>" +
-    preciseDetails;
+  out.innerHTML = renderCalcResult(app.machine + " / " + cfg.label, [
+    "Hotovo v <b>" + formatClockTime(finish) + "</b>"
+  ], "Za " + formatDuration(seconds * 1000) + " · " + formatCount(remainingPieces) + " ks / " + formatDoses(remainingPieces) + " dávek" + preciseNote) + preciseDetails;
   saveRotationData();
 }
 

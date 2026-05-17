@@ -256,3 +256,51 @@
     font-size:9px !important;
   }
 }
+
+/* F2 v.502: výsledkové karty a reset chování sjednocené napříč kalkulačkami. */
+.calcResultCard:empty{
+  display:none !important;
+}
+
+.calcResultCard:not(:empty){
+  display:grid !important;
+  gap:5px !important;
+}
+
+.calcResultTitle{
+  font-size:13px !important;
+  line-height:1.08 !important;
+  font-weight:850 !important;
+  color:rgba(238,255,238,.96) !important;
+}
+
+.calcResultMain,
+.calcResultLine{
+  font-size:14px !important;
+  line-height:1.2 !important;
+  color:rgba(238,247,238,.92) !important;
+}
+
+.calcResultMain b,
+.calcResultLine b{
+  color:var(--green2) !important;
+  font-weight:850 !important;
+}
+
+.calcResultSub{
+  font-size:11px !important;
+  line-height:1.18 !important;
+  color:rgba(238,247,238,.72) !important;
+}
+
+.calcDetailsInner .brusDetailsBody{
+  padding-bottom:8px !important;
+}
+
+.calcDetails:not([open]){
+  min-height:0 !important;
+}
+
+.calcDetails:not([open]) > .brusDetailsBody{
+  display:none !important;
+}

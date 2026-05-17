@@ -1,3 +1,10 @@
+## v.1.1 (502)
+- Fáze 2 calcPanel system: sjednocené reset chování kalkulaček.
+- Reset u Frézek, Brusů a Pračky čistí i výsledkové karty.
+- Prázdné výsledkové karty se neschovávají jako prázdné boxy v layoutu.
+- Výsledky Frézek, Brusů a Pračky mají jednotnou strukturu title / hlavní řádky / doplňkový text.
+- Přidaný další kompaktní guard pro zavřené details panely.
+
 ## v.1.1 (501)
 - Fáze 2: opraven scope kalkulačkových stránek, aby se Soustruhy/Frézky/Brusy/Pračka nezobrazovaly dole na ostatních stránkách.
 - Kalkulačkové stránky jsou nově viditelné jen jako `.page.active`, samotný `calcPage` už globálně nepřebíjí skrytí stránky.
