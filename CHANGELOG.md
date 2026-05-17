@@ -1,8 +1,13 @@
+## v.1.1 (514)
+- Dashboard: bezpečná obnova renderu karet, aby se znovu zobrazily ikonky i hodnoty.
+- Dashboard: vrácen stabilnější render z předchozí funkční verze a doplněny nulové pojistky pro jídelnu/kantýnu.
+- Láďův režim: optimalizace už nesmí skrývat dashboardové ikonky/data ani agresivně ořezávat karty.
+- Fáze 3: pokračování pozastavené, dokud Dashboard nebude potvrzený jako OK.
+
 ## v.1.1 (513)
-- Dashboard: opravený fallback render, aby ani při pozdním překreslení nezmizely ikonky a hodnoty z karet.
-- Dashboard: řádek směny D znovu srovnaný opticky na střed bez roztahování doprava.
-- Dashboard: doplněné guardy, které poznají neúplně vykreslené karty i podle chybějících ikonek.
-- Láďův režim: dashboardové karty mají bezpečnější layout, aby kompaktní režim neschoval data ani ikony.
+- Dashboard: pokus o opravu fallback renderu ikon a hodnot v kartách.
+- Dashboard: řádek směny D znovu srovnaný opticky na střed.
+- Láďův režim: dashboardové karty měly bezpečnější layout, ale v praxi bylo potřeba další zotavení ve verzi 514.
 
 ## v.1.1 (512)
 - Dashboard: řádek směny D je centrovaný přes celou hero kartu, ne podle posunutého vnitřního obsahu.
@@ -10,6 +15,7 @@
 - Láďův režim: přidané kompaktnější rozložení pro starší Androidy – nižší karty, menší mezery, úspornější spodní lišta a kompaktnější dock jmen.
 - Diagnostika: text detekce upravený na „Starší/slabší zařízení“, aby bylo jasnější, že cílí hlavně na slabší/starší mobily.
 - Fáze 3: pokračování výkonového a layoutového odlehčení bez zásahu do výpočtů.
+
 
 ## v.1.1 (511)
 - Dashboard: řádek se směnou D je vrácený na skutečný optický střed bez roztahování doprava.

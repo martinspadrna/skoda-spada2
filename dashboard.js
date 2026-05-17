@@ -167,12 +167,6 @@ function formatDashboardTeamDLine(now, teamDStatus) {
   return 'Směna D: další směna nenalezena';
 }
 
-
-function formatDashboardHeroLine3Html(text) {
-  if (!text) return '';
-  return '<div class="dashboardHeroLine3"><span class="dashboardHeroLine3Pill">' + esc(text) + '</span></div>';
-}
-
 function formatDashboardShiftName(shift) {
   if (!shift) return '';
   return String(shift.team || '—') + (shift.label ? ' (' + shift.label + ')' : '');
@@ -253,7 +247,7 @@ function updateDashboard() {
     hero.innerHTML = [
       '<div class="dashboardHeroLine1">' + heroLine1 + '</div>',
       heroLine2 ? '<div class="dashboardHeroLine2">' + esc(heroLine2) + '</div>' : '',
-      heroLine3 ? formatDashboardHeroLine3Html(heroLine3) : '',
+      heroLine3 ? '<div class="dashboardHeroLine3">' + esc(heroLine3) + '</div>' : '',
       '<div class="dashboardHeroBarRow">',
       '<div class="dashboardHeroBar"><span style="--fill:' + heroProgress.toFixed(1) + '%"></span></div>',
       heroProgressText ? '<div class="dashboardHeroBarPercent">' + esc(heroProgressText) + '</div>' : '',
@@ -313,8 +307,8 @@ function updateDashboard() {
     : (nextWorkShift ? 'Směna ' + String(nextWorkShift.team || '—') + (nextWorkShift.label ? ' · ' + nextWorkShift.label : '') + ' · ' + formatDashboardNextShiftMeta(nextWorkShift) : '');
   setCard('dashCountdown', shiftCountdownTitle, shiftCountdownValue, shiftCountdownMeta, '', false, clockIcon);
 
-  const foodText = status => status.isOpen && status.active ? 'Otevřeno do ' + formatFoodTime(status.active.end) : 'Zavřeno';
-  const foodDot = status => status.isOpen ? 'is-open' : 'is-closed';
+  const foodText = status => (status && status.isOpen && status.active) ? 'Otevřeno do ' + formatFoodTime(status.active.end) : 'Zavřeno';
+  const foodDot = status => (status && status.isOpen) ? 'is-open' : 'is-closed';
   const foodDate = value => {
     try {
       return new Intl.DateTimeFormat('cs-CZ', { day: '2-digit', month: '2-digit' }).format(new Date(value)).replace(/\s+/g, '');
@@ -411,10 +405,7 @@ function homeLooksUnpainted() {
   const countValue = count?.querySelector('.dashboardValue')?.textContent?.trim() || '';
   const kantynaValue = kantyna?.querySelector('.dashboardValue')?.textContent?.trim() || '';
   const jidelnaValue = jidelna?.querySelector('.dashboardValue')?.textContent?.trim() || '';
-  const cardList = [cal, count, kantyna, jidelna].filter(Boolean);
-  const iconsMissing = cardList.length > 0 && cardList.some((el) => !el.querySelector('.dashboardIconInline, .dashboardIconImg, .dashboardIconSvg'));
-  const isPlaceholder = (value) => !value || value === '--' || value === '—';
-  return !hero || !cal || !count || isPlaceholder(heroText) || iconsMissing || (isPlaceholder(calValue) && isPlaceholder(countValue) && isPlaceholder(kantynaValue) && isPlaceholder(jidelnaValue));
+  return !hero || !cal || !count || !heroText || (!calValue && !countValue);
 }
 
 function hammerHomeRefresh() {
@@ -617,7 +608,7 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
       hero.innerHTML = [
         '<div class="dashboardHeroLine1"><span class="dashboardHeroLine1Text">' + esc(activeText) + '</span></div>',
         '<div class="dashboardHeroLine2">' + esc(active ? 'Končí za: ' + countdownText : (nextWorkShift ? 'Začíná za: ' + countdownText : countdownText)) + '</div>',
-        (typeof formatDashboardHeroLine3Html === 'function' ? formatDashboardHeroLine3Html(typeof formatDashboardTeamDLine === 'function' ? formatDashboardTeamDLine(now, teamDStatus) : '') : ''),
+        '<div class="dashboardHeroLine3">' + esc(typeof formatDashboardTeamDLine === 'function' ? formatDashboardTeamDLine(now, teamDStatus) : '') + '</div>',
         '<div class="dashboardHeroBarRow"><div class="dashboardHeroBar"><span style="--fill:' + (active && active.start && active.end ? Math.max(0, Math.min(100, ((now.getTime() - active.start.getTime()) / (active.end.getTime() - active.start.getTime())) * 100)).toFixed(1) + '%' : '0%') + '"></span></div></div>'
       ].join('');
     }
