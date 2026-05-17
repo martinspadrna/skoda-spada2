@@ -293,7 +293,7 @@
 #games .arcadeBomberCell.bomb{background:rgba(255,115,115,.18);}
 #games .arcadeBomberCell.fire{background:rgba(255,170,80,.25);}
 
-/* v.1.1 (529) – Fáze 5 game performance */
+/* v.1.1 (530) – Fáze 5 game performance */
 body.ladaMode #games .arcadePanel,
 html[data-lightweight="1"] #games .arcadePanel{backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:none;}
 body.ladaMode #games .arcadeBoardWrap,

@@ -1,4 +1,4 @@
-// v.1.1 (529) – Fáze 5: game performance throttle + safer live refresh.
+// v.1.1 (530) – Fáze 5: game performance throttle + safer live refresh.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
@@ -377,10 +377,12 @@ function applyBottomNavMoreHardFix() {
 
     const compact = window.matchMedia && window.matchMedia('(max-width: 390px)').matches;
     const lightweight = document.body && (document.body.classList.contains('lightweightMode') || document.body.classList.contains('lowEndDevice'));
-    const width = lightweight ? '34px' : (compact ? '36px' : '38px');
     const peer = document.querySelector('nav.bottomNav > .bottomNavScroll > .bottomNavBtn:not(.bottomNavMenuBtn):not(.active)')
       || document.querySelector('nav.bottomNav > .bottomNavScroll > .bottomNavBtn:not(.bottomNavMenuBtn)');
     const peerRect = peer && peer.getBoundingClientRect ? peer.getBoundingClientRect() : null;
+    const peerWidth = peerRect && peerRect.width ? Math.round(peerRect.width) : (compact ? 58 : 64);
+    const widthPx = Math.max(lightweight ? 22 : 24, Math.min(Math.round(peerWidth * 0.42), lightweight ? 30 : 34));
+    const width = String(widthPx) + 'px';
     const peerHeight = peerRect && peerRect.height ? Math.round(peerRect.height) : 46;
     const height = Math.max(lightweight ? 40 : 44, Math.min(peerHeight || 46, lightweight ? 50 : 56)) + 'px';
 
@@ -502,7 +504,7 @@ function runPhaseFourCleanupManagerAudit() {
         report.bottomNav.menuAligned = !!(peerRect && Math.abs(menuRect.top - peerRect.top) <= 5 && Math.abs(menuRect.height - peerRect.height) <= 6);
         report.bottomNav.menuBottomAligned = !!(peerRect && Math.abs(menuRect.bottom - peerRect.bottom) <= 4);
         // Více má být záměrně užší než ostatní záložky, ale výškově zarovnané.
-        report.bottomNav.menuWidthAligned = !!(peerRect && menuRect.width <= peerRect.width - 6 && menuRect.width >= 34);
+        report.bottomNav.menuWidthAligned = !!(peerRect && menuRect.width <= peerRect.width - 6 && menuRect.width >= 22);
         report.bottomNav.allItemsAligned = peerButtons.length > 0 && peerButtons.every((btn) => {
           const rect = btn.getBoundingClientRect();
           return Math.abs(rect.bottom - menuRect.bottom) <= 5 && Math.abs(rect.height - menuRect.height) <= 7;
@@ -723,6 +725,7 @@ function installPwaAndConnectivityHooks() {
   let swUpdateTimer = null;
   let swUpdateToastEl = null;
   let swUpdateButtonEl = null;
+  let swNextUpdateVersion = "";
   let swUpdateReloading = false;
   let deferredInstallPrompt = null;
 
@@ -838,6 +841,32 @@ function installPwaAndConnectivityHooks() {
     if (suppress && suppress !== version) setSuppressUpdateToast('');
   };
 
+  const formatServiceWorkerVersionLabel = (version, fallback) => {
+    const raw = String(version || fallback || '').trim();
+    if (!raw) return '';
+    const m = /^v?1\.1-(\d+)$/i.exec(raw);
+    if (m) return 'v.1.1 (' + m[1] + ')';
+    return raw;
+  };
+
+  const updateToastVersionLine = (version) => {
+    const label = formatServiceWorkerVersionLabel(version, '');
+    if (label) swNextUpdateVersion = label;
+    const el = swUpdateToastEl ? swUpdateToastEl.querySelector('.rakUpdateToastVersion') : null;
+    if (el) {
+      el.textContent = swNextUpdateVersion ? ('Nová verze: ' + swNextUpdateVersion) : 'Nová verze: zjišťuji…';
+    }
+  };
+
+  const requestWaitingServiceWorkerVersion = (registration) => {
+    try {
+      const worker = registration && registration.waiting;
+      if (!worker || worker.__rotaceVersionRequested) return;
+      worker.__rotaceVersionRequested = true;
+      worker.postMessage({ type: 'GET_VERSION' });
+    } catch (err) {}
+  };
+
   const scheduleUpdateReload = (reason) => {
     if (swUpdateReloading) return;
     if (!getPendingUpdateVersion()) return;
@@ -866,6 +895,7 @@ function installPwaAndConnectivityHooks() {
         <div class="rakUpdateToastBadge" aria-hidden="true">⟳</div>
         <div class="rakUpdateToastBody">
           <div class="rakUpdateToastTitle">K dispozici je nová verze aplikace</div>
+          <div class="rakUpdateToastVersion">${swNextUpdateVersion ? 'Nová verze: ' + swNextUpdateVersion : 'Nová verze: zjišťuji…'}</div>
           <div class="rakUpdateToastText">Klikni na Aktualizovat a appka načte novou cache bez přeinstalace.</div>
         </div>
       </div>
@@ -916,6 +946,7 @@ function installPwaAndConnectivityHooks() {
     const suppress = getSuppressUpdateToast();
     if (suppress) return true;
     if (seen === currentVersion) return true;
+    requestWaitingServiceWorkerVersion(registration);
     ensureUpdateToast();
     setStoredUpdateNoticeVersion(currentVersion);
     setPendingUpdateVersion(currentVersion);
@@ -1064,7 +1095,12 @@ function installPwaAndConnectivityHooks() {
     registerListener(navigator.serviceWorker, 'message', (event) => {
       const data = event && event.data ? event.data : null;
       if (!data) return;
+      if (data.type === 'sw-version') {
+        updateToastVersionLine(data.appVersion || data.version || '');
+        return;
+      }
       if (data.type === 'sw-activated') {
+        if (data.appVersion || data.version) updateToastVersionLine(data.appVersion || data.version);
         hideUpdateToast();
         void runLiveRefresh(data.reason || data.type || 'sw-message', { force: true });
         scheduleUpdateReload('sw-activated');

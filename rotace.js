@@ -454,12 +454,78 @@ function renderPerson(name) {
   ].join('');
 }
 
+function getRotationRowShiftWindow(monthKey, dateLabel) {
+  const parsed = typeof parseDateToken === 'function' ? parseDateToken(String(dateLabel || '')) : null;
+  const parsedMonth = typeof parseMonthKey === 'function' ? parseMonthKey(monthKey) : null;
+  if (!parsed || !parsedMonth) return null;
+
+  const shift = (typeof normalizeShiftText === 'function'
+    ? normalizeShiftText(parsed.shift || '')
+    : String(parsed.shift || '').trim()).toUpperCase();
+  if (!shift) return null;
+
+  const baseDate = new Date(parsedMonth.year, parsed.month - 1, parsed.day, 0, 0, 0, 0);
+  const start = new Date(baseDate);
+  const end = new Date(baseDate);
+
+  if (shift.includes('R8')) {
+    start.setHours(6, 0, 0, 0);
+    end.setHours(14, 0, 0, 0);
+  } else if (shift.startsWith('R')) {
+    start.setHours(6, 0, 0, 0);
+    end.setHours(18, 0, 0, 0);
+  } else if (shift.includes('N8')) {
+    const specialHour = typeof getSpecialSundayNightStartHour === 'function'
+      ? getSpecialSundayNightStartHour(baseDate, 22)
+      : 22;
+    start.setHours(specialHour, 0, 0, 0);
+    end.setDate(end.getDate() + 1);
+    end.setHours(6, 0, 0, 0);
+  } else if (shift.startsWith('N')) {
+    start.setHours(18, 0, 0, 0);
+    end.setDate(end.getDate() + 1);
+    end.setHours(6, 0, 0, 0);
+  } else {
+    return null;
+  }
+
+  return {
+    key: String(parsed.day) + '.' + String(parsed.month) + '.' + '|' + shift,
+    start,
+    end
+  };
+}
+
+function getRotationMonthShiftHighlight(monthKey, month) {
+  const now = typeof getPragueNow === 'function' ? getPragueNow(new Date()) : new Date();
+  const nowMs = now.getTime();
+  const windows = [];
+  ['hard', 'soft'].forEach(section => {
+    const sec = month && month[section] ? month[section] : null;
+    (sec && Array.isArray(sec.rows) ? sec.rows : []).forEach(row => {
+      const win = getRotationRowShiftWindow(monthKey, row && row.date);
+      if (win && !windows.some(item => item.key === win.key)) windows.push(win);
+    });
+  });
+
+  const current = windows.find(win => win.start.getTime() <= nowMs && nowMs < win.end.getTime()) || null;
+  const next = windows
+    .filter(win => win.start.getTime() > nowMs)
+    .sort((a, b) => a.start - b.start)[0] || null;
+
+  return {
+    currentKey: current ? current.key : '',
+    nextKey: next ? next.key : ''
+  };
+}
+
 function renderMonth(monthKey) {
 
   const month = app.rotation.months[monthKey];
   const monthView = document.getElementById("monthView");
   if (!month || !monthView) return;
 
+  const shiftHighlight = getRotationMonthShiftHighlight(monthKey, month);
   let html = "<div class='sectionTitle'>" + escapeHtml(monthKey) + "</div>";
 
   const renderTable = (section, label) => {
@@ -473,7 +539,12 @@ function renderMonth(monthKey) {
     out += "</tr></thead><tbody>";
 
     (sec.rows || []).forEach(row => {
-      out += "<tr><td class='dateCell'>" + escapeHtml(row.date) + "</td>";
+      const rowWindow = getRotationRowShiftWindow(monthKey, row && row.date);
+      const rowKey = rowWindow ? rowWindow.key : '';
+      const rowClass = rowKey && rowKey === shiftHighlight.currentKey
+        ? 'currentShiftRow'
+        : (rowKey && rowKey === shiftHighlight.nextKey ? 'nextShiftRow' : '');
+      out += "<tr" + (rowClass ? " class='" + rowClass + "'" : "") + "><td class='dateCell'>" + escapeHtml(row.date) + "</td>";
       (row.cells || []).forEach(cell => {
         const val = (cell || "").trim();
         if (val) {

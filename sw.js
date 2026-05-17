@@ -1,4 +1,5 @@
-const CACHE_VERSION = 'v1.1-529';
+const CACHE_VERSION = 'v1.1-530';
+const SW_APP_VERSION = 'v.1.1 (530)';
 const STATIC_CACHE = `rotace-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `rotace-runtime-${CACHE_VERSION}`;
 const APP_SHELL = [
@@ -81,6 +82,14 @@ self.addEventListener('install', (event) => {
 self.addEventListener('message', (event) => {
   const data = event && event.data ? event.data : null;
   if (!data) return;
+  if (data.type === 'GET_VERSION') {
+    try {
+      if (event.source && event.source.postMessage) {
+        event.source.postMessage({ type: 'sw-version', version: CACHE_VERSION, appVersion: SW_APP_VERSION });
+      }
+    } catch (err) {}
+    return;
+  }
   if (data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
@@ -102,7 +111,7 @@ self.addEventListener('activate', (event) => {
     const clients = await self.clients.matchAll({ includeUncontrolled: true, type: 'window' });
     for (const client of clients) {
       try {
-        client.postMessage({ type: 'sw-activated', reason: 'activate', version: CACHE_VERSION });
+        client.postMessage({ type: 'sw-activated', reason: 'activate', version: CACHE_VERSION, appVersion: SW_APP_VERSION });
       } catch (err) {}
     }
   })());
