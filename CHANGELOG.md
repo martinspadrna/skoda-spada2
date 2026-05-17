@@ -1,3 +1,8 @@
+## v.1.1 (519)
+- Spodní panel: položka „Více“ je dorovnaná do stejné výšky jako ostatní záložky.
+- Ikona tří teček ve „Více“ dostala stejný ikonový box jako ostatní položky navigace.
+- Fáze 4: cleanup audit nově hlídá i základní strukturu spodní navigace a zarovnání položky „Více“.
+
 ## v.1.1 (518)
 - Dashboard: informace o směně D je rozdělená do dvou řádků.
 - Řádek „bude chybět…“ je nově samostatně pod časem začátku směny D.

@@ -1,4 +1,4 @@
-// v.1.1 (518) – Dashboard D řádek rozdělený do dvou řádků + Fáze 4 cleanup audit.
+// v.1.1 (519) – Bottom nav Více alignment + Fáze 4 cleanup audit rozšíření.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
@@ -376,7 +376,8 @@ function runPhaseFourCleanupManagerAudit() {
       phase: 'phase-4-cleanup-manager-start',
       checkedAt: new Date().toISOString(),
       ok: true,
-      dashboard: { missingCards: [], missingValues: [], missingIcons: [], dLine: { exists: false, hasMain: false, hasSub: false } }
+      dashboard: { missingCards: [], missingValues: [], missingIcons: [], dLine: { exists: false, hasMain: false, hasSub: false } },
+      bottomNav: { exists: false, missingButtons: [], menuAligned: false, menuHasIcon: false, menuHasLabel: false }
     };
 
     const requiredDashboardCards = [
@@ -408,19 +409,45 @@ function runPhaseFourCleanupManagerAudit() {
     report.dashboard.dLine.hasMain = !!(dLine && dLine.querySelector('.dashboardHeroLine3Main'));
     report.dashboard.dLine.hasSub = !!(dLine && dLine.querySelector('.dashboardHeroLine3Sub'));
 
+
+    const bottomNav = document.querySelector('.bottomNav');
+    report.bottomNav.exists = !!bottomNav;
+    const requiredNavActions = ['home', 'rotace', 'kalkulacky', 'rozpisy', 'statistiky', 'games', 'menu'];
+    if (bottomNav) {
+      requiredNavActions.forEach((action) => {
+        if (!bottomNav.querySelector('[data-action="' + action + '"]')) report.bottomNav.missingButtons.push(action);
+      });
+      const menuBtn = bottomNav.querySelector('.bottomNavMenuBtn');
+      report.bottomNav.menuHasIcon = !!(menuBtn && menuBtn.querySelector('.moreIcon'));
+      report.bottomNav.menuHasLabel = !!(menuBtn && menuBtn.querySelector('.bottomNavLabel'));
+      if (menuBtn && window.getComputedStyle) {
+        const menuRect = menuBtn.getBoundingClientRect();
+        const peer = bottomNav.querySelector('.bottomNavBtn:not(.bottomNavMenuBtn):not(.active)') || bottomNav.querySelector('.bottomNavBtn:not(.bottomNavMenuBtn)');
+        const peerRect = peer ? peer.getBoundingClientRect() : null;
+        report.bottomNav.menuAligned = !!(peerRect && Math.abs(menuRect.top - peerRect.top) <= 4 && Math.abs(menuRect.height - peerRect.height) <= 5);
+      } else {
+        report.bottomNav.menuAligned = !!menuBtn;
+      }
+    }
+
     report.ok = !report.dashboard.missingCards.length
       && !report.dashboard.missingValues.length
       && !report.dashboard.missingIcons.length
       && report.dashboard.dLine.exists
       && report.dashboard.dLine.hasMain
-      && report.dashboard.dLine.hasSub;
+      && report.dashboard.dLine.hasSub
+      && report.bottomNav.exists
+      && !report.bottomNav.missingButtons.length
+      && report.bottomNav.menuHasIcon
+      && report.bottomNav.menuHasLabel
+      && report.bottomNav.menuAligned;
     try {
       document.documentElement.dataset.rakPhase4 = report.ok ? 'cleanup-manager-start' : 'dashboard-check';
       window.__rakPhase4CleanupAudit = report;
     } catch (err) {}
 
     if (!report.ok) {
-      console.warn('[RaK] Phase 4 cleanup/dashboard audit', report);
+      console.warn('[RaK] Phase 4 cleanup/dashboard/bottom-nav audit', report);
       try {
         if (typeof forceHomeRefresh === 'function') forceHomeRefresh();
       } catch (err) {}
