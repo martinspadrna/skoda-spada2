@@ -1,3 +1,10 @@
+## v.1.1 (497)
+- Post-F1 dokončovací balík pro Dashboard, Rotace a spodní panel.
+- Dashboard znovu primárně drží aktuální směnu v práci a její odpočet do konce.
+- Pod hlavním stavem je samostatný řádek pro směnu D: začátek/aktivní stav a absence.
+- Rotace má ještě větší popisky datum/směna/stroj v detailu osoby.
+- Spodní panel má finální jemný polish aktivní položky a čitelnější rozměry před přechodem na další fázi.
+
 ## v.1.1 (496)
 - Dashboard znovu odděluje aktuální směnu od referenční směny D.
 - Hlavní horní stav ukazuje, která směna je právě v práci a za jak dlouho končí.

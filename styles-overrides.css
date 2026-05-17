@@ -635,3 +635,119 @@ html[data-rak-phase1="complete"] body{min-height:100svh;}
   font-size:18px !important;
   line-height:1.12 !important;
 }
+
+
+/* v.1.1 (497) – Post-F1 finální polish: Dashboard D řádek, Rotace čitelnost, spodní panel. */
+#dashHero .dashboardHeroLine2{
+  font-size:clamp(13px, 3.3vw, 16px) !important;
+  line-height:1.22 !important;
+  font-weight:850 !important;
+  color:rgba(223,255,219,.92) !important;
+}
+#dashHero .dashboardHeroLine3{
+  width:fit-content !important;
+  max-width:100% !important;
+  margin-top:8px !important;
+  padding:7px 10px !important;
+  border-radius:999px !important;
+  border:1px solid rgba(124,255,124,.16) !important;
+  background:rgba(124,255,124,.075) !important;
+  color:rgba(232,255,232,.88) !important;
+  font-size:clamp(12px, 3vw, 14px) !important;
+  line-height:1.2 !important;
+  font-weight:750 !important;
+  white-space:normal !important;
+}
+#rotaceNamesPanel #personView .rotaceMiniCard.rotaceShiftCard,
+#rotace #personView .rotaceMiniCard.rotaceShiftCard{
+  min-height:72px !important;
+  padding:12px 14px !important;
+  border-radius:18px !important;
+}
+#rotaceNamesPanel #personView .rotaceShiftDate,
+#rotace #personView .rotaceShiftDate{
+  font-size:18px !important;
+  line-height:1.1 !important;
+  letter-spacing:-.02em !important;
+}
+#rotaceNamesPanel #personView .rotaceShiftName,
+#rotace #personView .rotaceShiftName{
+  font-size:17px !important;
+  line-height:1.1 !important;
+}
+#rotaceNamesPanel #personView .rotaceShiftTarget,
+#rotace #personView .rotaceShiftTarget{
+  font-size:20px !important;
+  line-height:1.08 !important;
+  max-width:50% !important;
+}
+#rotaceNamesPanel #personView .rotacePersonMeta{
+  font-size:12px !important;
+  color:rgba(232,255,232,.68) !important;
+}
+.bottomNav{
+  width:min(calc(100vw - 10px), 760px) !important;
+  bottom:calc(9px + env(safe-area-inset-bottom)) !important;
+  padding:5px 6px calc(5px + env(safe-area-inset-bottom)) !important;
+  border-radius:18px !important;
+  border-color:rgba(124,255,124,.18) !important;
+  box-shadow:0 18px 42px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.06) !important;
+}
+.bottomNavScroll{
+  gap:4px !important;
+  padding-inline:2px !important;
+}
+.bottomNavInner{
+  gap:4px !important;
+  padding-right:6px !important;
+}
+.bottomNavBtn{
+  flex:0 0 clamp(54px, 9vw, 64px) !important;
+  width:clamp(54px, 9vw, 64px) !important;
+  min-width:clamp(54px, 9vw, 64px) !important;
+  max-width:clamp(54px, 9vw, 64px) !important;
+  min-height:48px !important;
+  border-radius:15px !important;
+}
+.bottomNavBtn .bottomNavIcon,
+.bottomNavBtn .bottomNavIcon svg,
+.bottomNavBtn .bottomNavIcon img{
+  width:25px !important;
+  height:25px !important;
+}
+.bottomNavBtn .bottomNavIcon{
+  flex:0 0 25px !important;
+}
+.bottomNavBtn .bottomNavLabel{
+  font-size:8.8px !important;
+  font-weight:800 !important;
+  line-height:1.05 !important;
+}
+.bottomNavBtn.active{
+  transform:translateY(-7px) scale(1.08) !important;
+  border-color:rgba(124,255,124,.76) !important;
+  background:linear-gradient(180deg, rgba(124,255,124,.18), rgba(16,24,17,.96)) !important;
+  box-shadow:0 16px 34px rgba(57,255,75,.18), 0 0 0 1px rgba(124,255,124,.18), inset 0 1px 0 rgba(255,255,255,.08) !important;
+}
+.bottomNavBtn.active::before{
+  inset:-4px !important;
+  opacity:.95 !important;
+}
+.bottomNavMenuBtn{
+  flex:0 0 34px !important;
+  width:34px !important;
+  min-width:34px !important;
+  max-width:34px !important;
+  border-radius:14px !important;
+}
+.bottomNavMenuBtn .moreIcon{
+  width:18px !important;
+  height:18px !important;
+  transform:none !important;
+}
+@media (max-width:390px){
+  .bottomNav{width:calc(100vw - 6px) !important;padding-inline:4px !important;}
+  .bottomNavInner{gap:2px !important;padding-right:4px !important;}
+  .bottomNavBtn{flex-basis:52px !important;width:52px !important;min-width:52px !important;max-width:52px !important;}
+  .bottomNavMenuBtn{flex-basis:30px !important;width:30px !important;min-width:30px !important;max-width:30px !important;}
+}

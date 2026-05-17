@@ -1,4 +1,4 @@
-// v.1.1 (496) – Post-F1: dashboard ukazuje aktuální směnu + doplňkově směnu D, Rotace má čitelnější detail směn.
+// v.1.1 (497) – Post-F1 finále: Dashboard aktuální směna + D řádek, Rotace čitelnost, spodní panel polish.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
