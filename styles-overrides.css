@@ -597,3 +597,19 @@ html[data-rak-phase1="complete"] body{min-height:100svh;}
   color:rgba(255,255,255,.88) !important;
   overflow-wrap:anywhere !important;
 }
+
+
+/* v.1.1 (495) – Rotace jmenný seznam užší asi o 10 %, aby 10 lidí lépe vyšlo na 2 řádky. */
+#rotaceNamesPanel .listGrid{
+  grid-template-columns:repeat(auto-fit, minmax(clamp(76px, 16vw, 115px), 1fr)) !important;
+  gap:clamp(6px, 1.4vw, 10px) !important;
+}
+@media (max-width:700px){
+  #rotaceNamesPanel .listGrid{
+    grid-template-columns:repeat(5, minmax(0, 1fr)) !important;
+    gap:6px !important;
+  }
+  #rotaceNamesPanel .listItem{
+    padding:5px 3px !important;
+  }
+}

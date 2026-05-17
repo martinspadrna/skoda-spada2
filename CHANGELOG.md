@@ -1,3 +1,9 @@
+## v.1.1 (495)
+- Dashboard je přepnutý na hlavní referenční směnu D: ukazuje, jestli je D právě v práci, nebo kdy D nastupuje příště.
+- Karta „Zbývá/Začíná“ teď také sleduje směnu D, ne nejbližší libovolnou směnu.
+- Jídelna a kantýna při otevřeném stavu ukazují i čas „otevřeno do“.
+- Rotace: jmenný seznam dole je užší zhruba o 10 %, aby se 10 jmen lépe vešlo do dvou řádků.
+
 ## v.1.1 (494)
 - Dashboard hero nově při pauze mezi směnami ukazuje nejbližší další směnu a za jak dlouho začne.
 - Karta „Zbývá“ se mimo aktivní směnu přepne na „Začíná“ a ukáže odpočet + konkrétní směnu.
