@@ -1,4 +1,4 @@
-// v.1.1 (520) – Bottom nav items dorovnané na výšku Více + Fáze 4 cleanup audit rozšíření.
+// v.1.1 (521) – Bottom nav Více snížené na rytmus ostatních položek + Fáze 4 cleanup audit pokračování.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

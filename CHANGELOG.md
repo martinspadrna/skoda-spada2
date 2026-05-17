@@ -1,3 +1,8 @@
+## v.1.1 (521)
+- Spodní panel jako celek zůstává beze změny.
+- Položka „Více“ je snížená na stejný výškový rytmus jako ostatní záložky.
+- Fáze 4: cleanup manager pokračuje jemným guardem pro spodní navigaci bez dalších zásahů do panelu.
+
 ## v.1.1 (520)
 - Spodní panel: samotný panel zůstává beze změny, dorovnané jsou jen ostatní záložky na výšku položky „Více“.
 - Ikony a popisky běžných záložek mají stejný výškový rytmus jako „Více“, aby nepůsobily níž.

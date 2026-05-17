@@ -2159,3 +2159,58 @@ body.lowEndDevice .bottomNavBtn:not(.bottomNavMenuBtn) .bottomNavLabel{
   font-size:9px !important;
   line-height:1 !important;
 }
+
+/* v.1.1 (521) – Bottom nav: „Více“ snížené na stejný výškový rytmus jako ostatní záložky, bez zásahu do panelu. */
+.bottomNavMenuBtn{
+  align-self:center !important;
+  min-height:42px !important;
+  height:42px !important;
+  padding:1px 1px 0 !important;
+  gap:1px !important;
+  justify-content:center !important;
+}
+.bottomNavMenuBtn .moreIcon{
+  flex:0 0 20px !important;
+  width:20px !important;
+  height:20px !important;
+  max-width:20px !important;
+  max-height:20px !important;
+  margin:0 !important;
+}
+.bottomNavMenuBtn .bottomNavLabel{
+  margin:0 !important;
+  padding:0 !important;
+  font-size:clamp(7.2px, 1.75vw, 8.8px) !important;
+  line-height:1 !important;
+}
+.bottomNavBtn:not(.bottomNavMenuBtn){
+  align-self:center !important;
+}
+@media (max-width:390px){
+  .bottomNavMenuBtn{
+    min-height:40px !important;
+    height:40px !important;
+    padding:1px 1px 0 !important;
+  }
+  .bottomNavMenuBtn .moreIcon{
+    flex-basis:19px !important;
+    width:19px !important;
+    height:19px !important;
+    max-width:19px !important;
+    max-height:19px !important;
+  }
+}
+body.lightweightMode .bottomNavMenuBtn,
+body.lowEndDevice .bottomNavMenuBtn{
+  min-height:36px !important;
+  height:36px !important;
+  gap:1px !important;
+}
+body.lightweightMode .bottomNavMenuBtn .moreIcon,
+body.lowEndDevice .bottomNavMenuBtn .moreIcon{
+  flex-basis:18px !important;
+  width:18px !important;
+  height:18px !important;
+  max-width:18px !important;
+  max-height:18px !important;
+}
