@@ -1,3 +1,7 @@
+## v.1.1 (524)
+- Spodní navigace: položka „Více“ je užší, ale výškově srovnaná s ostatními záložkami.
+- Fáze 4 cleanup manager: audit spodní navigace bere „Více“ jako záměrně užší položku, ne jako chybu.
+
 ## v.1.1 (523)
 - Spodní panel jako celek zůstává beze změny; položka „Více“ má sjednocený box, výšku a vnitřní zarovnání s ostatními záložkami.
 - Odstraněný ruční posun položky „Více“, který podle screenshotu nechával její spodní část opticky mimo rytmus ostatních položek.

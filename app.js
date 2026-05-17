@@ -1,4 +1,4 @@
-// v.1.1 (523) – Bottom nav Více sjednocené s ostatními položkami + Fáze 4 cleanup pokračuje.
+// v.1.1 (524) – Bottom nav Více užší se stejnou výškou + Fáze 4 cleanup pokračuje.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
@@ -428,7 +428,8 @@ function runPhaseFourCleanupManagerAudit() {
         const peerRect = peer ? peer.getBoundingClientRect() : null;
         report.bottomNav.menuAligned = !!(peerRect && Math.abs(menuRect.top - peerRect.top) <= 5 && Math.abs(menuRect.height - peerRect.height) <= 6);
         report.bottomNav.menuBottomAligned = !!(peerRect && Math.abs(menuRect.bottom - peerRect.bottom) <= 4);
-        report.bottomNav.menuWidthAligned = !!(peerRect && Math.abs(menuRect.width - peerRect.width) <= 8);
+        // Více má být záměrně užší než ostatní záložky, ale výškově zarovnané.
+        report.bottomNav.menuWidthAligned = !!(peerRect && menuRect.width <= peerRect.width + 2 && menuRect.width >= 34);
         report.bottomNav.allItemsAligned = peerButtons.length > 0 && peerButtons.every((btn) => {
           const rect = btn.getBoundingClientRect();
           return Math.abs(rect.bottom - menuRect.bottom) <= 5 && Math.abs(rect.height - menuRect.height) <= 7;
