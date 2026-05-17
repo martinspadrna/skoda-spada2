@@ -1,4 +1,4 @@
-// v.1.1 (492) – Post-F1: první Rotace UX krok, čistší výpis směn a QR až na třetí klepnutí.
+// v.1.1 (494) – Post-F1: Dashboard nahoře ukazuje další směnu a odpočet, když právě neběží žádná směna.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

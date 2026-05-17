@@ -547,3 +547,53 @@ html[data-rak-phase1="complete"] body{min-height:100svh;}
 .bottomNav{padding-bottom:max(var(--rak-phase1-safe-bottom), env(safe-area-inset-bottom)) !important;}
 .bottomNavScroll{overscroll-behavior-x:contain !important;}
 .page{scroll-margin-bottom:calc(96px + var(--rak-phase1-safe-bottom)) !important;}
+
+/* v.1.1 (494) – Rotace person detail: 7 směn, vlevo datum/směna, vpravo stroj */
+#rotaceNamesPanel #personView .rotaceQuickStack{
+  gap:8px !important;
+}
+#rotaceNamesPanel #personView .rotaceMiniCard.rotaceShiftCard,
+#rotace #personView .rotaceMiniCard.rotaceShiftCard{
+  min-height:64px !important;
+  padding:10px 12px !important;
+  display:flex !important;
+  flex-direction:row !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:12px !important;
+}
+#rotaceNamesPanel #personView .rotaceShiftLeft,
+#rotace #personView .rotaceShiftLeft{
+  min-width:0 !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:flex-start !important;
+  justify-content:center !important;
+  gap:3px !important;
+  text-align:left !important;
+}
+#rotaceNamesPanel #personView .rotaceShiftDate,
+#rotace #personView .rotaceShiftDate{
+  font-size:15px !important;
+  line-height:1.1 !important;
+  font-weight:900 !important;
+  color:rgba(255,255,255,.94) !important;
+}
+#rotaceNamesPanel #personView .rotaceShiftName,
+#rotace #personView .rotaceShiftName{
+  font-size:14px !important;
+  line-height:1.1 !important;
+  font-weight:850 !important;
+  color:var(--green2) !important;
+}
+#rotaceNamesPanel #personView .rotaceShiftTarget,
+#rotace #personView .rotaceShiftTarget{
+  flex:0 0 auto !important;
+  max-width:48% !important;
+  text-align:right !important;
+  font-size:16px !important;
+  line-height:1.12 !important;
+  font-weight:900 !important;
+  color:rgba(255,255,255,.88) !important;
+  overflow-wrap:anywhere !important;
+}

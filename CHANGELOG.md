@@ -1,3 +1,13 @@
+## v.1.1 (494)
+- Dashboard hero nově při pauze mezi směnami ukazuje nejbližší další směnu a za jak dlouho začne.
+- Karta „Zbývá“ se mimo aktivní směnu přepne na „Začíná“ a ukáže odpočet + konkrétní směnu.
+- Přidaný robustnější fallback pro delší odstávky/svátky, aby dashboard nekončil jen pomlčkou.
+
+## v.1.1 (493)
+- Rotace: detail po kliknutí na jméno teď ukazuje 7 směn dohromady: předchozí směnu a dalších 6 navazujících směn.
+- Rotace: karta směny má vlevo datum + směnu a vpravo stroj/cíl.
+- Rotace: zvětšené písmo v detailu směn pro lepší čitelnost na mobilu.
+
 ## v.1.1 (492)
 - Post-F1 Rotace UX: po kliknutí na jméno se ukazuje čistší krátký výpis nejbližších směn bez rušivých souhrnných řádků „Minulá směna“ a „Aktuálně“.
 - Výpis je zúžený na předchozí směnu + tři nejbližší směny, aby sekce na mobilu nebyla zbytečně dlouhá.

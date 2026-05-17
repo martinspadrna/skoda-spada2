@@ -412,13 +412,17 @@ function renderPerson(name) {
   const startIdx = Math.max(0, currentIdx >= 0 ? currentIdx - 1 : 0);
   const forwardStartIdx = currentIdx >= 0 ? currentIdx : startIdx;
   const previousEntry = currentIdx > 0 ? entries[currentIdx - 1] : null;
-  const forwardEntries = entries.slice(forwardStartIdx, Math.min(entries.length, forwardStartIdx + 3));
+  const forwardLimit = previousEntry ? 6 : 7;
+  const forwardEntries = entries.slice(forwardStartIdx, Math.min(entries.length, forwardStartIdx + forwardLimit));
   const visibleEntries = previousEntry ? [previousEntry, ...forwardEntries] : forwardEntries;
 
   const formatEntry = (entry, isCurrent) => [
-    '<div class="rotaceMiniCard' + (isCurrent ? ' current' : '') + '">',
-    '  <div class="rotaceMiniDate">' + escapeHtml(entry.dateLabel || "") + (entry.shift ? ' ' + escapeHtml(entry.shift) : '') + '</div>',
-    '  <div class="rotaceMiniTarget">' + escapeHtml(entry.target || "") + '</div>',
+    '<div class="rotaceMiniCard rotaceShiftCard' + (isCurrent ? ' current' : '') + '">',
+    '  <div class="rotaceShiftLeft">',
+    '    <div class="rotaceShiftDate">' + escapeHtml(entry.dateLabel || "") + '</div>',
+    '    <div class="rotaceShiftName">' + escapeHtml(entry.shift || "") + '</div>',
+    '  </div>',
+    '  <div class="rotaceShiftTarget">' + escapeHtml(entry.target || "") + '</div>',
     '</div>'
   ].join('');
 
