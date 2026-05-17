@@ -1,4 +1,4 @@
-// v.1.1 (497) – Post-F1 finále: Dashboard aktuální směna + D řádek, Rotace čitelnost, spodní panel polish.
+// v.1.1 (498) – Spodní panel: nižší pozice, centrování a bezpečné vejití na šířku mobilu.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

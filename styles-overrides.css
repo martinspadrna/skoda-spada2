@@ -751,3 +751,101 @@ html[data-rak-phase1="complete"] body{min-height:100svh;}
   .bottomNavBtn{flex-basis:52px !important;width:52px !important;min-width:52px !important;max-width:52px !important;}
   .bottomNavMenuBtn{flex-basis:30px !important;width:30px !important;min-width:30px !important;max-width:30px !important;}
 }
+
+/* v.1.1 (498) – Bottom nav final alignment fix.
+   Cíl: panel níž u spodního okraje, centrovaný a bez useknutého levého kraje. */
+:root{
+  --rak-bottom-nav-side-gap: max(6px, env(safe-area-inset-left));
+  --rak-bottom-nav-side-gap-r: max(6px, env(safe-area-inset-right));
+}
+.bottomNav{
+  left:max(6px, env(safe-area-inset-left)) !important;
+  right:max(6px, env(safe-area-inset-right)) !important;
+  width:auto !important;
+  max-width:760px !important;
+  margin-left:auto !important;
+  margin-right:auto !important;
+  transform:none !important;
+  bottom:max(2px, calc(env(safe-area-inset-bottom) * .52)) !important;
+  padding:4px 5px max(4px, calc(env(safe-area-inset-bottom) * .18)) !important;
+  box-sizing:border-box !important;
+  overflow:visible !important;
+}
+.bottomNavScroll{
+  width:100% !important;
+  min-width:0 !important;
+  overflow:visible !important;
+  justify-content:center !important;
+  padding:0 !important;
+  margin:0 !important;
+}
+.bottomNavInner{
+  width:100% !important;
+  min-width:0 !important;
+  max-width:100% !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:3px !important;
+  padding:0 !important;
+  margin:0 auto !important;
+  overflow:visible !important;
+}
+.bottomNavBtn:not(.bottomNavMenuBtn){
+  flex:1 1 0 !important;
+  width:auto !important;
+  min-width:0 !important;
+  max-width:66px !important;
+  min-height:47px !important;
+  padding:3px 1px 2px !important;
+}
+.bottomNavMenuBtn{
+  flex:0 0 32px !important;
+  width:32px !important;
+  min-width:32px !important;
+  max-width:32px !important;
+  min-height:47px !important;
+  margin-left:0 !important;
+  position:relative !important;
+  right:auto !important;
+}
+.bottomNavBtn.active{
+  transform:translateY(-4px) scale(1.07) !important;
+}
+.bottomNavBtn.active::before{
+  inset:-3px !important;
+}
+.bottomNavBtn .bottomNavIcon,
+.bottomNavBtn .bottomNavIcon svg,
+.bottomNavBtn .bottomNavIcon img{
+  width:24px !important;
+  height:24px !important;
+}
+.bottomNavBtn .bottomNavIcon{
+  flex:0 0 24px !important;
+}
+.bottomNavMenuBtn .moreIcon{
+  width:17px !important;
+  height:17px !important;
+}
+@media (max-width:390px){
+  .bottomNav{
+    left:4px !important;
+    right:4px !important;
+    bottom:max(2px, calc(env(safe-area-inset-bottom) * .45)) !important;
+    padding:3px 4px max(3px, calc(env(safe-area-inset-bottom) * .14)) !important;
+  }
+  .bottomNavInner{gap:2px !important;}
+  .bottomNavBtn:not(.bottomNavMenuBtn){max-width:none !important;min-height:45px !important;}
+  .bottomNavMenuBtn{flex-basis:28px !important;width:28px !important;min-width:28px !important;max-width:28px !important;min-height:45px !important;}
+  .bottomNavBtn .bottomNavLabel{font-size:7.6px !important;}
+  .bottomNavBtn .bottomNavIcon,
+  .bottomNavBtn .bottomNavIcon svg,
+  .bottomNavBtn .bottomNavIcon img{width:22px !important;height:22px !important;}
+}
+@media (display-mode: standalone){
+  .bottomNav{
+    bottom:max(3px, calc(env(safe-area-inset-bottom) * .48)) !important;
+  }
+}
+

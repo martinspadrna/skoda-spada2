@@ -1,3 +1,8 @@
+## v.1.1 (498)
+- Opraveno zarovnání spodního panelu: panel je níž u spodního okraje, centrovaný a neujíždí mimo levý kraj.
+- Spodní navigace už se na mobilu nespoléhá na vodorovný posuv; položky se bezpečně rozpočítají do dostupné šířky.
+- Zmenšené safe-area odsazení uvnitř panelu, aby bar nepůsobil zbytečně vysoko.
+
 ## v.1.1 (497)
 - Post-F1 dokončovací balík pro Dashboard, Rotace a spodní panel.
 - Dashboard znovu primárně drží aktuální směnu v práci a její odpočet do konce.
