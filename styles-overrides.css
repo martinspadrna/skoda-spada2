@@ -849,3 +849,18 @@ html[data-rak-phase1="complete"] body{min-height:100svh;}
   }
 }
 
+/* v.1.1 (499) – Rotace detail: kompaktnější řádky směn bez změny velikosti textu. */
+#rotaceNamesPanel #personView .rotaceQuickStack,
+#rotace #personView .rotaceQuickStack{
+  gap:6px !important;
+}
+#rotaceNamesPanel #personView .rotaceMiniCard.rotaceShiftCard,
+#rotace #personView .rotaceMiniCard.rotaceShiftCard{
+  min-height:64px !important;
+  padding-top:8px !important;
+  padding-bottom:8px !important;
+}
+#rotaceNamesPanel #personView .rotaceShiftLeft,
+#rotace #personView .rotaceShiftLeft{
+  gap:2px !important;
+}

@@ -1,3 +1,8 @@
+## v.1.1 (499)
+- Rotace: v detailu po kliknutí na jméno jsou řádky směn lehce užší/kompaktnější.
+- Velikost textu v řádcích Rotace zůstává stejná jako ve v.1.1 (498).
+- Verze sjednocena napříč aplikací a service worker cache navýšena.
+
 ## v.1.1 (498)
 - Opraveno zarovnání spodního panelu: panel je níž u spodního okraje, centrovaný a neujíždí mimo levý kraj.
 - Spodní navigace už se na mobilu nespoléhá na vodorovný posuv; položky se bezpečně rozpočítají do dostupné šířky.

@@ -1,4 +1,4 @@
-// v.1.1 (498) – Spodní panel: nižší pozice, centrování a bezpečné vejití na šířku mobilu.
+// v.1.1 (499) – Rotace: kompaktnější řádky detailu směn bez zmenšení textu.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
