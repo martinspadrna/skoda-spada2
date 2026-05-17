@@ -330,7 +330,7 @@ td.missingCell{background:#4b1f1f;
 .soustruhResultCard{margin-top:10px;}
 .bbtn.activeChoice{outline:3px solid var(--green2);}
 
-/* v.1.1 (491) – Fáze 1 final stabilization cleanup */
+/* v.1.1 (528) – Fáze 1 final stabilization cleanup */
 :root {
   --rak-safe-bottom: max(env(safe-area-inset-bottom), 12px);
 }

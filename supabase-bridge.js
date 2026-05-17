@@ -6,7 +6,11 @@
     announcements: [],
     rotationSnapshot: null,
     machineSettingsSnapshot: [],
-    lastError: null
+    lastError: null,
+    realtimeChannel: null,
+    realtimeStatus: 'idle',
+    realtimeEvents: [],
+    lastRealtimeAt: null
   };
 
   function hasClient() {
@@ -28,6 +32,92 @@
     });
     return state.client;
   }
+
+  const REALTIME_TABLES = [
+    'announcements',
+    'machine_settings',
+    'rotation_state',
+    'rotation_months',
+    'rotation_entries',
+    'game_accounts',
+    'game_invites',
+    'game_sessions',
+    'game_stats',
+    'gomoku_wins'
+  ];
+
+  let realtimeRefreshTimer = null;
+
+  function rememberRealtimeEvent(payload) {
+    const event = {
+      table: String(payload && payload.table ? payload.table : '').trim(),
+      eventType: String(payload && payload.eventType ? payload.eventType : '').trim(),
+      at: Date.now()
+    };
+    state.lastRealtimeAt = event.at;
+    state.realtimeEvents = Array.isArray(state.realtimeEvents) ? state.realtimeEvents : [];
+    state.realtimeEvents.push(event);
+    if (state.realtimeEvents.length > 12) state.realtimeEvents = state.realtimeEvents.slice(-12);
+    return event;
+  }
+
+  function requestRealtimeRefresh(payload) {
+    const event = rememberRealtimeEvent(payload || {});
+    if (realtimeRefreshTimer) clearTimeout(realtimeRefreshTimer);
+    realtimeRefreshTimer = setTimeout(async () => {
+      realtimeRefreshTimer = null;
+      const reason = event.table ? ('supabase-' + event.table) : 'supabase-realtime';
+      try {
+        if (typeof window.__rotaceTriggerLiveRefresh === 'function') {
+          await window.__rotaceTriggerLiveRefresh(reason, { force: true });
+          return;
+        }
+        await refreshPublicData();
+        if (typeof window.syncRotationFromSupabase === 'function') {
+          await window.syncRotationFromSupabase(false);
+        }
+        if (typeof window.forceHomeRefresh === 'function') window.forceHomeRefresh();
+        else if (typeof window.updateDashboard === 'function') window.updateDashboard();
+        if (typeof window.renderRotace === 'function') window.renderRotace();
+        if (typeof window.renderStatsPanel === 'function') window.renderStatsPanel();
+      } catch (err) {
+        state.lastError = err;
+        console.warn('Supabase realtime refresh failed', err);
+      }
+    }, 450);
+  }
+
+  function bindRealtimeSubscriptions() {
+    const client = getClient();
+    if (!client || !navigator.onLine) return false;
+    if (state.realtimeChannel) return true;
+    if (typeof client.channel !== 'function') return false;
+
+    try {
+      const channel = client.channel('rak-public-live-v528');
+      REALTIME_TABLES.forEach((table) => {
+        channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
+          requestRealtimeRefresh(payload || { table });
+        });
+      });
+      channel.subscribe((status) => {
+        state.realtimeStatus = String(status || '').toLowerCase() || 'unknown';
+        if (status === 'SUBSCRIBED') {
+          requestRealtimeRefresh({ table: 'initial', eventType: 'SUBSCRIBED' });
+        }
+      });
+      state.realtimeChannel = channel;
+      state.realtimeStatus = 'connecting';
+      return true;
+    } catch (err) {
+      state.lastError = err;
+      state.realtimeStatus = 'failed';
+      console.warn('Supabase realtime subscribe failed', err);
+      state.realtimeChannel = null;
+      return false;
+    }
+  }
+
 
   function getBridgeText() {
     const active = state.announcements.find(item => item && item.is_active !== false) || state.announcements[0] || null;
@@ -960,17 +1050,23 @@
       label: '🟢 Online synchronizováno',
       detail: cached && cached.updatedAt ? ('Aktualizováno ' + new Date(cached.updatedAt).toLocaleString('cs-CZ')) : 'Online',
       queued: 0,
-      hasCache
+      hasCache,
+      realtime: state.realtimeStatus || 'idle',
+      lastRealtimeAt: state.lastRealtimeAt || null
     };
   }
 
   window.refreshPublicData = refreshPublicData;
 
   function init() {
-    if (state.ready) return refreshPublicData();
+    if (state.ready) {
+      bindRealtimeSubscriptions();
+      return refreshPublicData();
+    }
     if (!hasClient()) {
       return refreshPublicData();
     }
+    bindRealtimeSubscriptions();
     void flushPendingWrites();
     return refreshPublicData();
   }
@@ -1008,6 +1104,7 @@
     },
     seedFromLocalSnapshot,
     flushPendingWrites,
+    bindRealtimeSubscriptions,
     getBridgeText,
     getCanteenStatus,
     getSyncUiStatus,
@@ -1050,6 +1147,7 @@
   window.saveGameSessionByInviteCode = async (code, payload) => window.RotationSupabaseBridge.saveGameSessionByInviteCode(code, payload);
 
   window.addEventListener('online', () => {
+    bindRealtimeSubscriptions();
     void flushPendingWrites();
     void refreshPublicData();
   });

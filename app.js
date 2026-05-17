@@ -1,4 +1,4 @@
-// v.1.1 (526) – Bottom nav Více runtime hard-fix + Fáze 4 cleanup pokračuje.
+// v.1.1 (528) – Supabase Realtime auto-refresh + Fáze 5 pokračování.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
@@ -446,7 +446,7 @@ function runPhaseFourCleanupManagerAudit() {
   const run = () => {
     const report = {
       version: window.APP_VERSION || 'unknown',
-      phase: 'phase-4-cleanup-manager-start',
+      phase: 'phase-5-game-performance-realtime',
       checkedAt: new Date().toISOString(),
       ok: true,
       dashboard: { missingCards: [], missingValues: [], missingIcons: [], dLine: { exists: false, hasMain: false, hasSub: false } },
@@ -565,11 +565,11 @@ function runPhaseFourCleanupManagerAudit() {
     const rerun = () => setTimeout(run, 220);
     if (typeof registerListener === 'function') registerListener(document, 'DOMContentLoaded', rerun, { once: true });
     else document.addEventListener('DOMContentLoaded', rerun, { once: true });
-    return { version: window.APP_VERSION || 'unknown', phase: 'phase-4-cleanup-manager-start', ok: true, deferred: true };
+    return { version: window.APP_VERSION || 'unknown', phase: 'phase-5-game-performance-realtime', ok: true, deferred: true };
   }
 
   requestAnimationFrame(() => setTimeout(run, 220));
-  return { version: window.APP_VERSION || 'unknown', phase: 'phase-4-cleanup-manager-start', ok: true, deferred: true };
+  return { version: window.APP_VERSION || 'unknown', phase: 'phase-5-game-performance-realtime', ok: true, deferred: true };
 }
 
 
@@ -703,11 +703,25 @@ function installPwaAndConnectivityHooks() {
         if (navigator.onLine && typeof refreshPublicData === 'function') {
           await refreshPublicData();
         }
+        if (navigator.onLine && window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.bindRealtimeSubscriptions === 'function') {
+          window.RotationSupabaseBridge.bindRealtimeSubscriptions();
+        }
         if (navigator.onLine && typeof flushSupabaseSyncQueue === 'function') {
           await flushSupabaseSyncQueue();
         }
         if (navigator.onLine && typeof syncRotationFromSupabase === 'function') {
           await syncRotationFromSupabase(false);
+        }
+        if (navigator.onLine && window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.loadMachineSettings === 'function' && typeof app !== 'undefined') {
+          const machineRows = await window.RotationSupabaseBridge.loadMachineSettings().catch(() => null);
+          if (Array.isArray(machineRows) && machineRows.length) {
+            app.machineSettingsRows = machineRows;
+            if (typeof renderBrusy === 'function') renderBrusy();
+            if (typeof renderSoustruhy === 'function') renderSoustruhy();
+          }
+        }
+        if (navigator.onLine && typeof gamesRefreshRemoteLeaderboards === 'function') {
+          await gamesRefreshRemoteLeaderboards().catch(() => []);
         }
         if (typeof forceHomeRefresh === 'function') forceHomeRefresh();
         if (typeof renderRotace === 'function') renderRotace();

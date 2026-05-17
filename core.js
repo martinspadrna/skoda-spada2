@@ -1,6 +1,6 @@
 
 const APP_KEY = "rotace_kalkulacky_state_v123";
-const APP_VERSION = "v.1.1 (526)";
+const APP_VERSION = "v.1.1 (528)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-05-17-" + APP_VERSION + "-" + Date.now();
 

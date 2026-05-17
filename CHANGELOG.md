@@ -1,69 +1,69 @@
-## v.1.1 (525)
+## v.1.1 (528)
 - Spodní navigace: „Více“ má novou tvrdou pojistku přes CSS i runtime, aby bylo opravdu užší a výškově stejné jako ostatní položky.
 - Fáze 4 cleanup manager pokračuje kontrolou, že „Více“ je záměrně užší, ne stejně široké jako běžné záložky.
 
-## v.1.1 (524)
+## v.1.1 (528)
 - Spodní navigace: položka „Více“ je užší, ale výškově srovnaná s ostatními záložkami.
 - Fáze 4 cleanup manager: audit spodní navigace bere „Více“ jako záměrně užší položku, ne jako chybu.
 
-## v.1.1 (523)
+## v.1.1 (528)
 - Spodní panel jako celek zůstává beze změny; položka „Více“ má sjednocený box, výšku a vnitřní zarovnání s ostatními záložkami.
 - Odstraněný ruční posun položky „Více“, který podle screenshotu nechával její spodní část opticky mimo rytmus ostatních položek.
 - Fáze 4: cleanup manager pokračuje kontrolou rozměrů a zarovnání všech položek spodní navigace.
 
-## v.1.1 (522)
+## v.1.1 (528)
 - Spodní panel jako celek zůstává beze změny; položka „Více“ je jen jemně posunutá dolů, aby spodní hrana seděla s ostatními záložkami.
 - Statistiky: výběr strojů je kompaktnější, s menšími mezerami a šesti položkami v jednom řádku.
 - Fáze 4: cleanup audit nově sleduje i spodní dorovnání položky „Více“ a základní stav výběru strojů ve Statistikách.
 
-## v.1.1 (521)
+## v.1.1 (528)
 - Spodní panel jako celek zůstává beze změny.
 - Položka „Více“ je snížená na stejný výškový rytmus jako ostatní záložky.
 - Fáze 4: cleanup manager pokračuje jemným guardem pro spodní navigaci bez dalších zásahů do panelu.
 
-## v.1.1 (520)
+## v.1.1 (528)
 - Spodní panel: samotný panel zůstává beze změny, dorovnané jsou jen ostatní záložky na výšku položky „Více“.
 - Ikony a popisky běžných záložek mají stejný výškový rytmus jako „Více“, aby nepůsobily níž.
 - Fáze 4: cleanup audit nově hlídá zarovnání všech položek spodní navigace, nejen položky „Více“.
 
-## v.1.1 (519)
+## v.1.1 (528)
 - Spodní panel: položka „Více“ je dorovnaná do stejné výšky jako ostatní záložky.
 - Ikona tří teček ve „Více“ dostala stejný ikonový box jako ostatní položky navigace.
 - Fáze 4: cleanup audit nově hlídá i základní strukturu spodní navigace a zarovnání položky „Více“.
 
-## v.1.1 (518)
+## v.1.1 (528)
 - Dashboard: informace o směně D je rozdělená do dvou řádků.
 - Řádek „bude chybět…“ je nově samostatně pod časem začátku směny D.
 - Fáze 4: cleanup audit nově hlídá i strukturu řádku směny D v horní kartě Dashboardu.
 
-## v.1.1 (517)
+## v.1.1 (528)
 - Dashboard: řádek směny D je centrovaný podle celé horní karty, ne podle odsazeného textového sloupce.
 - Opravený posun celého bloku „Směna D začíná za…“ doprava.
 - Fáze 4 zůstává v rozpracovaném stavu, šlo hlavně o korekci dashboard polish.
 
-## v.1.1 (516)
+## v.1.1 (528)
 - Start Fáze 4: cleanup manager audit začíná hlídat Dashboard karty, ikonky a hodnoty.
 - Láďův režim nově bezpečně odlehčuje i Dashboard: méně efektů, menší mezery a kompaktnější karty.
 - Dashboard v Láďově režimu má explicitní pojistky, aby se neschovaly ikonky ani data.
 
-## v.1.1 (515)
+## v.1.1 (528)
 - Dashboard: finálně dorovnaný řádek směny D mírně doleva, aby opticky neseděl vpravo.
 - Dashboard: řádek směny D má vlastní vnitřní `dashboardHeroLine3Pill` pro stabilnější centrování.
 - Fáze 3: dokončen finální audit Láďova režimu pro starší/slabší Androidy.
 - Láďův režim: doplněné kompaktní guardy pro modaly, dashboard, kalkulačky, Rotace a hry.
 
-## v.1.1 (514)
+## v.1.1 (528)
 - Dashboard: bezpečná obnova renderu karet, aby se znovu zobrazily ikonky i hodnoty.
 - Dashboard: vrácen stabilnější render z předchozí funkční verze a doplněny nulové pojistky pro jídelnu/kantýnu.
 - Láďův režim: optimalizace už nesmí skrývat dashboardové ikonky/data ani agresivně ořezávat karty.
 - Fáze 3: pokračování pozastavené, dokud Dashboard nebude potvrzený jako OK.
 
-## v.1.1 (513)
+## v.1.1 (528)
 - Dashboard: pokus o opravu fallback renderu ikon a hodnot v kartách.
 - Dashboard: řádek směny D znovu srovnaný opticky na střed.
 - Láďův režim: dashboardové karty měly bezpečnější layout, ale v praxi bylo potřeba další zotavení ve verzi 514.
 
-## v.1.1 (512)
+## v.1.1 (528)
 - Dashboard: řádek směny D je centrovaný přes celou hero kartu, ne podle posunutého vnitřního obsahu.
 - Rotace: aktivní kliknuté jméno ve spodním docku už se nezvětšuje přes horní hranu, takže se neořezává horní čára.
 - Láďův režim: přidané kompaktnější rozložení pro starší Androidy – nižší karty, menší mezery, úspornější spodní lišta a kompaktnější dock jmen.
@@ -71,50 +71,50 @@
 - Fáze 3: pokračování výkonového a layoutového odlehčení bez zásahu do výpočtů.
 
 
-## v.1.1 (511)
+## v.1.1 (528)
 - Dashboard: řádek se směnou D je vrácený na skutečný optický střed bez roztahování doprava.
 - Rotace: aktivní kliknuté jméno ve spodním docku už nemá oříznutou horní čáru.
 - Diagnostika: přesnější detekce slabšího zařízení, aby iPhone 13 Pro Max nespadl omylem do „slabší zařízení“ jen kvůli iOS/Safari údajům.
 - Nastavení: starý automaticky uložený Láďův režim z chybné detekce se na silnějším iPhonu automaticky vypne, ruční volba zůstává zachovaná.
 - Fáze 3: pokračování Láďova režimu – lehčí vykreslování vybraných drobných prvků bez změny výpočtů.
 
-## v.1.1 (510)
+## v.1.1 (528)
 - Dashboard: řádek směny D opticky srovnaný na střed hero karty.
 - Rotace: klikací jména dole už nemají společné ohraničení celého bloku, ohraničené jsou jen jednotlivé položky.
 - Rotace: jména a stroje v detailu drží jednotnou barvu.
 - Nastavení: sloučené „Méně animací“ do „Láďova režimu“ a cache + tvrdé obnovení do jedné servisní akce.
 - Fáze 3: lehčí vykreslování rozšířené i na nastavení/menu.
 
-## v.1.1 (509)
+## v.1.1 (528)
 - Nastavení: odlehčený režim přejmenovaný na „Láďův režim“.
 - Diagnostika aplikace nově používá stejný název „Láďův režim“.
 - Fáze 3 pokračuje: přidané lehčí render guardy pro karty, modaly, kalkulačky a hry.
 - Fáze 3: ukládá se stav detekce slabšího zařízení do diagnostických dat aplikace.
 
-## v.1.1 (508)
+## v.1.1 (528)
 - Dashboard: zkrácený text aktivní směny na „Končí za…“.
 - Dashboard: řádek směny D v horním panelu je vycentrovaný.
 - Fáze 3: start lightweight mode foundation – silnější omezení blurů, stínů, animací a filtrů v lehkém režimu.
 - Fáze 3: rozšířená detekce slabšího zařízení podle jader, paměti, Data Saveru a reduced motion.
 
-## v.1.1 (507)
+## v.1.1 (528)
 - Fáze 2 calcPanel system uzavřena: finální sjednocení šířek, scroll ochrany a vnitřních stacků kalkulaček.
 - Přidaný finální runtime audit kalkulaček: hlídá viditelnost neaktivních kalkulaček, chybějící výsledkové boxy a chybějící jednotné třídy tlačítek.
 - Doplněné závěrečné CSS guard rails pro kalkulačkové stránky, aby panely neroztahovaly layout a nepřekrývala je spodní lišta.
 
-## v.1.1 (506)
+## v.1.1 (528)
 - Rotace: klikací seznam jmen je pevně ukotvený dole nad spodní lištou.
 - Rotace: po kliknutí na jméno zůstává jen nápověda k QR kódu, bez popisku pro jedno klepnutí.
 - Rotace: sjednocená barva jména/směny a stroje v přehledu/detailu.
 - Fáze 2: doplněný finální guard pro dlouhé texty ve výsledcích kalkulaček.
 
-## v.1.1 (505)
+## v.1.1 (528)
 - Dashboard hero text mimo aktivní směnu zkrácený na „Další směna v práci…“ a samostatně „Začíná za…“.
 - Rotace: klikací seznam jmen je posunutý dolů nad spodní lištu.
 - Rotace přehled: jména a stroje jsou o něco menší a vizuálně odlišené.
 - Fáze 2: doplněný další bezpečný calcPanel guard pro vnitřní stacky a výsledkové texty.
 
-## v.1.1 (504)
+## v.1.1 (528)
 - Fáze 2 pokračuje: sjednocené další bezpečné šířky a overflow guardy kalkulačkových panelů.
 - Přesčasové nedělní noční směny zadané pro rok 2026 se nově promítají i do směnové logiky, nejen do kantýny/jídelny.
 - Na přesčasovou neděli se nedělní noční směna počítá od 18:00 do 6:00, aby dashboard seděl s otevřením kantýny/jídelny.
@@ -122,118 +122,118 @@
 - Rotace: v přehledu příští směny se dole zobrazují jen přítomní lidé; chybějící jsou přesunutí nahoru do řádku „Přítomno… / Chybí…“.
 - Rotace: přehled má větší písmo a seznam jmen je posunutý níž.
 
-## v.1.1 (503)
+## v.1.1 (528)
 - Opravená spodní lišta: pevně fixovaná dole, centrovaná a bez ujetí/odříznutí levého kraje.
 - Vyčištěné poškozené CSS pravidlo ve starších overridech spodní lišty.
 - Fáze 2 pokračuje: kalkulačkové stránky mají větší spodní rezervu a sbalené/rozbalené calcPanel detaily jsou sjednocené.
 
-## v.1.1 (502)
+## v.1.1 (528)
 - Fáze 2 calcPanel system: sjednocené reset chování kalkulaček.
 - Reset u Frézek, Brusů a Pračky čistí i výsledkové karty.
 - Prázdné výsledkové karty se neschovávají jako prázdné boxy v layoutu.
 - Výsledky Frézek, Brusů a Pračky mají jednotnou strukturu title / hlavní řádky / doplňkový text.
 - Přidaný další kompaktní guard pro zavřené details panely.
 
-## v.1.1 (501)
+## v.1.1 (528)
 - Fáze 2: opraven scope kalkulačkových stránek, aby se Soustruhy/Frézky/Brusy/Pračka nezobrazovaly dole na ostatních stránkách.
 - Kalkulačkové stránky jsou nově viditelné jen jako `.page.active`, samotný `calcPage` už globálně nepřebíjí skrytí stránky.
 - Přidaný lehký runtime audit `phase-2-calc-scope`, který hlídá únik neaktivních kalkulaček do layoutu.
 - Pokračování sjednocení calcPanel systému: bezpečné šířky panelů, gridů a info karet v kalkulačkách.
 
-## v.1.1 (500)
+## v.1.1 (528)
 - Start Fáze 2: první společný calcPanel systém pro kalkulačky.
 - Sjednocené kompaktní panely, tlačítka výpočtů, výsledkové karty a vstupy napříč Soustruhy, Frézky, Brusy a Pračka.
 - Panely Frézky/Brusy mají společné CSS proměnné místo dalších náhodných výšek a odsazení.
 - Bez zásahu do samotných výpočtů; cílem je stabilní základ pro další čištění kalkulaček.
 - Verze sjednocena napříč aplikací a service worker cache navýšena.
 
-## v.1.1 (499)
+## v.1.1 (528)
 - Rotace: v detailu po kliknutí na jméno jsou řádky směn lehce užší/kompaktnější.
-- Velikost textu v řádcích Rotace zůstává stejná jako ve v.1.1 (498).
+- Velikost textu v řádcích Rotace zůstává stejná jako ve v.1.1 (528).
 - Verze sjednocena napříč aplikací a service worker cache navýšena.
 
-## v.1.1 (498)
+## v.1.1 (528)
 - Opraveno zarovnání spodního panelu: panel je níž u spodního okraje, centrovaný a neujíždí mimo levý kraj.
 - Spodní navigace už se na mobilu nespoléhá na vodorovný posuv; položky se bezpečně rozpočítají do dostupné šířky.
 - Zmenšené safe-area odsazení uvnitř panelu, aby bar nepůsobil zbytečně vysoko.
 
-## v.1.1 (497)
+## v.1.1 (528)
 - Post-F1 dokončovací balík pro Dashboard, Rotace a spodní panel.
 - Dashboard znovu primárně drží aktuální směnu v práci a její odpočet do konce.
 - Pod hlavním stavem je samostatný řádek pro směnu D: začátek/aktivní stav a absence.
 - Rotace má ještě větší popisky datum/směna/stroj v detailu osoby.
 - Spodní panel má finální jemný polish aktivní položky a čitelnější rozměry před přechodem na další fázi.
 
-## v.1.1 (496)
+## v.1.1 (528)
 - Dashboard znovu odděluje aktuální směnu od referenční směny D.
 - Hlavní horní stav ukazuje, která směna je právě v práci a za jak dlouho končí.
 - Pod tím je samostatná informace pro směnu D: kdy začíná a kdo bude chybět.
 - Karta odpočtu už sleduje aktuálně běžící/nejbližší směnu všech týmů, ne pouze směnu D.
 - V Rotaci jsou popisky data, směny a stroje v detailu jména zvětšené pro lepší čitelnost.
 
-## v.1.1 (495)
+## v.1.1 (528)
 - Dashboard je přepnutý na hlavní referenční směnu D: ukazuje, jestli je D právě v práci, nebo kdy D nastupuje příště.
 - Karta „Zbývá/Začíná“ teď také sleduje směnu D, ne nejbližší libovolnou směnu.
 - Jídelna a kantýna při otevřeném stavu ukazují i čas „otevřeno do“.
 - Rotace: jmenný seznam dole je užší zhruba o 10 %, aby se 10 jmen lépe vešlo do dvou řádků.
 
-## v.1.1 (494)
+## v.1.1 (528)
 - Dashboard hero nově při pauze mezi směnami ukazuje nejbližší další směnu a za jak dlouho začne.
 - Karta „Zbývá“ se mimo aktivní směnu přepne na „Začíná“ a ukáže odpočet + konkrétní směnu.
 - Přidaný robustnější fallback pro delší odstávky/svátky, aby dashboard nekončil jen pomlčkou.
 
-## v.1.1 (493)
+## v.1.1 (528)
 - Rotace: detail po kliknutí na jméno teď ukazuje 7 směn dohromady: předchozí směnu a dalších 6 navazujících směn.
 - Rotace: karta směny má vlevo datum + směnu a vpravo stroj/cíl.
 - Rotace: zvětšené písmo v detailu směn pro lepší čitelnost na mobilu.
 
-## v.1.1 (492)
+## v.1.1 (528)
 - Post-F1 Rotace UX: po kliknutí na jméno se ukazuje čistší krátký výpis nejbližších směn bez rušivých souhrnných řádků „Minulá směna“ a „Aktuálně“.
 - Výpis je zúžený na předchozí směnu + tři nejbližší směny, aby sekce na mobilu nebyla zbytečně dlouhá.
 - QR kód se nově drží podle původního zadání až na třetí rychlé klepnutí na stejné jméno.
 - Verze sjednocena v core.js, sw.js, komentáři buildu a changelogu.
 
-## v.1.1 (491)
+## v.1.1 (528)
 - Fáze 1 uzavřena finálním runtime auditem základních DOM prvků, CSS vazeb a duplicitních ID.
 - Service worker má doplněné pozdě načítané CSS soubory a lokální ikonky dashboardu/spodní lišty do app shell cache.
 - Doplněné poslední bezpečné safe-area guard rails pro spodní lištu a scroll na mobilu.
 - Export ZIPu doplněn o lifecycle.js, games-arcade.js, pozdě načítané CSS soubory a lokální ikonky.
 - Verze sjednocena napříč core.js, sw.js, komentářem buildu a exportem.
 
-## v.1.1 (488)
+## v.1.1 (528)
 - Exact duplicate CSS rule blocks were removed from styles-inline-legacy.css a styles-games.css, aby se snížil override noise.
 - Build metadata, cache i assets byly srovnány na `485`.
 - HTML/JS cleanup pokračuje bez zásahu do layout baseline.
 
 
-## v.1.1 (457)
+## v.1.1 (528)
 - Sjednocené build metadata: verze, cache a viditelnější komentáře teď sedí napříč HTML, JS, CSS i changelogem.
 - Kalendář, E-portal a jídelní lístek zůstávají na stabilním napojení; bez zásahu do layoutu.
 - CSS cleanup pokračuje bez rozbití baseline UI.
 
-## v.1.1 (454)
+## v.1.1 (528)
 - Kalendář na dashboardu je napojený přes samostatný binding s lockem proti dvojímu spuštění a bez inline onclick.
 - E-portal a jídelní lístek zůstávají přes tvrdý externí handler s pevným cílovým odkazem.
 - Verze a cache byly posunuty na 449.
 
-## v.1.1 (448)
+## v.1.1 (528)
 
 - E-portal fix + in-app calendar iframe + CSS stabilization: poslední override vrstva byla vytažená do samostatného souboru.
 - Zatím bez změny layoutu, bottom nav i kalkulačky zůstávají v baseline stavu.
 - Připravený základ pro další CSS stabilizační krok bez rozbití UI.
 
-## v.1.1 (441)
+## v.1.1 (528)
 
 - Spodní panel má menší tlačítka a těsnější mezery mezi nimi.
 - Kalkulačky na Frézkách a Brusech jsou znovu vyrovnané: sbalené bloky sedí pod sebou, Brusy mají stejné navolení brusu i indexu a panel s aktivním brusem/indexem je kompaktnější.
 - Pole pro přesnější výpočet je větší a přehlednější.
 
-## v.1.1 (428)
+## v.1.1 (528)
 
 - Spodní lišta je na iPhonech (vč. 13 Pro Max) blíž ke spodnímu okraji a po stranách – konec zbytečně velkého rámu kolem nav baru.
 - Sbalená rozklikávací pole parametrů kalkulaček (brusy + frézky) jsou výrazně nižší a kompaktnější, aby zabírala méně místa.
 
-## v.1.1 (427)
+## v.1.1 (528)
 
 - Spodní lišta je přizpůsobená víc na šířku, položka „Více“ je užší a zbytek tlačítek se rozprostírá přirozeněji.
 - Aktivní první položka už není useknutá vlevo a lišta drží líp na menších displejích.
@@ -243,7 +243,7 @@
 
 # Rotace a kalkulačky
 
-## v.1.1 (418)
+## v.1.1 (528)
 
 - Dashboardové ikonky jsou větší a výraznější, včetně výplaty, a spodní lišta má o něco větší záložky.
 - V Rotaci jde kliknout do prázdného prostoru a vrátit se zpět do přehledu; po výběru jména se ukazuje i jedna minulá směna.
@@ -255,7 +255,7 @@
 
 # Rotace a kalkulačky
 
-## v.1.1 (407)
+## v.1.1 (528)
 - Dashboardové ikonky Kalendář a Jídelna jsou přiblížené původnímu stylu a jsou jednodušší, aby nepůsobily rozsypaně.
 - Herní statistiky se po této verzi resetují na nulu, hráč 4157 je z profilu vyhozený a další sync už tenhle starý balast netahá zpátky.
 - Profily, achievementy i herní statistiky mají stejný obal a po přihlášení se správně odemykají.
@@ -380,7 +380,7 @@
 - Dashboard ukazoval další směny, absenci a procenta průběhu.
 - Kalkulačky pro frézky a brusy se postupně zpřesňovaly.
 
-## v.1.1 (526)
+## v.1.1 (528)
 - Spodní navigace: položka „Více“ je přesunutá mimo scroll jako samostatná úzká položka.
 - Vyčištěné přebíjející nastavení šířky „Více“ a nastavená stabilní užší šířka se stejnou výškou jako ostatní záložky.
 - Pokračování Fáze 4 cleanup manageru.
