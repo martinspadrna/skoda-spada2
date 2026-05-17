@@ -1,4 +1,4 @@
-// v.1.1 (504) – Fáze 2: přesčasové neděle, Rotace přehled + další calcPanel cleanup.
+// v.1.1 (505) – Fáze 2: Dashboard text, Rotace přehled + další calcPanel cleanup.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

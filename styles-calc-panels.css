@@ -337,3 +337,25 @@
   min-width:0 !important;
   max-width:100% !important;
 }
+
+/* F2 v.505: jednotnější vnitřní stack panelů a výsledků, bez zásahu do výpočtů. */
+:is(#soustruhy, #frezky, #brusy, #pracka).calcPage :is(.calcPanel--form, .brusDetailsBody, .card){
+  min-width:0 !important;
+}
+:is(#soustruhy, #frezky, #brusy, #pracka).calcPage :is(.calcResultCard, .calcInfoCard) :is(div, span, p, b){
+  max-width:100% !important;
+}
+:is(#soustruhy, #frezky, #brusy, #pracka).calcPage :is(.calcResultMain, .calcResultLine, .calcResultSub){
+  overflow-wrap:anywhere !important;
+}
+:is(#frezky, #brusy) .brusDetails[open] > .brusDetailsBody{
+  animation:calcPanelSoftOpen .16s ease-out both;
+}
+@keyframes calcPanelSoftOpen{
+  from{opacity:.76;transform:translateY(-2px);}
+  to{opacity:1;transform:translateY(0);}
+}
+@media (prefers-reduced-motion:reduce){
+  :is(#frezky, #brusy) .brusDetails[open] > .brusDetailsBody{animation:none !important;}
+}
+

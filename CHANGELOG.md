@@ -1,3 +1,9 @@
+## v.1.1 (505)
+- Dashboard hero text mimo aktivní směnu zkrácený na „Další směna v práci…“ a samostatně „Začíná za…“.
+- Rotace: klikací seznam jmen je posunutý dolů nad spodní lištu.
+- Rotace přehled: jména a stroje jsou o něco menší a vizuálně odlišené.
+- Fáze 2: doplněný další bezpečný calcPanel guard pro vnitřní stacky a výsledkové texty.
+
 ## v.1.1 (504)
 - Fáze 2 pokračuje: sjednocené další bezpečné šířky a overflow guardy kalkulačkových panelů.
 - Přesčasové nedělní noční směny zadané pro rok 2026 se nově promítají i do směnové logiky, nejen do kantýny/jídelny.

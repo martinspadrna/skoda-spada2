@@ -235,7 +235,7 @@ function updateDashboard() {
     const heroLine2 = active
       ? (active.end ? 'Aktuální směna končí za: ' + formatDuration(Math.max(0, active.end - now)) : '')
       : (nextWorkShift
-        ? 'Další směna začíná za: ' + formatDuration(Math.max(0, nextWorkShift.start - now))
+        ? 'Začíná za: ' + formatDuration(Math.max(0, nextWorkShift.start - now))
         : '');
     const heroLine3 = typeof formatDashboardTeamDLine === 'function'
       ? formatDashboardTeamDLine(now, teamDStatus)
@@ -593,7 +593,7 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
     if (hero) {
       hero.innerHTML = [
         '<div class="dashboardHeroLine1"><span class="dashboardHeroLine1Text">' + esc(activeText) + '</span></div>',
-        '<div class="dashboardHeroLine2">' + esc(active ? 'Aktuální směna končí za: ' + countdownText : (nextWorkShift ? 'Další směna začíná za: ' + countdownText : countdownText)) + '</div>',
+        '<div class="dashboardHeroLine2">' + esc(active ? 'Aktuální směna končí za: ' + countdownText : (nextWorkShift ? 'Začíná za: ' + countdownText : countdownText)) + '</div>',
         '<div class="dashboardHeroLine3">' + esc(typeof formatDashboardTeamDLine === 'function' ? formatDashboardTeamDLine(now, teamDStatus) : '') + '</div>',
         '<div class="dashboardHeroBarRow"><div class="dashboardHeroBar"><span style="--fill:' + (active && active.start && active.end ? Math.max(0, Math.min(100, ((now.getTime() - active.start.getTime()) / (active.end.getTime() - active.start.getTime())) * 100)).toFixed(1) + '%' : '0%') + '"></span></div></div>'
       ].join('');
