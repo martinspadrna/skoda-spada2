@@ -411,7 +411,10 @@ function homeLooksUnpainted() {
   const countValue = count?.querySelector('.dashboardValue')?.textContent?.trim() || '';
   const kantynaValue = kantyna?.querySelector('.dashboardValue')?.textContent?.trim() || '';
   const jidelnaValue = jidelna?.querySelector('.dashboardValue')?.textContent?.trim() || '';
-  return !hero || !cal || !count || !heroText || (!calValue && !countValue);
+  const cardList = [cal, count, kantyna, jidelna].filter(Boolean);
+  const iconsMissing = cardList.length > 0 && cardList.some((el) => !el.querySelector('.dashboardIconInline, .dashboardIconImg, .dashboardIconSvg'));
+  const isPlaceholder = (value) => !value || value === '--' || value === '—';
+  return !hero || !cal || !count || isPlaceholder(heroText) || iconsMissing || (isPlaceholder(calValue) && isPlaceholder(countValue) && isPlaceholder(kantynaValue) && isPlaceholder(jidelnaValue));
 }
 
 function hammerHomeRefresh() {
@@ -512,15 +515,29 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
     return typeof getPragueNow === 'function' ? getPragueNow(new Date()) : new Date();
   }
 
-  function setCardSimple(id, title, value, meta, dotClass, clickable) {
+  const fallbackDashboardIconImg = (src) => '<img class="dashboardIconImg" src="' + src + '" alt="" aria-hidden="true" decoding="async" loading="eager" width="512" height="512">';
+  const fallbackDashboardIcons = {
+    calendar: fallbackDashboardIconImg('assets/dashboard-icons/calendar.png'),
+    countdown: fallbackDashboardIconImg('assets/dashboard-icons/hourglass.png'),
+    kantyna: fallbackDashboardIconImg('assets/dashboard-icons/kantyna.png'),
+    jidelna: fallbackDashboardIconImg('assets/dashboard-icons/jidelna.png'),
+    vyplata: fallbackDashboardIconImg('assets/dashboard-icons/vyplata.png'),
+    dovolena: fallbackDashboardIconImg('assets/dashboard-icons/dovolena.png'),
+    menu: fallbackDashboardIconImg('assets/dashboard-icons/jidelnilistek.png'),
+    eportal: fallbackDashboardIconImg('assets/dashboard-icons/eportal.png')
+  };
+
+  function setCardSimple(id, title, value, meta, dotClass, clickable, iconHtml) {
     const el = document.getElementById(id);
     if (!el) return;
     el.classList.toggle('dashboardCardClickable', !!clickable);
+    const icon = iconHtml ? '<span class="dashboardIcon dashboardIconInline" aria-hidden="true">' + iconHtml + '</span>' : '';
     const dot = dotClass ? '<span class="dashboardDot ' + esc(dotClass) + '" aria-hidden="true"></span>' : '';
     el.innerHTML = [
       '<div class="dashboardTop">',
       '  <div class="dashboardHead">',
       '    <div class="dashboardLabelRow">',
+      icon,
       '      <div class="dashboardLabel">' + esc(title) + '</div>',
       dot,
       '    </div>',
@@ -600,19 +617,19 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
       hero.innerHTML = [
         '<div class="dashboardHeroLine1"><span class="dashboardHeroLine1Text">' + esc(activeText) + '</span></div>',
         '<div class="dashboardHeroLine2">' + esc(active ? 'Končí za: ' + countdownText : (nextWorkShift ? 'Začíná za: ' + countdownText : countdownText)) + '</div>',
-        formatDashboardHeroLine3Html(typeof formatDashboardTeamDLine === 'function' ? formatDashboardTeamDLine(now, teamDStatus) : ''),
+        (typeof formatDashboardHeroLine3Html === 'function' ? formatDashboardHeroLine3Html(typeof formatDashboardTeamDLine === 'function' ? formatDashboardTeamDLine(now, teamDStatus) : '') : ''),
         '<div class="dashboardHeroBarRow"><div class="dashboardHeroBar"><span style="--fill:' + (active && active.start && active.end ? Math.max(0, Math.min(100, ((now.getTime() - active.start.getTime()) / (active.end.getTime() - active.start.getTime())) * 100)).toFixed(1) + '%' : '0%') + '"></span></div></div>'
       ].join('');
     }
 
-    setCardSimple('dashCalendar', 'Kalendář', calendarText, special ? String(special.label || '') : '', '', false);
-    setCardSimple('dashCountdown', active ? 'Zbývá' : (nextWorkShift ? 'Začíná' : 'Zbývá'), countdownText, countdownMeta, '', false);
-    setCardSimple('dashKantyna', 'Kantýna', foodText(foodA), foodMeta(foodA), foodA && foodA.isOpen ? 'is-open' : 'is-closed', true);
-    setCardSimple('dashJidelna', 'Jídelna', foodText(foodB), foodMeta(foodB), foodB && foodB.isOpen ? 'is-open' : 'is-closed', true);
-    setCardSimple('dashVyplata', 'Výplata', payText, payMeta, '', false);
-    setCardSimple('dashCzd', 'Dovolená', vacationCountdown.text || '--', vacationCountdown.meta || 'Odpočet do dovolené', '', false);
-    setCardSimple('dashFoodLink', 'Jídelní lístek', 'Otevřít', 'Aktuální menu', '', true);
-    setCardSimple('dashEportalLink', 'Eportal', 'Otevřít', 'Firemní portál', '', true);
+    setCardSimple('dashCalendar', 'Kalendář', calendarText, special ? String(special.label || '') : '', '', false, fallbackDashboardIcons.calendar);
+    setCardSimple('dashCountdown', active ? 'Zbývá' : (nextWorkShift ? 'Začíná' : 'Zbývá'), countdownText, countdownMeta, '', false, fallbackDashboardIcons.countdown);
+    setCardSimple('dashKantyna', 'Kantýna', foodText(foodA), foodMeta(foodA), foodA && foodA.isOpen ? 'is-open' : 'is-closed', true, fallbackDashboardIcons.kantyna);
+    setCardSimple('dashJidelna', 'Jídelna', foodText(foodB), foodMeta(foodB), foodB && foodB.isOpen ? 'is-open' : 'is-closed', true, fallbackDashboardIcons.jidelna);
+    setCardSimple('dashVyplata', 'Výplata', payText, payMeta, '', false, fallbackDashboardIcons.vyplata);
+    setCardSimple('dashCzd', 'Dovolená', vacationCountdown.text || '--', vacationCountdown.meta || 'Odpočet do dovolené', '', false, fallbackDashboardIcons.dovolena);
+    setCardSimple('dashFoodLink', 'Jídelní lístek', 'Otevřít', 'Aktuální menu', '', true, fallbackDashboardIcons.menu);
+    setCardSimple('dashEportalLink', 'Eportal', 'Otevřít', 'Firemní portál', '', true, fallbackDashboardIcons.eportal);
 
     if (err) {
       console.warn('Dashboard fallback activated', err);

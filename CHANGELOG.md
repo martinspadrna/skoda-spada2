@@ -1,3 +1,9 @@
+## v.1.1 (513)
+- Dashboard: opravený fallback render, aby ani při pozdním překreslení nezmizely ikonky a hodnoty z karet.
+- Dashboard: řádek směny D znovu srovnaný opticky na střed bez roztahování doprava.
+- Dashboard: doplněné guardy, které poznají neúplně vykreslené karty i podle chybějících ikonek.
+- Láďův režim: dashboardové karty mají bezpečnější layout, aby kompaktní režim neschoval data ani ikony.
+
 ## v.1.1 (512)
 - Dashboard: řádek směny D je centrovaný přes celou hero kartu, ne podle posunutého vnitřního obsahu.
 - Rotace: aktivní kliknuté jméno ve spodním docku už se nezvětšuje přes horní hranu, takže se neořezává horní čára.
