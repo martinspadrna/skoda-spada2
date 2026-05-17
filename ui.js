@@ -155,31 +155,61 @@ function startMenuImport() {
 const UI_PREFS_KEY = APP_KEY + ':uiPrefs';
 const LIGHTWEIGHT_MODE_LABEL = 'Láďův režim';
 
-function isLowEndDevice() {
+function getLowEndDeviceInfo() {
   try {
+    const ua = String(navigator.userAgent || '');
+    const isIOS = /iPad|iPhone|iPod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     const cores = Number(navigator.hardwareConcurrency || 0);
     const memory = Number(navigator.deviceMemory || 0);
+    const hasMemoryInfo = memory > 0;
     const saveData = !!(navigator.connection && navigator.connection.saveData);
     const reducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-    return (cores > 0 && cores <= 4) || (memory > 0 && memory <= 4) || saveData || reducedMotion;
+    const reasons = [];
+
+    if (saveData) reasons.push('Data Saver');
+
+    // iOS/Safari často RAM vůbec nehlásí a někdy vrací konzervativní počet jader.
+    // Proto už iPhone 13 Pro Max nesmí spadnout do slabšího zařízení jen kvůli <= 4 jádrům.
+    if (hasMemoryInfo && memory <= 3) reasons.push('RAM ' + memory + ' GB');
+    if (cores > 0 && cores <= 2) reasons.push('CPU ' + cores + ' jádra');
+    if (!isIOS && hasMemoryInfo && cores > 0 && cores <= 4 && memory <= 4) reasons.push('CPU/RAM kombinace');
+
+    return {
+      lowEnd: reasons.length > 0,
+      reasons,
+      cores,
+      memory: hasMemoryInfo ? memory : null,
+      saveData,
+      reducedMotion,
+      isIOS
+    };
   } catch (err) {
-    return false;
+    return { lowEnd: false, reasons: [], cores: 0, memory: null, saveData: false, reducedMotion: false, isIOS: false };
   }
+}
+
+function isLowEndDevice() {
+  return !!getLowEndDeviceInfo().lowEnd;
 }
 
 function loadUiPrefs() {
   try {
     const raw = localStorage.getItem(UI_PREFS_KEY);
-    if (!raw) return { compact: false, reduceMotion: false, lightweight: isLowEndDevice() };
+    const autoLightweight = isLowEndDevice();
+    if (!raw) return { compact: false, reduceMotion: false, lightweight: autoLightweight, lightweightManual: false };
     const parsed = JSON.parse(raw);
+    const oldManualMotion = parsed.reduceMotion === true;
+    const lightweightManual = parsed.lightweightManual === true || oldManualMotion;
+    const storedLightweight = !!parsed.lightweight || oldManualMotion;
     return {
       compact: !!parsed.compact,
       reduceMotion: false,
-      lightweight: !!parsed.lightweight || !!parsed.reduceMotion
+      lightweight: lightweightManual ? storedLightweight : (autoLightweight ? storedLightweight : false),
+      lightweightManual
     };
   } catch (err) {
     console.warn(err);
-    return { compact: false, reduceMotion: false, lightweight: isLowEndDevice() };
+    return { compact: false, reduceMotion: false, lightweight: isLowEndDevice(), lightweightManual: false };
   }
 }
 
@@ -187,7 +217,8 @@ function saveUiPrefs(prefs) {
   const next = {
     compact: !!prefs.compact,
     reduceMotion: !!prefs.reduceMotion,
-    lightweight: !!prefs.lightweight
+    lightweight: !!prefs.lightweight,
+    lightweightManual: !!prefs.lightweightManual
   };
   try {
     localStorage.setItem(UI_PREFS_KEY, JSON.stringify(next));
@@ -200,7 +231,8 @@ function saveUiPrefs(prefs) {
 function applyUiPrefs(prefs) {
   const next = saveUiPrefs(prefs || loadUiPrefs());
   const lightweight = !!next.lightweight;
-  const lowEndDetected = isLowEndDevice();
+  const lowEndInfo = getLowEndDeviceInfo();
+  const lowEndDetected = !!lowEndInfo.lowEnd;
   document.body.classList.toggle('compactUI', !!next.compact);
   document.body.classList.toggle('reduceMotion', !!next.reduceMotion || lightweight);
   document.body.classList.toggle('lightweightMode', lightweight);
@@ -209,11 +241,13 @@ function applyUiPrefs(prefs) {
     document.documentElement.dataset.rakLightweight = lightweight ? 'on' : 'off';
     document.documentElement.dataset.rakLightweightLabel = LIGHTWEIGHT_MODE_LABEL;
     document.documentElement.dataset.rakLowEndDevice = lowEndDetected ? 'yes' : 'no';
+    document.documentElement.dataset.rakLowEndReason = lowEndDetected ? lowEndInfo.reasons.join(', ') : '';
     document.documentElement.dataset.rakMotion = (next.reduceMotion || lightweight) ? 'reduced' : 'normal';
   } catch (err) {}
   if (typeof app !== 'undefined') {
     app.uiPrefs = next;
     app.lowEndDeviceDetected = lowEndDetected;
+    app.lowEndDeviceInfo = lowEndInfo;
   }
   return next;
 }
@@ -221,13 +255,16 @@ function applyUiPrefs(prefs) {
 function toggleUiPref(key) {
   const current = loadUiPrefs();
   const next = { ...current, [key]: !current[key] };
-  if (key === 'lightweight') next.reduceMotion = false;
+  if (key === 'lightweight') {
+    next.reduceMotion = false;
+    next.lightweightManual = true;
+  }
   applyUiPrefs(next);
   return next;
 }
 
 function resetUiPrefs() {
-  applyUiPrefs({ compact: false, reduceMotion: false, lightweight: false });
+  applyUiPrefs({ compact: false, reduceMotion: false, lightweight: false, lightweightManual: false });
 }
 
 applyUiPrefs(loadUiPrefs());
@@ -3672,12 +3709,20 @@ function bindAppMenuHandlers(body) {
         return;
       }
       if (menuAction === 'app-diagnostics') {
+        const lowEndInfo = typeof getLowEndDeviceInfo === 'function' ? getLowEndDeviceInfo() : { lowEnd: false, reasons: [], cores: 0, memory: null, isIOS: false };
+        const lowEndReason = lowEndInfo.lowEnd && lowEndInfo.reasons && lowEndInfo.reasons.length ? ' · důvod: ' + lowEndInfo.reasons.join(', ') : '';
+        const deviceInfo = [
+          lowEndInfo.cores ? (lowEndInfo.cores + ' jader') : 'jádra neznámá',
+          lowEndInfo.memory ? (lowEndInfo.memory + ' GB RAM') : 'RAM nehlášena',
+          lowEndInfo.isIOS ? 'iOS/Safari' : ''
+        ].filter(Boolean).join(' · ');
         const diag = [
           'Verze: ' + String((typeof app !== "undefined" && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '—')),
           'Online: ' + (navigator.onLine ? 'ano' : 'ne'),
           'Kompaktní režim: ' + (document.body.classList.contains('compactUI') ? 'zapnutý' : 'vypnutý'),
           LIGHTWEIGHT_MODE_LABEL + ': ' + (document.body.classList.contains('lightweightMode') ? 'zapnutý' : 'vypnutý') + (document.body.classList.contains('reduceMotion') ? ' · méně animací aktivní' : ''),
-          'Slabší zařízení detekováno: ' + (document.body.classList.contains('lowEndDevice') ? 'ano' : 'ne'),
+          'Slabší zařízení detekováno: ' + (lowEndInfo.lowEnd ? 'ano' : 'ne') + lowEndReason,
+          'Zařízení: ' + deviceInfo,
           'Aktuální stránka: ' + String(document.querySelector('.page.active')?.id || '—'),
           'Bottom lišta: ' + String(getComputedStyle(document.querySelector('.bottomNav') || document.body).bottom || '—')
         ].join('\n');

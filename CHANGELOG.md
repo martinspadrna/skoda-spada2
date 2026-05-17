@@ -1,3 +1,10 @@
+## v.1.1 (511)
+- Dashboard: řádek se směnou D je vrácený na skutečný optický střed bez roztahování doprava.
+- Rotace: aktivní kliknuté jméno ve spodním docku už nemá oříznutou horní čáru.
+- Diagnostika: přesnější detekce slabšího zařízení, aby iPhone 13 Pro Max nespadl omylem do „slabší zařízení“ jen kvůli iOS/Safari údajům.
+- Nastavení: starý automaticky uložený Láďův režim z chybné detekce se na silnějším iPhonu automaticky vypne, ruční volba zůstává zachovaná.
+- Fáze 3: pokračování Láďova režimu – lehčí vykreslování vybraných drobných prvků bez změny výpočtů.
+
 ## v.1.1 (510)
 - Dashboard: řádek směny D opticky srovnaný na střed hero karty.
 - Rotace: klikací jména dole už nemají společné ohraničení celého bloku, ohraničené jsou jen jednotlivé položky.

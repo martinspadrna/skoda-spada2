@@ -1,4 +1,4 @@
-// v.1.1 (510) – Fáze 3: nastavení cleanup + lightweight continuation.
+// v.1.1 (511) – Fáze 3: dashboard/rotace polish + přesnější detekce Láďova režimu.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
