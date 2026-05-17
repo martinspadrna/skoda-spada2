@@ -143,28 +143,58 @@ function formatDashboardAbsenceList(names) {
   return list.length ? list.join(', ') : 'nikdo';
 }
 
-function formatDashboardTeamDLine(now, teamDStatus) {
+function formatDashboardTeamDParts(now, teamDStatus) {
   const status = teamDStatus || getDashboardTeamDStatus(now);
   const active = status && status.active;
   const next = status && status.next;
   const safeDuration = (targetDate) => {
     if (!targetDate || typeof formatDuration !== 'function') return '';
-    const ms = targetDate.getTime ? targetDate.getTime() - now.getTime() : targetDate - now;
+    const ms = targetDate && targetDate.getTime ? targetDate.getTime() - now.getTime() : targetDate - now;
     return formatDuration(Math.max(0, ms));
   };
 
   if (active) {
     const names = typeof getAbsenceNamesForDate === 'function' ? getAbsenceNamesForDate(active.start || now) : [];
-    const endText = active.end ? ' · končí za ' + safeDuration(active.end) : '';
-    return 'Směna D je právě v práci' + endText + ' · chybí: ' + formatDashboardAbsenceList(names);
+    return {
+      main: 'Směna D je právě v práci' + (active.end ? ' · končí za ' + safeDuration(active.end) : ''),
+      sub: 'chybí: ' + formatDashboardAbsenceList(names)
+    };
   }
 
   if (next && next.start) {
     const names = typeof getAbsenceNamesForDate === 'function' ? getAbsenceNamesForDate(next.start) : [];
-    return 'Směna D začíná za ' + safeDuration(next.start) + ' · bude chybět: ' + formatDashboardAbsenceList(names);
+    return {
+      main: 'Směna D začíná za ' + safeDuration(next.start),
+      sub: 'bude chybět: ' + formatDashboardAbsenceList(names)
+    };
   }
 
-  return 'Směna D: další směna nenalezena';
+  return { main: 'Směna D: další směna nenalezena', sub: '' };
+}
+
+function formatDashboardTeamDLine(now, teamDStatus) {
+  const parts = typeof formatDashboardTeamDParts === 'function'
+    ? formatDashboardTeamDParts(now, teamDStatus)
+    : { main: '', sub: '' };
+  return [parts.main, parts.sub].filter(Boolean).join(' · ');
+}
+
+function renderDashboardTeamDLine(now, teamDStatus, esc) {
+  const escapeValue = typeof esc === 'function'
+    ? esc
+    : (value) => String(value ?? '').replace(/[&<>"']/g, ch => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      }[ch]));
+  const parts = typeof formatDashboardTeamDParts === 'function'
+    ? formatDashboardTeamDParts(now, teamDStatus)
+    : { main: formatDashboardTeamDLine(now, teamDStatus), sub: '' };
+  const main = parts && parts.main ? '<span class="dashboardHeroLine3Main">' + escapeValue(parts.main) + '</span>' : '';
+  const sub = parts && parts.sub ? '<span class="dashboardHeroLine3Sub">' + escapeValue(parts.sub) + '</span>' : '';
+  return main + sub;
 }
 
 function formatDashboardShiftName(shift) {
@@ -237,9 +267,9 @@ function updateDashboard() {
       : (nextWorkShift
         ? 'Začíná za: ' + formatDuration(Math.max(0, nextWorkShift.start - now))
         : '');
-    const heroLine3 = typeof formatDashboardTeamDLine === 'function'
-      ? formatDashboardTeamDLine(now, teamDStatus)
-      : '';
+    const heroLine3 = typeof renderDashboardTeamDLine === 'function'
+      ? renderDashboardTeamDLine(now, teamDStatus, esc)
+      : (typeof formatDashboardTeamDLine === 'function' ? esc(formatDashboardTeamDLine(now, teamDStatus)) : '');
     const heroProgress = active && active.start && active.end
       ? Math.max(0, Math.min(100, ((now.getTime() - active.start.getTime()) / (active.end.getTime() - active.start.getTime())) * 100))
       : 0;
@@ -247,7 +277,7 @@ function updateDashboard() {
     hero.innerHTML = [
       '<div class="dashboardHeroLine1">' + heroLine1 + '</div>',
       heroLine2 ? '<div class="dashboardHeroLine2">' + esc(heroLine2) + '</div>' : '',
-      heroLine3 ? '<div class="dashboardHeroLine3"><span class="dashboardHeroLine3Pill">' + esc(heroLine3) + '</span></div>' : '',
+      heroLine3 ? '<div class="dashboardHeroLine3"><span class="dashboardHeroLine3Pill">' + heroLine3 + '</span></div>' : '',
       '<div class="dashboardHeroBarRow">',
       '<div class="dashboardHeroBar"><span style="--fill:' + heroProgress.toFixed(1) + '%"></span></div>',
       heroProgressText ? '<div class="dashboardHeroBarPercent">' + esc(heroProgressText) + '</div>' : '',
@@ -608,7 +638,7 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
       hero.innerHTML = [
         '<div class="dashboardHeroLine1"><span class="dashboardHeroLine1Text">' + esc(activeText) + '</span></div>',
         '<div class="dashboardHeroLine2">' + esc(active ? 'Končí za: ' + countdownText : (nextWorkShift ? 'Začíná za: ' + countdownText : countdownText)) + '</div>',
-        '<div class="dashboardHeroLine3"><span class="dashboardHeroLine3Pill">' + esc(typeof formatDashboardTeamDLine === 'function' ? formatDashboardTeamDLine(now, teamDStatus) : '') + '</span></div>',
+        '<div class="dashboardHeroLine3"><span class="dashboardHeroLine3Pill">' + (typeof renderDashboardTeamDLine === 'function' ? renderDashboardTeamDLine(now, teamDStatus, esc) : esc(typeof formatDashboardTeamDLine === 'function' ? formatDashboardTeamDLine(now, teamDStatus) : '')) + '</span></div>',
         '<div class="dashboardHeroBarRow"><div class="dashboardHeroBar"><span style="--fill:' + (active && active.start && active.end ? Math.max(0, Math.min(100, ((now.getTime() - active.start.getTime()) / (active.end.getTime() - active.start.getTime())) * 100)).toFixed(1) + '%' : '0%') + '"></span></div></div>'
       ].join('');
     }

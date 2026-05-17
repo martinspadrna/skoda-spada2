@@ -1,4 +1,4 @@
-// v.1.1 (517) – Dashboard D řádek centrovaný přes celou hero kartu.
+// v.1.1 (518) – Dashboard D řádek rozdělený do dvou řádků + Fáze 4 cleanup audit.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
@@ -376,7 +376,7 @@ function runPhaseFourCleanupManagerAudit() {
       phase: 'phase-4-cleanup-manager-start',
       checkedAt: new Date().toISOString(),
       ok: true,
-      dashboard: { missingCards: [], missingValues: [], missingIcons: [] }
+      dashboard: { missingCards: [], missingValues: [], missingIcons: [], dLine: { exists: false, hasMain: false, hasSub: false } }
     };
 
     const requiredDashboardCards = [
@@ -403,7 +403,17 @@ function runPhaseFourCleanupManagerAudit() {
       if (!icon) report.dashboard.missingIcons.push(id);
     });
 
-    report.ok = !report.dashboard.missingCards.length && !report.dashboard.missingValues.length && !report.dashboard.missingIcons.length;
+    const dLine = document.querySelector('#dashHero .dashboardHeroLine3Pill');
+    report.dashboard.dLine.exists = !!dLine;
+    report.dashboard.dLine.hasMain = !!(dLine && dLine.querySelector('.dashboardHeroLine3Main'));
+    report.dashboard.dLine.hasSub = !!(dLine && dLine.querySelector('.dashboardHeroLine3Sub'));
+
+    report.ok = !report.dashboard.missingCards.length
+      && !report.dashboard.missingValues.length
+      && !report.dashboard.missingIcons.length
+      && report.dashboard.dLine.exists
+      && report.dashboard.dLine.hasMain
+      && report.dashboard.dLine.hasSub;
     try {
       document.documentElement.dataset.rakPhase4 = report.ok ? 'cleanup-manager-start' : 'dashboard-check';
       window.__rakPhase4CleanupAudit = report;

@@ -1,3 +1,8 @@
+## v.1.1 (518)
+- Dashboard: informace o směně D je rozdělená do dvou řádků.
+- Řádek „bude chybět…“ je nově samostatně pod časem začátku směny D.
+- Fáze 4: cleanup audit nově hlídá i strukturu řádku směny D v horní kartě Dashboardu.
+
 ## v.1.1 (517)
 - Dashboard: řádek směny D je centrovaný podle celé horní karty, ne podle odsazeného textového sloupce.
 - Opravený posun celého bloku „Směna D začíná za…“ doprava.
