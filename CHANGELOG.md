@@ -1,3 +1,8 @@
+## v.1.1 (517)
+- Dashboard: řádek směny D je centrovaný podle celé horní karty, ne podle odsazeného textového sloupce.
+- Opravený posun celého bloku „Směna D začíná za…“ doprava.
+- Fáze 4 zůstává v rozpracovaném stavu, šlo hlavně o korekci dashboard polish.
+
 ## v.1.1 (516)
 - Start Fáze 4: cleanup manager audit začíná hlídat Dashboard karty, ikonky a hodnoty.
 - Láďův režim nově bezpečně odlehčuje i Dashboard: méně efektů, menší mezery a kompaktnější karty.

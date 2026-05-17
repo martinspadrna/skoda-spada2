@@ -1,4 +1,4 @@
-// v.1.1 (516) – Fáze 4 start: Láďův režim bezpečně odlehčuje i Dashboard.
+// v.1.1 (517) – Dashboard D řádek centrovaný přes celou hero kartu.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

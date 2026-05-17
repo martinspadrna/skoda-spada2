@@ -1944,3 +1944,58 @@ body.lowEndDevice #home .dashboardDot{
   height:14px !important;
   min-width:14px !important;
 }
+
+/* v.1.1 (517) – Dashboard: řádek směny D se centruje podle celé hero karty, ne podle odsazeného textového sloupce. */
+#dashHero .dashboardHeroLine3{
+  --dash-line3-left-pad:64px;
+  --dash-line3-right-pad:128px;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  box-sizing:border-box !important;
+  width:calc(100% + var(--dash-line3-left-pad) + var(--dash-line3-right-pad)) !important;
+  max-width:none !important;
+  margin:8px 0 0 calc(-1 * var(--dash-line3-left-pad)) !important;
+  padding:0 !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  text-align:center !important;
+  align-self:stretch !important;
+  justify-self:stretch !important;
+  overflow:visible !important;
+  transform:none !important;
+  left:auto !important;
+  right:auto !important;
+}
+#dashHero .dashboardHeroLine3Pill{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  box-sizing:border-box !important;
+  width:auto !important;
+  max-width:min(520px, calc(100vw - 28px - env(safe-area-inset-left) - env(safe-area-inset-right))) !important;
+  margin:0 auto !important;
+  padding:7px 10px !important;
+  text-align:center !important;
+  white-space:normal !important;
+  overflow-wrap:anywhere !important;
+}
+@media (max-width:700px){
+  #dashHero .dashboardHeroLine3{
+    --dash-line3-left-pad:58px;
+    --dash-line3-right-pad:16px;
+  }
+}
+body.lightweightMode #dashHero .dashboardHeroLine3,
+body.lowEndDevice #dashHero .dashboardHeroLine3{
+  --dash-line3-left-pad:12px;
+  --dash-line3-right-pad:12px;
+  margin-top:6px !important;
+}
+body.lightweightMode #dashHero .dashboardHeroLine3Pill,
+body.lowEndDevice #dashHero .dashboardHeroLine3Pill{
+  padding:6px 8px !important;
+  font-size:clamp(11px, 2.8vw, 13px) !important;
+}
