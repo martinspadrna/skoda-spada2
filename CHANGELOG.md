@@ -1,3 +1,10 @@
+## v.1.1 (533)
+- Spodní lišta: jemné dorovnání položky „Více“ níž, bez posunu panelu.
+- Rotace: větší horní prostor v docku se jmény pro A15/menší displeje, aby se aktivní jméno neusekávalo.
+- Rozpisy: užší sloupec Datum/směna u tabulek Měkota/Tvrdota.
+- Hry: všechny hry přesunuté do složky „Ve vývoji“.
+- Hráčské profily a herní statistiky: přihlášený hráč je první a rozbalený, ostatní jsou sbalení.
+
 ## v.1.1 (532)
 - Spodní položka „Více“ je pořád mezi ostatními záložkami, ale je jemně posunutá níž, aby opticky nelítala nad řádek.
 - Kalkulačky: psací vstupy zůstávají menší, větší jsou jen klikací/navolovací a výpočtová tlačítka; tlačítko reload/reset je zase malé.

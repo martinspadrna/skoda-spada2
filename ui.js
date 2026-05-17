@@ -4828,12 +4828,15 @@ function gamesRenderProfiles() {
   const grid = document.getElementById('gamesProfilesGrid');
   if (!grid) return;
   const profile = gamesGetProfile();
+  const activeId = profile.activeAccountId;
   const accounts = Object.values(profile.accounts || {}).filter(acc => !GAMES_ACCOUNT_BLOCKLIST.has(String(acc && acc.id || '').trim())).sort((a, b) => {
+    const aActive = String(a && a.id || '') === String(activeId || '');
+    const bActive = String(b && b.id || '') === String(activeId || '');
+    if (aActive !== bActive) return aActive ? -1 : 1;
     const ai = Number(a && a.id ? a.id : 0) || 0;
     const bi = Number(b && b.id ? b.id : 0) || 0;
     return ai - bi;
   });
-  const activeId = profile.activeAccountId;
 
   if (!accounts.length) {
     grid.innerHTML = '<div class="smallText">Zatím nejsou žádné profily.</div>';
@@ -4857,20 +4860,23 @@ function gamesRenderProfiles() {
       const display = game.id === 'ttt' ? (String(value) + '×') : (game.id === 'reaction' ? (value ? (String(value) + ' ms') : '—') : (String(value) + ' ' + game.unit));
       return '<div class="gamesProfileRow"><strong>' + escapeHtml(game.title) + '</strong><span>' + escapeHtml(display) + '</span></div>';
     }).join('');
+    const isActive = String(acc.id) === String(activeId);
     return [
-      '<div class="gamesStatsCard' + (String(acc.id) === String(activeId) ? ' isActive' : '') + '">',
-      '  <div class="gamesStatsCardHead">',
-      '    <div>',
-      '      <div class="gamesStatsCardName">' + escapeHtml(acc.name || ('Hráč ' + String(acc.id || ''))) + '</div>',
-      '      <div class="gamesStatsCardId">' + escapeHtml(acc.id || '') + '</div>',
+      '<details class="gamesStatsCard' + (isActive ? ' isActive' : '') + '"' + (isActive ? ' open' : '') + '>',
+      '  <summary class="gamesStatsCardSummary">',
+      '    <div class="gamesStatsCardHead">',
+      '      <div>',
+      '        <div class="gamesStatsCardName">' + escapeHtml(acc.name || ('Hráč ' + String(acc.id || ''))) + '</div>',
+      '        <div class="gamesStatsCardId">' + escapeHtml(acc.id || '') + '</div>',
+      '      </div>',
+      '      <div class="gamesStatsCardTotal">' + String(total.totalPlays) + ' her</div>',
       '    </div>',
-      '    <div class="gamesStatsCardTotal">' + String(total.totalPlays) + ' her</div>',
-      '  </div>',
+      '  </summary>',
       '  <div class="gamesStatsCardBody">',
       profileRows,
       '    <div class="gamesStatsCardMeta">' + escapeHtml(last) + '</div>',
       '  </div>',
-      '</div>'
+      '</details>'
     ].join('');
   }).join('');
 }
@@ -4952,12 +4958,15 @@ function gamesRenderStats() {
   const grid = document.getElementById('gamesStatsGrid');
   if (!grid) return;
   const profile = gamesGetProfile();
+  const activeId = profile.activeAccountId;
   const accounts = Object.values(profile.accounts || {}).filter(acc => !GAMES_ACCOUNT_BLOCKLIST.has(String(acc && acc.id || '').trim())).sort((a, b) => {
+    const aActive = String(a && a.id || '') === String(activeId || '');
+    const bActive = String(b && b.id || '') === String(activeId || '');
+    if (aActive !== bActive) return aActive ? -1 : 1;
     const ai = Number(a && a.id ? a.id : 0) || 0;
     const bi = Number(b && b.id ? b.id : 0) || 0;
     return ai - bi;
   });
-  const activeId = profile.activeAccountId;
 
   if (!accounts.length) {
     grid.innerHTML = '<div class="smallText">Zatím nejsou žádné herní statistiky.</div>';
@@ -4975,15 +4984,18 @@ function gamesRenderStats() {
         '<div class="gamesStatsCardLine"><strong>Snake</strong> · max ' + String(snake.bestScore || 0) + '</div>',
         '<div class="gamesStatsCardLine"><strong>Flap</strong> · max ' + String(flap.bestScore || 0) + '</div>'
       ].join('');
-      return '<div class="gamesStatsCard' + (String(acc.id) === String(activeId) ? ' isActive' : '') + '">' +
-        '<div class="gamesStatsCardHead">' +
-          '<div>' +
-            '<div class="gamesStatsCardName">' + escapeHtml(acc.name || '') + '</div>' +
+      const isActive = String(acc.id) === String(activeId);
+      return '<details class="gamesStatsCard' + (isActive ? ' isActive' : '') + '"' + (isActive ? ' open' : '') + '>' +
+        '<summary class="gamesStatsCardSummary">' +
+          '<div class="gamesStatsCardHead">' +
+            '<div>' +
+              '<div class="gamesStatsCardName">' + escapeHtml(acc.name || '') + '</div>' +
+            '</div>' +
+            '<div class="gamesStatsCardTotal">' + String(totalPlays) + ' her</div>' +
           '</div>' +
-          '<div class="gamesStatsCardTotal">' + String(totalPlays) + ' her</div>' +
-        '</div>' +
+        '</summary>' +
         '<div class="gamesStatsCardBody">' + lines + '</div>' +
-      '</div>';
+      '</details>';
     }).join('');
   }
 }

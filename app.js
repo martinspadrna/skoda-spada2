@@ -1,4 +1,4 @@
-// v.1.1 (532) – Fáze 5: UI polish + calc button sizing guard.
+// v.1.1 (533) – Fáze 5: UI polish + games dev grouping + responsive fixes.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

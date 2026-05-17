@@ -2,8 +2,9 @@
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
 
-  const CORE_GAMES = ['ttt', '2048', 'snake', 'flap'];
-  const EXTRA_GAMES = ['aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
+  // v.1.1 (533): všechny hry zatím patří do složky Ve vývoji.
+  const CORE_GAMES = [];
+  const EXTRA_GAMES = ['ttt', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);
   const POINT_SCALE = 1000000000;
   const ARC_KEY = 'arcade';
@@ -110,12 +111,15 @@
     const grid = document.getElementById('gamesProfilesGrid');
     if (!grid) return;
     const profile = gamesGetProfile();
+    const activeId = profile.activeAccountId;
     const accounts = Object.values(profile.accounts || {}).filter(acc => !GAMES_ACCOUNT_BLOCKLIST.has(String(acc && acc.id || '').trim())).sort((a, b) => {
+      const aActive = String(a && a.id || '') === String(activeId || '');
+      const bActive = String(b && b.id || '') === String(activeId || '');
+      if (aActive !== bActive) return aActive ? -1 : 1;
       const ai = Number(a && a.id ? a.id : 0) || 0;
       const bi = Number(b && b.id ? b.id : 0) || 0;
       return ai - bi;
     });
-    const activeId = profile.activeAccountId;
 
     if (!accounts.length) {
       grid.innerHTML = '<div class="smallText">Zatím nejsou žádné profily.</div>';
@@ -135,24 +139,27 @@
       }).join('');
       const initials = String(acc.name || acc.id || '?').trim().slice(0, 2).toUpperCase();
       const xpPct = Math.max(0, Math.min(100, Math.round((progress.currentXp / 250) * 100)));
+      const isActive = String(acc.id) === String(activeId);
       return [
-        '<div class="gamesStatsCard' + (String(acc.id) === String(activeId) ? ' isActive' : '') + '">',
-        '  <div class="gamesStatsCardHead">',
-        '    <div class="gamesProfileAvatar">' + escapeHtml(initials) + '</div>',
-        '    <div class="gamesStatsCardHeadMain">',
-        '      <div class="gamesStatsCardName">' + escapeHtml(acc.name || ('Hráč ' + String(acc.id || ''))) + '</div>',
-        '      <div class="gamesStatsCardId">' + escapeHtml(acc.id || '') + '</div>',
-        '      <div class="gamesStatsCardMeta gamesStatsCardMetaDense">' + escapeHtml(progress.rank) + ' · Level ' + String(progress.level) + ' · XP ' + String(progress.xp) + ' · Win rate ' + String(progress.winRate) + '%</div>',
+        '<details class="gamesStatsCard' + (isActive ? ' isActive' : '') + '"' + (isActive ? ' open' : '') + '>',
+        '  <summary class="gamesStatsCardSummary">',
+        '    <div class="gamesStatsCardHead">',
+        '      <div class="gamesProfileAvatar">' + escapeHtml(initials) + '</div>',
+        '      <div class="gamesStatsCardHeadMain">',
+        '        <div class="gamesStatsCardName">' + escapeHtml(acc.name || ('Hráč ' + String(acc.id || ''))) + '</div>',
+        '        <div class="gamesStatsCardId">' + escapeHtml(acc.id || '') + '</div>',
+        '        <div class="gamesStatsCardMeta gamesStatsCardMetaDense">' + escapeHtml(progress.rank) + ' · Level ' + String(progress.level) + ' · XP ' + String(progress.xp) + ' · Win rate ' + String(progress.winRate) + '%</div>',
+        '      </div>',
+        '      <div class="gamesStatsCardTotal">' + String(progress.plays) + ' her</div>',
         '    </div>',
-        '    <div class="gamesStatsCardTotal">' + String(progress.plays) + ' her</div>',
-        '  </div>',
+        '  </summary>',
         '  <div class="gamesStatsCardBody">',
         '    <div class="gamesStatsXpBar"><span style="--fill:' + String(xpPct) + '%"></span></div>',
         '    <div class="gamesStatsCardMeta gamesStatsCardMetaDense">Nejoblíbenější hra: ' + escapeHtml(progress.favorite) + ' · Achievementy: ' + String(progress.achievements) + '</div>',
         profileRows,
         '    <div class="gamesStatsCardMeta">' + escapeHtml(last) + '</div>',
         '  </div>',
-        '</div>'
+        '</details>'
       ].join('');
     }).join('');
   }
@@ -558,8 +565,13 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     const grid = document.getElementById('gamesStatsGrid');
     if (!grid) return;
     const profile = gamesGetProfile();
-    const accounts = Object.values(profile.accounts || {}).sort((a, b) => (Number(a && a.id || 0) - Number(b && b.id || 0)));
     const activeId = profile.activeAccountId;
+    const accounts = Object.values(profile.accounts || {}).filter(acc => !GAMES_ACCOUNT_BLOCKLIST.has(String(acc && acc.id || '').trim())).sort((a, b) => {
+      const aActive = String(a && a.id || '') === String(activeId || '');
+      const bActive = String(b && b.id || '') === String(activeId || '');
+      if (aActive !== bActive) return aActive ? -1 : 1;
+      return Number(a && a.id || 0) - Number(b && b.id || 0);
+    });
     if (!accounts.length) {
       grid.innerHTML = '<div class="smallText">Zatím nejsou žádné herní statistiky.</div>';
       return;
@@ -567,7 +579,8 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     grid.innerHTML = accounts.map((acc) => {
       const totalPlays = ALL_GAMES.reduce((sum, gid) => sum + Number(getAccountStat(acc, gid).plays || 0), 0);
       const lines = ALL_GAMES.map((gid) => summaryLine(acc, gid)).join('');
-      return `<div class="gamesStatsCard${String(acc.id) === String(activeId) ? ' isActive' : ''}"><div class="gamesStatsCardHead"><div><div class="gamesStatsCardName">${escapeHtml(acc.name || '')}</div></div><div class="gamesStatsCardTotal">${String(totalPlays)} her</div></div><div class="gamesStatsCardBody">${lines}</div></div>`;
+      const isActive = String(acc.id) === String(activeId);
+      return `<details class="gamesStatsCard${isActive ? ' isActive' : ''}"${isActive ? ' open' : ''}><summary class="gamesStatsCardSummary"><div class="gamesStatsCardHead"><div><div class="gamesStatsCardName">${escapeHtml(acc.name || '')}</div></div><div class="gamesStatsCardTotal">${String(totalPlays)} her</div></div></summary><div class="gamesStatsCardBody">${lines}</div></details>`;
     }).join('');
   }
 
