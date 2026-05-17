@@ -2823,3 +2823,132 @@ body.lowEndDevice nav.bottomNav > .bottomNavScroll > .bottomNavBtn.bottomNavMenu
   font-weight:850 !important;
   color:rgba(184,255,103,.96) !important;
 }
+
+/* v.1.1 (531) – drobnosti UI: Více mezi záložkami, větší akční tlačítka, výraznější rozpisy, stroje v jedné řadě. */
+nav.bottomNav > .bottomNavScroll{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:clamp(3px, .9vw, 7px) !important;
+  width:100% !important;
+  max-width:100% !important;
+  padding-inline:clamp(3px, .9vw, 7px) !important;
+  box-sizing:border-box !important;
+  overflow-x:hidden !important;
+  overflow-y:hidden !important;
+}
+nav.bottomNav > .bottomNavScroll > .bottomNavBtn:not(.bottomNavMenuBtn){
+  flex:1 1 0 !important;
+  width:auto !important;
+  min-width:0 !important;
+  max-width:none !important;
+}
+nav.bottomNav > .bottomNavScroll > .bottomNavBtn.bottomNavMenuBtn{
+  position:relative !important;
+  right:auto !important;
+  left:auto !important;
+  top:auto !important;
+  bottom:auto !important;
+  z-index:auto !important;
+  margin:0 !important;
+  flex:0 0 clamp(30px, 8vw, 40px) !important;
+  width:clamp(30px, 8vw, 40px) !important;
+  min-width:clamp(30px, 8vw, 40px) !important;
+  max-width:clamp(30px, 8vw, 40px) !important;
+  min-height:var(--bottom-nav-item-h, 46px) !important;
+  height:var(--bottom-nav-item-h, 46px) !important;
+  align-self:center !important;
+  transform:none !important;
+  box-shadow:none !important;
+  background:transparent !important;
+}
+nav.bottomNav > .bottomNavScroll > .bottomNavBtn.bottomNavMenuBtn .moreIcon{
+  width:clamp(13px, 3.8vw, 18px) !important;
+  height:clamp(13px, 3.8vw, 18px) !important;
+  margin:0 auto !important;
+  transform:none !important;
+  display:block !important;
+}
+nav.bottomNav > .bottomNavScroll > .bottomNavBtn.bottomNavMenuBtn .bottomNavLabel{
+  margin-top:2px !important;
+  line-height:1 !important;
+  transform:none !important;
+}
+nav.bottomNav > .bottomNavScroll > .bottomNavBtn.bottomNavMenuBtn.active{
+  transform:translateY(-3px) scale(1.08) !important;
+}
+body.lightweightMode nav.bottomNav > .bottomNavScroll > .bottomNavBtn.bottomNavMenuBtn,
+body.lowEndDevice nav.bottomNav > .bottomNavScroll > .bottomNavBtn.bottomNavMenuBtn{
+  flex-basis:clamp(28px, 7vw, 36px) !important;
+  width:clamp(28px, 7vw, 36px) !important;
+  min-width:clamp(28px, 7vw, 36px) !important;
+  max-width:clamp(28px, 7vw, 36px) !important;
+}
+
+:is(#soustruhy, #frezky, #brusy).calcPage :is(input, select){
+  min-height:clamp(38px, 5.7dvh, 46px) !important;
+  padding-top:8px !important;
+  padding-bottom:8px !important;
+  font-size:15px !important;
+  line-height:1.15 !important;
+}
+:is(#soustruhy, #frezky, #brusy).calcPage :is(.bbtn, .calcPrimaryBtn, button[data-action^="calc-"], .calcTile, .resetBtn),
+#frezky .calcDetails > summary,
+#brusy .calcDetails > summary,
+#brusy .calcDetailsInner > summary{
+  min-height:clamp(58px, 8.8dvh, 78px) !important;
+  padding-top:clamp(12px, 2.3dvh, 18px) !important;
+  padding-bottom:clamp(12px, 2.3dvh, 18px) !important;
+  font-size:clamp(15px, 3.3vw, 17px) !important;
+  line-height:1.16 !important;
+}
+:is(#soustruhy, #frezky, #brusy).calcPage .calcPrimaryBtn{
+  font-weight:900 !important;
+}
+
+.rotTable tr.currentShiftRow td{
+  background:rgba(184,255,103,.34) !important;
+  color:#f7fff7 !important;
+  box-shadow:inset 0 0 0 2px rgba(184,255,103,.72), 0 0 18px rgba(184,255,103,.16) !important;
+  border-color:rgba(184,255,103,.70) !important;
+}
+.rotTable tr.nextShiftRow td{
+  background:rgba(184,255,103,.20) !important;
+  color:#f5fff5 !important;
+  box-shadow:inset 0 0 0 1px rgba(184,255,103,.48), 0 0 12px rgba(184,255,103,.10) !important;
+  border-color:rgba(184,255,103,.42) !important;
+}
+.rotTable tr.currentShiftRow .dateCell::after,
+.rotTable tr.nextShiftRow .dateCell::after{
+  background:#d8ff92 !important;
+  color:#071008 !important;
+}
+
+#statsMachineGrid.listGrid{
+  display:grid !important;
+  grid-template-columns:repeat(6, minmax(0, 1fr)) !important;
+  gap:4px !important;
+  width:100% !important;
+}
+#statsMachineGrid .listItem,
+#statsMachineGrid .statsMachineTile{
+  min-height:48px !important;
+  padding:7px 4px !important;
+  min-width:0 !important;
+  width:auto !important;
+}
+#statsMachineGrid .statsTileTitle{
+  font-size:clamp(13px, 3.1vw, 15px) !important;
+  line-height:1.08 !important;
+  font-weight:850 !important;
+  letter-spacing:-.03em !important;
+  white-space:nowrap !important;
+  transform:none !important;
+  max-width:100% !important;
+}
+@media (max-width:390px){
+  #statsMachineGrid.listGrid{gap:3px !important;}
+  #statsMachineGrid .listItem,
+  #statsMachineGrid .statsMachineTile{min-height:46px !important;padding:6px 2px !important;}
+  #statsMachineGrid .statsTileTitle{font-size:12.5px !important;letter-spacing:-.05em !important;}
+}

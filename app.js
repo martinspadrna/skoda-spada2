@@ -1,4 +1,4 @@
-// v.1.1 (530) – Fáze 5: game performance throttle + safer live refresh.
+// v.1.1 (531) – Fáze 5: game performance throttle + safer live refresh.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

@@ -1,3 +1,10 @@
+## v.1.1 (531)
+- Spodní položka „Více“ je zpět normálně mezi ostatními záložkami, jen zůstává užší.
+- V kalkulačkách jsou menší psací vstupy a větší klikací/navolovací tlačítka.
+- Rozpisy mají výraznější světle zelené zvýraznění aktuální a nejbližší směny.
+- Statistiky / Stroje jsou roztažené do jednoho řádku se čitelnější velikostí textu.
+- Pokračování Fáze 5: drobný UI/performance polish bez zásahu do výpočtů.
+
 ## v.1.1 (530)
 - Spodní lišta: „Více“ je zpět normálně mezi ostatními záložkami, jen zůstává užší.
 - Kalkulačky: v Soustruhách, Frézkách a Brusech jsou klikací/vstupní políčka vyšší pro lepší ovládání na mobilu.
