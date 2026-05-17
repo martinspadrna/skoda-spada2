@@ -1,4 +1,4 @@
-// v.1.1 (525) – Bottom nav Více runtime hard-fix + Fáze 4 cleanup pokračuje.
+// v.1.1 (526) – Bottom nav Více runtime hard-fix + Fáze 4 cleanup pokračuje.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
@@ -372,12 +372,12 @@ function runPhaseThreeLightweightAudit() {
 
 function applyBottomNavMoreHardFix() {
   const apply = () => {
-    const btn = document.querySelector('nav.bottomNav > .bottomNavScroll > .bottomNavMenuBtn');
+    const btn = document.querySelector('nav.bottomNav > .bottomNavMenuBtn') || document.querySelector('nav.bottomNav .bottomNavMenuBtn');
     if (!btn || !btn.style) return false;
 
     const compact = window.matchMedia && window.matchMedia('(max-width: 390px)').matches;
     const lightweight = document.body && (document.body.classList.contains('lightweightMode') || document.body.classList.contains('lowEndDevice'));
-    const width = lightweight ? '36px' : (compact ? '38px' : '44px');
+    const width = lightweight ? '34px' : (compact ? '36px' : '38px');
     const peer = document.querySelector('nav.bottomNav > .bottomNavScroll > .bottomNavBtn:not(.bottomNavMenuBtn):not(.active)')
       || document.querySelector('nav.bottomNav > .bottomNavScroll > .bottomNavBtn:not(.bottomNavMenuBtn)');
     const peerRect = peer && peer.getBoundingClientRect ? peer.getBoundingClientRect() : null;
@@ -401,7 +401,7 @@ function applyBottomNavMoreHardFix() {
 
     const icon = btn.querySelector('.moreIcon');
     if (icon && icon.style) {
-      const iconSize = lightweight ? '16px' : (compact ? '17px' : '18px');
+      const iconSize = lightweight ? '14px' : (compact ? '15px' : '16px');
       icon.style.setProperty('flex', '0 0 ' + iconSize, 'important');
       icon.style.setProperty('width', iconSize, 'important');
       icon.style.setProperty('height', iconSize, 'important');

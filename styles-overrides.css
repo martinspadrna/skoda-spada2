@@ -2493,3 +2493,121 @@ body.lowEndDevice nav.bottomNav > .bottomNavScroll > .bottomNavBtn.bottomNavMenu
   max-width:16px !important;
   max-height:16px !important;
 }
+
+
+/* v.1.1 (526) – Čistý reset položky „Více“: samostatná úzká položka mimo scroll, stejná výška jako ostatní. */
+nav.bottomNav{
+  --rak-bottom-item-w:clamp(48px, 7.2vw, 58px);
+  --rak-bottom-item-h:clamp(46px, 7.8vw, 56px);
+  --rak-bottom-more-w:clamp(34px, 3.4vw, 38px);
+  display:grid !important;
+  grid-template-columns:minmax(0, 1fr) auto !important;
+  align-items:center !important;
+  justify-items:stretch !important;
+}
+nav.bottomNav > .bottomNavScroll{
+  grid-column:1 !important;
+  display:flex !important;
+  align-items:center !important;
+  min-width:0 !important;
+  overflow-x:auto !important;
+  overflow-y:hidden !important;
+  gap:clamp(2px, .45vw, 5px) !important;
+  padding-inline:2px 3px !important;
+  scrollbar-width:none !important;
+}
+nav.bottomNav > .bottomNavScroll::-webkit-scrollbar{display:none !important;}
+nav.bottomNav > .bottomNavScroll > .bottomNavBtn:not(.bottomNavMenuBtn){
+  flex:0 0 var(--rak-bottom-item-w) !important;
+  width:var(--rak-bottom-item-w) !important;
+  min-width:var(--rak-bottom-item-w) !important;
+  max-width:var(--rak-bottom-item-w) !important;
+  min-height:var(--rak-bottom-item-h) !important;
+  height:var(--rak-bottom-item-h) !important;
+  max-height:var(--rak-bottom-item-h) !important;
+}
+nav.bottomNav > .bottomNavBtn.bottomNavMenuBtn{
+  grid-column:2 !important;
+  flex:0 0 var(--rak-bottom-more-w) !important;
+  width:var(--rak-bottom-more-w) !important;
+  min-width:var(--rak-bottom-more-w) !important;
+  max-width:var(--rak-bottom-more-w) !important;
+  min-height:var(--rak-bottom-item-h) !important;
+  height:var(--rak-bottom-item-h) !important;
+  max-height:var(--rak-bottom-item-h) !important;
+  margin:0 !important;
+  padding:2px 0 1px !important;
+  position:relative !important;
+  inset:auto !important;
+  right:auto !important;
+  left:auto !important;
+  top:auto !important;
+  bottom:auto !important;
+  align-self:center !important;
+  justify-self:end !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:1px !important;
+  transform:none !important;
+  box-sizing:border-box !important;
+  overflow:visible !important;
+  box-shadow:none !important;
+}
+nav.bottomNav > .bottomNavBtn.bottomNavMenuBtn .moreIcon{
+  flex:0 0 16px !important;
+  width:16px !important;
+  height:16px !important;
+  min-width:16px !important;
+  min-height:16px !important;
+  max-width:16px !important;
+  max-height:16px !important;
+  padding:0 !important;
+  margin:0 auto !important;
+  transform:none !important;
+  box-sizing:border-box !important;
+  display:block !important;
+}
+nav.bottomNav > .bottomNavBtn.bottomNavMenuBtn .bottomNavLabel{
+  display:block !important;
+  width:100% !important;
+  font-size:7.6px !important;
+  line-height:1 !important;
+  letter-spacing:-.03em !important;
+  text-align:center !important;
+  margin:0 !important;
+  padding:0 !important;
+  white-space:nowrap !important;
+  transform:none !important;
+  overflow:visible !important;
+}
+nav.bottomNav > .bottomNavBtn.bottomNavMenuBtn.active{
+  transform:translateY(-3px) scale(1.04) !important;
+}
+body.lightweightMode nav.bottomNav,
+body.lowEndDevice nav.bottomNav{
+  --rak-bottom-item-h:clamp(42px, 7.3vw, 50px);
+  --rak-bottom-more-w:34px;
+}
+body.lightweightMode nav.bottomNav > .bottomNavBtn.bottomNavMenuBtn .moreIcon,
+body.lowEndDevice nav.bottomNav > .bottomNavBtn.bottomNavMenuBtn .moreIcon{
+  width:14px !important;
+  height:14px !important;
+  min-width:14px !important;
+  min-height:14px !important;
+  max-width:14px !important;
+  max-height:14px !important;
+}
+body.lightweightMode nav.bottomNav > .bottomNavBtn.bottomNavMenuBtn .bottomNavLabel,
+body.lowEndDevice nav.bottomNav > .bottomNavBtn.bottomNavMenuBtn .bottomNavLabel{
+  font-size:7.2px !important;
+}
+
+/* v.1.1 (526) – optické dorovnání spodní hrany „Více“ po oddělení mimo scroll. */
+nav.bottomNav > .bottomNavBtn.bottomNavMenuBtn:not(.active){
+  transform:translateY(5px) !important;
+}
+nav.bottomNav > .bottomNavBtn.bottomNavMenuBtn.active{
+  transform:translateY(1px) scale(1.04) !important;
+}

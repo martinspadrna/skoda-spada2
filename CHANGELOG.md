@@ -379,3 +379,8 @@
 - Jídelna a kantýna se sjednocovaly do přehlednějšího zobrazení.
 - Dashboard ukazoval další směny, absenci a procenta průběhu.
 - Kalkulačky pro frézky a brusy se postupně zpřesňovaly.
+
+## v.1.1 (526)
+- Spodní navigace: položka „Více“ je přesunutá mimo scroll jako samostatná úzká položka.
+- Vyčištěné přebíjející nastavení šířky „Více“ a nastavená stabilní užší šířka se stejnou výškou jako ostatní záložky.
+- Pokračování Fáze 4 cleanup manageru.
