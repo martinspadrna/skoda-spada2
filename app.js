@@ -1,4 +1,4 @@
-// v.1.1 (509) – Fáze 3: Láďův režim naming + lightweight continuation.
+// v.1.1 (510) – Fáze 3: nastavení cleanup + lightweight continuation.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

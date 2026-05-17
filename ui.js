@@ -174,8 +174,8 @@ function loadUiPrefs() {
     const parsed = JSON.parse(raw);
     return {
       compact: !!parsed.compact,
-      reduceMotion: !!parsed.reduceMotion,
-      lightweight: !!parsed.lightweight
+      reduceMotion: false,
+      lightweight: !!parsed.lightweight || !!parsed.reduceMotion
     };
   } catch (err) {
     console.warn(err);
@@ -221,6 +221,7 @@ function applyUiPrefs(prefs) {
 function toggleUiPref(key) {
   const current = loadUiPrefs();
   const next = { ...current, [key]: !current[key] };
+  if (key === 'lightweight') next.reduceMotion = false;
   applyUiPrefs(next);
   return next;
 }
@@ -3652,7 +3653,7 @@ function bindAppMenuHandlers(body) {
         return;
       }
       if (menuAction === 'clear-cache') {
-        if (!confirm('Vymazat aplikační cache a znovu načíst appku?')) return;
+        if (!confirm('Vyčistit cache a tvrdě obnovit aplikaci?')) return;
         try {
           if ('caches' in window && typeof caches.keys === 'function') {
             const keys = await caches.keys();
@@ -3662,7 +3663,7 @@ function bindAppMenuHandlers(body) {
             const regs = await navigator.serviceWorker.getRegistrations();
             await Promise.all(regs.map((reg) => reg && reg.update ? reg.update().catch(() => {}) : Promise.resolve()));
           }
-          alert('Cache byla vymazaná. Appka se teď načte znovu.');
+          alert('Cache byla vyčištěná. Appka se teď tvrdě obnoví.');
           window.location.reload();
         } catch (err) {
           console.error('Cache clear failed', err);
@@ -3675,8 +3676,7 @@ function bindAppMenuHandlers(body) {
           'Verze: ' + String((typeof app !== "undefined" && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '—')),
           'Online: ' + (navigator.onLine ? 'ano' : 'ne'),
           'Kompaktní režim: ' + (document.body.classList.contains('compactUI') ? 'zapnutý' : 'vypnutý'),
-          'Méně animací: ' + (document.body.classList.contains('reduceMotion') ? 'zapnuté' : 'vypnuté'),
-          LIGHTWEIGHT_MODE_LABEL + ': ' + (document.body.classList.contains('lightweightMode') ? 'zapnutý' : 'vypnutý'),
+          LIGHTWEIGHT_MODE_LABEL + ': ' + (document.body.classList.contains('lightweightMode') ? 'zapnutý' : 'vypnutý') + (document.body.classList.contains('reduceMotion') ? ' · méně animací aktivní' : ''),
           'Slabší zařízení detekováno: ' + (document.body.classList.contains('lowEndDevice') ? 'ano' : 'ne'),
           'Aktuální stránka: ' + String(document.querySelector('.page.active')?.id || '—'),
           'Bottom lišta: ' + String(getComputedStyle(document.querySelector('.bottomNav') || document.body).bottom || '—')
@@ -3869,18 +3869,16 @@ function openAppMenu(view) {
         '<div class="appMenuCard appMenuSettingsCard">',
         '  <div class="appMenuCardTitle">Nastavení</div>',
         '  <div class="appMenuText">',
-        '    <div>Kompaktní režim, méně animací a Láďův režim se ukládají jen do tohoto zařízení a promítnou se napříč celou appkou.</div>',
-        '    <div>Pro rychlé servisní zásahy tu jsou ještě vyčištění cache, diagnostika a tvrdé obnovení aplikace.</div>',
+        '    <div>Kompaktní režim a Láďův režim se ukládají jen do tohoto zařízení a promítnou se napříč celou appkou.</div>',
+        '    <div>Láďův režim v sobě zahrnuje méně animací, lehčí efekty a šetrnější vykreslování pro slabší mobil.</div>',
         '  </div>',
         '  <div class="appMenuSettingsList">',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-pref="compact">' + (prefs.compact ? '✓ ' : '') + 'Kompaktní režim</button>',
-        '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-pref="reduceMotion">' + (prefs.reduceMotion ? '✓ ' : '') + 'Méně animací</button>',
-        '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-pref="lightweight">' + (prefs.lightweight ? '✓ ' : '') + LIGHTWEIGHT_MODE_LABEL + '</button>',
-        '    <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="clear-cache">Vymazat cache a obnovit</button>',
+        '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-pref="lightweight">' + (prefs.lightweight ? '✓ ' : '') + LIGHTWEIGHT_MODE_LABEL + ' · méně animací a efektů</button>',
+        '    <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="clear-cache">Vyčistit cache a tvrdě obnovit</button>',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="app-diagnostics">Diagnostika aplikace</button>',
-        '    <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="hard-reload">Tvrdé obnovení</button>',
-                '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-reset="1">Obnovit výchozí nastavení</button>',
-        '    <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="reset-state">Smazat lokální data</button>',
+        '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-reset="1">Obnovit výchozí nastavení</button>',
+        '    <button type="button" class="appMenuAction appMenuSettingBtn appMenuDangerBtn" data-menu-action="reset-state">Smazat lokální data</button>',
         '  </div>',
         '  <button type="button" class="appMenuAction appMenuBack" data-menu-back="1">Zpět</button>',
         '</div>',

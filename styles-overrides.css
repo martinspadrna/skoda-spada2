@@ -1239,7 +1239,7 @@ body.lightweightMode #games .game2048Board .gameBoardCell.n2048{
 }
 
 
-/* v.1.1 (509) – Fáze 3 pokračování: Láďův režim + lehčí render guardy. */
+/* v.1.1 (510) – Fáze 3 pokračování: Láďův režim + lehčí render guardy. */
 body.lightweightMode .dashboardHeroCard::before,
 body.lightweightMode .dashboardHeroCard::after,
 body.lightweightMode .dashboardCard::before,
@@ -1287,4 +1287,83 @@ body.lightweightMode .personScheduleOverlay,
 body.lightweightMode .qrModalOverlay,
 body.lightweightMode .tttOverlay{
   overscroll-behavior:contain !important;
+}
+
+/* v.1.1 (510) – Dashboard D line optical center + Rotace name dock cleanup + Fáze 3 menu polish. */
+#dashHero .dashboardHeroLine3{
+  display:block !important;
+  box-sizing:border-box !important;
+  width:100% !important;
+  max-width:100% !important;
+  margin:8px 0 0 !important;
+  padding:7px 8px !important;
+  text-align:center !important;
+  align-self:stretch !important;
+  transform:translateX(-16px) !important;
+}
+@media (max-width:700px){
+  #dashHero .dashboardHeroLine3{
+    transform:translateX(-10px) !important;
+    padding-inline:6px !important;
+  }
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid{
+  border:none !important;
+  background:transparent !important;
+  background-image:none !important;
+  box-shadow:none !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+  padding:4px 2px !important;
+  gap:7px !important;
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem,
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceNameTile{
+  border:1px solid rgba(124,255,124,.22) !important;
+  background:linear-gradient(180deg, rgba(20,24,22,.94), rgba(12,16,14,.96)) !important;
+  box-shadow:0 10px 22px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.05) !important;
+  border-radius:14px !important;
+}
+#rotaceNamesPanel #personView .rotaceOverviewName,
+#rotace #personView .rotaceOverviewName,
+#rotaceNamesPanel #personView .rotaceOverviewTarget,
+#rotace #personView .rotaceOverviewTarget,
+#rotaceNamesPanel #personView .rotaceShiftName,
+#rotace #personView .rotaceShiftName,
+#rotaceNamesPanel #personView .rotaceShiftTarget,
+#rotace #personView .rotaceShiftTarget{
+  color:rgba(255,255,255,.94) !important;
+}
+.appMenuSettingsList{
+  gap:9px !important;
+}
+.appMenuSettingBtn{
+  min-height:46px !important;
+}
+.appMenuDangerBtn{
+  border-color:rgba(255,124,124,.18) !important;
+  color:rgba(255,226,226,.92) !important;
+}
+body.lightweightMode .appMenuThemeCard,
+body.lightweightMode .appMenuThemeSummary,
+body.lightweightMode .appMenuSettingsCard,
+body.lightweightMode .appMenuSettingBtn{
+  contain:layout paint !important;
+  box-shadow:0 8px 18px rgba(0,0,0,.20) !important;
+}
+/* v.1.1 (510) – optical correction for unequal hero padding. */
+#dashHero .dashboardHeroLine3{
+  width:calc(100% + 128px) !important;
+  max-width:calc(100% + 128px) !important;
+  margin-left:-32px !important;
+  margin-right:0 !important;
+  transform:none !important;
+}
+@media (max-width:700px){
+  #dashHero .dashboardHeroLine3{
+    width:calc(100% + 96px) !important;
+    max-width:calc(100% + 96px) !important;
+    margin-left:-24px !important;
+    transform:none !important;
+  }
 }

@@ -1,3 +1,10 @@
+## v.1.1 (510)
+- Dashboard: řádek směny D opticky srovnaný na střed hero karty.
+- Rotace: klikací jména dole už nemají společné ohraničení celého bloku, ohraničené jsou jen jednotlivé položky.
+- Rotace: jména a stroje v detailu drží jednotnou barvu.
+- Nastavení: sloučené „Méně animací“ do „Láďova režimu“ a cache + tvrdé obnovení do jedné servisní akce.
+- Fáze 3: lehčí vykreslování rozšířené i na nastavení/menu.
+
 ## v.1.1 (509)
 - Nastavení: odlehčený režim přejmenovaný na „Láďův režim“.
 - Diagnostika aplikace nově používá stejný název „Láďův režim“.
