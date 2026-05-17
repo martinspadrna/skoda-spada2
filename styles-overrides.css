@@ -2214,3 +2214,65 @@ body.lowEndDevice .bottomNavMenuBtn .moreIcon{
   max-width:18px !important;
   max-height:18px !important;
 }
+
+/* v.1.1 (522) – Bottom nav: Více dorovnané spodní hranou + Statistiky stroje kompaktně v jednom řádku. */
+.bottomNavMenuBtn{
+  align-self:center !important;
+  transform:translateY(2px) !important;
+}
+.bottomNavMenuBtn.active{
+  transform:translateY(-2px) scale(1.06) !important;
+}
+body.lightweightMode .bottomNavMenuBtn,
+body.lowEndDevice .bottomNavMenuBtn{
+  transform:translateY(1px) !important;
+}
+body.lightweightMode .bottomNavMenuBtn.active,
+body.lowEndDevice .bottomNavMenuBtn.active{
+  transform:none !important;
+}
+
+#statsMachineGrid.listGrid{
+  grid-template-columns:repeat(6, minmax(0, 1fr)) !important;
+  gap:1px !important;
+  column-gap:1px !important;
+  row-gap:3px !important;
+}
+#statsMachineGrid .listItem,
+#statsMachineGrid .statsMachineTile{
+  min-height:31px !important;
+  padding:3px 1px !important;
+  margin:0 !important;
+}
+#statsMachineGrid .statsTileMain{
+  min-width:0 !important;
+  width:100% !important;
+  align-items:center !important;
+  justify-content:center !important;
+}
+#statsMachineGrid .statsTileTitle{
+  font-size:clamp(8px, 2.1vw, 10px) !important;
+  line-height:1.02 !important;
+  letter-spacing:-.04em !important;
+  transform:scaleX(.86) !important;
+  transform-origin:center center !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:clip !important;
+}
+@media (max-width:390px){
+  #statsMachineGrid.listGrid{
+    gap:1px !important;
+    row-gap:2px !important;
+  }
+  #statsMachineGrid .listItem,
+  #statsMachineGrid .statsMachineTile{
+    min-height:29px !important;
+    padding:2px 0 !important;
+  }
+  #statsMachineGrid .statsTileTitle{
+    font-size:clamp(7.4px, 2vw, 9px) !important;
+    transform:scaleX(.82) !important;
+  }
+}
+

@@ -1,4 +1,4 @@
-// v.1.1 (521) – Bottom nav Více snížené na rytmus ostatních položek + Fáze 4 cleanup audit pokračování.
+// v.1.1 (522) – Bottom nav Více dorovnané spodní hranou + Statistiky stroje kompaktněji + Fáze 4 audit.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
@@ -377,7 +377,8 @@ function runPhaseFourCleanupManagerAudit() {
       checkedAt: new Date().toISOString(),
       ok: true,
       dashboard: { missingCards: [], missingValues: [], missingIcons: [], dLine: { exists: false, hasMain: false, hasSub: false } },
-      bottomNav: { exists: false, missingButtons: [], menuAligned: false, allItemsAligned: false, menuHasIcon: false, menuHasLabel: false }
+      bottomNav: { exists: false, missingButtons: [], menuAligned: false, allItemsAligned: false, menuBottomAligned: false, menuHasIcon: false, menuHasLabel: false },
+      stats: { machineGridExists: false, machineOneLine: false, machineTileCount: 0, machineRows: 0 }
     };
 
     const requiredDashboardCards = [
@@ -425,15 +426,34 @@ function runPhaseFourCleanupManagerAudit() {
         const peerButtons = Array.from(bottomNav.querySelectorAll('.bottomNavBtn')).filter(Boolean);
         const peer = bottomNav.querySelector('.bottomNavBtn:not(.bottomNavMenuBtn):not(.active)') || bottomNav.querySelector('.bottomNavBtn:not(.bottomNavMenuBtn)');
         const peerRect = peer ? peer.getBoundingClientRect() : null;
-        report.bottomNav.menuAligned = !!(peerRect && Math.abs(menuRect.top - peerRect.top) <= 4 && Math.abs(menuRect.height - peerRect.height) <= 5);
+        report.bottomNav.menuAligned = !!(peerRect && Math.abs(menuRect.top - peerRect.top) <= 5 && Math.abs(menuRect.height - peerRect.height) <= 6);
+        report.bottomNav.menuBottomAligned = !!(peerRect && Math.abs(menuRect.bottom - peerRect.bottom) <= 4);
         report.bottomNav.allItemsAligned = peerButtons.length > 0 && peerButtons.every((btn) => {
           const rect = btn.getBoundingClientRect();
-          return Math.abs(rect.top - menuRect.top) <= 4 && Math.abs(rect.height - menuRect.height) <= 6;
+          return Math.abs(rect.bottom - menuRect.bottom) <= 5 && Math.abs(rect.height - menuRect.height) <= 7;
         });
       } else {
         report.bottomNav.menuAligned = !!menuBtn;
+        report.bottomNav.menuBottomAligned = !!menuBtn;
         report.bottomNav.allItemsAligned = !!menuBtn;
       }
+    }
+
+    const statsMachineGrid = document.getElementById('statsMachineGrid');
+    report.stats.machineGridExists = !!statsMachineGrid;
+    if (statsMachineGrid && window.getComputedStyle) {
+      const machineTiles = Array.from(statsMachineGrid.querySelectorAll('.statsMachineTile, .listItem')).filter(Boolean);
+      report.stats.machineTileCount = machineTiles.length;
+      const tops = [];
+      machineTiles.forEach((tile) => {
+        const rect = tile.getBoundingClientRect();
+        const top = Math.round(rect.top);
+        if (!tops.some((value) => Math.abs(value - top) <= 2)) tops.push(top);
+      });
+      report.stats.machineRows = tops.length;
+      report.stats.machineOneLine = machineTiles.length > 0 && tops.length <= 1;
+    } else {
+      report.stats.machineOneLine = !!statsMachineGrid;
     }
 
     report.ok = !report.dashboard.missingCards.length
@@ -447,7 +467,9 @@ function runPhaseFourCleanupManagerAudit() {
       && report.bottomNav.menuHasIcon
       && report.bottomNav.menuHasLabel
       && report.bottomNav.menuAligned
-      && report.bottomNav.allItemsAligned;
+      && report.bottomNav.menuBottomAligned
+      && report.bottomNav.allItemsAligned
+      && report.stats.machineGridExists;
     try {
       document.documentElement.dataset.rakPhase4 = report.ok ? 'cleanup-manager-start' : 'dashboard-check';
       window.__rakPhase4CleanupAudit = report;

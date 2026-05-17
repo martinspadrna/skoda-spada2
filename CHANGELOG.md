@@ -1,3 +1,8 @@
+## v.1.1 (522)
+- Spodní panel jako celek zůstává beze změny; položka „Více“ je jen jemně posunutá dolů, aby spodní hrana seděla s ostatními záložkami.
+- Statistiky: výběr strojů je kompaktnější, s menšími mezerami a šesti položkami v jednom řádku.
+- Fáze 4: cleanup audit nově sleduje i spodní dorovnání položky „Více“ a základní stav výběru strojů ve Statistikách.
+
 ## v.1.1 (521)
 - Spodní panel jako celek zůstává beze změny.
 - Položka „Více“ je snížená na stejný výškový rytmus jako ostatní záložky.
