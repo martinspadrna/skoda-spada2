@@ -2952,3 +2952,92 @@ body.lowEndDevice nav.bottomNav > .bottomNavScroll > .bottomNavBtn.bottomNavMenu
   #statsMachineGrid .statsMachineTile{min-height:46px !important;padding:6px 2px !important;}
   #statsMachineGrid .statsTileTitle{font-size:12.5px !important;letter-spacing:-.05em !important;}
 }
+
+
+/* v.1.1 (532) – UI polish: Více níž, správné velikosti klikacích kalkulačkových tlačítek, reload malý, stroje širší. */
+nav.bottomNav > .bottomNavScroll > .bottomNavBtn.bottomNavMenuBtn{
+  transform:translateY(2px) !important;
+  align-self:center !important;
+}
+nav.bottomNav > .bottomNavScroll > .bottomNavBtn.bottomNavMenuBtn.active{
+  transform:translateY(-1px) scale(1.08) !important;
+}
+nav.bottomNav > .bottomNavScroll > .bottomNavBtn.bottomNavMenuBtn .moreIcon{
+  transform:none !important;
+}
+nav.bottomNav > .bottomNavScroll > .bottomNavBtn.bottomNavMenuBtn .bottomNavLabel{
+  margin-top:1px !important;
+  transform:none !important;
+}
+
+/* Psací pole v kalkulačkách zpět kompaktní. */
+:is(#soustruhy, #frezky, #brusy).calcPage :is(input, select, textarea){
+  min-height:clamp(38px, 5.6dvh, 46px) !important;
+  padding-top:7px !important;
+  padding-bottom:7px !important;
+  font-size:15px !important;
+  line-height:1.15 !important;
+}
+
+/* Větší mají být klikací/navolovací a výpočtová tlačítka, ne reload/reset. */
+:is(#soustruhy, #frezky, #brusy).calcPage :is(.bbtn, .calcPrimaryBtn, button[data-action^="calc-"]):not(.resetBtn){
+  min-height:clamp(58px, 8.8dvh, 78px) !important;
+  padding-top:clamp(12px, 2.3dvh, 18px) !important;
+  padding-bottom:clamp(12px, 2.3dvh, 18px) !important;
+  font-size:clamp(15px, 3.3vw, 17px) !important;
+  line-height:1.16 !important;
+}
+#brusy :is(.bgrid, .indexGrid, .freeWrap) .bbtn{
+  min-height:clamp(60px, 9.2dvh, 82px) !important;
+  padding-top:clamp(13px, 2.4dvh, 19px) !important;
+  padding-bottom:clamp(13px, 2.4dvh, 19px) !important;
+  font-size:clamp(15.5px, 3.4vw, 17.5px) !important;
+}
+:is(#soustruhy, #frezky, #brusy).calcPage .resetBtn,
+:is(#soustruhy, #frezky, #brusy).calcPage .headerBar .resetBtn{
+  width:34px !important;
+  height:34px !important;
+  min-width:34px !important;
+  max-width:34px !important;
+  min-height:34px !important;
+  max-height:34px !important;
+  padding:0 !important;
+  font-size:18px !important;
+  line-height:1 !important;
+  border-radius:8px !important;
+  flex:0 0 34px !important;
+}
+
+/* Statistiky / Stroje: jeden řádek, dlaždice víc využijí celou šířku. */
+#statsMachineGrid.listGrid{
+  display:grid !important;
+  grid-template-columns:repeat(6, minmax(0, 1fr)) !important;
+  gap:2px !important;
+  column-gap:2px !important;
+  row-gap:2px !important;
+  width:100% !important;
+  max-width:100% !important;
+  padding-inline:0 !important;
+  box-sizing:border-box !important;
+}
+#statsMachineGrid .listItem,
+#statsMachineGrid .statsMachineTile{
+  min-width:0 !important;
+  width:100% !important;
+  max-width:100% !important;
+  min-height:48px !important;
+  padding:7px 5px !important;
+}
+#statsMachineGrid .statsTileTitle{
+  font-size:clamp(13.5px, 3.25vw, 15.5px) !important;
+  letter-spacing:-.035em !important;
+  white-space:nowrap !important;
+  transform:none !important;
+  max-width:100% !important;
+}
+@media (max-width:390px){
+  #statsMachineGrid.listGrid{gap:1px !important;column-gap:1px !important;}
+  #statsMachineGrid .listItem,
+  #statsMachineGrid .statsMachineTile{padding-left:3px !important;padding-right:3px !important;}
+  #statsMachineGrid .statsTileTitle{font-size:12.8px !important;letter-spacing:-.055em !important;}
+}

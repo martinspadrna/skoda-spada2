@@ -1,4 +1,4 @@
-// v.1.1 (531) – Fáze 5: game performance throttle + safer live refresh.
+// v.1.1 (532) – Fáze 5: UI polish + calc button sizing guard.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
@@ -399,7 +399,7 @@ function applyBottomNavMoreHardFix() {
     btn.style.setProperty('box-sizing', 'border-box', 'important');
     btn.style.setProperty('justify-content', 'center', 'important');
     btn.style.setProperty('gap', '1px', 'important');
-    if (!btn.classList.contains('active')) btn.style.setProperty('transform', 'none', 'important');
+    btn.style.setProperty('transform', btn.classList.contains('active') ? 'translateY(-1px) scale(1.08)' : 'translateY(2px)', 'important');
 
     const icon = btn.querySelector('.moreIcon');
     if (icon && icon.style) {

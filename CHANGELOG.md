@@ -1,3 +1,10 @@
+## v.1.1 (532)
+- Spodní položka „Více“ je pořád mezi ostatními záložkami, ale je jemně posunutá níž, aby opticky nelítala nad řádek.
+- Kalkulačky: psací vstupy zůstávají menší, větší jsou jen klikací/navolovací a výpočtová tlačítka; tlačítko reload/reset je zase malé.
+- Brusy: zvětšené jsou i klikací volby stroje a indexů.
+- Statistiky / Stroje: dlaždice strojů jsou roztažené a drží jeden řádek.
+- Pokračování Fáze 5: drobný UI/performance polish bez zásahu do výpočtů.
+
 ## v.1.1 (531)
 - Spodní položka „Více“ je zpět normálně mezi ostatními záložkami, jen zůstává užší.
 - V kalkulačkách jsou menší psací vstupy a větší klikací/navolovací tlačítka.
