@@ -1,6 +1,6 @@
-## v.1.1 (475)
-- Exact duplicate CSS rule blocks were removed from the active stylesheets to reduce override noise.
-- Build metadata, cache i assets byly srovnány na `475`.
+## v.1.1 (481)
+- Exact duplicate CSS rule blocks were removed from styles-inline-legacy.css a styles-games.css, aby se snížil override noise.
+- Build metadata, cache i assets byly srovnány na `481`.
 - HTML/JS cleanup pokračuje bez zásahu do layout baseline.
 
 
