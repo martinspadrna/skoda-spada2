@@ -1,3 +1,16 @@
+## v.1.1 (492)
+- Post-F1 Rotace UX: po kliknutí na jméno se ukazuje čistší krátký výpis nejbližších směn bez rušivých souhrnných řádků „Minulá směna“ a „Aktuálně“.
+- Výpis je zúžený na předchozí směnu + tři nejbližší směny, aby sekce na mobilu nebyla zbytečně dlouhá.
+- QR kód se nově drží podle původního zadání až na třetí rychlé klepnutí na stejné jméno.
+- Verze sjednocena v core.js, sw.js, komentáři buildu a changelogu.
+
+## v.1.1 (491)
+- Fáze 1 uzavřena finálním runtime auditem základních DOM prvků, CSS vazeb a duplicitních ID.
+- Service worker má doplněné pozdě načítané CSS soubory a lokální ikonky dashboardu/spodní lišty do app shell cache.
+- Doplněné poslední bezpečné safe-area guard rails pro spodní lištu a scroll na mobilu.
+- Export ZIPu doplněn o lifecycle.js, games-arcade.js, pozdě načítané CSS soubory a lokální ikonky.
+- Verze sjednocena napříč core.js, sw.js, komentářem buildu a exportem.
+
 ## v.1.1 (488)
 - Exact duplicate CSS rule blocks were removed from styles-inline-legacy.css a styles-games.css, aby se snížil override noise.
 - Build metadata, cache i assets byly srovnány na `485`.

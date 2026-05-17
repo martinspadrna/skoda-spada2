@@ -127,7 +127,7 @@ function handlePersonTap(name) {
     return;
   }
 
-  if (state.count >= 2) {
+  if (state.count >= 3) {
     state.qrShownAt = now;
     app.nameTapState = state;
     app.selectedName = name;
@@ -410,10 +410,10 @@ function renderPerson(name) {
   }
 
   const startIdx = Math.max(0, currentIdx >= 0 ? currentIdx - 1 : 0);
-  const endIdx = Math.min(entries.length, startIdx + 8);
-  const visibleEntries = entries.slice(startIdx, endIdx);
+  const forwardStartIdx = currentIdx >= 0 ? currentIdx : startIdx;
   const previousEntry = currentIdx > 0 ? entries[currentIdx - 1] : null;
-  const currentEntry = currentIdx >= 0 ? entries[currentIdx] : null;
+  const forwardEntries = entries.slice(forwardStartIdx, Math.min(entries.length, forwardStartIdx + 3));
+  const visibleEntries = previousEntry ? [previousEntry, ...forwardEntries] : forwardEntries;
 
   const formatEntry = (entry, isCurrent) => [
     '<div class="rotaceMiniCard' + (isCurrent ? ' current' : '') + '">',
@@ -423,11 +423,12 @@ function renderPerson(name) {
   ].join('');
 
   personView.innerHTML = [
-    '<div class="rotacePersonTitle">' + escapeHtml(name) + '</div>',
-    previousEntry ? '<div class="rotacePersonMeta">Minulá směna: ' + escapeHtml((previousEntry.dateLabel || '') + (previousEntry.shift ? ' ' + previousEntry.shift : '') + (previousEntry.target ? ' · ' + previousEntry.target : '')) + '</div>' : '',
-    currentEntry ? '<div class="rotacePersonMeta">Aktuálně: ' + escapeHtml((currentEntry.dateLabel || '') + (currentEntry.shift ? ' ' + currentEntry.shift : '') + (currentEntry.target ? ' · ' + currentEntry.target : '')) + '</div>' : '',
+    '<div class="rotacePersonHeader">',
+    '  <div class="rotacePersonTitle">' + escapeHtml(name) + '</div>',
+    '  <div class="rotacePersonMeta">1 klepnutí ukáže nejbližší směny, 3 klepnutí otevřou QR.</div>',
+    '</div>',
     '<div class="rotaceQuickCards rotaceQuickStack">',
-    visibleEntries.map((entry, idx) => formatEntry(entry, (startIdx + idx) === currentIdx)).join(''),
+    visibleEntries.map((entry) => formatEntry(entry, entry === entries[currentIdx])).join(''),
     '</div>'
   ].join('');
 }

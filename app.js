@@ -1,4 +1,4 @@
-// v.1.1 (488) – Fáze 1 pokračuje: externí odkazy a cleanup registry zpřehledňují runtime logiku.
+// v.1.1 (492) – Post-F1: první Rotace UX krok, čistší výpis směn a QR až na třetí klepnutí.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
@@ -164,6 +164,94 @@ function installBottomNavBindings() {
   }, { passive: false });
 }
 
+function runPhaseOneFinalAudit() {
+  if (document.readyState === 'loading') {
+    const rerun = () => runPhaseOneFinalAudit();
+    if (typeof registerListener === 'function') {
+      registerListener(document, 'DOMContentLoaded', rerun, { once: true });
+    } else {
+      document.addEventListener('DOMContentLoaded', rerun, { once: true });
+    }
+    return {
+      version: window.APP_VERSION || 'unknown',
+      phase: 'phase-1-final',
+      checkedAt: new Date().toISOString(),
+      ok: true,
+      deferred: true
+    };
+  }
+
+  const report = {
+    version: window.APP_VERSION || 'unknown',
+    phase: 'phase-1-final',
+    checkedAt: new Date().toISOString(),
+    ok: true,
+    missingDom: [],
+    missingStyles: [],
+    duplicateIds: []
+  };
+
+  const requiredDom = [
+    '#home',
+    '#rotace',
+    '#stats',
+    '.bottomNav',
+    '#dashKantyna',
+    '#dashJidelna',
+    '#games'
+  ];
+
+  requiredDom.forEach((selector) => {
+    if (!document.querySelector(selector)) report.missingDom.push(selector);
+  });
+
+  const loadedStyles = Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
+    .map((link) => String(link.getAttribute('href') || '').split('?')[0].trim())
+    .filter(Boolean);
+  [
+    'styles.css',
+    'styles-inline-legacy.css',
+    'styles-calc-panels.css',
+    'styles-games.css',
+    'styles-overrides.css'
+  ].forEach((href) => {
+    if (!loadedStyles.some((item) => item.endsWith(href))) report.missingStyles.push(href);
+  });
+
+  const ids = new Map();
+  document.querySelectorAll('[id]').forEach((el) => {
+    const id = el.id;
+    if (!ids.has(id)) ids.set(id, 0);
+    ids.set(id, ids.get(id) + 1);
+  });
+  report.duplicateIds = Array.from(ids.entries())
+    .filter(([, count]) => count > 1)
+    .map(([id, count]) => ({ id, count }));
+
+  report.ok = !report.missingDom.length && !report.missingStyles.length && !report.duplicateIds.length;
+  try {
+    document.documentElement.dataset.rakPhase1 = report.ok ? 'complete' : 'check';
+    window.__rakPhase1Audit = report;
+  } catch (err) {}
+
+  if (!report.ok) {
+    console.warn('[RaK] Phase 1 final audit', report);
+    try {
+      const log = JSON.parse(localStorage.getItem('rotace_err_log_v1') || '[]');
+      log.push({
+        ts: report.checkedAt,
+        ver: report.version,
+        type: 'phase1-audit',
+        missingDom: report.missingDom,
+        missingStyles: report.missingStyles,
+        duplicateIds: report.duplicateIds
+      });
+      localStorage.setItem('rotace_err_log_v1', JSON.stringify(log.slice(-50)));
+    } catch (err) {}
+  }
+  return report;
+}
+
 (async () => {
   const files = [
     "core.js",
@@ -200,6 +288,7 @@ function installBottomNavBindings() {
   installPwaAndConnectivityHooks();
   installBottomNavBindings();
   installDelegatedAppActions();
+  try { runPhaseOneFinalAudit(); } catch (err) { console.warn('Phase 1 final audit failed', err); }
 
   try {
     if (typeof window.__rotaceBootHomeRefreshLate === 'function') {
@@ -221,7 +310,9 @@ function installBottomNavBindings() {
       "saveRotationData": typeof saveRotationData === "function",
       "DOM #home": !!document.getElementById("home"),
       "DOM #rotace": !!document.getElementById("rotace"),
-      "DOM #stats": !!document.getElementById("stats")
+      "DOM #stats": !!document.getElementById("stats"),
+      "DOM .bottomNav": !!document.querySelector(".bottomNav"),
+      "DOM #games": !!document.getElementById("games")
     };
     const missing = Object.entries(required).filter(([_, v]) => !v).map(([k]) => k);
     if (missing.length) {

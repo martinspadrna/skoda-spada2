@@ -538,3 +538,12 @@ body.lightweightMode .dashboardSyncBadge{backdrop-filter:blur(4px) saturate(110%
   padding:0 10px 10px !important;}
 #games .gamesDevFolder[open] .gamesDevFolderBody{padding-top:4px !important;}
 @media (max-width:700px){#games .gamesDevFolderBody{gap:8px !important;}}
+
+/* v.1.1 (491) – Phase 1 final guard rails.
+   Jen bezpečné stabilizační dorovnání: žádná změna logiky ani větší redesign. */
+:root{--rak-phase1-safe-bottom:max(env(safe-area-inset-bottom), 12px);}
+html[data-rak-phase1="complete"] body{min-height:100svh;}
+@supports not (height: 100svh){html[data-rak-phase1="complete"] body{min-height:100vh;}}
+.bottomNav{padding-bottom:max(var(--rak-phase1-safe-bottom), env(safe-area-inset-bottom)) !important;}
+.bottomNavScroll{overscroll-behavior-x:contain !important;}
+.page{scroll-margin-bottom:calc(96px + var(--rak-phase1-safe-bottom)) !important;}
