@@ -1,9 +1,5 @@
-body.qrModalOpen{
-  overflow:hidden;
-}
-
-.qrModalOverlay{
-  position:fixed;
+body.qrModalOpen{overflow:hidden;}
+.qrModalOverlay{position:fixed;
   inset:0;
   z-index:4000;
   display:none;
@@ -11,15 +7,9 @@ body.qrModalOpen{
   justify-content:center;
   padding:18px;
   background:rgba(4,6,5,.76);
-  backdrop-filter:blur(10px);
-}
-
-.qrModalOverlay.isVisible{
-  display:flex;
-}
-
-.qrModal{
-  width:min(92vw, 360px);
+  backdrop-filter:blur(10px);}
+.qrModalOverlay.isVisible{display:flex;}
+.qrModal{width:min(92vw, 360px);
   border-radius:26px;
   background:rgba(20,24,22,.84);
   border:1px solid rgba(124,255,124,.16);
@@ -27,11 +17,8 @@ body.qrModalOpen{
   backdrop-filter:blur(18px) saturate(160%);
   padding:18px 18px 16px;
   position:relative;
-  text-align:center;
-}
-
-.qrModalClose{
-  position:absolute;
+  text-align:center;}
+.qrModalClose{position:absolute;
   top:10px;
   right:10px;
   width:36px;
@@ -42,18 +29,12 @@ body.qrModalOpen{
   background:rgba(255,255,255,.06);
   color:var(--text);
   font-size:22px;
-  line-height:1;
-}
-
-.qrModalName{
-  font-size:18px;
+  line-height:1;}
+.qrModalName{font-size:18px;
   font-weight:700;
   line-height:1.2;
-  margin:4px 34px 12px;
-}
-
-.qrModalSvg{
-  width:min(68vw, 250px);
+  margin:4px 34px 12px;}
+.qrModalSvg{width:min(68vw, 250px);
   margin:0 auto;
   aspect-ratio:1/1;
   background:#fff;
@@ -61,29 +42,17 @@ body.qrModalOpen{
   padding:12px;
   display:flex;
   align-items:center;
-  justify-content:center;
-}
-
-.qrModalSvg svg{
-  width:100%;
+  justify-content:center;}
+.qrModalSvg svg{width:100%;
   height:100%;
-  display:block;
-}
-
-.qrModalCode{
-  margin-top:12px;
+  display:block;}
+.qrModalCode{margin-top:12px;
   font-size:15px;
   font-weight:700;
   letter-spacing:.08em;
-  color:var(--green2);
-}
-
-body.foodModalOpen{
-  overflow:hidden;
-}
-
-.foodScheduleOverlay{
-  position:fixed;
+  color:var(--green2);}
+body.foodModalOpen{overflow:hidden;}
+.foodScheduleOverlay{position:fixed;
   inset:0;
   z-index:3900;
   display:none;
@@ -91,15 +60,9 @@ body.foodModalOpen{
   justify-content:center;
   padding:18px;
   background:rgba(7,10,8,.60);
-  backdrop-filter:blur(18px) saturate(160%);
-}
-
-.foodScheduleOverlay.isVisible{
-  display:flex;
-}
-
-.foodScheduleModal{
-  width:min(92vw, 430px);
+  backdrop-filter:blur(18px) saturate(160%);}
+.foodScheduleOverlay.isVisible{display:flex;}
+.foodScheduleModal{width:min(92vw, 430px);
   max-height:min(86vh, 760px);
   overflow:auto;
   border-radius:24px;
@@ -108,11 +71,8 @@ body.foodModalOpen{
   box-shadow:0 24px 60px rgba(0,0,0,.45);
   backdrop-filter:blur(18px) saturate(160%);
   padding:18px 18px 16px;
-  position:relative;
-}
-
-.foodScheduleClose{
-  position:sticky;
+  position:relative;}
+.foodScheduleClose{position:sticky;
   float:right;
   top:0;
   margin-left:auto;
@@ -124,69 +84,39 @@ body.foodModalOpen{
   background:rgba(255,255,255,.06);
   color:var(--text);
   font-size:22px;
-  line-height:1;
-}
-
-.foodScheduleModalTitle{
-  clear:both;
+  line-height:1;}
+.foodScheduleModalTitle{clear:both;
   font-size:18px;
   font-weight:700;
   line-height:1.2;
-  margin:4px 34px 14px 0;
-}
-
-.foodScheduleModalBody{
-  margin-top:2px;
+  margin:4px 34px 14px 0;}
+.foodScheduleModalBody{margin-top:2px;
   display:grid;
-  gap:8px;
-}
-
-.foodScheduleRow{
-  display:flex;
+  gap:8px;}
+.foodScheduleRow{display:flex;
   gap:12px;
   align-items:flex-start;
   padding:10px 12px;
   margin-top:8px;
   border-radius:16px;
   border:1px solid rgba(124,255,124,.10);
-  background:rgba(255,255,255,.03);
-}
-
-.foodScheduleDay{
-  min-width:96px;
+  background:rgba(255,255,255,.03);}
+.foodScheduleDay{min-width:96px;
   flex:none;
   font-weight:800;
-  color:var(--green2);
-}
-
-.foodScheduleWindows{
-  flex:1;
+  color:var(--green2);}
+.foodScheduleWindows{flex:1;
   color:var(--text);
   line-height:1.35;
   text-align:left;
   display:flex;
   flex-direction:column;
-  gap:3px;
-}
-
-.foodScheduleWindowLine{
-  font-weight:700;
-}
-
-.foodScheduleWindowEmpty{
-  opacity:.8;
-}
-
-body.personModalOpen{
-  overflow:hidden;
-}
-
-body.calendarModalOpen{
-  overflow:hidden;
-}
-
-.calendarOverlay{
-  position:fixed;
+  gap:3px;}
+.foodScheduleWindowLine{font-weight:700;}
+.foodScheduleWindowEmpty{opacity:.8;}
+body.personModalOpen{overflow:hidden;}
+body.calendarModalOpen{overflow:hidden;}
+.calendarOverlay{position:fixed;
   inset:0;
   z-index:3975;
   display:none;
@@ -194,15 +124,9 @@ body.calendarModalOpen{
   justify-content:center;
   padding:18px;
   background:rgba(7,10,8,.72);
-  backdrop-filter:blur(16px) saturate(160%);
-}
-
-.calendarOverlay.isVisible{
-  display:flex;
-}
-
-.calendarModal{
-  width:min(94vw, 980px);
+  backdrop-filter:blur(16px) saturate(160%);}
+.calendarOverlay.isVisible{display:flex;}
+.calendarModal{width:min(94vw, 980px);
   height:min(88vh, 860px);
   border-radius:24px;
   background:rgba(20,24,22,.88);
@@ -213,11 +137,8 @@ body.calendarModalOpen{
   position:relative;
   display:flex;
   flex-direction:column;
-  gap:12px;
-}
-
-.calendarModalClose{
-  position:sticky;
+  gap:12px;}
+.calendarModalClose{position:sticky;
   float:right;
   top:0;
   margin-left:auto;
@@ -230,36 +151,24 @@ body.calendarModalOpen{
   color:var(--text);
   font-size:22px;
   line-height:1;
-  z-index:1;
-}
-
-.calendarModalTitle{
-  clear:both;
+  z-index:1;}
+.calendarModalTitle{clear:both;
   font-size:18px;
   font-weight:700;
   line-height:1.2;
-  margin:4px 34px 0 0;
-}
-
-.calendarModalFrameWrap{
-  flex:1;
+  margin:4px 34px 0 0;}
+.calendarModalFrameWrap{flex:1;
   min-height:0;
   border-radius:18px;
   overflow:hidden;
   border:1px solid rgba(124,255,124,.10);
-  background:rgba(255,255,255,.03);
-}
-
-.calendarModalFrame{
-  width:100%;
+  background:rgba(255,255,255,.03);}
+.calendarModalFrame{width:100%;
   height:100%;
   border:0;
   display:block;
-  background:#fff;
-}
-
-.personScheduleOverlay{
-  position:fixed;
+  background:#fff;}
+.personScheduleOverlay{position:fixed;
   inset:0;
   z-index:3950;
   display:none;
@@ -267,15 +176,9 @@ body.calendarModalOpen{
   justify-content:center;
   padding:18px;
   background:rgba(7,10,8,.60);
-  backdrop-filter:blur(18px) saturate(160%);
-}
-
-.personScheduleOverlay.isVisible{
-  display:flex;
-}
-
-.personScheduleModal{
-  width:min(92vw, 430px);
+  backdrop-filter:blur(18px) saturate(160%);}
+.personScheduleOverlay.isVisible{display:flex;}
+.personScheduleModal{width:min(92vw, 430px);
   max-height:min(86vh, 760px);
   overflow:auto;
   border-radius:24px;
@@ -284,11 +187,8 @@ body.calendarModalOpen{
   box-shadow:0 24px 60px rgba(0,0,0,.45);
   backdrop-filter:blur(18px) saturate(160%);
   padding:18px 18px 16px;
-  position:relative;
-}
-
-.personScheduleClose{
-  position:sticky;
+  position:relative;}
+.personScheduleClose{position:sticky;
   float:right;
   top:0;
   margin-left:auto;
@@ -300,69 +200,35 @@ body.calendarModalOpen{
   background:rgba(255,255,255,.06);
   color:var(--text);
   font-size:22px;
-  line-height:1;
-}
-
-.personScheduleTitle{
-  clear:both;
+  line-height:1;}
+.personScheduleTitle{clear:both;
   font-size:18px;
   font-weight:700;
   line-height:1.2;
-  margin:4px 34px 14px 0;
-}
-
-.personScheduleBody{
-  margin-top:2px;
-}
-
-.personScheduleTable{
-  width:100%;
+  margin:4px 34px 14px 0;}
+.personScheduleBody{margin-top:2px;}
+.personScheduleTable{width:100%;
   border-collapse:collapse;
-  font-size:13px;
-}
-
-.personScheduleTable th,
-.personScheduleTable td{
-  padding:10px 8px;
+  font-size:13px;}
+.personScheduleTable th, .personScheduleTable td{padding:10px 8px;
   border-top:1px solid rgba(124,255,124,.08);
-  text-align:left;
-}
-
-.personScheduleTable thead th{
-  border-top:none;
+  text-align:left;}
+.personScheduleTable thead th{border-top:none;
   padding-top:0;
   color:rgba(255,255,255,.58);
   font-size:11px;
   letter-spacing:.08em;
-  text-transform:uppercase;
-}
-
-.personScheduleTable .currentRow td{
-  color:#dfffdb;
-  background:rgba(124,255,124,.06);
-}
-
-.personScheduleTable td:nth-child(1){
-  white-space:nowrap;
-  color:rgba(255,255,255,.82);
-}
-
-.personScheduleTable td:nth-child(2){
-  white-space:nowrap;
+  text-transform:uppercase;}
+.personScheduleTable .currentRow td{color:#dfffdb;
+  background:rgba(124,255,124,.06);}
+.personScheduleTable td:nth-child(1){white-space:nowrap;
+  color:rgba(255,255,255,.82);}
+.personScheduleTable td:nth-child(2){white-space:nowrap;
   color:var(--green2);
-  font-weight:700;
-}
-
-.personScheduleTable td:nth-child(3){
-  color:var(--text);
-}
-
-body.appMenuOpen{
-  overflow:hidden;
-}
-
-.appMenuOverlay{
-  position:fixed;
+  font-weight:700;}
+.personScheduleTable td:nth-child(3){color:var(--text);}
+body.appMenuOpen{overflow:hidden;}
+.appMenuOverlay{position:fixed;
   inset:0;
   z-index:3975;
   display:none;
@@ -370,25 +236,16 @@ body.appMenuOpen{
   justify-content:center;
   padding:18px 14px calc(14px + env(safe-area-inset-bottom));
   background:rgba(7,10,8,.70);
-  backdrop-filter:blur(12px);
-}
-
-.appMenuOverlay.isVisible{
-  display:flex;
-}
-
-.appMenuSheet{
-  width:min(100%, 430px);
+  backdrop-filter:blur(12px);}
+.appMenuOverlay.isVisible{display:flex;}
+.appMenuSheet{width:min(100%, 430px);
   border-radius:28px;
   background:rgba(18,22,20,.97);
   border:1px solid rgba(124,255,124,.16);
   box-shadow:0 26px 64px rgba(0,0,0,.46);
   padding:18px;
-  position:relative;
-}
-
-.appMenuClose{
-  position:absolute;
+  position:relative;}
+.appMenuClose{position:absolute;
   top:12px;
   right:12px;
   width:36px;
@@ -399,46 +256,25 @@ body.appMenuOpen{
   background:rgba(255,255,255,.06);
   color:var(--text);
   font-size:22px;
-  line-height:1;
-}
-
-.appMenuHeader{
-  padding-right:42px;
-}
-
-.appMenuKicker{
-  font-size:11px;
+  line-height:1;}
+.appMenuHeader{padding-right:42px;}
+.appMenuKicker{font-size:11px;
   text-transform:uppercase;
   letter-spacing:.18em;
   color:rgba(124,255,124,.7);
-  font-weight:800;
-}
-
-.appMenuTitle{
-  font-size:22px;
+  font-weight:800;}
+.appMenuTitle{font-size:22px;
   line-height:1.05;
   font-weight:900;
-  margin-top:6px;
-}
-
-.appMenuSubtitle{
-  margin-top:6px;
+  margin-top:6px;}
+.appMenuSubtitle{margin-top:6px;
   font-size:13px;
-  color:var(--soft);
-}
-
-.appMenuBody{
-  margin-top:16px;
-}
-
-.appMenuGrid{
-  display:grid;
+  color:var(--soft);}
+.appMenuBody{margin-top:16px;}
+.appMenuGrid{display:grid;
   grid-template-columns:1fr 1fr;
-  gap:10px;
-}
-
-.appMenuAction{
-  min-height:52px;
+  gap:10px;}
+.appMenuAction{min-height:52px;
   border-radius:16px;
   border:1px solid rgba(124,255,124,.18);
   background:rgba(20,24,22,.96);
@@ -448,142 +284,66 @@ body.appMenuOpen{
   text-align:left;
   padding:12px 14px;
   width:100%;
-  box-shadow:0 10px 24px rgba(0,0,0,.18);
-}
-
-.appMenuAction.appMenuBack{
-  margin-top:12px;
-  text-align:center;
-}
-
-.appMenuCard{
-  border:1px solid rgba(124,255,124,.12);
+  box-shadow:0 10px 24px rgba(0,0,0,.18);}
+.appMenuAction.appMenuBack{margin-top:12px;
+  text-align:center;}
+.appMenuCard{border:1px solid rgba(124,255,124,.12);
   border-radius:20px;
   padding:14px;
-  background:rgba(255,255,255,.02);
-}
-
-.appMenuCardTitle{
-  font-size:16px;
+  background:rgba(255,255,255,.02);}
+.appMenuCardTitle{font-size:16px;
   font-weight:800;
-  margin-bottom:10px;
-}
-
-.appMenuVersion{
-  font-size:26px;
+  margin-bottom:10px;}
+.appMenuVersion{font-size:26px;
   font-weight:900;
   letter-spacing:-.03em;
   margin-bottom:10px;
-  color:var(--green2);
-}
-
-.appMenuText{
-  display:grid;
+  color:var(--green2);}
+.appMenuText{display:grid;
   gap:6px;
   font-size:14px;
   line-height:1.35;
-  color:var(--text);
-}
-
-.appMenuHint{
-  margin-top:10px;
+  color:var(--text);}
+.appMenuHint{margin-top:10px;
   font-size:12px;
   line-height:1.35;
-  color:var(--soft);
-}
-
-.appMenuContactRow{
-  display:flex;
+  color:var(--soft);}
+.appMenuContactRow{display:flex;
   gap:10px;
   justify-content:space-between;
   align-items:flex-start;
   padding:10px 0;
   border-top:1px solid rgba(124,255,124,.08);
   font-size:14px;
-  line-height:1.3;
-}
-
-.appMenuContactRow:first-of-type{
-  border-top:0;
-  padding-top:0;
-}
-
-.appMenuContactRow span{
-  color:var(--soft);
-}
-
-.appMenuContactRow b{
-  text-align:right;
-  font-weight:800;
-}
-
-@media  (max-width: 420px){.appMenuGrid{
-    grid-template-columns:1fr;
-  }}
-
-.foodScheduleOverlay{
-  background:rgba(7,10,8,.38);
-  backdrop-filter:blur(22px) saturate(170%);
-}
-
-.foodScheduleModal{
-  background:rgba(20,24,22,.64);
+  line-height:1.3;}
+.appMenuContactRow:first-of-type{border-top:0;
+  padding-top:0;}
+.appMenuContactRow span{color:var(--soft);}
+.appMenuContactRow b{text-align:right;
+  font-weight:800;}
+@media (max-width: 420px){.appMenuGrid{grid-template-columns:1fr;}}
+.foodScheduleOverlay{background:rgba(7,10,8,.38);
+  backdrop-filter:blur(22px) saturate(170%);}
+.foodScheduleModal{background:rgba(20,24,22,.64);
   border:1px solid rgba(124,255,124,.18);
   backdrop-filter:blur(22px) saturate(170%);
-  box-shadow:0 22px 54px rgba(0,0,0,.34);
-}
-
-.foodScheduleRow{
-  background:rgba(255,255,255,.04);
-  border:1px solid rgba(124,255,124,.12);
-}
-
-@media  (max-width: 420px){.foodScheduleRow{flex-direction:column;gap:4px;}
-
-.foodScheduleDay,.foodScheduleWindows{text-align:left;min-width:0;}}
-
-@keyframes  rotaceShimmer {0% { background-position: 200% 0; }
-
-100% { background-position: -200% 0; }}
-
-.dashboardHeroCard,
-.dashboardCard,
-.bottomNav,
-.tile,
-.appMenuPage .appMenuAction {
-  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background-color .18s ease, background .18s ease;
-}
-
-.dashboardHeroCard {
-  background: linear-gradient(180deg, rgba(16,21,18,.88), rgba(10,13,11,.78)) !important;
+  box-shadow:0 22px 54px rgba(0,0,0,.34);}
+.foodScheduleRow{background:rgba(255,255,255,.04);
+  border:1px solid rgba(124,255,124,.12);}
+@media (max-width: 420px){.foodScheduleRow{flex-direction:column;gap:4px;}.foodScheduleDay, .foodScheduleWindows{text-align:left;min-width:0;}}
+@keyframes rotaceShimmer{0%{background-position: 200% 0;}100%{background-position: -200% 0;}}
+.dashboardHeroCard, .dashboardCard, .bottomNav, .tile, .appMenuPage .appMenuAction{transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background-color .18s ease, background .18s ease;}
+.dashboardHeroCard{background: linear-gradient(180deg, rgba(16,21,18,.88), rgba(10,13,11,.78)) !important;
   border: 1px solid rgba(124,255,124,.12) !important;
-  box-shadow: 0 18px 42px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.04) !important;
-}
-
-.dashboardCard {
-  background: linear-gradient(180deg, rgba(17,22,19,.88), rgba(11,15,12,.80)) !important;
+  box-shadow: 0 18px 42px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.04) !important;}
+.dashboardCard{background: linear-gradient(180deg, rgba(17,22,19,.88), rgba(11,15,12,.80)) !important;
   border-color: rgba(124,255,124,.14) !important;
-  box-shadow: 0 12px 28px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.035) !important;
-}
-
-.dashboardCardClickable:active,
-.bottomNavBtn:active,
-.tile:active,
-.appMenuPage .appMenuAction:active {
-  transform: translateY(1px) scale(.99);
-}
-
-.dashboardCardClickable:hover {
-  border-color: rgba(124,255,124,.26) !important;
-  box-shadow: 0 16px 34px rgba(0,0,0,.30), 0 0 0 1px rgba(124,255,124,.06) !important;
-}
-
-.dashboardValue {
-  letter-spacing: .01em;
-}
-
-.dashboardMeta.isLoading {
-  position: relative;
+  box-shadow: 0 12px 28px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.035) !important;}
+.dashboardCardClickable:active, .bottomNavBtn:active, .tile:active, .appMenuPage .appMenuAction:active{transform: translateY(1px) scale(.99);}
+.dashboardCardClickable:hover{border-color: rgba(124,255,124,.26) !important;
+  box-shadow: 0 16px 34px rgba(0,0,0,.30), 0 0 0 1px rgba(124,255,124,.06) !important;}
+.dashboardValue{letter-spacing: .01em;}
+.dashboardMeta.isLoading{position: relative;
   display: inline-block;
   min-width: 132px;
   min-height: 12px;
@@ -592,48 +352,20 @@ body.appMenuOpen{
   overflow: hidden;
   background: linear-gradient(90deg, rgba(255,255,255,.03) 0%, rgba(124,255,124,.14) 50%, rgba(255,255,255,.03) 100%);
   background-size: 200% 100%;
-  animation: rotaceShimmer 1.2s linear infinite;
-}
-
-.dashboardMeta.isLoading::after {
-  content: "";
+  animation: rotaceShimmer 1.2s linear infinite;}
+.dashboardMeta.isLoading::after{content: "";
   position: absolute;
   inset: 2px 18% 2px 18%;
   border-radius: inherit;
-  background: rgba(10, 14, 11, .28);
-}
-
-.bottomNav {
-  border: 1px solid rgba(124,255,124,.16) !important;
+  background: rgba(10, 14, 11, .28);}
+.bottomNav{border: 1px solid rgba(124,255,124,.16) !important;
   background: rgba(9, 12, 10, .58) !important;
-  box-shadow: 0 18px 40px rgba(0,0,0,.40), inset 0 1px 0 rgba(255,255,255,.045) !important;
-}
-
-.bottomNavBtn {
-  border-radius: 18px !important;
-}
-
-.bottomNavBtn.active {
-  background: linear-gradient(180deg, rgba(124,255,124,.14), rgba(124,255,124,.06)) !important;
-  box-shadow: 0 10px 24px rgba(124,255,124,.12), inset 0 1px 0 rgba(255,255,255,.05) !important;
-}
-
-.bottomNavBtn.active::before {
-  border-color: rgba(124,255,124,.20) !important;
-  box-shadow: 0 0 0 1px rgba(124,255,124,.10) inset !important;
-}
-
-.bottomNavBtn span,
-.bottomNavLabel,
-.bottomNavMenuBtn .moreIcon {
-  transition: transform .18s ease, opacity .18s ease, color .18s ease;
-}
-
-.bottomNavBtn.active span,
-.bottomNavBtn.active .bottomNavLabel {
-  transform: translateY(-1px);
-}
-
-#dashTttMeta {
-  min-width: 120px;
-}
+  box-shadow: 0 18px 40px rgba(0,0,0,.40), inset 0 1px 0 rgba(255,255,255,.045) !important;}
+.bottomNavBtn{border-radius: 18px !important;}
+.bottomNavBtn.active{background: linear-gradient(180deg, rgba(124,255,124,.14), rgba(124,255,124,.06)) !important;
+  box-shadow: 0 10px 24px rgba(124,255,124,.12), inset 0 1px 0 rgba(255,255,255,.05) !important;}
+.bottomNavBtn.active::before{border-color: rgba(124,255,124,.20) !important;
+  box-shadow: 0 0 0 1px rgba(124,255,124,.10) inset !important;}
+.bottomNavBtn span, .bottomNavLabel, .bottomNavMenuBtn .moreIcon{transition: transform .18s ease, opacity .18s ease, color .18s ease;}
+.bottomNavBtn.active span, .bottomNavBtn.active .bottomNavLabel{transform: translateY(-1px);}
+#dashTttMeta{min-width: 120px;}

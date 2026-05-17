@@ -1,4 +1,8 @@
-@media  (max-width: 700px){#games .gamesAccountTop .dashboardLabel{display:none !important;}}#games .calcTileIcon svg{stroke:currentColor !important;}#games .gamesAccountHint{font-size:11px !important;line-height:1.25 !important;}#games .gamesAccountRow{display:flex !important;align-items:center !important;gap:8px !important;margin-top:8px !important;}#games .gamesAccountCurrent, #games .gamesAccountCurrent{display:flex !important;
+@media (max-width: 700px){#games .gamesAccountTop .dashboardLabel{display:none !important;}}
+#games .calcTileIcon svg{stroke:currentColor !important;}
+#games .gamesAccountHint{font-size:11px !important;line-height:1.25 !important;}
+#games .gamesAccountRow{display:flex !important;align-items:center !important;gap:8px !important;margin-top:8px !important;}
+#games .gamesAccountCurrent{display:flex !important;
   align-items:center !important;
   justify-content:center !important;
   min-height:44px !important;
@@ -8,22 +12,30 @@
   background:rgba(255,255,255,.04) !important;
   color:#e7fff0 !important;
   font-weight:650 !important;
-  letter-spacing:.02em !important;}#games .gamesGrid, #games .gamesGrid{display:grid !important;
+  letter-spacing:.02em !important;}
+#games .gamesGrid{display:grid !important;
   grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
-  gap:10px !important;}#games .gamesLaunchTile{min-height:112px !important;
-  padding:12px !important;}#games .gamesLaunchTile .calcTileText, body.gamesCompactMode #games .gamePadCenter{font-size:16px !important;}#games .gamesLaunchTile .smallText{font-size:11px !important;line-height:1.2 !important;}#games .gamesStatsFolder{margin-top:14px !important;
+  gap:10px !important;}
+#games .gamesLaunchTile{min-height:112px !important;
+  padding:12px !important;}
+#games .gamesLaunchTile .calcTileText, body.gamesCompactMode #games .gamePadCenter{font-size:16px !important;}
+#games .gamesLaunchTile .smallText{font-size:11px !important;line-height:1.2 !important;}
+#games .gamesStatsFolder{margin-top:14px !important;
   border-radius:18px !important;
   border:1px solid rgba(124,255,124,.14) !important;
   background:rgba(11,15,13,.58) !important;
-  overflow:hidden !important;}#games .gamesStatsFolder > summary{list-style:none !important;
+  overflow:hidden !important;}
+#games .gamesStatsFolder > summary{list-style:none !important;
   cursor:pointer !important;
   padding:14px 14px !important;
   font-weight:700 !important;
-  color:#e8ffe8 !important;}#games .gamesStatsFolder > summary::-webkit-details-marker, #games .gamesStage, body.gamesOpen #games .gamesShellBack, #games .gameInfoRow .gameControlBtnSmall, body.gamesCompactMode #games .gamesShellBack, #games .gamesAccountCard.isLoggedIn .gamesAccountRow,#games .gamesAccountCard.isLoggedIn .gamesAccountHint, #games .gamesAccountCard.isLoggedIn .dashboardLabel, #games .gamesProfilesFolder[hidden],#games .gamesAchievementsFolder[hidden],#games .gamesStatsFolder[hidden], #games .gamesProfilesFolder > summary::-webkit-details-marker,#games .gamesAchievementsFolder > summary::-webkit-details-marker,#games .gamesStatsFolder > summary::-webkit-details-marker, #games .gamesAccountHint, #games .gamesAccountCurrent, #games .gamesAccountCard.isLoggedIn .gamesAccountRow,
-  #games .gamesAccountCard.isLoggedIn .gamesAccountHint, #games .gamesActiveAccountBar, #games .gamesAccountCard.isLoggedIn .gamesAccountCurrent, #games .gamesAccountCard.isLoggedIn .gamesAccountHint, #games .gamesAccountCard.isLoggedIn .gamesAccountRow{display:none !important;}#games .gamesStatsGrid{display:grid !important;
+  color:#e8ffe8 !important;}
+#games .gamesStatsFolder > summary::-webkit-details-marker, #games .gamesStage, body.gamesOpen #games .gamesShellBack, #games .gameInfoRow .gameControlBtnSmall, body.gamesCompactMode #games .gamesShellBack, #games .gamesAccountCard.isLoggedIn .gamesAccountRow, #games .gamesAccountCard.isLoggedIn .gamesAccountHint, #games .gamesAccountCard.isLoggedIn .dashboardLabel, #games .gamesProfilesFolder[hidden], #games .gamesAchievementsFolder[hidden], #games .gamesStatsFolder[hidden], #games .gamesProfilesFolder > summary::-webkit-details-marker, #games .gamesAchievementsFolder > summary::-webkit-details-marker, #games .gamesAccountHint, #games .gamesAccountCurrent, #games .gamesActiveAccountBar, #games .gamesAccountCard.isLoggedIn .gamesAccountCurrent{display:none !important;}
+#games .gamesStatsGrid{display:grid !important;
   grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
   gap:10px !important;
-  padding:0 12px 12px !important;}body.gamesOpen #games .gamesStage{display:block !important;
+  padding:0 12px 12px !important;}
+body.gamesOpen #games .gamesStage{display:block !important;
   position:fixed !important;
   inset:0 !important;
   z-index:170 !important;
@@ -31,15 +43,91 @@
   backdrop-filter:blur(18px) saturate(140%) !important;
   -webkit-backdrop-filter:blur(18px) saturate(140%) !important;
   padding:12px !important;
-  overflow:auto !important;}body.gamesOpen #games .gamesShell{min-height:100% !important;
+  overflow:auto !important;}
+body.gamesOpen #games .gamesShell{min-height:100% !important;
   display:flex !important;
-  flex-direction:column !important;}body.gamesOpen #games .gamesShellTop{position:sticky !important;
+  flex-direction:column !important;}
+body.gamesOpen #games .gamesShellTop{position:sticky !important;
   top:0 !important;
-  z-index:1 !important;}body.gamesOpen #games .gamesShell > #gamesShellBody{flex:1 1 auto !important;}#games .gameBoard{width:100% !important; max-width:100% !important;}#games .gameControls{display:flex !important; flex-wrap:wrap !important; gap:8px !important;}#games .gamesTop3Card{width:100% !important;border-radius:18px !important;border:1px solid rgba(124,255,124,.12) !important;background:rgba(255,255,255,.035) !important;padding:10px 12px !important;box-shadow:0 14px 30px rgba(0,0,0,.20) !important;}#games .gamesTop3Title{font-size:13px !important;font-weight:800 !important;letter-spacing:.01em !important;color:#e9ffe9 !important;margin-bottom:8px !important;}#games .gamesTop3Body{display:grid !important;gap:6px !important;}#games .gamesTop3Row{display:grid !important;grid-template-columns:auto 1fr auto !important;gap:8px !important;align-items:center !important;min-height:28px !important;}#games .gamesTop3Rank{width:22px !important;height:22px !important;display:grid !important;place-items:center !important;border-radius:999px !important;background:rgba(124,255,124,.12) !important;color:#e8ffe8 !important;font-size:11px !important;font-weight:800 !important;}#games .gamesTop3Name{font-size:12px !important;font-weight:700 !important;color:#f0fff0 !important;overflow:hidden !important;text-overflow:ellipsis !important;white-space:nowrap !important;}#games .gamesTop3Value{font-size:12px !important;font-weight:800 !important;color:#d9ffe0 !important;white-space:nowrap !important;}#games .gamesTop3Empty{font-size:12px !important;color:rgba(231,255,240,.78) !important;}#games .gamesLaunchTile[data-game="ttt"]{grid-column:span 1 !important;min-height:96px !important;}#games .gameControlBtn{min-height:44px !important; min-width:44px !important;}@media  (max-width: 700px){#games .gamesGrid{grid-template-columns:repeat(2, minmax(0, 1fr)) !important; gap:8px !important;}#games .gamesLaunchTile{min-height:104px !important;}#games .gamesStatsGrid{grid-template-columns:repeat(2, minmax(0, 1fr)) !important;}}#games .gameBoard{width:100% !important;max-width:100% !important;touch-action:none !important;overscroll-behavior:contain !important;user-select:none !important;-webkit-user-select:none !important;box-sizing:border-box !important;display:grid !important;place-items:stretch !important;}#games .gameInfoRow{display:flex !important;justify-content:space-between !important;align-items:center !important;gap:10px !important;padding:0 2px !important;font-size:12px !important;line-height:1.25 !important;flex-wrap:wrap !important;}#games .gameInfoRow > span{min-width:0 !important;flex:1 1 auto !important;}#games .gameInfoRowCompact, #games .gamesStatsCardName, #games .gamesTop3Title{font-size:12px !important;}#games .gamesGamePanel{display:flex !important;flex-direction:column !important;gap:8px !important;align-items:center !important;justify-content:flex-start !important;flex:1 1 auto !important;min-height:0 !important;width:100% !important;}#games .gameControls{display:flex !important;flex-wrap:wrap !important;gap:8px !important;justify-content:center !important;align-items:center !important;}#games .gamePad{display:grid !important;grid-template-columns:repeat(3, 54px) !important;grid-template-rows:repeat(3, 54px) !important;gap:6px !important;justify-content:center !important;align-items:center !important;touch-action:manipulation !important;}#games .gamePad .gameControlBtn{min-height:54px !important;min-width:54px !important;padding:0 12px !important;border-radius:18px !important;}#games .gamePadCenter, body.gamesCompactMode #games .game2048Board .gameBoardCell.n1024,
-body.gamesCompactMode #games .game2048Board .gameBoardCell.n2048{font-size:18px !important;}#games .gameBoard.game2048Board{width:min(100%, calc(100vw - 24px)) !important;max-width:min(100%, 460px) !important;aspect-ratio:1 / 1 !important;grid-template-columns:repeat(4,minmax(0,1fr)) !important;grid-template-rows:repeat(4,minmax(0,1fr)) !important;gap:clamp(6px, 1.6vw, 10px) !important;padding:clamp(8px, 2vw, 12px) !important;border-radius:26px !important;background:rgba(255,255,255,.06) !important;border:1px solid rgba(255,255,255,.10) !important;backdrop-filter:blur(18px) !important;box-shadow:0 20px 40px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.05) !important;place-items:stretch !important;}#games .game2048Board .gameBoardCell{aspect-ratio:1 / 1 !important;border-radius:16px !important;display:flex !important;align-items:center !important;justify-content:center !important;font-weight:800 !important;font-size:clamp(18px, 5vw, 30px) !important;color:#26313d !important;background:rgba(255,255,255,.06) !important;border:1px solid rgba(255,255,255,.06) !important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08) !important;transition:transform .12s ease, background .12s ease, box-shadow .12s ease !important;}#games .game2048Board .gameBoardCell[data-value=""]{color:transparent !important;}#games .game2048Board .gameBoardCell.n2{background:#dce7ff !important;color:#203040 !important;}#games .game2048Board .gameBoardCell.n4{background:#bfd3ff !important;color:#203040 !important;}#games .game2048Board .gameBoardCell.n8{background:#91b6ff !important;color:#fff !important;}#games .game2048Board .gameBoardCell.n16{background:#6d9dff !important;color:#fff !important;}#games .game2048Board .gameBoardCell.n32{background:#5f88ff !important;color:#fff !important;}#games .game2048Board .gameBoardCell.n64{background:#546fff !important;color:#fff !important;}#games .game2048Board .gameBoardCell.n128{background:#7f66ff !important;color:#fff !important;font-size:26px !important;}#games .game2048Board .gameBoardCell.n256{background:#9c61ff !important;color:#fff !important;font-size:26px !important;}#games .game2048Board .gameBoardCell.n512{background:#c15dff !important;color:#fff !important;font-size:24px !important;}#games .game2048Board .gameBoardCell.n1024{background:#f65eff !important;color:#fff !important;font-size:20px !important;}#games .game2048Board .gameBoardCell.n2048{background:linear-gradient(135deg,#ffe27a,#ffb347) !important;color:#222 !important;font-size:20px !important;box-shadow:0 0 30px rgba(255,200,80,.5) !important;}#games .gameBoard.gameSnakeBoard{width:min(100%, calc(100vw - 24px)) !important;max-width:min(100%, 420px) !important;aspect-ratio:1 / 1 !important;grid-template-columns:repeat(20,minmax(0,1fr)) !important;grid-template-rows:repeat(20,minmax(0,1fr)) !important;gap:clamp(1px, .55vw, 3px) !important;padding:clamp(7px, 1.8vw, 11px) !important;border-radius:26px !important;background:rgba(255,255,255,.06) !important;border:1px solid rgba(255,255,255,.08) !important;backdrop-filter:blur(18px) !important;box-shadow:0 20px 40px rgba(0,0,0,.30) !important;place-items:stretch !important;}#games .gameSnakeBoard .gameBoardCell{aspect-ratio:1 / 1 !important;border-radius:7px !important;background:rgba(255,255,255,.035) !important;display:flex !important;align-items:center !important;justify-content:center !important;color:#dfffe3 !important;font-size:clamp(9px, 2.6vw, 13px) !important;line-height:1 !important;}#games .gameSnakeBoard .snakeEmpty:nth-child(odd){background:rgba(255,255,255,.02) !important;}#games .gameSnakeBoard .snakeFood{background:rgba(124,255,124,.22) !important;color:#d7ffe0 !important;box-shadow:0 0 0 1px rgba(124,255,124,.12) inset !important;}#games .gameSnakeBoard .snakeHead{background:linear-gradient(180deg, rgba(124,255,124,.42), rgba(84,190,104,.20)) !important;color:#f4fff4 !important;box-shadow:0 0 16px rgba(124,255,124,.18) inset !important;}#games .gameSnakeBoard .snakeBody{background:rgba(124,255,124,.12) !important;color:#eaffef !important;}#games .gameBoard.gameFlapBoard{width:min(100%, calc(100vw - 24px)) !important;max-width:min(100%, 520px) !important;height:clamp(240px, 38dvh, 360px) !important;min-height:240px !important;padding:0 !important;border-radius:26px !important;border:1px solid rgba(255,255,255,.08) !important;background:linear-gradient(180deg, rgba(73,132,89,.35), rgba(11,17,23,.96)) !important;box-shadow:0 20px 40px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.04) !important;position:relative !important;overflow:hidden !important;}#games .gameFlapCanvas{display:block !important;width:100% !important;height:100% !important;touch-action:none !important;}#games .gamesShell{display:flex !important;flex-direction:column !important;gap:8px !important;min-height:100% !important;height:100% !important;overflow:hidden !important;}body.gamesOpen #games .gamesStage{display:block !important;position:fixed !important;inset:0 !important;z-index:170 !important;background:linear-gradient(180deg, rgba(7,10,8,.94), rgba(7,10,8,.98)) !important;backdrop-filter:blur(18px) saturate(140%) !important;-webkit-backdrop-filter:blur(18px) saturate(140%) !important;padding:8px 8px calc(8px + env(safe-area-inset-bottom)) !important;overflow:hidden !important;}body.gamesOpen #games .gamesShellTop{position:sticky !important;top:0 !important;z-index:2 !important;padding:10px 12px !important;border:1px solid rgba(124,255,124,.12) !important;border-radius:18px !important;background:rgba(12,15,13,.74) !important;backdrop-filter:blur(16px) saturate(145%) !important;-webkit-backdrop-filter:blur(16px) saturate(145%) !important;display:flex !important;align-items:center !important;justify-content:space-between !important;gap:8px !important;}body.gamesOpen #games .gamesShellTitle{font-size:18px !important;line-height:1.1 !important;flex:1 1 auto !important;}body.gamesOpen #games .gamesShell > #gamesShellBody{flex:1 1 auto !important;min-height:0 !important;overflow:hidden !important;display:flex !important;}#games .gamesGamePanel > *{max-width:100% !important;}#games .gameInfoRow span, #games .gameInfoRow span{white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important;}#games .gameInfoRowDense, body.gamesCompactMode #games .gameControlsFlap{gap:8px !important;}#games .gameInfoRowStatus{padding-top:0 !important;margin-top:-2px !important;justify-content:flex-start !important;}#games .gameInfoRowStatus > span{flex:1 1 100% !important;}#games .gameInfoRowDense .gameControlBtnSmall{min-height:36px !important;min-width:92px !important;padding:0 12px !important;border-radius:14px !important;font-size:12px !important;}body.gamesCompactMode #games .gamesShell{gap:6px !important;}body.gamesCompactMode #games .gamesShellTop{padding:8px 10px !important;border-radius:16px !important;display:flex !important;align-items:center !important;justify-content:space-between !important;gap:6px !important;}body.gamesCompactMode #games .gamesShellTitle{font-size:17px !important;}body.gamesCompactMode #games .gameInfoRow{font-size:11px !important;gap:8px !important;}body.gamesCompactMode #games .gamePad{grid-template-columns:repeat(3, 46px) !important;grid-template-rows:repeat(3, 46px) !important;gap:5px !important;}body.gamesCompactMode #games .gamePad .gameControlBtn{min-width:46px !important;min-height:46px !important;border-radius:16px !important;font-size:13px !important;}body.gamesCompactMode #games .gameBoard.game2048Board{border-radius:22px !important;gap:clamp(5px, 1.2vw, 8px) !important;padding:clamp(7px, 1.5vw, 10px) !important;}body.gamesCompactMode #games .game2048Board .gameBoardCell{border-radius:14px !important;font-size:clamp(15px, 4.4vw, 26px) !important;}body.gamesCompactMode #games .game2048Board .gameBoardCell.n128,
-body.gamesCompactMode #games .game2048Board .gameBoardCell.n256{font-size:22px !important;}body.gamesCompactMode #games .game2048Board .gameBoardCell.n512{font-size:20px !important;}body.gamesCompactMode #games .gameBoard.gameSnakeBoard{border-radius:22px !important;gap:clamp(1px, .35vw, 2px) !important;padding:clamp(6px, 1.4vw, 9px) !important;}body.gamesCompactMode #games .gameSnakeBoard .gameBoardCell{border-radius:6px !important;font-size:clamp(8px, 2.2vw, 12px) !important;}body.gamesCompactMode #games .gameBoard.gameFlapBoard{max-width:100% !important;border-radius:22px !important;}body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !important;min-width:92px !important;}@media  (max-height: 760px){#games .gamesGrid, #games .gamesGamePanel{gap:8px !important;}#games .gamesLaunchTile{min-height:94px !important;}#games .gamesAccountCard, body.gamesOpen #games .gamesShellTop{padding:8px 10px !important;}#games .gamesAccountHint{display:none !important;}body.gamesOpen #games .gamesStage{padding:6px 6px calc(6px + env(safe-area-inset-bottom)) !important;}#games .gameInfoRow{padding:0 !important;}#games .gamePad .gameControlBtn{min-height:48px !important;min-width:48px !important;}}@media  (max-width: 700px){#games .gamesGrid{grid-template-columns:repeat(2, minmax(0, 1fr)) !important;gap:8px !important;}#games .gamesLaunchTile{min-height:96px !important;}}#games{padding-bottom:128px !important;}#games .gamesStatsFolder{margin-bottom:8px !important;}#games .gamesStatsCardHead{display:flex !important;
+  z-index:1 !important;}
+body.gamesOpen #games .gamesShell > #gamesShellBody{flex:1 1 auto !important;}
+#games .gameBoard{width:100% !important; max-width:100% !important;}
+#games .gameControls{display:flex !important; flex-wrap:wrap !important; gap:8px !important;}
+#games .gamesTop3Card{width:100% !important;border-radius:18px !important;border:1px solid rgba(124,255,124,.12) !important;background:rgba(255,255,255,.035) !important;padding:10px 12px !important;box-shadow:0 14px 30px rgba(0,0,0,.20) !important;}
+#games .gamesTop3Title{font-size:13px !important;font-weight:800 !important;letter-spacing:.01em !important;color:#e9ffe9 !important;margin-bottom:8px !important;}
+#games .gamesTop3Body{display:grid !important;gap:6px !important;}
+#games .gamesTop3Row{display:grid !important;grid-template-columns:auto 1fr auto !important;gap:8px !important;align-items:center !important;min-height:28px !important;}
+#games .gamesTop3Rank{width:22px !important;height:22px !important;display:grid !important;place-items:center !important;border-radius:999px !important;background:rgba(124,255,124,.12) !important;color:#e8ffe8 !important;font-size:11px !important;font-weight:800 !important;}
+#games .gamesTop3Name{font-size:12px !important;font-weight:700 !important;color:#f0fff0 !important;overflow:hidden !important;text-overflow:ellipsis !important;white-space:nowrap !important;}
+#games .gamesTop3Value{font-size:12px !important;font-weight:800 !important;color:#d9ffe0 !important;white-space:nowrap !important;}
+#games .gamesTop3Empty{font-size:12px !important;color:rgba(231,255,240,.78) !important;}
+#games .gamesLaunchTile[data-game="ttt"]{grid-column:span 1 !important;min-height:96px !important;}
+#games .gameControlBtn{min-height:44px !important; min-width:44px !important;}
+@media (max-width: 700px){#games .gamesGrid{grid-template-columns:repeat(2, minmax(0, 1fr)) !important; gap:8px !important;}#games .gamesLaunchTile{min-height:104px !important;}#games .gamesStatsGrid{grid-template-columns:repeat(2, minmax(0, 1fr)) !important;}}
+#games .gameBoard{width:100% !important;max-width:100% !important;touch-action:none !important;overscroll-behavior:contain !important;user-select:none !important;-webkit-user-select:none !important;box-sizing:border-box !important;display:grid !important;place-items:stretch !important;}
+#games .gameInfoRow{display:flex !important;justify-content:space-between !important;align-items:center !important;gap:10px !important;padding:0 2px !important;font-size:12px !important;line-height:1.25 !important;flex-wrap:wrap !important;}
+#games .gameInfoRow > span{min-width:0 !important;flex:1 1 auto !important;}
+#games .gameInfoRowCompact, #games .gamesStatsCardName, #games .gamesTop3Title{font-size:12px !important;}
+#games .gamesGamePanel{display:flex !important;flex-direction:column !important;gap:8px !important;align-items:center !important;justify-content:flex-start !important;flex:1 1 auto !important;min-height:0 !important;width:100% !important;}
+#games .gameControls{display:flex !important;flex-wrap:wrap !important;gap:8px !important;justify-content:center !important;align-items:center !important;}
+#games .gamePad{display:grid !important;grid-template-columns:repeat(3, 54px) !important;grid-template-rows:repeat(3, 54px) !important;gap:6px !important;justify-content:center !important;align-items:center !important;touch-action:manipulation !important;}
+#games .gamePad .gameControlBtn{min-height:54px !important;min-width:54px !important;padding:0 12px !important;border-radius:18px !important;}
+#games .gamePadCenter, body.gamesCompactMode #games .game2048Board .gameBoardCell.n1024, body.gamesCompactMode #games .game2048Board .gameBoardCell.n2048{font-size:18px !important;}
+#games .gameBoard.game2048Board{width:min(100%, calc(100vw - 24px)) !important;max-width:min(100%, 460px) !important;aspect-ratio:1 / 1 !important;grid-template-columns:repeat(4,minmax(0,1fr)) !important;grid-template-rows:repeat(4,minmax(0,1fr)) !important;gap:clamp(6px, 1.6vw, 10px) !important;padding:clamp(8px, 2vw, 12px) !important;border-radius:26px !important;background:rgba(255,255,255,.06) !important;border:1px solid rgba(255,255,255,.10) !important;backdrop-filter:blur(18px) !important;box-shadow:0 20px 40px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.05) !important;place-items:stretch !important;}
+#games .game2048Board .gameBoardCell{aspect-ratio:1 / 1 !important;border-radius:16px !important;display:flex !important;align-items:center !important;justify-content:center !important;font-weight:800 !important;font-size:clamp(18px, 5vw, 30px) !important;color:#26313d !important;background:rgba(255,255,255,.06) !important;border:1px solid rgba(255,255,255,.06) !important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08) !important;transition:transform .12s ease, background .12s ease, box-shadow .12s ease !important;}
+#games .game2048Board .gameBoardCell[data-value=""]{color:transparent !important;}
+#games .game2048Board .gameBoardCell.n2{background:#dce7ff !important;color:#203040 !important;}
+#games .game2048Board .gameBoardCell.n4{background:#bfd3ff !important;color:#203040 !important;}
+#games .game2048Board .gameBoardCell.n8{background:#91b6ff !important;color:#fff !important;}
+#games .game2048Board .gameBoardCell.n16{background:#6d9dff !important;color:#fff !important;}
+#games .game2048Board .gameBoardCell.n32{background:#5f88ff !important;color:#fff !important;}
+#games .game2048Board .gameBoardCell.n64{background:#546fff !important;color:#fff !important;}
+#games .game2048Board .gameBoardCell.n128{background:#7f66ff !important;color:#fff !important;font-size:26px !important;}
+#games .game2048Board .gameBoardCell.n256{background:#9c61ff !important;color:#fff !important;font-size:26px !important;}
+#games .game2048Board .gameBoardCell.n512{background:#c15dff !important;color:#fff !important;font-size:24px !important;}
+#games .game2048Board .gameBoardCell.n1024{background:#f65eff !important;color:#fff !important;font-size:20px !important;}
+#games .game2048Board .gameBoardCell.n2048{background:linear-gradient(135deg,#ffe27a,#ffb347) !important;color:#222 !important;font-size:20px !important;box-shadow:0 0 30px rgba(255,200,80,.5) !important;}
+#games .gameBoard.gameSnakeBoard{width:min(100%, calc(100vw - 24px)) !important;max-width:min(100%, 420px) !important;aspect-ratio:1 / 1 !important;grid-template-columns:repeat(20,minmax(0,1fr)) !important;grid-template-rows:repeat(20,minmax(0,1fr)) !important;gap:clamp(1px, .55vw, 3px) !important;padding:clamp(7px, 1.8vw, 11px) !important;border-radius:26px !important;background:rgba(255,255,255,.06) !important;border:1px solid rgba(255,255,255,.08) !important;backdrop-filter:blur(18px) !important;box-shadow:0 20px 40px rgba(0,0,0,.30) !important;place-items:stretch !important;}
+#games .gameSnakeBoard .gameBoardCell{aspect-ratio:1 / 1 !important;border-radius:7px !important;background:rgba(255,255,255,.035) !important;display:flex !important;align-items:center !important;justify-content:center !important;color:#dfffe3 !important;font-size:clamp(9px, 2.6vw, 13px) !important;line-height:1 !important;}
+#games .gameSnakeBoard .snakeEmpty:nth-child(odd){background:rgba(255,255,255,.02) !important;}
+#games .gameSnakeBoard .snakeFood{background:rgba(124,255,124,.22) !important;color:#d7ffe0 !important;box-shadow:0 0 0 1px rgba(124,255,124,.12) inset !important;}
+#games .gameSnakeBoard .snakeHead{background:linear-gradient(180deg, rgba(124,255,124,.42), rgba(84,190,104,.20)) !important;color:#f4fff4 !important;box-shadow:0 0 16px rgba(124,255,124,.18) inset !important;}
+#games .gameSnakeBoard .snakeBody{background:rgba(124,255,124,.12) !important;color:#eaffef !important;}
+#games .gameBoard.gameFlapBoard{width:min(100%, calc(100vw - 24px)) !important;max-width:min(100%, 520px) !important;height:clamp(240px, 38dvh, 360px) !important;min-height:240px !important;padding:0 !important;border-radius:26px !important;border:1px solid rgba(255,255,255,.08) !important;background:linear-gradient(180deg, rgba(73,132,89,.35), rgba(11,17,23,.96)) !important;box-shadow:0 20px 40px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.04) !important;position:relative !important;overflow:hidden !important;}
+#games .gameFlapCanvas{display:block !important;width:100% !important;height:100% !important;touch-action:none !important;}
+#games .gamesShell{display:flex !important;flex-direction:column !important;gap:8px !important;min-height:100% !important;height:100% !important;overflow:hidden !important;}
+body.gamesOpen #games .gamesStage{display:block !important;position:fixed !important;inset:0 !important;z-index:170 !important;background:linear-gradient(180deg, rgba(7,10,8,.94), rgba(7,10,8,.98)) !important;backdrop-filter:blur(18px) saturate(140%) !important;-webkit-backdrop-filter:blur(18px) saturate(140%) !important;padding:8px 8px calc(8px + env(safe-area-inset-bottom)) !important;overflow:hidden !important;}
+body.gamesOpen #games .gamesShellTop{position:sticky !important;top:0 !important;z-index:2 !important;padding:10px 12px !important;border:1px solid rgba(124,255,124,.12) !important;border-radius:18px !important;background:rgba(12,15,13,.74) !important;backdrop-filter:blur(16px) saturate(145%) !important;-webkit-backdrop-filter:blur(16px) saturate(145%) !important;display:flex !important;align-items:center !important;justify-content:space-between !important;gap:8px !important;}
+body.gamesOpen #games .gamesShellTitle{font-size:18px !important;line-height:1.1 !important;flex:1 1 auto !important;}
+body.gamesOpen #games .gamesShell > #gamesShellBody{flex:1 1 auto !important;min-height:0 !important;overflow:hidden !important;display:flex !important;}
+#games .gamesGamePanel > *{max-width:100% !important;}
+#games .gameInfoRow span{white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important;}
+#games .gameInfoRowDense, body.gamesCompactMode #games .gameControlsFlap{gap:8px !important;}
+#games .gameInfoRowStatus{padding-top:0 !important;margin-top:-2px !important;justify-content:flex-start !important;}
+#games .gameInfoRowStatus > span{flex:1 1 100% !important;}
+#games .gameInfoRowDense .gameControlBtnSmall{min-height:36px !important;min-width:92px !important;padding:0 12px !important;border-radius:14px !important;font-size:12px !important;}
+body.gamesCompactMode #games .gamesShell{gap:6px !important;}
+body.gamesCompactMode #games .gamesShellTop{padding:8px 10px !important;border-radius:16px !important;display:flex !important;align-items:center !important;justify-content:space-between !important;gap:6px !important;}
+body.gamesCompactMode #games .gamesShellTitle{font-size:17px !important;}
+body.gamesCompactMode #games .gameInfoRow{font-size:11px !important;gap:8px !important;}
+body.gamesCompactMode #games .gamePad{grid-template-columns:repeat(3, 46px) !important;grid-template-rows:repeat(3, 46px) !important;gap:5px !important;}
+body.gamesCompactMode #games .gamePad .gameControlBtn{min-width:46px !important;min-height:46px !important;border-radius:16px !important;font-size:13px !important;}
+body.gamesCompactMode #games .gameBoard.game2048Board{border-radius:22px !important;gap:clamp(5px, 1.2vw, 8px) !important;padding:clamp(7px, 1.5vw, 10px) !important;}
+body.gamesCompactMode #games .game2048Board .gameBoardCell{border-radius:14px !important;font-size:clamp(15px, 4.4vw, 26px) !important;}
+body.gamesCompactMode #games .game2048Board .gameBoardCell.n128, body.gamesCompactMode #games .game2048Board .gameBoardCell.n256{font-size:22px !important;}
+body.gamesCompactMode #games .game2048Board .gameBoardCell.n512{font-size:20px !important;}
+body.gamesCompactMode #games .gameBoard.gameSnakeBoard{border-radius:22px !important;gap:clamp(1px, .35vw, 2px) !important;padding:clamp(6px, 1.4vw, 9px) !important;}
+body.gamesCompactMode #games .gameSnakeBoard .gameBoardCell{border-radius:6px !important;font-size:clamp(8px, 2.2vw, 12px) !important;}
+body.gamesCompactMode #games .gameBoard.gameFlapBoard{max-width:100% !important;border-radius:22px !important;}
+body.gamesCompactMode #games .gameControlsFlap .gameControlBtn{min-height:40px !important;min-width:92px !important;}
+@media (max-height: 760px){#games .gamesGrid, #games .gamesGamePanel{gap:8px !important;}#games .gamesLaunchTile{min-height:94px !important;}#games .gamesAccountCard, body.gamesOpen #games .gamesShellTop{padding:8px 10px !important;}#games .gamesAccountHint{display:none !important;}body.gamesOpen #games .gamesStage{padding:6px 6px calc(6px + env(safe-area-inset-bottom)) !important;}#games .gameInfoRow{padding:0 !important;}#games .gamePad .gameControlBtn{min-height:48px !important;min-width:48px !important;}}
+@media (max-width: 700px){#games .gamesGrid{grid-template-columns:repeat(2, minmax(0, 1fr)) !important;gap:8px !important;}#games .gamesLaunchTile{min-height:96px !important;}}
+#games{padding-bottom:128px !important;}
+#games .gamesStatsFolder{margin-bottom:8px !important;}
+#games .gamesStatsCardHead{display:flex !important;
     align-items:flex-start !important;
-    gap:10px !important;}#games .gamesProfileAvatar{width:42px !important;
+    gap:10px !important;}
+#games .gamesProfileAvatar{width:42px !important;
     height:42px !important;
     border-radius:15px !important;
     display:flex !important;
@@ -51,41 +139,94 @@ body.gamesCompactMode #games .game2048Board .gameBoardCell.n256{font-size:22px !
     color:#effff0 !important;
     font-weight:800 !important;
     letter-spacing:.04em !important;
-    box-shadow:0 12px 24px rgba(0,0,0,.18) inset, 0 0 0 1px rgba(255,255,255,.03) !important;}#games .gamesStatsCardHeadMain{flex:1 1 auto !important;
-    min-width:0 !important;}#games .gamesStatsCardMetaDense{font-size:11px !important;
-    line-height:1.15 !important;}#games .gamesStatsXpBar{width:100% !important;
+    box-shadow:0 12px 24px rgba(0,0,0,.18) inset, 0 0 0 1px rgba(255,255,255,.03) !important;}
+#games .gamesStatsCardHeadMain{flex:1 1 auto !important;
+    min-width:0 !important;}
+#games .gamesStatsCardMetaDense{font-size:11px !important;
+    line-height:1.15 !important;}
+#games .gamesStatsXpBar{width:100% !important;
     height:8px !important;
     border-radius:999px !important;
     background:rgba(255,255,255,.06) !important;
     overflow:hidden !important;
     margin:2px 0 6px !important;
-    border:1px solid rgba(124,255,124,.10) !important;}#games .gamesStatsXpBar span{display:block !important;
+    border:1px solid rgba(124,255,124,.10) !important;}
+#games .gamesStatsXpBar span{display:block !important;
     width:var(--fill, 0%) !important;
     height:100% !important;
     border-radius:inherit !important;
     background:linear-gradient(90deg, rgba(124,255,124,.35), rgba(124,255,124,.95)) !important;
-    box-shadow:0 0 14px rgba(124,255,124,.16) !important;}@media  (max-width:700px){#games .gamesGrid, #games .gamesStatsGrid{gap:10px !important;}}#games .gameSnakeBoard{position:relative !important;}#games .snakeJoystickDock{right:6px !important;
-    bottom:6px !important;}#games .snakeJoystickToggle{width:58px !important;
+    box-shadow:0 0 14px rgba(124,255,124,.16) !important;}
+@media (max-width:700px){#games .gamesGrid, #games .gamesStatsGrid{gap:10px !important;}}
+#games .gameSnakeBoard{position:relative !important;}
+#games .snakeJoystickDock{right:6px !important;
+    bottom:6px !important;}
+#games .snakeJoystickToggle{width:58px !important;
     min-width:58px !important;
     height:58px !important;
-    min-height:58px !important;}#games .snakeJoystickPad{grid-template-columns:repeat(3, 44px) !important;
-    grid-template-rows:repeat(3, 44px) !important;}#games .snakeJoystickPad .gameControlBtn,
-  #games .snakeJoystickCenter{min-width:44px !important;
+    min-height:58px !important;}
+#games .snakeJoystickPad{grid-template-columns:repeat(3, 44px) !important;
+    grid-template-rows:repeat(3, 44px) !important;}
+#games .snakeJoystickPad .gameControlBtn, #games .snakeJoystickCenter{min-width:44px !important;
     min-height:44px !important;
     width:64px !important;
-    height:64px !important;}#games .gamesAccountRow{display:flex !important;align-items:center !important;gap:10px !important;margin-top:10px !important;}#games .gamesAccountCard.isLoggedIn{padding:6px 10px !important;min-height:0 !important;}#games .gamesAccountCard.isLoggedIn .gamesAccountCurrent{display:flex !important;margin-top:0 !important;min-height:32px !important;padding:0 10px !important;font-size:12px !important;}#games .gamesAccountCard.isLoggedIn .gamesAccountTop{margin-bottom:0 !important;}#games .gamesAccountCard.isLoggedIn .gamesAccountName{font-size:14px !important;line-height:1.1 !important;}#games .gamesAccountCard.isLoggedIn .gamesTinyBtn, #games .gamesActiveAccountBar .gamesTinyBtn{min-height:30px !important;padding:0 10px !important;font-size:12px !important;}#games .gamesActiveAccountBar{margin:0 12px 10px !important;padding:10px 12px !important;border-radius:18px !important;background:rgba(255,255,255,.06) !important;border:1px solid rgba(124,255,124,.10) !important;backdrop-filter:blur(18px) !important;-webkit-backdrop-filter:blur(18px) !important;}#games .gamesActiveAccountBar.isVisible{display:flex !important;}#games .gamesActiveAccountBarText{font-size:13px !important;line-height:1.2 !important;font-weight:700 !important;color:#eef7ee !important;}#games .gamesProfilesFolder,#games .gamesAchievementsFolder,#games .gamesStatsFolder, #games .gamesStatsFolder{margin-top:10px !important;border-radius:18px !important;border:1px solid rgba(124,255,124,.14) !important;background:rgba(11,15,13,.58) !important;overflow:hidden !important;}#games .gamesProfilesFolder > summary,#games .gamesAchievementsFolder > summary,#games .gamesStatsFolder > summary, #games .gamesStatsFolder > summary{list-style:none !important;cursor:pointer !important;padding:10px 12px !important;font-weight:700 !important;color:#e8ffe8 !important;}#games .gamesProfilesFolder[open] .gamesProfilesGrid,#games .gamesAchievementsFolder[open] .gamesAchievementsGrid,#games .gamesStatsFolder[open] .gamesStatsGrid{padding-top:4px !important;}#games .gamesLaunchTile{min-height:110px !important;padding:12px !important;align-items:flex-start !important;}#games .gamesLaunchTile .calcTileIcon{width:42px !important;height:42px !important;border-radius:14px !important;background:linear-gradient(180deg, rgba(124,255,124,.10), rgba(124,255,124,.04)) !important;border:1px solid rgba(124,255,124,.12) !important;box-shadow:0 10px 20px rgba(0,0,0,.18) inset, 0 8px 20px rgba(0,0,0,.10) !important;}#games .gamesLaunchTile .calcTileIcon svg{width:24px !important;height:24px !important;color:var(--green2) !important;opacity:.96 !important;}#games .gamesStatsGrid{display:grid !important;grid-template-columns:repeat(2, minmax(0, 1fr)) !important;gap:8px !important;padding:0 10px 10px !important;}#games .gamesGamePanel{display:flex !important;flex-direction:column !important;gap:10px !important;align-items:center !important;justify-content:flex-start !important;flex:1 1 auto !important;min-height:0 !important;width:100% !important;}body.gamesOpen #games .gamesShellTop{position:sticky !important;top:0 !important;z-index:2 !important;padding:10px 12px !important;border:1px solid rgba(124,255,124,.12) !important;border-radius:18px !important;background:rgba(12,15,13,.74) !important;backdrop-filter:blur(16px) saturate(145%) !important;-webkit-backdrop-filter:blur(16px) saturate(145%) !important;}body.gamesOpen #games .gamesShellTitle{font-size:18px !important;line-height:1.1 !important;}body.gamesOpen #games .gamesShellBack{min-height:42px !important;padding:0 12px !important;}body.gamesCompactMode #games .gamesShellTop{padding:8px 10px !important;border-radius:16px !important;}body.gamesCompactMode #games .gamesShellBack{min-height:38px !important;padding:0 10px !important;}@media  (max-height: 760px){#games .gamesAccountCard{padding:10px !important;}body.gamesOpen #games .gamesShellTop{padding:8px 10px !important;}}@media  (max-width: 700px){#games .gamesGrid, #games .gamesStatsGrid{grid-template-columns:repeat(2, minmax(0, 1fr)) !important;gap:8px !important;}}#games{padding-bottom:154px !important;}#games{padding-bottom:170px !important;}#games .gamesProfilesFolder,#games .gamesAchievementsFolder,#games .gamesStatsFolder, #games .gamesStatsFolder{margin-top:6px !important;margin-bottom:6px !important;}#games .gamesProfilesFolder > summary,#games .gamesAchievementsFolder > summary,#games .gamesStatsFolder > summary, #games .gamesStatsFolder > summary{padding:8px 10px !important;}#games .gamesProfilesGrid,#games .gamesAchievementsGrid,#games .gamesStatsGrid, #games .gamesProfilesGrid,#games .gamesAchievementsGrid,#games .gamesStatsGrid, #games .gamesStatsGrid{padding:0 8px 8px !important;gap:6px !important;}#games .gamesStatsCard{padding:8px !important;}#games .gamesStatsCardTotal{font-size:11px !important;}#games .gamesStatsCardLine, #games .gamesStatsCardTotal, #games .gamesStatsCardTotal,
-  #games .gamesStatsCardLine,
-  #games .gamesStatsCardMeta{font-size:10px !important;}#games .gamesAccountCard.isLoggedIn .gamesAccountCurrent{min-height:30px !important;font-size:12px !important;}#games{padding-bottom:196px !important;}#games .gamesAccountCard{padding-bottom:8px !important;}#games .gamesProfilesFolder,#games .gamesAchievementsFolder,#games .gamesStatsFolder{margin-top:6px !important;
+    height:64px !important;}
+#games .gamesAccountRow{display:flex !important;align-items:center !important;gap:10px !important;margin-top:10px !important;}
+#games .gamesAccountCard.isLoggedIn{padding:6px 10px !important;min-height:0 !important;}
+#games .gamesAccountCard.isLoggedIn .gamesAccountCurrent{display:flex !important;margin-top:0 !important;min-height:32px !important;padding:0 10px !important;font-size:12px !important;}
+#games .gamesAccountCard.isLoggedIn .gamesAccountTop{margin-bottom:0 !important;}
+#games .gamesAccountCard.isLoggedIn .gamesAccountName{font-size:14px !important;line-height:1.1 !important;}
+#games .gamesAccountCard.isLoggedIn .gamesTinyBtn, #games .gamesActiveAccountBar .gamesTinyBtn{min-height:30px !important;padding:0 10px !important;font-size:12px !important;}
+#games .gamesActiveAccountBar{margin:0 12px 10px !important;padding:10px 12px !important;border-radius:18px !important;background:rgba(255,255,255,.06) !important;border:1px solid rgba(124,255,124,.10) !important;backdrop-filter:blur(18px) !important;-webkit-backdrop-filter:blur(18px) !important;}
+#games .gamesActiveAccountBar.isVisible{display:flex !important;}
+#games .gamesActiveAccountBarText{font-size:13px !important;line-height:1.2 !important;font-weight:700 !important;color:#eef7ee !important;}
+#games .gamesProfilesFolder, #games .gamesAchievementsFolder, #games .gamesStatsFolder{margin-top:10px !important;border-radius:18px !important;border:1px solid rgba(124,255,124,.14) !important;background:rgba(11,15,13,.58) !important;overflow:hidden !important;}
+#games .gamesProfilesFolder > summary, #games .gamesAchievementsFolder > summary, #games .gamesStatsFolder > summary{list-style:none !important;cursor:pointer !important;padding:10px 12px !important;font-weight:700 !important;color:#e8ffe8 !important;}
+#games .gamesProfilesFolder[open] .gamesProfilesGrid, #games .gamesAchievementsFolder[open] .gamesAchievementsGrid, #games .gamesStatsFolder[open] .gamesStatsGrid{padding-top:4px !important;}
+#games .gamesLaunchTile{min-height:110px !important;padding:12px !important;align-items:flex-start !important;}
+#games .gamesLaunchTile .calcTileIcon{width:42px !important;height:42px !important;border-radius:14px !important;background:linear-gradient(180deg, rgba(124,255,124,.10), rgba(124,255,124,.04)) !important;border:1px solid rgba(124,255,124,.12) !important;box-shadow:0 10px 20px rgba(0,0,0,.18) inset, 0 8px 20px rgba(0,0,0,.10) !important;}
+#games .gamesLaunchTile .calcTileIcon svg{width:24px !important;height:24px !important;color:var(--green2) !important;opacity:.96 !important;}
+#games .gamesStatsGrid{display:grid !important;grid-template-columns:repeat(2, minmax(0, 1fr)) !important;gap:8px !important;padding:0 10px 10px !important;}
+#games .gamesGamePanel{display:flex !important;flex-direction:column !important;gap:10px !important;align-items:center !important;justify-content:flex-start !important;flex:1 1 auto !important;min-height:0 !important;width:100% !important;}
+body.gamesOpen #games .gamesShellTop{position:sticky !important;top:0 !important;z-index:2 !important;padding:10px 12px !important;border:1px solid rgba(124,255,124,.12) !important;border-radius:18px !important;background:rgba(12,15,13,.74) !important;backdrop-filter:blur(16px) saturate(145%) !important;-webkit-backdrop-filter:blur(16px) saturate(145%) !important;}
+body.gamesOpen #games .gamesShellTitle{font-size:18px !important;line-height:1.1 !important;}
+body.gamesOpen #games .gamesShellBack{min-height:42px !important;padding:0 12px !important;}
+body.gamesCompactMode #games .gamesShellTop{padding:8px 10px !important;border-radius:16px !important;}
+body.gamesCompactMode #games .gamesShellBack{min-height:38px !important;padding:0 10px !important;}
+@media (max-height: 760px){#games .gamesAccountCard{padding:10px !important;}body.gamesOpen #games .gamesShellTop{padding:8px 10px !important;}}
+@media (max-width: 700px){#games .gamesGrid, #games .gamesStatsGrid{grid-template-columns:repeat(2, minmax(0, 1fr)) !important;gap:8px !important;}}
+#games{padding-bottom:154px !important;}
+#games{padding-bottom:170px !important;}
+#games .gamesProfilesFolder, #games .gamesAchievementsFolder, #games .gamesStatsFolder{margin-top:6px !important;margin-bottom:6px !important;}
+#games .gamesProfilesFolder > summary, #games .gamesAchievementsFolder > summary, #games .gamesStatsFolder > summary{padding:8px 10px !important;}
+#games .gamesProfilesGrid, #games .gamesAchievementsGrid, #games .gamesStatsGrid{padding:0 8px 8px !important;gap:6px !important;}
+#games .gamesStatsCard{padding:8px !important;}
+#games .gamesStatsCardTotal{font-size:11px !important;}
+#games .gamesStatsCardLine, #games .gamesStatsCardTotal, #games .gamesStatsCardMeta{font-size:10px !important;}
+#games .gamesAccountCard.isLoggedIn .gamesAccountCurrent{min-height:30px !important;font-size:12px !important;}
+#games{padding-bottom:196px !important;}
+#games .gamesAccountCard{padding-bottom:8px !important;}
+#games .gamesProfilesFolder, #games .gamesAchievementsFolder, #games .gamesStatsFolder{margin-top:6px !important;
     margin-bottom:10px !important;
-    border-radius:18px !important;}#games .gamesProfilesFolder[open] .gamesProfilesGrid,#games .gamesAchievementsFolder[open] .gamesAchievementsGrid,#games .gamesStatsFolder[open] .gamesStatsGrid{padding-top:4px !important;
-    padding-bottom:18px !important;}#games .gamesStatsCardHead{margin-bottom:5px !important;}#games .gamesTop3Name{font-size:11px !important;
-    font-weight:700 !important;}#games .gamesTop3Value{font-size:10px !important;
-    line-height:1.15 !important;}#games .gamesGrid{grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
-    gap:8px !important;}#games .gamesLaunchTile .calcTileIcon{width:42px !important;
-    height:42px !important;}body.gamesOpen #games .gamesStage{padding:6px 6px calc(14px + env(safe-area-inset-bottom)) !important;
-    overflow:hidden !important;}#games .gameInfoRow{padding:0 1px 0 !important;}#games .gameBoard.gameSnakeBoard{position:relative !important;
+    border-radius:18px !important;}
+#games .gamesProfilesFolder[open] .gamesProfilesGrid, #games .gamesAchievementsFolder[open] .gamesAchievementsGrid, #games .gamesStatsFolder[open] .gamesStatsGrid{padding-top:4px !important;
+    padding-bottom:18px !important;}
+#games .gamesStatsCardHead{margin-bottom:5px !important;}
+#games .gamesTop3Name{font-size:11px !important;
+    font-weight:700 !important;}
+#games .gamesTop3Value{font-size:10px !important;
+    line-height:1.15 !important;}
+#games .gamesGrid{grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
+    gap:8px !important;}
+#games .gamesLaunchTile .calcTileIcon{width:42px !important;
+    height:42px !important;}
+body.gamesOpen #games .gamesStage{padding:6px 6px calc(14px + env(safe-area-inset-bottom)) !important;
+    overflow:hidden !important;}
+#games .gameInfoRow{padding:0 1px 0 !important;}
+#games .gameBoard.gameSnakeBoard{position:relative !important;
     touch-action:none !important;
-    overscroll-behavior:contain !important;}#games .snakeJoystickDock{position:absolute !important;
+    overscroll-behavior:contain !important;}
+#games .snakeJoystickDock{position:absolute !important;
     right:8px !important;
     bottom:8px !important;
     z-index:20 !important;
@@ -93,7 +234,9 @@ body.gamesCompactMode #games .game2048Board .gameBoardCell.n256{font-size:22px !
     flex-direction:column !important;
     align-items:flex-end !important;
     gap:8px !important;
-    pointer-events:none !important;}#games .snakeJoystickDock *{pointer-events:auto !important;}#games .snakeJoystickToggle{width:52px !important;
+    pointer-events:none !important;}
+#games .snakeJoystickDock *{pointer-events:auto !important;}
+#games .snakeJoystickToggle{width:52px !important;
     min-width:52px !important;
     height:52px !important;
     min-height:52px !important;
@@ -106,9 +249,11 @@ body.gamesCompactMode #games .game2048Board .gameBoardCell.n256{font-size:22px !
     letter-spacing:.01em !important;
     background:rgba(12,16,14,.82) !important;
     border:1px solid rgba(124,255,124,.16) !important;
-    box-shadow:0 14px 28px rgba(0,0,0,.24) !important;}#games .snakeJoystickDock.isOn .snakeJoystickToggle{background:rgba(124,255,124,.14) !important;
+    box-shadow:0 14px 28px rgba(0,0,0,.24) !important;}
+#games .snakeJoystickDock.isOn .snakeJoystickToggle{background:rgba(124,255,124,.14) !important;
     color:#eaffea !important;
-    border-color:rgba(124,255,124,.22) !important;}#games .snakeJoystickPad{display:none !important;
+    border-color:rgba(124,255,124,.22) !important;}
+#games .snakeJoystickPad{display:none !important;
     grid-template-columns:repeat(3, 40px) !important;
     grid-template-rows:repeat(3, 40px) !important;
     gap:6px !important;
@@ -120,11 +265,14 @@ body.gamesCompactMode #games .game2048Board .gameBoardCell.n256{font-size:22px !
     background:rgba(11,15,13,.75) !important;
     backdrop-filter:blur(18px) saturate(135%) !important;
     -webkit-backdrop-filter:blur(18px) saturate(135%) !important;
-    box-shadow:0 18px 30px rgba(0,0,0,.22) !important;}#games .snakeJoystickDock.isOn .snakeJoystickPad, #games .snakeJoystickPad{display:grid !important;}#games .snakeJoystickPad .gameControlBtn{min-width:40px !important;
+    box-shadow:0 18px 30px rgba(0,0,0,.22) !important;}
+#games .snakeJoystickDock.isOn .snakeJoystickPad, #games .snakeJoystickPad{display:grid !important;}
+#games .snakeJoystickPad .gameControlBtn{min-width:40px !important;
     min-height:40px !important;
     padding:0 1px 0 !important;
     border-radius:12px !important;
-    font-size:13px !important;}#games .snakeJoystickCenter{width:40px !important;
+    font-size:13px !important;}
+#games .snakeJoystickCenter{width:40px !important;
     height:40px !important;
     border-radius:12px !important;
     display:grid !important;
@@ -132,26 +280,41 @@ body.gamesCompactMode #games .game2048Board .gameBoardCell.n256{font-size:22px !
     background:rgba(255,255,255,.04) !important;
     color:rgba(231,255,240,.7) !important;
     font-size:14px !important;
-    font-weight:700 !important;}@media  (max-width: 700px){#games .gamesStatsGrid{grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
-      gap:6px !important;}}#games .gamesGrid{gap:7px !important;}#games .gamesLaunchTile{min-height:92px !important;}#games .gamesProfilesFolder,#games .gamesAchievementsFolder,#games .gamesStatsFolder{margin-top:8px !important;
-    margin-bottom:10px !important;}#games .gamesProfilesGrid,#games .gamesAchievementsGrid,#games .gamesStatsGrid{gap:7px !important;
-    padding:0 8px 8px !important;}#games .gamesStatsCard{padding:9px !important;}#games .gamesStatsCardLine{font-size:9px !important;}#games .gamesStatsCardMeta{font-size:9px !important;
+    font-weight:700 !important;}
+@media (max-width: 700px){#games .gamesStatsGrid{grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
+      gap:6px !important;}}
+#games .gamesGrid{gap:7px !important;}
+#games .gamesLaunchTile{min-height:92px !important;}
+#games .gamesProfilesFolder, #games .gamesAchievementsFolder, #games .gamesStatsFolder{margin-top:8px !important;
+    margin-bottom:10px !important;}
+#games .gamesProfilesGrid, #games .gamesAchievementsGrid, #games .gamesStatsGrid{gap:7px !important;
+    padding:0 8px 8px !important;}
+#games .gamesStatsCard{padding:9px !important;}
+#games .gamesStatsCardLine{font-size:9px !important;}
+#games .gamesStatsCardMeta{font-size:9px !important;
     line-height:1.15 !important;
-    color:rgba(231,255,240,.68) !important;}#games .gameBoard.gameSnakeBoard, #games .gameSnakeBoard{touch-action:none !important;
-    overscroll-behavior:contain !important;}#games .snakeJoystickToggle{width:56px !important;
+    color:rgba(231,255,240,.68) !important;}
+#games .gameBoard.gameSnakeBoard, #games .gameSnakeBoard{touch-action:none !important;
+    overscroll-behavior:contain !important;}
+#games .snakeJoystickToggle{width:56px !important;
     min-width:56px !important;
     height:56px !important;
-    min-height:56px !important;}#games .snakeJoystickPad{grid-template-columns:repeat(3, 42px) !important;
-    grid-template-rows:repeat(3, 42px) !important;}#games .snakeJoystickPad .gameControlBtn,
-  #games .snakeJoystickCenter{min-width:42px !important;
+    min-height:56px !important;}
+#games .snakeJoystickPad{grid-template-columns:repeat(3, 42px) !important;
+    grid-template-rows:repeat(3, 42px) !important;}
+#games .snakeJoystickPad .gameControlBtn, #games .snakeJoystickCenter{min-width:42px !important;
     min-height:42px !important;
     width:42px !important;
-    height:42px !important;}#games .gamePad .gameControlBtn{min-width:50px !important;
-    min-height:50px !important;}#games .gamesStatsCardTotal,
-  #games .gamesStatsCardLine,
-  #games .gamesStatsCardMeta{font-size:9px !important;
-    line-height:1.12 !important;}#games .gamesGamePanel{position:relative !important;
-    padding-bottom:96px !important;}#games .gamesSnakePanel{padding-bottom:146px !important;}#games .gameBoard.gameSnakeBoard{margin-bottom:6px !important;}#games .snakeJoystickDock{position:absolute !important;
+    height:42px !important;}
+#games .gamePad .gameControlBtn{min-width:50px !important;
+    min-height:50px !important;}
+#games .gamesStatsCardTotal, #games .gamesStatsCardLine, #games .gamesStatsCardMeta{font-size:9px !important;
+    line-height:1.12 !important;}
+#games .gamesGamePanel{position:relative !important;
+    padding-bottom:96px !important;}
+#games .gamesSnakePanel{padding-bottom:146px !important;}
+#games .gameBoard.gameSnakeBoard{margin-bottom:6px !important;}
+#games .snakeJoystickDock{position:absolute !important;
     right:2px !important;
     bottom:4px !important;
     display:flex !important;
@@ -159,29 +322,36 @@ body.gamesCompactMode #games .game2048Board .gameBoardCell.n256{font-size:22px !
     align-items:flex-end !important;
     gap:6px !important;
     z-index:10 !important;
-    pointer-events:auto !important;}#games .snakeJoystickLabel{align-self:flex-end !important;
+    pointer-events:auto !important;}
+#games .snakeJoystickLabel{align-self:flex-end !important;
     font-size:11px !important;
     color:rgba(231,255,240,.62) !important;
     letter-spacing:.12em !important;
     text-transform:uppercase !important;
-    padding:0 8px 0 0 !important;}#games .snakeJoystickPad{grid-template-columns:repeat(3, 48px) !important;
+    padding:0 8px 0 0 !important;}
+#games .snakeJoystickPad{grid-template-columns:repeat(3, 48px) !important;
     grid-template-rows:repeat(3, 48px) !important;
     gap:6px !important;
     padding:8px !important;
     border-radius:22px !important;
     background:rgba(12,16,14,.78) !important;
-    box-shadow:0 16px 34px rgba(0,0,0,.32) !important;}#games .snakeJoystickPad .gameControlBtn,
-  #games .snakeJoystickCenter{width:48px !important;
+    box-shadow:0 16px 34px rgba(0,0,0,.32) !important;}
+#games .snakeJoystickPad .gameControlBtn, #games .snakeJoystickCenter{width:48px !important;
     height:48px !important;
     min-width:48px !important;
     min-height:48px !important;
-    border-radius:16px !important;}#games .snakeJoystickCenter{display:flex !important;
+    border-radius:16px !important;}
+#games .snakeJoystickCenter{display:flex !important;
     align-items:center !important;
     justify-content:center !important;
     color:#bff5c9 !important;
     font-size:14px !important;
     background:rgba(124,255,124,.10) !important;
-    box-shadow:inset 0 0 0 1px rgba(124,255,124,.10) !important;}#games .gamesStatsCard{padding:10px !important;}#games .gamesStatsCardName{font-size:13px !important;}#games .gamesSnakePanel{padding-bottom:186px !important;}#games .snakeJoystickDock{position:absolute !important;
+    box-shadow:inset 0 0 0 1px rgba(124,255,124,.10) !important;}
+#games .gamesStatsCard{padding:10px !important;}
+#games .gamesStatsCardName{font-size:13px !important;}
+#games .gamesSnakePanel{padding-bottom:186px !important;}
+#games .snakeJoystickDock{position:absolute !important;
     right:2px !important;
     bottom:72px !important;
     display:flex !important;
@@ -189,13 +359,19 @@ body.gamesCompactMode #games .game2048Board .gameBoardCell.n256{font-size:22px !
     align-items:flex-end !important;
     gap:6px !important;
     z-index:10 !important;
-    pointer-events:auto !important;}#games .snakeJoystickDock{right:8px !important;
-    bottom:154px !important;}#games .snakeJoystickLabel{font-size:12px !important;
+    pointer-events:auto !important;}
+#games .snakeJoystickDock{right:8px !important;
+    bottom:154px !important;}
+#games .snakeJoystickLabel{font-size:12px !important;
     font-weight:800 !important;
-    letter-spacing:.03em !important;}#games .tttBoard{gap:0 !important;
+    letter-spacing:.03em !important;}
+#games .tttBoard{gap:0 !important;
     background:rgba(124,255,124,.06) !important;
-    padding:0 !important;}#games .tttCell{border:0 !important;
-    box-shadow:inset 0 0 0 1px rgba(124,255,124,.16) !important;}#games .tttInviteCard{border-radius:0 !important;}#games .tttInviteCode{margin-top:10px !important;
+    padding:0 !important;}
+#games .tttCell{border:0 !important;
+    box-shadow:inset 0 0 0 1px rgba(124,255,124,.16) !important;}
+#games .tttInviteCard{border-radius:0 !important;}
+#games .tttInviteCode{margin-top:10px !important;
     padding:12px 10px !important;
     border-radius:0 !important;
     border:1px solid rgba(124,255,124,.16) !important;
@@ -206,7 +382,12 @@ body.gamesCompactMode #games .game2048Board .gameBoardCell.n256{font-size:22px !
     letter-spacing:.18em !important;
     text-align:center !important;
     text-transform:uppercase !important;
-    overflow-wrap:anywhere !important;}#games .tttInviteUrl{margin-top:8px !important;
-    word-break:break-all !important;}#games .tttInviteActions{grid-template-columns:1fr 1fr !important;}#games .tttInviteCard .tttBtn{min-height:48px !important;}#games .gamesAccountCard.isLoggedIn .gamesAccountCurrent{margin-top:8px !important;}#games .gamesAccountCard.isLoggedIn .gamesAccountTop .gamesTinyBtn{min-height:24px !important;
+    overflow-wrap:anywhere !important;}
+#games .tttInviteUrl{margin-top:8px !important;
+    word-break:break-all !important;}
+#games .tttInviteActions{grid-template-columns:1fr 1fr !important;}
+#games .tttInviteCard .tttBtn{min-height:48px !important;}
+#games .gamesAccountCard.isLoggedIn .gamesAccountCurrent{margin-top:8px !important;}
+#games .gamesAccountCard.isLoggedIn .gamesAccountTop .gamesTinyBtn{min-height:24px !important;
     padding:0 7px !important;
     font-size:11px !important;}

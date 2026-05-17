@@ -1,5 +1,4 @@
-:root{
-  --bg:#0b0f0c;
+:root{--bg:#0b0f0c;
   --panel:#151a17;
   --panel2:#1c1f1d;
   --green:#4CAF50;
@@ -13,18 +12,11 @@
   --emerald:#1f4d2f;
   --orange:#6b3f14;
   --gray:#2a2a2a;
-  --gray2:#2a3b2f;
-}
-
+  --gray2:#2a3b2f;}
 *{box-sizing:border-box;}
-
-html{
- min-height:100%;
- background:var(--bg);
-}
-
-body{
- font-family:Arial, sans-serif;
+html{min-height:100%;
+ background:var(--bg);}
+body{font-family:Arial, sans-serif;
  background:var(--bg);
  background-color:var(--bg);
  color:var(--text);
@@ -33,11 +25,8 @@ body{
  min-height:100dvh;
  padding:calc(15px + env(safe-area-inset-top)) calc(15px + env(safe-area-inset-right)) calc(118px + env(safe-area-inset-bottom)) calc(15px + env(safe-area-inset-left));
  position:relative;
- isolation:isolate;
-}
-
-body::before{
- content:"";
+ isolation:isolate;}
+body::before{content:"";
  position:fixed;
  inset:0;
  pointer-events:none;
@@ -55,27 +44,18 @@ body::before{
    rgba(124,255,124,0.05) 20%,
    rgba(124,255,124,0.02) 38%,
    rgba(11,15,12,0) 62%
-  );
-}
-
-h1{
- text-align:center;
+  );}
+h1{text-align:center;
  color:var(--green);
  margin:8px 0;
- font-size:26px;
-}
-
-#shiftTime{
- text-align:center;
+ font-size:26px;}
+#shiftTime{text-align:center;
  font-size:14px;
  color:var(--muted);
  margin-top:4px;
  white-space:pre-line;
- line-height:1.35;
-}
-
-.version{
- position:fixed;
+ line-height:1.35;}
+.version{position:fixed;
  bottom:6px;
  right:24px;
  font-size:12px;
@@ -84,11 +64,8 @@ h1{
  max-width:calc(100vw - 120px);
  text-align:right;
  opacity:.36;
- pointer-events:auto;
-}
-
-.signature{
- font-family:"Kalam", cursive;
+ pointer-events:auto;}
+.signature{font-family:"Kalam", cursive;
  font-style:normal;
  font-weight:700;
  font-size:24px;
@@ -96,11 +73,8 @@ h1{
  letter-spacing:0.1px;
  transform:rotate(-2deg);
  display:inline-block;
- opacity:.72;
-}
-
-.homeBtn{
- position:fixed;
+ opacity:.72;}
+.homeBtn{position:fixed;
  top:20px;
  right:10px;
  width:45px;
@@ -114,88 +88,37 @@ h1{
  display:flex;
  align-items:center;
  justify-content:center;
- cursor:pointer;
-}
-
-.brusDetails{
- margin-top:10px;
+ cursor:pointer;}
+.brusDetails{margin-top:10px;
  border:1px solid rgba(76,175,80,.35);
  border-radius:12px;
  background:rgba(21,26,23,.72);
- overflow:hidden;
-}
-
-.brusDetails summary{
- list-style:none;
+ overflow:hidden;}
+.brusDetails summary{list-style:none;
  cursor:pointer;
  padding:12px 14px;
  font-weight:700;
- color:var(--text);
-}
-
-.brusDetails summary::-webkit-details-marker{
- display:none;
-}
-
-.brusDetails summary::after{
- content:"▾";
+ color:var(--text);}
+.brusDetails summary::-webkit-details-marker{display:none;}
+.brusDetails summary::after{content:"▾";
  float:right;
  color:var(--muted);
- transition:transform .2s ease;
-}
-
-.brusDetails[open] summary::after{
- transform:rotate(180deg);
-}
-
-.brusDetailsBody{
- display:grid;
+ transition:transform .2s ease;}
+.brusDetails[open] summary::after{transform:rotate(180deg);}
+.brusDetailsBody{display:grid;
  gap:8px;
- padding:0 14px 14px 14px;
-}
-
-.brusDetailsBody label{
- margin-top:2px;
-}
-
-.brusDetailsBody input{
- margin-top:0;
-}
-
-html, body{
-  width:100%;
-}
-
-body{
-  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+ padding:0 14px 14px 14px;}
+.brusDetailsBody label{margin-top:2px;}
+.brusDetailsBody input{margin-top:0;}
+html, body{width:100%;}
+body{font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
   background:
     radial-gradient(circle at top, rgba(124,255,124,.10), transparent 26%),
-    linear-gradient(180deg, #050705 0%, #090b08 100%);
-}
-
-body > button.homeBtn,
-body > h1,
-body > #shiftTime,
-body > .version{
-  display:none !important;
-}
-
-.page{
-  width:min(100%, 460px);
-  margin:0 auto;
-}
-
-#frezky.active,
-#brusy.active{
-  display:grid;
-  gap:12px;
-}
-
-#frezky .calcDetails,
-#brusy .calcDetails{
-  margin-top:0;
-}
-
-#brusy .calcDetailsInner{
-  margin-top:6px;
-}
+    linear-gradient(180deg, #050705 0%, #090b08 100%);}
+body > button.homeBtn, body > h1, body > #shiftTime, body > .version{display:none !important;}
+.page{width:min(100%, 460px);
+  margin:0 auto;}
+#frezky.active, #brusy.active{display:grid;
+  gap:12px;}
+#frezky .calcDetails, #brusy .calcDetails{margin-top:0;}
+#brusy .calcDetailsInner{margin-top:6px;}
