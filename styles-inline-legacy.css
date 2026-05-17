@@ -13,7 +13,7 @@
     width:46px !important;
     min-width:46px !important;
     max-width:46px !important;}.bottomNavMenuBtn .moreIcon{width:13px !important;
-    height:13px !important;}@media (max-width:700px){.bottomNavBtn{flex-basis:62px !important;}.bottomNavMenuBtn{flex-basis:46px !important;}}.bottomNav{z-index: 1200 !important;}.bottomNavBtn{flex:0 0 66px !important;
+    height:13px !important;}@media  (max-width:700px){.bottomNavBtn{flex-basis:62px !important;}.bottomNavMenuBtn{flex-basis:46px !important;}}.bottomNav{z-index: 1200 !important;}.bottomNavBtn{flex:0 0 66px !important;
     width:66px !important;
     min-width:66px !important;
     max-width:66px !important;
@@ -40,7 +40,7 @@
     line-height:1.05 !important;
     text-align:center !important;}#statsMachineGrid.listGrid,
   #statsNameGrid.listGrid{grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-    gap:6px !important;}@media (max-width: 700px){#rotaceNamesPanel .listItem,
+    gap:6px !important;}@media  (max-width: 700px){#rotaceNamesPanel .listItem,
     #statsNameGrid .listItem,
     #statsMachineGrid .listItem{min-height:48px !important;}.bottomNavBtn{flex-basis:62px !important;
       width:62px !important;
@@ -92,7 +92,7 @@
   display:block !important;}.bottomNavGamesBtn{margin-right:0 !important;}#statsNameGrid .statsTileTitle,
 #statsMachineGrid .statsTileTitle, #statsMachineGrid .statsTileTitle{font-size:13px !important;
   line-height:1.05 !important;}#statsMachineGrid.listGrid{gap:3px !important;}#statsMachineGrid .listItem{padding:3px 1px !important;
-  min-height:32px !important;}#statsMachineGrid .statsMachineTile{padding:3px 1px !important;}.gamesStatsCard{border-radius:16px !important;border:1px solid rgba(124,255,124,.12) !important;background:rgba(255,255,255,.035) !important;padding:10px !important;box-shadow:0 10px 28px rgba(0,0,0,.16) !important;}.gamesStatsCard.isActive{border-color:rgba(124,255,124,.24) !important;background:rgba(124,255,124,.05) !important;}.gamesStatsCardHead{display:flex !important;align-items:flex-start !important;justify-content:space-between !important;gap:8px !important;margin-bottom:6px !important;}.gamesStatsCardName{font-weight:700 !important;font-size:13px !important;line-height:1.1 !important;}.gamesStatsCardTotal{font-size:11px !important;font-weight:700 !important;color:#dfffe3 !important;white-space:nowrap !important;}.gamesStatsCardBody{display:grid !important;gap:3px !important;}.gamesStatsCardLine{font-size:10px !important;line-height:1.2 !important;color:rgba(231,255,240,.82) !important;}@media (max-width: 700px){.bottomNavBtn{flex-basis:56px !important;width:56px !important;min-width:56px !important;max-width:56px !important;}.bottomNavMenuBtn{flex-basis:38px !important;width:38px !important;min-width:38px !important;max-width:38px !important;}}.bottomNav{padding:3px 5px calc(3px + env(safe-area-inset-bottom)) !important;
+  min-height:32px !important;}#statsMachineGrid .statsMachineTile{padding:3px 1px !important;}.gamesStatsCard{border-radius:16px !important;border:1px solid rgba(124,255,124,.12) !important;background:rgba(255,255,255,.035) !important;padding:10px !important;box-shadow:0 10px 28px rgba(0,0,0,.16) !important;}.gamesStatsCard.isActive{border-color:rgba(124,255,124,.24) !important;background:rgba(124,255,124,.05) !important;}.gamesStatsCardHead{display:flex !important;align-items:flex-start !important;justify-content:space-between !important;gap:8px !important;margin-bottom:6px !important;}.gamesStatsCardName{font-weight:700 !important;font-size:13px !important;line-height:1.1 !important;}.gamesStatsCardTotal{font-size:11px !important;font-weight:700 !important;color:#dfffe3 !important;white-space:nowrap !important;}.gamesStatsCardBody{display:grid !important;gap:3px !important;}.gamesStatsCardLine{font-size:10px !important;line-height:1.2 !important;color:rgba(231,255,240,.82) !important;}@media  (max-width: 700px){.bottomNavBtn{flex-basis:56px !important;width:56px !important;min-width:56px !important;max-width:56px !important;}.bottomNavMenuBtn{flex-basis:38px !important;width:38px !important;min-width:38px !important;max-width:38px !important;}}.bottomNav{padding:3px 5px calc(3px + env(safe-area-inset-bottom)) !important;
     gap:5px !important;}.bottomNavBtn{min-height:46px !important;
     padding:1px 2px 0 !important;}.bottomNavBtn .bottomNavIcon,
   .bottomNavBtn .bottomNavIcon svg{width:27px !important;
@@ -103,7 +103,7 @@
     flex-direction:column !important;
     min-height:calc(100dvh - 176px - env(safe-area-inset-bottom)) !important;}#rotaceNamesPanel .personCard{order:1 !important;
     flex:0 0 auto !important;}#rotaceNamesPanel .listGrid{order:2 !important;
-    margin-top:auto !important;}@media (max-width: 700px){#rotaceNamesPanel.active{min-height:calc(100dvh - 164px - env(safe-area-inset-bottom)) !important;}#rotaceNamesPanel .listGrid{grid-template-columns:repeat(auto-fit, minmax(70px, 1fr)) !important;
+    margin-top:auto !important;}@media  (max-width: 700px){#rotaceNamesPanel.active{min-height:calc(100dvh - 164px - env(safe-area-inset-bottom)) !important;}#rotaceNamesPanel .listGrid{grid-template-columns:repeat(auto-fit, minmax(70px, 1fr)) !important;
       gap:7px !important;}}.bottomNav{padding:2px 4px calc(2px + env(safe-area-inset-bottom)) !important;
     gap:3px !important;
     border-radius:16px !important;
@@ -131,7 +131,7 @@
     transform:translateY(-9px) !important;}#rotaceNamesPanel.active{min-height:calc(100dvh - 168px - env(safe-area-inset-bottom)) !important;}#statsMachineGrid.listGrid{grid-template-columns:repeat(5, minmax(0, 1fr)) !important;
     gap:1px !important;}#statsMachineGrid .listItem,
   #statsMachineGrid .statsMachineTile{min-height:28px !important;
-    padding:2px 1px !important;}@media (max-width: 700px){#rotaceNamesPanel.active{min-height:calc(100dvh - 160px - env(safe-area-inset-bottom)) !important;}#statsMachineGrid .listItem,
+    padding:2px 1px !important;}@media  (max-width: 700px){#rotaceNamesPanel.active{min-height:calc(100dvh - 160px - env(safe-area-inset-bottom)) !important;}#statsMachineGrid .listItem,
     #statsMachineGrid .statsMachineTile{min-height:28px !important;
       padding:1px !important;}}.bottomNav{width:calc(100% - 4px) !important;
     padding:1px 0 calc(1px + env(safe-area-inset-bottom)) !important;
@@ -200,7 +200,7 @@
   #statsNameView .statsSummaryValueCompact,
   #statsMachineView .statsSummaryValueCompact, .rakUpdateToastBody{text-align:center !important;}#stats .statsSummary .tile .statsMultiLine{font-size:12px !important;
     line-height:1.2 !important;
-    font-weight:700 !important;}@media (max-width: 700px){#statsNameGrid .listItem,
+    font-weight:700 !important;}@media  (max-width: 700px){#statsNameGrid .listItem,
     #statsNameGrid .statsNameTile,
     #statsMachineGrid .listItem,
     #statsMachineGrid .statsMachineTile{min-height:34px !important;
@@ -269,7 +269,7 @@
     font-weight:700 !important;
     text-align:center !important;
     white-space:pre-line !important;
-    word-break:break-word !important;}@media (max-width: 700px){#statsNameGrid .listItem,
+    word-break:break-word !important;}@media  (max-width: 700px){#statsNameGrid .listItem,
     #statsNameGrid .statsNameTile,
     #statsMachineGrid .listItem,
     #statsMachineGrid .statsMachineTile{min-height:34px !important;
@@ -471,10 +471,10 @@
     min-width:17px !important;
     max-width:17px !important;
     min-height:40px !important;}.bottomNavMenuBtn .moreIcon{width:11px !important;
-    height:11px !important;}@supports (-webkit-touch-callout: none){.bottomNav{bottom:24px !important;
-      padding:0 1px 0 !important;}}.bottomNav{padding:2px 1px calc(2px + env(safe-area-inset-bottom)) !important;}@supports (-webkit-touch-callout: none){.bottomNav{bottom:24px !important;
+    height:11px !important;}@supports  (-webkit-touch-callout: none){.bottomNav{bottom:24px !important;
+      padding:0 1px 0 !important;}}.bottomNav{padding:2px 1px calc(2px + env(safe-area-inset-bottom)) !important;}@supports  (-webkit-touch-callout: none){.bottomNav{bottom:24px !important;
       padding:3px 1px calc(3px + env(safe-area-inset-bottom)) !important;}}#statsMachineGrid.listGrid{gap:0 !important;}#statsMachineGrid .listItem,
-  #statsMachineGrid .statsMachineTile{padding:5px 3px !important;}@media (display-mode: standalone){.bottomNav{bottom:calc(env(safe-area-inset-bottom) + 4px) !important;}}.bottomNav{position:fixed !important;
+  #statsMachineGrid .statsMachineTile{padding:5px 3px !important;}@media  (display-mode: standalone){.bottomNav{bottom:calc(env(safe-area-inset-bottom) + 4px) !important;}}.bottomNav{position:fixed !important;
   width:min(calc(100vw - 8px), 880px) !important;
   left:50% !important;
   right:auto !important;
@@ -589,7 +589,7 @@
     text-align:center !important;}.rakUpdateToastMain{display:flex !important;
     align-items:center !important;
     gap:10px !important;
-    justify-content:center !important;}.rakUpdateToastBadge{align-self:center !important;}@media (max-width: 560px){.rakUpdateToast{flex-direction:column !important;
+    justify-content:center !important;}.rakUpdateToastBadge{align-self:center !important;}@media  (max-width: 560px){.rakUpdateToast{flex-direction:column !important;
       align-items:stretch !important;
       text-align:center !important;
       gap:10px !important;}}

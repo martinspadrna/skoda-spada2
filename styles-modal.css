@@ -517,7 +517,7 @@ body.appMenuOpen{
   font-weight:800;
 }
 
-@media (max-width: 420px){.appMenuGrid{
+@media  (max-width: 420px){.appMenuGrid{
     grid-template-columns:1fr;
   }}
 
@@ -538,11 +538,11 @@ body.appMenuOpen{
   border:1px solid rgba(124,255,124,.12);
 }
 
-@media (max-width: 420px){.foodScheduleRow{flex-direction:column;gap:4px;}
+@media  (max-width: 420px){.foodScheduleRow{flex-direction:column;gap:4px;}
 
 .foodScheduleDay,.foodScheduleWindows{text-align:left;min-width:0;}}
 
-@keyframes rotaceShimmer {0% { background-position: 200% 0; }
+@keyframes  rotaceShimmer {0% { background-position: 200% 0; }
 
 100% { background-position: -200% 0; }}
 
