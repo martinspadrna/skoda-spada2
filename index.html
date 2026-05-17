@@ -320,45 +320,45 @@
 </div>
 
 <!-- SOUSTRUHY -->
-<div id="soustruhy" class="page">
+<div id="soustruhy" class="page calcPage calcPage--soustruhy">
   <div class="headerBar">
     <div></div>
     <h3>Soustruhy</h3>
     <button class="resetBtn" data-action="reset-soustruhy" title="Reset polí" aria-label="Reset polí">↻</button>
   </div>
 
-  <div class="card">
-    <div class="bgrid mt12">
+  <div class="card calcPanel calcPanel--modeCard">
+    <div class="bgrid mt12 calcChoiceGrid">
       <div class="bbtn" data-action="soustruh-mode" data-soustruh-mode="lis">Lis</div>
       <div class="bbtn" data-action="soustruh-mode" data-soustruh-mode="126">Volné 126ks</div>
       <div class="bbtn activeChoice" data-action="soustruh-mode" data-soustruh-mode="106">Volné 106ks</div>
     </div>
 
-    <div id="soustruhyLisPanel" class="subPanel">
+    <div id="soustruhyLisPanel" class="subPanel calcPanel calcPanel--form">
       <div class="smallText">Lis: zadej číslo první dávky a plán.</div>
       <label>Číslo první dávky</label>
       <input id="lis_first" type="number" autocomplete="off">
       <label>Plán výroby</label>
       <input id="lis_plan" type="number" value="" autocomplete="off">
-      <button class="soustruhCalcBtn" data-action="calc-soustruhy-lis">Spočítej lis</button>
-      <div class="card" id="soustruhyLisResult"></div>
+      <button class="soustruhCalcBtn calcPrimaryBtn" data-action="calc-soustruhy-lis">Spočítej lis</button>
+      <div class="card calcResultCard" id="soustruhyLisResult"></div>
     </div>
 
-    <div id="soustruhy126Panel" class="subPanel">
+    <div id="soustruhy126Panel" class="subPanel calcPanel calcPanel--form">
       <div class="smallText">Volné 126ks: zadej číslo první dávky, plán a jestli začínáš dávkou s 32 nebo 31 kusy.</div>
       <label>Číslo první dávky</label>
       <input id="v126_first" type="number" autocomplete="off">
       <label>Plán výroby</label>
       <input id="v126_plan" type="number" value="" autocomplete="off">
-      <div class="bgrid">
+      <div class="bgrid calcChoiceGrid">
         <div class="bbtn activeChoice" data-action="soustruh126-start" data-startsize="32">Začínám 32 ks</div>
         <div class="bbtn" data-action="soustruh126-start" data-startsize="31">Začínám 31 ks</div>
       </div>
-      <button class="soustruhCalcBtn" data-action="calc-soustruhy-126">Spočítej 126</button>
-      <div class="card" id="soustruhy126Result"></div>
+      <button class="soustruhCalcBtn calcPrimaryBtn" data-action="calc-soustruhy-126">Spočítej 126</button>
+      <div class="card calcResultCard" id="soustruhy126Result"></div>
     </div>
 
-    <div id="soustruhy106Panel" class="subPanel active">
+    <div id="soustruhy106Panel" class="subPanel active calcPanel calcPanel--form">
       <div class="smallText">Volné 106ks: zadej číslo první dávky, plán a počet kusů v prvních čtyřech dávkách.</div>
       <label>Číslo první dávky</label>
       <input id="v106_first" type="number" autocomplete="off">
@@ -370,8 +370,8 @@
       </div>
       <label>Plán výroby</label>
       <input id="v106_plan" type="number" value="" autocomplete="off">
-      <button class="soustruhCalcBtn" data-action="calc-soustruhy-106">Spočítej 106</button>
-      <div class="card" id="soustruhy106Result"></div>
+      <button class="soustruhCalcBtn calcPrimaryBtn" data-action="calc-soustruhy-106">Spočítej 106</button>
+      <div class="card calcResultCard" id="soustruhy106Result"></div>
     </div>
   </div>
 </div>
@@ -409,8 +409,8 @@
     <div class="brusDetailsBody">
       <label>Hotovo kusů:</label>
       <input id="f_kusy" type="number">
-      <button data-action="calc-f">Spočítej kolik ještě stihnu</button>
-      <div class="card" id="outF"></div>
+      <button class="calcPrimaryBtn" data-action="calc-f">Spočítej kolik ještě stihnu</button>
+      <div class="card calcResultCard" id="outF"></div>
     </div>
   </details>
 
@@ -421,8 +421,8 @@
       <input id="f_finish_kusy" type="number" autocomplete="off">
       <label>nebo kolik dávek:</label>
       <input id="f_finish_davky" type="number" autocomplete="off">
-      <button data-action="calc-f-finish">Ukázat čas dokončení</button>
-      <div class="card" id="outFTime"></div>
+      <button class="calcPrimaryBtn" data-action="calc-f-finish">Ukázat čas dokončení</button>
+      <div class="card calcResultCard" id="outFTime"></div>
     </div>
   </details>
 </div>
@@ -451,7 +451,7 @@
     </div>
   </div>
 
-  <div class="card" id="brusyInfo"><div><b>TBKR01 / AD</b></div><div class="smallText">Výroba kusu: 58,5 s · Orovnává po 58 ks · Orovnává 4 min</div></div>
+  <div class="card calcInfoCard" id="brusyInfo"><div><b>TBKR01 / AD</b></div><div class="smallText">Výroba kusu: 58,5 s · Orovnává po 58 ks · Orovnává 4 min</div></div>
 
   <details class="brusDetails calcDetails calcPanel calcPanel--compact">
     <summary><span class="calcSummaryTitle">Kolik ještě stihnu</span><span class="calcSummarySub">Rychlý přehled kusů</span></summary>
@@ -470,9 +470,9 @@
         </div>
       </details>
 
-      <button data-action="calc-brusy">Spočítej kolik ještě stihnu</button>
+      <button class="calcPrimaryBtn" data-action="calc-brusy">Spočítej kolik ještě stihnu</button>
 
-      <div class="card" id="outB"></div>
+      <div class="card calcResultCard" id="outB"></div>
     </div>
   </details>
 
@@ -495,14 +495,14 @@
         </div>
       </details>
 
-      <button data-action="calc-brusy-finish">Ukázat čas dokončení</button>
-      <div class="card" id="outBTime"></div>
+      <button class="calcPrimaryBtn" data-action="calc-brusy-finish">Ukázat čas dokončení</button>
+      <div class="card calcResultCard" id="outBTime"></div>
     </div>
   </details>
 </div>
 
 <!-- PRAČKA -->
-<div id="pracka" class="page">
+<div id="pracka" class="page calcPage calcPage--pracka">
   <div class="headerBar">
     <div></div>
     <h3>Pračka</h3>
@@ -514,9 +514,9 @@
 
   <div class="smallText smallText--mtNeg4 smallText--mb8">V případě opsání kusů z tryskače je potřeba od výsledku odečíst 10 kusů.</div>
 
-  <button data-action="calc-p">Spočítej kolik ještě stihnu</button>
+  <button class="calcPrimaryBtn" data-action="calc-p">Spočítej kolik ještě stihnu</button>
 
-  <div class="card" id="outP"></div>
+  <div class="card calcResultCard" id="outP"></div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

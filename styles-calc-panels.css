@@ -1,79 +1,246 @@
-:root{--calc-compact-gap:4px;
-  --calc-compact-pad-x:10px;
-  --calc-compact-pad-y:5px;
-  --calc-compact-min-h:34px;
-  --calc-compact-line:1.02;}
-:is(#frezky, #brusy) .brusDetails{width:100% !important;
-    margin-top:4px !important;
-    border-radius:10px !important;}
-:is(#frezky, #brusy) .brusDetails + .brusDetails{margin-top:4px !important;}
-:is(#frezky, #brusy) .brusDetails > summary{display:flex !important;
-    flex-direction:column !important;
-    align-items:flex-start !important;
-    justify-content:center !important;
-    width:100% !important;
-    max-width:none !important;
-    min-height:var(--calc-compact-min-h) !important;
-    padding:var(--calc-compact-pad-y) var(--calc-compact-pad-x) !important;
-    gap:1px !important;
-    line-height:var(--calc-compact-line) !important;}
-:is(#frezky, #brusy) .brusDetails > summary::after{float:none !important;
-    align-self:flex-end !important;
-    margin-left:6px !important;}
-:is(#frezky, #brusy) .brusDetails.calcDetails[open] > summary{width:100% !important;
-    max-width:none !important;}
-:is(#frezky, #brusy) .calcSummaryTitle{display:block !important;
-    font-size:11px !important;
-    font-weight:700 !important;
-    line-height:1.04 !important;
-    white-space:nowrap !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important;}
-:is(#frezky, #brusy) .calcSummarySub{display:block !important;
-    font-size:9px !important;
-    line-height:1.02 !important;
-    opacity:.8 !important;
-    white-space:nowrap !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important;}
-:is(#frezky, #brusy) .brusDetailsBody{padding:0 10px 10px 10px !important;
-    gap:6px !important;
-    min-height:0 !important;}
-:is(#frezky, #brusy) .card{min-height:0 !important;}
-#brusyInfo{display:block !important;
-    width:100% !important;
-    max-width:none !important;
-    padding:3px 8px !important;
-    gap:0 !important;
-    min-height:0 !important;}
-#brusyInfo b{font-size:11px !important;
-    line-height:1.02 !important;}
-#brusyInfo .smallText{font-size:9px !important;
-    line-height:1.02 !important;}
-#brusy :is(.bgrid .bbtn, .indexGrid .bbtn, .indexGrid .freeWrap .bbtn){min-height:var(--calc-compact-min-h) !important;
-    height:34px !important;
-    padding:0 8px !important;
-    font-size:13px !important;}
-#brusy .bgrid, #brusy .indexGrid{gap:6px !important;}
-:is(#frezky, #brusy) .brusDetails.calcDetailsInner > summary{min-height:36px !important;
-    padding:7px 11px !important;
-    width:100% !important;
-    max-width:none !important;}
-:is(#frezky, #brusy) .brusDetails.calcDetailsInner > summary::after{font-size:13px !important;}
-.calcPanel{gap:var(--calc-compact-gap);}
-.calcPanel--compact{width:100%;}
-.calcPanel--compact > summary, .calcPanel--compact .calcPanel-summary, .calcPanel--compact .calcDetails > summary, .calcPanel--compact .calcDetailsInner > summary{display:flex;
-  align-items:center;
-  justify-content:space-between;
+:root{
+  --calc-panel-gap:6px;
+  --calc-panel-pad-x:10px;
+  --calc-panel-pad-y:6px;
+  --calc-panel-min-h:34px;
+  --calc-panel-line:1.05;
+  --calc-panel-radius:12px;
+  --calc-panel-border:rgba(124,255,124,.20);
+  --calc-panel-bg:rgba(18,23,20,.84);
+  --calc-panel-bg-open:rgba(20,26,22,.96);
+  --calc-result-bg:rgba(9,14,11,.54);
+}
+
+.calcPage{
+  display:grid;
+  gap:10px;
+}
+
+.calcPage .headerBar{
+  margin-bottom:2px;
+}
+
+.calcPanel{
+  box-sizing:border-box;
+}
+
+.calcPanel--modeCard{
+  padding:10px !important;
+  margin-top:6px !important;
+}
+
+.calcPanel--form{
+  margin-top:8px;
+  gap:var(--calc-panel-gap);
+}
+
+.calcChoiceGrid{
+  margin-bottom:8px !important;
+}
+
+:is(#soustruhy, #frezky, #brusy, #pracka).calcPage :is(input, select){
+  min-height:46px;
+  padding:11px 12px !important;
+  margin-top:4px !important;
+  margin-bottom:8px !important;
+  font-size:16px !important;
+  line-height:1.15 !important;
+  border-radius:13px !important;
+}
+
+:is(#soustruhy, #frezky, #brusy, #pracka).calcPage label{
+  margin-top:6px !important;
+  margin-bottom:0 !important;
+  font-size:13px !important;
+  line-height:1.15 !important;
+}
+
+.calcPrimaryBtn,
+:is(#soustruhy, #frezky, #brusy, #pracka).calcPage button[data-action^="calc-"]{
   width:100%;
-  min-height:var(--calc-compact-min-h);
-  padding:var(--calc-compact-pad-y) var(--calc-compact-pad-x);
-  gap:var(--calc-compact-gap);
-  line-height:var(--calc-compact-line);
-  box-sizing:border-box;}
-.calcPanel--compact .calcSummaryTitle{font-size:11px;
-  line-height:1.04;}
-.calcPanel--compact .calcSummarySub{font-size:9px;
-  line-height:1.02;}
-.calcPanel--compact .brusDetailsBody{padding:0 10px 10px 10px;
-  gap:6px;}
+  min-height:44px !important;
+  margin-top:6px !important;
+  padding:10px 12px !important;
+  border-radius:14px !important;
+  font-size:15px !important;
+  font-weight:800 !important;
+  line-height:1.12 !important;
+  box-shadow:0 12px 22px rgba(0,0,0,.22) !important;
+}
+
+.calcResultCard{
+  width:100%;
+  min-height:0 !important;
+  margin-top:8px !important;
+  padding:9px 10px !important;
+  border-radius:14px !important;
+  background:var(--calc-result-bg) !important;
+  border:1px solid rgba(124,255,124,.14) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04), 0 10px 22px rgba(0,0,0,.18) !important;
+  overflow-wrap:anywhere;
+}
+
+.calcInfoCard{
+  width:100% !important;
+  max-width:none !important;
+  min-height:0 !important;
+  margin-top:8px !important;
+  padding:6px 9px !important;
+  border-radius:14px !important;
+}
+
+.calcInfoCard b{
+  font-size:12px !important;
+  line-height:1.08 !important;
+}
+
+.calcInfoCard .smallText{
+  font-size:10px !important;
+  line-height:1.12 !important;
+}
+
+:is(#frezky, #brusy) .brusDetails{
+  width:100% !important;
+  margin-top:6px !important;
+  border-radius:var(--calc-panel-radius) !important;
+  border-color:var(--calc-panel-border) !important;
+  background:var(--calc-panel-bg) !important;
+}
+
+:is(#frezky, #brusy) .brusDetails + .brusDetails{
+  margin-top:6px !important;
+}
+
+:is(#frezky, #brusy) .brusDetails[open]{
+  background:var(--calc-panel-bg-open) !important;
+}
+
+.calcPanel--compact > summary,
+:is(#frezky, #brusy) .brusDetails > summary{
+  display:grid !important;
+  grid-template-columns:minmax(0, 1fr) auto !important;
+  align-items:center !important;
+  width:100% !important;
+  max-width:none !important;
+  min-height:var(--calc-panel-min-h) !important;
+  padding:var(--calc-panel-pad-y) var(--calc-panel-pad-x) !important;
+  gap:4px 8px !important;
+  line-height:var(--calc-panel-line) !important;
+  box-sizing:border-box !important;
+}
+
+.calcPanel--compact > summary::after,
+:is(#frezky, #brusy) .brusDetails > summary::after{
+  float:none !important;
+  grid-column:2 !important;
+  grid-row:1 / span 2 !important;
+  align-self:center !important;
+  margin-left:0 !important;
+  font-size:12px !important;
+}
+
+.calcSummaryTitle{
+  display:block !important;
+  min-width:0 !important;
+  font-size:12px !important;
+  font-weight:800 !important;
+  line-height:1.06 !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+}
+
+.calcSummarySub{
+  display:block !important;
+  min-width:0 !important;
+  font-size:10px !important;
+  line-height:1.05 !important;
+  opacity:.78 !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+}
+
+:is(#frezky, #brusy) .brusDetailsBody{
+  display:grid !important;
+  gap:6px !important;
+  min-height:0 !important;
+  padding:0 10px 10px 10px !important;
+}
+
+:is(#frezky, #brusy) .brusDetailsBody label{
+  margin-top:2px !important;
+}
+
+:is(#frezky, #brusy) .brusDetailsBody input{
+  margin-bottom:6px !important;
+}
+
+:is(#frezky, #brusy) .brusDetails.calcDetailsInner{
+  margin-top:6px !important;
+  border-radius:12px !important;
+}
+
+:is(#frezky, #brusy) .brusDetails.calcDetailsInner > summary{
+  min-height:34px !important;
+  padding:7px 10px !important;
+  font-size:13px !important;
+}
+
+#brusy :is(.bgrid .bbtn, .indexGrid .bbtn, .indexGrid .freeWrap .bbtn),
+#soustruhy :is(.bgrid .bbtn, .grid .bbtn){
+  min-height:38px !important;
+  padding:8px 9px !important;
+  font-size:13px !important;
+  line-height:1.08 !important;
+}
+
+#brusy .bgrid,
+#brusy .indexGrid,
+#soustruhy .bgrid,
+#soustruhy .grid{
+  gap:6px !important;
+}
+
+#soustruhy .grid--tight{
+  gap:6px !important;
+}
+
+#soustruhy .smallText,
+#frezky .smallText,
+#brusy .smallText,
+#pracka .smallText{
+  line-height:1.22;
+}
+
+@media (max-width: 430px){
+  :root{
+    --calc-panel-pad-x:9px;
+    --calc-panel-pad-y:5px;
+    --calc-panel-gap:5px;
+  }
+
+  .calcPanel--modeCard{
+    padding:8px !important;
+  }
+
+  :is(#soustruhy, #frezky, #brusy, #pracka).calcPage :is(input, select){
+    min-height:42px;
+    padding:9px 10px !important;
+    font-size:15px !important;
+  }
+
+  .calcPrimaryBtn,
+  :is(#soustruhy, #frezky, #brusy, #pracka).calcPage button[data-action^="calc-"]{
+    min-height:42px !important;
+    font-size:14px !important;
+  }
+
+  .calcSummaryTitle{
+    font-size:11px !important;
+  }
+
+  .calcSummarySub{
+    font-size:9px !important;
+  }
+}

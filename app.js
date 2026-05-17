@@ -1,4 +1,4 @@
-// v.1.1 (499) – Rotace: kompaktnější řádky detailu směn bez zmenšení textu.
+// v.1.1 (500) – Fáze 2: první sjednocení calcPanel systému pro kalkulačky.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

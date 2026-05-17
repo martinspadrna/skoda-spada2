@@ -1,3 +1,10 @@
+## v.1.1 (500)
+- Start Fáze 2: první společný calcPanel systém pro kalkulačky.
+- Sjednocené kompaktní panely, tlačítka výpočtů, výsledkové karty a vstupy napříč Soustruhy, Frézky, Brusy a Pračka.
+- Panely Frézky/Brusy mají společné CSS proměnné místo dalších náhodných výšek a odsazení.
+- Bez zásahu do samotných výpočtů; cílem je stabilní základ pro další čištění kalkulaček.
+- Verze sjednocena napříč aplikací a service worker cache navýšena.
+
 ## v.1.1 (499)
 - Rotace: v detailu po kliknutí na jméno jsou řádky směn lehce užší/kompaktnější.
 - Velikost textu v řádcích Rotace zůstává stejná jako ve v.1.1 (498).
