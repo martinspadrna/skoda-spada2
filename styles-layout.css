@@ -329,3 +329,18 @@ td.missingCell{background:#4b1f1f;
 .soustruhModePanel{margin-top:10px;}
 .soustruhResultCard{margin-top:10px;}
 .bbtn.activeChoice{outline:3px solid var(--green2);}
+
+/* v.1.1 (488) – Fáze 1 stabilization cleanup */
+:root {
+  --rak-safe-bottom: max(env(safe-area-inset-bottom), 12px);
+}
+
+body {
+  overscroll-behavior-x: none;
+}
+
+.bottomNav,
+.bottom-bar,
+.bottom-navigation {
+  padding-bottom: var(--rak-safe-bottom);
+}
