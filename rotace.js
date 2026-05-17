@@ -348,6 +348,11 @@ function renderUpcomingShiftsPreview(limit = 10) {
   const now = typeof getPragueNow === 'function' ? getPragueNow(new Date()) : new Date();
   const nowMs = now.getTime();
 
+  const shiftKey = (entry) => [
+    String(entry && entry.dateLabel ? entry.dateLabel : '').trim(),
+    String(entry && entry.shift ? entry.shift : '').trim().toUpperCase()
+  ].join('|');
+
   const previewEntries = names.map(name => {
     const model = getPersonScheduleEntries(name);
     const nextEntry = (model.entries || []).find(entry => {
@@ -363,7 +368,8 @@ function renderUpcomingShiftsPreview(limit = 10) {
       shift: nextEntry.shift || '',
       target: nextEntry.target || '',
       absence: !!nextEntry.absence,
-      endMs: end.getTime()
+      endMs: end.getTime(),
+      key: shiftKey(nextEntry)
     };
   }).filter(Boolean);
 
@@ -374,26 +380,37 @@ function renderUpcomingShiftsPreview(limit = 10) {
 
   previewEntries.sort((a, b) => a.endMs - b.endMs || String(a.name).localeCompare(String(b.name), 'cs'));
 
-  const visible = previewEntries.slice(0, Math.max(1, limit));
-  const nextShift = visible[0] || previewEntries[0];
-  const totalPeople = names.length || 10;
-  const presentCount = previewEntries.filter(entry => !entry.absence).length;
+  const nextShift = previewEntries[0];
+  const primaryKey = nextShift.key;
+  const shiftEntries = previewEntries
+    .filter(entry => entry.key === primaryKey)
+    .sort((a, b) => String(a.name).localeCompare(String(b.name), 'cs'));
+
+  const presentEntries = shiftEntries.filter(entry => !entry.absence).slice(0, Math.max(1, limit));
+  const presentNames = new Set(presentEntries.map(entry => entry.name));
+  const missingNames = names
+    .filter(name => !presentNames.has(name))
+    .filter((name, index, arr) => arr.indexOf(name) === index)
+    .sort((a, b) => String(a).localeCompare(String(b), 'cs'));
+
   const title = 'Příští směna';
   const nextShiftText = [nextShift && nextShift.dateLabel ? nextShift.dateLabel : '', nextShift && nextShift.shift ? nextShift.shift : ''].filter(Boolean).join(' - ');
   const headerText = nextShiftText ? (title + ' ' + nextShiftText) : title;
-
+  const totalPeople = names.length || Math.max(presentEntries.length + missingNames.length, 1);
+  const presentCount = presentEntries.length;
+  const missingText = missingNames.length ? missingNames.join(', ') : 'nikdo';
   personView.innerHTML = [
-    '<div class="rotacePersonHeader">',
+    '<div class="rotacePersonHeader rotaceOverviewHeader">',
     '  <div class="rotacePersonTitle">' + escapeHtml(headerText) + '</div>',
     '</div>',
-    '<div class="rotacePersonMeta">Přítomno ' + String(presentCount) + ' z ' + String(totalPeople) + ' lidí</div>',
-    '<div class="rotaceQuickCards rotacePreviewGrid">',
-    visible.map(entry => [
-      '<div class="rotaceMiniCard">',
-      '  <div class="rotaceMiniTarget">' + escapeHtml(entry.name || '') + '</div>',
-      entry.target ? '  <div class="rotaceMiniDate">' + escapeHtml(entry.target || '') + '</div>' : '',
+    '<div class="rotacePersonMeta rotaceOverviewMeta">Přítomno ' + String(presentCount) + ' z ' + String(totalPeople) + ' lidí · Chybí: ' + escapeHtml(missingText) + '</div>',
+    '<div class="rotaceQuickCards rotacePreviewGrid rotaceOverviewGrid">',
+    presentEntries.length ? presentEntries.map(entry => [
+      '<div class="rotaceMiniCard rotaceOverviewCard">',
+      '  <div class="rotaceMiniTarget rotaceOverviewName">' + escapeHtml(entry.name || '') + '</div>',
+      entry.target ? '  <div class="rotaceMiniDate rotaceOverviewTarget">' + escapeHtml(entry.target || '') + '</div>' : '',
       '</div>'
-    ].join('')).join(''),
+    ].join('')).join('') : '<div class="rotaceMiniCard rotaceOverviewCard isEmpty"><div class="rotaceMiniTarget rotaceOverviewName">Nikdo není zapsaný jako přítomný.</div></div>',
     '</div>'
   ].join('');
 }

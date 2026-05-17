@@ -1,6 +1,6 @@
 
 const APP_KEY = "rotace_kalkulacky_state_v123";
-const APP_VERSION = "v.1.1 (503)";
+const APP_VERSION = "v.1.1 (504)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-05-17-" + APP_VERSION + "-" + Date.now();
 
@@ -14,6 +14,48 @@ const NO_START_HOLIDAYS = new Set(["1-1", "4-3", "4-6", "5-1", "5-8", "7-5", "7-
 
 function dateKeyMD(date) {
   return (date.getMonth() + 1) + "-" + date.getDate();
+}
+
+const SPECIAL_OVERTIME_SUNDAY_NIGHTS_2026 = new Set([
+  "2026-01-11",
+  "2026-01-18",
+  "2026-01-25",
+  "2026-02-08",
+  "2026-02-15",
+  "2026-03-01",
+  "2026-03-08",
+  "2026-03-15",
+  "2026-03-22",
+  "2026-03-29",
+  "2026-04-12",
+  "2026-04-19",
+  "2026-05-17",
+  "2026-05-24",
+  "2026-05-31",
+  "2026-06-07",
+  "2026-06-14",
+  "2026-06-21",
+  "2026-09-13",
+  "2026-09-20",
+  "2026-10-04",
+  "2026-10-11",
+  "2026-10-18",
+  "2026-11-22"
+]);
+window.SPECIAL_OVERTIME_SUNDAY_NIGHTS_2026 = SPECIAL_OVERTIME_SUNDAY_NIGHTS_2026;
+
+function dateKeyISO(date) {
+  const d = date instanceof Date ? date : new Date(date);
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+
+function isSpecialOvertimeSundayNight(date) {
+  const d = date instanceof Date ? date : new Date(date);
+  return d.getDay() === 0 && SPECIAL_OVERTIME_SUNDAY_NIGHTS_2026.has(dateKeyISO(d));
+}
+
+function getSpecialSundayNightStartHour(date, fallbackHour = 22) {
+  return isSpecialOvertimeSundayNight(date) ? 18 : fallbackHour;
 }
 
 function isShiftStartBlocked(date) {

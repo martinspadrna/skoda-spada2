@@ -326,3 +326,14 @@
 .calcPage .calcResultCard:last-child{
   margin-bottom:0 !important;
 }
+
+/* F2 v.504: další společný guard pro kalkulačky – obsah panelů nesmí roztahovat stránku do šířky. */
+:is(#soustruhy, #frezky, #brusy, #pracka).calcPage :is(.card, .tile, .brusDetails, .brusDetailsBody, .calcResultCard, .calcInfoCard){
+  min-width:0 !important;
+  max-width:100% !important;
+  overflow-wrap:anywhere;
+}
+:is(#soustruhy, #frezky, #brusy, #pracka).calcPage :is(.grid, .bgrid, .indexGrid){
+  min-width:0 !important;
+  max-width:100% !important;
+}

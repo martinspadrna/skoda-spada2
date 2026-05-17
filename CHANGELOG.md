@@ -1,3 +1,11 @@
+## v.1.1 (504)
+- Fáze 2 pokračuje: sjednocené další bezpečné šířky a overflow guardy kalkulačkových panelů.
+- Přesčasové nedělní noční směny zadané pro rok 2026 se nově promítají i do směnové logiky, nejen do kantýny/jídelny.
+- Na přesčasovou neděli se nedělní noční směna počítá od 18:00 do 6:00, aby dashboard seděl s otevřením kantýny/jídelny.
+- Dashboard: pole Výplata má kratší název a pevnější řádek s ikonou, aby název nespadl pod ikonku.
+- Rotace: v přehledu příští směny se dole zobrazují jen přítomní lidé; chybějící jsou přesunutí nahoru do řádku „Přítomno… / Chybí…“.
+- Rotace: přehled má větší písmo a seznam jmen je posunutý níž.
+
 ## v.1.1 (503)
 - Opravená spodní lišta: pevně fixovaná dole, centrovaná a bez ujetí/odříznutí levého kraje.
 - Vyčištěné poškozené CSS pravidlo ve starších overridech spodní lišty.

@@ -987,3 +987,59 @@ body{
   padding-bottom:calc(92px + env(safe-area-inset-bottom)) !important;
 }
 
+
+/* v.1.1 (504) – Dashboard/Rotace polish po F2 fixu. */
+#dashVyplata .dashboardLabelRow{
+  flex-wrap:nowrap !important;
+  align-items:center !important;
+  gap:7px !important;
+}
+#dashVyplata .dashboardLabel{
+  white-space:nowrap !important;
+  font-size:clamp(12px, 3vw, 15px) !important;
+  line-height:1.05 !important;
+}
+#dashVyplata .dashboardIcon.dashboardIconInline{
+  flex:0 0 38px !important;
+  width:38px !important;
+  height:38px !important;
+}
+#rotaceNamesPanel #namesGrid{
+  margin-top:clamp(16px, 3.6vw, 24px) !important;
+}
+#rotaceNamesPanel #personView .rotaceOverviewHeader,
+#rotace #personView .rotaceOverviewHeader{
+  margin-bottom:6px !important;
+}
+#rotaceNamesPanel #personView .rotaceOverviewMeta,
+#rotace #personView .rotaceOverviewMeta{
+  display:block !important;
+  font-size:clamp(13px, 3.5vw, 16px) !important;
+  line-height:1.28 !important;
+  font-weight:800 !important;
+  color:rgba(232,255,232,.86) !important;
+  margin-top:2px !important;
+  margin-bottom:10px !important;
+}
+#rotaceNamesPanel #personView .rotaceOverviewGrid,
+#rotace #personView .rotaceOverviewGrid{
+  gap:8px !important;
+}
+#rotaceNamesPanel #personView .rotaceOverviewCard,
+#rotace #personView .rotaceOverviewCard{
+  min-height:64px !important;
+  padding:11px 12px !important;
+}
+#rotaceNamesPanel #personView .rotaceOverviewName,
+#rotace #personView .rotaceOverviewName{
+  font-size:clamp(17px, 4.8vw, 22px) !important;
+  line-height:1.05 !important;
+  font-weight:950 !important;
+}
+#rotaceNamesPanel #personView .rotaceOverviewTarget,
+#rotace #personView .rotaceOverviewTarget{
+  font-size:clamp(14px, 3.8vw, 17px) !important;
+  line-height:1.1 !important;
+  font-weight:850 !important;
+  color:rgba(226,255,226,.82) !important;
+}

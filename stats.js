@@ -570,7 +570,11 @@ function buildShiftIntervals(weekStart, cycleIndex) {
     pushIfAllowed(1, 6, 0, 1, 18, 0, "ranní");
     pushIfAllowed(4, 18, 0, 5, 6, 0, "noční");
     pushIfAllowed(5, 18, 0, 6, 6, 0, "noční");
-    pushIfAllowed(6, 22, 0, 7, 6, 0, "noční");
+    const sundayDate = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + 6, 12, 0, 0, 0);
+    const sundayNightStartHour = typeof getSpecialSundayNightStartHour === "function"
+      ? getSpecialSundayNightStartHour(sundayDate, 22)
+      : 22;
+    pushIfAllowed(6, sundayNightStartHour, 0, 7, 6, 0, "noční");
   } else if (cycleIndex === 1) { // D
     pushIfAllowed(2, 6, 0, 2, 18, 0, "ranní");
     pushIfAllowed(3, 6, 0, 3, 18, 0, "ranní");
