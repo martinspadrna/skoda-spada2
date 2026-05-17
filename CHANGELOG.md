@@ -1,3 +1,15 @@
+## v.1.1 (509)
+- Nastavení: odlehčený režim přejmenovaný na „Láďův režim“.
+- Diagnostika aplikace nově používá stejný název „Láďův režim“.
+- Fáze 3 pokračuje: přidané lehčí render guardy pro karty, modaly, kalkulačky a hry.
+- Fáze 3: ukládá se stav detekce slabšího zařízení do diagnostických dat aplikace.
+
+## v.1.1 (508)
+- Dashboard: zkrácený text aktivní směny na „Končí za…“.
+- Dashboard: řádek směny D v horním panelu je vycentrovaný.
+- Fáze 3: start lightweight mode foundation – silnější omezení blurů, stínů, animací a filtrů v lehkém režimu.
+- Fáze 3: rozšířená detekce slabšího zařízení podle jader, paměti, Data Saveru a reduced motion.
+
 ## v.1.1 (507)
 - Fáze 2 calcPanel system uzavřena: finální sjednocení šířek, scroll ochrany a vnitřních stacků kalkulaček.
 - Přidaný finální runtime audit kalkulaček: hlídá viditelnost neaktivních kalkulaček, chybějící výsledkové boxy a chybějící jednotné třídy tlačítek.

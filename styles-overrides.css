@@ -1174,3 +1174,117 @@ body{
   min-width:0 !important;
   max-width:100% !important;
 }
+
+
+/* v.1.1 (508) – Dashboard polish + Fáze 3 start: lightweight guard rails. */
+#dashHero .dashboardHeroLine3{
+  display:block !important;
+  width:fit-content !important;
+  max-width:min(100%, 520px) !important;
+  margin:8px auto 0 !important;
+  text-align:center !important;
+  align-self:center !important;
+}
+body.lightweightMode .dashboardHeroCard,
+body.lightweightMode .dashboardCard,
+body.lightweightMode .card,
+body.lightweightMode .tile,
+body.lightweightMode .listItem,
+body.lightweightMode .bbtn,
+body.lightweightMode .bottomNav,
+body.lightweightMode .appMenuCard,
+body.lightweightMode .appMenuAction,
+body.lightweightMode .calcTile,
+body.lightweightMode .qrModal,
+body.lightweightMode .personScheduleModal,
+body.lightweightMode .foodScheduleModal,
+body.lightweightMode .calendarModal,
+body.lightweightMode #games .gamesStage,
+body.lightweightMode #games .gamesShellTop,
+body.lightweightMode #games .gamesActiveAccountBar,
+body.lightweightMode #games .arcadePanel,
+body.lightweightMode #games .gameBoard,
+body.lightweightMode #games .gamesStatsCard{
+  -webkit-backdrop-filter:blur(3px) saturate(108%) !important;
+  backdrop-filter:blur(3px) saturate(108%) !important;
+  box-shadow:0 6px 14px rgba(0,0,0,.16) !important;
+}
+body.lightweightMode *,
+body.reduceMotion *{
+  scroll-behavior:auto !important;
+}
+body.lightweightMode .dashboardCard,
+body.lightweightMode .dashboardHeroCard,
+body.lightweightMode .bottomNav,
+body.lightweightMode .bottomNavBtn,
+body.lightweightMode .bottomNavIcon,
+body.lightweightMode .appMenuAction,
+body.lightweightMode .calcTile,
+body.lightweightMode .tile,
+body.lightweightMode .brusDetails,
+body.lightweightMode .brusDetails *,
+body.lightweightMode #games .gameBoardCell,
+body.lightweightMode #games .gameBoard,
+body.lightweightMode #games .arcadePanel{
+  transition:none !important;
+  animation:none !important;
+}
+body.lightweightMode .bottomNavIconImg--on,
+body.lightweightMode .dashboardDot,
+body.lightweightMode #games .gameSnakeBoard .snakeHead,
+body.lightweightMode #games .gameSnakeBoard .snakeFood,
+body.lightweightMode #games .game2048Board .gameBoardCell.n2048{
+  filter:none !important;
+  box-shadow:none !important;
+}
+
+
+/* v.1.1 (509) – Fáze 3 pokračování: Láďův režim + lehčí render guardy. */
+body.lightweightMode .dashboardHeroCard::before,
+body.lightweightMode .dashboardHeroCard::after,
+body.lightweightMode .dashboardCard::before,
+body.lightweightMode .dashboardCard::after,
+body.lightweightMode .appMenuCard::before,
+body.lightweightMode .appMenuCard::after,
+body.lightweightMode .calcTile::before,
+body.lightweightMode .calcTile::after,
+body.lightweightMode .tile::before,
+body.lightweightMode .tile::after{
+  display:none !important;
+  content:none !important;
+}
+
+body.lightweightMode .dashboardCard,
+body.lightweightMode .dashboardHeroCard,
+body.lightweightMode .appMenuCard,
+body.lightweightMode .calcTile,
+body.lightweightMode .tile,
+body.lightweightMode .personScheduleRow,
+body.lightweightMode .shiftPersonCard{
+  contain:layout paint !important;
+}
+
+body.lightweightMode img,
+body.lightweightMode svg,
+body.lightweightMode canvas,
+body.lightweightMode .bottomNavIconImg,
+body.lightweightMode .dashboardCardIcon,
+body.lightweightMode .dashboardCardIcon img{
+  will-change:auto !important;
+}
+
+body.lightweightMode #games .gameBoard,
+body.lightweightMode #games .arcadePanel,
+body.lightweightMode #games .gamesStage{
+  transform:none !important;
+  perspective:none !important;
+}
+
+body.lightweightMode .appMenuOverlay,
+body.lightweightMode .calendarOverlay,
+body.lightweightMode .foodScheduleOverlay,
+body.lightweightMode .personScheduleOverlay,
+body.lightweightMode .qrModalOverlay,
+body.lightweightMode .tttOverlay{
+  overscroll-behavior:contain !important;
+}

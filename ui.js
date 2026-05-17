@@ -153,11 +153,15 @@ function startMenuImport() {
 }
 
 const UI_PREFS_KEY = APP_KEY + ':uiPrefs';
+const LIGHTWEIGHT_MODE_LABEL = 'Láďův režim';
 
 function isLowEndDevice() {
   try {
     const cores = Number(navigator.hardwareConcurrency || 0);
-    return cores > 0 && cores <= 4;
+    const memory = Number(navigator.deviceMemory || 0);
+    const saveData = !!(navigator.connection && navigator.connection.saveData);
+    const reducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    return (cores > 0 && cores <= 4) || (memory > 0 && memory <= 4) || saveData || reducedMotion;
   } catch (err) {
     return false;
   }
@@ -195,11 +199,21 @@ function saveUiPrefs(prefs) {
 
 function applyUiPrefs(prefs) {
   const next = saveUiPrefs(prefs || loadUiPrefs());
+  const lightweight = !!next.lightweight;
+  const lowEndDetected = isLowEndDevice();
   document.body.classList.toggle('compactUI', !!next.compact);
-  document.body.classList.toggle('reduceMotion', !!next.reduceMotion);
-  document.body.classList.toggle('lightweightMode', !!next.lightweight);
+  document.body.classList.toggle('reduceMotion', !!next.reduceMotion || lightweight);
+  document.body.classList.toggle('lightweightMode', lightweight);
+  document.body.classList.toggle('lowEndDevice', lowEndDetected);
+  try {
+    document.documentElement.dataset.rakLightweight = lightweight ? 'on' : 'off';
+    document.documentElement.dataset.rakLightweightLabel = LIGHTWEIGHT_MODE_LABEL;
+    document.documentElement.dataset.rakLowEndDevice = lowEndDetected ? 'yes' : 'no';
+    document.documentElement.dataset.rakMotion = (next.reduceMotion || lightweight) ? 'reduced' : 'normal';
+  } catch (err) {}
   if (typeof app !== 'undefined') {
     app.uiPrefs = next;
+    app.lowEndDeviceDetected = lowEndDetected;
   }
   return next;
 }
@@ -3662,7 +3676,8 @@ function bindAppMenuHandlers(body) {
           'Online: ' + (navigator.onLine ? 'ano' : 'ne'),
           'Kompaktní režim: ' + (document.body.classList.contains('compactUI') ? 'zapnutý' : 'vypnutý'),
           'Méně animací: ' + (document.body.classList.contains('reduceMotion') ? 'zapnuté' : 'vypnuté'),
-          'Lehký režim: ' + (document.body.classList.contains('lightweightMode') ? 'zapnutý' : 'vypnutý'),
+          LIGHTWEIGHT_MODE_LABEL + ': ' + (document.body.classList.contains('lightweightMode') ? 'zapnutý' : 'vypnutý'),
+          'Slabší zařízení detekováno: ' + (document.body.classList.contains('lowEndDevice') ? 'ano' : 'ne'),
           'Aktuální stránka: ' + String(document.querySelector('.page.active')?.id || '—'),
           'Bottom lišta: ' + String(getComputedStyle(document.querySelector('.bottomNav') || document.body).bottom || '—')
         ].join('\n');
@@ -3854,13 +3869,13 @@ function openAppMenu(view) {
         '<div class="appMenuCard appMenuSettingsCard">',
         '  <div class="appMenuCardTitle">Nastavení</div>',
         '  <div class="appMenuText">',
-        '    <div>Kompaktní režim a méně animací se ukládají jen do tohoto zařízení a promítnou se napříč celou appkou.</div>',
+        '    <div>Kompaktní režim, méně animací a Láďův režim se ukládají jen do tohoto zařízení a promítnou se napříč celou appkou.</div>',
         '    <div>Pro rychlé servisní zásahy tu jsou ještě vyčištění cache, diagnostika a tvrdé obnovení aplikace.</div>',
         '  </div>',
         '  <div class="appMenuSettingsList">',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-pref="compact">' + (prefs.compact ? '✓ ' : '') + 'Kompaktní režim</button>',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-pref="reduceMotion">' + (prefs.reduceMotion ? '✓ ' : '') + 'Méně animací</button>',
-        '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-pref="lightweight">' + (prefs.lightweight ? '✓ ' : '') + 'Lehký režim</button>',
+        '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-pref="lightweight">' + (prefs.lightweight ? '✓ ' : '') + LIGHTWEIGHT_MODE_LABEL + '</button>',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="clear-cache">Vymazat cache a obnovit</button>',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="app-diagnostics">Diagnostika aplikace</button>',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="hard-reload">Tvrdé obnovení</button>',

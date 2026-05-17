@@ -1,4 +1,4 @@
-// v.1.1 (507) – Fáze 2: finální audit calcPanel systému a uzavření fáze.
+// v.1.1 (509) – Fáze 3: Láďův režim naming + lightweight continuation.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
@@ -336,6 +336,39 @@ function runPhaseTwoCalcScopeAudit() {
   return { version: window.APP_VERSION || 'unknown', phase: 'phase-2-calc-system', ok: true, deferred: true };
 }
 
+
+function runPhaseThreeLightweightAudit() {
+  const run = () => {
+    const prefs = (typeof loadUiPrefs === 'function') ? loadUiPrefs() : null;
+    const report = {
+      version: window.APP_VERSION || 'unknown',
+      phase: 'phase-3-lightweight-mode',
+      checkedAt: new Date().toISOString(),
+      lightweight: !!(document.body && document.body.classList && document.body.classList.contains('lightweightMode')),
+      lightweightLabel: 'Láďův režim',
+      autoSuggested: (typeof isLowEndDevice === 'function') ? !!isLowEndDevice() : null,
+      reduceMotion: !!(document.body && document.body.classList && document.body.classList.contains('reduceMotion')),
+      prefs,
+      ok: true
+    };
+    try {
+      document.documentElement.dataset.rakPhase3 = 'laduv-rezim-foundation';
+      window.__rakPhase3LightweightAudit = report;
+    } catch (err) {}
+    return report;
+  };
+
+  if (document.readyState === 'loading') {
+    const rerun = () => setTimeout(run, 0);
+    if (typeof registerListener === 'function') registerListener(document, 'DOMContentLoaded', rerun, { once: true });
+    else document.addEventListener('DOMContentLoaded', rerun, { once: true });
+    return { version: window.APP_VERSION || 'unknown', phase: 'phase-3-lightweight-mode', ok: true, deferred: true };
+  }
+
+  requestAnimationFrame(() => setTimeout(run, 0));
+  return { version: window.APP_VERSION || 'unknown', phase: 'phase-3-lightweight-mode', ok: true, deferred: true };
+}
+
 (async () => {
   const files = [
     "core.js",
@@ -374,6 +407,7 @@ function runPhaseTwoCalcScopeAudit() {
   installDelegatedAppActions();
   try { runPhaseOneFinalAudit(); } catch (err) { console.warn('Phase 1 final audit failed', err); }
   try { runPhaseTwoCalcScopeAudit(); } catch (err) { console.warn('Phase 2 calc scope audit failed', err); }
+  try { runPhaseThreeLightweightAudit(); } catch (err) { console.warn('Phase 3 lightweight audit failed', err); }
 
   try {
     if (typeof window.__rotaceBootHomeRefreshLate === 'function') {
