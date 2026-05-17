@@ -1,4 +1,4 @@
-// v.1.1 (533) – Fáze 5: UI polish + games dev grouping + responsive fixes.
+// v.1.1 (534) – Fáze 5: game performance guards + safer arcade refresh.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
@@ -587,10 +587,15 @@ function runPhaseFiveGamePerformanceAudit() {
         arcadeLoaded: !!window.__rakArcadeLoaded,
         perfManager: !!window.__rakGamePerfManager,
         stopLoops: typeof window.gamesStopActiveLoops === 'function',
-        leaderboardThrottle: !!(window.app && window.app.gamesLeaderboardThrottle)
+        leaderboardThrottle: !!(window.app && window.app.gamesLeaderboardThrottle),
+        shellRenderSkips: Number(window.__rakGamePerfManager && window.__rakGamePerfManager.shellRenderSkips || 0),
+        intervalHiddenSkips: Number(window.__rakGamePerfManager && window.__rakGamePerfManager.intervalHiddenSkips || 0),
+        activeManagedIntervals: Number(window.__rakGamePerfManager && window.__rakGamePerfManager.activeManagedIntervals || 0),
+        leaderboardTtlMs: Number(window.__rakGamePerfManager && window.__rakGamePerfManager.leaderboardTtlMs || 0)
       }
     };
     report.ok = report.games.stopLoops && (report.games.arcadeLoaded ? report.games.perfManager : true);
+    report.games.shellRerenderGuard = report.games.arcadeLoaded ? (typeof window.__rakGamePerfManager === 'object' && 'shellRenderSkips' in window.__rakGamePerfManager) : true;
     try {
       document.documentElement.dataset.rakPhase5 = report.ok ? 'game-performance' : 'game-performance-check';
       window.__rakPhase5GamePerformanceAudit = report;

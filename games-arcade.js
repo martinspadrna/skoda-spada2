@@ -2,7 +2,7 @@
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
 
-  // v.1.1 (533): všechny hry zatím patří do složky Ve vývoji.
+  // v.1.1 (534): Fáze 5 – ochrana proti zbytečnému překreslení her a lehčí časovače.
   const CORE_GAMES = [];
   const EXTRA_GAMES = ['ttt', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);
@@ -336,7 +336,10 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     hiddenSkips: 0,
     lastVisibilityAt: 0,
     maxDeltaMs: 34,
-    leaderboardTtlMs: 60000
+    leaderboardTtlMs: 60000,
+    shellRenderSkips: 0,
+    intervalHiddenSkips: 0,
+    activeManagedIntervals: 0
   });
 
   function isGamesPageVisible() {
@@ -376,6 +379,48 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       gamePerf.lastVisibilityAt = Date.now();
       gamePerf.hidden = document.visibilityState === 'hidden';
     }, { passive: true });
+  }
+
+
+  function rakGameIsLadaMode() {
+    try {
+      return !!(document.body && (document.body.classList.contains('ladaMode') || document.body.classList.contains('lightweightMode')))
+        || !!(document.documentElement && document.documentElement.dataset.lightweight === '1');
+    } catch (err) {
+      return false;
+    }
+  }
+
+  function rakGameLeaderboardTtl() {
+    const base = Number(gamePerf && gamePerf.leaderboardTtlMs || 60000) || 60000;
+    return rakGameIsLadaMode() ? Math.max(base, 120000) : base;
+  }
+
+  function rakGameSetInterval(fn, delay) {
+    const ms = Math.max(80, Number(delay) || 120);
+    const wrapped = () => {
+      if (!rakGameShouldTick()) {
+        gamePerf.intervalHiddenSkips += 1;
+        return;
+      }
+      try {
+        fn();
+      } catch (err) {
+        console.warn('arcade interval failed', err);
+      }
+    };
+    const timer = setInterval(wrapped, ms);
+    gamePerf.activeManagedIntervals += 1;
+    addCleanup(() => {
+      clearInterval(timer);
+      gamePerf.activeManagedIntervals = Math.max(0, Number(gamePerf.activeManagedIntervals || 0) - 1);
+    });
+    return timer;
+  }
+
+  function isArcadeShellMounted(id) {
+    const body = document.getElementById('gamesShellBody');
+    return !!(body && body.dataset && body.dataset.arcadeGame === key(id) && body.childElementCount > 0 && currentState.id === key(id));
   }
 
   function fmtMs(ms) {
@@ -643,7 +688,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     window.app.gamesLeaderboardCache = window.app.gamesLeaderboardCache || {};
     window.app.gamesLeaderboardThrottle = window.app.gamesLeaderboardThrottle || {};
     const now = Date.now();
-    const ttl = Number(gamePerf && gamePerf.leaderboardTtlMs || 60000) || 60000;
+    const ttl = rakGameLeaderboardTtl();
     const freshIds = ids.filter((gid) => {
       const last = Number(window.app.gamesLeaderboardThrottle[gid] || 0) || 0;
       const hasCache = Array.isArray(window.app.gamesLeaderboardCache[gid]) && window.app.gamesLeaderboardCache[gid].length;
@@ -731,7 +776,9 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     if (typeof originalSyncStatOnline === 'function') {
       void originalSyncStatOnline(id, merged);
     }
-    renderStatsExtended();
+    // Fáze 5: při rozehrané hře neobnovujeme celé statistické bloky, jen uložíme výsledek.
+    // Statistiky se dorenderují po návratu do hubu, takže se hra zbytečně nepřekreslí.
+    if (!window.app || !window.app.activeGameShell) renderStatsExtended();
     void refreshRemoteLeaderboards(id);
   };
 
@@ -761,12 +808,18 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         if (typeof window.closeGameShell === 'function') window.closeGameShell();
       });
     }
-    return document.getElementById('gamesShellBody');
+    const body = document.getElementById('gamesShellBody');
+    if (body && body.dataset) body.dataset.arcadeGame = key(gameId);
+    return body;
   }
 
   const origRenderGameShell = window.renderGameShell;
   window.renderGameShell = function renderGameShellArcade(gameId) {
     const id = key(gameId);
+    if (isArcadeShellMounted(id)) {
+      gamePerf.shellRenderSkips += 1;
+      return;
+    }
     if (!META[id] || EXTRA_GAMES.indexOf(id) < 0) {
       if (typeof origRenderGameShell === 'function') origRenderGameShell(id);
       const back = document.querySelector('#games .gamesShellTop');
@@ -813,7 +866,8 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     renderStatsExtended();
     if (window.app && window.app.activeGameShell) {
       if (EXTRA_GAMES.indexOf(key(window.app.activeGameShell)) >= 0) {
-        window.renderGameShell(window.app.activeGameShell);
+        if (!isArcadeShellMounted(window.app.activeGameShell)) window.renderGameShell(window.app.activeGameShell);
+        else gamePerf.shellRenderSkips += 1;
       }
     }
   };
@@ -925,7 +979,8 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       state.running = true;
       state.finished = false;
       state.startAt = Date.now();
-      state.timer = setInterval(tick, 100);
+      clearInterval(state.timer);
+      state.timer = rakGameSetInterval(tick, 160);
       updateTarget();
       tick();
     };
@@ -1746,7 +1801,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       draw();
     };
     draw();
-    if (!state.timer) state.timer = setInterval(loop, 120);
+    if (!state.timer) state.timer = rakGameSetInterval(loop, rakGameIsLadaMode() ? 180 : 140);
     addCleanup(() => {
       clearInterval(state.timer);
       state.timer = 0;

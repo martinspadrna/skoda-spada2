@@ -1,3 +1,9 @@
+## v.1.1 (534)
+- Fáze 5: ochrana proti zbytečnému překreslení rozehrané hry při obnově herního hubu nebo online dat.
+- Arcade hry nově používají bezpečnější intervaly, které v pozadí a mimo herní obrazovku šetří výkon.
+- Leaderboard refresh v Láďově režimu používá delší cache, aby starší mobily méně tahaly data.
+- Hry v Láďově režimu mají lehčí přechody a kompaktnější herní statistiky bez změny pravidel her.
+
 ## v.1.1 (533)
 - Spodní lišta: jemné dorovnání položky „Více“ níž, bez posunu panelu.
 - Rotace: větší horní prostor v docku se jmény pro A15/menší displeje, aby se aktivní jméno neusekávalo.

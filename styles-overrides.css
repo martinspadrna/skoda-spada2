@@ -3138,3 +3138,24 @@ table.rotTable td.dateCell{
 #games details.gamesStatsCard[open] .gamesStatsCardHead::after{
   content:'⌃';
 }
+
+
+/* v.1.1 (534) – Fáze 5: jemnější herní výkon pro slabší mobily bez zásahu do samotných her. */
+body.lightweightMode #games .gamesLaunchTile,
+body.lightweightMode #games .gamesStatsCard,
+body.lightweightMode #games .gamesTop3Card,
+body.lightweightMode #games .arcadeCell,
+body.lightweightMode #games .arcadeTileBtn,
+body.lightweightMode #games .arcadeMemoryCard{
+  transition:none !important;
+}
+body.lightweightMode #games .gamesTop3Body{
+  max-height:36dvh !important;
+  overflow:auto !important;
+}
+body.lightweightMode #games .arcadeHud{
+  gap:6px !important;
+}
+body.lightweightMode #games .arcadeHud .gamesStatCard{
+  padding:6px 8px !important;
+}
