@@ -2418,3 +2418,78 @@ body.lightweightMode .bottomNavMenuBtn.active,
 body.lowEndDevice .bottomNavMenuBtn.active{
   transform:translateY(-2px) scale(1.04) !important;
 }
+
+
+/* v.1.1 (525) – Bottom nav: tvrdá pojistka pro „Více“, aby bylo užší a mělo stejnou výšku jako ostatní. */
+nav.bottomNav > .bottomNavScroll > .bottomNavBtn.bottomNavMenuBtn{
+  flex:0 0 44px !important;
+  width:44px !important;
+  min-width:44px !important;
+  max-width:44px !important;
+  min-height:clamp(46px, 7.6vw, 56px) !important;
+  height:clamp(46px, 7.6vw, 56px) !important;
+  max-height:clamp(46px, 7.6vw, 56px) !important;
+  padding:2px 0 1px !important;
+  margin:0 !important;
+  align-self:center !important;
+  justify-content:center !important;
+  gap:1px !important;
+  transform:none !important;
+  box-sizing:border-box !important;
+  overflow:visible !important;
+}
+nav.bottomNav > .bottomNavScroll > .bottomNavBtn.bottomNavMenuBtn .moreIcon{
+  flex:0 0 18px !important;
+  width:18px !important;
+  height:18px !important;
+  max-width:18px !important;
+  max-height:18px !important;
+  padding:0 !important;
+  margin:0 auto !important;
+  transform:none !important;
+  box-sizing:border-box !important;
+}
+nav.bottomNav > .bottomNavScroll > .bottomNavBtn.bottomNavMenuBtn .bottomNavLabel{
+  font-size:8px !important;
+  line-height:1 !important;
+  margin:0 !important;
+  padding:0 !important;
+  white-space:nowrap !important;
+  transform:none !important;
+}
+nav.bottomNav > .bottomNavScroll > .bottomNavBtn.bottomNavMenuBtn.active{
+  transform:translateY(-3px) scale(1.06) !important;
+}
+@media (max-width:390px){
+  nav.bottomNav > .bottomNavScroll > .bottomNavBtn.bottomNavMenuBtn{
+    flex-basis:38px !important;
+    width:38px !important;
+    min-width:38px !important;
+    max-width:38px !important;
+  }
+  nav.bottomNav > .bottomNavScroll > .bottomNavBtn.bottomNavMenuBtn .moreIcon{
+    flex-basis:17px !important;
+    width:17px !important;
+    height:17px !important;
+    max-width:17px !important;
+    max-height:17px !important;
+  }
+}
+body.lightweightMode nav.bottomNav > .bottomNavScroll > .bottomNavBtn.bottomNavMenuBtn,
+body.lowEndDevice nav.bottomNav > .bottomNavScroll > .bottomNavBtn.bottomNavMenuBtn{
+  flex-basis:36px !important;
+  width:36px !important;
+  min-width:36px !important;
+  max-width:36px !important;
+  min-height:40px !important;
+  height:40px !important;
+  max-height:40px !important;
+}
+body.lightweightMode nav.bottomNav > .bottomNavScroll > .bottomNavBtn.bottomNavMenuBtn .moreIcon,
+body.lowEndDevice nav.bottomNav > .bottomNavScroll > .bottomNavBtn.bottomNavMenuBtn .moreIcon{
+  flex-basis:16px !important;
+  width:16px !important;
+  height:16px !important;
+  max-width:16px !important;
+  max-height:16px !important;
+}

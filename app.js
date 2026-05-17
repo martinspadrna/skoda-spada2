@@ -1,4 +1,4 @@
-// v.1.1 (524) – Bottom nav Více užší se stejnou výškou + Fáze 4 cleanup pokračuje.
+// v.1.1 (525) – Bottom nav Více runtime hard-fix + Fáze 4 cleanup pokračuje.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
@@ -369,6 +369,79 @@ function runPhaseThreeLightweightAudit() {
   return { version: window.APP_VERSION || 'unknown', phase: 'phase-3-lightweight-mode', ok: true, deferred: true };
 }
 
+
+function applyBottomNavMoreHardFix() {
+  const apply = () => {
+    const btn = document.querySelector('nav.bottomNav > .bottomNavScroll > .bottomNavMenuBtn');
+    if (!btn || !btn.style) return false;
+
+    const compact = window.matchMedia && window.matchMedia('(max-width: 390px)').matches;
+    const lightweight = document.body && (document.body.classList.contains('lightweightMode') || document.body.classList.contains('lowEndDevice'));
+    const width = lightweight ? '36px' : (compact ? '38px' : '44px');
+    const peer = document.querySelector('nav.bottomNav > .bottomNavScroll > .bottomNavBtn:not(.bottomNavMenuBtn):not(.active)')
+      || document.querySelector('nav.bottomNav > .bottomNavScroll > .bottomNavBtn:not(.bottomNavMenuBtn)');
+    const peerRect = peer && peer.getBoundingClientRect ? peer.getBoundingClientRect() : null;
+    const peerHeight = peerRect && peerRect.height ? Math.round(peerRect.height) : 46;
+    const height = Math.max(lightweight ? 40 : 44, Math.min(peerHeight || 46, lightweight ? 50 : 56)) + 'px';
+
+    btn.style.setProperty('flex', '0 0 ' + width, 'important');
+    btn.style.setProperty('width', width, 'important');
+    btn.style.setProperty('min-width', width, 'important');
+    btn.style.setProperty('max-width', width, 'important');
+    btn.style.setProperty('height', height, 'important');
+    btn.style.setProperty('min-height', height, 'important');
+    btn.style.setProperty('max-height', height, 'important');
+    btn.style.setProperty('align-self', 'center', 'important');
+    btn.style.setProperty('padding', lightweight ? '1px 0' : '2px 0 1px', 'important');
+    btn.style.setProperty('margin', '0', 'important');
+    btn.style.setProperty('box-sizing', 'border-box', 'important');
+    btn.style.setProperty('justify-content', 'center', 'important');
+    btn.style.setProperty('gap', '1px', 'important');
+    if (!btn.classList.contains('active')) btn.style.setProperty('transform', 'none', 'important');
+
+    const icon = btn.querySelector('.moreIcon');
+    if (icon && icon.style) {
+      const iconSize = lightweight ? '16px' : (compact ? '17px' : '18px');
+      icon.style.setProperty('flex', '0 0 ' + iconSize, 'important');
+      icon.style.setProperty('width', iconSize, 'important');
+      icon.style.setProperty('height', iconSize, 'important');
+      icon.style.setProperty('max-width', iconSize, 'important');
+      icon.style.setProperty('max-height', iconSize, 'important');
+      icon.style.setProperty('padding', '0', 'important');
+      icon.style.setProperty('margin', '0 auto', 'important');
+      icon.style.setProperty('transform', 'none', 'important');
+      icon.style.setProperty('box-sizing', 'border-box', 'important');
+    }
+
+    const label = btn.querySelector('.bottomNavLabel');
+    if (label && label.style) {
+      label.style.setProperty('font-size', lightweight ? '7.4px' : '8px', 'important');
+      label.style.setProperty('line-height', '1', 'important');
+      label.style.setProperty('margin', '0', 'important');
+      label.style.setProperty('padding', '0', 'important');
+      label.style.setProperty('white-space', 'nowrap', 'important');
+      label.style.setProperty('transform', 'none', 'important');
+    }
+    return true;
+  };
+
+  const run = () => {
+    apply();
+    requestAnimationFrame(apply);
+    setTimeout(apply, 80);
+    setTimeout(apply, 350);
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', run, { once: true });
+  } else {
+    run();
+  }
+  window.addEventListener('resize', () => requestAnimationFrame(apply), { passive: true });
+  window.addEventListener('orientationchange', () => setTimeout(apply, 120), { passive: true });
+  window.__rakApplyBottomNavMoreHardFix = apply;
+}
+
 function runPhaseFourCleanupManagerAudit() {
   const run = () => {
     const report = {
@@ -429,7 +502,7 @@ function runPhaseFourCleanupManagerAudit() {
         report.bottomNav.menuAligned = !!(peerRect && Math.abs(menuRect.top - peerRect.top) <= 5 && Math.abs(menuRect.height - peerRect.height) <= 6);
         report.bottomNav.menuBottomAligned = !!(peerRect && Math.abs(menuRect.bottom - peerRect.bottom) <= 4);
         // Více má být záměrně užší než ostatní záložky, ale výškově zarovnané.
-        report.bottomNav.menuWidthAligned = !!(peerRect && menuRect.width <= peerRect.width + 2 && menuRect.width >= 34);
+        report.bottomNav.menuWidthAligned = !!(peerRect && menuRect.width <= peerRect.width - 6 && menuRect.width >= 34);
         report.bottomNav.allItemsAligned = peerButtons.length > 0 && peerButtons.every((btn) => {
           const rect = btn.getBoundingClientRect();
           return Math.abs(rect.bottom - menuRect.bottom) <= 5 && Math.abs(rect.height - menuRect.height) <= 7;
@@ -535,6 +608,7 @@ function runPhaseFourCleanupManagerAudit() {
 
   installPwaAndConnectivityHooks();
   installBottomNavBindings();
+  try { applyBottomNavMoreHardFix(); } catch (err) { console.warn('Bottom nav Více hard-fix failed', err); }
   installDelegatedAppActions();
   try { runPhaseOneFinalAudit(); } catch (err) { console.warn('Phase 1 final audit failed', err); }
   try { runPhaseTwoCalcScopeAudit(); } catch (err) { console.warn('Phase 2 calc scope audit failed', err); }

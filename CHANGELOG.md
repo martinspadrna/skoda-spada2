@@ -1,3 +1,7 @@
+## v.1.1 (525)
+- Spodní navigace: „Více“ má novou tvrdou pojistku přes CSS i runtime, aby bylo opravdu užší a výškově stejné jako ostatní položky.
+- Fáze 4 cleanup manager pokračuje kontrolou, že „Více“ je záměrně užší, ne stejně široké jako běžné záložky.
+
 ## v.1.1 (524)
 - Spodní navigace: položka „Více“ je užší, ale výškově srovnaná s ostatními záložkami.
 - Fáze 4 cleanup manager: audit spodní navigace bere „Více“ jako záměrně užší položku, ne jako chybu.
