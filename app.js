@@ -1,4 +1,4 @@
-// v.1.1 (522) – Bottom nav Více dorovnané spodní hranou + Statistiky stroje kompaktněji + Fáze 4 audit.
+// v.1.1 (523) – Bottom nav Více sjednocené s ostatními položkami + Fáze 4 cleanup pokračuje.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
@@ -377,7 +377,7 @@ function runPhaseFourCleanupManagerAudit() {
       checkedAt: new Date().toISOString(),
       ok: true,
       dashboard: { missingCards: [], missingValues: [], missingIcons: [], dLine: { exists: false, hasMain: false, hasSub: false } },
-      bottomNav: { exists: false, missingButtons: [], menuAligned: false, allItemsAligned: false, menuBottomAligned: false, menuHasIcon: false, menuHasLabel: false },
+      bottomNav: { exists: false, missingButtons: [], menuAligned: false, allItemsAligned: false, menuBottomAligned: false, menuWidthAligned: false, menuHasIcon: false, menuHasLabel: false },
       stats: { machineGridExists: false, machineOneLine: false, machineTileCount: 0, machineRows: 0 }
     };
 
@@ -428,6 +428,7 @@ function runPhaseFourCleanupManagerAudit() {
         const peerRect = peer ? peer.getBoundingClientRect() : null;
         report.bottomNav.menuAligned = !!(peerRect && Math.abs(menuRect.top - peerRect.top) <= 5 && Math.abs(menuRect.height - peerRect.height) <= 6);
         report.bottomNav.menuBottomAligned = !!(peerRect && Math.abs(menuRect.bottom - peerRect.bottom) <= 4);
+        report.bottomNav.menuWidthAligned = !!(peerRect && Math.abs(menuRect.width - peerRect.width) <= 8);
         report.bottomNav.allItemsAligned = peerButtons.length > 0 && peerButtons.every((btn) => {
           const rect = btn.getBoundingClientRect();
           return Math.abs(rect.bottom - menuRect.bottom) <= 5 && Math.abs(rect.height - menuRect.height) <= 7;
@@ -435,6 +436,7 @@ function runPhaseFourCleanupManagerAudit() {
       } else {
         report.bottomNav.menuAligned = !!menuBtn;
         report.bottomNav.menuBottomAligned = !!menuBtn;
+        report.bottomNav.menuWidthAligned = !!menuBtn;
         report.bottomNav.allItemsAligned = !!menuBtn;
       }
     }
@@ -468,6 +470,7 @@ function runPhaseFourCleanupManagerAudit() {
       && report.bottomNav.menuHasLabel
       && report.bottomNav.menuAligned
       && report.bottomNav.menuBottomAligned
+      && report.bottomNav.menuWidthAligned
       && report.bottomNav.allItemsAligned
       && report.stats.machineGridExists;
     try {

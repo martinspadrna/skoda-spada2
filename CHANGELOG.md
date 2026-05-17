@@ -1,3 +1,8 @@
+## v.1.1 (523)
+- Spodní panel jako celek zůstává beze změny; položka „Více“ má sjednocený box, výšku a vnitřní zarovnání s ostatními záložkami.
+- Odstraněný ruční posun položky „Více“, který podle screenshotu nechával její spodní část opticky mimo rytmus ostatních položek.
+- Fáze 4: cleanup manager pokračuje kontrolou rozměrů a zarovnání všech položek spodní navigace.
+
 ## v.1.1 (522)
 - Spodní panel jako celek zůstává beze změny; položka „Více“ je jen jemně posunutá dolů, aby spodní hrana seděla s ostatními záložkami.
 - Statistiky: výběr strojů je kompaktnější, s menšími mezerami a šesti položkami v jednom řádku.

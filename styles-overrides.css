@@ -2215,7 +2215,7 @@ body.lowEndDevice .bottomNavMenuBtn .moreIcon{
   max-height:18px !important;
 }
 
-/* v.1.1 (522) – Bottom nav: Více dorovnané spodní hranou + Statistiky stroje kompaktně v jednom řádku. */
+/* v.1.1 (523) – Bottom nav: Více dorovnané spodní hranou + Statistiky stroje kompaktně v jednom řádku. */
 .bottomNavMenuBtn{
   align-self:center !important;
   transform:translateY(2px) !important;
@@ -2276,3 +2276,85 @@ body.lowEndDevice .bottomNavMenuBtn.active{
   }
 }
 
+
+
+/* v.1.1 (523) – Bottom nav: „Více“ sjednocené s ostatními položkami podle screenshotu. */
+.bottomNavMenuBtn{
+  flex:0 0 clamp(42px, 7vw, 55px) !important;
+  width:clamp(42px, 7vw, 55px) !important;
+  min-width:clamp(42px, 7vw, 55px) !important;
+  max-width:clamp(42px, 7vw, 55px) !important;
+  min-height:46px !important;
+  height:auto !important;
+  padding:2px 1px 1px !important;
+  margin:0 !important;
+  align-self:stretch !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:2px !important;
+  transform:none !important;
+  box-sizing:border-box !important;
+}
+.bottomNavMenuBtn .moreIcon{
+  display:block !important;
+  flex:0 0 24px !important;
+  width:24px !important;
+  height:24px !important;
+  max-width:24px !important;
+  max-height:24px !important;
+  padding:3px !important;
+  margin:0 !important;
+  transform:none !important;
+  box-sizing:border-box !important;
+}
+.bottomNavMenuBtn .bottomNavLabel{
+  display:block !important;
+  margin:0 !important;
+  padding:0 !important;
+  font-size:clamp(7.2px, 1.75vw, 8.8px) !important;
+  line-height:1.02 !important;
+  font-weight:800 !important;
+  white-space:nowrap !important;
+  transform:none !important;
+}
+.bottomNavMenuBtn.active{
+  transform:translateY(-4px) scale(1.12) !important;
+}
+.bottomNavMenuBtn.active .moreIcon{
+  transform:none !important;
+}
+@media (max-width:390px){
+  .bottomNavMenuBtn{
+    min-height:44px !important;
+    padding:2px 1px 1px !important;
+  }
+  .bottomNavMenuBtn .moreIcon{
+    flex-basis:22px !important;
+    width:22px !important;
+    height:22px !important;
+    max-width:22px !important;
+    max-height:22px !important;
+    padding:3px !important;
+  }
+}
+body.lightweightMode .bottomNavMenuBtn,
+body.lowEndDevice .bottomNavMenuBtn{
+  min-height:38px !important;
+  padding:1px 1px 1px !important;
+  transform:none !important;
+}
+body.lightweightMode .bottomNavMenuBtn .moreIcon,
+body.lowEndDevice .bottomNavMenuBtn .moreIcon{
+  flex-basis:20px !important;
+  width:20px !important;
+  height:20px !important;
+  max-width:20px !important;
+  max-height:20px !important;
+  padding:2px !important;
+}
+body.lightweightMode .bottomNavMenuBtn.active,
+body.lowEndDevice .bottomNavMenuBtn.active{
+  transform:translateY(-2px) scale(1.04) !important;
+}
