@@ -1,4 +1,4 @@
-// v.1.1 (511) – Fáze 3: dashboard/rotace polish + přesnější detekce Láďova režimu.
+// v.1.1 (512) – Fáze 3: dashboard center fix + Láďův režim pro starší Androidy.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

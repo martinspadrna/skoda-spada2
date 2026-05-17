@@ -1,3 +1,10 @@
+## v.1.1 (512)
+- Dashboard: řádek směny D je centrovaný přes celou hero kartu, ne podle posunutého vnitřního obsahu.
+- Rotace: aktivní kliknuté jméno ve spodním docku už se nezvětšuje přes horní hranu, takže se neořezává horní čára.
+- Láďův režim: přidané kompaktnější rozložení pro starší Androidy – nižší karty, menší mezery, úspornější spodní lišta a kompaktnější dock jmen.
+- Diagnostika: text detekce upravený na „Starší/slabší zařízení“, aby bylo jasnější, že cílí hlavně na slabší/starší mobily.
+- Fáze 3: pokračování výkonového a layoutového odlehčení bez zásahu do výpočtů.
+
 ## v.1.1 (511)
 - Dashboard: řádek se směnou D je vrácený na skutečný optický střed bez roztahování doprava.
 - Rotace: aktivní kliknuté jméno ve spodním docku už nemá oříznutou horní čáru.

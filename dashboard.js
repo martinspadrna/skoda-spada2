@@ -167,6 +167,12 @@ function formatDashboardTeamDLine(now, teamDStatus) {
   return 'Směna D: další směna nenalezena';
 }
 
+
+function formatDashboardHeroLine3Html(text) {
+  if (!text) return '';
+  return '<div class="dashboardHeroLine3"><span class="dashboardHeroLine3Pill">' + esc(text) + '</span></div>';
+}
+
 function formatDashboardShiftName(shift) {
   if (!shift) return '';
   return String(shift.team || '—') + (shift.label ? ' (' + shift.label + ')' : '');
@@ -247,7 +253,7 @@ function updateDashboard() {
     hero.innerHTML = [
       '<div class="dashboardHeroLine1">' + heroLine1 + '</div>',
       heroLine2 ? '<div class="dashboardHeroLine2">' + esc(heroLine2) + '</div>' : '',
-      heroLine3 ? '<div class="dashboardHeroLine3">' + esc(heroLine3) + '</div>' : '',
+      heroLine3 ? formatDashboardHeroLine3Html(heroLine3) : '',
       '<div class="dashboardHeroBarRow">',
       '<div class="dashboardHeroBar"><span style="--fill:' + heroProgress.toFixed(1) + '%"></span></div>',
       heroProgressText ? '<div class="dashboardHeroBarPercent">' + esc(heroProgressText) + '</div>' : '',
@@ -594,7 +600,7 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
       hero.innerHTML = [
         '<div class="dashboardHeroLine1"><span class="dashboardHeroLine1Text">' + esc(activeText) + '</span></div>',
         '<div class="dashboardHeroLine2">' + esc(active ? 'Končí za: ' + countdownText : (nextWorkShift ? 'Začíná za: ' + countdownText : countdownText)) + '</div>',
-        '<div class="dashboardHeroLine3">' + esc(typeof formatDashboardTeamDLine === 'function' ? formatDashboardTeamDLine(now, teamDStatus) : '') + '</div>',
+        formatDashboardHeroLine3Html(typeof formatDashboardTeamDLine === 'function' ? formatDashboardTeamDLine(now, teamDStatus) : ''),
         '<div class="dashboardHeroBarRow"><div class="dashboardHeroBar"><span style="--fill:' + (active && active.start && active.end ? Math.max(0, Math.min(100, ((now.getTime() - active.start.getTime()) / (active.end.getTime() - active.start.getTime())) * 100)).toFixed(1) + '%' : '0%') + '"></span></div></div>'
       ].join('');
     }

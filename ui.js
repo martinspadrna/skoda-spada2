@@ -3721,7 +3721,7 @@ function bindAppMenuHandlers(body) {
           'Online: ' + (navigator.onLine ? 'ano' : 'ne'),
           'Kompaktní režim: ' + (document.body.classList.contains('compactUI') ? 'zapnutý' : 'vypnutý'),
           LIGHTWEIGHT_MODE_LABEL + ': ' + (document.body.classList.contains('lightweightMode') ? 'zapnutý' : 'vypnutý') + (document.body.classList.contains('reduceMotion') ? ' · méně animací aktivní' : ''),
-          'Slabší zařízení detekováno: ' + (lowEndInfo.lowEnd ? 'ano' : 'ne') + lowEndReason,
+          'Starší/slabší zařízení detekováno: ' + (lowEndInfo.lowEnd ? 'ano' : 'ne') + lowEndReason,
           'Zařízení: ' + deviceInfo,
           'Aktuální stránka: ' + String(document.querySelector('.page.active')?.id || '—'),
           'Bottom lišta: ' + String(getComputedStyle(document.querySelector('.bottomNav') || document.body).bottom || '—')
@@ -3915,7 +3915,7 @@ function openAppMenu(view) {
         '  <div class="appMenuCardTitle">Nastavení</div>',
         '  <div class="appMenuText">',
         '    <div>Kompaktní režim a Láďův režim se ukládají jen do tohoto zařízení a promítnou se napříč celou appkou.</div>',
-        '    <div>Láďův režim v sobě zahrnuje méně animací, lehčí efekty a šetrnější vykreslování pro slabší mobil.</div>',
+        '    <div>Láďův režim v sobě zahrnuje méně animací, lehčí efekty a kompaktnější rozložení pro starší Androidy.</div>',
         '  </div>',
         '  <div class="appMenuSettingsList">',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-pref="compact">' + (prefs.compact ? '✓ ' : '') + 'Kompaktní režim</button>',

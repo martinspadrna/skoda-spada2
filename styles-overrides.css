@@ -1412,3 +1412,146 @@ body.lightweightMode #rotaceNamesPanel .rotaceNameTile{
   transition:none !important;
   animation:none !important;
 }
+
+/* v.1.1 (512) – Dashboard D řádek centrovaný přes celou kartu + Láďův režim pro starší Androidy. */
+#dashHero .dashboardHeroLine3{
+  --dash-hero-pad-left:64px;
+  --dash-hero-pad-right:128px;
+  display:block !important;
+  box-sizing:border-box !important;
+  width:calc(100% + var(--dash-hero-pad-left) + var(--dash-hero-pad-right)) !important;
+  max-width:none !important;
+  margin:8px 0 0 calc(-1 * var(--dash-hero-pad-left)) !important;
+  padding:0 !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  text-align:center !important;
+  transform:none !important;
+  left:auto !important;
+  right:auto !important;
+  align-self:stretch !important;
+  justify-self:stretch !important;
+  overflow:visible !important;
+}
+#dashHero .dashboardHeroLine3Pill{
+  display:inline-block !important;
+  box-sizing:border-box !important;
+  max-width:min(520px, calc(100vw - 28px - env(safe-area-inset-left) - env(safe-area-inset-right))) !important;
+  padding:7px 10px !important;
+  border-radius:999px !important;
+  border:1px solid rgba(124,255,124,.16) !important;
+  background:rgba(124,255,124,.075) !important;
+  color:rgba(232,255,232,.88) !important;
+  font-size:clamp(12px, 3vw, 14px) !important;
+  line-height:1.2 !important;
+  font-weight:750 !important;
+  text-align:center !important;
+  white-space:normal !important;
+  overflow-wrap:anywhere !important;
+}
+@media (max-width:700px){
+  #dashHero .dashboardHeroLine3{
+    --dash-hero-pad-left:58px;
+    --dash-hero-pad-right:16px;
+  }
+  #dashHero .dashboardHeroLine3Pill{
+    max-width:calc(100vw - 24px - env(safe-area-inset-left) - env(safe-area-inset-right)) !important;
+    padding-inline:8px !important;
+  }
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid{
+  padding-top:16px !important;
+  overflow-x:visible !important;
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem.activeChoice,
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceNameTile.activeChoice{
+  transform:none !important;
+  outline:2px solid rgba(124,255,124,.58) !important;
+  outline-offset:2px !important;
+  border-color:rgba(124,255,124,.45) !important;
+  box-shadow:0 8px 20px rgba(0,0,0,.24), 0 0 0 1px rgba(124,255,124,.18) inset !important;
+}
+body.lightweightMode .dashboardGrid,
+body.lowEndDevice .dashboardGrid{
+  gap:8px !important;
+  margin-top:8px !important;
+}
+body.lightweightMode .dashboardCard,
+body.lowEndDevice .dashboardCard{
+  min-height:82px !important;
+  padding:10px !important;
+  border-radius:18px !important;
+}
+body.lightweightMode .dashboardHeroCard,
+body.lowEndDevice .dashboardHeroCard{
+  padding-top:12px !important;
+  padding-bottom:12px !important;
+  border-radius:22px !important;
+}
+body.lightweightMode .dashboardValue,
+body.lowEndDevice .dashboardValue{
+  font-size:clamp(15px, 4.1vw, 20px) !important;
+  line-height:1.08 !important;
+}
+body.lightweightMode .dashboardMeta,
+body.lowEndDevice .dashboardMeta{
+  font-size:11px !important;
+  line-height:1.16 !important;
+}
+body.lightweightMode .bottomNav,
+body.lowEndDevice .bottomNav{
+  padding:2px 5px calc(2px + env(safe-area-inset-bottom)) !important;
+  border-radius:22px !important;
+}
+body.lightweightMode .bottomNavBtn,
+body.lowEndDevice .bottomNavBtn{
+  min-height:38px !important;
+  padding-inline:3px !important;
+  transform:none !important;
+}
+body.lightweightMode .bottomNavBtn.active,
+body.lowEndDevice .bottomNavBtn.active{
+  transform:none !important;
+}
+body.lightweightMode .bottomNavIcon,
+body.lowEndDevice .bottomNavIcon{
+  width:20px !important;
+  height:20px !important;
+}
+body.lightweightMode .bottomNavLabel,
+body.lowEndDevice .bottomNavLabel{
+  font-size:9px !important;
+  line-height:1 !important;
+}
+body.lightweightMode .appMenuCard,
+body.lowEndDevice .appMenuCard,
+body.lightweightMode .calcTile,
+body.lowEndDevice .calcTile,
+body.lightweightMode .tile,
+body.lowEndDevice .tile{
+  border-radius:18px !important;
+  padding:12px !important;
+}
+body.lightweightMode #rotace.page.active #rotaceNamesPanel.active,
+body.lowEndDevice #rotace.page.active #rotaceNamesPanel.active{
+  padding-bottom:calc(154px + env(safe-area-inset-bottom)) !important;
+}
+body.lightweightMode #rotace.page.active #rotaceNamesPanel.active #namesGrid,
+body.lowEndDevice #rotace.page.active #rotaceNamesPanel.active #namesGrid{
+  bottom:calc(56px + env(safe-area-inset-bottom)) !important;
+  max-height:calc(96px + env(safe-area-inset-bottom)) !important;
+  padding:12px 5px 5px !important;
+  gap:5px !important;
+}
+body.lightweightMode #rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem,
+body.lowEndDevice #rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem{
+  min-height:34px !important;
+  padding:4px 2px !important;
+}
+body.lightweightMode #rotaceNamesPanel .rotaceTileTitle,
+body.lowEndDevice #rotaceNamesPanel .rotaceTileTitle{
+  font-size:10.5px !important;
+  line-height:1.05 !important;
+}
