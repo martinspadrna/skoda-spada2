@@ -1,3 +1,8 @@
+## v.1.1 (520)
+- Spodní panel: samotný panel zůstává beze změny, dorovnané jsou jen ostatní záložky na výšku položky „Více“.
+- Ikony a popisky běžných záložek mají stejný výškový rytmus jako „Více“, aby nepůsobily níž.
+- Fáze 4: cleanup audit nově hlídá zarovnání všech položek spodní navigace, nejen položky „Více“.
+
 ## v.1.1 (519)
 - Spodní panel: položka „Více“ je dorovnaná do stejné výšky jako ostatní záložky.
 - Ikona tří teček ve „Více“ dostala stejný ikonový box jako ostatní položky navigace.

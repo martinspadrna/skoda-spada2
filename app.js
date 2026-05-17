@@ -1,4 +1,4 @@
-// v.1.1 (519) – Bottom nav Více alignment + Fáze 4 cleanup audit rozšíření.
+// v.1.1 (520) – Bottom nav items dorovnané na výšku Více + Fáze 4 cleanup audit rozšíření.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
@@ -377,7 +377,7 @@ function runPhaseFourCleanupManagerAudit() {
       checkedAt: new Date().toISOString(),
       ok: true,
       dashboard: { missingCards: [], missingValues: [], missingIcons: [], dLine: { exists: false, hasMain: false, hasSub: false } },
-      bottomNav: { exists: false, missingButtons: [], menuAligned: false, menuHasIcon: false, menuHasLabel: false }
+      bottomNav: { exists: false, missingButtons: [], menuAligned: false, allItemsAligned: false, menuHasIcon: false, menuHasLabel: false }
     };
 
     const requiredDashboardCards = [
@@ -422,11 +422,17 @@ function runPhaseFourCleanupManagerAudit() {
       report.bottomNav.menuHasLabel = !!(menuBtn && menuBtn.querySelector('.bottomNavLabel'));
       if (menuBtn && window.getComputedStyle) {
         const menuRect = menuBtn.getBoundingClientRect();
+        const peerButtons = Array.from(bottomNav.querySelectorAll('.bottomNavBtn')).filter(Boolean);
         const peer = bottomNav.querySelector('.bottomNavBtn:not(.bottomNavMenuBtn):not(.active)') || bottomNav.querySelector('.bottomNavBtn:not(.bottomNavMenuBtn)');
         const peerRect = peer ? peer.getBoundingClientRect() : null;
         report.bottomNav.menuAligned = !!(peerRect && Math.abs(menuRect.top - peerRect.top) <= 4 && Math.abs(menuRect.height - peerRect.height) <= 5);
+        report.bottomNav.allItemsAligned = peerButtons.length > 0 && peerButtons.every((btn) => {
+          const rect = btn.getBoundingClientRect();
+          return Math.abs(rect.top - menuRect.top) <= 4 && Math.abs(rect.height - menuRect.height) <= 6;
+        });
       } else {
         report.bottomNav.menuAligned = !!menuBtn;
+        report.bottomNav.allItemsAligned = !!menuBtn;
       }
     }
 
@@ -440,7 +446,8 @@ function runPhaseFourCleanupManagerAudit() {
       && !report.bottomNav.missingButtons.length
       && report.bottomNav.menuHasIcon
       && report.bottomNav.menuHasLabel
-      && report.bottomNav.menuAligned;
+      && report.bottomNav.menuAligned
+      && report.bottomNav.allItemsAligned;
     try {
       document.documentElement.dataset.rakPhase4 = report.ok ? 'cleanup-manager-start' : 'dashboard-check';
       window.__rakPhase4CleanupAudit = report;

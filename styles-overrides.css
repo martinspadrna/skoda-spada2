@@ -2083,3 +2083,79 @@ body.lowEndDevice .bottomNavMenuBtn .bottomNavLabel{
   font-size:9px !important;
   line-height:1 !important;
 }
+
+
+/* v.1.1 (520) – Bottom nav: ostatní záložky dorovnané na výšku položky Více, bez změny samotného panelu. */
+.bottomNavBtn:not(.bottomNavMenuBtn){
+  min-height:46px !important;
+  padding:2px 1px 1px !important;
+  align-self:stretch !important;
+  justify-content:center !important;
+}
+.bottomNavBtn:not(.bottomNavMenuBtn) .bottomNavIcon{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  flex:0 0 24px !important;
+  width:24px !important;
+  height:24px !important;
+  margin:0 !important;
+}
+.bottomNavBtn:not(.bottomNavMenuBtn) .bottomNavIcon svg,
+.bottomNavBtn:not(.bottomNavMenuBtn) .bottomNavIcon img{
+  width:24px !important;
+  height:24px !important;
+  max-width:24px !important;
+  max-height:24px !important;
+}
+.bottomNavBtn:not(.bottomNavMenuBtn) .bottomNavLabel{
+  display:block !important;
+  margin:0 !important;
+  padding:0 !important;
+  font-size:clamp(7.2px, 1.75vw, 8.8px) !important;
+  line-height:1.02 !important;
+  font-weight:800 !important;
+  white-space:nowrap !important;
+}
+@media (max-width:390px){
+  .bottomNavBtn:not(.bottomNavMenuBtn){
+    min-height:44px !important;
+    padding:2px 1px 1px !important;
+  }
+  .bottomNavBtn:not(.bottomNavMenuBtn) .bottomNavIcon{
+    flex-basis:22px !important;
+    width:22px !important;
+    height:22px !important;
+  }
+  .bottomNavBtn:not(.bottomNavMenuBtn) .bottomNavIcon svg,
+  .bottomNavBtn:not(.bottomNavMenuBtn) .bottomNavIcon img{
+    width:22px !important;
+    height:22px !important;
+    max-width:22px !important;
+    max-height:22px !important;
+  }
+}
+body.lightweightMode .bottomNavBtn:not(.bottomNavMenuBtn),
+body.lowEndDevice .bottomNavBtn:not(.bottomNavMenuBtn){
+  min-height:38px !important;
+}
+body.lightweightMode .bottomNavBtn:not(.bottomNavMenuBtn) .bottomNavIcon,
+body.lowEndDevice .bottomNavBtn:not(.bottomNavMenuBtn) .bottomNavIcon{
+  flex-basis:20px !important;
+  width:20px !important;
+  height:20px !important;
+}
+body.lightweightMode .bottomNavBtn:not(.bottomNavMenuBtn) .bottomNavIcon svg,
+body.lightweightMode .bottomNavBtn:not(.bottomNavMenuBtn) .bottomNavIcon img,
+body.lowEndDevice .bottomNavBtn:not(.bottomNavMenuBtn) .bottomNavIcon svg,
+body.lowEndDevice .bottomNavBtn:not(.bottomNavMenuBtn) .bottomNavIcon img{
+  width:20px !important;
+  height:20px !important;
+  max-width:20px !important;
+  max-height:20px !important;
+}
+body.lightweightMode .bottomNavBtn:not(.bottomNavMenuBtn) .bottomNavLabel,
+body.lowEndDevice .bottomNavBtn:not(.bottomNavMenuBtn) .bottomNavLabel{
+  font-size:9px !important;
+  line-height:1 !important;
+}
