@@ -1,3 +1,8 @@
+## v.1.1 (516)
+- Start Fáze 4: cleanup manager audit začíná hlídat Dashboard karty, ikonky a hodnoty.
+- Láďův režim nově bezpečně odlehčuje i Dashboard: méně efektů, menší mezery a kompaktnější karty.
+- Dashboard v Láďově režimu má explicitní pojistky, aby se neschovaly ikonky ani data.
+
 ## v.1.1 (515)
 - Dashboard: finálně dorovnaný řádek směny D mírně doleva, aby opticky neseděl vpravo.
 - Dashboard: řádek směny D má vlastní vnitřní `dashboardHeroLine3Pill` pro stabilnější centrování.

@@ -1,4 +1,4 @@
-// v.1.1 (515) – Fáze 3: dashboard D-line alignment + final lightweight audit.
+// v.1.1 (516) – Fáze 4 start: Láďův režim bezpečně odlehčuje i Dashboard.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
@@ -369,6 +369,67 @@ function runPhaseThreeLightweightAudit() {
   return { version: window.APP_VERSION || 'unknown', phase: 'phase-3-lightweight-mode', ok: true, deferred: true };
 }
 
+function runPhaseFourCleanupManagerAudit() {
+  const run = () => {
+    const report = {
+      version: window.APP_VERSION || 'unknown',
+      phase: 'phase-4-cleanup-manager-start',
+      checkedAt: new Date().toISOString(),
+      ok: true,
+      dashboard: { missingCards: [], missingValues: [], missingIcons: [] }
+    };
+
+    const requiredDashboardCards = [
+      'dashCalendar',
+      'dashCountdown',
+      'dashKantyna',
+      'dashJidelna',
+      'dashVyplata',
+      'dashCzd',
+      'dashFoodLink',
+      'dashEportalLink'
+    ];
+
+    requiredDashboardCards.forEach((id) => {
+      const el = document.getElementById(id);
+      if (!el) {
+        report.dashboard.missingCards.push(id);
+        return;
+      }
+      const value = el.querySelector('.dashboardValue');
+      const icon = el.querySelector('.dashboardIconInline img, .dashboardIconInline svg, .dashboardIconImg, .dashboardIconSvg');
+      const valueText = value && value.textContent ? value.textContent.trim() : '';
+      if (!value || !valueText) report.dashboard.missingValues.push(id);
+      if (!icon) report.dashboard.missingIcons.push(id);
+    });
+
+    report.ok = !report.dashboard.missingCards.length && !report.dashboard.missingValues.length && !report.dashboard.missingIcons.length;
+    try {
+      document.documentElement.dataset.rakPhase4 = report.ok ? 'cleanup-manager-start' : 'dashboard-check';
+      window.__rakPhase4CleanupAudit = report;
+    } catch (err) {}
+
+    if (!report.ok) {
+      console.warn('[RaK] Phase 4 cleanup/dashboard audit', report);
+      try {
+        if (typeof forceHomeRefresh === 'function') forceHomeRefresh();
+      } catch (err) {}
+    }
+    return report;
+  };
+
+  if (document.readyState === 'loading') {
+    const rerun = () => setTimeout(run, 220);
+    if (typeof registerListener === 'function') registerListener(document, 'DOMContentLoaded', rerun, { once: true });
+    else document.addEventListener('DOMContentLoaded', rerun, { once: true });
+    return { version: window.APP_VERSION || 'unknown', phase: 'phase-4-cleanup-manager-start', ok: true, deferred: true };
+  }
+
+  requestAnimationFrame(() => setTimeout(run, 220));
+  return { version: window.APP_VERSION || 'unknown', phase: 'phase-4-cleanup-manager-start', ok: true, deferred: true };
+}
+
+
 (async () => {
   const files = [
     "core.js",
@@ -408,6 +469,7 @@ function runPhaseThreeLightweightAudit() {
   try { runPhaseOneFinalAudit(); } catch (err) { console.warn('Phase 1 final audit failed', err); }
   try { runPhaseTwoCalcScopeAudit(); } catch (err) { console.warn('Phase 2 calc scope audit failed', err); }
   try { runPhaseThreeLightweightAudit(); } catch (err) { console.warn('Phase 3 lightweight audit failed', err); }
+  try { runPhaseFourCleanupManagerAudit(); } catch (err) { console.warn('Phase 4 cleanup manager audit failed', err); }
 
   try {
     if (typeof window.__rotaceBootHomeRefreshLate === 'function') {
