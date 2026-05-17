@@ -37,7 +37,7 @@ function updateDashboard() {
     const currentAbsences = active && active.team === 'D' ? getAbsenceNamesForDate(active.start || now) : [];
     const nextAbsences = (!active || active.team !== 'D') && dState && dState.next ? getAbsenceNamesForDate(dState.next.start) : [];
     const heroLine1 = active && !showSpecial
-      ? '<span class="dashboardHeroLine1Text">V práci: směna ' + active.team + (active.label ? ' (' + active.label + ')' : '') + '</span>'
+      ? '<span class="dashboardHeroLine1Text">Aktuální směna v práci: ' + active.team + (active.label ? ' (' + active.label + ')' : '') + '</span>'
       : '<span class="dashboardHeroLine1Text">' + (special ? 'Dnes se nepracuje' : '—') + '</span>';
     const heroLine2 = active && active.team === 'D'
       ? (currentAbsences.length ? 'Aktuálně chybí: ' + currentAbsences.join(', ') : 'Aktuálně nechybí nikdo')
@@ -341,7 +341,7 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
       }
     })();
     const activeText = active
-      ? 'V práci: směna ' + active.team + (active.label ? ' (' + active.label + ')' : '')
+      ? 'Aktuální směna v práci: ' + active.team + (active.label ? ' (' + active.label + ')' : '')
       : (special ? 'Dnes se nepracuje' : '—');
     const countdownText = active && active.end
       ? (typeof formatDuration === 'function' ? formatDuration(active.end - now) : '—')
