@@ -2,7 +2,7 @@
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
 
-  // v.1.1 (546): Fáze 5 zůstává uzavřená; herní část beze změny pravidel při opravě Theme/Pozadí.
+  // v.1.1 (552): Fáze 5 zůstává uzavřená; herní pravidla beze změny, vzhled profilu řeší Theme/Pozadí.
   const CORE_GAMES = [];
   const EXTRA_GAMES = ['ttt', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);

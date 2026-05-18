@@ -1,502 +1,137 @@
-## v.1.1 (546)
-- Nastavení → Theme/Pozadí: opravené klikání na varianty pozadí – po otevření nastavení se karty teď znovu správně nabindují.
-- Funkce pozadí jsou dostupné i přes `window.applyBackgroundPreference`, aby šla volba spolehlivě aplikovat i po překreslení menu.
+## v.1.1 (552)
+
+- Modernizované Theme tak, aby víc seděly k průhlednému iOS glass stylu.
+- Theme a Pozadí se nově ukládají k přihlášenému hernímu profilu.
+- Po přihlášení na jiném zařízení si appka načte uložené barvy i pozadí z profilu.
+- Bez přihlášení zůstává nastavení uložené lokálně jen v daném zařízení.
+- Cross-device uložení vzhledu využívá existující Supabase `game_stats` záznam typu `__profile_ui`, takže není potřeba nová tabulka.
+- Výpočty, pravidla her, spodní lišta a Supabase datový model veřejných dat beze změny.
+- Fáze 6 — Supabase hardening: cca 48 %.
+
+## Přehled největších změn v.1.1 (500–552)
+- Proběhlo velké stabilizační období před dalšími fázemi refactoru: Fáze 3 Láďův režim, Fáze 4 cleanup manager, Fáze 5 game performance a start Fáze 6 Supabase hardening.
+- Dashboard se postupně ladil kvůli správnému zobrazení směny, ikon, kantýny/jídelny, odpočtů a menšímu riziku prázdných nebo pozdě načtených karet.
+- Spodní navigace prošla opakovaným dorovnáním, hlavně položka „Více“ – má být užší, ale normálně mezi ostatními položkami a bez ukotvení vpravo.
+- Rotace dostala stabilnější spodní dock jmen, lepší safe-area chování na menších displejích typu Samsung A15 a čistší zobrazení příští směny.
+- Rozpisy mají zvýraznění aktuální a budoucí směny, užší sloupce datum/směna u Měkoty/Tvrdoty a víc prostoru pro tabulky.
+- Statistiky dostaly kompaktnější dlaždice lidí/strojů, snahu vejít stroje do jednoho řádku a čistší souhrny práce/absence.
+- Kalkulačky prošly sjednocením calcPanel systému, většími klikacími/navolovacími tlačítky a návratem barevných indexů u Brusů ve glass stylu.
+- Všechny hry jsou přesunuté do „Ve vývoji“, herní hub dostal výrazné performance optimalizace, méně opakovaných renderů a lepší cache profilů/statistik.
+- Supabase Realtime a offline/online sync se zpevňují: timeouty, retry, offline fronta, deduplikace, cache/fallback a diagnostika.
+- Nastavení → Theme dostalo volbu pozadí, výrazná glass-friendly pozadí a postupný iOS glass polish napříč aplikací.
+
+## Přehled největších změn v.1 (450–499)
+- Období příprav na větší stabilizační/refactor plán a sjednocení pravidel, že se má vždy pokračovat z posledního potvrzeného buildu.
+- Začal se víc řešit technický dluh: duplicity, přebíjení stylů, přerůstající CSS/JS a potřeba bezpečnějších guardů místo náhodného ladění jednotlivých prvků.
+- Postupně se dolaďovala mobilní použitelnost: safe-area, spodní lišta, výška panelů, mezery, čitelnost a stabilita na iPhonu i Androidu.
+- Připravoval se směr k iOS/glassmorphism vzhledu, ale s důrazem na opatrný postup, aby se nerozbily funkce a výpočty.
+
+## Přehled největších změn v.1 (400–449)
+- Projekt přešel do rozsáhlejšího herního a účtového rozšiřování.
+- Přibyly nebo se začaly sjednocovat hráčské profily, herní statistiky, leaderboardy, online ukládání a vazba na Supabase.
+- Začal se řešit větší herní plán: Snake, Piškvorky, 2048, Flappy Car a příprava dalších her do jednotného hubu.
+- Aplikace se víc posouvala k mobile-first rozložení a k tomu, aby hry i běžné části fungovaly bez rušivých reloadů.
+- Supabase se postupně začalo používat jako základ pro online data, ale současně bylo potřeba víc řešit fallbacky a stabilitu při slabém internetu.
+
+## Přehled největších změn v.1 (350–399)
+- Výrazně se ladily hry, spodní lišta, Rotace a Statistiky.
+- Přibylo víc herních modulů a společný herní hub, včetně leaderboardů a online invite flow.
+- Piškvorky dostaly tvrdší AI, online režim a lepší návrat do rozehrané hry.
+- Snake dostal mobilní ovládání/joystick, 2048 a další hry se ladily do kompaktního mobilního layoutu.
+- Spodní lišta a aktivní stavy prošly více koly ladění kvůli iPhonu, safe-area a celkové čitelnosti.
+- Rotace a Statistiky dostaly více tile prvků, menší rozestupy a lepší zobrazení jmen/strojů.
+
+## Přehled největších změn v.1 (300–349)
+- Vznikal stabilnější PWA základ: service worker, manifest, offline fallback, cache a aktualizační hooky.
+- Rozdělovaly se části inline skriptů do samostatnějších modulů.
+- Stabilizovala se herní sekce, invite flow a první větší online/offline sync vrstvy.
+- Přibyly hry jako 2048, Snake a Flap Bird v mobilním layoutu.
+- Dashboard, spodní lišta a přihlášení se ladily kvůli menšímu chaosu při načítání a přepínání stránek.
+
+## Přehled největších změn v.1 (250–299)
+- Dashboard se rozšiřoval o další směny, absenci, procenta průběhu, výplatu, kantýnu/jídelnu a přehlednější stavové karty.
+- Jídelna a kantýna se sjednocovaly do přehlednějšího zobrazení s lepším výpočtem otevřeno/zavřeno a dalšího termínu.
+- Kalkulačky pro Frézky a Brusy se postupně zpřesňovaly, včetně výpočtů času, dávek a hotových kusů.
+- Mobilní layout se dál čistil, aby hlavní části aplikace byly použitelné bez nutnosti zoomu nebo posouvání mimo obrazovku.
+
+## Přehled největších změn v.1 (200–249)
+- Aplikace se posouvala z původního prototypu do stabilnější vícestránkové appky s Dashboardem, Rotací, Rozpisy, Statistikami a Kalkulačkami.
+- Začalo se víc řešit ukládání dat, export, verze buildu a kontrola toho, aby změny nezmizely mezi jednotlivými ZIPy.
+- Rozpisy a rotace se ladily podle reálného použití v práci, včetně směn, strojů, absencí a přehledů pro lidi.
+- Přibývaly první větší úpravy vzhledu a použitelnosti na mobilu.
+
+## Přehled největších změn v.0.xx až v.1 (199)
+- Vznikl základ aplikace Rotace a kalkulačky: směnová logika, základní dashboard, první kalkulačky a pracovní přehledy.
+- Přidávaly se stroje, jména, směny, první statistiky a základní exportní/logická vrstva.
+- Hlavní priorita byla funkčnost výpočtů a ruční ladění podle testování, ne ještě finální vzhled ani čistá architektura.
+- Postupně se ukázalo, že projekt potřebuje silnější pravidla pro verze, safepointy, navazování na poslední ZIP a pozdější refactor.
+
+## Poslední jednotlivé buildy v.1.1 (548)
+- Fáze 6 — Supabase hardening posunuta na cca 42 %.
+- Herní účty a herní statistiky mají krátkou lokální cache/fallback, takže při slabém internetu nezmizí poslední známé výsledky do prázdna.
+- Supabase čtení herních účtů/statistik se sdílí přes in-flight guard, aby více stejných požadavků neběželo paralelně.
+- Po uložení herní statistiky se příslušná cache leaderboardu vyčistí, aby se po zápisu zbytečně nedržel starý výsledek.
+- Přidané výraznější glass pozadí: Blue orbit a Magma lime.
+
+## Poslední jednotlivé buildy v.1.1 (547)
+- Fáze 6 — Supabase hardening posunuta na cca 34 %.
+- Herní pozvánky a online session operace používají společný Supabase timeout/retry guard.
+- Theme/Pozadí má pojistku pro opětovné aplikování po reloadu, pageshow, focusu a návratu do appky.
+- Přidané výraznější glass pozadí: Aurora punch, Violet storm, Sunset plasma a Polar mint.
+- Diagnostika aplikace ukazuje i aktuální zvolené pozadí.
+
+## Poslední jednotlivé buildy v.1.1 (546)
+- Nastavení → Theme/Pozadí: opravené klikání na varianty pozadí.
 - Přidané výraznější glass-friendly pozadí: Neon lagoon, Electric lime, Škoda electric a Candy glass.
 - Aktivní karta pozadí má výraznější glass zvýraznění podle akcentu zvoleného pozadí.
 - Tlačítko Aktualizovat je kontrastnější a víc navázané na akcent aktuálního pozadí.
-- Výpočty, hry, Supabase datový model ani spodní lišta beze změny.
 
-## v.1.1 (545)
-- Nastavení → Theme má nově sekci Pozadí pro volbu glass-friendly pozadí aplikace.
+## Poslední jednotlivé buildy v.1.1 (545)
+- Nastavení → Theme má sekci Pozadí pro volbu glass-friendly pozadí aplikace.
 - Přidané varianty pozadí: iOS mesh, Škoda glass, Světle zelená, Deep aurora, Ember glass a Původní RaK.
 - Pozadí mění atmosféru a kontrast glass prvků, ne rozložení ani velikosti.
-- Tlačítko Aktualizovat je výraznější, aby nesplývalo s průhlednými glass vrstvami.
 - Láďův režim / low-end režim používá jednodušší statické pozadí bez náročné dodatečné vrstvy.
 
-## v.1.1 (544)
+## Poslední jednotlivé buildy v.1.1 (544)
 - Kalkulačky / Brusy: vrácené barevné rozlišení indexů AD / AE / AH / AD volné / AE volné.
-- Barvy indexů jsou nově sladěné s průhledným iOS glass stylem, takže zůstávají barevné, ale pořád působí jako sklo.
+- Barvy indexů jsou sladěné s průhledným iOS glass stylem.
 - Výpočty, Supabase logika, hry ani rozložení spodní lišty beze změny.
-- Fáze 6 pokračuje bezpečným UI fixem, stav cca 26 %.
 
-## v.1.1 (543)
-- Fáze 6 — Supabase hardening pokračuje: cca 24 %.
-- Přidán timeout guard pro Supabase čtení/zápisy, aby se požadavky nemohly na mobilu nechat viset donekonečna.
+## Poslední jednotlivé buildy v.1.1 (543)
+- Přidán timeout guard pro Supabase čtení/zápisy, aby požadavky nemohly na mobilu viset donekonečna.
 - Zápisy přes Supabase mají u přechodných chyb jeden bezpečný retry a potom fallback do offline fronty.
 - Přidán krátký online write cooldown při čerstvě frontovaných změnách, aby se při slabém internetu neposílalo více zápisů najednou.
-- Diagnostika aplikace nově ukazuje Supabase timeouty, retry pokusy, fallbacky do fronty a cooldown skipy.
-- Realtime kanál posunutý na v543.
-- Další jemný iOS glass polish: vstupy, selecty, textarea, běžná tlačítka, některé kalkulační řádky a jídelní/rozpisové řádky mají průhlednější sklo se silnějším blur efektem.
-- Láďův režim / low-end režim dál vypíná náročnější blur vrstvy.
+- Diagnostika aplikace ukazuje Supabase timeouty, retry pokusy, fallbacky do fronty a cooldown skipy.
 
-## v.1.1 (542)
-- Fáze 6 Supabase hardening zahájená – první bezpečný krok bez změny databázového schématu.
-- Offline Supabase fronta má nově ochranný limit 120 položek, deduplikaci posledních změn rotací / nastavení strojů / rozpisů a ochranu proti příliš velkým položkám v localStorage.
-- Realtime připojení dostalo guard proti duplicitnímu připojování při rychlých návratech online / refresh událostech.
-- Diagnostika umí zobrazit stav Supabase hardeningu: délku fronty, limit, stav realtime a počty ořezaných / sloučených / odmítnutých položek.
-- iOS glass polish pokračuje další bezpečnou vrstvou: tabulkové obaly, admin karty, souhrny, profily a herní informační řádky jsou průhlednější a víc rozmazávají pozadí.
-- Láďův režim / low-end režim má blur efekty dál vypnuté nebo odlehčené.
+## Poslední jednotlivé buildy v.1.1 (542)
+- Fáze 6 Supabase hardening zahájená bez změny databázového schématu.
+- Offline Supabase fronta má ochranný limit 120 položek, deduplikaci posledních změn a ochranu proti příliš velkým položkám v localStorage.
+- Realtime připojení dostalo guard proti duplicitnímu připojování.
+- Diagnostika umí zobrazit délku fronty, limit, stav realtime a počty ořezaných/sloučených/odmítnutých položek.
 
-## v.1.1 (541)
+## Poslední jednotlivé buildy v.1.1 (541)
 - Fáze 5 game performance uzavřená na 100 %.
-- Globální live refresh už nespouští herní leaderboardy, pokud uživatel není přímo v herním hubu; tím se hry zbytečně neprobouzí na pozadí.
-- Diagnostika nově rozlišuje live refresh běhy a skipy leaderboardů.
+- Globální live refresh už nespouští herní leaderboardy, pokud uživatel není přímo v herním hubu.
 - iOS glass polish pokračuje napříč aplikací: panely, karty, dlaždice, modaly, navigační prvky a herní sekce jsou průhlednější a víc rozmazávají pozadí.
-- Láďův režim / low-end režim nové náročnější blur vrstvy dál vypíná, aby starší mobily netrpěly.
+- Láďův režim / low-end režim náročnější blur vrstvy dál vypíná.
 
-## v.1.1 (540)
-- Fáze 5 game performance dotažená na cca 98 %.
-- MutationObserver pro herní launch tiles je nově omezený hlavně na herní stránku, takže nesleduje zbytečně celou aplikaci.
-- Přidaný online refresh guard pro návrat internetu: profily/leaderboardy se obnoví jen při otevřeném herním hubu a nesahá do rozehrané hry.
-- Diagnostika rozšířená o skutečné rendery profilů/statistik/achievementů, cache hity leaderboardů, fresh loady, online refresh a ignorované observer změny.
-- Další bezpečný iOS glass polish pro herní shell, zpět tlačítko a herní ovládací tlačítka bez změny velikostí a pravidel her.
+## Poslední jednotlivé buildy v.1.1 (540)
+- MutationObserver pro herní launch tiles je omezený hlavně na herní stránku, takže nesleduje zbytečně celou aplikaci.
+- Přidaný online refresh guard pro návrat internetu: profily/leaderboardy se obnoví jen při otevřeném herním hubu.
+- Diagnostika rozšířená o rendery profilů/statistik/achievementů, cache hity leaderboardů, fresh loady, online refresh a ignorované observer změny.
 
-## v.1.1 (539)
-- Fáze 5: tišší MutationObserver pro launch tiles – rychlé změny DOM se sloučí a dlaždice se nepřekreslují při každé drobné změně.
+## Poslední jednotlivé buildy v.1.1 (539)
+- Tišší MutationObserver pro launch tiles – rychlé změny DOM se sloučí a dlaždice se nepřekreslují při každé drobné změně.
 - Sync profilů lépe pozná offline stav, skrytou/neaktivní herní stránku a zbytečný opakovaný sync.
-- Diagnostika počítá offline/hidden skipy profilů, běhy hub renderu, skipy aktivního shellu a dávky launch observeru.
-- Přidaný další postupný iOS glass polish pro vstupy, menší akční prvky a herní skládací sekce bez změny výpočtů.
-
-## v.1.1 (538)
-- Fáze 5: přidaný úsporný sync hráčských profilů – opakované online načtení se slučuje a používá krátkou cache, aby herní hub méně cukal.
-- Fáze 5: profily a achievementy se nepřekreslují, pokud se jejich HTML obsah nezměnil.
-- Fáze 5: leaderboard refresh má in-flight pojistku a v pozadí se zbytečně nespouští.
-- Diagnostika počítá přeskočené syncy profilů, přeskočené rendery profilů/achievementů a přeskočené leaderboard refresh pokusy.
-- iOS glass polish: herní hub, složka „Ve vývoji“, profily, statistiky a top výsledky mají jemnější glass vzhled; v Láďově režimu zůstávají efekty odlehčené.
-
-## v.1.1 (537)
-- Fáze 5: chytřejší render herního hubu – launch tiles a herní statistiky se nepřekreslují, když se jejich obsah nezměnil.
-- Fáze 5: herní statistiky mají lehký idle/debounce render, takže online refresh ani návrat z pozadí zbytečně netrhá UI.
-- Fáze 5: diagnostika nově počítá přeskočené renderování launch tiles/statistik a počet odložených stat renderů.
-
-## v.1.1 (536)
-- Kantýna/jídelna: popup otevírací doby má nový iOS glass vzhled.
-- V popupu je den uprostřed a otevírací doba je pod ním, ne vedle něj.
-- Přidaný první bezpečný základ pro jednotnější iOS glass styl celé aplikace bez zásahu do výpočtů a herních pravidel.
-- Fáze 5 pokračuje opatrně bez změn herní logiky; vizuální glass polish je oddělený od Láďova režimu.
-
-## v.1.1 (535)
-- Rozpisy: u nejbližší budoucí směny zůstává zelené zvýraznění, ale mizí nápis „další“.
-- Rozpisy / Měkota / Tvrdota: jmenné sloupce jsou cca o 5 % užší, datum/směna zůstává z předchozí úpravy užší.
-- Fáze 5: přidaný page lifecycle guard pro arcade hry, aby se na mobilu po zamknutí / návratu z pozadí chovaly klidněji.
-
-## v.1.1 (534)
-- Fáze 5: ochrana proti zbytečnému překreslení rozehrané hry při obnově herního hubu nebo online dat.
-- Arcade hry nově používají bezpečnější intervaly, které v pozadí a mimo herní obrazovku šetří výkon.
-- Leaderboard refresh v Láďově režimu používá delší cache, aby starší mobily méně tahaly data.
-- Hry v Láďově režimu mají lehčí přechody a kompaktnější herní statistiky bez změny pravidel her.
-
-## v.1.1 (533)
-- Spodní lišta: jemné dorovnání položky „Více“ níž, bez posunu panelu.
-- Rotace: větší horní prostor v docku se jmény pro A15/menší displeje, aby se aktivní jméno neusekávalo.
-- Rozpisy: užší sloupec Datum/směna u tabulek Měkota/Tvrdota.
-- Hry: všechny hry přesunuté do složky „Ve vývoji“.
-- Hráčské profily a herní statistiky: přihlášený hráč je první a rozbalený, ostatní jsou sbalení.
-
-## v.1.1 (532)
-- Spodní položka „Více“ je pořád mezi ostatními záložkami, ale je jemně posunutá níž, aby opticky nelítala nad řádek.
-- Kalkulačky: psací vstupy zůstávají menší, větší jsou jen klikací/navolovací a výpočtová tlačítka; tlačítko reload/reset je zase malé.
-- Brusy: zvětšené jsou i klikací volby stroje a indexů.
-- Statistiky / Stroje: dlaždice strojů jsou roztažené a drží jeden řádek.
-- Pokračování Fáze 5: drobný UI/performance polish bez zásahu do výpočtů.
-
-## v.1.1 (531)
-- Spodní položka „Více“ je zpět normálně mezi ostatními záložkami, jen zůstává užší.
-- V kalkulačkách jsou menší psací vstupy a větší klikací/navolovací tlačítka.
-- Rozpisy mají výraznější světle zelené zvýraznění aktuální a nejbližší směny.
-- Statistiky / Stroje jsou roztažené do jednoho řádku se čitelnější velikostí textu.
-- Pokračování Fáze 5: drobný UI/performance polish bez zásahu do výpočtů.
-
-## v.1.1 (530)
-- Spodní lišta: „Více“ je zpět normálně mezi ostatními záložkami, jen zůstává užší.
-- Kalkulačky: v Soustruhách, Frézkách a Brusech jsou klikací/vstupní políčka vyšší pro lepší ovládání na mobilu.
-- Rozpisy: aktuální směna a nejbližší budoucí směna jsou zvýrazněné.
-- Statistiky/Stroje: dlaždice strojů mají výšku a velikost textu jako jména, ale jsou užší, aby se vešly na jeden řádek.
-- Výzva k aktualizaci umí zobrazit číslo nové verze, pokud ho service worker předá aplikaci.
-
-## v.1.1 (530)
-- Spodní navigace: „Více“ má novou tvrdou pojistku přes CSS i runtime, aby bylo opravdu užší a výškově stejné jako ostatní položky.
-- Fáze 4 cleanup manager pokračuje kontrolou, že „Více“ je záměrně užší, ne stejně široké jako běžné záložky.
-
-## v.1.1 (530)
-- Spodní navigace: položka „Více“ je užší, ale výškově srovnaná s ostatními záložkami.
-- Fáze 4 cleanup manager: audit spodní navigace bere „Více“ jako záměrně užší položku, ne jako chybu.
-
-## v.1.1 (530)
-- Spodní panel jako celek zůstává beze změny; položka „Více“ má sjednocený box, výšku a vnitřní zarovnání s ostatními záložkami.
-- Odstraněný ruční posun položky „Více“, který podle screenshotu nechával její spodní část opticky mimo rytmus ostatních položek.
-- Fáze 4: cleanup manager pokračuje kontrolou rozměrů a zarovnání všech položek spodní navigace.
-
-## v.1.1 (530)
-- Spodní panel jako celek zůstává beze změny; položka „Více“ je jen jemně posunutá dolů, aby spodní hrana seděla s ostatními záložkami.
-- Statistiky: výběr strojů je kompaktnější, s menšími mezerami a šesti položkami v jednom řádku.
-- Fáze 4: cleanup audit nově sleduje i spodní dorovnání položky „Více“ a základní stav výběru strojů ve Statistikách.
-
-## v.1.1 (530)
-- Spodní panel jako celek zůstává beze změny.
-- Položka „Více“ je snížená na stejný výškový rytmus jako ostatní záložky.
-- Fáze 4: cleanup manager pokračuje jemným guardem pro spodní navigaci bez dalších zásahů do panelu.
-
-## v.1.1 (530)
-- Spodní panel: samotný panel zůstává beze změny, dorovnané jsou jen ostatní záložky na výšku položky „Více“.
-- Ikony a popisky běžných záložek mají stejný výškový rytmus jako „Více“, aby nepůsobily níž.
-- Fáze 4: cleanup audit nově hlídá zarovnání všech položek spodní navigace, nejen položky „Více“.
-
-## v.1.1 (530)
-- Spodní panel: položka „Více“ je dorovnaná do stejné výšky jako ostatní záložky.
-- Ikona tří teček ve „Více“ dostala stejný ikonový box jako ostatní položky navigace.
-- Fáze 4: cleanup audit nově hlídá i základní strukturu spodní navigace a zarovnání položky „Více“.
-
-## v.1.1 (530)
-- Dashboard: informace o směně D je rozdělená do dvou řádků.
-- Řádek „bude chybět…“ je nově samostatně pod časem začátku směny D.
-- Fáze 4: cleanup audit nově hlídá i strukturu řádku směny D v horní kartě Dashboardu.
-
-## v.1.1 (530)
-- Dashboard: řádek směny D je centrovaný podle celé horní karty, ne podle odsazeného textového sloupce.
-- Opravený posun celého bloku „Směna D začíná za…“ doprava.
-- Fáze 4 zůstává v rozpracovaném stavu, šlo hlavně o korekci dashboard polish.
-
-## v.1.1 (530)
-- Start Fáze 4: cleanup manager audit začíná hlídat Dashboard karty, ikonky a hodnoty.
-- Láďův režim nově bezpečně odlehčuje i Dashboard: méně efektů, menší mezery a kompaktnější karty.
-- Dashboard v Láďově režimu má explicitní pojistky, aby se neschovaly ikonky ani data.
-
-## v.1.1 (530)
-- Dashboard: finálně dorovnaný řádek směny D mírně doleva, aby opticky neseděl vpravo.
-- Dashboard: řádek směny D má vlastní vnitřní `dashboardHeroLine3Pill` pro stabilnější centrování.
-- Fáze 3: dokončen finální audit Láďova režimu pro starší/slabší Androidy.
-- Láďův režim: doplněné kompaktní guardy pro modaly, dashboard, kalkulačky, Rotace a hry.
-
-## v.1.1 (530)
-- Dashboard: bezpečná obnova renderu karet, aby se znovu zobrazily ikonky i hodnoty.
-- Dashboard: vrácen stabilnější render z předchozí funkční verze a doplněny nulové pojistky pro jídelnu/kantýnu.
-- Láďův režim: optimalizace už nesmí skrývat dashboardové ikonky/data ani agresivně ořezávat karty.
-- Fáze 3: pokračování pozastavené, dokud Dashboard nebude potvrzený jako OK.
-
-## v.1.1 (530)
-- Dashboard: pokus o opravu fallback renderu ikon a hodnot v kartách.
-- Dashboard: řádek směny D znovu srovnaný opticky na střed.
-- Láďův režim: dashboardové karty měly bezpečnější layout, ale v praxi bylo potřeba další zotavení ve verzi 514.
-
-## v.1.1 (530)
-- Dashboard: řádek směny D je centrovaný přes celou hero kartu, ne podle posunutého vnitřního obsahu.
-- Rotace: aktivní kliknuté jméno ve spodním docku už se nezvětšuje přes horní hranu, takže se neořezává horní čára.
-- Láďův režim: přidané kompaktnější rozložení pro starší Androidy – nižší karty, menší mezery, úspornější spodní lišta a kompaktnější dock jmen.
-- Diagnostika: text detekce upravený na „Starší/slabší zařízení“, aby bylo jasnější, že cílí hlavně na slabší/starší mobily.
-- Fáze 3: pokračování výkonového a layoutového odlehčení bez zásahu do výpočtů.
-
-
-## v.1.1 (530)
-- Dashboard: řádek se směnou D je vrácený na skutečný optický střed bez roztahování doprava.
-- Rotace: aktivní kliknuté jméno ve spodním docku už nemá oříznutou horní čáru.
-- Diagnostika: přesnější detekce slabšího zařízení, aby iPhone 13 Pro Max nespadl omylem do „slabší zařízení“ jen kvůli iOS/Safari údajům.
-- Nastavení: starý automaticky uložený Láďův režim z chybné detekce se na silnějším iPhonu automaticky vypne, ruční volba zůstává zachovaná.
-- Fáze 3: pokračování Láďova režimu – lehčí vykreslování vybraných drobných prvků bez změny výpočtů.
-
-## v.1.1 (530)
-- Dashboard: řádek směny D opticky srovnaný na střed hero karty.
-- Rotace: klikací jména dole už nemají společné ohraničení celého bloku, ohraničené jsou jen jednotlivé položky.
-- Rotace: jména a stroje v detailu drží jednotnou barvu.
-- Nastavení: sloučené „Méně animací“ do „Láďova režimu“ a cache + tvrdé obnovení do jedné servisní akce.
-- Fáze 3: lehčí vykreslování rozšířené i na nastavení/menu.
-
-## v.1.1 (530)
-- Nastavení: odlehčený režim přejmenovaný na „Láďův režim“.
-- Diagnostika aplikace nově používá stejný název „Láďův režim“.
-- Fáze 3 pokračuje: přidané lehčí render guardy pro karty, modaly, kalkulačky a hry.
-- Fáze 3: ukládá se stav detekce slabšího zařízení do diagnostických dat aplikace.
-
-## v.1.1 (530)
-- Dashboard: zkrácený text aktivní směny na „Končí za…“.
-- Dashboard: řádek směny D v horním panelu je vycentrovaný.
-- Fáze 3: start lightweight mode foundation – silnější omezení blurů, stínů, animací a filtrů v lehkém režimu.
-- Fáze 3: rozšířená detekce slabšího zařízení podle jader, paměti, Data Saveru a reduced motion.
-
-## v.1.1 (530)
-- Fáze 2 calcPanel system uzavřena: finální sjednocení šířek, scroll ochrany a vnitřních stacků kalkulaček.
-- Přidaný finální runtime audit kalkulaček: hlídá viditelnost neaktivních kalkulaček, chybějící výsledkové boxy a chybějící jednotné třídy tlačítek.
-- Doplněné závěrečné CSS guard rails pro kalkulačkové stránky, aby panely neroztahovaly layout a nepřekrývala je spodní lišta.
-
-## v.1.1 (530)
-- Rotace: klikací seznam jmen je pevně ukotvený dole nad spodní lištou.
-- Rotace: po kliknutí na jméno zůstává jen nápověda k QR kódu, bez popisku pro jedno klepnutí.
-- Rotace: sjednocená barva jména/směny a stroje v přehledu/detailu.
-- Fáze 2: doplněný finální guard pro dlouhé texty ve výsledcích kalkulaček.
-
-## v.1.1 (530)
-- Dashboard hero text mimo aktivní směnu zkrácený na „Další směna v práci…“ a samostatně „Začíná za…“.
-- Rotace: klikací seznam jmen je posunutý dolů nad spodní lištu.
-- Rotace přehled: jména a stroje jsou o něco menší a vizuálně odlišené.
-- Fáze 2: doplněný další bezpečný calcPanel guard pro vnitřní stacky a výsledkové texty.
-
-## v.1.1 (530)
-- Fáze 2 pokračuje: sjednocené další bezpečné šířky a overflow guardy kalkulačkových panelů.
-- Přesčasové nedělní noční směny zadané pro rok 2026 se nově promítají i do směnové logiky, nejen do kantýny/jídelny.
-- Na přesčasovou neděli se nedělní noční směna počítá od 18:00 do 6:00, aby dashboard seděl s otevřením kantýny/jídelny.
-- Dashboard: pole Výplata má kratší název a pevnější řádek s ikonou, aby název nespadl pod ikonku.
-- Rotace: v přehledu příští směny se dole zobrazují jen přítomní lidé; chybějící jsou přesunutí nahoru do řádku „Přítomno… / Chybí…“.
-- Rotace: přehled má větší písmo a seznam jmen je posunutý níž.
-
-## v.1.1 (530)
-- Opravená spodní lišta: pevně fixovaná dole, centrovaná a bez ujetí/odříznutí levého kraje.
-- Vyčištěné poškozené CSS pravidlo ve starších overridech spodní lišty.
-- Fáze 2 pokračuje: kalkulačkové stránky mají větší spodní rezervu a sbalené/rozbalené calcPanel detaily jsou sjednocené.
-
-## v.1.1 (530)
-- Fáze 2 calcPanel system: sjednocené reset chování kalkulaček.
-- Reset u Frézek, Brusů a Pračky čistí i výsledkové karty.
-- Prázdné výsledkové karty se neschovávají jako prázdné boxy v layoutu.
-- Výsledky Frézek, Brusů a Pračky mají jednotnou strukturu title / hlavní řádky / doplňkový text.
-- Přidaný další kompaktní guard pro zavřené details panely.
-
-## v.1.1 (530)
-- Fáze 2: opraven scope kalkulačkových stránek, aby se Soustruhy/Frézky/Brusy/Pračka nezobrazovaly dole na ostatních stránkách.
-- Kalkulačkové stránky jsou nově viditelné jen jako `.page.active`, samotný `calcPage` už globálně nepřebíjí skrytí stránky.
-- Přidaný lehký runtime audit `phase-2-calc-scope`, který hlídá únik neaktivních kalkulaček do layoutu.
-- Pokračování sjednocení calcPanel systému: bezpečné šířky panelů, gridů a info karet v kalkulačkách.
-
-## v.1.1 (530)
-- Start Fáze 2: první společný calcPanel systém pro kalkulačky.
-- Sjednocené kompaktní panely, tlačítka výpočtů, výsledkové karty a vstupy napříč Soustruhy, Frézky, Brusy a Pračka.
-- Panely Frézky/Brusy mají společné CSS proměnné místo dalších náhodných výšek a odsazení.
-- Bez zásahu do samotných výpočtů; cílem je stabilní základ pro další čištění kalkulaček.
-- Verze sjednocena napříč aplikací a service worker cache navýšena.
-
-## v.1.1 (530)
-- Rotace: v detailu po kliknutí na jméno jsou řádky směn lehce užší/kompaktnější.
-- Velikost textu v řádcích Rotace zůstává stejná jako ve v.1.1 (530).
-- Verze sjednocena napříč aplikací a service worker cache navýšena.
-
-## v.1.1 (530)
-- Opraveno zarovnání spodního panelu: panel je níž u spodního okraje, centrovaný a neujíždí mimo levý kraj.
-- Spodní navigace už se na mobilu nespoléhá na vodorovný posuv; položky se bezpečně rozpočítají do dostupné šířky.
-- Zmenšené safe-area odsazení uvnitř panelu, aby bar nepůsobil zbytečně vysoko.
-
-## v.1.1 (530)
-- Post-F1 dokončovací balík pro Dashboard, Rotace a spodní panel.
-- Dashboard znovu primárně drží aktuální směnu v práci a její odpočet do konce.
-- Pod hlavním stavem je samostatný řádek pro směnu D: začátek/aktivní stav a absence.
-- Rotace má ještě větší popisky datum/směna/stroj v detailu osoby.
-- Spodní panel má finální jemný polish aktivní položky a čitelnější rozměry před přechodem na další fázi.
-
-## v.1.1 (530)
-- Dashboard znovu odděluje aktuální směnu od referenční směny D.
-- Hlavní horní stav ukazuje, která směna je právě v práci a za jak dlouho končí.
-- Pod tím je samostatná informace pro směnu D: kdy začíná a kdo bude chybět.
-- Karta odpočtu už sleduje aktuálně běžící/nejbližší směnu všech týmů, ne pouze směnu D.
-- V Rotaci jsou popisky data, směny a stroje v detailu jména zvětšené pro lepší čitelnost.
-
-## v.1.1 (530)
-- Dashboard je přepnutý na hlavní referenční směnu D: ukazuje, jestli je D právě v práci, nebo kdy D nastupuje příště.
-- Karta „Zbývá/Začíná“ teď také sleduje směnu D, ne nejbližší libovolnou směnu.
-- Jídelna a kantýna při otevřeném stavu ukazují i čas „otevřeno do“.
-- Rotace: jmenný seznam dole je užší zhruba o 10 %, aby se 10 jmen lépe vešlo do dvou řádků.
-
-## v.1.1 (530)
-- Dashboard hero nově při pauze mezi směnami ukazuje nejbližší další směnu a za jak dlouho začne.
-- Karta „Zbývá“ se mimo aktivní směnu přepne na „Začíná“ a ukáže odpočet + konkrétní směnu.
-- Přidaný robustnější fallback pro delší odstávky/svátky, aby dashboard nekončil jen pomlčkou.
-
-## v.1.1 (530)
-- Rotace: detail po kliknutí na jméno teď ukazuje 7 směn dohromady: předchozí směnu a dalších 6 navazujících směn.
-- Rotace: karta směny má vlevo datum + směnu a vpravo stroj/cíl.
-- Rotace: zvětšené písmo v detailu směn pro lepší čitelnost na mobilu.
-
-## v.1.1 (530)
-- Post-F1 Rotace UX: po kliknutí na jméno se ukazuje čistší krátký výpis nejbližších směn bez rušivých souhrnných řádků „Minulá směna“ a „Aktuálně“.
-- Výpis je zúžený na předchozí směnu + tři nejbližší směny, aby sekce na mobilu nebyla zbytečně dlouhá.
-- QR kód se nově drží podle původního zadání až na třetí rychlé klepnutí na stejné jméno.
-- Verze sjednocena v core.js, sw.js, komentáři buildu a changelogu.
-
-## v.1.1 (530)
-- Fáze 1 uzavřena finálním runtime auditem základních DOM prvků, CSS vazeb a duplicitních ID.
-- Service worker má doplněné pozdě načítané CSS soubory a lokální ikonky dashboardu/spodní lišty do app shell cache.
-- Doplněné poslední bezpečné safe-area guard rails pro spodní lištu a scroll na mobilu.
-- Export ZIPu doplněn o lifecycle.js, games-arcade.js, pozdě načítané CSS soubory a lokální ikonky.
-- Verze sjednocena napříč core.js, sw.js, komentářem buildu a exportem.
-
-## v.1.1 (530)
-- Exact duplicate CSS rule blocks were removed from styles-inline-legacy.css a styles-games.css, aby se snížil override noise.
-- Build metadata, cache i assets byly srovnány na `485`.
-- HTML/JS cleanup pokračuje bez zásahu do layout baseline.
-
-
-## v.1.1 (530)
-- Sjednocené build metadata: verze, cache a viditelnější komentáře teď sedí napříč HTML, JS, CSS i changelogem.
-- Kalendář, E-portal a jídelní lístek zůstávají na stabilním napojení; bez zásahu do layoutu.
-- CSS cleanup pokračuje bez rozbití baseline UI.
-
-## v.1.1 (530)
-- Kalendář na dashboardu je napojený přes samostatný binding s lockem proti dvojímu spuštění a bez inline onclick.
-- E-portal a jídelní lístek zůstávají přes tvrdý externí handler s pevným cílovým odkazem.
-- Verze a cache byly posunuty na 449.
-
-## v.1.1 (530)
-
-- E-portal fix + in-app calendar iframe + CSS stabilization: poslední override vrstva byla vytažená do samostatného souboru.
-- Zatím bez změny layoutu, bottom nav i kalkulačky zůstávají v baseline stavu.
-- Připravený základ pro další CSS stabilizační krok bez rozbití UI.
-
-## v.1.1 (530)
-
-- Spodní panel má menší tlačítka a těsnější mezery mezi nimi.
-- Kalkulačky na Frézkách a Brusech jsou znovu vyrovnané: sbalené bloky sedí pod sebou, Brusy mají stejné navolení brusu i indexu a panel s aktivním brusem/indexem je kompaktnější.
-- Pole pro přesnější výpočet je větší a přehlednější.
-
-## v.1.1 (530)
-
-- Spodní lišta je na iPhonech (vč. 13 Pro Max) blíž ke spodnímu okraji a po stranách – konec zbytečně velkého rámu kolem nav baru.
-- Sbalená rozklikávací pole parametrů kalkulaček (brusy + frézky) jsou výrazně nižší a kompaktnější, aby zabírala méně místa.
-
-## v.1.1 (530)
-
-- Spodní lišta je přizpůsobená víc na šířku, položka „Více“ je užší a zbytek tlačítek se rozprostírá přirozeněji.
-- Aktivní první položka už není useknutá vlevo a lišta drží líp na menších displejích.
-- V administraci rozpisů jsou roky a měsíce oddělené do dvou rozklikávacích menu s aktuálním měsícem předvybraným v základu.
-- Z editovatelných rozpisů mizí ruční křížky a odstranění jména je řešené rovnou klikem na konkrétní vyplněné pole.
-- Verze, cache i build labely jsou posunuté na novou 427.
-
-# Rotace a kalkulačky
-
-## v.1.1 (530)
-
-- Dashboardové ikonky jsou větší a výraznější, včetně výplaty, a spodní lišta má o něco větší záložky.
-- V Rotaci jde kliknout do prázdného prostoru a vrátit se zpět do přehledu; po výběru jména se ukazuje i jedna minulá směna.
-- Kalkulačky Brusy a Frézky jsou kompaktnější: dvouřádkový přehled, menší rozklikávací bloky a těsnější layout.
-- Herní profily a achievementy se rozšiřují na všechny hry a profilový systém se připravuje na rank/XP vrstvu.
-- O aplikaci má jemnější skupiny verzí a jasnější popisky od nejnovějších buildů po nejstarší.
-- Supabase propojení a sync flow zůstávají zkontrolované.
-
-
-# Rotace a kalkulačky
-
-## v.1.1 (530)
-- Dashboardové ikonky Kalendář a Jídelna jsou přiblížené původnímu stylu a jsou jednodušší, aby nepůsobily rozsypaně.
-- Herní statistiky se po této verzi resetují na nulu, hráč 4157 je z profilu vyhozený a další sync už tenhle starý balast netahá zpátky.
-- Profily, achievementy i herní statistiky mají stejný obal a po přihlášení se správně odemykají.
-- Spodní lišta drží pevně dole i na stránkách se scrollováním.
-- Eportal ikonka zůstává ve zjednodušeném neonovém stylu.
-- Update manager a popup zůstávají aktivní pro novou cache.
-
-## v.1(387)
-- Statistiky už neukazují popisky typu „Klepni na …“.
-- Spodní lišta je posunutá o chlup níž a rozpisy mají víc prostoru pod sebou.
-- Administrace má užší a sjednocenější pole pro stroje i rozpisy, včetně měsíční kontroly volných jmen.
-
-## v.1(386)
-- Rozpisy v administraci jsou kompaktnější a líp se vejdou na šířku.
-- Nové hry mají bezpečnější druhý pokus při vykreslení, aby se hned po otevření neukázala prázdná obrazovka.
-- U absencí je zadávání jednodušší: zůstalo to hlavně na datum, jméno a kód.
-- V rozpisových polích jsou nápovědy jmen podle dne, takže se snáz hlídají kolize.
-- Verze i cache jsou posunuté na 386.
-
-
-## v.1(383)
-- Opravené centrování spodní lišty na širších displejích.
-- Vrácené a zúžené šířky rozpisů pro tvrdotu, měkotu i absence.
-- Hry už se nenačítají do prázdna a mají bezpečnější render fallback.
-- Verze i cache jsou posunuté na 383.
-
-## v.1(382)
-- Ve hrách přibyly všechny plánované nové moduly v jednotném glass/iOS stylu, včetně hubu, statistik a leaderboardů.
-- Aim Trainer, Reaction Test, Tetris, Space Shooter, Brick Breaker, Doodle Jump, Bubble Shooter, Sudoku, Minesweeper, Memory, Bomberman mini i denní challenge jsou nově součástí herní části.
-- Verze i cache jsou posunuté na 382.
-
-## v.1(375)
-- Frézky i Brusy jsou po otevření zavřené a jejich rozbalování je přehlednější.
-- U Brusů má teď i sekce „Kdy bude hotovo“ vlastní přesnější výpočet, nejen odkaz na horní kalkulačku.
-- Verze i cache jsou posunuté na 375.
-
-## v.1(372)
-- Statistiky mají ještě menší rozestupy mezi stroji, aby se vešlo všech 6 do jednoho řádku.
-- Build a cache verze jsou srovnané na 372.
-
-# Changelog
-
-## v.1(370)
-- Spodní panel je ještě o chlup čistší, s rovnoměrnějším vnitřním odsazením a lepším safe-area odstupem na iPhonu.
-- Rotace drží příští směnu nahoře v jedné řádce a pod ní ukazuje jméno + stroj.
-- Statistiky mají těsnější rozestupy mezi stroji a součet práce + absence drží 73 i u částečných absencí.
-- Ve hrách se jméno účtu dotahuje ze Supabase i při přepnutí na jiný účet a druhý blok s přihlášením je pryč.
-
-## v.1(369)
-- Spodní lišta má upravené bloky, aktivní stav a menší mezeru u iPhonu.
-- Rotace teď ukazuje příští směnu jako jeden řádek a pod ní jména s jejich stroji.
-- Statistiky počítají částečné absence jako 0,5 práce a 0,5 absence a úpravy mezer jsou těsnější.
-- Hry umí dohledat i jiné účty ze Supabase a Snake má joystick posunutý výš.
-
-## v.1(368)
-- Přihlášení ve hrách teď dovolí přepsat aktivní účet bez schovávání formuláře.
-- Spodní lišta je na iPhonu výš, ale vypadá kompaktněji; bloky jsou o něco menší.
-- Rotace ukazuje příští směnu čistěji vedle nadpisu, Statistiky mají menší mezery mezi stroji.
-- Snake má viditelný a funkční virtuální joystick, který není schovaný za lištou.
-
-## v.1(366)
-- Spodní lišta je nižší, ale ikonky jsou výraznější a aktivní položka víc vystupuje.
-- Rotace má menší text ve výběru jmen, Statistiky širší a přehlednější tile prvky a Snake posunuté ovládání výš.
-- Piškvorky se dají opustit přes spodní lištu bez křížku, mají upravenější menu a jasnější invite flow.
-
-## v.1(365)
-- Zmenšená lišta, větší ikonky, upravená Rotace a Statistiky.
-- Snake dostal funkční virtuální joystick mimo herní plochu.
-- Piškvorky mají oddělené menu režimů a lepší online invite flow s přímým otevřením z odkazu.
-
-## v.1(363)
-
-- Dashboard teď u kantýny a jídelny skrývá dnešní datum, zítra ukazuje jako „Zítra“ a další termín drží na vlastním řádku.
-- Spodní lišta dostala větší ikonky, kompaktnější vyvážení a výraznější aktivní stav.
-- Rotace a Statistiky mají srovnanější výšku tile prvků, plus seznam ve spodku rotace je posunutý výš nad lištu.
-- Snake dostal skutečně vložený joystick i tvrdší swipe/touch ovládání.
-- Piškvorky se po otevření vrací do menu, umí pokračovat v rozehrané hře a AI víc hlídá hrozby.
-
-## v.1(364)
-
-- Doty u kantýny a jídelny jsou větší a červená je výraznější fosforově rudá.
-- Spodní lišta dostala ještě větší ikonky a „Více“ zůstalo úzké a vycentrované.
-- Rotace má menší spodní seznam jmen a Statistiky větší tile prvky.
-- Herní přehled na první stránce se teď dotahuje i z online dat, aby všichni viděli aktuální stav.
-
-# Rotace a kalkulačky
-
-## v.1(367)
-- Dashboard a spodní lišta dostaly další kompaktější ladění, titul Rotace a Kalkulačky je zřetelněji rozdělený do dvou řádků.
-- Rotace má vyšší výběrové bloky jmen a přehled příští směny je čistší: nahoře je jedna souhrnná budoucí směna, pod ní už jen bloky jméno + stroj.
-- Statistiky mají užší stroje, menší písmo a Piškvorky dostaly upravený invite flow, těsnější hrací pole a výš posunuté Snake ovládání.
-
-## v.1(362)
-- Ztišily se zbytečné alerty v herní části a admin ukládání běží víc inline.
-- Piškvorky, 2048, Snake i Flap Bird zůstávají v kompaktním mobile-first layoutu.
-- Herní sync, leaderboardy a Supabase napojení dál drží poslední stabilní základ.
-
-## v.1(345)–v.1(350)
-- Hry jsou kompaktnější, mobilnější a bez zbytečných ovládacích křížů.
-- Piškvorky mají online sync, top 10 leaderboardy a tvrdší AI blokování.
-- Supabase dostal další cleanup, indexy pro herní lookupy a bezpečnější napojení.
-- Changelog je zkrácený do větších milníků místo dlouhého seznamu každé verze.
-
-## v.1(323)–v.1(344)
-- Stabilizovala se herní sekce, invite flow a herní statistiky.
-- Přibyly 2048, Snake a Flap Bird v mobilním layoutu.
-- Spodní lišta, přihlášení a online/offline sync dostaly kompaktnější chování.
-- Inline skripty se začaly rozdělovat do samostatných modulů.
-
-## v.1(310)–v.1(322)
-- Service worker, manifest a offline fallback se ustálily do PWA základu.
-- Přibyly online/offline refresh hooky a sync queue.
-- Rotace a kalkulačky se dál refaktorovaly do stabilnějšího runtime.
-
-## v.1(291)–v.1(309)
-- Dashboard dostal čistší loading stavy a menší vizuální chaos.
-- Piškvorky se průběžně ladily proti zamrznutí po tahu AI.
-- Layout aplikace se dál zjemňoval pro mobil.
-
-## v.1(250)–v.1(289)
-- Jídelna a kantýna se sjednocovaly do přehlednějšího zobrazení.
-- Dashboard ukazoval další směny, absenci a procenta průběhu.
-- Kalkulačky pro frézky a brusy se postupně zpřesňovaly.
-
-## v.1.1 (530)
-- Spodní navigace: položka „Více“ je přesunutá mimo scroll jako samostatná úzká položka.
-- Vyčištěné přebíjející nastavení šířky „Více“ a nastavená stabilní užší šířka se stejnou výškou jako ostatní záložky.
-- Pokračování Fáze 4 cleanup manageru.
+- Přidaný postupný iOS glass polish pro vstupy, menší akční prvky a herní skládací sekce.
+
+## Poslední jednotlivé buildy v.1.1 (538)
+- Přidaný úsporný sync hráčských profilů – opakované online načtení se slučuje a používá krátkou cache.
+- Profily a achievementy se nepřekreslují, pokud se jejich HTML obsah nezměnil.
+- Leaderboard refresh má in-flight pojistku a v pozadí se zbytečně nespouští.
+
+## Poslední jednotlivé buildy v.1.1 (537)
+- Herní hub se nepřekresluje zbytečně, když se obsah nezměnil.
+- Launch tiles mají ochranu proti opakovanému renderu.
+- Herní statistiky mají lehčí odložený render.
+- Diagnostika počítá přeskočené rendery herních dlaždic/statistik a odložené rendery statistik.

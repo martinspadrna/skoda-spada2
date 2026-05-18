@@ -33,6 +33,26 @@
       lastRetryAt: null,
       lastQueuedFallbackAt: null,
       lastCooldownSkipAt: null
+    },
+    cacheGuard: {
+      accountCacheHits: 0,
+      accountCacheWrites: 0,
+      statsCacheHits: 0,
+      statsCacheWrites: 0,
+      uiCacheHits: 0,
+      uiCacheWrites: 0,
+      uiSettingsLoads: 0,
+      uiSettingsSaves: 0,
+      uiSettingsSaveQueued: 0,
+      uiSettingsSaveDeferred: 0,
+      uiSettingsSaveErrors: 0,
+      uiSettingsLoadFallbacks: 0,
+      uiSettingsSharedLookups: 0,
+      staleFallbacks: 0,
+      sharedReadJoins: 0,
+      lastCacheHitAt: null,
+      lastCacheWriteAt: null,
+      lastSharedReadAt: null
     }
   };
 
@@ -47,7 +67,8 @@
     'machine_settings',
     'rotation_month_entries',
     'gomoku_win',
-    'game_stat'
+    'game_stat',
+    'game_ui_settings'
   ]);
 
   function hasClient() {
@@ -141,7 +162,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v543');
+      const channel = client.channel('rak-public-live-v552');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -187,7 +208,13 @@
   const LOCAL_QUEUE_KEY = 'rotace_supabase_queue_v1';
   const LOCAL_ANNOUNCEMENTS_KEY = 'rotace_supabase_announcements_v1';
   const LOCAL_MACHINE_SETTINGS_KEY = 'rotace_supabase_machine_settings_v1';
+  const LOCAL_GAME_ACCOUNTS_KEY = 'rotace_supabase_game_accounts_v1';
+  const LOCAL_GAME_STATS_PREFIX = 'rotace_supabase_game_stats_v1:';
+  const LOCAL_GAME_UI_SETTINGS_PREFIX = 'rotace_supabase_game_ui_settings_v1:';
+  const GAME_UI_SETTINGS_TYPE = '__profile_ui';
+  const SUPABASE_GAME_CACHE_TTL_MS = 5 * 60 * 1000;
   let flushPromise = null;
+  const sharedReadPromises = new Map();
 
   function safeReadJson(key, fallback) {
     try {
@@ -207,6 +234,58 @@
     } catch (err) {
       return false;
     }
+  }
+
+  function readTimedCache(key, maxAgeMs) {
+    const item = safeReadJson(key, null);
+    if (!item || typeof item !== 'object' || !Array.isArray(item.rows)) return null;
+    const savedAt = Number(item.savedAt || 0);
+    const age = savedAt ? Date.now() - savedAt : Number.POSITIVE_INFINITY;
+    return {
+      rows: item.rows,
+      savedAt,
+      age,
+      fresh: age <= Math.max(1000, Number(maxAgeMs) || SUPABASE_GAME_CACHE_TTL_MS)
+    };
+  }
+
+  function writeTimedCache(key, rows, kind) {
+    if (!Array.isArray(rows)) return false;
+    const ok = safeWriteJson(key, {
+      savedAt: Date.now(),
+      version: window.APP_VERSION || '',
+      rows
+    });
+    if (ok) {
+      state.cacheGuard.lastCacheWriteAt = Date.now();
+      if (kind === 'accounts') state.cacheGuard.accountCacheWrites += 1;
+      if (kind === 'stats') state.cacheGuard.statsCacheWrites += 1;
+      if (kind === 'ui') state.cacheGuard.uiCacheWrites += 1;
+    }
+    return ok;
+  }
+
+  function rememberTimedCacheHit(kind, cache) {
+    state.cacheGuard.lastCacheHitAt = Date.now();
+    if (cache && !cache.fresh) state.cacheGuard.staleFallbacks += 1;
+    if (kind === 'accounts') state.cacheGuard.accountCacheHits += 1;
+    if (kind === 'stats') state.cacheGuard.statsCacheHits += 1;
+    if (kind === 'ui') state.cacheGuard.uiCacheHits += 1;
+  }
+
+  async function runSharedSupabaseRead(key, work) {
+    const readKey = String(key || '').trim();
+    if (!readKey) return await work();
+    if (sharedReadPromises.has(readKey)) {
+      state.cacheGuard.sharedReadJoins += 1;
+      state.cacheGuard.lastSharedReadAt = Date.now();
+      return await sharedReadPromises.get(readKey);
+    }
+    const promise = Promise.resolve().then(work).finally(() => {
+      sharedReadPromises.delete(readKey);
+    });
+    sharedReadPromises.set(readKey, promise);
+    return await promise;
   }
 
   function saveLocalSnapshot(rotation, machineSettingsRows) {
@@ -251,6 +330,7 @@
     if (type === 'rotation_month_entries') return type + ':' + String(task && (task.monthStart || task.label) ? (task.monthStart || task.label) : '').trim();
     if (type === 'gomoku_win') return type + ':' + String(task && task.entry && (task.entry.id || task.entry.player_name || task.entry.created_at) ? (task.entry.id || task.entry.player_name || task.entry.created_at) : '').trim();
     if (type === 'game_stat') return type + ':' + String(task && task.entry && (task.entry.id || task.entry.game_type || task.entry.account_number || task.entry.created_at) ? (task.entry.id || task.entry.game_type || task.entry.account_number || task.entry.created_at) : '').trim();
+    if (type === 'game_ui_settings') return type + ':' + String(task && task.entry && (task.entry.account_number || task.entry.accountNumber) ? (task.entry.account_number || task.entry.accountNumber) : '').trim();
     return type || 'unknown';
   }
 
@@ -287,7 +367,7 @@
       const normalized = normalizeQueueTask(item);
       if (!normalized) return;
       const key = queueTaskKey(normalized);
-      if (key && (normalized.type === 'rotation_state' || normalized.type === 'machine_settings' || normalized.type === 'rotation_month_entries')) {
+      if (key && (normalized.type === 'rotation_state' || normalized.type === 'machine_settings' || normalized.type === 'rotation_month_entries' || normalized.type === 'game_ui_settings')) {
         if (keyed.has(key)) state.queueGuard.deduped += 1;
         keyed.set(key, normalized);
       } else {
@@ -529,7 +609,11 @@
   async function loadGameInviteByCode(client, code) {
     const inviteCode = String(code || '').trim().toUpperCase();
     if (!inviteCode) return { ok: false, error: new Error('Chybí kód pozvánky.') };
-    const { data, error } = await client.from('game_invites').select('*').eq('invite_code', inviteCode).maybeSingle();
+    const { data, error } = await runSupabaseOperation('game_invites.lookup', () => client
+      .from('game_invites')
+      .select('*')
+      .eq('invite_code', inviteCode)
+      .maybeSingle(), { mode: 'read' });
     if (error) throw error;
     return { ok: true, invite: data || null };
   }
@@ -548,7 +632,11 @@
       expires_at: null,
       payload: payload && payload.payload && typeof payload.payload === 'object' ? payload.payload : {}
     };
-    const { data: inviteData, error: inviteErr } = await client.from('game_invites').insert([inviteRow]).select('*').maybeSingle();
+    const { data: inviteData, error: inviteErr } = await runSupabaseOperation('game_invites.create', () => client
+      .from('game_invites')
+      .insert([inviteRow])
+      .select('*')
+      .maybeSingle(), { mode: 'write' });
     if (inviteErr) throw inviteErr;
     const sessionRow = {
       game_type: 'gomoku',
@@ -561,7 +649,11 @@
       move_history: [],
       updated_at: new Date().toISOString()
     };
-    const { data: sessionData, error: sessionErr } = await client.from('game_sessions').insert([sessionRow]).select('*').maybeSingle();
+    const { data: sessionData, error: sessionErr } = await runSupabaseOperation('game_sessions.create', () => client
+      .from('game_sessions')
+      .insert([sessionRow])
+      .select('*')
+      .maybeSingle(), { mode: 'write' });
     if (sessionErr) throw sessionErr;
     return { invite: inviteData || null, session: sessionData || null };
   }
@@ -572,14 +664,23 @@
     const loaded = await loadGameInviteByCode(client, inviteCode);
     if (!loaded.invite) throw new Error('Pozvánka nenalezena.');
     const invite = loaded.invite;
-    const { data: sessionData, error: sessionLookupErr } = await client.from('game_sessions').select('*').eq('invite_id', invite.id).maybeSingle();
+    const { data: sessionData, error: sessionLookupErr } = await runSupabaseOperation('game_sessions.lookup_for_accept', () => client
+      .from('game_sessions')
+      .select('*')
+      .eq('invite_id', invite.id)
+      .maybeSingle(), { mode: 'read' });
     if (sessionLookupErr) throw sessionLookupErr;
     const nextInvite = {
       status: 'accepted',
       accepted_at: new Date().toISOString(),
       invitee_account_number: invitee
     };
-    const { data: updatedInvite, error: inviteUpdErr } = await client.from('game_invites').update(nextInvite).eq('id', invite.id).select('*').maybeSingle();
+    const { data: updatedInvite, error: inviteUpdErr } = await runSupabaseOperation('game_invites.accept', () => client
+      .from('game_invites')
+      .update(nextInvite)
+      .eq('id', invite.id)
+      .select('*')
+      .maybeSingle(), { mode: 'write' });
     if (inviteUpdErr) throw inviteUpdErr;
     const boardState = sessionData && sessionData.board_state && typeof sessionData.board_state === 'object' ? sessionData.board_state : { board: Array(180).fill(''), turn: 'X', status: 'active' };
     boardState.status = 'active';
@@ -595,7 +696,11 @@
       move_history: Array.isArray(sessionData && sessionData.move_history) ? sessionData.move_history : [],
       updated_at: new Date().toISOString()
     };
-    const { data: updatedSession, error: sessionUpdErr } = await client.from('game_sessions').upsert([Object.assign({ id: sessionData && sessionData.id ? sessionData.id : undefined }, sessionRow)], { onConflict: 'invite_id' }).select('*').maybeSingle();
+    const { data: updatedSession, error: sessionUpdErr } = await runSupabaseOperation('game_sessions.accept_upsert', () => client
+      .from('game_sessions')
+      .upsert([Object.assign({ id: sessionData && sessionData.id ? sessionData.id : undefined }, sessionRow)], { onConflict: 'invite_id' })
+      .select('*')
+      .maybeSingle(), { mode: 'write' });
     if (sessionUpdErr) throw sessionUpdErr;
     return { invite: updatedInvite || invite, session: updatedSession || sessionData || null };
   }
@@ -603,7 +708,11 @@
   async function loadGameSessionByInviteCodeDirect(client, code) {
     const loaded = await loadGameInviteByCode(client, code);
     if (!loaded.invite) return { ok: false, invite: null, session: null };
-    const { data: sessionData, error: sessionErr } = await client.from('game_sessions').select('*').eq('invite_id', loaded.invite.id).maybeSingle();
+    const { data: sessionData, error: sessionErr } = await runSupabaseOperation('game_sessions.lookup_by_invite', () => client
+      .from('game_sessions')
+      .select('*')
+      .eq('invite_id', loaded.invite.id)
+      .maybeSingle(), { mode: 'read' });
     if (sessionErr) throw sessionErr;
     return { ok: true, invite: loaded.invite, session: sessionData || null };
   }
@@ -611,7 +720,11 @@
   async function saveGameSessionByInviteCodeDirect(client, code, payload) {
     const loaded = await loadGameInviteByCode(client, code);
     if (!loaded.invite) throw new Error('Pozvánka nenalezena.');
-    const { data: sessionData, error: sessionErr } = await client.from('game_sessions').select('*').eq('invite_id', loaded.invite.id).maybeSingle();
+    const { data: sessionData, error: sessionErr } = await runSupabaseOperation('game_sessions.lookup_by_invite', () => client
+      .from('game_sessions')
+      .select('*')
+      .eq('invite_id', loaded.invite.id)
+      .maybeSingle(), { mode: 'read' });
     if (sessionErr) throw sessionErr;
     const boardState = payload && typeof payload === 'object' ? payload : {};
     const sessionRow = {
@@ -626,7 +739,11 @@
       updated_at: new Date().toISOString(),
       finished_at: boardState.gameOver ? new Date().toISOString() : (sessionData && sessionData.finished_at ? sessionData.finished_at : null)
     };
-    const { data: updatedSession, error: updErr } = await client.from('game_sessions').upsert([Object.assign({ id: sessionData && sessionData.id ? sessionData.id : undefined }, sessionRow)], { onConflict: 'invite_id' }).select('*').maybeSingle();
+    const { data: updatedSession, error: updErr } = await runSupabaseOperation('game_sessions.save_by_invite', () => client
+      .from('game_sessions')
+      .upsert([Object.assign({ id: sessionData && sessionData.id ? sessionData.id : undefined }, sessionRow)], { onConflict: 'invite_id' })
+      .select('*')
+      .maybeSingle(), { mode: 'write' });
     if (updErr) throw updErr;
     return { ok: true, session: updatedSession || null, status: sessionRow.status };
   }
@@ -659,6 +776,9 @@
             flushed += 1;
           } else if (task.type === 'game_stat') {
             await saveGameStatDirect(client, task.entry);
+            flushed += 1;
+          } else if (task.type === 'game_ui_settings') {
+            await saveGameAccountUiSettingsDirect(client, task.entry);
             flushed += 1;
           } else {
             remaining.push(task);
@@ -1008,47 +1128,97 @@
     }
   }
 
-  async function loadGameAccountsDirect(client) {
-    const { data, error } = await runSupabaseOperation('game_accounts.load', () => client
-      .from('game_accounts')
-      .select('account_number, full_name, updated_at')
-      .order('account_number', { ascending: true }), { mode: 'read' });
-    if (error) throw error;
-    return Array.isArray(data) ? data : [];
+  async function loadGameAccountsDirect(client, options) {
+    const opts = options || {};
+    const cache = readTimedCache(LOCAL_GAME_ACCOUNTS_KEY, SUPABASE_GAME_CACHE_TTL_MS);
+    if (opts.preferCache && cache && cache.fresh) {
+      rememberTimedCacheHit('accounts', cache);
+      return cache.rows;
+    }
+    try {
+      const { data, error } = await runSharedSupabaseRead('game_accounts.load', () => runSupabaseOperation('game_accounts.load', () => client
+        .from('game_accounts')
+        .select('account_number, full_name, updated_at')
+        .order('account_number', { ascending: true }), { mode: 'read' }));
+      if (error) throw error;
+      const rows = Array.isArray(data) ? data : [];
+      writeTimedCache(LOCAL_GAME_ACCOUNTS_KEY, rows, 'accounts');
+      return rows;
+    } catch (err) {
+      if (cache && cache.rows) {
+        rememberTimedCacheHit('accounts', cache);
+        return cache.rows;
+      }
+      throw err;
+    }
+  }
+
+  function gameStatsCacheKey(gameType, limit) {
+    return LOCAL_GAME_STATS_PREFIX + encodeURIComponent(String(gameType || '').trim() || 'unknown') + ':' + String(Math.max(1, Math.min(50, Number(limit) || 10)));
+  }
+
+  function clearGameStatsCache(gameType) {
+    const type = encodeURIComponent(String(gameType || '').trim() || 'unknown');
+    const prefix = LOCAL_GAME_STATS_PREFIX + type + ':';
+    try {
+      const keys = [];
+      for (let i = 0; i < localStorage.length; i += 1) {
+        const key = localStorage.key(i);
+        if (key && key.indexOf(prefix) === 0) keys.push(key);
+      }
+      keys.forEach(key => localStorage.removeItem(key));
+    } catch (err) {}
   }
 
   async function loadGameStatsDirect(client, gameType, limit) {
     const type = String(gameType || '').trim();
     if (!type) return [];
-    const [accounts, statsRes] = await Promise.all([
-      loadGameAccountsDirect(client).catch(() => []),
-      runSupabaseOperation('game_stats.load', () => client
-        .from('game_stats')
-        .select('id,account_number,game_type,games_played,wins,losses,draws,points,last_played_at,updated_at')
-        .eq('game_type', type)
-        .order('points', { ascending: false })
-        .order('updated_at', { ascending: false })
-        .limit(Math.max(1, Math.min(50, Number(limit) || 10))), { mode: 'read' })
-    ]);
-    if (statsRes && statsRes.error) throw statsRes.error;
-    const nameMap = new Map((Array.isArray(accounts) ? accounts : []).map(row => [String(row.account_number || '').trim(), String(row.full_name || '').trim()]));
-    return (Array.isArray(statsRes && statsRes.data) ? statsRes.data : [])
-      .map(row => ({
-        id: row.id,
-        account_number: String(row.account_number || '').trim(),
-        game_type: String(row.game_type || '').trim(),
-        games_played: Number(row.games_played || 0) || 0,
-        wins: Number(row.wins || 0) || 0,
-        losses: Number(row.losses || 0) || 0,
-        draws: Number(row.draws || 0) || 0,
-        points: Number(row.game_type === 'ttt' ? (row.games_played || row.points || 0) : (row.points || 0)) || 0,
-        last_played_at: row.last_played_at || null,
-        updated_at: row.updated_at || null,
-        player_name: nameMap.get(String(row.account_number || '').trim()) || String(row.account_number || '').trim()
-      }))
-      .filter(row => row.points > 0)
-      .sort((a, b) => (b.points - a.points) || String(b.updated_at || '').localeCompare(String(a.updated_at || '')) || String(a.player_name || '').localeCompare(String(b.player_name || ''), 'cs'))
-      .slice(0, Math.max(1, Math.min(50, Number(limit) || 10)));
+    const safeLimit = Math.max(1, Math.min(50, Number(limit) || 10));
+    const cacheKey = gameStatsCacheKey(type, safeLimit);
+    const cachedStats = readTimedCache(cacheKey, SUPABASE_GAME_CACHE_TTL_MS);
+    if (cachedStats && cachedStats.fresh) {
+      rememberTimedCacheHit('stats', cachedStats);
+      return cachedStats.rows;
+    }
+    try {
+      const [accounts, statsRes] = await Promise.all([
+        loadGameAccountsDirect(client, { preferCache: true }).catch(() => []),
+        runSharedSupabaseRead('game_stats.load:' + type + ':' + safeLimit, () => runSupabaseOperation('game_stats.load', () => client
+          .from('game_stats')
+          .select('id,account_number,game_type,games_played,wins,losses,draws,points,last_played_at,updated_at')
+          .eq('game_type', type)
+          .order('points', { ascending: false })
+          .order('updated_at', { ascending: false })
+          .limit(safeLimit), { mode: 'read' }))
+      ]);
+      if (statsRes && statsRes.error) throw statsRes.error;
+      const nameMap = new Map((Array.isArray(accounts) ? accounts : []).map(row => [String(row.account_number || '').trim(), String(row.full_name || '').trim()]));
+      const rows = (Array.isArray(statsRes && statsRes.data) ? statsRes.data : [])
+        .map(row => ({
+          id: row.id,
+          account_number: String(row.account_number || '').trim(),
+          game_type: String(row.game_type || '').trim(),
+          games_played: Number(row.games_played || 0) || 0,
+          wins: Number(row.wins || 0) || 0,
+          losses: Number(row.losses || 0) || 0,
+          draws: Number(row.draws || 0) || 0,
+          points: Number(row.game_type === 'ttt' ? (row.games_played || row.points || 0) : (row.points || 0)) || 0,
+          last_played_at: row.last_played_at || null,
+          updated_at: row.updated_at || null,
+          player_name: nameMap.get(String(row.account_number || '').trim()) || String(row.account_number || '').trim()
+        }))
+        .filter(row => row.points > 0)
+        .sort((a, b) => (b.points - a.points) || String(b.updated_at || '').localeCompare(String(a.updated_at || '')) || String(a.player_name || '').localeCompare(String(b.player_name || ''), 'cs'))
+        .slice(0, safeLimit);
+      writeTimedCache(cacheKey, rows, 'stats');
+      return rows;
+    } catch (err) {
+      if (cachedStats && cachedStats.rows) {
+        rememberTimedCacheHit('stats', cachedStats);
+        return cachedStats.rows;
+      }
+      throw err;
+    }
   }
 
   async function saveGameStatDirect(client, entry) {
@@ -1089,12 +1259,152 @@
     if (existing && existing.id) {
       const { data, error } = await runSupabaseOperation('game_stats.update', () => client.from('game_stats').update(next).eq('id', existing.id).select('*').maybeSingle(), { mode: 'write' });
       if (error) throw error;
+      clearGameStatsCache(gameType);
       return data || next;
     }
 
     const { data, error } = await runSupabaseOperation('game_stats.insert', () => client.from('game_stats').insert([next]).select('*').maybeSingle(), { mode: 'write', attempts: 1 });
     if (error) throw error;
+    clearGameStatsCache(gameType);
     return data || next;
+  }
+
+
+  function gameUiSettingsCacheKey(accountNumber) {
+    return LOCAL_GAME_UI_SETTINGS_PREFIX + encodeURIComponent(String(accountNumber || '').trim() || 'unknown');
+  }
+
+  function getGameUiDefinitionIndex(list, id, fallback) {
+    const defs = Array.isArray(list) ? list : [];
+    const wanted = String(id || '').trim();
+    const idx = defs.findIndex(item => String(item && item.id || '').trim() === wanted);
+    if (idx >= 0) return idx;
+    const fb = String(fallback || '').trim();
+    const fbIdx = defs.findIndex(item => String(item && item.id || '').trim() === fb);
+    return fbIdx >= 0 ? fbIdx : 0;
+  }
+
+  function getGameUiDefinitionId(list, index, fallback) {
+    const defs = Array.isArray(list) ? list : [];
+    const idx = Math.max(0, Math.min(defs.length - 1, Number(index) || 0));
+    return String(defs[idx] && defs[idx].id || fallback || '').trim();
+  }
+
+  function normalizeGameUiSettings(entry) {
+    const accountNumber = String(entry && (entry.account_number || entry.accountNumber) || '').trim();
+    const themeDefs = Array.isArray(window.RAK_THEME_DEFS) ? window.RAK_THEME_DEFS : [];
+    const bgDefs = Array.isArray(window.RAK_BACKGROUND_DEFS) ? window.RAK_BACKGROUND_DEFS : [];
+    const themeIdRaw = String(entry && (entry.theme_id || entry.themeId || entry.theme) || '').trim();
+    const backgroundIdRaw = String(entry && (entry.background_id || entry.backgroundId || entry.background) || '').trim();
+    const themeIndex = getGameUiDefinitionIndex(themeDefs, themeIdRaw, 'default');
+    const backgroundIndex = getGameUiDefinitionIndex(bgDefs, backgroundIdRaw, 'ios-mesh');
+    const themeId = getGameUiDefinitionId(themeDefs, themeIndex, 'default') || 'default';
+    const backgroundId = getGameUiDefinitionId(bgDefs, backgroundIndex, 'ios-mesh') || 'ios-mesh';
+    return {
+      account_number: accountNumber,
+      theme_id: themeId,
+      background_id: backgroundId,
+      theme_index: themeIndex,
+      background_index: backgroundIndex,
+      encoded_points: (themeIndex * 1000) + backgroundIndex,
+      updated_at: entry && (entry.updated_at || entry.updatedAt) ? String(entry.updated_at || entry.updatedAt) : new Date().toISOString()
+    };
+  }
+
+  function decodeGameUiSettingsRow(row) {
+    if (!row) return null;
+    const themeDefs = Array.isArray(window.RAK_THEME_DEFS) ? window.RAK_THEME_DEFS : [];
+    const bgDefs = Array.isArray(window.RAK_BACKGROUND_DEFS) ? window.RAK_BACKGROUND_DEFS : [];
+    const encoded = Number(row.points || 0) || 0;
+    const themeIndex = Number.isFinite(Number(row.wins)) ? Number(row.wins) : Math.floor(encoded / 1000);
+    const backgroundIndex = Number.isFinite(Number(row.losses)) ? Number(row.losses) : (encoded % 1000);
+    return {
+      account_number: String(row.account_number || '').trim(),
+      theme_id: getGameUiDefinitionId(themeDefs, themeIndex, 'default') || 'default',
+      background_id: getGameUiDefinitionId(bgDefs, backgroundIndex, 'ios-mesh') || 'ios-mesh',
+      updated_at: row.updated_at || row.last_played_at || null,
+      source: 'game_stats_profile_ui'
+    };
+  }
+
+  async function loadGameAccountUiSettingsDirect(client, accountNumber) {
+    const account = String(accountNumber || '').trim();
+    if (!account) return null;
+    const cacheKey = gameUiSettingsCacheKey(account);
+    const cache = readTimedCache(cacheKey, SUPABASE_GAME_CACHE_TTL_MS);
+    if (cache && cache.fresh && cache.rows && cache.rows[0]) {
+      rememberTimedCacheHit('ui', cache);
+      return cache.rows[0];
+    }
+    try {
+      const { data, error } = await runSharedSupabaseRead('game_ui_settings.load:' + account, () => runSupabaseOperation('game_ui_settings.load', () => client
+        .from('game_stats')
+        .select('id,account_number,game_type,games_played,wins,losses,draws,points,last_played_at,updated_at')
+        .eq('account_number', account)
+        .eq('game_type', GAME_UI_SETTINGS_TYPE)
+        .order('updated_at', { ascending: false })
+        .limit(1), { mode: 'read' }));
+      if (error) throw error;
+      const row = Array.isArray(data) && data.length ? decodeGameUiSettingsRow(data[0]) : null;
+      if (row) writeTimedCache(cacheKey, [row], 'ui');
+      state.cacheGuard.uiSettingsLoads += 1;
+      return row;
+    } catch (err) {
+      if (cache && cache.rows && cache.rows[0]) {
+        state.cacheGuard.uiSettingsLoadFallbacks += 1;
+        rememberTimedCacheHit('ui', cache);
+        return cache.rows[0];
+      }
+      throw err;
+    }
+  }
+
+  async function saveGameAccountUiSettingsDirect(client, entry) {
+    const normalized = normalizeGameUiSettings(entry);
+    if (!normalized.account_number) throw new Error('Chybí herní účet pro uložení vzhledu.');
+    const nowIso = new Date().toISOString();
+    const lookupKey = 'game_ui_settings.lookup:' + normalized.account_number;
+    const existingRes = await runSharedSupabaseRead(lookupKey, () => runSupabaseOperation('game_ui_settings.lookup', () => client
+      .from('game_stats')
+      .select('id,account_number,game_type,updated_at')
+      .eq('account_number', normalized.account_number)
+      .eq('game_type', GAME_UI_SETTINGS_TYPE)
+      .order('updated_at', { ascending: false })
+      .limit(1), { mode: 'read' }));
+    state.cacheGuard.uiSettingsSharedLookups += 1;
+    if (existingRes && existingRes.error) throw existingRes.error;
+    const existing = Array.isArray(existingRes && existingRes.data) && existingRes.data.length ? existingRes.data[0] : null;
+    const row = {
+      account_number: normalized.account_number,
+      game_type: GAME_UI_SETTINGS_TYPE,
+      games_played: 0,
+      wins: normalized.theme_index,
+      losses: normalized.background_index,
+      draws: 0,
+      points: normalized.encoded_points,
+      last_played_at: nowIso,
+      updated_at: nowIso
+    };
+    let saved = null;
+    if (existing && existing.id) {
+      const { data, error } = await runSupabaseOperation('game_ui_settings.update', () => client.from('game_stats').update(row).eq('id', existing.id).select('*').maybeSingle(), { mode: 'write' });
+      if (error) throw error;
+      saved = data || row;
+    } else {
+      const { data, error } = await runSupabaseOperation('game_ui_settings.insert', () => client.from('game_stats').insert([row]).select('*').maybeSingle(), { mode: 'write', attempts: 1 });
+      if (error) throw error;
+      saved = data || row;
+    }
+    const decoded = decodeGameUiSettingsRow(saved) || {
+      account_number: normalized.account_number,
+      theme_id: normalized.theme_id,
+      background_id: normalized.background_id,
+      updated_at: nowIso,
+      source: 'game_stats_profile_ui'
+    };
+    writeTimedCache(gameUiSettingsCacheKey(normalized.account_number), [decoded], 'ui');
+    state.cacheGuard.uiSettingsSaves += 1;
+    return decoded;
   }
 
   async function loadRotationState() {
@@ -1231,6 +1541,7 @@
       lastRealtimeAt: state.lastRealtimeAt || null,
       guard: Object.assign({}, state.queueGuard),
       syncGuard: Object.assign({}, state.syncGuard),
+      cacheGuard: Object.assign({}, state.cacheGuard),
       readTimeoutMs: SUPABASE_READ_TIMEOUT_MS,
       writeTimeoutMs: SUPABASE_WRITE_TIMEOUT_MS
     };
@@ -1317,10 +1628,26 @@
     loadRotationMonthEntries,
     saveRotationMonthEntries,
     loadGameStats: async (gameType, limit = 10) => {
+      const safeLimit = Math.max(1, Math.min(50, Number(limit) || 10));
+      const cache = readTimedCache(gameStatsCacheKey(gameType, safeLimit), SUPABASE_GAME_CACHE_TTL_MS);
       const client = getClient();
-      if (!client || !navigator.onLine) return [];
-      try { const rows = await loadGameStatsDirect(client, gameType, limit); state.lastError = null; return rows; }
-      catch (err) { state.lastError = err; console.error('Game stats load failed', err); return []; }
+      if (!client || !navigator.onLine) {
+        if (cache && cache.rows) {
+          rememberTimedCacheHit('stats', cache);
+          return cache.rows;
+        }
+        return [];
+      }
+      try { const rows = await loadGameStatsDirect(client, gameType, safeLimit); state.lastError = null; return rows; }
+      catch (err) {
+        state.lastError = err;
+        console.error('Game stats load failed', err);
+        if (cache && cache.rows) {
+          rememberTimedCacheHit('stats', cache);
+          return cache.rows;
+        }
+        return [];
+      }
     },
     saveGameStat: async (payload) => {
       const client = getClient();
@@ -1340,10 +1667,70 @@
       }
     },
     loadGameAccounts: async () => {
+      const cache = readTimedCache(LOCAL_GAME_ACCOUNTS_KEY, SUPABASE_GAME_CACHE_TTL_MS);
       const client = getClient();
-      if (!client || !navigator.onLine) return [];
+      if (!client || !navigator.onLine) {
+        if (cache && cache.rows) {
+          rememberTimedCacheHit('accounts', cache);
+          return cache.rows;
+        }
+        return [];
+      }
       try { const rows = await loadGameAccountsDirect(client); state.lastError = null; return rows; }
-      catch (err) { state.lastError = err; console.error('Game accounts load failed', err); return []; }
+      catch (err) {
+        state.lastError = err;
+        console.error('Game accounts load failed', err);
+        if (cache && cache.rows) {
+          rememberTimedCacheHit('accounts', cache);
+          return cache.rows;
+        }
+        return [];
+      }
+    },
+    loadGameAccountUiSettings: async (accountNumber) => {
+      const account = String(accountNumber || '').trim();
+      const cache = readTimedCache(gameUiSettingsCacheKey(account), SUPABASE_GAME_CACHE_TTL_MS);
+      const client = getClient();
+      if (!account) return null;
+      if (!client || !navigator.onLine) {
+        if (cache && cache.rows && cache.rows[0]) { rememberTimedCacheHit('ui', cache); return cache.rows[0]; }
+        return null;
+      }
+      try { const row = await loadGameAccountUiSettingsDirect(client, account); state.lastError = null; return row; }
+      catch (err) {
+        state.lastError = err;
+        console.error('Game UI settings load failed', err);
+        if (cache && cache.rows && cache.rows[0]) { rememberTimedCacheHit('ui', cache); return cache.rows[0]; }
+        return null;
+      }
+    },
+    saveGameAccountUiSettings: async (payload) => {
+      const normalized = normalizeGameUiSettings(payload);
+      const client = getClient();
+      if (!normalized.account_number) return { ok: false, reason: 'missing-account' };
+      if (!client || !navigator.onLine) {
+        state.cacheGuard.uiSettingsSaveQueued += 1;
+        return await enqueueAndMaybeFlush({ type: 'game_ui_settings', entry: normalized });
+      }
+      try {
+        if (shouldDeferOnlineWrite()) {
+          state.cacheGuard.uiSettingsSaveDeferred += 1;
+          return Object.assign(await enqueueAndMaybeFlush({ type: 'game_ui_settings', entry: normalized }), { deferred: true });
+        }
+        const row = await saveGameAccountUiSettingsDirect(client, normalized);
+        state.lastError = null;
+        await flushPendingWrites();
+        return Object.assign({ ok: true, queued: false }, row || {});
+      } catch (err) {
+        state.cacheGuard.uiSettingsSaveErrors += 1;
+        state.lastError = err;
+        console.error('Game UI settings save failed', err);
+        if (isLikelyTransientError(err)) {
+          state.cacheGuard.uiSettingsSaveQueued += 1;
+          return await enqueueAndMaybeFlush({ type: 'game_ui_settings', entry: normalized });
+        }
+        return { ok: false, error: err };
+      }
     },
     seedFromLocalSnapshot,
     flushPendingWrites,

@@ -1,4 +1,4 @@
-// v.1.1 (546) – Oprava přepínání pozadí v Theme + výraznější glass background varianty.
+// v.1.1 (552) – profilový vzhled má konflikt guard, dedupe save/load a stabilnější sync přes Supabase.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

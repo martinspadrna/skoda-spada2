@@ -3751,7 +3751,7 @@ body.lowEndDevice #brusy .indexGrid .bbtn{
 }
 
 
-/* v.1.1 (546) – Pozadí v nastavení: oprava klikání + výraznější glass-friendly varianty. */
+/* v.1.1 (552) – glass/theme polish + stabilnější profilové ukládání vzhledu. */
 :root{
   --rakBgBase:#050816;
   --rakAppBackground:
@@ -3890,6 +3890,74 @@ body.lightweightMode .appMenuBackgroundCard,
 body.lowEndDevice .appMenuBackgroundCard,
 body.lightweightMode .rakUpdateToastAction,
 body.lowEndDevice .rakUpdateToastAction{
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
+
+/* v.1.1 (552) – modernější Theme karty + profilové ukládání vzhledu */
+.appMenuThemeCard{
+  border:1px solid color-mix(in srgb, var(--rakThemeAccent, var(--green2)) 28%, rgba(255,255,255,.16)) !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.095), rgba(255,255,255,.024)),
+    radial-gradient(circle at 18% 20%, color-mix(in srgb, var(--rakThemeAccent, var(--green2)) 24%, transparent), transparent 52%),
+    rgba(8,14,12,.22) !important;
+  color:#eef7ee !important;
+  box-shadow:0 16px 38px rgba(0,0,0,.23), inset 0 1px 0 rgba(255,255,255,.12) !important;
+  backdrop-filter:blur(24px) saturate(175%) !important;
+  -webkit-backdrop-filter:blur(24px) saturate(175%) !important;
+  overflow:hidden !important;
+}
+.appMenuThemeCard::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(135deg, rgba(255,255,255,.12), transparent 38%, rgba(255,255,255,.035));
+  opacity:.72;
+}
+.appMenuThemeCard > *{position:relative; z-index:1;}
+.appMenuThemeCard.isActive{
+  outline:2px solid color-mix(in srgb, var(--rakThemeAccent, var(--green2)) 64%, rgba(255,255,255,.35)) !important;
+  outline-offset:1px !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.13), rgba(255,255,255,.032)),
+    radial-gradient(circle at 18% 20%, color-mix(in srgb, var(--rakThemeAccent, var(--green2)) 34%, transparent), transparent 54%),
+    rgba(8,14,12,.28) !important;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.14),
+    0 18px 42px rgba(0,0,0,.28),
+    0 0 30px color-mix(in srgb, var(--rakThemeAccent, var(--green2)) 28%, transparent),
+    inset 0 1px 0 rgba(255,255,255,.16) !important;
+}
+.appMenuThemeSwatch{
+  background:
+    radial-gradient(circle at 28% 24%, rgba(255,255,255,.76), transparent 18%),
+    linear-gradient(135deg, var(--theme-swatch), rgba(255,255,255,.08)) !important;
+  border:1px solid rgba(255,255,255,.18) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.28),
+    inset 0 -12px 24px rgba(0,0,0,.18),
+    0 0 24px color-mix(in srgb, var(--rakThemeAccent, var(--green2)) 26%, transparent) !important;
+}
+html[data-rak-theme="emerald"] .bottomNavBtn.active,
+html[data-rak-theme="emerald"] .appMenuThemeCard.isActive,
+html[data-rak-theme="emerald"] .appMenuBackgroundCard.isActive{--rakThemeAccent:#78FAAE;}
+html[data-rak-theme="midnight"] .bottomNavBtn.active,
+html[data-rak-theme="midnight"] .appMenuThemeCard.isActive{--rakThemeAccent:#60A5FA;}
+html[data-rak-theme="aurora"] .bottomNavBtn.active,
+html[data-rak-theme="aurora"] .appMenuThemeCard.isActive{--rakThemeAccent:#22D3EE;}
+html[data-rak-theme="neon"] .bottomNavBtn.active,
+html[data-rak-theme="neon"] .appMenuThemeCard.isActive{--rakThemeAccent:#D946EF;}
+html[data-rak-theme="graphite"] .bottomNavBtn.active,
+html[data-rak-theme="graphite"] .appMenuThemeCard.isActive{--rakThemeAccent:#CBD5E1;}
+html[data-rak-theme="ice"] .bottomNavBtn.active,
+html[data-rak-theme="ice"] .appMenuThemeCard.isActive{--rakThemeAccent:#99F6E4;}
+html[data-rak-theme="amoled"] .bottomNavBtn.active,
+html[data-rak-theme="amoled"] .appMenuThemeCard.isActive{--rakThemeAccent:#B8FF67;}
+html[data-rak-theme="sunset"] .bottomNavBtn.active,
+html[data-rak-theme="sunset"] .appMenuThemeCard.isActive{--rakThemeAccent:#FB7185;}
+body.lightweightMode .appMenuThemeCard,
+body.lowEndDevice .appMenuThemeCard{
   backdrop-filter:none !important;
   -webkit-backdrop-filter:none !important;
 }

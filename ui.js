@@ -2685,68 +2685,93 @@ function buildAppHistoryHtml(versionText) {
   const sections = [
     {
       range: versionText,
-      title: 'Současná verze a další směr',
+      title: 'Aktuální build',
       lines: [
-        'Nejnovější build je vždy nahoře a starší verze jdou hezky směrem dolů.',
-        'Update manager hlídá novou cache a umí nabídnout aktualizaci bez reinstalace PWA.',
-        'Herní vrstva se bude dál rozšiřovat o XP, ranky, achievementy i leaderboardy.',
-        'Zachovává se mobilní glassmorphism styl, smooth animace a app-like feel.'
+        'Theme i Pozadí jsou modernizované do glass stylu a při přihlášení se nově ukládají k hernímu profilu.',
+        'Po přihlášení na jiném zařízení si appka načte uložené barvy i pozadí z profilu; bez přihlášení zůstává lokální nastavení zařízení.',
+        'Funkce aplikace, výpočty, pravidla her a spodní lišta jsou v tomhle buildu beze změny.'
       ]
     },
     {
-      range: 'v0.301–v0.350',
-      title: 'Hry a první profilový základ',
+      range: 'v.1.1 500–552',
+      title: 'Stabilizace, hry, Supabase a glass vzhled',
       lines: [
-        'Rozjela se herní část, přihlášení hráčů a první statistiky výsledků.',
-        'Začaly se připravovat leaderboardy, rekordy a další herní rozšíření.'
+        'Proběhlo velké stabilizační období: Láďův režim, cleanup manager, dokončení game performance a start Supabase hardening.',
+        'Dashboard, Rotace, Rozpisy a Statistiky se ladily hlavně kvůli mobilům, safe-area, přehlednosti a menšímu riziku prázdných/pozdě načtených karet.',
+        'Kalkulačky dostaly sjednocenější calcPanel systém, větší klikací tlačítka a u Brusů se vrátily barevné indexy ve glass stylu.',
+        'Herní hub se zrychlil: méně opakovaných renderů, cache profilů/statistik, lepší práce s leaderboardy a všechny nedoladěné hry jsou zatím ve „Ve vývoji“.',
+        'Supabase Realtime a offline/online sync se zpevňují přes timeouty, retry, offline frontu, deduplikaci, fallback cache a diagnostiku.',
+        'Přibyly Theme/Pozadí volby, výrazná glass-friendly pozadí, modernější theme karty a profilové ukládání vzhledu.'
       ]
     },
     {
-      range: 'v0.251–v0.300',
-      title: 'PWA a offline režim',
+      range: 'v.1 450–499',
+      title: 'Příprava velkého refactoru',
       lines: [
-        'Přibyl service worker, cache a offline fallback pro použití bez signálu.',
-        'Appka se začala chovat víc jako nativní mobilní aplikace.'
+        'Upevnil se postup práce: vždy pokračovat z posledního potvrzeného buildu a safepoint použít jen na výslovný pokyn.',
+        'Začal se víc řešit technický dluh, duplicity, přebíjení stylů a potřeba bezpečnějších guardů místo náhodného ladění jednotlivých prvků.',
+        'Mobilní použitelnost šla nahoru hlavně přes safe-area, spodní lištu, výšky panelů, mezery a čitelnost na iPhonu i Androidu.',
+        'Vzhled se začal posouvat k iOS/glassmorphism směru, ale opatrně, aby se nerozbily funkce.'
       ]
     },
     {
-      range: 'v0.201–v0.250',
-      title: 'Supabase a sdílená data',
+      range: 'v.1 400–449',
+      title: 'Herní rozšíření a online data',
       lines: [
-        'Data se začala opírat o Supabase a přibyly první online synchronizace.',
-        'Herní a pracovní data se začala držet pohromadě v jednom systému.'
+        'Rozšířily se hráčské profily, herní statistiky, leaderboardy a vazba na Supabase.',
+        'Začal větší herní plán: Snake, Piškvorky, 2048, Flappy Car a příprava dalších her do jednotného hubu.',
+        'Appka se víc posouvala k mobile-first rozložení a menšímu počtu rušivých reloadů.',
+        'Supabase začala být důležitý základ pro online data, ale bylo potřeba dál řešit fallbacky a stabilitu při slabém internetu.'
       ]
     },
     {
-      range: 'v0.151–v0.200',
-      title: 'Kalkulačky a administrace',
+      range: 'v.1 350–399',
+      title: 'Hry, spodní lišta a tile rozložení',
       lines: [
-        'Kalkulačky pro stroje dostaly vlastní podobu a lepší pořádek v rozložení.',
-        'Administrace se začala připravovat na jemnější úpravy bez zásahů do kódu.'
+        'Výrazně se ladily hry, spodní lišta, Rotace a Statistiky.',
+        'Přibylo víc herních modulů a společný herní hub včetně leaderboardů a online invite flow.',
+        'Piškvorky dostaly tvrdší AI, online režim a lepší návrat do rozehrané hry.',
+        'Rotace a Statistiky dostaly více dlaždic, menší rozestupy a lepší zobrazení jmen/strojů.'
       ]
     },
     {
-      range: 'v0.101–v0.150',
-      title: 'Dashboard a rozpisy',
+      range: 'v.1 300–349',
+      title: 'PWA, cache a první větší online vrstva',
       lines: [
-        'Dashboard dostal přehlednější kartu s důležitými informacemi.',
-        'Rozpisy se začaly víc stáčet do kompaktního mobilního layoutu.'
+        'Vznikal stabilnější PWA základ: service worker, manifest, offline fallback, cache a aktualizační hooky.',
+        'Rozdělovaly se části inline skriptů do samostatnějších modulů.',
+        'Stabilizovala se herní sekce, invite flow a první větší online/offline sync vrstvy.',
+        'Dashboard, spodní lišta a přihlášení se ladily kvůli menšímu chaosu při načítání a přepínání stránek.'
       ]
     },
     {
-      range: 'v0.51–v0.100',
-      title: 'První větší rozšíření',
+      range: 'v.1 250–299',
+      title: 'Dashboard, kantýna/jídelna a kalkulačky',
       lines: [
-        'Přibyly první stabilnější bloky pro kalkulačky, statistiky a rychlé akce.',
-        'Začal se ladit tmavý glass styl a chování spodní navigace.'
+        'Dashboard se rozšířil o směny, absenci, procenta průběhu, výplatu, kantýnu/jídelnu a stavové karty.',
+        'Jídelna a kantýna se sjednocovaly do přehlednějšího zobrazení s lepším výpočtem otevřeno/zavřeno a dalšího termínu.',
+        'Kalkulačky pro Frézky a Brusy se zpřesňovaly v časech, dávkách a hotových kusech.',
+        'Mobilní layout se čistil, aby šel používat bez zoomu a bez posouvání mimo obrazovku.'
       ]
     },
     {
-      range: 'v0.1–v0.50',
-      title: 'Základ aplikace',
+      range: 'v.1 200–249',
+      title: 'Z prototypu do vícestránkové appky',
       lines: [
-        'Vznikl první základ rozpisů, dashboardu a jednoduchého mobilního layoutu.',
-        'Cíl byl mít jednu čistou appku, která se dá použít i v mobilu bez zbytečného bordelu.'
+        'Aplikace se posouvala do stabilnější vícestránkové appky s Dashboardem, Rotací, Rozpisy, Statistikami a Kalkulačkami.',
+        'Začalo se víc řešit ukládání dat, export, verze buildu a kontrola, aby změny nezmizely mezi ZIPy.',
+        'Rozpisy a rotace se ladily podle reálného použití v práci, včetně směn, strojů, absencí a přehledů pro lidi.',
+        'Přibývaly první větší úpravy vzhledu a použitelnosti na mobilu.'
+      ]
+    },
+    {
+      range: 'v.0.xx až v.1 199',
+      title: 'Základ Rotace a kalkulačky',
+      lines: [
+        'Vznikl základ aplikace: směnová logika, dashboard, první kalkulačky a pracovní přehledy.',
+        'Přidávaly se stroje, jména, směny, první statistiky a základní exportní/logická vrstva.',
+        'Priorita byla funkčnost výpočtů a ruční ladění podle testování, ne ještě finální vzhled ani čistá architektura.',
+        'Postupně se ukázala potřeba silnějších pravidel pro verze, safepointy, navazování na poslední ZIP a pozdější refactor.'
       ]
     }
   ];
@@ -3719,12 +3744,19 @@ function bindAppMenuHandlers(body) {
         const supabaseHardening = typeof window.getSupabaseHardeningStatus === 'function' ? window.getSupabaseHardeningStatus() : null;
         const supabaseGuard = supabaseHardening && supabaseHardening.guard ? supabaseHardening.guard : null;
         const supabaseSyncGuard = supabaseHardening && supabaseHardening.syncGuard ? supabaseHardening.syncGuard : null;
+        const supabaseCacheGuard = supabaseHardening && supabaseHardening.cacheGuard ? supabaseHardening.cacheGuard : null;
+        const profileUiStatus = typeof window.getProfileUiSyncStatus === 'function' ? window.getProfileUiSyncStatus() : null;
+        const profileUiGuard = profileUiStatus && profileUiStatus.guard ? profileUiStatus.guard : null;
         const supabaseDiag = supabaseHardening ? [
           'Supabase fronta: ' + String(supabaseHardening.queueLength || 0) + ' / ' + String(supabaseHardening.queueMaxItems || '—'),
           'Supabase realtime: ' + String(supabaseHardening.realtimeStatus || '—'),
           supabaseGuard ? ('Supabase guard: sloučeno ' + String(supabaseGuard.deduped || 0) + ' · ořezáno ' + String(supabaseGuard.trimmed || 0) + ' · odmítnuto ' + String((supabaseGuard.rejected || 0) + (supabaseGuard.oversized || 0))) : '',
           supabaseSyncGuard ? ('Supabase sync: timeouty R/W ' + String(supabaseSyncGuard.readTimeouts || 0) + '/' + String(supabaseSyncGuard.writeTimeouts || 0) + ' · retry R/W ' + String(supabaseSyncGuard.readRetries || 0) + '/' + String(supabaseSyncGuard.writeRetries || 0) + ' · fallback ' + String(supabaseSyncGuard.queuedFallbacks || 0)) : '',
-          supabaseSyncGuard ? ('Supabase chyby: čtení ' + String(supabaseSyncGuard.failedReads || 0) + ' · zápis ' + String(supabaseSyncGuard.failedWrites || 0) + ' · cooldown ' + String(supabaseSyncGuard.cooldownSkips || 0)) : ''
+          supabaseSyncGuard ? ('Supabase chyby: čtení ' + String(supabaseSyncGuard.failedReads || 0) + ' · zápis ' + String(supabaseSyncGuard.failedWrites || 0) + ' · cooldown ' + String(supabaseSyncGuard.cooldownSkips || 0)) : '',
+          supabaseCacheGuard ? ('Supabase herní cache: účty hit/write ' + String(supabaseCacheGuard.accountCacheHits || 0) + '/' + String(supabaseCacheGuard.accountCacheWrites || 0) + ' · statistiky hit/write ' + String(supabaseCacheGuard.statsCacheHits || 0) + '/' + String(supabaseCacheGuard.statsCacheWrites || 0)) : '',
+          supabaseCacheGuard ? ('Supabase sdílené čtení: spojeno ' + String(supabaseCacheGuard.sharedReadJoins || 0) + ' · stale fallback ' + String(supabaseCacheGuard.staleFallbacks || 0)) : '',
+          profileUiGuard ? ('Profilový vzhled: load ' + String(profileUiGuard.remoteLoads || 0) + ' · apply ' + String(profileUiGuard.remoteApplies || 0) + ' · skip starší ' + String(profileUiGuard.remoteOlderSkips || 0) + ' · save ' + String(profileUiGuard.remoteSaves || 0)) : '',
+          profileUiGuard ? ('Profilový vzhled guard: stejný save ' + String(profileUiGuard.saveSameSkips || 0) + ' · in-flight load/save ' + String(profileUiGuard.loadInFlightJoins || 0) + '/' + String(profileUiGuard.saveInFlightJoins || 0)) : ''
         ].filter(Boolean) : [];
         const diag = [
           'Verze: ' + String((typeof app !== "undefined" && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '—')),
@@ -3734,6 +3766,7 @@ function bindAppMenuHandlers(body) {
           'Starší/slabší zařízení detekováno: ' + (lowEndInfo.lowEnd ? 'ano' : 'ne') + lowEndReason,
           'Zařízení: ' + deviceInfo,
           'Aktuální stránka: ' + String(document.querySelector('.page.active')?.id || '—'),
+          'Pozadí: ' + String((typeof getBackgroundPreference === 'function' ? getBackgroundPreference() : document.documentElement.dataset.rakBackground) || '—'),
           'Bottom lišta: ' + String(getComputedStyle(document.querySelector('.bottomNav') || document.body).bottom || '—'),
           ...supabaseDiag
         ].join('\n');
@@ -3894,9 +3927,9 @@ function openAppMenu(view) {
         '  <div class="appMenuCardTitle">O aplikaci</div>',
         '  <div class="appMenuVersion">' + escapeHtml(versionText || '—') + '</div>',
         '  <div class="appMenuText">',
-        '    <div>Aktuální verze je nahoře, starší novinky jsou pod ní seřazené od nejnovějších po nejstarší.</div>',
-        '    <div>Import i export jsou schované v administraci, aby zbytek aplikace působil čistě.</div>',
-        '    <div>Hry se budou v dalších verzích dál ladit, zpřesňovat a rozšiřovat.</div>',
+        '    <div>Aktuální build je nahoře, pod ním je přehled největších změn po větších blocích cca 50 verzí.</div>',
+        '    <div>Detailní changelog zůstává v souboru CHANGELOG.md, tady je rychlejší přehled přímo v aplikaci.</div>',
+        '    <div>Theme mění barvy/akcenty aplikace, Pozadí mění hlavně atmosféru za glass vrstvami.</div>',
         '  </div>',
         '  ' + buildAppHistoryHtml(versionText),
         '  <button type="button" class="appMenuAction appMenuBack" data-menu-back="1">Zpět</button>',
@@ -4412,6 +4445,7 @@ function gamesMakeAccountEntry(accountId, name) {
     name: label,
     stats: gamesEmptyStats(),
     achievements: [],
+    uiSettings: { themeId: '', backgroundId: '', updatedAt: 0 },
     updatedAt: 0
   };
 }
@@ -4450,11 +4484,20 @@ function gamesNormalizeStoredAccount(account, fallbackName) {
   stats.flap.bestPipes = Number(flap.bestPipes || 0) || 0;
   stats.flap.lastPlayedAt = Number(flap.lastPlayedAt || 0) || 0;
   stats.arcade = arcade;
+  const rawUiSettings = account && account.uiSettings && typeof account.uiSettings === 'object' ? account.uiSettings : {};
+  const themeId = String(rawUiSettings.themeId || rawUiSettings.theme || account && (account.themeId || account.uiTheme) || '').trim();
+  const backgroundId = String(rawUiSettings.backgroundId || rawUiSettings.background || account && (account.backgroundId || account.uiBackground) || '').trim();
+  const uiSettings = {
+    themeId,
+    backgroundId,
+    updatedAt: Number(rawUiSettings.updatedAt || rawUiSettings.uiUpdatedAt || account && account.uiUpdatedAt || 0) || 0
+  };
   return {
     id,
     name,
     stats,
     achievements: Array.isArray(account && account.achievements) ? account.achievements.slice(0, 20) : [],
+    uiSettings,
     updatedAt: Number(account && account.updatedAt || 0) || 0
   };
 }
@@ -4541,6 +4584,15 @@ async function gamesSyncProfileFromRemote(force = false) {
       } else if (remoteName && remoteName !== profile.accounts[accountId].name) {
         profile.accounts[accountId].name = remoteName;
         changed = true;
+      }
+      const remoteThemeId = String(row && (row.ui_theme || row.theme_id || row.themeId || row.theme) || '').trim();
+      const remoteBackgroundId = String(row && (row.ui_background || row.background_id || row.backgroundId || row.background) || '').trim();
+      if (remoteThemeId || remoteBackgroundId) {
+        const account = profile.accounts[accountId];
+        account.uiSettings = account.uiSettings && typeof account.uiSettings === 'object' ? account.uiSettings : {};
+        if (remoteThemeId && account.uiSettings.themeId !== remoteThemeId) { account.uiSettings.themeId = remoteThemeId; changed = true; }
+        if (remoteBackgroundId && account.uiSettings.backgroundId !== remoteBackgroundId) { account.uiSettings.backgroundId = remoteBackgroundId; changed = true; }
+        account.uiSettings.updatedAt = Date.now();
       }
     });
 
@@ -4651,6 +4703,7 @@ function gamesSetActiveAccount(accountId) {
   gamesSaveProfile(profile);
   app.gamesProfile = profile;
   const active = profile.accounts[profile.activeAccountId] || null;
+  if (typeof applyProfileUiPreferencesForActiveAccount === 'function') applyProfileUiPreferencesForActiveAccount({ loadRemote: true, source: 'login' });
   gamesApplyActiveAccountUI(active);
   gamesRenderStats();
   renderGamesHub();
@@ -4664,6 +4717,10 @@ function gamesClearActiveAccount() {
   profile.profileVersion = GAMES_PROFILE_RESET_VERSION;
   gamesSaveProfile(profile);
   app.gamesProfile = profile;
+  try {
+    if (typeof applyThemePreference === 'function') applyThemePreference(getThemePreference(), false);
+    if (typeof applyBackgroundPreference === 'function') applyBackgroundPreference(getBackgroundPreference(), false);
+  } catch (err) {}
   gamesApplyActiveAccountUI(null);
   gamesRenderStats();
   renderGamesHub();
@@ -6061,15 +6118,16 @@ const RAK_THEME_BASE_VARS = {
   '--soft': '#ccc'
 };
 const RAK_THEME_DEFS = [
-  { id: 'default', label: 'Výchozí', subtitle: 'Bezpečný základ appky', color: '#7CFF7C', unlockText: 'Vždy dostupné', minPlays: 0, minAchievements: 0, vars: {} },
-  { id: 'emerald', label: 'Emerald glass', subtitle: 'Jasnější zelený lesk', color: '#8CFF98', unlockText: 'Odemkne se po 5 hrách', minPlays: 5, minAchievements: 0, vars: { '--bg': '#09110b', '--panel': '#101814', '--panel2': '#18211c', '--green': '#5ae36a', '--green2': '#a7ffb0', '--muted': '#8aa08f', '--soft': '#d5e6d6' } },
-  { id: 'midnight', label: 'Midnight', subtitle: 'Tmavší chladný skin', color: '#8fb4ff', unlockText: 'Odemkne se po 12 hrách', minPlays: 12, minAchievements: 0, vars: { '--bg': '#071018', '--panel': '#101824', '--panel2': '#17202b', '--green': '#55c7ff', '--green2': '#a9ddff', '--muted': '#8aa6b7', '--soft': '#d5e7f4' } },
-  { id: 'aurora', label: 'Aurora', subtitle: 'Zeleno-modrý glow', color: '#7ee7ff', unlockText: 'Odemkne se po 20 hrách', minPlays: 20, minAchievements: 0, vars: { '--bg': '#081219', '--panel': '#101d25', '--panel2': '#162a35', '--green': '#61e0ff', '--green2': '#bdf2ff', '--muted': '#8ea9b6', '--soft': '#dbeef5' } },
-  { id: 'neon', label: 'Neon pulse', subtitle: 'Výraznější glow a kontrast', color: '#ff9eff', unlockText: 'Odemkne se po 30 hrách', minPlays: 30, minAchievements: 0, vars: { '--bg': '#120a15', '--panel': '#1a1020', '--panel2': '#24142d', '--green': '#d35cff', '--green2': '#ffb3ff', '--muted': '#ad93b8', '--soft': '#eadbf0' } },
-  { id: 'graphite', label: 'Graphite', subtitle: 'Čistý uhlíkový dark', color: '#b6c0ca', unlockText: 'Odemkne se po 40 hrách', minPlays: 40, minAchievements: 0, vars: { '--bg': '#090b0f', '--panel': '#11161c', '--panel2': '#171d24', '--green': '#b8c6d1', '--green2': '#e7eef5', '--muted': '#95a0aa', '--soft': '#dce5ed' } },
-  { id: 'ice', label: 'Ice neon', subtitle: 'Studený iOS styl', color: '#7ee7ff', unlockText: 'Odemkne se po 55 hrách', minPlays: 55, minAchievements: 0, vars: { '--bg': '#081118', '--panel': '#101b24', '--panel2': '#172532', '--green': '#60d8ff', '--green2': '#bdeeff', '--muted': '#8ea8b6', '--soft': '#dbeaf2' } },
-  { id: 'amoled', label: 'Super AMOLED Dark', subtitle: 'Téměř čistá černá pro profíky', color: '#7cff7c', unlockText: 'Odemkne se po 8 achievementech', minPlays: 60, minAchievements: 8, vars: { '--bg': '#000000', '--panel': '#090909', '--panel2': '#111111', '--green': '#6dff6d', '--green2': '#b8ffb8', '--muted': '#909090', '--soft': '#f0f0f0' } }
-];
+  { id: 'default', label: 'RaK glass', subtitle: 'Čistý zelený základ pro tmavé sklo', color: '#7CFF7C', unlockText: 'Vždy dostupné', minPlays: 0, minAchievements: 0, vars: { '--bg': '#07100b', '--panel': 'rgba(18,28,22,.72)', '--panel2': 'rgba(24,36,28,.68)', '--green': '#4ADE80', '--green2': '#B7FFBE', '--muted': '#91a396', '--soft': '#e5f7e9' } },
+  { id: 'emerald', label: 'Škoda emerald', subtitle: 'Moderní zelená ve stylu novější identity', color: '#78FAAE', unlockText: 'Odemkne se po 5 hrách', minPlays: 5, minAchievements: 0, vars: { '--bg': '#04100d', '--panel': 'rgba(8,32,25,.70)', '--panel2': 'rgba(13,48,38,.66)', '--green': '#78FAAE', '--green2': '#D5FFE5', '--muted': '#96b7a6', '--soft': '#e6fff0' } },
+  { id: 'midnight', label: 'Midnight blue', subtitle: 'Tmavé modré sklo pro výrazný kontrast', color: '#60A5FA', unlockText: 'Odemkne se po 12 hrách', minPlays: 12, minAchievements: 0, vars: { '--bg': '#020617', '--panel': 'rgba(15,23,42,.70)', '--panel2': 'rgba(30,41,59,.66)', '--green': '#60A5FA', '--green2': '#BFDBFE', '--muted': '#93a4bd', '--soft': '#e7f0ff' } },
+  { id: 'aurora', label: 'Aurora cyan', subtitle: 'Tyrkysový glow pod glass kartami', color: '#22D3EE', unlockText: 'Odemkne se po 20 hrách', minPlays: 20, minAchievements: 0, vars: { '--bg': '#03121d', '--panel': 'rgba(6,24,38,.70)', '--panel2': 'rgba(8,47,73,.62)', '--green': '#22D3EE', '--green2': '#A5F3FC', '--muted': '#8fb7c3', '--soft': '#e5fbff' } },
+  { id: 'neon', label: 'Neon violet', subtitle: 'Fialovo-růžový moderní neon', color: '#D946EF', unlockText: 'Odemkne se po 30 hrách', minPlays: 30, minAchievements: 0, vars: { '--bg': '#12061b', '--panel': 'rgba(37,15,52,.70)', '--panel2': 'rgba(62,20,82,.64)', '--green': '#D946EF', '--green2': '#F5D0FE', '--muted': '#b99ac6', '--soft': '#f8eaff' } },
+  { id: 'graphite', label: 'Titanium graphite', subtitle: 'Prémiový šedo-stříbrný dark', color: '#CBD5E1', unlockText: 'Odemkne se po 40 hrách', minPlays: 40, minAchievements: 0, vars: { '--bg': '#05070a', '--panel': 'rgba(17,24,39,.72)', '--panel2': 'rgba(31,41,55,.64)', '--green': '#CBD5E1', '--green2': '#F8FAFC', '--muted': '#a7b0bd', '--soft': '#edf2f7' } },
+  { id: 'ice', label: 'Ice glass', subtitle: 'Ledově světlý akcent na tmavém podkladu', color: '#99F6E4', unlockText: 'Odemkne se po 55 hrách', minPlays: 55, minAchievements: 0, vars: { '--bg': '#021011', '--panel': 'rgba(8,47,73,.62)', '--panel2': 'rgba(15,118,110,.46)', '--green': '#99F6E4', '--green2': '#CCFBF1', '--muted': '#9ec5c3', '--soft': '#edfffb' } },
+  { id: 'amoled', label: 'AMOLED neon', subtitle: 'Skoro černá, maximum kontrastu', color: '#B8FF67', unlockText: 'Odemkne se po 8 achievementech', minPlays: 60, minAchievements: 8, vars: { '--bg': '#000000', '--panel': 'rgba(7,10,8,.76)', '--panel2': 'rgba(12,18,14,.68)', '--green': '#B8FF67', '--green2': '#ECFCCB', '--muted': '#939c91', '--soft': '#f4ffe9' } },
+  { id: 'sunset', label: 'Sunset plasma', subtitle: 'Teplý oranžovo-růžový glass', color: '#FB7185', unlockText: 'Odemkne se po 75 hrách', minPlays: 75, minAchievements: 0, vars: { '--bg': '#15050a', '--panel': 'rgba(57,18,28,.68)', '--panel2': 'rgba(87,28,38,.60)', '--green': '#FB7185', '--green2': '#FECDD3', '--muted': '#c7a0a8', '--soft': '#fff0f3' } }
+]
 window.RAK_THEME_DEFS = RAK_THEME_DEFS;
 
 const RAK_BACKGROUND_STORAGE_KEY = APP_KEY + ':background_v1';
@@ -6219,6 +6277,103 @@ const RAK_BACKGROUND_DEFS = [
       '--green2': '#f0abfc'
     }
   },
+
+  {
+    id: 'aurora-punch',
+    label: 'Aurora punch',
+    subtitle: 'Hodně výrazná modrá, růžová a tyrkys',
+    color: '#38bdf8',
+    swatch: 'radial-gradient(circle at 14% 18%, rgba(56,189,248,.98), transparent 32%), radial-gradient(circle at 82% 18%, rgba(244,114,182,.92), transparent 36%), radial-gradient(circle at 48% 86%, rgba(45,212,191,.78), transparent 42%), linear-gradient(145deg, #020617, #172554)',
+    vars: {
+      '--rakBgBase': '#020617',
+      '--rakAppBackground': 'radial-gradient(circle at 12% 10%, rgba(56,189,248,.36), transparent 31%), radial-gradient(circle at 86% 18%, rgba(244,114,182,.28), transparent 36%), radial-gradient(circle at 50% 86%, rgba(45,212,191,.20), transparent 42%), radial-gradient(circle at 42% 44%, rgba(129,140,248,.18), transparent 43%), linear-gradient(160deg, #020617 0%, #071633 48%, #172554 100%)',
+      '--rakAppBackgroundOverlay': 'linear-gradient(90deg, rgba(2,6,23,.48), transparent 24%, rgba(56,189,248,.060) 50%, transparent 76%, rgba(2,6,23,.48)), radial-gradient(circle at 46% 42%, rgba(255,255,255,.085), transparent 46%)',
+      '--rakAppBackgroundLite': 'linear-gradient(160deg, #020617 0%, #071633 55%, #172554 100%)',
+      '--rakBgAccent': 'rgba(56,189,248,.36)',
+      '--green': '#38bdf8',
+      '--green2': '#bae6fd'
+    }
+  },
+  {
+    id: 'violet-storm',
+    label: 'Violet storm',
+    subtitle: 'Fialová bouřka s neonovým sklem',
+    color: '#a78bfa',
+    swatch: 'radial-gradient(circle at 18% 16%, rgba(167,139,250,.98), transparent 34%), radial-gradient(circle at 80% 18%, rgba(59,130,246,.78), transparent 37%), radial-gradient(circle at 48% 86%, rgba(236,72,153,.68), transparent 42%), linear-gradient(145deg, #09051c, #2e1065)',
+    vars: {
+      '--rakBgBase': '#09051c',
+      '--rakAppBackground': 'radial-gradient(circle at 14% 12%, rgba(167,139,250,.32), transparent 32%), radial-gradient(circle at 84% 18%, rgba(59,130,246,.22), transparent 36%), radial-gradient(circle at 52% 86%, rgba(236,72,153,.18), transparent 42%), radial-gradient(circle at 44% 42%, rgba(255,255,255,.08), transparent 43%), linear-gradient(160deg, #060316 0%, #171044 48%, #2e1065 100%)',
+      '--rakAppBackgroundOverlay': 'linear-gradient(90deg, rgba(6,3,22,.48), transparent 25%, rgba(167,139,250,.060) 50%, transparent 75%, rgba(6,3,22,.48)), radial-gradient(circle at 48% 42%, rgba(255,255,255,.080), transparent 46%)',
+      '--rakAppBackgroundLite': 'linear-gradient(160deg, #060316 0%, #171044 55%, #2e1065 100%)',
+      '--rakBgAccent': 'rgba(167,139,250,.32)',
+      '--green': '#a78bfa',
+      '--green2': '#ddd6fe'
+    }
+  },
+  {
+    id: 'sunset-plasma',
+    label: 'Sunset plasma',
+    subtitle: 'Oranžovo-růžové výrazné pozadí',
+    color: '#fb7185',
+    swatch: 'radial-gradient(circle at 16% 18%, rgba(251,113,133,.96), transparent 34%), radial-gradient(circle at 82% 20%, rgba(251,146,60,.88), transparent 38%), radial-gradient(circle at 50% 86%, rgba(168,85,247,.62), transparent 42%), linear-gradient(145deg, #17050c, #431407)',
+    vars: {
+      '--rakBgBase': '#17050c',
+      '--rakAppBackground': 'radial-gradient(circle at 13% 11%, rgba(251,113,133,.30), transparent 32%), radial-gradient(circle at 86% 19%, rgba(251,146,60,.25), transparent 37%), radial-gradient(circle at 50% 86%, rgba(168,85,247,.16), transparent 42%), linear-gradient(160deg, #10030a 0%, #2a0714 48%, #431407 100%)',
+      '--rakAppBackgroundOverlay': 'linear-gradient(90deg, rgba(16,3,10,.50), transparent 25%, rgba(251,146,60,.062) 50%, transparent 75%, rgba(16,3,10,.50)), radial-gradient(circle at 47% 42%, rgba(255,255,255,.070), transparent 46%)',
+      '--rakAppBackgroundLite': 'linear-gradient(160deg, #10030a 0%, #2a0714 55%, #431407 100%)',
+      '--rakBgAccent': 'rgba(251,113,133,.30)',
+      '--green': '#fb7185',
+      '--green2': '#fecdd3'
+    }
+  },
+  {
+    id: 'polar-mint',
+    label: 'Polar mint',
+    subtitle: 'Ledově mintové sklo s výrazným kontrastem',
+    color: '#99f6e4',
+    swatch: 'radial-gradient(circle at 16% 16%, rgba(153,246,228,.98), transparent 34%), radial-gradient(circle at 82% 18%, rgba(34,211,238,.80), transparent 37%), radial-gradient(circle at 50% 86%, rgba(59,130,246,.62), transparent 42%), linear-gradient(145deg, #021011, #083344)',
+    vars: {
+      '--rakBgBase': '#021011',
+      '--rakAppBackground': 'radial-gradient(circle at 13% 10%, rgba(153,246,228,.30), transparent 31%), radial-gradient(circle at 86% 19%, rgba(34,211,238,.24), transparent 36%), radial-gradient(circle at 52% 86%, rgba(59,130,246,.16), transparent 42%), linear-gradient(160deg, #020b0c 0%, #06262b 48%, #083344 100%)',
+      '--rakAppBackgroundOverlay': 'linear-gradient(90deg, rgba(2,11,12,.50), transparent 26%, rgba(153,246,228,.060) 50%, transparent 74%, rgba(2,11,12,.50)), radial-gradient(circle at 47% 42%, rgba(255,255,255,.076), transparent 46%)',
+      '--rakAppBackgroundLite': 'linear-gradient(160deg, #020b0c 0%, #06262b 55%, #083344 100%)',
+      '--rakBgAccent': 'rgba(153,246,228,.30)',
+      '--green': '#99f6e4',
+      '--green2': '#ccfbf1'
+    }
+  },
+  {
+    id: 'blue-orbit',
+    label: 'Blue orbit',
+    subtitle: 'Sytě modré orbity pro výraznější glass hrany',
+    color: '#60a5fa',
+    swatch: 'radial-gradient(circle at 18% 18%, rgba(96,165,250,.98), transparent 34%), radial-gradient(circle at 84% 22%, rgba(14,165,233,.84), transparent 38%), radial-gradient(circle at 52% 84%, rgba(99,102,241,.72), transparent 42%), linear-gradient(145deg, #020617, #1e1b4b)',
+    vars: {
+      '--rakBgBase': '#020617',
+      '--rakAppBackground': 'radial-gradient(circle at 14% 11%, rgba(96,165,250,.34), transparent 32%), radial-gradient(circle at 86% 19%, rgba(14,165,233,.26), transparent 36%), radial-gradient(circle at 52% 86%, rgba(99,102,241,.20), transparent 42%), radial-gradient(circle at 42% 42%, rgba(255,255,255,.075), transparent 44%), linear-gradient(160deg, #020617 0%, #071633 48%, #1e1b4b 100%)',
+      '--rakAppBackgroundOverlay': 'linear-gradient(90deg, rgba(2,6,23,.50), transparent 25%, rgba(96,165,250,.070) 50%, transparent 75%, rgba(2,6,23,.50)), radial-gradient(circle at 47% 42%, rgba(255,255,255,.080), transparent 46%)',
+      '--rakAppBackgroundLite': 'linear-gradient(160deg, #020617 0%, #071633 55%, #1e1b4b 100%)',
+      '--rakBgAccent': 'rgba(96,165,250,.34)',
+      '--green': '#60a5fa',
+      '--green2': '#bfdbfe'
+    }
+  },
+  {
+    id: 'magma-lime',
+    label: 'Magma lime',
+    subtitle: 'Kontrast limetky, oranžové a tmavé hloubky',
+    color: '#bef264',
+    swatch: 'radial-gradient(circle at 16% 18%, rgba(190,242,100,.98), transparent 34%), radial-gradient(circle at 82% 20%, rgba(249,115,22,.86), transparent 38%), radial-gradient(circle at 50% 86%, rgba(236,72,153,.66), transparent 42%), linear-gradient(145deg, #080b03, #431407)',
+    vars: {
+      '--rakBgBase': '#080b03',
+      '--rakAppBackground': 'radial-gradient(circle at 13% 10%, rgba(190,242,100,.34), transparent 31%), radial-gradient(circle at 86% 18%, rgba(249,115,22,.26), transparent 37%), radial-gradient(circle at 50% 86%, rgba(236,72,153,.16), transparent 42%), radial-gradient(circle at 44% 44%, rgba(255,255,255,.065), transparent 43%), linear-gradient(160deg, #070902 0%, #1f1605 48%, #431407 100%)',
+      '--rakAppBackgroundOverlay': 'linear-gradient(90deg, rgba(7,9,2,.52), transparent 25%, rgba(190,242,100,.070) 50%, transparent 75%, rgba(7,9,2,.52)), radial-gradient(circle at 48% 42%, rgba(255,255,255,.074), transparent 46%)',
+      '--rakAppBackgroundLite': 'linear-gradient(160deg, #070902 0%, #1f1605 55%, #431407 100%)',
+      '--rakBgAccent': 'rgba(190,242,100,.34)',
+      '--green': '#bef264',
+      '--green2': '#ecfccb'
+    }
+  },
   {
     id: 'classic-rak',
     label: 'Původní RaK',
@@ -6236,27 +6391,326 @@ const RAK_BACKGROUND_DEFS = [
 ];
 window.RAK_BACKGROUND_DEFS = RAK_BACKGROUND_DEFS;
 
-function getThemePreference() {
+const RAK_PROFILE_UI_REMOTE_DEBOUNCE_MS = 650;
+let rakProfileUiRemoteSaveTimer = null;
+let rakProfileUiRemoteSavePromise = null;
+let rakProfileUiRemoteLoadAccount = '';
+let rakProfileUiRemoteLoadPromise = null;
+let rakProfileUiLastRemoteSaveSignature = '';
+const rakProfileUiSyncGuard = {
+  remoteLoads: 0,
+  remoteApplies: 0,
+  remoteSameSkips: 0,
+  remoteOlderSkips: 0,
+  remoteMissingCreates: 0,
+  loadInFlightJoins: 0,
+  saveInFlightJoins: 0,
+  saveSameSkips: 0,
+  remoteSaves: 0,
+  remoteSaveQueued: 0,
+  remoteSaveErrors: 0,
+  lastLoadAt: 0,
+  lastApplyAt: 0,
+  lastSaveAt: 0
+};
+
+function getProfileUiPayloadSignature(payload) {
+  if (!payload || typeof payload !== 'object') return '';
+  return [
+    String(payload.account_number || payload.accountNumber || '').trim(),
+    normalizeThemePreferenceId(payload.theme_id || payload.themeId || payload.theme || 'default', 'default'),
+    normalizeBackgroundPreferenceId(payload.background_id || payload.backgroundId || payload.background || 'ios-mesh', 'ios-mesh')
+  ].join('|');
+}
+
+function getProfileUiSyncStatus() {
+  const account = getActiveProfileUiAccount();
+  const ui = ensureAccountUiSettings(account);
+  return {
+    account: account ? String(account.name || account.id || '').trim() : '',
+    themeId: ui && ui.themeId ? ui.themeId : getLocalThemePreference(),
+    backgroundId: ui && ui.backgroundId ? ui.backgroundId : getLocalBackgroundPreference(),
+    remoteLoadActive: !!rakProfileUiRemoteLoadPromise,
+    remoteSaveActive: !!rakProfileUiRemoteSavePromise,
+    guard: Object.assign({}, rakProfileUiSyncGuard)
+  };
+}
+window.getProfileUiSyncStatus = getProfileUiSyncStatus;
+
+function normalizeThemePreferenceId(themeId, fallback = 'default') {
+  const id = String(themeId || '').trim();
+  if (id && RAK_THEME_DEFS.some(theme => theme.id === id)) return id;
+  const fb = String(fallback || '').trim();
+  return RAK_THEME_DEFS.some(theme => theme.id === fb) ? fb : 'default';
+}
+
+function normalizeBackgroundPreferenceId(bgId, fallback = 'ios-mesh') {
+  const id = String(bgId || '').trim();
+  if (id && RAK_BACKGROUND_DEFS.some(bg => bg.id === id)) return id;
+  const fb = String(fallback || '').trim();
+  return RAK_BACKGROUND_DEFS.some(bg => bg.id === fb) ? fb : 'ios-mesh';
+}
+
+function getLocalThemePreference() {
+  try { return normalizeThemePreferenceId(localStorage.getItem(RAK_THEME_STORAGE_KEY) || 'default', 'default'); }
+  catch (err) { return 'default'; }
+}
+
+function getLocalBackgroundPreference() {
+  try { return normalizeBackgroundPreferenceId(localStorage.getItem(RAK_BACKGROUND_STORAGE_KEY) || 'ios-mesh', 'ios-mesh'); }
+  catch (err) { return 'ios-mesh'; }
+}
+
+function getActiveProfileUiAccount() {
   try {
-    const saved = localStorage.getItem(RAK_THEME_STORAGE_KEY) || 'default';
-    return RAK_THEME_DEFS.some(t => t.id === saved) ? saved : 'default';
+    const profile = typeof gamesGetProfile === 'function' ? gamesGetProfile() : null;
+    if (!profile || !profile.activeAccountId || !profile.accounts) return null;
+    return profile.accounts[profile.activeAccountId] || null;
   } catch (err) {
-    return 'default';
+    return null;
   }
+}
+
+function ensureAccountUiSettings(account) {
+  if (!account || typeof account !== 'object') return null;
+  if (!account.uiSettings || typeof account.uiSettings !== 'object') account.uiSettings = {};
+  if (!account.uiSettings.themeId && (account.themeId || account.uiTheme)) account.uiSettings.themeId = String(account.themeId || account.uiTheme || '').trim();
+  if (!account.uiSettings.backgroundId && (account.backgroundId || account.uiBackground)) account.uiSettings.backgroundId = String(account.backgroundId || account.uiBackground || '').trim();
+  account.uiSettings.themeId = account.uiSettings.themeId ? normalizeThemePreferenceId(account.uiSettings.themeId, '') : '';
+  account.uiSettings.backgroundId = account.uiSettings.backgroundId ? normalizeBackgroundPreferenceId(account.uiSettings.backgroundId, '') : '';
+  account.uiSettings.updatedAt = Number(account.uiSettings.updatedAt || 0) || 0;
+  return account.uiSettings;
+}
+
+function getProfileThemePreference() {
+  const account = getActiveProfileUiAccount();
+  const ui = ensureAccountUiSettings(account);
+  return ui && ui.themeId ? normalizeThemePreferenceId(ui.themeId, '') : '';
+}
+
+function getProfileBackgroundPreference() {
+  const account = getActiveProfileUiAccount();
+  const ui = ensureAccountUiSettings(account);
+  return ui && ui.backgroundId ? normalizeBackgroundPreferenceId(ui.backgroundId, '') : '';
+}
+
+function saveActiveAccountUiSettings(partial, options = {}) {
+  const profile = typeof gamesGetProfile === 'function' ? gamesGetProfile() : null;
+  const account = profile && profile.activeAccountId && profile.accounts ? profile.accounts[profile.activeAccountId] : null;
+  const ui = ensureAccountUiSettings(account);
+  if (!profile || !account || !ui) return false;
+  let changed = false;
+  if (Object.prototype.hasOwnProperty.call(partial || {}, 'themeId')) {
+    const nextTheme = normalizeThemePreferenceId(partial.themeId, ui.themeId || getLocalThemePreference());
+    if (ui.themeId !== nextTheme) { ui.themeId = nextTheme; changed = true; }
+  }
+  if (Object.prototype.hasOwnProperty.call(partial || {}, 'backgroundId')) {
+    const nextBg = normalizeBackgroundPreferenceId(partial.backgroundId, ui.backgroundId || getLocalBackgroundPreference());
+    if (ui.backgroundId !== nextBg) { ui.backgroundId = nextBg; changed = true; }
+  }
+  if (changed || !ui.updatedAt) {
+    ui.updatedAt = Date.now();
+    account.updatedAt = Math.max(Number(account.updatedAt || 0) || 0, ui.updatedAt);
+    profile.profileVersion = GAMES_PROFILE_RESET_VERSION;
+    gamesSaveProfile(profile);
+    app.gamesProfile = profile;
+  }
+  if (!options.skipRemote) scheduleActiveAccountUiRemoteSave(options.reason || 'profile-ui-local-save');
+  return true;
+}
+
+function getActiveAccountUiRemotePayload() {
+  const account = getActiveProfileUiAccount();
+  const ui = ensureAccountUiSettings(account);
+  if (!account || !ui) return null;
+  return {
+    account_number: String(account.id || '').trim(),
+    theme_id: normalizeThemePreferenceId(ui.themeId || getLocalThemePreference(), 'default'),
+    background_id: normalizeBackgroundPreferenceId(ui.backgroundId || getLocalBackgroundPreference(), 'ios-mesh'),
+    updated_at: new Date(Number(ui.updatedAt || Date.now()) || Date.now()).toISOString()
+  };
+}
+
+function scheduleActiveAccountUiRemoteSave(reason) {
+  const bridge = window.RotationSupabaseBridge;
+  if (!bridge || typeof bridge.saveGameAccountUiSettings !== 'function') return false;
+  const payload = getActiveAccountUiRemotePayload();
+  if (!payload || !payload.account_number) return false;
+  const signature = getProfileUiPayloadSignature(payload);
+  if (signature && signature === rakProfileUiLastRemoteSaveSignature && !rakProfileUiRemoteSavePromise) {
+    rakProfileUiSyncGuard.saveSameSkips += 1;
+    return false;
+  }
+  if (rakProfileUiRemoteSaveTimer) clearTimeout(rakProfileUiRemoteSaveTimer);
+  rakProfileUiRemoteSaveTimer = setTimeout(() => {
+    rakProfileUiRemoteSaveTimer = null;
+    void pushActiveAccountUiRemoteSettings(reason || 'profile-ui-debounced');
+  }, RAK_PROFILE_UI_REMOTE_DEBOUNCE_MS);
+  return true;
+}
+
+async function pushActiveAccountUiRemoteSettings(reason) {
+  const bridge = window.RotationSupabaseBridge;
+  if (!bridge || typeof bridge.saveGameAccountUiSettings !== 'function') return null;
+  const payload = getActiveAccountUiRemotePayload();
+  if (!payload || !payload.account_number) return null;
+  const signature = getProfileUiPayloadSignature(payload);
+  if (signature && signature === rakProfileUiLastRemoteSaveSignature && !rakProfileUiRemoteSavePromise) {
+    rakProfileUiSyncGuard.saveSameSkips += 1;
+    return { ok: true, skipped: true, reason: 'same-profile-ui' };
+  }
+  if (rakProfileUiRemoteSavePromise) {
+    rakProfileUiSyncGuard.saveInFlightJoins += 1;
+    return await rakProfileUiRemoteSavePromise;
+  }
+  rakProfileUiRemoteSavePromise = bridge.saveGameAccountUiSettings(Object.assign({ reason: reason || 'profile-ui-save' }, payload))
+    .then((result) => {
+      if (result && result.ok !== false) {
+        rakProfileUiLastRemoteSaveSignature = signature;
+        rakProfileUiSyncGuard.remoteSaves += 1;
+        rakProfileUiSyncGuard.lastSaveAt = Date.now();
+        if (result.queued || result.deferred) rakProfileUiSyncGuard.remoteSaveQueued += 1;
+      } else {
+        rakProfileUiSyncGuard.remoteSaveErrors += 1;
+      }
+      return result;
+    })
+    .catch((err) => {
+      rakProfileUiSyncGuard.remoteSaveErrors += 1;
+      console.warn('Profile UI remote save failed', err);
+      return { ok: false, error: err };
+    })
+    .finally(() => { rakProfileUiRemoteSavePromise = null; });
+  return await rakProfileUiRemoteSavePromise;
+}
+
+async function loadActiveAccountUiRemoteSettings(accountId) {
+  const id = String(accountId || '').trim();
+  const bridge = window.RotationSupabaseBridge;
+  if (!id || !bridge || typeof bridge.loadGameAccountUiSettings !== 'function') return null;
+  if (rakProfileUiRemoteLoadAccount === id && rakProfileUiRemoteLoadPromise) {
+    rakProfileUiSyncGuard.loadInFlightJoins += 1;
+    return await rakProfileUiRemoteLoadPromise;
+  }
+  rakProfileUiRemoteLoadAccount = id;
+  rakProfileUiRemoteLoadPromise = (async () => {
+    try {
+      rakProfileUiSyncGuard.remoteLoads += 1;
+      rakProfileUiSyncGuard.lastLoadAt = Date.now();
+      const remote = await bridge.loadGameAccountUiSettings(id);
+      if (!remote || typeof remote !== 'object') {
+        rakProfileUiSyncGuard.remoteMissingCreates += 1;
+        void pushActiveAccountUiRemoteSettings('profile-ui-create-missing-remote');
+        return null;
+      }
+      const remoteTheme = normalizeThemePreferenceId(remote.theme_id || remote.themeId || remote.theme || '', '');
+      const remoteBg = normalizeBackgroundPreferenceId(remote.background_id || remote.backgroundId || remote.background || '', '');
+      if (!remoteTheme && !remoteBg) return null;
+      const profile = typeof gamesGetProfile === 'function' ? gamesGetProfile() : null;
+      const account = profile && profile.accounts ? profile.accounts[id] : null;
+      const ui = ensureAccountUiSettings(account);
+      if (!profile || !account || !ui) return null;
+      const localTs = Number(ui.updatedAt || 0) || 0;
+      const remoteTs = Date.parse(String(remote.updated_at || remote.updatedAt || '')) || 0;
+      const remoteIsOlder = localTs > 0 && remoteTs > 0 && remoteTs + 1000 < localTs;
+      if (remoteIsOlder) {
+        rakProfileUiSyncGuard.remoteOlderSkips += 1;
+        void pushActiveAccountUiRemoteSettings('profile-ui-remote-older-push-local');
+        return Object.assign({ ok: true, skipped: true, reason: 'remote-older' }, remote);
+      }
+      let changed = false;
+      if (remoteTheme && ui.themeId !== remoteTheme) { ui.themeId = remoteTheme; changed = true; }
+      if (remoteBg && ui.backgroundId !== remoteBg) { ui.backgroundId = remoteBg; changed = true; }
+      ui.updatedAt = Math.max(localTs, remoteTs || Date.now());
+      if (changed) {
+        rakProfileUiSyncGuard.remoteApplies += 1;
+        rakProfileUiSyncGuard.lastApplyAt = Date.now();
+        account.updatedAt = Math.max(Number(account.updatedAt || 0) || 0, ui.updatedAt);
+        profile.profileVersion = GAMES_PROFILE_RESET_VERSION;
+        gamesSaveProfile(profile);
+        app.gamesProfile = profile;
+        if (remoteTheme) applyThemePreference(remoteTheme, true, { skipProfile: true });
+        if (remoteBg) applyBackgroundPreference(remoteBg, true, { skipProfile: true });
+        if (typeof renderThemeSettingsCards === 'function') renderThemeSettingsCards();
+      } else {
+        rakProfileUiSyncGuard.remoteSameSkips += 1;
+        if (remoteTheme || remoteBg) {
+          rakProfileUiLastRemoteSaveSignature = getProfileUiPayloadSignature({ account_number: id, theme_id: remoteTheme || ui.themeId, background_id: remoteBg || ui.backgroundId });
+        }
+      }
+      return remote;
+    } catch (err) {
+      console.warn('Profile UI remote load failed', err);
+      return null;
+    }
+  })();
+  try {
+    return await rakProfileUiRemoteLoadPromise;
+  } finally {
+    rakProfileUiRemoteLoadAccount = '';
+    rakProfileUiRemoteLoadPromise = null;
+  }
+}
+
+function applyProfileUiPreferencesForActiveAccount(options = {}) {
+  const profile = typeof gamesGetProfile === 'function' ? gamesGetProfile() : null;
+  const account = profile && profile.activeAccountId && profile.accounts ? profile.accounts[profile.activeAccountId] : null;
+  const ui = ensureAccountUiSettings(account);
+  if (!profile || !account || !ui) return false;
+  const localTheme = getLocalThemePreference();
+  const localBg = getLocalBackgroundPreference();
+  let changed = false;
+  if (!ui.themeId) { ui.themeId = localTheme; changed = true; }
+  if (!ui.backgroundId) { ui.backgroundId = localBg; changed = true; }
+  if (changed || !ui.updatedAt) {
+    ui.updatedAt = Date.now();
+    account.updatedAt = Math.max(Number(account.updatedAt || 0) || 0, ui.updatedAt);
+    profile.profileVersion = GAMES_PROFILE_RESET_VERSION;
+    gamesSaveProfile(profile);
+    app.gamesProfile = profile;
+  }
+  applyThemePreference(ui.themeId || localTheme, true, { skipProfile: true });
+  applyBackgroundPreference(ui.backgroundId || localBg, true, { skipProfile: true });
+  if (typeof renderThemeSettingsCards === 'function') renderThemeSettingsCards();
+  if (changed) scheduleActiveAccountUiRemoteSave('profile-ui-initialized-from-local');
+  if (options.loadRemote !== false) void loadActiveAccountUiRemoteSettings(account.id);
+  return true;
+}
+
+window.applyProfileUiPreferencesForActiveAccount = applyProfileUiPreferencesForActiveAccount;
+window.pushActiveAccountUiRemoteSettings = pushActiveAccountUiRemoteSettings;
+window.loadActiveAccountUiRemoteSettings = loadActiveAccountUiRemoteSettings;
+
+function getThemePreference() {
+  const profileTheme = getProfileThemePreference();
+  if (profileTheme) return profileTheme;
+  return getLocalThemePreference();
 }
 
 
 function getBackgroundPreference() {
-  try {
-    const saved = localStorage.getItem(RAK_BACKGROUND_STORAGE_KEY) || 'ios-mesh';
-    return RAK_BACKGROUND_DEFS.some(bg => bg.id === saved) ? saved : 'ios-mesh';
-  } catch (err) {
-    return 'ios-mesh';
-  }
+  const profileBg = getProfileBackgroundPreference();
+  if (profileBg) return profileBg;
+  return getLocalBackgroundPreference();
 }
 
-function applyBackgroundPreference(bgId, persist = true) {
-  const bg = RAK_BACKGROUND_DEFS.find(item => item.id === bgId) || RAK_BACKGROUND_DEFS[0];
+function updateBackgroundMetaColor(bg) {
+  try {
+    const vars = bg && bg.vars && typeof bg.vars === 'object' ? bg.vars : {};
+    const nextColor = String((bg && bg.themeColor) || vars['--rakBgBase'] || '#050816').trim() || '#050816';
+    let meta = document.querySelector('meta[name="theme-color"]');
+    if (!meta && document.head) {
+      meta = document.createElement('meta');
+      meta.setAttribute('name', 'theme-color');
+      document.head.appendChild(meta);
+    }
+    if (meta) meta.setAttribute('content', nextColor);
+  } catch (err) {}
+}
+window.updateBackgroundMetaColor = updateBackgroundMetaColor;
+
+function applyBackgroundPreference(bgId, persist = true, options = {}) {
+  const bg = RAK_BACKGROUND_DEFS.find(item => item.id === normalizeBackgroundPreferenceId(bgId, 'ios-mesh')) || RAK_BACKGROUND_DEFS[0];
   const root = document.documentElement;
   root.dataset.rakBackground = bg.id;
   Object.entries(RAK_BACKGROUND_BASE_VARS).forEach(([key, value]) => {
@@ -6265,8 +6719,10 @@ function applyBackgroundPreference(bgId, persist = true) {
   Object.entries(bg.vars || {}).forEach(([key, value]) => {
     root.style.setProperty(key, value);
   });
+  updateBackgroundMetaColor(bg);
   if (persist) {
     try { localStorage.setItem(RAK_BACKGROUND_STORAGE_KEY, bg.id); } catch (err) {}
+    if (!options.skipProfile) saveActiveAccountUiSettings({ backgroundId: bg.id }, { reason: 'background-change', skipRemote: !!options.skipRemote });
   }
   return bg.id;
 }
@@ -6276,6 +6732,26 @@ window.RAK_BACKGROUND_STORAGE_KEY = RAK_BACKGROUND_STORAGE_KEY;
 
 (function initBackgroundPreference() {
   try { applyBackgroundPreference(getBackgroundPreference(), false); } catch (err) {}
+})();
+
+(function installAppearancePreferenceGuards() {
+  if (window.__rakAppearancePreferenceGuardV552) return;
+  window.__rakAppearancePreferenceGuardV552 = true;
+  const syncAppearance = () => {
+    try {
+      applyThemePreference(getThemePreference(), false);
+      applyBackgroundPreference(getBackgroundPreference(), false);
+      if (typeof renderThemeSettingsCards === 'function') renderThemeSettingsCards();
+    } catch (err) {}
+  };
+  window.addEventListener('pageshow', syncAppearance);
+  window.addEventListener('focus', syncAppearance);
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) syncAppearance();
+  });
+  window.addEventListener('storage', (event) => {
+    if (!event || event.key === RAK_BACKGROUND_STORAGE_KEY || event.key === RAK_THEME_STORAGE_KEY) syncAppearance();
+  });
 })();
 
 function getThemeUnlockMetrics(profile) {
@@ -6295,10 +6771,11 @@ function getThemeUnlockScore(profile) {
   return metrics.totalPlays + Math.floor(metrics.bestScore / 50) + (metrics.achievements * 2);
 }
 
-function applyThemePreference(themeId, persist = true) {
-  const theme = RAK_THEME_DEFS.find(t => t.id === themeId) || RAK_THEME_DEFS[0];
+function applyThemePreference(themeId, persist = true, options = {}) {
+  const theme = RAK_THEME_DEFS.find(t => t.id === normalizeThemePreferenceId(themeId, 'default')) || RAK_THEME_DEFS[0];
   const root = document.documentElement;
   root.dataset.rakTheme = theme.id;
+  root.style.setProperty('--rakThemeAccent', String(theme.color || '#7CFF7C'));
   Object.entries(RAK_THEME_BASE_VARS).forEach(([key, value]) => {
     root.style.setProperty(key, value);
   });
@@ -6307,6 +6784,7 @@ function applyThemePreference(themeId, persist = true) {
   });
   if (persist) {
     try { localStorage.setItem(RAK_THEME_STORAGE_KEY, theme.id); } catch (err) {}
+    if (!options.skipProfile) saveActiveAccountUiSettings({ themeId: theme.id }, { reason: 'theme-change', skipRemote: !!options.skipRemote });
   }
   return theme.id;
 }
@@ -6347,14 +6825,18 @@ function buildThemeSystemSettingsHtml() {
       '</div>' +
     '</button>';
   }).join('');
+  const activeUiAccount = getActiveProfileUiAccount();
+  const profileThemeText = activeUiAccount
+    ? 'Jsi přihlášený jako ' + String(activeUiAccount.name || activeUiAccount.id || '').trim() + ': theme i pozadí se ukládá k hernímu profilu a načte se i na jiném zařízení.'
+    : 'Bez přihlášení se theme i pozadí ukládá jen do tohoto zařízení. Po přihlášení herním profilem se začne ukládat k profilu.';
   return [
     '<div class="appMenuCard appMenuSettingsCard appMenuThemeCardWrap">',
-    '  <div class="appMenuCardTitle">Theme</div>',
-    '  <div class="appMenuText">Vzhled celé aplikace se váže na přihlášený herní účet. Pozadí je samostatné, aby šlo doladit glass efekt bez změny rozložení.</div>',
+    '  <div class="appMenuCardTitle">Theme / barvy aplikace</div>',
+    '  <div class="appMenuText">Theme mění barvy, akcenty, aktivní prvky a některé odemykatelné skiny. Pozadí je samostatné, aby šlo doladit glass efekt bez změny rozložení.<br>' + escapeHtml(profileThemeText) + '</div>',
     '  <details class="appMenuThemeAccordion" id="appMenuThemeAccordion">',
     '    <summary class="appMenuAction appMenuSettingBtn appMenuThemeSummary">',
     '      <span class="appMenuThemeSummaryLeft">',
-    '        <span class="appMenuThemeSummaryTitle">Theme</span>',
+    '        <span class="appMenuThemeSummaryTitle">Theme / barvy</span>',
     '        <span class="appMenuThemeSummaryMeta" id="appMenuThemeSummaryMeta">Aktivní: ' + escapeHtml(String(currentTheme.label || 'Výchozí')) + '</span>',
     '      </span>',
     '      <span class="appMenuThemeSummaryChevron" aria-hidden="true">⌄</span>',
@@ -6459,8 +6941,8 @@ function renderThemeSettingsCards() {
   if (hint) {
     const activeName = (themeById.get(current) || themeList[0] || { label: 'Výchozí' }).label;
     hint.textContent = profile && profile.activeAccountId
-      ? 'Theme se váže na přihlášený herní účet. Aktivní: ' + activeName + '.'
-      : 'Přihlas se do herního účtu a další themes se budou odemykat podle profilu.';
+      ? 'Theme i pozadí se ukládá k přihlášenému hernímu profilu. Aktivní: ' + activeName + '.'
+      : 'Theme mění barvy/akcenty aplikace. Bez přihlášení se ukládá jen lokálně v tomto zařízení.';
   }
 }
 
@@ -6498,6 +6980,7 @@ window.addEventListener('load', () => {
   try {
     if (typeof applyThemePreference === 'function') applyThemePreference(getThemePreference(), false);
     if (typeof syncGamesLockedSections === 'function') syncGamesLockedSections();
+    if (typeof applyProfileUiPreferencesForActiveAccount === 'function') applyProfileUiPreferencesForActiveAccount({ loadRemote: true, source: 'window-load' });
     if (typeof renderThemeSettingsCards === 'function') renderThemeSettingsCards();
   } catch (err) {}
 }, { once: true });
