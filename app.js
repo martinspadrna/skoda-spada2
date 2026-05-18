@@ -1,4 +1,4 @@
-// v.1.1 (544) – Fáze 6: UI fix indexů Brusy v iOS glass stylu bez zásahu do výpočtů nebo Supabase logiky.
+// v.1.1 (546) – Oprava přepínání pozadí v Theme + výraznější glass background varianty.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

@@ -1,3 +1,18 @@
+## v.1.1 (546)
+- Nastavení → Theme/Pozadí: opravené klikání na varianty pozadí – po otevření nastavení se karty teď znovu správně nabindují.
+- Funkce pozadí jsou dostupné i přes `window.applyBackgroundPreference`, aby šla volba spolehlivě aplikovat i po překreslení menu.
+- Přidané výraznější glass-friendly pozadí: Neon lagoon, Electric lime, Škoda electric a Candy glass.
+- Aktivní karta pozadí má výraznější glass zvýraznění podle akcentu zvoleného pozadí.
+- Tlačítko Aktualizovat je kontrastnější a víc navázané na akcent aktuálního pozadí.
+- Výpočty, hry, Supabase datový model ani spodní lišta beze změny.
+
+## v.1.1 (545)
+- Nastavení → Theme má nově sekci Pozadí pro volbu glass-friendly pozadí aplikace.
+- Přidané varianty pozadí: iOS mesh, Škoda glass, Světle zelená, Deep aurora, Ember glass a Původní RaK.
+- Pozadí mění atmosféru a kontrast glass prvků, ne rozložení ani velikosti.
+- Tlačítko Aktualizovat je výraznější, aby nesplývalo s průhlednými glass vrstvami.
+- Láďův režim / low-end režim používá jednodušší statické pozadí bez náročné dodatečné vrstvy.
+
 ## v.1.1 (544)
 - Kalkulačky / Brusy: vrácené barevné rozlišení indexů AD / AE / AH / AD volné / AE volné.
 - Barvy indexů jsou nově sladěné s průhledným iOS glass stylem, takže zůstávají barevné, ale pořád působí jako sklo.

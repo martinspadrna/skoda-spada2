@@ -3940,6 +3940,9 @@ function openAppMenu(view) {
         '</div>',
         themeCards
       ].join('');
+      if (typeof renderThemeSettingsCards === 'function') {
+        try { renderThemeSettingsCards(); } catch (err) {}
+      }
     } else if (v === 'admin') {
       bindAppMenuHandlers(body);
       void (async () => {
@@ -6069,6 +6072,170 @@ const RAK_THEME_DEFS = [
 ];
 window.RAK_THEME_DEFS = RAK_THEME_DEFS;
 
+const RAK_BACKGROUND_STORAGE_KEY = APP_KEY + ':background_v1';
+const RAK_BACKGROUND_BASE_VARS = {
+  '--rakBgBase': '#050816',
+  '--rakAppBackground': 'radial-gradient(circle at 16% 10%, rgba(56,189,248,.24), transparent 32%), radial-gradient(circle at 84% 18%, rgba(168,85,247,.20), transparent 35%), radial-gradient(circle at 52% 86%, rgba(20,184,166,.16), transparent 38%), linear-gradient(160deg, #050816 0%, #08111f 46%, #0f172a 100%)',
+  '--rakAppBackgroundOverlay': 'linear-gradient(90deg, rgba(4,8,18,.40), transparent 26%, rgba(255,255,255,.035) 50%, transparent 74%, rgba(4,8,18,.40)), radial-gradient(circle at 48% 44%, rgba(255,255,255,.055), transparent 44%)',
+  '--rakAppBackgroundLite': 'linear-gradient(160deg, #050816 0%, #08111f 52%, #0f172a 100%)',
+  '--rakBgAccent': 'rgba(56,189,248,.24)'
+};
+const RAK_BACKGROUND_DEFS = [
+  {
+    id: 'ios-mesh',
+    label: 'iOS mesh',
+    subtitle: 'Tmavé modro-fialové pozadí pro glass',
+    color: '#38bdf8',
+    swatch: 'radial-gradient(circle at 18% 18%, rgba(56,189,248,.95), transparent 34%), radial-gradient(circle at 82% 22%, rgba(168,85,247,.80), transparent 36%), radial-gradient(circle at 48% 82%, rgba(20,184,166,.70), transparent 40%), linear-gradient(145deg, #050816, #0f172a)',
+    vars: {
+      '--rakBgBase': '#050816',
+      '--rakAppBackground': 'radial-gradient(circle at 15% 10%, rgba(56,189,248,.24), transparent 32%), radial-gradient(circle at 84% 17%, rgba(168,85,247,.20), transparent 34%), radial-gradient(circle at 52% 86%, rgba(20,184,166,.16), transparent 38%), linear-gradient(160deg, #050816 0%, #08111f 45%, #0f172a 100%)',
+      '--rakAppBackgroundOverlay': 'linear-gradient(90deg, rgba(4,8,18,.42), transparent 25%, rgba(255,255,255,.035) 50%, transparent 75%, rgba(4,8,18,.42)), radial-gradient(circle at 46% 42%, rgba(255,255,255,.055), transparent 46%)',
+      '--rakAppBackgroundLite': 'linear-gradient(160deg, #050816 0%, #08111f 52%, #0f172a 100%)',
+      '--rakBgAccent': 'rgba(56,189,248,.24)'
+    }
+  },
+  {
+    id: 'skoda-green',
+    label: 'Škoda glass',
+    subtitle: 'Emerald + Electric green',
+    color: '#78FAAE',
+    swatch: 'radial-gradient(circle at 18% 18%, rgba(120,250,174,.95), transparent 34%), radial-gradient(circle at 78% 18%, rgba(14,58,47,.96), transparent 42%), radial-gradient(circle at 55% 86%, rgba(63,215,142,.72), transparent 42%), linear-gradient(145deg, #04100d, #0E3A2F)',
+    vars: {
+      '--rakBgBase': '#04100d',
+      '--rakAppBackground': 'radial-gradient(circle at 14% 12%, rgba(120,250,174,.26), transparent 32%), radial-gradient(circle at 86% 18%, rgba(14,58,47,.72), transparent 38%), radial-gradient(circle at 55% 86%, rgba(38,208,132,.18), transparent 42%), linear-gradient(160deg, #030a08 0%, #082019 48%, #0E3A2F 100%)',
+      '--rakAppBackgroundOverlay': 'linear-gradient(90deg, rgba(3,10,8,.48), transparent 26%, rgba(120,250,174,.040) 50%, transparent 74%, rgba(3,10,8,.48)), radial-gradient(circle at 48% 42%, rgba(120,250,174,.070), transparent 46%)',
+      '--rakAppBackgroundLite': 'linear-gradient(160deg, #030a08 0%, #082019 55%, #0E3A2F 100%)',
+      '--rakBgAccent': 'rgba(120,250,174,.26)',
+      '--green': '#78FAAE',
+      '--green2': '#B9FFD6'
+    }
+  },
+  {
+    id: 'light-green',
+    label: 'Světle zelená',
+    subtitle: 'Jemné světlé green glass pozadí',
+    color: '#A7FFB0',
+    swatch: 'radial-gradient(circle at 18% 20%, rgba(180,255,187,.98), transparent 34%), radial-gradient(circle at 80% 24%, rgba(80,230,145,.78), transparent 36%), radial-gradient(circle at 50% 86%, rgba(125,255,205,.62), transparent 42%), linear-gradient(145deg, #06130b, #11351d)',
+    vars: {
+      '--rakBgBase': '#06130b',
+      '--rakAppBackground': 'radial-gradient(circle at 16% 12%, rgba(180,255,187,.24), transparent 32%), radial-gradient(circle at 84% 20%, rgba(88,230,148,.18), transparent 35%), radial-gradient(circle at 52% 86%, rgba(125,255,205,.15), transparent 42%), linear-gradient(160deg, #041008 0%, #0c2815 48%, #11351d 100%)',
+      '--rakAppBackgroundOverlay': 'linear-gradient(90deg, rgba(3,10,5,.44), transparent 27%, rgba(180,255,187,.040) 50%, transparent 73%, rgba(3,10,5,.44)), radial-gradient(circle at 45% 42%, rgba(180,255,187,.060), transparent 46%)',
+      '--rakAppBackgroundLite': 'linear-gradient(160deg, #041008 0%, #0c2815 55%, #11351d 100%)',
+      '--rakBgAccent': 'rgba(180,255,187,.24)',
+      '--green': '#A7FFB0',
+      '--green2': '#D7FFDB'
+    }
+  },
+  {
+    id: 'deep-aurora',
+    label: 'Deep aurora',
+    subtitle: 'Tyrkys + modrá pro výrazný glass',
+    color: '#22d3ee',
+    swatch: 'radial-gradient(circle at 20% 18%, rgba(34,211,238,.90), transparent 34%), radial-gradient(circle at 80% 20%, rgba(37,99,235,.80), transparent 38%), radial-gradient(circle at 52% 86%, rgba(14,165,233,.58), transparent 42%), linear-gradient(145deg, #03121d, #061826)',
+    vars: {
+      '--rakBgBase': '#03121d',
+      '--rakAppBackground': 'radial-gradient(circle at 16% 12%, rgba(34,211,238,.22), transparent 32%), radial-gradient(circle at 86% 18%, rgba(37,99,235,.22), transparent 36%), radial-gradient(circle at 52% 86%, rgba(14,165,233,.15), transparent 42%), linear-gradient(160deg, #020912 0%, #061826 48%, #0b1326 100%)',
+      '--rakAppBackgroundOverlay': 'linear-gradient(90deg, rgba(2,9,18,.46), transparent 26%, rgba(34,211,238,.035) 50%, transparent 74%, rgba(2,9,18,.46)), radial-gradient(circle at 45% 42%, rgba(255,255,255,.045), transparent 46%)',
+      '--rakAppBackgroundLite': 'linear-gradient(160deg, #020912 0%, #061826 55%, #0b1326 100%)',
+      '--rakBgAccent': 'rgba(34,211,238,.22)'
+    }
+  },
+  {
+    id: 'ember',
+    label: 'Ember glass',
+    subtitle: 'Teplejší oranžovo-fialový kontrast',
+    color: '#fb923c',
+    swatch: 'radial-gradient(circle at 22% 76%, rgba(251,146,60,.92), transparent 34%), radial-gradient(circle at 76% 24%, rgba(190,24,93,.70), transparent 38%), radial-gradient(circle at 36% 18%, rgba(124,58,237,.56), transparent 40%), linear-gradient(145deg, #14070d, #260b12)',
+    vars: {
+      '--rakBgBase': '#14070d',
+      '--rakAppBackground': 'radial-gradient(circle at 22% 76%, rgba(251,146,60,.22), transparent 34%), radial-gradient(circle at 78% 18%, rgba(190,24,93,.18), transparent 36%), radial-gradient(circle at 36% 18%, rgba(124,58,237,.14), transparent 40%), linear-gradient(160deg, #09050b 0%, #1a0710 48%, #26100b 100%)',
+      '--rakAppBackgroundOverlay': 'linear-gradient(90deg, rgba(9,5,11,.48), transparent 27%, rgba(251,146,60,.035) 50%, transparent 73%, rgba(9,5,11,.48)), radial-gradient(circle at 45% 42%, rgba(255,255,255,.040), transparent 46%)',
+      '--rakAppBackgroundLite': 'linear-gradient(160deg, #09050b 0%, #1a0710 55%, #26100b 100%)',
+      '--rakBgAccent': 'rgba(251,146,60,.22)'
+    }
+  },
+  {
+    id: 'neon-lagoon',
+    label: 'Neon lagoon',
+    subtitle: 'Výrazný tyrkys, fialová a teplý glow',
+    color: '#22d3ee',
+    swatch: 'radial-gradient(circle at 18% 18%, rgba(34,211,238,.98), transparent 34%), radial-gradient(circle at 82% 18%, rgba(217,70,239,.82), transparent 36%), radial-gradient(circle at 34% 84%, rgba(251,146,60,.72), transparent 38%), linear-gradient(145deg, #020617, #111827)',
+    vars: {
+      '--rakBgBase': '#020617',
+      '--rakAppBackground': 'radial-gradient(circle at 14% 12%, rgba(34,211,238,.30), transparent 32%), radial-gradient(circle at 86% 18%, rgba(217,70,239,.24), transparent 35%), radial-gradient(circle at 34% 86%, rgba(251,146,60,.18), transparent 39%), radial-gradient(circle at 62% 48%, rgba(59,130,246,.16), transparent 42%), linear-gradient(160deg, #020617 0%, #08111f 46%, #111827 100%)',
+      '--rakAppBackgroundOverlay': 'linear-gradient(90deg, rgba(2,6,23,.48), transparent 25%, rgba(34,211,238,.052) 50%, transparent 75%, rgba(2,6,23,.48)), radial-gradient(circle at 48% 42%, rgba(255,255,255,.070), transparent 46%)',
+      '--rakAppBackgroundLite': 'linear-gradient(160deg, #020617 0%, #08111f 55%, #111827 100%)',
+      '--rakBgAccent': 'rgba(34,211,238,.30)',
+      '--green': '#22d3ee',
+      '--green2': '#a5f3fc'
+    }
+  },
+  {
+    id: 'electric-lime',
+    label: 'Electric lime',
+    subtitle: 'Hodně výrazná světle zelená pro glass',
+    color: '#bef264',
+    swatch: 'radial-gradient(circle at 18% 20%, rgba(190,242,100,.98), transparent 33%), radial-gradient(circle at 82% 20%, rgba(34,197,94,.86), transparent 37%), radial-gradient(circle at 50% 84%, rgba(20,184,166,.66), transparent 42%), linear-gradient(145deg, #031108, #17351c)',
+    vars: {
+      '--rakBgBase': '#031108',
+      '--rakAppBackground': 'radial-gradient(circle at 15% 12%, rgba(190,242,100,.30), transparent 31%), radial-gradient(circle at 86% 19%, rgba(34,197,94,.23), transparent 36%), radial-gradient(circle at 52% 84%, rgba(20,184,166,.18), transparent 42%), linear-gradient(160deg, #020a05 0%, #0a2410 48%, #17351c 100%)',
+      '--rakAppBackgroundOverlay': 'linear-gradient(90deg, rgba(2,10,5,.46), transparent 26%, rgba(190,242,100,.056) 50%, transparent 74%, rgba(2,10,5,.46)), radial-gradient(circle at 48% 40%, rgba(190,242,100,.075), transparent 46%)',
+      '--rakAppBackgroundLite': 'linear-gradient(160deg, #020a05 0%, #0a2410 55%, #17351c 100%)',
+      '--rakBgAccent': 'rgba(190,242,100,.30)',
+      '--green': '#bef264',
+      '--green2': '#ecfccb'
+    }
+  },
+  {
+    id: 'skoda-electric',
+    label: 'Škoda electric',
+    subtitle: 'Výraznější zelený Škoda směr',
+    color: '#78FAAE',
+    swatch: 'radial-gradient(circle at 16% 16%, rgba(120,250,174,.98), transparent 34%), radial-gradient(circle at 84% 22%, rgba(0,168,107,.88), transparent 37%), radial-gradient(circle at 50% 86%, rgba(12,64,48,.88), transparent 44%), linear-gradient(145deg, #020805, #0e3a2f)',
+    vars: {
+      '--rakBgBase': '#020805',
+      '--rakAppBackground': 'radial-gradient(circle at 13% 10%, rgba(120,250,174,.34), transparent 31%), radial-gradient(circle at 86% 20%, rgba(0,168,107,.26), transparent 36%), radial-gradient(circle at 54% 86%, rgba(12,64,48,.54), transparent 44%), radial-gradient(circle at 42% 42%, rgba(185,255,214,.10), transparent 42%), linear-gradient(160deg, #020805 0%, #062018 48%, #0e3a2f 100%)',
+      '--rakAppBackgroundOverlay': 'linear-gradient(90deg, rgba(2,8,5,.50), transparent 25%, rgba(120,250,174,.064) 50%, transparent 75%, rgba(2,8,5,.50)), radial-gradient(circle at 47% 42%, rgba(120,250,174,.086), transparent 46%)',
+      '--rakAppBackgroundLite': 'linear-gradient(160deg, #020805 0%, #062018 55%, #0e3a2f 100%)',
+      '--rakBgAccent': 'rgba(120,250,174,.34)',
+      '--green': '#78FAAE',
+      '--green2': '#d5ffe5'
+    }
+  },
+  {
+    id: 'candy-glass',
+    label: 'Candy glass',
+    subtitle: 'Modro-fialovo-růžové iOS pozadí',
+    color: '#c084fc',
+    swatch: 'radial-gradient(circle at 18% 18%, rgba(96,165,250,.96), transparent 34%), radial-gradient(circle at 82% 20%, rgba(236,72,153,.86), transparent 38%), radial-gradient(circle at 50% 86%, rgba(168,85,247,.74), transparent 42%), linear-gradient(145deg, #07051c, #1e1b4b)',
+    vars: {
+      '--rakBgBase': '#07051c',
+      '--rakAppBackground': 'radial-gradient(circle at 14% 12%, rgba(96,165,250,.28), transparent 32%), radial-gradient(circle at 86% 18%, rgba(236,72,153,.24), transparent 37%), radial-gradient(circle at 52% 86%, rgba(168,85,247,.20), transparent 42%), linear-gradient(160deg, #050316 0%, #111042 48%, #1e1b4b 100%)',
+      '--rakAppBackgroundOverlay': 'linear-gradient(90deg, rgba(5,3,22,.48), transparent 26%, rgba(236,72,153,.045) 50%, transparent 74%, rgba(5,3,22,.48)), radial-gradient(circle at 48% 42%, rgba(255,255,255,.065), transparent 46%)',
+      '--rakAppBackgroundLite': 'linear-gradient(160deg, #050316 0%, #111042 55%, #1e1b4b 100%)',
+      '--rakBgAccent': 'rgba(236,72,153,.24)',
+      '--green': '#c084fc',
+      '--green2': '#f0abfc'
+    }
+  },
+  {
+    id: 'classic-rak',
+    label: 'Původní RaK',
+    subtitle: 'Klidnější tmavé zelené pozadí',
+    color: '#7CFF7C',
+    swatch: 'radial-gradient(circle at 50% 50%, rgba(124,255,124,.42), transparent 42%), linear-gradient(145deg, #0b0f0c, #141a17)',
+    vars: {
+      '--rakBgBase': '#0b0f0c',
+      '--rakAppBackground': 'linear-gradient(160deg, #0b0f0c 0%, #101612 54%, #141a17 100%)',
+      '--rakAppBackgroundOverlay': 'linear-gradient(90deg, rgba(11,15,12,.92) 0%, rgba(11,15,12,.62) 26%, rgba(124,255,124,.060) 50%, rgba(11,15,12,.62) 74%, rgba(11,15,12,.92) 100%), radial-gradient(ellipse at center, rgba(124,255,124,.10) 0%, rgba(124,255,124,.05) 22%, rgba(11,15,12,0) 62%)',
+      '--rakAppBackgroundLite': 'linear-gradient(160deg, #0b0f0c 0%, #101612 54%, #141a17 100%)',
+      '--rakBgAccent': 'rgba(124,255,124,.14)'
+    }
+  }
+];
+window.RAK_BACKGROUND_DEFS = RAK_BACKGROUND_DEFS;
+
 function getThemePreference() {
   try {
     const saved = localStorage.getItem(RAK_THEME_STORAGE_KEY) || 'default';
@@ -6077,6 +6244,39 @@ function getThemePreference() {
     return 'default';
   }
 }
+
+
+function getBackgroundPreference() {
+  try {
+    const saved = localStorage.getItem(RAK_BACKGROUND_STORAGE_KEY) || 'ios-mesh';
+    return RAK_BACKGROUND_DEFS.some(bg => bg.id === saved) ? saved : 'ios-mesh';
+  } catch (err) {
+    return 'ios-mesh';
+  }
+}
+
+function applyBackgroundPreference(bgId, persist = true) {
+  const bg = RAK_BACKGROUND_DEFS.find(item => item.id === bgId) || RAK_BACKGROUND_DEFS[0];
+  const root = document.documentElement;
+  root.dataset.rakBackground = bg.id;
+  Object.entries(RAK_BACKGROUND_BASE_VARS).forEach(([key, value]) => {
+    root.style.setProperty(key, value);
+  });
+  Object.entries(bg.vars || {}).forEach(([key, value]) => {
+    root.style.setProperty(key, value);
+  });
+  if (persist) {
+    try { localStorage.setItem(RAK_BACKGROUND_STORAGE_KEY, bg.id); } catch (err) {}
+  }
+  return bg.id;
+}
+window.getBackgroundPreference = getBackgroundPreference;
+window.applyBackgroundPreference = applyBackgroundPreference;
+window.RAK_BACKGROUND_STORAGE_KEY = RAK_BACKGROUND_STORAGE_KEY;
+
+(function initBackgroundPreference() {
+  try { applyBackgroundPreference(getBackgroundPreference(), false); } catch (err) {}
+})();
 
 function getThemeUnlockMetrics(profile) {
   const active = profile && profile.activeAccountId && profile.accounts ? profile.accounts[profile.activeAccountId] : null;
@@ -6112,7 +6312,10 @@ function applyThemePreference(themeId, persist = true) {
 }
 
 (function initThemePreference() {
-  try { applyThemePreference(getThemePreference(), false); } catch (err) {}
+  try {
+    applyThemePreference(getThemePreference(), false);
+    if (typeof applyBackgroundPreference === 'function') applyBackgroundPreference(getBackgroundPreference(), false);
+  } catch (err) {}
 })();
 
 function buildThemeSystemSettingsHtml() {
@@ -6130,10 +6333,24 @@ function buildThemeSystemSettingsHtml() {
       '</div>' +
     '</button>';
   }).join('');
+  const bgDefs = Array.isArray(window.RAK_BACKGROUND_DEFS) ? window.RAK_BACKGROUND_DEFS : [];
+  const currentBgId = typeof getBackgroundPreference === 'function' ? getBackgroundPreference() : 'ios-mesh';
+  const currentBg = bgDefs.find(bg => String(bg.id || '') === String(currentBgId)) || bgDefs[0] || { label: 'iOS mesh' };
+  const bgCards = bgDefs.map(bg => {
+    const swatch = String(bg.swatch || bg.color || '#38bdf8');
+    return '<button type="button" class="appMenuBackgroundCard" data-bg-id="' + escapeHtml(String(bg.id || '')) + '">' +
+      '<div class="appMenuBackgroundSwatch" style="--background-swatch:' + escapeHtml(swatch) + '"></div>' +
+      '<div class="appMenuThemeInfo">' +
+      '<div class="appMenuThemeTitle">' + escapeHtml(String(bg.label || '')) + '</div>' +
+      '<div class="appMenuThemeSub">' + escapeHtml(String(bg.subtitle || '')) + '</div>' +
+      '<div class="appMenuThemeBadge">Dostupné</div>' +
+      '</div>' +
+    '</button>';
+  }).join('');
   return [
     '<div class="appMenuCard appMenuSettingsCard appMenuThemeCardWrap">',
     '  <div class="appMenuCardTitle">Theme</div>',
-    '  <div class="appMenuText">Vzhled celé aplikace se váže na přihlášený herní účet. Další themes se odemykají podle profilu a achievementů.</div>',
+    '  <div class="appMenuText">Vzhled celé aplikace se váže na přihlášený herní účet. Pozadí je samostatné, aby šlo doladit glass efekt bez změny rozložení.</div>',
     '  <details class="appMenuThemeAccordion" id="appMenuThemeAccordion">',
     '    <summary class="appMenuAction appMenuSettingBtn appMenuThemeSummary">',
     '      <span class="appMenuThemeSummaryLeft">',
@@ -6145,6 +6362,19 @@ function buildThemeSystemSettingsHtml() {
     '    <div class="appMenuThemeAccordionBody">',
     '      <div class="appMenuThemeGrid" id="appMenuThemeGrid">' + cards + '</div>',
     '      <div class="appMenuThemeHint" id="appMenuThemeHint"></div>',
+    '    </div>',
+    '  </details>',
+    '  <details class="appMenuThemeAccordion appMenuBackgroundAccordion" id="appMenuBackgroundAccordion">',
+    '    <summary class="appMenuAction appMenuSettingBtn appMenuThemeSummary">',
+    '      <span class="appMenuThemeSummaryLeft">',
+    '        <span class="appMenuThemeSummaryTitle">Pozadí</span>',
+    '        <span class="appMenuThemeSummaryMeta" id="appMenuBackgroundSummaryMeta">Aktivní: ' + escapeHtml(String(currentBg.label || 'iOS mesh')) + '</span>',
+    '      </span>',
+    '      <span class="appMenuThemeSummaryChevron" aria-hidden="true">⌄</span>',
+    '    </summary>',
+    '    <div class="appMenuThemeAccordionBody">',
+    '      <div class="appMenuBackgroundGrid" id="appMenuBackgroundGrid">' + bgCards + '</div>',
+    '      <div class="appMenuThemeHint" id="appMenuBackgroundHint">Pozadí mění jen atmosféru a kontrast glass prvků, ne velikosti ani funkce.</div>',
     '    </div>',
     '  </details>',
     '</div>'
@@ -6185,11 +6415,41 @@ function renderThemeSettingsCards() {
           return;
         }
         applyThemePreference(id, true);
+        if (typeof applyBackgroundPreference === 'function') applyBackgroundPreference(getBackgroundPreference(), false);
         renderThemeSettingsCards();
         if (hint) hint.textContent = 'Theme „' + String(nextTheme.label || id) + '“ je teď aktivní.';
       });
     }
   });
+
+  const bgGrid = document.getElementById('appMenuBackgroundGrid');
+  const bgHint = document.getElementById('appMenuBackgroundHint');
+  const bgSummaryMeta = document.getElementById('appMenuBackgroundSummaryMeta');
+  const bgList = Array.isArray(window.RAK_BACKGROUND_DEFS) ? window.RAK_BACKGROUND_DEFS : [];
+  const bgById = new Map(bgList.map(bg => [String(bg.id || ''), bg]));
+  const currentBg = typeof getBackgroundPreference === 'function' ? getBackgroundPreference() : 'ios-mesh';
+  if (bgGrid) {
+    Array.from(bgGrid.querySelectorAll('.appMenuBackgroundCard')).forEach(card => {
+      const id = String(card.dataset.bgId || '').trim();
+      const bg = bgById.get(id) || null;
+      card.classList.toggle('isActive', id === currentBg);
+      card.setAttribute('aria-pressed', id === currentBg ? 'true' : 'false');
+      if (!card.dataset.bound) {
+        card.dataset.bound = '1';
+        card.addEventListener('click', () => {
+          const nextBg = bgById.get(id) || null;
+          if (!nextBg) return;
+          if (typeof applyBackgroundPreference === 'function') applyBackgroundPreference(id, true);
+          renderThemeSettingsCards();
+          if (bgHint) bgHint.textContent = 'Pozadí „' + String(nextBg.label || id) + '“ je teď aktivní.';
+        });
+      }
+    });
+  }
+  if (bgSummaryMeta) {
+    const activeBgName = (bgById.get(currentBg) || bgList[0] || { label: 'iOS mesh' }).label;
+    bgSummaryMeta.textContent = 'Aktivní: ' + String(activeBgName);
+  }
 
   if (summaryMeta) {
     const activeName = (themeById.get(current) || themeList[0] || { label: 'Výchozí' }).label;
