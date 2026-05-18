@@ -1,4 +1,4 @@
-// v.1.1 (556) – Přepínání stránek vrací obsah nahoru; spodní navigace už nespouští vertikální scrollIntoView.
+// v.1.1 (557) – Supabase session cache pro online hry; Fáze 6 hardening pokračuje bez změny datového modelu.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

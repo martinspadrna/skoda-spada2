@@ -2725,22 +2725,22 @@ function buildAppHistoryHtml(versionText) {
       range: versionText,
       title: 'Aktuální build',
       lines: [
-        'Fáze 6 — Supabase hardening zůstává cca 70 %.',
-        'Přepínání hlavních stránek teď automaticky vrací obsah nahoru, aby se nová stránka neotevírala od spodní části.',
-        'Spodní navigace už pro zvýraznění aktivní záložky nepoužívá vertikální scrollIntoView, takže nemá stahovat stránku dolů.',
-        'Scroll reset běží až po renderu nové stránky a nespouští se při pouhém refreshi stejné stránky.',
+        'Fáze 6 — Supabase hardening posunuta na cca 78 %.',
+        'Online herní session/pozvánky mají lokální cache podle kódu pozvánky, takže při slabém internetu nezmizí poslední známý stav rozehrané hry.',
+        'Uložení online herní session umí při offline/slabém internetu spadnout do Supabase fronty a po návratu internetu se odešle stejně jako ostatní bezpečné změny.',
+        'Načítání session používá sdílený in-flight guard, aby se stejný kód pozvánky netahal zbytečně víckrát paralelně.',
         'Výpočty, pravidla her, Theme/Pozadí, otevírací doba, Supabase datový model a spodní lišta jsou funkčně beze změny.'
       ]
     },
     {
-      range: 'v.1.1 500–556',
+      range: 'v.1.1 500–557',
       title: 'Stabilizace, hry, Supabase a glass vzhled',
       lines: [
         'Proběhlo velké stabilizační období: Láďův režim, cleanup manager, dokončení game performance a start Supabase hardening.',
         'Dashboard, Rotace, Rozpisy a Statistiky se ladily hlavně kvůli mobilům, safe-area, přehlednosti a menšímu riziku prázdných/pozdě načtených karet.',
         'Kalkulačky dostaly sjednocenější calcPanel systém, větší klikací tlačítka a u Brusů se vrátily barevné indexy ve glass stylu.',
         'Herní hub se zrychlil: méně opakovaných renderů, cache profilů/statistik, lepší práce s leaderboardy a všechny nedoladěné hry jsou zatím ve „Ve vývoji“.',
-        'Supabase Realtime a offline/online sync se zpevňují přes timeouty, retry, offline frontu, deduplikaci, fallback cache, retry backoff a diagnostiku.',
+        'Supabase Realtime a offline/online sync se zpevňují přes timeouty, retry, offline frontu, deduplikaci, fallback cache, retry backoff, session cache online her a diagnostiku.',
         'Přibyly Theme/Pozadí volby, výrazná glass-friendly pozadí, modernější theme karty a profilové ukládání vzhledu.'
       ]
     },

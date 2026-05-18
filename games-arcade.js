@@ -2,7 +2,7 @@
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
 
-  // v.1.1 (556): Fáze 5 zůstává uzavřená; herní pravidla beze změny, upravené je jen stránkové scroll chování mimo hry.
+  // v.1.1 (557): Fáze 5 zůstává uzavřená; herní pravidla beze změny, zpevněné je jen Supabase session ukládání online her.
   const CORE_GAMES = [];
   const EXTRA_GAMES = ['ttt', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);

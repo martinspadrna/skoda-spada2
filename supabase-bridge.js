@@ -62,6 +62,12 @@
       uiSettingsSaveErrors: 0,
       uiSettingsLoadFallbacks: 0,
       uiSettingsSharedLookups: 0,
+      sessionCacheHits: 0,
+      sessionCacheWrites: 0,
+      sessionSaveQueued: 0,
+      sessionSaveErrors: 0,
+      sessionFallbacks: 0,
+      sessionSharedLookups: 0,
       staleFallbacks: 0,
       sharedReadJoins: 0,
       lastCacheHitAt: null,
@@ -87,7 +93,8 @@
     'rotation_month_entries',
     'gomoku_win',
     'game_stat',
-    'game_ui_settings'
+    'game_ui_settings',
+    'game_session'
   ]);
 
   function hasClient() {
@@ -181,7 +188,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v556');
+      const channel = client.channel('rak-public-live-v557');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -230,6 +237,7 @@
   const LOCAL_GAME_ACCOUNTS_KEY = 'rotace_supabase_game_accounts_v1';
   const LOCAL_GAME_STATS_PREFIX = 'rotace_supabase_game_stats_v1:';
   const LOCAL_GAME_UI_SETTINGS_PREFIX = 'rotace_supabase_game_ui_settings_v1:';
+  const LOCAL_GAME_SESSIONS_PREFIX = 'rotace_supabase_game_sessions_v1:';
   const GAME_UI_SETTINGS_TYPE = '__profile_ui';
   const SUPABASE_GAME_CACHE_TTL_MS = 5 * 60 * 1000;
   let flushPromise = null;
@@ -281,6 +289,7 @@
       if (kind === 'accounts') state.cacheGuard.accountCacheWrites += 1;
       if (kind === 'stats') state.cacheGuard.statsCacheWrites += 1;
       if (kind === 'ui') state.cacheGuard.uiCacheWrites += 1;
+      if (kind === 'session') state.cacheGuard.sessionCacheWrites += 1;
     }
     return ok;
   }
@@ -291,6 +300,7 @@
     if (kind === 'accounts') state.cacheGuard.accountCacheHits += 1;
     if (kind === 'stats') state.cacheGuard.statsCacheHits += 1;
     if (kind === 'ui') state.cacheGuard.uiCacheHits += 1;
+    if (kind === 'session') state.cacheGuard.sessionCacheHits += 1;
   }
 
   async function runSharedSupabaseRead(key, work) {
@@ -351,6 +361,7 @@
     if (type === 'gomoku_win') return type + ':' + String(task && task.entry && (task.entry.id || task.entry.player_name || task.entry.created_at) ? (task.entry.id || task.entry.player_name || task.entry.created_at) : '').trim();
     if (type === 'game_stat') return type + ':' + String(task && task.entry && (task.entry.id || task.entry.game_type || task.entry.account_number || task.entry.created_at) ? (task.entry.id || task.entry.game_type || task.entry.account_number || task.entry.created_at) : '').trim();
     if (type === 'game_ui_settings') return type + ':' + String(task && task.entry && (task.entry.account_number || task.entry.accountNumber) ? (task.entry.account_number || task.entry.accountNumber) : '').trim();
+    if (type === 'game_session') return type + ':' + String(task && (task.inviteCode || task.code) ? (task.inviteCode || task.code) : '').trim().toUpperCase();
     return type || 'unknown';
   }
 
@@ -387,7 +398,7 @@
       const normalized = normalizeQueueTask(item);
       if (!normalized) return;
       const key = queueTaskKey(normalized);
-      if (key && (normalized.type === 'rotation_state' || normalized.type === 'machine_settings' || normalized.type === 'rotation_month_entries' || normalized.type === 'game_ui_settings')) {
+      if (key && (normalized.type === 'rotation_state' || normalized.type === 'machine_settings' || normalized.type === 'rotation_month_entries' || normalized.type === 'game_ui_settings' || normalized.type === 'game_session')) {
         if (keyed.has(key)) state.queueGuard.deduped += 1;
         keyed.set(key, normalized);
       } else {
@@ -679,6 +690,73 @@
   }
 
 
+  function normalizeInviteCode(code) {
+    return String(code || '').trim().toUpperCase();
+  }
+
+  function gameSessionCacheKey(code) {
+    return LOCAL_GAME_SESSIONS_PREFIX + encodeURIComponent(normalizeInviteCode(code));
+  }
+
+  function readGameSessionCache(code) {
+    const inviteCode = normalizeInviteCode(code);
+    if (!inviteCode) return null;
+    const cache = readTimedCache(gameSessionCacheKey(inviteCode), SUPABASE_GAME_CACHE_TTL_MS);
+    if (!cache || !cache.rows || !cache.rows[0]) return null;
+    rememberTimedCacheHit('session', cache);
+    return Object.assign({ inviteCode, fresh: cache.fresh, savedAt: cache.savedAt, age: cache.age }, cache.rows[0]);
+  }
+
+  function writeGameSessionCache(code, invite, session) {
+    const inviteCode = normalizeInviteCode(code || (invite && invite.invite_code));
+    if (!inviteCode) return false;
+    return writeTimedCache(gameSessionCacheKey(inviteCode), [{
+      inviteCode,
+      invite: invite || null,
+      session: session || null,
+      status: session && session.status ? session.status : '',
+      updatedAt: Date.now(),
+      source: 'game_sessions'
+    }], 'session');
+  }
+
+  function buildCachedSessionResult(code, fallbackPayload) {
+    const inviteCode = normalizeInviteCode(code);
+    const cached = readGameSessionCache(inviteCode);
+    const payload = fallbackPayload && typeof fallbackPayload === 'object' ? fallbackPayload : null;
+    if (!cached && !payload) return { ok: false, reason: 'offline-or-missing-client' };
+    const cachedSession = cached && cached.session && typeof cached.session === 'object' ? cached.session : null;
+    const cachedInvite = cached && cached.invite ? cached.invite : null;
+    if (!payload && cached && !cachedSession) {
+      state.cacheGuard.sessionFallbacks += 1;
+      return { ok: true, invite: cachedInvite, session: null, cached: true, offline: !navigator.onLine };
+    }
+    const baseSession = cachedSession || {};
+    const boardState = payload || baseSession.board_state || {};
+    const session = Object.assign({}, baseSession, {
+      game_type: baseSession.game_type || 'gomoku',
+      invite_id: baseSession.invite_id || (cachedInvite && cachedInvite.id ? cachedInvite.id : null),
+      status: boardState.status || baseSession.status || 'active',
+      board_state: boardState,
+      move_history: Array.isArray(boardState.moveHistory) ? boardState.moveHistory : (Array.isArray(baseSession.move_history) ? baseSession.move_history : []),
+      updated_at: new Date().toISOString(),
+      finished_at: boardState.gameOver ? new Date().toISOString() : (baseSession.finished_at || null),
+      _local_only: true
+    });
+    if (payload) writeGameSessionCache(inviteCode, cachedInvite, session);
+    state.cacheGuard.sessionFallbacks += 1;
+    return {
+      ok: true,
+      invite: cachedInvite,
+      session,
+      status: session.status,
+      cached: !!cached,
+      queued: !!payload,
+      offline: !navigator.onLine
+    };
+  }
+
+
   async function loadGameInviteByCode(client, code) {
     const inviteCode = String(code || '').trim().toUpperCase();
     if (!inviteCode) return { ok: false, error: new Error('Chybí kód pozvánky.') };
@@ -728,6 +806,7 @@
       .select('*')
       .maybeSingle(), { mode: 'write' });
     if (sessionErr) throw sessionErr;
+    writeGameSessionCache(inviteCode, inviteData || null, sessionData || null);
     return { invite: inviteData || null, session: sessionData || null };
   }
 
@@ -775,6 +854,7 @@
       .select('*')
       .maybeSingle(), { mode: 'write' });
     if (sessionUpdErr) throw sessionUpdErr;
+    writeGameSessionCache(inviteCode, updatedInvite || invite, updatedSession || sessionData || null);
     return { invite: updatedInvite || invite, session: updatedSession || sessionData || null };
   }
 
@@ -787,6 +867,7 @@
       .eq('invite_id', loaded.invite.id)
       .maybeSingle(), { mode: 'read' });
     if (sessionErr) throw sessionErr;
+    writeGameSessionCache(code, loaded.invite, sessionData || null);
     return { ok: true, invite: loaded.invite, session: sessionData || null };
   }
 
@@ -818,7 +899,8 @@
       .select('*')
       .maybeSingle(), { mode: 'write' });
     if (updErr) throw updErr;
-    return { ok: true, session: updatedSession || null, status: sessionRow.status };
+    writeGameSessionCache(code, loaded.invite, updatedSession || sessionRow);
+    return { ok: true, invite: loaded.invite, session: updatedSession || null, status: sessionRow.status };
   }
 
 
@@ -895,6 +977,9 @@
             flushed += 1;
           } else if (task.type === 'game_ui_settings') {
             await saveGameAccountUiSettingsDirect(client, task.entry);
+            flushed += 1;
+          } else if (task.type === 'game_session') {
+            await saveGameSessionByInviteCodeDirect(client, task.inviteCode || task.code, task.payload);
             flushed += 1;
           } else {
             const failedUnknown = markQueuedTaskFailure(task, new Error('Neznámý typ úlohy ve frontě: ' + String(task.type || '')));
@@ -1895,16 +1980,54 @@
       catch (err) { state.lastError = err; console.error('TTT invite accept failed', err); return { ok: false, error: err }; }
     },
     loadGameSessionByInviteCode: async (code) => {
+      const inviteCode = normalizeInviteCode(code);
       const client = getClient();
-      if (!client || !navigator.onLine) return { ok: false, reason: 'offline-or-missing-client' };
-      try { const result = Object.assign({ ok: true }, await loadGameSessionByInviteCodeDirect(client, code)); state.lastError = null; return result; }
-      catch (err) { state.lastError = err; console.error('TTT session load failed', err); return { ok: false, error: err }; }
+      if (!inviteCode) return { ok: false, reason: 'missing-code' };
+      if (!client || !navigator.onLine) return buildCachedSessionResult(inviteCode);
+      try {
+        const result = await runSharedSupabaseRead('game_session.load:' + inviteCode, async () => Object.assign({ ok: true }, await loadGameSessionByInviteCodeDirect(client, inviteCode)));
+        state.lastError = null;
+        return result;
+      }
+      catch (err) {
+        state.lastError = err;
+        console.error('TTT session load failed', err);
+        const cachedResult = buildCachedSessionResult(inviteCode);
+        if (cachedResult && cachedResult.ok) return Object.assign(cachedResult, { fallback: true, error: err });
+        return { ok: false, error: err };
+      }
     },
     saveGameSessionByInviteCode: async (code, payload) => {
+      const inviteCode = normalizeInviteCode(code);
       const client = getClient();
-      if (!client || !navigator.onLine) return { ok: false, reason: 'offline-or-missing-client' };
-      try { const result = Object.assign({ ok: true }, await saveGameSessionByInviteCodeDirect(client, code, payload)); state.lastError = null; return result; }
-      catch (err) { state.lastError = err; console.error('TTT session save failed', err); return { ok: false, error: err }; }
+      if (!inviteCode) return { ok: false, reason: 'missing-code' };
+      if (!client || !navigator.onLine) {
+        state.cacheGuard.sessionSaveQueued += 1;
+        buildCachedSessionResult(inviteCode, payload);
+        return await enqueueAndMaybeFlush({ type: 'game_session', inviteCode, payload });
+      }
+      try {
+        if (shouldDeferOnlineWrite()) {
+          state.cacheGuard.sessionSaveQueued += 1;
+          buildCachedSessionResult(inviteCode, payload);
+          return Object.assign(await enqueueAndMaybeFlush({ type: 'game_session', inviteCode, payload }), { deferred: true });
+        }
+        const result = Object.assign({ ok: true }, await saveGameSessionByInviteCodeDirect(client, inviteCode, payload));
+        state.lastError = null;
+        await flushPendingWrites();
+        return result;
+      }
+      catch (err) {
+        state.cacheGuard.sessionSaveErrors += 1;
+        state.lastError = err;
+        console.error('TTT session save failed', err);
+        if (isLikelyTransientError(err)) {
+          state.cacheGuard.sessionSaveQueued += 1;
+          buildCachedSessionResult(inviteCode, payload);
+          return await enqueueAndMaybeFlush({ type: 'game_session', inviteCode, payload });
+        }
+        return { ok: false, error: err };
+      }
     },
     getState: () => ({ ...state })
   };

@@ -1,3 +1,14 @@
+## v.1.1 (557)
+
+- Fáze 6 — Supabase hardening posunuta na cca 78 %.
+- Online herní session/pozvánky mají nově lokální cache podle kódu pozvánky.
+- Když je slabý internet nebo offline stav, načtení online hry umí použít poslední známou session místo prázdného selhání.
+- Uložení online herní session se při offline/slabém internetu uloží do Supabase fronty a odešle se později.
+- Fronta nově podporuje typ `game_session` a deduplikuje ho podle kódu pozvánky, aby se neodesílal starý stav zbytečně víckrát.
+- Diagnostika Supabase nově ukazuje session cache hity/zápisy, session fallbacky, queued save a session save chyby.
+- Scroll reset z buildu 556 zůstává zachovaný beze změny.
+- Výpočty, pravidla her, Theme/Pozadí, otevírací doba, Supabase datový model a spodní lišta jsou funkčně beze změny.
+
 ## v.1.1 (556)
 
 - Při přepnutí hlavní stránky/podstránky se obsah nově nastaví na začátek stránky.
@@ -5,7 +16,7 @@
 - Aktivní položka spodní navigace se dál centruje jen vodorovně v rámci spodního panelu.
 - Scroll reset se nespouští při refreshi stejné stránky ani v otevřené hře.
 - Výpočty, pravidla her, Theme/Pozadí, otevírací doba, Supabase datový model a spodní lišta jsou funkčně beze změny.
-- Fáze 6 — Supabase hardening zůstává cca 70 %.
+- Fáze 6 — Supabase hardening zůstala cca 70 %.
 
 ## v.1.1 (555)
 
@@ -25,7 +36,7 @@
 - Fáze 6 — Supabase hardening zůstává cca 64 %.
 - Výpočty, pravidla her, Theme/Pozadí, spodní lišta a Supabase datový model beze změny.
 
-## Přehled největších změn v.1.1 (500–556)
+## Přehled největších změn v.1.1 (500–557)
 - Proběhlo velké stabilizační období před dalšími fázemi refactoru: Fáze 3 Láďův režim, Fáze 4 cleanup manager, Fáze 5 game performance a start Fáze 6 Supabase hardening.
 - Dashboard se postupně ladil kvůli správnému zobrazení směny, ikon, kantýny/jídelny, odpočtů a menšímu riziku prázdných nebo pozdě načtených karet.
 - Spodní navigace prošla opakovaným dorovnáním, hlavně položka „Více“ – má být užší, ale normálně mezi ostatními položkami a bez ukotvení vpravo.
@@ -34,7 +45,7 @@
 - Statistiky dostaly kompaktnější dlaždice lidí/strojů, snahu vejít stroje do jednoho řádku a čistší souhrny práce/absence.
 - Kalkulačky prošly sjednocením calcPanel systému, většími klikacími/navolovacími tlačítky a návratem barevných indexů u Brusů ve glass stylu.
 - Všechny hry jsou přesunuté do „Ve vývoji“, herní hub dostal výrazné performance optimalizace, méně opakovaných renderů a lepší cache profilů/statistik.
-- Supabase Realtime a offline/online sync se zpevňují: timeouty, retry, offline fronta, deduplikace, cache/fallback a diagnostika.
+- Supabase Realtime a offline/online sync se zpevňují: timeouty, retry, offline fronta, deduplikace, cache/fallback, session cache online her a diagnostika.
 - Nastavení → Theme dostalo volbu pozadí, výrazná glass-friendly pozadí a postupný iOS glass polish napříč aplikací.
 
 ## Přehled největších změn v.1 (450–499)
