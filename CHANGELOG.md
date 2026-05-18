@@ -1,3 +1,13 @@
+## v.1.1 (543)
+- Fáze 6 — Supabase hardening pokračuje: cca 24 %.
+- Přidán timeout guard pro Supabase čtení/zápisy, aby se požadavky nemohly na mobilu nechat viset donekonečna.
+- Zápisy přes Supabase mají u přechodných chyb jeden bezpečný retry a potom fallback do offline fronty.
+- Přidán krátký online write cooldown při čerstvě frontovaných změnách, aby se při slabém internetu neposílalo více zápisů najednou.
+- Diagnostika aplikace nově ukazuje Supabase timeouty, retry pokusy, fallbacky do fronty a cooldown skipy.
+- Realtime kanál posunutý na v543.
+- Další jemný iOS glass polish: vstupy, selecty, textarea, běžná tlačítka, některé kalkulační řádky a jídelní/rozpisové řádky mají průhlednější sklo se silnějším blur efektem.
+- Láďův režim / low-end režim dál vypíná náročnější blur vrstvy.
+
 ## v.1.1 (542)
 - Fáze 6 Supabase hardening zahájená – první bezpečný krok bez změny databázového schématu.
 - Offline Supabase fronta má nově ochranný limit 120 položek, deduplikaci posledních změn rotací / nastavení strojů / rozpisů a ochranu proti příliš velkým položkám v localStorage.

@@ -19,12 +19,29 @@
       oversized: 0,
       lastTrimAt: null,
       lastBindSkipAt: null
+    },
+    syncGuard: {
+      readTimeouts: 0,
+      writeTimeouts: 0,
+      readRetries: 0,
+      writeRetries: 0,
+      queuedFallbacks: 0,
+      cooldownSkips: 0,
+      failedWrites: 0,
+      failedReads: 0,
+      lastTimeoutAt: null,
+      lastRetryAt: null,
+      lastQueuedFallbackAt: null,
+      lastCooldownSkipAt: null
     }
   };
 
   const SUPABASE_QUEUE_MAX_ITEMS = 120;
   const SUPABASE_QUEUE_MAX_BYTES = 650000;
   const SUPABASE_REALTIME_REBIND_GUARD_MS = 15000;
+  const SUPABASE_READ_TIMEOUT_MS = 12000;
+  const SUPABASE_WRITE_TIMEOUT_MS = 16000;
+  const SUPABASE_WRITE_COOLDOWN_MS = 900;
   const SUPPORTED_QUEUE_TYPES = new Set([
     'rotation_state',
     'machine_settings',
@@ -124,7 +141,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v542');
+      const channel = client.channel('rak-public-live-v543');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -312,6 +329,92 @@
   function isLikelyOfflineError(err) {
     const msg = String(err && (err.message || err.statusText || err.code) ? (err.message || err.statusText || err.code) : err || '').toLowerCase();
     return !navigator.onLine || msg.includes('fetch') || msg.includes('network') || msg.includes('offline') || msg.includes('failed to fetch') || msg.includes('load failed');
+  }
+
+  function isSupabaseTimeoutError(err) {
+    return !!(err && (err.code === 'RAK_SUPABASE_TIMEOUT' || err.name === 'AbortError'));
+  }
+
+  function isLikelyTransientError(err) {
+    const msg = String(err && (err.message || err.statusText || err.code || err.status) ? (err.message || err.statusText || err.code || err.status) : err || '').toLowerCase();
+    const status = Number(err && (err.status || err.statusCode || err.code));
+    return isLikelyOfflineError(err)
+      || isSupabaseTimeoutError(err)
+      || msg.includes('timeout')
+      || msg.includes('timed out')
+      || msg.includes('rate limit')
+      || msg.includes('temporarily')
+      || msg.includes('connection')
+      || [408, 409, 425, 429, 500, 502, 503, 504].includes(status);
+  }
+
+  function wait(ms) {
+    return new Promise(resolve => setTimeout(resolve, Math.max(0, Number(ms) || 0)));
+  }
+
+  function withSupabaseTimeout(promise, label, timeoutMs, mode) {
+    const ms = Math.max(2500, Number(timeoutMs) || SUPABASE_READ_TIMEOUT_MS);
+    let timer = null;
+    const timeout = new Promise((_, reject) => {
+      timer = setTimeout(() => {
+        const err = new Error('Supabase požadavek vypršel: ' + String(label || 'unknown'));
+        err.code = 'RAK_SUPABASE_TIMEOUT';
+        err.mode = mode || 'read';
+        reject(err);
+      }, ms);
+    });
+    return Promise.race([Promise.resolve(promise), timeout]).finally(() => {
+      if (timer) clearTimeout(timer);
+    });
+  }
+
+  async function runSupabaseOperation(label, work, options) {
+    const opts = options || {};
+    const mode = opts.mode === 'write' ? 'write' : 'read';
+    const timeoutMs = Number(opts.timeoutMs) || (mode === 'write' ? SUPABASE_WRITE_TIMEOUT_MS : SUPABASE_READ_TIMEOUT_MS);
+    const maxAttempts = Math.max(1, Math.min(2, Number(opts.attempts) || (mode === 'write' ? 2 : 1)));
+    let lastErr = null;
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+      try {
+        const result = await withSupabaseTimeout(Promise.resolve().then(work), label, timeoutMs, mode);
+        return result;
+      } catch (err) {
+        lastErr = err;
+        const timeout = isSupabaseTimeoutError(err);
+        if (timeout) {
+          state.syncGuard.lastTimeoutAt = Date.now();
+          if (mode === 'write') state.syncGuard.writeTimeouts += 1;
+          else state.syncGuard.readTimeouts += 1;
+        }
+        const canRetry = attempt < maxAttempts && navigator.onLine && isLikelyTransientError(err);
+        if (!canRetry) break;
+        state.syncGuard.lastRetryAt = Date.now();
+        if (mode === 'write') state.syncGuard.writeRetries += 1;
+        else state.syncGuard.readRetries += 1;
+        await wait(260 + (attempt * 240));
+      }
+    }
+
+    if (mode === 'write') state.syncGuard.failedWrites += 1;
+    else state.syncGuard.failedReads += 1;
+    throw lastErr;
+  }
+
+  function rememberQueuedFallback() {
+    state.syncGuard.queuedFallbacks += 1;
+    state.syncGuard.lastQueuedFallbackAt = Date.now();
+  }
+
+  function shouldDeferOnlineWrite() {
+    if (!navigator.onLine) return false;
+    const queueLength = readQueue().length;
+    if (!queueLength) return false;
+    const lastQueued = Number(state.syncGuard.lastQueuedFallbackAt || 0);
+    if (!lastQueued || Date.now() - lastQueued > SUPABASE_WRITE_COOLDOWN_MS) return false;
+    state.syncGuard.cooldownSkips += 1;
+    state.syncGuard.lastCooldownSkipAt = Date.now();
+    return true;
   }
 
   async function upsertMachineSettingsDirect(client, rows) {
@@ -543,16 +646,16 @@
         const task = queue[i];
         try {
           if (task.type === 'rotation_state') {
-            await upsertRotationStateDirect(client, task.rotation, task.meta);
+            await runSupabaseOperation('queue.rotation_state', () => upsertRotationStateDirect(client, task.rotation, task.meta), { mode: 'write' });
             flushed += 1;
           } else if (task.type === 'machine_settings') {
-            await upsertMachineSettingsDirect(client, task.rows);
+            await runSupabaseOperation('queue.machine_settings', () => upsertMachineSettingsDirect(client, task.rows), { mode: 'write' });
             flushed += 1;
           } else if (task.type === 'rotation_month_entries') {
-            await upsertRotationMonthEntriesDirect(client, task.monthStart, task.label, task.rows);
+            await runSupabaseOperation('queue.rotation_month_entries', () => upsertRotationMonthEntriesDirect(client, task.monthStart, task.label, task.rows), { mode: 'write' });
             flushed += 1;
           } else if (task.type === 'gomoku_win') {
-            await upsertGomokuWinDirect(client, task.entry);
+            await runSupabaseOperation('queue.gomoku_win', () => upsertGomokuWinDirect(client, task.entry), { mode: 'write' });
             flushed += 1;
           } else if (task.type === 'game_stat') {
             await saveGameStatDirect(client, task.entry);
@@ -580,6 +683,7 @@
   }
 
   async function enqueueAndMaybeFlush(task) {
+    rememberQueuedFallback();
     const queuedTask = enqueueTask(task);
     if (!queuedTask) {
       return { ok: false, queued: false, reason: 'queue-guard-rejected', remaining: readQueue().length };
@@ -601,9 +705,9 @@
     }
     try {
       const client = getClient();
-      await upsertRotationStateDirect(client, rotation, { source: 'local-seed' });
+      await runSupabaseOperation('local_seed.rotation_state', () => upsertRotationStateDirect(client, rotation, { source: 'local-seed' }), { mode: 'write' });
       if (Array.isArray(machineSettingsRows) && machineSettingsRows.length) {
-        await upsertMachineSettingsDirect(client, machineSettingsRows);
+        await runSupabaseOperation('local_seed.machine_settings', () => upsertMachineSettingsDirect(client, machineSettingsRows), { mode: 'write' });
       }
       await flushPendingWrites();
       return { ok: true, seeded: true, queued: false };
@@ -621,12 +725,12 @@
     const client = getClient();
     try {
       if (client && navigator.onLine) {
-        const announcementsRes = await client
+        const announcementsRes = await runSupabaseOperation('announcements.refresh', () => client
           .from('announcements')
           .select('*')
           .eq('is_active', true)
           .order('created_at', { ascending: false })
-          .limit(5);
+          .limit(5), { mode: 'read' });
 
         if (announcementsRes && !announcementsRes.error) {
           state.announcements = Array.isArray(announcementsRes.data) ? announcementsRes.data : [];
@@ -811,11 +915,11 @@
     const client = getClient();
     try {
       if (client && navigator.onLine) {
-        const { data, error } = await client
+        const { data, error } = await runSupabaseOperation('machine_settings.load', () => client
           .from('machine_settings')
           .select('*')
           .order('category', { ascending: true })
-          .order('machine_key', { ascending: true });
+          .order('machine_key', { ascending: true }), { mode: 'read' });
         if (error) throw error;
         const rows = Array.isArray(data) ? data : [];
         if (rows.length) {
@@ -846,7 +950,8 @@
     const client = getClient();
     try {
       if (client && navigator.onLine) {
-        const savedCount = await upsertMachineSettingsDirect(client, rows);
+        if (shouldDeferOnlineWrite()) return Object.assign(await enqueueAndMaybeFlush({ type: 'machine_settings', rows }), { savedCount: Array.isArray(rows) ? rows.length : 0, deferred: true });
+        const savedCount = await runSupabaseOperation('machine_settings.save', () => upsertMachineSettingsDirect(client, rows), { mode: 'write' });
         state.machineSettingsSnapshot = Array.isArray(rows) ? rows : [];
         saveLocalSnapshot(state.rotationSnapshot || null, rows);
         await flushPendingWrites();
@@ -867,12 +972,12 @@
     const client = getClient();
     try {
       if (client && navigator.onLine) {
-        const { data, error } = await client
+        const { data, error } = await runSupabaseOperation('rotation_entries.load', () => client
           .from('rotation_entries')
           .select('*')
           .eq('month_start', monthStart)
           .order('row_order', { ascending: true })
-          .order('employee_name', { ascending: true });
+          .order('employee_name', { ascending: true }), { mode: 'read' });
         if (error) throw error;
         return Array.isArray(data) ? data : [];
       }
@@ -887,7 +992,8 @@
     const client = getClient();
     try {
       if (client && navigator.onLine) {
-        const summary = await upsertRotationMonthEntriesDirect(client, monthStart, label, rows);
+        if (shouldDeferOnlineWrite()) return Object.assign(await enqueueAndMaybeFlush({ type: 'rotation_month_entries', monthStart, label, rows }), { months: 1, entries: Array.isArray(rows) ? rows.length : 0, deferred: true });
+        const summary = await runSupabaseOperation('rotation_entries.save', () => upsertRotationMonthEntriesDirect(client, monthStart, label, rows), { mode: 'write' });
         await flushPendingWrites();
         return { ok: true, queued: false, months: summary.months, entries: summary.entries };
       }
@@ -903,10 +1009,10 @@
   }
 
   async function loadGameAccountsDirect(client) {
-    const { data, error } = await client
+    const { data, error } = await runSupabaseOperation('game_accounts.load', () => client
       .from('game_accounts')
       .select('account_number, full_name, updated_at')
-      .order('account_number', { ascending: true });
+      .order('account_number', { ascending: true }), { mode: 'read' });
     if (error) throw error;
     return Array.isArray(data) ? data : [];
   }
@@ -916,13 +1022,13 @@
     if (!type) return [];
     const [accounts, statsRes] = await Promise.all([
       loadGameAccountsDirect(client).catch(() => []),
-      client
+      runSupabaseOperation('game_stats.load', () => client
         .from('game_stats')
         .select('id,account_number,game_type,games_played,wins,losses,draws,points,last_played_at,updated_at')
         .eq('game_type', type)
         .order('points', { ascending: false })
         .order('updated_at', { ascending: false })
-        .limit(Math.max(1, Math.min(50, Number(limit) || 10)))
+        .limit(Math.max(1, Math.min(50, Number(limit) || 10))), { mode: 'read' })
     ]);
     if (statsRes && statsRes.error) throw statsRes.error;
     const nameMap = new Map((Array.isArray(accounts) ? accounts : []).map(row => [String(row.account_number || '').trim(), String(row.full_name || '').trim()]));
@@ -950,13 +1056,13 @@
     const gameType = String(entry && entry.game_type ? entry.game_type : '').trim();
     if (!accountNumber || !gameType) throw new Error('Chybí účet nebo typ hry.');
 
-    const existingRes = await client
+    const existingRes = await runSupabaseOperation('game_stats.lookup', () => client
       .from('game_stats')
       .select('id,games_played,wins,losses,draws,points,last_played_at,updated_at')
       .eq('account_number', accountNumber)
       .eq('game_type', gameType)
       .order('updated_at', { ascending: false })
-      .limit(1);
+      .limit(1), { mode: 'read' });
     if (existingRes && existingRes.error) throw existingRes.error;
     const existing = Array.isArray(existingRes && existingRes.data) && existingRes.data.length ? existingRes.data[0] : null;
 
@@ -981,12 +1087,12 @@
     };
 
     if (existing && existing.id) {
-      const { data, error } = await client.from('game_stats').update(next).eq('id', existing.id).select('*').maybeSingle();
+      const { data, error } = await runSupabaseOperation('game_stats.update', () => client.from('game_stats').update(next).eq('id', existing.id).select('*').maybeSingle(), { mode: 'write' });
       if (error) throw error;
       return data || next;
     }
 
-    const { data, error } = await client.from('game_stats').insert([next]).select('*').maybeSingle();
+    const { data, error } = await runSupabaseOperation('game_stats.insert', () => client.from('game_stats').insert([next]).select('*').maybeSingle(), { mode: 'write', attempts: 1 });
     if (error) throw error;
     return data || next;
   }
@@ -995,7 +1101,7 @@
     const client = getClient();
     try {
       if (client && navigator.onLine) {
-        const { data, error } = await client.from('rotation_state').select('*').eq('key', 'main').maybeSingle();
+        const { data, error } = await runSupabaseOperation('rotation_state.load', () => client.from('rotation_state').select('*').eq('key', 'main').maybeSingle(), { mode: 'read' });
         if (error) throw error;
 
         const row = data || null;
@@ -1051,7 +1157,8 @@
     const client = getClient();
     try {
       if (client && navigator.onLine) {
-        const row = await upsertRotationStateDirect(client, rotation, meta);
+        if (shouldDeferOnlineWrite()) return Object.assign(await enqueueAndMaybeFlush({ type: 'rotation_state', rotation, meta }), { deferred: true });
+        const row = await runSupabaseOperation('rotation_state.save', () => upsertRotationStateDirect(client, rotation, meta), { mode: 'write' });
         state.rotationSnapshot = rotation && typeof rotation === 'object' ? rotation : null;
         state.lastError = null;
         saveLocalSnapshot(state.rotationSnapshot, state.machineSettingsSnapshot || []);
@@ -1078,11 +1185,11 @@
     const client = getClient();
     if (!client || !navigator.onLine) return [];
     try {
-      const res = await client
+      const res = await runSupabaseOperation('gomoku_wins.load', () => client
         .from('gomoku_wins')
         .select('player_name,difficulty,moves,elapsed_ms,elapsed_text,x_moves,o_moves,created_at,app_version')
         .order('created_at', { ascending: false })
-        .limit(Math.max(1, Math.min(100, Number(limit) || 20)));
+        .limit(Math.max(1, Math.min(100, Number(limit) || 20))), { mode: 'read' });
       if (res && res.error) throw res.error;
       return Array.isArray(res && res.data) ? res.data : [];
     } catch (err) {
@@ -1096,7 +1203,8 @@
     const client = getClient();
     try {
       if (client && navigator.onLine) {
-        const data = await upsertGomokuWinDirect(client, entry);
+        if (shouldDeferOnlineWrite()) return Object.assign(await enqueueAndMaybeFlush({ type: 'gomoku_win', entry }), { deferred: true });
+        const data = await runSupabaseOperation('gomoku_win.save', () => upsertGomokuWinDirect(client, entry), { mode: 'write', attempts: 1 });
         await flushPendingWrites();
         return { ok: true, queued: false, data };
       }
@@ -1121,7 +1229,10 @@
       realtimeStatus: state.realtimeStatus || 'idle',
       realtimeBindStartedAt: state.realtimeBindStartedAt || 0,
       lastRealtimeAt: state.lastRealtimeAt || null,
-      guard: Object.assign({}, state.queueGuard)
+      guard: Object.assign({}, state.queueGuard),
+      syncGuard: Object.assign({}, state.syncGuard),
+      readTimeoutMs: SUPABASE_READ_TIMEOUT_MS,
+      writeTimeoutMs: SUPABASE_WRITE_TIMEOUT_MS
     };
   }
 
@@ -1213,9 +1324,20 @@
     },
     saveGameStat: async (payload) => {
       const client = getClient();
-      if (!client || !navigator.onLine) return { ok: false, reason: 'offline-or-missing-client' };
-      try { const result = Object.assign({ ok: true }, await saveGameStatDirect(client, payload)); state.lastError = null; return result; }
-      catch (err) { state.lastError = err; console.error('Game stat save failed', err); return { ok: false, error: err }; }
+      if (!client || !navigator.onLine) return await enqueueAndMaybeFlush({ type: 'game_stat', entry: payload });
+      try {
+        if (shouldDeferOnlineWrite()) return Object.assign(await enqueueAndMaybeFlush({ type: 'game_stat', entry: payload }), { deferred: true });
+        const result = Object.assign({ ok: true }, await saveGameStatDirect(client, payload));
+        state.lastError = null;
+        await flushPendingWrites();
+        return result;
+      }
+      catch (err) {
+        state.lastError = err;
+        console.error('Game stat save failed', err);
+        if (isLikelyTransientError(err)) return await enqueueAndMaybeFlush({ type: 'game_stat', entry: payload });
+        return { ok: false, error: err };
+      }
     },
     loadGameAccounts: async () => {
       const client = getClient();

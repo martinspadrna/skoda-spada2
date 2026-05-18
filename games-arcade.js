@@ -2,7 +2,7 @@
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
 
-  // v.1.1 (542): Fáze 5 je uzavřená; hry zůstávají stabilní při startu Fáze 6 a průhledného iOS glass polish.
+  // v.1.1 (543): Fáze 5 zůstává uzavřená; herní část beze změny pravidel při pokračování Fáze 6 a glass polish.
   const CORE_GAMES = [];
   const EXTRA_GAMES = ['ttt', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);

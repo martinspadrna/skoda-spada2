@@ -1,4 +1,4 @@
-// v.1.1 (542) – Fáze 6: první Supabase hardening guardy, diagnostika fronty a další průhledný iOS glass polish.
+// v.1.1 (543) – Fáze 6: timeout/retry guard pro Supabase, online write cooldown, rozšířená diagnostika a jemnější iOS glass polish.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
