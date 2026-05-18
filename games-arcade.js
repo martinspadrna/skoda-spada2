@@ -2,7 +2,7 @@
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
 
-  // v.1.1 (536): Fáze 5 – ochrana proti zbytečnému překreslení her, lehčí časovače a page lifecycle guard.
+  // v.1.1 (541): Fáze 5 – finální performance guardy, stabilní herní render a další průhlednější iOS glass polish.
   const CORE_GAMES = [];
   const EXTRA_GAMES = ['ttt', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);
@@ -122,13 +122,20 @@
     });
 
     if (!accounts.length) {
-      grid.innerHTML = '<div class="smallText">Zatím nejsou žádné profily.</div>';
+      const emptyHtml = '<div class="smallText">Zatím nejsou žádné profily.</div>';
+      if (grid.__rakLastProfilesHtml === emptyHtml && grid.childElementCount) {
+        gamePerf.profileRenderSkips = Number(gamePerf.profileRenderSkips || 0) + 1;
+        return;
+      }
+      grid.__rakLastProfilesHtml = emptyHtml;
+      gamePerf.profileRenderRuns = Number(gamePerf.profileRenderRuns || 0) + 1;
+      grid.innerHTML = emptyHtml;
       return;
     }
 
     const defs = ALL_GAMES.map((id) => Object.assign({ id }, META[id] || { title: id, subtitle: '', unit: 'bodů', mode: 'high' }));
 
-    grid.innerHTML = accounts.map((acc) => {
+    const nextHtml = accounts.map((acc) => {
       const progress = gamesBuildProgressSummary(acc);
       const last = acc.updatedAt ? gamesFormatPlayedLabel(acc.updatedAt) : 'Ještě bez hry';
       const profileRows = defs.map((game) => {
@@ -162,6 +169,13 @@
         '</details>'
       ].join('');
     }).join('');
+    if (grid.__rakLastProfilesHtml === nextHtml && grid.childElementCount) {
+      gamePerf.profileRenderSkips = Number(gamePerf.profileRenderSkips || 0) + 1;
+      return;
+    }
+    grid.__rakLastProfilesHtml = nextHtml;
+    gamePerf.profileRenderRuns = Number(gamePerf.profileRenderRuns || 0) + 1;
+    grid.innerHTML = nextHtml;
   }
 
   function renderAchievementsExtended() {
@@ -170,7 +184,14 @@
     const profile = gamesGetProfile();
     const account = gamesGetActiveAccount();
     if (!account) {
-      grid.innerHTML = '<div class="smallText">Přihlas se a achievementy se začnou počítat.</div>';
+      const emptyHtml = '<div class="smallText">Přihlas se a achievementy se začnou počítat.</div>';
+      if (grid.__rakLastAchievementsHtml === emptyHtml && grid.childElementCount) {
+        gamePerf.achievementRenderSkips = Number(gamePerf.achievementRenderSkips || 0) + 1;
+        return;
+      }
+      grid.__rakLastAchievementsHtml = emptyHtml;
+      gamePerf.achievementRenderRuns = Number(gamePerf.achievementRenderRuns || 0) + 1;
+      grid.innerHTML = emptyHtml;
       return;
     }
 
@@ -197,7 +218,7 @@
     const defs = baseAchievements.concat(gameAchievements).map(def => Object.assign({}, def));
     const unlocked = defs.filter((def) => Number(def.progress({ totalPlays: total.totalPlays, account })) >= Number(def.target || 0)).length;
 
-    grid.innerHTML = defs.map((def) => {
+    const nextHtml = defs.map((def) => {
       const current = Number(def.progress({ totalPlays: total.totalPlays, account }) || 0);
       const target = Number(def.target || 1) || 1;
       const pct = Math.max(0, Math.min(100, Math.round((current / target) * 100)));
@@ -219,6 +240,13 @@
         '</div>'
       ].join('');
     }).join('');
+    if (grid.__rakLastAchievementsHtml === nextHtml && grid.childElementCount) {
+      gamePerf.achievementRenderSkips = Number(gamePerf.achievementRenderSkips || 0) + 1;
+      return;
+    }
+    grid.__rakLastAchievementsHtml = nextHtml;
+    gamePerf.achievementRenderRuns = Number(gamePerf.achievementRenderRuns || 0) + 1;
+    grid.innerHTML = nextHtml;
     const folder = document.querySelector('#games .gamesAchievementsFolder');
     if (folder) folder.dataset.unlocked = String(unlocked);
   }
@@ -339,13 +367,47 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     leaderboardTtlMs: 60000,
     shellRenderSkips: 0,
     intervalHiddenSkips: 0,
-    activeManagedIntervals: 0
+    activeManagedIntervals: 0,
+    launchRenderSkips: 0,
+    statsRenderSkips: 0,
+    scheduledStatsRenders: 0,
+    statsIdlePending: false,
+    profileSyncRuns: 0,
+    profileSyncSkips: 0,
+    profileSyncInFlightSkips: 0,
+    profileSyncOfflineSkips: 0,
+    profileSyncHiddenSkips: 0,
+    profileRenderSkips: 0,
+    achievementRenderSkips: 0,
+    leaderboardInFlightSkips: 0,
+    leaderboardHiddenSkips: 0,
+    hubRenderRuns: 0,
+    hubActiveShellSkips: 0,
+    launchObserverBatches: 0,
+    launchObserverSkips: 0,
+    launchObserverIgnored: 0,
+    statsRenderRuns: 0,
+    profileRenderRuns: 0,
+    achievementRenderRuns: 0,
+    leaderboardRefreshRuns: 0,
+    leaderboardCacheHits: 0,
+    leaderboardFreshLoads: 0,
+    onlineRefreshRuns: 0,
+    onlineRefreshSkips: 0,
+    liveLeaderboardRefreshRuns: 0,
+    liveLeaderboardRefreshSkips: 0
   });
 
   function isGamesPageVisible() {
     if (document.visibilityState === 'hidden') return false;
     if (!document.body || !document.body.classList.contains('gamesOpen')) return false;
     return !!(window.app && window.app.activeGameShell);
+  }
+
+  function isGamesHubActive() {
+    if (document.visibilityState === 'hidden') return false;
+    const page = document.getElementById('games');
+    return !!(page && page.classList && page.classList.contains('active'));
   }
 
   function rakGameDelta(state, ts) {
@@ -396,6 +458,37 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   }
 
 
+
+  if (!window.__rakGamePerfOnlineBound) {
+    window.__rakGamePerfOnlineBound = true;
+    let gamesOnlineRefreshTimer = 0;
+    window.addEventListener('online', () => {
+      if (!isGamesHubActive() || (window.app && window.app.activeGameShell)) {
+        gamePerf.onlineRefreshSkips = Number(gamePerf.onlineRefreshSkips || 0) + 1;
+        return;
+      }
+      if (gamesOnlineRefreshTimer) {
+        clearTimeout(gamesOnlineRefreshTimer);
+        gamePerf.onlineRefreshSkips = Number(gamePerf.onlineRefreshSkips || 0) + 1;
+      }
+      gamesOnlineRefreshTimer = setTimeout(() => {
+        gamesOnlineRefreshTimer = 0;
+        if (!isGamesHubActive() || (window.app && window.app.activeGameShell)) {
+          gamePerf.onlineRefreshSkips = Number(gamePerf.onlineRefreshSkips || 0) + 1;
+          return;
+        }
+        gamePerf.onlineRefreshRuns = Number(gamePerf.onlineRefreshRuns || 0) + 1;
+        try {
+          if (typeof window.gamesSyncProfileFromRemote === 'function') void window.gamesSyncProfileFromRemote(false);
+          void refreshRemoteLeaderboards();
+          scheduleStatsExtended('online-resume');
+        } catch (err) {
+          console.warn('arcade online resume refresh failed', err);
+        }
+      }, rakGameIsLadaMode() ? 900 : 420);
+    }, { passive: true });
+  }
+
   function rakGameIsLadaMode() {
     try {
       return !!(document.body && (document.body.classList.contains('ladaMode') || document.body.classList.contains('lightweightMode')))
@@ -435,6 +528,42 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function isArcadeShellMounted(id) {
     const body = document.getElementById('gamesShellBody');
     return !!(body && body.dataset && body.dataset.arcadeGame === key(id) && body.childElementCount > 0 && currentState.id === key(id));
+  }
+
+
+  let statsRenderPending = false;
+  function rakGameScheduleIdle(fn, delay) {
+    const ms = Math.max(20, Number(delay) || (rakGameIsLadaMode() ? 140 : 60));
+    const ric = window.requestIdleCallback;
+    if (typeof ric === 'function') {
+      return ric(() => {
+        try { fn(); } catch (err) { console.warn('arcade idle task failed', err); }
+      }, { timeout: Math.max(350, ms * 6) });
+    }
+    return setTimeout(() => {
+      try { fn(); } catch (err) { console.warn('arcade idle task failed', err); }
+    }, ms);
+  }
+
+  function scheduleStatsExtended(reason) {
+    const grid = document.getElementById('gamesStatsGrid');
+    if (!grid) return;
+    if (!grid.childElementCount) {
+      renderStatsExtended();
+      return;
+    }
+    if (statsRenderPending) {
+      gamePerf.statsIdlePending = true;
+      return;
+    }
+    statsRenderPending = true;
+    gamePerf.statsIdlePending = true;
+    gamePerf.scheduledStatsRenders = Number(gamePerf.scheduledStatsRenders || 0) + 1;
+    rakGameScheduleIdle(() => {
+      statsRenderPending = false;
+      gamePerf.statsIdlePending = false;
+      renderStatsExtended(reason);
+    }, rakGameIsLadaMode() ? 180 : 70);
   }
 
   function fmtMs(ms) {
@@ -530,6 +659,40 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     return profile;
   };
 
+  const originalSyncProfileFromRemote = window.gamesSyncProfileFromRemote;
+  let gamesProfileSyncInFlight = null;
+  let gamesProfileSyncLastAt = 0;
+  window.gamesSyncProfileFromRemote = function gamesSyncProfileFromRemoteArcade(force = false) {
+    if (typeof originalSyncProfileFromRemote !== 'function') return Promise.resolve(null);
+    if (typeof navigator !== 'undefined' && !navigator.onLine && !force) {
+      gamePerf.profileSyncOfflineSkips = Number(gamePerf.profileSyncOfflineSkips || 0) + 1;
+      return Promise.resolve(null);
+    }
+    if (!force && !isGamesHubActive() && !(window.app && window.app.activeGameShell)) {
+      gamePerf.profileSyncHiddenSkips = Number(gamePerf.profileSyncHiddenSkips || 0) + 1;
+      return Promise.resolve((window.app && window.app.gamesProfile) || null);
+    }
+    const now = Date.now();
+    const ttl = rakGameIsLadaMode() ? 120000 : 45000;
+    if (!force && gamesProfileSyncInFlight) {
+      gamePerf.profileSyncInFlightSkips = Number(gamePerf.profileSyncInFlightSkips || 0) + 1;
+      return gamesProfileSyncInFlight;
+    }
+    if (!force && gamesProfileSyncLastAt && (now - gamesProfileSyncLastAt) < ttl) {
+      gamePerf.profileSyncSkips = Number(gamePerf.profileSyncSkips || 0) + 1;
+      return Promise.resolve((window.app && window.app.gamesProfile) || null);
+    }
+    gamesProfileSyncLastAt = now;
+    gamePerf.profileSyncRuns = Number(gamePerf.profileSyncRuns || 0) + 1;
+    gamesProfileSyncInFlight = Promise.resolve(originalSyncProfileFromRemote.call(this, force)).catch((err) => {
+      console.warn('games profile sync guard failed', err);
+      return null;
+    }).finally(() => {
+      gamesProfileSyncInFlight = null;
+    });
+    return gamesProfileSyncInFlight;
+  };
+
   function getAccountStat(account, gameId) {
     const acc = account || null;
     const id = key(gameId);
@@ -579,6 +742,11 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function renderLaunchTiles() {
     const grid = document.getElementById('gamesGrid');
     if (!grid) return;
+    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|');
+    if (grid.dataset && grid.dataset.arcadeLaunchSig === launchSig && grid.querySelector('.gamesDevFolder')) {
+      gamePerf.launchRenderSkips = Number(gamePerf.launchRenderSkips || 0) + 1;
+      return;
+    }
     const tile = (id) => {
       const meta = gameMeta(id);
       return `
@@ -607,6 +775,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         <div class="gamesDevFolderBody">${extraHtml}</div>
       </details>`
     ].join('');
+    if (grid.dataset) grid.dataset.arcadeLaunchSig = launchSig;
   }
 
   function summaryLine(account, gameId) {
@@ -620,7 +789,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     return `<div class="gamesStatsCardLine"><strong>${escapeHtml(meta.title)}</strong> · ${escapeHtml(value)}</div>`;
   }
 
-  function renderStatsExtended() {
+  function renderStatsExtended(reason) {
     const grid = document.getElementById('gamesStatsGrid');
     if (!grid) return;
     const profile = gamesGetProfile();
@@ -632,20 +801,28 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       return Number(a && a.id || 0) - Number(b && b.id || 0);
     });
     if (!accounts.length) {
+      gamePerf.statsRenderRuns = Number(gamePerf.statsRenderRuns || 0) + 1;
       grid.innerHTML = '<div class="smallText">Zatím nejsou žádné herní statistiky.</div>';
       return;
     }
-    grid.innerHTML = accounts.map((acc) => {
+    const nextHtml = accounts.map((acc) => {
       const totalPlays = ALL_GAMES.reduce((sum, gid) => sum + Number(getAccountStat(acc, gid).plays || 0), 0);
       const lines = ALL_GAMES.map((gid) => summaryLine(acc, gid)).join('');
       const isActive = String(acc.id) === String(activeId);
       return `<details class="gamesStatsCard${isActive ? ' isActive' : ''}"${isActive ? ' open' : ''}><summary class="gamesStatsCardSummary"><div class="gamesStatsCardHead"><div><div class="gamesStatsCardName">${escapeHtml(acc.name || '')}</div></div><div class="gamesStatsCardTotal">${String(totalPlays)} her</div></div></summary><div class="gamesStatsCardBody">${lines}</div></details>`;
     }).join('');
+    if (grid.__rakLastStatsHtml === nextHtml && grid.childElementCount) {
+      gamePerf.statsRenderSkips = Number(gamePerf.statsRenderSkips || 0) + 1;
+      return;
+    }
+    grid.__rakLastStatsHtml = nextHtml;
+    gamePerf.statsRenderRuns = Number(gamePerf.statsRenderRuns || 0) + 1;
+    grid.innerHTML = nextHtml;
   }
 
   const originalRenderStats = window.gamesRenderStats;
   window.gamesRenderStats = function gamesRenderStatsArcade() {
-    renderStatsExtended();
+    scheduleStatsExtended('public-render-stats');
     if (typeof originalRenderStats === 'function') {
       // preserve side effects only if needed elsewhere; we already replaced the visible block.
     }
@@ -696,9 +873,19 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     return `<div class="gamesTop3Card"><div class="gamesTop3Title">Top ${String(limit)} výsledků</div><div class="gamesTop3Body">${body}</div></div>`;
   };
 
+  const leaderboardInFlight = new Map();
   async function refreshRemoteLeaderboards(gameId) {
     if (!window.RotationSupabaseBridge || typeof window.RotationSupabaseBridge.loadGameStats !== 'function') return [];
+    if (document.visibilityState === 'hidden') {
+      gamePerf.leaderboardHiddenSkips = Number(gamePerf.leaderboardHiddenSkips || 0) + 1;
+      return [];
+    }
     const ids = gameId ? [key(gameId)] : ALL_GAMES.slice();
+    const requestKey = ids.join('|') || 'all';
+    if (leaderboardInFlight.has(requestKey)) {
+      gamePerf.leaderboardInFlightSkips = Number(gamePerf.leaderboardInFlightSkips || 0) + 1;
+      return leaderboardInFlight.get(requestKey);
+    }
     window.app.gamesLeaderboardCache = window.app.gamesLeaderboardCache || {};
     window.app.gamesLeaderboardThrottle = window.app.gamesLeaderboardThrottle || {};
     const now = Date.now();
@@ -708,9 +895,15 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       const hasCache = Array.isArray(window.app.gamesLeaderboardCache[gid]) && window.app.gamesLeaderboardCache[gid].length;
       return !hasCache || (now - last) > ttl;
     });
-    if (!freshIds.length) return ids.map((gid) => ({ id: gid, rows: (window.app.gamesLeaderboardCache[gid] || []).slice(0, 10), cached: true }));
-    try {
-      const results = await Promise.all(freshIds.map(async (gid) => {
+    if (!freshIds.length) {
+      gamePerf.leaderboardCacheHits = Number(gamePerf.leaderboardCacheHits || 0) + ids.length;
+      return ids.map((gid) => ({ id: gid, rows: (window.app.gamesLeaderboardCache[gid] || []).slice(0, 10), cached: true }));
+    }
+    gamePerf.leaderboardRefreshRuns = Number(gamePerf.leaderboardRefreshRuns || 0) + 1;
+    gamePerf.leaderboardFreshLoads = Number(gamePerf.leaderboardFreshLoads || 0) + freshIds.length;
+    const refreshPromise = (async () => {
+      try {
+        const results = await Promise.all(freshIds.map(async (gid) => {
         try {
           const rows = await window.RotationSupabaseBridge.loadGameStats(gid, 10);
           const normalized = (Array.isArray(rows) ? rows : []).map((row) => {
@@ -731,11 +924,18 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       }));
       // Fáze 5: během rozehrané hry už leaderboard refresh nespouští render celé hry.
       // Dřív se tím hra při online obnově zbytečně překreslila/restartovala.
-      if (!window.app.activeGameShell) renderStatsExtended();
-      return results;
-    } catch (err) {
-      console.warn('refreshRemoteLeaderboards failed', err);
-      return [];
+      if (!window.app.activeGameShell) scheduleStatsExtended('leaderboard-refresh');
+        return results;
+      } catch (err) {
+        console.warn('refreshRemoteLeaderboards failed', err);
+        return [];
+      }
+    })();
+    leaderboardInFlight.set(requestKey, refreshPromise);
+    try {
+      return await refreshPromise;
+    } finally {
+      leaderboardInFlight.delete(requestKey);
     }
   }
   window.gamesRefreshRemoteLeaderboards = refreshRemoteLeaderboards;
@@ -792,7 +992,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     }
     // Fáze 5: při rozehrané hře neobnovujeme celé statistické bloky, jen uložíme výsledek.
     // Statistiky se dorenderují po návratu do hubu, takže se hra zbytečně nepřekreslí.
-    if (!window.app || !window.app.activeGameShell) renderStatsExtended();
+    if (!window.app || !window.app.activeGameShell) scheduleStatsExtended('record-stat');
     void refreshRemoteLeaderboards(id);
   };
 
@@ -875,13 +1075,17 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
 
   const origRenderHub = window.renderGamesHub;
   window.renderGamesHub = function renderGamesHubArcade() {
+    gamePerf.hubRenderRuns = Number(gamePerf.hubRenderRuns || 0) + 1;
     if (typeof origRenderHub === 'function') origRenderHub();
     renderLaunchTiles();
-    renderStatsExtended();
+    scheduleStatsExtended('hub-render');
     if (window.app && window.app.activeGameShell) {
       if (EXTRA_GAMES.indexOf(key(window.app.activeGameShell)) >= 0) {
         if (!isArcadeShellMounted(window.app.activeGameShell)) window.renderGameShell(window.app.activeGameShell);
-        else gamePerf.shellRenderSkips += 1;
+        else {
+          gamePerf.shellRenderSkips += 1;
+          gamePerf.hubActiveShellSkips = Number(gamePerf.hubActiveShellSkips || 0) + 1;
+        }
       }
     }
   };
@@ -1853,11 +2057,48 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function isExtraGame(id) { return EXTRA_GAMES.includes(key(id)); }
 
   // Ensure launch tiles render immediately if already on the page.
-  const bootTiles = () => { try { renderLaunchTiles(); renderStatsExtended(); } catch (err) {} };
+  const bootTiles = () => { try { renderLaunchTiles(); scheduleStatsExtended('boot'); } catch (err) {} };
   bootTiles();
   if (typeof MutationObserver !== 'undefined') {
-    const obs = new MutationObserver(() => { const grid = document.getElementById('gamesGrid'); if (grid && grid.children.length && grid.querySelector('[data-game="aim"]')) return; renderLaunchTiles(); });
-    obs.observe(document.documentElement, { childList: true, subtree: true });
+    let launchObserverPending = false;
+    const scheduleLaunchObserverRender = () => {
+      if (launchObserverPending) {
+        gamePerf.launchObserverSkips = Number(gamePerf.launchObserverSkips || 0) + 1;
+        return;
+      }
+      launchObserverPending = true;
+      const run = () => {
+        launchObserverPending = false;
+        const grid = document.getElementById('gamesGrid');
+        if (!grid) return;
+        if (grid.children.length && grid.querySelector('[data-game="aim"]')) {
+          gamePerf.launchObserverSkips = Number(gamePerf.launchObserverSkips || 0) + 1;
+          return;
+        }
+        gamePerf.launchObserverBatches = Number(gamePerf.launchObserverBatches || 0) + 1;
+        renderLaunchTiles();
+      };
+      if (typeof window.requestAnimationFrame === 'function') window.requestAnimationFrame(run);
+      else setTimeout(run, 40);
+    };
+    const observerRoot = document.getElementById('games') || document.body || document.documentElement;
+    const obs = new MutationObserver((mutations) => {
+      const relevant = Array.prototype.some.call(mutations || [], (mutation) => {
+        const target = mutation && mutation.target;
+        if (target && (target.id === 'games' || target.id === 'gamesGrid')) return true;
+        if (target && target.closest && target.closest('#games')) return true;
+        return Array.prototype.some.call((mutation && mutation.addedNodes) || [], (node) => (
+          !!(node && (node.id === 'games' || node.id === 'gamesGrid' || (node.querySelector && node.querySelector('#games, #gamesGrid'))))
+        ));
+      });
+      if (!relevant) {
+        gamePerf.launchObserverIgnored = Number(gamePerf.launchObserverIgnored || 0) + 1;
+        return;
+      }
+      scheduleLaunchObserverRender();
+    });
+    obs.observe(observerRoot, { childList: true, subtree: true });
+    gamePerf.launchObserverRoot = observerRoot && observerRoot.id ? observerRoot.id : (observerRoot === document.body ? 'body' : 'document');
     addCleanup(() => obs.disconnect());
   }
 

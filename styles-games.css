@@ -391,3 +391,103 @@ body.gamesOpen #games .gamesStage{padding:6px 6px calc(14px + env(safe-area-inse
 #games .gamesAccountCard.isLoggedIn .gamesAccountTop .gamesTinyBtn{min-height:24px !important;
     padding:0 7px !important;
     font-size:11px !important;}
+
+/* v.1.1 (540) – Fáze 5/iOS glass polish: herní hub, profily a statistiky jemně sjednocené bez zásahu do pravidel her. */
+body:not(.lightweightMode):not(.lowEndDevice) #games .gamesDevFolder,
+body:not(.lightweightMode):not(.lowEndDevice) #games .gamesProfilesFolder,
+body:not(.lightweightMode):not(.lowEndDevice) #games .gamesAchievementsFolder,
+body:not(.lightweightMode):not(.lowEndDevice) #games .gamesStatsFolder{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.075), rgba(255,255,255,.028)),
+    rgba(11,16,14,.56) !important;
+  border-color:rgba(255,255,255,.105) !important;
+  box-shadow:0 18px 42px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.07) !important;
+  backdrop-filter:blur(18px) saturate(145%) !important;
+  -webkit-backdrop-filter:blur(18px) saturate(145%) !important;
+}
+body:not(.lightweightMode):not(.lowEndDevice) #games .gamesLaunchTile,
+body:not(.lightweightMode):not(.lowEndDevice) #games .gamesStatsCard,
+body:not(.lightweightMode):not(.lowEndDevice) #games .gamesTop3Card,
+body:not(.lightweightMode):not(.lowEndDevice) #games .arcadePanel,
+body:not(.lightweightMode):not(.lowEndDevice) #games .arcadeBoardWrap{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.085), rgba(255,255,255,.032)),
+    rgba(9,14,12,.42) !important;
+  border-color:rgba(255,255,255,.115) !important;
+  box-shadow:0 16px 38px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.075) !important;
+  backdrop-filter:blur(16px) saturate(142%) !important;
+  -webkit-backdrop-filter:blur(16px) saturate(142%) !important;
+}
+body:not(.lightweightMode):not(.lowEndDevice) #games .gamesLaunchTile:active{
+  transform:scale(.985) translateY(1px) !important;
+}
+body.lightweightMode #games .gamesDevFolder,
+body.lightweightMode #games .gamesProfilesFolder,
+body.lightweightMode #games .gamesAchievementsFolder,
+body.lightweightMode #games .gamesStatsFolder,
+body.lightweightMode #games .gamesLaunchTile,
+body.lightweightMode #games .gamesStatsCard,
+body.lightweightMode #games .gamesTop3Card,
+body.lowEndDevice #games .gamesDevFolder,
+body.lowEndDevice #games .gamesProfilesFolder,
+body.lowEndDevice #games .gamesAchievementsFolder,
+body.lowEndDevice #games .gamesStatsFolder,
+body.lowEndDevice #games .gamesLaunchTile,
+body.lowEndDevice #games .gamesStatsCard,
+body.lowEndDevice #games .gamesTop3Card{
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04) !important;
+}
+
+/* v.1.1 (540) – Fáze 5: tišší herní UI bez layout přepisu. */
+#games .gamesDevFolderBody{contain:layout paint style;}
+#games .gamesStatsGrid,
+#games .gamesProfilesGrid,
+#games .gamesAchievementsGrid{content-visibility:auto;contain-intrinsic-size:420px;}
+body:not(.lightweightMode):not(.lowEndDevice) #games .gamesFolderSummary,
+body:not(.lightweightMode):not(.lowEndDevice) #games .gamesStatsCardSummary{
+  background:linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.018)) !important;
+  border-radius:18px !important;
+}
+body.lightweightMode #games .gamesDevFolderBody,
+body.lowEndDevice #games .gamesDevFolderBody,
+body.lightweightMode #games .gamesStatsGrid,
+body.lowEndDevice #games .gamesStatsGrid,
+body.lightweightMode #games .gamesProfilesGrid,
+body.lowEndDevice #games .gamesProfilesGrid,
+body.lightweightMode #games .gamesAchievementsGrid,
+body.lowEndDevice #games .gamesAchievementsGrid{content-visibility:visible;contain:none;}
+
+
+/* v.1.1 (540) – bezpečný iOS glass polish herní obrazovky bez změny layoutu a pravidel her. */
+body:not(.lightweightMode):not(.lowEndDevice) #games .gamesShell,
+body:not(.lightweightMode):not(.lowEndDevice) #games .arcadeShellRoot{
+  background:
+    radial-gradient(circle at 18% 0%, rgba(124,255,124,.08), transparent 32%),
+    linear-gradient(180deg, rgba(255,255,255,.078), rgba(255,255,255,.024)),
+    rgba(7,12,10,.54) !important;
+  border-color:rgba(255,255,255,.11) !important;
+  box-shadow:0 22px 52px rgba(0,0,0,.26), inset 0 1px 0 rgba(255,255,255,.075) !important;
+  backdrop-filter:blur(18px) saturate(150%) !important;
+  -webkit-backdrop-filter:blur(18px) saturate(150%) !important;
+}
+body:not(.lightweightMode):not(.lowEndDevice) #games .gamesShellBack,
+body:not(.lightweightMode):not(.lowEndDevice) #games .gameControlBtn{
+  background:linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.03)), rgba(11,18,14,.46) !important;
+  border-color:rgba(255,255,255,.13) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.09), 0 10px 24px rgba(0,0,0,.17) !important;
+  backdrop-filter:blur(14px) saturate(148%) !important;
+  -webkit-backdrop-filter:blur(14px) saturate(148%) !important;
+}
+body.lightweightMode #games .gamesShell,
+body.lowEndDevice #games .gamesShell,
+body.lightweightMode #games .arcadeShellRoot,
+body.lowEndDevice #games .arcadeShellRoot,
+body.lightweightMode #games .gamesShellBack,
+body.lowEndDevice #games .gamesShellBack,
+body.lightweightMode #games .gameControlBtn,
+body.lowEndDevice #games .gameControlBtn{
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}

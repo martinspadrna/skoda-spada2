@@ -1,3 +1,35 @@
+## v.1.1 (541)
+- Fáze 5 game performance uzavřená na 100 %.
+- Globální live refresh už nespouští herní leaderboardy, pokud uživatel není přímo v herním hubu; tím se hry zbytečně neprobouzí na pozadí.
+- Diagnostika nově rozlišuje live refresh běhy a skipy leaderboardů.
+- iOS glass polish pokračuje napříč aplikací: panely, karty, dlaždice, modaly, navigační prvky a herní sekce jsou průhlednější a víc rozmazávají pozadí.
+- Láďův režim / low-end režim nové náročnější blur vrstvy dál vypíná, aby starší mobily netrpěly.
+
+## v.1.1 (540)
+- Fáze 5 game performance dotažená na cca 98 %.
+- MutationObserver pro herní launch tiles je nově omezený hlavně na herní stránku, takže nesleduje zbytečně celou aplikaci.
+- Přidaný online refresh guard pro návrat internetu: profily/leaderboardy se obnoví jen při otevřeném herním hubu a nesahá do rozehrané hry.
+- Diagnostika rozšířená o skutečné rendery profilů/statistik/achievementů, cache hity leaderboardů, fresh loady, online refresh a ignorované observer změny.
+- Další bezpečný iOS glass polish pro herní shell, zpět tlačítko a herní ovládací tlačítka bez změny velikostí a pravidel her.
+
+## v.1.1 (539)
+- Fáze 5: tišší MutationObserver pro launch tiles – rychlé změny DOM se sloučí a dlaždice se nepřekreslují při každé drobné změně.
+- Sync profilů lépe pozná offline stav, skrytou/neaktivní herní stránku a zbytečný opakovaný sync.
+- Diagnostika počítá offline/hidden skipy profilů, běhy hub renderu, skipy aktivního shellu a dávky launch observeru.
+- Přidaný další postupný iOS glass polish pro vstupy, menší akční prvky a herní skládací sekce bez změny výpočtů.
+
+## v.1.1 (538)
+- Fáze 5: přidaný úsporný sync hráčských profilů – opakované online načtení se slučuje a používá krátkou cache, aby herní hub méně cukal.
+- Fáze 5: profily a achievementy se nepřekreslují, pokud se jejich HTML obsah nezměnil.
+- Fáze 5: leaderboard refresh má in-flight pojistku a v pozadí se zbytečně nespouští.
+- Diagnostika počítá přeskočené syncy profilů, přeskočené rendery profilů/achievementů a přeskočené leaderboard refresh pokusy.
+- iOS glass polish: herní hub, složka „Ve vývoji“, profily, statistiky a top výsledky mají jemnější glass vzhled; v Láďově režimu zůstávají efekty odlehčené.
+
+## v.1.1 (537)
+- Fáze 5: chytřejší render herního hubu – launch tiles a herní statistiky se nepřekreslují, když se jejich obsah nezměnil.
+- Fáze 5: herní statistiky mají lehký idle/debounce render, takže online refresh ani návrat z pozadí zbytečně netrhá UI.
+- Fáze 5: diagnostika nově počítá přeskočené renderování launch tiles/statistik a počet odložených stat renderů.
+
 ## v.1.1 (536)
 - Kantýna/jídelna: popup otevírací doby má nový iOS glass vzhled.
 - V popupu je den uprostřed a otevírací doba je pod ním, ne vedle něj.

@@ -1,4 +1,4 @@
-// v.1.1 (536) – iOS glass polish: food schedule popup + safe app glass foundation.
+// v.1.1 (541) – Fáze 5: finální guard pro herní online refresh, diagnostika a průhlednější iOS glass polish.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
@@ -579,7 +579,7 @@ function runPhaseFiveGamePerformanceAudit() {
   const run = () => {
     const report = {
       version: window.APP_VERSION || 'unknown',
-      phase: 'phase-5-game-performance',
+      phase: 'phase-5-game-performance-complete',
       checkedAt: new Date().toISOString(),
       ok: true,
       games: {
@@ -594,13 +594,42 @@ function runPhaseFiveGamePerformanceAudit() {
         leaderboardTtlMs: Number(window.__rakGamePerfManager && window.__rakGamePerfManager.leaderboardTtlMs || 0),
         pageLifecycleBound: !!window.__rakGamePerfPageLifecycleBound,
         pageHideCount: Number(window.__rakGamePerfManager && window.__rakGamePerfManager.pageHideCount || 0),
-        pageShowCount: Number(window.__rakGamePerfManager && window.__rakGamePerfManager.pageShowCount || 0)
+        pageShowCount: Number(window.__rakGamePerfManager && window.__rakGamePerfManager.pageShowCount || 0),
+        launchRenderSkips: Number(window.__rakGamePerfManager && window.__rakGamePerfManager.launchRenderSkips || 0),
+        statsRenderSkips: Number(window.__rakGamePerfManager && window.__rakGamePerfManager.statsRenderSkips || 0),
+        scheduledStatsRenders: Number(window.__rakGamePerfManager && window.__rakGamePerfManager.scheduledStatsRenders || 0),
+        statsIdlePending: !!(window.__rakGamePerfManager && window.__rakGamePerfManager.statsIdlePending),
+        profileSyncRuns: Number(window.__rakGamePerfManager && window.__rakGamePerfManager.profileSyncRuns || 0),
+        profileSyncSkips: Number(window.__rakGamePerfManager && window.__rakGamePerfManager.profileSyncSkips || 0),
+        profileSyncInFlightSkips: Number(window.__rakGamePerfManager && window.__rakGamePerfManager.profileSyncInFlightSkips || 0),
+        profileSyncOfflineSkips: Number(window.__rakGamePerfManager && window.__rakGamePerfManager.profileSyncOfflineSkips || 0),
+        profileSyncHiddenSkips: Number(window.__rakGamePerfManager && window.__rakGamePerfManager.profileSyncHiddenSkips || 0),
+        profileRenderSkips: Number(window.__rakGamePerfManager && window.__rakGamePerfManager.profileRenderSkips || 0),
+        achievementRenderSkips: Number(window.__rakGamePerfManager && window.__rakGamePerfManager.achievementRenderSkips || 0),
+        leaderboardInFlightSkips: Number(window.__rakGamePerfManager && window.__rakGamePerfManager.leaderboardInFlightSkips || 0),
+        leaderboardHiddenSkips: Number(window.__rakGamePerfManager && window.__rakGamePerfManager.leaderboardHiddenSkips || 0),
+        hubRenderRuns: Number(window.__rakGamePerfManager && window.__rakGamePerfManager.hubRenderRuns || 0),
+        hubActiveShellSkips: Number(window.__rakGamePerfManager && window.__rakGamePerfManager.hubActiveShellSkips || 0),
+        launchObserverBatches: Number(window.__rakGamePerfManager && window.__rakGamePerfManager.launchObserverBatches || 0),
+        launchObserverSkips: Number(window.__rakGamePerfManager && window.__rakGamePerfManager.launchObserverSkips || 0),
+        launchObserverIgnored: Number(window.__rakGamePerfManager && window.__rakGamePerfManager.launchObserverIgnored || 0),
+        launchObserverRoot: String(window.__rakGamePerfManager && window.__rakGamePerfManager.launchObserverRoot || ''),
+        statsRenderRuns: Number(window.__rakGamePerfManager && window.__rakGamePerfManager.statsRenderRuns || 0),
+        profileRenderRuns: Number(window.__rakGamePerfManager && window.__rakGamePerfManager.profileRenderRuns || 0),
+        achievementRenderRuns: Number(window.__rakGamePerfManager && window.__rakGamePerfManager.achievementRenderRuns || 0),
+        leaderboardRefreshRuns: Number(window.__rakGamePerfManager && window.__rakGamePerfManager.leaderboardRefreshRuns || 0),
+        leaderboardCacheHits: Number(window.__rakGamePerfManager && window.__rakGamePerfManager.leaderboardCacheHits || 0),
+        leaderboardFreshLoads: Number(window.__rakGamePerfManager && window.__rakGamePerfManager.leaderboardFreshLoads || 0),
+        onlineRefreshRuns: Number(window.__rakGamePerfManager && window.__rakGamePerfManager.onlineRefreshRuns || 0),
+        onlineRefreshSkips: Number(window.__rakGamePerfManager && window.__rakGamePerfManager.onlineRefreshSkips || 0),
+        liveLeaderboardRefreshRuns: Number(window.__rakGamePerfManager && window.__rakGamePerfManager.liveLeaderboardRefreshRuns || 0),
+        liveLeaderboardRefreshSkips: Number(window.__rakGamePerfManager && window.__rakGamePerfManager.liveLeaderboardRefreshSkips || 0)
       }
     };
     report.ok = report.games.stopLoops && (report.games.arcadeLoaded ? report.games.perfManager && report.games.pageLifecycleBound : true);
     report.games.shellRerenderGuard = report.games.arcadeLoaded ? (typeof window.__rakGamePerfManager === 'object' && 'shellRenderSkips' in window.__rakGamePerfManager) : true;
     try {
-      document.documentElement.dataset.rakPhase5 = report.ok ? 'game-performance' : 'game-performance-check';
+      document.documentElement.dataset.rakPhase5 = report.ok ? 'game-performance-complete' : 'game-performance-check';
       window.__rakPhase5GamePerformanceAudit = report;
     } catch (err) {}
     if (!report.ok) console.warn('[RaK] Phase 5 game performance audit', report);
@@ -611,11 +640,11 @@ function runPhaseFiveGamePerformanceAudit() {
     const rerun = () => setTimeout(run, 260);
     if (typeof registerListener === 'function') registerListener(document, 'DOMContentLoaded', rerun, { once: true });
     else document.addEventListener('DOMContentLoaded', rerun, { once: true });
-    return { version: window.APP_VERSION || 'unknown', phase: 'phase-5-game-performance', ok: true, deferred: true };
+    return { version: window.APP_VERSION || 'unknown', phase: 'phase-5-game-performance-complete', ok: true, deferred: true };
   }
 
   requestAnimationFrame(() => setTimeout(run, 260));
-  return { version: window.APP_VERSION || 'unknown', phase: 'phase-5-game-performance', ok: true, deferred: true };
+  return { version: window.APP_VERSION || 'unknown', phase: 'phase-5-game-performance-complete', ok: true, deferred: true };
 }
 
 
@@ -769,7 +798,18 @@ function installPwaAndConnectivityHooks() {
           }
         }
         if (navigator.onLine && typeof gamesRefreshRemoteLeaderboards === 'function') {
-          await gamesRefreshRemoteLeaderboards().catch(() => []);
+          const gamesPage = document.getElementById('games');
+          const gamesHubVisible = !!(gamesPage && gamesPage.classList && gamesPage.classList.contains('active'));
+          const gameShellActive = !!(window.app && window.app.activeGameShell);
+          const gamePerf = window.__rakGamePerfManager || null;
+          // Fáze 5 finále: běžný live refresh celé appky už netahá herní leaderboardy,
+          // pokud uživatel není přímo na hubu her. Tím se hry neprobouzí na pozadí.
+          if (gamesHubVisible && !gameShellActive && document.visibilityState !== 'hidden') {
+            if (gamePerf) gamePerf.liveLeaderboardRefreshRuns = Number(gamePerf.liveLeaderboardRefreshRuns || 0) + 1;
+            await gamesRefreshRemoteLeaderboards().catch(() => []);
+          } else if (gamePerf) {
+            gamePerf.liveLeaderboardRefreshSkips = Number(gamePerf.liveLeaderboardRefreshSkips || 0) + 1;
+          }
         }
         if (typeof forceHomeRefresh === 'function') forceHomeRefresh();
         if (typeof renderRotace === 'function') renderRotace();

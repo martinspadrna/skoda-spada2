@@ -3161,7 +3161,7 @@ body.lightweightMode #games .arcadeHud .gamesStatCard{
 }
 
 
-/* v.1.1 (536) – Rozpisy: bez nápisu „další“ a o 5 % užší jmenné sloupce v Měkota/Tvrdota. */
+/* v.1.1 (537) – Rozpisy: bez nápisu „další“ a o 5 % užší jmenné sloupce v Měkota/Tvrdota. */
 #monthView table.rotTable{
   width:95% !important;
   min-width:380px !important;
@@ -3186,7 +3186,7 @@ body.lightweightMode #games .arcadeHud .gamesStatCard{
   }
 }
 
-/* v.1.1 (536) – iOS glass polish: kantýna/jídelna popup + první bezpečný glass základ appky. */
+/* v.1.1 (537) – iOS glass polish: kantýna/jídelna popup + první bezpečný glass základ appky. */
 body:not(.lightweightMode) .dashboardHeroCard,
 body:not(.lightweightMode) .dashboardCard,
 body:not(.lightweightMode) .card,
@@ -3367,4 +3367,171 @@ body.lowEndDevice .foodScheduleWindows{
   width:100% !important;
   text-align:center !important;
   align-items:center !important;
+}
+
+/* v.1.1 (540) – postupný iOS glass polish celé appky: jen bezpečná vizuální vrstva pro vstupy a menší akční prvky. */
+body:not(.lightweightMode):not(.lowEndDevice) input,
+body:not(.lightweightMode):not(.lowEndDevice) select,
+body:not(.lightweightMode):not(.lowEndDevice) textarea,
+body:not(.lightweightMode):not(.lowEndDevice) .btnSmall,
+body:not(.lightweightMode):not(.lowEndDevice) .pillBtn,
+body:not(.lightweightMode):not(.lowEndDevice) .chip,
+body:not(.lightweightMode):not(.lowEndDevice) .tabBtn,
+body:not(.lightweightMode):not(.lowEndDevice) .subNavBtn,
+body:not(.lightweightMode):not(.lowEndDevice) .settingBtn{
+  background:linear-gradient(180deg, rgba(255,255,255,.075), rgba(255,255,255,.025)), rgba(12,18,15,.42) !important;
+  border-color:rgba(255,255,255,.12) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08), 0 10px 24px rgba(0,0,0,.16) !important;
+  backdrop-filter:blur(14px) saturate(150%) !important;
+  -webkit-backdrop-filter:blur(14px) saturate(150%) !important;
+}
+body:not(.lightweightMode):not(.lowEndDevice) input:focus,
+body:not(.lightweightMode):not(.lowEndDevice) select:focus,
+body:not(.lightweightMode):not(.lowEndDevice) textarea:focus{
+  border-color:rgba(124,255,124,.30) !important;
+  box-shadow:0 0 0 3px rgba(124,255,124,.08), inset 0 1px 0 rgba(255,255,255,.10) !important;
+}
+body.lightweightMode input,
+body.lightweightMode select,
+body.lightweightMode textarea,
+body.lowEndDevice input,
+body.lowEndDevice select,
+body.lowEndDevice textarea{
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
+
+/* v.1.1 (541) – průhlednější iOS glass polish napříč appkou bez změny rozměrů/layoutu. */
+:root{
+  --rakGlassPanelBg:linear-gradient(180deg, rgba(255,255,255,.105), rgba(255,255,255,.026)), rgba(8,14,12,.34);
+  --rakGlassCardBg:linear-gradient(180deg, rgba(255,255,255,.092), rgba(255,255,255,.022)), rgba(9,15,12,.30);
+  --rakGlassSoftBg:linear-gradient(180deg, rgba(255,255,255,.075), rgba(255,255,255,.018)), rgba(9,15,12,.24);
+  --rakGlassStroke:rgba(255,255,255,.135);
+  --rakGlassStrokeSoft:rgba(255,255,255,.10);
+  --rakGlassBlur:28px;
+  --rakGlassBlurSoft:20px;
+}
+body:not(.lightweightMode):not(.lowEndDevice) .dashboardShell,
+body:not(.lightweightMode):not(.lowEndDevice) .dashboardHeroCard,
+body:not(.lightweightMode):not(.lowEndDevice) .dashboardCard,
+body:not(.lightweightMode):not(.lowEndDevice) .card,
+body:not(.lightweightMode):not(.lowEndDevice) .personCard,
+body:not(.lightweightMode):not(.lowEndDevice) .adminBox,
+body:not(.lightweightMode):not(.lowEndDevice) .appMenuCard,
+body:not(.lightweightMode):not(.lowEndDevice) .appMenuThemeCard,
+body:not(.lightweightMode):not(.lowEndDevice) .calendarModal,
+body:not(.lightweightMode):not(.lowEndDevice) .personScheduleModal,
+body:not(.lightweightMode):not(.lowEndDevice) .qrModal{
+  background:var(--rakGlassPanelBg) !important;
+  background-color:rgba(8,14,12,.34) !important;
+  border-color:var(--rakGlassStroke) !important;
+  box-shadow:0 24px 64px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.115), inset 0 -1px 0 rgba(124,255,124,.035) !important;
+  backdrop-filter:blur(var(--rakGlassBlur)) saturate(185%) !important;
+  -webkit-backdrop-filter:blur(var(--rakGlassBlur)) saturate(185%) !important;
+}
+body:not(.lightweightMode):not(.lowEndDevice) .tile,
+body:not(.lightweightMode):not(.lowEndDevice) .listItem,
+body:not(.lightweightMode):not(.lowEndDevice) .calcTile,
+body:not(.lightweightMode):not(.lowEndDevice) .calcPanel,
+body:not(.lightweightMode):not(.lowEndDevice) .calcResultCard,
+body:not(.lightweightMode):not(.lowEndDevice) .calcInfoCard,
+body:not(.lightweightMode):not(.lowEndDevice) .soustruhModePanel,
+body:not(.lightweightMode):not(.lowEndDevice) .statsNameTile,
+body:not(.lightweightMode):not(.lowEndDevice) .statsMachineTile,
+body:not(.lightweightMode):not(.lowEndDevice) .rotaceNameTile,
+body:not(.lightweightMode):not(.lowEndDevice) .appMenuAction,
+body:not(.lightweightMode):not(.lowEndDevice) .appMenuThemeSummary{
+  background:var(--rakGlassCardBg) !important;
+  background-color:rgba(9,15,12,.30) !important;
+  border-color:var(--rakGlassStrokeSoft) !important;
+  box-shadow:0 16px 38px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.085) !important;
+  backdrop-filter:blur(var(--rakGlassBlurSoft)) saturate(168%) !important;
+  -webkit-backdrop-filter:blur(var(--rakGlassBlurSoft)) saturate(168%) !important;
+}
+body:not(.lightweightMode):not(.lowEndDevice) .subNav,
+body:not(.lightweightMode):not(.lowEndDevice) .bgrid,
+body:not(.lightweightMode):not(.lowEndDevice) .indexGrid,
+body:not(.lightweightMode):not(.lowEndDevice) .headerBar,
+body:not(.lightweightMode):not(.lowEndDevice) .gamesActiveAccountBar,
+body:not(.lightweightMode):not(.lowEndDevice) .dashboardSyncBadge,
+body:not(.lightweightMode):not(.lowEndDevice) .bottomNav,
+body:not(.lightweightMode):not(.lowEndDevice) .bottomNavBtn{
+  background:var(--rakGlassSoftBg) !important;
+  background-color:rgba(9,15,12,.24) !important;
+  border-color:rgba(255,255,255,.095) !important;
+  box-shadow:0 12px 30px rgba(0,0,0,.20), inset 0 1px 0 rgba(255,255,255,.07) !important;
+  backdrop-filter:blur(24px) saturate(175%) !important;
+  -webkit-backdrop-filter:blur(24px) saturate(175%) !important;
+}
+body:not(.lightweightMode):not(.lowEndDevice) .bottomNavBtn.active,
+body:not(.lightweightMode):not(.lowEndDevice) .listItem.activeChoice,
+body:not(.lightweightMode):not(.lowEndDevice) .rotaceNameTile.activeChoice,
+body:not(.lightweightMode):not(.lowEndDevice) .statsNameTile.activeChoice,
+body:not(.lightweightMode):not(.lowEndDevice) .statsMachineTile.activeChoice{
+  background:linear-gradient(180deg, rgba(124,255,124,.18), rgba(255,255,255,.045)), rgba(12,22,15,.34) !important;
+  border-color:rgba(124,255,124,.46) !important;
+  box-shadow:0 16px 36px rgba(0,0,0,.24), 0 0 0 1px rgba(124,255,124,.12) inset, inset 0 1px 0 rgba(255,255,255,.12) !important;
+}
+body.lightweightMode .dashboardShell,
+body.lowEndDevice .dashboardShell,
+body.lightweightMode .dashboardHeroCard,
+body.lowEndDevice .dashboardHeroCard,
+body.lightweightMode .dashboardCard,
+body.lowEndDevice .dashboardCard,
+body.lightweightMode .card,
+body.lowEndDevice .card,
+body.lightweightMode .tile,
+body.lowEndDevice .tile,
+body.lightweightMode .calcPanel,
+body.lowEndDevice .calcPanel,
+body.lightweightMode .bottomNav,
+body.lowEndDevice .bottomNav,
+body.lightweightMode .bottomNavBtn,
+body.lowEndDevice .bottomNavBtn{
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
+
+/* v.1.1 (541) – herní část drží stejný průhledný glass tón jako zbytek aplikace. */
+body:not(.lightweightMode):not(.lowEndDevice) #games .gamesDevFolder,
+body:not(.lightweightMode):not(.lowEndDevice) #games .gamesProfilesFolder,
+body:not(.lightweightMode):not(.lowEndDevice) #games .gamesAchievementsFolder,
+body:not(.lightweightMode):not(.lowEndDevice) #games .gamesStatsFolder,
+body:not(.lightweightMode):not(.lowEndDevice) #games .gamesShell,
+body:not(.lightweightMode):not(.lowEndDevice) #games .arcadeShellRoot,
+body:not(.lightweightMode):not(.lowEndDevice) #games .arcadePanel,
+body:not(.lightweightMode):not(.lowEndDevice) #games .arcadeBoardWrap{
+  background:var(--rakGlassPanelBg) !important;
+  background-color:rgba(8,14,12,.34) !important;
+  border-color:var(--rakGlassStroke) !important;
+  box-shadow:0 22px 56px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.11) !important;
+  backdrop-filter:blur(var(--rakGlassBlur)) saturate(185%) !important;
+  -webkit-backdrop-filter:blur(var(--rakGlassBlur)) saturate(185%) !important;
+}
+body:not(.lightweightMode):not(.lowEndDevice) #games .gamesLaunchTile,
+body:not(.lightweightMode):not(.lowEndDevice) #games .gamesStatsCard,
+body:not(.lightweightMode):not(.lowEndDevice) #games .gamesTop3Card,
+body:not(.lightweightMode):not(.lowEndDevice) #games .gamesFolderSummary,
+body:not(.lightweightMode):not(.lowEndDevice) #games .gamesStatsCardSummary,
+body:not(.lightweightMode):not(.lowEndDevice) #games .gamesShellBack,
+body:not(.lightweightMode):not(.lowEndDevice) #games .gameControlBtn,
+body:not(.lightweightMode):not(.lowEndDevice) #games .gamesTinyBtn,
+body:not(.lightweightMode):not(.lowEndDevice) #games .gameInfoRow{
+  background:var(--rakGlassCardBg) !important;
+  background-color:rgba(9,15,12,.30) !important;
+  border-color:var(--rakGlassStrokeSoft) !important;
+  box-shadow:0 14px 34px rgba(0,0,0,.20), inset 0 1px 0 rgba(255,255,255,.085) !important;
+  backdrop-filter:blur(var(--rakGlassBlurSoft)) saturate(168%) !important;
+  -webkit-backdrop-filter:blur(var(--rakGlassBlurSoft)) saturate(168%) !important;
+}
+body.lightweightMode #games .gamesDevFolder,
+body.lowEndDevice #games .gamesDevFolder,
+body.lightweightMode #games .gamesStatsCard,
+body.lowEndDevice #games .gamesStatsCard,
+body.lightweightMode #games .gamesShell,
+body.lowEndDevice #games .gamesShell,
+body.lightweightMode #games .arcadeShellRoot,
+body.lowEndDevice #games .arcadeShellRoot{
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
 }
