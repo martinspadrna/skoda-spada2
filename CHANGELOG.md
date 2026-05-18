@@ -1,3 +1,30 @@
+## v.1.1 (561)
+
+- Opravený výpočet v `Kalkulačky → Brusy → Kolik ještě stihnu`.
+- Hodnota z přesnějšího výpočtu „hotových kusů v rozdělaném vozíku/dávce“ se nově používá jen pro přepočet dávek/vozíků.
+- Tyto kusy se už znovu nepřičítají do celkového počtu kusů, protože mají být zahrnuté v poli „Celkem zatím nabroušeno“.
+- Ve výsledku je doplněná poznámka, aby bylo jasné, že rozdělaný vozík slouží jen pro dávky, ne pro navyšování celku.
+- Výpočty `Kdy bude hotovo`, hry, Theme/Pozadí, Supabase datový model, rozpisy, rotace a spodní lišta beze změny.
+- Fáze 6 — Supabase hardening zůstává cca 90 %.
+
+## v.1.1 (560)
+
+- Fáze 6 — Supabase hardening posunuta na cca 90 %.
+- Supabase offline fronta má nově wake/resume guard: po návratu do appky, `pageshow`, focusu nebo obnovení internetu se čekající fronta bezpečně probudí a naplánuje podle retry/backoff času.
+- Realtime připojení se při návratu do appky umí znovu navázat, ale s guardem proti spamování duplicitních bindů.
+- Init větev už nespouští duplicitní realtime bind volání.
+- Diagnostika Supabase nově ukazuje wake požadavky, skipy, offline skipy, noop stavy a wake bindy realtime kanálu.
+- Výpočty, pravidla her, Theme/Pozadí, rozpisy, rotace, otevírací doba, Supabase datový model a spodní lišta beze změny.
+
+## v.1.1 (559)
+
+- Fáze 6 — Supabase hardening posunuta na cca 84 %.
+- Supabase offline fronta má nový hidden-page guard: když je appka skrytá/neaktivní, flush fronty se nespouští zbytečně a odloží se.
+- Po návratu do appky se čekající fronta automaticky znovu naplánuje, pokud je internet a existují čekající položky.
+- Diagnostika nově ukazuje odložené flush pokusy na skryté stránce, flush po návratu do viditelného stavu a delay pro hidden retry.
+- Oprava z v.1.1 (558) pro scroll v Brusech a zvýraznění směn zůstává zachovaná.
+- Výpočty, pravidla her, Theme/Pozadí, rozpisy, rotace, otevírací doba, Supabase datový model a spodní lišta beze změny.
+
 ## v.1.1 (558)
 
 - Opravené / zpevněné scrollování v `Kalkulačky → Brusy` pro zařízení, kde se stránka mohla zaseknout a nešlo ji posouvat prstem.
@@ -47,7 +74,7 @@
 - Fáze 6 — Supabase hardening zůstává cca 64 %.
 - Výpočty, pravidla her, Theme/Pozadí, spodní lišta a Supabase datový model beze změny.
 
-## Přehled největších změn v.1.1 (500–558)
+## Přehled největších změn v.1.1 (500–561)
 - Proběhlo velké stabilizační období před dalšími fázemi refactoru: Fáze 3 Láďův režim, Fáze 4 cleanup manager, Fáze 5 game performance a start Fáze 6 Supabase hardening.
 - Dashboard se postupně ladil kvůli správnému zobrazení směny, ikon, kantýny/jídelny, odpočtů a menšímu riziku prázdných nebo pozdě načtených karet.
 - Spodní navigace prošla opakovaným dorovnáním, hlavně položka „Více“ – má být užší, ale normálně mezi ostatními položkami a bez ukotvení vpravo.

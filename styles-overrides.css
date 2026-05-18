@@ -4111,3 +4111,6 @@ body.lowEndDevice #rotace #personView .rotaceMiniCard.rotaceShiftCard.current{
   transform:none !important;
   box-shadow:inset 0 0 0 1px rgba(184,255,103,.28) !important;
 }
+
+
+/* v.1.1 (561) – bez layout změn; Supabase wake/resume guard je čistě JS stabilizace. */

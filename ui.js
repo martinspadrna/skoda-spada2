@@ -2752,20 +2752,20 @@ function buildAppHistoryHtml(versionText) {
       range: versionText,
       title: 'Aktuální build',
       lines: [
-        'Fáze 6 — Supabase hardening zůstává cca 78 %.',
-        'Kalkulačky → Brusy mají nový bezpečný scroll guard pro zařízení, kde se dlouhá stránka mohla zaseknout a nešla posouvat prstem.',
-        'Rozpisy zvýrazní vždy jen jednu směnu: aktuální, a když právě nejsme v práci, nejbližší další. Bez textových popisků v řádku.',
-        'Rotace po kliknutí na jméno zvýrazní aktuální směnu, případně nejbližší další pracovní směnu, když člověk zrovna není v práci.',
-        'Výpočty, pravidla her, Theme/Pozadí, Supabase datový model a spodní lišta jsou funkčně beze změny.'
+        'Opravený výpočet v Kalkulačky → Brusy → Kolik ještě stihnu.',
+        'Hotové kusy v rozdělaném vozíku/dávce se nově používají jen pro přepočet dávek/vozíků.',
+        'Tyto kusy se už znovu nepřičítají do celkového počtu kusů, takže při vyplněném poli Celkem zatím nabroušeno nevzniká dvojí započítání.',
+        'Výpočty Kdy bude hotovo, hry, Theme/Pozadí, Supabase datový model, rozpisy, rotace a spodní lišta jsou funkčně beze změny.',
+        'Fáze 6 — Supabase hardening zůstává cca 90 %.'
       ]
     },
     {
-      range: 'v.1.1 500–558',
+      range: 'v.1.1 500–561',
       title: 'Stabilizace, hry, Supabase a glass vzhled',
       lines: [
         'Proběhlo velké stabilizační období: Láďův režim, cleanup manager, dokončení game performance a start Supabase hardening.',
         'Dashboard, Rotace, Rozpisy a Statistiky se ladily hlavně kvůli mobilům, safe-area, přehlednosti a menšímu riziku prázdných/pozdě načtených karet.',
-        'Kalkulačky dostaly sjednocenější calcPanel systém, větší klikací tlačítka a u Brusů se vrátily barevné indexy ve glass stylu.',
+        'Kalkulačky dostaly sjednocenější calcPanel systém, větší klikací tlačítka, barevné indexy u Brusů ve glass stylu a opravu dvojího započítání rozdělaného vozíku.',
         'Herní hub se zrychlil: méně opakovaných renderů, cache profilů/statistik, lepší práce s leaderboardy a všechny nedoladěné hry jsou zatím ve „Ve vývoji“.',
         'Supabase Realtime a offline/online sync se zpevňují přes timeouty, retry, offline frontu, deduplikaci, fallback cache, retry backoff, session cache online her a diagnostiku.',
         'Přibyly Theme/Pozadí volby, výrazná glass-friendly pozadí, modernější theme karty a profilové ukládání vzhledu.'

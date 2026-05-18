@@ -152,13 +152,17 @@ function calcBrusy() {
   const sec = Math.max(0, (getShiftEnd(new Date()) - new Date()) / 1000);
   const cfg = getBrusConfig(app.machine, app.prog);
   const ks = countBrusyPieces(sec, cfg);
-  const hotovo = parseInt(document.getElementById("davka").value) || 0;
+  const doneInCart = parseInt(document.getElementById("davka").value) || 0;
   const celkem = parseInt(document.getElementById("celkem").value) || 0;
-  const doKonce = ks + hotovo;
-  const celkove = celkem + doKonce;
+  const doseBase = ks + Math.max(0, doneInCart);
+  const celkove = celkem + ks;
+  const preciseLine = doneInCart > 0
+    ? "Rozdělaný vozík/dávka: <b>" + formatCount(doneInCart) + " ks</b> se používá jen pro přepočet dávek, nepřičítá se znovu do celkových kusů."
+    : "Přesnější výpočet může zohlednit rozdělaný vozík/dávku jen pro přepočet dávek.";
   document.getElementById("outB").innerHTML = renderCalcResult(app.machine + " / " + cfg.label, [
-    "Do konce směny ještě stihneš <b>" + formatCount(ks) + " ks</b> / " + formatDoses(doKonce) + " dávek včetně rozdělané dávky.",
-    "Celkově budeš mít <b>" + formatCount(celkove) + " ks</b> / " + formatDoses(celkove) + " dávek."
+    "Do konce směny ještě stihneš <b>" + formatCount(ks) + " ks</b> / " + formatDoses(doseBase) + " dávek včetně rozdělaného vozíku.",
+    "Celkově budeš mít <b>" + formatCount(celkove) + " ks</b> / " + formatDoses(celkove) + " dávek.",
+    preciseLine
   ]);
   saveRotationData();
 }

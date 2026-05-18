@@ -1,4 +1,4 @@
-// v.1.1 (558) – scroll guard pro Brusy + čisté zvýraznění aktuální/příští směny bez popisků.
+// v.1.1 (561) – Brusy: rozdělaný vozík se počítá jen do dávek, ne dvakrát do celkových kusů.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

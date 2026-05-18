@@ -37,6 +37,13 @@
       queueFlushBatchStops: 0,
       queueFlushScheduled: 0,
       queueFlushEmptyRuns: 0,
+      queueHiddenDefers: 0,
+      queueVisibilityFlushes: 0,
+      queueWakeRequests: 0,
+      queueWakeSkips: 0,
+      queueWakeOfflineSkips: 0,
+      queueWakeNoops: 0,
+      realtimeWakeBinds: 0,
       queueNextRetryAt: null,
       lastTimeoutAt: null,
       lastRetryAt: null,
@@ -46,7 +53,12 @@
       lastQueueSuccessAt: null,
       lastQueueErrorAt: null,
       lastQueueBackoffAt: null,
-      lastQueueScheduleAt: null
+      lastQueueScheduleAt: null,
+      lastQueueHiddenDeferAt: null,
+      lastQueueVisibilityFlushAt: null,
+      lastQueueWakeAt: null,
+      lastQueueWakeSkipAt: null,
+      lastRealtimeWakeBindAt: null
     },
     cacheGuard: {
       accountCacheHits: 0,
@@ -86,6 +98,8 @@
   const SUPABASE_QUEUE_RETRY_MAX_MS = 4 * 60 * 1000;
   const SUPABASE_QUEUE_FLUSH_BATCH_SIZE = 8;
   const SUPABASE_QUEUE_FLUSH_IDLE_DELAY_MS = 1200;
+  const SUPABASE_QUEUE_HIDDEN_RETRY_DELAY_MS = 1800;
+  const SUPABASE_QUEUE_WAKE_GUARD_MS = 2500;
   const SUPABASE_QUEUE_DROP_INVALID_AFTER = 3;
   const SUPPORTED_QUEUE_TYPES = new Set([
     'rotation_state',
@@ -188,7 +202,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v558');
+      const channel = client.channel('rak-public-live-v561');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -242,6 +256,7 @@
   const SUPABASE_GAME_CACHE_TTL_MS = 5 * 60 * 1000;
   let flushPromise = null;
   let flushScheduleTimer = null;
+  let lastQueueWakeRequestAt = 0;
   const sharedReadPromises = new Map();
 
   function safeReadJson(key, fallback) {
@@ -928,6 +943,54 @@
     return true;
   }
 
+  function shouldDeferQueueFlushForHiddenPage() {
+    return !!(typeof document !== 'undefined'
+      && document.visibilityState === 'hidden'
+      && typeof navigator !== 'undefined'
+      && navigator.onLine);
+  }
+
+  function requestSupabaseQueueWake(reason, delayMs) {
+    const now = Date.now();
+    if (now - lastQueueWakeRequestAt < SUPABASE_QUEUE_WAKE_GUARD_MS) {
+      state.syncGuard.queueWakeSkips += 1;
+      state.syncGuard.lastQueueWakeSkipAt = now;
+      return false;
+    }
+    lastQueueWakeRequestAt = now;
+    state.syncGuard.queueWakeRequests += 1;
+    state.syncGuard.lastQueueWakeAt = now;
+
+    if (!navigator.onLine) {
+      state.syncGuard.queueWakeOfflineSkips += 1;
+      return false;
+    }
+
+    const hadRealtimeChannel = !!state.realtimeChannel;
+    bindRealtimeSubscriptions();
+    if (!hadRealtimeChannel && state.realtimeChannel) {
+      state.syncGuard.realtimeWakeBinds += 1;
+      state.syncGuard.lastRealtimeWakeBindAt = now;
+    }
+
+    const queue = readQueue();
+    if (!queue.length) {
+      state.syncGuard.queueWakeNoops += 1;
+      return false;
+    }
+
+    if (shouldDeferQueueFlushForHiddenPage()) {
+      state.syncGuard.queueHiddenDefers += 1;
+      state.syncGuard.lastQueueHiddenDeferAt = now;
+      return scheduleSupabaseQueueFlush('wake-hidden-' + String(reason || 'resume'), SUPABASE_QUEUE_HIDDEN_RETRY_DELAY_MS);
+    }
+
+    const nextRetryAt = getNextQueueRetryAt(queue);
+    const retryDelay = nextRetryAt && nextRetryAt > now ? nextRetryAt - now : 0;
+    const wakeDelay = retryDelay || delayMs || 450;
+    return scheduleSupabaseQueueFlush('wake-' + String(reason || 'resume'), wakeDelay);
+  }
+
   async function flushPendingWrites() {
     if (flushPromise) return flushPromise;
     flushPromise = (async () => {
@@ -936,6 +999,13 @@
 
       const queue = readQueue();
       if (!queue.length) return { ok: true, flushed: 0, remaining: 0 };
+
+      if (shouldDeferQueueFlushForHiddenPage()) {
+        state.syncGuard.queueHiddenDefers += 1;
+        state.syncGuard.lastQueueHiddenDeferAt = Date.now();
+        scheduleSupabaseQueueFlush('hidden-page', SUPABASE_QUEUE_HIDDEN_RETRY_DELAY_MS);
+        return { ok: true, deferred: true, reason: 'document-hidden', remaining: queue.length };
+      }
 
       state.syncGuard.queueFlushRuns += 1;
       state.syncGuard.lastQueueFlushAt = Date.now();
@@ -1772,6 +1842,8 @@
       readTimeoutMs: SUPABASE_READ_TIMEOUT_MS,
       writeTimeoutMs: SUPABASE_WRITE_TIMEOUT_MS,
       queueFlushBatchSize: SUPABASE_QUEUE_FLUSH_BATCH_SIZE,
+      queueHiddenRetryDelayMs: SUPABASE_QUEUE_HIDDEN_RETRY_DELAY_MS,
+      queueWakeGuardMs: SUPABASE_QUEUE_WAKE_GUARD_MS,
       queueNextRetryAt: state.syncGuard.queueNextRetryAt || null
     };
   }
@@ -2045,9 +2117,23 @@
   window.saveGameSessionByInviteCode = async (code, payload) => window.RotationSupabaseBridge.saveGameSessionByInviteCode(code, payload);
 
   window.addEventListener('online', () => {
-    bindRealtimeSubscriptions();
-    scheduleSupabaseQueueFlush('online', 350);
+    requestSupabaseQueueWake('online', 350);
     void refreshPublicData();
+  });
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'visible') return;
+    state.syncGuard.queueVisibilityFlushes += 1;
+    state.syncGuard.lastQueueVisibilityFlushAt = Date.now();
+    requestSupabaseQueueWake('visible', 450);
+  });
+
+  window.addEventListener('pageshow', () => {
+    requestSupabaseQueueWake('pageshow', 650);
+  });
+
+  window.addEventListener('focus', () => {
+    requestSupabaseQueueWake('focus', 850);
   });
 
   if (document.readyState === 'loading') {
