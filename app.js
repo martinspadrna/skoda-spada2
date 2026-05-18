@@ -1,4 +1,4 @@
-// v.1.1 (543) – Fáze 6: timeout/retry guard pro Supabase, online write cooldown, rozšířená diagnostika a jemnější iOS glass polish.
+// v.1.1 (544) – Fáze 6: UI fix indexů Brusy v iOS glass stylu bez zásahu do výpočtů nebo Supabase logiky.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

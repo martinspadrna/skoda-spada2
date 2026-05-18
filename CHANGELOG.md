@@ -1,3 +1,9 @@
+## v.1.1 (544)
+- Kalkulačky / Brusy: vrácené barevné rozlišení indexů AD / AE / AH / AD volné / AE volné.
+- Barvy indexů jsou nově sladěné s průhledným iOS glass stylem, takže zůstávají barevné, ale pořád působí jako sklo.
+- Výpočty, Supabase logika, hry ani rozložení spodní lišty beze změny.
+- Fáze 6 pokračuje bezpečným UI fixem, stav cca 26 %.
+
 ## v.1.1 (543)
 - Fáze 6 — Supabase hardening pokračuje: cca 24 %.
 - Přidán timeout guard pro Supabase čtení/zápisy, aby se požadavky nemohly na mobilu nechat viset donekonečna.
