@@ -10,9 +10,14 @@ function renderBrusy() {
   const info = document.getElementById("brusyInfo");
   if (info) {
     const cfg = getBrusConfig(app.machine, app.prog);
-    info.innerHTML =
+    const infoHtml =
       "<div class='brusyInfoTitle'><b>" + escapeHtml(app.machine) + " / " + escapeHtml(cfg.label) + "</b></div>" +
       "<div class='brusyInfoSub'>Kus: " + formatBrusSeconds(cfg.pieceSec) + " · Orovnává po " + formatCount(cfg.dressEvery) + " ks · Orovnává " + formatBrusDuration(cfg.dressSec) + "</div>";
+    if (typeof setElementHtmlIfChanged === "function") {
+      setElementHtmlIfChanged(info, infoHtml, "brusyInfo");
+    } else {
+      info.innerHTML = infoHtml;
+    }
   }
 }
 

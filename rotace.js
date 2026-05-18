@@ -46,12 +46,22 @@ function renderRotace() {
   if (app.selectedMonth && app.rotation.months[app.selectedMonth]) {
     renderMonth(app.selectedMonth);
   } else if (monthView) {
-    monthView.innerHTML = "<div class='smallText'>Vyber měsíc.</div>";
+    setRotaceHtmlIfChanged(monthView, "<div class='smallText'>Vyber měsíc.</div>", 'rotaceMonth-empty');
   }
 
   renderStatsPanel();
   const adminBox = document.getElementById('adminBox');
   if (adminBox) adminBox.style.display = 'none';
+}
+
+
+function setRotaceHtmlIfChanged(element, html, key) {
+  if (!element) return false;
+  if (typeof setElementHtmlIfChanged === 'function') {
+    return setElementHtmlIfChanged(element, html, key || 'rotace');
+  }
+  element.innerHTML = String(html ?? '');
+  return true;
 }
 
 function bindRotaceOverviewTap() {
@@ -317,7 +327,7 @@ function renderPersonScheduleModal(name) {
   const title = overlay.querySelector('#personScheduleModalTitle');
   const body = overlay.querySelector('#personScheduleModalBody');
   if (title) title.textContent = name;
-  if (body) body.innerHTML = buildPersonScheduleModalHtml(name);
+  if (body) setRotaceHtmlIfChanged(body, buildPersonScheduleModalHtml(name), 'rotacePersonScheduleModalBody');
 }
 
 function showPersonScheduleModal(name) {
@@ -399,7 +409,7 @@ function renderUpcomingShiftsPreview(limit = 10) {
   }).filter(Boolean);
 
   if (!previewEntries.length) {
-    personView.innerHTML = "<div class='smallText'>Pro teď tu ještě nejsou žádné budoucí směny.</div>";
+    setRotaceHtmlIfChanged(personView, "<div class='smallText'>Pro teď tu ještě nejsou žádné budoucí směny.</div>", 'rotaceUpcoming-empty');
     return;
   }
 
@@ -424,7 +434,7 @@ function renderUpcomingShiftsPreview(limit = 10) {
   const totalPeople = names.length || Math.max(presentEntries.length + missingNames.length, 1);
   const presentCount = presentEntries.length;
   const missingText = missingNames.length ? missingNames.join(', ') : 'nikdo';
-  personView.innerHTML = [
+  setRotaceHtmlIfChanged(personView, [
     '<div class="rotacePersonHeader rotaceOverviewHeader">',
     '  <div class="rotacePersonTitle">' + escapeHtml(headerText) + '</div>',
     '</div>',
@@ -437,7 +447,7 @@ function renderUpcomingShiftsPreview(limit = 10) {
       '</div>'
     ].join('')).join('') : '<div class="rotaceMiniCard rotaceOverviewCard isEmpty"><div class="rotaceMiniTarget rotaceOverviewName">Nikdo není zapsaný jako přítomný.</div></div>',
     '</div>'
-  ].join('');
+  ].join(''), 'rotaceUpcoming-preview');
 }
 
 function renderPerson(name) {
@@ -447,7 +457,7 @@ function renderPerson(name) {
   const currentIdx = Number.isFinite(schedule.currentIdx) ? schedule.currentIdx : -1;
 
   if (!entries.length) {
-    personView.innerHTML = "<div class='smallText'>Pro tohle jméno zatím nejsou žádné směny.</div>";
+    setRotaceHtmlIfChanged(personView, "<div class='smallText'>Pro tohle jméno zatím nejsou žádné směny.</div>", 'rotacePerson-empty');
     return;
   }
 
@@ -468,7 +478,7 @@ function renderPerson(name) {
     '</div>'
   ].join('');
 
-  personView.innerHTML = [
+  setRotaceHtmlIfChanged(personView, [
     '<div class="rotacePersonHeader">',
     '  <div class="rotacePersonTitle">' + escapeHtml(name) + '</div>',
     '  <div class="rotacePersonMeta">3× rychle klepni na jméno pro QR kód.</div>',
@@ -476,7 +486,7 @@ function renderPerson(name) {
     '<div class="rotaceQuickCards rotaceQuickStack">',
     visibleEntries.map((entry) => formatEntry(entry, entry === entries[currentIdx])).join(''),
     '</div>'
-  ].join('');
+  ].join(''), 'rotacePerson-detail-' + String(name || ''));
 }
 
 function getRotationRowShiftWindow(monthKey, dateLabel) {
@@ -637,7 +647,7 @@ function renderMonth(monthKey) {
     html += "<div class='smallText'>Bez poznámek.</div>";
   }
 
-  monthView.innerHTML = html;
+  setRotaceHtmlIfChanged(monthView, html, 'rotaceMonth-' + String(monthKey || ''));
 }
 
 function showMonthByKey(monthKey) {

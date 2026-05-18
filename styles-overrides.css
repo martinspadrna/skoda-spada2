@@ -4263,3 +4263,38 @@ body.lightweightMode #games canvas,
 body.lowEndDevice #games canvas{
   image-rendering:auto !important;
 }
+
+
+/* v.1.1 (576) – DOM text/class guard + průběžný glass polish zachován. */
+#rotaceNamesPanel #personView .rotaceShiftDate,
+#rotace #personView .rotaceShiftDate{
+  font-size:clamp(15px, 4.1vw, 19px) !important;
+  line-height:1.05 !important;
+  font-weight:900 !important;
+  letter-spacing:-.01em !important;
+}
+#rotaceNamesPanel #personView .rotaceShiftName,
+#rotace #personView .rotaceShiftName,
+#rotaceNamesPanel #personView .rotaceShiftTarget,
+#rotace #personView .rotaceShiftTarget{
+  font-size:clamp(12px, 3.25vw, 15px) !important;
+  line-height:1.08 !important;
+  font-weight:800 !important;
+}
+#rotaceNamesPanel #personView .rotaceShiftTarget,
+#rotace #personView .rotaceShiftTarget{
+  max-width:48% !important;
+}
+#brusy :is(.bgrid, .indexGrid, .freeWrap) .bbtn{
+  min-height:clamp(51px, 7.8dvh, 70px) !important;
+  padding-top:clamp(10px, 2.0dvh, 16px) !important;
+  padding-bottom:clamp(10px, 2.0dvh, 16px) !important;
+  font-size:clamp(15px, 3.25vw, 17px) !important;
+}
+@media (max-width:430px){
+  #brusy :is(.bgrid, .indexGrid, .freeWrap) .bbtn{
+    min-height:clamp(48px, 7.4dvh, 64px) !important;
+    padding-top:9px !important;
+    padding-bottom:9px !important;
+  }
+}

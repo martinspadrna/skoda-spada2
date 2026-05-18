@@ -1,8 +1,48 @@
+## v.1.1 (576)
+- Fáze 7 — Data optimization posunuta na cca 72 %.
+- Přidané společné DOM guardy `setElementTextIfChanged()` a `setElementClassNameIfChanged()` pro úspornější změny textu a tříd.
+- Dashboardové helpery nově používají společné text/class guardy, takže opakovaný refresh méně zapisuje stejné hodnoty do DOM.
+- Theme/Pozadí a přihlášený herní účet používají úspornější textové zápisy při opakovaném otevření nastavení nebo návratu do appky.
+- Diagnostika aplikace nově ukazuje i DOM text/class zápisy a skipy.
+- Výpočty, hry, rozpisy, rotace logika, Theme/Pozadí nabídka, Supabase datový model, Výplata a spodní lišta beze změny.
+
+## v.1.1 (575)
+- Fáze 7 — Data optimization posunuta na cca 68 %.
+- Dashboard nově používá bezpečný DOM guard `setElementHtmlIfChanged()` pro hero panel a informační karty.
+- Opakované home refresh běhy už nepřepisují stejné HTML karet, pokud se zobrazený obsah nezměnil.
+- Sync badge na dashboardu mění text/třídu jen při skutečné změně, takže se při rychlých refreshích dělá méně drobných DOM zásahů.
+- Úpravy z 574 zůstávají zachované: sjednocené písmo detailu Rotace a nižší naklikávací volby Brusů.
+- Výpočty, pravidla her, Theme/Pozadí, Supabase datový model, rozpisy, Výplata a spodní lišta beze změny.
+
+
+## v.1.1 (574)
+- Fáze 7 — Data optimization posunuta na cca 64 %.
+- Rotace: po kliknutí na jméno je velikost písma v detailu směn sjednocená s přehledem Rotace, aby detail nepůsobil zbytečně přerostle.
+- Kalkulačky / Brusy: naklikávací okénka pro volbu brusu a indexu jsou snížená zhruba o 15 %, barvy indexů a glass styl zůstávají zachované.
+- Brusy info karta nově používá `setElementHtmlIfChanged()`, takže se nepřepisuje zbytečně, pokud se zobrazené parametry nezměnily.
+- Výpočty, pravidla her, Theme/Pozadí, Supabase datový model, rozpisy, Výplata a spodní lišta beze změny.
+
+
+## v.1.1 (573)
+- Fáze 7 — Data optimization posunuta na cca 60 %.
+- Bezpečný DOM HTML guard `setElementHtmlIfChanged()` je rozšířený i do Rotace.
+- Rotace nově nepřepisuje zbytečně stejné HTML u náhledu příští směny, detailu vybraného jména, měsíční tabulky a těla QR/seznamového modalu.
+- Při rychlém přepínání záložek nebo opakovaném refreshi by se mělo dělat méně zbytečných DOM zápisů, ale klikání, zvýraznění aktuální/příští směny i QR logika zůstávají stejné.
+- Výpočty, pravidla her, Theme/Pozadí, Supabase datový model, rozpisy, Výplata a spodní lišta beze změny.
+
+
+## v.1.1 (572)
+- Fáze 7 — Data optimization posunuta na cca 54 %.
+- Přidaný bezpečný DOM HTML guard `setElementHtmlIfChanged()`: vybrané prvky se nepřepisují přes `innerHTML`, když je výsledný obsah stejný jako předchozí render.
+- Optimalizace se dotkla hlavně přehledu měsíců a detailních panelů ve Statistikách, kde při refreshi často vzniká stejný HTML výstup.
+- Diagnostika Fáze 7 nově ukazuje DOM zápisy/skipy, chyby a poslední optimalizovaný prvek.
+- Výpočty, pravidla her, Theme/Pozadí, Supabase datový model, rozpisy, rotace, Výplata a spodní lišta beze změny.
+
+
 ## v.1.1 (571)
 - Fáze 7 — Data optimization posunuta na cca 48 %.
-- `scheduleHomeRefresh()` má nově dávkovací guard: když se během startu, návratu do appky nebo rychlého přepnutí naplánuje víc refreshů dashboardu najednou, sloučí se do jedné řízené sekvence.
-- Home refresh si dál nechává několik bezpečných doběhů kvůli později načteným kartám, ale paralelní stejné dávky se už nespouští vedle sebe.
-- Diagnostika Fáze 7 nově ukazuje plánované home refresh běhy, sloučené požadavky, skutečné refresh běhy a skipy při otevřeném modalu.
+- `scheduleHomeRefresh()` dostal dávkovací guard: při startu, návratu do appky nebo rychlém přepnutí se více požadavků na refresh dashboardu sloučí do jedné řízené sekvence.
+- Diagnostika Fáze 7 ukazuje plánované/sloučené home refresh běhy, skutečné refresh běhy a skipy při otevřeném modalu.
 - Výpočty, pravidla her, Theme/Pozadí, Supabase datový model, rozpisy, rotace, Výplata a spodní lišta beze změny.
 
 ## v.1.1 (570)
@@ -158,7 +198,7 @@
 - Fáze 6 — Supabase hardening zůstává cca 64 %.
 - Výpočty, pravidla her, Theme/Pozadí, spodní lišta a Supabase datový model beze změny.
 
-## Přehled největších změn v.1.1 (500–571)
+## Přehled největších změn v.1.1 (500–576)
 - Proběhlo velké stabilizační období před dalšími fázemi refactoru: Fáze 3 Láďův režim, Fáze 4 cleanup manager, Fáze 5 game performance a dokončený Supabase hardening a začátek Fáze 7 Data optimization.
 - Dashboard se postupně ladil kvůli správnému zobrazení směny, ikon, kantýny/jídelny, odpočtů, klikací výplatě a menšímu riziku prázdných nebo pozdě načtených karet.
 - Spodní navigace prošla opakovaným dorovnáním, hlavně položka „Více“ – má být užší, ale normálně mezi ostatními položkami a bez ukotvení vpravo.

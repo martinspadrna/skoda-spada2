@@ -1,4 +1,4 @@
-// v.1.1 (571) – Data optimization: plánované refresh běhy dashboardu se slučují do jedné dávky.
+// v.1.1 (576) – DOM text/class guard + úspornější theme/profil refresh.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
@@ -654,13 +654,13 @@ function runPhaseSevenDataOptimizationAudit() {
     const dataStatus = typeof window.getDataOptimizationStatus === 'function' ? window.getDataOptimizationStatus() : null;
     const report = {
       version: window.APP_VERSION || 'unknown',
-      phase: 'phase-7-data-optimization-shared-local-cache',
+      phase: 'phase-7-data-optimization-dom-text-class-guard',
       checkedAt: new Date().toISOString(),
       ok: !!dataStatus,
       dataOptimization: dataStatus || null
     };
     try {
-      document.documentElement.dataset.rakPhase7 = report.ok ? 'data-optimization-shared-local-cache' : 'data-optimization-check';
+      document.documentElement.dataset.rakPhase7 = report.ok ? 'data-optimization-dom-text-class-guard' : 'data-optimization-check';
       window.__rakPhase7DataOptimizationAudit = report;
     } catch (err) {}
     if (!report.ok) console.warn('[RaK] Phase 7 data optimization audit', report);
@@ -671,11 +671,11 @@ function runPhaseSevenDataOptimizationAudit() {
     const rerun = () => setTimeout(run, 300);
     if (typeof registerListener === 'function') registerListener(document, 'DOMContentLoaded', rerun, { once: true });
     else document.addEventListener('DOMContentLoaded', rerun, { once: true });
-    return { version: window.APP_VERSION || 'unknown', phase: 'phase-7-data-optimization-shared-local-cache', ok: true, deferred: true };
+    return { version: window.APP_VERSION || 'unknown', phase: 'phase-7-data-optimization-dom-text-class-guard', ok: true, deferred: true };
   }
 
   requestAnimationFrame(() => setTimeout(run, 300));
-  return { version: window.APP_VERSION || 'unknown', phase: 'phase-7-data-optimization-shared-local-cache', ok: true, deferred: true };
+  return { version: window.APP_VERSION || 'unknown', phase: 'phase-7-data-optimization-dom-text-class-guard', ok: true, deferred: true };
 }
 
 

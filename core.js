@@ -1,6 +1,6 @@
 
 const APP_KEY = "rotace_kalkulacky_state_v123";
-const APP_VERSION = "v.1.1 (571)";
+const APP_VERSION = "v.1.1 (576)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-05-18-" + APP_VERSION + "-" + Date.now();
 
@@ -177,6 +177,21 @@ const RAK_DATA_OPTIMIZATION_STATS = window.__rakDataOptimizationStats || {
   homeRefreshCoalescedSchedules: 0,
   homeRefreshRuns: 0,
   homeRefreshModalSkips: 0,
+  domHtmlWrites: 0,
+  domHtmlSkippedWrites: 0,
+  domHtmlWriteErrors: 0,
+  domTextWrites: 0,
+  domTextSkippedWrites: 0,
+  domTextWriteErrors: 0,
+  domClassWrites: 0,
+  domClassSkippedWrites: 0,
+  domClassWriteErrors: 0,
+  domHtmlLastKey: '',
+  domHtmlLastAt: null,
+  domTextLastKey: '',
+  domTextLastAt: null,
+  domClassLastKey: '',
+  domClassLastAt: null,
   homeRefreshLastReason: '',
   homeRefreshLastAt: null,
   lastWriteKey: '',
@@ -292,6 +307,82 @@ function getDataOptimizationStatus() {
   return Object.assign({}, RAK_DATA_OPTIMIZATION_STATS);
 }
 window.getDataOptimizationStatus = getDataOptimizationStatus;
+
+
+function setElementHtmlIfChanged(element, html, key = '') {
+  if (!element) return false;
+  const nextHtml = String(html ?? '');
+  const statKey = String(key || element.id || element.className || 'html').trim();
+  try {
+    if (element.__rakLastHtml === nextHtml || element.innerHTML === nextHtml) {
+      element.__rakLastHtml = nextHtml;
+      RAK_DATA_OPTIMIZATION_STATS.domHtmlSkippedWrites += 1;
+      RAK_DATA_OPTIMIZATION_STATS.domHtmlLastKey = statKey;
+      RAK_DATA_OPTIMIZATION_STATS.domHtmlLastAt = Date.now();
+      return false;
+    }
+    element.innerHTML = nextHtml;
+    element.__rakLastHtml = nextHtml;
+    RAK_DATA_OPTIMIZATION_STATS.domHtmlWrites += 1;
+    RAK_DATA_OPTIMIZATION_STATS.domHtmlLastKey = statKey;
+    RAK_DATA_OPTIMIZATION_STATS.domHtmlLastAt = Date.now();
+    return true;
+  } catch (err) {
+    RAK_DATA_OPTIMIZATION_STATS.domHtmlWriteErrors += 1;
+    element.innerHTML = nextHtml;
+    element.__rakLastHtml = nextHtml;
+    return true;
+  }
+}
+window.setElementHtmlIfChanged = setElementHtmlIfChanged;
+
+function setElementTextIfChanged(element, text, key = '') {
+  if (!element) return false;
+  const nextText = String(text ?? '');
+  const statKey = String(key || element.id || element.className || 'text').trim();
+  try {
+    if (element.textContent === nextText) {
+      RAK_DATA_OPTIMIZATION_STATS.domTextSkippedWrites += 1;
+      RAK_DATA_OPTIMIZATION_STATS.domTextLastKey = statKey;
+      RAK_DATA_OPTIMIZATION_STATS.domTextLastAt = Date.now();
+      return false;
+    }
+    element.textContent = nextText;
+    RAK_DATA_OPTIMIZATION_STATS.domTextWrites += 1;
+    RAK_DATA_OPTIMIZATION_STATS.domTextLastKey = statKey;
+    RAK_DATA_OPTIMIZATION_STATS.domTextLastAt = Date.now();
+    return true;
+  } catch (err) {
+    RAK_DATA_OPTIMIZATION_STATS.domTextWriteErrors += 1;
+    element.textContent = nextText;
+    return true;
+  }
+}
+window.setElementTextIfChanged = setElementTextIfChanged;
+
+function setElementClassNameIfChanged(element, className, key = '') {
+  if (!element) return false;
+  const nextClassName = String(className ?? '');
+  const statKey = String(key || element.id || 'class').trim();
+  try {
+    if (element.className === nextClassName) {
+      RAK_DATA_OPTIMIZATION_STATS.domClassSkippedWrites += 1;
+      RAK_DATA_OPTIMIZATION_STATS.domClassLastKey = statKey;
+      RAK_DATA_OPTIMIZATION_STATS.domClassLastAt = Date.now();
+      return false;
+    }
+    element.className = nextClassName;
+    RAK_DATA_OPTIMIZATION_STATS.domClassWrites += 1;
+    RAK_DATA_OPTIMIZATION_STATS.domClassLastKey = statKey;
+    RAK_DATA_OPTIMIZATION_STATS.domClassLastAt = Date.now();
+    return true;
+  } catch (err) {
+    RAK_DATA_OPTIMIZATION_STATS.domClassWriteErrors += 1;
+    element.className = nextClassName;
+    return true;
+  }
+}
+window.setElementClassNameIfChanged = setElementClassNameIfChanged;
 
 function normalizeRows(rows) {
   return (Array.isArray(rows) ? rows : []).map(row => ({

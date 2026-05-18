@@ -2789,15 +2789,15 @@ function buildAppHistoryHtml(versionText) {
       range: versionText,
       title: 'Aktuální build',
       lines: [
-        'Fáze 7 — Data optimization pokračuje, aktuálně cca 48 %.',
-        'Plánované refresh běhy dashboardu/home obrazovky se nově slučují do jedné dávky, aby se při startu nebo rychlém přepínání nespouštělo několik stejných refresh sekvencí najednou.',
-        'Diagnostika nově ukazuje plánované/sloučené home refresh běhy, skutečné refresh běhy a skipy při otevřeném modalu.',
-        'Navazuje to na předchozí cache optimalizace localStorage, Supabase cache/fronty, Theme/Pozadí a menších herních preferencí.',
-        'Výpočty, rozpisy, rotace, hry, Theme/Pozadí, Výplata, Supabase datový model i spodní lišta jsou beze změny.'
+        'Fáze 7 — Data optimization pokračuje, aktuálně cca 72 %.',
+        'Přibyl společný DOM guard i pro texty a className, takže časté refresh části nemusí pořád zapisovat stejné hodnoty do DOM.',
+        'Theme/Pozadí, přihlášený herní účet a dashboardové helpery teď používají úspornější text/class zápisy.',
+        'Diagnostika nově ukazuje i DOM text/class zápisy a skipy.',
+        'Výpočty, rozpisy, rotace logika, hry, Theme/Pozadí, Výplata, Supabase datový model i spodní lišta jsou beze změny.'
       ]
     },
     {
-      range: 'v.1.1 500–571',
+      range: 'v.1.1 500–576',
       title: 'Stabilizace, hry, Supabase a glass vzhled',
       lines: [
         'Proběhlo velké stabilizační období: Láďův režim, cleanup manager, dokončení game performance, dokončený Supabase hardening a začátek Fáze 7 Data optimization včetně dalšího odlehčení Láďova režimu a úspornější Supabase lokální cache.',
@@ -3860,7 +3860,9 @@ function bindAppMenuHandlers(body) {
           'Data opt: zápisy/skipy ' + String(dataOptStatus.localStorageWrites || 0) + '/' + String(dataOptStatus.localStorageSkippedWrites || 0) + ' · čtení/cache ' + String(dataOptStatus.localStorageReads || 0) + '/' + String(dataOptStatus.localStorageReadCacheHits || 0),
           'Data opt JSON: parse/cache ' + String(dataOptStatus.localStorageJsonParseReads || 0) + '/' + String(dataOptStatus.localStorageJsonParseCacheHits || 0) + ' · chyby ' + String(dataOptStatus.localStorageJsonParseErrors || 0),
           'Data opt bajty: zapsáno/přeskočeno/přečteno ' + String(dataOptStatus.approxBytesWritten || 0) + '/' + String(dataOptStatus.approxBytesSkipped || 0) + '/' + String(dataOptStatus.approxBytesRead || 0),
-          'Data opt home refresh: plán/sloučeno/běh ' + String(dataOptStatus.homeRefreshSchedules || 0) + '/' + String(dataOptStatus.homeRefreshCoalescedSchedules || 0) + '/' + String(dataOptStatus.homeRefreshRuns || 0) + ' · modaly skip ' + String(dataOptStatus.homeRefreshModalSkips || 0)
+          'Data opt home refresh: plán/sloučeno/běh ' + String(dataOptStatus.homeRefreshSchedules || 0) + '/' + String(dataOptStatus.homeRefreshCoalescedSchedules || 0) + '/' + String(dataOptStatus.homeRefreshRuns || 0) + ' · modaly skip ' + String(dataOptStatus.homeRefreshModalSkips || 0),
+          'Data opt DOM HTML: zápisy/skipy ' + String(dataOptStatus.domHtmlWrites || 0) + '/' + String(dataOptStatus.domHtmlSkippedWrites || 0) + ' · chyby ' + String(dataOptStatus.domHtmlWriteErrors || 0) + ' · poslední ' + String(dataOptStatus.domHtmlLastKey || '—'),
+          'Data opt DOM text/class: text ' + String(dataOptStatus.domTextWrites || 0) + '/' + String(dataOptStatus.domTextSkippedWrites || 0) + ' · class ' + String(dataOptStatus.domClassWrites || 0) + '/' + String(dataOptStatus.domClassSkippedWrites || 0) + ' · poslední ' + String(dataOptStatus.domTextLastKey || dataOptStatus.domClassLastKey || '—')
         ] : [];
         const supabaseDiag = supabaseHardening ? [
           'Supabase fronta: ' + String(supabaseHardening.queueLength || 0) + ' / ' + String(supabaseHardening.queueMaxItems || '—'),
@@ -4830,23 +4832,28 @@ function gamesApplyActiveAccountUI(account) {
     cardEl.classList.toggle('isLoggedIn', !!next);
     cardEl.style.display = '';
   }
-  nameEl.textContent = next ? next.name : 'Bez přihlášení';
-  hintEl.textContent = next
+  if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(nameEl, next ? next.name : 'Bez přihlášení', 'gamesAccountName');
+  else nameEl.textContent = next ? next.name : 'Bez přihlášení';
+  const nextAccountHint = next
     ? 'Přihlášeno. Můžeš hned zadat jiné číslo a účet přepsat.'
     : 'Bez účtu můžeš hrát dál. Statistiky se ukládají jen po přihlášení číslem.';
+  if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(hintEl, nextAccountHint, 'gamesAccountHint');
+  else hintEl.textContent = nextAccountHint;
   entryRow.style.display = '';
   hintEl.style.display = '';
   hintEl.hidden = false;
   currentEl.style.display = 'none';
   currentEl.hidden = true;
-  currentEl.textContent = '';
+  if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(currentEl, '', 'gamesAccountCurrent');
+  else currentEl.textContent = '';
   if (next) {
     inputEl.value = '';
     inputEl.placeholder = 'Zadej poslední 4 číslice os.č.';
   } else {
     inputEl.placeholder = 'Zadej poslední 4 číslice os.č.';
   }
-  clearBtn.textContent = next ? 'Odhlásit' : 'Bez účtu';
+  if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(clearBtn, next ? 'Odhlásit' : 'Bez účtu', 'gamesAccountClearBtn');
+  else clearBtn.textContent = next ? 'Odhlásit' : 'Bez účtu';
   clearBtn.style.minWidth = next ? '46px' : '';
   clearBtn.style.paddingInline = next ? '8px' : '';
   if (typeof syncGamesLockedSections === 'function') syncGamesLockedSections();
@@ -4860,7 +4867,10 @@ function gamesRenderActiveAccountBar(account) {
     bar.hidden = true;
     bar.classList.remove('isVisible');
   }
-  if (textEl) textEl.textContent = '';
+  if (textEl) {
+    if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(textEl, '', 'gamesActiveAccountText');
+    else textEl.textContent = '';
+  }
   if (clearBtn && !clearBtn.dataset.bound) {
     clearBtn.dataset.bound = '1';
     clearBtn.addEventListener('click', () => {
@@ -7077,7 +7087,9 @@ function renderThemeSettingsCards() {
     card.setAttribute('aria-pressed', id === current ? 'true' : 'false');
     const badge = card.querySelector('.appMenuThemeBadge');
     if (badge && theme) {
-      badge.textContent = unlocked ? (theme.unlockText || 'Odemčeno') : ('Zamčeno · ' + (theme.unlockText || 'podmínka nesplněna'));
+      const nextBadgeText = unlocked ? (theme.unlockText || 'Odemčeno') : ('Zamčeno · ' + (theme.unlockText || 'podmínka nesplněna'));
+      if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(badge, nextBadgeText, 'themeBadge-' + id);
+      else badge.textContent = nextBadgeText;
     }
     if (!card.dataset.bound) {
       card.dataset.bound = '1';
@@ -7087,13 +7099,21 @@ function renderThemeSettingsCards() {
         const nextMetrics = getThemeUnlockMetrics(typeof gamesGetProfile === 'function' ? gamesGetProfile() : null);
         const nextUnlocked = id === 'default' || (Number(nextTheme.minPlays || 0) <= nextMetrics.totalPlays && Number(nextTheme.minAchievements || 0) <= nextMetrics.achievements);
         if (!nextUnlocked) {
-          if (hint) hint.textContent = nextTheme.unlockText || 'Tento theme je zatím zamčený.';
+          if (hint) {
+            const nextHintText = nextTheme.unlockText || 'Tento theme je zatím zamčený.';
+            if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(hint, nextHintText, 'themeHintLocked');
+            else hint.textContent = nextHintText;
+          }
           return;
         }
         applyThemePreference(id, true);
         if (typeof applyBackgroundPreference === 'function') applyBackgroundPreference(getBackgroundPreference(), false);
         renderThemeSettingsCards();
-        if (hint) hint.textContent = 'Theme „' + String(nextTheme.label || id) + '“ je teď aktivní.';
+        if (hint) {
+          const nextHintText = 'Theme „' + String(nextTheme.label || id) + '“ je teď aktivní.';
+          if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(hint, nextHintText, 'themeHintActive');
+          else hint.textContent = nextHintText;
+        }
       });
     }
   });
@@ -7117,26 +7137,36 @@ function renderThemeSettingsCards() {
           if (!nextBg) return;
           if (typeof applyBackgroundPreference === 'function') applyBackgroundPreference(id, true);
           renderThemeSettingsCards();
-          if (bgHint) bgHint.textContent = 'Pozadí „' + String(nextBg.label || id) + '“ je teď aktivní.';
+          if (bgHint) {
+            const nextBgHintText = 'Pozadí „' + String(nextBg.label || id) + '“ je teď aktivní.';
+            if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(bgHint, nextBgHintText, 'backgroundHintActive');
+            else bgHint.textContent = nextBgHintText;
+          }
         });
       }
     });
   }
   if (bgSummaryMeta) {
     const activeBgName = (bgById.get(currentBg) || bgList[0] || { label: 'iOS mesh' }).label;
-    bgSummaryMeta.textContent = 'Aktivní: ' + String(activeBgName);
+    const nextBgSummary = 'Aktivní: ' + String(activeBgName);
+    if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(bgSummaryMeta, nextBgSummary, 'backgroundSummaryMeta');
+    else bgSummaryMeta.textContent = nextBgSummary;
   }
 
   if (summaryMeta) {
     const activeName = (themeById.get(current) || themeList[0] || { label: 'Výchozí' }).label;
-    summaryMeta.textContent = 'Aktivní: ' + String(activeName) + ' · ' + String(metrics.totalPlays) + ' her / ' + String(metrics.achievements) + ' achievementů';
+    const nextThemeSummary = 'Aktivní: ' + String(activeName) + ' · ' + String(metrics.totalPlays) + ' her / ' + String(metrics.achievements) + ' achievementů';
+    if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(summaryMeta, nextThemeSummary, 'themeSummaryMeta');
+    else summaryMeta.textContent = nextThemeSummary;
   }
 
   if (hint) {
     const activeName = (themeById.get(current) || themeList[0] || { label: 'Výchozí' }).label;
-    hint.textContent = profile && profile.activeAccountId
+    const nextThemeHint = profile && profile.activeAccountId
       ? 'Theme i pozadí se ukládá k přihlášenému hernímu profilu. Aktivní: ' + activeName + '.'
       : 'Theme mění barvy/akcenty aplikace. Bez přihlášení se ukládá jen lokálně v tomto zařízení.';
+    if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(hint, nextThemeHint, 'themeHintSummary');
+    else hint.textContent = nextThemeHint;
   }
 }
 

@@ -1,5 +1,37 @@
 // Extracted dashboard logic (v1(321))
 
+function setDashboardHtmlIfChanged(element, html, key) {
+  if (!element) return false;
+  if (typeof setElementHtmlIfChanged === 'function') {
+    return setElementHtmlIfChanged(element, html, key || element.id || 'dashboard');
+  }
+  const nextHtml = String(html ?? '');
+  if (element.innerHTML === nextHtml) return false;
+  element.innerHTML = nextHtml;
+  return true;
+}
+
+function setDashboardTextIfChanged(element, text, key) {
+  if (!element) return false;
+  if (typeof setElementTextIfChanged === 'function') {
+    return setElementTextIfChanged(element, text, key || element.id || 'dashboardText');
+  }
+  const nextText = String(text ?? '');
+  if (element.textContent === nextText) return false;
+  element.textContent = nextText;
+  return true;
+}
+
+function setDashboardClassNameIfChanged(element, className, key) {
+  if (!element) return false;
+  if (typeof setElementClassNameIfChanged === 'function') {
+    return setElementClassNameIfChanged(element, className, key || element.id || 'dashboardClass');
+  }
+  const nextClassName = String(className ?? '');
+  if (element.className === nextClassName) return false;
+  element.className = nextClassName;
+  return true;
+}
 function getDashboardShiftTeams() {
   return (typeof SHIFT_CYCLE_ORDER !== 'undefined' && Array.isArray(SHIFT_CYCLE_ORDER) && SHIFT_CYCLE_ORDER.length)
     ? SHIFT_CYCLE_ORDER
@@ -248,8 +280,8 @@ function updateDashboard() {
 
   const syncBadge = document.getElementById('dashboardSyncBadge');
   if (syncBadge) {
-    syncBadge.className = 'dashboardSyncBadge dashboardSyncBadge--' + esc(syncStatus.kind || 'offline');
-    syncBadge.textContent = syncStatus.label || '🟡 Offline cache';
+    setDashboardClassNameIfChanged(syncBadge, 'dashboardSyncBadge dashboardSyncBadge--' + esc(syncStatus.kind || 'offline'));
+    setDashboardTextIfChanged(syncBadge, syncStatus.label || '🟡 Offline cache');
   }
 
   const hero = document.getElementById('dashHero');
@@ -274,7 +306,7 @@ function updateDashboard() {
       ? Math.max(0, Math.min(100, ((now.getTime() - active.start.getTime()) / (active.end.getTime() - active.start.getTime())) * 100))
       : 0;
     const heroProgressText = active ? Math.round(heroProgress) + ' %' : '';
-    hero.innerHTML = [
+    setDashboardHtmlIfChanged(hero, [
       '<div class="dashboardHeroLine1">' + heroLine1 + '</div>',
       heroLine2 ? '<div class="dashboardHeroLine2">' + esc(heroLine2) + '</div>' : '',
       heroLine3 ? '<div class="dashboardHeroLine3"><span class="dashboardHeroLine3Pill">' + heroLine3 + '</span></div>' : '',
@@ -282,7 +314,7 @@ function updateDashboard() {
       '<div class="dashboardHeroBar"><span style="--fill:' + heroProgress.toFixed(1) + '%"></span></div>',
       heroProgressText ? '<div class="dashboardHeroBarPercent">' + esc(heroProgressText) + '</div>' : '',
       '</div>'
-    ].join('');
+    ].join(''), 'dashboardHero');
   }
 
   const setCard = (id, title, value, meta, dotClass, clickable, iconHtml) => {
@@ -291,7 +323,7 @@ function updateDashboard() {
     el.classList.toggle('dashboardCardClickable', !!clickable);
     const icon = iconHtml ? '<span class="dashboardIcon dashboardIconInline" aria-hidden="true">' + iconHtml + '</span>' : '';
     const dot = dotClass ? '<span class="dashboardDot ' + esc(dotClass) + '" aria-hidden="true"></span>' : '';
-    el.innerHTML = [
+    setDashboardHtmlIfChanged(el, [
       '<div class="dashboardTop">',
       '<div class="dashboardHead">',
       '<div class="dashboardLabelRow">',
@@ -303,7 +335,7 @@ function updateDashboard() {
       '</div>',
       '<div class="dashboardValue">' + esc(value || '--') + '</div>',
       meta ? '<div class="dashboardMeta">' + esc(meta) + '</div>' : ''
-    ].join('');
+    ].join(''), id || 'dashboardCard');
   };
 
 
@@ -554,7 +586,7 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
     el.classList.toggle('dashboardCardClickable', !!clickable);
     const icon = iconHtml ? '<span class="dashboardIcon dashboardIconInline" aria-hidden="true">' + iconHtml + '</span>' : '';
     const dot = dotClass ? '<span class="dashboardDot ' + esc(dotClass) + '" aria-hidden="true"></span>' : '';
-    el.innerHTML = [
+    setDashboardHtmlIfChanged(el, [
       '<div class="dashboardTop">',
       '  <div class="dashboardHead">',
       '    <div class="dashboardLabelRow">',
@@ -566,7 +598,7 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
       '</div>',
       '<div class="dashboardValue">' + esc(value || '--') + '</div>',
       meta ? '<div class="dashboardMeta">' + esc(meta) + '</div>' : ''
-    ].join('');
+    ].join(''), id || 'dashboardFallbackCard');
   }
 
   function renderDashboardFallback(err) {
@@ -635,12 +667,12 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
 
     const hero = document.getElementById('dashHero');
     if (hero) {
-      hero.innerHTML = [
+      setDashboardHtmlIfChanged(hero, [
         '<div class="dashboardHeroLine1"><span class="dashboardHeroLine1Text">' + esc(activeText) + '</span></div>',
         '<div class="dashboardHeroLine2">' + esc(active ? 'Končí za: ' + countdownText : (nextWorkShift ? 'Začíná za: ' + countdownText : countdownText)) + '</div>',
         '<div class="dashboardHeroLine3"><span class="dashboardHeroLine3Pill">' + (typeof renderDashboardTeamDLine === 'function' ? renderDashboardTeamDLine(now, teamDStatus, esc) : esc(typeof formatDashboardTeamDLine === 'function' ? formatDashboardTeamDLine(now, teamDStatus) : '')) + '</span></div>',
         '<div class="dashboardHeroBarRow"><div class="dashboardHeroBar"><span style="--fill:' + (active && active.start && active.end ? Math.max(0, Math.min(100, ((now.getTime() - active.start.getTime()) / (active.end.getTime() - active.start.getTime())) * 100)).toFixed(1) + '%' : '0%') + '"></span></div></div>'
-      ].join('');
+      ].join(''), 'dashboardFallbackHero');
     }
 
     setCardSimple('dashCalendar', 'Kalendář', calendarText, special ? String(special.label || '') : '', '', false, fallbackDashboardIcons.calendar);

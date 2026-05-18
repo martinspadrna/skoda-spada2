@@ -9,9 +9,14 @@ function renderMonthGrid() {
   const selected = months.includes(app.selectedMonth)
     ? app.selectedMonth
     : (months.includes(currentMonthKey) ? currentMonthKey : (months[0] || ""));
-  monthSelect.innerHTML = ['<option value="">Vyber měsíc…</option>']
+  const monthOptionsHtml = ['<option value="">Vyber měsíc…</option>']
     .concat(months.map(monthKey => '<option value="' + escapeHtml(monthKey) + '">' + escapeHtml(monthKey) + '</option>'))
     .join('');
+  if (typeof setElementHtmlIfChanged === 'function') {
+    setElementHtmlIfChanged(monthSelect, monthOptionsHtml, 'monthSelect');
+  } else {
+    monthSelect.innerHTML = monthOptionsHtml;
+  }
   monthSelect.value = selected;
   app.selectedMonth = selected || null;
 
@@ -489,7 +494,7 @@ function renderStatsPanel() {
     if (person) {
       const topWork = formatMachineWinners(person.topWorkMachines || (person.topWorkMachine ? [person.topWorkMachine] : []));
       const topClean = formatMachineWinners(person.topCleanMachines || (person.topCleanMachine ? [person.topCleanMachine] : []));
-      statsNameView.innerHTML =
+      const statsNameHtml =
         "<div class='sectionTitle'>" + escapeHtml(person.name) + " — " + escapeHtml(String(year)) + "</div>" +
         "<div class='statsSummary'>" +
         "<div class='tile'><div class='smallText'>Práce celkem</div><div class='statsSummaryValue'>" + formatCount(person.totalWork) + "</div></div>" +
@@ -502,11 +507,15 @@ function renderStatsPanel() {
         "<div class='tableWrap'><table class='statsTable'><thead><tr><th>Stroj</th><th>Práce</th><th>Úklid</th></tr></thead><tbody>" +
         stats.machineOrder.map(machine => "<tr><td>" + escapeHtml(machine) + "</td><td>" + formatCount(person.work[machine] || 0) + "</td><td>" + formatCount(person.clean[machine] || 0) + "</td></tr>").join("") +
         "</tbody></table></div>";
+      if (typeof setElementHtmlIfChanged === 'function') setElementHtmlIfChanged(statsNameView, statsNameHtml, 'statsNameView');
+      else statsNameView.innerHTML = statsNameHtml;
     } else {
-      statsNameView.innerHTML = "";
+      if (typeof setElementHtmlIfChanged === 'function') setElementHtmlIfChanged(statsNameView, '', 'statsNameView-empty');
+      else statsNameView.innerHTML = "";
     }
   } else {
-    statsNameView.innerHTML = "";
+    if (typeof setElementHtmlIfChanged === 'function') setElementHtmlIfChanged(statsNameView, '', 'statsNameView-empty');
+    else statsNameView.innerHTML = "";
   }
 
   if (app.selectedStatsMachine) {
@@ -527,15 +536,18 @@ function renderStatsPanel() {
       ? topWorkers.map(([name, value], index) => `${index + 1}. ${name} (${formatCount(value)})`).join('\n')
       : '—';
 
-    statsMachineView.innerHTML = [
+    const statsMachineHtml = [
       "<div class='sectionTitle'>" + escapeHtml(machine) + "</div>",
       "<div class='statsSummary'>",
       "<div class='tile'><div class='smallText'>Letos nejvíc uklízeli</div><div class='statsMultiLine statsSummaryValueCompact'>" + escapeHtml(leaderNames) + "</div></div>",
       "<div class='tile'><div class='smallText'>Nejvíce tu byl</div><div class='statsMultiLine statsSummaryValueCompact'>" + escapeHtml(topWorkersText) + "</div></div>",
       "</div>"
     ].join('');
+    if (typeof setElementHtmlIfChanged === 'function') setElementHtmlIfChanged(statsMachineView, statsMachineHtml, 'statsMachineView');
+    else statsMachineView.innerHTML = statsMachineHtml;
   } else {
-    statsMachineView.innerHTML = "";
+    if (typeof setElementHtmlIfChanged === 'function') setElementHtmlIfChanged(statsMachineView, '', 'statsMachineView-empty');
+    else statsMachineView.innerHTML = "";
   }
 }
 
