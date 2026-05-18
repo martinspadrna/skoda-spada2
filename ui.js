@@ -1,10 +1,48 @@
+function centerBottomNavButton(btn) {
+  if (!btn) return;
+  try {
+    const scroller = btn.closest('.bottomNavScroll') || btn.closest('.bottomNav');
+    if (!scroller || typeof scroller.scrollTo !== 'function') return;
+    const btnRect = btn.getBoundingClientRect();
+    const scrollerRect = scroller.getBoundingClientRect();
+    const targetLeft = scroller.scrollLeft + (btnRect.left - scrollerRect.left) - ((scrollerRect.width - btnRect.width) / 2);
+    scroller.scrollTo({ left: Math.max(0, targetLeft), behavior: 'smooth' });
+  } catch (err) {}
+}
+
+function resetPageScrollToTop(pageId, reason) {
+  try {
+    if (typeof document === 'undefined') return;
+    if (document.body && (document.body.classList.contains('gamesOpen') || document.body.classList.contains('tttOpen'))) return;
+    const el = pageId ? document.getElementById(pageId) : document.querySelector('.page.active');
+    const run = () => {
+      try {
+        const root = document.scrollingElement || document.documentElement || document.body;
+        if (root && typeof root.scrollTo === 'function') root.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+        else if (root) root.scrollTop = 0;
+        if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') window.scrollTo(0, 0);
+        if (el && typeof el.scrollTo === 'function') el.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+        else if (el) el.scrollTop = 0;
+        window.__rakLastPageScrollReset = { page: pageId || '', reason: reason || '', ts: Date.now() };
+      } catch (err) {}
+    };
+    if (typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(() => requestAnimationFrame(run));
+    } else {
+      setTimeout(run, 0);
+    }
+  } catch (err) {
+    console.warn('resetPageScrollToTop failed', err);
+  }
+}
+
 function setBottomNavActive(pageId) {
   const buttons = document.querySelectorAll('.bottomNavBtn');
   buttons.forEach(btn => {
     const isActive = btn.dataset.page === pageId;
     btn.classList.toggle('active', isActive);
-    if (isActive && typeof btn.scrollIntoView === 'function' && btn.dataset.page !== 'menu') {
-      try { btn.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' }); } catch (err) {}
+    if (isActive && btn.dataset.page !== 'menu') {
+      centerBottomNavButton(btn);
     }
   });
 }
@@ -2687,13 +2725,15 @@ function buildAppHistoryHtml(versionText) {
       range: versionText,
       title: 'Aktuální build',
       lines: [
-        'Popup Kantýna/Jídelna nově zvýrazňuje aktuální otevřený časový blok, když je právě otevřeno.',
-        'Když je zavřeno, zvýrazní se další nejbližší termín otevření v odlišném odstínu.',
-        'Funkce aplikace, výpočty, pravidla her, Theme/Pozadí, Supabase datový model a spodní lišta jsou v tomhle buildu beze změny.'
+        'Fáze 6 — Supabase hardening zůstává cca 70 %.',
+        'Přepínání hlavních stránek teď automaticky vrací obsah nahoru, aby se nová stránka neotevírala od spodní části.',
+        'Spodní navigace už pro zvýraznění aktivní záložky nepoužívá vertikální scrollIntoView, takže nemá stahovat stránku dolů.',
+        'Scroll reset běží až po renderu nové stránky a nespouští se při pouhém refreshi stejné stránky.',
+        'Výpočty, pravidla her, Theme/Pozadí, otevírací doba, Supabase datový model a spodní lišta jsou funkčně beze změny.'
       ]
     },
     {
-      range: 'v.1.1 500–554',
+      range: 'v.1.1 500–556',
       title: 'Stabilizace, hry, Supabase a glass vzhled',
       lines: [
         'Proběhlo velké stabilizační období: Láďův režim, cleanup manager, dokončení game performance a start Supabase hardening.',
@@ -4160,6 +4200,9 @@ function showPage(id) {
     console.error('showPage failed', err);
   } finally {
     setBottomNavActive(navPage);
+    if (!isSamePageRefresh) {
+      resetPageScrollToTop(id, 'showPage');
+    }
   }
 }
 
@@ -6735,8 +6778,8 @@ window.RAK_BACKGROUND_STORAGE_KEY = RAK_BACKGROUND_STORAGE_KEY;
 })();
 
 (function installAppearancePreferenceGuards() {
-  if (window.__rakAppearancePreferenceGuardV554) return;
-  window.__rakAppearancePreferenceGuardV554 = true;
+  if (window.__rakAppearancePreferenceGuardV556) return;
+  window.__rakAppearancePreferenceGuardV556 = true;
   const syncAppearance = () => {
     try {
       applyThemePreference(getThemePreference(), false);

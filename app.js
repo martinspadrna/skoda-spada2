@@ -1,4 +1,4 @@
-// v.1.1 (554) – Kantýna/Jídelna zvýrazňuje v popupu aktuální otevřený blok nebo další nejbližší termín.
+// v.1.1 (556) – Přepínání stránek vrací obsah nahoru; spodní navigace už nespouští vertikální scrollIntoView.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

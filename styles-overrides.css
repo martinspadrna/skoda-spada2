@@ -3751,7 +3751,7 @@ body.lowEndDevice #brusy .indexGrid .bbtn{
 }
 
 
-/* v.1.1 (554) – glass/theme polish + stabilnější profilové ukládání vzhledu. */
+/* v.1.1 (556) – glass/theme polish + stabilnější profilové ukládání vzhledu. */
 :root{
   --rakBgBase:#050816;
   --rakAppBackground:
@@ -3894,7 +3894,7 @@ body.lowEndDevice .rakUpdateToastAction{
   -webkit-backdrop-filter:none !important;
 }
 
-/* v.1.1 (554) – modernější Theme karty + profilové ukládání vzhledu */
+/* v.1.1 (556) – modernější Theme karty + profilové ukládání vzhledu */
 .appMenuThemeCard{
   border:1px solid color-mix(in srgb, var(--rakThemeAccent, var(--green2)) 28%, rgba(255,255,255,.16)) !important;
   background:
@@ -3962,7 +3962,7 @@ body.lowEndDevice .appMenuThemeCard{
   -webkit-backdrop-filter:none !important;
 }
 
-/* v.1.1 (554) – zvýraznění aktuální/další otevírací doby v Kantýně/Jídelně. */
+/* v.1.1 (556) – zvýraznění aktuální/další otevírací doby v Kantýně/Jídelně. */
 .foodScheduleNowBox{
   display:grid !important;
   gap:4px !important;

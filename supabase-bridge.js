@@ -34,6 +34,10 @@
       queueFlushErrors: 0,
       queueBackoffSkips: 0,
       queueDroppedInvalid: 0,
+      queueFlushBatchStops: 0,
+      queueFlushScheduled: 0,
+      queueFlushEmptyRuns: 0,
+      queueNextRetryAt: null,
       lastTimeoutAt: null,
       lastRetryAt: null,
       lastQueuedFallbackAt: null,
@@ -41,7 +45,8 @@
       lastQueueFlushAt: null,
       lastQueueSuccessAt: null,
       lastQueueErrorAt: null,
-      lastQueueBackoffAt: null
+      lastQueueBackoffAt: null,
+      lastQueueScheduleAt: null
     },
     cacheGuard: {
       accountCacheHits: 0,
@@ -73,6 +78,8 @@
   const SUPABASE_WRITE_COOLDOWN_MS = 900;
   const SUPABASE_QUEUE_RETRY_BASE_MS = 12000;
   const SUPABASE_QUEUE_RETRY_MAX_MS = 4 * 60 * 1000;
+  const SUPABASE_QUEUE_FLUSH_BATCH_SIZE = 8;
+  const SUPABASE_QUEUE_FLUSH_IDLE_DELAY_MS = 1200;
   const SUPABASE_QUEUE_DROP_INVALID_AFTER = 3;
   const SUPPORTED_QUEUE_TYPES = new Set([
     'rotation_state',
@@ -174,7 +181,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v554');
+      const channel = client.channel('rak-public-live-v556');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -226,6 +233,7 @@
   const GAME_UI_SETTINGS_TYPE = '__profile_ui';
   const SUPABASE_GAME_CACHE_TTL_MS = 5 * 60 * 1000;
   let flushPromise = null;
+  let flushScheduleTimer = null;
   const sharedReadPromises = new Map();
 
   function safeReadJson(key, fallback) {
@@ -448,7 +456,8 @@
     const retries = Math.max(0, Number(task && task.retryCount) || 0);
     if (!retries) return 0;
     const delay = SUPABASE_QUEUE_RETRY_BASE_MS * Math.pow(2, Math.min(5, retries - 1));
-    return Math.min(SUPABASE_QUEUE_RETRY_MAX_MS, Math.max(SUPABASE_QUEUE_RETRY_BASE_MS, delay));
+    const jitter = Math.max(0, Math.min(2500, Number(task && task.retryJitterMs) || 0));
+    return Math.min(SUPABASE_QUEUE_RETRY_MAX_MS, Math.max(SUPABASE_QUEUE_RETRY_BASE_MS, delay + jitter));
   }
 
   function shouldSkipQueuedTaskForBackoff(task) {
@@ -476,6 +485,7 @@
       retryCount: Math.max(0, Number(task && task.retryCount) || 0) + 1,
       lastErrorAt: Date.now(),
       lastErrorMessage: msg,
+      retryJitterMs: Math.floor(Math.random() * 1800),
       lastTriedVersion: window.APP_VERSION || ''
     });
   }
@@ -811,6 +821,31 @@
     return { ok: true, session: updatedSession || null, status: sessionRow.status };
   }
 
+
+  function getNextQueueRetryAt(queue) {
+    const times = (Array.isArray(queue) ? queue : [])
+      .map((task) => {
+        const lastTriedAt = Number(task && task.lastTriedAt ? task.lastTriedAt : 0);
+        const delay = getQueueRetryDelay(task);
+        return lastTriedAt && delay ? lastTriedAt + delay : 0;
+      })
+      .filter(Boolean);
+    if (!times.length) return null;
+    return Math.min.apply(Math, times);
+  }
+
+  function scheduleSupabaseQueueFlush(reason, delayMs) {
+    if (flushScheduleTimer || flushPromise || !navigator.onLine) return false;
+    const ms = Math.max(350, Math.min(60000, Number(delayMs) || SUPABASE_QUEUE_FLUSH_IDLE_DELAY_MS));
+    state.syncGuard.queueFlushScheduled += 1;
+    state.syncGuard.lastQueueScheduleAt = Date.now();
+    flushScheduleTimer = setTimeout(() => {
+      flushScheduleTimer = null;
+      if (navigator.onLine) void flushPendingWrites();
+    }, ms);
+    return true;
+  }
+
   async function flushPendingWrites() {
     if (flushPromise) return flushPromise;
     flushPromise = (async () => {
@@ -825,14 +860,23 @@
 
       let flushed = 0;
       let dropped = 0;
+      let attempted = 0;
+      let batchStopped = false;
       const remaining = [];
       for (let i = 0; i < queue.length; i += 1) {
+        if (attempted >= SUPABASE_QUEUE_FLUSH_BATCH_SIZE) {
+          batchStopped = true;
+          state.syncGuard.queueFlushBatchStops += 1;
+          remaining.push(...queue.slice(i));
+          break;
+        }
         const originalTask = queue[i];
         if (shouldSkipQueuedTaskForBackoff(originalTask)) {
           remaining.push(originalTask);
           continue;
         }
         const task = markQueuedTaskAttempt(originalTask);
+        attempted += 1;
         try {
           if (task.type === 'rotation_state') {
             await runSupabaseOperation('queue.rotation_state', () => upsertRotationStateDirect(client, task.rotation, task.meta), { mode: 'write' });
@@ -881,12 +925,19 @@
         }
       }
       writeQueue(remaining);
+      const nextRetryAt = getNextQueueRetryAt(remaining);
+      state.syncGuard.queueNextRetryAt = nextRetryAt;
+      if (!attempted && remaining.length) state.syncGuard.queueFlushEmptyRuns += 1;
       if (flushed > 0) {
         state.syncGuard.queueFlushSuccesses += 1;
         state.syncGuard.lastQueueSuccessAt = Date.now();
       }
       if (remaining.length === 0) state.lastError = null;
-      return { ok: true, flushed, dropped, remaining: remaining.length };
+      else if (navigator.onLine && (batchStopped || flushed > 0 || dropped > 0 || (!attempted && nextRetryAt))) {
+        const delay = nextRetryAt ? Math.max(SUPABASE_QUEUE_FLUSH_IDLE_DELAY_MS, nextRetryAt - Date.now()) : SUPABASE_QUEUE_FLUSH_IDLE_DELAY_MS;
+        scheduleSupabaseQueueFlush('remaining-queue', delay);
+      }
+      return { ok: true, flushed, dropped, remaining: remaining.length, nextRetryAt, batchStopped };
     })().finally(() => {
       flushPromise = null;
     });
@@ -900,7 +951,7 @@
       return { ok: false, queued: false, reason: 'queue-guard-rejected', remaining: readQueue().length };
     }
     if (navigator.onLine) {
-      void flushPendingWrites();
+      scheduleSupabaseQueueFlush('enqueue');
     }
     return { ok: true, queued: true, remaining: readQueue().length };
   }
@@ -1634,7 +1685,9 @@
       syncGuard: Object.assign({}, state.syncGuard),
       cacheGuard: Object.assign({}, state.cacheGuard),
       readTimeoutMs: SUPABASE_READ_TIMEOUT_MS,
-      writeTimeoutMs: SUPABASE_WRITE_TIMEOUT_MS
+      writeTimeoutMs: SUPABASE_WRITE_TIMEOUT_MS,
+      queueFlushBatchSize: SUPABASE_QUEUE_FLUSH_BATCH_SIZE,
+      queueNextRetryAt: state.syncGuard.queueNextRetryAt || null
     };
   }
 
@@ -1701,7 +1754,7 @@
       return refreshPublicData();
     }
     bindRealtimeSubscriptions();
-    void flushPendingWrites();
+    scheduleSupabaseQueueFlush('init', 650);
     return refreshPublicData();
   }
 
@@ -1870,7 +1923,7 @@
 
   window.addEventListener('online', () => {
     bindRealtimeSubscriptions();
-    void flushPendingWrites();
+    scheduleSupabaseQueueFlush('online', 350);
     void refreshPublicData();
   });
 

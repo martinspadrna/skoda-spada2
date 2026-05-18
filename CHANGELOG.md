@@ -1,3 +1,21 @@
+## v.1.1 (556)
+
+- Při přepnutí hlavní stránky/podstránky se obsah nově nastaví na začátek stránky.
+- Spodní navigace už nepoužívá vertikální `scrollIntoView`, které mohlo po přepnutí stáhnout stránku dolů.
+- Aktivní položka spodní navigace se dál centruje jen vodorovně v rámci spodního panelu.
+- Scroll reset se nespouští při refreshi stejné stránky ani v otevřené hře.
+- Výpočty, pravidla her, Theme/Pozadí, otevírací doba, Supabase datový model a spodní lišta jsou funkčně beze změny.
+- Fáze 6 — Supabase hardening zůstává cca 70 %.
+
+## v.1.1 (555)
+
+- Fáze 6 — Supabase hardening posunuta na cca 70 %.
+- Supabase offline fronta se nově odesílá po menších dávkách, aby při větší frontě nezablokovala appku ani slabší mobil.
+- Retry fronty má chytřejší plánování dalšího pokusu, včetně jemného jitteru, aby se po slabém internetu neposílaly všechny požadavky naráz.
+- Když jsou položky ještě v backoff pauze, appka si zapamatuje nejbližší další retry čas a sama si naplánuje další flush.
+- Diagnostika Supabase nově ukazuje dávkový limit fronty, plánované flush pokusy, batch stop stav a další retry čas.
+- Funkce aplikace, výpočty, pravidla her, Theme/Pozadí, otevírací doba a spodní lišta beze změny.
+
 ## v.1.1 (554)
 
 - Popup Kantýna/Jídelna nově zvýrazňuje aktuální otevřený časový blok, když je právě otevřeno.
@@ -7,7 +25,7 @@
 - Fáze 6 — Supabase hardening zůstává cca 64 %.
 - Výpočty, pravidla her, Theme/Pozadí, spodní lišta a Supabase datový model beze změny.
 
-## Přehled největších změn v.1.1 (500–554)
+## Přehled největších změn v.1.1 (500–556)
 - Proběhlo velké stabilizační období před dalšími fázemi refactoru: Fáze 3 Láďův režim, Fáze 4 cleanup manager, Fáze 5 game performance a start Fáze 6 Supabase hardening.
 - Dashboard se postupně ladil kvůli správnému zobrazení směny, ikon, kantýny/jídelny, odpočtů a menšímu riziku prázdných nebo pozdě načtených karet.
 - Spodní navigace prošla opakovaným dorovnáním, hlavně položka „Více“ – má být užší, ale normálně mezi ostatními položkami a bez ukotvení vpravo.
