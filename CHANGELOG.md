@@ -1,11 +1,95 @@
+## v.1.1 (571)
+- Fáze 7 — Data optimization posunuta na cca 48 %.
+- `scheduleHomeRefresh()` má nově dávkovací guard: když se během startu, návratu do appky nebo rychlého přepnutí naplánuje víc refreshů dashboardu najednou, sloučí se do jedné řízené sekvence.
+- Home refresh si dál nechává několik bezpečných doběhů kvůli později načteným kartám, ale paralelní stejné dávky se už nespouští vedle sebe.
+- Diagnostika Fáze 7 nově ukazuje plánované home refresh běhy, sloučené požadavky, skutečné refresh běhy a skipy při otevřeném modalu.
+- Výpočty, pravidla her, Theme/Pozadí, Supabase datový model, rozpisy, rotace, Výplata a spodní lišta beze změny.
+
+## v.1.1 (570)
+- Fáze 7 — Data optimization posunuta na cca 42 %.
+- Startovní načtení rotací nově používá sdílenou lokální read/JSON cache, takže se velký stav při init kontrole nečte a neparsuje zbytečně víckrát.
+- Menší herní preference používají stejný zápis jen při změně: online výsledky piškvorek, zapamatované jméno a joystick hada.
+- Diagnostika Fáze 7 dál ukazuje lokální čtení/zápisy, cache hity, parse hity a přeskočené stejné zápisy.
+- Výpočty, pravidla her, Theme/Pozadí, Supabase datový model, rozpisy, rotace, Výplata a spodní lišta beze změny.
+
+## v.1.1 (569)
+
+- Fáze 7 — Data optimization posunuta na cca 36 %.
+- Supabase lokální cache, offline fronta a profilové UI cache nově používají společnou lokální read/JSON cache z Fáze 7.
+- `safeReadJson()` už zbytečně neopakuje přímé čtení a JSON parse stejných hodnot z `localStorage`, pokud je k dispozici společná cache.
+- `safeWriteJson()` nově využívá zápis jen při změně, takže se stejná Supabase cache/fronta nepřepisuje pořád dokola.
+- Diagnostika Supabase cacheGuard nově ukazuje delegované lokální JSON čtení, zápisy a přeskočené stejné zápisy.
+- Výpočty, hry, Theme/Pozadí, Výplata, rozpisy, rotace, otevírací doba, Supabase datový model a spodní lišta jsou beze změny.
+
+## v.1.1 (568)
+
+- Fáze 7 — Data optimization posunuta na cca 32 %.
+- Láďův režim je víc odlehčený: těžký glass blur se vypíná šířeji napříč appkou, stíny jsou slabší, efektní pseudo-vrstvy se schovají a pozadí používá jednodušší statickou variantu.
+- Hry s canvasem v Láďově režimu / na slabším zařízení používají nižší DPR limit, takže se na mobilech nemusí renderovat zbytečně velké plátno.
+- Detekce slabšího zařízení je citlivější hlavně pro Androidy se 4 GB RAM, slabší CPU/RAM kombinací, Data Saverem, pomalejší sítí nebo malým displejem s vysokým DPR.
+- Diagnostika aplikace nově ukazuje výkonový profil, důvod detekce, ruční zapnutí Láďova režimu, DPR limit canvasu, DPR/šířku zařízení a typ sítě.
+- Výpočty, rozpisy, rotace, hry, Theme/Pozadí, Výplata, Supabase datový model a spodní lišta jsou beze změny.
+
+## v.1.1 (567)
+
+- Fáze 7 — Data optimization posunuta na cca 26 %.
+- UI preference, Theme/Pozadí a herní profil nově používají společnou lokální read/JSON cache, takže se při otevření nastavení nebo přepínání vzhledu méně opakovaně parsuje `localStorage`.
+- Ukládání UI preferencí, Theme/Pozadí a herního profilu nově používá zápis jen při skutečné změně, takže se neukládá zbytečně stejná hodnota pořád dokola.
+- Profilové nastavení vzhledu dál zůstává navázané na herní profil; změna je jen úspornější a bezpečnější pro slabší mobil/prohlížeč.
+- Diagnostika Fáze 7 dál ukazuje čtení, zápisy, skipy, cache hity a odhad přečtených/zapsaných bajtů.
+- Výpočty, pravidla her, Theme/Pozadí nabídka, rozpisy, rotace, otevírací doba, Výplata, Supabase datový model a spodní lišta jsou beze změny.
+
+## v.1.1 (566)
+
+- Fáze 7 — Data optimization posunuta na cca 18 %.
+- Přidaná lehká cache pro opakované čtení stejných hodnot z `localStorage`, aby se při obnovení vstupů nesahalo zbytečně pořád do úložiště.
+- Přidaná cache pro JSON parse lokálních hodnot; uložené počty soustruhu `soustruh106Counts` se v `restoreInputs()` parsují jen jednou a dál se používá stejná hodnota.
+- `setLocalStorageIfChanged()` nově pracuje i s read cache, takže po zápisu se cache hned aktualizuje a po změně JSON hodnoty se starý parse cache zahodí.
+- Při změně `localStorage` z jiné záložky/okna se lokální read/JSON cache pro daný klíč vyčistí, aby se nepoužila stará hodnota.
+- Diagnostika Fáze 7 nově ukazuje lokální čtení, read cache hity, JSON parse běhy/cache hity/chyby, odhad přečtených bajtů a poslední čtený klíč.
+- Výpočty, pravidla her, Theme/Pozadí, rozpisy, rotace, otevírací doba, Výplata, Supabase datový model a spodní lišta jsou beze změny.
+
+## v.1.1 (565)
+
+- Fáze 7 — Data optimization zahájena, aktuálně cca 10 %.
+- Lokální ukládání stavu nově používá deduplikaci: `localStorage` zápis se provede jen tehdy, když se hodnota opravdu změnila.
+- Velký stav rotací/kalkulaček se při opakovaných kliknutích nebo refreshech zbytečně nepřepisuje pořád dokola.
+- `saveRotationData()` nově signalizuje změnu jen při skutečném zápisu, takže se omezí část následných refresh/sync reakcí.
+- Diagnostika nově ukazuje počty provedených a přeskočených lokálních zápisů, odhad zapsaných/přeskočených bajtů a poslední klíč zápisu/skipu.
+- Výpočty, pravidla her, Theme/Pozadí, rozpisy, rotace, otevírací doba, Výplata, Supabase datový model a spodní lišta jsou beze změny.
+
+## v.1.1 (564)
+
+- Fáze 6 — Supabase hardening dokončena na 100 %.
+- Supabase Realtime má nově self-heal reconnect guard: po `CHANNEL_ERROR`, `TIMED_OUT`, `CLOSED`, návratu internetu, `pageshow`, focusu nebo návratu do viditelné appky se umí bezpečně znovu naplánovat připojení.
+- Reconnect má vlastní guard proti duplicitám, aby se při slabším internetu nevytvářely paralelní realtime bindy.
+- Diagnostika nově počítá naplánované realtime reconnecty, skutečné reconnect běhy, skipy a chyby reconnectu.
+- Funkce aplikace, výpočty, pravidla her, Theme/Pozadí, rozpisy, rotace, otevírací doba, Výplata a spodní lišta jsou beze změny.
+
+## v.1.1 (563)
+
+- Fáze 6 — Supabase hardening posunuta na cca 96 %.
+- Supabase offline fronta má nově diagnostiku zdraví fronty: stáří nejstarší položky, nejnovější položku, počty podle typu úlohy, maximální retry count a počet podezřele starých/varovných položek.
+- Queue health se přepočítá při probuzení fronty, při flushi fronty i v diagnostice, takže bude jednodušší poznat, jestli se sync opravdu jen čeká na retry/backoff, nebo je ve frontě starý problém.
+- Diagnostika Supabase nově ukazuje i warning/critical stav podle stáří fronty, bez automatického mazání dat.
+- Funkce aplikace, výpočty, pravidla her, Theme/Pozadí, rozpisy, rotace, otevírací doba, Výplata a spodní lišta jsou beze změny.
+
 ## v.1.1 (562)
+
+- Karta Výplata na dashboardu je nově klikací.
+- Po kliknutí otevře Škoda eMA/EV odkaz pro výplatu v novém okně/záložce.
+- Používá stejný bezpečný externí open guard jako Jídelní lístek a Eportal.
+- Výpočty, hry, Theme/Pozadí, Supabase datový model, rozpisy, rotace a spodní lišta beze změny.
+- Fáze 6 — Supabase hardening zůstala cca 90 %.
+
+## v.1.1 (561)
 
 - Opravený výpočet v `Kalkulačky → Brusy → Kolik ještě stihnu`.
 - Hodnota z přesnějšího výpočtu „hotových kusů v rozdělaném vozíku/dávce“ se nově používá jen pro přepočet dávek/vozíků.
 - Tyto kusy se už znovu nepřičítají do celkového počtu kusů, protože mají být zahrnuté v poli „Celkem zatím nabroušeno“.
 - Ve výsledku je doplněná poznámka, aby bylo jasné, že rozdělaný vozík slouží jen pro dávky, ne pro navyšování celku.
 - Výpočty `Kdy bude hotovo`, hry, Theme/Pozadí, Supabase datový model, rozpisy, rotace a spodní lišta beze změny.
-- Fáze 6 — Supabase hardening zůstává cca 90 %.
+- Fáze 6 — Supabase hardening zůstala cca 90 %.
 
 ## v.1.1 (560)
 
@@ -74,8 +158,8 @@
 - Fáze 6 — Supabase hardening zůstává cca 64 %.
 - Výpočty, pravidla her, Theme/Pozadí, spodní lišta a Supabase datový model beze změny.
 
-## Přehled největších změn v.1.1 (500–562)
-- Proběhlo velké stabilizační období před dalšími fázemi refactoru: Fáze 3 Láďův režim, Fáze 4 cleanup manager, Fáze 5 game performance a start Fáze 6 Supabase hardening.
+## Přehled největších změn v.1.1 (500–571)
+- Proběhlo velké stabilizační období před dalšími fázemi refactoru: Fáze 3 Láďův režim, Fáze 4 cleanup manager, Fáze 5 game performance a dokončený Supabase hardening a začátek Fáze 7 Data optimization.
 - Dashboard se postupně ladil kvůli správnému zobrazení směny, ikon, kantýny/jídelny, odpočtů, klikací výplatě a menšímu riziku prázdných nebo pozdě načtených karet.
 - Spodní navigace prošla opakovaným dorovnáním, hlavně položka „Více“ – má být užší, ale normálně mezi ostatními položkami a bez ukotvení vpravo.
 - Rotace dostala stabilnější spodní dock jmen, lepší safe-area chování na menších displejích typu Samsung A15 a čistší zobrazení příští směny.
@@ -83,7 +167,7 @@
 - Statistiky dostaly kompaktnější dlaždice lidí/strojů, snahu vejít stroje do jednoho řádku a čistší souhrny práce/absence.
 - Kalkulačky prošly sjednocením calcPanel systému, většími klikacími/navolovacími tlačítky a návratem barevných indexů u Brusů ve glass stylu.
 - Všechny hry jsou přesunuté do „Ve vývoji“, herní hub dostal výrazné performance optimalizace, méně opakovaných renderů a lepší cache profilů/statistik.
-- Supabase Realtime a offline/online sync se zpevňují: timeouty, retry, offline fronta, deduplikace, cache/fallback, session cache online her a diagnostika.
+- Supabase Realtime a offline/online sync se zpevnily: timeouty, retry, offline fronta, deduplikace, cache/fallback, session cache online her, diagnostika a self-heal reconnect.
 - Nastavení → Theme dostalo volbu pozadí, výrazná glass-friendly pozadí a postupný iOS glass polish napříč aplikací.
 
 ## Přehled největších změn v.1 (450–499)

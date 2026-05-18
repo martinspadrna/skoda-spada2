@@ -1,6 +1,6 @@
 
 const APP_KEY = "rotace_kalkulacky_state_v123";
-const APP_VERSION = "v.1.1 (562)";
+const APP_VERSION = "v.1.1 (571)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-05-18-" + APP_VERSION + "-" + Date.now();
 
@@ -158,6 +158,141 @@ function clone(obj) {
   return JSON.parse(JSON.stringify(obj));
 }
 
+const RAK_DATA_OPTIMIZATION_STATS = window.__rakDataOptimizationStats || {
+  phase: 'phase-7-data-optimization',
+  localStorageWrites: 0,
+  localStorageSkippedWrites: 0,
+  localStorageWriteErrors: 0,
+  rotationStateWrites: 0,
+  rotationStateSkippedWrites: 0,
+  approxBytesWritten: 0,
+  approxBytesSkipped: 0,
+  localStorageReads: 0,
+  localStorageReadCacheHits: 0,
+  localStorageJsonParseReads: 0,
+  localStorageJsonParseCacheHits: 0,
+  localStorageJsonParseErrors: 0,
+  approxBytesRead: 0,
+  homeRefreshSchedules: 0,
+  homeRefreshCoalescedSchedules: 0,
+  homeRefreshRuns: 0,
+  homeRefreshModalSkips: 0,
+  homeRefreshLastReason: '',
+  homeRefreshLastAt: null,
+  lastWriteKey: '',
+  lastSkipKey: '',
+  lastReadKey: '',
+  lastWriteAt: null,
+  lastSkipAt: null,
+  lastReadAt: null
+};
+window.__rakDataOptimizationStats = RAK_DATA_OPTIMIZATION_STATS;
+
+const RAK_LOCAL_STORAGE_READ_CACHE = window.__rakLocalStorageReadCache || new Map();
+window.__rakLocalStorageReadCache = RAK_LOCAL_STORAGE_READ_CACHE;
+const RAK_LOCAL_STORAGE_JSON_CACHE = window.__rakLocalStorageJsonCache || new Map();
+window.__rakLocalStorageJsonCache = RAK_LOCAL_STORAGE_JSON_CACHE;
+try {
+  window.addEventListener('storage', (event) => {
+    if (!event || !event.key) {
+      RAK_LOCAL_STORAGE_READ_CACHE.clear();
+      RAK_LOCAL_STORAGE_JSON_CACHE.clear();
+      return;
+    }
+    RAK_LOCAL_STORAGE_READ_CACHE.delete(event.key);
+    RAK_LOCAL_STORAGE_JSON_CACHE.delete(event.key);
+  });
+} catch (err) {}
+
+function approxStringBytes(value) {
+  const text = String(value ?? '');
+  try { return new Blob([text]).size; }
+  catch (err) { return text.length; }
+}
+
+function getLocalStorageCached(key, fallbackValue = '') {
+  const storageKey = String(key || '').trim();
+  if (!storageKey) return fallbackValue;
+  if (RAK_LOCAL_STORAGE_READ_CACHE.has(storageKey)) {
+    RAK_DATA_OPTIMIZATION_STATS.localStorageReadCacheHits += 1;
+    const cached = RAK_LOCAL_STORAGE_READ_CACHE.get(storageKey);
+    return cached === null || cached === undefined ? fallbackValue : cached;
+  }
+  try {
+    const raw = localStorage.getItem(storageKey);
+    RAK_LOCAL_STORAGE_READ_CACHE.set(storageKey, raw);
+    RAK_DATA_OPTIMIZATION_STATS.localStorageReads += 1;
+    RAK_DATA_OPTIMIZATION_STATS.approxBytesRead += approxStringBytes(raw || '');
+    RAK_DATA_OPTIMIZATION_STATS.lastReadKey = storageKey;
+    RAK_DATA_OPTIMIZATION_STATS.lastReadAt = Date.now();
+    return raw === null || raw === undefined ? fallbackValue : raw;
+  } catch (err) {
+    return fallbackValue;
+  }
+}
+
+function cloneCachedJson(value) {
+  if (value === null || value === undefined || typeof value !== 'object') return value;
+  try { return JSON.parse(JSON.stringify(value)); }
+  catch (err) { return Array.isArray(value) ? value.slice() : Object.assign({}, value); }
+}
+
+function parseLocalStorageJsonCached(key, fallbackValue) {
+  const storageKey = String(key || '').trim();
+  const raw = getLocalStorageCached(storageKey, '');
+  if (!raw) return cloneCachedJson(fallbackValue);
+  const cached = RAK_LOCAL_STORAGE_JSON_CACHE.get(storageKey);
+  if (cached && cached.raw === raw) {
+    RAK_DATA_OPTIMIZATION_STATS.localStorageJsonParseCacheHits += 1;
+    return cloneCachedJson(cached.value);
+  }
+  try {
+    const parsed = JSON.parse(raw);
+    RAK_LOCAL_STORAGE_JSON_CACHE.set(storageKey, { raw, value: parsed });
+    RAK_DATA_OPTIMIZATION_STATS.localStorageJsonParseReads += 1;
+    return cloneCachedJson(parsed);
+  } catch (err) {
+    RAK_DATA_OPTIMIZATION_STATS.localStorageJsonParseErrors += 1;
+    return cloneCachedJson(fallbackValue);
+  }
+}
+
+function setLocalStorageIfChanged(key, value) {
+  const storageKey = String(key || '').trim();
+  if (!storageKey) return false;
+  const storageValue = String(value ?? '');
+  try {
+    const current = RAK_LOCAL_STORAGE_READ_CACHE.has(storageKey)
+      ? RAK_LOCAL_STORAGE_READ_CACHE.get(storageKey)
+      : localStorage.getItem(storageKey);
+    if (current === storageValue) {
+      RAK_DATA_OPTIMIZATION_STATS.localStorageSkippedWrites += 1;
+      RAK_DATA_OPTIMIZATION_STATS.approxBytesSkipped += approxStringBytes(storageValue);
+      RAK_DATA_OPTIMIZATION_STATS.lastSkipKey = storageKey;
+      RAK_DATA_OPTIMIZATION_STATS.lastSkipAt = Date.now();
+      if (storageKey === APP_KEY) RAK_DATA_OPTIMIZATION_STATS.rotationStateSkippedWrites += 1;
+      return false;
+    }
+    localStorage.setItem(storageKey, storageValue);
+    RAK_LOCAL_STORAGE_READ_CACHE.set(storageKey, storageValue);
+    RAK_LOCAL_STORAGE_JSON_CACHE.delete(storageKey);
+    RAK_DATA_OPTIMIZATION_STATS.localStorageWrites += 1;
+    RAK_DATA_OPTIMIZATION_STATS.approxBytesWritten += approxStringBytes(storageValue);
+    RAK_DATA_OPTIMIZATION_STATS.lastWriteKey = storageKey;
+    RAK_DATA_OPTIMIZATION_STATS.lastWriteAt = Date.now();
+    if (storageKey === APP_KEY) RAK_DATA_OPTIMIZATION_STATS.rotationStateWrites += 1;
+    return true;
+  } catch (err) {
+    RAK_DATA_OPTIMIZATION_STATS.localStorageWriteErrors += 1;
+    throw err;
+  }
+}
+
+function getDataOptimizationStatus() {
+  return Object.assign({}, RAK_DATA_OPTIMIZATION_STATS);
+}
+window.getDataOptimizationStatus = getDataOptimizationStatus;
+
 function normalizeRows(rows) {
   return (Array.isArray(rows) ? rows : []).map(row => ({
     date: String(row && row.date ? row.date : "").trim(),
@@ -256,13 +391,13 @@ function defaultRotation() {
 
 function loadRotationData() {
   try {
-    const savedBuild = localStorage.getItem("rotationBuild");
+    // Fáze 7: startovní načtení používá stejnou lokální read/JSON cache jako zbytek appky.
+    // Tím se při reloadu a opakovaných init kontrolách nečte/parsuje velký stav zbytečně víckrát.
+    const savedBuild = getLocalStorageCached("rotationBuild", "");
     if (savedBuild && savedBuild !== ROTATION_BUILD) {
       return defaultRotation();
     }
-    const raw = localStorage.getItem(APP_KEY);
-    if (!raw) return defaultRotation();
-    const parsed = JSON.parse(raw);
+    const parsed = parseLocalStorageJsonCached(APP_KEY, null);
     if (!parsed || !parsed.months) return defaultRotation();
     return normalizeRotationData(parsed);
   } catch (e) {
@@ -271,29 +406,35 @@ function loadRotationData() {
 }
 
 function saveRotationData() {
-
-
   try {
-    localStorage.setItem(APP_KEY, JSON.stringify(app.rotation));
-    localStorage.setItem("rotationBuild", ROTATION_BUILD);
-    localStorage.setItem("machine", app.machine);
-    localStorage.setItem("prog", app.prog);
-    localStorage.setItem("f_kusy", document.getElementById("f_kusy")?.value || "");
-    localStorage.setItem("f_finish_kusy", document.getElementById("f_finish_kusy")?.value || "");
-    localStorage.setItem("f_finish_davky", document.getElementById("f_finish_davky")?.value || "");
-    localStorage.setItem("p_kusy", document.getElementById("p_kusy")?.value || "");
-    localStorage.setItem("b_finish_kusy", document.getElementById("b_finish_kusy")?.value || "");
-    localStorage.setItem("b_finish_davky", document.getElementById("b_finish_davky")?.value || "");
-    localStorage.setItem("davka", document.getElementById("davka")?.value || "");
-    localStorage.setItem("orovnani", document.getElementById("orovnani")?.value || "");
-    localStorage.setItem("celkem", document.getElementById("celkem")?.value || "");
-    localStorage.setItem("soustruhMode", app.soustruhMode);
-    localStorage.setItem("soustruhFirstBatch", app.soustruhFirstBatch || "");
-    localStorage.setItem("soustruhPlan", app.soustruhPlan || "");
-    localStorage.setItem("soustruh126Start", String(app.soustruh126Start || 32));
-    localStorage.setItem("soustruh106Counts", JSON.stringify(app.soustruh106Counts || ["", "", "", ""]));
-    localStorage.setItem("adminUnlocked", app.adminUnlocked ? "1" : "0");
-    if (typeof window.__rotaceSignalStateChange === "function") {
+    let changed = false;
+    const write = (key, value) => {
+      if (setLocalStorageIfChanged(key, value)) changed = true;
+    };
+
+    // Fáze 7: velký stav rotací ukládáme jen tehdy, když se opravdu změnil.
+    // Dřív se při některých kliknutích/stringify + localStorage zápis opakoval i bez změny.
+    const rotationJson = JSON.stringify(app.rotation);
+    write(APP_KEY, rotationJson);
+    write("rotationBuild", ROTATION_BUILD);
+    write("machine", app.machine);
+    write("prog", app.prog);
+    write("f_kusy", document.getElementById("f_kusy")?.value || "");
+    write("f_finish_kusy", document.getElementById("f_finish_kusy")?.value || "");
+    write("f_finish_davky", document.getElementById("f_finish_davky")?.value || "");
+    write("p_kusy", document.getElementById("p_kusy")?.value || "");
+    write("b_finish_kusy", document.getElementById("b_finish_kusy")?.value || "");
+    write("b_finish_davky", document.getElementById("b_finish_davky")?.value || "");
+    write("davka", document.getElementById("davka")?.value || "");
+    write("orovnani", document.getElementById("orovnani")?.value || "");
+    write("celkem", document.getElementById("celkem")?.value || "");
+    write("soustruhMode", app.soustruhMode);
+    write("soustruhFirstBatch", app.soustruhFirstBatch || "");
+    write("soustruhPlan", app.soustruhPlan || "");
+    write("soustruh126Start", String(app.soustruh126Start || 32));
+    write("soustruh106Counts", JSON.stringify(app.soustruh106Counts || ["", "", "", ""]));
+    write("adminUnlocked", app.adminUnlocked ? "1" : "0");
+    if (changed && typeof window.__rotaceSignalStateChange === "function") {
       window.__rotaceSignalStateChange("local-save");
     }
   } catch (e) {}
@@ -302,7 +443,7 @@ function saveRotationData() {
 function restoreInputs() {
   const setVal = (id, key) => {
     const el = document.getElementById(id);
-    if (el) el.value = localStorage.getItem(key) || "";
+    if (el) el.value = getLocalStorageCached(key, "") || "";
   };
   setVal("f_kusy", "f_kusy");
   setVal("f_finish_kusy", "f_finish_kusy");
@@ -320,16 +461,14 @@ function restoreInputs() {
   if (v126PlanEl) v126PlanEl.value = soustruhDefaultPlan;
   const v106PlanEl = document.getElementById("v106_plan");
   if (v106PlanEl) v106PlanEl.value = soustruhDefaultPlan;
-  try {
-    const arr = JSON.parse(localStorage.getItem("soustruh106Counts") || "[\"\",\"\",\"\",\"\"]");
-    ["v106_c1","v106_c2","v106_c3","v106_c4"].forEach((id, idx) => { const el = document.getElementById(id); if (el && !el.value) el.value = arr[idx] || ""; });
-  } catch (e) {}
-  app.soustruhMode = localStorage.getItem("soustruhMode") || app.soustruhMode || "lis";
-  app.soustruhFirstBatch = localStorage.getItem("soustruhFirstBatch") || "";
-  const storedSoustruhPlan = localStorage.getItem("soustruhPlan");
+  const soustruhCounts = parseLocalStorageJsonCached("soustruh106Counts", ["", "", "", ""]);
+  ["v106_c1","v106_c2","v106_c3","v106_c4"].forEach((id, idx) => { const el = document.getElementById(id); if (el && !el.value) el.value = soustruhCounts[idx] || ""; });
+  app.soustruhMode = getLocalStorageCached("soustruhMode", "") || app.soustruhMode || "lis";
+  app.soustruhFirstBatch = getLocalStorageCached("soustruhFirstBatch", "") || "";
+  const storedSoustruhPlan = getLocalStorageCached("soustruhPlan", "");
   app.soustruhPlan = storedSoustruhPlan && storedSoustruhPlan !== "1248" ? storedSoustruhPlan : String(typeof getSoustruhDefaultPlan === "function" ? getSoustruhDefaultPlan() : 1216);
-  app.soustruh126Start = parseInt(localStorage.getItem("soustruh126Start"), 10) || 32;
-  try { app.soustruh106Counts = JSON.parse(localStorage.getItem("soustruh106Counts") || "[\"\",\"\",\"\",\"\"]"); } catch (e) { app.soustruh106Counts = ["", "", "", ""]; }
+  app.soustruh126Start = parseInt(getLocalStorageCached("soustruh126Start", ""), 10) || 32;
+  app.soustruh106Counts = Array.isArray(soustruhCounts) ? soustruhCounts : ["", "", "", ""];
 }
 
 function getShiftEnd(now) {

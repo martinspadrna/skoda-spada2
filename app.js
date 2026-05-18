@@ -1,4 +1,4 @@
-// v.1.1 (562) – Dashboard: karta Výplata otevírá eMA/EV ve Škoda portálu.
+// v.1.1 (571) – Data optimization: plánované refresh běhy dashboardu se slučují do jedné dávky.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
@@ -649,6 +649,36 @@ function runPhaseFiveGamePerformanceAudit() {
 }
 
 
+function runPhaseSevenDataOptimizationAudit() {
+  const run = () => {
+    const dataStatus = typeof window.getDataOptimizationStatus === 'function' ? window.getDataOptimizationStatus() : null;
+    const report = {
+      version: window.APP_VERSION || 'unknown',
+      phase: 'phase-7-data-optimization-shared-local-cache',
+      checkedAt: new Date().toISOString(),
+      ok: !!dataStatus,
+      dataOptimization: dataStatus || null
+    };
+    try {
+      document.documentElement.dataset.rakPhase7 = report.ok ? 'data-optimization-shared-local-cache' : 'data-optimization-check';
+      window.__rakPhase7DataOptimizationAudit = report;
+    } catch (err) {}
+    if (!report.ok) console.warn('[RaK] Phase 7 data optimization audit', report);
+    return report;
+  };
+
+  if (document.readyState === 'loading') {
+    const rerun = () => setTimeout(run, 300);
+    if (typeof registerListener === 'function') registerListener(document, 'DOMContentLoaded', rerun, { once: true });
+    else document.addEventListener('DOMContentLoaded', rerun, { once: true });
+    return { version: window.APP_VERSION || 'unknown', phase: 'phase-7-data-optimization-shared-local-cache', ok: true, deferred: true };
+  }
+
+  requestAnimationFrame(() => setTimeout(run, 300));
+  return { version: window.APP_VERSION || 'unknown', phase: 'phase-7-data-optimization-shared-local-cache', ok: true, deferred: true };
+}
+
+
 (async () => {
   const files = [
     "core.js",
@@ -691,6 +721,7 @@ function runPhaseFiveGamePerformanceAudit() {
   try { runPhaseThreeLightweightAudit(); } catch (err) { console.warn('Phase 3 lightweight audit failed', err); }
   try { runPhaseFourCleanupManagerAudit(); } catch (err) { console.warn('Phase 4 cleanup manager audit failed', err); }
   try { runPhaseFiveGamePerformanceAudit(); } catch (err) { console.warn('Phase 5 game performance audit failed', err); }
+  try { runPhaseSevenDataOptimizationAudit(); } catch (err) { console.warn('Phase 7 data optimization audit failed', err); }
 
   try {
     if (typeof window.__rotaceBootHomeRefreshLate === 'function') {

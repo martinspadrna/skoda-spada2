@@ -223,21 +223,34 @@ const LIGHTWEIGHT_MODE_LABEL = 'Láďův režim';
 function getLowEndDeviceInfo() {
   try {
     const ua = String(navigator.userAgent || '');
-    const isIOS = /iPad|iPhone|iPod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const platform = String(navigator.platform || '');
+    const isIOS = /iPad|iPhone|iPod/i.test(ua) || (platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const isAndroid = /Android/i.test(ua);
     const cores = Number(navigator.hardwareConcurrency || 0);
     const memory = Number(navigator.deviceMemory || 0);
     const hasMemoryInfo = memory > 0;
-    const saveData = !!(navigator.connection && navigator.connection.saveData);
+    const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection || null;
+    const saveData = !!(connection && connection.saveData);
+    const effectiveType = connection && connection.effectiveType ? String(connection.effectiveType) : '';
+    const downlink = connection && Number.isFinite(Number(connection.downlink)) ? Number(connection.downlink) : 0;
     const reducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    const width = Math.min(
+      Number(window.innerWidth || 0) || 0,
+      Number(screen && screen.width || 0) || Number(window.innerWidth || 0) || 0
+    );
+    const dpr = Number(window.devicePixelRatio || 1) || 1;
     const reasons = [];
 
     if (saveData) reasons.push('Data Saver');
+    if (/^(slow-2g|2g|3g)$/i.test(effectiveType)) reasons.push('pomalejší připojení ' + effectiveType);
 
-    // iOS/Safari často RAM vůbec nehlásí a někdy vrací konzervativní počet jader.
-    // Proto už iPhone 13 Pro Max nesmí spadnout do slabšího zařízení jen kvůli <= 4 jádrům.
-    if (hasMemoryInfo && memory <= 3) reasons.push('RAM ' + memory + ' GB');
+    // Android telefony často hlásí 4 GB RAM a 8 jader, ale s těžkým glass/blur stylem se už umí škubat.
+    // Proto 4 GB RAM bereme jako slabší/střední zařízení pro automatické odlehčení.
+    if (hasMemoryInfo && memory <= 4) reasons.push('RAM ' + memory + ' GB');
     if (cores > 0 && cores <= 2) reasons.push('CPU ' + cores + ' jádra');
-    if (!isIOS && hasMemoryInfo && cores > 0 && cores <= 4 && memory <= 4) reasons.push('CPU/RAM kombinace');
+    if (!isIOS && hasMemoryInfo && cores > 0 && cores <= 4 && memory <= 6) reasons.push('CPU/RAM kombinace');
+    if (!isIOS && isAndroid && !hasMemoryInfo && cores > 0 && cores <= 4) reasons.push('Android bez RAM info + ' + cores + ' jádra');
+    if (!isIOS && isAndroid && width > 0 && width <= 390 && dpr >= 2.5 && (!hasMemoryInfo || memory <= 6)) reasons.push('malý displej s vysokým DPR');
 
     return {
       lowEnd: reasons.length > 0,
@@ -246,10 +259,15 @@ function getLowEndDeviceInfo() {
       memory: hasMemoryInfo ? memory : null,
       saveData,
       reducedMotion,
-      isIOS
+      isIOS,
+      isAndroid,
+      effectiveType,
+      downlink,
+      dpr,
+      width
     };
   } catch (err) {
-    return { lowEnd: false, reasons: [], cores: 0, memory: null, saveData: false, reducedMotion: false, isIOS: false };
+    return { lowEnd: false, reasons: [], cores: 0, memory: null, saveData: false, reducedMotion: false, isIOS: false, isAndroid: false, effectiveType: '', downlink: 0, dpr: 1, width: 0 };
   }
 }
 
@@ -259,10 +277,11 @@ function isLowEndDevice() {
 
 function loadUiPrefs() {
   try {
-    const raw = localStorage.getItem(UI_PREFS_KEY);
     const autoLightweight = isLowEndDevice();
-    if (!raw) return { compact: false, reduceMotion: false, lightweight: autoLightweight, lightweightManual: false };
-    const parsed = JSON.parse(raw);
+    const parsed = typeof parseLocalStorageJsonCached === 'function'
+      ? parseLocalStorageJsonCached(UI_PREFS_KEY, null)
+      : JSON.parse(localStorage.getItem(UI_PREFS_KEY) || 'null');
+    if (!parsed || typeof parsed !== 'object') return { compact: false, reduceMotion: false, lightweight: autoLightweight, lightweightManual: false };
     const oldManualMotion = parsed.reduceMotion === true;
     const lightweightManual = parsed.lightweightManual === true || oldManualMotion;
     const storedLightweight = !!parsed.lightweight || oldManualMotion;
@@ -286,7 +305,9 @@ function saveUiPrefs(prefs) {
     lightweightManual: !!prefs.lightweightManual
   };
   try {
-    localStorage.setItem(UI_PREFS_KEY, JSON.stringify(next));
+    const payload = JSON.stringify(next);
+    if (typeof setLocalStorageIfChanged === 'function') setLocalStorageIfChanged(UI_PREFS_KEY, payload);
+    else localStorage.setItem(UI_PREFS_KEY, payload);
   } catch (err) {
     console.warn(err);
   }
@@ -333,6 +354,19 @@ function resetUiPrefs() {
 }
 
 applyUiPrefs(loadUiPrefs());
+
+function getRakPerformanceDprMax() {
+  try {
+    const body = document.body;
+    const lite = !!(body && body.classList && (body.classList.contains('lightweightMode') || body.classList.contains('lowEndDevice')));
+    if (lite) return 1.15;
+    const info = typeof getLowEndDeviceInfo === 'function' ? getLowEndDeviceInfo() : null;
+    if (info && info.lowEnd) return 1.15;
+  } catch (err) {}
+  return 2;
+}
+
+try { window.getRakPerformanceDprMax = getRakPerformanceDprMax; } catch (err) {}
 
 
 
@@ -855,9 +889,9 @@ const TTT_ONLINE_RESULT_STORE_KEY = 'rotace_ttt_online_results_v1';
 
 function tttReadOnlineResultStore() {
   try {
-    const raw = localStorage.getItem(TTT_ONLINE_RESULT_STORE_KEY);
-    if (!raw) return {};
-    const parsed = JSON.parse(raw);
+    const parsed = typeof parseLocalStorageJsonCached === 'function'
+      ? parseLocalStorageJsonCached(TTT_ONLINE_RESULT_STORE_KEY, {})
+      : JSON.parse(localStorage.getItem(TTT_ONLINE_RESULT_STORE_KEY) || '{}');
     return parsed && typeof parsed === 'object' ? parsed : {};
   } catch (err) {
     return {};
@@ -866,7 +900,9 @@ function tttReadOnlineResultStore() {
 
 function tttWriteOnlineResultStore(store) {
   try {
-    localStorage.setItem(TTT_ONLINE_RESULT_STORE_KEY, JSON.stringify(store && typeof store === 'object' ? store : {}));
+    const payload = JSON.stringify(store && typeof store === 'object' ? store : {});
+    if (typeof setLocalStorageIfChanged === 'function') setLocalStorageIfChanged(TTT_ONLINE_RESULT_STORE_KEY, payload);
+    else localStorage.setItem(TTT_ONLINE_RESULT_STORE_KEY, payload);
   } catch (err) {}
 }
 
@@ -2155,7 +2191,7 @@ function tttFillHardWinPrompt() {
   const modeEl = overlay.querySelector('#tttWinMode');
 
   if (nameInput) {
-    const remembered = state.hardWinName || localStorage.getItem('tttHardWinName') || '';
+    const remembered = state.hardWinName || (typeof getLocalStorageCached === 'function' ? getLocalStorageCached('tttHardWinName', '') : localStorage.getItem('tttHardWinName')) || '';
     if (!nameInput.value) nameInput.value = remembered;
     state.hardWinName = nameInput.value;
   }
@@ -2197,10 +2233,11 @@ async function tttSendHardWinEntry(entry) {
 
 async function tttSubmitHardWin() {
   const state = tttGetState();
-  const fallbackName = String(gamesGetActiveAccount()?.name || state.hardWinName || localStorage.getItem('tttHardWinName') || 'Hráč').trim() || 'Hráč';
+  const fallbackName = String(gamesGetActiveAccount()?.name || state.hardWinName || (typeof getLocalStorageCached === 'function' ? getLocalStorageCached('tttHardWinName', '') : localStorage.getItem('tttHardWinName')) || 'Hráč').trim() || 'Hráč';
   state.hardWinName = fallbackName;
   try {
-    localStorage.setItem('tttHardWinName', fallbackName);
+    if (typeof setLocalStorageIfChanged === 'function') setLocalStorageIfChanged('tttHardWinName', fallbackName);
+    else localStorage.setItem('tttHardWinName', fallbackName);
   } catch (err) {
     console.warn(err);
   }
@@ -2752,22 +2789,22 @@ function buildAppHistoryHtml(versionText) {
       range: versionText,
       title: 'Aktuální build',
       lines: [
-        'Dashboardová karta Výplata je nově klikací.',
-        'Po kliknutí otevře Škoda eMA/EV odkaz pro výplatu v novém okně/záložce.',
-        'Používá stejný bezpečný externí open guard jako Jídelní lístek a Eportal.',
-        'Výpočty, hry, Theme/Pozadí, Supabase datový model, rozpisy, rotace a spodní lišta jsou funkčně beze změny.',
-        'Fáze 6 — Supabase hardening zůstává cca 90 %.'
+        'Fáze 7 — Data optimization pokračuje, aktuálně cca 48 %.',
+        'Plánované refresh běhy dashboardu/home obrazovky se nově slučují do jedné dávky, aby se při startu nebo rychlém přepínání nespouštělo několik stejných refresh sekvencí najednou.',
+        'Diagnostika nově ukazuje plánované/sloučené home refresh běhy, skutečné refresh běhy a skipy při otevřeném modalu.',
+        'Navazuje to na předchozí cache optimalizace localStorage, Supabase cache/fronty, Theme/Pozadí a menších herních preferencí.',
+        'Výpočty, rozpisy, rotace, hry, Theme/Pozadí, Výplata, Supabase datový model i spodní lišta jsou beze změny.'
       ]
     },
     {
-      range: 'v.1.1 500–562',
+      range: 'v.1.1 500–571',
       title: 'Stabilizace, hry, Supabase a glass vzhled',
       lines: [
-        'Proběhlo velké stabilizační období: Láďův režim, cleanup manager, dokončení game performance a start Supabase hardening.',
+        'Proběhlo velké stabilizační období: Láďův režim, cleanup manager, dokončení game performance, dokončený Supabase hardening a začátek Fáze 7 Data optimization včetně dalšího odlehčení Láďova režimu a úspornější Supabase lokální cache.',
         'Dashboard, Rotace, Rozpisy a Statistiky se ladily hlavně kvůli mobilům, safe-area, přehlednosti a menšímu riziku prázdných/pozdě načtených karet.',
         'Kalkulačky dostaly sjednocenější calcPanel systém, větší klikací tlačítka, barevné indexy u Brusů ve glass stylu a opravu dvojího započítání rozdělaného vozíku.',
         'Herní hub se zrychlil: méně opakovaných renderů, cache profilů/statistik, lepší práce s leaderboardy a všechny nedoladěné hry jsou zatím ve „Ve vývoji“.',
-        'Supabase Realtime a offline/online sync se zpevňují přes timeouty, retry, offline frontu, deduplikaci, fallback cache, retry backoff, session cache online her a diagnostiku.',
+        'Supabase Realtime a offline/online sync se zpevnily přes timeouty, retry, offline frontu, deduplikaci, fallback cache, retry backoff, session cache online her, profilové nastavení vzhledu, diagnostiku zdraví fronty a self-heal Realtime reconnect.',
         'Přibyly Theme/Pozadí volby, výrazná glass-friendly pozadí, modernější theme karty a profilové ukládání vzhledu.'
       ]
     },
@@ -3801,12 +3838,16 @@ function bindAppMenuHandlers(body) {
         return;
       }
       if (menuAction === 'app-diagnostics') {
-        const lowEndInfo = typeof getLowEndDeviceInfo === 'function' ? getLowEndDeviceInfo() : { lowEnd: false, reasons: [], cores: 0, memory: null, isIOS: false };
+        const lowEndInfo = typeof getLowEndDeviceInfo === 'function' ? getLowEndDeviceInfo() : { lowEnd: false, reasons: [], cores: 0, memory: null, isIOS: false, isAndroid: false, dpr: 1, width: 0, effectiveType: '' };
         const lowEndReason = lowEndInfo.lowEnd && lowEndInfo.reasons && lowEndInfo.reasons.length ? ' · důvod: ' + lowEndInfo.reasons.join(', ') : '';
+        const lightweightManual = !!(app && app.uiPrefs && app.uiPrefs.lightweightManual);
         const deviceInfo = [
           lowEndInfo.cores ? (lowEndInfo.cores + ' jader') : 'jádra neznámá',
           lowEndInfo.memory ? (lowEndInfo.memory + ' GB RAM') : 'RAM nehlášena',
-          lowEndInfo.isIOS ? 'iOS/Safari' : ''
+          lowEndInfo.width ? ('šířka ' + lowEndInfo.width + ' px') : '',
+          lowEndInfo.dpr ? ('DPR ' + Math.round(lowEndInfo.dpr * 100) / 100) : '',
+          lowEndInfo.effectiveType ? ('síť ' + lowEndInfo.effectiveType) : '',
+          lowEndInfo.isIOS ? 'iOS/Safari' : (lowEndInfo.isAndroid ? 'Android' : '')
         ].filter(Boolean).join(' · ');
         const supabaseHardening = typeof window.getSupabaseHardeningStatus === 'function' ? window.getSupabaseHardeningStatus() : null;
         const supabaseGuard = supabaseHardening && supabaseHardening.guard ? supabaseHardening.guard : null;
@@ -3814,6 +3855,13 @@ function bindAppMenuHandlers(body) {
         const supabaseCacheGuard = supabaseHardening && supabaseHardening.cacheGuard ? supabaseHardening.cacheGuard : null;
         const profileUiStatus = typeof window.getProfileUiSyncStatus === 'function' ? window.getProfileUiSyncStatus() : null;
         const profileUiGuard = profileUiStatus && profileUiStatus.guard ? profileUiStatus.guard : null;
+        const dataOptStatus = typeof window.getDataOptimizationStatus === 'function' ? window.getDataOptimizationStatus() : null;
+        const dataOptDiag = dataOptStatus ? [
+          'Data opt: zápisy/skipy ' + String(dataOptStatus.localStorageWrites || 0) + '/' + String(dataOptStatus.localStorageSkippedWrites || 0) + ' · čtení/cache ' + String(dataOptStatus.localStorageReads || 0) + '/' + String(dataOptStatus.localStorageReadCacheHits || 0),
+          'Data opt JSON: parse/cache ' + String(dataOptStatus.localStorageJsonParseReads || 0) + '/' + String(dataOptStatus.localStorageJsonParseCacheHits || 0) + ' · chyby ' + String(dataOptStatus.localStorageJsonParseErrors || 0),
+          'Data opt bajty: zapsáno/přeskočeno/přečteno ' + String(dataOptStatus.approxBytesWritten || 0) + '/' + String(dataOptStatus.approxBytesSkipped || 0) + '/' + String(dataOptStatus.approxBytesRead || 0),
+          'Data opt home refresh: plán/sloučeno/běh ' + String(dataOptStatus.homeRefreshSchedules || 0) + '/' + String(dataOptStatus.homeRefreshCoalescedSchedules || 0) + '/' + String(dataOptStatus.homeRefreshRuns || 0) + ' · modaly skip ' + String(dataOptStatus.homeRefreshModalSkips || 0)
+        ] : [];
         const supabaseDiag = supabaseHardening ? [
           'Supabase fronta: ' + String(supabaseHardening.queueLength || 0) + ' / ' + String(supabaseHardening.queueMaxItems || '—'),
           'Supabase realtime: ' + String(supabaseHardening.realtimeStatus || '—'),
@@ -3829,12 +3877,15 @@ function bindAppMenuHandlers(body) {
           'Verze: ' + String((typeof app !== "undefined" && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '—')),
           'Online: ' + (navigator.onLine ? 'ano' : 'ne'),
           'Kompaktní režim: ' + (document.body.classList.contains('compactUI') ? 'zapnutý' : 'vypnutý'),
-          LIGHTWEIGHT_MODE_LABEL + ': ' + (document.body.classList.contains('lightweightMode') ? 'zapnutý' : 'vypnutý') + (document.body.classList.contains('reduceMotion') ? ' · méně animací aktivní' : ''),
-          'Starší/slabší zařízení detekováno: ' + (lowEndInfo.lowEnd ? 'ano' : 'ne') + lowEndReason,
+          LIGHTWEIGHT_MODE_LABEL + ': ' + (document.body.classList.contains('lightweightMode') ? 'zapnutý' : 'vypnutý') + (document.body.classList.contains('reduceMotion') ? ' · méně animací aktivní' : '') + (lightweightManual ? ' · ručně' : ''),
+          'Výkonový profil: ' + (document.body.classList.contains('lightweightMode') || document.body.classList.contains('lowEndDevice') ? 'odlehčený' : 'normální'),
+          'Starší/slabší zařízení detekováno: ' + (lowEndInfo.lowEnd ? 'ano' : (document.body.classList.contains('lightweightMode') ? 'ne automaticky, ale Láďův režim je zapnutý' : 'ne')) + lowEndReason,
+          'Canvas DPR limit: ' + String(typeof getRakPerformanceDprMax === 'function' ? getRakPerformanceDprMax() : '—'),
           'Zařízení: ' + deviceInfo,
           'Aktuální stránka: ' + String(document.querySelector('.page.active')?.id || '—'),
           'Pozadí: ' + String((typeof getBackgroundPreference === 'function' ? getBackgroundPreference() : document.documentElement.dataset.rakBackground) || '—'),
           'Bottom lišta: ' + String(getComputedStyle(document.querySelector('.bottomNav') || document.body).bottom || '—'),
+          ...dataOptDiag,
           ...supabaseDiag
         ].join('\n');
         alert(diag);
@@ -4026,7 +4077,7 @@ function openAppMenu(view) {
         '  <div class="appMenuCardTitle">Nastavení</div>',
         '  <div class="appMenuText">',
         '    <div>Kompaktní režim a Láďův režim se ukládají jen do tohoto zařízení a promítnou se napříč celou appkou.</div>',
-        '    <div>Láďův režim v sobě zahrnuje méně animací, lehčí efekty a kompaktnější rozložení pro starší Androidy.</div>',
+        '    <div>Láďův režim v sobě zahrnuje méně animací, vypnutý těžký blur, slabší stíny, jednodušší pozadí a nižší canvas rozlišení u her pro starší/slabší mobily.</div>',
         '  </div>',
         '  <div class="appMenuSettingsList">',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-pref="compact">' + (prefs.compact ? '✓ ' : '') + 'Kompaktní režim</button>',
@@ -4310,27 +4361,77 @@ function refreshHomeScreen() {
   return true;
 }
 
-function scheduleHomeRefresh() {
-  const run = () => {
-    if (typeof isAnyModalOpen === 'function' && isAnyModalOpen()) return false;
+let rakHomeRefreshBatchActive = false;
+let rakHomeRefreshBatchQueued = false;
+let rakHomeRefreshBatchId = 0;
+
+function bumpDataOptimizationCounter(key, amount = 1) {
+  try {
+    const stats = window.__rakDataOptimizationStats;
+    if (!stats || !key) return;
+    stats[key] = Number(stats[key] || 0) + amount;
+  } catch (err) {}
+}
+
+function markDataOptimizationHomeRefresh(reason) {
+  try {
+    const stats = window.__rakDataOptimizationStats;
+    if (!stats) return;
+    stats.homeRefreshLastReason = String(reason || 'refresh');
+    stats.homeRefreshLastAt = Date.now();
+  } catch (err) {}
+}
+
+function scheduleHomeRefresh(reason = 'home-refresh') {
+  bumpDataOptimizationCounter('homeRefreshSchedules');
+  const refreshReason = String(reason || 'home-refresh');
+  if (rakHomeRefreshBatchActive) {
+    rakHomeRefreshBatchQueued = true;
+    bumpDataOptimizationCounter('homeRefreshCoalescedSchedules');
+    markDataOptimizationHomeRefresh('coalesced-' + refreshReason);
+    return false;
+  }
+
+  rakHomeRefreshBatchActive = true;
+  const batchId = ++rakHomeRefreshBatchId;
+  markDataOptimizationHomeRefresh(refreshReason);
+
+  const run = (step = '') => {
+    if (batchId !== rakHomeRefreshBatchId) return false;
+    if (typeof isAnyModalOpen === 'function' && isAnyModalOpen()) {
+      bumpDataOptimizationCounter('homeRefreshModalSkips');
+      return false;
+    }
+    bumpDataOptimizationCounter('homeRefreshRuns');
+    markDataOptimizationHomeRefresh(step ? (refreshReason + ':' + step) : refreshReason);
     return refreshHomeScreen();
   };
+
+  const finish = () => {
+    if (batchId !== rakHomeRefreshBatchId) return;
+    rakHomeRefreshBatchActive = false;
+    if (rakHomeRefreshBatchQueued) {
+      rakHomeRefreshBatchQueued = false;
+      setTimeout(() => scheduleHomeRefresh('queued-after-batch'), 80);
+    }
+  };
+
   if (typeof requestAnimationFrame === 'function') {
     requestAnimationFrame(() => {
-      run();
+      run('raf-1');
       requestAnimationFrame(() => {
-        run();
-        requestAnimationFrame(run);
+        run('raf-2');
+        requestAnimationFrame(() => run('raf-3'));
       });
     });
   } else {
-    setTimeout(run, 0);
-    setTimeout(run, 120);
+    setTimeout(() => run('timeout-0'), 0);
+    setTimeout(() => run('timeout-120'), 120);
   }
-  setTimeout(run, 240);
-  setTimeout(run, 480);
-  setTimeout(run, 900);
-  setTimeout(run, 1500);
+  setTimeout(() => run('timeout-240'), 240);
+  setTimeout(() => run('timeout-480'), 480);
+  setTimeout(() => run('timeout-900'), 900);
+  setTimeout(() => { run('timeout-1500'); finish(); }, 1500);
 }
 
 function setRotaceView(view) {
@@ -4580,9 +4681,10 @@ function gamesNormalizeStoredAccount(account, fallbackName) {
 
 function gamesLoadProfile() {
   try {
-    const raw = localStorage.getItem(GAMES_PROFILE_KEY);
-    if (!raw) return gamesDefaultProfile();
-    const parsed = JSON.parse(raw);
+    const parsed = typeof parseLocalStorageJsonCached === 'function'
+      ? parseLocalStorageJsonCached(GAMES_PROFILE_KEY, null)
+      : JSON.parse(localStorage.getItem(GAMES_PROFILE_KEY) || 'null');
+    if (!parsed || typeof parsed !== 'object') return gamesDefaultProfile();
     const base = gamesDefaultProfile();
     const srcAccounts = parsed.accounts && typeof parsed.accounts === 'object' ? parsed.accounts : {};
     const storedVersion = Number(parsed.profileVersion || parsed.schemaVersion || parsed.dataVersion || 0) || 0;
@@ -4615,7 +4717,9 @@ function gamesLoadProfile() {
 
 function gamesSaveProfile(profile) {
   try {
-    localStorage.setItem(GAMES_PROFILE_KEY, JSON.stringify(profile));
+    const payload = JSON.stringify(profile);
+    if (typeof setLocalStorageIfChanged === 'function') setLocalStorageIfChanged(GAMES_PROFILE_KEY, payload);
+    else localStorage.setItem(GAMES_PROFILE_KEY, payload);
   } catch (err) {
     console.warn('gamesSaveProfile failed', err);
   }
@@ -5487,8 +5591,10 @@ const SNAKE_JOYSTICK_KEY = APP_KEY + ':snake_joystick_v1';
 
 function snakeLoadJoystickEnabled() {
   try {
-    const saved = localStorage.getItem(SNAKE_JOYSTICK_KEY);
-    if (saved !== null) return saved === '1';
+    const saved = typeof getLocalStorageCached === 'function'
+      ? getLocalStorageCached(SNAKE_JOYSTICK_KEY, '')
+      : localStorage.getItem(SNAKE_JOYSTICK_KEY);
+    if (saved !== null && saved !== '') return saved === '1';
   } catch (err) {}
   return !!(navigator && navigator.maxTouchPoints > 0);
 }
@@ -5503,7 +5609,8 @@ function snakeIsJoystickEnabled() {
 function snakeSetJoystickEnabled(enabled) {
   app.gamesSnakeJoystickEnabled = !!enabled;
   try {
-    localStorage.setItem(SNAKE_JOYSTICK_KEY, enabled ? '1' : '0');
+    if (typeof setLocalStorageIfChanged === 'function') setLocalStorageIfChanged(SNAKE_JOYSTICK_KEY, enabled ? '1' : '0');
+    else localStorage.setItem(SNAKE_JOYSTICK_KEY, enabled ? '1' : '0');
   } catch (err) {}
   renderGameSnake();
 }
@@ -5916,7 +6023,8 @@ function flapSyncCanvas(state, force) {
   const rect = canvas.parentElement ? canvas.parentElement.getBoundingClientRect() : canvas.getBoundingClientRect();
   const width = Math.max(280, Math.floor(rect.width || canvas.clientWidth || 280));
   const height = Math.max(240, Math.floor(rect.height || canvas.clientHeight || 240));
-  const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+  const dprMax = typeof window.getRakPerformanceDprMax === 'function' ? window.getRakPerformanceDprMax() : 2;
+      const dpr = Math.max(1, Math.min(dprMax, window.devicePixelRatio || 1));
   if (force || width !== state.canvasW || height !== state.canvasH || dpr !== state.dpr) {
     state.canvasW = width;
     state.canvasH = height;
@@ -6528,13 +6636,17 @@ function normalizeBackgroundPreferenceId(bgId, fallback = 'ios-mesh') {
 }
 
 function getLocalThemePreference() {
-  try { return normalizeThemePreferenceId(localStorage.getItem(RAK_THEME_STORAGE_KEY) || 'default', 'default'); }
-  catch (err) { return 'default'; }
+  try {
+    const raw = typeof getLocalStorageCached === 'function' ? getLocalStorageCached(RAK_THEME_STORAGE_KEY, 'default') : (localStorage.getItem(RAK_THEME_STORAGE_KEY) || 'default');
+    return normalizeThemePreferenceId(raw || 'default', 'default');
+  } catch (err) { return 'default'; }
 }
 
 function getLocalBackgroundPreference() {
-  try { return normalizeBackgroundPreferenceId(localStorage.getItem(RAK_BACKGROUND_STORAGE_KEY) || 'ios-mesh', 'ios-mesh'); }
-  catch (err) { return 'ios-mesh'; }
+  try {
+    const raw = typeof getLocalStorageCached === 'function' ? getLocalStorageCached(RAK_BACKGROUND_STORAGE_KEY, 'ios-mesh') : (localStorage.getItem(RAK_BACKGROUND_STORAGE_KEY) || 'ios-mesh');
+    return normalizeBackgroundPreferenceId(raw || 'ios-mesh', 'ios-mesh');
+  } catch (err) { return 'ios-mesh'; }
 }
 
 function getActiveProfileUiAccount() {
@@ -6797,7 +6909,10 @@ function applyBackgroundPreference(bgId, persist = true, options = {}) {
   });
   updateBackgroundMetaColor(bg);
   if (persist) {
-    try { localStorage.setItem(RAK_BACKGROUND_STORAGE_KEY, bg.id); } catch (err) {}
+    try {
+      if (typeof setLocalStorageIfChanged === 'function') setLocalStorageIfChanged(RAK_BACKGROUND_STORAGE_KEY, bg.id);
+      else localStorage.setItem(RAK_BACKGROUND_STORAGE_KEY, bg.id);
+    } catch (err) {}
     if (!options.skipProfile) saveActiveAccountUiSettings({ backgroundId: bg.id }, { reason: 'background-change', skipRemote: !!options.skipRemote });
   }
   return bg.id;
@@ -6859,7 +6974,10 @@ function applyThemePreference(themeId, persist = true, options = {}) {
     root.style.setProperty(key, value);
   });
   if (persist) {
-    try { localStorage.setItem(RAK_THEME_STORAGE_KEY, theme.id); } catch (err) {}
+    try {
+      if (typeof setLocalStorageIfChanged === 'function') setLocalStorageIfChanged(RAK_THEME_STORAGE_KEY, theme.id);
+      else localStorage.setItem(RAK_THEME_STORAGE_KEY, theme.id);
+    } catch (err) {}
     if (!options.skipProfile) saveActiveAccountUiSettings({ themeId: theme.id }, { reason: 'theme-change', skipRemote: !!options.skipRemote });
   }
   return theme.id;

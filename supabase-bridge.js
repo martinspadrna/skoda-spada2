@@ -44,6 +44,19 @@
       queueWakeOfflineSkips: 0,
       queueWakeNoops: 0,
       realtimeWakeBinds: 0,
+      realtimeRebindScheduled: 0,
+      realtimeRebindRuns: 0,
+      realtimeRebindSkips: 0,
+      realtimeRebindErrors: 0,
+      queueHealthChecks: 0,
+      queueHealthWarnings: 0,
+      queueHealthCriticals: 0,
+      queueStaleTaskCount: 0,
+      queueMaxRetryCount: 0,
+      queueOldestAgeMs: 0,
+      lastQueueHealthAt: null,
+      lastQueueHealthWarningAt: null,
+      lastQueueHealthCriticalAt: null,
       queueNextRetryAt: null,
       lastTimeoutAt: null,
       lastRetryAt: null,
@@ -58,7 +71,11 @@
       lastQueueVisibilityFlushAt: null,
       lastQueueWakeAt: null,
       lastQueueWakeSkipAt: null,
-      lastRealtimeWakeBindAt: null
+      lastRealtimeWakeBindAt: null,
+      lastRealtimeRebindScheduleAt: null,
+      lastRealtimeRebindAt: null,
+      lastRealtimeRebindSkipAt: null,
+      lastRealtimeRebindErrorAt: null
     },
     cacheGuard: {
       accountCacheHits: 0,
@@ -80,6 +97,9 @@
       sessionSaveErrors: 0,
       sessionFallbacks: 0,
       sessionSharedLookups: 0,
+      localJsonReadDelegations: 0,
+      localJsonWriteDelegations: 0,
+      localJsonWriteSkips: 0,
       staleFallbacks: 0,
       sharedReadJoins: 0,
       lastCacheHitAt: null,
@@ -101,6 +121,8 @@
   const SUPABASE_QUEUE_HIDDEN_RETRY_DELAY_MS = 1800;
   const SUPABASE_QUEUE_WAKE_GUARD_MS = 2500;
   const SUPABASE_QUEUE_DROP_INVALID_AFTER = 3;
+  const SUPABASE_QUEUE_HEALTH_WARN_AFTER_MS = 20 * 60 * 1000;
+  const SUPABASE_QUEUE_HEALTH_CRITICAL_AFTER_MS = 2 * 60 * 60 * 1000;
   const SUPPORTED_QUEUE_TYPES = new Set([
     'rotation_state',
     'machine_settings',
@@ -145,6 +167,7 @@
   ];
 
   let realtimeRefreshTimer = null;
+  let realtimeRebindTimer = null;
 
   function rememberRealtimeEvent(payload) {
     const event = {
@@ -185,6 +208,47 @@
     }, 450);
   }
 
+
+  function scheduleRealtimeRebind(reason, delayMs) {
+    const now = Date.now();
+    if (!navigator.onLine) {
+      state.syncGuard.realtimeRebindSkips += 1;
+      state.syncGuard.lastRealtimeRebindSkipAt = now;
+      return false;
+    }
+    if (realtimeRebindTimer) {
+      state.syncGuard.realtimeRebindSkips += 1;
+      state.syncGuard.lastRealtimeRebindSkipAt = now;
+      return false;
+    }
+    const ms = Math.max(650, Math.min(30000, Number(delayMs) || 1800));
+    state.syncGuard.realtimeRebindScheduled += 1;
+    state.syncGuard.lastRealtimeRebindScheduleAt = now;
+    realtimeRebindTimer = setTimeout(() => {
+      realtimeRebindTimer = null;
+      if (!navigator.onLine) {
+        state.syncGuard.realtimeRebindSkips += 1;
+        state.syncGuard.lastRealtimeRebindSkipAt = Date.now();
+        return;
+      }
+      try {
+        const hadChannel = !!state.realtimeChannel;
+        state.syncGuard.realtimeRebindRuns += 1;
+        state.syncGuard.lastRealtimeRebindAt = Date.now();
+        bindRealtimeSubscriptions();
+        if (!hadChannel && state.realtimeChannel) {
+          requestRealtimeRefresh({ table: 'realtime-rebind', eventType: String(reason || 'resume') });
+        }
+      } catch (err) {
+        state.syncGuard.realtimeRebindErrors += 1;
+        state.syncGuard.lastRealtimeRebindErrorAt = Date.now();
+        state.lastError = err;
+        console.warn('Supabase realtime rebind failed', err);
+      }
+    }, ms);
+    return true;
+  }
+
   function bindRealtimeSubscriptions() {
     const client = getClient();
     if (!client || !navigator.onLine) return false;
@@ -202,7 +266,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v562');
+      const channel = client.channel('rak-public-live-v571');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -217,6 +281,7 @@
         if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
           state.realtimeChannel = null;
           state.realtimeBindStartedAt = 0;
+          scheduleRealtimeRebind('status-' + String(status || 'closed').toLowerCase(), 2200);
         }
       });
       state.realtimeChannel = channel;
@@ -261,6 +326,10 @@
 
   function safeReadJson(key, fallback) {
     try {
+      if (typeof parseLocalStorageJsonCached === 'function') {
+        state.cacheGuard.localJsonReadDelegations += 1;
+        return parseLocalStorageJsonCached(key, fallback);
+      }
       const raw = localStorage.getItem(key);
       if (!raw) return fallback;
       const parsed = JSON.parse(raw);
@@ -272,7 +341,14 @@
 
   function safeWriteJson(key, value) {
     try {
-      localStorage.setItem(key, JSON.stringify(value));
+      const payload = JSON.stringify(value);
+      if (typeof setLocalStorageIfChanged === 'function') {
+        state.cacheGuard.localJsonWriteDelegations += 1;
+        const changed = setLocalStorageIfChanged(key, payload);
+        if (!changed) state.cacheGuard.localJsonWriteSkips += 1;
+        return true;
+      }
+      localStorage.setItem(key, payload);
       return true;
     } catch (err) {
       return false;
@@ -919,6 +995,76 @@
   }
 
 
+
+  function parseQueueTime(value) {
+    if (!value) return 0;
+    if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
+    const parsed = Date.parse(String(value || ''));
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  function getQueueHealth(queue) {
+    const list = Array.isArray(queue) ? queue : [];
+    const now = Date.now();
+    const byType = {};
+    let oldestQueuedAt = 0;
+    let newestQueuedAt = 0;
+    let maxRetryCount = 0;
+    let staleTaskCount = 0;
+    let warningTaskCount = 0;
+    let criticalTaskCount = 0;
+    list.forEach((task) => {
+      const type = String(task && task.type ? task.type : 'unknown').trim() || 'unknown';
+      byType[type] = (byType[type] || 0) + 1;
+      const queuedAt = parseQueueTime(task && task.queuedAt);
+      if (queuedAt) {
+        if (!oldestQueuedAt || queuedAt < oldestQueuedAt) oldestQueuedAt = queuedAt;
+        if (!newestQueuedAt || queuedAt > newestQueuedAt) newestQueuedAt = queuedAt;
+        const age = now - queuedAt;
+        if (age > SUPABASE_QUEUE_HEALTH_WARN_AFTER_MS) warningTaskCount += 1;
+        if (age > SUPABASE_QUEUE_HEALTH_CRITICAL_AFTER_MS) criticalTaskCount += 1;
+      } else {
+        staleTaskCount += 1;
+      }
+      const retries = Math.max(0, Number(task && task.retryCount) || 0);
+      if (retries > maxRetryCount) maxRetryCount = retries;
+      if (retries >= SUPABASE_QUEUE_DROP_INVALID_AFTER) staleTaskCount += 1;
+    });
+    const oldestAgeMs = oldestQueuedAt ? Math.max(0, now - oldestQueuedAt) : 0;
+    return {
+      checkedAt: now,
+      length: list.length,
+      byType,
+      oldestQueuedAt: oldestQueuedAt || null,
+      newestQueuedAt: newestQueuedAt || null,
+      oldestAgeMs,
+      maxRetryCount,
+      staleTaskCount,
+      warningTaskCount,
+      criticalTaskCount,
+      warnAfterMs: SUPABASE_QUEUE_HEALTH_WARN_AFTER_MS,
+      criticalAfterMs: SUPABASE_QUEUE_HEALTH_CRITICAL_AFTER_MS
+    };
+  }
+
+  function rememberQueueHealth(queue) {
+    const health = getQueueHealth(queue);
+    state.syncGuard.queueHealthChecks += 1;
+    state.syncGuard.lastQueueHealthAt = health.checkedAt;
+    state.syncGuard.queueStaleTaskCount = health.staleTaskCount;
+    state.syncGuard.queueMaxRetryCount = health.maxRetryCount;
+    state.syncGuard.queueOldestAgeMs = health.oldestAgeMs;
+    if (health.warningTaskCount > 0) {
+      state.syncGuard.queueHealthWarnings += 1;
+      state.syncGuard.lastQueueHealthWarningAt = health.checkedAt;
+    }
+    if (health.criticalTaskCount > 0) {
+      state.syncGuard.queueHealthCriticals += 1;
+      state.syncGuard.lastQueueHealthCriticalAt = health.checkedAt;
+    }
+    return health;
+  }
+
   function getNextQueueRetryAt(queue) {
     const times = (Array.isArray(queue) ? queue : [])
       .map((task) => {
@@ -974,6 +1120,7 @@
     }
 
     const queue = readQueue();
+    rememberQueueHealth(queue);
     if (!queue.length) {
       state.syncGuard.queueWakeNoops += 1;
       return false;
@@ -998,7 +1145,8 @@
       if (!client || !navigator.onLine) return { ok: false, reason: 'offline-or-missing-client', remaining: readQueue().length };
 
       const queue = readQueue();
-      if (!queue.length) return { ok: true, flushed: 0, remaining: 0 };
+      const initialHealth = rememberQueueHealth(queue);
+      if (!queue.length) return { ok: true, flushed: 0, remaining: 0, health: initialHealth };
 
       if (shouldDeferQueueFlushForHiddenPage()) {
         state.syncGuard.queueHiddenDefers += 1;
@@ -1080,6 +1228,7 @@
         }
       }
       writeQueue(remaining);
+      const finalHealth = rememberQueueHealth(remaining);
       const nextRetryAt = getNextQueueRetryAt(remaining);
       state.syncGuard.queueNextRetryAt = nextRetryAt;
       if (!attempted && remaining.length) state.syncGuard.queueFlushEmptyRuns += 1;
@@ -1092,7 +1241,7 @@
         const delay = nextRetryAt ? Math.max(SUPABASE_QUEUE_FLUSH_IDLE_DELAY_MS, nextRetryAt - Date.now()) : SUPABASE_QUEUE_FLUSH_IDLE_DELAY_MS;
         scheduleSupabaseQueueFlush('remaining-queue', delay);
       }
-      return { ok: true, flushed, dropped, remaining: remaining.length, nextRetryAt, batchStopped };
+      return { ok: true, flushed, dropped, remaining: remaining.length, nextRetryAt, batchStopped, health: finalHealth };
     })().finally(() => {
       flushPromise = null;
     });
@@ -1829,6 +1978,7 @@
 
   function getSupabaseHardeningStatus() {
     const queue = readQueue();
+    const queueHealth = rememberQueueHealth(queue);
     return {
       queueLength: queue.length,
       queueMaxItems: SUPABASE_QUEUE_MAX_ITEMS,
@@ -1844,7 +1994,8 @@
       queueFlushBatchSize: SUPABASE_QUEUE_FLUSH_BATCH_SIZE,
       queueHiddenRetryDelayMs: SUPABASE_QUEUE_HIDDEN_RETRY_DELAY_MS,
       queueWakeGuardMs: SUPABASE_QUEUE_WAKE_GUARD_MS,
-      queueNextRetryAt: state.syncGuard.queueNextRetryAt || null
+      queueNextRetryAt: state.syncGuard.queueNextRetryAt || null,
+      queueHealth
     };
   }
 
@@ -2118,6 +2269,7 @@
 
   window.addEventListener('online', () => {
     requestSupabaseQueueWake('online', 350);
+    scheduleRealtimeRebind('online', 900);
     void refreshPublicData();
   });
 
@@ -2126,14 +2278,17 @@
     state.syncGuard.queueVisibilityFlushes += 1;
     state.syncGuard.lastQueueVisibilityFlushAt = Date.now();
     requestSupabaseQueueWake('visible', 450);
+    scheduleRealtimeRebind('visible', 1200);
   });
 
   window.addEventListener('pageshow', () => {
     requestSupabaseQueueWake('pageshow', 650);
+    scheduleRealtimeRebind('pageshow', 1450);
   });
 
   window.addEventListener('focus', () => {
     requestSupabaseQueueWake('focus', 850);
+    scheduleRealtimeRebind('focus', 1800);
   });
 
   if (document.readyState === 'loading') {

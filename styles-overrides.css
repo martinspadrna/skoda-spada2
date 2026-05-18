@@ -4113,4 +4113,153 @@ body.lowEndDevice #rotace #personView .rotaceMiniCard.rotaceShiftCard.current{
 }
 
 
-/* v.1.1 (562) – bez layout změn; Supabase wake/resume guard je čistě JS stabilizace. */
+/* v.1.1 (563) – bez layout změn; Supabase queue health guard je čistě JS stabilizace. */
+
+/* v.1.1 (569) – Láďův režim v2: ještě lehčí efekty pro slabší mobily. */
+body.lightweightMode,
+body.lowEndDevice{
+  --rakGlassBlur:0px !important;
+  --rakGlassBlurSoft:0px !important;
+  --rakGlassPanelBg:linear-gradient(180deg, rgba(255,255,255,.070), rgba(255,255,255,.018)), rgba(8,14,12,.72) !important;
+  --rakGlassCardBg:linear-gradient(180deg, rgba(255,255,255,.060), rgba(255,255,255,.014)), rgba(8,14,12,.66) !important;
+  --rakGlassSoftBg:linear-gradient(180deg, rgba(255,255,255,.050), rgba(255,255,255,.012)), rgba(8,14,12,.58) !important;
+}
+body.lightweightMode *,
+body.lightweightMode *::before,
+body.lightweightMode *::after,
+body.lowEndDevice *,
+body.lowEndDevice *::before,
+body.lowEndDevice *::after{
+  animation:none !important;
+  transition:none !important;
+  scroll-behavior:auto !important;
+}
+body.lightweightMode .dashboardShell,
+body.lowEndDevice .dashboardShell,
+body.lightweightMode .dashboardHeroCard,
+body.lowEndDevice .dashboardHeroCard,
+body.lightweightMode .dashboardCard,
+body.lowEndDevice .dashboardCard,
+body.lightweightMode .card,
+body.lowEndDevice .card,
+body.lightweightMode .tile,
+body.lowEndDevice .tile,
+body.lightweightMode .listItem,
+body.lowEndDevice .listItem,
+body.lightweightMode .calcTile,
+body.lowEndDevice .calcTile,
+body.lightweightMode .calcPanel,
+body.lowEndDevice .calcPanel,
+body.lightweightMode .calcResultCard,
+body.lowEndDevice .calcResultCard,
+body.lightweightMode .calcInfoCard,
+body.lowEndDevice .calcInfoCard,
+body.lightweightMode .appMenuCard,
+body.lowEndDevice .appMenuCard,
+body.lightweightMode .appMenuAction,
+body.lowEndDevice .appMenuAction,
+body.lightweightMode .appMenuThemeCard,
+body.lowEndDevice .appMenuThemeCard,
+body.lightweightMode .appMenuThemeSummary,
+body.lowEndDevice .appMenuThemeSummary,
+body.lightweightMode .appMenuSettingsCard,
+body.lowEndDevice .appMenuSettingsCard,
+body.lightweightMode .appMenuAdminCard,
+body.lowEndDevice .appMenuAdminCard,
+body.lightweightMode .tableWrap,
+body.lowEndDevice .tableWrap,
+body.lightweightMode .bottomNav,
+body.lowEndDevice .bottomNav,
+body.lightweightMode .bottomNavBtn,
+body.lowEndDevice .bottomNavBtn,
+body.lightweightMode .modal,
+body.lowEndDevice .modal,
+body.lightweightMode .personScheduleModal,
+body.lowEndDevice .personScheduleModal,
+body.lightweightMode .foodScheduleModal,
+body.lowEndDevice .foodScheduleModal,
+body.lightweightMode .calendarModal,
+body.lowEndDevice .calendarModal,
+body.lightweightMode .qrModal,
+body.lowEndDevice .qrModal,
+body.lightweightMode #games .gamesShell,
+body.lowEndDevice #games .gamesShell,
+body.lightweightMode #games .gamesDevFolder,
+body.lowEndDevice #games .gamesDevFolder,
+body.lightweightMode #games .gamesProfilesFolder,
+body.lowEndDevice #games .gamesProfilesFolder,
+body.lightweightMode #games .gamesAchievementsFolder,
+body.lowEndDevice #games .gamesAchievementsFolder,
+body.lightweightMode #games .gamesStatsFolder,
+body.lowEndDevice #games .gamesStatsFolder,
+body.lightweightMode #games .gamesLaunchTile,
+body.lowEndDevice #games .gamesLaunchTile,
+body.lightweightMode #games .gamesStatsCard,
+body.lowEndDevice #games .gamesStatsCard,
+body.lightweightMode #games .gamesTop3Card,
+body.lowEndDevice #games .gamesTop3Card,
+body.lightweightMode #games .arcadePanel,
+body.lowEndDevice #games .arcadePanel,
+body.lightweightMode #games .arcadeBoardWrap,
+body.lowEndDevice #games .arcadeBoardWrap,
+body.lightweightMode #games .arcadeHud,
+body.lowEndDevice #games .arcadeHud,
+body.lightweightMode #games .arcadeControls,
+body.lowEndDevice #games .arcadeControls,
+body.lightweightMode input,
+body.lowEndDevice input,
+body.lightweightMode select,
+body.lowEndDevice select,
+body.lightweightMode textarea,
+body.lowEndDevice textarea,
+body.lightweightMode button:not(.bottomNavBtn),
+body.lowEndDevice button:not(.bottomNavBtn){
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+  filter:none !important;
+  box-shadow:0 5px 13px rgba(0,0,0,.15), inset 0 1px 0 rgba(255,255,255,.055) !important;
+}
+body.lightweightMode .dashboardHeroCard::before,
+body.lightweightMode .dashboardHeroCard::after,
+body.lightweightMode .dashboardCard::before,
+body.lightweightMode .dashboardCard::after,
+body.lightweightMode .card::before,
+body.lightweightMode .card::after,
+body.lightweightMode .tile::before,
+body.lightweightMode .tile::after,
+body.lightweightMode .appMenuCard::before,
+body.lightweightMode .appMenuCard::after,
+body.lightweightMode .bottomNav::before,
+body.lightweightMode .bottomNav::after,
+body.lowEndDevice .dashboardHeroCard::before,
+body.lowEndDevice .dashboardHeroCard::after,
+body.lowEndDevice .dashboardCard::before,
+body.lowEndDevice .dashboardCard::after,
+body.lowEndDevice .card::before,
+body.lowEndDevice .card::after,
+body.lowEndDevice .tile::before,
+body.lowEndDevice .tile::after,
+body.lowEndDevice .appMenuCard::before,
+body.lowEndDevice .appMenuCard::after,
+body.lowEndDevice .bottomNav::before,
+body.lowEndDevice .bottomNav::after{
+  display:none !important;
+  content:none !important;
+}
+body.lightweightMode .dashboardIcon,
+body.lowEndDevice .dashboardIcon,
+body.lightweightMode .bottomNavIcon,
+body.lowEndDevice .bottomNavIcon,
+body.lightweightMode img,
+body.lowEndDevice img,
+body.lightweightMode svg,
+body.lowEndDevice svg,
+body.lightweightMode canvas,
+body.lowEndDevice canvas{
+  filter:none !important;
+  will-change:auto !important;
+}
+body.lightweightMode #games canvas,
+body.lowEndDevice #games canvas{
+  image-rendering:auto !important;
+}
