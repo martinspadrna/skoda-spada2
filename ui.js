@@ -3716,6 +3716,13 @@ function bindAppMenuHandlers(body) {
           lowEndInfo.memory ? (lowEndInfo.memory + ' GB RAM') : 'RAM nehlášena',
           lowEndInfo.isIOS ? 'iOS/Safari' : ''
         ].filter(Boolean).join(' · ');
+        const supabaseHardening = typeof window.getSupabaseHardeningStatus === 'function' ? window.getSupabaseHardeningStatus() : null;
+        const supabaseGuard = supabaseHardening && supabaseHardening.guard ? supabaseHardening.guard : null;
+        const supabaseDiag = supabaseHardening ? [
+          'Supabase fronta: ' + String(supabaseHardening.queueLength || 0) + ' / ' + String(supabaseHardening.queueMaxItems || '—'),
+          'Supabase realtime: ' + String(supabaseHardening.realtimeStatus || '—'),
+          supabaseGuard ? ('Supabase guard: sloučeno ' + String(supabaseGuard.deduped || 0) + ' · ořezáno ' + String(supabaseGuard.trimmed || 0) + ' · odmítnuto ' + String((supabaseGuard.rejected || 0) + (supabaseGuard.oversized || 0))) : ''
+        ].filter(Boolean) : [];
         const diag = [
           'Verze: ' + String((typeof app !== "undefined" && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '—')),
           'Online: ' + (navigator.onLine ? 'ano' : 'ne'),
@@ -3724,7 +3731,8 @@ function bindAppMenuHandlers(body) {
           'Starší/slabší zařízení detekováno: ' + (lowEndInfo.lowEnd ? 'ano' : 'ne') + lowEndReason,
           'Zařízení: ' + deviceInfo,
           'Aktuální stránka: ' + String(document.querySelector('.page.active')?.id || '—'),
-          'Bottom lišta: ' + String(getComputedStyle(document.querySelector('.bottomNav') || document.body).bottom || '—')
+          'Bottom lišta: ' + String(getComputedStyle(document.querySelector('.bottomNav') || document.body).bottom || '—'),
+          ...supabaseDiag
         ].join('\n');
         alert(diag);
         return;

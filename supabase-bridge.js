@@ -10,8 +10,28 @@
     realtimeChannel: null,
     realtimeStatus: 'idle',
     realtimeEvents: [],
-    lastRealtimeAt: null
+    lastRealtimeAt: null,
+    realtimeBindStartedAt: 0,
+    queueGuard: {
+      trimmed: 0,
+      deduped: 0,
+      rejected: 0,
+      oversized: 0,
+      lastTrimAt: null,
+      lastBindSkipAt: null
+    }
   };
+
+  const SUPABASE_QUEUE_MAX_ITEMS = 120;
+  const SUPABASE_QUEUE_MAX_BYTES = 650000;
+  const SUPABASE_REALTIME_REBIND_GUARD_MS = 15000;
+  const SUPPORTED_QUEUE_TYPES = new Set([
+    'rotation_state',
+    'machine_settings',
+    'rotation_month_entries',
+    'gomoku_win',
+    'game_stat'
+  ]);
 
   function hasClient() {
     return !!(window.supabase && typeof window.supabase.createClient === 'function');
@@ -91,10 +111,20 @@
     const client = getClient();
     if (!client || !navigator.onLine) return false;
     if (state.realtimeChannel) return true;
+    if (state.realtimeStatus === 'connecting') {
+      const now = Date.now();
+      if (state.realtimeBindStartedAt && now - state.realtimeBindStartedAt < SUPABASE_REALTIME_REBIND_GUARD_MS) {
+        state.queueGuard.lastBindSkipAt = now;
+        return true;
+      }
+      state.realtimeStatus = 'idle';
+      state.realtimeChannel = null;
+    }
     if (typeof client.channel !== 'function') return false;
 
     try {
-      const channel = client.channel('rak-public-live-v528');
+      state.realtimeBindStartedAt = Date.now();
+      const channel = client.channel('rak-public-live-v542');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -103,7 +133,12 @@
       channel.subscribe((status) => {
         state.realtimeStatus = String(status || '').toLowerCase() || 'unknown';
         if (status === 'SUBSCRIBED') {
+          state.realtimeBindStartedAt = 0;
           requestRealtimeRefresh({ table: 'initial', eventType: 'SUBSCRIBED' });
+        }
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+          state.realtimeChannel = null;
+          state.realtimeBindStartedAt = 0;
         }
       });
       state.realtimeChannel = channel;
@@ -192,20 +227,86 @@
     return null;
   }
 
+  function queueTaskKey(task) {
+    const type = String(task && task.type ? task.type : '').trim();
+    if (type === 'rotation_state') return type;
+    if (type === 'machine_settings') return type;
+    if (type === 'rotation_month_entries') return type + ':' + String(task && (task.monthStart || task.label) ? (task.monthStart || task.label) : '').trim();
+    if (type === 'gomoku_win') return type + ':' + String(task && task.entry && (task.entry.id || task.entry.player_name || task.entry.created_at) ? (task.entry.id || task.entry.player_name || task.entry.created_at) : '').trim();
+    if (type === 'game_stat') return type + ':' + String(task && task.entry && (task.entry.id || task.entry.game_type || task.entry.account_number || task.entry.created_at) ? (task.entry.id || task.entry.game_type || task.entry.account_number || task.entry.created_at) : '').trim();
+    return type || 'unknown';
+  }
+
+  function estimateJsonBytes(value) {
+    try { return new Blob([JSON.stringify(value || null)]).size; }
+    catch (err) {
+      try { return String(JSON.stringify(value || null)).length; }
+      catch (err2) { return Number.POSITIVE_INFINITY; }
+    }
+  }
+
+  function normalizeQueueTask(task) {
+    if (!task || typeof task !== 'object') return null;
+    const type = String(task.type || '').trim();
+    if (!SUPPORTED_QUEUE_TYPES.has(type)) {
+      state.queueGuard.rejected += 1;
+      return null;
+    }
+    const next = Object.assign({}, task, { type });
+    if (!next.id) next.id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    if (!next.queuedAt) next.queuedAt = new Date().toISOString();
+    if (estimateJsonBytes(next) > SUPABASE_QUEUE_MAX_BYTES) {
+      state.queueGuard.oversized += 1;
+      return null;
+    }
+    return next;
+  }
+
+  function compactQueue(queue) {
+    const source = Array.isArray(queue) ? queue : [];
+    const keyed = new Map();
+    const passthrough = [];
+    source.forEach((item) => {
+      const normalized = normalizeQueueTask(item);
+      if (!normalized) return;
+      const key = queueTaskKey(normalized);
+      if (key && (normalized.type === 'rotation_state' || normalized.type === 'machine_settings' || normalized.type === 'rotation_month_entries')) {
+        if (keyed.has(key)) state.queueGuard.deduped += 1;
+        keyed.set(key, normalized);
+      } else {
+        passthrough.push(normalized);
+      }
+    });
+    let next = [...keyed.values(), ...passthrough];
+    if (next.length > SUPABASE_QUEUE_MAX_ITEMS) {
+      const removed = next.length - SUPABASE_QUEUE_MAX_ITEMS;
+      state.queueGuard.trimmed += removed;
+      state.queueGuard.lastTrimAt = Date.now();
+      next = next.slice(-SUPABASE_QUEUE_MAX_ITEMS);
+    }
+    return next;
+  }
+
   function readQueue() {
     const queue = safeReadJson(LOCAL_QUEUE_KEY, []);
-    return Array.isArray(queue) ? queue : [];
+    const compacted = compactQueue(Array.isArray(queue) ? queue : []);
+    if (!Array.isArray(queue) || compacted.length !== queue.length) writeQueue(compacted);
+    return compacted;
   }
 
   function writeQueue(queue) {
-    safeWriteJson(LOCAL_QUEUE_KEY, Array.isArray(queue) ? queue : []);
+    safeWriteJson(LOCAL_QUEUE_KEY, compactQueue(Array.isArray(queue) ? queue : []));
   }
 
   function enqueueTask(task) {
     const queue = readQueue();
-    queue.push(Object.assign({ id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, queuedAt: new Date().toISOString() }, task || {}));
+    const normalized = normalizeQueueTask(Object.assign({ id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, queuedAt: new Date().toISOString() }, task || {}));
+    if (!normalized) return null;
+    queue.push(normalized);
     writeQueue(queue);
-    return queue[queue.length - 1];
+    const nextQueue = readQueue();
+    const key = queueTaskKey(normalized);
+    return nextQueue.slice().reverse().find(item => queueTaskKey(item) === key) || normalized;
   }
 
   function isLikelyOfflineError(err) {
@@ -479,7 +580,10 @@
   }
 
   async function enqueueAndMaybeFlush(task) {
-    enqueueTask(task);
+    const queuedTask = enqueueTask(task);
+    if (!queuedTask) {
+      return { ok: false, queued: false, reason: 'queue-guard-rejected', remaining: readQueue().length };
+    }
     if (navigator.onLine) {
       void flushPendingWrites();
     }
@@ -1008,6 +1112,19 @@
   }
 
 
+  function getSupabaseHardeningStatus() {
+    const queue = readQueue();
+    return {
+      queueLength: queue.length,
+      queueMaxItems: SUPABASE_QUEUE_MAX_ITEMS,
+      queueMaxBytes: SUPABASE_QUEUE_MAX_BYTES,
+      realtimeStatus: state.realtimeStatus || 'idle',
+      realtimeBindStartedAt: state.realtimeBindStartedAt || 0,
+      lastRealtimeAt: state.lastRealtimeAt || null,
+      guard: Object.assign({}, state.queueGuard)
+    };
+  }
+
   function getSyncUiStatus() {
     const cached = readLocalSnapshot();
     const hasCache = !!(cached && (cached.rotation || (Array.isArray(cached.machineSettingsRows) && cached.machineSettingsRows.length)));
@@ -1021,7 +1138,8 @@
         label: hasCache ? '🟡 Offline cache' : '🟡 Offline cache',
         detail: cached && cached.updatedAt ? ('cache ' + new Date(cached.updatedAt).toLocaleString('cs-CZ')) : 'Bez internetu',
         queued: queueLength,
-        hasCache
+        hasCache,
+        hardening: getSupabaseHardeningStatus()
       };
     }
 
@@ -1031,7 +1149,8 @@
         label: '🟡 Offline cache',
         detail: 'Čeká na odeslání ' + queueLength + ' změn',
         queued: queueLength,
-        hasCache
+        hasCache,
+        hardening: getSupabaseHardeningStatus()
       };
     }
 
@@ -1041,7 +1160,8 @@
         label: '🔴 Nepodařilo se synchronizovat',
         detail: 'Poslední pokus selhal',
         queued: queueLength,
-        hasCache
+        hasCache,
+        hardening: getSupabaseHardeningStatus()
       };
     }
 
@@ -1052,7 +1172,8 @@
       queued: 0,
       hasCache,
       realtime: state.realtimeStatus || 'idle',
-      lastRealtimeAt: state.lastRealtimeAt || null
+      lastRealtimeAt: state.lastRealtimeAt || null,
+      hardening: getSupabaseHardeningStatus()
     };
   }
 
@@ -1141,6 +1262,7 @@
   window.getSupabaseAnnouncement = getBridgeText;
   window.getSupabaseCanteenStatus = getCanteenStatus;
   window.getSupabaseSyncStatus = getSyncUiStatus;
+  window.getSupabaseHardeningStatus = getSupabaseHardeningStatus;
   window.createGameInvite = async (payload) => window.RotationSupabaseBridge.createGameInvite(payload);
   window.acceptGameInvite = async (code, inviteeAccountNumber) => window.RotationSupabaseBridge.acceptGameInvite(code, inviteeAccountNumber);
   window.loadGameSessionByInviteCode = async (code) => window.RotationSupabaseBridge.loadGameSessionByInviteCode(code);

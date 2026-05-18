@@ -1,3 +1,11 @@
+## v.1.1 (542)
+- Fáze 6 Supabase hardening zahájená – první bezpečný krok bez změny databázového schématu.
+- Offline Supabase fronta má nově ochranný limit 120 položek, deduplikaci posledních změn rotací / nastavení strojů / rozpisů a ochranu proti příliš velkým položkám v localStorage.
+- Realtime připojení dostalo guard proti duplicitnímu připojování při rychlých návratech online / refresh událostech.
+- Diagnostika umí zobrazit stav Supabase hardeningu: délku fronty, limit, stav realtime a počty ořezaných / sloučených / odmítnutých položek.
+- iOS glass polish pokračuje další bezpečnou vrstvou: tabulkové obaly, admin karty, souhrny, profily a herní informační řádky jsou průhlednější a víc rozmazávají pozadí.
+- Láďův režim / low-end režim má blur efekty dál vypnuté nebo odlehčené.
+
 ## v.1.1 (541)
 - Fáze 5 game performance uzavřená na 100 %.
 - Globální live refresh už nespouští herní leaderboardy, pokud uživatel není přímo v herním hubu; tím se hry zbytečně neprobouzí na pozadí.

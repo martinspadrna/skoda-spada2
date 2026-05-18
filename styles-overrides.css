@@ -3535,3 +3535,89 @@ body.lowEndDevice #games .arcadeShellRoot{
   backdrop-filter:none !important;
   -webkit-backdrop-filter:none !important;
 }
+
+/* v.1.1 (542) – další bezpečný krok iOS glass polish: průhlednější sklo + silnější blur bez změny layoutu. */
+:root{
+  --rakGlassPanelBg:linear-gradient(180deg, rgba(255,255,255,.095), rgba(255,255,255,.020)), rgba(8,14,12,.255);
+  --rakGlassCardBg:linear-gradient(180deg, rgba(255,255,255,.082), rgba(255,255,255,.018)), rgba(9,15,12,.225);
+  --rakGlassSoftBg:linear-gradient(180deg, rgba(255,255,255,.065), rgba(255,255,255,.014)), rgba(9,15,12,.195);
+  --rakGlassStroke:rgba(255,255,255,.155);
+  --rakGlassStrokeSoft:rgba(255,255,255,.112);
+  --rakGlassBlur:32px;
+  --rakGlassBlurSoft:24px;
+}
+body:not(.lightweightMode):not(.lowEndDevice) .tableWrap,
+body:not(.lightweightMode):not(.lowEndDevice) .appMenuTableWrap,
+body:not(.lightweightMode):not(.lowEndDevice) .statsSummary,
+body:not(.lightweightMode):not(.lowEndDevice) .rotaceMiniCard,
+body:not(.lightweightMode):not(.lowEndDevice) .rotaceOverviewCard,
+body:not(.lightweightMode):not(.lowEndDevice) .tttCard,
+body:not(.lightweightMode):not(.lowEndDevice) .appMenuAdminCard,
+body:not(.lightweightMode):not(.lowEndDevice) .appMenuSettingsCard,
+body:not(.lightweightMode):not(.lowEndDevice) .appMenuSubSection,
+body:not(.lightweightMode):not(.lowEndDevice) .gamesProfileRow,
+body:not(.lightweightMode):not(.lowEndDevice) .gamesAchievementBar,
+body:not(.lightweightMode):not(.lowEndDevice) .arcadeHud,
+body:not(.lightweightMode):not(.lowEndDevice) .arcadeControls{
+  background:var(--rakGlassCardBg) !important;
+  background-color:rgba(9,15,12,.225) !important;
+  border-color:var(--rakGlassStrokeSoft) !important;
+  box-shadow:0 16px 40px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.10), inset 0 -1px 0 rgba(124,255,124,.028) !important;
+  backdrop-filter:blur(var(--rakGlassBlurSoft)) saturate(180%) !important;
+  -webkit-backdrop-filter:blur(var(--rakGlassBlurSoft)) saturate(180%) !important;
+}
+body:not(.lightweightMode):not(.lowEndDevice) .appMenuTable,
+body:not(.lightweightMode):not(.lowEndDevice) .appMenuAdminTable,
+body:not(.lightweightMode):not(.lowEndDevice) .appMenuAdminTableDense,
+body:not(.lightweightMode):not(.lowEndDevice) .appMenuAdminRotationTable,
+body:not(.lightweightMode):not(.lowEndDevice) .statsTable,
+body:not(.lightweightMode):not(.lowEndDevice) .noteTable{
+  background:rgba(255,255,255,.018) !important;
+  border-color:rgba(255,255,255,.08) !important;
+}
+body:not(.lightweightMode):not(.lowEndDevice) .appMenuTable th,
+body:not(.lightweightMode):not(.lowEndDevice) .appMenuAdminTable th,
+body:not(.lightweightMode):not(.lowEndDevice) .appMenuAdminTableDense th,
+body:not(.lightweightMode):not(.lowEndDevice) .appMenuAdminRotationTable th,
+body:not(.lightweightMode):not(.lowEndDevice) .statsTable th,
+body:not(.lightweightMode):not(.lowEndDevice) .noteTable th{
+  background:linear-gradient(180deg, rgba(255,255,255,.075), rgba(255,255,255,.022)), rgba(12,20,16,.30) !important;
+  backdrop-filter:blur(18px) saturate(160%) !important;
+  -webkit-backdrop-filter:blur(18px) saturate(160%) !important;
+}
+body:not(.lightweightMode):not(.lowEndDevice) .appMenuTable td,
+body:not(.lightweightMode):not(.lowEndDevice) .appMenuAdminTable td,
+body:not(.lightweightMode):not(.lowEndDevice) .appMenuAdminTableDense td,
+body:not(.lightweightMode):not(.lowEndDevice) .appMenuAdminRotationTable td,
+body:not(.lightweightMode):not(.lowEndDevice) .statsTable td,
+body:not(.lightweightMode):not(.lowEndDevice) .noteTable td{
+  background:rgba(255,255,255,.014) !important;
+  border-color:rgba(255,255,255,.055) !important;
+}
+body.lightweightMode .tableWrap,
+body.lowEndDevice .tableWrap,
+body.lightweightMode .appMenuTableWrap,
+body.lowEndDevice .appMenuTableWrap,
+body.lightweightMode .statsSummary,
+body.lowEndDevice .statsSummary,
+body.lightweightMode .rotaceMiniCard,
+body.lowEndDevice .rotaceMiniCard,
+body.lightweightMode .rotaceOverviewCard,
+body.lowEndDevice .rotaceOverviewCard,
+body.lightweightMode .tttCard,
+body.lowEndDevice .tttCard,
+body.lightweightMode .appMenuAdminCard,
+body.lowEndDevice .appMenuAdminCard,
+body.lightweightMode .appMenuSettingsCard,
+body.lowEndDevice .appMenuSettingsCard,
+body.lightweightMode .gamesProfileRow,
+body.lowEndDevice .gamesProfileRow,
+body.lightweightMode .gamesAchievementBar,
+body.lowEndDevice .gamesAchievementBar,
+body.lightweightMode .arcadeHud,
+body.lowEndDevice .arcadeHud,
+body.lightweightMode .arcadeControls,
+body.lowEndDevice .arcadeControls{
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
