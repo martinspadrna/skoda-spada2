@@ -1,14 +1,13 @@
-## v.1.1 (552)
+## v.1.1 (554)
 
-- Modernizované Theme tak, aby víc seděly k průhlednému iOS glass stylu.
-- Theme a Pozadí se nově ukládají k přihlášenému hernímu profilu.
-- Po přihlášení na jiném zařízení si appka načte uložené barvy i pozadí z profilu.
-- Bez přihlášení zůstává nastavení uložené lokálně jen v daném zařízení.
-- Cross-device uložení vzhledu využívá existující Supabase `game_stats` záznam typu `__profile_ui`, takže není potřeba nová tabulka.
-- Výpočty, pravidla her, spodní lišta a Supabase datový model veřejných dat beze změny.
-- Fáze 6 — Supabase hardening: cca 48 %.
+- Popup Kantýna/Jídelna nově zvýrazňuje aktuální otevřený časový blok, když je právě otevřeno.
+- Když je zavřeno, zvýrazní se další nejbližší termín otevření jiným odstínem.
+- Nad seznamem otevírací doby je nový přehledový glass box s informací „aktuální otevření“ nebo „teď zavřeno / další otevření“.
+- Zvýraznění funguje i v běžné stránce Jídelní lístek, protože používá stejný render jako popup.
+- Fáze 6 — Supabase hardening zůstává cca 64 %.
+- Výpočty, pravidla her, Theme/Pozadí, spodní lišta a Supabase datový model beze změny.
 
-## Přehled největších změn v.1.1 (500–552)
+## Přehled největších změn v.1.1 (500–554)
 - Proběhlo velké stabilizační období před dalšími fázemi refactoru: Fáze 3 Láďův režim, Fáze 4 cleanup manager, Fáze 5 game performance a start Fáze 6 Supabase hardening.
 - Dashboard se postupně ladil kvůli správnému zobrazení směny, ikon, kantýny/jídelny, odpočtů a menšímu riziku prázdných nebo pozdě načtených karet.
 - Spodní navigace prošla opakovaným dorovnáním, hlavně položka „Více“ – má být užší, ale normálně mezi ostatními položkami a bez ukotvení vpravo.

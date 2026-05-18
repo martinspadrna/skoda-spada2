@@ -29,10 +29,19 @@
       cooldownSkips: 0,
       failedWrites: 0,
       failedReads: 0,
+      queueFlushRuns: 0,
+      queueFlushSuccesses: 0,
+      queueFlushErrors: 0,
+      queueBackoffSkips: 0,
+      queueDroppedInvalid: 0,
       lastTimeoutAt: null,
       lastRetryAt: null,
       lastQueuedFallbackAt: null,
-      lastCooldownSkipAt: null
+      lastCooldownSkipAt: null,
+      lastQueueFlushAt: null,
+      lastQueueSuccessAt: null,
+      lastQueueErrorAt: null,
+      lastQueueBackoffAt: null
     },
     cacheGuard: {
       accountCacheHits: 0,
@@ -62,6 +71,9 @@
   const SUPABASE_READ_TIMEOUT_MS = 12000;
   const SUPABASE_WRITE_TIMEOUT_MS = 16000;
   const SUPABASE_WRITE_COOLDOWN_MS = 900;
+  const SUPABASE_QUEUE_RETRY_BASE_MS = 12000;
+  const SUPABASE_QUEUE_RETRY_MAX_MS = 4 * 60 * 1000;
+  const SUPABASE_QUEUE_DROP_INVALID_AFTER = 3;
   const SUPPORTED_QUEUE_TYPES = new Set([
     'rotation_state',
     'machine_settings',
@@ -162,7 +174,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v552');
+      const channel = client.channel('rak-public-live-v554');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -430,6 +442,57 @@
 
   function wait(ms) {
     return new Promise(resolve => setTimeout(resolve, Math.max(0, Number(ms) || 0)));
+  }
+
+  function getQueueRetryDelay(task) {
+    const retries = Math.max(0, Number(task && task.retryCount) || 0);
+    if (!retries) return 0;
+    const delay = SUPABASE_QUEUE_RETRY_BASE_MS * Math.pow(2, Math.min(5, retries - 1));
+    return Math.min(SUPABASE_QUEUE_RETRY_MAX_MS, Math.max(SUPABASE_QUEUE_RETRY_BASE_MS, delay));
+  }
+
+  function shouldSkipQueuedTaskForBackoff(task) {
+    const lastTriedAt = Number(task && task.lastTriedAt ? task.lastTriedAt : 0);
+    const delay = getQueueRetryDelay(task);
+    if (!lastTriedAt || !delay) return false;
+    const waitLeft = lastTriedAt + delay - Date.now();
+    if (waitLeft <= 0) return false;
+    state.syncGuard.queueBackoffSkips += 1;
+    state.syncGuard.lastQueueBackoffAt = Date.now();
+    return true;
+  }
+
+  function markQueuedTaskAttempt(task) {
+    return Object.assign({}, task || {}, {
+      lastTriedAt: Date.now(),
+      lastTriedVersion: window.APP_VERSION || '',
+      retryCount: Math.max(0, Number(task && task.retryCount) || 0)
+    });
+  }
+
+  function markQueuedTaskFailure(task, err) {
+    const msg = String(err && (err.message || err.statusText || err.code || err.status) ? (err.message || err.statusText || err.code || err.status) : err || 'unknown').slice(0, 160);
+    return Object.assign({}, task || {}, {
+      retryCount: Math.max(0, Number(task && task.retryCount) || 0) + 1,
+      lastErrorAt: Date.now(),
+      lastErrorMessage: msg,
+      lastTriedVersion: window.APP_VERSION || ''
+    });
+  }
+
+  function isLikelyPermanentQueueError(err) {
+    const msg = String(err && (err.message || err.statusText || err.code || err.status) ? (err.message || err.statusText || err.code || err.status) : err || '').toLowerCase();
+    const status = Number(err && (err.status || err.statusCode || err.code));
+    return [400, 401, 403, 404, 406].includes(status)
+      || msg.includes('permission denied')
+      || msg.includes('violates row-level security')
+      || msg.includes('invalid input')
+      || msg.includes('not found');
+  }
+
+  function shouldDropInvalidQueuedTask(task, err) {
+    const retries = Math.max(0, Number(task && task.retryCount) || 0);
+    return isLikelyPermanentQueueError(err) && retries >= SUPABASE_QUEUE_DROP_INVALID_AFTER;
   }
 
   function withSupabaseTimeout(promise, label, timeoutMs, mode) {
@@ -757,10 +820,19 @@
       const queue = readQueue();
       if (!queue.length) return { ok: true, flushed: 0, remaining: 0 };
 
+      state.syncGuard.queueFlushRuns += 1;
+      state.syncGuard.lastQueueFlushAt = Date.now();
+
       let flushed = 0;
+      let dropped = 0;
       const remaining = [];
       for (let i = 0; i < queue.length; i += 1) {
-        const task = queue[i];
+        const originalTask = queue[i];
+        if (shouldSkipQueuedTaskForBackoff(originalTask)) {
+          remaining.push(originalTask);
+          continue;
+        }
+        const task = markQueuedTaskAttempt(originalTask);
         try {
           if (task.type === 'rotation_state') {
             await runSupabaseOperation('queue.rotation_state', () => upsertRotationStateDirect(client, task.rotation, task.meta), { mode: 'write' });
@@ -781,21 +853,40 @@
             await saveGameAccountUiSettingsDirect(client, task.entry);
             flushed += 1;
           } else {
-            remaining.push(task);
+            const failedUnknown = markQueuedTaskFailure(task, new Error('Neznámý typ úlohy ve frontě: ' + String(task.type || '')));
+            if (shouldDropInvalidQueuedTask(failedUnknown, new Error('invalid queue task'))) {
+              dropped += 1;
+              state.syncGuard.queueDroppedInvalid += 1;
+            } else {
+              remaining.push(failedUnknown);
+            }
           }
         } catch (err) {
+          const failedTask = markQueuedTaskFailure(task, err);
+          state.syncGuard.queueFlushErrors += 1;
+          state.syncGuard.lastQueueErrorAt = Date.now();
+          if (shouldDropInvalidQueuedTask(failedTask, err)) {
+            dropped += 1;
+            state.syncGuard.queueDroppedInvalid += 1;
+            console.warn('Supabase queued sync dropped invalid task', err);
+            continue;
+          }
           if (isLikelyOfflineError(err)) {
-            remaining.push(task, ...queue.slice(i + 1));
+            remaining.push(failedTask, ...queue.slice(i + 1));
             break;
           }
           console.warn('Supabase queued sync failed', err);
-          remaining.push(task, ...queue.slice(i + 1));
+          remaining.push(failedTask, ...queue.slice(i + 1));
           break;
         }
       }
       writeQueue(remaining);
+      if (flushed > 0) {
+        state.syncGuard.queueFlushSuccesses += 1;
+        state.syncGuard.lastQueueSuccessAt = Date.now();
+      }
       if (remaining.length === 0) state.lastError = null;
-      return { ok: true, flushed, remaining: remaining.length };
+      return { ok: true, flushed, dropped, remaining: remaining.length };
     })().finally(() => {
       flushPromise = null;
     });

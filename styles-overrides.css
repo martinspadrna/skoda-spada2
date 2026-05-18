@@ -3751,7 +3751,7 @@ body.lowEndDevice #brusy .indexGrid .bbtn{
 }
 
 
-/* v.1.1 (552) – glass/theme polish + stabilnější profilové ukládání vzhledu. */
+/* v.1.1 (554) – glass/theme polish + stabilnější profilové ukládání vzhledu. */
 :root{
   --rakBgBase:#050816;
   --rakAppBackground:
@@ -3894,7 +3894,7 @@ body.lowEndDevice .rakUpdateToastAction{
   -webkit-backdrop-filter:none !important;
 }
 
-/* v.1.1 (552) – modernější Theme karty + profilové ukládání vzhledu */
+/* v.1.1 (554) – modernější Theme karty + profilové ukládání vzhledu */
 .appMenuThemeCard{
   border:1px solid color-mix(in srgb, var(--rakThemeAccent, var(--green2)) 28%, rgba(255,255,255,.16)) !important;
   background:
@@ -3960,4 +3960,96 @@ body.lightweightMode .appMenuThemeCard,
 body.lowEndDevice .appMenuThemeCard{
   backdrop-filter:none !important;
   -webkit-backdrop-filter:none !important;
+}
+
+/* v.1.1 (554) – zvýraznění aktuální/další otevírací doby v Kantýně/Jídelně. */
+.foodScheduleNowBox{
+  display:grid !important;
+  gap:4px !important;
+  margin:0 0 10px !important;
+  padding:12px 14px !important;
+  border-radius:22px !important;
+  text-align:center !important;
+  border:1px solid rgba(255,255,255,.15) !important;
+  background:linear-gradient(180deg, rgba(255,255,255,.11), rgba(255,255,255,.035)), rgba(10,18,16,.28) !important;
+  box-shadow:0 14px 32px rgba(0,0,0,.20), inset 0 1px 0 rgba(255,255,255,.12) !important;
+  backdrop-filter:blur(22px) saturate(180%) !important;
+  -webkit-backdrop-filter:blur(22px) saturate(180%) !important;
+}
+.foodScheduleNowBox--open{
+  background:linear-gradient(135deg, rgba(124,255,124,.26), rgba(255,255,255,.055)), rgba(8,24,15,.30) !important;
+  border-color:rgba(124,255,124,.42) !important;
+  box-shadow:0 16px 36px rgba(70,255,130,.12), inset 0 1px 0 rgba(255,255,255,.16) !important;
+}
+.foodScheduleNowBox--next{
+  background:linear-gradient(135deg, rgba(255,196,87,.24), rgba(255,255,255,.052)), rgba(28,19,8,.28) !important;
+  border-color:rgba(255,203,92,.40) !important;
+  box-shadow:0 16px 36px rgba(255,177,56,.12), inset 0 1px 0 rgba(255,255,255,.15) !important;
+}
+.foodScheduleNowKicker{
+  font-size:11px !important;
+  line-height:1.15 !important;
+  font-weight:850 !important;
+  letter-spacing:.08em !important;
+  text-transform:uppercase !important;
+  color:rgba(235,255,238,.72) !important;
+}
+.foodScheduleNowMain{
+  font-size:15px !important;
+  line-height:1.25 !important;
+  font-weight:900 !important;
+  color:#f6fff7 !important;
+}
+.foodScheduleNowSub{
+  font-size:12px !important;
+  line-height:1.25 !important;
+  font-weight:750 !important;
+  color:rgba(232,255,235,.75) !important;
+}
+.foodScheduleRow--hasHighlight{
+  border-color:rgba(255,255,255,.20) !important;
+}
+.foodScheduleWindowLine--currentOpen,
+body:not(.lightweightMode) .foodScheduleWindowLine--currentOpen,
+body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleWindowLine--currentOpen{
+  background:linear-gradient(135deg, rgba(124,255,124,.48), rgba(255,255,255,.13)), rgba(24,72,38,.42) !important;
+  border-color:rgba(124,255,124,.68) !important;
+  color:#f8fff8 !important;
+  box-shadow:0 0 0 1px rgba(124,255,124,.16) inset, 0 10px 26px rgba(67,255,120,.16) !important;
+}
+.foodScheduleWindowLine--nextOpen,
+body:not(.lightweightMode) .foodScheduleWindowLine--nextOpen,
+body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleWindowLine--nextOpen{
+  background:linear-gradient(135deg, rgba(255,204,95,.44), rgba(255,255,255,.12)), rgba(78,51,13,.40) !important;
+  border-color:rgba(255,209,105,.66) !important;
+  color:#fffaf0 !important;
+  box-shadow:0 0 0 1px rgba(255,209,105,.15) inset, 0 10px 26px rgba(255,181,57,.15) !important;
+}
+.foodScheduleWindowBadge{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  min-height:18px !important;
+  margin-left:8px !important;
+  padding:2px 7px !important;
+  border-radius:999px !important;
+  font-size:10px !important;
+  line-height:1 !important;
+  font-weight:900 !important;
+  letter-spacing:.04em !important;
+  text-transform:uppercase !important;
+  background:rgba(255,255,255,.18) !important;
+  border:1px solid rgba(255,255,255,.22) !important;
+  color:inherit !important;
+}
+body.lightweightMode .foodScheduleNowBox,
+body.lowEndDevice .foodScheduleNowBox{
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+  box-shadow:0 10px 22px rgba(0,0,0,.16) !important;
+}
+@media (max-width:420px){
+  .foodScheduleNowBox{padding:11px 12px !important;}
+  .foodScheduleNowMain{font-size:14px !important;}
+  .foodScheduleWindowBadge{margin-left:6px !important; padding:2px 6px !important;}
 }

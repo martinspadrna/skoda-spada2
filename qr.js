@@ -349,6 +349,47 @@ function formatFoodDayRangeLabel(startDayIndex, endDayIndex) {
   return startLabel + ' – ' + endLabel;
 }
 
+function isFoodDayInsideGroup(dayIndex, group) {
+  if (!group) return false;
+  if (group.startDay <= group.endDay) {
+    return dayIndex >= group.startDay && dayIndex <= group.endDay;
+  }
+  return dayIndex >= group.startDay || dayIndex <= group.endDay;
+}
+
+function getFoodScheduleHighlight(location, now) {
+  const reference = getPragueNow(now || new Date());
+  const status = findFoodStatus(location, reference);
+  const range = status && status.isOpen && status.active ? status.active : (status ? status.next : null);
+  if (!range) {
+    return { type: 'none', status, reference };
+  }
+
+  const dayDate = new Date(range.start);
+  const relative = formatFoodRelativeLabel(dayDate, reference);
+  const dayName = formatFoodDayName(dayDate);
+  const rangeText = formatFoodRange(range.start, range.end);
+  const prefix = status.isOpen ? 'Právě otevřeno' : 'Další otevření';
+
+  return {
+    type: status.isOpen ? 'open' : 'next',
+    status,
+    reference,
+    dayIndex: dayDate.getDay(),
+    startText: formatFoodTime(range.start),
+    endText: formatFoodTime(range.end),
+    rangeText,
+    label: prefix + ' · ' + relative + ' ' + rangeText,
+    detail: status.isOpen ? ('Otevřeno do ' + formatFoodTime(range.end)) : ('Otevírá ' + relative + ' v ' + formatFoodTime(range.start)),
+    dayLabel: dayName
+  };
+}
+
+function foodWindowMatchesHighlight(window, highlight) {
+  if (!highlight || (highlight.type !== 'open' && highlight.type !== 'next')) return false;
+  return String(window && window[0]) === highlight.startText && String(window && window[1]) === highlight.endText;
+}
+
 function buildFoodScheduleGroups(location) {
   const dayOrder = [1, 2, 3, 4, 5, 6, 0];
   const groups = [];
@@ -374,20 +415,38 @@ function buildFoodScheduleGroups(location) {
 }
 
 function buildFoodScheduleHtml(location) {
+  const highlight = getFoodScheduleHighlight(location, new Date());
   const rows = buildFoodScheduleGroups(location).map((group) => {
     const dayLabel = formatFoodDayRangeLabel(group.startDay, group.endDay);
-    const windowsHtml = (Array.isArray(group.windows) && group.windows.length ? group.windows.map(window => '<div class="foodScheduleWindowLine">' + escapeHtml(window[0] + '–' + window[1]) + '</div>').join('') : '<div class="foodScheduleWindowLine foodScheduleWindowEmpty">Zavřeno</div>');
-    return '<div class="foodScheduleRow">' +
+    const groupHasHighlightDay = isFoodDayInsideGroup(highlight.dayIndex, group);
+    const rowClass = groupHasHighlightDay && highlight.type !== 'none' ? ' foodScheduleRow--hasHighlight' : '';
+    const windowsHtml = (Array.isArray(group.windows) && group.windows.length ? group.windows.map(window => {
+      const isHighlighted = groupHasHighlightDay && foodWindowMatchesHighlight(window, highlight);
+      const stateClass = isHighlighted ? (highlight.type === 'open' ? ' foodScheduleWindowLine--currentOpen' : ' foodScheduleWindowLine--nextOpen') : '';
+      const badge = isHighlighted ? '<span class="foodScheduleWindowBadge">' + escapeHtml(highlight.type === 'open' ? 'teď' : 'další') + '</span>' : '';
+      return '<div class="foodScheduleWindowLine' + stateClass + '">' + escapeHtml(window[0] + '–' + window[1]) + badge + '</div>';
+    }).join('') : '<div class="foodScheduleWindowLine foodScheduleWindowEmpty">Zavřeno</div>');
+    return '<div class="foodScheduleRow' + rowClass + '">' +
       '<div class="foodScheduleDay">' + escapeHtml(dayLabel) + '</div>' +
       '<div class="foodScheduleWindows">' + windowsHtml + '</div>' +
     '</div>';
   }).join('');
+
+  const highlightClass = highlight.type === 'open' ? ' foodScheduleNowBox--open' : (highlight.type === 'next' ? ' foodScheduleNowBox--next' : '');
+  const highlightHtml = highlight.type !== 'none' ? [
+    '<div class="foodScheduleNowBox' + highlightClass + '">',
+    '<div class="foodScheduleNowKicker">' + escapeHtml(highlight.type === 'open' ? 'Aktuální otevření' : 'Teď zavřeno') + '</div>',
+    '<div class="foodScheduleNowMain">' + escapeHtml(highlight.label) + '</div>',
+    '<div class="foodScheduleNowSub">' + escapeHtml(highlight.detail) + '</div>',
+    '</div>'
+  ].join('') : '';
 
   return [
     '<div class="foodScheduleTitleBlock">',
     '<div class="sectionTitle">Otevírací doba</div>',
     '<div class="smallText uMt0 uMb10">' + escapeHtml(location.label) + '</div>',
     '</div>',
+    highlightHtml,
     rows
   ].join('');
 }

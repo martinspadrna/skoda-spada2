@@ -1,4 +1,4 @@
-// v.1.1 (552) – profilový vzhled má konflikt guard, dedupe save/load a stabilnější sync přes Supabase.
+// v.1.1 (554) – Kantýna/Jídelna zvýrazňuje v popupu aktuální otevřený blok nebo další nejbližší termín.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

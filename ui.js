@@ -2687,20 +2687,20 @@ function buildAppHistoryHtml(versionText) {
       range: versionText,
       title: 'Aktuální build',
       lines: [
-        'Theme i Pozadí jsou modernizované do glass stylu a při přihlášení se nově ukládají k hernímu profilu.',
-        'Po přihlášení na jiném zařízení si appka načte uložené barvy i pozadí z profilu; bez přihlášení zůstává lokální nastavení zařízení.',
-        'Funkce aplikace, výpočty, pravidla her a spodní lišta jsou v tomhle buildu beze změny.'
+        'Popup Kantýna/Jídelna nově zvýrazňuje aktuální otevřený časový blok, když je právě otevřeno.',
+        'Když je zavřeno, zvýrazní se další nejbližší termín otevření v odlišném odstínu.',
+        'Funkce aplikace, výpočty, pravidla her, Theme/Pozadí, Supabase datový model a spodní lišta jsou v tomhle buildu beze změny.'
       ]
     },
     {
-      range: 'v.1.1 500–552',
+      range: 'v.1.1 500–554',
       title: 'Stabilizace, hry, Supabase a glass vzhled',
       lines: [
         'Proběhlo velké stabilizační období: Láďův režim, cleanup manager, dokončení game performance a start Supabase hardening.',
         'Dashboard, Rotace, Rozpisy a Statistiky se ladily hlavně kvůli mobilům, safe-area, přehlednosti a menšímu riziku prázdných/pozdě načtených karet.',
         'Kalkulačky dostaly sjednocenější calcPanel systém, větší klikací tlačítka a u Brusů se vrátily barevné indexy ve glass stylu.',
         'Herní hub se zrychlil: méně opakovaných renderů, cache profilů/statistik, lepší práce s leaderboardy a všechny nedoladěné hry jsou zatím ve „Ve vývoji“.',
-        'Supabase Realtime a offline/online sync se zpevňují přes timeouty, retry, offline frontu, deduplikaci, fallback cache a diagnostiku.',
+        'Supabase Realtime a offline/online sync se zpevňují přes timeouty, retry, offline frontu, deduplikaci, fallback cache, retry backoff a diagnostiku.',
         'Přibyly Theme/Pozadí volby, výrazná glass-friendly pozadí, modernější theme karty a profilové ukládání vzhledu.'
       ]
     },
@@ -6735,8 +6735,8 @@ window.RAK_BACKGROUND_STORAGE_KEY = RAK_BACKGROUND_STORAGE_KEY;
 })();
 
 (function installAppearancePreferenceGuards() {
-  if (window.__rakAppearancePreferenceGuardV552) return;
-  window.__rakAppearancePreferenceGuardV552 = true;
+  if (window.__rakAppearancePreferenceGuardV554) return;
+  window.__rakAppearancePreferenceGuardV554 = true;
   const syncAppearance = () => {
     try {
       applyThemePreference(getThemePreference(), false);
