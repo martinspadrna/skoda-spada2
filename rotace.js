@@ -141,7 +141,7 @@ function handlePersonTap(name) {
 }
 
 
-function getPersonScheduleEntryEnd(entry) {
+function getPersonScheduleEntryWindow(entry) {
   const parsed = parseDateToken(String(entry && entry.dateLabel ? entry.dateLabel : ""));
   if (!parsed) return null;
 
@@ -149,41 +149,50 @@ function getPersonScheduleEntryEnd(entry) {
   const baseYear = sortDate && !Number.isNaN(sortDate.getTime()) ? sortDate.getFullYear() : (new Date()).getFullYear();
   const baseDate = new Date(baseYear, parsed.month - 1, parsed.day, 0, 0, 0, 0);
   const shift = normalizeShiftText(String(entry && entry.shift ? entry.shift : parsed.shift || "")).toUpperCase();
+  const start = new Date(baseDate);
+  const end = new Date(baseDate);
 
   if (!shift) {
-    const endOfDay = new Date(baseDate);
-    endOfDay.setHours(23, 59, 59, 999);
-    return endOfDay;
+    end.setHours(23, 59, 59, 999);
+    return { start, end };
   }
 
   if (shift.includes("R8")) {
-    const end = new Date(baseDate);
+    start.setHours(6, 0, 0, 0);
     end.setHours(14, 0, 0, 0);
-    return end;
+    return { start, end };
   }
 
   if (shift.includes("N8")) {
-    const end = new Date(baseDate);
+    const specialHour = typeof getSpecialSundayNightStartHour === 'function'
+      ? getSpecialSundayNightStartHour(baseDate, 22)
+      : 22;
+    start.setHours(specialHour, 0, 0, 0);
     end.setDate(end.getDate() + 1);
     end.setHours(6, 0, 0, 0);
-    return end;
+    return { start, end };
   }
 
   if (shift.startsWith("N")) {
-    const start = new Date(baseDate);
     start.setHours(18, 0, 0, 0);
-    return getShiftEnd(start);
+    end.setDate(end.getDate() + 1);
+    end.setHours(6, 0, 0, 0);
+    return { start, end };
   }
 
   if (shift.startsWith("R")) {
-    const start = new Date(baseDate);
     start.setHours(6, 0, 0, 0);
-    return getShiftEnd(start);
+    end.setHours(18, 0, 0, 0);
+    return { start, end };
   }
 
-  const endOfDay = new Date(baseDate);
-  endOfDay.setHours(23, 59, 59, 999);
-  return endOfDay;
+  end.setHours(23, 59, 59, 999);
+  return { start, end };
+}
+
+function getPersonScheduleEntryEnd(entry) {
+  const win = getPersonScheduleEntryWindow(entry);
+  return win ? win.end : null;
 }
 
 function getPersonScheduleEntries(name) {
@@ -264,9 +273,25 @@ function getPersonScheduleEntries(name) {
     .sort((a, b) => a.sortDate.localeCompare(b.sortDate));
 
   let currentIdx = entries.findIndex(entry => {
-    const end = getPersonScheduleEntryEnd(entry);
-    return end && end.getTime() > nowMs;
+    if (entry && entry.absence) return false;
+    const win = getPersonScheduleEntryWindow(entry);
+    return win && win.start.getTime() <= nowMs && nowMs < win.end.getTime();
   });
+
+  if (currentIdx === -1) {
+    currentIdx = entries.findIndex(entry => {
+      if (entry && entry.absence) return false;
+      const win = getPersonScheduleEntryWindow(entry);
+      return win && win.start.getTime() > nowMs;
+    });
+  }
+
+  if (currentIdx === -1) {
+    currentIdx = entries.findIndex(entry => {
+      const end = getPersonScheduleEntryEnd(entry);
+      return end && end.getTime() > nowMs;
+    });
+  }
 
   if (currentIdx === -1 && entries.length) currentIdx = entries.length - 1;
 
@@ -515,7 +540,8 @@ function getRotationMonthShiftHighlight(monthKey, month) {
 
   return {
     currentKey: current ? current.key : '',
-    nextKey: next ? next.key : ''
+    // Zvýrazňuje se vždy jen jeden řádek: aktuální směna, a když právě žádná neběží, nejbližší další.
+    nextKey: current ? '' : (next ? next.key : '')
   };
 }
 

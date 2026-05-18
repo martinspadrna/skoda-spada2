@@ -1,4 +1,4 @@
-// v.1.1 (557) – Supabase session cache pro online hry; Fáze 6 hardening pokračuje bez změny datového modelu.
+// v.1.1 (558) – scroll guard pro Brusy + čisté zvýraznění aktuální/příští směny bez popisků.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

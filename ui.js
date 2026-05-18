@@ -36,6 +36,33 @@ function resetPageScrollToTop(pageId, reason) {
   }
 }
 
+
+function ensurePageScrollAvailable(pageId, reason) {
+  try {
+    if (typeof document === 'undefined' || !document.body) return;
+    const hasVisibleModal = !!document.querySelector('.foodScheduleOverlay.isVisible, .personScheduleOverlay.isVisible, .calendarOverlay.isVisible, .tttOverlay.isVisible, .qrModalOverlay.isVisible');
+    const isGameOpen = document.body.classList.contains('gamesOpen') || document.body.classList.contains('tttOpen');
+    if (!hasVisibleModal && !isGameOpen) {
+      document.body.classList.remove('foodModalOpen', 'personModalOpen', 'calendarModalOpen');
+      if (document.body.style && document.body.style.overflow === 'hidden') document.body.style.overflow = '';
+      if (document.documentElement && document.documentElement.style) document.documentElement.style.overflowY = 'auto';
+      if (document.body.style) document.body.style.overflowY = 'auto';
+    }
+
+    const id = String(pageId || '').trim();
+    if (id === 'brusy' || id === 'soustruhy' || id === 'frezky' || id === 'kalkulacky') {
+      const page = document.getElementById(id);
+      if (page && page.style) {
+        page.style.overflowY = 'visible';
+        page.style.webkitOverflowScrolling = 'touch';
+      }
+    }
+    window.__rakLastScrollGuard = { page: id, reason: reason || '', ts: Date.now() };
+  } catch (err) {
+    console.warn('ensurePageScrollAvailable failed', err);
+  }
+}
+
 function setBottomNavActive(pageId) {
   const buttons = document.querySelectorAll('.bottomNavBtn');
   buttons.forEach(btn => {
@@ -2725,15 +2752,15 @@ function buildAppHistoryHtml(versionText) {
       range: versionText,
       title: 'Aktuální build',
       lines: [
-        'Fáze 6 — Supabase hardening posunuta na cca 78 %.',
-        'Online herní session/pozvánky mají lokální cache podle kódu pozvánky, takže při slabém internetu nezmizí poslední známý stav rozehrané hry.',
-        'Uložení online herní session umí při offline/slabém internetu spadnout do Supabase fronty a po návratu internetu se odešle stejně jako ostatní bezpečné změny.',
-        'Načítání session používá sdílený in-flight guard, aby se stejný kód pozvánky netahal zbytečně víckrát paralelně.',
-        'Výpočty, pravidla her, Theme/Pozadí, otevírací doba, Supabase datový model a spodní lišta jsou funkčně beze změny.'
+        'Fáze 6 — Supabase hardening zůstává cca 78 %.',
+        'Kalkulačky → Brusy mají nový bezpečný scroll guard pro zařízení, kde se dlouhá stránka mohla zaseknout a nešla posouvat prstem.',
+        'Rozpisy zvýrazní vždy jen jednu směnu: aktuální, a když právě nejsme v práci, nejbližší další. Bez textových popisků v řádku.',
+        'Rotace po kliknutí na jméno zvýrazní aktuální směnu, případně nejbližší další pracovní směnu, když člověk zrovna není v práci.',
+        'Výpočty, pravidla her, Theme/Pozadí, Supabase datový model a spodní lišta jsou funkčně beze změny.'
       ]
     },
     {
-      range: 'v.1.1 500–557',
+      range: 'v.1.1 500–558',
       title: 'Stabilizace, hry, Supabase a glass vzhled',
       lines: [
         'Proběhlo velké stabilizační období: Láďův režim, cleanup manager, dokončení game performance a start Supabase hardening.',
@@ -4200,6 +4227,7 @@ function showPage(id) {
     console.error('showPage failed', err);
   } finally {
     setBottomNavActive(navPage);
+    ensurePageScrollAvailable(id, 'showPage');
     if (!isSamePageRefresh) {
       resetPageScrollToTop(id, 'showPage');
     }

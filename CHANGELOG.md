@@ -1,3 +1,14 @@
+## v.1.1 (558)
+
+- Opravené / zpevněné scrollování v `Kalkulačky → Brusy` pro zařízení, kde se stránka mohla zaseknout a nešlo ji posouvat prstem.
+- Přidaný bezpečný scroll guard pro kalkulačkové stránky, hlavně pro Brusy: stránka se má dál posouvat přes běžný body scroll a dlouhé otevřené panely nesmí pohltit tah prstem.
+- V `Rozpisy` se nově zvýrazňuje vždy jen jedna směna: když právě běží směna, zvýrazní se aktuální; když zrovna nejsme v práci, zvýrazní se nejbližší další.
+- U zvýraznění v rozpisech jsou odstraněné textové popisky typu „teď“ / „další“, zůstává jen barevné zvýraznění řádku.
+- V `Rotace` po kliknutí na jméno dostala aktuální směna trochu výraznější zvýraznění; když dotyčný zrovna není v práci, zvýrazní se nejbližší další pracovní směna.
+- Pokud má člověk zrovna absenci, zvýraznění v detailu jména se snaží vybrat další pracovní směnu, ne samotnou absenci.
+- Výpočty, pravidla her, Theme/Pozadí, Supabase datový model a spodní lišta jsou funkčně beze změny.
+- Fáze 6 — Supabase hardening zůstává cca 78 %.
+
 ## v.1.1 (557)
 
 - Fáze 6 — Supabase hardening posunuta na cca 78 %.
@@ -36,7 +47,7 @@
 - Fáze 6 — Supabase hardening zůstává cca 64 %.
 - Výpočty, pravidla her, Theme/Pozadí, spodní lišta a Supabase datový model beze změny.
 
-## Přehled největších změn v.1.1 (500–557)
+## Přehled největších změn v.1.1 (500–558)
 - Proběhlo velké stabilizační období před dalšími fázemi refactoru: Fáze 3 Láďův režim, Fáze 4 cleanup manager, Fáze 5 game performance a start Fáze 6 Supabase hardening.
 - Dashboard se postupně ladil kvůli správnému zobrazení směny, ikon, kantýny/jídelny, odpočtů a menšímu riziku prázdných nebo pozdě načtených karet.
 - Spodní navigace prošla opakovaným dorovnáním, hlavně položka „Více“ – má být užší, ale normálně mezi ostatními položkami a bez ukotvení vpravo.

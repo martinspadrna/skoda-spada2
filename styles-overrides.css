@@ -4053,3 +4053,61 @@ body.lowEndDevice .foodScheduleNowBox{
   .foodScheduleNowMain{font-size:14px !important;}
   .foodScheduleWindowBadge{margin-left:6px !important; padding:2px 6px !important;}
 }
+
+/* v.1.1 (558) – Brusy scroll guard + čisté zvýraznění směn bez popisků. */
+#brusy.calcPage.active{
+  overflow-x:hidden !important;
+  overflow-y:visible !important;
+  min-height:auto !important;
+  padding-bottom:calc(130px + env(safe-area-inset-bottom)) !important;
+  touch-action:pan-y pinch-zoom !important;
+  -webkit-overflow-scrolling:touch !important;
+  overscroll-behavior-y:auto !important;
+}
+#brusy.calcPage.active :is(.card, .brusDetails, .brusDetailsBody, .calcPanel, .calcResultCard, .calcInfoCard, .bgrid, .indexGrid, .freeWrap){
+  overflow:visible !important;
+  touch-action:pan-y pinch-zoom !important;
+}
+#brusy.calcPage.active :is(input, textarea, select){
+  touch-action:manipulation !important;
+}
+body:not(.foodModalOpen):not(.personModalOpen):not(.calendarModalOpen) #brusy.calcPage.active{
+  pointer-events:auto !important;
+}
+#monthView table.rotTable tr.currentShiftRow .dateCell::after,
+#monthView table.rotTable tr.nextShiftRow .dateCell::after{
+  content:"" !important;
+  display:none !important;
+  width:0 !important;
+  height:0 !important;
+  margin:0 !important;
+  padding:0 !important;
+}
+#monthView table.rotTable tr.currentShiftRow td{
+  background:rgba(184,255,103,.24) !important;
+  border-color:rgba(184,255,103,.48) !important;
+  box-shadow:inset 0 0 0 1px rgba(184,255,103,.46), 0 0 16px rgba(184,255,103,.10) !important;
+}
+#monthView table.rotTable tr.nextShiftRow td{
+  background:rgba(86,189,248,.16) !important;
+  border-color:rgba(86,189,248,.38) !important;
+  box-shadow:inset 0 0 0 1px rgba(86,189,248,.36), 0 0 14px rgba(86,189,248,.08) !important;
+}
+#rotaceNamesPanel #personView .rotaceMiniCard.rotaceShiftCard.current,
+#rotace #personView .rotaceMiniCard.rotaceShiftCard.current{
+  border-color:rgba(184,255,103,.52) !important;
+  background:linear-gradient(135deg, rgba(184,255,103,.18), rgba(255,255,255,.055)) !important;
+  box-shadow:0 16px 38px rgba(0,0,0,.24), inset 0 0 0 1px rgba(184,255,103,.22), inset 0 1px 0 rgba(255,255,255,.13) !important;
+  transform:translateY(-1px) !important;
+}
+#rotaceNamesPanel #personView .rotaceMiniCard.rotaceShiftCard.current .rotaceShiftName,
+#rotace #personView .rotaceMiniCard.rotaceShiftCard.current .rotaceShiftName{
+  color:rgba(222,255,146,.96) !important;
+}
+body.lightweightMode #rotaceNamesPanel #personView .rotaceMiniCard.rotaceShiftCard.current,
+body.lowEndDevice #rotaceNamesPanel #personView .rotaceMiniCard.rotaceShiftCard.current,
+body.lightweightMode #rotace #personView .rotaceMiniCard.rotaceShiftCard.current,
+body.lowEndDevice #rotace #personView .rotaceMiniCard.rotaceShiftCard.current{
+  transform:none !important;
+  box-shadow:inset 0 0 0 1px rgba(184,255,103,.28) !important;
+}
