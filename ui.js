@@ -2752,15 +2752,15 @@ function buildAppHistoryHtml(versionText) {
       range: versionText,
       title: 'Aktuální build',
       lines: [
-        'Opravený výpočet v Kalkulačky → Brusy → Kolik ještě stihnu.',
-        'Hotové kusy v rozdělaném vozíku/dávce se nově používají jen pro přepočet dávek/vozíků.',
-        'Tyto kusy se už znovu nepřičítají do celkového počtu kusů, takže při vyplněném poli Celkem zatím nabroušeno nevzniká dvojí započítání.',
-        'Výpočty Kdy bude hotovo, hry, Theme/Pozadí, Supabase datový model, rozpisy, rotace a spodní lišta jsou funkčně beze změny.',
+        'Dashboardová karta Výplata je nově klikací.',
+        'Po kliknutí otevře Škoda eMA/EV odkaz pro výplatu v novém okně/záložce.',
+        'Používá stejný bezpečný externí open guard jako Jídelní lístek a Eportal.',
+        'Výpočty, hry, Theme/Pozadí, Supabase datový model, rozpisy, rotace a spodní lišta jsou funkčně beze změny.',
         'Fáze 6 — Supabase hardening zůstává cca 90 %.'
       ]
     },
     {
-      range: 'v.1.1 500–561',
+      range: 'v.1.1 500–562',
       title: 'Stabilizace, hry, Supabase a glass vzhled',
       lines: [
         'Proběhlo velké stabilizační období: Láďův režim, cleanup manager, dokončení game performance a start Supabase hardening.',
@@ -4265,6 +4265,7 @@ function openKalkulacky() {
 
 
 const EPORTAL_URL = 'https://space.skoda.vwgroup.com/group/b2eportal/home-page';
+const PAYROLL_URL = 'https://smartappspki.skoda.vwgroup.com/sap/bc/ui2/flp?sap-client=010&sap-language=CS#eMA_EV-open';
 
 function openExternalTile(url) {
   const target = String(url || '').trim();
@@ -4283,6 +4284,10 @@ function openExternalTile(url) {
 
 function openEportal() {
   return openExternalTile(EPORTAL_URL);
+}
+
+function openPayroll() {
+  return openExternalTile(PAYROLL_URL);
 }
 
 function refreshHomeScreen() {

@@ -1,4 +1,4 @@
-// v.1.1 (561) – Brusy: rozdělaný vozík se počítá jen do dávek, ne dvakrát do celkových kusů.
+// v.1.1 (562) – Dashboard: karta Výplata otevírá eMA/EV ve Škoda portálu.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
@@ -73,6 +73,7 @@ function installDelegatedAppActions() {
     'calc-soustruhy-106': () => calcSoustruhy106(),
     'open-food-link': () => openExternalTile('https://sa.gthcatering.cz/restaurant/c1/'),
     'open-eportal-link': () => openEportal(),
+    'open-payroll-link': () => openPayroll(),
     'calc-f': () => calcF(),
     'calc-f-finish': () => calcFFinish(),
     'calc-brusy': () => calcBrusy(),
