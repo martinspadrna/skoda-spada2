@@ -681,15 +681,21 @@ function formatCalendarDateLabel(now) {
   }).format(now);
 }
 
+function getDashboardCalendarWeekNumber(now) {
+  const source = now instanceof Date ? now : new Date();
+  if (!(source instanceof Date) || Number.isNaN(source.getTime())) return null;
+
+  // ISO kalendářní týden: pondělí je první den a 1. týden je ten, který obsahuje čtvrtek.
+  const d = new Date(source.getFullYear(), source.getMonth(), source.getDate());
+  const day = d.getDay() || 7;
+  d.setDate(d.getDate() + 4 - day);
+  const yearStart = new Date(d.getFullYear(), 0, 1);
+  return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+}
+
 function getDashboardProductionWeekNumber(now) {
-  const d = now instanceof Date ? new Date(now) : new Date();
-  if (!(d instanceof Date) || Number.isNaN(d.getTime())) return null;
-  const weekStart = typeof startOfWeekMonday === "function" ? startOfWeekMonday(d) : new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  const base = typeof startOfWeekMonday === "function"
-    ? startOfWeekMonday(new Date(2026, 0, 12, 0, 0, 0, 0))
-    : new Date(2026, 0, 12, 0, 0, 0, 0);
-  const diff = Math.floor((weekStart.getTime() - base.getTime()) / 604800000);
-  return Math.max(1, diff + 1);
+  // Zachováno kvůli starším voláním, ale Dashboard už má ukazovat kalendářní ISO týden.
+  return getDashboardCalendarWeekNumber(now);
 }
 
 function isDashboardMorningShiftTime(now) {
@@ -750,8 +756,8 @@ function getDashboardCalendarWorkNotes(now) {
 
 function getCalendarSpecialText(now) {
   const parts = [];
-  const weekNumber = getDashboardProductionWeekNumber(now);
-  if (weekNumber) parts.push("Týden " + weekNumber);
+  const weekNumber = getDashboardCalendarWeekNumber(now);
+  if (weekNumber) parts.push("Kalendářní týden " + weekNumber);
 
   const special = getSpecialWorkInfo(now);
   if (special) {

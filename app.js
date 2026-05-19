@@ -1,4 +1,4 @@
-// v.1.1 (624) – Machine settings: TBKR07/AH 6m orovnání + oprava permission denied.
+// v.1.1 (625) – Dashboard kalendář: ISO kalendářní týden + pokračování Fáze 9.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

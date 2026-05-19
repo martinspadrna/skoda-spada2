@@ -2851,9 +2851,10 @@ function buildAppHistoryHtml(versionText) {
       range: versionText,
       title: 'Aktuální build',
       lines: [
+        'Dashboard / Kalendář ukazuje skutečný ISO kalendářní týden; pro 19.5.2026 vychází týden 21.',
+        'Pondělní ranní poznámka „Brusy- spálení“ a první ranní v měsíci „Roznýtování- laborka“ zůstávají navázané na kalendář/ranní směnu, ne na směnu D.',
         'TBKR07 / AH má nastavený čas výroby 1m03s, orovnává po 88 ks a doba orovnání je nově 6m00s.',
         'Opravené online ukládání machine_settings: doplněný databázový grant pro zápis, takže změna parametrů už nemá padat na permission denied.',
-        'Dashboard / Kalendář ukazuje aktuální výrobní týden, pondělní ranní poznámku „Brusy- spálení“ a první ranní v měsíci „Roznýtování- laborka“ bez vazby na směnu D.',
         'Opravené načítání uložených parametrů Brusů: appka už hledá stejný klíč, jaký se ukládá v nastavení strojů, takže změny parametrů se reálně použijí ve výpočtech.',
         'Nastavení strojů má opravený online zápis do machine_settings včetně GRANT práv pro anon/authenticated role, aby ukládání nepadalo na permission denied.',
         'Fáze 8 — PWA / Service Worker hardening zůstává dokončená na 100 % včetně finální offline readiness kontroly app shellu.',
@@ -2866,7 +2867,7 @@ function buildAppHistoryHtml(versionText) {
       ]
     },
     {
-      range: 'v.1.1 500–624',
+      range: 'v.1.1 500–625',
       title: 'Stabilizace, hry, Supabase a glass vzhled',
       lines: [
         'Proběhlo velké stabilizační období: Láďův režim, cleanup manager, dokončení game performance, dokončený Supabase hardening a začátek Fáze 7 Data optimization včetně dalšího odlehčení Láďova režimu, úspornější Supabase lokální cache a méně zbytečných DOM renderů včetně Otevírací doby/Jídelního lístku, úspornějších selectů pro roky/měsíce, class toggle guardů u kalkulaček, style guardů u Theme/Pozadí/spodní lišty a závěrečného úklidu lokální read/JSON cache. Po dokončení Fáze 7 začala Fáze 8: tvrdší PWA/service worker chování, bezpečnější precache, řízenější update checky a diagnostika cache stavu.',

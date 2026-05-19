@@ -1,3 +1,9 @@
+## v.1.1 (625)
+- Dashboard / Kalendář nově ukazuje skutečný ISO kalendářní týden; pro 19.5.2026 vychází týden 21.
+- Původní výrobní týden byl nahrazen kalendářním týdnem, aby v tom nebyl zmatek.
+- Poznámky „Brusy- spálení“ a „Roznýtování- laborka“ zůstávají nezávislé na směně D a řídí se kalendářem/ranní směnou.
+- Verze sjednocena na v.1.1 (625), cache na v1.1-625 a Supabase realtime kanál na rak-public-live-v625.
+
 ## v.1.1 (624)
 - Brusy / TBKR07 / AH: doba orovnání změněna na 6m00s / 360 s; čas výroby zůstává 1m03s a orovnává po 88 ks.
 - Online hodnota v Supabase `machine_settings` pro `TBKR07-AH` byla přepsaná na 360 s i ve `settings_json`.
