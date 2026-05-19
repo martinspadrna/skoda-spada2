@@ -506,7 +506,7 @@ function renderBatchResult(title, batches, target, firstBatch, heatData) {
   return html;
 }
 
-function renderSoustruhyCombinationResult(firstPart, secondPart) {
+function renderSoustruhyCombinationResult(firstPart, secondPart, comboMeta) {
   const firstBatches = Array.isArray(firstPart?.batches) ? firstPart.batches : [];
   const secondBatches = Array.isArray(secondPart?.batches) ? secondPart.batches : [];
   const firstCount = firstBatches.length;
@@ -519,12 +519,17 @@ function renderSoustruhyCombinationResult(firstPart, secondPart) {
   const secondLastText = secondCount ? formatCount(secondBatches[secondCount - 1].batchNo) : "—";
   const firstLabel = firstPart?.label || "1. část";
   const secondLabel = secondPart?.label || "2. část";
+  const totalPlan = Number(comboMeta?.totalPlan) || 0;
+  const remainingPlan = Math.max(0, Number(comboMeta?.remainingPlan) || 0);
+  const plannedText = totalPlan > 0
+    ? " Celkový plán je <b>" + formatCount(totalPlan) + " ks</b>; po 1. části zbývalo pro 2. část <b>" + formatCount(remainingPlan) + " ks</b>."
+    : "";
 
-  let html = "<div class='smallText uMb10'>Kombinace: 1. část je zadaný rozsah, 2. část se dopočítá podle plánu.</div>";
+  let html = "<div class='smallText uMb10'>Kombinace: 1. část je zadaný rozsah, 2. část se dopočítá ze společného plánu pro Lis + Volné." + plannedText + "</div>";
   html += "<div class='statsSummary soustruhComboSummary'>";
   html += "<div class='tile'><div class='smallText'>1. část – " + escapeHtml(firstLabel) + "</div><div class='uFs22 uMt4'>" + formatCount(firstTotal) + " ks</div><div class='smallText uMt4'>" + formatCount(firstCount) + " dávek · do " + firstLastText + "</div></div>";
   html += "<div class='tile'><div class='smallText'>2. část – " + escapeHtml(secondLabel) + "</div><div class='uFs22 uMt4'>" + formatCount(secondTotal) + " ks</div><div class='smallText uMt4'>" + formatCount(secondCount) + " dávek · skončíš na " + secondLastText + "</div></div>";
-  html += "<div class='tile'><div class='smallText'>Celkem</div><div class='uFs22 uMt4'>" + formatCount(firstTotal + secondTotal) + " ks</div><div class='smallText uMt4'>" + formatCount(firstCount + secondCount) + " dávek</div></div>";
+  html += "<div class='tile'><div class='smallText'>Celkem</div><div class='uFs22 uMt4'>" + formatCount(firstTotal + secondTotal) + " ks</div><div class='smallText uMt4'>" + formatCount(firstCount + secondCount) + " dávek" + (totalPlan > 0 ? " · plán " + formatCount(totalPlan) + " ks" : "") + "</div></div>";
   html += "</div>";
   html += renderSoustruhBatchListDetails(firstBatches, "Seznam dávek – 1. část / " + firstLabel + " (" + formatCount(firstCount) + ")");
   html += renderSoustruhBatchListDetails(secondBatches, "Seznam dávek – 2. část / " + secondLabel + " (" + formatCount(secondCount) + ")");
@@ -630,6 +635,9 @@ function renderSoustruhy() {
     const type = String(btn.getAttribute('data-combo-first') || 'lis');
     toggleClass(btn, 'activeChoice', comboFirstType === type, 'soustruhComboFirst:' + type);
   });
+
+  const comboFreeSettingsDetails = document.getElementById('comboFreeSettingsDetails');
+  if (comboFreeSettingsDetails && comboFirstType === "free") comboFreeSettingsDetails.open = true;
 
   const comboFreeType = app.soustruhComboFreeType === "106" ? "106" : "126";
   document.querySelectorAll('[data-combo-free]').forEach(btn => {
@@ -744,21 +752,21 @@ function calcSoustruhyCombo() {
   const firstStart = parseInt(document.getElementById('combo_first_start')?.value || '', 10);
   const firstEnd = parseInt(document.getElementById('combo_first_end')?.value || '', 10);
   const secondStart = parseInt(document.getElementById('combo_second_start')?.value || '', 10);
-  const secondPlan = parseInt(document.getElementById('combo_second_plan')?.value || '', 10);
+  const totalPlan = parseInt(document.getElementById('combo_second_plan')?.value || '', 10);
   const heatFirst = parseInt(document.getElementById('combo_heat_first')?.value || '', 10);
   const out = document.getElementById('soustruhyComboResult');
   const heatOut = document.getElementById('soustruhyComboHeatResult');
   const firstType = app.soustruhComboFirstType === "free" ? "free" : "lis";
   const secondType = firstType === "free" ? "lis" : "free";
-  const hasAny = Number.isFinite(firstStart) || Number.isFinite(firstEnd) || Number.isFinite(secondStart) || Number.isFinite(secondPlan);
+  const hasAny = Number.isFinite(firstStart) || Number.isFinite(firstEnd) || Number.isFinite(secondStart) || Number.isFinite(totalPlan);
 
   if (!hasAny) {
-    setCalcOutputHtml(out, "<div class='smallText'>Doplň první a poslední dávku 1. části, první dávku 2. části a plán 2. části.</div>", out?.id || 'soustruhyComboEmpty');
+    setCalcOutputHtml(out, "<div class='smallText'>Doplň první a poslední dávku 1. části, první dávku 2. části a celkový plán.</div>", out?.id || 'soustruhyComboEmpty');
     if (heatOut) setCalcOutputHtml(heatOut, "", heatOut.id || 'soustruhyComboHeatEmpty');
     return;
   }
-  if (!Number.isFinite(firstStart) || !Number.isFinite(firstEnd) || firstEnd < firstStart || !Number.isFinite(secondStart) || !Number.isFinite(secondPlan) || secondPlan <= 0) {
-    setCalcOutputHtml(out, "<div class='smallText'>Doplň platně: první + poslední dávku 1. části a první dávku + plán 2. části.</div>", out?.id || 'soustruhyComboInvalid');
+  if (!Number.isFinite(firstStart) || !Number.isFinite(firstEnd) || firstEnd < firstStart || !Number.isFinite(secondStart) || !Number.isFinite(totalPlan) || totalPlan <= 0) {
+    setCalcOutputHtml(out, "<div class='smallText'>Doplň platně: první + poslední dávku 1. části, první dávku 2. části a celkový plán pro Lis + Volné.</div>", out?.id || 'soustruhyComboInvalid');
     if (heatOut) setCalcOutputHtml(heatOut, "", heatOut.id || 'soustruhyComboHeatInvalid');
     return;
   }
@@ -775,17 +783,31 @@ function calcSoustruhyCombo() {
   const firstSizes = firstType === "free" ? freeCfg.sizes : [32];
   const secondSizes = secondType === "free" ? freeCfg.sizes : [32];
   const firstBatches = getSoustruhBatchRange(firstStart, firstEnd, firstSizes);
-  const secondBatches = getSoustruhBatchList(secondStart, secondSizes, secondPlan);
 
-  if (!firstBatches.length || !secondBatches.length) {
-    setCalcOutputHtml(out, "<div class='smallText'>Rozsah nebo plán nevychází na žádnou dávku. Zkontroluj čísla a nastavení Volné.</div>", out?.id || 'soustruhyComboNoBatches');
+  if (!firstBatches.length) {
+    setCalcOutputHtml(out, "<div class='smallText'>Rozsah 1. části nevychází na žádnou dávku. Zkontroluj první a poslední dávku.</div>", out?.id || 'soustruhyComboNoFirstBatches');
+    if (heatOut) setCalcOutputHtml(heatOut, "", heatOut.id || 'soustruhyComboHeatInvalid');
+    return;
+  }
+
+  const firstTotal = firstBatches[firstBatches.length - 1].produced;
+  const remainingPlan = Math.max(0, totalPlan - firstTotal);
+  if (remainingPlan <= 0) {
+    setCalcOutputHtml(out, "<div class='smallText'>Celkový plán už pokrývá 1. část. Zadej větší plán, aby bylo co dopočítat pro 2. část.</div>", out?.id || 'soustruhyComboPlanCovered');
+    if (heatOut) setCalcOutputHtml(heatOut, "", heatOut.id || 'soustruhyComboHeatInvalid');
+    return;
+  }
+
+  const secondBatches = getSoustruhBatchList(secondStart, secondSizes, remainingPlan);
+  if (!secondBatches.length) {
+    setCalcOutputHtml(out, "<div class='smallText'>2. část nevychází na žádnou dávku. Zkontroluj číslo první dávky 2. části a nastavení Volné.</div>", out?.id || 'soustruhyComboNoSecondBatches');
     if (heatOut) setCalcOutputHtml(heatOut, "", heatOut.id || 'soustruhyComboHeatInvalid');
     return;
   }
 
   const firstPart = { label: firstLabel, batches: firstBatches, type: firstType };
   const secondPart = { label: secondLabel, batches: secondBatches, type: secondType };
-  setCalcOutputHtml(out, renderSoustruhyCombinationResult(firstPart, secondPart), out?.id || 'soustruhyComboResult');
+  setCalcOutputHtml(out, renderSoustruhyCombinationResult(firstPart, secondPart, { totalPlan, remainingPlan }), out?.id || 'soustruhyComboResult');
 
   app.soustruhComboHeatFirst = Number.isFinite(heatFirst) ? String(heatFirst) : '';
   const freeBatches = firstType === "free" ? firstBatches : secondBatches;

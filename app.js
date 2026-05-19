@@ -1,4 +1,4 @@
-// v.1.1 (604) – Soustruhy: Kombinace nově počítá 1. část podle rozsahu a 2. část podle první dávky + plánu.
+// v.1.1 (605) – Soustruhy: Kombinace nově počítá 2. část ze společného plánu pro Lis + Volné.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

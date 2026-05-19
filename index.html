@@ -392,7 +392,7 @@
     </div>
 
     <div id="soustruhyComboPanel" class="subPanel calcPanel calcPanel--form">
-      <div class="smallText">Kombinace: když část směny pojede Lis a část Volné. Vyber, co pojedeš jako první; u první části zadej první a poslední dávku, u druhé první dávku a plán.</div>
+      <div class="smallText">Kombinace: když část směny pojede Lis a část Volné. U 1. části zadej známý rozsah, u 2. části jen první dávku a pod tím celkový plán pro obě části dohromady.</div>
       <details class="soustruhComboDetails calcDetails calcDetailsInner" open>
         <summary>Pořadí práce</summary>
         <div class="soustruhComboDetailsBody">
@@ -403,25 +403,7 @@
           <div class="smallText">Druhá část se dopočítá automaticky jako ta druhá možnost.</div>
         </div>
       </details>
-      <details class="soustruhComboDetails calcDetails calcDetailsInner" open>
-        <summary>1. část – známý rozsah</summary>
-        <div class="soustruhComboDetailsBody">
-          <label>První dávka 1. části</label>
-          <input id="combo_first_start" type="number" autocomplete="off">
-          <label>Poslední dávka 1. části</label>
-          <input id="combo_first_end" type="number" autocomplete="off">
-        </div>
-      </details>
-      <details class="soustruhComboDetails calcDetails calcDetailsInner" open>
-        <summary>2. část – dopočítat podle plánu</summary>
-        <div class="soustruhComboDetailsBody">
-          <label>První dávka 2. části</label>
-          <input id="combo_second_start" type="number" autocomplete="off">
-          <label>Plán 2. části</label>
-          <input id="combo_second_plan" type="number" autocomplete="off">
-        </div>
-      </details>
-      <details class="soustruhComboDetails calcDetails calcDetailsInner">
+      <details id="comboFreeSettingsDetails" class="soustruhComboDetails calcDetails calcDetailsInner" open>
         <summary>Nastavení Volné</summary>
         <div class="soustruhComboDetailsBody">
           <div class="bgrid calcChoiceGrid soustruhComboChoiceGrid">
@@ -444,6 +426,30 @@
               <div><label>4. dávka</label><input id="combo106_c4" type="number"></div>
             </div>
           </div>
+        </div>
+      </details>
+      <details class="soustruhComboDetails calcDetails calcDetailsInner" open>
+        <summary>1. část – známý rozsah</summary>
+        <div class="soustruhComboDetailsBody">
+          <label>První dávka 1. části</label>
+          <input id="combo_first_start" type="number" autocomplete="off">
+          <label>Poslední dávka 1. části</label>
+          <input id="combo_first_end" type="number" autocomplete="off">
+        </div>
+      </details>
+      <details class="soustruhComboDetails calcDetails calcDetailsInner" open>
+        <summary>2. část – dopočítat konec</summary>
+        <div class="soustruhComboDetailsBody">
+          <label>První dávka 2. části</label>
+          <input id="combo_second_start" type="number" autocomplete="off">
+        </div>
+      </details>
+      <details class="soustruhComboDetails calcDetails calcDetailsInner" open>
+        <summary>Plán celkem</summary>
+        <div class="soustruhComboDetailsBody">
+          <label>Plán celkem za Lis + Volné</label>
+          <input id="combo_second_plan" type="number" autocomplete="off">
+          <div class="smallText">Do plánu se počítají kusy z obou částí. Appka odečte 1. část a 2. část dopočítá ze zbytku.</div>
         </div>
       </details>
       <button class="soustruhCalcBtn calcPrimaryBtn" data-action="calc-soustruhy-combo">Spočítej kombinaci</button>

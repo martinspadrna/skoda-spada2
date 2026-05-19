@@ -1,3 +1,11 @@
+## v.1.1 (605)
+- Soustruhy / Kombinace: u 2. části se nově zadává jen číslo první dávky.
+- Plán je nově samostatný celkový plán pro Lis + Volné; appka odečte kusy z 1. části a 2. část dopočítá jen ze zbytku.
+- Nastavení Volné je v Kombinaci otevřené hned nahoře u volby pořadí, aby bylo po zvolení Volného po ruce.
+- Výsledek ukazuje celkový plán, kolik po 1. části zbývalo pro 2. část a na jaké dávce druhá část skončí.
+- Kalírenské dopočítání po 4 dávkách zůstává dole a počítá se jen z části Volné.
+- Verze sjednocena na v.1.1 (605), cache na v1.1-605 a Supabase realtime kanál na rak-public-live-v605.
+
 ## v.1.1 (604)
 - Soustruhy / Kombinace: zadávání je předělané podle reálného postupu práce. Vybere se, co jede jako první: Lis nebo Volné.
 - U 1. části se zadává číslo první a poslední dávky, takže appka bere známý hotový rozsah.
