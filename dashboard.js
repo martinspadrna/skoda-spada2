@@ -675,7 +675,8 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
       ].join(''), 'dashboardFallbackHero');
     }
 
-    setCardSimple('dashCalendar', 'Kalendář', calendarText, special ? String(special.label || '') : '', '', false, fallbackDashboardIcons.calendar);
+    const calendarMeta = safeCall(() => typeof getCalendarSpecialText === 'function' ? getCalendarSpecialText(now) : (special ? String(special.label || '') : ''), special ? String(special.label || '') : '');
+    setCardSimple('dashCalendar', 'Kalendář', calendarText, calendarMeta, '', false, fallbackDashboardIcons.calendar);
     setCardSimple('dashCountdown', active ? 'Zbývá' : (nextWorkShift ? 'Začíná' : 'Zbývá'), countdownText, countdownMeta, '', false, fallbackDashboardIcons.countdown);
     setCardSimple('dashKantyna', 'Kantýna', foodText(foodA), foodMeta(foodA), foodA && foodA.isOpen ? 'is-open' : 'is-closed', true, fallbackDashboardIcons.kantyna);
     setCardSimple('dashJidelna', 'Jídelna', foodText(foodB), foodMeta(foodB), foodB && foodB.isOpen ? 'is-open' : 'is-closed', true, fallbackDashboardIcons.jidelna);

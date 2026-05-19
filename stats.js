@@ -681,8 +681,78 @@ function formatCalendarDateLabel(now) {
   }).format(now);
 }
 
+function getDashboardProductionWeekNumber(now) {
+  const d = now instanceof Date ? new Date(now) : new Date();
+  if (!(d instanceof Date) || Number.isNaN(d.getTime())) return null;
+  const weekStart = typeof startOfWeekMonday === "function" ? startOfWeekMonday(d) : new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const base = typeof startOfWeekMonday === "function"
+    ? startOfWeekMonday(new Date(2026, 0, 12, 0, 0, 0, 0))
+    : new Date(2026, 0, 12, 0, 0, 0, 0);
+  const diff = Math.floor((weekStart.getTime() - base.getTime()) / 604800000);
+  return Math.max(1, diff + 1);
+}
+
+function isDashboardMorningShiftTime(now) {
+  const d = now instanceof Date ? now : new Date();
+  const hour = d.getHours();
+  if (hour < 6 || hour >= 18) return false;
+  if (typeof getActiveShiftNow === "function") {
+    try {
+      const active = getActiveShiftNow(d);
+      if (active && active.label) return /ranní/i.test(String(active.label));
+    } catch (err) {
+      // Když kontrola směny selže, kalendář se řídí aspoň časovým oknem ranní.
+    }
+  }
+  return true;
+}
+
+function getFirstMorningShiftDateInMonth(now) {
+  const d = now instanceof Date ? now : new Date();
+  const year = d.getFullYear();
+  const month = d.getMonth() + 1;
+  const monthKey = month + "/" + String(year).slice(-2);
+  const monthData = app && app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
+  const rows = monthData && monthData.hard && Array.isArray(monthData.hard.rows)
+    ? monthData.hard.rows
+    : (monthData && monthData.soft && Array.isArray(monthData.soft.rows) ? monthData.soft.rows : []);
+
+  const candidates = rows
+    .map(row => typeof parseDateToken === "function" ? parseDateToken(row && row.date) : null)
+    .filter(parsed => parsed && parsed.month === month && /^R/i.test(String(parsed.shift || "").trim()))
+    .map(parsed => parsed.day)
+    .filter(day => Number.isFinite(day))
+    .sort((a, b) => a - b);
+
+  if (candidates.length) return new Date(year, month - 1, candidates[0], 6, 0, 0, 0);
+  return new Date(year, month - 1, 1, 6, 0, 0, 0);
+}
+
+function isSameCalendarDay(a, b) {
+  return !!(a && b &&
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate());
+}
+
+function getDashboardCalendarWorkNotes(now) {
+  const d = now instanceof Date ? now : new Date();
+  if (!isDashboardMorningShiftTime(d)) return [];
+
+  const notes = [];
+  if (d.getDay() === 1) notes.push("Brusy- spálení");
+
+  const firstMorning = getFirstMorningShiftDateInMonth(d);
+  if (isSameCalendarDay(d, firstMorning)) notes.push("Roznýtování- laborka");
+
+  return notes;
+}
+
 function getCalendarSpecialText(now) {
   const parts = [];
+  const weekNumber = getDashboardProductionWeekNumber(now);
+  if (weekNumber) parts.push("Týden " + weekNumber);
+
   const special = getSpecialWorkInfo(now);
   if (special) {
     if (special.type === "holiday") {
@@ -691,6 +761,8 @@ function getCalendarSpecialText(now) {
       parts.push(special.label);
     }
   }
+
+  getDashboardCalendarWorkNotes(now).forEach(note => parts.push(note));
 
   return parts.join(" · ") || "Bez událostí";
 }

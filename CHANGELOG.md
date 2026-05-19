@@ -1,3 +1,17 @@
+## v.1.1 (624)
+- Brusy / TBKR07 / AH: doba orovnání změněna na 6m00s / 360 s; čas výroby zůstává 1m03s a orovnává po 88 ks.
+- Online hodnota v Supabase `machine_settings` pro `TBKR07-AH` byla přepsaná na 360 s i ve `settings_json`.
+- Opraveno `permission denied for table machine_settings`: doplněný databázový GRANT pro zápis a samostatné RLS policy pro INSERT/UPDATE z appky.
+- Lokální fallback v appce má stejnou hodnotu jako online data, aby se po offline startu nevracelo starých 6m40s.
+- Verze sjednocena na v.1.1 (624), cache na v1.1-624 a Supabase realtime kanál na rak-public-live-v624.
+
+## v.1.1 (623)
+- Dashboard / Kalendář nově ukazuje aktuální výrobní týden; aktuální nastavení vychází pro 19.5.2026 jako týden 19.
+- Každé pondělí během ranní směny se v kalendáři ukáže poznámka „Brusy- spálení“.
+- Každou první ranní směnu v měsíci se v kalendáři ukáže poznámka „Roznýtování- laborka“.
+- Obě nové poznámky se řídí kalendářem/ranní směnou a nejsou navázané na to, jestli má zrovna směnu D.
+- Verze sjednocena na v.1.1 (623), cache na v1.1-623 a Supabase realtime kanál na rak-public-live-v623.
+
 ## v.1.1 (622)
 - Opraveny parametry pro Brusy: TBKR07 / AH má čas výroby 1m03s, orovnává po 88 ks a doba orovnání je 6m40s.
 - Opraveno načítání uložených parametrů Brusů: výpočty už hledají stejné klíče stroj/index, jaké ukládá nastavení strojů (`TBKR07-AH` místo staré varianty s podtržítkem).

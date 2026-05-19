@@ -1,4 +1,4 @@
-// v.1.1 (622) – Oprava parametrů TBKR07/AH a ukládání nastavení strojů.
+// v.1.1 (624) – Machine settings: TBKR07/AH 6m orovnání + oprava permission denied.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
