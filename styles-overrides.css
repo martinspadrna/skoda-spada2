@@ -5057,3 +5057,108 @@ html body #brusy.calcPage .brusIndexGrid{
 #brusy #outBTime{
   margin-top:10px !important;
 }
+
+/* v.1.1 (614) – Láďova kalkulačka: tvrdší, ale bezpečné odlehčení pro low-end/Láďův režim. */
+body.lightweightMode,
+body.lowEndDevice,
+body.ladaMode{
+  --rak-lada-blur:0px;
+  --rak-lada-shadow:0 4px 10px rgba(0,0,0,.18);
+  background-attachment:scroll !important;
+}
+body.ladaMode .card,
+body.ladaMode .tile,
+body.ladaMode .listItem,
+body.ladaMode .bbtn,
+body.ladaMode .calcTile,
+body.ladaMode .bottomNav,
+body.ladaMode .bottomNavBtn,
+body.ladaMode .bottomNavMenuBtn,
+body.ladaMode .appMenuCard,
+body.ladaMode .appMenuAction,
+body.ladaMode .appMenuThemeCard,
+body.ladaMode .appMenuThemeSummary,
+body.ladaMode .rakUpdateToast,
+body.ladaMode .dashboardSyncBadge,
+body.ladaMode .qrModal,
+body.ladaMode .personScheduleModal,
+body.ladaMode .foodScheduleModal,
+body.ladaMode .calendarModal,
+body.ladaMode #games .gamesStage,
+body.ladaMode #games .gamesShellTop,
+body.ladaMode #games .gamesActiveAccountBar,
+body.ladaMode #games .gamesDevFolder,
+body.ladaMode #games .gamesProfilesFolder,
+body.ladaMode #games .gamesAchievementsFolder,
+body.ladaMode #games .gamesStatsFolder,
+body.ladaMode #games .gamesLaunchTile,
+body.ladaMode #games .gamesStatsCard,
+body.ladaMode #games .gamesTop3Card,
+body.ladaMode #games .arcadePanel,
+body.ladaMode #games .arcadeBoardWrap,
+body.ladaMode #games .gameBoard{
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+  box-shadow:var(--rak-lada-shadow) !important;
+}
+body.ladaMode .dashboardHeroCard,
+body.ladaMode .dashboardCard,
+body.ladaMode .appMenuCard,
+body.ladaMode .calcTile,
+body.ladaMode .tile,
+body.ladaMode .listItem,
+body.ladaMode .bbtn,
+body.ladaMode #games .gamesLaunchTile,
+body.ladaMode #games .gamesStatsCard,
+body.ladaMode #games .gamesTop3Card{
+  background:rgba(10,16,13,.78) !important;
+  border-color:rgba(255,255,255,.08) !important;
+}
+body.ladaMode .dashboardHeroCard::before,
+body.ladaMode .dashboardHeroCard::after,
+body.ladaMode .dashboardCard::before,
+body.ladaMode .dashboardCard::after,
+body.ladaMode .card::before,
+body.ladaMode .card::after,
+body.ladaMode .tile::before,
+body.ladaMode .tile::after,
+body.ladaMode .calcTile::before,
+body.ladaMode .calcTile::after,
+body.ladaMode .appMenuCard::before,
+body.ladaMode .appMenuCard::after,
+body.ladaMode #games .arcadeBoardWrap::before,
+body.ladaMode #games .arcadeBoardWrap::after{
+  display:none !important;
+  content:none !important;
+}
+body.ladaMode *,
+body.ladaMode *::before,
+body.ladaMode *::after{
+  transition-duration:0s !important;
+  animation-duration:.001ms !important;
+  animation-iteration-count:1 !important;
+  scroll-behavior:auto !important;
+}
+body.ladaMode img,
+body.ladaMode svg,
+body.ladaMode canvas,
+body.ladaMode .bottomNavIconImg,
+body.ladaMode .dashboardIconImg,
+body.ladaMode .dashboardIconSvg{
+  filter:none !important;
+  will-change:auto !important;
+}
+body.ladaMode #games .arcadeCanvasWrap,
+body.ladaMode #games .gameFlapBoard,
+body.ladaMode #games .gameSnakeBoard,
+body.ladaMode #games .game2048Board{
+  contain:layout paint style !important;
+  transform:none !important;
+  perspective:none !important;
+}
+body.ladaMode .bottomNavBtn.active,
+body.ladaMode .bottomNavBtn.active .bottomNavIcon,
+body.ladaMode #games .gamesLaunchTile:active{
+  transform:none !important;
+}
+

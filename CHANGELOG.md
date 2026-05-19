@@ -1,3 +1,67 @@
+## v.1.1 (617)
+- Fáze 8 — PWA / Service Worker hardening dokončena na 100 %.
+- Service worker nově vrací finální offline readiness stav: `phase8CompletionMode`, `phase8Ready` a poměr připravenosti app shell cache.
+- Diagnostika aplikace nově ukazuje, jestli je app shell připravený pro offline spuštění a na kolik procent je cache kompletní.
+- Verze sjednocena na v.1.1 (617), cache na v1.1-617 a Supabase realtime kanál na rak-public-live-v617.
+
+## v.1.1 (616)
+- Fáze 8 / PWA: statické cache-first soubory mimo cache už při slabé síti nepadají do nekonečného čekání, ale používají stejný timeout jako ostatní síťový fallback.
+- Diagnostika PWA nově ukazuje režim `staticCacheFirstTimeoutMode`.
+- Verze sjednocena na v.1.1 (616), cache na v1.1-616 a Supabase realtime kanál na rak-public-live-v616.
+
+## v.1.1 (615)
+- Fáze 8 — PWA/SW: navigace a same-origin požadavky mají časový limit pro rychlejší návrat do cache při slabé nebo zaseklé síti.
+- Service worker při navigaci čeká krátce na navigation preload a potom přejde na běžný fetch s timeoutem; při selhání použije offline/cache fallback jako dřív.
+- Diagnostika PWA nově ukazuje režim `network-timeout-cache-fallback` a časové limity síťového fallbacku.
+- Fáze 8 — PWA / Service Worker hardening posunuta na cca 92 %.
+- Verze sjednocena na v.1.1 (615), cache na v1.1-615 a Supabase realtime kanál na rak-public-live-v615.
+
+## v.1.1 (614)
+- Láďův režim / low-end zařízení: automatické zapnutí odlehčeného profilu je spolehlivější i po starším uloženém nastavení, pokud ho uživatel ručně nevypnul.
+- Přidána společná třída `ladaMode`, aby hry, dashboard i obecné UI používaly stejný výkonový profil.
+- V Láďově režimu se vypíná další těžký blur, zjemňují se stíny, ruší se přechody/animace a canvas hry používají DPR limit 1 pro slabší zařízení.
+- Verze sjednocena na v.1.1 (614), cache na v1.1-614 a Supabase realtime kanál na rak-public-live-v614.
+
+## v.1.1 (613)
+- Fáze 8 — PWA/SW: při aktivaci service workeru se runtime cache bezpečně ořeže na povolený limit.
+- Diagnostika PWA ukazuje režim runtime trimu a počty položek před/po ořezu.
+- Verze sjednocena na v.1.1 (613), cache na v1.1-613 a Supabase realtime kanál na rak-public-live-v613.
+
+## v.1.1 (612)
+- PWA / Service Worker hardening: ukládání do cache má nově společný guard, který pouští jen bezpečně cacheovatelné odpovědi.
+- App shell precache, runtime cache i navigační fallback už neukládají částečné/problematičtější odpovědi typu HTTP 206 nebo neplatné response objekty.
+- Diagnostika nově vrací `cacheableResponseMode` a O aplikaci ho ukazuje v PWA/SW diagnostice.
+- Fáze 8 — PWA / Service Worker hardening posunuta na cca 84 %.
+- Verze sjednocena na v.1.1 (612), cache na v1.1-612 a Supabase realtime kanál na rak-public-live-v612.
+
+## v.1.1 (611)
+- PWA / Service Worker hardening: úklid cache při aktivaci je nově omezený jen na staré RaK cache `rotace-static-*` a `rotace-runtime-*`.
+- Service worker už nemaže všechny ostatní cache na stejné doméně, takže je bezpečnější při běhu vedle dalších projektů nebo testovacích verzí.
+- Diagnostika nově vrací `staleCacheCleanupMode`, počty spravovaných/starých RaK cache a počet smazaných starých cache.
+- Fáze 8 — PWA / Service Worker hardening posunuta na cca 80 %.
+- Verze sjednocena na v.1.1 (611), cache na v1.1-611 a Supabase realtime kanál na rak-public-live-v611.
+
+## v.1.1 (610)
+- PWA / Service Worker hardening: service worker při aktivaci automaticky zkontroluje, jestli v precache nechybí povinné položky app shellu.
+- Pokud je precache neúplná, zkusí chybějící položky sám doplnit ještě během aktivace a stav rovnou pošle otevřeným oknům appky.
+- Diagnostika nově vrací `activatePrecacheRepairMode`, `activatePrecacheRepairTriggered`, čas poslední aktivační opravy a případnou chybu.
+- Fáze 8 — PWA / Service Worker hardening posunuta na cca 76 %.
+- Verze sjednocena na v.1.1 (610), cache na v1.1-610 a Supabase realtime kanál na rak-public-live-v610.
+
+## v.1.1 (609)
+- PWA / Service Worker hardening: dotazy appky na stav cache service workeru jsou nově hlídané krátkým throttlingem, aby se při návratu do appky neposílalo víc stejných `GET_CACHE_STATUS` zpráv najednou.
+- Důležité kontroly po registraci, aktualizaci, `controllerchange` a návratu online zůstávají vynucené, takže se neztratí kontrola nové cache ani automatická oprava precache.
+- Diagnostika PWA nově sleduje `swCacheStatusRequestSkips`, `swCacheStatusRequestMode` a čas posledního požadavku na stav cache.
+- Fáze 8 — PWA / Service Worker hardening posunuta na cca 72 %.
+- Verze sjednocena na v.1.1 (609), cache na v1.1-609 a Supabase realtime kanál na rak-public-live-v609.
+
+## v.1.1 (608)
+- PWA / Service Worker hardening: appka umí po zjištění chybějících položek app shellu požádat service worker o automatickou opravu precache.
+- Service worker nově podporuje zprávu `REPAIR_PRECACHE`, znovu stáhne jen chybějící položky a uloží je pod čisté stabilní cache klíče.
+- Diagnostika nově vrací `precacheRepairMode`, počty opravovaných položek a výsledek poslední opravy.
+- Fáze 8 — PWA / Service Worker hardening posunuta na cca 68 %.
+- Verze sjednocena na v.1.1 (608), cache na v1.1-608 a Supabase realtime kanál na rak-public-live-v608.
+
 ## v.1.1 (607)
 - Brusy / Kdy bude hotovo: popisek pole je upravený na „Kolik dávek ještě – včetně načaté“, aby bylo jasné, že se počítá i rozdělaná dávka.
 - PWA / Service Worker hardening: diagnostika precache nově kontroluje, jestli v app shell cache nechybí některá povinná položka.

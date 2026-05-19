@@ -288,7 +288,9 @@ function loadUiPrefs() {
     return {
       compact: !!parsed.compact,
       reduceMotion: false,
-      lightweight: lightweightManual ? storedLightweight : (autoLightweight ? storedLightweight : false),
+      // Když zařízení samo vypadá jako slabší, Láďův režim se má zapnout i po starším uloženém nastavení.
+      // Vypnout ho může jen ruční volba v nastavení.
+      lightweight: lightweightManual ? storedLightweight : autoLightweight,
       lightweightManual
     };
   } catch (err) {
@@ -315,20 +317,25 @@ function saveUiPrefs(prefs) {
 }
 
 function applyUiPrefs(prefs) {
-  const next = saveUiPrefs(prefs || loadUiPrefs());
-  const lightweight = !!next.lightweight;
   const lowEndInfo = getLowEndDeviceInfo();
   const lowEndDetected = !!lowEndInfo.lowEnd;
+  const incoming = Object.assign({}, prefs || loadUiPrefs());
+  if (lowEndDetected && !incoming.lightweightManual) incoming.lightweight = true;
+  const next = saveUiPrefs(incoming);
+  const lightweight = !!next.lightweight;
+  const ladaMode = lightweight || lowEndDetected;
   document.body.classList.toggle('compactUI', !!next.compact);
-  document.body.classList.toggle('reduceMotion', !!next.reduceMotion || lightweight);
+  document.body.classList.toggle('reduceMotion', !!next.reduceMotion || ladaMode);
   document.body.classList.toggle('lightweightMode', lightweight);
+  document.body.classList.toggle('ladaMode', ladaMode);
   document.body.classList.toggle('lowEndDevice', lowEndDetected);
   try {
     document.documentElement.dataset.rakLightweight = lightweight ? 'on' : 'off';
     document.documentElement.dataset.rakLightweightLabel = LIGHTWEIGHT_MODE_LABEL;
     document.documentElement.dataset.rakLowEndDevice = lowEndDetected ? 'yes' : 'no';
     document.documentElement.dataset.rakLowEndReason = lowEndDetected ? lowEndInfo.reasons.join(', ') : '';
-    document.documentElement.dataset.rakMotion = (next.reduceMotion || lightweight) ? 'reduced' : 'normal';
+    document.documentElement.dataset.rakPerformanceMode = ladaMode ? (lowEndDetected ? 'lada-auto-low-end' : 'lada-manual') : 'normal';
+    document.documentElement.dataset.rakMotion = (next.reduceMotion || ladaMode) ? 'reduced' : 'normal';
   } catch (err) {}
   if (typeof app !== 'undefined') {
     app.uiPrefs = next;
@@ -358,10 +365,10 @@ applyUiPrefs(loadUiPrefs());
 function getRakPerformanceDprMax() {
   try {
     const body = document.body;
-    const lite = !!(body && body.classList && (body.classList.contains('lightweightMode') || body.classList.contains('lowEndDevice')));
-    if (lite) return 1.15;
+    const lite = !!(body && body.classList && (body.classList.contains('lightweightMode') || body.classList.contains('lowEndDevice') || body.classList.contains('ladaMode')));
+    if (lite) return 1;
     const info = typeof getLowEndDeviceInfo === 'function' ? getLowEndDeviceInfo() : null;
-    if (info && info.lowEnd) return 1.15;
+    if (info && info.lowEnd) return 1;
   } catch (err) {}
   return 2;
 }
@@ -2844,16 +2851,17 @@ function buildAppHistoryHtml(versionText) {
       range: versionText,
       title: 'Aktuální build',
       lines: [
-        'Fáze 8 — PWA / Service Worker hardening je zhruba na 64 %.',
+        'Fáze 8 — PWA / Service Worker hardening je dokončená na 100 %. Tenhle build doplňuje finální offline readiness kontrolu app shellu a uzavírá SW/cache stabilizační část.',
         'Soustruhy mají u Volné 126 a Volné 106 kalírenské čtveřice schované dole v rozbalovacím bloku, kde je společně zadání první kalírenské dávky i výsledek.',
         'Volba Kombinace u Soustruhů má teď společný plán pro Lis + Volné: 1. část se zadá jako známý rozsah, u 2. části se zadá jen první dávka a appka dopočítá konec ze zbytku plánu.',
         'Nastavení Volné je v Kombinaci otevřené hned nahoře u volby pořadí, aby bylo po ruce při jízdě Volného.',
         'Dashboard při aktivní směně D ve zvýrazněném horním poli neopakuje text „Směna D je právě v práci“ a ukazuje jen, kdo chybí.',
-        'Service worker má chytřejší fallback pro same-origin požadavky a nově v diagnostice hlídá i chybějící položky app shellu v precache.'
+        'Service worker má chytřejší fallback pro same-origin požadavky, hlídá a opravuje chybějící položky app shellu, při aktivaci uklízí jen staré RaK cache, do cache ukládá jen bezpečně cacheovatelné odpovědi a runtime cache ořezává na povolený limit.',
+        'Láďův režim nově sjednocuje ruční i automatický low-end profil přes třídu ladaMode a vypíná další těžké blur/stínové efekty na slabších zařízeních.'
       ]
     },
     {
-      range: 'v.1.1 500–607',
+      range: 'v.1.1 500–617',
       title: 'Stabilizace, hry, Supabase a glass vzhled',
       lines: [
         'Proběhlo velké stabilizační období: Láďův režim, cleanup manager, dokončení game performance, dokončený Supabase hardening a začátek Fáze 7 Data optimization včetně dalšího odlehčení Láďova režimu, úspornější Supabase lokální cache a méně zbytečných DOM renderů včetně Otevírací doby/Jídelního lístku, úspornějších selectů pro roky/měsíce, class toggle guardů u kalkulaček, style guardů u Theme/Pozadí/spodní lišty a závěrečného úklidu lokální read/JSON cache. Po dokončení Fáze 7 začala Fáze 8: tvrdší PWA/service worker chování, bezpečnější precache, řízenější update checky a diagnostika cache stavu.',
@@ -3917,7 +3925,9 @@ function bindAppMenuHandlers(body) {
           'PWA/SW: fáze ' + String(pwaStatus.phasePercent || 0) + '% · controller ' + (pwaStatus.hasController ? 'ano' : 'ne') + ' · update toast ' + (pwaStatus.updateToastVisible ? 'viditelný' : 'ne') + ' · verze cache ' + (pwaStatus.swVersionMismatch ? 'nesedí' : 'sedí'),
           'PWA update check: běhy/skip/join ' + String(pwaStatus.updateChecks || 0) + '/' + String(pwaStatus.updateCheckSkips || 0) + '/' + String(pwaStatus.updateCheckJoins || 0) + ' · update volání ' + String(pwaStatus.registrationUpdates || 0) + ' · chyby ' + String(pwaStatus.registrationUpdateErrors || 0),
           'PWA zprávy SW: celkem/verze/aktivace/cache ' + String(pwaStatus.swMessages || 0) + '/' + String(pwaStatus.swVersionMessages || 0) + '/' + String(pwaStatus.swActivatedMessages || 0) + '/' + String(pwaStatus.swCacheStatusMessages || 0) + ' · poslední ' + String(pwaStatus.lastMessageType || '—'),
-          'PWA cache: verze ' + String(pwaStatus.swCacheVersion || '—') + ' / oček. ' + String(pwaStatus.swExpectedCacheVersion || '—') + ' · mismatch ' + String(pwaStatus.swVersionMismatchCount || 0) + ' · update/skip ' + String(pwaStatus.swVersionMismatchUpdateChecks || 0) + '/' + String(pwaStatus.swVersionMismatchUpdateSkips || 0) + ' · static/runtime ' + String(pwaStatus.swStaticCacheEntries || 0) + '/' + String(pwaStatus.swRuntimeCacheEntries || 0) + ' · precache OK/chyby/chybí ' + String(pwaStatus.swPrecacheSuccessCount || 0) + '/' + String(pwaStatus.swPrecacheFailedCount || 0) + '/' + String(pwaStatus.swPrecacheMissingCount || 0) + ' · požadavky ' + String(pwaStatus.swCacheStatusRequests || 0) + ' · klienti ' + String(pwaStatus.swClientsCount || 0) + ' · preload ' + (pwaStatus.swNavigationPreloadEnabled ? 'ano' : 'ne')
+          'PWA cache: verze ' + String(pwaStatus.swCacheVersion || '—') + ' / oček. ' + String(pwaStatus.swExpectedCacheVersion || '—') + ' · mismatch ' + String(pwaStatus.swVersionMismatchCount || 0) + ' · update/skip ' + String(pwaStatus.swVersionMismatchUpdateChecks || 0) + '/' + String(pwaStatus.swVersionMismatchUpdateSkips || 0) + ' · static/runtime ' + String(pwaStatus.swStaticCacheEntries || 0) + '/' + String(pwaStatus.swRuntimeCacheEntries || 0) + ' · runtime trim ' + String(pwaStatus.swRuntimeTrimDeletedCount || 0) + '/' + String(pwaStatus.swRuntimeTrimBeforeCount || 0) + ' · staré RaK cache/smazáno ' + String(pwaStatus.swStaleRakCacheCount || 0) + '/' + String(pwaStatus.swStaleRakCacheDeletedCount || 0) + ' · precache OK/chyby/chybí ' + String(pwaStatus.swPrecacheSuccessCount || 0) + '/' + String(pwaStatus.swPrecacheFailedCount || 0) + '/' + String(pwaStatus.swPrecacheMissingCount || 0) + ' · požadavky/skip ' + String(pwaStatus.swCacheStatusRequests || 0) + '/' + String(pwaStatus.swCacheStatusRequestSkips || 0) + ' · klienti ' + String(pwaStatus.swClientsCount || 0) + ' · preload ' + (pwaStatus.swNavigationPreloadEnabled ? 'ano' : 'ne'),
+          'PWA cache režim: lookup ' + String(pwaStatus.swCacheLookupMode || '—') + ' · ukládání ' + String(pwaStatus.swCacheableResponseMode || '—') + ' · trim ' + String(pwaStatus.swActivateRuntimeTrimMode || '—') + ' · síť fallback ' + String(pwaStatus.swNetworkTimeoutFallbackMode || '—') + ' (' + String(pwaStatus.swNetworkFallbackTimeoutMs || 0) + ' ms)' + ' · static timeout ' + String(pwaStatus.swStaticCacheFirstTimeoutMode || '—'),
+          'PWA dokončení: ' + String(pwaStatus.swPhase8CompletionMode || '—') + ' · připraveno ' + (pwaStatus.swPhase8Ready ? 'ano' : 'ne') + ' · app shell ' + String(pwaStatus.swAppShellCachedRatio || 0) + '%'
         ] : [];
         const dataOptDiag = dataOptStatus ? [
           'Data opt: zápisy/skipy ' + String(dataOptStatus.localStorageWrites || 0) + '/' + String(dataOptStatus.localStorageSkippedWrites || 0) + ' · čtení/cache ' + String(dataOptStatus.localStorageReads || 0) + '/' + String(dataOptStatus.localStorageReadCacheHits || 0),
@@ -4149,7 +4159,7 @@ function openAppMenu(view) {
         '  <div class="appMenuCardTitle">Nastavení aplikace</div>',
         '  <div class="appMenuText">',
         '    <div>Kompaktní režim a Láďův režim se ukládají jen do tohoto zařízení a promítnou se napříč celou appkou.</div>',
-        '    <div>Láďův režim v sobě zahrnuje méně animací, vypnutý těžký blur, slabší stíny, jednodušší pozadí a nižší canvas rozlišení u her pro starší/slabší mobily.</div>',
+        '    <div>Láďův režim v sobě zahrnuje méně animací, vypnutý těžký blur, slabší stíny, jednodušší pozadí a nižší canvas rozlišení u her pro starší/slabší mobily. Když appka pozná slabší zařízení, zapne si odlehčený profil sama.</div>',
         '  </div>',
         '  <div class="appMenuSettingsList">',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-pref="compact">' + (prefs.compact ? '✓ ' : '') + 'Kompaktní režim</button>',

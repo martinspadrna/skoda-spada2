@@ -1,4 +1,4 @@
-// v.1.1 (607) – Brusy: upravený popisek dávek v Kdy bude hotovo; PWA/SW diagnostika hlídá chybějící položky app shellu.
+// v.1.1 (617) – PWA/SW: dokončení Fáze 8 a finální offline readiness diagnostika.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
@@ -794,6 +794,8 @@ function installPwaAndConnectivityHooks() {
   const LIVE_REFRESH_INTERVAL_MS = 4 * 60 * 1000;
   const SW_UPDATE_CHECK_INTERVAL_MS = 10 * 60 * 1000;
   const SW_VERSION_MISMATCH_CHECK_MS = 45 * 1000;
+  const SW_PRECACHE_REPAIR_GUARD_MS = 2 * 60 * 1000;
+  const SW_CACHE_STATUS_REQUEST_GUARD_MS = 20 * 1000;
   const STALE_REFRESH_GUARD_MS = 15 * 1000;
   const LIVE_CHANNEL_NAME = 'rotace-live-updates';
   const SW_UPDATE_NOTICE_KEY = 'rotace_sw_update_notice_v1';
@@ -814,11 +816,13 @@ function installPwaAndConnectivityHooks() {
   let swUpdateCheckPromise = null;
   let lastSwUpdateCheckAt = 0;
   let lastSwVersionMismatchCheckAt = 0;
+  let lastSwPrecacheRepairAt = 0;
+  let lastSwCacheStatusRequestAt = 0;
   let deferredInstallPrompt = null;
 
   const pwaHardeningStatus = window.__rakPwaHardeningStatus || {
     phase: 'phase-8-pwa-service-worker-hardening',
-    phasePercent: 64,
+    phasePercent: 100,
     updateChecks: 0,
     updateCheckSkips: 0,
     updateCheckJoins: 0,
@@ -829,6 +833,9 @@ function installPwaAndConnectivityHooks() {
     swActivatedMessages: 0,
     swCacheStatusMessages: 0,
     swCacheStatusRequests: 0,
+    swCacheStatusRequestSkips: 0,
+    swCacheStatusRequestMode: 'throttled-cache-status-requests',
+    swLastCacheStatusRequestAt: 0,
     swCacheStatusErrors: 0,
     swCacheVersion: '',
     swStaticCacheEntries: 0,
@@ -837,9 +844,35 @@ function installPwaAndConnectivityHooks() {
     swPrecacheSuccessCount: 0,
     swPrecacheFailedCount: 0,
     swPrecacheMissingCount: 0,
+    swPrecacheRepairMode: '',
+    swPrecacheRepairRequests: 0,
+    swPrecacheRepairSkips: 0,
+    swStaleCacheCleanupMode: '',
+    swManagedRakCacheCount: 0,
+    swStaleRakCacheCount: 0,
+    swStaleRakCacheDeletedCount: 0,
+    swStaleCacheCleanupAt: 0,
+    swPrecacheRepairAttemptedCount: 0,
+    swPrecacheRepairSuccessCount: 0,
+    swPrecacheRepairFailedCount: 0,
+    swLastPrecacheRepairAt: 0,
+    swLastPrecacheRepairSource: '',
     swClientsCount: 0,
     swNavigationPreloadEnabled: false,
     swCacheLookupMode: '',
+    swCacheableResponseMode: '',
+    swActivateRuntimeTrimMode: '',
+    swNetworkTimeoutFallbackMode: '',
+    swStaticCacheFirstTimeoutMode: '',
+    swPhase8CompletionMode: '',
+    swPhase8Ready: false,
+    swAppShellCachedRatio: 0,
+    swNetworkFallbackTimeoutMs: 0,
+    swNavigationPreloadTimeoutMs: 0,
+    swRuntimeTrimBeforeCount: 0,
+    swRuntimeTrimAfterCount: 0,
+    swRuntimeTrimDeletedCount: 0,
+    swRuntimeTrimAt: 0,
     swPrecacheIntegrityMode: '',
     swExpectedCacheVersion: '',
     swVersionMismatch: false,
@@ -1036,6 +1069,33 @@ function installPwaAndConnectivityHooks() {
     } catch (err) {}
   };
 
+  const requestActiveServiceWorkerPrecacheRepair = (source) => {
+    try {
+      if (!('serviceWorker' in navigator) || !navigator.serviceWorker.controller) return false;
+      if (!navigator.onLine) {
+        pwaHardeningStatus.swPrecacheRepairSkips = Number(pwaHardeningStatus.swPrecacheRepairSkips || 0) + 1;
+        pwaHardeningStatus.swLastPrecacheRepairSource = String(source || 'offline') + ':offline';
+        return false;
+      }
+      const now = Date.now();
+      if (lastSwPrecacheRepairAt && now - lastSwPrecacheRepairAt < SW_PRECACHE_REPAIR_GUARD_MS) {
+        pwaHardeningStatus.swPrecacheRepairSkips = Number(pwaHardeningStatus.swPrecacheRepairSkips || 0) + 1;
+        pwaHardeningStatus.swLastPrecacheRepairSource = String(source || 'repair') + ':throttled';
+        return false;
+      }
+      lastSwPrecacheRepairAt = now;
+      pwaHardeningStatus.swPrecacheRepairRequests = Number(pwaHardeningStatus.swPrecacheRepairRequests || 0) + 1;
+      pwaHardeningStatus.swLastPrecacheRepairAt = now;
+      pwaHardeningStatus.swLastPrecacheRepairSource = String(source || 'cache-status');
+      navigator.serviceWorker.controller.postMessage({ type: 'REPAIR_PRECACHE', source: source || 'cache-status' });
+      return true;
+    } catch (err) {
+      pwaHardeningStatus.swCacheStatusErrors = Number(pwaHardeningStatus.swCacheStatusErrors || 0) + 1;
+      pwaHardeningStatus.swLastCacheStatusError = err && err.message ? err.message : String(err || 'precache-repair-request-error');
+      return false;
+    }
+  };
+
   const applyServiceWorkerCacheStatus = (data, source) => {
     if (!data) return;
     pwaHardeningStatus.swCacheStatusMessages = Number(pwaHardeningStatus.swCacheStatusMessages || 0) + 1;
@@ -1049,8 +1109,32 @@ function installPwaAndConnectivityHooks() {
     pwaHardeningStatus.swClientsCount = Number(data.clientsCount || 0);
     pwaHardeningStatus.swNavigationPreloadEnabled = !!data.navigationPreloadEnabled;
     pwaHardeningStatus.swCacheLookupMode = String(data.cacheLookupMode || '');
+    pwaHardeningStatus.swCacheableResponseMode = String(data.cacheableResponseMode || pwaHardeningStatus.swCacheableResponseMode || '');
+    pwaHardeningStatus.swActivateRuntimeTrimMode = String(data.activateRuntimeTrimMode || pwaHardeningStatus.swActivateRuntimeTrimMode || '');
+    pwaHardeningStatus.swNetworkTimeoutFallbackMode = String(data.networkTimeoutFallbackMode || pwaHardeningStatus.swNetworkTimeoutFallbackMode || '');
+    pwaHardeningStatus.swStaticCacheFirstTimeoutMode = String(data.staticCacheFirstTimeoutMode || pwaHardeningStatus.swStaticCacheFirstTimeoutMode || '');
+    pwaHardeningStatus.swPhase8CompletionMode = String(data.phase8CompletionMode || pwaHardeningStatus.swPhase8CompletionMode || '');
+    pwaHardeningStatus.swPhase8Ready = !!data.phase8Ready;
+    pwaHardeningStatus.swAppShellCachedRatio = Number(data.appShellCachedRatio || pwaHardeningStatus.swAppShellCachedRatio || 0);
+    pwaHardeningStatus.swNetworkFallbackTimeoutMs = Number(data.networkFallbackTimeoutMs || pwaHardeningStatus.swNetworkFallbackTimeoutMs || 0);
+    pwaHardeningStatus.swNavigationPreloadTimeoutMs = Number(data.navigationPreloadTimeoutMs || pwaHardeningStatus.swNavigationPreloadTimeoutMs || 0);
+    pwaHardeningStatus.swRuntimeTrimBeforeCount = Number(data.runtimeTrimBeforeCount || pwaHardeningStatus.swRuntimeTrimBeforeCount || 0);
+    pwaHardeningStatus.swRuntimeTrimAfterCount = Number(data.runtimeTrimAfterCount || pwaHardeningStatus.swRuntimeTrimAfterCount || 0);
+    pwaHardeningStatus.swRuntimeTrimDeletedCount = Number(data.runtimeTrimDeletedCount || pwaHardeningStatus.swRuntimeTrimDeletedCount || 0);
+    if (data.runtimeTrimAt) pwaHardeningStatus.swRuntimeTrimAt = Number(data.runtimeTrimAt || 0);
     pwaHardeningStatus.swPrecacheFetchMode = String(data.precacheFetchMode || '');
     pwaHardeningStatus.swPrecacheIntegrityMode = String(data.precacheIntegrityMode || '');
+    pwaHardeningStatus.swPrecacheRepairMode = String(data.precacheRepairMode || '');
+    pwaHardeningStatus.swStaleCacheCleanupMode = String(data.staleCacheCleanupMode || pwaHardeningStatus.swStaleCacheCleanupMode || '');
+    pwaHardeningStatus.swManagedRakCacheCount = Number(data.managedRakCacheCount || pwaHardeningStatus.swManagedRakCacheCount || 0);
+    pwaHardeningStatus.swStaleRakCacheCount = Number(data.staleRakCacheCount || 0);
+    pwaHardeningStatus.swStaleRakCacheDeletedCount = Number(data.staleRakCacheDeletedCount || pwaHardeningStatus.swStaleRakCacheDeletedCount || 0);
+    if (data.staleCacheCleanupAt) pwaHardeningStatus.swStaleCacheCleanupAt = Number(data.staleCacheCleanupAt || 0);
+    pwaHardeningStatus.swPrecacheRepairAttemptedCount = Number(data.precacheRepairAttemptedCount || pwaHardeningStatus.swPrecacheRepairAttemptedCount || 0);
+    pwaHardeningStatus.swPrecacheRepairSuccessCount = Number(data.precacheRepairSuccessCount || pwaHardeningStatus.swPrecacheRepairSuccessCount || 0);
+    pwaHardeningStatus.swPrecacheRepairFailedCount = Number(data.precacheRepairFailedCount || pwaHardeningStatus.swPrecacheRepairFailedCount || 0);
+    if (data.precacheRepairCompletedAt) pwaHardeningStatus.swLastPrecacheRepairAt = Number(data.precacheRepairCompletedAt || 0);
+    if (data.precacheRepairSource) pwaHardeningStatus.swLastPrecacheRepairSource = String(data.precacheRepairSource || '');
     pwaHardeningStatus.swLastCacheStatusAt = Date.now();
     pwaHardeningStatus.swLastCacheStatusSource = String(source || data.type || 'cache-status');
     const expectedCacheVersion = getExpectedServiceWorkerCacheVersion();
@@ -1067,12 +1151,25 @@ function installPwaAndConnectivityHooks() {
       pwaHardeningStatus.swCacheStatusErrors = Number(pwaHardeningStatus.swCacheStatusErrors || 0) + 1;
       pwaHardeningStatus.swLastCacheStatusError = String(data.error || 'cache-status-error');
     }
+    if (Number(data.precacheMissingCount || 0) > 0 && data.source !== 'precache-repair') {
+      requestActiveServiceWorkerPrecacheRepair(source || data.type || 'cache-status');
+    }
   };
 
-  const requestActiveServiceWorkerCacheStatus = (source) => {
+  const requestActiveServiceWorkerCacheStatus = (source, opts = {}) => {
     try {
       if (!('serviceWorker' in navigator) || !navigator.serviceWorker.controller) return false;
+      const force = !!(opts && opts.force);
+      const now = Date.now();
+      if (!force && lastSwCacheStatusRequestAt && now - lastSwCacheStatusRequestAt < SW_CACHE_STATUS_REQUEST_GUARD_MS) {
+        pwaHardeningStatus.swCacheStatusRequestSkips = Number(pwaHardeningStatus.swCacheStatusRequestSkips || 0) + 1;
+        pwaHardeningStatus.swLastCacheStatusSource = String(source || 'request') + ':throttled';
+        return false;
+      }
+      lastSwCacheStatusRequestAt = now;
       pwaHardeningStatus.swCacheStatusRequests = Number(pwaHardeningStatus.swCacheStatusRequests || 0) + 1;
+      pwaHardeningStatus.swCacheStatusRequestMode = 'throttled-cache-status-requests';
+      pwaHardeningStatus.swLastCacheStatusRequestAt = now;
       pwaHardeningStatus.swLastCacheStatusSource = String(source || 'request');
       navigator.serviceWorker.controller.postMessage({ type: 'GET_CACHE_STATUS', source: source || 'app' });
       return true;
@@ -1216,7 +1313,7 @@ function installPwaAndConnectivityHooks() {
         lastSwUpdateCheckAt = Date.now();
         pwaHardeningStatus.lastUpdateCheckAt = lastSwUpdateCheckAt;
         await checkForWaitingServiceWorker(reason);
-        requestActiveServiceWorkerCacheStatus(reason + '-after-update-check');
+        requestActiveServiceWorkerCacheStatus(reason + '-after-update-check', { force: true });
         return registration || null;
       } catch (err) {
         pwaHardeningStatus.registrationUpdateErrors = Number(pwaHardeningStatus.registrationUpdateErrors || 0) + 1;
@@ -1269,7 +1366,7 @@ function installPwaAndConnectivityHooks() {
         }
       }
       void checkForWaitingServiceWorker('register');
-      requestActiveServiceWorkerCacheStatus('register');
+      requestActiveServiceWorkerCacheStatus('register', { force: true });
       return registration;
     }).catch((err) => {
       console.warn('Service worker registration failed', err);
@@ -1284,7 +1381,7 @@ function installPwaAndConnectivityHooks() {
     window.__rotaceSwControllerChangeBound = true;
     registerListener(navigator.serviceWorker, 'controllerchange', () => {
       const pending = getPendingUpdateVersion();
-      requestActiveServiceWorkerCacheStatus('controllerchange');
+      requestActiveServiceWorkerCacheStatus('controllerchange', { force: true });
       if (pending && !swUpdateReloading) {
         scheduleUpdateReload('controllerchange');
       }
@@ -1380,7 +1477,7 @@ function installPwaAndConnectivityHooks() {
     if (typeof flushSupabaseSyncQueue === 'function') void flushSupabaseSyncQueue();
     void runLiveRefresh('online', { force: true });
     void refreshServiceWorkerRegistration('online', { force: true });
-    requestActiveServiceWorkerCacheStatus('online');
+    requestActiveServiceWorkerCacheStatus('online', { force: true });
     signalStateChange('online');
   });
   registerListener(window, 'offline', () => {
