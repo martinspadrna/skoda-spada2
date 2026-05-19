@@ -1,5 +1,5 @@
-const CACHE_VERSION = 'v1.1-576';
-const SW_APP_VERSION = 'v.1.1 (576)';
+const CACHE_VERSION = 'v1.1-588';
+const SW_APP_VERSION = 'v.1.1 (588)';
 const STATIC_CACHE = `rotace-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `rotace-runtime-${CACHE_VERSION}`;
 const APP_SHELL = [
@@ -63,20 +63,129 @@ const APP_SHELL = [
   './icon-1024.png'
 ];
 
+const APP_SHELL_URLS = Array.from(new Set(APP_SHELL));
 const RUNTIME_EXTENSIONS = ['.js', '.css', '.png', '.jpg', '.jpeg', '.webp', '.svg', '.ico', '.json', '.webmanifest'];
+const MAX_RUNTIME_CACHE_ENTRIES = 96;
+const SW_CACHE_META_URL = './__rak-sw-cache-status.json';
 
 const OFFLINE_FALLBACK_HTML = `<!DOCTYPE html><html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#0b0f0c"><title>Rotace a kalkulačky</title><style>html,body{margin:0;min-height:100%;background:#0b0f0c;color:#eef6ee;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}body{display:grid;place-items:center;padding:24px}main{max-width:440px;width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:24px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.35)}h1{font-size:1.35rem;line-height:1.2;margin:0 0 12px}p{margin:0;color:rgba(238,246,238,.78);line-height:1.5}small{display:block;margin-top:14px;color:rgba(238,246,238,.58)}</style></head><body><main><h1>Jsi offline</h1><p>Appka je dostupná v omezeném režimu. Jakmile se připojení vrátí, synchronizuje se poslední stav automaticky.</p><small>Rotace a kalkulačky</small></main></body></html>`;
 
-self.addEventListener('install', (event) => {
-  event.waitUntil((async () => {
-    const cache = await caches.open(STATIC_CACHE);
+async function writeCacheStatusMeta(cache, summary) {
+  try {
+    const payload = Object.assign({
+      type: 'rak-sw-cache-status',
+      cacheVersion: CACHE_VERSION,
+      appVersion: SW_APP_VERSION,
+      staticCache: STATIC_CACHE,
+      runtimeCache: RUNTIME_CACHE,
+      appShellCount: APP_SHELL_URLS.length,
+      runtimeMaxEntries: MAX_RUNTIME_CACHE_ENTRIES,
+      savedAt: Date.now()
+    }, summary || {});
+    await cache.put(SW_CACHE_META_URL, new Response(JSON.stringify(payload), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': 'no-store'
+      }
+    }));
+    return payload;
+  } catch (err) {
+    return null;
+  }
+}
+
+async function precacheAppShellSafe() {
+  const cache = await caches.open(STATIC_CACHE);
+  const failedUrls = [];
+  let successCount = 0;
+  await Promise.all(APP_SHELL_URLS.map(async (url) => {
     try {
-      await cache.addAll(APP_SHELL);
+      const request = new Request(url, { cache: 'reload' });
+      const response = await fetch(request);
+      if (response && response.ok) {
+        await cache.put(url, response.clone());
+        successCount += 1;
+      } else {
+        failedUrls.push(url);
+      }
     } catch (err) {
-      // Some cross-origin assets may fail to precache; ignore and keep the app shell.
-      console.warn('[sw] precache partial fail', err);
+      // Jedna chybějící položka nesmí shodit celou instalaci service workeru.
+      failedUrls.push(url);
+      console.warn('[sw] precache item skipped', url, err);
     }
-  })());
+  }));
+  const summary = {
+    precacheSuccessCount: successCount,
+    precacheFailedCount: failedUrls.length,
+    precacheFailedUrls: failedUrls.slice(0, 12),
+    precacheCompletedAt: Date.now()
+  };
+  await writeCacheStatusMeta(cache, summary);
+  return summary;
+}
+
+async function getSwCacheStatus() {
+  try {
+    const staticCache = await caches.open(STATIC_CACHE);
+    const runtimeCache = await caches.open(RUNTIME_CACHE);
+    const staticKeys = await staticCache.keys();
+    const runtimeKeys = await runtimeCache.keys();
+    let meta = null;
+    try {
+      const metaResponse = await staticCache.match(SW_CACHE_META_URL, { ignoreSearch: true });
+      if (metaResponse) meta = await metaResponse.json();
+    } catch (err) {}
+    let navigationPreloadEnabled = false;
+    try {
+      if ('navigationPreload' in self.registration && self.registration.navigationPreload && typeof self.registration.navigationPreload.getState === 'function') {
+        const preloadState = await self.registration.navigationPreload.getState();
+        navigationPreloadEnabled = !!(preloadState && preloadState.enabled);
+      }
+    } catch (err) {}
+    let clientsCount = 0;
+    try {
+      const clientsList = await self.clients.matchAll({ includeUncontrolled: true, type: 'window' });
+      clientsCount = Array.isArray(clientsList) ? clientsList.length : 0;
+    } catch (err) {}
+    return Object.assign({}, meta || {}, {
+      type: 'sw-cache-status',
+      cacheVersion: CACHE_VERSION,
+      appVersion: SW_APP_VERSION,
+      staticCache: STATIC_CACHE,
+      runtimeCache: RUNTIME_CACHE,
+      appShellCount: APP_SHELL_URLS.length,
+      staticCacheEntries: staticKeys.length,
+      runtimeCacheEntries: runtimeKeys.length,
+      runtimeMaxEntries: MAX_RUNTIME_CACHE_ENTRIES,
+      navigationPreloadEnabled,
+      clientsCount,
+      checkedAt: Date.now()
+    });
+  } catch (err) {
+    return {
+      type: 'sw-cache-status',
+      cacheVersion: CACHE_VERSION,
+      appVersion: SW_APP_VERSION,
+      error: err && err.message ? err.message : String(err || 'cache-status-error'),
+      checkedAt: Date.now()
+    };
+  }
+}
+
+async function trimCacheEntries(cacheName, maxEntries) {
+  if (!maxEntries || maxEntries < 1) return;
+  try {
+    const cache = await caches.open(cacheName);
+    const keys = await cache.keys();
+    if (keys.length <= maxEntries) return;
+    const deleteCount = keys.length - maxEntries;
+    await Promise.all(keys.slice(0, deleteCount).map((key) => cache.delete(key)));
+  } catch (err) {}
+}
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(precacheAppShellSafe());
 });
 
 self.addEventListener('message', (event) => {
@@ -85,9 +194,18 @@ self.addEventListener('message', (event) => {
   if (data.type === 'GET_VERSION') {
     try {
       if (event.source && event.source.postMessage) {
-        event.source.postMessage({ type: 'sw-version', version: CACHE_VERSION, appVersion: SW_APP_VERSION });
+        event.source.postMessage({ type: 'sw-version', version: CACHE_VERSION, appVersion: SW_APP_VERSION, appShellCount: APP_SHELL_URLS.length, runtimeMaxEntries: MAX_RUNTIME_CACHE_ENTRIES });
       }
     } catch (err) {}
+    return;
+  }
+  if (data.type === 'GET_CACHE_STATUS') {
+    event.waitUntil((async () => {
+      try {
+        const status = await getSwCacheStatus();
+        if (event.source && event.source.postMessage) event.source.postMessage(status);
+      } catch (err) {}
+    })());
     return;
   }
   if (data.type === 'SKIP_WAITING') {
@@ -108,10 +226,11 @@ self.addEventListener('activate', (event) => {
       } catch (err) {}
     }
     await self.clients.claim();
+    const status = await getSwCacheStatus();
     const clients = await self.clients.matchAll({ includeUncontrolled: true, type: 'window' });
     for (const client of clients) {
       try {
-        client.postMessage({ type: 'sw-activated', reason: 'activate', version: CACHE_VERSION, appVersion: SW_APP_VERSION });
+        client.postMessage(Object.assign({}, status || {}, { type: 'sw-activated', reason: 'activate', version: CACHE_VERSION, appVersion: SW_APP_VERSION }));
       } catch (err) {}
     }
   })());
@@ -123,7 +242,7 @@ async function cacheFirst(request) {
   if (cached) return cached;
   const response = await fetch(request);
   if (response && response.ok) {
-    cache.put(request, response.clone()).catch(() => {});
+    cache.put(request, response.clone()).then(() => trimCacheEntries(RUNTIME_CACHE, MAX_RUNTIME_CACHE_ENTRIES)).catch(() => {});
   }
   return response;
 }
@@ -133,7 +252,7 @@ async function networkFirst(request, fallbackTo) {
   try {
     const response = await fetch(request);
     if (response && response.ok) {
-      cache.put(request, response.clone()).catch(() => {});
+      cache.put(request, response.clone()).then(() => trimCacheEntries(RUNTIME_CACHE, MAX_RUNTIME_CACHE_ENTRIES)).catch(() => {});
     }
     return response;
   } catch (err) {
@@ -159,9 +278,10 @@ self.addEventListener('fetch', (event) => {
   if (isNavigation) {
     event.respondWith((async () => {
       try {
-        const response = await fetch(request);
+        const preloadResponse = await event.preloadResponse;
+        const response = preloadResponse || await fetch(request);
         const cache = await caches.open(RUNTIME_CACHE);
-        if (response && response.ok) cache.put('./index.html', response.clone()).catch(() => {});
+        if (response && response.ok) cache.put('./index.html', response.clone()).then(() => trimCacheEntries(RUNTIME_CACHE, MAX_RUNTIME_CACHE_ENTRIES)).catch(() => {});
         return response;
       } catch (err) {
         const cache = await caches.open(STATIC_CACHE);

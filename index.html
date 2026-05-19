@@ -321,10 +321,13 @@
 
 <!-- SOUSTRUHY -->
 <div id="soustruhy" class="page calcPage calcPage--soustruhy">
-  <div class="headerBar">
+  <div class="headerBar calcHeaderBar">
     <div></div>
     <h3>Soustruhy</h3>
-    <button class="resetBtn" data-action="reset-soustruhy" title="Reset polí" aria-label="Reset polí">↻</button>
+    <div class="calcHeaderActions">
+      <button class="resetBtn" data-action="reset-soustruhy" title="Reset polí" aria-label="Reset polí">↻</button>
+      <button class="calcCloseBtn" data-action="page-kalkulacky" title="Zpět na přehled kalkulaček" aria-label="Zpět na přehled kalkulaček">×</button>
+    </div>
   </div>
 
   <div class="card calcPanel calcPanel--modeCard">
@@ -398,10 +401,13 @@
 
 <!-- FREZKY -->
 <div id="frezky" class="page calcPage">
-  <div class="headerBar">
+  <div class="headerBar calcHeaderBar">
     <div></div>
     <h3>Frézky</h3>
-    <button class="resetBtn" data-action="reset-fields" data-reset-fields="f_kusy,f_finish_kusy,f_finish_davky" data-reset-results="outF,outFTime" title="Reset polí" aria-label="Reset polí">↻</button>
+    <div class="calcHeaderActions">
+      <button class="resetBtn" data-action="reset-fields" data-reset-fields="f_kusy,f_finish_kusy,f_finish_davky" data-reset-results="outF,outFTime" title="Reset polí" aria-label="Reset polí">↻</button>
+      <button class="calcCloseBtn" data-action="page-kalkulacky" title="Zpět na přehled kalkulaček" aria-label="Zpět na přehled kalkulaček">×</button>
+    </div>
   </div>
 
   <details class="brusDetails calcDetails calcPanel calcPanel--compact">
@@ -429,23 +435,26 @@
 
 <!-- BRUSY -->
 <div id="brusy" class="page calcPage">
-  <div class="headerBar">
+  <div class="headerBar calcHeaderBar">
     <div></div>
     <h3>Brusy</h3>
-    <button class="resetBtn" data-action="reset-fields" data-reset-fields="davka,orovnani,celkem,b_finish_kusy,b_finish_davky,b_finish_davka,b_finish_orovnani" data-reset-results="outB,outBTime" title="Reset polí" aria-label="Reset polí">↻</button>
+    <div class="calcHeaderActions">
+      <button class="resetBtn" data-action="reset-fields" data-reset-fields="davka,orovnani,celkem,b_finish_kusy,b_finish_davky,b_finish_davka,b_finish_orovnani" data-reset-results="outB,outBTime" title="Reset polí" aria-label="Reset polí">↻</button>
+      <button class="calcCloseBtn" data-action="page-kalkulacky" title="Zpět na přehled kalkulaček" aria-label="Zpět na přehled kalkulaček">×</button>
+    </div>
   </div>
 
-  <div class="bgrid">
+  <div class="bgrid brusChoiceGrid">
     <div class="bbtn activeMachine activeChoice" data-action="set-machine" data-machine="TBKR01">TBKR01</div>
     <div class="bbtn" data-action="set-machine" data-machine="TBKR07">TBKR07</div>
   </div>
 
-  <div class="indexGrid">
+  <div class="indexGrid brusIndexGrid">
     <div class="bbtn ad activeIndex activeChoice" data-action="set-prog" data-prog="AD">AD</div>
     <div class="bbtn ae" data-action="set-prog" data-prog="AE">AE</div>
     <div class="bbtn ah" data-action="set-prog" data-prog="AH">AH</div>
 
-    <div class="freeWrap">
+    <div class="freeWrap brusFreeWrap">
       <div class="bbtn adv" data-action="set-prog" data-prog="ADV">AD volné</div>
       <div class="bbtn aev" data-action="set-prog" data-prog="AEV">AE volné</div>
     </div>
@@ -503,10 +512,13 @@
 
 <!-- PRAČKA -->
 <div id="pracka" class="page calcPage calcPage--pracka">
-  <div class="headerBar">
+  <div class="headerBar calcHeaderBar">
     <div></div>
     <h3>Pračka</h3>
-    <button class="resetBtn" data-action="reset-fields" data-reset-fields="p_kusy" data-reset-results="outP" title="Reset polí" aria-label="Reset polí">↻</button>
+    <div class="calcHeaderActions">
+      <button class="resetBtn" data-action="reset-fields" data-reset-fields="p_kusy" data-reset-results="outP" title="Reset polí" aria-label="Reset polí">↻</button>
+      <button class="calcCloseBtn" data-action="page-kalkulacky" title="Zpět na přehled kalkulaček" aria-label="Zpět na přehled kalkulaček">×</button>
+    </div>
   </div>
 
   <label>Hotovo kusů:</label>

@@ -2789,18 +2789,17 @@ function buildAppHistoryHtml(versionText) {
       range: versionText,
       title: 'Aktuální build',
       lines: [
-        'Fáze 7 — Data optimization pokračuje, aktuálně cca 72 %.',
-        'Přibyl společný DOM guard i pro texty a className, takže časté refresh části nemusí pořád zapisovat stejné hodnoty do DOM.',
-        'Theme/Pozadí, přihlášený herní účet a dashboardové helpery teď používají úspornější text/class zápisy.',
-        'Diagnostika nově ukazuje i DOM text/class zápisy a skipy.',
-        'Výpočty, rozpisy, rotace logika, hry, Theme/Pozadí, Výplata, Supabase datový model i spodní lišta jsou beze změny.'
+        'Fáze 8 — PWA / Service Worker hardening je zhruba na 40 %.',
+        'Kalkulačky / Brusy mají sjednocenou výšku všech klikacích voleb: oba brusy, běžné indexy i volné indexy drží stejný kompaktní rozměr.',
+        'Kalkulačky mají vpravo kompaktní skupinu ovládání: reset a křížek pro návrat na přehled kalkulaček.',
+        'Service worker diagnostika hlídá nesoulad mezi aktuální verzí appky a aktivní cache verzí a při nesouladu spustí bezpečný update check.'
       ]
     },
     {
-      range: 'v.1.1 500–576',
+      range: 'v.1.1 500–588',
       title: 'Stabilizace, hry, Supabase a glass vzhled',
       lines: [
-        'Proběhlo velké stabilizační období: Láďův režim, cleanup manager, dokončení game performance, dokončený Supabase hardening a začátek Fáze 7 Data optimization včetně dalšího odlehčení Láďova režimu a úspornější Supabase lokální cache.',
+        'Proběhlo velké stabilizační období: Láďův režim, cleanup manager, dokončení game performance, dokončený Supabase hardening a začátek Fáze 7 Data optimization včetně dalšího odlehčení Láďova režimu, úspornější Supabase lokální cache a méně zbytečných DOM renderů včetně Otevírací doby/Jídelního lístku, úspornějších selectů pro roky/měsíce, class toggle guardů u kalkulaček, style guardů u Theme/Pozadí/spodní lišty a závěrečného úklidu lokální read/JSON cache. Po dokončení Fáze 7 začala Fáze 8: tvrdší PWA/service worker chování, bezpečnější precache, řízenější update checky a diagnostika cache stavu.',
         'Dashboard, Rotace, Rozpisy a Statistiky se ladily hlavně kvůli mobilům, safe-area, přehlednosti a menšímu riziku prázdných/pozdě načtených karet.',
         'Kalkulačky dostaly sjednocenější calcPanel systém, větší klikací tlačítka, barevné indexy u Brusů ve glass stylu a opravu dvojího započítání rozdělaného vozíku.',
         'Herní hub se zrychlil: méně opakovaných renderů, cache profilů/statistik, lepší práce s leaderboardy a všechny nedoladěné hry jsou zatím ve „Ve vývoji“.',
@@ -3856,13 +3855,24 @@ function bindAppMenuHandlers(body) {
         const profileUiStatus = typeof window.getProfileUiSyncStatus === 'function' ? window.getProfileUiSyncStatus() : null;
         const profileUiGuard = profileUiStatus && profileUiStatus.guard ? profileUiStatus.guard : null;
         const dataOptStatus = typeof window.getDataOptimizationStatus === 'function' ? window.getDataOptimizationStatus() : null;
+        const pwaStatus = typeof window.getPwaHardeningStatus === 'function' ? window.getPwaHardeningStatus() : null;
+        const pwaDiag = pwaStatus ? [
+          'PWA/SW: fáze ' + String(pwaStatus.phasePercent || 0) + '% · controller ' + (pwaStatus.hasController ? 'ano' : 'ne') + ' · update toast ' + (pwaStatus.updateToastVisible ? 'viditelný' : 'ne') + ' · verze cache ' + (pwaStatus.swVersionMismatch ? 'nesedí' : 'sedí'),
+          'PWA update check: běhy/skip/join ' + String(pwaStatus.updateChecks || 0) + '/' + String(pwaStatus.updateCheckSkips || 0) + '/' + String(pwaStatus.updateCheckJoins || 0) + ' · update volání ' + String(pwaStatus.registrationUpdates || 0) + ' · chyby ' + String(pwaStatus.registrationUpdateErrors || 0),
+          'PWA zprávy SW: celkem/verze/aktivace/cache ' + String(pwaStatus.swMessages || 0) + '/' + String(pwaStatus.swVersionMessages || 0) + '/' + String(pwaStatus.swActivatedMessages || 0) + '/' + String(pwaStatus.swCacheStatusMessages || 0) + ' · poslední ' + String(pwaStatus.lastMessageType || '—'),
+          'PWA cache: verze ' + String(pwaStatus.swCacheVersion || '—') + ' / oček. ' + String(pwaStatus.swExpectedCacheVersion || '—') + ' · mismatch ' + String(pwaStatus.swVersionMismatchCount || 0) + ' · update/skip ' + String(pwaStatus.swVersionMismatchUpdateChecks || 0) + '/' + String(pwaStatus.swVersionMismatchUpdateSkips || 0) + ' · static/runtime ' + String(pwaStatus.swStaticCacheEntries || 0) + '/' + String(pwaStatus.swRuntimeCacheEntries || 0) + ' · precache OK/chyby ' + String(pwaStatus.swPrecacheSuccessCount || 0) + '/' + String(pwaStatus.swPrecacheFailedCount || 0) + ' · požadavky ' + String(pwaStatus.swCacheStatusRequests || 0) + ' · klienti ' + String(pwaStatus.swClientsCount || 0) + ' · preload ' + (pwaStatus.swNavigationPreloadEnabled ? 'ano' : 'ne')
+        ] : [];
         const dataOptDiag = dataOptStatus ? [
           'Data opt: zápisy/skipy ' + String(dataOptStatus.localStorageWrites || 0) + '/' + String(dataOptStatus.localStorageSkippedWrites || 0) + ' · čtení/cache ' + String(dataOptStatus.localStorageReads || 0) + '/' + String(dataOptStatus.localStorageReadCacheHits || 0),
           'Data opt JSON: parse/cache ' + String(dataOptStatus.localStorageJsonParseReads || 0) + '/' + String(dataOptStatus.localStorageJsonParseCacheHits || 0) + ' · chyby ' + String(dataOptStatus.localStorageJsonParseErrors || 0),
+          'Data opt cache: read/json ' + String(dataOptStatus.localReadCacheSize || 0) + '/' + String(dataOptStatus.localCacheMaxSize || 0) + ' · ' + String(dataOptStatus.localJsonCacheSize || 0) + '/' + String(dataOptStatus.localJsonCacheMaxSize || 0) + ' · úklid ' + String(dataOptStatus.localReadCachePrunes || 0) + '/' + String(dataOptStatus.localJsonCachePrunes || 0) + ' · ořez ' + String(dataOptStatus.localReadCacheTrimmedEntries || 0) + '/' + String(dataOptStatus.localJsonCacheTrimmedEntries || 0),
           'Data opt bajty: zapsáno/přeskočeno/přečteno ' + String(dataOptStatus.approxBytesWritten || 0) + '/' + String(dataOptStatus.approxBytesSkipped || 0) + '/' + String(dataOptStatus.approxBytesRead || 0),
           'Data opt home refresh: plán/sloučeno/běh ' + String(dataOptStatus.homeRefreshSchedules || 0) + '/' + String(dataOptStatus.homeRefreshCoalescedSchedules || 0) + '/' + String(dataOptStatus.homeRefreshRuns || 0) + ' · modaly skip ' + String(dataOptStatus.homeRefreshModalSkips || 0),
           'Data opt DOM HTML: zápisy/skipy ' + String(dataOptStatus.domHtmlWrites || 0) + '/' + String(dataOptStatus.domHtmlSkippedWrites || 0) + ' · chyby ' + String(dataOptStatus.domHtmlWriteErrors || 0) + ' · poslední ' + String(dataOptStatus.domHtmlLastKey || '—'),
-          'Data opt DOM text/class: text ' + String(dataOptStatus.domTextWrites || 0) + '/' + String(dataOptStatus.domTextSkippedWrites || 0) + ' · class ' + String(dataOptStatus.domClassWrites || 0) + '/' + String(dataOptStatus.domClassSkippedWrites || 0) + ' · poslední ' + String(dataOptStatus.domTextLastKey || dataOptStatus.domClassLastKey || '—')
+          'Data opt DOM text/class: text ' + String(dataOptStatus.domTextWrites || 0) + '/' + String(dataOptStatus.domTextSkippedWrites || 0) + ' · class ' + String(dataOptStatus.domClassWrites || 0) + '/' + String(dataOptStatus.domClassSkippedWrites || 0) + ' · poslední ' + String(dataOptStatus.domTextLastKey || dataOptStatus.domClassLastKey || '—'),
+          'Data opt DOM select: zápisy/skipy ' + String(dataOptStatus.domSelectWrites || 0) + '/' + String(dataOptStatus.domSelectSkippedWrites || 0) + ' · chyby ' + String(dataOptStatus.domSelectWriteErrors || 0) + ' · poslední ' + String(dataOptStatus.domSelectLastKey || '—'),
+          'Data opt DOM toggle: zápisy/skipy ' + String(dataOptStatus.domToggleWrites || 0) + '/' + String(dataOptStatus.domToggleSkippedWrites || 0) + ' · chyby ' + String(dataOptStatus.domToggleWriteErrors || 0) + ' · poslední ' + String(dataOptStatus.domToggleLastKey || '—'),
+          'Data opt DOM style: zápisy/skipy ' + String(dataOptStatus.domStyleWrites || 0) + '/' + String(dataOptStatus.domStyleSkippedWrites || 0) + ' · chyby ' + String(dataOptStatus.domStyleWriteErrors || 0) + ' · poslední ' + String(dataOptStatus.domStyleLastKey || '—')
         ] : [];
         const supabaseDiag = supabaseHardening ? [
           'Supabase fronta: ' + String(supabaseHardening.queueLength || 0) + ' / ' + String(supabaseHardening.queueMaxItems || '—'),
@@ -3887,6 +3897,7 @@ function bindAppMenuHandlers(body) {
           'Aktuální stránka: ' + String(document.querySelector('.page.active')?.id || '—'),
           'Pozadí: ' + String((typeof getBackgroundPreference === 'function' ? getBackgroundPreference() : document.documentElement.dataset.rakBackground) || '—'),
           'Bottom lišta: ' + String(getComputedStyle(document.querySelector('.bottomNav') || document.body).bottom || '—'),
+          ...pwaDiag,
           ...dataOptDiag,
           ...supabaseDiag
         ].join('\n');
@@ -6902,20 +6913,33 @@ function updateBackgroundMetaColor(bg) {
       meta.setAttribute('name', 'theme-color');
       document.head.appendChild(meta);
     }
-    if (meta) meta.setAttribute('content', nextColor);
+    if (meta && meta.getAttribute('content') !== nextColor) meta.setAttribute('content', nextColor);
   } catch (err) {}
 }
 window.updateBackgroundMetaColor = updateBackgroundMetaColor;
+
+function setRakStyleProperty(target, key, value, priority = '', statKey = '') {
+  if (!target || !target.style) return false;
+  if (typeof setStylePropertyIfChanged === 'function') {
+    return setStylePropertyIfChanged(target, key, value, priority, statKey || key);
+  }
+  try {
+    target.style.setProperty(key, value, priority || '');
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
 
 function applyBackgroundPreference(bgId, persist = true, options = {}) {
   const bg = RAK_BACKGROUND_DEFS.find(item => item.id === normalizeBackgroundPreferenceId(bgId, 'ios-mesh')) || RAK_BACKGROUND_DEFS[0];
   const root = document.documentElement;
   root.dataset.rakBackground = bg.id;
   Object.entries(RAK_BACKGROUND_BASE_VARS).forEach(([key, value]) => {
-    root.style.setProperty(key, value);
+    setRakStyleProperty(root, key, value, '', 'background-' + key);
   });
   Object.entries(bg.vars || {}).forEach(([key, value]) => {
-    root.style.setProperty(key, value);
+    setRakStyleProperty(root, key, value, '', 'background-' + key);
   });
   updateBackgroundMetaColor(bg);
   if (persist) {
@@ -6976,12 +7000,12 @@ function applyThemePreference(themeId, persist = true, options = {}) {
   const theme = RAK_THEME_DEFS.find(t => t.id === normalizeThemePreferenceId(themeId, 'default')) || RAK_THEME_DEFS[0];
   const root = document.documentElement;
   root.dataset.rakTheme = theme.id;
-  root.style.setProperty('--rakThemeAccent', String(theme.color || '#7CFF7C'));
+  setRakStyleProperty(root, '--rakThemeAccent', String(theme.color || '#7CFF7C'), '', 'theme-accent');
   Object.entries(RAK_THEME_BASE_VARS).forEach(([key, value]) => {
-    root.style.setProperty(key, value);
+    setRakStyleProperty(root, key, value, '', 'theme-base-' + key);
   });
   Object.entries(theme.vars || {}).forEach(([key, value]) => {
-    root.style.setProperty(key, value);
+    setRakStyleProperty(root, key, value, '', 'theme-' + key);
   });
   if (persist) {
     try {

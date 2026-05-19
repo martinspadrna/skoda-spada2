@@ -423,8 +423,7 @@ function buildFoodScheduleHtml(location) {
     const windowsHtml = (Array.isArray(group.windows) && group.windows.length ? group.windows.map(window => {
       const isHighlighted = groupHasHighlightDay && foodWindowMatchesHighlight(window, highlight);
       const stateClass = isHighlighted ? (highlight.type === 'open' ? ' foodScheduleWindowLine--currentOpen' : ' foodScheduleWindowLine--nextOpen') : '';
-      const badge = isHighlighted ? '<span class="foodScheduleWindowBadge">' + escapeHtml(highlight.type === 'open' ? 'teď' : 'další') + '</span>' : '';
-      return '<div class="foodScheduleWindowLine' + stateClass + '">' + escapeHtml(window[0] + '–' + window[1]) + badge + '</div>';
+      return '<div class="foodScheduleWindowLine' + stateClass + '">' + escapeHtml(window[0] + '–' + window[1]) + '</div>';
     }).join('') : '<div class="foodScheduleWindowLine foodScheduleWindowEmpty">Zavřeno</div>');
     return '<div class="foodScheduleRow' + rowClass + '">' +
       '<div class="foodScheduleDay">' + escapeHtml(dayLabel) + '</div>' +
@@ -432,21 +431,11 @@ function buildFoodScheduleHtml(location) {
     '</div>';
   }).join('');
 
-  const highlightClass = highlight.type === 'open' ? ' foodScheduleNowBox--open' : (highlight.type === 'next' ? ' foodScheduleNowBox--next' : '');
-  const highlightHtml = highlight.type !== 'none' ? [
-    '<div class="foodScheduleNowBox' + highlightClass + '">',
-    '<div class="foodScheduleNowKicker">' + escapeHtml(highlight.type === 'open' ? 'Aktuální otevření' : 'Teď zavřeno') + '</div>',
-    '<div class="foodScheduleNowMain">' + escapeHtml(highlight.label) + '</div>',
-    '<div class="foodScheduleNowSub">' + escapeHtml(highlight.detail) + '</div>',
-    '</div>'
-  ].join('') : '';
-
   return [
-    '<div class="foodScheduleTitleBlock">',
+    '<div class="foodScheduleTitleBlock foodScheduleTitleBlock--compact">',
     '<div class="sectionTitle">Otevírací doba</div>',
     '<div class="smallText uMt0 uMb10">' + escapeHtml(location.label) + '</div>',
     '</div>',
-    highlightHtml,
     rows
   ].join('');
 }
@@ -457,8 +446,13 @@ function renderFoodSchedulePage() {
   const card = document.getElementById('foodScheduleCard');
   if (!card) return;
 
-  if (title) title.textContent = location.label;
-  card.innerHTML = buildFoodScheduleHtml(location);
+  const html = buildFoodScheduleHtml(location);
+  if (title) {
+    if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(title, location.label, 'foodScheduleTitle');
+    else title.textContent = location.label;
+  }
+  if (typeof setElementHtmlIfChanged === 'function') setElementHtmlIfChanged(card, html, 'foodSchedulePage');
+  else card.innerHTML = html;
 }
 
 function renderFoodScheduleModal() {
@@ -466,8 +460,15 @@ function renderFoodScheduleModal() {
   const overlay = ensureFoodScheduleModal();
   const title = overlay.querySelector('#foodScheduleModalTitle');
   const body = overlay.querySelector('#foodScheduleModalBody');
-  if (title) title.textContent = location.label;
-  if (body) body.innerHTML = buildFoodScheduleHtml(location);
+  const html = buildFoodScheduleHtml(location);
+  if (title) {
+    if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(title, location.label, 'foodScheduleModalTitle');
+    else title.textContent = location.label;
+  }
+  if (body) {
+    if (typeof setElementHtmlIfChanged === 'function') setElementHtmlIfChanged(body, html, 'foodScheduleModalBody');
+    else body.innerHTML = html;
+  }
 }
 
 function showFoodSchedule(which) {

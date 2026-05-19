@@ -1,4 +1,4 @@
-// v.1.1 (576) – DOM text/class guard + úspornější theme/profil refresh.
+// v.1.1 (588) – Brusy mají sjednocenou výšku všech klikacích voleb brusu i indexů.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
@@ -62,6 +62,7 @@ function installDelegatedAppActions() {
     'page-soustruhy': () => showPage('soustruhy'),
     'page-frezky': () => showPage('frezky'),
     'page-brusy': () => showPage('brusy'),
+    'page-kalkulacky': () => openKalkulacky(),
     'reset-soustruhy': () => resetSoustruhy(),
     'soustruh-mode': (el) => setSoustruhMode(String(el.dataset.soustruhMode || '')),
     'calc-soustruhy-lis': () => calcSoustruhyLis(),
@@ -386,44 +387,47 @@ function applyBottomNavMoreHardFix() {
     const width = String(widthPx) + 'px';
     const peerHeight = peerRect && peerRect.height ? Math.round(peerRect.height) : 46;
     const height = Math.max(lightweight ? 40 : 44, Math.min(peerHeight || 46, lightweight ? 50 : 56)) + 'px';
+    const setStyle = typeof setStylePropertyIfChanged === 'function'
+      ? setStylePropertyIfChanged
+      : ((el, prop, value, priority) => { if (el && el.style) el.style.setProperty(prop, value, priority || ''); return true; });
 
-    btn.style.setProperty('flex', '0 0 ' + width, 'important');
-    btn.style.setProperty('width', width, 'important');
-    btn.style.setProperty('min-width', width, 'important');
-    btn.style.setProperty('max-width', width, 'important');
-    btn.style.setProperty('height', height, 'important');
-    btn.style.setProperty('min-height', height, 'important');
-    btn.style.setProperty('max-height', height, 'important');
-    btn.style.setProperty('align-self', 'center', 'important');
-    btn.style.setProperty('padding', lightweight ? '1px 0' : '2px 0 1px', 'important');
-    btn.style.setProperty('margin', '0', 'important');
-    btn.style.setProperty('box-sizing', 'border-box', 'important');
-    btn.style.setProperty('justify-content', 'center', 'important');
-    btn.style.setProperty('gap', '1px', 'important');
-    btn.style.setProperty('transform', btn.classList.contains('active') ? 'translateY(-1px) scale(1.08)' : 'translateY(2px)', 'important');
+    setStyle(btn, 'flex', '0 0 ' + width, 'important', 'bottomNavMore-flex');
+    setStyle(btn, 'width', width, 'important', 'bottomNavMore-width');
+    setStyle(btn, 'min-width', width, 'important', 'bottomNavMore-minWidth');
+    setStyle(btn, 'max-width', width, 'important', 'bottomNavMore-maxWidth');
+    setStyle(btn, 'height', height, 'important', 'bottomNavMore-height');
+    setStyle(btn, 'min-height', height, 'important', 'bottomNavMore-minHeight');
+    setStyle(btn, 'max-height', height, 'important', 'bottomNavMore-maxHeight');
+    setStyle(btn, 'align-self', 'center', 'important', 'bottomNavMore-alignSelf');
+    setStyle(btn, 'padding', lightweight ? '1px 0' : '2px 0 1px', 'important', 'bottomNavMore-padding');
+    setStyle(btn, 'margin', '0', 'important', 'bottomNavMore-margin');
+    setStyle(btn, 'box-sizing', 'border-box', 'important', 'bottomNavMore-boxSizing');
+    setStyle(btn, 'justify-content', 'center', 'important', 'bottomNavMore-justify');
+    setStyle(btn, 'gap', '1px', 'important', 'bottomNavMore-gap');
+    setStyle(btn, 'transform', btn.classList.contains('active') ? 'translateY(-1px) scale(1.08)' : 'translateY(2px)', 'important', 'bottomNavMore-transform');
 
     const icon = btn.querySelector('.moreIcon');
     if (icon && icon.style) {
       const iconSize = lightweight ? '14px' : (compact ? '15px' : '16px');
-      icon.style.setProperty('flex', '0 0 ' + iconSize, 'important');
-      icon.style.setProperty('width', iconSize, 'important');
-      icon.style.setProperty('height', iconSize, 'important');
-      icon.style.setProperty('max-width', iconSize, 'important');
-      icon.style.setProperty('max-height', iconSize, 'important');
-      icon.style.setProperty('padding', '0', 'important');
-      icon.style.setProperty('margin', '0 auto', 'important');
-      icon.style.setProperty('transform', 'none', 'important');
-      icon.style.setProperty('box-sizing', 'border-box', 'important');
+      setStyle(icon, 'flex', '0 0 ' + iconSize, 'important', 'bottomNavMoreIcon-flex');
+      setStyle(icon, 'width', iconSize, 'important', 'bottomNavMoreIcon-width');
+      setStyle(icon, 'height', iconSize, 'important', 'bottomNavMoreIcon-height');
+      setStyle(icon, 'max-width', iconSize, 'important', 'bottomNavMoreIcon-maxWidth');
+      setStyle(icon, 'max-height', iconSize, 'important', 'bottomNavMoreIcon-maxHeight');
+      setStyle(icon, 'padding', '0', 'important', 'bottomNavMoreIcon-padding');
+      setStyle(icon, 'margin', '0 auto', 'important', 'bottomNavMoreIcon-margin');
+      setStyle(icon, 'transform', 'none', 'important', 'bottomNavMoreIcon-transform');
+      setStyle(icon, 'box-sizing', 'border-box', 'important', 'bottomNavMoreIcon-boxSizing');
     }
 
     const label = btn.querySelector('.bottomNavLabel');
     if (label && label.style) {
-      label.style.setProperty('font-size', lightweight ? '7.4px' : '8px', 'important');
-      label.style.setProperty('line-height', '1', 'important');
-      label.style.setProperty('margin', '0', 'important');
-      label.style.setProperty('padding', '0', 'important');
-      label.style.setProperty('white-space', 'nowrap', 'important');
-      label.style.setProperty('transform', 'none', 'important');
+      setStyle(label, 'font-size', lightweight ? '7.4px' : '8px', 'important', 'bottomNavMoreLabel-fontSize');
+      setStyle(label, 'line-height', '1', 'important', 'bottomNavMoreLabel-lineHeight');
+      setStyle(label, 'margin', '0', 'important', 'bottomNavMoreLabel-margin');
+      setStyle(label, 'padding', '0', 'important', 'bottomNavMoreLabel-padding');
+      setStyle(label, 'white-space', 'nowrap', 'important', 'bottomNavMoreLabel-whiteSpace');
+      setStyle(label, 'transform', 'none', 'important', 'bottomNavMoreLabel-transform');
     }
     return true;
   };
@@ -654,13 +658,13 @@ function runPhaseSevenDataOptimizationAudit() {
     const dataStatus = typeof window.getDataOptimizationStatus === 'function' ? window.getDataOptimizationStatus() : null;
     const report = {
       version: window.APP_VERSION || 'unknown',
-      phase: 'phase-7-data-optimization-dom-text-class-guard',
+      phase: 'phase-7-data-optimization-style-guard',
       checkedAt: new Date().toISOString(),
       ok: !!dataStatus,
       dataOptimization: dataStatus || null
     };
     try {
-      document.documentElement.dataset.rakPhase7 = report.ok ? 'data-optimization-dom-text-class-guard' : 'data-optimization-check';
+      document.documentElement.dataset.rakPhase7 = report.ok ? 'data-optimization-style-guard' : 'data-optimization-check';
       window.__rakPhase7DataOptimizationAudit = report;
     } catch (err) {}
     if (!report.ok) console.warn('[RaK] Phase 7 data optimization audit', report);
@@ -671,11 +675,11 @@ function runPhaseSevenDataOptimizationAudit() {
     const rerun = () => setTimeout(run, 300);
     if (typeof registerListener === 'function') registerListener(document, 'DOMContentLoaded', rerun, { once: true });
     else document.addEventListener('DOMContentLoaded', rerun, { once: true });
-    return { version: window.APP_VERSION || 'unknown', phase: 'phase-7-data-optimization-dom-text-class-guard', ok: true, deferred: true };
+    return { version: window.APP_VERSION || 'unknown', phase: 'phase-7-data-optimization-style-guard', ok: true, deferred: true };
   }
 
   requestAnimationFrame(() => setTimeout(run, 300));
-  return { version: window.APP_VERSION || 'unknown', phase: 'phase-7-data-optimization-dom-text-class-guard', ok: true, deferred: true };
+  return { version: window.APP_VERSION || 'unknown', phase: 'phase-7-data-optimization-style-guard', ok: true, deferred: true };
 }
 
 
@@ -779,6 +783,7 @@ function installPwaAndConnectivityHooks() {
 
   const LIVE_REFRESH_INTERVAL_MS = 4 * 60 * 1000;
   const SW_UPDATE_CHECK_INTERVAL_MS = 10 * 60 * 1000;
+  const SW_VERSION_MISMATCH_CHECK_MS = 45 * 1000;
   const STALE_REFRESH_GUARD_MS = 15 * 1000;
   const LIVE_CHANNEL_NAME = 'rotace-live-updates';
   const SW_UPDATE_NOTICE_KEY = 'rotace_sw_update_notice_v1';
@@ -796,7 +801,56 @@ function installPwaAndConnectivityHooks() {
   let swUpdateButtonEl = null;
   let swNextUpdateVersion = "";
   let swUpdateReloading = false;
+  let swUpdateCheckPromise = null;
+  let lastSwUpdateCheckAt = 0;
+  let lastSwVersionMismatchCheckAt = 0;
   let deferredInstallPrompt = null;
+
+  const pwaHardeningStatus = window.__rakPwaHardeningStatus || {
+    phase: 'phase-8-pwa-service-worker-hardening',
+    phasePercent: 36,
+    updateChecks: 0,
+    updateCheckSkips: 0,
+    updateCheckJoins: 0,
+    registrationUpdates: 0,
+    registrationUpdateErrors: 0,
+    swMessages: 0,
+    swVersionMessages: 0,
+    swActivatedMessages: 0,
+    swCacheStatusMessages: 0,
+    swCacheStatusRequests: 0,
+    swCacheStatusErrors: 0,
+    swCacheVersion: '',
+    swStaticCacheEntries: 0,
+    swRuntimeCacheEntries: 0,
+    swAppShellCount: 0,
+    swPrecacheSuccessCount: 0,
+    swPrecacheFailedCount: 0,
+    swClientsCount: 0,
+    swNavigationPreloadEnabled: false,
+    swExpectedCacheVersion: '',
+    swVersionMismatch: false,
+    swVersionMismatchCount: 0,
+    swVersionMismatchUpdateChecks: 0,
+    swVersionMismatchUpdateSkips: 0,
+    swLastVersionMismatchSource: '',
+    swLastCacheStatusAt: 0,
+    swLastCacheStatusSource: '',
+    lastUpdateSource: '',
+    lastUpdateCheckAt: 0,
+    lastUpdateSkipSource: '',
+    lastMessageType: '',
+    throttleMs: SW_UPDATE_CHECK_INTERVAL_MS
+  };
+  window.__rakPwaHardeningStatus = pwaHardeningStatus;
+  window.getPwaHardeningStatus = function getPwaHardeningStatus() {
+    return Object.assign({}, pwaHardeningStatus, {
+      hasController: !!(navigator.serviceWorker && navigator.serviceWorker.controller),
+      updateToastVisible: !!(swUpdateToastEl && document.body && document.body.contains(swUpdateToastEl)),
+      updateReloading: !!swUpdateReloading,
+      lastUpdateCheckAgoMs: pwaHardeningStatus.lastUpdateCheckAt ? Math.max(0, Date.now() - pwaHardeningStatus.lastUpdateCheckAt) : null
+    });
+  };
 
   const runLiveRefresh = async (reason, opts = {}) => {
     const force = !!(opts && opts.force);
@@ -929,6 +983,28 @@ function installPwaAndConnectivityHooks() {
     return raw;
   };
 
+  const getExpectedServiceWorkerCacheVersion = () => {
+    const raw = getAppVersionTag();
+    const m = /v\.1\.1\s*\((\d+)\)/i.exec(raw);
+    if (m) return 'v1.1-' + m[1];
+    return String(raw || '').replace(/^v\./i, 'v').replace(/\s*\((\d+)\)\s*$/, '-$1').replace(/\s+/g, '');
+  };
+
+  const scheduleVersionMismatchUpdateCheck = (source) => {
+    const now = Date.now();
+    if (lastSwVersionMismatchCheckAt && now - lastSwVersionMismatchCheckAt < SW_VERSION_MISMATCH_CHECK_MS) {
+      pwaHardeningStatus.swVersionMismatchUpdateSkips = Number(pwaHardeningStatus.swVersionMismatchUpdateSkips || 0) + 1;
+      return false;
+    }
+    lastSwVersionMismatchCheckAt = now;
+    pwaHardeningStatus.swVersionMismatchUpdateChecks = Number(pwaHardeningStatus.swVersionMismatchUpdateChecks || 0) + 1;
+    if (typeof refreshServiceWorkerRegistration === 'function') {
+      void refreshServiceWorkerRegistration('version-mismatch:' + String(source || 'cache-status'), { force: true });
+      return true;
+    }
+    return false;
+  };
+
   const updateToastVersionLine = (version) => {
     const label = formatServiceWorkerVersionLabel(version, '');
     if (label) swNextUpdateVersion = label;
@@ -945,6 +1021,49 @@ function installPwaAndConnectivityHooks() {
       worker.__rotaceVersionRequested = true;
       worker.postMessage({ type: 'GET_VERSION' });
     } catch (err) {}
+  };
+
+  const applyServiceWorkerCacheStatus = (data, source) => {
+    if (!data) return;
+    pwaHardeningStatus.swCacheStatusMessages = Number(pwaHardeningStatus.swCacheStatusMessages || 0) + 1;
+    pwaHardeningStatus.swCacheVersion = String(data.cacheVersion || data.version || '');
+    pwaHardeningStatus.swStaticCacheEntries = Number(data.staticCacheEntries || 0);
+    pwaHardeningStatus.swRuntimeCacheEntries = Number(data.runtimeCacheEntries || 0);
+    pwaHardeningStatus.swAppShellCount = Number(data.appShellCount || 0);
+    pwaHardeningStatus.swPrecacheSuccessCount = Number(data.precacheSuccessCount || 0);
+    pwaHardeningStatus.swPrecacheFailedCount = Number(data.precacheFailedCount || 0);
+    pwaHardeningStatus.swClientsCount = Number(data.clientsCount || 0);
+    pwaHardeningStatus.swNavigationPreloadEnabled = !!data.navigationPreloadEnabled;
+    pwaHardeningStatus.swLastCacheStatusAt = Date.now();
+    pwaHardeningStatus.swLastCacheStatusSource = String(source || data.type || 'cache-status');
+    const expectedCacheVersion = getExpectedServiceWorkerCacheVersion();
+    const reportedCacheVersion = String(data.cacheVersion || data.version || '').trim();
+    pwaHardeningStatus.swExpectedCacheVersion = expectedCacheVersion;
+    const mismatch = !!(expectedCacheVersion && reportedCacheVersion && reportedCacheVersion !== expectedCacheVersion);
+    pwaHardeningStatus.swVersionMismatch = mismatch;
+    if (mismatch) {
+      pwaHardeningStatus.swVersionMismatchCount = Number(pwaHardeningStatus.swVersionMismatchCount || 0) + 1;
+      pwaHardeningStatus.swLastVersionMismatchSource = String(source || data.type || 'cache-status');
+      scheduleVersionMismatchUpdateCheck(source || data.type || 'cache-status');
+    }
+    if (data.error) {
+      pwaHardeningStatus.swCacheStatusErrors = Number(pwaHardeningStatus.swCacheStatusErrors || 0) + 1;
+      pwaHardeningStatus.swLastCacheStatusError = String(data.error || 'cache-status-error');
+    }
+  };
+
+  const requestActiveServiceWorkerCacheStatus = (source) => {
+    try {
+      if (!('serviceWorker' in navigator) || !navigator.serviceWorker.controller) return false;
+      pwaHardeningStatus.swCacheStatusRequests = Number(pwaHardeningStatus.swCacheStatusRequests || 0) + 1;
+      pwaHardeningStatus.swLastCacheStatusSource = String(source || 'request');
+      navigator.serviceWorker.controller.postMessage({ type: 'GET_CACHE_STATUS', source: source || 'app' });
+      return true;
+    } catch (err) {
+      pwaHardeningStatus.swCacheStatusErrors = Number(pwaHardeningStatus.swCacheStatusErrors || 0) + 1;
+      pwaHardeningStatus.swLastCacheStatusError = err && err.message ? err.message : String(err || 'cache-status-request-error');
+      return false;
+    }
   };
 
   const scheduleUpdateReload = (reason) => {
@@ -1051,19 +1170,46 @@ function installPwaAndConnectivityHooks() {
     }
   };
 
-  const refreshServiceWorkerRegistration = async (source) => {
+  const refreshServiceWorkerRegistration = async (source, opts = {}) => {
     if (!('serviceWorker' in navigator)) return null;
-    try {
-      const registration = await registerServiceWorker();
-      if (registration && registration.update) {
-        await registration.update();
-      }
-      await checkForWaitingServiceWorker(source || 'refresh');
-      return registration || null;
-    } catch (err) {
-      console.warn('[Rotace] SW refresh failed', err);
-      return null;
+    const reason = source || 'refresh';
+    const force = !!(opts && opts.force);
+    const now = Date.now();
+    if (swUpdateCheckPromise) {
+      pwaHardeningStatus.updateCheckJoins = Number(pwaHardeningStatus.updateCheckJoins || 0) + 1;
+      pwaHardeningStatus.lastUpdateSkipSource = reason + ':join';
+      return swUpdateCheckPromise;
     }
+    if (!force && lastSwUpdateCheckAt && now - lastSwUpdateCheckAt < SW_UPDATE_CHECK_INTERVAL_MS) {
+      pwaHardeningStatus.updateCheckSkips = Number(pwaHardeningStatus.updateCheckSkips || 0) + 1;
+      pwaHardeningStatus.lastUpdateSkipSource = reason;
+      await checkForWaitingServiceWorker(reason + '-throttled');
+      return swRegistrationInstance || null;
+    }
+
+    swUpdateCheckPromise = (async () => {
+      try {
+        pwaHardeningStatus.updateChecks = Number(pwaHardeningStatus.updateChecks || 0) + 1;
+        pwaHardeningStatus.lastUpdateSource = reason;
+        const registration = await registerServiceWorker();
+        if (registration && registration.update) {
+          pwaHardeningStatus.registrationUpdates = Number(pwaHardeningStatus.registrationUpdates || 0) + 1;
+          await registration.update();
+        }
+        lastSwUpdateCheckAt = Date.now();
+        pwaHardeningStatus.lastUpdateCheckAt = lastSwUpdateCheckAt;
+        await checkForWaitingServiceWorker(reason);
+        requestActiveServiceWorkerCacheStatus(reason + '-after-update-check');
+        return registration || null;
+      } catch (err) {
+        pwaHardeningStatus.registrationUpdateErrors = Number(pwaHardeningStatus.registrationUpdateErrors || 0) + 1;
+        console.warn('[Rotace] SW refresh failed', err);
+        return null;
+      } finally {
+        swUpdateCheckPromise = null;
+      }
+    })();
+    return swUpdateCheckPromise;
   };
 
   const signalStateChange = (reason) => {
@@ -1095,9 +1241,18 @@ function installPwaAndConnectivityHooks() {
         });
       }
       if (registration && registration.update) {
-        try { await registration.update(); } catch (err) {}
+        try {
+          pwaHardeningStatus.registrationUpdates = Number(pwaHardeningStatus.registrationUpdates || 0) + 1;
+          await registration.update();
+          lastSwUpdateCheckAt = Date.now();
+          pwaHardeningStatus.lastUpdateCheckAt = lastSwUpdateCheckAt;
+          pwaHardeningStatus.lastUpdateSource = 'register';
+        } catch (err) {
+          pwaHardeningStatus.registrationUpdateErrors = Number(pwaHardeningStatus.registrationUpdateErrors || 0) + 1;
+        }
       }
       void checkForWaitingServiceWorker('register');
+      requestActiveServiceWorkerCacheStatus('register');
       return registration;
     }).catch((err) => {
       console.warn('Service worker registration failed', err);
@@ -1112,6 +1267,7 @@ function installPwaAndConnectivityHooks() {
     window.__rotaceSwControllerChangeBound = true;
     registerListener(navigator.serviceWorker, 'controllerchange', () => {
       const pending = getPendingUpdateVersion();
+      requestActiveServiceWorkerCacheStatus('controllerchange');
       if (pending && !swUpdateReloading) {
         scheduleUpdateReload('controllerchange');
       }
@@ -1175,11 +1331,20 @@ function installPwaAndConnectivityHooks() {
     registerListener(navigator.serviceWorker, 'message', (event) => {
       const data = event && event.data ? event.data : null;
       if (!data) return;
+      pwaHardeningStatus.swMessages = Number(pwaHardeningStatus.swMessages || 0) + 1;
+      pwaHardeningStatus.lastMessageType = String(data.type || 'unknown');
       if (data.type === 'sw-version') {
+        pwaHardeningStatus.swVersionMessages = Number(pwaHardeningStatus.swVersionMessages || 0) + 1;
         updateToastVersionLine(data.appVersion || data.version || '');
         return;
       }
+      if (data.type === 'sw-cache-status') {
+        applyServiceWorkerCacheStatus(data, 'message');
+        return;
+      }
       if (data.type === 'sw-activated') {
+        pwaHardeningStatus.swActivatedMessages = Number(pwaHardeningStatus.swActivatedMessages || 0) + 1;
+        applyServiceWorkerCacheStatus(data, 'activated');
         if (data.appVersion || data.version) updateToastVersionLine(data.appVersion || data.version);
         hideUpdateToast();
         void runLiveRefresh(data.reason || data.type || 'sw-message', { force: true });
@@ -1197,7 +1362,8 @@ function installPwaAndConnectivityHooks() {
     setConnectionFlag();
     if (typeof flushSupabaseSyncQueue === 'function') void flushSupabaseSyncQueue();
     void runLiveRefresh('online', { force: true });
-    void refreshServiceWorkerRegistration('online');
+    void refreshServiceWorkerRegistration('online', { force: true });
+    requestActiveServiceWorkerCacheStatus('online');
     signalStateChange('online');
   });
   registerListener(window, 'offline', () => {
@@ -1211,12 +1377,14 @@ function installPwaAndConnectivityHooks() {
       if (typeof flushSupabaseSyncQueue === 'function') void flushSupabaseSyncQueue();
       void runLiveRefresh('pageshow');
       void refreshServiceWorkerRegistration('pageshow');
+      requestActiveServiceWorkerCacheStatus('pageshow');
     }
   });
   registerListener(window, 'focus', () => {
     if (!document.hidden && navigator.onLine) {
       void runLiveRefresh('focus');
       void refreshServiceWorkerRegistration('focus');
+      requestActiveServiceWorkerCacheStatus('focus');
     }
   });
   registerListener(window, 'visibilitychange', () => {
@@ -1224,6 +1392,7 @@ function installPwaAndConnectivityHooks() {
     if (!document.hidden && navigator.onLine) {
       void runLiveRefresh('visible');
       void refreshServiceWorkerRegistration('visible');
+      requestActiveServiceWorkerCacheStatus('visible');
     }
   });
   registerListener(window, 'storage', (event) => {

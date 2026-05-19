@@ -429,6 +429,73 @@ function buildStatsForYear(year) {
 
 
 
+
+function bindStatsGridDelegates() {
+  const statsNameGrid = document.getElementById("statsNameGrid");
+  const statsMachineGrid = document.getElementById("statsMachineGrid");
+
+  const activateNameTile = (target) => {
+    const tile = target && typeof target.closest === 'function' ? target.closest('[data-stats-name]') : null;
+    if (!tile) return false;
+    const name = tile.getAttribute('data-stats-name') || '';
+    if (!name) return false;
+    setSelectedStatsName(name);
+    return true;
+  };
+
+  const activateMachineTile = (target) => {
+    const tile = target && typeof target.closest === 'function' ? target.closest('[data-stats-machine]') : null;
+    if (!tile) return false;
+    const machine = tile.getAttribute('data-stats-machine') || '';
+    if (!machine) return false;
+    setSelectedStatsMachine(machine);
+    return true;
+  };
+
+  if (statsNameGrid && statsNameGrid.dataset.statsDelegateBound !== '1') {
+    statsNameGrid.dataset.statsDelegateBound = '1';
+    statsNameGrid.addEventListener('click', (event) => activateNameTile(event.target));
+    statsNameGrid.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      if (activateNameTile(event.target)) event.preventDefault();
+    });
+  }
+
+  if (statsMachineGrid && statsMachineGrid.dataset.statsDelegateBound !== '1') {
+    statsMachineGrid.dataset.statsDelegateBound = '1';
+    statsMachineGrid.addEventListener('click', (event) => activateMachineTile(event.target));
+    statsMachineGrid.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      if (activateMachineTile(event.target)) event.preventDefault();
+    });
+  }
+}
+
+function renderStatsNameGridHtml(names) {
+  return (Array.isArray(names) ? names : []).map(name => {
+    const active = app.selectedStatsName === name ? ' activeChoice' : '';
+    return [
+      '<div class="listItem statsNameTile' + active + '" role="button" tabindex="0" data-stats-name="' + escapeHtml(name) + '">',
+      '<div class="statsTileMain"><div class="statsTileTitle">' + escapeHtml(name) + '</div></div>',
+      '</div>'
+    ].join('');
+  }).join('');
+}
+
+function renderStatsMachineGridHtml(stats) {
+  const order = stats && Array.isArray(stats.machineOrder) ? stats.machineOrder : [];
+  return order.map(machine => {
+    const active = app.selectedStatsMachine === machine ? ' activeChoice' : '';
+    return [
+      '<div class="listItem statsMachineTile' + active + '" role="button" tabindex="0" data-stats-machine="' + escapeHtml(machine) + '">',
+      '  <div class="statsTileMain">',
+      '    <div class="statsTileTitle">' + escapeHtml(machine) + '</div>',
+      '  </div>',
+      '</div>'
+    ].join('');
+  }).join('');
+}
+
 function renderStatsPanel() {
   const statsNameGrid = document.getElementById("statsNameGrid");
   const statsMachineGrid = document.getElementById("statsMachineGrid");
@@ -446,48 +513,15 @@ function renderStatsPanel() {
     app.selectedStatsName = null;
   }
 
-  statsNameGrid.innerHTML = '';
-  stats.names.forEach(name => {
-    const tile = document.createElement('div');
-    tile.className = 'listItem statsNameTile' + (app.selectedStatsName === name ? ' activeChoice' : '');
-    tile.setAttribute('role', 'button');
-    tile.setAttribute('tabindex', '0');
-    tile.innerHTML = '<div class="statsTileMain"><div class="statsTileTitle">' + escapeHtml(name) + '</div></div>';
-    tile.onclick = () => setSelectedStatsName(name);
-    tile.onkeydown = (event) => {
-      if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault();
-        setSelectedStatsName(name);
-      }
-    };
-    statsNameGrid.appendChild(tile);
-  });
+  bindStatsGridDelegates();
 
-  statsMachineGrid.innerHTML = '';
-  stats.machineOrder.forEach(machine => {
-    const leader = stats.machineCleanLeaders[machine] || null;
-    const leaderNames = leader && Array.isArray(leader.names) && leader.names.length
-      ? leader.names.join('\n')
-      : '—';
+  const statsNameGridHtml = renderStatsNameGridHtml(stats.names);
+  if (typeof setElementHtmlIfChanged === 'function') setElementHtmlIfChanged(statsNameGrid, statsNameGridHtml, 'statsNameGrid');
+  else statsNameGrid.innerHTML = statsNameGridHtml;
 
-    const tile = document.createElement('div');
-    tile.className = 'listItem statsMachineTile' + (app.selectedStatsMachine === machine ? ' activeChoice' : '');
-    tile.setAttribute('role', 'button');
-    tile.setAttribute('tabindex', '0');
-    tile.innerHTML = [
-      '<div class="statsTileMain">',
-      '  <div class="statsTileTitle">' + escapeHtml(machine) + '</div>',
-      '</div>'
-    ].join('');
-    tile.onclick = () => setSelectedStatsMachine(machine);
-    tile.onkeydown = (event) => {
-      if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault();
-        setSelectedStatsMachine(machine);
-      }
-    };
-    statsMachineGrid.appendChild(tile);
-  });
+  const statsMachineGridHtml = renderStatsMachineGridHtml(stats);
+  if (typeof setElementHtmlIfChanged === 'function') setElementHtmlIfChanged(statsMachineGrid, statsMachineGridHtml, 'statsMachineGrid');
+  else statsMachineGrid.innerHTML = statsMachineGridHtml;
 
   if (app.selectedStatsName) {
     const person = stats.people[app.selectedStatsName];

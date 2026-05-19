@@ -4265,7 +4265,7 @@ body.lowEndDevice #games canvas{
 }
 
 
-/* v.1.1 (576) – DOM text/class guard + průběžný glass polish zachován. */
+/* v.1.1 (582) – průběžný glass polish zachován, Fáze 7 Data optimization uzavřena LRU úklidem lokální cache. */
 #rotaceNamesPanel #personView .rotaceShiftDate,
 #rotace #personView .rotaceShiftDate{
   font-size:clamp(15px, 4.1vw, 19px) !important;
@@ -4298,3 +4298,196 @@ body.lowEndDevice #games canvas{
     padding-bottom:9px !important;
   }
 }
+
+
+/* v.1.1 (585) – nižší volby Brusů a kulatější iOS glass hlavičky stránek */
+#brusy :is(.bgrid, .indexGrid, .freeWrap) .bbtn{
+  min-height:clamp(41px, 6.2dvh, 56px) !important;
+  padding-top:clamp(7px, 1.5dvh, 12px) !important;
+  padding-bottom:clamp(7px, 1.5dvh, 12px) !important;
+}
+@media (max-width:430px){
+  #brusy :is(.bgrid, .indexGrid, .freeWrap) .bbtn{
+    min-height:clamp(38px, 5.9dvh, 51px) !important;
+    padding-top:7px !important;
+    padding-bottom:7px !important;
+  }
+}
+.page:not(#home) > .headerBar{
+  margin:8px 6px 10px !important;
+  padding:8px 44px !important;
+  min-height:44px !important;
+  border-radius:22px !important;
+  border:1px solid rgba(255,255,255,.12) !important;
+  border-bottom:1px solid rgba(255,255,255,.12) !important;
+  background:linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.035)) !important;
+  box-shadow:0 14px 34px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.13) !important;
+  backdrop-filter:blur(20px) saturate(165%) !important;
+  -webkit-backdrop-filter:blur(20px) saturate(165%) !important;
+  overflow:hidden !important;
+}
+.page:not(#home) > .headerBar::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  border-radius:inherit;
+  background:radial-gradient(circle at 18% 0%, rgba(255,255,255,.18), transparent 46%);
+  opacity:.72;
+}
+.page:not(#home) > .headerBar > *{
+  position:relative;
+  z-index:1;
+}
+.page:not(#home) > .headerBar h3{
+  color:var(--text) !important;
+  text-shadow:0 1px 12px rgba(0,0,0,.28) !important;
+}
+body.lightweightMode .page:not(#home) > .headerBar,
+body.lowEndDevice .page:not(#home) > .headerBar{
+  background:rgba(255,255,255,.055) !important;
+  border-color:rgba(255,255,255,.09) !important;
+  box-shadow:0 8px 18px rgba(0,0,0,.18) !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
+body.lightweightMode .page:not(#home) > .headerBar::before,
+body.lowEndDevice .page:not(#home) > .headerBar::before{
+  display:none !important;
+}
+.foodScheduleTitleBlock--compact{
+  margin-bottom:8px !important;
+}
+
+/* v.1.1 (587) – kalkulačky: pravé header ovládání a ještě kompaktnější volby Brusů. */
+:is(#soustruhy, #frezky, #brusy, #pracka).calcPage .calcHeaderBar{
+  padding-right:88px !important;
+}
+:is(#soustruhy, #frezky, #brusy, #pracka).calcPage .calcHeaderActions{
+  position:absolute !important;
+  right:0 !important;
+  top:50% !important;
+  transform:translateY(-50%) !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-end !important;
+  gap:7px !important;
+  z-index:2 !important;
+}
+:is(#soustruhy, #frezky, #brusy, #pracka).calcPage .calcHeaderActions .resetBtn,
+:is(#soustruhy, #frezky, #brusy, #pracka).calcPage .calcHeaderActions .calcCloseBtn{
+  position:static !important;
+  right:auto !important;
+  top:auto !important;
+  transform:none !important;
+  width:34px !important;
+  height:34px !important;
+  min-width:34px !important;
+  max-width:34px !important;
+  min-height:34px !important;
+  max-height:34px !important;
+  margin:0 !important;
+  padding:0 !important;
+  border-radius:12px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  font-size:18px !important;
+  line-height:1 !important;
+  flex:0 0 34px !important;
+  color:rgba(255,255,255,.96) !important;
+  border:1px solid rgba(255,255,255,.20) !important;
+  background:rgba(255,255,255,.10) !important;
+  -webkit-backdrop-filter:blur(16px) saturate(150%) !important;
+  backdrop-filter:blur(16px) saturate(150%) !important;
+  box-shadow:0 8px 22px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.16) !important;
+}
+:is(#soustruhy, #frezky, #brusy, #pracka).calcPage .calcHeaderActions .resetBtn{
+  background:linear-gradient(135deg, rgba(56,189,248,.34), rgba(99,102,241,.24)) !important;
+}
+:is(#soustruhy, #frezky, #brusy, #pracka).calcPage .calcHeaderActions .calcCloseBtn{
+  background:linear-gradient(135deg, rgba(255,255,255,.15), rgba(255,255,255,.07)) !important;
+  font-size:23px !important;
+  font-weight:800 !important;
+  padding-bottom:2px !important;
+}
+#brusy :is(.bgrid, .indexGrid, .freeWrap) .bbtn{
+  min-height:clamp(48px, 7.4dvh, 66px) !important;
+  padding-top:clamp(9px, 1.8dvh, 14px) !important;
+  padding-bottom:clamp(9px, 1.8dvh, 14px) !important;
+  font-size:clamp(14.5px, 3.15vw, 16.5px) !important;
+  line-height:1.12 !important;
+}
+body.lightweightMode :is(#soustruhy, #frezky, #brusy, #pracka).calcPage .calcHeaderActions .resetBtn,
+body.lightweightMode :is(#soustruhy, #frezky, #brusy, #pracka).calcPage .calcHeaderActions .calcCloseBtn,
+body.lowEndDevice :is(#soustruhy, #frezky, #brusy, #pracka).calcPage .calcHeaderActions .resetBtn,
+body.lowEndDevice :is(#soustruhy, #frezky, #brusy, #pracka).calcPage .calcHeaderActions .calcCloseBtn{
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+  box-shadow:0 4px 12px rgba(0,0,0,.22) !important;
+}
+
+
+/* v.1.1 (587) – Brusy: cílená oprava skutečné vrstvy pro nižší volby brusu a indexu.
+   V 586 je přebíjela pozdější header vrstva, proto je pravidlo schválně až na konci a konkrétnější. */
+#brusy.calcPage :is(.bgrid, .indexGrid) > .bbtn,
+#brusy.calcPage .indexGrid .freeWrap > .bbtn{
+  min-height:clamp(38px, 5.9dvh, 53px) !important;
+  padding-top:clamp(6px, 1.25dvh, 10px) !important;
+  padding-bottom:clamp(6px, 1.25dvh, 10px) !important;
+  font-size:clamp(14px, 3.05vw, 16px) !important;
+  line-height:1.08 !important;
+}
+@media (max-width:430px){
+  #brusy.calcPage :is(.bgrid, .indexGrid) > .bbtn,
+  #brusy.calcPage .indexGrid .freeWrap > .bbtn{
+    min-height:clamp(36px, 5.5dvh, 48px) !important;
+    padding-top:6px !important;
+    padding-bottom:6px !important;
+  }
+}
+
+/* v.1.1 (588) – Brusy: skutečné sjednocení výšky všech klikacích voleb.
+   Cílené třídy drží stejný rozměr pro volbu brusu, běžné indexy i volné indexy. */
+#brusy.calcPage .brusChoiceGrid,
+#brusy.calcPage .brusIndexGrid,
+#brusy.calcPage .brusFreeWrap{
+  gap:7px !important;
+}
+#brusy.calcPage .brusIndexGrid > .brusFreeWrap{
+  min-width:0 !important;
+  align-items:stretch !important;
+}
+#brusy.calcPage .brusChoiceGrid > .bbtn,
+#brusy.calcPage .brusIndexGrid > .bbtn,
+#brusy.calcPage .brusIndexGrid > .brusFreeWrap > .bbtn,
+#brusy.calcPage .brusFreeWrap > .bbtn{
+  min-height:clamp(46px, 6.8dvh, 60px) !important;
+  height:auto !important;
+  padding-top:clamp(8px, 1.55dvh, 12px) !important;
+  padding-bottom:clamp(8px, 1.55dvh, 12px) !important;
+  padding-left:9px !important;
+  padding-right:9px !important;
+  font-size:clamp(14.5px, 3.15vw, 16.5px) !important;
+  line-height:1.10 !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  box-sizing:border-box !important;
+}
+@media (max-width:430px){
+  #brusy.calcPage .brusChoiceGrid,
+  #brusy.calcPage .brusIndexGrid,
+  #brusy.calcPage .brusFreeWrap{
+    gap:6px !important;
+  }
+  #brusy.calcPage .brusChoiceGrid > .bbtn,
+  #brusy.calcPage .brusIndexGrid > .bbtn,
+  #brusy.calcPage .brusIndexGrid > .brusFreeWrap > .bbtn,
+  #brusy.calcPage .brusFreeWrap > .bbtn{
+    min-height:clamp(44px, 6.3dvh, 56px) !important;
+    padding-top:7px !important;
+    padding-bottom:7px !important;
+  }
+}
+

@@ -5,7 +5,7 @@ function resetSoustruhy() {
   });
   ["soustruhyLisResult", "soustruhy126Result", "soustruhy106Result"].forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.innerHTML = "";
+    if (el) setCalcOutputHtml(el, "", id);
   });
   app.soustruhMode = "lis";
   app.soustruhPlan = String(typeof getSoustruhDefaultPlan === "function" ? getSoustruhDefaultPlan() : 1216);
@@ -22,7 +22,7 @@ function resetFields(ids, resultIds) {
   });
   (Array.isArray(resultIds) ? resultIds : []).forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.innerHTML = "";
+    if (el) setCalcOutputHtml(el, "", id);
   });
   saveRotationData();
 }
@@ -34,6 +34,16 @@ function renderCalcResult(title, lines, meta) {
     safeLines.map((line, index) => "<div class='" + (index === 0 ? "calcResultMain" : "calcResultLine") + "'>" + line + "</div>").join("") +
     (safeMeta ? "<div class='calcResultSub'>" + escapeHtml(safeMeta) + "</div>" : "");
 }
+function setCalcOutputHtml(elementOrId, html, key) {
+  const el = typeof elementOrId === "string" ? document.getElementById(elementOrId) : elementOrId;
+  if (!el) return false;
+  if (typeof setElementHtmlIfChanged === "function") {
+    return setElementHtmlIfChanged(el, html, key || el.id || "calcOutput");
+  }
+  el.innerHTML = String(html ?? "");
+  return true;
+}
+
 function formatClockTime(date) {
   const d = date instanceof Date ? date : new Date(date);
   const hh = String(d.getHours()).padStart(2, "0");
@@ -60,16 +70,16 @@ function renderFinishResult(outId, label, pieces, seconds, extraLine) {
   const out = document.getElementById(outId);
   if (!out) return;
   if (!pieces || !seconds || seconds < 0) {
-    out.innerHTML = "<div class='smallText'>Zadej počet kusů nebo dávek.</div>";
+    setCalcOutputHtml(out, "<div class='smallText'>Zadej počet kusů nebo dávek.</div>", out.id || "calcEmpty");
     return;
   }
   const now = new Date();
   const finish = new Date(now.getTime() + Math.round(seconds * 1000));
   const durationText = formatDuration(Math.round(seconds * 1000));
   const dosesText = formatDoses(pieces);
-  out.innerHTML = renderCalcResult(label, [
+  setCalcOutputHtml(out, renderCalcResult(label, [
     "Hotovo v <b>" + formatClockTime(finish) + "</b>"
-  ], "Za " + durationText + " · " + formatCount(pieces) + " ks / " + dosesText + " dávek" + (extraLine ? " · " + extraLine : ""));
+  ], "Za " + durationText + " · " + formatCount(pieces) + " ks / " + dosesText + " dávek" + (extraLine ? " · " + extraLine : "")), outId);
 }
 
 function estimateBrusSecondsForPieces(pieces, cfg, doneInBatch, piecesToDress) {
@@ -111,11 +121,11 @@ function calcF() {
   const ks = Math.floor(sec / 60);
   const hotovo = parseInt(document.getElementById("f_kusy").value) || 0;
   const celkem = hotovo + ks;
-  document.getElementById("outF").innerHTML = renderCalcResult("Frézky", [
+  setCalcOutputHtml("outF", renderCalcResult("Frézky", [
     "Do konce směny ještě stihneš <b>" + formatCount(ks) + " ks</b> / " + formatDoses(ks) + " dávek.",
     "Celkově budeš mít <b>" + formatCount(celkem) + " ks</b> / " + formatDoses(celkem) + " dávek.",
     "Na obou frézkách ještě stihneš <b>" + formatCount(ks * 2) + " ks</b> / " + formatDoses(ks * 2) + " dávek."
-  ]);
+  ]), "outF");
   saveRotationData();
 }
 
@@ -124,15 +134,15 @@ function calcFFinish() {
   const out = document.getElementById("outFTime");
   if (!out) return;
   if (!target.pieces) {
-    out.innerHTML = "<div class='smallText'>Zadej počet kusů nebo dávek.</div>";
+    setCalcOutputHtml(out, "<div class='smallText'>Zadej počet kusů nebo dávek.</div>", out.id || "calcEmpty");
     return;
   }
   const seconds = target.pieces * 60;
   const now = new Date();
   const finish = new Date(now.getTime() + seconds * 1000);
-  out.innerHTML = renderCalcResult("Frézky", [
+  setCalcOutputHtml(out, renderCalcResult("Frézky", [
     "Hotovo v <b>" + formatClockTime(finish) + "</b>"
-  ], "Za " + formatDuration(seconds * 1000) + " · " + formatCount(target.pieces) + " ks / " + formatDoses(target.pieces) + " dávek");
+  ], "Za " + formatDuration(seconds * 1000) + " · " + formatCount(target.pieces) + " ks / " + formatDoses(target.pieces) + " dávek"), out.id || "outFTime");
   saveRotationData();
 }
 
@@ -141,10 +151,10 @@ function calcP() {
   const ks = Math.floor(sec / 30);
   const hotovo = parseInt(document.getElementById("p_kusy").value) || 0;
   const celkem = hotovo + ks;
-  document.getElementById("outP").innerHTML = renderCalcResult("Pračka", [
+  setCalcOutputHtml("outP", renderCalcResult("Pračka", [
     "Do konce směny ještě stihneš <b>" + formatCount(ks) + " ks</b> / " + formatDoses(ks) + " dávek.",
     "Celkově budeš mít <b>" + formatCount(celkem) + " ks</b> / " + formatDoses(celkem) + " dávek."
-  ]);
+  ]), "outP");
   saveRotationData();
 }
 
@@ -159,11 +169,11 @@ function calcBrusy() {
   const preciseLine = doneInCart > 0
     ? "Rozdělaný vozík/dávka: <b>" + formatCount(doneInCart) + " ks</b> se používá jen pro přepočet dávek, nepřičítá se znovu do celkových kusů."
     : "Přesnější výpočet může zohlednit rozdělaný vozík/dávku jen pro přepočet dávek.";
-  document.getElementById("outB").innerHTML = renderCalcResult(app.machine + " / " + cfg.label, [
+  setCalcOutputHtml("outB", renderCalcResult(app.machine + " / " + cfg.label, [
     "Do konce směny ještě stihneš <b>" + formatCount(ks) + " ks</b> / " + formatDoses(doseBase) + " dávek včetně rozdělaného vozíku.",
     "Celkově budeš mít <b>" + formatCount(celkove) + " ks</b> / " + formatDoses(celkove) + " dávek.",
     preciseLine
-  ]);
+  ]), "outB");
   saveRotationData();
 }
 
@@ -185,7 +195,7 @@ function calcBrusyFinish() {
   const out = document.getElementById("outBTime");
   if (!out) return;
   if (!target.pieces) {
-    out.innerHTML = "<div class='smallText'>Zadej počet kusů nebo dávek.</div>";
+    setCalcOutputHtml(out, "<div class='smallText'>Zadej počet kusů nebo dávek.</div>", out.id || "calcEmpty");
     return;
   }
   const cfg = getBrusConfig(app.machine, app.prog);
@@ -199,9 +209,9 @@ function calcBrusyFinish() {
   const preciseDetails = (doneInBatch > 0 || piecesToDress > 0)
     ? ("<div class='smallText'>Přesnější výpočet: " + (doneInBatch > 0 ? ("rozpracovaná dávka má " + formatCount(doneInBatch) + " ks hotovo") : "bez rozdělané dávky") + (piecesToDress > 0 ? (", do orovnání zbývá " + formatCount(piecesToDress) + " ks") : "") + ".</div>")
     : "<div class='smallText'>Přesnější výpočet si můžeš rozkliknout a doplnit podle rozdělané dávky.</div>";
-  out.innerHTML = renderCalcResult(app.machine + " / " + cfg.label, [
+  setCalcOutputHtml(out, renderCalcResult(app.machine + " / " + cfg.label, [
     "Hotovo v <b>" + formatClockTime(finish) + "</b>"
-  ], "Za " + formatDuration(seconds * 1000) + " · " + formatCount(remainingPieces) + " ks / " + formatDoses(remainingPieces) + " dávek" + preciseNote) + preciseDetails;
+  ], "Za " + formatDuration(seconds * 1000) + " · " + formatCount(remainingPieces) + " ks / " + formatDoses(remainingPieces) + " dávek" + preciseNote) + preciseDetails, out.id || "outBTime");
   saveRotationData();
 }
 
@@ -342,13 +352,17 @@ function renderSoustruhy() {
     "106": document.getElementById('soustruhy106Panel')
   };
 
+  const toggleClass = typeof toggleElementClassIfChanged === 'function'
+    ? toggleElementClassIfChanged
+    : ((el, className, force) => { if (el) el.classList.toggle(className, !!force); });
+
   modeButtons.forEach(btn => {
     const mode = btn.getAttribute('data-soustruh-mode');
-    btn.classList.toggle('activeChoice', app.soustruhMode === mode);
+    toggleClass(btn, 'activeChoice', app.soustruhMode === mode, 'soustruhMode:' + String(mode || 'unknown'));
   });
 
   Object.entries(panels).forEach(([mode, panel]) => {
-    if (panel) panel.classList.toggle('active', app.soustruhMode === mode);
+    if (panel) toggleClass(panel, 'active', app.soustruhMode === mode, 'soustruhPanel:' + String(mode || 'unknown'));
   });
 
   const lisFirst = document.getElementById('lis_first');
@@ -374,7 +388,7 @@ function renderSoustruhy() {
   const startButtons = document.querySelectorAll('[data-startsize]');
   startButtons.forEach(btn => {
     const size = Number(btn.getAttribute('data-startsize'));
-    btn.classList.toggle('activeChoice', app.soustruh126Start === size);
+    toggleClass(btn, 'activeChoice', app.soustruh126Start === size, 'soustruhStartSize:' + String(size || 'unknown'));
   });
 }
 
@@ -383,12 +397,12 @@ function calcSoustruhyLis() {
   const plan = parseInt(document.getElementById('lis_plan').value, 10);
   const out = document.getElementById('soustruhyLisResult');
   if (!Number.isFinite(first) || !Number.isFinite(plan) || plan <= 0) {
-    out.innerHTML = "<div class='smallText'>Doplň první dávku a plán.</div>";
+    setCalcOutputHtml(out, "<div class='smallText'>Doplň první dávku a plán.</div>", out.id || "soustruhEmpty");
     return;
   }
   app.soustruhPlan = String(plan);
   const batches = getSoustruhBatchList(first, [32], plan);
-  out.innerHTML = renderBatchResult('Lis', batches, plan, first);
+  setCalcOutputHtml(out, renderBatchResult('Lis', batches, plan, first), 'soustruhyLisResult');
   saveRotationData();
 }
 
@@ -397,14 +411,14 @@ function calcSoustruhy126() {
   const plan = parseInt(document.getElementById('v126_plan').value, 10);
   const out = document.getElementById('soustruhy126Result');
   if (!Number.isFinite(first) || !Number.isFinite(plan) || plan <= 0) {
-    out.innerHTML = "<div class='smallText'>Doplň první dávku a plán.</div>";
+    setCalcOutputHtml(out, "<div class='smallText'>Doplň první dávku a plán.</div>", out.id || "soustruhEmpty");
     return;
   }
   app.soustruhPlan = String(plan);
   const startSize = app.soustruh126Start === 31 ? 31 : 32;
   const sizes = startSize === 32 ? [32, 31] : [31, 32];
   const batches = getSoustruhBatchList(first, sizes, plan);
-  out.innerHTML = renderBatchResult('Volné 126 ks', batches, plan, first);
+  setCalcOutputHtml(out, renderBatchResult('Volné 126 ks', batches, plan, first), 'soustruhy126Result');
   saveRotationData();
 }
 
@@ -419,12 +433,12 @@ function calcSoustruhy106() {
   ];
   const out = document.getElementById('soustruhy106Result');
   if (!Number.isFinite(first) || !Number.isFinite(plan) || plan <= 0 || counts.some(v => !Number.isFinite(v) || v <= 0)) {
-    out.innerHTML = "<div class='smallText'>Doplň první dávku, plán a první čtyři dávky.</div>";
+    setCalcOutputHtml(out, "<div class='smallText'>Doplň první dávku, plán a první čtyři dávky.</div>", out.id || "soustruh106Empty");
     return;
   }
   app.soustruhPlan = String(plan);
   app.soustruh106Counts = counts.map(v => String(v));
   const batches = getSoustruhBatchList(first, counts, plan);
-  out.innerHTML = renderBatchResult('Volné 106 ks', batches, plan, first);
+  setCalcOutputHtml(out, renderBatchResult('Volné 106 ks', batches, plan, first), 'soustruhy106Result');
   saveRotationData();
 }

@@ -1,5 +1,83 @@
-## v.1.1 (576)
-- Fáze 7 — Data optimization posunuta na cca 72 %.
+## v.1.1 (588)
+- Fáze 8 — PWA / Service Worker hardening posunuta na cca 40 %.
+- Kalkulačky / Brusy: klikací volby mají vlastní cílové třídy pro skutečnou strukturu Brusů, aby je nepřebíjely obecné vrstvy kalkulaček.
+- Kalkulačky / Brusy: sjednocena výška pro oba brusy, běžné indexy AD/AE/AH i volné indexy AD volné/AE volné.
+- Výška je nastavená mezi příliš nízkou variantou volných indexů z v.1.1 (587) a původními vysokými tlačítky, takže zůstává kompaktní, ale ne extrémně nízká.
+- Barevné glass rozlišení indexů a výpočty v Brusech jsou beze změny.
+- Dashboard, spodní lišta, Rotace, Rozpisy, Statistiky, Výplata, hry, Theme/Pozadí a Supabase datový model jsou beze změny.
+
+## v.1.1 (587)
+- Fáze 8 — PWA / Service Worker hardening posunuta na cca 36 %.
+- Kalkulačky: v detailu kalkulaček je vpravo nová kompaktní dvojice ovládání — reset a křížek pro návrat na přehled kalkulaček.
+- Kalkulačky / Brusy: volby brusu a indexu jsou ještě nižší, přibližně o dalších 20 %, ale barevné glass rozlišení zůstává zachované.
+- PWA/SW diagnostika nově hlídá nesoulad mezi očekávanou cache verzí aktuální appky a aktivní verzí service worker cache.
+- Pokud appka zjistí starší cache/service worker verzi, spustí bezpečný vynucený update check s ochranným throttlem.
+- Výpočty, hry, Theme/Pozadí, Supabase datový model, rozpisy, rotace logika, Výplata a spodní lišta jsou beze změny.
+
+## v.1.1 (585)
+- Fáze 8 — PWA / Service Worker hardening posunuta na cca 28 %.
+- Kalkulačky / Brusy: naklikávací volby brusu a indexu jsou zhruba o 20 % nižší, aby na mobilu nezabíraly tolik výšky.
+- Kantýna/Jídelna: v popupu otevírací doby zmizel horní stavový box typu „Teď zavřeno / Další otevření / Otevírá…“.
+- Kantýna/Jídelna: ze zvýrazněného času zmizel malý popisek „teď/další“, zůstává jen čisté barevné zvýraznění aktuálního nebo nejbližšího budoucího bloku.
+- Horní názvy stránek mimo Home mají novou kulatější iOS glass lištu bez ostrých rohů.
+- Diagnostika PWA/SW nově doplňuje počet otevřených klientů a stav navigation preload z aktivního service workeru.
+- Výpočty, hry, Theme/Pozadí, Supabase datový model, rozpisy, rotace logika, Výplata a spodní lišta jsou beze změny.
+
+## v.1.1 (584)
+- Fáze 8 — PWA / Service Worker hardening posunuta na cca 20 %.
+- Service worker nově ukládá metadata o precache app shellu: počet úspěšně uložených položek, počet chyb a krátký seznam přeskočených souborů.
+- Appka si umí od aktivního service workeru vyžádat cache status přes zprávu `GET_CACHE_STATUS`.
+- Diagnostika nově ukazuje aktivní SW/cache verzi, počet položek ve static/runtime cache, úspěšnost precache a počet cache status požadavků.
+- Aktivace service workeru posílá zpět i cache status, takže se lépe pozná, jestli běží správná cache verze.
+- Výpočty, hry, Theme/Pozadí, Supabase datový model, rozpisy, rotace, Výplata a spodní lišta jsou beze změny.
+
+## v.1.1 (583)
+- Fáze 8 — PWA / Service Worker hardening začala zhruba na 10 %.
+- Service worker má bezpečnější instalaci cache: app shell se ukládá po jednotlivých položkách a jedna nepovedená položka neshodí celé přednačtení.
+- Navigace využívá `navigationPreload`, pokud ho prohlížeč podporuje.
+- Runtime cache má limit a průběžný úklid nejstarších položek.
+- Kontrola aktualizace service workeru má throttle/in-flight guard, aby se při focusu/pageshow nespouštělo víc kontrol za sebou.
+- Diagnostika nově ukazuje základní PWA/SW údaje.
+
+## v.1.1 (582)
+- Fáze 7 — Data optimization dokončena na 100 %.
+- Lokální read/JSON cache má nově malý LRU limit, aby při dlouhém používání appky zbytečně nerostla v paměti.
+- Často používané klíče v cache zůstávají, nejstarší nepoužívané položky se bezpečně ořežou.
+- Diagnostika aplikace nově ukazuje velikost read/json cache, nastavené limity, počty úklidů a ořezaných položek.
+- Chování appky, výpočty, hry, Theme/Pozadí, Supabase datový model, rozpisy, rotace, Výplata a spodní lišta jsou beze změny.
+
+## v.1.1 (581)
+- Fáze 7 — Data optimization posunuta na cca 92 %.
+- Přidaný bezpečný style guard `setStylePropertyIfChanged()` pro opakované CSS/inline styly.
+- Theme a Pozadí už při návratu do appky/pageshow/focus zbytečně nepřepisují stejné CSS proměnné, pokud se nezměnily.
+- Spodní lišta / tlačítko Více používá style guard pro opakované dorovnání rozměrů, takže stejné inline styly se při resize/orientaci nepíšou pořád dokola.
+- Diagnostika aplikace nově ukazuje i DOM style zápisy/skipy, chyby a poslední optimalizovaný styl.
+- Výpočty, hry, Theme/Pozadí nabídka, Supabase datový model, rozpisy, rotace, Výplata a spodní lišta funkčně beze změny.
+
+## v.1.1 (580)
+- Fáze 7 — Data optimization posunuta na cca 88 %.
+- Přidaný bezpečný class toggle guard `toggleElementClassIfChanged()` pro aktivní stavy tlačítek/panelů.
+- Kalkulačky / Brusy a Soustruhy už při opakovaném renderu zbytečně nepřepisují stejné aktivní třídy u naklikávacích voleb.
+- Výsledkové panely kalkulaček používají společný `setCalcOutputHtml()` guard, takže se stejné výsledky zbytečně nepřepisují do DOM.
+- Diagnostika aplikace nově ukazuje i DOM toggle zápisy/skipy, chyby a poslední optimalizovaný toggle.
+- Výpočty, pravidla her, Theme/Pozadí, Supabase datový model, rozpisy, rotace logika, Výplata a spodní lišta beze změny.
+
+## v.1.1 (579)
+- Fáze 7 — Data optimization posunuta na cca 84 %.
+- Rokové a měsíční selecty v Rotaci/Statistikách/Importu nově používají bezpečný `setSelectOptionsIfChanged()` guard.
+- Při opakovaném refreshi už se stejné možnosti selectů zbytečně nemažou a nevytváří znovu.
+- Diagnostika aplikace nově ukazuje i DOM select zápisy/skipy a poslední upravený select.
+- Výpočty, hry, Theme/Pozadí, Supabase datový model, rozpisy, rotace logika, Výplata a spodní lišta beze změny.
+
+## v.1.1 (578)
+- Fáze 7 — Data optimization posunuta na cca 80 %.
+- Otevírací doba Kantýny/Jídelny a stránka Jídelní lístek nově používají společný DOM guard `setElementHtmlIfChanged()`.
+- Nadpisy v Otevírací době používají `setElementTextIfChanged()`, takže se při opakovaném refreshi méně sahá do DOMu.
+- Zvýraznění aktuálního/dalšího otevření zůstává beze změny, jen se stejné HTML nepřepisuje pořád dokola.
+- Výpočty, hry, Theme/Pozadí, Výplata, rozpisy, rotace, Supabase datový model i spodní lišta jsou beze změny.
+
+## v.1.1 (577)
+- Fáze 7 — Data optimization posunuta na cca 76 %.
 - Přidané společné DOM guardy `setElementTextIfChanged()` a `setElementClassNameIfChanged()` pro úspornější změny textu a tříd.
 - Dashboardové helpery nově používají společné text/class guardy, takže opakovaný refresh méně zapisuje stejné hodnoty do DOM.
 - Theme/Pozadí a přihlášený herní účet používají úspornější textové zápisy při opakovaném otevření nastavení nebo návratu do appky.
@@ -198,8 +276,8 @@
 - Fáze 6 — Supabase hardening zůstává cca 64 %.
 - Výpočty, pravidla her, Theme/Pozadí, spodní lišta a Supabase datový model beze změny.
 
-## Přehled největších změn v.1.1 (500–576)
-- Proběhlo velké stabilizační období před dalšími fázemi refactoru: Fáze 3 Láďův režim, Fáze 4 cleanup manager, Fáze 5 game performance a dokončený Supabase hardening a začátek Fáze 7 Data optimization.
+## Přehled největších změn v.1.1 (500–588)
+- Proběhlo velké stabilizační období před dalšími fázemi refactoru: Fáze 3 Láďův režim, Fáze 4 cleanup manager, Fáze 5 game performance, dokončený Supabase hardening, dokončená Fáze 7 Data optimization a začátek Fáze 8 PWA / Service Worker hardening včetně úspornějších DOM renderů v Dashboardu, Rotaci, Statistikách, Otevírací době, rokových/měsíčních selectech, aktivních stavech kalkulačních voleb, závěrečného LRU úklidu lokální cache a bezpečnější service worker cache a čistší drobné UI doladění Brusů, Otevírací doby a horních názvů stránek.
 - Dashboard se postupně ladil kvůli správnému zobrazení směny, ikon, kantýny/jídelny, odpočtů, klikací výplatě a menšímu riziku prázdných nebo pozdě načtených karet.
 - Spodní navigace prošla opakovaným dorovnáním, hlavně položka „Více“ – má být užší, ale normálně mezi ostatními položkami a bez ukotvení vpravo.
 - Rotace dostala stabilnější spodní dock jmen, lepší safe-area chování na menších displejích typu Samsung A15 a čistší zobrazení příští směny.

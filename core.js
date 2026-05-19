@@ -1,6 +1,6 @@
 
 const APP_KEY = "rotace_kalkulacky_state_v123";
-const APP_VERSION = "v.1.1 (576)";
+const APP_VERSION = "v.1.1 (588)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-05-18-" + APP_VERSION + "-" + Date.now();
 
@@ -172,6 +172,14 @@ const RAK_DATA_OPTIMIZATION_STATS = window.__rakDataOptimizationStats || {
   localStorageJsonParseReads: 0,
   localStorageJsonParseCacheHits: 0,
   localStorageJsonParseErrors: 0,
+  localReadCachePrunes: 0,
+  localJsonCachePrunes: 0,
+  localReadCacheTrimmedEntries: 0,
+  localJsonCacheTrimmedEntries: 0,
+  localReadCacheSize: 0,
+  localJsonCacheSize: 0,
+  localCacheMaxSize: 0,
+  localJsonCacheMaxSize: 0,
   approxBytesRead: 0,
   homeRefreshSchedules: 0,
   homeRefreshCoalescedSchedules: 0,
@@ -186,6 +194,21 @@ const RAK_DATA_OPTIMIZATION_STATS = window.__rakDataOptimizationStats || {
   domClassWrites: 0,
   domClassSkippedWrites: 0,
   domClassWriteErrors: 0,
+  domSelectWrites: 0,
+  domSelectSkippedWrites: 0,
+  domSelectWriteErrors: 0,
+  domToggleWrites: 0,
+  domToggleSkippedWrites: 0,
+  domToggleWriteErrors: 0,
+  domStyleWrites: 0,
+  domStyleSkippedWrites: 0,
+  domStyleWriteErrors: 0,
+  domStyleLastKey: '',
+  domStyleLastAt: null,
+  domToggleLastKey: '',
+  domToggleLastAt: null,
+  domSelectLastKey: '',
+  domSelectLastAt: null,
   domHtmlLastKey: '',
   domHtmlLastAt: null,
   domTextLastKey: '',
@@ -202,20 +225,70 @@ const RAK_DATA_OPTIMIZATION_STATS = window.__rakDataOptimizationStats || {
   lastReadAt: null
 };
 window.__rakDataOptimizationStats = RAK_DATA_OPTIMIZATION_STATS;
+[
+  'domSelectWrites','domSelectSkippedWrites','domSelectWriteErrors','domToggleWrites','domToggleSkippedWrites','domToggleWriteErrors',
+  'domStyleWrites','domStyleSkippedWrites','domStyleWriteErrors','localReadCachePrunes','localJsonCachePrunes',
+  'localReadCacheTrimmedEntries','localJsonCacheTrimmedEntries','localReadCacheSize','localJsonCacheSize','localCacheMaxSize','localJsonCacheMaxSize'
+].forEach((key) => {
+  if (!Number.isFinite(Number(RAK_DATA_OPTIMIZATION_STATS[key]))) RAK_DATA_OPTIMIZATION_STATS[key] = 0;
+});
+if (typeof RAK_DATA_OPTIMIZATION_STATS.domSelectLastKey !== 'string') RAK_DATA_OPTIMIZATION_STATS.domSelectLastKey = '';
+if (!('domSelectLastAt' in RAK_DATA_OPTIMIZATION_STATS)) RAK_DATA_OPTIMIZATION_STATS.domSelectLastAt = null;
+if (typeof RAK_DATA_OPTIMIZATION_STATS.domToggleLastKey !== 'string') RAK_DATA_OPTIMIZATION_STATS.domToggleLastKey = '';
+if (!('domToggleLastAt' in RAK_DATA_OPTIMIZATION_STATS)) RAK_DATA_OPTIMIZATION_STATS.domToggleLastAt = null;
+if (typeof RAK_DATA_OPTIMIZATION_STATS.domStyleLastKey !== 'string') RAK_DATA_OPTIMIZATION_STATS.domStyleLastKey = '';
+if (!('domStyleLastAt' in RAK_DATA_OPTIMIZATION_STATS)) RAK_DATA_OPTIMIZATION_STATS.domStyleLastAt = null;
 
 const RAK_LOCAL_STORAGE_READ_CACHE = window.__rakLocalStorageReadCache || new Map();
 window.__rakLocalStorageReadCache = RAK_LOCAL_STORAGE_READ_CACHE;
 const RAK_LOCAL_STORAGE_JSON_CACHE = window.__rakLocalStorageJsonCache || new Map();
 window.__rakLocalStorageJsonCache = RAK_LOCAL_STORAGE_JSON_CACHE;
+const RAK_LOCAL_STORAGE_READ_CACHE_LIMIT = 80;
+const RAK_LOCAL_STORAGE_JSON_CACHE_LIMIT = 48;
+RAK_DATA_OPTIMIZATION_STATS.localCacheMaxSize = RAK_LOCAL_STORAGE_READ_CACHE_LIMIT;
+RAK_DATA_OPTIMIZATION_STATS.localJsonCacheMaxSize = RAK_LOCAL_STORAGE_JSON_CACHE_LIMIT;
+
+function pruneRakLocalMapCache(cache, limit, pruneCounterKey, trimmedCounterKey) {
+  if (!cache || typeof cache.size !== 'number' || !Number.isFinite(limit) || limit <= 0) return 0;
+  let trimmed = 0;
+  try {
+    while (cache.size > limit) {
+      const oldest = cache.keys().next();
+      if (!oldest || oldest.done) break;
+      cache.delete(oldest.value);
+      trimmed += 1;
+    }
+    if (trimmed > 0) {
+      RAK_DATA_OPTIMIZATION_STATS[pruneCounterKey] = Number(RAK_DATA_OPTIMIZATION_STATS[pruneCounterKey] || 0) + 1;
+      RAK_DATA_OPTIMIZATION_STATS[trimmedCounterKey] = Number(RAK_DATA_OPTIMIZATION_STATS[trimmedCounterKey] || 0) + trimmed;
+    }
+  } catch (err) {}
+  return trimmed;
+}
+
+function refreshRakLocalMapEntry(cache, key, value) {
+  if (!cache || !key) return;
+  try {
+    if (cache.has(key)) cache.delete(key);
+    cache.set(key, value);
+  } catch (err) {}
+}
+
+function updateRakLocalCacheSizes() {
+  RAK_DATA_OPTIMIZATION_STATS.localReadCacheSize = RAK_LOCAL_STORAGE_READ_CACHE.size || 0;
+  RAK_DATA_OPTIMIZATION_STATS.localJsonCacheSize = RAK_LOCAL_STORAGE_JSON_CACHE.size || 0;
+}
 try {
   window.addEventListener('storage', (event) => {
     if (!event || !event.key) {
       RAK_LOCAL_STORAGE_READ_CACHE.clear();
       RAK_LOCAL_STORAGE_JSON_CACHE.clear();
+      updateRakLocalCacheSizes();
       return;
     }
     RAK_LOCAL_STORAGE_READ_CACHE.delete(event.key);
     RAK_LOCAL_STORAGE_JSON_CACHE.delete(event.key);
+    updateRakLocalCacheSizes();
   });
 } catch (err) {}
 
@@ -231,11 +304,16 @@ function getLocalStorageCached(key, fallbackValue = '') {
   if (RAK_LOCAL_STORAGE_READ_CACHE.has(storageKey)) {
     RAK_DATA_OPTIMIZATION_STATS.localStorageReadCacheHits += 1;
     const cached = RAK_LOCAL_STORAGE_READ_CACHE.get(storageKey);
+    // Fáze 7: jednoduché LRU chování, často používané klíče zůstávají v malé cache.
+    refreshRakLocalMapEntry(RAK_LOCAL_STORAGE_READ_CACHE, storageKey, cached);
+    updateRakLocalCacheSizes();
     return cached === null || cached === undefined ? fallbackValue : cached;
   }
   try {
     const raw = localStorage.getItem(storageKey);
-    RAK_LOCAL_STORAGE_READ_CACHE.set(storageKey, raw);
+    refreshRakLocalMapEntry(RAK_LOCAL_STORAGE_READ_CACHE, storageKey, raw);
+    pruneRakLocalMapCache(RAK_LOCAL_STORAGE_READ_CACHE, RAK_LOCAL_STORAGE_READ_CACHE_LIMIT, 'localReadCachePrunes', 'localReadCacheTrimmedEntries');
+    updateRakLocalCacheSizes();
     RAK_DATA_OPTIMIZATION_STATS.localStorageReads += 1;
     RAK_DATA_OPTIMIZATION_STATS.approxBytesRead += approxStringBytes(raw || '');
     RAK_DATA_OPTIMIZATION_STATS.lastReadKey = storageKey;
@@ -259,11 +337,15 @@ function parseLocalStorageJsonCached(key, fallbackValue) {
   const cached = RAK_LOCAL_STORAGE_JSON_CACHE.get(storageKey);
   if (cached && cached.raw === raw) {
     RAK_DATA_OPTIMIZATION_STATS.localStorageJsonParseCacheHits += 1;
+    refreshRakLocalMapEntry(RAK_LOCAL_STORAGE_JSON_CACHE, storageKey, cached);
+    updateRakLocalCacheSizes();
     return cloneCachedJson(cached.value);
   }
   try {
     const parsed = JSON.parse(raw);
-    RAK_LOCAL_STORAGE_JSON_CACHE.set(storageKey, { raw, value: parsed });
+    refreshRakLocalMapEntry(RAK_LOCAL_STORAGE_JSON_CACHE, storageKey, { raw, value: parsed });
+    pruneRakLocalMapCache(RAK_LOCAL_STORAGE_JSON_CACHE, RAK_LOCAL_STORAGE_JSON_CACHE_LIMIT, 'localJsonCachePrunes', 'localJsonCacheTrimmedEntries');
+    updateRakLocalCacheSizes();
     RAK_DATA_OPTIMIZATION_STATS.localStorageJsonParseReads += 1;
     return cloneCachedJson(parsed);
   } catch (err) {
@@ -289,8 +371,10 @@ function setLocalStorageIfChanged(key, value) {
       return false;
     }
     localStorage.setItem(storageKey, storageValue);
-    RAK_LOCAL_STORAGE_READ_CACHE.set(storageKey, storageValue);
+    refreshRakLocalMapEntry(RAK_LOCAL_STORAGE_READ_CACHE, storageKey, storageValue);
     RAK_LOCAL_STORAGE_JSON_CACHE.delete(storageKey);
+    pruneRakLocalMapCache(RAK_LOCAL_STORAGE_READ_CACHE, RAK_LOCAL_STORAGE_READ_CACHE_LIMIT, 'localReadCachePrunes', 'localReadCacheTrimmedEntries');
+    updateRakLocalCacheSizes();
     RAK_DATA_OPTIMIZATION_STATS.localStorageWrites += 1;
     RAK_DATA_OPTIMIZATION_STATS.approxBytesWritten += approxStringBytes(storageValue);
     RAK_DATA_OPTIMIZATION_STATS.lastWriteKey = storageKey;
@@ -304,6 +388,7 @@ function setLocalStorageIfChanged(key, value) {
 }
 
 function getDataOptimizationStatus() {
+  updateRakLocalCacheSizes();
   return Object.assign({}, RAK_DATA_OPTIMIZATION_STATS);
 }
 window.getDataOptimizationStatus = getDataOptimizationStatus;
@@ -383,6 +468,129 @@ function setElementClassNameIfChanged(element, className, key = '') {
   }
 }
 window.setElementClassNameIfChanged = setElementClassNameIfChanged;
+
+
+function toggleElementClassIfChanged(element, className, force, key = '') {
+  if (!element || !className) return false;
+  const classToken = String(className || '').trim();
+  if (!classToken) return false;
+  const shouldHave = !!force;
+  const statKey = String(key || element.id || classToken || 'toggle').trim();
+  try {
+    const hasClass = element.classList.contains(classToken);
+    if (hasClass === shouldHave) {
+      RAK_DATA_OPTIMIZATION_STATS.domToggleSkippedWrites += 1;
+      RAK_DATA_OPTIMIZATION_STATS.domToggleLastKey = statKey;
+      RAK_DATA_OPTIMIZATION_STATS.domToggleLastAt = Date.now();
+      return false;
+    }
+    element.classList.toggle(classToken, shouldHave);
+    RAK_DATA_OPTIMIZATION_STATS.domToggleWrites += 1;
+    RAK_DATA_OPTIMIZATION_STATS.domToggleLastKey = statKey;
+    RAK_DATA_OPTIMIZATION_STATS.domToggleLastAt = Date.now();
+    return true;
+  } catch (err) {
+    RAK_DATA_OPTIMIZATION_STATS.domToggleWriteErrors += 1;
+    try { element.classList.toggle(classToken, shouldHave); } catch (fallbackErr) {}
+    return true;
+  }
+}
+window.toggleElementClassIfChanged = toggleElementClassIfChanged;
+
+function setStylePropertyIfChanged(element, propertyName, value, priority = '', key = '') {
+  if (!element || !element.style || !propertyName) return false;
+  const prop = String(propertyName || '').trim();
+  if (!prop) return false;
+  const nextValue = String(value ?? '');
+  const nextPriority = String(priority || '').trim();
+  const statKey = String(key || element.id || prop || 'style').trim();
+  try {
+    const currentValue = String(element.style.getPropertyValue(prop) || '');
+    const currentPriority = String(element.style.getPropertyPriority(prop) || '');
+    if (currentValue === nextValue && currentPriority === nextPriority) {
+      RAK_DATA_OPTIMIZATION_STATS.domStyleSkippedWrites += 1;
+      RAK_DATA_OPTIMIZATION_STATS.domStyleLastKey = statKey;
+      RAK_DATA_OPTIMIZATION_STATS.domStyleLastAt = Date.now();
+      return false;
+    }
+    element.style.setProperty(prop, nextValue, nextPriority);
+    RAK_DATA_OPTIMIZATION_STATS.domStyleWrites += 1;
+    RAK_DATA_OPTIMIZATION_STATS.domStyleLastKey = statKey;
+    RAK_DATA_OPTIMIZATION_STATS.domStyleLastAt = Date.now();
+    return true;
+  } catch (err) {
+    RAK_DATA_OPTIMIZATION_STATS.domStyleWriteErrors += 1;
+    try { element.style.setProperty(prop, nextValue, nextPriority); } catch (fallbackErr) {}
+    return true;
+  }
+}
+window.setStylePropertyIfChanged = setStylePropertyIfChanged;
+
+function setSelectOptionsIfChanged(selectElement, options, selectedValue = '', key = '') {
+  if (!selectElement) return false;
+  const normalizedOptions = (Array.isArray(options) ? options : []).map((option) => {
+    if (option && typeof option === 'object') {
+      return {
+        value: String(option.value ?? ''),
+        label: String(option.label ?? option.text ?? option.value ?? '')
+      };
+    }
+    return { value: String(option ?? ''), label: String(option ?? '') };
+  });
+  const selected = String(selectedValue ?? '');
+  const signature = JSON.stringify({ options: normalizedOptions, selected });
+  const statKey = String(key || selectElement.id || selectElement.name || 'select').trim();
+  try {
+    if (selectElement.__rakLastOptionsSignature === signature) {
+      RAK_DATA_OPTIMIZATION_STATS.domSelectSkippedWrites += 1;
+      RAK_DATA_OPTIMIZATION_STATS.domSelectLastKey = statKey;
+      RAK_DATA_OPTIMIZATION_STATS.domSelectLastAt = Date.now();
+      return false;
+    }
+    const existing = Array.from(selectElement.options || []).map((opt) => ({
+      value: String(opt.value ?? ''),
+      label: String(opt.textContent ?? '')
+    }));
+    const existingSignature = JSON.stringify({ options: existing, selected: String(selectElement.value ?? '') });
+    if (existingSignature === signature) {
+      selectElement.__rakLastOptionsSignature = signature;
+      RAK_DATA_OPTIMIZATION_STATS.domSelectSkippedWrites += 1;
+      RAK_DATA_OPTIMIZATION_STATS.domSelectLastKey = statKey;
+      RAK_DATA_OPTIMIZATION_STATS.domSelectLastAt = Date.now();
+      return false;
+    }
+    const fragment = document.createDocumentFragment();
+    normalizedOptions.forEach((item) => {
+      const opt = document.createElement('option');
+      opt.value = item.value;
+      opt.textContent = item.label;
+      if (item.value === selected) opt.selected = true;
+      fragment.appendChild(opt);
+    });
+    selectElement.replaceChildren(fragment);
+    if (selected && selectElement.value !== selected) selectElement.value = selected;
+    selectElement.__rakLastOptionsSignature = signature;
+    RAK_DATA_OPTIMIZATION_STATS.domSelectWrites += 1;
+    RAK_DATA_OPTIMIZATION_STATS.domSelectLastKey = statKey;
+    RAK_DATA_OPTIMIZATION_STATS.domSelectLastAt = Date.now();
+    return true;
+  } catch (err) {
+    RAK_DATA_OPTIMIZATION_STATS.domSelectWriteErrors += 1;
+    try {
+      selectElement.innerHTML = '';
+      normalizedOptions.forEach((item) => {
+        const opt = document.createElement('option');
+        opt.value = item.value;
+        opt.textContent = item.label;
+        if (item.value === selected) opt.selected = true;
+        selectElement.appendChild(opt);
+      });
+      selectElement.__rakLastOptionsSignature = signature;
+    } catch (fallbackErr) {}
+    return true;
+  }
+}
+window.setSelectOptionsIfChanged = setSelectOptionsIfChanged;
 
 function normalizeRows(rows) {
   return (Array.isArray(rows) ? rows : []).map(row => ({
@@ -739,33 +947,43 @@ function syncYearControls() {
   const importYearSelect = document.getElementById("importYearSelect");
   const overwriteMonth = document.getElementById("overwriteMonth");
 
-  const fillSelect = (el, values, selected) => {
+  const fillSelect = (el, values, selected, key) => {
     if (!el) return;
+    const options = (Array.isArray(values) ? values : []).map(year => ({ value: String(year), label: String(year) }));
+    if (typeof setSelectOptionsIfChanged === 'function') {
+      setSelectOptionsIfChanged(el, options, String(selected || ''), key);
+      return;
+    }
     const current = String(selected || "");
     el.innerHTML = "";
-    values.forEach(year => {
+    options.forEach(item => {
       const opt = document.createElement("option");
-      opt.value = String(year);
-      opt.textContent = String(year);
-      if (String(year) === current) opt.selected = true;
+      opt.value = item.value;
+      opt.textContent = item.label;
+      if (item.value === current) opt.selected = true;
       el.appendChild(opt);
     });
   };
 
-  fillSelect(monthYearSelect, getAvailableYears(app.rotation), app.selectedYear);
-  fillSelect(statsYearSelect, getAvailableYears(app.rotation), app.selectedYear);
-  fillSelect(importYearSelect, getImportYears(app.rotation), app.importYear);
+  fillSelect(monthYearSelect, getAvailableYears(app.rotation), app.selectedYear, 'monthYearSelect');
+  fillSelect(statsYearSelect, getAvailableYears(app.rotation), app.selectedYear, 'statsYearSelect');
+  fillSelect(importYearSelect, getImportYears(app.rotation), app.importYear, 'importYearSelect');
 
   if (overwriteMonth) {
     const selectedYear = parseInt(app.importYear, 10) || parseInt(app.selectedYear, 10);
     const months = getMonthsForYear(app.rotation, selectedYear);
-    overwriteMonth.innerHTML = '<option value="">— jen doplnit nové měsíce —</option>';
-    months.forEach(monthKey => {
-      const opt = document.createElement("option");
-      opt.value = monthKey;
-      opt.textContent = monthKey;
-      overwriteMonth.appendChild(opt);
-    });
+    const options = [{ value: '', label: '— jen doplnit nové měsíce —' }].concat(months.map(monthKey => ({ value: monthKey, label: monthKey })));
+    if (typeof setSelectOptionsIfChanged === 'function') {
+      setSelectOptionsIfChanged(overwriteMonth, options, String(overwriteMonth.value || ''), 'overwriteMonth');
+    } else {
+      overwriteMonth.innerHTML = '<option value="">— jen doplnit nové měsíce —</option>';
+      months.forEach(monthKey => {
+        const opt = document.createElement("option");
+        opt.value = monthKey;
+        opt.textContent = monthKey;
+        overwriteMonth.appendChild(opt);
+      });
+    }
   }
 }
 

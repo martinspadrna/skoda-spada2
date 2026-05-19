@@ -1,11 +1,16 @@
 function renderBrusy() {
+  const toggleClass = typeof toggleElementClassIfChanged === "function"
+    ? toggleElementClassIfChanged
+    : ((el, className, force) => { if (el) el.classList.toggle(className, !!force); });
+
   document.querySelectorAll("#brusy .bbtn").forEach(b => {
-    b.classList.remove("activeMachine", "activeIndex", "activeChoice");
+    const isMachine = b.getAttribute("data-machine") === String(app.machine || "");
+    const isProg = b.getAttribute("data-prog") === String(app.prog || "");
+    const btnKey = "brusyBtn:" + (b.getAttribute("data-machine") || b.getAttribute("data-prog") || "unknown");
+    toggleClass(b, "activeMachine", isMachine, btnKey + ":machine");
+    toggleClass(b, "activeIndex", isProg, btnKey + ":index");
+    toggleClass(b, "activeChoice", isMachine || isProg, btnKey + ":choice");
   });
-  const machineBtn = document.querySelector(`#brusy [data-machine="${app.machine}"]`);
-  const progBtn = document.querySelector(`#brusy [data-prog="${app.prog}"]`);
-  if (machineBtn) machineBtn.classList.add("activeMachine", "activeChoice");
-  if (progBtn) progBtn.classList.add("activeIndex", "activeChoice");
 
   const info = document.getElementById("brusyInfo");
   if (info) {
