@@ -1,4 +1,4 @@
-// v.1.1 (598) – Soustruhy: dopočítání kalírenských dávek pro Volné 126/106.
+// v.1.1 (600) – Soustruhy: kalírenské čtveřice jsou součástí hlavního výpočtu dávek.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

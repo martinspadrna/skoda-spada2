@@ -1,3 +1,18 @@
+## v.1.1 (600)
+- Kalkulačky / Soustruhy: u Volné 126 ks a Volné 106 ks je dopočítání kalírenských volných nově součástí hlavního výpočtu dávek.
+- Už se nezadává zvlášť číslo první průvodky pro kalírnu; výpočet bere číslo první dávky na soustruhu a podle hotového plánu rovnou vypíše kalírenské čtveřice po 4 průvodkách.
+- Poslední kalírenská čtveřice se dopočítá do celé čtveřice: pokud plán skončí např. po 1–3 dávkách v poslední skupině, výsledek ukáže, které další vozíky se mají ještě doplnit ze soustruhu, aby kalírna dostala 4.
+- Tabulka kalírenských volných nově ukazuje sloupec „Doplnit“ a průvodky dopočítané mimo aktuální plán označí hvězdičkou.
+- Výpočty kusů pro Volné 126/106 zůstávají stejné, změněné je jen napojení kalírenské logiky na hlavní výsledek.
+- Fáze 8 — PWA / Service Worker hardening zůstává cca 60 %, protože jde o cílenou úpravu Soustruhů bez změny PWA/SW jádra.
+
+## v.1.1 (599)
+- Dashboard: když je směna D právě v práci, horní zvýrazněné pole už neopakuje text „Směna D je právě v práci“, protože stejná informace je hned nad ním.
+- Ve zvýrazněném poli při aktivní směně D zůstává jen informace „chybí: …“.
+- Když směna D právě v práci není, zobrazení zůstává stejné jako ve v.1.1 (598): ukáže za jak dlouho D začíná a kdo bude chybět.
+- Výpočty, kalkulačky, profil, hry, Supabase datový model a service worker jsou beze změny.
+- Fáze 8 — PWA / Service Worker hardening zůstává cca 60 %, protože jde o cílené doladění Dashboardu bez změny PWA/SW jádra.
+
 ## v.1.1 (598)
 - Kalkulačky / Soustruhy: u Volné 126 ks a Volné 106 ks přibylo okýnko „Dopočítání kalírenské dávky“.
 - Nový výpočet má pole „Číslo první průvodky v kalírenské dávce“ a po kliknutí vypíše kalírenské volné po 4 našich průvodkách v jednom řádku, např. 3, 4, 5, 6.

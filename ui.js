@@ -2845,15 +2845,14 @@ function buildAppHistoryHtml(versionText) {
       title: 'Aktuální build',
       lines: [
         'Fáze 8 — PWA / Service Worker hardening je zhruba na 60 %.',
-        'Soustruhy nově umí u Volné 126 a Volné 106 dopočítat kalírenské dávky po 4 našich průvodkách podle plánu kusů.',
-        'Zadáš číslo první průvodky v kalírenské dávce a appka vypíše skupiny typu 3, 4, 5, 6 až do konce plánu.',
-        'Service worker má navíc chytřejší fallback pro same-origin požadavky: při výpadku zkusí normalizované hledání v runtime i statické cache.',
-        'Kalkulačky / Brusy mají cíleně zmenšené volby přes vlastní třídy a menší mezeru mezi volbou brusu a indexy.',
-        'Service worker diagnostika hlídá nesoulad verzí a statické soubory app shellu teď při offline načítání hledá i ve statické precache.'
+        'Soustruhy u Volné 126 a Volné 106 nově ukazují kalírenské čtveřice přímo v hlavním výpočtu dávek.',
+        'Poslední kalírenská čtveřice se dopočítá do 4 průvodek a jasně ukáže vozíky, které se mají ještě doplnit ze soustruhu.',
+        'Dashboard při aktivní směně D ve zvýrazněném horním poli neopakuje text „Směna D je právě v práci“ a ukazuje jen, kdo chybí.',
+        'Service worker má chytřejší fallback pro same-origin požadavky a diagnostika hlídá nesoulad verzí/cache.'
       ]
     },
     {
-      range: 'v.1.1 500–598',
+      range: 'v.1.1 500–600',
       title: 'Stabilizace, hry, Supabase a glass vzhled',
       lines: [
         'Proběhlo velké stabilizační období: Láďův režim, cleanup manager, dokončení game performance, dokončený Supabase hardening a začátek Fáze 7 Data optimization včetně dalšího odlehčení Láďova režimu, úspornější Supabase lokální cache a méně zbytečných DOM renderů včetně Otevírací doby/Jídelního lístku, úspornějších selectů pro roky/měsíce, class toggle guardů u kalkulaček, style guardů u Theme/Pozadí/spodní lišty a závěrečného úklidu lokální read/JSON cache. Po dokončení Fáze 7 začala Fáze 8: tvrdší PWA/service worker chování, bezpečnější precache, řízenější update checky a diagnostika cache stavu.',

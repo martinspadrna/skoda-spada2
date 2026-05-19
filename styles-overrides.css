@@ -4851,3 +4851,13 @@ html body #brusy.calcPage .brusIndexGrid{
 #soustruhy .soustruhyHeatBox .calcResultCard{
   margin-top:8px !important;
 }
+
+/* v.1.1 (600) – Soustruhy: kalírenské čtveřice jsou součástí hlavního výpočtu dávek. */
+#soustruhy .calcResultDivider{
+  height:1px !important;
+  margin:14px 0 12px !important;
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent) !important;
+}
+#soustruhy .calcResultCard .statsSummary + .smallText{
+  margin-top:8px !important;
+}

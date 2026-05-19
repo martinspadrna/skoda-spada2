@@ -1,9 +1,9 @@
 function resetSoustruhy() {
-  ["lis_first", "lis_plan", "v126_first", "v126_plan", "v126_heat_first", "v106_first", "v106_plan", "v106_heat_first", "v106_c1", "v106_c2", "v106_c3", "v106_c4"].forEach(id => {
+  ["lis_first", "lis_plan", "v126_first", "v126_plan", "v106_first", "v106_plan", "v106_c1", "v106_c2", "v106_c3", "v106_c4"].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = "";
   });
-  ["soustruhyLisResult", "soustruhy126Result", "soustruhy126HeatResult", "soustruhy106Result", "soustruhy106HeatResult"].forEach(id => {
+  ["soustruhyLisResult", "soustruhy126Result", "soustruhy106Result"].forEach(id => {
     const el = document.getElementById(id);
     if (el) setCalcOutputHtml(el, "", id);
   });
@@ -318,56 +318,84 @@ function getSoustruhBatchList(firstBatch, sizes, plan) {
 function getSoustruhHeatGroups(firstGuide, sizes, plan) {
   const start = parseInt(firstGuide, 10);
   const batches = getSoustruhBatchList(start, sizes, plan);
-  if (!Number.isFinite(start) || !batches.length) {
-    return { groups: [], batchCount: 0, heatCount: 0, lastPlannedGuide: 0, lastHeatGuide: 0 };
+  return getSoustruhHeatGroupsFromBatches(start, batches);
+}
+
+function getSoustruhHeatGroupsFromBatches(firstGuide, batches) {
+  const start = parseInt(firstGuide, 10);
+  const safeBatches = Array.isArray(batches) ? batches : [];
+  if (!Number.isFinite(start) || !safeBatches.length) {
+    return { groups: [], batchCount: 0, heatCount: 0, lastPlannedGuide: 0, lastHeatGuide: 0, missingCount: 0, missingGuides: [] };
   }
 
-  const batchCount = batches.length;
+  const batchCount = safeBatches.length;
   const heatCount = Math.ceil(batchCount / 4);
+  const lastPlannedGuide = safeBatches[batchCount - 1].batchNo;
+  const lastHeatGuide = start + heatCount * 4 - 1;
+  const plannedSet = new Set(safeBatches.map(item => Number(item.batchNo)));
   const groups = [];
 
   for (let groupIndex = 0; groupIndex < heatCount; groupIndex += 1) {
     const offset = groupIndex * 4;
-    const guides = [0, 1, 2, 3].map(step => start + offset + step);
-    const plannedInside = Math.max(0, Math.min(4, batchCount - offset));
+    const guides = [0, 1, 2, 3].map(step => {
+      const number = start + offset + step;
+      return {
+        number,
+        planned: plannedSet.has(number)
+      };
+    });
+    const plannedInside = guides.filter(item => item.planned).length;
+    const missingGuides = guides.filter(item => !item.planned).map(item => item.number);
     groups.push({
       number: groupIndex + 1,
       guides,
-      plannedInside
+      plannedInside,
+      missingGuides
     });
   }
 
+  const missingGuides = groups.flatMap(item => item.missingGuides || []);
   return {
     groups,
     batchCount,
     heatCount,
-    lastPlannedGuide: start + batchCount - 1,
-    lastHeatGuide: start + heatCount * 4 - 1
+    lastPlannedGuide,
+    lastHeatGuide,
+    missingCount: missingGuides.length,
+    missingGuides
   };
 }
 
 function renderSoustruhHeatGroups(title, heatData) {
   if (!heatData || !Array.isArray(heatData.groups) || !heatData.groups.length) {
-    return "<div class='smallText'>Doplň číslo první průvodky a plán výroby.</div>";
+    return "<div class='smallText'>Doplň číslo první dávky a plán výroby.</div>";
   }
 
-  let html = "<div class='smallText uMb10'>" + escapeHtml(title) + "</div>";
+  let html = "<div class='calcResultDivider'></div>";
+  html += "<div class='smallText uMb10'><b>" + escapeHtml(title) + "</b></div>";
   html += "<div class='statsSummary'>";
   html += "<div class='tile'><div class='smallText'>Našich dávek</div><div class='uFs22 uMt4'>" + formatCount(heatData.batchCount) + "</div></div>";
   html += "<div class='tile'><div class='smallText'>Kalírenských</div><div class='uFs22 uMt4'>" + formatCount(heatData.heatCount) + "</div></div>";
-  html += "<div class='tile'><div class='smallText'>Do průvodky</div><div class='uFs22 uMt4'>" + formatCount(heatData.lastPlannedGuide) + "</div></div>";
+  html += "<div class='tile'><div class='smallText'>Do kalírny</div><div class='uFs22 uMt4'>" + formatCount(heatData.lastHeatGuide) + "</div></div>";
   html += "</div>";
-  html += "<div class='smallText uMb10'>Jedna kalírenská volná = 4 naše průvodky. Poslední řádek je dopočítaný do celé čtveřice, aby to sedělo pro kalírnu.</div>";
-  html += "<div class='tableWrap'><table class='statsTable'><thead><tr><th>Kalírenská</th><th>Průvodky</th><th>Z plánu</th></tr></thead><tbody>";
+  html += "<div class='smallText uMb10'>Jedna kalírenská volná = 4 naše průvodky. Pokud plán skončí uprostřed čtveřice, poslední řádek rovnou doplní další vozíky ze soustruhu, aby kalírna dostala celou čtveřici.</div>";
+  if (heatData.missingCount > 0) {
+    html += "<div class='smallText uMb10'>Plán končí průvodkou <b>" + formatCount(heatData.lastPlannedGuide) + "</b>. Do poslední kalírenské volné ještě doplnit ze soustruhu: <b>" + heatData.missingGuides.map(formatCount).join(", ") + "</b>.</div>";
+  }
+  html += "<div class='tableWrap'><table class='statsTable'><thead><tr><th>Kalírenská</th><th>Průvodky</th><th>Z plánu</th><th>Doplnit</th></tr></thead><tbody>";
   heatData.groups.forEach(item => {
-    const guideText = item.guides.map(formatCount).join(", ");
-    html += "<tr><td>" + formatCount(item.number) + ".</td><td>" + guideText + "</td><td>" + formatCount(item.plannedInside) + "/4</td></tr>";
+    const guideText = item.guides.map(guide => guide.planned ? formatCount(guide.number) : (formatCount(guide.number) + "*")).join(", ");
+    const missingText = item.missingGuides && item.missingGuides.length ? item.missingGuides.map(formatCount).join(", ") : "—";
+    html += "<tr><td>" + formatCount(item.number) + ".</td><td>" + guideText + "</td><td>" + formatCount(item.plannedInside) + "/4</td><td>" + missingText + "</td></tr>";
   });
   html += "</tbody></table></div>";
+  if (heatData.missingCount > 0) {
+    html += "<div class='smallText uMt8'>* průvodky označené hvězdičkou jsou dopočítané vozíky, které se ještě musí vzít ze soustruhu, aby poslední kalírenská volná měla 4 naše dávky.</div>";
+  }
   return html;
 }
 
-function renderBatchResult(title, batches, target, firstBatch) {
+function renderBatchResult(title, batches, target, firstBatch, heatData) {
   if (!batches.length) return "<div class='smallText'>Doplň vstupy, ať se to spočítá.</div>";
   const lastBatch = batches[batches.length - 1].batchNo;
   const total = batches[batches.length - 1].produced;
@@ -382,6 +410,9 @@ function renderBatchResult(title, batches, target, firstBatch) {
     html += "<tr><td>" + formatCount(item.batchNo) + "</td><td>" + formatCount(item.size) + "</td><td>" + formatCount(item.produced) + "</td></tr>";
   });
   html += "</tbody></table></div>";
+  if (heatData) {
+    html += renderSoustruhHeatGroups('Kalírenské volné po 4 našich dávkách', heatData);
+  }
   return html;
 }
 
@@ -471,24 +502,15 @@ function calcSoustruhy126() {
   const startSize = app.soustruh126Start === 31 ? 31 : 32;
   const sizes = startSize === 32 ? [32, 31] : [31, 32];
   const batches = getSoustruhBatchList(first, sizes, plan);
-  setCalcOutputHtml(out, renderBatchResult('Volné 126 ks', batches, plan, first), 'soustruhy126Result');
+  const heatData = getSoustruhHeatGroupsFromBatches(first, batches);
+  setCalcOutputHtml(out, renderBatchResult('Volné 126 ks', batches, plan, first, heatData), 'soustruhy126Result');
   saveRotationData();
 }
 
 function calcSoustruhy126Heat() {
-  const first = parseInt(document.getElementById('v126_heat_first').value, 10);
-  const plan = parseInt(document.getElementById('v126_plan').value, 10);
-  const out = document.getElementById('soustruhy126HeatResult');
-  if (!Number.isFinite(first) || !Number.isFinite(plan) || plan <= 0) {
-    setCalcOutputHtml(out, "<div class='smallText'>Doplň číslo první průvodky v kalírenské dávce a plán výroby.</div>", out.id || "soustruh126HeatEmpty");
-    return;
-  }
-  app.soustruhPlan = String(plan);
-  const startSize = app.soustruh126Start === 31 ? 31 : 32;
-  const sizes = startSize === 32 ? [32, 31] : [31, 32];
-  const heatData = getSoustruhHeatGroups(first, sizes, plan);
-  setCalcOutputHtml(out, renderSoustruhHeatGroups('Volné 126 ks · kalírenské dávky', heatData), 'soustruhy126HeatResult');
-  saveRotationData();
+  // Ponecháno kvůli zpětné kompatibilitě starších exportů / klikacích akcí.
+  // Nově se kalírenské čtveřice počítají rovnou v hlavním výpočtu Volné 126.
+  calcSoustruhy126();
 }
 
 function calcSoustruhy106() {
@@ -508,28 +530,14 @@ function calcSoustruhy106() {
   app.soustruhPlan = String(plan);
   app.soustruh106Counts = counts.map(v => String(v));
   const batches = getSoustruhBatchList(first, counts, plan);
-  setCalcOutputHtml(out, renderBatchResult('Volné 106 ks', batches, plan, first), 'soustruhy106Result');
+  const heatData = getSoustruhHeatGroupsFromBatches(first, batches);
+  setCalcOutputHtml(out, renderBatchResult('Volné 106 ks', batches, plan, first, heatData), 'soustruhy106Result');
   saveRotationData();
 }
 
 
 function calcSoustruhy106Heat() {
-  const first = parseInt(document.getElementById('v106_heat_first').value, 10);
-  const plan = parseInt(document.getElementById('v106_plan').value, 10);
-  const counts = [
-    parseInt(document.getElementById('v106_c1').value, 10),
-    parseInt(document.getElementById('v106_c2').value, 10),
-    parseInt(document.getElementById('v106_c3').value, 10),
-    parseInt(document.getElementById('v106_c4').value, 10)
-  ];
-  const out = document.getElementById('soustruhy106HeatResult');
-  if (!Number.isFinite(first) || !Number.isFinite(plan) || plan <= 0 || counts.some(v => !Number.isFinite(v) || v <= 0)) {
-    setCalcOutputHtml(out, "<div class='smallText'>Doplň číslo první průvodky, plán a počty kusů v prvních čtyřech dávkách.</div>", out.id || "soustruh106HeatEmpty");
-    return;
-  }
-  app.soustruhPlan = String(plan);
-  app.soustruh106Counts = counts.map(v => String(v));
-  const heatData = getSoustruhHeatGroups(first, counts, plan);
-  setCalcOutputHtml(out, renderSoustruhHeatGroups('Volné 106 ks · kalírenské dávky', heatData), 'soustruhy106HeatResult');
-  saveRotationData();
+  // Ponecháno kvůli zpětné kompatibilitě starších exportů / klikacích akcí.
+  // Nově se kalírenské čtveřice počítají rovnou v hlavním výpočtu Volné 106.
+  calcSoustruhy106();
 }

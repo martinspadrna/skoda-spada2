@@ -188,7 +188,7 @@ function formatDashboardTeamDParts(now, teamDStatus) {
   if (active) {
     const names = typeof getAbsenceNamesForDate === 'function' ? getAbsenceNamesForDate(active.start || now) : [];
     return {
-      main: 'Směna D je právě v práci' + (active.end ? ' · končí za ' + safeDuration(active.end) : ''),
+      main: '',
       sub: 'chybí: ' + formatDashboardAbsenceList(names)
     };
   }
