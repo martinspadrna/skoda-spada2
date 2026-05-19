@@ -1,3 +1,44 @@
+## v.1.1 (598)
+- Kalkulačky / Soustruhy: u Volné 126 ks a Volné 106 ks přibylo okýnko „Dopočítání kalírenské dávky“.
+- Nový výpočet má pole „Číslo první průvodky v kalírenské dávce“ a po kliknutí vypíše kalírenské volné po 4 našich průvodkách v jednom řádku, např. 3, 4, 5, 6.
+- Výpočet vychází z plánu výroby: nejdřív dopočítá, kolik našich dávek je potřeba pro plán kusů, a potom vypíše kalírenské skupiny až do konce plánu.
+- U Volné 126 ks respektuje volbu začátku 32/31 ks, u Volné 106 ks používá zadané počty kusů v prvních čtyřech dávkách.
+- PWA / Service Worker hardening: same-origin fallback při výpadku nově používá stejné normalizované hledání v runtime i statické cache místo jen přesného runtime klíče.
+- Diagnostika service workeru nově vrací `sameOriginFallbackMode`, aby bylo vidět, že běží novější fallback režim.
+- Fáze 8 — PWA / Service Worker hardening posunuta na cca 60 %.
+
+## v.1.1 (597)
+- Fáze 8 — PWA / Service Worker hardening posunuta na cca 56 %.
+- Service worker nově ukládá runtime cache pod čisté kanonické klíče bez query parametrů, takže stejný soubor nevzniká v cache ve více zbytečných variantách.
+- Chytřejší cache lookup z předchozích buildů tím dostal i stejně předvídatelné ukládání, což zlepšuje offline spuštění po updatech a drží runtime cache štíhlejší.
+- Diagnostika service workeru nově vrací `runtimeStoreMode`, aby bylo poznat, že běží kanonické ukládání runtime cache.
+- UI, kalkulačky, profil/přihlášení, hry, Supabase datový model, Dashboard, Rotace, Rozpisy, Statistiky a spodní lišta jsou beze změny.
+
+## v.1.1 (596)
+- Fáze 8 — PWA / Service Worker hardening posunuta na cca 52 %.
+- Service worker při instalaci app shellu nově stahuje precache soubory s cache-busting parametrem `__rak_precache`, aby se po nasazení nové verze nesáhlo po staré prohlížečové kopii.
+- Soubory se dál ukládají pod čisté stabilní app-shell klíče bez query parametru, takže offline lookup z v.1.1 (595) zůstává kompatibilní.
+- Diagnostika service workeru nově vrací `precacheFetchMode`, aby bylo poznat, že běží bezpečnější precache režim.
+- UI, kalkulačky, profil/přihlášení, hry, Supabase datový model, Dashboard, Rotace, Rozpisy, Statistiky a spodní lišta jsou beze změny.
+
+## v.1.1 (595)
+- Fáze 8 — PWA / Service Worker hardening posunuta na cca 48 %.
+- Service worker nově hledá položky app shellu v cache přes normalizované kandidáty: původní request, absolutní URL bez query, relativní `./soubor` a variantu bez `./`.
+- Offline fallback navigace nově používá stejnou cache lookup logiku, takže má větší šanci najít `index.html` i po spuštění appky z jiné cesty nebo s query parametrem.
+- Diagnostika service workeru vrací `cacheLookupMode`, aby bylo v cache statusu poznat, že běží novější normalizované hledání.
+- UI, kalkulačky, profil/přihlášení, hry, Supabase datový model, Dashboard, Rotace, Rozpisy, Statistiky a spodní lišta jsou beze změny.
+
+## v.1.1 (594)
+- Hry: karta Přihlášení byla přesunutá z horní části záložky Hry do Více → Nastavení jako karta Profil a přihlášení.
+- Hry teď nahoře ukazují jen stručný stav herního profilu a tlačítko Nastavení, takže herní hub není zahlcený přihlašovacím formulářem.
+- Profilová logika, herní statistiky, achievementy, Theme/Pozadí ukládané k profilu a Supabase sync zůstávají zachované.
+- O aplikaci: aktualizovaný rychlý přehled aktuálního buildu; Fáze 8 zůstává cca 44 %, protože jde o přesun existující profilové UI bez změny PWA/SW jádra.
+
+## v.1.1 (593)
+- Kalkulačky / Brusy: zmenšená mezera mezi volbou brusu TBKR01/TBKR07 a blokem indexů, bez změny výpočtů a bez zásahu do výšek tlačítek z v.1.1 (592).
+- PWA / Service Worker hardening: statické soubory app shellu se při offline načítání hledají i ve statické precache, nejen v runtime cache. Offline spuštění by tak mělo být odolnější po aktivaci nové cache.
+- O aplikaci: aktualizovaný rychlý přehled aktuálního buildu a posun Fáze 8 na cca 44 %.
+
 ## v.1.1 (592)
 - Fáze 8 — PWA / Service Worker hardening zůstává cca na 40 %, protože jde o cílenou opravu Brusů po testu v.1.1 (591).
 - Kalkulačky / Brusy: volby brusu TBKR01/TBKR07 a běžné indexy AD/AE/AH dostaly vlastní třídy `brusMachineBtn` a `brusIndexBtn`, aby je už nepřebíjely starší obecné `.bbtn` vrstvy.
@@ -308,7 +349,7 @@
 - Fáze 6 — Supabase hardening zůstává cca 64 %.
 - Výpočty, pravidla her, Theme/Pozadí, spodní lišta a Supabase datový model beze změny.
 
-## Přehled největších změn v.1.1 (500–592)
+## Přehled největších změn v.1.1 (500–594)
 - Proběhlo velké stabilizační období před dalšími fázemi refactoru: Fáze 3 Láďův režim, Fáze 4 cleanup manager, Fáze 5 game performance, dokončený Supabase hardening, dokončená Fáze 7 Data optimization a začátek Fáze 8 PWA / Service Worker hardening včetně úspornějších DOM renderů v Dashboardu, Rotaci, Statistikách, Otevírací době, rokových/měsíčních selectech, aktivních stavech kalkulačních voleb, závěrečného LRU úklidu lokální cache a bezpečnější service worker cache a čistší drobné UI doladění Brusů, Otevírací doby a horních názvů stránek.
 - Dashboard se postupně ladil kvůli správnému zobrazení směny, ikon, kantýny/jídelny, odpočtů, klikací výplatě a menšímu riziku prázdných nebo pozdě načtených karet.
 - Spodní navigace prošla opakovaným dorovnáním, hlavně položka „Více“ – má být užší, ale normálně mezi ostatními položkami a bez ukotvení vpravo.

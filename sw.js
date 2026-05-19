@@ -1,5 +1,5 @@
-const CACHE_VERSION = 'v1.1-592';
-const SW_APP_VERSION = 'v.1.1 (592)';
+const CACHE_VERSION = 'v1.1-598';
+const SW_APP_VERSION = 'v.1.1 (598)';
 const STATIC_CACHE = `rotace-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `rotace-runtime-${CACHE_VERSION}`;
 const APP_SHELL = [
@@ -68,6 +68,109 @@ const RUNTIME_EXTENSIONS = ['.js', '.css', '.png', '.jpg', '.jpeg', '.webp', '.s
 const MAX_RUNTIME_CACHE_ENTRIES = 96;
 const SW_CACHE_META_URL = './__rak-sw-cache-status.json';
 
+const CACHE_LOOKUP_MODE = 'normalized-cache-candidates';
+const PRECACHE_FETCH_MODE = 'cache-busted-clean-keys';
+const RUNTIME_STORE_MODE = 'canonical-clean-runtime-keys';
+const SAME_ORIGIN_FALLBACK_MODE = 'normalized-same-origin-fallback';
+
+function getScopeRelativeCacheKeys(requestOrUrl) {
+  const candidates = [];
+  const seen = new Set();
+  const push = (value) => {
+    if (!value) return;
+    const key = typeof value === 'string' ? value : (value && value.url ? value.url : '');
+    if (!key || seen.has(key)) return;
+    seen.add(key);
+    candidates.push(value);
+  };
+
+  try {
+    if (requestOrUrl instanceof Request) push(requestOrUrl);
+  } catch (err) {}
+
+  try {
+    const rawUrl = requestOrUrl && requestOrUrl.url ? requestOrUrl.url : String(requestOrUrl || '');
+    const url = new URL(rawUrl || './', self.location.href);
+    if (url.origin !== self.location.origin) return candidates;
+
+    push(url.href);
+
+    const noSearch = new URL(url.href);
+    noSearch.search = '';
+    noSearch.hash = '';
+    push(noSearch.href);
+
+    const scopeUrl = new URL(self.registration && self.registration.scope ? self.registration.scope : './', self.location.href);
+    let scopePath = scopeUrl.pathname || '/';
+    if (!scopePath.endsWith('/')) scopePath = scopePath.slice(0, scopePath.lastIndexOf('/') + 1) || '/';
+
+    let relativePath = url.pathname || '/';
+    if (relativePath.startsWith(scopePath)) relativePath = relativePath.slice(scopePath.length);
+    if (!relativePath || relativePath === '/') relativePath = 'index.html';
+    relativePath = relativePath.replace(/^\/+/, '');
+
+    if (relativePath) {
+      push('./' + relativePath);
+      push(relativePath);
+      if (relativePath === 'index.html') push('./');
+    }
+  } catch (err) {}
+
+  return candidates;
+}
+
+async function matchCacheCandidates(cache, requestOrUrl, opts = {}) {
+  const matchOptions = { ignoreSearch: opts.ignoreSearch !== false };
+  const candidates = getScopeRelativeCacheKeys(requestOrUrl);
+  for (const candidate of candidates) {
+    try {
+      const match = await cache.match(candidate, matchOptions);
+      if (match) return match;
+    } catch (err) {}
+  }
+  return null;
+}
+
+function getPrecacheFetchUrl(url) {
+  try {
+    const nextUrl = new URL(url || './', self.location.href);
+    nextUrl.searchParams.set('__rak_precache', CACHE_VERSION);
+    return nextUrl.href;
+  } catch (err) {
+    return url;
+  }
+}
+
+function getStableCachePutKey(requestOrUrl, fallbackKey) {
+  try {
+    const rawUrl = requestOrUrl && requestOrUrl.url ? requestOrUrl.url : String(requestOrUrl || fallbackKey || './');
+    const url = new URL(rawUrl || fallbackKey || './', self.location.href);
+    if (url.origin !== self.location.origin) return requestOrUrl || fallbackKey || url.href;
+
+    const scopeUrl = new URL(self.registration && self.registration.scope ? self.registration.scope : './', self.location.href);
+    let scopePath = scopeUrl.pathname || '/';
+    if (!scopePath.endsWith('/')) scopePath = scopePath.slice(0, scopePath.lastIndexOf('/') + 1) || '/';
+
+    let relativePath = url.pathname || '/';
+    if (relativePath.startsWith(scopePath)) relativePath = relativePath.slice(scopePath.length);
+    relativePath = relativePath.replace(/^\/+/, '');
+    if (!relativePath || relativePath === '/') return './index.html';
+    return './' + relativePath;
+  } catch (err) {
+    return fallbackKey || requestOrUrl;
+  }
+}
+
+async function fetchAndStoreAppShellUrl(cache, url) {
+  const fetchUrl = getPrecacheFetchUrl(url);
+  const request = new Request(fetchUrl, { cache: 'reload' });
+  const response = await fetch(request);
+  if (!response || !response.ok) return false;
+  // Ukládáme pod čistý app-shell klíč bez cache-busting query, aby offline lookup našel stabilní cestu.
+  await cache.put(url, response.clone());
+  return true;
+}
+
 const OFFLINE_FALLBACK_HTML = `<!DOCTYPE html><html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#0b0f0c"><title>Rotace a kalkulačky</title><style>html,body{margin:0;min-height:100%;background:#0b0f0c;color:#eef6ee;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}body{display:grid;place-items:center;padding:24px}main{max-width:440px;width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:24px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.35)}h1{font-size:1.35rem;line-height:1.2;margin:0 0 12px}p{margin:0;color:rgba(238,246,238,.78);line-height:1.5}small{display:block;margin-top:14px;color:rgba(238,246,238,.58)}</style></head><body><main><h1>Jsi offline</h1><p>Appka je dostupná v omezeném režimu. Jakmile se připojení vrátí, synchronizuje se poslední stav automaticky.</p><small>Rotace a kalkulačky</small></main></body></html>`;
 
 async function writeCacheStatusMeta(cache, summary) {
@@ -80,6 +183,10 @@ async function writeCacheStatusMeta(cache, summary) {
       runtimeCache: RUNTIME_CACHE,
       appShellCount: APP_SHELL_URLS.length,
       runtimeMaxEntries: MAX_RUNTIME_CACHE_ENTRIES,
+      cacheLookupMode: CACHE_LOOKUP_MODE,
+      precacheFetchMode: PRECACHE_FETCH_MODE,
+      runtimeStoreMode: RUNTIME_STORE_MODE,
+      sameOriginFallbackMode: SAME_ORIGIN_FALLBACK_MODE,
       savedAt: Date.now()
     }, summary || {});
     await cache.put(SW_CACHE_META_URL, new Response(JSON.stringify(payload), {
@@ -101,10 +208,8 @@ async function precacheAppShellSafe() {
   let successCount = 0;
   await Promise.all(APP_SHELL_URLS.map(async (url) => {
     try {
-      const request = new Request(url, { cache: 'reload' });
-      const response = await fetch(request);
-      if (response && response.ok) {
-        await cache.put(url, response.clone());
+      const stored = await fetchAndStoreAppShellUrl(cache, url);
+      if (stored) {
         successCount += 1;
       } else {
         failedUrls.push(url);
@@ -158,6 +263,10 @@ async function getSwCacheStatus() {
       staticCacheEntries: staticKeys.length,
       runtimeCacheEntries: runtimeKeys.length,
       runtimeMaxEntries: MAX_RUNTIME_CACHE_ENTRIES,
+      cacheLookupMode: CACHE_LOOKUP_MODE,
+      precacheFetchMode: PRECACHE_FETCH_MODE,
+      runtimeStoreMode: RUNTIME_STORE_MODE,
+      sameOriginFallbackMode: SAME_ORIGIN_FALLBACK_MODE,
       navigationPreloadEnabled,
       clientsCount,
       checkedAt: Date.now()
@@ -194,7 +303,7 @@ self.addEventListener('message', (event) => {
   if (data.type === 'GET_VERSION') {
     try {
       if (event.source && event.source.postMessage) {
-        event.source.postMessage({ type: 'sw-version', version: CACHE_VERSION, appVersion: SW_APP_VERSION, appShellCount: APP_SHELL_URLS.length, runtimeMaxEntries: MAX_RUNTIME_CACHE_ENTRIES });
+        event.source.postMessage({ type: 'sw-version', version: CACHE_VERSION, appVersion: SW_APP_VERSION, appShellCount: APP_SHELL_URLS.length, runtimeMaxEntries: MAX_RUNTIME_CACHE_ENTRIES, cacheLookupMode: CACHE_LOOKUP_MODE, precacheFetchMode: PRECACHE_FETCH_MODE, runtimeStoreMode: RUNTIME_STORE_MODE, sameOriginFallbackMode: SAME_ORIGIN_FALLBACK_MODE });
       }
     } catch (err) {}
     return;
@@ -236,13 +345,27 @@ self.addEventListener('activate', (event) => {
   })());
 });
 
+async function matchAppCaches(request, opts = {}) {
+  try {
+    const runtimeCache = await caches.open(RUNTIME_CACHE);
+    const runtimeMatch = await matchCacheCandidates(runtimeCache, request, opts);
+    if (runtimeMatch) return runtimeMatch;
+  } catch (err) {}
+  try {
+    const staticCache = await caches.open(STATIC_CACHE);
+    const staticMatch = await matchCacheCandidates(staticCache, request, opts);
+    if (staticMatch) return staticMatch;
+  } catch (err) {}
+  return null;
+}
+
 async function cacheFirst(request) {
-  const cache = await caches.open(RUNTIME_CACHE);
-  const cached = await cache.match(request, { ignoreSearch: false });
+  const cached = await matchAppCaches(request, { ignoreSearch: true });
   if (cached) return cached;
+  const cache = await caches.open(RUNTIME_CACHE);
   const response = await fetch(request);
   if (response && response.ok) {
-    cache.put(request, response.clone()).then(() => trimCacheEntries(RUNTIME_CACHE, MAX_RUNTIME_CACHE_ENTRIES)).catch(() => {});
+    cache.put(getStableCachePutKey(request), response.clone()).then(() => trimCacheEntries(RUNTIME_CACHE, MAX_RUNTIME_CACHE_ENTRIES)).catch(() => {});
   }
   return response;
 }
@@ -252,14 +375,14 @@ async function networkFirst(request, fallbackTo) {
   try {
     const response = await fetch(request);
     if (response && response.ok) {
-      cache.put(request, response.clone()).then(() => trimCacheEntries(RUNTIME_CACHE, MAX_RUNTIME_CACHE_ENTRIES)).catch(() => {});
+      cache.put(getStableCachePutKey(request), response.clone()).then(() => trimCacheEntries(RUNTIME_CACHE, MAX_RUNTIME_CACHE_ENTRIES)).catch(() => {});
     }
     return response;
   } catch (err) {
-    const cached = await cache.match(request, { ignoreSearch: false });
+    const cached = await matchAppCaches(request, { ignoreSearch: true });
     if (cached) return cached;
     if (fallbackTo) {
-      const fallback = await cache.match(fallbackTo, { ignoreSearch: false });
+      const fallback = await matchAppCaches(fallbackTo, { ignoreSearch: true });
       if (fallback) return fallback;
     }
     throw err;
@@ -281,11 +404,10 @@ self.addEventListener('fetch', (event) => {
         const preloadResponse = await event.preloadResponse;
         const response = preloadResponse || await fetch(request);
         const cache = await caches.open(RUNTIME_CACHE);
-        if (response && response.ok) cache.put('./index.html', response.clone()).then(() => trimCacheEntries(RUNTIME_CACHE, MAX_RUNTIME_CACHE_ENTRIES)).catch(() => {});
+        if (response && response.ok) cache.put(getStableCachePutKey(request, './index.html'), response.clone()).then(() => trimCacheEntries(RUNTIME_CACHE, MAX_RUNTIME_CACHE_ENTRIES)).catch(() => {});
         return response;
       } catch (err) {
-        const cache = await caches.open(STATIC_CACHE);
-        return (await cache.match('./index.html')) || (await cache.match('./')) || new Response(OFFLINE_FALLBACK_HTML, {
+        return (await matchAppCaches('./index.html', { ignoreSearch: true })) || (await matchAppCaches('./', { ignoreSearch: true })) || new Response(OFFLINE_FALLBACK_HTML, {
           status: 200,
           headers: { 'Content-Type': 'text/html; charset=utf-8' }
         });
@@ -301,8 +423,8 @@ self.addEventListener('fetch', (event) => {
 
   if (sameOrigin) {
     event.respondWith(networkFirst(request).catch(async () => {
-      const cache = await caches.open(RUNTIME_CACHE);
-      return cache.match(request, { ignoreSearch: false }) || Response.error();
+      const cached = await matchAppCaches(request, { ignoreSearch: true });
+      return cached || Response.error();
     }));
   }
 });

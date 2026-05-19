@@ -1,4 +1,4 @@
-// v.1.1 (592) – Brusy: skutečné zmenšení voleb brusu a běžných indexů přes vlastní třídy, aby je nepřebíjely starší .bbtn vrstvy.
+// v.1.1 (598) – Soustruhy: dopočítání kalírenských dávek pro Volné 126/106.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
@@ -71,7 +71,9 @@ function installDelegatedAppActions() {
       if (Number.isFinite(start)) setSoustruh126Start(start);
     },
     'calc-soustruhy-126': () => calcSoustruhy126(),
+    'calc-soustruhy-126-heat': () => calcSoustruhy126Heat(),
     'calc-soustruhy-106': () => calcSoustruhy106(),
+    'calc-soustruhy-106-heat': () => calcSoustruhy106Heat(),
     'open-food-link': () => openExternalTile('https://sa.gthcatering.cz/restaurant/c1/'),
     'open-eportal-link': () => openEportal(),
     'open-payroll-link': () => openPayroll(),
@@ -808,7 +810,7 @@ function installPwaAndConnectivityHooks() {
 
   const pwaHardeningStatus = window.__rakPwaHardeningStatus || {
     phase: 'phase-8-pwa-service-worker-hardening',
-    phasePercent: 36,
+    phasePercent: 48,
     updateChecks: 0,
     updateCheckSkips: 0,
     updateCheckJoins: 0,
@@ -828,6 +830,7 @@ function installPwaAndConnectivityHooks() {
     swPrecacheFailedCount: 0,
     swClientsCount: 0,
     swNavigationPreloadEnabled: false,
+    swCacheLookupMode: '',
     swExpectedCacheVersion: '',
     swVersionMismatch: false,
     swVersionMismatchCount: 0,
@@ -1034,6 +1037,8 @@ function installPwaAndConnectivityHooks() {
     pwaHardeningStatus.swPrecacheFailedCount = Number(data.precacheFailedCount || 0);
     pwaHardeningStatus.swClientsCount = Number(data.clientsCount || 0);
     pwaHardeningStatus.swNavigationPreloadEnabled = !!data.navigationPreloadEnabled;
+    pwaHardeningStatus.swCacheLookupMode = String(data.cacheLookupMode || '');
+    pwaHardeningStatus.swPrecacheFetchMode = String(data.precacheFetchMode || '');
     pwaHardeningStatus.swLastCacheStatusAt = Date.now();
     pwaHardeningStatus.swLastCacheStatusSource = String(source || data.type || 'cache-status');
     const expectedCacheVersion = getExpectedServiceWorkerCacheVersion();

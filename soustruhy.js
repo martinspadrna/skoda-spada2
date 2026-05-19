@@ -1,9 +1,9 @@
 function resetSoustruhy() {
-  ["lis_first", "lis_plan", "v126_first", "v126_plan", "v106_first", "v106_plan", "v106_c1", "v106_c2", "v106_c3", "v106_c4"].forEach(id => {
+  ["lis_first", "lis_plan", "v126_first", "v126_plan", "v126_heat_first", "v106_first", "v106_plan", "v106_heat_first", "v106_c1", "v106_c2", "v106_c3", "v106_c4"].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = "";
   });
-  ["soustruhyLisResult", "soustruhy126Result", "soustruhy106Result"].forEach(id => {
+  ["soustruhyLisResult", "soustruhy126Result", "soustruhy126HeatResult", "soustruhy106Result", "soustruhy106HeatResult"].forEach(id => {
     const el = document.getElementById(id);
     if (el) setCalcOutputHtml(el, "", id);
   });
@@ -314,6 +314,59 @@ function getSoustruhBatchList(firstBatch, sizes, plan) {
   return batches;
 }
 
+
+function getSoustruhHeatGroups(firstGuide, sizes, plan) {
+  const start = parseInt(firstGuide, 10);
+  const batches = getSoustruhBatchList(start, sizes, plan);
+  if (!Number.isFinite(start) || !batches.length) {
+    return { groups: [], batchCount: 0, heatCount: 0, lastPlannedGuide: 0, lastHeatGuide: 0 };
+  }
+
+  const batchCount = batches.length;
+  const heatCount = Math.ceil(batchCount / 4);
+  const groups = [];
+
+  for (let groupIndex = 0; groupIndex < heatCount; groupIndex += 1) {
+    const offset = groupIndex * 4;
+    const guides = [0, 1, 2, 3].map(step => start + offset + step);
+    const plannedInside = Math.max(0, Math.min(4, batchCount - offset));
+    groups.push({
+      number: groupIndex + 1,
+      guides,
+      plannedInside
+    });
+  }
+
+  return {
+    groups,
+    batchCount,
+    heatCount,
+    lastPlannedGuide: start + batchCount - 1,
+    lastHeatGuide: start + heatCount * 4 - 1
+  };
+}
+
+function renderSoustruhHeatGroups(title, heatData) {
+  if (!heatData || !Array.isArray(heatData.groups) || !heatData.groups.length) {
+    return "<div class='smallText'>Doplň číslo první průvodky a plán výroby.</div>";
+  }
+
+  let html = "<div class='smallText uMb10'>" + escapeHtml(title) + "</div>";
+  html += "<div class='statsSummary'>";
+  html += "<div class='tile'><div class='smallText'>Našich dávek</div><div class='uFs22 uMt4'>" + formatCount(heatData.batchCount) + "</div></div>";
+  html += "<div class='tile'><div class='smallText'>Kalírenských</div><div class='uFs22 uMt4'>" + formatCount(heatData.heatCount) + "</div></div>";
+  html += "<div class='tile'><div class='smallText'>Do průvodky</div><div class='uFs22 uMt4'>" + formatCount(heatData.lastPlannedGuide) + "</div></div>";
+  html += "</div>";
+  html += "<div class='smallText uMb10'>Jedna kalírenská volná = 4 naše průvodky. Poslední řádek je dopočítaný do celé čtveřice, aby to sedělo pro kalírnu.</div>";
+  html += "<div class='tableWrap'><table class='statsTable'><thead><tr><th>Kalírenská</th><th>Průvodky</th><th>Z plánu</th></tr></thead><tbody>";
+  heatData.groups.forEach(item => {
+    const guideText = item.guides.map(formatCount).join(", ");
+    html += "<tr><td>" + formatCount(item.number) + ".</td><td>" + guideText + "</td><td>" + formatCount(item.plannedInside) + "/4</td></tr>";
+  });
+  html += "</tbody></table></div>";
+  return html;
+}
+
 function renderBatchResult(title, batches, target, firstBatch) {
   if (!batches.length) return "<div class='smallText'>Doplň vstupy, ať se to spočítá.</div>";
   const lastBatch = batches[batches.length - 1].batchNo;
@@ -422,6 +475,22 @@ function calcSoustruhy126() {
   saveRotationData();
 }
 
+function calcSoustruhy126Heat() {
+  const first = parseInt(document.getElementById('v126_heat_first').value, 10);
+  const plan = parseInt(document.getElementById('v126_plan').value, 10);
+  const out = document.getElementById('soustruhy126HeatResult');
+  if (!Number.isFinite(first) || !Number.isFinite(plan) || plan <= 0) {
+    setCalcOutputHtml(out, "<div class='smallText'>Doplň číslo první průvodky v kalírenské dávce a plán výroby.</div>", out.id || "soustruh126HeatEmpty");
+    return;
+  }
+  app.soustruhPlan = String(plan);
+  const startSize = app.soustruh126Start === 31 ? 31 : 32;
+  const sizes = startSize === 32 ? [32, 31] : [31, 32];
+  const heatData = getSoustruhHeatGroups(first, sizes, plan);
+  setCalcOutputHtml(out, renderSoustruhHeatGroups('Volné 126 ks · kalírenské dávky', heatData), 'soustruhy126HeatResult');
+  saveRotationData();
+}
+
 function calcSoustruhy106() {
   const first = parseInt(document.getElementById('v106_first').value, 10);
   const plan = parseInt(document.getElementById('v106_plan').value, 10);
@@ -440,5 +509,27 @@ function calcSoustruhy106() {
   app.soustruh106Counts = counts.map(v => String(v));
   const batches = getSoustruhBatchList(first, counts, plan);
   setCalcOutputHtml(out, renderBatchResult('Volné 106 ks', batches, plan, first), 'soustruhy106Result');
+  saveRotationData();
+}
+
+
+function calcSoustruhy106Heat() {
+  const first = parseInt(document.getElementById('v106_heat_first').value, 10);
+  const plan = parseInt(document.getElementById('v106_plan').value, 10);
+  const counts = [
+    parseInt(document.getElementById('v106_c1').value, 10),
+    parseInt(document.getElementById('v106_c2').value, 10),
+    parseInt(document.getElementById('v106_c3').value, 10),
+    parseInt(document.getElementById('v106_c4').value, 10)
+  ];
+  const out = document.getElementById('soustruhy106HeatResult');
+  if (!Number.isFinite(first) || !Number.isFinite(plan) || plan <= 0 || counts.some(v => !Number.isFinite(v) || v <= 0)) {
+    setCalcOutputHtml(out, "<div class='smallText'>Doplň číslo první průvodky, plán a počty kusů v prvních čtyřech dávkách.</div>", out.id || "soustruh106HeatEmpty");
+    return;
+  }
+  app.soustruhPlan = String(plan);
+  app.soustruh106Counts = counts.map(v => String(v));
+  const heatData = getSoustruhHeatGroups(first, counts, plan);
+  setCalcOutputHtml(out, renderSoustruhHeatGroups('Volné 106 ks · kalírenské dávky', heatData), 'soustruhy106HeatResult');
   saveRotationData();
 }

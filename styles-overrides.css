@@ -4733,3 +4733,121 @@ html body #brusy.calcPage .bbtn.brusFreeIndexBtn{
     font-size:13.8px !important;
   }
 }
+
+/* v.1.1 (593) – Brusy: menší mezera mezi volbou brusu a indexy.
+   Nehýbe výškou tlačítek z v.592, jen stáhne vertikální rozestup mezi oběma bloky. */
+html body #brusy.calcPage .brusChoiceGrid{
+  margin-bottom:-5px !important;
+}
+html body #brusy.calcPage .brusIndexGrid{
+  margin-top:0 !important;
+}
+@media (max-width:430px){
+  html body #brusy.calcPage .brusChoiceGrid{
+    margin-bottom:-6px !important;
+  }
+}
+
+/* v.1.1 (594) – Profil/přihlášení přesunuto z Her do Více → Nastavení. */
+#games .gamesProfileStatusCard{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:12px !important;
+  padding:10px 12px !important;
+  margin:0 12px 10px !important;
+  border-radius:20px !important;
+  border:1px solid rgba(124,255,124,.13) !important;
+  background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.025)) !important;
+  box-shadow:0 14px 32px rgba(0,0,0,.18) !important;
+}
+#games .gamesProfileStatusName{
+  margin-top:3px !important;
+  color:#ecfff0 !important;
+  font-size:15px !important;
+  font-weight:800 !important;
+  line-height:1.12 !important;
+}
+#games .gamesProfileStatusMeta{
+  margin-top:3px !important;
+  color:rgba(236,255,240,.66) !important;
+  font-size:11.5px !important;
+  line-height:1.25 !important;
+}
+#games .gamesProfileSettingsBtn,
+.appMenuProfileCard .gamesTinyBtn{
+  min-height:34px !important;
+  border-radius:14px !important;
+  border:1px solid rgba(124,255,124,.16) !important;
+  background:rgba(124,255,124,.08) !important;
+  color:#eaffee !important;
+  font-weight:800 !important;
+  padding:0 12px !important;
+  font-size:12px !important;
+  white-space:nowrap !important;
+}
+#games .gamesProfileStatusCard.isLoggedIn{
+  border-color:rgba(124,255,124,.24) !important;
+  background:linear-gradient(180deg, rgba(124,255,124,.10), rgba(255,255,255,.028)) !important;
+}
+.appMenuProfileCard .gamesAccountTop{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:12px !important;
+  margin-top:10px !important;
+}
+.appMenuProfileCard .gamesAccountName{
+  margin-top:3px !important;
+  color:#ecfff0 !important;
+  font-size:16px !important;
+  font-weight:850 !important;
+  line-height:1.14 !important;
+}
+.appMenuProfileCard .gamesAccountRow{
+  display:flex !important;
+  align-items:center !important;
+  gap:8px !important;
+  margin-top:10px !important;
+}
+.appMenuProfileCard .gamesAccountHint,
+.appMenuProfileCard .gamesAccountCurrent{
+  margin-top:8px !important;
+  color:rgba(236,255,240,.66) !important;
+  font-size:11.5px !important;
+  line-height:1.35 !important;
+}
+.appMenuProfileCard .gamesAccountInput{
+  flex:1 1 auto !important;
+  min-width:0 !important;
+  height:42px !important;
+}
+@media (max-width:430px){
+  #games .gamesProfileStatusCard,
+  .appMenuProfileCard .gamesAccountTop,
+  .appMenuProfileCard .gamesAccountRow{
+    gap:8px !important;
+  }
+  .appMenuProfileCard .gamesTinyBtn,
+  #games .gamesProfileSettingsBtn{
+    padding-inline:10px !important;
+  }
+}
+
+
+/* v.1.1 (598) – Soustruhy: okýnko pro dopočítání kalírenských dávek u Volné 126/106. */
+#soustruhy .soustruhyHeatBox{
+  margin-top:10px !important;
+  padding:10px !important;
+  border-radius:16px !important;
+}
+#soustruhy .soustruhyHeatBox > b,
+#soustruhy .soustruhyHeatBox b{
+  font-size:13px !important;
+}
+#soustruhy .soustruhyHeatBox .calcPrimaryBtn{
+  margin-top:8px !important;
+}
+#soustruhy .soustruhyHeatBox .calcResultCard{
+  margin-top:8px !important;
+}

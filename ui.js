@@ -2783,20 +2783,77 @@ function triggerAboutAction() {
 }
 
 
+function buildGamesProfileSettingsHtml() {
+  return [
+    '<div class="appMenuCard appMenuSettingsCard appMenuProfileCard gamesAccountCard" id="gamesAccountCard">',
+    '  <div class="appMenuCardTitle">Profil a přihlášení</div>',
+    '  <div class="appMenuText">Profil ovlivňuje herní statistiky, achievementy a ukládání Theme/Pozadí k účtu. Bez přihlášení zůstane vzhled jen v tomto zařízení.</div>',
+    '  <div class="gamesAccountTop">',
+    '    <div>',
+    '      <div class="dashboardLabel">Aktuální profil</div>',
+    '      <div class="gamesAccountName" id="gamesAccountName">Bez přihlášení</div>',
+    '    </div>',
+    '    <button type="button" class="gamesTinyBtn" id="gamesAccountClearBtn">Bez účtu</button>',
+    '  </div>',
+    '  <div class="gamesAccountRow" id="gamesAccountEntryRow">',
+    '    <input id="gamesAccountInput" class="gamesAccountInput" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="Zadej poslední 4 číslice os.č.">',
+    '    <button type="button" class="gamesTinyBtn gamesAccountConfirmBtn" id="gamesAccountConfirmBtn">Ověřit</button>',
+    '  </div>',
+    '  <div class="gamesAccountCurrent" id="gamesAccountCurrent" hidden></div>',
+    '  <div class="gamesAccountHint" id="gamesAccountHint">Bez účtu můžeš hrát dál. Statistiky se ukládají jen po přihlášení číslem.</div>',
+    '</div>'
+  ].join('');
+}
+
+function openProfileSettingsFromGames() {
+  showPage('menu');
+  openAppMenu('settings');
+  if (typeof setBottomNavActive === 'function') setBottomNavActive('menu');
+}
+
+function renderGamesProfileStatus() {
+  const card = document.getElementById('gamesProfileStatusCard');
+  const nameEl = document.getElementById('gamesProfileStatusName');
+  const metaEl = document.getElementById('gamesProfileStatusMeta');
+  const btn = document.getElementById('gamesProfileSettingsBtn');
+  if (!card || !nameEl || !metaEl) return;
+  const profile = typeof gamesGetProfile === 'function' ? gamesGetProfile() : null;
+  const active = profile && profile.activeAccountId && profile.accounts ? profile.accounts[profile.activeAccountId] : null;
+  card.classList.toggle('isLoggedIn', !!active);
+  const nextName = active ? String(active.name || active.id || 'Přihlášeno') : 'Bez přihlášení';
+  const nextMeta = active
+    ? 'Profil a vzhled spravuješ ve Více → Nastavení.'
+    : 'Přihlášení je nově ve Více → Nastavení.';
+  if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(nameEl, nextName, 'gamesProfileStatusName');
+  else nameEl.textContent = nextName;
+  if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(metaEl, nextMeta, 'gamesProfileStatusMeta');
+  else metaEl.textContent = nextMeta;
+  if (btn && !btn.dataset.bound) {
+    btn.dataset.bound = '1';
+    btn.addEventListener('click', (ev) => {
+      ev.preventDefault();
+      openProfileSettingsFromGames();
+    });
+  }
+}
+
+
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
       range: versionText,
       title: 'Aktuální build',
       lines: [
-        'Fáze 8 — PWA / Service Worker hardening je zhruba na 40 %.',
-        'Kalkulačky / Brusy mají nově cíleně zmenšenou volbu brusu a běžné indexy přes vlastní třídy, takže už je nepřebíjí starší obecná .bbtn vrstva.',
-        'Kalkulačky mají vpravo kompaktní skupinu ovládání: reset a křížek pro návrat na přehled kalkulaček.',
-        'Service worker diagnostika hlídá nesoulad mezi aktuální verzí appky a aktivní cache verzí a při nesouladu spustí bezpečný update check.'
+        'Fáze 8 — PWA / Service Worker hardening je zhruba na 60 %.',
+        'Soustruhy nově umí u Volné 126 a Volné 106 dopočítat kalírenské dávky po 4 našich průvodkách podle plánu kusů.',
+        'Zadáš číslo první průvodky v kalírenské dávce a appka vypíše skupiny typu 3, 4, 5, 6 až do konce plánu.',
+        'Service worker má navíc chytřejší fallback pro same-origin požadavky: při výpadku zkusí normalizované hledání v runtime i statické cache.',
+        'Kalkulačky / Brusy mají cíleně zmenšené volby přes vlastní třídy a menší mezeru mezi volbou brusu a indexy.',
+        'Service worker diagnostika hlídá nesoulad verzí a statické soubory app shellu teď při offline načítání hledá i ve statické precache.'
       ]
     },
     {
-      range: 'v.1.1 500–592',
+      range: 'v.1.1 500–598',
       title: 'Stabilizace, hry, Supabase a glass vzhled',
       lines: [
         'Proběhlo velké stabilizační období: Láďův režim, cleanup manager, dokončení game performance, dokončený Supabase hardening a začátek Fáze 7 Data optimization včetně dalšího odlehčení Láďova režimu, úspornější Supabase lokální cache a méně zbytečných DOM renderů včetně Otevírací doby/Jídelního lístku, úspornějších selectů pro roky/měsíce, class toggle guardů u kalkulaček, style guardů u Theme/Pozadí/spodní lišty a závěrečného úklidu lokální read/JSON cache. Po dokončení Fáze 7 začala Fáze 8: tvrdší PWA/service worker chování, bezpečnější precache, řízenější update checky a diagnostika cache stavu.',
@@ -4084,10 +4141,12 @@ function openAppMenu(view) {
     } else if (v === 'settings') {
       bindAppMenuHandlers(body);
       const prefs = loadUiPrefs();
+      const profileCard = buildGamesProfileSettingsHtml();
       const themeCards = buildThemeSystemSettingsHtml();
       body.innerHTML = [
+        profileCard,
         '<div class="appMenuCard appMenuSettingsCard">',
-        '  <div class="appMenuCardTitle">Nastavení</div>',
+        '  <div class="appMenuCardTitle">Nastavení aplikace</div>',
         '  <div class="appMenuText">',
         '    <div>Kompaktní režim a Láďův režim se ukládají jen do tohoto zařízení a promítnou se napříč celou appkou.</div>',
         '    <div>Láďův režim v sobě zahrnuje méně animací, vypnutý těžký blur, slabší stíny, jednodušší pozadí a nižší canvas rozlišení u her pro starší/slabší mobily.</div>',
@@ -4104,6 +4163,12 @@ function openAppMenu(view) {
         '</div>',
         themeCards
       ].join('');
+      if (typeof gamesRenderAccountChips === 'function') {
+        try { gamesRenderAccountChips(); } catch (err) {}
+      }
+      if (typeof renderGamesProfileStatus === 'function') {
+        try { renderGamesProfileStatus(); } catch (err) {}
+      }
       if (typeof renderThemeSettingsCards === 'function') {
         try { renderThemeSettingsCards(); } catch (err) {}
       }
@@ -4808,6 +4873,7 @@ async function gamesSyncProfileFromRemote(force = false) {
       profile.profileVersion = GAMES_PROFILE_RESET_VERSION;
       gamesSaveProfile(profile);
       app.gamesProfile = profile;
+      if (typeof renderGamesProfileStatus === 'function') renderGamesProfileStatus();
       gamesRenderProfiles();
       gamesRenderAchievements();
       gamesRenderStats();
@@ -4906,6 +4972,7 @@ function gamesSetActiveAccount(accountId) {
   const active = profile.accounts[profile.activeAccountId] || null;
   if (typeof applyProfileUiPreferencesForActiveAccount === 'function') applyProfileUiPreferencesForActiveAccount({ loadRemote: true, source: 'login' });
   gamesApplyActiveAccountUI(active);
+  if (typeof renderGamesProfileStatus === 'function') renderGamesProfileStatus();
   gamesRenderStats();
   renderGamesHub();
   if (typeof syncGamesLockedSections === 'function') syncGamesLockedSections();
@@ -4923,6 +4990,7 @@ function gamesClearActiveAccount() {
     if (typeof applyBackgroundPreference === 'function') applyBackgroundPreference(getBackgroundPreference(), false);
   } catch (err) {}
   gamesApplyActiveAccountUI(null);
+  if (typeof renderGamesProfileStatus === 'function') renderGamesProfileStatus();
   gamesRenderStats();
   renderGamesHub();
   if (typeof syncGamesLockedSections === 'function') syncGamesLockedSections();
@@ -5022,12 +5090,14 @@ function gamesRenderAccountChips() {
       }
       syncVisibleAccount(found);
       gamesApplyActiveAccountUI(found);
+      if (typeof renderGamesProfileStatus === 'function') renderGamesProfileStatus();
       gamesRenderProfiles();
       gamesRenderAchievements();
       gamesRenderStats();
       if (typeof syncGamesLockedSections === 'function') syncGamesLockedSections();
       requestAnimationFrame(() => {
         gamesRenderAccountChips();
+        if (typeof renderGamesProfileStatus === 'function') renderGamesProfileStatus();
         gamesRenderProfiles();
         gamesRenderAchievements();
         gamesRenderStats();
@@ -5045,6 +5115,7 @@ function gamesRenderAccountChips() {
       inputEl.value = '';
       gamesClearActiveAccount();
       syncVisibleAccount(null);
+      if (typeof renderGamesProfileStatus === 'function') renderGamesProfileStatus();
       hintEl.textContent = 'Bez účtu můžeš hrát dál. Statistiky se ukládají jen po přihlášení číslem.';
       if (typeof syncGamesLockedSections === 'function') syncGamesLockedSections();
     });
@@ -5275,11 +5346,12 @@ function gamesRenderStats() {
 function renderGamesHub() {
   gamesGetProfile();
   gamesRenderAccountChips();
+  if (typeof renderGamesProfileStatus === 'function') renderGamesProfileStatus();
   gamesRenderProfiles();
   gamesRenderAchievements();
   gamesRenderStats();
   if (typeof syncGamesLockedSections === 'function') syncGamesLockedSections();
-  void gamesSyncProfileFromRemote().then(() => { gamesRenderProfiles(); gamesRenderAchievements(); gamesRenderStats(); if (typeof syncGamesLockedSections === 'function') syncGamesLockedSections(); });
+  void gamesSyncProfileFromRemote().then(() => { if (typeof renderGamesProfileStatus === 'function') renderGamesProfileStatus(); gamesRenderProfiles(); gamesRenderAchievements(); gamesRenderStats(); if (typeof syncGamesLockedSections === 'function') syncGamesLockedSections(); });
   void gamesRefreshRemoteLeaderboards();
   gamesEnsureKeyBindings();
   gamesEnsureResizeBinding();
@@ -7228,6 +7300,7 @@ window.addEventListener('load', () => {
   try {
     if (typeof applyThemePreference === 'function') applyThemePreference(getThemePreference(), false);
     if (typeof syncGamesLockedSections === 'function') syncGamesLockedSections();
+    if (typeof renderGamesProfileStatus === 'function') renderGamesProfileStatus();
     if (typeof applyProfileUiPreferencesForActiveAccount === 'function') applyProfileUiPreferencesForActiveAccount({ loadRemote: true, source: 'window-load' });
     if (typeof renderThemeSettingsCards === 'function') renderThemeSettingsCards();
   } catch (err) {}

@@ -121,20 +121,13 @@
     <button type="button" class="gamesTinyBtn gamesActiveAccountClearBtn" id="gamesActiveAccountClearBtn">Odhlásit</button>
   </div>
 
-  <div class="card gamesAccountCard" id="gamesAccountCard">
-    <div class="gamesAccountTop">
-      <div>
-        <div class="dashboardLabel">Přihlášení</div>
-        <div class="gamesAccountName" id="gamesAccountName">Bez přihlášení</div>
-      </div>
-      <button type="button" class="gamesTinyBtn" id="gamesAccountClearBtn">Bez účtu</button>
+  <div class="card gamesProfileStatusCard" id="gamesProfileStatusCard">
+    <div>
+      <div class="dashboardLabel">Herní profil</div>
+      <div class="gamesProfileStatusName" id="gamesProfileStatusName">Bez přihlášení</div>
+      <div class="gamesProfileStatusMeta" id="gamesProfileStatusMeta">Přihlášení je nově ve Více → Nastavení.</div>
     </div>
-    <div class="gamesAccountRow" id="gamesAccountEntryRow">
-      <input id="gamesAccountInput" class="gamesAccountInput" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="Zadej poslední 4 číslice os.č.">
-      <button type="button" class="gamesTinyBtn gamesAccountConfirmBtn" id="gamesAccountConfirmBtn">Ověřit</button>
-    </div>
-    <div class="gamesAccountCurrent" id="gamesAccountCurrent" hidden></div>
-    <div class="gamesAccountHint" id="gamesAccountHint">Bez účtu můžeš hrát dál. Statistiky se ukládají jen po přihlášení číslem.</div>
+    <button type="button" class="gamesTinyBtn gamesProfileSettingsBtn" id="gamesProfileSettingsBtn">Nastavení</button>
   </div>
   <details class="gamesProfilesFolder" hidden>
     <summary class="gamesFolderSummary">
@@ -359,6 +352,15 @@
       </div>
       <button class="soustruhCalcBtn calcPrimaryBtn" data-action="calc-soustruhy-126">Spočítej 126</button>
       <div class="card calcResultCard" id="soustruhy126Result"></div>
+
+      <div class="card calcInfoCard soustruhyHeatBox">
+        <div><b>Dopočítání kalírenské dávky</b></div>
+        <div class="smallText">Počítá průvodky po 4 našich dávkách v jedné kalírenské volné.</div>
+        <label>Číslo první průvodky v kalírenské dávce</label>
+        <input id="v126_heat_first" type="number" autocomplete="off">
+        <button class="soustruhCalcBtn calcPrimaryBtn" data-action="calc-soustruhy-126-heat">Dopočítej kalírenské dávky</button>
+        <div class="card calcResultCard" id="soustruhy126HeatResult"></div>
+      </div>
     </div>
 
     <div id="soustruhy106Panel" class="subPanel active calcPanel calcPanel--form">
@@ -375,6 +377,15 @@
       <input id="v106_plan" type="number" value="" autocomplete="off">
       <button class="soustruhCalcBtn calcPrimaryBtn" data-action="calc-soustruhy-106">Spočítej 106</button>
       <div class="card calcResultCard" id="soustruhy106Result"></div>
+
+      <div class="card calcInfoCard soustruhyHeatBox">
+        <div><b>Dopočítání kalírenské dávky</b></div>
+        <div class="smallText">Počítá průvodky po 4 našich dávkách v jedné kalírenské volné.</div>
+        <label>Číslo první průvodky v kalírenské dávce</label>
+        <input id="v106_heat_first" type="number" autocomplete="off">
+        <button class="soustruhCalcBtn calcPrimaryBtn" data-action="calc-soustruhy-106-heat">Dopočítej kalírenské dávky</button>
+        <div class="card calcResultCard" id="soustruhy106HeatResult"></div>
+      </div>
     </div>
   </div>
 </div>
