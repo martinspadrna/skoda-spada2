@@ -1,4 +1,4 @@
-// v.1.1 (602) – Soustruhy: zabalený seznam dávek a sjednocené kalírenské dopočítání po 4 dávkách.
+// v.1.1 (603) – Soustruhy: kombinace Lis + Volné a kalírna sjednocená dole u výsledku.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
@@ -74,6 +74,13 @@ function installDelegatedAppActions() {
     'calc-soustruhy-126-heat': () => calcSoustruhy126Heat(),
     'calc-soustruhy-106': () => calcSoustruhy106(),
     'calc-soustruhy-106-heat': () => calcSoustruhy106Heat(),
+    'soustruh-combo-free': (el) => setSoustruhComboFreeType(String(el.dataset.comboFree || '126')),
+    'soustruh-combo126-start': (el) => {
+      const start = parseInt(el.dataset.comboStartsize || '', 10);
+      if (Number.isFinite(start)) setSoustruhCombo126Start(start);
+    },
+    'calc-soustruhy-combo': () => calcSoustruhyCombo(),
+    'calc-soustruhy-combo-heat': () => calcSoustruhyComboHeat(),
     'open-food-link': () => openExternalTile('https://sa.gthcatering.cz/restaurant/c1/'),
     'open-eportal-link': () => openEportal(),
     'open-payroll-link': () => openPayroll(),

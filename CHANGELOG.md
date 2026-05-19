@@ -1,3 +1,9 @@
+## v.1.1 (603)
+- Soustruhy: pole „První kalírenská dávka“ je přesunuté dolů přímo do rozbalovacího bloku „Dopočítání kalírenské dávky po 4 dávkách“, aby zadání i výsledek byly u sebe.
+- Soustruhy: přidaná čtvrtá volba „Kombinace“ pro výpočet části směny na Lisu a části směny na Volné 126/106.
+- Soustruhy / Kombinace: výsledek ukazuje zvlášť Lis, Volné i celkem, seznamy dávek jsou zabalené a kalírenské čtveřice se počítají jen z části Volné.
+- Verze sjednocena na v.1.1 (603), cache na v1.1-603 a Supabase realtime kanál na rak-public-live-v603.
+
 ## v.1.1 (602)
 - Soustruhy / Volné 126 a Volné 106: kalírenské čtveřice jsou nově zabalené v rozbalovacím bloku jako přesnější výpočet u Brusů.
 - Pro kalírenské čtveřice se zadává samostatně číslo první kalírenské dávky, protože začátek čtveřice může vycházet z jiného stroje.

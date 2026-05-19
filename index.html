@@ -328,6 +328,7 @@
       <div class="bbtn" data-action="soustruh-mode" data-soustruh-mode="lis">Lis</div>
       <div class="bbtn" data-action="soustruh-mode" data-soustruh-mode="126">Volné 126ks</div>
       <div class="bbtn activeChoice" data-action="soustruh-mode" data-soustruh-mode="106">Volné 106ks</div>
+      <div class="bbtn" data-action="soustruh-mode" data-soustruh-mode="combo">Kombinace</div>
     </div>
 
     <div id="soustruhyLisPanel" class="subPanel calcPanel calcPanel--form">
@@ -350,16 +351,18 @@
         <div class="bbtn activeChoice" data-action="soustruh126-start" data-startsize="32">Začínám 32 ks</div>
         <div class="bbtn" data-action="soustruh126-start" data-startsize="31">Začínám 31 ks</div>
       </div>
+      <button class="soustruhCalcBtn calcPrimaryBtn" data-action="calc-soustruhy-126">Spočítej 126</button>
+      <div class="card calcResultCard" id="soustruhy126Result"></div>
       <details class="soustruhHeatDetails calcDetails calcDetailsInner">
         <summary>Dopočítání kalírenské dávky po 4 dávkách</summary>
         <div class="soustruhHeatDetailsBody">
           <label>První kalírenská dávka</label>
           <input id="v126_heat_first" type="number" autocomplete="off">
-          <div class="smallText">Začátek čtveřice se bere z kalírny / jiného stroje. Po výpočtu se ukážou jen dávky, které vyrobíš tady na soustruhu, a případné doplnění do 4.</div>
+          <div class="smallText">Začátek čtveřice se bere z kalírny / jiného stroje. Počítají se jen dávky vyrobené tady na soustruhu a případné doplnění do celé čtveřice.</div>
+          <button class="soustruhCalcBtn calcPrimaryBtn" data-action="calc-soustruhy-126-heat">Přepočítat kalírnu</button>
+          <div class="soustruhHeatInlineResult" id="soustruhy126HeatResult"></div>
         </div>
       </details>
-      <button class="soustruhCalcBtn calcPrimaryBtn" data-action="calc-soustruhy-126">Spočítej 126</button>
-      <div class="card calcResultCard" id="soustruhy126Result"></div>
     </div>
 
     <div id="soustruhy106Panel" class="subPanel active calcPanel calcPanel--form">
@@ -374,16 +377,72 @@
       </div>
       <label>Plán výroby</label>
       <input id="v106_plan" type="number" value="" autocomplete="off">
+      <button class="soustruhCalcBtn calcPrimaryBtn" data-action="calc-soustruhy-106">Spočítej 106</button>
+      <div class="card calcResultCard" id="soustruhy106Result"></div>
       <details class="soustruhHeatDetails calcDetails calcDetailsInner">
         <summary>Dopočítání kalírenské dávky po 4 dávkách</summary>
         <div class="soustruhHeatDetailsBody">
           <label>První kalírenská dávka</label>
           <input id="v106_heat_first" type="number" autocomplete="off">
-          <div class="smallText">Začátek čtveřice se bere z kalírny / jiného stroje. Po výpočtu se ukážou jen dávky, které vyrobíš tady na soustruhu, a případné doplnění do 4.</div>
+          <div class="smallText">Začátek čtveřice se bere z kalírny / jiného stroje. Počítají se jen dávky vyrobené tady na soustruhu a případné doplnění do celé čtveřice.</div>
+          <button class="soustruhCalcBtn calcPrimaryBtn" data-action="calc-soustruhy-106-heat">Přepočítat kalírnu</button>
+          <div class="soustruhHeatInlineResult" id="soustruhy106HeatResult"></div>
         </div>
       </details>
-      <button class="soustruhCalcBtn calcPrimaryBtn" data-action="calc-soustruhy-106">Spočítej 106</button>
-      <div class="card calcResultCard" id="soustruhy106Result"></div>
+    </div>
+
+    <div id="soustruhyComboPanel" class="subPanel calcPanel calcPanel--form">
+      <div class="smallText">Kombinace: když část směny pojede Lis a část směny Volné. Vyplň plán pro každou část zvlášť.</div>
+      <details class="soustruhComboDetails calcDetails calcDetailsInner" open>
+        <summary>Část směny – Lis</summary>
+        <div class="soustruhComboDetailsBody">
+          <label>Lis – číslo první dávky</label>
+          <input id="combo_lis_first" type="number" autocomplete="off">
+          <label>Lis – plán výroby</label>
+          <input id="combo_lis_plan" type="number" autocomplete="off">
+        </div>
+      </details>
+      <details class="soustruhComboDetails calcDetails calcDetailsInner" open>
+        <summary>Část směny – Volné</summary>
+        <div class="soustruhComboDetailsBody">
+          <div class="bgrid calcChoiceGrid soustruhComboChoiceGrid">
+            <div class="bbtn activeChoice" data-action="soustruh-combo-free" data-combo-free="126">Volné 126ks</div>
+            <div class="bbtn" data-action="soustruh-combo-free" data-combo-free="106">Volné 106ks</div>
+          </div>
+          <label>Volné – číslo první dávky</label>
+          <input id="combo_free_first" type="number" autocomplete="off">
+          <label>Volné – plán výroby</label>
+          <input id="combo_free_plan" type="number" autocomplete="off">
+          <div id="combo126Options" class="soustruhComboFreeOptions">
+            <div class="smallText">Volné 126ks – začátek střídání dávek</div>
+            <div class="bgrid calcChoiceGrid">
+              <div class="bbtn activeChoice" data-action="soustruh-combo126-start" data-combo-startsize="32">Začínám 32 ks</div>
+              <div class="bbtn" data-action="soustruh-combo126-start" data-combo-startsize="31">Začínám 31 ks</div>
+            </div>
+          </div>
+          <div id="combo106Options" class="soustruhComboFreeOptions">
+            <div class="smallText">Volné 106ks – počet kusů v prvních čtyřech dávkách</div>
+            <div class="grid grid--tight">
+              <div><label>1. dávka</label><input id="combo106_c1" type="number"></div>
+              <div><label>2. dávka</label><input id="combo106_c2" type="number"></div>
+              <div><label>3. dávka</label><input id="combo106_c3" type="number"></div>
+              <div><label>4. dávka</label><input id="combo106_c4" type="number"></div>
+            </div>
+          </div>
+        </div>
+      </details>
+      <button class="soustruhCalcBtn calcPrimaryBtn" data-action="calc-soustruhy-combo">Spočítej kombinaci</button>
+      <div class="card calcResultCard" id="soustruhyComboResult"></div>
+      <details class="soustruhHeatDetails calcDetails calcDetailsInner">
+        <summary>Dopočítání kalírenské dávky po 4 dávkách</summary>
+        <div class="soustruhHeatDetailsBody">
+          <label>První kalírenská dávka</label>
+          <input id="combo_heat_first" type="number" autocomplete="off">
+          <div class="smallText">Kalírna se počítá jen z části Volné. Začátek čtveřice se bere z kalírny / jiného stroje.</div>
+          <button class="soustruhCalcBtn calcPrimaryBtn" data-action="calc-soustruhy-combo-heat">Přepočítat kalírnu</button>
+          <div class="soustruhHeatInlineResult" id="soustruhyComboHeatResult"></div>
+        </div>
+      </details>
     </div>
   </div>
 </div>

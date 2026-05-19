@@ -1,9 +1,9 @@
 function resetSoustruhy() {
-  ["lis_first", "lis_plan", "v126_first", "v126_plan", "v126_heat_first", "v106_first", "v106_plan", "v106_heat_first", "v106_c1", "v106_c2", "v106_c3", "v106_c4"].forEach(id => {
+  ["lis_first", "lis_plan", "v126_first", "v126_plan", "v126_heat_first", "v106_first", "v106_plan", "v106_heat_first", "v106_c1", "v106_c2", "v106_c3", "v106_c4", "combo_lis_first", "combo_lis_plan", "combo_free_first", "combo_free_plan", "combo_heat_first", "combo106_c1", "combo106_c2", "combo106_c3", "combo106_c4"].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = "";
   });
-  ["soustruhyLisResult", "soustruhy126Result", "soustruhy106Result"].forEach(id => {
+  ["soustruhyLisResult", "soustruhy126Result", "soustruhy106Result", "soustruhyComboResult", "soustruhy126HeatResult", "soustruhy106HeatResult", "soustruhyComboHeatResult"].forEach(id => {
     const el = document.getElementById(id);
     if (el) setCalcOutputHtml(el, "", id);
   });
@@ -12,6 +12,10 @@ function resetSoustruhy() {
   app.soustruh126Start = 32;
   app.soustruh126HeatFirst = "";
   app.soustruh106HeatFirst = "";
+  app.soustruhComboFreeType = "126";
+  app.soustruhCombo126Start = 32;
+  app.soustruhComboHeatFirst = "";
+  app.soustruhCombo106Counts = ["", "", "", ""];
   app.soustruh106Counts = ["", "", "", ""];
   renderSoustruhy();
   saveRotationData();
@@ -410,9 +414,9 @@ function getSoustruhHeatGroupsFromBatches(firstHeatGuide, batches) {
   };
 }
 
-function renderSoustruhHeatGroups(title, heatData) {
+function renderSoustruhHeatGroupsBody(heatData) {
   if (!heatData || !Array.isArray(heatData.groups) || !heatData.groups.length) {
-    return "";
+    return "<div class='smallText'>Zadej první kalírenskou dávku a spočítej hlavní část.</div>";
   }
 
   let body = "<div class='soustruhHeatResultBody'>";
@@ -438,9 +442,30 @@ function renderSoustruhHeatGroups(title, heatData) {
   body += "</tbody></table></div>";
   body += "<div class='smallText uMt8'>° = patří do kalírenské čtveřice, ale není z tohohle výpočtu soustruhu. * = dopočítaný vozík, který se má ještě doplnit ze soustruhu, aby čtveřice měla 4 dávky.</div>";
   body += "</div>";
+  return body;
+}
 
+function renderSoustruhHeatGroups(title, heatData) {
+  if (!heatData || !Array.isArray(heatData.groups) || !heatData.groups.length) {
+    return "";
+  }
   return "<details class='soustruhHeatResultDetails calcDetails calcDetailsInner'>" +
-    "<summary>" + escapeHtml(title) + "</summary>" + body + "</details>";
+    "<summary>" + escapeHtml(title) + "</summary>" + renderSoustruhHeatGroupsBody(heatData) + "</details>";
+}
+
+function renderSoustruhBatchListDetails(batches, summaryLabel) {
+  const safeBatches = Array.isArray(batches) ? batches : [];
+  if (!safeBatches.length) return "";
+  const label = summaryLabel || ("Seznam dávek (" + formatCount(safeBatches.length) + ")");
+  let html = "<details class='soustruhBatchListDetails calcDetails calcDetailsInner'>";
+  html += "<summary>" + escapeHtml(label) + "</summary>";
+  html += "<div class='soustruhBatchListBody'>";
+  html += "<div class='tableWrap'><table class='statsTable'><thead><tr><th>Dávka</th><th>Ks</th><th>Součet</th></tr></thead><tbody>";
+  safeBatches.forEach(item => {
+    html += "<tr><td>" + formatCount(item.batchNo) + "</td><td>" + formatCount(item.size) + "</td><td>" + formatCount(item.produced) + "</td></tr>";
+  });
+  html += "</tbody></table></div></div></details>";
+  return html;
 }
 
 function renderBatchResult(title, batches, target, firstBatch, heatData) {
@@ -453,17 +478,29 @@ function renderBatchResult(title, batches, target, firstBatch, heatData) {
   html += "<div class='tile'><div class='smallText'>Poslední dávka</div><div class='uFs22 uMt4'>" + formatCount(lastBatch) + "</div></div>";
   html += "<div class='tile'><div class='smallText'>Vyrobeno</div><div class='uFs22 uMt4'>" + formatCount(total) + "</div></div>";
   html += "</div>";
-  html += "<details class='soustruhBatchListDetails calcDetails calcDetailsInner'>";
-  html += "<summary>Seznam dávek (" + formatCount(batches.length) + ")</summary>";
-  html += "<div class='soustruhBatchListBody'>";
-  html += "<div class='tableWrap'><table class='statsTable'><thead><tr><th>Dávka</th><th>Ks</th><th>Součet</th></tr></thead><tbody>";
-  batches.forEach(item => {
-    html += "<tr><td>" + formatCount(item.batchNo) + "</td><td>" + formatCount(item.size) + "</td><td>" + formatCount(item.produced) + "</td></tr>";
-  });
-  html += "</tbody></table></div></div></details>";
+  html += renderSoustruhBatchListDetails(batches, "Seznam dávek (" + formatCount(batches.length) + ")");
   if (heatData) {
     html += renderSoustruhHeatGroups('Dopočítání kalírenské dávky po 4 dávkách', heatData);
   }
+  return html;
+}
+
+function renderSoustruhyCombinationResult(lisBatches, freeBatches, freeLabel) {
+  const lisCount = Array.isArray(lisBatches) ? lisBatches.length : 0;
+  const freeCount = Array.isArray(freeBatches) ? freeBatches.length : 0;
+  if (!lisCount && !freeCount) return "<div class='smallText'>Doplň aspoň jednu část směny.</div>";
+  const lisTotal = lisCount ? lisBatches[lisBatches.length - 1].produced : 0;
+  const freeTotal = freeCount ? freeBatches[freeBatches.length - 1].produced : 0;
+  const lisLastText = lisCount ? formatCount(lisBatches[lisBatches.length - 1].batchNo) : "—";
+  const freeLastText = freeCount ? formatCount(freeBatches[freeBatches.length - 1].batchNo) : "—";
+  let html = "<div class='smallText uMb10'>Kombinace Lis + " + escapeHtml(freeLabel || "Volné") + "</div>";
+  html += "<div class='statsSummary soustruhComboSummary'>";
+  html += "<div class='tile'><div class='smallText'>Lis</div><div class='uFs22 uMt4'>" + formatCount(lisTotal) + " ks</div><div class='smallText uMt4'>" + formatCount(lisCount) + " dávek · do " + lisLastText + "</div></div>";
+  html += "<div class='tile'><div class='smallText'>Volné</div><div class='uFs22 uMt4'>" + formatCount(freeTotal) + " ks</div><div class='smallText uMt4'>" + formatCount(freeCount) + " dávek · do " + freeLastText + "</div></div>";
+  html += "<div class='tile'><div class='smallText'>Celkem</div><div class='uFs22 uMt4'>" + formatCount(lisTotal + freeTotal) + " ks</div><div class='smallText uMt4'>" + formatCount(lisCount + freeCount) + " dávek</div></div>";
+  html += "</div>";
+  html += renderSoustruhBatchListDetails(lisBatches, "Seznam dávek – Lis (" + formatCount(lisCount) + ")");
+  html += renderSoustruhBatchListDetails(freeBatches, "Seznam dávek – " + (freeLabel || "Volné") + " (" + formatCount(freeCount) + ")");
   return html;
 }
 
@@ -479,12 +516,25 @@ function setSoustruh126Start(size) {
   saveRotationData();
 }
 
+function setSoustruhComboFreeType(type) {
+  app.soustruhComboFreeType = String(type) === "106" ? "106" : "126";
+  renderSoustruhy();
+  saveRotationData();
+}
+
+function setSoustruhCombo126Start(size) {
+  app.soustruhCombo126Start = Number(size) === 31 ? 31 : 32;
+  renderSoustruhy();
+  saveRotationData();
+}
+
 function renderSoustruhy() {
   const modeButtons = document.querySelectorAll('[data-soustruh-mode]');
   const panels = {
     lis: document.getElementById('soustruhyLisPanel'),
     "126": document.getElementById('soustruhy126Panel'),
-    "106": document.getElementById('soustruhy106Panel')
+    "106": document.getElementById('soustruhy106Panel'),
+    combo: document.getElementById('soustruhyComboPanel')
   };
 
   const toggleClass = typeof toggleElementClassIfChanged === 'function'
@@ -512,6 +562,13 @@ function renderSoustruhy() {
   const v106C2 = document.getElementById('v106_c2');
   const v106C3 = document.getElementById('v106_c3');
   const v106C4 = document.getElementById('v106_c4');
+  const comboLisPlan = document.getElementById('combo_lis_plan');
+  const comboFreePlan = document.getElementById('combo_free_plan');
+  const comboHeatFirst = document.getElementById('combo_heat_first');
+  const combo106C1 = document.getElementById('combo106_c1');
+  const combo106C2 = document.getElementById('combo106_c2');
+  const combo106C3 = document.getElementById('combo106_c3');
+  const combo106C4 = document.getElementById('combo106_c4');
 
   const defaultPlan = String(app.soustruhPlan || (typeof getSoustruhDefaultPlan === "function" ? getSoustruhDefaultPlan() : 1216));
   if (lisPlan && !lisPlan.value) lisPlan.value = defaultPlan;
@@ -523,12 +580,33 @@ function renderSoustruhy() {
   if (v106C2 && !v106C2.value) v106C2.value = app.soustruh106Counts[1] || '';
   if (v106C3 && !v106C3.value) v106C3.value = app.soustruh106Counts[2] || '';
   if (v106C4 && !v106C4.value) v106C4.value = app.soustruh106Counts[3] || '';
+  if (comboLisPlan && !comboLisPlan.value) comboLisPlan.value = '';
+  if (comboFreePlan && !comboFreePlan.value) comboFreePlan.value = '';
+  if (comboHeatFirst && !comboHeatFirst.value) comboHeatFirst.value = app.soustruhComboHeatFirst || '';
+  if (combo106C1 && !combo106C1.value) combo106C1.value = app.soustruhCombo106Counts?.[0] || '';
+  if (combo106C2 && !combo106C2.value) combo106C2.value = app.soustruhCombo106Counts?.[1] || '';
+  if (combo106C3 && !combo106C3.value) combo106C3.value = app.soustruhCombo106Counts?.[2] || '';
+  if (combo106C4 && !combo106C4.value) combo106C4.value = app.soustruhCombo106Counts?.[3] || '';
 
   const startButtons = document.querySelectorAll('[data-startsize]');
   startButtons.forEach(btn => {
     const size = Number(btn.getAttribute('data-startsize'));
     toggleClass(btn, 'activeChoice', app.soustruh126Start === size, 'soustruhStartSize:' + String(size || 'unknown'));
   });
+
+  const comboFreeType = app.soustruhComboFreeType === "106" ? "106" : "126";
+  document.querySelectorAll('[data-combo-free]').forEach(btn => {
+    const type = String(btn.getAttribute('data-combo-free') || '126');
+    toggleClass(btn, 'activeChoice', comboFreeType === type, 'soustruhComboFree:' + type);
+  });
+  document.querySelectorAll('[data-combo-startsize]').forEach(btn => {
+    const size = Number(btn.getAttribute('data-combo-startsize'));
+    toggleClass(btn, 'activeChoice', (app.soustruhCombo126Start || 32) === size, 'soustruhComboStart:' + String(size || 'unknown'));
+  });
+  const combo126Options = document.getElementById('combo126Options');
+  const combo106Options = document.getElementById('combo106Options');
+  if (combo126Options) toggleClass(combo126Options, 'is-hidden', comboFreeType !== "126", 'combo126Options');
+  if (combo106Options) toggleClass(combo106Options, 'is-hidden', comboFreeType !== "106", 'combo106Options');
 }
 
 function calcSoustruhyLis() {
@@ -549,8 +627,10 @@ function calcSoustruhy126() {
   const first = parseInt(document.getElementById('v126_first').value, 10);
   const plan = parseInt(document.getElementById('v126_plan').value, 10);
   const out = document.getElementById('soustruhy126Result');
+  const heatOut = document.getElementById('soustruhy126HeatResult');
   if (!Number.isFinite(first) || !Number.isFinite(plan) || plan <= 0) {
     setCalcOutputHtml(out, "<div class='smallText'>Doplň první dávku a plán.</div>", out.id || "soustruhEmpty");
+    if (heatOut) setCalcOutputHtml(heatOut, "", heatOut.id || "soustruh126HeatEmpty");
     return;
   }
   app.soustruhPlan = String(plan);
@@ -559,14 +639,15 @@ function calcSoustruhy126() {
   const startSize = app.soustruh126Start === 31 ? 31 : 32;
   const sizes = startSize === 32 ? [32, 31] : [31, 32];
   const batches = getSoustruhBatchList(first, sizes, plan);
-  const heatData = Number.isFinite(heatFirst) ? getSoustruhHeatGroupsFromBatches(heatFirst, batches) : null;
-  setCalcOutputHtml(out, renderBatchResult('Volné 126 ks', batches, plan, first, heatData), 'soustruhy126Result');
+  setCalcOutputHtml(out, renderBatchResult('Volné 126 ks', batches, plan, first), 'soustruhy126Result');
+  if (heatOut) {
+    const heatData = Number.isFinite(heatFirst) ? getSoustruhHeatGroupsFromBatches(heatFirst, batches) : null;
+    setCalcOutputHtml(heatOut, Number.isFinite(heatFirst) ? renderSoustruhHeatGroupsBody(heatData) : "<div class='smallText'>Zadej první kalírenskou dávku a klikni na Přepočítat kalírnu.</div>", heatOut.id || 'soustruhy126HeatResult');
+  }
   saveRotationData();
 }
 
 function calcSoustruhy126Heat() {
-  // Ponecháno kvůli zpětné kompatibilitě starších exportů / klikacích akcí.
-  // Kalírenské čtveřice jsou ve v.1.1 (602) v rozbalovacím bloku hlavního výpočtu Volné 126.
   calcSoustruhy126();
 }
 
@@ -580,8 +661,10 @@ function calcSoustruhy106() {
     parseInt(document.getElementById('v106_c4').value, 10)
   ];
   const out = document.getElementById('soustruhy106Result');
+  const heatOut = document.getElementById('soustruhy106HeatResult');
   if (!Number.isFinite(first) || !Number.isFinite(plan) || plan <= 0 || counts.some(v => !Number.isFinite(v) || v <= 0)) {
     setCalcOutputHtml(out, "<div class='smallText'>Doplň první dávku, plán a první čtyři dávky.</div>", out.id || "soustruh106Empty");
+    if (heatOut) setCalcOutputHtml(heatOut, "", heatOut.id || "soustruh106HeatEmpty");
     return;
   }
   app.soustruhPlan = String(plan);
@@ -589,14 +672,82 @@ function calcSoustruhy106() {
   app.soustruh106HeatFirst = Number.isFinite(heatFirst) ? String(heatFirst) : '';
   app.soustruh106Counts = counts.map(v => String(v));
   const batches = getSoustruhBatchList(first, counts, plan);
-  const heatData = Number.isFinite(heatFirst) ? getSoustruhHeatGroupsFromBatches(heatFirst, batches) : null;
-  setCalcOutputHtml(out, renderBatchResult('Volné 106 ks', batches, plan, first, heatData), 'soustruhy106Result');
+  setCalcOutputHtml(out, renderBatchResult('Volné 106 ks', batches, plan, first), 'soustruhy106Result');
+  if (heatOut) {
+    const heatData = Number.isFinite(heatFirst) ? getSoustruhHeatGroupsFromBatches(heatFirst, batches) : null;
+    setCalcOutputHtml(heatOut, Number.isFinite(heatFirst) ? renderSoustruhHeatGroupsBody(heatData) : "<div class='smallText'>Zadej první kalírenskou dávku a klikni na Přepočítat kalírnu.</div>", heatOut.id || 'soustruhy106HeatResult');
+  }
   saveRotationData();
 }
 
-
 function calcSoustruhy106Heat() {
-  // Ponecháno kvůli zpětné kompatibilitě starších exportů / klikacích akcí.
-  // Kalírenské čtveřice jsou ve v.1.1 (602) v rozbalovacím bloku hlavního výpočtu Volné 106.
   calcSoustruhy106();
+}
+
+function getSoustruhyComboFreeConfig() {
+  const type = app.soustruhComboFreeType === "106" ? "106" : "126";
+  if (type === "106") {
+    const counts = [
+      parseInt(document.getElementById('combo106_c1')?.value || '', 10),
+      parseInt(document.getElementById('combo106_c2')?.value || '', 10),
+      parseInt(document.getElementById('combo106_c3')?.value || '', 10),
+      parseInt(document.getElementById('combo106_c4')?.value || '', 10)
+    ];
+    if (counts.some(v => !Number.isFinite(v) || v <= 0)) {
+      return { type, label: 'Volné 106 ks', sizes: [], error: 'U Volné 106 doplň počet kusů v prvních čtyřech dávkách.' };
+    }
+    app.soustruhCombo106Counts = counts.map(v => String(v));
+    return { type, label: 'Volné 106 ks', sizes: counts, error: '' };
+  }
+  const startSize = app.soustruhCombo126Start === 31 ? 31 : 32;
+  return { type, label: 'Volné 126 ks', sizes: startSize === 32 ? [32, 31] : [31, 32], error: '' };
+}
+
+function calcSoustruhyCombo() {
+  const lisFirst = parseInt(document.getElementById('combo_lis_first')?.value || '', 10);
+  const lisPlan = parseInt(document.getElementById('combo_lis_plan')?.value || '', 10);
+  const freeFirst = parseInt(document.getElementById('combo_free_first')?.value || '', 10);
+  const freePlan = parseInt(document.getElementById('combo_free_plan')?.value || '', 10);
+  const heatFirst = parseInt(document.getElementById('combo_heat_first')?.value || '', 10);
+  const out = document.getElementById('soustruhyComboResult');
+  const heatOut = document.getElementById('soustruhyComboHeatResult');
+  const lisHasAny = Number.isFinite(lisFirst) || Number.isFinite(lisPlan);
+  const freeHasAny = Number.isFinite(freeFirst) || Number.isFinite(freePlan);
+  const lisValid = Number.isFinite(lisFirst) && Number.isFinite(lisPlan) && lisPlan > 0;
+  const freeValidBase = Number.isFinite(freeFirst) && Number.isFinite(freePlan) && freePlan > 0;
+
+  if (!lisHasAny && !freeHasAny) {
+    setCalcOutputHtml(out, "<div class='smallText'>Doplň část Lis, část Volné, nebo obě části směny.</div>", out?.id || 'soustruhyComboEmpty');
+    if (heatOut) setCalcOutputHtml(heatOut, "", heatOut.id || 'soustruhyComboHeatEmpty');
+    return;
+  }
+  if ((lisHasAny && !lisValid) || (freeHasAny && !freeValidBase)) {
+    setCalcOutputHtml(out, "<div class='smallText'>Když některou část vyplníš, doplň u ní první dávku i plán výroby.</div>", out?.id || 'soustruhyComboInvalid');
+    if (heatOut) setCalcOutputHtml(heatOut, "", heatOut.id || 'soustruhyComboHeatInvalid');
+    return;
+  }
+
+  const freeCfg = getSoustruhyComboFreeConfig();
+  if (freeValidBase && freeCfg.error) {
+    setCalcOutputHtml(out, "<div class='smallText'>" + escapeHtml(freeCfg.error) + "</div>", out?.id || 'soustruhyComboFreeInvalid');
+    if (heatOut) setCalcOutputHtml(heatOut, "", heatOut.id || 'soustruhyComboHeatInvalid');
+    return;
+  }
+
+  const lisBatches = lisValid ? getSoustruhBatchList(lisFirst, [32], lisPlan) : [];
+  const freeBatches = freeValidBase ? getSoustruhBatchList(freeFirst, freeCfg.sizes, freePlan) : [];
+  setCalcOutputHtml(out, renderSoustruhyCombinationResult(lisBatches, freeBatches, freeCfg.label), out?.id || 'soustruhyComboResult');
+
+  app.soustruhComboHeatFirst = Number.isFinite(heatFirst) ? String(heatFirst) : '';
+  if (freeValidBase && heatOut) {
+    const heatData = Number.isFinite(heatFirst) ? getSoustruhHeatGroupsFromBatches(heatFirst, freeBatches) : null;
+    setCalcOutputHtml(heatOut, Number.isFinite(heatFirst) ? renderSoustruhHeatGroupsBody(heatData) : "<div class='smallText'>Zadej první kalírenskou dávku a klikni na Přepočítat kalírnu.</div>", heatOut.id || 'soustruhyComboHeatResult');
+  } else if (heatOut) {
+    setCalcOutputHtml(heatOut, "<div class='smallText'>Kalírna se počítá jen z části Volné. Nejdřív doplň Volné.</div>", heatOut.id || 'soustruhyComboHeatResult');
+  }
+  saveRotationData();
+}
+
+function calcSoustruhyComboHeat() {
+  calcSoustruhyCombo();
 }

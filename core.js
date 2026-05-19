@@ -1,6 +1,6 @@
 
 const APP_KEY = "rotace_kalkulacky_state_v123";
-const APP_VERSION = "v.1.1 (602)";
+const APP_VERSION = "v.1.1 (603)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-05-18-" + APP_VERSION + "-" + Date.now();
 
@@ -123,6 +123,10 @@ const app = {
   soustruh126Start: 32,
   soustruh126HeatFirst: "",
   soustruh106HeatFirst: "",
+  soustruhComboFreeType: "126",
+  soustruhCombo126Start: 32,
+  soustruhComboHeatFirst: "",
+  soustruhCombo106Counts: ["", "", "", ""],
   soustruh106Counts: ["", "", "", ""],
   selectedYear: new Date().getFullYear(),
   importYear: new Date().getFullYear(),
@@ -735,6 +739,14 @@ function saveRotationData() {
     write("soustruh126Start", String(app.soustruh126Start || 32));
     write("soustruh126HeatFirst", app.soustruh126HeatFirst || document.getElementById("v126_heat_first")?.value || "");
     write("soustruh106HeatFirst", app.soustruh106HeatFirst || document.getElementById("v106_heat_first")?.value || "");
+    write("soustruhComboFreeType", app.soustruhComboFreeType || "126");
+    write("soustruhCombo126Start", String(app.soustruhCombo126Start || 32));
+    write("soustruhComboHeatFirst", app.soustruhComboHeatFirst || document.getElementById("combo_heat_first")?.value || "");
+    write("soustruhCombo106Counts", JSON.stringify(app.soustruhCombo106Counts || ["", "", "", ""]));
+    write("combo_lis_first", document.getElementById("combo_lis_first")?.value || "");
+    write("combo_lis_plan", document.getElementById("combo_lis_plan")?.value || "");
+    write("combo_free_first", document.getElementById("combo_free_first")?.value || "");
+    write("combo_free_plan", document.getElementById("combo_free_plan")?.value || "");
     write("soustruh106Counts", JSON.stringify(app.soustruh106Counts || ["", "", "", ""]));
     write("adminUnlocked", app.adminUnlocked ? "1" : "0");
     if (changed && typeof window.__rotaceSignalStateChange === "function") {
@@ -757,6 +769,10 @@ function restoreInputs() {
   setVal("davka", "davka");
   setVal("orovnani", "orovnani");
   setVal("celkem", "celkem");
+  setVal("combo_lis_first", "combo_lis_first");
+  setVal("combo_lis_plan", "combo_lis_plan");
+  setVal("combo_free_first", "combo_free_first");
+  setVal("combo_free_plan", "combo_free_plan");
   const lisPlanEl = document.getElementById("lis_plan");
   const soustruhDefaultPlan = String(typeof getSoustruhDefaultPlan === "function" ? getSoustruhDefaultPlan() : 1216);
   if (lisPlanEl) lisPlanEl.value = soustruhDefaultPlan;
@@ -765,11 +781,15 @@ function restoreInputs() {
   const v106PlanEl = document.getElementById("v106_plan");
   if (v106PlanEl) v106PlanEl.value = soustruhDefaultPlan;
   const soustruhCounts = parseLocalStorageJsonCached("soustruh106Counts", ["", "", "", ""]);
+  const soustruhComboCounts = parseLocalStorageJsonCached("soustruhCombo106Counts", ["", "", "", ""]);
   const v126HeatFirstEl = document.getElementById("v126_heat_first");
   if (v126HeatFirstEl && !v126HeatFirstEl.value) v126HeatFirstEl.value = getLocalStorageCached("soustruh126HeatFirst", "") || "";
   const v106HeatFirstEl = document.getElementById("v106_heat_first");
   if (v106HeatFirstEl && !v106HeatFirstEl.value) v106HeatFirstEl.value = getLocalStorageCached("soustruh106HeatFirst", "") || "";
+  const comboHeatFirstEl = document.getElementById("combo_heat_first");
+  if (comboHeatFirstEl && !comboHeatFirstEl.value) comboHeatFirstEl.value = getLocalStorageCached("soustruhComboHeatFirst", "") || "";
   ["v106_c1","v106_c2","v106_c3","v106_c4"].forEach((id, idx) => { const el = document.getElementById(id); if (el && !el.value) el.value = soustruhCounts[idx] || ""; });
+  ["combo106_c1","combo106_c2","combo106_c3","combo106_c4"].forEach((id, idx) => { const el = document.getElementById(id); if (el && !el.value) el.value = soustruhComboCounts[idx] || ""; });
   app.soustruhMode = getLocalStorageCached("soustruhMode", "") || app.soustruhMode || "lis";
   app.soustruhFirstBatch = getLocalStorageCached("soustruhFirstBatch", "") || "";
   const storedSoustruhPlan = getLocalStorageCached("soustruhPlan", "");
@@ -777,6 +797,10 @@ function restoreInputs() {
   app.soustruh126Start = parseInt(getLocalStorageCached("soustruh126Start", ""), 10) || 32;
   app.soustruh126HeatFirst = getLocalStorageCached("soustruh126HeatFirst", "") || "";
   app.soustruh106HeatFirst = getLocalStorageCached("soustruh106HeatFirst", "") || "";
+  app.soustruhComboFreeType = getLocalStorageCached("soustruhComboFreeType", "") === "106" ? "106" : "126";
+  app.soustruhCombo126Start = parseInt(getLocalStorageCached("soustruhCombo126Start", ""), 10) || 32;
+  app.soustruhComboHeatFirst = getLocalStorageCached("soustruhComboHeatFirst", "") || "";
+  app.soustruhCombo106Counts = Array.isArray(soustruhComboCounts) ? soustruhComboCounts : ["", "", "", ""];
   app.soustruh106Counts = Array.isArray(soustruhCounts) ? soustruhCounts : ["", "", "", ""];
 }
 
