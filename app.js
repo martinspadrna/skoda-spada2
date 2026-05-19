@@ -1,4 +1,4 @@
-// v.1.1 (591) – Brusy: finální dorovnání velikosti voleb brusu a všech indexů do jedné kompaktní výšky.
+// v.1.1 (592) – Brusy: skutečné zmenšení voleb brusu a běžných indexů přes vlastní třídy, aby je nepřebíjely starší .bbtn vrstvy.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

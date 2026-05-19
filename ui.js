@@ -2790,13 +2790,13 @@ function buildAppHistoryHtml(versionText) {
       title: 'Aktuální build',
       lines: [
         'Fáze 8 — PWA / Service Worker hardening je zhruba na 40 %.',
-        'Kalkulačky / Brusy mají finálně sjednocenou střední výšku voleb brusu, běžných indexů i volných indexů bez překrývání.',
+        'Kalkulačky / Brusy mají nově cíleně zmenšenou volbu brusu a běžné indexy přes vlastní třídy, takže už je nepřebíjí starší obecná .bbtn vrstva.',
         'Kalkulačky mají vpravo kompaktní skupinu ovládání: reset a křížek pro návrat na přehled kalkulaček.',
         'Service worker diagnostika hlídá nesoulad mezi aktuální verzí appky a aktivní cache verzí a při nesouladu spustí bezpečný update check.'
       ]
     },
     {
-      range: 'v.1.1 500–591',
+      range: 'v.1.1 500–592',
       title: 'Stabilizace, hry, Supabase a glass vzhled',
       lines: [
         'Proběhlo velké stabilizační období: Láďův režim, cleanup manager, dokončení game performance, dokončený Supabase hardening a začátek Fáze 7 Data optimization včetně dalšího odlehčení Láďova režimu, úspornější Supabase lokální cache a méně zbytečných DOM renderů včetně Otevírací doby/Jídelního lístku, úspornějších selectů pro roky/měsíce, class toggle guardů u kalkulaček, style guardů u Theme/Pozadí/spodní lišty a závěrečného úklidu lokální read/JSON cache. Po dokončení Fáze 7 začala Fáze 8: tvrdší PWA/service worker chování, bezpečnější precache, řízenější update checky a diagnostika cache stavu.',

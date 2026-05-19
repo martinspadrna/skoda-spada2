@@ -1,3 +1,11 @@
+## v.1.1 (592)
+- Fáze 8 — PWA / Service Worker hardening zůstává cca na 40 %, protože jde o cílenou opravu Brusů po testu v.1.1 (591).
+- Kalkulačky / Brusy: volby brusu TBKR01/TBKR07 a běžné indexy AD/AE/AH dostaly vlastní třídy `brusMachineBtn` a `brusIndexBtn`, aby je už nepřebíjely starší obecné `.bbtn` vrstvy.
+- Brusy a běžné indexy jsou nově nastavené na viditelně menší střední výšku mezi nízkými volnými indexy a původními vysokými tlačítky.
+- Volné indexy AD volné / AE volné mají vlastní třídu `brusFreeIndexBtn` a zůstávají kompaktnější jako spodní vizuální hranice.
+- Grid a wrapper volných indexů zůstávají přirozené bez pevného překrývání; barevné glass rozlišení i výpočty jsou beze změny.
+- Dashboard, spodní lišta, Rotace, Rozpisy, Statistiky, Výplata, hry, Theme/Pozadí a Supabase datový model jsou beze změny.
+
 ## v.1.1 (591)
 - Fáze 8 — PWA / Service Worker hardening zůstává cca na 40 %, protože jde o rychlé doladění Brusů po testu v.1.1 (590).
 - Kalkulačky / Brusy: volba brusu, běžné indexy i volné indexy mají nově jednu společnou střední velikost přes finální proměnnou úplně na konci CSS.
@@ -300,7 +308,7 @@
 - Fáze 6 — Supabase hardening zůstává cca 64 %.
 - Výpočty, pravidla her, Theme/Pozadí, spodní lišta a Supabase datový model beze změny.
 
-## Přehled největších změn v.1.1 (500–591)
+## Přehled největších změn v.1.1 (500–592)
 - Proběhlo velké stabilizační období před dalšími fázemi refactoru: Fáze 3 Láďův režim, Fáze 4 cleanup manager, Fáze 5 game performance, dokončený Supabase hardening, dokončená Fáze 7 Data optimization a začátek Fáze 8 PWA / Service Worker hardening včetně úspornějších DOM renderů v Dashboardu, Rotaci, Statistikách, Otevírací době, rokových/měsíčních selectech, aktivních stavech kalkulačních voleb, závěrečného LRU úklidu lokální cache a bezpečnější service worker cache a čistší drobné UI doladění Brusů, Otevírací doby a horních názvů stránek.
 - Dashboard se postupně ladil kvůli správnému zobrazení směny, ikon, kantýny/jídelny, odpočtů, klikací výplatě a menšímu riziku prázdných nebo pozdě načtených karet.
 - Spodní navigace prošla opakovaným dorovnáním, hlavně položka „Více“ – má být užší, ale normálně mezi ostatními položkami a bez ukotvení vpravo.

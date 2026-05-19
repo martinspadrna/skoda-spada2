@@ -4667,3 +4667,69 @@ body.lowEndDevice :is(#soustruhy, #frezky, #brusy, #pracka).calcPage .calcHeader
     --brus-choice-gap:8px;
   }
 }
+
+
+/* v.1.1 (592) – Brusy: oprava skutečné velikosti tlačítek přes vlastní třídy.
+   Už se nespoléhá jen na obecnou .bbtn vrstvu. Volba brusu a běžné indexy
+   jsou viditelně zmenšené na velikost mezi nízkými volnými indexy a původními vysokými tlačítky. */
+#brusy.calcPage{
+  --brus-main-choice-h:44px;
+  --brus-free-choice-h:40px;
+  --brus-choice-gap:7px;
+}
+html body #brusy.calcPage .brusChoiceGrid,
+html body #brusy.calcPage .brusIndexGrid{
+  gap:var(--brus-choice-gap) !important;
+  grid-auto-rows:auto !important;
+  align-items:stretch !important;
+}
+html body #brusy.calcPage .brusIndexGrid > .brusFreeWrap{
+  gap:var(--brus-choice-gap) !important;
+  grid-column:1 / -1 !important;
+  align-items:stretch !important;
+  min-height:0 !important;
+  height:auto !important;
+  max-height:none !important;
+}
+html body #brusy.calcPage .bbtn.brusMachineBtn,
+html body #brusy.calcPage .bbtn.brusIndexBtn{
+  height:var(--brus-main-choice-h) !important;
+  min-height:var(--brus-main-choice-h) !important;
+  max-height:var(--brus-main-choice-h) !important;
+  padding:5px 9px !important;
+  font-size:14px !important;
+  line-height:1.05 !important;
+  border-radius:13px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  box-sizing:border-box !important;
+  overflow:hidden !important;
+}
+html body #brusy.calcPage .bbtn.brusFreeIndexBtn{
+  height:var(--brus-free-choice-h) !important;
+  min-height:var(--brus-free-choice-h) !important;
+  max-height:var(--brus-free-choice-h) !important;
+  padding:4px 9px !important;
+  font-size:13.5px !important;
+  line-height:1.05 !important;
+  border-radius:13px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  box-sizing:border-box !important;
+  overflow:hidden !important;
+}
+@media (max-width:430px){
+  #brusy.calcPage{
+    --brus-main-choice-h:43px;
+    --brus-free-choice-h:40px;
+    --brus-choice-gap:7px;
+  }
+  html body #brusy.calcPage .bbtn.brusMachineBtn,
+  html body #brusy.calcPage .bbtn.brusIndexBtn{
+    padding-top:5px !important;
+    padding-bottom:5px !important;
+    font-size:13.8px !important;
+  }
+}
