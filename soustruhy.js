@@ -1,5 +1,5 @@
 function resetSoustruhy() {
-  ["lis_first", "lis_plan", "v126_first", "v126_plan", "v106_first", "v106_plan", "v106_c1", "v106_c2", "v106_c3", "v106_c4"].forEach(id => {
+  ["lis_first", "lis_plan", "v126_first", "v126_plan", "v126_heat_first", "v106_first", "v106_plan", "v106_heat_first", "v106_c1", "v106_c2", "v106_c3", "v106_c4"].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = "";
   });
@@ -10,6 +10,8 @@ function resetSoustruhy() {
   app.soustruhMode = "lis";
   app.soustruhPlan = String(typeof getSoustruhDefaultPlan === "function" ? getSoustruhDefaultPlan() : 1216);
   app.soustruh126Start = 32;
+  app.soustruh126HeatFirst = "";
+  app.soustruh106HeatFirst = "";
   app.soustruh106Counts = ["", "", "", ""];
   renderSoustruhy();
   saveRotationData();
@@ -315,84 +317,130 @@ function getSoustruhBatchList(firstBatch, sizes, plan) {
 }
 
 
-function getSoustruhHeatGroups(firstGuide, sizes, plan) {
+function getSoustruhHeatGroups(firstGuide, sizes, plan, firstHeatGuide) {
   const start = parseInt(firstGuide, 10);
   const batches = getSoustruhBatchList(start, sizes, plan);
-  return getSoustruhHeatGroupsFromBatches(start, batches);
+  return getSoustruhHeatGroupsFromBatches(firstHeatGuide || start, batches);
 }
 
-function getSoustruhHeatGroupsFromBatches(firstGuide, batches) {
-  const start = parseInt(firstGuide, 10);
+function getSoustruhHeatGroupsFromBatches(firstHeatGuide, batches) {
+  const heatStart = parseInt(firstHeatGuide, 10);
   const safeBatches = Array.isArray(batches) ? batches : [];
-  if (!Number.isFinite(start) || !safeBatches.length) {
-    return { groups: [], batchCount: 0, heatCount: 0, lastPlannedGuide: 0, lastHeatGuide: 0, missingCount: 0, missingGuides: [] };
+  if (!Number.isFinite(heatStart) || !safeBatches.length) {
+    return {
+      groups: [],
+      batchCount: 0,
+      heatCount: 0,
+      firstHeatGuide: 0,
+      firstProducedGuide: 0,
+      lastPlannedGuide: 0,
+      lastHeatGuide: 0,
+      fillCount: 0,
+      fillGuides: [],
+      externalGuides: []
+    };
   }
 
-  const batchCount = safeBatches.length;
-  const heatCount = Math.ceil(batchCount / 4);
-  const lastPlannedGuide = safeBatches[batchCount - 1].batchNo;
-  const lastHeatGuide = start + heatCount * 4 - 1;
-  const plannedSet = new Set(safeBatches.map(item => Number(item.batchNo)));
+  const batchNumbers = safeBatches
+    .map(item => Number(item.batchNo))
+    .filter(number => Number.isFinite(number))
+    .sort((a, b) => a - b);
+  if (!batchNumbers.length) {
+    return {
+      groups: [],
+      batchCount: 0,
+      heatCount: 0,
+      firstHeatGuide: heatStart,
+      firstProducedGuide: 0,
+      lastPlannedGuide: 0,
+      lastHeatGuide: 0,
+      fillCount: 0,
+      fillGuides: [],
+      externalGuides: []
+    };
+  }
+
+  const firstProducedGuide = batchNumbers[0];
+  const lastPlannedGuide = batchNumbers[batchNumbers.length - 1];
+  const plannedSet = new Set(batchNumbers);
+  const firstGroupStart = heatStart + Math.floor((firstProducedGuide - heatStart) / 4) * 4;
+  const lastGroupStart = heatStart + Math.floor((lastPlannedGuide - heatStart) / 4) * 4;
   const groups = [];
 
-  for (let groupIndex = 0; groupIndex < heatCount; groupIndex += 1) {
-    const offset = groupIndex * 4;
+  for (let groupStart = firstGroupStart, groupIndex = 0; groupStart <= lastGroupStart; groupStart += 4, groupIndex += 1) {
     const guides = [0, 1, 2, 3].map(step => {
-      const number = start + offset + step;
+      const number = groupStart + step;
+      const planned = plannedSet.has(number);
+      const fill = !planned && number > lastPlannedGuide;
+      const external = !planned && !fill;
       return {
         number,
-        planned: plannedSet.has(number)
+        planned,
+        fill,
+        external
       };
     });
     const plannedInside = guides.filter(item => item.planned).length;
-    const missingGuides = guides.filter(item => !item.planned).map(item => item.number);
+    const fillGuides = guides.filter(item => item.fill).map(item => item.number);
+    const externalGuides = guides.filter(item => item.external).map(item => item.number);
     groups.push({
       number: groupIndex + 1,
+      groupStart,
+      groupEnd: groupStart + 3,
       guides,
       plannedInside,
-      missingGuides
+      fillGuides,
+      externalGuides
     });
   }
 
-  const missingGuides = groups.flatMap(item => item.missingGuides || []);
+  const fillGuides = groups.flatMap(item => item.fillGuides || []);
+  const externalGuides = groups.flatMap(item => item.externalGuides || []);
   return {
     groups,
-    batchCount,
-    heatCount,
+    batchCount: batchNumbers.length,
+    heatCount: groups.length,
+    firstHeatGuide: heatStart,
+    firstProducedGuide,
     lastPlannedGuide,
-    lastHeatGuide,
-    missingCount: missingGuides.length,
-    missingGuides
+    lastHeatGuide: lastGroupStart + 3,
+    fillCount: fillGuides.length,
+    fillGuides,
+    externalGuides
   };
 }
 
 function renderSoustruhHeatGroups(title, heatData) {
   if (!heatData || !Array.isArray(heatData.groups) || !heatData.groups.length) {
-    return "<div class='smallText'>Doplň číslo první dávky a plán výroby.</div>";
+    return "";
   }
 
-  let html = "<div class='calcResultDivider'></div>";
-  html += "<div class='smallText uMb10'><b>" + escapeHtml(title) + "</b></div>";
-  html += "<div class='statsSummary'>";
-  html += "<div class='tile'><div class='smallText'>Našich dávek</div><div class='uFs22 uMt4'>" + formatCount(heatData.batchCount) + "</div></div>";
-  html += "<div class='tile'><div class='smallText'>Kalírenských</div><div class='uFs22 uMt4'>" + formatCount(heatData.heatCount) + "</div></div>";
-  html += "<div class='tile'><div class='smallText'>Do kalírny</div><div class='uFs22 uMt4'>" + formatCount(heatData.lastHeatGuide) + "</div></div>";
-  html += "</div>";
-  html += "<div class='smallText uMb10'>Jedna kalírenská volná = 4 naše průvodky. Pokud plán skončí uprostřed čtveřice, poslední řádek rovnou doplní další vozíky ze soustruhu, aby kalírna dostala celou čtveřici.</div>";
-  if (heatData.missingCount > 0) {
-    html += "<div class='smallText uMb10'>Plán končí průvodkou <b>" + formatCount(heatData.lastPlannedGuide) + "</b>. Do poslední kalírenské volné ještě doplnit ze soustruhu: <b>" + heatData.missingGuides.map(formatCount).join(", ") + "</b>.</div>";
+  let body = "<div class='soustruhHeatResultBody'>";
+  body += "<div class='statsSummary'>";
+  body += "<div class='tile'><div class='smallText'>Našich dávek</div><div class='uFs22 uMt4'>" + formatCount(heatData.batchCount) + "</div></div>";
+  body += "<div class='tile'><div class='smallText'>Kalírenských řádků</div><div class='uFs22 uMt4'>" + formatCount(heatData.heatCount) + "</div></div>";
+  body += "<div class='tile'><div class='smallText'>Poslední do</div><div class='uFs22 uMt4'>" + formatCount(heatData.lastHeatGuide) + "</div></div>";
+  body += "</div>";
+  body += "<div class='smallText uMb10'>První kalírenská dávka je <b>" + formatCount(heatData.firstHeatGuide) + "</b>. Čtveřice se počítají podle kalírny, ale do součtu se berou jen dávky vyrobené na soustruhu.</div>";
+  if (heatData.fillCount > 0) {
+    body += "<div class='smallText uMb10'>Plán na soustruhu končí průvodkou <b>" + formatCount(heatData.lastPlannedGuide) + "</b>. Aby poslední kalírenská čtveřice seděla, doplnit ze soustruhu: <b>" + heatData.fillGuides.map(formatCount).join(", ") + "</b>.</div>";
   }
-  html += "<div class='tableWrap'><table class='statsTable'><thead><tr><th>Kalírenská</th><th>Průvodky</th><th>Z plánu</th><th>Doplnit</th></tr></thead><tbody>";
+  body += "<div class='tableWrap'><table class='statsTable'><thead><tr><th>Kalírenská</th><th>Čtveřice</th><th>Naše</th><th>Doplnit</th></tr></thead><tbody>";
   heatData.groups.forEach(item => {
-    const guideText = item.guides.map(guide => guide.planned ? formatCount(guide.number) : (formatCount(guide.number) + "*")).join(", ");
-    const missingText = item.missingGuides && item.missingGuides.length ? item.missingGuides.map(formatCount).join(", ") : "—";
-    html += "<tr><td>" + formatCount(item.number) + ".</td><td>" + guideText + "</td><td>" + formatCount(item.plannedInside) + "/4</td><td>" + missingText + "</td></tr>";
+    const guideText = item.guides.map(guide => {
+      if (guide.planned) return formatCount(guide.number);
+      if (guide.fill) return formatCount(guide.number) + "*";
+      return formatCount(guide.number) + "°";
+    }).join(", ");
+    const fillText = item.fillGuides && item.fillGuides.length ? item.fillGuides.map(formatCount).join(", ") : "—";
+    body += "<tr><td>" + formatCount(item.number) + ".</td><td>" + guideText + "</td><td>" + formatCount(item.plannedInside) + "/4</td><td>" + fillText + "</td></tr>";
   });
-  html += "</tbody></table></div>";
-  if (heatData.missingCount > 0) {
-    html += "<div class='smallText uMt8'>* průvodky označené hvězdičkou jsou dopočítané vozíky, které se ještě musí vzít ze soustruhu, aby poslední kalírenská volná měla 4 naše dávky.</div>";
-  }
-  return html;
+  body += "</tbody></table></div>";
+  body += "<div class='smallText uMt8'>° = patří do kalírenské čtveřice, ale není z tohohle výpočtu soustruhu. * = dopočítaný vozík, který se má ještě doplnit ze soustruhu, aby čtveřice měla 4 dávky.</div>";
+  body += "</div>";
+
+  return "<details class='soustruhHeatResultDetails calcDetails calcDetailsInner'>" +
+    "<summary>" + escapeHtml(title) + "</summary>" + body + "</details>";
 }
 
 function renderBatchResult(title, batches, target, firstBatch, heatData) {
@@ -453,8 +501,10 @@ function renderSoustruhy() {
   const lisPlan = document.getElementById('lis_plan');
   const v126First = document.getElementById('v126_first');
   const v126Plan = document.getElementById('v126_plan');
+  const v126HeatFirst = document.getElementById('v126_heat_first');
   const v106First = document.getElementById('v106_first');
   const v106Plan = document.getElementById('v106_plan');
+  const v106HeatFirst = document.getElementById('v106_heat_first');
   const v106C1 = document.getElementById('v106_c1');
   const v106C2 = document.getElementById('v106_c2');
   const v106C3 = document.getElementById('v106_c3');
@@ -463,7 +513,9 @@ function renderSoustruhy() {
   const defaultPlan = String(app.soustruhPlan || (typeof getSoustruhDefaultPlan === "function" ? getSoustruhDefaultPlan() : 1216));
   if (lisPlan && !lisPlan.value) lisPlan.value = defaultPlan;
   if (v126Plan && !v126Plan.value) v126Plan.value = defaultPlan;
+  if (v126HeatFirst && !v126HeatFirst.value) v126HeatFirst.value = app.soustruh126HeatFirst || '';
   if (v106Plan && !v106Plan.value) v106Plan.value = defaultPlan;
+  if (v106HeatFirst && !v106HeatFirst.value) v106HeatFirst.value = app.soustruh106HeatFirst || '';
   if (v106C1 && !v106C1.value) v106C1.value = app.soustruh106Counts[0] || '';
   if (v106C2 && !v106C2.value) v106C2.value = app.soustruh106Counts[1] || '';
   if (v106C3 && !v106C3.value) v106C3.value = app.soustruh106Counts[2] || '';
@@ -499,17 +551,19 @@ function calcSoustruhy126() {
     return;
   }
   app.soustruhPlan = String(plan);
+  const heatFirst = parseInt(document.getElementById('v126_heat_first')?.value || '', 10);
+  app.soustruh126HeatFirst = Number.isFinite(heatFirst) ? String(heatFirst) : '';
   const startSize = app.soustruh126Start === 31 ? 31 : 32;
   const sizes = startSize === 32 ? [32, 31] : [31, 32];
   const batches = getSoustruhBatchList(first, sizes, plan);
-  const heatData = getSoustruhHeatGroupsFromBatches(first, batches);
+  const heatData = Number.isFinite(heatFirst) ? getSoustruhHeatGroupsFromBatches(heatFirst, batches) : null;
   setCalcOutputHtml(out, renderBatchResult('Volné 126 ks', batches, plan, first, heatData), 'soustruhy126Result');
   saveRotationData();
 }
 
 function calcSoustruhy126Heat() {
   // Ponecháno kvůli zpětné kompatibilitě starších exportů / klikacích akcí.
-  // Nově se kalírenské čtveřice počítají rovnou v hlavním výpočtu Volné 126.
+  // Kalírenské čtveřice jsou ve v.1.1 (601) v rozbalovacím bloku hlavního výpočtu Volné 126.
   calcSoustruhy126();
 }
 
@@ -528,9 +582,11 @@ function calcSoustruhy106() {
     return;
   }
   app.soustruhPlan = String(plan);
+  const heatFirst = parseInt(document.getElementById('v106_heat_first')?.value || '', 10);
+  app.soustruh106HeatFirst = Number.isFinite(heatFirst) ? String(heatFirst) : '';
   app.soustruh106Counts = counts.map(v => String(v));
   const batches = getSoustruhBatchList(first, counts, plan);
-  const heatData = getSoustruhHeatGroupsFromBatches(first, batches);
+  const heatData = Number.isFinite(heatFirst) ? getSoustruhHeatGroupsFromBatches(heatFirst, batches) : null;
   setCalcOutputHtml(out, renderBatchResult('Volné 106 ks', batches, plan, first, heatData), 'soustruhy106Result');
   saveRotationData();
 }
@@ -538,6 +594,6 @@ function calcSoustruhy106() {
 
 function calcSoustruhy106Heat() {
   // Ponecháno kvůli zpětné kompatibilitě starších exportů / klikacích akcí.
-  // Nově se kalírenské čtveřice počítají rovnou v hlavním výpočtu Volné 106.
+  // Kalírenské čtveřice jsou ve v.1.1 (601) v rozbalovacím bloku hlavního výpočtu Volné 106.
   calcSoustruhy106();
 }

@@ -4861,3 +4861,63 @@ html body #brusy.calcPage .brusIndexGrid{
 #soustruhy .calcResultCard .statsSummary + .smallText{
   margin-top:8px !important;
 }
+
+/* v.1.1 (601) – Soustruhy: rozbalovací kalírenské čtveřice se samostatnou první kalírenskou dávkou. */
+#soustruhy .soustruhHeatDetails,
+#soustruhy .soustruhHeatResultDetails{
+  margin-top:8px !important;
+  border:1px solid rgba(255,255,255,.10) !important;
+  border-radius:14px !important;
+  background:rgba(255,255,255,.045) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08) !important;
+  overflow:hidden !important;
+}
+#soustruhy .soustruhHeatDetails > summary,
+#soustruhy .soustruhHeatResultDetails > summary{
+  list-style:none !important;
+  min-height:42px !important;
+  padding:10px 12px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:10px !important;
+  cursor:pointer !important;
+  color:rgba(236,255,240,.92) !important;
+  font-size:13px !important;
+  font-weight:850 !important;
+  line-height:1.12 !important;
+}
+#soustruhy .soustruhHeatDetails > summary::-webkit-details-marker,
+#soustruhy .soustruhHeatResultDetails > summary::-webkit-details-marker{
+  display:none !important;
+}
+#soustruhy .soustruhHeatDetails > summary::after,
+#soustruhy .soustruhHeatResultDetails > summary::after{
+  content:'›' !important;
+  opacity:.7 !important;
+  transform:rotate(90deg) !important;
+  transition:transform .18s ease, opacity .18s ease !important;
+}
+#soustruhy .soustruhHeatDetails[open] > summary::after,
+#soustruhy .soustruhHeatResultDetails[open] > summary::after{
+  transform:rotate(-90deg) !important;
+  opacity:1 !important;
+}
+#soustruhy .soustruhHeatDetailsBody,
+#soustruhy .soustruhHeatResultBody{
+  display:grid !important;
+  gap:8px !important;
+  padding:0 12px 12px !important;
+}
+#soustruhy .soustruhHeatDetailsBody label{
+  margin-top:2px !important;
+}
+#soustruhy .soustruhHeatResultDetails{
+  margin-top:14px !important;
+}
+#soustruhy .soustruhHeatResultDetails:not([open]) .soustruhHeatResultBody{
+  display:none !important;
+}
+#soustruhy .soustruhHeatResultDetails .statsSummary{
+  margin-top:0 !important;
+}

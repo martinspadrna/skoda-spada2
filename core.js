@@ -1,6 +1,6 @@
 
 const APP_KEY = "rotace_kalkulacky_state_v123";
-const APP_VERSION = "v.1.1 (600)";
+const APP_VERSION = "v.1.1 (601)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-05-18-" + APP_VERSION + "-" + Date.now();
 
@@ -121,6 +121,8 @@ const app = {
   soustruhFirstBatch: "",
   soustruhPlan: "",
   soustruh126Start: 32,
+  soustruh126HeatFirst: "",
+  soustruh106HeatFirst: "",
   soustruh106Counts: ["", "", "", ""],
   selectedYear: new Date().getFullYear(),
   importYear: new Date().getFullYear(),
@@ -731,6 +733,8 @@ function saveRotationData() {
     write("soustruhFirstBatch", app.soustruhFirstBatch || "");
     write("soustruhPlan", app.soustruhPlan || "");
     write("soustruh126Start", String(app.soustruh126Start || 32));
+    write("soustruh126HeatFirst", app.soustruh126HeatFirst || document.getElementById("v126_heat_first")?.value || "");
+    write("soustruh106HeatFirst", app.soustruh106HeatFirst || document.getElementById("v106_heat_first")?.value || "");
     write("soustruh106Counts", JSON.stringify(app.soustruh106Counts || ["", "", "", ""]));
     write("adminUnlocked", app.adminUnlocked ? "1" : "0");
     if (changed && typeof window.__rotaceSignalStateChange === "function") {
@@ -761,12 +765,18 @@ function restoreInputs() {
   const v106PlanEl = document.getElementById("v106_plan");
   if (v106PlanEl) v106PlanEl.value = soustruhDefaultPlan;
   const soustruhCounts = parseLocalStorageJsonCached("soustruh106Counts", ["", "", "", ""]);
+  const v126HeatFirstEl = document.getElementById("v126_heat_first");
+  if (v126HeatFirstEl && !v126HeatFirstEl.value) v126HeatFirstEl.value = getLocalStorageCached("soustruh126HeatFirst", "") || "";
+  const v106HeatFirstEl = document.getElementById("v106_heat_first");
+  if (v106HeatFirstEl && !v106HeatFirstEl.value) v106HeatFirstEl.value = getLocalStorageCached("soustruh106HeatFirst", "") || "";
   ["v106_c1","v106_c2","v106_c3","v106_c4"].forEach((id, idx) => { const el = document.getElementById(id); if (el && !el.value) el.value = soustruhCounts[idx] || ""; });
   app.soustruhMode = getLocalStorageCached("soustruhMode", "") || app.soustruhMode || "lis";
   app.soustruhFirstBatch = getLocalStorageCached("soustruhFirstBatch", "") || "";
   const storedSoustruhPlan = getLocalStorageCached("soustruhPlan", "");
   app.soustruhPlan = storedSoustruhPlan && storedSoustruhPlan !== "1248" ? storedSoustruhPlan : String(typeof getSoustruhDefaultPlan === "function" ? getSoustruhDefaultPlan() : 1216);
   app.soustruh126Start = parseInt(getLocalStorageCached("soustruh126Start", ""), 10) || 32;
+  app.soustruh126HeatFirst = getLocalStorageCached("soustruh126HeatFirst", "") || "";
+  app.soustruh106HeatFirst = getLocalStorageCached("soustruh106HeatFirst", "") || "";
   app.soustruh106Counts = Array.isArray(soustruhCounts) ? soustruhCounts : ["", "", "", ""];
 }
 

@@ -1,3 +1,9 @@
+## v.1.1 (601)
+- Soustruhy / Volné 126 a Volné 106: kalírenské čtveřice jsou nově zabalené v rozbalovacím bloku jako přesnější výpočet u Brusů.
+- Pro kalírenské čtveřice se zadává samostatně číslo první kalírenské dávky, protože začátek čtveřice může vycházet z jiného stroje.
+- Výpočet pořád počítá jen dávky vyrobené na soustruhu; položky mimo tenhle výpočet jsou označené zvlášť a doplnění ze soustruhu se ukazuje jen u poslední čtveřice.
+- Verze sjednocena na v.1.1 (601), cache na v1.1-601 a Supabase realtime kanál na rak-public-live-v601.
+
 ## v.1.1 (600)
 - Kalkulačky / Soustruhy: u Volné 126 ks a Volné 106 ks je dopočítání kalírenských volných nově součástí hlavního výpočtu dávek.
 - Už se nezadává zvlášť číslo první průvodky pro kalírnu; výpočet bere číslo první dávky na soustruhu a podle hotového plánu rovnou vypíše kalírenské čtveřice po 4 průvodkách.

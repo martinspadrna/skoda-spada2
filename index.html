@@ -350,8 +350,16 @@
         <div class="bbtn activeChoice" data-action="soustruh126-start" data-startsize="32">Začínám 32 ks</div>
         <div class="bbtn" data-action="soustruh126-start" data-startsize="31">Začínám 31 ks</div>
       </div>
+      <details class="soustruhHeatDetails calcDetails calcDetailsInner">
+        <summary>Dopočítání kalírenské dávky</summary>
+        <div class="soustruhHeatDetailsBody">
+          <label>Číslo první kalírenské dávky</label>
+          <input id="v126_heat_first" type="number" autocomplete="off">
+          <div class="smallText">Tahle čtveřice se bere z kalírny / jiného stroje. Počítají se jen dávky, které vyrobíš tady na soustruhu.</div>
+        </div>
+      </details>
       <button class="soustruhCalcBtn calcPrimaryBtn" data-action="calc-soustruhy-126">Spočítej 126</button>
-      <div class="smallText uMt8">Výpočet rovnou dopočítá i kalírenské volné po 4 našich dávkách.</div>
+      <div class="smallText uMt8">Kalírenské volné se po výpočtu ukáže v rozbalovacím bloku.</div>
       <div class="card calcResultCard" id="soustruhy126Result"></div>
     </div>
 
@@ -367,8 +375,16 @@
       </div>
       <label>Plán výroby</label>
       <input id="v106_plan" type="number" value="" autocomplete="off">
+      <details class="soustruhHeatDetails calcDetails calcDetailsInner">
+        <summary>Dopočítání kalírenské dávky</summary>
+        <div class="soustruhHeatDetailsBody">
+          <label>Číslo první kalírenské dávky</label>
+          <input id="v106_heat_first" type="number" autocomplete="off">
+          <div class="smallText">Tahle čtveřice se bere z kalírny / jiného stroje. Počítají se jen dávky, které vyrobíš tady na soustruhu.</div>
+        </div>
+      </details>
       <button class="soustruhCalcBtn calcPrimaryBtn" data-action="calc-soustruhy-106">Spočítej 106</button>
-      <div class="smallText uMt8">Výpočet rovnou dopočítá i kalírenské volné po 4 našich dávkách.</div>
+      <div class="smallText uMt8">Kalírenské volné se po výpočtu ukáže v rozbalovacím bloku.</div>
       <div class="card calcResultCard" id="soustruhy106Result"></div>
     </div>
   </div>
