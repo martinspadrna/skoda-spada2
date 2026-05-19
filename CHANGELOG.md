@@ -1,8 +1,16 @@
+## v.1.1 (589)
+- Fáze 8 — PWA / Service Worker hardening zůstává cca na 40 %, protože jde o rychlou korekci Brusů po testu v.1.1 (588).
+- Kalkulačky / Brusy: volné indexy AD volné / AE volné už nemají vlastní nižší výšku než volba brusu a běžné indexy.
+- Výška je nově držená přes jednu společnou proměnnou pro volbu brusu, běžné indexy i wrapper volných indexů, takže se nemůže lišit jen kvůli `.freeWrap` vrstvě.
+- Volné indexy jsou v Brusech stále ve vlastním řádku přes celou šířku, ale tlačítka drží stejnou výšku jako ostatní volby.
+- Barevné glass rozlišení indexů a výpočty v Brusech jsou beze změny.
+- Dashboard, spodní lišta, Rotace, Rozpisy, Statistiky, Výplata, hry, Theme/Pozadí a Supabase datový model jsou beze změny.
+
 ## v.1.1 (588)
 - Fáze 8 — PWA / Service Worker hardening posunuta na cca 40 %.
-- Kalkulačky / Brusy: klikací volby mají vlastní cílové třídy pro skutečnou strukturu Brusů, aby je nepřebíjely obecné vrstvy kalkulaček.
-- Kalkulačky / Brusy: sjednocena výška pro oba brusy, běžné indexy AD/AE/AH i volné indexy AD volné/AE volné.
-- Výška je nastavená mezi příliš nízkou variantou volných indexů z v.1.1 (587) a původními vysokými tlačítky, takže zůstává kompaktní, ale ne extrémně nízká.
+- Kalkulačky / Brusy: klikací volby dostaly vlastní cílové třídy pro skutečnou strukturu Brusů, aby je nepřebíjely obecné vrstvy kalkulaček.
+- Kalkulačky / Brusy: proběhl pokus o sjednocení výšky pro oba brusy, běžné indexy AD/AE/AH i volné indexy AD volné/AE volné.
+- Po testu se ukázalo, že volné indexy přes `.freeWrap` zůstaly vizuálně nižší než ostatní volby; navazuje oprava v.1.1 (589).
 - Barevné glass rozlišení indexů a výpočty v Brusech jsou beze změny.
 - Dashboard, spodní lišta, Rotace, Rozpisy, Statistiky, Výplata, hry, Theme/Pozadí a Supabase datový model jsou beze změny.
 
@@ -276,7 +284,7 @@
 - Fáze 6 — Supabase hardening zůstává cca 64 %.
 - Výpočty, pravidla her, Theme/Pozadí, spodní lišta a Supabase datový model beze změny.
 
-## Přehled největších změn v.1.1 (500–588)
+## Přehled největších změn v.1.1 (500–589)
 - Proběhlo velké stabilizační období před dalšími fázemi refactoru: Fáze 3 Láďův režim, Fáze 4 cleanup manager, Fáze 5 game performance, dokončený Supabase hardening, dokončená Fáze 7 Data optimization a začátek Fáze 8 PWA / Service Worker hardening včetně úspornějších DOM renderů v Dashboardu, Rotaci, Statistikách, Otevírací době, rokových/měsíčních selectech, aktivních stavech kalkulačních voleb, závěrečného LRU úklidu lokální cache a bezpečnější service worker cache a čistší drobné UI doladění Brusů, Otevírací doby a horních názvů stránek.
 - Dashboard se postupně ladil kvůli správnému zobrazení směny, ikon, kantýny/jídelny, odpočtů, klikací výplatě a menšímu riziku prázdných nebo pozdě načtených karet.
 - Spodní navigace prošla opakovaným dorovnáním, hlavně položka „Více“ – má být užší, ale normálně mezi ostatními položkami a bez ukotvení vpravo.

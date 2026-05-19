@@ -4491,3 +4491,55 @@ body.lowEndDevice :is(#soustruhy, #frezky, #brusy, #pracka).calcPage .calcHeader
   }
 }
 
+/* v.1.1 (589) – Brusy: dorovnání volných indexů na stejnou pevnou výšku.
+   Volné indexy jsou v samostatném wrapperu, proto výšku drží i wrapper, nejen samotná .bbtn. */
+#brusy.calcPage{
+  --brus-choice-btn-h:clamp(46px, 6.8dvh, 60px);
+  --brus-choice-btn-pad-y:clamp(8px, 1.55dvh, 12px);
+}
+#brusy.calcPage .brusChoiceGrid,
+#brusy.calcPage .brusIndexGrid{
+  gap:7px !important;
+  align-items:stretch !important;
+  grid-auto-rows:var(--brus-choice-btn-h) !important;
+}
+#brusy.calcPage .brusIndexGrid > .brusFreeWrap{
+  grid-column:1 / -1 !important;
+  display:grid !important;
+  grid-template-columns:minmax(0, 1fr) minmax(0, 1fr) !important;
+  gap:7px !important;
+  height:var(--brus-choice-btn-h) !important;
+  min-height:var(--brus-choice-btn-h) !important;
+  max-height:var(--brus-choice-btn-h) !important;
+  align-items:stretch !important;
+}
+#brusy.calcPage .brusChoiceGrid > .bbtn,
+#brusy.calcPage .brusIndexGrid > .bbtn,
+#brusy.calcPage .brusIndexGrid > .brusFreeWrap > .bbtn,
+#brusy.calcPage .brusFreeWrap > .bbtn{
+  height:var(--brus-choice-btn-h) !important;
+  min-height:var(--brus-choice-btn-h) !important;
+  max-height:var(--brus-choice-btn-h) !important;
+  padding-top:var(--brus-choice-btn-pad-y) !important;
+  padding-bottom:var(--brus-choice-btn-pad-y) !important;
+  padding-left:9px !important;
+  padding-right:9px !important;
+  font-size:clamp(14.5px, 3.15vw, 16.5px) !important;
+  line-height:1.10 !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  box-sizing:border-box !important;
+}
+@media (max-width:430px){
+  #brusy.calcPage{
+    --brus-choice-btn-h:clamp(44px, 6.3dvh, 56px);
+    --brus-choice-btn-pad-y:7px;
+  }
+  #brusy.calcPage .brusChoiceGrid,
+  #brusy.calcPage .brusIndexGrid,
+  #brusy.calcPage .brusIndexGrid > .brusFreeWrap{
+    gap:6px !important;
+  }
+}
+
