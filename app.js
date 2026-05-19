@@ -1,4 +1,4 @@
-// v.1.1 (603) – Soustruhy: kombinace Lis + Volné a kalírna sjednocená dole u výsledku.
+// v.1.1 (604) – Soustruhy: Kombinace nově počítá 1. část podle rozsahu a 2. část podle první dávky + plánu.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
@@ -74,6 +74,7 @@ function installDelegatedAppActions() {
     'calc-soustruhy-126-heat': () => calcSoustruhy126Heat(),
     'calc-soustruhy-106': () => calcSoustruhy106(),
     'calc-soustruhy-106-heat': () => calcSoustruhy106Heat(),
+    'soustruh-combo-first': (el) => setSoustruhComboFirstType(String(el.dataset.comboFirst || 'lis')),
     'soustruh-combo-free': (el) => setSoustruhComboFreeType(String(el.dataset.comboFree || '126')),
     'soustruh-combo126-start': (el) => {
       const start = parseInt(el.dataset.comboStartsize || '', 10);

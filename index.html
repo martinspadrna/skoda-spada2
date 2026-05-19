@@ -392,27 +392,42 @@
     </div>
 
     <div id="soustruhyComboPanel" class="subPanel calcPanel calcPanel--form">
-      <div class="smallText">Kombinace: když část směny pojede Lis a část směny Volné. Vyplň plán pro každou část zvlášť.</div>
+      <div class="smallText">Kombinace: když část směny pojede Lis a část Volné. Vyber, co pojedeš jako první; u první části zadej první a poslední dávku, u druhé první dávku a plán.</div>
       <details class="soustruhComboDetails calcDetails calcDetailsInner" open>
-        <summary>Část směny – Lis</summary>
+        <summary>Pořadí práce</summary>
         <div class="soustruhComboDetailsBody">
-          <label>Lis – číslo první dávky</label>
-          <input id="combo_lis_first" type="number" autocomplete="off">
-          <label>Lis – plán výroby</label>
-          <input id="combo_lis_plan" type="number" autocomplete="off">
+          <div class="bgrid calcChoiceGrid soustruhComboChoiceGrid">
+            <div class="bbtn activeChoice" data-action="soustruh-combo-first" data-combo-first="lis">Nejdřív Lis</div>
+            <div class="bbtn" data-action="soustruh-combo-first" data-combo-first="free">Nejdřív Volné</div>
+          </div>
+          <div class="smallText">Druhá část se dopočítá automaticky jako ta druhá možnost.</div>
         </div>
       </details>
       <details class="soustruhComboDetails calcDetails calcDetailsInner" open>
-        <summary>Část směny – Volné</summary>
+        <summary>1. část – známý rozsah</summary>
+        <div class="soustruhComboDetailsBody">
+          <label>První dávka 1. části</label>
+          <input id="combo_first_start" type="number" autocomplete="off">
+          <label>Poslední dávka 1. části</label>
+          <input id="combo_first_end" type="number" autocomplete="off">
+        </div>
+      </details>
+      <details class="soustruhComboDetails calcDetails calcDetailsInner" open>
+        <summary>2. část – dopočítat podle plánu</summary>
+        <div class="soustruhComboDetailsBody">
+          <label>První dávka 2. části</label>
+          <input id="combo_second_start" type="number" autocomplete="off">
+          <label>Plán 2. části</label>
+          <input id="combo_second_plan" type="number" autocomplete="off">
+        </div>
+      </details>
+      <details class="soustruhComboDetails calcDetails calcDetailsInner">
+        <summary>Nastavení Volné</summary>
         <div class="soustruhComboDetailsBody">
           <div class="bgrid calcChoiceGrid soustruhComboChoiceGrid">
             <div class="bbtn activeChoice" data-action="soustruh-combo-free" data-combo-free="126">Volné 126ks</div>
             <div class="bbtn" data-action="soustruh-combo-free" data-combo-free="106">Volné 106ks</div>
           </div>
-          <label>Volné – číslo první dávky</label>
-          <input id="combo_free_first" type="number" autocomplete="off">
-          <label>Volné – plán výroby</label>
-          <input id="combo_free_plan" type="number" autocomplete="off">
           <div id="combo126Options" class="soustruhComboFreeOptions">
             <div class="smallText">Volné 126ks – začátek střídání dávek</div>
             <div class="bgrid calcChoiceGrid">

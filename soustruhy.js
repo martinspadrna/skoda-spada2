@@ -1,5 +1,5 @@
 function resetSoustruhy() {
-  ["lis_first", "lis_plan", "v126_first", "v126_plan", "v126_heat_first", "v106_first", "v106_plan", "v106_heat_first", "v106_c1", "v106_c2", "v106_c3", "v106_c4", "combo_lis_first", "combo_lis_plan", "combo_free_first", "combo_free_plan", "combo_heat_first", "combo106_c1", "combo106_c2", "combo106_c3", "combo106_c4"].forEach(id => {
+  ["lis_first", "lis_plan", "v126_first", "v126_plan", "v126_heat_first", "v106_first", "v106_plan", "v106_heat_first", "v106_c1", "v106_c2", "v106_c3", "v106_c4", "combo_first_start", "combo_first_end", "combo_second_start", "combo_second_plan", "combo_heat_first", "combo106_c1", "combo106_c2", "combo106_c3", "combo106_c4"].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = "";
   });
@@ -13,6 +13,7 @@ function resetSoustruhy() {
   app.soustruh126HeatFirst = "";
   app.soustruh106HeatFirst = "";
   app.soustruhComboFreeType = "126";
+  app.soustruhComboFirstType = "lis";
   app.soustruhCombo126Start = 32;
   app.soustruhComboHeatFirst = "";
   app.soustruhCombo106Counts = ["", "", "", ""];
@@ -320,6 +321,26 @@ function getSoustruhBatchList(firstBatch, sizes, plan) {
   return batches;
 }
 
+function getSoustruhBatchRange(firstBatch, lastBatch, sizes) {
+  const batches = [];
+  const start = parseInt(firstBatch, 10);
+  const end = parseInt(lastBatch, 10);
+  if (!Number.isFinite(start) || !Number.isFinite(end) || end < start || !Array.isArray(sizes) || !sizes.length) return batches;
+
+  let produced = 0;
+  let batchNo = start;
+  let index = 0;
+  while (batchNo <= end && batches.length < 1000) {
+    const size = Number(sizes[index % sizes.length]) || 0;
+    if (size <= 0) break;
+    produced += size;
+    batches.push({ batchNo, size, produced });
+    batchNo += 1;
+    index += 1;
+  }
+  return batches;
+}
+
 
 function getSoustruhHeatGroups(firstGuide, sizes, plan, firstHeatGuide) {
   const start = parseInt(firstGuide, 10);
@@ -485,22 +506,28 @@ function renderBatchResult(title, batches, target, firstBatch, heatData) {
   return html;
 }
 
-function renderSoustruhyCombinationResult(lisBatches, freeBatches, freeLabel) {
-  const lisCount = Array.isArray(lisBatches) ? lisBatches.length : 0;
-  const freeCount = Array.isArray(freeBatches) ? freeBatches.length : 0;
-  if (!lisCount && !freeCount) return "<div class='smallText'>Doplň aspoň jednu část směny.</div>";
-  const lisTotal = lisCount ? lisBatches[lisBatches.length - 1].produced : 0;
-  const freeTotal = freeCount ? freeBatches[freeBatches.length - 1].produced : 0;
-  const lisLastText = lisCount ? formatCount(lisBatches[lisBatches.length - 1].batchNo) : "—";
-  const freeLastText = freeCount ? formatCount(freeBatches[freeBatches.length - 1].batchNo) : "—";
-  let html = "<div class='smallText uMb10'>Kombinace Lis + " + escapeHtml(freeLabel || "Volné") + "</div>";
+function renderSoustruhyCombinationResult(firstPart, secondPart) {
+  const firstBatches = Array.isArray(firstPart?.batches) ? firstPart.batches : [];
+  const secondBatches = Array.isArray(secondPart?.batches) ? secondPart.batches : [];
+  const firstCount = firstBatches.length;
+  const secondCount = secondBatches.length;
+  if (!firstCount && !secondCount) return "<div class='smallText'>Doplň kombinaci, ať se to spočítá.</div>";
+
+  const firstTotal = firstCount ? firstBatches[firstCount - 1].produced : 0;
+  const secondTotal = secondCount ? secondBatches[secondCount - 1].produced : 0;
+  const firstLastText = firstCount ? formatCount(firstBatches[firstCount - 1].batchNo) : "—";
+  const secondLastText = secondCount ? formatCount(secondBatches[secondCount - 1].batchNo) : "—";
+  const firstLabel = firstPart?.label || "1. část";
+  const secondLabel = secondPart?.label || "2. část";
+
+  let html = "<div class='smallText uMb10'>Kombinace: 1. část je zadaný rozsah, 2. část se dopočítá podle plánu.</div>";
   html += "<div class='statsSummary soustruhComboSummary'>";
-  html += "<div class='tile'><div class='smallText'>Lis</div><div class='uFs22 uMt4'>" + formatCount(lisTotal) + " ks</div><div class='smallText uMt4'>" + formatCount(lisCount) + " dávek · do " + lisLastText + "</div></div>";
-  html += "<div class='tile'><div class='smallText'>Volné</div><div class='uFs22 uMt4'>" + formatCount(freeTotal) + " ks</div><div class='smallText uMt4'>" + formatCount(freeCount) + " dávek · do " + freeLastText + "</div></div>";
-  html += "<div class='tile'><div class='smallText'>Celkem</div><div class='uFs22 uMt4'>" + formatCount(lisTotal + freeTotal) + " ks</div><div class='smallText uMt4'>" + formatCount(lisCount + freeCount) + " dávek</div></div>";
+  html += "<div class='tile'><div class='smallText'>1. část – " + escapeHtml(firstLabel) + "</div><div class='uFs22 uMt4'>" + formatCount(firstTotal) + " ks</div><div class='smallText uMt4'>" + formatCount(firstCount) + " dávek · do " + firstLastText + "</div></div>";
+  html += "<div class='tile'><div class='smallText'>2. část – " + escapeHtml(secondLabel) + "</div><div class='uFs22 uMt4'>" + formatCount(secondTotal) + " ks</div><div class='smallText uMt4'>" + formatCount(secondCount) + " dávek · skončíš na " + secondLastText + "</div></div>";
+  html += "<div class='tile'><div class='smallText'>Celkem</div><div class='uFs22 uMt4'>" + formatCount(firstTotal + secondTotal) + " ks</div><div class='smallText uMt4'>" + formatCount(firstCount + secondCount) + " dávek</div></div>";
   html += "</div>";
-  html += renderSoustruhBatchListDetails(lisBatches, "Seznam dávek – Lis (" + formatCount(lisCount) + ")");
-  html += renderSoustruhBatchListDetails(freeBatches, "Seznam dávek – " + (freeLabel || "Volné") + " (" + formatCount(freeCount) + ")");
+  html += renderSoustruhBatchListDetails(firstBatches, "Seznam dávek – 1. část / " + firstLabel + " (" + formatCount(firstCount) + ")");
+  html += renderSoustruhBatchListDetails(secondBatches, "Seznam dávek – 2. část / " + secondLabel + " (" + formatCount(secondCount) + ")");
   return html;
 }
 
@@ -518,6 +545,12 @@ function setSoustruh126Start(size) {
 
 function setSoustruhComboFreeType(type) {
   app.soustruhComboFreeType = String(type) === "106" ? "106" : "126";
+  renderSoustruhy();
+  saveRotationData();
+}
+
+function setSoustruhComboFirstType(type) {
+  app.soustruhComboFirstType = String(type) === "free" ? "free" : "lis";
   renderSoustruhy();
   saveRotationData();
 }
@@ -562,8 +595,7 @@ function renderSoustruhy() {
   const v106C2 = document.getElementById('v106_c2');
   const v106C3 = document.getElementById('v106_c3');
   const v106C4 = document.getElementById('v106_c4');
-  const comboLisPlan = document.getElementById('combo_lis_plan');
-  const comboFreePlan = document.getElementById('combo_free_plan');
+  const comboSecondPlan = document.getElementById('combo_second_plan');
   const comboHeatFirst = document.getElementById('combo_heat_first');
   const combo106C1 = document.getElementById('combo106_c1');
   const combo106C2 = document.getElementById('combo106_c2');
@@ -580,8 +612,7 @@ function renderSoustruhy() {
   if (v106C2 && !v106C2.value) v106C2.value = app.soustruh106Counts[1] || '';
   if (v106C3 && !v106C3.value) v106C3.value = app.soustruh106Counts[2] || '';
   if (v106C4 && !v106C4.value) v106C4.value = app.soustruh106Counts[3] || '';
-  if (comboLisPlan && !comboLisPlan.value) comboLisPlan.value = '';
-  if (comboFreePlan && !comboFreePlan.value) comboFreePlan.value = '';
+  if (comboSecondPlan && !comboSecondPlan.value) comboSecondPlan.value = '';
   if (comboHeatFirst && !comboHeatFirst.value) comboHeatFirst.value = app.soustruhComboHeatFirst || '';
   if (combo106C1 && !combo106C1.value) combo106C1.value = app.soustruhCombo106Counts?.[0] || '';
   if (combo106C2 && !combo106C2.value) combo106C2.value = app.soustruhCombo106Counts?.[1] || '';
@@ -592,6 +623,12 @@ function renderSoustruhy() {
   startButtons.forEach(btn => {
     const size = Number(btn.getAttribute('data-startsize'));
     toggleClass(btn, 'activeChoice', app.soustruh126Start === size, 'soustruhStartSize:' + String(size || 'unknown'));
+  });
+
+  const comboFirstType = app.soustruhComboFirstType === "free" ? "free" : "lis";
+  document.querySelectorAll('[data-combo-first]').forEach(btn => {
+    const type = String(btn.getAttribute('data-combo-first') || 'lis');
+    toggleClass(btn, 'activeChoice', comboFirstType === type, 'soustruhComboFirst:' + type);
   });
 
   const comboFreeType = app.soustruhComboFreeType === "106" ? "106" : "126";
@@ -704,50 +741,60 @@ function getSoustruhyComboFreeConfig() {
 }
 
 function calcSoustruhyCombo() {
-  const lisFirst = parseInt(document.getElementById('combo_lis_first')?.value || '', 10);
-  const lisPlan = parseInt(document.getElementById('combo_lis_plan')?.value || '', 10);
-  const freeFirst = parseInt(document.getElementById('combo_free_first')?.value || '', 10);
-  const freePlan = parseInt(document.getElementById('combo_free_plan')?.value || '', 10);
+  const firstStart = parseInt(document.getElementById('combo_first_start')?.value || '', 10);
+  const firstEnd = parseInt(document.getElementById('combo_first_end')?.value || '', 10);
+  const secondStart = parseInt(document.getElementById('combo_second_start')?.value || '', 10);
+  const secondPlan = parseInt(document.getElementById('combo_second_plan')?.value || '', 10);
   const heatFirst = parseInt(document.getElementById('combo_heat_first')?.value || '', 10);
   const out = document.getElementById('soustruhyComboResult');
   const heatOut = document.getElementById('soustruhyComboHeatResult');
-  const lisHasAny = Number.isFinite(lisFirst) || Number.isFinite(lisPlan);
-  const freeHasAny = Number.isFinite(freeFirst) || Number.isFinite(freePlan);
-  const lisValid = Number.isFinite(lisFirst) && Number.isFinite(lisPlan) && lisPlan > 0;
-  const freeValidBase = Number.isFinite(freeFirst) && Number.isFinite(freePlan) && freePlan > 0;
+  const firstType = app.soustruhComboFirstType === "free" ? "free" : "lis";
+  const secondType = firstType === "free" ? "lis" : "free";
+  const hasAny = Number.isFinite(firstStart) || Number.isFinite(firstEnd) || Number.isFinite(secondStart) || Number.isFinite(secondPlan);
 
-  if (!lisHasAny && !freeHasAny) {
-    setCalcOutputHtml(out, "<div class='smallText'>Doplň část Lis, část Volné, nebo obě části směny.</div>", out?.id || 'soustruhyComboEmpty');
+  if (!hasAny) {
+    setCalcOutputHtml(out, "<div class='smallText'>Doplň první a poslední dávku 1. části, první dávku 2. části a plán 2. části.</div>", out?.id || 'soustruhyComboEmpty');
     if (heatOut) setCalcOutputHtml(heatOut, "", heatOut.id || 'soustruhyComboHeatEmpty');
     return;
   }
-  if ((lisHasAny && !lisValid) || (freeHasAny && !freeValidBase)) {
-    setCalcOutputHtml(out, "<div class='smallText'>Když některou část vyplníš, doplň u ní první dávku i plán výroby.</div>", out?.id || 'soustruhyComboInvalid');
+  if (!Number.isFinite(firstStart) || !Number.isFinite(firstEnd) || firstEnd < firstStart || !Number.isFinite(secondStart) || !Number.isFinite(secondPlan) || secondPlan <= 0) {
+    setCalcOutputHtml(out, "<div class='smallText'>Doplň platně: první + poslední dávku 1. části a první dávku + plán 2. části.</div>", out?.id || 'soustruhyComboInvalid');
     if (heatOut) setCalcOutputHtml(heatOut, "", heatOut.id || 'soustruhyComboHeatInvalid');
     return;
   }
 
   const freeCfg = getSoustruhyComboFreeConfig();
-  if (freeValidBase && freeCfg.error) {
+  if (freeCfg.error) {
     setCalcOutputHtml(out, "<div class='smallText'>" + escapeHtml(freeCfg.error) + "</div>", out?.id || 'soustruhyComboFreeInvalid');
     if (heatOut) setCalcOutputHtml(heatOut, "", heatOut.id || 'soustruhyComboHeatInvalid');
     return;
   }
 
-  const lisBatches = lisValid ? getSoustruhBatchList(lisFirst, [32], lisPlan) : [];
-  const freeBatches = freeValidBase ? getSoustruhBatchList(freeFirst, freeCfg.sizes, freePlan) : [];
-  setCalcOutputHtml(out, renderSoustruhyCombinationResult(lisBatches, freeBatches, freeCfg.label), out?.id || 'soustruhyComboResult');
+  const firstLabel = firstType === "free" ? freeCfg.label : "Lis";
+  const secondLabel = secondType === "free" ? freeCfg.label : "Lis";
+  const firstSizes = firstType === "free" ? freeCfg.sizes : [32];
+  const secondSizes = secondType === "free" ? freeCfg.sizes : [32];
+  const firstBatches = getSoustruhBatchRange(firstStart, firstEnd, firstSizes);
+  const secondBatches = getSoustruhBatchList(secondStart, secondSizes, secondPlan);
+
+  if (!firstBatches.length || !secondBatches.length) {
+    setCalcOutputHtml(out, "<div class='smallText'>Rozsah nebo plán nevychází na žádnou dávku. Zkontroluj čísla a nastavení Volné.</div>", out?.id || 'soustruhyComboNoBatches');
+    if (heatOut) setCalcOutputHtml(heatOut, "", heatOut.id || 'soustruhyComboHeatInvalid');
+    return;
+  }
+
+  const firstPart = { label: firstLabel, batches: firstBatches, type: firstType };
+  const secondPart = { label: secondLabel, batches: secondBatches, type: secondType };
+  setCalcOutputHtml(out, renderSoustruhyCombinationResult(firstPart, secondPart), out?.id || 'soustruhyComboResult');
 
   app.soustruhComboHeatFirst = Number.isFinite(heatFirst) ? String(heatFirst) : '';
-  if (freeValidBase && heatOut) {
+  const freeBatches = firstType === "free" ? firstBatches : secondBatches;
+  if (heatOut) {
     const heatData = Number.isFinite(heatFirst) ? getSoustruhHeatGroupsFromBatches(heatFirst, freeBatches) : null;
     setCalcOutputHtml(heatOut, Number.isFinite(heatFirst) ? renderSoustruhHeatGroupsBody(heatData) : "<div class='smallText'>Zadej první kalírenskou dávku a klikni na Přepočítat kalírnu.</div>", heatOut.id || 'soustruhyComboHeatResult');
-  } else if (heatOut) {
-    setCalcOutputHtml(heatOut, "<div class='smallText'>Kalírna se počítá jen z části Volné. Nejdřív doplň Volné.</div>", heatOut.id || 'soustruhyComboHeatResult');
   }
   saveRotationData();
 }
-
 function calcSoustruhyComboHeat() {
   calcSoustruhyCombo();
 }

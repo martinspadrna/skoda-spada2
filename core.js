@@ -1,6 +1,6 @@
 
 const APP_KEY = "rotace_kalkulacky_state_v123";
-const APP_VERSION = "v.1.1 (603)";
+const APP_VERSION = "v.1.1 (604)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-05-18-" + APP_VERSION + "-" + Date.now();
 
@@ -124,6 +124,7 @@ const app = {
   soustruh126HeatFirst: "",
   soustruh106HeatFirst: "",
   soustruhComboFreeType: "126",
+  soustruhComboFirstType: "lis",
   soustruhCombo126Start: 32,
   soustruhComboHeatFirst: "",
   soustruhCombo106Counts: ["", "", "", ""],
@@ -740,13 +741,14 @@ function saveRotationData() {
     write("soustruh126HeatFirst", app.soustruh126HeatFirst || document.getElementById("v126_heat_first")?.value || "");
     write("soustruh106HeatFirst", app.soustruh106HeatFirst || document.getElementById("v106_heat_first")?.value || "");
     write("soustruhComboFreeType", app.soustruhComboFreeType || "126");
+    write("soustruhComboFirstType", app.soustruhComboFirstType || "lis");
     write("soustruhCombo126Start", String(app.soustruhCombo126Start || 32));
     write("soustruhComboHeatFirst", app.soustruhComboHeatFirst || document.getElementById("combo_heat_first")?.value || "");
     write("soustruhCombo106Counts", JSON.stringify(app.soustruhCombo106Counts || ["", "", "", ""]));
-    write("combo_lis_first", document.getElementById("combo_lis_first")?.value || "");
-    write("combo_lis_plan", document.getElementById("combo_lis_plan")?.value || "");
-    write("combo_free_first", document.getElementById("combo_free_first")?.value || "");
-    write("combo_free_plan", document.getElementById("combo_free_plan")?.value || "");
+    write("combo_first_start", document.getElementById("combo_first_start")?.value || "");
+    write("combo_first_end", document.getElementById("combo_first_end")?.value || "");
+    write("combo_second_start", document.getElementById("combo_second_start")?.value || "");
+    write("combo_second_plan", document.getElementById("combo_second_plan")?.value || "");
     write("soustruh106Counts", JSON.stringify(app.soustruh106Counts || ["", "", "", ""]));
     write("adminUnlocked", app.adminUnlocked ? "1" : "0");
     if (changed && typeof window.__rotaceSignalStateChange === "function") {
@@ -769,10 +771,10 @@ function restoreInputs() {
   setVal("davka", "davka");
   setVal("orovnani", "orovnani");
   setVal("celkem", "celkem");
-  setVal("combo_lis_first", "combo_lis_first");
-  setVal("combo_lis_plan", "combo_lis_plan");
-  setVal("combo_free_first", "combo_free_first");
-  setVal("combo_free_plan", "combo_free_plan");
+  setVal("combo_first_start", "combo_first_start");
+  setVal("combo_first_end", "combo_first_end");
+  setVal("combo_second_start", "combo_second_start");
+  setVal("combo_second_plan", "combo_second_plan");
   const lisPlanEl = document.getElementById("lis_plan");
   const soustruhDefaultPlan = String(typeof getSoustruhDefaultPlan === "function" ? getSoustruhDefaultPlan() : 1216);
   if (lisPlanEl) lisPlanEl.value = soustruhDefaultPlan;
@@ -798,6 +800,7 @@ function restoreInputs() {
   app.soustruh126HeatFirst = getLocalStorageCached("soustruh126HeatFirst", "") || "";
   app.soustruh106HeatFirst = getLocalStorageCached("soustruh106HeatFirst", "") || "";
   app.soustruhComboFreeType = getLocalStorageCached("soustruhComboFreeType", "") === "106" ? "106" : "126";
+  app.soustruhComboFirstType = getLocalStorageCached("soustruhComboFirstType", "") === "free" ? "free" : "lis";
   app.soustruhCombo126Start = parseInt(getLocalStorageCached("soustruhCombo126Start", ""), 10) || 32;
   app.soustruhComboHeatFirst = getLocalStorageCached("soustruhComboHeatFirst", "") || "";
   app.soustruhCombo106Counts = Array.isArray(soustruhComboCounts) ? soustruhComboCounts : ["", "", "", ""];

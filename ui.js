@@ -2846,13 +2846,13 @@ function buildAppHistoryHtml(versionText) {
       lines: [
         'Fáze 8 — PWA / Service Worker hardening je zhruba na 60 %.',
         'Soustruhy mají u Volné 126 a Volné 106 kalírenské čtveřice schované dole v rozbalovacím bloku, kde je společně zadání první kalírenské dávky i výsledek.',
-        'Přibyla volba Kombinace pro směnu rozdělenou mezi Lis a Volné; ukazuje zvlášť Lis, Volné i celkem a kalírnu počítá jen z části Volné.',
+        'Volba Kombinace u Soustruhů teď vychází z praxe: 1. část se zadá prvním a posledním číslem dávky, 2. část prvním číslem dávky a plánem, takže appka dopočítá konec druhé části.',
         'Dashboard při aktivní směně D ve zvýrazněném horním poli neopakuje text „Směna D je právě v práci“ a ukazuje jen, kdo chybí.',
         'Service worker má chytřejší fallback pro same-origin požadavky a diagnostika hlídá nesoulad verzí/cache.'
       ]
     },
     {
-      range: 'v.1.1 500–603',
+      range: 'v.1.1 500–604',
       title: 'Stabilizace, hry, Supabase a glass vzhled',
       lines: [
         'Proběhlo velké stabilizační období: Láďův režim, cleanup manager, dokončení game performance, dokončený Supabase hardening a začátek Fáze 7 Data optimization včetně dalšího odlehčení Láďova režimu, úspornější Supabase lokální cache a méně zbytečných DOM renderů včetně Otevírací doby/Jídelního lístku, úspornějších selectů pro roky/měsíce, class toggle guardů u kalkulaček, style guardů u Theme/Pozadí/spodní lišty a závěrečného úklidu lokální read/JSON cache. Po dokončení Fáze 7 začala Fáze 8: tvrdší PWA/service worker chování, bezpečnější precache, řízenější update checky a diagnostika cache stavu.',

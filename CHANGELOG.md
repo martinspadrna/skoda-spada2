@@ -1,3 +1,10 @@
+## v.1.1 (604)
+- Soustruhy / Kombinace: zadávání je předělané podle reálného postupu práce. Vybere se, co jede jako první: Lis nebo Volné.
+- U 1. části se zadává číslo první a poslední dávky, takže appka bere známý hotový rozsah.
+- U 2. části se zadává číslo první dávky a plán; appka dopočítá, čím budeš u druhé části končit.
+- Kalírenské dopočítání po 4 dávkách zůstává dole v rozbalovacím bloku a počítá se jen z části Volné, ať už jede jako první nebo druhá.
+- Verze sjednocena na v.1.1 (604), cache na v1.1-604 a Supabase realtime kanál na rak-public-live-v604.
+
 ## v.1.1 (603)
 - Soustruhy: pole „První kalírenská dávka“ je přesunuté dolů přímo do rozbalovacího bloku „Dopočítání kalírenské dávky po 4 dávkách“, aby zadání i výsledek byly u sebe.
 - Soustruhy: přidaná čtvrtá volba „Kombinace“ pro výpočet části směny na Lisu a části směny na Volné 126/106.
