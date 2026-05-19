@@ -1,3 +1,10 @@
+## v.1.1 (606)
+- Soustruhy / Kombinace: výsledek je nově v jednom větším čitelnějším bloku místo tří menších okýnek.
+- Soustruhy / Kombinace: seznamy dávek zůstávají zabalené zvlášť pod výsledkem.
+- Brusy / Kdy bude hotovo: zůstalo jen zadání celých dávek; samostatný rozbalovací „Přesnější výpočet“ je odstraněný.
+- Brusy / Kdy bude hotovo: hotové kusy v rozdělané dávce a kusy do orovnání jsou nově přímo v hlavním zadání času dokončení.
+- Verze sjednocena na v.1.1 (606), cache na v1.1-606 a Supabase realtime kanál na rak-public-live-v606.
+
 ## v.1.1 (605)
 - Soustruhy / Kombinace: u 2. části se nově zadává jen číslo první dávky.
 - Plán je nově samostatný celkový plán pro Lis + Volné; appka odečte kusy z 1. části a 2. část dopočítá jen ze zbytku.

@@ -5023,3 +5023,37 @@ html body #brusy.calcPage .brusIndexGrid{
 #soustruhy .soustruhComboChoiceGrid{
   margin-top:2px !important;
 }
+
+/* v.1.1 (606) – Soustruhy: Kombinace má jeden větší čitelný výsledek místo malých okýnek. */
+#soustruhy .soustruhComboResultPanel{
+  display:grid !important;
+  gap:8px !important;
+  padding:12px !important;
+  border-radius:18px !important;
+  border:1px solid rgba(255,255,255,.12) !important;
+  background:linear-gradient(145deg, rgba(255,255,255,.08), rgba(255,255,255,.035)) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.10) !important;
+}
+#soustruhy .soustruhComboResultTitle{
+  color:rgba(236,255,240,.96) !important;
+  font-size:15px !important;
+  font-weight:900 !important;
+  line-height:1.15 !important;
+}
+#soustruhy .soustruhComboResultLine,
+#soustruhy .soustruhComboResultTotal{
+  color:rgba(236,255,240,.88) !important;
+  font-size:13px !important;
+  line-height:1.35 !important;
+}
+#soustruhy .soustruhComboResultTotal{
+  margin-top:2px !important;
+  padding-top:8px !important;
+  border-top:1px solid rgba(255,255,255,.10) !important;
+  color:rgba(236,255,240,.95) !important;
+}
+
+/* v.1.1 (606) – Brusy: Kdy bude hotovo má přesné vstupy rovnou v hlavním zadání. */
+#brusy #outBTime{
+  margin-top:10px !important;
+}

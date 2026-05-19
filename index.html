@@ -528,7 +528,7 @@
     <div></div>
     <h3>Brusy</h3>
     <div class="calcHeaderActions">
-      <button class="resetBtn" data-action="reset-fields" data-reset-fields="davka,orovnani,celkem,b_finish_kusy,b_finish_davky,b_finish_davka,b_finish_orovnani" data-reset-results="outB,outBTime" title="Reset polí" aria-label="Reset polí">↻</button>
+      <button class="resetBtn" data-action="reset-fields" data-reset-fields="davka,orovnani,celkem,b_finish_davky,b_finish_davka,b_finish_orovnani" data-reset-results="outB,outBTime" title="Reset polí" aria-label="Reset polí">↻</button>
       <button class="calcCloseBtn" data-action="page-kalkulacky" title="Zpět na přehled kalkulaček" aria-label="Zpět na přehled kalkulaček">×</button>
     </div>
   </div>
@@ -577,21 +577,15 @@
   <details class="brusDetails calcDetails calcPanel calcPanel--compact">
     <summary><span class="calcSummaryTitle">Kdy bude hotovo</span><span class="calcSummarySub">Odhad dokončení a času</span></summary>
     <div class="brusDetailsBody">
-      <label>Kolik kusů ještě děláš:</label>
-      <input id="b_finish_kusy" type="number" autocomplete="off">
-      <label>nebo kolik dávek:</label>
+      <label>Kolik celých dávek ještě děláš:</label>
       <input id="b_finish_davky" type="number" autocomplete="off">
 
-      <details class="brusDetails calcDetails calcDetailsInner">
-        <summary>Přesnější výpočet</summary>
-        <div class="brusDetailsBody">
-          <label>Hotových kusů v rozdělané dávce:</label>
-          <input id="b_finish_davka" type="number" autocomplete="off">
+      <label>Hotových kusů v rozdělané dávce:</label>
+      <input id="b_finish_davka" type="number" autocomplete="off">
 
-          <label>Kusů do orovnání:</label>
-          <input id="b_finish_orovnani" type="number" autocomplete="off">
-        </div>
-      </details>
+      <label>Kusů do orovnání:</label>
+      <input id="b_finish_orovnani" type="number" autocomplete="off">
+      <div class="smallText">Dávky se berou po 32 ks. Rozdělaná dávka a orovnání se započítají rovnou do času dokončení.</div>
 
       <button class="calcPrimaryBtn" data-action="calc-brusy-finish">Ukázat čas dokončení</button>
       <div class="card calcResultCard" id="outBTime"></div>

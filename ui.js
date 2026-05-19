@@ -2853,7 +2853,7 @@ function buildAppHistoryHtml(versionText) {
       ]
     },
     {
-      range: 'v.1.1 500–605',
+      range: 'v.1.1 500–606',
       title: 'Stabilizace, hry, Supabase a glass vzhled',
       lines: [
         'Proběhlo velké stabilizační období: Láďův režim, cleanup manager, dokončení game performance, dokončený Supabase hardening a začátek Fáze 7 Data optimization včetně dalšího odlehčení Láďova režimu, úspornější Supabase lokální cache a méně zbytečných DOM renderů včetně Otevírací doby/Jídelního lístku, úspornějších selectů pro roky/měsíce, class toggle guardů u kalkulaček, style guardů u Theme/Pozadí/spodní lišty a závěrečného úklidu lokální read/JSON cache. Po dokončení Fáze 7 začala Fáze 8: tvrdší PWA/service worker chování, bezpečnější precache, řízenější update checky a diagnostika cache stavu.',

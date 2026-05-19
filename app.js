@@ -1,4 +1,4 @@
-// v.1.1 (605) – Soustruhy: Kombinace nově počítá 2. část ze společného plánu pro Lis + Volné.
+// v.1.1 (606) – Soustruhy: čitelnější výsledek Kombinace; Brusy/Kdy bude hotovo mají přesné vstupy přímo v hlavním zadání.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

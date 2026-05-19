@@ -77,7 +77,7 @@ function renderFinishResult(outId, label, pieces, seconds, extraLine) {
   const out = document.getElementById(outId);
   if (!out) return;
   if (!pieces || !seconds || seconds < 0) {
-    setCalcOutputHtml(out, "<div class='smallText'>Zadej počet kusů nebo dávek.</div>", out.id || "calcEmpty");
+    setCalcOutputHtml(out, "<div class='smallText'>Zadej počet celých dávek.</div>", out.id || "calcEmpty");
     return;
   }
   const now = new Date();
@@ -141,7 +141,7 @@ function calcFFinish() {
   const out = document.getElementById("outFTime");
   if (!out) return;
   if (!target.pieces) {
-    setCalcOutputHtml(out, "<div class='smallText'>Zadej počet kusů nebo dávek.</div>", out.id || "calcEmpty");
+    setCalcOutputHtml(out, "<div class='smallText'>Zadej počet celých dávek.</div>", out.id || "calcEmpty");
     return;
   }
   const seconds = target.pieces * 60;
@@ -185,7 +185,7 @@ function calcBrusy() {
 }
 
 function calcBrusyFinish() {
-  const target = resolveTargetPieces("b_finish_kusy", "b_finish_davky");
+  const target = resolveTargetPieces("", "b_finish_davky");
   const readFirstInt = (...ids) => {
     for (const id of ids) {
       const el = document.getElementById(id);
@@ -202,7 +202,7 @@ function calcBrusyFinish() {
   const out = document.getElementById("outBTime");
   if (!out) return;
   if (!target.pieces) {
-    setCalcOutputHtml(out, "<div class='smallText'>Zadej počet kusů nebo dávek.</div>", out.id || "calcEmpty");
+    setCalcOutputHtml(out, "<div class='smallText'>Zadej počet celých dávek.</div>", out.id || "calcEmpty");
     return;
   }
   const cfg = getBrusConfig(app.machine, app.prog);
@@ -214,8 +214,8 @@ function calcBrusyFinish() {
     ? (" · přesněji s rozdělanou dávkou" + (doneInBatch > 0 ? (" " + formatCount(doneInBatch) + " ks hotovo") : "") + (piecesToDress > 0 ? (", do orovnání " + formatCount(piecesToDress) + " ks") : ""))
     : "";
   const preciseDetails = (doneInBatch > 0 || piecesToDress > 0)
-    ? ("<div class='smallText'>Přesnější výpočet: " + (doneInBatch > 0 ? ("rozpracovaná dávka má " + formatCount(doneInBatch) + " ks hotovo") : "bez rozdělané dávky") + (piecesToDress > 0 ? (", do orovnání zbývá " + formatCount(piecesToDress) + " ks") : "") + ".</div>")
-    : "<div class='smallText'>Přesnější výpočet si můžeš rozkliknout a doplnit podle rozdělané dávky.</div>";
+    ? ("<div class='smallText'>Zohledněno: " + (doneInBatch > 0 ? ("rozpracovaná dávka má " + formatCount(doneInBatch) + " ks hotovo") : "bez rozdělané dávky") + (piecesToDress > 0 ? (", do orovnání zbývá " + formatCount(piecesToDress) + " ks") : "") + ".</div>")
+    : "";
   setCalcOutputHtml(out, renderCalcResult(app.machine + " / " + cfg.label, [
     "Hotovo v <b>" + formatClockTime(finish) + "</b>"
   ], "Za " + formatDuration(seconds * 1000) + " · " + formatCount(remainingPieces) + " ks / " + formatDoses(remainingPieces) + " dávek" + preciseNote) + preciseDetails, out.id || "outBTime");
@@ -521,15 +521,18 @@ function renderSoustruhyCombinationResult(firstPart, secondPart, comboMeta) {
   const secondLabel = secondPart?.label || "2. část";
   const totalPlan = Number(comboMeta?.totalPlan) || 0;
   const remainingPlan = Math.max(0, Number(comboMeta?.remainingPlan) || 0);
-  const plannedText = totalPlan > 0
-    ? " Celkový plán je <b>" + formatCount(totalPlan) + " ks</b>; po 1. části zbývalo pro 2. část <b>" + formatCount(remainingPlan) + " ks</b>."
-    : "";
+  const totalPieces = firstTotal + secondTotal;
+  const totalBatches = firstCount + secondCount;
+  const planLine = totalPlan > 0
+    ? "Plán celkem: <b>" + formatCount(totalPlan) + " ks</b> · po 1. části zbývalo <b>" + formatCount(remainingPlan) + " ks</b> pro 2. část."
+    : "Plán celkem není vyplněný.";
 
-  let html = "<div class='smallText uMb10'>Kombinace: 1. část je zadaný rozsah, 2. část se dopočítá ze společného plánu pro Lis + Volné." + plannedText + "</div>";
-  html += "<div class='statsSummary soustruhComboSummary'>";
-  html += "<div class='tile'><div class='smallText'>1. část – " + escapeHtml(firstLabel) + "</div><div class='uFs22 uMt4'>" + formatCount(firstTotal) + " ks</div><div class='smallText uMt4'>" + formatCount(firstCount) + " dávek · do " + firstLastText + "</div></div>";
-  html += "<div class='tile'><div class='smallText'>2. část – " + escapeHtml(secondLabel) + "</div><div class='uFs22 uMt4'>" + formatCount(secondTotal) + " ks</div><div class='smallText uMt4'>" + formatCount(secondCount) + " dávek · skončíš na " + secondLastText + "</div></div>";
-  html += "<div class='tile'><div class='smallText'>Celkem</div><div class='uFs22 uMt4'>" + formatCount(firstTotal + secondTotal) + " ks</div><div class='smallText uMt4'>" + formatCount(firstCount + secondCount) + " dávek" + (totalPlan > 0 ? " · plán " + formatCount(totalPlan) + " ks" : "") + "</div></div>";
+  let html = "<div class='soustruhComboResultPanel'>";
+  html += "<div class='soustruhComboResultTitle'>Kombinace</div>";
+  html += "<div class='soustruhComboResultLine'>" + planLine + "</div>";
+  html += "<div class='soustruhComboResultLine'><b>1. část – " + escapeHtml(firstLabel) + ":</b> " + formatCount(firstCount) + " dávek / " + formatCount(firstTotal) + " ks · končí dávkou <b>" + firstLastText + "</b>.</div>";
+  html += "<div class='soustruhComboResultLine'><b>2. část – " + escapeHtml(secondLabel) + ":</b> " + formatCount(secondCount) + " dávek / " + formatCount(secondTotal) + " ks · skončíš dávkou <b>" + secondLastText + "</b>.</div>";
+  html += "<div class='soustruhComboResultTotal'><b>Celkem:</b> " + formatCount(totalBatches) + " dávek / " + formatCount(totalPieces) + " ks" + (totalPlan > 0 ? " · proti plánu " + formatCount(totalPlan) + " ks" : "") + ".</div>";
   html += "</div>";
   html += renderSoustruhBatchListDetails(firstBatches, "Seznam dávek – 1. část / " + firstLabel + " (" + formatCount(firstCount) + ")");
   html += renderSoustruhBatchListDetails(secondBatches, "Seznam dávek – 2. část / " + secondLabel + " (" + formatCount(secondCount) + ")");
