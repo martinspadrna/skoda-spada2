@@ -13,7 +13,7 @@ const BRUS_CONFIG = {
     ADV:  { pieceSec: 60.3, dressEvery: 45, dressSec: 240, label: "AD volné" },
     AE:   { pieceSec: 56.4, dressEvery: 59, dressSec: 325, label: "AE" },
     AEV:  { pieceSec: 60.0, dressEvery: 45, dressSec: 240, label: "AE volné" },
-    AH:   { pieceSec: 63.0, dressEvery: 65, dressSec: 240, label: "AH" }
+    AH:   { pieceSec: 63.0, dressEvery: 88, dressSec: 400, label: "AH" }
   }
 };
 

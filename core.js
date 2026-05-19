@@ -1,6 +1,6 @@
 
 const APP_KEY = "rotace_kalkulacky_state_v123";
-const APP_VERSION = "v.1.1 (617)";
+const APP_VERSION = "v.1.1 (622)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-05-18-" + APP_VERSION + "-" + Date.now();
 
@@ -158,6 +158,98 @@ function escapeHtml(str) {
     "'": "&#39;"
   }[ch]));
 }
+
+const RAK_SECURITY_RENDER_DEFAULTS = {
+  phase: 'phase-9-security-render-cleanup',
+  phasePercent: 32,
+  safeDomBuilds: 0,
+  lastSafeDomKey: '',
+  escapedDynamicHtmlWrites: 0,
+  guardedHtmlWrites: 0,
+  guardedHtmlSkippedWrites: 0,
+  riskyHtmlWrites: 0,
+  guardedTextWrites: 0,
+  guardedTextSkippedWrites: 0,
+  safeExternalUrlChecks: 0,
+  safeExternalUrlBlocked: 0,
+  lastEscapedKey: '',
+  lastHtmlKey: '',
+  lastHtmlRisk: '',
+  lastTextKey: '',
+  lastExternalUrlKey: '',
+  lastBlockedExternalUrl: '',
+  lastRenderAt: 0
+};
+const RAK_SECURITY_RENDER_STATS = Object.assign(
+  {},
+  RAK_SECURITY_RENDER_DEFAULTS,
+  window.__rakSecurityRenderStats || {},
+  { phase: 'phase-9-security-render-cleanup', phasePercent: 32 }
+);
+window.__rakSecurityRenderStats = RAK_SECURITY_RENDER_STATS;
+
+function escapeDynamicHtml(value, key = '') {
+  const statKey = String(key || 'dynamic-html');
+  RAK_SECURITY_RENDER_STATS.escapedDynamicHtmlWrites += 1;
+  RAK_SECURITY_RENDER_STATS.lastEscapedKey = statKey;
+  RAK_SECURITY_RENDER_STATS.lastRenderAt = Date.now();
+  return escapeHtml(value);
+}
+window.escapeDynamicHtml = escapeDynamicHtml;
+
+function getSecurityRenderStatus() {
+  return Object.assign({}, RAK_SECURITY_RENDER_STATS);
+}
+window.getSecurityRenderStatus = getSecurityRenderStatus;
+
+function recordSafeDomBuild(key = '') {
+  const statKey = String(key || 'safe-dom-build').trim();
+  RAK_SECURITY_RENDER_STATS.safeDomBuilds = Number(RAK_SECURITY_RENDER_STATS.safeDomBuilds || 0) + 1;
+  RAK_SECURITY_RENDER_STATS.lastSafeDomKey = statKey;
+  RAK_SECURITY_RENDER_STATS.lastRenderAt = Date.now();
+  return true;
+}
+window.recordSafeDomBuild = recordSafeDomBuild;
+
+function normalizeSafeExternalUrl(rawUrl, key = '') {
+  const statKey = String(key || 'external-url').trim();
+  RAK_SECURITY_RENDER_STATS.safeExternalUrlChecks += 1;
+  RAK_SECURITY_RENDER_STATS.lastExternalUrlKey = statKey;
+  RAK_SECURITY_RENDER_STATS.lastRenderAt = Date.now();
+  try {
+    const url = new URL(String(rawUrl || '').trim(), window.location.href);
+    const protocol = String(url.protocol || '').toLowerCase();
+    if (protocol !== 'https:' && protocol !== 'http:') {
+      RAK_SECURITY_RENDER_STATS.safeExternalUrlBlocked += 1;
+      RAK_SECURITY_RENDER_STATS.lastBlockedExternalUrl = statKey + ':' + protocol;
+      return '';
+    }
+    return url.href;
+  } catch (err) {
+    RAK_SECURITY_RENDER_STATS.safeExternalUrlBlocked += 1;
+    RAK_SECURITY_RENDER_STATS.lastBlockedExternalUrl = statKey + ':invalid-url';
+    return '';
+  }
+}
+window.normalizeSafeExternalUrl = normalizeSafeExternalUrl;
+
+
+function inspectDynamicHtmlForRenderRisk(html, key = '') {
+  const raw = String(html ?? '');
+  const statKey = String(key || 'html-render').trim();
+  const risks = [];
+  if (/<\s*script\b/i.test(raw)) risks.push('script-tag');
+  if (/\son[a-z]+\s*=/i.test(raw)) risks.push('inline-event');
+  if (/javascript\s*:/i.test(raw)) risks.push('javascript-url');
+  if (/<\s*(iframe|object|embed)\b/i.test(raw)) risks.push('embedded-frame');
+  const riskText = risks.length ? risks.join(',') : 'safe-template';
+  RAK_SECURITY_RENDER_STATS.lastHtmlKey = statKey;
+  RAK_SECURITY_RENDER_STATS.lastHtmlRisk = riskText;
+  RAK_SECURITY_RENDER_STATS.lastRenderAt = Date.now();
+  if (risks.length) RAK_SECURITY_RENDER_STATS.riskyHtmlWrites += 1;
+  return { ok: !risks.length, risks, riskText };
+}
+window.inspectDynamicHtmlForRenderRisk = inspectDynamicHtmlForRenderRisk;
 
 // Budoucí rozšíření: statistiky za rok pro jednotlivá jména/stroje/úklid.
 
@@ -405,17 +497,28 @@ function setElementHtmlIfChanged(element, html, key = '') {
   if (!element) return false;
   const nextHtml = String(html ?? '');
   const statKey = String(key || element.id || element.className || 'html').trim();
+  const htmlRisk = typeof inspectDynamicHtmlForRenderRisk === 'function'
+    ? inspectDynamicHtmlForRenderRisk(nextHtml, statKey)
+    : { ok: true, riskText: 'unchecked' };
   try {
     if (element.__rakLastHtml === nextHtml || element.innerHTML === nextHtml) {
       element.__rakLastHtml = nextHtml;
       RAK_DATA_OPTIMIZATION_STATS.domHtmlSkippedWrites += 1;
       RAK_DATA_OPTIMIZATION_STATS.domHtmlLastKey = statKey;
       RAK_DATA_OPTIMIZATION_STATS.domHtmlLastAt = Date.now();
+      RAK_SECURITY_RENDER_STATS.guardedHtmlSkippedWrites += 1;
+      RAK_SECURITY_RENDER_STATS.lastHtmlKey = statKey;
+      RAK_SECURITY_RENDER_STATS.lastHtmlRisk = htmlRisk && htmlRisk.riskText ? htmlRisk.riskText : 'safe-template';
+      RAK_SECURITY_RENDER_STATS.lastRenderAt = Date.now();
       return false;
     }
     element.innerHTML = nextHtml;
     element.__rakLastHtml = nextHtml;
     RAK_DATA_OPTIMIZATION_STATS.domHtmlWrites += 1;
+    RAK_SECURITY_RENDER_STATS.guardedHtmlWrites += 1;
+    RAK_SECURITY_RENDER_STATS.lastHtmlKey = statKey;
+    RAK_SECURITY_RENDER_STATS.lastHtmlRisk = htmlRisk && htmlRisk.riskText ? htmlRisk.riskText : 'safe-template';
+    RAK_SECURITY_RENDER_STATS.lastRenderAt = Date.now();
     RAK_DATA_OPTIMIZATION_STATS.domHtmlLastKey = statKey;
     RAK_DATA_OPTIMIZATION_STATS.domHtmlLastAt = Date.now();
     return true;
@@ -423,6 +526,10 @@ function setElementHtmlIfChanged(element, html, key = '') {
     RAK_DATA_OPTIMIZATION_STATS.domHtmlWriteErrors += 1;
     element.innerHTML = nextHtml;
     element.__rakLastHtml = nextHtml;
+    RAK_SECURITY_RENDER_STATS.guardedHtmlWrites += 1;
+    RAK_SECURITY_RENDER_STATS.lastHtmlKey = statKey;
+    RAK_SECURITY_RENDER_STATS.lastHtmlRisk = 'write-error-fallback';
+    RAK_SECURITY_RENDER_STATS.lastRenderAt = Date.now();
     return true;
   }
 }
@@ -437,10 +544,16 @@ function setElementTextIfChanged(element, text, key = '') {
       RAK_DATA_OPTIMIZATION_STATS.domTextSkippedWrites += 1;
       RAK_DATA_OPTIMIZATION_STATS.domTextLastKey = statKey;
       RAK_DATA_OPTIMIZATION_STATS.domTextLastAt = Date.now();
+      RAK_SECURITY_RENDER_STATS.guardedTextSkippedWrites += 1;
+      RAK_SECURITY_RENDER_STATS.lastTextKey = statKey;
+      RAK_SECURITY_RENDER_STATS.lastRenderAt = Date.now();
       return false;
     }
     element.textContent = nextText;
     RAK_DATA_OPTIMIZATION_STATS.domTextWrites += 1;
+    RAK_SECURITY_RENDER_STATS.guardedTextWrites += 1;
+    RAK_SECURITY_RENDER_STATS.lastTextKey = statKey;
+    RAK_SECURITY_RENDER_STATS.lastRenderAt = Date.now();
     RAK_DATA_OPTIMIZATION_STATS.domTextLastKey = statKey;
     RAK_DATA_OPTIMIZATION_STATS.domTextLastAt = Date.now();
     return true;

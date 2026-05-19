@@ -236,20 +236,74 @@ function setProg(p) {
   saveRotationData();
 }
 
+function normalizeBrusSettingIndex(prog) {
+  const raw = String(prog || '').trim();
+  if (raw === 'ADV') return 'AD volné';
+  if (raw === 'AEV') return 'AE volné';
+  return raw;
+}
+
+function parseBrusSettingsJson(row) {
+  if (!row || row.settings_json === null || row.settings_json === undefined) return {};
+  if (typeof row.settings_json === 'object') return row.settings_json || {};
+  try { return JSON.parse(String(row.settings_json || '{}')) || {}; }
+  catch (err) { return {}; }
+}
+
+function firstFilledNumber() {
+  for (let i = 0; i < arguments.length; i += 1) {
+    const value = arguments[i];
+    if (value === '' || value === null || value === undefined) continue;
+    const num = Number(String(value).replace(',', '.'));
+    if (Number.isFinite(num)) return num;
+  }
+  return 0;
+}
+
 function findBrusMachineSetting(machine, prog) {
   const rows = Array.isArray(app && app.machineSettingsRows) ? app.machineSettingsRows : [];
-  const key = String(machine || '').trim() + '_' + String(prog || '').trim();
-  return rows.find(row => String(row && row.machine_key ? row.machine_key : '').trim() === key) || null;
+  const machineCode = String(machine || '').trim();
+  const progCode = String(prog || '').trim();
+  const settingIndex = normalizeBrusSettingIndex(progCode);
+  const keyCandidates = new Set([
+    machineCode + '-' + progCode,
+    machineCode + '_' + progCode,
+    machineCode + '-' + settingIndex,
+    machineCode + '_' + settingIndex
+  ].filter(Boolean));
+
+  return rows.find(row => {
+    const settings = parseBrusSettingsJson(row);
+    const rowKey = String(row && row.machine_key ? row.machine_key : '').trim();
+    if (rowKey && keyCandidates.has(rowKey)) return true;
+
+    const rowMachine = String(row && (row.machine_code || row.machine) ? (row.machine_code || row.machine) : (settings.machine || '')).trim();
+    const rowIndex = String(row && (row.machine_index || row.index) ? (row.machine_index || row.index) : (settings.index || '')).trim();
+    return rowMachine === machineCode && (rowIndex === settingIndex || rowIndex === progCode);
+  }) || null;
 }
 
 function getBrusConfig(machine, prog) {
   const fallback = BRUS_CONFIG[machine] || BRUS_CONFIG.TBKR01;
   const cfg = fallback[prog] || fallback.AD;
   const setting = findBrusMachineSetting(machine, prog);
-  const settings = setting && typeof setting.settings_json === 'object' && setting.settings_json !== null ? setting.settings_json : {};
-  const pieceSec = setting && setting.speed !== '' && setting.speed !== null && setting.speed !== undefined ? Number(setting.speed) : Number(cfg.pieceSec) || 0;
-  const dressEvery = Number(settings.dress_count ?? cfg.dressEvery) || 0;
-  const dressSec = Number(settings.dress_time ?? cfg.dressSec) || 0;
+  const settings = parseBrusSettingsJson(setting);
+  const pieceSec = firstFilledNumber(
+    setting && setting.cycle_time,
+    setting && setting.speed,
+    settings.cycle_time,
+    cfg.pieceSec
+  );
+  const dressEvery = firstFilledNumber(
+    setting && setting.dress_count,
+    settings.dress_count,
+    cfg.dressEvery
+  );
+  const dressSec = firstFilledNumber(
+    setting && setting.dress_time,
+    settings.dress_time,
+    cfg.dressSec
+  );
   return {
     machine,
     prog,

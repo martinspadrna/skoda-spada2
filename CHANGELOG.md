@@ -1,8 +1,36 @@
-## v.1.1 (617)
+## v.1.1 (622)
+- Opraveny parametry pro Brusy: TBKR07 / AH má čas výroby 1m03s, orovnává po 88 ks a doba orovnání je 6m40s.
+- Opraveno načítání uložených parametrů Brusů: výpočty už hledají stejné klíče stroj/index, jaké ukládá nastavení strojů (`TBKR07-AH` místo staré varianty s podtržítkem).
+- Výpočet Brusů nově umí použít hodnoty z horních sloupců `cycle_time`, `speed`, `dress_count`, `dress_time` i ze `settings_json`, takže nespadne na staré výchozí hodnoty.
+- Supabase RLS pro `machine_settings` upravená tak, aby šlo ukládat nastavení strojů z appky a nepadalo to na access denied.
+- Verze sjednocena na v.1.1 (622), cache na v1.1-622 a Supabase realtime kanál na rak-public-live-v622.
+
+## v.1.1 (621)
+- Fáze 9 — security/render cleanup pokračuje čtvrtým bezpečným krokem.
+- Update toast pro novou verzi už se nevykresluje přes `innerHTML`; skládá se přes DOM uzly a `textContent`, takže text ze service workeru nejde omylem vložit jako HTML.
+- Přidána diagnostika bezpečných DOM sestavení: `safeDomBuilds` a `lastSafeDomKey`.
+- O aplikaci / diagnostika nově ukazuje i poslední bezpečně sestavený DOM blok.
+- Verze sjednocena na v.1.1 (621), cache na v1.1-621 a Supabase realtime kanál na rak-public-live-v621.
+
+## v.1.1 (620)
+- Fáze 9 — security/render cleanup pokračuje třetím bezpečným krokem.
+- Společné HTML renderování přes `setElementHtmlIfChanged()` nově prochází lehkou kontrolou rizikových šablon: `script` tagy, inline `on...` události, `javascript:` URL a embed/frame prvky.
+- Kontrola zatím nic neblokuje, aby se nerozbilo UI; zapisuje jen diagnostiku pro další cílený úklid renderů.
+- Diagnostika O aplikaci nově ukazuje HTML guard zápisy/skipy/rizika a poslední kontrolovaný HTML render.
+- Verze sjednocena na v.1.1 (620), cache na v1.1-620 a Supabase realtime kanál na rak-public-live-v620.
+
+## v.1.1 (619)
+- Fáze 9 — security/render cleanup pokračovala druhým bezpečným krokem.
+- Přidán společný URL guard `normalizeSafeExternalUrl()` pro externí odkazy otevírané z aplikace; povolí jen `http`/`https` a neplatné nebo nebezpečné schéma potichu zablokuje.
+- Otevření Eportalu / Výplaty dál používá `noopener,noreferrer`.
+- Diagnostika nově ukazuje počet kontrol externích URL, počet blokovaných URL a poslední kontrolovaný externí odkaz.
+- Verze sjednocena na v.1.1 (619), cache na v1.1-619 a Supabase realtime kanál na rak-public-live-v619.
+
+## v.1.1 (618)
 - Fáze 8 — PWA / Service Worker hardening dokončena na 100 %.
 - Service worker nově vrací finální offline readiness stav: `phase8CompletionMode`, `phase8Ready` a poměr připravenosti app shell cache.
 - Diagnostika aplikace nově ukazuje, jestli je app shell připravený pro offline spuštění a na kolik procent je cache kompletní.
-- Verze sjednocena na v.1.1 (617), cache na v1.1-617 a Supabase realtime kanál na rak-public-live-v617.
+- Verze sjednocena na v.1.1 (618), cache na v1.1-618 a Supabase realtime kanál na rak-public-live-v618.
 
 ## v.1.1 (616)
 - Fáze 8 / PWA: statické cache-first soubory mimo cache už při slabé síti nepadají do nekonečného čekání, ale používají stejný timeout jako ostatní síťový fallback.

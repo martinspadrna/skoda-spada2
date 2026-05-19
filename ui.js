@@ -2851,7 +2851,10 @@ function buildAppHistoryHtml(versionText) {
       range: versionText,
       title: 'Aktuální build',
       lines: [
-        'Fáze 8 — PWA / Service Worker hardening je dokončená na 100 %. Tenhle build doplňuje finální offline readiness kontrolu app shellu a uzavírá SW/cache stabilizační část.',
+        'TBKR07 / AH má nastavený čas výroby 1m03s, orovnává po 88 ks a doba orovnání je 6m40s.',
+        'Opravené načítání uložených parametrů Brusů: appka už hledá stejný klíč, jaký se ukládá v nastavení strojů, takže změny parametrů se reálně použijí ve výpočtech.',
+        'Nastavení strojů má opravený online zápis do machine_settings, aby ukládání nepadalo na access denied.',
+        'Fáze 8 — PWA / Service Worker hardening zůstává dokončená na 100 % včetně finální offline readiness kontroly app shellu.',
         'Soustruhy mají u Volné 126 a Volné 106 kalírenské čtveřice schované dole v rozbalovacím bloku, kde je společně zadání první kalírenské dávky i výsledek.',
         'Volba Kombinace u Soustruhů má teď společný plán pro Lis + Volné: 1. část se zadá jako známý rozsah, u 2. části se zadá jen první dávka a appka dopočítá konec ze zbytku plánu.',
         'Nastavení Volné je v Kombinaci otevřené hned nahoře u volby pořadí, aby bylo po ruce při jízdě Volného.',
@@ -2861,7 +2864,7 @@ function buildAppHistoryHtml(versionText) {
       ]
     },
     {
-      range: 'v.1.1 500–617',
+      range: 'v.1.1 500–622',
       title: 'Stabilizace, hry, Supabase a glass vzhled',
       lines: [
         'Proběhlo velké stabilizační období: Láďův režim, cleanup manager, dokončení game performance, dokončený Supabase hardening a začátek Fáze 7 Data optimization včetně dalšího odlehčení Láďova režimu, úspornější Supabase lokální cache a méně zbytečných DOM renderů včetně Otevírací doby/Jídelního lístku, úspornějších selectů pro roky/měsíce, class toggle guardů u kalkulaček, style guardů u Theme/Pozadí/spodní lišty a závěrečného úklidu lokální read/JSON cache. Po dokončení Fáze 7 začala Fáze 8: tvrdší PWA/service worker chování, bezpečnější precache, řízenější update checky a diagnostika cache stavu.',
@@ -3440,7 +3443,7 @@ function buildAdminMachineSettingsTableHtml() {
     { machine_key: 'TBKR01-AE volné', machine_code: 'TBKR01', machine_index: 'AE volné', label: 'TBKR01-AE volné', category: 'brus', cycle_time: '60.0', dress_time: '240', dress_count: '45', settings_json: { machine: 'TBKR01', index: 'AE volné', cycle_time: '60.0', dress_time: '240', dress_count: '45' } },
     { machine_key: 'TBKR07-AD', machine_code: 'TBKR07', machine_index: 'AD', label: 'TBKR07-AD', category: 'brus', cycle_time: '58.2', dress_time: '298', dress_count: '59', settings_json: { machine: 'TBKR07', index: 'AD', cycle_time: '58.2', dress_time: '298', dress_count: '59' } },
     { machine_key: 'TBKR07-AE', machine_code: 'TBKR07', machine_index: 'AE', label: 'TBKR07-AE', category: 'brus', cycle_time: '56.4', dress_time: '325', dress_count: '59', settings_json: { machine: 'TBKR07', index: 'AE', cycle_time: '56.4', dress_time: '325', dress_count: '59' } },
-    { machine_key: 'TBKR07-AH', machine_code: 'TBKR07', machine_index: 'AH', label: 'TBKR07-AH', category: 'brus', cycle_time: '63.0', dress_time: '240', dress_count: '65', settings_json: { machine: 'TBKR07', index: 'AH', cycle_time: '63.0', dress_time: '240', dress_count: '65' } },
+    { machine_key: 'TBKR07-AH', machine_code: 'TBKR07', machine_index: 'AH', label: 'TBKR07-AH', category: 'brus', cycle_time: '63', dress_time: '400', dress_count: '88', settings_json: { machine: 'TBKR07', index: 'AH', cycle_time: '63', dress_time: '400', dress_count: '88' } },
     { machine_key: 'TBKR07-AD volné', machine_code: 'TBKR07', machine_index: 'AD volné', label: 'TBKR07-AD volné', category: 'brus', cycle_time: '60.3', dress_time: '240', dress_count: '45', settings_json: { machine: 'TBKR07', index: 'AD volné', cycle_time: '60.3', dress_time: '240', dress_count: '45' } },
     { machine_key: 'TBKR07-AE volné', machine_code: 'TBKR07', machine_index: 'AE volné', label: 'TBKR07-AE volné', category: 'brus', cycle_time: '60.0', dress_time: '240', dress_count: '45', settings_json: { machine: 'TBKR07', index: 'AE volné', cycle_time: '60.0', dress_time: '240', dress_count: '45' } }
   ];
@@ -3921,6 +3924,13 @@ function bindAppMenuHandlers(body) {
         const profileUiGuard = profileUiStatus && profileUiStatus.guard ? profileUiStatus.guard : null;
         const dataOptStatus = typeof window.getDataOptimizationStatus === 'function' ? window.getDataOptimizationStatus() : null;
         const pwaStatus = typeof window.getPwaHardeningStatus === 'function' ? window.getPwaHardeningStatus() : null;
+        const securityRenderStatus = typeof window.getSecurityRenderStatus === 'function' ? window.getSecurityRenderStatus() : null;
+        const securityRenderDiag = securityRenderStatus ? [
+          'Security/render: fáze ' + String(securityRenderStatus.phasePercent || 0) + '% · escapované dynamické HTML ' + String(securityRenderStatus.escapedDynamicHtmlWrites || 0) + ' · text render ' + String(securityRenderStatus.guardedTextWrites || 0) + '/' + String(securityRenderStatus.guardedTextSkippedWrites || 0),
+          'Security/render HTML: zápisy/skip/riziko ' + String(securityRenderStatus.guardedHtmlWrites || 0) + '/' + String(securityRenderStatus.guardedHtmlSkippedWrites || 0) + '/' + String(securityRenderStatus.riskyHtmlWrites || 0) + ' · poslední ' + String(securityRenderStatus.lastHtmlKey || '—') + ' / ' + String(securityRenderStatus.lastHtmlRisk || '—'),
+          'Security/render URL: kontroly/blokace ' + String(securityRenderStatus.safeExternalUrlChecks || 0) + '/' + String(securityRenderStatus.safeExternalUrlBlocked || 0) + ' · poslední ' + String(securityRenderStatus.lastExternalUrlKey || '—'),
+          'Security/render poslední: HTML escape ' + String(securityRenderStatus.lastEscapedKey || '—') + ' · text ' + String(securityRenderStatus.lastTextKey || '—') + ' · safe DOM ' + String(securityRenderStatus.safeDomBuilds || 0) + ' / ' + String(securityRenderStatus.lastSafeDomKey || '—')
+        ] : [];
         const pwaDiag = pwaStatus ? [
           'PWA/SW: fáze ' + String(pwaStatus.phasePercent || 0) + '% · controller ' + (pwaStatus.hasController ? 'ano' : 'ne') + ' · update toast ' + (pwaStatus.updateToastVisible ? 'viditelný' : 'ne') + ' · verze cache ' + (pwaStatus.swVersionMismatch ? 'nesedí' : 'sedí'),
           'PWA update check: běhy/skip/join ' + String(pwaStatus.updateChecks || 0) + '/' + String(pwaStatus.updateCheckSkips || 0) + '/' + String(pwaStatus.updateCheckJoins || 0) + ' · update volání ' + String(pwaStatus.registrationUpdates || 0) + ' · chyby ' + String(pwaStatus.registrationUpdateErrors || 0),
@@ -3964,6 +3974,7 @@ function bindAppMenuHandlers(body) {
           'Aktuální stránka: ' + String(document.querySelector('.page.active')?.id || '—'),
           'Pozadí: ' + String((typeof getBackgroundPreference === 'function' ? getBackgroundPreference() : document.documentElement.dataset.rakBackground) || '—'),
           'Bottom lišta: ' + String(getComputedStyle(document.querySelector('.bottomNav') || document.body).bottom || '—'),
+          ...securityRenderDiag,
           ...pwaDiag,
           ...dataOptDiag,
           ...supabaseDiag
@@ -4407,7 +4418,9 @@ const EPORTAL_URL = 'https://space.skoda.vwgroup.com/group/b2eportal/home-page';
 const PAYROLL_URL = 'https://smartappspki.skoda.vwgroup.com/sap/bc/ui2/flp?sap-client=010&sap-language=CS#eMA_EV-open';
 
 function openExternalTile(url) {
-  const target = String(url || '').trim();
+  const target = typeof normalizeSafeExternalUrl === 'function'
+    ? normalizeSafeExternalUrl(url, 'openExternalTile')
+    : String(url || '').trim();
   if (!target) return false;
   try {
     const win = window.open(target, '_blank', 'noopener,noreferrer');

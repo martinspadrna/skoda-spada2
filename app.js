@@ -1,4 +1,4 @@
-// v.1.1 (617) – PWA/SW: dokončení Fáze 8 a finální offline readiness diagnostika.
+// v.1.1 (622) – Oprava parametrů TBKR07/AH a ukládání nastavení strojů.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
@@ -1203,20 +1203,45 @@ function installPwaAndConnectivityHooks() {
     toast.className = 'rakUpdateToast';
     toast.setAttribute('role', 'status');
     toast.setAttribute('aria-live', 'polite');
-    toast.innerHTML = `
-      <div class="rakUpdateToastMain">
-        <div class="rakUpdateToastBadge" aria-hidden="true">⟳</div>
-        <div class="rakUpdateToastBody">
-          <div class="rakUpdateToastTitle">K dispozici je nová verze aplikace</div>
-          <div class="rakUpdateToastVersion">${swNextUpdateVersion ? 'Nová verze: ' + swNextUpdateVersion : 'Nová verze: zjišťuji…'}</div>
-          <div class="rakUpdateToastText">Klikni na Aktualizovat a appka načte novou cache bez přeinstalace.</div>
-        </div>
-      </div>
-      <button type="button" class="rakUpdateToastAction">Aktualizovat</button>
-    `;
+
+    const main = document.createElement('div');
+    main.className = 'rakUpdateToastMain';
+
+    const badge = document.createElement('div');
+    badge.className = 'rakUpdateToastBadge';
+    badge.setAttribute('aria-hidden', 'true');
+    badge.textContent = '⟳';
+
+    const body = document.createElement('div');
+    body.className = 'rakUpdateToastBody';
+
+    const title = document.createElement('div');
+    title.className = 'rakUpdateToastTitle';
+    title.textContent = 'K dispozici je nová verze aplikace';
+
+    const version = document.createElement('div');
+    version.className = 'rakUpdateToastVersion';
+    version.textContent = swNextUpdateVersion
+      ? 'Nová verze: ' + String(swNextUpdateVersion)
+      : 'Nová verze: zjišťuji…';
+
+    const text = document.createElement('div');
+    text.className = 'rakUpdateToastText';
+    text.textContent = 'Klikni na Aktualizovat a appka načte novou cache bez přeinstalace.';
+
+    body.append(title, version, text);
+    main.append(badge, body);
+
+    const action = document.createElement('button');
+    action.type = 'button';
+    action.className = 'rakUpdateToastAction';
+    action.textContent = 'Aktualizovat';
+
+    toast.append(main, action);
+    if (typeof recordSafeDomBuild === 'function') recordSafeDomBuild('swUpdateToast');
     document.body.appendChild(toast);
     swUpdateToastEl = toast;
-    swUpdateButtonEl = toast.querySelector('.rakUpdateToastAction');
+    swUpdateButtonEl = action;
     swUpdateButtonEl.addEventListener('click', async () => {
       const registration = swRegistrationInstance;
       const version = getAppVersionTag();
