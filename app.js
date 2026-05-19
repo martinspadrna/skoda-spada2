@@ -1,4 +1,4 @@
-// v.1.1 (589) – Brusy: volné indexy dorovnány na stejnou výšku jako volba brusu a ostatní indexy.
+// v.1.1 (590) – Brusy: oprava překrývání indexů po dorovnání výšek, bez změny výpočtů.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

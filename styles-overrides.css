@@ -4543,3 +4543,65 @@ body.lowEndDevice :is(#soustruhy, #frezky, #brusy, #pracka).calcPage .calcHeader
   }
 }
 
+
+
+/* v.1.1 (590) – Brusy: oprava překrývání indexů po v.1.1 (589).
+   Tlačítka mají společnou kompaktní minimální výšku, ale řádky už nejsou natvrdo zamčené.
+   Díky tomu grid může přirozeně dopočítat rozestupy a žádný index neleze přes další. */
+#brusy.calcPage{
+  --brus-choice-btn-h:clamp(46px, 6.8dvh, 60px);
+  --brus-choice-btn-pad-y:clamp(8px, 1.55dvh, 12px);
+  --brus-choice-gap:8px;
+}
+#brusy.calcPage .brusChoiceGrid,
+#brusy.calcPage .brusIndexGrid{
+  display:grid !important;
+  grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
+  grid-auto-flow:row !important;
+  grid-auto-rows:auto !important;
+  gap:var(--brus-choice-gap) !important;
+  align-items:stretch !important;
+}
+#brusy.calcPage .brusIndexGrid > .brusFreeWrap{
+  grid-column:1 / -1 !important;
+  grid-row:auto !important;
+  display:grid !important;
+  grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
+  gap:var(--brus-choice-gap) !important;
+  width:100% !important;
+  height:auto !important;
+  min-height:0 !important;
+  max-height:none !important;
+  align-items:stretch !important;
+  overflow:visible !important;
+  box-sizing:border-box !important;
+}
+#brusy.calcPage .brusChoiceGrid > .bbtn,
+#brusy.calcPage .brusIndexGrid > .bbtn,
+#brusy.calcPage .brusIndexGrid > .brusFreeWrap > .bbtn,
+#brusy.calcPage .brusFreeWrap > .bbtn{
+  width:100% !important;
+  min-width:0 !important;
+  height:auto !important;
+  min-height:var(--brus-choice-btn-h) !important;
+  max-height:none !important;
+  padding-top:var(--brus-choice-btn-pad-y) !important;
+  padding-bottom:var(--brus-choice-btn-pad-y) !important;
+  padding-left:9px !important;
+  padding-right:9px !important;
+  font-size:clamp(14.5px, 3.15vw, 16.5px) !important;
+  line-height:1.10 !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  align-self:stretch !important;
+  box-sizing:border-box !important;
+  overflow:visible !important;
+}
+@media (max-width:430px){
+  #brusy.calcPage{
+    --brus-choice-btn-h:clamp(44px, 6.3dvh, 56px);
+    --brus-choice-btn-pad-y:7px;
+    --brus-choice-gap:8px;
+  }
+}
