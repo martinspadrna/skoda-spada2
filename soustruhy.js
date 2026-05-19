@@ -421,9 +421,9 @@ function renderSoustruhHeatGroups(title, heatData) {
   body += "<div class='tile'><div class='smallText'>Kalírenských řádků</div><div class='uFs22 uMt4'>" + formatCount(heatData.heatCount) + "</div></div>";
   body += "<div class='tile'><div class='smallText'>Poslední do</div><div class='uFs22 uMt4'>" + formatCount(heatData.lastHeatGuide) + "</div></div>";
   body += "</div>";
-  body += "<div class='smallText uMb10'>První kalírenská dávka je <b>" + formatCount(heatData.firstHeatGuide) + "</b>. Čtveřice se počítají podle kalírny, ale do součtu se berou jen dávky vyrobené na soustruhu.</div>";
+  body += "<div class='smallText uMb10'>Zadáno od kalírenské dávky <b>" + formatCount(heatData.firstHeatGuide) + "</b>. Čtveřice se berou podle kalírny / jiného stroje, ale počítají se jen dávky vyrobené tady na soustruhu.</div>";
   if (heatData.fillCount > 0) {
-    body += "<div class='smallText uMb10'>Plán na soustruhu končí průvodkou <b>" + formatCount(heatData.lastPlannedGuide) + "</b>. Aby poslední kalírenská čtveřice seděla, doplnit ze soustruhu: <b>" + heatData.fillGuides.map(formatCount).join(", ") + "</b>.</div>";
+    body += "<div class='smallText uMb10'>Plán na soustruhu končí průvodkou <b>" + formatCount(heatData.lastPlannedGuide) + "</b>. Aby poslední kalírenská čtveřice seděla po 4, doplnit ze soustruhu: <b>" + heatData.fillGuides.map(formatCount).join(", ") + "</b>.</div>";
   }
   body += "<div class='tableWrap'><table class='statsTable'><thead><tr><th>Kalírenská</th><th>Čtveřice</th><th>Naše</th><th>Doplnit</th></tr></thead><tbody>";
   heatData.groups.forEach(item => {
@@ -453,13 +453,16 @@ function renderBatchResult(title, batches, target, firstBatch, heatData) {
   html += "<div class='tile'><div class='smallText'>Poslední dávka</div><div class='uFs22 uMt4'>" + formatCount(lastBatch) + "</div></div>";
   html += "<div class='tile'><div class='smallText'>Vyrobeno</div><div class='uFs22 uMt4'>" + formatCount(total) + "</div></div>";
   html += "</div>";
+  html += "<details class='soustruhBatchListDetails calcDetails calcDetailsInner'>";
+  html += "<summary>Seznam dávek (" + formatCount(batches.length) + ")</summary>";
+  html += "<div class='soustruhBatchListBody'>";
   html += "<div class='tableWrap'><table class='statsTable'><thead><tr><th>Dávka</th><th>Ks</th><th>Součet</th></tr></thead><tbody>";
   batches.forEach(item => {
     html += "<tr><td>" + formatCount(item.batchNo) + "</td><td>" + formatCount(item.size) + "</td><td>" + formatCount(item.produced) + "</td></tr>";
   });
-  html += "</tbody></table></div>";
+  html += "</tbody></table></div></div></details>";
   if (heatData) {
-    html += renderSoustruhHeatGroups('Kalírenské volné po 4 našich dávkách', heatData);
+    html += renderSoustruhHeatGroups('Dopočítání kalírenské dávky po 4 dávkách', heatData);
   }
   return html;
 }
@@ -563,7 +566,7 @@ function calcSoustruhy126() {
 
 function calcSoustruhy126Heat() {
   // Ponecháno kvůli zpětné kompatibilitě starších exportů / klikacích akcí.
-  // Kalírenské čtveřice jsou ve v.1.1 (601) v rozbalovacím bloku hlavního výpočtu Volné 126.
+  // Kalírenské čtveřice jsou ve v.1.1 (602) v rozbalovacím bloku hlavního výpočtu Volné 126.
   calcSoustruhy126();
 }
 
@@ -594,6 +597,6 @@ function calcSoustruhy106() {
 
 function calcSoustruhy106Heat() {
   // Ponecháno kvůli zpětné kompatibilitě starších exportů / klikacích akcí.
-  // Kalírenské čtveřice jsou ve v.1.1 (601) v rozbalovacím bloku hlavního výpočtu Volné 106.
+  // Kalírenské čtveřice jsou ve v.1.1 (602) v rozbalovacím bloku hlavního výpočtu Volné 106.
   calcSoustruhy106();
 }

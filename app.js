@@ -1,4 +1,4 @@
-// v.1.1 (601) – Soustruhy: kalírenské čtveřice mají vlastní rozbalovací blok a samostatnou první kalírenskou dávku.
+// v.1.1 (602) – Soustruhy: zabalený seznam dávek a sjednocené kalírenské dopočítání po 4 dávkách.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
