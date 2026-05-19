@@ -1,3 +1,10 @@
+## v.1.1 (607)
+- Brusy / Kdy bude hotovo: popisek pole je upravený na „Kolik dávek ještě – včetně načaté“, aby bylo jasné, že se počítá i rozdělaná dávka.
+- PWA / Service Worker hardening: diagnostika precache nově kontroluje, jestli v app shell cache nechybí některá povinná položka.
+- Service worker vrací `precacheIntegrityMode`, `precacheMissingCount` a ukázku chybějících položek, aby šlo snáz poznat neúplně uloženou offline verzi.
+- Fáze 8 — PWA / Service Worker hardening posunuta na cca 64 %.
+- Verze sjednocena na v.1.1 (607), cache na v1.1-607 a Supabase realtime kanál na rak-public-live-v607.
+
 ## v.1.1 (606)
 - Soustruhy / Kombinace: výsledek je nově v jednom větším čitelnějším bloku místo tří menších okýnek.
 - Soustruhy / Kombinace: seznamy dávek zůstávají zabalené zvlášť pod výsledkem.

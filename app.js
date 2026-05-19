@@ -1,4 +1,4 @@
-// v.1.1 (606) – Soustruhy: čitelnější výsledek Kombinace; Brusy/Kdy bude hotovo mají přesné vstupy přímo v hlavním zadání.
+// v.1.1 (607) – Brusy: upravený popisek dávek v Kdy bude hotovo; PWA/SW diagnostika hlídá chybějící položky app shellu.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
@@ -818,7 +818,7 @@ function installPwaAndConnectivityHooks() {
 
   const pwaHardeningStatus = window.__rakPwaHardeningStatus || {
     phase: 'phase-8-pwa-service-worker-hardening',
-    phasePercent: 48,
+    phasePercent: 64,
     updateChecks: 0,
     updateCheckSkips: 0,
     updateCheckJoins: 0,
@@ -836,9 +836,11 @@ function installPwaAndConnectivityHooks() {
     swAppShellCount: 0,
     swPrecacheSuccessCount: 0,
     swPrecacheFailedCount: 0,
+    swPrecacheMissingCount: 0,
     swClientsCount: 0,
     swNavigationPreloadEnabled: false,
     swCacheLookupMode: '',
+    swPrecacheIntegrityMode: '',
     swExpectedCacheVersion: '',
     swVersionMismatch: false,
     swVersionMismatchCount: 0,
@@ -1043,10 +1045,12 @@ function installPwaAndConnectivityHooks() {
     pwaHardeningStatus.swAppShellCount = Number(data.appShellCount || 0);
     pwaHardeningStatus.swPrecacheSuccessCount = Number(data.precacheSuccessCount || 0);
     pwaHardeningStatus.swPrecacheFailedCount = Number(data.precacheFailedCount || 0);
+    pwaHardeningStatus.swPrecacheMissingCount = Number(data.precacheMissingCount || 0);
     pwaHardeningStatus.swClientsCount = Number(data.clientsCount || 0);
     pwaHardeningStatus.swNavigationPreloadEnabled = !!data.navigationPreloadEnabled;
     pwaHardeningStatus.swCacheLookupMode = String(data.cacheLookupMode || '');
     pwaHardeningStatus.swPrecacheFetchMode = String(data.precacheFetchMode || '');
+    pwaHardeningStatus.swPrecacheIntegrityMode = String(data.precacheIntegrityMode || '');
     pwaHardeningStatus.swLastCacheStatusAt = Date.now();
     pwaHardeningStatus.swLastCacheStatusSource = String(source || data.type || 'cache-status');
     const expectedCacheVersion = getExpectedServiceWorkerCacheVersion();

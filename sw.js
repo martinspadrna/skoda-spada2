@@ -1,5 +1,5 @@
-const CACHE_VERSION = 'v1.1-606';
-const SW_APP_VERSION = 'v.1.1 (606)';
+const CACHE_VERSION = 'v1.1-607';
+const SW_APP_VERSION = 'v.1.1 (607)';
 const STATIC_CACHE = `rotace-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `rotace-runtime-${CACHE_VERSION}`;
 const APP_SHELL = [
@@ -72,6 +72,7 @@ const CACHE_LOOKUP_MODE = 'normalized-cache-candidates';
 const PRECACHE_FETCH_MODE = 'cache-busted-clean-keys';
 const RUNTIME_STORE_MODE = 'canonical-clean-runtime-keys';
 const SAME_ORIGIN_FALLBACK_MODE = 'normalized-same-origin-fallback';
+const PRECACHE_INTEGRITY_MODE = 'app-shell-missing-check';
 
 function getScopeRelativeCacheKeys(requestOrUrl) {
   const candidates = [];
@@ -171,6 +172,33 @@ async function fetchAndStoreAppShellUrl(cache, url) {
   return true;
 }
 
+async function getPrecacheIntegritySummary(staticCache) {
+  const missingUrls = [];
+  try {
+    const cache = staticCache || await caches.open(STATIC_CACHE);
+    for (const url of APP_SHELL_URLS) {
+      try {
+        const match = await matchCacheCandidates(cache, url, { ignoreSearch: true });
+        if (!match) missingUrls.push(url);
+      } catch (err) {
+        missingUrls.push(url);
+      }
+    }
+  } catch (err) {
+    return {
+      precacheIntegrityMode: PRECACHE_INTEGRITY_MODE,
+      precacheMissingCount: APP_SHELL_URLS.length,
+      precacheMissingUrls: APP_SHELL_URLS.slice(0, 12),
+      precacheIntegrityError: err && err.message ? err.message : String(err || 'precache-integrity-error')
+    };
+  }
+  return {
+    precacheIntegrityMode: PRECACHE_INTEGRITY_MODE,
+    precacheMissingCount: missingUrls.length,
+    precacheMissingUrls: missingUrls.slice(0, 12)
+  };
+}
+
 const OFFLINE_FALLBACK_HTML = `<!DOCTYPE html><html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#0b0f0c"><title>Rotace a kalkulačky</title><style>html,body{margin:0;min-height:100%;background:#0b0f0c;color:#eef6ee;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}body{display:grid;place-items:center;padding:24px}main{max-width:440px;width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:24px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.35)}h1{font-size:1.35rem;line-height:1.2;margin:0 0 12px}p{margin:0;color:rgba(238,246,238,.78);line-height:1.5}small{display:block;margin-top:14px;color:rgba(238,246,238,.58)}</style></head><body><main><h1>Jsi offline</h1><p>Appka je dostupná v omezeném režimu. Jakmile se připojení vrátí, synchronizuje se poslední stav automaticky.</p><small>Rotace a kalkulačky</small></main></body></html>`;
 
 async function writeCacheStatusMeta(cache, summary) {
@@ -187,6 +215,7 @@ async function writeCacheStatusMeta(cache, summary) {
       precacheFetchMode: PRECACHE_FETCH_MODE,
       runtimeStoreMode: RUNTIME_STORE_MODE,
       sameOriginFallbackMode: SAME_ORIGIN_FALLBACK_MODE,
+      precacheIntegrityMode: PRECACHE_INTEGRITY_MODE,
       savedAt: Date.now()
     }, summary || {});
     await cache.put(SW_CACHE_META_URL, new Response(JSON.stringify(payload), {
@@ -220,12 +249,13 @@ async function precacheAppShellSafe() {
       console.warn('[sw] precache item skipped', url, err);
     }
   }));
-  const summary = {
+  const integrity = await getPrecacheIntegritySummary(cache);
+  const summary = Object.assign({
     precacheSuccessCount: successCount,
     precacheFailedCount: failedUrls.length,
     precacheFailedUrls: failedUrls.slice(0, 12),
     precacheCompletedAt: Date.now()
-  };
+  }, integrity);
   await writeCacheStatusMeta(cache, summary);
   return summary;
 }
@@ -241,6 +271,7 @@ async function getSwCacheStatus() {
       const metaResponse = await staticCache.match(SW_CACHE_META_URL, { ignoreSearch: true });
       if (metaResponse) meta = await metaResponse.json();
     } catch (err) {}
+    const integrity = await getPrecacheIntegritySummary(staticCache);
     let navigationPreloadEnabled = false;
     try {
       if ('navigationPreload' in self.registration && self.registration.navigationPreload && typeof self.registration.navigationPreload.getState === 'function') {
@@ -253,7 +284,7 @@ async function getSwCacheStatus() {
       const clientsList = await self.clients.matchAll({ includeUncontrolled: true, type: 'window' });
       clientsCount = Array.isArray(clientsList) ? clientsList.length : 0;
     } catch (err) {}
-    return Object.assign({}, meta || {}, {
+    return Object.assign({}, meta || {}, integrity || {}, {
       type: 'sw-cache-status',
       cacheVersion: CACHE_VERSION,
       appVersion: SW_APP_VERSION,
@@ -267,6 +298,7 @@ async function getSwCacheStatus() {
       precacheFetchMode: PRECACHE_FETCH_MODE,
       runtimeStoreMode: RUNTIME_STORE_MODE,
       sameOriginFallbackMode: SAME_ORIGIN_FALLBACK_MODE,
+      precacheIntegrityMode: PRECACHE_INTEGRITY_MODE,
       navigationPreloadEnabled,
       clientsCount,
       checkedAt: Date.now()
@@ -303,7 +335,7 @@ self.addEventListener('message', (event) => {
   if (data.type === 'GET_VERSION') {
     try {
       if (event.source && event.source.postMessage) {
-        event.source.postMessage({ type: 'sw-version', version: CACHE_VERSION, appVersion: SW_APP_VERSION, appShellCount: APP_SHELL_URLS.length, runtimeMaxEntries: MAX_RUNTIME_CACHE_ENTRIES, cacheLookupMode: CACHE_LOOKUP_MODE, precacheFetchMode: PRECACHE_FETCH_MODE, runtimeStoreMode: RUNTIME_STORE_MODE, sameOriginFallbackMode: SAME_ORIGIN_FALLBACK_MODE });
+        event.source.postMessage({ type: 'sw-version', version: CACHE_VERSION, appVersion: SW_APP_VERSION, appShellCount: APP_SHELL_URLS.length, runtimeMaxEntries: MAX_RUNTIME_CACHE_ENTRIES, cacheLookupMode: CACHE_LOOKUP_MODE, precacheFetchMode: PRECACHE_FETCH_MODE, runtimeStoreMode: RUNTIME_STORE_MODE, sameOriginFallbackMode: SAME_ORIGIN_FALLBACK_MODE, precacheIntegrityMode: PRECACHE_INTEGRITY_MODE });
       }
     } catch (err) {}
     return;
