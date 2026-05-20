@@ -1,3 +1,10 @@
+## v.1.1 (670)
+- Piškvorky jsou přesunuté z rozbalovací složky „Ve vývoji“ mezi běžné hry.
+- V nastavení profilu se po přihlášení schová přihlašovací pole; pro jiný profil je potřeba se nejdřív odhlásit.
+- Samostatná herní sekce Statistiky je schovaná jako duplicitní, výsledky zůstávají v Profilech.
+- Theme systém má více výraznějších témat, přísnější unlock přes hry + achievementy a jasnější progress text u zamčených skinů.
+- Verze sjednocena na v.1.1 (670), cache na v1.1-670 a Supabase realtime kanál na rak-public-live-v670.
+
 ## v.1.1 (669)
 - Piškvorky: při přepnutí na Proti AI nebo Na jednom mobilu se už nepřebírá online rozehraná hra.
 - Tlačítko Hrát proti AI / Hrát na mobilu zakládá vždy čistou novou partii.

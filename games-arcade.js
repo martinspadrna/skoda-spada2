@@ -2,9 +2,9 @@
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
 
-  // v.1.1 (557): Fáze 5 zůstává uzavřená; herní pravidla beze změny, zpevněné je jen Supabase session ukládání online her.
-  const CORE_GAMES = [];
-  const EXTRA_GAMES = ['ttt', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
+  // v.1.1 (670): Piškvorky jsou hotová hra mimo složku Ve vývoji; ostatní arcade hry zůstávají ve vývoji.
+  const CORE_GAMES = ['ttt'];
+  const EXTRA_GAMES = ['2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);
   const POINT_SCALE = 1000000000;
   const ARC_KEY = 'arcade';
@@ -197,21 +197,24 @@
 
     const total = gamesGetTotals(account);
     const baseAchievements = [
-      { id: 'start', title: 'První krok', desc: 'Zahraj si první hru', goalText: '1 hra', progress: (a) => a.totalPlays, target: 1 },
-      { id: 'ten', title: 'Desítka', desc: 'Nasbírej 10 her', goalText: '10 her', progress: (a) => a.totalPlays, target: 10 }
+      { id: 'start', title: 'První zápis', desc: 'Odehraj první započítanou hru', goalText: '1 hra', progress: (a) => a.totalPlays, target: 1 },
+      { id: 'ten', title: 'Rozjezd', desc: 'Odehraj 10 započítaných her', goalText: '10 her', progress: (a) => a.totalPlays, target: 10 },
+      { id: 'thirty', title: 'Držák', desc: 'Odehraj 30 započítaných her', goalText: '30 her', progress: (a) => a.totalPlays, target: 30 },
+      { id: 'sixty', title: 'Mazák', desc: 'Odehraj 60 započítaných her', goalText: '60 her', progress: (a) => a.totalPlays, target: 60 }
     ];
     const gameAchievements = ALL_GAMES.map((gameId) => {
       const meta = META[gameId] || { title: gameId, subtitle: '', unit: '' };
+      const target = gameId === 'ttt' ? 10 : 5;
       return {
         id: 'game-' + gameId,
         title: meta.title,
-        desc: meta.subtitle || 'Zahraj si a ulož první výsledek.',
-        goalText: '1 spuštění',
+        desc: meta.subtitle || 'Zahraj si a ulož několik výsledků.',
+        goalText: String(target) + ' započítaných her',
         progress: (a) => {
           const st = getArcadeProfileStat(a && a.account ? a.account : a, gameId);
           return Number(st.plays || 0) || 0;
         },
-        target: 1
+        target
       };
     });
 
@@ -742,8 +745,8 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function renderLaunchTiles() {
     const grid = document.getElementById('gamesGrid');
     if (!grid) return;
-    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|');
-    if (grid.dataset && grid.dataset.arcadeLaunchSig === launchSig && grid.querySelector('.gamesDevFolder')) {
+    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v670';
+    if (grid.dataset && grid.dataset.arcadeLaunchSig === launchSig && grid.querySelector('.gamesDevFolder') && grid.querySelector('[data-game="ttt"]')) {
       gamePerf.launchRenderSkips = Number(gamePerf.launchRenderSkips || 0) + 1;
       return;
     }

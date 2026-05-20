@@ -6133,3 +6133,29 @@ html body.tttOpen .tttOverlay .tttResultRestartBtn:hover{
   color:#FFFFFF !important;
   -webkit-text-fill-color:#FFFFFF !important;
 }
+
+
+/* v.1.1 (670) – Hry: statistiky sjednocené do Profilů + výraznější theme systém. */
+#games .gamesStatsFolder{display:none !important;}
+.appMenuThemeCard.isLocked{opacity:.62;filter:saturate(.72);}
+.appMenuThemeBadge{line-height:1.25 !important;}
+html[data-rak-theme] .bottomNav .bottomNavItem.active,
+html[data-rak-theme] .bottomNav .navItem.active,
+html[data-rak-theme] .gamesLaunchTile,
+html[data-rak-theme] .calcTile,
+html[data-rak-theme] .appMenuThemeCard.isActive{
+  border-color:var(--rakThemeBorder, rgba(124,255,124,.22)) !important;
+  box-shadow:0 14px 34px rgba(0,0,0,.24), 0 0 22px var(--rakThemeGlow, rgba(124,255,124,.18)) !important;
+}
+html[data-rak-theme] .appMenuThemeCard.isActive .appMenuThemeSwatch,
+html[data-rak-theme] .gamesProfileAvatar,
+html[data-rak-theme] .calcTileIcon{
+  box-shadow:0 0 22px var(--rakThemeGlow, rgba(124,255,124,.24)) !important;
+}
+html[data-rak-theme] .gamesAchievementBar span,
+html[data-rak-theme] .gamesStatsXpBar span{
+  background:linear-gradient(90deg, var(--green), var(--green2)) !important;
+  box-shadow:0 0 16px var(--rakThemeGlow, rgba(124,255,124,.25)) !important;
+}
+#games .gamesAccountCard.isLoggedIn #gamesAccountEntryRow{display:none !important;}
+#games .gamesAccountCard.isLoggedIn #gamesAccountCurrent{display:flex !important;}

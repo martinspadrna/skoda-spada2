@@ -5958,23 +5958,21 @@ function gamesApplyActiveAccountUI(account) {
   if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(nameEl, next ? next.name : 'Bez přihlášení', 'gamesAccountName');
   else nameEl.textContent = next ? next.name : 'Bez přihlášení';
   const nextAccountHint = next
-    ? 'Přihlášeno. Můžeš hned zadat jiné číslo a účet přepsat.'
+    ? 'Přihlášeno. Pro přihlášení jiného profilu se nejdřív odhlas.'
     : 'Bez účtu můžeš hrát dál. Statistiky se ukládají jen po přihlášení číslem.';
   if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(hintEl, nextAccountHint, 'gamesAccountHint');
   else hintEl.textContent = nextAccountHint;
-  entryRow.style.display = '';
+  entryRow.style.display = next ? 'none' : '';
   hintEl.style.display = '';
   hintEl.hidden = false;
-  currentEl.style.display = 'none';
-  currentEl.hidden = true;
-  if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(currentEl, '', 'gamesAccountCurrent');
-  else currentEl.textContent = '';
-  if (next) {
-    inputEl.value = '';
-    inputEl.placeholder = 'Zadej poslední 4 číslice os.č.';
-  } else {
-    inputEl.placeholder = 'Zadej poslední 4 číslice os.č.';
-  }
+  currentEl.style.display = next ? 'flex' : 'none';
+  currentEl.hidden = !next;
+  const currentText = next ? ('Aktivní profil: ' + String(next.name || next.id || '').trim()) : '';
+  if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(currentEl, currentText, 'gamesAccountCurrent');
+  else currentEl.textContent = currentText;
+  inputEl.value = next ? '' : inputEl.value;
+  inputEl.disabled = !!next;
+  inputEl.placeholder = next ? 'Nejdřív se odhlas' : 'Zadej poslední 4 číslice os.č.';
   if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(clearBtn, next ? 'Odhlásit' : 'Bez účtu', 'gamesAccountClearBtn');
   else clearBtn.textContent = next ? 'Odhlásit' : 'Bez účtu';
   clearBtn.style.minWidth = next ? '46px' : '';
@@ -6112,6 +6110,11 @@ function gamesRenderAccountChips() {
   if (!inputEl.dataset.bound) {
     inputEl.dataset.bound = '1';
     const submit = async () => {
+      const currentProfile = gamesGetProfile();
+      if (currentProfile && currentProfile.activeAccountId) {
+        hintEl.textContent = 'Nejdřív se odhlas a pak se můžeš přihlásit jako někdo jiný.';
+        return;
+      }
       const typed = String(inputEl.value || '').trim();
       if (!typed) {
         syncVisibleAccount(null);
@@ -6316,31 +6319,33 @@ function gamesRenderProfiles() {
 }
 
 const GAMES_ACHIEVEMENT_DEFS = [
-  { id: 'start', title: 'První krok', desc: 'Zahraj si první hru', goalText: '1 hra', progress: (a) => a.totalPlays, target: 1 },
-  { id: 'ten', title: 'Desítka', desc: 'Nasbírej 10 her', goalText: '10 her', progress: (a) => a.totalPlays, target: 10 },
-  { id: 'twentyfive', title: 'Rozjezd', desc: 'Nasbírej 25 her', goalText: '25 her', progress: (a) => a.totalPlays, target: 25 },
-  { id: 'fifty', title: 'Mazák', desc: 'Nasbírej 50 her', goalText: '50 her', progress: (a) => a.totalPlays, target: 50 },
-  { id: 'hundred', title: 'Veterán', desc: 'Nasbírej 100 her', goalText: '100 her', progress: (a) => a.totalPlays, target: 100 },
-  { id: 'ttt_5', title: 'Piškvorky', desc: 'Odehraj 5 kol', goalText: '5 kol', progress: (a) => a.ttt.plays || 0, target: 5 },
-  { id: 'ttt_10_wins', title: 'Piškvorkový boss', desc: 'Vyhraj 10krát v piškvorkách', goalText: '10 výher', progress: (a) => a.ttt.wins || 0, target: 10 },
-  { id: '2048_500', title: '2048 start', desc: 'Dostaň se na 500 bodů', goalText: '500 bodů', progress: (a) => a.g2048.bestScore || 0, target: 500 },
-  { id: '2048_tile', title: '2048 tile', desc: 'Dostaň tile 256', goalText: 'tile 256', progress: (a) => a.g2048.bestTile || 0, target: 256 },
-  { id: 'snake_15', title: 'Snake master', desc: 'Dostaň snake na délku 15', goalText: '15 bodů', progress: (a) => a.snake.bestScore || 0, target: 15 },
-  { id: 'snake_30', title: 'Hadí legenda', desc: 'Dostaň snake na délku 30', goalText: '30 bodů', progress: (a) => a.snake.bestScore || 0, target: 30 },
-  { id: 'flap_10', title: 'Flappy pilot', desc: 'Dej ve Flapu 10 bodů', goalText: '10 bodů', progress: (a) => a.flap.bestScore || 0, target: 10 },
-  { id: 'flap_20', title: 'Letecký boss', desc: 'Dej ve Flapu 20 bodů', goalText: '20 bodů', progress: (a) => a.flap.bestScore || 0, target: 20 },
-  { id: 'aim_250', title: 'Rychlá ruka', desc: 'Nahraj 250 bodů v Aim Traineru', goalText: '250 bodů', progress: (a) => Number((a.arcade && a.arcade.aim && a.arcade.aim.bestScore) || 0), target: 250 },
-  { id: 'reaction_200', title: 'Blesk', desc: 'Zasaž reakci pod 200 ms', goalText: '200 ms', progress: (a) => Number((a.arcade && a.arcade.reaction && a.arcade.reaction.bestTimeMs) || 0) ? (1000 - Number((a.arcade && a.arcade.reaction && a.arcade.reaction.bestTimeMs) || 0)) : 0, target: 800 },
-  { id: 'tetris_500', title: 'Tetris master', desc: 'Nasbírej 500 bodů v Tetrisu', goalText: '500 bodů', progress: (a) => Number((a.arcade && a.arcade.tetris && a.arcade.tetris.bestScore) || 0), target: 500 },
-  { id: 'shooter_500', title: 'Space ace', desc: 'Nasbírej 500 bodů ve Space Shooteru', goalText: '500 bodů', progress: (a) => Number((a.arcade && a.arcade.shooter && a.arcade.shooter.bestScore) || 0), target: 500 },
-  { id: 'brick_500', title: 'Brick breaker', desc: 'Nasbírej 500 bodů v Brick Breakeru', goalText: '500 bodů', progress: (a) => Number((a.arcade && a.arcade.brick && a.arcade.brick.bestScore) || 0), target: 500 },
-  { id: 'doodle_500', title: 'Doodle jumper', desc: 'Nasbírej 500 bodů v Doodle Jumpu', goalText: '500 bodů', progress: (a) => Number((a.arcade && a.arcade.doodle && a.arcade.doodle.bestScore) || 0), target: 500 },
-  { id: 'bubble_250', title: 'Bubble pop', desc: 'Nasbírej 250 bodů v Bubble Shooteru', goalText: '250 bodů', progress: (a) => Number((a.arcade && a.arcade.bubble && a.arcade.bubble.bestScore) || 0), target: 250 },
-  { id: 'sudoku_1', title: 'Sudoku solver', desc: 'Vyřeš první Sudoku', goalText: '1 dokončení', progress: (a) => Number((a.arcade && a.arcade.sudoku && a.arcade.sudoku.plays) || 0), target: 1 },
-  { id: 'mines_10', title: 'Mines hunter', desc: 'Dej 10 bodů v Minesweeperu', goalText: '10 bodů', progress: (a) => Number((a.arcade && a.arcade.mines && a.arcade.mines.bestScore) || 0), target: 10 },
-  { id: 'memory_10', title: 'Memory king', desc: 'Dostaň 10 bodů v Memory', goalText: '10 bodů', progress: (a) => Number((a.arcade && a.arcade.memory && a.arcade.memory.bestScore) || 0), target: 10 },
-  { id: 'bomber_5', title: 'Bomber pilot', desc: 'Nasbírej 5 her v Bomberman mini', goalText: '5 her', progress: (a) => Number((a.arcade && a.arcade.bomber && a.arcade.bomber.plays) || 0), target: 5 },
-  { id: 'daily_1', title: 'Daily grinder', desc: 'Splň první denní challenge', goalText: '1 challenge', progress: (a) => Number((a.arcade && a.arcade.daily && a.arcade.daily.plays) || 0), target: 1 }
+  { id: 'start', title: 'První zápis', desc: 'Odehraj první započítanou hru', goalText: '1 hra', progress: (a) => a.totalPlays, target: 1 },
+  { id: 'ten', title: 'Rozjezd', desc: 'Odehraj 10 započítaných her', goalText: '10 her', progress: (a) => a.totalPlays, target: 10 },
+  { id: 'thirty', title: 'Držák', desc: 'Odehraj 30 započítaných her', goalText: '30 her', progress: (a) => a.totalPlays, target: 30 },
+  { id: 'sixty', title: 'Mazák', desc: 'Odehraj 60 započítaných her', goalText: '60 her', progress: (a) => a.totalPlays, target: 60 },
+  { id: 'hundred', title: 'Veterán', desc: 'Odehraj 100 započítaných her', goalText: '100 her', progress: (a) => a.totalPlays, target: 100 },
+  { id: 'ttt_10', title: 'Piškvorkář', desc: 'Odehraj 10 partií piškvorek', goalText: '10 partií', progress: (a) => a.ttt.plays || 0, target: 10 },
+  { id: 'ttt_25', title: 'Taktik', desc: 'Odehraj 25 partií piškvorek', goalText: '25 partií', progress: (a) => a.ttt.plays || 0, target: 25 },
+  { id: 'ttt_15_wins', title: 'Piškvorkový boss', desc: 'Vyhraj 15krát v piškvorkách', goalText: '15 výher', progress: (a) => a.ttt.wins || 0, target: 15 },
+  { id: 'ttt_30_wins', title: 'Nepříjemný soupeř', desc: 'Vyhraj 30krát v piškvorkách', goalText: '30 výher', progress: (a) => a.ttt.wins || 0, target: 30 },
+  { id: '2048_1000', title: '2048 start', desc: 'Dostaň se na 1000 bodů', goalText: '1000 bodů', progress: (a) => a.g2048.bestScore || 0, target: 1000 },
+  { id: '2048_tile_512', title: '2048 tile', desc: 'Dostaň tile 512', goalText: 'tile 512', progress: (a) => a.g2048.bestTile || 0, target: 512 },
+  { id: 'snake_25', title: 'Snake master', desc: 'Dostaň snake na délku 25', goalText: '25 bodů', progress: (a) => a.snake.bestScore || 0, target: 25 },
+  { id: 'snake_45', title: 'Hadí legenda', desc: 'Dostaň snake na délku 45', goalText: '45 bodů', progress: (a) => a.snake.bestScore || 0, target: 45 },
+  { id: 'flap_20', title: 'Flappy pilot', desc: 'Dej ve Flapu 20 bodů', goalText: '20 bodů', progress: (a) => a.flap.bestScore || 0, target: 20 },
+  { id: 'flap_35', title: 'Letecký boss', desc: 'Dej ve Flapu 35 bodů', goalText: '35 bodů', progress: (a) => a.flap.bestScore || 0, target: 35 },
+  { id: 'aim_500', title: 'Rychlá ruka', desc: 'Nahraj 500 bodů v Aim Traineru', goalText: '500 bodů', progress: (a) => Number((a.arcade && a.arcade.aim && a.arcade.aim.bestScore) || 0), target: 500 },
+  { id: 'reaction_180', title: 'Blesk', desc: 'Zasaž reakci pod 180 ms', goalText: 'pod 180 ms', progress: (a) => Number((a.arcade && a.arcade.reaction && a.arcade.reaction.bestTimeMs) || 0) ? Math.max(0, 1000 - Number((a.arcade && a.arcade.reaction && a.arcade.reaction.bestTimeMs) || 0)) : 0, target: 820 },
+  { id: 'tetris_1200', title: 'Tetris master', desc: 'Nasbírej 1200 bodů v Tetrisu', goalText: '1200 bodů', progress: (a) => Number((a.arcade && a.arcade.tetris && a.arcade.tetris.bestScore) || 0), target: 1200 },
+  { id: 'shooter_1200', title: 'Space ace', desc: 'Nasbírej 1200 bodů ve Space Shooteru', goalText: '1200 bodů', progress: (a) => Number((a.arcade && a.arcade.shooter && a.arcade.shooter.bestScore) || 0), target: 1200 },
+  { id: 'brick_1200', title: 'Brick breaker', desc: 'Nasbírej 1200 bodů v Brick Breakeru', goalText: '1200 bodů', progress: (a) => Number((a.arcade && a.arcade.brick && a.arcade.brick.bestScore) || 0), target: 1200 },
+  { id: 'doodle_1200', title: 'Doodle jumper', desc: 'Nasbírej 1200 bodů v Doodle Jumpu', goalText: '1200 bodů', progress: (a) => Number((a.arcade && a.arcade.doodle && a.arcade.doodle.bestScore) || 0), target: 1200 },
+  { id: 'bubble_600', title: 'Bubble pop', desc: 'Nasbírej 600 bodů v Bubble Shooteru', goalText: '600 bodů', progress: (a) => Number((a.arcade && a.arcade.bubble && a.arcade.bubble.bestScore) || 0), target: 600 },
+  { id: 'sudoku_3', title: 'Sudoku solver', desc: 'Vyřeš 3 Sudoku', goalText: '3 dokončení', progress: (a) => Number((a.arcade && a.arcade.sudoku && a.arcade.sudoku.plays) || 0), target: 3 },
+  { id: 'mines_25', title: 'Mines hunter', desc: 'Dej 25 bodů v Minesweeperu', goalText: '25 bodů', progress: (a) => Number((a.arcade && a.arcade.mines && a.arcade.mines.bestScore) || 0), target: 25 },
+  { id: 'memory_25', title: 'Memory king', desc: 'Dostaň 25 bodů v Memory', goalText: '25 bodů', progress: (a) => Number((a.arcade && a.arcade.memory && a.arcade.memory.bestScore) || 0), target: 25 },
+  { id: 'bomber_12', title: 'Bomber pilot', desc: 'Nasbírej 12 her v Bomberman mini', goalText: '12 her', progress: (a) => Number((a.arcade && a.arcade.bomber && a.arcade.bomber.plays) || 0), target: 12 },
+  { id: 'daily_5', title: 'Daily grinder', desc: 'Splň 5 denních challenge', goalText: '5 challenge', progress: (a) => Number((a.arcade && a.arcade.daily && a.arcade.daily.plays) || 0), target: 5 }
 ];
 
 
@@ -7496,16 +7501,19 @@ const RAK_THEME_BASE_VARS = {
   '--soft': '#ccc'
 };
 const RAK_THEME_DEFS = [
-  { id: 'default', label: 'RaK glass', subtitle: 'Čistý zelený základ pro tmavé sklo', color: '#7CFF7C', unlockText: 'Vždy dostupné', minPlays: 0, minAchievements: 0, vars: { '--bg': '#07100b', '--panel': 'rgba(18,28,22,.72)', '--panel2': 'rgba(24,36,28,.68)', '--green': '#4ADE80', '--green2': '#B7FFBE', '--muted': '#91a396', '--soft': '#e5f7e9' } },
-  { id: 'emerald', label: 'Škoda emerald', subtitle: 'Moderní zelená ve stylu novější identity', color: '#78FAAE', unlockText: 'Odemkne se po 5 hrách', minPlays: 5, minAchievements: 0, vars: { '--bg': '#04100d', '--panel': 'rgba(8,32,25,.70)', '--panel2': 'rgba(13,48,38,.66)', '--green': '#78FAAE', '--green2': '#D5FFE5', '--muted': '#96b7a6', '--soft': '#e6fff0' } },
-  { id: 'midnight', label: 'Midnight blue', subtitle: 'Tmavé modré sklo pro výrazný kontrast', color: '#60A5FA', unlockText: 'Odemkne se po 12 hrách', minPlays: 12, minAchievements: 0, vars: { '--bg': '#020617', '--panel': 'rgba(15,23,42,.70)', '--panel2': 'rgba(30,41,59,.66)', '--green': '#60A5FA', '--green2': '#BFDBFE', '--muted': '#93a4bd', '--soft': '#e7f0ff' } },
-  { id: 'aurora', label: 'Aurora cyan', subtitle: 'Tyrkysový glow pod glass kartami', color: '#22D3EE', unlockText: 'Odemkne se po 20 hrách', minPlays: 20, minAchievements: 0, vars: { '--bg': '#03121d', '--panel': 'rgba(6,24,38,.70)', '--panel2': 'rgba(8,47,73,.62)', '--green': '#22D3EE', '--green2': '#A5F3FC', '--muted': '#8fb7c3', '--soft': '#e5fbff' } },
-  { id: 'neon', label: 'Neon violet', subtitle: 'Fialovo-růžový moderní neon', color: '#D946EF', unlockText: 'Odemkne se po 30 hrách', minPlays: 30, minAchievements: 0, vars: { '--bg': '#12061b', '--panel': 'rgba(37,15,52,.70)', '--panel2': 'rgba(62,20,82,.64)', '--green': '#D946EF', '--green2': '#F5D0FE', '--muted': '#b99ac6', '--soft': '#f8eaff' } },
-  { id: 'graphite', label: 'Titanium graphite', subtitle: 'Prémiový šedo-stříbrný dark', color: '#CBD5E1', unlockText: 'Odemkne se po 40 hrách', minPlays: 40, minAchievements: 0, vars: { '--bg': '#05070a', '--panel': 'rgba(17,24,39,.72)', '--panel2': 'rgba(31,41,55,.64)', '--green': '#CBD5E1', '--green2': '#F8FAFC', '--muted': '#a7b0bd', '--soft': '#edf2f7' } },
-  { id: 'ice', label: 'Ice glass', subtitle: 'Ledově světlý akcent na tmavém podkladu', color: '#99F6E4', unlockText: 'Odemkne se po 55 hrách', minPlays: 55, minAchievements: 0, vars: { '--bg': '#021011', '--panel': 'rgba(8,47,73,.62)', '--panel2': 'rgba(15,118,110,.46)', '--green': '#99F6E4', '--green2': '#CCFBF1', '--muted': '#9ec5c3', '--soft': '#edfffb' } },
-  { id: 'amoled', label: 'AMOLED neon', subtitle: 'Skoro černá, maximum kontrastu', color: '#B8FF67', unlockText: 'Odemkne se po 8 achievementech', minPlays: 60, minAchievements: 8, vars: { '--bg': '#000000', '--panel': 'rgba(7,10,8,.76)', '--panel2': 'rgba(12,18,14,.68)', '--green': '#B8FF67', '--green2': '#ECFCCB', '--muted': '#939c91', '--soft': '#f4ffe9' } },
-  { id: 'sunset', label: 'Sunset plasma', subtitle: 'Teplý oranžovo-růžový glass', color: '#FB7185', unlockText: 'Odemkne se po 75 hrách', minPlays: 75, minAchievements: 0, vars: { '--bg': '#15050a', '--panel': 'rgba(57,18,28,.68)', '--panel2': 'rgba(87,28,38,.60)', '--green': '#FB7185', '--green2': '#FECDD3', '--muted': '#c7a0a8', '--soft': '#fff0f3' } }
-]
+  { id: 'default', label: 'RaK glass', subtitle: 'Základní zelený glass styl', color: '#7CFF7C', unlockText: 'Vždy dostupné', minPlays: 0, minAchievements: 0, vars: { '--bg': '#07100b', '--panel': 'rgba(18,28,22,.72)', '--panel2': 'rgba(24,36,28,.68)', '--green': '#4ADE80', '--green2': '#B7FFBE', '--muted': '#91a396', '--soft': '#e5f7e9', '--rakThemeGlow': 'rgba(124,255,124,.30)', '--rakThemeBorder': 'rgba(124,255,124,.20)' } },
+  { id: 'emerald-pro', label: 'Emerald Pro', subtitle: 'Sytá zelená, výraznější aktivní prvky', color: '#00FF88', unlockText: '10 her + 2 achievementy', minPlays: 10, minAchievements: 2, vars: { '--bg': '#02110b', '--panel': 'rgba(5,40,26,.76)', '--panel2': 'rgba(10,64,42,.68)', '--green': '#00FF88', '--green2': '#B6FFD8', '--muted': '#8bc2a6', '--soft': '#e8fff2', '--rakThemeGlow': 'rgba(0,255,136,.36)', '--rakThemeBorder': 'rgba(0,255,136,.28)' } },
+  { id: 'midnight-blue', label: 'Midnight Blue', subtitle: 'Modrý OLED kontrast s chladným glow', color: '#38BDF8', unlockText: '20 her + 4 achievementy', minPlays: 20, minAchievements: 4, vars: { '--bg': '#020617', '--panel': 'rgba(9,22,49,.78)', '--panel2': 'rgba(18,39,82,.68)', '--green': '#38BDF8', '--green2': '#BAE6FD', '--muted': '#90a9c4', '--soft': '#e8f5ff', '--rakThemeGlow': 'rgba(56,189,248,.38)', '--rakThemeBorder': 'rgba(56,189,248,.28)' } },
+  { id: 'cyber-cyan', label: 'Cyber Cyan', subtitle: 'Tyrkysový neon s ostrým futuristickým akcentem', color: '#00F5FF', unlockText: '35 her + 6 achievementů', minPlays: 35, minAchievements: 6, vars: { '--bg': '#001217', '--panel': 'rgba(0,35,45,.78)', '--panel2': 'rgba(0,68,78,.62)', '--green': '#00F5FF', '--green2': '#B8FEFF', '--muted': '#8fc8cf', '--soft': '#e8ffff', '--rakThemeGlow': 'rgba(0,245,255,.42)', '--rakThemeBorder': 'rgba(0,245,255,.30)' } },
+  { id: 'violet-pulse', label: 'Violet Pulse', subtitle: 'Fialovo-růžový neon, hodně viditelná změna UI', color: '#D946EF', unlockText: '50 her + 8 achievementů', minPlays: 50, minAchievements: 8, vars: { '--bg': '#12061b', '--panel': 'rgba(45,16,65,.78)', '--panel2': 'rgba(72,23,96,.66)', '--green': '#D946EF', '--green2': '#F5D0FE', '--muted': '#c39acb', '--soft': '#faeaff', '--rakThemeGlow': 'rgba(217,70,239,.40)', '--rakThemeBorder': 'rgba(217,70,239,.30)' } },
+  { id: 'crimson-alert', label: 'Crimson Alert', subtitle: 'Červený sportovní skin s výrazným glow', color: '#FF3B3B', unlockText: '65 her + 10 achievementů', minPlays: 65, minAchievements: 10, vars: { '--bg': '#150608', '--panel': 'rgba(55,12,18,.78)', '--panel2': 'rgba(82,18,26,.66)', '--green': '#FF3B3B', '--green2': '#FFC9C9', '--muted': '#c99a9d', '--soft': '#fff0f0', '--rakThemeGlow': 'rgba(255,59,59,.42)', '--rakThemeBorder': 'rgba(255,59,59,.32)' } },
+  { id: 'sunset-plasma', label: 'Sunset Plasma', subtitle: 'Oranžovo-růžový teplý glass', color: '#FB923C', unlockText: '80 her + 12 achievementů', minPlays: 80, minAchievements: 12, vars: { '--bg': '#17090a', '--panel': 'rgba(65,28,18,.76)', '--panel2': 'rgba(92,38,24,.64)', '--green': '#FB923C', '--green2': '#FED7AA', '--muted': '#c7a28f', '--soft': '#fff4e8', '--rakThemeGlow': 'rgba(251,146,60,.40)', '--rakThemeBorder': 'rgba(251,146,60,.30)' } },
+  { id: 'graphite', label: 'Titanium Graphite', subtitle: 'Prémiově šedý dark mód bez barevného cirkusu', color: '#CBD5E1', unlockText: '100 her + 14 achievementů', minPlays: 100, minAchievements: 14, vars: { '--bg': '#05070a', '--panel': 'rgba(17,24,39,.78)', '--panel2': 'rgba(31,41,55,.66)', '--green': '#CBD5E1', '--green2': '#F8FAFC', '--muted': '#a7b0bd', '--soft': '#edf2f7', '--rakThemeGlow': 'rgba(203,213,225,.28)', '--rakThemeBorder': 'rgba(203,213,225,.22)' } },
+  { id: 'ice-prism', label: 'Ice Prism', subtitle: 'Ledově světlý cyan/teal akcent', color: '#99F6E4', unlockText: '120 her + 16 achievementů', minPlays: 120, minAchievements: 16, vars: { '--bg': '#011011', '--panel': 'rgba(10,49,59,.74)', '--panel2': 'rgba(17,90,92,.58)', '--green': '#99F6E4', '--green2': '#CCFBF1', '--muted': '#9ec5c3', '--soft': '#edfffb', '--rakThemeGlow': 'rgba(153,246,228,.38)', '--rakThemeBorder': 'rgba(153,246,228,.30)' } },
+  { id: 'toxic-lime', label: 'Toxic Lime', subtitle: 'Fosforová limetka pro maximální arcade vibe', color: '#C6FF00', unlockText: '145 her + 18 achievementů', minPlays: 145, minAchievements: 18, vars: { '--bg': '#071100', '--panel': 'rgba(25,45,4,.78)', '--panel2': 'rgba(46,72,8,.64)', '--green': '#C6FF00', '--green2': '#F1FFB3', '--muted': '#b6c98f', '--soft': '#fbffe6', '--rakThemeGlow': 'rgba(198,255,0,.42)', '--rakThemeBorder': 'rgba(198,255,0,.32)' } },
+  { id: 'royal-gold', label: 'Royal Gold', subtitle: 'Zlatý achievement skin pro dlouhodobé hraní', color: '#FACC15', unlockText: '170 her + 20 achievementů', minPlays: 170, minAchievements: 20, vars: { '--bg': '#130d02', '--panel': 'rgba(54,38,5,.78)', '--panel2': 'rgba(84,58,8,.66)', '--green': '#FACC15', '--green2': '#FEF3C7', '--muted': '#c7b78a', '--soft': '#fff8dc', '--rakThemeGlow': 'rgba(250,204,21,.40)', '--rakThemeBorder': 'rgba(250,204,21,.32)' } },
+  { id: 'amoled-legend', label: 'AMOLED Legend', subtitle: 'Skoro černá, ostrý neon, odměna pro největší grind', color: '#B8FF67', unlockText: '200 her + 22 achievementů', minPlays: 200, minAchievements: 22, vars: { '--bg': '#000000', '--panel': 'rgba(5,8,6,.86)', '--panel2': 'rgba(10,16,11,.74)', '--green': '#B8FF67', '--green2': '#ECFCCB', '--muted': '#939c91', '--soft': '#f4ffe9', '--rakThemeGlow': 'rgba(184,255,103,.45)', '--rakThemeBorder': 'rgba(184,255,103,.34)' } }
+];
 window.RAK_THEME_DEFS = RAK_THEME_DEFS;
 
 const RAK_BACKGROUND_STORAGE_KEY = APP_KEY + ':background_v1';
@@ -8284,7 +8292,12 @@ function renderThemeSettingsCards() {
     card.setAttribute('aria-pressed', id === current ? 'true' : 'false');
     const badge = card.querySelector('.appMenuThemeBadge');
     if (badge && theme) {
-      const nextBadgeText = unlocked ? (theme.unlockText || 'Odemčeno') : ('Zamčeno · ' + (theme.unlockText || 'podmínka nesplněna'));
+      const neededPlays = Number(theme.minPlays || 0) || 0;
+      const neededAchievements = Number(theme.minAchievements || 0) || 0;
+      const progressText = neededPlays || neededAchievements
+        ? (' · máš ' + String(metrics.totalPlays) + '/' + String(neededPlays) + ' her, ' + String(metrics.achievements) + '/' + String(neededAchievements) + ' ach.')
+        : '';
+      const nextBadgeText = unlocked ? 'Odemčeno' : ('Zamčeno · ' + (theme.unlockText || 'podmínka nesplněna') + progressText);
       if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(badge, nextBadgeText, 'themeBadge-' + id);
       else badge.textContent = nextBadgeText;
     }
@@ -8297,7 +8310,7 @@ function renderThemeSettingsCards() {
         const nextUnlocked = id === 'default' || (Number(nextTheme.minPlays || 0) <= nextMetrics.totalPlays && Number(nextTheme.minAchievements || 0) <= nextMetrics.achievements);
         if (!nextUnlocked) {
           if (hint) {
-            const nextHintText = nextTheme.unlockText || 'Tento theme je zatím zamčený.';
+            const nextHintText = 'Zatím zamčeno: ' + (nextTheme.unlockText || 'podmínka nesplněna') + '. Aktuálně máš ' + String(nextMetrics.totalPlays) + ' her a ' + String(nextMetrics.achievements) + ' achievementů.';
             if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(hint, nextHintText, 'themeHintLocked');
             else hint.textContent = nextHintText;
           }
@@ -8403,13 +8416,14 @@ function syncGamesLockedSections() {
   const active = profile && profile.activeAccountId && profile.accounts ? profile.accounts[profile.activeAccountId] : null;
   const lockedEls = [
     document.querySelector('#games .gamesProfilesFolder'),
-    document.querySelector('#games .gamesAchievementsFolder'),
-    document.querySelector('#games .gamesStatsFolder')
+    document.querySelector('#games .gamesAchievementsFolder')
   ];
   lockedEls.forEach((el) => {
     if (!el) return;
     el.hidden = !active;
   });
+  const duplicateStatsFolder = document.querySelector('#games .gamesStatsFolder');
+  if (duplicateStatsFolder) duplicateStatsFolder.hidden = true;
 }
 
 

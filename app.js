@@ -1,4 +1,4 @@
-// v.1.1 (669) – Piškvorky: AI/lokální hra vždy čistá, profily tahají online statistiky.
+// v.1.1 (670) – Hry: Piškvorky hotové, profil bez přepnutí účtu před odhlášením, theme update.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
