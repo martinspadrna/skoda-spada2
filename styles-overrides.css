@@ -7317,3 +7317,106 @@ html[data-lightweight="1"] body.tttOpen .tttOverlay .tttBoardWrap{
   -webkit-backdrop-filter:none !important;
   backdrop-filter:none !important;
 }
+
+
+/* v.1.1 (684) – Flappy Car: hotová mobile-first hra v aktuálním theme/pozadí. */
+body.gamesOpen #games .gamesGamePanel.gameFlapPanel{
+  width:100% !important;
+  max-width:none !important;
+  box-sizing:border-box !important;
+  gap:10px !important;
+  align-items:center !important;
+  background:transparent !important;
+  padding-top:0 !important;
+}
+body.gamesOpen #games .gameFlapHud{
+  display:grid !important;
+  grid-template-columns:repeat(3, minmax(0, 1fr)) !important;
+  gap:8px !important;
+  width:100% !important;
+  max-width:none !important;
+  margin:0 0 8px !important;
+  padding:0 !important;
+  box-sizing:border-box !important;
+}
+body.gamesOpen #games .gameFlapHud .game2048ScoreCard{
+  width:100% !important;
+  min-width:0 !important;
+  min-height:54px !important;
+  box-sizing:border-box !important;
+  border-color:var(--rakThemeBorder, rgba(124,255,124,.20)) !important;
+  background:linear-gradient(135deg, rgba(255,255,255,.090), rgba(255,255,255,.026)), radial-gradient(circle at 18% 12%, color-mix(in srgb, var(--green, #7CFF7C) 16%, transparent), transparent 48%), var(--panel, rgba(12,18,15,.72)) !important;
+}
+body.gamesOpen #games .gameFlapBoardWrap{
+  width:100% !important;
+  display:flex !important;
+  justify-content:center !important;
+  box-sizing:border-box !important;
+}
+body.gamesOpen #games .gameBoard.gameFlapBoard{
+  width:min(100%, calc(100vw - 16px)) !important;
+  max-width:min(100%, 520px) !important;
+  height:clamp(270px, 48dvh, 430px) !important;
+  min-height:270px !important;
+  border-radius:26px !important;
+  border-color:var(--rakThemeBorder, rgba(124,255,124,.22)) !important;
+  background:linear-gradient(135deg, rgba(255,255,255,.070), rgba(255,255,255,.018)), radial-gradient(circle at 18% 14%, color-mix(in srgb, var(--green, #7CFF7C) 16%, transparent), transparent 45%), var(--panel2, var(--panel, rgba(12,18,15,.70))) !important;
+  box-shadow:0 18px 46px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.07) !important;
+  touch-action:none !important;
+  user-select:none !important;
+  -webkit-user-select:none !important;
+}
+body.gamesOpen #games .gameFlapCanvas{
+  display:block !important;
+  width:100% !important;
+  height:100% !important;
+  touch-action:none !important;
+}
+body.gamesOpen #games .flapOverlay{
+  position:absolute !important;
+  inset:0 !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  pointer-events:none !important;
+  padding:18px !important;
+  z-index:2 !important;
+}
+body.gamesOpen #games .flapOverlay[hidden]{display:none !important;}
+body.gamesOpen #games .flapOverlayCard{
+  width:min(280px, 86%) !important;
+  padding:14px 16px !important;
+  border-radius:22px !important;
+  border:1px solid var(--rakThemeBorder, rgba(124,255,124,.22)) !important;
+  background:linear-gradient(135deg, rgba(255,255,255,.120), rgba(255,255,255,.040)), var(--panel, rgba(8,14,12,.82)) !important;
+  box-shadow:0 18px 44px rgba(0,0,0,.36), 0 0 24px var(--rakThemeGlow, rgba(124,255,124,.16)) !important;
+  color:var(--soft, #e7fff0) !important;
+  text-align:center !important;
+  backdrop-filter:blur(16px) saturate(140%) !important;
+  -webkit-backdrop-filter:blur(16px) saturate(140%) !important;
+}
+body.gamesOpen #games .flapOverlayCard strong{
+  display:block !important;
+  font-size:18px !important;
+  line-height:1.1 !important;
+  margin-bottom:6px !important;
+}
+body.gamesOpen #games .flapOverlayCard span{
+  display:block !important;
+  font-size:12px !important;
+  line-height:1.25 !important;
+  color:color-mix(in srgb, var(--soft, #e7fff0) 76%, transparent) !important;
+}
+body.gamesOpen #games .gameFlapControls{
+  width:100% !important;
+  max-width:520px !important;
+  display:flex !important;
+  justify-content:flex-end !important;
+  margin-top:0 !important;
+}
+@media (max-width:430px){
+  body.gamesOpen #games .gameFlapHud{gap:7px !important;}
+  body.gamesOpen #games .gameFlapHud .game2048ScoreCard{min-height:48px !important;padding:8px 5px !important;}
+  body.gamesOpen #games .gameFlapHud .game2048ScoreCard span{font-size:9px !important;letter-spacing:.04em !important;}
+  body.gamesOpen #games .gameFlapHud .game2048ScoreCard strong{font-size:clamp(14px, 4vw, 18px) !important;}
+}

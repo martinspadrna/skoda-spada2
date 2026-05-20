@@ -1,4 +1,4 @@
-// v.1.1 (683) – Hry: Piškvorky theme board runtime fix bez zeleno-černé plochy.
+// v.1.1 (685) – Hry: Aim Trainer a Reaction Test mobile-first polish + přesun mezi hotové hry.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

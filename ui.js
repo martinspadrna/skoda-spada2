@@ -379,7 +379,7 @@ function ensureTicTacToeThemeBoardPatch() {
   try {
     const existing = document.getElementById('tttThemeBoardPatch');
     const css = `
-/* v.1.1 (683) – Piškvorky: poslední pojistka proti starému zeleno-černému boardu. */
+/* v.1.1 (684) – Piškvorky: poslední pojistka proti starému zeleno-černému boardu. */
 html body.tttOpen .tttOverlay,
 html body.tttOpen .tttShell,
 html body.tttOpen .tttContent,
@@ -3903,8 +3903,8 @@ function buildAppHistoryHtml(versionText) {
       range: versionText,
       title: 'Aktuální build',
       lines: [
-        'Build v.1.1 (683) finálně odstraňuje starou zeleno-černou vrstvu hrací plochy Piškvorek a přidává runtime pojistku, aby board držel theme/pozadí.',
-        'Série v.1.1 650–683 dotáhla Piškvorky, online pozvánky, PWA launch handler, 2048/Snake mezi hotové hry, herní profily, theme polish a těžší/chytřejší achievementy.',
+        'Build v.1.1 (685) přidává další dvě hotové hry: Aim Trainer a Reaction Test v mobile-first stylu s čistým dotykem, theme/pozadím a započítáním jen po dokončení.',
+        'Série v.1.1 650–685 dotáhla Piškvorky, online pozvánky, PWA launch handler, 2048/Snake/Flappy Car/Aim/Reaction mezi hotové hry, herní profily, theme polish a těžší/chytřejší achievementy.',
         'Sekce „O aplikaci“ je nově stručnější: detailní změny zůstávají v changelogu a tady se historie drží po větších blocích.',
         'Stabilizační audity, Supabase guardy, Láďův režim a finální readiness kontroly zůstávají součástí diagnostiky.'
       ]
@@ -6693,14 +6693,14 @@ function closeGameShell() {
 function renderGameShell(gameId) {
   const stage = document.getElementById('gamesStage');
   if (!stage) return;
-  const titleMap = { ttt: 'Piškvorky', '2048': '2048', snake: 'Snake', flap: 'Flap Bird' };
+  const titleMap = { ttt: 'Piškvorky', '2048': '2048', snake: 'Snake', flap: 'Flappy Car' };
   const title = titleMap[gameId] || 'Hra';
   if (gameId && typeof app !== 'undefined') app.activeGameShell = gameId;
   if (gameId && typeof window.rakGameEngineActivate === 'function') window.rakGameEngineActivate(gameId, 'renderGameShell');
   document.body.classList.add('gamesOpen');
   gamesApplyCompactMode();
   gamesEnsureResizeBinding();
-  const cleanTitleGames = gameId === '2048' || gameId === 'snake';
+  const cleanTitleGames = gameId === '2048' || gameId === 'snake' || gameId === 'flap';
   stage.innerHTML = cleanTitleGames ? [
     '<div class="gamesShell gamesShellNoTitle">',
     '  <button type="button" class="gamesShellBack gamesShellBackFloating" id="legacyGameBackBtn" aria-label="Zpět">Zpět</button>',
@@ -7712,16 +7712,18 @@ function snakeStart() {
   state.timer = setInterval(snakeTick, Number(state.speedMs || 126));
 }
 
-// ---- Flap Bird ----
+// ---- Flappy Car ----
 function flapDefaultState() {
   return {
     y: 0,
     v: 0,
-    gravity: 0.38,
-    lift: -6.8,
+    gravity: 0.36,
+    lift: -6.9,
     pipes: [],
     score: 0,
+    best: 0,
     over: false,
+    completedRecorded: false,
     timer: null,
     frame: 0,
     started: false,
@@ -7730,6 +7732,7 @@ function flapDefaultState() {
     dpr: 1,
     canvasW: 0,
     canvasH: 0,
+    lastTapAt: 0,
     refs: null
   };
 }
@@ -7740,10 +7743,56 @@ function flapResetState(state) {
   state.pipes = [];
   state.score = 0;
   state.over = false;
+  state.completedRecorded = false;
   state.frame = 0;
   state.started = false;
   state.lastTs = 0;
   state.nextPipeAt = 0;
+  state.lastTapAt = 0;
+  if (state.refs && state.refs.overlay) state.refs.overlay.hidden = false;
+}
+
+function flapCssVar(name, fallback) {
+  try {
+    const rootStyle = getComputedStyle(document.documentElement);
+    const bodyStyle = getComputedStyle(document.body);
+    return String((rootStyle.getPropertyValue(name) || bodyStyle.getPropertyValue(name) || fallback || '')).trim() || fallback;
+  } catch (_) {
+    return fallback;
+  }
+}
+
+function flapColorAlpha(color, alpha) {
+  const raw = String(color || '').trim();
+  const a = Math.max(0, Math.min(1, Number(alpha)));
+  const hex = raw.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
+  if (hex) {
+    let h = hex[1];
+    if (h.length === 3) h = h.split('').map(ch => ch + ch).join('');
+    const r = parseInt(h.slice(0, 2), 16);
+    const g = parseInt(h.slice(2, 4), 16);
+    const b = parseInt(h.slice(4, 6), 16);
+    return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
+  }
+  const rgb = raw.match(/^rgba?\(([^)]+)\)$/i);
+  if (rgb) {
+    const parts = rgb[1].split(',').map(x => x.trim()).slice(0, 3);
+    return 'rgba(' + parts.join(',') + ',' + a + ')';
+  }
+  return raw || 'rgba(124,255,124,' + a + ')';
+}
+
+function flapThemeColors() {
+  return {
+    bg: flapCssVar('--rakBgBase', '#050816'),
+    panel: flapCssVar('--panel', 'rgba(12,18,28,.72)'),
+    panel2: flapCssVar('--panel2', 'rgba(18,28,38,.66)'),
+    accent: flapCssVar('--green', '#7CFF7C'),
+    accent2: flapCssVar('--green2', '#B7FFBE'),
+    soft: flapCssVar('--soft', '#e7fff0'),
+    glow: flapCssVar('--rakThemeGlow', 'rgba(124,255,124,.28)'),
+    border: flapCssVar('--rakThemeBorder', 'rgba(124,255,124,.22)')
+  };
 }
 
 function flapSyncCanvas(state, force) {
@@ -7751,10 +7800,10 @@ function flapSyncCanvas(state, force) {
   const canvas = refs && refs.canvas;
   if (!canvas) return { width: 0, height: 0 };
   const rect = canvas.parentElement ? canvas.parentElement.getBoundingClientRect() : canvas.getBoundingClientRect();
-  const width = Math.max(280, Math.floor(rect.width || canvas.clientWidth || 280));
-  const height = Math.max(240, Math.floor(rect.height || canvas.clientHeight || 240));
+  const width = Math.max(290, Math.floor(rect.width || canvas.clientWidth || 300));
+  const height = Math.max(250, Math.floor(rect.height || canvas.clientHeight || 260));
   const dprMax = typeof window.getRakPerformanceDprMax === 'function' ? window.getRakPerformanceDprMax() : 2;
-      const dpr = Math.max(1, Math.min(dprMax, window.devicePixelRatio || 1));
+  const dpr = Math.max(1, Math.min(dprMax, window.devicePixelRatio || 1));
   if (force || width !== state.canvasW || height !== state.canvasH || dpr !== state.dpr) {
     state.canvasW = width;
     state.canvasH = height;
@@ -7764,11 +7813,30 @@ function flapSyncCanvas(state, force) {
     canvas.style.width = width + 'px';
     canvas.style.height = height + 'px';
     const ctx = canvas.getContext('2d');
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    if (!state.started && !state.over && !state.y) state.y = height * 0.42;
-    state.y = Math.max(20, Math.min(height - 24, state.y || height * 0.42));
+    if (ctx) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (!state.started && !state.over && !state.y) state.y = height * 0.46;
+    state.y = Math.max(20, Math.min(height - 34, state.y || height * 0.46));
   }
   return { width: state.canvasW, height: state.canvasH };
+}
+
+function flapDrawRoundedRect(ctx, x, y, w, h, r) {
+  const radius = Math.max(0, Math.min(r || 0, Math.min(w, h) / 2));
+  if (typeof ctx.roundRect === 'function') {
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, h, radius);
+    return;
+  }
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + w - radius, y);
+  ctx.arcTo(x + w, y, x + w, y + radius, radius);
+  ctx.lineTo(x + w, y + h - radius);
+  ctx.arcTo(x + w, y + h, x + w - radius, y + h, radius);
+  ctx.lineTo(x + radius, y + h);
+  ctx.arcTo(x, y + h, x, y + h - radius, radius);
+  ctx.lineTo(x, y + radius);
+  ctx.arcTo(x, y, x + radius, y, radius);
 }
 
 function flapDraw(state) {
@@ -7778,96 +7846,124 @@ function flapDraw(state) {
   if (!ctx) return;
   const width = state.canvasW || canvas.clientWidth || 320;
   const height = state.canvasH || canvas.clientHeight || 280;
-  const pipeWidth = Math.max(26, Math.round(width * 0.085));
-  const gap = Math.max(118, Math.min(170, Math.round(height * 0.28)));
-  const birdX = Math.round(width * 0.22);
-  const birdSize = Math.max(18, Math.round(Math.min(width, height) * 0.055));
+  const colors = flapThemeColors();
+  const gateWidth = Math.max(28, Math.round(width * 0.082));
+  const gap = Math.max(126, Math.min(176, Math.round(height * 0.31)));
+  const carX = Math.round(width * 0.22);
+  const carH = Math.max(17, Math.round(Math.min(width, height) * 0.062));
+  const carW = Math.max(31, Math.round(carH * 1.72));
+  const floorH = Math.max(16, Math.round(height * 0.055));
   ctx.clearRect(0, 0, width, height);
-  const sky = ctx.createLinearGradient(0, 0, 0, height);
-  sky.addColorStop(0, 'rgba(92, 168, 112, 0.42)');
-  sky.addColorStop(0.5, 'rgba(27, 44, 39, 0.92)');
-  sky.addColorStop(1, 'rgba(6, 10, 12, 0.98)');
-  ctx.fillStyle = sky;
+
+  const bg = ctx.createLinearGradient(0, 0, width, height);
+  bg.addColorStop(0, flapColorAlpha(colors.accent, 0.24));
+  bg.addColorStop(0.45, flapColorAlpha(colors.panel2, 0.78));
+  bg.addColorStop(1, flapColorAlpha(colors.bg, 0.98));
+  ctx.fillStyle = bg;
   ctx.fillRect(0, 0, width, height);
-  ctx.fillStyle = 'rgba(255,255,255,0.08)';
-  for (let i = 0; i < 4; i += 1) {
-    const px = (i * 91 + state.frame * 0.22) % (width + 60) - 30;
+
+  ctx.fillStyle = flapColorAlpha(colors.soft, 0.055);
+  for (let i = 0; i < 5; i += 1) {
+    const px = (i * 93 + state.frame * 0.18) % (width + 70) - 35;
+    const py = 24 + (i % 3) * 26;
     ctx.beginPath();
-    ctx.ellipse(px, 30 + i * 14, 18, 8, 0, 0, Math.PI * 2);
+    ctx.ellipse(px, py, 22, 8, 0, 0, Math.PI * 2);
     ctx.fill();
   }
-  ctx.fillStyle = 'rgba(0,0,0,0.18)';
-  ctx.fillRect(0, height - 18, width, 18);
-  const floorY = height - 18;
-  const pipeBase = 'rgba(83, 190, 110, 0.82)';
-  const pipeEdge = 'rgba(124,255,124,0.34)';
-  state.pipes.forEach((pipe) => {
-    const topH = pipe.gapY;
-    const bottomY = pipe.gapY + gap;
-    ctx.fillStyle = pipeBase;
-    ctx.strokeStyle = pipeEdge;
+
+  const roadY = height - floorH;
+  ctx.fillStyle = flapColorAlpha('#000000', 0.18);
+  ctx.fillRect(0, roadY, width, floorH);
+  ctx.strokeStyle = flapColorAlpha(colors.soft, 0.10);
+  ctx.lineWidth = 1;
+  ctx.setLineDash([10, 12]);
+  ctx.beginPath();
+  ctx.moveTo(0, roadY + floorH * 0.46);
+  ctx.lineTo(width, roadY + floorH * 0.46);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  state.pipes.forEach((gate) => {
+    const topH = gate.gapY;
+    const bottomY = gate.gapY + gap;
+    const x = gate.x;
+    const grdTop = ctx.createLinearGradient(x, 0, x + gateWidth, 0);
+    grdTop.addColorStop(0, flapColorAlpha(colors.accent, 0.18));
+    grdTop.addColorStop(0.55, flapColorAlpha(colors.accent, 0.58));
+    grdTop.addColorStop(1, flapColorAlpha(colors.accent2, 0.26));
+    ctx.fillStyle = grdTop;
+    ctx.strokeStyle = flapColorAlpha(colors.soft, 0.20);
     ctx.lineWidth = 1;
-    const rounded = Math.max(8, Math.round(pipeWidth * 0.34));
-    const topX = pipe.x;
-    const drawPipe = (x, y, w, h, topRound, bottomRound) => {
-      ctx.beginPath();
-      if (topRound && bottomRound) {
-        if (typeof ctx.roundRect === 'function') ctx.roundRect(x, y, w, h, rounded);
-        else ctx.rect(x, y, w, h);
-      } else if (topRound) {
-        ctx.moveTo(x, y + rounded);
-        ctx.arcTo(x, y, x + rounded, y, rounded);
-        ctx.lineTo(x + w - rounded, y);
-        ctx.arcTo(x + w, y, x + w, y + rounded, rounded);
-        ctx.lineTo(x + w, y + h);
-        ctx.lineTo(x, y + h);
-      } else {
-        ctx.moveTo(x, y);
-        ctx.lineTo(x + w, y);
-        ctx.lineTo(x + w, y + h - rounded);
-        ctx.arcTo(x + w, y + h, x + w - rounded, y + h, rounded);
-        ctx.lineTo(x + rounded, y + h);
-        ctx.arcTo(x, y + h, x, y + h - rounded, rounded);
-        ctx.closePath();
-      }
-      ctx.fill();
-      ctx.stroke();
-    };
-    drawPipe(topX, 0, pipeWidth, topH, false, true);
-    drawPipe(topX, bottomY, pipeWidth, height - bottomY - 18, true, false);
+    flapDrawRoundedRect(ctx, x, -10, gateWidth, topH + 10, Math.max(9, gateWidth * 0.32));
+    ctx.fill();
+    ctx.stroke();
+    const grdBot = ctx.createLinearGradient(x, bottomY, x + gateWidth, bottomY);
+    grdBot.addColorStop(0, flapColorAlpha(colors.accent, 0.16));
+    grdBot.addColorStop(0.55, flapColorAlpha(colors.accent, 0.58));
+    grdBot.addColorStop(1, flapColorAlpha(colors.accent2, 0.24));
+    ctx.fillStyle = grdBot;
+    flapDrawRoundedRect(ctx, x, bottomY, gateWidth, Math.max(0, roadY - bottomY + 10), Math.max(9, gateWidth * 0.32));
+    ctx.fill();
+    ctx.stroke();
   });
-  const birdY = state.y;
-  const birdGlow = ctx.createRadialGradient(birdX + birdSize * 0.5, birdY + birdSize * 0.5, 4, birdX + birdSize * 0.5, birdY + birdSize * 0.5, birdSize * 2.2);
-  birdGlow.addColorStop(0, 'rgba(124,255,124,0.45)');
-  birdGlow.addColorStop(1, 'rgba(124,255,124,0)');
-  ctx.fillStyle = birdGlow;
+
+  const carY = state.y;
+  const glow = ctx.createRadialGradient(carX + carW * 0.52, carY + carH * 0.52, 3, carX + carW * 0.52, carY + carH * 0.52, carW * 1.4);
+  glow.addColorStop(0, flapColorAlpha(colors.accent, 0.34));
+  glow.addColorStop(1, flapColorAlpha(colors.accent, 0));
+  ctx.fillStyle = glow;
   ctx.beginPath();
-  ctx.arc(birdX + birdSize * 0.5, birdY + birdSize * 0.5, birdSize * 2.2, 0, Math.PI * 2);
+  ctx.arc(carX + carW * 0.52, carY + carH * 0.52, carW * 1.35, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = 'rgba(128, 255, 154, 0.96)';
+
+  const bodyGradient = ctx.createLinearGradient(carX, carY, carX + carW, carY + carH);
+  bodyGradient.addColorStop(0, flapColorAlpha(colors.accent2, 0.96));
+  bodyGradient.addColorStop(0.55, flapColorAlpha(colors.accent, 0.92));
+  bodyGradient.addColorStop(1, flapColorAlpha(colors.bg, 0.78));
+  ctx.fillStyle = bodyGradient;
+  flapDrawRoundedRect(ctx, carX, carY + carH * 0.18, carW, carH * 0.68, Math.max(7, carH * 0.34));
+  ctx.fill();
+  ctx.fillStyle = flapColorAlpha(colors.soft, 0.20);
+  flapDrawRoundedRect(ctx, carX + carW * 0.28, carY, carW * 0.36, carH * 0.42, Math.max(5, carH * 0.26));
+  ctx.fill();
+  ctx.fillStyle = flapColorAlpha('#020617', 0.86);
   ctx.beginPath();
-  if (typeof ctx.roundRect === 'function') ctx.roundRect(birdX, birdY, birdSize, birdSize * 0.78, birdSize * 0.35);
-  else ctx.rect(birdX, birdY, birdSize, birdSize * 0.78);
+  ctx.arc(carX + carW * 0.26, carY + carH * 0.88, Math.max(2.5, carH * 0.16), 0, Math.PI * 2);
+  ctx.arc(carX + carW * 0.74, carY + carH * 0.88, Math.max(2.5, carH * 0.16), 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = 'rgba(18, 32, 25, 0.92)';
-  ctx.beginPath();
-  ctx.arc(birdX + birdSize * 0.72, birdY + birdSize * 0.28, Math.max(1.6, birdSize * 0.09), 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = 'rgba(232,255,240,0.92)';
-  ctx.beginPath();
-  ctx.arc(birdX + birdSize * 0.7, birdY + birdSize * 0.27, Math.max(0.9, birdSize * 0.04), 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = 'rgba(0,0,0,0.18)';
-  ctx.fillRect(0, floorY, width, 1);
+}
+
+function flapSetOverlay(state) {
+  if (!state.refs || !state.refs.overlay) return;
+  const overlay = state.refs.overlay;
+  if (state.started && !state.over) {
+    overlay.hidden = true;
+    return;
+  }
+  overlay.hidden = false;
+  const title = state.over ? 'Konec jízdy' : 'Klepni a letíš';
+  const desc = state.over ? ('Score ' + String(state.score || 0) + ' · klepni pro novou hru') : 'Drž rytmus klepáním do plochy.';
+  overlay.innerHTML = '<div class="flapOverlayCard"><strong>' + escapeHtml(title) + '</strong><span>' + escapeHtml(desc) + '</span></div>';
 }
 
 function flapUpdateScoreUI(state) {
   if (!state.refs) return;
   if (state.refs.scoreEl) state.refs.scoreEl.textContent = String(state.score);
-  if (state.refs.bestEl) state.refs.bestEl.textContent = String(state.refs.best || 0);
-  if (state.refs.statusEl) {
-    state.refs.statusEl.textContent = state.over ? 'Konec hry' : (state.started ? 'Klepni pro skok' : 'Klepni pro start');
-  }
+  if (state.refs.bestEl) state.refs.bestEl.textContent = String(Math.max(state.best || 0, gamesGetActiveAccount()?.stats?.flap?.bestScore || 0));
+  if (state.refs.statusEl) state.refs.statusEl.textContent = state.over ? 'Konec' : (state.started ? 'Jízda' : 'Start');
+  flapSetOverlay(state);
+}
+
+function flapRecordCompleted(state) {
+  if (!state || state.completedRecorded) return;
+  state.completedRecorded = true;
+  const account = gamesGetActiveAccount();
+  gamesRecordStat('flap', {
+    completed: true,
+    plays: (account?.stats?.flap?.plays || 0) + 1,
+    bestScore: Math.max(account?.stats?.flap?.bestScore || 0, state.score),
+    bestPipes: Math.max(account?.stats?.flap?.bestPipes || 0, state.score)
+  });
 }
 
 function flapEnsureLoop(state) {
@@ -7879,57 +7975,55 @@ function flapEnsureLoop(state) {
     if (!size.width || !size.height) return;
     const now = ts || performance.now();
     if (!state.lastTs) state.lastTs = now;
-    const dt = Math.min(2.2, Math.max(0.35, (now - state.lastTs) / 16.666));
+    const dt = Math.min(2.0, Math.max(0.45, (now - state.lastTs) / 16.666));
     state.lastTs = now;
-    const pipeWidth = Math.max(26, Math.round(size.width * 0.085));
-    const gap = Math.max(118, Math.min(170, Math.round(size.height * 0.28)));
-    const birdX = Math.round(size.width * 0.22);
-    const birdSize = Math.max(18, Math.round(Math.min(size.width, size.height) * 0.055));
-    const pipeSpeed = Math.max(2.2, size.width * 0.0044);
+    const gateWidth = Math.max(28, Math.round(size.width * 0.082));
+    const gap = Math.max(126, Math.min(176, Math.round(size.height * 0.31)));
+    const carX = Math.round(size.width * 0.22);
+    const carH = Math.max(17, Math.round(Math.min(size.width, size.height) * 0.062));
+    const carW = Math.max(31, Math.round(carH * 1.72));
+    const floorH = Math.max(16, Math.round(size.height * 0.055));
+    const roadY = size.height - floorH;
+    const speed = Math.max(2.15, size.width * 0.0042) + Math.min(1.05, state.score * 0.018);
     if (state.started && !state.over) {
       state.frame += 1;
       state.v += state.gravity * dt;
       state.y += state.v * dt;
-      if (!state.nextPipeAt) state.nextPipeAt = now + 850;
+      if (!state.nextPipeAt) state.nextPipeAt = now + 780;
       if (now >= state.nextPipeAt) {
-        const margin = Math.max(34, Math.round(size.height * 0.11));
+        const margin = Math.max(30, Math.round(size.height * 0.105));
         const gapMin = margin;
-        const gapMax = Math.max(gapMin + 10, size.height - gap - margin - 18);
+        const gapMax = Math.max(gapMin + 10, roadY - gap - margin);
         const gapY = Math.max(gapMin, Math.min(gapMax, Math.floor(margin + Math.random() * Math.max(20, gapMax - gapMin))));
         state.pipes.push({ x: size.width + 12, gapY, passed: false });
-        state.nextPipeAt = now + Math.max(1260, 1480 - Math.min(360, state.score * 10));
+        state.nextPipeAt = now + Math.max(1040, 1360 - Math.min(330, state.score * 9));
       }
-      state.pipes.forEach((pipe) => {
-        pipe.x -= pipeSpeed * dt;
-        if (!pipe.passed && pipe.x + pipeWidth < birdX) {
-          pipe.passed = true;
+      state.pipes.forEach((gate) => {
+        gate.x -= speed * dt;
+        if (!gate.passed && gate.x + gateWidth < carX) {
+          gate.passed = true;
           state.score += 1;
-          if ((gamesGetActiveAccount()?.stats?.flap?.bestScore || 0) < state.score) state.best = Math.max(state.best || 0, state.score);
+          state.best = Math.max(state.best || 0, state.score);
         }
       });
-      state.pipes = state.pipes.filter((pipe) => pipe.x > -pipeWidth - 10);
-      if (state.y < 0) state.y = 0;
-      if (state.y > size.height - birdSize - 18) state.over = true;
-      const birdTop = state.y;
-      const birdBottom = state.y + birdSize * 0.78;
-      for (const pipe of state.pipes) {
-        const withinX = birdX + birdSize > pipe.x && birdX < pipe.x + pipeWidth;
-        if (withinX) {
-          if (birdTop < pipe.gapY || birdBottom > pipe.gapY + gap) {
-            state.over = true;
-            break;
-          }
+      state.pipes = state.pipes.filter((gate) => gate.x > -gateWidth - 12);
+      if (state.y < 2) {
+        state.y = 2;
+        state.v = Math.max(0, state.v * 0.35);
+      }
+      if (state.y > roadY - carH) state.over = true;
+      const carTop = state.y;
+      const carBottom = state.y + carH * 0.86;
+      const carLeft = carX + carW * 0.08;
+      const carRight = carX + carW * 0.92;
+      for (const gate of state.pipes) {
+        const withinX = carRight > gate.x && carLeft < gate.x + gateWidth;
+        if (withinX && (carTop < gate.gapY || carBottom > gate.gapY + gap)) {
+          state.over = true;
+          break;
         }
       }
-      if (state.over) {
-        const account = gamesGetActiveAccount();
-        gamesRecordStat('flap', {
-          completed: true,
-          plays: (account?.stats?.flap?.plays || 0) + 1,
-          bestScore: Math.max(account?.stats?.flap?.bestScore || 0, state.score),
-          bestPipes: Math.max(account?.stats?.flap?.bestPipes || 0, state.score)
-        });
-      }
+      if (state.over) flapRecordCompleted(state);
     }
     flapDraw(state);
     flapUpdateScoreUI(state);
@@ -7940,15 +8034,21 @@ function flapEnsureLoop(state) {
 function flapTap() {
   const state = app.gamesFlap;
   if (!state) return;
+  const now = Date.now();
+  if (now - Number(state.lastTapAt || 0) < 65) return;
+  state.lastTapAt = now;
   if (state.over) {
     flapResetState(state);
     if (state.refs) {
       flapSyncCanvas(state, true);
-      state.y = Math.max(20, Math.min((state.canvasH || 280) - 24, (state.canvasH || 280) * 0.42));
+      state.y = Math.max(20, Math.min((state.canvasH || 280) - 34, (state.canvasH || 280) * 0.46));
     }
   }
   state.started = true;
   state.v = state.lift;
+  if (typeof navigator !== 'undefined' && navigator.vibrate) {
+    try { navigator.vibrate(8); } catch (_) {}
+  }
   if (!state.timer) flapEnsureLoop(state);
   flapUpdateScoreUI(state);
 }
@@ -7958,11 +8058,23 @@ function renderGameFlap() {
   if (!body) return;
   const state = app.gamesFlap || (app.gamesFlap = flapDefaultState());
   const fit = gamesFitFlapSize();
+  const currentBest = Math.max(state.best || 0, gamesGetActiveAccount()?.stats?.flap?.bestScore || 0);
+  state.best = currentBest;
   body.innerHTML = [
-    '<div class="gamesGamePanel">',
-    '  <div class="gameInfoRow gameInfoRowCompact gameInfoRowDense"><span>Skóre <strong id="flapScore">' + String(state.score || 0) + '</strong></span><span>Nejlepší <strong id="flapBest">' + String(state.best || 0) + '</strong></span><span id="flapStatus">' + (state.over ? 'Klepni na plochu pro novou hru' : (state.started ? 'Klepni pro skok' : 'Klepni pro start')) + '</span></div>',
-    '  <div class="gameBoard gameFlapBoard" id="gameFlapBoard" style="width:' + fit.width + 'px;height:' + fit.height + 'px;">',
-    '    <canvas id="flapCanvas" class="gameFlapCanvas"></canvas>',
+    '<div class="gamesGamePanel gameFlapPanel">',
+    '  <div class="game2048Hud gameFlapHud">',
+    '    <div class="game2048ScoreCard"><span>Score</span><strong id="flapScore">' + String(state.score || 0) + '</strong></div>',
+    '    <div class="game2048ScoreCard"><span>Nejlepší</span><strong id="flapBest">' + String(currentBest || 0) + '</strong></div>',
+    '    <div class="game2048ScoreCard"><span>Stav</span><strong id="flapStatus">' + (state.over ? 'Konec' : (state.started ? 'Jízda' : 'Start')) + '</strong></div>',
+    '  </div>',
+    '  <div class="gameFlapBoardWrap">',
+    '    <div class="gameBoard gameFlapBoard" id="gameFlapBoard" style="width:' + fit.width + 'px;height:' + fit.height + 'px;">',
+    '      <canvas id="flapCanvas" class="gameFlapCanvas" aria-label="Flappy Car"></canvas>',
+    '      <div class="flapOverlay" id="flapOverlay"></div>',
+    '    </div>',
+    '  </div>',
+    '  <div class="gameControls gameFlapControls">',
+    '    <button type="button" class="gameControlBtn" id="flapRestartBtn">Nová hra</button>',
     '  </div>',
     gamesTop3Block('flap', 'bodů', 10),
     '</div>'
@@ -7970,23 +8082,37 @@ function renderGameFlap() {
   state.refs = {
     board: body.querySelector('#gameFlapBoard'),
     canvas: body.querySelector('#flapCanvas'),
+    overlay: body.querySelector('#flapOverlay'),
     scoreEl: body.querySelector('#flapScore'),
     statusEl: body.querySelector('#flapStatus'),
-    bestEl: body.querySelector('#flapBest')
+    bestEl: body.querySelector('#flapBest'),
+    restartBtn: body.querySelector('#flapRestartBtn')
   };
   if (state.refs.board) {
     state.refs.board.style.setProperty('width', fit.width + 'px', 'important');
     state.refs.board.style.setProperty('height', fit.height + 'px', 'important');
   }
-  state.best = Math.max(state.best || 0, gamesGetActiveAccount()?.stats?.flap?.bestScore || 0);
   flapSyncCanvas(state, true);
-  if (!state.y) state.y = Math.max(20, Math.min((state.canvasH || fit.height) - 24, (state.canvasH || fit.height) * 0.42));
+  if (!state.y) state.y = Math.max(20, Math.min((state.canvasH || fit.height) - 34, (state.canvasH || fit.height) * 0.46));
   flapUpdateScoreUI(state);
   flapEnsureLoop(state);
-  state.refs.canvas?.addEventListener('pointerdown', (ev) => {
-    ev.preventDefault();
-    flapTap();
-  }, { passive: false });
+  const tapTarget = state.refs.board || state.refs.canvas;
+  if (tapTarget) {
+    tapTarget.addEventListener('pointerdown', (ev) => {
+      ev.preventDefault();
+      flapTap();
+    }, { passive: false });
+  }
+  if (state.refs.restartBtn) {
+    state.refs.restartBtn.addEventListener('click', (ev) => {
+      ev.preventDefault();
+      flapResetState(state);
+      flapSyncCanvas(state, true);
+      state.y = Math.max(20, Math.min((state.canvasH || fit.height) - 34, (state.canvasH || fit.height) * 0.46));
+      flapUpdateScoreUI(state);
+      flapDraw(state);
+    });
+  }
 }
 
 function renderGamesTttShell() {

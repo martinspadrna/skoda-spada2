@@ -2,11 +2,12 @@
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
 
-  // v.1.1 (683): Piškvorky mají runtime pojistku theme boardu bez staré zeleno-černé vrstvy.
-  const CORE_GAMES = ['ttt', '2048', 'snake'];
-  const EXTRA_GAMES = ['flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
+  // v.1.1 (685): Aim Trainer a Reaction Test jsou přepracované jako další hotové mobile-first hry.
+  const CORE_GAMES = ['ttt', '2048', 'snake', 'flap', 'aim', 'reaction'];
+  const EXTRA_GAMES = ['tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);
   const LEGACY_RENDER_GAMES = ['2048', 'snake', 'flap'];
+  const ARCADE_RENDER_GAMES = ['aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
   const POINT_SCALE = 1000000000;
   const ARC_KEY = 'arcade';
   const DAILY_MODES = ['aim'];
@@ -15,7 +16,7 @@
     ttt: { title: 'Piškvorky', subtitle: 'AI, lokální duel a pozvánky', unit: 'her', mode: 'high', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5.2" y="5.2" width="13.6" height="13.6" rx="3"></rect><path d="M9 9.1l3 3 3-3"></path><circle cx="9.2" cy="15" r="1.1"></circle><circle cx="14.8" cy="15" r="1.1"></circle><path d="M8.1 6.5v11M12 6.5v11M15.9 6.5v11M6.5 10.1h11M6.5 13.9h11"></path></svg>' },
     '2048': { title: '2048', subtitle: 'Skládej čísla do sebe', unit: 'bodů', mode: 'high', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4.8" y="4.8" width="5.8" height="5.8" rx="1.8"></rect><rect x="13.4" y="4.8" width="5.8" height="5.8" rx="1.8"></rect><rect x="4.8" y="13.4" width="5.8" height="5.8" rx="1.8"></rect><rect x="13.4" y="13.4" width="5.8" height="5.8" rx="1.8"></rect></svg>' },
     snake: { title: 'Snake', subtitle: 'Klasická hadí hra', unit: 'bodů', mode: 'high', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 16.5c1.8-5 4.3-8 8.1-8 2.5 0 4.5 1.1 5.9 3"></path><circle cx="18.3" cy="11.7" r="2"></circle></svg>' },
-    flap: { title: 'Flap Bird', subtitle: 'Klikni a leť mezi trubkami', unit: 'bodů', mode: 'high', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5.8 14.8c2.2-4.8 5.8-7 8.4-7 1.8 0 3.4.7 4.8 2"></path><path d="M9.2 11.2c1.6 0 3.2.4 4.8 1.5"></path><path d="M14.2 14.5c1.4 0 2.8.6 4.2 1.9"></path></svg>' },
+    flap: { title: 'Flappy Car', subtitle: 'Klepni a proleť mezi překážkami', unit: 'bodů', mode: 'high', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5.8 14.8c2.2-4.8 5.8-7 8.4-7 1.8 0 3.4.7 4.8 2"></path><path d="M9.2 11.2c1.6 0 3.2.4 4.8 1.5"></path><path d="M14.2 14.5c1.4 0 2.8.6 4.2 1.9"></path></svg>' },
     aim: { title: 'Aim Trainer', subtitle: 'Klikání na targety, combo a accuracy', unit: 'bodů', mode: 'high', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="6.8"></circle><circle cx="12" cy="12" r="2.2"></circle><path d="M12 2.8v3.2M21.2 12h-3.2M12 21.2V18M2.8 12H6"></path></svg>' },
     reaction: { title: 'Reaction Test', subtitle: 'Klikni po změně barvy', unit: 'ms', mode: 'low', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 6h10M7 18h10"></path><path d="M9 6v4l-2 2 2 2v4M15 6v4l2 2-2 2v4"></path></svg>' },
     tetris: { title: 'Tetris', subtitle: 'Moderní glow styl a ghost piece', unit: 'bodů', mode: 'high', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5h4v4H5zM9 5h4v4H9zM9 9h4v4H9zM13 9h4v4h-4zM13 13h4v4h-4z"></path></svg>' },
@@ -341,10 +342,27 @@
       { id: 'snake_score_80', title: 'Hadí legenda', desc: 'Dej ve Snake skóre 80.', goalText: '80 bodů', progress: (a) => a.snake.bestScore || 0, target: 80 },
       { id: 'snake_length_45', title: 'Dlouhý had', desc: 'Dostaň Snake na délku 45.', goalText: 'délka 45', progress: (a) => a.snake.bestLength || 0, target: 45 },
       { id: 'snake_length_80', title: 'Had přes celou halu', desc: 'Dostaň Snake na délku 80.', goalText: 'délka 80', progress: (a) => a.snake.bestLength || 0, target: 80 },
+      { id: 'flap_25', title: 'První čistý průlet', desc: 'Dej ve Flappy Car 25 bodů.', goalText: '25 bodů', progress: (a) => a.flap.bestScore || 0, target: 25 },
       { id: 'flap_50', title: 'Flappy pilot', desc: 'Dej ve Flappy Car 50 bodů.', goalText: '50 bodů', progress: (a) => a.flap.bestScore || 0, target: 50 },
+      { id: 'flap_75', title: 'Klidná ruka', desc: 'Dej ve Flappy Car 75 bodů.', goalText: '75 bodů', progress: (a) => a.flap.bestScore || 0, target: 75 },
       { id: 'flap_100', title: 'Letecký boss', desc: 'Dej ve Flappy Car 100 bodů.', goalText: '100 bodů', progress: (a) => a.flap.bestScore || 0, target: 100 },
+      { id: 'flap_150', title: 'Pilot bez nervů', desc: 'Dej ve Flappy Car 150 bodů.', goalText: '150 bodů', progress: (a) => a.flap.bestScore || 0, target: 150 },
+      { id: 'flap_runs_25', title: 'Trénink rytmu', desc: 'Dokonči 25 jízd ve Flappy Car.', goalText: '25 jízd', progress: (a) => a.flap.plays || 0, target: 25 },
+      { id: 'flap_runs_100', title: 'Vytrvalý letec', desc: 'Dokonči 100 jízd ve Flappy Car.', goalText: '100 jízd', progress: (a) => a.flap.plays || 0, target: 100 },
       { id: 'aim_1500', title: 'Rychlá ruka', desc: 'Nahraj 1 500 bodů v Aim Traineru.', goalText: '1 500 bodů', progress: (a) => arcadeStat(a.account, 'aim', 'bestScore'), target: 1500 },
-      { id: 'reaction_160', title: 'Blesk', desc: 'Dostaň reakci pod 160 ms.', goalText: 'pod 160 ms', progress: (a) => { const t = arcadeStat(a.account, 'reaction', 'bestTimeMs'); return t ? Math.max(0, 1000 - t) : 0; }, target: 840 },
+      { id: 'aim_3000', title: 'Ruka bez cuknutí', desc: 'Nahraj 3 000 bodů v Aim Traineru.', goalText: '3 000 bodů', progress: (a) => arcadeStat(a.account, 'aim', 'bestScore'), target: 3000 },
+      { id: 'aim_4500', title: 'Target boss', desc: 'Nahraj 4 500 bodů v Aim Traineru.', goalText: '4 500 bodů', progress: (a) => arcadeStat(a.account, 'aim', 'bestScore'), target: 4500 },
+      { id: 'aim_combo_20', title: 'Pevná ruka', desc: 'Dej combo 20 v Aim Traineru.', goalText: 'combo 20', progress: (a) => arcadeStat(a.account, 'aim', 'bestCombo'), target: 20 },
+      { id: 'aim_combo_35', title: 'Laserová přesnost', desc: 'Dej combo 35 v Aim Traineru.', goalText: 'combo 35', progress: (a) => arcadeStat(a.account, 'aim', 'bestCombo'), target: 35 },
+      { id: 'aim_accuracy_90', title: 'Devadesátka', desc: 'Dokonči Aim s přesností aspoň 90 %.', goalText: '90 % přesnost', progress: (a) => arcadeStat(a.account, 'aim', 'bestAccuracy'), target: 90 },
+      { id: 'aim_accuracy_98', title: 'Chirurg', desc: 'Dokonči Aim s přesností aspoň 98 %.', goalText: '98 % přesnost', progress: (a) => arcadeStat(a.account, 'aim', 'bestAccuracy'), target: 98 },
+      { id: 'aim_runs_50', title: 'Terče pod kontrolou', desc: 'Dokonči 50 kol Aim Traineru.', goalText: '50 dokončení', progress: (a) => arcadeStat(a.account, 'aim', 'plays'), target: 50 },
+      { id: 'reaction_220', title: 'Rychlé oči', desc: 'Dostaň reakci pod 220 ms.', goalText: 'pod 220 ms', progress: (a) => { const t = arcadeStat(a.account, 'reaction', 'bestTimeMs'); return t ? Math.max(0, 1000 - t) : 0; }, target: 780 },
+      { id: 'reaction_180', title: 'Blesk', desc: 'Dostaň reakci pod 180 ms.', goalText: 'pod 180 ms', progress: (a) => { const t = arcadeStat(a.account, 'reaction', 'bestTimeMs'); return t ? Math.max(0, 1000 - t) : 0; }, target: 820 },
+      { id: 'reaction_150', title: 'Nervy z oceli', desc: 'Dostaň reakci pod 150 ms.', goalText: 'pod 150 ms', progress: (a) => { const t = arcadeStat(a.account, 'reaction', 'bestTimeMs'); return t ? Math.max(0, 1000 - t) : 0; }, target: 850 },
+      { id: 'reaction_avg_240', title: 'Stabilní ruka', desc: 'Dokonči Reaction s průměrem pod 240 ms.', goalText: 'průměr pod 240 ms', progress: (a) => { const t = arcadeStat(a.account, 'reaction', 'bestAvgTimeMs'); return t ? Math.max(0, 1000 - t) : 0; }, target: 760 },
+      { id: 'reaction_perfect_10', title: 'Bez zaváhání', desc: 'Dokonči 10 čistých Reaction sérií s každým kolem pod 250 ms.', goalText: '10 čistých sérií', progress: (a) => arcadeStat(a.account, 'reaction', 'perfectRuns'), target: 10 },
+      { id: 'reaction_runs_50', title: 'Reflex tester', desc: 'Dokonči 50 Reaction testů.', goalText: '50 dokončení', progress: (a) => arcadeStat(a.account, 'reaction', 'plays'), target: 50 },
       { id: 'tetris_5000', title: 'Tetris mistr', desc: 'Nahraj 5 000 bodů v Tetrisu.', goalText: '5 000 bodů', progress: (a) => arcadeStat(a.account, 'tetris', 'bestScore'), target: 5000 },
       { id: 'shooter_3500', title: 'Space ace', desc: 'Nahraj 3 500 bodů ve Space Shooteru.', goalText: '3 500 bodů', progress: (a) => arcadeStat(a.account, 'shooter', 'bestScore'), target: 3500 },
       { id: 'brick_2500', title: 'Bourák cihel', desc: 'Nahraj 2 500 bodů v Brick Breakeru.', goalText: '2 500 bodů', progress: (a) => arcadeStat(a.account, 'brick', 'bestScore'), target: 2500 },
@@ -501,6 +519,29 @@
 #games .arcadeAimBoard{position:relative;height:clamp(280px, 52dvh, 430px);}
 #games .arcadeAimTarget{position:absolute;transform:translate(-50%,-50%);width:58px;height:58px;border-radius:50%;border:none;background:radial-gradient(circle at 35% 35%, #ffffff, #81ff9d 28%, #22b24e 70%);box-shadow:0 0 0 10px rgba(124,255,124,.08), 0 0 26px rgba(124,255,124,.36);}
 #games .arcadeAimTarget:active{transform:translate(-50%,-50%) scale(.96);}
+#games .arcadeShellTopCompact{min-height:44px;justify-content:flex-start !important;padding-top:max(8px, env(safe-area-inset-top)) !important;}
+#games .arcadeHudWide{grid-template-columns:repeat(4,minmax(0,1fr));width:100%;}
+#games .arcadeAimStage,#games .arcadeReactionStage{gap:10px;}
+#games .arcadeAimBoard{height:clamp(330px, 58dvh, 560px);touch-action:none;background:var(--rakGlassPanelBg, linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.025))) !important;border-color:var(--rakGlassStroke, rgba(255,255,255,.14)) !important;}
+#games .arcadeAimBoard::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 25% 18%, color-mix(in srgb, var(--rakThemeAccent, var(--green2)) 20%, transparent), transparent 46%), radial-gradient(circle at 80% 82%, rgba(255,255,255,.08), transparent 42%);pointer-events:none;}
+#games .arcadeAimTarget{z-index:2;touch-action:none;background:radial-gradient(circle at 35% 32%, #fff, color-mix(in srgb, var(--rakThemeAccent, var(--green2)) 72%, #ffffff) 24%, color-mix(in srgb, var(--rakThemeAccent, var(--green2)) 78%, #111827) 70%) !important;box-shadow:0 0 0 10px color-mix(in srgb, var(--rakThemeAccent, var(--green2)) 10%, transparent), 0 0 30px color-mix(in srgb, var(--rakThemeAccent, var(--green2)) 32%, transparent) !important;}
+#games .arcadeAimTarget.isHidden{display:none;}
+#games .arcadeGameOverlay{position:absolute;inset:0;z-index:3;display:flex;align-items:center;justify-content:center;padding:16px;pointer-events:none;background:linear-gradient(180deg, rgba(5,8,12,.18), rgba(5,8,12,.38));}
+#games .arcadeGameOverlay[hidden]{display:none !important;}
+#games .arcadeOverlayCard{width:min(92%, 320px);border-radius:24px;border:1px solid var(--rakGlassStroke, rgba(255,255,255,.14));background:var(--rakGlassCardBg, rgba(255,255,255,.08));backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 18px 40px rgba(0,0,0,.32);padding:16px;text-align:center;display:grid;gap:7px;}
+#games .arcadeOverlayCard strong{font-size:18px;line-height:1.12;}
+#games .arcadeOverlayCard span{font-size:13px;line-height:1.35;color:rgba(245,255,250,.82);}
+#games .arcadeOverlayCard small{font-size:11px;color:rgba(245,255,250,.62);}
+#games .arcadeReactionBoard{min-height:clamp(330px, 58dvh, 560px);width:100%;border:none;color:inherit;cursor:pointer;touch-action:manipulation;background:var(--rakGlassPanelBg, linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.025))) !important;border-color:var(--rakGlassStroke, rgba(255,255,255,.14)) !important;}
+#games .arcadeReactionBoard.isGo{background:linear-gradient(180deg, color-mix(in srgb, var(--rakThemeAccent, var(--green2)) 24%, rgba(255,255,255,.04)), rgba(255,255,255,.03)) !important;}
+#games .arcadeReactionBoard.isBad{background:linear-gradient(180deg, rgba(255,74,104,.28), rgba(255,255,255,.03)) !important;}
+#games .arcadeReactionBoard strong{font-size:clamp(28px, 10vw, 56px);letter-spacing:.02em;}
+#games .arcadeReactionBoard small{font-size:14px;color:rgba(245,255,250,.76);max-width:28ch;line-height:1.35;}
+#games .arcadeReactionPulse{width:96px;height:96px;border-radius:50%;background:radial-gradient(circle, color-mix(in srgb, var(--rakThemeAccent, var(--green2)) 36%, rgba(255,255,255,.2)), transparent 68%);filter:blur(.2px);opacity:.85;}
+#games .arcadeReactionBoard.isGo .arcadeReactionPulse{animation:reactionPulse .72s ease-in-out infinite alternate;}
+@keyframes reactionPulse{from{transform:scale(.88);opacity:.65;}to{transform:scale(1.1);opacity:1;}}
+@media (max-width: 700px){#games .arcadeHudWide{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;}#games .arcadeAimBoard,#games .arcadeReactionBoard{min-height:clamp(330px, 60dvh, 560px);}#games .arcadeHud .gamesStatValue{font-size:13px;}}
+
 #games .arcadeBanner{display:grid;gap:8px;align-content:center;justify-items:center;min-height:clamp(220px, 40dvh, 340px);padding:18px;text-align:center;}
 #games .arcadeBanner.isGo{background:linear-gradient(180deg, rgba(124,255,124,.12), rgba(255,255,255,.03));}
 #games .arcadeBanner.isBad{background:linear-gradient(180deg, rgba(255,116,116,.16), rgba(255,255,255,.03));}
@@ -940,7 +981,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function renderLaunchTiles() {
     const grid = document.getElementById('gamesGrid');
     if (!grid) return;
-    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v683';
+    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v685';
     if (grid.dataset && grid.dataset.arcadeLaunchSig === launchSig && grid.querySelector('.gamesDevFolder') && grid.querySelector('[data-game="ttt"]')) {
       gamePerf.launchRenderSkips = Number(gamePerf.launchRenderSkips || 0) + 1;
       return;
@@ -1171,7 +1212,9 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     }
     const current = getAccountStat(active, id);
     const merged = Object.assign({}, current, nextPatch);
-    merged.plays = Math.max(Number(current.plays || 0) || 0, Number(nextPatch.plays || nextPatch.games_played || 0) || 0);
+    const currentPlays = Number(current.plays || 0) || 0;
+    const patchPlays = Number(nextPatch.plays || nextPatch.games_played || 0) || 0;
+    merged.plays = isCompleted ? currentPlays + Math.max(1, patchPlays || 1) : currentPlays;
     if (isLowBetter(id)) {
       const bestTime = Number(nextPatch.bestTimeMs || nextPatch.timeMs || nextPatch.elapsedMs || 0) || 0;
       merged.bestTimeMs = Math.max(0, Math.min(Number(current.bestTimeMs || 0) || 0, bestTime) || bestTime || current.bestTimeMs || 0);
@@ -1184,6 +1227,12 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     }
     if (typeof nextPatch.bestAccuracy === 'number') merged.bestAccuracy = Math.max(Number(current.bestAccuracy || 0) || 0, nextPatch.bestAccuracy || 0);
     if (typeof nextPatch.bestCombo === 'number') merged.bestCombo = Math.max(Number(current.bestCombo || 0) || 0, nextPatch.bestCombo || 0);
+    if (typeof nextPatch.bestHits === 'number') merged.bestHits = Math.max(Number(current.bestHits || 0) || 0, nextPatch.bestHits || 0);
+    if (typeof nextPatch.bestAvgTimeMs === 'number' && nextPatch.bestAvgTimeMs > 0) {
+      const oldAvg = Number(current.bestAvgTimeMs || 0) || 0;
+      merged.bestAvgTimeMs = oldAvg ? Math.min(oldAvg, nextPatch.bestAvgTimeMs) : nextPatch.bestAvgTimeMs;
+    }
+    if (typeof nextPatch.perfectRuns === 'number') merged.perfectRuns = Math.max(Number(current.perfectRuns || 0) || 0, nextPatch.perfectRuns || 0);
     if (typeof nextPatch.bestMoves === 'number') merged.bestMoves = Math.max(Number(current.bestMoves || 0) || 0, nextPatch.bestMoves || 0);
     merged.lastResult = String(nextPatch.lastResult || merged.lastResult || '').trim();
     setAccountStat(active, id, merged);
@@ -1204,7 +1253,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   }
 
   function shellHeader(title, subtitle) {
-    return `<div class="gamesShellTop"><button type="button" class="gamesShellBack" id="arcadeBackBtn">Zpět</button><div class="gamesShellTitleWrap"><div class="gamesShellTitle">${escapeHtml(title)}</div><div class="gamesShellSubtitle">${escapeHtml(subtitle || '')}</div></div></div>`;
+    return `<div class="gamesShellTop arcadeShellTopCompact"><button type="button" class="gamesShellBack" id="arcadeBackBtn">Zpět</button></div>`;
   }
 
   function mountArcadeShell(gameId) {
@@ -1235,7 +1284,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       gamePerf.shellRenderSkips += 1;
       return;
     }
-    if (!META[id] || EXTRA_GAMES.indexOf(id) < 0 || LEGACY_RENDER_GAMES.indexOf(id) >= 0) {
+    if (!META[id] || ARCADE_RENDER_GAMES.indexOf(id) < 0 || LEGACY_RENDER_GAMES.indexOf(id) >= 0) {
       if (typeof origRenderGameShell === 'function') origRenderGameShell(id);
       const back = document.querySelector('#games .gamesShellTop');
       if (back && !back.querySelector('.gamesShellBack')) {
@@ -1281,7 +1330,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     renderLaunchTiles();
     scheduleStatsExtended('hub-render');
     if (window.app && window.app.activeGameShell) {
-      if (EXTRA_GAMES.indexOf(key(window.app.activeGameShell)) >= 0) {
+      if (ARCADE_RENDER_GAMES.indexOf(key(window.app.activeGameShell)) >= 0) {
         if (!isArcadeShellMounted(window.app.activeGameShell)) window.renderGameShell(window.app.activeGameShell);
         else {
           gamePerf.shellRenderSkips += 1;
@@ -1326,84 +1375,106 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function shuffle(arr) { const a = arr.slice(); for (let i = a.length - 1; i > 0; i -= 1) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 
   // Aim Trainer ------------------------------------------------------------
+  function aimFreshState(opts = {}) {
+    return { running: false, finished: false, score: 0, combo: 0, hits: 0, misses: 0, accuracy: 100, bestCombo: 0, startAt: 0, duration: opts.duration || 30000, target: null, timer: null, challenge: !!opts.challenge, saved: false };
+  }
+
   function renderAim(body, opts = {}) {
-    const state = getState('aim', () => ({ running: false, score: 0, combo: 0, hits: 0, misses: 0, accuracy: 100, bestCombo: 0, startAt: 0, duration: opts.duration || 30000, target: null, timer: null, finished: false, challenge: !!opts.challenge }));
-    if (!state.startAt || state.finished) {
-      state.running = false;
-      state.score = 0;
-      state.combo = 0;
-      state.hits = 0;
-      state.misses = 0;
-      state.accuracy = 100;
-      state.bestCombo = 0;
-      state.startAt = 0;
-      state.finished = false;
-      state.target = null;
-    }
+    const state = getState('aim', () => aimFreshState(opts));
+    if (opts.challenge) state.challenge = true;
+    if (!state.duration) state.duration = opts.duration || 30000;
+    const best = getAccountStat(gamesGetActiveAccount(), state.challenge ? 'daily' : 'aim');
+    const timeLeft = state.running && state.startAt ? Math.max(0, state.duration - (Date.now() - state.startAt)) : state.duration;
     body.innerHTML = `
-      <div class="arcadeStage">
-        <div class="arcadeHud">
-          ${gamesStatLine('Skóre', state.score)}
+      <div class="arcadeStage arcadeAimStage">
+        <div class="arcadeHud arcadeHudWide">
+          ${gamesStatLine('Score', state.score)}
           ${gamesStatLine('Combo', state.combo)}
-          ${gamesStatLine('Accuracy', `${Math.round(state.accuracy)} %`)}
-        </div>
-        <div class="arcadeBar arcadePanel uPad10x12">
-          <div class="arcadeStatus">${state.challenge ? '<strong>Denní challenge:</strong> stejné cíle pro všechny.' : '<strong>Aim Trainer:</strong> klikni na cíle, drž combo.'}</div>
-          <div class="arcadeStatus">Zbývá: <strong id="aimTimeLeft">${fmtTime(state.duration)}</strong></div>
+          ${gamesStatLine('Přesnost', `${Math.round(state.accuracy || 100)} %`)}
+          ${gamesStatLine('Čas', fmtTime(timeLeft))}
         </div>
         <div class="arcadeBoardWrap arcadeAimBoard arcadePanel" id="aimBoard">
-          <button type="button" class="arcadeAimTarget" id="aimTarget" aria-label="Target"></button>
+          <button type="button" class="arcadeAimTarget${state.running ? '' : ' isHidden'}" id="aimTarget" aria-label="Target"></button>
+          <div class="arcadeGameOverlay" id="aimOverlay" ${state.running ? 'hidden' : ''}>
+            <div class="arcadeOverlayCard">
+              <strong>${state.finished ? 'Konec tréninku' : (state.challenge ? 'Denní Aim challenge' : 'Aim Trainer')}</strong>
+              <span>${state.finished ? `Score ${state.score} · combo ${state.bestCombo} · přesnost ${Math.round(state.accuracy || 0)} %` : 'Klepni na plochu a trefuj cíle. Počítá se až dokončené kolo.'}</span>
+              <small>Best: ${Number(best && best.bestScore || 0) || 0}</small>
+            </div>
+          </div>
         </div>
         <div class="arcadeControls">
-          <button type="button" class="gameControlBtn" id="aimStartBtn">Spustit</button>
           <button type="button" class="gameControlBtn" id="aimResetBtn">Nová hra</button>
         </div>
-        ${gamesTop3Block(state.challenge ? 'daily' : 'aim', state.challenge ? 'bodů' : 'bodů', 5)}
+        ${gamesTop3Block(state.challenge ? 'daily' : 'aim', 'bodů', 5)}
       </div>`;
     const board = body.querySelector('#aimBoard');
     const target = body.querySelector('#aimTarget');
-    const timeLeftEl = body.querySelector('#aimTimeLeft');
+    const overlay = body.querySelector('#aimOverlay');
+    const hud = body.querySelector('.arcadeHud');
+    const hudUpdate = () => {
+      const left = state.running && state.startAt ? Math.max(0, state.duration - (Date.now() - state.startAt)) : (state.finished ? 0 : state.duration);
+      if (hud) hud.innerHTML = `${gamesStatLine('Score', state.score)}${gamesStatLine('Combo', state.combo)}${gamesStatLine('Přesnost', `${Math.round(state.accuracy || 100)} %`)}${gamesStatLine('Čas', fmtTime(left))}`;
+    };
     const updateTarget = () => {
       if (!board || !target) return;
       const r = board.getBoundingClientRect();
-      const pad = 44;
-      const x = clamp((Math.random() * (r.width - pad * 2)) + pad, 36, Math.max(36, r.width - 36));
-      const y = clamp((Math.random() * (r.height - pad * 2)) + pad, 36, Math.max(36, r.height - 36));
-      state.target = { x, y };
+      const size = clamp(60 - Math.floor(state.combo / 5) * 2, 44, 64);
+      const pad = Math.max(34, size * .68);
+      const x = clamp((Math.random() * Math.max(1, r.width - pad * 2)) + pad, pad, Math.max(pad, r.width - pad));
+      const y = clamp((Math.random() * Math.max(1, r.height - pad * 2)) + pad, pad, Math.max(pad, r.height - pad));
+      state.target = { x, y, size };
       target.style.left = `${x}px`;
       target.style.top = `${y}px`;
-      target.style.width = state.combo >= 10 ? '64px' : '58px';
-      target.style.height = state.combo >= 10 ? '64px' : '58px';
+      target.style.width = `${size}px`;
+      target.style.height = `${size}px`;
     };
     const finish = () => {
       if (state.finished) return;
       state.finished = true;
       state.running = false;
       clearInterval(state.timer);
-      const total = state.hits + state.misses;
-      state.accuracy = total ? (state.hits / total) * 100 : 100;
-      const points = Math.max(0, Math.round(state.score + state.accuracy * 1.5 + state.bestCombo * 10));
-      const payload = { plays: 1, bestScore: points, bestAccuracy: Math.round(state.accuracy), bestCombo: state.bestCombo, lastResult: `${state.hits}/${total}` };
-      if (state.challenge) payload.game_type = 'daily';
-      payload.completed = true;
-      gamesRecordStat(state.challenge ? 'daily' : 'aim', payload);
-      body.querySelector('.arcadeStatus')?.insertAdjacentHTML('afterend', `<div class="arcadeBanner arcadePanel isGo uPad14"> <div class="arcadeBannerTitle">Konec kola</div><div class="arcadeBannerText">Skóre ${points} · Accuracy ${Math.round(state.accuracy)} % · Max combo ${state.bestCombo}</div></div>`);
+      const total = Math.max(1, state.hits + state.misses);
+      state.accuracy = (state.hits / total) * 100;
+      state.score = Math.max(0, Math.round(state.score + state.accuracy * 2 + state.bestCombo * 18 + state.hits * 6));
+      if (target) target.classList.add('isHidden');
+      if (overlay) {
+        overlay.hidden = false;
+        overlay.innerHTML = `<div class="arcadeOverlayCard"><strong>Konec tréninku</strong><span>Score ${state.score} · combo ${state.bestCombo} · přesnost ${Math.round(state.accuracy)} %</span><small>${state.hits}/${total} zásahů</small></div>`;
+      }
+      hudUpdate();
+      if (!state.saved) {
+        state.saved = true;
+        gamesRecordStat(state.challenge ? 'daily' : 'aim', {
+          completed: true,
+          plays: 1,
+          bestScore: state.score,
+          bestAccuracy: Math.round(state.accuracy),
+          bestCombo: state.bestCombo,
+          bestHits: state.hits,
+          lastResult: `${state.score} bodů`
+        });
+      }
     };
     const tick = () => {
       if (!state.running) return;
       const left = Math.max(0, state.duration - (Date.now() - state.startAt));
-      if (timeLeftEl) timeLeftEl.textContent = fmtTime(left);
-      if (left <= 0) { finish(); return; }
+      hudUpdate();
+      if (left <= 0) finish();
     };
     const start = () => {
       if (state.running) return;
+      Object.assign(state, aimFreshState({ duration: state.duration, challenge: state.challenge }));
       state.running = true;
-      state.finished = false;
       state.startAt = Date.now();
+      state.saved = false;
+      if (overlay) overlay.hidden = true;
+      if (target) target.classList.remove('isHidden');
       clearInterval(state.timer);
-      state.timer = rakGameSetInterval(tick, 160);
+      state.timer = rakGameSetInterval(tick, 100);
       updateTarget();
-      tick();
+      hudUpdate();
+      if (typeof navigator !== 'undefined' && navigator.vibrate) { try { navigator.vibrate(8); } catch (err) {} }
     };
     const hit = (ev) => {
       ev?.preventDefault?.(); ev?.stopPropagation?.();
@@ -1411,93 +1482,135 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       state.hits += 1;
       state.combo += 1;
       state.bestCombo = Math.max(state.bestCombo, state.combo);
-      state.score += 10 + Math.min(20, state.combo * 2);
+      state.score += 12 + Math.min(36, state.combo * 3);
+      const total = Math.max(1, state.hits + state.misses);
+      state.accuracy = (state.hits / total) * 100;
       updateTarget();
-      const total = state.hits + state.misses;
-      state.accuracy = total ? (state.hits / total) * 100 : 100;
-      body.querySelector('.arcadeHud').innerHTML = `${gamesStatLine('Skóre', state.score)}${gamesStatLine('Combo', state.combo)}${gamesStatLine('Accuracy', `${Math.round(state.accuracy)} %`)}`;
-      if (state.hits >= (state.challenge ? 20 : 25)) finish();
+      hudUpdate();
+      if (typeof navigator !== 'undefined' && navigator.vibrate) { try { navigator.vibrate(5); } catch (err) {} }
+      if (state.hits >= (state.challenge ? 25 : 45)) finish();
     };
-    target.addEventListener('click', hit);
-    board.addEventListener('pointerdown', (ev) => {
+    const miss = (ev) => {
+      ev?.preventDefault?.();
+      if (!state.running) { start(); return; }
       if (ev.target === target) return;
-      if (!state.running) start();
       state.combo = 0;
       state.misses += 1;
-      state.accuracy = (state.hits / (state.hits + state.misses)) * 100;
-      body.querySelector('.arcadeHud').innerHTML = `${gamesStatLine('Skóre', state.score)}${gamesStatLine('Combo', state.combo)}${gamesStatLine('Accuracy', `${Math.round(state.accuracy)} %`)}`;
+      const total = Math.max(1, state.hits + state.misses);
+      state.accuracy = (state.hits / total) * 100;
+      hudUpdate();
+    };
+    target.addEventListener('pointerdown', hit);
+    board.addEventListener('pointerdown', miss);
+    body.querySelector('#aimResetBtn').addEventListener('click', () => {
+      clearInterval(state.timer);
+      Object.assign(state, aimFreshState({ duration: opts.duration || 30000, challenge: !!opts.challenge }));
+      renderAim(body, opts);
     });
-    body.querySelector('#aimStartBtn').addEventListener('click', () => { if (!state.running || state.finished) { state.score = 0; state.combo = 0; state.hits = 0; state.misses = 0; state.bestCombo = 0; state.accuracy = 100; state.startAt = 0; state.finished = false; start(); } });
-    body.querySelector('#aimResetBtn').addEventListener('click', () => { state.running = false; clearInterval(state.timer); state.score = 0; state.combo = 0; state.hits = 0; state.misses = 0; state.bestCombo = 0; state.accuracy = 100; state.startAt = 0; state.finished = false; updateTarget(); body.querySelector('.arcadeHud').innerHTML = `${gamesStatLine('Skóre', 0)}${gamesStatLine('Combo', 0)}${gamesStatLine('Accuracy', '100 %')}`; timeLeftEl.textContent = fmtTime(state.duration); });
-    updateTarget();
-    const resize = () => updateTarget();
+    const resize = () => { if (state.running) updateTarget(); };
     window.addEventListener('resize', resize, { passive: true });
     addCleanup(() => { clearInterval(state.timer); window.removeEventListener('resize', resize); });
+    if (state.running) updateTarget();
     setActiveState('aim', state);
   }
 
   // Reaction Test ----------------------------------------------------------
+  function reactionFreshState() {
+    return { phase: 'ready', round: 0, roundsTotal: 5, startedAt: 0, bestTimeMs: 0, lastTimeMs: 0, times: [], waitingTimer: null, tooSoon: false, finished: false, saved: false };
+  }
+
   function renderReaction(body) {
-    const state = getState('reaction', () => ({ phase: 'ready', roundsLeft: 5, startedAt: 0, bestTimeMs: 0, lastTimeMs: 0, times: [], timer: null, waitingTimer: null, tooSoon: false, finished: false }));
-    if (!state.phase || state.finished) {
-      state.phase = 'ready'; state.roundsLeft = 5; state.startedAt = 0; state.bestTimeMs = 0; state.lastTimeMs = 0; state.times = []; state.finished = false; state.tooSoon = false;
-    }
+    const state = getState('reaction', reactionFreshState);
+    const bestStat = getAccountStat(gamesGetActiveAccount(), 'reaction');
+    const bestLabel = state.bestTimeMs ? fmtTime(state.bestTimeMs) : (bestStat.bestTimeMs ? fmtTime(bestStat.bestTimeMs) : '—');
     body.innerHTML = `
-      <div class="arcadeStage">
-        <div class="arcadeHud">
-          ${gamesStatLine('Kolo', `${6 - state.roundsLeft}/5`)}
-          ${gamesStatLine('Best', fmtTime(state.bestTimeMs))}
-          ${gamesStatLine('Poslední', fmtTime(state.lastTimeMs))}
+      <div class="arcadeStage arcadeReactionStage">
+        <div class="arcadeHud arcadeHudWide">
+          ${gamesStatLine('Kolo', `${state.round}/${state.roundsTotal || 5}`)}
+          ${gamesStatLine('Best', bestLabel)}
+          ${gamesStatLine('Poslední', state.lastTimeMs ? fmtTime(state.lastTimeMs) : '—')}
+          ${gamesStatLine('Průměr', state.times.length ? fmtTime(Math.round(state.times.reduce((a, b) => a + b, 0) / state.times.length)) : '—')}
         </div>
-        <div class="arcadeBoardWrap arcadeBanner arcadePanel ${state.phase === 'go' ? 'isGo' : ''} ${state.tooSoon ? 'isBad' : ''}" id="reactionBoard">
-          <div class="arcadeBannerTitle">${state.phase === 'go' ? 'TEĎ!' : (state.phase === 'waiting' ? 'Čekej...' : (state.tooSoon ? 'Moc brzo!' : 'Připrav se'))}</div>
-          <div class="arcadeBannerText" id="reactionText">${state.phase === 'go' ? 'Klikni co nejrychleji.' : 'Klepni na kartu a počkej na zelenou.'}</div>
-          <div class="arcadeStatus">Zbývá kol: <strong>${state.roundsLeft}</strong></div>
-        </div>
+        <button type="button" class="arcadeBoardWrap arcadeReactionBoard arcadePanel ${state.phase === 'go' ? 'isGo' : ''} ${state.tooSoon ? 'isBad' : ''}" id="reactionBoard">
+          <span class="arcadeReactionPulse"></span>
+          <strong id="reactionTitle">${state.phase === 'go' ? 'TEĎ!' : (state.phase === 'waiting' ? 'Čekej…' : (state.finished ? 'Hotovo' : (state.tooSoon ? 'Moc brzo' : 'Připrav se')))}</strong>
+          <small id="reactionText">${state.finished ? 'Klepni na Nová hra pro další pokus.' : (state.phase === 'go' ? 'Klepni hned.' : 'Klepni pro start a pak čekej na signál.')}</small>
+        </button>
         <div class="arcadeControls">
-          <button type="button" class="gameControlBtn" id="reactionStartBtn">Start</button>
           <button type="button" class="gameControlBtn" id="reactionResetBtn">Nová hra</button>
         </div>
         ${gamesTop3Block('reaction', 'ms', 5)}
       </div>`;
     const board = body.querySelector('#reactionBoard');
-    const text = body.querySelector('#reactionText');
+    const title = body.querySelector('#reactionTitle');
+    const textEl = body.querySelector('#reactionText');
+    const hud = body.querySelector('.arcadeHud');
     const clearWaiting = () => { clearTimeout(state.waitingTimer); state.waitingTimer = null; };
-    const nextRound = () => {
-      clearWaiting();
-      if (state.roundsLeft <= 0) { finish(); return; }
-      state.phase = 'waiting';
-      state.tooSoon = false;
-      const delay = 900 + Math.random() * 2400;
-      text.textContent = 'Klepni až karta zezelená.';
-      state.waitingTimer = setTimeout(() => {
-        state.phase = 'go';
-        state.startedAt = performance.now();
-        board.classList.add('isGo');
-        board.classList.remove('isBad');
-        text.textContent = 'Teď!';
-      }, delay);
+    const updateHud = () => {
+      const avg = state.times.length ? Math.round(state.times.reduce((a, b) => a + b, 0) / state.times.length) : 0;
+      if (hud) hud.innerHTML = `${gamesStatLine('Kolo', `${state.round}/${state.roundsTotal || 5}`)}${gamesStatLine('Best', state.bestTimeMs ? fmtTime(state.bestTimeMs) : (bestStat.bestTimeMs ? fmtTime(bestStat.bestTimeMs) : '—'))}${gamesStatLine('Poslední', state.lastTimeMs ? fmtTime(state.lastTimeMs) : '—')}${gamesStatLine('Průměr', avg ? fmtTime(avg) : '—')}`;
+    };
+    const setPhase = (phase, bad = false) => {
+      state.phase = phase;
+      state.tooSoon = !!bad;
+      board.classList.toggle('isGo', phase === 'go');
+      board.classList.toggle('isBad', !!bad);
+      if (title) title.textContent = phase === 'go' ? 'TEĎ!' : phase === 'waiting' ? 'Čekej…' : state.finished ? 'Hotovo' : bad ? 'Moc brzo' : 'Připrav se';
+      if (textEl) textEl.textContent = phase === 'go' ? 'Klepni hned.' : phase === 'waiting' ? 'Nech ruce v klidu, signál přijde za chvilku.' : state.finished ? 'Klepni na Nová hra pro další pokus.' : 'Klepni pro start a pak čekej na signál.';
     };
     const finish = () => {
       if (state.finished) return;
+      clearWaiting();
       state.finished = true;
       state.phase = 'done';
       const best = state.bestTimeMs || Math.min(...state.times.filter(Boolean)) || 0;
       const avg = state.times.length ? Math.round(state.times.reduce((a, b) => a + b, 0) / state.times.length) : 0;
-      gamesRecordStat('reaction', { completed: true, plays: 1, bestTimeMs: best, bestScore: best ? encodePoints('reaction', best) : 0, lastResult: `${best} ms` });
-      board.classList.remove('isGo');
-      text.textContent = `Hotovo. Průměr ${fmtTime(avg)}, best ${fmtTime(best)}.`;
+      setPhase('done', false);
+      if (title) title.textContent = 'Hotovo';
+      if (textEl) textEl.textContent = `Best ${fmtTime(best)} · průměr ${fmtTime(avg)}.`;
+      updateHud();
+      if (!state.saved) {
+        state.saved = true;
+        gamesRecordStat('reaction', {
+          completed: true,
+          plays: 1,
+          bestTimeMs: best,
+          bestAvgTimeMs: avg,
+          bestScore: best ? encodePoints('reaction', best) : 0,
+          perfectRuns: state.times.every(t => t && t < 250) ? 1 : 0,
+          lastResult: `${best} ms`
+        });
+      }
     };
-    const onTap = () => {
-      if (state.finished) { state.phase = 'ready'; state.roundsLeft = 5; state.times = []; state.bestTimeMs = 0; state.lastTimeMs = 0; state.finished = false; body.querySelector('#reactionBoard').classList.remove('isGo','isBad'); text.textContent = 'Klepni na kartu a počkej na zelenou.'; return; }
-      if (state.phase === 'ready') { state.roundsLeft = 5; state.times = []; state.bestTimeMs = 0; state.lastTimeMs = 0; nextRound(); return; }
+    const nextRound = () => {
+      clearWaiting();
+      if (state.round >= (state.roundsTotal || 5)) { finish(); return; }
+      setPhase('waiting', false);
+      const delay = 850 + Math.random() * 2600;
+      state.waitingTimer = setTimeout(() => {
+        setPhase('go', false);
+        state.startedAt = performance.now();
+        if (typeof navigator !== 'undefined' && navigator.vibrate) { try { navigator.vibrate(12); } catch (err) {} }
+      }, delay);
+    };
+    const reset = () => {
+      clearWaiting();
+      Object.assign(state, reactionFreshState());
+      setPhase('ready', false);
+      updateHud();
+    };
+    const onTap = (ev) => {
+      ev?.preventDefault?.();
+      if (state.finished) return;
+      if (state.phase === 'ready') { state.round = 0; state.times = []; state.bestTimeMs = 0; state.lastTimeMs = 0; state.saved = false; nextRound(); return; }
       if (state.phase === 'waiting') {
-        state.tooSoon = true;
-        state.phase = 'ready';
         clearWaiting();
-        board.classList.remove('isGo');
-        board.classList.add('isBad');
-        text.textContent = 'Moc brzo. Zkus znovu.';
+        state.round = 0;
+        state.times = [];
+        state.bestTimeMs = 0;
+        state.lastTimeMs = 0;
+        setPhase('ready', true);
+        updateHud();
         return;
       }
       if (state.phase === 'go') {
@@ -1505,15 +1618,14 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         state.lastTimeMs = time;
         state.bestTimeMs = state.bestTimeMs ? Math.min(state.bestTimeMs, time) : time;
         state.times.push(time);
-        state.roundsLeft -= 1;
-        body.querySelector('.arcadeHud').innerHTML = `${gamesStatLine('Kolo', `${6 - state.roundsLeft}/5`)}${gamesStatLine('Best', fmtTime(state.bestTimeMs))}${gamesStatLine('Poslední', fmtTime(state.lastTimeMs))}`;
-        if (state.roundsLeft <= 0) { finish(); return; }
-        nextRound();
+        state.round += 1;
+        updateHud();
+        if (state.round >= (state.roundsTotal || 5)) finish();
+        else nextRound();
       }
     };
-    board.addEventListener('click', onTap);
-    body.querySelector('#reactionStartBtn').addEventListener('click', () => { state.phase = 'ready'; state.roundsLeft = 5; state.times = []; state.bestTimeMs = 0; state.lastTimeMs = 0; state.finished = false; nextRound(); });
-    body.querySelector('#reactionResetBtn').addEventListener('click', () => { state.phase = 'ready'; state.roundsLeft = 5; state.times = []; state.bestTimeMs = 0; state.lastTimeMs = 0; state.finished = false; clearWaiting(); board.classList.remove('isGo','isBad'); text.textContent = 'Klepni na kartu a počkej na zelenou.'; body.querySelector('.arcadeHud').innerHTML = `${gamesStatLine('Kolo', `0/5`)}${gamesStatLine('Best', '—')}${gamesStatLine('Poslední', '—')}`; });
+    board.addEventListener('pointerdown', onTap);
+    body.querySelector('#reactionResetBtn').addEventListener('click', reset);
     addCleanup(() => { clearWaiting(); });
     setActiveState('reaction', state);
   }

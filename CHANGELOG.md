@@ -1,3 +1,18 @@
+## v.1.1 (685)
+- Hry: Aim Trainer a Reaction Test přesunuté mezi hlavní/hotové hry vedle Piškvorek, 2048, Snake a Flappy Car.
+- Aim Trainer přepracovaný pro dotyk: větší plocha, targety přes theme/pozadí, čistý HUD, start/konec overlay a zápis jen po dokončeném kole.
+- Reaction Test přepracovaný pro mobil: velká reakční karta, 5kolový test, čistý HUD bez zbytečného titulku a zápis jen po dokončené sérii.
+- Přidané těžší achievementy pro Aim a Reaction: skóre, combo, přesnost, počet dokončení, rychlé reakce, průměr a čisté série.
+- Verze sjednocena na v.1.1 (685), cache na v1.1-685 a Supabase realtime kanál na rak-public-live-v685.
+
+## v.1.1 (684)
+- Flappy Car: přepracovaná do mobile-first podoby s čistým touch ovládáním přes celou herní plochu, overlayem start/konec a tlačítkem Nová hra.
+- Flappy Car: canvas kreslí pozadí, překážky i auto podle aktuálního theme/pozadí aplikace místo tvrdého zeleného vzhledu.
+- Flappy Car: přesunutá mezi hlavní/hotové hry vedle Piškvorek, 2048 a Snake; ve složce Ve vývoji už nezůstává.
+- Flappy Car: přidané další achievementy pro score 25/50/75/100/150 a dokončené jízdy 25/100.
+- Statistiky Flappy Car se zapisují jen po dokončené jízdě, aby otevření/zavření hry nepřidávalo XP ani achievementy.
+- Verze sjednocena na v.1.1 (684), cache na v1.1-684 a Supabase realtime kanál na rak-public-live-v684.
+
 ## v.1.1 (683)
 - Piškvorky: finální oprava zeleno-černé hrací plochy. Přidaná runtime pojistka `tttThemeBoardPatch`, která se vloží až po starém interním `tttStyles` a přebije staré zelené pozadí, mřížku i pseudo-vrstvy.
 - Piškvorky: hrací plocha nově používá neutrální glass/panel vrstvu navázanou na globální theme a pozadí aplikace; barvy X/O zůstaly beze změny.
