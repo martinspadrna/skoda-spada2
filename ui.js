@@ -900,6 +900,74 @@ function tttGetState() {
 }
 
 
+function tttCreateEmptyOnlineState() {
+  return {
+    code: '',
+    inviteId: null,
+    sessionId: null,
+    role: '',
+    status: 'idle',
+    revision: 0,
+    lastUpdatedAt: 0,
+    lastRemoteUpdatedAt: 0,
+    dirty: false,
+    pendingRevision: 0,
+    playerXAccountNumber: null,
+    playerOAccountNumber: null,
+    connected: false,
+    resultSavedKey: '',
+    inviteUrl: '',
+    headToHead: null,
+    headToHeadText: '',
+    headToHeadLoadedAt: 0
+  };
+}
+
+function tttClearBoardStateForNewMode(state, mode) {
+  const s = state || tttGetState();
+  const nextMode = String(mode || s.mode || 'ai').trim() || 'ai';
+  if (nextMode !== 'pvp') {
+    if (typeof tttStopOnlineSync === 'function') tttStopOnlineSync();
+    s.online = tttCreateEmptyOnlineState();
+    s.onlineStatus = '';
+    s.onlineKind = 'idle';
+  }
+  s.board = Array(TTT_TOTAL_CELLS).fill('');
+  s.turn = 'X';
+  s.gameOver = false;
+  s.winner = null;
+  s.nextStarter = 'X';
+  s.startedAt = 0;
+  s.moveCount = 0;
+  s.moveCountX = 0;
+  s.moveCountO = 0;
+  s.lastMoveIndex = null;
+  s.lastMoveMark = null;
+  s.hardWinPrompt = false;
+  s.hardWinStats = null;
+  s.resultSaved = false;
+  s.resultOnlineSaved = false;
+  s.resultSummary = null;
+  s.aiBusy = false;
+  s.aiToken = (Number(s.aiToken || 0) || 0) + 1;
+  s.message = nextMode === 'local' ? 'Na řadě je X.' : (nextMode === 'pvp' ? s.message || '' : 'Hraješ za X. AI je O.');
+  return s;
+}
+
+function tttSwitchModeClean(nextMode) {
+  const state = tttGetState();
+  const mode = String(nextMode || 'ai').trim() || 'ai';
+  const previous = String(state.mode || '').trim();
+  state.mode = mode;
+  state.difficulty = 'ai';
+  if (mode !== previous || mode !== 'pvp') {
+    tttClearBoardStateForNewMode(state, mode);
+  }
+  state.screen = 'start';
+  return state;
+}
+
+
 function tttNormalizeInviteCode(code) {
   return String(code || '').replace(/\D/g, '').slice(0, 4);
 }
@@ -1185,7 +1253,12 @@ async function tttRecordOnlineSessionResult(force) {
   try {
     const res = await window.RotationSupabaseBridge.recordTttSessionResultByInviteCode(online.code, { force: !!force });
     if (res && res.ok) {
-      void gamesRefreshRemoteLeaderboards('ttt', true);
+      void gamesRefreshRemoteLeaderboards('ttt', true).then(() => {
+        if (typeof gamesSyncProfileFromRemote === 'function') return gamesSyncProfileFromRemote(true);
+        return null;
+      }).then(() => {
+        if (typeof gamesRenderProfiles === 'function') gamesRenderProfiles();
+      });
       void tttRefreshOnlineHeadToHead(true).then(() => {
         if (typeof tttRender === 'function') tttRender();
       });
@@ -2999,8 +3072,7 @@ function tttRender() {
 
   const tttHasResumeGame = () => {
     if (state.gameOver) return false;
-    if (state.mode === 'pvp' && state.online && state.online.code) return true;
-    return Array.isArray(state.board) && state.board.some(cell => !!cell);
+    return state.mode === 'pvp' && !!(state.online && state.online.code);
   };
 
   if (state.screen === 'start') {
@@ -3017,7 +3089,7 @@ function tttRender() {
       '    <button type="button" class="tttBtn' + (state.mode === 'pvp' ? ' isActive' : '') + '" data-ttt-mode="pvp">Online pozvánka</button>',
       '  </div>',
       '</div>',
-      state.mode !== 'pvp' ? '<div class="tttCard tttActionCard"><div class="tttSectionTitle">Hrát</div><div class="tttNote">Vybraný režim spusť jedním tlačítkem. Když je rozehraná hra, můžeš se k ní vrátit přes pokračování.</div><button type="button" class="tttBtn tttPrimaryBtn" id="tttStartBtn">' + (state.mode === 'local' ? 'Hrát na mobilu' : 'Hrát proti AI') + '</button>' + (tttHasResumeGame() ? '<button type="button" class="tttBtn tttSecondaryBtn" id="tttResumeBtn">Pokračovat v rozehrané hře</button>' : '') + '</div>' : '',
+      state.mode !== 'pvp' ? '<div class="tttCard tttActionCard"><div class="tttSectionTitle">Hrát</div><div class="tttNote">Vybraný režim spustí vždy čistou novou hru.</div><button type="button" class="tttBtn tttPrimaryBtn" id="tttStartBtn">' + (state.mode === 'local' ? 'Hrát na mobilu' : 'Hrát proti AI') + '</button>' + (tttHasResumeGame() ? '<button type="button" class="tttBtn tttSecondaryBtn" id="tttResumeBtn">Pokračovat v rozehrané hře</button>' : '') + '</div>' : '',
       state.mode === 'pvp' ? '<div class="tttCard tttInviteCard"><div class="tttSectionTitle">Online pozvánka</div><div id="tttInviteInfo" class="tttNote">Vytvoř hru a pošli spoluhráči 4místný kód, nebo přijmi jeho pozvánku.</div><div id="tttInviteCode" class="tttInviteCode' + ((state.online && state.online.code) ? '' : ' uHidden') + '">' + escapeHtml((state.online && state.online.code) || '') + '</div><div class="tttNote uWordBreakAll uMt8' + ((state.online && state.online.code) ? '' : ' uHidden') + '" id="tttInviteUrl">Kód: ' + escapeHtml((state.online && state.online.code) || '') + '</div><div class="tttToggleRow tttInviteActions uMt10"><button type="button" class="tttBtn tttPrimaryBtn" id="tttCreateInviteBtn">Vytvořit hru</button><button type="button" class="tttBtn" id="tttJoinInviteBtn">Přijmout pozvánku</button></div></div>' : '',
       '<div class="tttCard tttWinHistory">',
       '  <div class="tttSectionTitle">Kdo porazil AI</div>',
@@ -3028,8 +3100,8 @@ function tttRender() {
 
     start.querySelectorAll('[data-ttt-mode]').forEach(btn => {
       btn.addEventListener('click', () => {
-        state.mode = btn.getAttribute('data-ttt-mode') || 'ai';
-        state.difficulty = 'ai';
+        const nextMode = btn.getAttribute('data-ttt-mode') || 'ai';
+        tttSwitchModeClean(nextMode);
         tttRender();
         scheduleTttLayout();
       });
@@ -3166,6 +3238,9 @@ function tttRender() {
       }
     });
     start.querySelector('#tttStartBtn')?.addEventListener('click', async () => {
+      const selectedMode = String(state.mode || 'ai');
+      if (selectedMode !== 'pvp') tttClearBoardStateForNewMode(state, selectedMode);
+      state.mode = selectedMode;
       state.screen = 'game';
       state.board = Array(TTT_TOTAL_CELLS).fill('');
       state.turn = 'X';
@@ -5763,6 +5838,9 @@ async function gamesSyncProfileFromRemote(force = false) {
   try {
     const profile = gamesGetProfile();
     const remoteAccounts = await bridge.loadGameAccounts().catch(() => []);
+    const remoteTttStats = typeof bridge.loadGameStats === 'function'
+      ? await bridge.loadGameStats('ttt', 100, { force: !!force }).catch(() => [])
+      : [];
     let changed = false;
 
     (Array.isArray(remoteAccounts) ? remoteAccounts : []).forEach((row) => {
@@ -5786,6 +5864,39 @@ async function gamesSyncProfileFromRemote(force = false) {
         if (remoteThemeId && account.uiSettings.themeId !== remoteThemeId) { account.uiSettings.themeId = remoteThemeId; changed = true; }
         if (remoteBackgroundId && account.uiSettings.backgroundId !== remoteBackgroundId) { account.uiSettings.backgroundId = remoteBackgroundId; changed = true; }
         account.uiSettings.updatedAt = Date.now();
+      }
+    });
+
+    (Array.isArray(remoteTttStats) ? remoteTttStats : []).forEach((row) => {
+      const accountId = String(row && (row.account_number || row.accountNumber || row.id) ? (row.account_number || row.accountNumber || row.id) : '').trim();
+      if (!accountId || GAMES_ACCOUNT_BLOCKLIST.has(accountId)) return;
+      const remoteName = String(row && (row.player_name || row.full_name || row.name) ? (row.player_name || row.full_name || row.name) : accountId).trim() || accountId;
+      if (!profile.accounts[accountId]) {
+        profile.accounts[accountId] = gamesMakeAccountEntry(accountId, remoteName);
+        changed = true;
+      } else if (remoteName && (!profile.accounts[accountId].name || profile.accounts[accountId].name === accountId)) {
+        profile.accounts[accountId].name = remoteName;
+        changed = true;
+      }
+      const acc = profile.accounts[accountId];
+      if (!acc.stats || typeof acc.stats !== 'object') acc.stats = gamesEmptyStats();
+      const current = acc.stats.ttt && typeof acc.stats.ttt === 'object' ? acc.stats.ttt : {};
+      const plays = Number(row && (row.games_played ?? row.plays ?? row.value ?? row.points) || 0) || 0;
+      const wins = Number(row && row.wins || 0) || 0;
+      const losses = Number(row && row.losses || 0) || 0;
+      const draws = Number(row && row.draws || 0) || 0;
+      const lastTs = gamesParseRemoteTimestamp(row && (row.last_played_at || row.updated_at || row.updatedAt));
+      const nextTtt = Object.assign({}, current, {
+        plays: Math.max(Number(current.plays || 0) || 0, plays),
+        wins: Math.max(Number(current.wins || 0) || 0, wins),
+        losses: Math.max(Number(current.losses || 0) || 0, losses),
+        draws: Math.max(Number(current.draws || 0) || 0, draws),
+        lastPlayedAt: Math.max(Number(current.lastPlayedAt || 0) || 0, lastTs || 0)
+      });
+      if (JSON.stringify(current) !== JSON.stringify(nextTtt)) {
+        acc.stats.ttt = nextTtt;
+        acc.updatedAt = Math.max(Number(acc.updatedAt || 0) || 0, nextTtt.lastPlayedAt || Date.now());
+        changed = true;
       }
     });
 
@@ -6466,11 +6577,9 @@ async function gamesRefreshRemoteLeaderboards(gameId, force) {
         return { id, rows: app.gamesLeaderboardCache[id] || [] };
       }
     }));
-    // Fáze 5: online leaderboard refresh už během rozehrané hry nepřerenderuje shell.
-    if (!app.activeGameShell) {
-      gamesRenderProfiles();
-      gamesRenderStats();
-    }
+    // v.1.1 (669): profily se můžou bezpečně obnovit i během hry; shell samotný se nepřekresluje.
+    gamesRenderProfiles();
+    if (!app.activeGameShell) gamesRenderStats();
     return results;
   } catch (err) {
     console.warn('gamesRefreshRemoteLeaderboards failed', err);

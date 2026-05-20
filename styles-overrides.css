@@ -6115,3 +6115,21 @@ html body.tttOpen .tttOverlay .tttResultRestartBtn{
 #games .gamesStatsFolder{display:none !important;}
 #games .gamesProfilesFolder .gamesStatsCardLine,
 #games .gamesProfilesFolder .gamesProfileRow span{font-variant-numeric:tabular-nums !important;}
+
+
+/* v.1.1 (669) – Piškvorky: finální kontrast tlačítka Nová hra po AI/online výsledku. */
+html body .tttOverlay .tttResultRestartBtn,
+html body.tttOpen .tttOverlay .tttResultRestartBtn,
+html body .tttOverlay .tttResultRestartBtn.tttBtn{
+  color:#FFFFFF !important;
+  -webkit-text-fill-color:#FFFFFF !important;
+  background:linear-gradient(180deg, rgba(18,36,25,.98), rgba(4,12,8,1)) !important;
+  border:2px solid rgba(255,255,255,.92) !important;
+  text-shadow:0 1px 3px rgba(0,0,0,.95), 0 0 16px rgba(255,255,255,.34) !important;
+  box-shadow:0 0 0 1px rgba(57,255,20,.55), 0 0 30px rgba(57,255,20,.42), inset 0 0 0 1px rgba(255,255,255,.18) !important;
+}
+html body .tttOverlay .tttResultRestartBtn:hover,
+html body.tttOpen .tttOverlay .tttResultRestartBtn:hover{
+  color:#FFFFFF !important;
+  -webkit-text-fill-color:#FFFFFF !important;
+}

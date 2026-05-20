@@ -1,3 +1,12 @@
+## v.1.1 (669)
+- Piškvorky: při přepnutí na Proti AI nebo Na jednom mobilu se už nepřebírá online rozehraná hra.
+- Tlačítko Hrát proti AI / Hrát na mobilu zakládá vždy čistou novou partii.
+- Volba Pokračovat v rozehrané hře se už u AI/lokální hry nezobrazuje kvůli online partii.
+- Profily při online refreshi přebírají i vzdálené TTT statistiky z game_stats, aby byly vidět hry ostatních hráčů.
+- Nová hra ve výsledkovém panelu má finálně bílý, kontrastní text.
+- Vzájemné skóre online Piškvorek dál běží přes game_sessions a vítěz další online hru začíná prvním tahem.
+- Verze sjednocena na v.1.1 (669), cache na v1.1-669 a Supabase realtime kanál na rak-public-live-v669.
+
 ## v.1.1 (668)
 - Piškvorky online: kód pozvánky se při čekání zobrazuje velkým panelem přes hrací pole a zmizí po přijetí soupeřem.
 - Horní řádek online hry nově ukazuje vzájemné skóre ve formátu hráč X 2:2 hráč O.
