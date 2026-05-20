@@ -1,6 +1,6 @@
 
 const APP_KEY = "rotace_kalkulacky_state_v123";
-const APP_VERSION = "v.1.1 (625)";
+const APP_VERSION = "v.1.1 (664)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-05-18-" + APP_VERSION + "-" + Date.now();
 
@@ -161,9 +161,20 @@ function escapeHtml(str) {
 
 const RAK_SECURITY_RENDER_DEFAULTS = {
   phase: 'phase-9-security-render-cleanup',
-  phasePercent: 32,
+  phasePercent: 100,
   safeDomBuilds: 0,
+  safeDomSkippedBuilds: 0,
+  safeDomReplacements: 0,
+  safeDomFallbackReplacements: 0,
+  safeDomClears: 0,
   lastSafeDomKey: '',
+  lastSafeDomReplaceKey: '',
+  lastSafeDomFingerprint: '',
+  delegatedActionChecks: 0,
+  delegatedActionBlocked: 0,
+  delegatedActionGuardMode: 'allowlist-data-action',
+  lastDelegatedAction: '',
+  lastBlockedDelegatedAction: '',
   escapedDynamicHtmlWrites: 0,
   guardedHtmlWrites: 0,
   guardedHtmlSkippedWrites: 0,
@@ -172,11 +183,17 @@ const RAK_SECURITY_RENDER_DEFAULTS = {
   guardedTextSkippedWrites: 0,
   safeExternalUrlChecks: 0,
   safeExternalUrlBlocked: 0,
+  safeExternalUrlAllowlistChecks: 0,
+  safeExternalUrlAllowlistBlocked: 0,
+  safeExternalHrefWrites: 0,
+  safeExternalHrefSkippedWrites: 0,
   lastEscapedKey: '',
   lastHtmlKey: '',
   lastHtmlRisk: '',
   lastTextKey: '',
   lastExternalUrlKey: '',
+  lastAllowedExternalUrlKey: '',
+  lastSafeExternalHrefKey: '',
   lastBlockedExternalUrl: '',
   lastRenderAt: 0
 };
@@ -184,7 +201,7 @@ const RAK_SECURITY_RENDER_STATS = Object.assign(
   {},
   RAK_SECURITY_RENDER_DEFAULTS,
   window.__rakSecurityRenderStats || {},
-  { phase: 'phase-9-security-render-cleanup', phasePercent: 32 }
+  { phase: 'phase-9-security-render-cleanup', phasePercent: 100 }
 );
 window.__rakSecurityRenderStats = RAK_SECURITY_RENDER_STATS;
 
@@ -211,6 +228,125 @@ function recordSafeDomBuild(key = '') {
 }
 window.recordSafeDomBuild = recordSafeDomBuild;
 
+
+function appendSafeDomChild(parent, child) {
+  if (!parent || child == null || typeof document === 'undefined') return;
+  if (child instanceof Node) {
+    parent.appendChild(child);
+    return;
+  }
+  parent.appendChild(document.createTextNode(String(child)));
+}
+
+function clearElementChildrenSafely(element, key = '') {
+  if (!element) return false;
+  const statKey = String(key || element.id || element.className || 'safe-dom-clear').trim();
+  try {
+    if (!element.firstChild) return false;
+    if (typeof element.replaceChildren === 'function') {
+      element.replaceChildren();
+    } else {
+      while (element.firstChild) element.removeChild(element.firstChild);
+    }
+    RAK_SECURITY_RENDER_STATS.safeDomClears = Number(RAK_SECURITY_RENDER_STATS.safeDomClears || 0) + 1;
+    RAK_SECURITY_RENDER_STATS.lastSafeDomReplaceKey = statKey;
+    RAK_SECURITY_RENDER_STATS.lastRenderAt = Date.now();
+    return true;
+  } catch (err) {
+    try { while (element.firstChild) element.removeChild(element.firstChild); } catch (fallbackErr) {}
+    RAK_SECURITY_RENDER_STATS.safeDomFallbackReplacements = Number(RAK_SECURITY_RENDER_STATS.safeDomFallbackReplacements || 0) + 1;
+    RAK_SECURITY_RENDER_STATS.lastSafeDomReplaceKey = statKey + ':fallback-clear';
+    RAK_SECURITY_RENDER_STATS.lastRenderAt = Date.now();
+    return true;
+  }
+}
+window.clearElementChildrenSafely = clearElementChildrenSafely;
+
+function replaceElementChildrenSafely(element, children, key = '') {
+  if (!element || typeof document === 'undefined') return false;
+  const statKey = String(key || element.id || element.className || 'safe-dom-replace').trim();
+  const childList = Array.isArray(children) ? children.filter(child => child != null) : (children == null ? [] : [children]);
+  try {
+    if (typeof element.replaceChildren === 'function') {
+      element.replaceChildren(...childList.map(child => child instanceof Node ? child : document.createTextNode(String(child))));
+    } else {
+      while (element.firstChild) element.removeChild(element.firstChild);
+      childList.forEach(child => appendSafeDomChild(element, child));
+    }
+    RAK_SECURITY_RENDER_STATS.safeDomReplacements = Number(RAK_SECURITY_RENDER_STATS.safeDomReplacements || 0) + 1;
+    RAK_SECURITY_RENDER_STATS.lastSafeDomReplaceKey = statKey;
+    RAK_SECURITY_RENDER_STATS.lastRenderAt = Date.now();
+    return true;
+  } catch (err) {
+    try {
+      while (element.firstChild) element.removeChild(element.firstChild);
+      childList.forEach(child => appendSafeDomChild(element, child));
+    } catch (fallbackErr) {}
+    RAK_SECURITY_RENDER_STATS.safeDomFallbackReplacements = Number(RAK_SECURITY_RENDER_STATS.safeDomFallbackReplacements || 0) + 1;
+    RAK_SECURITY_RENDER_STATS.lastSafeDomReplaceKey = statKey + ':fallback-replace';
+    RAK_SECURITY_RENDER_STATS.lastRenderAt = Date.now();
+    return true;
+  }
+}
+window.replaceElementChildrenSafely = replaceElementChildrenSafely;
+
+
+function setElementChildrenIfChanged(element, fingerprint, buildChildren, key = '') {
+  if (!element || typeof document === 'undefined') return false;
+  const statKey = String(key || element.id || element.className || 'safe-dom').trim();
+  const nextFingerprint = String(fingerprint ?? '');
+  if (element.__rakSafeDomFingerprint === nextFingerprint) {
+    RAK_SECURITY_RENDER_STATS.safeDomSkippedBuilds = Number(RAK_SECURITY_RENDER_STATS.safeDomSkippedBuilds || 0) + 1;
+    RAK_SECURITY_RENDER_STATS.lastSafeDomKey = statKey;
+    RAK_SECURITY_RENDER_STATS.lastSafeDomFingerprint = nextFingerprint;
+    RAK_SECURITY_RENDER_STATS.lastRenderAt = Date.now();
+    return false;
+  }
+
+  const fragment = document.createDocumentFragment();
+  const built = typeof buildChildren === 'function' ? buildChildren() : [];
+  const children = Array.isArray(built) ? built : [built];
+  children.forEach((child) => {
+    if (child == null) return;
+    if (child instanceof Node) {
+      fragment.appendChild(child);
+      return;
+    }
+    fragment.appendChild(document.createTextNode(String(child)));
+  });
+
+  if (typeof replaceElementChildrenSafely === 'function') {
+    replaceElementChildrenSafely(element, fragment, statKey);
+  } else if (typeof element.replaceChildren === 'function') {
+    element.replaceChildren(fragment);
+  } else {
+    while (element.firstChild) element.removeChild(element.firstChild);
+    element.appendChild(fragment);
+  }
+  element.__rakSafeDomFingerprint = nextFingerprint;
+  RAK_SECURITY_RENDER_STATS.lastSafeDomFingerprint = nextFingerprint;
+  recordSafeDomBuild(statKey);
+  return true;
+}
+window.setElementChildrenIfChanged = setElementChildrenIfChanged;
+
+function recordDelegatedActionGuard(action, allowed, source = '') {
+  const rawAction = String(action || '').trim();
+  const statSource = String(source || 'delegated-action').trim();
+  const safeFormat = /^[a-z0-9-]{1,80}$/.test(rawAction);
+  const ok = !!allowed && safeFormat;
+  RAK_SECURITY_RENDER_STATS.delegatedActionChecks = Number(RAK_SECURITY_RENDER_STATS.delegatedActionChecks || 0) + 1;
+  RAK_SECURITY_RENDER_STATS.lastDelegatedAction = statSource + ':' + (rawAction || 'empty');
+  RAK_SECURITY_RENDER_STATS.lastRenderAt = Date.now();
+  if (!ok) {
+    RAK_SECURITY_RENDER_STATS.delegatedActionBlocked = Number(RAK_SECURITY_RENDER_STATS.delegatedActionBlocked || 0) + 1;
+    RAK_SECURITY_RENDER_STATS.lastBlockedDelegatedAction = statSource + ':' + (rawAction || 'empty') + (safeFormat ? ':unknown' : ':bad-format');
+    return false;
+  }
+  return true;
+}
+window.recordDelegatedActionGuard = recordDelegatedActionGuard;
+
 function normalizeSafeExternalUrl(rawUrl, key = '') {
   const statKey = String(key || 'external-url').trim();
   RAK_SECURITY_RENDER_STATS.safeExternalUrlChecks += 1;
@@ -232,6 +368,77 @@ function normalizeSafeExternalUrl(rawUrl, key = '') {
   }
 }
 window.normalizeSafeExternalUrl = normalizeSafeExternalUrl;
+
+function isRakExternalHostAllowed(hostname, allowedHosts) {
+  const host = String(hostname || '').toLowerCase().trim();
+  const rules = Array.isArray(allowedHosts) ? allowedHosts : [];
+  return rules.some((rule) => {
+    const allowed = String(rule || '').toLowerCase().trim();
+    if (!allowed) return false;
+    if (allowed.charAt(0) === '.') return host.endsWith(allowed);
+    return host === allowed;
+  });
+}
+window.isRakExternalHostAllowed = isRakExternalHostAllowed;
+
+function normalizeAllowedExternalUrl(rawUrl, allowedHosts, key = '') {
+  const statKey = String(key || 'allowed-external-url').trim();
+  RAK_SECURITY_RENDER_STATS.safeExternalUrlAllowlistChecks = Number(RAK_SECURITY_RENDER_STATS.safeExternalUrlAllowlistChecks || 0) + 1;
+  RAK_SECURITY_RENDER_STATS.lastAllowedExternalUrlKey = statKey;
+  RAK_SECURITY_RENDER_STATS.lastRenderAt = Date.now();
+
+  const normalized = normalizeSafeExternalUrl(rawUrl, statKey);
+  if (!normalized) return '';
+
+  try {
+    const url = new URL(normalized, window.location.href);
+    if (!isRakExternalHostAllowed(url.hostname, allowedHosts)) {
+      RAK_SECURITY_RENDER_STATS.safeExternalUrlAllowlistBlocked = Number(RAK_SECURITY_RENDER_STATS.safeExternalUrlAllowlistBlocked || 0) + 1;
+      RAK_SECURITY_RENDER_STATS.lastBlockedExternalUrl = statKey + ':host-not-allowed:' + String(url.hostname || 'unknown');
+      return '';
+    }
+    return url.href;
+  } catch (err) {
+    RAK_SECURITY_RENDER_STATS.safeExternalUrlAllowlistBlocked = Number(RAK_SECURITY_RENDER_STATS.safeExternalUrlAllowlistBlocked || 0) + 1;
+    RAK_SECURITY_RENDER_STATS.lastBlockedExternalUrl = statKey + ':allowlist-invalid-url';
+    return '';
+  }
+}
+window.normalizeAllowedExternalUrl = normalizeAllowedExternalUrl;
+
+function setSafeExternalAnchor(anchor, rawUrl, allowedHosts, key = '') {
+  if (!anchor) return false;
+  const statKey = String(key || anchor.id || 'safe-external-anchor').trim();
+  const href = normalizeAllowedExternalUrl(rawUrl, allowedHosts, statKey);
+  if (!href) {
+    try { anchor.removeAttribute('href'); } catch (err) {}
+    return false;
+  }
+
+  try {
+    const current = String(anchor.getAttribute('href') || '');
+    const currentTarget = String(anchor.getAttribute('target') || '');
+    const currentRel = String(anchor.getAttribute('rel') || '');
+    const rel = 'noopener noreferrer';
+    const noChange = current === href && currentTarget === '_blank' && currentRel === rel;
+    if (noChange) {
+      RAK_SECURITY_RENDER_STATS.safeExternalHrefSkippedWrites = Number(RAK_SECURITY_RENDER_STATS.safeExternalHrefSkippedWrites || 0) + 1;
+      RAK_SECURITY_RENDER_STATS.lastSafeExternalHrefKey = statKey;
+      RAK_SECURITY_RENDER_STATS.lastRenderAt = Date.now();
+      return false;
+    }
+    anchor.setAttribute('href', href);
+    anchor.setAttribute('target', '_blank');
+    anchor.setAttribute('rel', rel);
+    RAK_SECURITY_RENDER_STATS.safeExternalHrefWrites = Number(RAK_SECURITY_RENDER_STATS.safeExternalHrefWrites || 0) + 1;
+    RAK_SECURITY_RENDER_STATS.lastSafeExternalHrefKey = statKey;
+    RAK_SECURITY_RENDER_STATS.lastRenderAt = Date.now();
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
+window.setSafeExternalAnchor = setSafeExternalAnchor;
 
 
 function inspectDynamicHtmlForRenderRisk(html, key = '') {
@@ -687,7 +894,11 @@ function setSelectOptionsIfChanged(selectElement, options, selectedValue = '', k
       if (item.value === selected) opt.selected = true;
       fragment.appendChild(opt);
     });
-    selectElement.replaceChildren(fragment);
+    if (typeof replaceElementChildrenSafely === 'function') {
+      replaceElementChildrenSafely(selectElement, fragment, statKey + ':options');
+    } else {
+      selectElement.replaceChildren(fragment);
+    }
     if (selected && selectElement.value !== selected) selectElement.value = selected;
     selectElement.__rakLastOptionsSignature = signature;
     RAK_DATA_OPTIMIZATION_STATS.domSelectWrites += 1;
@@ -697,7 +908,7 @@ function setSelectOptionsIfChanged(selectElement, options, selectedValue = '', k
   } catch (err) {
     RAK_DATA_OPTIMIZATION_STATS.domSelectWriteErrors += 1;
     try {
-      selectElement.innerHTML = '';
+      while (selectElement.firstChild) selectElement.removeChild(selectElement.firstChild);
       normalizedOptions.forEach((item) => {
         const opt = document.createElement('option');
         opt.value = item.value;
@@ -1105,7 +1316,7 @@ function syncYearControls() {
       return;
     }
     const current = String(selected || "");
-    el.innerHTML = "";
+    while (el.firstChild) el.removeChild(el.firstChild);
     options.forEach(item => {
       const opt = document.createElement("option");
       opt.value = item.value;
@@ -1126,11 +1337,13 @@ function syncYearControls() {
     if (typeof setSelectOptionsIfChanged === 'function') {
       setSelectOptionsIfChanged(overwriteMonth, options, String(overwriteMonth.value || ''), 'overwriteMonth');
     } else {
-      overwriteMonth.innerHTML = '<option value="">— jen doplnit nové měsíce —</option>';
-      months.forEach(monthKey => {
+      const current = String(overwriteMonth.value || '');
+      while (overwriteMonth.firstChild) overwriteMonth.removeChild(overwriteMonth.firstChild);
+      options.forEach(item => {
         const opt = document.createElement("option");
-        opt.value = monthKey;
-        opt.textContent = monthKey;
+        opt.value = item.value;
+        opt.textContent = item.label;
+        if (item.value === current) opt.selected = true;
         overwriteMonth.appendChild(opt);
       });
     }

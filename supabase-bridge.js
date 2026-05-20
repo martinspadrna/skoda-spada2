@@ -105,12 +105,42 @@
       lastCacheHitAt: null,
       lastCacheWriteAt: null,
       lastSharedReadAt: null
+    },
+    performanceGuard: {
+      realtimeRefreshRequests: 0,
+      realtimeRefreshRuns: 0,
+      realtimeRefreshCoalesced: 0,
+      realtimeRefreshHiddenDefers: 0,
+      realtimeRefreshErrors: 0,
+      sharedReadStarts: 0,
+      sharedReadJoins: 0,
+      sharedReadActive: 0,
+      sharedReadPeak: 0,
+      writeOptimizationChecks: 0,
+      writeOptimizationJoins: 0,
+      writeOptimizationSkips: 0,
+      writeOptimizationStarts: 0,
+      writeOptimizationActive: 0,
+      writeOptimizationPeak: 0,
+      lastWriteOptimizationKey: '',
+      lastWriteOptimizationAt: null,
+      lastWriteOptimizationSkipAt: null,
+      lastWriteOptimizationJoinAt: null,
+      lastRealtimeRefreshRequestAt: null,
+      lastRealtimeRefreshRunAt: null,
+      lastRealtimeRefreshTable: '',
+      lastRealtimeRefreshReason: '',
+      lastRealtimeRefreshHiddenAt: null,
+      lastSharedReadKey: '',
+      lastSharedReadAt: null
     }
   };
 
   const SUPABASE_QUEUE_MAX_ITEMS = 120;
   const SUPABASE_QUEUE_MAX_BYTES = 650000;
   const SUPABASE_REALTIME_REBIND_GUARD_MS = 15000;
+  const SUPABASE_REALTIME_REFRESH_DELAY_MS = 750;
+  const SUPABASE_REALTIME_REFRESH_HIDDEN_DELAY_MS = 2600;
   const SUPABASE_READ_TIMEOUT_MS = 12000;
   const SUPABASE_WRITE_TIMEOUT_MS = 16000;
   const SUPABASE_WRITE_COOLDOWN_MS = 900;
@@ -166,6 +196,34 @@
     'gomoku_wins'
   ];
 
+
+  const SUPABASE_STRUCTURE_CONTRACTS = [
+    { table: 'announcements', realtime: true, queueType: '', access: 'anon SELECT', note: 'dashboard oznámení / veřejné čtení' },
+    { table: 'machine_settings', realtime: true, queueType: 'machine_settings', access: 'anon SELECT/INSERT/UPDATE', note: 'nastavení strojů a parametrů kalkulaček' },
+    { table: 'rotation_state', realtime: true, queueType: 'rotation_state', access: 'anon SELECT/INSERT/UPDATE', note: 'hlavní snapshot rotace' },
+    { table: 'rotation_months', realtime: true, queueType: '', access: 'anon SELECT/INSERT/UPDATE', note: 'měsíce rozpisů' },
+    { table: 'rotation_entries', realtime: true, queueType: 'rotation_month_entries', access: 'anon SELECT/INSERT/UPDATE', note: 'řádky rozpisů' },
+    { table: 'game_accounts', realtime: true, queueType: '', access: 'anon SELECT/INSERT/UPDATE', note: 'herní profily' },
+    { table: 'game_invites', realtime: true, queueType: '', access: 'anon SELECT/INSERT/UPDATE', note: 'pozvánky online her' },
+    { table: 'game_sessions', realtime: true, queueType: 'game_session', access: 'anon SELECT/INSERT/UPDATE', note: 'online herní session' },
+    { table: 'game_stats', realtime: true, queueType: 'game_stat', access: 'anon SELECT/INSERT/UPDATE', note: 'skóre a žebříčky' },
+    { table: 'game_ui_settings', realtime: false, queueType: 'game_ui_settings', access: 'anon SELECT/INSERT/UPDATE', note: 'profilové nastavení vzhledu' },
+    { table: 'gomoku_wins', realtime: true, queueType: 'gomoku_win', access: 'anon SELECT/INSERT/UPDATE', note: 'výhry piškvorek / legacy leaderboard' }
+  ];
+
+  const SUPABASE_STRUCTURE_REQUIRED_HELPERS = [
+    'getClient',
+    'runSupabaseOperation',
+    'runSharedSupabaseRead',
+    'runOptimizedSupabaseWrite',
+    'readQueue',
+    'enqueueTask',
+    'requestRealtimeRefresh',
+    'bindRealtime',
+    'getSupabasePerformanceHealth',
+    'getSupabaseHardeningStatus'
+  ];
+
   let realtimeRefreshTimer = null;
   let realtimeRebindTimer = null;
 
@@ -184,10 +242,25 @@
 
   function requestRealtimeRefresh(payload) {
     const event = rememberRealtimeEvent(payload || {});
-    if (realtimeRefreshTimer) clearTimeout(realtimeRefreshTimer);
+    const hidden = typeof document !== 'undefined' && document.visibilityState === 'hidden';
+    state.performanceGuard.realtimeRefreshRequests += 1;
+    state.performanceGuard.lastRealtimeRefreshRequestAt = Date.now();
+    state.performanceGuard.lastRealtimeRefreshTable = event.table || '';
+    if (realtimeRefreshTimer) {
+      state.performanceGuard.realtimeRefreshCoalesced += 1;
+      clearTimeout(realtimeRefreshTimer);
+    }
+    if (hidden) {
+      state.performanceGuard.realtimeRefreshHiddenDefers += 1;
+      state.performanceGuard.lastRealtimeRefreshHiddenAt = Date.now();
+    }
+    const delay = hidden ? SUPABASE_REALTIME_REFRESH_HIDDEN_DELAY_MS : SUPABASE_REALTIME_REFRESH_DELAY_MS;
     realtimeRefreshTimer = setTimeout(async () => {
       realtimeRefreshTimer = null;
       const reason = event.table ? ('supabase-' + event.table) : 'supabase-realtime';
+      state.performanceGuard.realtimeRefreshRuns += 1;
+      state.performanceGuard.lastRealtimeRefreshRunAt = Date.now();
+      state.performanceGuard.lastRealtimeRefreshReason = reason;
       try {
         if (typeof window.__rotaceTriggerLiveRefresh === 'function') {
           await window.__rotaceTriggerLiveRefresh(reason, { force: true });
@@ -202,10 +275,11 @@
         if (typeof window.renderRotace === 'function') window.renderRotace();
         if (typeof window.renderStatsPanel === 'function') window.renderStatsPanel();
       } catch (err) {
+        state.performanceGuard.realtimeRefreshErrors += 1;
         state.lastError = err;
         console.warn('Supabase realtime refresh failed', err);
       }
-    }, 450);
+    }, delay);
   }
 
 
@@ -266,7 +340,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v625');
+      const channel = client.channel('rak-public-live-v664');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -319,10 +393,14 @@
   const LOCAL_GAME_SESSIONS_PREFIX = 'rotace_supabase_game_sessions_v1:';
   const GAME_UI_SETTINGS_TYPE = '__profile_ui';
   const SUPABASE_GAME_CACHE_TTL_MS = 5 * 60 * 1000;
+  const SUPABASE_WRITE_DEDUPE_WINDOW_MS = 1400;
+  const SUPABASE_WRITE_FINGERPRINT_LIMIT = 180000;
   let flushPromise = null;
   let flushScheduleTimer = null;
   let lastQueueWakeRequestAt = 0;
   const sharedReadPromises = new Map();
+  const sharedWritePromises = new Map();
+  const recentWriteFingerprints = new Map();
 
   function safeReadJson(key, fallback) {
     try {
@@ -399,15 +477,88 @@
     if (!readKey) return await work();
     if (sharedReadPromises.has(readKey)) {
       state.cacheGuard.sharedReadJoins += 1;
+      state.performanceGuard.sharedReadJoins += 1;
       state.cacheGuard.lastSharedReadAt = Date.now();
+      state.performanceGuard.lastSharedReadAt = Date.now();
+      state.performanceGuard.lastSharedReadKey = readKey;
       return await sharedReadPromises.get(readKey);
     }
+    state.performanceGuard.sharedReadStarts += 1;
+    state.performanceGuard.sharedReadActive += 1;
+    state.performanceGuard.sharedReadPeak = Math.max(Number(state.performanceGuard.sharedReadPeak || 0), Number(state.performanceGuard.sharedReadActive || 0));
+    state.performanceGuard.lastSharedReadAt = Date.now();
+    state.performanceGuard.lastSharedReadKey = readKey;
     const promise = Promise.resolve().then(work).finally(() => {
       sharedReadPromises.delete(readKey);
+      state.performanceGuard.sharedReadActive = Math.max(0, Number(state.performanceGuard.sharedReadActive || 0) - 1);
     });
     sharedReadPromises.set(readKey, promise);
     return await promise;
   }
+  function getSupabaseWriteFingerprint(value) {
+    let raw = '';
+    try { raw = JSON.stringify(value === undefined ? null : value); }
+    catch (err) { raw = String(value === undefined ? null : value); }
+    if (raw.length > SUPABASE_WRITE_FINGERPRINT_LIMIT) raw = raw.slice(0, SUPABASE_WRITE_FINGERPRINT_LIMIT) + ':truncated:' + raw.length;
+    let hash = 5381;
+    for (let i = 0; i < raw.length; i += 1) {
+      hash = ((hash << 5) + hash) ^ raw.charCodeAt(i);
+    }
+    return String(raw.length) + ':' + String(hash >>> 0);
+  }
+
+  function pruneRecentWriteFingerprints() {
+    const now = Date.now();
+    for (const [key, item] of recentWriteFingerprints.entries()) {
+      if (!item || now - Number(item.at || 0) > SUPABASE_WRITE_DEDUPE_WINDOW_MS * 6) recentWriteFingerprints.delete(key);
+    }
+    while (recentWriteFingerprints.size > 32) {
+      const firstKey = recentWriteFingerprints.keys().next().value;
+      if (!firstKey) break;
+      recentWriteFingerprints.delete(firstKey);
+    }
+  }
+
+  async function runOptimizedSupabaseWrite(key, payload, work, options) {
+    const baseKey = String(key || 'supabase.write').trim() || 'supabase.write';
+    const opts = options || {};
+    const windowMs = Math.max(500, Math.min(6000, Number(opts.windowMs) || SUPABASE_WRITE_DEDUPE_WINDOW_MS));
+    const fingerprint = getSupabaseWriteFingerprint(payload);
+    const writeKey = baseKey + ':' + fingerprint;
+    const now = Date.now();
+    state.performanceGuard.writeOptimizationChecks += 1;
+    state.performanceGuard.lastWriteOptimizationKey = baseKey;
+    state.performanceGuard.lastWriteOptimizationAt = now;
+
+    if (sharedWritePromises.has(writeKey)) {
+      state.performanceGuard.writeOptimizationJoins += 1;
+      state.performanceGuard.lastWriteOptimizationJoinAt = now;
+      return await sharedWritePromises.get(writeKey);
+    }
+
+    const recent = recentWriteFingerprints.get(writeKey);
+    if (recent && now - Number(recent.at || 0) <= windowMs) {
+      state.performanceGuard.writeOptimizationSkips += 1;
+      state.performanceGuard.lastWriteOptimizationSkipAt = now;
+      return recent.result;
+    }
+
+    state.performanceGuard.writeOptimizationStarts += 1;
+    state.performanceGuard.writeOptimizationActive += 1;
+    state.performanceGuard.writeOptimizationPeak = Math.max(Number(state.performanceGuard.writeOptimizationPeak || 0), Number(state.performanceGuard.writeOptimizationActive || 0));
+
+    const promise = Promise.resolve().then(work).then((result) => {
+      recentWriteFingerprints.set(writeKey, { at: Date.now(), result });
+      pruneRecentWriteFingerprints();
+      return result;
+    }).finally(() => {
+      sharedWritePromises.delete(writeKey);
+      state.performanceGuard.writeOptimizationActive = Math.max(0, Number(state.performanceGuard.writeOptimizationActive || 0) - 1);
+    });
+    sharedWritePromises.set(writeKey, promise);
+    return await promise;
+  }
+
 
   function saveLocalSnapshot(rotation, machineSettingsRows) {
     const existing = readLocalSnapshot() || {};
@@ -1291,12 +1442,12 @@
     const client = getClient();
     try {
       if (client && navigator.onLine) {
-        const announcementsRes = await runSupabaseOperation('announcements.refresh', () => client
+        const announcementsRes = await runSharedSupabaseRead('announcements.refresh', () => runSupabaseOperation('announcements.refresh', () => client
           .from('announcements')
           .select('*')
           .eq('is_active', true)
           .order('created_at', { ascending: false })
-          .limit(5), { mode: 'read' });
+          .limit(5), { mode: 'read' }));
 
         if (announcementsRes && !announcementsRes.error) {
           state.announcements = Array.isArray(announcementsRes.data) ? announcementsRes.data : [];
@@ -1481,11 +1632,11 @@
     const client = getClient();
     try {
       if (client && navigator.onLine) {
-        const { data, error } = await runSupabaseOperation('machine_settings.load', () => client
+        const { data, error } = await runSharedSupabaseRead('machine_settings.load', () => runSupabaseOperation('machine_settings.load', () => client
           .from('machine_settings')
           .select('*')
           .order('category', { ascending: true })
-          .order('machine_key', { ascending: true }), { mode: 'read' });
+          .order('machine_key', { ascending: true }), { mode: 'read' }));
         if (error) throw error;
         const rows = Array.isArray(data) ? data : [];
         if (rows.length) {
@@ -1517,7 +1668,7 @@
     try {
       if (client && navigator.onLine) {
         if (shouldDeferOnlineWrite()) return Object.assign(await enqueueAndMaybeFlush({ type: 'machine_settings', rows }), { savedCount: Array.isArray(rows) ? rows.length : 0, deferred: true });
-        const savedCount = await runSupabaseOperation('machine_settings.save', () => upsertMachineSettingsDirect(client, rows), { mode: 'write' });
+        const savedCount = await runOptimizedSupabaseWrite('machine_settings.save', rows, () => runSupabaseOperation('machine_settings.save', () => upsertMachineSettingsDirect(client, rows), { mode: 'write' }));
         state.machineSettingsSnapshot = Array.isArray(rows) ? rows : [];
         saveLocalSnapshot(state.rotationSnapshot || null, rows);
         await flushPendingWrites();
@@ -1538,12 +1689,12 @@
     const client = getClient();
     try {
       if (client && navigator.onLine) {
-        const { data, error } = await runSupabaseOperation('rotation_entries.load', () => client
+        const { data, error } = await runSharedSupabaseRead('rotation_entries.load:' + String(monthStart || ''), () => runSupabaseOperation('rotation_entries.load', () => client
           .from('rotation_entries')
           .select('*')
           .eq('month_start', monthStart)
           .order('row_order', { ascending: true })
-          .order('employee_name', { ascending: true }), { mode: 'read' });
+          .order('employee_name', { ascending: true }), { mode: 'read' }));
         if (error) throw error;
         return Array.isArray(data) ? data : [];
       }
@@ -1559,7 +1710,7 @@
     try {
       if (client && navigator.onLine) {
         if (shouldDeferOnlineWrite()) return Object.assign(await enqueueAndMaybeFlush({ type: 'rotation_month_entries', monthStart, label, rows }), { months: 1, entries: Array.isArray(rows) ? rows.length : 0, deferred: true });
-        const summary = await runSupabaseOperation('rotation_entries.save', () => upsertRotationMonthEntriesDirect(client, monthStart, label, rows), { mode: 'write' });
+        const summary = await runOptimizedSupabaseWrite('rotation_entries.save:' + String(monthStart || ''), { monthStart, label, rows }, () => runSupabaseOperation('rotation_entries.save', () => upsertRotationMonthEntriesDirect(client, monthStart, label, rows), { mode: 'write' }), { windowMs: 2200 });
         await flushPendingWrites();
         return { ok: true, queued: false, months: summary.months, entries: summary.entries };
       }
@@ -1857,7 +2008,7 @@
     const client = getClient();
     try {
       if (client && navigator.onLine) {
-        const { data, error } = await runSupabaseOperation('rotation_state.load', () => client.from('rotation_state').select('*').eq('key', 'main').maybeSingle(), { mode: 'read' });
+        const { data, error } = await runSharedSupabaseRead('rotation_state.load:main', () => runSupabaseOperation('rotation_state.load', () => client.from('rotation_state').select('*').eq('key', 'main').maybeSingle(), { mode: 'read' }));
         if (error) throw error;
 
         const row = data || null;
@@ -1914,7 +2065,7 @@
     try {
       if (client && navigator.onLine) {
         if (shouldDeferOnlineWrite()) return Object.assign(await enqueueAndMaybeFlush({ type: 'rotation_state', rotation, meta }), { deferred: true });
-        const row = await runSupabaseOperation('rotation_state.save', () => upsertRotationStateDirect(client, rotation, meta), { mode: 'write' });
+        const row = await runOptimizedSupabaseWrite('rotation_state.save', { rotation, meta }, () => runSupabaseOperation('rotation_state.save', () => upsertRotationStateDirect(client, rotation, meta), { mode: 'write' }), { windowMs: 2200 });
         state.rotationSnapshot = rotation && typeof rotation === 'object' ? rotation : null;
         state.lastError = null;
         saveLocalSnapshot(state.rotationSnapshot, state.machineSettingsSnapshot || []);
@@ -1941,11 +2092,12 @@
     const client = getClient();
     if (!client || !navigator.onLine) return [];
     try {
-      const res = await runSupabaseOperation('gomoku_wins.load', () => client
+      const safeLimit = Math.max(1, Math.min(100, Number(limit) || 20));
+      const res = await runSharedSupabaseRead('gomoku_wins.load:' + safeLimit, () => runSupabaseOperation('gomoku_wins.load', () => client
         .from('gomoku_wins')
         .select('player_name,difficulty,moves,elapsed_ms,elapsed_text,x_moves,o_moves,created_at,app_version')
         .order('created_at', { ascending: false })
-        .limit(Math.max(1, Math.min(100, Number(limit) || 20))), { mode: 'read' });
+        .limit(safeLimit), { mode: 'read' }));
       if (res && res.error) throw res.error;
       return Array.isArray(res && res.data) ? res.data : [];
     } catch (err) {
@@ -1960,7 +2112,7 @@
     try {
       if (client && navigator.onLine) {
         if (shouldDeferOnlineWrite()) return Object.assign(await enqueueAndMaybeFlush({ type: 'gomoku_win', entry }), { deferred: true });
-        const data = await runSupabaseOperation('gomoku_win.save', () => upsertGomokuWinDirect(client, entry), { mode: 'write', attempts: 1 });
+        const data = await runOptimizedSupabaseWrite('gomoku_win.save', entry, () => runSupabaseOperation('gomoku_win.save', () => upsertGomokuWinDirect(client, entry), { mode: 'write', attempts: 1 }));
         await flushPendingWrites();
         return { ok: true, queued: false, data };
       }
@@ -1976,6 +2128,148 @@
   }
 
 
+  function getSupabaseStructureHealth() {
+    const issues = [];
+    const warnings = [];
+    const configUrl = String(SUPABASE_CONFIG.url || '').trim();
+    const publishableKey = String(SUPABASE_CONFIG.publishableKey || '').trim();
+    const realtimeSet = new Set(REALTIME_TABLES.map((table) => String(table || '').trim()).filter(Boolean));
+    const queueSet = new Set(Array.from(SUPPORTED_QUEUE_TYPES || []).map((type) => String(type || '').trim()).filter(Boolean));
+    const realtimeDuplicates = REALTIME_TABLES
+      .map((table) => String(table || '').trim())
+      .filter((table, index, arr) => table && arr.indexOf(table) !== index);
+    const expectedTables = SUPABASE_STRUCTURE_CONTRACTS.map((item) => item.table);
+    const missingRealtimeTables = SUPABASE_STRUCTURE_CONTRACTS
+      .filter((item) => item.realtime && !realtimeSet.has(item.table))
+      .map((item) => item.table);
+    const missingQueueTypes = SUPABASE_STRUCTURE_CONTRACTS
+      .filter((item) => item.queueType && !queueSet.has(item.queueType))
+      .map((item) => item.queueType + ' → ' + item.table);
+    const missingHelpers = SUPABASE_STRUCTURE_REQUIRED_HELPERS.filter((name) => {
+      try {
+        if (name === 'getClient') return typeof getClient !== 'function';
+        if (name === 'runSupabaseOperation') return typeof runSupabaseOperation !== 'function';
+        if (name === 'runSharedSupabaseRead') return typeof runSharedSupabaseRead !== 'function';
+        if (name === 'runOptimizedSupabaseWrite') return typeof runOptimizedSupabaseWrite !== 'function';
+        if (name === 'readQueue') return typeof readQueue !== 'function';
+        if (name === 'enqueueTask') return typeof enqueueTask !== 'function';
+        if (name === 'requestRealtimeRefresh') return typeof requestRealtimeRefresh !== 'function';
+        if (name === 'bindRealtime') return typeof bindRealtime !== 'function';
+        if (name === 'getSupabasePerformanceHealth') return typeof getSupabasePerformanceHealth !== 'function';
+        if (name === 'getSupabaseHardeningStatus') return typeof getSupabaseHardeningStatus !== 'function';
+      } catch (err) {
+        return true;
+      }
+      return false;
+    });
+    const requiredGrantSignals = SUPABASE_STRUCTURE_CONTRACTS.map((item) => item.table + ': ' + item.access);
+    const rlsPolicyChecklist = SUPABASE_STRUCTURE_CONTRACTS.map((item) => ({
+      table: item.table,
+      expected: item.access,
+      appUse: item.note
+    }));
+    const online = typeof navigator !== 'undefined' ? navigator.onLine !== false : true;
+    const clientReady = !!getClient();
+
+    if (!configUrl || !publishableKey) issues.push('chybí Supabase url/publishableKey');
+    if (!clientReady) issues.push('Supabase client není připravený');
+    if (missingRealtimeTables.length) issues.push('chybí realtime tabulky: ' + missingRealtimeTables.join(', '));
+    if (missingQueueTypes.length) issues.push('chybí queue typy: ' + missingQueueTypes.join(', '));
+    if (missingHelpers.length) issues.push('chybí Supabase helpery: ' + missingHelpers.join(', '));
+    if (realtimeDuplicates.length) warnings.push('duplicitní realtime tabulky: ' + Array.from(new Set(realtimeDuplicates)).join(', '));
+    if (!online) warnings.push('offline — vzdálenou Supabase strukturu nelze ověřovat za běhu');
+
+    return {
+      ok: issues.length === 0,
+      mode: 'supabase-structure-rls-grant-policy-contract-audit',
+      issues: issues.slice(0, 12),
+      warnings: warnings.slice(0, 12),
+      configReady: !!(configUrl && publishableKey),
+      clientReady,
+      online,
+      expectedTableCount: expectedTables.length,
+      expectedTables: expectedTables.slice(0, 24),
+      realtimeTableCount: REALTIME_TABLES.length,
+      realtimeTables: REALTIME_TABLES.slice(0, 24),
+      missingRealtimeTableCount: missingRealtimeTables.length,
+      missingRealtimeTables: missingRealtimeTables.slice(0, 12),
+      queueTypeCount: queueSet.size,
+      missingQueueTypeCount: missingQueueTypes.length,
+      missingQueueTypes: missingQueueTypes.slice(0, 12),
+      helperCount: SUPABASE_STRUCTURE_REQUIRED_HELPERS.length,
+      missingHelperCount: missingHelpers.length,
+      missingHelpers: missingHelpers.slice(0, 12),
+      grantSignalCount: requiredGrantSignals.length,
+      requiredGrantSignals: requiredGrantSignals.slice(0, 24),
+      rlsPolicyChecklistCount: rlsPolicyChecklist.length,
+      rlsPolicyChecklist: rlsPolicyChecklist.slice(0, 24),
+      checkedAt: new Date().toISOString()
+    };
+  }
+
+  function getSupabasePerformanceHealth() {
+    const queue = readQueue();
+    const queueHealth = getQueueHealth(queue);
+    const perf = state.performanceGuard || {};
+    const cache = state.cacheGuard || {};
+    const issues = [];
+    const online = typeof navigator !== 'undefined' ? navigator.onLine !== false : true;
+    const clientReady = !!getClient();
+    const realtimeStatus = String(state.realtimeStatus || 'idle');
+    const cacheHits = Number(cache.accountCacheHits || 0) + Number(cache.statsCacheHits || 0) + Number(cache.uiCacheHits || 0) + Number(cache.sessionCacheHits || 0);
+    const cacheWrites = Number(cache.accountCacheWrites || 0) + Number(cache.statsCacheWrites || 0) + Number(cache.uiCacheWrites || 0) + Number(cache.sessionCacheWrites || 0);
+
+    if (!clientReady) issues.push('Supabase client není připravený');
+    if (queueHealth && queueHealth.critical) issues.push('offline fronta má kriticky staré položky');
+    if (queue.length > Math.floor(SUPABASE_QUEUE_MAX_ITEMS * 0.85)) issues.push('offline fronta je skoro plná');
+    if (Number(perf.sharedReadActive || 0) > 6) issues.push('moc souběžných Supabase čtení');
+    if (Number(perf.writeOptimizationActive || 0) > 4) issues.push('moc souběžných Supabase zápisů');
+    if (['channel_error', 'timed_out', 'closed', 'failed'].includes(realtimeStatus.toLowerCase()) && online) issues.push('Realtime není zdravý');
+
+    return {
+      ok: issues.length === 0,
+      mode: 'supabase-performance-cache-realtime-write-guard',
+      issues: issues.slice(0, 12),
+      online,
+      clientReady,
+      realtimeStatus,
+      realtimeTableCount: REALTIME_TABLES.length,
+      realtimeRefreshDelayMs: SUPABASE_REALTIME_REFRESH_DELAY_MS,
+      realtimeRefreshHiddenDelayMs: SUPABASE_REALTIME_REFRESH_HIDDEN_DELAY_MS,
+      realtimeRefreshRequests: Number(perf.realtimeRefreshRequests || 0),
+      realtimeRefreshRuns: Number(perf.realtimeRefreshRuns || 0),
+      realtimeRefreshCoalesced: Number(perf.realtimeRefreshCoalesced || 0),
+      realtimeRefreshHiddenDefers: Number(perf.realtimeRefreshHiddenDefers || 0),
+      realtimeRefreshErrors: Number(perf.realtimeRefreshErrors || 0),
+      sharedReadStarts: Number(perf.sharedReadStarts || 0),
+      sharedReadJoins: Number(perf.sharedReadJoins || 0),
+      sharedReadActive: Number(perf.sharedReadActive || 0),
+      sharedReadPeak: Number(perf.sharedReadPeak || 0),
+      writeOptimizationChecks: Number(perf.writeOptimizationChecks || 0),
+      writeOptimizationStarts: Number(perf.writeOptimizationStarts || 0),
+      writeOptimizationJoins: Number(perf.writeOptimizationJoins || 0),
+      writeOptimizationSkips: Number(perf.writeOptimizationSkips || 0),
+      writeOptimizationActive: Number(perf.writeOptimizationActive || 0),
+      writeOptimizationPeak: Number(perf.writeOptimizationPeak || 0),
+      writeDedupeWindowMs: SUPABASE_WRITE_DEDUPE_WINDOW_MS,
+      writeSharedActive: sharedWritePromises.size,
+      recentWriteFingerprints: recentWriteFingerprints.size,
+      lastWriteOptimizationKey: String(perf.lastWriteOptimizationKey || ''),
+      lastRealtimeRefreshTable: String(perf.lastRealtimeRefreshTable || ''),
+      lastRealtimeRefreshReason: String(perf.lastRealtimeRefreshReason || ''),
+      lastSharedReadKey: String(perf.lastSharedReadKey || ''),
+      cacheHits,
+      cacheWrites,
+      staleFallbacks: Number(cache.staleFallbacks || 0),
+      queueLength: queue.length,
+      queueMaxItems: SUPABASE_QUEUE_MAX_ITEMS,
+      queueOldestAgeMs: Number(queueHealth && queueHealth.oldestAgeMs || 0),
+      queueStaleTaskCount: Number(queueHealth && queueHealth.staleTaskCount || 0),
+      queueCritical: !!(queueHealth && queueHealth.critical),
+      checkedAt: new Date().toISOString()
+    };
+  }
+
   function getSupabaseHardeningStatus() {
     const queue = readQueue();
     const queueHealth = rememberQueueHealth(queue);
@@ -1989,6 +2283,9 @@
       guard: Object.assign({}, state.queueGuard),
       syncGuard: Object.assign({}, state.syncGuard),
       cacheGuard: Object.assign({}, state.cacheGuard),
+      performanceGuard: Object.assign({}, state.performanceGuard),
+      performanceHealth: getSupabasePerformanceHealth(),
+      structureHealth: getSupabaseStructureHealth(),
       readTimeoutMs: SUPABASE_READ_TIMEOUT_MS,
       writeTimeoutMs: SUPABASE_WRITE_TIMEOUT_MS,
       queueFlushBatchSize: SUPABASE_QUEUE_FLUSH_BATCH_SIZE,
@@ -2106,7 +2403,7 @@
       if (!client || !navigator.onLine) return await enqueueAndMaybeFlush({ type: 'game_stat', entry: payload });
       try {
         if (shouldDeferOnlineWrite()) return Object.assign(await enqueueAndMaybeFlush({ type: 'game_stat', entry: payload }), { deferred: true });
-        const result = Object.assign({ ok: true }, await saveGameStatDirect(client, payload));
+        const result = Object.assign({ ok: true }, await runOptimizedSupabaseWrite('game_stat.save', payload, () => saveGameStatDirect(client, payload)));
         state.lastError = null;
         await flushPendingWrites();
         return result;
@@ -2169,7 +2466,7 @@
           state.cacheGuard.uiSettingsSaveDeferred += 1;
           return Object.assign(await enqueueAndMaybeFlush({ type: 'game_ui_settings', entry: normalized }), { deferred: true });
         }
-        const row = await saveGameAccountUiSettingsDirect(client, normalized);
+        const row = await runOptimizedSupabaseWrite('game_ui_settings.save:' + String(normalized.account_number || ''), normalized, () => saveGameAccountUiSettingsDirect(client, normalized), { windowMs: 2600 });
         state.lastError = null;
         await flushPendingWrites();
         return Object.assign({ ok: true, queued: false }, row || {});
@@ -2235,7 +2532,7 @@
           buildCachedSessionResult(inviteCode, payload);
           return Object.assign(await enqueueAndMaybeFlush({ type: 'game_session', inviteCode, payload }), { deferred: true });
         }
-        const result = Object.assign({ ok: true }, await saveGameSessionByInviteCodeDirect(client, inviteCode, payload));
+        const result = Object.assign({ ok: true }, await runOptimizedSupabaseWrite('game_session.save:' + inviteCode, payload, () => saveGameSessionByInviteCodeDirect(client, inviteCode, payload), { windowMs: 1200 }));
         state.lastError = null;
         await flushPendingWrites();
         return result;
@@ -2262,6 +2559,8 @@
   window.getSupabaseCanteenStatus = getCanteenStatus;
   window.getSupabaseSyncStatus = getSyncUiStatus;
   window.getSupabaseHardeningStatus = getSupabaseHardeningStatus;
+  window.getSupabasePerformanceHealth = getSupabasePerformanceHealth;
+  window.getSupabaseStructureHealth = getSupabaseStructureHealth;
   window.createGameInvite = async (payload) => window.RotationSupabaseBridge.createGameInvite(payload);
   window.acceptGameInvite = async (code, inviteeAccountNumber) => window.RotationSupabaseBridge.acceptGameInvite(code, inviteeAccountNumber);
   window.loadGameSessionByInviteCode = async (code) => window.RotationSupabaseBridge.loadGameSessionByInviteCode(code);

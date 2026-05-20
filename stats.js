@@ -9,13 +9,19 @@ function renderMonthGrid() {
   const selected = months.includes(app.selectedMonth)
     ? app.selectedMonth
     : (months.includes(currentMonthKey) ? currentMonthKey : (months[0] || ""));
-  const monthOptionsHtml = ['<option value="">Vyber měsíc…</option>']
-    .concat(months.map(monthKey => '<option value="' + escapeHtml(monthKey) + '">' + escapeHtml(monthKey) + '</option>'))
-    .join('');
-  if (typeof setElementHtmlIfChanged === 'function') {
-    setElementHtmlIfChanged(monthSelect, monthOptionsHtml, 'monthSelect');
+  const monthOptions = [{ value: '', label: 'Vyber měsíc…' }]
+    .concat(months.map(monthKey => ({ value: monthKey, label: monthKey })));
+  if (typeof setSelectOptionsIfChanged === 'function') {
+    setSelectOptionsIfChanged(monthSelect, monthOptions, selected, 'monthSelect');
   } else {
-    monthSelect.innerHTML = monthOptionsHtml;
+    while (monthSelect.firstChild) monthSelect.removeChild(monthSelect.firstChild);
+    monthOptions.forEach(item => {
+      const opt = document.createElement('option');
+      opt.value = String(item.value || '');
+      opt.textContent = String(item.label || '');
+      if (String(item.value || '') === String(selected || '')) opt.selected = true;
+      monthSelect.appendChild(opt);
+    });
   }
   monthSelect.value = selected;
   app.selectedMonth = selected || null;
@@ -471,6 +477,117 @@ function bindStatsGridDelegates() {
   }
 }
 
+function createStatsTile(kind, value, active) {
+  const tile = document.createElement('div');
+  tile.className = 'listItem ' + (kind === 'machine' ? 'statsMachineTile' : 'statsNameTile') + (active ? ' activeChoice' : '');
+  tile.setAttribute('role', 'button');
+  tile.setAttribute('tabindex', '0');
+  tile.setAttribute(kind === 'machine' ? 'data-stats-machine' : 'data-stats-name', String(value || ''));
+
+  const main = document.createElement('div');
+  main.className = 'statsTileMain';
+
+  const title = document.createElement('div');
+  title.className = 'statsTileTitle';
+  title.textContent = String(value || '');
+
+  main.appendChild(title);
+  tile.appendChild(main);
+  return tile;
+}
+
+function renderStatsNameGridNodes(names) {
+  return (Array.isArray(names) ? names : []).map(name => createStatsTile('name', name, app.selectedStatsName === name));
+}
+
+function renderStatsMachineGridNodes(stats) {
+  const order = stats && Array.isArray(stats.machineOrder) ? stats.machineOrder : [];
+  return order.map(machine => createStatsTile('machine', machine, app.selectedStatsMachine === machine));
+}
+
+
+function createStatsTextNode(tagName, className, text) {
+  const node = document.createElement(tagName || 'div');
+  if (className) node.className = className;
+  node.textContent = String(text ?? '');
+  return node;
+}
+
+function createStatsSummaryTile(label, value, valueClassName) {
+  const tile = document.createElement('div');
+  tile.className = 'tile';
+  tile.appendChild(createStatsTextNode('div', 'smallText', label));
+  tile.appendChild(createStatsTextNode('div', valueClassName || 'statsSummaryValue', value));
+  return tile;
+}
+
+function renderStatsNameViewNodes(person, year, stats, topWork, topClean) {
+  if (!person || !stats) return [];
+
+  const title = createStatsTextNode('div', 'sectionTitle', `${person.name} — ${year}`);
+
+  const summary = document.createElement('div');
+  summary.className = 'statsSummary';
+  summary.appendChild(createStatsSummaryTile('Práce celkem', formatCount(person.totalWork)));
+  summary.appendChild(createStatsSummaryTile('Úklid celkem', formatCount(person.totalClean)));
+  summary.appendChild(createStatsSummaryTile('Absence celkem', formatCount(person.totalAbsence)));
+  summary.appendChild(createStatsSummaryTile('Práce + absence', formatCount(person.totalWork + person.totalAbsence)));
+  summary.appendChild(createStatsSummaryTile('Nejvíc pracoval na', topWork, 'statsMultiLine statsSummaryValueCompact'));
+  summary.appendChild(createStatsSummaryTile('Nejvíc uklízel na', topClean, 'statsMultiLine statsSummaryValueCompact'));
+
+  const wrap = document.createElement('div');
+  wrap.className = 'tableWrap';
+
+  const table = document.createElement('table');
+  table.className = 'statsTable';
+
+  const thead = document.createElement('thead');
+  const headerRow = document.createElement('tr');
+  ['Stroj', 'Práce', 'Úklid'].forEach(label => {
+    const th = document.createElement('th');
+    th.textContent = label;
+    headerRow.appendChild(th);
+  });
+  thead.appendChild(headerRow);
+
+  const tbody = document.createElement('tbody');
+  (Array.isArray(stats.machineOrder) ? stats.machineOrder : []).forEach(machine => {
+    const row = document.createElement('tr');
+    [machine, formatCount(person.work[machine] || 0), formatCount(person.clean[machine] || 0)].forEach(value => {
+      const td = document.createElement('td');
+      td.textContent = String(value ?? '');
+      row.appendChild(td);
+    });
+    tbody.appendChild(row);
+  });
+
+  table.appendChild(thead);
+  table.appendChild(tbody);
+  wrap.appendChild(table);
+
+  return [title, summary, wrap];
+}
+
+function renderStatsMachineViewNodes(machine, leaderNames, topWorkersText) {
+  const title = createStatsTextNode('div', 'sectionTitle', machine);
+  const summary = document.createElement('div');
+  summary.className = 'statsSummary';
+  summary.appendChild(createStatsSummaryTile('Letos nejvíc uklízeli', leaderNames, 'statsMultiLine statsSummaryValueCompact'));
+  summary.appendChild(createStatsSummaryTile('Nejvíce tu byl', topWorkersText, 'statsMultiLine statsSummaryValueCompact'));
+  return [title, summary];
+}
+
+function clearStatsViewElement(element, key) {
+  if (!element) return;
+  if (typeof setElementChildrenIfChanged === 'function') {
+    setElementChildrenIfChanged(element, 'empty', () => [], key || 'statsView-empty');
+    return;
+  }
+  if (typeof clearElementChildrenSafely === 'function') clearElementChildrenSafely(element, key || 'statsView-empty');
+  else if (typeof element.replaceChildren === 'function') element.replaceChildren();
+  else while (element.firstChild) element.removeChild(element.firstChild);
+}
+
 function renderStatsNameGridHtml(names) {
   return (Array.isArray(names) ? names : []).map(name => {
     const active = app.selectedStatsName === name ? ' activeChoice' : '';
@@ -515,41 +632,66 @@ function renderStatsPanel() {
 
   bindStatsGridDelegates();
 
-  const statsNameGridHtml = renderStatsNameGridHtml(stats.names);
-  if (typeof setElementHtmlIfChanged === 'function') setElementHtmlIfChanged(statsNameGrid, statsNameGridHtml, 'statsNameGrid');
-  else statsNameGrid.innerHTML = statsNameGridHtml;
+  const statsNameGridFingerprint = JSON.stringify({ names: stats.names || [], selected: app.selectedStatsName || '' });
+  if (typeof setElementChildrenIfChanged === 'function') {
+    setElementChildrenIfChanged(statsNameGrid, statsNameGridFingerprint, () => renderStatsNameGridNodes(stats.names), 'statsNameGrid');
+  } else {
+    const statsNameGridHtml = renderStatsNameGridHtml(stats.names);
+    if (typeof setElementHtmlIfChanged === 'function') setElementHtmlIfChanged(statsNameGrid, statsNameGridHtml, 'statsNameGrid');
+    else statsNameGrid.innerHTML = statsNameGridHtml;
+  }
 
-  const statsMachineGridHtml = renderStatsMachineGridHtml(stats);
-  if (typeof setElementHtmlIfChanged === 'function') setElementHtmlIfChanged(statsMachineGrid, statsMachineGridHtml, 'statsMachineGrid');
-  else statsMachineGrid.innerHTML = statsMachineGridHtml;
+  const statsMachineGridFingerprint = JSON.stringify({ machines: stats.machineOrder || [], selected: app.selectedStatsMachine || '' });
+  if (typeof setElementChildrenIfChanged === 'function') {
+    setElementChildrenIfChanged(statsMachineGrid, statsMachineGridFingerprint, () => renderStatsMachineGridNodes(stats), 'statsMachineGrid');
+  } else {
+    const statsMachineGridHtml = renderStatsMachineGridHtml(stats);
+    if (typeof setElementHtmlIfChanged === 'function') setElementHtmlIfChanged(statsMachineGrid, statsMachineGridHtml, 'statsMachineGrid');
+    else statsMachineGrid.innerHTML = statsMachineGridHtml;
+  }
 
   if (app.selectedStatsName) {
     const person = stats.people[app.selectedStatsName];
     if (person) {
       const topWork = formatMachineWinners(person.topWorkMachines || (person.topWorkMachine ? [person.topWorkMachine] : []));
       const topClean = formatMachineWinners(person.topCleanMachines || (person.topCleanMachine ? [person.topCleanMachine] : []));
-      const statsNameHtml =
-        "<div class='sectionTitle'>" + escapeHtml(person.name) + " — " + escapeHtml(String(year)) + "</div>" +
-        "<div class='statsSummary'>" +
-        "<div class='tile'><div class='smallText'>Práce celkem</div><div class='statsSummaryValue'>" + formatCount(person.totalWork) + "</div></div>" +
-        "<div class='tile'><div class='smallText'>Úklid celkem</div><div class='statsSummaryValue'>" + formatCount(person.totalClean) + "</div></div>" +
-        "<div class='tile'><div class='smallText'>Absence celkem</div><div class='statsSummaryValue'>" + formatCount(person.totalAbsence) + "</div></div>" +
-        "<div class='tile'><div class='smallText'>Práce + absence</div><div class='statsSummaryValue'>" + formatCount(person.totalWork + person.totalAbsence) + "</div></div>" +
-        "<div class='tile'><div class='smallText'>Nejvíc pracoval na</div><div class='statsMultiLine statsSummaryValueCompact'>" + escapeHtml(topWork) + "</div></div>" +
-        "<div class='tile'><div class='smallText'>Nejvíc uklízel na</div><div class='statsMultiLine statsSummaryValueCompact'>" + escapeHtml(topClean) + "</div></div>" +
-        "</div>" +
-        "<div class='tableWrap'><table class='statsTable'><thead><tr><th>Stroj</th><th>Práce</th><th>Úklid</th></tr></thead><tbody>" +
-        stats.machineOrder.map(machine => "<tr><td>" + escapeHtml(machine) + "</td><td>" + formatCount(person.work[machine] || 0) + "</td><td>" + formatCount(person.clean[machine] || 0) + "</td></tr>").join("") +
-        "</tbody></table></div>";
-      if (typeof setElementHtmlIfChanged === 'function') setElementHtmlIfChanged(statsNameView, statsNameHtml, 'statsNameView');
-      else statsNameView.innerHTML = statsNameHtml;
+      const statsNameViewFingerprint = JSON.stringify({
+        selected: person.name || '',
+        year,
+        totals: [person.totalWork, person.totalClean, person.totalAbsence],
+        topWork,
+        topClean,
+        machines: (stats.machineOrder || []).map(machine => [machine, person.work[machine] || 0, person.clean[machine] || 0])
+      });
+      if (typeof setElementChildrenIfChanged === 'function') {
+        setElementChildrenIfChanged(
+          statsNameView,
+          statsNameViewFingerprint,
+          () => renderStatsNameViewNodes(person, year, stats, topWork, topClean),
+          'statsNameView'
+        );
+      } else {
+        const statsNameHtml =
+          "<div class='sectionTitle'>" + escapeHtml(person.name) + " — " + escapeHtml(String(year)) + "</div>" +
+          "<div class='statsSummary'>" +
+          "<div class='tile'><div class='smallText'>Práce celkem</div><div class='statsSummaryValue'>" + formatCount(person.totalWork) + "</div></div>" +
+          "<div class='tile'><div class='smallText'>Úklid celkem</div><div class='statsSummaryValue'>" + formatCount(person.totalClean) + "</div></div>" +
+          "<div class='tile'><div class='smallText'>Absence celkem</div><div class='statsSummaryValue'>" + formatCount(person.totalAbsence) + "</div></div>" +
+          "<div class='tile'><div class='smallText'>Práce + absence</div><div class='statsSummaryValue'>" + formatCount(person.totalWork + person.totalAbsence) + "</div></div>" +
+          "<div class='tile'><div class='smallText'>Nejvíc pracoval na</div><div class='statsMultiLine statsSummaryValueCompact'>" + escapeHtml(topWork) + "</div></div>" +
+          "<div class='tile'><div class='smallText'>Nejvíc uklízel na</div><div class='statsMultiLine statsSummaryValueCompact'>" + escapeHtml(topClean) + "</div></div>" +
+          "</div>" +
+          "<div class='tableWrap'><table class='statsTable'><thead><tr><th>Stroj</th><th>Práce</th><th>Úklid</th></tr></thead><tbody>" +
+          stats.machineOrder.map(machine => "<tr><td>" + escapeHtml(machine) + "</td><td>" + formatCount(person.work[machine] || 0) + "</td><td>" + formatCount(person.clean[machine] || 0) + "</td></tr>").join("") +
+          "</tbody></table></div>";
+        if (typeof setElementHtmlIfChanged === 'function') setElementHtmlIfChanged(statsNameView, statsNameHtml, 'statsNameView');
+        else statsNameView.innerHTML = statsNameHtml;
+      }
     } else {
-      if (typeof setElementHtmlIfChanged === 'function') setElementHtmlIfChanged(statsNameView, '', 'statsNameView-empty');
-      else statsNameView.innerHTML = "";
+      clearStatsViewElement(statsNameView, 'statsNameView-empty');
     }
   } else {
-    if (typeof setElementHtmlIfChanged === 'function') setElementHtmlIfChanged(statsNameView, '', 'statsNameView-empty');
-    else statsNameView.innerHTML = "";
+    clearStatsViewElement(statsNameView, 'statsNameView-empty');
   }
 
   if (app.selectedStatsMachine) {
@@ -570,18 +712,27 @@ function renderStatsPanel() {
       ? topWorkers.map(([name, value], index) => `${index + 1}. ${name} (${formatCount(value)})`).join('\n')
       : '—';
 
-    const statsMachineHtml = [
-      "<div class='sectionTitle'>" + escapeHtml(machine) + "</div>",
-      "<div class='statsSummary'>",
-      "<div class='tile'><div class='smallText'>Letos nejvíc uklízeli</div><div class='statsMultiLine statsSummaryValueCompact'>" + escapeHtml(leaderNames) + "</div></div>",
-      "<div class='tile'><div class='smallText'>Nejvíce tu byl</div><div class='statsMultiLine statsSummaryValueCompact'>" + escapeHtml(topWorkersText) + "</div></div>",
-      "</div>"
-    ].join('');
-    if (typeof setElementHtmlIfChanged === 'function') setElementHtmlIfChanged(statsMachineView, statsMachineHtml, 'statsMachineView');
-    else statsMachineView.innerHTML = statsMachineHtml;
+    const statsMachineViewFingerprint = JSON.stringify({ machine, leaderNames, topWorkersText });
+    if (typeof setElementChildrenIfChanged === 'function') {
+      setElementChildrenIfChanged(
+        statsMachineView,
+        statsMachineViewFingerprint,
+        () => renderStatsMachineViewNodes(machine, leaderNames, topWorkersText),
+        'statsMachineView'
+      );
+    } else {
+      const statsMachineHtml = [
+        "<div class='sectionTitle'>" + escapeHtml(machine) + "</div>",
+        "<div class='statsSummary'>",
+        "<div class='tile'><div class='smallText'>Letos nejvíc uklízeli</div><div class='statsMultiLine statsSummaryValueCompact'>" + escapeHtml(leaderNames) + "</div></div>",
+        "<div class='tile'><div class='smallText'>Nejvíce tu byl</div><div class='statsMultiLine statsSummaryValueCompact'>" + escapeHtml(topWorkersText) + "</div></div>",
+        "</div>"
+      ].join('');
+      if (typeof setElementHtmlIfChanged === 'function') setElementHtmlIfChanged(statsMachineView, statsMachineHtml, 'statsMachineView');
+      else statsMachineView.innerHTML = statsMachineHtml;
+    }
   } else {
-    if (typeof setElementHtmlIfChanged === 'function') setElementHtmlIfChanged(statsMachineView, '', 'statsMachineView-empty');
-    else statsMachineView.innerHTML = "";
+    clearStatsViewElement(statsMachineView, 'statsMachineView-empty');
   }
 }
 
@@ -757,7 +908,7 @@ function getDashboardCalendarWorkNotes(now) {
 function getCalendarSpecialText(now) {
   const parts = [];
   const weekNumber = getDashboardCalendarWeekNumber(now);
-  if (weekNumber) parts.push("Kalendářní týden " + weekNumber);
+  if (weekNumber) parts.push(String(weekNumber) + ".KT");
 
   const special = getSpecialWorkInfo(now);
   if (special) {

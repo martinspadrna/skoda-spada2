@@ -18,14 +18,18 @@ function renderRotace() {
   const nameIndex = buildNameIndex(app.rotation);
   const names = Object.keys(nameIndex);
 
-  namesGrid.innerHTML = '';
-  names.forEach(name => {
+  const buildRotaceNameTiles = () => names.map(name => {
     const el = document.createElement('div');
     const isActive = app.selectedName === name;
     el.className = 'listItem rotaceNameTile' + (isActive ? ' activeChoice' : '');
     el.setAttribute('role', 'button');
     el.setAttribute('tabindex', '0');
-    el.innerHTML = '<div class="rotaceTileTitle">' + escapeHtml(name) + '</div>';
+
+    const title = document.createElement('div');
+    title.className = 'rotaceTileTitle';
+    title.textContent = name;
+    el.appendChild(title);
+
     el.onclick = () => handlePersonTap(name);
     el.onkeydown = (event) => {
       if (event.key === 'Enter' || event.key === ' ') {
@@ -33,8 +37,15 @@ function renderRotace() {
         handlePersonTap(name);
       }
     };
-    namesGrid.appendChild(el);
+    return el;
   });
+
+  const namesFingerprint = JSON.stringify({ names, selectedName: app.selectedName || '' });
+  if (typeof setElementChildrenIfChanged === 'function') {
+    setElementChildrenIfChanged(namesGrid, namesFingerprint, buildRotaceNameTiles, 'rotaceNamesGrid');
+  } else {
+    namesGrid.replaceChildren(...buildRotaceNameTiles());
+  }
 
   if (app.selectedName && nameIndex[app.selectedName]) {
     renderPerson(app.selectedName);
@@ -307,27 +318,81 @@ function getPersonScheduleEntries(name) {
 
   return { entries, currentIdx };
 }
-function buildPersonScheduleModalHtml(name) {
+function buildPersonScheduleModalNodes(name) {
   const model = getPersonScheduleEntries(name);
   if (!model.entries.length) {
-    return "<div class='smallText'>Pro tohle jméno zatím nejsou žádné směny.</div>";
+    const empty = document.createElement('div');
+    empty.className = 'smallText';
+    empty.textContent = 'Pro tohle jméno zatím nejsou žádné směny.';
+    return [empty];
   }
 
-  let html = "<div class='personScheduleTitle'>" + escapeHtml(name) + "</div>";
-  html += "<div class='tableWrap'><table class='personScheduleTable'><thead><tr><th>Datum</th><th>Směna</th><th>Cíl</th></tr></thead><tbody>";
-  model.entries.forEach((e, idx) => {
-    html += "<tr class='" + (idx === model.currentIdx ? "currentRow" : "") + "'><td>" + escapeHtml(e.dateLabel || "") + "</td><td>" + escapeHtml(e.shift || "") + "</td><td>" + escapeHtml(e.target || "") + "</td></tr>";
+  const innerTitle = document.createElement('div');
+  innerTitle.className = 'personScheduleTitle';
+  innerTitle.textContent = String(name || '');
+
+  const wrap = document.createElement('div');
+  wrap.className = 'tableWrap';
+
+  const table = document.createElement('table');
+  table.className = 'personScheduleTable';
+
+  const thead = document.createElement('thead');
+  const headerRow = document.createElement('tr');
+  ['Datum', 'Směna', 'Cíl'].forEach((label) => {
+    const th = document.createElement('th');
+    th.textContent = label;
+    headerRow.appendChild(th);
   });
-  html += "</tbody></table></div>";
-  return html;
+  thead.appendChild(headerRow);
+
+  const tbody = document.createElement('tbody');
+  model.entries.forEach((e, idx) => {
+    const row = document.createElement('tr');
+    if (idx === model.currentIdx) row.className = 'currentRow';
+    [e.dateLabel || '', e.shift || '', e.target || ''].forEach((value) => {
+      const td = document.createElement('td');
+      td.textContent = String(value || '');
+      row.appendChild(td);
+    });
+    tbody.appendChild(row);
+  });
+
+  table.appendChild(thead);
+  table.appendChild(tbody);
+  wrap.appendChild(table);
+  return [innerTitle, wrap];
+}
+
+function getPersonScheduleModalFingerprint(name) {
+  const model = getPersonScheduleEntries(name);
+  return JSON.stringify({
+    name: String(name || ''),
+    currentIdx: model.currentIdx,
+    entries: model.entries.map((e) => ({
+      dateLabel: String(e.dateLabel || ''),
+      shift: String(e.shift || ''),
+      target: String(e.target || '')
+    }))
+  });
 }
 
 function renderPersonScheduleModal(name) {
   const overlay = ensurePersonScheduleModal();
   const title = overlay.querySelector('#personScheduleModalTitle');
   const body = overlay.querySelector('#personScheduleModalBody');
-  if (title) title.textContent = name;
-  if (body) setRotaceHtmlIfChanged(body, buildPersonScheduleModalHtml(name), 'rotacePersonScheduleModalBody');
+  if (title) {
+    if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(title, name, 'rotacePersonScheduleModalTitle');
+    else title.textContent = name;
+  }
+  if (body) {
+    const fingerprint = getPersonScheduleModalFingerprint(name);
+    if (typeof setElementChildrenIfChanged === 'function') {
+      setElementChildrenIfChanged(body, fingerprint, () => buildPersonScheduleModalNodes(name), 'rotacePersonScheduleModalBody');
+    } else {
+      body.replaceChildren(...buildPersonScheduleModalNodes(name));
+    }
+  }
 }
 
 function showPersonScheduleModal(name) {
@@ -351,18 +416,36 @@ function ensurePersonScheduleModal() {
   overlay = document.createElement('div');
   overlay.id = 'personScheduleModal';
   overlay.className = 'personScheduleOverlay';
-  overlay.innerHTML = [
-    '<div class="personScheduleModal" role="dialog" aria-modal="true" aria-labelledby="personScheduleModalTitle">',
-    '<button type="button" class="personScheduleClose" aria-label="Zavřít">×</button>',
-    '<div class="personScheduleTitle" id="personScheduleModalTitle"></div>',
-    '<div class="personScheduleBody" id="personScheduleModalBody"></div>',
-    '</div>'
-  ].join('');
+
+  const modal = document.createElement('div');
+  modal.className = 'personScheduleModal';
+  modal.setAttribute('role', 'dialog');
+  modal.setAttribute('aria-modal', 'true');
+  modal.setAttribute('aria-labelledby', 'personScheduleModalTitle');
+
+  const closeBtn = document.createElement('button');
+  closeBtn.type = 'button';
+  closeBtn.className = 'personScheduleClose';
+  closeBtn.setAttribute('aria-label', 'Zavřít');
+  closeBtn.textContent = '×';
+
+  const title = document.createElement('div');
+  title.className = 'personScheduleTitle';
+  title.id = 'personScheduleModalTitle';
+
+  const body = document.createElement('div');
+  body.className = 'personScheduleBody';
+  body.id = 'personScheduleModalBody';
+
+  modal.appendChild(closeBtn);
+  modal.appendChild(title);
+  modal.appendChild(body);
+  overlay.appendChild(modal);
 
   overlay.addEventListener('click', (event) => {
     if (event.target === overlay) hidePersonScheduleModal();
   });
-  overlay.querySelector('.personScheduleClose')?.addEventListener('click', hidePersonScheduleModal);
+  closeBtn.addEventListener('click', hidePersonScheduleModal);
 
   bindGlobalEscapeOnce('personModalKeydownBound', hidePersonScheduleModal);
 

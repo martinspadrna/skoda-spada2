@@ -15,13 +15,33 @@ function renderBrusy() {
   const info = document.getElementById("brusyInfo");
   if (info) {
     const cfg = getBrusConfig(app.machine, app.prog);
-    const infoHtml =
-      "<div class='brusyInfoTitle'><b>" + escapeHtml(app.machine) + " / " + escapeHtml(cfg.label) + "</b></div>" +
-      "<div class='brusyInfoSub'>Kus: " + formatBrusSeconds(cfg.pieceSec) + " · Orovnává po " + formatCount(cfg.dressEvery) + " ks · Orovnává " + formatBrusDuration(cfg.dressSec) + "</div>";
-    if (typeof setElementHtmlIfChanged === "function") {
-      setElementHtmlIfChanged(info, infoHtml, "brusyInfo");
+    const titleText = String(app.machine || "") + " / " + String(cfg.label || "");
+    const subText = "Kus: " + formatBrusSeconds(cfg.pieceSec) + " · Orovnává po " + formatCount(cfg.dressEvery) + " ks · Orovnává " + formatBrusDuration(cfg.dressSec);
+    const fingerprint = ["brusyInfo", titleText, subText].join("|");
+
+    if (typeof setElementChildrenIfChanged === "function") {
+      setElementChildrenIfChanged(info, fingerprint, () => {
+        const title = document.createElement("div");
+        title.className = "brusyInfoTitle";
+        const titleStrong = document.createElement("b");
+        titleStrong.textContent = titleText;
+        title.appendChild(titleStrong);
+
+        const sub = document.createElement("div");
+        sub.className = "brusyInfoSub";
+        sub.textContent = subText;
+
+        return [title, sub];
+      }, "brusyInfo");
     } else {
-      info.innerHTML = infoHtml;
+      const infoHtml =
+        "<div class='brusyInfoTitle'><b>" + escapeHtml(titleText) + "</b></div>" +
+        "<div class='brusyInfoSub'>" + escapeHtml(subText) + "</div>";
+      if (typeof setElementHtmlIfChanged === "function") {
+        setElementHtmlIfChanged(info, infoHtml, "brusyInfo:fallback");
+      } else {
+        info.textContent = titleText + " · " + subText;
+      }
     }
   }
 }

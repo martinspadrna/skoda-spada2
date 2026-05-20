@@ -5162,3 +5162,856 @@ body.ladaMode #games .gamesLaunchTile:active{
   transform:none !important;
 }
 
+
+/* v.1.1 (649) – Láďův režim: finální výkonová pojistka pro slabší zařízení. */
+body.ladaMode .dashboardHeroCard,
+body.ladaMode .dashboardCard,
+body.ladaMode .card,
+body.ladaMode .tile,
+body.ladaMode .listItem,
+body.ladaMode .bbtn,
+body.ladaMode .bottomNav,
+body.ladaMode .bottomNavBtn,
+body.ladaMode .bottomNavMenuBtn,
+body.ladaMode .appMenuCard,
+body.ladaMode .appMenuAction,
+body.ladaMode .appMenuThemeCard,
+body.ladaMode .appMenuThemeSummary,
+body.ladaMode .appMenuSettingsCard,
+body.ladaMode .appMenuSettingBtn,
+body.ladaMode .calcTile,
+body.ladaMode .brusDetails,
+body.ladaMode .qrModal,
+body.ladaMode .personScheduleModal,
+body.ladaMode .foodScheduleModal,
+body.ladaMode .calendarModal,
+body.ladaMode .rakUpdateToast,
+body.ladaMode .dashboardSyncBadge,
+body.ladaMode #games .gamesStage,
+body.ladaMode #games .gamesShell,
+body.ladaMode #games .gamesShellTop,
+body.ladaMode #games .gamesActiveAccountBar,
+body.ladaMode #games .gamesDevFolder,
+body.ladaMode #games .gamesProfilesFolder,
+body.ladaMode #games .gamesAchievementsFolder,
+body.ladaMode #games .gamesStatsFolder,
+body.ladaMode #games .gamesLaunchTile,
+body.ladaMode #games .gamesStatsCard,
+body.ladaMode #games .gamesTop3Card,
+body.ladaMode #games .arcadePanel,
+body.ladaMode #games .arcadeBoardWrap,
+body.ladaMode #games .gameBoard,
+body.lowEndDevice .dashboardHeroCard,
+body.lowEndDevice .dashboardCard,
+body.lowEndDevice .card,
+body.lowEndDevice .tile,
+body.lowEndDevice .listItem,
+body.lowEndDevice .bbtn,
+body.lowEndDevice .bottomNav,
+body.lowEndDevice .bottomNavBtn,
+body.lowEndDevice .bottomNavMenuBtn,
+body.lowEndDevice .appMenuCard,
+body.lowEndDevice .appMenuAction,
+body.lowEndDevice .appMenuThemeCard,
+body.lowEndDevice .appMenuThemeSummary,
+body.lowEndDevice .appMenuSettingsCard,
+body.lowEndDevice .appMenuSettingBtn,
+body.lowEndDevice .calcTile,
+body.lowEndDevice .brusDetails,
+body.lowEndDevice .qrModal,
+body.lowEndDevice .personScheduleModal,
+body.lowEndDevice .foodScheduleModal,
+body.lowEndDevice .calendarModal,
+body.lowEndDevice .rakUpdateToast,
+body.lowEndDevice .dashboardSyncBadge,
+body.lowEndDevice #games .gamesStage,
+body.lowEndDevice #games .gamesShell,
+body.lowEndDevice #games .gamesShellTop,
+body.lowEndDevice #games .gamesActiveAccountBar,
+body.lowEndDevice #games .gamesDevFolder,
+body.lowEndDevice #games .gamesProfilesFolder,
+body.lowEndDevice #games .gamesAchievementsFolder,
+body.lowEndDevice #games .gamesStatsFolder,
+body.lowEndDevice #games .gamesLaunchTile,
+body.lowEndDevice #games .gamesStatsCard,
+body.lowEndDevice #games .gamesTop3Card,
+body.lowEndDevice #games .arcadePanel,
+body.lowEndDevice #games .arcadeBoardWrap,
+body.lowEndDevice #games .gameBoard{
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+  box-shadow:0 4px 10px rgba(0,0,0,.14) !important;
+}
+
+body.ladaMode *,
+body.lowEndDevice *{
+  transition-duration:0s !important;
+  animation-duration:0s !important;
+  animation-delay:0s !important;
+  scroll-behavior:auto !important;
+}
+
+body.ladaMode .dashboardHeroCard::before,
+body.ladaMode .dashboardHeroCard::after,
+body.ladaMode .dashboardCard::before,
+body.ladaMode .dashboardCard::after,
+body.ladaMode .appMenuCard::before,
+body.ladaMode .appMenuCard::after,
+body.ladaMode .calcTile::before,
+body.ladaMode .calcTile::after,
+body.ladaMode .tile::before,
+body.ladaMode .tile::after,
+body.lowEndDevice .dashboardHeroCard::before,
+body.lowEndDevice .dashboardHeroCard::after,
+body.lowEndDevice .dashboardCard::before,
+body.lowEndDevice .dashboardCard::after,
+body.lowEndDevice .appMenuCard::before,
+body.lowEndDevice .appMenuCard::after,
+body.lowEndDevice .calcTile::before,
+body.lowEndDevice .calcTile::after,
+body.lowEndDevice .tile::before,
+body.lowEndDevice .tile::after{
+  display:none !important;
+  content:none !important;
+}
+
+body.ladaMode img,
+body.ladaMode svg,
+body.ladaMode canvas,
+body.ladaMode .bottomNavIconImg,
+body.ladaMode .dashboardCardIcon,
+body.ladaMode .dashboardCardIcon img,
+body.lowEndDevice img,
+body.lowEndDevice svg,
+body.lowEndDevice canvas,
+body.lowEndDevice .bottomNavIconImg,
+body.lowEndDevice .dashboardCardIcon,
+body.lowEndDevice .dashboardCardIcon img{
+  filter:none !important;
+  will-change:auto !important;
+}
+
+body.ladaMode .dashboardCard,
+body.ladaMode .dashboardHeroCard,
+body.ladaMode .appMenuCard,
+body.ladaMode .calcTile,
+body.ladaMode .tile,
+body.ladaMode .personScheduleRow,
+body.ladaMode .shiftPersonCard,
+body.ladaMode #games .gameBoard,
+body.ladaMode #games .arcadePanel,
+body.lowEndDevice .dashboardCard,
+body.lowEndDevice .dashboardHeroCard,
+body.lowEndDevice .appMenuCard,
+body.lowEndDevice .calcTile,
+body.lowEndDevice .tile,
+body.lowEndDevice .personScheduleRow,
+body.lowEndDevice .shiftPersonCard,
+body.lowEndDevice #games .gameBoard,
+body.lowEndDevice #games .arcadePanel{
+  contain:layout paint !important;
+  transform:none !important;
+  perspective:none !important;
+}
+
+/* v.1.1 (656) – Piškvorky: RaK mřížka z čar bez papírového vzhledu + tvrdší AI. */
+.tttBoardWrap{
+  inset:56px 10px 96px !important;
+  padding:8px !important;
+  background:radial-gradient(circle at 18% 8%, rgba(124,255,124,.13), transparent 34%), linear-gradient(180deg, rgba(12,18,16,.92), rgba(5,9,8,.96)) !important;
+  border:1px solid rgba(124,255,124,.20) !important;
+  border-radius:22px !important;
+  box-shadow:0 18px 46px rgba(0,0,0,.36), inset 0 0 0 1px rgba(255,255,255,.05) !important;
+}
+.tttBoard{
+  gap:0 !important;
+  padding:0 !important;
+  border-radius:14px !important;
+  background-color:rgba(8,14,12,.86) !important;
+  background-image:linear-gradient(to right, rgba(124,255,124,.24) 1px, transparent 1px), linear-gradient(to bottom, rgba(124,255,124,.24) 1px, transparent 1px), radial-gradient(circle at 50% 0%, rgba(124,255,124,.08), transparent 42%) !important;
+  background-size:var(--tttCellSize, 24px) var(--tttCellSize, 24px), var(--tttCellSize, 24px) var(--tttCellSize, 24px), 100% 100% !important;
+  box-shadow:inset -1px -1px 0 rgba(124,255,124,.24), inset 1px 1px 0 rgba(124,255,124,.24), 0 0 26px rgba(124,255,124,.08) !important;
+}
+.tttCell{
+  position:relative !important;
+  border:0 !important;
+  outline:0 !important;
+  margin:0 !important;
+  padding:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  color:#77caff !important;
+  font-family:"Comic Sans MS", "Segoe Print", "Bradley Hand", cursive !important;
+  font-size:calc(var(--tttCellSize, 24px) * .82) !important;
+  text-shadow:0 0 12px rgba(119,202,255,.24) !important;
+}
+.tttCell.isX{color:#78c7ff !important;text-shadow:0 0 12px rgba(120,199,255,.36) !important;}
+.tttCell.isO{color:#ff7c7c !important;text-shadow:0 0 12px rgba(255,124,124,.34) !important;}
+.tttCell.isFilled{background:transparent !important;}
+.tttCell.isLastMove{background:rgba(124,255,124,.10) !important;}
+.tttCell.isWinner{background:rgba(124,255,124,.20) !important;box-shadow:inset 0 0 0 2px rgba(124,255,124,.66), 0 0 18px rgba(124,255,124,.20) !important;}
+@media (max-width:520px){
+  .tttBoardWrap{inset:50px 8px 88px !important;padding:6px !important;}
+}
+
+/* v.1.1 (657) – Piškvorky: klikací buňky sedí uvnitř čtverců a znaménka jsou větší. */
+.tttBoard{
+  gap:0 !important;
+  padding:0 !important;
+  border-radius:14px !important;
+  border-left:1px solid rgba(124,255,124,.30) !important;
+  border-top:1px solid rgba(124,255,124,.30) !important;
+  background-color:rgba(8,14,12,.86) !important;
+  background-image:radial-gradient(circle at 50% 0%, rgba(124,255,124,.08), transparent 42%) !important;
+  background-size:100% 100% !important;
+  box-shadow:0 0 26px rgba(124,255,124,.08) !important;
+}
+.tttCell{
+  position:relative !important;
+  box-sizing:border-box !important;
+  border:0 !important;
+  border-right:1px solid rgba(124,255,124,.30) !important;
+  border-bottom:1px solid rgba(124,255,124,.30) !important;
+  outline:0 !important;
+  margin:0 !important;
+  padding:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  color:#77caff !important;
+  font-family:"Comic Sans MS", "Segoe Print", "Bradley Hand", cursive !important;
+  font-size:calc(var(--tttCellSize, 24px) * .96) !important;
+  line-height:.9 !important;
+  text-shadow:0 0 13px rgba(119,202,255,.28) !important;
+  transition:color .10s ease, text-shadow .10s ease !important;
+}
+.tttCell:active{
+  transform:none !important;
+  background:transparent !important;
+}
+.tttCell.isX{color:#78c7ff !important;text-shadow:0 0 14px rgba(120,199,255,.44) !important;}
+.tttCell.isO{color:#ff7c7c !important;text-shadow:0 0 14px rgba(255,124,124,.42) !important;}
+.tttCell.isFilled{background:transparent !important;}
+.tttCell.isLastMove{background:transparent !important;text-shadow:0 0 18px rgba(124,255,124,.34), 0 0 14px currentColor !important;}
+.tttCell.isWinner{background:rgba(124,255,124,.10) !important;box-shadow:inset 0 0 0 2px rgba(124,255,124,.62), 0 0 18px rgba(124,255,124,.18) !important;}
+@media (max-width:520px){
+  .tttCell{font-size:calc(var(--tttCellSize, 24px) * 1.02) !important;}
+}
+
+
+
+/* v.1.1 (658) – Piškvorky: souvislá RaK mřížka bez mezer, výsledková karta a výrazná výherní pětice. */
+.tttBoardWrap{
+  padding:10px !important;
+  background:
+    radial-gradient(circle at 14% 8%, rgba(124,255,124,.16), transparent 34%),
+    radial-gradient(circle at 88% 92%, rgba(120,199,255,.10), transparent 30%),
+    linear-gradient(180deg, rgba(10,16,15,.94), rgba(4,8,7,.98)) !important;
+  border:1px solid rgba(124,255,124,.22) !important;
+  border-radius:22px !important;
+  box-shadow:0 18px 46px rgba(0,0,0,.36), inset 0 0 0 1px rgba(255,255,255,.045) !important;
+}
+.tttBoard{
+  gap:0 !important;
+  padding:0 !important;
+  border:0 !important;
+  border-radius:8px !important;
+  background-color:rgba(5,12,10,.82) !important;
+  background-image:
+    repeating-linear-gradient(to right, rgba(124,255,124,.34) 0 1px, transparent 1px var(--tttCellSize, 24px)),
+    repeating-linear-gradient(to bottom, rgba(124,255,124,.34) 0 1px, transparent 1px var(--tttCellSize, 24px)),
+    radial-gradient(circle at 50% 0%, rgba(124,255,124,.08), transparent 42%) !important;
+  background-size:auto !important;
+  box-shadow:
+    inset -1px 0 0 rgba(124,255,124,.34),
+    inset 0 -1px 0 rgba(124,255,124,.34),
+    0 0 26px rgba(124,255,124,.10) !important;
+}
+.tttCell{
+  position:relative !important;
+  border:0 !important;
+  outline:0 !important;
+  margin:0 !important;
+  padding:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  transform:none !important;
+  color:#77caff !important;
+  font-family:"Comic Sans MS", "Segoe Print", "Bradley Hand", cursive !important;
+  font-size:calc(var(--tttCellSize, 24px) * 1.06) !important;
+  line-height:.82 !important;
+  text-shadow:0 0 14px rgba(119,202,255,.36) !important;
+  transition:color .10s ease, text-shadow .10s ease, filter .10s ease !important;
+}
+.tttCell:hover,.tttCell:active,.tttCell.isFilled,.tttCell.isLastMove{
+  background:transparent !important;
+  box-shadow:none !important;
+}
+.tttCell.isLastMove{filter:brightness(1.16) saturate(1.12) !important;}
+.tttCell.isX{color:#78c7ff !important;text-shadow:0 0 14px rgba(120,199,255,.48), 0 0 2px rgba(255,255,255,.30) !important;}
+.tttCell.isO{color:#ff7c7c !important;text-shadow:0 0 14px rgba(255,124,124,.48), 0 0 2px rgba(255,255,255,.28) !important;}
+.tttCell.isWinner{
+  background:radial-gradient(circle at center, rgba(255,230,112,.18), transparent 58%) !important;
+  box-shadow:none !important;
+  color:#fff1a6 !important;
+  text-shadow:0 0 4px rgba(255,255,255,.95), 0 0 12px rgba(255,226,122,.95), 0 0 28px rgba(124,255,124,.62) !important;
+  filter:brightness(1.35) saturate(1.28) !important;
+}
+.tttCell.isWinner::after{
+  content:"";
+  position:absolute;
+  inset:18%;
+  border:2px solid rgba(255,226,122,.85);
+  border-radius:999px;
+  box-shadow:0 0 16px rgba(255,226,122,.45), inset 0 0 12px rgba(255,226,122,.20);
+  pointer-events:none;
+}
+.tttResultCard{
+  position:absolute;
+  left:10px;
+  right:10px;
+  bottom:58px;
+  z-index:5;
+  display:none;
+  padding:10px 12px;
+  border-radius:18px;
+  border:1px solid rgba(124,255,124,.22);
+  background:rgba(5,10,8,.86);
+  backdrop-filter:blur(14px) saturate(145%);
+  box-shadow:0 18px 38px rgba(0,0,0,.34), inset 0 0 0 1px rgba(255,255,255,.045);
+}
+.tttResultCard.isVisible{display:block;}
+.tttResultTitle{font-size:15px;font-weight:950;color:#f2fff2;letter-spacing:.01em;}
+.tttResultDetail{margin-top:3px;font-size:12px;color:rgba(235,255,235,.72);line-height:1.28;}
+.tttResultStats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px;}
+.tttResultStats>div{border-radius:12px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.055);padding:6px 7px;}
+.tttResultStats span{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:rgba(235,255,235,.55);}
+.tttResultStats strong{display:block;margin-top:2px;font-size:13px;color:#7CFF7C;}
+.tttResultSaved{margin-top:7px;font-size:11px;color:rgba(235,255,235,.68);}
+.tttResultCard.isWin{border-color:rgba(124,255,124,.38);}
+.tttResultCard.isLoss{border-color:rgba(255,124,124,.30);}
+.tttResultCard.isDraw{border-color:rgba(120,199,255,.28);}
+@media (max-width:520px){
+  .tttBoardWrap{inset:50px 8px 88px !important;padding:8px !important;}
+  .tttCell{font-size:calc(var(--tttCellSize, 24px) * 1.12) !important;}
+  .tttResultCard{left:8px;right:8px;bottom:56px;padding:9px 10px;border-radius:16px;}
+  .tttResultStats{gap:5px;}
+}
+
+
+/* v.1.1 (660) – Piškvorky: mřížka přímo na klikacích polích, aby se čáry a tahy nikdy nerozjížděly. */
+.tttBoard{
+  --tttGridLine: rgba(124,255,124,.38);
+  position:relative !important;
+  gap:0 !important;
+  padding:0 !important;
+  border:0 !important;
+  border-radius:10px !important;
+  overflow:hidden !important;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(124,255,124,.08), transparent 42%),
+    linear-gradient(180deg, rgba(5,12,10,.86), rgba(3,8,7,.92)) !important;
+  background-size:100% 100% !important;
+  box-shadow:
+    0 0 26px rgba(124,255,124,.08),
+    inset 1px 1px 0 rgba(124,255,124,.38),
+    inset -1px -1px 0 rgba(124,255,124,.38) !important;
+}
+.tttBoard::before,
+#games .tttBoard::before{
+  content:none !important;
+  display:none !important;
+}
+.tttCell,
+#games .tttCell{
+  position:relative !important;
+  z-index:1 !important;
+  border:0 !important;
+  outline:0 !important;
+  margin:0 !important;
+  padding:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  box-shadow:
+    inset -1px 0 0 var(--tttGridLine),
+    inset 0 -1px 0 var(--tttGridLine) !important;
+  transform:none !important;
+  font-size:calc(var(--tttCellSize, 24px) * 1.18) !important;
+  line-height:.82 !important;
+}
+.tttCell:hover,
+.tttCell:active,
+.tttCell.isFilled,
+.tttCell.isLastMove,
+#games .tttCell:hover,
+#games .tttCell:active,
+#games .tttCell.isFilled,
+#games .tttCell.isLastMove{
+  background:transparent !important;
+}
+.tttCell.isLastMove,
+#games .tttCell.isLastMove{
+  box-shadow:
+    inset -1px 0 0 var(--tttGridLine),
+    inset 0 -1px 0 var(--tttGridLine),
+    inset 0 0 0 2px rgba(124,255,124,.18) !important;
+}
+.tttCell.isWinner,
+#games .tttCell.isWinner{
+  background:radial-gradient(circle at center, rgba(255,230,112,.18), transparent 58%) !important;
+  box-shadow:
+    inset -1px 0 0 var(--tttGridLine),
+    inset 0 -1px 0 var(--tttGridLine),
+    inset 0 0 0 2px rgba(255,226,122,.88),
+    0 0 18px rgba(255,226,122,.18) !important;
+  color:#fff1a6 !important;
+  text-shadow:0 0 4px rgba(255,255,255,.95), 0 0 12px rgba(255,226,122,.95), 0 0 28px rgba(124,255,124,.62) !important;
+  filter:brightness(1.35) saturate(1.28) !important;
+}
+.tttCell.isWinner::after,
+#games .tttCell.isWinner::after{
+  content:"" !important;
+  position:absolute !important;
+  inset:14% !important;
+  border:2px solid rgba(255,226,122,.88) !important;
+  border-radius:6px !important;
+  box-shadow:0 0 14px rgba(255,226,122,.30), inset 0 0 10px rgba(255,226,122,.16) !important;
+  pointer-events:none !important;
+}
+
+
+/* v.1.1 (661) – Piškvorky: finální papírová mřížka bez mezer; přebíjí globální glass styl tlačítek. */
+html body.tttOpen .tttOverlay .tttBoard,
+html body.tttOpen:not(.lightweightMode):not(.lowEndDevice) .tttOverlay .tttBoard,
+html body.tttOpen.lightweightMode .tttOverlay .tttBoard,
+html body.tttOpen.lowEndDevice .tttOverlay .tttBoard{
+  --tttGridLine: rgba(124,255,124,.42) !important;
+  display:grid !important;
+  gap:0 !important;
+  row-gap:0 !important;
+  column-gap:0 !important;
+  padding:0 !important;
+  border:0 !important;
+  border-left:1px solid var(--tttGridLine) !important;
+  border-top:1px solid var(--tttGridLine) !important;
+  border-radius:10px !important;
+  overflow:hidden !important;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(124,255,124,.08), transparent 42%),
+    linear-gradient(180deg, rgba(5,12,10,.90), rgba(3,8,7,.96)) !important;
+  background-size:100% 100% !important;
+  box-shadow:0 0 26px rgba(124,255,124,.08) !important;
+}
+html body.tttOpen .tttOverlay .tttBoard::before,
+html body.tttOpen:not(.lightweightMode):not(.lowEndDevice) .tttOverlay .tttBoard::before,
+html body.tttOpen.lightweightMode .tttOverlay .tttBoard::before,
+html body.tttOpen.lowEndDevice .tttOverlay .tttBoard::before{
+  content:none !important;
+  display:none !important;
+}
+html body.tttOpen .tttOverlay .tttBoard .tttCell,
+html body.tttOpen:not(.lightweightMode):not(.lowEndDevice) .tttOverlay .tttBoard .tttCell,
+html body.tttOpen.lightweightMode .tttOverlay .tttBoard .tttCell,
+html body.tttOpen.lowEndDevice .tttOverlay .tttBoard .tttCell,
+html body.tttOpen #games .tttBoard .tttCell,
+html body.tttOpen:not(.lightweightMode):not(.lowEndDevice) #games .tttBoard .tttCell,
+html body.tttOpen.lightweightMode #games .tttBoard .tttCell,
+html body.tttOpen.lowEndDevice #games .tttBoard .tttCell{
+  appearance:none !important;
+  -webkit-appearance:none !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  width:100% !important;
+  height:100% !important;
+  min-width:0 !important;
+  min-height:0 !important;
+  box-sizing:border-box !important;
+  margin:0 !important;
+  padding:0 !important;
+  border:0 !important;
+  border-right:1px solid var(--tttGridLine) !important;
+  border-bottom:1px solid var(--tttGridLine) !important;
+  border-radius:0 !important;
+  outline:0 !important;
+  background:transparent !important;
+  background-color:transparent !important;
+  background-image:none !important;
+  box-shadow:none !important;
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+  filter:none !important;
+  transform:none !important;
+  font-family:"Comic Sans MS", "Segoe Print", "Bradley Hand", cursive !important;
+  font-size:calc(var(--tttCellSize, 24px) * 1.18) !important;
+  font-weight:900 !important;
+  line-height:.82 !important;
+  text-align:center !important;
+  color:#77caff !important;
+  text-shadow:0 0 14px rgba(119,202,255,.36) !important;
+  touch-action:manipulation !important;
+  -webkit-tap-highlight-color:rgba(124,255,124,.10) !important;
+}
+html body.tttOpen .tttOverlay .tttBoard .tttCell:hover,
+html body.tttOpen .tttOverlay .tttBoard .tttCell:active,
+html body.tttOpen .tttOverlay .tttBoard .tttCell.isFilled,
+html body.tttOpen .tttOverlay .tttBoard .tttCell.isLastMove,
+html body.tttOpen:not(.lightweightMode):not(.lowEndDevice) .tttOverlay .tttBoard .tttCell:hover,
+html body.tttOpen:not(.lightweightMode):not(.lowEndDevice) .tttOverlay .tttBoard .tttCell:active,
+html body.tttOpen:not(.lightweightMode):not(.lowEndDevice) .tttOverlay .tttBoard .tttCell.isFilled,
+html body.tttOpen:not(.lightweightMode):not(.lowEndDevice) .tttOverlay .tttBoard .tttCell.isLastMove{
+  background:transparent !important;
+  background-color:transparent !important;
+  background-image:none !important;
+  box-shadow:none !important;
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+  transform:none !important;
+}
+html body.tttOpen .tttOverlay .tttBoard .tttCell.isX{color:#78c7ff !important;text-shadow:0 0 14px rgba(120,199,255,.50), 0 0 2px rgba(255,255,255,.30) !important;}
+html body.tttOpen .tttOverlay .tttBoard .tttCell.isO{color:#ff7c7c !important;text-shadow:0 0 14px rgba(255,124,124,.50), 0 0 2px rgba(255,255,255,.28) !important;}
+html body.tttOpen .tttOverlay .tttBoard .tttCell.isLastMove{
+  box-shadow:inset 0 0 0 2px rgba(124,255,124,.18) !important;
+  filter:brightness(1.12) saturate(1.08) !important;
+}
+html body.tttOpen .tttOverlay .tttBoard .tttCell.isWinner{
+  background:radial-gradient(circle at center, rgba(255,230,112,.20), transparent 60%) !important;
+  box-shadow:inset 0 0 0 2px rgba(255,226,122,.92), 0 0 18px rgba(255,226,122,.20) !important;
+  color:#fff1a6 !important;
+  text-shadow:0 0 4px rgba(255,255,255,.96), 0 0 12px rgba(255,226,122,.96), 0 0 28px rgba(124,255,124,.64) !important;
+  filter:brightness(1.35) saturate(1.28) !important;
+}
+html body.tttOpen .tttOverlay .tttBoard .tttCell.isWinner::after{
+  content:"" !important;
+  position:absolute !important;
+  inset:14% !important;
+  border:2px solid rgba(255,226,122,.88) !important;
+  border-radius:6px !important;
+  box-shadow:0 0 14px rgba(255,226,122,.30), inset 0 0 10px rgba(255,226,122,.16) !important;
+  pointer-events:none !important;
+}
+
+
+/* v.1.1 (662) – Piškvorky: opravdová souvislá mřížka bez mezer + fosforové znaky + výsledek přes pole. */
+html body .tttOverlay .tttBoardWrap,
+html body.tttOpen .tttOverlay .tttBoardWrap{
+  position:absolute !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  overflow:hidden !important;
+}
+html body .tttOverlay .tttBoard,
+html body.tttOpen .tttOverlay .tttBoard,
+html body #games .tttBoard{
+  --tttGridLine:#7CFF7C !important;
+  display:grid !important;
+  grid-auto-flow:row !important;
+  gap:0 !important;
+  row-gap:0 !important;
+  column-gap:0 !important;
+  justify-items:stretch !important;
+  align-items:stretch !important;
+  justify-content:center !important;
+  align-content:center !important;
+  box-sizing:content-box !important;
+  padding:0 !important;
+  border:0 !important;
+  border-left:1px solid rgba(124,255,124,.72) !important;
+  border-top:1px solid rgba(124,255,124,.72) !important;
+  border-radius:8px !important;
+  overflow:visible !important;
+  background:linear-gradient(180deg, rgba(4,12,9,.94), rgba(2,7,6,.98)) !important;
+  box-shadow:
+    0 0 26px rgba(124,255,124,.08),
+    inset -1px 0 0 rgba(124,255,124,.72),
+    inset 0 -1px 0 rgba(124,255,124,.72) !important;
+}
+html body .tttOverlay .tttBoard::before,
+html body .tttOverlay .tttBoard::after,
+html body.tttOpen .tttOverlay .tttBoard::before,
+html body.tttOpen .tttOverlay .tttBoard::after,
+html body #games .tttBoard::before,
+html body #games .tttBoard::after{
+  content:none !important;
+  display:none !important;
+}
+html body .tttOverlay .tttBoard .tttCell,
+html body.tttOpen .tttOverlay .tttBoard .tttCell,
+html body #games .tttBoard .tttCell{
+  appearance:none !important;
+  -webkit-appearance:none !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  inline-size:var(--tttCellSize, 24px) !important;
+  block-size:var(--tttCellSize, 24px) !important;
+  width:var(--tttCellSize, 24px) !important;
+  height:var(--tttCellSize, 24px) !important;
+  min-width:0 !important;
+  min-height:0 !important;
+  max-width:none !important;
+  max-height:none !important;
+  box-sizing:border-box !important;
+  margin:0 !important;
+  padding:0 !important;
+  border:0 !important;
+  border-right:1px solid rgba(124,255,124,.72) !important;
+  border-bottom:1px solid rgba(124,255,124,.72) !important;
+  border-radius:0 !important;
+  outline:0 !important;
+  background:transparent !important;
+  background-color:transparent !important;
+  background-image:none !important;
+  box-shadow:none !important;
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+  transform:none !important;
+  opacity:1 !important;
+  font-family:"Comic Sans MS", "Segoe Print", "Bradley Hand", cursive !important;
+  font-size:calc(var(--tttCellSize, 24px) * 1.24) !important;
+  font-weight:1000 !important;
+  line-height:.78 !important;
+  letter-spacing:-.03em !important;
+  text-align:center !important;
+  color:#f4fff4 !important;
+  touch-action:manipulation !important;
+  -webkit-tap-highlight-color:rgba(124,255,124,.12) !important;
+}
+html body .tttOverlay .tttBoard .tttCell:hover,
+html body .tttOverlay .tttBoard .tttCell:active,
+html body .tttOverlay .tttBoard .tttCell.isFilled,
+html body .tttOverlay .tttBoard .tttCell.isLastMove,
+html body.tttOpen .tttOverlay .tttBoard .tttCell:hover,
+html body.tttOpen .tttOverlay .tttBoard .tttCell:active,
+html body.tttOpen .tttOverlay .tttBoard .tttCell.isFilled,
+html body.tttOpen .tttOverlay .tttBoard .tttCell.isLastMove{
+  background:transparent !important;
+  background-color:transparent !important;
+  background-image:none !important;
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+  transform:none !important;
+}
+html body .tttOverlay .tttBoard .tttCell.isX,
+html body.tttOpen .tttOverlay .tttBoard .tttCell.isX,
+html body #games .tttBoard .tttCell.isX{
+  color:#FF174D !important;
+  text-shadow:
+    0 0 3px rgba(255,255,255,.96),
+    0 0 9px rgba(255,23,77,1),
+    0 0 20px rgba(255,23,77,.92),
+    0 0 34px rgba(255,0,64,.62) !important;
+}
+html body .tttOverlay .tttBoard .tttCell.isO,
+html body.tttOpen .tttOverlay .tttBoard .tttCell.isO,
+html body #games .tttBoard .tttCell.isO{
+  color:#39FF14 !important;
+  text-shadow:
+    0 0 3px rgba(255,255,255,.96),
+    0 0 9px rgba(57,255,20,1),
+    0 0 20px rgba(57,255,20,.92),
+    0 0 34px rgba(57,255,20,.62) !important;
+}
+html body .tttOverlay .tttBoard .tttCell.isLastMove,
+html body.tttOpen .tttOverlay .tttBoard .tttCell.isLastMove{
+  box-shadow:inset 0 0 0 2px rgba(124,255,124,.26) !important;
+}
+html body .tttOverlay .tttBoard .tttCell.isWinner,
+html body.tttOpen .tttOverlay .tttBoard .tttCell.isWinner,
+html body #games .tttBoard .tttCell.isWinner{
+  color:#FFF36B !important;
+  background:radial-gradient(circle at center, rgba(255,243,107,.24), transparent 62%) !important;
+  box-shadow:
+    inset 0 0 0 2px rgba(255,243,107,.96),
+    0 0 20px rgba(255,243,107,.30) !important;
+  text-shadow:
+    0 0 4px rgba(255,255,255,1),
+    0 0 12px rgba(255,243,107,1),
+    0 0 26px rgba(255,243,107,.86),
+    0 0 42px rgba(124,255,124,.55) !important;
+  filter:brightness(1.42) saturate(1.35) !important;
+}
+html body .tttOverlay .tttBoard .tttCell.isWinner::after,
+html body.tttOpen .tttOverlay .tttBoard .tttCell.isWinner::after{
+  content:"" !important;
+  position:absolute !important;
+  inset:10% !important;
+  border:2px solid rgba(255,243,107,.96) !important;
+  border-radius:5px !important;
+  box-shadow:0 0 18px rgba(255,243,107,.46), inset 0 0 14px rgba(255,243,107,.22) !important;
+  pointer-events:none !important;
+}
+html body .tttOverlay .tttResultCard,
+html body.tttOpen .tttOverlay .tttResultCard{
+  position:absolute !important;
+  left:50% !important;
+  right:auto !important;
+  top:50% !important;
+  bottom:auto !important;
+  transform:translate(-50%, -50%) !important;
+  z-index:8 !important;
+  width:min(88%, 360px) !important;
+  padding:15px 16px 14px !important;
+  border-radius:22px !important;
+  border:1px solid rgba(124,255,124,.48) !important;
+  background:rgba(4,10,8,.88) !important;
+  -webkit-backdrop-filter:blur(16px) saturate(160%) !important;
+  backdrop-filter:blur(16px) saturate(160%) !important;
+  box-shadow:0 24px 70px rgba(0,0,0,.62), 0 0 34px rgba(124,255,124,.22), inset 0 0 0 1px rgba(255,255,255,.08) !important;
+  text-align:center !important;
+}
+html body .tttOverlay .tttResultCard.isVisible,
+html body.tttOpen .tttOverlay .tttResultCard.isVisible{display:block !important;}
+html body .tttOverlay .tttResultTitle,
+html body.tttOpen .tttOverlay .tttResultTitle{
+  font-size:20px !important;
+  font-weight:1000 !important;
+  color:#f6fff6 !important;
+  text-shadow:0 0 14px rgba(124,255,124,.38) !important;
+}
+html body .tttOverlay .tttResultDetail,
+html body.tttOpen .tttOverlay .tttResultDetail{
+  margin-top:6px !important;
+  font-size:13px !important;
+  color:rgba(235,255,235,.82) !important;
+}
+html body .tttOverlay .tttResultStats,
+html body.tttOpen .tttOverlay .tttResultStats{margin-top:11px !important;}
+html body .tttOverlay .tttResultStats strong,
+html body.tttOpen .tttOverlay .tttResultStats strong{color:#7CFF7C !important;}
+html body .tttOverlay .tttResultSaved,
+html body.tttOpen .tttOverlay .tttResultSaved{margin-top:9px !important;color:rgba(235,255,235,.76) !important;}
+html body .tttOverlay .tttResultCard.isWin{border-color:rgba(124,255,124,.68) !important;box-shadow:0 24px 70px rgba(0,0,0,.62), 0 0 38px rgba(124,255,124,.30), inset 0 0 0 1px rgba(255,255,255,.08) !important;}
+html body .tttOverlay .tttResultCard.isLoss{border-color:rgba(255,43,255,.56) !important;box-shadow:0 24px 70px rgba(0,0,0,.62), 0 0 38px rgba(255,43,255,.24), inset 0 0 0 1px rgba(255,255,255,.08) !important;}
+html body .tttOverlay .tttResultCard.isDraw{border-color:rgba(0,245,255,.52) !important;box-shadow:0 24px 70px rgba(0,0,0,.62), 0 0 38px rgba(0,245,255,.22), inset 0 0 0 1px rgba(255,255,255,.08) !important;}
+
+
+/* v.1.1 (663) – Piškvorky: pravý uzavírací okraj + jasně odlišené fosforové X/O. */
+html body .tttOverlay .tttBoard,
+html body.tttOpen .tttOverlay .tttBoard,
+html body #games .tttBoard{
+  --tttGridLine:rgba(138,255,138,.86) !important;
+  outline:1px solid rgba(138,255,138,.88) !important;
+  outline-offset:0 !important;
+  box-shadow:
+    0 0 26px rgba(124,255,124,.10),
+    inset 0 0 0 1px rgba(138,255,138,.40),
+    inset -2px 0 0 rgba(138,255,138,.95),
+    inset 0 -1px 0 rgba(138,255,138,.80) !important;
+}
+html body .tttOverlay .tttBoard::after,
+html body.tttOpen .tttOverlay .tttBoard::after,
+html body #games .tttBoard::after{
+  content:"" !important;
+  display:block !important;
+  position:absolute !important;
+  top:0 !important;
+  right:0 !important;
+  bottom:0 !important;
+  left:auto !important;
+  width:2px !important;
+  height:auto !important;
+  z-index:7 !important;
+  pointer-events:none !important;
+  background:linear-gradient(180deg, rgba(138,255,138,.98), rgba(124,255,124,.78)) !important;
+  box-shadow:0 0 10px rgba(124,255,124,.34) !important;
+}
+html body .tttOverlay .tttBoard .tttCell,
+html body.tttOpen .tttOverlay .tttBoard .tttCell,
+html body #games .tttBoard .tttCell{
+  border-right:1px solid var(--tttGridLine) !important;
+  border-bottom:1px solid var(--tttGridLine) !important;
+}
+html body .tttOverlay .tttBoard .tttCell.isX,
+html body.tttOpen .tttOverlay .tttBoard .tttCell.isX,
+html body #games .tttBoard .tttCell.isX,
+html body .tttOverlay .tttBoard .tttCell.isWinner.isX,
+html body.tttOpen .tttOverlay .tttBoard .tttCell.isWinner.isX,
+html body #games .tttBoard .tttCell.isWinner.isX{
+  color:#FF174D !important;
+  text-shadow:
+    0 0 3px rgba(255,255,255,.98),
+    0 0 9px rgba(255,23,77,1),
+    0 0 20px rgba(255,23,77,.92),
+    0 0 38px rgba(255,0,64,.72),
+    0 0 58px rgba(255,0,64,.42) !important;
+}
+html body .tttOverlay .tttBoard .tttCell.isO,
+html body.tttOpen .tttOverlay .tttBoard .tttCell.isO,
+html body #games .tttBoard .tttCell.isO,
+html body .tttOverlay .tttBoard .tttCell.isWinner.isO,
+html body.tttOpen .tttOverlay .tttBoard .tttCell.isWinner.isO,
+html body #games .tttBoard .tttCell.isWinner.isO{
+  color:#39FF14 !important;
+  text-shadow:
+    0 0 3px rgba(255,255,255,.98),
+    0 0 9px rgba(57,255,20,1),
+    0 0 20px rgba(57,255,20,.92),
+    0 0 38px rgba(57,255,20,.72),
+    0 0 58px rgba(57,255,20,.42) !important;
+}
+html body .tttOverlay .tttBoard .tttCell.isWinner,
+html body.tttOpen .tttOverlay .tttBoard .tttCell.isWinner,
+html body #games .tttBoard .tttCell.isWinner{
+  background:radial-gradient(circle at center, rgba(255,243,107,.20), transparent 62%) !important;
+  box-shadow:
+    inset 0 0 0 2px rgba(255,243,107,.96),
+    0 0 20px rgba(255,243,107,.34) !important;
+}
+
+
+/* v.1.1 (664) – Piškvorky: finální override pro barvy X/O a Nová hra až ve výsledku. */
+html body .tttOverlay .tttFooter,
+html body.tttOpen .tttOverlay .tttFooter{
+  display:none !important;
+}
+html body .tttOverlay .tttBoard .tttCell.isX,
+html body.tttOpen .tttOverlay .tttBoard .tttCell.isX,
+html body #games .tttBoard .tttCell.isX,
+html body .tttOverlay .tttBoard .tttCell.isWinner.isX,
+html body.tttOpen .tttOverlay .tttBoard .tttCell.isWinner.isX,
+html body #games .tttBoard .tttCell.isWinner.isX{
+  color:#FF073A !important;
+  -webkit-text-fill-color:#FF073A !important;
+  text-shadow:
+    0 0 3px rgba(255,255,255,.98),
+    0 0 10px rgba(255,7,58,1),
+    0 0 24px rgba(255,7,58,.98),
+    0 0 46px rgba(255,0,48,.78),
+    0 0 72px rgba(255,0,48,.42) !important;
+}
+html body .tttOverlay .tttBoard .tttCell.isO,
+html body.tttOpen .tttOverlay .tttBoard .tttCell.isO,
+html body #games .tttBoard .tttCell.isO,
+html body .tttOverlay .tttBoard .tttCell.isWinner.isO,
+html body.tttOpen .tttOverlay .tttBoard .tttCell.isWinner.isO,
+html body #games .tttBoard .tttCell.isWinner.isO{
+  color:#39FF14 !important;
+  -webkit-text-fill-color:#39FF14 !important;
+  text-shadow:
+    0 0 3px rgba(255,255,255,.98),
+    0 0 10px rgba(57,255,20,1),
+    0 0 24px rgba(57,255,20,.98),
+    0 0 46px rgba(57,255,20,.78),
+    0 0 72px rgba(57,255,20,.42) !important;
+}
+html body .tttOverlay .tttResultActions,
+html body.tttOpen .tttOverlay .tttResultActions{
+  display:grid !important;
+  grid-template-columns:1fr !important;
+  gap:8px !important;
+  margin-top:12px !important;
+}
+html body .tttOverlay .tttResultRestartBtn,
+html body.tttOpen .tttOverlay .tttResultRestartBtn{
+  min-height:44px !important;
+  border-radius:16px !important;
+  font-weight:1000 !important;
+  color:#061006 !important;
+  background:linear-gradient(135deg, rgba(124,255,124,.96), rgba(57,255,20,.82)) !important;
+  border:1px solid rgba(220,255,220,.58) !important;
+  box-shadow:0 0 24px rgba(57,255,20,.22), inset 0 0 0 1px rgba(255,255,255,.28) !important;
+}

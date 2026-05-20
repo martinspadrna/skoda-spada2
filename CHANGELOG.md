@@ -1,3 +1,249 @@
+## v.1.1 (664)
+- Piškvorky: tlačítko Nová hra je přesunuté až do výsledkového panelu po skončení hry.
+- Piškvorky: X/O mají vynucené fosforové barvy přímo při renderu i finálním CSS overridem: X červené, O zelené.
+- Piškvorky: spodní footer s tlačítkem Nová hra je skrytý/odstraněný z běžné hry.
+- Verze sjednocena na v.1.1 (664), cache na v1.1-664 a Supabase realtime kanál na rak-public-live-v664.
+
+## v.1.1 (663)
+- Piškvorky: doplněný silnější pravý uzavírací okraj hrací mřížky přes samostatnou overlay linku, aby byl vidět konec krajních políček.
+- Piškvorky: X změněno na fosforově svítící červenou a O na fosforově svítící zelenou.
+- Výherní políčka si nechávají výrazné zvýraznění, ale X/O už zůstávají barevně rozlišené.
+
+- Piškvorky: doplněná pravá krajní čára a zpevněná souvislá mřížka bez mezer mezi buňkami.
+- X/O mají nové výrazné fosforové barvy: X tyrkysově neonové, O růžovo-fialové neonové.
+- Přidaná velká výsledková hláška přes hrací pole při výhře, prohře nebo remíze.
+
+- Piškvorky: opravená skutečná příčina mezer — globální iOS/glass styl tlačítek přepisoval buňky hry.
+- Klikací pole jsou teď natvrdo bez glass pozadí, bez stínů, bez marginů a dotýkají se přesně hranami.
+- Čáry mřížky jsou kreslené přímo hranami buněk, takže hrací plocha vypadá jako souvislý čtverečkovaný papír v RaK stylu.
+
+- Piškvorky: čáry jsou teď přímo svázané s klikacími poli, takže mřížka a klikací zóny se nerozcházejí.
+- Mřížka se už nekreslí samostatnou vrstvou na pozadí, ale přímo hranami buněk.
+- Zvětšené X/O a ponechané kratší texty žebříčku „Kdo porazil AI“ / „Žebříček online .“.
+
+- Piškvorky: hrací plocha je opravená na skutečnou souvislou mřížku z čar bez viditelných klikacích čtverců/dlaždic.
+- Klikací buňky jsou průhledné nad mřížkou; čáry tvoří políčka a značky X/O se kreslí dovnitř polí.
+- Odstraněný celý popisný blok „AI režim“.
+- Text žebříčku změněn na „Kdo porazil AI“ a „Žebříček online .“.
+- AI má tvrdší obranu proti dřívějším hrozbám a fork situacím; výherní pětice, výsledková karta, zápis skóre a shrnutí partie zůstávají zachované.
+- Verze sjednocena na v.1.1 (663), cache na v1.1-663 a Supabase realtime kanál na rak-public-live-v663.
+
+## v.1.1 (658)
+- Piškvorky mají souvislou RaK mřížku z jedné vrstvy čar bez mezer mezi buňkami; klikací pole jsou průhledná a neviditelná.
+- AI je přitvrzená přes danger-reduction a anti-fork kontrolu, aby lépe blokovala dvojité hrozby a přípravy na pětici.
+- Přidaná výsledková hláška se shrnutím tahů, času, X/O počtu a stavem zápisu výsledku.
+- Výherní znaky jsou zvýrazněné výraznějším neonovým glow efektem a kroužkem kolem znaku.
+- Verze sjednocena na v.1.1 (658), cache na v1.1-658 a Supabase realtime kanál na rak-public-live-v658.
+
+## v.1.1 (657)
+- Piškvorky: klikací buňky jsou nově opticky uvnitř čtverců, ne na křížení čar.
+- Mřížka je kreslená hranami průhledných buněk, takže nejsou vidět žádné extra klikací dlaždice.
+- X/O jsou zvětšené a čitelnější pro pohodlnější hraní na mobilu.
+- Hratelnost, AI, pravidla 10 × 18 a výhra 5 v řadě zůstávají zachované.
+- Verze sjednocena na v.1.1 (657), cache na v1.1-657 a Supabase realtime kanál na rak-public-live-v657.
+
+## v.1.1 (656)
+- Piškvorky jsou nově ve stylu aplikace: čistá tmavá RaK mřížka z čar bez papírového vzhledu, bez mezer a bez dlaždic.
+- X/O zůstávají dobře čitelné v neonovém app stylu, výherní řada a poslední tah mají jemné zvýraznění.
+- AI je tvrdší: lépe hodnotí vlastní útok, blokování nebezpečných hrozeb, fork situace a krátké časově hlídané hledání.
+- Automaticky otestováno herním průchodem AI logiky hraným na výhru; test po 100 tazích neskončil výhrou hráče ani zamrznutím.
+- Verze sjednocena na v.1.1 (656), cache na v1.1-656 a Supabase realtime kanál na rak-public-live-v656.
+
+
+## v.1.1 (654)
+
+- Navazuje na potvrzenou verzi v.1.1 (651).
+- Přidán Supabase strukturální audit `getSupabaseStructureHealth()` pro kontrolu klientského kontraktu tabulek, realtime napojení, queue typů a helperů.
+- Audit drží checklist očekávaných RLS/GRANT/policies signálů pro tabulky používané aplikací: rozpisy, machine_settings, herní profily, session, statistiky a legacy gomoku_wins.
+- `getSupabaseHardeningStatus()` nově vrací i `structureHealth`, takže je kontrola vidět společně se Supabase frontou, cache a výkonem.
+- Finální readiness summary a post-stabilizační kontrola nově zahrnují bod Supabase struktura.
+- Diagnostika v O aplikaci nově ukazuje Supabase struktura/RLS a GRANT/policies checklist.
+- Vzhled, výpočty a zamčené části beze změny.
+- Verze sjednocena na v.1.1 (654), cache na v1.1-654 a Supabase realtime kanál na rak-public-live-v654.
+
+## v.1.1 (651)
+
+- Navazuje na potvrzenou verzi v.1.1 (650).
+- Přidán Supabase read/write optimizer pro plynulejší provoz před laděním her.
+- Sdílené čtení se nově používá i pro announcements, machine_settings, rotation_state, rotation_entries a gomoku_wins, takže stejné paralelní dotazy se slučují.
+- Přidán optimalizovaný zápis runOptimizedSupabaseWrite(): stejné souběžné zápisy se sdílí a krátce opakované totožné zápisy se přeskočí jako hotové.
+- Optimalizace je nasazená pro machine_settings, rozpisy, rotation_state, gomoku_wins, game_stats, game_ui_settings a game_sessions.
+- Diagnostika Supabase výkonu nově ukazuje write guard: kontroly, starty, joiny, skipy, aktivní zápisy a peak.
+- Vzhled, výpočty a zamčené části beze změny.
+- Verze sjednocena na v.1.1 (651), cache na v1.1-651 a Supabase realtime kanál na rak-public-live-v651.
+
+## v.1.1 (649)
+- Post-stabilization pokračování po dokončené Fázi 10: přidán audit Láďova režimu a výkonových pojistek.
+- Přidán `getLadaPerformanceHealth()` a `runLadaPerformanceAudit()` pro kontrolu aktivního odlehčeného režimu, `reduceMotion`, canvas DPR limitu, vzorků blur efektů a animací.
+- Readiness summary nově zahrnuje kontrolu `Láďův režim výkon`, aby šlo rychleji poznat, jestli odlehčený režim opravdu drží výkonový profil.
+- Diagnostika v O aplikaci nově ukazuje řádky Láďův režim výkon a Láďův režim efekty.
+- Přidaná finální CSS pojistka pro `ladaMode` / `lowEndDevice`: vypíná náročný backdrop blur, animace, přechody, pseudo glass vrstvy a zbytečné filtry u obrázků/canvasu.
+- Běžný režim, výpočty a zamčené části beze změny.
+- Verze sjednocena na v.1.1 (649), cache na v1.1-649 a Supabase realtime kanál na rak-public-live-v649.
+
+## v.1.1 (648)
+- Post-stabilization safe helper guard navazuje na dokončenou Fázi 10 a baseline watch.
+- Přidán `getPostStabilizationSafeHelperHealth()`, který hlídá dostupnost klíčových safe DOM / safe URL / audit helperů po načtení aplikace.
+- Readiness summary nově zahrnuje kontrolu safe helperů, aby šla rychleji odhalit regrese po dalších úpravách.
+- Diagnostika v O aplikaci nově ukazuje řádek Post-stabilizace helpery.
+- Vzhled, výpočty a zamčené části beze změny.
+- Verze sjednocena na v.1.1 (648), cache na v1.1-648 a Supabase realtime kanál na rak-public-live-v648.
+
+## v.1.1 (647)
+- Post-stabilization baseline watch navazuje na dokončenou Fázi 10.
+- Přidán `getPostStabilizationBaselineHealth()`, který hlídá, že finální stabilizace zůstává kompletní, readiness summary běží a verze aplikace sedí.
+- Diagnostika v O aplikaci nově ukazuje řádek Post-stabilizace s režimem a počtem bodů ke kontrole.
+- Vzhled, výpočty a zamčené části beze změny.
+- Verze sjednocena na v.1.1 (647), cache na v1.1-647 a Supabase realtime kanál na rak-public-live-v647.
+
+## v.1.1 (646)
+- Fáze 10 — final stabilization dokončena na 100 %.
+- Přidán finální readiness summary audit `getPhaseTenRuntimeReadinessHealth()`, který sjednocuje výsledky kontrol verze, Fáze 9, PWA/SW, storage, modulů, navigace, page shellu, akcí/odkazů a formulářů.
+- Diagnostika v O aplikaci nově ukazuje souhrn finální připravenosti včetně počtu splněných kontrol a případných bodů ke kontrole.
+- Vzhled, výpočty a zamčené části beze změny.
+- Verze sjednocena na v.1.1 (646), cache na v1.1-646 a Supabase realtime kanál na rak-public-live-v646.
+
+## v.1.1 (644)
+- Fáze 10 — final stabilization posunuta cca na 84 %.
+- Přidán runtime audit `getPhaseTenActionHealth()` pro kontrolu `data-action` prvků, allowlistu, povinných akcí, datových cílů a externích dashboard odkazů.
+- Legacy self-test už také nekontroluje staré neexistující `#stats`, ale reálný `#rotaceStatsPanel`, aby nevznikal falešný zápis do error logu.
+- Diagnostika v O aplikaci nově ukazuje stav akcí/odkazů.
+- Vzhled, výpočty a zamčené části beze změny.
+- Verze sjednocena na v.1.1 (644), cache na v1.1-644 a Supabase realtime kanál na rak-public-live-v644.
+
+## v.1.1 (643)
+- Fáze 10 — final stabilization pokračuje auditem page shellu a hlavních panelů aplikace.
+- Přidán `getPhaseTenPageShellHealth()`, který hlídá hlavní stránky, aktivní stránku a klíčové panely bez zásahu do UI.
+- Runtime audit nově sleduje počet stránek, počet aktivních stránek, přítomnost hlavních dashboard/rotace/kalkulačka/herních panelů a případné chybějící prvky.
+- Finální audit už nekontroluje staré neexistující `#stats`, ale reálný panel `#rotaceStatsPanel`, aby diagnostika neházela falešné varování.
+- Diagnostika v O aplikaci nově ukazuje stav page shellu, počet stránek, aktivní stránku, počet hlavních panelů a chybějící části.
+- Vzhled, výpočty ani zamčené části aplikace beze změny.
+- Verze sjednocena na v.1.1 (643), cache na v1.1-643 a Supabase realtime kanál na rak-public-live-v643.
+
+## v.1.1 (642)
+- Fáze 10 — final stabilization pokračuje auditem načtených modulů a scriptů.
+- Přidán `getPhaseTenScriptLoadHealth()`, který kontroluje, jestli jsou klíčové JS moduly aplikace opravdu načtené.
+- Runtime audit nově sleduje chybějící moduly, duplicitně načtené lokální moduly a neočekávané lokální JS soubory.
+- Diagnostika v O aplikaci nově ukazuje stav načtení modulů, počet chybějících modulů, duplicity a případné lokální JS navíc.
+- Vzhled, výpočty ani zamčené části aplikace beze změny.
+- Verze sjednocena na v.1.1 (642), cache na v1.1-642 a Supabase realtime kanál na rak-public-live-v642.
+
+## v.1.1 (640)
+- Fáze 10 — final stabilization pokračuje storage/runtime health auditem.
+- Přidán `getPhaseTenStorageHealth()`, který bezpečně ověřuje dostupnost a zapisovatelnost `localStorage` bez změny dat aplikace.
+- Runtime audit nově sleduje počet položek v úložišti, větší uložené klíče, online stav a viditelnost stránky.
+- Diagnostika v O aplikaci nově ukazuje stav localStorage, počet položek a počet větších klíčů.
+- Vzhled, výpočty ani zamčené části aplikace beze změny.
+- Verze sjednocena na v.1.1 (640), cache na v1.1-640 a Supabase realtime kanál na rak-public-live-v640.
+
+## v.1.1 (639)
+- Fáze 10 — final stabilization pokračuje bezpečným runtime auditem DOM a stavového logu.
+- Audit nově hlídá duplicitní `id` prvky v aktuálním DOM, aby se rychleji odhalily regresní chyby v navigaci, panelech a modalech.
+- Přidány pomocné kontroly `getPhaseTenDuplicateDomIds()` a `getPhaseTenErrorLogCount()` pro přehled stavu bez zásahu do běhu aplikace.
+- Diagnostika v O aplikaci nově ukazuje počet duplicitních DOM ID a velikost error logu.
+- Vzhled, výpočty ani zamčené části aplikace beze změny.
+- Verze sjednocena na v.1.1 (639), cache na v1.1-639 a Supabase realtime kanál na rak-public-live-v639.
+
+## v.1.1 (638)
+- Fáze 10 — final stabilization zahájena prvním bezpečným runtime auditem.
+- Přidán `runPhaseTenFinalStabilizationAudit()`, který po startu kontroluje klíčové DOM prvky, bezpečné helpery, verzi aplikace, stav Fáze 9 a dostupnost datové optimalizace.
+- Nový `getFinalStabilizationStatus()` ukládá výsledek posledního auditu pro diagnostiku a rychlejší hledání regresí.
+- Diagnostika v O aplikaci nově ukazuje řádky Finální stabilizace, počet auditů, případné chybějící části a stav PWA mismatch.
+- Vzhled, výpočty ani zamčené části aplikace beze změny.
+- Verze sjednocena na v.1.1 (638), cache na v1.1-638 a Supabase realtime kanál na rak-public-live-v638.
+
+## v.1.1 (637)
+- Fáze 9 — security/render cleanup dokončena na 100 %.
+- Přidán centrální bezpečný helper pro přepis/mazání DOM dětí: `replaceElementChildrenSafely()` a `clearElementChildrenSafely()`.
+- `setElementChildrenIfChanged()` a `setSelectOptionsIfChanged()` používají jednotný safe DOM replace postup místo přímého `replaceChildren()` bez evidence.
+- Diagnostika v O aplikaci nově ukazuje safe DOM replace/clear/fallback počítadla.
+- Vzhled, výpočty ani zamčené části aplikace beze změny.
+- Verze sjednocena na v.1.1 (637), cache na v1.1-637 a Supabase realtime kanál na rak-public-live-v637.
+
+## v.1.1 (636)
+- Fáze 9 — security/render cleanup pokračuje dalším bezpečným dočištěním bez změny vzhledu a výpočtů.
+- Fallback render výběrových polí nově maže staré položky přes DOM místo `innerHTML = ""`.
+- `setSelectOptionsIfChanged()` má bezpečnější nouzovou větev pro `<select>` prvky a dál vytváří položky přes `createElement` + `textContent`.
+- Kontrola měsíce v administraci rozpisů (`overwriteMonth`) má bezpečnější fallback a zachovává vybranou hodnotu, když existuje.
+- Fáze 9 posunuta přibližně na 94 %.
+- Verze sjednocena na v.1.1 (636), cache na v1.1-636 a Supabase realtime kanál na rak-public-live-v636.
+
+## v.1.1 (635)
+- Fáze 9 — security/render cleanup pokračuje dalším bezpečným krokem bez změny vzhledu a výpočtů.
+- Detail vybraného jména ve Statistikách se nově skládá přes DOM prvky a `textContent` místo přímého HTML renderu.
+- Detail vybraného stroje ve Statistikách se také skládá bezpečněji přes DOM prvky a `textContent`.
+- Souhrnné dlaždice a tabulka ve statistikách zachovávají stejné třídy, texty i pořadí sloupců.
+- Fáze 9 posunuta přibližně na 90 %.
+- Verze sjednocena na v.1.1 (635), cache na v1.1-635 a Supabase realtime kanál na rak-public-live-v635.
+
+## v.1.1 (634)
+- Fáze 9 — security/render cleanup pokračuje dalším bezpečným krokem bez změny vzhledu a výpočtů.
+- Dlaždice jmen a strojů ve Statistikách se nově skládají přes DOM prvky a `textContent` místo přímého `innerHTML` renderu.
+- Aktivní zvýraznění, klikání i ovládání přes klávesnici zůstává stejné.
+- `statsNameGrid` a `statsMachineGrid` používají bezpečný `setElementChildrenIfChanged()` helper a při stejném obsahu zbytečně nepřekreslují dlaždice.
+- Fáze 9 posunuta přibližně na 84 %.
+- Verze sjednocena na v.1.1 (634), cache na v1.1-634 a Supabase realtime kanál na rak-public-live-v634.
+
+## v.1.1 (633)
+- Fáze 9 — security/render cleanup pokračuje dalším bezpečným krokem bez změny vzhledu a výpočtů.
+- Modal směn v Rotaci se už neskládá přes `innerHTML`, ale přes DOM prvky a `textContent`.
+- Tabulka směn v modalu zachovává stejné sloupce Datum / Směna / Cíl i zvýraznění aktuálního řádku.
+- Základní shell modalu se nově vytváří přes DOM místo vkládání HTML řetězce.
+- Fáze 9 posunuta přibližně na 78 %.
+- Verze sjednocena na v.1.1 (633), cache na v1.1-633 a Supabase realtime kanál na rak-public-live-v633.
+
+## v.1.1 (632)
+- Fáze 9 — security/render cleanup pokračuje dalším bezpečným krokem bez změny vzhledu a výpočtů.
+- Jmenné dlaždice v Rotaci se už neskládají přes `innerHTML`, ale přes DOM prvky a `textContent`.
+- Aktivní výběr jména, klikání i ovládání klávesnicí zůstává zachované.
+- `namesGrid` nově používá bezpečný `setElementChildrenIfChanged()` helper a při stejném obsahu zbytečně nepřekresluje.
+- Fáze 9 posunuta přibližně na 72 %.
+- Verze sjednocena na v.1.1 (632), cache na v1.1-632 a Supabase realtime kanál na rak-public-live-v632.
+
+## v.1.1 (631)
+- Fáze 9 — security/render cleanup pokračuje dalším bezpečným krokem bez změny vzhledu a výpočtů.
+- Kontrola měsíce v administraci rozpisů se už neskládá přes HTML řetězec, ale přes bezpečné DOM prvky a `textContent`.
+- Našeptávače jmen v administraci rozpisů nově vytvářejí `<option>` prvky přes DOM místo vkládání HTML.
+- Dynamické texty jmen a dnů zůstávají stejné, jen se bezpečněji zapisují do stránky.
+- Fáze 9 posunuta přibližně na 66 %.
+- Verze sjednocena na v.1.1 (631), cache na v1.1-631 a Supabase realtime kanál na rak-public-live-v631.
+
+## v.1.1 (630)
+- Fáze 9 — security/render cleanup pokračuje dalším bezpečným krokem bez změny vzhledu a výpočtů.
+- Výběr měsíce ve statistikách už se neskládá přes HTML řetězec, ale přes bezpečné DOM `option` prvky.
+- `monthSelect` nově používá společný `setSelectOptionsIfChanged()` helper, takže se při stejných datech zbytečně nepřepisuje.
+- Fallback bez helperu také používá `textContent` místo vkládání HTML.
+- Fáze 9 posunuta přibližně na 60 %.
+- Verze sjednocena na v.1.1 (630), cache na v1.1-630 a Supabase realtime kanál na rak-public-live-v630.
+
+## v.1.1 (629)
+- Fáze 9 — security/render cleanup pokračuje dalším bezpečným krokem bez změny vzhledu a výpočtů.
+- Přidán allowlist pro externí URL používané dlaždicemi aplikace.
+- Externí odkazy se nově normalizují přes bezpečný helper a hlídají povolené domény.
+- Dashboard odkazy na jídelní lístek a Eportal mají bezpečně synchronizované `href`, `target` a `rel`.
+- Diagnostika v O aplikaci ukazuje URL allowlist a bezpečné href zápisy/skipy.
+- Fáze 9 posunuta přibližně na 54 %.
+- Verze sjednocena na v.1.1 (629), cache na v1.1-629 a Supabase realtime kanál na rak-public-live-v629.
+
+## v.1.1 (628)
+- Fáze 9 — security/render cleanup pokračuje dalším opatrným krokem bez změny vzhledu a výpočtů.
+- Přidán společný helper `setElementChildrenIfChanged()` pro bezpečnější skládání DOM uzlů přes `textContent` místo přímého HTML tam, kde stačí čistý text.
+- Brusy / horní info panel stroje a indexu se nově skládá přes DOM uzly, takže text stroje/indexu už nejde vložit jako HTML.
+- Diagnostika O aplikaci nově ukazuje i safe DOM build/skip, aby bylo vidět, kdy se bezpečný DOM render skutečně provedl a kdy se přeskočil.
+- Fáze 9 posunuta přibližně na 48 %.
+- Verze sjednocena na v.1.1 (628), cache na v1.1-628 a Supabase realtime kanál na rak-public-live-v628.
+
+## v.1.1 (627)
+- Fáze 9 — security/render cleanup pokračuje dalším bezpečným krokem.
+- Delegované klikací/klávesové akce přes `data-action` nově prochází allowlist guardem; neznámé nebo divně zapsané akce se ignorují a zapisují do diagnostiky.
+- Diagnostika O aplikaci nově ukazuje kontroly/blokace delegovaných akcí a režim `allowlist-data-action`.
+- Verze sjednocena na v.1.1 (627), cache na v1.1-627 a Supabase realtime kanál na rak-public-live-v627.
+
+## v.1.1 (626)
+- Dashboard / Kalendář zkracuje zápis ISO kalendářního týdne na formát `21.KT`, aby se za něj vešly poznámky jako Brusy- spálení nebo Roznýtování- laborka.
+- Výpočet ISO týdne zůstává stejný; mění se jen text zobrazený v kartě kalendáře.
+- Verze sjednocena na v.1.1 (626), cache na v1.1-626 a Supabase realtime kanál na rak-public-live-v626.
+
 ## v.1.1 (625)
 - Dashboard / Kalendář nově ukazuje skutečný ISO kalendářní týden; pro 19.5.2026 vychází týden 21.
 - Původní výrobní týden byl nahrazen kalendářním týdnem, aby v tom nebyl zmatek.
