@@ -1,4 +1,4 @@
-// v.1.1 (681) – Hry: theme plochy, Snake HUD/osa a chytré achievementy.
+// v.1.1 (682) – Hry: Piškvorky/Snake/2048 theme polish, širší HUD a rychlejší Snake swipe.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

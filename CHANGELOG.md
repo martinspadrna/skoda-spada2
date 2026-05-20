@@ -1,9 +1,14 @@
+## v.1.1 (682)
+- Piškvorky: finální přepis hrací plochy tak, aby už nepřebíjela zvolený theme/pozadí tvrdým zeleno-černým vzhledem; X/O barvy zůstaly beze změny.
+- 2048 a Snake: horní trojice HUD polí je přes celou šířku panelu.
+- Snake: swipe reaguje dřív už při pohybu prstem, ne až po puštění; směr se pořád zamyká jen na vodorovnou nebo svislou osu.
+- Verze sjednocena na v.1.1 (682), cache na v1.1-682 a Supabase realtime kanál na rak-public-live-v682.
+
 ## v.1.1 (681)
-- Piškvorky a Snake mají herní plochy přeladěné na aktuální theme/pozadí aplikace místo tvrdého zeleno-černého vzhledu.
-- Snake má čistší HUD jen se třemi poli v pořadí Score / Délka / Nejlepší a odstraněné pole „Hraje se“.
-- Snake má pevně vynucenou mřížku podle skutečné velikosti hry a přísnější swipe osu, aby se pohyb nechoval šikmo.
-- Achievementy doplněné o chytřejší cíle podle času, dne, víkendu, aktivní směny, noční/ranní směny a různých hraných dnů.
-- Statistiky/XP/achievementy dál vycházejí jen z dokončených her.
+- Piškvorky a Snake: herní plochy přeladěné víc podle aktuálního theme/pozadí; barvy X/O v Piškvorkách zůstaly beze změny.
+- Snake: HUD zjednodušený na Score / Délka / Nejlepší a odstraněné pole „Hraje se“.
+- Snake: zpevněná skutečná 18×18 mřížka a přísnější osa swipu pro čistě vodorovný/svislý směr.
+- Achievementy: přidané chytré podmínky podle času, dne, víkendu, směny a hraní napříč směnami.
 - Verze sjednocena na v.1.1 (681), cache na v1.1-681 a Supabase realtime kanál na rak-public-live-v681.
 
 ## v.1.1 (680)

@@ -3798,8 +3798,8 @@ function buildAppHistoryHtml(versionText) {
       range: versionText,
       title: 'Aktuální build',
       lines: [
-        'Build v.1.1 (681) dolaďuje herní plochy podle theme/pozadí, opravuje Snake HUD/ovládání a přidává chytré achievementy podle času a směn.',
-        'Série v.1.1 650–681 dotáhla Piškvorky, online pozvánky, PWA launch handler, 2048/Snake mezi hotové hry, herní profily a těžší/chytřejší achievementy.',
+        'Build v.1.1 (682) dolaďuje Piškvorky/Snake/2048 podle theme a pozadí, rozšiřuje horní herní HUD na celou šířku a zrychluje reakci Snake swipu.',
+        'Série v.1.1 650–682 dotáhla Piškvorky, online pozvánky, PWA launch handler, 2048/Snake mezi hotové hry, herní profily, theme polish a těžší/chytřejší achievementy.',
         'Sekce „O aplikaci“ je nově stručnější: detailní změny zůstávají v changelogu a tady se historie drží po větších blocích.',
         'Stabilizační audity, Supabase guardy, Láďův režim a finální readiness kontroly zůstávají součástí diagnostiky.'
       ]
@@ -6828,6 +6828,7 @@ function gamesBindSwipeControl(el, onSwipe, options) {
   const lockDistance = Number(opts.lockDistance || 7);
   const maxTapTime = Number(opts.maxTapTime || 260);
   const axisRatio = Math.max(1, Number(opts.axisRatio || 1) || 1);
+  const fireOnMove = !!opts.fireOnMove;
   let startX = 0;
   let startY = 0;
   let active = false;
@@ -6840,20 +6841,32 @@ function gamesBindSwipeControl(el, onSwipe, options) {
     el.classList.remove('isTouching');
   };
 
-  const finish = (clientX, clientY) => {
-    if (!active) return;
+  const readSwipe = (clientX, clientY) => {
     const dx = clientX - startX;
     const dy = clientY - startY;
     const absX = Math.abs(dx);
     const absY = Math.abs(dy);
     const distance = Math.max(absX, absY);
     const elapsed = Date.now() - startedAt;
-    reset();
-    if (distance < minDistance) return;
-    if (elapsed < maxTapTime && distance < minDistance + 3) return;
-    if (axisRatio > 1 && Math.max(absX, absY) < Math.max(1, Math.min(absX, absY)) * axisRatio) return;
+    if (distance < minDistance) return null;
+    if (elapsed < maxTapTime && distance < minDistance + 3) return null;
+    if (axisRatio > 1 && Math.max(absX, absY) < Math.max(1, Math.min(absX, absY)) * axisRatio) return null;
     const dir = absX >= absY ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up');
-    onSwipe(dir, { dx, dy, absX, absY, distance, elapsed });
+    return { dir, dx, dy, absX, absY, distance, elapsed };
+  };
+
+  const trigger = (clientX, clientY) => {
+    const swipe = readSwipe(clientX, clientY);
+    if (!swipe) return false;
+    onSwipe(swipe.dir, swipe);
+    return true;
+  };
+
+  const finish = (clientX, clientY) => {
+    if (!active) return;
+    const fired = trigger(clientX, clientY);
+    reset();
+    return fired;
   };
 
   const usePointer = 'PointerEvent' in window;
@@ -6884,7 +6897,9 @@ function gamesBindSwipeControl(el, onSwipe, options) {
       if (activePointerId !== null && ev.pointerId !== activePointerId) return;
       const dx = ev.clientX - startX;
       const dy = ev.clientY - startY;
-      if (Math.max(Math.abs(dx), Math.abs(dy)) >= lockDistance) ev.preventDefault?.();
+      const distance = Math.max(Math.abs(dx), Math.abs(dy));
+      if (distance >= lockDistance) ev.preventDefault?.();
+      if (fireOnMove && distance >= minDistance && trigger(ev.clientX, ev.clientY)) reset();
     }, { passive: false });
 
     el.addEventListener('pointercancel', reset, { passive: true });
@@ -6906,6 +6921,8 @@ function gamesBindSwipeControl(el, onSwipe, options) {
     el.addEventListener('touchmove', (ev) => {
       if (!active) return;
       ev.preventDefault?.();
+      const touch = ev.touches && ev.touches[0];
+      if (fireOnMove && touch && trigger(touch.clientX, touch.clientY)) reset();
     }, { passive: false });
 
     el.addEventListener('touchend', (ev) => {
@@ -7487,7 +7504,7 @@ function renderGameSnake() {
   };
   body.querySelector('#snakeNewBtn')?.addEventListener('click', resetSnake);
   body.querySelector('#snakeOverlayNewBtn')?.addEventListener('click', resetSnake);
-  gamesBindSwipeControl(board || body, handleTurn, { minDistance: 14, lockDistance: 4, maxTapTime: 220, axisRatio: 1.8 });
+  gamesBindSwipeControl(board || body, handleTurn, { minDistance: 10, lockDistance: 3, maxTapTime: 220, axisRatio: 1.35, fireOnMove: true });
   board?.addEventListener('click', () => {
     if (app.gamesSnake && app.gamesSnake.over) resetSnake();
   });
