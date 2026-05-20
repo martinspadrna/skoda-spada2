@@ -6,6 +6,7 @@
   const CORE_GAMES = ['ttt'];
   const EXTRA_GAMES = ['2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);
+  const LEGACY_RENDER_GAMES = ['2048', 'snake', 'flap'];
   const POINT_SCALE = 1000000000;
   const ARC_KEY = 'arcade';
   const DAILY_MODES = ['aim'];
@@ -1037,7 +1038,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       gamePerf.shellRenderSkips += 1;
       return;
     }
-    if (!META[id] || EXTRA_GAMES.indexOf(id) < 0) {
+    if (!META[id] || EXTRA_GAMES.indexOf(id) < 0 || LEGACY_RENDER_GAMES.indexOf(id) >= 0) {
       if (typeof origRenderGameShell === 'function') origRenderGameShell(id);
       const back = document.querySelector('#games .gamesShellTop');
       if (back && !back.querySelector('.gamesShellBack')) {

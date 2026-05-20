@@ -6354,7 +6354,7 @@ html body.tttOpen .tttInviteActions{
   grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
 }
 
-/* v.1.1 (676) – 2048: mobile-first touch ovládání, čistší herní shell a výsledkový overlay. */
+/* v.1.1 (677) – 2048: mobile-first touch ovládání, čistší herní shell a výsledkový overlay. */
 #games .game2048Panel{
   gap:clamp(8px, 1.8vw, 12px) !important;
   align-items:center !important;
@@ -6599,3 +6599,9 @@ body.ladaMode #games .game2048Board .gameBoardCell.isMerged,
 body.ladaMode #games .gameBoard.game2048Board.isInvalidSwipe{
   animation:none !important;
 }
+
+/* v.1.1 (677) – Hry: rychlé Theme/Pozadí na základní obrazovce. */
+#games .gamesAppearanceCard{display:flex !important;align-items:center !important;justify-content:space-between !important;gap:12px !important;border-radius:24px !important;}
+#games .gamesAppearanceActions{display:flex !important;gap:8px !important;flex-wrap:wrap !important;justify-content:flex-end !important;}
+#games .gamesAppearanceActions .gamesTinyBtn{min-width:76px !important;}
+@media (max-width:430px){#games .gamesAppearanceCard{align-items:flex-start !important;flex-direction:column !important;}#games .gamesAppearanceActions{width:100% !important;}#games .gamesAppearanceActions .gamesTinyBtn{flex:1 1 0 !important;}}

@@ -1,4 +1,4 @@
-// v.1.1 (676) – 2048: přepracované mobilní ovládání, HUD a výsledkový overlay.
+// v.1.1 (677) – 2048: oprava načítání přes herní shell + vzhled her na základní obrazovce.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

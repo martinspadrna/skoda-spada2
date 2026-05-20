@@ -1,9 +1,14 @@
-## v.1.1 (676)
+## v.1.1 (677)
+- Opravena 2048: hra už nepadá do arcade rendereru bez vlastního vykreslovače a otevírá se přes původní 2048 shell s novým mobilním ovládáním.
+- Na základní obrazovku Her přidaný rychlý blok Vzhled her s aktuálním Theme a Pozadím a tlačítky pro otevření stejného nastavení jako v aplikaci.
+- Verze sjednocena na v.1.1 (677), cache na v1.1-677 a Supabase realtime kanál na rak-public-live-v677.
+
+## v.1.1 (677)
 - 2048 je přepracovaná jako mobil-first hra: nový HUD, větší a čitelnější herní plocha, výsledkový overlay a náhradní šipkové ovládání.
 - Swipe ovládání je tolerantnější na prst, uzamyká posun stránky při tahu po herní ploše a lépe bere i méně přesné diagonální pohyby.
 - Logika 2048 nově hlídá konec hry i při tahu, který už nejde provést, zvýrazňuje nové/sloučené kameny a dává jemnou haptickou odezvu tam, kde ji zařízení podporuje.
 - Sekce „O aplikaci“ má zkrácený aktuální přehled, aby se historie buildů držela stručněji a nepřerůstala do dlouhého changelogu.
-- Verze sjednocena na v.1.1 (676), cache na v1.1-676 a Supabase realtime kanál na rak-public-live-v676.
+- Verze sjednocena na v.1.1 (677), cache na v1.1-677 a Supabase realtime kanál na rak-public-live-v677.
 
 ## v.1.1 (675)
 - Piškvorky online: tlačítka „Kopírovat odkaz“ a „Sdílet“ jsou odstraněná z online menu před startem.

@@ -3746,6 +3746,32 @@ function renderGamesProfileStatus() {
   }
 }
 
+function openGamesAppearanceSettings(kind) {
+  showPage('menu');
+  openAppMenu('settings');
+  if (typeof setBottomNavActive === 'function') setBottomNavActive('menu');
+  setTimeout(() => {
+    const id = kind === 'background' ? 'appMenuBackgroundAccordion' : 'appMenuThemeAccordion';
+    const el = document.getElementById(id);
+    if (el) el.open = true;
+  }, 80);
+}
+
+function renderGamesAppearanceStatus() {
+  const card = document.getElementById('gamesAppearanceCard');
+  if (!card) return;
+  const meta = document.getElementById('gamesAppearanceMeta');
+  const themeBtn = document.getElementById('gamesThemeQuickBtn');
+  const bgBtn = document.getElementById('gamesBackgroundQuickBtn');
+  const themeId = typeof getThemePreference === 'function' ? getThemePreference() : 'default';
+  const bgId = typeof getBackgroundPreference === 'function' ? getBackgroundPreference() : 'ios-mesh';
+  const theme = (Array.isArray(window.RAK_THEME_DEFS) ? window.RAK_THEME_DEFS : []).find(x => String(x.id || '') === String(themeId)) || { label: themeId || 'Výchozí' };
+  const bg = (Array.isArray(window.RAK_BACKGROUND_DEFS) ? window.RAK_BACKGROUND_DEFS : []).find(x => String(x.id || '') === String(bgId)) || { label: bgId || 'Výchozí' };
+  const text = 'Theme: ' + String(theme.label || themeId || 'Výchozí') + ' · Pozadí: ' + String(bg.label || bgId || 'Výchozí');
+  if (meta) meta.textContent = text;
+  if (themeBtn && !themeBtn.dataset.bound) { themeBtn.dataset.bound = '1'; themeBtn.addEventListener('click', (ev) => { ev.preventDefault(); openGamesAppearanceSettings('theme'); }); }
+  if (bgBtn && !bgBtn.dataset.bound) { bgBtn.dataset.bound = '1'; bgBtn.addEventListener('click', (ev) => { ev.preventDefault(); openGamesAppearanceSettings('background'); }); }
+}
 
 function buildAppHistoryHtml(versionText) {
   const sections = [
@@ -3753,8 +3779,8 @@ function buildAppHistoryHtml(versionText) {
       range: versionText,
       title: 'Aktuální build',
       lines: [
-        'Build v.1.1 (676) předělává 2048 na mobil-first hru: větší plocha, nový HUD, lepší swipe, náhradní šipky a výsledkový overlay.',
-        'Série v.1.1 650–676 dotáhla Piškvorky, online pozvánky, PWA launch handler, herní engine základ a první kompletní doladění další hry.',
+        'Build v.1.1 (677) opravuje načítání 2048 a přidává na základní obrazovku Her rychlý blok Theme/Pozadí.',
+        'Série v.1.1 650–677 dotáhla Piškvorky, online pozvánky, PWA launch handler, herní engine základ a první kompletní doladění další hry.',
         'Sekce „O aplikaci“ je nově stručnější: detailní změny zůstávají v changelogu a tady se historie drží po větších blocích.',
         'Stabilizační audity, Supabase guardy, Láďův režim a finální readiness kontroly zůstávají součástí diagnostiky.'
       ]
@@ -6501,6 +6527,7 @@ function renderGamesHub() {
   gamesGetProfile();
   gamesRenderAccountChips();
   if (typeof renderGamesProfileStatus === 'function') renderGamesProfileStatus();
+  if (typeof renderGamesAppearanceStatus === 'function') renderGamesAppearanceStatus();
   gamesRenderProfiles();
   gamesRenderAchievements();
   // v.1.1 (668): samostatné herní Statistiky jsou sjednocené do Profilů.
