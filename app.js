@@ -1,4 +1,4 @@
-// v.1.1 (677) – 2048: oprava načítání přes herní shell + vzhled her na základní obrazovce.
+// v.1.1 (678) – 2048 vyčištěná pro mobil + přesun mezi hotové hry; Piškvorky safe-area bez změny X/O barev.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

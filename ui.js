@@ -3224,8 +3224,8 @@ function tttRender() {
       '    <button type="button" class="tttBtn' + (state.mode === 'pvp' ? ' isActive' : '') + '" data-ttt-mode="pvp">Online</button>',
       '  </div>',
       '</div>',
-      state.mode !== 'pvp' ? '<div class="tttCard tttActionCard"><div class="tttSectionTitle">Hrát</div><div class="tttNote">Vybraný režim spustí vždy čistou novou hru.</div><button type="button" class="tttBtn tttPrimaryBtn" id="tttStartBtn">' + (state.mode === 'local' ? 'Hrát na mobilu' : 'Hrát proti AI') + '</button>' + (tttHasResumeGame() ? '<button type="button" class="tttBtn tttSecondaryBtn" id="tttResumeBtn">Pokračovat v rozehrané hře</button>' : '') + '</div>' : '',
-      state.mode === 'pvp' ? '<div class="tttCard tttInviteCard"><div class="tttSectionTitle">Online</div><div id="tttInviteInfo" class="tttNote">Vytvoř hru, a kód s odkazem se ukáže až ve hře v čekacím okně na spoluhráče.</div><div class="tttToggleRow tttInviteActions uMt10"><button type="button" class="tttBtn tttPrimaryBtn" id="tttCreateInviteBtn">Vytvořit hru</button><button type="button" class="tttBtn" id="tttJoinInviteBtn">Přijmout pozvánku</button></div></div>' : '',
+      state.mode !== 'pvp' ? '<div class="tttCard tttActionCard"><div class="tttSectionTitle">Hrát</div><button type="button" class="tttBtn tttPrimaryBtn" id="tttStartBtn">' + (state.mode === 'local' ? 'Hrát na mobilu' : 'Hrát proti AI') + '</button>' + (tttHasResumeGame() ? '<button type="button" class="tttBtn tttSecondaryBtn" id="tttResumeBtn">Pokračovat v rozehrané hře</button>' : '') + '</div>' : '',
+      state.mode === 'pvp' ? '<div class="tttCard tttInviteCard"><div class="tttSectionTitle">Online</div><div class="tttToggleRow tttInviteActions"><button type="button" class="tttBtn tttPrimaryBtn" id="tttCreateInviteBtn">Vytvořit hru</button><button type="button" class="tttBtn" id="tttJoinInviteBtn">Přijmout pozvánku</button></div></div>' : '',
       tttBuildStartLeaderboardHtml()
     ].join('');
 
@@ -3243,7 +3243,6 @@ function tttRender() {
         const result = await tttCreateInviteSession();
         const info = inviteInfo();
         if (result && result.ok) {
-          if (info) info.textContent = 'Pozvánka připravená. Kód i odkaz jsou přímo ve hře.';
           state.screen = 'game';
           state.gameOver = false;
           state.winner = null;
@@ -3779,8 +3778,8 @@ function buildAppHistoryHtml(versionText) {
       range: versionText,
       title: 'Aktuální build',
       lines: [
-        'Build v.1.1 (677) opravuje načítání 2048 a přidává na základní obrazovku Her rychlý blok Theme/Pozadí.',
-        'Série v.1.1 650–677 dotáhla Piškvorky, online pozvánky, PWA launch handler, herní engine základ a první kompletní doladění další hry.',
+        'Build v.1.1 (678) čistí 2048 i Piškvorky pro mobil: méně nápověd, bez šipek a lepší safe-area odsazení.',
+        'Série v.1.1 650–678 dotáhla Piškvorky, online pozvánky, PWA launch handler, herní engine základ a přesun 2048 mezi hotové hry.',
         'Sekce „O aplikaci“ je nově stručnější: detailní změny zůstávají v changelogu a tady se historie drží po větších blocích.',
         'Stabilizační audity, Supabase guardy, Láďův režim a finální readiness kontroly zůstávají součástí diagnostiky.'
       ]
@@ -7149,9 +7148,6 @@ function renderGame2048() {
   const activeAccount = gamesGetActiveAccount();
   const bestScore = activeAccount?.stats?.g2048?.bestScore || 0;
   const bestTile = Math.max(Number(activeAccount?.stats?.g2048?.bestTile || 0), Number(state.best || 0));
-  const lastMoveText = state.lastGain > 0
-    ? '+' + String(state.lastGain) + ' · ' + game2048DirectionText(state.lastDir)
-    : (state.over ? 'Konec hry' : 'Táhni po ploše');
   const invalidClass = state.lastInvalidAt && Date.now() - state.lastInvalidAt < 450 ? ' isInvalidSwipe' : '';
   const overlay = state.over ? [
     '<div class="game2048Overlay">',
@@ -7169,19 +7165,12 @@ function renderGame2048() {
     '    <div class="game2048ScoreCard"><span>Nejlepší</span><strong>' + String(bestScore) + '</strong></div>',
     '    <div class="game2048ScoreCard"><span>Kámen</span><strong>' + String(bestTile || state.best || 0) + '</strong></div>',
     '  </div>',
-    '  <div class="game2048Hint"><span>' + escapeHtml(lastMoveText) + '</span><em>Swipe funguje přes celou plochu, stránka se při tahu neposouvá.</em></div>',
     '  <div class="game2048BoardWrap" style="width:' + boardSize + 'px;max-width:100%;">',
     '    <div class="gameBoard game2048Board' + invalidClass + '" id="game2048Board" role="application" aria-label="2048, táhni prstem nahoru, dolů, doleva nebo doprava" tabindex="0" style="width:' + boardSize + 'px;height:' + boardSize + 'px;">' + state.board.map((v, i) => game2048BuildCell(v, i, state)).join('') + '</div>',
     overlay,
     '  </div>',
-    '  <div class="game2048ControlsRow">',
+    '  <div class="game2048ControlsRow game2048ControlsRowSolo">',
     '    <button type="button" class="gameControlBtn" id="game2048NewBtn">Nová hra</button>',
-    '    <div class="game2048SwipePad" id="game2048QuickPad" aria-label="Náhradní ovládání 2048">',
-    '      <button type="button" class="gameControlBtn" data-game-dir="left" aria-label="Doleva">◀</button>',
-    '      <button type="button" class="gameControlBtn" data-game-dir="up" aria-label="Nahoru">▲</button>',
-    '      <button type="button" class="gameControlBtn" data-game-dir="down" aria-label="Dolů">▼</button>',
-    '      <button type="button" class="gameControlBtn" data-game-dir="right" aria-label="Doprava">▶</button>',
-    '    </div>',
     '  </div>',
     gamesTop3Block('2048', 'bodů', 10),
     '</div>'
@@ -7213,7 +7202,6 @@ function renderGame2048() {
   body.querySelector('#game2048NewBtn')?.addEventListener('click', reset2048);
   body.querySelector('#game2048OverlayNewBtn')?.addEventListener('click', reset2048);
   gamesBindSwipeControl(board, (dir) => playDir(dir), { minDistance: 12, lockDistance: 5 });
-  gamesBindDirectionPad(body.querySelector('#game2048QuickPad'), playDir);
   board?.addEventListener('click', () => {
     if (app.games2048 && app.games2048.over) reset2048();
   });

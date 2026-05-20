@@ -2,9 +2,9 @@
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
 
-  // v.1.1 (670): Piškvorky jsou hotová hra mimo složku Ve vývoji; ostatní arcade hry zůstávají ve vývoji.
-  const CORE_GAMES = ['ttt'];
-  const EXTRA_GAMES = ['2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
+  // v.1.1 (678): Piškvorky a 2048 jsou hotové hry mimo složku Ve vývoji; ostatní arcade hry zůstávají ve vývoji.
+  const CORE_GAMES = ['ttt', '2048'];
+  const EXTRA_GAMES = ['snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);
   const LEGACY_RENDER_GAMES = ['2048', 'snake', 'flap'];
   const POINT_SCALE = 1000000000;
@@ -746,7 +746,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function renderLaunchTiles() {
     const grid = document.getElementById('gamesGrid');
     if (!grid) return;
-    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v670';
+    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v678';
     if (grid.dataset && grid.dataset.arcadeLaunchSig === launchSig && grid.querySelector('.gamesDevFolder') && grid.querySelector('[data-game="ttt"]')) {
       gamePerf.launchRenderSkips = Number(gamePerf.launchRenderSkips || 0) + 1;
       return;

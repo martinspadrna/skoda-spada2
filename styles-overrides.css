@@ -6354,7 +6354,7 @@ html body.tttOpen .tttInviteActions{
   grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
 }
 
-/* v.1.1 (677) – 2048: mobile-first touch ovládání, čistší herní shell a výsledkový overlay. */
+/* v.1.1 (678) – 2048/Piškvorky: čistší mobilní herní obrazovka a safe-area odsazení. */
 #games .game2048Panel{
   gap:clamp(8px, 1.8vw, 12px) !important;
   align-items:center !important;
@@ -6569,7 +6569,6 @@ html body.tttOpen .tttInviteActions{
 @keyframes rak2048Pop{0%{transform:scale(.88);}58%{transform:scale(1.10);}100%{transform:scale(1);}}
 @keyframes rak2048Shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-5px);}75%{transform:translateX(5px);}}
 body.gamesCompactMode #games .game2048Hud,
-body.gamesCompactMode #games .game2048Hint,
 body.gamesCompactMode #games .game2048ControlsRow{
   width:min(100%, 440px) !important;
 }
@@ -6579,12 +6578,9 @@ body.gamesCompactMode #games .game2048ScoreCard{
   border-radius:16px !important;
 }
 body.gamesCompactMode #games .game2048ScoreCard span{font-size:10px !important;}
-body.gamesCompactMode #games .game2048Hint{min-height:38px !important;font-size:11px !important;border-radius:16px !important;}
 body.gamesCompactMode #games .gameBoard.game2048Board{border-radius:24px !important;gap:clamp(6px, 1.45vw, 9px) !important;padding:clamp(8px, 1.8vw, 11px) !important;}
 body.gamesCompactMode #games .game2048Board .gameBoardCell{border-radius:clamp(13px, 3.3vw, 18px) !important;font-size:clamp(19px, 5.4vw, 30px) !important;}
 body.gamesCompactMode #games .game2048ControlsRow{grid-template-columns:1fr !important;}
-body.gamesCompactMode #games .game2048ControlsRow > .gameControlBtn{order:2 !important;}
-body.gamesCompactMode #games .game2048SwipePad{order:1 !important;}
 body.ladaMode #games .game2048Board .gameBoardCell,
 body.ladaMode #games .gameBoard.game2048Board,
 body.ladaMode #games .game2048Overlay{
@@ -6600,8 +6596,43 @@ body.ladaMode #games .gameBoard.game2048Board.isInvalidSwipe{
   animation:none !important;
 }
 
-/* v.1.1 (677) – Hry: rychlé Theme/Pozadí na základní obrazovce. */
+/* v.1.1 (678) – Hry: rychlé Theme/Pozadí na základní obrazovce. */
 #games .gamesAppearanceCard{display:flex !important;align-items:center !important;justify-content:space-between !important;gap:12px !important;border-radius:24px !important;}
 #games .gamesAppearanceActions{display:flex !important;gap:8px !important;flex-wrap:wrap !important;justify-content:flex-end !important;}
 #games .gamesAppearanceActions .gamesTinyBtn{min-width:76px !important;}
 @media (max-width:430px){#games .gamesAppearanceCard{align-items:flex-start !important;flex-direction:column !important;}#games .gamesAppearanceActions{width:100% !important;}#games .gamesAppearanceActions .gamesTinyBtn{flex:1 1 0 !important;}}
+
+
+/* v.1.1 (678) – herní safe-area + čisté 2048 bez nápovědy a šipek. */
+body.gamesOpen #games .gamesStage{
+  padding-top:calc(clamp(12px, 2.2vw, 18px) + env(safe-area-inset-top)) !important;
+}
+body.gamesOpen #games .gamesShellTop{
+  padding-top:calc(12px + env(safe-area-inset-top)) !important;
+}
+body.gamesOpen #games .gamesShellTitle{
+  line-height:1.15 !important;
+}
+#games .game2048Panel{
+  padding-top:clamp(8px, 1.8dvh, 18px) !important;
+}
+#games .game2048Hint,
+#games .game2048SwipePad{
+  display:none !important;
+}
+#games .game2048ControlsRow.game2048ControlsRowSolo{
+  width:min(100%, 500px) !important;
+  display:grid !important;
+  grid-template-columns:1fr !important;
+  gap:0 !important;
+}
+#games .game2048ControlsRow.game2048ControlsRowSolo > .gameControlBtn{
+  width:100% !important;
+  min-height:46px !important;
+}
+html body.tttOpen .tttHeader{
+  padding-top:calc(14px + env(safe-area-inset-top)) !important;
+}
+@media (max-width:520px){
+  html body.tttOpen .tttHeader{padding-top:calc(12px + env(safe-area-inset-top)) !important;}
+}
