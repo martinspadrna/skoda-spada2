@@ -1206,19 +1206,54 @@ function tttRenderInviteOverlay(overlay) {
     el.textContent = '';
     return;
   }
+  const inviteUrl = online.inviteUrl || tttGetInviteUrl(code);
+  if (state.online) state.online.inviteUrl = inviteUrl;
   const fragment = document.createDocumentFragment();
   const label = document.createElement('div');
   label.className = 'tttInviteOverlayLabel';
-  label.textContent = 'Kód pro spoluhráče';
+  label.textContent = 'Pozvánka pro spoluhráče';
   const codeEl = document.createElement('div');
   codeEl.className = 'tttInviteOverlayCode';
   codeEl.textContent = code;
   const hint = document.createElement('div');
   hint.className = 'tttInviteOverlayHint';
-  hint.textContent = 'Jakmile soupeř kód přijme, okno zmizí a nahoře zůstane skóre.';
+  hint.textContent = 'Může opsat 4 čísla, nebo mu pošli odkaz a hra se mu otevře rovnou.';
+  const linkEl = document.createElement('div');
+  linkEl.className = 'tttInviteOverlayLink';
+  linkEl.textContent = inviteUrl;
+  const actions = document.createElement('div');
+  actions.className = 'tttInviteOverlayActions';
+  const copyBtn = document.createElement('button');
+  copyBtn.type = 'button';
+  copyBtn.className = 'tttBtn tttInviteOverlayBtn';
+  copyBtn.textContent = 'Kopírovat odkaz';
+  copyBtn.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(inviteUrl);
+      copyBtn.textContent = 'Odkaz zkopírován';
+      window.setTimeout(() => { copyBtn.textContent = 'Kopírovat odkaz'; }, 1400);
+    } catch (err) {
+      copyBtn.textContent = 'Nešlo zkopírovat';
+      window.setTimeout(() => { copyBtn.textContent = 'Kopírovat odkaz'; }, 1400);
+    }
+  });
+  const shareBtn = document.createElement('button');
+  shareBtn.type = 'button';
+  shareBtn.className = 'tttBtn tttInviteOverlayBtn';
+  shareBtn.textContent = 'Sdílet';
+  shareBtn.addEventListener('click', async () => {
+    try {
+      if (navigator.share) await navigator.share({ title: 'Piškvorky', text: 'Přidej se ke hře v RaK.', url: inviteUrl });
+      else await navigator.clipboard.writeText(inviteUrl);
+    } catch (err) {}
+  });
+  actions.appendChild(copyBtn);
+  actions.appendChild(shareBtn);
   fragment.appendChild(label);
   fragment.appendChild(codeEl);
   fragment.appendChild(hint);
+  fragment.appendChild(linkEl);
+  fragment.appendChild(actions);
   if (typeof replaceElementChildrenSafely === 'function') replaceElementChildrenSafely(el, fragment, 'ttt-invite-overlay');
   else {
     while (el.firstChild) el.removeChild(el.firstChild);
@@ -7485,6 +7520,7 @@ function renderGamesTttShell() {
 if (!window.__tttHashInviteBound) {
   window.__tttHashInviteBound = true;
   window.addEventListener('load', () => { void tttAutoOpenFromHash(); }, { once: true });
+window.addEventListener('hashchange', () => { void tttAutoOpenFromHash(); });
 }
 
 

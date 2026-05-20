@@ -6159,3 +6159,61 @@ html[data-rak-theme] .gamesStatsXpBar span{
 }
 #games .gamesAccountCard.isLoggedIn #gamesAccountEntryRow{display:none !important;}
 #games .gamesAccountCard.isLoggedIn #gamesAccountCurrent{display:flex !important;}
+
+
+/* v.1.1 (671) – Kalkulačky: větší 3D ikony bez pozadí + Piškvorky přímý odkaz. */
+#kalkulacky .calcTileIcon.calcTileIcon3d,
+#kalkulacky .tile .calcTileIcon.calcTileIcon3d,
+html[data-rak-theme] #kalkulacky .calcTileIcon.calcTileIcon3d{
+  width:58px !important;
+  height:58px !important;
+  min-width:58px !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  background-image:none !important;
+  box-shadow:none !important;
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+  color:inherit !important;
+  overflow:visible !important;
+}
+#kalkulacky .calcTileIcon.calcTileIcon3d svg{
+  width:58px !important;
+  height:58px !important;
+  display:block !important;
+  overflow:visible !important;
+  stroke:none !important;
+  filter:drop-shadow(0 10px 10px rgba(0,0,0,.34)) !important;
+}
+#kalkulacky .calcTileStack{
+  grid-template-columns:minmax(0,1fr) 64px !important;
+  align-items:center !important;
+}
+html body .tttOverlay .tttInviteOverlayLink{
+  margin-top:9px !important;
+  padding:7px 8px !important;
+  border-radius:12px !important;
+  background:rgba(255,255,255,.055) !important;
+  border:1px solid rgba(255,255,255,.08) !important;
+  color:rgba(235,255,235,.78) !important;
+  font-size:10px !important;
+  line-height:1.25 !important;
+  word-break:break-all !important;
+}
+html body .tttOverlay .tttInviteOverlayActions{
+  display:grid !important;
+  grid-template-columns:1fr 1fr !important;
+  gap:8px !important;
+  margin-top:12px !important;
+}
+html body .tttOverlay .tttInviteOverlayBtn{
+  min-height:40px !important;
+  border-radius:14px !important;
+  color:#FFFFFF !important;
+  -webkit-text-fill-color:#FFFFFF !important;
+  background:linear-gradient(180deg, rgba(24,42,30,.98), rgba(5,14,9,.98)) !important;
+  border:1px solid rgba(124,255,124,.62) !important;
+  text-shadow:0 1px 2px rgba(0,0,0,.9) !important;
+  box-shadow:0 0 18px rgba(57,255,20,.20), inset 0 0 0 1px rgba(255,255,255,.10) !important;
+}

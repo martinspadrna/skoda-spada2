@@ -1,9 +1,8 @@
-## v.1.1 (670)
-- Piškvorky jsou přesunuté z rozbalovací složky „Ve vývoji“ mezi běžné hry.
-- V nastavení profilu se po přihlášení schová přihlašovací pole; pro jiný profil je potřeba se nejdřív odhlásit.
-- Samostatná herní sekce Statistiky je schovaná jako duplicitní, výsledky zůstávají v Profilech.
-- Theme systém má více výraznějších témat, přísnější unlock přes hry + achievementy a jasnější progress text u zamčených skinů.
-- Verze sjednocena na v.1.1 (670), cache na v1.1-670 a Supabase realtime kanál na rak-public-live-v670.
+## v.1.1 (671)
+- Piškvorky online: pozvánka má vedle 4místného kódu i přímý odkaz, který otevře appku rovnou do Piškvorek a přijme pozvánku bez opisování kódu.
+- Čekací okno pozvánky nově umí kopírovat nebo sdílet přímý odkaz.
+- Kalkulačky: ikony Soustruhy, Frézky a Brusy jsou větší, bez vlastního pozadí a mají výraznější 3D vzhled.
+- Verze sjednocena na v.1.1 (671), cache na v1.1-671 a Supabase realtime kanál na rak-public-live-v671.
 
 ## v.1.1 (669)
 - Piškvorky: při přepnutí na Proti AI nebo Na jednom mobilu se už nepřebírá online rozehraná hra.
