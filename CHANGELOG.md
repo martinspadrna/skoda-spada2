@@ -1,3 +1,10 @@
+## v.1.1 (675)
+- Piškvorky online: tlačítka „Kopírovat odkaz“ a „Sdílet“ jsou odstraněná z online menu před startem.
+- Kopírování a sdílení pozvánky zůstává jen přímo ve hře v čekacím okně na protihráče.
+- Úvodní shell Piškvorek už nekopíruje obecný odkaz; navádí na vytvoření online pozvánky až ve hře.
+- Manifest PWA dostal `launch_handler` s `navigate-existing`, aby podporované prohlížeče mohly otevřít pozvánku v nainstalované aplikaci, pokud je odkaz v rámci scope.
+- Verze sjednocena na v.1.1 (675), cache na v1.1-675 a Supabase realtime kanál na rak-public-live-v675.
+
 ## v.1.1 (674)
 - Kalkulačky: opravené rozjetí názvu Soustruhy po zvětšení původních ikon.
 - Dlaždice kalkulaček mají znovu pevný sloupec pro ikonu vlevo a text bezpečně uvnitř druhého sloupce.

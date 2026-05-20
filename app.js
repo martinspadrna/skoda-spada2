@@ -1,4 +1,4 @@
-// v.1.1 (674) – Kalkulačky: oprava rozjetého názvu Soustruhy po zvětšení ikon.
+// v.1.1 (675) – Piškvorky online: sdílení pozvánky jen v čekacím okně + PWA launch handler.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

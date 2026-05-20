@@ -3225,7 +3225,7 @@ function tttRender() {
       '  </div>',
       '</div>',
       state.mode !== 'pvp' ? '<div class="tttCard tttActionCard"><div class="tttSectionTitle">Hrát</div><div class="tttNote">Vybraný režim spustí vždy čistou novou hru.</div><button type="button" class="tttBtn tttPrimaryBtn" id="tttStartBtn">' + (state.mode === 'local' ? 'Hrát na mobilu' : 'Hrát proti AI') + '</button>' + (tttHasResumeGame() ? '<button type="button" class="tttBtn tttSecondaryBtn" id="tttResumeBtn">Pokračovat v rozehrané hře</button>' : '') + '</div>' : '',
-      state.mode === 'pvp' ? '<div class="tttCard tttInviteCard"><div class="tttSectionTitle">Online</div><div id="tttInviteInfo" class="tttNote">Vytvoř hru a pošli spoluhráči odkaz, nebo mu nadiktuj 4místný kód.</div><div id="tttInviteCode" class="tttInviteCode' + ((state.online && state.online.code) ? '' : ' uHidden') + '">' + escapeHtml((state.online && state.online.code) || '') + '</div><div class="tttNote uWordBreakAll uMt8' + ((state.online && state.online.code) ? '' : ' uHidden') + '" id="tttInviteUrl">' + escapeHtml((state.online && state.online.inviteUrl) ? state.online.inviteUrl : ((state.online && state.online.code) ? tttGetInviteUrl(state.online.code) : '')) + '</div><div class="tttToggleRow tttInviteActions uMt10"><button type="button" class="tttBtn tttPrimaryBtn" id="tttCreateInviteBtn">Vytvořit hru</button><button type="button" class="tttBtn" id="tttJoinInviteBtn">Přijmout pozvánku</button><button type="button" class="tttBtn" id="tttCopyInviteBtn">Kopírovat odkaz</button><button type="button" class="tttBtn" id="tttShareInviteBtn">Sdílet</button></div></div>' : '',
+      state.mode === 'pvp' ? '<div class="tttCard tttInviteCard"><div class="tttSectionTitle">Online</div><div id="tttInviteInfo" class="tttNote">Vytvoř hru, a kód s odkazem se ukáže až ve hře v čekacím okně na spoluhráče.</div><div class="tttToggleRow tttInviteActions uMt10"><button type="button" class="tttBtn tttPrimaryBtn" id="tttCreateInviteBtn">Vytvořit hru</button><button type="button" class="tttBtn" id="tttJoinInviteBtn">Přijmout pozvánku</button></div></div>' : '',
       tttBuildStartLeaderboardHtml()
     ].join('');
 
@@ -3237,60 +3237,13 @@ function tttRender() {
         scheduleTttLayout();
       });
     });
-    let lastInviteUrl = '';
-    const copyInviteUrl = async (url) => {
-      const target = String(url || lastInviteUrl || '').trim();
-      if (!target) return;
-      lastInviteUrl = target;
-      try {
-        await navigator.clipboard.writeText(target);
-      } catch (err) {
-        console.warn('TTT copy invite failed', err);
-      }
-    };
     const inviteInfo = () => start.querySelector('#tttInviteInfo');
-    const inviteCodeEl = () => start.querySelector('#tttInviteCode');
-    const inviteUrlEl = () => start.querySelector('#tttInviteUrl');
-    const copyBtnEl = () => start.querySelector('#tttCopyInviteBtn');
-    const shareBtnEl = () => start.querySelector('#tttShareInviteBtn');
-    const ensureInviteUrl = async () => {
-      if (!state.online || !state.online.code) {
-        const created = await tttCreateInviteSession();
-        if (!created || !created.ok) return '';
-        state.screen = 'start';
-        state.gameOver = false;
-        state.winner = null;
-        state.board = Array(TTT_TOTAL_CELLS).fill('');
-        state.turn = 'X';
-        state.message = 'Pozvánka připravená. Pošli kód spoluhráči.';
-        tttRender();
-        scheduleTttLayout();
-      }
-      const url = (state.online && state.online.inviteUrl) || (state.online && state.online.code ? tttGetInviteUrl(state.online.code) : '');
-      if (state.online) state.online.inviteUrl = url;
-      return url;
-    };
     start.querySelector('#tttCreateInviteBtn')?.addEventListener('click', async () => {
       try {
         const result = await tttCreateInviteSession();
         const info = inviteInfo();
-        const codeEl = inviteCodeEl();
-        const urlEl = inviteUrlEl();
-        const copyBtn = copyBtnEl();
-        const shareBtn = shareBtnEl();
         if (result && result.ok) {
-          lastInviteUrl = result.url || '';
-          if (info) info.textContent = 'Pozvánka připravená. Kód vidíš i přímo ve hře.';
-          if (codeEl) {
-            codeEl.style.display = 'block';
-            codeEl.textContent = result.code || '';
-          }
-          if (urlEl) {
-            urlEl.style.display = 'block';
-            urlEl.textContent = 'Kód: ' + (result.code || '');
-          }
-          if (copyBtn) copyBtn.disabled = !lastInviteUrl;
-          if (shareBtn) shareBtn.disabled = !lastInviteUrl;
+          if (info) info.textContent = 'Pozvánka připravená. Kód i odkaz jsou přímo ve hře.';
           state.screen = 'game';
           state.gameOver = false;
           state.winner = null;
@@ -3304,41 +3257,6 @@ function tttRender() {
         }
       } catch (err) {
         console.warn('TTT create invite failed', err);
-      }
-    });
-    start.querySelector('#tttCopyInviteBtn')?.addEventListener('click', async () => {
-      try {
-        const url = await ensureInviteUrl();
-        if (!url) return;
-        lastInviteUrl = url;
-        await navigator.clipboard.writeText(url);
-        const info = inviteInfo();
-        if (info) info.textContent = 'Odkaz na pozvánku je zkopírovaný do schránky.';
-      } catch (err) {
-        console.warn('TTT copy invite failed', err);
-      }
-    });
-    start.querySelector('#tttShareInviteBtn')?.addEventListener('click', async () => {
-      try {
-        const url = await ensureInviteUrl();
-        if (!url) return;
-        lastInviteUrl = url;
-        const shareData = {
-          title: 'Piškvorky',
-          text: 'Přidej se ke hře přes tenhle odkaz.',
-          url
-        };
-        if (navigator.share) {
-          await navigator.share(shareData);
-          const info = inviteInfo();
-          if (info) info.textContent = 'Otevřel se systém pro sdílení pozvánky.';
-        } else {
-          await navigator.clipboard.writeText(url);
-          const info = inviteInfo();
-          if (info) info.textContent = 'Sdílení není dostupné, odkaz je zkopírovaný do schránky.';
-        }
-      } catch (err) {
-        console.warn('TTT share invite failed', err);
       }
     });
     start.querySelector('#tttResumeBtn')?.addEventListener('click', () => {
@@ -7606,23 +7524,15 @@ function renderGamesTttShell() {
   const body = document.getElementById('gamesShellBody');
   if (!body) return;
   body.innerHTML = [
-    '<div class="gameInfoRow"><span>Piškvorky běží na celou obrazovku.</span><span>Odkaz můžeš poslat dál.</span></div>',
+    '<div class="gameInfoRow"><span>Piškvorky běží na celou obrazovku.</span><span>Online pozvánka se řeší až ve hře.</span></div>',
     '<div class="gamesShell uPad12 uMt10">',
-    '  <div class="smallText">Spustí se plná hra a odkaz můžeš sdílet dál.</div>',
+    '  <div class="smallText">Spusť hru a v online režimu vytvoř pozvánku. Kopírování a sdílení se ukáže až v čekacím okně na soupeře.</div>',
     '  <div class="gameControls uMt10">',
     '    <button type="button" class="gameControlBtn" id="openTttOverlayBtn">Otevřít piškvorky</button>',
-    '    <button type="button" class="gameControlBtn" id="copyTttInviteBtn">Kopírovat odkaz</button>',
     '  </div>',
     '</div>'
   ].join('');
   body.querySelector('#openTttOverlayBtn')?.addEventListener('click', openTicTacToeGame);
-  body.querySelector('#copyTttInviteBtn')?.addEventListener('click', () => {
-    const url = new URL(window.location.href);
-    url.hash = 'games=ttt';
-    navigator.clipboard?.writeText(url.toString()).catch(()=>{});
-    const info = body.querySelector('#tttInviteInfo');
-    if (info) info.textContent = 'Odkaz na piškvorky je zkopírovaný do schránky.';
-  });
 }
 
 

@@ -6306,7 +6306,7 @@ html[data-rak-theme] #kalkulacky .calcTile.calcTileStack{
   }
 }
 
-/* v.1.1 (674) – Piškvorky: start obrazovka drží theme/pozadí aplikace + online/AI tabulky. */
+/* v.1.1 (675) – Piškvorky: start obrazovka drží theme/pozadí aplikace + online/AI tabulky. */
 html body.tttOpen .tttOverlay{
   background:var(--rakAppBackground, linear-gradient(160deg, #050816 0%, #08111f 46%, #0f172a 100%)) !important;
   color:var(--soft, #e7fff0) !important;
