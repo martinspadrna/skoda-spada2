@@ -1,4 +1,4 @@
-// v.1.1 (678) – 2048 vyčištěná pro mobil + přesun mezi hotové hry; Piškvorky safe-area bez změny X/O barev.
+// v.1.1 (679) – Snake mobile-first: čisté swipe ovládání, stabilnější render a přesun mezi hotové hry.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

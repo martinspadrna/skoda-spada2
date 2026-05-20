@@ -1,3 +1,10 @@
+## v.1.1 (679)
+- Snake přepracovaný jako mobile-first hra: čistý HUD, větší dotyková plocha a ovládání hlavně swipem po herní ploše.
+- Snake už se při každém kroku celý nepřekresluje; deska se vytvoří jednou a během hry se aktualizují jen buňky, skóre a výsledkový overlay.
+- Odstraněný joystick z herní obrazovky Snake; zůstává swipe a tlačítko Nová hra, aby obrazovka byla čistší podobně jako u 2048.
+- Snake je přesunutý mezi hlavní/hotové hry vedle Piškvorek a 2048; ve složce „Ve vývoji“ zůstávají jen rozpracované hry.
+- Verze sjednocena na v.1.1 (679), cache na v1.1-679 a Supabase realtime kanál na rak-public-live-v679.
+
 ## v.1.1 (678)
 - 2048: odstraněné viditelné nápovědní pole pod HUDem a odstraněné náhradní ovládací šipky; hra zůstává ovládaná swipem po ploše.
 - Herní obrazovka 2048 má lepší horní safe-area odsazení, aby se název nepřekrýval s časem/notchem na iPhonu.

@@ -3778,8 +3778,8 @@ function buildAppHistoryHtml(versionText) {
       range: versionText,
       title: 'Aktuální build',
       lines: [
-        'Build v.1.1 (678) čistí 2048 i Piškvorky pro mobil: méně nápověd, bez šipek a lepší safe-area odsazení.',
-        'Série v.1.1 650–678 dotáhla Piškvorky, online pozvánky, PWA launch handler, herní engine základ a přesun 2048 mezi hotové hry.',
+        'Build v.1.1 (679) předělává Snake pro mobil: čisté swipe ovládání, stabilnější render a přesun mezi hotové hry.',
+        'Série v.1.1 650–679 dotáhla Piškvorky, online pozvánky, PWA launch handler, herní engine základ a přesun 2048/Snake mezi hotové hry.',
         'Sekce „O aplikaci“ je nově stručnější: detailní změny zůstávají v changelogu a tady se historie drží po větších blocích.',
         'Stabilizační audity, Supabase guardy, Láďův režim a finální readiness kontroly zůstávají součástí diagnostiky.'
       ]
@@ -7266,135 +7266,294 @@ function game2048Move(dir) {
 
 // ---- Snake ----
 function snakeDefaultState() {
-  const head = { x: 10, y: 10 };
-  return { size: 20, snake: [head, { x: 9, y: 10 }, { x: 8, y: 10 }], dir: { x: 1, y: 0 }, pending: null, food: { x: 5, y: 5 }, over: false, score: 0, timer: null };
+  const head = { x: 8, y: 9 };
+  return {
+    size: 18,
+    snake: [head, { x: 7, y: 9 }, { x: 6, y: 9 }],
+    dir: { x: 1, y: 0 },
+    queue: [],
+    food: { x: 13, y: 9 },
+    over: false,
+    score: 0,
+    timer: null,
+    recorded: false,
+    lastAteAt: 0,
+    lastTurnAt: 0,
+    lastTickAt: 0,
+    speedMs: 126
+  };
+}
+
+function snakeCellKey(x, y) {
+  return String(x) + ':' + String(y);
+}
+
+function snakeCellIndex(x, y, size) {
+  return (Number(y || 0) * Number(size || 0)) + Number(x || 0);
+}
+
+function snakeTryVibrate(pattern) {
+  try {
+    if (typeof navigator !== 'undefined' && navigator && typeof navigator.vibrate === 'function') navigator.vibrate(pattern);
+  } catch (err) {}
 }
 
 function snakePlaceFood(state) {
-  let x, y, ok = false;
-  while (!ok) {
-    x = Math.floor(Math.random() * state.size);
-    y = Math.floor(Math.random() * state.size);
-    ok = !state.snake.some(p => p.x === x && p.y === y);
+  if (!state || !Array.isArray(state.snake)) return;
+  const occupied = new Set(state.snake.map(p => snakeCellKey(p.x, p.y)));
+  const free = [];
+  for (let y = 0; y < state.size; y += 1) {
+    for (let x = 0; x < state.size; x += 1) {
+      if (!occupied.has(snakeCellKey(x, y))) free.push({ x, y });
+    }
   }
-  state.food = { x, y };
+  if (!free.length) {
+    state.over = true;
+    return;
+  }
+  state.food = free[Math.floor(Math.random() * free.length)] || free[0];
 }
 
 function snakeBuildCellClasses(state, x, y) {
-  if (state.food.x === x && state.food.y === y) return 'snakeFood';
-  if (state.snake[0].x === x && state.snake[0].y === y) return 'snakeHead';
-  if (state.snake.some((p, idx) => idx > 0 && p.x === x && p.y === y)) return 'snakeBody';
+  if (!state) return 'snakeEmpty';
+  if (state.food && state.food.x === x && state.food.y === y) return 'snakeFood';
+  if (state.snake && state.snake[0] && state.snake[0].x === x && state.snake[0].y === y) return 'snakeHead';
+  if (Array.isArray(state.snake) && state.snake.some((p, idx) => idx > 0 && p.x === x && p.y === y)) return 'snakeBody';
   return 'snakeEmpty';
+}
+
+function snakeBuildCells(state) {
+  const cells = [];
+  const size = Number(state && state.size || 18);
+  for (let y = 0; y < size; y += 1) {
+    for (let x = 0; x < size; x += 1) {
+      cells.push('<div class="gameBoardCell snakeEmpty" data-snake-cell="' + String(snakeCellIndex(x, y, size)) + '" aria-hidden="true"></div>');
+    }
+  }
+  return cells.join('');
+}
+
+function snakeGetBestStats() {
+  const activeAccount = gamesGetActiveAccount();
+  const stats = activeAccount && activeAccount.stats && activeAccount.stats.snake ? activeAccount.stats.snake : {};
+  return {
+    bestScore: Number(stats.bestScore || 0) || 0,
+    bestLength: Number(stats.bestLength || 0) || 0,
+    plays: Number(stats.plays || 0) || 0
+  };
+}
+
+function snakeUpdateUi() {
+  const body = document.getElementById('gamesShellBody');
+  const state = app.gamesSnake;
+  if (!body || !state) return;
+  const best = snakeGetBestStats();
+  const scoreEl = body.querySelector('[data-snake-score]');
+  const bestEl = body.querySelector('[data-snake-best]');
+  const lenEl = body.querySelector('[data-snake-length]');
+  const stateEl = body.querySelector('[data-snake-state]');
+  const board = body.querySelector('#gameSnakeBoard');
+  const overlay = body.querySelector('#snakeResultOverlay');
+  const overlayScore = body.querySelector('[data-snake-result-score]');
+  const overlayLength = body.querySelector('[data-snake-result-length]');
+  const live = body.querySelector('#snakeLiveStatus');
+  if (scoreEl) scoreEl.textContent = String(state.score || 0);
+  if (bestEl) bestEl.textContent = String(Math.max(best.bestScore || 0, state.score || 0));
+  if (lenEl) lenEl.textContent = String(state.snake ? state.snake.length : 0);
+  if (stateEl) stateEl.textContent = state.over ? 'Konec' : 'Hraje se';
+  if (overlay) overlay.classList.toggle('isVisible', !!state.over);
+  if (overlayScore) overlayScore.textContent = String(state.score || 0);
+  if (overlayLength) overlayLength.textContent = String(state.snake ? state.snake.length : 0);
+  if (live) live.textContent = state.over ? 'Konec hry. Skóre ' + String(state.score || 0) + ', délka ' + String(state.snake ? state.snake.length : 0) + '.' : 'Snake běží.';
+  if (!board) return;
+  const cells = board.querySelectorAll('[data-snake-cell]');
+  const size = Number(state.size || 18);
+  const foodKey = state.food ? snakeCellIndex(state.food.x, state.food.y, size) : -1;
+  const snakeMap = new Map();
+  (state.snake || []).forEach((p, idx) => snakeMap.set(snakeCellIndex(p.x, p.y, size), idx));
+  cells.forEach((cell, idx) => {
+    const order = snakeMap.has(idx) ? snakeMap.get(idx) : -1;
+    let cls = 'gameBoardCell snakeEmpty';
+    if (idx === foodKey) cls = 'gameBoardCell snakeFood';
+    if (order === 0) cls = 'gameBoardCell snakeHead';
+    else if (order > 0) cls = 'gameBoardCell snakeBody';
+    if (cell.className !== cls) cell.className = cls;
+    if (order > 0) cell.style.setProperty('--snake-order', String(Math.min(order, 18)));
+    else cell.style.removeProperty('--snake-order');
+  });
 }
 
 function renderGameSnake() {
   const body = document.getElementById('gamesShellBody');
   if (!body) return;
   const state = app.gamesSnake || (app.gamesSnake = snakeDefaultState());
-  if (!state.food || !state.snake.length) snakePlaceFood(state);
+  if (!state.food || !state.snake || !state.snake.length) snakePlaceFood(state);
+  if (!Array.isArray(state.queue)) state.queue = [];
   const compact = gamesIsCompactMode();
-  const boardSize = gamesFitSquareSize({ min: compact ? 226 : 246, max: Math.min(compact ? 540 : 480, gamesViewportSize().width - (compact ? 14 : 20)), reserve: compact ? 250 : 258, shellPad: compact ? 6 : 10 });
-  const cells = [];
-  for (let y = 0; y < state.size; y += 1) {
-    for (let x = 0; x < state.size; x += 1) {
-      const cls = snakeBuildCellClasses(state, x, y);
-      const content = cls === 'snakeFood' ? '●' : cls === 'snakeHead' ? '◉' : cls === 'snakeBody' ? '•' : '';
-      cells.push('<div class="gameBoardCell ' + cls + '">' + content + '</div>');
-    }
-  }
-  const activeAccount = gamesGetActiveAccount();
-  const bestLength = activeAccount?.stats?.snake?.bestLength || 0;
+  const boardSize = gamesFitSquareSize({ min: compact ? 252 : 278, max: Math.min(compact ? 540 : 500, gamesViewportSize().width - (compact ? 14 : 20)), reserve: compact ? 186 : 202, shellPad: compact ? 6 : 10 });
+  const best = snakeGetBestStats();
   body.innerHTML = [
-    '<div class="gamesGamePanel gamesSnakePanel">',
-    '  <div class="gameInfoRow gameInfoRowCompact gameInfoRowDense"><span>Skóre <strong>' + state.score + '</strong></span><span>Nejdelší <strong>' + String(bestLength) + '</strong></span><span>' + (state.over ? 'Klepni na pole pro novou hru' : 'Táhni po ploše nebo joystickem') + '</span></div>',
-    '  <div class="gameBoard gameSnakeBoard" id="gameSnakeBoard" style="width:' + boardSize + 'px;height:' + boardSize + 'px;grid-template-columns:repeat(20,minmax(0,1fr));">' + cells.join('') + '</div>',
-    snakeBuildJoystickMarkup(),
+    '<div class="gamesGamePanel gamesSnakePanel snakeRedesignPanel">',
+    '  <div class="snakeHud" aria-label="Stav hry Snake">',
+    '    <div class="snakeScoreCard"><span>Skóre</span><strong data-snake-score>' + String(state.score || 0) + '</strong></div>',
+    '    <div class="snakeScoreCard"><span>Nejlepší</span><strong data-snake-best>' + String(Math.max(best.bestScore || 0, state.score || 0)) + '</strong></div>',
+    '    <div class="snakeScoreCard"><span>Délka</span><strong data-snake-length>' + String(state.snake ? state.snake.length : 0) + '</strong></div>',
+    '    <div class="snakeScoreCard snakeStateCard"><span>Stav</span><strong data-snake-state>' + (state.over ? 'Konec' : 'Hraje se') + '</strong></div>',
+    '  </div>',
+    '  <div class="snakeBoardWrap" style="width:' + boardSize + 'px;max-width:100%;">',
+    '    <div class="gameBoard gameSnakeBoard snakeTouchZone" id="gameSnakeBoard" role="application" aria-label="Snake" tabindex="0" style="width:' + boardSize + 'px;height:' + boardSize + 'px;grid-template-columns:repeat(' + String(state.size) + ',minmax(0,1fr));grid-template-rows:repeat(' + String(state.size) + ',minmax(0,1fr));">' + snakeBuildCells(state) + '</div>',
+    '    <div class="snakeResultOverlay" id="snakeResultOverlay" aria-live="polite">',
+    '      <div class="snakeResultCard">',
+    '        <div class="snakeResultTitle">Konec hry</div>',
+    '        <div class="snakeResultText">Skóre <strong data-snake-result-score>' + String(state.score || 0) + '</strong> · délka <strong data-snake-result-length>' + String(state.snake ? state.snake.length : 0) + '</strong></div>',
+    '        <button type="button" class="gameControlBtn snakeNewBtn" id="snakeOverlayNewBtn">Nová hra</button>',
+    '      </div>',
+    '    </div>',
+    '  </div>',
+    '  <div class="snakeControlsRow">',
+    '    <button type="button" class="gameControlBtn snakeNewBtn" id="snakeNewBtn">Nová hra</button>',
+    '  </div>',
+    '  <div class="srOnly" id="snakeLiveStatus" aria-live="polite">Snake běží.</div>',
     gamesTop3Block('snake', 'bodů', 10),
     '</div>'
   ].join('');
   const board = body.querySelector('#gameSnakeBoard');
+  const wrap = body.querySelector('.snakeBoardWrap');
   if (board) {
     board.style.setProperty('width', boardSize + 'px', 'important');
     board.style.setProperty('height', boardSize + 'px', 'important');
     board.style.touchAction = 'none';
     board.style.webkitTouchCallout = 'none';
     board.style.userSelect = 'none';
+    try {
+      if (typeof board.focus === 'function') board.focus({ preventScroll: true });
+    } catch (err) {
+      try { if (typeof board.focus === 'function') board.focus(); } catch (innerErr) {}
+    }
   }
+  if (wrap) wrap.style.setProperty('width', boardSize + 'px', 'important');
   body.style.touchAction = 'none';
   body.style.webkitTouchCallout = 'none';
   body.style.userSelect = 'none';
   body.style.overscrollBehavior = 'contain';
-  body.style.touchAction = 'none';
-  if (navigator && navigator.maxTouchPoints > 0 && !snakeIsJoystickEnabled()) {
-    snakeSetJoystickEnabled(true);
-  }
   const resetSnake = () => {
-    if (state.timer) clearInterval(state.timer);
+    const current = app.gamesSnake;
+    if (current && current.timer) clearInterval(current.timer);
     app.gamesSnake = snakeDefaultState();
     snakePlaceFood(app.gamesSnake);
-    snakeStart();
     renderGameSnake();
+    snakeStart();
   };
-  gamesBindSwipeControl(board || body, (dir) => {
+  const handleTurn = (dir) => {
     const current = app.gamesSnake;
     if (current && current.over) {
       resetSnake();
       return;
     }
     snakeSetDirection(dir);
-  });
+  };
+  body.querySelector('#snakeNewBtn')?.addEventListener('click', resetSnake);
+  body.querySelector('#snakeOverlayNewBtn')?.addEventListener('click', resetSnake);
+  gamesBindSwipeControl(board || body, handleTurn, { minDistance: 8, lockDistance: 3, maxTapTime: 170 });
   board?.addEventListener('click', () => {
     if (app.gamesSnake && app.gamesSnake.over) resetSnake();
   });
-  snakeBindJoystickControls(body, resetSnake);
-  if (!state.timer) snakeStart();
+  snakeUpdateUi();
+  if (!state.timer && !state.over) snakeStart();
+}
+
+function snakeNormalizeDirection(dir) {
+  if (dir === 'up') return { x: 0, y: -1, id: 'up' };
+  if (dir === 'down') return { x: 0, y: 1, id: 'down' };
+  if (dir === 'left') return { x: -1, y: 0, id: 'left' };
+  return { x: 1, y: 0, id: 'right' };
+}
+
+function snakeSameDirection(a, b) {
+  return !!a && !!b && Number(a.x || 0) === Number(b.x || 0) && Number(a.y || 0) === Number(b.y || 0);
+}
+
+function snakeOppositeDirection(a, b) {
+  return !!a && !!b && (Number(a.x || 0) + Number(b.x || 0) === 0) && (Number(a.y || 0) + Number(b.y || 0) === 0);
 }
 
 function snakeSetDirection(dir) {
   const state = app.gamesSnake;
   if (!state || state.over) return;
-  const next = dir === 'up' ? { x: 0, y: -1 } : dir === 'down' ? { x: 0, y: 1 } : dir === 'left' ? { x: -1, y: 0 } : { x: 1, y: 0 };
-  if (state.dir.x + next.x === 0 && state.dir.y + next.y === 0) return;
-  state.pending = next;
+  const next = snakeNormalizeDirection(dir);
+  if (!Array.isArray(state.queue)) state.queue = [];
+  const reference = state.queue.length ? state.queue[state.queue.length - 1] : state.dir;
+  if (snakeSameDirection(reference, next) || snakeOppositeDirection(reference, next)) return;
+  if (state.queue.length >= 3) state.queue.shift();
+  state.queue.push({ x: next.x, y: next.y });
+  state.lastTurnAt = Date.now();
+  snakeTryVibrate(6);
   if (!state.timer) snakeStart();
+}
+
+function snakeRecordEnd(state) {
+  if (!state || state.recorded) return;
+  state.recorded = true;
+  const account = gamesGetActiveAccount();
+  gamesRecordStat('snake', {
+    plays: (account?.stats?.snake?.plays || 0) + 1,
+    bestScore: Math.max(account?.stats?.snake?.bestScore || 0, state.score),
+    bestLength: Math.max(account?.stats?.snake?.bestLength || 0, state.snake.length)
+  });
+}
+
+function snakeEndGame(state) {
+  if (!state) return;
+  state.over = true;
+  if (state.timer) {
+    clearInterval(state.timer);
+    state.timer = null;
+  }
+  snakeRecordEnd(state);
+  snakeTryVibrate([20, 35, 20]);
+  snakeUpdateUi();
 }
 
 function snakeTick() {
   const state = app.gamesSnake;
   if (!state || state.over) return;
-  if (state.pending) {
-    state.dir = state.pending;
-    state.pending = null;
+  if (Array.isArray(state.queue) && state.queue.length) {
+    state.dir = state.queue.shift();
   }
+  const size = Number(state.size || 18);
+  const currentHead = state.snake && state.snake[0] ? state.snake[0] : { x: 0, y: 0 };
   const head = {
-    x: (state.snake[0].x + state.dir.x + state.size) % state.size,
-    y: (state.snake[0].y + state.dir.y + state.size) % state.size
+    x: (currentHead.x + state.dir.x + size) % size,
+    y: (currentHead.y + state.dir.y + size) % size
   };
-  if (state.snake.some(p => p.x === head.x && p.y === head.y)) {
-    state.over = true;
-    renderGameSnake();
-    const account = gamesGetActiveAccount();
-    gamesRecordStat('snake', {
-      plays: (account?.stats?.snake?.plays || 0) + 1,
-      bestScore: Math.max(account?.stats?.snake?.bestScore || 0, state.score),
-      bestLength: Math.max(account?.stats?.snake?.bestLength || 0, state.snake.length)
-    });
+  const willEat = !!state.food && head.x === state.food.x && head.y === state.food.y;
+  const collisionBody = willEat ? state.snake : state.snake.slice(0, -1);
+  if (collisionBody.some(p => p.x === head.x && p.y === head.y)) {
+    snakeEndGame(state);
     return;
   }
   state.snake.unshift(head);
-  if (head.x === state.food.x && head.y === state.food.y) {
+  if (willEat) {
     state.score += 1;
+    state.lastAteAt = Date.now();
+    snakeTryVibrate(12);
     snakePlaceFood(state);
+    if (state.over) {
+      snakeEndGame(state);
+      return;
+    }
   } else {
     state.snake.pop();
   }
-  renderGameSnake();
+  state.lastTickAt = Date.now();
+  snakeUpdateUi();
 }
 
 function snakeStart() {
   const state = app.gamesSnake || (app.gamesSnake = snakeDefaultState());
+  if (state.over) return;
   if (state.timer) clearInterval(state.timer);
-  state.timer = setInterval(snakeTick, 120);
+  state.timer = setInterval(snakeTick, Number(state.speedMs || 126));
 }
 
 // ---- Flap Bird ----
