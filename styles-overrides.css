@@ -7445,3 +7445,51 @@ body.gamesOpen #games .arcadeReactionBoard.isGo{
   box-shadow:0 0 0 1px color-mix(in srgb, var(--rakThemeAccent, var(--green2)) 42%, transparent) inset, 0 22px 58px color-mix(in srgb, var(--rakThemeAccent, var(--green2)) 34%, rgba(0,0,0,.32)) !important;
   color:#fafffb !important;
 }
+
+
+/* v.1.1 (689) – Tetris/Shooter/Brick: čistý canvas bez šikmých čar, kompaktní HUD a užší Brick plocha. */
+body.gamesOpen #games .arcadeHudSingleLine{
+  grid-template-columns:repeat(3, minmax(0, 1fr)) !important;
+  align-items:stretch !important;
+  width:100% !important;
+}
+body.gamesOpen #games .arcadeHudSingleLine .gamesStatCard{
+  min-height:42px !important;
+  padding:7px 8px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:5px !important;
+}
+body.gamesOpen #games .arcadeHudSingleLine .gamesStatLabel,
+body.gamesOpen #games .arcadeHudSingleLine .gamesStatValue{
+  white-space:nowrap !important;
+  line-height:1 !important;
+}
+body.gamesOpen #games .arcadeHudSingleLine .gamesStatLabel{font-size:9px !important;}
+body.gamesOpen #games .arcadeHudSingleLine .gamesStatValue{font-size:13px !important;}
+body.gamesOpen #games .arcadeCanvasWrap.tetrisCanvasWrap{
+  border-color:color-mix(in srgb, var(--green, #7CFF7C) 22%, rgba(255,255,255,.18)) !important;
+  box-shadow:0 18px 46px rgba(0,0,0,.34), inset 0 0 0 1px rgba(255,255,255,.055), inset 0 1px 0 rgba(255,255,255,.08) !important;
+}
+body.gamesOpen #games .arcadeCanvasWrap.brickNarrowCanvas{
+  width:min(100%, 360px) !important;
+  max-width:360px !important;
+  align-self:center !important;
+}
+body.gamesOpen #games .arcadeCanvasWrap.shooterCanvasWrap{
+  width:100% !important;
+  align-self:center !important;
+}
+@media (max-width:380px){
+  body.gamesOpen #games .arcadeCanvasWrap.brickNarrowCanvas{width:min(94vw, 340px) !important;}
+}
+
+
+/* v.1.1 (689) – arcade výsledky mají vlastní scroll a canvas hry blokují nechtěný scroll stránky. */
+#games .gamesTop5ScrollCard{max-height:154px !important;overflow:hidden !important;overscroll-behavior:contain !important;touch-action:pan-y !important;}
+#games .gamesTop5ScrollBody{max-height:96px !important;overflow-y:auto !important;overscroll-behavior:contain !important;-webkit-overflow-scrolling:touch !important;padding-right:4px !important;}
+#games .arcadeNoPageScroll,
+#games .arcadeNoPageScroll .arcadeCanvas{touch-action:none !important;overscroll-behavior:contain !important;}
+#games .arcadeCanvasWrap.brickNarrowCanvas{width:min(100%, 340px) !important;}
+#games .tetrisSideStatsCanvas{height:clamp(450px,72dvh,720px) !important;}

@@ -1,3 +1,17 @@
+## v.1.1 (689)
+- Tetris: score/řádky/level přesunuté do pravého panelu pod náhled dalších 3 kostek, herní plocha může být vyšší a Top 5 je hned pod hrou.
+- Space Shooter: Top 5 je pod hrou ve vlastním scroll boxu, loď se neteleportuje po klepnutí a hra dostala space-opera styl lodí/nepřátel, power-upy, vícesměrné střely, štít, rychlopalbu, silnější zbraň, bosse a nové achievementy za bosse/upgrady/výzbroj.
+- Brick Breaker: Top 5 je ve vlastním scroll boxu pod hrou, plocha zůstává užší pro pohodlnější ovládání palcem a canvas blokuje nechtěný scroll stránky při hraní.
+- Verze sjednocena na v.1.1 (689), cache na v1.1-689 a Supabase realtime kanál na rak-public-live-v689.
+
+
+## v.1.1 (688)
+- Tetris: odstraněné šikmé čáry z herní plochy, přidané jasnější ohraničení hracího pole a ukázka dalších 3 kostek vedle hry.
+- Tetris / Space Shooter / Brick Breaker: horní score řádek je kompaktnější na jeden řádek a top výsledky jsou přesunuté pod herní plochu.
+- Space Shooter: loď už se po klepnutí neteleportuje; pohyb je relativní jen při tažení prstem a střelba běží automaticky až při aktivním tažení.
+- Brick Breaker: pálka už se po klepnutí neteleportuje, ovládá se relativním tažením; plocha je užší a drží pohodlnější šířku i na širších mobilech.
+- Verze sjednocena na v.1.1 (688), cache na v1.1-688 a Supabase realtime kanál na rak-public-live-v688.
+
 ## v.1.1 (687)
 - Hry / Aim Trainer a Reaction Test: odstraněný černý horní pruh nad HUDem a herní plochou u arcade her. Zůstává jen malé plovoucí tlačítko Zpět bez titulkového bloku.
 - Reaction Test: stav „TEĎ!“ má výraznou změnu barvy reakčního pole podle aktuálního theme, aby byl signál jasně vidět.

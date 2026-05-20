@@ -1,4 +1,4 @@
-// v.1.1 (687) – Hry: Tetris/Space Shooter/Brick Breaker hotový mobile-first blok bez šipek.
+// v.1.1 (689) – Hry: Tetris sidebar score, scroll výsledky a Space Shooter power-upy/boss.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

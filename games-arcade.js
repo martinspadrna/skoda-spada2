@@ -2,7 +2,7 @@
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
 
-  // v.1.1 (687): Tetris/Space Shooter/Brick Breaker jako hotový mobile-first blok bez šipek.
+  // v.1.1 (689): Tetris sidebar score, scroll top výsledky, Shooter power-upy/boss a jemnější canvas layout.
   const CORE_GAMES = ['ttt', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick'];
   const EXTRA_GAMES = ['doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);
@@ -373,6 +373,9 @@
       { id: 'shooter_hits_150', title: 'Přesná palba', desc: 'Dej ve Space Shooteru 150 zásahů v jedné dokončené hře.', goalText: '150 zásahů', progress: (a) => arcadeStat(a.account, 'shooter', 'bestHits'), target: 150 },
       { id: 'shooter_survive_180', title: 'Tři minuty ve vesmíru', desc: 'Přežij ve Space Shooteru aspoň 180 sekund.', goalText: '180 s', progress: (a) => arcadeStat(a.account, 'shooter', 'bestSurvivalSec'), target: 180 },
       { id: 'shooter_runs_50', title: 'Pilot po směně', desc: 'Dokonči 50 her Space Shooteru.', goalText: '50 dokončení', progress: (a) => arcadeStat(a.account, 'shooter', 'plays'), target: 50 },
+      { id: 'shooter_boss_3', title: 'Lovec velitelů', desc: 'Sundej v jedné dokončené hře 3 bosse.', goalText: '3 bossové', progress: (a) => arcadeStat(a.account, 'shooter', 'bestBossKills'), target: 3 },
+      { id: 'shooter_power_12', title: 'Sběrač upgradů', desc: 'Seber v jedné dokončené hře 12 upgradů.', goalText: '12 upgradů', progress: (a) => arcadeStat(a.account, 'shooter', 'bestPowerUps'), target: 12 },
+      { id: 'shooter_weapon_3', title: 'Plná výzbroj', desc: 'Dostaň ve Space Shooteru zbraň na třetí úroveň.', goalText: 'úroveň 3', progress: (a) => arcadeStat(a.account, 'shooter', 'bestWeaponLevel'), target: 3 },
       { id: 'brick_2500', title: 'Bourák cihel', desc: 'Nahraj 2 500 bodů v Brick Breakeru.', goalText: '2 500 bodů', progress: (a) => arcadeStat(a.account, 'brick', 'bestScore'), target: 2500 },
       { id: 'brick_6000', title: 'Demolice haly', desc: 'Nahraj 6 000 bodů v Brick Breakeru.', goalText: '6 000 bodů', progress: (a) => arcadeStat(a.account, 'brick', 'bestScore'), target: 6000 },
       { id: 'brick_combo_20', title: 'Combo odrazy', desc: 'Dej v Brick Breakeru combo 20.', goalText: 'combo 20', progress: (a) => arcadeStat(a.account, 'brick', 'bestCombo'), target: 20 },
@@ -509,6 +512,21 @@
 #games .arcadeShellHeader{display:none !important;}
 #games .arcadeHud{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%;}
 #games .arcadeHudWide3{grid-template-columns:repeat(3,minmax(0,1fr));width:100%;}
+#games .arcadeHudSingleLine{grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch;}
+#games .arcadeHudSingleLine .gamesStatCard{min-height:42px;padding:7px 8px;display:flex;align-items:center;justify-content:space-between;gap:5px;}
+#games .arcadeHudSingleLine .gamesStatLabel{font-size:9px;line-height:1;white-space:nowrap;}
+#games .arcadeHudSingleLine .gamesStatValue{font-size:13px;line-height:1;white-space:nowrap;}
+#games .arcadeCanvasWrap.tetrisCanvasWrap{border-color:color-mix(in srgb, var(--green, #7CFF7C) 22%, rgba(255,255,255,.18)) !important;}
+#games .arcadeCanvasWrap.brickNarrowCanvas{width:min(100%, 340px) !important;align-self:center !important;}
+#games .arcadeCanvasWrap.shooterCanvasWrap{width:100% !important;align-self:center !important;}
+#games .gamesTop3Card{flex:0 0 auto;}
+
+#games .gamesTop5ScrollCard{max-height:154px;overflow:hidden;overscroll-behavior:contain;touch-action:pan-y;}
+#games .gamesTop5ScrollBody{max-height:96px;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-right:4px;}
+#games .gamesTop5ScrollBody::-webkit-scrollbar{width:4px;}
+#games .gamesTop5ScrollBody::-webkit-scrollbar-thumb{background:rgba(255,255,255,.22);border-radius:999px;}
+#games .arcadeNoPageScroll,#games .arcadeNoPageScroll .arcadeCanvas{touch-action:none;overscroll-behavior:contain;}
+#games .tetrisSideStatsCanvas{height:clamp(450px,72dvh,720px) !important;}
 #games .arcadeOnlyRestart{justify-content:center;margin-top:2px;}
 #games .arcadeOnlyRestart .gameControlBtn{min-width:118px;}
 #games .arcadeCanvasWrap.isFullGame{height:clamp(360px, 62dvh, 620px) !important;}
@@ -1003,7 +1021,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function renderLaunchTiles() {
     const grid = document.getElementById('gamesGrid');
     if (!grid) return;
-    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v687';
+    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v689';
     if (grid.dataset && grid.dataset.arcadeLaunchSig === launchSig && grid.querySelector('.gamesDevFolder') && grid.querySelector('[data-game="ttt"]')) {
       gamePerf.launchRenderSkips = Number(gamePerf.launchRenderSkips || 0) + 1;
       return;
@@ -1127,11 +1145,12 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   };
 
   window.gamesTop3Block = function gamesTop3BlockArcade(gameId, label, limit = 10) {
-    const rows = window.gamesGetGameLeaderboard(gameId, limit);
+    const id = key(gameId);
+    const rows = window.gamesGetGameLeaderboard(id, limit);
     const body = rows.length ? rows.map((row, idx) => (
       `<div class="gamesTop3Row"><div class="gamesTop3Rank">${String(idx + 1)}.</div><div class="gamesTop3Name">${escapeHtml(row.name)}</div><div class="gamesTop3Value">${String(row.value)} ${escapeHtml(label)}${row.playedText ? ' · ' + escapeHtml(row.playedText) : ''}</div></div>`
     )).join('') : '<div class="gamesTop3Empty">Zatím žádné výsledky.</div>';
-    return `<div class="gamesTop3Card"><div class="gamesTop3Title">Top ${String(limit)} výsledků</div><div class="gamesTop3Body">${body}</div></div>`;
+    return `<div class="gamesTop3Card gamesTop5ScrollCard" data-score-game="${escapeHtml(id)}"><div class="gamesTop3Title">Top ${String(limit)} výsledků</div><div class="gamesTop3Body gamesTop5ScrollBody">${body}</div></div>`;
   };
 
   const leaderboardInFlight = new Map();
@@ -1256,7 +1275,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     }
     if (typeof nextPatch.perfectRuns === 'number') merged.perfectRuns = (Number(current.perfectRuns || 0) || 0) + Math.max(0, nextPatch.perfectRuns || 0);
     if (typeof nextPatch.bestMoves === 'number') merged.bestMoves = Math.max(Number(current.bestMoves || 0) || 0, nextPatch.bestMoves || 0);
-    ['bestLines','bestLevel','bestSurvivalSec','bestWave','bestBricks','bestClears','bestShots','bestStreak','bestBlocks','bestStageClear'].forEach((field) => {
+    ['bestLines','bestLevel','bestSurvivalSec','bestWave','bestBricks','bestClears','bestShots','bestStreak','bestBlocks','bestStageClear','bestBossKills','bestPowerUps','bestWeaponLevel'].forEach((field) => {
       if (typeof nextPatch[field] === 'number') merged[field] = Math.max(Number(current[field] || 0) || 0, nextPatch[field] || 0);
     });
     if (typeof nextPatch.perfectClears === 'number') merged.perfectClears = (Number(current.perfectClears || 0) || 0) + Math.max(0, nextPatch.perfectClears || 0);
@@ -1425,20 +1444,19 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
 
   function arcadeDrawStageBg(ctx, w, h, colors) {
     const grad = ctx.createLinearGradient(0, 0, w, h);
-    grad.addColorStop(0, 'rgba(255,255,255,.065)');
-    grad.addColorStop(.55, 'rgba(255,255,255,.026)');
-    grad.addColorStop(1, 'rgba(0,0,0,.18)');
+    grad.addColorStop(0, 'rgba(255,255,255,.070)');
+    grad.addColorStop(.55, 'rgba(255,255,255,.030)');
+    grad.addColorStop(1, 'rgba(0,0,0,.16)');
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, w, h);
     ctx.save();
-    ctx.globalAlpha = .13;
-    ctx.strokeStyle = colors.accent;
-    for (let x = -20; x < w + 40; x += 42) {
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x + 68, h);
-      ctx.stroke();
-    }
+    const glow = ctx.createRadialGradient(w * 0.18, h * 0.10, 0, w * 0.18, h * 0.10, Math.max(w, h) * 0.65);
+    glow.addColorStop(0, colors.accent || 'rgba(255,255,255,.12)');
+    glow.addColorStop(.34, 'rgba(255,255,255,.040)');
+    glow.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.globalAlpha = .10;
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, w, h);
     ctx.restore();
   }
 
@@ -1718,7 +1736,8 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   const TETRIS_KEYS = Object.keys(TETRIS_SHAPES);
   function rotateMatrix(m) { return m[0].map((_, i) => m.map(r => r[i]).reverse()); }
   function tetrisNewPiece() { const type = randomPick(TETRIS_KEYS); return { type, matrix: TETRIS_SHAPES[type].map(r => r.slice()), x: 3, y: 0, color: type }; }
-  function tetrisState() { return { board: Array.from({ length: 20 }, () => Array(10).fill('')), piece: tetrisNewPiece(), score: 0, lines: 0, level: 1, over: false, dropAcc: 0, lastTs: 0, startedAt: Date.now(), best: 0, raf: 0 }; }
+  function tetrisFreshQueue() { return [tetrisNewPiece(), tetrisNewPiece(), tetrisNewPiece()]; }
+  function tetrisState() { return { board: Array.from({ length: 20 }, () => Array(10).fill('')), piece: tetrisNewPiece(), nextQueue: tetrisFreshQueue(), score: 0, lines: 0, level: 1, over: false, dropAcc: 0, lastTs: 0, startedAt: Date.now(), best: 0, raf: 0 }; }
   function tetrisCollision(st, px = 0, py = 0, matrix = null) {
     const m = matrix || st.piece.matrix;
     for (let y = 0; y < m.length; y += 1) for (let x = 0; x < m[y].length; x += 1) if (m[y][x]) {
@@ -1742,7 +1761,9 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       st.score += [0, 100, 300, 500, 800][cleared] * st.level;
       st.level = 1 + Math.floor(st.lines / 10);
     }
-    st.piece = tetrisNewPiece();
+    if (!Array.isArray(st.nextQueue)) st.nextQueue = tetrisFreshQueue();
+    st.piece = st.nextQueue.length ? st.nextQueue.shift() : tetrisNewPiece();
+    st.nextQueue.push(tetrisNewPiece());
     st.piece.x = 3;
     st.piece.y = 0;
     if (tetrisCollision(st)) st.over = true;
@@ -1764,9 +1785,12 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function renderTetris(body) {
     const state = getState('tetris', tetrisState);
     state.saved = !!state.saved;
-    const stage = createCanvas(body, 'clamp(360px, 62dvh, 620px)');
-    if (stage.wrap) stage.wrap.classList.add('isFullGame');
-    body.insertAdjacentHTML('afterbegin', `<div class="arcadeHud arcadeHudWide3">${gamesStatLine('Skóre', state.score)}${gamesStatLine('Řádky', state.lines)}${gamesStatLine('Level', state.level)}</div><div class="arcadeControls arcadeOnlyRestart"><button type="button" class="gameControlBtn" id="tetrisRestartBtn">Nová hra</button></div>${gamesTop3Block('tetris', 'bodů', 5)}`);
+    if (!Array.isArray(state.nextQueue)) state.nextQueue = tetrisFreshQueue();
+    const stage = createCanvas(body, 'clamp(450px, 72dvh, 720px)');
+    if (stage.wrap) stage.wrap.classList.add('isFullGame', 'tetrisCanvasWrap', 'tetrisSideStatsCanvas');
+    body.insertAdjacentHTML('afterbegin', `<div class="arcadeControls arcadeOnlyRestart arcadeControlsTop"><button type="button" class="gameControlBtn" id="tetrisRestartBtn">Nová hra</button></div>`);
+    const tetrisStage = body.querySelector('.arcadeStage');
+    if (tetrisStage) tetrisStage.insertAdjacentHTML('afterend', gamesTop3Block('tetris', 'bodů', 5));
     const canvas = stage.canvas; const ctx = stage.ctx;
     let touch = null;
     const finishTetris = () => {
@@ -1803,25 +1827,55 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       ctx.restore();
     };
     const pieceColor = (v, colors) => ({ I: colors.cyan, O: colors.gold, T: colors.purple, S: colors.accent, Z: colors.danger, J: '#8fb2ff', L: '#ffb36f' }[v] || colors.accent);
+    const drawPanel = (x, y, w, h, radius = 12) => {
+      ctx.save();
+      ctx.fillStyle = 'rgba(255,255,255,.045)';
+      if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(x, y, w, h, radius); ctx.fill(); } else ctx.fillRect(x, y, w, h);
+      ctx.strokeStyle = 'rgba(255,255,255,.13)';
+      ctx.lineWidth = 1;
+      if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(x + .5, y + .5, w - 1, h - 1, radius); ctx.stroke(); } else ctx.strokeRect(x + .5, y + .5, w - 1, h - 1);
+      ctx.restore();
+    };
+    const drawSideStat = (x, y, w, label, value, colors) => {
+      drawPanel(x, y, w, 34, 12);
+      ctx.save();
+      ctx.fillStyle = 'rgba(255,255,255,.64)';
+      ctx.font = '800 8.5px system-ui';
+      ctx.textAlign = 'left';
+      ctx.fillText(label.toUpperCase(), x + 7, y + 12);
+      ctx.fillStyle = colors.soft;
+      ctx.font = '900 14px system-ui';
+      ctx.textAlign = 'right';
+      ctx.fillText(String(value), x + w - 7, y + 25);
+      ctx.restore();
+    };
     const draw = () => {
       const { w, h } = stage.resize();
       const colors = arcadeThemeColors();
-      const cell = Math.floor(Math.min(w / 10, h / 20));
+      if (!Array.isArray(state.nextQueue)) state.nextQueue = tetrisFreshQueue();
+      const sidebarEnabled = w >= 300;
+      const sidebarW = sidebarEnabled ? Math.min(92, Math.max(78, Math.floor(w * 0.25))) : 0;
+      const gap = sidebarEnabled ? 10 : 0;
+      const cell = Math.floor(Math.min((w - sidebarW - gap - 8) / 10, (h - 10) / 20));
       const bw = cell * 10; const bh = cell * 20;
-      const ox = Math.floor((w - bw) / 2); const oy = Math.floor((h - bh) / 2);
+      const totalW = bw + sidebarW + gap;
+      const ox = Math.floor((w - totalW) / 2);
+      const oy = Math.floor((h - bh) / 2);
       ctx.clearRect(0, 0, w, h);
-      arcadeDrawStageBg(ctx, w, h, colors);
+      arcadeDrawStageBg(ctx, w, h, colors, { clean: true });
       ctx.save();
       ctx.translate(ox, oy);
-      ctx.fillStyle = 'rgba(0,0,0,.14)';
-      ctx.fillRect(0, 0, bw, bh);
-      ctx.strokeStyle = 'rgba(255,255,255,.08)';
+      ctx.fillStyle = 'rgba(0,0,0,.10)';
+      if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(0, 0, bw, bh, 12); ctx.fill(); } else ctx.fillRect(0, 0, bw, bh);
+      ctx.strokeStyle = 'rgba(255,255,255,.26)';
+      ctx.lineWidth = 2;
+      if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(1, 1, bw - 2, bh - 2, 12); ctx.stroke(); } else ctx.strokeRect(1, 1, bw - 2, bh - 2);
       for (let y = 0; y < 20; y += 1) {
         for (let x = 0; x < 10; x += 1) {
           const v = state.board[y][x];
           if (v) drawBlock(x * cell, y * cell, cell, pieceColor(v, colors), .88);
           else {
-            ctx.fillStyle = 'rgba(255,255,255,.026)';
+            ctx.fillStyle = 'rgba(255,255,255,.024)';
             ctx.fillRect(x * cell + 1, y * cell + 1, cell - 2, cell - 2);
           }
         }
@@ -1835,6 +1889,42 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         drawBlock(px, py, cell, pieceColor(state.piece.color || v, colors), .94);
         drawBlock((state.piece.x + x) * cell + cell * .18, gy + cell * .18, cell * .64, colors.accent, .22);
       }));
+      ctx.restore();
+      if (sidebarEnabled) {
+        const sx = ox + bw + gap;
+        const sy = Math.max(oy, 8);
+        ctx.save();
+        ctx.fillStyle = 'rgba(255,255,255,.72)';
+        ctx.font = '800 10px system-ui';
+        ctx.textAlign = 'left';
+        ctx.fillText('DALŠÍ', sx + 3, sy + 10);
+        const mini = Math.max(9, Math.min(13, Math.floor(sidebarW / 5)));
+        const boxH = mini * 4 + 12;
+        (state.nextQueue || []).slice(0, 3).forEach((piece, i) => {
+          const py0 = sy + 20 + i * (boxH + 8);
+          drawPanel(sx, py0, sidebarW, boxH, 12);
+          const m = piece.matrix || [];
+          const px0 = sx + Math.max(5, Math.floor((sidebarW - (m[0] || []).length * mini) / 2));
+          const pyy = py0 + Math.max(6, Math.floor((boxH - m.length * mini) / 2));
+          m.forEach((row, y) => row.forEach((v, x) => { if (v) drawBlock(px0 + x * mini, pyy + y * mini, mini, pieceColor(piece.color || v, colors), .86); }));
+        });
+        const statsY = sy + 20 + 3 * (boxH + 8) + 2;
+        drawSideStat(sx, statsY, sidebarW, 'Score', state.score, colors);
+        drawSideStat(sx, statsY + 40, sidebarW, 'Řádky', state.lines, colors);
+        drawSideStat(sx, statsY + 80, sidebarW, 'Level', state.level, colors);
+        ctx.restore();
+      } else {
+        ctx.save();
+        ctx.fillStyle = 'rgba(0,0,0,.38)';
+        if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(8, 8, w - 16, 32, 14); ctx.fill(); } else ctx.fillRect(8, 8, w - 16, 32);
+        ctx.fillStyle = colors.soft;
+        ctx.font = '800 12px system-ui';
+        ctx.textAlign = 'center';
+        ctx.fillText(`Score ${state.score} · Řádky ${state.lines} · Lvl ${state.level}`, w / 2, 29);
+        ctx.restore();
+      }
+      ctx.save();
+      ctx.translate(ox, oy);
       if (state.over) {
         ctx.fillStyle = 'rgba(0,0,0,.62)'; ctx.fillRect(0, 0, bw, bh);
         ctx.fillStyle = colors.soft; ctx.font = `${Math.max(18, Math.floor(cell * 0.9))}px system-ui`; ctx.textAlign = 'center';
@@ -1842,8 +1932,6 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         ctx.font = '12px system-ui'; ctx.fillText(`${state.score} bodů · ${state.lines} řádků`, bw / 2, bh / 2 + 16);
       }
       ctx.restore();
-      const hud = body.querySelector('.arcadeHud');
-      if (hud) hud.innerHTML = `${gamesStatLine('Skóre', state.score)}${gamesStatLine('Řádky', state.lines)}${gamesStatLine('Level', state.level)}`;
     };
     const applyMove = (fn) => {
       if (state.over) return;
@@ -1910,13 +1998,22 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
 
   // Space Shooter ----------------------------------------------------------
   function shooterState() {
-    return { score: 0, hits: 0, over: false, lastTs: 0, raf: 0, shipX: 160, bullets: [], enemies: [], spawnAcc: 0, shotCooldown: 0, survivedMs: 0, saved: false, stars: Array.from({ length: 28 }, () => ({ x: Math.random() * 320, y: Math.random() * 520, s: 0.45 + Math.random() * 1.45 })), startedAt: Date.now() };
+    return {
+      score: 0, hits: 0, over: false, lastTs: 0, raf: 0,
+      shipX: 160, bullets: [], enemies: [], powerUps: [], explosions: [],
+      spawnAcc: 0, powerAcc: 0, bossAcc: 0, shotCooldown: 0, survivedMs: 0,
+      saved: false, autoShoot: false, weaponLevel: 1, spreadUntil: 0, rapidUntil: 0, shieldUntil: 0, bossKills: 0, powerUpsCollected: 0,
+      stars: Array.from({ length: 46 }, () => ({ x: Math.random() * 320, y: Math.random() * 520, s: 0.45 + Math.random() * 1.7 })),
+      startedAt: Date.now()
+    };
   }
   function renderShooter(body) {
     const state = getState('shooter', shooterState);
-    const stage = createCanvas(body, 'clamp(360px, 62dvh, 620px)');
-    if (stage.wrap) stage.wrap.classList.add('isFullGame');
-    body.insertAdjacentHTML('afterbegin', `<div class="arcadeHud arcadeHudWide3">${gamesStatLine('Skóre', state.score)}${gamesStatLine('Zásahy', state.hits || 0)}${gamesStatLine('Čas', Math.floor((state.survivedMs || 0) / 1000))}</div><div class="arcadeControls arcadeOnlyRestart"><button type="button" class="gameControlBtn" id="shooterRestartBtn">Nová hra</button></div>${gamesTop3Block('shooter', 'bodů', 5)}`);
+    const stage = createCanvas(body, 'clamp(390px, 58dvh, 590px)');
+    if (stage.wrap) stage.wrap.classList.add('isFullGame', 'shooterCanvasWrap', 'arcadeNoPageScroll');
+    body.insertAdjacentHTML('afterbegin', `<div class="arcadeHud arcadeHudWide3 arcadeHudSingleLine">${gamesStatLine('Skóre', state.score)}${gamesStatLine('Zásahy', state.hits || 0)}${gamesStatLine('Čas', Math.floor((state.survivedMs || 0) / 1000))}</div><div class="arcadeControls arcadeOnlyRestart"><button type="button" class="gameControlBtn" id="shooterRestartBtn">Nová hra</button></div>`);
+    const shooterStage = body.querySelector('.arcadeStage');
+    if (shooterStage) shooterStage.insertAdjacentHTML('afterend', gamesTop3Block('shooter', 'bodů', 5));
     const canvas = stage.canvas, ctx = stage.ctx;
     const reset = () => { Object.assign(state, shooterState()); draw(); };
     const finishShooter = () => {
@@ -1926,67 +2023,197 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         bestScore: state.score,
         bestHits: state.hits || 0,
         bestSurvivalSec: Math.floor((state.survivedMs || 0) / 1000),
+        bestBossKills: state.bossKills || 0,
+        bestPowerUps: state.powerUpsCollected || 0,
+        bestWeaponLevel: state.weaponLevel || 1,
         lastResult: `${state.score} bodů`
       });
     };
+    const enemyKinds = ['scout', 'fighter', 'bomber', 'asteroid'];
     const spawnEnemy = () => {
       const w = canvas.clientWidth || stage.wrap.clientWidth || 320;
-      const size = 13 + Math.random() * 6;
-      state.enemies.push({ x: Math.random() * (w - size * 2) + size, y: -24, vx: (Math.random() - .5) * 0.55, vy: 1.35 + Math.random() * 1.75 + Math.min(1.2, state.score / 600), r: size, hp: 1 + (state.score > 220 ? 1 : 0) });
+      const kind = randomPick(enemyKinds);
+      const base = {
+        scout: { r: 11, hp: 1, vy: 1.9, vx: (Math.random() - .5) * .45, score: 18 },
+        fighter: { r: 14, hp: 2, vy: 1.45, vx: (Math.random() - .5) * 1.05, score: 32 },
+        bomber: { r: 18, hp: 3, vy: 1.05, vx: (Math.random() - .5) * .35, score: 48 },
+        asteroid: { r: 16, hp: 2, vy: 1.25, vx: (Math.random() - .5) * .8, score: 22 }
+      }[kind];
+      state.enemies.push({ kind, x: Math.random() * (w - base.r * 2) + base.r, y: -28, wave: Math.random() * Math.PI * 2, ...base });
+    };
+    const spawnBoss = () => {
+      const w = canvas.clientWidth || stage.wrap.clientWidth || 320;
+      state.enemies.push({ kind: 'boss', boss: true, x: w / 2, y: -54, r: 34, hp: 16 + Math.floor(state.score / 260), vy: .38, vx: .55, score: 260, wave: 0 });
+    };
+    const spawnPower = () => {
+      const w = canvas.clientWidth || stage.wrap.clientWidth || 320;
+      const type = randomPick(['spread', 'rapid', 'shield', 'score', 'laser']);
+      state.powerUps.push({ type, x: 24 + Math.random() * Math.max(1, w - 48), y: -22, vy: 1.25, r: 12 });
+    };
+    const applyPower = (type) => {
+      const now = Date.now();
+      state.powerUpsCollected = Number(state.powerUpsCollected || 0) + 1;
+      if (type === 'spread') { state.spreadUntil = now + 11000; state.weaponLevel = Math.max(state.weaponLevel || 1, 2); }
+      else if (type === 'laser') { state.spreadUntil = now + 14000; state.rapidUntil = now + 9000; state.weaponLevel = 3; }
+      else if (type === 'rapid') state.rapidUntil = now + 10000;
+      else if (type === 'shield') state.shieldUntil = now + 12000;
+      else if (type === 'score') state.score += 150;
+      if (typeof navigator !== 'undefined' && navigator.vibrate) { try { navigator.vibrate([8, 18, 8]); } catch (err) {} }
     };
     const shoot = () => {
       if (state.shotCooldown > 0 || state.over) return;
-      state.bullets.push({ x: state.shipX, y: (canvas.clientHeight || stage.wrap.clientHeight || 420) - 52, vy: -6.6 });
-      state.shotCooldown = 120;
+      const h = canvas.clientHeight || stage.wrap.clientHeight || 420;
+      const y = h - 58;
+      const now = Date.now();
+      const rapid = now < Number(state.rapidUntil || 0);
+      const spread = now < Number(state.spreadUntil || 0) || Number(state.weaponLevel || 1) >= 2;
+      state.bullets.push({ x: state.shipX, y, vx: 0, vy: -7.1, strong: Number(state.weaponLevel || 1) >= 3 });
+      if (spread) {
+        state.bullets.push({ x: state.shipX - 8, y: y + 4, vx: -1.15, vy: -6.55 });
+        state.bullets.push({ x: state.shipX + 8, y: y + 4, vx: 1.15, vy: -6.55 });
+      }
+      if (Number(state.weaponLevel || 1) >= 3) {
+        state.bullets.push({ x: state.shipX - 15, y: y + 8, vx: -.45, vy: -6.9, strong: true });
+        state.bullets.push({ x: state.shipX + 15, y: y + 8, vx: .45, vy: -6.9, strong: true });
+      }
+      state.shotCooldown = rapid ? 62 : 115;
     };
+    let shooterDrag = null;
     const pointerMove = (ev) => {
+      if (!shooterDrag) return;
       ev.preventDefault();
       const rect = canvas.getBoundingClientRect();
-      state.shipX = clamp(ev.clientX - rect.left, 20, rect.width - 20);
+      const dx = ev.clientX - shooterDrag.lastX;
+      if (Math.abs(dx) < 0.5) return;
+      state.shipX = clamp((state.shipX || rect.width / 2) + dx, 20, rect.width - 20);
+      shooterDrag.lastX = ev.clientX;
+      state.autoShoot = true;
     };
+    const pointerDown = (ev) => {
+      ev.preventDefault();
+      canvas.setPointerCapture && canvas.setPointerCapture(ev.pointerId);
+      if (!state.shipX) state.shipX = (canvas.getBoundingClientRect().width || 320) / 2;
+      shooterDrag = { lastX: ev.clientX };
+      state.autoShoot = false;
+    };
+    const pointerEnd = (ev) => {
+      ev?.preventDefault?.();
+      shooterDrag = null;
+      state.autoShoot = false;
+    };
+    canvas.addEventListener('pointerdown', pointerDown);
     canvas.addEventListener('pointermove', pointerMove);
-    canvas.addEventListener('pointerdown', (ev) => { pointerMove(ev); shoot(); });
+    canvas.addEventListener('pointerup', pointerEnd);
+    canvas.addEventListener('pointercancel', pointerEnd);
     body.querySelector('#shooterRestartBtn').addEventListener('click', reset);
     const end = () => { if (!state.over) { state.over = true; finishShooter(); } };
+    const drawShip = (x, y, colors) => {
+      const shield = Date.now() < Number(state.shieldUntil || 0);
+      ctx.save();
+      if (shield) { ctx.strokeStyle = colors.cyan; ctx.globalAlpha = .75; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, y, 28, 0, Math.PI * 2); ctx.stroke(); ctx.globalAlpha = 1; }
+      ctx.fillStyle = colors.accent2;
+      ctx.shadowColor = colors.accent2; ctx.shadowBlur = 16;
+      ctx.beginPath(); ctx.moveTo(x, y - 23); ctx.lineTo(x - 9, y + 12); ctx.lineTo(x, y + 6); ctx.lineTo(x + 9, y + 12); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = colors.accent; ctx.beginPath(); ctx.moveTo(x - 7, y + 5); ctx.lineTo(x - 27, y + 18); ctx.lineTo(x - 14, y - 2); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(x + 7, y + 5); ctx.lineTo(x + 27, y + 18); ctx.lineTo(x + 14, y - 2); ctx.closePath(); ctx.fill();
+      ctx.shadowBlur = 0; ctx.fillStyle = colors.soft; ctx.fillRect(x - 3, y - 3, 6, 15);
+      ctx.restore();
+    };
+    const drawEnemy = (e, colors) => {
+      ctx.save();
+      if (e.kind === 'boss') {
+        const grd = ctx.createLinearGradient(e.x - 36, e.y, e.x + 36, e.y);
+        grd.addColorStop(0, colors.danger); grd.addColorStop(1, colors.purple || colors.accent2);
+        ctx.fillStyle = grd; ctx.shadowColor = colors.danger; ctx.shadowBlur = 18;
+        ctx.beginPath(); ctx.moveTo(e.x, e.y + 36); ctx.lineTo(e.x - 48, e.y - 8); ctx.lineTo(e.x - 18, e.y - 28); ctx.lineTo(e.x + 18, e.y - 28); ctx.lineTo(e.x + 48, e.y - 8); ctx.closePath(); ctx.fill();
+        ctx.shadowBlur = 0; ctx.fillStyle = 'rgba(255,255,255,.72)'; ctx.fillRect(e.x - 24, e.y - 3, 48 * Math.max(0, e.hp) / Math.max(1, 16 + Math.floor(state.score / 260)), 3);
+      } else if (e.kind === 'asteroid') {
+        ctx.fillStyle = 'rgba(190,194,202,.72)'; ctx.beginPath(); ctx.arc(e.x, e.y, e.r || 15, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,.22)'; ctx.stroke();
+      } else if (e.kind === 'bomber') {
+        ctx.fillStyle = colors.danger; ctx.shadowColor = colors.danger; ctx.shadowBlur = 10; ctx.fillRect(e.x - 18, e.y - 10, 36, 20); ctx.fillRect(e.x - 7, e.y - 18, 14, 36);
+      } else {
+        ctx.fillStyle = e.kind === 'fighter' ? colors.gold : colors.danger;
+        ctx.shadowColor = ctx.fillStyle; ctx.shadowBlur = 10;
+        ctx.beginPath(); ctx.moveTo(e.x, e.y + 18); ctx.lineTo(e.x - 18, e.y - 12); ctx.lineTo(e.x, e.y - 4); ctx.lineTo(e.x + 18, e.y - 12); ctx.closePath(); ctx.fill();
+      }
+      ctx.restore();
+    };
+    const drawPower = (p, colors) => {
+      const color = p.type === 'shield' ? colors.cyan : p.type === 'rapid' ? colors.gold : p.type === 'score' ? colors.soft : colors.accent;
+      ctx.save(); ctx.fillStyle = color; ctx.shadowColor = color; ctx.shadowBlur = 14;
+      ctx.beginPath(); ctx.moveTo(p.x, p.y - 12); ctx.lineTo(p.x + 12, p.y); ctx.lineTo(p.x, p.y + 12); ctx.lineTo(p.x - 12, p.y); ctx.closePath(); ctx.fill();
+      ctx.shadowBlur = 0; ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.font = '900 9px system-ui'; ctx.textAlign = 'center';
+      ctx.fillText(p.type === 'spread' ? '3' : p.type === 'rapid' ? 'R' : p.type === 'shield' ? 'S' : p.type === 'laser' ? 'L' : '+', p.x, p.y + 3);
+      ctx.restore();
+    };
     const draw = () => {
       const { w, h } = stage.resize();
       const colors = arcadeThemeColors();
       ctx.clearRect(0, 0, w, h);
-      arcadeDrawStageBg(ctx, w, h, colors);
-      state.stars.forEach((s) => { s.y += s.s; if (s.y > h) { s.y = -2; s.x = Math.random() * w; } ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.fillRect(s.x, s.y, 2, 2); });
+      arcadeDrawStageBg(ctx, w, h, colors, { clean: true });
+      ctx.fillStyle = 'rgba(0,0,0,.18)'; ctx.fillRect(0, 0, w, h);
+      state.stars.forEach((s) => { s.y += s.s; if (s.y > h) { s.y = -2; s.x = Math.random() * w; } ctx.fillStyle = 'rgba(255,255,255,.58)'; ctx.fillRect(s.x, s.y, 2, 2); });
       const shipY = h - 42;
-      ctx.save();
-      ctx.fillStyle = colors.accent;
-      ctx.shadowColor = colors.accent;
-      ctx.shadowBlur = 16;
-      ctx.beginPath(); ctx.moveTo(state.shipX, shipY - 18); ctx.lineTo(state.shipX - 16, shipY + 12); ctx.lineTo(state.shipX + 16, shipY + 12); ctx.closePath(); ctx.fill();
-      ctx.shadowBlur = 0; ctx.fillStyle = colors.soft; ctx.fillRect(state.shipX - 4, shipY - 2, 8, 13);
-      state.bullets.forEach((b) => { ctx.fillStyle = colors.gold; ctx.shadowColor = colors.gold; ctx.shadowBlur = 10; ctx.fillRect(b.x - 2, b.y - 10, 4, 12); });
-      ctx.shadowBlur = 0;
-      state.enemies.forEach((e) => { ctx.fillStyle = colors.danger; ctx.beginPath(); ctx.arc(e.x, e.y, e.r || 13, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,.22)'; ctx.stroke(); });
+      state.powerUps.forEach((p) => drawPower(p, colors));
+      state.bullets.forEach((b) => { ctx.fillStyle = b.strong ? colors.cyan : colors.gold; ctx.shadowColor = ctx.fillStyle; ctx.shadowBlur = 10; ctx.fillRect(b.x - 2, b.y - 12, 4, 13); ctx.shadowBlur = 0; });
+      state.enemies.forEach((e) => drawEnemy(e, colors));
+      drawShip(state.shipX || w / 2, shipY, colors);
+      const active = [];
+      if (Date.now() < Number(state.spreadUntil || 0)) active.push('vícesměr');
+      if (Date.now() < Number(state.rapidUntil || 0)) active.push('rychlopalba');
+      if (Date.now() < Number(state.shieldUntil || 0)) active.push('štít');
+      if (active.length) { ctx.fillStyle = 'rgba(0,0,0,.42)'; ctx.fillRect(8, 8, Math.min(w - 16, 210), 24); ctx.fillStyle = colors.soft; ctx.font = '800 11px system-ui'; ctx.fillText(active.join(' · '), 18, 24); }
       if (state.over) { ctx.fillStyle = 'rgba(0,0,0,.62)'; ctx.fillRect(0, 0, w, h); ctx.fillStyle = colors.soft; ctx.font = '20px system-ui'; ctx.textAlign = 'center'; ctx.fillText('Konec hry', w / 2, h / 2 - 10); ctx.font = '12px system-ui'; ctx.fillText(`${state.score} bodů · ${state.hits || 0} zásahů`, w / 2, h / 2 + 16); }
-      ctx.restore();
     };
     const loop = (ts) => {
       if (!rakGameShouldTick()) { state.lastTs = 0; state.raf = 0; return; }
       const dt = rakGameDelta(state, ts);
-      const { h } = stage.resize();
+      const { w, h } = stage.resize();
+      if (!state.shipX) state.shipX = w / 2;
       if (!state.over) {
         state.survivedMs += dt;
         state.shotCooldown = Math.max(0, state.shotCooldown - dt);
+        if (state.autoShoot) shoot();
         state.spawnAcc += dt;
-        if (state.spawnAcc > Math.max(420, 760 - Math.floor(state.score / 50) * 28)) { state.spawnAcc = 0; spawnEnemy(); }
-        state.bullets.forEach((b) => { b.y += b.vy * dt / 16; });
-        state.enemies.forEach((e) => { e.x += e.vx * dt / 16; e.y += e.vy * dt / 16; });
-        state.bullets = state.bullets.filter((b) => b.y > -20);
+        state.powerAcc += dt;
+        state.bossAcc += dt;
+        if (state.spawnAcc > Math.max(300, 720 - Math.floor(state.score / 55) * 24)) { state.spawnAcc = 0; spawnEnemy(); }
+        if (state.powerAcc > 8500 + Math.random() * 3500) { state.powerAcc = 0; spawnPower(); }
+        if (state.bossAcc > 45000 && !state.enemies.some(e => e.boss)) { state.bossAcc = 0; spawnBoss(); }
+        state.bullets.forEach((b) => { b.x += (b.vx || 0) * dt / 16; b.y += b.vy * dt / 16; });
+        state.enemies.forEach((e) => {
+          e.wave = (e.wave || 0) + dt / 620;
+          e.x += ((e.vx || 0) + (e.kind === 'fighter' ? Math.sin(e.wave) * .45 : 0)) * dt / 16;
+          e.y += e.vy * dt / 16;
+          if (e.x < (e.r || 14)) e.vx = Math.abs(e.vx || .4);
+          if (e.x > w - (e.r || 14)) e.vx = -Math.abs(e.vx || .4);
+        });
+        state.powerUps.forEach((p) => { p.y += p.vy * dt / 16; });
+        state.bullets = state.bullets.filter((b) => b.y > -28 && b.x > -18 && b.x < w + 18);
+        state.powerUps = state.powerUps.filter((p) => p.y < h + 28);
         const shipY = h - 42;
-        state.enemies.forEach((e) => { if (Math.abs(e.x - state.shipX) < 18 && Math.abs(e.y - shipY) < 24) end(); if (e.y > h + 28) end(); });
+        state.powerUps = state.powerUps.filter((p) => {
+          if (Math.hypot(p.x - state.shipX, p.y - shipY) < 28) { applyPower(p.type); return false; }
+          return true;
+        });
+        state.enemies.forEach((e) => {
+          if (Math.hypot(e.x - state.shipX, e.y - shipY) < (e.r || 14) + 15) {
+            if (Date.now() < Number(state.shieldUntil || 0)) { e.hp = 0; state.shieldUntil = 0; }
+            else end();
+          }
+          if (e.y > h + 36) end();
+        });
         state.bullets = state.bullets.filter((b) => {
           for (let i = state.enemies.length - 1; i >= 0; i -= 1) {
             const e = state.enemies[i];
-            if (Math.hypot(b.x - e.x, b.y - e.y) < (e.r || 14) + 3) {
-              e.hp -= 1;
-              if (e.hp <= 0) { state.enemies.splice(i, 1); state.score += 15; state.hits = (state.hits || 0) + 1; }
+            if (Math.hypot(b.x - e.x, b.y - e.y) < (e.r || 14) + 4) {
+              e.hp -= b.strong ? 2 : 1;
+              if (e.hp <= 0) {
+                state.enemies.splice(i, 1);
+                state.score += Number(e.score || 20);
+                state.hits = (state.hits || 0) + 1;
+                if (e.boss) { state.bossKills = Number(state.bossKills || 0) + 1; state.weaponLevel = Math.min(3, Number(state.weaponLevel || 1) + 1); spawnPower(); }
+              }
               return false;
             }
           }
@@ -1999,7 +2226,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       state.raf = rakGameRequestFrame(state, loop);
     };
     state.raf = rakGameRequestFrame(state, loop);
-    addCleanup(() => { cancelAnimationFrame(state.raf); canvas.removeEventListener('pointermove', pointerMove); if (state.over) finishShooter(); });
+    addCleanup(() => { cancelAnimationFrame(state.raf); canvas.removeEventListener('pointerdown', pointerDown); canvas.removeEventListener('pointermove', pointerMove); canvas.removeEventListener('pointerup', pointerEnd); canvas.removeEventListener('pointercancel', pointerEnd); if (state.over) finishShooter(); });
     draw();
     setActiveState('shooter', state);
   }
@@ -2009,11 +2236,13 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function initBricks(state) { state.bricks = []; for (let r = 0; r < 6; r += 1) { for (let c = 0; c < 8; c += 1) state.bricks.push({ x: c, y: r, alive: true, hp: r > 3 ? 2 : 1 }); } }
   function renderBrick(body) {
     const state = getState('brick', () => { const s2 = brickState(); initBricks(s2); return s2; });
-    const stage = createCanvas(body, 'clamp(360px, 62dvh, 620px)');
-    if (stage.wrap) stage.wrap.classList.add('isFullGame');
-    body.insertAdjacentHTML('afterbegin', `<div class="arcadeHud arcadeHudWide3">${gamesStatLine('Skóre', state.score)}${gamesStatLine('Cihly', state.bricks.filter(b => b.alive).length)}${gamesStatLine('Combo', state.bestCombo || 0)}</div><div class="arcadeControls arcadeOnlyRestart"><button type="button" class="gameControlBtn" id="brickRestartBtn">Nová hra</button></div>${gamesTop3Block('brick', 'bodů', 5)}`);
+    const stage = createCanvas(body, 'clamp(370px, 56dvh, 560px)');
+    if (stage.wrap) stage.wrap.classList.add('isFullGame', 'brickNarrowCanvas', 'arcadeNoPageScroll');
+    body.insertAdjacentHTML('afterbegin', `<div class="arcadeHud arcadeHudWide3 arcadeHudSingleLine">${gamesStatLine('Skóre', state.score)}${gamesStatLine('Cihly', state.bricks.filter(b => b.alive).length)}${gamesStatLine('Combo', state.bestCombo || 0)}</div><div class="arcadeControls arcadeOnlyRestart"><button type="button" class="gameControlBtn" id="brickRestartBtn">Nová hra</button></div>`);
+    const brickStage = body.querySelector('.arcadeStage');
+    if (brickStage) brickStage.insertAdjacentHTML('afterend', gamesTop3Block('brick', 'bodů', 5));
     const canvas = stage.canvas, ctx = stage.ctx;
-    const reset = () => { Object.assign(state, brickState()); initBricks(state); draw(); };
+    const reset = () => { Object.assign(state, brickState()); initBricks(state); state.paddleReady = false; draw(); };
     const finishBrick = () => {
       arcadeRecordOnce(state, 'brick', {
         completed: true,
@@ -2025,21 +2254,64 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         lastResult: `${state.score} bodů`
       });
     };
-    const movePaddle = (x) => { const w = canvas.getBoundingClientRect().width || 320; state.paddleX = clamp(x - 45, 0, Math.max(0, w - 90)); if (!state.launched && !state.over) { state.ball.x = state.paddleX + 45; } };
-    canvas.addEventListener('pointermove', (ev) => { ev.preventDefault(); movePaddle(ev.clientX - canvas.getBoundingClientRect().left); });
-    canvas.addEventListener('pointerdown', (ev) => { ev.preventDefault(); movePaddle(ev.clientX - canvas.getBoundingClientRect().left); if (!state.launched && !state.over) state.launched = true; });
+    let brickDrag = null;
+    const paddleWidth = () => {
+      const w = canvas.getBoundingClientRect().width || 320;
+      return Math.max(74, Math.min(92, w * 0.26));
+    };
+    const ensurePaddleReady = () => {
+      const w = canvas.getBoundingClientRect().width || 320;
+      const pw = paddleWidth();
+      if (!state.paddleReady) {
+        state.paddleX = Math.max(0, (w - pw) / 2);
+        state.ball.x = state.paddleX + pw / 2;
+        state.paddleReady = true;
+      }
+    };
+    const movePaddleBy = (dx) => {
+      const w = canvas.getBoundingClientRect().width || 320;
+      const pw = paddleWidth();
+      ensurePaddleReady();
+      state.paddleX = clamp((state.paddleX || 0) + dx, 0, Math.max(0, w - pw));
+      if (!state.launched && !state.over) state.ball.x = state.paddleX + pw / 2;
+    };
+    const brickPointerDown = (ev) => {
+      ev.preventDefault();
+      canvas.setPointerCapture && canvas.setPointerCapture(ev.pointerId);
+      ensurePaddleReady();
+      brickDrag = { lastX: ev.clientX, moved: false };
+      if (!state.launched && !state.over) state.launched = true;
+    };
+    const brickPointerMove = (ev) => {
+      if (!brickDrag) return;
+      ev.preventDefault();
+      const dx = ev.clientX - brickDrag.lastX;
+      if (Math.abs(dx) >= 0.5) {
+        movePaddleBy(dx);
+        brickDrag.lastX = ev.clientX;
+        brickDrag.moved = true;
+      }
+    };
+    const brickPointerEnd = (ev) => { ev?.preventDefault?.(); brickDrag = null; };
+    canvas.addEventListener('pointerdown', brickPointerDown);
+    canvas.addEventListener('pointermove', brickPointerMove);
+    canvas.addEventListener('pointerup', brickPointerEnd);
+    canvas.addEventListener('pointercancel', brickPointerEnd);
     body.querySelector('#brickRestartBtn').addEventListener('click', reset);
     const end = (won = false) => { if (!state.over) { state.over = true; state.won = !!won; finishBrick(); } };
     const draw = () => {
       const { w, h } = stage.resize();
       const colors = arcadeThemeColors();
       const paddleY = h - 28;
+      const pw = paddleWidth();
+      ensurePaddleReady();
       ctx.clearRect(0, 0, w, h);
       arcadeDrawStageBg(ctx, w, h, colors);
       const brickW = w / 8 - 5;
       const brickH = Math.max(18, Math.min(24, h * .045));
       state.bricks.forEach((b) => { if (!b.alive) return; const x = b.x * (brickW + 5) + 2.5; const y = b.y * (brickH + 5) + 16; ctx.fillStyle = b.hp > 1 ? colors.gold : colors.accent; ctx.globalAlpha = b.hp > 1 ? .62 : .48; ctx.fillRect(x, y, brickW, brickH); ctx.globalAlpha = 1; ctx.strokeStyle = 'rgba(255,255,255,.22)'; ctx.strokeRect(x, y, brickW, brickH); });
-      ctx.fillStyle = colors.accent; ctx.shadowColor = colors.accent; ctx.shadowBlur = 14; ctx.fillRect(state.paddleX, paddleY, 90, 11); ctx.shadowBlur = 0;
+      ctx.fillStyle = colors.accent; ctx.shadowColor = colors.accent; ctx.shadowBlur = 14; ctx.fillRect(state.paddleX, paddleY, pw, 11); ctx.shadowBlur = 0;
+      if (!state.launched && !state.over) state.ball.x = state.paddleX + pw / 2;
       ctx.beginPath(); ctx.fillStyle = colors.gold; ctx.arc(state.ball.x, state.ball.y, 6.5, 0, Math.PI * 2); ctx.fill();
       if (!state.launched && !state.over) { ctx.fillStyle = 'rgba(255,255,255,.78)'; ctx.font = '12px system-ui'; ctx.textAlign = 'center'; ctx.fillText('Klepni nebo táhni pro start', w / 2, h - 52); }
       if (state.over) { ctx.fillStyle = 'rgba(0,0,0,.62)'; ctx.fillRect(0, 0, w, h); ctx.fillStyle = colors.soft; ctx.font = '20px system-ui'; ctx.textAlign = 'center'; ctx.fillText(state.won ? 'Vyčištěno' : 'Konec hry', w / 2, h / 2 - 10); ctx.font = '12px system-ui'; ctx.fillText(`${state.score} bodů · combo ${state.bestCombo || 0}`, w / 2, h / 2 + 16); }
@@ -2049,15 +2321,17 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       const dt = rakGameDelta(state, ts);
       const { w, h } = stage.resize();
       const paddleY = h - 28;
+      const pw = paddleWidth();
+      ensurePaddleReady();
       if (!state.over && state.launched) {
         state.ball.x += state.ball.vx * dt / 16;
         state.ball.y += state.ball.vy * dt / 16;
         if (state.ball.x < 7) { state.ball.x = 7; state.ball.vx = Math.abs(state.ball.vx); }
         if (state.ball.x > w - 7) { state.ball.x = w - 7; state.ball.vx = -Math.abs(state.ball.vx); }
         if (state.ball.y < 7) { state.ball.y = 7; state.ball.vy = Math.abs(state.ball.vy); }
-        if (state.ball.y > paddleY - 7 && state.ball.y < paddleY + 14 && state.ball.x > state.paddleX - 4 && state.ball.x < state.paddleX + 94 && state.ball.vy > 0) {
+        if (state.ball.y > paddleY - 7 && state.ball.y < paddleY + 14 && state.ball.x > state.paddleX - 4 && state.ball.x < state.paddleX + pw + 4 && state.ball.vy > 0) {
           state.ball.vy = -Math.abs(state.ball.vy) * 1.015;
-          const hit = (state.ball.x - (state.paddleX + 45)) / 45;
+          const hit = (state.ball.x - (state.paddleX + pw / 2)) / Math.max(1, pw / 2);
           state.ball.vx = hit * 5.8;
           state.combo = 0;
         }
@@ -2083,7 +2357,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       state.raf = rakGameRequestFrame(state, loop);
     };
     state.raf = rakGameRequestFrame(state, loop);
-    addCleanup(() => { cancelAnimationFrame(state.raf); if (state.over) finishBrick(); });
+    addCleanup(() => { cancelAnimationFrame(state.raf); canvas.removeEventListener('pointerdown', brickPointerDown); canvas.removeEventListener('pointermove', brickPointerMove); canvas.removeEventListener('pointerup', brickPointerEnd); canvas.removeEventListener('pointercancel', brickPointerEnd); if (state.over) finishBrick(); });
     draw();
     setActiveState('brick', state);
   }

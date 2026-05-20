@@ -3903,8 +3903,8 @@ function buildAppHistoryHtml(versionText) {
       range: versionText,
       title: 'Aktuální build',
       lines: [
-        'Build v.1.1 (687) přidává hotový herní blok Tetris, Space Shooter a Brick Breaker: mobile-first ovládání bez šipek, theme canvas a těžší achievementy.',
-        'Série v.1.1 650–687 dotáhla Piškvorky, online pozvánky, PWA launch handler, 2048/Snake/Flappy Car/Aim/Reaction/Tetris/Space Shooter/Brick Breaker mezi hotové hry, herní profily, theme polish a těžší/chytřejší achievementy.',
+        'Build v.1.1 (689) dolaďuje Tetris, Space Shooter a Brick Breaker: Tetris má score v pravém panelu pod dalšími kostkami, výsledky mají vlastní scroll a Space Shooter dostal power-upy, různé protivníky a bosse.',
+        'Série v.1.1 650–689 dotáhla Piškvorky, online pozvánky, PWA launch handler, 2048/Snake/Flappy Car/Aim/Reaction/Tetris/Space Shooter/Brick Breaker mezi hotové hry, herní profily, theme polish a těžší/chytřejší achievementy.',
         'Sekce „O aplikaci“ je nově stručnější: detailní změny zůstávají v changelogu a tady se historie drží po větších blocích.',
         'Stabilizační audity, Supabase guardy, Láďův režim a finální readiness kontroly zůstávají součástí diagnostiky.'
       ]
