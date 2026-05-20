@@ -1,3 +1,8 @@
+## v.1.1 (683)
+- Piškvorky: finální oprava zeleno-černé hrací plochy. Přidaná runtime pojistka `tttThemeBoardPatch`, která se vloží až po starém interním `tttStyles` a přebije staré zelené pozadí, mřížku i pseudo-vrstvy.
+- Piškvorky: hrací plocha nově používá neutrální glass/panel vrstvu navázanou na globální theme a pozadí aplikace; barvy X/O zůstaly beze změny.
+- Verze sjednocena na v.1.1 (683), cache na v1.1-683 a Supabase realtime kanál na rak-public-live-v683.
+
 ## v.1.1 (682)
 - Piškvorky: finální přepis hrací plochy tak, aby už nepřebíjela zvolený theme/pozadí tvrdým zeleno-černým vzhledem; X/O barvy zůstaly beze změny.
 - 2048 a Snake: horní trojice HUD polí je přes celou šířku panelu.

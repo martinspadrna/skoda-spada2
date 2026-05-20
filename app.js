@@ -1,4 +1,4 @@
-// v.1.1 (682) – Hry: Piškvorky/Snake/2048 theme polish, širší HUD a rychlejší Snake swipe.
+// v.1.1 (683) – Hry: Piškvorky theme board runtime fix bez zeleno-černé plochy.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
