@@ -1,4 +1,4 @@
-// v.1.1 (689) – Hry: Tetris sidebar score, scroll výsledky a Space Shooter power-upy/boss.
+// v.1.1 (692) – Report chyb přes Supabase: jedno tlačítko Odeslat + offline fronta.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

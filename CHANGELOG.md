@@ -1,8 +1,14 @@
-## v.1.1 (689)
+## v.1.1 (692)
+- Doodle Jump a Bubble Shooter mají Top 5 výsledky hned pod hrou v kompaktním scroll boxu, aby nebyly zbytečně nízko a nepřekážely hraní.
+- Bubble Shooter počítá stejné barvy i diagonálně/křížem a po prasknutí shazuje bubliny, které už nejsou napojené na horní řadu; boční stěna je sama nedrží.
+- Do Více přidána sekce „Pošli mi chybu“ pro přihlášené herní profily: pole pro popis chyby/nápadu, lokální uložení reportu a předvyplněné odeslání přes e-mail nebo WhatsApp.
+- Verze sjednocena na v.1.1 (692), cache na v1.1-692 a Supabase realtime kanál na rak-public-live-v692.
+
+## v.1.1 (690)
 - Tetris: score/řádky/level přesunuté do pravého panelu pod náhled dalších 3 kostek, herní plocha může být vyšší a Top 5 je hned pod hrou.
 - Space Shooter: Top 5 je pod hrou ve vlastním scroll boxu, loď se neteleportuje po klepnutí a hra dostala space-opera styl lodí/nepřátel, power-upy, vícesměrné střely, štít, rychlopalbu, silnější zbraň, bosse a nové achievementy za bosse/upgrady/výzbroj.
 - Brick Breaker: Top 5 je ve vlastním scroll boxu pod hrou, plocha zůstává užší pro pohodlnější ovládání palcem a canvas blokuje nechtěný scroll stránky při hraní.
-- Verze sjednocena na v.1.1 (689), cache na v1.1-689 a Supabase realtime kanál na rak-public-live-v689.
+- Verze sjednocena na v.1.1 (690), cache na v1.1-690 a Supabase realtime kanál na rak-public-live-v690.
 
 
 ## v.1.1 (688)

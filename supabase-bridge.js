@@ -160,7 +160,8 @@
     'gomoku_win',
     'game_stat',
     'game_ui_settings',
-    'game_session'
+    'game_session',
+    'bug_report'
   ]);
 
   function hasClient() {
@@ -208,6 +209,7 @@
     { table: 'game_sessions', realtime: true, queueType: 'game_session', access: 'anon SELECT/INSERT/UPDATE', note: 'online herní session' },
     { table: 'game_stats', realtime: true, queueType: 'game_stat', access: 'anon SELECT/INSERT/UPDATE', note: 'skóre a žebříčky' },
     { table: 'game_ui_settings', realtime: false, queueType: 'game_ui_settings', access: 'anon SELECT/INSERT/UPDATE', note: 'profilové nastavení vzhledu' },
+    { table: 'bug_reports', realtime: false, queueType: 'bug_report', access: 'anon INSERT only', note: 'uživatelské reporty chyb / nápadů' },
     { table: 'gomoku_wins', realtime: true, queueType: 'gomoku_win', access: 'anon SELECT/INSERT/UPDATE', note: 'výhry piškvorek / legacy leaderboard' }
   ];
 
@@ -340,7 +342,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v689');
+      const channel = client.channel('rak-public-live-v692');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -604,6 +606,7 @@
     if (type === 'game_stat') return type + ':' + String(task && task.entry && (task.entry.id || task.entry.game_type || task.entry.account_number || task.entry.created_at) ? (task.entry.id || task.entry.game_type || task.entry.account_number || task.entry.created_at) : '').trim();
     if (type === 'game_ui_settings') return type + ':' + String(task && task.entry && (task.entry.account_number || task.entry.accountNumber) ? (task.entry.account_number || task.entry.accountNumber) : '').trim();
     if (type === 'game_session') return type + ':' + String(task && (task.inviteCode || task.code) ? (task.inviteCode || task.code) : '').trim().toUpperCase();
+    if (type === 'bug_report') return type + ':' + String(task && task.entry && (task.entry.id || task.entry.created_at || task.entry.createdAt) ? (task.entry.id || task.entry.created_at || task.entry.createdAt) : '').trim();
     return type || 'unknown';
   }
 
@@ -929,6 +932,50 @@
     const { data, error } = await client.from('gomoku_wins').insert([payload]).select('*');
     if (error) throw error;
     return Array.isArray(data) ? data : [];
+  }
+
+
+  function normalizeBugReportType(value) {
+    const raw = String(value || '').trim().toLowerCase();
+    if (raw.includes('nel')) return 'nelibi';
+    if (raw.includes('náp') || raw.includes('nap')) return 'napad';
+    if (raw.includes('výkon') || raw.includes('vykon') || raw.includes('sek')) return 'vykon';
+    if (raw.includes('hra')) return 'hra';
+    if (raw.includes('chy')) return 'chyba';
+    return 'ostatni';
+  }
+
+  function normalizeBugReportPayload(entry) {
+    const source = entry && typeof entry === 'object' ? entry : {};
+    const text = String(source.text || source.message || '').trim().slice(0, 4000);
+    const route = [String(source.page || '').trim(), String(source.game || '').trim()].filter(Boolean).join(' · ').slice(0, 300);
+    const deviceInfo = {
+      theme: String(source.theme || '').slice(0, 80),
+      background: String(source.background || '').slice(0, 80),
+      online: !!source.online,
+      createdAtLocal: String(source.createdAtLocal || '').slice(0, 120),
+      viewport: typeof window !== 'undefined' ? { width: window.innerWidth || 0, height: window.innerHeight || 0, dpr: window.devicePixelRatio || 1 } : {},
+      sourceId: String(source.id || '').slice(0, 120)
+    };
+    return {
+      account_number: String(source.accountId || source.account_number || '').trim().slice(0, 80) || null,
+      player_name: String(source.accountName || source.player_name || '').trim().slice(0, 160) || null,
+      report_type: normalizeBugReportType(source.type || source.report_type),
+      message: text,
+      app_version: String(source.version || window.APP_VERSION || '').trim().slice(0, 80) || null,
+      route: route || null,
+      user_agent: String(source.userAgent || (typeof navigator !== 'undefined' ? navigator.userAgent : '') || '').slice(0, 1000) || null,
+      device_info: deviceInfo,
+      status: 'new'
+    };
+  }
+
+  async function saveBugReportDirect(client, entry) {
+    const row = normalizeBugReportPayload(entry);
+    if (!row.message || row.message.length < 3) throw new Error('Report je moc krátký.');
+    const { error } = await runSupabaseOperation('bug_reports.insert', () => client.from('bug_reports').insert([row]), { mode: 'write', attempts: 1 });
+    if (error) throw error;
+    return { ok: true, row };
   }
 
 
@@ -1393,6 +1440,9 @@
             flushed += 1;
           } else if (task.type === 'game_session') {
             await saveGameSessionByInviteCodeDirect(client, task.inviteCode || task.code, task.payload);
+            flushed += 1;
+          } else if (task.type === 'bug_report') {
+            await saveBugReportDirect(client, task.entry);
             flushed += 1;
           } else {
             const failedUnknown = markQueuedTaskFailure(task, new Error('Neznámý typ úlohy ve frontě: ' + String(task.type || '')));
@@ -2754,6 +2804,22 @@
           state.cacheGuard.uiSettingsSaveQueued += 1;
           return await enqueueAndMaybeFlush({ type: 'game_ui_settings', entry: normalized });
         }
+        return { ok: false, error: err };
+      }
+    },
+    submitBugReport: async (payload) => {
+      const client = getClient();
+      if (!client || !navigator.onLine) return await enqueueAndMaybeFlush({ type: 'bug_report', entry: payload });
+      try {
+        if (shouldDeferOnlineWrite()) return Object.assign(await enqueueAndMaybeFlush({ type: 'bug_report', entry: payload }), { deferred: true });
+        const result = await runOptimizedSupabaseWrite('bug_report.save:' + String(payload && payload.id || Date.now()), payload, () => saveBugReportDirect(client, payload), { windowMs: 500 });
+        state.lastError = null;
+        await flushPendingWrites();
+        return Object.assign({ ok: true, queued: false }, result || {});
+      } catch (err) {
+        state.lastError = err;
+        console.error('Bug report save failed', err);
+        if (isLikelyTransientError(err)) return await enqueueAndMaybeFlush({ type: 'bug_report', entry: payload });
         return { ok: false, error: err };
       }
     },

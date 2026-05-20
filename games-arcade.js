@@ -2,9 +2,9 @@
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
 
-  // v.1.1 (689): Tetris sidebar score, scroll top výsledky, Shooter power-upy/boss a jemnější canvas layout.
-  const CORE_GAMES = ['ttt', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick'];
-  const EXTRA_GAMES = ['doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
+  // v.1.1 (692): Doodle/Bubble stabilní, reporty chyb posílá Supabase bridge.
+  const CORE_GAMES = ['ttt', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble'];
+  const EXTRA_GAMES = ['sudoku', 'mines', 'memory', 'bomber', 'daily'];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);
   const LEGACY_RENDER_GAMES = ['2048', 'snake', 'flap'];
   const ARCADE_RENDER_GAMES = ['aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
@@ -381,8 +381,19 @@
       { id: 'brick_combo_20', title: 'Combo odrazy', desc: 'Dej v Brick Breakeru combo 20.', goalText: 'combo 20', progress: (a) => arcadeStat(a.account, 'brick', 'bestCombo'), target: 20 },
       { id: 'brick_clear_10', title: 'Čistá plocha', desc: 'Vyčisti 10 her Brick Breakeru.', goalText: '10 vyčištění', progress: (a) => arcadeStat(a.account, 'brick', 'perfectClears'), target: 10 },
       { id: 'brick_runs_50', title: 'Pálka v ruce', desc: 'Dokonči 50 her Brick Breakeru.', goalText: '50 dokončení', progress: (a) => arcadeStat(a.account, 'brick', 'plays'), target: 50 },
+      { id: 'shooter_wave_8', title: 'První vlna', desc: 'Dostaň Space Shooter aspoň na obtížnost 8.', goalText: 'vlna 8', progress: (a) => arcadeStat(a.account, 'shooter', 'bestWave'), target: 8 },
+      { id: 'shooter_wave_12', title: 'Vesmírný masakr', desc: 'Dostaň Space Shooter na maximální tlak obtížnosti 12.', goalText: 'vlna 12', progress: (a) => arcadeStat(a.account, 'shooter', 'bestWave'), target: 12 },
       { id: 'doodle_3500', title: 'Skokan', desc: 'Nahraj 3 500 bodů v Doodle Jumpu.', goalText: '3 500 bodů', progress: (a) => arcadeStat(a.account, 'doodle', 'bestScore'), target: 3500 },
+      { id: 'doodle_7000', title: 'Skok až ke stropu', desc: 'Nahraj 7 000 bodů v Doodle Jumpu.', goalText: '7 000 bodů', progress: (a) => arcadeStat(a.account, 'doodle', 'bestScore'), target: 7000 },
+      { id: 'doodle_height_1200', title: 'Vysokozdvižka', desc: 'Vylez v Doodle Jumpu aspoň o 1 200 výškových bodů.', goalText: 'výška 1 200', progress: (a) => arcadeStat(a.account, 'doodle', 'bestHeight'), target: 1200 },
+      { id: 'doodle_jumps_80', title: 'Gumové nohy', desc: 'Skoč v jedné dokončené hře Doodle Jumpu 80krát.', goalText: '80 skoků', progress: (a) => arcadeStat(a.account, 'doodle', 'bestJumps'), target: 80 },
+      { id: 'doodle_runs_50', title: 'Skáču po směně', desc: 'Dokonči 50 her Doodle Jumpu.', goalText: '50 dokončení', progress: (a) => arcadeStat(a.account, 'doodle', 'plays'), target: 50 },
       { id: 'bubble_2500', title: 'Bubble pop', desc: 'Nahraj 2 500 bodů v Bubble Shooteru.', goalText: '2 500 bodů', progress: (a) => arcadeStat(a.account, 'bubble', 'bestScore'), target: 2500 },
+      { id: 'bubble_6000', title: 'Bublinový mistr', desc: 'Nahraj 6 000 bodů v Bubble Shooteru.', goalText: '6 000 bodů', progress: (a) => arcadeStat(a.account, 'bubble', 'bestScore'), target: 6000 },
+      { id: 'bubble_combo_10', title: 'Řetězová reakce', desc: 'Dej v Bubble Shooteru combo 10.', goalText: 'combo 10', progress: (a) => arcadeStat(a.account, 'bubble', 'bestCombo'), target: 10 },
+      { id: 'bubble_pops_120', title: 'Praskač bublinek', desc: 'Praskni v jedné dokončené hře 120 bublinek.', goalText: '120 bublinek', progress: (a) => arcadeStat(a.account, 'bubble', 'bestPops'), target: 120 },
+      { id: 'bubble_clears_10', title: 'Čistá obloha', desc: 'Vyčisti 10 her Bubble Shooteru.', goalText: '10 vyčištění', progress: (a) => arcadeStat(a.account, 'bubble', 'bestClears'), target: 10 },
+      { id: 'bubble_runs_50', title: 'Bubliny pod kontrolou', desc: 'Dokonči 50 her Bubble Shooteru.', goalText: '50 dokončení', progress: (a) => arcadeStat(a.account, 'bubble', 'plays'), target: 50 },
       { id: 'sudoku_15', title: 'Sudoku hlava', desc: 'Vyřeš 15 Sudoku.', goalText: '15 dokončení', progress: (a) => arcadeStat(a.account, 'sudoku', 'plays'), target: 15 },
       { id: 'mines_25_wins', title: 'Minové pole znám', desc: 'Vyhraj 25 her Minesweeperu.', goalText: '25 výher', progress: (a) => arcadeStat(a.account, 'mines', 'plays'), target: 25 },
       { id: 'memory_30', title: 'Pexeso paměťák', desc: 'Dokonči 30 her Memory.', goalText: '30 dokončení', progress: (a) => arcadeStat(a.account, 'memory', 'plays'), target: 30 },
@@ -1021,7 +1032,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function renderLaunchTiles() {
     const grid = document.getElementById('gamesGrid');
     if (!grid) return;
-    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v689';
+    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v692';
     if (grid.dataset && grid.dataset.arcadeLaunchSig === launchSig && grid.querySelector('.gamesDevFolder') && grid.querySelector('[data-game="ttt"]')) {
       gamePerf.launchRenderSkips = Number(gamePerf.launchRenderSkips || 0) + 1;
       return;
@@ -1275,7 +1286,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     }
     if (typeof nextPatch.perfectRuns === 'number') merged.perfectRuns = (Number(current.perfectRuns || 0) || 0) + Math.max(0, nextPatch.perfectRuns || 0);
     if (typeof nextPatch.bestMoves === 'number') merged.bestMoves = Math.max(Number(current.bestMoves || 0) || 0, nextPatch.bestMoves || 0);
-    ['bestLines','bestLevel','bestSurvivalSec','bestWave','bestBricks','bestClears','bestShots','bestStreak','bestBlocks','bestStageClear','bestBossKills','bestPowerUps','bestWeaponLevel'].forEach((field) => {
+    ['bestLines','bestLevel','bestSurvivalSec','bestWave','bestHeight','bestJumps','bestPlatforms','bestPops','bestBricks','bestClears','bestShots','bestStreak','bestBlocks','bestStageClear','bestBossKills','bestPowerUps','bestWeaponLevel'].forEach((field) => {
       if (typeof nextPatch[field] === 'number') merged[field] = Math.max(Number(current[field] || 0) || 0, nextPatch[field] || 0);
     });
     if (typeof nextPatch.perfectClears === 'number') merged.perfectClears = (Number(current.perfectClears || 0) || 0) + Math.max(0, nextPatch.perfectClears || 0);
@@ -2026,24 +2037,63 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         bestBossKills: state.bossKills || 0,
         bestPowerUps: state.powerUpsCollected || 0,
         bestWeaponLevel: state.weaponLevel || 1,
+        bestWave: state.bestWave || 1,
         lastResult: `${state.score} bodů`
       });
     };
-    const enemyKinds = ['scout', 'fighter', 'bomber', 'asteroid'];
+    const shooterDifficulty = () => {
+      const score = Number(state.score || 0) || 0;
+      const sec = Math.floor(Number(state.survivedMs || 0) / 1000);
+      const level = Math.max(1, Math.min(12, 1 + Math.floor(score / 850) + Math.floor(sec / 34)));
+      return {
+        level,
+        speed: 1 + (level - 1) * 0.075,
+        hpBonus: Math.floor((level - 1) / 3),
+        spawnMs: Math.max(210, 760 - (level - 1) * 46),
+        maxEnemies: Math.min(15, 4 + Math.floor(level * 0.85)),
+        burstChance: Math.min(0.46, level * 0.035),
+        bossMs: Math.max(18000, 47000 - (level - 1) * 2300)
+      };
+    };
+    const pickEnemyKind = (level) => {
+      const roll = Math.random();
+      if (level >= 10 && roll < .16) return 'destroyer';
+      if (level >= 7 && roll < .26) return 'interceptor';
+      if (level >= 5 && roll < .42) return 'bomber';
+      if (level >= 3 && roll < .62) return 'fighter';
+      return randomPick(['scout', 'fighter', 'asteroid']);
+    };
     const spawnEnemy = () => {
+      const diff = shooterDifficulty();
+      if (state.enemies.length >= diff.maxEnemies) return;
       const w = canvas.clientWidth || stage.wrap.clientWidth || 320;
-      const kind = randomPick(enemyKinds);
+      const kind = pickEnemyKind(diff.level);
       const base = {
-        scout: { r: 11, hp: 1, vy: 1.9, vx: (Math.random() - .5) * .45, score: 18 },
-        fighter: { r: 14, hp: 2, vy: 1.45, vx: (Math.random() - .5) * 1.05, score: 32 },
-        bomber: { r: 18, hp: 3, vy: 1.05, vx: (Math.random() - .5) * .35, score: 48 },
+        scout: { r: 11, hp: 1, vy: 1.85, vx: (Math.random() - .5) * .45, score: 18 },
+        fighter: { r: 14, hp: 2, vy: 1.42, vx: (Math.random() - .5) * 1.05, score: 32 },
+        interceptor: { r: 13, hp: 2, vy: 1.95, vx: (Math.random() - .5) * 1.55, score: 42 },
+        bomber: { r: 18, hp: 3, vy: 1.08, vx: (Math.random() - .5) * .35, score: 52 },
+        destroyer: { r: 21, hp: 5, vy: .92, vx: (Math.random() - .5) * .42, score: 82 },
         asteroid: { r: 16, hp: 2, vy: 1.25, vx: (Math.random() - .5) * .8, score: 22 }
       }[kind];
-      state.enemies.push({ kind, x: Math.random() * (w - base.r * 2) + base.r, y: -28, wave: Math.random() * Math.PI * 2, ...base });
+      const hpExtra = kind === 'scout' ? Math.max(0, diff.hpBonus - 1) : diff.hpBonus;
+      state.enemies.push({
+        kind,
+        x: Math.random() * (w - base.r * 2) + base.r,
+        y: -28,
+        wave: Math.random() * Math.PI * 2,
+        r: base.r,
+        hp: base.hp + hpExtra,
+        maxHp: base.hp + hpExtra,
+        vy: base.vy * diff.speed,
+        vx: base.vx * Math.min(1.8, 1 + diff.level * .035),
+        score: base.score + diff.level * 4
+      });
     };
     const spawnBoss = () => {
       const w = canvas.clientWidth || stage.wrap.clientWidth || 320;
-      state.enemies.push({ kind: 'boss', boss: true, x: w / 2, y: -54, r: 34, hp: 16 + Math.floor(state.score / 260), vy: .38, vx: .55, score: 260, wave: 0 });
+      const diff = shooterDifficulty();
+      state.enemies.push({ kind: 'boss', boss: true, x: w / 2, y: -54, r: 34 + diff.level * .6, hp: 16 + diff.level * 4 + Math.floor(state.score / 340), maxHp: 16 + diff.level * 4 + Math.floor(state.score / 340), vy: .34 + diff.level * .018, vx: .52 + diff.level * .025, score: 260 + diff.level * 25, wave: 0 });
     };
     const spawnPower = () => {
       const w = canvas.clientWidth || stage.wrap.clientWidth || 320;
@@ -2126,9 +2176,13 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         grd.addColorStop(0, colors.danger); grd.addColorStop(1, colors.purple || colors.accent2);
         ctx.fillStyle = grd; ctx.shadowColor = colors.danger; ctx.shadowBlur = 18;
         ctx.beginPath(); ctx.moveTo(e.x, e.y + 36); ctx.lineTo(e.x - 48, e.y - 8); ctx.lineTo(e.x - 18, e.y - 28); ctx.lineTo(e.x + 18, e.y - 28); ctx.lineTo(e.x + 48, e.y - 8); ctx.closePath(); ctx.fill();
-        ctx.shadowBlur = 0; ctx.fillStyle = 'rgba(255,255,255,.72)'; ctx.fillRect(e.x - 24, e.y - 3, 48 * Math.max(0, e.hp) / Math.max(1, 16 + Math.floor(state.score / 260)), 3);
+        ctx.shadowBlur = 0; ctx.fillStyle = 'rgba(255,255,255,.72)'; ctx.fillRect(e.x - 24, e.y - 3, 48 * Math.max(0, e.hp) / Math.max(1, e.maxHp || e.hp || 1), 3);
       } else if (e.kind === 'asteroid') {
         ctx.fillStyle = 'rgba(190,194,202,.72)'; ctx.beginPath(); ctx.arc(e.x, e.y, e.r || 15, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,.22)'; ctx.stroke();
+      } else if (e.kind === 'destroyer') {
+        ctx.fillStyle = colors.purple || colors.danger; ctx.shadowColor = ctx.fillStyle; ctx.shadowBlur = 14;
+        ctx.beginPath(); ctx.moveTo(e.x, e.y + 24); ctx.lineTo(e.x - 26, e.y - 12); ctx.lineTo(e.x - 9, e.y - 20); ctx.lineTo(e.x + 9, e.y - 20); ctx.lineTo(e.x + 26, e.y - 12); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.fillRect(e.x - 16, e.y + 14, 32 * Math.max(0, e.hp) / Math.max(1, e.maxHp || e.hp || 1), 2);
       } else if (e.kind === 'bomber') {
         ctx.fillStyle = colors.danger; ctx.shadowColor = colors.danger; ctx.shadowBlur = 10; ctx.fillRect(e.x - 18, e.y - 10, 36, 20); ctx.fillRect(e.x - 7, e.y - 18, 14, 36);
       } else {
@@ -2177,9 +2231,16 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         state.spawnAcc += dt;
         state.powerAcc += dt;
         state.bossAcc += dt;
-        if (state.spawnAcc > Math.max(300, 720 - Math.floor(state.score / 55) * 24)) { state.spawnAcc = 0; spawnEnemy(); }
-        if (state.powerAcc > 8500 + Math.random() * 3500) { state.powerAcc = 0; spawnPower(); }
-        if (state.bossAcc > 45000 && !state.enemies.some(e => e.boss)) { state.bossAcc = 0; spawnBoss(); }
+        const diff = shooterDifficulty();
+        state.bestWave = Math.max(Number(state.bestWave || 1) || 1, diff.level);
+        if (state.spawnAcc > diff.spawnMs) {
+          state.spawnAcc = 0;
+          spawnEnemy();
+          if (Math.random() < diff.burstChance) spawnEnemy();
+          if (diff.level >= 9 && Math.random() < .18) spawnEnemy();
+        }
+        if (state.powerAcc > Math.max(5200, 9000 - diff.level * 260) + Math.random() * 2800) { state.powerAcc = 0; spawnPower(); }
+        if (state.bossAcc > diff.bossMs && !state.enemies.some(e => e.boss)) { state.bossAcc = 0; spawnBoss(); }
         state.bullets.forEach((b) => { b.x += (b.vx || 0) * dt / 16; b.y += b.vy * dt / 16; });
         state.enemies.forEach((e) => {
           e.wave = (e.wave || 0) + dt / 620;
@@ -2221,7 +2282,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         });
       }
       const hud = body.querySelector('.arcadeHud');
-      if (hud) hud.innerHTML = `${gamesStatLine('Skóre', state.score)}${gamesStatLine('Zásahy', state.hits || 0)}${gamesStatLine('Čas', Math.floor((state.survivedMs || 0) / 1000))}`;
+      if (hud) hud.innerHTML = `${gamesStatLine('Skóre', state.score)}${gamesStatLine('Vlna', state.bestWave || 1)}${gamesStatLine('Čas', Math.floor((state.survivedMs || 0) / 1000))}`;
       draw();
       state.raf = rakGameRequestFrame(state, loop);
     };
@@ -2363,88 +2424,181 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   }
 
   // Doodle Jump ------------------------------------------------------------
-  function doodleState() { return { score: 0, over: false, lastTs: 0, raf: 0, x: 160, y: 260, vy: -1.6, vx: 0, platforms: [], highest: 260 }; }
-  function initDoodle(state) { state.platforms = []; for (let i = 0; i < 14; i += 1) state.platforms.push({ x: Math.random() * 260 + 20, y: 280 - i * 34, w: 48 }); }
+  function doodleState() {
+    return { score: 0, over: false, lastTs: 0, raf: 0, x: 160, y: 300, vy: -6.4, vx: 0, platforms: [], height: 0, jumps: 0, platformHits: 0, saved: false, dragging: false, lastX: 0, startedAt: Date.now() };
+  }
+  function initDoodle(state) {
+    state.platforms = [];
+    for (let i = 0; i < 15; i += 1) {
+      const kind = i > 7 && Math.random() < .18 ? 'boost' : (i > 10 && Math.random() < .16 ? 'moving' : 'normal');
+      state.platforms.push({ x: 28 + Math.random() * 240, y: 320 - i * 36, w: kind === 'boost' ? 46 : 54 + Math.random() * 14, kind, vx: kind === 'moving' ? (Math.random() < .5 ? -0.8 : 0.8) : 0 });
+    }
+  }
   function renderDoodle(body) {
-    const state = getState('doodle', () => { const s = doodleState(); initDoodle(s); return s; });
-    const stage = createCanvas(body, 'clamp(300px, 54dvh, 470px)');
-    body.insertAdjacentHTML('afterbegin', `<div class="arcadeHud">${gamesStatLine('Skóre', state.score)}${gamesStatLine('Výška', Math.max(0, Math.round((state.highest - state.y) * 1.5)))}${gamesStatLine('Stav', state.over ? 'Konec' : 'Skok')}` + `</div><div class="arcadeControls"><button type="button" class="gameControlBtn" data-doodle="left">◀</button><button type="button" class="gameControlBtn" data-doodle="right">▶</button><button type="button" class="gameControlBtn" data-doodle="restart">Nová hra</button></div>${gamesTop3Block('doodle', 'bodů', 5)}`);
+    const state = getState('doodle', () => { const s2 = doodleState(); initDoodle(s2); return s2; });
+    const stage = createCanvas(body, 'clamp(330px, 46dvh, 500px)');
+    if (stage.wrap) stage.wrap.classList.add('isFullGame', 'arcadeNoPageScroll', 'doodleCanvasWrap');
+    body.insertAdjacentHTML('afterbegin', `<div class="arcadeHud arcadeHudWide3 arcadeHudSingleLine">${gamesStatLine('Skóre', state.score)}${gamesStatLine('Výška', Math.floor(state.height || 0))}${gamesStatLine('Skoky', state.jumps || 0)}</div><div class="arcadeControls arcadeOnlyRestart"><button type="button" class="gameControlBtn" id="doodleRestartBtn">Nová hra</button></div>`);
+    const doodleWrap = body.querySelector('.doodleCanvasWrap');
+    if (doodleWrap) doodleWrap.insertAdjacentHTML('afterend', gamesTop3Block('doodle', 'bodů', 5).replace('gamesTop5ScrollCard', 'gamesTop5ScrollCard arcadeTopScoreTight'));
     const canvas = stage.canvas, ctx = stage.ctx;
-    const setMove = (dir) => { if (dir === 'left') state.vx = -2.8; else if (dir === 'right') state.vx = 2.8; };
-    body.querySelector('[data-doodle="left"]').addEventListener('click', () => setMove('left'));
-    body.querySelector('[data-doodle="right"]').addEventListener('click', () => setMove('right'));
-    body.querySelector('[data-doodle="restart"]').addEventListener('click', () => { Object.assign(state, doodleState()); initDoodle(state); });
-    canvas.addEventListener('pointermove', (ev) => { const rect = canvas.getBoundingClientRect(); const x = ev.clientX - rect.left; state.vx = (x < rect.width / 2) ? -2.6 : 2.6; });
+    const reset = () => { Object.assign(state, doodleState()); initDoodle(state); draw(); };
+    body.querySelector('#doodleRestartBtn').addEventListener('click', reset);
+    const finishDoodle = () => {
+      arcadeRecordOnce(state, 'doodle', {
+        completed: true,
+        plays: 1,
+        bestScore: state.score,
+        bestHeight: Math.floor(state.height || 0),
+        bestJumps: state.jumps || 0,
+        bestPlatforms: state.platformHits || 0,
+        lastResult: `${state.score} bodů`
+      });
+    };
+    const pointerDown = (ev) => { ev.preventDefault(); canvas.setPointerCapture && canvas.setPointerCapture(ev.pointerId); state.dragging = true; state.lastX = ev.clientX; };
+    const pointerMove = (ev) => {
+      if (!state.dragging) return;
+      ev.preventDefault();
+      const dx = ev.clientX - state.lastX;
+      state.lastX = ev.clientX;
+      state.vx = clamp((state.vx || 0) + dx * 0.045, -5.8, 5.8);
+    };
+    const pointerEnd = (ev) => { ev?.preventDefault?.(); state.dragging = false; };
+    canvas.addEventListener('pointerdown', pointerDown);
+    canvas.addEventListener('pointermove', pointerMove);
+    canvas.addEventListener('pointerup', pointerEnd);
+    canvas.addEventListener('pointercancel', pointerEnd);
+    const addPlatform = (w, y) => {
+      const roll = Math.random();
+      const kind = roll > .86 ? 'boost' : roll > .70 ? 'moving' : 'normal';
+      state.platforms.push({ x: 18 + Math.random() * Math.max(1, w - 86), y, w: kind === 'boost' ? 44 : 48 + Math.random() * 20, kind, vx: kind === 'moving' ? (Math.random() < .5 ? -0.9 : 0.9) : 0 });
+    };
+    const end = () => { if (!state.over) { state.over = true; finishDoodle(); } };
     const draw = () => {
       const { w, h } = stage.resize();
+      const colors = arcadeThemeColors();
       ctx.clearRect(0, 0, w, h);
-      ctx.fillStyle = 'rgba(8,12,18,.94)'; ctx.fillRect(0, 0, w, h);
-      state.platforms.forEach((p) => { ctx.fillStyle = 'rgba(124,255,124,.16)'; ctx.fillRect(p.x, p.y, p.w, 10); });
-      ctx.fillStyle = '#8bffb2'; ctx.beginPath(); ctx.arc(state.x, state.y, 10, 0, Math.PI * 2); ctx.fill();
-      if (state.over) { ctx.fillStyle = 'rgba(7,10,8,.7)'; ctx.fillRect(0, 0, w, h); ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.font = '18px system-ui'; ctx.fillText('Konec hry', w / 2, h / 2); }
+      arcadeDrawStageBg(ctx, w, h, colors, { clean: true });
+      ctx.strokeStyle = 'rgba(255,255,255,.16)'; ctx.lineWidth = 1; ctx.strokeRect(0.5, 0.5, w - 1, h - 1);
+      state.platforms.forEach((p) => {
+        ctx.save();
+        const fill = p.kind === 'boost' ? colors.gold : p.kind === 'moving' ? colors.accent2 : colors.accent;
+        ctx.fillStyle = fill; ctx.shadowColor = fill; ctx.shadowBlur = p.kind === 'boost' ? 16 : 9; ctx.globalAlpha = .78;
+        if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(p.x, p.y, p.w, 9, 5); ctx.fill(); } else ctx.fillRect(p.x, p.y, p.w, 9);
+        ctx.restore();
+      });
+      ctx.save();
+      ctx.translate(state.x, state.y);
+      ctx.fillStyle = colors.soft; ctx.shadowColor = colors.accent; ctx.shadowBlur = 14;
+      ctx.beginPath(); ctx.arc(0, 0, 12, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = colors.accent; ctx.beginPath(); ctx.arc(-4, -3, 2, 0, Math.PI * 2); ctx.arc(4, -3, 2, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+      if (state.over) { ctx.fillStyle = 'rgba(0,0,0,.62)'; ctx.fillRect(0, 0, w, h); ctx.fillStyle = colors.soft; ctx.textAlign = 'center'; ctx.font = '20px system-ui'; ctx.fillText('Konec hry', w / 2, h / 2 - 10); ctx.font = '12px system-ui'; ctx.fillText(`${state.score} bodů · výška ${Math.floor(state.height || 0)}`, w / 2, h / 2 + 16); }
     };
     const loop = (ts) => {
       if (!rakGameShouldTick()) { state.lastTs = 0; state.raf = 0; return; }
       const dt = rakGameDelta(state, ts);
       const { w, h } = stage.resize();
       if (!state.over) {
-        state.x += state.vx * dt / 16;
-        state.x = (state.x + w) % w;
-        state.vy += 0.25 * dt / 16;
-        state.y += state.vy * dt / 16;
-        if (state.y < h * 0.35) {
-          const dy = h * 0.35 - state.y;
-          state.y = h * 0.35;
-          state.highest = Math.min(state.highest, state.y);
-          state.platforms.forEach(p => p.y += dy);
-          state.score += Math.max(1, Math.round(dy));
+        const step = dt / 16;
+        state.platforms.forEach((p) => { if (p.kind === 'moving') { p.x += p.vx * step; if (p.x < 8 || p.x + p.w > w - 8) p.vx *= -1; } });
+        state.vx *= Math.pow(.985, step);
+        state.x += state.vx * step;
+        if (state.x < -10) state.x = w + 10;
+        if (state.x > w + 10) state.x = -10;
+        state.vy += 0.26 * step;
+        state.y += state.vy * step;
+        if (state.y < h * 0.36) {
+          const dy = h * 0.36 - state.y;
+          state.y = h * 0.36;
+          state.height += dy;
+          state.score += Math.max(1, Math.round(dy * 1.35));
+          state.platforms.forEach(p => { p.y += dy; });
         }
         state.platforms.forEach((p) => {
-          if (state.vy > 0 && state.x > p.x - 4 && state.x < p.x + p.w + 4 && state.y > p.y - 10 && state.y < p.y + 12) {
-            state.vy = -6.5;
+          if (state.vy > 0 && state.x > p.x - 8 && state.x < p.x + p.w + 8 && state.y > p.y - 16 && state.y < p.y + 12) {
+            state.vy = p.kind === 'boost' ? -9.4 : -6.8;
+            state.jumps = Number(state.jumps || 0) + 1;
+            state.platformHits = Number(state.platformHits || 0) + 1;
+            if (p.kind === 'boost') state.score += 60;
           }
         });
-        state.platforms = state.platforms.filter(p => p.y < h + 20);
-        while (state.platforms.length < 14) state.platforms.push({ x: Math.random() * (w - 60), y: -20 - Math.random() * 40, w: 48 + Math.random() * 20 });
-        if (state.y > h + 20) state.over = true;
+        state.platforms = state.platforms.filter(p => p.y < h + 26);
+        while (state.platforms.length < 15) addPlatform(w, -20 - Math.random() * 40);
+        if (state.y > h + 28) end();
       }
-      body.querySelector('.arcadeHud').innerHTML = `${gamesStatLine('Skóre', state.score)}${gamesStatLine('Výška', Math.max(0, Math.round((state.highest - state.y) * 1.5)))}${gamesStatLine('Stav', state.over ? 'Konec' : 'Skok')}`;
+      const hud = body.querySelector('.arcadeHud');
+      if (hud) hud.innerHTML = `${gamesStatLine('Skóre', state.score)}${gamesStatLine('Výška', Math.floor(state.height || 0))}${gamesStatLine('Skoky', state.jumps || 0)}`;
       draw();
       state.raf = rakGameRequestFrame(state, loop);
     };
     state.raf = rakGameRequestFrame(state, loop);
-    addCleanup(() => { cancelAnimationFrame(state.raf); if (state.over) gamesRecordStat('doodle', { completed: true, plays: 1, bestScore: state.score, lastResult: String(state.score) }); });
+    addCleanup(() => { cancelAnimationFrame(state.raf); canvas.removeEventListener('pointerdown', pointerDown); canvas.removeEventListener('pointermove', pointerMove); canvas.removeEventListener('pointerup', pointerEnd); canvas.removeEventListener('pointercancel', pointerEnd); if (state.over) finishDoodle(); });
+    draw();
     setActiveState('doodle', state);
   }
 
   // Bubble Shooter ---------------------------------------------------------
-  function bubbleState() { return { score: 0, over: false, lastTs: 0, raf: 0, aim: 0, shot: null, grid: [], colors: ['#ff8f8f', '#ffe27a', '#8bffb2', '#8fb2ff', '#c18bff'], rows: 8, cols: 8, combo: 0 }; }
-  function initBubble(state) { state.grid = Array.from({ length: state.rows }, (_, r) => Array.from({ length: state.cols }, (_, c) => (r < 4 ? randomPick(state.colors) : ''))); }
+  function bubbleState() {
+    return { score: 0, over: false, cleared: false, lastTs: 0, raf: 0, aim: -Math.PI / 2, shot: null, grid: [], colors: ['#ff8f8f', '#ffe27a', '#8bffb2', '#8fb2ff', '#c18bff'], rows: 10, cols: 8, combo: 0, bestCombo: 0, shots: 0, popped: 0, dropped: 0, saved: false, nextColor: '#8bffb2', aiming: false };
+  }
+  function initBubble(state) {
+    state.nextColor = randomPick(state.colors);
+    state.grid = Array.from({ length: state.rows }, (_, r) => Array.from({ length: state.cols }, () => (r < 4 ? randomPick(state.colors) : '')));
+  }
   function renderBubble(body) {
-    const state = getState('bubble', () => { const s = bubbleState(); initBubble(s); return s; });
-    const stage = createCanvas(body, 'clamp(300px, 52dvh, 460px)');
-    body.insertAdjacentHTML('afterbegin', `<div class="arcadeHud">${gamesStatLine('Skóre', state.score)}${gamesStatLine('Combo', state.combo)}${gamesStatLine('Stav', state.over ? 'Konec' : 'Pusť')}` + `</div><div class="arcadeControls"><button type="button" class="gameControlBtn" data-bubble="shoot">Střelba</button><button type="button" class="gameControlBtn" data-bubble="restart">Nová hra</button></div>${gamesTop3Block('bubble', 'bodů', 5)}`);
+    const state = getState('bubble', () => { const s2 = bubbleState(); initBubble(s2); return s2; });
+    const stage = createCanvas(body, 'clamp(330px, 46dvh, 500px)');
+    if (stage.wrap) stage.wrap.classList.add('isFullGame', 'arcadeNoPageScroll', 'bubbleCanvasWrap');
+    body.insertAdjacentHTML('afterbegin', `<div class="arcadeHud arcadeHudWide3 arcadeHudSingleLine">${gamesStatLine('Skóre', state.score)}${gamesStatLine('Combo', state.bestCombo || 0)}${gamesStatLine('Střely', state.shots || 0)}</div><div class="arcadeControls arcadeOnlyRestart"><button type="button" class="gameControlBtn" id="bubbleRestartBtn">Nová hra</button></div>`);
+    const bubbleWrap = body.querySelector('.bubbleCanvasWrap');
+    if (bubbleWrap) bubbleWrap.insertAdjacentHTML('afterend', gamesTop3Block('bubble', 'bodů', 5).replace('gamesTop5ScrollCard', 'gamesTop5ScrollCard arcadeTopScoreTight'));
     const canvas = stage.canvas, ctx = stage.ctx;
-    const fire = (ev) => { if (state.over) return; const rect = canvas.getBoundingClientRect(); const x = ev ? ev.clientX - rect.left : rect.width / 2; state.aim = clamp((x / rect.width) * Math.PI - Math.PI / 2, -Math.PI * .9, -Math.PI * .1); if (!state.shot) state.shot = { x: rect.width / 2, y: rect.height - 18, vx: Math.cos(state.aim) * 5.2, vy: Math.sin(state.aim) * 5.2, color: randomPick(state.colors) }; };
-    canvas.addEventListener('pointermove', (ev) => { const rect = canvas.getBoundingClientRect(); state.aim = clamp(((ev.clientX - rect.left) / rect.width) * Math.PI - Math.PI / 2, -Math.PI * .9, -Math.PI * .1); });
-    canvas.addEventListener('pointerdown', (ev) => fire(ev));
-    body.querySelector('[data-bubble="shoot"]').addEventListener('click', () => fire());
-    body.querySelector('[data-bubble="restart"]').addEventListener('click', () => { Object.assign(state, bubbleState()); initBubble(state); });
-    const draw = () => {
-      const { w, h } = stage.resize();
-      const cell = Math.floor(w / state.cols);
-      ctx.clearRect(0, 0, w, h);
-      ctx.fillStyle = 'rgba(8,12,18,.94)'; ctx.fillRect(0, 0, w, h);
-      for (let r = 0; r < state.rows; r += 1) {
-        for (let c = 0; c < state.cols; c += 1) {
-          const color = state.grid[r][c];
-          if (!color) continue;
-          ctx.fillStyle = color; ctx.beginPath(); ctx.arc(c * cell + cell / 2, r * cell + cell / 2 + 12, cell * .34, 0, Math.PI * 2); ctx.fill();
-        }
-      }
-      if (state.shot) { ctx.fillStyle = state.shot.color; ctx.beginPath(); ctx.arc(state.shot.x, state.shot.y, cell * .28, 0, Math.PI * 2); ctx.fill(); }
-      if (state.over) { ctx.fillStyle = 'rgba(7,10,8,.7)'; ctx.fillRect(0, 0, w, h); ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.font = '18px system-ui'; ctx.fillText('Konec hry', w / 2, h / 2); }
+    const reset = () => { Object.assign(state, bubbleState()); initBubble(state); draw(); };
+    body.querySelector('#bubbleRestartBtn').addEventListener('click', reset);
+    const finishBubble = () => {
+      arcadeRecordOnce(state, 'bubble', {
+        completed: true,
+        plays: 1,
+        bestScore: state.score,
+        bestCombo: state.bestCombo || 0,
+        bestPops: state.popped || 0,
+        bestDrops: state.dropped || 0,
+        bestShots: state.shots || 0,
+        bestClears: state.cleared ? 1 : 0,
+        lastResult: `${state.score} bodů`
+      });
     };
+    const setAimFromEvent = (ev) => {
+      const rect = canvas.getBoundingClientRect();
+      const sx = rect.width / 2;
+      const sy = rect.height - 24;
+      const x = ev.clientX - rect.left;
+      const y = ev.clientY - rect.top;
+      state.aim = clamp(Math.atan2(y - sy, x - sx), -Math.PI + .18, -.18);
+    };
+    const fire = () => {
+      if (state.over || state.shot) return;
+      const rect = canvas.getBoundingClientRect();
+      const speed = 6.2;
+      state.shot = { x: rect.width / 2, y: rect.height - 24, vx: Math.cos(state.aim) * speed, vy: Math.sin(state.aim) * speed, color: state.nextColor };
+      state.nextColor = randomPick(state.colors);
+      state.shots = Number(state.shots || 0) + 1;
+    };
+    const pointerDown = (ev) => { ev.preventDefault(); canvas.setPointerCapture && canvas.setPointerCapture(ev.pointerId); state.aiming = true; setAimFromEvent(ev); };
+    const pointerMove = (ev) => { if (!state.aiming) return; ev.preventDefault(); setAimFromEvent(ev); };
+    const pointerEnd = (ev) => { ev?.preventDefault?.(); if (state.aiming) fire(); state.aiming = false; };
+    canvas.addEventListener('pointerdown', pointerDown);
+    canvas.addEventListener('pointermove', pointerMove);
+    canvas.addEventListener('pointerup', pointerEnd);
+    canvas.addEventListener('pointercancel', pointerEnd);
+    const occupied = () => state.grid.some(row => row.some(Boolean));
+    const findSlot = (row, col) => {
+      const candidates = [[row, col], [row, col - 1], [row, col + 1], [row - 1, col], [row + 1, col], [row - 1, col - 1], [row - 1, col + 1], [row + 1, col - 1], [row + 1, col + 1]];
+      for (const [r, c] of candidates) if (r >= 0 && c >= 0 && r < state.rows && c < state.cols && !state.grid[r][c]) return [r, c];
+      return [clamp(row, 0, state.rows - 1), clamp(col, 0, state.cols - 1)];
+    };
+    const bubbleDirs = [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
     const clusterPop = (r, c, color, seen = new Set()) => {
       const q = [[r, c]]; const cluster = [];
       while (q.length) {
@@ -2452,49 +2606,116 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         if (rr < 0 || cc < 0 || rr >= state.rows || cc >= state.cols) continue;
         if (state.grid[rr][cc] !== color) continue;
         cluster.push([rr, cc]);
-        [[1,0],[-1,0],[0,1],[0,-1]].forEach(([dr, dc]) => q.push([rr + dr, cc + dc]));
+        bubbleDirs.forEach(([dr, dc]) => q.push([rr + dr, cc + dc]));
       }
       return cluster;
+    };
+    const dropFloatingBubbles = () => {
+      const connected = new Set();
+      const q = [];
+      for (let c = 0; c < state.cols; c += 1) {
+        if (state.grid[0][c]) q.push([0, c]);
+      }
+      while (q.length) {
+        const [rr, cc] = q.pop();
+        const k = `${rr}:${cc}`;
+        if (connected.has(k)) continue;
+        if (rr < 0 || cc < 0 || rr >= state.rows || cc >= state.cols) continue;
+        if (!state.grid[rr][cc]) continue;
+        connected.add(k);
+        bubbleDirs.forEach(([dr, dc]) => q.push([rr + dr, cc + dc]));
+      }
+      let dropped = 0;
+      for (let r = 0; r < state.rows; r += 1) {
+        for (let c = 0; c < state.cols; c += 1) {
+          if (state.grid[r][c] && !connected.has(`${r}:${c}`)) {
+            state.grid[r][c] = '';
+            dropped += 1;
+          }
+        }
+      }
+      if (dropped) {
+        state.dropped = Number(state.dropped || 0) + dropped;
+        state.popped = Number(state.popped || 0) + dropped;
+        state.score += dropped * 18 + Math.min(180, dropped * 6);
+      }
+      return dropped;
+    };
+    const dropRows = () => {
+      if ((state.shots || 0) % 5 !== 0) return;
+      state.grid.pop();
+      state.grid.unshift(Array.from({ length: state.cols }, () => randomPick(state.colors)));
+      if (state.grid[state.rows - 1].some(Boolean)) end(false);
+    };
+    const settleShot = (row, col) => {
+      const [r, c] = findSlot(row, col);
+      state.grid[r][c] = state.shot.color;
+      const cluster = clusterPop(r, c, state.shot.color);
+      if (cluster.length >= 3) {
+        cluster.forEach(([rr, cc]) => { state.grid[rr][cc] = ''; });
+        state.combo = Number(state.combo || 0) + 1;
+        state.bestCombo = Math.max(Number(state.bestCombo || 0) || 0, state.combo);
+        state.popped = Number(state.popped || 0) + cluster.length;
+        state.score += cluster.length * 26 + Math.min(220, state.combo * 22);
+        dropFloatingBubbles();
+      } else {
+        state.combo = 0;
+        dropRows();
+      }
+      state.shot = null;
+      if (!occupied()) end(true);
+    };
+    const end = (cleared = false) => { if (!state.over) { state.over = true; state.cleared = !!cleared; finishBubble(); } };
+    const draw = () => {
+      const { w, h } = stage.resize();
+      const colors = arcadeThemeColors();
+      const cell = Math.floor(w / state.cols);
+      ctx.clearRect(0, 0, w, h);
+      arcadeDrawStageBg(ctx, w, h, colors, { clean: true });
+      ctx.strokeStyle = 'rgba(255,255,255,.16)'; ctx.strokeRect(0.5, 0.5, w - 1, h - 1);
+      for (let r = 0; r < state.rows; r += 1) {
+        for (let c = 0; c < state.cols; c += 1) {
+          const color = state.grid[r][c];
+          if (!color) continue;
+          const cx = c * cell + cell / 2; const cy = r * cell + cell / 2 + 12;
+          ctx.save(); ctx.fillStyle = color; ctx.shadowColor = color; ctx.shadowBlur = 10; ctx.globalAlpha = .86;
+          ctx.beginPath(); ctx.arc(cx, cy, cell * .34, 0, Math.PI * 2); ctx.fill();
+          ctx.restore();
+        }
+      }
+      const sx = w / 2, sy = h - 24;
+      ctx.save(); ctx.strokeStyle = 'rgba(255,255,255,.26)'; ctx.setLineDash([6, 7]); ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx + Math.cos(state.aim) * 110, sy + Math.sin(state.aim) * 110); ctx.stroke(); ctx.setLineDash([]); ctx.restore();
+      ctx.fillStyle = state.nextColor; ctx.shadowColor = state.nextColor; ctx.shadowBlur = 12; ctx.beginPath(); ctx.arc(sx, sy, Math.max(12, cell * .28), 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
+      if (state.shot) { ctx.fillStyle = state.shot.color; ctx.shadowColor = state.shot.color; ctx.shadowBlur = 12; ctx.beginPath(); ctx.arc(state.shot.x, state.shot.y, cell * .28, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0; }
+      if (state.over) { ctx.fillStyle = 'rgba(0,0,0,.62)'; ctx.fillRect(0, 0, w, h); ctx.fillStyle = colors.soft; ctx.textAlign = 'center'; ctx.font = '20px system-ui'; ctx.fillText(state.cleared ? 'Vyčištěno' : 'Konec hry', w / 2, h / 2 - 10); ctx.font = '12px system-ui'; ctx.fillText(`${state.score} bodů · combo ${state.bestCombo || 0}`, w / 2, h / 2 + 16); }
     };
     const loop = (ts) => {
       if (!rakGameShouldTick()) { state.lastTs = 0; state.raf = 0; return; }
       const dt = rakGameDelta(state, ts);
       const { w, h } = stage.resize();
       const cell = Math.floor(w / state.cols);
-      if (!state.over) {
-        if (state.shot) {
-          state.shot.x += state.shot.vx * dt / 16;
-          state.shot.y += state.shot.vy * dt / 16;
-          if (state.shot.x < 10 || state.shot.x > w - 10) state.shot.vx *= -1;
-          if (state.shot.y < 18) {
-            const row = 0; const col = clamp(Math.round(state.shot.x / cell - 0.5), 0, state.cols - 1);
-            state.grid[row][col] = state.shot.color;
-            const cluster = clusterPop(row, col, state.shot.color);
-            if (cluster.length >= 3) { cluster.forEach(([rr, cc]) => { state.grid[rr][cc] = ''; }); state.score += cluster.length * 10; state.combo += 1; } else { state.combo = 0; }
-            state.shot = null;
-          } else {
-            let hit = false;
-            for (let r = 0; r < state.rows; r += 1) for (let c = 0; c < state.cols; c += 1) {
-              const color = state.grid[r][c]; if (!color) continue;
-              const cx = c * cell + cell / 2, cy = r * cell + cell / 2 + 12;
-              if (Math.hypot(state.shot.x - cx, state.shot.y - cy) < cell * .34) {
-                state.grid[r][c] = state.shot.color;
-                const cluster = clusterPop(r, c, state.shot.color);
-                if (cluster.length >= 3) { cluster.forEach(([rr, cc]) => { state.grid[rr][cc] = ''; }); state.score += cluster.length * 10; state.combo += 1; } else { state.combo = 0; }
-                state.shot = null; hit = true; break;
-              }
-            }
-            if (!hit && state.shot) { /* continue */ }
+      if (!state.over && state.shot) {
+        state.shot.x += state.shot.vx * dt / 16;
+        state.shot.y += state.shot.vy * dt / 16;
+        if (state.shot.x < cell * .28) { state.shot.x = cell * .28; state.shot.vx = Math.abs(state.shot.vx); }
+        if (state.shot.x > w - cell * .28) { state.shot.x = w - cell * .28; state.shot.vx = -Math.abs(state.shot.vx); }
+        if (state.shot.y < 18) settleShot(0, clamp(Math.round(state.shot.x / cell - .5), 0, state.cols - 1));
+        else {
+          outer: for (let r = 0; r < state.rows; r += 1) for (let c = 0; c < state.cols; c += 1) {
+            const color = state.grid[r][c]; if (!color) continue;
+            const cx = c * cell + cell / 2, cy = r * cell + cell / 2 + 12;
+            if (Math.hypot(state.shot.x - cx, state.shot.y - cy) < cell * .58) { settleShot(r, c); break outer; }
           }
         }
-        if (!state.grid.some(row => row.some(Boolean))) state.over = true;
       }
-      body.querySelector('.arcadeHud').innerHTML = `${gamesStatLine('Skóre', state.score)}${gamesStatLine('Combo', state.combo)}${gamesStatLine('Stav', state.over ? 'Konec' : 'Pusť')}`;
+      const hud = body.querySelector('.arcadeHud');
+      if (hud) hud.innerHTML = `${gamesStatLine('Skóre', state.score)}${gamesStatLine('Combo', state.bestCombo || 0)}${gamesStatLine('Střely', state.shots || 0)}`;
       draw();
       state.raf = rakGameRequestFrame(state, loop);
     };
     state.raf = rakGameRequestFrame(state, loop);
-    addCleanup(() => { cancelAnimationFrame(state.raf); if (state.over) gamesRecordStat('bubble', { completed: true, plays: 1, bestScore: state.score, lastResult: String(state.score) }); });
+    addCleanup(() => { cancelAnimationFrame(state.raf); canvas.removeEventListener('pointerdown', pointerDown); canvas.removeEventListener('pointermove', pointerMove); canvas.removeEventListener('pointerup', pointerEnd); canvas.removeEventListener('pointercancel', pointerEnd); if (state.over) finishBubble(); });
+    draw();
     setActiveState('bubble', state);
   }
 
