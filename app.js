@@ -1,4 +1,4 @@
-// v.1.1 (664) – Piškvorky: pravý okraj mřížky + X červené, O zelené ve fosforovém stylu.
+// v.1.1 (665) – Piškvorky online: 4místný kód, Supabase session update/insert a oprava closeGameShell.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
@@ -219,7 +219,7 @@ function runPhaseOneFinalAudit() {
   const requiredDom = [
     '#home',
     '#rotace',
-    '#stats',
+    '#rotaceStatsPanel',
     '.bottomNav',
     '#dashKantyna',
     '#dashJidelna',

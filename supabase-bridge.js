@@ -340,7 +340,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v664');
+      const channel = client.channel('rak-public-live-v665');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -392,7 +392,7 @@
   const LOCAL_GAME_UI_SETTINGS_PREFIX = 'rotace_supabase_game_ui_settings_v1:';
   const LOCAL_GAME_SESSIONS_PREFIX = 'rotace_supabase_game_sessions_v1:';
   const GAME_UI_SETTINGS_TYPE = '__profile_ui';
-  const SUPABASE_GAME_CACHE_TTL_MS = 5 * 60 * 1000;
+  const SUPABASE_GAME_CACHE_TTL_MS = 30 * 1000;
   const SUPABASE_WRITE_DEDUPE_WINDOW_MS = 1400;
   const SUPABASE_WRITE_FINGERPRINT_LIMIT = 180000;
   let flushPromise = null;
@@ -933,7 +933,7 @@
 
 
   function normalizeInviteCode(code) {
-    return String(code || '').trim().toUpperCase();
+    return String(code || '').replace(/\D/g, '').slice(0, 4);
   }
 
   function gameSessionCacheKey(code) {
@@ -1090,14 +1090,27 @@
       move_history: Array.isArray(sessionData && sessionData.move_history) ? sessionData.move_history : [],
       updated_at: new Date().toISOString()
     };
-    const { data: updatedSession, error: sessionUpdErr } = await runSupabaseOperation('game_sessions.accept_upsert', () => client
-      .from('game_sessions')
-      .upsert([Object.assign({ id: sessionData && sessionData.id ? sessionData.id : undefined }, sessionRow)], { onConflict: 'invite_id' })
-      .select('*')
-      .maybeSingle(), { mode: 'write' });
-    if (sessionUpdErr) throw sessionUpdErr;
-    writeGameSessionCache(inviteCode, updatedInvite || invite, updatedSession || sessionData || null);
-    return { invite: updatedInvite || invite, session: updatedSession || sessionData || null };
+    let updatedSession = null;
+    if (sessionData && sessionData.id) {
+      const { data, error } = await runSupabaseOperation('game_sessions.accept_update', () => client
+        .from('game_sessions')
+        .update(sessionRow)
+        .eq('id', sessionData.id)
+        .select('*')
+        .maybeSingle(), { mode: 'write' });
+      if (error) throw error;
+      updatedSession = data || Object.assign({}, sessionData, sessionRow);
+    } else {
+      const { data, error } = await runSupabaseOperation('game_sessions.accept_insert', () => client
+        .from('game_sessions')
+        .insert([sessionRow])
+        .select('*')
+        .maybeSingle(), { mode: 'write' });
+      if (error) throw error;
+      updatedSession = data || sessionRow;
+    }
+    writeGameSessionCache(inviteCode, updatedInvite || invite, updatedSession || null);
+    return { invite: updatedInvite || invite, session: updatedSession || null };
   }
 
   async function loadGameSessionByInviteCodeDirect(client, code) {
@@ -1135,12 +1148,25 @@
       updated_at: new Date().toISOString(),
       finished_at: boardState.gameOver ? new Date().toISOString() : (sessionData && sessionData.finished_at ? sessionData.finished_at : null)
     };
-    const { data: updatedSession, error: updErr } = await runSupabaseOperation('game_sessions.save_by_invite', () => client
-      .from('game_sessions')
-      .upsert([Object.assign({ id: sessionData && sessionData.id ? sessionData.id : undefined }, sessionRow)], { onConflict: 'invite_id' })
-      .select('*')
-      .maybeSingle(), { mode: 'write' });
-    if (updErr) throw updErr;
+    let updatedSession = null;
+    if (sessionData && sessionData.id) {
+      const { data, error } = await runSupabaseOperation('game_sessions.save_by_invite_update', () => client
+        .from('game_sessions')
+        .update(sessionRow)
+        .eq('id', sessionData.id)
+        .select('*')
+        .maybeSingle(), { mode: 'write' });
+      if (error) throw error;
+      updatedSession = data || Object.assign({}, sessionData, sessionRow);
+    } else {
+      const { data, error } = await runSupabaseOperation('game_sessions.save_by_invite_insert', () => client
+        .from('game_sessions')
+        .insert([sessionRow])
+        .select('*')
+        .maybeSingle(), { mode: 'write' });
+      if (error) throw error;
+      updatedSession = data || sessionRow;
+    }
     writeGameSessionCache(code, loaded.invite, updatedSession || sessionRow);
     return { ok: true, invite: loaded.invite, session: updatedSession || null, status: sessionRow.status };
   }
@@ -1767,12 +1793,13 @@
     } catch (err) {}
   }
 
-  async function loadGameStatsDirect(client, gameType, limit) {
+  async function loadGameStatsDirect(client, gameType, limit, options) {
     const type = String(gameType || '').trim();
     if (!type) return [];
     const safeLimit = Math.max(1, Math.min(50, Number(limit) || 10));
     const cacheKey = gameStatsCacheKey(type, safeLimit);
-    const cachedStats = readTimedCache(cacheKey, SUPABASE_GAME_CACHE_TTL_MS);
+    const forceRefresh = !!(options && options.force);
+    const cachedStats = forceRefresh ? null : readTimedCache(cacheKey, SUPABASE_GAME_CACHE_TTL_MS);
     if (cachedStats && cachedStats.fresh) {
       rememberTimedCacheHit('stats', cachedStats);
       return cachedStats.rows;
@@ -2376,7 +2403,7 @@
     saveMachineSettings,
     loadRotationMonthEntries,
     saveRotationMonthEntries,
-    loadGameStats: async (gameType, limit = 10) => {
+    loadGameStats: async (gameType, limit = 10, options = {}) => {
       const safeLimit = Math.max(1, Math.min(50, Number(limit) || 10));
       const cache = readTimedCache(gameStatsCacheKey(gameType, safeLimit), SUPABASE_GAME_CACHE_TTL_MS);
       const client = getClient();
@@ -2387,7 +2414,7 @@
         }
         return [];
       }
-      try { const rows = await loadGameStatsDirect(client, gameType, safeLimit); state.lastError = null; return rows; }
+      try { const rows = await loadGameStatsDirect(client, gameType, safeLimit, options); state.lastError = null; return rows; }
       catch (err) {
         state.lastError = err;
         console.error('Game stats load failed', err);

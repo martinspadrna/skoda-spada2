@@ -6015,3 +6015,25 @@ html body.tttOpen .tttOverlay .tttResultRestartBtn{
   border:1px solid rgba(220,255,220,.58) !important;
   box-shadow:0 0 24px rgba(57,255,20,.22), inset 0 0 0 1px rgba(255,255,255,.28) !important;
 }
+
+
+/* v.1.1 (665) – Piškvorky: viditelné tlačítko Nová hra ve výsledkovém panelu. */
+html body .tttOverlay .tttResultActions,
+html body.tttOpen .tttOverlay .tttResultActions{
+  margin-top:13px !important;
+  display:flex !important;
+  justify-content:center !important;
+}
+html body .tttOverlay .tttResultRestartBtn,
+html body.tttOpen .tttOverlay .tttResultRestartBtn{
+  min-height:42px !important;
+  padding:10px 18px !important;
+  border-radius:16px !important;
+  border:1px solid rgba(124,255,124,.84) !important;
+  background:linear-gradient(180deg, rgba(124,255,124,.96), rgba(50,220,94,.86)) !important;
+  color:#041008 !important;
+  font-weight:1000 !important;
+  letter-spacing:.02em !important;
+  text-shadow:none !important;
+  box-shadow:0 0 24px rgba(124,255,124,.36), inset 0 1px 0 rgba(255,255,255,.34) !important;
+}

@@ -1,3 +1,12 @@
+## v.1.1 (665)
+- Piškvorky online: kód pozvánky je nově jednoduchý 4místný číselný kód.
+- Opravené ukládání online session v Supabase bez `upsert(... onConflict: invite_id)`, protože tabulka nemusí mít unikátní constraint na `invite_id`. Nově se session nejdřív dohledá a potom update/insert.
+- Opravená rekurze `closeGameShellProxy`, která způsobovala `Maximum call stack size exceeded`.
+- Výsledkové tlačítko „Nová hra“ je výraznější a čitelnější.
+- Online statistiky her se po zápisu obnovují s vynuceným refreshem, aby spoluhráč viděl aktuálnější odehrané hry.
+- Doplněn `mobile-web-app-capable` meta tag a Phase 1 audit už nekontroluje staré neexistující `#stats`.
+- Verze sjednocena na v.1.1 (665), cache na v1.1-665 a Supabase realtime kanál na rak-public-live-v665.
+
 ## v.1.1 (664)
 - Piškvorky: tlačítko Nová hra je přesunuté až do výsledkového panelu po skončení hry.
 - Piškvorky: X/O mají vynucené fosforové barvy přímo při renderu i finálním CSS overridem: X červené, O zelené.

@@ -887,8 +887,12 @@ function tttGetState() {
 }
 
 
+function tttNormalizeInviteCode(code) {
+  return String(code || '').replace(/\D/g, '').slice(0, 4);
+}
+
 function tttMakeInviteCode() {
-  return Math.random().toString(36).slice(2, 8).toUpperCase();
+  return String(Math.floor(1000 + Math.random() * 9000));
 }
 
 function tttGetInviteUrl(code) {
@@ -903,14 +907,14 @@ function tttReadHashInviteCode() {
     if (!hash) return '';
     const params = new URLSearchParams(hash.replace(/&/g, '&'));
     const invite = params.get('invite') || params.get('code') || '';
-    return String(invite || '').trim().toUpperCase();
+    return tttNormalizeInviteCode(invite);
   } catch (err) {
     return '';
   }
 }
 
 async function tttOpenFromInviteCode(code) {
-  const inviteCode = String(code || '').trim().toUpperCase();
+  const inviteCode = tttNormalizeInviteCode(code);
   if (!inviteCode) return false;
   try {
     showPage('games');
@@ -1136,7 +1140,8 @@ async function tttCreateInviteSession() {
         resultSavedKey: '',
         inviteUrl: ''
       };
-      tttSetOnlineStatus('Pozvánka vytvořená. Pošli odkaz spoluhráči.', 'waiting');
+      state.online.inviteUrl = tttGetInviteUrl(code);
+      tttSetOnlineStatus('Pozvánka vytvořená. Kód pro spoluhráče: ' + code + '.', 'waiting');
       return { ok: true, code, url: tttGetInviteUrl(code), result };
     }
   }
@@ -1157,14 +1162,14 @@ async function tttCreateInviteSession() {
     resultSavedKey: '',
     inviteUrl: tttGetInviteUrl(code)
   };
-  tttSetOnlineStatus('Pozvánka vytvořená lokálně. Pošli kód spoluhráči.', 'waiting');
+  tttSetOnlineStatus('Pozvánka vytvořená lokálně. Kód pro spoluhráče: ' + code + '.', 'waiting');
   return { ok: true, code, url: tttGetInviteUrl(code), local: true };
 }
 
 async function tttJoinInviteSession(code) {
   const state = tttGetState();
-  const inviteCode = String(code || '').trim().toUpperCase();
-  if (!inviteCode) return { ok: false, error: new Error('Chybí kód pozvánky.') };
+  const inviteCode = tttNormalizeInviteCode(code);
+  if (!inviteCode || inviteCode.length !== 4) return { ok: false, error: new Error('Zadej 4 čísla kódu pozvánky.') };
   const active = typeof gamesGetActiveAccount === 'function' ? gamesGetActiveAccount() : null;
   const joiner = active && active.id ? String(active.id) : null;
   if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.acceptGameInvite === 'function') {
@@ -1187,8 +1192,29 @@ async function tttJoinInviteSession(code) {
         resultSavedKey: '',
         inviteUrl: ''
       };
-      tttSetOnlineStatus('Pozvánka přijata. Hraješ proti spoluhráči.', 'active');
+      const session = result.session || (result.result && result.result.session) || null;
+      const boardState = session && session.board_state && typeof session.board_state === 'object' ? session.board_state : null;
+      if (boardState) {
+        tttApplyOnlineState(Object.assign({}, boardState, {
+          status: 'active',
+          playerXAccountNumber: session.player_x_account_number || state.online.playerXAccountNumber || null,
+          playerOAccountNumber: session.player_o_account_number || state.online.playerOAccountNumber || null
+        }), {
+          code: inviteCode,
+          inviteId: state.online.inviteId,
+          sessionId: state.online.sessionId,
+          role: 'o',
+          status: 'active'
+        });
+      }
+      state.message = 'Jsi O. Čekáš na tah hráče X.';
+      tttSetOnlineStatus(state.message, 'active');
       return { ok: true, code: inviteCode, result };
+    }
+    if (result && result.ok === false) {
+      state.message = 'Pozvánku se nepodařilo načíst online. Zkontroluj 4místný kód.';
+      tttSetOnlineStatus(state.message, 'error');
+      return result;
     }
   }
   state.online = {
@@ -1227,6 +1253,13 @@ async function tttSyncOnlineSession(force) {
   if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.loadGameSessionByInviteCode === 'function') {
     try {
       const remote = await window.RotationSupabaseBridge.loadGameSessionByInviteCode(code);
+      if (remote && remote.ok && !remote.session && remote.invite && String(remote.invite.status || '').toLowerCase() === 'accepted') {
+        state.online.status = 'active';
+        state.message = String(state.online.role || '').toUpperCase() === 'X' ? 'Jsi X. Hraješ.' : 'Čekáš na tah hráče X.';
+        tttSetOnlineStatus(state.message, 'active');
+        tttRender();
+        scheduleTttLayout();
+      }
       if (remote && remote.ok && remote.session) {
         const session = remote.session;
         const boardState = session.board_state && typeof session.board_state === 'object' ? session.board_state : {};
@@ -1250,6 +1283,11 @@ async function tttSyncOnlineSession(force) {
             role: state.online.role || '',
             status: session.status || boardState.status || 'active'
           });
+          const ownRole = String(state.online.role || '').toUpperCase();
+          if (!state.gameOver && ownRole) {
+            state.message = state.turn === ownRole ? ('Jsi ' + ownRole + '. Hraješ.') : ('Čekáš na tah hráče ' + state.turn + '.');
+            tttSetOnlineStatus(state.message, state.online.status || 'active');
+          }
           tttRender();
           scheduleTttLayout();
           if (state.gameOver) {
@@ -1304,7 +1342,7 @@ async function tttPushOnlineSession(extraPatch) {
   const nextRevision = Math.max(Number(state.online.revision || 0) || 0, Number(state.online.pendingRevision || 0) || 0) + 1;
   const payload = tttMakeOnlineStatePatch(Object.assign({}, extraPatch, {
     revision: nextRevision,
-    status: (extraPatch && extraPatch.status) || state.message || (state.gameOver ? 'finished' : (state.online.status || 'active'))
+    status: (extraPatch && extraPatch.status) || (state.gameOver ? 'finished' : (state.online.status === 'waiting' ? 'waiting' : 'active'))
   }));
   if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.saveGameSessionByInviteCode === 'function') {
     try {
@@ -2817,11 +2855,11 @@ function tttRender() {
           }
           if (urlEl) {
             urlEl.style.display = 'block';
-            urlEl.textContent = result.url || '';
+            urlEl.textContent = 'Kód: ' + (result.code || '');
           }
           if (copyBtn) copyBtn.disabled = !lastInviteUrl;
           if (shareBtn) shareBtn.disabled = !lastInviteUrl;
-          state.screen = 'start';
+          state.screen = 'game';
           state.gameOver = false;
           state.winner = null;
           state.board = Array(TTT_TOTAL_CELLS).fill('');
@@ -2829,6 +2867,8 @@ function tttRender() {
           state.message = 'Čekám na přijetí pozvánky.';
           tttRender();
           scheduleTttLayout();
+          tttStartOnlineSyncLoop();
+          void tttSyncOnlineSession(true);
         }
       } catch (err) {
         console.warn('TTT create invite failed', err);
@@ -2880,7 +2920,7 @@ function tttRender() {
       }
     });
     start.querySelector('#tttJoinInviteBtn')?.addEventListener('click', async () => {
-      const code = prompt('Zadej kód pozvánky');
+      const code = prompt('Zadej 4místný číselný kód pozvánky');
       if (code) {
         const result = await tttJoinInviteSession(code);
         if (result && result.ok) {
@@ -2912,7 +2952,7 @@ function tttRender() {
       state.resultOnlineSaved = false;
       state.resultSummary = null;
       state.message = state.mode === 'pvp'
-        ? (state.online && state.online.status === 'waiting' ? 'Čekám na přijetí pozvánky.' : 'Hraje hráč X.')
+        ? (state.online && state.online.status === 'waiting' ? 'Čekám na přijetí pozvánky.' : 'Jsi X. Hraješ.')
         : (state.mode === 'local' ? 'Na řadě je X.' : 'Hraješ za X. AI je O.');
       tttRender();
       scheduleTttLayout();
@@ -2934,7 +2974,7 @@ function tttRender() {
   if (game) game.classList.remove('uHidden');
   start.style.display = 'none';
   game.style.display = 'flex';
-  status.textContent = state.message || state.onlineStatus || (state.mode === 'pvp' ? 'Hraje hráč X.' : (state.mode === 'local' ? 'Na řadě je X.' : 'Hraješ za X. AI je O.'));
+  status.textContent = state.message || state.onlineStatus || (state.mode === 'pvp' ? ((state.online && String(state.online.role || '').toUpperCase() === state.turn) ? ('Jsi ' + state.turn + '. Hraješ.') : ('Čekáš na tah hráče ' + state.turn + '.')) : (state.mode === 'local' ? 'Na řadě je X.' : 'Hraješ za X. AI je O.'));
 
   const result = tttWinner(state.board);
   const winnerLine = result.line || [];
@@ -3020,7 +3060,7 @@ function tttHandleMove(index) {
   if (state.mode === 'pvp' || state.mode === 'local') {
     state.turn = state.turn === 'X' ? 'O' : 'X';
     state.message = state.mode === 'pvp'
-      ? (state.online && state.online.status === 'waiting' ? 'Čekám na přijetí pozvánky.' : (state.turn === 'X' ? 'Hraje hráč X.' : 'Hraje hráč O.'))
+      ? (state.online && state.online.status === 'waiting' ? 'Čekám na přijetí pozvánky.' : ((String(state.online.role || '').toUpperCase() === state.turn) ? ('Jsi ' + state.turn + '. Hraješ.') : ('Čekáš na tah hráče ' + state.turn + '.')))
       : (state.turn === 'X' ? 'Na řadě je X.' : 'Na řadě je O.');
     tttRender();
     scheduleTttLayout();
@@ -6032,7 +6072,7 @@ function gamesRecordStat(gameId, patch) {
   gamesSaveProfile(profile);
   gamesRenderStats();
   void gamesSyncStatOnline(gameId, nextPatch);
-  void gamesRefreshRemoteLeaderboards(gameId);
+  void gamesRefreshRemoteLeaderboards(gameId, true);
 }
 
 
@@ -6061,7 +6101,7 @@ function gamesNormalizeRemoteLeaderboardRows(gameId, rows, limit = 10) {
     .slice(0, limit);
 }
 
-async function gamesRefreshRemoteLeaderboards(gameId) {
+async function gamesRefreshRemoteLeaderboards(gameId, force) {
   if (!window.RotationSupabaseBridge || typeof window.RotationSupabaseBridge.loadGameStats !== 'function') return [];
   const ids = gameId ? [gameId] : ['ttt', '2048', 'snake', 'flap'];
   app.gamesLeaderboardCache = app.gamesLeaderboardCache || { ttt: [], '2048': [], snake: [], flap: [] };
@@ -6071,13 +6111,13 @@ async function gamesRefreshRemoteLeaderboards(gameId) {
   const freshIds = ids.filter((id) => {
     const last = Number(app.gamesLeaderboardThrottle[id] || 0) || 0;
     const hasCache = Array.isArray(app.gamesLeaderboardCache[id]) && app.gamesLeaderboardCache[id].length;
-    return !hasCache || (now - last) > ttl;
+    return !!force || !hasCache || (now - last) > ttl;
   });
   if (!freshIds.length) return ids.map((id) => ({ id, rows: (app.gamesLeaderboardCache[id] || []).slice(0, 10), cached: true }));
   try {
     const results = await Promise.all(freshIds.map(async (id) => {
       try {
-        const rows = await window.RotationSupabaseBridge.loadGameStats(id, 10);
+        const rows = await window.RotationSupabaseBridge.loadGameStats(id, 10, { force: !!force });
         const normalized = gamesNormalizeRemoteLeaderboardRows(id, rows, 10);
         app.gamesLeaderboardCache[id] = normalized;
         app.gamesLeaderboardThrottle[id] = Date.now();
@@ -7895,9 +7935,15 @@ window.openGameShell = function openGameShellPublic(gameId) {
 };
 
 
+const rakInternalCloseGameShell = (typeof closeGameShell === 'function') ? closeGameShell : null;
 window.closeGameShell = function closeGameShellProxy() {
-  if (typeof closeGameShell === 'function') return closeGameShell();
-  return false;
+  if (typeof rakInternalCloseGameShell === 'function') return rakInternalCloseGameShell();
+  if (typeof document !== 'undefined' && document.body) {
+    document.body.classList.remove('gamesOpen');
+    document.body.classList.remove('tttOpen');
+  }
+  if (typeof app !== 'undefined') app.activeGameShell = '';
+  return true;
 };
 
 
