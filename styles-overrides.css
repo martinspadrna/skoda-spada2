@@ -7422,7 +7422,7 @@ body.gamesOpen #games .gameFlapControls{
 }
 
 
-/* v.1.1 (686) – Aim/Reaction: bez černého horního pruhu a výrazný TEĎ stav. */
+/* v.1.1 (687) – Aim/Reaction: bez černého horního pruhu a výrazný TEĎ stav. */
 body.gamesOpen #games .arcadeShellRoot{
   background:transparent !important;
   border:0 !important;

@@ -3903,8 +3903,8 @@ function buildAppHistoryHtml(versionText) {
       range: versionText,
       title: 'Aktuální build',
       lines: [
-        'Build v.1.1 (686) dolaďuje Aim Trainer a Reaction Test: pryč je černý horní pruh nad hrou a Reaction při „TEĎ!“ výrazně mění barvu pole.',
-        'Série v.1.1 650–686 dotáhla Piškvorky, online pozvánky, PWA launch handler, 2048/Snake/Flappy Car/Aim/Reaction mezi hotové hry, herní profily, theme polish a těžší/chytřejší achievementy.',
+        'Build v.1.1 (687) přidává hotový herní blok Tetris, Space Shooter a Brick Breaker: mobile-first ovládání bez šipek, theme canvas a těžší achievementy.',
+        'Série v.1.1 650–687 dotáhla Piškvorky, online pozvánky, PWA launch handler, 2048/Snake/Flappy Car/Aim/Reaction/Tetris/Space Shooter/Brick Breaker mezi hotové hry, herní profily, theme polish a těžší/chytřejší achievementy.',
         'Sekce „O aplikaci“ je nově stručnější: detailní změny zůstávají v changelogu a tady se historie drží po větších blocích.',
         'Stabilizační audity, Supabase guardy, Láďův režim a finální readiness kontroly zůstávají součástí diagnostiky.'
       ]

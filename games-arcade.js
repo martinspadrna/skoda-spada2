@@ -2,9 +2,9 @@
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
 
-  // v.1.1 (686): Aim/Reaction mají čistší shell bez černého horního pruhu a Reaction výrazný TEĎ stav.
-  const CORE_GAMES = ['ttt', '2048', 'snake', 'flap', 'aim', 'reaction'];
-  const EXTRA_GAMES = ['tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
+  // v.1.1 (687): Tetris/Space Shooter/Brick Breaker jako hotový mobile-first blok bez šipek.
+  const CORE_GAMES = ['ttt', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick'];
+  const EXTRA_GAMES = ['doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);
   const LEGACY_RENDER_GAMES = ['2048', 'snake', 'flap'];
   const ARCADE_RENDER_GAMES = ['aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
@@ -364,8 +364,20 @@
       { id: 'reaction_perfect_10', title: 'Bez zaváhání', desc: 'Dokonči 10 čistých Reaction sérií s každým kolem pod 250 ms.', goalText: '10 čistých sérií', progress: (a) => arcadeStat(a.account, 'reaction', 'perfectRuns'), target: 10 },
       { id: 'reaction_runs_50', title: 'Reflex tester', desc: 'Dokonči 50 Reaction testů.', goalText: '50 dokončení', progress: (a) => arcadeStat(a.account, 'reaction', 'plays'), target: 50 },
       { id: 'tetris_5000', title: 'Tetris mistr', desc: 'Nahraj 5 000 bodů v Tetrisu.', goalText: '5 000 bodů', progress: (a) => arcadeStat(a.account, 'tetris', 'bestScore'), target: 5000 },
+      { id: 'tetris_12000', title: 'Tetris směnový boss', desc: 'Nahraj 12 000 bodů v Tetrisu.', goalText: '12 000 bodů', progress: (a) => arcadeStat(a.account, 'tetris', 'bestScore'), target: 12000 },
+      { id: 'tetris_lines_40', title: 'Čistič řádků', desc: 'Smaž v Tetrisu 40 řádků v jedné dokončené hře.', goalText: '40 řádků', progress: (a) => arcadeStat(a.account, 'tetris', 'bestLines'), target: 40 },
+      { id: 'tetris_level_10', title: 'Level 10', desc: 'Dostaň se v Tetrisu na level 10.', goalText: 'level 10', progress: (a) => arcadeStat(a.account, 'tetris', 'bestLevel'), target: 10 },
+      { id: 'tetris_runs_50', title: 'Padající bloky', desc: 'Dokonči 50 her Tetrisu.', goalText: '50 dokončení', progress: (a) => arcadeStat(a.account, 'tetris', 'plays'), target: 50 },
       { id: 'shooter_3500', title: 'Space ace', desc: 'Nahraj 3 500 bodů ve Space Shooteru.', goalText: '3 500 bodů', progress: (a) => arcadeStat(a.account, 'shooter', 'bestScore'), target: 3500 },
+      { id: 'shooter_7000', title: 'Velitel hangáru', desc: 'Nahraj 7 000 bodů ve Space Shooteru.', goalText: '7 000 bodů', progress: (a) => arcadeStat(a.account, 'shooter', 'bestScore'), target: 7000 },
+      { id: 'shooter_hits_150', title: 'Přesná palba', desc: 'Dej ve Space Shooteru 150 zásahů v jedné dokončené hře.', goalText: '150 zásahů', progress: (a) => arcadeStat(a.account, 'shooter', 'bestHits'), target: 150 },
+      { id: 'shooter_survive_180', title: 'Tři minuty ve vesmíru', desc: 'Přežij ve Space Shooteru aspoň 180 sekund.', goalText: '180 s', progress: (a) => arcadeStat(a.account, 'shooter', 'bestSurvivalSec'), target: 180 },
+      { id: 'shooter_runs_50', title: 'Pilot po směně', desc: 'Dokonči 50 her Space Shooteru.', goalText: '50 dokončení', progress: (a) => arcadeStat(a.account, 'shooter', 'plays'), target: 50 },
       { id: 'brick_2500', title: 'Bourák cihel', desc: 'Nahraj 2 500 bodů v Brick Breakeru.', goalText: '2 500 bodů', progress: (a) => arcadeStat(a.account, 'brick', 'bestScore'), target: 2500 },
+      { id: 'brick_6000', title: 'Demolice haly', desc: 'Nahraj 6 000 bodů v Brick Breakeru.', goalText: '6 000 bodů', progress: (a) => arcadeStat(a.account, 'brick', 'bestScore'), target: 6000 },
+      { id: 'brick_combo_20', title: 'Combo odrazy', desc: 'Dej v Brick Breakeru combo 20.', goalText: 'combo 20', progress: (a) => arcadeStat(a.account, 'brick', 'bestCombo'), target: 20 },
+      { id: 'brick_clear_10', title: 'Čistá plocha', desc: 'Vyčisti 10 her Brick Breakeru.', goalText: '10 vyčištění', progress: (a) => arcadeStat(a.account, 'brick', 'perfectClears'), target: 10 },
+      { id: 'brick_runs_50', title: 'Pálka v ruce', desc: 'Dokonči 50 her Brick Breakeru.', goalText: '50 dokončení', progress: (a) => arcadeStat(a.account, 'brick', 'plays'), target: 50 },
       { id: 'doodle_3500', title: 'Skokan', desc: 'Nahraj 3 500 bodů v Doodle Jumpu.', goalText: '3 500 bodů', progress: (a) => arcadeStat(a.account, 'doodle', 'bestScore'), target: 3500 },
       { id: 'bubble_2500', title: 'Bubble pop', desc: 'Nahraj 2 500 bodů v Bubble Shooteru.', goalText: '2 500 bodů', progress: (a) => arcadeStat(a.account, 'bubble', 'bestScore'), target: 2500 },
       { id: 'sudoku_15', title: 'Sudoku hlava', desc: 'Vyřeš 15 Sudoku.', goalText: '15 dokončení', progress: (a) => arcadeStat(a.account, 'sudoku', 'plays'), target: 15 },
@@ -495,7 +507,11 @@
 #games .arcadeShellRoot .gamesArcadeRoot{background:transparent !important;position:relative;z-index:1;}
 #games .arcadeShellRoot .arcadeBackFloating{background:var(--rakGlassCardBg, rgba(255,255,255,.08)) !important;border:1px solid var(--rakGlassStroke, rgba(255,255,255,.16)) !important;color:var(--soft, #e7fff0) !important;box-shadow:0 10px 28px rgba(0,0,0,.22) !important;}
 #games .arcadeShellHeader{display:none !important;}
-#games .arcadeHud{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}
+#games .arcadeHud{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%;}
+#games .arcadeHudWide3{grid-template-columns:repeat(3,minmax(0,1fr));width:100%;}
+#games .arcadeOnlyRestart{justify-content:center;margin-top:2px;}
+#games .arcadeOnlyRestart .gameControlBtn{min-width:118px;}
+#games .arcadeCanvasWrap.isFullGame{height:clamp(360px, 62dvh, 620px) !important;}
 #games .arcadeHud .gamesStatCard{padding:8px 10px;}
 #games .arcadeHud .gamesStatLabel{font-size:10px;opacity:.72;}
 #games .arcadeHud .gamesStatValue{font-size:14px;font-weight:800;line-height:1.1;}
@@ -987,7 +1003,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function renderLaunchTiles() {
     const grid = document.getElementById('gamesGrid');
     if (!grid) return;
-    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v686';
+    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v687';
     if (grid.dataset && grid.dataset.arcadeLaunchSig === launchSig && grid.querySelector('.gamesDevFolder') && grid.querySelector('[data-game="ttt"]')) {
       gamePerf.launchRenderSkips = Number(gamePerf.launchRenderSkips || 0) + 1;
       return;
@@ -1238,8 +1254,12 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       const oldAvg = Number(current.bestAvgTimeMs || 0) || 0;
       merged.bestAvgTimeMs = oldAvg ? Math.min(oldAvg, nextPatch.bestAvgTimeMs) : nextPatch.bestAvgTimeMs;
     }
-    if (typeof nextPatch.perfectRuns === 'number') merged.perfectRuns = Math.max(Number(current.perfectRuns || 0) || 0, nextPatch.perfectRuns || 0);
+    if (typeof nextPatch.perfectRuns === 'number') merged.perfectRuns = (Number(current.perfectRuns || 0) || 0) + Math.max(0, nextPatch.perfectRuns || 0);
     if (typeof nextPatch.bestMoves === 'number') merged.bestMoves = Math.max(Number(current.bestMoves || 0) || 0, nextPatch.bestMoves || 0);
+    ['bestLines','bestLevel','bestSurvivalSec','bestWave','bestBricks','bestClears','bestShots','bestStreak','bestBlocks','bestStageClear'].forEach((field) => {
+      if (typeof nextPatch[field] === 'number') merged[field] = Math.max(Number(current[field] || 0) || 0, nextPatch[field] || 0);
+    });
+    if (typeof nextPatch.perfectClears === 'number') merged.perfectClears = (Number(current.perfectClears || 0) || 0) + Math.max(0, nextPatch.perfectClears || 0);
     merged.lastResult = String(nextPatch.lastResult || merged.lastResult || '').trim();
     setAccountStat(active, id, merged);
     gamesSaveProfile(profile);
@@ -1259,7 +1279,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   }
 
   function shellHeader(title, subtitle) {
-    // v.1.1 (686): arcade hry už nepoužívají horní tmavý titulkový/header pruh.
+    // v.1.1 (687): arcade hry už nepoužívají horní tmavý titulkový/header pruh.
     return `<button type="button" class="gamesShellBack gamesShellBackFloating arcadeBackFloating" id="arcadeBackBtn" aria-label="Zpět">Zpět</button>`;
   }
 
@@ -1380,6 +1400,54 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function randomPick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
   function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
   function shuffle(arr) { const a = arr.slice(); for (let i = a.length - 1; i > 0; i -= 1) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+  function arcadeThemeColors() {
+    const source = document.getElementById('app') || document.body || document.documentElement;
+    const cs = getComputedStyle(source);
+    const root = getComputedStyle(document.documentElement);
+    const accent = (cs.getPropertyValue('--accent') || root.getPropertyValue('--accent') || '#7cff7c').trim();
+    const accent2 = (cs.getPropertyValue('--accent2') || root.getPropertyValue('--accent2') || '#00f5ff').trim();
+    const soft = (cs.getPropertyValue('--soft') || root.getPropertyValue('--soft') || '#e7fff0').trim();
+    return {
+      accent,
+      accent2,
+      soft,
+      panel: 'rgba(255,255,255,.045)',
+      panelStrong: 'rgba(255,255,255,.08)',
+      line: 'rgba(255,255,255,.12)',
+      shadow: 'rgba(0,0,0,.32)',
+      danger: '#ff6b8a',
+      gold: '#ffd76a',
+      cyan: '#69e8ff',
+      purple: '#c18bff'
+    };
+  }
+
+  function arcadeDrawStageBg(ctx, w, h, colors) {
+    const grad = ctx.createLinearGradient(0, 0, w, h);
+    grad.addColorStop(0, 'rgba(255,255,255,.065)');
+    grad.addColorStop(.55, 'rgba(255,255,255,.026)');
+    grad.addColorStop(1, 'rgba(0,0,0,.18)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, w, h);
+    ctx.save();
+    ctx.globalAlpha = .13;
+    ctx.strokeStyle = colors.accent;
+    for (let x = -20; x < w + 40; x += 42) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x + 68, h);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function arcadeRecordOnce(state, gameId, patch) {
+    if (!state || state.saved || !patch || !patch.completed) return;
+    state.saved = true;
+    gamesRecordStat(gameId, Object.assign({ completed: true, plays: 1 }, patch));
+  }
+
 
   // Aim Trainer ------------------------------------------------------------
   function aimFreshState(opts = {}) {
@@ -1695,215 +1763,328 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   }
   function renderTetris(body) {
     const state = getState('tetris', tetrisState);
-    const stage = createCanvas(body, 'clamp(320px, 58dvh, 560px)');
-    body.insertAdjacentHTML('afterbegin', `<div class="arcadeHud">${gamesStatLine('Skóre', state.score)}${gamesStatLine('Řádky', state.lines)}${gamesStatLine('Level', state.level)}</div><div class="arcadeBar arcadePanel uPad10x12"><div class="arcadeStatus">Swipe nebo tlačítka. Ghost piece a combo efekt jsou v klasickém RaK stylu.</div></div><div class="arcadeControls"><button type="button" class="gameControlBtn" data-act="left">◀</button><button type="button" class="gameControlBtn" data-act="right">▶</button><button type="button" class="gameControlBtn" data-act="rotate">⟳</button><button type="button" class="gameControlBtn" data-act="down">▼</button><button type="button" class="gameControlBtn" data-act="drop">⤓</button><button type="button" class="gameControlBtn" data-act="restart">Nová hra</button></div>${gamesTop3Block('tetris', 'bodů', 5)}`);
+    state.saved = !!state.saved;
+    const stage = createCanvas(body, 'clamp(360px, 62dvh, 620px)');
+    if (stage.wrap) stage.wrap.classList.add('isFullGame');
+    body.insertAdjacentHTML('afterbegin', `<div class="arcadeHud arcadeHudWide3">${gamesStatLine('Skóre', state.score)}${gamesStatLine('Řádky', state.lines)}${gamesStatLine('Level', state.level)}</div><div class="arcadeControls arcadeOnlyRestart"><button type="button" class="gameControlBtn" id="tetrisRestartBtn">Nová hra</button></div>${gamesTop3Block('tetris', 'bodů', 5)}`);
     const canvas = stage.canvas; const ctx = stage.ctx;
-    const resize = () => stage.resize();
+    let touch = null;
+    const finishTetris = () => {
+      arcadeRecordOnce(state, 'tetris', {
+        completed: true,
+        plays: 1,
+        bestScore: state.score,
+        bestLines: state.lines,
+        bestLevel: state.level,
+        lastResult: `${state.score} bodů`
+      });
+    };
+    const restart = () => {
+      Object.assign(state, tetrisState());
+      state.saved = false;
+      draw();
+    };
+    const hardDrop = () => {
+      if (state.over) return;
+      while (!tetrisCollision(state, 0, 1)) state.piece.y += 1;
+      tetrisMove(state, 0, 1);
+      if (state.over) finishTetris();
+    };
+    const drawBlock = (x, y, size, color, alpha = 1) => {
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = color;
+      ctx.shadowColor = color;
+      ctx.shadowBlur = alpha > .7 ? 10 : 0;
+      ctx.fillRect(x + 1.5, y + 1.5, size - 3, size - 3);
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = 'rgba(255,255,255,.18)';
+      ctx.strokeRect(x + 1.5, y + 1.5, size - 3, size - 3);
+      ctx.restore();
+    };
+    const pieceColor = (v, colors) => ({ I: colors.cyan, O: colors.gold, T: colors.purple, S: colors.accent, Z: colors.danger, J: '#8fb2ff', L: '#ffb36f' }[v] || colors.accent);
     const draw = () => {
       const { w, h } = stage.resize();
+      const colors = arcadeThemeColors();
       const cell = Math.floor(Math.min(w / 10, h / 20));
       const bw = cell * 10; const bh = cell * 20;
       const ox = Math.floor((w - bw) / 2); const oy = Math.floor((h - bh) / 2);
       ctx.clearRect(0, 0, w, h);
+      arcadeDrawStageBg(ctx, w, h, colors);
       ctx.save();
       ctx.translate(ox, oy);
-      ctx.fillStyle = 'rgba(255,255,255,.05)';
+      ctx.fillStyle = 'rgba(0,0,0,.14)';
       ctx.fillRect(0, 0, bw, bh);
-      ctx.strokeStyle = 'rgba(124,255,124,.08)';
-      for (let y = 0; y < 20; y += 1) for (let x = 0; x < 10; x += 1) {
-        const v = state.board[y][x];
-        ctx.fillStyle = v ? (v === 'I' ? '#6ee7ff' : v === 'O' ? '#ffe27a' : v === 'T' ? '#c18bff' : v === 'S' ? '#8bffb2' : v === 'Z' ? '#ff8f8f' : v === 'J' ? '#8fb2ff' : '#ffb36f') : 'rgba(255,255,255,.03)';
-        ctx.fillRect(x * cell + 1, y * cell + 1, cell - 2, cell - 2);
-        ctx.strokeRect(x * cell + .5, y * cell + .5, cell, cell);
+      ctx.strokeStyle = 'rgba(255,255,255,.08)';
+      for (let y = 0; y < 20; y += 1) {
+        for (let x = 0; x < 10; x += 1) {
+          const v = state.board[y][x];
+          if (v) drawBlock(x * cell, y * cell, cell, pieceColor(v, colors), .88);
+          else {
+            ctx.fillStyle = 'rgba(255,255,255,.026)';
+            ctx.fillRect(x * cell + 1, y * cell + 1, cell - 2, cell - 2);
+          }
+        }
       }
-      const ghost = (() => { const s = { ...state, piece: { ...state.piece, matrix: state.piece.matrix.map(r => r.slice()) } }; while (!tetrisCollision(s, 0, 1)) s.piece.y += 1; return s.piece.y; })();
+      const ghost = (() => { const s2 = { ...state, piece: { ...state.piece, matrix: state.piece.matrix.map(r => r.slice()) } }; while (!tetrisCollision(s2, 0, 1)) s2.piece.y += 1; return s2.piece.y; })();
       state.piece.matrix.forEach((row, y) => row.forEach((v, x) => {
         if (!v) return;
         const px = (state.piece.x + x) * cell;
         const py = (state.piece.y + y) * cell;
         const gy = (ghost + y) * cell;
-        ctx.fillStyle = v ? 'rgba(255,255,255,.88)' : 'transparent';
-        ctx.shadowColor = 'rgba(124,255,124,.28)'; ctx.shadowBlur = 10;
-        ctx.fillRect(px + 1, py + 1, cell - 2, cell - 2);
-        ctx.shadowBlur = 0;
-        ctx.fillStyle = 'rgba(124,255,124,.16)';
-        ctx.fillRect((state.piece.x + x) * cell + 4, gy + 4, cell - 8, cell - 8);
+        drawBlock(px, py, cell, pieceColor(state.piece.color || v, colors), .94);
+        drawBlock((state.piece.x + x) * cell + cell * .18, gy + cell * .18, cell * .64, colors.accent, .22);
       }));
       if (state.over) {
-        ctx.fillStyle = 'rgba(7,10,8,.68)'; ctx.fillRect(0, 0, bw, bh);
-        ctx.fillStyle = '#fff'; ctx.font = `${Math.max(18, Math.floor(cell * 0.9))}px system-ui`; ctx.textAlign = 'center'; ctx.fillText('Konec hry', bw / 2, bh / 2 - 6); ctx.font = '12px system-ui'; ctx.fillText('Klepni na Nová hra', bw / 2, bh / 2 + 16);
+        ctx.fillStyle = 'rgba(0,0,0,.62)'; ctx.fillRect(0, 0, bw, bh);
+        ctx.fillStyle = colors.soft; ctx.font = `${Math.max(18, Math.floor(cell * 0.9))}px system-ui`; ctx.textAlign = 'center';
+        ctx.fillText('Konec hry', bw / 2, bh / 2 - 8);
+        ctx.font = '12px system-ui'; ctx.fillText(`${state.score} bodů · ${state.lines} řádků`, bw / 2, bh / 2 + 16);
       }
       ctx.restore();
-      body.querySelector('.arcadeHud').innerHTML = `${gamesStatLine('Skóre', state.score)}${gamesStatLine('Řádky', state.lines)}${gamesStatLine('Level', state.level)}`;
+      const hud = body.querySelector('.arcadeHud');
+      if (hud) hud.innerHTML = `${gamesStatLine('Skóre', state.score)}${gamesStatLine('Řádky', state.lines)}${gamesStatLine('Level', state.level)}`;
     };
-    const restart = () => { Object.assign(state, tetrisState()); draw(); };
-    body.querySelectorAll('[data-act]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const act = btn.dataset.act;
-        if (act === 'left') tetrisMove(state, -1, 0);
-        else if (act === 'right') tetrisMove(state, 1, 0);
-        else if (act === 'down') tetrisMove(state, 0, 1);
-        else if (act === 'rotate') tetrisRotate(state);
-        else if (act === 'drop') { while (tetrisMove(state, 0, 1)); }
-        else if (act === 'restart') restart();
-        draw();
-      });
+    const applyMove = (fn) => {
+      if (state.over) return;
+      fn();
+      if (state.over) finishTetris();
+      draw();
+      if (typeof navigator !== 'undefined' && navigator.vibrate) { try { navigator.vibrate(4); } catch (err) {} }
+    };
+    canvas.addEventListener('pointerdown', (ev) => {
+      ev.preventDefault();
+      canvas.setPointerCapture && canvas.setPointerCapture(ev.pointerId);
+      touch = { x: ev.clientX, y: ev.clientY, t: Date.now(), moved: false };
+    });
+    canvas.addEventListener('pointermove', (ev) => {
+      if (!touch) return;
+      ev.preventDefault();
+      const dx = ev.clientX - touch.x;
+      const dy = ev.clientY - touch.y;
+      if (Math.abs(dx) < 26 && Math.abs(dy) < 26) return;
+      if (Math.abs(dx) > Math.abs(dy) * 1.15) {
+        applyMove(() => tetrisMove(state, dx > 0 ? 1 : -1, 0));
+        touch.x = ev.clientX; touch.y = ev.clientY; touch.moved = true;
+      } else if (dy > Math.abs(dx) * 1.05) {
+        applyMove(() => tetrisMove(state, 0, 1));
+        touch.x = ev.clientX; touch.y = ev.clientY; touch.moved = true;
+      }
+    });
+    canvas.addEventListener('pointerup', (ev) => {
+      if (!touch) return;
+      ev.preventDefault();
+      const dx = ev.clientX - touch.x;
+      const dy = ev.clientY - touch.y;
+      const age = Date.now() - touch.t;
+      if (!touch.moved && Math.abs(dx) < 18 && Math.abs(dy) < 18 && age < 450) applyMove(() => tetrisRotate(state));
+      else if (dy > 90 && Math.abs(dy) > Math.abs(dx) * 1.6) { hardDrop(); draw(); }
+      touch = null;
     });
     const onKey = (ev) => {
       if (['INPUT','TEXTAREA','SELECT'].includes((ev.target && ev.target.tagName) || '')) return;
-      if (ev.key === 'ArrowLeft') { ev.preventDefault(); tetrisMove(state, -1, 0); }
-      else if (ev.key === 'ArrowRight') { ev.preventDefault(); tetrisMove(state, 1, 0); }
-      else if (ev.key === 'ArrowDown') { ev.preventDefault(); tetrisMove(state, 0, 1); }
-      else if (ev.key === 'ArrowUp' || ev.key === 'z' || ev.key === 'Z') { ev.preventDefault(); tetrisRotate(state); }
-      else if (ev.key === ' ' ) { ev.preventDefault(); while (tetrisMove(state, 0, 1)); }
-      draw();
+      if (ev.key === 'ArrowLeft') { ev.preventDefault(); applyMove(() => tetrisMove(state, -1, 0)); }
+      else if (ev.key === 'ArrowRight') { ev.preventDefault(); applyMove(() => tetrisMove(state, 1, 0)); }
+      else if (ev.key === 'ArrowDown') { ev.preventDefault(); applyMove(() => tetrisMove(state, 0, 1)); }
+      else if (ev.key === 'ArrowUp' || ev.key === 'z' || ev.key === 'Z') { ev.preventDefault(); applyMove(() => tetrisRotate(state)); }
+      else if (ev.key === ' ' ) { ev.preventDefault(); hardDrop(); draw(); }
     };
     document.addEventListener('keydown', onKey);
+    body.querySelector('#tetrisRestartBtn').addEventListener('click', restart);
     const loop = (ts) => {
       if (!rakGameShouldTick()) { state.lastTs = 0; state.raf = 0; return; }
       const dt = rakGameDelta(state, ts);
       if (!state.over) {
         state.dropAcc += dt;
         const speed = Math.max(120, 700 - (state.level - 1) * 45);
-        if (state.dropAcc >= speed) { state.dropAcc = 0; tetrisMove(state, 0, 1); }
+        if (state.dropAcc >= speed) { state.dropAcc = 0; tetrisMove(state, 0, 1); if (state.over) finishTetris(); }
       }
       draw();
       state.raf = rakGameRequestFrame(state, loop);
     };
     state.raf = rakGameRequestFrame(state, loop);
-    const finishCleanup = () => { cancelAnimationFrame(state.raf); document.removeEventListener('keydown', onKey); gamesRecordStat('tetris', { completed: true, plays: 1, bestScore: Math.max(state.score, getAccountStat(gamesGetActiveAccount(), 'tetris').bestScore || 0), lastResult: String(state.score) }); };
-    addCleanup(() => { cancelAnimationFrame(state.raf); document.removeEventListener('keydown', onKey); });
-    body.querySelector('.arcadeControls [data-act="restart"]').addEventListener('click', () => { if (state.over) { gamesRecordStat('tetris', { completed: true, plays: 1, bestScore: state.score, lastResult: String(state.score) }); state.over = false; } });
-    addCleanup(() => { if (state.over) gamesRecordStat('tetris', { completed: true, plays: 1, bestScore: state.score, lastResult: String(state.score) }); });
+    addCleanup(() => { cancelAnimationFrame(state.raf); document.removeEventListener('keydown', onKey); if (state.over) finishTetris(); });
     draw();
     setActiveState('tetris', state);
   }
 
   // Space Shooter ----------------------------------------------------------
-  function shooterState() { return { score: 0, over: false, lastTs: 0, raf: 0, shipX: 160, bullets: [], enemies: [], spawnAcc: 0, shotCooldown: 0, stars: Array.from({ length: 24 }, () => ({ x: Math.random() * 320, y: Math.random() * 420, s: 0.5 + Math.random() * 1.5 })), startedAt: Date.now() }; }
+  function shooterState() {
+    return { score: 0, hits: 0, over: false, lastTs: 0, raf: 0, shipX: 160, bullets: [], enemies: [], spawnAcc: 0, shotCooldown: 0, survivedMs: 0, saved: false, stars: Array.from({ length: 28 }, () => ({ x: Math.random() * 320, y: Math.random() * 520, s: 0.45 + Math.random() * 1.45 })), startedAt: Date.now() };
+  }
   function renderShooter(body) {
     const state = getState('shooter', shooterState);
-    const stage = createCanvas(body, 'clamp(300px, 52dvh, 470px)');
-    body.insertAdjacentHTML('afterbegin', `<div class="arcadeHud">${gamesStatLine('Skóre', state.score)}${gamesStatLine('Zásahy', state.enemies.length ? state.score : 0)}${gamesStatLine('Stav', state.over ? 'Konec' : 'Boj')}</div><div class="arcadeControls"><button type="button" class="gameControlBtn" data-ship="shoot">Střelba</button><button type="button" class="gameControlBtn" data-ship="restart">Nová hra</button></div>${gamesTop3Block('shooter', 'bodů', 5)}`);
+    const stage = createCanvas(body, 'clamp(360px, 62dvh, 620px)');
+    if (stage.wrap) stage.wrap.classList.add('isFullGame');
+    body.insertAdjacentHTML('afterbegin', `<div class="arcadeHud arcadeHudWide3">${gamesStatLine('Skóre', state.score)}${gamesStatLine('Zásahy', state.hits || 0)}${gamesStatLine('Čas', Math.floor((state.survivedMs || 0) / 1000))}</div><div class="arcadeControls arcadeOnlyRestart"><button type="button" class="gameControlBtn" id="shooterRestartBtn">Nová hra</button></div>${gamesTop3Block('shooter', 'bodů', 5)}`);
     const canvas = stage.canvas, ctx = stage.ctx;
-    const resize = () => stage.resize();
-    const spawnEnemy = () => { const w = canvas.clientWidth || stage.wrap.clientWidth || 320; state.enemies.push({ x: Math.random() * (w - 24) + 12, y: -20, vx: (Math.random() - .5) * 0.4, vy: 1.2 + Math.random() * 1.6, hp: 1 + (state.score > 150 ? 1 : 0) }); };
-    const shoot = () => { if (state.shotCooldown > 0 || state.over) return; state.bullets.push({ x: state.shipX, y: 360, vy: -5.8 }); state.shotCooldown = 160; };
+    const reset = () => { Object.assign(state, shooterState()); draw(); };
+    const finishShooter = () => {
+      arcadeRecordOnce(state, 'shooter', {
+        completed: true,
+        plays: 1,
+        bestScore: state.score,
+        bestHits: state.hits || 0,
+        bestSurvivalSec: Math.floor((state.survivedMs || 0) / 1000),
+        lastResult: `${state.score} bodů`
+      });
+    };
+    const spawnEnemy = () => {
+      const w = canvas.clientWidth || stage.wrap.clientWidth || 320;
+      const size = 13 + Math.random() * 6;
+      state.enemies.push({ x: Math.random() * (w - size * 2) + size, y: -24, vx: (Math.random() - .5) * 0.55, vy: 1.35 + Math.random() * 1.75 + Math.min(1.2, state.score / 600), r: size, hp: 1 + (state.score > 220 ? 1 : 0) });
+    };
+    const shoot = () => {
+      if (state.shotCooldown > 0 || state.over) return;
+      state.bullets.push({ x: state.shipX, y: (canvas.clientHeight || stage.wrap.clientHeight || 420) - 52, vy: -6.6 });
+      state.shotCooldown = 120;
+    };
     const pointerMove = (ev) => {
+      ev.preventDefault();
       const rect = canvas.getBoundingClientRect();
-      state.shipX = clamp(ev.clientX - rect.left, 18, rect.width - 18);
+      state.shipX = clamp(ev.clientX - rect.left, 20, rect.width - 20);
     };
     canvas.addEventListener('pointermove', pointerMove);
     canvas.addEventListener('pointerdown', (ev) => { pointerMove(ev); shoot(); });
-    body.querySelector('[data-ship="shoot"]').addEventListener('click', shoot);
-    body.querySelector('[data-ship="restart"]').addEventListener('click', () => { Object.assign(state, shooterState()); });
+    body.querySelector('#shooterRestartBtn').addEventListener('click', reset);
+    const end = () => { if (!state.over) { state.over = true; finishShooter(); } };
     const draw = () => {
       const { w, h } = stage.resize();
+      const colors = arcadeThemeColors();
       ctx.clearRect(0, 0, w, h);
-      ctx.fillStyle = 'rgba(8,12,18,.94)'; ctx.fillRect(0, 0, w, h);
+      arcadeDrawStageBg(ctx, w, h, colors);
       state.stars.forEach((s) => { s.y += s.s; if (s.y > h) { s.y = -2; s.x = Math.random() * w; } ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.fillRect(s.x, s.y, 2, 2); });
-      const shipY = h - 36;
-      ctx.fillStyle = '#8bffb2'; ctx.beginPath(); ctx.moveTo(state.shipX, shipY - 14); ctx.lineTo(state.shipX - 14, shipY + 10); ctx.lineTo(state.shipX + 14, shipY + 10); ctx.closePath(); ctx.fill();
-      ctx.fillStyle = '#dfffe3'; ctx.fillRect(state.shipX - 4, shipY - 2, 8, 10);
-      state.bullets.forEach((b) => { ctx.fillStyle = '#ffe27a'; ctx.fillRect(b.x - 2, b.y - 8, 4, 10); });
-      state.enemies.forEach((e) => { ctx.fillStyle = '#ff8f8f'; ctx.beginPath(); ctx.arc(e.x, e.y, 12, 0, Math.PI * 2); ctx.fill(); });
-      if (state.over) { ctx.fillStyle = 'rgba(7,10,8,.68)'; ctx.fillRect(0, 0, w, h); ctx.fillStyle = '#fff'; ctx.font = '18px system-ui'; ctx.textAlign = 'center'; ctx.fillText('Konec hry', w / 2, h / 2); }
+      const shipY = h - 42;
+      ctx.save();
+      ctx.fillStyle = colors.accent;
+      ctx.shadowColor = colors.accent;
+      ctx.shadowBlur = 16;
+      ctx.beginPath(); ctx.moveTo(state.shipX, shipY - 18); ctx.lineTo(state.shipX - 16, shipY + 12); ctx.lineTo(state.shipX + 16, shipY + 12); ctx.closePath(); ctx.fill();
+      ctx.shadowBlur = 0; ctx.fillStyle = colors.soft; ctx.fillRect(state.shipX - 4, shipY - 2, 8, 13);
+      state.bullets.forEach((b) => { ctx.fillStyle = colors.gold; ctx.shadowColor = colors.gold; ctx.shadowBlur = 10; ctx.fillRect(b.x - 2, b.y - 10, 4, 12); });
+      ctx.shadowBlur = 0;
+      state.enemies.forEach((e) => { ctx.fillStyle = colors.danger; ctx.beginPath(); ctx.arc(e.x, e.y, e.r || 13, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,.22)'; ctx.stroke(); });
+      if (state.over) { ctx.fillStyle = 'rgba(0,0,0,.62)'; ctx.fillRect(0, 0, w, h); ctx.fillStyle = colors.soft; ctx.font = '20px system-ui'; ctx.textAlign = 'center'; ctx.fillText('Konec hry', w / 2, h / 2 - 10); ctx.font = '12px system-ui'; ctx.fillText(`${state.score} bodů · ${state.hits || 0} zásahů`, w / 2, h / 2 + 16); }
+      ctx.restore();
     };
     const loop = (ts) => {
       if (!rakGameShouldTick()) { state.lastTs = 0; state.raf = 0; return; }
       const dt = rakGameDelta(state, ts);
-      const { w, h } = stage.resize();
+      const { h } = stage.resize();
       if (!state.over) {
+        state.survivedMs += dt;
         state.shotCooldown = Math.max(0, state.shotCooldown - dt);
         state.spawnAcc += dt;
-        if (state.spawnAcc > Math.max(500, 900 - Math.floor(state.score / 20) * 25)) { state.spawnAcc = 0; spawnEnemy(); }
+        if (state.spawnAcc > Math.max(420, 760 - Math.floor(state.score / 50) * 28)) { state.spawnAcc = 0; spawnEnemy(); }
         state.bullets.forEach((b) => { b.y += b.vy * dt / 16; });
         state.enemies.forEach((e) => { e.x += e.vx * dt / 16; e.y += e.vy * dt / 16; });
         state.bullets = state.bullets.filter((b) => b.y > -20);
-        const shipY = h - 36;
-        state.enemies.forEach((e) => {
-          if (Math.abs(e.x - state.shipX) < 16 && Math.abs(e.y - shipY) < 18) state.over = true;
-          if (e.y > h + 20) state.over = true;
-        });
+        const shipY = h - 42;
+        state.enemies.forEach((e) => { if (Math.abs(e.x - state.shipX) < 18 && Math.abs(e.y - shipY) < 24) end(); if (e.y > h + 28) end(); });
         state.bullets = state.bullets.filter((b) => {
           for (let i = state.enemies.length - 1; i >= 0; i -= 1) {
             const e = state.enemies[i];
-            if (Math.hypot(b.x - e.x, b.y - e.y) < 16) {
-              state.enemies.splice(i, 1);
-              state.score += 10;
+            if (Math.hypot(b.x - e.x, b.y - e.y) < (e.r || 14) + 3) {
+              e.hp -= 1;
+              if (e.hp <= 0) { state.enemies.splice(i, 1); state.score += 15; state.hits = (state.hits || 0) + 1; }
               return false;
             }
           }
           return true;
         });
       }
-      body.querySelector('.arcadeHud').innerHTML = `${gamesStatLine('Skóre', state.score)}${gamesStatLine('Zásahy', state.score ? state.score / 10 : 0)}${gamesStatLine('Stav', state.over ? 'Konec' : 'Boj')}`;
+      const hud = body.querySelector('.arcadeHud');
+      if (hud) hud.innerHTML = `${gamesStatLine('Skóre', state.score)}${gamesStatLine('Zásahy', state.hits || 0)}${gamesStatLine('Čas', Math.floor((state.survivedMs || 0) / 1000))}`;
       draw();
       state.raf = rakGameRequestFrame(state, loop);
     };
     state.raf = rakGameRequestFrame(state, loop);
-    addCleanup(() => { cancelAnimationFrame(state.raf); canvas.removeEventListener('pointermove', pointerMove); if (state.over) gamesRecordStat('shooter', { completed: true, plays: 1, bestScore: state.score, lastResult: String(state.score) }); });
+    addCleanup(() => { cancelAnimationFrame(state.raf); canvas.removeEventListener('pointermove', pointerMove); if (state.over) finishShooter(); });
+    draw();
     setActiveState('shooter', state);
   }
 
   // Brick Breaker ----------------------------------------------------------
-  function brickState() { return { score: 0, over: false, lastTs: 0, raf: 0, paddleX: 0, ball: { x: 160, y: 280, vx: 3, vy: -3 }, launched: false, bricks: [] }; }
-  function initBricks(state) { state.bricks = []; for (let r = 0; r < 5; r += 1) { for (let c = 0; c < 8; c += 1) state.bricks.push({ x: c, y: r, alive: true }); } }
+  function brickState() { return { score: 0, over: false, won: false, lastTs: 0, raf: 0, paddleX: 0, ball: { x: 160, y: 280, vx: 3.4, vy: -3.6 }, launched: false, bricks: [], combo: 0, bestCombo: 0, saved: false }; }
+  function initBricks(state) { state.bricks = []; for (let r = 0; r < 6; r += 1) { for (let c = 0; c < 8; c += 1) state.bricks.push({ x: c, y: r, alive: true, hp: r > 3 ? 2 : 1 }); } }
   function renderBrick(body) {
-    const state = getState('brick', () => { const s = brickState(); initBricks(s); return s; });
-    const stage = createCanvas(body, 'clamp(300px, 48dvh, 420px)');
-    body.insertAdjacentHTML('afterbegin', `<div class="arcadeHud">${gamesStatLine('Skóre', state.score)}${gamesStatLine('Bricky', state.bricks.filter(b => b.alive).length)}${gamesStatLine('Stav', state.over ? 'Konec' : 'Hra')}` + `</div><div class="arcadeControls"><button type="button" class="gameControlBtn" data-brick="launch">Spustit</button><button type="button" class="gameControlBtn" data-brick="restart">Nová hra</button></div>${gamesTop3Block('brick', 'bodů', 5)}`);
+    const state = getState('brick', () => { const s2 = brickState(); initBricks(s2); return s2; });
+    const stage = createCanvas(body, 'clamp(360px, 62dvh, 620px)');
+    if (stage.wrap) stage.wrap.classList.add('isFullGame');
+    body.insertAdjacentHTML('afterbegin', `<div class="arcadeHud arcadeHudWide3">${gamesStatLine('Skóre', state.score)}${gamesStatLine('Cihly', state.bricks.filter(b => b.alive).length)}${gamesStatLine('Combo', state.bestCombo || 0)}</div><div class="arcadeControls arcadeOnlyRestart"><button type="button" class="gameControlBtn" id="brickRestartBtn">Nová hra</button></div>${gamesTop3Block('brick', 'bodů', 5)}`);
     const canvas = stage.canvas, ctx = stage.ctx;
-    const movePaddle = (x) => { const w = canvas.getBoundingClientRect().width; state.paddleX = clamp(x - 40, 0, Math.max(0, w - 80)); };
-    canvas.addEventListener('pointermove', (ev) => movePaddle(ev.clientX - canvas.getBoundingClientRect().left));
-    canvas.addEventListener('pointerdown', (ev) => { movePaddle(ev.clientX - canvas.getBoundingClientRect().left); if (!state.launched) state.launched = true; });
-    body.querySelector('[data-brick="launch"]').addEventListener('click', () => { state.launched = true; });
-    body.querySelector('[data-brick="restart"]').addEventListener('click', () => { Object.assign(state, brickState()); initBricks(state); });
+    const reset = () => { Object.assign(state, brickState()); initBricks(state); draw(); };
+    const finishBrick = () => {
+      arcadeRecordOnce(state, 'brick', {
+        completed: true,
+        plays: 1,
+        bestScore: state.score,
+        bestCombo: state.bestCombo || 0,
+        bestBricks: 48 - state.bricks.filter(b => b.alive).length,
+        perfectClears: state.won ? 1 : 0,
+        lastResult: `${state.score} bodů`
+      });
+    };
+    const movePaddle = (x) => { const w = canvas.getBoundingClientRect().width || 320; state.paddleX = clamp(x - 45, 0, Math.max(0, w - 90)); if (!state.launched && !state.over) { state.ball.x = state.paddleX + 45; } };
+    canvas.addEventListener('pointermove', (ev) => { ev.preventDefault(); movePaddle(ev.clientX - canvas.getBoundingClientRect().left); });
+    canvas.addEventListener('pointerdown', (ev) => { ev.preventDefault(); movePaddle(ev.clientX - canvas.getBoundingClientRect().left); if (!state.launched && !state.over) state.launched = true; });
+    body.querySelector('#brickRestartBtn').addEventListener('click', reset);
+    const end = (won = false) => { if (!state.over) { state.over = true; state.won = !!won; finishBrick(); } };
     const draw = () => {
       const { w, h } = stage.resize();
-      const paddleY = h - 24;
+      const colors = arcadeThemeColors();
+      const paddleY = h - 28;
       ctx.clearRect(0, 0, w, h);
-      ctx.fillStyle = 'rgba(8,12,18,.94)'; ctx.fillRect(0, 0, w, h);
-      const brickW = w / 8 - 4;
-      const brickH = 20;
-      state.bricks.forEach((b) => { if (!b.alive) return; const x = b.x * (brickW + 4) + 2; const y = b.y * (brickH + 4) + 10; ctx.fillStyle = 'rgba(124,255,124,.15)'; ctx.fillRect(x, y, brickW, brickH); });
-      ctx.fillStyle = '#8bffb2'; ctx.fillRect(state.paddleX, paddleY, 80, 10);
-      ctx.beginPath(); ctx.fillStyle = '#ffe27a'; ctx.arc(state.ball.x, state.ball.y, 6, 0, Math.PI * 2); ctx.fill();
-      if (state.over) { ctx.fillStyle = 'rgba(7,10,8,.7)'; ctx.fillRect(0, 0, w, h); ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.font = '18px system-ui'; ctx.fillText('Konec hry', w / 2, h / 2); }
+      arcadeDrawStageBg(ctx, w, h, colors);
+      const brickW = w / 8 - 5;
+      const brickH = Math.max(18, Math.min(24, h * .045));
+      state.bricks.forEach((b) => { if (!b.alive) return; const x = b.x * (brickW + 5) + 2.5; const y = b.y * (brickH + 5) + 16; ctx.fillStyle = b.hp > 1 ? colors.gold : colors.accent; ctx.globalAlpha = b.hp > 1 ? .62 : .48; ctx.fillRect(x, y, brickW, brickH); ctx.globalAlpha = 1; ctx.strokeStyle = 'rgba(255,255,255,.22)'; ctx.strokeRect(x, y, brickW, brickH); });
+      ctx.fillStyle = colors.accent; ctx.shadowColor = colors.accent; ctx.shadowBlur = 14; ctx.fillRect(state.paddleX, paddleY, 90, 11); ctx.shadowBlur = 0;
+      ctx.beginPath(); ctx.fillStyle = colors.gold; ctx.arc(state.ball.x, state.ball.y, 6.5, 0, Math.PI * 2); ctx.fill();
+      if (!state.launched && !state.over) { ctx.fillStyle = 'rgba(255,255,255,.78)'; ctx.font = '12px system-ui'; ctx.textAlign = 'center'; ctx.fillText('Klepni nebo táhni pro start', w / 2, h - 52); }
+      if (state.over) { ctx.fillStyle = 'rgba(0,0,0,.62)'; ctx.fillRect(0, 0, w, h); ctx.fillStyle = colors.soft; ctx.font = '20px system-ui'; ctx.textAlign = 'center'; ctx.fillText(state.won ? 'Vyčištěno' : 'Konec hry', w / 2, h / 2 - 10); ctx.font = '12px system-ui'; ctx.fillText(`${state.score} bodů · combo ${state.bestCombo || 0}`, w / 2, h / 2 + 16); }
     };
     const loop = (ts) => {
       if (!rakGameShouldTick()) { state.lastTs = 0; state.raf = 0; return; }
       const dt = rakGameDelta(state, ts);
       const { w, h } = stage.resize();
-      const paddleY = h - 24;
+      const paddleY = h - 28;
       if (!state.over && state.launched) {
         state.ball.x += state.ball.vx * dt / 16;
         state.ball.y += state.ball.vy * dt / 16;
-        if (state.ball.x < 6 || state.ball.x > w - 6) state.ball.vx *= -1;
-        if (state.ball.y < 6) state.ball.vy *= -1;
-        if (state.ball.y > paddleY - 6 && state.ball.y < paddleY + 12 && state.ball.x > state.paddleX - 4 && state.ball.x < state.paddleX + 84 && state.ball.vy > 0) {
-          state.ball.vy *= -1; const hit = (state.ball.x - (state.paddleX + 40)) / 40; state.ball.vx = hit * 5.2; state.score += 5;
+        if (state.ball.x < 7) { state.ball.x = 7; state.ball.vx = Math.abs(state.ball.vx); }
+        if (state.ball.x > w - 7) { state.ball.x = w - 7; state.ball.vx = -Math.abs(state.ball.vx); }
+        if (state.ball.y < 7) { state.ball.y = 7; state.ball.vy = Math.abs(state.ball.vy); }
+        if (state.ball.y > paddleY - 7 && state.ball.y < paddleY + 14 && state.ball.x > state.paddleX - 4 && state.ball.x < state.paddleX + 94 && state.ball.vy > 0) {
+          state.ball.vy = -Math.abs(state.ball.vy) * 1.015;
+          const hit = (state.ball.x - (state.paddleX + 45)) / 45;
+          state.ball.vx = hit * 5.8;
+          state.combo = 0;
         }
-        const brickW = w / 8 - 4; const brickH = 20;
+        const brickW = w / 8 - 5; const brickH = Math.max(18, Math.min(24, h * .045));
         state.bricks.forEach((b) => {
           if (!b.alive) return;
-          const x = b.x * (brickW + 4) + 2;
-          const y = b.y * (brickH + 4) + 10;
+          const x = b.x * (brickW + 5) + 2.5;
+          const y = b.y * (brickH + 5) + 16;
           if (state.ball.x > x && state.ball.x < x + brickW && state.ball.y > y && state.ball.y < y + brickH) {
-            b.alive = false;
+            b.hp -= 1;
             state.ball.vy *= -1;
-            state.score += 10;
+            state.combo += 1;
+            state.bestCombo = Math.max(state.bestCombo || 0, state.combo);
+            if (b.hp <= 0) { b.alive = false; state.score += 18 + Math.min(60, state.combo * 4); }
           }
         });
-        if (state.ball.y > h + 18) state.over = true;
-        if (!state.bricks.some(b => b.alive)) state.over = true;
+        if (state.ball.y > h + 18) end(false);
+        if (!state.bricks.some(b => b.alive)) end(true);
       }
-      body.querySelector('.arcadeHud').innerHTML = `${gamesStatLine('Skóre', state.score)}${gamesStatLine('Bricky', state.bricks.filter(b => b.alive).length)}${gamesStatLine('Stav', state.over ? 'Konec' : 'Hra')}`;
+      const hud = body.querySelector('.arcadeHud');
+      if (hud) hud.innerHTML = `${gamesStatLine('Skóre', state.score)}${gamesStatLine('Cihly', state.bricks.filter(b => b.alive).length)}${gamesStatLine('Combo', state.bestCombo || 0)}`;
       draw();
       state.raf = rakGameRequestFrame(state, loop);
     };
     state.raf = rakGameRequestFrame(state, loop);
-    addCleanup(() => { cancelAnimationFrame(state.raf); if (state.over) gamesRecordStat('brick', { completed: true, plays: 1, bestScore: state.score, lastResult: String(state.score) }); });
+    addCleanup(() => { cancelAnimationFrame(state.raf); if (state.over) finishBrick(); });
+    draw();
     setActiveState('brick', state);
   }
 
