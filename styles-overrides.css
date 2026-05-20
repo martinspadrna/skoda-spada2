@@ -6305,3 +6305,51 @@ html[data-rak-theme] #kalkulacky .calcTile.calcTileStack{
     column-gap:10px !important;
   }
 }
+
+/* v.1.1 (674) – Piškvorky: start obrazovka drží theme/pozadí aplikace + online/AI tabulky. */
+html body.tttOpen .tttOverlay{
+  background:var(--rakAppBackground, linear-gradient(160deg, #050816 0%, #08111f 46%, #0f172a 100%)) !important;
+  color:var(--soft, #e7fff0) !important;
+}
+html body.tttOpen .tttOverlay::before{
+  content:"" !important;
+  position:absolute !important;
+  inset:0 !important;
+  pointer-events:none !important;
+  background:var(--rakAppBackgroundOverlay, radial-gradient(circle at 48% 44%, rgba(255,255,255,.055), transparent 44%)) !important;
+  opacity:.92 !important;
+  z-index:0 !important;
+}
+html body.tttOpen .tttShell,
+html body.tttOpen .tttContent,
+html body.tttOpen .tttStartScreen{
+  position:relative !important;
+  z-index:1 !important;
+  background:transparent !important;
+}
+html body.tttOpen .tttHeader,
+html body.tttOpen .tttCard{
+  border-color:var(--rakThemeBorder, rgba(124,255,124,.20)) !important;
+  background:linear-gradient(180deg, rgba(255,255,255,.075), rgba(255,255,255,.030)), var(--panel, rgba(18,28,22,.72)) !important;
+  box-shadow:0 16px 36px rgba(0,0,0,.26), 0 0 22px var(--rakThemeGlow, rgba(124,255,124,.16)) !important;
+  backdrop-filter:blur(18px) saturate(145%) !important;
+  -webkit-backdrop-filter:blur(18px) saturate(145%) !important;
+}
+html body.tttOpen .tttBtn.isActive,
+html body.tttOpen .tttPrimaryBtn{
+  border-color:var(--rakThemeBorder, rgba(124,255,124,.44)) !important;
+  color:var(--green2, #B7FFBE) !important;
+  background:linear-gradient(180deg, color-mix(in srgb, var(--green, #7CFF7C) 24%, transparent), rgba(255,255,255,.05)) !important;
+  box-shadow:0 0 20px var(--rakThemeGlow, rgba(124,255,124,.20)) !important;
+}
+html body.tttOpen .tttSectionTitle,
+html body.tttOpen .tttWinTable th{
+  color:color-mix(in srgb, var(--green2, #B7FFBE) 72%, #ffffff 28%) !important;
+}
+html body.tttOpen .tttOnlineScoreTable strong{
+  color:var(--green2, #B7FFBE) !important;
+  text-shadow:0 0 12px var(--rakThemeGlow, rgba(124,255,124,.26)) !important;
+}
+html body.tttOpen .tttInviteActions{
+  grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
+}

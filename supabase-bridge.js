@@ -340,7 +340,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v673');
+      const channel = client.channel('rak-public-live-v674');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -2051,6 +2051,91 @@
     return result;
   }
 
+  async function loadTttHeadToHeadListDirect(client, options = {}) {
+    const forceRefresh = !!(options && options.force);
+    const limit = Math.max(20, Math.min(500, Number(options && options.limit) || 200));
+    const cacheKey = LOCAL_GAME_SESSIONS_PREFIX + 'h2h-list:' + String(limit);
+    const cached = forceRefresh ? null : readTimedCache(cacheKey, SUPABASE_GAME_CACHE_TTL_MS);
+    if (cached && cached.fresh && cached.rows && cached.rows[0]) {
+      rememberTimedCacheHit('session', cached);
+      return cached.rows[0];
+    }
+    const { data, error } = await runSupabaseOperation('game_sessions.ttt_head_to_head_list', () => client
+      .from('game_sessions')
+      .select('id,player_x_account_number,player_o_account_number,winner_account_number,status,board_state,updated_at,finished_at')
+      .eq('game_type', 'gomoku')
+      .eq('status', 'finished')
+      .not('player_x_account_number', 'is', null)
+      .not('player_o_account_number', 'is', null)
+      .order('updated_at', { ascending: false })
+      .limit(limit), { mode: 'read' });
+    if (error) throw error;
+    const rows = Array.isArray(data) ? data : [];
+    const accountSet = new Set();
+    rows.forEach((row) => {
+      const x = String(row && row.player_x_account_number || '').trim();
+      const o = String(row && row.player_o_account_number || '').trim();
+      if (x) accountSet.add(x);
+      if (o) accountSet.add(o);
+    });
+    const accountIds = Array.from(accountSet);
+    const names = {};
+    if (accountIds.length) {
+      try {
+        const { data: accountRows, error: accountErr } = await runSupabaseOperation('game_accounts.ttt_head_to_head_names', () => client
+          .from('game_accounts')
+          .select('account_number,full_name')
+          .in('account_number', accountIds), { mode: 'read' });
+        if (!accountErr && Array.isArray(accountRows)) {
+          accountRows.forEach((acc) => {
+            const id = String(acc && acc.account_number || '').trim();
+            if (id) names[id] = String(acc && acc.full_name || '').trim();
+          });
+        }
+      } catch (err) {}
+    }
+    const pairs = new Map();
+    rows.forEach((row) => {
+      const x = String(row && row.player_x_account_number || '').trim();
+      const o = String(row && row.player_o_account_number || '').trim();
+      if (!x || !o || x === o) return;
+      const sorted = [x, o].sort();
+      const key = sorted.join('::');
+      if (!pairs.has(key)) {
+        pairs.set(key, {
+          playerA: sorted[0],
+          playerB: sorted[1],
+          nameA: names[sorted[0]] || '',
+          nameB: names[sorted[1]] || '',
+          aWins: 0,
+          bWins: 0,
+          draws: 0,
+          total: 0,
+          lastPlayedAt: ''
+        });
+      }
+      const pair = pairs.get(key);
+      const boardState = row && row.board_state && typeof row.board_state === 'object' ? row.board_state : {};
+      const winner = String(boardState.winner || boardState.winnerRole || '').toUpperCase();
+      let winnerAcc = String(row && row.winner_account_number || boardState.winnerAccountNumber || '').trim();
+      if (!winnerAcc && winner === 'X') winnerAcc = x;
+      if (!winnerAcc && winner === 'O') winnerAcc = o;
+      if (winnerAcc === pair.playerA) pair.aWins += 1;
+      else if (winnerAcc === pair.playerB) pair.bWins += 1;
+      else pair.draws += 1;
+      pair.total += 1;
+      const playedAt = String(row && (row.finished_at || row.updated_at) || '').trim();
+      if (!pair.lastPlayedAt || playedAt > pair.lastPlayedAt) pair.lastPlayedAt = playedAt;
+    });
+    const resultRows = Array.from(pairs.values())
+      .filter(pair => pair.total > 0)
+      .sort((a, b) => (b.total - a.total) || String(b.lastPlayedAt || '').localeCompare(String(a.lastPlayedAt || '')))
+      .slice(0, 50);
+    const result = { ok: true, rows: resultRows, totalPairs: resultRows.length };
+    writeTimedCache(cacheKey, [result], 'session');
+    return result;
+  }
+
 
   function gameUiSettingsCacheKey(accountNumber) {
     return LOCAL_GAME_UI_SETTINGS_PREFIX + encodeURIComponent(String(accountNumber || '').trim() || 'unknown');
@@ -2749,6 +2834,12 @@
       try { const result = await loadTttHeadToHeadDirect(client, a, b, options); state.lastError = null; return result; }
       catch (err) { state.lastError = err; console.error('TTT head-to-head load failed', err); return { ok: false, error: err }; }
     },
+    loadTttHeadToHeadList: async (options = {}) => {
+      const client = getClient();
+      if (!client || !navigator.onLine) return { ok: false, reason: 'offline-or-missing-client', rows: [] };
+      try { const result = await loadTttHeadToHeadListDirect(client, options || {}); state.lastError = null; return result; }
+      catch (err) { state.lastError = err; console.error('TTT head-to-head list load failed', err); return { ok: false, error: err, rows: [] }; }
+    },
     getState: () => ({ ...state })
   };
 
@@ -2766,6 +2857,7 @@
   window.loadGameSessionByInviteCode = async (code) => window.RotationSupabaseBridge.loadGameSessionByInviteCode(code);
   window.saveGameSessionByInviteCode = async (code, payload) => window.RotationSupabaseBridge.saveGameSessionByInviteCode(code, payload);
   window.loadTttHeadToHead = async (playerA, playerB, options) => window.RotationSupabaseBridge.loadTttHeadToHead(playerA, playerB, options || {});
+  window.loadTttHeadToHeadList = async (options) => window.RotationSupabaseBridge.loadTttHeadToHeadList(options || {});
 
   window.addEventListener('online', () => {
     requestSupabaseQueueWake('online', 350);
