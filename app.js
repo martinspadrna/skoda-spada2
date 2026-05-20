@@ -1,4 +1,4 @@
-// v.1.1 (668) – Piškvorky online: pozvánka jen s kódem, kód ve hře, vzájemné skóre a sdílené statistiky.
+// v.1.1 (669) – Piškvorky: AI/lokální hra vždy čistá, profily tahají online statistiky.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
