@@ -340,7 +340,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v666');
+      const channel = client.channel('rak-public-live-v667');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -1079,6 +1079,10 @@
     if (inviteUpdErr) throw inviteUpdErr;
     const boardState = sessionData && sessionData.board_state && typeof sessionData.board_state === 'object' ? sessionData.board_state : { board: Array(180).fill(''), turn: 'X', status: 'active' };
     boardState.status = 'active';
+    boardState.playerXAccountNumber = invite.inviter_account_number || boardState.playerXAccountNumber || null;
+    boardState.playerOAccountNumber = invitee || boardState.playerOAccountNumber || null;
+    boardState.revision = Math.max(Number(boardState.revision || 0) || 0, 1);
+    boardState.updatedAtTs = Date.now();
     boardState.acceptedAt = new Date().toISOString();
     const sessionRow = {
       game_type: 'gomoku',
@@ -1142,7 +1146,7 @@
       invite_id: loaded.invite.id,
       player_x_account_number: sessionData && sessionData.player_x_account_number ? sessionData.player_x_account_number : loaded.invite.inviter_account_number || null,
       player_o_account_number: sessionData && sessionData.player_o_account_number ? sessionData.player_o_account_number : loaded.invite.invitee_account_number || null,
-      winner_account_number: boardState.winnerAccountNumber || sessionData && sessionData.winner_account_number || null,
+      winner_account_number: boardState.winnerAccountNumber || (boardState.winner === 'X' ? (sessionData && sessionData.player_x_account_number ? sessionData.player_x_account_number : loaded.invite.inviter_account_number || null) : (boardState.winner === 'O' ? (sessionData && sessionData.player_o_account_number ? sessionData.player_o_account_number : loaded.invite.invitee_account_number || null) : null)) || sessionData && sessionData.winner_account_number || null,
       status: boardState.status || sessionData && sessionData.status || 'active',
       board_state: boardState,
       move_history: Array.isArray(boardState.moveHistory) ? boardState.moveHistory : (Array.isArray(sessionData && sessionData.move_history) ? sessionData.move_history : []),
@@ -1895,6 +1899,100 @@
   }
 
 
+
+  async function getExistingGameStat(client, accountNumber, gameType) {
+    const account = String(accountNumber || '').trim();
+    const type = String(gameType || '').trim();
+    if (!account || !type) return null;
+    const res = await runSupabaseOperation('game_stats.lookup_existing', () => client
+      .from('game_stats')
+      .select('id,games_played,wins,losses,draws,points,last_played_at,updated_at')
+      .eq('account_number', account)
+      .eq('game_type', type)
+      .order('updated_at', { ascending: false })
+      .limit(1), { mode: 'read' });
+    if (res && res.error) throw res.error;
+    return Array.isArray(res && res.data) && res.data.length ? res.data[0] : null;
+  }
+
+  async function bumpTttGameStat(client, accountNumber, resultKind) {
+    const account = String(accountNumber || '').trim();
+    if (!account) return null;
+    const existing = await getExistingGameStat(client, account, 'ttt');
+    const nowIso = new Date().toISOString();
+    const currentPlayed = Number(existing && existing.games_played || 0) || 0;
+    const currentWins = Number(existing && existing.wins || 0) || 0;
+    const currentLosses = Number(existing && existing.losses || 0) || 0;
+    const currentDraws = Number(existing && existing.draws || 0) || 0;
+    const next = {
+      account_number: account,
+      game_type: 'ttt',
+      games_played: currentPlayed + 1,
+      wins: currentWins + (resultKind === 'win' ? 1 : 0),
+      losses: currentLosses + (resultKind === 'loss' ? 1 : 0),
+      draws: currentDraws + (resultKind === 'draw' ? 1 : 0),
+      points: currentPlayed + 1,
+      last_played_at: nowIso,
+      updated_at: nowIso
+    };
+    if (existing && existing.id) {
+      const { data, error } = await runSupabaseOperation('game_stats.ttt_bump_update', () => client.from('game_stats').update(next).eq('id', existing.id).select('*').maybeSingle(), { mode: 'write' });
+      if (error) throw error;
+      clearGameStatsCache('ttt');
+      return data || next;
+    }
+    const { data, error } = await runSupabaseOperation('game_stats.ttt_bump_insert', () => client.from('game_stats').insert([next]).select('*').maybeSingle(), { mode: 'write', attempts: 1 });
+    if (error) throw error;
+    clearGameStatsCache('ttt');
+    return data || next;
+  }
+
+  async function recordTttSessionResultByInviteCodeDirect(client, code, options) {
+    const loaded = await loadGameInviteByCode(client, code);
+    if (!loaded.invite) return { ok: false, reason: 'missing-invite' };
+    const { data: sessionData, error: sessionErr } = await runSupabaseOperation('game_sessions.record_result_lookup', () => client
+      .from('game_sessions')
+      .select('*')
+      .eq('invite_id', loaded.invite.id)
+      .maybeSingle(), { mode: 'read' });
+    if (sessionErr) throw sessionErr;
+    if (!sessionData) return { ok: false, reason: 'missing-session' };
+    const boardState = sessionData.board_state && typeof sessionData.board_state === 'object' ? Object.assign({}, sessionData.board_state) : {};
+    const winner = String(boardState.winner || sessionData.winner || '').trim();
+    const gameOver = !!boardState.gameOver || String(sessionData.status || '').toLowerCase() === 'finished';
+    if (!gameOver || !winner) return { ok: false, reason: 'not-finished' };
+    if (boardState.statsRecordedAt && !(options && options.force)) return { ok: true, skipped: true, reason: 'already-recorded' };
+
+    const xAcc = String(sessionData.player_x_account_number || boardState.playerXAccountNumber || loaded.invite.inviter_account_number || '').trim();
+    const oAcc = String(sessionData.player_o_account_number || boardState.playerOAccountNumber || loaded.invite.invitee_account_number || '').trim();
+    if (!xAcc || !oAcc) return { ok: false, reason: 'missing-players' };
+
+    if (winner === 'draw') {
+      await bumpTttGameStat(client, xAcc, 'draw');
+      await bumpTttGameStat(client, oAcc, 'draw');
+    } else if (winner === 'X') {
+      await bumpTttGameStat(client, xAcc, 'win');
+      await bumpTttGameStat(client, oAcc, 'loss');
+    } else if (winner === 'O') {
+      await bumpTttGameStat(client, xAcc, 'loss');
+      await bumpTttGameStat(client, oAcc, 'win');
+    } else {
+      return { ok: false, reason: 'unknown-winner' };
+    }
+
+    boardState.statsRecordedAt = new Date().toISOString();
+    boardState.statsRecordedBy = 'client';
+    const { data: updatedSession, error: updateErr } = await runSupabaseOperation('game_sessions.record_result_mark', () => client
+      .from('game_sessions')
+      .update({ board_state: boardState, updated_at: new Date().toISOString() })
+      .eq('id', sessionData.id)
+      .select('*')
+      .maybeSingle(), { mode: 'write' });
+    if (updateErr) throw updateErr;
+    clearGameStatsCache('ttt');
+    return { ok: true, session: updatedSession || sessionData, recorded: true };
+  }
+
   async function loadTttHeadToHeadDirect(client, playerA, playerB, options) {
     const a = String(playerA || '').trim();
     const b = String(playerB || '').trim();
@@ -2447,6 +2545,12 @@
     saveMachineSettings,
     loadRotationMonthEntries,
     saveRotationMonthEntries,
+    recordTttSessionResultByInviteCode: async (code, options = {}) => {
+      const client = getClient();
+      if (!client || !navigator.onLine) return { ok: false, reason: 'offline' };
+      try { const result = await recordTttSessionResultByInviteCodeDirect(client, code, options); state.lastError = null; return result; }
+      catch (err) { state.lastError = err; console.error('TTT session result record failed', err); return { ok: false, error: err }; }
+    },
     loadGameStats: async (gameType, limit = 10, options = {}) => {
       const safeLimit = Math.max(1, Math.min(50, Number(limit) || 10));
       const cache = readTimedCache(gameStatsCacheKey(gameType, safeLimit), SUPABASE_GAME_CACHE_TTL_MS);
