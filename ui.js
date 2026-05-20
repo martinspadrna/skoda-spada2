@@ -3678,20 +3678,17 @@ function buildGamesProfileSettingsHtml() {
   return [
     '<div class="appMenuCard appMenuSettingsCard appMenuProfileCard gamesAccountCard" id="gamesAccountCard">',
     '  <div class="appMenuCardTitle">Profil a přihlášení</div>',
-    '  <div class="appMenuText">Profil ovlivňuje herní statistiky, achievementy a ukládání Theme/Pozadí k účtu. Bez přihlášení zůstane vzhled jen v tomto zařízení.</div>',
-    '  <div class="gamesAccountTop">',
+    '  <div class="gamesAccountTop" id="gamesAccountTop">',
     '    <div>',
-    '      <div class="dashboardLabel">Aktuální profil</div>',
-    '      <div class="gamesAccountName" id="gamesAccountName">Bez přihlášení</div>',
+    '      <div class="dashboardLabel">Přihlášený profil</div>',
+    '      <div class="gamesAccountName" id="gamesAccountName"></div>',
     '    </div>',
-    '    <button type="button" class="gamesTinyBtn" id="gamesAccountClearBtn">Bez účtu</button>',
+    '    <button type="button" class="gamesTinyBtn" id="gamesAccountClearBtn">Odhlásit</button>',
     '  </div>',
     '  <div class="gamesAccountRow" id="gamesAccountEntryRow">',
     '    <input id="gamesAccountInput" class="gamesAccountInput" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="Zadej poslední 4 číslice os.č.">',
     '    <button type="button" class="gamesTinyBtn gamesAccountConfirmBtn" id="gamesAccountConfirmBtn">Ověřit</button>',
     '  </div>',
-    '  <div class="gamesAccountCurrent" id="gamesAccountCurrent" hidden></div>',
-    '  <div class="gamesAccountHint" id="gamesAccountHint">Bez účtu můžeš hrát dál. Statistiky se ukládají jen po přihlášení číslem.</div>',
     '</div>'
   ].join('');
 }
@@ -5977,41 +5974,43 @@ function gamesAccountById(accountId) {
 
 function gamesApplyActiveAccountUI(account) {
   const cardEl = document.getElementById('gamesAccountCard');
+  const topEl = document.getElementById('gamesAccountTop') || (cardEl ? cardEl.querySelector('.gamesAccountTop') : null);
   const nameEl = document.getElementById('gamesAccountName');
   const hintEl = document.getElementById('gamesAccountHint');
   const inputEl = document.getElementById('gamesAccountInput');
   const entryRow = document.getElementById('gamesAccountEntryRow');
   const currentEl = document.getElementById('gamesAccountCurrent');
   const clearBtn = document.getElementById('gamesAccountClearBtn');
-  if (!nameEl || !hintEl || !inputEl || !entryRow || !currentEl || !clearBtn) return;
+  if (!inputEl || !entryRow || !clearBtn) return;
 
   const next = account || null;
   if (cardEl) {
     cardEl.classList.toggle('isLoggedIn', !!next);
     cardEl.style.display = '';
   }
-  if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(nameEl, next ? next.name : 'Bez přihlášení', 'gamesAccountName');
-  else nameEl.textContent = next ? next.name : 'Bez přihlášení';
-  const nextAccountHint = next
-    ? 'Přihlášeno. Pro přihlášení jiného profilu se nejdřív odhlas.'
-    : 'Bez účtu můžeš hrát dál. Statistiky se ukládají jen po přihlášení číslem.';
-  if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(hintEl, nextAccountHint, 'gamesAccountHint');
-  else hintEl.textContent = nextAccountHint;
-  entryRow.style.display = next ? 'none' : '';
-  hintEl.style.display = '';
-  hintEl.hidden = false;
-  currentEl.style.display = next ? 'flex' : 'none';
-  currentEl.hidden = !next;
-  const currentText = next ? ('Aktivní profil: ' + String(next.name || next.id || '').trim()) : '';
-  if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(currentEl, currentText, 'gamesAccountCurrent');
-  else currentEl.textContent = currentText;
+  if (topEl) topEl.style.display = next ? 'flex' : 'none';
+  if (nameEl) {
+    if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(nameEl, next ? next.name : '', 'gamesAccountName');
+    else nameEl.textContent = next ? next.name : '';
+  }
+  entryRow.style.display = next ? 'none' : 'flex';
+  if (hintEl) {
+    hintEl.textContent = '';
+    hintEl.style.display = 'none';
+    hintEl.hidden = true;
+  }
+  if (currentEl) {
+    currentEl.textContent = '';
+    currentEl.style.display = 'none';
+    currentEl.hidden = true;
+  }
   inputEl.value = next ? '' : inputEl.value;
   inputEl.disabled = !!next;
-  inputEl.placeholder = next ? 'Nejdřív se odhlas' : 'Zadej poslední 4 číslice os.č.';
-  if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(clearBtn, next ? 'Odhlásit' : 'Bez účtu', 'gamesAccountClearBtn');
-  else clearBtn.textContent = next ? 'Odhlásit' : 'Bez účtu';
-  clearBtn.style.minWidth = next ? '46px' : '';
-  clearBtn.style.paddingInline = next ? '8px' : '';
+  inputEl.placeholder = 'Zadej poslední 4 číslice os.č.';
+  if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(clearBtn, 'Odhlásit', 'gamesAccountClearBtn');
+  else clearBtn.textContent = 'Odhlásit';
+  clearBtn.style.minWidth = '46px';
+  clearBtn.style.paddingInline = '8px';
   if (typeof syncGamesLockedSections === 'function') syncGamesLockedSections();
 }
 
@@ -6122,14 +6121,12 @@ function gamesFormatPlayedLabel(value) {
 }
 
 function gamesRenderAccountChips() {
-  const nameEl = document.getElementById('gamesAccountName');
   const hintEl = document.getElementById('gamesAccountHint');
   const inputEl = document.getElementById('gamesAccountInput');
   const entryRow = document.getElementById('gamesAccountEntryRow');
-  const currentEl = document.getElementById('gamesAccountCurrent');
   const confirmBtn = document.getElementById('gamesAccountConfirmBtn');
   const clearBtn = document.getElementById('gamesAccountClearBtn');
-  if (!nameEl || !hintEl || !inputEl || !entryRow || !currentEl || !confirmBtn || !clearBtn) return;
+  if (!inputEl || !entryRow || !confirmBtn || !clearBtn) return;
 
   const profile = gamesGetProfile();
   const active = profile.accounts[profile.activeAccountId] || null;
@@ -6137,6 +6134,16 @@ function gamesRenderAccountChips() {
 
   gamesApplyActiveAccountUI(active);
   inputEl.value = hasAccount ? '' : inputEl.value;
+
+  const setLoginFeedback = (message) => {
+    const text = String(message || '').trim();
+    if (hintEl) {
+      hintEl.textContent = '';
+      hintEl.style.display = 'none';
+      hintEl.hidden = true;
+    }
+    if (text) inputEl.placeholder = text;
+  };
 
   const syncVisibleAccount = (account) => {
     gamesApplyActiveAccountUI(account || null);
@@ -6147,13 +6154,13 @@ function gamesRenderAccountChips() {
     const submit = async () => {
       const currentProfile = gamesGetProfile();
       if (currentProfile && currentProfile.activeAccountId) {
-        hintEl.textContent = 'Nejdřív se odhlas a pak se můžeš přihlásit jako někdo jiný.';
+        setLoginFeedback('Nejdřív se odhlas');
         return;
       }
       const typed = String(inputEl.value || '').trim();
       if (!typed) {
         syncVisibleAccount(null);
-        hintEl.textContent = 'Zadej poslední 4 číslice os.č.';
+        setLoginFeedback('Zadej poslední 4 číslice os.č.');
         inputEl.focus();
         return;
       }
@@ -6162,7 +6169,7 @@ function gamesRenderAccountChips() {
       }
       const found = gamesAccountById(typed);
       if (!found) {
-        hintEl.textContent = 'Takový uživatel na serveru neexistuje.';
+        setLoginFeedback('Uživatel nenalezen');
         inputEl.focus();
         inputEl.select();
         return;
@@ -6188,7 +6195,6 @@ function gamesRenderAccountChips() {
         if (typeof renderThemeSettingsCards === 'function') renderThemeSettingsCards();
         if (typeof syncGamesLockedSections === 'function') syncGamesLockedSections();
       });
-      hintEl.textContent = 'Přihlášeno jako ' + found.name + '.';
       return;
     };
     inputEl.addEventListener('keydown', (ev) => {
@@ -6200,7 +6206,7 @@ function gamesRenderAccountChips() {
       gamesClearActiveAccount();
       syncVisibleAccount(null);
       if (typeof renderGamesProfileStatus === 'function') renderGamesProfileStatus();
-      hintEl.textContent = 'Bez účtu můžeš hrát dál. Statistiky se ukládají jen po přihlášení číslem.';
+      setLoginFeedback('Zadej poslední 4 číslice os.č.');
       if (typeof syncGamesLockedSections === 'function') syncGamesLockedSections();
     });
   }

@@ -1,8 +1,8 @@
-## v.1.1 (671)
-- Piškvorky online: pozvánka má vedle 4místného kódu i přímý odkaz, který otevře appku rovnou do Piškvorek a přijme pozvánku bez opisování kódu.
-- Čekací okno pozvánky nově umí kopírovat nebo sdílet přímý odkaz.
-- Kalkulačky: ikony Soustruhy, Frézky a Brusy jsou větší, bez vlastního pozadí a mají výraznější 3D vzhled.
-- Verze sjednocena na v.1.1 (671), cache na v1.1-671 a Supabase realtime kanál na rak-public-live-v671.
+## v.1.1 (672)
+- Kalkulačky: vrácené původní linkové ikony Soustruhy / Frézky / Brusy, jen jsou větší a bez pozadí.
+- Nastavení profilu: po přihlášení je vidět jen přihlášený profil a tlačítko Odhlásit; přihlašovací pole se ukáže až po odhlášení.
+- Odstraněné zbytečné texty pod přihlášením v nastavení profilu.
+- Verze sjednocena na v.1.1 (672), cache na v1.1-672 a Supabase realtime kanál na rak-public-live-v672.
 
 ## v.1.1 (669)
 - Piškvorky: při přepnutí na Proti AI nebo Na jednom mobilu se už nepřebírá online rozehraná hra.

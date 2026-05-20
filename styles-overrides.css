@@ -6161,7 +6161,7 @@ html[data-rak-theme] .gamesStatsXpBar span{
 #games .gamesAccountCard.isLoggedIn #gamesAccountCurrent{display:flex !important;}
 
 
-/* v.1.1 (671) – Kalkulačky: větší 3D ikony bez pozadí + Piškvorky přímý odkaz. */
+/* v.1.1 (672) – Piškvorky přímý odkaz; kalkulačky mají zpět původní zvětšené linkové ikony bez pozadí. */
 #kalkulacky .calcTileIcon.calcTileIcon3d,
 #kalkulacky .tile .calcTileIcon.calcTileIcon3d,
 html[data-rak-theme] #kalkulacky .calcTileIcon.calcTileIcon3d{
@@ -6216,4 +6216,52 @@ html body .tttOverlay .tttInviteOverlayBtn{
   border:1px solid rgba(124,255,124,.62) !important;
   text-shadow:0 1px 2px rgba(0,0,0,.9) !important;
   box-shadow:0 0 18px rgba(57,255,20,.20), inset 0 0 0 1px rgba(255,255,255,.10) !important;
+}
+
+
+/* v.1.1 (672) – Kalkulačky: původní linkové ikony zpět, větší a bez pozadí. */
+#kalkulacky .calcTileIcon.calcTileIconLegacy,
+#kalkulacky .tile .calcTileIcon.calcTileIconLegacy,
+html[data-rak-theme] #kalkulacky .calcTileIcon.calcTileIconLegacy{
+  width:58px !important;
+  height:58px !important;
+  min-width:58px !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  background-image:none !important;
+  box-shadow:none !important;
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+  color:#7CFF7C !important;
+  overflow:visible !important;
+}
+#kalkulacky .calcTileIcon.calcTileIconLegacy svg{
+  width:52px !important;
+  height:52px !important;
+  display:block !important;
+  overflow:visible !important;
+  stroke:currentColor !important;
+  filter:drop-shadow(0 8px 8px rgba(0,0,0,.34)) drop-shadow(0 0 8px rgba(124,255,124,.22)) !important;
+}
+#kalkulacky .calcTileStack{
+  grid-template-columns:minmax(0,1fr) 64px !important;
+  align-items:center !important;
+}
+.appMenuProfileCard .appMenuText,
+.appMenuProfileCard .gamesAccountHint,
+.appMenuProfileCard .gamesAccountCurrent{
+  display:none !important;
+}
+.appMenuProfileCard:not(.isLoggedIn) .gamesAccountTop{
+  display:none !important;
+}
+.appMenuProfileCard.isLoggedIn .gamesAccountRow{
+  display:none !important;
+}
+.appMenuProfileCard .gamesAccountTop{
+  margin-top:10px !important;
+}
+.appMenuProfileCard .gamesAccountRow{
+  margin-top:10px !important;
 }

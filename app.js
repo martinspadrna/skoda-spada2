@@ -1,4 +1,4 @@
-// v.1.1 (671) – Piškvorky: přímý online odkaz + 3D ikony kalkulaček.
+// v.1.1 (672) – Piškvorky: přímý online odkaz + 3D ikony kalkulaček.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

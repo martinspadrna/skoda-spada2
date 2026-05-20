@@ -233,32 +233,10 @@
 
   <div class="grid">
     <div class="tile calcTile calcTileStack" data-action="page-soustruhy">
-      <div class="calcTileIcon calcTileIcon3d calcTileIcon3d--lathe" aria-hidden="true">
-        <svg viewBox="0 0 64 64" role="img" aria-hidden="true">
-          <defs>
-            <linearGradient id="latheBodyG" x1="10" y1="12" x2="50" y2="54" gradientUnits="userSpaceOnUse">
-              <stop offset="0" stop-color="#E8FFF2"/>
-              <stop offset="0.38" stop-color="#7CFF7C"/>
-              <stop offset="1" stop-color="#087D3F"/>
-            </linearGradient>
-            <linearGradient id="latheSteelG" x1="10" y1="18" x2="48" y2="42" gradientUnits="userSpaceOnUse">
-              <stop offset="0" stop-color="#F6FFFF"/>
-              <stop offset="0.55" stop-color="#9BD4FF"/>
-              <stop offset="1" stop-color="#265C96"/>
-            </linearGradient>
-            <filter id="latheGlow" x="-30%" y="-30%" width="160%" height="160%">
-              <feDropShadow dx="0" dy="5" stdDeviation="3.5" flood-color="#000000" flood-opacity="0.42"/>
-              <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#7CFF7C" flood-opacity="0.45"/>
-            </filter>
-          </defs>
-          <g filter="url(#latheGlow)">
-            <path d="M10 41h42l4 8H7l3-8Z" fill="url(#latheBodyG)"/>
-            <path d="M13 25h21v12H13z" rx="4" fill="url(#latheSteelG)"/>
-            <circle cx="43" cy="31" r="10" fill="url(#latheBodyG)"/>
-            <circle cx="43" cy="31" r="4.2" fill="#082516" stroke="#F5FFF8" stroke-width="2"/>
-            <path d="M20 19h18l5 6H15l5-6Z" fill="#DFFFF0" opacity=".82"/>
-            <path d="M49 23l7-4v23l-7-4V23Z" fill="#99FF99"/>
-          </g>
+      <div class="calcTileIcon calcTileIconLegacy" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="7"></circle>
+          <circle cx="12" cy="12" r="2.1"></circle>
         </svg>
       </div>
       <div>
@@ -266,32 +244,11 @@
       </div>
     </div>
     <div class="tile calcTile calcTileStack" data-action="page-frezky">
-      <div class="calcTileIcon calcTileIcon3d calcTileIcon3d--mill" aria-hidden="true">
-        <svg viewBox="0 0 64 64" role="img" aria-hidden="true">
-          <defs>
-            <radialGradient id="millCutterG" cx="35%" cy="26%" r="72%">
-              <stop offset="0" stop-color="#FFFFFF"/>
-              <stop offset="0.35" stop-color="#9BE7FF"/>
-              <stop offset="0.72" stop-color="#00D6FF"/>
-              <stop offset="1" stop-color="#006A8F"/>
-            </radialGradient>
-            <linearGradient id="millBodyG" x1="15" y1="8" x2="49" y2="58">
-              <stop offset="0" stop-color="#EAFFF4"/>
-              <stop offset="0.5" stop-color="#7CFF7C"/>
-              <stop offset="1" stop-color="#087D3F"/>
-            </linearGradient>
-            <filter id="millGlow" x="-30%" y="-30%" width="160%" height="160%">
-              <feDropShadow dx="0" dy="5" stdDeviation="3.5" flood-color="#000" flood-opacity="0.45"/>
-              <feDropShadow dx="0" dy="0" stdDeviation="3.2" flood-color="#00D6FF" flood-opacity="0.42"/>
-            </filter>
-          </defs>
-          <g filter="url(#millGlow)">
-            <path d="M29 8h13l-3 18H27l2-18Z" fill="url(#millBodyG)"/>
-            <path d="M18 45h31l6 9H11l7-9Z" fill="url(#millBodyG)"/>
-            <circle cx="32" cy="33" r="15" fill="url(#millCutterG)"/>
-            <circle cx="32" cy="33" r="5" fill="#061826" stroke="#F4FFFF" stroke-width="2"/>
-            <path d="M32 18v8M32 40v8M17 33h8M39 33h8M21.5 22.5l5.7 5.7M36.8 37.8l5.7 5.7M42.5 22.5l-5.7 5.7M27.2 37.8l-5.7 5.7" stroke="#FFFFFF" stroke-width="3.2" stroke-linecap="round" opacity=".88"/>
-          </g>
+      <div class="calcTileIcon calcTileIconLegacy" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="6.2"></circle>
+          <circle cx="12" cy="12" r="2.2"></circle>
+          <path d="M12 3.6v2.4M12 18v2.4M3.6 12H6M18 12h2.4M6.1 6.1l1.6 1.6M16.3 16.3l1.6 1.6M17.9 6.1l-1.6 1.6M8.2 15.8l-1.6 1.6"></path>
         </svg>
       </div>
       <div>
@@ -299,33 +256,10 @@
       </div>
     </div>
     <div class="tile calcTile calcTileStack big" data-action="page-brusy">
-      <div class="calcTileIcon calcTileIcon3d calcTileIcon3d--grinder" aria-hidden="true">
-        <svg viewBox="0 0 64 64" role="img" aria-hidden="true">
-          <defs>
-            <radialGradient id="grindWheelG" cx="34%" cy="26%" r="72%">
-              <stop offset="0" stop-color="#FFFFFF"/>
-              <stop offset="0.38" stop-color="#FFD6F7"/>
-              <stop offset="0.72" stop-color="#FF2BFF"/>
-              <stop offset="1" stop-color="#7F168A"/>
-            </radialGradient>
-            <linearGradient id="grindBaseG" x1="11" y1="15" x2="54" y2="56">
-              <stop offset="0" stop-color="#EFFFF4"/>
-              <stop offset="0.5" stop-color="#7CFF7C"/>
-              <stop offset="1" stop-color="#087D3F"/>
-            </linearGradient>
-            <filter id="grindGlow" x="-30%" y="-30%" width="160%" height="160%">
-              <feDropShadow dx="0" dy="5" stdDeviation="3.5" flood-color="#000" flood-opacity="0.45"/>
-              <feDropShadow dx="0" dy="0" stdDeviation="3.2" flood-color="#FF2BFF" flood-opacity="0.48"/>
-            </filter>
-          </defs>
-          <g filter="url(#grindGlow)">
-            <path d="M13 43h38l5 10H8l5-10Z" fill="url(#grindBaseG)"/>
-            <path d="M18 35h20v9H18z" rx="3" fill="#9BE7FF"/>
-            <circle cx="42" cy="29" r="15" fill="url(#grindWheelG)"/>
-            <circle cx="42" cy="29" r="5" fill="#21061F" stroke="#FFFFFF" stroke-width="2"/>
-            <path d="M15 33l4-7 4 7 4-7 4 7" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity=".9"/>
-            <path d="M24 18h22l-5 8H19l5-8Z" fill="#E8FFF2" opacity=".86"/>
-          </g>
+      <div class="calcTileIcon calcTileIconLegacy" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5.1 14.4l1.7-2.4 1.7 2.4 1.7-2.4 1.7 2.4 1.7-2.4 1.7 2.4"></path>
+          <path d="M4.9 16l.8-1.2M8.2 16l.8-1.2M11.5 16l.8-1.2M14.8 16l.8-1.2M18.1 16l.8-1.2"></path>
         </svg>
       </div>
       <div>
