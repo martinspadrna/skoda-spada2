@@ -1,3 +1,10 @@
+## v.1.1 (676)
+- 2048 je přepracovaná jako mobil-first hra: nový HUD, větší a čitelnější herní plocha, výsledkový overlay a náhradní šipkové ovládání.
+- Swipe ovládání je tolerantnější na prst, uzamyká posun stránky při tahu po herní ploše a lépe bere i méně přesné diagonální pohyby.
+- Logika 2048 nově hlídá konec hry i při tahu, který už nejde provést, zvýrazňuje nové/sloučené kameny a dává jemnou haptickou odezvu tam, kde ji zařízení podporuje.
+- Sekce „O aplikaci“ má zkrácený aktuální přehled, aby se historie buildů držela stručněji a nepřerůstala do dlouhého changelogu.
+- Verze sjednocena na v.1.1 (676), cache na v1.1-676 a Supabase realtime kanál na rak-public-live-v676.
+
 ## v.1.1 (675)
 - Piškvorky online: tlačítka „Kopírovat odkaz“ a „Sdílet“ jsou odstraněná z online menu před startem.
 - Kopírování a sdílení pozvánky zůstává jen přímo ve hře v čekacím okně na protihráče.

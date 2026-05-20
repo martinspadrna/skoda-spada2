@@ -3753,41 +3753,37 @@ function buildAppHistoryHtml(versionText) {
       range: versionText,
       title: 'Aktuální build',
       lines: [
-        'Dashboard / Kalendář zkracuje ISO kalendářní týden na formát „21.KT“, aby se vedle vešly další poznámky.',
-        'Pondělní ranní poznámka „Brusy- spálení“ a první ranní v měsíci „Roznýtování- laborka“ zůstávají navázané na kalendář/ranní směnu, ne na směnu D.',
-        'TBKR07 / AH má nastavený čas výroby 1m03s, orovnává po 88 ks a doba orovnání je nově 6m00s.',
-        'Opravené online ukládání machine_settings: doplněný databázový grant pro zápis, takže změna parametrů už nemá padat na permission denied.',
-        'Opravené načítání uložených parametrů Brusů: appka už hledá stejný klíč, jaký se ukládá v nastavení strojů, takže změny parametrů se reálně použijí ve výpočtech.',
-        'Nastavení strojů má opravený online zápis do machine_settings včetně GRANT práv pro anon/authenticated role, aby ukládání nepadalo na permission denied.',
-        'Fáze 8 — PWA / Service Worker hardening zůstává dokončená na 100 % včetně finální offline readiness kontroly app shellu.',
-        'Soustruhy mají u Volné 126 a Volné 106 kalírenské čtveřice schované dole v rozbalovacím bloku, kde je společně zadání první kalírenské dávky i výsledek.',
-        'Volba Kombinace u Soustruhů má teď společný plán pro Lis + Volné: 1. část se zadá jako známý rozsah, u 2. části se zadá jen první dávka a appka dopočítá konec ze zbytku plánu.',
-        'Nastavení Volné je v Kombinaci otevřené hned nahoře u volby pořadí, aby bylo po ruce při jízdě Volného.',
-        'Dashboard při aktivní směně D ve zvýrazněném horním poli neopakuje text „Směna D je právě v práci“ a ukazuje jen, kdo chybí.',
-        'Service worker má chytřejší fallback pro same-origin požadavky, hlídá a opravuje chybějící položky app shellu, při aktivaci uklízí jen staré RaK cache, do cache ukládá jen bezpečně cacheovatelné odpovědi a runtime cache ořezává na povolený limit.',
-        'Láďův režim nově sjednocuje ruční i automatický low-end profil přes třídu ladaMode a vypíná další těžké blur/stínové efekty na slabších zařízeních.',
-        'Build v.1.1 (649) přidal audit Láďova režimu: hlídá DPR limit canvasu, reduceMotion, zbytky blur efektů, animace a diagnostiku výkonového profilu.',
-        'Build v.1.1 (650) přidal Supabase performance guard: hlídá slučování realtime refreshů, odklad při skryté stránce, sdílená čtení a poměr cache hit/write.',
-        'Build v.1.1 (651) přidal Supabase read/write optimizer: slučuje stejná paralelní čtení a chrání proti duplicitním krátkým zápisům.',
-        'Build v.1.1 (652) přidal Supabase strukturální audit: hlídá očekávané tabulky, realtime napojení, queue typy a RLS/GRANT/policies checklist.',
-        'Build v.1.1 (653) přidal společný herní engine základ: lifecycle audit, start/stop/pause/resume signály a diagnostiku před postupným laděním her.',
-        'Build v.1.1 (654) předělal Piškvorky na čtverečkovaný papír bez mezer, kulatých buněk a glass dlaždic.',
-        'Build v.1.1 (656) upravuje Piškvorky do RaK stylu: čistá mřížka z čar bez dlaždic, tvrdší AI a testovací průchod AI logiky.',
-        'Build v.1.1 (657) posouvá klikání v Piškvorkách doprostřed čtverců a zvětšuje X/O pro pohodlnější hraní na mobilu.',
-        'Build v.1.1 (658) překresluje Piškvorky na souvislou mřížku bez mezer mezi buňkami, přitvrzuje AI a přidává výsledkovou hlášku se shrnutím a zápisem výsledku.',
-        'Build v.1.1 (659) opravuje Piškvorky na skutečnou souvislou mřížku: klikací políčka jsou průhledná nad čárami, bez tmavých dlaždic a bez mezer; zároveň maže AI popis a zkracuje text žebříčku.'
+        'Build v.1.1 (676) předělává 2048 na mobil-first hru: větší plocha, nový HUD, lepší swipe, náhradní šipky a výsledkový overlay.',
+        'Série v.1.1 650–676 dotáhla Piškvorky, online pozvánky, PWA launch handler, herní engine základ a první kompletní doladění další hry.',
+        'Sekce „O aplikaci“ je nově stručnější: detailní změny zůstávají v changelogu a tady se historie drží po větších blocích.',
+        'Stabilizační audity, Supabase guardy, Láďův režim a finální readiness kontroly zůstávají součástí diagnostiky.'
       ]
     },
     {
-      range: 'v.1.1 500–626',
-      title: 'Stabilizace, hry, Supabase a glass vzhled',
+      range: 'v.1.1 600–649',
+      title: 'Finální stabilizace a výkon',
       lines: [
-        'Proběhlo velké stabilizační období: Láďův režim, cleanup manager, dokončení game performance, dokončený Supabase hardening a začátek Fáze 7 Data optimization včetně dalšího odlehčení Láďova režimu, úspornější Supabase lokální cache a méně zbytečných DOM renderů včetně Otevírací doby/Jídelního lístku, úspornějších selectů pro roky/měsíce, class toggle guardů u kalkulaček, style guardů u Theme/Pozadí/spodní lišty a závěrečného úklidu lokální read/JSON cache. Po dokončení Fáze 7 začala Fáze 8: tvrdší PWA/service worker chování, bezpečnější precache, řízenější update checky a diagnostika cache stavu.',
-        'Dashboard, Rotace, Rozpisy a Statistiky se ladily hlavně kvůli mobilům, safe-area, přehlednosti a menšímu riziku prázdných/pozdě načtených karet.',
-        'Kalkulačky dostaly sjednocenější calcPanel systém, větší klikací tlačítka, barevné indexy u Brusů ve glass stylu a opravu dvojího započítání rozdělaného vozíku.',
-        'Herní hub se zrychlil: méně opakovaných renderů, cache profilů/statistik, lepší práce s leaderboardy a všechny nedoladěné hry jsou zatím ve „Ve vývoji“.',
-        'Supabase Realtime a offline/online sync se zpevnily přes timeouty, retry, offline frontu, deduplikaci, fallback cache, retry backoff, session cache online her, profilové nastavení vzhledu, diagnostiku zdraví fronty a self-heal Realtime reconnect.',
-        'Přibyly Theme/Pozadí volby, výrazná glass-friendly pozadí, modernější theme karty a profilové ukládání vzhledu.'
+        'Dokončila se Fáze 8–10: PWA/service worker hardening, security/render cleanup a finální readiness diagnostika.',
+        'Přibyl post-stabilization watch, Láďův režim dostal další výkonové pojistky a Supabase kontroly se zpřesnily.',
+        'Aplikace se čistila hlavně kvůli stabilitě, cache, offline chování a slabším mobilům.'
+      ]
+    },
+    {
+      range: 'v.1.1 550–599',
+      title: 'Data, Supabase a odlehčení renderu',
+      lines: [
+        'Probíhala Fáze 7: úspornější lokální cache, méně zbytečných DOM renderů a bezpečnější práce s uloženými daty.',
+        'Supabase vrstva dostala frontu, retry/backoff, deduplikaci, fallback cache a lepší reconnect chování.',
+        'Theme/Pozadí a profilové nastavení vzhledu se začalo ukládat k hernímu profilu.'
+      ]
+    },
+    {
+      range: 'v.1.1 500–549',
+      title: 'CalcPanel, Láďův režim a herní výkon',
+      lines: [
+        'Kalkulačky se sjednotily přes calcPanel systém a opravovaly se výšky, tlačítka, indexy a rozdělané dávky.',
+        'Láďův režim začal víc šetřit blur efekty, stíny a animace pro slabší zařízení.',
+        'Herní hub dostal cache profilů/statistik, lepší leaderboardy a základ výkonových guardů.'
       ]
     },
     {
@@ -6767,27 +6763,39 @@ if (!window.__rakCoreGamesVisibilityBound) {
   }, { passive: true });
 }
 
-function gamesBindSwipeControl(el, onSwipe) {
+function gamesBindSwipeControl(el, onSwipe, options) {
   if (!el || el.dataset.swipeBound) return;
   el.dataset.swipeBound = '1';
 
+  const opts = options || {};
+  const minDistance = Number(opts.minDistance || 14);
+  const lockDistance = Number(opts.lockDistance || 7);
+  const maxTapTime = Number(opts.maxTapTime || 260);
   let startX = 0;
   let startY = 0;
   let active = false;
+  let activePointerId = null;
+  let startedAt = 0;
+
+  const reset = () => {
+    active = false;
+    activePointerId = null;
+    el.classList.remove('isTouching');
+  };
 
   const finish = (clientX, clientY) => {
     if (!active) return;
-    active = false;
     const dx = clientX - startX;
     const dy = clientY - startY;
     const absX = Math.abs(dx);
     const absY = Math.abs(dy);
-    if (Math.max(absX, absY) < 18) return;
-    if (absX > absY && absY < 36) {
-      onSwipe(dx > 0 ? 'right' : 'left');
-    } else if (absY > absX && absX < 36) {
-      onSwipe(dy > 0 ? 'down' : 'up');
-    }
+    const distance = Math.max(absX, absY);
+    const elapsed = Date.now() - startedAt;
+    reset();
+    if (distance < minDistance) return;
+    if (elapsed < maxTapTime && distance < minDistance + 3) return;
+    const dir = absX >= absY ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up');
+    onSwipe(dir, { dx, dy, absX, absY, distance, elapsed });
   };
 
   const usePointer = 'PointerEvent' in window;
@@ -6798,6 +6806,9 @@ function gamesBindSwipeControl(el, onSwipe) {
       startX = ev.clientX;
       startY = ev.clientY;
       active = true;
+      activePointerId = ev.pointerId;
+      startedAt = Date.now();
+      el.classList.add('isTouching');
       try {
         if (typeof el.setPointerCapture === 'function') el.setPointerCapture(ev.pointerId);
       } catch (err) {}
@@ -6805,21 +6816,22 @@ function gamesBindSwipeControl(el, onSwipe) {
 
     el.addEventListener('pointerup', (ev) => {
       if (ev.pointerType && ev.pointerType !== 'touch' && ev.pointerType !== 'pen') return;
+      if (activePointerId !== null && ev.pointerId !== activePointerId) return;
       ev.preventDefault?.();
       finish(ev.clientX, ev.clientY);
     }, { passive: false });
 
     el.addEventListener('pointermove', (ev) => {
       if (!active || (ev.pointerType && ev.pointerType !== 'touch' && ev.pointerType !== 'pen')) return;
-      ev.preventDefault?.();
+      if (activePointerId !== null && ev.pointerId !== activePointerId) return;
+      const dx = ev.clientX - startX;
+      const dy = ev.clientY - startY;
+      if (Math.max(Math.abs(dx), Math.abs(dy)) >= lockDistance) ev.preventDefault?.();
     }, { passive: false });
 
-    el.addEventListener('pointercancel', () => {
-      active = false;
-    }, { passive: true });
-
+    el.addEventListener('pointercancel', reset, { passive: true });
     el.addEventListener('lostpointercapture', () => {
-      active = false;
+      if (!active) el.classList.remove('isTouching');
     }, { passive: true });
   } else {
     el.addEventListener('touchstart', (ev) => {
@@ -6828,6 +6840,8 @@ function gamesBindSwipeControl(el, onSwipe) {
       startX = touch.clientX;
       startY = touch.clientY;
       active = true;
+      startedAt = Date.now();
+      el.classList.add('isTouching');
       ev.preventDefault?.();
     }, { passive: false });
 
@@ -6843,9 +6857,7 @@ function gamesBindSwipeControl(el, onSwipe) {
       finish(touch.clientX, touch.clientY);
     }, { passive: false });
 
-    el.addEventListener('touchcancel', () => {
-      active = false;
-    }, { passive: true });
+    el.addEventListener('touchcancel', reset, { passive: true });
   }
 }
 const SNAKE_JOYSTICK_KEY = APP_KEY + ':snake_joystick_v1';
@@ -6960,11 +6972,15 @@ function gamesBindDirectionPad(root, handler) {
   root.querySelectorAll('[data-game-dir]').forEach((btn) => {
     if (btn.dataset.dirBound) return;
     btn.dataset.dirBound = '1';
+    let lastFireAt = 0;
     const fire = (ev) => {
       if (ev) {
         ev.preventDefault?.();
         ev.stopPropagation?.();
       }
+      const now = Date.now();
+      if (now - lastFireAt < 160) return;
+      lastFireAt = now;
       handler(btn.dataset.gameDir);
     };
     btn.addEventListener('click', fire);
@@ -6987,15 +7003,32 @@ function gamesEnsureResizeBinding() {
 }
 
 function game2048InitialState() {
-  return { board: Array(16).fill(0), score: 0, over: false, best: 0, spawned: false, moves: 0 };
+  return {
+    board: Array(16).fill(0),
+    score: 0,
+    over: false,
+    recorded: false,
+    best: 0,
+    spawned: false,
+    moves: 0,
+    lastGain: 0,
+    lastDir: '',
+    lastMoveAt: 0,
+    lastSpawnedIndex: -1,
+    lastMergedIndexes: [],
+    lastInvalidAt: 0
+  };
 }
 
 function game2048Spawn(state) {
   const empties = state.board.map((v, i) => (v ? -1 : i)).filter(i => i >= 0);
-  if (!empties.length) return false;
+  if (!empties.length) return null;
   const idx = empties[Math.floor(Math.random() * empties.length)];
-  state.board[idx] = Math.random() < 0.9 ? 2 : 4;
-  return true;
+  const value = Math.random() < 0.9 ? 2 : 4;
+  state.board[idx] = value;
+  state.lastSpawnedIndex = idx;
+  state.best = Math.max(Number(state.best || 0), value);
+  return { index: idx, value };
 }
 
 function game2048CanMove(board) {
@@ -7012,6 +7045,64 @@ function game2048CanMove(board) {
 
 function game2048Index(r, c) { return r * 4 + c; }
 
+function game2048PositionsForLine(dir, lineIndex) {
+  if (dir === 'left') return [0, 1, 2, 3].map(c => game2048Index(lineIndex, c));
+  if (dir === 'right') return [3, 2, 1, 0].map(c => game2048Index(lineIndex, c));
+  if (dir === 'up') return [0, 1, 2, 3].map(r => game2048Index(r, lineIndex));
+  if (dir === 'down') return [3, 2, 1, 0].map(r => game2048Index(r, lineIndex));
+  return [];
+}
+
+function game2048PullLine(vals) {
+  const arr = vals.filter(Boolean);
+  const values = [];
+  const mergedSlots = [];
+  let gain = 0;
+  for (let i = 0; i < arr.length; i += 1) {
+    if (i < arr.length - 1 && arr[i] === arr[i + 1]) {
+      const merged = arr[i] * 2;
+      const slot = values.length;
+      values.push(merged);
+      mergedSlots.push({ slot, value: merged });
+      gain += merged;
+      i += 1;
+    } else {
+      values.push(arr[i]);
+    }
+  }
+  while (values.length < 4) values.push(0);
+  return { values, gain, mergedSlots };
+}
+
+function game2048DirectionText(dir) {
+  return ({ left: 'doleva', right: 'doprava', up: 'nahoru', down: 'dolů' })[dir] || '';
+}
+
+function game2048TryVibrate(pattern) {
+  try {
+    if (navigator && typeof navigator.vibrate === 'function') navigator.vibrate(pattern);
+  } catch (err) {}
+}
+
+function game2048RecordEndIfNeeded(state) {
+  if (!state || state.recorded) return;
+  state.recorded = true;
+  const account = gamesGetActiveAccount();
+  gamesRecordStat('2048', {
+    plays: (account?.stats?.g2048?.plays || 0) + 1,
+    bestScore: Math.max(account?.stats?.g2048?.bestScore || 0, state.score),
+    bestTile: Math.max(account?.stats?.g2048?.bestTile || 0, state.best)
+  });
+}
+
+function game2048BuildCell(value, index, state) {
+  const classes = ['gameBoardCell'];
+  if (value) classes.push('n' + value);
+  if (index === state.lastSpawnedIndex) classes.push('isNew');
+  if (Array.isArray(state.lastMergedIndexes) && state.lastMergedIndexes.includes(index)) classes.push('isMerged');
+  return '<div class="' + classes.join(' ') + '" data-value="' + (value || '') + '" aria-label="' + (value ? ('Pole ' + value) : 'Prázdné pole') + '">' + (value || '') + '</div>';
+}
+
 function renderGame2048() {
   const body = document.getElementById('gamesShellBody');
   if (!body) return;
@@ -7020,39 +7111,82 @@ function renderGame2048() {
     game2048Spawn(state);
     game2048Spawn(state);
     state.spawned = true;
+    state.lastSpawnedIndex = -1;
+  }
+  if (!state.over && !game2048CanMove(state.board)) {
+    state.over = true;
+    game2048RecordEndIfNeeded(state);
   }
   const compact = gamesIsCompactMode();
-  const boardSize = gamesFitSquareSize({ min: compact ? 250 : 266, max: Math.min(compact ? 540 : 480, gamesViewportSize().width - (compact ? 14 : 20)), reserve: compact ? 170 : 186, shellPad: compact ? 6 : 10 });
+  const boardSize = gamesFitSquareSize({ min: compact ? 268 : 292, max: Math.min(compact ? 540 : 500, gamesViewportSize().width - (compact ? 14 : 20)), reserve: compact ? 196 : 210, shellPad: compact ? 6 : 10 });
   const activeAccount = gamesGetActiveAccount();
   const bestScore = activeAccount?.stats?.g2048?.bestScore || 0;
-  body.innerHTML = [
-    '<div class="gamesGamePanel">',
-    '  <div class="gameInfoRow gameInfoRowCompact gameInfoRowDense"><span>Skóre <strong>' + state.score + '</strong></span><span>Nejlepší <strong>' + String(bestScore) + '</strong></span><span>' + (state.over ? 'Klepni na Nová hra' : 'Táhni po ploše') + '</span></div>',
-    '  <div class="gameControls uMt2">',
-    '    <button type="button" class="gameControlBtn" id="game2048NewBtn">Nová hra</button>',
+  const bestTile = Math.max(Number(activeAccount?.stats?.g2048?.bestTile || 0), Number(state.best || 0));
+  const lastMoveText = state.lastGain > 0
+    ? '+' + String(state.lastGain) + ' · ' + game2048DirectionText(state.lastDir)
+    : (state.over ? 'Konec hry' : 'Táhni po ploše');
+  const invalidClass = state.lastInvalidAt && Date.now() - state.lastInvalidAt < 450 ? ' isInvalidSwipe' : '';
+  const overlay = state.over ? [
+    '<div class="game2048Overlay">',
+    '  <div class="game2048OverlayCard">',
+    '    <div class="game2048OverlayTitle">Konec hry</div>',
+    '    <div class="game2048OverlayText">Skóre ' + String(state.score) + ' · nejvyšší kámen ' + String(state.best || 0) + '</div>',
+    '    <button type="button" class="gameControlBtn" id="game2048OverlayNewBtn">Nová hra</button>',
     '  </div>',
-    '  <div class="gameBoard game2048Board" id="game2048Board" style="width:' + boardSize + 'px;height:' + boardSize + 'px;">' + state.board.map(v => '<div class="gameBoardCell ' + (v ? 'n' + v : '') + '" data-value="' + (v || '') + '">' + (v || '') + '</div>').join('') + '</div>',
+    '</div>'
+  ].join('') : '';
+  body.innerHTML = [
+    '<div class="gamesGamePanel game2048Panel">',
+    '  <div class="game2048Hud" aria-label="Stav hry 2048">',
+    '    <div class="game2048ScoreCard"><span>Skóre</span><strong>' + String(state.score) + '</strong></div>',
+    '    <div class="game2048ScoreCard"><span>Nejlepší</span><strong>' + String(bestScore) + '</strong></div>',
+    '    <div class="game2048ScoreCard"><span>Kámen</span><strong>' + String(bestTile || state.best || 0) + '</strong></div>',
+    '  </div>',
+    '  <div class="game2048Hint"><span>' + escapeHtml(lastMoveText) + '</span><em>Swipe funguje přes celou plochu, stránka se při tahu neposouvá.</em></div>',
+    '  <div class="game2048BoardWrap" style="width:' + boardSize + 'px;max-width:100%;">',
+    '    <div class="gameBoard game2048Board' + invalidClass + '" id="game2048Board" role="application" aria-label="2048, táhni prstem nahoru, dolů, doleva nebo doprava" tabindex="0" style="width:' + boardSize + 'px;height:' + boardSize + 'px;">' + state.board.map((v, i) => game2048BuildCell(v, i, state)).join('') + '</div>',
+    overlay,
+    '  </div>',
+    '  <div class="game2048ControlsRow">',
+    '    <button type="button" class="gameControlBtn" id="game2048NewBtn">Nová hra</button>',
+    '    <div class="game2048SwipePad" id="game2048QuickPad" aria-label="Náhradní ovládání 2048">',
+    '      <button type="button" class="gameControlBtn" data-game-dir="left" aria-label="Doleva">◀</button>',
+    '      <button type="button" class="gameControlBtn" data-game-dir="up" aria-label="Nahoru">▲</button>',
+    '      <button type="button" class="gameControlBtn" data-game-dir="down" aria-label="Dolů">▼</button>',
+    '      <button type="button" class="gameControlBtn" data-game-dir="right" aria-label="Doprava">▶</button>',
+    '    </div>',
+    '  </div>',
     gamesTop3Block('2048', 'bodů', 10),
     '</div>'
   ].join('');
   const board = body.querySelector('#game2048Board');
+  const wrap = body.querySelector('.game2048BoardWrap');
   if (board) {
     board.style.setProperty('width', boardSize + 'px', 'important');
     board.style.setProperty('height', boardSize + 'px', 'important');
+    try {
+      if (typeof board.focus === 'function') board.focus({ preventScroll: true });
+    } catch (err) {
+      try { if (typeof board.focus === 'function') board.focus(); } catch (innerErr) {}
+    }
   }
+  if (wrap) wrap.style.setProperty('width', boardSize + 'px', 'important');
   const reset2048 = () => {
     app.games2048 = game2048InitialState();
     renderGame2048();
   };
-  body.querySelector('#game2048NewBtn')?.addEventListener('click', reset2048);
-  gamesBindSwipeControl(board, (dir) => {
+  const playDir = (dir) => {
     const current = app.games2048;
     if (current && current.over) {
       reset2048();
       return;
     }
     game2048Move(dir);
-  });
+  };
+  body.querySelector('#game2048NewBtn')?.addEventListener('click', reset2048);
+  body.querySelector('#game2048OverlayNewBtn')?.addEventListener('click', reset2048);
+  gamesBindSwipeControl(board, (dir) => playDir(dir), { minDistance: 12, lockDistance: 5 });
+  gamesBindDirectionPad(body.querySelector('#game2048QuickPad'), playDir);
   board?.addEventListener('click', () => {
     if (app.games2048 && app.games2048.over) reset2048();
   });
@@ -7063,50 +7197,55 @@ function game2048Move(dir) {
   if (!state || state.over) return;
   const old = state.board.slice();
   let moved = false;
-  const pull = (vals) => {
-    const arr = vals.filter(Boolean);
-    const out = [];
-    for (let i = 0; i < arr.length; i += 1) {
-      if (i < arr.length - 1 && arr[i] === arr[i + 1]) {
-        const merged = arr[i] * 2;
-        out.push(merged);
-        state.score += merged;
-        state.best = Math.max(state.best, merged);
-        i += 1;
-      } else {
-        out.push(arr[i]);
-      }
-    }
-    while (out.length < 4) out.push(0);
-    return out;
-  };
+  let gain = 0;
+  const mergedIndexes = [];
+  state.lastSpawnedIndex = -1;
+  state.lastMergedIndexes = [];
+  state.lastGain = 0;
+  state.lastDir = dir;
   for (let i = 0; i < 4; i += 1) {
-    let line = [];
-    if (dir === 'left') line = [0, 1, 2, 3].map(c => old[game2048Index(i, c)]);
-    else if (dir === 'right') line = [3, 2, 1, 0].map(c => old[game2048Index(i, c)]);
-    else if (dir === 'up') line = [0, 1, 2, 3].map(r => old[game2048Index(r, i)]);
-    else if (dir === 'down') line = [3, 2, 1, 0].map(r => old[game2048Index(r, i)]);
-    else return;
-    const next = pull(line);
-    if (dir === 'left') [0, 1, 2, 3].forEach((c, idx) => { state.board[game2048Index(i, c)] = next[idx]; if (next[idx] !== old[game2048Index(i, c)]) moved = true; });
-    else if (dir === 'right') [3, 2, 1, 0].forEach((c, idx) => { state.board[game2048Index(i, c)] = next[idx]; if (next[idx] !== old[game2048Index(i, c)]) moved = true; });
-    else if (dir === 'up') [0, 1, 2, 3].forEach((r, idx) => { state.board[game2048Index(r, i)] = next[idx]; if (next[idx] !== old[game2048Index(r, i)]) moved = true; });
-    else if (dir === 'down') [3, 2, 1, 0].forEach((r, idx) => { state.board[game2048Index(r, i)] = next[idx]; if (next[idx] !== old[game2048Index(r, i)]) moved = true; });
+    const positions = game2048PositionsForLine(dir, i);
+    if (!positions.length) return;
+    const line = positions.map(idx => old[idx]);
+    const pulled = game2048PullLine(line);
+    pulled.values.forEach((value, idx) => {
+      const boardIndex = positions[idx];
+      state.board[boardIndex] = value;
+      if (value !== old[boardIndex]) moved = true;
+    });
+    pulled.mergedSlots.forEach((item) => {
+      const boardIndex = positions[item.slot];
+      if (typeof boardIndex === 'number') mergedIndexes.push(boardIndex);
+    });
+    gain += pulled.gain;
   }
   if (moved) {
     state.moves += 1;
+    state.score += gain;
+    state.lastGain = gain;
+    state.lastMoveAt = Date.now();
+    state.lastMergedIndexes = mergedIndexes;
+    state.best = Math.max(state.best, ...state.board);
     game2048Spawn(state);
     state.best = Math.max(state.best, ...state.board);
-    if (!state.board.includes(0) && !game2048CanMove(state.board)) state.over = true;
-    renderGame2048();
-    if (state.over) {
-      const account = gamesGetActiveAccount();
-      gamesRecordStat('2048', {
-        plays: (account?.stats?.g2048?.plays || 0) + 1,
-        bestScore: Math.max(account?.stats?.g2048?.bestScore || 0, state.score),
-        bestTile: Math.max(account?.stats?.g2048?.bestTile || 0, state.best)
-      });
+    if (!state.board.includes(0) && !game2048CanMove(state.board)) {
+      state.over = true;
+      game2048RecordEndIfNeeded(state);
+      game2048TryVibrate([18, 32, 18]);
+    } else {
+      game2048TryVibrate(8);
     }
+    renderGame2048();
+  } else {
+    state.lastInvalidAt = Date.now();
+    state.lastGain = 0;
+    if (!game2048CanMove(state.board)) {
+      state.over = true;
+      game2048RecordEndIfNeeded(state);
+    } else {
+      game2048TryVibrate(18);
+    }
+    renderGame2048();
   }
 }
 

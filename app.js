@@ -1,4 +1,4 @@
-// v.1.1 (675) – Piškvorky online: sdílení pozvánky jen v čekacím okně + PWA launch handler.
+// v.1.1 (676) – 2048: přepracované mobilní ovládání, HUD a výsledkový overlay.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
