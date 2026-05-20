@@ -2,9 +2,9 @@
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
 
-  // v.1.1 (692): Doodle/Bubble stabilní, reporty chyb posílá Supabase bridge.
-  const CORE_GAMES = ['ttt', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble'];
-  const EXTRA_GAMES = ['sudoku', 'mines', 'memory', 'bomber', 'daily'];
+  // v.1.1 (693): Administrace reportů + Sudoku/Mines/Memory hotové mobile-first hry.
+  const CORE_GAMES = ['ttt', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory'];
+  const EXTRA_GAMES = ['bomber', 'daily'];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);
   const LEGACY_RENDER_GAMES = ['2048', 'snake', 'flap'];
   const ARCADE_RENDER_GAMES = ['aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
@@ -395,8 +395,14 @@
       { id: 'bubble_clears_10', title: 'Čistá obloha', desc: 'Vyčisti 10 her Bubble Shooteru.', goalText: '10 vyčištění', progress: (a) => arcadeStat(a.account, 'bubble', 'bestClears'), target: 10 },
       { id: 'bubble_runs_50', title: 'Bubliny pod kontrolou', desc: 'Dokonči 50 her Bubble Shooteru.', goalText: '50 dokončení', progress: (a) => arcadeStat(a.account, 'bubble', 'plays'), target: 50 },
       { id: 'sudoku_15', title: 'Sudoku hlava', desc: 'Vyřeš 15 Sudoku.', goalText: '15 dokončení', progress: (a) => arcadeStat(a.account, 'sudoku', 'plays'), target: 15 },
+      { id: 'sudoku_5min', title: 'Sudoku sprint', desc: 'Vyřeš Sudoku pod 5 minut.', goalText: 'pod 5 minut', progress: (a) => { const t = arcadeStat(a.account, 'sudoku', 'bestTimeMs'); return t ? Math.max(0, 360000 - t) : 0; }, target: 60000 },
+      { id: 'sudoku_100', title: 'Sudoku mistr směny', desc: 'Vyřeš 100 Sudoku.', goalText: '100 dokončení', progress: (a) => arcadeStat(a.account, 'sudoku', 'plays'), target: 100 },
       { id: 'mines_25_wins', title: 'Minové pole znám', desc: 'Vyhraj 25 her Minesweeperu.', goalText: '25 výher', progress: (a) => arcadeStat(a.account, 'mines', 'plays'), target: 25 },
+      { id: 'mines_2min', title: 'Odminovač', desc: 'Vyhraj Minesweeper pod 2 minuty.', goalText: 'pod 2 minuty', progress: (a) => { const t = arcadeStat(a.account, 'mines', 'bestTimeMs'); return t ? Math.max(0, 180000 - t) : 0; }, target: 60000 },
+      { id: 'mines_100', title: 'Pole pod kontrolou', desc: 'Vyhraj 100 her Minesweeperu.', goalText: '100 výher', progress: (a) => arcadeStat(a.account, 'mines', 'plays'), target: 100 },
       { id: 'memory_30', title: 'Pexeso paměťák', desc: 'Dokonči 30 her Memory.', goalText: '30 dokončení', progress: (a) => arcadeStat(a.account, 'memory', 'plays'), target: 30 },
+      { id: 'memory_60sec', title: 'Fotografická paměť', desc: 'Dokonči Pexeso pod 60 sekund.', goalText: 'pod 60 s', progress: (a) => { const t = arcadeStat(a.account, 'memory', 'bestTimeMs'); return t ? Math.max(0, 120000 - t) : 0; }, target: 60000 },
+      { id: 'memory_100', title: 'Mozkovna', desc: 'Dokonči 100 her Pexesa.', goalText: '100 dokončení', progress: (a) => arcadeStat(a.account, 'memory', 'plays'), target: 100 },
       { id: 'bomber_30', title: 'Bomber pilot', desc: 'Dokonči 30 her Bomberman mini.', goalText: '30 dokončení', progress: (a) => arcadeStat(a.account, 'bomber', 'plays'), target: 30 },
       { id: 'daily_20', title: 'Denní držák', desc: 'Splň 20 denních challenge.', goalText: '20 challenge', progress: (a) => arcadeStat(a.account, 'daily', 'plays'), target: 20 },
       { id: 'ctx_shift_15', title: 'Hráč na směně', desc: 'Dokonči 15 her během aktivní směny.', goalText: '15 her na směně', progress: (a) => a.context.onShiftPlays || 0, target: 15 },
@@ -903,7 +909,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     Object.values(profile.accounts).forEach((acc) => {
       if (!acc || !acc.stats || typeof acc.stats !== 'object') return;
       if (!acc.stats[ARC_KEY] || typeof acc.stats[ARC_KEY] !== 'object') acc.stats[ARC_KEY] = {};
-      EXTRA_GAMES.forEach((id) => {
+      ARCADE_RENDER_GAMES.forEach((id) => {
         const cur = acc.stats[ARC_KEY][id] || {};
         acc.stats[ARC_KEY][id] = Object.assign(arcadeDefaults(id), cur);
       });
@@ -923,7 +929,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         const rawArcade = incoming && incoming.stats && incoming.stats[ARC_KEY] && typeof incoming.stats[ARC_KEY] === 'object' ? incoming.stats[ARC_KEY] : null;
         if (!rawArcade) return;
         profile.accounts[id].stats[ARC_KEY] = profile.accounts[id].stats[ARC_KEY] || {};
-        EXTRA_GAMES.forEach((gid) => {
+        ARCADE_RENDER_GAMES.forEach((gid) => {
           if (rawArcade[gid]) {
             profile.accounts[id].stats[ARC_KEY][gid] = Object.assign(arcadeDefaults(gid), profile.accounts[id].stats[ARC_KEY][gid] || {}, rawArcade[gid]);
           }
@@ -1032,7 +1038,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function renderLaunchTiles() {
     const grid = document.getElementById('gamesGrid');
     if (!grid) return;
-    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v692';
+    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v693';
     if (grid.dataset && grid.dataset.arcadeLaunchSig === launchSig && grid.querySelector('.gamesDevFolder') && grid.querySelector('[data-game="ttt"]')) {
       gamePerf.launchRenderSkips = Number(gamePerf.launchRenderSkips || 0) + 1;
       return;
@@ -2749,14 +2755,14 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         <div class="arcadeBar arcadePanel uPad10x12">
           <div class="arcadeStatus">Vyplň čísla 1–9. Hotovo se uloží automaticky po správném doplnění.</div>
         </div>
-        <div class="arcadeBoard grid-9 arcadePanel" id="sudokuGrid" class="uPad8">${gridHtml}</div>
+        <div class="arcadeBoard grid-9 arcadePanel arcadeLogicBoard" id="sudokuGrid">${gridHtml}</div>
         <div class="arcadeControls">
           <button type="button" class="gameControlBtn" data-sudoku="easy">Easy</button>
           <button type="button" class="gameControlBtn" data-sudoku="medium">Medium</button>
           <button type="button" class="gameControlBtn" data-sudoku="hard">Hard</button>
           <button type="button" class="gameControlBtn" data-sudoku="restart">Nové</button>
         </div>
-        ${gamesTop3Block('sudoku', 'ms', 5)}
+        ${gamesTop3Block('sudoku', 'ms', 5).replace('gamesTop5ScrollCard', 'gamesTop5ScrollCard arcadeTopScoreTight')}
       </div>`;
     const grid = body.querySelector('#sudokuGrid');
     const completeCheck = () => {
@@ -2823,9 +2829,9 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       <div class="arcadeStage">
         <div class="arcadeHud">${gamesStatLine('Mines', state.mines)}${gamesStatLine('Otevřeno', state.opened)}${gamesStatLine('Režim', state.mode === 'flag' ? 'Vlajka' : 'Otevřít')}</div>
         <div class="arcadeBar arcadePanel uPad10x12"><div class="arcadeStatus">Klepni na pole. Dlouhé držení nebo režim Vlajka přepne značku.</div></div>
-        <div class="arcadeBoard grid-9 arcadePanel" id="minesGrid" class="uPad8">${cells.join('')}</div>
+        <div class="arcadeBoard grid-9 arcadePanel arcadeLogicBoard" id="minesGrid">${cells.join('')}</div>
         <div class="arcadeControls"><button type="button" class="gameControlBtn" data-mines="mode">${state.mode === 'flag' ? 'Vlajka' : 'Otevřít'}</button><button type="button" class="gameControlBtn" data-mines="restart">Nová hra</button></div>
-        ${gamesTop3Block('mines', 'ms', 5)}
+        ${gamesTop3Block('mines', 'ms', 5).replace('gamesTop5ScrollCard', 'gamesTop5ScrollCard arcadeTopScoreTight')}
       </div>`;
     const grid = body.querySelector('#minesGrid');
     const dig = (x, y) => {
@@ -2869,9 +2875,9 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       <div class="arcadeStage">
         <div class="arcadeHud">${gamesStatLine('Pohyby', state.moves)}${gamesStatLine('Páry', state.matched.size / 2)}${gamesStatLine('Čas', fmtTime(Date.now() - state.startAt))}</div>
         <div class="arcadeBar arcadePanel uPad10x12"><div class="arcadeStatus">Najdi dvojice co nejrychleji. Moderní pexeso v RaK stylu.</div></div>
-        <div class="arcadeGridList grid-4 arcadePanel" id="memoryGrid" class="uPad8">${cells}</div>
+        <div class="arcadeGridList grid-4 arcadePanel arcadeMemoryBoard" id="memoryGrid">${cells}</div>
         <div class="arcadeControls"><button type="button" class="gameControlBtn" data-memory="restart">Nová hra</button></div>
-        ${gamesTop3Block('memory', 'ms', 5)}
+        ${gamesTop3Block('memory', 'ms', 5).replace('gamesTop5ScrollCard', 'gamesTop5ScrollCard arcadeTopScoreTight')}
       </div>`;
     const grid = body.querySelector('#memoryGrid');
     grid.querySelectorAll('button').forEach((btn) => {
@@ -2887,8 +2893,8 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
             if (state.matched.size >= state.deck.length) {
               state.over = true;
               state.bestTimeMs = Date.now() - state.startAt;
-              gamesRecordStat('memory', { completed: true, plays: 1, bestTimeMs: state.bestTimeMs, bestScore: encodePoints('memory', state.bestTimeMs), bestMoves: state.moves, lastResult: `${state.moves} movů` });
-              body.querySelector('.arcadeStatus').innerHTML = `<strong>Vyhráno!</strong> ${fmtTime(state.bestTimeMs)} · ${state.moves} pohybů.`;
+              gamesRecordStat('memory', { completed: true, plays: 1, bestTimeMs: state.bestTimeMs, bestScore: encodePoints('memory', state.bestTimeMs), bestMoves: state.moves, lastResult: `${state.moves} tahů` });
+              body.querySelector('.arcadeStatus').innerHTML = `<strong>Vyhráno!</strong> ${fmtTime(state.bestTimeMs)} · ${state.moves} tahů.`;
             }
           } else {
             state.lock = true;

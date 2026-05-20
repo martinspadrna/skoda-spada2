@@ -1,8 +1,9 @@
-## v.1.1 (692)
-- Doodle Jump a Bubble Shooter mají Top 5 výsledky hned pod hrou v kompaktním scroll boxu, aby nebyly zbytečně nízko a nepřekážely hraní.
-- Bubble Shooter počítá stejné barvy i diagonálně/křížem a po prasknutí shazuje bubliny, které už nejsou napojené na horní řadu; boční stěna je sama nedrží.
-- Do Více přidána sekce „Pošli mi chybu“ pro přihlášené herní profily: pole pro popis chyby/nápadu, lokální uložení reportu a předvyplněné odeslání přes e-mail nebo WhatsApp.
-- Verze sjednocena na v.1.1 (692), cache na v1.1-692 a Supabase realtime kanál na rak-public-live-v692.
+## v.1.1 (693)
+- Přidána Administrace → Reporty chyb: v odemčené administraci jde načíst reporty ze Supabase, rozkliknout detail a označit je jako Viděno / Hotovo / Ignorovat.
+- Sekce Pošli mi chybu zůstává pro uživatele jednoduchá: jen typ, popis a tlačítko Odeslat; report se ukládá do Supabase nebo offline fronty.
+- Sudoku, Minesweeper a Memory/Pexeso přesunuté mezi hlavní/hotové hry; mají mobile-first čistší vzhled, Top 5 ve vlastním scroll boxu a completed-only zápis statistik/XP.
+- Přidané těžší achievementy pro Sudoku, Minesweeper a Memory/Pexeso.
+- Verze sjednocena na v.1.1 (693), cache na v1.1-693 a Supabase realtime kanál na rak-public-live-v693.
 
 ## v.1.1 (690)
 - Tetris: score/řádky/level přesunuté do pravého panelu pod náhled dalších 3 kostek, herní plocha může být vyšší a Top 5 je hned pod hrou.

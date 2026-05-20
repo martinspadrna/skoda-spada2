@@ -342,7 +342,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v692');
+      const channel = client.channel('rak-public-live-v693');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -976,6 +976,41 @@
     const { error } = await runSupabaseOperation('bug_reports.insert', () => client.from('bug_reports').insert([row]), { mode: 'write', attempts: 1 });
     if (error) throw error;
     return { ok: true, row };
+  }
+
+  function normalizeBugReportStatus(status) {
+    const raw = String(status || '').trim().toLowerCase();
+    if (raw === 'seen' || raw.includes('vid')) return 'seen';
+    if (raw === 'done' || raw.includes('hot')) return 'done';
+    if (raw === 'ignored' || raw.includes('ignor')) return 'ignored';
+    return 'new';
+  }
+
+  async function loadBugReportsDirect(client, options = {}) {
+    const limit = Math.max(1, Math.min(80, Number(options.limit || 40) || 40));
+    const status = String(options.status || '').trim();
+    let query = client.from('bug_reports')
+      .select('id, account_number, player_name, report_type, message, app_version, route, user_agent, device_info, status, created_at, handled_at, handled_note')
+      .order('created_at', { ascending: false })
+      .limit(limit);
+    if (status && status !== 'all') query = query.eq('status', normalizeBugReportStatus(status));
+    const { data, error } = await runSupabaseOperation('bug_reports.select', () => query, { mode: 'read', attempts: 1 });
+    if (error) throw error;
+    return { ok: true, rows: Array.isArray(data) ? data : [] };
+  }
+
+  async function updateBugReportStatusDirect(client, id, status, note = '') {
+    const reportId = String(id || '').trim();
+    if (!reportId) throw new Error('Chybí ID reportu.');
+    const nextStatus = normalizeBugReportStatus(status);
+    const patch = {
+      status: nextStatus,
+      handled_at: nextStatus === 'new' ? null : new Date().toISOString(),
+      handled_note: String(note || '').slice(0, 600) || null
+    };
+    const { data, error } = await runSupabaseOperation('bug_reports.update', () => client.from('bug_reports').update(patch).eq('id', reportId).select('id, status, handled_at, handled_note').maybeSingle(), { mode: 'write', attempts: 1 });
+    if (error) throw error;
+    return { ok: true, row: data || patch };
   }
 
 
@@ -2823,6 +2858,32 @@
         return { ok: false, error: err };
       }
     },
+    loadBugReports: async (options = {}) => {
+      const client = getClient();
+      if (!client || !navigator.onLine) return { ok: false, reason: 'offline-or-missing-client', rows: [] };
+      try {
+        const result = await runSharedSupabaseRead('bug_reports.load:' + String(options.status || 'all') + ':' + String(options.limit || 40), () => loadBugReportsDirect(client, options || {}));
+        state.lastError = null;
+        return result;
+      } catch (err) {
+        state.lastError = err;
+        console.error('Bug reports load failed', err);
+        return { ok: false, error: err, rows: [] };
+      }
+    },
+    updateBugReportStatus: async (id, status, note = '') => {
+      const client = getClient();
+      if (!client || !navigator.onLine) return { ok: false, reason: 'offline-or-missing-client' };
+      try {
+        const result = await updateBugReportStatusDirect(client, id, status, note);
+        state.lastError = null;
+        return result;
+      } catch (err) {
+        state.lastError = err;
+        console.error('Bug report status update failed', err);
+        return { ok: false, error: err };
+      }
+    },
     seedFromLocalSnapshot,
     flushPendingWrites,
     bindRealtimeSubscriptions,
@@ -2924,6 +2985,8 @@
   window.saveGameSessionByInviteCode = async (code, payload) => window.RotationSupabaseBridge.saveGameSessionByInviteCode(code, payload);
   window.loadTttHeadToHead = async (playerA, playerB, options) => window.RotationSupabaseBridge.loadTttHeadToHead(playerA, playerB, options || {});
   window.loadTttHeadToHeadList = async (options) => window.RotationSupabaseBridge.loadTttHeadToHeadList(options || {});
+  window.loadBugReports = async (options) => window.RotationSupabaseBridge.loadBugReports(options || {});
+  window.updateBugReportStatus = async (id, status, note) => window.RotationSupabaseBridge.updateBugReportStatus(id, status, note || '');
 
   window.addEventListener('online', () => {
     requestSupabaseQueueWake('online', 350);

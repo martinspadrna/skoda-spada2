@@ -3903,7 +3903,7 @@ function buildAppHistoryHtml(versionText) {
       range: versionText,
       title: 'Aktuální build',
       lines: [
-        'Build v.1.1 (692) zjednodušuje Pošli mi chybu: uživatel jen klikne na Odeslat a report se uloží online do Supabase, případně do offline fronty.',
+        'Build v.1.1 (693) přidává Administraci reportů chyb a přesouvá Sudoku, Minesweeper a Pexeso mezi hotové hry.',
         'Série v.1.1 650–689 dotáhla Piškvorky, online pozvánky, PWA launch handler, 2048/Snake/Flappy Car/Aim/Reaction/Tetris/Space Shooter/Brick Breaker mezi hotové hry, herní profily, theme polish a těžší/chytřejší achievementy.',
         'Sekce „O aplikaci“ je nově stručnější: detailní změny zůstávají v changelogu a tady se historie drží po větších blocích.',
         'Stabilizační audity, Supabase guardy, Láďův režim a finální readiness kontroly zůstávají součástí diagnostiky.'
@@ -4808,6 +4808,107 @@ async function saveAdminRotationFromDom(monthKey) {
 
 
 
+
+function formatAdminReportDate(value) {
+  try {
+    const d = value ? new Date(value) : null;
+    if (!d || Number.isNaN(d.getTime())) return '—';
+    return d.toLocaleString('cs-CZ', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+  } catch (err) { return '—'; }
+}
+
+function normalizeAdminReportTypeLabel(value) {
+  const raw = String(value || '').toLowerCase();
+  if (raw === 'nelibi') return 'Nelíbí se mi';
+  if (raw === 'napad') return 'Nápad';
+  if (raw === 'vykon') return 'Výkon / sekání';
+  if (raw === 'hra') return 'Hra';
+  if (raw === 'ostatni') return 'Ostatní';
+  return 'Chyba';
+}
+
+function normalizeAdminReportStatusLabel(value) {
+  const raw = String(value || '').toLowerCase();
+  if (raw === 'seen') return 'Viděno';
+  if (raw === 'done') return 'Hotovo';
+  if (raw === 'ignored') return 'Ignorovat';
+  return 'Nové';
+}
+
+function getAdminReportsCache() {
+  return Array.isArray(app.adminBugReports) ? app.adminBugReports : [];
+}
+
+function buildAdminReportsHtml() {
+  const rows = getAdminReportsCache();
+  const list = rows.length ? rows.map((row) => {
+    const id = escapeHtml(String(row.id || ''));
+    const status = String(row.status || 'new');
+    const device = row.device_info && typeof row.device_info === 'object' ? row.device_info : {};
+    const meta = [
+      row.app_version ? String(row.app_version) : '',
+      row.route ? String(row.route) : '',
+      device.theme ? ('Theme ' + String(device.theme)) : '',
+      device.background ? ('Pozadí ' + String(device.background)) : ''
+    ].filter(Boolean).join(' · ');
+    return [
+      '<details class="adminReportItem" data-report-id="' + id + '">',
+      '  <summary class="adminReportSummary">',
+      '    <span><b>' + escapeHtml(normalizeAdminReportTypeLabel(row.report_type)) + '</b><small>' + escapeHtml(formatAdminReportDate(row.created_at)) + ' · ' + escapeHtml(row.player_name || row.account_number || 'bez jména') + '</small></span>',
+      '    <em class="adminReportStatus adminReportStatus-' + escapeHtml(status) + '">' + escapeHtml(normalizeAdminReportStatusLabel(status)) + '</em>',
+      '  </summary>',
+      '  <div class="adminReportBody">',
+      '    <div class="adminReportMessage">' + escapeHtml(row.message || '') + '</div>',
+      meta ? '    <div class="smallText">' + escapeHtml(meta) + '</div>' : '',
+      row.user_agent ? '    <div class="smallText adminReportDevice">' + escapeHtml(row.user_agent) + '</div>' : '',
+      '    <div class="appMenuActionRow adminReportActions">',
+      '      <button type="button" class="appMenuAction" data-admin-action="report-seen" data-report-id="' + id + '">Viděno</button>',
+      '      <button type="button" class="appMenuAction isActive" data-admin-action="report-done" data-report-id="' + id + '">Hotovo</button>',
+      '      <button type="button" class="appMenuAction" data-admin-action="report-ignore" data-report-id="' + id + '">Ignorovat</button>',
+      '    </div>',
+      '  </div>',
+      '</details>'
+    ].join('');
+  }).join('') : '<div class="appMenuText">Zatím tu nejsou žádné reporty.</div>';
+  return [
+    '<div class="adminReportsFolder">',
+    '  <div class="adminReportsToolbar">',
+    '    <button type="button" class="appMenuAction isActive" data-admin-action="load-reports">Načíst reporty</button>',
+    '    <span class="smallText">' + String(rows.length || 0) + ' záznamů</span>',
+    '  </div>',
+    '  <div class="adminReportsList">' + list + '</div>',
+    '</div>'
+  ].join('');
+}
+
+async function loadAdminBugReportsFromSupabase() {
+  if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.loadBugReports === 'function') {
+    const result = await window.RotationSupabaseBridge.loadBugReports({ limit: 50, status: 'all' });
+    app.adminBugReports = result && Array.isArray(result.rows) ? result.rows : [];
+    return result;
+  }
+  app.adminBugReports = [];
+  return { ok: false, rows: [], reason: 'missing-bridge' };
+}
+
+async function updateAdminBugReportStatus(reportId, status) {
+  if (!reportId) return { ok: false, reason: 'missing-id' };
+  if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.updateBugReportStatus === 'function') {
+    const result = await window.RotationSupabaseBridge.updateBugReportStatus(reportId, status, 'Změněno z administrace RaK');
+    if (result && result.ok) {
+      const rows = getAdminReportsCache();
+      const hit = rows.find(r => String(r.id || '') === String(reportId));
+      if (hit) {
+        hit.status = status;
+        hit.handled_at = new Date().toISOString();
+        hit.handled_note = 'Změněno z administrace RaK';
+      }
+    }
+    return result;
+  }
+  return { ok: false, reason: 'missing-bridge' };
+}
+
 function renderAdminMenuBody(body, section) {
   const mode = String(section || 'home').trim() || 'home';
   const months = getAdminRotationMonthKeys();
@@ -4827,6 +4928,7 @@ function renderAdminMenuBody(body, section) {
     '    <button type="button" class="appMenuAction" data-admin-action="open-machines">Nastavení strojů</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-rotation">Rozpisy</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-export">Export / import</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="open-reports">Reporty chyb</button>',
     '  </div>',
     '  <button type="button" class="appMenuAction appMenuBack" data-menu-back="1">Zpět</button>',
     '</div>'
@@ -4881,12 +4983,27 @@ function renderAdminMenuBody(body, section) {
     '</div>'
   ].join('');
 
+
+  const reportsHtml = [
+    '<div class="appMenuCard appMenuAdminCard adminReportsCard">',
+    '  <div class="appMenuCardTitle">Reporty chyb</div>',
+    '  <div class="appMenuText">',
+    '    <div>Tady uvidíš, co uživatelé poslali přes Pošli mi chybu. Reporty chodí do Supabase tabulky bug_reports.</div>',
+    '    <div class="smallText" id="adminOnlineSaveStatus">Načti reporty a podle potřeby je označ jako viděné nebo hotové.</div>',
+    '  </div>',
+    buildAdminReportsHtml(),
+    '  <button type="button" class="appMenuAction appMenuBack" data-admin-action="back-admin">Zpět</button>',
+    '</div>'
+  ].join('');
+
   if (mode === 'machines') {
     body.innerHTML = machinesHtml;
   } else if (mode === 'rotation') {
     body.innerHTML = rotationHtml;
   } else if (mode === 'export') {
     body.innerHTML = exportHtml;
+  } else if (mode === 'reports') {
+    body.innerHTML = reportsHtml;
   } else {
     body.innerHTML = homeHtml;
   }
@@ -5160,6 +5277,10 @@ function bindAppMenuHandlers(body) {
         openAppMenu('admin-export');
         return;
       }
+      if (menuAction === 'admin-reports') {
+        openAppMenu('admin-reports');
+        return;
+      }
       if (menuAction === 'clear-cache') {
         if (!confirm('Vyčistit cache a tvrdě obnovit aplikaci?')) return;
         try {
@@ -5337,6 +5458,25 @@ function bindAppMenuHandlers(body) {
       }
       if (adminAction === 'open-export') {
         openAppMenu('admin-export');
+        return;
+      }
+      if (adminAction === 'open-reports') {
+        openAppMenu('admin-reports');
+        return;
+      }
+      if (adminAction === 'load-reports') {
+        const statusEl = document.getElementById('adminOnlineSaveStatus');
+        if (statusEl) statusEl.textContent = 'Načítám reporty…';
+        await loadAdminBugReportsFromSupabase();
+        renderAdminMenuBody(body, 'reports');
+        return;
+      }
+      if (adminAction === 'report-seen' || adminAction === 'report-done' || adminAction === 'report-ignore') {
+        const reportId = target.getAttribute('data-report-id') || target.closest('[data-report-id]')?.getAttribute('data-report-id') || '';
+        const nextStatus = adminAction === 'report-done' ? 'done' : (adminAction === 'report-ignore' ? 'ignored' : 'seen');
+        const result = await updateAdminBugReportStatus(reportId, nextStatus);
+        if (!result || result.ok === false) throw (result && result.error ? result.error : new Error('Report se nepodařilo upravit.'));
+        renderAdminMenuBody(body, 'reports');
         return;
       }
       if (adminAction === 'load-month') {
@@ -5543,6 +5683,16 @@ function openAppMenu(view) {
       })();
     } else if (v === 'admin-export') {
       renderAdminMenuBody(body, 'export');
+    } else if (v === 'admin-reports') {
+      void (async () => {
+        try {
+          await loadAdminBugReportsFromSupabase();
+          renderAdminMenuBody(body, 'reports');
+        } catch (err) {
+          console.warn('Admin reports preload failed', err);
+          renderAdminMenuBody(body, 'reports');
+        }
+      })();
     } else {
       body.innerHTML = [
         '<div class="appMenuGrid">',

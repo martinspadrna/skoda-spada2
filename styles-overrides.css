@@ -7495,7 +7495,7 @@ body.gamesOpen #games .arcadeCanvasWrap.shooterCanvasWrap{
 #games .tetrisSideStatsCanvas{height:clamp(450px,72dvh,720px) !important;}
 
 
-/* v.1.1 (692) – report chyb přes Supabase */
+/* v.1.1 (693) – report chyb přes Supabase */
 #games .doodleCanvasWrap,
 #games .bubbleCanvasWrap{max-width:380px !important;margin-left:auto !important;margin-right:auto !important;}
 #games .arcadeTopScoreTight{margin-top:6px !important;max-height:132px !important;}
@@ -7510,3 +7510,28 @@ body.gamesOpen #games .arcadeCanvasWrap.shooterCanvasWrap{
 .appMenuReportHint{font-size:12px !important;line-height:1.35 !important;color:rgba(231,255,240,.72) !important;}
 .appMenuReportActions{display:grid !important;grid-template-columns:1fr !important;gap:8px !important;}
 @media (min-width:520px){.appMenuReportActions{grid-template-columns:repeat(3,minmax(0,1fr)) !important;}}
+
+/* v.1.1 (693) - Administrace reportů + logické hry */
+#menu .adminReportsCard .adminReportsFolder{display:flex;flex-direction:column;gap:10px;}
+#menu .adminReportsToolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0 4px;}
+#menu .adminReportsList{display:flex;flex-direction:column;gap:8px;max-height:52vh;overflow:auto;overscroll-behavior:contain;padding-right:2px;}
+#menu .adminReportItem{border:1px solid rgba(255,255,255,.12);border-radius:18px;background:rgba(255,255,255,.045);overflow:hidden;}
+#menu .adminReportSummary{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;cursor:pointer;list-style:none;}
+#menu .adminReportSummary::-webkit-details-marker{display:none;}
+#menu .adminReportSummary span{display:flex;flex-direction:column;gap:2px;min-width:0;}
+#menu .adminReportSummary small{color:var(--muted);font-size:.78rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;}
+#menu .adminReportStatus{font-size:.72rem;font-style:normal;border-radius:999px;padding:5px 8px;background:rgba(255,255,255,.08);white-space:nowrap;}
+#menu .adminReportStatus-new{background:rgba(250,204,21,.16);color:#fde68a;}
+#menu .adminReportStatus-seen{background:rgba(56,189,248,.16);color:#bae6fd;}
+#menu .adminReportStatus-done{background:rgba(74,222,128,.16);color:#bbf7d0;}
+#menu .adminReportStatus-ignored{background:rgba(148,163,184,.14);color:#cbd5e1;}
+#menu .adminReportBody{padding:0 12px 12px;display:flex;flex-direction:column;gap:8px;}
+#menu .adminReportMessage{font-size:.9rem;line-height:1.35;color:var(--soft);white-space:pre-wrap;border-radius:14px;background:rgba(0,0,0,.18);padding:10px;}
+#menu .adminReportDevice{max-height:58px;overflow:auto;overscroll-behavior:contain;}
+#menu .adminReportActions{gap:8px;flex-wrap:wrap;}
+#games .arcadeLogicBoard{padding:8px !important;border-radius:22px !important;background:linear-gradient(145deg,rgba(255,255,255,.075),rgba(255,255,255,.025)) !important;border:1px solid var(--rakThemeBorder,rgba(255,255,255,.16)) !important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.04),0 18px 36px rgba(0,0,0,.22) !important;touch-action:manipulation;}
+#games .arcadeLogicBoard .arcadeCell{min-height:34px;border-radius:10px !important;background:rgba(255,255,255,.065) !important;border:1px solid rgba(255,255,255,.10) !important;}
+#games .arcadeLogicBoard input.arcadeCell{font-size:1rem;font-weight:900;text-align:center;color:var(--soft);}
+#games .arcadeMemoryBoard{padding:8px !important;border-radius:22px !important;background:linear-gradient(145deg,rgba(255,255,255,.075),rgba(255,255,255,.025)) !important;border:1px solid var(--rakThemeBorder,rgba(255,255,255,.16)) !important;touch-action:manipulation;}
+#games .arcadeMemoryBoard .arcadeMemoryCard{min-height:54px;border-radius:16px !important;background:rgba(255,255,255,.075) !important;border:1px solid rgba(255,255,255,.12) !important;font-size:1.35rem;}
+#games .arcadeMemoryBoard .arcadeMemoryCard.isFlipped,#games .arcadeMemoryBoard .arcadeMemoryCard.isMatched{background:var(--rakThemeGlow,rgba(124,255,124,.24)) !important;box-shadow:0 0 18px var(--rakThemeGlow,rgba(124,255,124,.22));}

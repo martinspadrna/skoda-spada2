@@ -1,4 +1,4 @@
-// v.1.1 (692) – Report chyb přes Supabase: jedno tlačítko Odeslat + offline fronta.
+// v.1.1 (693) – Administrace reportů chyb + Sudoku/Mines/Memory jako hotové hry.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
