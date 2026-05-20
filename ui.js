@@ -860,6 +860,7 @@ function tttGetState() {
       turn: 'X',
       gameOver: false,
       winner: null,
+      nextStarter: 'X',
       message: '',
       startedAt: 0,
       moveCount: 0,
@@ -1102,14 +1103,26 @@ function tttBuildOnlineScoreText() {
   const xName = tttGetAccountDisplayName(xAcc) || 'Hráč X';
   const oName = tttGetAccountDisplayName(oAcc) || 'Hráč O';
   const score = online.headToHead && online.headToHead.score ? online.headToHead.score : null;
-  let xWins = Number(score && (score.xWins ?? score.aWins) || 0) || 0;
-  let oWins = Number(score && (score.oWins ?? score.bWins) || 0) || 0;
-  // Když je hráč A/B v head-to-head obráceně, preferuj výhry podle symbolů X/O ze session.
-  if (score && Number.isFinite(Number(score.xWins)) && Number.isFinite(Number(score.oWins))) {
-    xWins = Number(score.xWins || 0) || 0;
-    oWins = Number(score.oWins || 0) || 0;
+  let xWins = 0;
+  let oWins = 0;
+  if (score) {
+    if (Number.isFinite(Number(score.xWins)) || Number.isFinite(Number(score.oWins))) {
+      xWins = Number(score.xWins || 0) || 0;
+      oWins = Number(score.oWins || 0) || 0;
+    } else {
+      const players = online.headToHead && online.headToHead.players ? online.headToHead.players : {};
+      const a = String(players.a || '').trim();
+      const b = String(players.b || '').trim();
+      if (a && b) {
+        xWins = xAcc === a ? Number(score.aWins || 0) || 0 : Number(score.bWins || 0) || 0;
+        oWins = oAcc === a ? Number(score.aWins || 0) || 0 : Number(score.bWins || 0) || 0;
+      } else {
+        xWins = Number(score.aWins || 0) || 0;
+        oWins = Number(score.bWins || 0) || 0;
+      }
+    }
   }
-  return xName + ' (X) ' + xWins + ':' + oWins + ' ' + oName + ' (O)';
+  return xName + ' (x) ' + xWins + ':' + oWins + ' ' + oName + ' (o)';
 }
 
 function tttRenderInviteOverlay(overlay) {
@@ -1134,7 +1147,7 @@ function tttRenderInviteOverlay(overlay) {
   codeEl.textContent = code;
   const hint = document.createElement('div');
   hint.className = 'tttInviteOverlayHint';
-  hint.textContent = 'Jakmile soupeř kód přijme, kód zmizí a nahoře zůstane vzájemné skóre.';
+  hint.textContent = 'Jakmile soupeř kód přijme, okno zmizí a nahoře zůstane skóre.';
   fragment.appendChild(label);
   fragment.appendChild(codeEl);
   fragment.appendChild(hint);
@@ -1209,11 +1222,12 @@ function tttMakeOnlineStatePatch(extraPatch) {
     playerXAccountNumber: online.playerXAccountNumber || null,
     playerOAccountNumber: online.playerOAccountNumber || null,
     winnerRole: state.gameOver ? (state.winner || null) : null,
+    nextStarter: state.nextStarter || (state.gameOver && ['X','O'].includes(String(state.winner || '')) ? state.winner : null),
     winnerAccountNumber: null
   };
-  if (patch.winner && online && online.role && patch.winner === online.role.toUpperCase()) {
-    patch.winnerAccountNumber = typeof gamesGetActiveAccount === 'function' && gamesGetActiveAccount() ? gamesGetActiveAccount().id : null;
-  }
+  if (patch.winner === 'X') patch.winnerAccountNumber = online.playerXAccountNumber || null;
+  else if (patch.winner === 'O') patch.winnerAccountNumber = online.playerOAccountNumber || null;
+  else if (patch.winner === 'draw') patch.winnerAccountNumber = null;
   return Object.assign(patch, extraPatch && typeof extraPatch === 'object' ? extraPatch : {});
 }
 
@@ -1227,6 +1241,7 @@ function tttApplyOnlineState(statePatch, remote) {
   state.turn = statePatch.turn === 'O' ? 'O' : 'X';
   state.gameOver = !!statePatch.gameOver;
   state.winner = statePatch.winner || null;
+  if (['X', 'O'].includes(String(statePatch.nextStarter || ''))) state.nextStarter = statePatch.nextStarter;
   state.message = statePatch.message || (state.gameOver
     ? (state.winner === 'draw' ? 'Remíza. Dobře hrané.' : ('Vyhrál hráč ' + state.winner + '.'))
     : (state.turn === 'X' ? 'Hraje hráč X.' : 'Hraje hráč O.'));
@@ -3345,6 +3360,7 @@ function tttHandleMove(index) {
       if (afterAi.winner) {
         fresh.gameOver = true;
         fresh.winner = afterAi.winner;
+        fresh.nextStarter = ['X', 'O'].includes(afterAi.winner) ? afterAi.winner : 'X';
         fresh.message = afterAi.winner === 'draw'
           ? 'Remíza. Dobře hrané.'
           : 'AI vyhrála. Zkus to znovu.';
@@ -3390,11 +3406,16 @@ function tttHandleMove(index) {
 
 function resetTicTacToeGame(keepScreen) {
   const state = tttGetState();
+  const previousWinner = String(state.winner || '').toUpperCase();
+  const starter = ['X', 'O'].includes(previousWinner)
+    ? previousWinner
+    : (['X', 'O'].includes(String(state.nextStarter || '').toUpperCase()) ? String(state.nextStarter).toUpperCase() : 'X');
   state.board = Array(TTT_TOTAL_CELLS).fill('');
-  state.turn = 'X';
+  state.turn = (state.mode === 'pvp' || state.mode === 'local') ? starter : 'X';
+  state.nextStarter = starter;
   state.gameOver = false;
   state.winner = null;
-  state.startedAt = 0;
+  state.startedAt = state.mode === 'pvp' ? Date.now() : 0;
   state.moveCount = 0;
   state.moveCountX = 0;
   state.moveCountO = 0;
@@ -3405,14 +3426,39 @@ function resetTicTacToeGame(keepScreen) {
   state.resultSaved = false;
   state.resultOnlineSaved = false;
   state.resultSummary = null;
-  state.message = state.mode === 'pvp' ? 'Hraje hráč X.' : (state.mode === 'local' ? 'Na řadě je X.' : 'Hraješ za X. AI je O.');
+  if (state.mode === 'pvp') {
+    const role = String(state.online && state.online.role || '').toUpperCase();
+    const waiting = state.online && (!state.online.playerOAccountNumber || String(state.online.status || '').toLowerCase() === 'waiting');
+    state.message = waiting
+      ? 'Čekám na přijetí pozvánky.'
+      : (role === state.turn ? ('Začíná ' + state.turn + '. Jsi na tahu.') : ('Začíná ' + state.turn + '. Čekáš na soupeře.'));
+    if (state.online) state.online.status = waiting ? 'waiting' : 'active';
+  } else {
+    state.message = state.mode === 'local'
+      ? ('Začíná ' + state.turn + '.')
+      : 'Hraješ za X. AI je O.';
+  }
   if (!keepScreen) state.screen = 'start';
   tttRender();
   scheduleTttLayout();
   if (state.mode === 'pvp' && state.online && state.online.code) {
     state.online.dirty = true;
     state.online.pendingRevision = Math.max(Number(state.online.pendingRevision || 0) || 0, Number(state.online.revision || 0) || 0) + 1;
-    void tttPushOnlineSession({ status: state.online.status || 'waiting', gameOver: false, winner: null, winnerRole: null, finishedAt: null, moveCount: 0, moveCountX: 0, moveCountO: 0, lastMoveIndex: null, lastMoveMark: null });
+    void tttPushOnlineSession({
+      status: state.online.status || 'active',
+      gameOver: false,
+      winner: null,
+      winnerRole: null,
+      winnerAccountNumber: null,
+      nextStarter: starter,
+      finishedAt: null,
+      moveCount: 0,
+      moveCountX: 0,
+      moveCountO: 0,
+      lastMoveIndex: null,
+      lastMoveMark: null,
+      forceNewSession: true
+    });
   }
 }
 
@@ -6062,15 +6108,39 @@ function gamesBuildProfilesWithRemoteRows(profile) {
   const remoteTtt = app.gamesLeaderboardCache && Array.isArray(app.gamesLeaderboardCache.ttt) ? app.gamesLeaderboardCache.ttt : [];
   remoteTtt.forEach((row) => {
     const id = String(row && (row.id || row.account_number || row.accountNumber) ? (row.id || row.account_number || row.accountNumber) : '').trim();
-    if (!id || byId.has(id) || GAMES_ACCOUNT_BLOCKLIST.has(id)) return;
+    if (!id || GAMES_ACCOUNT_BLOCKLIST.has(id)) return;
     const value = Number(row && (row.value || row.games_played || row.points) || 0) || 0;
     if (value <= 0) return;
+    const remoteStats = {
+      plays: value,
+      wins: Number(row && row.wins || 0) || 0,
+      losses: Number(row && row.losses || 0) || 0,
+      draws: Number(row && row.draws || 0) || 0,
+      lastPlayedAt: row && row.updatedAt ? Date.parse(row.updatedAt) || 0 : 0
+    };
+    const remoteName = String(row && (row.name || row.player_name) ? (row.name || row.player_name) : ('Hráč ' + id)).trim();
+    if (byId.has(id)) {
+      const existing = byId.get(id) || {};
+      existing.stats = existing.stats && typeof existing.stats === 'object' ? existing.stats : {};
+      const localTtt = existing.stats.ttt && typeof existing.stats.ttt === 'object' ? existing.stats.ttt : {};
+      existing.stats.ttt = Object.assign({}, localTtt, {
+        plays: Math.max(Number(localTtt.plays || 0) || 0, remoteStats.plays),
+        wins: Math.max(Number(localTtt.wins || 0) || 0, remoteStats.wins),
+        losses: Math.max(Number(localTtt.losses || 0) || 0, remoteStats.losses),
+        draws: Math.max(Number(localTtt.draws || 0) || 0, remoteStats.draws),
+        lastPlayedAt: Math.max(Number(localTtt.lastPlayedAt || 0) || 0, remoteStats.lastPlayedAt)
+      });
+      if (!existing.name && remoteName) existing.name = remoteName;
+      existing.updatedAt = Math.max(Number(existing.updatedAt || 0) || 0, remoteStats.lastPlayedAt || Date.now());
+      byId.set(id, existing);
+      return;
+    }
     byId.set(id, gamesNormalizeStoredAccount({
       id,
-      name: String(row && (row.name || row.player_name) ? (row.name || row.player_name) : ('Hráč ' + id)).trim(),
-      stats: { ttt: { plays: value, wins: Number(row && row.wins || 0) || 0, losses: Number(row && row.losses || 0) || 0, draws: Number(row && row.draws || 0) || 0, lastPlayedAt: row && row.updatedAt ? Date.parse(row.updatedAt) || 0 : 0 } },
-      updatedAt: row && row.updatedAt ? Date.parse(row.updatedAt) || Date.now() : Date.now()
-    }, String(row && (row.name || row.player_name) ? (row.name || row.player_name) : ('Hráč ' + id)).trim()));
+      name: remoteName,
+      stats: { ttt: remoteStats },
+      updatedAt: remoteStats.lastPlayedAt || Date.now()
+    }, remoteName));
   });
   return Array.from(byId.values());
 }
@@ -6108,7 +6178,9 @@ function gamesRenderProfiles() {
       else if (game.id === 'snake') value = Number(total.snake.bestScore || 0) || 0;
       else if (game.id === 'flap') value = Number(total.flap.bestScore || 0) || 0;
       else if (gameStats) value = Number(gameStats.bestScore || gameStats.plays || gameStats.bestTimeMs || 0) || 0;
-      const display = game.id === 'ttt' ? (String(value) + '×') : (game.id === 'reaction' ? (value ? (String(value) + ' ms') : '—') : (String(value) + ' ' + game.unit));
+      const display = game.id === 'ttt'
+        ? (String(value) + '× · V ' + String(Number((gameStats && gameStats.wins) || total.ttt.wins || 0) || 0) + ' / P ' + String(Number((gameStats && gameStats.losses) || total.ttt.losses || 0) || 0) + ' / R ' + String(Number((gameStats && gameStats.draws) || total.ttt.draws || 0) || 0))
+        : (game.id === 'reaction' ? (value ? (String(value) + ' ms') : '—') : (String(value) + ' ' + game.unit));
       return '<div class="gamesProfileRow"><strong>' + escapeHtml(game.title) + '</strong><span>' + escapeHtml(display) + '</span></div>';
     }).join('');
     const isActive = String(acc.id) === String(activeId);
@@ -6257,10 +6329,10 @@ function renderGamesHub() {
   if (typeof renderGamesProfileStatus === 'function') renderGamesProfileStatus();
   gamesRenderProfiles();
   gamesRenderAchievements();
-  gamesRenderStats();
+  // v.1.1 (668): samostatné herní Statistiky jsou sjednocené do Profilů.
   if (typeof syncGamesLockedSections === 'function') syncGamesLockedSections();
-  void gamesSyncProfileFromRemote().then(() => { if (typeof renderGamesProfileStatus === 'function') renderGamesProfileStatus(); gamesRenderProfiles(); gamesRenderAchievements(); gamesRenderStats(); if (typeof syncGamesLockedSections === 'function') syncGamesLockedSections(); });
-  void gamesRefreshRemoteLeaderboards(null, true).then(() => { gamesRenderProfiles(); gamesRenderStats(); });
+  void gamesSyncProfileFromRemote().then(() => { if (typeof renderGamesProfileStatus === 'function') renderGamesProfileStatus(); gamesRenderProfiles(); gamesRenderAchievements(); if (typeof syncGamesLockedSections === 'function') syncGamesLockedSections(); });
+  void gamesRefreshRemoteLeaderboards(null, true).then(() => { gamesRenderProfiles(); });
   gamesEnsureKeyBindings();
   gamesEnsureResizeBinding();
   const stage = document.getElementById('gamesStage');
@@ -6334,7 +6406,7 @@ function gamesRecordStat(gameId, patch) {
     active.stats.flap = Object.assign({}, active.stats.flap, nextPatch);
   }
   gamesSaveProfile(profile);
-  gamesRenderStats();
+  gamesRenderProfiles();
   void gamesSyncStatOnline(gameId, nextPatch);
   void gamesRefreshRemoteLeaderboards(gameId, true);
 }

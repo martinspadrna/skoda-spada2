@@ -6039,7 +6039,7 @@ html body.tttOpen .tttOverlay .tttResultRestartBtn{
 }
 
 
-/* v.1.1 (667) – Piškvorky online: kód ve hře, vzájemné skóre a čitelné Nová hra. */
+/* v.1.1 (668) – Piškvorky online: kód ve hře, vzájemné skóre a čitelné Nová hra. */
 html body .tttOverlay .tttOnlineGameInfo,
 html body.tttOpen .tttOverlay .tttOnlineGameInfo{
   position:absolute !important;
@@ -6075,3 +6075,43 @@ html body.tttOpen .tttOverlay .tttResultRestartBtn{
   text-shadow:0 1px 0 rgba(255,255,255,.55) !important;
   box-shadow:0 0 24px rgba(57,255,20,.42), inset 0 1px 0 rgba(255,255,255,.62) !important;
 }
+
+
+/* v.1.1 (668) – Piškvorky: online kód jako modální okno, bílé Nová hra, Profily místo duplicitních statistik. */
+html body .tttOverlay .tttInviteOverlay,
+html body.tttOpen .tttOverlay .tttInviteOverlay{
+  position:absolute !important;
+  left:50% !important;
+  top:50% !important;
+  right:auto !important;
+  bottom:auto !important;
+  transform:translate(-50%, -50%) !important;
+  width:min(86%, 320px) !important;
+  z-index:26 !important;
+  display:block !important;
+  padding:18px 16px !important;
+  border-radius:24px !important;
+  border:1px solid rgba(124,255,124,.58) !important;
+  background:linear-gradient(180deg, rgba(5,12,10,.94), rgba(2,7,6,.98)) !important;
+  -webkit-backdrop-filter:blur(18px) saturate(170%) !important;
+  backdrop-filter:blur(18px) saturate(170%) !important;
+  box-shadow:0 24px 70px rgba(0,0,0,.66), 0 0 40px rgba(124,255,124,.28), inset 0 0 0 1px rgba(255,255,255,.08) !important;
+  text-align:center !important;
+}
+html body .tttOverlay .tttInviteOverlay[hidden],
+html body.tttOpen .tttOverlay .tttInviteOverlay[hidden]{display:none !important;}
+html body .tttOverlay .tttInviteOverlayLabel{font-size:12px !important;text-transform:uppercase !important;letter-spacing:.12em !important;color:rgba(235,255,235,.72) !important;font-weight:900 !important;}
+html body .tttOverlay .tttInviteOverlayCode{margin-top:8px !important;font-size:52px !important;line-height:1 !important;font-weight:1000 !important;letter-spacing:.14em !important;color:#39FF14 !important;text-shadow:0 0 10px rgba(57,255,20,.86), 0 0 32px rgba(57,255,20,.48) !important;}
+html body .tttOverlay .tttInviteOverlayHint{margin-top:10px !important;font-size:12px !important;line-height:1.35 !important;color:rgba(235,255,235,.76) !important;}
+html body .tttOverlay .tttResultRestartBtn,
+html body.tttOpen .tttOverlay .tttResultRestartBtn{
+  color:#FFFFFF !important;
+  -webkit-text-fill-color:#FFFFFF !important;
+  text-shadow:0 1px 2px rgba(0,0,0,.72), 0 0 12px rgba(255,255,255,.18) !important;
+  background:linear-gradient(180deg, rgba(20,38,26,.96), rgba(7,20,13,.98)) !important;
+  border:2px solid rgba(124,255,124,.88) !important;
+  box-shadow:0 0 26px rgba(57,255,20,.36), inset 0 0 0 1px rgba(255,255,255,.18) !important;
+}
+#games .gamesStatsFolder{display:none !important;}
+#games .gamesProfilesFolder .gamesStatsCardLine,
+#games .gamesProfilesFolder .gamesProfileRow span{font-variant-numeric:tabular-nums !important;}

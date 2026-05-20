@@ -1,10 +1,10 @@
-## v.1.1 (667)
+## v.1.1 (668)
 - Piškvorky online: kód pozvánky se při čekání zobrazuje velkým panelem přes hrací pole a zmizí po přijetí soupeřem.
 - Horní řádek online hry nově ukazuje vzájemné skóre ve formátu hráč X 2:2 hráč O.
 - Opravené zapisování online výsledků do `game_stats` pro oba hráče, aby se odehrané hry objevily i ve Statistikách a Profilech na druhém mobilu.
 - Tlačítko Nová hra ve výsledkovém panelu má bílý čitelný text.
 - Smazané staré online výhry proti AI z tabulky `gomoku_wins`, protože patřily k jiné obtížnosti.
-- Verze sjednocena na v.1.1 (667), cache na v1.1-667 a Supabase realtime kanál na rak-public-live-v667.
+- Verze sjednocena na v.1.1 (668), cache na v1.1-668 a Supabase realtime kanál na rak-public-live-v668.
 
 ## v.1.1 (665)
 - Piškvorky online: kód pozvánky je nově jednoduchý 4místný číselný kód.

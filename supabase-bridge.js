@@ -340,7 +340,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v667');
+      const channel = client.channel('rak-public-live-v668');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -1059,12 +1059,14 @@
     const loaded = await loadGameInviteByCode(client, inviteCode);
     if (!loaded.invite) throw new Error('Pozvánka nenalezena.');
     const invite = loaded.invite;
-    const { data: sessionData, error: sessionLookupErr } = await runSupabaseOperation('game_sessions.lookup_for_accept', () => client
+    const { data: sessionRows, error: sessionLookupErr } = await runSupabaseOperation('game_sessions.lookup_for_accept', () => client
       .from('game_sessions')
       .select('*')
       .eq('invite_id', invite.id)
-      .maybeSingle(), { mode: 'read' });
+      .order('updated_at', { ascending: false })
+      .limit(1), { mode: 'read' });
     if (sessionLookupErr) throw sessionLookupErr;
+    const sessionData = Array.isArray(sessionRows) && sessionRows.length ? sessionRows[0] : null;
     const nextInvite = {
       status: 'accepted',
       accepted_at: new Date().toISOString(),
@@ -1121,12 +1123,14 @@
   async function loadGameSessionByInviteCodeDirect(client, code) {
     const loaded = await loadGameInviteByCode(client, code);
     if (!loaded.invite) return { ok: false, invite: null, session: null };
-    const { data: sessionData, error: sessionErr } = await runSupabaseOperation('game_sessions.lookup_by_invite', () => client
+    const { data: sessionRows, error: sessionErr } = await runSupabaseOperation('game_sessions.lookup_by_invite', () => client
       .from('game_sessions')
       .select('*')
       .eq('invite_id', loaded.invite.id)
-      .maybeSingle(), { mode: 'read' });
+      .order('updated_at', { ascending: false })
+      .limit(1), { mode: 'read' });
     if (sessionErr) throw sessionErr;
+    const sessionData = Array.isArray(sessionRows) && sessionRows.length ? sessionRows[0] : null;
     writeGameSessionCache(code, loaded.invite, sessionData || null);
     return { ok: true, invite: loaded.invite, session: sessionData || null };
   }
@@ -1134,27 +1138,36 @@
   async function saveGameSessionByInviteCodeDirect(client, code, payload) {
     const loaded = await loadGameInviteByCode(client, code);
     if (!loaded.invite) throw new Error('Pozvánka nenalezena.');
-    const { data: sessionData, error: sessionErr } = await runSupabaseOperation('game_sessions.lookup_by_invite', () => client
+    const { data: sessionRows, error: sessionErr } = await runSupabaseOperation('game_sessions.lookup_by_invite', () => client
       .from('game_sessions')
       .select('*')
       .eq('invite_id', loaded.invite.id)
-      .maybeSingle(), { mode: 'read' });
+      .order('updated_at', { ascending: false })
+      .limit(1), { mode: 'read' });
     if (sessionErr) throw sessionErr;
-    const boardState = payload && typeof payload === 'object' ? payload : {};
+    const sessionData = Array.isArray(sessionRows) && sessionRows.length ? sessionRows[0] : null;
+    const boardState = payload && typeof payload === 'object' ? Object.assign({}, payload) : {};
+    const currentStatus = String(sessionData && sessionData.status || '').toLowerCase();
+    const startsNewRound = !!boardState.forceNewSession || (!boardState.gameOver && currentStatus === 'finished');
+    delete boardState.forceNewSession;
+    const xAcc = (sessionData && sessionData.player_x_account_number) || loaded.invite.inviter_account_number || boardState.playerXAccountNumber || null;
+    const oAcc = (sessionData && sessionData.player_o_account_number) || loaded.invite.invitee_account_number || boardState.playerOAccountNumber || null;
+    const winnerAccount = boardState.winnerAccountNumber
+      || (boardState.winner === 'X' ? xAcc : (boardState.winner === 'O' ? oAcc : null));
     const sessionRow = {
       game_type: 'gomoku',
       invite_id: loaded.invite.id,
-      player_x_account_number: sessionData && sessionData.player_x_account_number ? sessionData.player_x_account_number : loaded.invite.inviter_account_number || null,
-      player_o_account_number: sessionData && sessionData.player_o_account_number ? sessionData.player_o_account_number : loaded.invite.invitee_account_number || null,
-      winner_account_number: boardState.winnerAccountNumber || (boardState.winner === 'X' ? (sessionData && sessionData.player_x_account_number ? sessionData.player_x_account_number : loaded.invite.inviter_account_number || null) : (boardState.winner === 'O' ? (sessionData && sessionData.player_o_account_number ? sessionData.player_o_account_number : loaded.invite.invitee_account_number || null) : null)) || sessionData && sessionData.winner_account_number || null,
-      status: boardState.status || sessionData && sessionData.status || 'active',
+      player_x_account_number: xAcc,
+      player_o_account_number: oAcc,
+      winner_account_number: winnerAccount || null,
+      status: boardState.status || (boardState.gameOver ? 'finished' : 'active'),
       board_state: boardState,
-      move_history: Array.isArray(boardState.moveHistory) ? boardState.moveHistory : (Array.isArray(sessionData && sessionData.move_history) ? sessionData.move_history : []),
+      move_history: Array.isArray(boardState.moveHistory) ? boardState.moveHistory : (startsNewRound ? [] : (Array.isArray(sessionData && sessionData.move_history) ? sessionData.move_history : [])),
       updated_at: new Date().toISOString(),
-      finished_at: boardState.gameOver ? new Date().toISOString() : (sessionData && sessionData.finished_at ? sessionData.finished_at : null)
+      finished_at: boardState.gameOver ? new Date().toISOString() : null
     };
     let updatedSession = null;
-    if (sessionData && sessionData.id) {
+    if (sessionData && sessionData.id && !startsNewRound) {
       const { data, error } = await runSupabaseOperation('game_sessions.save_by_invite_update', () => client
         .from('game_sessions')
         .update(sessionRow)
@@ -1164,7 +1177,7 @@
       if (error) throw error;
       updatedSession = data || Object.assign({}, sessionData, sessionRow);
     } else {
-      const { data, error } = await runSupabaseOperation('game_sessions.save_by_invite_insert', () => client
+      const { data, error } = await runSupabaseOperation('game_sessions.save_by_invite_insert_round', () => client
         .from('game_sessions')
         .insert([sessionRow])
         .select('*')
@@ -1173,7 +1186,7 @@
       updatedSession = data || sessionRow;
     }
     writeGameSessionCache(code, loaded.invite, updatedSession || sessionRow);
-    return { ok: true, invite: loaded.invite, session: updatedSession || null, status: sessionRow.status };
+    return { ok: true, invite: loaded.invite, session: updatedSession || null, status: sessionRow.status, newRound: startsNewRound };
   }
 
 
@@ -1782,7 +1795,7 @@
   }
 
   function gameStatsCacheKey(gameType, limit) {
-    return LOCAL_GAME_STATS_PREFIX + encodeURIComponent(String(gameType || '').trim() || 'unknown') + ':' + String(Math.max(1, Math.min(50, Number(limit) || 10)));
+    return LOCAL_GAME_STATS_PREFIX + encodeURIComponent(String(gameType || '').trim() || 'unknown') + ':' + String(Math.max(1, Math.min(100, Number(limit) || 10)));
   }
 
   function clearGameStatsCache(gameType) {
@@ -1801,7 +1814,7 @@
   async function loadGameStatsDirect(client, gameType, limit, options) {
     const type = String(gameType || '').trim();
     if (!type) return [];
-    const safeLimit = Math.max(1, Math.min(50, Number(limit) || 10));
+    const safeLimit = Math.max(1, Math.min(100, Number(limit) || 10));
     const cacheKey = gameStatsCacheKey(type, safeLimit);
     const forceRefresh = !!(options && options.force);
     const cachedStats = forceRefresh ? null : readTimedCache(cacheKey, SUPABASE_GAME_CACHE_TTL_MS);
@@ -1950,12 +1963,15 @@
   async function recordTttSessionResultByInviteCodeDirect(client, code, options) {
     const loaded = await loadGameInviteByCode(client, code);
     if (!loaded.invite) return { ok: false, reason: 'missing-invite' };
-    const { data: sessionData, error: sessionErr } = await runSupabaseOperation('game_sessions.record_result_lookup', () => client
+    const { data: sessionRows, error: sessionErr } = await runSupabaseOperation('game_sessions.record_result_lookup', () => client
       .from('game_sessions')
       .select('*')
       .eq('invite_id', loaded.invite.id)
-      .maybeSingle(), { mode: 'read' });
+      .order('updated_at', { ascending: false })
+      .limit(5), { mode: 'read' });
     if (sessionErr) throw sessionErr;
+    const rows = Array.isArray(sessionRows) ? sessionRows : [];
+    const sessionData = rows.find(row => String(row && row.status || '').toLowerCase() === 'finished') || rows[0] || null;
     if (!sessionData) return { ok: false, reason: 'missing-session' };
     const boardState = sessionData.board_state && typeof sessionData.board_state === 'object' ? Object.assign({}, sessionData.board_state) : {};
     const winner = String(boardState.winner || sessionData.winner || '').trim();
@@ -1984,7 +2000,7 @@
     boardState.statsRecordedBy = 'client';
     const { data: updatedSession, error: updateErr } = await runSupabaseOperation('game_sessions.record_result_mark', () => client
       .from('game_sessions')
-      .update({ board_state: boardState, updated_at: new Date().toISOString() })
+      .update({ board_state: boardState, winner_account_number: (winner === 'X' ? xAcc : (winner === 'O' ? oAcc : null)), status: 'finished', finished_at: sessionData.finished_at || new Date().toISOString(), updated_at: new Date().toISOString() })
       .eq('id', sessionData.id)
       .select('*')
       .maybeSingle(), { mode: 'write' });
@@ -2552,7 +2568,7 @@
       catch (err) { state.lastError = err; console.error('TTT session result record failed', err); return { ok: false, error: err }; }
     },
     loadGameStats: async (gameType, limit = 10, options = {}) => {
-      const safeLimit = Math.max(1, Math.min(50, Number(limit) || 10));
+      const safeLimit = Math.max(1, Math.min(100, Number(limit) || 10));
       const cache = readTimedCache(gameStatsCacheKey(gameType, safeLimit), SUPABASE_GAME_CACHE_TTL_MS);
       const client = getClient();
       if (!client || !navigator.onLine) {
