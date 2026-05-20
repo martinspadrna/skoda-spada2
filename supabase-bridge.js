@@ -340,7 +340,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v665');
+      const channel = client.channel('rak-public-live-v666');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -1006,9 +1006,10 @@
       .from('game_invites')
       .select('*')
       .eq('invite_code', inviteCode)
-      .maybeSingle(), { mode: 'read' });
+      .limit(1), { mode: 'read' });
     if (error) throw error;
-    return { ok: true, invite: data || null };
+    const row = Array.isArray(data) && data.length ? data[0] : null;
+    return { ok: true, invite: row || null };
   }
 
   async function createGameInviteDirect(client, payload) {
@@ -1894,6 +1895,49 @@
   }
 
 
+  async function loadTttHeadToHeadDirect(client, playerA, playerB, options) {
+    const a = String(playerA || '').trim();
+    const b = String(playerB || '').trim();
+    if (!a || !b || a === b) return { ok: true, rows: [], score: { xWins: 0, oWins: 0, aWins: 0, bWins: 0, draws: 0, total: 0 } };
+    const cacheKey = LOCAL_GAME_SESSIONS_PREFIX + 'h2h:' + encodeURIComponent([a, b].sort().join(':'));
+    const forceRefresh = !!(options && options.force);
+    const cached = forceRefresh ? null : readTimedCache(cacheKey, SUPABASE_GAME_CACHE_TTL_MS);
+    if (cached && cached.fresh && cached.rows && cached.rows[0]) {
+      rememberTimedCacheHit('session', cached);
+      return cached.rows[0];
+    }
+    const orExpr = 'and(player_x_account_number.eq.' + a + ',player_o_account_number.eq.' + b + '),and(player_x_account_number.eq.' + b + ',player_o_account_number.eq.' + a + ')';
+    const { data, error } = await runSupabaseOperation('game_sessions.ttt_head_to_head', () => client
+      .from('game_sessions')
+      .select('id,player_x_account_number,player_o_account_number,winner_account_number,status,board_state,updated_at,finished_at')
+      .eq('game_type', 'gomoku')
+      .eq('status', 'finished')
+      .or(orExpr)
+      .order('updated_at', { ascending: false })
+      .limit(100), { mode: 'read' });
+    if (error) throw error;
+    const rows = Array.isArray(data) ? data : [];
+    const score = { xWins: 0, oWins: 0, aWins: 0, bWins: 0, draws: 0, total: rows.length };
+    rows.forEach((row) => {
+      const boardState = row && row.board_state && typeof row.board_state === 'object' ? row.board_state : {};
+      const winner = String(boardState.winner || boardState.winnerRole || '').toUpperCase();
+      const xAcc = String(row && row.player_x_account_number || '').trim();
+      const oAcc = String(row && row.player_o_account_number || '').trim();
+      let winnerAcc = String(row && row.winner_account_number || boardState.winnerAccountNumber || '').trim();
+      if (!winnerAcc && winner === 'X') winnerAcc = xAcc;
+      if (!winnerAcc && winner === 'O') winnerAcc = oAcc;
+      if (winner === 'DRAW' || winner === 'draw' || boardState.winner === 'draw') score.draws += 1;
+      else if (winner === 'X') score.xWins += 1;
+      else if (winner === 'O') score.oWins += 1;
+      if (winnerAcc === a) score.aWins += 1;
+      else if (winnerAcc === b) score.bWins += 1;
+    });
+    const result = { ok: true, rows, score, players: { a, b } };
+    writeTimedCache(cacheKey, [result], 'session');
+    return result;
+  }
+
+
   function gameUiSettingsCacheKey(accountNumber) {
     return LOCAL_GAME_UI_SETTINGS_PREFIX + encodeURIComponent(String(accountNumber || '').trim() || 'unknown');
   }
@@ -2576,6 +2620,15 @@
         return { ok: false, error: err };
       }
     },
+    loadTttHeadToHead: async (playerA, playerB, options = {}) => {
+      const client = getClient();
+      const a = String(playerA || '').trim();
+      const b = String(playerB || '').trim();
+      if (!a || !b) return { ok: false, reason: 'missing-players' };
+      if (!client || !navigator.onLine) return { ok: false, reason: 'offline-or-missing-client' };
+      try { const result = await loadTttHeadToHeadDirect(client, a, b, options); state.lastError = null; return result; }
+      catch (err) { state.lastError = err; console.error('TTT head-to-head load failed', err); return { ok: false, error: err }; }
+    },
     getState: () => ({ ...state })
   };
 
@@ -2592,6 +2645,7 @@
   window.acceptGameInvite = async (code, inviteeAccountNumber) => window.RotationSupabaseBridge.acceptGameInvite(code, inviteeAccountNumber);
   window.loadGameSessionByInviteCode = async (code) => window.RotationSupabaseBridge.loadGameSessionByInviteCode(code);
   window.saveGameSessionByInviteCode = async (code, payload) => window.RotationSupabaseBridge.saveGameSessionByInviteCode(code, payload);
+  window.loadTttHeadToHead = async (playerA, playerB, options) => window.RotationSupabaseBridge.loadTttHeadToHead(playerA, playerB, options || {});
 
   window.addEventListener('online', () => {
     requestSupabaseQueueWake('online', 350);

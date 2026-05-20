@@ -1,3 +1,12 @@
+## v.1.1 (666)
+- Piškvorky online: odstraněné zbytečné okno „Hrát / Spustit online duel“ pro online pozvánku. V online režimu zůstává jen karta Online pozvánka s tlačítky Vytvořit hru a Přijmout pozvánku.
+- Po vytvoření online hry se hráč rovnou přesune do hry a kód pozvánky je vidět přímo nad hrací plochou.
+- Přidaný základ vzájemného skóre online Piškvorek přes `game_sessions`, pokud jsou oba hráči přihlášení profilem.
+- Statistiky her nově umí do přehledů přimíchat i vzdálené online hráče z `game_stats`, takže druhý mobil má vidět odehrané hry ostatních profilů po online refreshi.
+- Opraveno zapisování výsledku online Piškvorek podle role hráče X/O, ne podle předpokladu hry proti AI.
+- Tlačítko Nová hra ve výsledkovém panelu má tvrdší kontrast textu.
+- Verze sjednocena na v.1.1 (666), cache na v1.1-666 a Supabase realtime kanál na rak-public-live-v666.
+
 ## v.1.1 (665)
 - Piškvorky online: kód pozvánky je nově jednoduchý 4místný číselný kód.
 - Opravené ukládání online session v Supabase bez `upsert(... onConflict: invite_id)`, protože tabulka nemusí mít unikátní constraint na `invite_id`. Nově se session nejdřív dohledá a potom update/insert.

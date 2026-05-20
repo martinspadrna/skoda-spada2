@@ -1,4 +1,4 @@
-// v.1.1 (665) – Piškvorky online: 4místný kód, Supabase session update/insert a oprava closeGameShell.
+// v.1.1 (666) – Piškvorky online: pozvánka jen s kódem, kód ve hře, vzájemné skóre a sdílené statistiky.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

@@ -799,6 +799,7 @@ function ensureTicTacToeOverlay() {
     '    <div class="tttStartScreen" id="tttStartScreen"></div>',
     '    <div class="tttGameScreen uHidden" id="tttGameScreen">',
     '      <div class="tttStatus" id="tttStatus"></div>',
+    '      <div class="tttOnlineGameInfo" id="tttOnlineGameInfo" hidden></div>',
     '      <div class="tttBoardWrap"><div class="tttBoard" id="tttBoard"></div><div class="tttResultCard" id="tttResultCard" hidden></div></div>',
     '    </div>',
     '  </div>',
@@ -941,6 +942,69 @@ function tttSetOnlineStatus(text, kind) {
   const state = tttGetState();
   state.onlineStatus = String(text || '').trim();
   state.onlineKind = String(kind || 'waiting');
+}
+
+function tttGetActiveAccountId() {
+  const active = typeof gamesGetActiveAccount === 'function' ? gamesGetActiveAccount() : null;
+  return active && active.id ? String(active.id).trim() : '';
+}
+
+function tttGetOnlineDisplayCode() {
+  const state = tttGetState();
+  return tttNormalizeInviteCode(state && state.online ? state.online.code : '');
+}
+
+function tttGetOnlineCodeText() {
+  const state = tttGetState();
+  const code = tttGetOnlineDisplayCode();
+  if (!code || state.mode !== 'pvp') return '';
+  const role = String(state.online && state.online.role || '').toUpperCase();
+  const roleText = role ? (' · ty jsi ' + role) : '';
+  return 'Kód pozvánky: ' + code + roleText;
+}
+
+function tttSetOnlineHeadToHeadText(text) {
+  const state = tttGetState();
+  if (!state.online) state.online = {};
+  state.online.headToHeadText = String(text || '').trim();
+}
+
+async function tttRefreshOnlineHeadToHead(force) {
+  const state = tttGetState();
+  const online = state.online || {};
+  if (state.mode !== 'pvp') return '';
+  const x = String(online.playerXAccountNumber || '').trim();
+  const o = String(online.playerOAccountNumber || '').trim();
+  if (!x || !o || x === o) {
+    const waiting = x ? 'Vzájemné skóre: čekám na druhého hráče.' : '';
+    tttSetOnlineHeadToHeadText(waiting);
+    return waiting;
+  }
+  const now = Date.now();
+  if (!force && online.headToHeadText && now - Number(online.headToHeadLoadedAt || 0) < 30000) return online.headToHeadText;
+  if (!window.RotationSupabaseBridge || typeof window.RotationSupabaseBridge.loadTttHeadToHead !== 'function') {
+    const fallback = 'Vzájemné skóre: ' + x + ' vs ' + o;
+    tttSetOnlineHeadToHeadText(fallback);
+    return fallback;
+  }
+  try {
+    const result = await window.RotationSupabaseBridge.loadTttHeadToHead(x, o, { force: !!force });
+    if (result && result.ok) {
+      const score = result.score || {};
+      const xWins = Number(score.xWins || 0) || 0;
+      const oWins = Number(score.oWins || 0) || 0;
+      const draws = Number(score.draws || 0) || 0;
+      const label = 'Vzájemně: X ' + xWins + ' : ' + oWins + ' O' + (draws ? (' · remízy ' + draws) : '');
+      state.online.headToHeadLoadedAt = now;
+      tttSetOnlineHeadToHeadText(label);
+      return label;
+    }
+  } catch (err) {
+    console.warn('TTT head-to-head load failed', err);
+  }
+  const fallback = 'Vzájemné skóre: čeká na načtení.';
+  tttSetOnlineHeadToHeadText(fallback);
+  return fallback;
 }
 
 const TTT_ONLINE_POLL_MS = 650;
@@ -1095,6 +1159,8 @@ function tttMaybeRecordOnlineResult(winner) {
         bestMoves: won ? Math.min(stats.bestMoves || 9999, state.moveCount || 0) : stats.bestMoves || null,
         bestTimeMs: won ? Math.min(stats.bestTimeMs || 999999999, Date.now() - (state.startedAt || Date.now())) : stats.bestTimeMs || null
       });
+  void gamesRefreshRemoteLeaderboards('ttt', true);
+  void tttRefreshOnlineHeadToHead(true);
   return true;
 }
 
@@ -1125,8 +1191,8 @@ async function tttCreateInviteSession() {
     if (result && result.ok) {
       state.online = {
         code,
-        inviteId: result.inviteId || (result.result && result.result.invite && result.result.invite.id) || null,
-        sessionId: result.sessionId || (result.result && result.result.session && result.result.session.id) || null,
+        inviteId: result.inviteId || (result.invite && result.invite.id) || (result.result && result.result.invite && result.result.invite.id) || null,
+        sessionId: result.sessionId || (result.session && result.session.id) || (result.result && result.result.session && result.result.session.id) || null,
         role: 'x',
         status: 'waiting',
         revision: 0,
@@ -1177,8 +1243,8 @@ async function tttJoinInviteSession(code) {
     if (result && result.ok) {
       state.online = {
         code: inviteCode,
-        inviteId: result.inviteId || (result.result && result.result.invite && result.result.invite.id) || null,
-        sessionId: result.sessionId || (result.result && result.result.session && result.result.session.id) || null,
+        inviteId: result.inviteId || (result.invite && result.invite.id) || (result.result && result.result.invite && result.result.invite.id) || null,
+        sessionId: result.sessionId || (result.session && result.session.id) || (result.result && result.result.session && result.result.session.id) || null,
         role: 'o',
         status: 'active',
         revision: Number(result.revision || 0) || 0,
@@ -1186,7 +1252,7 @@ async function tttJoinInviteSession(code) {
         lastRemoteUpdatedAt: 0,
         dirty: false,
         pendingRevision: Number(result.revision || 0) || 0,
-        playerXAccountNumber: (result.result && result.result.session && result.result.session.player_x_account_number) || null,
+        playerXAccountNumber: (result.session && result.session.player_x_account_number) || (result.result && result.result.session && result.result.session.player_x_account_number) || null,
         playerOAccountNumber: joiner,
         connected: true,
         resultSavedKey: '',
@@ -1355,7 +1421,7 @@ async function tttPushOnlineSession(extraPatch) {
         state.online.connected = true;
         state.online.status = result.status || payload.status || state.online.status || 'active';
         if (payload.status === 'finished' || payload.gameOver) {
-          state.online.resultSavedKey = tttBuildOnlineResultKey(state.online.code, nextRevision, payload.winner || state.winner || 'draw', state.online.role || '');
+          state.online.lastPushedResultKey = tttBuildOnlineResultKey(state.online.code, nextRevision, payload.winner || state.winner || 'draw', state.online.role || '');
         }
       }
       return result;
@@ -2761,6 +2827,7 @@ function tttRender() {
   const game = overlay.querySelector('#tttGameScreen');
   const status = overlay.querySelector('#tttStatus');
   const boardEl = overlay.querySelector('#tttBoard');
+  const onlineInfo = overlay.querySelector('#tttOnlineGameInfo');
 
   const tttHasResumeGame = () => {
     if (state.gameOver) return false;
@@ -2782,14 +2849,8 @@ function tttRender() {
       '    <button type="button" class="tttBtn' + (state.mode === 'pvp' ? ' isActive' : '') + '" data-ttt-mode="pvp">Online pozvánka</button>',
       '  </div>',
       '</div>',
-      '<div class="tttCard tttActionCard">',
-      '  <div class="tttSectionTitle">Hrát</div>',
-      '  <div class="tttNote">Vybraný režim spusť níž jedním tlačítkem. Když je rozehraná hra, můžeš se k ní vrátit přes pokračování.</div>',
-      '  <button type="button" class="tttBtn tttPrimaryBtn" id="tttStartBtn">' + (state.mode === 'pvp' ? 'Spustit online duel' : (state.mode === 'local' ? 'Hrát na mobilu' : 'Hrát proti AI')) + '</button>',
-      tttHasResumeGame() ? '<button type="button" class="tttBtn tttSecondaryBtn" id="tttResumeBtn">Pokračovat v rozehrané hře</button>' : '',
-      '</div>',
-      state.mode === 'pvp' ? '<div class="tttCard tttInviteCard"><div class="tttSectionTitle">Online pozvánka</div><div id="tttInviteInfo" class="tttNote">Nejdřív vytvoř pozvánku. Druhý hráč pak zadá kód do "Přijmout pozvánku".</div><div id="tttInviteCode" class="tttInviteCode' + ((state.online && state.online.code) ? '' : ' uHidden') + '">' + escapeHtml((state.online && state.online.code) || '') + '</div><div class="tttNote uWordBreakAll uMt8' + ((state.online && state.online.code) ? '' : ' uHidden') + '" id="tttInviteUrl"></div><div class="tttToggleRow tttInviteActions uMt10"><button type="button" class="tttBtn" id="tttCreateInviteBtn">Vytvořit kód</button><button type="button" class="tttBtn" id="tttJoinInviteBtn">Přijmout pozvánku</button><button type="button" class="tttBtn" id="tttCopyInviteBtn">Kopírovat odkaz</button><button type="button" class="tttBtn" id="tttShareInviteBtn">Sdílet</button></div></div>' : '',
-      '</div>',
+      state.mode !== 'pvp' ? '<div class="tttCard tttActionCard"><div class="tttSectionTitle">Hrát</div><div class="tttNote">Vybraný režim spusť jedním tlačítkem. Když je rozehraná hra, můžeš se k ní vrátit přes pokračování.</div><button type="button" class="tttBtn tttPrimaryBtn" id="tttStartBtn">' + (state.mode === 'local' ? 'Hrát na mobilu' : 'Hrát proti AI') + '</button>' + (tttHasResumeGame() ? '<button type="button" class="tttBtn tttSecondaryBtn" id="tttResumeBtn">Pokračovat v rozehrané hře</button>' : '') + '</div>' : '',
+      state.mode === 'pvp' ? '<div class="tttCard tttInviteCard"><div class="tttSectionTitle">Online pozvánka</div><div id="tttInviteInfo" class="tttNote">Vytvoř hru a pošli spoluhráči 4místný kód, nebo přijmi jeho pozvánku.</div><div id="tttInviteCode" class="tttInviteCode' + ((state.online && state.online.code) ? '' : ' uHidden') + '">' + escapeHtml((state.online && state.online.code) || '') + '</div><div class="tttNote uWordBreakAll uMt8' + ((state.online && state.online.code) ? '' : ' uHidden') + '" id="tttInviteUrl">Kód: ' + escapeHtml((state.online && state.online.code) || '') + '</div><div class="tttToggleRow tttInviteActions uMt10"><button type="button" class="tttBtn tttPrimaryBtn" id="tttCreateInviteBtn">Vytvořit hru</button><button type="button" class="tttBtn" id="tttJoinInviteBtn">Přijmout pozvánku</button></div></div>' : '',
       '<div class="tttCard tttWinHistory">',
       '  <div class="tttSectionTitle">Kdo porazil AI</div>',
       '  <div class="tttNote">Žebříček online .</div>',
@@ -2848,7 +2909,7 @@ function tttRender() {
         const shareBtn = shareBtnEl();
         if (result && result.ok) {
           lastInviteUrl = result.url || '';
-          if (info) info.textContent = 'Pozvánka připravená. Pošli kód spoluhráči.';
+          if (info) info.textContent = 'Pozvánka připravená. Kód vidíš i přímo ve hře.';
           if (codeEl) {
             codeEl.style.display = 'block';
             codeEl.textContent = result.code || '';
@@ -2864,7 +2925,7 @@ function tttRender() {
           state.winner = null;
           state.board = Array(TTT_TOTAL_CELLS).fill('');
           state.turn = 'X';
-          state.message = 'Čekám na přijetí pozvánky.';
+          state.message = 'Kód pozvánky: ' + (result.code || '') + ' · čekám na spoluhráče.';
           tttRender();
           scheduleTttLayout();
           tttStartOnlineSyncLoop();
@@ -2975,6 +3036,24 @@ function tttRender() {
   start.style.display = 'none';
   game.style.display = 'flex';
   status.textContent = state.message || state.onlineStatus || (state.mode === 'pvp' ? ((state.online && String(state.online.role || '').toUpperCase() === state.turn) ? ('Jsi ' + state.turn + '. Hraješ.') : ('Čekáš na tah hráče ' + state.turn + '.')) : (state.mode === 'local' ? 'Na řadě je X.' : 'Hraješ za X. AI je O.'));
+  if (onlineInfo) {
+    const codeText = tttGetOnlineCodeText();
+    const h2hText = state.online && state.online.headToHeadText ? state.online.headToHeadText : '';
+    const infoText = [codeText, h2hText].filter(Boolean).join(' · ');
+    onlineInfo.hidden = !(state.mode === 'pvp' && infoText);
+    onlineInfo.textContent = infoText;
+  }
+  if (state.mode === 'pvp' && state.online && state.online.code && state.online.playerXAccountNumber && state.online.playerOAccountNumber) {
+    void tttRefreshOnlineHeadToHead(false).then(() => {
+      const currentOverlay = document.getElementById('tttOverlay');
+      const currentInfo = currentOverlay ? currentOverlay.querySelector('#tttOnlineGameInfo') : null;
+      const currentState = tttGetState();
+      if (!currentInfo || currentState.screen !== 'game' || currentState.mode !== 'pvp') return;
+      const nextText = [tttGetOnlineCodeText(), currentState.online && currentState.online.headToHeadText ? currentState.online.headToHeadText : ''].filter(Boolean).join(' · ');
+      currentInfo.hidden = !nextText;
+      currentInfo.textContent = nextText;
+    });
+  }
 
   const result = tttWinner(state.board);
   const winnerLine = result.line || [];
@@ -3009,6 +3088,20 @@ function tttHandleMove(index) {
   if (after.winner) {
     state.gameOver = true;
     state.winner = after.winner;
+    if (state.mode === 'pvp') {
+      const role = String(state.online && state.online.role || '').toUpperCase();
+      state.message = after.winner === 'draw'
+        ? 'Remíza. Dobře hrané.'
+        : (role && after.winner === role ? 'Vyhrál jsi.' : ('Vyhrál hráč ' + after.winner + '.'));
+      tttMarkResultSaved(after.winner);
+      tttRender();
+      scheduleTttLayout();
+      if (state.online && state.online.code) {
+        void tttPushOnlineSession({ status: 'finished', gameOver: true, winner: after.winner, winnerRole: after.winner, finishedAt: Date.now() });
+        tttMaybeRecordOnlineResult(after.winner);
+      }
+      return;
+    }
     if (after.winner === 'draw') {
       state.message = 'Remíza. Dobře hrané.';
       if (typeof gamesRecordStat === 'function') {
@@ -5811,12 +5904,31 @@ const GAMES_PROFILE_GAME_DEFS = [
   { id: 'daily', title: 'Denní challenge', unit: 'bodů' }
 ];
 
+function gamesBuildProfilesWithRemoteRows(profile) {
+  const base = Object.values(profile && profile.accounts || {}).filter(acc => !GAMES_ACCOUNT_BLOCKLIST.has(String(acc && acc.id || '').trim()));
+  const byId = new Map(base.map(acc => [String(acc && acc.id || '').trim(), acc]));
+  const remoteTtt = app.gamesLeaderboardCache && Array.isArray(app.gamesLeaderboardCache.ttt) ? app.gamesLeaderboardCache.ttt : [];
+  remoteTtt.forEach((row) => {
+    const id = String(row && (row.id || row.account_number || row.accountNumber) ? (row.id || row.account_number || row.accountNumber) : '').trim();
+    if (!id || byId.has(id) || GAMES_ACCOUNT_BLOCKLIST.has(id)) return;
+    const value = Number(row && (row.value || row.games_played || row.points) || 0) || 0;
+    if (value <= 0) return;
+    byId.set(id, gamesNormalizeStoredAccount({
+      id,
+      name: String(row && (row.name || row.player_name) ? (row.name || row.player_name) : ('Hráč ' + id)).trim(),
+      stats: { ttt: { plays: value, wins: Number(row && row.wins || 0) || 0, losses: Number(row && row.losses || 0) || 0, draws: Number(row && row.draws || 0) || 0, lastPlayedAt: row && row.updatedAt ? Date.parse(row.updatedAt) || 0 : 0 } },
+      updatedAt: row && row.updatedAt ? Date.parse(row.updatedAt) || Date.now() : Date.now()
+    }, String(row && (row.name || row.player_name) ? (row.name || row.player_name) : ('Hráč ' + id)).trim()));
+  });
+  return Array.from(byId.values());
+}
+
 function gamesRenderProfiles() {
   const grid = document.getElementById('gamesProfilesGrid');
   if (!grid) return;
   const profile = gamesGetProfile();
   const activeId = profile.activeAccountId;
-  const accounts = Object.values(profile.accounts || {}).filter(acc => !GAMES_ACCOUNT_BLOCKLIST.has(String(acc && acc.id || '').trim())).sort((a, b) => {
+  const accounts = gamesBuildProfilesWithRemoteRows(profile).sort((a, b) => {
     const aActive = String(a && a.id || '') === String(activeId || '');
     const bActive = String(b && b.id || '') === String(activeId || '');
     if (aActive !== bActive) return aActive ? -1 : 1;
@@ -5946,7 +6058,7 @@ function gamesRenderStats() {
   if (!grid) return;
   const profile = gamesGetProfile();
   const activeId = profile.activeAccountId;
-  const accounts = Object.values(profile.accounts || {}).filter(acc => !GAMES_ACCOUNT_BLOCKLIST.has(String(acc && acc.id || '').trim())).sort((a, b) => {
+  const accounts = gamesBuildProfilesWithRemoteRows(profile).sort((a, b) => {
     const aActive = String(a && a.id || '') === String(activeId || '');
     const bActive = String(b && b.id || '') === String(activeId || '');
     if (aActive !== bActive) return aActive ? -1 : 1;
@@ -6093,6 +6205,9 @@ function gamesNormalizeRemoteLeaderboardRows(gameId, rows, limit = 10) {
         value: points,
         updatedAt,
         playedText: gamesFormatPlayedLabel(updatedAt),
+        wins: Number(row && row.wins || 0) || 0,
+        losses: Number(row && row.losses || 0) || 0,
+        draws: Number(row && row.draws || 0) || 0,
         gameId: key
       };
     })
@@ -6128,7 +6243,10 @@ async function gamesRefreshRemoteLeaderboards(gameId, force) {
       }
     }));
     // Fáze 5: online leaderboard refresh už během rozehrané hry nepřerenderuje shell.
-    if (!app.activeGameShell) gamesRenderStats();
+    if (!app.activeGameShell) {
+      gamesRenderProfiles();
+      gamesRenderStats();
+    }
     return results;
   } catch (err) {
     console.warn('gamesRefreshRemoteLeaderboards failed', err);
