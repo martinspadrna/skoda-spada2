@@ -1,4 +1,4 @@
-// v.1.1 (680) – Hry: čistý profil, theme/pozadí napříč hrami a tvrdší XP/achievementy.
+// v.1.1 (681) – Hry: theme plochy, Snake HUD/osa a chytré achievementy.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

@@ -2,7 +2,7 @@
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
 
-  // v.1.1 (680): Piškvorky, 2048 a Snake jsou hotové hry mimo složku Ve vývoji; ostatní arcade hry zůstávají ve vývoji.
+  // v.1.1 (681): hotové hry drží theme/pozadí; Snake má čistý HUD a chytré achievementy sledují čas/směny.
   const CORE_GAMES = ['ttt', '2048', 'snake'];
   const EXTRA_GAMES = ['flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);
@@ -117,6 +117,139 @@
   window.gamesBuildProgressSummary = gamesBuildProgressSummary;
   window.GAMES_RANK_DEFS = GAMES_RANK_DEFS;
 
+
+  function gamesLocalDateKey(date) {
+    const d = date instanceof Date ? date : new Date(date || Date.now());
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return y + '-' + m + '-' + day;
+  }
+
+  function gamesGetActiveShiftForContext(date) {
+    try {
+      if (typeof getDashboardActiveWorkShift === 'function') return getDashboardActiveWorkShift(date) || null;
+    } catch (err) {}
+    try {
+      if (typeof getActiveShiftNow === 'function') return getActiveShiftNow(date) || null;
+    } catch (err) {}
+    return null;
+  }
+
+  function gamesBuildCompletionContext(timestamp) {
+    const when = new Date(timestamp || Date.now());
+    const hour = when.getHours();
+    const day = when.getDay();
+    const activeShift = gamesGetActiveShiftForContext(when);
+    const label = String(activeShift && activeShift.label ? activeShift.label : '').toLowerCase();
+    return {
+      dateKey: gamesLocalDateKey(when),
+      hour,
+      day,
+      isWeekend: day === 0 || day === 6,
+      isNightHours: hour >= 22 || hour < 6,
+      isEarlyMorning: hour >= 4 && hour < 7,
+      isLunchWindow: hour >= 11 && hour < 14,
+      isOnShift: !!activeShift,
+      isNightShift: !!activeShift && label.includes('noční'),
+      isMorningShift: !!activeShift && label.includes('ranní'),
+      shiftTeam: String(activeShift && activeShift.team ? activeShift.team : '').trim(),
+      shiftLabel: String(activeShift && activeShift.label ? activeShift.label : '').trim()
+    };
+  }
+
+  function gamesMergeCompletionContext(currentContext, ctx) {
+    const current = currentContext && typeof currentContext === 'object' ? currentContext : {};
+    const next = Object.assign({
+      completedPlays: 0,
+      weekendPlays: 0,
+      nightHourPlays: 0,
+      earlyMorningPlays: 0,
+      lunchWindowPlays: 0,
+      onShiftPlays: 0,
+      nightShiftPlays: 0,
+      morningShiftPlays: 0,
+      playedDays: [],
+      shiftTeams: {},
+      lastContext: null
+    }, current);
+    next.completedPlays = (Number(next.completedPlays || 0) || 0) + 1;
+    if (ctx.isWeekend) next.weekendPlays = (Number(next.weekendPlays || 0) || 0) + 1;
+    if (ctx.isNightHours) next.nightHourPlays = (Number(next.nightHourPlays || 0) || 0) + 1;
+    if (ctx.isEarlyMorning) next.earlyMorningPlays = (Number(next.earlyMorningPlays || 0) || 0) + 1;
+    if (ctx.isLunchWindow) next.lunchWindowPlays = (Number(next.lunchWindowPlays || 0) || 0) + 1;
+    if (ctx.isOnShift) next.onShiftPlays = (Number(next.onShiftPlays || 0) || 0) + 1;
+    if (ctx.isNightShift) next.nightShiftPlays = (Number(next.nightShiftPlays || 0) || 0) + 1;
+    if (ctx.isMorningShift) next.morningShiftPlays = (Number(next.morningShiftPlays || 0) || 0) + 1;
+    const days = Array.isArray(next.playedDays) ? next.playedDays.map(String) : [];
+    if (ctx.dateKey && !days.includes(ctx.dateKey)) days.push(ctx.dateKey);
+    next.playedDays = days.slice(-180);
+    const teams = next.shiftTeams && typeof next.shiftTeams === 'object' ? Object.assign({}, next.shiftTeams) : {};
+    if (ctx.shiftTeam) teams[ctx.shiftTeam] = (Number(teams[ctx.shiftTeam] || 0) || 0) + 1;
+    next.shiftTeams = teams;
+    next.lastContext = ctx;
+    return next;
+  }
+
+  function gamesGetStatContext(stat) {
+    return stat && stat.context && typeof stat.context === 'object' ? stat.context : {};
+  }
+
+  function gamesGetContextTotals(account) {
+    const stats = account && account.stats ? account.stats : {};
+    const contexts = [stats.ttt, stats.g2048, stats.snake, stats.flap]
+      .concat(Object.values(stats.arcade && typeof stats.arcade === 'object' ? stats.arcade : {}))
+      .map(gamesGetStatContext);
+    const totals = {
+      completedPlays: 0,
+      weekendPlays: 0,
+      nightHourPlays: 0,
+      earlyMorningPlays: 0,
+      lunchWindowPlays: 0,
+      onShiftPlays: 0,
+      nightShiftPlays: 0,
+      morningShiftPlays: 0,
+      playedDays: [],
+      shiftTeams: {},
+      shiftTeamCount: 0,
+      distinctPlayedDays: 0
+    };
+    const days = new Set();
+    const teams = {};
+    contexts.forEach((ctx) => {
+      ['completedPlays','weekendPlays','nightHourPlays','earlyMorningPlays','lunchWindowPlays','onShiftPlays','nightShiftPlays','morningShiftPlays'].forEach((field) => {
+        totals[field] += Number(ctx && ctx[field] || 0) || 0;
+      });
+      (Array.isArray(ctx && ctx.playedDays) ? ctx.playedDays : []).forEach(day => { if (day) days.add(String(day)); });
+      const sourceTeams = ctx && ctx.shiftTeams && typeof ctx.shiftTeams === 'object' ? ctx.shiftTeams : {};
+      Object.keys(sourceTeams).forEach((team) => {
+        teams[team] = (Number(teams[team] || 0) || 0) + (Number(sourceTeams[team] || 0) || 0);
+      });
+    });
+    totals.playedDays = Array.from(days).sort();
+    totals.distinctPlayedDays = totals.playedDays.length;
+    totals.shiftTeams = teams;
+    totals.shiftTeamCount = Object.keys(teams).length;
+    return totals;
+  }
+
+  function gamesGetCurrentStatForContext(account, id) {
+    if (!account || !account.stats) return {};
+    if (id === 'ttt') return account.stats.ttt || {};
+    if (id === '2048') return account.stats.g2048 || {};
+    if (id === 'snake') return account.stats.snake || {};
+    if (id === 'flap') return account.stats.flap || {};
+    return getAccountStat(account, id) || {};
+  }
+
+  function gamesAttachCompletionContext(account, id, patch) {
+    const nextPatch = patch || {};
+    const currentStat = gamesGetCurrentStatForContext(account, id);
+    const ctx = gamesBuildCompletionContext(nextPatch.lastPlayedAt || Date.now());
+    nextPatch.context = gamesMergeCompletionContext(currentStat.context, ctx);
+    return nextPatch;
+  }
+
   function renderProfilesExtended() {
     const grid = document.getElementById('gamesProfilesGrid');
     if (!grid) return;
@@ -221,14 +354,23 @@
       { id: 'mines_25_wins', title: 'Minové pole znám', desc: 'Vyhraj 25 her Minesweeperu.', goalText: '25 výher', progress: (a) => arcadeStat(a.account, 'mines', 'plays'), target: 25 },
       { id: 'memory_30', title: 'Pexeso paměťák', desc: 'Dokonči 30 her Memory.', goalText: '30 dokončení', progress: (a) => arcadeStat(a.account, 'memory', 'plays'), target: 30 },
       { id: 'bomber_30', title: 'Bomber pilot', desc: 'Dokonči 30 her Bomberman mini.', goalText: '30 dokončení', progress: (a) => arcadeStat(a.account, 'bomber', 'plays'), target: 30 },
-      { id: 'daily_20', title: 'Denní držák', desc: 'Splň 20 denních challenge.', goalText: '20 challenge', progress: (a) => arcadeStat(a.account, 'daily', 'plays'), target: 20 }
+      { id: 'daily_20', title: 'Denní držák', desc: 'Splň 20 denních challenge.', goalText: '20 challenge', progress: (a) => arcadeStat(a.account, 'daily', 'plays'), target: 20 },
+      { id: 'ctx_shift_15', title: 'Hráč na směně', desc: 'Dokonči 15 her během aktivní směny.', goalText: '15 her na směně', progress: (a) => a.context.onShiftPlays || 0, target: 15 },
+      { id: 'ctx_shift_60', title: 'Směnový držák', desc: 'Dokonči 60 her v čase, kdy běží směna.', goalText: '60 her na směně', progress: (a) => a.context.onShiftPlays || 0, target: 60 },
+      { id: 'ctx_night_hours_20', title: 'Noční sova', desc: 'Dokonči 20 her mezi 22:00 a 6:00.', goalText: '20 nočních her', progress: (a) => a.context.nightHourPlays || 0, target: 20 },
+      { id: 'ctx_night_shift_15', title: 'Noční pauza', desc: 'Dokonči 15 her přímo během noční směny.', goalText: '15 her na noční', progress: (a) => a.context.nightShiftPlays || 0, target: 15 },
+      { id: 'ctx_morning_shift_25', title: 'Ranní rozjezd', desc: 'Dokonči 25 her během ranní směny.', goalText: '25 her na ranní', progress: (a) => a.context.morningShiftPlays || 0, target: 25 },
+      { id: 'ctx_weekend_30', title: 'Víkendový hráč', desc: 'Dokonči 30 her o víkendu.', goalText: '30 víkendových her', progress: (a) => a.context.weekendPlays || 0, target: 30 },
+      { id: 'ctx_lunch_20', title: 'Pauzový stratég', desc: 'Dokonči 20 her mezi 11:00 a 14:00.', goalText: '20 her v pauzovém čase', progress: (a) => a.context.lunchWindowPlays || 0, target: 20 },
+      { id: 'ctx_days_14', title: 'Dlouhá série', desc: 'Dokonči hry ve 14 různých dnech.', goalText: '14 různých dnů', progress: (a) => a.context.distinctPlayedDays || 0, target: 14 },
+      { id: 'ctx_shift_teams_4', title: 'Napříč směnami', desc: 'Dokonči hru během aktivní směny A, B, C i D.', goalText: '4 různé směny', progress: (a) => a.context.shiftTeamCount || 0, target: 4 }
     ];
   }
 
   function getExtendedAchievementCount(account) {
     if (!account) return 0;
     const total = gamesGetTotals(account);
-    const ctx = Object.assign({ account }, total);
+    const ctx = Object.assign({ account, context: gamesGetContextTotals(account) }, total);
     return getExtendedAchievementDefs().filter((def) => Number(def.progress(ctx) || 0) >= Number(def.target || 0)).length;
   }
 
@@ -283,7 +425,7 @@
     }
 
     const total = gamesGetTotals(account);
-    const ctx = Object.assign({ account }, total);
+    const ctx = Object.assign({ account, context: gamesGetContextTotals(account) }, total);
     const defs = getExtendedAchievementDefs();
     const enriched = defs.map((def) => ({ def, current: Number(def.progress(ctx) || 0) }));
     const done = enriched.filter(item => item.current >= Number(item.def.target || 0));
@@ -798,7 +940,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function renderLaunchTiles() {
     const grid = document.getElementById('gamesGrid');
     if (!grid) return;
-    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v680';
+    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v681';
     if (grid.dataset && grid.dataset.arcadeLaunchSig === launchSig && grid.querySelector('.gamesDevFolder') && grid.querySelector('[data-game="ttt"]')) {
       gamePerf.launchRenderSkips = Number(gamePerf.launchRenderSkips || 0) + 1;
       return;
@@ -1018,9 +1160,10 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     const profile = gamesGetProfile();
     const active = profile.accounts[profile.activeAccountId];
     if (!active) return;
-    const nextPatch = Object.assign({ lastPlayedAt: Date.now() }, patch || {});
+    let nextPatch = Object.assign({ lastPlayedAt: Date.now() }, patch || {});
     const isCompleted = nextPatch.completed === true || nextPatch.finished === true || nextPatch.isComplete === true || nextPatch.gameOver === true || nextPatch.winner === true || nextPatch.resultSaved === true;
     if (!isCompleted && (Number(nextPatch.plays || nextPatch.games_played || 0) || 0) > 0) return;
+    if (isCompleted) nextPatch = gamesAttachCompletionContext(active, id, nextPatch);
     active.updatedAt = nextPatch.lastPlayedAt;
     if (id === 'ttt' || id === '2048' || id === 'snake' || id === 'flap') {
       if (typeof originalRecordStat === 'function') return originalRecordStat(id, nextPatch);

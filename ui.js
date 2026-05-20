@@ -3798,8 +3798,8 @@ function buildAppHistoryHtml(versionText) {
       range: versionText,
       title: 'Aktuální build',
       lines: [
-        'Build v.1.1 (680) uklízí herní profil, sjednocuje theme/pozadí v hotových hrách a zpřísňuje XP i achievementy.',
-        'Série v.1.1 650–680 dotáhla Piškvorky, online pozvánky, PWA launch handler, 2048/Snake mezi hotové hry a herní profily/achievementy.',
+        'Build v.1.1 (681) dolaďuje herní plochy podle theme/pozadí, opravuje Snake HUD/ovládání a přidává chytré achievementy podle času a směn.',
+        'Série v.1.1 650–681 dotáhla Piškvorky, online pozvánky, PWA launch handler, 2048/Snake mezi hotové hry, herní profily a těžší/chytřejší achievementy.',
         'Sekce „O aplikaci“ je nově stručnější: detailní změny zůstávají v changelogu a tady se historie drží po větších blocích.',
         'Stabilizační audity, Supabase guardy, Láďův režim a finální readiness kontroly zůstávají součástí diagnostiky.'
       ]
@@ -7384,7 +7384,6 @@ function snakeUpdateUi() {
   const scoreEl = body.querySelector('[data-snake-score]');
   const bestEl = body.querySelector('[data-snake-best]');
   const lenEl = body.querySelector('[data-snake-length]');
-  const stateEl = body.querySelector('[data-snake-state]');
   const board = body.querySelector('#gameSnakeBoard');
   const overlay = body.querySelector('#snakeResultOverlay');
   const overlayScore = body.querySelector('[data-snake-result-score]');
@@ -7393,7 +7392,6 @@ function snakeUpdateUi() {
   if (scoreEl) scoreEl.textContent = String(state.score || 0);
   if (bestEl) bestEl.textContent = String(Math.max(best.bestScore || 0, state.score || 0));
   if (lenEl) lenEl.textContent = String(state.snake ? state.snake.length : 0);
-  if (stateEl) stateEl.textContent = state.over ? 'Konec' : 'Hraje se';
   if (overlay) overlay.classList.toggle('isVisible', !!state.over);
   if (overlayScore) overlayScore.textContent = String(state.score || 0);
   if (overlayLength) overlayLength.textContent = String(state.snake ? state.snake.length : 0);
@@ -7427,11 +7425,10 @@ function renderGameSnake() {
   const best = snakeGetBestStats();
   body.innerHTML = [
     '<div class="gamesGamePanel gamesSnakePanel snakeRedesignPanel">',
-    '  <div class="snakeHud" aria-label="Stav hry Snake">',
-    '    <div class="snakeScoreCard"><span>Skóre</span><strong data-snake-score>' + String(state.score || 0) + '</strong></div>',
-    '    <div class="snakeScoreCard"><span>Nejlepší</span><strong data-snake-best>' + String(Math.max(best.bestScore || 0, state.score || 0)) + '</strong></div>',
+    '  <div class="snakeHud snakeHudCompact" aria-label="Stav hry Snake">',
+    '    <div class="snakeScoreCard"><span>Score</span><strong data-snake-score>' + String(state.score || 0) + '</strong></div>',
     '    <div class="snakeScoreCard"><span>Délka</span><strong data-snake-length>' + String(state.snake ? state.snake.length : 0) + '</strong></div>',
-    '    <div class="snakeScoreCard snakeStateCard"><span>Stav</span><strong data-snake-state>' + (state.over ? 'Konec' : 'Hraje se') + '</strong></div>',
+    '    <div class="snakeScoreCard"><span>Nejlepší</span><strong data-snake-best>' + String(Math.max(best.bestScore || 0, state.score || 0)) + '</strong></div>',
     '  </div>',
     '  <div class="snakeBoardWrap" style="width:' + boardSize + 'px;max-width:100%;">',
     '    <div class="gameBoard gameSnakeBoard snakeTouchZone" id="gameSnakeBoard" role="application" aria-label="Snake" tabindex="0" style="width:' + boardSize + 'px;height:' + boardSize + 'px;grid-template-columns:repeat(' + String(state.size) + ',minmax(0,1fr));grid-template-rows:repeat(' + String(state.size) + ',minmax(0,1fr));">' + snakeBuildCells(state) + '</div>',
@@ -7455,6 +7452,9 @@ function renderGameSnake() {
   if (board) {
     board.style.setProperty('width', boardSize + 'px', 'important');
     board.style.setProperty('height', boardSize + 'px', 'important');
+    board.style.setProperty('--snake-grid-size', String(state.size || 18));
+    board.style.setProperty('grid-template-columns', 'repeat(' + String(state.size || 18) + ', minmax(0, 1fr))', 'important');
+    board.style.setProperty('grid-template-rows', 'repeat(' + String(state.size || 18) + ', minmax(0, 1fr))', 'important');
     board.style.touchAction = 'none';
     board.style.webkitTouchCallout = 'none';
     board.style.userSelect = 'none';
@@ -7487,7 +7487,7 @@ function renderGameSnake() {
   };
   body.querySelector('#snakeNewBtn')?.addEventListener('click', resetSnake);
   body.querySelector('#snakeOverlayNewBtn')?.addEventListener('click', resetSnake);
-  gamesBindSwipeControl(board || body, handleTurn, { minDistance: 10, lockDistance: 4, maxTapTime: 190, axisRatio: 1.35 });
+  gamesBindSwipeControl(board || body, handleTurn, { minDistance: 14, lockDistance: 4, maxTapTime: 220, axisRatio: 1.8 });
   board?.addEventListener('click', () => {
     if (app.gamesSnake && app.gamesSnake.over) resetSnake();
   });

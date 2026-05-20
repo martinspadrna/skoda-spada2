@@ -7015,3 +7015,130 @@ html[data-lightweight="1"] #games .gamesAchievementGroup{
   -webkit-backdrop-filter:none !important;
   box-shadow:none !important;
 }
+
+/* v.1.1 (681) – hry drží aktuální theme/pozadí; Piškvorky a Snake už nejsou tvrdě zeleno-černé. */
+body.gamesOpen #games .gamesStage,
+html body.tttOpen .tttOverlay{
+  background:var(--rakAppBackground, var(--bg)) !important;
+  background-color:var(--rakBgBase, var(--bg)) !important;
+}
+body.gamesOpen #games .gamesStage::before,
+html body.tttOpen .tttOverlay::before{
+  content:"" !important;
+  position:fixed !important;
+  inset:0 !important;
+  pointer-events:none !important;
+  z-index:0 !important;
+  background:var(--rakAppBackgroundOverlay, transparent) !important;
+  opacity:1 !important;
+}
+body.gamesOpen #games .gamesShell,
+body.gamesOpen #games .gamesGamePanel,
+html body.tttOpen .tttShell,
+html body.tttOpen .tttContent,
+html body.tttOpen .tttGameScreen{
+  position:relative !important;
+  z-index:1 !important;
+  background:transparent !important;
+  color:var(--soft, #e7fff0) !important;
+}
+html body.tttOpen .tttHeader,
+html body.tttOpen .tttCard,
+html body.tttOpen .tttStatus,
+html body.tttOpen .tttResultCard,
+html body.tttOpen .tttOnlineGameInfo,
+#games .game2048ScoreCard,
+#games .snakeScoreCard,
+#games .gamesTop3Card,
+#games .game2048OverlayCard,
+#games .snakeResultCard{
+  border-color:var(--rakThemeBorder, rgba(124,255,124,.20)) !important;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.090), rgba(255,255,255,.026)),
+    radial-gradient(circle at 18% 12%, color-mix(in srgb, var(--green, #7CFF7C) 18%, transparent), transparent 48%),
+    var(--panel, rgba(12,18,15,.72)) !important;
+  color:var(--soft, #e7fff0) !important;
+}
+html body.tttOpen .tttOverlay .tttBoardWrap,
+#games .game2048BoardWrap,
+#games .snakeBoardWrap{
+  border-color:var(--rakThemeBorder, rgba(124,255,124,.22)) !important;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.075), rgba(255,255,255,.018)),
+    radial-gradient(circle at 16% 8%, color-mix(in srgb, var(--green, #7CFF7C) 18%, transparent), transparent 42%),
+    var(--panel, rgba(12,18,15,.72)) !important;
+  box-shadow:0 18px 46px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.07) !important;
+}
+html body.tttOpen .tttOverlay .tttBoard,
+html body #games .tttBoard{
+  --tttGridLine:color-mix(in srgb, var(--green, #7CFF7C) 58%, rgba(255,255,255,.30)) !important;
+  border-left:1px solid var(--tttGridLine) !important;
+  border-top:1px solid var(--tttGridLine) !important;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.045), rgba(255,255,255,.012)),
+    radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--green, #7CFF7C) 12%, transparent), transparent 42%),
+    var(--panel2, var(--panel, rgba(8,14,12,.72))) !important;
+  box-shadow:
+    0 0 24px color-mix(in srgb, var(--green, #7CFF7C) 14%, transparent),
+    inset -1px 0 0 var(--tttGridLine),
+    inset 0 -1px 0 var(--tttGridLine) !important;
+}
+html body.tttOpen .tttOverlay .tttBoard .tttCell,
+html body #games .tttBoard .tttCell{
+  border-right:1px solid var(--tttGridLine) !important;
+  border-bottom:1px solid var(--tttGridLine) !important;
+  -webkit-tap-highlight-color:color-mix(in srgb, var(--green, #7CFF7C) 18%, transparent) !important;
+}
+html body.tttOpen .tttOverlay .tttBoard .tttCell.isLastMove,
+html body #games .tttBoard .tttCell.isLastMove{
+  box-shadow:inset 0 0 0 2px color-mix(in srgb, var(--green, #7CFF7C) 26%, transparent) !important;
+}
+#games .gameBoard.game2048Board,
+#games .gameBoard.gameSnakeBoard.snakeTouchZone{
+  border-color:var(--rakThemeBorder, rgba(124,255,124,.22)) !important;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.070), rgba(255,255,255,.018)),
+    radial-gradient(circle at 18% 14%, color-mix(in srgb, var(--green, #7CFF7C) 16%, transparent), transparent 45%),
+    var(--panel2, var(--panel, rgba(12,18,15,.70))) !important;
+  color:var(--soft, #e7fff0) !important;
+}
+#games .gameBoard.gameSnakeBoard.snakeTouchZone{
+  grid-template-columns:repeat(var(--snake-grid-size, 18), minmax(0, 1fr)) !important;
+  grid-template-rows:repeat(var(--snake-grid-size, 18), minmax(0, 1fr)) !important;
+}
+#games .gameSnakeBoard.snakeTouchZone .gameBoardCell{
+  border-radius:clamp(4px, 1.15vw, 7px) !important;
+  background:color-mix(in srgb, var(--soft, #e7fff0) 5%, transparent) !important;
+  transition:background .06s ease, box-shadow .06s ease, transform .06s ease !important;
+}
+#games .gameSnakeBoard.snakeTouchZone .snakeEmpty:nth-child(odd),
+#games .gameSnakeBoard.snakeTouchZone .snakeEmpty:nth-child(3n){
+  background:color-mix(in srgb, var(--soft, #e7fff0) 4%, transparent) !important;
+}
+#games .gameSnakeBoard.snakeTouchZone .snakeFood{
+  transform:scale(.86) !important;
+  background:
+    radial-gradient(circle, color-mix(in srgb, var(--green2, #B7FFBE) 85%, white 15%) 0 22%, var(--green, #7CFF7C) 23% 58%, color-mix(in srgb, var(--green, #7CFF7C) 20%, transparent) 59% 100%) !important;
+  box-shadow:0 0 18px color-mix(in srgb, var(--green, #7CFF7C) 36%, transparent), inset 0 0 0 1px rgba(255,255,255,.26) !important;
+}
+#games .gameSnakeBoard.snakeTouchZone .snakeHead{
+  transform:scale(1.02) !important;
+  background:linear-gradient(145deg, color-mix(in srgb, var(--green2, #B7FFBE) 82%, white 18%), var(--green, #7CFF7C) 52%, color-mix(in srgb, var(--green, #7CFF7C) 65%, #000 35%)) !important;
+  box-shadow:0 0 22px color-mix(in srgb, var(--green, #7CFF7C) 42%, transparent), inset 0 -2px 8px rgba(0,0,0,.28) !important;
+}
+#games .gameSnakeBoard.snakeTouchZone .snakeBody{
+  background:linear-gradient(145deg, color-mix(in srgb, var(--green, #7CFF7C) 52%, transparent), color-mix(in srgb, var(--green, #7CFF7C) 24%, transparent)) !important;
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--green2, #B7FFBE) 10%, transparent), 0 0 9px color-mix(in srgb, var(--green, #7CFF7C) 10%, transparent) !important;
+}
+#games .snakeHud.snakeHudCompact{
+  grid-template-columns:repeat(3, minmax(0, 1fr)) !important;
+}
+#games .snakeHud.snakeHudCompact .snakeScoreCard{
+  min-height:52px !important;
+}
+@media (max-width:430px){
+  #games .snakeHud.snakeHudCompact{grid-template-columns:repeat(3, minmax(0, 1fr)) !important;}
+  #games .snakeHud.snakeHudCompact .snakeScoreCard{min-height:48px !important;padding:8px 5px !important;}
+  #games .snakeHud.snakeHudCompact .snakeScoreCard span{font-size:9px !important;letter-spacing:.04em !important;}
+  #games .snakeHud.snakeHudCompact .snakeScoreCard strong{font-size:clamp(14px, 4vw, 18px) !important;}
+}
