@@ -1,4 +1,4 @@
-// v.1.1 (685) – Hry: Aim Trainer a Reaction Test mobile-first polish + přesun mezi hotové hry.
+// v.1.1 (686) – Hry: Aim/Reaction bez černého horního pruhu + výraznější TEĎ stav.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

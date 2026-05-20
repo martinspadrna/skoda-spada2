@@ -1,3 +1,8 @@
+## v.1.1 (686)
+- Hry / Aim Trainer a Reaction Test: odstraněný černý horní pruh nad HUDem a herní plochou u arcade her. Zůstává jen malé plovoucí tlačítko Zpět bez titulkového bloku.
+- Reaction Test: stav „TEĎ!“ má výraznou změnu barvy reakčního pole podle aktuálního theme, aby byl signál jasně vidět.
+- Verze sjednocena na v.1.1 (686), cache na v1.1-686 a Supabase realtime kanál na rak-public-live-v686.
+
 ## v.1.1 (685)
 - Hry: Aim Trainer a Reaction Test přesunuté mezi hlavní/hotové hry vedle Piškvorek, 2048, Snake a Flappy Car.
 - Aim Trainer přepracovaný pro dotyk: větší plocha, targety přes theme/pozadí, čistý HUD, start/konec overlay a zápis jen po dokončeném kole.

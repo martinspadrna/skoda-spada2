@@ -3903,8 +3903,8 @@ function buildAppHistoryHtml(versionText) {
       range: versionText,
       title: 'Aktuální build',
       lines: [
-        'Build v.1.1 (685) přidává další dvě hotové hry: Aim Trainer a Reaction Test v mobile-first stylu s čistým dotykem, theme/pozadím a započítáním jen po dokončení.',
-        'Série v.1.1 650–685 dotáhla Piškvorky, online pozvánky, PWA launch handler, 2048/Snake/Flappy Car/Aim/Reaction mezi hotové hry, herní profily, theme polish a těžší/chytřejší achievementy.',
+        'Build v.1.1 (686) dolaďuje Aim Trainer a Reaction Test: pryč je černý horní pruh nad hrou a Reaction při „TEĎ!“ výrazně mění barvu pole.',
+        'Série v.1.1 650–686 dotáhla Piškvorky, online pozvánky, PWA launch handler, 2048/Snake/Flappy Car/Aim/Reaction mezi hotové hry, herní profily, theme polish a těžší/chytřejší achievementy.',
         'Sekce „O aplikaci“ je nově stručnější: detailní změny zůstávají v changelogu a tady se historie drží po větších blocích.',
         'Stabilizační audity, Supabase guardy, Láďův režim a finální readiness kontroly zůstávají součástí diagnostiky.'
       ]

@@ -2,7 +2,7 @@
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
 
-  // v.1.1 (685): Aim Trainer a Reaction Test jsou přepracované jako další hotové mobile-first hry.
+  // v.1.1 (686): Aim/Reaction mají čistší shell bez černého horního pruhu a Reaction výrazný TEĎ stav.
   const CORE_GAMES = ['ttt', '2048', 'snake', 'flap', 'aim', 'reaction'];
   const EXTRA_GAMES = ['tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);
@@ -491,6 +491,10 @@
 #games .gamesShellTitle{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 #games .gamesShellSubtitle{font-size:11px;line-height:1.2;color:rgba(231,255,240,.68);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 #games .gamesArcadeRoot{display:flex;flex-direction:column;gap:8px;flex:1 1 auto;min-height:0;overflow:hidden;}
+#games .arcadeShellRoot{background:transparent !important;border:0 !important;box-shadow:none !important;padding-top:calc(44px + env(safe-area-inset-top)) !important;}
+#games .arcadeShellRoot .gamesArcadeRoot{background:transparent !important;position:relative;z-index:1;}
+#games .arcadeShellRoot .arcadeBackFloating{background:var(--rakGlassCardBg, rgba(255,255,255,.08)) !important;border:1px solid var(--rakGlassStroke, rgba(255,255,255,.16)) !important;color:var(--soft, #e7fff0) !important;box-shadow:0 10px 28px rgba(0,0,0,.22) !important;}
+#games .arcadeShellHeader{display:none !important;}
 #games .arcadeHud{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}
 #games .arcadeHud .gamesStatCard{padding:8px 10px;}
 #games .arcadeHud .gamesStatLabel{font-size:10px;opacity:.72;}
@@ -533,11 +537,13 @@
 #games .arcadeOverlayCard span{font-size:13px;line-height:1.35;color:rgba(245,255,250,.82);}
 #games .arcadeOverlayCard small{font-size:11px;color:rgba(245,255,250,.62);}
 #games .arcadeReactionBoard{min-height:clamp(330px, 58dvh, 560px);width:100%;border:none;color:inherit;cursor:pointer;touch-action:manipulation;background:var(--rakGlassPanelBg, linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.025))) !important;border-color:var(--rakGlassStroke, rgba(255,255,255,.14)) !important;}
-#games .arcadeReactionBoard.isGo{background:linear-gradient(180deg, color-mix(in srgb, var(--rakThemeAccent, var(--green2)) 24%, rgba(255,255,255,.04)), rgba(255,255,255,.03)) !important;}
+#games .arcadeReactionBoard.isGo{background:radial-gradient(circle at 50% 34%, color-mix(in srgb, var(--rakThemeAccent, var(--green2)) 74%, #ffffff) 0 14%, color-mix(in srgb, var(--rakThemeAccent, var(--green2)) 48%, transparent) 15% 42%, transparent 68%), linear-gradient(135deg, color-mix(in srgb, var(--rakThemeAccent, var(--green2)) 58%, #06351a), color-mix(in srgb, var(--rakThemeAccent, var(--green2)) 22%, rgba(255,255,255,.05))) !important;border-color:color-mix(in srgb, var(--rakThemeAccent, var(--green2)) 62%, rgba(255,255,255,.18)) !important;box-shadow:0 0 0 1px color-mix(in srgb, var(--rakThemeAccent, var(--green2)) 42%, transparent) inset, 0 22px 58px color-mix(in srgb, var(--rakThemeAccent, var(--green2)) 34%, rgba(0,0,0,.32)) !important;color:#fafffb !important;}
 #games .arcadeReactionBoard.isBad{background:linear-gradient(180deg, rgba(255,74,104,.28), rgba(255,255,255,.03)) !important;}
 #games .arcadeReactionBoard strong{font-size:clamp(28px, 10vw, 56px);letter-spacing:.02em;}
 #games .arcadeReactionBoard small{font-size:14px;color:rgba(245,255,250,.76);max-width:28ch;line-height:1.35;}
 #games .arcadeReactionPulse{width:96px;height:96px;border-radius:50%;background:radial-gradient(circle, color-mix(in srgb, var(--rakThemeAccent, var(--green2)) 36%, rgba(255,255,255,.2)), transparent 68%);filter:blur(.2px);opacity:.85;}
+#games .arcadeReactionBoard.isGo .arcadeReactionPulse{background:radial-gradient(circle, #ffffff 0 18%, color-mix(in srgb, var(--rakThemeAccent, var(--green2)) 70%, #ffffff) 19% 52%, transparent 70%);box-shadow:0 0 40px color-mix(in srgb, var(--rakThemeAccent, var(--green2)) 70%, transparent);opacity:1;}
+#games .arcadeReactionBoard.isGo strong{text-shadow:0 0 22px rgba(255,255,255,.45), 0 0 34px color-mix(in srgb, var(--rakThemeAccent, var(--green2)) 56%, transparent);}
 #games .arcadeReactionBoard.isGo .arcadeReactionPulse{animation:reactionPulse .72s ease-in-out infinite alternate;}
 @keyframes reactionPulse{from{transform:scale(.88);opacity:.65;}to{transform:scale(1.1);opacity:1;}}
 @media (max-width: 700px){#games .arcadeHudWide{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;}#games .arcadeAimBoard,#games .arcadeReactionBoard{min-height:clamp(330px, 60dvh, 560px);}#games .arcadeHud .gamesStatValue{font-size:13px;}}
@@ -981,7 +987,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function renderLaunchTiles() {
     const grid = document.getElementById('gamesGrid');
     if (!grid) return;
-    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v685';
+    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v686';
     if (grid.dataset && grid.dataset.arcadeLaunchSig === launchSig && grid.querySelector('.gamesDevFolder') && grid.querySelector('[data-game="ttt"]')) {
       gamePerf.launchRenderSkips = Number(gamePerf.launchRenderSkips || 0) + 1;
       return;
@@ -1253,7 +1259,8 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   }
 
   function shellHeader(title, subtitle) {
-    return `<div class="gamesShellTop arcadeShellTopCompact"><button type="button" class="gamesShellBack" id="arcadeBackBtn">Zpět</button></div>`;
+    // v.1.1 (686): arcade hry už nepoužívají horní tmavý titulkový/header pruh.
+    return `<button type="button" class="gamesShellBack gamesShellBackFloating arcadeBackFloating" id="arcadeBackBtn" aria-label="Zpět">Zpět</button>`;
   }
 
   function mountArcadeShell(gameId) {
@@ -1264,7 +1271,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     setActiveState(gameId, null);
     window.document.body.classList.add('gamesOpen');
     window.gamesApplyCompactMode && window.gamesApplyCompactMode();
-    stage.innerHTML = `<div class="gamesShell arcadeShellRoot"><div class="arcadeShellHeader">${shellHeader(meta.title, meta.subtitle)}</div><div class="gamesArcadeRoot" id="gamesShellBody"></div></div>`;
+    stage.innerHTML = `<div class="gamesShell gamesShellNoTitle arcadeShellRoot">${shellHeader(meta.title, meta.subtitle)}<div class="gamesArcadeRoot" id="gamesShellBody"></div></div>`;
     const backBtn = document.getElementById('arcadeBackBtn');
     if (backBtn && !backBtn.dataset.bound) {
       backBtn.dataset.bound = '1';
