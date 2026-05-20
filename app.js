@@ -1,4 +1,4 @@
-// v.1.1 (672) – Piškvorky: přímý online odkaz + 3D ikony kalkulaček.
+// v.1.1 (673) – Kalkulačky: oprava rozjetého názvu Soustruhy po zvětšení ikon.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

@@ -6265,3 +6265,43 @@ html[data-rak-theme] #kalkulacky .calcTileIcon.calcTileIconLegacy{
 .appMenuProfileCard .gamesAccountRow{
   margin-top:10px !important;
 }
+
+
+/* v.1.1 (673) – Kalkulačky: fix rozjetého názvu po zvětšení původních ikon. */
+#kalkulacky .calcTile.calcTileStack,
+#kalkulacky .tile.calcTile.calcTileStack,
+html[data-rak-theme] #kalkulacky .calcTile.calcTileStack{
+  display:grid !important;
+  grid-template-columns:64px minmax(0, 1fr) !important;
+  column-gap:12px !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+  text-align:left !important;
+  overflow:hidden !important;
+}
+#kalkulacky .calcTile.calcTileStack > .calcTileIconLegacy{
+  grid-column:1 !important;
+  justify-self:center !important;
+}
+#kalkulacky .calcTile.calcTileStack > div:not(.calcTileIcon){
+  grid-column:2 !important;
+  min-width:0 !important;
+  max-width:100% !important;
+  overflow:hidden !important;
+}
+#kalkulacky .calcTile.calcTileStack .calcTileText{
+  display:block !important;
+  min-width:0 !important;
+  max-width:100% !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  white-space:nowrap !important;
+  text-align:left !important;
+}
+@media (max-width:420px){
+  #kalkulacky .calcTile.calcTileStack,
+  #kalkulacky .tile.calcTile.calcTileStack{
+    grid-template-columns:58px minmax(0, 1fr) !important;
+    column-gap:10px !important;
+  }
+}

@@ -1,3 +1,8 @@
+## v.1.1 (673)
+- Kalkulačky: opravené rozjetí názvu Soustruhy po zvětšení původních ikon.
+- Dlaždice kalkulaček mají znovu pevný sloupec pro ikonu vlevo a text bezpečně uvnitř druhého sloupce.
+- Verze sjednocena na v.1.1 (673), cache na v1.1-673 a Supabase realtime kanál na rak-public-live-v673.
+
 ## v.1.1 (672)
 - Kalkulačky: vrácené původní linkové ikony Soustruhy / Frézky / Brusy, jen jsou větší a bez pozadí.
 - Nastavení profilu: po přihlášení je vidět jen přihlášený profil a tlačítko Odhlásit; přihlašovací pole se ukáže až po odhlášení.
