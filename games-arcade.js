@@ -2,7 +2,7 @@
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
 
-  // v.1.1 (679): Piškvorky, 2048 a Snake jsou hotové hry mimo složku Ve vývoji; ostatní arcade hry zůstávají ve vývoji.
+  // v.1.1 (680): Piškvorky, 2048 a Snake jsou hotové hry mimo složku Ve vývoji; ostatní arcade hry zůstávají ve vývoji.
   const CORE_GAMES = ['ttt', '2048', 'snake'];
   const EXTRA_GAMES = ['flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);
@@ -70,12 +70,12 @@
 
   const GAMES_RANK_DEFS = [
     { name: 'Vemeno', minXp: 0 },
-    { name: 'Učeň', minXp: 250 },
-    { name: 'Seřizovač', minXp: 700 },
-    { name: 'Týmař', minXp: 1500 },
-    { name: 'Mistr', minXp: 2800 },
-    { name: 'Senior', minXp: 4500 },
-    { name: 'Legenda RaK', minXp: 7000 }
+    { name: 'Učeň', minXp: 900 },
+    { name: 'Seřizovač', minXp: 2400 },
+    { name: 'Týmař', minXp: 5200 },
+    { name: 'Mistr', minXp: 9500 },
+    { name: 'Senior', minXp: 15500 },
+    { name: 'Legenda RaK', minXp: 24000 }
   ];
 
   function gamesBuildProgressSummary(account) {
@@ -84,12 +84,19 @@
     const wins = Number(total.ttt && total.ttt.wins || 0) + Math.max(Number(total.g2048 && total.g2048.bestScore || 0) > 0 ? 1 : 0, 0) + Math.max(Number(total.snake && total.snake.bestScore || 0) > 0 ? 1 : 0, 0) + Math.max(Number(total.flap && total.flap.bestScore || 0) > 0 ? 1 : 0, 0);
     const plays = Number(total.totalPlays || 0) || 0;
     const bestScore = Number(total.bestScore || 0) || 0;
-    const xp = Math.max(0, Math.round((plays * 12) + (wins * 35) + (achievements * 80) + Math.min(500, Math.floor(bestScore / 2))));
-    const level = Math.max(1, Math.floor(xp / 250) + 1);
-    const levelBase = (level - 1) * 250;
+    const xp = Math.max(0, Math.round((plays * 6) + (wins * 18) + (achievements * 55) + Math.min(900, Math.floor(bestScore / 6))));
+    const levelStep = 600;
+    const level = Math.max(1, Math.floor(xp / levelStep) + 1);
+    const levelBase = (level - 1) * levelStep;
     const currentXp = xp - levelBase;
-    const nextXp = level * 250;
+    const nextXp = level * levelStep;
     const rank = [...GAMES_RANK_DEFS].reverse().find(r => xp >= r.minXp) || GAMES_RANK_DEFS[0];
+    const nextRank = GAMES_RANK_DEFS.find(r => xp < r.minXp) || null;
+    const rankBase = Number(rank && rank.minXp || 0) || 0;
+    const rankTarget = nextRank ? Number(nextRank.minXp || 0) : Math.max(rankBase + (levelStep * 4), xp);
+    const rankSpan = Math.max(1, rankTarget - rankBase);
+    const rankPct = nextRank ? Math.max(0, Math.min(100, Math.round(((xp - rankBase) / rankSpan) * 100))) : 100;
+    const rankRemaining = Math.max(0, rankTarget - xp);
     const favorite = (() => {
       const defs = ALL_GAMES.map((id) => Object.assign({ id }, META[id] || { title: id, subtitle: '', unit: 'bodů', mode: 'high' }));
       let best = defs[0] || null;
@@ -105,8 +112,10 @@
       return best ? best.title : '—';
     })();
     const winRate = plays > 0 ? Math.round((wins / plays) * 100) : 0;
-    return { xp, level, currentXp, nextXp, rank: rank.name, plays, achievements, wins, winRate, favorite, bestScore };
+    return { xp, level, currentXp, nextXp, rank: rank.name, nextRank: nextRank ? nextRank.name : '', rankPct, rankRemaining, plays, achievements, wins, winRate, favorite, bestScore };
   }
+  window.gamesBuildProgressSummary = gamesBuildProgressSummary;
+  window.GAMES_RANK_DEFS = GAMES_RANK_DEFS;
 
   function renderProfilesExtended() {
     const grid = document.getElementById('gamesProfilesGrid');
@@ -146,7 +155,7 @@
         return '<div class="gamesProfileRow"><strong>' + escapeHtml(game.title) + '</strong><span>' + escapeHtml(display + suffix) + '</span></div>';
       }).join('');
       const initials = String(acc.name || acc.id || '?').trim().slice(0, 2).toUpperCase();
-      const xpPct = Math.max(0, Math.min(100, Math.round((progress.currentXp / 250) * 100)));
+      const xpPct = Math.max(0, Math.min(100, Math.round(Number(progress.rankPct || 0) || 0)));
       const isActive = String(acc.id) === String(activeId);
       return [
         '<details class="gamesStatsCard' + (isActive ? ' isActive' : '') + '"' + (isActive ? ' open' : '') + '>',
@@ -179,10 +188,87 @@
     grid.innerHTML = nextHtml;
   }
 
+  function getExtendedAchievementDefs() {
+    const arcadeStat = (account, id, field) => Number((account && account.stats && account.stats.arcade && account.stats.arcade[id] && account.stats.arcade[id][field]) || 0) || 0;
+    return [
+      { id: 'games_25', title: 'Zahřívací směna', desc: 'Dokonči 25 započítaných her.', goalText: '25 dokončených her', progress: (a) => a.totalPlays, target: 25 },
+      { id: 'games_75', title: 'Rozjetá mašina', desc: 'Dokonči 75 započítaných her.', goalText: '75 dokončených her', progress: (a) => a.totalPlays, target: 75 },
+      { id: 'games_150', title: 'Držák po směně', desc: 'Dokonči 150 započítaných her.', goalText: '150 dokončených her', progress: (a) => a.totalPlays, target: 150 },
+      { id: 'games_300', title: 'Herní mistr dílny', desc: 'Dokonči 300 započítaných her.', goalText: '300 dokončených her', progress: (a) => a.totalPlays, target: 300 },
+      { id: 'games_500', title: 'Legenda pauzy', desc: 'Dokonči 500 započítaných her.', goalText: '500 dokončených her', progress: (a) => a.totalPlays, target: 500 },
+      { id: 'ttt_50', title: 'Piškvorkář', desc: 'Dokonči 50 partií Piškvorek.', goalText: '50 partií', progress: (a) => a.ttt.plays || 0, target: 50 },
+      { id: 'ttt_100', title: 'Taktik', desc: 'Dokonči 100 partií Piškvorek.', goalText: '100 partií', progress: (a) => a.ttt.plays || 0, target: 100 },
+      { id: 'ttt_50_wins', title: 'Nepříjemný soupeř', desc: 'Vyhraj 50krát v Piškvorkách.', goalText: '50 výher', progress: (a) => a.ttt.wins || 0, target: 50 },
+      { id: 'ttt_120_wins', title: 'Piškvorkový boss', desc: 'Vyhraj 120krát v Piškvorkách.', goalText: '120 výher', progress: (a) => a.ttt.wins || 0, target: 120 },
+      { id: '2048_5000', title: '2048 rozjezd', desc: 'Nahraj v 2048 skóre 5 000.', goalText: '5 000 bodů', progress: (a) => a.g2048.bestScore || 0, target: 5000 },
+      { id: '2048_15000', title: '2048 stratég', desc: 'Nahraj v 2048 skóre 15 000.', goalText: '15 000 bodů', progress: (a) => a.g2048.bestScore || 0, target: 15000 },
+      { id: '2048_tile_1024', title: 'Kámen 1024', desc: 'V 2048 dostaň kámen 1024.', goalText: 'kámen 1024', progress: (a) => a.g2048.bestTile || 0, target: 1024 },
+      { id: '2048_tile_2048', title: 'Konečně 2048', desc: 'V 2048 dostaň kámen 2048.', goalText: 'kámen 2048', progress: (a) => a.g2048.bestTile || 0, target: 2048 },
+      { id: 'snake_score_40', title: 'Hadí ruce', desc: 'Dej ve Snake skóre 40.', goalText: '40 bodů', progress: (a) => a.snake.bestScore || 0, target: 40 },
+      { id: 'snake_score_80', title: 'Hadí legenda', desc: 'Dej ve Snake skóre 80.', goalText: '80 bodů', progress: (a) => a.snake.bestScore || 0, target: 80 },
+      { id: 'snake_length_45', title: 'Dlouhý had', desc: 'Dostaň Snake na délku 45.', goalText: 'délka 45', progress: (a) => a.snake.bestLength || 0, target: 45 },
+      { id: 'snake_length_80', title: 'Had přes celou halu', desc: 'Dostaň Snake na délku 80.', goalText: 'délka 80', progress: (a) => a.snake.bestLength || 0, target: 80 },
+      { id: 'flap_50', title: 'Flappy pilot', desc: 'Dej ve Flappy Car 50 bodů.', goalText: '50 bodů', progress: (a) => a.flap.bestScore || 0, target: 50 },
+      { id: 'flap_100', title: 'Letecký boss', desc: 'Dej ve Flappy Car 100 bodů.', goalText: '100 bodů', progress: (a) => a.flap.bestScore || 0, target: 100 },
+      { id: 'aim_1500', title: 'Rychlá ruka', desc: 'Nahraj 1 500 bodů v Aim Traineru.', goalText: '1 500 bodů', progress: (a) => arcadeStat(a.account, 'aim', 'bestScore'), target: 1500 },
+      { id: 'reaction_160', title: 'Blesk', desc: 'Dostaň reakci pod 160 ms.', goalText: 'pod 160 ms', progress: (a) => { const t = arcadeStat(a.account, 'reaction', 'bestTimeMs'); return t ? Math.max(0, 1000 - t) : 0; }, target: 840 },
+      { id: 'tetris_5000', title: 'Tetris mistr', desc: 'Nahraj 5 000 bodů v Tetrisu.', goalText: '5 000 bodů', progress: (a) => arcadeStat(a.account, 'tetris', 'bestScore'), target: 5000 },
+      { id: 'shooter_3500', title: 'Space ace', desc: 'Nahraj 3 500 bodů ve Space Shooteru.', goalText: '3 500 bodů', progress: (a) => arcadeStat(a.account, 'shooter', 'bestScore'), target: 3500 },
+      { id: 'brick_2500', title: 'Bourák cihel', desc: 'Nahraj 2 500 bodů v Brick Breakeru.', goalText: '2 500 bodů', progress: (a) => arcadeStat(a.account, 'brick', 'bestScore'), target: 2500 },
+      { id: 'doodle_3500', title: 'Skokan', desc: 'Nahraj 3 500 bodů v Doodle Jumpu.', goalText: '3 500 bodů', progress: (a) => arcadeStat(a.account, 'doodle', 'bestScore'), target: 3500 },
+      { id: 'bubble_2500', title: 'Bubble pop', desc: 'Nahraj 2 500 bodů v Bubble Shooteru.', goalText: '2 500 bodů', progress: (a) => arcadeStat(a.account, 'bubble', 'bestScore'), target: 2500 },
+      { id: 'sudoku_15', title: 'Sudoku hlava', desc: 'Vyřeš 15 Sudoku.', goalText: '15 dokončení', progress: (a) => arcadeStat(a.account, 'sudoku', 'plays'), target: 15 },
+      { id: 'mines_25_wins', title: 'Minové pole znám', desc: 'Vyhraj 25 her Minesweeperu.', goalText: '25 výher', progress: (a) => arcadeStat(a.account, 'mines', 'plays'), target: 25 },
+      { id: 'memory_30', title: 'Pexeso paměťák', desc: 'Dokonči 30 her Memory.', goalText: '30 dokončení', progress: (a) => arcadeStat(a.account, 'memory', 'plays'), target: 30 },
+      { id: 'bomber_30', title: 'Bomber pilot', desc: 'Dokonči 30 her Bomberman mini.', goalText: '30 dokončení', progress: (a) => arcadeStat(a.account, 'bomber', 'plays'), target: 30 },
+      { id: 'daily_20', title: 'Denní držák', desc: 'Splň 20 denních challenge.', goalText: '20 challenge', progress: (a) => arcadeStat(a.account, 'daily', 'plays'), target: 20 }
+    ];
+  }
+
+  function getExtendedAchievementCount(account) {
+    if (!account) return 0;
+    const total = gamesGetTotals(account);
+    const ctx = Object.assign({ account }, total);
+    return getExtendedAchievementDefs().filter((def) => Number(def.progress(ctx) || 0) >= Number(def.target || 0)).length;
+  }
+
+  function renderAchievementCard(def, current) {
+    const target = Number(def.target || 1) || 1;
+    const pct = Math.max(0, Math.min(100, Math.round((current / target) * 100)));
+    const isUnlocked = current >= target;
+    return [
+      '<div class="gamesStatsCard' + (isUnlocked ? ' isActive' : '') + '">',
+      '  <div class="gamesStatsCardHead">',
+      '    <div>',
+      '      <div class="gamesStatsCardName">' + escapeHtml(def.title) + '</div>',
+      '      <div class="gamesStatsCardId">' + escapeHtml(def.id) + '</div>',
+      '    </div>',
+      '    <div class="gamesStatsCardTotal">' + String(Math.min(current, target)) + '/' + String(target) + '</div>',
+      '  </div>',
+      '  <div class="gamesStatsCardBody">',
+      '    <div class="gamesStatsCardLine">' + escapeHtml(def.desc) + '</div>',
+      '    <div class="gamesStatsCardLine">' + escapeHtml(def.goalText) + '</div>',
+      '    <div class="gamesAchievementBar"><span style="--fill:' + String(pct) + '%"></span></div>',
+      '  </div>',
+      '</div>'
+    ].join('');
+  }
+
+  function renderAchievementGroup(title, items, open) {
+    const body = items.length
+      ? items.map(item => renderAchievementCard(item.def, item.current)).join('')
+      : '<div class="smallText gamesAchievementEmpty">Tady zatím nic není.</div>';
+    return [
+      '<details class="gamesAchievementGroup"' + (open ? ' open' : '') + '>',
+      '  <summary class="gamesAchievementGroupSummary"><span>' + escapeHtml(title) + '</span><strong>' + String(items.length) + '</strong></summary>',
+      '  <div class="gamesAchievementGroupBody">' + body + '</div>',
+      '</details>'
+    ].join('');
+  }
+
   function renderAchievementsExtended() {
     const grid = document.getElementById('gamesAchievementsGrid');
     if (!grid) return;
-    const profile = gamesGetProfile();
     const account = gamesGetActiveAccount();
     if (!account) {
       const emptyHtml = '<div class="smallText">Přihlas se a achievementy se začnou počítat.</div>';
@@ -197,53 +283,18 @@
     }
 
     const total = gamesGetTotals(account);
-    const baseAchievements = [
-      { id: 'start', title: 'První zápis', desc: 'Odehraj první započítanou hru', goalText: '1 hra', progress: (a) => a.totalPlays, target: 1 },
-      { id: 'ten', title: 'Rozjezd', desc: 'Odehraj 10 započítaných her', goalText: '10 her', progress: (a) => a.totalPlays, target: 10 },
-      { id: 'thirty', title: 'Držák', desc: 'Odehraj 30 započítaných her', goalText: '30 her', progress: (a) => a.totalPlays, target: 30 },
-      { id: 'sixty', title: 'Mazák', desc: 'Odehraj 60 započítaných her', goalText: '60 her', progress: (a) => a.totalPlays, target: 60 }
-    ];
-    const gameAchievements = ALL_GAMES.map((gameId) => {
-      const meta = META[gameId] || { title: gameId, subtitle: '', unit: '' };
-      const target = gameId === 'ttt' ? 10 : 5;
-      return {
-        id: 'game-' + gameId,
-        title: meta.title,
-        desc: meta.subtitle || 'Zahraj si a ulož několik výsledků.',
-        goalText: String(target) + ' započítaných her',
-        progress: (a) => {
-          const st = getArcadeProfileStat(a && a.account ? a.account : a, gameId);
-          return Number(st.plays || 0) || 0;
-        },
-        target
-      };
-    });
-
-    const defs = baseAchievements.concat(gameAchievements).map(def => Object.assign({}, def));
-    const unlocked = defs.filter((def) => Number(def.progress({ totalPlays: total.totalPlays, account })) >= Number(def.target || 0)).length;
-
-    const nextHtml = defs.map((def) => {
-      const current = Number(def.progress({ totalPlays: total.totalPlays, account }) || 0);
-      const target = Number(def.target || 1) || 1;
-      const pct = Math.max(0, Math.min(100, Math.round((current / target) * 100)));
-      const isUnlocked = current >= target;
-      return [
-        '<div class="gamesStatsCard' + (isUnlocked ? ' isActive' : '') + '">',
-        '  <div class="gamesStatsCardHead">',
-        '    <div>',
-        '      <div class="gamesStatsCardName">' + escapeHtml(def.title) + '</div>',
-        '      <div class="gamesStatsCardId">' + escapeHtml(def.id) + '</div>',
-        '    </div>',
-        '    <div class="gamesStatsCardTotal">' + String(Math.min(current, target)) + '/' + String(target) + '</div>',
-        '  </div>',
-        '  <div class="gamesStatsCardBody">',
-        '    <div class="gamesStatsCardLine">' + escapeHtml(def.desc) + '</div>',
-        '    <div class="gamesStatsCardLine">' + escapeHtml(def.goalText) + '</div>',
-        '    <div class="gamesAchievementBar"><span style="--fill:' + String(pct) + '%"></span></div>',
-        '  </div>',
-        '</div>'
-      ].join('');
-    }).join('');
+    const ctx = Object.assign({ account }, total);
+    const defs = getExtendedAchievementDefs();
+    const enriched = defs.map((def) => ({ def, current: Number(def.progress(ctx) || 0) }));
+    const done = enriched.filter(item => item.current >= Number(item.def.target || 0));
+    const active = enriched.filter(item => item.current > 0 && item.current < Number(item.def.target || 0));
+    const fresh = enriched.filter(item => item.current <= 0);
+    const unlocked = done.length;
+    const nextHtml = [
+      renderAchievementGroup('Hotové', done, true),
+      renderAchievementGroup('Rozdělané', active, true),
+      renderAchievementGroup('Nenačaté', fresh, false)
+    ].join('');
     if (grid.__rakLastAchievementsHtml === nextHtml && grid.childElementCount) {
       gamePerf.achievementRenderSkips = Number(gamePerf.achievementRenderSkips || 0) + 1;
       return;
@@ -254,6 +305,7 @@
     const folder = document.querySelector('#games .gamesAchievementsFolder');
     if (folder) folder.dataset.unlocked = String(unlocked);
   }
+  window.gamesGetAchievementCount = getExtendedAchievementCount;
 
   const originalRenderProfiles = window.gamesRenderProfiles;
   window.gamesRenderProfiles = function gamesRenderProfilesArcade() {
@@ -746,7 +798,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function renderLaunchTiles() {
     const grid = document.getElementById('gamesGrid');
     if (!grid) return;
-    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v679';
+    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v680';
     if (grid.dataset && grid.dataset.arcadeLaunchSig === launchSig && grid.querySelector('.gamesDevFolder') && grid.querySelector('[data-game="ttt"]')) {
       gamePerf.launchRenderSkips = Number(gamePerf.launchRenderSkips || 0) + 1;
       return;
@@ -967,6 +1019,8 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     const active = profile.accounts[profile.activeAccountId];
     if (!active) return;
     const nextPatch = Object.assign({ lastPlayedAt: Date.now() }, patch || {});
+    const isCompleted = nextPatch.completed === true || nextPatch.finished === true || nextPatch.isComplete === true || nextPatch.gameOver === true || nextPatch.winner === true || nextPatch.resultSaved === true;
+    if (!isCompleted && (Number(nextPatch.plays || nextPatch.games_played || 0) || 0) > 0) return;
     active.updatedAt = nextPatch.lastPlayedAt;
     if (id === 'ttt' || id === '2048' || id === 'snake' || id === 'flap') {
       if (typeof originalRecordStat === 'function') return originalRecordStat(id, nextPatch);
@@ -1188,6 +1242,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       const points = Math.max(0, Math.round(state.score + state.accuracy * 1.5 + state.bestCombo * 10));
       const payload = { plays: 1, bestScore: points, bestAccuracy: Math.round(state.accuracy), bestCombo: state.bestCombo, lastResult: `${state.hits}/${total}` };
       if (state.challenge) payload.game_type = 'daily';
+      payload.completed = true;
       gamesRecordStat(state.challenge ? 'daily' : 'aim', payload);
       body.querySelector('.arcadeStatus')?.insertAdjacentHTML('afterend', `<div class="arcadeBanner arcadePanel isGo uPad14"> <div class="arcadeBannerTitle">Konec kola</div><div class="arcadeBannerText">Skóre ${points} · Accuracy ${Math.round(state.accuracy)} % · Max combo ${state.bestCombo}</div></div>`);
     };
@@ -1286,7 +1341,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       state.phase = 'done';
       const best = state.bestTimeMs || Math.min(...state.times.filter(Boolean)) || 0;
       const avg = state.times.length ? Math.round(state.times.reduce((a, b) => a + b, 0) / state.times.length) : 0;
-      gamesRecordStat('reaction', { plays: 1, bestTimeMs: best, bestScore: best ? encodePoints('reaction', best) : 0, lastResult: `${best} ms` });
+      gamesRecordStat('reaction', { completed: true, plays: 1, bestTimeMs: best, bestScore: best ? encodePoints('reaction', best) : 0, lastResult: `${best} ms` });
       board.classList.remove('isGo');
       text.textContent = `Hotovo. Průměr ${fmtTime(avg)}, best ${fmtTime(best)}.`;
     };
@@ -1454,10 +1509,10 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       state.raf = rakGameRequestFrame(state, loop);
     };
     state.raf = rakGameRequestFrame(state, loop);
-    const finishCleanup = () => { cancelAnimationFrame(state.raf); document.removeEventListener('keydown', onKey); gamesRecordStat('tetris', { plays: 1, bestScore: Math.max(state.score, getAccountStat(gamesGetActiveAccount(), 'tetris').bestScore || 0), lastResult: String(state.score) }); };
+    const finishCleanup = () => { cancelAnimationFrame(state.raf); document.removeEventListener('keydown', onKey); gamesRecordStat('tetris', { completed: true, plays: 1, bestScore: Math.max(state.score, getAccountStat(gamesGetActiveAccount(), 'tetris').bestScore || 0), lastResult: String(state.score) }); };
     addCleanup(() => { cancelAnimationFrame(state.raf); document.removeEventListener('keydown', onKey); });
-    body.querySelector('.arcadeControls [data-act="restart"]').addEventListener('click', () => { if (state.over) { gamesRecordStat('tetris', { plays: 1, bestScore: state.score, lastResult: String(state.score) }); state.over = false; } });
-    addCleanup(() => { if (state.over) gamesRecordStat('tetris', { plays: 1, bestScore: state.score, lastResult: String(state.score) }); });
+    body.querySelector('.arcadeControls [data-act="restart"]').addEventListener('click', () => { if (state.over) { gamesRecordStat('tetris', { completed: true, plays: 1, bestScore: state.score, lastResult: String(state.score) }); state.over = false; } });
+    addCleanup(() => { if (state.over) gamesRecordStat('tetris', { completed: true, plays: 1, bestScore: state.score, lastResult: String(state.score) }); });
     draw();
     setActiveState('tetris', state);
   }
@@ -1525,7 +1580,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       state.raf = rakGameRequestFrame(state, loop);
     };
     state.raf = rakGameRequestFrame(state, loop);
-    addCleanup(() => { cancelAnimationFrame(state.raf); canvas.removeEventListener('pointermove', pointerMove); gamesRecordStat('shooter', { plays: 1, bestScore: state.score, lastResult: String(state.score) }); });
+    addCleanup(() => { cancelAnimationFrame(state.raf); canvas.removeEventListener('pointermove', pointerMove); if (state.over) gamesRecordStat('shooter', { completed: true, plays: 1, bestScore: state.score, lastResult: String(state.score) }); });
     setActiveState('shooter', state);
   }
 
@@ -1586,7 +1641,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       state.raf = rakGameRequestFrame(state, loop);
     };
     state.raf = rakGameRequestFrame(state, loop);
-    addCleanup(() => { cancelAnimationFrame(state.raf); gamesRecordStat('brick', { plays: 1, bestScore: state.score, lastResult: String(state.score) }); });
+    addCleanup(() => { cancelAnimationFrame(state.raf); if (state.over) gamesRecordStat('brick', { completed: true, plays: 1, bestScore: state.score, lastResult: String(state.score) }); });
     setActiveState('brick', state);
   }
 
@@ -1641,7 +1696,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       state.raf = rakGameRequestFrame(state, loop);
     };
     state.raf = rakGameRequestFrame(state, loop);
-    addCleanup(() => { cancelAnimationFrame(state.raf); gamesRecordStat('doodle', { plays: 1, bestScore: state.score, lastResult: String(state.score) }); });
+    addCleanup(() => { cancelAnimationFrame(state.raf); if (state.over) gamesRecordStat('doodle', { completed: true, plays: 1, bestScore: state.score, lastResult: String(state.score) }); });
     setActiveState('doodle', state);
   }
 
@@ -1722,7 +1777,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       state.raf = rakGameRequestFrame(state, loop);
     };
     state.raf = rakGameRequestFrame(state, loop);
-    addCleanup(() => { cancelAnimationFrame(state.raf); gamesRecordStat('bubble', { plays: 1, bestScore: state.score, lastResult: String(state.score) }); });
+    addCleanup(() => { cancelAnimationFrame(state.raf); if (state.over) gamesRecordStat('bubble', { completed: true, plays: 1, bestScore: state.score, lastResult: String(state.score) }); });
     setActiveState('bubble', state);
   }
 
@@ -1779,7 +1834,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       if (valid && !state.finished) {
         state.finished = true;
         const time = Date.now() - state.startAt;
-        gamesRecordStat('sudoku', { plays: 1, bestTimeMs: time, bestScore: encodePoints('sudoku', time), lastResult: fmtTime(time) });
+        gamesRecordStat('sudoku', { completed: true, plays: 1, bestTimeMs: time, bestScore: encodePoints('sudoku', time), lastResult: fmtTime(time) });
         body.querySelector('.arcadeStatus').innerHTML = `<strong>Vyřešeno!</strong> Čas ${fmtTime(time)}.`;
       }
       body.querySelector('.arcadeHud').innerHTML = `${gamesStatLine('Obtížnost', pick.difficulty)}${gamesStatLine('Čas', fmtTime(Date.now() - state.startAt))}${gamesStatLine('Chyby', state.mistakes)}`;
@@ -1855,7 +1910,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     body.querySelector('[data-mines="restart"]').addEventListener('click', () => { const s = minesState(); initMines(s); window.app.gamesArcade['mines'] = s; renderMines(body); });
     if (state.over || state.win) {
       const time = Date.now() - state.startAt;
-      if (state.win && !state._saved) { state._saved = true; gamesRecordStat('mines', { plays: 1, bestTimeMs: time, bestScore: encodePoints('mines', time), lastResult: fmtTime(time) }); }
+      if (state.win && !state._saved) { state._saved = true; gamesRecordStat('mines', { completed: true, plays: 1, bestTimeMs: time, bestScore: encodePoints('mines', time), lastResult: fmtTime(time) }); }
       body.querySelector('.arcadeStatus').innerHTML = state.win ? `<strong>Vyhrál jsi!</strong> Čas ${fmtTime(time)}.` : `<strong>Bum!</strong> Narazil jsi na minu.`;
     }
     setActiveState('mines', state);
@@ -1894,7 +1949,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
             if (state.matched.size >= state.deck.length) {
               state.over = true;
               state.bestTimeMs = Date.now() - state.startAt;
-              gamesRecordStat('memory', { plays: 1, bestTimeMs: state.bestTimeMs, bestScore: encodePoints('memory', state.bestTimeMs), bestMoves: state.moves, lastResult: `${state.moves} movů` });
+              gamesRecordStat('memory', { completed: true, plays: 1, bestTimeMs: state.bestTimeMs, bestScore: encodePoints('memory', state.bestTimeMs), bestMoves: state.moves, lastResult: `${state.moves} movů` });
               body.querySelector('.arcadeStatus').innerHTML = `<strong>Vyhráno!</strong> ${fmtTime(state.bestTimeMs)} · ${state.moves} pohybů.`;
             }
           } else {
@@ -2019,7 +2074,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       }
       if (state.over && !state.saved) {
         state.saved = true;
-        gamesRecordStat('bomber', { plays: 1, bestScore: state.score, lastResult: String(state.score) });
+        gamesRecordStat('bomber', { completed: true, plays: 1, bestScore: state.score, lastResult: String(state.score) });
       }
       draw();
     };
@@ -2029,7 +2084,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       clearInterval(state.timer);
       state.timer = 0;
       document.removeEventListener('keydown', keyHandler);
-      if (!state.saved) gamesRecordStat('bomber', { plays: 1, bestScore: state.score, lastResult: String(state.score) });
+      if (state.over && !state.saved) gamesRecordStat('bomber', { completed: true, plays: 1, bestScore: state.score, lastResult: String(state.score) });
     });
     setActiveState('bomber', state);
   }

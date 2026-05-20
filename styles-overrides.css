@@ -6637,7 +6637,7 @@ html body.tttOpen .tttHeader{
   html body.tttOpen .tttHeader{padding-top:calc(12px + env(safe-area-inset-top)) !important;}
 }
 
-/* v.1.1 (679) – Snake mobile-first: čistá swipe plocha bez joysticku a bez zbytečného překreslování. */
+/* v.1.1 (680) – Snake mobile-first: čistá swipe plocha bez joysticku a bez zbytečného překreslování. */
 body.gamesOpen #games .gamesShell{
   padding-top: max(12px, env(safe-area-inset-top)) !important;
 }
@@ -6829,4 +6829,189 @@ body.ladaMode #games .gameSnakeBoard.snakeTouchZone .gameBoardCell{
   #games .gamesSnakePanel.snakeRedesignPanel{
     gap: 10px !important;
   }
+}
+
+/* v.1.1 (680) – Hry: čistý profil, globální theme/pozadí a kompaktní herní obrazovky */
+#games .gamesAppearanceCard{display:none !important;}
+#games .gamesProfileStatusCard.gamesProfileStatusCardCompact{
+  display:grid !important;
+  gap:8px !important;
+  padding:12px 14px !important;
+  border-radius:24px !important;
+  border-color:var(--rakThemeBorder, rgba(124,255,124,.18)) !important;
+  background:linear-gradient(135deg, rgba(255,255,255,.075), rgba(255,255,255,.028)), var(--panel, rgba(12,18,15,.72)) !important;
+}
+#games .gamesProfileCompactHead{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:10px !important;
+  min-width:0 !important;
+}
+#games .gamesProfileStatusCardCompact .gamesProfileStatusName{
+  min-width:0 !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  white-space:nowrap !important;
+  font-size:clamp(18px,4.8vw,22px) !important;
+  line-height:1.05 !important;
+}
+#games .gamesProfileRankBadge{
+  flex:0 0 auto !important;
+  padding:7px 10px !important;
+  border-radius:999px !important;
+  border:1px solid var(--rakThemeBorder, rgba(124,255,124,.20)) !important;
+  background:rgba(255,255,255,.055) !important;
+  color:var(--accent, #7cff7c) !important;
+  font-size:12px !important;
+  font-weight:900 !important;
+}
+#games .gamesProfileStatusCardCompact .gamesProfileStatusMeta{
+  font-size:12px !important;
+  line-height:1.25 !important;
+  opacity:.78 !important;
+}
+#games .gamesProfileRankBar,
+#games .gamesStatsXpBar,
+#games .gamesAchievementBar{
+  width:100% !important;
+  height:7px !important;
+  border-radius:999px !important;
+  overflow:hidden !important;
+  background:rgba(255,255,255,.075) !important;
+}
+#games .gamesProfileRankBar span,
+#games .gamesStatsXpBar span,
+#games .gamesAchievementBar span{
+  display:block !important;
+  width:var(--fill,0%) !important;
+  height:100% !important;
+  border-radius:999px !important;
+  background:linear-gradient(90deg, var(--accent, #7cff7c), rgba(255,255,255,.9)) !important;
+}
+body.gamesOpen #games .gamesStage,
+html body.tttOpen .tttOverlay{
+  background:var(--rakAppBackground, radial-gradient(circle at 20% 10%, rgba(53,255,133,.16), transparent 34%), linear-gradient(180deg,#050807,#101a13)) !important;
+  color:var(--soft, #e7fff0) !important;
+}
+body.gamesOpen #games .gamesStage::before,
+html body.tttOpen .tttOverlay::before{
+  content:"" !important;
+  position:absolute !important;
+  inset:0 !important;
+  pointer-events:none !important;
+  background:var(--rakAppBackgroundOverlay, radial-gradient(circle at 50% 0%, rgba(255,255,255,.08), transparent 36%)) !important;
+  opacity:.9 !important;
+}
+body.gamesOpen #games .gamesShell,
+html body.tttOpen .tttShell,
+html body.tttOpen .tttContent,
+html body.tttOpen .tttStartScreen,
+html body.tttOpen .tttGameScreen{
+  position:relative !important;
+  z-index:1 !important;
+  background:transparent !important;
+}
+body.gamesOpen #games .gamesShellNoTitle{
+  padding-top:calc(8px + env(safe-area-inset-top)) !important;
+  gap:8px !important;
+}
+body.gamesOpen #games .gamesShellNoTitle #gamesShellBody{
+  padding-top:0 !important;
+}
+body.gamesOpen #games .gamesShellBackFloating{
+  position:absolute !important;
+  top:calc(8px + env(safe-area-inset-top)) !important;
+  right:10px !important;
+  z-index:8 !important;
+  min-height:34px !important;
+  padding:0 10px !important;
+  border-radius:14px !important;
+  background:rgba(10,16,13,.62) !important;
+  border-color:var(--rakThemeBorder, rgba(124,255,124,.18)) !important;
+  backdrop-filter:blur(12px) saturate(130%) !important;
+  -webkit-backdrop-filter:blur(12px) saturate(130%) !important;
+}
+#games .game2048Panel,
+#games .gamesSnakePanel.snakeRedesignPanel{
+  padding-top:0 !important;
+  margin-top:0 !important;
+  background:transparent !important;
+}
+#games .game2048Hud,
+#games .snakeHud{
+  margin-top:0 !important;
+  padding-right:70px !important;
+}
+#games .game2048ScoreCard,
+#games .snakeScoreCard,
+#games .game2048Board,
+#games .gameSnakeBoard.snakeTouchZone,
+#games .gamesTop3Card,
+html body.tttOpen .tttHeader,
+html body.tttOpen .tttCard,
+html body.tttOpen .tttBoardWrap,
+html body.tttOpen .tttResultCard,
+html body.tttOpen .tttOnlineGameInfo,
+html body.tttOpen .tttStatus{
+  border-color:var(--rakThemeBorder, rgba(124,255,124,.18)) !important;
+  background:linear-gradient(135deg, rgba(255,255,255,.075), rgba(255,255,255,.026)), var(--panel, rgba(12,18,15,.72)) !important;
+  color:var(--soft, #e7fff0) !important;
+}
+#games .game2048OverlayCard,
+#games .snakeResultCard{
+  border-color:var(--rakThemeBorder, rgba(124,255,124,.22)) !important;
+  background:linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,.035)), var(--panel, rgba(10,16,13,.88)) !important;
+}
+#games .gamesAchievementGroup{
+  border:1px solid var(--rakThemeBorder, rgba(124,255,124,.14)) !important;
+  border-radius:22px !important;
+  background:rgba(255,255,255,.035) !important;
+  overflow:hidden !important;
+}
+#games .gamesAchievementGroup + .gamesAchievementGroup{margin-top:10px !important;}
+#games .gamesAchievementGroupSummary{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:10px !important;
+  padding:12px 14px !important;
+  cursor:pointer !important;
+  font-weight:900 !important;
+  color:var(--soft, #e7fff0) !important;
+}
+#games .gamesAchievementGroupSummary::-webkit-details-marker{display:none !important;}
+#games .gamesAchievementGroupSummary::before{
+  content:"›" !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  width:22px !important;
+  height:22px !important;
+  border-radius:999px !important;
+  background:rgba(255,255,255,.06) !important;
+  color:var(--accent, #7cff7c) !important;
+  transition:transform .16s ease !important;
+}
+#games .gamesAchievementGroup[open] .gamesAchievementGroupSummary::before{transform:rotate(90deg) !important;}
+#games .gamesAchievementGroupSummary span{flex:1 1 auto !important;}
+#games .gamesAchievementGroupSummary strong{
+  padding:3px 8px !important;
+  border-radius:999px !important;
+  background:rgba(255,255,255,.07) !important;
+  color:var(--accent, #7cff7c) !important;
+}
+#games .gamesAchievementGroupBody{
+  display:grid !important;
+  gap:10px !important;
+  padding:0 10px 12px !important;
+}
+#games .gamesAchievementEmpty{padding:8px 4px 2px !important;}
+body.ladaMode #games .gamesShellBackFloating,
+html[data-lightweight="1"] #games .gamesShellBackFloating,
+body.ladaMode #games .gamesAchievementGroup,
+html[data-lightweight="1"] #games .gamesAchievementGroup{
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+  box-shadow:none !important;
 }

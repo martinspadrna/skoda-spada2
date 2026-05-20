@@ -1,3 +1,11 @@
+## v.1.1 (680)
+- Hry: horní herní profil zjednodušený na jméno, rank a procenta k dalšímu ranku; blok Vzhled her odstraněný, protože Theme a Pozadí se nastavují globálně v Nastavení.
+- Piškvorky, 2048 a Snake víc drží aktuální theme/pozadí aplikace i po spuštění herního módu; barvy X/O v Piškvorkách zůstávají beze změny.
+- 2048 a Snake mají čistší herní obrazovku bez horního titulkového bloku; hrací plocha může být výš a nepůsobí tak stísněně.
+- Snake: zpřesněné dotykové ovládání jen na jednu osu, aby had jel čistě horizontálně nebo vertikálně a nereagoval zmateně na šikmé tahy.
+- Statistiky, XP a achievementy se mají počítat jen z dokončených her; XP/ranky jsou výrazně těžší a achievementy jsou rozdělené do rozbalovacích skupin Hotové / Rozdělané / Nenačaté.
+- Verze sjednocena na v.1.1 (680), cache na v1.1-680 a Supabase realtime kanál na rak-public-live-v680.
+
 ## v.1.1 (679)
 - Snake přepracovaný jako mobile-first hra: čistý HUD, větší dotyková plocha a ovládání hlavně swipem po herní ploše.
 - Snake už se při každém kroku celý nepřekresluje; deska se vytvoří jednou a během hry se aktualizují jen buňky, skóre a výsledkový overlay.

@@ -1410,6 +1410,7 @@ function tttMaybeRecordOnlineResult(winner) {
     const won = !isDraw && String(winner || '').toUpperCase() === role;
     gamesRecordStat('ttt', isDraw
       ? {
+          completed: true,
           plays: played,
           draws: (stats.draws || 0) + 1,
           bestMoves: stats.bestMoves || null,
@@ -1417,6 +1418,7 @@ function tttMaybeRecordOnlineResult(winner) {
           lastResult: 'Online remíza · ' + String(state.moveCount || 0) + ' tahů'
         }
       : {
+          completed: true,
           plays: played,
           wins: won ? (stats.wins || 0) + 1 : (stats.wins || 0),
           losses: won ? (stats.losses || 0) : (stats.losses || 0) + 1,
@@ -3399,6 +3401,7 @@ function tttHandleMove(index) {
       state.message = 'Remíza. Dobře hrané.';
       if (typeof gamesRecordStat === 'function') {
         gamesRecordStat('ttt', {
+          completed: true,
           plays: (gamesGetActiveAccount()?.stats.ttt.plays || 0) + 1,
           draws: (gamesGetActiveAccount()?.stats.ttt.draws || 0) + 1,
           bestMoves: gamesGetActiveAccount()?.stats.ttt.bestMoves || null,
@@ -3411,6 +3414,7 @@ function tttHandleMove(index) {
       state.message = 'Vyhrál jsi.';
       if (typeof gamesRecordStat === 'function') {
         gamesRecordStat('ttt', {
+          completed: true,
           plays: (gamesGetActiveAccount()?.stats.ttt.plays || 0) + 1,
           wins: (gamesGetActiveAccount()?.stats.ttt.wins || 0) + 1,
           bestMoves: Math.min(gamesGetActiveAccount()?.stats.ttt.bestMoves || 9999, state.moveCount || 0),
@@ -3427,6 +3431,7 @@ function tttHandleMove(index) {
       state.message = 'Vyhrála O.';
       if (typeof gamesRecordStat === 'function') {
         gamesRecordStat('ttt', {
+          completed: true,
           plays: (gamesGetActiveAccount()?.stats.ttt.plays || 0) + 1,
           losses: (gamesGetActiveAccount()?.stats.ttt.losses || 0) + 1,
           lastResult: 'Prohra · ' + String(state.moveCount || 0) + ' tahů'
@@ -3495,11 +3500,13 @@ function tttHandleMove(index) {
           if (active) {
             const patch = afterAi.winner === 'draw'
               ? {
+                  completed: true,
                   plays: (active.stats.ttt.plays || 0) + 1,
                   draws: (active.stats.ttt.draws || 0) + 1,
                   lastResult: 'Remíza · ' + String(fresh.moveCount || 0) + ' tahů'
                 }
               : {
+                  completed: true,
                   plays: (active.stats.ttt.plays || 0) + 1,
                   losses: (active.stats.ttt.losses || 0) + 1,
                   lastResult: 'Prohra · ' + String(fresh.moveCount || 0) + ' tahů'
@@ -3723,26 +3730,39 @@ function renderGamesProfileStatus() {
   const card = document.getElementById('gamesProfileStatusCard');
   const nameEl = document.getElementById('gamesProfileStatusName');
   const metaEl = document.getElementById('gamesProfileStatusMeta');
-  const btn = document.getElementById('gamesProfileSettingsBtn');
+  const rankEl = document.getElementById('gamesProfileRankBadge');
+  const barEl = document.getElementById('gamesProfileRankBar');
   if (!card || !nameEl || !metaEl) return;
   const profile = typeof gamesGetProfile === 'function' ? gamesGetProfile() : null;
   const active = profile && profile.activeAccountId && profile.accounts ? profile.accounts[profile.activeAccountId] : null;
   card.classList.toggle('isLoggedIn', !!active);
-  const nextName = active ? String(active.name || active.id || 'Přihlášeno') : 'Bez přihlášení';
-  const nextMeta = active
-    ? 'Profil a vzhled spravuješ ve Více → Nastavení.'
-    : 'Přihlášení je nově ve Více → Nastavení.';
+
+  let nextName = 'Bez profilu';
+  let rankText = 'Rank —';
+  let metaText = 'Přihlas se ve Více → Nastavení.';
+  let pct = 0;
+
+  if (active) {
+    nextName = String(active.name || active.id || 'Hráč').trim() || 'Hráč';
+    const progress = typeof window.gamesBuildProgressSummary === 'function'
+      ? window.gamesBuildProgressSummary(active)
+      : null;
+    const rank = progress && progress.rank ? String(progress.rank) : 'Rank';
+    pct = Math.max(0, Math.min(100, Number(progress && progress.rankPct || 0) || 0));
+    const remaining = Math.max(0, Number(progress && progress.rankRemaining || 0) || 0);
+    const nextRank = progress && progress.nextRank ? String(progress.nextRank) : '';
+    rankText = rank;
+    metaText = nextRank
+      ? (String(Math.round(pct)) + ' % k dalšímu ranku · chybí ' + String(remaining) + ' XP')
+      : 'Max rank · ' + String(Math.round(pct)) + ' %';
+  }
+
   if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(nameEl, nextName, 'gamesProfileStatusName');
   else nameEl.textContent = nextName;
-  if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(metaEl, nextMeta, 'gamesProfileStatusMeta');
-  else metaEl.textContent = nextMeta;
-  if (btn && !btn.dataset.bound) {
-    btn.dataset.bound = '1';
-    btn.addEventListener('click', (ev) => {
-      ev.preventDefault();
-      openProfileSettingsFromGames();
-    });
-  }
+  if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(metaEl, metaText, 'gamesProfileStatusMeta');
+  else metaEl.textContent = metaText;
+  if (rankEl) rankEl.textContent = rankText;
+  if (barEl) barEl.style.setProperty('--fill', String(Math.round(pct)) + '%');
 }
 
 function openGamesAppearanceSettings(kind) {
@@ -3778,8 +3798,8 @@ function buildAppHistoryHtml(versionText) {
       range: versionText,
       title: 'Aktuální build',
       lines: [
-        'Build v.1.1 (679) předělává Snake pro mobil: čisté swipe ovládání, stabilnější render a přesun mezi hotové hry.',
-        'Série v.1.1 650–679 dotáhla Piškvorky, online pozvánky, PWA launch handler, herní engine základ a přesun 2048/Snake mezi hotové hry.',
+        'Build v.1.1 (680) uklízí herní profil, sjednocuje theme/pozadí v hotových hrách a zpřísňuje XP i achievementy.',
+        'Série v.1.1 650–680 dotáhla Piškvorky, online pozvánky, PWA launch handler, 2048/Snake mezi hotové hry a herní profily/achievementy.',
         'Sekce „O aplikaci“ je nově stručnější: detailní změny zůstávají v changelogu a tady se historie drží po větších blocích.',
         'Stabilizační audity, Supabase guardy, Láďův režim a finální readiness kontroly zůstávají součástí diagnostiky.'
       ]
@@ -6526,7 +6546,6 @@ function renderGamesHub() {
   gamesGetProfile();
   gamesRenderAccountChips();
   if (typeof renderGamesProfileStatus === 'function') renderGamesProfileStatus();
-  if (typeof renderGamesAppearanceStatus === 'function') renderGamesAppearanceStatus();
   gamesRenderProfiles();
   gamesRenderAchievements();
   // v.1.1 (668): samostatné herní Statistiky jsou sjednocené do Profilů.
@@ -6576,7 +6595,13 @@ function renderGameShell(gameId) {
   document.body.classList.add('gamesOpen');
   gamesApplyCompactMode();
   gamesEnsureResizeBinding();
-  stage.innerHTML = [
+  const cleanTitleGames = gameId === '2048' || gameId === 'snake';
+  stage.innerHTML = cleanTitleGames ? [
+    '<div class="gamesShell gamesShellNoTitle">',
+    '  <button type="button" class="gamesShellBack gamesShellBackFloating" id="legacyGameBackBtn" aria-label="Zpět">Zpět</button>',
+    '  <div id="gamesShellBody"></div>',
+    '</div>'
+  ].join('') : [
     '<div class="gamesShell">',
     '  <div class="gamesShellTop">',
     '    <div class="gamesShellTitle">' + escapeHtml(title) + '</div>',
@@ -6584,6 +6609,11 @@ function renderGameShell(gameId) {
     '  <div id="gamesShellBody"></div>',
     '</div>'
   ].join('');
+  const legacyBack = document.getElementById('legacyGameBackBtn');
+  if (legacyBack && !legacyBack.dataset.bound) {
+    legacyBack.dataset.bound = '1';
+    legacyBack.addEventListener('click', () => { if (typeof closeGameShell === 'function') closeGameShell(); });
+  }
   if (gameId === 'ttt') renderGamesTttShell();
   else if (gameId === '2048') renderGame2048();
   else if (gameId === 'snake') renderGameSnake();
@@ -6797,6 +6827,7 @@ function gamesBindSwipeControl(el, onSwipe, options) {
   const minDistance = Number(opts.minDistance || 14);
   const lockDistance = Number(opts.lockDistance || 7);
   const maxTapTime = Number(opts.maxTapTime || 260);
+  const axisRatio = Math.max(1, Number(opts.axisRatio || 1) || 1);
   let startX = 0;
   let startY = 0;
   let active = false;
@@ -6820,6 +6851,7 @@ function gamesBindSwipeControl(el, onSwipe, options) {
     reset();
     if (distance < minDistance) return;
     if (elapsed < maxTapTime && distance < minDistance + 3) return;
+    if (axisRatio > 1 && Math.max(absX, absY) < Math.max(1, Math.min(absX, absY)) * axisRatio) return;
     const dir = absX >= absY ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up');
     onSwipe(dir, { dx, dy, absX, absY, distance, elapsed });
   };
@@ -7115,6 +7147,7 @@ function game2048RecordEndIfNeeded(state) {
   state.recorded = true;
   const account = gamesGetActiveAccount();
   gamesRecordStat('2048', {
+    completed: true,
     plays: (account?.stats?.g2048?.plays || 0) + 1,
     bestScore: Math.max(account?.stats?.g2048?.bestScore || 0, state.score),
     bestTile: Math.max(account?.stats?.g2048?.bestTile || 0, state.best)
@@ -7144,7 +7177,7 @@ function renderGame2048() {
     game2048RecordEndIfNeeded(state);
   }
   const compact = gamesIsCompactMode();
-  const boardSize = gamesFitSquareSize({ min: compact ? 268 : 292, max: Math.min(compact ? 540 : 500, gamesViewportSize().width - (compact ? 14 : 20)), reserve: compact ? 196 : 210, shellPad: compact ? 6 : 10 });
+  const boardSize = gamesFitSquareSize({ min: compact ? 268 : 292, max: Math.min(compact ? 540 : 500, gamesViewportSize().width - (compact ? 14 : 20)), reserve: compact ? 156 : 172, shellPad: compact ? 6 : 10 });
   const activeAccount = gamesGetActiveAccount();
   const bestScore = activeAccount?.stats?.g2048?.bestScore || 0;
   const bestTile = Math.max(Number(activeAccount?.stats?.g2048?.bestTile || 0), Number(state.best || 0));
@@ -7390,7 +7423,7 @@ function renderGameSnake() {
   if (!state.food || !state.snake || !state.snake.length) snakePlaceFood(state);
   if (!Array.isArray(state.queue)) state.queue = [];
   const compact = gamesIsCompactMode();
-  const boardSize = gamesFitSquareSize({ min: compact ? 252 : 278, max: Math.min(compact ? 540 : 500, gamesViewportSize().width - (compact ? 14 : 20)), reserve: compact ? 186 : 202, shellPad: compact ? 6 : 10 });
+  const boardSize = gamesFitSquareSize({ min: compact ? 252 : 278, max: Math.min(compact ? 540 : 500, gamesViewportSize().width - (compact ? 14 : 20)), reserve: compact ? 164 : 178, shellPad: compact ? 6 : 10 });
   const best = snakeGetBestStats();
   body.innerHTML = [
     '<div class="gamesGamePanel gamesSnakePanel snakeRedesignPanel">',
@@ -7454,7 +7487,7 @@ function renderGameSnake() {
   };
   body.querySelector('#snakeNewBtn')?.addEventListener('click', resetSnake);
   body.querySelector('#snakeOverlayNewBtn')?.addEventListener('click', resetSnake);
-  gamesBindSwipeControl(board || body, handleTurn, { minDistance: 8, lockDistance: 3, maxTapTime: 170 });
+  gamesBindSwipeControl(board || body, handleTurn, { minDistance: 10, lockDistance: 4, maxTapTime: 190, axisRatio: 1.35 });
   board?.addEventListener('click', () => {
     if (app.gamesSnake && app.gamesSnake.over) resetSnake();
   });
@@ -7496,6 +7529,7 @@ function snakeRecordEnd(state) {
   state.recorded = true;
   const account = gamesGetActiveAccount();
   gamesRecordStat('snake', {
+    completed: true,
     plays: (account?.stats?.snake?.plays || 0) + 1,
     bestScore: Math.max(account?.stats?.snake?.bestScore || 0, state.score),
     bestLength: Math.max(account?.stats?.snake?.bestLength || 0, state.snake.length)
@@ -7768,6 +7802,7 @@ function flapEnsureLoop(state) {
       if (state.over) {
         const account = gamesGetActiveAccount();
         gamesRecordStat('flap', {
+          completed: true,
           plays: (account?.stats?.flap?.plays || 0) + 1,
           bestScore: Math.max(account?.stats?.flap?.bestScore || 0, state.score),
           bestPipes: Math.max(account?.stats?.flap?.bestPipes || 0, state.score)

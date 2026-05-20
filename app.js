@@ -1,4 +1,4 @@
-// v.1.1 (679) – Snake mobile-first: čisté swipe ovládání, stabilnější render a přesun mezi hotové hry.
+// v.1.1 (680) – Hry: čistý profil, theme/pozadí napříč hrami a tvrdší XP/achievementy.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
@@ -1198,7 +1198,7 @@ function getPhaseTenFormHealth() {
       'p_kusy'
     ];
     const requiredSelects = ['statsYearSelect', 'monthYearSelect', 'monthSelect'];
-    const requiredButtons = ['importBtn', 'exportBtn', 'gamesProfileSettingsBtn'];
+    const requiredButtons = ['importBtn', 'exportBtn'];
     const requiredActions = [
       'calc-soustruhy-lis',
       'calc-soustruhy-126',
