@@ -8606,3 +8606,71 @@ body.gamesOpen #games #gamesShellBody[data-arcade-game="ships"] .arcadeStage,
 #games .shipsH2HMenuNote{margin-top:-2px !important;color:rgba(255,255,255,.58) !important;line-height:1.25 !important;}
 #games .shipsPlayStage .shipsH2HCard,
 #games .shipsSetupStage .shipsH2HCard{display:none !important;}
+
+/* v.1.1 (714): Lodě online – čistší příprava flotily bez duplicitního kódu */
+body.gamesOpen #games #gamesShellBody[data-arcade-game="ships"]{
+  padding-top:0 !important;
+}
+#games .shipsStage{
+  gap:6px !important;
+  justify-content:flex-start !important;
+  align-content:flex-start !important;
+  padding-top:0 !important;
+}
+#games .shipsSetupStage,
+#games .shipsPlayStage{
+  margin-top:-4px !important;
+}
+#games .shipsStage .arcadeHud{
+  margin-top:0 !important;
+  flex:0 0 auto !important;
+}
+#games .shipsInlineHint{
+  margin:2px 0 6px !important;
+  color:rgba(245,255,250,.66) !important;
+  line-height:1.25 !important;
+}
+#games .shipsPlayInfoLine{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:8px !important;
+  min-height:30px !important;
+  padding:6px 9px !important;
+  border-radius:14px !important;
+  border:1px solid rgba(255,255,255,.09) !important;
+  background:rgba(255,255,255,.045) !important;
+  color:rgba(245,255,250,.82) !important;
+  font-size:11px !important;
+  line-height:1.2 !important;
+}
+#games .shipsPlayInfoLine strong{
+  color:#fff !important;
+  white-space:nowrap !important;
+}
+#games .shipsPlayInfoLine span{
+  min-width:0 !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  white-space:nowrap !important;
+}
+#games .shipsSetupStage .shipsCodeCard,
+#games .shipsPlayStage .shipsCodeCard,
+#games .shipsSetupStage .shipsInviteCode,
+#games .shipsPlayStage .shipsInviteCode{
+  display:none !important;
+}
+#games .shipsSetupStage .shipsBoard,
+#games .shipsPlayStage .shipsBoard{
+  width:min(100%,430px) !important;
+  max-width:min(100%,430px) !important;
+  margin-inline:auto !important;
+}
+#games .shipsSetupStage .shipsBoardCardLift,
+#games .shipsPlayStage .shipsBoardCardLift{
+  padding:7px !important;
+}
+@media (max-width:390px){
+  #games .shipsPlayInfoLine{font-size:10px !important;padding:5px 7px !important;}
+  #games .shipsInlineHint{font-size:10px !important;margin-bottom:5px !important;}
+}

@@ -2,7 +2,7 @@
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
 
-  // v.1.1 (713): Lodě online: vzájemné zápasy uložené jen v předherním menu.
+  // v.1.1 (714): Lodě online: čistší příprava flotily bez duplicitního kódu.
   const CORE_GAMES = ['ttt', 'ships', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
   const EXTRA_GAMES = [];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);
@@ -1101,7 +1101,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function renderLaunchTiles() {
     const grid = document.getElementById('gamesGrid');
     if (!grid) return;
-    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v713';
+    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v714';
     if (grid.dataset && grid.dataset.arcadeLaunchSig === launchSig && grid.querySelector('[data-game="ttt"]')) {
       gamePerf.launchRenderSkips = Number(gamePerf.launchRenderSkips || 0) + 1;
       return;
@@ -3933,11 +3933,11 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         local.placing.horizontal = !!selectedShip.horizontal;
       }
       const selectedName = selectedShip ? selectedShip.name : 'loď';
+      const hintText = message || st.message || 'Automat už položil všechny lodě. Klepni na loď, tím ji vybereš. Pak klepni jinam na moře a přesuneš ji. Lodě se nesmí dotýkat ani rohem.';
       body.innerHTML = `<div class="arcadeStage shipsStage shipsSetupStage shipsScrollableStage">
         <div class="arcadeHud arcadeHudSingleLine shipsCompactHud">${gamesStatLine('Kód', st.code || '—')}${gamesStatLine('Role', role || '—')}${gamesStatLine('Lodí', `${mine.ships.length}/${SHIPS_FLEET.length}`)}${gamesStatLine('Vybraná', selectedName)}</div>
-        <div class="arcadeBar arcadePanel uPad12 shipsCodeCard shipsSlimCard"><strong>Připrav flotilu</strong><div class="smallText">${escapeHtml(message || st.message || 'Automat už položil všechny lodě. Klepni na loď, tím ji vybereš. Pak klepni jinam na moře a přesuneš ji. Lodě se nesmí dotýkat ani rohem.')}</div>${!st.o ? `<div class="shipsInviteCode">${escapeHtml(st.code || '')}</div><button type="button" class="gameControlBtn" id="shipsCopyCodeBtn">Kopírovat kód</button>` : ''}</div>
         <div class="shipsSingleBoardWrap shipsSetupBoardWrap">
-          <div class="shipsBoardCard shipsBoardCardLift"><div class="smallText uBold">Tvoje flotila · klepni na loď a přesuň ji</div>${shipsRenderBoard(mine, { own: true, placement: true, selectedShipId: selectedShip && selectedShip.id })}</div>
+          <div class="shipsBoardCard shipsBoardCardLift"><div class="smallText uBold">Tvoje flotila · klepni na loď a přesuň ji</div><div class="smallText shipsInlineHint">${escapeHtml(hintText)}</div>${shipsRenderBoard(mine, { own: true, placement: true, selectedShipId: selectedShip && selectedShip.id })}</div>
         </div>
         <div class="arcadeControls shipsSetupActions shipsSetupActionsCompact">
           <button type="button" class="gameControlBtn" id="shipsShuffleBtn">Přehodit automaticky</button>
@@ -3945,10 +3945,6 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
           <button type="button" class="gameControlBtn ${valid ? 'primary' : 'isDisabled'}" id="shipsReadyBtn">Potvrdit flotilu</button>
         </div>
       </div>`;
-      const copy = body.querySelector('#shipsCopyCodeBtn');
-      if (copy) copy.addEventListener('click', async () => {
-        try { await navigator.clipboard.writeText(st.code || ''); st.message = 'Kód zkopírovaný.'; renderPlacement(st, role); } catch (err) { st.message = 'Kód: ' + (st.code || ''); renderPlacement(st, role); }
-      });
       const shuffle = body.querySelector('#shipsShuffleBtn');
       if (shuffle) shuffle.addEventListener('click', async () => {
         st[keyName] = shipsBuildPlayerBoard();
@@ -4031,18 +4027,14 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         ? (canShoot ? 'Jsi na tahu, proto se ti rovnou ukazuje pole soupeře.' : 'Hraje soupeř, proto se ti rovnou ukazuje tvoje flotila a zásahy proti tobě.')
         : 'Přepni si, jestli chceš vidět flotilu nebo střelbu.';
       body.innerHTML = `<div class="arcadeStage shipsStage shipsScrollableStage shipsPlayStage">
-        <div class="arcadeHud arcadeHudSingleLine">${gamesStatLine('Kód', st.code || '—')}${gamesStatLine('Role', role || 'divák')}${gamesStatLine('Zásahy', sum.hits)}${gamesStatLine('Potopené', sum.sunk)}</div>
-        <div class="arcadeBar arcadePanel uPad12 shipsCodeCard shipsSlimCard"><strong>${escapeHtml(headline)}</strong><div class="smallText">${escapeHtml(st.message || '')}</div><div class="smallText shipsViewHint">${escapeHtml(viewHint)}</div>${(!st.o && role === 'X') ? `<div class="shipsInviteCode">${escapeHtml(st.code || '')}</div><button type="button" class="gameControlBtn" id="shipsCopyCodeBtn">Kopírovat kód</button>` : ''}</div>
+        <div class="arcadeHud arcadeHudSingleLine shipsCompactHud">${gamesStatLine('Kód', st.code || '—')}${gamesStatLine('Role', role || 'divák')}${gamesStatLine('Zásahy', sum.hits)}${gamesStatLine('Potopené', sum.sunk)}</div>
+        <div class="shipsPlayInfoLine"><strong>${escapeHtml(headline)}</strong><span>${escapeHtml(st.message || viewHint || '')}</span></div>
         ${toggleHtml}
         <div class="shipsSingleBoardWrap">
-          <div class="shipsBoardCard shipsBoardCardLift"><div class="smallText uBold">${escapeHtml(activeBoardTitle)}</div>${activeBoard}</div>
+          <div class="shipsBoardCard shipsBoardCardLift"><div class="smallText uBold">${escapeHtml(activeBoardTitle)}</div><div class="smallText shipsInlineHint">${escapeHtml(viewHint)}</div>${activeBoard}</div>
         </div>
         ${st.status === 'finished' ? `<div class="arcadeResultOverlay shipsResult"><div class="arcadeResultCard"><strong>${st.winner === role ? 'Výhra!' : 'Konec hry'}</strong><div class="smallText">Zásahy: ${sum.hits} · Potopené: ${sum.sunk}</div><button type="button" class="gameControlBtn" id="shipsBackBtn">Zpět do Lodí</button></div></div>` : ''}
       </div>`;
-      const copy = body.querySelector('#shipsCopyCodeBtn');
-      if (copy) copy.addEventListener('click', async () => {
-        try { await navigator.clipboard.writeText(st.code || ''); st.message = 'Kód zkopírovaný.'; renderGame(); } catch (err) { st.message = 'Kód: ' + (st.code || ''); renderGame(); }
-      });
       body.querySelectorAll('[data-ships-view]').forEach((btn) => btn.addEventListener('click', () => {
         local.view = btn.getAttribute('data-ships-view') === 'enemy' ? 'enemy' : 'own';
         renderGame();
@@ -4129,7 +4121,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     const allHot = EXTRA_GAMES.length === 0;
     const completedOnlyGuard = typeof window.gamesRecordStat === 'function';
     return {
-      version: 'v.1.1 (713)',
+      version: 'v.1.1 (714)',
       ok: !missingMeta.length && !missingRenderer.length && allHot && completedOnlyGuard,
       totalGames: ids.length,
       coreGames: ids,
@@ -4144,7 +4136,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       themeBackground: true,
       touchGuard: true,
       notes: [
-        'QA build 712 přesouvá Lodě vedle Piškvorek, povoluje scroll obrazovky Lodí a zjednodušuje přípravu flotily bez bočního výběru lodí.',
+        'Build 714 čistí Lodě online: kód zůstává jen v horním řádku, příprava flotily je výš a po potvrzení se už nezobrazuje duplicitní karta s kódem.',
         'Reálnou hratelnost a citlivost dotyku je potřeba potvrdit na mobilu.'
       ]
     };

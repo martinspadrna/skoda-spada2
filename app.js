@@ -1,4 +1,4 @@
-// v.1.1 (713) – Lodě online: vzájemné zápasy uložené jen v předherním menu.
+// v.1.1 (714) – Lodě online: čistší příprava flotily bez duplicitního kódu.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;
