@@ -316,6 +316,50 @@ function saveUiPrefs(prefs) {
   return next;
 }
 
+function buildRakLadaPerformanceProfile(active, lowEndInfo, prefs) {
+  const info = lowEndInfo || { reasons: [], cores: 0, memory: null, dpr: 1, width: 0, saveData: false, reducedMotion: false };
+  const reasons = Array.isArray(info.reasons) ? info.reasons.slice(0, 10) : [];
+  const veryLowMemory = Number(info.memory || 0) > 0 && Number(info.memory || 0) <= 4;
+  const smallHighDpr = Number(info.width || 0) > 0 && Number(info.width || 0) <= 390 && Number(info.dpr || 1) >= 2.5;
+  const saveData = !!info.saveData;
+  const reducedMotion = !!info.reducedMotion;
+  const manual = !!(prefs && prefs.lightweightManual);
+  const isTurbo = !!active && (manual || veryLowMemory || smallHighDpr || saveData || reducedMotion || reasons.length > 0);
+  return {
+    active: !!active,
+    level: active ? (isTurbo ? 'turbo' : 'lite') : 'normal',
+    frameMs: active ? (isTurbo ? 34 : 28) : 0,
+    canvasDprMax: active ? 1 : 2,
+    resizeThrottleMs: active ? (isTurbo ? 520 : 360) : 120,
+    onlineRefreshDelayMs: active ? 1200 : 420,
+    leaderboardTtlMs: active ? (isTurbo ? 180000 : 120000) : 60000,
+    idleDelayMs: active ? (isTurbo ? 220 : 160) : 60,
+    maxDeltaMs: active ? 34 : 48,
+    cssEffects: active ? 'minimal' : 'full',
+    reasons,
+    manual,
+    detectedDpr: Number(info.dpr || window.devicePixelRatio || 1) || 1,
+    width: Number(info.width || 0) || 0,
+    memory: Number(info.memory || 0) || null,
+    cores: Number(info.cores || 0) || 0
+  };
+}
+
+function getRakLadaPerformanceProfile() {
+  try {
+    const body = document.body;
+    const active = !!(body && body.classList && (body.classList.contains('lightweightMode') || body.classList.contains('lowEndDevice') || body.classList.contains('ladaMode')));
+    const info = typeof getLowEndDeviceInfo === 'function' ? getLowEndDeviceInfo() : { reasons: [], dpr: Number(window.devicePixelRatio || 1) || 1 };
+    const prefs = typeof app !== 'undefined' && app && app.uiPrefs ? app.uiPrefs : loadUiPrefs();
+    return buildRakLadaPerformanceProfile(active, info, prefs);
+  } catch (err) {
+    return buildRakLadaPerformanceProfile(false, null, null);
+  }
+}
+
+try { window.getRakLadaPerformanceProfile = getRakLadaPerformanceProfile; } catch (err) {}
+try { window.buildRakLadaPerformanceProfile = buildRakLadaPerformanceProfile; } catch (err) {}
+
 function applyUiPrefs(prefs) {
   const lowEndInfo = getLowEndDeviceInfo();
   const lowEndDetected = !!lowEndInfo.lowEnd;
@@ -324,24 +368,33 @@ function applyUiPrefs(prefs) {
   const next = saveUiPrefs(incoming);
   const lightweight = !!next.lightweight;
   const ladaMode = lightweight || lowEndDetected;
+  const profile = buildRakLadaPerformanceProfile(ladaMode, lowEndInfo, next);
   document.body.classList.toggle('compactUI', !!next.compact);
   document.body.classList.toggle('reduceMotion', !!next.reduceMotion || ladaMode);
   document.body.classList.toggle('lightweightMode', lightweight);
   document.body.classList.toggle('ladaMode', ladaMode);
   document.body.classList.toggle('lowEndDevice', lowEndDetected);
+  document.body.classList.toggle('ladaTurboMode', ladaMode && profile.level === 'turbo');
   try {
     document.documentElement.dataset.rakLightweight = lightweight ? 'on' : 'off';
     document.documentElement.dataset.rakLightweightLabel = LIGHTWEIGHT_MODE_LABEL;
     document.documentElement.dataset.rakLowEndDevice = lowEndDetected ? 'yes' : 'no';
     document.documentElement.dataset.rakLowEndReason = lowEndDetected ? lowEndInfo.reasons.join(', ') : '';
-    document.documentElement.dataset.rakPerformanceMode = ladaMode ? (lowEndDetected ? 'lada-auto-low-end' : 'lada-manual') : 'normal';
+    document.documentElement.dataset.rakPerformanceMode = ladaMode ? (lowEndDetected ? 'lada-auto-low-end-turbo' : 'lada-manual-turbo') : 'normal';
+    document.documentElement.dataset.rakLadaProfile = ladaMode ? profile.level : 'normal';
+    document.documentElement.dataset.rakLadaFrameMs = String(profile.frameMs || 0);
+    document.documentElement.dataset.rakLadaCanvasDpr = String(profile.canvasDprMax || 2);
     document.documentElement.dataset.rakMotion = (next.reduceMotion || ladaMode) ? 'reduced' : 'normal';
+    document.documentElement.style.setProperty('--rak-lada-frame-ms', String(profile.frameMs || 0));
+    document.documentElement.style.setProperty('--rak-lada-blur-px', ladaMode ? '0px' : '12px');
   } catch (err) {}
   if (typeof app !== 'undefined') {
     app.uiPrefs = next;
     app.lowEndDeviceDetected = lowEndDetected;
     app.lowEndDeviceInfo = lowEndInfo;
+    app.ladaPerformanceProfile = profile;
   }
+  try { window.__rakLadaPerformanceProfile = profile; } catch (err) {}
   return next;
 }
 
@@ -364,6 +417,8 @@ applyUiPrefs(loadUiPrefs());
 
 function getRakPerformanceDprMax() {
   try {
+    const profile = typeof getRakLadaPerformanceProfile === 'function' ? getRakLadaPerformanceProfile() : null;
+    if (profile && profile.active) return Math.max(1, Math.min(1, Number(profile.canvasDprMax || 1) || 1));
     const body = document.body;
     const lite = !!(body && body.classList && (body.classList.contains('lightweightMode') || body.classList.contains('lowEndDevice') || body.classList.contains('ladaMode')));
     if (lite) return 1;
@@ -4005,7 +4060,7 @@ function renderGamesProfileStatus() {
   if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(metaEl, metaText, 'gamesProfileStatusMeta');
   else metaEl.textContent = metaText;
   if (rankEl) {
-    // v.1.1 (721): životnost online pozvánek a automatický úklid starých herních dat.
+    // v.1.1 (723): Láďův režim turbo profil pro slabší mobily.
     rankEl.innerHTML = '<span class="gamesProfileRankValue">' + escapeHtml(rankText) + '</span>';
     rankEl.setAttribute('data-player-name', nextName);
     rankEl.disabled = false;
@@ -4047,7 +4102,7 @@ function buildAppHistoryHtml(versionText) {
       range: versionText,
       title: 'Aktuální build',
       lines: [
-        'Build v.1.1 (721) přidává 60minutovou životnost online pozvánek, odmítnutí prošlých kódů a databázový úklid starých pozvánek.',
+        'Build v.1.1 (723) přidává servisní administraci, klikací online stav na dashboardu pro ruční sync a kontrolu aktualizace/cache.',
         'Série v.1.1 650–706 dotáhla Piškvorky, online pozvánky, PWA launch handler, všechny hlavní hry, herní profily, reporty chyb, theme polish, těžší/chytřejší achievementy a společný herní QA průchod včetně app-like dotykového polishu.',
         'Sekce „O aplikaci“ je nově stručnější: detailní změny zůstávají v changelogu a tady se historie drží po větších blocích.',
         'Stabilizační audity, Supabase guardy, Láďův režim a finální readiness kontroly zůstávají součástí diagnostiky.'
@@ -5062,6 +5117,76 @@ async function updateAdminBugReportStatus(reportId, status) {
   return { ok: false, reason: 'missing-bridge' };
 }
 
+
+function formatAdminServiceCount(value) {
+  if (value === null || typeof value === 'undefined') return '—';
+  return String(Number(value || 0) || 0);
+}
+
+function getAdminServiceSnapshotCache() {
+  return app && app.adminServiceSnapshot && typeof app.adminServiceSnapshot === 'object' ? app.adminServiceSnapshot : null;
+}
+
+async function loadAdminServiceSnapshotFromSupabase() {
+  if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.getAdminServiceSnapshot === 'function') {
+    const result = await window.RotationSupabaseBridge.getAdminServiceSnapshot();
+    app.adminServiceSnapshot = result || null;
+    return result;
+  }
+  app.adminServiceSnapshot = { ok: false, reason: 'missing-bridge', counts: {} };
+  return app.adminServiceSnapshot;
+}
+
+async function cleanupAdminExpiredInvites() {
+  if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.cleanupExpiredGameInvites === 'function') {
+    return window.RotationSupabaseBridge.cleanupExpiredGameInvites();
+  }
+  return { ok: false, reason: 'missing-bridge' };
+}
+
+function buildAdminServiceHtml() {
+  const snapshot = getAdminServiceSnapshotCache();
+  const counts = snapshot && snapshot.counts ? snapshot.counts : {};
+  const sync = snapshot && snapshot.sync ? snapshot.sync : (typeof getSupabaseSyncStatus === 'function' ? getSupabaseSyncStatus() : null);
+  const profileUi = typeof getProfileUiSyncStatus === 'function' ? getProfileUiSyncStatus() : null;
+  const pwa = typeof getPwaHardeningStatus === 'function' ? getPwaHardeningStatus() : null;
+  const statusText = snapshot
+    ? (snapshot.ok ? ('Načteno ' + new Date(snapshot.at || Date.now()).toLocaleString('cs-CZ')) : 'Servisní stav se nepodařilo načíst.')
+    : 'Klikni na Načíst stav a uvidíš online počty.';
+  const rows = [
+    ['Hráčské profily', counts.game_accounts],
+    ['Herní statistiky', counts.game_stats],
+    ['Profilový vzhled', counts.profile_ui_settings],
+    ['Pozvánky celkem', counts.game_invites],
+    ['Čekající pozvánky', counts.game_invites_pending],
+    ['Session celkem', counts.game_sessions],
+    ['Aktivní session', counts.game_sessions_active],
+    ['Nové reporty', counts.bug_reports_new]
+  ].map(pair => '<div class="adminServiceMetric"><span>' + escapeHtml(pair[0]) + '</span><b>' + escapeHtml(formatAdminServiceCount(pair[1])) + '</b></div>').join('');
+  return [
+    '<div class="appMenuCard appMenuAdminCard adminServiceCard">',
+    '  <div class="appMenuCardTitle">Servis / synchronizace</div>',
+    '  <div class="appMenuText">',
+    '    <div>Tady je rychlá údržba appky: sync rozpisu, herních statistik, kontrola aktualizace a úklid starých pozvánek.</div>',
+    '    <div class="smallText" id="adminOnlineSaveStatus">' + escapeHtml(statusText) + '</div>',
+    '  </div>',
+    '  <div class="adminServiceGrid">' + rows + '</div>',
+    '  <div class="adminServiceDiag smallText">',
+    sync ? ('Online stav: ' + escapeHtml(sync.label || sync.kind || '—') + '<br>') : '',
+    profileUi ? ('Profilový vzhled: ' + escapeHtml(profileUi.account || 'bez profilu') + ' · theme ' + escapeHtml(profileUi.themeId || '—') + ' · pozadí ' + escapeHtml(profileUi.backgroundId || '—') + '<br>') : '',
+    pwa ? ('PWA: poslední kontrola ' + escapeHtml(pwa.lastUpdateCheckAgoMs === null ? '—' : Math.round(Number(pwa.lastUpdateCheckAgoMs || 0) / 1000) + ' s') + ' · čeká update ' + escapeHtml(pwa.updateToastVisible ? 'ano' : 'ne')) : '',
+    '  </div>',
+    '  <div class="appMenuActionRow adminServiceActions">',
+    '    <button type="button" class="appMenuAction isActive" data-admin-action="service-sync-now">Vynutit synchronizaci</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="service-update-check">Kontrola aktualizace</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="service-load-status">Načíst stav</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="service-clean-invites">Vyčistit pozvánky</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
 function renderAdminMenuBody(body, section) {
   const mode = String(section || 'home').trim() || 'home';
   const months = getAdminRotationMonthKeys();
@@ -5082,6 +5207,7 @@ function renderAdminMenuBody(body, section) {
     '    <button type="button" class="appMenuAction" data-admin-action="open-rotation">Rozpisy</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-export">Export / import</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-reports">Reporty chyb</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="open-service">Servis / synchronizace</button>',
     '  </div>',
     '  <button type="button" class="appMenuAction appMenuBack" data-menu-back="1">Zpět</button>',
     '</div>'
@@ -5149,6 +5275,8 @@ function renderAdminMenuBody(body, section) {
     '</div>'
   ].join('');
 
+  const serviceHtml = buildAdminServiceHtml();
+
   if (mode === 'machines') {
     body.innerHTML = machinesHtml;
   } else if (mode === 'rotation') {
@@ -5157,6 +5285,8 @@ function renderAdminMenuBody(body, section) {
     body.innerHTML = exportHtml;
   } else if (mode === 'reports') {
     body.innerHTML = reportsHtml;
+  } else if (mode === 'service') {
+    body.innerHTML = serviceHtml;
   } else {
     body.innerHTML = homeHtml;
   }
@@ -5487,8 +5617,8 @@ function bindAppMenuHandlers(body) {
           'Security/render poslední: HTML escape ' + String(securityRenderStatus.lastEscapedKey || '—') + ' · text ' + String(securityRenderStatus.lastTextKey || '—') + ' · safe DOM build/skip ' + String(securityRenderStatus.safeDomBuilds || 0) + '/' + String(securityRenderStatus.safeDomSkippedBuilds || 0) + ' / ' + String(securityRenderStatus.lastSafeDomKey || '—') + ' · replace/clear/fallback ' + String(securityRenderStatus.safeDomReplacements || 0) + '/' + String(securityRenderStatus.safeDomClears || 0) + '/' + String(securityRenderStatus.safeDomFallbackReplacements || 0)
         ] : [];
         const ladaPerformanceDiag = ladaPerformanceStatus ? [
-          'Láďův režim výkon: ' + (ladaPerformanceStatus.ok ? 'OK' : 'kontrola') + ' · režim ' + String(ladaPerformanceStatus.mode || '—') + ' · aktivní ' + (ladaPerformanceStatus.active ? 'ano' : 'ne'),
-          'Láďův režim efekty: DPR limit ' + String(ladaPerformanceStatus.dprLimit || '—') + ' · max blur ' + String(ladaPerformanceStatus.maxBlurPx || 0) + 'px · animované vzorky ' + String(ladaPerformanceStatus.animatedSampleCount || 0) + ' · problémy ' + String((ladaPerformanceStatus.issues || []).length || 0)
+          'Láďův režim výkon: ' + (ladaPerformanceStatus.ok ? 'OK' : 'kontrola') + ' · režim ' + String(ladaPerformanceStatus.mode || '—') + ' · profil ' + String(ladaPerformanceStatus.profileLevel || '—') + ' · aktivní ' + (ladaPerformanceStatus.active ? 'ano' : 'ne'),
+          'Láďův režim efekty: DPR limit ' + String(ladaPerformanceStatus.dprLimit || '—') + ' · FPS brzda ' + String(ladaPerformanceStatus.frameMs || 0) + ' ms · resize ' + String(ladaPerformanceStatus.resizeThrottleMs || 0) + ' ms · max blur ' + String(ladaPerformanceStatus.maxBlurPx || 0) + 'px · animované vzorky ' + String(ladaPerformanceStatus.animatedSampleCount || 0) + ' · problémy ' + String((ladaPerformanceStatus.issues || []).length || 0)
         ] : [];
         const gameEngineDiag = gameEngineStatus ? [
           'Herní engine: ' + (gameEngineStatus.ok ? 'OK' : 'kontrola') + ' · režim ' + String(gameEngineStatus.mode || '—') + ' · aktivní hra ' + String(gameEngineStatus.activeGame || '—') + ' · pauza ' + (gameEngineStatus.paused ? 'ano' : 'ne'),
@@ -5615,6 +5745,43 @@ function bindAppMenuHandlers(body) {
       }
       if (adminAction === 'open-reports') {
         openAppMenu('admin-reports');
+        return;
+      }
+      if (adminAction === 'open-service') {
+        openAppMenu('admin-service');
+        return;
+      }
+      if (adminAction === 'service-load-status') {
+        const statusEl = document.getElementById('adminOnlineSaveStatus');
+        if (statusEl) statusEl.textContent = 'Načítám servisní stav…';
+        await loadAdminServiceSnapshotFromSupabase();
+        renderAdminMenuBody(body, 'service');
+        return;
+      }
+      if (adminAction === 'service-sync-now') {
+        const statusEl = document.getElementById('adminOnlineSaveStatus');
+        if (statusEl) statusEl.textContent = 'Synchronizuji rozpis, hry a update…';
+        if (typeof runDashboardManualSync === 'function') await runDashboardManualSync('admin-service-sync');
+        else if (typeof window.__rotaceTriggerLiveRefresh === 'function') await window.__rotaceTriggerLiveRefresh('admin-service-sync', { force: true });
+        await loadAdminServiceSnapshotFromSupabase();
+        renderAdminMenuBody(body, 'service');
+        return;
+      }
+      if (adminAction === 'service-update-check') {
+        const statusEl = document.getElementById('adminOnlineSaveStatus');
+        if (statusEl) statusEl.textContent = 'Kontroluji aktualizaci…';
+        if (typeof window.__rotaceForcePwaUpdateCheck === 'function') await window.__rotaceForcePwaUpdateCheck('admin-service');
+        if (typeof window.__rotaceRequestPwaCacheStatus === 'function') window.__rotaceRequestPwaCacheStatus('admin-service');
+        renderAdminMenuBody(body, 'service');
+        return;
+      }
+      if (adminAction === 'service-clean-invites') {
+        const statusEl = document.getElementById('adminOnlineSaveStatus');
+        if (statusEl) statusEl.textContent = 'Čistím prošlé pozvánky…';
+        const result = await cleanupAdminExpiredInvites();
+        if (!result || result.ok === false) throw (result && result.error ? result.error : new Error('Úklid pozvánek se nepovedl.'));
+        await loadAdminServiceSnapshotFromSupabase();
+        renderAdminMenuBody(body, 'service');
         return;
       }
       if (adminAction === 'load-reports') {
@@ -5779,7 +5946,7 @@ function openAppMenu(view) {
         '  <div class="appMenuCardTitle">Nastavení aplikace</div>',
         '  <div class="appMenuText">',
         '    <div>Kompaktní režim a Láďův režim se ukládají jen do tohoto zařízení a promítnou se napříč celou appkou.</div>',
-        '    <div>Láďův režim v sobě zahrnuje méně animací, vypnutý těžký blur, slabší stíny, jednodušší pozadí a nižší canvas rozlišení u her pro starší/slabší mobily. Když appka pozná slabší zařízení, zapne si odlehčený profil sama.</div>',
+        '    <div>Láďův režim v sobě zahrnuje méně animací, vypnutý těžký blur, slabší stíny, jednodušší pozadí, nižší canvas rozlišení a úspornější FPS u her pro starší/slabší mobily. Když appka pozná slabší zařízení, zapne si odlehčený profil sama.</div>',
         '  </div>',
         '  <div class="appMenuSettingsList">',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-pref="compact">' + (prefs.compact ? '✓ ' : '') + 'Kompaktní režim</button>',
@@ -5844,6 +6011,17 @@ function openAppMenu(view) {
         } catch (err) {
           console.warn('Admin reports preload failed', err);
           renderAdminMenuBody(body, 'reports');
+        }
+      })();
+    } else if (v === 'admin-service') {
+      bindAppMenuHandlers(body);
+      void (async () => {
+        try {
+          await loadAdminServiceSnapshotFromSupabase();
+          renderAdminMenuBody(body, 'service');
+        } catch (err) {
+          console.warn('Admin service preload failed', err);
+          renderAdminMenuBody(body, 'service');
         }
       })();
     } else {

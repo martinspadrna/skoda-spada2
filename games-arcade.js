@@ -2,7 +2,7 @@
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
 
-  // v.1.1 (721): online pozvánky mají životnost a stará herní data se uklízí.
+  // v.1.1 (723): Láďův režim šetří canvas hry, FPS, resize a online refresh.
   const CORE_GAMES = ['ttt', 'ships', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
   const EXTRA_GAMES = [];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);
@@ -815,7 +815,9 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function rakGameDelta(state, ts) {
     const last = Number(state && state.lastTs || 0) || ts;
     if (state) state.lastTs = ts;
-    return Math.max(0, Math.min(gamePerf.maxDeltaMs, ts - last));
+    const profile = rakGamePerformanceProfile();
+    const maxDelta = rakGameIsLadaMode() ? Math.max(28, Number(profile.maxDeltaMs || 34) || 34) : Number(gamePerf.maxDeltaMs || 34) || 34;
+    return Math.max(0, Math.min(maxDelta, ts - last));
   }
 
   function rakGameRequestFrame(state, loop) {
@@ -824,10 +826,23 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       if (state) {
         state.raf = 0;
         state.lastTs = 0;
+        state.ladaLastFrameTs = 0;
       }
       return 0;
     }
-    return requestAnimationFrame(loop);
+    return requestAnimationFrame((ts) => {
+      const minFrameMs = rakGameFrameMs();
+      if (state && minFrameMs > 0) {
+        const last = Number(state.ladaLastFrameTs || 0) || 0;
+        if (last && ts - last < minFrameMs) {
+          gamePerf.ladaFrameSkips = Number(gamePerf.ladaFrameSkips || 0) + 1;
+          state.raf = rakGameRequestFrame(state, loop);
+          return;
+        }
+        state.ladaLastFrameTs = ts;
+      }
+      loop(ts);
+    });
   }
 
   function rakGameShouldTick() {
@@ -893,20 +908,39 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
 
   function rakGameIsLadaMode() {
     try {
-      return !!(document.body && (document.body.classList.contains('ladaMode') || document.body.classList.contains('lightweightMode')))
-        || !!(document.documentElement && document.documentElement.dataset.lightweight === '1');
+      return !!(document.body && (document.body.classList.contains('ladaMode') || document.body.classList.contains('lightweightMode') || document.body.classList.contains('ladaTurboMode')))
+        || !!(document.documentElement && (document.documentElement.dataset.lightweight === '1' || String(document.documentElement.dataset.rakLadaProfile || '') === 'turbo'));
     } catch (err) {
       return false;
     }
   }
 
+  function rakGamePerformanceProfile() {
+    try {
+      if (typeof window.getRakLadaPerformanceProfile === 'function') return window.getRakLadaPerformanceProfile();
+    } catch (err) {}
+    return { active: rakGameIsLadaMode(), level: rakGameIsLadaMode() ? 'lite' : 'normal', frameMs: rakGameIsLadaMode() ? 34 : 0, resizeThrottleMs: rakGameIsLadaMode() ? 520 : 120, leaderboardTtlMs: rakGameIsLadaMode() ? 180000 : 60000, idleDelayMs: rakGameIsLadaMode() ? 220 : 60, maxDeltaMs: rakGameIsLadaMode() ? 34 : 48 };
+  }
+
+  function rakGameFrameMs() {
+    const profile = rakGamePerformanceProfile();
+    return rakGameIsLadaMode() ? Math.max(28, Number(profile.frameMs || 34) || 34) : 0;
+  }
+
+  function rakGameResizeThrottleMs() {
+    const profile = rakGamePerformanceProfile();
+    return rakGameIsLadaMode() ? Math.max(240, Number(profile.resizeThrottleMs || 520) || 520) : Math.max(80, Number(profile.resizeThrottleMs || 120) || 120);
+  }
+
   function rakGameLeaderboardTtl() {
     const base = Number(gamePerf && gamePerf.leaderboardTtlMs || 60000) || 60000;
-    return rakGameIsLadaMode() ? Math.max(base, 120000) : base;
+    const profile = rakGamePerformanceProfile();
+    return rakGameIsLadaMode() ? Math.max(base, Number(profile.leaderboardTtlMs || 180000) || 180000) : base;
   }
 
   function rakGameSetInterval(fn, delay) {
-    const ms = Math.max(80, Number(delay) || 120);
+    const profile = rakGamePerformanceProfile();
+    const ms = Math.max(rakGameIsLadaMode() ? Math.max(140, Number(profile.frameMs || 34) * 4) : 80, Number(delay) || 120);
     const wrapped = () => {
       if (!rakGameShouldTick()) {
         gamePerf.intervalHiddenSkips += 1;
@@ -935,7 +969,8 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
 
   let statsRenderPending = false;
   function rakGameScheduleIdle(fn, delay) {
-    const ms = Math.max(20, Number(delay) || (rakGameIsLadaMode() ? 140 : 60));
+    const profile = rakGamePerformanceProfile();
+    const ms = Math.max(20, Number(delay) || (rakGameIsLadaMode() ? Math.max(160, Number(profile.idleDelayMs || 220) || 220) : 60));
     const ric = window.requestIdleCallback;
     if (typeof ric === 'function') {
       return ric(() => {
@@ -1151,7 +1186,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function renderLaunchTiles() {
     const grid = document.getElementById('gamesGrid');
     if (!grid) return;
-    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v721';
+    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v722';
     if (grid.dataset && grid.dataset.arcadeLaunchSig === launchSig && grid.querySelector('[data-game="ttt"]')) {
       gamePerf.launchRenderSkips = Number(gamePerf.launchRenderSkips || 0) + 1;
       return;
@@ -1534,18 +1569,30 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     body.innerHTML = `<div class="arcadeStage"><div class="arcadeBoardWrap arcadeCanvasWrap" style="height:${height || 'clamp(260px, 46dvh, 430px)'};"><canvas class="arcadeCanvas" id="arcadeCanvas"></canvas></div></div>`;
     const wrap = body.querySelector('.arcadeCanvasWrap');
     const canvas = body.querySelector('#arcadeCanvas');
-    const ctx = canvas.getContext('2d');
-    const resize = () => {
+    const ctx = canvas.getContext('2d', rakGameIsLadaMode() ? { alpha: true, desynchronized: true } : undefined);
+    let last = { w: 0, h: 0, dpr: 1, cw: 0, ch: 0, checkedAt: 0 };
+    const resize = (force) => {
+      const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+      if (!force && last.w && now - last.checkedAt < rakGameResizeThrottleMs()) {
+        ctx.setTransform(last.dpr, 0, 0, last.dpr, 0, 0);
+        return { w: last.w, h: last.h, dpr: last.dpr };
+      }
       const rect = wrap.getBoundingClientRect();
       const dprMax = typeof window.getRakPerformanceDprMax === 'function' ? window.getRakPerformanceDprMax() : 2;
       const dpr = Math.max(1, Math.min(dprMax, window.devicePixelRatio || 1));
-      canvas.width = Math.max(1, Math.floor(rect.width * dpr));
-      canvas.height = Math.max(1, Math.floor(rect.height * dpr));
-      canvas.style.width = '100%';
-      canvas.style.height = '100%';
+      const w = Math.max(1, rect.width || wrap.clientWidth || canvas.clientWidth || 1);
+      const h = Math.max(1, rect.height || wrap.clientHeight || canvas.clientHeight || 1);
+      const cw = Math.max(1, Math.floor(w * dpr));
+      const ch = Math.max(1, Math.floor(h * dpr));
+      if (canvas.width !== cw) canvas.width = cw;
+      if (canvas.height !== ch) canvas.height = ch;
+      if (canvas.style.width !== '100%') canvas.style.width = '100%';
+      if (canvas.style.height !== '100%') canvas.style.height = '100%';
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      return { w: rect.width, h: rect.height, dpr };
+      last = { w, h, dpr, cw, ch, checkedAt: now };
+      return { w, h, dpr };
     };
+    resize(true);
     return { wrap, canvas, ctx, resize };
   }
 
@@ -4206,7 +4253,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     const allHot = EXTRA_GAMES.length === 0;
     const completedOnlyGuard = typeof window.gamesRecordStat === 'function';
     return {
-      version: 'v.1.1 (721)',
+      version: 'v.1.1 (723)',
       ok: !missingMeta.length && !missingRenderer.length && allHot && completedOnlyGuard,
       totalGames: ids.length,
       coreGames: ids,

@@ -342,7 +342,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v721');
+      const channel = client.channel('rak-public-live-v723');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -2825,6 +2825,47 @@
 
   window.sendGomokuWin = sendGomokuWin;
 
+  async function countAdminRowsDirect(client, table, configure) {
+    try {
+      let query = client.from(table).select('*', { count: 'exact', head: true });
+      if (typeof configure === 'function') query = configure(query);
+      const { count, error } = await runSupabaseOperation('admin.count.' + table, () => query, { mode: 'read', attempts: 1, timeoutMs: 9000 });
+      if (error) throw error;
+      return Number(count || 0) || 0;
+    } catch (err) {
+      return null;
+    }
+  }
+
+  async function getAdminServiceSnapshotDirect(client) {
+    const nowIso = new Date().toISOString();
+    const counts = {
+      game_accounts: await countAdminRowsDirect(client, 'game_accounts'),
+      game_stats: await countAdminRowsDirect(client, 'game_stats'),
+      game_invites: await countAdminRowsDirect(client, 'game_invites'),
+      game_invites_pending: await countAdminRowsDirect(client, 'game_invites', q => q.eq('status', 'pending')),
+      game_sessions: await countAdminRowsDirect(client, 'game_sessions'),
+      game_sessions_active: await countAdminRowsDirect(client, 'game_sessions', q => q.in('status', ['active', 'waiting', 'placing'])),
+      bug_reports_new: await countAdminRowsDirect(client, 'bug_reports', q => q.eq('status', 'new'))
+    };
+    const profileUiRows = await countAdminRowsDirect(client, 'game_stats', q => q.eq('game_type', GAME_UI_SETTINGS_TYPE));
+    counts.profile_ui_settings = profileUiRows;
+    return {
+      ok: true,
+      at: nowIso,
+      counts,
+      sync: getSyncUiStatus(),
+      bridge: getSupabaseHardeningStatus(),
+      profileUiStorage: 'game_stats:' + GAME_UI_SETTINGS_TYPE
+    };
+  }
+
+  async function cleanupExpiredGameInvitesDirect(client) {
+    const { data, error } = await runSupabaseOperation('admin.cleanup_expired_game_invites', () => client.rpc('rak_admin_cleanup_expired_game_invites'), { mode: 'write', attempts: 1, timeoutMs: 12000 });
+    if (error) throw error;
+    return { ok: true, data: data || null, at: new Date().toISOString() };
+  }
+
   window.RotationSupabaseBridge = {
     init,
     refreshPublicData,
@@ -2995,6 +3036,18 @@
     getBridgeText,
     getCanteenStatus,
     getSyncUiStatus,
+    getAdminServiceSnapshot: async () => {
+      const client = getClient();
+      if (!client || !navigator.onLine) return { ok: false, reason: 'offline-or-missing-client', counts: {} };
+      try { const result = await getAdminServiceSnapshotDirect(client); state.lastError = null; return result; }
+      catch (err) { state.lastError = err; console.error('Admin service snapshot failed', err); return { ok: false, error: err, counts: {} }; }
+    },
+    cleanupExpiredGameInvites: async () => {
+      const client = getClient();
+      if (!client || !navigator.onLine) return { ok: false, reason: 'offline-or-missing-client' };
+      try { const result = await cleanupExpiredGameInvitesDirect(client); state.lastError = null; return result; }
+      catch (err) { state.lastError = err; console.error('Expired invites cleanup failed', err); return { ok: false, error: err }; }
+    },
     createGameInvite: async (payload) => {
       const client = getClient();
       if (!client || !navigator.onLine) return { ok: false, reason: 'offline-or-missing-client' };

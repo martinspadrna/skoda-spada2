@@ -282,6 +282,7 @@ function updateDashboard() {
   if (syncBadge) {
     setDashboardClassNameIfChanged(syncBadge, 'dashboardSyncBadge dashboardSyncBadge--' + esc(syncStatus.kind || 'offline'));
     setDashboardTextIfChanged(syncBadge, syncStatus.label || '🟡 Offline cache');
+    if (typeof bindDashboardManualSyncBadge === 'function') bindDashboardManualSyncBadge();
   }
 
   const hero = document.getElementById('dashHero');
@@ -707,3 +708,94 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
     }
   };
 })();
+
+
+// v.1.1 (723): ruční sync přes online stav na dashboardu.
+const RAK_DASHBOARD_MANUAL_SYNC_STATE = {
+  running: false,
+  lastAt: 0,
+  lastText: ''
+};
+
+function setDashboardManualSyncBadge(text, kind) {
+  try {
+    const badge = document.getElementById('dashboardSyncBadge');
+    if (!badge) return;
+    const safeKind = String(kind || 'pending').trim() || 'pending';
+    badge.className = 'dashboardSyncBadge dashboardSyncBadge--' + safeKind;
+    badge.textContent = String(text || '').trim() || 'Synchronizuji…';
+    badge.title = 'Kliknutím vynutíš synchronizaci rozpisu, herních statistik a kontrolu aktualizace.';
+  } catch (err) {}
+}
+
+async function runDashboardManualSync(source) {
+  if (RAK_DASHBOARD_MANUAL_SYNC_STATE.running) return { ok: false, reason: 'already-running' };
+  RAK_DASHBOARD_MANUAL_SYNC_STATE.running = true;
+  const started = Date.now();
+  setDashboardManualSyncBadge('⟳ Synchronizuji…', 'pending');
+  const result = { ok: true, source: source || 'dashboard-sync-badge', steps: [] };
+  const step = async (name, fn) => {
+    try {
+      if (typeof fn !== 'function') return null;
+      const value = await fn();
+      result.steps.push({ name, ok: true });
+      return value;
+    } catch (err) {
+      result.ok = false;
+      result.steps.push({ name, ok: false, error: String(err && err.message ? err.message : err || '') });
+      return null;
+    }
+  };
+  try {
+    await step('flush-fronty', () => window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.flushPendingWrites === 'function' ? window.RotationSupabaseBridge.flushPendingWrites() : null);
+    await step('rozpis', () => typeof syncRotationFromSupabase === 'function' ? syncRotationFromSupabase(true) : null);
+    await step('herni-profily', () => typeof gamesSyncProfileFromRemote === 'function' ? gamesSyncProfileFromRemote(true) : null);
+    await step('profil-vzhled', async () => {
+      if (typeof pushActiveAccountUiRemoteSettings === 'function') await pushActiveAccountUiRemoteSettings('dashboard-manual-sync');
+      const active = typeof gamesGetActiveAccount === 'function' ? gamesGetActiveAccount() : null;
+      if (active && typeof loadActiveAccountUiRemoteSettings === 'function') return loadActiveAccountUiRemoteSettings(active.id);
+      return null;
+    });
+    await step('herni-statistiky', () => typeof gamesRefreshRemoteLeaderboards === 'function' ? gamesRefreshRemoteLeaderboards(true) : null);
+    await step('live-refresh', () => typeof window.__rotaceTriggerLiveRefresh === 'function' ? window.__rotaceTriggerLiveRefresh('dashboard-manual-sync', { force: true }) : null);
+    await step('kontrola-aktualizace', () => typeof window.__rotaceForcePwaUpdateCheck === 'function' ? window.__rotaceForcePwaUpdateCheck('dashboard-manual-sync') : null);
+    await step('pwa-cache', () => typeof window.__rotaceRequestPwaCacheStatus === 'function' ? window.__rotaceRequestPwaCacheStatus('dashboard-manual-sync') : null);
+    if (typeof renderRotace === 'function') renderRotace();
+    if (typeof renderStatsPanel === 'function') renderStatsPanel();
+    if (typeof updateDashboard === 'function') updateDashboard();
+    RAK_DASHBOARD_MANUAL_SYNC_STATE.lastAt = Date.now();
+    RAK_DASHBOARD_MANUAL_SYNC_STATE.lastText = result.ok ? 'Synchronizace hotová.' : 'Synchronizace doběhla s chybou.';
+    setDashboardManualSyncBadge(result.ok ? '🟢 Synchronizováno teď' : '🔴 Sync s chybou', result.ok ? 'online' : 'error');
+    const restore = () => { try { if (typeof updateDashboard === 'function') updateDashboard(); } catch (err) {} };
+    if (typeof registerTimeout === 'function') registerTimeout(restore, 1800); else setTimeout(restore, 1800);
+    return Object.assign(result, { elapsedMs: Date.now() - started });
+  } finally {
+    RAK_DASHBOARD_MANUAL_SYNC_STATE.running = false;
+  }
+}
+
+function bindDashboardManualSyncBadge() {
+  const badge = document.getElementById('dashboardSyncBadge');
+  if (!badge || badge.dataset.manualSyncBound === '1') return;
+  badge.dataset.manualSyncBound = '1';
+  badge.setAttribute('role', 'button');
+  badge.setAttribute('tabindex', '0');
+  badge.setAttribute('aria-label', 'Vynutit synchronizaci a kontrolu aktualizace');
+  badge.title = 'Kliknutím vynutíš synchronizaci rozpisu, herních statistik a kontrolu aktualizace.';
+  badge.addEventListener('click', () => { void runDashboardManualSync('dashboard-click'); });
+  badge.addEventListener('keydown', (event) => {
+    if (event && (event.key === 'Enter' || event.key === ' ')) {
+      event.preventDefault();
+      void runDashboardManualSync('dashboard-keyboard');
+    }
+  });
+}
+
+window.runDashboardManualSync = runDashboardManualSync;
+window.bindDashboardManualSyncBadge = bindDashboardManualSyncBadge;
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', bindDashboardManualSyncBadge, { once: true });
+} else {
+  bindDashboardManualSyncBadge();
+}

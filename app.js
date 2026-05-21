@@ -1,4 +1,4 @@
-// v.1.1 (721) – životnost online pozvánek a úklid starých herních dat.
+// v.1.1 (723) – administrace, ruční synchronizace dashboardu a PWA update kontrola.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;
@@ -1319,6 +1319,7 @@ function getPostStabilizationSafeHelperHealth() {
     'getPhaseTenRuntimeReadinessHealth',
     'getPostStabilizationBaselineHealth',
     'getLadaPerformanceHealth',
+    'getRakLadaPerformanceProfile',
     'runLadaPerformanceAudit',
     'getSupabaseStructureHealth',
     'getGameEngineBaselineHealth',
@@ -1364,7 +1365,10 @@ function getLadaPerformanceHealth() {
   const lowEndInfo = typeof getLowEndDeviceInfo === 'function'
     ? getLowEndDeviceInfo()
     : { lowEnd: false, reasons: [], dpr: Number(window.devicePixelRatio || 1) || 1 };
-  const dprLimit = typeof getRakPerformanceDprMax === 'function' ? Number(getRakPerformanceDprMax()) : 2;
+  const profile = typeof getRakLadaPerformanceProfile === 'function'
+    ? getRakLadaPerformanceProfile()
+    : { active, level: active ? 'lite' : 'normal', frameMs: active ? 34 : 0, canvasDprMax: active ? 1 : 2, resizeThrottleMs: active ? 520 : 120, leaderboardTtlMs: active ? 180000 : 60000, cssEffects: active ? 'minimal' : 'full' };
+  const dprLimit = typeof getRakPerformanceDprMax === 'function' ? Number(getRakPerformanceDprMax()) : Number(profile.canvasDprMax || 2);
   const cssSamples = [];
   const issues = [];
   const sampleSelectors = [
@@ -1409,18 +1413,26 @@ function getLadaPerformanceHealth() {
   if (active && maxBlur > 3.5) issues.push('heavy blur still active');
   if (active && animatedSamples.length) issues.push('animations/transitions still active');
   if (active && root && !String(root.dataset.rakPerformanceMode || '').includes('lada')) issues.push('performance dataset missing');
+  if (active && profile && Number(profile.frameMs || 0) < 28) issues.push('lada frame throttle too low');
+  if (active && profile && String(profile.cssEffects || '') !== 'minimal') issues.push('lada css effects not minimal');
   if (typeof getRakPerformanceDprMax !== 'function') issues.push('getRakPerformanceDprMax missing');
+  if (typeof getRakLadaPerformanceProfile !== 'function') issues.push('getRakLadaPerformanceProfile missing');
   if (typeof getLowEndDeviceInfo !== 'function') issues.push('getLowEndDeviceInfo missing');
 
   return {
     ok: issues.length === 0,
-    mode: active ? 'lada-performance-active' : 'lada-performance-ready',
+    mode: active ? 'lada-performance-turbo-active' : 'lada-performance-ready',
     active,
     lightweight: !!(classes && classes.contains('lightweightMode')),
     lowEndDevice: !!(classes && classes.contains('lowEndDevice')),
     ladaMode: !!(classes && classes.contains('ladaMode')),
     reduceMotion: !!(classes && classes.contains('reduceMotion')),
     dprLimit,
+    profileLevel: String(profile && profile.level || (active ? 'lite' : 'normal')),
+    frameMs: Number(profile && profile.frameMs || 0) || 0,
+    resizeThrottleMs: Number(profile && profile.resizeThrottleMs || 0) || 0,
+    leaderboardTtlMs: Number(profile && profile.leaderboardTtlMs || 0) || 0,
+    cssEffects: String(profile && profile.cssEffects || 'full'),
     detectedDpr: Number(lowEndInfo && lowEndInfo.dpr || window.devicePixelRatio || 1) || 1,
     lowEndDetected: !!(lowEndInfo && lowEndInfo.lowEnd),
     lowEndReasons: Array.isArray(lowEndInfo && lowEndInfo.reasons) ? lowEndInfo.reasons.slice(0, 8) : [],
@@ -2850,6 +2862,21 @@ function installPwaAndConnectivityHooks() {
 
   window.__rotaceTriggerLiveRefresh = runLiveRefresh;
   window.__rotaceRefreshAfterOnline = runLiveRefresh;
+  window.__rotaceForcePwaUpdateCheck = async (source) => {
+    const reason = source || 'manual-dashboard-sync';
+    const registration = await refreshServiceWorkerRegistration(reason, { force: true });
+    requestActiveServiceWorkerCacheStatus(reason + '-cache-status', { force: true });
+    requestActiveServiceWorkerPrecacheRepair(reason + '-precache-repair');
+    return {
+      ok: !!registration,
+      waiting: !!(registration && registration.waiting),
+      installing: !!(registration && registration.installing),
+      active: !!(registration && registration.active),
+      source: reason
+    };
+  };
+  window.__rotaceRequestPwaCacheStatus = (source) => requestActiveServiceWorkerCacheStatus(source || 'manual-dashboard-sync', { force: true });
+  window.__rotaceRepairPwaPrecache = (source) => requestActiveServiceWorkerPrecacheRepair(source || 'manual-dashboard-sync');
   window.__rotaceSignalStateChange = signalStateChange;
   window.__rotacePromptInstall = async () => {
     if (!deferredInstallPrompt) return false;

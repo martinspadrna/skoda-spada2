@@ -8972,3 +8972,254 @@ body.gamesOpen #games #gamesShellBody[data-arcade-game="ships"] .arcadeStage,
 #games .shipsWaitingBoard{
   min-height:220px !important;
 }
+
+/* v.1.1 (723): Láďův režim turbo – finální výkonová pojistka pro slabší mobily. */
+body.ladaMode,
+body.lightweightMode,
+body.lowEndDevice{
+  --rak-lada-blur-px:0px !important;
+  --rak-compact-gap:7px !important;
+  --rak-compact-card-pad:9px !important;
+}
+body.ladaMode *,
+body.lightweightMode *,
+body.lowEndDevice *{
+  scroll-behavior:auto !important;
+  transition-duration:0s !important;
+  transition-delay:0s !important;
+  animation-duration:.001ms !important;
+  animation-delay:0s !important;
+  animation-iteration-count:1 !important;
+  will-change:auto !important;
+}
+body.ladaMode .page:not(.active),
+body.lightweightMode .page:not(.active),
+body.lowEndDevice .page:not(.active){
+  content-visibility:hidden !important;
+  contain:layout style paint !important;
+}
+body.ladaMode .dashboardCard,
+body.ladaMode .dashboardHeroCard,
+body.ladaMode .dashboardShell,
+body.ladaMode .card,
+body.ladaMode .tile,
+body.ladaMode .listItem,
+body.ladaMode .personCard,
+body.ladaMode .adminBox,
+body.ladaMode .appMenuCard,
+body.ladaMode .appMenuAction,
+body.ladaMode .appMenuThemeCard,
+body.ladaMode .appMenuThemeSummary,
+body.ladaMode .calcTile,
+body.ladaMode .calcPanel,
+body.ladaMode .calcResultCard,
+body.ladaMode .bottomNav,
+body.ladaMode .bottomNavBtn,
+body.ladaMode .bottomNavMenuBtn,
+body.ladaMode .modal,
+body.ladaMode .qrModal,
+body.ladaMode .personScheduleModal,
+body.ladaMode .foodScheduleModal,
+body.ladaMode .calendarModal,
+body.ladaMode .tttOverlay,
+body.ladaMode .calendarOverlay,
+body.ladaMode .foodScheduleOverlay,
+body.ladaMode .personScheduleOverlay,
+body.ladaMode .qrModalOverlay,
+body.ladaMode #games .gamesStage,
+body.ladaMode #games .gamesShellTop,
+body.ladaMode #games .gamesActiveAccountBar,
+body.ladaMode #games .gamesLaunchTile,
+body.ladaMode #games .gamesStatsCard,
+body.ladaMode #games .gamesTop3Card,
+body.ladaMode #games .arcadePanel,
+body.ladaMode #games .arcadeBoardWrap,
+body.ladaMode #games .gameBoard,
+body.lightweightMode .dashboardCard,
+body.lightweightMode .dashboardHeroCard,
+body.lightweightMode .dashboardShell,
+body.lightweightMode .card,
+body.lightweightMode .tile,
+body.lightweightMode .listItem,
+body.lightweightMode .personCard,
+body.lightweightMode .adminBox,
+body.lightweightMode .appMenuCard,
+body.lightweightMode .appMenuAction,
+body.lightweightMode .appMenuThemeCard,
+body.lightweightMode .appMenuThemeSummary,
+body.lightweightMode .calcTile,
+body.lightweightMode .calcPanel,
+body.lightweightMode .calcResultCard,
+body.lightweightMode .bottomNav,
+body.lightweightMode .bottomNavBtn,
+body.lightweightMode .bottomNavMenuBtn,
+body.lightweightMode .modal,
+body.lightweightMode .qrModal,
+body.lightweightMode .personScheduleModal,
+body.lightweightMode .foodScheduleModal,
+body.lightweightMode .calendarModal,
+body.lightweightMode .tttOverlay,
+body.lightweightMode .calendarOverlay,
+body.lightweightMode .foodScheduleOverlay,
+body.lightweightMode .personScheduleOverlay,
+body.lightweightMode .qrModalOverlay,
+body.lightweightMode #games .gamesStage,
+body.lightweightMode #games .gamesShellTop,
+body.lightweightMode #games .gamesActiveAccountBar,
+body.lightweightMode #games .gamesLaunchTile,
+body.lightweightMode #games .gamesStatsCard,
+body.lightweightMode #games .gamesTop3Card,
+body.lightweightMode #games .arcadePanel,
+body.lightweightMode #games .arcadeBoardWrap,
+body.lightweightMode #games .gameBoard,
+body.lowEndDevice .dashboardCard,
+body.lowEndDevice .dashboardHeroCard,
+body.lowEndDevice .dashboardShell,
+body.lowEndDevice .card,
+body.lowEndDevice .tile,
+body.lowEndDevice .listItem,
+body.lowEndDevice .personCard,
+body.lowEndDevice .adminBox,
+body.lowEndDevice .appMenuCard,
+body.lowEndDevice .appMenuAction,
+body.lowEndDevice .appMenuThemeCard,
+body.lowEndDevice .appMenuThemeSummary,
+body.lowEndDevice .calcTile,
+body.lowEndDevice .calcPanel,
+body.lowEndDevice .calcResultCard,
+body.lowEndDevice .bottomNav,
+body.lowEndDevice .bottomNavBtn,
+body.lowEndDevice .bottomNavMenuBtn,
+body.lowEndDevice .modal,
+body.lowEndDevice .qrModal,
+body.lowEndDevice .personScheduleModal,
+body.lowEndDevice .foodScheduleModal,
+body.lowEndDevice .calendarModal,
+body.lowEndDevice .tttOverlay,
+body.lowEndDevice .calendarOverlay,
+body.lowEndDevice .foodScheduleOverlay,
+body.lowEndDevice .personScheduleOverlay,
+body.lowEndDevice .qrModalOverlay,
+body.lowEndDevice #games .gamesStage,
+body.lowEndDevice #games .gamesShellTop,
+body.lowEndDevice #games .gamesActiveAccountBar,
+body.lowEndDevice #games .gamesLaunchTile,
+body.lowEndDevice #games .gamesStatsCard,
+body.lowEndDevice #games .gamesTop3Card,
+body.lowEndDevice #games .arcadePanel,
+body.lowEndDevice #games .arcadeBoardWrap,
+body.lowEndDevice #games .gameBoard{
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+  box-shadow:none !important;
+  filter:none !important;
+}
+body.ladaMode #games canvas,
+body.lightweightMode #games canvas,
+body.lowEndDevice #games canvas{
+  image-rendering:auto !important;
+  filter:none !important;
+  box-shadow:none !important;
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+  touch-action:none !important;
+}
+body.ladaMode #games .arcadeCell,
+body.lightweightMode #games .arcadeCell,
+body.lowEndDevice #games .arcadeCell,
+body.ladaMode #games .arcadeTileBtn,
+body.lightweightMode #games .arcadeTileBtn,
+body.lowEndDevice #games .arcadeTileBtn,
+body.ladaMode #games .arcadeMemoryCard,
+body.lightweightMode #games .arcadeMemoryCard,
+body.lowEndDevice #games .arcadeMemoryCard{
+  box-shadow:none !important;
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+}
+body.ladaMode img,
+body.ladaMode canvas,
+body.ladaMode svg,
+body.lightweightMode img,
+body.lightweightMode canvas,
+body.lightweightMode svg,
+body.lowEndDevice img,
+body.lowEndDevice canvas,
+body.lowEndDevice svg{
+  filter:none !important;
+}
+body.ladaMode #home .dashboardCard,
+body.lightweightMode #home .dashboardCard,
+body.lowEndDevice #home .dashboardCard{
+  min-height:70px !important;
+  padding:7px 8px !important;
+}
+body.ladaMode #games .gamesTop3Body,
+body.lightweightMode #games .gamesTop3Body,
+body.lowEndDevice #games .gamesTop3Body,
+body.ladaMode #games .gamesTop5ScrollBody,
+body.lightweightMode #games .gamesTop5ScrollBody,
+body.lowEndDevice #games .gamesTop5ScrollBody{
+  -webkit-overflow-scrolling:auto !important;
+  overscroll-behavior:contain !important;
+}
+
+
+/* v.1.1 (723) – dashboard ruční sync + administrace servis */
+.dashboardSyncBadge{
+  pointer-events:auto !important;
+  cursor:pointer !important;
+  user-select:none !important;
+  -webkit-user-select:none !important;
+  touch-action:manipulation !important;
+}
+.dashboardSyncBadge:active{
+  transform:scale(.97) !important;
+}
+.adminServiceGrid{
+  display:grid !important;
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  gap:10px !important;
+  margin:12px 0 !important;
+}
+.adminServiceMetric{
+  min-height:54px !important;
+  padding:10px 12px !important;
+  border-radius:18px !important;
+  border:1px solid rgba(255,255,255,.10) !important;
+  background:rgba(255,255,255,.055) !important;
+  display:flex !important;
+  flex-direction:column !important;
+  justify-content:space-between !important;
+  gap:5px !important;
+}
+.adminServiceMetric span{
+  font-size:11px !important;
+  line-height:1.15 !important;
+  color:rgba(238,247,238,.68) !important;
+}
+.adminServiceMetric b{
+  font-size:18px !important;
+  line-height:1 !important;
+  color:var(--rakThemeAccent,#7CFF7C) !important;
+}
+.adminServiceDiag{
+  margin-top:8px !important;
+  padding:10px 12px !important;
+  border-radius:16px !important;
+  background:rgba(0,0,0,.16) !important;
+  border:1px solid rgba(255,255,255,.08) !important;
+}
+.adminServiceActions{
+  margin-top:12px !important;
+}
+@media (max-width:380px){
+  .adminServiceGrid{grid-template-columns:1fr !important;}
+}
+body.lightweightMode .adminServiceMetric,
+body.lowEndDevice .adminServiceMetric,
+body.ladaMode .adminServiceMetric{
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+  box-shadow:none !important;
+}

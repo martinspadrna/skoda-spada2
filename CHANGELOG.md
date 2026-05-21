@@ -1,3 +1,19 @@
+## v.1.1 (723)
+- Přidaná servisní část administrace: rychlý přehled počtů hráčů, statistik, profilového vzhledu, pozvánek, session a nových reportů.
+- Administrace umí vynutit synchronizaci rozpisu/herních statistik, ruční kontrolu aktualizace PWA a bezpečný úklid prošlých pozvánek přes Supabase funkci.
+- Online stav vpravo nahoře na dashboardu je nově klikací: vynutí synchronizaci rozpisu, herních profilů/statistik, profilového theme/pozadí a kontrolu nové verze/cache.
+- Ověřeno napojení theme/pozadí na online profil: kvůli kompatibilitě se ukládá přes speciální řádek v game_stats s game_type __profile_ui, ne přes samostatnou tabulku.
+- PWA update kontrola dostala veřejné helpery pro ruční kontrolu service workeru, cache statusu a precache repair z dashboardu i administrace.
+- Verze sjednocena na v.1.1 (723), cache na v1.1-723 a Supabase realtime kanál na rak-public-live-v723.
+
+## v.1.1 (722)
+- Láďův režim dostal turbo výkonový profil pro slabší mobily: appka ukládá profil do datasetů, diagnostika ukazuje frame throttle, canvas DPR, resize throttle a úroveň profilu.
+- Canvas hry v Láďově režimu běží šetrněji: requestAnimationFrame se brzdí přibližně na 30 FPS, delta čas se víc hlídá a canvas resize se necpe do každého snímku.
+- Herní online refresh, idle render statistik a leaderboard cache jsou v Láďově režimu delší/klidnější, aby appka zbytečně netahala data a nepřekreslovala UI.
+- CSS pojistka pro Láďův režim tvrdě vypíná náročné blur efekty, stíny, animace, přechody, filtry a skryté stránky dostávají content-visibility.
+- Text v nastavení a diagnostika „O aplikaci“ popisují úspornější FPS a nový turbo profil.
+- Verze sjednocena na v.1.1 (722), cache na v1.1-722 a Supabase realtime kanál na rak-public-live-v722.
+
 ## v.1.1 (721)
 - Herní profily po ostrém spuštění začínají od nuly: lokální XP, odehrané hry, skóre a achievementy se resetují přes novou profileVersion 720, ale theme/pozadí profilu zůstává zachované.
 - Přidán online reset ochranné vrstvy pro Supabase: staré game_stats/game_sessions před reset cutoffem se ignorují v žebříčcích/profilu a aplikace se je po online startu pokusí v Supabase vynulovat/označit jako reset.
