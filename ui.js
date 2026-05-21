@@ -3883,6 +3883,51 @@ function bindGamesRankBadge() {
   rankEl.addEventListener('click', (ev) => { ev.preventDefault(); openGamesRankModal(); });
 }
 
+function gamesResolveActiveAccountName(active) {
+  if (!active) return 'Bez profilu';
+  const id = String(active.id || '').trim();
+  const raw = String(active.name || '').trim();
+  const looksGeneric = !raw || raw === id || raw === ('Hráč ' + id) || /^\d{1,8}$/.test(raw);
+  if (!looksGeneric) return raw;
+  try {
+    if (typeof tttGetAccountDisplayName === 'function' && id) {
+      const resolved = String(tttGetAccountDisplayName(id) || '').trim();
+      if (resolved && resolved !== id && resolved !== ('Hráč ' + id) && !/^\d{1,8}$/.test(resolved)) return resolved;
+    }
+  } catch (err) {}
+  try {
+    if (Array.isArray(window.GAMES_ACCOUNT_LIST) && id) {
+      const match = window.GAMES_ACCOUNT_LIST.find(acc => String(acc && acc.id || '').trim() === id);
+      const name = String(match && match.name || '').trim();
+      if (name && name !== id && name !== ('Hráč ' + id)) return name;
+    }
+  } catch (err) {}
+  try {
+    if (typeof GAMES_ACCOUNT_LIST !== 'undefined' && Array.isArray(GAMES_ACCOUNT_LIST) && id) {
+      const match = GAMES_ACCOUNT_LIST.find(acc => String(acc && acc.id || '').trim() === id);
+      const name = String(match && match.name || '').trim();
+      if (name && name !== id && name !== ('Hráč ' + id)) return name;
+    }
+  } catch (err) {}
+  return raw || (id ? ('Hráč ' + id) : 'Hráč');
+}
+
+function gamesMaybeRefreshProfileName(active) {
+  if (!active || !active.id || active.__nameRefreshQueued) return;
+  const id = String(active.id || '').trim();
+  const raw = String(active.name || '').trim();
+  const needsRefresh = !raw || raw === id || raw === ('Hráč ' + id) || /^\d{1,8}$/.test(raw);
+  if (!needsRefresh) return;
+  active.__nameRefreshQueued = true;
+  try {
+    if (typeof gamesSyncProfileFromRemote === 'function') {
+      Promise.resolve(gamesSyncProfileFromRemote(true)).then(() => {
+        try { renderGamesProfileStatus(); } catch (err) {}
+      }).catch(() => {});
+    }
+  } catch (err) {}
+}
+
 function renderGamesProfileStatus() {
   const card = document.getElementById('gamesProfileStatusCard');
   const nameEl = document.getElementById('gamesProfileStatusName');
@@ -3900,7 +3945,8 @@ function renderGamesProfileStatus() {
   let pct = 0;
 
   if (active) {
-    nextName = String(active.name || active.id || 'Hráč').trim() || 'Hráč';
+    nextName = gamesResolveActiveAccountName(active);
+    gamesMaybeRefreshProfileName(active);
     const progress = typeof window.gamesBuildProgressSummary === 'function'
       ? window.gamesBuildProgressSummary(active)
       : null;
@@ -3959,7 +4005,7 @@ function buildAppHistoryHtml(versionText) {
       range: versionText,
       title: 'Aktuální build',
       lines: [
-        'Build v.1.1 (698) vrací v herním menu čistý horní profil se jménem a rankem vedle sebe a zvýrazňuje zdi/truhly v Bombermanovi.',
+        'Build v.1.1 (699) opravuje jméno přihlášeného profilu u ranku a předělává Bombermana na joystick ovládání s panáčkem místo šipky.',
         'Série v.1.1 650–694 dotáhla Piškvorky, online pozvánky, PWA launch handler, 2048/Snake/Flappy Car/Aim/Reaction/Tetris/Space Shooter/Brick Breaker/Doodle/Bubble/Sudoku/Miny/Pexeso mezi hotové hry, herní profily, theme polish a těžší/chytřejší achievementy.',
         'Sekce „O aplikaci“ je nově stručnější: detailní změny zůstávají v changelogu a tady se historie drží po větších blocích.',
         'Stabilizační audity, Supabase guardy, Láďův režim a finální readiness kontroly zůstávají součástí diagnostiky.'
@@ -6571,8 +6617,13 @@ function gamesSetActiveAccount(accountId) {
   const profile = gamesGetProfile();
   const id = String(accountId || '').trim();
   if (!id || GAMES_ACCOUNT_BLOCKLIST.has(id)) return false;
+  const knownAccount = gamesAccountById(id);
   if (!profile.accounts[id]) {
-    profile.accounts[id] = gamesMakeAccountEntry(id, id);
+    profile.accounts[id] = gamesMakeAccountEntry(id, knownAccount && knownAccount.name ? knownAccount.name : id);
+  } else if (knownAccount && knownAccount.name) {
+    const currentName = String(profile.accounts[id].name || '').trim();
+    const knownName = String(knownAccount.name || '').trim();
+    if (knownName && (currentName === id || currentName === ('Hráč ' + id) || /^\d{1,8}$/.test(currentName))) profile.accounts[id].name = knownName;
   }
   profile.activeAccountId = id;
   profile.profileVersion = GAMES_PROFILE_RESET_VERSION;

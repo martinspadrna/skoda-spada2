@@ -1,4 +1,4 @@
-// v.1.1 (698) – Hry: jméno + rank v horním profilu a výraznější zdi/truhly v Bombermanovi.
+// v.1.1 (699) – Hry: opravené přihlášené jméno u ranku a Bomberman joystick s panáčkem.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

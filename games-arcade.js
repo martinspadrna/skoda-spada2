@@ -2,7 +2,7 @@
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
 
-  // v.1.1 (698): Bomberman mini výraznější zdi/truhly a stabilní herní launcher.
+  // v.1.1 (699): Hry horní profil jméno + rank a Bomberman joystick pohyb s panáčkem.
   const CORE_GAMES = ['ttt', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
   const EXTRA_GAMES = [];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);
@@ -1060,7 +1060,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function renderLaunchTiles() {
     const grid = document.getElementById('gamesGrid');
     if (!grid) return;
-    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v698';
+    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v699';
     if (grid.dataset && grid.dataset.arcadeLaunchSig === launchSig && grid.querySelector('.gamesDevFolder') && grid.querySelector('[data-game="ttt"]')) {
       gamePerf.launchRenderSkips = Number(gamePerf.launchRenderSkips || 0) + 1;
       return;
@@ -3051,8 +3051,9 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       timer: 0,
       bound: false,
       saved: false,
-      hint: 'Táhni prstem po bludišti. Klepnutím položíš bombu.',
-      touch: null
+      hint: 'Drž prst na bludišti a táhni jako joystick. Krátké klepnutí položí bombu.',
+      touch: null,
+      joystick: { active: false, pointerId: null, startX: 0, startY: 0, dirX: 0, dirY: 0, moved: false, stepAcc: 0, lastMoveAt: 0 }
     };
   }
 
@@ -3097,7 +3098,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     state.enemies = starts.map((pos, i) => ({ id: `m${i}`, x: pos[0], y: pos[1], alive: true, mood: i % 2 ? 'chase' : 'wander' }));
     state.bombs = []; state.fires = []; state.score = 0; state.range = 1; state.maxBombs = 1; state.shield = 0; state.speed = 1;
     state.enemyStepMs = 620; state.enemyAcc = 0; state.kills = 0; state.crates = 0; state.upgradesCollected = 0;
-    state.over = false; state.won = false; state.saved = false; state.lastTs = 0; state.hint = 'Znič 4 příšerky bombami. V bednách jsou upgrady.';
+    state.over = false; state.won = false; state.saved = false; state.lastTs = 0; state.hint = 'Drž prst na bludišti a táhni jako joystick. Klepnutí položí bombu.'; state.touch = null; state.joystick = { active: false, pointerId: null, startX: 0, startY: 0, dirX: 0, dirY: 0, moved: false, stepAcc: 0, lastMoveAt: 0 };
   }
   function bomberUpgradeLabel(type) {
     return type === 'range' ? '🔥' : type === 'bomb' ? '💣' : type === 'shield' ? '🛡️' : type === 'speed' ? '⚡' : '⭐';
@@ -3142,8 +3143,8 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       state.bombs.filter(b => !b.exploded).forEach(b => items.push(`<div class="bomberEntity bomb" style="--x:${b.x};--y:${b.y};">💣</div>`));
       state.fires.filter(f => f.life > 0).forEach(f => items.push(`<div class="bomberEntity fire" style="--x:${f.x};--y:${f.y};">✦</div>`));
       state.enemies.filter(e => e.alive).forEach((e, i) => items.push(`<div class="bomberEntity monster m${i}" style="--x:${e.x};--y:${e.y};">${i === 0 ? '👾' : i === 1 ? '🛸' : i === 2 ? '🦑' : '👻'}</div>`));
-      const face = state.dir === 'left' ? '◀' : state.dir === 'right' ? '▶' : state.dir === 'up' ? '▲' : '▼';
-      items.push(`<div class="bomberEntity player" style="--x:${state.x};--y:${state.y};"><span>${face}</span></div>`);
+      const dirClass = state.dir === 'left' ? ' isLeft' : state.dir === 'right' ? ' isRight' : state.dir === 'up' ? ' isUp' : ' isDown';
+      items.push(`<div class="bomberEntity player${dirClass}" style="--x:${state.x};--y:${state.y};"><span class="bomberHero" aria-hidden="true"><span class="bomberHeroHead"></span><span class="bomberHeroBody"></span><span class="bomberHeroArm a1"></span><span class="bomberHeroArm a2"></span></span></div>`);
       return items.join('');
     };
     const boardHtml = () => `<div class="arcadeBomberCells">${cellsHtml()}</div><div class="arcadeBomberEntities">${entityHtml()}</div>`;
@@ -3243,26 +3244,44 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         const grid = ev.target && ev.target.closest ? ev.target.closest('#bomberGrid') : null;
         if (!grid) return;
         ev.preventDefault();
+        try { grid.setPointerCapture && grid.setPointerCapture(ev.pointerId); } catch (err) {}
         state.touch = { x: ev.clientX, y: ev.clientY, moved: false };
+        state.joystick = { active: true, pointerId: ev.pointerId, startX: ev.clientX, startY: ev.clientY, dirX: 0, dirY: 0, moved: false, stepAcc: 999, lastMoveAt: 0 };
+        state.hint = 'Držíš joystick. Táhni prstem do směru pohybu.';
+        paint();
       }, { passive: false });
       body.addEventListener('pointermove', (ev) => {
-        if (!state.touch) return;
-        const dx = ev.clientX - state.touch.x;
-        const dy = ev.clientY - state.touch.y;
-        const ax = Math.abs(dx), ay = Math.abs(dy);
-        const threshold = Math.max(16, 28 - Math.round((state.speed - 1) * 10));
-        if (Math.max(ax, ay) < threshold) return;
+        const joy = state.joystick || {};
+        if (!joy.active || (joy.pointerId !== null && typeof joy.pointerId !== 'undefined' && ev.pointerId !== joy.pointerId)) return;
         ev.preventDefault();
-        state.touch.moved = true;
-        if (ax >= ay) move(dx > 0 ? 1 : -1, 0);
-        else move(0, dy > 0 ? 1 : -1);
-        state.touch.x = ev.clientX; state.touch.y = ev.clientY;
+        const dx = ev.clientX - joy.startX;
+        const dy = ev.clientY - joy.startY;
+        const ax = Math.abs(dx), ay = Math.abs(dy);
+        const deadZone = Math.max(10, 18 - Math.round((state.speed - 1) * 4));
+        if (Math.max(ax, ay) < deadZone) {
+          joy.dirX = 0; joy.dirY = 0;
+          return;
+        }
+        joy.moved = true;
+        if (state.touch) state.touch.moved = true;
+        if (ax >= ay) { joy.dirX = dx > 0 ? 1 : -1; joy.dirY = 0; }
+        else { joy.dirX = 0; joy.dirY = dy > 0 ? 1 : -1; }
+        if (joy.dirX < 0) state.dir = 'left'; else if (joy.dirX > 0) state.dir = 'right'; else if (joy.dirY < 0) state.dir = 'up'; else if (joy.dirY > 0) state.dir = 'down';
+        paint();
       }, { passive: false });
-      body.addEventListener('pointerup', (ev) => {
+      const stopJoystick = (ev) => {
         const grid = ev.target && ev.target.closest ? ev.target.closest('#bomberGrid') : null;
-        if (state.touch && grid && !state.touch.moved) { ev.preventDefault(); placeBomb(); }
-        state.touch = null;
-      }, { passive: false });
+        const joy = state.joystick || {};
+        if (joy.active && (joy.pointerId === null || typeof joy.pointerId === 'undefined' || ev.pointerId === joy.pointerId)) {
+          if (state.touch && grid && !state.touch.moved) { ev.preventDefault(); placeBomb(); }
+          joy.active = false; joy.dirX = 0; joy.dirY = 0; joy.pointerId = null; joy.stepAcc = 0;
+          state.touch = null;
+          state.hint = state.over ? state.hint : 'Drž prst a táhni jako joystick. Klepnutí položí bombu.';
+          paint();
+        }
+      };
+      body.addEventListener('pointerup', stopJoystick, { passive: false });
+      body.addEventListener('pointercancel', stopJoystick, { passive: false });
       body.addEventListener('contextmenu', (ev) => { if (ev.target && ev.target.closest && ev.target.closest('#bomberGrid')) ev.preventDefault(); });
       body.addEventListener('click', (ev) => {
         const btn = ev.target && ev.target.closest ? ev.target.closest('[data-bomber]') : null;
@@ -3292,6 +3311,15 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       const dt = state.lastTs ? Math.min(260, now - state.lastTs) : 120;
       state.lastTs = now;
       if (!state.over) {
+        const joy = state.joystick || {};
+        if (joy.active && (joy.dirX || joy.dirY)) {
+          joy.stepAcc = Number(joy.stepAcc || 0) + dt;
+          const stepMs = Math.max(82, Math.round(176 - ((Number(state.speed || 1) - 1) * 46)));
+          while (joy.stepAcc >= stepMs) {
+            joy.stepAcc -= stepMs;
+            move(joy.dirX, joy.dirY);
+          }
+        }
         state.bombs.forEach((b) => { b.life -= dt; if (b.life <= 0 && !b.exploded) explode(b); });
         state.bombs = state.bombs.filter(b => !b.exploded || b.life > -260);
         state.fires.forEach(f => { f.life -= dt; });
