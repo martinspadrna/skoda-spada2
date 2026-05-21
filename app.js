@@ -1,4 +1,4 @@
-// v.1.1 (711) – Lodě online: souvislé grafické lodě + přepínání jedné plochy.
+// v.1.1 (713) – Lodě online: vzájemné zápasy uložené jen v předherním menu.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

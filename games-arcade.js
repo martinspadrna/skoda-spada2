@@ -2,8 +2,8 @@
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
 
-  // v.1.1 (711): Lodě online: souvislé grafické lodě + přepínání jedné plochy.
-  const CORE_GAMES = ['ttt', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'ships', 'daily'];
+  // v.1.1 (713): Lodě online: vzájemné zápasy uložené jen v předherním menu.
+  const CORE_GAMES = ['ttt', 'ships', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
   const EXTRA_GAMES = [];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);
   const LEGACY_RENDER_GAMES = ['2048', 'snake', 'flap'];
@@ -1101,7 +1101,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function renderLaunchTiles() {
     const grid = document.getElementById('gamesGrid');
     if (!grid) return;
-    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v711';
+    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v713';
     if (grid.dataset && grid.dataset.arcadeLaunchSig === launchSig && grid.querySelector('[data-game="ttt"]')) {
       gamePerf.launchRenderSkips = Number(gamePerf.launchRenderSkips || 0) + 1;
       return;
@@ -3695,7 +3695,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       x: shipsBuildPlayerBoard(),
       o: null,
       revision: 1,
-      message: 'Připrav si flotilu. Lodě se nesmí dotýkat stranou ani rohem.'
+      message: 'Připrav si flotilu. Lodě už leží na mapě, můžeš je přehazovat nebo přesouvat přímo v poli.'
     };
   }
   function shipsNormalizeState(raw, code) {
@@ -3735,8 +3735,9 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     else if (idx === len - 1) pos = 'stern';
     const idClass = 'isShip' + String(ship && ship.id ? ship.id : 'boat').replace(/[^a-z0-9]+/gi, '').replace(/^./, (m) => m.toUpperCase());
     const hitClass = shot && shot.hit ? ' isDamaged' : '';
+    const selectedClass = options && String(options.selectedShipId || '') === String(ship && ship.id || '') ? ' isSelectedShip' : '';
     const label = idx === Math.floor((len - 1) / 2) ? `<span class="shipsShipCabin">${escapeHtml(String(ship.icon || '🚢'))}</span>` : '<span class="shipsShipDeck"></span>';
-    return `<span class="shipsShipSegment ${horizontal ? 'isH' : 'isV'} ${idClass} isLen${len} is${pos.charAt(0).toUpperCase() + pos.slice(1)}${hitClass}" aria-hidden="true">${label}</span>`;
+    return `<span class="shipsShipSegment ${horizontal ? 'isH' : 'isV'} ${idClass} isLen${len} is${pos.charAt(0).toUpperCase() + pos.slice(1)}${hitClass}${selectedClass}" aria-hidden="true">${label}</span>`;
   }
   function shipsRenderBoard(player, opts) {
     const options = opts || {};
@@ -3751,13 +3752,14 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         const revealShip = !!(ship && (options.own || options.placement || sunkShip || (shot && shot.hit)));
         let cls = 'shipsCell';
         let txt = '';
-        if (revealShip) cls += ' hasShip' + (sunkShip ? ' isSunkShip' : '');
+        if (revealShip) cls += ' hasShip' + (sunkShip ? ' isSunkShip' : '') + (options.selectedShipId && ship && String(ship.id) === String(options.selectedShipId) ? ' isSelectedShipCell' : '');
         if (shot) cls += shot.hit ? ' isHit' : ' isMiss';
         if (options.enemy && shot) cls += ' isDisabled';
         if (revealShip) txt += shipsRenderShipSegment(ship, r, c, shot, options);
         if (shot) txt += shot.hit ? '<span class="shipsShotMark isHitMark">💥</span>' : '<span class="shipsShotMark isMissMark">🌊</span>';
         const data = options.enemy && !shot ? ` data-ships-shot="${r}:${c}"` : '';
         const placeData = options.placement ? ` data-ships-place="${r}:${c}"` : '';
+        const shipData = options.placement && ship ? ` data-ships-cell-ship="${escapeHtml(String(ship.id || ''))}"` : '';
         rows.push(`<button type="button" class="${cls}"${data}${placeData} aria-label="${r + 1}-${c + 1}">${txt}</button>`);
       }
     }
@@ -3814,6 +3816,25 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     const account = shipsAccountId();
     const accountName = shipsAccountName();
     const status = (msg) => `<div class="arcadeStatus shipsStatus">${escapeHtml(msg || '')}</div>`;
+    const renderShipsHeadToHeadMenu = async () => {
+      const box = body.querySelector('#shipsH2HList');
+      if (!box || typeof window.loadGameHeadToHeadList !== 'function') {
+        if (box) box.textContent = 'Zatím bez online historie.';
+        return;
+      }
+      try {
+        const res = await window.loadGameHeadToHeadList('battleship', { limit: 50 });
+        const rows = res && Array.isArray(res.rows) ? res.rows : [];
+        if (!rows.length) { box.textContent = 'Zatím žádné dokončené vzájemné zápasy.'; return; }
+        box.innerHTML = rows.slice(0, 8).map((row) => {
+          const aName = row.nameA || row.playerA || 'Hráč A';
+          const bName = row.nameB || row.playerB || 'Hráč B';
+          return `<div class="shipsH2HRow"><span>${escapeHtml(aName)} vs ${escapeHtml(bName)}</span><b>${Number(row.aWins || 0) || 0}:${Number(row.bWins || 0) || 0}</b><em>${Number(row.total || 0) || 0}×</em></div>`;
+        }).join('');
+      } catch (err) {
+        box.textContent = 'Vzájemné zápasy se nepodařilo načíst.';
+      }
+    };
     const playerKey = (role) => role === 'O' ? 'o' : 'x';
     const readyKey = (role) => role === 'O' ? 'oReady' : 'xReady';
     const selectedDef = () => SHIPS_FLEET.find((ship) => ship.id === local.placing.selected) || SHIPS_FLEET[0];
@@ -3829,9 +3850,9 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       await shipsSaveState(st);
     };
     const renderMenu = (message) => {
-      body.innerHTML = `<div class="arcadeStage shipsStage shipsMenuStage">
-        <div class="arcadeBar arcadePanel uPad12 shipsIntroCard">
-          <div class="arcadeStatus"><strong>Lodě online</strong><br>Online námořní souboj pro dva hráče. Nejdřív si připravíš flotilu: můžeš ji opakovaně přehodit automatem nebo poskládat ručně. Lodě se nesmí dotýkat stranou ani rohem.</div>
+      body.innerHTML = `<div class="arcadeStage shipsStage shipsMenuStage shipsScrollableStage">
+        <div class="arcadeBar arcadePanel uPad12 shipsIntroCard shipsSlimCard">
+          <div class="arcadeStatus"><strong>Lodě online</strong><br>Vytvoř nebo přijmi online souboj. Flotila se položí automaticky a pak si ji upravíš přímo na mapě.</div>
         </div>
         ${message ? status(message) : ''}
         <div class="arcadeControls shipsInviteControls">
@@ -3842,6 +3863,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
           <input id="shipsJoinCode" class="appInput" inputmode="text" maxlength="6" placeholder="např. A7K9">
           <button type="button" class="gameControlBtn" id="shipsJoinBtn">Přijmout pozvánku</button>
         </div>
+        <div class="arcadeBar arcadePanel uPad12 shipsH2HCard shipsMenuOnlyH2H"><div class="gamesTop3Title">Uložené vzájemné zápasy</div><div class="smallText shipsH2HMenuNote">Historie Lodí je schovaná tady v menu pro založení nebo přijetí hry, ne přímo v souboji.</div><div id="shipsH2HList" class="shipsH2HBody smallText">Načítám…</div></div>
         ${gamesTop3Block('ships', 'bodů', 5).replace('gamesTop5ScrollCard', 'gamesTop5ScrollCard arcadeTopScoreTight')}
       </div>`;
       const create = body.querySelector('#shipsCreateBtn');
@@ -3856,6 +3878,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         if (!res || !res.ok) { renderMenu('Pozvánku se nepodařilo vytvořit. Zkus to znovu online.'); return; }
         local.code = code; local.state = st; local.placing = { manual: false, selected: nextUnplaced(st.x), horizontal: true }; renderGame();
       });
+      void renderShipsHeadToHeadMenu();
       if (join) join.addEventListener('click', async () => {
         if (!account) { renderMenu('Nejdřív se přihlas do herního profilu.'); return; }
         const input = body.querySelector('#shipsJoinCode');
@@ -3904,22 +3927,21 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       const mine = shipsNormalizePlayerBoard(st[keyName]);
       st[keyName] = mine;
       const valid = shipsValidateFleet(mine);
-      const manual = !!local.placing.manual;
-      const def = selectedDef();
-      const placedIds = new Set(mine.ships.map((ship) => String(ship.id)));
-      const fleetButtons = SHIPS_FLEET.map((ship) => `<button type="button" class="shipsShipChip ${local.placing.selected === ship.id ? 'isSelected' : ''} ${placedIds.has(ship.id) ? 'isPlaced' : ''}" data-ships-select="${ship.id}"><span>${escapeHtml(ship.icon)}</span><strong>${escapeHtml(ship.name)}</strong><em>${ship.len} pole</em></button>`).join('');
-      body.innerHTML = `<div class="arcadeStage shipsStage shipsSetupStage">
-        <div class="arcadeHud arcadeHudSingleLine">${gamesStatLine('Kód', st.code || '—')}${gamesStatLine('Role', role || '—')}${gamesStatLine('Lodí', `${mine.ships.length}/${SHIPS_FLEET.length}`)}${gamesStatLine('Režim', manual ? 'ručně' : 'auto')}</div>
-        <div class="arcadeBar arcadePanel uPad12 shipsCodeCard"><strong>Připrav flotilu</strong><div class="smallText">${escapeHtml(message || st.message || 'Lodě se nesmí dotýkat ani rohem. Můžeš přehazovat automat nebo je poskládat ručně.')}</div>${!st.o ? `<div class="shipsInviteCode">${escapeHtml(st.code || '')}</div><button type="button" class="gameControlBtn" id="shipsCopyCodeBtn">Kopírovat kód</button>` : ''}</div>
-        <div class="shipsSetupGrid">
-          <div class="shipsBoardCard"><div class="smallText uBold">Tvoje flotila</div>${shipsRenderBoard(mine, { own: true, placement: true })}</div>
-          <div class="shipsFleetPanel arcadeBar arcadePanel uPad12"><div class="smallText uBold">Lodě</div><div class="shipsFleetPicker">${fleetButtons}</div><div class="smallText">Vybraná: <strong>${escapeHtml(def.name)}</strong> · ${local.placing.horizontal ? 'vodorovně' : 'svisle'}</div></div>
+      const selectedShip = mine.ships.find((ship) => String(ship.id) === String(local.placing.selected)) || mine.ships[0] || null;
+      if (selectedShip) {
+        local.placing.selected = selectedShip.id;
+        local.placing.horizontal = !!selectedShip.horizontal;
+      }
+      const selectedName = selectedShip ? selectedShip.name : 'loď';
+      body.innerHTML = `<div class="arcadeStage shipsStage shipsSetupStage shipsScrollableStage">
+        <div class="arcadeHud arcadeHudSingleLine shipsCompactHud">${gamesStatLine('Kód', st.code || '—')}${gamesStatLine('Role', role || '—')}${gamesStatLine('Lodí', `${mine.ships.length}/${SHIPS_FLEET.length}`)}${gamesStatLine('Vybraná', selectedName)}</div>
+        <div class="arcadeBar arcadePanel uPad12 shipsCodeCard shipsSlimCard"><strong>Připrav flotilu</strong><div class="smallText">${escapeHtml(message || st.message || 'Automat už položil všechny lodě. Klepni na loď, tím ji vybereš. Pak klepni jinam na moře a přesuneš ji. Lodě se nesmí dotýkat ani rohem.')}</div>${!st.o ? `<div class="shipsInviteCode">${escapeHtml(st.code || '')}</div><button type="button" class="gameControlBtn" id="shipsCopyCodeBtn">Kopírovat kód</button>` : ''}</div>
+        <div class="shipsSingleBoardWrap shipsSetupBoardWrap">
+          <div class="shipsBoardCard shipsBoardCardLift"><div class="smallText uBold">Tvoje flotila · klepni na loď a přesuň ji</div>${shipsRenderBoard(mine, { own: true, placement: true, selectedShipId: selectedShip && selectedShip.id })}</div>
         </div>
-        <div class="arcadeControls shipsSetupActions">
+        <div class="arcadeControls shipsSetupActions shipsSetupActionsCompact">
           <button type="button" class="gameControlBtn" id="shipsShuffleBtn">Přehodit automaticky</button>
-          <button type="button" class="gameControlBtn" id="shipsManualBtn">${manual ? 'Automatický návrh' : 'Ručně poskládat'}</button>
-          <button type="button" class="gameControlBtn" id="shipsRotateBtn">Otočit loď</button>
-          <button type="button" class="gameControlBtn" id="shipsClearBtn">Vyčistit</button>
+          <button type="button" class="gameControlBtn" id="shipsRotateBtn">Otočit vybranou</button>
           <button type="button" class="gameControlBtn ${valid ? 'primary' : 'isDisabled'}" id="shipsReadyBtn">Potvrdit flotilu</button>
         </div>
       </div>`;
@@ -3927,35 +3949,45 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       if (copy) copy.addEventListener('click', async () => {
         try { await navigator.clipboard.writeText(st.code || ''); st.message = 'Kód zkopírovaný.'; renderPlacement(st, role); } catch (err) { st.message = 'Kód: ' + (st.code || ''); renderPlacement(st, role); }
       });
-      body.querySelectorAll('[data-ships-select]').forEach((btn) => btn.addEventListener('click', () => { local.placing.selected = btn.getAttribute('data-ships-select') || SHIPS_FLEET[0].id; local.placing.manual = true; renderPlacement(st, role); }));
       const shuffle = body.querySelector('#shipsShuffleBtn');
       if (shuffle) shuffle.addEventListener('click', async () => {
         st[keyName] = shipsBuildPlayerBoard();
         st[readyKey(role)] = false;
-        local.placing.manual = false;
-        local.placing.selected = nextUnplaced(st[keyName]);
-        await saveAndRender(st, 'Flotila přeházená. Jestli sedí, potvrď ji.');
-      });
-      const manualBtn = body.querySelector('#shipsManualBtn');
-      if (manualBtn) manualBtn.addEventListener('click', async () => {
-        local.placing.manual = !local.placing.manual;
-        if (local.placing.manual) { st[keyName] = shipsEmptyPlayerBoard(); st[readyKey(role)] = false; local.placing.selected = SHIPS_FLEET[0].id; await saveAndRender(st, 'Ruční pokládání: vyber loď a klepni na pole.'); }
-        else { st[keyName] = shipsBuildPlayerBoard(); st[readyKey(role)] = false; await saveAndRender(st, 'Automat připravil novou flotilu.'); }
+        local.placing.selected = (st[keyName].ships[0] && st[keyName].ships[0].id) || SHIPS_FLEET[0].id;
+        local.placing.horizontal = !!(st[keyName].ships[0] && st[keyName].ships[0].horizontal);
+        await saveAndRender(st, 'Flotila přeházená. Jestli sedí, potvrď ji, nebo klepni na loď a přesuň ji ručně.');
       });
       const rotate = body.querySelector('#shipsRotateBtn');
-      if (rotate) rotate.addEventListener('click', () => { local.placing.horizontal = !local.placing.horizontal; renderPlacement(st, role); });
-      const clear = body.querySelector('#shipsClearBtn');
-      if (clear) clear.addEventListener('click', async () => { st[keyName] = shipsEmptyPlayerBoard(); st[readyKey(role)] = false; local.placing.manual = true; local.placing.selected = SHIPS_FLEET[0].id; await saveAndRender(st, 'Pole je čisté. Poskládej flotilu ručně.'); });
+      if (rotate) rotate.addEventListener('click', async () => {
+        const current = st[keyName].ships.find((ship) => String(ship.id) === String(local.placing.selected)) || st[keyName].ships[0];
+        if (!current || !Array.isArray(current.cells) || !current.cells.length) { renderPlacement(st, role, 'Nejdřív vyber loď.'); return; }
+        const anchor = current.cells[0];
+        const res = shipsPlaceShip(st[keyName], current, Number(anchor[0]), Number(anchor[1]), !current.horizontal);
+        if (!res.ok) { renderPlacement(st, role, 'Tady otočit nejde. Zkus loď posunout dál od ostatních.'); return; }
+        st[keyName] = res.board;
+        st[readyKey(role)] = false;
+        local.placing.selected = current.id;
+        local.placing.horizontal = !current.horizontal;
+        await saveAndRender(st, 'Loď otočená.');
+      });
       body.querySelectorAll('[data-ships-place]').forEach((btn) => btn.addEventListener('click', async () => {
-        local.placing.manual = true;
         const parts = String(btn.getAttribute('data-ships-place') || '').split(':').map(Number);
-        const picked = selectedDef();
+        const clickedShipId = btn.getAttribute('data-ships-cell-ship') || '';
+        const clickedShip = clickedShipId ? mine.ships.find((ship) => String(ship.id) === String(clickedShipId)) : null;
+        if (clickedShip) {
+          local.placing.selected = clickedShip.id;
+          local.placing.horizontal = !!clickedShip.horizontal;
+          renderPlacement(st, role, 'Vybraná loď: ' + String(clickedShip.name || 'loď') + '. Klepni na nové místo, kam ji chceš přesunout.');
+          return;
+        }
+        const picked = mine.ships.find((ship) => String(ship.id) === String(local.placing.selected)) || mine.ships[0];
+        if (!picked) { renderPlacement(st, role, 'Není vybraná žádná loď. Přehod flotilu automatem.'); return; }
         const res = shipsPlaceShip(st[keyName], picked, parts[0], parts[1], !!local.placing.horizontal);
         if (!res.ok) { renderPlacement(st, role, 'Sem loď dát nejde. Lodě se nesmí dotýkat ani rohem.'); return; }
         st[keyName] = res.board;
         st[readyKey(role)] = false;
-        local.placing.selected = nextUnplaced(res.board);
-        await saveAndRender(st, 'Loď položena. Pokračuj nebo potvrď flotilu.');
+        local.placing.selected = picked.id;
+        await saveAndRender(st, 'Loď přesunutá.');
       }));
       const ready = body.querySelector('#shipsReadyBtn');
       if (ready) ready.addEventListener('click', async () => {
@@ -3998,12 +4030,12 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       const viewHint = st.status === 'active'
         ? (canShoot ? 'Jsi na tahu, proto se ti rovnou ukazuje pole soupeře.' : 'Hraje soupeř, proto se ti rovnou ukazuje tvoje flotila a zásahy proti tobě.')
         : 'Přepni si, jestli chceš vidět flotilu nebo střelbu.';
-      body.innerHTML = `<div class="arcadeStage shipsStage">
+      body.innerHTML = `<div class="arcadeStage shipsStage shipsScrollableStage shipsPlayStage">
         <div class="arcadeHud arcadeHudSingleLine">${gamesStatLine('Kód', st.code || '—')}${gamesStatLine('Role', role || 'divák')}${gamesStatLine('Zásahy', sum.hits)}${gamesStatLine('Potopené', sum.sunk)}</div>
-        <div class="arcadeBar arcadePanel uPad12 shipsCodeCard"><strong>${escapeHtml(headline)}</strong><div class="smallText">${escapeHtml(st.message || '')}</div><div class="smallText shipsViewHint">${escapeHtml(viewHint)}</div>${(!st.o && role === 'X') ? `<div class="shipsInviteCode">${escapeHtml(st.code || '')}</div><button type="button" class="gameControlBtn" id="shipsCopyCodeBtn">Kopírovat kód</button>` : ''}</div>
+        <div class="arcadeBar arcadePanel uPad12 shipsCodeCard shipsSlimCard"><strong>${escapeHtml(headline)}</strong><div class="smallText">${escapeHtml(st.message || '')}</div><div class="smallText shipsViewHint">${escapeHtml(viewHint)}</div>${(!st.o && role === 'X') ? `<div class="shipsInviteCode">${escapeHtml(st.code || '')}</div><button type="button" class="gameControlBtn" id="shipsCopyCodeBtn">Kopírovat kód</button>` : ''}</div>
         ${toggleHtml}
         <div class="shipsSingleBoardWrap">
-          <div class="shipsBoardCard"><div class="smallText uBold">${escapeHtml(activeBoardTitle)}</div>${activeBoard}</div>
+          <div class="shipsBoardCard shipsBoardCardLift"><div class="smallText uBold">${escapeHtml(activeBoardTitle)}</div>${activeBoard}</div>
         </div>
         ${st.status === 'finished' ? `<div class="arcadeResultOverlay shipsResult"><div class="arcadeResultCard"><strong>${st.winner === role ? 'Výhra!' : 'Konec hry'}</strong><div class="smallText">Zásahy: ${sum.hits} · Potopené: ${sum.sunk}</div><button type="button" class="gameControlBtn" id="shipsBackBtn">Zpět do Lodí</button></div></div>` : ''}
       </div>`;
@@ -4097,7 +4129,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     const allHot = EXTRA_GAMES.length === 0;
     const completedOnlyGuard = typeof window.gamesRecordStat === 'function';
     return {
-      version: 'v.1.1 (711)',
+      version: 'v.1.1 (713)',
       ok: !missingMeta.length && !missingRenderer.length && allHot && completedOnlyGuard,
       totalGames: ids.length,
       coreGames: ids,
@@ -4112,7 +4144,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       themeBackground: true,
       touchGuard: true,
       notes: [
-        'QA build 711 dotahuje Lodě online: přepínanou jednu herní plochu a souvislejší lodní grafiku.',
+        'QA build 712 přesouvá Lodě vedle Piškvorek, povoluje scroll obrazovky Lodí a zjednodušuje přípravu flotily bez bočního výběru lodí.',
         'Reálnou hratelnost a citlivost dotyku je potřeba potvrdit na mobilu.'
       ]
     };

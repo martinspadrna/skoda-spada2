@@ -342,7 +342,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v711');
+      const channel = client.channel('rak-public-live-v713');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -2110,7 +2110,7 @@
     const { data, error } = await runSupabaseOperation('game_sessions.ttt_head_to_head', () => client
       .from('game_sessions')
       .select('id,player_x_account_number,player_o_account_number,winner_account_number,status,board_state,updated_at,finished_at')
-      .eq('game_type', 'gomoku')
+      .eq('game_type', gameType)
       .eq('status', 'finished')
       .or(orExpr)
       .order('updated_at', { ascending: false })
@@ -2140,7 +2140,8 @@
   async function loadTttHeadToHeadListDirect(client, options = {}) {
     const forceRefresh = !!(options && options.force);
     const limit = Math.max(20, Math.min(500, Number(options && options.limit) || 200));
-    const cacheKey = LOCAL_GAME_SESSIONS_PREFIX + 'h2h-list:' + String(limit);
+    const gameType = String(options && options.gameType || options && options.game_type || 'gomoku').trim() || 'gomoku';
+    const cacheKey = LOCAL_GAME_SESSIONS_PREFIX + 'h2h-list:' + encodeURIComponent(gameType) + ':' + String(limit);
     const cached = forceRefresh ? null : readTimedCache(cacheKey, SUPABASE_GAME_CACHE_TTL_MS);
     if (cached && cached.fresh && cached.rows && cached.rows[0]) {
       rememberTimedCacheHit('session', cached);
@@ -2149,7 +2150,7 @@
     const { data, error } = await runSupabaseOperation('game_sessions.ttt_head_to_head_list', () => client
       .from('game_sessions')
       .select('id,player_x_account_number,player_o_account_number,winner_account_number,status,board_state,updated_at,finished_at')
-      .eq('game_type', 'gomoku')
+      .eq('game_type', gameType)
       .eq('status', 'finished')
       .not('player_x_account_number', 'is', null)
       .not('player_o_account_number', 'is', null)
@@ -2966,7 +2967,13 @@
       const client = getClient();
       if (!client || !navigator.onLine) return { ok: false, reason: 'offline-or-missing-client', rows: [] };
       try { const result = await loadTttHeadToHeadListDirect(client, options || {}); state.lastError = null; return result; }
-      catch (err) { state.lastError = err; console.error('TTT head-to-head list load failed', err); return { ok: false, error: err, rows: [] }; }
+      catch (err) { state.lastError = err; console.error('Head-to-head list load failed', err); return { ok: false, error: err, rows: [] }; }
+    },
+    loadGameHeadToHeadList: async (gameType, options = {}) => {
+      const client = getClient();
+      if (!client || !navigator.onLine) return { ok: false, reason: 'offline-or-missing-client', rows: [] };
+      try { const result = await loadTttHeadToHeadListDirect(client, Object.assign({}, options || {}, { gameType: String(gameType || 'gomoku') || 'gomoku' })); state.lastError = null; return result; }
+      catch (err) { state.lastError = err; console.error('Game head-to-head list load failed', err); return { ok: false, error: err, rows: [] }; }
     },
     getState: () => ({ ...state })
   };
@@ -2986,6 +2993,7 @@
   window.saveGameSessionByInviteCode = async (code, payload) => window.RotationSupabaseBridge.saveGameSessionByInviteCode(code, payload);
   window.loadTttHeadToHead = async (playerA, playerB, options) => window.RotationSupabaseBridge.loadTttHeadToHead(playerA, playerB, options || {});
   window.loadTttHeadToHeadList = async (options) => window.RotationSupabaseBridge.loadTttHeadToHeadList(options || {});
+  window.loadGameHeadToHeadList = async (gameType, options) => window.RotationSupabaseBridge.loadGameHeadToHeadList(gameType, options || {});
   window.loadBugReports = async (options) => window.RotationSupabaseBridge.loadBugReports(options || {});
   window.updateBugReportStatus = async (id, status, note) => window.RotationSupabaseBridge.updateBugReportStatus(id, status, note || '');
 

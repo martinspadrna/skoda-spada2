@@ -1,15 +1,9 @@
-## v.1.1 (711)
-- Lodě online: lodě mají souvislejší grafický vzhled přes celou délku, ne jen oddělené segmenty v jednotlivých políčkách. Přidané tvary přídě/zádě, paluba, kabina a odlišnější styl pro typy lodí.
-- Lodě online: herní fáze nově používá jednu hlavní přepínanou plochu. Když jsi na tahu, ukáže se pole soupeře pro střelbu; když hraje soupeř, ukáže se tvoje flotila se zásahy proti tobě. Přepínač dovolí pole ručně přepnout.
-- Lodě online: moře, zásahy, voda/minutí a potopené lodě mají výraznější námořní vizuál a jasnější čitelnost na mobilu.
-- Verze sjednocena na v.1.1 (711), cache na v1.1-711 a Supabase realtime kanál na rak-public-live-v711.
-
-## v.1.1 (711)
-- Lodě online: přidaná přípravná fáze flotily před hrou. Hráč může flotilu opakovaně přehazovat automaticky, nebo ji skládat ručně.
-- Lodě online: ruční pokládání podporuje výběr konkrétní lodě, otáčení vodorovně/svisle a kontrolu pravidla, že se lodě nesmí dotýkat stranou ani rohem.
-- Lodě online: hra začne až po potvrzení flotily oběma hráči; do té doby se čeká na připravenost soupeře.
-- Lodě online: výraznější grafika moře, lodí, zásahů, vody/minutí a potopených lodí. Tvoje pole ukazuje zásahy soupeře a soupeřovo pole tvoje střely.
-- Verze sjednocena na v.1.1 (711), cache na v1.1-711 a Supabase realtime kanál na rak-public-live-v711.
+## v.1.1 (713)
+- Lodě online přesunuté v menu hned vedle Piškvorek.
+- Obrazovka Lodí má povolené scrollování, hrací pole je posunuté výš a okolní panely jsou kompaktnější, aby nebyla vidět jen mřížka.
+- Příprava flotily je zjednodušená: panel s výběrem lodí je pryč, flotila se položí automaticky a lodě se vybírají/přesouvají přímo na mapě.
+- Vzájemné zápasy Lodí jsou nově v menu, kde se zakládá nebo přijímá online hra.
+- Verze sjednocena na v.1.1 (713), cache na v1.1-713 a Supabase realtime kanál na rak-public-live-v713.
 
 ## v.1.1 (709)
 - Rozpisy: jmenné sloupky v běžných tabulkách zúžené o dalších cca 5 %, aby se lépe vešly na mobil.
