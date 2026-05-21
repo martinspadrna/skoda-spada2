@@ -1,3 +1,9 @@
+## v.1.1 (700)
+- Hry: jméno přihlášeného profilu se nově propisuje i přímo vedle ranku v horním řádku Her, aby nezmizelo při pozdějším přerenderování nebo starším CSS.
+- Bomberman mini: panáček už se nepřekresluje celý při každém kroku; zůstává ve vrstvě a plynule přechází po jednotlivých políčkách místo teleportování.
+- Bomberman joystick dál drží směr podle prstu, ale provádí vždy jen krok po mřížce.
+- Verze sjednocena na v.1.1 (700), cache na v1.1-700 a Supabase realtime kanál na rak-public-live-v700.
+
 ## v.1.1 (699)
 - Hry: horní profil v menu je zjednodušený zpět na jméno vlevo a klikací rank vpravo; průběh k dalšímu ranku zůstává dostupný v tabulce po klepnutí na rank.
 - Bomberman mini: zdi a truhly/bedny jsou výraznější, čitelnější a mají pevnější kontrast v herním bludišti.

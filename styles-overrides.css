@@ -7854,3 +7854,58 @@ body.gamesOpen #games .gamesProfileStatusName:empty::before{
 #games .bomberEntity.player.isLeft .bomberHeroArm.a2{animation:bomberHeroRunB .32s ease-in-out infinite alternate;}
 @keyframes bomberHeroRunA{from{transform:rotate(32deg);}to{transform:rotate(-10deg);}}
 @keyframes bomberHeroRunB{from{transform:rotate(-32deg);}to{transform:rotate(10deg);}}
+
+/* v.1.1 (700) – Hry: jméno pevně vedle ranku + Bomberman krokový pohyb po políčkách */
+body.gamesOpen #games .gamesProfileRankBadge,
+#games .gamesProfileRankBadge{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:8px !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  white-space:nowrap !important;
+}
+body.gamesOpen #games .gamesProfileRankPlayer,
+#games .gamesProfileRankPlayer{
+  display:inline-block !important;
+  max-width:min(40vw, 170px) !important;
+  min-width:0 !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  color:var(--soft,#ecfff0) !important;
+  font-weight:900 !important;
+  letter-spacing:-.01em !important;
+}
+body.gamesOpen #games .gamesProfileRankValue,
+#games .gamesProfileRankValue{
+  display:inline-block !important;
+  color:var(--accent,#7cff7c) !important;
+  font-weight:950 !important;
+}
+body.gamesOpen #games .gamesProfileRankPlayer + .gamesProfileRankValue::before,
+#games .gamesProfileRankPlayer + .gamesProfileRankValue::before{
+  content:'·';
+  color:rgba(236,255,240,.42);
+  margin-right:8px;
+}
+body.gamesOpen #games .gamesProfileStatusCardCompact .gamesProfileStatusName{
+  display:block !important;
+  visibility:visible !important;
+  opacity:1 !important;
+}
+#games .bomberDynamicEntities{
+  position:absolute !important;
+  inset:0 !important;
+  pointer-events:none !important;
+}
+#games .bomberEntity.player{
+  transition:transform .18s linear, filter .14s ease, opacity .14s ease !important;
+  animation:none !important;
+}
+#games .bomberEntity.monster,
+#games .bomberEntity.bomb,
+#games .bomberEntity.fire,
+#games .bomberEntity.upgrade{
+  transition:transform .14s linear, filter .14s ease, opacity .14s ease !important;
+}

@@ -3885,30 +3885,44 @@ function bindGamesRankBadge() {
 
 function gamesResolveActiveAccountName(active) {
   if (!active) return 'Bez profilu';
-  const id = String(active.id || '').trim();
-  const raw = String(active.name || '').trim();
-  const looksGeneric = !raw || raw === id || raw === ('Hráč ' + id) || /^\d{1,8}$/.test(raw);
-  if (!looksGeneric) return raw;
+  const id = String(active.id || active.account_number || active.accountNumber || '').trim();
+  const candidates = [
+    active.name,
+    active.full_name,
+    active.fullName,
+    active.player_name,
+    active.playerName,
+    active.nickname,
+    active.username
+  ];
+  const isUsableName = (value) => {
+    const text = String(value || '').trim();
+    if (!text) return false;
+    if (id && (text === id || text === ('Hráč ' + id))) return false;
+    if (/^\d{1,8}$/.test(text)) return false;
+    return true;
+  };
+  for (const value of candidates) {
+    if (isUsableName(value)) return String(value).trim();
+  }
   try {
     if (typeof tttGetAccountDisplayName === 'function' && id) {
       const resolved = String(tttGetAccountDisplayName(id) || '').trim();
-      if (resolved && resolved !== id && resolved !== ('Hráč ' + id) && !/^\d{1,8}$/.test(resolved)) return resolved;
+      if (isUsableName(resolved)) return resolved;
     }
   } catch (err) {}
-  try {
-    if (Array.isArray(window.GAMES_ACCOUNT_LIST) && id) {
-      const match = window.GAMES_ACCOUNT_LIST.find(acc => String(acc && acc.id || '').trim() === id);
-      const name = String(match && match.name || '').trim();
-      if (name && name !== id && name !== ('Hráč ' + id)) return name;
-    }
-  } catch (err) {}
-  try {
-    if (typeof GAMES_ACCOUNT_LIST !== 'undefined' && Array.isArray(GAMES_ACCOUNT_LIST) && id) {
-      const match = GAMES_ACCOUNT_LIST.find(acc => String(acc && acc.id || '').trim() === id);
-      const name = String(match && match.name || '').trim();
-      if (name && name !== id && name !== ('Hráč ' + id)) return name;
-    }
-  } catch (err) {}
+  const lists = [];
+  try { if (Array.isArray(window.GAMES_ACCOUNT_LIST)) lists.push(window.GAMES_ACCOUNT_LIST); } catch (err) {}
+  try { if (typeof GAMES_ACCOUNT_LIST !== 'undefined' && Array.isArray(GAMES_ACCOUNT_LIST)) lists.push(GAMES_ACCOUNT_LIST); } catch (err) {}
+  for (const list of lists) {
+    try {
+      const match = list.find(acc => String(acc && (acc.id || acc.account_number || acc.accountNumber) || '').trim() === id);
+      if (!match) continue;
+      const resolved = match.name || match.full_name || match.fullName || match.player_name || match.playerName || match.nickname || match.username;
+      if (isUsableName(resolved)) return String(resolved).trim();
+    } catch (err) {}
+  }
+  const raw = String(active.name || '').trim();
   return raw || (id ? ('Hráč ' + id) : 'Hráč');
 }
 
@@ -3965,7 +3979,10 @@ function renderGamesProfileStatus() {
   if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(metaEl, metaText, 'gamesProfileStatusMeta');
   else metaEl.textContent = metaText;
   if (rankEl) {
-    rankEl.textContent = rankText;
+    rankEl.innerHTML = active
+      ? '<span class="gamesProfileRankPlayer">' + escapeHtml(nextName) + '</span><span class="gamesProfileRankValue">' + escapeHtml(rankText) + '</span>'
+      : '<span class="gamesProfileRankValue">' + escapeHtml(rankText) + '</span>';
+    rankEl.setAttribute('data-player-name', nextName);
     rankEl.disabled = false;
     bindGamesRankBadge();
   }
@@ -4005,7 +4022,7 @@ function buildAppHistoryHtml(versionText) {
       range: versionText,
       title: 'Aktuální build',
       lines: [
-        'Build v.1.1 (699) opravuje jméno přihlášeného profilu u ranku a předělává Bombermana na joystick ovládání s panáčkem místo šipky.',
+        'Build v.1.1 (700) opravuje zobrazení jména přímo vedle ranku v Hrách a Bomberman už krokově chodí po políčkách místo teleportování.',
         'Série v.1.1 650–694 dotáhla Piškvorky, online pozvánky, PWA launch handler, 2048/Snake/Flappy Car/Aim/Reaction/Tetris/Space Shooter/Brick Breaker/Doodle/Bubble/Sudoku/Miny/Pexeso mezi hotové hry, herní profily, theme polish a těžší/chytřejší achievementy.',
         'Sekce „O aplikaci“ je nově stručnější: detailní změny zůstávají v changelogu a tady se historie drží po větších blocích.',
         'Stabilizační audity, Supabase guardy, Láďův režim a finální readiness kontroly zůstávají součástí diagnostiky.'

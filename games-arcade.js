@@ -2,7 +2,7 @@
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
 
-  // v.1.1 (699): Hry horní profil jméno + rank a Bomberman joystick pohyb s panáčkem.
+  // v.1.1 (700): Hry jméno přímo u ranku a Bomberman krokový joystick bez teleportu.
   const CORE_GAMES = ['ttt', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
   const EXTRA_GAMES = [];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);
@@ -1060,7 +1060,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function renderLaunchTiles() {
     const grid = document.getElementById('gamesGrid');
     if (!grid) return;
-    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v699';
+    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v700';
     if (grid.dataset && grid.dataset.arcadeLaunchSig === launchSig && grid.querySelector('.gamesDevFolder') && grid.querySelector('[data-game="ttt"]')) {
       gamePerf.launchRenderSkips = Number(gamePerf.launchRenderSkips || 0) + 1;
       return;
@@ -3134,7 +3134,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       }
       return out;
     };
-    const entityHtml = () => {
+    const dynamicEntityHtml = () => {
       const items = [];
       Object.keys(state.upgrades || {}).forEach((k) => {
         const [x, y] = k.split(',').map(Number);
@@ -3143,15 +3143,32 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       state.bombs.filter(b => !b.exploded).forEach(b => items.push(`<div class="bomberEntity bomb" style="--x:${b.x};--y:${b.y};">💣</div>`));
       state.fires.filter(f => f.life > 0).forEach(f => items.push(`<div class="bomberEntity fire" style="--x:${f.x};--y:${f.y};">✦</div>`));
       state.enemies.filter(e => e.alive).forEach((e, i) => items.push(`<div class="bomberEntity monster m${i}" style="--x:${e.x};--y:${e.y};">${i === 0 ? '👾' : i === 1 ? '🛸' : i === 2 ? '🦑' : '👻'}</div>`));
-      const dirClass = state.dir === 'left' ? ' isLeft' : state.dir === 'right' ? ' isRight' : state.dir === 'up' ? ' isUp' : ' isDown';
-      items.push(`<div class="bomberEntity player${dirClass}" style="--x:${state.x};--y:${state.y};"><span class="bomberHero" aria-hidden="true"><span class="bomberHeroHead"></span><span class="bomberHeroBody"></span><span class="bomberHeroArm a1"></span><span class="bomberHeroArm a2"></span></span></div>`);
       return items.join('');
     };
-    const boardHtml = () => `<div class="arcadeBomberCells">${cellsHtml()}</div><div class="arcadeBomberEntities">${entityHtml()}</div>`;
+    const playerClass = () => 'bomberEntity player' + (state.dir === 'left' ? ' isLeft' : state.dir === 'right' ? ' isRight' : state.dir === 'up' ? ' isUp' : ' isDown');
+    const playerHtml = () => `<div class="${playerClass()}" id="bomberPlayer" style="--x:${state.x};--y:${state.y};"><span class="bomberHero" aria-hidden="true"><span class="bomberHeroHead"></span><span class="bomberHeroBody"></span><span class="bomberHeroArm a1"></span><span class="bomberHeroArm a2"></span></span></div>`;
+    const boardHtml = () => `<div class="arcadeBomberCells">${cellsHtml()}</div><div class="arcadeBomberEntities"><div class="bomberDynamicEntities">${dynamicEntityHtml()}</div>${playerHtml()}</div>`;
     const hudHtml = () => `${gamesStatLine('Skóre', state.score)}${gamesStatLine('Příšerky', state.enemies.filter(e => e.alive).length)}${gamesStatLine('Bomby', `${state.bombs.filter(b => !b.exploded).length}/${state.maxBombs}`)}${gamesStatLine('Síla', state.range)}`;
     const paint = () => {
       const hud = body.querySelector('.bomberHud'); if (hud) hud.innerHTML = hudHtml();
-      const board = body.querySelector('#bomberGrid'); if (board) board.innerHTML = boardHtml();
+      const board = body.querySelector('#bomberGrid');
+      if (board) {
+        const cells = board.querySelector('.arcadeBomberCells');
+        const dynamic = board.querySelector('.bomberDynamicEntities');
+        let player = board.querySelector('#bomberPlayer');
+        if (!cells || !dynamic || !player) {
+          board.innerHTML = boardHtml();
+          player = board.querySelector('#bomberPlayer');
+        } else {
+          cells.innerHTML = cellsHtml();
+          dynamic.innerHTML = dynamicEntityHtml();
+        }
+        if (player) {
+          player.className = playerClass();
+          player.style.setProperty('--x', String(state.x));
+          player.style.setProperty('--y', String(state.y));
+        }
+      }
       const status = body.querySelector('.bomberStatus');
       if (status) status.innerHTML = state.over ? (state.won ? 'Vyčištěno. Příšerky jsou pryč.' : 'Konec hry. Zkus to znovu.') : state.hint;
     };
@@ -3181,11 +3198,20 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       if (!state.over && state.enemies.every(e => !e.alive)) { state.over = true; state.won = true; state.score += 500; state.hint = 'Vyčištěno. Všechny příšerky jsou pryč.'; }
     };
     const move = (dx, dy) => {
-      if (state.over) return;
+      if (state.over) return false;
       if (dx < 0) state.dir = 'left'; else if (dx > 0) state.dir = 'right'; else if (dy < 0) state.dir = 'up'; else if (dy > 0) state.dir = 'down';
-      const nx = clamp(state.x + dx, 1, state.w - 2); const ny = clamp(state.y + dy, 1, state.h - 2);
-      if (!bomberIsBlocked(state, nx, ny, false) && !bomberHasBomb(state, nx, ny)) { state.x = nx; state.y = ny; checkCollect(); checkHits(); }
+      const nx = clamp(state.x + dx, 1, state.w - 2);
+      const ny = clamp(state.y + dy, 1, state.h - 2);
+      if (!bomberIsBlocked(state, nx, ny, false) && !bomberHasBomb(state, nx, ny)) {
+        state.x = nx;
+        state.y = ny;
+        checkCollect();
+        checkHits();
+        paint();
+        return true;
+      }
       paint();
+      return false;
     };
     const placeBomb = () => {
       if (state.over) return;
@@ -3246,7 +3272,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         ev.preventDefault();
         try { grid.setPointerCapture && grid.setPointerCapture(ev.pointerId); } catch (err) {}
         state.touch = { x: ev.clientX, y: ev.clientY, moved: false };
-        state.joystick = { active: true, pointerId: ev.pointerId, startX: ev.clientX, startY: ev.clientY, dirX: 0, dirY: 0, moved: false, stepAcc: 999, lastMoveAt: 0 };
+        state.joystick = { active: true, pointerId: ev.pointerId, startX: ev.clientX, startY: ev.clientY, dirX: 0, dirY: 0, moved: false, stepAcc: 0, lastMoveAt: 0 };
         state.hint = 'Držíš joystick. Táhni prstem do směru pohybu.';
         paint();
       }, { passive: false });
@@ -3264,8 +3290,11 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         }
         joy.moved = true;
         if (state.touch) state.touch.moved = true;
+        const prevX = joy.dirX || 0;
+        const prevY = joy.dirY || 0;
         if (ax >= ay) { joy.dirX = dx > 0 ? 1 : -1; joy.dirY = 0; }
         else { joy.dirX = 0; joy.dirY = dy > 0 ? 1 : -1; }
+        if (prevX !== joy.dirX || prevY !== joy.dirY) joy.stepAcc = Math.max(Number(joy.stepAcc || 0), 130);
         if (joy.dirX < 0) state.dir = 'left'; else if (joy.dirX > 0) state.dir = 'right'; else if (joy.dirY < 0) state.dir = 'up'; else if (joy.dirY > 0) state.dir = 'down';
         paint();
       }, { passive: false });
@@ -3314,9 +3343,9 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         const joy = state.joystick || {};
         if (joy.active && (joy.dirX || joy.dirY)) {
           joy.stepAcc = Number(joy.stepAcc || 0) + dt;
-          const stepMs = Math.max(82, Math.round(176 - ((Number(state.speed || 1) - 1) * 46)));
-          while (joy.stepAcc >= stepMs) {
-            joy.stepAcc -= stepMs;
+          const stepMs = Math.max(118, Math.round(210 - ((Number(state.speed || 1) - 1) * 42)));
+          if (joy.stepAcc >= stepMs) {
+            joy.stepAcc = 0;
             move(joy.dirX, joy.dirY);
           }
         }

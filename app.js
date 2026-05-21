@@ -1,4 +1,4 @@
-// v.1.1 (699) – Hry: opravené přihlášené jméno u ranku a Bomberman joystick s panáčkem.
+// v.1.1 (700) – Hry: jméno přímo u ranku a Bomberman krokově chodí po políčkách.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;
