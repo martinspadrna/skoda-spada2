@@ -1,4 +1,4 @@
-// v.1.1 (716) – Lodě online: nižší posazení, kulaté vytvoření hry a návrat do menu Lodí.
+// v.1.1 (717) – Lodě online: akce flotily nad kódem a kompaktnější horní panel.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

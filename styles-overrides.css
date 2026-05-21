@@ -8766,7 +8766,7 @@ body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .arcadeStage
 }
 
 
-/* v.1.1 (716): Lodě online – obrazovky mírně níž, kulaté založení a návrat do menu Lodí. */
+/* v.1.1 (717): Lodě online – zachované nižší posazení, kulaté založení a návrat do menu Lodí. */
 body.shipsGameOpen #games .gamesShellNoTitle{
   padding-top:calc(8px + env(safe-area-inset-top)) !important;
 }
@@ -8811,4 +8811,81 @@ body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .arcadeStage
 @media (max-width:390px){
   body.shipsGameOpen #games .gamesShellNoTitle{padding-top:calc(6px + env(safe-area-inset-top)) !important;}
   #games .shipsSetupActionsCompact{gap:6px !important;}
+}
+
+/* v.1.1 (717): Lodě online – akce flotily nad panelem s kódem a čitelnější název lodi. */
+#games .shipsSetupPrimaryActions{
+  width:min(100%,460px) !important;
+  margin:0 auto 2px !important;
+  display:grid !important;
+  grid-template-columns:1fr 1fr !important;
+  gap:7px !important;
+}
+#games .shipsSetupPrimaryActions .gameControlBtn{
+  min-height:36px !important;
+  padding:7px 9px !important;
+  border-radius:15px !important;
+  font-size:11px !important;
+}
+#games .shipsSetupSecondaryActions{
+  width:min(100%,460px) !important;
+  margin:2px auto 0 !important;
+  display:grid !important;
+  grid-template-columns:1fr 1fr !important;
+  gap:7px !important;
+}
+#games .shipsSetupSecondaryActions .gameControlBtn{
+  min-height:34px !important;
+  padding:7px 9px !important;
+  border-radius:15px !important;
+  font-size:11px !important;
+}
+#games .shipsCompactHud{
+  grid-template-columns:.72fr .62fr .68fr minmax(118px,1.65fr) !important;
+  gap:3px !important;
+}
+#games .shipsCompactHud .arcadeStat{
+  padding:5px 4px !important;
+  min-height:34px !important;
+}
+#games .shipsCompactHud .arcadeStat span,
+#games .shipsCompactHud .arcadeStat small{
+  line-height:1.05 !important;
+}
+#games .shipsCompactHud .arcadeStat:last-child{
+  min-width:118px !important;
+}
+#games .shipsCompactHud .arcadeStat:last-child b,
+#games .shipsCompactHud .arcadeStat:last-child strong,
+#games .shipsCompactHud .arcadeStat:last-child span:last-child{
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+}
+@media (max-width:390px){
+  #games .shipsSetupPrimaryActions,
+  #games .shipsSetupSecondaryActions{gap:6px !important;}
+  #games .shipsCompactHud{grid-template-columns:.62fr .55fr .62fr minmax(108px,1.8fr) !important;}
+  #games .shipsCompactHud .arcadeStat{padding:4px 3px !important;}
+}
+/* v.1.1 (717): korekce pro skutečné stat karty v HUDu Lodí. */
+#games .shipsCompactHud .gamesStatCard{
+  padding:5px 4px !important;
+  min-height:34px !important;
+  min-width:0 !important;
+}
+#games .shipsCompactHud .gamesStatLabel,
+#games .shipsCompactHud .gamesStatValue{
+  line-height:1.05 !important;
+}
+#games .shipsCompactHud .gamesStatCard:last-child{
+  min-width:118px !important;
+}
+#games .shipsCompactHud .gamesStatCard:last-child .gamesStatValue{
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+}
+@media (max-width:390px){
+  #games .shipsCompactHud .gamesStatCard{padding:4px 3px !important;}
 }
