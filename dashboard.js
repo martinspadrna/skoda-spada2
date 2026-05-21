@@ -710,7 +710,7 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
 })();
 
 
-// v.1.1 (723): ruční sync přes online stav na dashboardu.
+// v.1.1 (725): ruční sync přes online stav na dashboardu.
 const RAK_DASHBOARD_MANUAL_SYNC_STATE = {
   running: false,
   lastAt: 0,

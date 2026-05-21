@@ -8973,7 +8973,7 @@ body.gamesOpen #games #gamesShellBody[data-arcade-game="ships"] .arcadeStage,
   min-height:220px !important;
 }
 
-/* v.1.1 (723): Láďův režim turbo – finální výkonová pojistka pro slabší mobily. */
+/* v.1.1 (725): Láďův režim turbo – finální výkonová pojistka pro slabší mobily. */
 body.ladaMode,
 body.lightweightMode,
 body.lowEndDevice{
@@ -9165,7 +9165,7 @@ body.lowEndDevice #games .gamesTop5ScrollBody{
 }
 
 
-/* v.1.1 (723) – dashboard ruční sync + administrace servis */
+/* v.1.1 (725) – dashboard ruční sync + administrace servis */
 .dashboardSyncBadge{
   pointer-events:auto !important;
   cursor:pointer !important;
@@ -9222,4 +9222,76 @@ body.ladaMode .adminServiceMetric{
   backdrop-filter:none !important;
   -webkit-backdrop-filter:none !important;
   box-shadow:none !important;
+}
+
+/* v.1.1 (725) – výkon zařízení / Láďův režim v nastavení */
+.rakDevicePerfCard{
+  border-color:rgba(124,255,124,.18) !important;
+}
+.rakDevicePerfCard .appMenuCardTitle::after{
+  content:"";
+  display:inline-block;
+  width:8px;
+  height:8px;
+  margin-left:8px;
+  border-radius:999px;
+  background:var(--rakThemeAccent,#7CFF7C);
+  box-shadow:0 0 18px rgba(124,255,124,.42);
+  vertical-align:middle;
+}
+.rakDevicePerfActions{
+  margin-top:12px !important;
+  display:grid !important;
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  gap:8px !important;
+}
+.rakDevicePerfActions .appMenuAction{
+  min-height:42px !important;
+  padding:9px 10px !important;
+  font-size:12px !important;
+  line-height:1.15 !important;
+}
+body.ladaMode .rakDevicePerfCard,
+body.lightweightMode .rakDevicePerfCard,
+body.lowEndDevice .rakDevicePerfCard{
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+  box-shadow:none !important;
+}
+@media (max-width:390px){
+  .rakDevicePerfActions{grid-template-columns:1fr !important;}
+}
+
+/* v.1.1 (726) – Pampuch maze polish */
+#games .pampuchLevelBar{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:6px;
+  width:100%;
+  margin:0 0 4px;
+}
+#games .pampuchLevelBar .gameControlBtn{
+  min-width:0 !important;
+  min-height:36px !important;
+  padding:7px 6px !important;
+  border-radius:14px !important;
+  font-size:clamp(10px,2.7vw,12px) !important;
+}
+#games .pampuchLevelBar .gameControlBtn.isActive{
+  color:#fff !important;
+  border-color:rgba(255,209,77,.62) !important;
+  background:linear-gradient(135deg,rgba(255,209,77,.28),rgba(124,255,124,.16)) !important;
+  box-shadow:0 0 0 1px rgba(255,209,77,.18) inset, 0 10px 28px rgba(255,209,77,.10) !important;
+}
+#games .pampuchMazeWrap canvas{
+  image-rendering:auto;
+  touch-action:none;
+}
+body.lightweightMode #games .pampuchLevelBar .gameControlBtn,
+body.lowEndDevice #games .pampuchLevelBar .gameControlBtn,
+body.ladaTurboMode #games .pampuchLevelBar .gameControlBtn{
+  box-shadow:none !important;
+}
+@media (max-width:420px){
+  #games .pampuchLevelBar{grid-template-columns:repeat(3,minmax(0,1fr));}
 }

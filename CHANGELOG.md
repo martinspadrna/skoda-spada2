@@ -1,3 +1,17 @@
+## v.1.1 (726)
+- Pampuch je předělaný z původní skákačky na bludišťovou retro hru ve stylu odkázaného Pampucha: body v mapě, bonus body, duchové, životy, levely a Total/Best/Points HUD.
+- Ovládání je mobile-first bez šipkových tlačítek: swipe kdekoliv po herní ploše, na PC fungují klávesové šipky/WASD a mezerník pro pauzu.
+- Přidané 4 vlastní bludišťové levely, level přepínače, bonus režim pro lov duchů, Top 5 pod hrou a dokončené zápisy statistik/XP jen po konci hry.
+- Achievementy Pampucha jsou upravené na body v bludišti, combo, dokončení a skóre.
+- Verze sjednocena na v.1.1 (726), cache na v1.1-726 a Supabase realtime kanál na rak-public-live-v726.
+
+## v.1.1 (724)
+- Přidané měření výkonu zařízení přímo v Nastavení: appka změří FPS, nejhorší snímek, počet dropů a podle toho doporučí normální, odlehčený nebo Láďův turbo režim.
+- Výsledek měření se ukládá lokálně a napojuje se do automatické detekce slabšího zařízení, takže appka umí po měření sama přidat Láďův režim bez ručního hledání.
+- Nastavení má novou kartu Výkon zařízení s aktuálním režimem, důvody detekce, posledním měřením a rychlým přepnutím na Automatiku nebo Láďův režim.
+- Diagnostika aplikace nově vypisuje skóre výkonu zařízení, doporučený profil a stav posledního měření.
+- Verze sjednocena na v.1.1 (724), cache na v1.1-724 a Supabase realtime kanál na rak-public-live-v724.
+
 ## v.1.1 (723)
 - Přidaná servisní část administrace: rychlý přehled počtů hráčů, statistik, profilového vzhledu, pozvánek, session a nových reportů.
 - Administrace umí vynutit synchronizaci rozpisu/herních statistik, ruční kontrolu aktualizace PWA a bezpečný úklid prošlých pozvánek přes Supabase funkci.

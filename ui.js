@@ -218,7 +218,189 @@ function startMenuImport() {
 }
 
 const UI_PREFS_KEY = APP_KEY + ':uiPrefs';
+const DEVICE_PERFORMANCE_PROBE_KEY = APP_KEY + ':devicePerformanceProbe';
 const LIGHTWEIGHT_MODE_LABEL = 'Láďův režim';
+
+
+function clampRakNumber(value, min, max) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return min;
+  return Math.max(min, Math.min(max, num));
+}
+
+function getRakDevicePerformanceProbeCached(maxAgeMs) {
+  try {
+    const parsed = typeof parseLocalStorageJsonCached === 'function'
+      ? parseLocalStorageJsonCached(DEVICE_PERFORMANCE_PROBE_KEY, null)
+      : JSON.parse(localStorage.getItem(DEVICE_PERFORMANCE_PROBE_KEY) || 'null');
+    if (!parsed || typeof parsed !== 'object') return null;
+    const at = parsed.at ? Date.parse(parsed.at) : Number(parsed.ts || 0);
+    if (!Number.isFinite(at) || at <= 0) return null;
+    const age = Date.now() - at;
+    const limit = Number(maxAgeMs || 7 * 24 * 60 * 60 * 1000);
+    if (limit > 0 && age > limit) return null;
+    return parsed;
+  } catch (err) {
+    return null;
+  }
+}
+
+function saveRakDevicePerformanceProbe(result) {
+  try {
+    const payload = Object.assign({ at: new Date().toISOString(), appVersion: typeof APP_VERSION !== 'undefined' ? APP_VERSION : '' }, result || {});
+    const json = JSON.stringify(payload);
+    if (typeof setLocalStorageIfChanged === 'function') setLocalStorageIfChanged(DEVICE_PERFORMANCE_PROBE_KEY, json);
+    else localStorage.setItem(DEVICE_PERFORMANCE_PROBE_KEY, json);
+    if (typeof clearLocalStorageJsonCache === 'function') clearLocalStorageJsonCache(DEVICE_PERFORMANCE_PROBE_KEY);
+    try { window.__rakDevicePerformanceProbe = payload; } catch (err) {}
+    return payload;
+  } catch (err) {
+    console.warn('Device performance probe save failed', err);
+    return result || null;
+  }
+}
+
+function classifyRakDevicePerformance(avgFps, worstFrameMs, droppedRatio) {
+  const fpsScore = clampRakNumber((Number(avgFps || 0) / 60) * 100, 0, 100);
+  const worstPenalty = clampRakNumber((Number(worstFrameMs || 0) - 24) * 1.55, 0, 42);
+  const dropPenalty = clampRakNumber(Number(droppedRatio || 0) * 90, 0, 36);
+  const score = Math.round(clampRakNumber(fpsScore - worstPenalty - dropPenalty, 0, 100));
+  const profile = score < 52 || Number(avgFps || 0) < 42 || Number(worstFrameMs || 0) > 55
+    ? 'turbo'
+    : (score < 72 || Number(avgFps || 0) < 53 || Number(worstFrameMs || 0) > 38 ? 'lite' : 'normal');
+  return {
+    score,
+    profile,
+    label: profile === 'turbo' ? 'Láďův turbo režim' : (profile === 'lite' ? 'odlehčený režim' : 'normální režim'),
+    shouldAutoLightweight: profile !== 'normal'
+  };
+}
+
+function getRakDevicePerformanceStatus() {
+  const lowEnd = typeof getLowEndDeviceInfo === 'function' ? getLowEndDeviceInfo() : null;
+  const probe = getRakDevicePerformanceProbeCached(14 * 24 * 60 * 60 * 1000);
+  const prefs = typeof loadUiPrefs === 'function' ? loadUiPrefs() : null;
+  const active = !!(document.body && document.body.classList && (document.body.classList.contains('ladaMode') || document.body.classList.contains('lightweightMode') || document.body.classList.contains('lowEndDevice')));
+  const profile = typeof getRakLadaPerformanceProfile === 'function' ? getRakLadaPerformanceProfile() : null;
+  return {
+    ok: true,
+    active,
+    mode: active ? String(profile && profile.level || 'lite') : 'normal',
+    manual: !!(prefs && prefs.lightweightManual),
+    lowEndDetected: !!(lowEnd && lowEnd.lowEnd),
+    lowEndReasons: Array.isArray(lowEnd && lowEnd.reasons) ? lowEnd.reasons.slice(0, 8) : [],
+    probe,
+    probeAgeMs: probe && probe.at ? Math.max(0, Date.now() - Date.parse(probe.at)) : null,
+    recommendedProfile: probe && probe.profile ? probe.profile : (lowEnd && lowEnd.lowEnd ? 'turbo' : 'normal'),
+    label: active ? (profile && profile.level === 'turbo' ? 'Láďův turbo režim' : 'odlehčený režim') : 'normální režim'
+  };
+}
+
+async function runRakDevicePerformanceProbe(options) {
+  const opts = options || {};
+  const durationMs = clampRakNumber(opts.durationMs || 950, 420, 1800);
+  const start = typeof performance !== 'undefined' ? performance.now() : Date.now();
+  let last = start;
+  let frames = 0;
+  let dropped = 0;
+  let worst = 0;
+  let sum = 0;
+
+  await new Promise((resolve) => {
+    const step = (ts) => {
+      const now = Number(ts || (typeof performance !== 'undefined' ? performance.now() : Date.now()));
+      const delta = Math.max(0, now - last);
+      if (frames > 0) {
+        sum += delta;
+        worst = Math.max(worst, delta);
+        if (delta > 34) dropped += 1;
+      }
+      frames += 1;
+      last = now;
+      if (now - start >= durationMs) resolve();
+      else requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  });
+
+  const total = Math.max(1, ((typeof performance !== 'undefined' ? performance.now() : Date.now()) - start));
+  const avgFps = Math.round((Math.max(0, frames - 1) / total) * 1000 * 10) / 10;
+  const avgFrameMs = Math.round((sum / Math.max(1, frames - 1)) * 10) / 10;
+  const droppedRatio = Math.round((dropped / Math.max(1, frames - 1)) * 100) / 100;
+  const classification = classifyRakDevicePerformance(avgFps, worst, droppedRatio);
+  const lowEndInfo = typeof getLowEndDeviceInfo === 'function' ? getLowEndDeviceInfo() : null;
+  const result = saveRakDevicePerformanceProbe(Object.assign({}, classification, {
+    avgFps,
+    avgFrameMs,
+    worstFrameMs: Math.round(worst * 10) / 10,
+    droppedFrames: dropped,
+    frameCount: frames,
+    droppedRatio,
+    durationMs: Math.round(total),
+    dpr: Number(window.devicePixelRatio || 1) || 1,
+    width: Number(window.innerWidth || 0) || 0,
+    height: Number(window.innerHeight || 0) || 0,
+    memory: Number(navigator.deviceMemory || 0) || null,
+    cores: Number(navigator.hardwareConcurrency || 0) || 0,
+    lowEndReasons: Array.isArray(lowEndInfo && lowEndInfo.reasons) ? lowEndInfo.reasons.slice(0, 8) : []
+  }));
+
+  if (classification.shouldAutoLightweight) {
+    try {
+      const current = loadUiPrefs();
+      if (!current.lightweightManual && !current.lightweight) {
+        applyUiPrefs(Object.assign({}, current, { lightweight: true, lightweightManual: false }));
+      } else {
+        applyUiPrefs(current);
+      }
+    } catch (err) {}
+  }
+  try {
+    if (typeof app !== 'undefined') app.lastDevicePerformanceProbe = result;
+  } catch (err) {}
+  return result;
+}
+
+function formatRakProbeAge(probe) {
+  try {
+    if (!probe || !probe.at) return 'ještě neměřeno';
+    const age = Math.max(0, Date.now() - Date.parse(probe.at));
+    if (age < 60 * 1000) return 'před chvílí';
+    if (age < 60 * 60 * 1000) return 'před ' + Math.round(age / 60000) + ' min';
+    if (age < 24 * 60 * 60 * 1000) return 'před ' + Math.round(age / 3600000) + ' h';
+    return 'před ' + Math.round(age / 86400000) + ' dny';
+  } catch (err) {
+    return 'neznámé';
+  }
+}
+
+function buildRakDevicePerformanceSettingsHtml() {
+  const status = getRakDevicePerformanceStatus();
+  const probe = status.probe || null;
+  const profileText = status.active ? (status.mode === 'turbo' ? 'Láďův turbo režim' : 'odlehčený režim') : 'normální režim';
+  const lowReasons = status.lowEndReasons && status.lowEndReasons.length ? status.lowEndReasons.join(', ') : 'žádný výrazný důvod';
+  const probeText = probe
+    ? ('Skóre ' + String(probe.score || 0) + '/100 · ' + String(probe.avgFps || '—') + ' FPS · nejhorší snímek ' + String(probe.worstFrameMs || '—') + ' ms · doporučení ' + String(probe.label || profileText))
+    : 'Změř plynulost a appka si přesněji řekne, jestli má použít odlehčený režim.';
+  return [
+    '<div class="appMenuCard appMenuSettingsCard rakDevicePerfCard">',
+    '  <div class="appMenuCardTitle">Výkon zařízení</div>',
+    '  <div class="appMenuText">',
+    '    <div>Aktuálně: <b>' + escapeHtml(profileText) + '</b>' + (status.manual ? ' · ručně nastaveno' : ' · automatika povolená') + '</div>',
+    '    <div class="smallText">Detekce: ' + (status.lowEndDetected ? 'slabší zařízení' : 'bez automatického omezení') + ' · ' + escapeHtml(lowReasons) + '</div>',
+    '    <div class="smallText">Měření: ' + escapeHtml(probeText) + ' · ' + escapeHtml(formatRakProbeAge(probe)) + '</div>',
+    '  </div>',
+    '  <div class="appMenuActionRow rakDevicePerfActions">',
+    '    <button type="button" class="appMenuAction isActive" data-menu-action="device-performance-test">Změřit plynulost</button>',
+    '    <button type="button" class="appMenuAction" data-menu-action="device-performance-auto">Automatika</button>',
+    '    <button type="button" class="appMenuAction" data-ui-pref="lightweight">' + (status.active ? 'Vypnout Láďův režim' : 'Zapnout Láďův režim') + '</button>',
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
+try { window.getRakDevicePerformanceStatus = getRakDevicePerformanceStatus; } catch (err) {}
+try { window.runRakDevicePerformanceProbe = runRakDevicePerformanceProbe; } catch (err) {}
 
 function getLowEndDeviceInfo() {
   try {
@@ -251,6 +433,11 @@ function getLowEndDeviceInfo() {
     if (!isIOS && hasMemoryInfo && cores > 0 && cores <= 4 && memory <= 6) reasons.push('CPU/RAM kombinace');
     if (!isIOS && isAndroid && !hasMemoryInfo && cores > 0 && cores <= 4) reasons.push('Android bez RAM info + ' + cores + ' jádra');
     if (!isIOS && isAndroid && width > 0 && width <= 390 && dpr >= 2.5 && (!hasMemoryInfo || memory <= 6)) reasons.push('malý displej s vysokým DPR');
+
+    const perfProbe = typeof getRakDevicePerformanceProbeCached === 'function' ? getRakDevicePerformanceProbeCached(14 * 24 * 60 * 60 * 1000) : null;
+    if (perfProbe && String(perfProbe.profile || '') === 'turbo') reasons.push('měření výkonu: turbo');
+    else if (perfProbe && String(perfProbe.profile || '') === 'lite') reasons.push('měření výkonu: odlehčený režim');
+    if (perfProbe && Number(perfProbe.avgFps || 0) > 0 && Number(perfProbe.avgFps || 0) < 45) reasons.push('FPS ' + Math.round(Number(perfProbe.avgFps || 0)));
 
     return {
       lowEnd: reasons.length > 0,
@@ -4060,7 +4247,7 @@ function renderGamesProfileStatus() {
   if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(metaEl, metaText, 'gamesProfileStatusMeta');
   else metaEl.textContent = metaText;
   if (rankEl) {
-    // v.1.1 (723): Láďův režim turbo profil pro slabší mobily.
+    // v.1.1 (726): Láďův režim turbo profil pro slabší mobily.
     rankEl.innerHTML = '<span class="gamesProfileRankValue">' + escapeHtml(rankText) + '</span>';
     rankEl.setAttribute('data-player-name', nextName);
     rankEl.disabled = false;
@@ -4102,7 +4289,7 @@ function buildAppHistoryHtml(versionText) {
       range: versionText,
       title: 'Aktuální build',
       lines: [
-        'Build v.1.1 (723) přidává servisní administraci, klikací online stav na dashboardu pro ruční sync a kontrolu aktualizace/cache.',
+        'Build v.1.1 (726) předělává Pampucha na bludišťovou retro hru ve stylu původního Pampucha: body, duchové, levely, swipe/šipky, Top 5 a achievementy.',
         'Série v.1.1 650–706 dotáhla Piškvorky, online pozvánky, PWA launch handler, všechny hlavní hry, herní profily, reporty chyb, theme polish, těžší/chytřejší achievementy a společný herní QA průchod včetně app-like dotykového polishu.',
         'Sekce „O aplikaci“ je nově stručnější: detailní změny zůstávají v changelogu a tady se historie drží po větších blocích.',
         'Stabilizační audity, Supabase guardy, Láďův režim a finální readiness kontroly zůstávají součástí diagnostiky.'
@@ -5564,6 +5751,30 @@ function bindAppMenuHandlers(body) {
         openAppMenu('admin-reports');
         return;
       }
+      if (menuAction === 'device-performance-test') {
+        const status = body.querySelector('#adminOnlineSaveStatus') || body.querySelector('.rakDevicePerfCard .smallText');
+        if (status) status.textContent = 'Měřím plynulost… chvíli nehýbej obrazovkou.';
+        try {
+          const result = await runRakDevicePerformanceProbe({ durationMs: 950 });
+          const msg = 'Měření hotové: skóre ' + String(result.score || 0) + '/100, ' + String(result.avgFps || '—') + ' FPS, doporučení ' + String(result.label || '—') + '.';
+          alert(msg);
+        } catch (err) {
+          console.warn('Device performance test failed', err);
+          alert('Měření se nepovedlo. Zkus to prosím znovu.');
+        }
+        openAppMenu('settings');
+        return;
+      }
+      if (menuAction === 'device-performance-auto') {
+        try {
+          localStorage.removeItem(DEVICE_PERFORMANCE_PROBE_KEY);
+          if (typeof clearLocalStorageJsonCache === 'function') clearLocalStorageJsonCache(DEVICE_PERFORMANCE_PROBE_KEY);
+        } catch (err) {}
+        const current = loadUiPrefs();
+        applyUiPrefs(Object.assign({}, current, { lightweight: false, lightweightManual: false }));
+        openAppMenu('settings');
+        return;
+      }
       if (menuAction === 'clear-cache') {
         if (!confirm('Vyčistit cache a tvrdě obnovit aplikaci?')) return;
         try {
@@ -5608,6 +5819,7 @@ function bindAppMenuHandlers(body) {
         const securityRenderStatus = typeof window.getSecurityRenderStatus === 'function' ? window.getSecurityRenderStatus() : null;
         const finalStabilizationStatus = typeof window.getFinalStabilizationStatus === 'function' ? window.getFinalStabilizationStatus() : null;
         const ladaPerformanceStatus = typeof window.getLadaPerformanceHealth === 'function' ? window.getLadaPerformanceHealth() : null;
+        const devicePerformanceStatus = typeof window.getRakDevicePerformanceStatus === 'function' ? window.getRakDevicePerformanceStatus() : null;
         const gameEngineStatus = typeof window.getGameEngineBaselineHealth === 'function' ? window.getGameEngineBaselineHealth() : null;
         const securityRenderDiag = securityRenderStatus ? [
           'Security/render: fáze ' + String(securityRenderStatus.phasePercent || 0) + '% · escapované dynamické HTML ' + String(securityRenderStatus.escapedDynamicHtmlWrites || 0) + ' · text render ' + String(securityRenderStatus.guardedTextWrites || 0) + '/' + String(securityRenderStatus.guardedTextSkippedWrites || 0),
@@ -5619,6 +5831,9 @@ function bindAppMenuHandlers(body) {
         const ladaPerformanceDiag = ladaPerformanceStatus ? [
           'Láďův režim výkon: ' + (ladaPerformanceStatus.ok ? 'OK' : 'kontrola') + ' · režim ' + String(ladaPerformanceStatus.mode || '—') + ' · profil ' + String(ladaPerformanceStatus.profileLevel || '—') + ' · aktivní ' + (ladaPerformanceStatus.active ? 'ano' : 'ne'),
           'Láďův režim efekty: DPR limit ' + String(ladaPerformanceStatus.dprLimit || '—') + ' · FPS brzda ' + String(ladaPerformanceStatus.frameMs || 0) + ' ms · resize ' + String(ladaPerformanceStatus.resizeThrottleMs || 0) + ' ms · max blur ' + String(ladaPerformanceStatus.maxBlurPx || 0) + 'px · animované vzorky ' + String(ladaPerformanceStatus.animatedSampleCount || 0) + ' · problémy ' + String((ladaPerformanceStatus.issues || []).length || 0)
+        ] : [];
+        const devicePerformanceDiag = devicePerformanceStatus ? [
+          'Výkon zařízení: režim ' + String(devicePerformanceStatus.label || devicePerformanceStatus.mode || '—') + ' · doporučení ' + String(devicePerformanceStatus.recommendedProfile || '—') + ' · měření ' + (devicePerformanceStatus.probe ? (String(devicePerformanceStatus.probe.score || 0) + '/100, ' + String(devicePerformanceStatus.probe.avgFps || '—') + ' FPS') : 'není')
         ] : [];
         const gameEngineDiag = gameEngineStatus ? [
           'Herní engine: ' + (gameEngineStatus.ok ? 'OK' : 'kontrola') + ' · režim ' + String(gameEngineStatus.mode || '—') + ' · aktivní hra ' + String(gameEngineStatus.activeGame || '—') + ' · pauza ' + (gameEngineStatus.paused ? 'ano' : 'ne'),
@@ -5691,6 +5906,7 @@ function bindAppMenuHandlers(body) {
           ...securityRenderDiag,
           ...finalStabilizationDiag,
           ...ladaPerformanceDiag,
+          ...devicePerformanceDiag,
           ...gameEngineDiag,
           ...pwaDiag,
           ...dataOptDiag,
@@ -5939,14 +6155,16 @@ function openAppMenu(view) {
       bindAppMenuHandlers(body);
       const prefs = loadUiPrefs();
       const profileCard = buildGamesProfileSettingsHtml();
+      const performanceCard = typeof buildRakDevicePerformanceSettingsHtml === 'function' ? buildRakDevicePerformanceSettingsHtml() : '';
       const themeCards = buildThemeSystemSettingsHtml();
       body.innerHTML = [
         profileCard,
+        performanceCard,
         '<div class="appMenuCard appMenuSettingsCard">',
         '  <div class="appMenuCardTitle">Nastavení aplikace</div>',
         '  <div class="appMenuText">',
-        '    <div>Kompaktní režim a Láďův režim se ukládají jen do tohoto zařízení a promítnou se napříč celou appkou.</div>',
-        '    <div>Láďův režim v sobě zahrnuje méně animací, vypnutý těžký blur, slabší stíny, jednodušší pozadí, nižší canvas rozlišení a úspornější FPS u her pro starší/slabší mobily. Když appka pozná slabší zařízení, zapne si odlehčený profil sama.</div>',
+        '    <div>Kompaktní režim se ukládá jen do tohoto zařízení. Theme a pozadí jsou napojené na herní profil, když je hráč přihlášený.</div>',
+        '    <div>Láďův režim umí jet ručně nebo automaticky podle zařízení a měření plynulosti. Vypíná těžký blur, stíny, animace a snižuje zátěž canvas her.</div>',
         '  </div>',
         '  <div class="appMenuSettingsList">',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-pref="compact">' + (prefs.compact ? '✓ ' : '') + 'Kompaktní režim</button>',

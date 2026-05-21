@@ -2,15 +2,15 @@
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
 
-  // v.1.1 (723): Láďův režim šetří canvas hry, FPS, resize a online refresh.
-  const CORE_GAMES = ['ttt', 'ships', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
+  // v.1.1 (726): Pampuch předělaný do bludišťového retro stylu podle původního Pampucha.
+  const CORE_GAMES = ['ttt', 'ships', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'pampuch', 'daily'];
   const EXTRA_GAMES = [];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);
   const LEGACY_RENDER_GAMES = ['2048', 'snake', 'flap'];
-  const ARCADE_RENDER_GAMES = ['aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'ships', 'daily'];
+  const ARCADE_RENDER_GAMES = ['aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'pampuch', 'ships', 'daily'];
   const POINT_SCALE = 1000000000;
   const ARC_KEY = 'arcade';
-  const DAILY_MODES = ['aim', 'reaction', 'memory', 'mines', 'bubble', 'doodle', 'brick', 'shooter', 'bomber', 'ships'];
+  const DAILY_MODES = ['aim', 'reaction', 'memory', 'mines', 'bubble', 'doodle', 'brick', 'shooter', 'bomber', 'pampuch', 'ships'];
 
   const META = {
     ttt: { title: 'Piškvorky', subtitle: 'AI, lokální duel a pozvánky', unit: 'her', mode: 'high', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5.2" y="5.2" width="13.6" height="13.6" rx="3"></rect><path d="M9 9.1l3 3 3-3"></path><circle cx="9.2" cy="15" r="1.1"></circle><circle cx="14.8" cy="15" r="1.1"></circle><path d="M8.1 6.5v11M12 6.5v11M15.9 6.5v11M6.5 10.1h11M6.5 13.9h11"></path></svg>' },
@@ -29,6 +29,7 @@
     memory: { title: 'Memory / Pexeso', subtitle: 'Moderní animace a rychlé páry', unit: 's', mode: 'low', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="5" width="6.2" height="6.2" rx="1.5"></rect><rect x="13.3" y="5" width="6.2" height="6.2" rx="1.5"></rect><rect x="4.5" y="13.8" width="6.2" height="6.2" rx="1.5"></rect><rect x="13.3" y="13.8" width="6.2" height="6.2" rx="1.5"></rect></svg>' },
     bomber: { title: 'Bomberman mini', subtitle: 'Bludiště, bomby, příšerky a upgrady', unit: 'bodů', mode: 'high', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h6v3H9z"></path><circle cx="12" cy="14" r="5"></circle><path d="M15.8 10.2l2-2"></path></svg>' },
 
+    pampuch: { title: 'Pampuch', subtitle: 'Bludiště, body a duchové v retro stylu', unit: 'bodů', mode: 'high', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="7.2"></circle><path d="M8.5 10.2h.1M15.5 10.2h.1"></path><path d="M8.7 14.2c2 1.5 4.6 1.5 6.6 0"></path><path d="M5.2 6.4c1.3-1.5 3-2.5 5-2.9M18.8 17.6c-1.3 1.5-3 2.5-5 2.9"></path></svg>' },
     ships: { title: 'Lodě online', subtitle: 'Online námořní souboj přes pozvánku', unit: 'bodů', mode: 'high', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15.5h16l-2 3.5H6z"></path><path d="M8 15.5V8l4-3 4 3v7.5"></path><path d="M10 11h4"></path><path d="M3.5 20.5c1.5.7 3 .7 4.5 0 1.5.7 3 .7 4.5 0 1.5.7 3 .7 4.5 0 1.2.5 2.4.6 3.5.2"></path></svg>' },
     daily: { title: 'Denní challenge', subtitle: 'Každý den jiná hra a stejná výzva', unit: 'bodů', mode: 'high', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="6.5" width="15" height="13" rx="2"></rect><path d="M8 4.5v4M16 4.5v4M4.5 10h15"></path><path d="M8 14l2.1 2.1L16.3 10"></path></svg>' }
   };
@@ -430,6 +431,12 @@
       { id: 'mines_score_600', title: 'Minové body', desc: 'Nahraj v Minesweeperu 600 bodů.', goalText: '600 bodů', progress: (a) => arcadeStat(a.account, 'mines', 'bestScore'), target: 600 },
       { id: 'memory_moves_24', title: 'Málo tahů', desc: 'Dokonči Pexeso s nejvýše 24 tahy.', goalText: '24 tahů', progress: (a) => { const m = arcadeStat(a.account, 'memory', 'bestMoves'); return m ? Math.max(0, 60 - m) : 0; }, target: 36 },
       { id: 'bomber_stage_clear_10', title: 'Vyčištěné bludiště', desc: 'Vyhraj 10 kol Bomberman mini.', goalText: '10 vyčištění', progress: (a) => arcadeStat(a.account, 'bomber', 'bestStageClear'), target: 10 },
+      { id: 'pampuch_2500', title: 'Pampuch rozjezd', desc: 'Nahraj v Pampuchovi 2 500 bodů.', goalText: '2 500 bodů', progress: (a) => arcadeStat(a.account, 'pampuch', 'bestScore'), target: 2500 },
+      { id: 'pampuch_6000', title: 'Lovec bodů', desc: 'Nahraj v Pampuchovi 6 000 bodů.', goalText: '6 000 bodů', progress: (a) => arcadeStat(a.account, 'pampuch', 'bestScore'), target: 6000 },
+      { id: 'pampuch_10000', title: 'Pampuch legenda', desc: 'Nahraj v Pampuchovi 10 000 bodů.', goalText: '10 000 bodů', progress: (a) => arcadeStat(a.account, 'pampuch', 'bestScore'), target: 10000 },
+      { id: 'pampuch_points_120', title: 'Vyčištěná mapa', desc: 'Seber v jedné hře 120 bodů v bludišti.', goalText: '120 bodů v mapě', progress: (a) => arcadeStat(a.account, 'pampuch', 'bestPops'), target: 120 },
+      { id: 'pampuch_combo_24', title: 'Bez zaváhání', desc: 'Dej v Pampuchovi combo 24.', goalText: 'combo 24', progress: (a) => arcadeStat(a.account, 'pampuch', 'bestCombo'), target: 24 },
+      { id: 'pampuch_runs_50', title: 'Pampuch po směně', desc: 'Dokonči 50 her Pampucha.', goalText: '50 dokončení', progress: (a) => arcadeStat(a.account, 'pampuch', 'plays'), target: 50 },
       { id: 'daily_5', title: 'Denní rozjezd', desc: 'Splň 5 denních challenge.', goalText: '5 challenge', progress: (a) => arcadeStat(a.account, 'daily', 'plays'), target: 5 },
       { id: 'daily_20', title: 'Denní držák', desc: 'Splň 20 denních challenge.', goalText: '20 challenge', progress: (a) => arcadeStat(a.account, 'daily', 'plays'), target: 20 },
       { id: 'ttt_online_10', title: 'Soupeř z druhé ruky', desc: 'Dokonči 10 online partií Piškvorek proti někomu.', goalText: '10 online partií', progress: (a) => (a.ttt.context && a.ttt.context.onlinePlays) || 0, target: 10 },
@@ -1186,7 +1193,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function renderLaunchTiles() {
     const grid = document.getElementById('gamesGrid');
     if (!grid) return;
-    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v722';
+    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v726';
     if (grid.dataset && grid.dataset.arcadeLaunchSig === launchSig && grid.querySelector('[data-game="ttt"]')) {
       gamePerf.launchRenderSkips = Number(gamePerf.launchRenderSkips || 0) + 1;
       return;
@@ -1443,7 +1450,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     }
     if (typeof nextPatch.perfectRuns === 'number') merged.perfectRuns = (Number(current.perfectRuns || 0) || 0) + Math.max(0, nextPatch.perfectRuns || 0);
     if (typeof nextPatch.bestMoves === 'number') merged.bestMoves = Math.max(Number(current.bestMoves || 0) || 0, nextPatch.bestMoves || 0);
-    ['bestLines','bestLevel','bestSurvivalSec','bestWave','bestHeight','bestJumps','bestPlatforms','bestPops','bestBricks','bestClears','bestShots','bestStreak','bestBlocks','bestStageClear','bestBossKills','bestPowerUps','bestWeaponLevel','bestEnemiesKilled','bestCrates'].forEach((field) => {
+    ['bestLines','bestLevel','bestSurvivalSec','bestWave','bestHeight','bestJumps','bestPlatforms','bestDistance','bestPops','bestBricks','bestClears','bestShots','bestStreak','bestBlocks','bestStageClear','bestBossKills','bestPowerUps','bestWeaponLevel','bestEnemiesKilled','bestCrates'].forEach((field) => {
       if (typeof nextPatch[field] === 'number') merged[field] = Math.max(Number(current[field] || 0) || 0, nextPatch[field] || 0);
     });
     if (typeof nextPatch.perfectClears === 'number') merged.perfectClears = (Number(current.perfectClears || 0) || 0) + Math.max(0, nextPatch.perfectClears || 0);
@@ -4196,6 +4203,577 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   }
 
 
+  // Pampuch ---------------------------------------------------------------
+  const PAMP_LEVELS = [
+    {
+      name: 'Level 1',
+      speed: 126,
+      ghostDelay: 2,
+      map: [
+        '###################',
+        '#P....#.....#....G#',
+        '#.###.#.###.#.###.#',
+        '#o#...#.....#...#o#',
+        '#.#.###.###.###.#.#',
+        '#...#...#G#...#...#',
+        '###.#.#.#.#.#.#.###',
+        '#.....#.....#.....#',
+        '#.###.#.###.#.###.#',
+        '#o..#...#...#..o#G#',
+        '###.#.#####.#.###.#',
+        '#...#.......#.....#',
+        '#.###.#####.###.#.#',
+        '#G...............o#',
+        '###################'
+      ]
+    },
+    {
+      name: 'Level 2',
+      speed: 118,
+      ghostDelay: 1,
+      map: [
+        '###################',
+        '#P..#.......#....G#',
+        '#.#.#.#####.#.###.#',
+        '#.#...#...#...#...#',
+        '#.#####.#.#####.#.#',
+        '#o......#......o#.#',
+        '#####.#####.#####.#',
+        '#.....#G..#.....#.#',
+        '#.###.#.#.#.###.#.#',
+        '#...#...#...#...#G#',
+        '###.#####.#####.###',
+        '#...#.........#...#',
+        '#.#.#.#######.#.#.#',
+        '#G#.............#o#',
+        '###################'
+      ]
+    },
+    {
+      name: 'Level 3',
+      speed: 112,
+      ghostDelay: 1,
+      map: [
+        '###################',
+        '#P......#......G..#',
+        '#.#####.#.#####.#.#',
+        '#.....#...#.....#.#',
+        '#####.#.#.#.#####.#',
+        '#o....#.#.#....o#.#',
+        '#.#####.#.#####.#.#',
+        '#.......G.......#.#',
+        '#.###.#####.###.#.#',
+        '#...#...#...#...#G#',
+        '###.#.#.#.#.#.###.#',
+        '#...#.#...#.#.....#',
+        '#.#.#######.###.#.#',
+        '#G#.............#o#',
+        '###################'
+      ]
+    },
+    {
+      name: 'Level 4',
+      speed: 106,
+      ghostDelay: 0,
+      map: [
+        '###################',
+        '#P....#.....#....G#',
+        '#####.#.###.#.#####',
+        '#.....#...#.#.....#',
+        '#.#######.#.#####.#',
+        '#o#.......#.....#o#',
+        '#.#.###########.#.#',
+        '#.#.....G.....#...#',
+        '#.#####.###.#####.#',
+        '#.....#...#.....#G#',
+        '#####.#.#.###.#.###',
+        '#...#...#.....#...#',
+        '#.#.###########.#.#',
+        '#G#.............#o#',
+        '###################'
+      ]
+    }
+  ];
+
+  const PAMP_DIRS = [
+    { name: 'left', dr: 0, dc: -1 },
+    { name: 'right', dr: 0, dc: 1 },
+    { name: 'up', dr: -1, dc: 0 },
+    { name: 'down', dr: 1, dc: 0 }
+  ];
+
+  function pampDir(name) {
+    return PAMP_DIRS.find(d => d.name === name) || null;
+  }
+
+  function pampOpposite(a, b) {
+    return !!(a && b && a.dr + b.dr === 0 && a.dc + b.dc === 0);
+  }
+
+  function pampuchState() {
+    return {
+      running: false,
+      over: false,
+      paused: false,
+      saved: false,
+      score: 0,
+      levelIndex: 0,
+      levelClears: 0,
+      points: 0,
+      totalPoints: 0,
+      runPoints: 0,
+      bestLevelPoints: 0,
+      lives: 3,
+      combo: 0,
+      bestCombo: 0,
+      eatenGhosts: 0,
+      steps: 0,
+      frightened: 0,
+      invuln: 0,
+      tickMs: 126,
+      ghostSlowTurn: 0,
+      moveAcc: 0,
+      lastTs: 0,
+      raf: 0,
+      grid: [],
+      rows: 0,
+      cols: 0,
+      player: { r: 1, c: 1, dir: pampDir('right'), queued: pampDir('right'), mouth: 0 },
+      ghosts: [],
+      touchStart: null,
+      startAt: 0
+    };
+  }
+
+  function pampuchTotalScore(state) {
+    return Math.max(0, Number(state.score || 0) || 0);
+  }
+
+  function pampuchParseLevel(state, index, keepScore) {
+    const levelIndex = clamp(Number(index || 0) || 0, 0, PAMP_LEVELS.length - 1);
+    const def = PAMP_LEVELS[levelIndex] || PAMP_LEVELS[0];
+    const rows = def.map.length;
+    const cols = def.map[0].length;
+    const grid = [];
+    const ghosts = [];
+    let player = { r: 1, c: 1, dir: pampDir('right'), queued: pampDir('right'), mouth: 0 };
+    let total = 0;
+    def.map.forEach((row, r) => {
+      const cells = String(row).split('');
+      cells.forEach((cell, c) => {
+        if (cell === 'P') { player = { r, c, dir: pampDir('right'), queued: pampDir('right'), mouth: 0 }; cells[c] = '.'; total += 1; }
+        else if (cell === 'G') { ghosts.push({ r, c, homeR: r, homeC: c, dir: randomPick(PAMP_DIRS), color: ['#ff4f88', '#00f5ff', '#ffb347', '#b875ff'][ghosts.length % 4], wait: Number(def.ghostDelay || 0) + ghosts.length }); cells[c] = '.'; total += 1; }
+        else if (cell === '.' || cell === 'o') total += 1;
+      });
+      grid.push(cells);
+    });
+    state.levelIndex = levelIndex;
+    state.grid = grid;
+    state.rows = rows;
+    state.cols = cols;
+    state.player = player;
+    state.ghosts = ghosts;
+    state.totalPoints = total;
+    state.points = 0;
+    state.combo = 0;
+    state.frightened = 0;
+    state.invuln = 0;
+    state.moveAcc = 0;
+    state.tickMs = Math.max(86, Number(def.speed || 126) - Math.min(22, Number(state.levelClears || 0) * 3));
+    if (!keepScore) {
+      state.score = 0;
+      state.lives = 3;
+      state.levelClears = 0;
+      state.bestCombo = 0;
+      state.bestLevelPoints = 0;
+      state.runPoints = 0;
+      state.eatenGhosts = 0;
+      state.steps = 0;
+      state.saved = false;
+    }
+  }
+
+  function pampuchEnsureMap(state) {
+    if (!Array.isArray(state.grid) || !state.grid.length || !state.rows || !state.cols) pampuchParseLevel(state, state.levelIndex || 0, true);
+  }
+
+  function pampuchReset(state, levelIndex) {
+    const targetLevel = Number.isFinite(Number(levelIndex)) ? Number(levelIndex) : Number(state.levelIndex || 0) || 0;
+    const fresh = pampuchState();
+    Object.keys(state).forEach((k) => { delete state[k]; });
+    Object.assign(state, fresh);
+    pampuchParseLevel(state, targetLevel, false);
+  }
+
+  function pampuchIsWall(state, r, c) {
+    if (r < 0 || c < 0 || r >= state.rows || c >= state.cols) return true;
+    return state.grid[r] && state.grid[r][c] === '#';
+  }
+
+  function pampuchCanMove(state, actor, dir) {
+    if (!dir) return false;
+    return !pampuchIsWall(state, actor.r + dir.dr, actor.c + dir.dc);
+  }
+
+  function pampuchMoveActor(state, actor, dir) {
+    if (!dir || !pampuchCanMove(state, actor, dir)) return false;
+    actor.r += dir.dr;
+    actor.c += dir.dc;
+    actor.dir = dir;
+    return true;
+  }
+
+  function pampuchHandlePoint(state) {
+    const p = state.player;
+    const cell = state.grid[p.r] && state.grid[p.r][p.c];
+    if (cell !== '.' && cell !== 'o') return;
+    state.grid[p.r][p.c] = ' ';
+    state.points += 1;
+    state.runPoints += 1;
+    state.bestLevelPoints = Math.max(Number(state.bestLevelPoints || 0) || 0, Number(state.points || 0) || 0);
+    state.combo += 1;
+    state.bestCombo = Math.max(Number(state.bestCombo || 0) || 0, Number(state.combo || 0) || 0);
+    if (cell === 'o') {
+      state.score += 80 + Math.min(300, Number(state.combo || 0) * 8);
+      state.frightened = 6500;
+    } else {
+      state.score += 10 + Math.min(70, Math.floor(Number(state.combo || 0) / 6) * 5);
+    }
+  }
+
+  function pampuchResetPositions(state) {
+    const def = PAMP_LEVELS[state.levelIndex] || PAMP_LEVELS[0];
+    let playerFound = false;
+    def.map.forEach((row, r) => String(row).split('').forEach((cell, c) => {
+      if (cell === 'P' && !playerFound) {
+        state.player.r = r; state.player.c = c; state.player.dir = pampDir('right'); state.player.queued = pampDir('right'); playerFound = true;
+      }
+    }));
+    state.ghosts.forEach((g, idx) => {
+      g.r = g.homeR; g.c = g.homeC; g.dir = randomPick(PAMP_DIRS); g.wait = 1 + idx;
+    });
+    state.invuln = 1700;
+    state.frightened = Math.max(0, Number(state.frightened || 0) - 1200);
+    state.combo = 0;
+  }
+
+  function pampuchGhostChoice(state, ghost) {
+    let dirs = PAMP_DIRS.filter(d => pampuchCanMove(state, ghost, d));
+    if (!dirs.length) return null;
+    if (dirs.length > 1) dirs = dirs.filter(d => !pampOpposite(d, ghost.dir));
+    const target = state.player;
+    const chase = Math.random() < (state.frightened > 0 ? .22 : .72);
+    dirs.sort((a, b) => {
+      const ar = ghost.r + a.dr, ac = ghost.c + a.dc;
+      const br = ghost.r + b.dr, bc = ghost.c + b.dc;
+      const ad = Math.abs(ar - target.r) + Math.abs(ac - target.c);
+      const bd = Math.abs(br - target.r) + Math.abs(bc - target.c);
+      return state.frightened > 0 ? bd - ad : ad - bd;
+    });
+    if (!chase && dirs.length > 1) return randomPick(dirs.slice(0, Math.min(3, dirs.length)));
+    return dirs[0] || randomPick(PAMP_DIRS);
+  }
+
+  function pampuchCollideGhosts(state) {
+    if (state.invuln > 0) return false;
+    const p = state.player;
+    let hit = false;
+    state.ghosts.forEach((g) => {
+      if (g.r !== p.r || g.c !== p.c || hit) return;
+      if (state.frightened > 0) {
+        state.eatenGhosts += 1;
+        state.score += 240 + Math.min(600, Number(state.eatenGhosts || 0) * 40);
+        g.r = g.homeR; g.c = g.homeC; g.wait = 4; g.dir = randomPick(PAMP_DIRS);
+        state.combo += 3;
+        state.bestCombo = Math.max(Number(state.bestCombo || 0) || 0, Number(state.combo || 0) || 0);
+      } else {
+        hit = true;
+      }
+    });
+    if (!hit) return false;
+    state.lives -= 1;
+    if (state.lives <= 0) return true;
+    pampuchResetPositions(state);
+    return false;
+  }
+
+  function pampuchAdvanceLevel(state) {
+    state.levelClears += 1;
+    state.score += 500 + (state.levelIndex + 1) * 120 + Math.max(0, Number(state.lives || 0) * 90);
+    const next = (Number(state.levelIndex || 0) + 1) % PAMP_LEVELS.length;
+    pampuchParseLevel(state, next, true);
+  }
+
+  function renderPampuch(body) {
+    const state = getState('pampuch', () => pampuchState());
+    pampuchEnsureMap(state);
+    const best = getAccountStat(gamesGetActiveAccount(), 'pampuch');
+    const stage = createCanvas(body, 'clamp(430px, 68dvh, 660px)');
+    if (stage.wrap) stage.wrap.classList.add('isFullGame', 'arcadeNoPageScroll', 'pampuchCanvasWrap', 'pampuchMazeWrap');
+    body.insertAdjacentHTML('afterbegin', `<div class="arcadeHud arcadeHudWide3 arcadeHudSingleLine" id="pampuchHud">${gamesStatLine('Total', pampuchTotalScore(state))}${gamesStatLine('Best', Number(best && best.bestScore || 0) || 0)}${gamesStatLine('Points', `${state.points || 0}/${state.totalPoints || 0}`)}</div><div class="pampuchLevelBar" id="pampuchLevelBar">${PAMP_LEVELS.map((level, idx) => `<button type="button" class="gameControlBtn pampuchLevelBtn${idx === state.levelIndex ? ' isActive' : ''}" data-pampuch-level="${idx}">${level.name}</button>`).join('')}<button type="button" class="gameControlBtn" id="pampuchPauseBtn">Pauza</button></div><div class="arcadeControls arcadeOnlyRestart"><button type="button" class="gameControlBtn" id="pampuchRestartBtn">Nová hra</button></div>`);
+    if (stage.wrap) {
+      stage.wrap.insertAdjacentHTML('beforeend', `<div class="arcadeGameOverlay arcadeEndOverlay" id="pampuchOverlay"><div class="arcadeOverlayCard"><strong data-pampuch-title>${state.over ? 'Konec hry' : 'Pampuch'}</strong><span data-pampuch-text>${state.over ? `Total ${pampuchTotalScore(state)} · Points ${state.points || 0}/${state.totalPoints || 0}` : 'Původní styl: bludiště, body a duchové. Swipe kdekoliv po ploše, na PC šipky.'}</span><small>Level ${Number(state.levelIndex || 0) + 1} · Best: ${Number(best && best.bestScore || 0) || 0}</small><button type="button" class="gameControlBtn" id="pampuchOverlayBtn">${state.over ? 'Nová hra' : 'Start'}</button></div></div>`);
+      stage.wrap.insertAdjacentHTML('afterend', gamesTop3Block('pampuch', 'bodů', 5).replace('gamesTop5ScrollCard', 'gamesTop5ScrollCard arcadeTopScoreTight'));
+    }
+    const canvas = stage.canvas;
+    const ctx = stage.ctx;
+    const hud = body.querySelector('#pampuchHud');
+    const overlay = body.querySelector('#pampuchOverlay');
+    const overlayTitle = body.querySelector('[data-pampuch-title]');
+    const overlayText = body.querySelector('[data-pampuch-text]');
+    const resetBtn = body.querySelector('#pampuchRestartBtn');
+    const overlayBtn = body.querySelector('#pampuchOverlayBtn');
+    const pauseBtn = body.querySelector('#pampuchPauseBtn');
+
+    const begin = () => {
+      if (state.over) pampuchReset(state, state.levelIndex || 0);
+      pampuchEnsureMap(state);
+      state.running = true;
+      state.paused = false;
+      state.over = false;
+      state.startAt = state.startAt || Date.now();
+      if (overlay) overlay.hidden = true;
+      if (pauseBtn) pauseBtn.textContent = 'Pauza';
+    };
+    const reset = (levelIndex) => {
+      pampuchReset(state, Number.isFinite(Number(levelIndex)) ? Number(levelIndex) : state.levelIndex || 0);
+      if (overlay) overlay.hidden = false;
+      if (overlayTitle) overlayTitle.textContent = 'Pampuch';
+      if (overlayText) overlayText.textContent = 'Původní styl: bludiště, body a duchové. Swipe kdekoliv po ploše, na PC šipky.';
+      if (overlayBtn) overlayBtn.textContent = 'Start';
+      if (pauseBtn) pauseBtn.textContent = 'Pauza';
+      draw();
+    };
+    const finishPampuch = () => {
+      arcadeRecordOnce(state, 'pampuch', {
+        completed: true,
+        plays: 1,
+        bestScore: pampuchTotalScore(state),
+        bestDistance: Number(state.levelClears || 0) + 1,
+        bestPops: Math.max(Number(state.bestLevelPoints || 0) || 0, Number(state.points || 0) || 0),
+        bestCombo: state.bestCombo || 0,
+        bestJumps: state.eatenGhosts || 0,
+        bestSurvivalSec: state.startAt ? Math.floor((Date.now() - state.startAt) / 1000) : 0,
+        lastResult: `${pampuchTotalScore(state)} bodů · ${state.runPoints || state.points || 0} bodů celkem`
+      });
+    };
+    const end = () => {
+      if (state.over) return;
+      state.over = true;
+      state.running = false;
+      state.paused = false;
+      finishPampuch();
+      if (overlay) overlay.hidden = false;
+      if (overlayTitle) overlayTitle.textContent = 'Konec hry';
+      if (overlayText) overlayText.textContent = `Total ${pampuchTotalScore(state)} · Points ${state.points || 0}/${state.totalPoints || 0} · Level ${Number(state.levelIndex || 0) + 1}`;
+      if (overlayBtn) overlayBtn.textContent = 'Nová hra';
+      if (pauseBtn) pauseBtn.textContent = 'Pauza';
+    };
+    const togglePause = () => {
+      if (state.over) return;
+      if (!state.running) { begin(); return; }
+      state.paused = !state.paused;
+      if (pauseBtn) pauseBtn.textContent = state.paused ? 'Pokračovat' : 'Pauza';
+      if (overlay) overlay.hidden = !state.paused;
+      if (overlayTitle) overlayTitle.textContent = state.paused ? 'Pauza' : 'Pampuch';
+      if (overlayText) overlayText.textContent = state.paused ? 'Klepni na pokračovat nebo zmáčkni mezerník.' : 'Původní styl: bludiště, body a duchové. Swipe kdekoliv po ploše, na PC šipky.';
+      if (overlayBtn) overlayBtn.textContent = state.paused ? 'Pokračovat' : 'Start';
+    };
+    const setDir = (dirName) => {
+      const dir = pampDir(dirName);
+      if (!dir) return;
+      state.player.queued = dir;
+      if (!state.running || state.over) begin();
+      if (state.paused) togglePause();
+    };
+    const handleKey = (ev) => {
+      const code = ev.key || ev.code;
+      const map = { ArrowLeft: 'left', a: 'left', A: 'left', ArrowRight: 'right', d: 'right', D: 'right', ArrowUp: 'up', w: 'up', W: 'up', ArrowDown: 'down', s: 'down', S: 'down' };
+      if (map[code]) { ev.preventDefault(); setDir(map[code]); }
+      else if (code === ' ' || code === 'Spacebar' || code === 'Space') { ev.preventDefault(); togglePause(); }
+    };
+    const pointerDown = (ev) => {
+      ev.preventDefault();
+      canvas.setPointerCapture && canvas.setPointerCapture(ev.pointerId);
+      state.touchStart = { x: ev.clientX, y: ev.clientY, at: Date.now() };
+      if (!state.running || state.over) begin();
+      if (state.paused) togglePause();
+    };
+    const pointerMove = (ev) => {
+      if (!state.touchStart) return;
+      ev.preventDefault();
+      const dx = ev.clientX - state.touchStart.x;
+      const dy = ev.clientY - state.touchStart.y;
+      if (Math.max(Math.abs(dx), Math.abs(dy)) < 18) return;
+      setDir(Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? 'left' : 'right') : (dy < 0 ? 'up' : 'down'));
+      state.touchStart = { x: ev.clientX, y: ev.clientY, at: Date.now() };
+    };
+    const pointerEnd = (ev) => { ev?.preventDefault?.(); state.touchStart = null; };
+    canvas.addEventListener('pointerdown', pointerDown);
+    canvas.addEventListener('pointermove', pointerMove);
+    canvas.addEventListener('pointerup', pointerEnd);
+    canvas.addEventListener('pointercancel', pointerEnd);
+    document.addEventListener('keydown', handleKey);
+    resetBtn && resetBtn.addEventListener('click', () => reset(state.levelIndex || 0));
+    overlayBtn && overlayBtn.addEventListener('click', () => { if (state.over) reset(state.levelIndex || 0); begin(); });
+    pauseBtn && pauseBtn.addEventListener('click', togglePause);
+    body.querySelectorAll('[data-pampuch-level]').forEach((btn) => {
+      btn.addEventListener('click', () => reset(Number(btn.dataset.pampuchLevel || 0) || 0));
+    });
+
+    const stepGame = () => {
+      const p = state.player;
+      if (p.queued && pampuchCanMove(state, p, p.queued)) p.dir = p.queued;
+      pampuchMoveActor(state, p, p.dir);
+      p.mouth = (Number(p.mouth || 0) + 1) % 6;
+      state.steps += 1;
+      pampuchHandlePoint(state);
+      if (pampuchCollideGhosts(state)) { end(); return; }
+      state.ghostSlowTurn = (Number(state.ghostSlowTurn || 0) + 1) % (state.frightened > 0 ? 2 : 1);
+      state.ghosts.forEach((g, idx) => {
+        if (g.wait > 0) { g.wait -= 1; return; }
+        if (state.frightened > 0 && ((state.steps + idx) % 2 === 0)) return;
+        const dir = pampuchGhostChoice(state, g);
+        if (dir) pampuchMoveActor(state, g, dir);
+      });
+      if (pampuchCollideGhosts(state)) { end(); return; }
+      if (state.points >= state.totalPoints) pampuchAdvanceLevel(state);
+    };
+
+    const boardMetrics = () => {
+      const { w, h } = stage.resize();
+      const pad = 10;
+      const tile = Math.floor(Math.min((w - pad * 2) / state.cols, (h - pad * 2) / state.rows));
+      const size = Math.max(14, tile || 14);
+      return { w, h, tile: size, ox: Math.floor((w - state.cols * size) / 2), oy: Math.floor((h - state.rows * size) / 2) };
+    };
+
+    const drawGhost = (x, y, r, ghost, colors) => {
+      ctx.save();
+      ctx.translate(x, y);
+      const scared = state.frightened > 0;
+      ctx.fillStyle = scared ? 'rgba(98,190,255,.92)' : ghost.color;
+      ctx.shadowColor = scared ? '#60d8ff' : ghost.color;
+      ctx.shadowBlur = rakGameIsLadaMode() ? 0 : 10;
+      ctx.beginPath();
+      ctx.arc(0, -r * .12, r * .72, Math.PI, 0);
+      ctx.lineTo(r * .72, r * .55);
+      for (let i = 2; i >= -2; i -= 1) {
+        ctx.lineTo(i * r * .18, r * (i % 2 === 0 ? .34 : .56));
+      }
+      ctx.lineTo(-r * .72, r * .55);
+      ctx.closePath();
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = '#fff';
+      ctx.beginPath(); ctx.arc(-r * .24, -r * .12, r * .17, 0, Math.PI * 2); ctx.arc(r * .24, -r * .12, r * .17, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = scared ? '#1b2c42' : '#0d1020';
+      ctx.beginPath(); ctx.arc(-r * .22, -r * .10, r * .08, 0, Math.PI * 2); ctx.arc(r * .26, -r * .10, r * .08, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    };
+
+    const drawPlayer = (x, y, r, colors) => {
+      const p = state.player;
+      const dir = p.dir || pampDir('right');
+      const mouthOpen = .16 + ((p.mouth % 6) < 3 ? .12 : .04);
+      let angle = 0;
+      if (dir.name === 'left') angle = Math.PI;
+      else if (dir.name === 'up') angle = -Math.PI / 2;
+      else if (dir.name === 'down') angle = Math.PI / 2;
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(angle);
+      ctx.fillStyle = '#ffd14d';
+      ctx.shadowColor = colors.gold || '#ffd14d';
+      ctx.shadowBlur = rakGameIsLadaMode() ? 0 : 14;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.arc(0, 0, r * .72, mouthOpen * Math.PI, (2 - mouthOpen) * Math.PI);
+      ctx.closePath();
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = '#16130b';
+      ctx.beginPath(); ctx.arc(r * .08, -r * .34, Math.max(1.6, r * .08), 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    };
+
+    const draw = () => {
+      pampuchEnsureMap(state);
+      const m = boardMetrics();
+      const colors = arcadeThemeColors();
+      ctx.clearRect(0, 0, m.w, m.h);
+      arcadeDrawStageBg(ctx, m.w, m.h, colors);
+      ctx.save();
+      ctx.fillStyle = 'rgba(3,6,18,.50)';
+      if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(m.ox - 6, m.oy - 6, state.cols * m.tile + 12, state.rows * m.tile + 12, 18); ctx.fill(); } else ctx.fillRect(m.ox - 6, m.oy - 6, state.cols * m.tile + 12, state.rows * m.tile + 12);
+      ctx.restore();
+      for (let r = 0; r < state.rows; r += 1) {
+        for (let c = 0; c < state.cols; c += 1) {
+          const cell = state.grid[r][c];
+          const x = m.ox + c * m.tile;
+          const y = m.oy + r * m.tile;
+          if (cell === '#') {
+            const wallGrad = ctx.createLinearGradient(x, y, x + m.tile, y + m.tile);
+            wallGrad.addColorStop(0, 'rgba(30,118,255,.92)');
+            wallGrad.addColorStop(1, 'rgba(86,40,190,.86)');
+            ctx.fillStyle = wallGrad;
+            ctx.strokeStyle = 'rgba(255,255,255,.18)';
+            ctx.lineWidth = 1;
+            if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(x + 1, y + 1, m.tile - 2, m.tile - 2, Math.max(4, m.tile * .18)); ctx.fill(); ctx.stroke(); }
+            else { ctx.fillRect(x + 1, y + 1, m.tile - 2, m.tile - 2); ctx.strokeRect(x + 1, y + 1, m.tile - 2, m.tile - 2); }
+          } else if (cell === '.' || cell === 'o') {
+            ctx.fillStyle = cell === 'o' ? (colors.gold || '#ffd166') : 'rgba(255,236,170,.92)';
+            ctx.shadowColor = cell === 'o' ? (colors.gold || '#ffd166') : 'transparent';
+            ctx.shadowBlur = cell === 'o' && !rakGameIsLadaMode() ? 8 : 0;
+            ctx.beginPath();
+            ctx.arc(x + m.tile / 2, y + m.tile / 2, cell === 'o' ? Math.max(4, m.tile * .20) : Math.max(2, m.tile * .08), 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+          }
+        }
+      }
+      state.ghosts.forEach((g) => drawGhost(m.ox + (g.c + .5) * m.tile, m.oy + (g.r + .5) * m.tile, m.tile * .45, g, colors));
+      drawPlayer(m.ox + (state.player.c + .5) * m.tile, m.oy + (state.player.r + .5) * m.tile, m.tile * .48, colors);
+      if (state.frightened > 0) {
+        ctx.save(); ctx.fillStyle = colors.accent || '#7cff7c'; ctx.globalAlpha = .75; ctx.font = `700 ${Math.max(10, m.tile * .48)}px system-ui`; ctx.textAlign = 'center'; ctx.fillText('BONUS', m.ox + state.cols * m.tile / 2, m.oy + m.tile * .85); ctx.restore();
+      }
+      if (!state.running || state.paused || state.over) {
+        ctx.save(); ctx.fillStyle = 'rgba(0,0,0,.18)'; ctx.fillRect(0, 0, m.w, m.h); ctx.restore();
+      }
+    };
+
+    const updateHud = () => {
+      if (hud) hud.innerHTML = `${gamesStatLine('Total', pampuchTotalScore(state))}${gamesStatLine('Best', Number(best && best.bestScore || 0) || 0)}${gamesStatLine('Points', `${state.points || 0}/${state.totalPoints || 0}`)}${gamesStatLine('Životy', state.lives || 0)}`;
+      body.querySelectorAll('[data-pampuch-level]').forEach((btn) => btn.classList.toggle('isActive', Number(btn.dataset.pampuchLevel || 0) === Number(state.levelIndex || 0)));
+    };
+
+    const loop = (ts) => {
+      if (!rakGameShouldTick()) { state.lastTs = 0; state.raf = 0; return; }
+      const dt = rakGameDelta(state, ts);
+      if (!state.over && state.running && !state.paused) {
+        state.moveAcc += dt;
+        state.frightened = Math.max(0, Number(state.frightened || 0) - dt);
+        state.invuln = Math.max(0, Number(state.invuln || 0) - dt);
+        const tickMs = Math.max(72, Number(state.tickMs || 126) || 126);
+        let guard = 0;
+        while (state.moveAcc >= tickMs && guard < 4) {
+          state.moveAcc -= tickMs;
+          stepGame();
+          guard += 1;
+          if (state.over) break;
+        }
+      }
+      updateHud();
+      draw();
+      state.raf = rakGameRequestFrame(state, loop);
+    };
+    state.raf = rakGameRequestFrame(state, loop);
+    addCleanup(() => { cancelAnimationFrame(state.raf); canvas.removeEventListener('pointerdown', pointerDown); canvas.removeEventListener('pointermove', pointerMove); canvas.removeEventListener('pointerup', pointerEnd); canvas.removeEventListener('pointercancel', pointerEnd); document.removeEventListener('keydown', handleKey); if (state.over) finishPampuch(); });
+    draw();
+    setActiveState('pampuch', state);
+  }
+
+
   // Daily challenge --------------------------------------------------------
   function dailySeed() {
     const d = new Date(); d.setHours(0,0,0,0);
@@ -4203,7 +4781,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   }
   function dailyChallengeId() { return DAILY_MODES[dailySeed() % DAILY_MODES.length]; }
   function dailyLabel(mode) {
-    return mode === 'aim' ? 'Aim Trainer' : mode === 'reaction' ? 'Reaction Test' : mode === 'memory' ? 'Pexeso' : mode === 'mines' ? 'Miny' : mode === 'bubble' ? 'Bubble Shooter' : mode === 'doodle' ? 'Doodle Jump' : mode === 'brick' ? 'Brick Breaker' : mode === 'shooter' ? 'Space Shooter' : mode === 'bomber' ? 'Bomberman mini' : mode === 'ships' ? 'Lodě online' : 'Challenge';
+    return mode === 'aim' ? 'Aim Trainer' : mode === 'reaction' ? 'Reaction Test' : mode === 'memory' ? 'Pexeso' : mode === 'mines' ? 'Miny' : mode === 'bubble' ? 'Bubble Shooter' : mode === 'doodle' ? 'Doodle Jump' : mode === 'brick' ? 'Brick Breaker' : mode === 'shooter' ? 'Space Shooter' : mode === 'bomber' ? 'Bomberman mini' : mode === 'pampuch' ? 'Pampuch' : mode === 'ships' ? 'Lodě online' : 'Challenge';
   }
   function dailyText(mode) {
     if (mode === 'aim') return '20+ přesných zásahů za 30 sekund.';
@@ -4215,6 +4793,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     if (mode === 'brick') return 'Rozbij co nejvíc bloků.';
     if (mode === 'shooter') return 'Přežij vesmírnou vlnu.';
     if (mode === 'bomber') return 'Znič příšerky v bludišti.';
+    if (mode === 'pampuch') return 'Projdi bludiště, seber body a uteč duchům.';
     if (mode === 'ships') return 'Vyhraj online námořní souboj.';
     return 'Každý den jiná výzva.';
   }
@@ -4232,6 +4811,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       else if (mode === 'brick') renderBrick(body);
       else if (mode === 'shooter') renderShooter(body);
       else if (mode === 'bomber') renderBomber(body);
+      else if (mode === 'pampuch') renderPampuch(body);
       else if (mode === 'ships') renderShips(body);
     };
     body.querySelector('#dailyStartBtn').addEventListener('click', start);
@@ -4239,7 +4819,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     setActiveState('daily', { mode });
   }
 
-  const renderers = { aim: renderAim, reaction: renderReaction, tetris: renderTetris, shooter: renderShooter, brick: renderBrick, doodle: renderDoodle, bubble: renderBubble, sudoku: renderSudoku, mines: renderMines, memory: renderMemory, bomber: renderBomber, ships: renderShips, daily: renderDaily };
+  const renderers = { aim: renderAim, reaction: renderReaction, tetris: renderTetris, shooter: renderShooter, brick: renderBrick, doodle: renderDoodle, bubble: renderBubble, sudoku: renderSudoku, mines: renderMines, memory: renderMemory, bomber: renderBomber, pampuch: renderPampuch, ships: renderShips, daily: renderDaily };
 
   function runArcadeGamesFullAudit() {
     const ids = CORE_GAMES.slice();
@@ -4253,7 +4833,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     const allHot = EXTRA_GAMES.length === 0;
     const completedOnlyGuard = typeof window.gamesRecordStat === 'function';
     return {
-      version: 'v.1.1 (723)',
+      version: 'v.1.1 (726)',
       ok: !missingMeta.length && !missingRenderer.length && allHot && completedOnlyGuard,
       totalGames: ids.length,
       coreGames: ids,
@@ -4268,7 +4848,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       themeBackground: true,
       touchGuard: true,
       notes: [
-        'Build 721 přidává 60minutovou platnost online pozvánek, odmítá prošlé kódy a připravuje databázový úklid starých pozvánek.',
+        'Build 726 předělává Pampucha na bludišťovou retro hru s body, duchy, levely a swipe ovládáním.',
         'Reálnou hratelnost a citlivost dotyku je potřeba potvrdit na mobilu.'
       ]
     };

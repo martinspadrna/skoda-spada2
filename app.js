@@ -1,4 +1,4 @@
-// v.1.1 (723) – administrace, ruční synchronizace dashboardu a PWA update kontrola.
+// v.1.1 (726) – Pampuch předělaný do bludišťového retro stylu s body, duchy a levely.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;
@@ -1320,6 +1320,8 @@ function getPostStabilizationSafeHelperHealth() {
     'getPostStabilizationBaselineHealth',
     'getLadaPerformanceHealth',
     'getRakLadaPerformanceProfile',
+    'getRakDevicePerformanceStatus',
+    'runRakDevicePerformanceProbe',
     'runLadaPerformanceAudit',
     'getSupabaseStructureHealth',
     'getGameEngineBaselineHealth',
@@ -1415,8 +1417,11 @@ function getLadaPerformanceHealth() {
   if (active && root && !String(root.dataset.rakPerformanceMode || '').includes('lada')) issues.push('performance dataset missing');
   if (active && profile && Number(profile.frameMs || 0) < 28) issues.push('lada frame throttle too low');
   if (active && profile && String(profile.cssEffects || '') !== 'minimal') issues.push('lada css effects not minimal');
+  const deviceStatus = typeof getRakDevicePerformanceStatus === 'function' ? getRakDevicePerformanceStatus() : null;
   if (typeof getRakPerformanceDprMax !== 'function') issues.push('getRakPerformanceDprMax missing');
   if (typeof getRakLadaPerformanceProfile !== 'function') issues.push('getRakLadaPerformanceProfile missing');
+  if (typeof getRakDevicePerformanceStatus !== 'function') issues.push('getRakDevicePerformanceStatus missing');
+  if (typeof runRakDevicePerformanceProbe !== 'function') issues.push('runRakDevicePerformanceProbe missing');
   if (typeof getLowEndDeviceInfo !== 'function') issues.push('getLowEndDeviceInfo missing');
 
   return {
@@ -1436,6 +1441,9 @@ function getLadaPerformanceHealth() {
     detectedDpr: Number(lowEndInfo && lowEndInfo.dpr || window.devicePixelRatio || 1) || 1,
     lowEndDetected: !!(lowEndInfo && lowEndInfo.lowEnd),
     lowEndReasons: Array.isArray(lowEndInfo && lowEndInfo.reasons) ? lowEndInfo.reasons.slice(0, 8) : [],
+    devicePerformanceScore: deviceStatus && deviceStatus.probe ? Number(deviceStatus.probe.score || 0) || 0 : null,
+    devicePerformanceRecommendation: deviceStatus ? String(deviceStatus.recommendedProfile || 'normal') : 'unknown',
+    devicePerformanceProbeAgeMs: deviceStatus ? deviceStatus.probeAgeMs : null,
     cssSampleCount: cssSamples.length,
     maxBlurPx: Math.round(maxBlur * 10) / 10,
     animatedSampleCount: animatedSamples.length,
