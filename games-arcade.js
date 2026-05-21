@@ -2,7 +2,7 @@
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
 
-  // v.1.1 (704): Opravy Reaction/Bubble/Sudoku/Bomberman a app-like herní chování.
+  // v.1.1 (705): Kalkulačky numeric keyboard, Reaction menší plocha, Sudoku bez chyb, Bubble obtížnost a Bomberman restart.
   const CORE_GAMES = ['ttt', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
   const EXTRA_GAMES = [];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);
@@ -590,7 +590,7 @@
 #games .arcadeOverlayCard strong{font-size:18px;line-height:1.12;}
 #games .arcadeOverlayCard span{font-size:13px;line-height:1.35;color:rgba(245,255,250,.82);}
 #games .arcadeOverlayCard small{font-size:11px;color:rgba(245,255,250,.62);}
-#games .arcadeReactionBoard{min-height:clamp(330px, 58dvh, 560px);width:100%;border:none;color:inherit;cursor:pointer;touch-action:manipulation;background:var(--rakGlassPanelBg, linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.025))) !important;border-color:var(--rakGlassStroke, rgba(255,255,255,.14)) !important;}
+#games .arcadeReactionBoard{min-height:clamp(360px, 62dvh, 600px);width:100%;border:none;color:inherit;cursor:pointer;touch-action:manipulation;background:var(--rakGlassPanelBg, linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.025))) !important;border-color:var(--rakGlassStroke, rgba(255,255,255,.14)) !important;}
 #games .arcadeReactionBoard.isGo{background:radial-gradient(circle at 50% 34%, color-mix(in srgb, var(--rakThemeAccent, var(--green2)) 74%, #ffffff) 0 14%, color-mix(in srgb, var(--rakThemeAccent, var(--green2)) 48%, transparent) 15% 42%, transparent 68%), linear-gradient(135deg, color-mix(in srgb, var(--rakThemeAccent, var(--green2)) 58%, #06351a), color-mix(in srgb, var(--rakThemeAccent, var(--green2)) 22%, rgba(255,255,255,.05))) !important;border-color:color-mix(in srgb, var(--rakThemeAccent, var(--green2)) 62%, rgba(255,255,255,.18)) !important;box-shadow:0 0 0 1px color-mix(in srgb, var(--rakThemeAccent, var(--green2)) 42%, transparent) inset, 0 22px 58px color-mix(in srgb, var(--rakThemeAccent, var(--green2)) 34%, rgba(0,0,0,.32)) !important;color:#fafffb !important;}
 #games .arcadeReactionBoard.isBad{background:linear-gradient(180deg, rgba(255,74,104,.28), rgba(255,255,255,.03)) !important;}
 #games .arcadeReactionBoard strong{font-size:clamp(28px, 10vw, 56px);letter-spacing:.02em;}
@@ -600,7 +600,7 @@
 #games .arcadeReactionBoard.isGo strong{text-shadow:0 0 22px rgba(255,255,255,.45), 0 0 34px color-mix(in srgb, var(--rakThemeAccent, var(--green2)) 56%, transparent);}
 #games .arcadeReactionBoard.isGo .arcadeReactionPulse{animation:reactionPulse .72s ease-in-out infinite alternate;}
 @keyframes reactionPulse{from{transform:scale(.88);opacity:.65;}to{transform:scale(1.1);opacity:1;}}
-@media (max-width: 700px){#games .arcadeHudWide{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;}#games .arcadeAimBoard,#games .arcadeReactionBoard{min-height:clamp(330px, 60dvh, 560px);}#games .arcadeHud .gamesStatValue{font-size:13px;}}
+@media (max-width: 700px){#games .arcadeHudWide{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;}#games .arcadeAimBoard{min-height:clamp(330px, 60dvh, 560px);}#games .arcadeReactionBoard{min-height:clamp(360px, 62dvh, 600px);}#games .arcadeHud .gamesStatValue{font-size:13px;}}
 
 #games .arcadeBanner{display:grid;gap:8px;align-content:center;justify-items:center;min-height:clamp(220px, 40dvh, 340px);padding:18px;text-align:center;}
 #games .arcadeBanner.isGo{background:linear-gradient(180deg, rgba(124,255,124,.12), rgba(255,255,255,.03));}
@@ -1099,7 +1099,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function renderLaunchTiles() {
     const grid = document.getElementById('gamesGrid');
     if (!grid) return;
-    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v704';
+    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v705';
     if (grid.dataset && grid.dataset.arcadeLaunchSig === launchSig && grid.querySelector('[data-game="ttt"]')) {
       gamePerf.launchRenderSkips = Number(gamePerf.launchRenderSkips || 0) + 1;
       return;
@@ -2740,7 +2740,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       }
       return dropped;
     };
-    const bubbleDropEvery = () => Math.max(2, 6 - Math.floor((Number(state.shots || 0)) / 8));
+    const bubbleDropEvery = () => Math.max(2, 7 - Math.floor((Number(state.shots || 0)) / 4));
     const dropRows = () => {
       const every = bubbleDropEvery();
       state.nextDropEvery = every;
@@ -2830,7 +2830,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     { difficulty: 'hard', label: 'Těžké', puzzle: ['000000907','000420180','000705026','100904000','050000040','000507009','920108000','034059000','507000000'], solution: ['462831957','397426185','851795326','176984253','259673841','483517629','925148763','634259718','517362494'] }
   ];
   function createSudokuState(diff) {
-    return { started: false, selected: diff || 'easy', startAt: 0, finished: false, mistakes: 0, solution: null, puzzle: null, entries: Array(81).fill(''), selectedCell: null, wrong: {} };
+    return { started: false, selected: diff || 'easy', startAt: 0, finished: false, solution: null, puzzle: null, entries: Array(81).fill(''), selectedCell: null, wrong: {} };
   }
   function renderSudoku(body) {
     const state = getState('sudoku', () => createSudokuState('easy'));
@@ -2863,7 +2863,6 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       state.puzzle = pick.puzzle;
       state.startAt = state.startAt || Date.now();
       state.finished = false;
-      state.mistakes = 0;
       state.entries = Array(81).fill('');
       state.wrong = {};
       state.selectedCell = null;
@@ -2873,7 +2872,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       const idx = r * 9 + c;
       const fixed = v !== '0';
       const entry = fixed ? v : String(state.entries[idx] || '');
-      const cls = ['arcadeSudokuCell', fixed ? 'isFixed' : 'isOpen', selectedIdx === idx ? 'isSelected' : '', state.wrong[idx] ? 'isWrong' : '', entry ? 'hasValue' : ''].filter(Boolean).join(' ');
+      const cls = ['arcadeSudokuCell', fixed ? 'isFixed' : 'isOpen', selectedIdx === idx ? 'isSelected' : '', entry ? 'hasValue' : ''].filter(Boolean).join(' ');
       return `<button type="button" class="${cls}" data-r="${r}" data-c="${c}" data-idx="${idx}" ${fixed ? 'aria-disabled="true"' : ''}>${entry}</button>`;
     }).join('')).join('');
     const selectedRow = selectedIdx >= 0 ? Math.floor(selectedIdx / 9) : 0;
@@ -2884,7 +2883,6 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         <div class="arcadeHud arcadeHudSingleLine sudokuHud">
           ${gamesStatLine('Obtížnost', pick.label || pick.difficulty)}
           ${gamesStatLine('Čas', fmtTime(state.startAt ? Date.now() - state.startAt : 0))}
-          ${gamesStatLine('Chyby', state.mistakes)}
         </div>
         <div class="arcadeControls sudokuGameControls sudokuGameControlsSingle sudokuRestartTop"><button type="button" class="gameControlBtn" data-sudoku-restart="1">Nová hra</button></div>
         <div class="arcadeBoard grid-9 arcadePanel arcadeLogicBoard arcadeSudokuPaper" id="sudokuGrid">${gridHtml}</div>
@@ -2893,7 +2891,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     const grid = body.querySelector('#sudokuGrid');
     const updateHud = () => {
       const hud = body.querySelector('.sudokuHud');
-      if (hud) hud.innerHTML = `${gamesStatLine('Obtížnost', pick.label || pick.difficulty)}${gamesStatLine('Čas', fmtTime(Date.now() - state.startAt))}${gamesStatLine('Chyby', state.mistakes)}`;
+      if (hud) hud.innerHTML = `${gamesStatLine('Obtížnost', pick.label || pick.difficulty)}${gamesStatLine('Čas', fmtTime(Date.now() - state.startAt))}`;
     };
     const completeCheck = () => {
       const valid = pick.solution.every((row, r) => row.split('').every((val, c) => {
@@ -2903,9 +2901,9 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       if (valid && !state.finished) {
         state.finished = true;
         const time = Date.now() - state.startAt;
-        gamesRecordStat('sudoku', { completed: true, plays: 1, bestTimeMs: time, bestScore: encodePoints('sudoku', time), mistakes: state.mistakes, lastResult: fmtTime(time) });
+        gamesRecordStat('sudoku', { completed: true, plays: 1, bestTimeMs: time, bestScore: encodePoints('sudoku', time), lastResult: fmtTime(time) });
         const done = body.querySelector('.sudokuGameControls');
-        if (done) done.insertAdjacentHTML('beforebegin', `<div class="arcadeBar arcadePanel uPad10x12"><div class="arcadeStatus"><strong>Vyřešeno!</strong> Čas ${fmtTime(time)} · chyby ${state.mistakes}.</div></div>`);
+        if (done) done.insertAdjacentHTML('beforebegin', `<div class="arcadeBar arcadePanel uPad10x12"><div class="arcadeStatus"><strong>Vyřešeno!</strong> Čas ${fmtTime(time)}.</div></div>`);
       }
       updateHud();
     };
@@ -2926,8 +2924,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       const val = btn.dataset.sudokuNum;
       if (val === 'clear') { state.entries[idx] = ''; delete state.wrong[idx]; renderSudoku(body); return; }
       state.entries[idx] = val;
-      if (val !== pick.solution[r][c]) { state.mistakes += 1; state.wrong[idx] = true; }
-      else delete state.wrong[idx];
+      delete state.wrong[idx];
       renderSudoku(body);
       completeCheck();
     }));
@@ -3241,7 +3238,17 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     const resultHtml = () => state.over ? `<div class="bomberResultOverlay isVisible"><div class="bomberResultCard"><strong>${state.won ? 'Vyčištěno' : 'Konec hry'}</strong><span>${state.won ? 'Zničil jsi všechny příšerky.' : 'Příšerka tě dostala.'}</span><div class="bomberResultStats">Score ${state.score} · příšerky ${state.kills}/4 · bedny ${state.crates} · upgrady ${state.upgradesCollected}</div><button type="button" class="gameControlBtn" data-bomber="restart">Nová hra</button></div></div>` : '';
     const paint = () => {
       const hud = body.querySelector('.bomberHud'); if (hud) hud.innerHTML = hudHtml();
-      const overlay = body.querySelector('.bomberResultMount'); if (overlay) overlay.innerHTML = resultHtml();
+      const overlay = body.querySelector('.bomberResultMount');
+      if (overlay) {
+        overlay.innerHTML = resultHtml();
+        const restartBtn = overlay.querySelector('[data-bomber="restart"]');
+        if (restartBtn && !restartBtn.dataset.boundRestart) {
+          restartBtn.dataset.boundRestart = '1';
+          const restartAction = (ev) => { ev.preventDefault(); ev.stopPropagation(); resetBomberGame(); };
+          restartBtn.addEventListener('pointerdown', restartAction, { passive: false });
+          restartBtn.addEventListener('click', restartAction);
+        }
+      }
       const board = body.querySelector('#bomberGrid');
       if (board) {
         const cells = board.querySelector('.arcadeBomberCells');
@@ -3534,7 +3541,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     const allHot = EXTRA_GAMES.length === 0;
     const completedOnlyGuard = typeof window.gamesRecordStat === 'function';
     return {
-      version: 'v.1.1 (704)',
+      version: 'v.1.1 (705)',
       ok: !missingMeta.length && !missingRenderer.length && allHot && completedOnlyGuard,
       totalGames: ids.length,
       coreGames: ids,
@@ -3549,7 +3556,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       themeBackground: true,
       touchGuard: true,
       notes: [
-        'QA build 702 sjednocuje HUDy, scroll Top výsledků, touch-action a konečné overlaye napříč hotovými hrami.',
+        'QA build 705 dotahuje Reaction výšku, Sudoku bez nápovědy chyb, Bubble postupné sjíždění a Bomberman restart.',
         'Reálnou hratelnost a citlivost dotyku je potřeba potvrdit na mobilu.'
       ]
     };

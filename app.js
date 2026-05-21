@@ -1,4 +1,4 @@
-// v.1.1 (704) – Hry: Reaction větší plocha, Bubble přísnější řádky, Sudoku spodní číselník, Bomberman restart a celkové app-like blokování výběru textu.
+// v.1.1 (705) – Kalkulačky číselná klávesnice, Reaction úprava výšky, Sudoku bez nápovědy chyb, Bubble obtížnost a Bomberman restart.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;
@@ -14,6 +14,29 @@
   };
   document.addEventListener('selectstart', preventSelection, { capture: true });
   document.addEventListener('dragstart', preventSelection, { capture: true });
+})();
+
+(function setupRakCalcNumericKeyboard() {
+  if (window.__rakCalcNumericKeyboardGuard) return;
+  window.__rakCalcNumericKeyboardGuard = true;
+  const selector = '#soustruhy input, #frezky input, #brusy input, .calcPage input';
+  const apply = () => {
+    try {
+      document.querySelectorAll(selector).forEach((input) => {
+        const type = String(input.getAttribute('type') || '').toLowerCase();
+        if (type === 'file' || type === 'hidden' || type === 'checkbox' || type === 'radio') return;
+        input.setAttribute('inputmode', 'decimal');
+        input.setAttribute('pattern', '[0-9]*[,.]?[0-9]*');
+        input.setAttribute('autocomplete', 'off');
+      });
+    } catch (err) {}
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', apply, { once: true });
+  else apply();
+  if (typeof MutationObserver !== 'undefined') {
+    const observer = new MutationObserver(() => apply());
+    observer.observe(document.documentElement || document.body, { childList: true, subtree: true });
+  }
 })();
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";

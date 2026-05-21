@@ -1,3 +1,12 @@
+## v.1.1 (705)
+- Kalkulačky: číselné vstupy dostávají `inputmode=decimal`, aby se na mobilu otevírala číselná klávesnice místo běžné.
+- Reaction Test: herní plocha je o něco snížená, aby šly pod ní vidět Top výsledky.
+- Bubble Shooter: sjíždění řádků se během hry zrychluje výrazněji podle počtu střel.
+- Sudoku: odstraněné označování/chyby jako nápověda; číselník je kompaktnější pod hrou.
+- Bomberman: tlačítko Nová hra v koncovém overlayi má přímé napojení, aby reagovalo spolehlivěji.
+- Celá app: zesílený app-like zákaz označování textu mimo vstupní pole.
+- Verze sjednocena na v.1.1 (705), cache na v1.1-705 a Supabase realtime kanál na rak-public-live-v705.
+
 ## v.1.1 (704)
 
 - Hry: Reaction Test má výrazně vyšší herní plochu, aby šla lépe trefovat na mobilu.

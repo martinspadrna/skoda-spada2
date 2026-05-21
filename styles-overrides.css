@@ -8137,7 +8137,7 @@ body.gamesOpen #games textarea{
 }
 
 
-/* v.1.1 (704) – app-like text selection guard + poslední herní doladění */
+/* v.1.1 (705) – app-like text selection guard + kalkulačky/Reakce/Sudoku/Bubble/Bomberman */
 html, body, #app, .app, .page, .card, .glassCard, .bottomNav, .navItem, button, .btn, .tile, .calcTile, .modal, #games, #games *, .gamesRankModalOverlay, .gamesRankModalOverlay *{
   -webkit-user-select:none !important;
   user-select:none !important;
@@ -8203,4 +8203,50 @@ body.gamesOpen #games .bomberResultCard *,
   #games .sudokuNumberPickerDocked{grid-template-columns:repeat(5,48px) !important;gap:6px !important;}
   body.gamesOpen #games .sudokuNumberPickerDocked button,
   #games .sudokuNumberPickerDocked button{width:48px !important;min-width:48px !important;height:46px !important;min-height:46px !important;}
+}
+
+
+/* v.1.1 (705) – tvrdší app-like režim bez označování textu mimo vstupní pole */
+html, body, body *{
+  -webkit-user-select:none !important;
+  user-select:none !important;
+  -webkit-touch-callout:none !important;
+}
+input, textarea, select, [contenteditable="true"], .allowTextSelect, .selectableText{
+  -webkit-user-select:text !important;
+  user-select:text !important;
+  -webkit-touch-callout:default !important;
+}
+:is(#soustruhy,#frezky,#brusy,.calcPage) input{
+  -webkit-user-select:text !important;
+  user-select:text !important;
+}
+body.gamesOpen #games .arcadeReactionBoard,
+#games .arcadeReactionBoard{
+  min-height:clamp(390px, 64dvh, 620px) !important;
+}
+body.gamesOpen #games .sudokuNumberPickerDocked,
+#games .sudokuNumberPickerDocked{
+  grid-template-columns:repeat(10,34px) !important;
+  gap:6px !important;
+  padding:8px !important;
+  width:max-content !important;
+  max-width:calc(100% - 12px) !important;
+  justify-content:center !important;
+  margin:0 auto !important;
+}
+body.gamesOpen #games .sudokuNumberPickerDocked button,
+#games .sudokuNumberPickerDocked button{
+  width:34px !important;
+  min-width:34px !important;
+  height:38px !important;
+  min-height:38px !important;
+  font-size:16px !important;
+}
+body.gamesOpen #games .arcadeSudokuCell.isWrong,
+#games .arcadeSudokuCell.isWrong{
+  background:rgba(255,255,255,.03) !important;
+  color:inherit !important;
+  box-shadow:none !important;
+  outline:none !important;
 }
