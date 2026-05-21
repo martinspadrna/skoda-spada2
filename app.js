@@ -1,4 +1,4 @@
-// v.1.1 (696) – Miny: dlouhé podržení vrací vlajku, krátký klik otevírá pole.
+// v.1.1 (697) – Bomberman mini: bludiště, 4 příšerky, bomby, upgrady a denní rotace her.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

@@ -1,7 +1,7 @@
-## v.1.1 (696)
+## v.1.1 (697)
 - Miny: dlouhé podržení na poli nově přidá nebo sundá vlajku, krátký klik dál otevírá pole.
 - Vlajka má výrazné zvýraznění přímo v herní mřížce a neotevírá pole omylem.
-- Verze sjednocena na v.1.1 (696), cache na v1.1-696 a Supabase realtime kanál na rak-public-live-v696.
+- Verze sjednocena na v.1.1 (697), cache na v1.1-697 a Supabase realtime kanál na rak-public-live-v697.
 
 ## v.1.1 (695)
 - Sudoku: ve hře odstraněné Top výsledky i tlačítko obtížnosti, tlačítko Nová hra vrací zpět na menu s výběrem obtížnosti a číselník 1–9 je výrazně větší pro pohodlné klepání.

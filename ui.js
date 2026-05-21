@@ -3959,7 +3959,7 @@ function buildAppHistoryHtml(versionText) {
       range: versionText,
       title: 'Aktuální build',
       lines: [
-        'Build v.1.1 (696) vrací u Min dlouhé podržení jako rychlou vlajku a ponechává krátký klik pro otevření pole.',
+        'Build v.1.1 (697) předělává Bomberman mini na bludiště se 4 příšerkami, bombami, bednami a upgrady a Daily Challenge střídá hry podle dne.',
         'Série v.1.1 650–694 dotáhla Piškvorky, online pozvánky, PWA launch handler, 2048/Snake/Flappy Car/Aim/Reaction/Tetris/Space Shooter/Brick Breaker/Doodle/Bubble/Sudoku/Miny/Pexeso mezi hotové hry, herní profily, theme polish a těžší/chytřejší achievementy.',
         'Sekce „O aplikaci“ je nově stručnější: detailní změny zůstávají v changelogu a tady se historie drží po větších blocích.',
         'Stabilizační audity, Supabase guardy, Láďův režim a finální readiness kontroly zůstávají součástí diagnostiky.'
@@ -6917,6 +6917,9 @@ const GAMES_ACHIEVEMENT_DEFS = [
   { id: 'mines_25', title: 'Mines hunter', desc: 'Dej 25 bodů v Minesweeperu', goalText: '25 bodů', progress: (a) => Number((a.arcade && a.arcade.mines && a.arcade.mines.bestScore) || 0), target: 25 },
   { id: 'memory_25', title: 'Memory king', desc: 'Dostaň 25 bodů v Memory', goalText: '25 bodů', progress: (a) => Number((a.arcade && a.arcade.memory && a.arcade.memory.bestScore) || 0), target: 25 },
   { id: 'bomber_12', title: 'Bomber pilot', desc: 'Nasbírej 12 her v Bomberman mini', goalText: '12 her', progress: (a) => Number((a.arcade && a.arcade.bomber && a.arcade.bomber.plays) || 0), target: 12 },
+  { id: 'bomber_kill_4', title: 'Lovec příšerek', desc: 'Znič v Bombermanovi všechny 4 příšerky v jedné hře', goalText: '4 příšerky', progress: (a) => Number((a.arcade && a.arcade.bomber && a.arcade.bomber.bestEnemiesKilled) || 0), target: 4 },
+  { id: 'bomber_crates_30', title: 'Bourání beden', desc: 'Rozbij v Bombermanovi 30 beden v jedné hře', goalText: '30 beden', progress: (a) => Number((a.arcade && a.arcade.bomber && a.arcade.bomber.bestCrates) || 0), target: 30 },
+  { id: 'bomber_power_6', title: 'Sběrač výbavy', desc: 'Seber v Bombermanovi 6 upgradů v jedné hře', goalText: '6 upgradů', progress: (a) => Number((a.arcade && a.arcade.bomber && a.arcade.bomber.bestPowerUps) || 0), target: 6 },
   { id: 'daily_5', title: 'Daily grinder', desc: 'Splň 5 denních challenge', goalText: '5 challenge', progress: (a) => Number((a.arcade && a.arcade.daily && a.arcade.daily.plays) || 0), target: 5 }
 ];
 

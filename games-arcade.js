@@ -2,7 +2,7 @@
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
 
-  // v.1.1 (696): Miny long-press vlajky podle požadavku.
+  // v.1.1 (697): Bomberman mini bludiště, příšerky, upgrady a denní challenge rotace.
   const CORE_GAMES = ['ttt', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
   const EXTRA_GAMES = [];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);
@@ -10,7 +10,7 @@
   const ARCADE_RENDER_GAMES = ['aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
   const POINT_SCALE = 1000000000;
   const ARC_KEY = 'arcade';
-  const DAILY_MODES = ['aim'];
+  const DAILY_MODES = ['aim', 'reaction', 'memory', 'mines', 'bubble', 'doodle', 'brick', 'shooter', 'bomber'];
 
   const META = {
     ttt: { title: 'Piškvorky', subtitle: 'AI, lokální duel a pozvánky', unit: 'her', mode: 'high', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5.2" y="5.2" width="13.6" height="13.6" rx="3"></rect><path d="M9 9.1l3 3 3-3"></path><circle cx="9.2" cy="15" r="1.1"></circle><circle cx="14.8" cy="15" r="1.1"></circle><path d="M8.1 6.5v11M12 6.5v11M15.9 6.5v11M6.5 10.1h11M6.5 13.9h11"></path></svg>' },
@@ -27,8 +27,8 @@
     sudoku: { title: 'Sudoku', subtitle: 'Různé obtížnosti a časy', unit: 'ms', mode: 'low', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="4.5" width="15" height="15" rx="2"></rect><path d="M4.5 10h15M4.5 15h15M10 4.5v15M15 4.5v15"></path></svg>' },
     mines: { title: 'Minesweeper', subtitle: 'Rychlá pauza a nejlepší časy', unit: 'ms', mode: 'low', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="7"></circle><path d="M12 5v4M12 15v4M5 12h4M15 12h4M8.3 8.3l2.8 2.8M12.9 12.9l2.8 2.8M15.7 8.3l-2.8 2.8M11.1 12.9l-2.8 2.8"></path></svg>' },
     memory: { title: 'Memory / Pexeso', subtitle: 'Moderní animace a rychlé páry', unit: 'ms', mode: 'low', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="5" width="6.2" height="6.2" rx="1.5"></rect><rect x="13.3" y="5" width="6.2" height="6.2" rx="1.5"></rect><rect x="4.5" y="13.8" width="6.2" height="6.2" rx="1.5"></rect><rect x="13.3" y="13.8" width="6.2" height="6.2" rx="1.5"></rect></svg>' },
-    bomber: { title: 'Bomberman mini', subtitle: 'Jednoduchý arcade styl', unit: 'bodů', mode: 'high', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h6v3H9z"></path><circle cx="12" cy="14" r="5"></circle><path d="M15.8 10.2l2-2"></path></svg>' },
-    daily: { title: 'Denní challenge', subtitle: 'Stejné podmínky pro všechny', unit: 'bodů', mode: 'high', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="6.5" width="15" height="13" rx="2"></rect><path d="M8 4.5v4M16 4.5v4M4.5 10h15"></path><path d="M8 14l2.1 2.1L16.3 10"></path></svg>' }
+    bomber: { title: 'Bomberman mini', subtitle: 'Bludiště, bomby, příšerky a upgrady', unit: 'bodů', mode: 'high', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h6v3H9z"></path><circle cx="12" cy="14" r="5"></circle><path d="M15.8 10.2l2-2"></path></svg>' },
+    daily: { title: 'Denní challenge', subtitle: 'Každý den jiná hra a stejná výzva', unit: 'bodů', mode: 'high', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="6.5" width="15" height="13" rx="2"></rect><path d="M8 4.5v4M16 4.5v4M4.5 10h15"></path><path d="M8 14l2.1 2.1L16.3 10"></path></svg>' }
   };
 
   window.RAK_ARCADE_GAMES = {
@@ -404,6 +404,9 @@
       { id: 'memory_60sec', title: 'Fotografická paměť', desc: 'Dokonči Pexeso pod 60 sekund.', goalText: 'pod 60 s', progress: (a) => { const t = arcadeStat(a.account, 'memory', 'bestTimeMs'); return t ? Math.max(0, 120000 - t) : 0; }, target: 60000 },
       { id: 'memory_100', title: 'Mozkovna', desc: 'Dokonči 100 her Pexesa.', goalText: '100 dokončení', progress: (a) => arcadeStat(a.account, 'memory', 'plays'), target: 100 },
       { id: 'bomber_30', title: 'Bomber pilot', desc: 'Dokonči 30 her Bomberman mini.', goalText: '30 dokončení', progress: (a) => arcadeStat(a.account, 'bomber', 'plays'), target: 30 },
+      { id: 'bomber_kill_4', title: 'Lovec příšerek', desc: 'Znič v Bombermanovi všechny 4 příšerky v jedné hře.', goalText: '4 příšerky', progress: (a) => arcadeStat(a.account, 'bomber', 'bestEnemiesKilled'), target: 4 },
+      { id: 'bomber_crates_30', title: 'Bourání beden', desc: 'Rozbij v jedné hře 30 beden.', goalText: '30 beden', progress: (a) => arcadeStat(a.account, 'bomber', 'bestCrates'), target: 30 },
+      { id: 'bomber_power_6', title: 'Sběrač výbavy', desc: 'Seber v jedné hře 6 upgradů.', goalText: '6 upgradů', progress: (a) => arcadeStat(a.account, 'bomber', 'bestPowerUps'), target: 6 },
       { id: 'daily_20', title: 'Denní držák', desc: 'Splň 20 denních challenge.', goalText: '20 challenge', progress: (a) => arcadeStat(a.account, 'daily', 'plays'), target: 20 },
       { id: 'ctx_shift_15', title: 'Hráč na směně', desc: 'Dokonči 15 her během aktivní směny.', goalText: '15 her na směně', progress: (a) => a.context.onShiftPlays || 0, target: 15 },
       { id: 'ctx_shift_60', title: 'Směnový držák', desc: 'Dokonči 60 her v čase, kdy běží směna.', goalText: '60 her na směně', progress: (a) => a.context.onShiftPlays || 0, target: 60 },
@@ -623,6 +626,25 @@
 #games .arcadeBomberCell.player{background:rgba(124,255,124,.22);}
 #games .arcadeBomberCell.bomb{background:rgba(255,115,115,.18);}
 #games .arcadeBomberCell.fire{background:rgba(255,170,80,.25);}
+
+#games .arcadeBomberBoard{position:relative;display:block;width:min(100%,380px);max-width:380px;aspect-ratio:1/1;margin:0 auto;padding:8px;border-radius:22px;overflow:hidden;touch-action:none;}
+#games .arcadeBomberCells{position:absolute;inset:8px;display:grid;grid-template-columns:repeat(11,minmax(0,1fr));grid-template-rows:repeat(11,minmax(0,1fr));gap:4px;}
+#games .arcadeBomberEntities{position:absolute;inset:8px;pointer-events:none;}
+#games .arcadeBomberCell{min-height:0;border-radius:9px;background:rgba(255,255,255,.035);border:1px solid color-mix(in srgb,var(--rakThemeAccent,var(--green2)) 16%,rgba(255,255,255,.08));box-shadow:inset 0 0 0 1px rgba(255,255,255,.025);}
+#games .arcadeBomberCell.wall{background:linear-gradient(135deg,rgba(255,255,255,.18),rgba(255,255,255,.07));border-color:rgba(255,255,255,.18);}
+#games .arcadeBomberCell.brick{background:linear-gradient(135deg,color-mix(in srgb,var(--rakThemeAccent,var(--green2)) 24%,rgba(255,180,70,.20)),rgba(255,255,255,.055));border-color:color-mix(in srgb,var(--rakThemeAccent,var(--green2)) 22%,rgba(255,215,120,.2));}
+#games .arcadeBomberCell.fire{background:radial-gradient(circle,color-mix(in srgb,var(--rakThemeAccent,var(--green2)) 58%,#fff) 0 18%,rgba(255,160,62,.30) 19% 72%,rgba(255,255,255,.05));box-shadow:0 0 18px rgba(255,180,80,.28);}
+#games .arcadeBomberCell.isTarget{outline:1px solid color-mix(in srgb,var(--rakThemeAccent,var(--green2)) 42%,rgba(255,255,255,.16));outline-offset:-2px;}
+#games .bomberEntity{position:absolute;left:0;top:0;width:calc(100% / 11);height:calc(100% / 11);transform:translate(calc(var(--x) * 100%), calc(var(--y) * 100%));display:grid;place-items:center;font-size:clamp(14px,4.2vw,22px);transition:transform .13s linear, filter .16s ease, opacity .16s ease;will-change:transform;z-index:3;text-shadow:0 2px 8px rgba(0,0,0,.45);}
+#games .bomberEntity.player{z-index:5;border-radius:12px;background:radial-gradient(circle at 35% 30%,#fff,color-mix(in srgb,var(--rakThemeAccent,var(--green2)) 78%,#fff) 36%,color-mix(in srgb,var(--rakThemeAccent,var(--green2)) 70%,#04130a));box-shadow:0 0 18px color-mix(in srgb,var(--rakThemeAccent,var(--green2)) 32%,transparent);animation:bomberStep .16s ease;}
+#games .bomberEntity.player span{font-size:.78em;color:#06120b;text-shadow:none;font-weight:900;}
+#games .bomberEntity.monster{z-index:4;filter:drop-shadow(0 0 8px rgba(255,80,110,.25));animation:bomberMonsterPulse .9s ease-in-out infinite alternate;}
+#games .bomberEntity.bomb{z-index:4;animation:bomberBombPulse .55s ease-in-out infinite alternate;}
+#games .bomberEntity.fire{z-index:6;color:#fff6cf;filter:drop-shadow(0 0 9px rgba(255,190,80,.7));}
+#games .bomberEntity.upgrade{z-index:2;filter:drop-shadow(0 0 8px color-mix(in srgb,var(--rakThemeAccent,var(--green2)) 44%,transparent));}
+@keyframes bomberStep{from{filter:brightness(1.35);transform:translate(calc(var(--x) * 100%), calc(var(--y) * 100%)) scale(.88);}to{filter:brightness(1);transform:translate(calc(var(--x) * 100%), calc(var(--y) * 100%)) scale(1);}}
+@keyframes bomberBombPulse{from{transform:translate(calc(var(--x) * 100%), calc(var(--y) * 100%)) scale(.92);}to{transform:translate(calc(var(--x) * 100%), calc(var(--y) * 100%)) scale(1.08);}}
+@keyframes bomberMonsterPulse{from{transform:translate(calc(var(--x) * 100%), calc(var(--y) * 100%)) scale(.96);}to{transform:translate(calc(var(--x) * 100%), calc(var(--y) * 100%)) scale(1.05);}}
 
 /* v.1.1 (530) – Fáze 5 game performance */
 body.ladaMode #games .arcadePanel,
@@ -1038,7 +1060,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function renderLaunchTiles() {
     const grid = document.getElementById('gamesGrid');
     if (!grid) return;
-    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v696';
+    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v697';
     if (grid.dataset && grid.dataset.arcadeLaunchSig === launchSig && grid.querySelector('.gamesDevFolder') && grid.querySelector('[data-game="ttt"]')) {
       gamePerf.launchRenderSkips = Number(gamePerf.launchRenderSkips || 0) + 1;
       return;
@@ -1292,7 +1314,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     }
     if (typeof nextPatch.perfectRuns === 'number') merged.perfectRuns = (Number(current.perfectRuns || 0) || 0) + Math.max(0, nextPatch.perfectRuns || 0);
     if (typeof nextPatch.bestMoves === 'number') merged.bestMoves = Math.max(Number(current.bestMoves || 0) || 0, nextPatch.bestMoves || 0);
-    ['bestLines','bestLevel','bestSurvivalSec','bestWave','bestHeight','bestJumps','bestPlatforms','bestPops','bestBricks','bestClears','bestShots','bestStreak','bestBlocks','bestStageClear','bestBossKills','bestPowerUps','bestWeaponLevel'].forEach((field) => {
+    ['bestLines','bestLevel','bestSurvivalSec','bestWave','bestHeight','bestJumps','bestPlatforms','bestPops','bestBricks','bestClears','bestShots','bestStreak','bestBlocks','bestStageClear','bestBossKills','bestPowerUps','bestWeaponLevel','bestEnemiesKilled','bestCrates'].forEach((field) => {
       if (typeof nextPatch[field] === 'number') merged[field] = Math.max(Number(current[field] || 0) || 0, nextPatch[field] || 0);
     });
     if (typeof nextPatch.perfectClears === 'number') merged.perfectClears = (Number(current.perfectClears || 0) || 0) + Math.max(0, nextPatch.perfectClears || 0);
@@ -3001,73 +3023,209 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
 
   // Bomberman mini ---------------------------------------------------------
 
-  function bomberState() { return { w: 11, h: 11, x: 1, y: 1, score: 0, bombs: [], fires: [], map: [], over: false, lastTs: 0, timer: 0, bound: false, saved: false }; }
+  function bomberState() {
+    return {
+      w: 11,
+      h: 11,
+      x: 1,
+      y: 1,
+      dir: 'right',
+      score: 0,
+      range: 1,
+      maxBombs: 1,
+      shield: 0,
+      speed: 1,
+      bombs: [],
+      fires: [],
+      map: [],
+      upgrades: {},
+      enemies: [],
+      enemyStepMs: 620,
+      enemyAcc: 0,
+      kills: 0,
+      crates: 0,
+      upgradesCollected: 0,
+      over: false,
+      won: false,
+      lastTs: 0,
+      timer: 0,
+      bound: false,
+      saved: false,
+      hint: 'Táhni prstem po bludišti. Klepnutím položíš bombu.',
+      touch: null
+    };
+  }
+
+  function bomberKey(x, y) { return `${x},${y}`; }
+  function bomberIsInside(state, x, y) { return x >= 0 && y >= 0 && x < state.w && y < state.h; }
+  function bomberHasBomb(state, x, y) { return state.bombs.some(b => b.x === x && b.y === y && !b.exploded); }
+  function bomberIsBlocked(state, x, y, forEnemy) {
+    if (!bomberIsInside(state, x, y)) return true;
+    const cell = state.map[y] && state.map[y][x];
+    if (cell === 'wall' || cell === 'brick') return true;
+    if (forEnemy && bomberHasBomb(state, x, y)) return true;
+    return false;
+  }
+  function bomberFreeCells(state) {
+    const out = [];
+    for (let y = 1; y < state.h - 1; y += 1) {
+      for (let x = 1; x < state.w - 1; x += 1) {
+        if (state.map[y][x] === 'brick') out.push({ x, y });
+      }
+    }
+    return out;
+  }
   function initBomber(state) {
     state.map = Array.from({ length: state.h }, (_, y) => Array.from({ length: state.w }, (_, x) => {
       if (x === 0 || y === 0 || x === state.w - 1 || y === state.h - 1) return 'wall';
       if (x % 2 === 0 && y % 2 === 0) return 'wall';
-      return Math.random() < 0.55 ? 'brick' : '';
+      return Math.random() < 0.48 ? 'brick' : '';
     }));
-    state.map[1][1] = ''; state.map[1][2] = ''; state.map[2][1] = '';
+    const clear = [[1,1],[1,2],[2,1],[2,2],[1,9],[2,9],[1,8],[9,1],[8,1],[9,2],[9,9],[8,9],[9,8],[5,5],[5,6],[6,5]];
+    clear.forEach(([x,y]) => { if (state.map[y]) state.map[y][x] = ''; });
+    // Jemné chodby, aby to nebyl náhodný bordel, ale opravdové bludiště.
+    for (let x = 1; x < state.w - 1; x += 1) if (x !== 4 && x !== 6) state.map[5][x] = '';
+    for (let y = 1; y < state.h - 1; y += 1) if (y !== 4 && y !== 6) state.map[y][5] = '';
+    state.x = 1; state.y = 1; state.dir = 'right';
+    state.upgrades = {};
+    const cells = bomberFreeCells(state).sort(() => Math.random() - 0.5);
+    ['range','bomb','shield','speed','range','bomb','shield','score'].forEach((type, i) => {
+      const c = cells[i * 2 + 1] || cells[i];
+      if (c) state.upgrades[bomberKey(c.x, c.y)] = type;
+    });
+    const starts = [[9,9],[9,1],[1,9],[7,5]];
+    state.enemies = starts.map((pos, i) => ({ id: `m${i}`, x: pos[0], y: pos[1], alive: true, mood: i % 2 ? 'chase' : 'wander' }));
+    state.bombs = []; state.fires = []; state.score = 0; state.range = 1; state.maxBombs = 1; state.shield = 0; state.speed = 1;
+    state.enemyStepMs = 620; state.enemyAcc = 0; state.kills = 0; state.crates = 0; state.upgradesCollected = 0;
+    state.over = false; state.won = false; state.saved = false; state.lastTs = 0; state.hint = 'Znič 4 příšerky bombami. V bednách jsou upgrady.';
+  }
+  function bomberUpgradeLabel(type) {
+    return type === 'range' ? '🔥' : type === 'bomb' ? '💣' : type === 'shield' ? '🛡️' : type === 'speed' ? '⚡' : '⭐';
+  }
+  function bomberApplyUpgrade(state, type) {
+    state.upgradesCollected += 1;
+    if (type === 'range') { state.range = Math.min(4, state.range + 1); state.hint = 'Plamen je delší.'; }
+    else if (type === 'bomb') { state.maxBombs = Math.min(3, state.maxBombs + 1); state.hint = 'Můžeš mít víc bomb najednou.'; }
+    else if (type === 'shield') { state.shield = Math.min(3, state.shield + 1); state.hint = 'Štít tě jednou ochrání.'; }
+    else if (type === 'speed') { state.speed = Math.min(2, state.speed + 0.25); state.enemyStepMs = Math.max(430, state.enemyStepMs - 40); state.hint = 'Pohyb reaguje svižněji.'; }
+    else { state.score += 120; state.hint = 'Bonusové body.'; }
+    state.score += 35;
+  }
+  function bomberDamagePlayer(state) {
+    if (state.over) return;
+    if (state.shield > 0) { state.shield -= 1; state.hint = 'Štít tě zachránil.'; return; }
+    state.over = true; state.won = false; state.hint = 'Příšerka tě dostala.';
   }
   function renderBomber(body) {
     const state = getState('bomber', () => { const s = bomberState(); initBomber(s); return s; });
-    const build = () => {
-      const rows = [];
-      for (let y = 0; y < state.h; y += 1) {
-        const cells = [];
-        for (let x = 0; x < state.w; x += 1) {
-          let cls = 'arcadeBomberCell'; let text = '';
-          if (state.map[y][x] === 'wall') cls += ' wall';
-          if (state.map[y][x] === 'brick') cls += ' brick';
-          if (state.x === x && state.y === y) { cls += ' player'; text = '🙂'; }
-          if (state.bombs.some(b => b.x === x && b.y === y && !b.exploded)) { cls += ' bomb'; text = '💣'; }
-          if (state.fires.some(f => f.x === x && f.y === y && f.life > 0)) { cls += ' fire'; text = '✨'; }
-          cells.push(`<button type="button" class="${cls}" data-x="${x}" data-y="${y}">${text}</button>`);
-        }
-        rows.push(`<div class="arcadeTableRow">${cells.join('')}</div>`);
-      }
-      return rows.join('');
+    const cellClass = (x, y) => {
+      let cls = 'arcadeBomberCell';
+      if (state.map[y][x] === 'wall') cls += ' wall';
+      if (state.map[y][x] === 'brick') cls += ' brick';
+      if (state.fires.some(f => f.x === x && f.y === y && f.life > 0)) cls += ' fire';
+      if (state.x === x && state.y === y) cls += ' isTarget';
+      return cls;
     };
-    const updateHud = () => {
-      const hud = body.querySelector('.arcadeHud');
-      if (hud) hud.innerHTML = `${gamesStatLine('Skóre', state.score)}${gamesStatLine('Bomby', state.bombs.filter(b => !b.exploded).length)}${gamesStatLine('Stav', state.over ? 'Konec' : 'Běží')}`;
+    const cellsHtml = () => {
+      let out = '';
+      for (let y = 0; y < state.h; y += 1) {
+        for (let x = 0; x < state.w; x += 1) out += `<div class="${cellClass(x, y)}" data-x="${x}" data-y="${y}"></div>`;
+      }
+      return out;
+    };
+    const entityHtml = () => {
+      const items = [];
+      Object.keys(state.upgrades || {}).forEach((k) => {
+        const [x, y] = k.split(',').map(Number);
+        if (state.map[y] && state.map[y][x] === '') items.push(`<div class="bomberEntity upgrade" style="--x:${x};--y:${y};">${bomberUpgradeLabel(state.upgrades[k])}</div>`);
+      });
+      state.bombs.filter(b => !b.exploded).forEach(b => items.push(`<div class="bomberEntity bomb" style="--x:${b.x};--y:${b.y};">💣</div>`));
+      state.fires.filter(f => f.life > 0).forEach(f => items.push(`<div class="bomberEntity fire" style="--x:${f.x};--y:${f.y};">✦</div>`));
+      state.enemies.filter(e => e.alive).forEach((e, i) => items.push(`<div class="bomberEntity monster m${i}" style="--x:${e.x};--y:${e.y};">${i === 0 ? '👾' : i === 1 ? '🛸' : i === 2 ? '🦑' : '👻'}</div>`));
+      const face = state.dir === 'left' ? '◀' : state.dir === 'right' ? '▶' : state.dir === 'up' ? '▲' : '▼';
+      items.push(`<div class="bomberEntity player" style="--x:${state.x};--y:${state.y};"><span>${face}</span></div>`);
+      return items.join('');
+    };
+    const boardHtml = () => `<div class="arcadeBomberCells">${cellsHtml()}</div><div class="arcadeBomberEntities">${entityHtml()}</div>`;
+    const hudHtml = () => `${gamesStatLine('Skóre', state.score)}${gamesStatLine('Příšerky', state.enemies.filter(e => e.alive).length)}${gamesStatLine('Bomby', `${state.bombs.filter(b => !b.exploded).length}/${state.maxBombs}`)}${gamesStatLine('Síla', state.range)}`;
+    const paint = () => {
+      const hud = body.querySelector('.bomberHud'); if (hud) hud.innerHTML = hudHtml();
+      const board = body.querySelector('#bomberGrid'); if (board) board.innerHTML = boardHtml();
+      const status = body.querySelector('.bomberStatus');
+      if (status) status.innerHTML = state.over ? (state.won ? 'Vyčištěno. Příšerky jsou pryč.' : 'Konec hry. Zkus to znovu.') : state.hint;
     };
     const draw = () => {
       body.innerHTML = `
         <div class="arcadeStage bomberStage">
-          <div class="arcadeHud arcadeHudSingleLine bomberHud">${gamesStatLine('Skóre', state.score)}${gamesStatLine('Bomby', state.bombs.filter(b => !b.exploded).length)}${gamesStatLine('Stav', state.over ? 'Konec' : 'Běží')}</div>
-          <div class="arcadeBar arcadePanel uPad10x12"><div class="arcadeStatus">Táhni prstem po poli pro pohyb, klepnutím položíš bombu. Cíl je vyčistit bedny.</div></div>
-          <div class="arcadeTable arcadePanel arcadeBomberBoard" id="bomberGrid">${build()}</div>
+          <div class="arcadeHud arcadeHudSingleLine bomberHud">${hudHtml()}</div>
+          <div class="arcadeBar arcadePanel uPad10x12"><div class="arcadeStatus bomberStatus">${state.hint}</div></div>
+          <div class="arcadeBomberBoard arcadePanel" id="bomberGrid">${boardHtml()}</div>
           <div class="arcadeControls"><button type="button" class="gameControlBtn" data-bomber="restart">Nová hra</button></div>
           ${gamesTop3Block('bomber', 'bodů', 5).replace('gamesTop5ScrollCard', 'gamesTop5ScrollCard arcadeTopScoreTight')}
         </div>`;
       bindButtons();
-      updateHud();
+    };
+    const checkCollect = () => {
+      const k = bomberKey(state.x, state.y);
+      if (state.upgrades && state.upgrades[k] && state.map[state.y][state.x] === '') {
+        const type = state.upgrades[k]; delete state.upgrades[k]; bomberApplyUpgrade(state, type);
+      }
+    };
+    const checkHits = () => {
+      if (state.fires.some(f => f.life > 0 && f.x === state.x && f.y === state.y)) bomberDamagePlayer(state);
+      if (state.enemies.some(e => e.alive && e.x === state.x && e.y === state.y)) bomberDamagePlayer(state);
+      state.enemies.forEach((e) => {
+        if (e.alive && state.fires.some(f => f.life > 0 && f.x === e.x && f.y === e.y)) { e.alive = false; state.kills += 1; state.score += 250; state.hint = 'Příšerka zničená.'; }
+      });
+      if (!state.over && state.enemies.every(e => !e.alive)) { state.over = true; state.won = true; state.score += 500; state.hint = 'Vyčištěno. Všechny příšerky jsou pryč.'; }
     };
     const move = (dx, dy) => {
       if (state.over) return;
+      if (dx < 0) state.dir = 'left'; else if (dx > 0) state.dir = 'right'; else if (dy < 0) state.dir = 'up'; else if (dy > 0) state.dir = 'down';
       const nx = clamp(state.x + dx, 1, state.w - 2); const ny = clamp(state.y + dy, 1, state.h - 2);
-      if (state.map[ny][nx] !== 'wall' && state.map[ny][nx] !== 'brick') { state.x = nx; state.y = ny; }
-      draw();
+      if (!bomberIsBlocked(state, nx, ny, false) && !bomberHasBomb(state, nx, ny)) { state.x = nx; state.y = ny; checkCollect(); checkHits(); }
+      paint();
     };
     const placeBomb = () => {
       if (state.over) return;
-      if (state.bombs.some(b => b.x === state.x && b.y === state.y && !b.exploded)) return;
-      state.bombs.push({ x: state.x, y: state.y, life: 1400, exploded: false });
-      draw();
+      if (state.bombs.filter(b => !b.exploded).length >= state.maxBombs) { state.hint = 'Další bomba až po výbuchu.'; paint(); return; }
+      if (bomberHasBomb(state, state.x, state.y)) return;
+      state.bombs.push({ x: state.x, y: state.y, life: 1500, exploded: false });
+      state.hint = 'Bomba položena. Pryč od ní.';
+      paint();
     };
+    const addBlast = (x, y) => { state.fires.push({ x, y, life: 380 }); };
     const explode = (bomb) => {
       if (bomb.exploded) return;
       bomb.exploded = true;
-      const blast = [[0,0],[1,0],[-1,0],[0,1],[0,-1]];
-      blast.forEach(([dx, dy]) => {
-        const x = bomb.x + dx, y = bomb.y + dy;
-        if (x < 0 || y < 0 || x >= state.w || y >= state.h) return;
-        state.fires.push({ x, y, life: 350 });
-        if (state.map[y][x] === 'brick') { state.map[y][x] = ''; state.score += 20; }
+      addBlast(bomb.x, bomb.y);
+      [[1,0],[-1,0],[0,1],[0,-1]].forEach(([dx, dy]) => {
+        for (let step = 1; step <= state.range; step += 1) {
+          const x = bomb.x + dx * step, y = bomb.y + dy * step;
+          if (!bomberIsInside(state, x, y) || state.map[y][x] === 'wall') break;
+          addBlast(x, y);
+          if (state.map[y][x] === 'brick') { state.map[y][x] = ''; state.crates += 1; state.score += 45; break; }
+        }
       });
-      state.score += 5;
+      state.score += 10;
+      checkHits();
+    };
+    const enemyDirs = (enemy) => {
+      const towardX = state.x > enemy.x ? 1 : state.x < enemy.x ? -1 : 0;
+      const towardY = state.y > enemy.y ? 1 : state.y < enemy.y ? -1 : 0;
+      const pref = Math.abs(state.x - enemy.x) >= Math.abs(state.y - enemy.y) ? [[towardX,0],[0,towardY]] : [[0,towardY],[towardX,0]];
+      return pref.concat([[1,0],[-1,0],[0,1],[0,-1]].sort(() => Math.random() - .5)).filter(([dx,dy]) => dx || dy);
+    };
+    const stepEnemies = () => {
+      state.enemies.forEach((e) => {
+        if (!e.alive) return;
+        const dirs = enemyDirs(e);
+        for (const [dx, dy] of dirs) {
+          const nx = e.x + dx, ny = e.y + dy;
+          if (!bomberIsBlocked(state, nx, ny, true) && !state.enemies.some(o => o !== e && o.alive && o.x === nx && o.y === ny)) { e.x = nx; e.y = ny; break; }
+        }
+      });
+      checkHits();
     };
     const keyHandler = (ev) => {
       if (['INPUT','TEXTAREA','SELECT'].includes((ev.target && ev.target.tagName) || '')) return;
@@ -3081,69 +3239,77 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       if (state.bound) return;
       state.bound = true;
       document.addEventListener('keydown', keyHandler);
-      let touchStart = null;
       body.addEventListener('pointerdown', (ev) => {
         const grid = ev.target && ev.target.closest ? ev.target.closest('#bomberGrid') : null;
         if (!grid) return;
         ev.preventDefault();
-        touchStart = { x: ev.clientX, y: ev.clientY, moved: false };
+        state.touch = { x: ev.clientX, y: ev.clientY, moved: false };
       }, { passive: false });
       body.addEventListener('pointermove', (ev) => {
-        if (!touchStart) return;
-        const dx = ev.clientX - touchStart.x;
-        const dy = ev.clientY - touchStart.y;
-        const ax = Math.abs(dx);
-        const ay = Math.abs(dy);
-        if (Math.max(ax, ay) < 22) return;
+        if (!state.touch) return;
+        const dx = ev.clientX - state.touch.x;
+        const dy = ev.clientY - state.touch.y;
+        const ax = Math.abs(dx), ay = Math.abs(dy);
+        const threshold = Math.max(16, 28 - Math.round((state.speed - 1) * 10));
+        if (Math.max(ax, ay) < threshold) return;
         ev.preventDefault();
-        touchStart.moved = true;
+        state.touch.moved = true;
         if (ax >= ay) move(dx > 0 ? 1 : -1, 0);
         else move(0, dy > 0 ? 1 : -1);
-        touchStart.x = ev.clientX;
-        touchStart.y = ev.clientY;
+        state.touch.x = ev.clientX; state.touch.y = ev.clientY;
       }, { passive: false });
       body.addEventListener('pointerup', (ev) => {
         const grid = ev.target && ev.target.closest ? ev.target.closest('#bomberGrid') : null;
-        if (touchStart && grid && !touchStart.moved) { ev.preventDefault(); placeBomb(); }
-        touchStart = null;
+        if (state.touch && grid && !state.touch.moved) { ev.preventDefault(); placeBomb(); }
+        state.touch = null;
       }, { passive: false });
-      body.addEventListener('contextmenu', (ev) => {
-        if (ev.target && ev.target.closest && ev.target.closest('#bomberGrid')) ev.preventDefault();
-      });
+      body.addEventListener('contextmenu', (ev) => { if (ev.target && ev.target.closest && ev.target.closest('#bomberGrid')) ev.preventDefault(); });
       body.addEventListener('click', (ev) => {
         const btn = ev.target && ev.target.closest ? ev.target.closest('[data-bomber]') : null;
         if (!btn) return;
-        const a = btn.dataset.bomber;
-        if (a === 'restart') {
-          Object.assign(state, bomberState());
-          initBomber(state);
-          state.bound = true;
-          draw();
+        if (btn.dataset.bomber === 'restart') {
+          Object.assign(state, bomberState()); initBomber(state); state.bound = true; draw();
         }
+      });
+    };
+    const saveResult = () => {
+      if (state.saved) return;
+      state.saved = true;
+      gamesRecordStat('bomber', {
+        completed: true,
+        plays: 1,
+        bestScore: state.score,
+        bestEnemiesKilled: state.kills,
+        bestCrates: state.crates,
+        bestPowerUps: state.upgradesCollected,
+        perfectClears: state.won ? 1 : 0,
+        lastResult: state.won ? `${state.score} / výhra` : String(state.score)
       });
     };
     const loop = () => {
       if (!rakGameShouldTick()) return;
+      const now = Date.now();
+      const dt = state.lastTs ? Math.min(260, now - state.lastTs) : 120;
+      state.lastTs = now;
       if (!state.over) {
-        state.bombs.forEach((b) => { b.life -= 120; if (b.life <= 0 && !b.exploded) explode(b); });
-        state.bombs = state.bombs.filter(b => !b.exploded || b.life > -220);
-        state.fires.forEach(f => { f.life -= 120; });
+        state.bombs.forEach((b) => { b.life -= dt; if (b.life <= 0 && !b.exploded) explode(b); });
+        state.bombs = state.bombs.filter(b => !b.exploded || b.life > -260);
+        state.fires.forEach(f => { f.life -= dt; });
         state.fires = state.fires.filter(f => f.life > 0);
-        if (!state.map.some(row => row.includes('brick'))) state.over = true;
+        state.enemyAcc += dt;
+        if (state.enemyAcc >= state.enemyStepMs) { state.enemyAcc = 0; stepEnemies(); }
+        checkHits();
       }
-      if (state.over && !state.saved) {
-        state.saved = true;
-        gamesRecordStat('bomber', { completed: true, plays: 1, bestScore: state.score, lastResult: String(state.score) });
-      }
-      draw();
+      if (state.over) saveResult();
+      paint();
     };
     draw();
-    if (!state.timer) state.timer = rakGameSetInterval(loop, rakGameIsLadaMode() ? 180 : 140);
+    if (!state.timer) state.timer = rakGameSetInterval(loop, rakGameIsLadaMode() ? 160 : 105);
     addCleanup(() => {
       clearInterval(state.timer);
       state.timer = 0;
       document.removeEventListener('keydown', keyHandler);
-      if (state.over && !state.saved) gamesRecordStat('bomber', { completed: true, plays: 1, bestScore: state.score, lastResult: String(state.score) });
+      if (state.over) saveResult();
     });
     setActiveState('bomber', state);
   }
@@ -3154,15 +3320,35 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
   }
   function dailyChallengeId() { return DAILY_MODES[dailySeed() % DAILY_MODES.length]; }
+  function dailyLabel(mode) {
+    return mode === 'aim' ? 'Aim Trainer' : mode === 'reaction' ? 'Reaction Test' : mode === 'memory' ? 'Pexeso' : mode === 'mines' ? 'Miny' : mode === 'bubble' ? 'Bubble Shooter' : mode === 'doodle' ? 'Doodle Jump' : mode === 'brick' ? 'Brick Breaker' : mode === 'shooter' ? 'Space Shooter' : mode === 'bomber' ? 'Bomberman mini' : 'Challenge';
+  }
+  function dailyText(mode) {
+    if (mode === 'aim') return '20+ přesných zásahů za 30 sekund.';
+    if (mode === 'reaction') return '5 rychlých reakcí na změnu barvy.';
+    if (mode === 'memory') return 'Najdi páry co nejrychleji.';
+    if (mode === 'mines') return 'Vyčisti minové pole bez chyby.';
+    if (mode === 'bubble') return 'Vyčisti bubliny a drž combo.';
+    if (mode === 'doodle') return 'Vyskoč co nejvýš.';
+    if (mode === 'brick') return 'Rozbij co nejvíc bloků.';
+    if (mode === 'shooter') return 'Přežij vesmírnou vlnu.';
+    if (mode === 'bomber') return 'Znič příšerky v bludišti.';
+    return 'Každý den jiná výzva.';
+  }
   function renderDaily(body) {
     const mode = dailyChallengeId();
-    const meta = gameMeta('daily');
-    body.innerHTML = `<div class="arcadeStage"><div class="arcadeHud">${gamesStatLine('Dnešní', mode === 'aim' ? 'Aim' : mode === 'reaction' ? 'Reaction' : 'Memory')}${gamesStatLine('Datum', new Date().toLocaleDateString('cs-CZ'))}${gamesStatLine('Rekord', '—')}</div><div class="arcadeBar arcadePanel uPad12"> <div class="arcadeStatus"><strong>Denní challenge:</strong> ${mode === 'aim' ? '20 cílů za 30 sekund' : mode === 'reaction' ? '5 rychlých reakcí' : 'najdi všech 8 dvojic co nejrychleji'}. Podmínky jsou stejné pro všechny.</div></div><div class="arcadeControls"><button type="button" class="gameControlBtn" id="dailyStartBtn">Spustit challenge</button><button type="button" class="gameControlBtn" id="dailyResetBtn">Obnovit</button></div>${gamesTop3Block('daily', 'bodů', 5).replace('gamesTop5ScrollCard', 'gamesTop5ScrollCard arcadeTopScoreTight')}</div>`;
-    let subState = null;
+    const label = dailyLabel(mode);
+    body.innerHTML = `<div class="arcadeStage dailyStage"><div class="arcadeHud arcadeHudSingleLine">${gamesStatLine('Dnešní hra', label)}${gamesStatLine('Datum', new Date().toLocaleDateString('cs-CZ'))}${gamesStatLine('Střídání', `${DAILY_MODES.length} her`)}</div><div class="arcadeBar arcadePanel uPad12"><div class="arcadeStatus"><strong>Denní challenge:</strong> ${dailyText(mode)} Zítra se automaticky vybere jiná hra podle data.</div></div><div class="arcadeControls"><button type="button" class="gameControlBtn" id="dailyStartBtn">Spustit dnešní výzvu</button><button type="button" class="gameControlBtn" id="dailyResetBtn">Obnovit</button></div>${gamesTop3Block('daily', 'bodů', 5).replace('gamesTop5ScrollCard', 'gamesTop5ScrollCard arcadeTopScoreTight')}</div>`;
     const start = () => {
-      if (mode === 'aim') { subState = { challenge: true, duration: 30000 }; renderAim(body, subState); }
-      else if (mode === 'reaction') { subState = {}; renderReaction(body); }
-      else { subState = {}; renderMemory(body); }
+      if (mode === 'aim') renderAim(body, { challenge: true, duration: 30000 });
+      else if (mode === 'reaction') renderReaction(body);
+      else if (mode === 'memory') renderMemory(body);
+      else if (mode === 'mines') renderMines(body);
+      else if (mode === 'bubble') renderBubble(body);
+      else if (mode === 'doodle') renderDoodle(body);
+      else if (mode === 'brick') renderBrick(body);
+      else if (mode === 'shooter') renderShooter(body);
+      else if (mode === 'bomber') renderBomber(body);
     };
     body.querySelector('#dailyStartBtn').addEventListener('click', start);
     body.querySelector('#dailyResetBtn').addEventListener('click', () => renderDaily(body));

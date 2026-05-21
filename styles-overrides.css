@@ -7657,10 +7657,32 @@ body.gamesOpen #games .bomberHud{grid-template-columns:repeat(3,minmax(0,1fr)) !
 body.gamesOpen #games .arcadeBomberBoard{width:min(100%,360px) !important;max-width:360px !important;margin:0 auto !important;padding:8px !important;border-radius:22px !important;touch-action:none !important;}
 body.gamesOpen #games .arcadeBomberCell{min-width:0 !important;min-height:30px !important;aspect-ratio:1/1 !important;border-radius:10px !important;}
 
-/* v.1.1 (696) – Miny: dlouhé podržení = vlajka */
+/* v.1.1 (697) – Miny: dlouhé podržení = vlajka */
 body.gamesOpen #games .minesCell.isFlagged{
   background:linear-gradient(180deg,color-mix(in srgb,var(--rakThemeAccent,var(--green2)) 24%,rgba(255,255,255,.14)),rgba(255,255,255,.08)) !important;
   border-color:color-mix(in srgb,var(--rakThemeAccent,var(--green2)) 48%,rgba(255,255,255,.22)) !important;
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),0 0 18px color-mix(in srgb,var(--rakThemeAccent,var(--green2)) 18%,transparent) !important;
   font-size:clamp(17px,5vw,24px) !important;
+}
+
+
+/* v.1.1 (697) – Bomberman: bludiště, příšerky a plynulejší pohyb */
+body.gamesOpen #games .arcadeBomberBoard{
+  display:block !important;
+  position:relative !important;
+  width:min(100%,380px) !important;
+  max-width:380px !important;
+  aspect-ratio:1/1 !important;
+  overflow:hidden !important;
+  touch-action:none !important;
+}
+body.gamesOpen #games .arcadeBomberCells{
+  display:grid !important;
+  grid-template-columns:repeat(11,minmax(0,1fr)) !important;
+  grid-template-rows:repeat(11,minmax(0,1fr)) !important;
+  gap:4px !important;
+}
+body.gamesOpen #games .arcadeBomberEntity,
+body.gamesOpen #games .bomberEntity{
+  pointer-events:none !important;
 }
