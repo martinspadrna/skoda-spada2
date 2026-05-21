@@ -208,31 +208,22 @@ async function exportCurrentHtml() {
       binarySources[file] = await readExportBinary(file);
     }
 
-    const pages = [...document.querySelectorAll(".page")];
-    const previousActive = pages.find(p => p.classList.contains("active"))?.id || "home";
-    pages.forEach(p => p.classList.remove("active"));
-    const home = document.getElementById("home");
-    if (home) home.classList.add("active");
-
-    const clone = document.documentElement.cloneNode(true);
-    for (const [file, id] of Object.entries(EXPORT_SOURCE_IDS)) {
-      let text = null;
-      if (file === 'styles.css') text = stylesSource;
-      else if (moduleSources[file]) text = moduleSources[file];
-      else if (cssSources[file]) text = cssSources[file];
-      else if (textSources[file]) text = textSources[file];
-      else if (file === 'data.js') text = `const initialRotationData = ${JSON.stringify(app.rotation)};
-`;
-      if (!text) continue;
-      const node = clone.querySelector('[id="' + id + '"]');
-      if (node) node.textContent = text;
+    let indexText = '';
+    try {
+      indexText = await readExportText('index.html');
+    } catch (indexErr) {
+      console.warn('Export fallback: index.html se nepodařilo načíst jako zdroj, používám DOM kopii.', indexErr);
+      const pages = [...document.querySelectorAll(".page")];
+      const previousActive = pages.find(p => p.classList.contains("active"))?.id || "home";
+      pages.forEach(p => p.classList.remove("active"));
+      const home = document.getElementById("home");
+      if (home) home.classList.add("active");
+      indexText = `<!DOCTYPE html>
+${document.documentElement.cloneNode(true).outerHTML}`;
+      pages.forEach(p => p.classList.remove("active"));
+      const restore = document.getElementById(previousActive);
+      if (restore) restore.classList.add("active");
     }
-    const indexText = `<!DOCTYPE html>
-${clone.outerHTML}`;
-
-    pages.forEach(p => p.classList.remove("active"));
-    const restore = document.getElementById(previousActive);
-    if (restore) restore.classList.add("active");
 
     const zip = new JSZip();
     zip.file('index.html', indexText);
@@ -259,7 +250,7 @@ ${clone.outerHTML}`;
     a.href = url;
     const versionMatch = String(window.APP_VERSION || '').match(/\((\d+)\)/);
     const versionSuffix = versionMatch ? versionMatch[1] : 'current';
-    a.download = `rotace_a_kalkulacky_v1_${versionSuffix}.zip`;
+    a.download = `RaK_v1_1_${versionSuffix}.zip`;
     document.body.appendChild(a);
     a.click();
     a.remove();

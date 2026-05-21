@@ -2,7 +2,7 @@
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
 
-  // v.1.1 (727): Pampuch je mírně zpomalený a směnové achievementy se počítají jen na směně D.
+  // v.1.1 (728): Pampuch je mírně zpomalený a směnové achievementy se počítají jen na směně D.
   const CORE_GAMES = ['ttt', 'ships', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'pampuch', 'daily'];
   const EXTRA_GAMES = [];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);
@@ -150,7 +150,7 @@
     const rawShiftLabel = String(activeShift && activeShift.label ? activeShift.label : '').trim();
     const label = rawShiftLabel.toLowerCase();
     const isShiftD = !!activeShift && rawShiftTeam === 'D';
-    // v.1.1 (727): herní achievementy s podmínkou „ve směně“ se počítají jen tehdy,
+    // v.1.1 (728): herní achievementy s podmínkou „ve směně“ se počítají jen tehdy,
     // když je opravdu aktivní směna D v práci. Ostatní směny zůstanou uložené jen diagnosticky v lastContext.
     return {
       dateKey: gamesLocalDateKey(when),
@@ -1211,7 +1211,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function renderLaunchTiles() {
     const grid = document.getElementById('gamesGrid');
     if (!grid) return;
-    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v727';
+    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v728';
     if (grid.dataset && grid.dataset.arcadeLaunchSig === launchSig && grid.querySelector('[data-game="ttt"]')) {
       gamePerf.launchRenderSkips = Number(gamePerf.launchRenderSkips || 0) + 1;
       return;
@@ -4851,7 +4851,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     const allHot = EXTRA_GAMES.length === 0;
     const completedOnlyGuard = typeof window.gamesRecordStat === 'function';
     return {
-      version: 'v.1.1 (727)',
+      version: 'v.1.1 (728)',
       ok: !missingMeta.length && !missingRenderer.length && allHot && completedOnlyGuard,
       totalGames: ids.length,
       coreGames: ids,
@@ -4866,7 +4866,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       themeBackground: true,
       touchGuard: true,
       notes: [
-        'Build 727 zpomaluje Pampucha a hlídá, aby směnové achievementy přibývaly jen při aktivní směně D.',
+        'Build 728 opravuje import Excelu, online uložení rozpisů a export ZIP buildu.',
         'Reálnou hratelnost a citlivost dotyku je potřeba potvrdit na mobilu.'
       ]
     };

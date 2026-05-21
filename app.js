@@ -1,4 +1,4 @@
-// v.1.1 (727) – Pampuch zpomalený a směnové achievementy hlídají směnu D.
+// v.1.1 (728) – opravený import Excelu a export ZIP buildu 1:1.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

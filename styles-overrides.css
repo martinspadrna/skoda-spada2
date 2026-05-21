@@ -9262,7 +9262,7 @@ body.lowEndDevice .rakDevicePerfCard{
   .rakDevicePerfActions{grid-template-columns:1fr !important;}
 }
 
-/* v.1.1 (727) – Pampuch maze polish */
+/* v.1.1 (728) – Pampuch maze polish */
 #games .pampuchLevelBar{
   display:grid;
   grid-template-columns:repeat(5,minmax(0,1fr));
