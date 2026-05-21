@@ -8514,3 +8514,33 @@ body.gamesOpen #games .flapOverlay #flapOverlayNewBtn{
 @keyframes shipsHitPop{0%{transform:scale(.35) rotate(-12deg);opacity:.2}70%{transform:scale(1.18) rotate(3deg);opacity:1}100%{transform:scale(1) rotate(0deg);opacity:1}}
 @media (min-width:720px){#games .shipsBoardsWrap,#games .shipsSetupGrid{grid-template-columns:1fr 1fr;}}
 @media (max-width:390px){#games .shipsBoard{gap:2px;padding:3px;}#games .shipsCell{border-radius:6px;}#games .shipsShipChip{grid-template-columns:28px 1fr auto;padding:7px 8px;}}
+
+/* v.1.1 (711): Lodě online – jedna přepínaná plocha + souvislejší grafické lodě */
+#games .shipsSingleBoardWrap{display:grid;grid-template-columns:1fr;gap:12px;}
+#games .shipsViewToggle{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+#games .shipsViewBtn{border:1px solid rgba(155,220,255,.18);border-radius:16px;background:rgba(255,255,255,.055);color:rgba(255,255,255,.82);font-weight:900;font-size:12px;padding:10px 8px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.035);}
+#games .shipsViewBtn.isActive{background:linear-gradient(135deg,rgba(60,180,255,.26),rgba(124,255,180,.14));border-color:rgba(125,230,255,.46);color:#fff;box-shadow:0 0 18px rgba(60,180,255,.16),inset 0 0 0 1px rgba(255,255,255,.09);}
+#games .shipsViewHint{opacity:.72;}
+#games .shipsBoard{background:radial-gradient(circle at 18% 20%,rgba(150,230,255,.24),transparent 30%),radial-gradient(circle at 80% 70%,rgba(56,189,248,.18),transparent 32%),linear-gradient(160deg,rgba(10,91,132,.72),rgba(2,22,48,.92));}
+#games .shipsBoard::before{content:"";position:absolute;inset:4px;border-radius:14px;pointer-events:none;background:repeating-linear-gradient(135deg,rgba(255,255,255,.045) 0 8px,rgba(255,255,255,0) 8px 18px);mix-blend-mode:screen;opacity:.45;}
+#games .shipsCell{overflow:visible;z-index:1;}
+#games .shipsShipSegment{z-index:3;border:1px solid rgba(255,255,255,.18);background:linear-gradient(145deg,rgba(225,238,245,.98),rgba(96,118,137,.98));box-shadow:inset 0 2px 0 rgba(255,255,255,.44),inset 0 -4px 7px rgba(0,0,0,.28),0 3px 9px rgba(0,0,0,.18);}
+#games .shipsShipSegment.isH.isMid{inset:14% -18%;border-radius:4px;}
+#games .shipsShipSegment.isH.isBow{inset:14% -18% 14% 6%;border-radius:999px 6px 6px 999px;clip-path:polygon(0 50%,22% 0,100% 0,100% 100%,22% 100%);}
+#games .shipsShipSegment.isH.isStern{inset:14% 6% 14% -18%;border-radius:6px 999px 999px 6px;clip-path:polygon(0 0,78% 0,100% 50%,78% 100%,0 100%);}
+#games .shipsShipSegment.isV.isMid{inset:-18% 14%;border-radius:4px;}
+#games .shipsShipSegment.isV.isBow{inset:6% 14% -18% 14%;border-radius:999px 999px 6px 6px;clip-path:polygon(50% 0,100% 22%,100% 100%,0 100%,0 22%);}
+#games .shipsShipSegment.isV.isStern{inset:-18% 14% 6% 14%;border-radius:6px 6px 999px 999px;clip-path:polygon(0 0,100% 0,100% 78%,50% 100%,0 78%);}
+#games .shipsShipSegment.isShipCarrier{background:linear-gradient(145deg,rgba(241,245,249,.98),rgba(71,85,105,.98));}
+#games .shipsShipSegment.isShipBattleship{background:linear-gradient(145deg,rgba(226,232,240,.98),rgba(51,65,85,.98));}
+#games .shipsShipSegment.isShipCruiser{background:linear-gradient(145deg,rgba(210,236,245,.98),rgba(42,93,122,.98));}
+#games .shipsShipSegment.isShipSubmarine{background:linear-gradient(145deg,rgba(180,198,210,.98),rgba(35,52,68,.98));}
+#games .shipsShipSegment.isShipDestroyer{background:linear-gradient(145deg,rgba(230,245,238,.98),rgba(57,111,91,.98));}
+#games .shipsShipSegment::before{content:"";position:absolute;inset:24% 12%;border-radius:999px;background:linear-gradient(90deg,rgba(255,255,255,.34),rgba(255,255,255,.05));opacity:.8;}
+#games .shipsShipSegment::after{content:"";position:absolute;width:28%;height:28%;border-radius:50%;background:rgba(7,18,34,.36);box-shadow:10px 0 0 rgba(7,18,34,.22),-10px 0 0 rgba(7,18,34,.18);opacity:.58;}
+#games .shipsShipSegment.isV::after{box-shadow:0 10px 0 rgba(7,18,34,.22),0 -10px 0 rgba(7,18,34,.18);}
+#games .shipsShipCabin{position:relative;z-index:4;display:grid;place-items:center;width:100%;height:100%;font-size:clamp(12px,2.7vw,18px);filter:drop-shadow(0 2px 5px rgba(0,0,0,.45));}
+#games .shipsShipDeck{position:relative;z-index:4;display:block;width:46%;height:3px;border-radius:999px;background:rgba(255,255,255,.28);box-shadow:0 7px 0 rgba(255,255,255,.14),0 -7px 0 rgba(0,0,0,.12);}
+#games .shipsShipSegment.isDamaged{background:linear-gradient(145deg,rgba(255,220,188,.98),rgba(130,55,45,.98));box-shadow:0 0 16px rgba(255,80,42,.28),inset 0 -4px 8px rgba(0,0,0,.36);}
+#games .shipsCell.isSunkShip .shipsShipSegment{filter:saturate(.72) brightness(.78);}
+#games .shipsCell.isHit .shipsShipSegment{animation:shipsHitPop .32s ease-out both;}

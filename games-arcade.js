@@ -2,7 +2,7 @@
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
 
-  // v.1.1 (710): Lodě online: flotila ručně/automaticky + výraznější námořní grafika.
+  // v.1.1 (711): Lodě online: souvislé grafické lodě + přepínání jedné plochy.
   const CORE_GAMES = ['ttt', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'ships', 'daily'];
   const EXTRA_GAMES = [];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);
@@ -1101,7 +1101,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function renderLaunchTiles() {
     const grid = document.getElementById('gamesGrid');
     if (!grid) return;
-    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v710';
+    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v711';
     if (grid.dataset && grid.dataset.arcadeLaunchSig === launchSig && grid.querySelector('[data-game="ttt"]')) {
       gamePerf.launchRenderSkips = Number(gamePerf.launchRenderSkips || 0) + 1;
       return;
@@ -3733,9 +3733,10 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     let pos = 'mid';
     if (idx === 0) pos = 'bow';
     else if (idx === len - 1) pos = 'stern';
-    const icon = idx === Math.floor((len - 1) / 2) ? escapeHtml(String(ship.icon || '🚢')) : '';
+    const idClass = 'isShip' + String(ship && ship.id ? ship.id : 'boat').replace(/[^a-z0-9]+/gi, '').replace(/^./, (m) => m.toUpperCase());
     const hitClass = shot && shot.hit ? ' isDamaged' : '';
-    return `<span class="shipsShipSegment ${horizontal ? 'isH' : 'isV'} is${pos.charAt(0).toUpperCase() + pos.slice(1)}${hitClass}" aria-hidden="true">${icon}</span>`;
+    const label = idx === Math.floor((len - 1) / 2) ? `<span class="shipsShipCabin">${escapeHtml(String(ship.icon || '🚢'))}</span>` : '<span class="shipsShipDeck"></span>';
+    return `<span class="shipsShipSegment ${horizontal ? 'isH' : 'isV'} ${idClass} isLen${len} is${pos.charAt(0).toUpperCase() + pos.slice(1)}${hitClass}" aria-hidden="true">${label}</span>`;
   }
   function shipsRenderBoard(player, opts) {
     const options = opts || {};
@@ -3808,7 +3809,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   }
   function renderShips(body) {
     clearCleanups();
-    const local = getState('ships', () => ({ code: '', state: null, loadedRevision: 0, busy: false, poll: 0, savedFinishedCode: '', placing: { manual: false, selected: 'carrier', horizontal: true } }));
+    const local = getState('ships', () => ({ code: '', state: null, loadedRevision: 0, busy: false, poll: 0, savedFinishedCode: '', view: '', lastTurn: '', lastStatus: '', placing: { manual: false, selected: 'carrier', horizontal: true } }));
     local.placing = local.placing || { manual: false, selected: 'carrier', horizontal: true };
     const account = shipsAccountId();
     const accountName = shipsAccountName();
@@ -3980,12 +3981,29 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       const headline = waiting ? (st.o ? 'Čeká se na flotily' : 'Čeká se na protihráče') : (st.status === 'finished' ? (st.winner === role ? 'Vyhrál jsi' : 'Konec hry') : (canShoot ? 'Jsi na tahu' : 'Hraje soupeř'));
       const ownShots = enemy && Array.isArray(enemy.shots) ? enemy.shots : [];
       const myShots = mine && Array.isArray(mine.shots) ? mine.shots : [];
+      const preferredView = canShoot ? 'enemy' : 'own';
+      if (!local.view || local.lastTurn !== st.turn || st.status !== local.lastStatus) local.view = preferredView;
+      if (!enemy && local.view === 'enemy') local.view = 'own';
+      local.lastTurn = st.turn;
+      local.lastStatus = st.status;
+      const view = local.view === 'enemy' ? 'enemy' : 'own';
+      const toggleHtml = enemy ? `<div class="shipsViewToggle" role="tablist" aria-label="Přepnutí pole">
+        <button type="button" class="shipsViewBtn ${view === 'own' ? 'isActive' : ''}" data-ships-view="own">Moje flotila</button>
+        <button type="button" class="shipsViewBtn ${view === 'enemy' ? 'isActive' : ''}" data-ships-view="enemy">Střílet na soupeře</button>
+      </div>` : '';
+      const activeBoardTitle = view === 'enemy' ? `Soupeřovo pole ${canShoot ? '· střílej' : '· čekej na tah'}` : 'Tvoje lodě · zásahy soupeře';
+      const activeBoard = view === 'enemy'
+        ? (enemy ? shipsRenderBoard(enemy, { enemy: true, shots: myShots }) : '<div class="shipsWaitingBoard">Soupeř ještě není připojený.</div>')
+        : shipsRenderBoard(mine, { own: true, shots: ownShots });
+      const viewHint = st.status === 'active'
+        ? (canShoot ? 'Jsi na tahu, proto se ti rovnou ukazuje pole soupeře.' : 'Hraje soupeř, proto se ti rovnou ukazuje tvoje flotila a zásahy proti tobě.')
+        : 'Přepni si, jestli chceš vidět flotilu nebo střelbu.';
       body.innerHTML = `<div class="arcadeStage shipsStage">
         <div class="arcadeHud arcadeHudSingleLine">${gamesStatLine('Kód', st.code || '—')}${gamesStatLine('Role', role || 'divák')}${gamesStatLine('Zásahy', sum.hits)}${gamesStatLine('Potopené', sum.sunk)}</div>
-        <div class="arcadeBar arcadePanel uPad12 shipsCodeCard"><strong>${escapeHtml(headline)}</strong><div class="smallText">${escapeHtml(st.message || '')}</div>${(!st.o && role === 'X') ? `<div class="shipsInviteCode">${escapeHtml(st.code || '')}</div><button type="button" class="gameControlBtn" id="shipsCopyCodeBtn">Kopírovat kód</button>` : ''}</div>
-        <div class="shipsBoardsWrap">
-          <div class="shipsBoardCard"><div class="smallText uBold">Tvoje lodě · zásahy soupeře</div>${shipsRenderBoard(mine, { own: true, shots: ownShots })}</div>
-          <div class="shipsBoardCard"><div class="smallText uBold">Soupeřovo pole ${canShoot ? '· střílej' : ''}</div>${enemy ? shipsRenderBoard(enemy, { enemy: true, shots: myShots }) : '<div class="shipsWaitingBoard">Soupeř ještě není připojený.</div>'}</div>
+        <div class="arcadeBar arcadePanel uPad12 shipsCodeCard"><strong>${escapeHtml(headline)}</strong><div class="smallText">${escapeHtml(st.message || '')}</div><div class="smallText shipsViewHint">${escapeHtml(viewHint)}</div>${(!st.o && role === 'X') ? `<div class="shipsInviteCode">${escapeHtml(st.code || '')}</div><button type="button" class="gameControlBtn" id="shipsCopyCodeBtn">Kopírovat kód</button>` : ''}</div>
+        ${toggleHtml}
+        <div class="shipsSingleBoardWrap">
+          <div class="shipsBoardCard"><div class="smallText uBold">${escapeHtml(activeBoardTitle)}</div>${activeBoard}</div>
         </div>
         ${st.status === 'finished' ? `<div class="arcadeResultOverlay shipsResult"><div class="arcadeResultCard"><strong>${st.winner === role ? 'Výhra!' : 'Konec hry'}</strong><div class="smallText">Zásahy: ${sum.hits} · Potopené: ${sum.sunk}</div><button type="button" class="gameControlBtn" id="shipsBackBtn">Zpět do Lodí</button></div></div>` : ''}
       </div>`;
@@ -3993,6 +4011,10 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       if (copy) copy.addEventListener('click', async () => {
         try { await navigator.clipboard.writeText(st.code || ''); st.message = 'Kód zkopírovaný.'; renderGame(); } catch (err) { st.message = 'Kód: ' + (st.code || ''); renderGame(); }
       });
+      body.querySelectorAll('[data-ships-view]').forEach((btn) => btn.addEventListener('click', () => {
+        local.view = btn.getAttribute('data-ships-view') === 'enemy' ? 'enemy' : 'own';
+        renderGame();
+      }));
       const back = body.querySelector('#shipsBackBtn');
       if (back) back.addEventListener('click', () => { local.code = ''; local.state = null; local.placing = { manual: false, selected: 'carrier', horizontal: true }; renderMenu(''); });
       body.querySelectorAll('[data-ships-shot]').forEach((btn) => {
@@ -4075,7 +4097,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     const allHot = EXTRA_GAMES.length === 0;
     const completedOnlyGuard = typeof window.gamesRecordStat === 'function';
     return {
-      version: 'v.1.1 (710)',
+      version: 'v.1.1 (711)',
       ok: !missingMeta.length && !missingRenderer.length && allHot && completedOnlyGuard,
       totalGames: ids.length,
       coreGames: ids,
@@ -4090,7 +4112,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       themeBackground: true,
       touchGuard: true,
       notes: [
-        'QA build 705 dotahuje Reaction výšku, Sudoku bez nápovědy chyb, Bubble postupné sjíždění a Bomberman restart.',
+        'QA build 711 dotahuje Lodě online: přepínanou jednu herní plochu a souvislejší lodní grafiku.',
         'Reálnou hratelnost a citlivost dotyku je potřeba potvrdit na mobilu.'
       ]
     };

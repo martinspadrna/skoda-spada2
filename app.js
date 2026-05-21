@@ -1,4 +1,4 @@
-// v.1.1 (710) – Lodě online: flotila ručně/automaticky + výraznější námořní grafika.
+// v.1.1 (711) – Lodě online: souvislé grafické lodě + přepínání jedné plochy.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;
