@@ -342,7 +342,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v719');
+      const channel = client.channel('rak-public-live-v721');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -394,6 +394,9 @@
   const LOCAL_GAME_UI_SETTINGS_PREFIX = 'rotace_supabase_game_ui_settings_v1:';
   const LOCAL_GAME_SESSIONS_PREFIX = 'rotace_supabase_game_sessions_v1:';
   const GAME_UI_SETTINGS_TYPE = '__profile_ui';
+  const GAME_PROGRESS_RESET_VERSION = 'v.1.1 (720)';
+  const GAME_PROGRESS_RESET_CUTOFF_ISO = '2026-05-21T17:30:00+02:00';
+  const GAME_PROGRESS_RESET_CUTOFF_MS = Date.parse(GAME_PROGRESS_RESET_CUTOFF_ISO);
   const SUPABASE_GAME_CACHE_TTL_MS = 30 * 1000;
   const SUPABASE_WRITE_DEDUPE_WINDOW_MS = 1400;
   const SUPABASE_WRITE_FINGERPRINT_LIMIT = 180000;
@@ -1018,6 +1021,37 @@
     return String(code || '').replace(/\D/g, '').slice(0, 4);
   }
 
+  const GAME_INVITE_TTL_MS = 60 * 60 * 1000;
+
+  function getGameInviteExpiryIso(nowTs) {
+    const base = Number(nowTs || Date.now()) || Date.now();
+    return new Date(base + GAME_INVITE_TTL_MS).toISOString();
+  }
+
+  function isGameInviteExpired(invite) {
+    if (!invite || !invite.expires_at) return false;
+    const ts = Date.parse(String(invite.expires_at));
+    return Number.isFinite(ts) && ts <= Date.now();
+  }
+
+  function isPendingExpiredGameInvite(invite) {
+    const status = String(invite && invite.status || '').toLowerCase();
+    return (!status || status === 'pending' || status === 'waiting') && isGameInviteExpired(invite);
+  }
+
+  function makeExpiredGameInviteError() {
+    const err = new Error('Tahle pozvánka už vypršela. Vytvoř novou.');
+    err.code = 'INVITE_EXPIRED';
+    err.reason = 'expired-invite';
+    return err;
+  }
+
+  function gameInviteErrorMessage(err, fallback) {
+    if (!err) return fallback || 'Pozvánku se nepodařilo načíst.';
+    if (err.code === 'INVITE_EXPIRED' || err.reason === 'expired-invite') return 'Tahle pozvánka už vypršela. Vytvoř novou.';
+    return String(err.message || fallback || 'Pozvánku se nepodařilo načíst.');
+  }
+
   function gameSessionCacheKey(code) {
     return LOCAL_GAME_SESSIONS_PREFIX + encodeURIComponent(normalizeInviteCode(code));
   }
@@ -1091,6 +1125,7 @@
       .limit(1), { mode: 'read' });
     if (error) throw error;
     const row = Array.isArray(data) && data.length ? data[0] : null;
+    if (row && isPendingExpiredGameInvite(row)) return { ok: false, invite: row, expired: true, reason: 'expired-invite', error: makeExpiredGameInviteError() };
     return { ok: true, invite: row || null };
   }
 
@@ -1100,14 +1135,16 @@
     const inviterAccountNumber = String(payload && payload.inviterAccountNumber ? payload.inviterAccountNumber : '').trim() || null;
     const gameType = String(payload && payload.gameType ? payload.gameType : (payload && payload.game_type ? payload.game_type : 'gomoku')).trim() || 'gomoku';
     const boardState = payload && payload.boardState && typeof payload.boardState === 'object' ? Object.assign({ gameType }, payload.boardState) : { board: Array(180).fill(''), turn: 'X', status: 'waiting', gameType };
+    const expiresAt = payload && payload.expiresAt ? String(payload.expiresAt) : getGameInviteExpiryIso();
+    boardState.inviteExpiresAt = expiresAt;
     const inviteRow = {
       game_type: gameType,
       inviter_account_number: inviterAccountNumber,
       invitee_account_number: null,
       invite_code: inviteCode,
       status: 'pending',
-      expires_at: null,
-      payload: payload && payload.payload && typeof payload.payload === 'object' ? payload.payload : {}
+      expires_at: expiresAt,
+      payload: Object.assign({}, payload && payload.payload && typeof payload.payload === 'object' ? payload.payload : {}, { expiresAt })
     };
     const { data: inviteData, error: inviteErr } = await runSupabaseOperation('game_invites.create', () => client
       .from('game_invites')
@@ -1140,8 +1177,10 @@
     const inviteCode = String(code || '').trim().toUpperCase();
     const invitee = String(inviteeAccountNumber || '').trim() || null;
     const loaded = await loadGameInviteByCode(client, inviteCode);
+    if (loaded && loaded.expired) throw (loaded.error || makeExpiredGameInviteError());
     if (!loaded.invite) throw new Error('Pozvánka nenalezena.');
     const invite = loaded.invite;
+    if (isPendingExpiredGameInvite(invite)) throw makeExpiredGameInviteError();
     const { data: sessionRows, error: sessionLookupErr } = await runSupabaseOperation('game_sessions.lookup_for_accept', () => client
       .from('game_sessions')
       .select('*')
@@ -1207,6 +1246,7 @@
 
   async function loadGameSessionByInviteCodeDirect(client, code) {
     const loaded = await loadGameInviteByCode(client, code);
+    if (loaded && loaded.expired) return { ok: false, invite: loaded.invite || null, session: null, expired: true, reason: 'expired-invite', message: gameInviteErrorMessage(loaded.error) };
     if (!loaded.invite) return { ok: false, invite: null, session: null };
     const { data: sessionRows, error: sessionErr } = await runSupabaseOperation('game_sessions.lookup_by_invite', () => client
       .from('game_sessions')
@@ -1222,6 +1262,7 @@
 
   async function saveGameSessionByInviteCodeDirect(client, code, payload) {
     const loaded = await loadGameInviteByCode(client, code);
+    if (loaded && loaded.expired) throw (loaded.error || makeExpiredGameInviteError());
     if (!loaded.invite) throw new Error('Pozvánka nenalezena.');
     const { data: sessionRows, error: sessionErr } = await runSupabaseOperation('game_sessions.lookup_by_invite', () => client
       .from('game_sessions')
@@ -1899,6 +1940,56 @@
     } catch (err) {}
   }
 
+  function clearAllGameStatsCaches() {
+    try {
+      const keys = [];
+      for (let i = 0; i < localStorage.length; i += 1) {
+        const cacheKey = localStorage.key(i);
+        if (cacheKey && (cacheKey.indexOf(LOCAL_GAME_STATS_PREFIX) === 0 || cacheKey.indexOf(LOCAL_GAME_SESSIONS_PREFIX) === 0)) keys.push(cacheKey);
+      }
+      keys.forEach(cacheKey => localStorage.removeItem(cacheKey));
+    } catch (err) {}
+  }
+
+  function gameProgressIsBeforeReset(row) {
+    if (!row || String(row.game_type || '') === GAME_UI_SETTINGS_TYPE) return false;
+    const ts = Date.parse(String(row.updated_at || row.last_played_at || row.created_at || ''));
+    return Number.isFinite(GAME_PROGRESS_RESET_CUTOFF_MS) && Number.isFinite(ts) && ts < GAME_PROGRESS_RESET_CUTOFF_MS;
+  }
+
+  function gameProgressQueryAfterReset(query) {
+    if (!query || !GAME_PROGRESS_RESET_CUTOFF_ISO) return query;
+    try { return query.gte('updated_at', GAME_PROGRESS_RESET_CUTOFF_ISO); } catch (err) { return query; }
+  }
+
+  async function resetGameProgressOnlineDirect(client, options = {}) {
+    const cutoffIso = String(options.cutoffIso || GAME_PROGRESS_RESET_CUTOFF_ISO || '').trim();
+    const nowIso = new Date().toISOString();
+    const result = { ok: true, version: GAME_PROGRESS_RESET_VERSION, cutoffIso, statsRows: 0, sessionRows: 0, errors: [] };
+    const statsPatch = { games_played: 0, wins: 0, losses: 0, draws: 0, points: 0, last_played_at: nowIso, updated_at: nowIso };
+    try {
+      let statsQuery = client.from('game_stats').update(statsPatch).neq('game_type', GAME_UI_SETTINGS_TYPE);
+      if (cutoffIso) statsQuery = statsQuery.lt('updated_at', cutoffIso);
+      const { data, error } = await runSupabaseOperation('game_stats.reset_progress_v720', () => statsQuery.select('id,game_type'), { mode: 'write', attempts: 1 });
+      if (error) throw error;
+      result.statsRows = Array.isArray(data) ? data.length : 0;
+    } catch (err) {
+      result.ok = false;
+      result.errors.push({ table: 'game_stats', message: String(err && err.message ? err.message : err) });
+    }
+    try {
+      let sessionQuery = client.from('game_sessions').update({ status: 'reset', winner_account_number: null, finished_at: nowIso, updated_at: nowIso });
+      if (cutoffIso) sessionQuery = sessionQuery.lt('updated_at', cutoffIso);
+      const { data, error } = await runSupabaseOperation('game_sessions.reset_progress_v720', () => sessionQuery.select('id,game_type,status'), { mode: 'write', attempts: 1 });
+      if (error) throw error;
+      result.sessionRows = Array.isArray(data) ? data.length : 0;
+    } catch (err) {
+      result.errors.push({ table: 'game_sessions', message: String(err && err.message ? err.message : err) });
+    }
+    clearAllGameStatsCaches();
+    return result;
+  }
+
   async function loadGameStatsDirect(client, gameType, limit, options) {
     const type = String(gameType || '').trim();
     if (!type) return [];
@@ -1917,6 +2008,7 @@
           .from('game_stats')
           .select('id,account_number,game_type,games_played,wins,losses,draws,points,last_played_at,updated_at')
           .eq('game_type', type)
+          .gte('updated_at', GAME_PROGRESS_RESET_CUTOFF_ISO)
           .order('points', { ascending: false })
           .order('updated_at', { ascending: false })
           .limit(safeLimit), { mode: 'read' }))
@@ -1965,12 +2057,18 @@
       .limit(1), { mode: 'read' });
     if (existingRes && existingRes.error) throw existingRes.error;
     const existing = Array.isArray(existingRes && existingRes.data) && existingRes.data.length ? existingRes.data[0] : null;
+    const existingBeforeReset = gameProgressIsBeforeReset(Object.assign({ game_type: gameType }, existing || {}));
 
     const lastPlayedRaw = entry && (entry.last_played_at ?? entry.lastPlayedAt ?? entry.updated_at ?? entry.updatedAt);
     const lastPlayedDate = lastPlayedRaw ? new Date(lastPlayedRaw) : new Date();
     const lastPlayedIso = Number.isNaN(lastPlayedDate.getTime()) ? new Date().toISOString() : lastPlayedDate.toISOString();
 
-    const gamesPlayed = Math.max(Number(existing && existing.games_played || 0) || 0, Number(entry && (entry.games_played ?? entry.plays) || 0) || 0);
+    const existingGamesPlayed = existingBeforeReset ? 0 : (Number(existing && existing.games_played || 0) || 0);
+    const existingWins = existingBeforeReset ? 0 : (Number(existing && existing.wins || 0) || 0);
+    const existingLosses = existingBeforeReset ? 0 : (Number(existing && existing.losses || 0) || 0);
+    const existingDraws = existingBeforeReset ? 0 : (Number(existing && existing.draws || 0) || 0);
+    const existingPoints = existingBeforeReset ? 0 : (Number(existing && existing.points || 0) || 0);
+    const gamesPlayed = Math.max(existingGamesPlayed, Number(entry && (entry.games_played ?? entry.plays) || 0) || 0);
     const derivedPoints = gameType === 'ttt'
       ? gamesPlayed
       : Number(entry && (entry.points ?? entry.bestScore ?? entry.score) || 0) || 0;
@@ -1978,10 +2076,10 @@
       account_number: accountNumber,
       game_type: gameType,
       games_played: gamesPlayed,
-      wins: Math.max(Number(existing && existing.wins || 0) || 0, Number(entry && entry.wins || 0) || 0),
-      losses: Math.max(Number(existing && existing.losses || 0) || 0, Number(entry && entry.losses || 0) || 0),
-      draws: Math.max(Number(existing && existing.draws || 0) || 0, Number(entry && entry.draws || 0) || 0),
-      points: Math.max(Number(existing && existing.points || 0) || 0, derivedPoints),
+      wins: Math.max(existingWins, Number(entry && entry.wins || 0) || 0),
+      losses: Math.max(existingLosses, Number(entry && entry.losses || 0) || 0),
+      draws: Math.max(existingDraws, Number(entry && entry.draws || 0) || 0),
+      points: Math.max(existingPoints, derivedPoints),
       last_played_at: lastPlayedIso,
       updated_at: lastPlayedIso
     };
@@ -2021,10 +2119,11 @@
     if (!account) return null;
     const existing = await getExistingGameStat(client, account, 'ttt');
     const nowIso = new Date().toISOString();
-    const currentPlayed = Number(existing && existing.games_played || 0) || 0;
-    const currentWins = Number(existing && existing.wins || 0) || 0;
-    const currentLosses = Number(existing && existing.losses || 0) || 0;
-    const currentDraws = Number(existing && existing.draws || 0) || 0;
+    const existingBeforeReset = gameProgressIsBeforeReset(Object.assign({ game_type: 'ttt' }, existing || {}));
+    const currentPlayed = existingBeforeReset ? 0 : (Number(existing && existing.games_played || 0) || 0);
+    const currentWins = existingBeforeReset ? 0 : (Number(existing && existing.wins || 0) || 0);
+    const currentLosses = existingBeforeReset ? 0 : (Number(existing && existing.losses || 0) || 0);
+    const currentDraws = existingBeforeReset ? 0 : (Number(existing && existing.draws || 0) || 0);
     const next = {
       account_number: account,
       game_type: 'ttt',
@@ -2114,6 +2213,7 @@
       .select('id,player_x_account_number,player_o_account_number,winner_account_number,status,board_state,updated_at,finished_at')
       .eq('game_type', gameType)
       .eq('status', 'finished')
+      .gte('updated_at', GAME_PROGRESS_RESET_CUTOFF_ISO)
       .or(orExpr)
       .order('updated_at', { ascending: false })
       .limit(100), { mode: 'read' });
@@ -2154,6 +2254,7 @@
       .select('id,player_x_account_number,player_o_account_number,winner_account_number,status,board_state,updated_at,finished_at')
       .eq('game_type', gameType)
       .eq('status', 'finished')
+      .gte('updated_at', GAME_PROGRESS_RESET_CUTOFF_ISO)
       .not('player_x_account_number', 'is', null)
       .not('player_o_account_number', 'is', null)
       .order('updated_at', { ascending: false })
@@ -2904,7 +3005,11 @@
       const client = getClient();
       if (!client || !navigator.onLine) return { ok: false, reason: 'offline-or-missing-client' };
       try { const result = Object.assign({ ok: true }, await acceptGameInviteDirect(client, code, inviteeAccountNumber)); state.lastError = null; return result; }
-      catch (err) { state.lastError = err; console.error('Game invite accept failed', err); return { ok: false, error: err }; }
+      catch (err) {
+        state.lastError = err;
+        console.error('Game invite accept failed', err);
+        return { ok: false, error: err, reason: err && (err.reason || err.code) ? (err.reason || err.code) : 'invite-accept-failed', message: gameInviteErrorMessage(err, 'Pozvánku se nepodařilo přijmout.') };
+      }
     },
     loadGameSessionByInviteCode: async (code) => {
       const inviteCode = normalizeInviteCode(code);
@@ -2912,9 +3017,9 @@
       if (!inviteCode) return { ok: false, reason: 'missing-code' };
       if (!client || !navigator.onLine) return buildCachedSessionResult(inviteCode);
       try {
-        const result = await runSharedSupabaseRead('game_session.load:' + inviteCode, async () => Object.assign({ ok: true }, await loadGameSessionByInviteCodeDirect(client, inviteCode)));
-        state.lastError = null;
-        return result;
+        const result = await runSharedSupabaseRead('game_session.load:' + inviteCode, async () => loadGameSessionByInviteCodeDirect(client, inviteCode));
+        state.lastError = result && result.ok === false ? state.lastError : null;
+        return result && typeof result === 'object' ? result : Object.assign({ ok: true }, result || {});
       }
       catch (err) {
         state.lastError = err;
@@ -2953,7 +3058,7 @@
           buildCachedSessionResult(inviteCode, payload);
           return await enqueueAndMaybeFlush({ type: 'game_session', inviteCode, payload });
         }
-        return { ok: false, error: err };
+        return { ok: false, error: err, reason: err && (err.reason || err.code) ? (err.reason || err.code) : 'session-save-failed', message: gameInviteErrorMessage(err, 'Online uložení se nepovedlo.') };
       }
     },
     loadTttHeadToHead: async (playerA, playerB, options = {}) => {
@@ -2977,6 +3082,12 @@
       try { const result = await loadTttHeadToHeadListDirect(client, Object.assign({}, options || {}, { gameType: String(gameType || 'gomoku') || 'gomoku' })); state.lastError = null; return result; }
       catch (err) { state.lastError = err; console.error('Game head-to-head list load failed', err); return { ok: false, error: err, rows: [] }; }
     },
+    resetGameProgressOnline: async (options = {}) => {
+      const client = getClient();
+      if (!client || !navigator.onLine) return { ok: false, reason: 'offline-or-missing-client' };
+      try { const result = await resetGameProgressOnlineDirect(client, options || {}); state.lastError = result && result.ok ? null : state.lastError; return result; }
+      catch (err) { state.lastError = err; console.error('Game progress reset failed', err); return { ok: false, error: err }; }
+    },
     getState: () => ({ ...state })
   };
 
@@ -2998,6 +3109,7 @@
   window.loadGameHeadToHeadList = async (gameType, options) => window.RotationSupabaseBridge.loadGameHeadToHeadList(gameType, options || {});
   window.loadBugReports = async (options) => window.RotationSupabaseBridge.loadBugReports(options || {});
   window.updateBugReportStatus = async (id, status, note) => window.RotationSupabaseBridge.updateBugReportStatus(id, status, note || '');
+  window.resetGameProgressOnline = async (options) => window.RotationSupabaseBridge.resetGameProgressOnline(options || {});
 
   window.addEventListener('online', () => {
     requestSupabaseQueueWake('online', 350);

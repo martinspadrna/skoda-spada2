@@ -1,3 +1,11 @@
+## v.1.1 (721)
+- Herní profily po ostrém spuštění začínají od nuly: lokální XP, odehrané hry, skóre a achievementy se resetují přes novou profileVersion 720, ale theme/pozadí profilu zůstává zachované.
+- Přidán online reset ochranné vrstvy pro Supabase: staré game_stats/game_sessions před reset cutoffem se ignorují v žebříčcích/profilu a aplikace se je po online startu pokusí v Supabase vynulovat/označit jako reset.
+- Ranky jsou výrazně těžší a XP přibývá pomaleji, aby postup po ostrém spuštění nebyl hned hotový.
+- Rozšířené achievementy: více cílů pro jednotlivé hry, online hraní s někým, online výhry, Lodě, denní challenge, směna D a další směnové/časové výzvy.
+- Časové hry kromě Reaction Testu zobrazují výsledky v sekundách; Reaction Test zůstává v milisekundách.
+- Verze sjednocena na v.1.1 (721), cache na v1.1-721 a Supabase realtime kanál na rak-public-live-v721.
+
 ## v.1.1 (719)
 - Lodě online: vypnuté scrollování v herní obrazovce, aby se hra chovala víc jako appka.
 - Přepínač Moje flotila / Střílet na soupeře se nově zobrazuje i zakládajícímu hráči po přijetí soupeře, i když soupeř ještě připravuje flotilu.

@@ -1516,6 +1516,9 @@ function tttMaybeRecordOnlineResult(winner) {
     gamesRecordStat('ttt', isDraw
       ? {
           completed: true,
+          online: true,
+          onlinePlay: true,
+          onlinePlays: 1,
           plays: played,
           draws: (stats.draws || 0) + 1,
           bestMoves: stats.bestMoves || null,
@@ -1524,6 +1527,11 @@ function tttMaybeRecordOnlineResult(winner) {
         }
       : {
           completed: true,
+          online: true,
+          onlinePlay: true,
+          onlinePlays: 1,
+          onlineWin: won,
+          onlineWins: won ? 1 : 0,
           plays: played,
           wins: won ? (stats.wins || 0) + 1 : (stats.wins || 0),
           losses: won ? (stats.losses || 0) : (stats.losses || 0) + 1,
@@ -1584,7 +1592,7 @@ async function tttCreateInviteSession() {
         inviteUrl: ''
       };
       state.online.inviteUrl = tttGetInviteUrl(code);
-      tttSetOnlineStatus('Pozvánka vytvořená. Kód pro spoluhráče: ' + code + '.', 'waiting');
+      tttSetOnlineStatus('Pozvánka vytvořená na 60 minut. Kód pro spoluhráče: ' + code + '.', 'waiting');
       return { ok: true, code, url: tttGetInviteUrl(code), result };
     }
   }
@@ -1607,6 +1615,14 @@ async function tttCreateInviteSession() {
   };
   tttSetOnlineStatus('Pozvánka vytvořená lokálně. Kód pro spoluhráče: ' + code + '.', 'waiting');
   return { ok: true, code, url: tttGetInviteUrl(code), local: true };
+}
+
+function tttInviteResultMessage(result, fallback) {
+  if (!result) return fallback || 'Pozvánku se nepodařilo načíst.';
+  if (result.expired || result.reason === 'expired-invite' || result.reason === 'INVITE_EXPIRED') return 'Tahle pozvánka už vypršela. Vytvoř novou.';
+  if (result.message) return String(result.message);
+  if (result.error && result.error.message) return String(result.error.message);
+  return fallback || 'Pozvánku se nepodařilo načíst.';
 }
 
 async function tttJoinInviteSession(code) {
@@ -1655,7 +1671,7 @@ async function tttJoinInviteSession(code) {
       return { ok: true, code: inviteCode, result };
     }
     if (result && result.ok === false) {
-      state.message = 'Pozvánku se nepodařilo načíst online. Zkontroluj 4místný kód.';
+      state.message = tttInviteResultMessage(result, 'Pozvánku se nepodařilo načíst online. Zkontroluj 4místný kód.');
       tttSetOnlineStatus(state.message, 'error');
       return result;
     }
@@ -1696,6 +1712,16 @@ async function tttSyncOnlineSession(force) {
   if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.loadGameSessionByInviteCode === 'function') {
     try {
       const remote = await window.RotationSupabaseBridge.loadGameSessionByInviteCode(code);
+      if (remote && remote.ok === false && (remote.expired || remote.reason === 'expired-invite')) {
+        state.online.status = 'expired';
+        state.online.connected = false;
+        state.message = tttInviteResultMessage(remote, 'Tahle pozvánka už vypršela. Vytvoř novou.');
+        tttSetOnlineStatus(state.message, 'error');
+        tttStopOnlineSync();
+        tttRender();
+        scheduleTttLayout();
+        return;
+      }
       if (remote && remote.ok && !remote.session && remote.invite && String(remote.invite.status || '').toLowerCase() === 'accepted') {
         state.online.status = 'active';
         if (remote.invite && remote.invite.invitee_account_number) state.online.playerOAccountNumber = remote.invite.invitee_account_number;
@@ -3979,7 +4005,7 @@ function renderGamesProfileStatus() {
   if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(metaEl, metaText, 'gamesProfileStatusMeta');
   else metaEl.textContent = metaText;
   if (rankEl) {
-    // v.1.1 (719): Lodě online – vypnutý scroll a jistější přepínání pohledu po přijetí soupeře.
+    // v.1.1 (721): životnost online pozvánek a automatický úklid starých herních dat.
     rankEl.innerHTML = '<span class="gamesProfileRankValue">' + escapeHtml(rankText) + '</span>';
     rankEl.setAttribute('data-player-name', nextName);
     rankEl.disabled = false;
@@ -4021,7 +4047,7 @@ function buildAppHistoryHtml(versionText) {
       range: versionText,
       title: 'Aktuální build',
       lines: [
-        'Build v.1.1 (719) opravuje Lodě online: scrollování je znovu vypnuté a přepínač Moje flotila / Střílet se ukáže i zakládajícímu hráči po přijetí soupeře.',
+        'Build v.1.1 (721) přidává 60minutovou životnost online pozvánek, odmítnutí prošlých kódů a databázový úklid starých pozvánek.',
         'Série v.1.1 650–706 dotáhla Piškvorky, online pozvánky, PWA launch handler, všechny hlavní hry, herní profily, reporty chyb, theme polish, těžší/chytřejší achievementy a společný herní QA průchod včetně app-like dotykového polishu.',
         'Sekce „O aplikaci“ je nově stručnější: detailní změny zůstávají v changelogu a tady se historie drží po větších blocích.',
         'Stabilizační audity, Supabase guardy, Láďův režim a finální readiness kontroly zůstávají součástí diagnostiky.'
@@ -6322,7 +6348,8 @@ function bindCalendarTile() {
 // Games hub + account profile
 // -------------------------
 const GAMES_PROFILE_KEY = APP_KEY + ':games_profile_v1';
-const GAMES_PROFILE_RESET_VERSION = 406;
+const GAMES_PROFILE_RESET_VERSION = 720;
+const GAMES_REMOTE_STATS_RESET_CUTOFF_MS = Date.parse('2026-05-21T17:30:00+02:00');
 const GAMES_ACCOUNT_BLOCKLIST = new Set(['4157']);
 const GAMES_ACCOUNT_LIST = [];
 
@@ -6416,9 +6443,13 @@ function gamesLoadProfile() {
       const accountId = String(id || '').trim();
       if (!accountId || GAMES_ACCOUNT_BLOCKLIST.has(accountId)) return;
       const incoming = srcAccounts[accountId] || {};
-      const next = shouldResetStats
+      let next = shouldResetStats
         ? gamesMakeAccountEntry(accountId, incoming.name || accountId)
-        : gamesNormalizeStoredAccount({ id: accountId, name: incoming.name || accountId, stats: incoming.stats, achievements: incoming.achievements, updatedAt: incoming.updatedAt }, incoming.name || accountId);
+        : gamesNormalizeStoredAccount({ id: accountId, name: incoming.name || accountId, stats: incoming.stats, achievements: incoming.achievements, uiSettings: incoming.uiSettings, themeId: incoming.themeId, uiTheme: incoming.uiTheme, backgroundId: incoming.backgroundId, uiBackground: incoming.uiBackground, updatedAt: incoming.updatedAt }, incoming.name || accountId);
+      if (shouldResetStats && incoming && typeof incoming === 'object') {
+        const preserved = gamesNormalizeStoredAccount({ id: accountId, name: incoming.name || accountId, stats: {}, achievements: [], uiSettings: incoming.uiSettings, themeId: incoming.themeId, uiTheme: incoming.uiTheme, backgroundId: incoming.backgroundId, uiBackground: incoming.uiBackground, updatedAt: 0 }, incoming.name || accountId);
+        next.uiSettings = preserved.uiSettings || next.uiSettings;
+      }
       base.accounts[accountId] = next;
     });
 
@@ -6502,6 +6533,8 @@ async function gamesSyncProfileFromRemote(force = false) {
     });
 
     (Array.isArray(remoteTttStats) ? remoteTttStats : []).forEach((row) => {
+      const remoteUpdated = gamesParseRemoteTimestamp(row && (row.updated_at || row.last_played_at || row.updatedAt));
+      if (Number.isFinite(GAMES_REMOTE_STATS_RESET_CUTOFF_MS) && remoteUpdated && remoteUpdated < GAMES_REMOTE_STATS_RESET_CUTOFF_MS) return;
       const accountId = String(row && (row.account_number || row.accountNumber || row.id) ? (row.account_number || row.accountNumber || row.id) : '').trim();
       if (!accountId || GAMES_ACCOUNT_BLOCKLIST.has(accountId)) return;
       const remoteName = String(row && (row.player_name || row.full_name || row.name) ? (row.player_name || row.full_name || row.name) : accountId).trim() || accountId;
@@ -6857,9 +6890,9 @@ const GAMES_PROFILE_GAME_DEFS = [
   { id: 'brick', title: 'Brick Breaker', unit: 'bodů' },
   { id: 'doodle', title: 'Doodle Jump', unit: 'bodů' },
   { id: 'bubble', title: 'Bubble Shooter', unit: 'bodů' },
-  { id: 'sudoku', title: 'Sudoku', unit: 'bodů' },
+  { id: 'sudoku', title: 'Sudoku', unit: 's' },
   { id: 'mines', title: 'Minesweeper', unit: 'bodů' },
-  { id: 'memory', title: 'Memory / Pexeso', unit: 'bodů' },
+  { id: 'memory', title: 'Memory / Pexeso', unit: 's' },
   { id: 'bomber', title: 'Bomberman mini', unit: 'bodů' },
   { id: 'daily', title: 'Denní challenge', unit: 'bodů' }
 ];
@@ -6869,6 +6902,8 @@ function gamesBuildProfilesWithRemoteRows(profile) {
   const byId = new Map(base.map(acc => [String(acc && acc.id || '').trim(), acc]));
   const remoteTtt = app.gamesLeaderboardCache && Array.isArray(app.gamesLeaderboardCache.ttt) ? app.gamesLeaderboardCache.ttt : [];
   remoteTtt.forEach((row) => {
+    const remoteUpdated = gamesParseRemoteTimestamp(row && (row.updated_at || row.last_played_at || row.updatedAt));
+    if (Number.isFinite(GAMES_REMOTE_STATS_RESET_CUTOFF_MS) && remoteUpdated && remoteUpdated < GAMES_REMOTE_STATS_RESET_CUTOFF_MS) return;
     const id = String(row && (row.id || row.account_number || row.accountNumber) ? (row.id || row.account_number || row.accountNumber) : '').trim();
     if (!id || GAMES_ACCOUNT_BLOCKLIST.has(id)) return;
     const value = Number(row && (row.value || row.games_played || row.points) || 0) || 0;
@@ -7090,6 +7125,22 @@ function gamesRenderStats() {
   }
 }
 
+function gamesEnsureOnlineProgressReset() {
+  try {
+    const resetKey = APP_KEY + ':games_online_progress_reset_v720';
+    if (localStorage.getItem(resetKey) === 'done') return Promise.resolve({ ok: true, skipped: true });
+    const bridge = window.RotationSupabaseBridge;
+    if (!bridge || typeof bridge.resetGameProgressOnline !== 'function' || !navigator.onLine) return Promise.resolve({ ok: false, reason: 'offline-or-missing-bridge' });
+    return bridge.resetGameProgressOnline({ version: 'v.1.1 (720)', cutoffIso: '2026-05-21T17:30:00+02:00' }).then((res) => {
+      if (res && res.ok) localStorage.setItem(resetKey, 'done');
+      return res;
+    }).catch((err) => { console.warn('gamesEnsureOnlineProgressReset failed', err); return { ok: false, error: err }; });
+  } catch (err) {
+    console.warn('gamesEnsureOnlineProgressReset failed', err);
+    return Promise.resolve({ ok: false, error: err });
+  }
+}
+
 function renderGamesHub() {
   gamesGetProfile();
   gamesRenderAccountChips();
@@ -7098,6 +7149,7 @@ function renderGamesHub() {
   gamesRenderAchievements();
   // v.1.1 (668): samostatné herní Statistiky jsou sjednocené do Profilů.
   if (typeof syncGamesLockedSections === 'function') syncGamesLockedSections();
+  if (typeof gamesEnsureOnlineProgressReset === 'function') void gamesEnsureOnlineProgressReset();
   void gamesSyncProfileFromRemote().then(() => { if (typeof renderGamesProfileStatus === 'function') renderGamesProfileStatus(); gamesRenderProfiles(); gamesRenderAchievements(); if (typeof syncGamesLockedSections === 'function') syncGamesLockedSections(); });
   void gamesRefreshRemoteLeaderboards(null, true).then(() => { gamesRenderProfiles(); });
   gamesEnsureKeyBindings();

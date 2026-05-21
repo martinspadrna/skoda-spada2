@@ -2,7 +2,7 @@
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
 
-  // v.1.1 (719): Lodě online: vypnutý scroll a přepínač pohledu i pro zakládajícího hráče.
+  // v.1.1 (721): online pozvánky mají životnost a stará herní data se uklízí.
   const CORE_GAMES = ['ttt', 'ships', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
   const EXTRA_GAMES = [];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);
@@ -24,9 +24,9 @@
     brick: { title: 'Brick Breaker', subtitle: 'Neon arkanoid a combo odrazy', unit: 'bodů', mode: 'high', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h16v3H4zM6 13h12v3H6zM8 18h8v2H8z"></path><path d="M12 4v3"></path></svg>' },
     doodle: { title: 'Doodle Jump', subtitle: 'Nekonečné skákání na mobil', unit: 'bodů', mode: 'high', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 19c2-4 4-5 8-8"></path><path d="M12 4l2.2 4.6L19 11l-4.8 1.2L12 17l-2.2-4.8L5 11l4.8-2.4z"></path></svg>' },
     bubble: { title: 'Bubble Shooter', subtitle: 'Relax, komba a denní rekordy', unit: 'bodů', mode: 'high', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="9" r="3"></circle><circle cx="15.5" cy="10.5" r="2.6"></circle><circle cx="12" cy="16" r="3.4"></circle></svg>' },
-    sudoku: { title: 'Sudoku', subtitle: 'Různé obtížnosti a časy', unit: 'ms', mode: 'low', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="4.5" width="15" height="15" rx="2"></rect><path d="M4.5 10h15M4.5 15h15M10 4.5v15M15 4.5v15"></path></svg>' },
+    sudoku: { title: 'Sudoku', subtitle: 'Různé obtížnosti a časy', unit: 's', mode: 'low', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="4.5" width="15" height="15" rx="2"></rect><path d="M4.5 10h15M4.5 15h15M10 4.5v15M15 4.5v15"></path></svg>' },
     mines: { title: 'Minesweeper', subtitle: 'Rychlá pauza a score i při výbuchu', unit: 'bodů', mode: 'high', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="7"></circle><path d="M12 5v4M12 15v4M5 12h4M15 12h4M8.3 8.3l2.8 2.8M12.9 12.9l2.8 2.8M15.7 8.3l-2.8 2.8M11.1 12.9l-2.8 2.8"></path></svg>' },
-    memory: { title: 'Memory / Pexeso', subtitle: 'Moderní animace a rychlé páry', unit: 'ms', mode: 'low', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="5" width="6.2" height="6.2" rx="1.5"></rect><rect x="13.3" y="5" width="6.2" height="6.2" rx="1.5"></rect><rect x="4.5" y="13.8" width="6.2" height="6.2" rx="1.5"></rect><rect x="13.3" y="13.8" width="6.2" height="6.2" rx="1.5"></rect></svg>' },
+    memory: { title: 'Memory / Pexeso', subtitle: 'Moderní animace a rychlé páry', unit: 's', mode: 'low', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="5" width="6.2" height="6.2" rx="1.5"></rect><rect x="13.3" y="5" width="6.2" height="6.2" rx="1.5"></rect><rect x="4.5" y="13.8" width="6.2" height="6.2" rx="1.5"></rect><rect x="13.3" y="13.8" width="6.2" height="6.2" rx="1.5"></rect></svg>' },
     bomber: { title: 'Bomberman mini', subtitle: 'Bludiště, bomby, příšerky a upgrady', unit: 'bodů', mode: 'high', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h6v3H9z"></path><circle cx="12" cy="14" r="5"></circle><path d="M15.8 10.2l2-2"></path></svg>' },
 
     ships: { title: 'Lodě online', subtitle: 'Online námořní souboj přes pozvánku', unit: 'bodů', mode: 'high', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15.5h16l-2 3.5H6z"></path><path d="M8 15.5V8l4-3 4 3v7.5"></path><path d="M10 11h4"></path><path d="M3.5 20.5c1.5.7 3 .7 4.5 0 1.5.7 3 .7 4.5 0 1.5.7 3 .7 4.5 0 1.2.5 2.4.6 3.5.2"></path></svg>' },
@@ -66,19 +66,20 @@
     const meta = META[id] || {};
     const st = getArcadeProfileStat(account, id);
     if (id === 'ttt') return `${Number(st.plays || 0) || 0}×`;
-    if (meta.mode === 'low') return st.bestTimeMs ? fmtTime(st.bestTimeMs) : '—';
+    if (meta.mode === 'low') return st.bestTimeMs ? fmtGameValue(id, st.bestTimeMs) : '—';
     return `${Number(st.bestScore || st.leaderboardValue || 0) || 0}`;
   }
 
 
   const GAMES_RANK_DEFS = [
     { name: 'Vemeno', minXp: 0 },
-    { name: 'Učeň', minXp: 900 },
-    { name: 'Seřizovač', minXp: 2400 },
-    { name: 'Týmař', minXp: 5200 },
-    { name: 'Mistr', minXp: 9500 },
-    { name: 'Senior', minXp: 15500 },
-    { name: 'Legenda RaK', minXp: 24000 }
+    { name: 'Učeň', minXp: 2400 },
+    { name: 'Seřizovač', minXp: 7200 },
+    { name: 'Týmař', minXp: 15000 },
+    { name: 'Mistr', minXp: 28000 },
+    { name: 'Senior', minXp: 46000 },
+    { name: 'Legenda RaK', minXp: 72000 },
+    { name: 'RaK nesmrtelný', minXp: 110000 }
   ];
 
   function gamesBuildProgressSummary(account) {
@@ -87,7 +88,7 @@
     const wins = Number(total.ttt && total.ttt.wins || 0) + Math.max(Number(total.g2048 && total.g2048.bestScore || 0) > 0 ? 1 : 0, 0) + Math.max(Number(total.snake && total.snake.bestScore || 0) > 0 ? 1 : 0, 0) + Math.max(Number(total.flap && total.flap.bestScore || 0) > 0 ? 1 : 0, 0);
     const plays = Number(total.totalPlays || 0) || 0;
     const bestScore = Number(total.bestScore || 0) || 0;
-    const xp = Math.max(0, Math.round((plays * 6) + (wins * 18) + (achievements * 55) + Math.min(900, Math.floor(bestScore / 6))));
+    const xp = Math.max(0, Math.round((plays * 4) + (wins * 14) + (achievements * 42) + Math.min(1400, Math.floor(bestScore / 10))));
     const levelStep = 600;
     const level = Math.max(1, Math.floor(xp / levelStep) + 1);
     const levelBase = (level - 1) * levelStep;
@@ -157,6 +158,7 @@
       isNightShift: !!activeShift && label.includes('noční'),
       isMorningShift: !!activeShift && label.includes('ranní'),
       shiftTeam: String(activeShift && activeShift.team ? activeShift.team : '').trim(),
+      isShiftD: String(activeShift && activeShift.team ? activeShift.team : '').trim().toUpperCase() === 'D',
       shiftLabel: String(activeShift && activeShift.label ? activeShift.label : '').trim()
     };
   }
@@ -172,6 +174,9 @@
       onShiftPlays: 0,
       nightShiftPlays: 0,
       morningShiftPlays: 0,
+      shiftDPlays: 0,
+      onlinePlays: 0,
+      onlineWins: 0,
       playedDays: [],
       shiftTeams: {},
       lastContext: null
@@ -184,6 +189,7 @@
     if (ctx.isOnShift) next.onShiftPlays = (Number(next.onShiftPlays || 0) || 0) + 1;
     if (ctx.isNightShift) next.nightShiftPlays = (Number(next.nightShiftPlays || 0) || 0) + 1;
     if (ctx.isMorningShift) next.morningShiftPlays = (Number(next.morningShiftPlays || 0) || 0) + 1;
+    if (ctx.isShiftD) next.shiftDPlays = (Number(next.shiftDPlays || 0) || 0) + 1;
     const days = Array.isArray(next.playedDays) ? next.playedDays.map(String) : [];
     if (ctx.dateKey && !days.includes(ctx.dateKey)) days.push(ctx.dateKey);
     next.playedDays = days.slice(-180);
@@ -212,6 +218,9 @@
       onShiftPlays: 0,
       nightShiftPlays: 0,
       morningShiftPlays: 0,
+      shiftDPlays: 0,
+      onlinePlays: 0,
+      onlineWins: 0,
       playedDays: [],
       shiftTeams: {},
       shiftTeamCount: 0,
@@ -220,7 +229,7 @@
     const days = new Set();
     const teams = {};
     contexts.forEach((ctx) => {
-      ['completedPlays','weekendPlays','nightHourPlays','earlyMorningPlays','lunchWindowPlays','onShiftPlays','nightShiftPlays','morningShiftPlays'].forEach((field) => {
+      ['completedPlays','weekendPlays','nightHourPlays','earlyMorningPlays','lunchWindowPlays','onShiftPlays','nightShiftPlays','morningShiftPlays','shiftDPlays','onlinePlays','onlineWins'].forEach((field) => {
         totals[field] += Number(ctx && ctx[field] || 0) || 0;
       });
       (Array.isArray(ctx && ctx.playedDays) ? ctx.playedDays : []).forEach(day => { if (day) days.add(String(day)); });
@@ -250,6 +259,12 @@
     const currentStat = gamesGetCurrentStatForContext(account, id);
     const ctx = gamesBuildCompletionContext(nextPatch.lastPlayedAt || Date.now());
     nextPatch.context = gamesMergeCompletionContext(currentStat.context, ctx);
+    if (nextPatch.online === true || nextPatch.onlinePlay === true || Number(nextPatch.onlinePlays || 0) > 0 || id === 'ships') {
+      nextPatch.context.onlinePlays = (Number(nextPatch.context.onlinePlays || 0) || 0) + Math.max(1, Number(nextPatch.onlinePlays || 0) || 1);
+    }
+    if (nextPatch.onlineWin === true || Number(nextPatch.onlineWins || 0) > 0) {
+      nextPatch.context.onlineWins = (Number(nextPatch.context.onlineWins || 0) || 0) + Math.max(1, Number(nextPatch.onlineWins || 0) || 1);
+    }
     return nextPatch;
   }
 
@@ -409,7 +424,35 @@
       { id: 'bomber_kill_4', title: 'Lovec příšerek', desc: 'Znič v Bombermanovi všechny 4 příšerky v jedné hře.', goalText: '4 příšerky', progress: (a) => arcadeStat(a.account, 'bomber', 'bestEnemiesKilled'), target: 4 },
       { id: 'bomber_crates_30', title: 'Bourání beden', desc: 'Rozbij v jedné hře 30 beden.', goalText: '30 beden', progress: (a) => arcadeStat(a.account, 'bomber', 'bestCrates'), target: 30 },
       { id: 'bomber_power_6', title: 'Sběrač výbavy', desc: 'Seber v jedné hře 6 upgradů.', goalText: '6 upgradů', progress: (a) => arcadeStat(a.account, 'bomber', 'bestPowerUps'), target: 6 },
+      { id: '2048_tile_4096', title: 'Kámen 4096', desc: 'V 2048 dostaň kámen 4096.', goalText: 'kámen 4096', progress: (a) => a.g2048.bestTile || 0, target: 4096 },
+      { id: '2048_runs_50', title: 'Čísla v ruce', desc: 'Dokonči 50 her 2048.', goalText: '50 dokončení', progress: (a) => a.g2048.plays || 0, target: 50 },
+      { id: 'snake_runs_50', title: 'Hadí rozcvička', desc: 'Dokonči 50 her Snake.', goalText: '50 dokončení', progress: (a) => a.snake.plays || 0, target: 50 },
+      { id: 'mines_score_600', title: 'Minové body', desc: 'Nahraj v Minesweeperu 600 bodů.', goalText: '600 bodů', progress: (a) => arcadeStat(a.account, 'mines', 'bestScore'), target: 600 },
+      { id: 'memory_moves_24', title: 'Málo tahů', desc: 'Dokonči Pexeso s nejvýše 24 tahy.', goalText: '24 tahů', progress: (a) => { const m = arcadeStat(a.account, 'memory', 'bestMoves'); return m ? Math.max(0, 60 - m) : 0; }, target: 36 },
+      { id: 'bomber_stage_clear_10', title: 'Vyčištěné bludiště', desc: 'Vyhraj 10 kol Bomberman mini.', goalText: '10 vyčištění', progress: (a) => arcadeStat(a.account, 'bomber', 'bestStageClear'), target: 10 },
+      { id: 'daily_5', title: 'Denní rozjezd', desc: 'Splň 5 denních challenge.', goalText: '5 challenge', progress: (a) => arcadeStat(a.account, 'daily', 'plays'), target: 5 },
       { id: 'daily_20', title: 'Denní držák', desc: 'Splň 20 denních challenge.', goalText: '20 challenge', progress: (a) => arcadeStat(a.account, 'daily', 'plays'), target: 20 },
+      { id: 'ttt_online_10', title: 'Soupeř z druhé ruky', desc: 'Dokonči 10 online partií Piškvorek proti někomu.', goalText: '10 online partií', progress: (a) => (a.ttt.context && a.ttt.context.onlinePlays) || 0, target: 10 },
+      { id: 'ttt_online_wins_10', title: 'Online taktik', desc: 'Vyhraj 10 online partií Piškvorek.', goalText: '10 online výher', progress: (a) => (a.ttt.context && a.ttt.context.onlineWins) || 0, target: 10 },
+      { id: 'ships_online_10', title: 'Námořní duelant', desc: 'Dohraj 10 online her Lodí s druhým hráčem.', goalText: '10 online duelů', progress: (a) => arcadeStat(a.account, 'ships', 'plays'), target: 10 },
+      { id: 'ships_online_wins_10', title: 'Kapitán flotily', desc: 'Vyhraj 10 online her Lodí.', goalText: '10 online výher', progress: (a) => arcadeStat(a.account, 'ships', 'wins'), target: 10 },
+      { id: 'ships_hits_40', title: 'Přesné salvy', desc: 'Dej v Lodích 40 zásahů v jedné dokončené hře.', goalText: '40 zásahů', progress: (a) => arcadeStat(a.account, 'ships', 'bestHits'), target: 40 },
+      { id: 'ships_sunk_5', title: 'Potopeno', desc: 'Potop v jedné hře Lodí 5 lodí.', goalText: '5 potopených lodí', progress: (a) => arcadeStat(a.account, 'ships', 'bestClears'), target: 5 },
+      { id: 'daily_60', title: 'Denní rutina', desc: 'Splň 60 denních challenge.', goalText: '60 challenge', progress: (a) => arcadeStat(a.account, 'daily', 'plays'), target: 60 },
+      { id: 'daily_120', title: 'Kalendářní legenda', desc: 'Splň 120 denních challenge.', goalText: '120 challenge', progress: (a) => arcadeStat(a.account, 'daily', 'plays'), target: 120 },
+      { id: 'sudoku_50', title: 'Sudoku série', desc: 'Vyřeš 50 Sudoku.', goalText: '50 dokončení', progress: (a) => arcadeStat(a.account, 'sudoku', 'plays'), target: 50 },
+      { id: 'sudoku_2min', title: 'Sudoku rychlík', desc: 'Vyřeš Sudoku pod 2 minuty.', goalText: 'pod 120 s', progress: (a) => { const t = arcadeStat(a.account, 'sudoku', 'bestTimeMs'); return t ? Math.max(0, 240000 - t) : 0; }, target: 120000 },
+      { id: 'mines_score_1000', title: 'Minový profík', desc: 'Nahraj v Minesweeperu 1 000 bodů.', goalText: '1 000 bodů', progress: (a) => arcadeStat(a.account, 'mines', 'bestScore'), target: 1000 },
+      { id: 'mines_60sec', title: 'Rychlé odminování', desc: 'Vyhraj Minesweeper pod 60 sekund.', goalText: 'pod 60 s', progress: (a) => { const t = arcadeStat(a.account, 'mines', 'bestTimeMs'); return t ? Math.max(0, 120000 - t) : 0; }, target: 60000 },
+      { id: 'memory_45sec', title: 'Paměť na čas', desc: 'Dokonči Pexeso pod 45 sekund.', goalText: 'pod 45 s', progress: (a) => { const t = arcadeStat(a.account, 'memory', 'bestTimeMs'); return t ? Math.max(0, 90000 - t) : 0; }, target: 45000 },
+      { id: 'memory_6x6', title: 'Velké pexeso', desc: 'Dokonči Memory na velikosti 6×6.', goalText: '6×6', progress: (a) => arcadeStat(a.account, 'memory', 'bestSize'), target: 6 },
+      { id: 'ships_online_25', title: 'Mořský veterán', desc: 'Dohraj 25 online her Lodí.', goalText: '25 online duelů', progress: (a) => arcadeStat(a.account, 'ships', 'plays'), target: 25 },
+      { id: 'ships_online_wins_25', title: 'Admirál směny', desc: 'Vyhraj 25 online her Lodí.', goalText: '25 online výher', progress: (a) => arcadeStat(a.account, 'ships', 'wins'), target: 25 },
+      { id: 'daily_200', title: 'Denní železo', desc: 'Splň 200 denních challenge.', goalText: '200 challenge', progress: (a) => arcadeStat(a.account, 'daily', 'plays'), target: 200 },
+      { id: 'ctx_shift_d_10', title: 'Déčko zapnuto', desc: 'Dokonči 10 her přímo v době, kdy běží směna D.', goalText: '10 her na D', progress: (a) => a.context.shiftDPlays || 0, target: 10 },
+      { id: 'ctx_shift_d_40', title: 'D jako držák', desc: 'Dokonči 40 her přímo v době, kdy běží směna D.', goalText: '40 her na D', progress: (a) => a.context.shiftDPlays || 0, target: 40 },
+      { id: 'ctx_online_25', title: 'Hraní s někým', desc: 'Dokonči 25 online her s dalším hráčem.', goalText: '25 online her', progress: (a) => a.context.onlinePlays || 0, target: 25 },
+      { id: 'ctx_online_wins_15', title: 'Online vítěz', desc: 'Vyhraj 15 online her proti někomu.', goalText: '15 online výher', progress: (a) => a.context.onlineWins || 0, target: 15 },
       { id: 'ctx_shift_15', title: 'Hráč na směně', desc: 'Dokonči 15 her během aktivní směny.', goalText: '15 her na směně', progress: (a) => a.context.onShiftPlays || 0, target: 15 },
       { id: 'ctx_shift_60', title: 'Směnový držák', desc: 'Dokonči 60 her v čase, kdy běží směna.', goalText: '60 her na směně', progress: (a) => a.context.onShiftPlays || 0, target: 60 },
       { id: 'ctx_night_hours_20', title: 'Noční sova', desc: 'Dokonči 20 her mezi 22:00 a 6:00.', goalText: '20 nočních her', progress: (a) => a.context.nightHourPlays || 0, target: 20 },
@@ -928,12 +971,19 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function fmtMs(ms) {
     const n = Number(ms);
     if (!Number.isFinite(n) || n <= 0) return '—';
-    if (n < 1000) return `${Math.round(n)} ms`;
-    const s = (n / 1000).toFixed(n < 10000 ? 2 : 1).replace(/\.0+$/, '');
-    return `${s} s`;
+    return `${Math.round(n)} ms`;
   }
 
-  function fmtTime(ms) { return fmtMs(ms); }
+  function fmtSeconds(ms) {
+    const n = Number(ms);
+    if (!Number.isFinite(n) || n <= 0) return '—';
+    const seconds = n / 1000;
+    const decimals = seconds < 10 ? 2 : (seconds < 60 ? 1 : 0);
+    return `${seconds.toFixed(decimals).replace(/\.0+$/, '')} s`;
+  }
+
+  function fmtTime(ms) { return fmtSeconds(ms); }
+  function fmtGameValue(gameId, ms) { return key(gameId) === 'reaction' ? fmtMs(ms) : fmtSeconds(ms); }
   function formatDate(ms) {
     const n = Number(ms);
     if (!Number.isFinite(n) || n <= 0) return '';
@@ -1094,14 +1144,14 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     const st = getAccountStat(account, gameId);
     const id = key(gameId);
     if (id === 'ttt') return `${Number(st.plays || 0) || 0}×`;
-    if (isLowBetter(id)) return fmtTime(Number(st.bestTimeMs || 0) || 0);
+    if (isLowBetter(id)) return fmtGameValue(id, Number(st.bestTimeMs || 0) || 0);
     return `${Number(st.bestScore || 0) || 0}`;
   }
 
   function renderLaunchTiles() {
     const grid = document.getElementById('gamesGrid');
     if (!grid) return;
-    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v719';
+    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v721';
     if (grid.dataset && grid.dataset.arcadeLaunchSig === launchSig && grid.querySelector('[data-game="ttt"]')) {
       gamePerf.launchRenderSkips = Number(gamePerf.launchRenderSkips || 0) + 1;
       return;
@@ -1141,7 +1191,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     const meta = gameMeta(id);
     let value = '—';
     if (id === 'ttt') value = `${Number(st.plays || 0) || 0}×`;
-    else if (isLowBetter(id)) value = st.bestTimeMs ? fmtTime(st.bestTimeMs) : '—';
+    else if (isLowBetter(id)) value = st.bestTimeMs ? fmtGameValue(id, st.bestTimeMs) : '—';
     else value = String(Number(st.bestScore || st.leaderboardValue || 0) || 0);
     return `<div class="gamesStatsCardLine"><strong>${escapeHtml(meta.title)}</strong> · ${escapeHtml(value)}</div>`;
   }
@@ -1347,6 +1397,11 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     if (typeof nextPatch.bestAccuracy === 'number') merged.bestAccuracy = Math.max(Number(current.bestAccuracy || 0) || 0, nextPatch.bestAccuracy || 0);
     if (typeof nextPatch.bestCombo === 'number') merged.bestCombo = Math.max(Number(current.bestCombo || 0) || 0, nextPatch.bestCombo || 0);
     if (typeof nextPatch.bestHits === 'number') merged.bestHits = Math.max(Number(current.bestHits || 0) || 0, nextPatch.bestHits || 0);
+    if (typeof nextPatch.wins === 'number') merged.wins = (Number(current.wins || 0) || 0) + Math.max(0, nextPatch.wins || 0);
+    if (typeof nextPatch.losses === 'number') merged.losses = (Number(current.losses || 0) || 0) + Math.max(0, nextPatch.losses || 0);
+    if (typeof nextPatch.draws === 'number') merged.draws = (Number(current.draws || 0) || 0) + Math.max(0, nextPatch.draws || 0);
+    if (typeof nextPatch.onlinePlays === 'number') merged.onlinePlays = (Number(current.onlinePlays || 0) || 0) + Math.max(0, nextPatch.onlinePlays || 0);
+    if (typeof nextPatch.onlineWins === 'number') merged.onlineWins = (Number(current.onlineWins || 0) || 0) + Math.max(0, nextPatch.onlineWins || 0);
     if (typeof nextPatch.bestAvgTimeMs === 'number' && nextPatch.bestAvgTimeMs > 0) {
       const oldAvg = Number(current.bestAvgTimeMs || 0) || 0;
       merged.bestAvgTimeMs = oldAvg ? Math.min(oldAvg, nextPatch.bestAvgTimeMs) : nextPatch.bestAvgTimeMs;
@@ -1693,14 +1748,14 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function renderReaction(body) {
     const state = getState('reaction', reactionFreshState);
     const bestStat = getAccountStat(gamesGetActiveAccount(), 'reaction');
-    const bestLabel = state.bestTimeMs ? fmtTime(state.bestTimeMs) : (bestStat.bestTimeMs ? fmtTime(bestStat.bestTimeMs) : '—');
+    const bestLabel = state.bestTimeMs ? fmtMs(state.bestTimeMs) : (bestStat.bestTimeMs ? fmtMs(bestStat.bestTimeMs) : '—');
     body.innerHTML = `
       <div class="arcadeStage arcadeReactionStage">
         <div class="arcadeHud arcadeHudWide">
           ${gamesStatLine('Kolo', `${state.round}/${state.roundsTotal || 5}`)}
           ${gamesStatLine('Best', bestLabel)}
-          ${gamesStatLine('Poslední', state.lastTimeMs ? fmtTime(state.lastTimeMs) : '—')}
-          ${gamesStatLine('Průměr', state.times.length ? fmtTime(Math.round(state.times.reduce((a, b) => a + b, 0) / state.times.length)) : '—')}
+          ${gamesStatLine('Poslední', state.lastTimeMs ? fmtMs(state.lastTimeMs) : '—')}
+          ${gamesStatLine('Průměr', state.times.length ? fmtMs(Math.round(state.times.reduce((a, b) => a + b, 0) / state.times.length)) : '—')}
         </div>
         <button type="button" class="arcadeBoardWrap arcadeReactionBoard arcadePanel ${state.phase === 'go' ? 'isGo' : ''} ${state.tooSoon ? 'isBad' : ''}" id="reactionBoard">
           <span class="arcadeReactionPulse"></span>
@@ -1719,7 +1774,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     const clearWaiting = () => { clearTimeout(state.waitingTimer); state.waitingTimer = null; };
     const updateHud = () => {
       const avg = state.times.length ? Math.round(state.times.reduce((a, b) => a + b, 0) / state.times.length) : 0;
-      if (hud) hud.innerHTML = `${gamesStatLine('Kolo', `${state.round}/${state.roundsTotal || 5}`)}${gamesStatLine('Best', state.bestTimeMs ? fmtTime(state.bestTimeMs) : (bestStat.bestTimeMs ? fmtTime(bestStat.bestTimeMs) : '—'))}${gamesStatLine('Poslední', state.lastTimeMs ? fmtTime(state.lastTimeMs) : '—')}${gamesStatLine('Průměr', avg ? fmtTime(avg) : '—')}`;
+      if (hud) hud.innerHTML = `${gamesStatLine('Kolo', `${state.round}/${state.roundsTotal || 5}`)}${gamesStatLine('Best', state.bestTimeMs ? fmtMs(state.bestTimeMs) : (bestStat.bestTimeMs ? fmtMs(bestStat.bestTimeMs) : '—'))}${gamesStatLine('Poslední', state.lastTimeMs ? fmtMs(state.lastTimeMs) : '—')}${gamesStatLine('Průměr', avg ? fmtMs(avg) : '—')}`;
     };
     const setPhase = (phase, bad = false) => {
       state.phase = phase;
@@ -1738,7 +1793,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       const avg = state.times.length ? Math.round(state.times.reduce((a, b) => a + b, 0) / state.times.length) : 0;
       setPhase('done', false);
       if (title) title.textContent = 'Hotovo';
-      if (textEl) textEl.textContent = `Best ${fmtTime(best)} · průměr ${fmtTime(avg)}.`;
+      if (textEl) textEl.textContent = `Best ${fmtMs(best)} · průměr ${fmtMs(avg)}.`;
       updateHud();
       if (!state.saved) {
         state.saved = true;
@@ -3110,7 +3165,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         state.bestTimeMs = Date.now() - state.startAt;
         gamesRecordStat('memory', { completed: true, plays: 1, bestTimeMs: state.bestTimeMs, bestScore: encodePoints('memory', state.bestTimeMs), bestMoves: state.moves, bestSize: size, lastResult: `${size}×${size} · ${state.moves} tahů` });
         const controls = body.querySelector('.arcadeControls');
-        if (controls) controls.insertAdjacentHTML('beforebegin', `<div class="arcadeBar arcadePanel uPad10x12"><div class="arcadeStatus"><strong>Vyhráno!</strong> ${fmtTime(state.bestTimeMs)} · ${state.moves} tahů · ${size}×${size}.</div></div>`);
+        if (controls) controls.insertAdjacentHTML('beforebegin', `<div class="arcadeBar arcadePanel uPad10x12"><div class="arcadeStatus"><strong>Vyhráno!</strong> ${fmtMs(state.bestTimeMs)} · ${state.moves} tahů · ${size}×${size}.</div></div>`);
       }
     };
     grid.querySelectorAll('button').forEach((btn) => {
@@ -3880,7 +3935,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         local.busy = true; renderMenu('Zakládám online hru…');
         const res = await window.createGameInvite({ gameType: 'battleship', code, inviterAccountNumber: account, boardState: st, payload: { title: 'Lodě online', playerName: accountName } });
         local.busy = false;
-        if (!res || !res.ok) { renderMenu('Pozvánku se nepodařilo vytvořit. Zkus to znovu online.'); return; }
+        if (!res || !res.ok) { renderMenu((res && res.message) || (res && res.error && res.error.message) || 'Pozvánku se nepodařilo vytvořit. Zkus to znovu online.'); return; }
         local.code = code; local.state = st; local.placing = { manual: false, selected: nextUnplaced(st.x), horizontal: true }; renderGame();
       });
       void renderShipsHeadToHeadMenu();
@@ -3891,7 +3946,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         if (code.length !== 4) { renderMenu('Zadej 4místný číselný kód pozvánky.'); return; }
         renderMenu('Připojuji se k online hře…');
         const accepted = await window.acceptGameInvite(code, account);
-        if (!accepted || !accepted.ok) { renderMenu('Pozvánku se nepodařilo přijmout.'); return; }
+        if (!accepted || !accepted.ok) { renderMenu((accepted && accepted.message) || (accepted && accepted.error && accepted.error.message) || 'Pozvánku se nepodařilo přijmout.'); return; }
         const loaded = accepted && accepted.session ? accepted : await window.loadGameSessionByInviteCode(code);
         let st = shipsNormalizeState(loaded && loaded.session && loaded.session.board_state, code);
         st.playerOAccountNumber = st.playerOAccountNumber || account;
@@ -3920,11 +3975,15 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       local.savedFinishedCode = st.code + ':' + String(st.winner || '');
       const sum = shipsBuildPayloadSummary(st, role);
       const won = st.winner === role;
-      gamesRecordStat('ships', { completed: true, bestScore: won ? 1000 + (sum.hits * 80) + (sum.sunk * 220) : Math.max(100, sum.hits * 70), bestHits: sum.hits, bestClears: sum.sunk, lastResult: won ? 'Výhra v Lodích' : 'Prohra v Lodích' });
+      gamesRecordStat('ships', { completed: true, online: true, onlinePlay: true, onlinePlays: 1, onlineWins: won ? 1 : 0, wins: won ? 1 : 0, losses: won ? 0 : 1, bestScore: won ? 1000 + (sum.hits * 80) + (sum.sunk * 220) : Math.max(100, sum.hits * 70), bestHits: sum.hits, bestClears: sum.sunk, lastResult: won ? 'Výhra v Lodích' : 'Prohra v Lodích' });
     };
     const refreshRemote = async (soft) => {
       if (!local.code || typeof window.loadGameSessionByInviteCode !== 'function') return;
       const res = await window.loadGameSessionByInviteCode(local.code);
+      if (res && res.ok === false && (res.expired || res.reason === 'expired-invite')) {
+        shipsReturnToMenu(res.message || 'Tahle pozvánka už vypršela. Vytvoř novou.');
+        return;
+      }
       const remote = res && res.session && res.session.board_state ? shipsNormalizeState(res.session.board_state, local.code) : null;
       if (!remote) return;
       const oldRev = Number(local.state && local.state.revision || 0) || 0;
@@ -4147,7 +4206,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     const allHot = EXTRA_GAMES.length === 0;
     const completedOnlyGuard = typeof window.gamesRecordStat === 'function';
     return {
-      version: 'v.1.1 (719)',
+      version: 'v.1.1 (721)',
       ok: !missingMeta.length && !missingRenderer.length && allHot && completedOnlyGuard,
       totalGames: ids.length,
       coreGames: ids,
@@ -4162,7 +4221,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       themeBackground: true,
       touchGuard: true,
       notes: [
-        'Build 719 opravuje Lodě online: scrollování je znovu vypnuté a přepínání Moje flotila / Střílet je viditelné i zakládajícímu hráči po přijetí soupeře.',
+        'Build 721 přidává 60minutovou platnost online pozvánek, odmítá prošlé kódy a připravuje databázový úklid starých pozvánek.',
         'Reálnou hratelnost a citlivost dotyku je potřeba potvrdit na mobilu.'
       ]
     };

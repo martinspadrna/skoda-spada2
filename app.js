@@ -1,4 +1,4 @@
-// v.1.1 (719) – Lodě online: vypnutý scroll a přepínač pohledu i pro zakládajícího hráče.
+// v.1.1 (721) – životnost online pozvánek a úklid starých herních dat.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;
