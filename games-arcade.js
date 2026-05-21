@@ -2,7 +2,7 @@
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
 
-  // v.1.1 (702): Společný QA/sjednocovací průchod všemi hotovými hrami.
+  // v.1.1 (703): Velký společný polish všech hotových her a herního hubu.
   const CORE_GAMES = ['ttt', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
   const EXTRA_GAMES = [];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);
@@ -25,7 +25,7 @@
     doodle: { title: 'Doodle Jump', subtitle: 'Nekonečné skákání na mobil', unit: 'bodů', mode: 'high', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 19c2-4 4-5 8-8"></path><path d="M12 4l2.2 4.6L19 11l-4.8 1.2L12 17l-2.2-4.8L5 11l4.8-2.4z"></path></svg>' },
     bubble: { title: 'Bubble Shooter', subtitle: 'Relax, komba a denní rekordy', unit: 'bodů', mode: 'high', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="9" r="3"></circle><circle cx="15.5" cy="10.5" r="2.6"></circle><circle cx="12" cy="16" r="3.4"></circle></svg>' },
     sudoku: { title: 'Sudoku', subtitle: 'Různé obtížnosti a časy', unit: 'ms', mode: 'low', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="4.5" width="15" height="15" rx="2"></rect><path d="M4.5 10h15M4.5 15h15M10 4.5v15M15 4.5v15"></path></svg>' },
-    mines: { title: 'Minesweeper', subtitle: 'Rychlá pauza a nejlepší časy', unit: 'ms', mode: 'low', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="7"></circle><path d="M12 5v4M12 15v4M5 12h4M15 12h4M8.3 8.3l2.8 2.8M12.9 12.9l2.8 2.8M15.7 8.3l-2.8 2.8M11.1 12.9l-2.8 2.8"></path></svg>' },
+    mines: { title: 'Minesweeper', subtitle: 'Rychlá pauza a score i při výbuchu', unit: 'bodů', mode: 'high', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="7"></circle><path d="M12 5v4M12 15v4M5 12h4M15 12h4M8.3 8.3l2.8 2.8M12.9 12.9l2.8 2.8M15.7 8.3l-2.8 2.8M11.1 12.9l-2.8 2.8"></path></svg>' },
     memory: { title: 'Memory / Pexeso', subtitle: 'Moderní animace a rychlé páry', unit: 'ms', mode: 'low', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="5" width="6.2" height="6.2" rx="1.5"></rect><rect x="13.3" y="5" width="6.2" height="6.2" rx="1.5"></rect><rect x="4.5" y="13.8" width="6.2" height="6.2" rx="1.5"></rect><rect x="13.3" y="13.8" width="6.2" height="6.2" rx="1.5"></rect></svg>' },
     bomber: { title: 'Bomberman mini', subtitle: 'Bludiště, bomby, příšerky a upgrady', unit: 'bodů', mode: 'high', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h6v3H9z"></path><circle cx="12" cy="14" r="5"></circle><path d="M15.8 10.2l2-2"></path></svg>' },
     daily: { title: 'Denní challenge', subtitle: 'Každý den jiná hra a stejná výzva', unit: 'bodů', mode: 'high', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="6.5" width="15" height="13" rx="2"></rect><path d="M8 4.5v4M16 4.5v4M4.5 10h15"></path><path d="M8 14l2.1 2.1L16.3 10"></path></svg>' }
@@ -486,7 +486,7 @@
     const fresh = enriched.filter(item => item.current <= 0);
     const unlocked = done.length;
     const nextHtml = [
-      renderAchievementGroup('Hotové', done, true),
+      renderAchievementGroup('Hotové', done, false),
       renderAchievementGroup('Rozdělané', active, true),
       renderAchievementGroup('Nenačaté', fresh, false)
     ].join('');
@@ -647,7 +647,7 @@
 @keyframes bomberMonsterPulse{from{transform:translate(calc(var(--x) * 100%), calc(var(--y) * 100%)) scale(.96);}to{transform:translate(calc(var(--x) * 100%), calc(var(--y) * 100%)) scale(1.05);}}
 
 
-/* v.1.1 (702) – společný herní QA polish pro všechny hotové hry */
+/* v.1.1 (703) – velký společný polish všech hotových her */
 #games .gamesArcadeRoot{min-height:0;overflow:hidden;}
 #games .arcadeStage{gap:8px;min-height:0;overflow:hidden;padding-bottom:max(4px, env(safe-area-inset-bottom));}
 #games .arcadeHud,
@@ -1099,8 +1099,8 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function renderLaunchTiles() {
     const grid = document.getElementById('gamesGrid');
     if (!grid) return;
-    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v702';
-    if (grid.dataset && grid.dataset.arcadeLaunchSig === launchSig && grid.querySelector('.gamesDevFolder') && grid.querySelector('[data-game="ttt"]')) {
+    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v703';
+    if (grid.dataset && grid.dataset.arcadeLaunchSig === launchSig && grid.querySelector('[data-game="ttt"]')) {
       gamePerf.launchRenderSkips = Number(gamePerf.launchRenderSkips || 0) + 1;
       return;
     }
@@ -1117,9 +1117,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     };
     const coreHtml = CORE_GAMES.map(tile).join('');
     const extraHtml = EXTRA_GAMES.map(tile).join('');
-    grid.innerHTML = [
-      coreHtml,
-      `<details class="gamesDevFolder">
+    const devFolderHtml = EXTRA_GAMES.length ? `<details class="gamesDevFolder">
         <summary class="gamesFolderSummary">
           <span class="gamesFolderSummaryIcon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -1130,8 +1128,8 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
           <span class="gamesFolderSummaryText">Ve vývoji</span>
         </summary>
         <div class="gamesDevFolderBody">${extraHtml}</div>
-      </details>`
-    ].join('');
+      </details>` : '';
+    grid.innerHTML = coreHtml + devFolderHtml;
     if (grid.dataset) grid.dataset.arcadeLaunchSig = launchSig;
   }
 
@@ -2080,16 +2078,17 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       score: 0, hits: 0, over: false, lastTs: 0, raf: 0,
       shipX: 160, bullets: [], enemies: [], powerUps: [], explosions: [],
       spawnAcc: 0, powerAcc: 0, bossAcc: 0, shotCooldown: 0, survivedMs: 0,
-      saved: false, autoShoot: false, weaponLevel: 1, spreadUntil: 0, rapidUntil: 0, shieldUntil: 0, bossKills: 0, powerUpsCollected: 0,
+      saved: false, autoShoot: false, weaponLevel: 1, spreadLevel: 0, rapidLevel: 0, weaponUntil: 0, spreadUntil: 0, rapidUntil: 0, shieldUntil: 0, timeSlowUntil: 0, doubleUntil: 0, bossKills: 0, powerUpsCollected: 0,
       stars: Array.from({ length: 46 }, () => ({ x: Math.random() * 320, y: Math.random() * 520, s: 0.45 + Math.random() * 1.7 })),
       startedAt: Date.now()
     };
   }
   function renderShooter(body) {
     const state = getState('shooter', shooterState);
-    const stage = createCanvas(body, 'clamp(390px, 58dvh, 590px)');
+    const stage = createCanvas(body, 'clamp(440px, 68dvh, 680px)');
     if (stage.wrap) stage.wrap.classList.add('isFullGame', 'shooterCanvasWrap', 'arcadeNoPageScroll');
-    body.insertAdjacentHTML('afterbegin', `<div class="arcadeHud arcadeHudWide3 arcadeHudSingleLine">${gamesStatLine('Skóre', state.score)}${gamesStatLine('Zásahy', state.hits || 0)}${gamesStatLine('Čas', Math.floor((state.survivedMs || 0) / 1000))}</div><div class="arcadeControls arcadeOnlyRestart"><button type="button" class="gameControlBtn" id="shooterRestartBtn">Nová hra</button></div>`);
+    body.insertAdjacentHTML('afterbegin', `<div class="arcadeHud arcadeHudWide3 arcadeHudSingleLine">${gamesStatLine('Skóre', state.score)}${gamesStatLine('Vlna', state.bestWave || 1)}${gamesStatLine('Čas', Math.floor((state.survivedMs || 0) / 1000))}</div>`);
+    if (stage.wrap) stage.wrap.insertAdjacentHTML('beforeend', `<div class="arcadeGameOverlay arcadeEndOverlay" id="shooterEndOverlay" hidden><div class="arcadeOverlayCard"><strong>Konec mise</strong><span data-shooter-end-text>Score 0</span><button type="button" class="gameControlBtn" id="shooterRestartBtn">Nová hra</button></div></div>`);
     const shooterStage = body.querySelector('.arcadeStage');
     if (shooterStage) shooterStage.insertAdjacentHTML('afterend', gamesTop3Block('shooter', 'bodů', 5));
     const canvas = stage.canvas, ctx = stage.ctx;
@@ -2164,16 +2163,19 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     };
     const spawnPower = () => {
       const w = canvas.clientWidth || stage.wrap.clientWidth || 320;
-      const type = randomPick(['spread', 'rapid', 'shield', 'score', 'laser']);
+      const type = randomPick(['spread', 'rapid', 'shield', 'score', 'laser', 'nuke', 'slow', 'double']);
       state.powerUps.push({ type, x: 24 + Math.random() * Math.max(1, w - 48), y: -22, vy: 1.25, r: 12 });
     };
     const applyPower = (type) => {
       const now = Date.now();
       state.powerUpsCollected = Number(state.powerUpsCollected || 0) + 1;
-      if (type === 'spread') { state.spreadUntil = now + 11000; state.weaponLevel = Math.max(state.weaponLevel || 1, 2); }
-      else if (type === 'laser') { state.spreadUntil = now + 14000; state.rapidUntil = now + 9000; state.weaponLevel = 3; }
-      else if (type === 'rapid') state.rapidUntil = now + 10000;
+      if (type === 'spread') { state.spreadLevel = Math.min(5, Number(state.spreadLevel || 0) + 1); state.spreadUntil = now + 16000; state.weaponLevel = Math.max(Number(state.weaponLevel || 1), 1 + state.spreadLevel); }
+      else if (type === 'laser') { state.weaponLevel = Math.min(6, Number(state.weaponLevel || 1) + 1); state.spreadUntil = now + 14000; state.rapidUntil = now + 9000; state.weaponUntil = now + 15000; }
+      else if (type === 'rapid') { state.rapidLevel = Math.min(4, Number(state.rapidLevel || 0) + 1); state.rapidUntil = now + 9000 + state.rapidLevel * 2500; }
       else if (type === 'shield') state.shieldUntil = now + 12000;
+      else if (type === 'slow') state.timeSlowUntil = now + 9000;
+      else if (type === 'double') state.doubleUntil = now + 11000;
+      else if (type === 'nuke') { let hit = 0; state.enemies.forEach((e) => { if (e.boss) { e.hp = Math.max(1, Number(e.hp || 0) - 10); } else { e.hp = 0; hit += 1; } }); state.enemies = state.enemies.filter(e => e.hp > 0); state.score += 85 * hit; }
       else if (type === 'score') state.score += 150;
       if (typeof navigator !== 'undefined' && navigator.vibrate) { try { navigator.vibrate([8, 18, 8]); } catch (err) {} }
     };
@@ -2183,17 +2185,23 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       const y = h - 58;
       const now = Date.now();
       const rapid = now < Number(state.rapidUntil || 0);
-      const spread = now < Number(state.spreadUntil || 0) || Number(state.weaponLevel || 1) >= 2;
-      state.bullets.push({ x: state.shipX, y, vx: 0, vy: -7.1, strong: Number(state.weaponLevel || 1) >= 3 });
-      if (spread) {
-        state.bullets.push({ x: state.shipX - 8, y: y + 4, vx: -1.15, vy: -6.55 });
-        state.bullets.push({ x: state.shipX + 8, y: y + 4, vx: 1.15, vy: -6.55 });
+      const weaponLevel = Math.max(1, Number(state.weaponLevel || 1) || 1);
+      const spreadLevel = Math.max(0, Number(state.spreadLevel || 0) || 0);
+      const strong = weaponLevel >= 3 || now < Number(state.weaponUntil || 0);
+      const bullets = [{ x: state.shipX, y, vx: 0, vy: -7.35, strong }];
+      const sideCount = Math.min(4, spreadLevel);
+      for (let i = 1; i <= sideCount; i += 1) {
+        const vx = 0.72 + i * 0.48;
+        const vy = -7.05 + i * 0.10;
+        bullets.push({ x: state.shipX - 7 * i, y: y + 3 * i, vx: -vx, vy, strong: strong || i >= 3 });
+        bullets.push({ x: state.shipX + 7 * i, y: y + 3 * i, vx, vy, strong: strong || i >= 3 });
       }
-      if (Number(state.weaponLevel || 1) >= 3) {
-        state.bullets.push({ x: state.shipX - 15, y: y + 8, vx: -.45, vy: -6.9, strong: true });
-        state.bullets.push({ x: state.shipX + 15, y: y + 8, vx: .45, vy: -6.9, strong: true });
+      if (weaponLevel >= 4) {
+        bullets.push({ x: state.shipX - 16, y: y + 8, vx: -.28, vy: -7.65, strong: true });
+        bullets.push({ x: state.shipX + 16, y: y + 8, vx: .28, vy: -7.65, strong: true });
       }
-      state.shotCooldown = rapid ? 62 : 115;
+      state.bullets.push(...bullets);
+      state.shotCooldown = rapid ? Math.max(36, 72 - Number(state.rapidLevel || 0) * 8) : 115;
     };
     let shooterDrag = null;
     const pointerMove = (ev) => {
@@ -2260,11 +2268,11 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       ctx.restore();
     };
     const drawPower = (p, colors) => {
-      const color = p.type === 'shield' ? colors.cyan : p.type === 'rapid' ? colors.gold : p.type === 'score' ? colors.soft : colors.accent;
+      const color = p.type === 'shield' ? colors.cyan : p.type === 'rapid' ? colors.gold : p.type === 'nuke' ? colors.danger : p.type === 'slow' ? colors.purple : p.type === 'double' ? colors.soft : p.type === 'score' ? colors.soft : colors.accent;
       ctx.save(); ctx.fillStyle = color; ctx.shadowColor = color; ctx.shadowBlur = 14;
       ctx.beginPath(); ctx.moveTo(p.x, p.y - 12); ctx.lineTo(p.x + 12, p.y); ctx.lineTo(p.x, p.y + 12); ctx.lineTo(p.x - 12, p.y); ctx.closePath(); ctx.fill();
       ctx.shadowBlur = 0; ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.font = '900 9px system-ui'; ctx.textAlign = 'center';
-      ctx.fillText(p.type === 'spread' ? '3' : p.type === 'rapid' ? 'R' : p.type === 'shield' ? 'S' : p.type === 'laser' ? 'L' : '+', p.x, p.y + 3);
+      ctx.fillText(p.type === 'spread' ? '+' : p.type === 'rapid' ? 'R' : p.type === 'shield' ? 'S' : p.type === 'laser' ? 'L' : p.type === 'nuke' ? '☢' : p.type === 'slow' ? 'T' : p.type === 'double' ? '2' : '+', p.x, p.y + 3);
       ctx.restore();
     };
     const draw = () => {
@@ -2280,8 +2288,10 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       state.enemies.forEach((e) => drawEnemy(e, colors));
       drawShip(state.shipX || w / 2, shipY, colors);
       const active = [];
-      if (Date.now() < Number(state.spreadUntil || 0)) active.push('vícesměr');
+      if (Date.now() < Number(state.spreadUntil || 0)) active.push('vícesměr +' + String(Number(state.spreadLevel || 0) || 1));
       if (Date.now() < Number(state.rapidUntil || 0)) active.push('rychlopalba');
+      if (Date.now() < Number(state.timeSlowUntil || 0)) active.push('časový zpomalovač');
+      if (Date.now() < Number(state.doubleUntil || 0)) active.push('2× body');
       if (Date.now() < Number(state.shieldUntil || 0)) active.push('štít');
       if (active.length) { ctx.fillStyle = 'rgba(0,0,0,.42)'; ctx.fillRect(8, 8, Math.min(w - 16, 210), 24); ctx.fillStyle = colors.soft; ctx.font = '800 11px system-ui'; ctx.fillText(active.join(' · '), 18, 24); }
       if (state.over) { ctx.fillStyle = 'rgba(0,0,0,.62)'; ctx.fillRect(0, 0, w, h); ctx.fillStyle = colors.soft; ctx.font = '20px system-ui'; ctx.textAlign = 'center'; ctx.fillText('Konec hry', w / 2, h / 2 - 10); ctx.font = '12px system-ui'; ctx.fillText(`${state.score} bodů · ${state.hits || 0} zásahů`, w / 2, h / 2 + 16); }
@@ -2311,8 +2321,9 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         state.bullets.forEach((b) => { b.x += (b.vx || 0) * dt / 16; b.y += b.vy * dt / 16; });
         state.enemies.forEach((e) => {
           e.wave = (e.wave || 0) + dt / 620;
-          e.x += ((e.vx || 0) + (e.kind === 'fighter' ? Math.sin(e.wave) * .45 : 0)) * dt / 16;
-          e.y += e.vy * dt / 16;
+          const slowMul = Date.now() < Number(state.timeSlowUntil || 0) ? 0.58 : 1;
+          e.x += ((e.vx || 0) + (e.kind === 'fighter' ? Math.sin(e.wave) * .45 : 0)) * slowMul * dt / 16;
+          e.y += e.vy * slowMul * dt / 16;
           if (e.x < (e.r || 14)) e.vx = Math.abs(e.vx || .4);
           if (e.x > w - (e.r || 14)) e.vx = -Math.abs(e.vx || .4);
         });
@@ -2338,9 +2349,9 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
               e.hp -= b.strong ? 2 : 1;
               if (e.hp <= 0) {
                 state.enemies.splice(i, 1);
-                state.score += Number(e.score || 20);
+                state.score += Number(e.score || 20) * (Date.now() < Number(state.doubleUntil || 0) ? 2 : 1);
                 state.hits = (state.hits || 0) + 1;
-                if (e.boss) { state.bossKills = Number(state.bossKills || 0) + 1; state.weaponLevel = Math.min(3, Number(state.weaponLevel || 1) + 1); spawnPower(); }
+                if (e.boss) { state.bossKills = Number(state.bossKills || 0) + 1; state.weaponLevel = Math.min(6, Number(state.weaponLevel || 1) + 1); spawnPower(); }
               }
               return false;
             }
@@ -2350,6 +2361,8 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       }
       const hud = body.querySelector('.arcadeHud');
       if (hud) hud.innerHTML = `${gamesStatLine('Skóre', state.score)}${gamesStatLine('Vlna', state.bestWave || 1)}${gamesStatLine('Čas', Math.floor((state.survivedMs || 0) / 1000))}`;
+      const endOverlay = body.querySelector('#shooterEndOverlay');
+      if (endOverlay) { endOverlay.hidden = !state.over; const txt = endOverlay.querySelector('[data-shooter-end-text]'); if (txt) txt.textContent = `Score ${state.score} · vlna ${state.bestWave || 1} · boss ${state.bossKills || 0}`; }
       draw();
       state.raf = rakGameRequestFrame(state, loop);
     };
@@ -2364,9 +2377,10 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function initBricks(state) { state.bricks = []; for (let r = 0; r < 6; r += 1) { for (let c = 0; c < 8; c += 1) state.bricks.push({ x: c, y: r, alive: true, hp: r > 3 ? 2 : 1 }); } }
   function renderBrick(body) {
     const state = getState('brick', () => { const s2 = brickState(); initBricks(s2); return s2; });
-    const stage = createCanvas(body, 'clamp(370px, 56dvh, 560px)');
+    const stage = createCanvas(body, 'clamp(420px, 66dvh, 640px)');
     if (stage.wrap) stage.wrap.classList.add('isFullGame', 'brickNarrowCanvas', 'arcadeNoPageScroll');
-    body.insertAdjacentHTML('afterbegin', `<div class="arcadeHud arcadeHudWide3 arcadeHudSingleLine">${gamesStatLine('Skóre', state.score)}${gamesStatLine('Cihly', state.bricks.filter(b => b.alive).length)}${gamesStatLine('Combo', state.bestCombo || 0)}</div><div class="arcadeControls arcadeOnlyRestart"><button type="button" class="gameControlBtn" id="brickRestartBtn">Nová hra</button></div>`);
+    body.insertAdjacentHTML('afterbegin', `<div class="arcadeHud arcadeHudWide3 arcadeHudSingleLine">${gamesStatLine('Skóre', state.score)}${gamesStatLine('Cihly', state.bricks.filter(b => b.alive).length)}${gamesStatLine('Combo', state.bestCombo || 0)}</div>`);
+    if (stage.wrap) stage.wrap.insertAdjacentHTML('beforeend', `<div class="arcadeGameOverlay arcadeEndOverlay" id="brickEndOverlay" hidden><div class="arcadeOverlayCard"><strong>Konec hry</strong><span data-brick-end-text>Score 0</span><button type="button" class="gameControlBtn" id="brickRestartBtn">Nová hra</button></div></div>`);
     const brickStage = body.querySelector('.arcadeStage');
     if (brickStage) brickStage.insertAdjacentHTML('afterend', gamesTop3Block('brick', 'bodů', 5));
     const canvas = stage.canvas, ctx = stage.ctx;
@@ -2481,6 +2495,8 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       }
       const hud = body.querySelector('.arcadeHud');
       if (hud) hud.innerHTML = `${gamesStatLine('Skóre', state.score)}${gamesStatLine('Cihly', state.bricks.filter(b => b.alive).length)}${gamesStatLine('Combo', state.bestCombo || 0)}`;
+      const endOverlay = body.querySelector('#brickEndOverlay');
+      if (endOverlay) { endOverlay.hidden = !state.over; const txt = endOverlay.querySelector('[data-brick-end-text]'); if (txt) txt.textContent = `${state.score} bodů · combo ${state.bestCombo || 0}`; }
       draw();
       state.raf = rakGameRequestFrame(state, loop);
     };
@@ -2503,9 +2519,10 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   }
   function renderDoodle(body) {
     const state = getState('doodle', () => { const s2 = doodleState(); initDoodle(s2); return s2; });
-    const stage = createCanvas(body, 'clamp(330px, 46dvh, 500px)');
+    const stage = createCanvas(body, 'clamp(420px, 66dvh, 640px)');
     if (stage.wrap) stage.wrap.classList.add('isFullGame', 'arcadeNoPageScroll', 'doodleCanvasWrap');
-    body.insertAdjacentHTML('afterbegin', `<div class="arcadeHud arcadeHudWide3 arcadeHudSingleLine">${gamesStatLine('Skóre', state.score)}${gamesStatLine('Výška', Math.floor(state.height || 0))}${gamesStatLine('Skoky', state.jumps || 0)}</div><div class="arcadeControls arcadeOnlyRestart"><button type="button" class="gameControlBtn" id="doodleRestartBtn">Nová hra</button></div>`);
+    body.insertAdjacentHTML('afterbegin', `<div class="arcadeHud arcadeHudWide3 arcadeHudSingleLine">${gamesStatLine('Skóre', state.score)}${gamesStatLine('Výška', Math.floor(state.height || 0))}${gamesStatLine('Skoky', state.jumps || 0)}</div>`);
+    if (stage.wrap) stage.wrap.insertAdjacentHTML('beforeend', `<div class="arcadeGameOverlay arcadeEndOverlay" id="doodleEndOverlay" hidden><div class="arcadeOverlayCard"><strong>Konec skoku</strong><span data-doodle-end-text>Score 0</span><button type="button" class="gameControlBtn" id="doodleRestartBtn">Nová hra</button></div></div>`);
     const doodleWrap = body.querySelector('.doodleCanvasWrap');
     if (doodleWrap) doodleWrap.insertAdjacentHTML('afterend', gamesTop3Block('doodle', 'bodů', 5).replace('gamesTop5ScrollCard', 'gamesTop5ScrollCard arcadeTopScoreTight'));
     const canvas = stage.canvas, ctx = stage.ctx;
@@ -2596,6 +2613,8 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       }
       const hud = body.querySelector('.arcadeHud');
       if (hud) hud.innerHTML = `${gamesStatLine('Skóre', state.score)}${gamesStatLine('Výška', Math.floor(state.height || 0))}${gamesStatLine('Skoky', state.jumps || 0)}`;
+      const endOverlay = body.querySelector('#doodleEndOverlay');
+      if (endOverlay) { endOverlay.hidden = !state.over; const txt = endOverlay.querySelector('[data-doodle-end-text]'); if (txt) txt.textContent = `${state.score} bodů · výška ${Math.floor(state.height || 0)}`; }
       draw();
       state.raf = rakGameRequestFrame(state, loop);
     };
@@ -2615,7 +2634,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   }
   function renderBubble(body) {
     const state = getState('bubble', () => { const s2 = bubbleState(); initBubble(s2); return s2; });
-    const stage = createCanvas(body, 'clamp(330px, 46dvh, 500px)');
+    const stage = createCanvas(body, 'clamp(420px, 66dvh, 640px)');
     if (stage.wrap) stage.wrap.classList.add('isFullGame', 'arcadeNoPageScroll', 'bubbleCanvasWrap');
     body.insertAdjacentHTML('afterbegin', `<div class="arcadeHud arcadeHudWide3 arcadeHudSingleLine">${gamesStatLine('Skóre', state.score)}${gamesStatLine('Combo', state.bestCombo || 0)}${gamesStatLine('Střely', state.shots || 0)}</div><div class="arcadeControls arcadeOnlyRestart"><button type="button" class="gameControlBtn" id="bubbleRestartBtn">Nová hra</button></div>`);
     const bubbleWrap = body.querySelector('.bubbleCanvasWrap');
@@ -2661,8 +2680,21 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     canvas.addEventListener('pointercancel', pointerEnd);
     const occupied = () => state.grid.some(row => row.some(Boolean));
     const findSlot = (row, col) => {
-      const candidates = [[row, col], [row, col - 1], [row, col + 1], [row - 1, col], [row + 1, col], [row - 1, col - 1], [row - 1, col + 1], [row + 1, col - 1], [row + 1, col + 1]];
-      for (const [r, c] of candidates) if (r >= 0 && c >= 0 && r < state.rows && c < state.cols && !state.grid[r][c]) return [r, c];
+      const rect = canvas.getBoundingClientRect();
+      const cell = Math.max(1, Math.floor((rect.width || 320) / state.cols));
+      const sx = state.shot ? Number(state.shot.x || 0) : ((col + .5) * cell);
+      const sy = state.shot ? Number(state.shot.y || 0) : ((row + .5) * cell + 12);
+      const candidates = [];
+      for (let rr = row - 2; rr <= row + 2; rr += 1) {
+        for (let cc = col - 2; cc <= col + 2; cc += 1) {
+          if (rr < 0 || cc < 0 || rr >= state.rows || cc >= state.cols || state.grid[rr][cc]) continue;
+          const cx = cc * cell + cell / 2;
+          const cy = rr * cell + cell / 2 + 12;
+          candidates.push({ r: rr, c: cc, d: Math.hypot(sx - cx, sy - cy) + Math.abs(rr - row) * 4 + Math.abs(cc - col) * 2 });
+        }
+      }
+      candidates.sort((a, b) => a.d - b.d);
+      if (candidates.length) return [candidates[0].r, candidates[0].c];
       return [clamp(row, 0, state.rows - 1), clamp(col, 0, state.cols - 1)];
     };
     const bubbleDirs = [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
@@ -2841,9 +2873,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     }).join('')).join('');
     const selectedRow = selectedIdx >= 0 ? Math.floor(selectedIdx / 9) : 0;
     const selectedCol = selectedIdx >= 0 ? selectedIdx % 9 : 0;
-    const picker = selectedIdx >= 0 && pick.puzzle[selectedRow][selectedCol] === '0'
-      ? `<div class="sudokuNumberPicker" style="--sudokuRow:${selectedRow};--sudokuCol:${selectedCol};">${[1,2,3,4,5,6,7,8,9].map(n => `<button type="button" data-sudoku-num="${n}">${n}</button>`).join('')}<button type="button" data-sudoku-num="clear">×</button></div>`
-      : '';
+    const picker = `<div class="sudokuNumberPicker sudokuNumberPickerDocked${selectedIdx >= 0 ? ' isActive' : ''}">${[1,2,3,4,5,6,7,8,9].map(n => `<button type="button" data-sudoku-num="${n}">${n}</button>`).join('')}<button type="button" data-sudoku-num="clear">×</button></div>`;
     body.innerHTML = `
       <div class="arcadeStage sudokuGameStage">
         <div class="arcadeHud arcadeHudSingleLine sudokuHud">
@@ -2851,7 +2881,8 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
           ${gamesStatLine('Čas', fmtTime(state.startAt ? Date.now() - state.startAt : 0))}
           ${gamesStatLine('Chyby', state.mistakes)}
         </div>
-        <div class="arcadeBoard grid-9 arcadePanel arcadeLogicBoard arcadeSudokuPaper" id="sudokuGrid">${gridHtml}${picker}</div>
+        <div class="arcadeBoard grid-9 arcadePanel arcadeLogicBoard arcadeSudokuPaper" id="sudokuGrid">${gridHtml}</div>
+        ${picker}
         <div class="arcadeControls sudokuGameControls sudokuGameControlsSingle"><button type="button" class="gameControlBtn" data-sudoku-restart="1">Nová hra</button></div>
       </div>`;
     const grid = body.querySelector('#sudokuGrid');
@@ -2931,7 +2962,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         <div class="arcadeHud arcadeHudSingleLine minesHud">${gamesStatLine('Score', score)}${gamesStatLine('Otevřeno', state.opened)}${gamesStatLine('Čas', fmtTime(Date.now() - state.startAt))}</div>
         <div class="arcadeBoard grid-9 arcadePanel arcadeLogicBoard arcadeMinesBoard" id="minesGrid">${cells.join('')}</div>
         <div class="arcadeControls"><button type="button" class="gameControlBtn" data-mines="restart">Nová hra</button></div>
-        ${gamesTop3Block('mines', 'ms', 5).replace('gamesTop5ScrollCard', 'gamesTop5ScrollCard arcadeTopScoreTight')}
+        ${gamesTop3Block('mines', 'bodů', 5).replace('gamesTop5ScrollCard', 'gamesTop5ScrollCard arcadeTopScoreTight')}
       </div>`;
     const grid = body.querySelector('#minesGrid');
     if (grid) {
@@ -2991,8 +3022,22 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     body.querySelector('[data-mines="restart"]').addEventListener('click', () => { const s = minesState(); initMines(s); window.app.gamesArcade['mines'] = s; renderMines(body); });
     if (state.over || state.win) {
       const time = Date.now() - state.startAt;
-      if (state.win && !state._saved) { state._saved = true; gamesRecordStat('mines', { completed: true, plays: 1, bestTimeMs: time, bestScore: encodePoints('mines', time), opened: state.opened, lastResult: fmtTime(time) }); }
-      const msg = state.win ? `<strong>Vyhrál jsi!</strong> Čas ${fmtTime(time)}.` : `<strong>Bum!</strong> Narazil jsi na minu.`;
+      const finalScore = Math.max(0, state.opened * 10 - (state.over && !state.win ? 30 : 0));
+      if (!state._saved) {
+        state._saved = true;
+        const timeBonus = state.win ? Math.max(0, 900 - Math.floor(time / 1000)) : 0;
+        const tableScore = finalScore + timeBonus + (state.win ? 250 : 0);
+        gamesRecordStat('mines', {
+          completed: true,
+          plays: 1,
+          bestTimeMs: state.win ? time : 0,
+          bestScore: tableScore,
+          score: tableScore,
+          opened: state.opened,
+          lastResult: state.win ? (String(tableScore) + ' bodů / ' + fmtTime(time)) : (String(finalScore) + ' bodů')
+        });
+      }
+      const msg = state.win ? `<strong>Vyhrál jsi!</strong> Čas ${fmtTime(time)}.` : `<strong>Bum!</strong> Score ${finalScore} bodů.`;
       const controls = body.querySelector('.arcadeControls');
       if (controls) controls.insertAdjacentHTML('beforebegin', `<div class="arcadeBar arcadePanel uPad10x12"><div class="arcadeStatus">${msg}</div></div>`);
     }
@@ -3000,10 +3045,10 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   }
 
   // Memory -----------------------------------------------------------------
-  const MEMORY_PAIRS = ['🍀','⚡','⭐','🌙','🔥','💎','🎯','🧠','🚗','🌴','🛠️','🪐'];
-  const MEMORY_BONUS = '🎁';
+  const MEMORY_PAIRS = ['🍀','⚡','⭐','🌙','🔥','💎','🎯','🧠','🚗','🌴','🛠️','🪐','🚀','🍒','🧩','🐺','🏆','🎲'];
+  const MEMORY_BONUS = '';
   function memoryState() { return { deck: [], flipped: [], matched: new Set(), moves: 0, startAt: Date.now(), over: false, lock: false, bestTimeMs: 0 }; }
-  function initMemory(state) { state.deck = shuffle(MEMORY_PAIRS.concat(MEMORY_PAIRS).concat([MEMORY_BONUS])); state.flipped = []; state.matched = new Set(); state.moves = 0; state.startAt = Date.now(); state.over = false; state.lock = false; }
+  function initMemory(state) { state.deck = shuffle(MEMORY_PAIRS.concat(MEMORY_PAIRS)); state.flipped = []; state.matched = new Set(); state.moves = 0; state.startAt = Date.now(); state.over = false; state.lock = false; }
   function renderMemory(body) {
     const state = getState('memory', () => { const s = memoryState(); initMemory(s); return s; });
     const cells = state.deck.map((sym, i) => {
@@ -3014,10 +3059,9 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     body.innerHTML = `
       <div class="arcadeStage memoryStage">
         <div class="arcadeHud arcadeHudSingleLine memoryHud">${gamesStatLine('Čas', fmtTime(Date.now() - state.startAt))}${gamesStatLine('Pohyby', state.moves)}${gamesStatLine('Páry', Math.floor(state.matched.size / 2))}</div>
-        <div class="arcadeGridList grid-5 arcadePanel arcadeMemoryBoard arcadeMemoryBoardLarge" id="memoryGrid">${cells}</div>
+        <div class="arcadeGridList grid-6 arcadePanel arcadeMemoryBoard arcadeMemoryBoardLarge" id="memoryGrid">${cells}</div>
         <div class="arcadeControls"><button type="button" class="gameControlBtn" data-memory="restart">Nová hra</button></div>
-        ${gamesTop3Block('memory', 'ms', 5).replace('gamesTop5ScrollCard', 'gamesTop5ScrollCard arcadeTopScoreTight')}
-      </div>`;
+        </div>`;
     const grid = body.querySelector('#memoryGrid');
     const finishIfDone = () => {
       if (state.matched.size >= state.deck.length && !state.over) {
@@ -3467,7 +3511,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     const allHot = EXTRA_GAMES.length === 0;
     const completedOnlyGuard = typeof window.gamesRecordStat === 'function';
     return {
-      version: 'v.1.1 (702)',
+      version: 'v.1.1 (703)',
       ok: !missingMeta.length && !missingRenderer.length && allHot && completedOnlyGuard,
       totalGames: ids.length,
       coreGames: ids,

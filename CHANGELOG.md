@@ -1,4 +1,4 @@
-## v.1.1 (702)
+## v.1.1 (703)
 
 - Hry: společný QA/sjednocovací build pro všechny hotové hry najednou, bez přidávání dalších her.
 - Sjednocené horní HUDy, aby se score/čas/pohyby/ostatní údaje držely v kompaktních řádcích i na menších mobilech.
@@ -6,7 +6,7 @@
 - Přidané finální touch-action/overscroll pojistky pro canvas a logické herní plochy, aby se při hraní nechtěně nehýbala stránka.
 - Doladěné společné vizuální pojistky pro Sudoku číselník, Miny vlajky, Pexeso karty a Bomberman zdi/truhly.
 - Přidána interní funkce runArcadeGamesFullAudit()/getArcadeGamesFullAudit() pro rychlou kontrolu napojení všech hlavních her.
-- Verze sjednocena na v.1.1 (702), cache na v1.1-702 a Supabase realtime kanál na rak-public-live-v702.
+- Verze sjednocena na v.1.1 (703), cache na v1.1-703 a Supabase realtime kanál na rak-public-live-v703.
 
 ## v.1.1 (701)
 

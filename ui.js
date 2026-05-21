@@ -3979,7 +3979,7 @@ function renderGamesProfileStatus() {
   if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(metaEl, metaText, 'gamesProfileStatusMeta');
   else metaEl.textContent = metaText;
   if (rankEl) {
-    // v.1.1 (702): jméno/rank zůstává oddělené; herní build přidal společný QA průchod.
+    // v.1.1 (703): jméno/rank zůstává oddělené; herní build přidal společný QA průchod.
     rankEl.innerHTML = '<span class="gamesProfileRankValue">' + escapeHtml(rankText) + '</span>';
     rankEl.setAttribute('data-player-name', nextName);
     rankEl.disabled = false;
@@ -4021,7 +4021,7 @@ function buildAppHistoryHtml(versionText) {
       range: versionText,
       title: 'Aktuální build',
       lines: [
-        'Build v.1.1 (702) sjednocuje všechny hotové hry najednou: HUDy, dotykové chování, Top výsledky ve scroll boxech, konečné overlaye, theme/pozadí a interní herní QA audit.',
+        'Build v.1.1 (703) sjednocuje všechny hotové hry najednou: HUDy, dotykové chování, Top výsledky ve scroll boxech, konečné overlaye, theme/pozadí a interní herní QA audit.',
         'Série v.1.1 650–702 dotáhla Piškvorky, online pozvánky, PWA launch handler, všechny hlavní hry, herní profily, reporty chyb, theme polish, těžší/chytřejší achievementy a společný herní QA průchod.',
         'Sekce „O aplikaci“ je nově stručnější: detailní změny zůstávají v changelogu a tady se historie drží po větších blocích.',
         'Stabilizační audity, Supabase guardy, Láďův režim a finální readiness kontroly zůstávají součástí diagnostiky.'
@@ -7562,7 +7562,7 @@ function gamesFitFlapSize() {
   const vp = gamesViewportSize();
   const compact = gamesIsCompactMode();
   const width = Math.max(320, Math.min(compact ? 640 : 620, vp.width - (compact ? 10 : 14)));
-  const height = Math.max(compact ? 330 : 300, Math.min(compact ? 560 : 520, vp.height - (compact ? 128 : 154)));
+  const height = Math.max(compact ? 360 : 340, Math.min(compact ? 610 : 590, vp.height - (compact ? 88 : 110)));
   return {
     width: Math.round(width),
     height: Math.round(height)
@@ -7977,7 +7977,7 @@ function renderGameSnake() {
   if (!state.food || !state.snake || !state.snake.length) snakePlaceFood(state);
   if (!Array.isArray(state.queue)) state.queue = [];
   const compact = gamesIsCompactMode();
-  const boardSize = gamesFitSquareSize({ min: compact ? 252 : 278, max: Math.min(compact ? 540 : 500, gamesViewportSize().width - (compact ? 14 : 20)), reserve: compact ? 164 : 178, shellPad: compact ? 6 : 10 });
+  const boardSize = gamesFitSquareSize({ min: compact ? 252 : 278, max: Math.min(compact ? 540 : 500, gamesViewportSize().width - (compact ? 14 : 20)), reserve: compact ? 118 : 132, shellPad: compact ? 6 : 10 });
   const best = snakeGetBestStats();
   body.innerHTML = [
     '<div class="gamesGamePanel gamesSnakePanel snakeRedesignPanel">',
@@ -7995,9 +7995,6 @@ function renderGameSnake() {
     '        <button type="button" class="gameControlBtn snakeNewBtn" id="snakeOverlayNewBtn">Nová hra</button>',
     '      </div>',
     '    </div>',
-    '  </div>',
-    '  <div class="snakeControlsRow">',
-    '    <button type="button" class="gameControlBtn snakeNewBtn" id="snakeNewBtn">Nová hra</button>',
     '  </div>',
     '  <div class="srOnly" id="snakeLiveStatus" aria-live="polite">Snake běží.</div>',
     gamesTop3Block('snake', 'bodů', 10),
@@ -8041,7 +8038,6 @@ function renderGameSnake() {
     }
     snakeSetDirection(dir);
   };
-  body.querySelector('#snakeNewBtn')?.addEventListener('click', resetSnake);
   body.querySelector('#snakeOverlayNewBtn')?.addEventListener('click', resetSnake);
   gamesBindSwipeControl(board || body, handleTurn, { minDistance: 10, lockDistance: 3, maxTapTime: 220, axisRatio: 1.35, fireOnMove: true });
   board?.addEventListener('click', () => {
@@ -8376,8 +8372,10 @@ function flapSetOverlay(state) {
   }
   overlay.hidden = false;
   const title = state.over ? 'Konec jízdy' : 'Klepni a letíš';
-  const desc = state.over ? ('Score ' + String(state.score || 0) + ' · klepni pro novou hru') : 'Drž rytmus klepáním do plochy.';
-  overlay.innerHTML = '<div class="flapOverlayCard"><strong>' + escapeHtml(title) + '</strong><span>' + escapeHtml(desc) + '</span></div>';
+  const desc = state.over ? ('Score ' + String(state.score || 0) + ' · dokončená jízda') : 'Drž rytmus klepáním do plochy.';
+  overlay.innerHTML = state.over
+    ? '<div class="flapOverlayCard"><strong>' + escapeHtml(title) + '</strong><span>' + escapeHtml(desc) + '</span><button type="button" class="gameControlBtn" id="flapOverlayNewBtn">Nová hra</button></div>'
+    : '<div class="flapOverlayCard"><strong>' + escapeHtml(title) + '</strong><span>' + escapeHtml(desc) + '</span></div>';
 }
 
 function flapUpdateScoreUI(state) {
@@ -8507,9 +8505,6 @@ function renderGameFlap() {
     '      <div class="flapOverlay" id="flapOverlay"></div>',
     '    </div>',
     '  </div>',
-    '  <div class="gameControls gameFlapControls">',
-    '    <button type="button" class="gameControlBtn" id="flapRestartBtn">Nová hra</button>',
-    '  </div>',
     gamesTop3Block('flap', 'bodů', 10),
     '</div>'
   ].join('');
@@ -8520,7 +8515,7 @@ function renderGameFlap() {
     scoreEl: body.querySelector('#flapScore'),
     statusEl: body.querySelector('#flapStatus'),
     bestEl: body.querySelector('#flapBest'),
-    restartBtn: body.querySelector('#flapRestartBtn')
+    restartBtn: body.querySelector('#flapOverlayNewBtn')
   };
   if (state.refs.board) {
     state.refs.board.style.setProperty('width', fit.width + 'px', 'important');
@@ -8537,8 +8532,11 @@ function renderGameFlap() {
       flapTap();
     }, { passive: false });
   }
-  if (state.refs.restartBtn) {
-    state.refs.restartBtn.addEventListener('click', (ev) => {
+  if (state.refs.overlay && !state.refs.overlay.dataset.restartBound) {
+    state.refs.overlay.dataset.restartBound = '1';
+    state.refs.overlay.addEventListener('click', (ev) => {
+      const btn = ev.target && ev.target.closest ? ev.target.closest('#flapOverlayNewBtn') : null;
+      if (!btn) return;
       ev.preventDefault();
       flapResetState(state);
       flapSyncCanvas(state, true);
