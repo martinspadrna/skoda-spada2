@@ -3959,7 +3959,7 @@ function buildAppHistoryHtml(versionText) {
       range: versionText,
       title: 'Aktuální build',
       lines: [
-        'Build v.1.1 (697) předělává Bomberman mini na bludiště se 4 příšerkami, bombami, bednami a upgrady a Daily Challenge střídá hry podle dne.',
+        'Build v.1.1 (698) vrací v herním menu čistý horní profil se jménem a rankem vedle sebe a zvýrazňuje zdi/truhly v Bombermanovi.',
         'Série v.1.1 650–694 dotáhla Piškvorky, online pozvánky, PWA launch handler, 2048/Snake/Flappy Car/Aim/Reaction/Tetris/Space Shooter/Brick Breaker/Doodle/Bubble/Sudoku/Miny/Pexeso mezi hotové hry, herní profily, theme polish a těžší/chytřejší achievementy.',
         'Sekce „O aplikaci“ je nově stručnější: detailní změny zůstávají v changelogu a tady se historie drží po větších blocích.',
         'Stabilizační audity, Supabase guardy, Láďův režim a finální readiness kontroly zůstávají součástí diagnostiky.'

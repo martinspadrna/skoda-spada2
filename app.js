@@ -1,4 +1,4 @@
-// v.1.1 (697) – Bomberman mini: bludiště, 4 příšerky, bomby, upgrady a denní rotace her.
+// v.1.1 (698) – Hry: jméno + rank v horním profilu a výraznější zdi/truhly v Bombermanovi.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

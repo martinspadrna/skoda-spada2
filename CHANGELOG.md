@@ -1,3 +1,8 @@
+## v.1.1 (698)
+- Hry: horní profil v menu je zjednodušený zpět na jméno vlevo a klikací rank vpravo; průběh k dalšímu ranku zůstává dostupný v tabulce po klepnutí na rank.
+- Bomberman mini: zdi a truhly/bedny jsou výraznější, čitelnější a mají pevnější kontrast v herním bludišti.
+- Verze sjednocena na v.1.1 (698), cache na v1.1-698 a Supabase realtime kanál na rak-public-live-v698.
+
 ## v.1.1 (697)
 - Miny: dlouhé podržení na poli nově přidá nebo sundá vlajku, krátký klik dál otevírá pole.
 - Vlajka má výrazné zvýraznění přímo v herní mřížce a neotevírá pole omylem.
