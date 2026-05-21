@@ -8250,3 +8250,135 @@ body.gamesOpen #games .arcadeSudokuCell.isWrong,
   box-shadow:none !important;
   outline:none !important;
 }
+
+/* v.1.1 (707) – Flappy průchodnost overlaye, Reaction výška, Sudoku číselník, Pexeso obtížnosti, Rozpisy fold sekce */
+body.gamesOpen #games .flapOverlay{
+  pointer-events:none !important;
+}
+body.gamesOpen #games .flapOverlay.isGameOver .flapOverlayCard,
+body.gamesOpen #games .flapOverlay.isGameOver .flapOverlayCard *,
+body.gamesOpen #games .flapOverlay #flapOverlayNewBtn{
+  pointer-events:auto !important;
+}
+body.gamesOpen #games .flapOverlay.isStartHint .flapOverlayCard{
+  pointer-events:none !important;
+}
+body.gamesOpen #games .arcadeReactionBoard,
+#games .arcadeReactionBoard{
+  min-height:clamp(330px, 54dvh, 520px) !important;
+}
+body.gamesOpen #games .sudokuNumberPickerTwoRows,
+#games .sudokuNumberPickerTwoRows{
+  grid-template-columns:repeat(5,50px) !important;
+  gap:8px !important;
+  padding:10px !important;
+  width:max-content !important;
+  max-width:calc(100% - 12px) !important;
+  margin:4px auto 0 !important;
+  justify-content:center !important;
+}
+body.gamesOpen #games .sudokuNumberPickerTwoRows button,
+#games .sudokuNumberPickerTwoRows button{
+  width:50px !important;
+  min-width:50px !important;
+  height:48px !important;
+  min-height:48px !important;
+  font-size:18px !important;
+}
+body.gamesOpen #games .sudokuNumberPickerTwoRows .sudokuClearBtn,
+#games .sudokuNumberPickerTwoRows .sudokuClearBtn{
+  grid-column:5 !important;
+}
+#games .memoryMenuStage{gap:10px !important;}
+#games .memoryMenuCard{display:grid !important;gap:12px !important;}
+#games .memoryDifficultyMenu{display:grid !important;grid-template-columns:repeat(3,minmax(0,1fr)) !important;gap:8px !important;}
+#games .memoryDifficultyBtn{display:grid !important;gap:3px !important;place-items:center !important;min-height:58px !important;}
+#games .memoryDifficultyBtn span{font-size:10px !important;color:color-mix(in srgb,var(--soft,#e7fff0) 70%,transparent) !important;}
+#games .arcadeMemoryBoard.grid-4{grid-template-columns:repeat(4,minmax(0,1fr)) !important;max-width:min(100%,360px) !important;margin-inline:auto !important;gap:9px !important;}
+#games .arcadeMemoryBoard.grid-8{grid-template-columns:repeat(8,minmax(0,1fr)) !important;max-width:min(100%,420px) !important;margin-inline:auto !important;gap:4px !important;padding:6px !important;}
+#games .arcadeMemoryBoard.grid-8 .arcadeMemoryCard{min-height:36px !important;font-size:clamp(17px,4.9vw,25px) !important;border-radius:11px !important;}
+#games .arcadeMemoryBoard.grid-4 .arcadeMemoryCard{min-height:64px !important;font-size:clamp(30px,10vw,44px) !important;}
+.appMenuFoldSection.adminRotationFold{
+  margin-top:12px !important;
+  border:1px solid var(--rakGlassStroke,rgba(255,255,255,.14)) !important;
+  border-radius:22px !important;
+  background:var(--rakGlassCardBg,rgba(255,255,255,.06)) !important;
+  overflow:hidden !important;
+}
+.appMenuFoldSection.adminRotationFold > summary{
+  cursor:pointer !important;
+  list-style:none !important;
+  padding:12px 14px !important;
+  font-weight:900 !important;
+  color:var(--soft,#e7fff0) !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+}
+.appMenuFoldSection.adminRotationFold > summary::-webkit-details-marker{display:none !important;}
+.appMenuFoldSection.adminRotationFold > summary::after{content:'⌄';font-size:18px;line-height:1;opacity:.8;transform:rotate(0deg);transition:transform .18s ease;}
+.appMenuFoldSection.adminRotationFold:not([open]) > summary::after{transform:rotate(-90deg);}
+.appMenuFoldSection.adminRotationFold .tableWrap{margin:0 !important;border-top:1px solid rgba(255,255,255,.08) !important;border-radius:0 !important;}
+.appMenuFoldSection.adminRotationFold .smallText{padding:10px 12px 0 !important;}
+
+
+/* v.1.1 (707) – Pexeso menu polish + běžné Rozpisy rozbalovací sekce */
+#games .memoryMenuCard .arcadeStatus{
+  width:100% !important;
+  box-sizing:border-box !important;
+  padding-inline:16px !important;
+  text-align:center !important;
+  overflow:visible !important;
+}
+#games .memoryMenuCard .arcadeStatus strong{
+  display:block !important;
+  width:100% !important;
+  text-align:center !important;
+}
+#games .memoryDifficultyBtn.isActive{
+  border-color:color-mix(in srgb,var(--accent,#39ff14) 88%,white 12%) !important;
+  background:linear-gradient(135deg,color-mix(in srgb,var(--accent,#39ff14) 28%,rgba(12,18,32,.78)),rgba(255,255,255,.08)) !important;
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--accent,#39ff14) 55%,transparent),0 14px 34px rgba(0,0,0,.28) !important;
+  transform:translateY(-1px) !important;
+}
+#games .memoryDifficultyBtn.isActive strong{
+  color:#fff !important;
+  text-shadow:0 0 12px color-mix(in srgb,var(--accent,#39ff14) 75%,transparent) !important;
+}
+.rotationViewFold{
+  margin:12px 0 !important;
+  border:1px solid rgba(255,255,255,.12) !important;
+  border-radius:18px !important;
+  background:linear-gradient(135deg,rgba(255,255,255,.085),rgba(255,255,255,.035)) !important;
+  box-shadow:0 14px 32px rgba(0,0,0,.22) !important;
+  overflow:hidden !important;
+}
+.rotationViewFold>summary{
+  min-height:44px !important;
+  padding:11px 14px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:10px !important;
+  cursor:pointer !important;
+  list-style:none !important;
+  font-weight:850 !important;
+  letter-spacing:.01em !important;
+}
+.rotationViewFold>summary::-webkit-details-marker{display:none !important;}
+.rotationViewFold>summary::after{
+  content:'⌄' !important;
+  width:26px !important;
+  height:26px !important;
+  display:grid !important;
+  place-items:center !important;
+  border-radius:999px !important;
+  background:rgba(255,255,255,.08) !important;
+  color:var(--accent,#39ff14) !important;
+  transition:transform .18s ease !important;
+}
+.rotationViewFold[open]>summary::after{transform:rotate(180deg) !important;}
+.rotationViewFold>.tableWrap,
+.rotationViewFold>.smallText{
+  margin:0 10px 12px !important;
+}

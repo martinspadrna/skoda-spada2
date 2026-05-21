@@ -1,4 +1,4 @@
-// v.1.1 (705) – Kalkulačky číselná klávesnice, Reaction úprava výšky, Sudoku bez nápovědy chyb, Bubble obtížnost a Bomberman restart.
+// v.1.1 (707) – Pexeso menu polish a rozbalovací běžné Rozpisy.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

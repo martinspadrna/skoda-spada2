@@ -3979,7 +3979,7 @@ function renderGamesProfileStatus() {
   if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(metaEl, metaText, 'gamesProfileStatusMeta');
   else metaEl.textContent = metaText;
   if (rankEl) {
-    // v.1.1 (705): herní build ladí kalkulačky numeric keyboard, Reaction, Bubble, Sudoku, Bomberman a app-like výběr textu.
+    // v.1.1 (707): herní build ladí Flappy overlay, Pexeso obtížnosti, Sudoku číselník, Bubble sjíždění a rozpisy do sekcí.
     rankEl.innerHTML = '<span class="gamesProfileRankValue">' + escapeHtml(rankText) + '</span>';
     rankEl.setAttribute('data-player-name', nextName);
     rankEl.disabled = false;
@@ -4021,8 +4021,8 @@ function buildAppHistoryHtml(versionText) {
       range: versionText,
       title: 'Aktuální build',
       lines: [
-        'Build v.1.1 (705) ladí kalkulačky s číselnou klávesnicí, menší Reaction plochu, Bubble obtížnost, Sudoku bez nápovědy chyb, spolehlivější Bomberman restart a tvrdší app-like blokování označování textu.',
-        'Série v.1.1 650–705 dotáhla Piškvorky, online pozvánky, PWA launch handler, všechny hlavní hry, herní profily, reporty chyb, theme polish, těžší/chytřejší achievementy a společný herní QA průchod včetně app-like dotykového polishu.',
+        'Build v.1.1 (707) dolaďuje Pexeso menu a přenáší rozbalovací Tvrdotu, Měkotu a Absenci i do běžných Rozpisů.',
+        'Série v.1.1 650–706 dotáhla Piškvorky, online pozvánky, PWA launch handler, všechny hlavní hry, herní profily, reporty chyb, theme polish, těžší/chytřejší achievementy a společný herní QA průchod včetně app-like dotykového polishu.',
         'Sekce „O aplikaci“ je nově stručnější: detailní změny zůstávají v changelogu a tady se historie drží po větších blocích.',
         'Stabilizační audity, Supabase guardy, Láďův režim a finální readiness kontroly zůstávají součástí diagnostiky.'
       ]
@@ -4773,28 +4773,37 @@ function buildAdminRotationTableHtml(monthKey) {
     '    <div class="appMenuFreeNamesTitle">Kontrola měsíce</div>',
     '    <div class="appMenuFreeNamesText">Vyber měsíc a hned uvidíš, kdo v něm není zapsaný ani jednou a na kterých dnech ještě někdo chybí.</div>',
     '  </div>',
-    '  <div class="tableWrap appMenuTableWrap">',
-    '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense appMenuAdminRotationTable">',
-    '      ' + hardColgroup,
-    '      <thead><tr><th colspan="' + String(1 + hardMachines.length) + '">Tvrdota</th></tr><tr><th>Datum</th>' + hardMachines.map(m => '<th>' + escapeHtml(m) + '</th>').join('') + '</tr></thead>',
-    '      <tbody>' + renderRows('hard', hardRows, hardMachines.length) + '</tbody>',
-    '    </table>',
-    '  </div>',
-    '  <div class="tableWrap appMenuTableWrap">',
-    '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense appMenuAdminRotationTable">',
-    '      ' + softColgroup,
-    '      <thead><tr><th colspan="' + String(1 + softMachines.length) + '">Měkota</th></tr><tr><th>Datum</th>' + softMachines.map(m => '<th>' + escapeHtml(m) + '</th>').join('') + '</tr></thead>',
-    '      <tbody>' + renderRows('soft', softRows, softMachines.length) + '</tbody>',
-    '    </table>',
-    '  </div>',
-    '  <div class="tableWrap appMenuTableWrap">',
-    '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense appMenuAdminAbsenceTable">',
-    '      ' + absenceColgroup,
-    '      <thead><tr><th>Datum</th><th>Jméno</th><th>Kód</th></tr></thead>',
-    '      <tbody>' + renderNotes() + '</tbody>',
-    '    </table>',
-    '  </div>',
+    '  <details class="appMenuFoldSection adminRotationFold" open>',
+    '    <summary>Tvrdota</summary>',
+    '    <div class="tableWrap appMenuTableWrap">',
+    '      <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense appMenuAdminRotationTable">',
+    '        ' + hardColgroup,
+    '        <thead><tr><th>Datum</th>' + hardMachines.map(m => '<th>' + escapeHtml(m) + '</th>').join('') + '</tr></thead>',
+    '        <tbody>' + renderRows('hard', hardRows, hardMachines.length) + '</tbody>',
+    '      </table>',
+    '    </div>',
+    '  </details>',
+    '  <details class="appMenuFoldSection adminRotationFold" open>',
+    '    <summary>Měkota</summary>',
+    '    <div class="tableWrap appMenuTableWrap">',
+    '      <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense appMenuAdminRotationTable">',
+    '        ' + softColgroup,
+    '        <thead><tr><th>Datum</th>' + softMachines.map(m => '<th>' + escapeHtml(m) + '</th>').join('') + '</tr></thead>',
+    '        <tbody>' + renderRows('soft', softRows, softMachines.length) + '</tbody>',
+    '      </table>',
+    '    </div>',
+    '  </details>',
+    '  <details class="appMenuFoldSection adminRotationFold" open>',
+    '    <summary>Absence</summary>',
+    '    <div class="tableWrap appMenuTableWrap">',
+    '      <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense appMenuAdminAbsenceTable">',
+    '        ' + absenceColgroup,
+    '        <thead><tr><th>Datum</th><th>Jméno</th><th>Kód</th></tr></thead>',
+    '        <tbody>' + renderNotes() + '</tbody>',
+    '      </table>',
+    '    </div>',
     buildAdminAbsenceSummaryHtml(notesRows),
+    '  </details>',
     '</div>'
   ].join('');
 }
@@ -8372,6 +8381,8 @@ function flapSetOverlay(state) {
   }
   overlay.hidden = false;
   const title = state.over ? 'Konec jízdy' : 'Klepni a letíš';
+  overlay.classList.toggle('isGameOver', !!state.over);
+  overlay.classList.toggle('isStartHint', !state.started && !state.over);
   const desc = state.over ? ('Score ' + String(state.score || 0) + ' · dokončená jízda') : 'Drž rytmus klepáním do plochy.';
   overlay.innerHTML = state.over
     ? '<div class="flapOverlayCard"><strong>' + escapeHtml(title) + '</strong><span>' + escapeHtml(desc) + '</span><button type="button" class="gameControlBtn" id="flapOverlayNewBtn">Nová hra</button></div>'
@@ -8528,6 +8539,8 @@ function renderGameFlap() {
   const tapTarget = state.refs.board || state.refs.canvas;
   if (tapTarget) {
     tapTarget.addEventListener('pointerdown', (ev) => {
+      if (ev.target && ev.target.closest && ev.target.closest('#flapOverlayNewBtn')) return;
+      if (state.over) return;
       ev.preventDefault();
       flapTap();
     }, { passive: false });

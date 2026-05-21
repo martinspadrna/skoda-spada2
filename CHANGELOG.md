@@ -1,3 +1,9 @@
+## v.1.1 (707)
+- Pexeso: menu s obtížnostmi má posunutý/vycentrovaný popisek, aby nebyl uříznutý vlevo.
+- Pexeso: zvolená obtížnost je výrazněji zvýrazněná v samostatném tlačítku.
+- Rozpisy: Tvrdota, Měkota a Absence jsou rozbalovací samostatné sekce i v běžném zobrazení rozpisu, nejen v administraci; v základu jsou otevřené.
+- Verze sjednocena na v.1.1 (707), cache na v1.1-707 a Supabase realtime kanál na rak-public-live-v707.
+
 ## v.1.1 (705)
 - Kalkulačky: číselné vstupy dostávají `inputmode=decimal`, aby se na mobilu otevírala číselná klávesnice místo běžné.
 - Reaction Test: herní plocha je o něco snížená, aby šly pod ní vidět Top výsledky.

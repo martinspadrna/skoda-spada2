@@ -650,8 +650,7 @@ function renderMonth(monthKey) {
   const renderTable = (section, label) => {
     const sec = month[section];
     if (!sec) return "";
-    let out = "<div class='smallText uMt10 uBold'>" + label + "</div>";
-    out += "<div class='tableWrap'><table class='rotTable'><thead><tr><th>Datum</th>";
+    let out = "<div class='tableWrap'><table class='rotTable'><thead><tr><th>Datum</th>";
     (sec.machines || []).forEach(m => {
       out += "<th>" + escapeHtml(m) + "</th>";
     });
@@ -679,11 +678,15 @@ function renderMonth(monthKey) {
     return out;
   };
 
-  html += renderTable("hard", "Tvrdota");
-  html += renderTable("soft", "Měkota");
+  const wrapRotationViewSection = (label, content) => {
+    return "<details class='rotationFoldSection rotationViewFold' open><summary>" + escapeHtml(label) + "</summary>" + (content || "<div class='smallText'>Bez dat.</div>") + "</details>";
+  };
 
-  html += "<div class='smallText uMt12 uBold'>Dovolené / absence</div>";
+  html += wrapRotationViewSection("Tvrdota", renderTable("hard", "Tvrdota"));
+  html += wrapRotationViewSection("Měkota", renderTable("soft", "Měkota"));
+
   const absNotes = (month.notes || []).map(normalizeNoteEntry).filter(n => n.isAbsence);
+  let absenceHtml = "";
 
   if (absNotes.length) {
     const grouped = new Map();
@@ -699,17 +702,17 @@ function renderMonth(monthKey) {
     }));
 
     const maxPairs = Math.max(1, ...rows.map(r => r.items.length));
-    html += "<div class='tableWrap'><table class='noteTable'><thead><tr>";
+    absenceHtml += "<div class='tableWrap'><table class='noteTable'><thead><tr>";
     for (let i = 0; i < maxPairs; i += 1) {
-      if (i > 0) html += "<th class='noteSpacer'></th>";
-      html += "<th class='noteDateCell'>Datum</th><th class='noteShiftCell'>Směna</th><th class='notePersonCell'>Jméno</th><th class='noteReasonCell'>Důvod</th>";
+      if (i > 0) absenceHtml += "<th class='noteSpacer'></th>";
+      absenceHtml += "<th class='noteDateCell'>Datum</th><th class='noteShiftCell'>Směna</th><th class='notePersonCell'>Jméno</th><th class='noteReasonCell'>Důvod</th>";
     }
-    html += "</tr></thead><tbody>";
+    absenceHtml += "</tr></thead><tbody>";
 
     rows.forEach(row => {
-      html += "<tr>";
+      absenceHtml += "<tr>";
       for (let i = 0; i < maxPairs; i += 1) {
-        if (i > 0) html += "<td class='noteSpacer'></td>";
+        if (i > 0) absenceHtml += "<td class='noteSpacer'></td>";
         const n = row.items[i];
         if (n) {
           const parsed = parseDateToken(n.date);
@@ -717,18 +720,20 @@ function renderMonth(monthKey) {
           const shift = n.shift || (parsed ? parsed.shift : "");
           const people = (n.people && n.people.length) ? n.people.join(" a ") : (n.person || "");
           const reason = n.label || n.code || "";
-          html += "<td class='noteDateCell'>" + escapeHtml(dateOnly) + "</td><td class='noteShiftCell'>" + escapeHtml(shift) + "</td><td class='notePersonCell'>" + escapeHtml(people) + "</td><td class='noteReasonCell'>" + escapeHtml(reason) + "</td>";
+          absenceHtml += "<td class='noteDateCell'>" + escapeHtml(dateOnly) + "</td><td class='noteShiftCell'>" + escapeHtml(shift) + "</td><td class='notePersonCell'>" + escapeHtml(people) + "</td><td class='noteReasonCell'>" + escapeHtml(reason) + "</td>";
         } else {
-          html += "<td class='emptyCell noteDateCell'>—</td><td class='emptyCell noteShiftCell'>—</td><td class='emptyCell notePersonCell'>—</td><td class='emptyCell noteReasonCell'>—</td>";
+          absenceHtml += "<td class='emptyCell noteDateCell'>—</td><td class='emptyCell noteShiftCell'>—</td><td class='emptyCell notePersonCell'>—</td><td class='emptyCell noteReasonCell'>—</td>";
         }
       }
-      html += "</tr>";
+      absenceHtml += "</tr>";
     });
 
-    html += "</tbody></table></div>";
+    absenceHtml += "</tbody></table></div>";
   } else {
-    html += "<div class='smallText'>Bez poznámek.</div>";
+    absenceHtml += "<div class='smallText'>Bez poznámek.</div>";
   }
+
+  html += wrapRotationViewSection("Absence", absenceHtml);
 
   setRotaceHtmlIfChanged(monthView, html, 'rotaceMonth-' + String(monthKey || ''));
 }

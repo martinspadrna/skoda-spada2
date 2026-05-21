@@ -2,7 +2,7 @@
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
 
-  // v.1.1 (705): Kalkulačky numeric keyboard, Reaction menší plocha, Sudoku bez chyb, Bubble obtížnost a Bomberman restart.
+  // v.1.1 (707): Pexeso menu polish a rozbalovací běžné Rozpisy.
   const CORE_GAMES = ['ttt', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
   const EXTRA_GAMES = [];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);
@@ -1099,7 +1099,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function renderLaunchTiles() {
     const grid = document.getElementById('gamesGrid');
     if (!grid) return;
-    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v705';
+    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v707';
     if (grid.dataset && grid.dataset.arcadeLaunchSig === launchSig && grid.querySelector('[data-game="ttt"]')) {
       gamePerf.launchRenderSkips = Number(gamePerf.launchRenderSkips || 0) + 1;
       return;
@@ -2740,7 +2740,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       }
       return dropped;
     };
-    const bubbleDropEvery = () => Math.max(2, 7 - Math.floor((Number(state.shots || 0)) / 4));
+    const bubbleDropEvery = () => Math.max(2, 6 - Math.floor((Number(state.shots || 0)) / 3));
     const dropRows = () => {
       const every = bubbleDropEvery();
       state.nextDropEvery = every;
@@ -2877,7 +2877,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     }).join('')).join('');
     const selectedRow = selectedIdx >= 0 ? Math.floor(selectedIdx / 9) : 0;
     const selectedCol = selectedIdx >= 0 ? selectedIdx % 9 : 0;
-    const picker = `<div class="sudokuNumberPicker sudokuNumberPickerDocked${selectedIdx >= 0 ? ' isActive' : ''}">${[1,2,3,4,5,6,7,8,9].map(n => `<button type="button" data-sudoku-num="${n}">${n}</button>`).join('')}<button type="button" data-sudoku-num="clear">×</button></div>`;
+    const picker = `<div class="sudokuNumberPicker sudokuNumberPickerDocked sudokuNumberPickerTwoRows${selectedIdx >= 0 ? ' isActive' : ''}">${[1,2,3,4,5,6,7,8,9].map(n => `<button type="button" data-sudoku-num="${n}">${n}</button>`).join('')}<button type="button" class="sudokuClearBtn" data-sudoku-num="clear">×</button></div>`;
     body.innerHTML = `
       <div class="arcadeStage sudokuGameStage">
         <div class="arcadeHud arcadeHudSingleLine sudokuHud">
@@ -3047,44 +3047,74 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   }
 
   // Memory -----------------------------------------------------------------
-  const MEMORY_PAIRS = ['🍀','⚡','⭐','🌙','🔥','💎','🎯','🧠','🚗','🌴','🛠️','🪐','🚀','🍒','🧩','🐺','🏆','🎲'];
-  const MEMORY_BONUS = '';
-  function memoryState() { return { deck: [], flipped: [], matched: new Set(), moves: 0, startAt: Date.now(), over: false, lock: false, bestTimeMs: 0 }; }
-  function initMemory(state) { state.deck = shuffle(MEMORY_PAIRS.concat(MEMORY_PAIRS)); state.flipped = []; state.matched = new Set(); state.moves = 0; state.startAt = Date.now(); state.over = false; state.lock = false; }
+  const MEMORY_SYMBOLS = ['🍀','⚡','⭐','🌙','🔥','💎','🎯','🧠','🚗','🌴','🛠️','🪐','🚀','🍒','🧩','🐺','🏆','🎲','🍉','🍕','🎧','📱','🧲','🪙','🦊','🐸','🦄','🐝','🌈','☄️','🛡️','🧊'];
+  const MEMORY_DIFFICULTIES = [
+    { size: 4, label: '4×4', subtitle: 'rychlá pauza' },
+    { size: 6, label: '6×6', subtitle: 'klasika' },
+    { size: 8, label: '8×8', subtitle: 'mozkovna' }
+  ];
+  function memoryState(size) { return { started: false, size: size || 6, deck: [], flipped: [], matched: new Set(), moves: 0, startAt: Date.now(), over: false, lock: false, bestTimeMs: 0 }; }
+  function initMemory(state) {
+    const size = Math.max(4, Math.min(8, Number(state.size || 6) || 6));
+    const total = size * size;
+    const pairs = Math.floor(total / 2);
+    const symbols = MEMORY_SYMBOLS.slice(0, pairs);
+    state.size = size;
+    state.deck = shuffle(symbols.concat(symbols));
+    state.flipped = [];
+    state.matched = new Set();
+    state.moves = 0;
+    state.startAt = Date.now();
+    state.over = false;
+    state.lock = false;
+    state.started = true;
+  }
   function renderMemory(body) {
-    const state = getState('memory', () => { const s = memoryState(); initMemory(s); return s; });
+    const state = getState('memory', () => memoryState(6));
+    if (!state.started) {
+      const buttons = MEMORY_DIFFICULTIES.map((d) => `<button type="button" class="gameControlBtn memoryDifficultyBtn${Number(state.size || 6) === d.size ? ' isActive' : ''}" data-memory-size="${d.size}"><strong>${d.label}</strong><span>${d.subtitle}</span></button>`).join('');
+      body.innerHTML = `
+        <div class="arcadeStage memoryMenuStage">
+          <div class="arcadePanel memoryMenuCard">
+            <div class="arcadeStatus"><strong>Pexeso</strong><br>Vyber velikost pole. Čím větší, tím těžší hra.</div>
+            <div class="arcadeControls memoryDifficultyMenu">${buttons}</div>
+            <button type="button" class="gameControlBtn primary" data-memory-start="1">Spustit Pexeso</button>
+          </div>
+          ${gamesTop3Block('memory', 'ms', 5).replace('gamesTop5ScrollCard', 'gamesTop5ScrollCard arcadeTopScoreTight')}
+        </div>`;
+      body.querySelectorAll('[data-memory-size]').forEach((btn) => btn.addEventListener('click', () => { state.size = Number(btn.dataset.memorySize) || 6; renderMemory(body); }));
+      const startBtn = body.querySelector('[data-memory-start]');
+      if (startBtn) startBtn.addEventListener('click', () => { const fresh = memoryState(Number(state.size || 6) || 6); initMemory(fresh); window.app.gamesArcade['memory'] = fresh; renderMemory(body); });
+      setActiveState('memory', state);
+      return;
+    }
+    if (!Array.isArray(state.deck) || !state.deck.length) initMemory(state);
+    const size = Math.max(4, Math.min(8, Number(state.size || 6) || 6));
     const cells = state.deck.map((sym, i) => {
       const flipped = state.flipped.includes(i) || state.matched.has(i);
       const matched = state.matched.has(i);
-      return `<button type="button" class="arcadeMemoryCard${flipped ? ' isFlipped' : ''}${matched ? ' isMatched' : ''}${sym === MEMORY_BONUS ? ' isBonus' : ''}" data-i="${i}">${flipped ? sym : '·'}</button>`;
+      return `<button type="button" class="arcadeMemoryCard${flipped ? ' isFlipped' : ''}${matched ? ' isMatched' : ''}" data-i="${i}">${flipped ? sym : '·'}</button>`;
     }).join('');
     body.innerHTML = `
       <div class="arcadeStage memoryStage">
-        <div class="arcadeHud arcadeHudSingleLine memoryHud">${gamesStatLine('Čas', fmtTime(Date.now() - state.startAt))}${gamesStatLine('Pohyby', state.moves)}${gamesStatLine('Páry', Math.floor(state.matched.size / 2))}</div>
-        <div class="arcadeGridList grid-6 arcadePanel arcadeMemoryBoard arcadeMemoryBoardLarge" id="memoryGrid">${cells}</div>
+        <div class="arcadeHud arcadeHudSingleLine memoryHud">${gamesStatLine('Čas', fmtTime(Date.now() - state.startAt))}${gamesStatLine('Pohyby', state.moves)}${gamesStatLine('Páry', `${Math.floor(state.matched.size / 2)}/${Math.floor(state.deck.length / 2)}`)}</div>
+        <div class="arcadeGridList grid-${size} arcadePanel arcadeMemoryBoard arcadeMemoryBoardLarge" id="memoryGrid">${cells}</div>
         <div class="arcadeControls"><button type="button" class="gameControlBtn" data-memory="restart">Nová hra</button></div>
-        </div>`;
+      </div>`;
     const grid = body.querySelector('#memoryGrid');
     const finishIfDone = () => {
       if (state.matched.size >= state.deck.length && !state.over) {
         state.over = true;
         state.bestTimeMs = Date.now() - state.startAt;
-        gamesRecordStat('memory', { completed: true, plays: 1, bestTimeMs: state.bestTimeMs, bestScore: encodePoints('memory', state.bestTimeMs), bestMoves: state.moves, lastResult: `${state.moves} tahů` });
+        gamesRecordStat('memory', { completed: true, plays: 1, bestTimeMs: state.bestTimeMs, bestScore: encodePoints('memory', state.bestTimeMs), bestMoves: state.moves, bestSize: size, lastResult: `${size}×${size} · ${state.moves} tahů` });
         const controls = body.querySelector('.arcadeControls');
-        if (controls) controls.insertAdjacentHTML('beforebegin', `<div class="arcadeBar arcadePanel uPad10x12"><div class="arcadeStatus"><strong>Vyhráno!</strong> ${fmtTime(state.bestTimeMs)} · ${state.moves} tahů.</div></div>`);
+        if (controls) controls.insertAdjacentHTML('beforebegin', `<div class="arcadeBar arcadePanel uPad10x12"><div class="arcadeStatus"><strong>Vyhráno!</strong> ${fmtTime(state.bestTimeMs)} · ${state.moves} tahů · ${size}×${size}.</div></div>`);
       }
     };
     grid.querySelectorAll('button').forEach((btn) => {
       btn.addEventListener('click', () => {
         const i = Number(btn.dataset.i);
         if (state.lock || state.matched.has(i) || state.flipped.includes(i)) return;
-        if (state.deck[i] === MEMORY_BONUS) {
-          state.moves += 1;
-          state.matched.add(i);
-          renderMemory(body);
-          finishIfDone();
-          return;
-        }
         state.flipped.push(i);
         if (state.flipped.length === 2) {
           state.moves += 1;
@@ -3102,7 +3132,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         renderMemory(body);
       });
     });
-    body.querySelector('[data-memory="restart"]').addEventListener('click', () => { const s = memoryState(); initMemory(s); window.app.gamesArcade['memory'] = s; renderMemory(body); });
+    body.querySelector('[data-memory="restart"]').addEventListener('click', () => { const s = memoryState(Number(state.size || 6) || 6); window.app.gamesArcade['memory'] = s; renderMemory(body); });
     setActiveState('memory', state);
   }
 
@@ -3541,7 +3571,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     const allHot = EXTRA_GAMES.length === 0;
     const completedOnlyGuard = typeof window.gamesRecordStat === 'function';
     return {
-      version: 'v.1.1 (705)',
+      version: 'v.1.1 (707)',
       ok: !missingMeta.length && !missingRenderer.length && allHot && completedOnlyGuard,
       totalGames: ids.length,
       coreGames: ids,
