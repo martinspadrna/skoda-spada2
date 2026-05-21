@@ -1,3 +1,10 @@
+## v.1.1 (727)
+- Pampuch je mírně zpomalený: levely mají delší krok pohybu, takže se hra na mobilu neřítí tak rychle a lépe se ovládá swipem.
+- Herní směnové achievementy jsou zpřesněné: všechno, co se má plnit „ve směně“, se nově započítává jen při aktivní směně D v práci.
+- Kontext směny si dál ukládá diagnosticky i původní aktivní směnu, ale počítadla onShift/nightShift/morningShift/shiftTeam pro achievementy přibývají jen pro D.
+- Ne-směnové achievementy, které měly jen v názvu slovo směna/po směně, jsou přejmenované, aby nemátly.
+- Verze sjednocena na v.1.1 (727), cache na v1.1-727 a Supabase realtime kanál na rak-public-live-v727.
+
 ## v.1.1 (726)
 - Pampuch je předělaný z původní skákačky na bludišťovou retro hru ve stylu odkázaného Pampucha: body v mapě, bonus body, duchové, životy, levely a Total/Best/Points HUD.
 - Ovládání je mobile-first bez šipkových tlačítek: swipe kdekoliv po herní ploše, na PC fungují klávesové šipky/WASD a mezerník pro pauzu.

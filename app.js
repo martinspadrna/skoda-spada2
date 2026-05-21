@@ -1,4 +1,4 @@
-// v.1.1 (726) – Pampuch předělaný do bludišťového retro stylu s body, duchy a levely.
+// v.1.1 (727) – Pampuch zpomalený a směnové achievementy hlídají směnu D.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

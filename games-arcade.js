@@ -2,7 +2,7 @@
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
 
-  // v.1.1 (726): Pampuch předělaný do bludišťového retro stylu podle původního Pampucha.
+  // v.1.1 (727): Pampuch je mírně zpomalený a směnové achievementy se počítají jen na směně D.
   const CORE_GAMES = ['ttt', 'ships', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'pampuch', 'daily'];
   const EXTRA_GAMES = [];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);
@@ -146,7 +146,12 @@
     const hour = when.getHours();
     const day = when.getDay();
     const activeShift = gamesGetActiveShiftForContext(when);
-    const label = String(activeShift && activeShift.label ? activeShift.label : '').toLowerCase();
+    const rawShiftTeam = String(activeShift && activeShift.team ? activeShift.team : '').trim().toUpperCase();
+    const rawShiftLabel = String(activeShift && activeShift.label ? activeShift.label : '').trim();
+    const label = rawShiftLabel.toLowerCase();
+    const isShiftD = !!activeShift && rawShiftTeam === 'D';
+    // v.1.1 (727): herní achievementy s podmínkou „ve směně“ se počítají jen tehdy,
+    // když je opravdu aktivní směna D v práci. Ostatní směny zůstanou uložené jen diagnosticky v lastContext.
     return {
       dateKey: gamesLocalDateKey(when),
       hour,
@@ -155,12 +160,15 @@
       isNightHours: hour >= 22 || hour < 6,
       isEarlyMorning: hour >= 4 && hour < 7,
       isLunchWindow: hour >= 11 && hour < 14,
-      isOnShift: !!activeShift,
-      isNightShift: !!activeShift && label.includes('noční'),
-      isMorningShift: !!activeShift && label.includes('ranní'),
-      shiftTeam: String(activeShift && activeShift.team ? activeShift.team : '').trim(),
-      isShiftD: String(activeShift && activeShift.team ? activeShift.team : '').trim().toUpperCase() === 'D',
-      shiftLabel: String(activeShift && activeShift.label ? activeShift.label : '').trim()
+      rawIsOnShift: !!activeShift,
+      rawShiftTeam,
+      rawShiftLabel,
+      isOnShift: isShiftD,
+      isNightShift: isShiftD && label.includes('noční'),
+      isMorningShift: isShiftD && label.includes('ranní'),
+      shiftTeam: isShiftD ? 'D' : '',
+      isShiftD,
+      shiftLabel: isShiftD ? rawShiftLabel : ''
     };
   }
 
@@ -179,6 +187,7 @@
       onlinePlays: 0,
       onlineWins: 0,
       playedDays: [],
+      shiftDPlayedDays: [],
       shiftTeams: {},
       lastContext: null
     }, current);
@@ -194,6 +203,9 @@
     const days = Array.isArray(next.playedDays) ? next.playedDays.map(String) : [];
     if (ctx.dateKey && !days.includes(ctx.dateKey)) days.push(ctx.dateKey);
     next.playedDays = days.slice(-180);
+    const dDays = Array.isArray(next.shiftDPlayedDays) ? next.shiftDPlayedDays.map(String) : [];
+    if (ctx.isShiftD && ctx.dateKey && !dDays.includes(ctx.dateKey)) dDays.push(ctx.dateKey);
+    next.shiftDPlayedDays = dDays.slice(-180);
     const teams = next.shiftTeams && typeof next.shiftTeams === 'object' ? Object.assign({}, next.shiftTeams) : {};
     if (ctx.shiftTeam) teams[ctx.shiftTeam] = (Number(teams[ctx.shiftTeam] || 0) || 0) + 1;
     next.shiftTeams = teams;
@@ -223,24 +235,30 @@
       onlinePlays: 0,
       onlineWins: 0,
       playedDays: [],
+      shiftDPlayedDays: [],
       shiftTeams: {},
       shiftTeamCount: 0,
-      distinctPlayedDays: 0
+      distinctPlayedDays: 0,
+      distinctShiftDDays: 0
     };
     const days = new Set();
+    const dDays = new Set();
     const teams = {};
     contexts.forEach((ctx) => {
       ['completedPlays','weekendPlays','nightHourPlays','earlyMorningPlays','lunchWindowPlays','onShiftPlays','nightShiftPlays','morningShiftPlays','shiftDPlays','onlinePlays','onlineWins'].forEach((field) => {
         totals[field] += Number(ctx && ctx[field] || 0) || 0;
       });
       (Array.isArray(ctx && ctx.playedDays) ? ctx.playedDays : []).forEach(day => { if (day) days.add(String(day)); });
+      (Array.isArray(ctx && ctx.shiftDPlayedDays) ? ctx.shiftDPlayedDays : []).forEach(day => { if (day) dDays.add(String(day)); });
       const sourceTeams = ctx && ctx.shiftTeams && typeof ctx.shiftTeams === 'object' ? ctx.shiftTeams : {};
       Object.keys(sourceTeams).forEach((team) => {
         teams[team] = (Number(teams[team] || 0) || 0) + (Number(sourceTeams[team] || 0) || 0);
       });
     });
     totals.playedDays = Array.from(days).sort();
+    totals.shiftDPlayedDays = Array.from(dDays).sort();
     totals.distinctPlayedDays = totals.playedDays.length;
+    totals.distinctShiftDDays = totals.shiftDPlayedDays.length;
     totals.shiftTeams = teams;
     totals.shiftTeamCount = Object.keys(teams).length;
     return totals;
@@ -343,9 +361,9 @@
   function getExtendedAchievementDefs() {
     const arcadeStat = (account, id, field) => Number((account && account.stats && account.stats.arcade && account.stats.arcade[id] && account.stats.arcade[id][field]) || 0) || 0;
     return [
-      { id: 'games_25', title: 'Zahřívací směna', desc: 'Dokonči 25 započítaných her.', goalText: '25 dokončených her', progress: (a) => a.totalPlays, target: 25 },
+      { id: 'games_25', title: 'Zahřívací kolo', desc: 'Dokonči 25 započítaných her.', goalText: '25 dokončených her', progress: (a) => a.totalPlays, target: 25 },
       { id: 'games_75', title: 'Rozjetá mašina', desc: 'Dokonči 75 započítaných her.', goalText: '75 dokončených her', progress: (a) => a.totalPlays, target: 75 },
-      { id: 'games_150', title: 'Držák po směně', desc: 'Dokonči 150 započítaných her.', goalText: '150 dokončených her', progress: (a) => a.totalPlays, target: 150 },
+      { id: 'games_150', title: 'Herní držák', desc: 'Dokonči 150 započítaných her.', goalText: '150 dokončených her', progress: (a) => a.totalPlays, target: 150 },
       { id: 'games_300', title: 'Herní mistr dílny', desc: 'Dokonči 300 započítaných her.', goalText: '300 dokončených her', progress: (a) => a.totalPlays, target: 300 },
       { id: 'games_500', title: 'Legenda pauzy', desc: 'Dokonči 500 započítaných her.', goalText: '500 dokončených her', progress: (a) => a.totalPlays, target: 500 },
       { id: 'ttt_50', title: 'Piškvorkář', desc: 'Dokonči 50 partií Piškvorek.', goalText: '50 partií', progress: (a) => a.ttt.plays || 0, target: 50 },
@@ -382,7 +400,7 @@
       { id: 'reaction_perfect_10', title: 'Bez zaváhání', desc: 'Dokonči 10 čistých Reaction sérií s každým kolem pod 250 ms.', goalText: '10 čistých sérií', progress: (a) => arcadeStat(a.account, 'reaction', 'perfectRuns'), target: 10 },
       { id: 'reaction_runs_50', title: 'Reflex tester', desc: 'Dokonči 50 Reaction testů.', goalText: '50 dokončení', progress: (a) => arcadeStat(a.account, 'reaction', 'plays'), target: 50 },
       { id: 'tetris_5000', title: 'Tetris mistr', desc: 'Nahraj 5 000 bodů v Tetrisu.', goalText: '5 000 bodů', progress: (a) => arcadeStat(a.account, 'tetris', 'bestScore'), target: 5000 },
-      { id: 'tetris_12000', title: 'Tetris směnový boss', desc: 'Nahraj 12 000 bodů v Tetrisu.', goalText: '12 000 bodů', progress: (a) => arcadeStat(a.account, 'tetris', 'bestScore'), target: 12000 },
+      { id: 'tetris_12000', title: 'Tetris boss', desc: 'Nahraj 12 000 bodů v Tetrisu.', goalText: '12 000 bodů', progress: (a) => arcadeStat(a.account, 'tetris', 'bestScore'), target: 12000 },
       { id: 'tetris_lines_40', title: 'Čistič řádků', desc: 'Smaž v Tetrisu 40 řádků v jedné dokončené hře.', goalText: '40 řádků', progress: (a) => arcadeStat(a.account, 'tetris', 'bestLines'), target: 40 },
       { id: 'tetris_level_10', title: 'Level 10', desc: 'Dostaň se v Tetrisu na level 10.', goalText: 'level 10', progress: (a) => arcadeStat(a.account, 'tetris', 'bestLevel'), target: 10 },
       { id: 'tetris_runs_50', title: 'Padající bloky', desc: 'Dokonči 50 her Tetrisu.', goalText: '50 dokončení', progress: (a) => arcadeStat(a.account, 'tetris', 'plays'), target: 50 },
@@ -390,7 +408,7 @@
       { id: 'shooter_7000', title: 'Velitel hangáru', desc: 'Nahraj 7 000 bodů ve Space Shooteru.', goalText: '7 000 bodů', progress: (a) => arcadeStat(a.account, 'shooter', 'bestScore'), target: 7000 },
       { id: 'shooter_hits_150', title: 'Přesná palba', desc: 'Dej ve Space Shooteru 150 zásahů v jedné dokončené hře.', goalText: '150 zásahů', progress: (a) => arcadeStat(a.account, 'shooter', 'bestHits'), target: 150 },
       { id: 'shooter_survive_180', title: 'Tři minuty ve vesmíru', desc: 'Přežij ve Space Shooteru aspoň 180 sekund.', goalText: '180 s', progress: (a) => arcadeStat(a.account, 'shooter', 'bestSurvivalSec'), target: 180 },
-      { id: 'shooter_runs_50', title: 'Pilot po směně', desc: 'Dokonči 50 her Space Shooteru.', goalText: '50 dokončení', progress: (a) => arcadeStat(a.account, 'shooter', 'plays'), target: 50 },
+      { id: 'shooter_runs_50', title: 'Vytrvalý pilot', desc: 'Dokonči 50 her Space Shooteru.', goalText: '50 dokončení', progress: (a) => arcadeStat(a.account, 'shooter', 'plays'), target: 50 },
       { id: 'shooter_boss_3', title: 'Lovec velitelů', desc: 'Sundej v jedné dokončené hře 3 bosse.', goalText: '3 bossové', progress: (a) => arcadeStat(a.account, 'shooter', 'bestBossKills'), target: 3 },
       { id: 'shooter_power_12', title: 'Sběrač upgradů', desc: 'Seber v jedné dokončené hře 12 upgradů.', goalText: '12 upgradů', progress: (a) => arcadeStat(a.account, 'shooter', 'bestPowerUps'), target: 12 },
       { id: 'shooter_weapon_3', title: 'Plná výzbroj', desc: 'Dostaň ve Space Shooteru zbraň na třetí úroveň.', goalText: 'úroveň 3', progress: (a) => arcadeStat(a.account, 'shooter', 'bestWeaponLevel'), target: 3 },
@@ -405,7 +423,7 @@
       { id: 'doodle_7000', title: 'Skok až ke stropu', desc: 'Nahraj 7 000 bodů v Doodle Jumpu.', goalText: '7 000 bodů', progress: (a) => arcadeStat(a.account, 'doodle', 'bestScore'), target: 7000 },
       { id: 'doodle_height_1200', title: 'Vysokozdvižka', desc: 'Vylez v Doodle Jumpu aspoň o 1 200 výškových bodů.', goalText: 'výška 1 200', progress: (a) => arcadeStat(a.account, 'doodle', 'bestHeight'), target: 1200 },
       { id: 'doodle_jumps_80', title: 'Gumové nohy', desc: 'Skoč v jedné dokončené hře Doodle Jumpu 80krát.', goalText: '80 skoků', progress: (a) => arcadeStat(a.account, 'doodle', 'bestJumps'), target: 80 },
-      { id: 'doodle_runs_50', title: 'Skáču po směně', desc: 'Dokonči 50 her Doodle Jumpu.', goalText: '50 dokončení', progress: (a) => arcadeStat(a.account, 'doodle', 'plays'), target: 50 },
+      { id: 'doodle_runs_50', title: 'Skáču po pauze', desc: 'Dokonči 50 her Doodle Jumpu.', goalText: '50 dokončení', progress: (a) => arcadeStat(a.account, 'doodle', 'plays'), target: 50 },
       { id: 'bubble_2500', title: 'Bubble pop', desc: 'Nahraj 2 500 bodů v Bubble Shooteru.', goalText: '2 500 bodů', progress: (a) => arcadeStat(a.account, 'bubble', 'bestScore'), target: 2500 },
       { id: 'bubble_6000', title: 'Bublinový mistr', desc: 'Nahraj 6 000 bodů v Bubble Shooteru.', goalText: '6 000 bodů', progress: (a) => arcadeStat(a.account, 'bubble', 'bestScore'), target: 6000 },
       { id: 'bubble_combo_10', title: 'Řetězová reakce', desc: 'Dej v Bubble Shooteru combo 10.', goalText: 'combo 10', progress: (a) => arcadeStat(a.account, 'bubble', 'bestCombo'), target: 10 },
@@ -414,7 +432,7 @@
       { id: 'bubble_runs_50', title: 'Bubliny pod kontrolou', desc: 'Dokonči 50 her Bubble Shooteru.', goalText: '50 dokončení', progress: (a) => arcadeStat(a.account, 'bubble', 'plays'), target: 50 },
       { id: 'sudoku_15', title: 'Sudoku hlava', desc: 'Vyřeš 15 Sudoku.', goalText: '15 dokončení', progress: (a) => arcadeStat(a.account, 'sudoku', 'plays'), target: 15 },
       { id: 'sudoku_5min', title: 'Sudoku sprint', desc: 'Vyřeš Sudoku pod 5 minut.', goalText: 'pod 5 minut', progress: (a) => { const t = arcadeStat(a.account, 'sudoku', 'bestTimeMs'); return t ? Math.max(0, 360000 - t) : 0; }, target: 60000 },
-      { id: 'sudoku_100', title: 'Sudoku mistr směny', desc: 'Vyřeš 100 Sudoku.', goalText: '100 dokončení', progress: (a) => arcadeStat(a.account, 'sudoku', 'plays'), target: 100 },
+      { id: 'sudoku_100', title: 'Sudoku mistr', desc: 'Vyřeš 100 Sudoku.', goalText: '100 dokončení', progress: (a) => arcadeStat(a.account, 'sudoku', 'plays'), target: 100 },
       { id: 'mines_25_wins', title: 'Minové pole znám', desc: 'Vyhraj 25 her Minesweeperu.', goalText: '25 výher', progress: (a) => arcadeStat(a.account, 'mines', 'plays'), target: 25 },
       { id: 'mines_2min', title: 'Odminovač', desc: 'Vyhraj Minesweeper pod 2 minuty.', goalText: 'pod 2 minuty', progress: (a) => { const t = arcadeStat(a.account, 'mines', 'bestTimeMs'); return t ? Math.max(0, 180000 - t) : 0; }, target: 60000 },
       { id: 'mines_100', title: 'Pole pod kontrolou', desc: 'Vyhraj 100 her Minesweeperu.', goalText: '100 výher', progress: (a) => arcadeStat(a.account, 'mines', 'plays'), target: 100 },
@@ -436,7 +454,7 @@
       { id: 'pampuch_10000', title: 'Pampuch legenda', desc: 'Nahraj v Pampuchovi 10 000 bodů.', goalText: '10 000 bodů', progress: (a) => arcadeStat(a.account, 'pampuch', 'bestScore'), target: 10000 },
       { id: 'pampuch_points_120', title: 'Vyčištěná mapa', desc: 'Seber v jedné hře 120 bodů v bludišti.', goalText: '120 bodů v mapě', progress: (a) => arcadeStat(a.account, 'pampuch', 'bestPops'), target: 120 },
       { id: 'pampuch_combo_24', title: 'Bez zaváhání', desc: 'Dej v Pampuchovi combo 24.', goalText: 'combo 24', progress: (a) => arcadeStat(a.account, 'pampuch', 'bestCombo'), target: 24 },
-      { id: 'pampuch_runs_50', title: 'Pampuch po směně', desc: 'Dokonči 50 her Pampucha.', goalText: '50 dokončení', progress: (a) => arcadeStat(a.account, 'pampuch', 'plays'), target: 50 },
+      { id: 'pampuch_runs_50', title: 'Pampuch držák', desc: 'Dokonči 50 her Pampucha.', goalText: '50 dokončení', progress: (a) => arcadeStat(a.account, 'pampuch', 'plays'), target: 50 },
       { id: 'daily_5', title: 'Denní rozjezd', desc: 'Splň 5 denních challenge.', goalText: '5 challenge', progress: (a) => arcadeStat(a.account, 'daily', 'plays'), target: 5 },
       { id: 'daily_20', title: 'Denní držák', desc: 'Splň 20 denních challenge.', goalText: '20 challenge', progress: (a) => arcadeStat(a.account, 'daily', 'plays'), target: 20 },
       { id: 'ttt_online_10', title: 'Soupeř z druhé ruky', desc: 'Dokonči 10 online partií Piškvorek proti někomu.', goalText: '10 online partií', progress: (a) => (a.ttt.context && a.ttt.context.onlinePlays) || 0, target: 10 },
@@ -454,21 +472,21 @@
       { id: 'memory_45sec', title: 'Paměť na čas', desc: 'Dokonči Pexeso pod 45 sekund.', goalText: 'pod 45 s', progress: (a) => { const t = arcadeStat(a.account, 'memory', 'bestTimeMs'); return t ? Math.max(0, 90000 - t) : 0; }, target: 45000 },
       { id: 'memory_6x6', title: 'Velké pexeso', desc: 'Dokonči Memory na velikosti 6×6.', goalText: '6×6', progress: (a) => arcadeStat(a.account, 'memory', 'bestSize'), target: 6 },
       { id: 'ships_online_25', title: 'Mořský veterán', desc: 'Dohraj 25 online her Lodí.', goalText: '25 online duelů', progress: (a) => arcadeStat(a.account, 'ships', 'plays'), target: 25 },
-      { id: 'ships_online_wins_25', title: 'Admirál směny', desc: 'Vyhraj 25 online her Lodí.', goalText: '25 online výher', progress: (a) => arcadeStat(a.account, 'ships', 'wins'), target: 25 },
+      { id: 'ships_online_wins_25', title: 'Admirál flotily', desc: 'Vyhraj 25 online her Lodí.', goalText: '25 online výher', progress: (a) => arcadeStat(a.account, 'ships', 'wins'), target: 25 },
       { id: 'daily_200', title: 'Denní železo', desc: 'Splň 200 denních challenge.', goalText: '200 challenge', progress: (a) => arcadeStat(a.account, 'daily', 'plays'), target: 200 },
       { id: 'ctx_shift_d_10', title: 'Déčko zapnuto', desc: 'Dokonči 10 her přímo v době, kdy běží směna D.', goalText: '10 her na D', progress: (a) => a.context.shiftDPlays || 0, target: 10 },
       { id: 'ctx_shift_d_40', title: 'D jako držák', desc: 'Dokonči 40 her přímo v době, kdy běží směna D.', goalText: '40 her na D', progress: (a) => a.context.shiftDPlays || 0, target: 40 },
       { id: 'ctx_online_25', title: 'Hraní s někým', desc: 'Dokonči 25 online her s dalším hráčem.', goalText: '25 online her', progress: (a) => a.context.onlinePlays || 0, target: 25 },
       { id: 'ctx_online_wins_15', title: 'Online vítěz', desc: 'Vyhraj 15 online her proti někomu.', goalText: '15 online výher', progress: (a) => a.context.onlineWins || 0, target: 15 },
-      { id: 'ctx_shift_15', title: 'Hráč na směně', desc: 'Dokonči 15 her během aktivní směny.', goalText: '15 her na směně', progress: (a) => a.context.onShiftPlays || 0, target: 15 },
-      { id: 'ctx_shift_60', title: 'Směnový držák', desc: 'Dokonči 60 her v čase, kdy běží směna.', goalText: '60 her na směně', progress: (a) => a.context.onShiftPlays || 0, target: 60 },
+      { id: 'ctx_shift_15', title: 'Hráč na déčku', desc: 'Dokonči 15 her během aktivní směny D.', goalText: '15 her na směně D', progress: (a) => a.context.onShiftPlays || 0, target: 15 },
+      { id: 'ctx_shift_60', title: 'Déčkový držák', desc: 'Dokonči 60 her v čase, kdy je směna D v práci.', goalText: '60 her na směně D', progress: (a) => a.context.onShiftPlays || 0, target: 60 },
       { id: 'ctx_night_hours_20', title: 'Noční sova', desc: 'Dokonči 20 her mezi 22:00 a 6:00.', goalText: '20 nočních her', progress: (a) => a.context.nightHourPlays || 0, target: 20 },
-      { id: 'ctx_night_shift_15', title: 'Noční pauza', desc: 'Dokonči 15 her přímo během noční směny.', goalText: '15 her na noční', progress: (a) => a.context.nightShiftPlays || 0, target: 15 },
-      { id: 'ctx_morning_shift_25', title: 'Ranní rozjezd', desc: 'Dokonči 25 her během ranní směny.', goalText: '25 her na ranní', progress: (a) => a.context.morningShiftPlays || 0, target: 25 },
+      { id: 'ctx_night_shift_15', title: 'Noční pauza D', desc: 'Dokonči 15 her přímo během noční směny D.', goalText: '15 her na noční D', progress: (a) => a.context.nightShiftPlays || 0, target: 15 },
+      { id: 'ctx_morning_shift_25', title: 'Ranní rozjezd D', desc: 'Dokonči 25 her během ranní směny D.', goalText: '25 her na ranní D', progress: (a) => a.context.morningShiftPlays || 0, target: 25 },
       { id: 'ctx_weekend_30', title: 'Víkendový hráč', desc: 'Dokonči 30 her o víkendu.', goalText: '30 víkendových her', progress: (a) => a.context.weekendPlays || 0, target: 30 },
       { id: 'ctx_lunch_20', title: 'Pauzový stratég', desc: 'Dokonči 20 her mezi 11:00 a 14:00.', goalText: '20 her v pauzovém čase', progress: (a) => a.context.lunchWindowPlays || 0, target: 20 },
       { id: 'ctx_days_14', title: 'Dlouhá série', desc: 'Dokonči hry ve 14 různých dnech.', goalText: '14 různých dnů', progress: (a) => a.context.distinctPlayedDays || 0, target: 14 },
-      { id: 'ctx_shift_teams_4', title: 'Napříč směnami', desc: 'Dokonči hru během aktivní směny A, B, C i D.', goalText: '4 různé směny', progress: (a) => a.context.shiftTeamCount || 0, target: 4 }
+      { id: 'ctx_shift_teams_4', title: 'Déčko ve více dnech', desc: 'Dokonči hru během směny D ve 4 různých dnech.', goalText: '4 D dny', progress: (a) => a.context.distinctShiftDDays || 0, target: 4 }
     ];
   }
 
@@ -1193,7 +1211,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function renderLaunchTiles() {
     const grid = document.getElementById('gamesGrid');
     if (!grid) return;
-    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v726';
+    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v727';
     if (grid.dataset && grid.dataset.arcadeLaunchSig === launchSig && grid.querySelector('[data-game="ttt"]')) {
       gamePerf.launchRenderSkips = Number(gamePerf.launchRenderSkips || 0) + 1;
       return;
@@ -4207,7 +4225,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   const PAMP_LEVELS = [
     {
       name: 'Level 1',
-      speed: 126,
+      speed: 148,
       ghostDelay: 2,
       map: [
         '###################',
@@ -4229,7 +4247,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     },
     {
       name: 'Level 2',
-      speed: 118,
+      speed: 140,
       ghostDelay: 1,
       map: [
         '###################',
@@ -4251,7 +4269,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     },
     {
       name: 'Level 3',
-      speed: 112,
+      speed: 134,
       ghostDelay: 1,
       map: [
         '###################',
@@ -4273,7 +4291,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     },
     {
       name: 'Level 4',
-      speed: 106,
+      speed: 128,
       ghostDelay: 0,
       map: [
         '###################',
@@ -4330,7 +4348,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       steps: 0,
       frightened: 0,
       invuln: 0,
-      tickMs: 126,
+      tickMs: 148,
       ghostSlowTurn: 0,
       moveAcc: 0,
       lastTs: 0,
@@ -4754,7 +4772,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         state.moveAcc += dt;
         state.frightened = Math.max(0, Number(state.frightened || 0) - dt);
         state.invuln = Math.max(0, Number(state.invuln || 0) - dt);
-        const tickMs = Math.max(72, Number(state.tickMs || 126) || 126);
+        const tickMs = Math.max(96, Number(state.tickMs || 148) || 148);
         let guard = 0;
         while (state.moveAcc >= tickMs && guard < 4) {
           state.moveAcc -= tickMs;
@@ -4833,7 +4851,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     const allHot = EXTRA_GAMES.length === 0;
     const completedOnlyGuard = typeof window.gamesRecordStat === 'function';
     return {
-      version: 'v.1.1 (726)',
+      version: 'v.1.1 (727)',
       ok: !missingMeta.length && !missingRenderer.length && allHot && completedOnlyGuard,
       totalGames: ids.length,
       coreGames: ids,
@@ -4848,7 +4866,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       themeBackground: true,
       touchGuard: true,
       notes: [
-        'Build 726 předělává Pampucha na bludišťovou retro hru s body, duchy, levely a swipe ovládáním.',
+        'Build 727 zpomaluje Pampucha a hlídá, aby směnové achievementy přibývaly jen při aktivní směně D.',
         'Reálnou hratelnost a citlivost dotyku je potřeba potvrdit na mobilu.'
       ]
     };
