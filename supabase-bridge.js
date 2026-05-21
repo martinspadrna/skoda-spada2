@@ -342,7 +342,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v708');
+      const channel = client.channel('rak-public-live-v710');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -1098,9 +1098,10 @@
     const inviteCode = String(payload && payload.code ? payload.code : '').trim().toUpperCase();
     if (!inviteCode) throw new Error('Chybí kód pozvánky.');
     const inviterAccountNumber = String(payload && payload.inviterAccountNumber ? payload.inviterAccountNumber : '').trim() || null;
-    const boardState = payload && payload.boardState && typeof payload.boardState === 'object' ? payload.boardState : { board: Array(180).fill(''), turn: 'X', status: 'waiting' };
+    const gameType = String(payload && payload.gameType ? payload.gameType : (payload && payload.game_type ? payload.game_type : 'gomoku')).trim() || 'gomoku';
+    const boardState = payload && payload.boardState && typeof payload.boardState === 'object' ? Object.assign({ gameType }, payload.boardState) : { board: Array(180).fill(''), turn: 'X', status: 'waiting', gameType };
     const inviteRow = {
-      game_type: 'gomoku',
+      game_type: gameType,
       inviter_account_number: inviterAccountNumber,
       invitee_account_number: null,
       invite_code: inviteCode,
@@ -1115,7 +1116,7 @@
       .maybeSingle(), { mode: 'write' });
     if (inviteErr) throw inviteErr;
     const sessionRow = {
-      game_type: 'gomoku',
+      game_type: gameType,
       invite_id: inviteData && inviteData.id ? inviteData.id : null,
       player_x_account_number: inviterAccountNumber,
       player_o_account_number: null,
@@ -1169,7 +1170,7 @@
     boardState.updatedAtTs = Date.now();
     boardState.acceptedAt = new Date().toISOString();
     const sessionRow = {
-      game_type: 'gomoku',
+      game_type: invite.game_type || boardState.gameType || 'gomoku',
       invite_id: invite.id,
       player_x_account_number: invite.inviter_account_number || null,
       player_o_account_number: invitee,
@@ -1237,7 +1238,7 @@
     const winnerAccount = boardState.winnerAccountNumber
       || (boardState.winner === 'X' ? xAcc : (boardState.winner === 'O' ? oAcc : null));
     const sessionRow = {
-      game_type: 'gomoku',
+      game_type: loaded.invite.game_type || boardState.gameType || 'gomoku',
       invite_id: loaded.invite.id,
       player_x_account_number: xAcc,
       player_o_account_number: oAcc,

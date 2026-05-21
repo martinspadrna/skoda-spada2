@@ -8251,7 +8251,7 @@ body.gamesOpen #games .arcadeSudokuCell.isWrong,
   outline:none !important;
 }
 
-/* v.1.1 (708) – Flappy průchodnost overlaye, Reaction výška, Sudoku číselník, Pexeso obtížnosti, Rozpisy fold sekce */
+/* v.1.1 (709) – Flappy průchodnost overlaye, Reaction výška, Sudoku číselník, Pexeso obtížnosti, Rozpisy fold sekce */
 body.gamesOpen #games .flapOverlay{
   pointer-events:none !important;
 }
@@ -8322,7 +8322,7 @@ body.gamesOpen #games .sudokuNumberPickerTwoRows .sudokuClearBtn,
 .appMenuFoldSection.adminRotationFold .smallText{padding:10px 12px 0 !important;}
 
 
-/* v.1.1 (708) – Pexeso menu polish + běžné Rozpisy rozbalovací sekce */
+/* v.1.1 (709) – Pexeso menu polish + běžné Rozpisy rozbalovací sekce */
 #games .memoryMenuCard .arcadeStatus{
   width:100% !important;
   box-sizing:border-box !important;
@@ -8384,7 +8384,7 @@ body.gamesOpen #games .sudokuNumberPickerTwoRows .sudokuClearBtn,
 }
 
 
-/* v.1.1 (708) – Flappy overlay kliká jen přes kartu a Rozpisy mají o chlup širší pracovní plochu. */
+/* v.1.1 (709) – Flappy overlay kliká jen přes kartu a Rozpisy mají o chlup širší pracovní plochu. */
 body.gamesOpen #games .flapOverlay{
   pointer-events:none !important;
 }
@@ -8430,3 +8430,87 @@ body.gamesOpen #games .flapOverlay #flapOverlayNewBtn{
     max-width:38px !important;
   }
 }
+
+/* v.1.1 (709) – Rozpisy: jmenné sloupky o dalších cca 5 % užší + Lodě online. */
+#monthView table.rotTable{
+  width:90% !important;
+  min-width:360px !important;
+}
+#monthView table.rotTable th:not(:first-child),
+#monthView table.rotTable td:not(.dateCell){
+  width:auto !important;
+  max-width:calc((100% - 42px) / 6) !important;
+  padding-left:0 !important;
+  padding-right:0 !important;
+}
+@media (max-width:390px){
+  #monthView table.rotTable{min-width:358px !important;}
+}
+#games .shipsStage{gap:10px;}
+#games .shipsBoardsWrap{display:grid;grid-template-columns:1fr;gap:12px;}
+#games .shipsBoardCard{border:1px solid rgba(255,255,255,.12);background:rgba(8,18,28,.50);border-radius:22px;padding:10px;box-shadow:inset 0 0 0 1px rgba(124,255,124,.05);}
+#games .shipsBoard{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:3px;touch-action:manipulation;user-select:none;-webkit-user-select:none;}
+#games .shipsCell{aspect-ratio:1/1;min-width:0;border-radius:8px;border:1px solid rgba(255,255,255,.11);background:linear-gradient(145deg,rgba(16,50,74,.92),rgba(8,22,38,.88));color:rgba(255,255,255,.86);font-size:clamp(10px,2.2vw,15px);font-weight:900;display:grid;place-items:center;padding:0;line-height:1;box-shadow:inset 0 0 10px rgba(38,190,255,.06);}
+#games .shipsBoard.isEnemy .shipsCell{cursor:pointer;}
+#games .shipsBoard.isEnemy .shipsCell:active{transform:scale(.94);filter:brightness(1.22);}
+#games .shipsCell.hasShip{background:linear-gradient(145deg,rgba(98,255,150,.22),rgba(30,86,70,.60));border-color:rgba(145,255,161,.28);color:rgba(185,255,204,.9);}
+#games .shipsCell.isMiss{background:linear-gradient(145deg,rgba(255,255,255,.13),rgba(57,91,118,.36));color:rgba(210,230,255,.84);}
+#games .shipsCell.isHit{background:radial-gradient(circle at 50% 45%,rgba(255,245,117,.96),rgba(255,85,64,.88) 55%,rgba(90,20,20,.62));border-color:rgba(255,160,115,.72);color:#fff;box-shadow:0 0 18px rgba(255,80,40,.26);}
+#games .shipsCodeCard{display:grid;gap:8px;}
+#games .shipsInviteCode{font-size:clamp(30px,10vw,54px);font-weight:1000;letter-spacing:.18em;text-align:center;color:rgb(184,255,103);text-shadow:0 0 22px rgba(124,255,124,.38);}
+#games .shipsJoinCard{display:grid;gap:10px;}
+#games .shipsJoinCard .appInput{text-align:center;text-transform:uppercase;font-size:22px;font-weight:900;letter-spacing:.14em;}
+#games .shipsWaitingBoard{min-height:160px;border:1px dashed rgba(255,255,255,.18);border-radius:18px;display:grid;place-items:center;color:rgba(255,255,255,.62);text-align:center;padding:18px;}
+#games .shipsResult{pointer-events:none;}
+#games .shipsResult .arcadeResultCard{pointer-events:auto;}
+@media (min-width:720px){#games .shipsBoardsWrap{grid-template-columns:1fr 1fr;}}
+@media (max-width:390px){#games .shipsBoard{gap:2px;}#games .shipsCell{border-radius:6px;}}
+
+/* v.1.1 (710) – Lodě online: příprava flotily, ruční pokládání a grafické zásahy. */
+#games .shipsIntroCard,
+#games .shipsCodeCard,
+#games .shipsFleetPanel{background:linear-gradient(145deg,rgba(11,32,55,.74),rgba(5,12,24,.62));border-color:rgba(72,190,255,.18);}
+#games .shipsSetupStage{gap:10px;}
+#games .shipsSetupGrid{display:grid;grid-template-columns:1fr;gap:12px;align-items:start;}
+#games .shipsSetupActions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+#games .shipsSetupActions .gameControlBtn.primary{grid-column:1/-1;background:linear-gradient(135deg,rgba(124,255,124,.26),rgba(25,120,90,.36));border-color:rgba(160,255,180,.42);}
+#games .shipsSetupActions .gameControlBtn.isDisabled{opacity:.58;filter:saturate(.7);}
+#games .shipsFleetPicker{display:grid;gap:7px;}
+#games .shipsShipChip{display:grid;grid-template-columns:32px 1fr auto;align-items:center;gap:8px;width:100%;border-radius:16px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.055);color:rgba(255,255,255,.92);padding:8px 9px;text-align:left;box-shadow:inset 0 0 0 1px rgba(255,255,255,.035);}
+#games .shipsShipChip span{font-size:21px;filter:drop-shadow(0 3px 8px rgba(0,0,0,.28));}
+#games .shipsShipChip strong{font-size:12px;line-height:1.05;}
+#games .shipsShipChip em{font-style:normal;font-size:10px;color:rgba(255,255,255,.58);white-space:nowrap;}
+#games .shipsShipChip.isSelected{border-color:rgba(124,255,255,.55);background:rgba(42,180,255,.14);box-shadow:0 0 18px rgba(42,180,255,.14),inset 0 0 0 1px rgba(124,255,255,.16);}
+#games .shipsShipChip.isPlaced{background:rgba(124,255,124,.12);border-color:rgba(124,255,124,.26);}
+#games .shipsBoardsWrap{display:grid;grid-template-columns:1fr;gap:12px;}
+#games .shipsBoardCard{border:1px solid rgba(255,255,255,.14);background:linear-gradient(145deg,rgba(4,24,45,.76),rgba(5,12,22,.58));border-radius:22px;padding:10px;box-shadow:inset 0 0 0 1px rgba(105,205,255,.08),0 16px 48px rgba(0,0,0,.24);}
+#games .shipsBoard{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:3px;touch-action:manipulation;user-select:none;-webkit-user-select:none;position:relative;padding:4px;border-radius:16px;background:radial-gradient(circle at 25% 20%,rgba(90,210,255,.18),transparent 34%),linear-gradient(150deg,rgba(11,82,122,.54),rgba(2,20,38,.78));box-shadow:inset 0 0 0 1px rgba(130,220,255,.16),inset 0 -18px 35px rgba(0,20,45,.28);}
+#games .shipsCell{aspect-ratio:1/1;min-width:0;border-radius:8px;border:1px solid rgba(166,226,255,.14);background:radial-gradient(circle at 30% 28%,rgba(91,198,255,.26),transparent 34%),linear-gradient(145deg,rgba(17,93,140,.86),rgba(4,35,68,.86));color:rgba(255,255,255,.92);font-size:clamp(10px,2.1vw,15px);font-weight:900;display:grid;place-items:center;padding:0;line-height:1;box-shadow:inset 0 0 12px rgba(49,200,255,.08);position:relative;overflow:hidden;}
+#games .shipsCell::before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.08),transparent 42%,rgba(255,255,255,.03));opacity:.62;pointer-events:none;}
+#games .shipsBoard.isEnemy .shipsCell{cursor:pointer;}
+#games .shipsBoard.isEnemy .shipsCell:not(.isDisabled):active,
+#games .shipsBoard.isPlacement .shipsCell:active{transform:scale(.94);filter:brightness(1.2);}
+#games .shipsCell.hasShip{background:radial-gradient(circle at 40% 32%,rgba(230,255,255,.2),transparent 34%),linear-gradient(145deg,rgba(74,96,112,.92),rgba(24,39,55,.9));border-color:rgba(210,240,255,.34);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12),inset 0 -10px 20px rgba(0,0,0,.24);}
+#games .shipsCell.isSunkShip{background:linear-gradient(145deg,rgba(80,47,42,.94),rgba(28,18,24,.94));border-color:rgba(255,130,90,.48);}
+#games .shipsShipSegment{position:absolute;inset:13% 7%;display:grid;place-items:center;border-radius:999px;background:linear-gradient(145deg,rgba(220,236,245,.95),rgba(83,107,126,.94));box-shadow:inset 0 2px 0 rgba(255,255,255,.36),inset 0 -3px 5px rgba(0,0,0,.22),0 3px 8px rgba(0,0,0,.18);font-size:11px;z-index:2;}
+#games .shipsShipSegment.isV{inset:7% 13%;}
+#games .shipsShipSegment.isBow.isH{border-radius:999px 18px 18px 999px;}
+#games .shipsShipSegment.isStern.isH{border-radius:18px 999px 999px 18px;}
+#games .shipsShipSegment.isBow.isV{border-radius:999px 999px 18px 18px;}
+#games .shipsShipSegment.isStern.isV{border-radius:18px 18px 999px 999px;}
+#games .shipsShipSegment.isDamaged{background:linear-gradient(145deg,rgba(255,210,180,.96),rgba(135,64,55,.95));}
+#games .shipsShotMark{position:absolute;z-index:4;display:grid;place-items:center;inset:0;font-size:clamp(13px,3vw,22px);text-shadow:0 2px 7px rgba(0,0,0,.42);}
+#games .shipsShotMark.isHitMark{animation:shipsHitPop .32s ease-out both;filter:drop-shadow(0 0 9px rgba(255,95,46,.58));}
+#games .shipsShotMark.isMissMark{font-size:clamp(12px,2.5vw,18px);opacity:.86;filter:drop-shadow(0 0 8px rgba(120,220,255,.42));}
+#games .shipsCell.isMiss{background:radial-gradient(circle at 50% 50%,rgba(210,245,255,.22),transparent 42%),linear-gradient(145deg,rgba(24,98,145,.72),rgba(5,34,68,.86));border-color:rgba(160,230,255,.22);}
+#games .shipsCell.isHit{background:radial-gradient(circle at 50% 45%,rgba(255,235,120,.45),rgba(255,83,60,.32) 46%,rgba(42,14,20,.7));border-color:rgba(255,158,108,.72);box-shadow:0 0 18px rgba(255,80,40,.24),inset 0 0 0 1px rgba(255,255,255,.16);}
+#games .shipsCell.isDisabled{pointer-events:none;}
+#games .shipsInviteCode{font-size:clamp(30px,10vw,54px);font-weight:1000;letter-spacing:.18em;text-align:center;color:rgb(184,255,103);text-shadow:0 0 22px rgba(124,255,124,.38);}
+#games .shipsJoinCard{display:grid;gap:10px;}
+#games .shipsJoinCard .appInput{text-align:center;text-transform:uppercase;font-size:22px;font-weight:900;letter-spacing:.14em;}
+#games .shipsWaitingBoard{min-height:160px;border:1px dashed rgba(255,255,255,.18);border-radius:18px;display:grid;place-items:center;color:rgba(255,255,255,.62);text-align:center;padding:18px;background:rgba(255,255,255,.04);}
+#games .shipsResult{pointer-events:none;}
+#games .shipsResult .arcadeResultCard{pointer-events:auto;}
+@keyframes shipsHitPop{0%{transform:scale(.35) rotate(-12deg);opacity:.2}70%{transform:scale(1.18) rotate(3deg);opacity:1}100%{transform:scale(1) rotate(0deg);opacity:1}}
+@media (min-width:720px){#games .shipsBoardsWrap,#games .shipsSetupGrid{grid-template-columns:1fr 1fr;}}
+@media (max-width:390px){#games .shipsBoard{gap:2px;padding:3px;}#games .shipsCell{border-radius:6px;}#games .shipsShipChip{grid-template-columns:28px 1fr auto;padding:7px 8px;}}

@@ -1,8 +1,16 @@
-## v.1.1 (708)
-- Flappy Car: koncový overlay už nepřekresluje tlačítko Nová hra v každém frame, takže tlačítko reaguje spolehlivěji.
-- Flappy Car: overlay po konci hry kliká jen přes vlastní kartu, takže nemá blokovat spodní navigaci nebo klik mimo tabulku.
-- Rozpisy: běžné tabulky Tvrdota/Měkota mají o něco širší pracovní plochu a užší datumový sloupec, aby se lépe vešla jména.
-- Verze sjednocena na v.1.1 (708), cache na v1.1-708 a Supabase realtime kanál na rak-public-live-v708.
+## v.1.1 (710)
+- Lodě online: přidaná přípravná fáze flotily před hrou. Hráč může flotilu opakovaně přehazovat automaticky, nebo ji skládat ručně.
+- Lodě online: ruční pokládání podporuje výběr konkrétní lodě, otáčení vodorovně/svisle a kontrolu pravidla, že se lodě nesmí dotýkat stranou ani rohem.
+- Lodě online: hra začne až po potvrzení flotily oběma hráči; do té doby se čeká na připravenost soupeře.
+- Lodě online: výraznější grafika moře, lodí, zásahů, vody/minutí a potopených lodí. Tvoje pole ukazuje zásahy soupeře a soupeřovo pole tvoje střely.
+- Verze sjednocena na v.1.1 (710), cache na v1.1-710 a Supabase realtime kanál na rak-public-live-v710.
+
+## v.1.1 (709)
+- Rozpisy: jmenné sloupky v běžných tabulkách zúžené o dalších cca 5 %, aby se lépe vešly na mobil.
+- Hry: přidaná nová online-only hra Lodě online / Battleship. Vytvoření hry, přijetí 4místné pozvánky a tahy běží přes stejnou online session logiku jako Piškvorky.
+- Lodě mají automaticky rozmístěnou flotilu, dvě 10×10 pole, střídání tahů, zásah/voda/potopení a výsledek se zapisuje do herního profilu až po dokončení hry.
+- Supabase bridge nově umí vytvářet a ukládat game_sessions i pro jiný typ online hry než gomoku, bez rozbití Piškvorek.
+- Verze sjednocena na v.1.1 (709), cache na v1.1-709 a Supabase realtime kanál na rak-public-live-v709.
 
 ## v.1.1 (705)
 - Kalkulačky: číselné vstupy dostávají `inputmode=decimal`, aby se na mobilu otevírala číselná klávesnice místo běžné.

@@ -1,4 +1,4 @@
-// v.1.1 (708) – Flappy Car overlay restart + širší běžné Rozpisy.
+// v.1.1 (710) – Lodě online: flotila ručně/automaticky + výraznější námořní grafika.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;
