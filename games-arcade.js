@@ -2,15 +2,15 @@
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
 
-  // v.1.1 (708): Flappy Car overlay restart + širší běžné Rozpisy.
-  const CORE_GAMES = ['ttt', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
+  // v.1.1 (710): Lodě online: flotila ručně/automaticky + výraznější námořní grafika.
+  const CORE_GAMES = ['ttt', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'ships', 'daily'];
   const EXTRA_GAMES = [];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);
   const LEGACY_RENDER_GAMES = ['2048', 'snake', 'flap'];
-  const ARCADE_RENDER_GAMES = ['aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
+  const ARCADE_RENDER_GAMES = ['aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'ships', 'daily'];
   const POINT_SCALE = 1000000000;
   const ARC_KEY = 'arcade';
-  const DAILY_MODES = ['aim', 'reaction', 'memory', 'mines', 'bubble', 'doodle', 'brick', 'shooter', 'bomber'];
+  const DAILY_MODES = ['aim', 'reaction', 'memory', 'mines', 'bubble', 'doodle', 'brick', 'shooter', 'bomber', 'ships'];
 
   const META = {
     ttt: { title: 'Piškvorky', subtitle: 'AI, lokální duel a pozvánky', unit: 'her', mode: 'high', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5.2" y="5.2" width="13.6" height="13.6" rx="3"></rect><path d="M9 9.1l3 3 3-3"></path><circle cx="9.2" cy="15" r="1.1"></circle><circle cx="14.8" cy="15" r="1.1"></circle><path d="M8.1 6.5v11M12 6.5v11M15.9 6.5v11M6.5 10.1h11M6.5 13.9h11"></path></svg>' },
@@ -28,6 +28,8 @@
     mines: { title: 'Minesweeper', subtitle: 'Rychlá pauza a score i při výbuchu', unit: 'bodů', mode: 'high', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="7"></circle><path d="M12 5v4M12 15v4M5 12h4M15 12h4M8.3 8.3l2.8 2.8M12.9 12.9l2.8 2.8M15.7 8.3l-2.8 2.8M11.1 12.9l-2.8 2.8"></path></svg>' },
     memory: { title: 'Memory / Pexeso', subtitle: 'Moderní animace a rychlé páry', unit: 'ms', mode: 'low', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="5" width="6.2" height="6.2" rx="1.5"></rect><rect x="13.3" y="5" width="6.2" height="6.2" rx="1.5"></rect><rect x="4.5" y="13.8" width="6.2" height="6.2" rx="1.5"></rect><rect x="13.3" y="13.8" width="6.2" height="6.2" rx="1.5"></rect></svg>' },
     bomber: { title: 'Bomberman mini', subtitle: 'Bludiště, bomby, příšerky a upgrady', unit: 'bodů', mode: 'high', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h6v3H9z"></path><circle cx="12" cy="14" r="5"></circle><path d="M15.8 10.2l2-2"></path></svg>' },
+
+    ships: { title: 'Lodě online', subtitle: 'Online námořní souboj přes pozvánku', unit: 'bodů', mode: 'high', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15.5h16l-2 3.5H6z"></path><path d="M8 15.5V8l4-3 4 3v7.5"></path><path d="M10 11h4"></path><path d="M3.5 20.5c1.5.7 3 .7 4.5 0 1.5.7 3 .7 4.5 0 1.5.7 3 .7 4.5 0 1.2.5 2.4.6 3.5.2"></path></svg>' },
     daily: { title: 'Denní challenge', subtitle: 'Každý den jiná hra a stejná výzva', unit: 'bodů', mode: 'high', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="6.5" width="15" height="13" rx="2"></rect><path d="M8 4.5v4M16 4.5v4M4.5 10h15"></path><path d="M8 14l2.1 2.1L16.3 10"></path></svg>' }
   };
 
@@ -1099,7 +1101,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function renderLaunchTiles() {
     const grid = document.getElementById('gamesGrid');
     if (!grid) return;
-    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v708';
+    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v710';
     if (grid.dataset && grid.dataset.arcadeLaunchSig === launchSig && grid.querySelector('[data-game="ttt"]')) {
       gamePerf.launchRenderSkips = Number(gamePerf.launchRenderSkips || 0) + 1;
       return;
@@ -3516,6 +3518,506 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     setActiveState('bomber', state);
   }
 
+
+  // Lodě online -----------------------------------------------------------
+  const SHIPS_SIZE = 10;
+  const SHIPS_FLEET = [
+    { id: 'carrier', len: 5, name: 'Letadlová loď', icon: '🛳️' },
+    { id: 'battleship', len: 4, name: 'Bitevní loď', icon: '🚢' },
+    { id: 'cruiser', len: 3, name: 'Křižník', icon: '⛴️' },
+    { id: 'submarine', len: 3, name: 'Ponorka', icon: '🛥️' },
+    { id: 'destroyer', len: 2, name: 'Torpédoborec', icon: '🚤' }
+  ];
+
+  function shipsCellKey(r, c) { return String(r) + ':' + String(c); }
+  function shipsHasCell(list, r, c) {
+    return Array.isArray(list) && list.some((cell) => Number(cell && cell[0]) === r && Number(cell && cell[1]) === c);
+  }
+  function shipsRandomCode() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let out = '';
+    for (let i = 0; i < 4; i += 1) out += chars[Math.floor(Math.random() * chars.length)];
+    return out;
+  }
+  function shipsAccountId() {
+    try {
+      const acc = typeof gamesGetActiveAccount === 'function' ? gamesGetActiveAccount() : null;
+      return String(acc && acc.id ? acc.id : '').trim();
+    } catch (err) { return ''; }
+  }
+  function shipsAccountName() {
+    try {
+      const acc = typeof gamesGetActiveAccount === 'function' ? gamesGetActiveAccount() : null;
+      return String(acc && acc.name ? acc.name : (acc && acc.id ? acc.id : 'Hráč')).trim() || 'Hráč';
+    } catch (err) { return 'Hráč'; }
+  }
+  function shipsEmptyPlayerBoard() { return { ships: [], shots: [], sunk: 0 }; }
+  function shipsFleetCells(player) {
+    const set = new Set();
+    (player && Array.isArray(player.ships) ? player.ships : []).forEach((ship) => {
+      (Array.isArray(ship.cells) ? ship.cells : []).forEach((cell) => set.add(shipsCellKey(Number(cell[0]), Number(cell[1]))));
+    });
+    return set;
+  }
+  function shipsFindShipAt(player, r, c) {
+    const ships = player && Array.isArray(player.ships) ? player.ships : [];
+    return ships.find((ship) => shipsHasCell(ship.cells, r, c)) || null;
+  }
+  function shipsShotAt(playerOrShots, r, c) {
+    const shots = Array.isArray(playerOrShots) ? playerOrShots : (playerOrShots && Array.isArray(playerOrShots.shots) ? playerOrShots.shots : []);
+    return shots.find((shot) => Number(shot.r) === r && Number(shot.c) === c) || null;
+  }
+  function shipsShipSunk(ship) {
+    return !!(ship && Array.isArray(ship.cells) && ship.cells.length && Array.isArray(ship.hits) && ship.hits.length >= ship.cells.length);
+  }
+  function shipsCellsForPlacement(r, c, len, horizontal) {
+    const cells = [];
+    for (let i = 0; i < len; i += 1) cells.push([r + (horizontal ? 0 : i), c + (horizontal ? i : 0)]);
+    return cells;
+  }
+  function shipsCanPlaceAgainstShips(ships, r, c, len, horizontal, ignoreId) {
+    const cells = shipsCellsForPlacement(r, c, len, horizontal);
+    if (cells.some(([rr, cc]) => rr < 0 || cc < 0 || rr >= SHIPS_SIZE || cc >= SHIPS_SIZE)) return false;
+    const occupied = new Set();
+    (Array.isArray(ships) ? ships : []).forEach((ship) => {
+      if (ignoreId && String(ship.id || '') === String(ignoreId)) return;
+      (Array.isArray(ship.cells) ? ship.cells : []).forEach((cell) => occupied.add(shipsCellKey(Number(cell[0]), Number(cell[1]))));
+    });
+    for (const [rr, cc] of cells) {
+      for (let ar = rr - 1; ar <= rr + 1; ar += 1) {
+        for (let ac = cc - 1; ac <= cc + 1; ac += 1) {
+          if (ar >= 0 && ac >= 0 && ar < SHIPS_SIZE && ac < SHIPS_SIZE && occupied.has(shipsCellKey(ar, ac))) return false;
+        }
+      }
+    }
+    return true;
+  }
+  function shipsCanPlace(grid, r, c, len, horizontal) {
+    for (let i = 0; i < len; i += 1) {
+      const rr = r + (horizontal ? 0 : i);
+      const cc = c + (horizontal ? i : 0);
+      if (rr < 0 || cc < 0 || rr >= SHIPS_SIZE || cc >= SHIPS_SIZE) return false;
+      for (let ar = rr - 1; ar <= rr + 1; ar += 1) {
+        for (let ac = cc - 1; ac <= cc + 1; ac += 1) {
+          if (ar >= 0 && ac >= 0 && ar < SHIPS_SIZE && ac < SHIPS_SIZE && grid[ar][ac]) return false;
+        }
+      }
+    }
+    return true;
+  }
+  function shipsBuildPlayerBoard() {
+    const grid = Array.from({ length: SHIPS_SIZE }, () => Array(SHIPS_SIZE).fill(false));
+    const ships = [];
+    SHIPS_FLEET.forEach((def, idx) => {
+      let placed = false;
+      for (let tries = 0; tries < 900 && !placed; tries += 1) {
+        const horizontal = Math.random() > 0.5;
+        const r = Math.floor(Math.random() * (horizontal ? SHIPS_SIZE : (SHIPS_SIZE - def.len + 1)));
+        const c = Math.floor(Math.random() * (horizontal ? (SHIPS_SIZE - def.len + 1) : SHIPS_SIZE));
+        if (!shipsCanPlace(grid, r, c, def.len, horizontal)) continue;
+        const cells = shipsCellsForPlacement(r, c, def.len, horizontal);
+        cells.forEach(([rr, cc]) => { grid[rr][cc] = true; });
+        ships.push({ id: def.id || ('s' + idx), name: def.name, icon: def.icon, len: def.len, horizontal, cells, hits: [] });
+        placed = true;
+      }
+    });
+    return { ships, shots: [], sunk: 0 };
+  }
+  function shipsNormalizePlayerBoard(player) {
+    const board = player && typeof player === 'object' ? Object.assign({}, player) : shipsEmptyPlayerBoard();
+    board.shots = Array.isArray(board.shots) ? board.shots : [];
+    board.ships = Array.isArray(board.ships) ? board.ships.map((ship, idx) => {
+      const def = SHIPS_FLEET.find((x) => String(x.id) === String(ship.id)) || SHIPS_FLEET[idx] || { id: 's' + idx, len: Number(ship.len || 1), name: 'Loď', icon: '🚢' };
+      const cells = Array.isArray(ship.cells) ? ship.cells.map((cell) => [Number(cell[0]), Number(cell[1])]).filter(([r, c]) => Number.isFinite(r) && Number.isFinite(c)) : [];
+      return {
+        id: String(ship.id || def.id || ('s' + idx)),
+        name: String(ship.name || def.name || 'Loď'),
+        icon: String(ship.icon || def.icon || '🚢'),
+        len: Number(ship.len || def.len || cells.length || 1),
+        horizontal: typeof ship.horizontal === 'boolean' ? ship.horizontal : (cells.length > 1 ? Number(cells[0][0]) === Number(cells[cells.length - 1][0]) : true),
+        cells,
+        hits: Array.isArray(ship.hits) ? ship.hits.map((cell) => [Number(cell[0]), Number(cell[1])]) : []
+      };
+    }) : [];
+    return board;
+  }
+  function shipsValidateFleet(player) {
+    const board = shipsNormalizePlayerBoard(player);
+    if (board.ships.length !== SHIPS_FLEET.length) return false;
+    const sortedHave = board.ships.map((ship) => Number(ship.len || (ship.cells || []).length)).sort((a, b) => b - a).join(',');
+    const sortedNeed = SHIPS_FLEET.map((ship) => ship.len).sort((a, b) => b - a).join(',');
+    if (sortedHave !== sortedNeed) return false;
+    const occupied = new Set();
+    for (const ship of board.ships) {
+      if (!Array.isArray(ship.cells) || ship.cells.length !== Number(ship.len)) return false;
+      for (const [r, c] of ship.cells) {
+        if (r < 0 || c < 0 || r >= SHIPS_SIZE || c >= SHIPS_SIZE) return false;
+        const key = shipsCellKey(r, c);
+        if (occupied.has(key)) return false;
+        occupied.add(key);
+      }
+    }
+    for (let i = 0; i < board.ships.length; i += 1) {
+      const ship = board.ships[i];
+      for (const [r, c] of ship.cells) {
+        for (let ar = r - 1; ar <= r + 1; ar += 1) {
+          for (let ac = c - 1; ac <= c + 1; ac += 1) {
+            if (ar < 0 || ac < 0 || ar >= SHIPS_SIZE || ac >= SHIPS_SIZE) continue;
+            const other = shipsFindShipAt(board, ar, ac);
+            if (other && String(other.id) !== String(ship.id)) return false;
+          }
+        }
+      }
+    }
+    return true;
+  }
+  function shipsPlaceShip(player, def, r, c, horizontal) {
+    const board = shipsNormalizePlayerBoard(player);
+    if (!def || !shipsCanPlaceAgainstShips(board.ships, r, c, def.len, horizontal, def.id)) return { ok: false, board };
+    const cells = shipsCellsForPlacement(r, c, def.len, horizontal);
+    const nextShip = { id: def.id, name: def.name, icon: def.icon, len: def.len, horizontal: !!horizontal, cells, hits: [] };
+    board.ships = board.ships.filter((ship) => String(ship.id) !== String(def.id));
+    board.ships.push(nextShip);
+    board.ships.sort((a, b) => SHIPS_FLEET.findIndex(x => x.id === a.id) - SHIPS_FLEET.findIndex(x => x.id === b.id));
+    return { ok: true, board };
+  }
+  function shipsFreshState(code, xAccount) {
+    return {
+      gameType: 'battleship',
+      code: String(code || '').trim().toUpperCase(),
+      status: 'waiting',
+      turn: 'X',
+      winner: '',
+      playerXAccountNumber: xAccount || null,
+      playerOAccountNumber: null,
+      xReady: false,
+      oReady: false,
+      x: shipsBuildPlayerBoard(),
+      o: null,
+      revision: 1,
+      message: 'Připrav si flotilu. Lodě se nesmí dotýkat stranou ani rohem.'
+    };
+  }
+  function shipsNormalizeState(raw, code) {
+    const st = raw && typeof raw === 'object' ? Object.assign({}, raw) : shipsFreshState(code, shipsAccountId());
+    st.gameType = 'battleship';
+    st.code = String(st.code || code || '').trim().toUpperCase();
+    st.status = st.status || 'waiting';
+    st.turn = st.turn === 'O' ? 'O' : 'X';
+    st.playerXAccountNumber = st.playerXAccountNumber || null;
+    st.playerOAccountNumber = st.playerOAccountNumber || null;
+    st.x = shipsNormalizePlayerBoard(st.x && Array.isArray(st.x.ships) ? st.x : shipsBuildPlayerBoard());
+    st.o = st.o && Array.isArray(st.o.ships) ? shipsNormalizePlayerBoard(st.o) : null;
+    st.xReady = !!st.xReady;
+    st.oReady = !!st.oReady;
+    if (st.status !== 'finished' && st.o && st.xReady && st.oReady) st.status = 'active';
+    if (st.status === 'active' && (!st.xReady || !st.oReady || !st.o)) st.status = st.o ? 'placing' : 'waiting';
+    st.revision = Number(st.revision || 1) || 1;
+    return st;
+  }
+  function shipsRoleForState(st) {
+    const account = shipsAccountId();
+    if (account && String(st.playerXAccountNumber || '') === account) return 'X';
+    if (account && String(st.playerOAccountNumber || '') === account) return 'O';
+    return '';
+  }
+  function shipsAllSunk(player) {
+    const ships = player && Array.isArray(player.ships) ? player.ships : [];
+    return ships.length > 0 && ships.every((ship) => shipsShipSunk(ship));
+  }
+  function shipsRenderShipSegment(ship, r, c, shot, options) {
+    const cells = Array.isArray(ship && ship.cells) ? ship.cells : [];
+    const idx = cells.findIndex((cell) => Number(cell[0]) === r && Number(cell[1]) === c);
+    const len = Math.max(1, cells.length || Number(ship && ship.len || 1));
+    const horizontal = typeof ship.horizontal === 'boolean' ? ship.horizontal : (len > 1 ? Number(cells[0] && cells[0][0]) === Number(cells[len - 1] && cells[len - 1][0]) : true);
+    let pos = 'mid';
+    if (idx === 0) pos = 'bow';
+    else if (idx === len - 1) pos = 'stern';
+    const icon = idx === Math.floor((len - 1) / 2) ? escapeHtml(String(ship.icon || '🚢')) : '';
+    const hitClass = shot && shot.hit ? ' isDamaged' : '';
+    return `<span class="shipsShipSegment ${horizontal ? 'isH' : 'isV'} is${pos.charAt(0).toUpperCase() + pos.slice(1)}${hitClass}" aria-hidden="true">${icon}</span>`;
+  }
+  function shipsRenderBoard(player, opts) {
+    const options = opts || {};
+    const board = shipsNormalizePlayerBoard(player || {});
+    const shots = Array.isArray(options.shots) ? options.shots : board.shots;
+    const rows = [];
+    for (let r = 0; r < SHIPS_SIZE; r += 1) {
+      for (let c = 0; c < SHIPS_SIZE; c += 1) {
+        const shot = shipsShotAt(shots, r, c);
+        const ship = shipsFindShipAt(board, r, c);
+        const sunkShip = ship && shipsShipSunk(ship);
+        const revealShip = !!(ship && (options.own || options.placement || sunkShip || (shot && shot.hit)));
+        let cls = 'shipsCell';
+        let txt = '';
+        if (revealShip) cls += ' hasShip' + (sunkShip ? ' isSunkShip' : '');
+        if (shot) cls += shot.hit ? ' isHit' : ' isMiss';
+        if (options.enemy && shot) cls += ' isDisabled';
+        if (revealShip) txt += shipsRenderShipSegment(ship, r, c, shot, options);
+        if (shot) txt += shot.hit ? '<span class="shipsShotMark isHitMark">💥</span>' : '<span class="shipsShotMark isMissMark">🌊</span>';
+        const data = options.enemy && !shot ? ` data-ships-shot="${r}:${c}"` : '';
+        const placeData = options.placement ? ` data-ships-place="${r}:${c}"` : '';
+        rows.push(`<button type="button" class="${cls}"${data}${placeData} aria-label="${r + 1}-${c + 1}">${txt}</button>`);
+      }
+    }
+    return `<div class="shipsBoard ${options.enemy ? 'isEnemy' : 'isOwn'}${options.placement ? ' isPlacement' : ''}">${rows.join('')}</div>`;
+  }
+  function shipsBuildPayloadSummary(st, role) {
+    const mine = role === 'O' ? st.o : st.x;
+    const enemy = role === 'O' ? st.x : st.o;
+    const myShots = mine && Array.isArray(mine.shots) ? mine.shots.length : 0;
+    const hits = mine && Array.isArray(mine.shots) ? mine.shots.filter(s => s.hit).length : 0;
+    const sunk = enemy && Array.isArray(enemy.ships) ? enemy.ships.filter(ship => shipsShipSunk(ship)).length : 0;
+    return { myShots, hits, sunk };
+  }
+  function shipsApplyShot(st, role, r, c) {
+    if (!st || st.status !== 'active' || st.turn !== role) return { ok: false, reason: 'not-your-turn' };
+    const shooterKey = role === 'O' ? 'o' : 'x';
+    const targetKey = role === 'O' ? 'x' : 'o';
+    const shooter = st[shooterKey];
+    const target = st[targetKey];
+    if (!shooter || !target) return { ok: false, reason: 'missing-board' };
+    if (shipsShotAt(shooter, r, c)) return { ok: false, reason: 'already-shot' };
+    const hitShip = shipsFindShipAt(target, r, c);
+    const shot = { r, c, hit: !!hitShip, at: Date.now() };
+    if (hitShip) {
+      hitShip.hits = Array.isArray(hitShip.hits) ? hitShip.hits : [];
+      if (!shipsHasCell(hitShip.hits, r, c)) hitShip.hits.push([r, c]);
+      shot.sunk = shipsShipSunk(hitShip);
+      shot.shipId = hitShip.id;
+      st.message = shot.sunk ? 'Přímý zásah. ' + String(hitShip.name || 'Loď') + ' šla ke dnu.' : 'Zásah! Střílíš znovu.';
+    } else {
+      st.turn = role === 'X' ? 'O' : 'X';
+      st.message = 'Voda. Na tahu je soupeř.';
+    }
+    shooter.shots = Array.isArray(shooter.shots) ? shooter.shots : [];
+    shooter.shots.push(shot);
+    if (shipsAllSunk(target)) {
+      st.status = 'finished';
+      st.winner = role;
+      st.winnerAccountNumber = role === 'X' ? st.playerXAccountNumber : st.playerOAccountNumber;
+      st.message = 'Vyhrál hráč ' + role + '. Celá flotila soupeře je dole.';
+    }
+    st.revision = (Number(st.revision || 0) || 0) + 1;
+    st.updatedAtTs = Date.now();
+    return { ok: true, shot };
+  }
+  async function shipsSaveState(state) {
+    if (!state || !state.code || typeof window.saveGameSessionByInviteCode !== 'function') return { ok: false, reason: 'missing-save' };
+    return window.saveGameSessionByInviteCode(state.code, state);
+  }
+  function renderShips(body) {
+    clearCleanups();
+    const local = getState('ships', () => ({ code: '', state: null, loadedRevision: 0, busy: false, poll: 0, savedFinishedCode: '', placing: { manual: false, selected: 'carrier', horizontal: true } }));
+    local.placing = local.placing || { manual: false, selected: 'carrier', horizontal: true };
+    const account = shipsAccountId();
+    const accountName = shipsAccountName();
+    const status = (msg) => `<div class="arcadeStatus shipsStatus">${escapeHtml(msg || '')}</div>`;
+    const playerKey = (role) => role === 'O' ? 'o' : 'x';
+    const readyKey = (role) => role === 'O' ? 'oReady' : 'xReady';
+    const selectedDef = () => SHIPS_FLEET.find((ship) => ship.id === local.placing.selected) || SHIPS_FLEET[0];
+    const nextUnplaced = (board) => {
+      const ids = new Set((board && Array.isArray(board.ships) ? board.ships : []).map((ship) => String(ship.id)));
+      return (SHIPS_FLEET.find((ship) => !ids.has(ship.id)) || SHIPS_FLEET[0]).id;
+    };
+    const saveAndRender = async (st, msg) => {
+      st.message = msg || st.message || '';
+      st.revision = (Number(st.revision || 0) || 0) + 1;
+      local.state = st;
+      renderGame();
+      await shipsSaveState(st);
+    };
+    const renderMenu = (message) => {
+      body.innerHTML = `<div class="arcadeStage shipsStage shipsMenuStage">
+        <div class="arcadeBar arcadePanel uPad12 shipsIntroCard">
+          <div class="arcadeStatus"><strong>Lodě online</strong><br>Online námořní souboj pro dva hráče. Nejdřív si připravíš flotilu: můžeš ji opakovaně přehodit automatem nebo poskládat ručně. Lodě se nesmí dotýkat stranou ani rohem.</div>
+        </div>
+        ${message ? status(message) : ''}
+        <div class="arcadeControls shipsInviteControls">
+          <button type="button" class="gameControlBtn" id="shipsCreateBtn">Vytvořit hru</button>
+        </div>
+        <div class="arcadeBar arcadePanel uPad12 shipsJoinCard">
+          <label class="smallText uBold" for="shipsJoinCode">Kód pozvánky</label>
+          <input id="shipsJoinCode" class="appInput" inputmode="text" maxlength="6" placeholder="např. A7K9">
+          <button type="button" class="gameControlBtn" id="shipsJoinBtn">Přijmout pozvánku</button>
+        </div>
+        ${gamesTop3Block('ships', 'bodů', 5).replace('gamesTop5ScrollCard', 'gamesTop5ScrollCard arcadeTopScoreTight')}
+      </div>`;
+      const create = body.querySelector('#shipsCreateBtn');
+      const join = body.querySelector('#shipsJoinBtn');
+      if (create) create.addEventListener('click', async () => {
+        if (!account) { renderMenu('Nejdřív se přihlas do herního profilu.'); return; }
+        const code = shipsRandomCode();
+        const st = shipsFreshState(code, account);
+        local.busy = true; renderMenu('Zakládám online hru…');
+        const res = await window.createGameInvite({ gameType: 'battleship', code, inviterAccountNumber: account, boardState: st, payload: { title: 'Lodě online', playerName: accountName } });
+        local.busy = false;
+        if (!res || !res.ok) { renderMenu('Pozvánku se nepodařilo vytvořit. Zkus to znovu online.'); return; }
+        local.code = code; local.state = st; local.placing = { manual: false, selected: nextUnplaced(st.x), horizontal: true }; renderGame();
+      });
+      if (join) join.addEventListener('click', async () => {
+        if (!account) { renderMenu('Nejdřív se přihlas do herního profilu.'); return; }
+        const input = body.querySelector('#shipsJoinCode');
+        const code = String(input && input.value || '').trim().toUpperCase();
+        if (!code) { renderMenu('Zadej kód pozvánky.'); return; }
+        renderMenu('Připojuji se k online hře…');
+        const accepted = await window.acceptGameInvite(code, account);
+        if (!accepted || !accepted.ok) { renderMenu('Pozvánku se nepodařilo přijmout.'); return; }
+        const loaded = await window.loadGameSessionByInviteCode(code);
+        let st = shipsNormalizeState(loaded && loaded.session && loaded.session.board_state, code);
+        st.playerOAccountNumber = st.playerOAccountNumber || account;
+        st.o = st.o && st.o.ships && st.o.ships.length ? st.o : shipsBuildPlayerBoard();
+        st.oReady = false;
+        st.status = st.xReady ? 'placing' : 'placing';
+        st.message = 'Připojeno. Připrav si flotilu a potvrď ji.';
+        st.revision = (Number(st.revision || 0) || 0) + 1;
+        await shipsSaveState(st);
+        local.code = code; local.state = st; local.placing = { manual: false, selected: nextUnplaced(st.o), horizontal: true }; renderGame();
+      });
+    };
+    const maybeRecordFinished = () => {
+      const st = local.state;
+      const role = st ? shipsRoleForState(st) : '';
+      if (!st || st.status !== 'finished' || !role || local.savedFinishedCode === st.code + ':' + String(st.winner || '')) return;
+      local.savedFinishedCode = st.code + ':' + String(st.winner || '');
+      const sum = shipsBuildPayloadSummary(st, role);
+      const won = st.winner === role;
+      gamesRecordStat('ships', { completed: true, bestScore: won ? 1000 + (sum.hits * 80) + (sum.sunk * 220) : Math.max(100, sum.hits * 70), bestHits: sum.hits, bestClears: sum.sunk, lastResult: won ? 'Výhra v Lodích' : 'Prohra v Lodích' });
+    };
+    const refreshRemote = async (soft) => {
+      if (!local.code || typeof window.loadGameSessionByInviteCode !== 'function') return;
+      const res = await window.loadGameSessionByInviteCode(local.code);
+      const remote = res && res.session && res.session.board_state ? shipsNormalizeState(res.session.board_state, local.code) : null;
+      if (!remote) return;
+      const oldRev = Number(local.state && local.state.revision || 0) || 0;
+      const role = shipsRoleForState(local.state || remote);
+      const mineReady = role ? !!remote[readyKey(role)] : true;
+      if (!soft || mineReady || Number(remote.revision || 0) > oldRev) {
+        local.state = remote;
+        maybeRecordFinished();
+        renderGame(true);
+      }
+    };
+    const renderPlacement = (st, role, message) => {
+      const keyName = playerKey(role);
+      const mine = shipsNormalizePlayerBoard(st[keyName]);
+      st[keyName] = mine;
+      const valid = shipsValidateFleet(mine);
+      const manual = !!local.placing.manual;
+      const def = selectedDef();
+      const placedIds = new Set(mine.ships.map((ship) => String(ship.id)));
+      const fleetButtons = SHIPS_FLEET.map((ship) => `<button type="button" class="shipsShipChip ${local.placing.selected === ship.id ? 'isSelected' : ''} ${placedIds.has(ship.id) ? 'isPlaced' : ''}" data-ships-select="${ship.id}"><span>${escapeHtml(ship.icon)}</span><strong>${escapeHtml(ship.name)}</strong><em>${ship.len} pole</em></button>`).join('');
+      body.innerHTML = `<div class="arcadeStage shipsStage shipsSetupStage">
+        <div class="arcadeHud arcadeHudSingleLine">${gamesStatLine('Kód', st.code || '—')}${gamesStatLine('Role', role || '—')}${gamesStatLine('Lodí', `${mine.ships.length}/${SHIPS_FLEET.length}`)}${gamesStatLine('Režim', manual ? 'ručně' : 'auto')}</div>
+        <div class="arcadeBar arcadePanel uPad12 shipsCodeCard"><strong>Připrav flotilu</strong><div class="smallText">${escapeHtml(message || st.message || 'Lodě se nesmí dotýkat ani rohem. Můžeš přehazovat automat nebo je poskládat ručně.')}</div>${!st.o ? `<div class="shipsInviteCode">${escapeHtml(st.code || '')}</div><button type="button" class="gameControlBtn" id="shipsCopyCodeBtn">Kopírovat kód</button>` : ''}</div>
+        <div class="shipsSetupGrid">
+          <div class="shipsBoardCard"><div class="smallText uBold">Tvoje flotila</div>${shipsRenderBoard(mine, { own: true, placement: true })}</div>
+          <div class="shipsFleetPanel arcadeBar arcadePanel uPad12"><div class="smallText uBold">Lodě</div><div class="shipsFleetPicker">${fleetButtons}</div><div class="smallText">Vybraná: <strong>${escapeHtml(def.name)}</strong> · ${local.placing.horizontal ? 'vodorovně' : 'svisle'}</div></div>
+        </div>
+        <div class="arcadeControls shipsSetupActions">
+          <button type="button" class="gameControlBtn" id="shipsShuffleBtn">Přehodit automaticky</button>
+          <button type="button" class="gameControlBtn" id="shipsManualBtn">${manual ? 'Automatický návrh' : 'Ručně poskládat'}</button>
+          <button type="button" class="gameControlBtn" id="shipsRotateBtn">Otočit loď</button>
+          <button type="button" class="gameControlBtn" id="shipsClearBtn">Vyčistit</button>
+          <button type="button" class="gameControlBtn ${valid ? 'primary' : 'isDisabled'}" id="shipsReadyBtn">Potvrdit flotilu</button>
+        </div>
+      </div>`;
+      const copy = body.querySelector('#shipsCopyCodeBtn');
+      if (copy) copy.addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText(st.code || ''); st.message = 'Kód zkopírovaný.'; renderPlacement(st, role); } catch (err) { st.message = 'Kód: ' + (st.code || ''); renderPlacement(st, role); }
+      });
+      body.querySelectorAll('[data-ships-select]').forEach((btn) => btn.addEventListener('click', () => { local.placing.selected = btn.getAttribute('data-ships-select') || SHIPS_FLEET[0].id; local.placing.manual = true; renderPlacement(st, role); }));
+      const shuffle = body.querySelector('#shipsShuffleBtn');
+      if (shuffle) shuffle.addEventListener('click', async () => {
+        st[keyName] = shipsBuildPlayerBoard();
+        st[readyKey(role)] = false;
+        local.placing.manual = false;
+        local.placing.selected = nextUnplaced(st[keyName]);
+        await saveAndRender(st, 'Flotila přeházená. Jestli sedí, potvrď ji.');
+      });
+      const manualBtn = body.querySelector('#shipsManualBtn');
+      if (manualBtn) manualBtn.addEventListener('click', async () => {
+        local.placing.manual = !local.placing.manual;
+        if (local.placing.manual) { st[keyName] = shipsEmptyPlayerBoard(); st[readyKey(role)] = false; local.placing.selected = SHIPS_FLEET[0].id; await saveAndRender(st, 'Ruční pokládání: vyber loď a klepni na pole.'); }
+        else { st[keyName] = shipsBuildPlayerBoard(); st[readyKey(role)] = false; await saveAndRender(st, 'Automat připravil novou flotilu.'); }
+      });
+      const rotate = body.querySelector('#shipsRotateBtn');
+      if (rotate) rotate.addEventListener('click', () => { local.placing.horizontal = !local.placing.horizontal; renderPlacement(st, role); });
+      const clear = body.querySelector('#shipsClearBtn');
+      if (clear) clear.addEventListener('click', async () => { st[keyName] = shipsEmptyPlayerBoard(); st[readyKey(role)] = false; local.placing.manual = true; local.placing.selected = SHIPS_FLEET[0].id; await saveAndRender(st, 'Pole je čisté. Poskládej flotilu ručně.'); });
+      body.querySelectorAll('[data-ships-place]').forEach((btn) => btn.addEventListener('click', async () => {
+        local.placing.manual = true;
+        const parts = String(btn.getAttribute('data-ships-place') || '').split(':').map(Number);
+        const picked = selectedDef();
+        const res = shipsPlaceShip(st[keyName], picked, parts[0], parts[1], !!local.placing.horizontal);
+        if (!res.ok) { renderPlacement(st, role, 'Sem loď dát nejde. Lodě se nesmí dotýkat ani rohem.'); return; }
+        st[keyName] = res.board;
+        st[readyKey(role)] = false;
+        local.placing.selected = nextUnplaced(res.board);
+        await saveAndRender(st, 'Loď položena. Pokračuj nebo potvrď flotilu.');
+      }));
+      const ready = body.querySelector('#shipsReadyBtn');
+      if (ready) ready.addEventListener('click', async () => {
+        if (!shipsValidateFleet(st[keyName])) { renderPlacement(st, role, 'Flotila ještě není správně složená. Musí být 5 lodí a nesmí se dotýkat.'); return; }
+        st[readyKey(role)] = true;
+        if (st.xReady && st.oReady && st.o) { st.status = 'active'; st.message = 'Hra začala. Střílí hráč X.'; }
+        else { st.status = st.o ? 'placing' : 'waiting'; st.message = st.o ? 'Čeká se, až soupeř potvrdí flotilu.' : 'Flotila potvrzená. Čeká se na protihráče.'; }
+        await saveAndRender(st, st.message);
+      });
+    };
+    const renderGame = (fromPoll) => {
+      const st = shipsNormalizeState(local.state, local.code);
+      local.state = st;
+      const role = shipsRoleForState(st);
+      const keyName = role === 'O' ? 'o' : 'x';
+      const mine = role === 'O' ? st.o : st.x;
+      const enemy = role === 'O' ? st.x : st.o;
+      const mineReady = role ? !!st[readyKey(role)] : true;
+      if (role && st.status !== 'finished' && !mineReady) { renderPlacement(st, role); return; }
+      const sum = shipsBuildPayloadSummary(st, role || 'X');
+      const waiting = st.status === 'waiting' || !st.o || !st.oReady || !st.xReady;
+      const canShoot = st.status === 'active' && role && st.turn === role;
+      const headline = waiting ? (st.o ? 'Čeká se na flotily' : 'Čeká se na protihráče') : (st.status === 'finished' ? (st.winner === role ? 'Vyhrál jsi' : 'Konec hry') : (canShoot ? 'Jsi na tahu' : 'Hraje soupeř'));
+      const ownShots = enemy && Array.isArray(enemy.shots) ? enemy.shots : [];
+      const myShots = mine && Array.isArray(mine.shots) ? mine.shots : [];
+      body.innerHTML = `<div class="arcadeStage shipsStage">
+        <div class="arcadeHud arcadeHudSingleLine">${gamesStatLine('Kód', st.code || '—')}${gamesStatLine('Role', role || 'divák')}${gamesStatLine('Zásahy', sum.hits)}${gamesStatLine('Potopené', sum.sunk)}</div>
+        <div class="arcadeBar arcadePanel uPad12 shipsCodeCard"><strong>${escapeHtml(headline)}</strong><div class="smallText">${escapeHtml(st.message || '')}</div>${(!st.o && role === 'X') ? `<div class="shipsInviteCode">${escapeHtml(st.code || '')}</div><button type="button" class="gameControlBtn" id="shipsCopyCodeBtn">Kopírovat kód</button>` : ''}</div>
+        <div class="shipsBoardsWrap">
+          <div class="shipsBoardCard"><div class="smallText uBold">Tvoje lodě · zásahy soupeře</div>${shipsRenderBoard(mine, { own: true, shots: ownShots })}</div>
+          <div class="shipsBoardCard"><div class="smallText uBold">Soupeřovo pole ${canShoot ? '· střílej' : ''}</div>${enemy ? shipsRenderBoard(enemy, { enemy: true, shots: myShots }) : '<div class="shipsWaitingBoard">Soupeř ještě není připojený.</div>'}</div>
+        </div>
+        ${st.status === 'finished' ? `<div class="arcadeResultOverlay shipsResult"><div class="arcadeResultCard"><strong>${st.winner === role ? 'Výhra!' : 'Konec hry'}</strong><div class="smallText">Zásahy: ${sum.hits} · Potopené: ${sum.sunk}</div><button type="button" class="gameControlBtn" id="shipsBackBtn">Zpět do Lodí</button></div></div>` : ''}
+      </div>`;
+      const copy = body.querySelector('#shipsCopyCodeBtn');
+      if (copy) copy.addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText(st.code || ''); st.message = 'Kód zkopírovaný.'; renderGame(); } catch (err) { st.message = 'Kód: ' + (st.code || ''); renderGame(); }
+      });
+      const back = body.querySelector('#shipsBackBtn');
+      if (back) back.addEventListener('click', () => { local.code = ''; local.state = null; local.placing = { manual: false, selected: 'carrier', horizontal: true }; renderMenu(''); });
+      body.querySelectorAll('[data-ships-shot]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const stNow = shipsNormalizeState(local.state, local.code);
+          const roleNow = shipsRoleForState(stNow);
+          const parts = String(btn.getAttribute('data-ships-shot') || '').split(':').map(Number);
+          const result = shipsApplyShot(stNow, roleNow, parts[0], parts[1]);
+          if (!result.ok) { stNow.message = result.reason === 'already-shot' ? 'Sem už jsi střílel.' : 'Teď nejsi na tahu.'; local.state = stNow; renderGame(); return; }
+          local.state = stNow;
+          renderGame();
+          await shipsSaveState(stNow);
+          maybeRecordFinished();
+        });
+      });
+      if (!fromPoll && local.poll) { clearInterval(local.poll); local.poll = 0; }
+      if (!local.poll && st.status !== 'finished') local.poll = rakGameSetInterval(() => refreshRemote(true), 2200);
+    };
+    addCleanup(() => { if (local.poll) clearInterval(local.poll); local.poll = 0; });
+    if (local.code && local.state) renderGame();
+    else renderMenu('');
+    setActiveState('ships', local);
+  }
+
+
   // Daily challenge --------------------------------------------------------
   function dailySeed() {
     const d = new Date(); d.setHours(0,0,0,0);
@@ -3523,7 +4025,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   }
   function dailyChallengeId() { return DAILY_MODES[dailySeed() % DAILY_MODES.length]; }
   function dailyLabel(mode) {
-    return mode === 'aim' ? 'Aim Trainer' : mode === 'reaction' ? 'Reaction Test' : mode === 'memory' ? 'Pexeso' : mode === 'mines' ? 'Miny' : mode === 'bubble' ? 'Bubble Shooter' : mode === 'doodle' ? 'Doodle Jump' : mode === 'brick' ? 'Brick Breaker' : mode === 'shooter' ? 'Space Shooter' : mode === 'bomber' ? 'Bomberman mini' : 'Challenge';
+    return mode === 'aim' ? 'Aim Trainer' : mode === 'reaction' ? 'Reaction Test' : mode === 'memory' ? 'Pexeso' : mode === 'mines' ? 'Miny' : mode === 'bubble' ? 'Bubble Shooter' : mode === 'doodle' ? 'Doodle Jump' : mode === 'brick' ? 'Brick Breaker' : mode === 'shooter' ? 'Space Shooter' : mode === 'bomber' ? 'Bomberman mini' : mode === 'ships' ? 'Lodě online' : 'Challenge';
   }
   function dailyText(mode) {
     if (mode === 'aim') return '20+ přesných zásahů za 30 sekund.';
@@ -3535,6 +4037,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     if (mode === 'brick') return 'Rozbij co nejvíc bloků.';
     if (mode === 'shooter') return 'Přežij vesmírnou vlnu.';
     if (mode === 'bomber') return 'Znič příšerky v bludišti.';
+    if (mode === 'ships') return 'Vyhraj online námořní souboj.';
     return 'Každý den jiná výzva.';
   }
   function renderDaily(body) {
@@ -3551,13 +4054,14 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       else if (mode === 'brick') renderBrick(body);
       else if (mode === 'shooter') renderShooter(body);
       else if (mode === 'bomber') renderBomber(body);
+      else if (mode === 'ships') renderShips(body);
     };
     body.querySelector('#dailyStartBtn').addEventListener('click', start);
     body.querySelector('#dailyResetBtn').addEventListener('click', () => renderDaily(body));
     setActiveState('daily', { mode });
   }
 
-  const renderers = { aim: renderAim, reaction: renderReaction, tetris: renderTetris, shooter: renderShooter, brick: renderBrick, doodle: renderDoodle, bubble: renderBubble, sudoku: renderSudoku, mines: renderMines, memory: renderMemory, bomber: renderBomber, daily: renderDaily };
+  const renderers = { aim: renderAim, reaction: renderReaction, tetris: renderTetris, shooter: renderShooter, brick: renderBrick, doodle: renderDoodle, bubble: renderBubble, sudoku: renderSudoku, mines: renderMines, memory: renderMemory, bomber: renderBomber, ships: renderShips, daily: renderDaily };
 
   function runArcadeGamesFullAudit() {
     const ids = CORE_GAMES.slice();
@@ -3571,7 +4075,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     const allHot = EXTRA_GAMES.length === 0;
     const completedOnlyGuard = typeof window.gamesRecordStat === 'function';
     return {
-      version: 'v.1.1 (708)',
+      version: 'v.1.1 (710)',
       ok: !missingMeta.length && !missingRenderer.length && allHot && completedOnlyGuard,
       totalGames: ids.length,
       coreGames: ids,
