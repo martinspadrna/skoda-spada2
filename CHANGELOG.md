@@ -1,3 +1,9 @@
+## v.1.1 (719)
+- Lodě online: vypnuté scrollování v herní obrazovce, aby se hra chovala víc jako appka.
+- Přepínač Moje flotila / Střílet na soupeře se nově zobrazuje i zakládajícímu hráči po přijetí soupeře, i když soupeř ještě připravuje flotilu.
+- Doplněná čekací plocha pro soupeřovo pole, když je protihráč připojený, ale flotilu ještě nepotvrdil.
+- Verze sjednocena na v.1.1 (719), cache na v1.1-719 a Supabase realtime kanál na rak-public-live-v719.
+
 ## v.1.1 (718)
 - Lodě online: kód pozvánky je nově čistě číselný 4místný kód, aby seděl se Supabase normalizací a nehledala se špatná pozvánka.
 - Opravené přijetí protihráče a ukládání stavu Lodí po připojení, aby hra nezůstávala na „Čekání na protihráče“.

@@ -8891,7 +8891,7 @@ body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .arcadeStage
 }
 
 
-/* v.1.1 (718): Lodě online – číselný kód, čistý create button a viditelné přepínání pohledu. */
+/* v.1.1 (719): Lodě online – číselný kód, čistý create button a viditelné přepínání pohledu. */
 #games .shipsJoinCard .appInput{
   text-transform:none !important;
 }
@@ -8948,4 +8948,27 @@ body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .arcadeStage
   border-color:rgba(124,255,255,.46) !important;
   background:linear-gradient(135deg,rgba(124,255,255,.18),rgba(124,255,124,.10)) !important;
   box-shadow:0 0 18px rgba(124,255,255,.13),inset 0 0 0 1px rgba(255,255,255,.08) !important;
+}
+
+/* v.1.1 (719): Lodě online – vypnuté scrollování a jisté přepínání pohledu. */
+body.gamesOpen #games #gamesShellBody[data-arcade-game="ships"]{
+  overflow:hidden !important;
+  -webkit-overflow-scrolling:auto !important;
+  overscroll-behavior:none !important;
+  touch-action:manipulation !important;
+}
+body.gamesOpen #games #gamesShellBody[data-arcade-game="ships"] .arcadeStage,
+#games .shipsStage,
+#games .shipsScrollableStage{
+  overflow:visible !important;
+  touch-action:manipulation !important;
+  padding-bottom:calc(18px + env(safe-area-inset-bottom)) !important;
+}
+#games .shipsViewToggle{
+  display:grid !important;
+  visibility:visible !important;
+  opacity:1 !important;
+}
+#games .shipsWaitingBoard{
+  min-height:220px !important;
 }

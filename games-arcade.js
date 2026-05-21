@@ -2,7 +2,7 @@
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
 
-  // v.1.1 (718): Lodě online: čistě číselný kód, oprava přijetí a přepínání pohledu.
+  // v.1.1 (719): Lodě online: vypnutý scroll a přepínač pohledu i pro zakládajícího hráče.
   const CORE_GAMES = ['ttt', 'ships', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
   const EXTRA_GAMES = [];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);
@@ -1101,7 +1101,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function renderLaunchTiles() {
     const grid = document.getElementById('gamesGrid');
     if (!grid) return;
-    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v718';
+    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v719';
     if (grid.dataset && grid.dataset.arcadeLaunchSig === launchSig && grid.querySelector('[data-game="ttt"]')) {
       gamePerf.launchRenderSkips = Number(gamePerf.launchRenderSkips || 0) + 1;
       return;
@@ -4032,22 +4032,23 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       const ownShots = enemy && Array.isArray(enemy.shots) ? enemy.shots : [];
       const myShots = mine && Array.isArray(mine.shots) ? mine.shots : [];
       const preferredView = canShoot ? 'enemy' : 'own';
-      if (!local.view || local.lastTurn !== st.turn || st.status !== local.lastStatus) local.view = preferredView;
-      if (!enemy && local.view === 'enemy') local.view = 'own';
+      if (!local.view || local.lastTurn !== st.turn || st.status !== local.lastStatus || local.lastHasOpponent !== hasOpponent) local.view = preferredView;
+      if (!hasOpponent && local.view === 'enemy') local.view = 'own';
       local.lastTurn = st.turn;
       local.lastStatus = st.status;
+      local.lastHasOpponent = hasOpponent;
       const view = local.view === 'enemy' ? 'enemy' : 'own';
-      const toggleHtml = enemy ? `<div class="shipsViewToggle" role="tablist" aria-label="Přepnutí pole">
+      const toggleHtml = hasOpponent ? `<div class="shipsViewToggle" role="tablist" aria-label="Přepnutí pole">
         <button type="button" class="shipsViewBtn ${view === 'own' ? 'isActive' : ''}" data-ships-view="own">Moje flotila</button>
         <button type="button" class="shipsViewBtn ${view === 'enemy' ? 'isActive' : ''}" data-ships-view="enemy">Střílet na soupeře</button>
       </div>` : '';
       const activeBoardTitle = view === 'enemy' ? `Soupeřovo pole ${canShoot ? '· střílej' : '· čekej na tah'}` : 'Tvoje lodě · zásahy soupeře';
       const activeBoard = view === 'enemy'
-        ? (enemy ? shipsRenderBoard(enemy, { enemy: true, shots: myShots }) : '<div class="shipsWaitingBoard">Soupeř ještě není připojený.</div>')
+        ? (enemy ? shipsRenderBoard(enemy, { enemy: true, shots: myShots }) : '<div class="shipsWaitingBoard">Soupeř se připojil, ale ještě připravuje flotilu.</div>')
         : shipsRenderBoard(mine, { own: true, shots: ownShots });
       const viewHint = st.status === 'active'
         ? (canShoot ? 'Jsi na tahu, proto se ti rovnou ukazuje pole soupeře.' : 'Hraje soupeř, proto se ti rovnou ukazuje tvoje flotila a zásahy proti tobě.')
-        : 'Přepni si, jestli chceš vidět flotilu nebo střelbu.';
+        : (hasOpponent ? 'Soupeř je připojený. Přepni si flotilu nebo pole pro střelbu.' : 'Čeká se na soupeře.');
       body.innerHTML = `<div class="arcadeStage shipsStage shipsScrollableStage shipsPlayStage">
         <div class="arcadeHud arcadeHudSingleLine shipsCompactHud">${gamesStatLine('Kód', st.code || '—')}${gamesStatLine('Role', role || 'divák')}${gamesStatLine('Zásahy', sum.hits)}${gamesStatLine('Potopené', sum.sunk)}</div>
         <div class="shipsPlayInfoLine"><strong>${escapeHtml(headline)}</strong><span>${escapeHtml(st.message || viewHint || '')}</span></div>
@@ -4146,7 +4147,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     const allHot = EXTRA_GAMES.length === 0;
     const completedOnlyGuard = typeof window.gamesRecordStat === 'function';
     return {
-      version: 'v.1.1 (718)',
+      version: 'v.1.1 (719)',
       ok: !missingMeta.length && !missingRenderer.length && allHot && completedOnlyGuard,
       totalGames: ids.length,
       coreGames: ids,
@@ -4161,7 +4162,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       themeBackground: true,
       touchGuard: true,
       notes: [
-        'Build 718 opravuje Lodě online: kód je čistě číselný, přijetí protihráče už nezůstává viset na čekání, přepínání pohledu je vidět po načtení soupeře a tlačítko Vytvořit hru nemá hranaté ohraničení.',
+        'Build 719 opravuje Lodě online: scrollování je znovu vypnuté a přepínání Moje flotila / Střílet je viditelné i zakládajícímu hráči po přijetí soupeře.',
         'Reálnou hratelnost a citlivost dotyku je potřeba potvrdit na mobilu.'
       ]
     };

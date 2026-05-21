@@ -1,4 +1,4 @@
-// v.1.1 (718) – Lodě online: číselný kód, oprava přijetí protihráče a čistší tlačítko založení.
+// v.1.1 (719) – Lodě online: vypnutý scroll a přepínač pohledu i pro zakládajícího hráče.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;
