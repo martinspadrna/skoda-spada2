@@ -8764,3 +8764,51 @@ body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .arcadeStage
   #games .shipsSingleBoardWrap,
   #games .shipsSetupBoardWrap{max-width:100% !important;}
 }
+
+
+/* v.1.1 (716): Lodě online – obrazovky mírně níž, kulaté založení a návrat do menu Lodí. */
+body.shipsGameOpen #games .gamesShellNoTitle{
+  padding-top:calc(8px + env(safe-area-inset-top)) !important;
+}
+body.shipsGameOpen #games .gamesShellBackFloating{
+  top:calc(12px + env(safe-area-inset-top)) !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .arcadeStage,
+#games .shipsStage{
+  margin-top:4px !important;
+}
+#games .shipsMenuStage{
+  padding-top:8px !important;
+}
+#games .shipsSetupStage,
+#games .shipsPlayStage{
+  margin-top:4px !important;
+}
+#games .shipsInviteControls #shipsCreateBtn,
+#games #shipsCreateBtn{
+  border-radius:18px !important;
+  overflow:hidden !important;
+  border:1px solid rgba(135,230,255,.34) !important;
+  box-shadow:0 12px 28px rgba(0,0,0,.16), inset 0 0 0 1px rgba(255,255,255,.08) !important;
+}
+#games .shipsSetupActionsCompact{
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  width:min(100%,460px) !important;
+}
+#games .shipsMenuBackLine{
+  width:min(100%,460px) !important;
+  margin:-2px auto 0 !important;
+  display:flex !important;
+  justify-content:flex-end !important;
+}
+#games .shipsMenuBackLine .gameControlBtn{
+  width:auto !important;
+  min-height:34px !important;
+  padding:7px 12px !important;
+  border-radius:15px !important;
+  font-size:11px !important;
+}
+@media (max-width:390px){
+  body.shipsGameOpen #games .gamesShellNoTitle{padding-top:calc(6px + env(safe-area-inset-top)) !important;}
+  #games .shipsSetupActionsCompact{gap:6px !important;}
+}

@@ -1,4 +1,4 @@
-// v.1.1 (715) – Lodě online: vycentrování, výběr lodí a stabilní velikost pole.
+// v.1.1 (716) – Lodě online: nižší posazení, kulaté vytvoření hry a návrat do menu Lodí.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

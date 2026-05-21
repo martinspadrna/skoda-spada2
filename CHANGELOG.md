@@ -1,3 +1,9 @@
+## v.1.1 (716)
+- Lodě online: obrazovka zakládání i herní obrazovka jsou posunuté mírně níž, aby nepůsobily nalepeně nahoře.
+- Tlačítko Vytvořit hru má zaoblené RaK ohraničení místo hranatého vzhledu.
+- Z přípravy flotily i herní obrazovky je nově návrat zpět do menu Lodí, kde jsou Top výsledky a uložené vzájemné zápasy.
+- Verze sjednocena na v.1.1 (716), cache na v1.1-716 a Supabase realtime kanál na rak-public-live-v716.
+
 ## v.1.1 (715)
 - Lodě online: ubrané prázdné místo nahoře a herní pole je lépe vycentrované.
 - Opraven výběr lodí v přípravě flotily: první klik vybere loď, druhý klik ji přesune, potom jde znovu vybrat jiná loď.

@@ -2,7 +2,7 @@
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
 
-  // v.1.1 (715): Lodě online: výběr lodí klikem, vycentrování a stabilní velikost pole.
+  // v.1.1 (716): Lodě online: nižší posazení, kulaté založení hry a návrat do menu Lodí.
   const CORE_GAMES = ['ttt', 'ships', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
   const EXTRA_GAMES = [];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);
@@ -1101,7 +1101,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function renderLaunchTiles() {
     const grid = document.getElementById('gamesGrid');
     if (!grid) return;
-    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v715';
+    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v716';
     if (grid.dataset && grid.dataset.arcadeLaunchSig === launchSig && grid.querySelector('[data-game="ttt"]')) {
       gamePerf.launchRenderSkips = Number(gamePerf.launchRenderSkips || 0) + 1;
       return;
@@ -3901,6 +3901,15 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         local.code = code; local.state = st; local.placing = { manual: false, selected: nextUnplaced(st.o), horizontal: true }; renderGame();
       });
     };
+    const shipsReturnToMenu = (msg) => {
+      local.code = '';
+      local.state = null;
+      local.view = 'own';
+      local.lastTurn = '';
+      local.lastStatus = '';
+      local.placing = { manual: false, selected: 'carrier', horizontal: true };
+      renderMenu(msg || '');
+    };
     const maybeRecordFinished = () => {
       const st = local.state;
       const role = st ? shipsRoleForState(st) : '';
@@ -3945,8 +3954,11 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
           <button type="button" class="gameControlBtn" id="shipsShuffleBtn">Přehodit automaticky</button>
           <button type="button" class="gameControlBtn" id="shipsRotateBtn">Otočit vybranou</button>
           <button type="button" class="gameControlBtn ${valid ? 'primary' : 'isDisabled'}" id="shipsReadyBtn">Potvrdit flotilu</button>
+          <button type="button" class="gameControlBtn ghost" id="shipsMenuBackBtn">Zpět do menu</button>
         </div>
       </div>`;
+      const menuBack = body.querySelector('#shipsMenuBackBtn');
+      if (menuBack) menuBack.addEventListener('click', () => shipsReturnToMenu('Zpět v menu Lodí. Hru můžeš založit znovu nebo přijmout kód.'));
       const shuffle = body.querySelector('#shipsShuffleBtn');
       if (shuffle) shuffle.addEventListener('click', async () => {
         st[keyName] = shipsBuildPlayerBoard();
@@ -4034,6 +4046,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         <div class="arcadeHud arcadeHudSingleLine shipsCompactHud">${gamesStatLine('Kód', st.code || '—')}${gamesStatLine('Role', role || 'divák')}${gamesStatLine('Zásahy', sum.hits)}${gamesStatLine('Potopené', sum.sunk)}</div>
         <div class="shipsPlayInfoLine"><strong>${escapeHtml(headline)}</strong><span>${escapeHtml(st.message || viewHint || '')}</span></div>
         ${toggleHtml}
+        <div class="shipsMenuBackLine"><button type="button" class="gameControlBtn ghost" id="shipsMenuBackBtn">Zpět do menu Lodí</button></div>
         <div class="shipsSingleBoardWrap">
           <div class="shipsBoardCard shipsBoardCardLift"><div class="smallText uBold">${escapeHtml(activeBoardTitle)}</div><div class="smallText shipsInlineHint">${escapeHtml(viewHint)}</div>${activeBoard}</div>
         </div>
@@ -4044,7 +4057,9 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         renderGame();
       }));
       const back = body.querySelector('#shipsBackBtn');
-      if (back) back.addEventListener('click', () => { local.code = ''; local.state = null; local.placing = { manual: false, selected: 'carrier', horizontal: true }; renderMenu(''); });
+      if (back) back.addEventListener('click', () => shipsReturnToMenu(''));
+      const menuBack = body.querySelector('#shipsMenuBackBtn');
+      if (menuBack) menuBack.addEventListener('click', () => shipsReturnToMenu(''));
       body.querySelectorAll('[data-ships-shot]').forEach((btn) => {
         btn.addEventListener('click', async () => {
           const stNow = shipsNormalizeState(local.state, local.code);
@@ -4125,7 +4140,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     const allHot = EXTRA_GAMES.length === 0;
     const completedOnlyGuard = typeof window.gamesRecordStat === 'function';
     return {
-      version: 'v.1.1 (715)',
+      version: 'v.1.1 (716)',
       ok: !missingMeta.length && !missingRenderer.length && allHot && completedOnlyGuard,
       totalGames: ids.length,
       coreGames: ids,
@@ -4140,7 +4155,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       themeBackground: true,
       touchGuard: true,
       notes: [
-        'Build 715 dolaďuje Lodě online: výběr lodí klikem, vycentrované pole, méně prázdného místa nahoře a stabilní velikost pole po potvrzení flotily.',
+        'Build 716 dolaďuje Lodě online: obrazovky jsou níž, tlačítko Vytvořit hru je kulaté a z přípravy/souboje se jde vrátit do menu Lodí s Top výsledky a vzájemnými zápasy.',
         'Reálnou hratelnost a citlivost dotyku je potřeba potvrdit na mobilu.'
       ]
     };

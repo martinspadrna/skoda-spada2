@@ -3979,7 +3979,7 @@ function renderGamesProfileStatus() {
   if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(metaEl, metaText, 'gamesProfileStatusMeta');
   else metaEl.textContent = metaText;
   if (rankEl) {
-    // v.1.1 (715): Lodě online – výběr lodí klikem a stabilní pole v přípravě/čekání.
+    // v.1.1 (716): Lodě online – návrat do menu, kulaté založení a jemnější odsazení.
     rankEl.innerHTML = '<span class="gamesProfileRankValue">' + escapeHtml(rankText) + '</span>';
     rankEl.setAttribute('data-player-name', nextName);
     rankEl.disabled = false;
@@ -4021,7 +4021,7 @@ function buildAppHistoryHtml(versionText) {
       range: versionText,
       title: 'Aktuální build',
       lines: [
-        'Build v.1.1 (715) dolaďuje Lodě online: pole je výš a vycentrované, lodě jdou vybírat klikem a velikost pole drží i po potvrzení flotily.',
+        'Build v.1.1 (716) dolaďuje Lodě online: obrazovky jsou mírně níž, Vytvořit hru je kulaté a z přípravy i hry se jde vrátit do menu s Top výsledky a vzájemnými zápasy.',
         'Série v.1.1 650–706 dotáhla Piškvorky, online pozvánky, PWA launch handler, všechny hlavní hry, herní profily, reporty chyb, theme polish, těžší/chytřejší achievementy a společný herní QA průchod včetně app-like dotykového polishu.',
         'Sekce „O aplikaci“ je nově stručnější: detailní změny zůstávají v changelogu a tady se historie drží po větších blocích.',
         'Stabilizační audity, Supabase guardy, Láďův režim a finální readiness kontroly zůstávají součástí diagnostiky.'
