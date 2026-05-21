@@ -3903,7 +3903,7 @@ function buildAppHistoryHtml(versionText) {
       range: versionText,
       title: 'Aktuální build',
       lines: [
-        'Build v.1.1 (693) přidává Administraci reportů chyb a přesouvá Sudoku, Minesweeper a Pexeso mezi hotové hry.',
+        'Build v.1.1 (694) přidává Administraci reportů chyb a přesouvá Sudoku, Minesweeper a Pexeso mezi hotové hry.',
         'Série v.1.1 650–689 dotáhla Piškvorky, online pozvánky, PWA launch handler, 2048/Snake/Flappy Car/Aim/Reaction/Tetris/Space Shooter/Brick Breaker mezi hotové hry, herní profily, theme polish a těžší/chytřejší achievementy.',
         'Sekce „O aplikaci“ je nově stručnější: detailní změny zůstávají v changelogu a tady se historie drží po větších blocích.',
         'Stabilizační audity, Supabase guardy, Láďův režim a finální readiness kontroly zůstávají součástí diagnostiky.'

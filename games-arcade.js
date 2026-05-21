@@ -2,7 +2,7 @@
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
 
-  // v.1.1 (693): Administrace reportů + Sudoku/Mines/Memory hotové mobile-first hry.
+  // v.1.1 (694): doladění Sudoku/Mines/Pexeso – papírové Sudoku, Miny bez vlajek a Pexeso 5×5.
   const CORE_GAMES = ['ttt', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory'];
   const EXTRA_GAMES = ['bomber', 'daily'];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);
@@ -1038,7 +1038,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function renderLaunchTiles() {
     const grid = document.getElementById('gamesGrid');
     if (!grid) return;
-    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v693';
+    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v694';
     if (grid.dataset && grid.dataset.arcadeLaunchSig === launchSig && grid.querySelector('.gamesDevFolder') && grid.querySelector('[data-game="ttt"]')) {
       gamePerf.launchRenderSkips = Number(gamePerf.launchRenderSkips || 0) + 1;
       return;
@@ -2727,86 +2727,127 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
 
   // Sudoku -----------------------------------------------------------------
   const SUDOKU_PUZZLES = [
-    { difficulty: 'easy', puzzle: ['530070000','600195000','098000060','800060003','400803001','700020006','060000280','000419005','000080079'], solution: ['534678912','672195348','198342567','859761423','426853791','713924856','961537284','287419635','345286179'] },
-    { difficulty: 'medium', puzzle: ['003020600','900305001','001806400','008102900','700000008','006708200','002609500','800203009','005010300'], solution: ['483921657','967345821','251876493','548132976','729564138','136798245','372689514','814253769','695417382'] },
-    { difficulty: 'hard', puzzle: ['000000907','000420180','000705026','100904000','050000040','000507009','920108000','034059000','507000000'], solution: ['462831957','397426185','851795326','176984253','259673841','483517629','925148763','634259718','517362494'] }
+    { difficulty: 'easy', label: 'Lehké', puzzle: ['530070000','600195000','098000060','800060003','400803001','700020006','060000280','000419005','000080079'], solution: ['534678912','672195348','198342567','859761423','426853791','713924856','961537284','287419635','345286179'] },
+    { difficulty: 'medium', label: 'Střední', puzzle: ['003020600','900305001','001806400','008102900','700000008','006708200','002609500','800203009','005010300'], solution: ['483921657','967345821','251876493','548132976','729564138','136798245','372689514','814253769','695417382'] },
+    { difficulty: 'hard', label: 'Těžké', puzzle: ['000000907','000420180','000705026','100904000','050000040','000507009','920108000','034059000','507000000'], solution: ['462831957','397426185','851795326','176984253','259673841','483517629','925148763','634259718','517362494'] }
   ];
+  function createSudokuState(diff) {
+    return { started: false, selected: diff || 'easy', startAt: 0, finished: false, mistakes: 0, solution: null, puzzle: null, entries: Array(81).fill(''), selectedCell: null, wrong: {} };
+  }
   function renderSudoku(body) {
-    const state = getState('sudoku', () => ({ index: 0, startAt: 0, finished: false, selected: 'easy', mistakes: 0, solution: null, puzzle: null }));
+    const state = getState('sudoku', () => createSudokuState('easy'));
     const pick = SUDOKU_PUZZLES.find(p => p.difficulty === state.selected) || SUDOKU_PUZZLES[0];
-    if (!state.solution || state.selected !== pick.difficulty) {
+    if (!state.started) {
+      const diffBtns = SUDOKU_PUZZLES.map((p) => `<button type="button" class="gameControlBtn sudokuDifficultyBtn${state.selected === p.difficulty ? ' isActive' : ''}" data-sudoku-diff="${p.difficulty}">${p.label}</button>`).join('');
+      body.innerHTML = `
+        <div class="arcadeStage sudokuMenuStage">
+          <div class="arcadePanel sudokuMenuCard">
+            <div class="arcadeStatus"><strong>Sudoku</strong><br>Nejdřív zvol obtížnost. Hra se spustí až potom.</div>
+            <div class="arcadeControls sudokuDifficultyMenu">${diffBtns}</div>
+            <button type="button" class="gameControlBtn primary" data-sudoku-start="1">Spustit Sudoku</button>
+          </div>
+          ${gamesTop3Block('sudoku', 'ms', 5).replace('gamesTop5ScrollCard', 'gamesTop5ScrollCard arcadeTopScoreTight')}
+        </div>`;
+      body.querySelectorAll('[data-sudoku-diff]').forEach((btn) => btn.addEventListener('click', () => { state.selected = btn.dataset.sudokuDiff; renderSudoku(body); }));
+      const startBtn = body.querySelector('[data-sudoku-start]');
+      if (startBtn) startBtn.addEventListener('click', () => {
+        const fresh = createSudokuState(state.selected);
+        fresh.started = true;
+        fresh.startAt = Date.now();
+        window.app.gamesArcade['sudoku'] = fresh;
+        renderSudoku(body);
+      });
+      setActiveState('sudoku', state);
+      return;
+    }
+    if (!state.solution || !state.puzzle || state.puzzle.join('') !== pick.puzzle.join('')) {
       state.solution = pick.solution;
       state.puzzle = pick.puzzle;
-      state.startAt = Date.now();
+      state.startAt = state.startAt || Date.now();
       state.finished = false;
       state.mistakes = 0;
+      state.entries = Array(81).fill('');
+      state.wrong = {};
+      state.selectedCell = null;
     }
+    const selectedIdx = Number.isFinite(state.selectedCell) ? state.selectedCell : -1;
     const gridHtml = pick.puzzle.map((row, r) => row.split('').map((v, c) => {
+      const idx = r * 9 + c;
       const fixed = v !== '0';
-      return `<input class="arcadeSudokuCell" data-r="${r}" data-c="${c}" ${fixed ? 'readonly' : ''} inputmode="numeric" maxlength="1" value="${fixed ? v : ''}" aria-label="Sudoku ${r + 1}-${c + 1}">`;
+      const entry = fixed ? v : String(state.entries[idx] || '');
+      const cls = ['arcadeSudokuCell', fixed ? 'isFixed' : 'isOpen', selectedIdx === idx ? 'isSelected' : '', state.wrong[idx] ? 'isWrong' : '', entry ? 'hasValue' : ''].filter(Boolean).join(' ');
+      return `<button type="button" class="${cls}" data-r="${r}" data-c="${c}" data-idx="${idx}" ${fixed ? 'aria-disabled="true"' : ''}>${entry}</button>`;
     }).join('')).join('');
+    const selectedRow = selectedIdx >= 0 ? Math.floor(selectedIdx / 9) : 0;
+    const selectedCol = selectedIdx >= 0 ? selectedIdx % 9 : 0;
+    const picker = selectedIdx >= 0 && pick.puzzle[selectedRow][selectedCol] === '0'
+      ? `<div class="sudokuNumberPicker" style="--sudokuRow:${selectedRow};--sudokuCol:${selectedCol};">${[1,2,3,4,5,6,7,8,9].map(n => `<button type="button" data-sudoku-num="${n}">${n}</button>`).join('')}<button type="button" data-sudoku-num="clear">×</button></div>`
+      : '';
     body.innerHTML = `
-      <div class="arcadeStage">
-        <div class="arcadeHud">
-          ${gamesStatLine('Obtížnost', pick.difficulty)}
+      <div class="arcadeStage sudokuGameStage">
+        <div class="arcadeHud arcadeHudSingleLine sudokuHud">
+          ${gamesStatLine('Obtížnost', pick.label || pick.difficulty)}
           ${gamesStatLine('Čas', fmtTime(state.startAt ? Date.now() - state.startAt : 0))}
           ${gamesStatLine('Chyby', state.mistakes)}
         </div>
-        <div class="arcadeBar arcadePanel uPad10x12">
-          <div class="arcadeStatus">Vyplň čísla 1–9. Hotovo se uloží automaticky po správném doplnění.</div>
-        </div>
-        <div class="arcadeBoard grid-9 arcadePanel arcadeLogicBoard" id="sudokuGrid">${gridHtml}</div>
-        <div class="arcadeControls">
-          <button type="button" class="gameControlBtn" data-sudoku="easy">Easy</button>
-          <button type="button" class="gameControlBtn" data-sudoku="medium">Medium</button>
-          <button type="button" class="gameControlBtn" data-sudoku="hard">Hard</button>
-          <button type="button" class="gameControlBtn" data-sudoku="restart">Nové</button>
-        </div>
+        <div class="arcadeBoard grid-9 arcadePanel arcadeLogicBoard arcadeSudokuPaper" id="sudokuGrid">${gridHtml}${picker}</div>
+        <div class="arcadeControls sudokuGameControls"><button type="button" class="gameControlBtn" data-sudoku-restart="1">Nová hra</button><button type="button" class="gameControlBtn ghost" data-sudoku-menu="1">Obtížnost</button></div>
         ${gamesTop3Block('sudoku', 'ms', 5).replace('gamesTop5ScrollCard', 'gamesTop5ScrollCard arcadeTopScoreTight')}
       </div>`;
     const grid = body.querySelector('#sudokuGrid');
+    const updateHud = () => {
+      const hud = body.querySelector('.sudokuHud');
+      if (hud) hud.innerHTML = `${gamesStatLine('Obtížnost', pick.label || pick.difficulty)}${gamesStatLine('Čas', fmtTime(Date.now() - state.startAt))}${gamesStatLine('Chyby', state.mistakes)}`;
+    };
     const completeCheck = () => {
-      const cells = [...grid.querySelectorAll('input')];
-      const values = cells.map((cell, idx) => {
-        const r = Math.floor(idx / 9), c = idx % 9;
-        const fixed = pick.puzzle[r][c] !== '0';
-        const v = fixed ? pick.puzzle[r][c] : String(cell.value || '').trim().slice(0, 1);
-        return v;
-      });
-      const rows = Array.from({ length: 9 }, (_, r) => values.slice(r * 9, r * 9 + 9));
-      const valid = rows.every((row, r) => row.join('') === pick.solution[r]);
+      const valid = pick.solution.every((row, r) => row.split('').every((val, c) => {
+        const idx = r * 9 + c;
+        return (pick.puzzle[r][c] !== '0' ? pick.puzzle[r][c] : String(state.entries[idx] || '')) === val;
+      }));
       if (valid && !state.finished) {
         state.finished = true;
         const time = Date.now() - state.startAt;
-        gamesRecordStat('sudoku', { completed: true, plays: 1, bestTimeMs: time, bestScore: encodePoints('sudoku', time), lastResult: fmtTime(time) });
-        body.querySelector('.arcadeStatus').innerHTML = `<strong>Vyřešeno!</strong> Čas ${fmtTime(time)}.`;
+        gamesRecordStat('sudoku', { completed: true, plays: 1, bestTimeMs: time, bestScore: encodePoints('sudoku', time), mistakes: state.mistakes, lastResult: fmtTime(time) });
+        const done = body.querySelector('.sudokuGameControls');
+        if (done) done.insertAdjacentHTML('beforebegin', `<div class="arcadeBar arcadePanel uPad10x12"><div class="arcadeStatus"><strong>Vyřešeno!</strong> Čas ${fmtTime(time)} · chyby ${state.mistakes}.</div></div>`);
       }
-      body.querySelector('.arcadeHud').innerHTML = `${gamesStatLine('Obtížnost', pick.difficulty)}${gamesStatLine('Čas', fmtTime(Date.now() - state.startAt))}${gamesStatLine('Chyby', state.mistakes)}`;
+      updateHud();
     };
-    grid.querySelectorAll('input').forEach((input) => {
-      input.addEventListener('input', () => {
-        input.value = String(input.value || '').replace(/[^1-9]/g, '').slice(0, 1);
-        if (input.value) completeCheck();
-      });
-    });
-    body.querySelectorAll('[data-sudoku]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        if (btn.dataset.sudoku === 'restart') { state.solution = null; state.finished = false; state.startAt = Date.now(); renderSudoku(body); return; }
-        state.selected = btn.dataset.sudoku;
-        state.solution = null;
+    grid.querySelectorAll('.arcadeSudokuCell').forEach((cell) => {
+      cell.addEventListener('click', () => {
+        const idx = Number(cell.dataset.idx);
+        const r = Number(cell.dataset.r), c = Number(cell.dataset.c);
+        if (pick.puzzle[r][c] !== '0' || state.finished) return;
+        state.selectedCell = idx;
         renderSudoku(body);
       });
     });
+    body.querySelectorAll('[data-sudoku-num]').forEach((btn) => btn.addEventListener('click', () => {
+      const idx = Number(state.selectedCell);
+      if (!Number.isFinite(idx) || idx < 0 || state.finished) return;
+      const r = Math.floor(idx / 9), c = idx % 9;
+      if (pick.puzzle[r][c] !== '0') return;
+      const val = btn.dataset.sudokuNum;
+      if (val === 'clear') { state.entries[idx] = ''; delete state.wrong[idx]; renderSudoku(body); return; }
+      state.entries[idx] = val;
+      if (val !== pick.solution[r][c]) { state.mistakes += 1; state.wrong[idx] = true; }
+      else delete state.wrong[idx];
+      renderSudoku(body);
+      completeCheck();
+    }));
+    const restart = body.querySelector('[data-sudoku-restart]');
+    if (restart) restart.addEventListener('click', () => { const fresh = createSudokuState(state.selected); fresh.started = true; fresh.startAt = Date.now(); window.app.gamesArcade['sudoku'] = fresh; renderSudoku(body); });
+    const menu = body.querySelector('[data-sudoku-menu]');
+    if (menu) menu.addEventListener('click', () => { const fresh = createSudokuState(state.selected); window.app.gamesArcade['sudoku'] = fresh; renderSudoku(body); });
     setActiveState('sudoku', state);
   }
 
   // Minesweeper ------------------------------------------------------------
-  function minesState() { return { w: 9, h: 9, mines: 10, flags: 0, opened: 0, over: false, win: false, startAt: Date.now(), mode: 'open', board: [], revealed: [], flagged: [], timer: 0 }; }
+  function minesState() { return { w: 9, h: 9, mines: 10, opened: 0, over: false, win: false, startAt: Date.now(), board: [], revealed: [], timer: 0 }; }
   function initMines(state) {
     state.board = Array.from({ length: state.h }, () => Array(state.w).fill(0));
     state.revealed = Array.from({ length: state.h }, () => Array(state.w).fill(false));
-    state.flagged = Array.from({ length: state.h }, () => Array(state.w).fill(false));
-    state.over = false; state.win = false; state.opened = 0; state.flags = 0; state.startAt = Date.now();
+    state.over = false; state.win = false; state.opened = 0; state.startAt = Date.now(); state._saved = false;
     const spots = [];
     for (let y = 0; y < state.h; y += 1) for (let x = 0; x < state.w; x += 1) spots.push([x, y]);
     shuffle(spots).slice(0, state.mines).forEach(([x, y]) => { state.board[y][x] = -1; });
@@ -2817,85 +2858,98 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   }
   function renderMines(body) {
     const state = getState('mines', () => { const s = minesState(); initMines(s); return s; });
+    const score = Math.max(0, state.opened * 10 - (state.over ? 30 : 0));
     const cells = [];
     for (let y = 0; y < state.h; y += 1) for (let x = 0; x < state.w; x += 1) {
-      const rev = state.revealed[y][x]; const flag = state.flagged[y][x]; const val = state.board[y][x];
-      let cls = 'arcadeCell'; let text = '';
-      if (rev) { cls += ' isFilled'; if (val === -1) { cls += ' isMine'; text = '💣'; } else text = val ? String(val) : ''; }
-      if (flag) cls += ' isActive';
+      const rev = state.revealed[y][x]; const val = state.board[y][x];
+      let cls = 'arcadeCell minesCell'; let text = '';
+      if (rev) { cls += ' isRevealed isFilled'; if (val === -1) { cls += ' isMine isExploded'; text = '💣'; } else { cls += val === 0 ? ' isZero' : ` isNum${val}`; text = val ? String(val) : ''; } }
       cells.push(`<button type="button" class="${cls}" data-x="${x}" data-y="${y}">${text}</button>`);
     }
     body.innerHTML = `
-      <div class="arcadeStage">
-        <div class="arcadeHud">${gamesStatLine('Mines', state.mines)}${gamesStatLine('Otevřeno', state.opened)}${gamesStatLine('Režim', state.mode === 'flag' ? 'Vlajka' : 'Otevřít')}</div>
-        <div class="arcadeBar arcadePanel uPad10x12"><div class="arcadeStatus">Klepni na pole. Dlouhé držení nebo režim Vlajka přepne značku.</div></div>
-        <div class="arcadeBoard grid-9 arcadePanel arcadeLogicBoard" id="minesGrid">${cells.join('')}</div>
-        <div class="arcadeControls"><button type="button" class="gameControlBtn" data-mines="mode">${state.mode === 'flag' ? 'Vlajka' : 'Otevřít'}</button><button type="button" class="gameControlBtn" data-mines="restart">Nová hra</button></div>
+      <div class="arcadeStage minesStage">
+        <div class="arcadeHud arcadeHudSingleLine minesHud">${gamesStatLine('Score', score)}${gamesStatLine('Otevřeno', state.opened)}${gamesStatLine('Čas', fmtTime(Date.now() - state.startAt))}</div>
+        <div class="arcadeBoard grid-9 arcadePanel arcadeLogicBoard arcadeMinesBoard" id="minesGrid">${cells.join('')}</div>
+        <div class="arcadeControls"><button type="button" class="gameControlBtn" data-mines="restart">Nová hra</button></div>
         ${gamesTop3Block('mines', 'ms', 5).replace('gamesTop5ScrollCard', 'gamesTop5ScrollCard arcadeTopScoreTight')}
       </div>`;
     const grid = body.querySelector('#minesGrid');
+    const revealAllMines = () => {
+      for (let yy = 0; yy < state.h; yy += 1) for (let xx = 0; xx < state.w; xx += 1) if (state.board[yy][xx] === -1) state.revealed[yy][xx] = true;
+    };
     const dig = (x, y) => {
       if (state.over || state.win) return;
-      if (x < 0 || y < 0 || x >= state.w || y >= state.h || state.revealed[y][x] || state.flagged[y][x]) return;
+      if (x < 0 || y < 0 || x >= state.w || y >= state.h || state.revealed[y][x]) return;
       state.revealed[y][x] = true; state.opened += 1;
-      if (state.board[y][x] === -1) { state.over = true; return; }
+      if (state.board[y][x] === -1) { state.over = true; revealAllMines(); return; }
       if (state.board[y][x] === 0) {
         [[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,-1],[1,-1],[-1,1]].forEach(([dx, dy]) => { const nx = x + dx, ny = y + dy; if (ny >= 0 && ny < state.h && nx >= 0 && nx < state.w && !state.revealed[ny][nx]) dig(nx, ny); });
       }
       if (state.opened >= state.w * state.h - state.mines) { state.win = true; }
     };
     grid.querySelectorAll('button').forEach((btn) => {
-      let longPress = null;
-      btn.addEventListener('pointerdown', () => { longPress = setTimeout(() => { state.mode = 'flag'; btn.dataset.long = '1'; }, 450); });
-      btn.addEventListener('pointerup', (ev) => { clearTimeout(longPress); const x = Number(btn.dataset.x), y = Number(btn.dataset.y); if (state.mode === 'flag' || btn.dataset.long === '1') { state.flagged[y][x] = !state.flagged[y][x]; state.flags += state.flagged[y][x] ? 1 : -1; btn.dataset.long = '0'; } else dig(x, y); renderMines(body); });
-      btn.addEventListener('click', (ev) => { ev.preventDefault(); });
+      btn.addEventListener('click', (ev) => { ev.preventDefault(); const x = Number(btn.dataset.x), y = Number(btn.dataset.y); dig(x, y); renderMines(body); });
     });
-    body.querySelector('[data-mines="mode"]').addEventListener('click', () => { state.mode = state.mode === 'flag' ? 'open' : 'flag'; renderMines(body); });
     body.querySelector('[data-mines="restart"]').addEventListener('click', () => { const s = minesState(); initMines(s); window.app.gamesArcade['mines'] = s; renderMines(body); });
     if (state.over || state.win) {
       const time = Date.now() - state.startAt;
-      if (state.win && !state._saved) { state._saved = true; gamesRecordStat('mines', { completed: true, plays: 1, bestTimeMs: time, bestScore: encodePoints('mines', time), lastResult: fmtTime(time) }); }
-      body.querySelector('.arcadeStatus').innerHTML = state.win ? `<strong>Vyhrál jsi!</strong> Čas ${fmtTime(time)}.` : `<strong>Bum!</strong> Narazil jsi na minu.`;
+      if (state.win && !state._saved) { state._saved = true; gamesRecordStat('mines', { completed: true, plays: 1, bestTimeMs: time, bestScore: encodePoints('mines', time), opened: state.opened, lastResult: fmtTime(time) }); }
+      const msg = state.win ? `<strong>Vyhrál jsi!</strong> Čas ${fmtTime(time)}.` : `<strong>Bum!</strong> Narazil jsi na minu.`;
+      const controls = body.querySelector('.arcadeControls');
+      if (controls) controls.insertAdjacentHTML('beforebegin', `<div class="arcadeBar arcadePanel uPad10x12"><div class="arcadeStatus">${msg}</div></div>`);
     }
     setActiveState('mines', state);
   }
 
   // Memory -----------------------------------------------------------------
-  const MEMORY_PAIRS = ['🍀','⚡','⭐','🌙','🔥','💎','🎯','🧠'];
+  const MEMORY_PAIRS = ['🍀','⚡','⭐','🌙','🔥','💎','🎯','🧠','🚗','🌴','🛠️','🪐'];
+  const MEMORY_BONUS = '🎁';
   function memoryState() { return { deck: [], flipped: [], matched: new Set(), moves: 0, startAt: Date.now(), over: false, lock: false, bestTimeMs: 0 }; }
-  function initMemory(state) { state.deck = shuffle(MEMORY_PAIRS.concat(MEMORY_PAIRS)); state.flipped = []; state.matched = new Set(); state.moves = 0; state.startAt = Date.now(); state.over = false; state.lock = false; }
+  function initMemory(state) { state.deck = shuffle(MEMORY_PAIRS.concat(MEMORY_PAIRS).concat([MEMORY_BONUS])); state.flipped = []; state.matched = new Set(); state.moves = 0; state.startAt = Date.now(); state.over = false; state.lock = false; }
   function renderMemory(body) {
     const state = getState('memory', () => { const s = memoryState(); initMemory(s); return s; });
     const cells = state.deck.map((sym, i) => {
       const flipped = state.flipped.includes(i) || state.matched.has(i);
       const matched = state.matched.has(i);
-      return `<button type="button" class="arcadeMemoryCard${flipped ? ' isFlipped' : ''}${matched ? ' isMatched' : ''}" data-i="${i}">${flipped ? sym : '·'}</button>`;
+      return `<button type="button" class="arcadeMemoryCard${flipped ? ' isFlipped' : ''}${matched ? ' isMatched' : ''}${sym === MEMORY_BONUS ? ' isBonus' : ''}" data-i="${i}">${flipped ? sym : '·'}</button>`;
     }).join('');
     body.innerHTML = `
-      <div class="arcadeStage">
-        <div class="arcadeHud">${gamesStatLine('Pohyby', state.moves)}${gamesStatLine('Páry', state.matched.size / 2)}${gamesStatLine('Čas', fmtTime(Date.now() - state.startAt))}</div>
-        <div class="arcadeBar arcadePanel uPad10x12"><div class="arcadeStatus">Najdi dvojice co nejrychleji. Moderní pexeso v RaK stylu.</div></div>
-        <div class="arcadeGridList grid-4 arcadePanel arcadeMemoryBoard" id="memoryGrid">${cells}</div>
+      <div class="arcadeStage memoryStage">
+        <div class="arcadeHud arcadeHudSingleLine memoryHud">${gamesStatLine('Čas', fmtTime(Date.now() - state.startAt))}${gamesStatLine('Pohyby', state.moves)}${gamesStatLine('Páry', Math.floor(state.matched.size / 2))}</div>
+        <div class="arcadeGridList grid-5 arcadePanel arcadeMemoryBoard arcadeMemoryBoardLarge" id="memoryGrid">${cells}</div>
         <div class="arcadeControls"><button type="button" class="gameControlBtn" data-memory="restart">Nová hra</button></div>
         ${gamesTop3Block('memory', 'ms', 5).replace('gamesTop5ScrollCard', 'gamesTop5ScrollCard arcadeTopScoreTight')}
       </div>`;
     const grid = body.querySelector('#memoryGrid');
+    const finishIfDone = () => {
+      if (state.matched.size >= state.deck.length && !state.over) {
+        state.over = true;
+        state.bestTimeMs = Date.now() - state.startAt;
+        gamesRecordStat('memory', { completed: true, plays: 1, bestTimeMs: state.bestTimeMs, bestScore: encodePoints('memory', state.bestTimeMs), bestMoves: state.moves, lastResult: `${state.moves} tahů` });
+        const controls = body.querySelector('.arcadeControls');
+        if (controls) controls.insertAdjacentHTML('beforebegin', `<div class="arcadeBar arcadePanel uPad10x12"><div class="arcadeStatus"><strong>Vyhráno!</strong> ${fmtTime(state.bestTimeMs)} · ${state.moves} tahů.</div></div>`);
+      }
+    };
     grid.querySelectorAll('button').forEach((btn) => {
       btn.addEventListener('click', () => {
         const i = Number(btn.dataset.i);
         if (state.lock || state.matched.has(i) || state.flipped.includes(i)) return;
+        if (state.deck[i] === MEMORY_BONUS) {
+          state.moves += 1;
+          state.matched.add(i);
+          renderMemory(body);
+          finishIfDone();
+          return;
+        }
         state.flipped.push(i);
         if (state.flipped.length === 2) {
           state.moves += 1;
           const [a, b] = state.flipped;
           if (state.deck[a] === state.deck[b]) {
             state.matched.add(a); state.matched.add(b); state.flipped = [];
-            if (state.matched.size >= state.deck.length) {
-              state.over = true;
-              state.bestTimeMs = Date.now() - state.startAt;
-              gamesRecordStat('memory', { completed: true, plays: 1, bestTimeMs: state.bestTimeMs, bestScore: encodePoints('memory', state.bestTimeMs), bestMoves: state.moves, lastResult: `${state.moves} tahů` });
-              body.querySelector('.arcadeStatus').innerHTML = `<strong>Vyhráno!</strong> ${fmtTime(state.bestTimeMs)} · ${state.moves} tahů.`;
-            }
+            renderMemory(body);
+            finishIfDone();
+            return;
           } else {
             state.lock = true;
             setTimeout(() => { state.flipped = []; state.lock = false; renderMemory(body); }, 650);

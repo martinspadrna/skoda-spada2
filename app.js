@@ -1,4 +1,4 @@
-// v.1.1 (693) – Administrace reportů chyb + Sudoku/Mines/Memory jako hotové hry.
+// v.1.1 (694) – Doladění Sudoku, Min a Pexesa podle mobilního UI.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

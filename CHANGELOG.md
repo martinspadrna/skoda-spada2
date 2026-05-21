@@ -1,3 +1,9 @@
+## v.1.1 (694)
+- Sudoku přepracované podle požadavku: obtížnost se volí před startem, hra se spustí až potom, hrací plocha je papírová 9×9 mřížka a prázdné pole po kliknutí nabídne čísla 1–9 bez vyvolání klávesnice.
+- Miny zjednodušené bez vlajek/režimu vlajky, odhalená pole jsou výrazněji zvýrazněná a horní HUD je kompaktní na jeden řádek.
+- Pexeso upravené na 5×5, větší obrázky/karty a horní čas/pohyby/páry na jeden řádek.
+- Verze sjednocena na v.1.1 (694), cache na v1.1-694 a Supabase realtime kanál na rak-public-live-v694.
+
 ## v.1.1 (693)
 - Přidána Administrace → Reporty chyb: v odemčené administraci jde načíst reporty ze Supabase, rozkliknout detail a označit je jako Viděno / Hotovo / Ignorovat.
 - Sekce Pošli mi chybu zůstává pro uživatele jednoduchá: jen typ, popis a tlačítko Odeslat; report se ukládá do Supabase nebo offline fronty.
