@@ -8135,3 +8135,72 @@ body.gamesOpen #games textarea{
   touch-action:none !important;
   overscroll-behavior:contain !important;
 }
+
+
+/* v.1.1 (704) – app-like text selection guard + poslední herní doladění */
+html, body, #app, .app, .page, .card, .glassCard, .bottomNav, .navItem, button, .btn, .tile, .calcTile, .modal, #games, #games *, .gamesRankModalOverlay, .gamesRankModalOverlay *{
+  -webkit-user-select:none !important;
+  user-select:none !important;
+  -webkit-touch-callout:none !important;
+}
+input, textarea, select, [contenteditable="true"], .allowTextSelect, .selectableText{
+  -webkit-user-select:text !important;
+  user-select:text !important;
+  -webkit-touch-callout:default !important;
+}
+body.gamesOpen #games .arcadeReactionBoard,
+#games .arcadeReactionBoard{
+  min-height:clamp(500px, 78dvh, 760px) !important;
+}
+body.gamesOpen #games .arcadeReactionStage,
+#games .arcadeReactionStage{
+  gap:8px !important;
+}
+body.gamesOpen #games .sudokuRestartTop,
+#games .sudokuRestartTop{
+  width:min(100%,358px) !important;
+  margin:0 auto 2px !important;
+}
+body.gamesOpen #games .sudokuNumberPickerDocked,
+#games .sudokuNumberPickerDocked{
+  position:static !important;
+  left:auto !important;
+  top:auto !important;
+  transform:none !important;
+  width:max-content !important;
+  max-width:calc(100% - 12px) !important;
+  margin:0 auto !important;
+  display:grid !important;
+  grid-template-columns:repeat(5,52px) !important;
+  justify-content:center !important;
+  justify-items:center !important;
+  gap:8px !important;
+  padding:9px !important;
+  border-radius:20px !important;
+}
+body.gamesOpen #games .sudokuNumberPickerDocked button,
+#games .sudokuNumberPickerDocked button{
+  width:52px !important;
+  min-width:52px !important;
+  height:50px !important;
+  min-height:50px !important;
+  display:grid !important;
+  place-items:center !important;
+  text-align:center !important;
+  line-height:1 !important;
+  padding:0 !important;
+}
+body.gamesOpen #games .bomberResultMount,
+#games .bomberResultMount{pointer-events:none !important;}
+body.gamesOpen #games .bomberResultOverlay,
+#games .bomberResultOverlay{pointer-events:auto !important;z-index:25 !important;}
+body.gamesOpen #games .bomberResultCard,
+#games .bomberResultCard,
+body.gamesOpen #games .bomberResultCard *,
+#games .bomberResultCard *{pointer-events:auto !important;}
+@media (max-width:390px){
+  body.gamesOpen #games .sudokuNumberPickerDocked,
+  #games .sudokuNumberPickerDocked{grid-template-columns:repeat(5,48px) !important;gap:6px !important;}
+  body.gamesOpen #games .sudokuNumberPickerDocked button,
+  #games .sudokuNumberPickerDocked button{width:48px !important;min-width:48px !important;height:46px !important;min-height:46px !important;}
+}

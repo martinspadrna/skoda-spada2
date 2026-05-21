@@ -1,3 +1,12 @@
+## v.1.1 (704)
+
+- Hry: Reaction Test má výrazně vyšší herní plochu, aby šla lépe trefovat na mobilu.
+- Bubble Shooter má postupně častější sjíždění řádků podle počtu střel, takže obtížnost víc roste v průběhu hry.
+- Sudoku má tlačítko Nová hra nad hrací plochou a číselník pevně pod hrou, užší na šířku tlačítek a vycentrovaný.
+- Bomberman má spolehlivější tlačítko Nová hra v koncovém overlayi, aby se nechytalo pod herní joystick/redraw.
+- Celá appka dostala tvrdší app-like zákaz označování textu mimo vstupní pole, aby se při dotykovém ovládání nechytal text na obrazovce.
+- Verze sjednocena na v.1.1 (704), cache na v1.1-704 a Supabase realtime kanál na rak-public-live-v704.
+
 ## v.1.1 (703)
 
 - Hry: společný QA/sjednocovací build pro všechny hotové hry najednou, bez přidávání dalších her.

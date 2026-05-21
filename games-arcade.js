@@ -2,7 +2,7 @@
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
 
-  // v.1.1 (703): Velký společný polish všech hotových her a herního hubu.
+  // v.1.1 (704): Opravy Reaction/Bubble/Sudoku/Bomberman a app-like herní chování.
   const CORE_GAMES = ['ttt', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
   const EXTRA_GAMES = [];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);
@@ -1099,7 +1099,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function renderLaunchTiles() {
     const grid = document.getElementById('gamesGrid');
     if (!grid) return;
-    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v703';
+    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v704';
     if (grid.dataset && grid.dataset.arcadeLaunchSig === launchSig && grid.querySelector('[data-game="ttt"]')) {
       gamePerf.launchRenderSkips = Number(gamePerf.launchRenderSkips || 0) + 1;
       return;
@@ -2636,7 +2636,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     const state = getState('bubble', () => { const s2 = bubbleState(); initBubble(s2); return s2; });
     const stage = createCanvas(body, 'clamp(420px, 66dvh, 640px)');
     if (stage.wrap) stage.wrap.classList.add('isFullGame', 'arcadeNoPageScroll', 'bubbleCanvasWrap');
-    body.insertAdjacentHTML('afterbegin', `<div class="arcadeHud arcadeHudWide3 arcadeHudSingleLine">${gamesStatLine('Skóre', state.score)}${gamesStatLine('Combo', state.bestCombo || 0)}${gamesStatLine('Střely', state.shots || 0)}</div><div class="arcadeControls arcadeOnlyRestart"><button type="button" class="gameControlBtn" id="bubbleRestartBtn">Nová hra</button></div>`);
+    body.insertAdjacentHTML('afterbegin', `<div class="arcadeHud arcadeHudWide3 arcadeHudSingleLine">${gamesStatLine('Skóre', state.score)}${gamesStatLine('Combo', state.bestCombo || 0)}${gamesStatLine('Sjede', state.nextDropEvery ? `${state.shots || 0}/${state.nextDropEvery}` : `${state.shots || 0}/6`)}</div><div class="arcadeControls arcadeOnlyRestart"><button type="button" class="gameControlBtn" id="bubbleRestartBtn">Nová hra</button></div>`);
     const bubbleWrap = body.querySelector('.bubbleCanvasWrap');
     if (bubbleWrap) bubbleWrap.insertAdjacentHTML('afterend', gamesTop3Block('bubble', 'bodů', 5).replace('gamesTop5ScrollCard', 'gamesTop5ScrollCard arcadeTopScoreTight'));
     const canvas = stage.canvas, ctx = stage.ctx;
@@ -2740,10 +2740,15 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       }
       return dropped;
     };
+    const bubbleDropEvery = () => Math.max(2, 6 - Math.floor((Number(state.shots || 0)) / 8));
     const dropRows = () => {
-      if ((state.shots || 0) % 5 !== 0) return;
+      const every = bubbleDropEvery();
+      state.nextDropEvery = every;
+      if ((state.shots || 0) % every !== 0) return;
       state.grid.pop();
       state.grid.unshift(Array.from({ length: state.cols }, () => randomPick(state.colors)));
+      state.score += 8;
+      state.hint = `Řádek sjel po ${every}. střele.`;
       if (state.grid[state.rows - 1].some(Boolean)) end(false);
     };
     const settleShot = (row, col) => {
@@ -2808,7 +2813,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         }
       }
       const hud = body.querySelector('.arcadeHud');
-      if (hud) hud.innerHTML = `${gamesStatLine('Skóre', state.score)}${gamesStatLine('Combo', state.bestCombo || 0)}${gamesStatLine('Střely', state.shots || 0)}`;
+      if (hud) hud.innerHTML = `${gamesStatLine('Skóre', state.score)}${gamesStatLine('Combo', state.bestCombo || 0)}${gamesStatLine('Sjede', `${state.shots || 0}/${state.nextDropEvery || bubbleDropEvery()}`)}`;
       draw();
       state.raf = rakGameRequestFrame(state, loop);
     };
@@ -2881,9 +2886,9 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
           ${gamesStatLine('Čas', fmtTime(state.startAt ? Date.now() - state.startAt : 0))}
           ${gamesStatLine('Chyby', state.mistakes)}
         </div>
+        <div class="arcadeControls sudokuGameControls sudokuGameControlsSingle sudokuRestartTop"><button type="button" class="gameControlBtn" data-sudoku-restart="1">Nová hra</button></div>
         <div class="arcadeBoard grid-9 arcadePanel arcadeLogicBoard arcadeSudokuPaper" id="sudokuGrid">${gridHtml}</div>
         ${picker}
-        <div class="arcadeControls sudokuGameControls sudokuGameControlsSingle"><button type="button" class="gameControlBtn" data-sudoku-restart="1">Nová hra</button></div>
       </div>`;
     const grid = body.querySelector('#sudokuGrid');
     const updateHud = () => {
@@ -3134,6 +3139,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       timer: 0,
       bound: false,
       saved: false,
+      finalPainted: false,
       hint: 'Drž prst na bludišti a táhni jako joystick. Krátké klepnutí položí bombu.',
       touch: null,
       joystick: { active: false, pointerId: null, startX: 0, startY: 0, dirX: 0, dirY: 0, moved: false, stepAcc: 0, lastMoveAt: 0 }
@@ -3181,7 +3187,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     state.enemies = starts.map((pos, i) => ({ id: `m${i}`, x: pos[0], y: pos[1], alive: true, mood: i % 2 ? 'chase' : 'wander' }));
     state.bombs = []; state.fires = []; state.score = 0; state.range = 1; state.maxBombs = 1; state.shield = 0; state.speed = 1;
     state.enemyStepMs = 620; state.enemyAcc = 0; state.kills = 0; state.crates = 0; state.upgradesCollected = 0;
-    state.over = false; state.won = false; state.saved = false; state.lastTs = 0; state.hint = 'Drž prst na bludišti a táhni jako joystick. Klepnutí položí bombu.'; state.touch = null; state.joystick = { active: false, pointerId: null, startX: 0, startY: 0, dirX: 0, dirY: 0, moved: false, stepAcc: 0, lastMoveAt: 0 };
+    state.over = false; state.won = false; state.saved = false; state.finalPainted = false; state.lastTs = 0; state.hint = 'Drž prst na bludišti a táhni jako joystick. Klepnutí položí bombu.'; state.touch = null; state.joystick = { active: false, pointerId: null, startX: 0, startY: 0, dirX: 0, dirY: 0, moved: false, stepAcc: 0, lastMoveAt: 0 };
   }
   function bomberUpgradeLabel(type) {
     return type === 'range' ? '🔥' : type === 'bomb' ? '💣' : type === 'shield' ? '🛡️' : type === 'speed' ? '⚡' : '⭐';
@@ -3346,10 +3352,23 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       else if (ev.key === 'ArrowDown') { ev.preventDefault(); move(0, 1); }
       else if (ev.key === ' ' || ev.key === 'Enter') { ev.preventDefault(); placeBomb(); }
     };
+    const resetBomberGame = () => {
+      Object.assign(state, bomberState());
+      initBomber(state);
+      state.bound = true;
+      draw();
+    };
     const bindButtons = () => {
       if (state.bound) return;
       state.bound = true;
       document.addEventListener('keydown', keyHandler);
+      body.addEventListener('pointerdown', (ev) => {
+        const btn = ev.target && ev.target.closest ? ev.target.closest('[data-bomber="restart"]') : null;
+        if (!btn) return;
+        ev.preventDefault();
+        ev.stopPropagation();
+        resetBomberGame();
+      }, { passive: false, capture: true });
       body.addEventListener('pointerdown', (ev) => {
         if (ev.target && ev.target.closest && ev.target.closest('[data-bomber]')) return;
         const grid = ev.target && ev.target.closest ? ev.target.closest('#bomberGrid') : null;
@@ -3401,7 +3420,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         const btn = ev.target && ev.target.closest ? ev.target.closest('[data-bomber]') : null;
         if (!btn) return;
         if (btn.dataset.bomber === 'restart') {
-          Object.assign(state, bomberState()); initBomber(state); state.bound = true; draw();
+          resetBomberGame();
         }
       });
     };
@@ -3442,7 +3461,11 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         if (state.enemyAcc >= state.enemyStepMs) { state.enemyAcc = 0; stepEnemies(); }
         checkHits();
       }
-      if (state.over) saveResult();
+      if (state.over) {
+        saveResult();
+        if (!state.finalPainted) { state.finalPainted = true; paint(); }
+        return;
+      }
       paint();
     };
     draw();
@@ -3511,7 +3534,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     const allHot = EXTRA_GAMES.length === 0;
     const completedOnlyGuard = typeof window.gamesRecordStat === 'function';
     return {
-      version: 'v.1.1 (703)',
+      version: 'v.1.1 (704)',
       ok: !missingMeta.length && !missingRenderer.length && allHot && completedOnlyGuard,
       totalGames: ids.length,
       coreGames: ids,

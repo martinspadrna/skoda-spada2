@@ -1,4 +1,20 @@
-// v.1.1 (703) – Hry: velký společný polish všech her, end overlaye, HUDy, Sudoku/Miny/Pexeso/Shooter a ochrana proti výběru textu při hraní.
+// v.1.1 (704) – Hry: Reaction větší plocha, Bubble přísnější řádky, Sudoku spodní číselník, Bomberman restart a celkové app-like blokování výběru textu.
+
+(function setupRakAppLikeTextSelectionGuard() {
+  if (window.__rakAppLikeTextSelectionGuard) return;
+  window.__rakAppLikeTextSelectionGuard = true;
+  const isEditableTarget = (target) => {
+    try {
+      return !!(target && target.closest && target.closest('input, textarea, select, [contenteditable="true"], .allowTextSelect, .selectableText'));
+    } catch (err) { return false; }
+  };
+  const preventSelection = (ev) => {
+    if (isEditableTarget(ev && ev.target)) return;
+    ev.preventDefault();
+  };
+  document.addEventListener('selectstart', preventSelection, { capture: true });
+  document.addEventListener('dragstart', preventSelection, { capture: true });
+})();
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

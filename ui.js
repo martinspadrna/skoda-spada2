@@ -3979,7 +3979,7 @@ function renderGamesProfileStatus() {
   if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(metaEl, metaText, 'gamesProfileStatusMeta');
   else metaEl.textContent = metaText;
   if (rankEl) {
-    // v.1.1 (703): jméno/rank zůstává oddělené; herní build přidal společný QA průchod.
+    // v.1.1 (704): jméno/rank zůstává oddělené; herní build ladí Reaction, Bubble, Sudoku, Bomberman a app-like výběr textu.
     rankEl.innerHTML = '<span class="gamesProfileRankValue">' + escapeHtml(rankText) + '</span>';
     rankEl.setAttribute('data-player-name', nextName);
     rankEl.disabled = false;
@@ -4021,8 +4021,8 @@ function buildAppHistoryHtml(versionText) {
       range: versionText,
       title: 'Aktuální build',
       lines: [
-        'Build v.1.1 (703) sjednocuje všechny hotové hry najednou: HUDy, dotykové chování, Top výsledky ve scroll boxech, konečné overlaye, theme/pozadí a interní herní QA audit.',
-        'Série v.1.1 650–702 dotáhla Piškvorky, online pozvánky, PWA launch handler, všechny hlavní hry, herní profily, reporty chyb, theme polish, těžší/chytřejší achievementy a společný herní QA průchod.',
+        'Build v.1.1 (704) ladí poslední herní detaily: větší Reaction plochu, zrychlující sjíždění Bubble řádků, spodní Sudoku číselník, spolehlivější Bomberman restart a celkové app-like blokování označování textu.',
+        'Série v.1.1 650–704 dotáhla Piškvorky, online pozvánky, PWA launch handler, všechny hlavní hry, herní profily, reporty chyb, theme polish, těžší/chytřejší achievementy a společný herní QA průchod včetně posledního app-like dotykového polishu.',
         'Sekce „O aplikaci“ je nově stručnější: detailní změny zůstávají v changelogu a tady se historie drží po větších blocích.',
         'Stabilizační audity, Supabase guardy, Láďův režim a finální readiness kontroly zůstávají součástí diagnostiky.'
       ]
