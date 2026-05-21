@@ -1,4 +1,4 @@
-// v.1.1 (714) – Lodě online: čistší příprava flotily bez duplicitního kódu.
+// v.1.1 (715) – Lodě online: vycentrování, výběr lodí a stabilní velikost pole.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

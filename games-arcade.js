@@ -2,7 +2,7 @@
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
 
-  // v.1.1 (714): Lodě online: čistší příprava flotily bez duplicitního kódu.
+  // v.1.1 (715): Lodě online: výběr lodí klikem, vycentrování a stabilní velikost pole.
   const CORE_GAMES = ['ttt', 'ships', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
   const EXTRA_GAMES = [];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);
@@ -1101,7 +1101,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function renderLaunchTiles() {
     const grid = document.getElementById('gamesGrid');
     if (!grid) return;
-    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v714';
+    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v715';
     if (grid.dataset && grid.dataset.arcadeLaunchSig === launchSig && grid.querySelector('[data-game="ttt"]')) {
       gamePerf.launchRenderSkips = Number(gamePerf.launchRenderSkips || 0) + 1;
       return;
@@ -3760,7 +3760,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         const data = options.enemy && !shot ? ` data-ships-shot="${r}:${c}"` : '';
         const placeData = options.placement ? ` data-ships-place="${r}:${c}"` : '';
         const shipData = options.placement && ship ? ` data-ships-cell-ship="${escapeHtml(String(ship.id || ''))}"` : '';
-        rows.push(`<button type="button" class="${cls}"${data}${placeData} aria-label="${r + 1}-${c + 1}">${txt}</button>`);
+        rows.push(`<button type="button" class="${cls}"${data}${placeData}${shipData} aria-label="${r + 1}-${c + 1}">${txt}</button>`);
       }
     }
     return `<div class="shipsBoard ${options.enemy ? 'isEnemy' : 'isOwn'}${options.placement ? ' isPlacement' : ''}">${rows.join('')}</div>`;
@@ -3811,6 +3811,8 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   }
   function renderShips(body) {
     clearCleanups();
+    try { document.body.classList.add('shipsGameOpen'); } catch (err) {}
+    addCleanup(() => { try { document.body.classList.remove('shipsGameOpen'); } catch (err) {} });
     const local = getState('ships', () => ({ code: '', state: null, loadedRevision: 0, busy: false, poll: 0, savedFinishedCode: '', view: '', lastTurn: '', lastStatus: '', placing: { manual: false, selected: 'carrier', horizontal: true } }));
     local.placing = local.placing || { manual: false, selected: 'carrier', horizontal: true };
     const account = shipsAccountId();
@@ -3933,7 +3935,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         local.placing.horizontal = !!selectedShip.horizontal;
       }
       const selectedName = selectedShip ? selectedShip.name : 'loď';
-      const hintText = message || st.message || 'Automat už položil všechny lodě. Klepni na loď, tím ji vybereš. Pak klepni jinam na moře a přesuneš ji. Lodě se nesmí dotýkat ani rohem.';
+      const hintText = message || st.message || 'Klepni na loď = výběr. Druhé klepnutí na moře = přesun. Lodě se nesmí dotýkat ani rohem.';
       body.innerHTML = `<div class="arcadeStage shipsStage shipsSetupStage shipsScrollableStage">
         <div class="arcadeHud arcadeHudSingleLine shipsCompactHud">${gamesStatLine('Kód', st.code || '—')}${gamesStatLine('Role', role || '—')}${gamesStatLine('Lodí', `${mine.ships.length}/${SHIPS_FLEET.length}`)}${gamesStatLine('Vybraná', selectedName)}</div>
         <div class="shipsSingleBoardWrap shipsSetupBoardWrap">
@@ -3968,15 +3970,17 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       });
       body.querySelectorAll('[data-ships-place]').forEach((btn) => btn.addEventListener('click', async () => {
         const parts = String(btn.getAttribute('data-ships-place') || '').split(':').map(Number);
+        if (!Number.isFinite(parts[0]) || !Number.isFinite(parts[1])) return;
         const clickedShipId = btn.getAttribute('data-ships-cell-ship') || '';
-        const clickedShip = clickedShipId ? mine.ships.find((ship) => String(ship.id) === String(clickedShipId)) : null;
+        const currentBoard = shipsNormalizePlayerBoard(st[keyName]);
+        const clickedShip = clickedShipId ? currentBoard.ships.find((ship) => String(ship.id) === String(clickedShipId)) : null;
         if (clickedShip) {
           local.placing.selected = clickedShip.id;
           local.placing.horizontal = !!clickedShip.horizontal;
           renderPlacement(st, role, 'Vybraná loď: ' + String(clickedShip.name || 'loď') + '. Klepni na nové místo, kam ji chceš přesunout.');
           return;
         }
-        const picked = mine.ships.find((ship) => String(ship.id) === String(local.placing.selected)) || mine.ships[0];
+        const picked = currentBoard.ships.find((ship) => String(ship.id) === String(local.placing.selected)) || currentBoard.ships[0];
         if (!picked) { renderPlacement(st, role, 'Není vybraná žádná loď. Přehod flotilu automatem.'); return; }
         const res = shipsPlaceShip(st[keyName], picked, parts[0], parts[1], !!local.placing.horizontal);
         if (!res.ok) { renderPlacement(st, role, 'Sem loď dát nejde. Lodě se nesmí dotýkat ani rohem.'); return; }
@@ -4121,7 +4125,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     const allHot = EXTRA_GAMES.length === 0;
     const completedOnlyGuard = typeof window.gamesRecordStat === 'function';
     return {
-      version: 'v.1.1 (714)',
+      version: 'v.1.1 (715)',
       ok: !missingMeta.length && !missingRenderer.length && allHot && completedOnlyGuard,
       totalGames: ids.length,
       coreGames: ids,
@@ -4136,7 +4140,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       themeBackground: true,
       touchGuard: true,
       notes: [
-        'Build 714 čistí Lodě online: kód zůstává jen v horním řádku, příprava flotily je výš a po potvrzení se už nezobrazuje duplicitní karta s kódem.',
+        'Build 715 dolaďuje Lodě online: výběr lodí klikem, vycentrované pole, méně prázdného místa nahoře a stabilní velikost pole po potvrzení flotily.',
         'Reálnou hratelnost a citlivost dotyku je potřeba potvrdit na mobilu.'
       ]
     };

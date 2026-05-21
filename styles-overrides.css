@@ -8674,3 +8674,93 @@ body.gamesOpen #games #gamesShellBody[data-arcade-game="ships"]{
   #games .shipsPlayInfoLine{font-size:10px !important;padding:5px 7px !important;}
   #games .shipsInlineHint{font-size:10px !important;margin-bottom:5px !important;}
 }
+
+
+/* v.1.1 (715): Lodě online – vycentrovaná plocha, méně prázdna nahoře a stejná velikost po potvrzení flotily. */
+body.shipsGameOpen #games .gamesShellNoTitle{
+  padding-top:0 !important;
+  gap:4px !important;
+}
+body.shipsGameOpen #games .gamesShellBackFloating{
+  top:calc(4px + env(safe-area-inset-top)) !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"]{
+  padding-top:0 !important;
+  align-items:flex-start !important;
+  justify-content:flex-start !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .arcadeStage,
+#games .shipsStage{
+  width:100% !important;
+  max-width:100% !important;
+  margin-top:-10px !important;
+  padding-top:0 !important;
+  align-items:center !important;
+  justify-items:center !important;
+}
+#games .shipsSetupStage,
+#games .shipsPlayStage{
+  width:100% !important;
+  max-width:100% !important;
+  margin-inline:auto !important;
+}
+#games .shipsCompactHud,
+#games .shipsPlayInfoLine,
+#games .shipsViewToggle,
+#games .shipsSetupActionsCompact{
+  width:min(100%, 460px) !important;
+  margin-left:auto !important;
+  margin-right:auto !important;
+}
+#games .shipsSingleBoardWrap,
+#games .shipsSetupBoardWrap{
+  width:100% !important;
+  max-width:460px !important;
+  margin:0 auto !important;
+  display:grid !important;
+  place-items:center !important;
+  justify-items:center !important;
+}
+#games .shipsSetupStage .shipsBoardCardLift,
+#games .shipsPlayStage .shipsBoardCardLift,
+#games .shipsBoardCardLift{
+  width:min(100%, 452px) !important;
+  max-width:452px !important;
+  margin-left:auto !important;
+  margin-right:auto !important;
+  box-sizing:border-box !important;
+}
+#games .shipsSetupStage .shipsBoard,
+#games .shipsPlayStage .shipsBoard,
+#games .shipsBoard{
+  width:100% !important;
+  max-width:430px !important;
+  margin-left:auto !important;
+  margin-right:auto !important;
+  box-sizing:border-box !important;
+}
+#games .shipsSetupStage .shipsInlineHint,
+#games .shipsPlayStage .shipsInlineHint{
+  display:block !important;
+  max-width:430px !important;
+  margin-left:auto !important;
+  margin-right:auto !important;
+  text-align:center !important;
+}
+#games .shipsBoard.isPlacement .shipsCell[data-ships-cell-ship]{
+  cursor:pointer !important;
+}
+#games .shipsBoard.isPlacement .shipsCell[data-ships-cell-ship]:active{
+  transform:scale(.92) !important;
+  filter:brightness(1.28) saturate(1.08) !important;
+}
+@media (max-width:390px){
+  body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .arcadeStage,
+  #games .shipsStage{margin-top:-8px !important;}
+  #games .shipsCompactHud,
+  #games .shipsPlayInfoLine,
+  #games .shipsViewToggle,
+  #games .shipsSetupActionsCompact,
+  #games .shipsSingleBoardWrap,
+  #games .shipsSetupBoardWrap{max-width:100% !important;}
+}

@@ -1,9 +1,8 @@
-## v.1.1 (714)
-- Lodě online přesunuté v menu hned vedle Piškvorek.
-- Obrazovka Lodí má povolené scrollování, hrací pole je posunuté výš a okolní panely jsou kompaktnější, aby nebyla vidět jen mřížka.
-- Příprava flotily je zjednodušená: panel s výběrem lodí je pryč, flotila se položí automaticky a lodě se vybírají/přesouvají přímo na mapě.
-- Vzájemné zápasy Lodí jsou nově v menu, kde se zakládá nebo přijímá online hra.
-- Verze sjednocena na v.1.1 (714), cache na v1.1-714 a Supabase realtime kanál na rak-public-live-v714.
+## v.1.1 (715)
+- Lodě online: ubrané prázdné místo nahoře a herní pole je lépe vycentrované.
+- Opraven výběr lodí v přípravě flotily: první klik vybere loď, druhý klik ji přesune, potom jde znovu vybrat jiná loď.
+- Příprava i čekání po potvrzení drží stejnou velikost hracího pole, aby se layout po potvrzení nezmenšoval.
+- Verze sjednocena na v.1.1 (715), cache na v1.1-715 a Supabase realtime kanál na rak-public-live-v715.
 
 ## v.1.1 (709)
 - Rozpisy: jmenné sloupky v běžných tabulkách zúžené o dalších cca 5 %, aby se lépe vešly na mobil.

@@ -3979,7 +3979,7 @@ function renderGamesProfileStatus() {
   if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(metaEl, metaText, 'gamesProfileStatusMeta');
   else metaEl.textContent = metaText;
   if (rankEl) {
-    // v.1.1 (714): Lodě online bez duplicitní kódové karty v přípravě/čekání.
+    // v.1.1 (715): Lodě online – výběr lodí klikem a stabilní pole v přípravě/čekání.
     rankEl.innerHTML = '<span class="gamesProfileRankValue">' + escapeHtml(rankText) + '</span>';
     rankEl.setAttribute('data-player-name', nextName);
     rankEl.disabled = false;
@@ -4021,7 +4021,7 @@ function buildAppHistoryHtml(versionText) {
       range: versionText,
       title: 'Aktuální build',
       lines: [
-        'Build v.1.1 (714) čistí Lodě online: kód je jen v horním řádku, příprava flotily je výš a po potvrzení se už nezobrazuje duplicitní karta s kódem.',
+        'Build v.1.1 (715) dolaďuje Lodě online: pole je výš a vycentrované, lodě jdou vybírat klikem a velikost pole drží i po potvrzení flotily.',
         'Série v.1.1 650–706 dotáhla Piškvorky, online pozvánky, PWA launch handler, všechny hlavní hry, herní profily, reporty chyb, theme polish, těžší/chytřejší achievementy a společný herní QA průchod včetně app-like dotykového polishu.',
         'Sekce „O aplikaci“ je nově stručnější: detailní změny zůstávají v changelogu a tady se historie drží po větších blocích.',
         'Stabilizační audity, Supabase guardy, Láďův režim a finální readiness kontroly zůstávají součástí diagnostiky.'
@@ -8386,7 +8386,7 @@ function flapSetOverlay(state) {
   overlay.classList.toggle('isStartHint', !state.started && !state.over);
   const desc = state.over ? ('Score ' + String(state.score || 0) + ' · dokončená jízda') : 'Drž rytmus klepáním do plochy.';
   const key = (state.over ? 'over:' : 'start:') + String(state.score || 0) + ':' + String(state.best || 0);
-  // v.1.1 (714): nepřekreslovat overlay v každém frame. Staré chování ničilo tlačítko mezi pointerdown/click,
+  // v.1.1 (715): nepřekreslovat overlay v každém frame. Staré chování ničilo tlačítko mezi pointerdown/click,
   // takže po konci Flappy Car blokovalo kliky mimo kartu a Nová hra často nereagovala.
   if (overlay.dataset.flapOverlayKey === key) return;
   overlay.dataset.flapOverlayKey = key;
