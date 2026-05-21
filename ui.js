@@ -3831,6 +3831,58 @@ function openProfileSettingsFromGames() {
   if (typeof setBottomNavActive === 'function') setBottomNavActive('menu');
 }
 
+
+function closeGamesRankModal() {
+  const overlay = document.getElementById('gamesRankModalOverlay');
+  if (overlay) overlay.classList.remove('isVisible');
+  document.body.classList.remove('gamesRankModalOpen');
+}
+
+function openGamesRankModal() {
+  const defs = Array.isArray(window.GAMES_RANK_DEFS) ? window.GAMES_RANK_DEFS : [];
+  const profile = typeof gamesGetProfile === 'function' ? gamesGetProfile() : null;
+  const active = profile && profile.activeAccountId && profile.accounts ? profile.accounts[profile.activeAccountId] : null;
+  const progress = active && typeof window.gamesBuildProgressSummary === 'function'
+    ? window.gamesBuildProgressSummary(active)
+    : null;
+  const xp = Math.max(0, Number(progress && progress.xp || 0) || 0);
+  const currentRank = String(progress && progress.rank || '');
+  const rows = defs.length ? defs.map((rank) => {
+    const min = Math.max(0, Number(rank && rank.minXp || 0) || 0);
+    const name = String(rank && rank.name || 'Rank');
+    const isCurrent = currentRank && name === currentRank;
+    return '<div class="gamesRankRow' + (isCurrent ? ' isCurrent' : '') + '"><div><div class="gamesRankName">' + escapeHtml(name) + '</div><div class="gamesRankHint">' + (isCurrent ? 'Aktuální rank' : (xp >= min ? 'Splněno' : 'Chybí ' + String(min - xp) + ' XP')) + '</div></div><div class="gamesRankXp">' + String(min) + ' XP</div></div>';
+  }).join('') : '<div class="gamesRankHint">Ranky se zatím nenačetly.</div>';
+  let overlay = document.getElementById('gamesRankModalOverlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'gamesRankModalOverlay';
+    overlay.className = 'gamesRankModalOverlay';
+    document.body.appendChild(overlay);
+  }
+  const nextRank = progress && progress.nextRank ? String(progress.nextRank) : '';
+  const meta = active
+    ? (nextRank ? ('Aktuálně máš ' + String(xp) + ' XP. Další rank: ' + nextRank + ', chybí ' + String(Math.max(0, Number(progress.rankRemaining || 0) || 0)) + ' XP.') : ('Aktuálně máš ' + String(xp) + ' XP a jsi na max ranku.'))
+    : 'Přihlas se k hernímu profilu a uvidíš svůj aktuální postup.';
+  overlay.innerHTML = [
+    '<div class="gamesRankModal" role="dialog" aria-modal="true" aria-labelledby="gamesRankModalTitle">',
+    '  <div class="gamesRankModalHead"><div><div class="gamesRankModalTitle" id="gamesRankModalTitle">Ranky a XP</div><div class="gamesRankHint">' + escapeHtml(meta) + '</div></div><button type="button" class="gamesRankModalClose" data-rank-close="1">×</button></div>',
+    '  <div class="gamesRankRows">' + rows + '</div>',
+    '</div>'
+  ].join('');
+  overlay.classList.add('isVisible');
+  document.body.classList.add('gamesRankModalOpen');
+  overlay.querySelectorAll('[data-rank-close]').forEach((btn) => btn.addEventListener('click', closeGamesRankModal));
+  overlay.addEventListener('click', (ev) => { if (ev.target === overlay) closeGamesRankModal(); }, { once: true });
+}
+
+function bindGamesRankBadge() {
+  const rankEl = document.getElementById('gamesProfileRankBadge');
+  if (!rankEl || rankEl.dataset.rankBound === '1') return;
+  rankEl.dataset.rankBound = '1';
+  rankEl.addEventListener('click', (ev) => { ev.preventDefault(); openGamesRankModal(); });
+}
+
 function renderGamesProfileStatus() {
   const card = document.getElementById('gamesProfileStatusCard');
   const nameEl = document.getElementById('gamesProfileStatusName');
@@ -3866,7 +3918,11 @@ function renderGamesProfileStatus() {
   else nameEl.textContent = nextName;
   if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(metaEl, metaText, 'gamesProfileStatusMeta');
   else metaEl.textContent = metaText;
-  if (rankEl) rankEl.textContent = rankText;
+  if (rankEl) {
+    rankEl.textContent = rankText;
+    rankEl.disabled = false;
+    bindGamesRankBadge();
+  }
   if (barEl) barEl.style.setProperty('--fill', String(Math.round(pct)) + '%');
 }
 
@@ -3903,8 +3959,8 @@ function buildAppHistoryHtml(versionText) {
       range: versionText,
       title: 'Aktuální build',
       lines: [
-        'Build v.1.1 (694) přidává Administraci reportů chyb a přesouvá Sudoku, Minesweeper a Pexeso mezi hotové hry.',
-        'Série v.1.1 650–689 dotáhla Piškvorky, online pozvánky, PWA launch handler, 2048/Snake/Flappy Car/Aim/Reaction/Tetris/Space Shooter/Brick Breaker mezi hotové hry, herní profily, theme polish a těžší/chytřejší achievementy.',
+        'Build v.1.1 (696) vrací u Min dlouhé podržení jako rychlou vlajku a ponechává krátký klik pro otevření pole.',
+        'Série v.1.1 650–694 dotáhla Piškvorky, online pozvánky, PWA launch handler, 2048/Snake/Flappy Car/Aim/Reaction/Tetris/Space Shooter/Brick Breaker/Doodle/Bubble/Sudoku/Miny/Pexeso mezi hotové hry, herní profily, theme polish a těžší/chytřejší achievementy.',
         'Sekce „O aplikaci“ je nově stručnější: detailní změny zůstávají v changelogu a tady se historie drží po větších blocích.',
         'Stabilizační audity, Supabase guardy, Láďův režim a finální readiness kontroly zůstávají součástí diagnostiky.'
       ]

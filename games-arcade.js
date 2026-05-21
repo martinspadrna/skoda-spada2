@@ -2,9 +2,9 @@
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
 
-  // v.1.1 (694): doladění Sudoku/Mines/Pexeso – papírové Sudoku, Miny bez vlajek a Pexeso 5×5.
-  const CORE_GAMES = ['ttt', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory'];
-  const EXTRA_GAMES = ['bomber', 'daily'];
+  // v.1.1 (696): Miny long-press vlajky podle požadavku.
+  const CORE_GAMES = ['ttt', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
+  const EXTRA_GAMES = [];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);
   const LEGACY_RENDER_GAMES = ['2048', 'snake', 'flap'];
   const ARCADE_RENDER_GAMES = ['aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
@@ -1038,7 +1038,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function renderLaunchTiles() {
     const grid = document.getElementById('gamesGrid');
     if (!grid) return;
-    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v694';
+    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v696';
     if (grid.dataset && grid.dataset.arcadeLaunchSig === launchSig && grid.querySelector('.gamesDevFolder') && grid.querySelector('[data-game="ttt"]')) {
       gamePerf.launchRenderSkips = Number(gamePerf.launchRenderSkips || 0) + 1;
       return;
@@ -2791,8 +2791,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
           ${gamesStatLine('Chyby', state.mistakes)}
         </div>
         <div class="arcadeBoard grid-9 arcadePanel arcadeLogicBoard arcadeSudokuPaper" id="sudokuGrid">${gridHtml}${picker}</div>
-        <div class="arcadeControls sudokuGameControls"><button type="button" class="gameControlBtn" data-sudoku-restart="1">Nová hra</button><button type="button" class="gameControlBtn ghost" data-sudoku-menu="1">Obtížnost</button></div>
-        ${gamesTop3Block('sudoku', 'ms', 5).replace('gamesTop5ScrollCard', 'gamesTop5ScrollCard arcadeTopScoreTight')}
+        <div class="arcadeControls sudokuGameControls sudokuGameControlsSingle"><button type="button" class="gameControlBtn" data-sudoku-restart="1">Nová hra</button></div>
       </div>`;
     const grid = body.querySelector('#sudokuGrid');
     const updateHud = () => {
@@ -2836,17 +2835,16 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       completeCheck();
     }));
     const restart = body.querySelector('[data-sudoku-restart]');
-    if (restart) restart.addEventListener('click', () => { const fresh = createSudokuState(state.selected); fresh.started = true; fresh.startAt = Date.now(); window.app.gamesArcade['sudoku'] = fresh; renderSudoku(body); });
-    const menu = body.querySelector('[data-sudoku-menu]');
-    if (menu) menu.addEventListener('click', () => { const fresh = createSudokuState(state.selected); window.app.gamesArcade['sudoku'] = fresh; renderSudoku(body); });
+    if (restart) restart.addEventListener('click', () => { const fresh = createSudokuState(state.selected); window.app.gamesArcade['sudoku'] = fresh; renderSudoku(body); });
     setActiveState('sudoku', state);
   }
 
   // Minesweeper ------------------------------------------------------------
-  function minesState() { return { w: 9, h: 9, mines: 10, opened: 0, over: false, win: false, startAt: Date.now(), board: [], revealed: [], timer: 0 }; }
+  function minesState() { return { w: 9, h: 9, mines: 10, opened: 0, over: false, win: false, startAt: Date.now(), board: [], revealed: [], flags: [], timer: 0 }; }
   function initMines(state) {
     state.board = Array.from({ length: state.h }, () => Array(state.w).fill(0));
     state.revealed = Array.from({ length: state.h }, () => Array(state.w).fill(false));
+    state.flags = Array.from({ length: state.h }, () => Array(state.w).fill(false));
     state.over = false; state.win = false; state.opened = 0; state.startAt = Date.now(); state._saved = false;
     const spots = [];
     for (let y = 0; y < state.h; y += 1) for (let x = 0; x < state.w; x += 1) spots.push([x, y]);
@@ -2861,10 +2859,11 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     const score = Math.max(0, state.opened * 10 - (state.over ? 30 : 0));
     const cells = [];
     for (let y = 0; y < state.h; y += 1) for (let x = 0; x < state.w; x += 1) {
-      const rev = state.revealed[y][x]; const val = state.board[y][x];
+      const rev = state.revealed[y][x]; const val = state.board[y][x]; const flagged = state.flags && state.flags[y] && state.flags[y][x];
       let cls = 'arcadeCell minesCell'; let text = '';
       if (rev) { cls += ' isRevealed isFilled'; if (val === -1) { cls += ' isMine isExploded'; text = '💣'; } else { cls += val === 0 ? ' isZero' : ` isNum${val}`; text = val ? String(val) : ''; } }
-      cells.push(`<button type="button" class="${cls}" data-x="${x}" data-y="${y}">${text}</button>`);
+      else if (flagged) { cls += ' isFlagged'; text = '🚩'; }
+      cells.push(`<button type="button" class="${cls}" data-x="${x}" data-y="${y}" aria-label="${flagged ? 'Vlajka' : 'Pole'}">${text}</button>`);
     }
     body.innerHTML = `
       <div class="arcadeStage minesStage">
@@ -2874,12 +2873,17 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         ${gamesTop3Block('mines', 'ms', 5).replace('gamesTop5ScrollCard', 'gamesTop5ScrollCard arcadeTopScoreTight')}
       </div>`;
     const grid = body.querySelector('#minesGrid');
+    if (grid) {
+      grid.addEventListener('contextmenu', (ev) => { ev.preventDefault(); });
+      grid.addEventListener('touchstart', (ev) => { if (ev.cancelable) ev.preventDefault(); }, { passive: false });
+    }
     const revealAllMines = () => {
       for (let yy = 0; yy < state.h; yy += 1) for (let xx = 0; xx < state.w; xx += 1) if (state.board[yy][xx] === -1) state.revealed[yy][xx] = true;
     };
     const dig = (x, y) => {
       if (state.over || state.win) return;
       if (x < 0 || y < 0 || x >= state.w || y >= state.h || state.revealed[y][x]) return;
+      if (state.flags && state.flags[y] && state.flags[y][x]) return;
       state.revealed[y][x] = true; state.opened += 1;
       if (state.board[y][x] === -1) { state.over = true; revealAllMines(); return; }
       if (state.board[y][x] === 0) {
@@ -2887,8 +2891,41 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       }
       if (state.opened >= state.w * state.h - state.mines) { state.win = true; }
     };
+    const toggleFlag = (x, y) => {
+      if (state.over || state.win) return;
+      if (x < 0 || y < 0 || x >= state.w || y >= state.h || state.revealed[y][x]) return;
+      if (!state.flags || !state.flags[y]) state.flags = Array.from({ length: state.h }, () => Array(state.w).fill(false));
+      state.flags[y][x] = !state.flags[y][x];
+      if (typeof navigator !== 'undefined' && navigator.vibrate) { try { navigator.vibrate(state.flags[y][x] ? 18 : 8); } catch (_) {} }
+    };
     grid.querySelectorAll('button').forEach((btn) => {
-      btn.addEventListener('click', (ev) => { ev.preventDefault(); const x = Number(btn.dataset.x), y = Number(btn.dataset.y); dig(x, y); renderMines(body); });
+      let longPressTimer = null;
+      let longPressDone = false;
+      const clearLongPress = () => { if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; } };
+      btn.addEventListener('pointerdown', (ev) => {
+        ev.preventDefault();
+        longPressDone = false;
+        const x = Number(btn.dataset.x), y = Number(btn.dataset.y);
+        if (btn.setPointerCapture && ev.pointerId !== undefined) { try { btn.setPointerCapture(ev.pointerId); } catch (_) {} }
+        clearLongPress();
+        longPressTimer = setTimeout(() => {
+          longPressDone = true;
+          toggleFlag(x, y);
+          renderMines(body);
+        }, 430);
+      });
+      btn.addEventListener('pointerup', (ev) => {
+        ev.preventDefault();
+        clearLongPress();
+        const x = Number(btn.dataset.x), y = Number(btn.dataset.y);
+        if (!longPressDone) {
+          dig(x, y);
+          renderMines(body);
+        }
+      });
+      btn.addEventListener('pointerleave', clearLongPress);
+      btn.addEventListener('pointercancel', clearLongPress);
+      btn.addEventListener('contextmenu', (ev) => { ev.preventDefault(); });
     });
     body.querySelector('[data-mines="restart"]').addEventListener('click', () => { const s = minesState(); initMines(s); window.app.gamesArcade['mines'] = s; renderMines(body); });
     if (state.over || state.win) {
@@ -2998,12 +3035,12 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     };
     const draw = () => {
       body.innerHTML = `
-        <div class="arcadeStage">
-          <div class="arcadeHud">${gamesStatLine('Skóre', state.score)}${gamesStatLine('Bomby', state.bombs.filter(b => !b.exploded).length)}${gamesStatLine('Stav', state.over ? 'Konec' : 'Běží')}</div>
-          <div class="arcadeBar arcadePanel uPad10x12"><div class="arcadeStatus">Pohybuj se šipkami nebo tlačítky, bombu položíš středem. Cíl je čistit bedny.</div></div>
-          <div class="arcadeTable arcadePanel" id="bomberGrid" class="uPad8">${build()}</div>
-          <div class="arcadeControls"><button type="button" class="gameControlBtn" data-bomber="up">▲</button><button type="button" class="gameControlBtn" data-bomber="left">◀</button><button type="button" class="gameControlBtn" data-bomber="bomb">💣</button><button type="button" class="gameControlBtn" data-bomber="right">▶</button><button type="button" class="gameControlBtn" data-bomber="down">▼</button><button type="button" class="gameControlBtn" data-bomber="restart">Nová hra</button></div>
-          ${gamesTop3Block('bomber', 'bodů', 5)}
+        <div class="arcadeStage bomberStage">
+          <div class="arcadeHud arcadeHudSingleLine bomberHud">${gamesStatLine('Skóre', state.score)}${gamesStatLine('Bomby', state.bombs.filter(b => !b.exploded).length)}${gamesStatLine('Stav', state.over ? 'Konec' : 'Běží')}</div>
+          <div class="arcadeBar arcadePanel uPad10x12"><div class="arcadeStatus">Táhni prstem po poli pro pohyb, klepnutím položíš bombu. Cíl je vyčistit bedny.</div></div>
+          <div class="arcadeTable arcadePanel arcadeBomberBoard" id="bomberGrid">${build()}</div>
+          <div class="arcadeControls"><button type="button" class="gameControlBtn" data-bomber="restart">Nová hra</button></div>
+          ${gamesTop3Block('bomber', 'bodů', 5).replace('gamesTop5ScrollCard', 'gamesTop5ScrollCard arcadeTopScoreTight')}
         </div>`;
       bindButtons();
       updateHud();
@@ -3044,16 +3081,40 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       if (state.bound) return;
       state.bound = true;
       document.addEventListener('keydown', keyHandler);
+      let touchStart = null;
+      body.addEventListener('pointerdown', (ev) => {
+        const grid = ev.target && ev.target.closest ? ev.target.closest('#bomberGrid') : null;
+        if (!grid) return;
+        ev.preventDefault();
+        touchStart = { x: ev.clientX, y: ev.clientY, moved: false };
+      }, { passive: false });
+      body.addEventListener('pointermove', (ev) => {
+        if (!touchStart) return;
+        const dx = ev.clientX - touchStart.x;
+        const dy = ev.clientY - touchStart.y;
+        const ax = Math.abs(dx);
+        const ay = Math.abs(dy);
+        if (Math.max(ax, ay) < 22) return;
+        ev.preventDefault();
+        touchStart.moved = true;
+        if (ax >= ay) move(dx > 0 ? 1 : -1, 0);
+        else move(0, dy > 0 ? 1 : -1);
+        touchStart.x = ev.clientX;
+        touchStart.y = ev.clientY;
+      }, { passive: false });
+      body.addEventListener('pointerup', (ev) => {
+        const grid = ev.target && ev.target.closest ? ev.target.closest('#bomberGrid') : null;
+        if (touchStart && grid && !touchStart.moved) { ev.preventDefault(); placeBomb(); }
+        touchStart = null;
+      }, { passive: false });
+      body.addEventListener('contextmenu', (ev) => {
+        if (ev.target && ev.target.closest && ev.target.closest('#bomberGrid')) ev.preventDefault();
+      });
       body.addEventListener('click', (ev) => {
         const btn = ev.target && ev.target.closest ? ev.target.closest('[data-bomber]') : null;
         if (!btn) return;
         const a = btn.dataset.bomber;
-        if (a === 'up') move(0, -1);
-        else if (a === 'down') move(0, 1);
-        else if (a === 'left') move(-1, 0);
-        else if (a === 'right') move(1, 0);
-        else if (a === 'bomb') placeBomb();
-        else if (a === 'restart') {
+        if (a === 'restart') {
           Object.assign(state, bomberState());
           initBomber(state);
           state.bound = true;
@@ -3096,7 +3157,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function renderDaily(body) {
     const mode = dailyChallengeId();
     const meta = gameMeta('daily');
-    body.innerHTML = `<div class="arcadeStage"><div class="arcadeHud">${gamesStatLine('Dnešní', mode === 'aim' ? 'Aim' : mode === 'reaction' ? 'Reaction' : 'Memory')}${gamesStatLine('Datum', new Date().toLocaleDateString('cs-CZ'))}${gamesStatLine('Rekord', '—')}</div><div class="arcadeBar arcadePanel uPad12"> <div class="arcadeStatus"><strong>Denní challenge:</strong> ${mode === 'aim' ? '20 cílů za 30 sekund' : mode === 'reaction' ? '5 rychlých reakcí' : 'najdi všech 8 dvojic co nejrychleji'}. Podmínky jsou stejné pro všechny.</div></div><div class="arcadeControls"><button type="button" class="gameControlBtn" id="dailyStartBtn">Spustit challenge</button><button type="button" class="gameControlBtn" id="dailyResetBtn">Obnovit</button></div>${gamesTop3Block('daily', 'bodů', 5)}</div>`;
+    body.innerHTML = `<div class="arcadeStage"><div class="arcadeHud">${gamesStatLine('Dnešní', mode === 'aim' ? 'Aim' : mode === 'reaction' ? 'Reaction' : 'Memory')}${gamesStatLine('Datum', new Date().toLocaleDateString('cs-CZ'))}${gamesStatLine('Rekord', '—')}</div><div class="arcadeBar arcadePanel uPad12"> <div class="arcadeStatus"><strong>Denní challenge:</strong> ${mode === 'aim' ? '20 cílů za 30 sekund' : mode === 'reaction' ? '5 rychlých reakcí' : 'najdi všech 8 dvojic co nejrychleji'}. Podmínky jsou stejné pro všechny.</div></div><div class="arcadeControls"><button type="button" class="gameControlBtn" id="dailyStartBtn">Spustit challenge</button><button type="button" class="gameControlBtn" id="dailyResetBtn">Obnovit</button></div>${gamesTop3Block('daily', 'bodů', 5).replace('gamesTop5ScrollCard', 'gamesTop5ScrollCard arcadeTopScoreTight')}</div>`;
     let subState = null;
     const start = () => {
       if (mode === 'aim') { subState = { challenge: true, duration: 30000 }; renderAim(body, subState); }

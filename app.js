@@ -1,4 +1,4 @@
-// v.1.1 (694) – Doladění Sudoku, Min a Pexesa podle mobilního UI.
+// v.1.1 (696) – Miny: dlouhé podržení vrací vlajku, krátký klik otevírá pole.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

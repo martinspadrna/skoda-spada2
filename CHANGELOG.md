@@ -1,8 +1,14 @@
-## v.1.1 (694)
-- Sudoku přepracované podle požadavku: obtížnost se volí před startem, hra se spustí až potom, hrací plocha je papírová 9×9 mřížka a prázdné pole po kliknutí nabídne čísla 1–9 bez vyvolání klávesnice.
-- Miny zjednodušené bez vlajek/režimu vlajky, odhalená pole jsou výrazněji zvýrazněná a horní HUD je kompaktní na jeden řádek.
-- Pexeso upravené na 5×5, větší obrázky/karty a horní čas/pohyby/páry na jeden řádek.
-- Verze sjednocena na v.1.1 (694), cache na v1.1-694 a Supabase realtime kanál na rak-public-live-v694.
+## v.1.1 (696)
+- Miny: dlouhé podržení na poli nově přidá nebo sundá vlajku, krátký klik dál otevírá pole.
+- Vlajka má výrazné zvýraznění přímo v herní mřížce a neotevírá pole omylem.
+- Verze sjednocena na v.1.1 (696), cache na v1.1-696 a Supabase realtime kanál na rak-public-live-v696.
+
+## v.1.1 (695)
+- Sudoku: ve hře odstraněné Top výsledky i tlačítko obtížnosti, tlačítko Nová hra vrací zpět na menu s výběrem obtížnosti a číselník 1–9 je výrazně větší pro pohodlné klepání.
+- Miny: přidané pojistky proti long-press/context menu chování, aby dlouhé podržení nedělalo vlajku ani systémové menu.
+- Hry: klik na rank vedle jména v herním menu otevře přehled ranků a potřebných XP.
+- Bomberman mini a Denní challenge přesunuté mezi hlavní/hotové hry; Bomberman má dotykové ovládání bez šipkových tlačítek.
+- Verze sjednocena na v.1.1 (695), cache na v1.1-695 a Supabase realtime kanál na rak-public-live-v695.
 
 ## v.1.1 (693)
 - Přidána Administrace → Reporty chyb: v odemčené administraci jde načíst reporty ze Supabase, rozkliknout detail a označit je jako Viděno / Hotovo / Ignorovat.

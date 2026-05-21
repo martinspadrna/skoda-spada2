@@ -7578,3 +7578,89 @@ body.gamesOpen #games .arcadeMemoryBoard.grid-5{display:grid !important;grid-tem
 body.gamesOpen #games .arcadeMemoryBoardLarge .arcadeMemoryCard{aspect-ratio:1/1 !important;min-height:58px !important;font-size:clamp(1.45rem,7vw,2.2rem) !important;border-radius:18px !important;}
 body.gamesOpen #games .arcadeMemoryBoardLarge .arcadeMemoryCard:not(.isFlipped){font-size:1.9rem !important;color:rgba(255,255,255,.36) !important;}
 body.gamesOpen #games .arcadeMemoryBoardLarge .arcadeMemoryCard.isBonus.isMatched{background:linear-gradient(135deg,rgba(251,191,36,.28),rgba(255,255,255,.08)) !important;box-shadow:0 0 22px rgba(251,191,36,.22) !important;}
+
+
+/* v.1.1 (695) – Sudoku číselník, rank modal a další hry */
+#games .gamesProfileRankBadge{
+  appearance:none !important;
+  -webkit-appearance:none !important;
+  cursor:pointer !important;
+  text-align:center !important;
+}
+#games .gamesProfileRankBadge:active{transform:scale(.98) !important;}
+.gamesRankModalOverlay{
+  position:fixed;
+  inset:0;
+  z-index:12000;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:calc(env(safe-area-inset-top,0px) + 18px) 14px calc(env(safe-area-inset-bottom,0px) + 18px);
+  background:rgba(3,7,7,.68);
+  backdrop-filter:blur(18px) saturate(150%);
+  -webkit-backdrop-filter:blur(18px) saturate(150%);
+}
+.gamesRankModalOverlay.isVisible{display:flex;}
+.gamesRankModal{
+  width:min(94vw,430px);
+  max-height:min(82vh,640px);
+  overflow:auto;
+  overscroll-behavior:contain;
+  border-radius:28px;
+  border:1px solid var(--rakThemeBorder,rgba(124,255,124,.22));
+  background:linear-gradient(145deg,rgba(255,255,255,.09),rgba(255,255,255,.035)),var(--panel,rgba(8,13,12,.86));
+  box-shadow:0 26px 70px rgba(0,0,0,.48),0 0 30px color-mix(in srgb,var(--rakThemeAccent,var(--green2)) 14%,transparent);
+  padding:16px;
+}
+.gamesRankModalHead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;}
+.gamesRankModalTitle{font-size:1.08rem;font-weight:950;letter-spacing:-.02em;}
+.gamesRankModalClose{width:38px;height:38px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.07);color:var(--soft,#f4fff6);font-weight:950;}
+.gamesRankRows{display:grid;gap:8px;margin-top:12px;}
+.gamesRankRow{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:10px 12px;border-radius:18px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.045);}
+.gamesRankRow.isCurrent{border-color:color-mix(in srgb,var(--rakThemeAccent,var(--green2)) 55%,rgba(255,255,255,.18));background:color-mix(in srgb,var(--rakThemeAccent,var(--green2)) 16%,rgba(255,255,255,.05));box-shadow:0 0 18px color-mix(in srgb,var(--rakThemeAccent,var(--green2)) 16%,transparent);}
+.gamesRankName{font-weight:950;}
+.gamesRankXp{font-size:.82rem;opacity:.82;font-weight:800;}
+.gamesRankHint{font-size:.84rem;line-height:1.35;opacity:.82;}
+body.gamesOpen #games .sudokuGameStage .arcadeTopScoreTight{display:none !important;}
+body.gamesOpen #games .sudokuGameControlsSingle{grid-template-columns:1fr !important;width:min(100%,358px) !important;margin:0 auto !important;}
+body.gamesOpen #games .sudokuNumberPicker{
+  left:clamp(6px, calc((100% / 9) * var(--sudokuCol) - 139px + (100% / 18)), calc(100% - 278px)) !important;
+  top:clamp(6px, calc((100% / 9) * var(--sudokuRow) - 68px), calc(100% - 106px)) !important;
+  grid-template-columns:repeat(5,48px) !important;
+  gap:6px !important;
+  padding:8px !important;
+  border-radius:22px !important;
+}
+body.gamesOpen #games .sudokuNumberPicker button{
+  width:48px !important;
+  height:46px !important;
+  min-height:46px !important;
+  border-radius:14px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  text-align:center !important;
+  font-size:1.25rem !important;
+  line-height:1 !important;
+  padding:0 !important;
+}
+body.gamesOpen #games .arcadeMinesBoard,
+body.gamesOpen #games .arcadeMinesBoard *,
+body.gamesOpen #games .arcadeBomberBoard,
+body.gamesOpen #games .arcadeBomberBoard *{
+  -webkit-touch-callout:none !important;
+  -webkit-user-select:none !important;
+  user-select:none !important;
+  touch-action:manipulation !important;
+}
+body.gamesOpen #games .bomberHud{grid-template-columns:repeat(3,minmax(0,1fr)) !important;width:100% !important;gap:6px !important;}
+body.gamesOpen #games .arcadeBomberBoard{width:min(100%,360px) !important;max-width:360px !important;margin:0 auto !important;padding:8px !important;border-radius:22px !important;touch-action:none !important;}
+body.gamesOpen #games .arcadeBomberCell{min-width:0 !important;min-height:30px !important;aspect-ratio:1/1 !important;border-radius:10px !important;}
+
+/* v.1.1 (696) – Miny: dlouhé podržení = vlajka */
+body.gamesOpen #games .minesCell.isFlagged{
+  background:linear-gradient(180deg,color-mix(in srgb,var(--rakThemeAccent,var(--green2)) 24%,rgba(255,255,255,.14)),rgba(255,255,255,.08)) !important;
+  border-color:color-mix(in srgb,var(--rakThemeAccent,var(--green2)) 48%,rgba(255,255,255,.22)) !important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),0 0 18px color-mix(in srgb,var(--rakThemeAccent,var(--green2)) 18%,transparent) !important;
+  font-size:clamp(17px,5vw,24px) !important;
+}
