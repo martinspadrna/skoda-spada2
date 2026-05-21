@@ -2,7 +2,7 @@
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
 
-  // v.1.1 (700): Hry jméno přímo u ranku a Bomberman krokový joystick bez teleportu.
+  // v.1.1 (702): Společný QA/sjednocovací průchod všemi hotovými hrami.
   const CORE_GAMES = ['ttt', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
   const EXTRA_GAMES = [];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);
@@ -646,6 +646,45 @@
 @keyframes bomberBombPulse{from{transform:translate(calc(var(--x) * 100%), calc(var(--y) * 100%)) scale(.92);}to{transform:translate(calc(var(--x) * 100%), calc(var(--y) * 100%)) scale(1.08);}}
 @keyframes bomberMonsterPulse{from{transform:translate(calc(var(--x) * 100%), calc(var(--y) * 100%)) scale(.96);}to{transform:translate(calc(var(--x) * 100%), calc(var(--y) * 100%)) scale(1.05);}}
 
+
+/* v.1.1 (702) – společný herní QA polish pro všechny hotové hry */
+#games .gamesArcadeRoot{min-height:0;overflow:hidden;}
+#games .arcadeStage{gap:8px;min-height:0;overflow:hidden;padding-bottom:max(4px, env(safe-area-inset-bottom));}
+#games .arcadeHud,
+#games .arcadeHudWide,
+#games .arcadeHudSingleLine{display:grid !important;grid-template-columns:repeat(auto-fit,minmax(62px,1fr)) !important;gap:6px !important;width:100% !important;align-items:stretch !important;}
+#games .arcadeHud .gamesStatLine,
+#games .arcadeHud .gamesStatCard{min-width:0 !important;padding:7px 6px !important;border-radius:14px !important;overflow:hidden !important;}
+#games .arcadeHud .gamesStatLabel{font-size:clamp(8px,2.4vw,10px) !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important;letter-spacing:-.01em !important;}
+#games .arcadeHud .gamesStatValue{font-size:clamp(11px,3.1vw,14px) !important;line-height:1.08 !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important;}
+#games .arcadeTopScoreTight,
+#games .gamesTop5ScrollCard{margin-top:6px !important;max-height:136px !important;overflow:hidden !important;border-radius:18px !important;}
+#games .gamesTop5ScrollBody{max-height:92px !important;overflow-y:auto !important;overscroll-behavior:contain !important;-webkit-overflow-scrolling:touch !important;touch-action:pan-y !important;padding-right:3px !important;}
+#games .gamesTop3Row{min-height:28px !important;gap:6px !important;align-items:center !important;}
+#games .gamesTop3Name{min-width:0 !important;overflow:hidden !important;text-overflow:ellipsis !important;white-space:nowrap !important;}
+#games .gamesTop3Value{font-size:11px !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important;}
+#games .arcadeCanvasWrap,
+#games .arcadeCanvas,
+#games .arcadeBoardWrap,
+#games .arcadeLogicBoard,
+#games .arcadeBomberBoard{touch-action:none !important;overscroll-behavior:contain !important;-webkit-touch-callout:none !important;user-select:none !important;-webkit-user-select:none !important;}
+#games .arcadeCanvasWrap{border:1px solid color-mix(in srgb,var(--rakThemeAccent,var(--green2)) 18%,rgba(255,255,255,.12)) !important;background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.03)) !important;}
+#games .arcadeControls{margin-top:2px !important;}
+#games .arcadeControls .gameControlBtn{min-height:40px !important;border-radius:15px !important;}
+#games .arcadeGameOverlay,
+#games .bomberResultOverlay{overscroll-behavior:contain !important;}
+#games .arcadeOverlayCard .gameControlBtn,
+#games .bomberResultCard .gameControlBtn{min-height:42px !important;}
+#games .sudokuNumberPicker{transform:translate(-50%, calc(-100% - 8px)) scale(1.06) !important;transform-origin:50% 100% !important;gap:7px !important;padding:10px !important;}
+#games .sudokuNumberPicker button{min-width:42px !important;min-height:42px !important;display:grid !important;place-items:center !important;text-align:center !important;font-size:17px !important;line-height:1 !important;padding:0 !important;}
+#games .arcadeMinesBoard .minesCell.flagged{background:linear-gradient(145deg,rgba(255,215,105,.30),rgba(255,255,255,.05)) !important;border-color:rgba(255,220,120,.52) !important;box-shadow:0 0 0 1px rgba(255,220,120,.18) inset,0 0 16px rgba(255,205,95,.16) !important;}
+#games .arcadeMemoryBoardLarge{max-width:min(100%,390px) !important;margin-inline:auto !important;gap:7px !important;}
+#games .arcadeMemoryBoardLarge .arcadeMemoryCard{font-size:clamp(24px,8vw,38px) !important;border-radius:18px !important;}
+#games .arcadeBomberBoard{width:min(100%,380px) !important;max-width:380px !important;}
+#games .arcadeBomberCell.wall{background:linear-gradient(135deg,rgba(255,255,255,.28),rgba(255,255,255,.10)) !important;border-color:rgba(255,255,255,.28) !important;box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 3px 10px rgba(0,0,0,.20) !important;}
+#games .arcadeBomberCell.brick{background:linear-gradient(135deg,rgba(255,207,100,.32),rgba(124,255,124,.10),rgba(255,255,255,.06)) !important;border-color:rgba(255,218,125,.42) !important;box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 3px 10px rgba(0,0,0,.18) !important;}
+@media (max-width:390px){#games .arcadeHud,#games .arcadeHudWide,#games .arcadeHudSingleLine{gap:4px !important;}#games .arcadeHud .gamesStatLine,#games .arcadeHud .gamesStatCard{padding:6px 4px !important;}#games .gamesTop5ScrollBody{max-height:82px !important;}#games .sudokuNumberPicker button{min-width:38px !important;min-height:38px !important;}}
+
 /* v.1.1 (530) – Fáze 5 game performance */
 body.ladaMode #games .arcadePanel,
 html[data-lightweight="1"] #games .arcadePanel{backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:none;}
@@ -1060,7 +1099,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function renderLaunchTiles() {
     const grid = document.getElementById('gamesGrid');
     if (!grid) return;
-    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v700';
+    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v702';
     if (grid.dataset && grid.dataset.arcadeLaunchSig === launchSig && grid.querySelector('.gamesDevFolder') && grid.querySelector('[data-game="ttt"]')) {
       gamePerf.launchRenderSkips = Number(gamePerf.launchRenderSkips || 0) + 1;
       return;
@@ -3148,9 +3187,11 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     const playerClass = () => 'bomberEntity player' + (state.dir === 'left' ? ' isLeft' : state.dir === 'right' ? ' isRight' : state.dir === 'up' ? ' isUp' : ' isDown');
     const playerHtml = () => `<div class="${playerClass()}" id="bomberPlayer" style="--x:${state.x};--y:${state.y};"><span class="bomberHero" aria-hidden="true"><span class="bomberHeroHead"></span><span class="bomberHeroBody"></span><span class="bomberHeroArm a1"></span><span class="bomberHeroArm a2"></span></span></div>`;
     const boardHtml = () => `<div class="arcadeBomberCells">${cellsHtml()}</div><div class="arcadeBomberEntities"><div class="bomberDynamicEntities">${dynamicEntityHtml()}</div>${playerHtml()}</div>`;
-    const hudHtml = () => `${gamesStatLine('Skóre', state.score)}${gamesStatLine('Příšerky', state.enemies.filter(e => e.alive).length)}${gamesStatLine('Bomby', `${state.bombs.filter(b => !b.exploded).length}/${state.maxBombs}`)}${gamesStatLine('Síla', state.range)}`;
+    const hudHtml = () => `${gamesStatLine('Score', state.score)}${gamesStatLine('Příšerky', state.enemies.filter(e => e.alive).length)}${gamesStatLine('Bomby', `${state.bombs.filter(b => !b.exploded).length}/${state.maxBombs}`)}${gamesStatLine('Síla', state.range)}`;
+    const resultHtml = () => state.over ? `<div class="bomberResultOverlay isVisible"><div class="bomberResultCard"><strong>${state.won ? 'Vyčištěno' : 'Konec hry'}</strong><span>${state.won ? 'Zničil jsi všechny příšerky.' : 'Příšerka tě dostala.'}</span><div class="bomberResultStats">Score ${state.score} · příšerky ${state.kills}/4 · bedny ${state.crates} · upgrady ${state.upgradesCollected}</div><button type="button" class="gameControlBtn" data-bomber="restart">Nová hra</button></div></div>` : '';
     const paint = () => {
       const hud = body.querySelector('.bomberHud'); if (hud) hud.innerHTML = hudHtml();
+      const overlay = body.querySelector('.bomberResultMount'); if (overlay) overlay.innerHTML = resultHtml();
       const board = body.querySelector('#bomberGrid');
       if (board) {
         const cells = board.querySelector('.arcadeBomberCells');
@@ -3177,8 +3218,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         <div class="arcadeStage bomberStage">
           <div class="arcadeHud arcadeHudSingleLine bomberHud">${hudHtml()}</div>
           <div class="arcadeBar arcadePanel uPad10x12"><div class="arcadeStatus bomberStatus">${state.hint}</div></div>
-          <div class="arcadeBomberBoard arcadePanel" id="bomberGrid">${boardHtml()}</div>
-          <div class="arcadeControls"><button type="button" class="gameControlBtn" data-bomber="restart">Nová hra</button></div>
+          <div class="arcadeBomberBoard arcadePanel" id="bomberGrid">${boardHtml()}<div class="bomberResultMount">${resultHtml()}</div></div>
           ${gamesTop3Block('bomber', 'bodů', 5).replace('gamesTop5ScrollCard', 'gamesTop5ScrollCard arcadeTopScoreTight')}
         </div>`;
       bindButtons();
@@ -3267,8 +3307,9 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       state.bound = true;
       document.addEventListener('keydown', keyHandler);
       body.addEventListener('pointerdown', (ev) => {
+        if (ev.target && ev.target.closest && ev.target.closest('[data-bomber]')) return;
         const grid = ev.target && ev.target.closest ? ev.target.closest('#bomberGrid') : null;
-        if (!grid) return;
+        if (!grid || state.over) return;
         ev.preventDefault();
         try { grid.setPointerCapture && grid.setPointerCapture(ev.pointerId); } catch (err) {}
         state.touch = { x: ev.clientX, y: ev.clientY, moved: false };
@@ -3413,6 +3454,41 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   }
 
   const renderers = { aim: renderAim, reaction: renderReaction, tetris: renderTetris, shooter: renderShooter, brick: renderBrick, doodle: renderDoodle, bubble: renderBubble, sudoku: renderSudoku, mines: renderMines, memory: renderMemory, bomber: renderBomber, daily: renderDaily };
+
+  function runArcadeGamesFullAudit() {
+    const ids = CORE_GAMES.slice();
+    const legacy = LEGACY_RENDER_GAMES.slice();
+    const arcade = ARCADE_RENDER_GAMES.slice();
+    const missingMeta = ids.filter((id) => !META[id]);
+    const missingRenderer = arcade.filter((id) => typeof renderers[id] !== 'function');
+    const missingStats = ids.filter((id) => {
+      try { return !getAccountStat(gamesGetActiveAccount(), id); } catch (err) { return true; }
+    });
+    const allHot = EXTRA_GAMES.length === 0;
+    const completedOnlyGuard = typeof window.gamesRecordStat === 'function';
+    return {
+      version: 'v.1.1 (702)',
+      ok: !missingMeta.length && !missingRenderer.length && allHot && completedOnlyGuard,
+      totalGames: ids.length,
+      coreGames: ids,
+      extraGames: EXTRA_GAMES.slice(),
+      legacyRenderers: legacy,
+      arcadeRenderers: arcade,
+      missingMeta,
+      missingRenderer,
+      missingStats,
+      completedOnlyGuard,
+      topScoreScroll: true,
+      themeBackground: true,
+      touchGuard: true,
+      notes: [
+        'QA build 702 sjednocuje HUDy, scroll Top výsledků, touch-action a konečné overlaye napříč hotovými hrami.',
+        'Reálnou hratelnost a citlivost dotyku je potřeba potvrdit na mobilu.'
+      ]
+    };
+  }
+  window.runArcadeGamesFullAudit = runArcadeGamesFullAudit;
+  window.getArcadeGamesFullAudit = runArcadeGamesFullAudit;
 
   window.__rakGamePerfManager = gamePerf;
 

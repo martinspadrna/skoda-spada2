@@ -1,3 +1,21 @@
+## v.1.1 (702)
+
+- Hry: společný QA/sjednocovací build pro všechny hotové hry najednou, bez přidávání dalších her.
+- Sjednocené horní HUDy, aby se score/čas/pohyby/ostatní údaje držely v kompaktních řádcích i na menších mobilech.
+- Top výsledky mají jednotné vlastní scroll boxy, aby nepřekážely hře a neposouvaly omylem celou stránku během hraní.
+- Přidané finální touch-action/overscroll pojistky pro canvas a logické herní plochy, aby se při hraní nechtěně nehýbala stránka.
+- Doladěné společné vizuální pojistky pro Sudoku číselník, Miny vlajky, Pexeso karty a Bomberman zdi/truhly.
+- Přidána interní funkce runArcadeGamesFullAudit()/getArcadeGamesFullAudit() pro rychlou kontrolu napojení všech hlavních her.
+- Verze sjednocena na v.1.1 (702), cache na v1.1-702 a Supabase realtime kanál na rak-public-live-v702.
+
+## v.1.1 (701)
+
+- Hry: jméno profilu a rank jsou nahoře dvě samostatná okénka místo jednoho společného badge.
+- Rank modal: zavírací křížek je vycentrovaný v kulatém tlačítku.
+- Bomberman: HUD Score/Příšerky/Bomby/Síla je zhuštěný do jednoho řádku.
+- Bomberman: tlačítko Nová hra už není pod hrou během hraní; objeví se až po konci hry přímo přes plochu spolu se shrnutím.
+- Verze sjednocena na v.1.1 (701), cache na v1.1-701 a Supabase realtime kanál na rak-public-live-v701.
+
 ## v.1.1 (700)
 - Hry: jméno přihlášeného profilu se nově propisuje i přímo vedle ranku v horním řádku Her, aby nezmizelo při pozdějším přerenderování nebo starším CSS.
 - Bomberman mini: panáček už se nepřekresluje celý při každém kroku; zůstává ve vrstvě a plynule přechází po jednotlivých políčkách místo teleportování.

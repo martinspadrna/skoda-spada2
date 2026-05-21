@@ -1,4 +1,4 @@
-// v.1.1 (700) – Hry: jméno přímo u ranku a Bomberman krokově chodí po políčkách.
+// v.1.1 (702) – Hry: společný QA/sjednocovací build pro všechny hotové hry, layout, dotyk, Top 5, overlaye a completed-only audit.
 (function setupErrorCapture() {
   const LOG_KEY = "rotace_err_log_v1";
   const MAX = 50;

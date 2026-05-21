@@ -3979,9 +3979,8 @@ function renderGamesProfileStatus() {
   if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(metaEl, metaText, 'gamesProfileStatusMeta');
   else metaEl.textContent = metaText;
   if (rankEl) {
-    rankEl.innerHTML = active
-      ? '<span class="gamesProfileRankPlayer">' + escapeHtml(nextName) + '</span><span class="gamesProfileRankValue">' + escapeHtml(rankText) + '</span>'
-      : '<span class="gamesProfileRankValue">' + escapeHtml(rankText) + '</span>';
+    // v.1.1 (702): jméno/rank zůstává oddělené; herní build přidal společný QA průchod.
+    rankEl.innerHTML = '<span class="gamesProfileRankValue">' + escapeHtml(rankText) + '</span>';
     rankEl.setAttribute('data-player-name', nextName);
     rankEl.disabled = false;
     bindGamesRankBadge();
@@ -4022,8 +4021,8 @@ function buildAppHistoryHtml(versionText) {
       range: versionText,
       title: 'Aktuální build',
       lines: [
-        'Build v.1.1 (700) opravuje zobrazení jména přímo vedle ranku v Hrách a Bomberman už krokově chodí po políčkách místo teleportování.',
-        'Série v.1.1 650–694 dotáhla Piškvorky, online pozvánky, PWA launch handler, 2048/Snake/Flappy Car/Aim/Reaction/Tetris/Space Shooter/Brick Breaker/Doodle/Bubble/Sudoku/Miny/Pexeso mezi hotové hry, herní profily, theme polish a těžší/chytřejší achievementy.',
+        'Build v.1.1 (702) sjednocuje všechny hotové hry najednou: HUDy, dotykové chování, Top výsledky ve scroll boxech, konečné overlaye, theme/pozadí a interní herní QA audit.',
+        'Série v.1.1 650–702 dotáhla Piškvorky, online pozvánky, PWA launch handler, všechny hlavní hry, herní profily, reporty chyb, theme polish, těžší/chytřejší achievementy a společný herní QA průchod.',
         'Sekce „O aplikaci“ je nově stručnější: detailní změny zůstávají v changelogu a tady se historie drží po větších blocích.',
         'Stabilizační audity, Supabase guardy, Láďův režim a finální readiness kontroly zůstávají součástí diagnostiky.'
       ]
