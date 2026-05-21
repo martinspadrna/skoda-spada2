@@ -1,3 +1,10 @@
+## v.1.1 (718)
+- Lodě online: kód pozvánky je nově čistě číselný 4místný kód, aby seděl se Supabase normalizací a nehledala se špatná pozvánka.
+- Opravené přijetí protihráče a ukládání stavu Lodí po připojení, aby hra nezůstávala na „Čekání na protihráče“.
+- Ve hře se po načtení soupeřovy flotily zobrazuje přepínání Moje flotila / Střílet na soupeře.
+- Tlačítko Vytvořit hru má čistý zaoblený styl bez hranatého ohraničení.
+- Verze sjednocena na v.1.1 (718), cache na v1.1-718 a Supabase realtime kanál na rak-public-live-v718.
+
 ## v.1.1 (717)
 - Lodě online: tlačítka Potvrdit flotilu a Zpět do menu jsou nově nad horním panelem s kódem.
 - Horní panel Lodí je zhuštěný a pole Loď má víc prostoru, aby byl vidět celý název vybrané lodi.

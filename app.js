@@ -1,4 +1,4 @@
-// v.1.1 (717) – Lodě online: akce flotily nad kódem a kompaktnější horní panel.
+// v.1.1 (718) – Lodě online: číselný kód, oprava přijetí protihráče a čistší tlačítko založení.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

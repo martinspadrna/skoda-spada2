@@ -342,7 +342,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v717');
+      const channel = client.channel('rak-public-live-v718');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -1163,19 +1163,21 @@
       .maybeSingle(), { mode: 'write' });
     if (inviteUpdErr) throw inviteUpdErr;
     const boardState = sessionData && sessionData.board_state && typeof sessionData.board_state === 'object' ? sessionData.board_state : { board: Array(180).fill(''), turn: 'X', status: 'active' };
-    boardState.status = 'active';
+    const inviteGameType = String(invite.game_type || boardState.gameType || 'gomoku').trim() || 'gomoku';
+    boardState.gameType = inviteGameType;
+    boardState.status = inviteGameType === 'battleship' ? 'placing' : 'active';
     boardState.playerXAccountNumber = invite.inviter_account_number || boardState.playerXAccountNumber || null;
     boardState.playerOAccountNumber = invitee || boardState.playerOAccountNumber || null;
     boardState.revision = Math.max(Number(boardState.revision || 0) || 0, 1);
     boardState.updatedAtTs = Date.now();
     boardState.acceptedAt = new Date().toISOString();
     const sessionRow = {
-      game_type: invite.game_type || boardState.gameType || 'gomoku',
+      game_type: inviteGameType,
       invite_id: invite.id,
       player_x_account_number: invite.inviter_account_number || null,
       player_o_account_number: invitee,
       winner_account_number: null,
-      status: 'active',
+      status: inviteGameType === 'battleship' ? 'placing' : 'active',
       board_state: boardState,
       move_history: Array.isArray(sessionData && sessionData.move_history) ? sessionData.move_history : [],
       updated_at: new Date().toISOString()
@@ -2896,13 +2898,13 @@
       const client = getClient();
       if (!client || !navigator.onLine) return { ok: false, reason: 'offline-or-missing-client' };
       try { const result = Object.assign({ ok: true }, await createGameInviteDirect(client, payload)); state.lastError = null; return result; }
-      catch (err) { state.lastError = err; console.error('TTT invite create failed', err); return { ok: false, error: err }; }
+      catch (err) { state.lastError = err; console.error('Game invite create failed', err); return { ok: false, error: err }; }
     },
     acceptGameInvite: async (code, inviteeAccountNumber) => {
       const client = getClient();
       if (!client || !navigator.onLine) return { ok: false, reason: 'offline-or-missing-client' };
       try { const result = Object.assign({ ok: true }, await acceptGameInviteDirect(client, code, inviteeAccountNumber)); state.lastError = null; return result; }
-      catch (err) { state.lastError = err; console.error('TTT invite accept failed', err); return { ok: false, error: err }; }
+      catch (err) { state.lastError = err; console.error('Game invite accept failed', err); return { ok: false, error: err }; }
     },
     loadGameSessionByInviteCode: async (code) => {
       const inviteCode = normalizeInviteCode(code);
@@ -2916,7 +2918,7 @@
       }
       catch (err) {
         state.lastError = err;
-        console.error('TTT session load failed', err);
+        console.error('Game session load failed', err);
         const cachedResult = buildCachedSessionResult(inviteCode);
         if (cachedResult && cachedResult.ok) return Object.assign(cachedResult, { fallback: true, error: err });
         return { ok: false, error: err };
@@ -2945,7 +2947,7 @@
       catch (err) {
         state.cacheGuard.sessionSaveErrors += 1;
         state.lastError = err;
-        console.error('TTT session save failed', err);
+        console.error('Game session save failed', err);
         if (isLikelyTransientError(err)) {
           state.cacheGuard.sessionSaveQueued += 1;
           buildCachedSessionResult(inviteCode, payload);

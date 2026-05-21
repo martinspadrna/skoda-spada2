@@ -8889,3 +8889,63 @@ body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .arcadeStage
 @media (max-width:390px){
   #games .shipsCompactHud .gamesStatCard{padding:4px 3px !important;}
 }
+
+
+/* v.1.1 (718): Lodě online – číselný kód, čistý create button a viditelné přepínání pohledu. */
+#games .shipsJoinCard .appInput{
+  text-transform:none !important;
+}
+#games .shipsInviteControls{
+  background:transparent !important;
+  border:0 !important;
+  box-shadow:none !important;
+  outline:0 !important;
+  padding:0 !important;
+}
+#games .shipsInviteControls #shipsCreateBtn,
+#games #shipsCreateBtn{
+  appearance:none !important;
+  -webkit-appearance:none !important;
+  outline:0 !important;
+  border-radius:18px !important;
+  overflow:hidden !important;
+  clip-path:inset(0 round 18px) !important;
+}
+#games .shipsInviteControls #shipsCreateBtn::before,
+#games .shipsInviteControls #shipsCreateBtn::after,
+#games #shipsCreateBtn::before,
+#games #shipsCreateBtn::after{
+  border-radius:18px !important;
+}
+#games .shipsInviteControls #shipsCreateBtn:focus,
+#games #shipsCreateBtn:focus{
+  outline:0 !important;
+}
+#games .shipsInviteControls #shipsCreateBtn:focus-visible,
+#games #shipsCreateBtn:focus-visible{
+  outline:0 !important;
+  box-shadow:0 0 0 2px rgba(124,255,255,.34),0 12px 28px rgba(0,0,0,.16),inset 0 0 0 1px rgba(255,255,255,.08) !important;
+}
+#games .shipsViewToggle{
+  display:grid !important;
+  grid-template-columns:1fr 1fr !important;
+  gap:7px !important;
+  width:min(100%,460px) !important;
+  margin:2px auto 0 !important;
+}
+#games .shipsViewBtn{
+  border-radius:16px !important;
+  border:1px solid rgba(255,255,255,.13) !important;
+  background:rgba(255,255,255,.055) !important;
+  color:rgba(255,255,255,.78) !important;
+  min-height:36px !important;
+  padding:7px 9px !important;
+  font-size:11px !important;
+  font-weight:850 !important;
+}
+#games .shipsViewBtn.isActive{
+  color:#fff !important;
+  border-color:rgba(124,255,255,.46) !important;
+  background:linear-gradient(135deg,rgba(124,255,255,.18),rgba(124,255,124,.10)) !important;
+  box-shadow:0 0 18px rgba(124,255,255,.13),inset 0 0 0 1px rgba(255,255,255,.08) !important;
+}

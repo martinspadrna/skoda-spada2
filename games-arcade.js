@@ -2,7 +2,7 @@
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
 
-  // v.1.1 (717): Lodě online: akce flotily nad kódem a kompaktnější horní panel.
+  // v.1.1 (718): Lodě online: čistě číselný kód, oprava přijetí a přepínání pohledu.
   const CORE_GAMES = ['ttt', 'ships', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'daily'];
   const EXTRA_GAMES = [];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);
@@ -1101,7 +1101,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function renderLaunchTiles() {
     const grid = document.getElementById('gamesGrid');
     if (!grid) return;
-    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v717';
+    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v718';
     if (grid.dataset && grid.dataset.arcadeLaunchSig === launchSig && grid.querySelector('[data-game="ttt"]')) {
       gamePerf.launchRenderSkips = Number(gamePerf.launchRenderSkips || 0) + 1;
       return;
@@ -3534,9 +3534,8 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     return Array.isArray(list) && list.some((cell) => Number(cell && cell[0]) === r && Number(cell && cell[1]) === c);
   }
   function shipsRandomCode() {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     let out = '';
-    for (let i = 0; i < 4; i += 1) out += chars[Math.floor(Math.random() * chars.length)];
+    for (let i = 0; i < 4; i += 1) out += String(Math.floor(Math.random() * 10));
     return out;
   }
   function shipsAccountId() {
@@ -3684,7 +3683,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function shipsFreshState(code, xAccount) {
     return {
       gameType: 'battleship',
-      code: String(code || '').trim().toUpperCase(),
+      code: String(code || '').replace(/\D/g, '').slice(0, 4),
       status: 'waiting',
       turn: 'X',
       winner: '',
@@ -3701,7 +3700,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   function shipsNormalizeState(raw, code) {
     const st = raw && typeof raw === 'object' ? Object.assign({}, raw) : shipsFreshState(code, shipsAccountId());
     st.gameType = 'battleship';
-    st.code = String(st.code || code || '').trim().toUpperCase();
+    st.code = String(st.code || code || '').replace(/\D/g, '').slice(0, 4);
     st.status = st.status || 'waiting';
     st.turn = st.turn === 'O' ? 'O' : 'X';
     st.playerXAccountNumber = st.playerXAccountNumber || null;
@@ -3862,7 +3861,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         </div>
         <div class="arcadeBar arcadePanel uPad12 shipsJoinCard">
           <label class="smallText uBold" for="shipsJoinCode">Kód pozvánky</label>
-          <input id="shipsJoinCode" class="appInput" inputmode="text" maxlength="6" placeholder="např. A7K9">
+          <input id="shipsJoinCode" class="appInput" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="1234">
           <button type="button" class="gameControlBtn" id="shipsJoinBtn">Přijmout pozvánku</button>
         </div>
         <div class="arcadeBar arcadePanel uPad12 shipsH2HCard shipsMenuOnlyH2H"><div class="gamesTop3Title">Uložené vzájemné zápasy</div><div class="smallText shipsH2HMenuNote">Historie Lodí je schovaná tady v menu pro založení nebo přijetí hry, ne přímo v souboji.</div><div id="shipsH2HList" class="shipsH2HBody smallText">Načítám…</div></div>
@@ -3870,6 +3869,10 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       </div>`;
       const create = body.querySelector('#shipsCreateBtn');
       const join = body.querySelector('#shipsJoinBtn');
+      const codeInput = body.querySelector('#shipsJoinCode');
+      if (codeInput) codeInput.addEventListener('input', () => {
+        codeInput.value = String(codeInput.value || '').replace(/\D/g, '').slice(0, 4);
+      });
       if (create) create.addEventListener('click', async () => {
         if (!account) { renderMenu('Nejdřív se přihlas do herního profilu.'); return; }
         const code = shipsRandomCode();
@@ -3884,12 +3887,12 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       if (join) join.addEventListener('click', async () => {
         if (!account) { renderMenu('Nejdřív se přihlas do herního profilu.'); return; }
         const input = body.querySelector('#shipsJoinCode');
-        const code = String(input && input.value || '').trim().toUpperCase();
-        if (!code) { renderMenu('Zadej kód pozvánky.'); return; }
+        const code = String(input && input.value || '').replace(/\D/g, '').slice(0, 4);
+        if (code.length !== 4) { renderMenu('Zadej 4místný číselný kód pozvánky.'); return; }
         renderMenu('Připojuji se k online hře…');
         const accepted = await window.acceptGameInvite(code, account);
         if (!accepted || !accepted.ok) { renderMenu('Pozvánku se nepodařilo přijmout.'); return; }
-        const loaded = await window.loadGameSessionByInviteCode(code);
+        const loaded = accepted && accepted.session ? accepted : await window.loadGameSessionByInviteCode(code);
         let st = shipsNormalizeState(loaded && loaded.session && loaded.session.board_state, code);
         st.playerOAccountNumber = st.playerOAccountNumber || account;
         st.o = st.o && st.o.ships && st.o.ships.length ? st.o : shipsBuildPlayerBoard();
@@ -4022,9 +4025,10 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       const mineReady = role ? !!st[readyKey(role)] : true;
       if (role && st.status !== 'finished' && !mineReady) { renderPlacement(st, role); return; }
       const sum = shipsBuildPayloadSummary(st, role || 'X');
+      const hasOpponent = !!(st.o || st.playerOAccountNumber);
       const waiting = st.status === 'waiting' || !st.o || !st.oReady || !st.xReady;
       const canShoot = st.status === 'active' && role && st.turn === role;
-      const headline = waiting ? (st.o ? 'Čeká se na flotily' : 'Čeká se na protihráče') : (st.status === 'finished' ? (st.winner === role ? 'Vyhrál jsi' : 'Konec hry') : (canShoot ? 'Jsi na tahu' : 'Hraje soupeř'));
+      const headline = waiting ? (hasOpponent ? 'Čeká se na flotily' : 'Čeká se na protihráče') : (st.status === 'finished' ? (st.winner === role ? 'Vyhrál jsi' : 'Konec hry') : (canShoot ? 'Jsi na tahu' : 'Hraje soupeř'));
       const ownShots = enemy && Array.isArray(enemy.shots) ? enemy.shots : [];
       const myShots = mine && Array.isArray(mine.shots) ? mine.shots : [];
       const preferredView = canShoot ? 'enemy' : 'own';
@@ -4142,7 +4146,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     const allHot = EXTRA_GAMES.length === 0;
     const completedOnlyGuard = typeof window.gamesRecordStat === 'function';
     return {
-      version: 'v.1.1 (717)',
+      version: 'v.1.1 (718)',
       ok: !missingMeta.length && !missingRenderer.length && allHot && completedOnlyGuard,
       totalGames: ids.length,
       coreGames: ids,
@@ -4157,7 +4161,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       themeBackground: true,
       touchGuard: true,
       notes: [
-        'Build 717 dolaďuje Lodě online: tlačítka Potvrdit flotilu a Zpět do menu jsou nad horním panelem s kódem a panel je kompaktnější, aby byl vidět celý název vybrané lodi.',
+        'Build 718 opravuje Lodě online: kód je čistě číselný, přijetí protihráče už nezůstává viset na čekání, přepínání pohledu je vidět po načtení soupeře a tlačítko Vytvořit hru nemá hranaté ohraničení.',
         'Reálnou hratelnost a citlivost dotyku je potřeba potvrdit na mobilu.'
       ]
     };
