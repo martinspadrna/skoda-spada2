@@ -1,4 +1,4 @@
-// v.1.1 (707) – Pexeso menu polish a rozbalovací běžné Rozpisy.
+// v.1.1 (708) – Flappy Car overlay restart + širší běžné Rozpisy.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

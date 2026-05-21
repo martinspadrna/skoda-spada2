@@ -8251,7 +8251,7 @@ body.gamesOpen #games .arcadeSudokuCell.isWrong,
   outline:none !important;
 }
 
-/* v.1.1 (707) – Flappy průchodnost overlaye, Reaction výška, Sudoku číselník, Pexeso obtížnosti, Rozpisy fold sekce */
+/* v.1.1 (708) – Flappy průchodnost overlaye, Reaction výška, Sudoku číselník, Pexeso obtížnosti, Rozpisy fold sekce */
 body.gamesOpen #games .flapOverlay{
   pointer-events:none !important;
 }
@@ -8322,7 +8322,7 @@ body.gamesOpen #games .sudokuNumberPickerTwoRows .sudokuClearBtn,
 .appMenuFoldSection.adminRotationFold .smallText{padding:10px 12px 0 !important;}
 
 
-/* v.1.1 (707) – Pexeso menu polish + běžné Rozpisy rozbalovací sekce */
+/* v.1.1 (708) – Pexeso menu polish + běžné Rozpisy rozbalovací sekce */
 #games .memoryMenuCard .arcadeStatus{
   width:100% !important;
   box-sizing:border-box !important;
@@ -8381,4 +8381,52 @@ body.gamesOpen #games .sudokuNumberPickerTwoRows .sudokuClearBtn,
 .rotationViewFold>.tableWrap,
 .rotationViewFold>.smallText{
   margin:0 10px 12px !important;
+}
+
+
+/* v.1.1 (708) – Flappy overlay kliká jen přes kartu a Rozpisy mají o chlup širší pracovní plochu. */
+body.gamesOpen #games .flapOverlay{
+  pointer-events:none !important;
+}
+body.gamesOpen #games .flapOverlay .flapOverlayCard,
+body.gamesOpen #games .flapOverlay #flapOverlayNewBtn{
+  pointer-events:auto !important;
+}
+#monthView .rotationViewFold>.tableWrap{
+  margin-left:4px !important;
+  margin-right:4px !important;
+  width:calc(100% - 8px) !important;
+  max-width:calc(100% - 8px) !important;
+}
+#monthView table.rotTable{
+  width:100% !important;
+  min-width:392px !important;
+}
+#monthView table.rotTable th:first-child,
+#monthView table.rotTable td.dateCell{
+  width:clamp(38px, 9vw, 48px) !important;
+  min-width:clamp(38px, 9vw, 48px) !important;
+  max-width:clamp(38px, 9vw, 48px) !important;
+}
+#monthView table.rotTable th:not(:first-child),
+#monthView table.rotTable td:not(.dateCell){
+  font-size:clamp(9.3px, 2.55vw, 10.5px) !important;
+  letter-spacing:-.02em !important;
+}
+@media (max-width:390px){
+  #monthView .rotationViewFold>.tableWrap{
+    margin-left:2px !important;
+    margin-right:2px !important;
+    width:calc(100% - 4px) !important;
+    max-width:calc(100% - 4px) !important;
+  }
+  #monthView table.rotTable{
+    min-width:388px !important;
+  }
+  #monthView table.rotTable th:first-child,
+  #monthView table.rotTable td.dateCell{
+    width:38px !important;
+    min-width:38px !important;
+    max-width:38px !important;
+  }
 }

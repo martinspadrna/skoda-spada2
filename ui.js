@@ -3979,7 +3979,7 @@ function renderGamesProfileStatus() {
   if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(metaEl, metaText, 'gamesProfileStatusMeta');
   else metaEl.textContent = metaText;
   if (rankEl) {
-    // v.1.1 (707): herní build ladí Flappy overlay, Pexeso obtížnosti, Sudoku číselník, Bubble sjíždění a rozpisy do sekcí.
+    // v.1.1 (708): opravuje Flappy Car overlay po konci hry a rozšiřuje čitelnost běžných Rozpisů.
     rankEl.innerHTML = '<span class="gamesProfileRankValue">' + escapeHtml(rankText) + '</span>';
     rankEl.setAttribute('data-player-name', nextName);
     rankEl.disabled = false;
@@ -4021,7 +4021,7 @@ function buildAppHistoryHtml(versionText) {
       range: versionText,
       title: 'Aktuální build',
       lines: [
-        'Build v.1.1 (707) dolaďuje Pexeso menu a přenáší rozbalovací Tvrdotu, Měkotu a Absenci i do běžných Rozpisů.',
+        'Build v.1.1 (708) opravuje Flappy Car koncové okno a roztahuje tabulky Rozpisů, aby se lépe vešla jména.',
         'Série v.1.1 650–706 dotáhla Piškvorky, online pozvánky, PWA launch handler, všechny hlavní hry, herní profily, reporty chyb, theme polish, těžší/chytřejší achievementy a společný herní QA průchod včetně app-like dotykového polishu.',
         'Sekce „O aplikaci“ je nově stručnější: detailní změny zůstávají v changelogu a tady se historie drží po větších blocích.',
         'Stabilizační audity, Supabase guardy, Láďův režim a finální readiness kontroly zůstávají součástí diagnostiky.'
@@ -8377,6 +8377,7 @@ function flapSetOverlay(state) {
   const overlay = state.refs.overlay;
   if (state.started && !state.over) {
     overlay.hidden = true;
+    overlay.dataset.flapOverlayKey = 'hidden';
     return;
   }
   overlay.hidden = false;
@@ -8384,6 +8385,11 @@ function flapSetOverlay(state) {
   overlay.classList.toggle('isGameOver', !!state.over);
   overlay.classList.toggle('isStartHint', !state.started && !state.over);
   const desc = state.over ? ('Score ' + String(state.score || 0) + ' · dokončená jízda') : 'Drž rytmus klepáním do plochy.';
+  const key = (state.over ? 'over:' : 'start:') + String(state.score || 0) + ':' + String(state.best || 0);
+  // v.1.1 (708): nepřekreslovat overlay v každém frame. Staré chování ničilo tlačítko mezi pointerdown/click,
+  // takže po konci Flappy Car blokovalo kliky mimo kartu a Nová hra často nereagovala.
+  if (overlay.dataset.flapOverlayKey === key) return;
+  overlay.dataset.flapOverlayKey = key;
   overlay.innerHTML = state.over
     ? '<div class="flapOverlayCard"><strong>' + escapeHtml(title) + '</strong><span>' + escapeHtml(desc) + '</span><button type="button" class="gameControlBtn" id="flapOverlayNewBtn">Nová hra</button></div>'
     : '<div class="flapOverlayCard"><strong>' + escapeHtml(title) + '</strong><span>' + escapeHtml(desc) + '</span></div>';
@@ -8547,16 +8553,19 @@ function renderGameFlap() {
   }
   if (state.refs.overlay && !state.refs.overlay.dataset.restartBound) {
     state.refs.overlay.dataset.restartBound = '1';
-    state.refs.overlay.addEventListener('click', (ev) => {
+    const restartFlapFromOverlay = (ev) => {
       const btn = ev.target && ev.target.closest ? ev.target.closest('#flapOverlayNewBtn') : null;
       if (!btn) return;
       ev.preventDefault();
+      ev.stopPropagation();
       flapResetState(state);
       flapSyncCanvas(state, true);
       state.y = Math.max(20, Math.min((state.canvasH || fit.height) - 34, (state.canvasH || fit.height) * 0.46));
       flapUpdateScoreUI(state);
       flapDraw(state);
-    });
+    };
+    state.refs.overlay.addEventListener('pointerdown', restartFlapFromOverlay, { passive: false });
+    state.refs.overlay.addEventListener('click', restartFlapFromOverlay);
   }
 }
 

@@ -1,8 +1,8 @@
-## v.1.1 (707)
-- Pexeso: menu s obtížnostmi má posunutý/vycentrovaný popisek, aby nebyl uříznutý vlevo.
-- Pexeso: zvolená obtížnost je výrazněji zvýrazněná v samostatném tlačítku.
-- Rozpisy: Tvrdota, Měkota a Absence jsou rozbalovací samostatné sekce i v běžném zobrazení rozpisu, nejen v administraci; v základu jsou otevřené.
-- Verze sjednocena na v.1.1 (707), cache na v1.1-707 a Supabase realtime kanál na rak-public-live-v707.
+## v.1.1 (708)
+- Flappy Car: koncový overlay už nepřekresluje tlačítko Nová hra v každém frame, takže tlačítko reaguje spolehlivěji.
+- Flappy Car: overlay po konci hry kliká jen přes vlastní kartu, takže nemá blokovat spodní navigaci nebo klik mimo tabulku.
+- Rozpisy: běžné tabulky Tvrdota/Měkota mají o něco širší pracovní plochu a užší datumový sloupec, aby se lépe vešla jména.
+- Verze sjednocena na v.1.1 (708), cache na v1.1-708 a Supabase realtime kanál na rak-public-live-v708.
 
 ## v.1.1 (705)
 - Kalkulačky: číselné vstupy dostávají `inputmode=decimal`, aby se na mobilu otevírala číselná klávesnice místo běžné.
