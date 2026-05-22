@@ -10555,7 +10555,7 @@ body.shipsGameOpen #games .gamesShellBackFloating{
   border-radius:12px !important;
 }
 
-/* v.1.5 (755): Korekce Frézky – tlačítkové volby indexů a auto rozlišení konicita/fhβ. */
+/* v.1.5 (756): Korekce Frézky – jedna kalkulačka pro konicitu i fhβ. */
 .calcCorrectionFhbCard .calcCorrectionPresetGroup{
   padding-bottom:8px !important;
 }

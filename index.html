@@ -662,13 +662,13 @@
     <div></div>
     <h3 class="calcHeaderTitleOneLine">Korekce · Frézky</h3>
     <div class="calcHeaderActions">
-      <button class="resetBtn" data-action="reset-fields" data-reset-fields="fhb_target_key,fhb_target_left,fhb_target_right,fhb_c1_left,fhb_c1_right,fhb_c2_left,fhb_c2_right,fhb_current_corr" data-reset-results="fhbResult" title="Reset polí" aria-label="Reset polí">↻</button>
+      <button class="resetBtn" data-action="reset-fields" data-reset-fields="fhb_target_key,fhb_target_left,fhb_target_right,fhb_c1_left,fhb_c1_right,fhb_c2_left,fhb_c2_right,fhb_current_taper_corr,fhb_current_shift_corr" data-reset-results="fhbResult" title="Reset polí" aria-label="Reset polí">↻</button>
       <button class="calcCloseBtn" data-action="page-kalkulacky" title="Zpět na přehled kalkulaček" aria-label="Zpět na přehled kalkulaček">×</button>
     </div>
   </div>
 
   <div class="card calcPanel calcCorrectionFormCard calcCorrectionFhbCard">
-    <div class="calcCorrectionEmptyTitle">Frézky · konicita / fhβ</div>
+    <div class="calcCorrectionEmptyTitle">Frézky · konicita + fhβ</div>
     <div class="calcCorrectionGroup calcCorrectionPresetGroup">
       <div class="calcCorrectionGroupTitle">Vyber index</div>
       <input id="fhb_target_key" type="hidden" value="">
@@ -705,11 +705,15 @@
     </div>
 
     <div class="calcCorrectionGroup calcCorrectionGroup--soft">
-      <div class="calcCorrectionGroupTitle">Korekce</div>
+      <div class="calcCorrectionGroupTitle">Aktuální korekce ve stroji</div>
       <div class="calcCorrectionTwoCols">
         <label class="calcCorrectionField">
-          <span>Aktuální korekce</span>
-          <input id="fhb_current_corr" type="text" inputmode="decimal" placeholder="např. 35 nebo 0,035">
+          <span>Konicita</span>
+          <input id="fhb_current_taper_corr" type="text" inputmode="decimal" placeholder="např. 35 nebo 0,035">
+        </label>
+        <label class="calcCorrectionField">
+          <span>fhβ</span>
+          <input id="fhb_current_shift_corr" type="text" inputmode="decimal" placeholder="např. 57 nebo 0,057">
         </label>
       </div>
     </div>
@@ -718,10 +722,6 @@
     <div class="card calcResultCard calcCorrectionResultCard" id="fhbResult"></div>
   </div>
 
-  <div class="card calcPanel calcCorrectionEmptyCard calcCorrectionFhbShiftCard">
-    <div class="calcCorrectionEmptyTitle">fhβ · posun celé strany <span class="calcDevBadge">ve vývoji</span></div>
-    <div class="smallText">Vyhodnocení nahoře samo upozorní, když hodnoty vypadají spíš na posun celého průběhu než na konicitu.</div>
-  </div>
 </div>
 
 <!-- KOREKCE BRUSY -->

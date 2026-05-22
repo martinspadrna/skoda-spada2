@@ -1,4 +1,4 @@
-// v.1.5 (755) – Korekce Frézky: tlačítkové volby indexů a automatické rozlišení konicity vs. fhβ posunu.
+// v.1.5 (756) – Korekce Frézky: jedna kalkulačka pro konicitu i fhβ korekci.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

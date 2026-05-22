@@ -943,7 +943,8 @@ function calcFrezkyFhbCorrection() {
   const c1Right = readCalcDecimal('fhb_c1_right');
   const c2Left = readCalcDecimal('fhb_c2_left');
   const c2Right = readCalcDecimal('fhb_c2_right');
-  const currentCorr = readFhbCorrectionInput('fhb_current_corr');
+  const currentTaperCorr = readFhbCorrectionInput('fhb_current_taper_corr');
+  const currentShiftCorr = readFhbCorrectionInput('fhb_current_shift_corr');
 
   if (!Number.isFinite(targetLeft) || !Number.isFinite(targetRight)) {
     setCalcOutputHtml(out, "<div class='smallText'>Vyber index nahoře.</div>", 'fhbMissingTargetPreset');
@@ -989,71 +990,64 @@ function calcFrezkyFhbCorrection() {
     };
   });
 
-  const controlPair = checkedPairs.slice().sort((a, b) => b.severity - a.severity)[0];
   const maxCenterError = checkedPairs.slice().sort((a, b) => Math.abs(b.centerError) - Math.abs(a.centerError))[0];
   const maxSpreadError = checkedPairs.slice().sort((a, b) => Math.abs(b.spreadError) - Math.abs(a.spreadError))[0];
   const centerScore = Math.abs(maxCenterError.centerError);
   const spreadScore = Math.abs(maxSpreadError.spreadError);
-  const needsShift = centerScore > centerDeadband && centerScore > spreadScore * 1.15;
-  const needsTaper = spreadScore > spreadDeadband && spreadScore >= centerScore * 0.85;
-  const recommendedMode = needsShift ? 'shift' : (needsTaper ? 'taper' : (spreadScore > spreadDeadband ? 'taper' : (centerScore > centerDeadband ? 'shift' : 'ok')));
+  const needsShift = centerScore > centerDeadband;
+  const needsTaper = spreadScore > spreadDeadband;
 
-  let html = '';
-  const pairSummaryHtml = checkedPairs.map((pair) => {
-    return "<div class='calcResultLine'><b>" + escapeHtml(pair.id) + "</b> · L <b>" + formatCalcDecimalWhole(pair.left) +
-      "</b> / P <b>" + formatCalcDecimalWhole(pair.right) + "</b></div>";
+  const taperSensitivityPer001 = maxSpreadError.spreadError > spreadDeadband ? downSensitivityPer001 : upSensitivityPer001;
+  const taperSafeFactor = maxSpreadError.spreadError > spreadDeadband ? 0.45 : 1.0;
+  const taperDelta = needsTaper ? (-(maxSpreadError.spreadError / taperSensitivityPer001) * 0.001 * taperSafeFactor) : 0;
+  const shiftSafeFactor = 0.75;
+  const shiftDelta = needsShift ? (-(maxCenterError.centerError / shiftSensitivityPer001) * 0.001 * shiftSafeFactor) : 0;
+
+  const suggestedTaper = Number.isFinite(currentTaperCorr) ? currentTaperCorr + taperDelta : NaN;
+  const suggestedShift = Number.isFinite(currentShiftCorr) ? currentShiftCorr + shiftDelta : NaN;
+  const taperMove = taperSensitivityPer001 * (taperDelta / 0.001);
+  const shiftMove = shiftSensitivityPer001 * (shiftDelta / 0.001);
+  const expectedHtml = checkedPairs.map((pair) => {
+    const expectedLeft = pair.left + shiftMove - (taperMove / 2);
+    const expectedRight = pair.right + shiftMove + (taperMove / 2);
+    const leftClass = Math.abs(expectedLeft - targetLeft) <= tolerance ? 'ok' : 'warn';
+    const rightClass = Math.abs(expectedRight - targetRight) <= tolerance ? 'ok' : 'warn';
+    return "<div class='calcResultLine'><b>" + escapeHtml(pair.id) + "</b> · L <b class='" + leftClass + "'>" + formatCalcDecimalWhole(expectedLeft) +
+      "</b> / P <b class='" + rightClass + "'>" + formatCalcDecimalWhole(expectedRight) + "</b></div>";
   }).join('');
 
-  if (recommendedMode === 'shift') {
-    const control = maxCenterError;
-    const expectedShift = -control.centerError;
-    const directionText = control.centerError > 0 ? 'fhβ dolů' : 'fhβ nahoru';
-    const expectedHtml = checkedPairs.map((pair) => {
-      const expectedLeft = pair.left + expectedShift;
-      const expectedRight = pair.right + expectedShift;
-      return "<div class='calcResultLine'><b>" + escapeHtml(pair.id) + "</b> · L <b>" + formatCalcDecimalWhole(expectedLeft) +
-        "</b> / P <b>" + formatCalcDecimalWhole(expectedRight) + "</b></div>";
-    }).join('');
-    const roughDelta = -(control.centerError / shiftSensitivityPer001) * 0.001 * 0.5;
-    const roughSuggestion = Number.isFinite(currentCorr) ? currentCorr + roughDelta : NaN;
-    html = "<div class='calcResultMain'>Nejdřív: <b>fhβ · posun celé strany</b></div>" +
-      "<div class='calcResultTitle calcResultTitle--small'>Směr</div>" +
-      "<div class='calcResultLine'><b>" + escapeHtml(directionText) + "</b> · celé je mimo střed</div>" +
-      (Number.isFinite(roughSuggestion) ? "<div class='calcResultLine'>Orientačně: <b>" + formatFhbCorrection(roughSuggestion) + "</b></div>" : "") +
-      "<div class='calcResultTitle calcResultTitle--small'>Po posunu čekej</div>" + expectedHtml +
-      (needsTaper ? "<div class='smallText'>Konicita je tam taky vidět, ale větší problém je teď posun celku.</div>" : "");
-  } else if (recommendedMode === 'taper') {
-    const control = maxSpreadError;
-    const activeSensitivityPer001 = control.spreadError > spreadDeadband ? downSensitivityPer001 : upSensitivityPer001;
-    const fullDelta = -(control.spreadError / activeSensitivityPer001) * 0.001;
-    const safeFactor = control.spreadError > spreadDeadband ? 0.45 : 1.0;
-    const safeDelta = fullDelta * safeFactor;
-    const suggestedCorrection = Number.isFinite(currentCorr) ? currentCorr + safeDelta : NaN;
-    const expectedSpreadShift = activeSensitivityPer001 * (safeDelta / 0.001);
-    const expectedHtml = checkedPairs.map((pair) => {
-      const expectedLeft = pair.left - (expectedSpreadShift / 2);
-      const expectedRight = pair.right + (expectedSpreadShift / 2);
-      return "<div class='calcResultLine'><b>" + escapeHtml(pair.id) + "</b> · L <b>" + formatCalcDecimalWhole(expectedLeft) +
-        "</b> / P <b>" + formatCalcDecimalWhole(expectedRight) + "</b></div>";
-    }).join('');
+  const targetLine = targetLabel
+    ? "<div class='calcResultLine calcResultPresetLine'>" + escapeHtml(targetLabel) + " · L " + formatCalcDecimalWhole(targetLeft) + " / P " + formatCalcDecimalWhole(targetRight) + "</div>"
+    : '';
+  const measuredLine = checkedPairs.map((pair) => {
+    return "<div class='calcResultLine calcResultLine--muted'><b>" + escapeHtml(pair.id) + "</b> · teď L " + formatCalcDecimalWhole(pair.left) +
+      " / P " + formatCalcDecimalWhole(pair.right) + "</div>";
+  }).join('');
 
-    html = (Number.isFinite(suggestedCorrection)
-      ? "<div class='calcResultMain'>Zadej korekci: <b>" + formatFhbCorrection(suggestedCorrection) + "</b></div>"
-      : "<div class='calcResultMain'>Nejdřív: <b>Konicita</b></div>") +
-      "<div class='calcResultTitle calcResultTitle--small'>Očekávané hodnoty</div>" + expectedHtml +
-      (needsShift ? "<div class='smallText'>Je tam i posun celku, ale větší problém je teď konicita.</div>" : "");
-  } else {
-    html = "<div class='calcResultMain'><b>Vypadá to blízko středu</b></div>" +
-      "<div class='calcResultTitle calcResultTitle--small'>Naměřeno</div>" + pairSummaryHtml;
+  const modeParts = [];
+  if (needsTaper) modeParts.push('konicita');
+  if (needsShift) modeParts.push('fhβ');
+  const modeText = modeParts.length ? modeParts.join(' + ') : 'bez zásahu';
+
+  let html = targetLine + "<div class='calcResultMain'>Hýbej: <b>" + escapeHtml(modeText) + "</b></div>";
+  if (needsTaper) {
+    html += Number.isFinite(suggestedTaper)
+      ? "<div class='calcResultLine'>Zadej konicitu: <b>" + formatFhbCorrection(suggestedTaper) + "</b></div>"
+      : "<div class='calcResultLine'>Konicita: <b>doplň aktuální korekci</b></div>";
   }
-
-  if (targetLabel) {
-    html = "<div class='calcResultLine calcResultPresetLine'>" + escapeHtml(targetLabel) + " · L " + formatCalcDecimalWhole(targetLeft) + " / P " + formatCalcDecimalWhole(targetRight) + "</div>" + html;
+  if (needsShift) {
+    html += Number.isFinite(suggestedShift)
+      ? "<div class='calcResultLine'>Zadej fhβ: <b>" + formatFhbCorrection(suggestedShift) + "</b></div>"
+      : "<div class='calcResultLine'>fhβ: <b>doplň aktuální korekci</b></div>";
   }
+  if (!needsTaper && !needsShift) {
+    html += "<div class='calcResultLine'>Hodnoty jsou blízko středu i konicity.</div>";
+  }
+  html += "<div class='calcResultTitle calcResultTitle--small'>Očekávané hodnoty</div>" + expectedHtml;
+  html += "<div class='calcResultTitle calcResultTitle--small'>Naměřeno</div>" + measuredLine;
 
-  setCalcOutputHtml(out, html, 'fhbResult:' + html.length + ':' + [targetLeft, targetRight, currentCorr, recommendedMode, controlPair.centerError, controlPair.spreadError].join('|'));
+  setCalcOutputHtml(out, html, 'fhbCombinedResult:' + html.length + ':' + [targetLeft, targetRight, currentTaperCorr, currentShiftCorr, centerScore, spreadScore, taperDelta, shiftDelta].join('|'));
 }
-
 function getFhbSpreadRelationText(spreadError, deadband) {
   if (!Number.isFinite(spreadError)) return 'nejde vyhodnotit';
   if (spreadError > deadband) return 'moc od sebe → korekce dolů je má sbližovat';

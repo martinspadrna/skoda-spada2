@@ -4284,11 +4284,11 @@ function renderGamesAppearanceStatus() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText || 'v.1.5 (755)',
+      range: versionText || 'v.1.5 (756)',
       title: 'Přechod na řadu 1.5',
       lines: [
         'Korekce jsou oddělené od Výpočtu kusů a u strojů je jasně označeno, že jsou zatím ve vývoji.',
-        'Frézky → volba indexu je přes tlačítka a vyhodnocení samo rozlišuje konicitu proti fhβ posunu celého průběhu.',
+        'Frézky → konicita a fhβ jsou v jedné kalkulačce; zadáš obě aktuální korekce a výstup řekne, kde hýbat.',
         'Sekce O aplikaci se průběžně drží stručná a aktualizovaná podle aktuálních buildů.'
       ]
     },
