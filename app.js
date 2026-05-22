@@ -1,4 +1,4 @@
-// v.1.5 (757) – Korekce: nízké hlavičky a frézky vybírají nejdřív jednu nejlepší korekci.
+// v.1.5 (758) – Korekce: centrované nadpisy a barevné indexy frézek.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

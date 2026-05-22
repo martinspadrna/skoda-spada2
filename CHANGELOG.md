@@ -1,3 +1,9 @@
+## v.1.5 (758)
+- Korekce: nadpisy strojů po rozkliknutí jsou centrované, včetně Frézek.
+- Přehled strojů v sekci Korekce je vycentrovaný a zůstává po jednom stroji na řádek.
+- Korekce → Frézky: karta s volbou indexu je blíž k nadpisu a indexová tlačítka mají barvy podle stylu brusů; AF/AG používá zeleno-modré značení, AH oranžové, volné varianty tlumené odstíny.
+- Verze sjednocena na v.1.5 (758), cache na v1.5-758 a Supabase realtime kanál na rak-public-live-v758.
+
 ## v.1.5 (757)
 - Korekce → Frézky: konicita i fhβ jsou sjednocené do jedné kalkulačky.
 - Zadávají se dvě aktuální korekce ze stroje: Konicita a fhβ. Samostatná karta „fhβ posun celé strany“ je odstraněná.
