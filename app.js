@@ -1,4 +1,4 @@
-// v.1.1 (742) – Lodě: spodní tlačítka pro přehazování/otáčení flotily jsou v toku pod hrací plochou, nad spodní lištou.
+// v.1.5 (743) – Lodě: spodní tlačítka pro přehazování/otáčení flotily jsou v toku pod hrací plochou, nad spodní lištou.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;
@@ -2477,15 +2477,15 @@ function installPwaAndConnectivityHooks() {
   const formatServiceWorkerVersionLabel = (version, fallback) => {
     const raw = String(version || fallback || '').trim();
     if (!raw) return '';
-    const m = /^v?1\.1-(\d+)$/i.exec(raw);
-    if (m) return 'v.1.1 (' + m[1] + ')';
+    const m = /^v?(\d+)\.(\d+)-(\d+)$/i.exec(raw);
+    if (m) return 'v.' + m[1] + '.' + m[2] + ' (' + m[3] + ')';
     return raw;
   };
 
   const getExpectedServiceWorkerCacheVersion = () => {
     const raw = getAppVersionTag();
-    const m = /v\.1\.1\s*\((\d+)\)/i.exec(raw);
-    if (m) return 'v1.1-' + m[1];
+    const m = /v\.(\d+)\.(\d+)\s*\((\d+)\)/i.exec(raw);
+    if (m) return 'v' + m[1] + '.' + m[2] + '-' + m[3];
     return String(raw || '').replace(/^v\./i, 'v').replace(/\s*\((\d+)\)\s*$/, '-$1').replace(/\s+/g, '');
   };
 
