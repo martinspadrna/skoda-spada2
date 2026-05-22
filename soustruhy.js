@@ -923,29 +923,34 @@ function calcFrezkyFhbCorrection() {
   const avgRight = avg(rightValues);
   const diffLeft = avgLeft - targetLeft;
   const diffRight = avgRight - targetRight;
-  const relative = diffRight - diffLeft;
   const tolerance = 10;
   const inLeft = Math.abs(diffLeft) <= tolerance;
   const inRight = Math.abs(diffRight) <= tolerance;
   const targetSpread = targetRight - targetLeft;
   const measuredSpread = avgRight - avgLeft;
+  const spreadError = measuredSpread - targetSpread;
 
   // Cíl korekce je vždy čistý střed z hodnot „Má být“: L 50 / P 70 znamená cíl 50 / 70.
   // Tolerance ±10 se používá jen jako OK/NOK pásmo v textu, nikdy jako cílový střed výpočtu.
-  // První kalibrace podle Martinových reálných měření:
-  // 0,035 -> 0,030 posunulo rozdíl L/P o cca 9 µm při změně korekce -0,005.
-  // 0,028 -> 0,048 posunulo rozdíl L/P o cca 29 µm při změně korekce +0,020.
-  // Průměrně tedy 0,001 korekce posune rozdíl mezi levou/pravou stranou asi o 1,6 µm.
-  const sensitivityPer001 = 1.625;
+  // fhβ korekce se teď počítá hlavně podle spodního sbíhání/rozbíhání čar v protokolu:
+  // - když je měřený rozdíl P−L větší než má být, čáry jsou dole moc od sebe => korekci dolů, aby se sbližovaly.
+  // - když je měřený rozdíl P−L menší než má být, čáry jsou dole moc u sebe => korekci nahoru, aby se rozevíraly.
+  // První reálná kalibrace je záměrně oddělená pro oba směry, protože pohyb nechodí přesně 1:1:
+  // dolů: 0,035 -> 0,030 změnilo rozdíl L/P asi o 9 µm při změně korekce -0,005 => cca 1,8 µm / 0,001.
+  // nahoru: 0,028 -> 0,048 změnilo rozdíl L/P asi o 29 µm při změně korekce +0,020 => cca 1,45 µm / 0,001.
+  const downSensitivityPer001 = 1.8;
+  const upSensitivityPer001 = 1.45;
   const centerDeadband = 0.25;
-  const fullDelta = Math.abs(relative) > centerDeadband ? -(relative / sensitivityPer001) * 0.001 : 0;
-  const safeDelta = fullDelta * 0.6;
-  const direction = relative > centerDeadband
-    ? 'Ubrat korekci – pravá je proti levé moc nahoře.'
-    : relative < -centerDeadband
-      ? 'Přidat korekci – levá je proti pravé moc nahoře.'
+  const needsMove = Math.abs(spreadError) > centerDeadband;
+  const activeSensitivityPer001 = spreadError > centerDeadband ? downSensitivityPer001 : upSensitivityPer001;
+  const fullDelta = needsMove ? -(spreadError / activeSensitivityPer001) * 0.001 : 0;
+  const safeFactor = spreadError > centerDeadband ? 0.45 : 0.6;
+  const safeDelta = fullDelta * safeFactor;
+  const direction = spreadError > centerDeadband
+    ? 'Korekci dolů – fhβ čáry jsou dole moc od sebe, korekcí dolů je potřeba je sbližovat.'
+    : spreadError < -centerDeadband
+      ? 'Korekci nahoru – fhβ čáry jsou dole moc u sebe, korekcí nahoru je potřeba je rozevírat.'
       : 'Sklon levá/pravá je prakticky na středu.';
-  const needsMove = Math.abs(relative) > centerDeadband;
   const fullTarget = Number.isFinite(currentCorr) ? currentCorr + fullDelta : NaN;
   const safeTarget = Number.isFinite(currentCorr) ? currentCorr + safeDelta : NaN;
   const correctionHtml = Number.isFinite(currentCorr)
@@ -956,17 +961,26 @@ function calcFrezkyFhbCorrection() {
         : '')
     : "<div class='calcResultMain'>Doporučení: <b>" + escapeHtml(direction) + "</b></div>" +
       "<div class='calcResultLine'>Doplň aktuální korekci a dopočítám i konkrétní novou hodnotu.</div>";
-  const calibrationText = 'Cíl výpočtu je střed bez tolerance: například 50 ±10 míří na 50, ne na 40 nebo 60. Tolerance ±10 je jen kontrola OK/NOK. Počítám orientačně z prvních měření: 0,001 korekce ≈ 1,6 µm rozdílu levá/pravá.';
+  const calibrationText = 'Cíl výpočtu je střed bez tolerance: například 50 ±10 míří na 50, ne na 40 nebo 60. Tolerance ±10 je jen kontrola OK/NOK. Směr počítám podle rozdílu P−L: moc velký rozdíl = korekce dolů a sbližovat, moc malý rozdíl = korekce nahoru a rozevírat. Pro dolů používám zatím cca 1,8 µm / 0,001, pro nahoru cca 1,45 µm / 0,001.';
 
   const html = "<div class='calcResultTitle'>fhβ · návrh korekce</div>" +
     "<div class='calcResultLine'>Cílový střed: L <b>" + formatCalcDecimal(targetLeft, 3) + "</b> / P <b>" + formatCalcDecimal(targetRight, 3) + "</b> · tolerance jen OK/NOK ±10</div>" +
     "<div class='calcResultLine'>Levá průměr: <b>" + formatCalcDecimal(avgLeft, 3) + "</b> · odchylka od středu <b>" + formatSignedCalcDecimal(diffLeft, 3) + "</b> · " + (inLeft ? 'v toleranci ±10' : 'mimo toleranci ±10') + "</div>" +
     "<div class='calcResultLine'>Pravá průměr: <b>" + formatCalcDecimal(avgRight, 3) + "</b> · odchylka od středu <b>" + formatSignedCalcDecimal(diffRight, 3) + "</b> · " + (inRight ? 'v toleranci ±10' : 'mimo toleranci ±10') + "</div>" +
-    "<div class='calcResultLine'>Rozdíl sklonu P−L: měřeno <b>" + formatSignedCalcDecimal(measuredSpread, 3) + "</b> · cíl <b>" + formatSignedCalcDecimal(targetSpread, 3) + "</b> · od středu <b>" + formatSignedCalcDecimal(relative, 3) + "</b></div>" +
+    "<div class='calcResultLine'>Rozdíl sklonu P−L: měřeno <b>" + formatSignedCalcDecimal(measuredSpread, 3) + "</b> · cíl <b>" + formatSignedCalcDecimal(targetSpread, 3) + "</b> · od středu <b>" + formatSignedCalcDecimal(spreadError, 3) + "</b></div>" +
+    "<div class='calcResultLine'>Spodní strana čar: <b>" + escapeHtml(getFhbSpreadRelationText(spreadError, centerDeadband)) + "</b></div>" +
     correctionHtml +
     "<div class='calcResultSub'>" + escapeHtml(calibrationText) + "</div>";
 
-  setCalcOutputHtml(out, html, 'fhbResult:' + html.length + ':' + [targetLeft, targetRight, avgLeft, avgRight, currentCorr, relative].join('|'));
+  setCalcOutputHtml(out, html, 'fhbResult:' + html.length + ':' + [targetLeft, targetRight, avgLeft, avgRight, currentCorr, spreadError].join('|'));
+}
+
+
+function getFhbSpreadRelationText(spreadError, deadband) {
+  if (!Number.isFinite(spreadError)) return 'nejde vyhodnotit';
+  if (spreadError > deadband) return 'moc od sebe → korekce dolů je má sbližovat';
+  if (spreadError < -deadband) return 'moc u sebe → korekce nahoru je má rozevírat';
+  return 'prakticky na středu';
 }
 
 function formatSignedCalcDecimal(value, digits) {

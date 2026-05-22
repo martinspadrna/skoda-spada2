@@ -1,3 +1,10 @@
+## v.1.5 (750)
+- Korekce Frézky → fhβ: upravená logika směru podle spodního sbíhání/rozbíhání čar v protokolu, ne jen podle obecného průměru.
+- Když je měřený rozdíl P−L větší než cílový, aplikace jasně doporučí korekci dolů a vysvětlí, že čáry jsou dole moc od sebe a mají se sbližovat.
+- Když je měřený rozdíl P−L menší než cílový, doporučí korekci nahoru a vysvětlí, že čáry jsou dole moc u sebe a mají se rozevírat.
+- Citlivost je nově oddělená pro směr dolů a nahoru podle prvních reálných příkladů: dolů cca 1,8 µm / 0,001, nahoru cca 1,45 µm / 0,001.
+- Verze sjednocena na v.1.5 (750), cache na v1.5-750 a Supabase realtime kanál na rak-public-live-v750.
+
 ## v.1.5 (749)
 - Korekce Frézky → fhβ: výpočet návrhu korekce teď míří vždy na střed z hodnot „Má být“ bez tolerance.
 - Tolerance ±10 zůstává jen pro vyhodnocení OK/NOK, neovlivňuje cílový střed ani doporučený směr korekce.

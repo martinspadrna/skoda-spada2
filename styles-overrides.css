@@ -10350,7 +10350,7 @@ body.shipsGameOpen #games .gamesShellBackFloating{
 }
 
 
-/* v.1.5 (749): Korekce Frézky – fhβ návrh korekce a kompaktnější ruční vstupy. */
+/* v.1.5 (750): Korekce Frézky – fhβ návrh korekce a kompaktnější ruční vstupy. */
 .calcCorrectionFhbCard .calcCorrectionGroup--soft .calcCorrectionTwoCols {
   grid-template-columns: 1fr !important;
 }

@@ -4284,7 +4284,7 @@ function renderGamesAppearanceStatus() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText || 'v.1.5 (749)',
+      range: versionText || 'v.1.5 (750)',
       title: 'Přechod na řadu 1.5',
       lines: [
         'Přepnutí verze na v.1.5 a vyčištění sekce O aplikaci.',
