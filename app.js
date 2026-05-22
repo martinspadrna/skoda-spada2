@@ -1,4 +1,4 @@
-// v.1.5 (748) – Korekce Frézky: fhβ návrh směru a velikosti korekce podle průměrného pohybu.
+// v.1.5 (749) – Korekce Frézky: fhβ míří na střed bez tolerance; tolerance slouží jen pro OK/NOK.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

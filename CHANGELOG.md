@@ -1,3 +1,9 @@
+## v.1.5 (749)
+- Korekce Frézky → fhβ: výpočet návrhu korekce teď míří vždy na střed z hodnot „Má být“ bez tolerance.
+- Tolerance ±10 zůstává jen pro vyhodnocení OK/NOK, neovlivňuje cílový střed ani doporučený směr korekce.
+- Výsledek nově výslovně ukazuje cílový střed L/P a rozdíl P−L proti středu.
+- Verze sjednocena na v.1.5 (749), cache na v1.5-749 a Supabase realtime kanál na rak-public-live-v749.
+
 ## v.1.5 (748)
 - Korekce → Frézky → fhβ: doplněný praktický návrh, kam hnout korekcí podle ručně zadaných hodnot z protokolu.
 - Výpočet už nebere korekci jako 1:1; používá první průměrnou kalibraci z reálných měření, kde 0,001 korekce posune rozdíl levá/pravá přibližně o 1,6 µm.

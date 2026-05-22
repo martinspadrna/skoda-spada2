@@ -927,36 +927,42 @@ function calcFrezkyFhbCorrection() {
   const tolerance = 10;
   const inLeft = Math.abs(diffLeft) <= tolerance;
   const inRight = Math.abs(diffRight) <= tolerance;
+  const targetSpread = targetRight - targetLeft;
+  const measuredSpread = avgRight - avgLeft;
 
+  // Cíl korekce je vždy čistý střed z hodnot „Má být“: L 50 / P 70 znamená cíl 50 / 70.
+  // Tolerance ±10 se používá jen jako OK/NOK pásmo v textu, nikdy jako cílový střed výpočtu.
   // První kalibrace podle Martinových reálných měření:
   // 0,035 -> 0,030 posunulo rozdíl L/P o cca 9 µm při změně korekce -0,005.
   // 0,028 -> 0,048 posunulo rozdíl L/P o cca 29 µm při změně korekce +0,020.
   // Průměrně tedy 0,001 korekce posune rozdíl mezi levou/pravou stranou asi o 1,6 µm.
   const sensitivityPer001 = 1.625;
-  const fullDelta = Math.abs(relative) > 0.001 ? -(relative / sensitivityPer001) * 0.001 : 0;
+  const centerDeadband = 0.25;
+  const fullDelta = Math.abs(relative) > centerDeadband ? -(relative / sensitivityPer001) * 0.001 : 0;
   const safeDelta = fullDelta * 0.6;
-  const direction = relative > 0.001
+  const direction = relative > centerDeadband
     ? 'Ubrat korekci – pravá je proti levé moc nahoře.'
-    : relative < -0.001
+    : relative < -centerDeadband
       ? 'Přidat korekci – levá je proti pravé moc nahoře.'
-      : 'Levá a pravá jsou proti sobě vyrovnané.';
-  const needsMove = !(inLeft && inRight && Math.abs(relative) <= tolerance);
+      : 'Sklon levá/pravá je prakticky na středu.';
+  const needsMove = Math.abs(relative) > centerDeadband;
   const fullTarget = Number.isFinite(currentCorr) ? currentCorr + fullDelta : NaN;
   const safeTarget = Number.isFinite(currentCorr) ? currentCorr + safeDelta : NaN;
   const correctionHtml = Number.isFinite(currentCorr)
-    ? "<div class='calcResultMain'>Doporučení: <b>" + (needsMove ? escapeHtml(direction) : 'Nechal bych to být, je to v toleranci.') + "</b></div>" +
+    ? "<div class='calcResultMain'>Doporučení: <b>" + (needsMove ? escapeHtml(direction) : 'S korekcí bych nehýbal, sklon je na středu.') + "</b></div>" +
       (needsMove
         ? "<div class='calcResultLine'>Odhad na střed: <b>" + formatFhbCorrection(fullTarget) + "</b> (změna " + formatSignedFhbCorrection(fullDelta) + ")</div>" +
           "<div class='calcResultLine'>Opatrný první krok: <b>" + formatFhbCorrection(safeTarget) + "</b> (změna " + formatSignedFhbCorrection(safeDelta) + ")</div>"
         : '')
     : "<div class='calcResultMain'>Doporučení: <b>" + escapeHtml(direction) + "</b></div>" +
       "<div class='calcResultLine'>Doplň aktuální korekci a dopočítám i konkrétní novou hodnotu.</div>";
-  const calibrationText = 'Počítám orientačně z prvních měření: 0,001 korekce ≈ 1,6 µm rozdílu levá/pravá. Není to 1:1, proto je lepší brát opatrný první krok a potom přeměřit.';
+  const calibrationText = 'Cíl výpočtu je střed bez tolerance: například 50 ±10 míří na 50, ne na 40 nebo 60. Tolerance ±10 je jen kontrola OK/NOK. Počítám orientačně z prvních měření: 0,001 korekce ≈ 1,6 µm rozdílu levá/pravá.';
 
   const html = "<div class='calcResultTitle'>fhβ · návrh korekce</div>" +
-    "<div class='calcResultLine'>Levá průměr: <b>" + formatCalcDecimal(avgLeft, 3) + "</b> · odchylka <b>" + formatSignedCalcDecimal(diffLeft, 3) + "</b> · " + (inLeft ? 'v toleranci ±10' : 'mimo toleranci ±10') + "</div>" +
-    "<div class='calcResultLine'>Pravá průměr: <b>" + formatCalcDecimal(avgRight, 3) + "</b> · odchylka <b>" + formatSignedCalcDecimal(diffRight, 3) + "</b> · " + (inRight ? 'v toleranci ±10' : 'mimo toleranci ±10') + "</div>" +
-    "<div class='calcResultLine'>Rozdíl sklonu P−L: <b>" + formatSignedCalcDecimal(relative, 3) + "</b></div>" +
+    "<div class='calcResultLine'>Cílový střed: L <b>" + formatCalcDecimal(targetLeft, 3) + "</b> / P <b>" + formatCalcDecimal(targetRight, 3) + "</b> · tolerance jen OK/NOK ±10</div>" +
+    "<div class='calcResultLine'>Levá průměr: <b>" + formatCalcDecimal(avgLeft, 3) + "</b> · odchylka od středu <b>" + formatSignedCalcDecimal(diffLeft, 3) + "</b> · " + (inLeft ? 'v toleranci ±10' : 'mimo toleranci ±10') + "</div>" +
+    "<div class='calcResultLine'>Pravá průměr: <b>" + formatCalcDecimal(avgRight, 3) + "</b> · odchylka od středu <b>" + formatSignedCalcDecimal(diffRight, 3) + "</b> · " + (inRight ? 'v toleranci ±10' : 'mimo toleranci ±10') + "</div>" +
+    "<div class='calcResultLine'>Rozdíl sklonu P−L: měřeno <b>" + formatSignedCalcDecimal(measuredSpread, 3) + "</b> · cíl <b>" + formatSignedCalcDecimal(targetSpread, 3) + "</b> · od středu <b>" + formatSignedCalcDecimal(relative, 3) + "</b></div>" +
     correctionHtml +
     "<div class='calcResultSub'>" + escapeHtml(calibrationText) + "</div>";
 
