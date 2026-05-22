@@ -1,4 +1,4 @@
-// v.1.1 (740) – Pampuch má klidnější pomalejší duchy; Lodě mají spodní akce nad lištou a jasnější potopené lodě.
+// v.1.1 (741) – Statistiky aktuálního roku počítají jen do aktuálního měsíce; Lodě jsou kotvené od spodní lišty; Pampuch má náhodnější duchy.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

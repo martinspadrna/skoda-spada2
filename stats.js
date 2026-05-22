@@ -244,6 +244,30 @@ function applyAnnualWorkAbsenceTarget(person, target) {
   person.totalWork = Math.max(0, numericTarget - absence);
 }
 
+function shouldIncludeMonthInStats(parsedMonth, selectedYear) {
+  if (!parsedMonth || parsedMonth.year !== selectedYear) return false;
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth() + 1;
+  // v.1.1 (741): u aktuálního roku nepočítat importované budoucí měsíce.
+  // Celý rok 2026 může být nahraný kvůli plánování, ale statistiky mají zatím končit aktuálním měsícem.
+  if (selectedYear > currentYear) return false;
+  if (selectedYear === currentYear) return parsedMonth.month <= currentMonth;
+  return true;
+}
+
+function inferWorkAbsenceTargetForStats(people, explicitTarget) {
+  const numericExplicit = Number(explicitTarget);
+  if (Number.isFinite(numericExplicit) && numericExplicit > 0) return numericExplicit;
+  const sums = (Array.isArray(people) ? people : [])
+    .map(person => Math.round(((Number(person && person.totalWork || 0) || 0) + (Number(person && person.totalAbsence || 0) || 0)) * 10) / 10)
+    .filter(value => Number.isFinite(value) && value > 0);
+  if (!sums.length) return null;
+  // v.1.1 (741): pro aktuální/částečný rok dopočítat společný fond podle nejúplnějšího záznamu.
+  // Import 2026 má nahraný celý rok kvůli rozpisům, ale statistiky k 05/2026 mají všem držet 73.
+  return Math.max(...sums);
+}
+
 function buildStatsForYear(year) {
   const stats = {
     year,
@@ -253,7 +277,8 @@ function buildStatsForYear(year) {
     cleanTotals: {},
     absenceTotals: {},
     machineCleanLeaders: {},
-    machineTopWorkers: {}
+    machineTopWorkers: {},
+    includedMonthKeys: []
   };
 
   const ensureColumn = (label) => {
@@ -290,10 +315,12 @@ function buildStatsForYear(year) {
   const nameIndex = buildNameIndex(app.rotation);
   const knownStatNames = getKnownStatNames();
   const annualWorkAbsenceTarget = getAnnualWorkAbsenceTarget(year);
+  const includedMonthSet = new Set();
 
   Object.entries(app.rotation.months || {}).forEach(([monthKey, month]) => {
     const parsedMonth = parseMonthKey(monthKey);
-    if (!parsedMonth || parsedMonth.year !== year) return;
+    if (!shouldIncludeMonthInStats(parsedMonth, year)) return;
+    includedMonthSet.add(monthKey);
 
     ["hard", "soft"].forEach(section => {
       const sec = month[section];
@@ -363,7 +390,7 @@ function buildStatsForYear(year) {
 
   Object.entries(app.rotation.months || {}).forEach(([monthKey, month]) => {
     const parsedMonth = parseMonthKey(monthKey);
-    if (!parsedMonth || parsedMonth.year !== year) return;
+    if (!shouldIncludeMonthInStats(parsedMonth, year)) return;
 
     (month.notes || []).forEach(note => {
       const n = normalizeNoteEntry(note);
@@ -401,6 +428,8 @@ function buildStatsForYear(year) {
     });
   });
 
+  const resolvedWorkAbsenceTarget = inferWorkAbsenceTargetForStats(Object.values(stats.people), annualWorkAbsenceTarget);
+
   Object.values(stats.people).forEach(person => {
     Object.keys(person.work).forEach(column => {
       if (typeof person.work[column] === "number") person.work[column] = Math.round(person.work[column] * 10) / 10;
@@ -410,9 +439,8 @@ function buildStatsForYear(year) {
     });
     person.totalAbsence = Math.round((Number(person.totalAbsence) || 0) * 10) / 10;
     person.totalWork = Math.round((Math.max(0, Number(person.totalWork || 0))) * 10) / 10;
-    // v.1.1 (740): pevný roční fond 164 platí jen pro rok 2025.
-    // Ostatní roky se nedorovnávají naslepo, protože každý rok může mít jiný počet směn.
-    applyAnnualWorkAbsenceTarget(person, annualWorkAbsenceTarget);
+    // v.1.1 (741): známý fond 2025 zůstává 164, aktuální rok se dopočítá jen z měsíců, které už patří do statistik.
+    applyAnnualWorkAbsenceTarget(person, resolvedWorkAbsenceTarget);
     person.totalWork = Math.round((Math.max(0, Number(person.totalWork || 0))) * 10) / 10;
     person.totalClean = Math.round((Number(person.totalClean) || 0) * 10) / 10;
 
@@ -421,6 +449,13 @@ function buildStatsForYear(year) {
     person.topWorkMachines = getBestEntries(person.work);
     person.topCleanMachines = getBestEntries(person.clean);
   });
+  stats.includedMonthKeys = Array.from(includedMonthSet).sort((a, b) => {
+    const pa = parseMonthKey(a);
+    const pb = parseMonthKey(b);
+    if (!pa || !pb) return String(a).localeCompare(String(b), 'cs');
+    return (pa.year - pb.year) || (pa.month - pb.month);
+  });
+
   Object.keys(stats.machineTotals).forEach(column => {
     if (typeof stats.machineTotals[column] === "number") stats.machineTotals[column] = Math.round(stats.machineTotals[column] * 10) / 10;
   });

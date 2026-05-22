@@ -1,10 +1,10 @@
-## v.1.1 (740)
-- Pampuch: duchové už se nechovají jako Pac-Man, méně cíleně loví hráče, víc drží chodbu a na křižovatkách volí klidnější směr.
-- Pampuch: jednotná pomalejší rychlost, bez zrychlování podle duchů/barvy/levelu.
-- Lodě: spodní tlačítka Přehodit automaticky / Otočit vybranou jsou fixně nad spodní lištou a board se jim přizpůsobuje.
-- Lodě: potopené lodě jsou jasně odlišené jako pod vodou, bez hořícího efektu, aby bylo vidět, co už je potopené a co jen načaté.
-- Lodě: silnější odstranění šedých podkladů za tlačítkovými řádky.
-- Verze sjednocena na v.1.1 (740), cache na v1.1-740 a Supabase realtime kanál na rak-public-live-v740.
+## v.1.1 (741)
+- Statistiky: aktuální rok se počítá jen do aktuálního měsíce, takže celý import 2026 se v květnu nepočítá jako hotový rok. Pro 01–05/2026 vychází Práce + absence všem 73.
+- Statistiky: známý roční fond 2025 zůstává 164, další roky se nedorovnávají natvrdo.
+- Lodě: výběr flotily i samotná hra se skládají od spodní lišty nahoru; spodní akce už nemají ležet přes hrací pole na větším mobilu a na menším mobilu se hra posune níž.
+- Lodě: odstraněné zbytky šedých/glass podkladů za tlačítkovými řádky.
+- Pampuch: duchové už vůbec nevolí směr podle vzdálenosti k hráči; drží chodbu, náhodně odbočují a hra má pomalejší jednotný krok.
+- Verze sjednocena na v.1.1 (741), cache na v1.1-741 a Supabase realtime kanál na rak-public-live-v741.
 
 ## v.1.1 (735)
 - Opravené roční statistiky: u uzavřeného/importovaného roku se pro každého pracovníka drží roční fond 164, takže karta „Práce + absence“ vychází 164 místo hodnot převzatých z aktuálního období.

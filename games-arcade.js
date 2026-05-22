@@ -2,7 +2,7 @@
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
 
-  // v.1.1 (740): Pampuch má klidnější duchy bez cíleného lovení; Lodě mají spodní akce nad lištou a jasně potopené lodě.
+  // v.1.1 (741): Statistiky řeší aktuální rok jen po aktuální měsíc; Lodě se skládají od spodní lišty a Pampuch má náhodnější duchy.
   const CORE_GAMES = ['ttt', 'ships', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'pampuch', 'daily'];
   const EXTRA_GAMES = [];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);
@@ -4253,7 +4253,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   const PAMP_LEVELS = [
     {
       name: 'Level 1',
-      speed: 320,
+      speed: 380,
       ghostDelay: 2,
       map: [
         '###################',
@@ -4275,7 +4275,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     },
     {
       name: 'Level 2',
-      speed: 320,
+      speed: 380,
       ghostDelay: 2,
       map: [
         '###################',
@@ -4297,7 +4297,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     },
     {
       name: 'Level 3',
-      speed: 320,
+      speed: 380,
       ghostDelay: 2,
       map: [
         '###################',
@@ -4319,7 +4319,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     },
     {
       name: 'Level 4',
-      speed: 320,
+      speed: 380,
       ghostDelay: 2,
       map: [
         '###################',
@@ -4347,7 +4347,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     { name: 'up', dr: -1, dc: 0 },
     { name: 'down', dr: 1, dc: 0 }
   ];
-  const PAMP_BASE_TICK_MS = 320;
+  const PAMP_BASE_TICK_MS = 380;
   const PAMP_GHOST_COLOR = '#ff4f88';
 
   function pampDir(name) {
@@ -4508,27 +4508,16 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   }
 
   function pampuchGhostChoice(state, ghost) {
-    // Pampuch není Pac-Man: duchové se netlačí cíleně na hráče.
-    // Primárně pokračují chodbou, na křižovatkách si vyberou směr a jen občas
-    // lehce zohlední pozici hráče, aby hra nebyla úplně náhodná.
+    // v.1.1 (741): víc Pampuch, míň Pac-Man. Duchové nehoní hráče podle vzdálenosti.
+    // Chodí po chodbách, na křižovatce většinou pokračují nebo náhodně odbočí; otočí se jen ve slepé uličce.
     const allDirs = PAMP_DIRS.filter(d => pampuchCanMove(state, ghost, d));
     if (!allDirs.length) return null;
-    let dirs = allDirs;
-    if (allDirs.length > 1) dirs = allDirs.filter(d => !pampOpposite(d, ghost.dir));
-    if (!dirs.length) dirs = allDirs;
-    const forward = ghost.dir && dirs.find(d => d.name === ghost.dir.name);
-    if (forward && dirs.length <= 2 && Math.random() < .82) return forward;
-    if (forward && Math.random() < .58) return forward;
-    if (Math.random() < .10 && state && state.player) {
-      const target = state.player;
-      const ranked = dirs.slice().sort((a, b) => {
-        const ar = ghost.r + a.dr, ac = ghost.c + a.dc;
-        const br = ghost.r + b.dr, bc = ghost.c + b.dc;
-        const ad = Math.abs(ar - target.r) + Math.abs(ac - target.c);
-        const bd = Math.abs(br - target.r) + Math.abs(bc - target.c);
-        return ad - bd;
-      });
-      return ranked[0] || randomPick(dirs);
+    const forward = ghost.dir && allDirs.find(d => d.name === ghost.dir.name);
+    const nonReverse = allDirs.length > 1 ? allDirs.filter(d => !pampOpposite(d, ghost.dir)) : allDirs;
+    const dirs = nonReverse.length ? nonReverse : allDirs;
+    if (forward && dirs.some(d => d.name === forward.name)) {
+      if (dirs.length <= 2 && Math.random() < .90) return forward;
+      if (Math.random() < .68) return forward;
     }
     return randomPick(dirs);
   }
@@ -4890,7 +4879,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     const allHot = EXTRA_GAMES.length === 0;
     const completedOnlyGuard = typeof window.gamesRecordStat === 'function';
     return {
-      version: 'v.1.1 (740)',
+      version: 'v.1.1 (741)',
       ok: !missingMeta.length && !missingRenderer.length && allHot && completedOnlyGuard,
       totalGames: ids.length,
       coreGames: ids,
@@ -4905,7 +4894,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       themeBackground: true,
       touchGuard: true,
       notes: [
-        'Build 740 ladí Pampucha na klidnější duchy bez cíleného lovení a Lodě na spodní akce nad lištou, čistší tlačítka a podvodní potopené lodě.',
+        'Build 741 opravuje statistiky aktuálního roku po aktuální měsíc, skládá Lodě od spodní lišty a zklidňuje Pampuchovy duchy bez cíleného honění.',
         'Reálnou hratelnost a citlivost dotyku je potřeba potvrdit na mobilu.'
       ]
     };
