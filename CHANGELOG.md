@@ -1,3 +1,16 @@
+## v.1.5 (753)
+- Korekce → Frézky → fhβ: text návrhu zůstává „Zadej korekci“, ale hodnota korekce se znovu ukazuje v desetinném tvaru, např. 0,035.
+- Očekávané hodnoty fhβ po korekci se nově zobrazují v celých číslech bez desetinných míst.
+- C1 a C2 se dál vyhodnocují samostatně, bez průměrování kol.
+- Verze sjednocena na v.1.5 (753), cache na v1.5-753 a Supabase realtime kanál na rak-public-live-v753.
+
+## v.1.5 (752)
+- Korekce → Frézky → fhβ: výsledná navržená korekce se zobrazuje jako celé korekční číslo, například „Zadej korekci: 30“.
+- Výsledek je zkrácený jen na doporučenou korekci a očekávané hodnoty fhβ po korekci.
+- Formulář fhβ a výsledková karta jsou nižší, aby byl výsledek vidět bez zbytečného scrollování.
+- Vstup aktuální korekce nově snese zápis jako 35 i jako 0,035.
+- Verze sjednocena na v.1.5 (752), cache na v1.5-752 a Supabase realtime kanál na rak-public-live-v752.
+
 ## v.1.5 (751)
 - Korekce → Frézky → fhβ: odstraněný horní vysvětlující text ve formuláři.
 - Návrh korekce je stručnější: ukazuje hlavně konkrétní hodnotu korekce a očekávané fhβ po korekci.

@@ -1,4 +1,4 @@
-// v.1.5 (751) – Korekce Frézky: fhβ bez průměrů C1/C2, stručný návrh a označení korekcí ve vývoji.
+// v.1.5 (753) – Korekce Frézky: korekce zpět v desetinném tvaru, očekávané fhβ zaokrouhlené na celá čísla.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

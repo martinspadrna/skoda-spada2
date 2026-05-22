@@ -893,6 +893,11 @@ function formatCalcDecimal(value, digits) {
   return value.toLocaleString('cs-CZ', { maximumFractionDigits: places, minimumFractionDigits: Math.min(places, 0) });
 }
 
+function formatCalcDecimalWhole(value) {
+  if (!Number.isFinite(value)) return '—';
+  return value.toLocaleString('cs-CZ', { maximumFractionDigits: 0, minimumFractionDigits: 0 });
+}
+
 function calcFrezkyFhbCorrection() {
   const out = document.getElementById('fhbResult');
   if (!out) return;
@@ -903,7 +908,7 @@ function calcFrezkyFhbCorrection() {
   const c1Right = readCalcDecimal('fhb_c1_right');
   const c2Left = readCalcDecimal('fhb_c2_left');
   const c2Right = readCalcDecimal('fhb_c2_right');
-  const currentCorr = readCalcDecimal('fhb_current_corr');
+  const currentCorr = readFhbCorrectionInput('fhb_current_corr');
 
   if (!Number.isFinite(targetLeft) || !Number.isFinite(targetRight)) {
     setCalcOutputHtml(out, "<div class='smallText'>Doplň hodnoty levá/pravá v části Má být.</div>", 'fhbMissingTarget');
@@ -950,30 +955,19 @@ function calcFrezkyFhbCorrection() {
   const suggestedCorrection = Number.isFinite(currentCorr) ? currentCorr + safeDelta : NaN;
   const expectedSpreadShift = needsMove ? activeSensitivityPer001 * (safeDelta / 0.001) : 0;
 
-  const controlHtml = checkedPairs.map((pair) => {
-    const status = pair.leftOk && pair.rightOk ? 'OK' : 'MIMO';
-    return "<div class='calcResultLine'><b>" + escapeHtml(pair.id) + "</b> · L " + formatCalcDecimal(pair.left, 1) +
-      " (" + formatSignedCalcDecimal(pair.leftDiff, 1) + ") / P " + formatCalcDecimal(pair.right, 1) +
-      " (" + formatSignedCalcDecimal(pair.rightDiff, 1) + ") · P−L " + formatSignedCalcDecimal(pair.measuredSpread, 1) +
-      " · " + status + "</div>";
-  }).join('');
-
   const expectedHtml = checkedPairs.map((pair) => {
     const expectedLeft = pair.left - (expectedSpreadShift / 2);
     const expectedRight = pair.right + (expectedSpreadShift / 2);
-    return "<div class='calcResultLine'><b>" + escapeHtml(pair.id) + "</b> · L <b>" + formatCalcDecimal(expectedLeft, 1) +
-      "</b> / P <b>" + formatCalcDecimal(expectedRight, 1) + "</b></div>";
+    return "<div class='calcResultLine'><b>" + escapeHtml(pair.id) + "</b> · L <b>" + formatCalcDecimalWhole(expectedLeft) +
+      "</b> / P <b>" + formatCalcDecimalWhole(expectedRight) + "</b></div>";
   }).join('');
 
   const suggestionHtml = Number.isFinite(suggestedCorrection)
-    ? "<div class='calcResultMain'>Korekce: <b>" + formatFhbCorrection(suggestedCorrection) + "</b></div>" +
-      "<div class='calcResultTitle calcResultTitle--small'>Očekávané fhβ po korekci</div>" + expectedHtml
-    : "<div class='calcResultMain'>Korekce: <b>doplň aktuální korekci</b></div>";
+    ? "<div class='calcResultMain'>Zadej korekci: <b>" + formatFhbCorrection(suggestedCorrection) + "</b></div>" +
+      "<div class='calcResultTitle calcResultTitle--small'>Očekávané fhβ</div>" + expectedHtml
+    : "<div class='calcResultMain'>Zadej korekci: <b>doplň aktuální</b></div>";
 
-  const html = "<div class='calcResultTitle'>fhβ</div>" +
-    "<div class='calcResultLine'>Má být: L <b>" + formatCalcDecimal(targetLeft, 1) + "</b> / P <b>" + formatCalcDecimal(targetRight, 1) + "</b> · ±10</div>" +
-    controlHtml +
-    suggestionHtml;
+  const html = suggestionHtml;
 
   setCalcOutputHtml(out, html, 'fhbResult:' + html.length + ':' + [targetLeft, targetRight, currentCorr, controlPair.spreadError, safeDelta].join('|'));
 }
@@ -989,6 +983,17 @@ function formatSignedCalcDecimal(value, digits) {
   if (!Number.isFinite(value)) return '—';
   const sign = value > 0 ? '+' : '';
   return sign + formatCalcDecimal(value, digits);
+}
+
+function readFhbCorrectionInput(id) {
+  const value = readCalcDecimal(id);
+  if (!Number.isFinite(value)) return NaN;
+  return Math.abs(value) >= 1 ? value / 1000 : value;
+}
+
+function formatFhbCorrectionWhole(value) {
+  if (!Number.isFinite(value)) return '—';
+  return String(Math.round(value * 1000));
 }
 
 function formatFhbCorrection(value) {

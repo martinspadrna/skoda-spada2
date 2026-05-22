@@ -10350,7 +10350,7 @@ body.shipsGameOpen #games .gamesShellBackFloating{
 }
 
 
-/* v.1.5 (751): Korekce Frézky – fhβ návrh korekce a kompaktnější ruční vstupy. */
+/* v.1.5 (753): Korekce Frézky – fhβ návrh korekce a kompaktnější ruční vstupy. */
 .calcCorrectionFhbCard .calcCorrectionGroup--soft .calcCorrectionTwoCols {
   grid-template-columns: 1fr !important;
 }
@@ -10364,4 +10364,73 @@ body.shipsGameOpen #games .gamesShellBackFloating{
 .calcCorrectionFhbCard .calcResultSub {
   margin-top: 10px !important;
   line-height: 1.45 !important;
+}
+
+/* v.1.5 (753): Korekce Frézky – nižší fhβ formulář a krátký výsledek bez zbytečného scrollu. */
+.calcCorrectionFhbCard{
+  padding:10px !important;
+  margin-top:8px !important;
+}
+.calcCorrectionFhbCard .calcCorrectionEmptyTitle{
+  margin-bottom:6px !important;
+  font-size:15px !important;
+  line-height:1.05 !important;
+}
+.calcCorrectionFhbCard .calcCorrectionGroup{
+  margin-top:7px !important;
+  padding:7px !important;
+  border-radius:15px !important;
+}
+.calcCorrectionFhbCard .calcCorrectionGroupTitle{
+  margin-bottom:5px !important;
+  font-size:12px !important;
+  line-height:1 !important;
+}
+.calcCorrectionFhbCard .calcCorrectionTwoCols{
+  gap:6px !important;
+}
+.calcCorrectionFhbCard .calcCorrectionField{
+  gap:3px !important;
+}
+.calcCorrectionFhbCard .calcCorrectionField span{
+  font-size:11px !important;
+  line-height:1 !important;
+}
+.calcCorrectionFhbCard .calcCorrectionField span small{
+  font-size:10px !important;
+}
+.calcCorrectionFhbCard .calcCorrectionField input{
+  min-height:34px !important;
+  padding:5px 8px !important;
+  border-radius:12px !important;
+  font-size:14px !important;
+}
+.calcCorrectionFhbCard .calcCorrectionPrimaryBtn{
+  min-height:38px !important;
+  margin-top:8px !important;
+  padding:8px 12px !important;
+  border-radius:14px !important;
+}
+.calcCorrectionFhbCard .calcCorrectionResultCard{
+  margin-top:7px !important;
+  padding:9px 10px !important;
+  border-radius:16px !important;
+}
+.calcCorrectionFhbCard .calcResultMain{
+  margin-top:0 !important;
+  padding:8px 10px !important;
+  border-radius:14px !important;
+  font-size:16px !important;
+  line-height:1.1 !important;
+}
+.calcCorrectionFhbCard .calcResultTitle--small{
+  margin-top:7px !important;
+  margin-bottom:4px !important;
+  font-size:12px !important;
+  line-height:1 !important;
+}
+.calcCorrectionFhbCard .calcResultLine{
+  margin-top:3px !important;
+  font-size:12px !important;
+  line-height:1.2 !important;
 }
