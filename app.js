@@ -1,4 +1,4 @@
-// v.1.5 (753) – Korekce Frézky: korekce zpět v desetinném tvaru, očekávané fhβ zaokrouhlené na celá čísla.
+// v.1.5 (755) – Korekce Frézky: tlačítkové volby indexů a automatické rozlišení konicity vs. fhβ posunu.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;
@@ -130,6 +130,7 @@ function installDelegatedAppActions() {
     'calc-f': () => calcF(),
     'calc-f-finish': () => calcFFinish(),
     'calc-frezky-fhb': () => calcFrezkyFhbCorrection(),
+    'set-fhb-target-preset': (el) => setFhbTargetPreset(el),
     'calc-brusy': () => calcBrusy(),
     'calc-brusy-finish': () => calcBrusyFinish(),
     'calc-p': () => calcP(),
@@ -1135,6 +1136,7 @@ function getPhaseTenActionHealth() {
       'page-korekce-frezky',
       'page-korekce-brusy',
       'calc-frezky-fhb',
+      'set-fhb-target-preset',
       'calc-brusy',
       'calc-brusy-finish',
       'reset-fields',
@@ -1159,6 +1161,11 @@ function getPhaseTenActionHealth() {
 
       if (action === 'set-machine' && !String(node.getAttribute('data-machine') || '').trim()) health.missingTargets.push('set-machine data-machine');
       if (action === 'set-prog' && !String(node.getAttribute('data-prog') || '').trim()) health.missingTargets.push('set-prog data-prog');
+      if (action === 'set-fhb-target-preset') {
+        if (!String(node.getAttribute('data-fhb-key') || '').trim()) health.missingTargets.push('set-fhb-target-preset data-fhb-key');
+        if (!String(node.getAttribute('data-fhb-left') || '').trim()) health.missingTargets.push('set-fhb-target-preset data-fhb-left');
+        if (!String(node.getAttribute('data-fhb-right') || '').trim()) health.missingTargets.push('set-fhb-target-preset data-fhb-right');
+      }
       if (action === 'open-game' && !String(node.getAttribute('data-game') || '').trim()) health.missingTargets.push('open-game data-game');
       if (action === 'reset-fields' && !String(node.getAttribute('data-reset-fields') || '').trim()) health.missingTargets.push('reset-fields data-reset-fields');
       if (action === 'soustruh-mode' && !String(node.getAttribute('data-soustruh-mode') || '').trim()) health.missingTargets.push('soustruh-mode data-soustruh-mode');
@@ -1257,6 +1264,7 @@ function getPhaseTenFormHealth() {
       'calc-f',
       'calc-f-finish',
       'calc-frezky-fhb',
+      'set-fhb-target-preset',
       'calc-brusy',
       'calc-brusy-finish',
       'calc-p',

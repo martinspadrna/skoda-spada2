@@ -1,8 +1,14 @@
-## v.1.5 (753)
+## v.1.5 (755)
+- Korekce → Frézky: ruční pole „Má být“ nahrazená tlačítkovou volbou indexů AF/AG lis, AH lis, AF/AG volné a AH volné.
+- Vyhodnocení frézek nově porovnává posun celého středu a konicitu a samo doporučí, jestli řešit spíš fhβ posun celé strany, nebo konicitu.
+- U konicity zůstává návrh „Zadej korekci“, u fhβ posunu aplikace zatím ukáže směr a orientační první odhad, protože citlivost se bude dál ladit z praxe.
+- Verze sjednocena na v.1.5 (755), cache na v1.5-755 a Supabase realtime kanál na rak-public-live-v755.
+
+## v.1.5 (754)
 - Korekce → Frézky → fhβ: text návrhu zůstává „Zadej korekci“, ale hodnota korekce se znovu ukazuje v desetinném tvaru, např. 0,035.
 - Očekávané hodnoty fhβ po korekci se nově zobrazují v celých číslech bez desetinných míst.
 - C1 a C2 se dál vyhodnocují samostatně, bez průměrování kol.
-- Verze sjednocena na v.1.5 (753), cache na v1.5-753 a Supabase realtime kanál na rak-public-live-v753.
+- Verze sjednocena na v.1.5 (754), cache na v1.5-754 a Supabase realtime kanál na rak-public-live-v754.
 
 ## v.1.5 (752)
 - Korekce → Frézky → fhβ: výsledná navržená korekce se zobrazuje jako celé korekční číslo, například „Zadej korekci: 30“.

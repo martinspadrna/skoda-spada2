@@ -898,12 +898,47 @@ function formatCalcDecimalWhole(value) {
   return value.toLocaleString('cs-CZ', { maximumFractionDigits: 0, minimumFractionDigits: 0 });
 }
 
+function setFhbTargetPreset(button) {
+  if (!button) return;
+  const key = String(button.dataset.fhbKey || '').trim();
+  const label = String(button.dataset.fhbLabel || '').trim();
+  const left = Number(String(button.dataset.fhbLeft || '').replace(',', '.'));
+  const right = Number(String(button.dataset.fhbRight || '').replace(',', '.'));
+  if (!key || !Number.isFinite(left) || !Number.isFinite(right)) return;
+
+  const keyInput = document.getElementById('fhb_target_key');
+  const leftInput = document.getElementById('fhb_target_left');
+  const rightInput = document.getElementById('fhb_target_right');
+  if (keyInput) keyInput.value = key;
+  if (leftInput) leftInput.value = String(left);
+  if (rightInput) rightInput.value = String(right);
+
+  document.querySelectorAll('.calcFhbPresetBtn').forEach((btn) => {
+    const active = btn === button;
+    btn.classList.toggle('activeChoice', active);
+    btn.classList.toggle('activeFhbPreset', active);
+    btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+  });
+
+  const out = document.getElementById('fhbResult');
+  if (out) {
+    setCalcOutputHtml(out, "<div class='calcResultMain'>Vybráno: <b>" + escapeHtml(label || key) + "</b></div>", 'fhbPreset:' + key);
+  }
+}
+
+function getFhbTargetLabel() {
+  const key = String(document.getElementById('fhb_target_key')?.value || '').trim();
+  const btn = key ? Array.from(document.querySelectorAll('.calcFhbPresetBtn')).find((item) => String(item.dataset.fhbKey || '') === key) : null;
+  return String(btn && btn.dataset ? (btn.dataset.fhbLabel || key) : (key || '')).trim();
+}
+
 function calcFrezkyFhbCorrection() {
   const out = document.getElementById('fhbResult');
   if (!out) return;
 
   const targetLeft = readCalcDecimal('fhb_target_left');
   const targetRight = readCalcDecimal('fhb_target_right');
+  const targetLabel = getFhbTargetLabel();
   const c1Left = readCalcDecimal('fhb_c1_left');
   const c1Right = readCalcDecimal('fhb_c1_right');
   const c2Left = readCalcDecimal('fhb_c2_left');
@@ -911,11 +946,12 @@ function calcFrezkyFhbCorrection() {
   const currentCorr = readFhbCorrectionInput('fhb_current_corr');
 
   if (!Number.isFinite(targetLeft) || !Number.isFinite(targetRight)) {
-    setCalcOutputHtml(out, "<div class='smallText'>Doplň hodnoty levá/pravá v části Má být.</div>", 'fhbMissingTarget');
+    setCalcOutputHtml(out, "<div class='smallText'>Vyber index nahoře.</div>", 'fhbMissingTargetPreset');
     return;
   }
 
   const tolerance = 10;
+  const targetCenter = (targetLeft + targetRight) / 2;
   const targetSpread = targetRight - targetLeft;
   const pairs = [
     { id: 'C1', left: c1Left, right: c1Right },
@@ -927,49 +963,95 @@ function calcFrezkyFhbCorrection() {
     return;
   }
 
-  const centerDeadband = 0.25;
+  const centerDeadband = 1.0;
+  const spreadDeadband = 1.0;
   const downSensitivityPer001 = 1.8;
   const upSensitivityPer001 = 1.45;
+  const shiftSensitivityPer001 = 1.6;
   const checkedPairs = pairs.map((pair) => {
     const leftDiff = pair.left - targetLeft;
     const rightDiff = pair.right - targetRight;
+    const measuredCenter = (pair.left + pair.right) / 2;
     const measuredSpread = pair.right - pair.left;
+    const centerError = measuredCenter - targetCenter;
     const spreadError = measuredSpread - targetSpread;
     return {
       ...pair,
       leftDiff,
       rightDiff,
+      measuredCenter,
       measuredSpread,
+      centerError,
       spreadError,
       leftOk: Math.abs(leftDiff) <= tolerance,
-      rightOk: Math.abs(rightDiff) <= tolerance
+      rightOk: Math.abs(rightDiff) <= tolerance,
+      severity: Math.max(Math.abs(centerError), Math.abs(spreadError))
     };
   });
 
-  const controlPair = checkedPairs.slice().sort((a, b) => Math.abs(b.spreadError) - Math.abs(a.spreadError))[0];
-  const needsMove = Math.abs(controlPair.spreadError) > centerDeadband;
-  const activeSensitivityPer001 = controlPair.spreadError > centerDeadband ? downSensitivityPer001 : upSensitivityPer001;
-  const fullDelta = needsMove ? -(controlPair.spreadError / activeSensitivityPer001) * 0.001 : 0;
-  const safeFactor = controlPair.spreadError > centerDeadband ? 0.45 : 1.0;
-  const safeDelta = fullDelta * safeFactor;
-  const suggestedCorrection = Number.isFinite(currentCorr) ? currentCorr + safeDelta : NaN;
-  const expectedSpreadShift = needsMove ? activeSensitivityPer001 * (safeDelta / 0.001) : 0;
+  const controlPair = checkedPairs.slice().sort((a, b) => b.severity - a.severity)[0];
+  const maxCenterError = checkedPairs.slice().sort((a, b) => Math.abs(b.centerError) - Math.abs(a.centerError))[0];
+  const maxSpreadError = checkedPairs.slice().sort((a, b) => Math.abs(b.spreadError) - Math.abs(a.spreadError))[0];
+  const centerScore = Math.abs(maxCenterError.centerError);
+  const spreadScore = Math.abs(maxSpreadError.spreadError);
+  const needsShift = centerScore > centerDeadband && centerScore > spreadScore * 1.15;
+  const needsTaper = spreadScore > spreadDeadband && spreadScore >= centerScore * 0.85;
+  const recommendedMode = needsShift ? 'shift' : (needsTaper ? 'taper' : (spreadScore > spreadDeadband ? 'taper' : (centerScore > centerDeadband ? 'shift' : 'ok')));
 
-  const expectedHtml = checkedPairs.map((pair) => {
-    const expectedLeft = pair.left - (expectedSpreadShift / 2);
-    const expectedRight = pair.right + (expectedSpreadShift / 2);
-    return "<div class='calcResultLine'><b>" + escapeHtml(pair.id) + "</b> · L <b>" + formatCalcDecimalWhole(expectedLeft) +
-      "</b> / P <b>" + formatCalcDecimalWhole(expectedRight) + "</b></div>";
+  let html = '';
+  const pairSummaryHtml = checkedPairs.map((pair) => {
+    return "<div class='calcResultLine'><b>" + escapeHtml(pair.id) + "</b> · L <b>" + formatCalcDecimalWhole(pair.left) +
+      "</b> / P <b>" + formatCalcDecimalWhole(pair.right) + "</b></div>";
   }).join('');
 
-  const suggestionHtml = Number.isFinite(suggestedCorrection)
-    ? "<div class='calcResultMain'>Zadej korekci: <b>" + formatFhbCorrection(suggestedCorrection) + "</b></div>" +
-      "<div class='calcResultTitle calcResultTitle--small'>Očekávané fhβ</div>" + expectedHtml
-    : "<div class='calcResultMain'>Zadej korekci: <b>doplň aktuální</b></div>";
+  if (recommendedMode === 'shift') {
+    const control = maxCenterError;
+    const expectedShift = -control.centerError;
+    const directionText = control.centerError > 0 ? 'fhβ dolů' : 'fhβ nahoru';
+    const expectedHtml = checkedPairs.map((pair) => {
+      const expectedLeft = pair.left + expectedShift;
+      const expectedRight = pair.right + expectedShift;
+      return "<div class='calcResultLine'><b>" + escapeHtml(pair.id) + "</b> · L <b>" + formatCalcDecimalWhole(expectedLeft) +
+        "</b> / P <b>" + formatCalcDecimalWhole(expectedRight) + "</b></div>";
+    }).join('');
+    const roughDelta = -(control.centerError / shiftSensitivityPer001) * 0.001 * 0.5;
+    const roughSuggestion = Number.isFinite(currentCorr) ? currentCorr + roughDelta : NaN;
+    html = "<div class='calcResultMain'>Nejdřív: <b>fhβ · posun celé strany</b></div>" +
+      "<div class='calcResultTitle calcResultTitle--small'>Směr</div>" +
+      "<div class='calcResultLine'><b>" + escapeHtml(directionText) + "</b> · celé je mimo střed</div>" +
+      (Number.isFinite(roughSuggestion) ? "<div class='calcResultLine'>Orientačně: <b>" + formatFhbCorrection(roughSuggestion) + "</b></div>" : "") +
+      "<div class='calcResultTitle calcResultTitle--small'>Po posunu čekej</div>" + expectedHtml +
+      (needsTaper ? "<div class='smallText'>Konicita je tam taky vidět, ale větší problém je teď posun celku.</div>" : "");
+  } else if (recommendedMode === 'taper') {
+    const control = maxSpreadError;
+    const activeSensitivityPer001 = control.spreadError > spreadDeadband ? downSensitivityPer001 : upSensitivityPer001;
+    const fullDelta = -(control.spreadError / activeSensitivityPer001) * 0.001;
+    const safeFactor = control.spreadError > spreadDeadband ? 0.45 : 1.0;
+    const safeDelta = fullDelta * safeFactor;
+    const suggestedCorrection = Number.isFinite(currentCorr) ? currentCorr + safeDelta : NaN;
+    const expectedSpreadShift = activeSensitivityPer001 * (safeDelta / 0.001);
+    const expectedHtml = checkedPairs.map((pair) => {
+      const expectedLeft = pair.left - (expectedSpreadShift / 2);
+      const expectedRight = pair.right + (expectedSpreadShift / 2);
+      return "<div class='calcResultLine'><b>" + escapeHtml(pair.id) + "</b> · L <b>" + formatCalcDecimalWhole(expectedLeft) +
+        "</b> / P <b>" + formatCalcDecimalWhole(expectedRight) + "</b></div>";
+    }).join('');
 
-  const html = suggestionHtml;
+    html = (Number.isFinite(suggestedCorrection)
+      ? "<div class='calcResultMain'>Zadej korekci: <b>" + formatFhbCorrection(suggestedCorrection) + "</b></div>"
+      : "<div class='calcResultMain'>Nejdřív: <b>Konicita</b></div>") +
+      "<div class='calcResultTitle calcResultTitle--small'>Očekávané hodnoty</div>" + expectedHtml +
+      (needsShift ? "<div class='smallText'>Je tam i posun celku, ale větší problém je teď konicita.</div>" : "");
+  } else {
+    html = "<div class='calcResultMain'><b>Vypadá to blízko středu</b></div>" +
+      "<div class='calcResultTitle calcResultTitle--small'>Naměřeno</div>" + pairSummaryHtml;
+  }
 
-  setCalcOutputHtml(out, html, 'fhbResult:' + html.length + ':' + [targetLeft, targetRight, currentCorr, controlPair.spreadError, safeDelta].join('|'));
+  if (targetLabel) {
+    html = "<div class='calcResultLine calcResultPresetLine'>" + escapeHtml(targetLabel) + " · L " + formatCalcDecimalWhole(targetLeft) + " / P " + formatCalcDecimalWhole(targetRight) + "</div>" + html;
+  }
+
+  setCalcOutputHtml(out, html, 'fhbResult:' + html.length + ':' + [targetLeft, targetRight, currentCorr, recommendedMode, controlPair.centerError, controlPair.spreadError].join('|'));
 }
 
 function getFhbSpreadRelationText(spreadError, deadband) {

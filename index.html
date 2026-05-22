@@ -643,7 +643,7 @@
 <div id="korekce-soustruhy" class="page calcPage calcCorrectionPage calcCorrectionPage--soustruhy">
   <div class="headerBar calcHeaderBar">
     <div></div>
-    <h3>Korekce · Soustruhy</h3>
+    <h3 class="calcHeaderTitleOneLine">Korekce · Soustruhy</h3>
     <div class="calcHeaderActions">
       <button class="resetBtn" data-action="reset-fields" title="Reset polí" aria-label="Reset polí">↻</button>
       <button class="calcCloseBtn" data-action="page-kalkulacky" title="Zpět na přehled kalkulaček" aria-label="Zpět na přehled kalkulaček">×</button>
@@ -660,26 +660,25 @@
 <div id="korekce-frezky" class="page calcPage calcCorrectionPage calcCorrectionPage--frezky">
   <div class="headerBar calcHeaderBar">
     <div></div>
-    <h3>Korekce · Frézky</h3>
+    <h3 class="calcHeaderTitleOneLine">Korekce · Frézky</h3>
     <div class="calcHeaderActions">
-      <button class="resetBtn" data-action="reset-fields" data-reset-fields="fhb_target_left,fhb_target_right,fhb_c1_left,fhb_c1_right,fhb_c2_left,fhb_c2_right,fhb_current_corr" data-reset-results="fhbResult" title="Reset polí" aria-label="Reset polí">↻</button>
+      <button class="resetBtn" data-action="reset-fields" data-reset-fields="fhb_target_key,fhb_target_left,fhb_target_right,fhb_c1_left,fhb_c1_right,fhb_c2_left,fhb_c2_right,fhb_current_corr" data-reset-results="fhbResult" title="Reset polí" aria-label="Reset polí">↻</button>
       <button class="calcCloseBtn" data-action="page-kalkulacky" title="Zpět na přehled kalkulaček" aria-label="Zpět na přehled kalkulaček">×</button>
     </div>
   </div>
 
   <div class="card calcPanel calcCorrectionFormCard calcCorrectionFhbCard">
-    <div class="calcCorrectionEmptyTitle">fhβ · sklon ozubení</div>
-    <div class="calcCorrectionGroup">
-      <div class="calcCorrectionGroupTitle">Má být</div>
-      <div class="calcCorrectionTwoCols">
-        <label class="calcCorrectionField">
-          <span>Levá struna <small>±10</small></span>
-          <input id="fhb_target_left" type="text" inputmode="decimal" placeholder="např. 50">
-        </label>
-        <label class="calcCorrectionField">
-          <span>Pravá struna <small>±10</small></span>
-          <input id="fhb_target_right" type="text" inputmode="decimal" placeholder="např. 70">
-        </label>
+    <div class="calcCorrectionEmptyTitle">Frézky · konicita / fhβ</div>
+    <div class="calcCorrectionGroup calcCorrectionPresetGroup">
+      <div class="calcCorrectionGroupTitle">Vyber index</div>
+      <input id="fhb_target_key" type="hidden" value="">
+      <input id="fhb_target_left" type="hidden" value="">
+      <input id="fhb_target_right" type="hidden" value="">
+      <div class="calcFhbPresetGrid">
+        <button type="button" class="bbtn calcFhbPresetBtn" data-action="set-fhb-target-preset" data-fhb-key="afag-lis" data-fhb-label="AF/AG lis" data-fhb-left="50" data-fhb-right="70"><b>AF/AG lis</b><span>L 50 / P 70</span></button>
+        <button type="button" class="bbtn calcFhbPresetBtn" data-action="set-fhb-target-preset" data-fhb-key="ah-lis" data-fhb-label="AH lis" data-fhb-left="20" data-fhb-right="80"><b>AH lis</b><span>L 20 / P 80</span></button>
+        <button type="button" class="bbtn calcFhbPresetBtn" data-action="set-fhb-target-preset" data-fhb-key="afag-volne" data-fhb-label="AF/AG volné" data-fhb-left="-5" data-fhb-right="10"><b>AF/AG volné</b><span>L -5 / P 10</span></button>
+        <button type="button" class="bbtn calcFhbPresetBtn" data-action="set-fhb-target-preset" data-fhb-key="ah-volne" data-fhb-label="AH volné" data-fhb-left="10" data-fhb-right="25"><b>AH volné</b><span>L 10 / P 25</span></button>
       </div>
     </div>
 
@@ -715,8 +714,13 @@
       </div>
     </div>
 
-    <button class="calcPrimaryBtn calcCorrectionPrimaryBtn" data-action="calc-frezky-fhb">Vyhodnotit fhβ</button>
+    <button class="calcPrimaryBtn calcCorrectionPrimaryBtn" data-action="calc-frezky-fhb">Vyhodnotit</button>
     <div class="card calcResultCard calcCorrectionResultCard" id="fhbResult"></div>
+  </div>
+
+  <div class="card calcPanel calcCorrectionEmptyCard calcCorrectionFhbShiftCard">
+    <div class="calcCorrectionEmptyTitle">fhβ · posun celé strany <span class="calcDevBadge">ve vývoji</span></div>
+    <div class="smallText">Vyhodnocení nahoře samo upozorní, když hodnoty vypadají spíš na posun celého průběhu než na konicitu.</div>
   </div>
 </div>
 
@@ -724,7 +728,7 @@
 <div id="korekce-brusy" class="page calcPage calcCorrectionPage calcCorrectionPage--brusy">
   <div class="headerBar calcHeaderBar">
     <div></div>
-    <h3>Korekce · Brusy</h3>
+    <h3 class="calcHeaderTitleOneLine">Korekce · Brusy</h3>
     <div class="calcHeaderActions">
       <button class="resetBtn" data-action="reset-fields" title="Reset polí" aria-label="Reset polí">↻</button>
       <button class="calcCloseBtn" data-action="page-kalkulacky" title="Zpět na přehled kalkulaček" aria-label="Zpět na přehled kalkulaček">×</button>
