@@ -910,71 +910,73 @@ function calcFrezkyFhbCorrection() {
     return;
   }
 
-  const leftValues = [c1Left, c2Left].filter(Number.isFinite);
-  const rightValues = [c1Right, c2Right].filter(Number.isFinite);
+  const tolerance = 10;
+  const targetSpread = targetRight - targetLeft;
+  const pairs = [
+    { id: 'C1', left: c1Left, right: c1Right },
+    { id: 'C2', left: c2Left, right: c2Right }
+  ].filter((pair) => Number.isFinite(pair.left) && Number.isFinite(pair.right));
 
-  if (!leftValues.length || !rightValues.length) {
-    setCalcOutputHtml(out, "<div class='smallText'>Doplň aspoň jednu levou a jednu pravou naměřenou hodnotu.</div>", 'fhbMissingMeasured');
+  if (!pairs.length) {
+    setCalcOutputHtml(out, "<div class='smallText'>Doplň aspoň jedno celé kolo: levá i pravá strana u C1 nebo C2.</div>", 'fhbMissingMeasuredPair');
     return;
   }
 
-  const avg = (arr) => arr.reduce((sum, value) => sum + value, 0) / arr.length;
-  const avgLeft = avg(leftValues);
-  const avgRight = avg(rightValues);
-  const diffLeft = avgLeft - targetLeft;
-  const diffRight = avgRight - targetRight;
-  const tolerance = 10;
-  const inLeft = Math.abs(diffLeft) <= tolerance;
-  const inRight = Math.abs(diffRight) <= tolerance;
-  const targetSpread = targetRight - targetLeft;
-  const measuredSpread = avgRight - avgLeft;
-  const spreadError = measuredSpread - targetSpread;
-
-  // Cíl korekce je vždy čistý střed z hodnot „Má být“: L 50 / P 70 znamená cíl 50 / 70.
-  // Tolerance ±10 se používá jen jako OK/NOK pásmo v textu, nikdy jako cílový střed výpočtu.
-  // fhβ korekce se teď počítá hlavně podle spodního sbíhání/rozbíhání čar v protokolu:
-  // - když je měřený rozdíl P−L větší než má být, čáry jsou dole moc od sebe => korekci dolů, aby se sbližovaly.
-  // - když je měřený rozdíl P−L menší než má být, čáry jsou dole moc u sebe => korekci nahoru, aby se rozevíraly.
-  // První reálná kalibrace je záměrně oddělená pro oba směry, protože pohyb nechodí přesně 1:1:
-  // dolů: 0,035 -> 0,030 změnilo rozdíl L/P asi o 9 µm při změně korekce -0,005 => cca 1,8 µm / 0,001.
-  // nahoru: 0,028 -> 0,048 změnilo rozdíl L/P asi o 29 µm při změně korekce +0,020 => cca 1,45 µm / 0,001.
+  const centerDeadband = 0.25;
   const downSensitivityPer001 = 1.8;
   const upSensitivityPer001 = 1.45;
-  const centerDeadband = 0.25;
-  const needsMove = Math.abs(spreadError) > centerDeadband;
-  const activeSensitivityPer001 = spreadError > centerDeadband ? downSensitivityPer001 : upSensitivityPer001;
-  const fullDelta = needsMove ? -(spreadError / activeSensitivityPer001) * 0.001 : 0;
-  const safeFactor = spreadError > centerDeadband ? 0.45 : 0.6;
+  const checkedPairs = pairs.map((pair) => {
+    const leftDiff = pair.left - targetLeft;
+    const rightDiff = pair.right - targetRight;
+    const measuredSpread = pair.right - pair.left;
+    const spreadError = measuredSpread - targetSpread;
+    return {
+      ...pair,
+      leftDiff,
+      rightDiff,
+      measuredSpread,
+      spreadError,
+      leftOk: Math.abs(leftDiff) <= tolerance,
+      rightOk: Math.abs(rightDiff) <= tolerance
+    };
+  });
+
+  const controlPair = checkedPairs.slice().sort((a, b) => Math.abs(b.spreadError) - Math.abs(a.spreadError))[0];
+  const needsMove = Math.abs(controlPair.spreadError) > centerDeadband;
+  const activeSensitivityPer001 = controlPair.spreadError > centerDeadband ? downSensitivityPer001 : upSensitivityPer001;
+  const fullDelta = needsMove ? -(controlPair.spreadError / activeSensitivityPer001) * 0.001 : 0;
+  const safeFactor = controlPair.spreadError > centerDeadband ? 0.45 : 1.0;
   const safeDelta = fullDelta * safeFactor;
-  const direction = spreadError > centerDeadband
-    ? 'Korekci dolů – fhβ čáry jsou dole moc od sebe, korekcí dolů je potřeba je sbližovat.'
-    : spreadError < -centerDeadband
-      ? 'Korekci nahoru – fhβ čáry jsou dole moc u sebe, korekcí nahoru je potřeba je rozevírat.'
-      : 'Sklon levá/pravá je prakticky na středu.';
-  const fullTarget = Number.isFinite(currentCorr) ? currentCorr + fullDelta : NaN;
-  const safeTarget = Number.isFinite(currentCorr) ? currentCorr + safeDelta : NaN;
-  const correctionHtml = Number.isFinite(currentCorr)
-    ? "<div class='calcResultMain'>Doporučení: <b>" + (needsMove ? escapeHtml(direction) : 'S korekcí bych nehýbal, sklon je na středu.') + "</b></div>" +
-      (needsMove
-        ? "<div class='calcResultLine'>Odhad na střed: <b>" + formatFhbCorrection(fullTarget) + "</b> (změna " + formatSignedFhbCorrection(fullDelta) + ")</div>" +
-          "<div class='calcResultLine'>Opatrný první krok: <b>" + formatFhbCorrection(safeTarget) + "</b> (změna " + formatSignedFhbCorrection(safeDelta) + ")</div>"
-        : '')
-    : "<div class='calcResultMain'>Doporučení: <b>" + escapeHtml(direction) + "</b></div>" +
-      "<div class='calcResultLine'>Doplň aktuální korekci a dopočítám i konkrétní novou hodnotu.</div>";
-  const calibrationText = 'Cíl výpočtu je střed bez tolerance: například 50 ±10 míří na 50, ne na 40 nebo 60. Tolerance ±10 je jen kontrola OK/NOK. Směr počítám podle rozdílu P−L: moc velký rozdíl = korekce dolů a sbližovat, moc malý rozdíl = korekce nahoru a rozevírat. Pro dolů používám zatím cca 1,8 µm / 0,001, pro nahoru cca 1,45 µm / 0,001.';
+  const suggestedCorrection = Number.isFinite(currentCorr) ? currentCorr + safeDelta : NaN;
+  const expectedSpreadShift = needsMove ? activeSensitivityPer001 * (safeDelta / 0.001) : 0;
 
-  const html = "<div class='calcResultTitle'>fhβ · návrh korekce</div>" +
-    "<div class='calcResultLine'>Cílový střed: L <b>" + formatCalcDecimal(targetLeft, 3) + "</b> / P <b>" + formatCalcDecimal(targetRight, 3) + "</b> · tolerance jen OK/NOK ±10</div>" +
-    "<div class='calcResultLine'>Levá průměr: <b>" + formatCalcDecimal(avgLeft, 3) + "</b> · odchylka od středu <b>" + formatSignedCalcDecimal(diffLeft, 3) + "</b> · " + (inLeft ? 'v toleranci ±10' : 'mimo toleranci ±10') + "</div>" +
-    "<div class='calcResultLine'>Pravá průměr: <b>" + formatCalcDecimal(avgRight, 3) + "</b> · odchylka od středu <b>" + formatSignedCalcDecimal(diffRight, 3) + "</b> · " + (inRight ? 'v toleranci ±10' : 'mimo toleranci ±10') + "</div>" +
-    "<div class='calcResultLine'>Rozdíl sklonu P−L: měřeno <b>" + formatSignedCalcDecimal(measuredSpread, 3) + "</b> · cíl <b>" + formatSignedCalcDecimal(targetSpread, 3) + "</b> · od středu <b>" + formatSignedCalcDecimal(spreadError, 3) + "</b></div>" +
-    "<div class='calcResultLine'>Spodní strana čar: <b>" + escapeHtml(getFhbSpreadRelationText(spreadError, centerDeadband)) + "</b></div>" +
-    correctionHtml +
-    "<div class='calcResultSub'>" + escapeHtml(calibrationText) + "</div>";
+  const controlHtml = checkedPairs.map((pair) => {
+    const status = pair.leftOk && pair.rightOk ? 'OK' : 'MIMO';
+    return "<div class='calcResultLine'><b>" + escapeHtml(pair.id) + "</b> · L " + formatCalcDecimal(pair.left, 1) +
+      " (" + formatSignedCalcDecimal(pair.leftDiff, 1) + ") / P " + formatCalcDecimal(pair.right, 1) +
+      " (" + formatSignedCalcDecimal(pair.rightDiff, 1) + ") · P−L " + formatSignedCalcDecimal(pair.measuredSpread, 1) +
+      " · " + status + "</div>";
+  }).join('');
 
-  setCalcOutputHtml(out, html, 'fhbResult:' + html.length + ':' + [targetLeft, targetRight, avgLeft, avgRight, currentCorr, spreadError].join('|'));
+  const expectedHtml = checkedPairs.map((pair) => {
+    const expectedLeft = pair.left - (expectedSpreadShift / 2);
+    const expectedRight = pair.right + (expectedSpreadShift / 2);
+    return "<div class='calcResultLine'><b>" + escapeHtml(pair.id) + "</b> · L <b>" + formatCalcDecimal(expectedLeft, 1) +
+      "</b> / P <b>" + formatCalcDecimal(expectedRight, 1) + "</b></div>";
+  }).join('');
+
+  const suggestionHtml = Number.isFinite(suggestedCorrection)
+    ? "<div class='calcResultMain'>Korekce: <b>" + formatFhbCorrection(suggestedCorrection) + "</b></div>" +
+      "<div class='calcResultTitle calcResultTitle--small'>Očekávané fhβ po korekci</div>" + expectedHtml
+    : "<div class='calcResultMain'>Korekce: <b>doplň aktuální korekci</b></div>";
+
+  const html = "<div class='calcResultTitle'>fhβ</div>" +
+    "<div class='calcResultLine'>Má být: L <b>" + formatCalcDecimal(targetLeft, 1) + "</b> / P <b>" + formatCalcDecimal(targetRight, 1) + "</b> · ±10</div>" +
+    controlHtml +
+    suggestionHtml;
+
+  setCalcOutputHtml(out, html, 'fhbResult:' + html.length + ':' + [targetLeft, targetRight, currentCorr, controlPair.spreadError, safeDelta].join('|'));
 }
-
 
 function getFhbSpreadRelationText(spreadError, deadband) {
   if (!Number.isFinite(spreadError)) return 'nejde vyhodnotit';

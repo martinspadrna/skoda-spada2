@@ -1,4 +1,4 @@
-// v.1.5 (750) – Korekce Frézky: fhβ směr dolů počítá podle spodního sbíhání/rozbíhání čar.
+// v.1.5 (751) – Korekce Frézky: fhβ bez průměrů C1/C2, stručný návrh a označení korekcí ve vývoji.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

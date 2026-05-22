@@ -1,8 +1,16 @@
+## v.1.5 (751)
+- Korekce → Frézky → fhβ: odstraněný horní vysvětlující text ve formuláři.
+- Návrh korekce je stručnější: ukazuje hlavně konkrétní hodnotu korekce a očekávané fhβ po korekci.
+- C1 a C2 se už neprůměrují; každé kolo se kontroluje samostatně pro levou i pravou stranu, aby průměr neschoval jedno kolo mimo toleranci.
+- Korekce → Soustruhy / Frézky / Brusy jsou v přehledu označené štítkem „ve vývoji“.
+- Sekce O aplikaci průběžně aktualizovaná pro aktuální stav korekcí.
+- Verze sjednocena na v.1.5 (751), cache na v1.5-751 a Supabase realtime kanál na rak-public-live-v751.
+
 ## v.1.5 (750)
 - Korekce Frézky → fhβ: upravená logika směru podle spodního sbíhání/rozbíhání čar v protokolu, ne jen podle obecného průměru.
-- Když je měřený rozdíl P−L větší než cílový, aplikace jasně doporučí korekci dolů a vysvětlí, že čáry jsou dole moc od sebe a mají se sbližovat.
-- Když je měřený rozdíl P−L menší než cílový, doporučí korekci nahoru a vysvětlí, že čáry jsou dole moc u sebe a mají se rozevírat.
-- Citlivost je nově oddělená pro směr dolů a nahoru podle prvních reálných příkladů: dolů cca 1,8 µm / 0,001, nahoru cca 1,45 µm / 0,001.
+- Když je měřený rozdíl P−L větší než cílový, aplikace doporučí korekci dolů a sbližování čar.
+- Když je měřený rozdíl P−L menší než cílový, doporučí korekci nahoru a rozevírání čar.
+- Citlivost je oddělená pro směr dolů a nahoru podle prvních reálných příkladů: dolů cca 1,8 µm / 0,001, nahoru cca 1,45 µm / 0,001.
 - Verze sjednocena na v.1.5 (750), cache na v1.5-750 a Supabase realtime kanál na rak-public-live-v750.
 
 ## v.1.5 (749)
