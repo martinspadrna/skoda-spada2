@@ -4289,7 +4289,7 @@ function buildAppHistoryHtml(versionText) {
       range: versionText,
       title: 'Aktuální build',
       lines: [
-        'Build v.1.1 (731) dolaďuje import Excelu podle reálného souboru: bere jen měsíční listy 01.2025, přeskakuje pomocné listy a čte tvrdotu, měkotu i absence.',
+        'Build v.1.1 (732) dolaďuje import Excelu podle reálného souboru: bere jen měsíční listy 01.2025, přeskakuje pomocné listy a čte tvrdotu, měkotu i absence.',
         'Série v.1.1 650–706 dotáhla Piškvorky, online pozvánky, PWA launch handler, všechny hlavní hry, herní profily, reporty chyb, theme polish, těžší/chytřejší achievementy a společný herní QA průchod včetně app-like dotykového polishu.',
         'Sekce „O aplikaci“ je nově stručnější: detailní změny zůstávají v changelogu a tady se historie drží po větších blocích.',
         'Stabilizační audity, Supabase guardy, Láďův režim a finální readiness kontroly zůstávají součástí diagnostiky.'
@@ -5444,8 +5444,6 @@ function renderAdminMenuBody(body, section) {
     '    <div class="smallText" id="rakExcelImportStatus">Export ZIP se stáhne jako kompletní build aplikace.</div>',
     '  </div>',
     '  <div class="appMenuSettingsList">',
-    '    <label class="appMenuFieldLabel" for="rakExcelImportYear">Rok pro starší listy bez roku</label>',
-    '    <input id="rakExcelImportYear" class="appMenuInput" inputmode="numeric" value="' + escapeHtml(String(app.selectedYear || new Date().getFullYear())) + '" placeholder="2025">',
     '    <div class="smallText" id="rakExcelImportFileStatus">' + escapeHtml(importPreview ? ('Načteno: ' + importPreview.fileName + ' · měsíčních listů: ' + importPreview.monthKeys.length) : 'Zatím není vybraný žádný Excel.') + '</div>',
     '    <button type="button" class="appMenuAction" data-admin-action="excel-pick">Vybrat Excel</button>',
     '    <label class="appMenuFieldLabel" for="rakExcelImportScope">Co importovat</label>',

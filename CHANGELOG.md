@@ -1,3 +1,9 @@
+## v.1.1 (732)
+- Opravené online ukládání importovaných rozpisů: v Supabase byla doplněná minimální práva a RLS policy pro tabulku rotation_state, protože import padal na `permission denied for table rotation_state`.
+- Z formuláře Import Excelu odstraněné pole „Rok pro starší listy bez roku“, protože správné měsíce se berou přímo z názvů listů typu 01.2025 / 01/2025 / 01/25.
+- Import dál ukládá rozpis lokálně i online; při chybě má zůstat lokální kopie a v konzoli je vidět konkrétní Supabase chyba.
+- Verze sjednocena na v.1.1 (732), cache na v1.1-732 a Supabase realtime kanál na rak-public-live-v732.
+
 ## v.1.1 (731)
 - Import Excelu ověřený proti souborům Rotace týmu 2025.xlsx i Rotace týmu 2026.xlsx. Parser bere jen měsíční listy pojmenované 01.2025 / 01/2025 / 01-2025 a pomocné listy Souhrn/Datumy se nepoužívají.
 - Po importu se rozpis uloží pod správný klíč měsíce a roku podle názvu listu, například 01.2026 -> 1/26. Rozpis i statistiky se po importu rovnou přepnou na rok importovaného Excelu.

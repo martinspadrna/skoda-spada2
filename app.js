@@ -1,4 +1,4 @@
-// v.1.1 (731) – ověřený import Excelu 2025/2026, správné měsíce/roky pro rozpisy i statistiky.
+// v.1.1 (732) – ověřený import Excelu 2025/2026, správné měsíce/roky pro rozpisy i statistiky.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;
