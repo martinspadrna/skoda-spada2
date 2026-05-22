@@ -1,10 +1,8 @@
-## v.1.1 (741)
-- Statistiky: aktuální rok se počítá jen do aktuálního měsíce, takže celý import 2026 se v květnu nepočítá jako hotový rok. Pro 01–05/2026 vychází Práce + absence všem 73.
-- Statistiky: známý roční fond 2025 zůstává 164, další roky se nedorovnávají natvrdo.
-- Lodě: výběr flotily i samotná hra se skládají od spodní lišty nahoru; spodní akce už nemají ležet přes hrací pole na větším mobilu a na menším mobilu se hra posune níž.
-- Lodě: odstraněné zbytky šedých/glass podkladů za tlačítkovými řádky.
-- Pampuch: duchové už vůbec nevolí směr podle vzdálenosti k hráči; drží chodbu, náhodně odbočují a hra má pomalejší jednotný krok.
-- Verze sjednocena na v.1.1 (741), cache na v1.1-741 a Supabase realtime kanál na rak-public-live-v741.
+## v.1.1 (742)
+- Lodě: opravené umístění spodních tlačítek při rozmisťování flotily.
+- Tlačítka Přehodit automaticky a Otočit vybranou jsou nově v běžném toku pod hrací plochou a nad spodní lištou, ne jako sticky vrstva přes board.
+- Board se dopočítává menší podle dostupné výšky, aby se ovládání vešlo pod něj i na větších mobilech.
+- Verze sjednocena na v.1.1 (742), cache na v1.1-742 a Supabase realtime kanál na rak-public-live-v742.
 
 ## v.1.1 (735)
 - Opravené roční statistiky: u uzavřeného/importovaného roku se pro každého pracovníka drží roční fond 164, takže karta „Práce + absence“ vychází 164 místo hodnot převzatých z aktuálního období.

@@ -1,4 +1,4 @@
-// v.1.1 (741) – Statistiky aktuálního roku počítají jen do aktuálního měsíce; Lodě jsou kotvené od spodní lišty; Pampuch má náhodnější duchy.
+// v.1.1 (742) – Lodě: spodní tlačítka pro přehazování/otáčení flotily jsou v toku pod hrací plochou, nad spodní lištou.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

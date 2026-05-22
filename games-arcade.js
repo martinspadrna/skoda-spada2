@@ -2,7 +2,7 @@
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
 
-  // v.1.1 (741): Statistiky řeší aktuální rok jen po aktuální měsíc; Lodě se skládají od spodní lišty a Pampuch má náhodnější duchy.
+  // v.1.1 (742): Lodě mají spodní akce flotily v běžném toku pod boardem a nad spodní lištou.
   const CORE_GAMES = ['ttt', 'ships', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'pampuch', 'daily'];
   const EXTRA_GAMES = [];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);
@@ -4508,7 +4508,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   }
 
   function pampuchGhostChoice(state, ghost) {
-    // v.1.1 (741): víc Pampuch, míň Pac-Man. Duchové nehoní hráče podle vzdálenosti.
+    // v.1.1 (742): víc Pampuch, míň Pac-Man. Duchové nehoní hráče podle vzdálenosti.
     // Chodí po chodbách, na křižovatce většinou pokračují nebo náhodně odbočí; otočí se jen ve slepé uličce.
     const allDirs = PAMP_DIRS.filter(d => pampuchCanMove(state, ghost, d));
     if (!allDirs.length) return null;
@@ -4879,7 +4879,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     const allHot = EXTRA_GAMES.length === 0;
     const completedOnlyGuard = typeof window.gamesRecordStat === 'function';
     return {
-      version: 'v.1.1 (741)',
+      version: 'v.1.1 (742)',
       ok: !missingMeta.length && !missingRenderer.length && allHot && completedOnlyGuard,
       totalGames: ids.length,
       coreGames: ids,
