@@ -391,7 +391,7 @@ function buildRakDevicePerformanceSettingsHtml() {
     '  <div class="appMenuActionRow rakDevicePerfActions">',
     '    <button type="button" class="appMenuAction isActive" data-menu-action="device-performance-test">Změřit</button>',
     '    <button type="button" class="appMenuAction" data-menu-action="device-performance-auto">Automatika</button>',
-    '    <button type="button" class="appMenuAction" data-ui-pref="lightweight">' + (status.active ? 'Vypnout Láďův' : 'Zapnout Láďův') + '</button>',
+    '    <button type="button" class="appMenuAction rakLadaModeBtn' + (status.active ? ' isActive' : '') + '" data-ui-pref="lightweight">Láďův režim</button>',
     '  </div>',
     '</div>'
   ].join('');
@@ -4284,12 +4284,12 @@ function renderGamesAppearanceStatus() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText || 'v.1.5 (744)',
+      range: versionText || 'v.1.5 (748)',
       title: 'Přechod na řadu 1.5',
       lines: [
         'Přepnutí verze na v.1.5 a vyčištění sekce O aplikaci.',
         'Stručnější historie po větších blocích, bez dlouhých vysvětlivek.',
-        'V Nastavení zůstaly volby, ale zmizely zbytečné popisky.'
+        'V Nastavení zůstaly volby, zmizely zbytečné popisky a Kalkulačky mají sekce Výpočet kusů / Korekce.'
       ]
     },
     {

@@ -232,42 +232,85 @@
     <div class="headerSpacer" aria-hidden="true"></div>
   </div>
 
-  <div class="grid">
-    <div class="tile calcTile calcTileStack" data-action="page-soustruhy">
-      <div class="calcTileIcon calcTileIconLegacy" aria-hidden="true">
+  <details class="card calcHomeSection" open>
+    <summary><span class="calcHomeSummaryText"><strong>Výpočet kusů</strong><small>Kolik stihnu a kdy bude hotovo</small></span></summary>
+    <div class="grid calcHomeGrid">
+      <div class="tile calcTile calcTileStack" data-action="page-soustruhy">
+        <div class="calcTileIcon calcTileIconLegacy" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="7"></circle>
           <circle cx="12" cy="12" r="2.1"></circle>
         </svg>
       </div>
-      <div>
-        <div class="calcTileText">Soustruhy</div>
+        <div>
+          <div class="calcTileText">Soustruhy</div>
+        </div>
       </div>
-    </div>
-    <div class="tile calcTile calcTileStack" data-action="page-frezky">
-      <div class="calcTileIcon calcTileIconLegacy" aria-hidden="true">
+      <div class="tile calcTile calcTileStack" data-action="page-frezky">
+        <div class="calcTileIcon calcTileIconLegacy" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="6.2"></circle>
           <circle cx="12" cy="12" r="2.2"></circle>
           <path d="M12 3.6v2.4M12 18v2.4M3.6 12H6M18 12h2.4M6.1 6.1l1.6 1.6M16.3 16.3l1.6 1.6M17.9 6.1l-1.6 1.6M8.2 15.8l-1.6 1.6"></path>
         </svg>
       </div>
-      <div>
-        <div class="calcTileText">Frézky</div>
+        <div>
+          <div class="calcTileText">Frézky</div>
+        </div>
       </div>
-    </div>
-    <div class="tile calcTile calcTileStack big" data-action="page-brusy">
-      <div class="calcTileIcon calcTileIconLegacy" aria-hidden="true">
+      <div class="tile calcTile calcTileStack" data-action="page-brusy">
+        <div class="calcTileIcon calcTileIconLegacy" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
           <path d="M5.1 14.4l1.7-2.4 1.7 2.4 1.7-2.4 1.7 2.4 1.7-2.4 1.7 2.4"></path>
           <path d="M4.9 16l.8-1.2M8.2 16l.8-1.2M11.5 16l.8-1.2M14.8 16l.8-1.2M18.1 16l.8-1.2"></path>
         </svg>
       </div>
-      <div>
-        <div class="calcTileText">Brusy</div>
+        <div>
+          <div class="calcTileText">Brusy</div>
+        </div>
       </div>
     </div>
-  </div>
+  </details>
+
+  <details class="card calcHomeSection calcHomeSectionCorrections">
+    <summary><span class="calcHomeSummaryText"><strong>Korekce</strong><small>Rychlý přepočet rozměru a korekce</small></span></summary>
+    <div class="grid calcHomeGrid">
+      <div class="tile calcTile calcTileStack" data-action="page-korekce-soustruhy">
+        <div class="calcTileIcon calcTileIconLegacy" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="7"></circle>
+          <circle cx="12" cy="12" r="2.1"></circle>
+        </svg>
+      </div>
+        <div>
+          <div class="calcTileText">Soustruhy</div>
+        </div>
+      </div>
+      <div class="tile calcTile calcTileStack" data-action="page-korekce-frezky">
+        <div class="calcTileIcon calcTileIconLegacy" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="6.2"></circle>
+          <circle cx="12" cy="12" r="2.2"></circle>
+          <path d="M12 3.6v2.4M12 18v2.4M3.6 12H6M18 12h2.4M6.1 6.1l1.6 1.6M16.3 16.3l1.6 1.6M17.9 6.1l-1.6 1.6M8.2 15.8l-1.6 1.6"></path>
+        </svg>
+      </div>
+        <div>
+          <div class="calcTileText">Frézky</div>
+        </div>
+      </div>
+      <div class="tile calcTile calcTileStack" data-action="page-korekce-brusy">
+        <div class="calcTileIcon calcTileIconLegacy" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5.1 14.4l1.7-2.4 1.7 2.4 1.7-2.4 1.7 2.4 1.7-2.4 1.7 2.4"></path>
+          <path d="M4.9 16l.8-1.2M8.2 16l.8-1.2M11.5 16l.8-1.2M14.8 16l.8-1.2M18.1 16l.8-1.2"></path>
+        </svg>
+      </div>
+        <div>
+          <div class="calcTileText">Brusy</div>
+        </div>
+      </div>
+    </div>
+  </details>
 </div>
 
 <!-- ROTACE -->
@@ -593,6 +636,107 @@
       <div class="card calcResultCard" id="outBTime"></div>
     </div>
   </details>
+</div>
+
+
+<!-- KOREKCE SOUSTRUHY -->
+<div id="korekce-soustruhy" class="page calcPage calcCorrectionPage calcCorrectionPage--soustruhy">
+  <div class="headerBar calcHeaderBar">
+    <div></div>
+    <h3>Korekce · Soustruhy</h3>
+    <div class="calcHeaderActions">
+      <button class="resetBtn" data-action="reset-fields" title="Reset polí" aria-label="Reset polí">↻</button>
+      <button class="calcCloseBtn" data-action="page-kalkulacky" title="Zpět na přehled kalkulaček" aria-label="Zpět na přehled kalkulaček">×</button>
+    </div>
+  </div>
+
+  <div class="card calcPanel calcCorrectionEmptyCard">
+    <div class="calcCorrectionEmptyTitle">Korekce pro soustruhy</div>
+    <div class="smallText">Tady postupně doplníme konkrétní korekce.</div>
+  </div>
+</div>
+
+<!-- KOREKCE FREZKY -->
+<div id="korekce-frezky" class="page calcPage calcCorrectionPage calcCorrectionPage--frezky">
+  <div class="headerBar calcHeaderBar">
+    <div></div>
+    <h3>Korekce · Frézky</h3>
+    <div class="calcHeaderActions">
+      <button class="resetBtn" data-action="reset-fields" data-reset-fields="fhb_target_left,fhb_target_right,fhb_c1_left,fhb_c1_right,fhb_c2_left,fhb_c2_right,fhb_current_corr" data-reset-results="fhbResult" title="Reset polí" aria-label="Reset polí">↻</button>
+      <button class="calcCloseBtn" data-action="page-kalkulacky" title="Zpět na přehled kalkulaček" aria-label="Zpět na přehled kalkulaček">×</button>
+    </div>
+  </div>
+
+  <div class="card calcPanel calcCorrectionFormCard calcCorrectionFhbCard">
+    <div class="calcCorrectionEmptyTitle">fhβ · sklon ozubení</div>
+    <div class="smallText">Zadej hodnoty z protokolu a aktuální korekci. Návrh bere průměrný pohyb z prvních měření, protože to nechodí přesně 1:1.</div>
+
+    <div class="calcCorrectionGroup">
+      <div class="calcCorrectionGroupTitle">Má být</div>
+      <div class="calcCorrectionTwoCols">
+        <label class="calcCorrectionField">
+          <span>Levá struna <small>±10</small></span>
+          <input id="fhb_target_left" type="text" inputmode="decimal" placeholder="např. 50">
+        </label>
+        <label class="calcCorrectionField">
+          <span>Pravá struna <small>±10</small></span>
+          <input id="fhb_target_right" type="text" inputmode="decimal" placeholder="např. 70">
+        </label>
+      </div>
+    </div>
+
+    <div class="calcCorrectionGroup">
+      <div class="calcCorrectionGroupTitle">Naměřeno</div>
+      <div class="calcCorrectionTwoCols">
+        <label class="calcCorrectionField">
+          <span>C1 · levá</span>
+          <input id="fhb_c1_left" type="text" inputmode="decimal">
+        </label>
+        <label class="calcCorrectionField">
+          <span>C1 · pravá</span>
+          <input id="fhb_c1_right" type="text" inputmode="decimal">
+        </label>
+        <label class="calcCorrectionField">
+          <span>C2 · levá</span>
+          <input id="fhb_c2_left" type="text" inputmode="decimal">
+        </label>
+        <label class="calcCorrectionField">
+          <span>C2 · pravá</span>
+          <input id="fhb_c2_right" type="text" inputmode="decimal">
+        </label>
+      </div>
+    </div>
+
+    <div class="calcCorrectionGroup calcCorrectionGroup--soft">
+      <div class="calcCorrectionGroupTitle">Korekce</div>
+      <div class="calcCorrectionTwoCols">
+        <label class="calcCorrectionField">
+          <span>Aktuální korekce</span>
+          <input id="fhb_current_corr" type="text" inputmode="decimal" placeholder="např. 0,035">
+        </label>
+      </div>
+    </div>
+
+    <button class="calcPrimaryBtn calcCorrectionPrimaryBtn" data-action="calc-frezky-fhb">Vyhodnotit fhβ</button>
+    <div class="card calcResultCard calcCorrectionResultCard" id="fhbResult"></div>
+  </div>
+</div>
+
+<!-- KOREKCE BRUSY -->
+<div id="korekce-brusy" class="page calcPage calcCorrectionPage calcCorrectionPage--brusy">
+  <div class="headerBar calcHeaderBar">
+    <div></div>
+    <h3>Korekce · Brusy</h3>
+    <div class="calcHeaderActions">
+      <button class="resetBtn" data-action="reset-fields" title="Reset polí" aria-label="Reset polí">↻</button>
+      <button class="calcCloseBtn" data-action="page-kalkulacky" title="Zpět na přehled kalkulaček" aria-label="Zpět na přehled kalkulaček">×</button>
+    </div>
+  </div>
+
+  <div class="card calcPanel calcCorrectionEmptyCard">
+    <div class="calcCorrectionEmptyTitle">Korekce pro brusy</div>
+    <div class="smallText">Tady postupně doplníme konkrétní korekce.</div>
+  </div>
 </div>
 
 <!-- PRAČKA -->

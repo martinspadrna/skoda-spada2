@@ -1,4 +1,4 @@
-// v.1.5 (744) – Nastavení: kompaktnější profil, výkon zařízení, theme a samostatné Zpět pod vzhledem.
+// v.1.5 (748) – Korekce Frézky: fhβ návrh směru a velikosti korekce podle průměrného pohybu.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;
@@ -101,6 +101,9 @@ function installDelegatedAppActions() {
     'page-soustruhy': () => showPage('soustruhy'),
     'page-frezky': () => showPage('frezky'),
     'page-brusy': () => showPage('brusy'),
+    'page-korekce-soustruhy': () => showPage('korekce-soustruhy'),
+    'page-korekce-frezky': () => showPage('korekce-frezky'),
+    'page-korekce-brusy': () => showPage('korekce-brusy'),
     'page-kalkulacky': () => openKalkulacky(),
     'reset-soustruhy': () => resetSoustruhy(),
     'soustruh-mode': (el) => setSoustruhMode(String(el.dataset.soustruhMode || '')),
@@ -126,6 +129,7 @@ function installDelegatedAppActions() {
     'open-payroll-link': () => openPayroll(),
     'calc-f': () => calcF(),
     'calc-f-finish': () => calcFFinish(),
+    'calc-frezky-fhb': () => calcFrezkyFhbCorrection(),
     'calc-brusy': () => calcBrusy(),
     'calc-brusy-finish': () => calcBrusyFinish(),
     'calc-p': () => calcP(),
@@ -1127,6 +1131,10 @@ function getPhaseTenActionHealth() {
       'page-soustruhy',
       'page-frezky',
       'page-brusy',
+      'page-korekce-soustruhy',
+      'page-korekce-frezky',
+      'page-korekce-brusy',
+      'calc-frezky-fhb',
       'calc-brusy',
       'calc-brusy-finish',
       'reset-fields',
@@ -1234,7 +1242,7 @@ function getPhaseTenFormHealth() {
       'b_finish_davky',
       'b_finish_davka',
       'b_finish_orovnani',
-      'p_kusy'
+      'p_kusy',
     ];
     const requiredSelects = ['statsYearSelect', 'monthYearSelect', 'monthSelect'];
     const requiredButtons = ['importBtn', 'exportBtn'];
@@ -1248,6 +1256,7 @@ function getPhaseTenFormHealth() {
       'calc-soustruhy-combo-heat',
       'calc-f',
       'calc-f-finish',
+      'calc-frezky-fhb',
       'calc-brusy',
       'calc-brusy-finish',
       'calc-p',

@@ -222,6 +222,7 @@ function calcBrusyFinish() {
   saveRotationData();
 }
 
+
 function setMachine(m) {
   app.machine = m;
   renderBrusy();
@@ -877,3 +878,105 @@ function calcSoustruhyCombo() {
 function calcSoustruhyComboHeat() {
   calcSoustruhyCombo();
 }
+function readCalcDecimal(id) {
+  const el = document.getElementById(id);
+  if (!el) return NaN;
+  const raw = String(el.value || '').trim().replace(/\s+/g, '').replace(',', '.');
+  if (!raw) return NaN;
+  const value = Number(raw);
+  return Number.isFinite(value) ? value : NaN;
+}
+
+function formatCalcDecimal(value, digits) {
+  if (!Number.isFinite(value)) return '—';
+  const places = typeof digits === 'number' ? digits : 3;
+  return value.toLocaleString('cs-CZ', { maximumFractionDigits: places, minimumFractionDigits: Math.min(places, 0) });
+}
+
+function calcFrezkyFhbCorrection() {
+  const out = document.getElementById('fhbResult');
+  if (!out) return;
+
+  const targetLeft = readCalcDecimal('fhb_target_left');
+  const targetRight = readCalcDecimal('fhb_target_right');
+  const c1Left = readCalcDecimal('fhb_c1_left');
+  const c1Right = readCalcDecimal('fhb_c1_right');
+  const c2Left = readCalcDecimal('fhb_c2_left');
+  const c2Right = readCalcDecimal('fhb_c2_right');
+  const currentCorr = readCalcDecimal('fhb_current_corr');
+
+  if (!Number.isFinite(targetLeft) || !Number.isFinite(targetRight)) {
+    setCalcOutputHtml(out, "<div class='smallText'>Doplň hodnoty levá/pravá v části Má být.</div>", 'fhbMissingTarget');
+    return;
+  }
+
+  const leftValues = [c1Left, c2Left].filter(Number.isFinite);
+  const rightValues = [c1Right, c2Right].filter(Number.isFinite);
+
+  if (!leftValues.length || !rightValues.length) {
+    setCalcOutputHtml(out, "<div class='smallText'>Doplň aspoň jednu levou a jednu pravou naměřenou hodnotu.</div>", 'fhbMissingMeasured');
+    return;
+  }
+
+  const avg = (arr) => arr.reduce((sum, value) => sum + value, 0) / arr.length;
+  const avgLeft = avg(leftValues);
+  const avgRight = avg(rightValues);
+  const diffLeft = avgLeft - targetLeft;
+  const diffRight = avgRight - targetRight;
+  const relative = diffRight - diffLeft;
+  const tolerance = 10;
+  const inLeft = Math.abs(diffLeft) <= tolerance;
+  const inRight = Math.abs(diffRight) <= tolerance;
+
+  // První kalibrace podle Martinových reálných měření:
+  // 0,035 -> 0,030 posunulo rozdíl L/P o cca 9 µm při změně korekce -0,005.
+  // 0,028 -> 0,048 posunulo rozdíl L/P o cca 29 µm při změně korekce +0,020.
+  // Průměrně tedy 0,001 korekce posune rozdíl mezi levou/pravou stranou asi o 1,6 µm.
+  const sensitivityPer001 = 1.625;
+  const fullDelta = Math.abs(relative) > 0.001 ? -(relative / sensitivityPer001) * 0.001 : 0;
+  const safeDelta = fullDelta * 0.6;
+  const direction = relative > 0.001
+    ? 'Ubrat korekci – pravá je proti levé moc nahoře.'
+    : relative < -0.001
+      ? 'Přidat korekci – levá je proti pravé moc nahoře.'
+      : 'Levá a pravá jsou proti sobě vyrovnané.';
+  const needsMove = !(inLeft && inRight && Math.abs(relative) <= tolerance);
+  const fullTarget = Number.isFinite(currentCorr) ? currentCorr + fullDelta : NaN;
+  const safeTarget = Number.isFinite(currentCorr) ? currentCorr + safeDelta : NaN;
+  const correctionHtml = Number.isFinite(currentCorr)
+    ? "<div class='calcResultMain'>Doporučení: <b>" + (needsMove ? escapeHtml(direction) : 'Nechal bych to být, je to v toleranci.') + "</b></div>" +
+      (needsMove
+        ? "<div class='calcResultLine'>Odhad na střed: <b>" + formatFhbCorrection(fullTarget) + "</b> (změna " + formatSignedFhbCorrection(fullDelta) + ")</div>" +
+          "<div class='calcResultLine'>Opatrný první krok: <b>" + formatFhbCorrection(safeTarget) + "</b> (změna " + formatSignedFhbCorrection(safeDelta) + ")</div>"
+        : '')
+    : "<div class='calcResultMain'>Doporučení: <b>" + escapeHtml(direction) + "</b></div>" +
+      "<div class='calcResultLine'>Doplň aktuální korekci a dopočítám i konkrétní novou hodnotu.</div>";
+  const calibrationText = 'Počítám orientačně z prvních měření: 0,001 korekce ≈ 1,6 µm rozdílu levá/pravá. Není to 1:1, proto je lepší brát opatrný první krok a potom přeměřit.';
+
+  const html = "<div class='calcResultTitle'>fhβ · návrh korekce</div>" +
+    "<div class='calcResultLine'>Levá průměr: <b>" + formatCalcDecimal(avgLeft, 3) + "</b> · odchylka <b>" + formatSignedCalcDecimal(diffLeft, 3) + "</b> · " + (inLeft ? 'v toleranci ±10' : 'mimo toleranci ±10') + "</div>" +
+    "<div class='calcResultLine'>Pravá průměr: <b>" + formatCalcDecimal(avgRight, 3) + "</b> · odchylka <b>" + formatSignedCalcDecimal(diffRight, 3) + "</b> · " + (inRight ? 'v toleranci ±10' : 'mimo toleranci ±10') + "</div>" +
+    "<div class='calcResultLine'>Rozdíl sklonu P−L: <b>" + formatSignedCalcDecimal(relative, 3) + "</b></div>" +
+    correctionHtml +
+    "<div class='calcResultSub'>" + escapeHtml(calibrationText) + "</div>";
+
+  setCalcOutputHtml(out, html, 'fhbResult:' + html.length + ':' + [targetLeft, targetRight, avgLeft, avgRight, currentCorr, relative].join('|'));
+}
+
+function formatSignedCalcDecimal(value, digits) {
+  if (!Number.isFinite(value)) return '—';
+  const sign = value > 0 ? '+' : '';
+  return sign + formatCalcDecimal(value, digits);
+}
+
+function formatFhbCorrection(value) {
+  if (!Number.isFinite(value)) return '—';
+  return value.toLocaleString('cs-CZ', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+}
+
+function formatSignedFhbCorrection(value) {
+  if (!Number.isFinite(value)) return '—';
+  const sign = value > 0 ? '+' : '';
+  return sign + formatFhbCorrection(value);
+}
+

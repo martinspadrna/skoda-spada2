@@ -1,3 +1,32 @@
+## v.1.5 (748)
+- Korekce → Frézky → fhβ: doplněný praktický návrh, kam hnout korekcí podle ručně zadaných hodnot z protokolu.
+- Výpočet už nebere korekci jako 1:1; používá první průměrnou kalibraci z reálných měření, kde 0,001 korekce posune rozdíl levá/pravá přibližně o 1,6 µm.
+- Výsledek ukazuje směr přidat/ubrat, odhad na střed a opatrný první krok, aby šlo po korekci přeměřit a doladit.
+- Pole „Změněno na“ odebrané z ručního zadání, protože novou hodnotu má navrhnout aplikace.
+- Verze sjednocena na v.1.5 (748), cache na v1.5-748 a Supabase realtime kanál na rak-public-live-v748.
+
+## v.1.5 (747)
+- Korekce → Frézky: přidaný první formulář pro fhβ / sklon ozubení.
+- Formulář má předepsané hodnoty levé a pravé struny „Má být“ s tolerancí ±10.
+- Přidané naměřené hodnoty C1 levá/pravá a C2 levá/pravá.
+- Doplněné volitelné pole aktuální korekce a změněno na, aby šlo zapisovat reálné pokusy.
+- Vyhodnocení fhβ zatím dává orientační průměry, odchylky a směr podle příkladů; přesný automatický návrh korekce se doplní později podle indexů.
+- Korekční horní panel je zpevněný do jednoho řádku stejně jako u Výpočtu kusů.
+- Verze sjednocena na v.1.5 (747), cache na v1.5-747 a Supabase realtime kanál na rak-public-live-v747.
+
+## v.1.5 (746)
+- Kalkulačky: stroje v sekcích Výpočet kusů i Korekce jsou v přehledu vždy po jednom na řádek.
+- Korekční stránky Soustruhy, Frézky a Brusy mají sjednocený horní panel jako výpočet kusů: název na jeden řádek, reset a křížek vpravo.
+- Z korekčních stránek odstraněné připravené výpočty a formuláře, aby se konkrétní korekce doplnily postupně.
+- Verze sjednocena na v.1.5 (746), cache na v1.5-746 a Supabase realtime kanál na rak-public-live-v746.
+
+## v.1.5 (745)
+- Kalkulačky: hlavní přehled rozdělený do rozbalovacích sekcí „Výpočet kusů“ a „Korekce“.
+- Sekce Korekce používá stejné stroje a ikonky jako výpočty kusů: Soustruhy, Frézky a Brusy.
+- Přidané základní korekční výpočty pro stroje: rozdíl cíle proti naměřené hodnotě, nová korekce, u soustruhu i půlka na rádius a u brusu přepočet na kroky.
+- Výkon zařízení: tlačítko „Zapnout Láďův“ změněné na „Láďův režim“, texty v tlačítkách jsou centrované a zapnutý Láďův režim je výrazněji zvýrazněný.
+- Export ZIPu přejmenovaný na formát „RaK v1.5(745).zip“ a obsah ZIPu je přímo v kořeni bez další složky.
+
 ## v.1.5 (744)
 - Více → Nastavení: zmenšená karta Profil a přihlášení, zúžená karta Výkon zařízení a kratší texty.
 - Z Nastavení aplikace odebrané duplicitní tlačítko Láďův režim, protože zůstává ve Výkonu zařízení.

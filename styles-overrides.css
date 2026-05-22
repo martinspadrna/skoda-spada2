@@ -4360,10 +4360,10 @@ body.lowEndDevice .page:not(#home) > .headerBar::before{
 }
 
 /* v.1.1 (587) – kalkulačky: pravé header ovládání a ještě kompaktnější volby Brusů. */
-:is(#soustruhy, #frezky, #brusy, #pracka).calcPage .calcHeaderBar{
+:is(#soustruhy, #frezky, #brusy, #pracka, #korekce-soustruhy, #korekce-frezky, #korekce-brusy).calcPage .calcHeaderBar{
   padding-right:88px !important;
 }
-:is(#soustruhy, #frezky, #brusy, #pracka).calcPage .calcHeaderActions{
+:is(#soustruhy, #frezky, #brusy, #pracka, #korekce-soustruhy, #korekce-frezky, #korekce-brusy).calcPage .calcHeaderActions{
   position:absolute !important;
   right:0 !important;
   top:50% !important;
@@ -4374,8 +4374,8 @@ body.lowEndDevice .page:not(#home) > .headerBar::before{
   gap:7px !important;
   z-index:2 !important;
 }
-:is(#soustruhy, #frezky, #brusy, #pracka).calcPage .calcHeaderActions .resetBtn,
-:is(#soustruhy, #frezky, #brusy, #pracka).calcPage .calcHeaderActions .calcCloseBtn{
+:is(#soustruhy, #frezky, #brusy, #pracka, #korekce-soustruhy, #korekce-frezky, #korekce-brusy).calcPage .calcHeaderActions .resetBtn,
+:is(#soustruhy, #frezky, #brusy, #pracka, #korekce-soustruhy, #korekce-frezky, #korekce-brusy).calcPage .calcHeaderActions .calcCloseBtn{
   position:static !important;
   right:auto !important;
   top:auto !important;
@@ -4402,10 +4402,10 @@ body.lowEndDevice .page:not(#home) > .headerBar::before{
   backdrop-filter:blur(16px) saturate(150%) !important;
   box-shadow:0 8px 22px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.16) !important;
 }
-:is(#soustruhy, #frezky, #brusy, #pracka).calcPage .calcHeaderActions .resetBtn{
+:is(#soustruhy, #frezky, #brusy, #pracka, #korekce-soustruhy, #korekce-frezky, #korekce-brusy).calcPage .calcHeaderActions .resetBtn{
   background:linear-gradient(135deg, rgba(56,189,248,.34), rgba(99,102,241,.24)) !important;
 }
-:is(#soustruhy, #frezky, #brusy, #pracka).calcPage .calcHeaderActions .calcCloseBtn{
+:is(#soustruhy, #frezky, #brusy, #pracka, #korekce-soustruhy, #korekce-frezky, #korekce-brusy).calcPage .calcHeaderActions .calcCloseBtn{
   background:linear-gradient(135deg, rgba(255,255,255,.15), rgba(255,255,255,.07)) !important;
   font-size:23px !important;
   font-weight:800 !important;
@@ -4418,10 +4418,10 @@ body.lowEndDevice .page:not(#home) > .headerBar::before{
   font-size:clamp(14.5px, 3.15vw, 16.5px) !important;
   line-height:1.12 !important;
 }
-body.lightweightMode :is(#soustruhy, #frezky, #brusy, #pracka).calcPage .calcHeaderActions .resetBtn,
-body.lightweightMode :is(#soustruhy, #frezky, #brusy, #pracka).calcPage .calcHeaderActions .calcCloseBtn,
-body.lowEndDevice :is(#soustruhy, #frezky, #brusy, #pracka).calcPage .calcHeaderActions .resetBtn,
-body.lowEndDevice :is(#soustruhy, #frezky, #brusy, #pracka).calcPage .calcHeaderActions .calcCloseBtn{
+body.lightweightMode :is(#soustruhy, #frezky, #brusy, #pracka, #korekce-soustruhy, #korekce-frezky, #korekce-brusy).calcPage .calcHeaderActions .resetBtn,
+body.lightweightMode :is(#soustruhy, #frezky, #brusy, #pracka, #korekce-soustruhy, #korekce-frezky, #korekce-brusy).calcPage .calcHeaderActions .calcCloseBtn,
+body.lowEndDevice :is(#soustruhy, #frezky, #brusy, #pracka, #korekce-soustruhy, #korekce-frezky, #korekce-brusy).calcPage .calcHeaderActions .resetBtn,
+body.lowEndDevice :is(#soustruhy, #frezky, #brusy, #pracka, #korekce-soustruhy, #korekce-frezky, #korekce-brusy).calcPage .calcHeaderActions .calcCloseBtn{
   -webkit-backdrop-filter:none !important;
   backdrop-filter:none !important;
   box-shadow:0 4px 12px rgba(0,0,0,.22) !important;
@@ -9942,7 +9942,7 @@ body.shipsGameOpen #games .gamesShellBackFloating{
   }
 }
 
-/* v.1.5 (744): Více → Nastavení – kompaktnější profil, výkon a tlačítka ve dvou sloupcích. */
+/* v.1.5 (747): Více → Nastavení – kompaktnější profil, výkon a tlačítka ve dvou sloupcích. */
 #appMenuBody .appMenuProfileCard{
   padding:10px 12px !important;
   gap:7px !important;
@@ -10113,4 +10113,255 @@ body.shipsGameOpen #games .gamesShellBackFloating{
     padding-left:5px !important;
     padding-right:5px !important;
   }
+}
+
+/* v.1.5 (747): Kalkulačky – rozbalené sekce Výpočet kusů/Korekce + kompaktní přehled. */
+#kalkulacky .calcHomeSection{
+  padding:10px 12px !important;
+  margin:0 0 10px !important;
+  border-radius:20px !important;
+  overflow:hidden !important;
+}
+#kalkulacky .calcHomeSection > summary{
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) auto !important;
+  align-items:center !important;
+  gap:10px !important;
+  min-height:42px !important;
+  padding:2px 2px 8px !important;
+  cursor:pointer !important;
+  list-style:none !important;
+  -webkit-tap-highlight-color:transparent !important;
+}
+#kalkulacky .calcHomeSection > summary::-webkit-details-marker{display:none !important;}
+#kalkulacky .calcHomeSection > summary::after{
+  content:'⌄' !important;
+  width:30px !important;
+  height:30px !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  border-radius:999px !important;
+  background:rgba(255,255,255,.07) !important;
+  border:1px solid rgba(255,255,255,.10) !important;
+  color:var(--green2, #7CFF7C) !important;
+  transition:transform .18s ease !important;
+}
+#kalkulacky .calcHomeSection[open] > summary::after{transform:rotate(180deg) !important;}
+#kalkulacky .calcHomeSection > summary .calcHomeSummaryText strong{
+  display:block !important;
+  color:var(--soft, #e7fff0) !important;
+  font-size:16px !important;
+  font-weight:900 !important;
+  line-height:1.08 !important;
+}
+#kalkulacky .calcHomeSection > summary .calcHomeSummaryText small{
+  display:block !important;
+  margin-top:3px !important;
+  color:rgba(231,255,240,.58) !important;
+  font-size:11px !important;
+  font-weight:700 !important;
+  line-height:1.1 !important;
+}
+#kalkulacky .calcHomeSection .calcHomeGrid{
+  display:grid !important;
+  grid-template-columns:1fr !important;
+  gap:8px !important;
+  margin-top:2px !important;
+}
+#kalkulacky .calcHomeSection .calcTile.calcTileStack{
+  min-height:66px !important;
+  padding:9px 11px !important;
+  border-radius:18px !important;
+}
+#kalkulacky .calcHomeSection .calcTile.calcTileStack .calcTileText{
+  font-size:15px !important;
+}
+#kalkulacky .calcHomeSectionCorrections .calcTile{
+  border-color:rgba(124,255,124,.18) !important;
+}
+
+/* v.1.5 (747): Výkon zařízení – centrovaná tlačítka a výrazný aktivní Láďův režim. */
+#appMenuBody .rakDevicePerfActions .appMenuAction{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  text-align:center !important;
+  white-space:normal !important;
+}
+#appMenuBody .rakDevicePerfActions .rakLadaModeBtn.isActive{
+  color:#061008 !important;
+  -webkit-text-fill-color:#061008 !important;
+  background:linear-gradient(180deg, var(--green2, #7CFF7C), var(--green, #39FF14)) !important;
+  border-color:rgba(255,255,255,.62) !important;
+  box-shadow:0 0 0 1px rgba(255,255,255,.22), 0 0 22px var(--rakThemeGlow, rgba(124,255,124,.36)) !important;
+  text-shadow:none !important;
+  font-weight:950 !important;
+}
+
+/* v.1.5 (747): Kalkulačky – každý stroj na vlastním řádku a korekce jako čisté připravené stránky. */
+#kalkulacky .calcHomeSection .calcHomeGrid,
+#kalkulacky .calcHomeGrid.grid{
+  display:grid !important;
+  grid-template-columns:1fr !important;
+  gap:8px !important;
+}
+#kalkulacky .calcHomeSection .calcTile.calcTileStack{
+  width:100% !important;
+  max-width:none !important;
+  grid-column:1 / -1 !important;
+}
+:is(#korekce-soustruhy, #korekce-frezky, #korekce-brusy).calcPage .calcHeaderBar{
+  min-height:50px !important;
+  display:grid !important;
+  grid-template-columns:1fr minmax(0, auto) 1fr !important;
+  align-items:center !important;
+  padding-right:88px !important;
+}
+:is(#korekce-soustruhy, #korekce-frezky, #korekce-brusy).calcPage .calcHeaderBar h3{
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  font-size:clamp(16px, 4.2vw, 20px) !important;
+  line-height:1 !important;
+}
+:is(#korekce-soustruhy, #korekce-frezky, #korekce-brusy).calcPage .calcCorrectionEmptyCard{
+  margin-top:12px !important;
+  padding:14px 16px !important;
+  border-radius:22px !important;
+}
+:is(#korekce-soustruhy, #korekce-frezky, #korekce-brusy).calcPage .calcCorrectionEmptyTitle{
+  font-size:16px !important;
+  font-weight:900 !important;
+  color:var(--soft, #e7fff0) !important;
+  margin-bottom:5px !important;
+}
+
+
+/* v.1.5 (747): Korekce – kompaktní header a první formulář fhβ pro frézky. */
+:is(#korekce-soustruhy, #korekce-frezky, #korekce-brusy).calcPage .calcHeaderBar{
+  min-height:44px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  padding:7px 86px 7px 44px !important;
+  margin:8px 6px 10px !important;
+  overflow:hidden !important;
+}
+:is(#korekce-soustruhy, #korekce-frezky, #korekce-brusy).calcPage .calcHeaderBar > div:first-child{
+  display:none !important;
+}
+:is(#korekce-soustruhy, #korekce-frezky, #korekce-brusy).calcPage .calcHeaderBar h3{
+  min-width:0 !important;
+  max-width:calc(100vw - 156px) !important;
+  margin:0 !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  font-size:clamp(16px, 4.1vw, 19px) !important;
+  line-height:1.05 !important;
+}
+:is(#korekce-soustruhy, #korekce-frezky, #korekce-brusy).calcPage .calcHeaderActions{
+  right:8px !important;
+}
+.calcCorrectionFormCard{
+  margin-top:12px !important;
+  padding:14px !important;
+  border-radius:22px !important;
+}
+.calcCorrectionFormCard > .smallText{
+  margin-top:4px !important;
+  line-height:1.25 !important;
+}
+.calcCorrectionGroup{
+  margin-top:12px !important;
+  padding:10px !important;
+  border-radius:18px !important;
+  background:rgba(255,255,255,.045) !important;
+  border:1px solid rgba(255,255,255,.08) !important;
+}
+.calcCorrectionGroup--soft{
+  background:rgba(124,255,124,.045) !important;
+  border-color:rgba(124,255,124,.11) !important;
+}
+.calcCorrectionGroupTitle{
+  margin-bottom:8px !important;
+  color:var(--soft, #e7fff0) !important;
+  font-size:14px !important;
+  font-weight:900 !important;
+  letter-spacing:.01em !important;
+}
+.calcCorrectionTwoCols{
+  display:grid !important;
+  grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
+  gap:9px !important;
+}
+.calcCorrectionField{
+  display:flex !important;
+  flex-direction:column !important;
+  gap:5px !important;
+  margin:0 !important;
+}
+.calcCorrectionField span{
+  display:flex !important;
+  align-items:baseline !important;
+  justify-content:space-between !important;
+  gap:6px !important;
+  color:rgba(231,255,240,.84) !important;
+  font-size:12px !important;
+  font-weight:850 !important;
+  line-height:1.1 !important;
+}
+.calcCorrectionField span small{
+  color:var(--green2, #7CFF7C) !important;
+  font-size:11px !important;
+  font-weight:950 !important;
+  white-space:nowrap !important;
+}
+.calcCorrectionField input{
+  width:100% !important;
+  min-height:42px !important;
+  padding:8px 10px !important;
+  border-radius:14px !important;
+  text-align:center !important;
+  font-weight:850 !important;
+  box-sizing:border-box !important;
+}
+.calcCorrectionPrimaryBtn{
+  width:100% !important;
+  margin-top:12px !important;
+}
+.calcCorrectionResultCard{
+  margin-top:10px !important;
+  min-height:0 !important;
+}
+@media (max-width:360px){
+  .calcCorrectionTwoCols{
+    gap:7px !important;
+  }
+  .calcCorrectionField input{
+    min-height:40px !important;
+    padding-left:7px !important;
+    padding-right:7px !important;
+  }
+  .calcCorrectionField span{
+    font-size:11px !important;
+  }
+}
+
+
+/* v.1.5 (748): Korekce Frézky – fhβ návrh korekce a kompaktnější ruční vstupy. */
+.calcCorrectionFhbCard .calcCorrectionGroup--soft .calcCorrectionTwoCols {
+  grid-template-columns: 1fr !important;
+}
+.calcCorrectionFhbCard .calcResultMain {
+  margin-top: 10px !important;
+  padding: 10px 12px !important;
+  border-radius: 16px !important;
+  background: rgba(255,255,255,.08) !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
+}
+.calcCorrectionFhbCard .calcResultSub {
+  margin-top: 10px !important;
+  line-height: 1.45 !important;
 }
