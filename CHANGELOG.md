@@ -1,3 +1,20 @@
+## v.1.1 (737)
+- Opravené pravidlo ročního fondu statistik: hodnota Práce + absence = 164 platí jen pro ověřený rok 2025.
+- Další roky se už nedorovnávají naslepo na 164, protože každý rok může mít jiný počet směn; u nich se ukáže skutečný součet z importovaných rozpisů/absencí.
+- Verze sjednocena na v.1.1 (737), cache na v1.1-737 a Supabase realtime kanál na rak-public-live-v737.
+
+## v.1.1 (735)
+- Opravené roční statistiky: u uzavřeného/importovaného roku se pro každého pracovníka drží roční fond 164, takže karta „Práce + absence“ vychází 164 místo hodnot převzatých z aktuálního období.
+- Aktuální rok se dál počítá průběžně podle vyplněných měsíců, takže např. 5/26 nezvedá uměle celý rok na 164.
+- Zkontrolované pravidlo TNKS01/TPKW01: mimo neděli se počítá 0,5 směny na TNKS01 a 0,5 směny na TPKW01; v neděli se nepůlí a bere se skutečný stroj.
+- Verze sjednocena na v.1.1 (735), cache na v1.1-735 a Supabase realtime kanál na rak-public-live-v735.
+
+## v.1.1 (734)
+- Opravené přepínání roku v Rozpisech: render už nepřepisuje ručně vybraný rok zpět na aktuální rok, takže po volbě 2025 se zobrazují měsíce roku 2025.
+- Opravené přepínání roku ve Statistikách: změna roku okamžitě překreslí statistiky podle vybraného roku a detailní výpočty se už nemíchají s posledním/aktuálním rokem.
+- Doplněný handler pro výběr měsíce v Rozpisech, aby změna v rozbalovacím seznamu rovnou načetla správný měsíc a držela k němu správný rok.
+- Verze sjednocena na v.1.1 (734), cache na v1.1-734 a Supabase realtime kanál na rak-public-live-v734.
+
 ## v.1.1 (732)
 - Opravené online ukládání importovaných rozpisů: v Supabase byla doplněná minimální práva a RLS policy pro tabulku rotation_state, protože import padal na `permission denied for table rotation_state`.
 - Z formuláře Import Excelu odstraněné pole „Rok pro starší listy bez roku“, protože správné měsíce se berou přímo z názvů listů typu 01.2025 / 01/2025 / 01/25.

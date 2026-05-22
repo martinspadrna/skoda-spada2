@@ -1,4 +1,4 @@
-// v.1.1 (732) – ověřený import Excelu 2025/2026, správné měsíce/roky pro rozpisy i statistiky.
+// v.1.1 (737) – Statistiky: roční fond 164 platí jen pro rok 2025; další roky se nedorovnávají naslepo; TNKS01/TPKW01 se mimo neděli počítá 0,5/0,5.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

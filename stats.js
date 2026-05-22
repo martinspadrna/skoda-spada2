@@ -220,6 +220,30 @@ function formatMachineWinners(entries) {
   return list.map(([name, value]) => name + ' (' + formatCount(value) + ')').join('\n');
 }
 
+
+const RAK_KNOWN_ANNUAL_WORK_ABSENCE_TARGETS = {
+  // Rok 2025 měl podle ověřeného rozpisu roční fond 164 směn.
+  // Další roky se nesmí dorovnávat na 164 naslepo — každý rok může mít jiný fond.
+  2025: 164
+};
+
+function getAnnualWorkAbsenceTarget(year) {
+  const numericYear = parseInt(year, 10);
+  if (!Number.isFinite(numericYear)) return null;
+  if (Object.prototype.hasOwnProperty.call(RAK_KNOWN_ANNUAL_WORK_ABSENCE_TARGETS, numericYear)) {
+    return RAK_KNOWN_ANNUAL_WORK_ABSENCE_TARGETS[numericYear];
+  }
+  return null;
+}
+
+function applyAnnualWorkAbsenceTarget(person, target) {
+  const numericTarget = Number(target);
+  if (!Number.isFinite(numericTarget) || numericTarget <= 0 || !person) return;
+  const absence = Math.max(0, Number(person.totalAbsence || 0) || 0);
+  person.annualWorkAbsenceTarget = numericTarget;
+  person.totalWork = Math.max(0, numericTarget - absence);
+}
+
 function buildStatsForYear(year) {
   const stats = {
     year,
@@ -265,6 +289,7 @@ function buildStatsForYear(year) {
 
   const nameIndex = buildNameIndex(app.rotation);
   const knownStatNames = getKnownStatNames();
+  const annualWorkAbsenceTarget = getAnnualWorkAbsenceTarget(year);
 
   Object.entries(app.rotation.months || {}).forEach(([monthKey, month]) => {
     const parsedMonth = parseMonthKey(monthKey);
@@ -289,6 +314,7 @@ function buildStatsForYear(year) {
 
           rowNames.add(name);
           const person = ensurePerson(name);
+          // TNKS01 + TPKW01: mimo neděli se střídá půl směny/půl směny; v neděli se nepůlí.
           const isPairMachine = section === "hard" && (machine === "TNKS01" || machine === "TPKW01");
 
           if (isPairMachine) {
@@ -373,7 +399,8 @@ function buildStatsForYear(year) {
         person.totalWork = Math.max(0, (Number(person.totalWork || 0) || 0) - weight);
       });
     });
-  });  const expectedTotalUnits = 73;
+  });
+
   Object.values(stats.people).forEach(person => {
     Object.keys(person.work).forEach(column => {
       if (typeof person.work[column] === "number") person.work[column] = Math.round(person.work[column] * 10) / 10;
@@ -382,7 +409,11 @@ function buildStatsForYear(year) {
       if (typeof person.absence[column] === "number") person.absence[column] = Math.round(person.absence[column] * 10) / 10;
     });
     person.totalAbsence = Math.round((Number(person.totalAbsence) || 0) * 10) / 10;
-    person.totalWork = Math.round((Math.max(0, expectedTotalUnits - person.totalAbsence)) * 10) / 10;
+    person.totalWork = Math.round((Math.max(0, Number(person.totalWork || 0))) * 10) / 10;
+    // v.1.1 (737): pevný roční fond 164 platí jen pro rok 2025.
+    // Ostatní roky se nedorovnávají naslepo, protože každý rok může mít jiný počet směn.
+    applyAnnualWorkAbsenceTarget(person, annualWorkAbsenceTarget);
+    person.totalWork = Math.round((Math.max(0, Number(person.totalWork || 0))) * 10) / 10;
     person.totalClean = Math.round((Number(person.totalClean) || 0) * 10) / 10;
 
     person.topWorkMachine = getBestEntry(person.work);

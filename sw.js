@@ -1,5 +1,5 @@
-const CACHE_VERSION = 'v1.1-732';
-const SW_APP_VERSION = 'v.1.1 (732)';
+const CACHE_VERSION = 'v1.1-737';
+const SW_APP_VERSION = 'v.1.1 (737)';
 const STATIC_CACHE = `rotace-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `rotace-runtime-${CACHE_VERSION}`;
 const APP_SHELL = [

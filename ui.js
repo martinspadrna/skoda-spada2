@@ -4289,7 +4289,7 @@ function buildAppHistoryHtml(versionText) {
       range: versionText,
       title: 'Aktuální build',
       lines: [
-        'Build v.1.1 (732) dolaďuje import Excelu podle reálného souboru: bere jen měsíční listy 01.2025, přeskakuje pomocné listy a čte tvrdotu, měkotu i absence.',
+        'Build v.1.1 (737) opravuje roční fond: 164 platí jen pro rok 2025; další roky se nedorovnávají naslepo. TNKS01/TPKW01 dál drží půlení mimo neděli.',
         'Série v.1.1 650–706 dotáhla Piškvorky, online pozvánky, PWA launch handler, všechny hlavní hry, herní profily, reporty chyb, theme polish, těžší/chytřejší achievementy a společný herní QA průchod včetně app-like dotykového polishu.',
         'Sekce „O aplikaci“ je nově stručnější: detailní změny zůstávají v changelogu a tady se historie drží po větších blocích.',
         'Stabilizační audity, Supabase guardy, Láďův režim a finální readiness kontroly zůstávají součástí diagnostiky.'

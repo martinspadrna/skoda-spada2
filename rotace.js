@@ -3,12 +3,11 @@ function renderRotace() {
   const personView = document.getElementById('personView');
   const monthView = document.getElementById('monthView');
 
-  const year = parseInt(app.selectedYear, 10) || getInitialSelectedYear(app.rotation);
+  // v.1.1 (737): respektuj ručně vybraný rok. Dřív se při každém renderu
+  // Rozpisů/Statistik přepsal zpět na aktuální rok, takže importy 2025 nebyly vidět.
+  const requestedYear = parseInt(app.selectedYear, 10);
   const availableYears = getAvailableYears(app.rotation);
-  const currentYear = new Date().getFullYear();
-  if (availableYears.includes(currentYear) && year !== currentYear) {
-    app.selectedYear = currentYear;
-  } else if (!availableYears.includes(year)) {
+  if (!availableYears.includes(requestedYear)) {
     app.selectedYear = getInitialSelectedYear(app.rotation);
   }
 

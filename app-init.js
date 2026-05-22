@@ -646,6 +646,18 @@ function initAppInitBindings() {
     setSelectedYear(e.target.value);
   });
 
+  registerListener(document.getElementById("monthSelect"), "change", (e) => {
+    const monthKey = e && e.target ? String(e.target.value || '') : '';
+    app.selectedMonth = monthKey || null;
+    if (monthKey && typeof parseMonthKey === 'function') {
+      const parsed = parseMonthKey(monthKey);
+      if (parsed && Number.isFinite(parsed.year)) app.selectedYear = parsed.year;
+    }
+    if (typeof syncYearControls === 'function') syncYearControls();
+    if (monthKey && typeof renderMonth === 'function') renderMonth(monthKey);
+    if (typeof renderStatsPanel === 'function') renderStatsPanel();
+  });
+
   registerListener(document.getElementById("importYearSelect"), "change", (e) => {
     app.importYear = parseInt(e.target.value, 10) || getInitialSelectedYear(app.rotation);
     syncYearControls();
