@@ -10555,7 +10555,7 @@ body.shipsGameOpen #games .gamesShellBackFloating{
   border-radius:12px !important;
 }
 
-/* v.1.5 (756): Korekce Frézky – jedna kalkulačka pro konicitu i fhβ. */
+/* v.1.5 (757): Korekce Frézky – jedna kalkulačka pro konicitu i fhβ. */
 .calcCorrectionFhbCard .calcCorrectionPresetGroup{
   padding-bottom:8px !important;
 }
@@ -10615,4 +10615,63 @@ body.shipsGameOpen #games .gamesShellBackFloating{
   .calcFhbPresetBtn span{
     font-size:10px !important;
   }
+}
+
+
+/* v.1.5 (757): Korekce – úplně nízký horní banner stroje, poslední pojistka po všech starších overridech. */
+:is(#korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage.calcCorrectionPage > .headerBar.calcHeaderBar{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  min-height:38px !important;
+  height:38px !important;
+  max-height:38px !important;
+  padding:4px 6px 4px 12px !important;
+  margin:6px 6px 8px !important;
+  gap:8px !important;
+  box-sizing:border-box !important;
+  overflow:hidden !important;
+}
+:is(#korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage.calcCorrectionPage > .headerBar.calcHeaderBar > div:first-child{
+  display:none !important;
+}
+:is(#korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage.calcCorrectionPage > .headerBar.calcHeaderBar h3,
+:is(#korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage.calcCorrectionPage > .headerBar.calcHeaderBar .calcHeaderTitleOneLine{
+  flex:1 1 auto !important;
+  min-width:0 !important;
+  max-width:none !important;
+  margin:0 !important;
+  padding:0 !important;
+  display:block !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  text-align:left !important;
+  font-size:clamp(14px, 3.7vw, 17px) !important;
+  line-height:1 !important;
+}
+:is(#korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage.calcCorrectionPage > .headerBar.calcHeaderBar .calcHeaderActions{
+  flex:0 0 auto !important;
+  width:auto !important;
+  min-width:0 !important;
+  position:static !important;
+  transform:none !important;
+  right:auto !important;
+  top:auto !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-end !important;
+  gap:5px !important;
+}
+:is(#korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage.calcCorrectionPage > .headerBar.calcHeaderBar .calcHeaderActions .resetBtn,
+:is(#korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage.calcCorrectionPage > .headerBar.calcHeaderBar .calcHeaderActions .calcCloseBtn{
+  width:30px !important;
+  min-width:30px !important;
+  max-width:30px !important;
+  height:30px !important;
+  min-height:30px !important;
+  max-height:30px !important;
+  padding:0 !important;
+  border-radius:11px !important;
+  line-height:1 !important;
 }

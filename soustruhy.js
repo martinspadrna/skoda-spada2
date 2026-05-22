@@ -1003,51 +1003,117 @@ function calcFrezkyFhbCorrection() {
   const shiftSafeFactor = 0.75;
   const shiftDelta = needsShift ? (-(maxCenterError.centerError / shiftSensitivityPer001) * 0.001 * shiftSafeFactor) : 0;
 
-  const suggestedTaper = Number.isFinite(currentTaperCorr) ? currentTaperCorr + taperDelta : NaN;
-  const suggestedShift = Number.isFinite(currentShiftCorr) ? currentShiftCorr + shiftDelta : NaN;
   const taperMove = taperSensitivityPer001 * (taperDelta / 0.001);
   const shiftMove = shiftSensitivityPer001 * (shiftDelta / 0.001);
-  const expectedHtml = checkedPairs.map((pair) => {
-    const expectedLeft = pair.left + shiftMove - (taperMove / 2);
-    const expectedRight = pair.right + shiftMove + (taperMove / 2);
-    const leftClass = Math.abs(expectedLeft - targetLeft) <= tolerance ? 'ok' : 'warn';
-    const rightClass = Math.abs(expectedRight - targetRight) <= tolerance ? 'ok' : 'warn';
-    return "<div class='calcResultLine'><b>" + escapeHtml(pair.id) + "</b> · L <b class='" + leftClass + "'>" + formatCalcDecimalWhole(expectedLeft) +
-      "</b> / P <b class='" + rightClass + "'>" + formatCalcDecimalWhole(expectedRight) + "</b></div>";
-  }).join('');
+
+  function buildExpected(shiftMoveValue, taperMoveValue) {
+    return checkedPairs.map((pair) => {
+      const expectedLeft = pair.left + shiftMoveValue - (taperMoveValue / 2);
+      const expectedRight = pair.right + shiftMoveValue + (taperMoveValue / 2);
+      const leftError = expectedLeft - targetLeft;
+      const rightError = expectedRight - targetRight;
+      const centerError = ((expectedLeft + expectedRight) / 2) - targetCenter;
+      const spreadError = (expectedRight - expectedLeft) - targetSpread;
+      return {
+        id: pair.id,
+        left: expectedLeft,
+        right: expectedRight,
+        leftError,
+        rightError,
+        centerError,
+        spreadError,
+        leftOk: Math.abs(leftError) <= tolerance,
+        rightOk: Math.abs(rightError) <= tolerance
+      };
+    });
+  }
+
+  function scoreExpected(expected) {
+    let maxAbs = 0;
+    let sumAbs = 0;
+    let outCount = 0;
+    let maxCenter = 0;
+    let maxSpread = 0;
+    expected.forEach((item) => {
+      const absLeft = Math.abs(item.leftError);
+      const absRight = Math.abs(item.rightError);
+      maxAbs = Math.max(maxAbs, absLeft, absRight);
+      sumAbs += absLeft + absRight;
+      if (absLeft > tolerance) outCount += 1;
+      if (absRight > tolerance) outCount += 1;
+      maxCenter = Math.max(maxCenter, Math.abs(item.centerError));
+      maxSpread = Math.max(maxSpread, Math.abs(item.spreadError));
+    });
+    const avgAbs = sumAbs / Math.max(1, expected.length * 2);
+    return {
+      maxAbs,
+      sumAbs,
+      avgAbs,
+      outCount,
+      maxCenter,
+      maxSpread,
+      score: (maxAbs * 2) + (avgAbs * 0.5) + (outCount * 8) + (maxCenter * 0.25) + (maxSpread * 0.25)
+    };
+  }
+
+  function makeCandidate(type, useTaper, useShift) {
+    const expected = buildExpected(useShift ? shiftMove : 0, useTaper ? taperMove : 0);
+    const metrics = scoreExpected(expected);
+    const taperValue = useTaper && Number.isFinite(currentTaperCorr) ? currentTaperCorr + taperDelta : NaN;
+    const shiftValue = useShift && Number.isFinite(currentShiftCorr) ? currentShiftCorr + shiftDelta : NaN;
+    return { type, useTaper, useShift, expected, metrics, taperValue, shiftValue };
+  }
+
+  const base = makeCandidate('bez zásahu', false, false);
+  const candidates = [];
+  if (needsTaper) candidates.push(makeCandidate('konicita', true, false));
+  if (needsShift) candidates.push(makeCandidate('fhβ', false, true));
+  const singleCandidates = candidates.slice().sort((a, b) => a.metrics.score - b.metrics.score);
+  const bestSingle = singleCandidates[0] || null;
+  const both = (needsTaper && needsShift) ? makeCandidate('konicita + fhβ', true, true) : null;
+
+  let selected = bestSingle || base;
+  if (both && bestSingle) {
+    const singleGoodEnough = bestSingle.metrics.outCount === 0 || bestSingle.metrics.maxAbs <= tolerance;
+    const bothMuchBetter = (bestSingle.metrics.score - both.metrics.score) >= Math.max(8, bestSingle.metrics.score * 0.25);
+    selected = (!singleGoodEnough && bothMuchBetter) ? both : bestSingle;
+  }
+  if (!needsTaper && !needsShift) selected = base;
 
   const targetLine = targetLabel
     ? "<div class='calcResultLine calcResultPresetLine'>" + escapeHtml(targetLabel) + " · L " + formatCalcDecimalWhole(targetLeft) + " / P " + formatCalcDecimalWhole(targetRight) + "</div>"
     : '';
+  const expectedHtml = selected.expected.map((pair) => {
+    const leftClass = pair.leftOk ? 'ok' : 'warn';
+    const rightClass = pair.rightOk ? 'ok' : 'warn';
+    return "<div class='calcResultLine'><b>" + escapeHtml(pair.id) + "</b> · L <b class='" + leftClass + "'>" + formatCalcDecimalWhole(pair.left) +
+      "</b> / P <b class='" + rightClass + "'>" + formatCalcDecimalWhole(pair.right) + "</b></div>";
+  }).join('');
   const measuredLine = checkedPairs.map((pair) => {
     return "<div class='calcResultLine calcResultLine--muted'><b>" + escapeHtml(pair.id) + "</b> · teď L " + formatCalcDecimalWhole(pair.left) +
       " / P " + formatCalcDecimalWhole(pair.right) + "</div>";
   }).join('');
 
-  const modeParts = [];
-  if (needsTaper) modeParts.push('konicita');
-  if (needsShift) modeParts.push('fhβ');
-  const modeText = modeParts.length ? modeParts.join(' + ') : 'bez zásahu';
-
-  let html = targetLine + "<div class='calcResultMain'>Hýbej: <b>" + escapeHtml(modeText) + "</b></div>";
-  if (needsTaper) {
-    html += Number.isFinite(suggestedTaper)
-      ? "<div class='calcResultLine'>Zadej konicitu: <b>" + formatFhbCorrection(suggestedTaper) + "</b></div>"
+  let html = targetLine + "<div class='calcResultMain'>Hýbej: <b>" + escapeHtml(selected.type) + "</b></div>";
+  if (selected.useTaper) {
+    html += Number.isFinite(selected.taperValue)
+      ? "<div class='calcResultLine'>Zadej konicitu: <b>" + formatFhbCorrection(selected.taperValue) + "</b></div>"
       : "<div class='calcResultLine'>Konicita: <b>doplň aktuální korekci</b></div>";
   }
-  if (needsShift) {
-    html += Number.isFinite(suggestedShift)
-      ? "<div class='calcResultLine'>Zadej fhβ: <b>" + formatFhbCorrection(suggestedShift) + "</b></div>"
+  if (selected.useShift) {
+    html += Number.isFinite(selected.shiftValue)
+      ? "<div class='calcResultLine'>Zadej fhβ: <b>" + formatFhbCorrection(selected.shiftValue) + "</b></div>"
       : "<div class='calcResultLine'>fhβ: <b>doplň aktuální korekci</b></div>";
   }
-  if (!needsTaper && !needsShift) {
+  if (!selected.useTaper && !selected.useShift) {
     html += "<div class='calcResultLine'>Hodnoty jsou blízko středu i konicity.</div>";
   }
   html += "<div class='calcResultTitle calcResultTitle--small'>Očekávané hodnoty</div>" + expectedHtml;
   html += "<div class='calcResultTitle calcResultTitle--small'>Naměřeno</div>" + measuredLine;
 
-  setCalcOutputHtml(out, html, 'fhbCombinedResult:' + html.length + ':' + [targetLeft, targetRight, currentTaperCorr, currentShiftCorr, centerScore, spreadScore, taperDelta, shiftDelta].join('|'));
+  setCalcOutputHtml(out, html, 'fhbBestSingleResult:' + selected.type + ':' + [targetLeft, targetRight, currentTaperCorr, currentShiftCorr, centerScore, spreadScore, taperDelta, shiftDelta, selected.metrics.score].join('|'));
 }
+
 function getFhbSpreadRelationText(spreadError, deadband) {
   if (!Number.isFinite(spreadError)) return 'nejde vyhodnotit';
   if (spreadError > deadband) return 'moc od sebe → korekce dolů je má sbližovat';

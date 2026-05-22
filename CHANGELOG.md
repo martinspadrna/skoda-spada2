@@ -1,9 +1,9 @@
-## v.1.5 (756)
+## v.1.5 (757)
 - Korekce → Frézky: konicita i fhβ jsou sjednocené do jedné kalkulačky.
 - Zadávají se dvě aktuální korekce ze stroje: Konicita a fhβ. Samostatná karta „fhβ posun celé strany“ je odstraněná.
 - Vyhodnocení samo řekne, jestli hýbat konicitou, fhβ, nebo obojím, a ukáže konkrétní hodnoty „Zadej konicitu“ / „Zadej fhβ“.
 - Očekávané hodnoty po korekci se počítají pro C1 i C2 zvlášť, bez průměrování kol.
-- Verze sjednocena na v.1.5 (756), cache na v1.5-756 a Supabase realtime kanál na rak-public-live-v756.
+- Verze sjednocena na v.1.5 (757), cache na v1.5-757 a Supabase realtime kanál na rak-public-live-v757.
 
 ## v.1.5 (755)
 - Korekce → Frézky: ruční pole „Má být“ nahrazená tlačítkovou volbou indexů AF/AG lis, AH lis, AF/AG volné a AH volné.
