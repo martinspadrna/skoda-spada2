@@ -1,4 +1,4 @@
-// v.1.1 (738) – Pampuch zpomalený bez power režimu duchů; Lodě mají rychlejší odezvu, mobilní posun výš a rematch po konci hry.
+// v.1.1 (739) – Pampuch má plynulejší pomalejší pohyb; Lodě mají čistší mobilní layout, bezpečný horní odstup a výsledek přes pole.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

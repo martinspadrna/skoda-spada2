@@ -4289,7 +4289,7 @@ function buildAppHistoryHtml(versionText) {
       range: versionText,
       title: 'Aktuální build',
       lines: [
-        'Build v.1.1 (738) ladí Pampucha blíž původnímu stylu bez power režimu duchů a upravuje Lodě: rychlejší odezva, čistší mobilní layout a nová hra se stejným soupeřem po konci.',
+        'Build v.1.1 (739) ladí Pampucha na plynulejší pomalejší pohyb a upravuje Lodě: čistší mobilní layout bez šedých podkladů, bezpečný horní odstup a výsledkové okno přes hrací pole.',
         'Série v.1.1 650–706 dotáhla Piškvorky, online pozvánky, PWA launch handler, všechny hlavní hry, herní profily, reporty chyb, theme polish, těžší/chytřejší achievementy a společný herní QA průchod včetně app-like dotykového polishu.',
         'Sekce „O aplikaci“ je nově stručnější: detailní změny zůstávají v changelogu a tady se historie drží po větších blocích.',
         'Stabilizační audity, Supabase guardy, Láďův režim a finální readiness kontroly zůstávají součástí diagnostiky.'

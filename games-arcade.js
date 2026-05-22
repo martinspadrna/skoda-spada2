@@ -2,7 +2,7 @@
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
 
-  // v.1.1 (738): Pampuch bez power režimu duchů a Lodě s rychlejší odezvou/rematchem.
+  // v.1.1 (739): Pampuch plynulejší bez pacman režimu; Lodě čistší mobilní layout a overlay výsledku přes pole.
   const CORE_GAMES = ['ttt', 'ships', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'pampuch', 'daily'];
   const EXTRA_GAMES = [];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);
@@ -150,7 +150,7 @@
     const rawShiftLabel = String(activeShift && activeShift.label ? activeShift.label : '').trim();
     const label = rawShiftLabel.toLowerCase();
     const isShiftD = !!activeShift && rawShiftTeam === 'D';
-    // v.1.1 (738): herní achievementy s podmínkou „ve směně“ se počítají jen tehdy,
+    // v.1.1 (739): herní achievementy s podmínkou „ve směně“ se počítají jen tehdy,
     // když je opravdu aktivní směna D v práci. Ostatní směny zůstanou uložené jen diagnosticky v lastContext.
     return {
       dateKey: gamesLocalDateKey(when),
@@ -4213,9 +4213,8 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         ${toggleHtml}
         <div class="shipsMenuBackLine"><button type="button" class="gameControlBtn ghost" id="shipsMenuBackBtn">Zpět do menu Lodí</button></div>
         <div class="shipsSingleBoardWrap">
-          <div class="shipsBoardCard shipsBoardCardLift"><div class="smallText uBold">${escapeHtml(activeBoardTitle)}</div><div class="smallText shipsInlineHint">${escapeHtml(viewHint)}</div>${activeBoard}</div>
+          <div class="shipsBoardCard shipsBoardCardLift shipsBoardCardResultHost"><div class="smallText uBold">${escapeHtml(activeBoardTitle)}</div><div class="smallText shipsInlineHint">${escapeHtml(viewHint)}</div>${activeBoard}${st.status === 'finished' ? `<div class="arcadeGameOverlay arcadeEndOverlay shipsResult"><div class="arcadeOverlayCard shipsResultCard"><strong>${st.winner === role ? 'Výhra!' : 'Konec hry'}</strong><span>Score: ${st.winner === role ? 1000 + (sum.hits * 80) + (sum.sunk * 220) : Math.max(100, sum.hits * 70)} · Zásahy: ${sum.hits} · Potopené: ${sum.sunk}</span><div class="shipsResultActions"><button type="button" class="gameControlBtn primary" id="shipsRematchBtn">Nová hra se soupeřem</button><button type="button" class="gameControlBtn ghost" id="shipsBackBtn">Zpět do Lodí</button></div></div></div>` : ''}</div>
         </div>
-        ${st.status === 'finished' ? `<div class="arcadeResultOverlay shipsResult"><div class="arcadeResultCard"><strong>${st.winner === role ? 'Výhra!' : 'Konec hry'}</strong><div class="smallText">Score: ${st.winner === role ? 1000 + (sum.hits * 80) + (sum.sunk * 220) : Math.max(100, sum.hits * 70)} · Zásahy: ${sum.hits} · Potopené: ${sum.sunk}</div><div class="shipsResultActions"><button type="button" class="gameControlBtn primary" id="shipsRematchBtn">Nová hra se soupeřem</button><button type="button" class="gameControlBtn ghost" id="shipsBackBtn">Zpět do Lodí</button></div></div></div>` : ''}
       </div>`;
       body.querySelectorAll('[data-ships-view]').forEach((btn) => btn.addEventListener('click', () => {
         local.view = btn.getAttribute('data-ships-view') === 'enemy' ? 'enemy' : 'own';
@@ -4254,7 +4253,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   const PAMP_LEVELS = [
     {
       name: 'Level 1',
-      speed: 210,
+      speed: 250,
       ghostDelay: 2,
       map: [
         '###################',
@@ -4276,7 +4275,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     },
     {
       name: 'Level 2',
-      speed: 210,
+      speed: 250,
       ghostDelay: 2,
       map: [
         '###################',
@@ -4298,7 +4297,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     },
     {
       name: 'Level 3',
-      speed: 210,
+      speed: 250,
       ghostDelay: 2,
       map: [
         '###################',
@@ -4320,7 +4319,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     },
     {
       name: 'Level 4',
-      speed: 210,
+      speed: 250,
       ghostDelay: 2,
       map: [
         '###################',
@@ -4348,7 +4347,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     { name: 'up', dr: -1, dc: 0 },
     { name: 'down', dr: 1, dc: 0 }
   ];
-  const PAMP_BASE_TICK_MS = 210;
+  const PAMP_BASE_TICK_MS = 250;
   const PAMP_GHOST_COLOR = '#ff4f88';
 
   function pampDir(name) {
@@ -4387,7 +4386,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       grid: [],
       rows: 0,
       cols: 0,
-      player: { r: 1, c: 1, dir: pampDir('right'), queued: pampDir('right'), mouth: 0 },
+      player: { r: 1, c: 1, prevR: 1, prevC: 1, moveAt: 0, dir: pampDir('right'), queued: pampDir('right'), mouth: 0 },
       ghosts: [],
       touchStart: null,
       startAt: 0
@@ -4405,13 +4404,13 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     const cols = def.map[0].length;
     const grid = [];
     const ghosts = [];
-    let player = { r: 1, c: 1, dir: pampDir('right'), queued: pampDir('right'), mouth: 0 };
+    let player = { r: 1, c: 1, prevR: 1, prevC: 1, moveAt: 0, dir: pampDir('right'), queued: pampDir('right'), mouth: 0 };
     let total = 0;
     def.map.forEach((row, r) => {
       const cells = String(row).split('');
       cells.forEach((cell, c) => {
-        if (cell === 'P') { player = { r, c, dir: pampDir('right'), queued: pampDir('right'), mouth: 0 }; cells[c] = '.'; total += 1; }
-        else if (cell === 'G') { ghosts.push({ r, c, homeR: r, homeC: c, dir: randomPick(PAMP_DIRS), color: PAMP_GHOST_COLOR, wait: Number(def.ghostDelay || 0) + ghosts.length }); cells[c] = '.'; total += 1; }
+        if (cell === 'P') { player = { r, c, prevR: r, prevC: c, moveAt: 0, dir: pampDir('right'), queued: pampDir('right'), mouth: 0 }; cells[c] = '.'; total += 1; }
+        else if (cell === 'G') { ghosts.push({ r, c, prevR: r, prevC: c, moveAt: 0, homeR: r, homeC: c, dir: randomPick(PAMP_DIRS), color: PAMP_GHOST_COLOR, wait: Number(def.ghostDelay || 0) + ghosts.length }); cells[c] = '.'; total += 1; }
         else if (cell === '.' || cell === 'o') total += 1;
       });
       grid.push(cells);
@@ -4464,11 +4463,14 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     return !pampuchIsWall(state, actor.r + dir.dr, actor.c + dir.dc);
   }
 
-  function pampuchMoveActor(state, actor, dir) {
+  function pampuchMoveActor(state, actor, dir, ts) {
     if (!dir || !pampuchCanMove(state, actor, dir)) return false;
+    actor.prevR = Number(actor.r || 0);
+    actor.prevC = Number(actor.c || 0);
     actor.r += dir.dr;
     actor.c += dir.dc;
     actor.dir = dir;
+    actor.moveAt = Number(ts || (typeof performance !== 'undefined' ? performance.now() : Date.now())) || 0;
     return true;
   }
 
@@ -4494,11 +4496,11 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     let playerFound = false;
     def.map.forEach((row, r) => String(row).split('').forEach((cell, c) => {
       if (cell === 'P' && !playerFound) {
-        state.player.r = r; state.player.c = c; state.player.dir = pampDir('right'); state.player.queued = pampDir('right'); playerFound = true;
+        state.player.r = r; state.player.c = c; state.player.prevR = r; state.player.prevC = c; state.player.moveAt = 0; state.player.dir = pampDir('right'); state.player.queued = pampDir('right'); playerFound = true;
       }
     }));
     state.ghosts.forEach((g, idx) => {
-      g.r = g.homeR; g.c = g.homeC; g.dir = randomPick(PAMP_DIRS); g.wait = 1 + idx;
+      g.r = g.homeR; g.c = g.homeC; g.prevR = g.homeR; g.prevC = g.homeC; g.moveAt = 0; g.dir = randomPick(PAMP_DIRS); g.wait = 1 + idx;
     });
     state.invuln = 1700;
     state.frightened = 0;
@@ -4656,10 +4658,10 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       btn.addEventListener('click', () => reset(Number(btn.dataset.pampuchLevel || 0) || 0));
     });
 
-    const stepGame = () => {
+    const stepGame = (stepTs) => {
       const p = state.player;
       if (p.queued && pampuchCanMove(state, p, p.queued)) p.dir = p.queued;
-      pampuchMoveActor(state, p, p.dir);
+      pampuchMoveActor(state, p, p.dir, stepTs);
       p.mouth = (Number(p.mouth || 0) + 1) % 6;
       state.steps += 1;
       pampuchHandlePoint(state);
@@ -4668,7 +4670,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       state.ghosts.forEach((g) => {
         if (g.wait > 0) { g.wait -= 1; return; }
         const dir = pampuchGhostChoice(state, g);
-        if (dir) pampuchMoveActor(state, g, dir);
+        if (dir) pampuchMoveActor(state, g, dir, stepTs);
       });
       if (pampuchCollideGhosts(state)) { end(); return; }
       if (state.points >= state.totalPoints) pampuchAdvanceLevel(state);
@@ -4680,6 +4682,21 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       const tile = Math.floor(Math.min((w - pad * 2) / state.cols, (h - pad * 2) / state.rows));
       const size = Math.max(14, tile || 14);
       return { w, h, tile: size, ox: Math.floor((w - state.cols * size) / 2), oy: Math.floor((h - state.rows * size) / 2) };
+    };
+
+    const actorDrawPos = (actor, m) => {
+      const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+      const fromR = Number.isFinite(Number(actor.prevR)) ? Number(actor.prevR) : Number(actor.r || 0);
+      const fromC = Number.isFinite(Number(actor.prevC)) ? Number(actor.prevC) : Number(actor.c || 0);
+      const toR = Number(actor.r || 0);
+      const toC = Number(actor.c || 0);
+      const moveAt = Number(actor.moveAt || 0) || 0;
+      const duration = Math.max(140, Number(state.tickMs || PAMP_BASE_TICK_MS) * .92);
+      const t = moveAt ? clamp((now - moveAt) / duration, 0, 1) : 1;
+      const ease = t * t * (3 - 2 * t);
+      const rr = fromR + (toR - fromR) * ease;
+      const cc = fromC + (toC - fromC) * ease;
+      return { x: m.ox + (cc + .5) * m.tile, y: m.oy + (rr + .5) * m.tile };
     };
 
     const drawGhost = (x, y, r, ghost, colors) => {
@@ -4765,8 +4782,9 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
           }
         }
       }
-      state.ghosts.forEach((g) => drawGhost(m.ox + (g.c + .5) * m.tile, m.oy + (g.r + .5) * m.tile, m.tile * .45, g, colors));
-      drawPlayer(m.ox + (state.player.c + .5) * m.tile, m.oy + (state.player.r + .5) * m.tile, m.tile * .48, colors);
+      state.ghosts.forEach((g) => { const gp = actorDrawPos(g, m); drawGhost(gp.x, gp.y, m.tile * .45, g, colors); });
+      const pp = actorDrawPos(state.player, m);
+      drawPlayer(pp.x, pp.y, m.tile * .48, colors);
       if (!state.running || state.paused || state.over) {
         ctx.save(); ctx.fillStyle = 'rgba(0,0,0,.18)'; ctx.fillRect(0, 0, m.w, m.h); ctx.restore();
       }
@@ -4787,7 +4805,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         let guard = 0;
         while (state.moveAcc >= tickMs && guard < 4) {
           state.moveAcc -= tickMs;
-          stepGame();
+          stepGame(ts);
           guard += 1;
           if (state.over) break;
         }
@@ -4862,7 +4880,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     const allHot = EXTRA_GAMES.length === 0;
     const completedOnlyGuard = typeof window.gamesRecordStat === 'function';
     return {
-      version: 'v.1.1 (738)',
+      version: 'v.1.1 (739)',
       ok: !missingMeta.length && !missingRenderer.length && allHot && completedOnlyGuard,
       totalGames: ids.length,
       coreGames: ids,
@@ -4877,7 +4895,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       themeBackground: true,
       touchGuard: true,
       notes: [
-        'Build 737 opravuje roční fond statistik: 164 platí jen pro rok 2025, další roky se počítají podle importu.',
+        'Build 739 ladí Pampucha na plynulejší pomalejší pohyb a Lodě na čistší mobilní layout bez šedých podkladů za tlačítky.',
         'Reálnou hratelnost a citlivost dotyku je potřeba potvrdit na mobilu.'
       ]
     };
