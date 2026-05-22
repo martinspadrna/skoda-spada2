@@ -1,3 +1,9 @@
+## v.1.5 (759)
+- Korekce → Frézky: AF je nově modré a AG zelené, AH zůstává oranžové; volné varianty používají tlumenější odstíny.
+- Korekce → Frézky: karta s volbou indexu je dotažená těsněji pod horní nadpis bez zbytečné volné plochy.
+- Korekce → přehled: „Frézky ve vývoji“ přejmenováno na „Frézky (nutno doladit)“.
+- Verze sjednocena na v.1.5 (759), cache na v1.5-759 a Supabase realtime kanál na rak-public-live-v759.
+
 ## v.1.5 (758)
 - Korekce: nadpisy strojů po rozkliknutí jsou centrované, včetně Frézek.
 - Přehled strojů v sekci Korekce je vycentrovaný a zůstává po jednom stroji na řádek.

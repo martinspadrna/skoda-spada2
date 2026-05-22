@@ -10555,7 +10555,7 @@ body.shipsGameOpen #games .gamesShellBackFloating{
   border-radius:12px !important;
 }
 
-/* v.1.5 (758): Korekce Frézky – jedna kalkulačka pro konicitu i fhβ. */
+/* v.1.5 (759): Korekce Frézky – jedna kalkulačka pro konicitu i fhβ. */
 .calcCorrectionFhbCard .calcCorrectionPresetGroup{
   padding-bottom:8px !important;
 }
@@ -10618,7 +10618,7 @@ body.shipsGameOpen #games .gamesShellBackFloating{
 }
 
 
-/* v.1.5 (758): Korekce – úplně nízký horní banner stroje, poslední pojistka po všech starších overridech. */
+/* v.1.5 (759): Korekce – úplně nízký horní banner stroje, poslední pojistka po všech starších overridech. */
 :is(#korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage.calcCorrectionPage > .headerBar.calcHeaderBar{
   display:flex !important;
   align-items:center !important;
@@ -10677,7 +10677,7 @@ body.shipsGameOpen #games .gamesShellBackFloating{
 }
 
 
-/* v.1.5 (758): Korekce – centrované nadpisy, nižší mezera a barevné volby indexů frézek. */
+/* v.1.5 (759): Korekce – centrované nadpisy, nižší mezera a barevné volby indexů frézek. */
 #kalkulacky .calcHomeSectionCorrections .calcHomeGrid{
   grid-template-columns:1fr !important;
   gap:7px !important;
@@ -10828,4 +10828,49 @@ body.lowEndDevice #korekce-frezky .calcFhbPresetBtn{
   backdrop-filter:none !important;
   -webkit-backdrop-filter:none !important;
   box-shadow:0 8px 18px rgba(0,0,0,.22) !important;
+}
+
+
+/* v.1.5 (759): Korekce Frézky – AF modře, AG zeleně a karta těsně pod nadpisem. */
+#korekce-frezky.page.calcPage.calcCorrectionPage > .headerBar.calcHeaderBar{
+  margin:6px 6px 0 !important;
+  padding:4px 6px !important;
+  min-height:36px !important;
+  height:36px !important;
+  max-height:36px !important;
+}
+#korekce-frezky.page.calcPage.calcCorrectionPage > .card.calcCorrectionFhbCard,
+#korekce-frezky.page.calcPage.calcCorrectionPage > .calcCorrectionFhbCard{
+  margin-top:2px !important;
+  padding-top:6px !important;
+}
+#korekce-frezky .calcCorrectionFhbCard .calcCorrectionEmptyTitle{
+  margin:0 0 3px !important;
+  padding:0 !important;
+  min-height:0 !important;
+}
+#korekce-frezky .calcCorrectionFhbCard .calcCorrectionPresetGroup{
+  margin-top:0 !important;
+  padding-top:4px !important;
+}
+#korekce-frezky .calcFhbPresetBtn .fhbIndexAf{
+  color:#82c8ff !important;
+  text-shadow:0 0 12px rgba(83,163,255,.40) !important;
+}
+#korekce-frezky .calcFhbPresetBtn .fhbIndexAg{
+  color:#80ffad !important;
+  text-shadow:0 0 12px rgba(93,225,137,.40) !important;
+}
+#korekce-frezky .calcFhbPresetBtn .fhbIndexAh{
+  color:#ffc173 !important;
+  text-shadow:0 0 12px rgba(255,178,86,.36) !important;
+}
+#korekce-frezky .calcFhbPresetBtn--volne .fhbIndexAf{
+  color:rgba(130,200,255,.72) !important;
+}
+#korekce-frezky .calcFhbPresetBtn--volne .fhbIndexAg{
+  color:rgba(128,255,173,.72) !important;
+}
+#kalkulacky .calcHomeSectionCorrections .calcTileText .calcDevBadge{
+  white-space:nowrap !important;
 }

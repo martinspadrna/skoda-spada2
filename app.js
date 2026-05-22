@@ -1,4 +1,4 @@
-// v.1.5 (758) – Korekce: centrované nadpisy a barevné indexy frézek.
+// v.1.5 (759) – Korekce: barvy AF/AG a dotažení mezery pod nadpisem.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;
