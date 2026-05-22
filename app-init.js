@@ -199,7 +199,7 @@ function updateRakExcelImportPreviewUi() {
   const scopeEl = document.getElementById('rakExcelImportScope');
   if (fileStatus) {
     fileStatus.textContent = preview
-      ? ('Načteno: ' + preview.fileName + ' · měsíců: ' + preview.monthKeys.length)
+      ? ('Načteno: ' + preview.fileName + ' · měsíčních listů: ' + preview.monthKeys.length)
       : 'Zatím není vybraný žádný Excel.';
   }
   if (monthSelect) {
@@ -259,7 +259,7 @@ async function buildRakExcelImportPreview(file) {
     const warn = imported && imported.warnings && imported.warnings.length ? ' · ' + imported.warnings.slice(0, 2).join(' / ') : '';
     setRakExcelImportStatus('Excel jsem načetl, ale nenašel jsem použitelný měsíc.' + warn, true);
   } else {
-    setRakExcelImportStatus('Excel načtený. Vyber celý rok/Excel nebo konkrétní měsíc a klikni na Načíst do rozpisů.', false);
+    setRakExcelImportStatus('Excel načtený. V seznamu jsou jen měsíční listy typu 01.2025; pomocné listy se přeskakují. Vyber celý rok nebo konkrétní měsíc.', false);
   }
   return app.excelImportPreview;
 }
@@ -316,9 +316,21 @@ async function performRakExcelImportFromPreview() {
 
   app.rotation = normalizeRotationData(app.rotation);
   if (selectedImportedMonth) app.selectedMonth = selectedImportedMonth;
-  if (!getAvailableYears(app.rotation).includes(parseInt(app.selectedYear, 10))) {
+
+  const importedYears = new Set(entries.map(([monthKey]) => {
+    const parsed = typeof parseMonthKey === 'function' ? parseMonthKey(monthKey) : null;
+    return parsed && parsed.year ? parsed.year : null;
+  }).filter(Boolean));
+  const selectedParsedMonth = selectedImportedMonth && typeof parseMonthKey === 'function' ? parseMonthKey(selectedImportedMonth) : null;
+  if (importedYears.size === 1) {
+    app.selectedYear = Array.from(importedYears)[0];
+  } else if (selectedParsedMonth && selectedParsedMonth.year) {
+    app.selectedYear = selectedParsedMonth.year;
+  } else if (!getAvailableYears(app.rotation).includes(parseInt(app.selectedYear, 10))) {
     app.selectedYear = getInitialSelectedYear(app.rotation);
   }
+  app.importYear = parseInt(app.selectedYear, 10) || app.importYear;
+  if (typeof syncYearControls === 'function') syncYearControls();
   saveRotationData();
 
   let onlineMessage = 'Online uložení se přeskočilo.';
@@ -369,26 +381,80 @@ function rakExcelNormalizeHeader(value) {
   return rakExcelCellText(value).toUpperCase().replace(/\s+/g, '').replace(/[–—-]/g, '');
 }
 
-function rakExcelDetectSection(row, headers) {
-  const normalizedHeaders = headers.map(rakExcelNormalizeHeader);
-  const hitColumns = [];
-  (Array.isArray(row) ? row : []).forEach((cell, index) => {
-    const text = rakExcelNormalizeHeader(cell);
-    if (!text) return;
-    normalizedHeaders.forEach((header, hIndex) => {
-      if (text === header || text.includes(header) || header.includes(text)) hitColumns.push({ column: index, machineIndex: hIndex });
+function rakExcelNormalizeLoose(value) {
+  return rakExcelCellText(value)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toUpperCase()
+    .replace(/\s+/g, '')
+    .replace(/[–—-]/g, '');
+}
+
+function rakExcelMonthKeyFromSheetName(sheetName, fallbackYear) {
+  const raw = rakExcelCellText(sheetName);
+  if (!raw) return '';
+  // Import rozpisů bere jen skutečné měsíční záložky. Měsíc/rok se nesmí brát z buněk,
+  // jinak se do výběru pletou hodnoty typu 1/10 nebo 6/10 ze souhrnů.
+  const m = raw.match(/^\s*(0?[1-9]|1[0-2])\s*[./\-]\s*(20\d{2}|\d{2})\s*$/);
+  if (!m) return '';
+  const month = parseInt(m[1], 10);
+  let year = parseInt(m[2], 10);
+  if (year < 100) year += 2000;
+  return (typeof monthKeyFromYearMonth === 'function') ? monthKeyFromYearMonth(year, month) : (String(month) + '/' + String(year).slice(-2));
+}
+
+function rakExcelLooksLikeMachineHeader(value, section) {
+  const text = rakExcelNormalizeLoose(value);
+  if (!text || text.length > 14) return false;
+  if (section === 'hard') return /^(TNKS|TBKR|TPKW)\d{2}$/.test(text);
+  if (section === 'soft') return /^(MSKC|MFKF)\d{2}$/.test(text);
+  return /^(TNKS|TBKR|TPKW|MSKC|MFKF)\d{2}$/.test(text);
+}
+
+function rakExcelFindSectionHeader(rows, section) {
+  const typeNeedle = section === 'hard' ? 'TVRD' : 'MEK';
+  const fallbackHeaders = section === 'hard' ? HARD_MACHINE_HEADERS : SOFT_MACHINE_HEADERS;
+  for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
+    const row = rows[rowIndex] || [];
+    const rowText = rakExcelNormalizeLoose(row.map(rakExcelCellText).filter(Boolean).join(' '));
+    if (!rowText || !rowText.includes('ROTACE') || !rowText.includes(typeNeedle)) continue;
+
+    let titleColumn = row.findIndex((cell) => {
+      const text = rakExcelNormalizeLoose(cell);
+      return text.includes('ROTACE') && text.includes(typeNeedle);
     });
-  });
-  const unique = [];
-  const seen = new Set();
-  hitColumns.forEach((hit) => {
-    const key = hit.machineIndex + ':' + hit.column;
-    if (!seen.has(key)) {
-      seen.add(key);
-      unique.push(hit);
+    if (titleColumn < 0) titleColumn = row.findIndex((cell) => rakExcelCellText(cell));
+    if (titleColumn < 0) titleColumn = 0;
+
+    const machineColumns = [];
+    for (let column = titleColumn + 1; column < row.length; column += 1) {
+      const label = rakExcelCellText(row[column]);
+      if (!label) {
+        if (machineColumns.length) break;
+        continue;
+      }
+      if (rakExcelLooksLikeMachineHeader(label, section)) {
+        machineColumns.push({ column, machineIndex: machineColumns.length, label });
+        continue;
+      }
+      if (machineColumns.length) break;
     }
-  });
-  return unique.length >= 2 ? unique.sort((a, b) => a.machineIndex - b.machineIndex) : null;
+
+    if (machineColumns.length >= 2) return { rowIndex, titleColumn, dateColumn: titleColumn, machineColumns };
+
+    const fallbackHits = [];
+    (Array.isArray(row) ? row : []).forEach((cell, column) => {
+      const text = rakExcelNormalizeLoose(cell);
+      fallbackHeaders.forEach((header, hIndex) => {
+        if (text && text === rakExcelNormalizeLoose(header)) fallbackHits.push({ column, machineIndex: hIndex, label: rakExcelCellText(cell) || header });
+      });
+    });
+    if (fallbackHits.length >= 2) {
+      fallbackHits.sort((a, b) => a.column - b.column);
+      return { rowIndex, titleColumn, dateColumn: Math.max(0, Math.min(...fallbackHits.map((x) => x.column)) - 1), machineColumns: fallbackHits };
+    }
+  }
+  return null;
 }
 
 function rakExcelParseDate(value, fallbackMonth, fallbackYear) {
@@ -404,7 +470,7 @@ function rakExcelParseDate(value, fallbackMonth, fallbackYear) {
     const shift = String(m[2] || '').trim().toUpperCase();
     return String(parseInt(m[1], 10)) + '.' + String(fallbackMonth) + '.' + (shift ? ' ' + shift : '');
   }
-  return text;
+  return '';
 }
 
 function rakExcelIsProbablyDateCell(value) {
@@ -430,22 +496,28 @@ function rakExcelFindDateColumn(rows, startRow, machineColumns) {
   return best;
 }
 
-function rakExcelCollectSectionRows(rows, headerRowIndex, machineColumns, fallbackMonth, fallbackYear) {
-  const dateColumn = rakExcelFindDateColumn(rows, headerRowIndex + 1, machineColumns);
+function rakExcelCollectSectionRows(rows, sectionInfo, fallbackMonth, fallbackYear, stopRowIndex) {
+  if (!sectionInfo || !Array.isArray(sectionInfo.machineColumns) || !sectionInfo.machineColumns.length) return [];
+  const machineColumns = sectionInfo.machineColumns;
+  const guessedDateColumn = Number.isFinite(sectionInfo.dateColumn) ? sectionInfo.dateColumn : Math.max(0, Math.min(...machineColumns.map((x) => x.column)) - 1);
+  const fallbackDateColumn = rakExcelFindDateColumn(rows, sectionInfo.rowIndex + 1, machineColumns);
+  const dateColumn = guessedDateColumn >= 0 ? guessedDateColumn : fallbackDateColumn;
   const out = [];
   const seen = new Set();
-  for (let r = headerRowIndex + 1; r < rows.length; r += 1) {
+  const end = Number.isFinite(stopRowIndex) && stopRowIndex > sectionInfo.rowIndex ? stopRowIndex : rows.length;
+
+  for (let r = sectionInfo.rowIndex + 1; r < end; r += 1) {
     const row = rows[r] || [];
-    if (rakExcelDetectSection(row, HARD_MACHINE_HEADERS) || rakExcelDetectSection(row, SOFT_MACHINE_HEADERS)) break;
     const rowText = rakExcelRowText(row);
     if (!rowText) {
       if (out.length) break;
       continue;
     }
-    const date = rakExcelParseDate(row[dateColumn], fallbackMonth, fallbackYear);
+    const date = rakExcelParseDate(row[dateColumn], fallbackMonth, fallbackYear) || rakExcelParseDate(row[fallbackDateColumn], fallbackMonth, fallbackYear);
     const cells = machineColumns.map((hit) => rakExcelCellText(row[hit.column]));
     if (!date && cells.every((v) => !v)) continue;
-    if (!rakExcelIsProbablyDateCell(date) && !/\d{1,2}\./.test(date) && cells.filter(Boolean).length < 2) continue;
+    if (!date && cells.filter(Boolean).length < 2) continue;
+    if (!date) continue;
     const key = date + '|' + cells.join('|');
     if (seen.has(key)) continue;
     seen.add(key);
@@ -454,61 +526,47 @@ function rakExcelCollectSectionRows(rows, headerRowIndex, machineColumns, fallba
   return out;
 }
 
-function rakExcelParseNotes(rows, fallbackMonth, fallbackYear, hardRows, softRows) {
-  const knownRowKeys = new Set([...(hardRows || []), ...(softRows || [])].map((row) => (typeof adminRotationDateKey === 'function') ? adminRotationDateKey(row.date) : String(row.date || '').toLowerCase()));
+function rakExcelFindAbsenceAnchor(rows) {
+  for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
+    const row = rows[rowIndex] || [];
+    for (let column = 0; column < row.length; column += 1) {
+      const text = rakExcelNormalizeLoose(row[column]);
+      if (!text) continue;
+      if (text.includes('DOVOLENA') || text.includes('NESCHOPENKA') || text.includes('NEPRITOMNOST')) {
+        return { rowIndex, column };
+      }
+    }
+  }
+  return null;
+}
+
+function rakExcelCollectAbsenceRows(rows, fallbackMonth, fallbackYear, stopRowIndex) {
+  const anchor = rakExcelFindAbsenceAnchor(rows);
+  if (!anchor) return [];
   const notes = [];
   const seen = new Set();
-  const absenceCodeRe = /(^|\s)(D|N|§|§\+D|NV|L|LEK|LÉK|OČR|OCR|DOV|DOVOLENÁ|DOVOLENA)(\s|$)/i;
-  rows.forEach((row) => {
-    const text = rakExcelRowText(row);
-    if (!text || !absenceCodeRe.test(text)) return;
-    const dateCell = (row || []).find((cell) => rakExcelIsProbablyDateCell(cell));
-    const date = rakExcelParseDate(dateCell || '', fallbackMonth, fallbackYear);
-    if (!date) return;
-    const dateKey = (typeof adminRotationDateKey === 'function') ? adminRotationDateKey(date) : String(date).toLowerCase();
-    if (!knownRowKeys.has(dateKey) && !/\d{1,2}\./.test(date)) return;
-    const parts = (row || []).map(rakExcelCellText).filter(Boolean);
-    const withoutDate = parts.filter((part) => part !== rakExcelCellText(dateCell));
-    const codePart = withoutDate.find((part) => absenceCodeRe.test(part)) || '';
-    const codeMatch = codePart.match(/(§\+D|DOVOLENÁ|DOVOLENA|LEK|LÉK|OČR|OCR|NV|D|N|§|L)/i);
-    const code = codeMatch ? codeMatch[1] : codePart;
-    let person = withoutDate.find((part) => part !== codePart && /[A-Za-zÁ-ž]/.test(part)) || '';
-    if (!person && withoutDate.length) person = withoutDate[0];
-    const note = { date, shift: '', person, code, text: [person, code].filter(Boolean).join(' ').trim() };
-    const key = [note.date, note.person, note.code, note.text].join('|').toLowerCase();
-    if (!seen.has(key) && note.person && note.code) {
-      seen.add(key);
-      notes.push(note);
+  const end = Number.isFinite(stopRowIndex) && stopRowIndex > anchor.rowIndex ? stopRowIndex : rows.length;
+  for (let r = anchor.rowIndex + 1; r < end; r += 1) {
+    const row = rows[r] || [];
+    const date = rakExcelParseDate(row[anchor.column], fallbackMonth, fallbackYear);
+    if (!date) continue;
+    const maxColumn = Math.min(row.length, anchor.column + 10);
+    for (let column = anchor.column + 1; column < maxColumn; column += 2) {
+      let person = rakExcelCellText(row[column]);
+      let code = rakExcelCellText(row[column + 1]);
+      if (!person && !code) continue;
+      if (/^jméno$/i.test(person) || /^nepř/i.test(person) || /^nepr/i.test(person)) continue;
+      if (!person || !code) continue;
+      if (typeof sanitizeAbsencePersonName === 'function') person = sanitizeAbsencePersonName(person) || person;
+      const note = { date, shift: '', person, code, text: [person, code].filter(Boolean).join(' ').trim() };
+      const key = [note.date, note.person, note.code].join('|').toLowerCase();
+      if (!seen.has(key)) {
+        seen.add(key);
+        notes.push(note);
+      }
     }
-  });
+  }
   return notes;
-}
-
-function rakExcelMonthFromSheetRows(sheetName, rows, fallbackYear) {
-  const fromName = normalizeExcelImportMonthKey(sheetName, fallbackYear);
-  if (/^\d{1,2}\/\d{2}$/.test(fromName)) return fromName;
-  for (let i = 0; i < Math.min(rows.length, 12); i += 1) {
-    const key = normalizeExcelImportMonthKey(rakExcelRowText(rows[i]), fallbackYear);
-    if (/^\d{1,2}\/\d{2}$/.test(key)) return key;
-  }
-  return '';
-}
-
-
-
-function rakExcelFindMonthKeyNearRows(sheetName, rows, rowIndex, sectionRows, fallbackYear) {
-  const directSheet = normalizeExcelImportMonthKey(sheetName, fallbackYear);
-  if (/^\d{1,2}\/\d{2}$/.test(directSheet)) return directSheet;
-  for (let i = Math.max(0, rowIndex - 10); i <= Math.min(rows.length - 1, rowIndex + 2); i += 1) {
-    const key = normalizeExcelImportMonthKey(rakExcelRowText(rows[i]), fallbackYear);
-    if (/^\d{1,2}\/\d{2}$/.test(key)) return key;
-  }
-  const firstDate = (sectionRows || []).map((row) => row && row.date).find(Boolean) || '';
-  const parsed = typeof parseDateToken === 'function' ? parseDateToken(firstDate) : null;
-  if (parsed && Number.isFinite(parsed.month)) {
-    return normalizeExcelImportMonthKey(String(parsed.month) + '/' + String(fallbackYear), fallbackYear);
-  }
-  return '';
 }
 
 function parseWorkbookFromSheetJS(workbook, options) {
@@ -516,60 +574,66 @@ function parseWorkbookFromSheetJS(workbook, options) {
   const fallbackYear = parseInt(opts.fallbackYear, 10) || app.importYear || app.selectedYear || new Date().getFullYear();
   const months = {};
   const warnings = [];
+  const skippedSheets = [];
   if (!workbook || !Array.isArray(workbook.SheetNames)) return { months, warnings };
 
   workbook.SheetNames.forEach((sheetName) => {
+    const monthKey = rakExcelMonthKeyFromSheetName(sheetName, fallbackYear);
+    if (!monthKey) {
+      skippedSheets.push(sheetName);
+      return;
+    }
     const sheet = workbook.Sheets[sheetName];
     if (!sheet || typeof XLSX === 'undefined') return;
     const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '', raw: false });
     if (!rows || !rows.length) return;
-    const baseMonthKey = rakExcelMonthFromSheetRows(sheetName, rows, fallbackYear);
-    const parsedByMonth = {};
-    const ensureMonth = (monthKey) => {
-      if (!monthKey) return null;
-      if (!parsedByMonth[monthKey]) {
-        parsedByMonth[monthKey] = {
-          hard: { title: 'Rotace tvrdota', machines: HARD_MACHINE_HEADERS.slice(), rows: [] },
-          soft: { title: 'Rotace měkota', machines: SOFT_MACHINE_HEADERS.slice(), rows: [] },
-          notes: []
-        };
-      }
-      return parsedByMonth[monthKey];
-    };
 
-    rows.forEach((row, index) => {
-      const hardCols = rakExcelDetectSection(row, HARD_MACHINE_HEADERS);
-      if (hardCols) {
-        const parsedBase = baseMonthKey && typeof parseMonthKey === 'function' ? parseMonthKey(baseMonthKey) : null;
-        const hardRows = rakExcelCollectSectionRows(rows, index, hardCols, parsedBase && parsedBase.month, fallbackYear);
-        const monthKey = baseMonthKey || rakExcelFindMonthKeyNearRows(sheetName, rows, index, hardRows, fallbackYear);
-        const target = ensureMonth(monthKey);
-        if (target && !target.hard.rows.length) target.hard.rows = hardRows;
-      }
-      const softCols = rakExcelDetectSection(row, SOFT_MACHINE_HEADERS);
-      if (softCols) {
-        const parsedBase = baseMonthKey && typeof parseMonthKey === 'function' ? parseMonthKey(baseMonthKey) : null;
-        const softRows = rakExcelCollectSectionRows(rows, index, softCols, parsedBase && parsedBase.month, fallbackYear);
-        const monthKey = baseMonthKey || rakExcelFindMonthKeyNearRows(sheetName, rows, index, softRows, fallbackYear);
-        const target = ensureMonth(monthKey);
-        if (target && !target.soft.rows.length) target.soft.rows = softRows;
-      }
-    });
+    const parsedKey = typeof parseMonthKey === 'function' ? parseMonthKey(monthKey) : null;
+    const month = parsedKey && parsedKey.month ? parsedKey.month : parseInt(String(monthKey).split('/')[0], 10);
+    const sheetYear = parsedKey && parsedKey.year ? parsedKey.year : fallbackYear;
+    const hardInfo = rakExcelFindSectionHeader(rows, 'hard');
+    const softInfo = rakExcelFindSectionHeader(rows, 'soft');
+    const hardRows = rakExcelCollectSectionRows(rows, hardInfo, month, sheetYear, softInfo && softInfo.rowIndex);
+    const softRows = rakExcelCollectSectionRows(rows, softInfo, month, sheetYear, null);
+    const notes = rakExcelCollectAbsenceRows(rows, month, sheetYear, softInfo && softInfo.rowIndex);
 
-    Object.entries(parsedByMonth).forEach(([monthKey, parsedMonth]) => {
-      const parsedKey = typeof parseMonthKey === 'function' ? parseMonthKey(monthKey) : null;
-      parsedMonth.notes = rakExcelParseNotes(rows, parsedKey && parsedKey.month, fallbackYear, parsedMonth.hard.rows, parsedMonth.soft.rows);
-      if (!parsedMonth.hard.rows.length && !parsedMonth.soft.rows.length) return;
-      const fallback = app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
-      months[monthKey] = normalizeMonthForImport(parsedMonth, fallback);
-    });
-
-    if (!Object.keys(parsedByMonth).length) {
-      warnings.push('List „' + sheetName + '“ jsem přeskočil – nenašel jsem měsíc nebo tabulky tvrdota/měkota.');
+    if (!hardRows.length && !softRows.length && !notes.length) {
+      warnings.push('List „' + sheetName + '“ je měsíční, ale nenašel jsem v něm tvrdotu, měkotu ani absence.');
+      return;
     }
+
+    const parsedMonth = {
+      hard: {
+        title: 'Rotace tvrdota',
+        machines: hardInfo && Array.isArray(hardInfo.machineColumns) ? hardInfo.machineColumns.map((hit) => hit.label || rakExcelCellText(rows[hardInfo.rowIndex] && rows[hardInfo.rowIndex][hit.column])).filter(Boolean) : HARD_MACHINE_HEADERS.slice(),
+        rows: hardRows
+      },
+      soft: {
+        title: 'Rotace měkota',
+        machines: softInfo && Array.isArray(softInfo.machineColumns) ? softInfo.machineColumns.map((hit) => hit.label || rakExcelCellText(rows[softInfo.rowIndex] && rows[softInfo.rowIndex][hit.column])).filter(Boolean) : SOFT_MACHINE_HEADERS.slice(),
+        rows: softRows
+      },
+      notes,
+      importMeta: {
+        source: 'excel',
+        sheetName,
+        monthKey,
+        month,
+        year: sheetYear,
+        hardRows: hardRows.length,
+        softRows: softRows.length,
+        absenceRows: notes.length
+      }
+    };
+    const fallback = app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
+    months[monthKey] = normalizeMonthForImport(parsedMonth, fallback);
   });
 
-  return { months, warnings };
+  if (skippedSheets.length) {
+    warnings.push('Přeskočené pomocné listy: ' + skippedSheets.slice(0, 6).join(', ') + (skippedSheets.length > 6 ? '…' : ''));
+  }
+
+  return { months, warnings, skippedSheets };
 }
 
 

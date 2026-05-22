@@ -1,4 +1,4 @@
-// v.1.1 (729) – opravený dvoukrokový import Excelu a funkční export ZIP buildu.
+// v.1.1 (731) – ověřený import Excelu 2025/2026, správné měsíce/roky pro rozpisy i statistiky.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

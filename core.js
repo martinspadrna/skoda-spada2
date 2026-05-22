@@ -1,6 +1,6 @@
 
 const APP_KEY = "rotace_kalkulacky_state_v123";
-const APP_VERSION = "v.1.1 (729)";
+const APP_VERSION = "v.1.1 (731)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-05-18-" + APP_VERSION + "-" + Date.now();
 
@@ -998,11 +998,17 @@ function normalizeMonthForImport(monthData, fallbackMonthData) {
   const incomingNotes = hasNotes ? normalizeNotesArray(monthData.notes) : null;
   const fallbackNotes = fallbackMonthData && Array.isArray(fallbackMonthData.notes) ? normalizeNotesArray(fallbackMonthData.notes) : [];
 
-  return {
+  const importMeta = (monthData && monthData.importMeta && typeof monthData.importMeta === 'object')
+    ? Object.assign({}, monthData.importMeta)
+    : ((fallbackMonthData && fallbackMonthData.importMeta && typeof fallbackMonthData.importMeta === 'object') ? Object.assign({}, fallbackMonthData.importMeta) : null);
+
+  const normalized = {
     hard: normalizeSection("hard", HARD_MACHINE_HEADERS),
     soft: normalizeSection("soft", SOFT_MACHINE_HEADERS),
     notes: incomingNotes !== null ? incomingNotes : fallbackNotes
   };
+  if (importMeta) normalized.importMeta = importMeta;
+  return normalized;
 }
 
 function normalizeRotationData(rotation) {

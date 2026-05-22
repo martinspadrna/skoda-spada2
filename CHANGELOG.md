@@ -1,3 +1,16 @@
+## v.1.1 (731)
+- Import Excelu ověřený proti souborům Rotace týmu 2025.xlsx i Rotace týmu 2026.xlsx. Parser bere jen měsíční listy pojmenované 01.2025 / 01/2025 / 01-2025 a pomocné listy Souhrn/Datumy se nepoužívají.
+- Po importu se rozpis uloží pod správný klíč měsíce a roku podle názvu listu, například 01.2026 -> 1/26. Rozpis i statistiky se po importu rovnou přepnou na rok importovaného Excelu.
+- Import si ukládá metainformaci o zdrojovém listu a počtech řádků tvrdoty, měkoty a absencí, aby šlo později dohledat, co se z Excelu načetlo.
+- Verze sjednocena na v.1.1 (731), cache na v1.1-731 a Supabase realtime kanál na rak-public-live-v731.
+
+## v.1.1 (730)
+- Import Excelu je doladěný podle reálného souboru Rotace týmu 2025.xlsx: měsíce se berou jen z názvů listů typu 01.2025 / 01/2025 / 01/25, takže už se nechytají falešné hodnoty jako 1/10 nebo 6/10 z pomocných tabulek.
+- Pomocné listy typu Souhrn a Datumy se při importu přeskočí; do rozpisů se čtou jen měsíční listy.
+- Parser nově hledá bloky podle nadpisů Rotace tvrdota, Rotace měkota a Dovolená/neschopenka, ne podle pevných řádků, takže zvládne rozdílný počet pracovních dnů v měsících.
+- Měkota přebírá skutečné názvy strojů z daného listu, takže zvládne i měsíc, kde je v Excelu místo MFKF06 jiný stroj, například MSKC02.
+- Verze sjednocena na v.1.1 (730), cache na v1.1-730 a Supabase realtime kanál na rak-public-live-v730.
+
 ## v.1.1 (729)
 - Opravený Export / import v administraci: tlačítka teď používají správné `data-admin-action`, takže export ZIP i import Excelu skutečně reagují na kliknutí.
 - Import Excelu je nově dvoukrokový: nejdřív se vybere soubor, appka ho načte, zobrazí nalezené měsíce v rozbalovacím menu a potom jde importovat celý načtený Excel/rok nebo jen vybraný měsíc.
