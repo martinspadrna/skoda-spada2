@@ -1,4 +1,4 @@
-// v.1.5 (759) – Korekce: barvy AF/AG a dotažení mezery pod nadpisem.
+// v.1.5 (760) – Korekce: odstranění mezery pod nadpisem a správné AF/AG barvy.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

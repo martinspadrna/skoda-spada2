@@ -10555,7 +10555,7 @@ body.shipsGameOpen #games .gamesShellBackFloating{
   border-radius:12px !important;
 }
 
-/* v.1.5 (759): Korekce Frézky – jedna kalkulačka pro konicitu i fhβ. */
+/* v.1.5 (760): Korekce Frézky – jedna kalkulačka pro konicitu i fhβ. */
 .calcCorrectionFhbCard .calcCorrectionPresetGroup{
   padding-bottom:8px !important;
 }
@@ -10618,7 +10618,7 @@ body.shipsGameOpen #games .gamesShellBackFloating{
 }
 
 
-/* v.1.5 (759): Korekce – úplně nízký horní banner stroje, poslední pojistka po všech starších overridech. */
+/* v.1.5 (760): Korekce – úplně nízký horní banner stroje, poslední pojistka po všech starších overridech. */
 :is(#korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage.calcCorrectionPage > .headerBar.calcHeaderBar{
   display:flex !important;
   align-items:center !important;
@@ -10677,7 +10677,7 @@ body.shipsGameOpen #games .gamesShellBackFloating{
 }
 
 
-/* v.1.5 (759): Korekce – centrované nadpisy, nižší mezera a barevné volby indexů frézek. */
+/* v.1.5 (760): Korekce – centrované nadpisy, nižší mezera a barevné volby indexů frézek. */
 #kalkulacky .calcHomeSectionCorrections .calcHomeGrid{
   grid-template-columns:1fr !important;
   gap:7px !important;
@@ -10831,7 +10831,7 @@ body.lowEndDevice #korekce-frezky .calcFhbPresetBtn{
 }
 
 
-/* v.1.5 (759): Korekce Frézky – AF modře, AG zeleně a karta těsně pod nadpisem. */
+/* v.1.5 (760): Korekce Frézky – AF modře, AG zeleně a karta těsně pod nadpisem. */
 #korekce-frezky.page.calcPage.calcCorrectionPage > .headerBar.calcHeaderBar{
   margin:6px 6px 0 !important;
   padding:4px 6px !important;
@@ -10873,4 +10873,51 @@ body.lowEndDevice #korekce-frezky .calcFhbPresetBtn{
 }
 #kalkulacky .calcHomeSectionCorrections .calcTileText .calcDevBadge{
   white-space:nowrap !important;
+}
+
+/* v.1.5 (760): Korekce Frézky – bez mezery pod nadpisem a AF/AG pozadí zleva modrá, zprava zelená. */
+:is(#korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage.calcCorrectionPage.active{
+  align-content:start !important;
+  align-items:start !important;
+  grid-auto-rows:max-content !important;
+  row-gap:0 !important;
+  gap:0 !important;
+}
+:is(#korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage.calcCorrectionPage > .headerBar.calcHeaderBar{
+  margin-bottom:0 !important;
+}
+:is(#korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage.calcCorrectionPage > .card,
+:is(#korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage.calcCorrectionPage > .calcPanel,
+:is(#korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage.calcCorrectionPage > .calcCorrectionFhbCard,
+:is(#korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage.calcCorrectionPage > .calcCorrectionEmptyCard{
+  margin-top:0 !important;
+}
+#korekce-frezky.page.calcPage.calcCorrectionPage > .card.calcCorrectionFhbCard,
+#korekce-frezky.page.calcPage.calcCorrectionPage > .calcCorrectionFhbCard{
+  margin-top:0 !important;
+  padding-top:6px !important;
+}
+#korekce-frezky .calcFhbPresetBtn--afag.calcFhbPresetBtn--lis{
+  background:linear-gradient(90deg, rgba(83,163,255,.34) 0%, rgba(83,163,255,.30) 49%, rgba(93,225,137,.30) 51%, rgba(93,225,137,.34) 100%), rgba(16,40,50,.34) !important;
+  border-color:rgba(113,202,210,.58) !important;
+  box-shadow:0 16px 38px rgba(0,0,0,.24), 0 0 24px rgba(75,154,255,.10), 0 0 24px rgba(91,220,130,.08), inset 0 1px 0 rgba(255,255,255,.14) !important;
+}
+#korekce-frezky .calcFhbPresetBtn--afag.calcFhbPresetBtn--volne{
+  background:linear-gradient(90deg, rgba(83,163,255,.18) 0%, rgba(83,163,255,.16) 49%, rgba(93,225,137,.16) 51%, rgba(93,225,137,.18) 100%), rgba(18,32,36,.30) !important;
+  border-color:rgba(132,176,180,.30) !important;
+  color:rgba(230,244,242,.84) !important;
+}
+#korekce-frezky .calcFhbPresetBtn .fhbIndexAf{
+  color:#82c8ff !important;
+  text-shadow:0 0 12px rgba(83,163,255,.40) !important;
+}
+#korekce-frezky .calcFhbPresetBtn .fhbIndexAg{
+  color:#80ffad !important;
+  text-shadow:0 0 12px rgba(93,225,137,.40) !important;
+}
+#korekce-frezky .calcFhbPresetBtn--volne .fhbIndexAf{
+  color:rgba(130,200,255,.72) !important;
+}
+#korekce-frezky .calcFhbPresetBtn--volne .fhbIndexAg{
+  color:rgba(128,255,173,.72) !important;
 }
