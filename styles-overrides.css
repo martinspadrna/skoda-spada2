@@ -10555,7 +10555,7 @@ body.shipsGameOpen #games .gamesShellBackFloating{
   border-radius:12px !important;
 }
 
-/* v.1.5 (760): Korekce Frézky – jedna kalkulačka pro konicitu i fhβ. */
+/* v.1.5 (762): Korekce Frézky – jedna kalkulačka pro konicitu i fhβ. */
 .calcCorrectionFhbCard .calcCorrectionPresetGroup{
   padding-bottom:8px !important;
 }
@@ -10618,7 +10618,7 @@ body.shipsGameOpen #games .gamesShellBackFloating{
 }
 
 
-/* v.1.5 (760): Korekce – úplně nízký horní banner stroje, poslední pojistka po všech starších overridech. */
+/* v.1.5 (762): Korekce – úplně nízký horní banner stroje, poslední pojistka po všech starších overridech. */
 :is(#korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage.calcCorrectionPage > .headerBar.calcHeaderBar{
   display:flex !important;
   align-items:center !important;
@@ -10677,7 +10677,7 @@ body.shipsGameOpen #games .gamesShellBackFloating{
 }
 
 
-/* v.1.5 (760): Korekce – centrované nadpisy, nižší mezera a barevné volby indexů frézek. */
+/* v.1.5 (762): Korekce – centrované nadpisy, nižší mezera a barevné volby indexů frézek. */
 #kalkulacky .calcHomeSectionCorrections .calcHomeGrid{
   grid-template-columns:1fr !important;
   gap:7px !important;
@@ -10831,7 +10831,7 @@ body.lowEndDevice #korekce-frezky .calcFhbPresetBtn{
 }
 
 
-/* v.1.5 (760): Korekce Frézky – AF modře, AG zeleně a karta těsně pod nadpisem. */
+/* v.1.5 (762): Korekce Frézky – AF modře, AG zeleně a karta těsně pod nadpisem. */
 #korekce-frezky.page.calcPage.calcCorrectionPage > .headerBar.calcHeaderBar{
   margin:6px 6px 0 !important;
   padding:4px 6px !important;
@@ -10875,7 +10875,7 @@ body.lowEndDevice #korekce-frezky .calcFhbPresetBtn{
   white-space:nowrap !important;
 }
 
-/* v.1.5 (760): Korekce Frézky – bez mezery pod nadpisem a AF/AG pozadí zleva modrá, zprava zelená. */
+/* v.1.5 (762): Korekce Frézky – bez mezery pod nadpisem a AF/AG pozadí zleva modrá, zprava zelená. */
 :is(#korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage.calcCorrectionPage.active{
   align-content:start !important;
   align-items:start !important;
@@ -10920,4 +10920,72 @@ body.lowEndDevice #korekce-frezky .calcFhbPresetBtn{
 }
 #korekce-frezky .calcFhbPresetBtn--volne .fhbIndexAg{
   color:rgba(128,255,173,.72) !important;
+}
+
+
+/* v.1.5 (762): Korekce Frézky – malá mezera pod nadpisem jako u Výpočtu kusů. */
+:is(#korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage.calcCorrectionPage.active{
+  align-content:start !important;
+  align-items:start !important;
+  grid-auto-rows:max-content !important;
+  row-gap:8px !important;
+  gap:8px !important;
+}
+:is(#korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage.calcCorrectionPage > .headerBar.calcHeaderBar{
+  margin-bottom:0 !important;
+}
+#korekce-frezky.page.calcPage.calcCorrectionPage > .card.calcCorrectionFhbCard,
+#korekce-frezky.page.calcPage.calcCorrectionPage > .calcCorrectionFhbCard{
+  margin-top:0 !important;
+}
+
+/* v.1.5 (762): Piškvorky – pod hrou se nesmí zobrazovat ani scrollovat stránka s ostatními hrami. */
+html:has(body.tttOpen){
+  height:100% !important;
+  overflow:hidden !important;
+  overscroll-behavior:none !important;
+}
+html body.tttOpen{
+  width:100% !important;
+  height:100dvh !important;
+  min-height:100dvh !important;
+  max-height:100dvh !important;
+  overflow:hidden !important;
+  overscroll-behavior:none !important;
+}
+html body.tttOpen .page{
+  visibility:hidden !important;
+  pointer-events:none !important;
+}
+html body.tttOpen .tttOverlay{
+  position:fixed !important;
+  inset:0 !important;
+  width:100vw !important;
+  height:100dvh !important;
+  min-height:100dvh !important;
+  max-height:100dvh !important;
+  z-index:10010 !important;
+  overflow:hidden !important;
+  overscroll-behavior:none !important;
+}
+html body.tttOpen .tttShell,
+html body.tttOpen .tttContent{
+  height:100dvh !important;
+  min-height:100dvh !important;
+  max-height:100dvh !important;
+  overflow:hidden !important;
+}
+html body.tttOpen .tttStartScreen{
+  overscroll-behavior:contain !important;
+}
+html body.tttOpen .tttOverlay::after{
+  content:"" !important;
+  position:fixed !important;
+  left:0 !important;
+  right:0 !important;
+  bottom:0 !important;
+  height:calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 18px) !important;
+  pointer-events:none !important;
+  z-index:1 !important;
+  background:linear-gradient(180deg, rgba(5,8,22,0), var(--rakBgBase, var(--bg, #050816)) 42%, var(--rakBgBase, var(--bg, #050816)) 100%) !important;
 }

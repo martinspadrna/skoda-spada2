@@ -269,6 +269,19 @@
           <div class="calcTileText">Brusy</div>
         </div>
       </div>
+      <div class="tile calcTile calcTileStack" data-action="page-pracka">
+        <div class="calcTileIcon calcTileIconLegacy" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="5" y="4" width="14" height="16" rx="2.4"></rect>
+          <path d="M8 7h.1M11 7h5"></path>
+          <circle cx="12" cy="14" r="4.2"></circle>
+          <path d="M9.4 14c.8-.7 1.7-.7 2.6 0s1.8.7 2.6 0"></path>
+        </svg>
+      </div>
+        <div>
+          <div class="calcTileText">Pračka</div>
+        </div>
+      </div>
     </div>
   </details>
 
@@ -747,19 +760,34 @@
     <div></div>
     <h3>Pračka</h3>
     <div class="calcHeaderActions">
-      <button class="resetBtn" data-action="reset-fields" data-reset-fields="p_kusy" data-reset-results="outP" title="Reset polí" aria-label="Reset polí">↻</button>
+      <button class="resetBtn" data-action="reset-fields" data-reset-fields="p_kusy,p_finish_davky,p_finish_davka" data-reset-results="outP,outPTime" title="Reset polí" aria-label="Reset polí">↻</button>
       <button class="calcCloseBtn" data-action="page-kalkulacky" title="Zpět na přehled kalkulaček" aria-label="Zpět na přehled kalkulaček">×</button>
     </div>
   </div>
 
-  <label>Hotovo kusů:</label>
-  <input id="p_kusy" type="number">
+  <div class="card calcInfoCard" id="prackaInfo"><div><b>Pračka</b></div><div class="smallText">Výroba kusu: 30 s · dávka 32 ks</div></div>
 
-  <div class="smallText smallText--mtNeg4 smallText--mb8">V případě opsání kusů z tryskače je potřeba od výsledku odečíst 10 kusů.</div>
+  <details class="brusDetails calcDetails calcPanel calcPanel--compact" open>
+    <summary><span class="calcSummaryTitle">Kolik ještě stihnu</span><span class="calcSummarySub">Do konce směny a přepočet na dávky</span></summary>
+    <div class="brusDetailsBody">
+      <label>Počet z počítadla</label>
+      <input id="p_kusy" type="number" autocomplete="off">
+      <button class="calcPrimaryBtn" data-action="calc-p">Spočítej kolik ještě stihnu</button>
+      <div class="card calcResultCard" id="outP"></div>
+    </div>
+  </details>
 
-  <button class="calcPrimaryBtn" data-action="calc-p">Spočítej kolik ještě stihnu</button>
-
-  <div class="card calcResultCard" id="outP"></div>
+  <details class="brusDetails calcDetails calcPanel calcPanel--compact">
+    <summary><span class="calcSummaryTitle">Kdy bude hotovo</span><span class="calcSummarySub">Zbývající dávky a rozdělaná dávka</span></summary>
+    <div class="brusDetailsBody">
+      <label>Počet zbývajících dávek</label>
+      <input id="p_finish_davky" type="number" autocomplete="off">
+      <label>Hotovo kusů z aktuální dávky</label>
+      <input id="p_finish_davka" type="number" autocomplete="off">
+      <button class="calcPrimaryBtn" data-action="calc-p-finish">Ukázat čas dokončení</button>
+      <div class="card calcResultCard" id="outPTime"></div>
+    </div>
+  </details>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

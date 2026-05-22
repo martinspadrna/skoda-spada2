@@ -153,15 +153,89 @@ function calcFFinish() {
   saveRotationData();
 }
 
+function findPrackaMachineSetting() {
+  const rows = Array.isArray(app && app.machineSettingsRows) ? app.machineSettingsRows : [];
+  return rows.find(row => {
+    const settings = parseBrusSettingsJson(row);
+    const key = String(row && row.machine_key ? row.machine_key : '').trim().toUpperCase();
+    const code = String(row && (row.machine_code || row.machine) ? (row.machine_code || row.machine) : (settings.machine || '')).trim().toUpperCase();
+    const category = String(row && row.category ? row.category : '').trim().toLowerCase();
+    const label = String(row && row.label ? row.label : '').trim().toLowerCase();
+    return key === 'TPKW01' || code === 'TPKW01' || category === 'pracka' || label === 'pračka' || label === 'pracka';
+  }) || null;
+}
+
+function getPrackaCycleSeconds() {
+  const setting = findPrackaMachineSetting();
+  const settings = parseBrusSettingsJson(setting);
+  const value = firstFilledNumber(
+    setting && setting.cycle_time,
+    setting && setting.speed,
+    settings.cycle_time,
+    30
+  );
+  return value > 0 ? value : 30;
+}
+
+function formatPrackaCycleSeconds(value) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return '30';
+  return num.toLocaleString('cs-CZ', { maximumFractionDigits: num % 1 ? 1 : 0, minimumFractionDigits: 0 });
+}
+
+function updatePrackaInfo() {
+  const el = document.getElementById('prackaInfo');
+  if (!el) return;
+  const pieceSec = getPrackaCycleSeconds();
+  setCalcOutputHtml(el, '<div><b>Pračka</b></div><div class="smallText">Výroba kusu: ' + escapeHtml(formatPrackaCycleSeconds(pieceSec)) + ' s · dávka 32 ks</div>', 'prackaInfo:' + pieceSec);
+}
+
 function calcP() {
+  updatePrackaInfo();
+  const pieceSec = getPrackaCycleSeconds();
   const sec = Math.max(0, (getShiftEnd(new Date()) - new Date()) / 1000);
-  const ks = Math.floor(sec / 30);
-  const hotovo = parseInt(document.getElementById("p_kusy").value) || 0;
-  const celkem = hotovo + ks;
+  const ks = Math.floor(sec / pieceSec);
+  const hotovo = parseInt(document.getElementById("p_kusy").value, 10) || 0;
+  const celkem = Math.max(0, hotovo) + ks;
   setCalcOutputHtml("outP", renderCalcResult("Pračka", [
     "Do konce směny ještě stihneš <b>" + formatCount(ks) + " ks</b> / " + formatDoses(ks) + " dávek.",
-    "Celkově budeš mít <b>" + formatCount(celkem) + " ks</b> / " + formatDoses(celkem) + " dávek."
-  ]), "outP");
+    "S počítadlem budeš mít <b>" + formatCount(celkem) + " ks</b> / " + formatDoses(celkem) + " dávek."
+  ], "Výroba kusu: " + formatPrackaCycleSeconds(pieceSec) + " s · dávka 32 ks"), "outP");
+  saveRotationData();
+}
+
+function refreshPrackaFromMachineSettings(source) {
+  try { updatePrackaInfo(); } catch (err) {}
+  const outPieces = document.getElementById('outP');
+  const outTime = document.getElementById('outPTime');
+  const hasPiecesResult = !!(outPieces && String(outPieces.textContent || '').trim());
+  const hasTimeResult = !!(outTime && String(outTime.textContent || '').trim());
+  try { if (hasPiecesResult && typeof calcP === 'function') calcP(); } catch (err) {}
+  try { if (hasTimeResult && typeof calcPFinish === 'function') calcPFinish(); } catch (err) {}
+}
+
+function calcPFinish() {
+  updatePrackaInfo();
+  const out = document.getElementById("outPTime");
+  if (!out) return;
+  const pieceSec = getPrackaCycleSeconds();
+  const batches = Math.max(0, parseInt(document.getElementById("p_finish_davky")?.value || "", 10) || 0);
+  const doneInBatch = Math.max(0, parseInt(document.getElementById("p_finish_davka")?.value || "", 10) || 0);
+  if (!batches) {
+    setCalcOutputHtml(out, "<div class='smallText'>Zadej počet zbývajících dávek.</div>", out.id || "calcEmpty");
+    return;
+  }
+  const targetPieces = batches * 32;
+  const remainingPieces = Math.max(0, targetPieces - doneInBatch);
+  const seconds = remainingPieces * pieceSec;
+  const now = new Date();
+  const finish = new Date(now.getTime() + seconds * 1000);
+  const partialNote = doneInBatch > 0
+    ? " · rozdělaná dávka má " + formatCount(doneInBatch) + " ks hotovo"
+    : "";
+  setCalcOutputHtml(out, renderCalcResult("Pračka", [
+    "Hotovo v <b>" + formatClockTime(finish) + "</b>"
+  ], "Za " + formatDuration(seconds * 1000) + " · zbývá " + formatCount(remainingPieces) + " ks / " + formatDoses(remainingPieces) + " dávek · " + formatPrackaCycleSeconds(pieceSec) + " s/ks" + partialNote), out.id || "outPTime");
   saveRotationData();
 }
 
@@ -898,12 +972,135 @@ function formatCalcDecimalWhole(value) {
   return value.toLocaleString('cs-CZ', { maximumFractionDigits: 0, minimumFractionDigits: 0 });
 }
 
+const FHB_TARGET_PRESET_DEFAULTS = [
+  { key: 'afag-lis', label: 'AF/AG lis', left: 50, right: 70 },
+  { key: 'ah-lis', label: 'AH lis', left: 20, right: 80 },
+  { key: 'afag-volne', label: 'AF/AG volné', left: -5, right: 10 },
+  { key: 'ah-volne', label: 'AH volné', left: 10, right: 25 }
+];
+
+function normalizeFhbTargetKey(key) {
+  return String(key || '').trim().toLowerCase();
+}
+
+function getDefaultFhbTargetPresets() {
+  return FHB_TARGET_PRESET_DEFAULTS.map(item => Object.assign({}, item));
+}
+
+function findFhbTargetSetting(key) {
+  const targetKey = normalizeFhbTargetKey(key);
+  if (!targetKey) return null;
+  const rows = Array.isArray(app && app.machineSettingsRows) ? app.machineSettingsRows : [];
+  return rows.find(row => {
+    const settings = parseBrusSettingsJson(row);
+    const category = String(row && row.category ? row.category : '').trim().toLowerCase();
+    const machineCode = String(row && (row.machine_code || row.machine) ? (row.machine_code || row.machine) : (settings.machine || '')).trim().toUpperCase();
+    const rowKey = normalizeFhbTargetKey(settings.key || row.machine_index || row.index || String(row.machine_key || '').replace(/^FHB_TARGET[_-]/i, ''));
+    return (category === 'fhb_target' || machineCode === 'FHB') && rowKey === targetKey;
+  }) || null;
+}
+
+function getFhbTargetPreset(key, fallback) {
+  const targetKey = normalizeFhbTargetKey(key);
+  const defaults = getDefaultFhbTargetPresets();
+  const base = defaults.find(item => item.key === targetKey) || fallback || { key: targetKey, label: key || '', left: NaN, right: NaN };
+  const row = findFhbTargetSetting(targetKey);
+  const settings = parseBrusSettingsJson(row);
+  const left = firstFilledNumber(
+    settings.target_left,
+    settings.left,
+    row && row.target_left,
+    base.left
+  );
+  const right = firstFilledNumber(
+    settings.target_right,
+    settings.right,
+    row && row.target_right,
+    base.right
+  );
+  return {
+    key: targetKey || base.key,
+    label: String(settings.label || (row && row.label) || base.label || key || '').trim(),
+    left,
+    right
+  };
+}
+
+function getAllFhbTargetPresets() {
+  return getDefaultFhbTargetPresets().map(item => getFhbTargetPreset(item.key, item));
+}
+
+function updateFhbPresetButtons() {
+  document.querySelectorAll('.calcFhbPresetBtn').forEach((button) => {
+    const key = String(button.dataset.fhbKey || '').trim();
+    const preset = getFhbTargetPreset(key, {
+      key,
+      label: String(button.dataset.fhbLabel || key || ''),
+      left: Number(String(button.dataset.fhbLeft || '').replace(',', '.')),
+      right: Number(String(button.dataset.fhbRight || '').replace(',', '.'))
+    });
+    if (!preset || !Number.isFinite(preset.left) || !Number.isFinite(preset.right)) return;
+    button.dataset.fhbLabel = preset.label;
+    button.dataset.fhbLeft = String(preset.left);
+    button.dataset.fhbRight = String(preset.right);
+    const valueSpan = button.querySelector('span:last-child');
+    if (valueSpan) valueSpan.textContent = 'L ' + formatCalcDecimalWhole(preset.left) + ' / P ' + formatCalcDecimalWhole(preset.right);
+  });
+}
+
+function refreshFhbSettingsUi(options) {
+  const opts = options || {};
+  updateFhbPresetButtons();
+  const keyInput = document.getElementById('fhb_target_key');
+  const key = String(keyInput && keyInput.value ? keyInput.value : '').trim();
+  if (!key) return;
+  const btn = Array.from(document.querySelectorAll('.calcFhbPresetBtn')).find((item) => String(item.dataset.fhbKey || '') === key) || null;
+  const preset = getFhbTargetPreset(key, btn ? {
+    key,
+    label: String(btn.dataset.fhbLabel || key || ''),
+    left: Number(String(btn.dataset.fhbLeft || '').replace(',', '.')),
+    right: Number(String(btn.dataset.fhbRight || '').replace(',', '.'))
+  } : { key, label: key, left: NaN, right: NaN });
+
+  if (!preset || !Number.isFinite(preset.left) || !Number.isFinite(preset.right)) return;
+
+  const leftInput = document.getElementById('fhb_target_left');
+  const rightInput = document.getElementById('fhb_target_right');
+  if (leftInput) leftInput.value = String(preset.left);
+  if (rightInput) rightInput.value = String(preset.right);
+
+  document.querySelectorAll('.calcFhbPresetBtn').forEach((item) => {
+    const active = String(item.dataset.fhbKey || '') === key;
+    item.classList.toggle('activeChoice', active);
+    item.classList.toggle('activeFhbPreset', active);
+    item.setAttribute('aria-pressed', active ? 'true' : 'false');
+  });
+
+  const out = document.getElementById('fhbResult');
+  const hasMeasuredPair = (Number.isFinite(readCalcDecimal('fhb_c1_left')) && Number.isFinite(readCalcDecimal('fhb_c1_right')))
+    || (Number.isFinite(readCalcDecimal('fhb_c2_left')) && Number.isFinite(readCalcDecimal('fhb_c2_right')));
+  if (opts.recalculate && hasMeasuredPair && out && String(out.textContent || '').trim()) {
+    calcFrezkyFhbCorrection();
+    return;
+  }
+  if (out && /Vybráno:/i.test(String(out.textContent || ''))) {
+    setCalcOutputHtml(out, "<div class='calcResultMain'>Vybráno: <b>" + escapeHtml(preset.label || key) + "</b></div>", 'fhbPresetRefresh:' + key + ':' + preset.left + ':' + preset.right);
+  }
+}
+
 function setFhbTargetPreset(button) {
   if (!button) return;
+  updateFhbPresetButtons();
   const key = String(button.dataset.fhbKey || '').trim();
-  const label = String(button.dataset.fhbLabel || '').trim();
-  const left = Number(String(button.dataset.fhbLeft || '').replace(',', '.'));
-  const right = Number(String(button.dataset.fhbRight || '').replace(',', '.'));
+  const preset = getFhbTargetPreset(key, {
+    key,
+    label: String(button.dataset.fhbLabel || key || ''),
+    left: Number(String(button.dataset.fhbLeft || '').replace(',', '.')),
+    right: Number(String(button.dataset.fhbRight || '').replace(',', '.'))
+  });
+  const label = String(preset && preset.label ? preset.label : button.dataset.fhbLabel || '').trim();
+  const left = Number(preset && preset.left);
+  const right = Number(preset && preset.right);
   if (!key || !Number.isFinite(left) || !Number.isFinite(right)) return;
 
   const keyInput = document.getElementById('fhb_target_key');
@@ -1112,6 +1309,16 @@ function calcFrezkyFhbCorrection() {
   html += "<div class='calcResultTitle calcResultTitle--small'>Naměřeno</div>" + measuredLine;
 
   setCalcOutputHtml(out, html, 'fhbBestSingleResult:' + selected.type + ':' + [targetLeft, targetRight, currentTaperCorr, currentShiftCorr, centerScore, spreadScore, taperDelta, shiftDelta, selected.metrics.score].join('|'));
+}
+
+if (typeof window !== 'undefined' && !window.__rakMachineSettingsUiRefreshBound) {
+  window.__rakMachineSettingsUiRefreshBound = true;
+  try {
+    window.addEventListener('rak:machine-settings-updated', () => {
+      try { if (typeof refreshPrackaFromMachineSettings === 'function') refreshPrackaFromMachineSettings('machine-settings-event'); } catch (err) {}
+      try { if (typeof refreshFhbSettingsUi === 'function') refreshFhbSettingsUi({ source: 'machine-settings-event', recalculate: true }); } catch (err) {}
+    });
+  } catch (err) {}
 }
 
 function getFhbSpreadRelationText(spreadError, deadband) {

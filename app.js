@@ -1,4 +1,4 @@
-// v.1.5 (760) – Korekce: odstranění mezery pod nadpisem a správné AF/AG barvy.
+// v.1.5 (764) – Machine settings realtime refresh pro Pračku a korekce fhβ.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;
@@ -101,6 +101,7 @@ function installDelegatedAppActions() {
     'page-soustruhy': () => showPage('soustruhy'),
     'page-frezky': () => showPage('frezky'),
     'page-brusy': () => showPage('brusy'),
+    'page-pracka': () => showPage('pracka'),
     'page-korekce-soustruhy': () => showPage('korekce-soustruhy'),
     'page-korekce-frezky': () => showPage('korekce-frezky'),
     'page-korekce-brusy': () => showPage('korekce-brusy'),
@@ -134,6 +135,7 @@ function installDelegatedAppActions() {
     'calc-brusy': () => calcBrusy(),
     'calc-brusy-finish': () => calcBrusyFinish(),
     'calc-p': () => calcP(),
+    'calc-p-finish': () => calcPFinish(),
     'set-machine': (el) => setMachine(String(el.dataset.machine || '')),
     'set-prog': (el) => setProg(String(el.dataset.prog || '')),
     'reset-fields': (el) => {
@@ -1132,6 +1134,7 @@ function getPhaseTenActionHealth() {
       'page-soustruhy',
       'page-frezky',
       'page-brusy',
+      'page-pracka',
       'page-korekce-soustruhy',
       'page-korekce-frezky',
       'page-korekce-brusy',
@@ -1139,6 +1142,8 @@ function getPhaseTenActionHealth() {
       'set-fhb-target-preset',
       'calc-brusy',
       'calc-brusy-finish',
+      'calc-p',
+      'calc-p-finish',
       'reset-fields',
       'open-game',
       'calendar-open'
@@ -1250,6 +1255,8 @@ function getPhaseTenFormHealth() {
       'b_finish_davka',
       'b_finish_orovnani',
       'p_kusy',
+      'p_finish_davky',
+      'p_finish_davka',
     ];
     const requiredSelects = ['statsYearSelect', 'monthYearSelect', 'monthSelect'];
     const requiredButtons = ['importBtn', 'exportBtn'];
@@ -1268,6 +1275,8 @@ function getPhaseTenFormHealth() {
       'calc-brusy',
       'calc-brusy-finish',
       'calc-p',
+      'calc-p-finish',
+      'page-pracka',
       'reset-soustruhy',
       'reset-fields',
       'page-kalkulacky'
@@ -2368,6 +2377,22 @@ function installPwaAndConnectivityHooks() {
     });
   };
 
+  const refreshMachineSettingsUi = (source) => {
+    try {
+      if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+        window.dispatchEvent(new CustomEvent('rak:machine-settings-updated', { detail: { source: source || 'live-refresh', at: Date.now() } }));
+      }
+    } catch (err) {}
+    try {
+      if (typeof refreshPrackaFromMachineSettings === 'function') refreshPrackaFromMachineSettings(source || 'live-refresh');
+      else if (typeof updatePrackaInfo === 'function') updatePrackaInfo();
+    } catch (err) {}
+    try {
+      if (typeof refreshFhbSettingsUi === 'function') refreshFhbSettingsUi({ source: source || 'live-refresh', recalculate: true });
+      else if (typeof updateFhbPresetButtons === 'function') updateFhbPresetButtons();
+    } catch (err) {}
+  };
+
   const runLiveRefresh = async (reason, opts = {}) => {
     const force = !!(opts && opts.force);
     if (!navigator.onLine && !force) return 'offline';
@@ -2397,6 +2422,7 @@ function installPwaAndConnectivityHooks() {
             app.machineSettingsRows = machineRows;
             if (typeof renderBrusy === 'function') renderBrusy();
             if (typeof renderSoustruhy === 'function') renderSoustruhy();
+            refreshMachineSettingsUi('live-refresh:' + String(reason || 'sync'));
           }
         }
         if (navigator.onLine && typeof gamesRefreshRemoteLeaderboards === 'function') {

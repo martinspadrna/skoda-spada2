@@ -342,7 +342,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v760');
+      const channel = client.channel('rak-public-live-v764');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -861,13 +861,13 @@
         cycle_time: cycleTime,
         dress_time: dressTime,
         dress_count: Number.isFinite(dressCount) ? dressCount : null,
-        settings_json: {
+        settings_json: Object.assign({}, settings, {
           machine: machineCode,
           index: machineIndex,
           cycle_time: row && row.cycle_time !== '' && row.cycle_time !== null && row.cycle_time !== undefined ? String(row.cycle_time) : (row && row.speed !== '' && row.speed !== null && row.speed !== undefined ? String(row.speed) : ''),
           dress_time: row && row.dress_time !== '' && row.dress_time !== null && row.dress_time !== undefined ? String(row.dress_time) : '',
           dress_count: row && row.dress_count !== '' && row.dress_count !== null && row.dress_count !== undefined ? String(row.dress_count) : ''
-        },
+        }),
         updated_at: new Date().toISOString()
       };
       if (!payload.machine_key || !payload.label) continue;
@@ -1787,7 +1787,11 @@
   function defaultMachineSettingsRows() {
     return [
       { machine_key: 'FREZKY', machine_code: 'FREZKY', machine_index: '', label: 'Frezky', category: 'frezka', cycle_time: null, dress_time: null, dress_count: null, settings_json: { machine: 'FREZKY', index: '', cycle_time: '', dress_time: '', dress_count: '' } },
-      { machine_key: 'TPKW01', machine_code: 'TPKW01', machine_index: '', label: 'Pračka', category: 'pracka', cycle_time: null, dress_time: null, dress_count: null, settings_json: { machine: 'TPKW01', index: '', cycle_time: '', dress_time: '', dress_count: '' } },
+      { machine_key: 'TPKW01', machine_code: 'TPKW01', machine_index: '', label: 'Pračka', category: 'pracka', cycle_time: 30, dress_time: null, dress_count: null, settings_json: { machine: 'TPKW01', index: '', cycle_time: '30', dress_time: '', dress_count: '' } },
+      { machine_key: 'FHB_TARGET_afag-lis', machine_code: 'FHB', machine_index: 'afag-lis', label: 'AF/AG lis', category: 'fhb_target', cycle_time: null, dress_time: null, dress_count: null, settings_json: { machine: 'FHB', index: 'afag-lis', type: 'fhb_target', key: 'afag-lis', label: 'AF/AG lis', target_left: '50', target_right: '70' } },
+      { machine_key: 'FHB_TARGET_ah-lis', machine_code: 'FHB', machine_index: 'ah-lis', label: 'AH lis', category: 'fhb_target', cycle_time: null, dress_time: null, dress_count: null, settings_json: { machine: 'FHB', index: 'ah-lis', type: 'fhb_target', key: 'ah-lis', label: 'AH lis', target_left: '20', target_right: '80' } },
+      { machine_key: 'FHB_TARGET_afag-volne', machine_code: 'FHB', machine_index: 'afag-volne', label: 'AF/AG volné', category: 'fhb_target', cycle_time: null, dress_time: null, dress_count: null, settings_json: { machine: 'FHB', index: 'afag-volne', type: 'fhb_target', key: 'afag-volne', label: 'AF/AG volné', target_left: '-5', target_right: '10' } },
+      { machine_key: 'FHB_TARGET_ah-volne', machine_code: 'FHB', machine_index: 'ah-volne', label: 'AH volné', category: 'fhb_target', cycle_time: null, dress_time: null, dress_count: null, settings_json: { machine: 'FHB', index: 'ah-volne', type: 'fhb_target', key: 'ah-volne', label: 'AH volné', target_left: '10', target_right: '25' } },
       { machine_key: 'TBKR01-AD', machine_code: 'TBKR01', machine_index: 'AD', label: 'TBKR01-AD', category: 'brus', cycle_time: 58.2, dress_time: 323, dress_count: 59, settings_json: { machine: 'TBKR01', index: 'AD', cycle_time: '58.2', dress_time: '323', dress_count: '59' } },
       { machine_key: 'TBKR01-AE', machine_code: 'TBKR01', machine_index: 'AE', label: 'TBKR01-AE', category: 'brus', cycle_time: 57.0, dress_time: 240, dress_count: 58, settings_json: { machine: 'TBKR01', index: 'AE', cycle_time: '57.0', dress_time: '240', dress_count: '58' } },
       { machine_key: 'TBKR01-AH', machine_code: 'TBKR01', machine_index: 'AH', label: 'TBKR01-AH', category: 'brus', cycle_time: 66.0, dress_time: 400, dress_count: 87, settings_json: { machine: 'TBKR01', index: 'AH', cycle_time: '66.0', dress_time: '400', dress_count: '87' } },

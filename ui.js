@@ -709,6 +709,57 @@ html[data-lightweight="1"] body.tttOpen .tttOverlay .tttBoardWrap{
   -webkit-backdrop-filter:none !important;
   backdrop-filter:none !important;
 }
+
+/* v.1.5 (764): Piškvorky – za spodní lištou nesmí být vidět ani scrollovat jiná stránka. */
+html:has(body.tttOpen){
+  height:100% !important;
+  overflow:hidden !important;
+  overscroll-behavior:none !important;
+}
+html body.tttOpen{
+  width:100% !important;
+  height:100dvh !important;
+  min-height:100dvh !important;
+  max-height:100dvh !important;
+  overflow:hidden !important;
+  overscroll-behavior:none !important;
+}
+html body.tttOpen .page{
+  visibility:hidden !important;
+  pointer-events:none !important;
+}
+html body.tttOpen .tttOverlay{
+  position:fixed !important;
+  inset:0 !important;
+  width:100vw !important;
+  height:100dvh !important;
+  min-height:100dvh !important;
+  max-height:100dvh !important;
+  z-index:10010 !important;
+  overflow:hidden !important;
+  overscroll-behavior:none !important;
+}
+html body.tttOpen .tttShell,
+html body.tttOpen .tttContent{
+  height:100dvh !important;
+  min-height:100dvh !important;
+  max-height:100dvh !important;
+  overflow:hidden !important;
+}
+html body.tttOpen .tttStartScreen{
+  overscroll-behavior:contain !important;
+}
+html body.tttOpen .tttOverlay::after{
+  content:"" !important;
+  position:fixed !important;
+  left:0 !important;
+  right:0 !important;
+  bottom:0 !important;
+  height:calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 18px) !important;
+  pointer-events:none !important;
+  z-index:1 !important;
+  background:linear-gradient(180deg, rgba(5,8,22,0), var(--rakBgBase, var(--bg, #050816)) 42%, var(--rakBgBase, var(--bg, #050816)) 100%) !important;
+}
 `;
     if (existing) {
       if (existing.textContent !== css) existing.textContent = css;
@@ -4284,12 +4335,15 @@ function renderGamesAppearanceStatus() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText || 'v.1.5 (760)',
+      range: versionText || 'v.1.5 (764)',
       title: 'Přechod na řadu 1.5',
       lines: [
         'Korekce jsou oddělené od Výpočtu kusů; Frézky jsou označené jako nutné doladit.',
-        'Frézky → konicita a fhβ jsou v jedné kalkulačce; výstup přednostně vybere jednu nejlepší korekci a kombinaci doporučí až když je potřeba.',
-        'Korekce mají kompaktnější centrované nadpisy; Frézky mají volbu indexu bez zbytečné mezery a AF/AG pozadí správně modrá vlevo, zelená vpravo.',
+        'Výpočet kusů má Pračku s časem výroby nastavitelným v administraci, přepočtem na dávky po 32 ks a dokončením podle rozdělané dávky.',
+        'Frézky → konicita a fhβ jsou v jedné kalkulačce; středy fhβ se dají měnit v administraci a výstup přednostně vybere jednu nejlepší korekci.',
+        'Online změny strojních nastavení se po Supabase syncu promítají rovnou do otevřené Pračky i korekcí frézky.',
+        'Piškvorky při otevření hry uzamykají pozadí, aby pod spodní lištou nebyly vidět ani scrollovat ostatní hry.',
+        'Korekce mají kompaktnější centrované nadpisy; Frézky mají volbu indexu s malou mezerou jako u Výpočtu kusů a AF/AG pozadí správně modrá vlevo, zelená vpravo.',
         'Sekce O aplikaci se průběžně drží stručná a aktualizovaná podle aktuálních buildů.'
       ]
     },
@@ -4941,14 +4995,50 @@ function buildAdminAbsenceSummaryHtml(notesRows) {
   return html;
 }
 
+function getAdminFhbTargetRows() {
+  if (typeof getAllFhbTargetPresets === 'function') {
+    return getAllFhbTargetPresets();
+  }
+  return [
+    { key: 'afag-lis', label: 'AF/AG lis', left: 50, right: 70 },
+    { key: 'ah-lis', label: 'AH lis', left: 20, right: 80 },
+    { key: 'afag-volne', label: 'AF/AG volné', left: -5, right: 10 },
+    { key: 'ah-volne', label: 'AH volné', left: 10, right: 25 }
+  ];
+}
+
+function buildAdminFhbTargetSettingsHtml() {
+  const rows = getAdminFhbTargetRows();
+  const rowsHtml = rows.map((row) => {
+    const key = String(row.key || '').trim();
+    const label = String(row.label || key || '').trim();
+    return [
+      '<tr data-fhb-target-row="' + escapeHtml(key) + '">',
+      '  <td><input class="appMenuInlineInput" data-fhb-target-field="label" value="' + escapeHtml(label) + '" readonly></td>',
+      '  <td><input class="appMenuInlineInput" data-fhb-target-field="left" value="' + escapeHtml(String(row.left ?? '')) + '" inputmode="decimal"></td>',
+      '  <td><input class="appMenuInlineInput" data-fhb-target-field="right" value="' + escapeHtml(String(row.right ?? '')) + '" inputmode="decimal"></td>',
+      '</tr>'
+    ].join('');
+  }).join('');
+  return [
+    '<div class="tableWrap appMenuTableWrap uMt12">',
+    '  <div class="smallText">Korekce frézky · středy fhβ</div>',
+    '  <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense appMenuAdminFhbTargetTable">',
+    '    <thead><tr><th>Index</th><th>Levá</th><th>Pravá</th></tr></thead>',
+    '    <tbody>' + rowsHtml + '</tbody>',
+    '  </table>',
+    '</div>'
+  ].join('');
+}
+
 function buildAdminMachineSettingsTableHtml() {
   const rows = Array.isArray(app.machineSettingsRows) ? app.machineSettingsRows : [];
-  const machineRows = rows.filter(row => String(row && row.category ? row.category : '').trim() !== 'brus');
+  const machineRows = rows.filter(row => { const cat = String(row && row.category ? row.category : '').trim(); return cat !== 'brus' && cat !== 'fhb_target'; });
   const brusRows = rows.filter(row => String(row && row.category ? row.category : '').trim() === 'brus');
 
   const machineDefaults = machineRows.length ? machineRows : [
     { machine_key: 'FREZKY', machine_code: 'FREZKY', machine_index: '', label: 'Frezky', category: 'frezka', cycle_time: '', settings_json: { machine: 'FREZKY', index: '', cycle_time: '' } },
-    { machine_key: 'TPKW01', machine_code: 'TPKW01', machine_index: '', label: 'Pračka', category: 'pracka', cycle_time: '', settings_json: { machine: 'TPKW01', index: '', cycle_time: '' } }
+    { machine_key: 'TPKW01', machine_code: 'TPKW01', machine_index: '', label: 'Pračka', category: 'pracka', cycle_time: '30', settings_json: { machine: 'TPKW01', index: '', cycle_time: '30' } }
   ];
 
   const brusDefaults = brusRows.length ? brusRows : [
@@ -4997,7 +5087,7 @@ function buildAdminMachineSettingsTableHtml() {
   return [
     '<div class="appMenuSubSection" id="adminMachinesSection">',
     '  <div class="appMenuSubTitle">Nastavení strojů</div>',
-    '  <div class="appMenuText">Frezky a pračka mají jen čas výroby kola. Brusky mají stroj, index, čas výroby kola, čas orovnání a počet kusů po orovnání.</div>',
+    '  <div class="appMenuText">Frezky a pračka mají jen čas výroby kola. Brusky mají stroj, index, čas výroby kola, čas orovnání a počet kusů po orovnání. Níž upravíš i středy fhβ pro frézky.</div>',
     '  <div class="tableWrap appMenuTableWrap">',
     '    <div class="smallText">Frezky a pračka</div>',
     '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense">',
@@ -5012,6 +5102,7 @@ function buildAdminMachineSettingsTableHtml() {
     '      <tbody>' + brusRowsHtml + '</tbody>',
     '    </table>',
     '  </div>',
+    buildAdminFhbTargetSettingsHtml(),
     '</div>'
   ].join('');
 }
@@ -5112,6 +5203,26 @@ function readAdminMachineSettingsFromDom() {
       dress_time,
       dress_count,
       settings_json: { machine: machine_code, index: machine_index, cycle_time, dress_time, dress_count }
+    });
+  });
+  document.querySelectorAll('#appMenuBody tr[data-fhb-target-row]').forEach((tr) => {
+    const key = String(tr.getAttribute('data-fhb-target-row') || '').trim();
+    const get = (field) => tr.querySelector('[data-fhb-target-field="' + field + '"]')?.value ?? '';
+    const label = String(get('label')).trim() || key;
+    const left = String(get('left')).trim();
+    const right = String(get('right')).trim();
+    if (!key) return;
+    rows.push({
+      machine_key: 'FHB_TARGET_' + key,
+      machine_code: 'FHB',
+      machine_index: key,
+      label,
+      category: 'fhb_target',
+      cycle_time: '',
+      speed: '',
+      dress_time: '',
+      dress_count: '',
+      settings_json: { machine: 'FHB', index: key, type: 'fhb_target', key, label, target_left: left, target_right: right }
     });
   });
   return rows;
@@ -6095,6 +6206,14 @@ function bindAppMenuHandlers(body) {
           const result = await window.RotationSupabaseBridge.saveMachineSettings(rows);
           if (result && result.ok === false) throw (result.error || new Error('Uložení strojů selhalo.'));
           app.machineSettingsRows = rows;
+          try {
+            if (typeof refreshPrackaFromMachineSettings === 'function') refreshPrackaFromMachineSettings('admin-save-machines');
+            else if (typeof updatePrackaInfo === 'function') updatePrackaInfo();
+          } catch (err) {}
+          try {
+            if (typeof refreshFhbSettingsUi === 'function') refreshFhbSettingsUi({ source: 'admin-save-machines', recalculate: true });
+            else if (typeof updateFhbPresetButtons === 'function') updateFhbPresetButtons();
+          } catch (err) {}
           renderAdminMenuBody(body, currentView);
           const statusEl = document.getElementById('adminOnlineSaveStatus');
           if (statusEl) statusEl.textContent = (result && result.queued)
@@ -6336,7 +6455,7 @@ function showPage(id) {
 
   let navPage = id === 'rotace'
     ? 'rotace'
-    : (id === 'brusy' || id === 'soustruhy' || id === 'frezky' || id === 'kalkulacky')
+    : (id === 'brusy' || id === 'soustruhy' || id === 'frezky' || id === 'pracka' || id === 'kalkulacky' || String(id || '').startsWith('korekce-'))
       ? 'kalkulacky'
       : (id === 'jidlo' ? 'home' : id);
 
@@ -6395,6 +6514,10 @@ function showPage(id) {
       if (typeof renderSoustruhy === 'function') renderSoustruhy();
     } else if (id === 'frezky') {
       // page exists only as part of kalkulačky hub
+    } else if (id === 'pracka') {
+      if (typeof updatePrackaInfo === 'function') updatePrackaInfo();
+    } else if (id === 'korekce-frezky') {
+      if (typeof updateFhbPresetButtons === 'function') updateFhbPresetButtons();
     } else if (id === 'jidlo') {
       if (typeof renderFoodSchedulePage === 'function') {
         renderFoodSchedulePage();

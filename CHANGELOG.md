@@ -1,3 +1,22 @@
+## v.1.5 (764)
+- Supabase změny `machine_settings` nově po realtime/sync refreshi rovnou překreslí otevřenou Pračku a Korekce → Frézky.
+- Pračka po online změně času výroby kusu aktualizuje informační řádek i už spočítané výsledky bez přechodu na jinou stránku.
+- Korekce → Frézky po online změně středů fhβ aktualizují tlačítka indexů, skrytý vybraný střed a případně přepočítají otevřený výsledek.
+- Verze sjednocena na v.1.5 (764), cache na v1.5-764 a Supabase realtime kanál na rak-public-live-v764.
+
+## v.1.5 (763)
+- Výpočet kusů má nový stroj Pračka v přehledu kalkulaček.
+- Pračka počítá „Kolik ještě stihnu“ podle výroby 30 s/ks, přičítá volitelný počet z počítadla a přepočítává výsledek na dávky po 32 ks.
+- Pračka má nově „Kdy bude hotovo“ podle počtu zbývajících dávek a kusů hotových v aktuální dávce, stejnou logikou rozdělané dávky jako u Brusů.
+- Administrace umí upravit čas Pračky a středy fhβ pro frézky přes Supabase `machine_settings`.
+- Verze sjednocena na v.1.5 (763), cache na v1.5-763 a Supabase realtime kanál na rak-public-live-v763.
+
+## v.1.5 (761)
+- Piškvorky: při otevřené hře se pod spodní lištou už nezobrazuje stránka s ostatními hrami.
+- Piškvorky: podklad stránky je při hře skrytý a scroll pod hrou je uzamčený, aby nešlo posouvat jinou stránku za overlayem.
+- Korekce → Frézky: mezi horním nadpisem a kalkulačkou je nově malá mezera podobně jako u Výpočtu kusů, ne nalepené a ne velká volná plocha.
+- Verze sjednocena na v.1.5 (761), cache na v1.5-761 a Supabase realtime kanál na rak-public-live-v761.
+
 ## v.1.5 (760)
 - Korekce → Frézky: odstraněná volná plocha mezi horním nadpisem a kalkulačkou; korekční stránky se už v gridu neroztahují přes výšku.
 - Korekce → Frézky: AF/AG tlačítka mají pozadí správně zleva modré pro AF a zprava zelené pro AG, včetně volných variant.
