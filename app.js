@@ -1,4 +1,4 @@
-// v.1.1 (739) – Pampuch má plynulejší pomalejší pohyb; Lodě mají čistší mobilní layout, bezpečný horní odstup a výsledek přes pole.
+// v.1.1 (740) – Pampuch má klidnější pomalejší duchy; Lodě mají spodní akce nad lištou a jasnější potopené lodě.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

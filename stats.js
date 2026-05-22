@@ -410,7 +410,7 @@ function buildStatsForYear(year) {
     });
     person.totalAbsence = Math.round((Number(person.totalAbsence) || 0) * 10) / 10;
     person.totalWork = Math.round((Math.max(0, Number(person.totalWork || 0))) * 10) / 10;
-    // v.1.1 (739): pevný roční fond 164 platí jen pro rok 2025.
+    // v.1.1 (740): pevný roční fond 164 platí jen pro rok 2025.
     // Ostatní roky se nedorovnávají naslepo, protože každý rok může mít jiný počet směn.
     applyAnnualWorkAbsenceTarget(person, annualWorkAbsenceTarget);
     person.totalWork = Math.round((Math.max(0, Number(person.totalWork || 0))) * 10) / 10;

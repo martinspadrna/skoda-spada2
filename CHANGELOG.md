@@ -1,8 +1,10 @@
-## v.1.1 (739)
-- Pampuch zpomalený a víc přiblížený původnímu stylu: duchové mají jednu barvu, nemění rychlost/barvu, nejdou jíst a každý dotyk ducha bere život.
-- Lodě online: mobilní plocha posunutá výš, menší prázdno kolem hracího pole, čistší výsledkové okno se scorem a tlačítkem Nová hra se soupeřem.
-- Lodě online: rychlejší polling pro odezvu zásahů, odstraněné šipkovité konce lodí při odhaleném zásahu a menší blikání lodi po zásahu.
-- Verze sjednocena na v.1.1 (739), cache na v1.1-739 a Supabase realtime kanál na rak-public-live-v739.
+## v.1.1 (740)
+- Pampuch: duchové už se nechovají jako Pac-Man, méně cíleně loví hráče, víc drží chodbu a na křižovatkách volí klidnější směr.
+- Pampuch: jednotná pomalejší rychlost, bez zrychlování podle duchů/barvy/levelu.
+- Lodě: spodní tlačítka Přehodit automaticky / Otočit vybranou jsou fixně nad spodní lištou a board se jim přizpůsobuje.
+- Lodě: potopené lodě jsou jasně odlišené jako pod vodou, bez hořícího efektu, aby bylo vidět, co už je potopené a co jen načaté.
+- Lodě: silnější odstranění šedých podkladů za tlačítkovými řádky.
+- Verze sjednocena na v.1.1 (740), cache na v1.1-740 a Supabase realtime kanál na rak-public-live-v740.
 
 ## v.1.1 (735)
 - Opravené roční statistiky: u uzavřeného/importovaného roku se pro každého pracovníka drží roční fond 164, takže karta „Práce + absence“ vychází 164 místo hodnot převzatých z aktuálního období.

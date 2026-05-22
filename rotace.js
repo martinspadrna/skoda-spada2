@@ -3,7 +3,7 @@ function renderRotace() {
   const personView = document.getElementById('personView');
   const monthView = document.getElementById('monthView');
 
-  // v.1.1 (739): respektuj ručně vybraný rok. Dřív se při každém renderu
+  // v.1.1 (740): respektuj ručně vybraný rok. Dřív se při každém renderu
   // Rozpisů/Statistik přepsal zpět na aktuální rok, takže importy 2025 nebyly vidět.
   const requestedYear = parseInt(app.selectedYear, 10);
   const availableYears = getAvailableYears(app.rotation);

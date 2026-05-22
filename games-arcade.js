@@ -2,7 +2,7 @@
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
 
-  // v.1.1 (739): Pampuch plynulejší bez pacman režimu; Lodě čistší mobilní layout a overlay výsledku přes pole.
+  // v.1.1 (740): Pampuch má klidnější duchy bez cíleného lovení; Lodě mají spodní akce nad lištou a jasně potopené lodě.
   const CORE_GAMES = ['ttt', 'ships', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'pampuch', 'daily'];
   const EXTRA_GAMES = [];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);
@@ -150,7 +150,7 @@
     const rawShiftLabel = String(activeShift && activeShift.label ? activeShift.label : '').trim();
     const label = rawShiftLabel.toLowerCase();
     const isShiftD = !!activeShift && rawShiftTeam === 'D';
-    // v.1.1 (739): herní achievementy s podmínkou „ve směně“ se počítají jen tehdy,
+    // v.1.1 (740): herní achievementy s podmínkou „ve směně“ se počítají jen tehdy,
     // když je opravdu aktivní směna D v práci. Ostatní směny zůstanou uložené jen diagnosticky v lastContext.
     return {
       dateKey: gamesLocalDateKey(when),
@@ -3882,7 +3882,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         if (shot) cls += shot.hit ? ' isHit' : ' isMiss';
         if (options.enemy && shot) cls += ' isDisabled';
         if (revealShip) txt += shipsRenderShipSegment(ship, r, c, shot, options);
-        if (shot) txt += shot.hit ? '<span class="shipsShotMark isHitMark">💥</span>' : '<span class="shipsShotMark isMissMark">🌊</span>';
+        if (shot) txt += shot.hit ? (sunkShip ? '<span class="shipsShotMark isSunkMark">≈</span>' : '<span class="shipsShotMark isHitMark">💥</span>') : '<span class="shipsShotMark isMissMark">🌊</span>';
         const data = options.enemy && !shot ? ` data-ships-shot="${r}:${c}"` : '';
         const placeData = options.placement ? ` data-ships-place="${r}:${c}"` : '';
         const shipData = options.placement && ship ? ` data-ships-cell-ship="${escapeHtml(String(ship.id || ''))}"` : '';
@@ -4253,7 +4253,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   const PAMP_LEVELS = [
     {
       name: 'Level 1',
-      speed: 250,
+      speed: 320,
       ghostDelay: 2,
       map: [
         '###################',
@@ -4275,7 +4275,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     },
     {
       name: 'Level 2',
-      speed: 250,
+      speed: 320,
       ghostDelay: 2,
       map: [
         '###################',
@@ -4297,7 +4297,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     },
     {
       name: 'Level 3',
-      speed: 250,
+      speed: 320,
       ghostDelay: 2,
       map: [
         '###################',
@@ -4319,7 +4319,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     },
     {
       name: 'Level 4',
-      speed: 250,
+      speed: 320,
       ghostDelay: 2,
       map: [
         '###################',
@@ -4347,7 +4347,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     { name: 'up', dr: -1, dc: 0 },
     { name: 'down', dr: 1, dc: 0 }
   ];
-  const PAMP_BASE_TICK_MS = 250;
+  const PAMP_BASE_TICK_MS = 320;
   const PAMP_GHOST_COLOR = '#ff4f88';
 
   function pampDir(name) {
@@ -4508,19 +4508,29 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   }
 
   function pampuchGhostChoice(state, ghost) {
-    let dirs = PAMP_DIRS.filter(d => pampuchCanMove(state, ghost, d));
-    if (!dirs.length) return null;
-    if (dirs.length > 1) dirs = dirs.filter(d => !pampOpposite(d, ghost.dir));
-    const target = state.player;
-    dirs.sort((a, b) => {
-      const ar = ghost.r + a.dr, ac = ghost.c + a.dc;
-      const br = ghost.r + b.dr, bc = ghost.c + b.dc;
-      const ad = Math.abs(ar - target.r) + Math.abs(ac - target.c);
-      const bd = Math.abs(br - target.r) + Math.abs(bc - target.c);
-      return ad - bd;
-    });
-    if (Math.random() < .24 && dirs.length > 1) return randomPick(dirs.slice(0, Math.min(3, dirs.length)));
-    return dirs[0] || randomPick(PAMP_DIRS);
+    // Pampuch není Pac-Man: duchové se netlačí cíleně na hráče.
+    // Primárně pokračují chodbou, na křižovatkách si vyberou směr a jen občas
+    // lehce zohlední pozici hráče, aby hra nebyla úplně náhodná.
+    const allDirs = PAMP_DIRS.filter(d => pampuchCanMove(state, ghost, d));
+    if (!allDirs.length) return null;
+    let dirs = allDirs;
+    if (allDirs.length > 1) dirs = allDirs.filter(d => !pampOpposite(d, ghost.dir));
+    if (!dirs.length) dirs = allDirs;
+    const forward = ghost.dir && dirs.find(d => d.name === ghost.dir.name);
+    if (forward && dirs.length <= 2 && Math.random() < .82) return forward;
+    if (forward && Math.random() < .58) return forward;
+    if (Math.random() < .10 && state && state.player) {
+      const target = state.player;
+      const ranked = dirs.slice().sort((a, b) => {
+        const ar = ghost.r + a.dr, ac = ghost.c + a.dc;
+        const br = ghost.r + b.dr, bc = ghost.c + b.dc;
+        const ad = Math.abs(ar - target.r) + Math.abs(ac - target.c);
+        const bd = Math.abs(br - target.r) + Math.abs(bc - target.c);
+        return ad - bd;
+      });
+      return ranked[0] || randomPick(dirs);
+    }
+    return randomPick(dirs);
   }
 
   function pampuchCollideGhosts(state) {
@@ -4880,7 +4890,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     const allHot = EXTRA_GAMES.length === 0;
     const completedOnlyGuard = typeof window.gamesRecordStat === 'function';
     return {
-      version: 'v.1.1 (739)',
+      version: 'v.1.1 (740)',
       ok: !missingMeta.length && !missingRenderer.length && allHot && completedOnlyGuard,
       totalGames: ids.length,
       coreGames: ids,
@@ -4895,7 +4905,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       themeBackground: true,
       touchGuard: true,
       notes: [
-        'Build 739 ladí Pampucha na plynulejší pomalejší pohyb a Lodě na čistší mobilní layout bez šedých podkladů za tlačítky.',
+        'Build 740 ladí Pampucha na klidnější duchy bez cíleného lovení a Lodě na spodní akce nad lištou, čistší tlačítka a podvodní potopené lodě.',
         'Reálnou hratelnost a citlivost dotyku je potřeba potvrdit na mobilu.'
       ]
     };

@@ -1,6 +1,6 @@
 
 const APP_KEY = "rotace_kalkulacky_state_v123";
-const APP_VERSION = "v.1.1 (739)";
+const APP_VERSION = "v.1.1 (740)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-05-18-" + APP_VERSION + "-" + Date.now();
 
@@ -1294,7 +1294,7 @@ function setSelectedYear(year) {
     app.selectedMonth = yearMonths[0] || null;
   }
 
-  // v.1.1 (739): změna roku musí okamžitě překreslit Rozpisy i Statistiky
+  // v.1.1 (740): změna roku musí okamžitě překreslit Rozpisy i Statistiky
   // bez návratu na aktuální rok a bez starých detailů z jiného roku.
   if (typeof syncYearControls === 'function') syncYearControls();
   if (typeof renderMonthGrid === 'function') renderMonthGrid();

@@ -9296,7 +9296,7 @@ body.ladaTurboMode #games .pampuchLevelBar .gameControlBtn{
   #games .pampuchLevelBar{grid-template-columns:repeat(3,minmax(0,1fr));}
 }
 
-/* v.1.1 (739): Pampuch bez pacman power režimu + Lodě rychlejší odezva, čistší rematch a mobilní posun výš. */
+/* v.1.1 (740): Pampuch bez pacman power režimu + Lodě rychlejší odezva, čistší rematch a mobilní posun výš. */
 #games .shipsResultActions{
   display:grid !important;
   grid-template-columns:1fr !important;
@@ -9417,7 +9417,7 @@ body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .arcadeStage
 }
 
 
-/* v.1.1 (739): Pampuch plynulejší pohyb + Lodě bez šedých podkladů a s výsledkem přes hrací pole. */
+/* v.1.1 (740): Pampuch plynulejší pohyb + Lodě bez šedých podkladů a s výsledkem přes hrací pole. */
 #games .pampuchMazeWrap canvas{
   image-rendering:auto !important;
 }
@@ -9597,4 +9597,131 @@ body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .arcadeStage
   #games .shipsIntroCard{display:none !important;}
   #games .shipsMenuStage{padding-top:0 !important;}
   #games .shipsPlayInfoLine{display:none !important;}
+}
+
+/* v.1.1 (740): Lodě – spodní akce nad spodní lištou, čisté tlačítkové řádky a potopené lodě pod vodou. */
+body.shipsGameOpen #games .gamesShellNoTitle{
+  padding-top:calc(12px + env(safe-area-inset-top)) !important;
+}
+body.shipsGameOpen #games .gamesShellBackFloating{
+  top:calc(10px + env(safe-area-inset-top)) !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"]{
+  overflow-y:auto !important;
+  -webkit-overflow-scrolling:touch !important;
+  padding-bottom:calc(128px + env(safe-area-inset-bottom)) !important;
+}
+body:not(.lightweightMode):not(.lowEndDevice) #games #gamesShellBody[data-arcade-game="ships"] .arcadeControls,
+#games #gamesShellBody[data-arcade-game="ships"] .arcadeControls,
+#games .shipsInviteControls,
+#games .shipsSetupPrimaryActions,
+#games .shipsSetupSecondaryActions,
+#games .shipsMenuBackLine,
+#games .shipsResultActions{
+  background:transparent !important;
+  background-color:transparent !important;
+  border:0 !important;
+  box-shadow:none !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+  padding:0 !important;
+}
+#games .shipsInviteControls::before,
+#games .shipsInviteControls::after,
+#games .shipsSetupPrimaryActions::before,
+#games .shipsSetupPrimaryActions::after,
+#games .shipsSetupSecondaryActions::before,
+#games .shipsSetupSecondaryActions::after,
+#games .shipsMenuBackLine::before,
+#games .shipsMenuBackLine::after{
+  display:none !important;
+  content:none !important;
+}
+#games .shipsSetupStage{
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  min-height:auto !important;
+  padding-top:4px !important;
+  padding-bottom:calc(96px + env(safe-area-inset-bottom)) !important;
+}
+#games .shipsSetupBoardWrap{
+  width:100% !important;
+  max-width:420px !important;
+  margin:0 auto !important;
+}
+#games .shipsSetupSecondaryActions{
+  position:fixed !important;
+  left:50% !important;
+  bottom:calc(86px + env(safe-area-inset-bottom)) !important;
+  transform:translateX(-50%) !important;
+  z-index:80 !important;
+  width:min(calc(100vw - 24px),420px) !important;
+  display:grid !important;
+  grid-template-columns:1fr 1fr !important;
+  gap:8px !important;
+  pointer-events:auto !important;
+}
+#games .shipsSetupSecondaryActions .gameControlBtn{
+  min-height:38px !important;
+  padding:7px 8px !important;
+  font-size:11px !important;
+}
+#games #gamesShellBody[data-arcade-game="ships"] .gameControlBtn,
+#games #gamesShellBody[data-arcade-game="ships"] .shipsViewBtn{
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.055),0 8px 18px rgba(0,0,0,.18) !important;
+}
+#games .shipsCell.isSunkShip{
+  background:linear-gradient(180deg,rgba(16,92,135,.58),rgba(2,35,73,.78)) !important;
+  box-shadow:inset 0 0 0 1px rgba(130,220,255,.16) !important;
+}
+#games .shipsCell.isSunkShip::after{
+  content:"" !important;
+  position:absolute !important;
+  inset:5% !important;
+  border-radius:inherit !important;
+  background:repeating-linear-gradient(135deg,rgba(156,220,255,.20) 0 2px,transparent 2px 7px) !important;
+  opacity:.55 !important;
+  pointer-events:none !important;
+  z-index:6 !important;
+}
+#games .shipsCell.isSunkShip .shipsShipSegment{
+  background:linear-gradient(145deg,rgba(82,142,160,.82),rgba(18,56,78,.92)) !important;
+  filter:saturate(.55) brightness(.72) !important;
+  box-shadow:inset 0 2px 0 rgba(185,235,255,.16),inset 0 -5px 9px rgba(0,0,0,.36) !important;
+}
+#games .shipsCell.isSunkShip .shipsShipCabin,
+#games .shipsCell.isSunkShip .shipsShipDeck{
+  opacity:.34 !important;
+}
+#games .shipsCell.isSunkShip .isHitMark{
+  display:none !important;
+}
+#games .shipsShotMark.isSunkMark{
+  position:absolute !important;
+  inset:0 !important;
+  z-index:9 !important;
+  display:grid !important;
+  place-items:center !important;
+  color:rgba(190,240,255,.92) !important;
+  font-weight:1000 !important;
+  font-size:clamp(16px,4.2vw,24px) !important;
+  text-shadow:0 2px 8px rgba(0,40,90,.65) !important;
+  pointer-events:none !important;
+}
+@media (min-width:421px){
+  #games .shipsSetupStage{padding-top:0 !important;}
+  #games .shipsSetupSecondaryActions{bottom:calc(96px + env(safe-area-inset-bottom)) !important;}
+}
+@media (max-width:430px){
+  body.shipsGameOpen #games .gamesShellNoTitle{padding-top:calc(18px + env(safe-area-inset-top)) !important;}
+  body.shipsGameOpen #games .gamesShellBackFloating{top:calc(13px + env(safe-area-inset-top)) !important;}
+  #games .shipsStage{padding-top:7px !important;}
+  #games .shipsSetupSecondaryActions{bottom:calc(76px + env(safe-area-inset-bottom)) !important;}
+  #games .shipsSetupStage{padding-bottom:calc(86px + env(safe-area-inset-bottom)) !important;}
+}
+
+/* v.1.1 (740): Pampuch – klidnější duchové a pomalejší jednotná rychlost bez honičky na hráče. */
+#games .pampuchMazeWrap canvas{
+  image-rendering:auto !important;
 }
