@@ -2,7 +2,7 @@
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
 
-  // v.1.1 (737): import Excelu bere jen měsíční listy 01.2025 a čte tvrdotu, měkotu i absence.
+  // v.1.1 (738): Pampuch bez power režimu duchů a Lodě s rychlejší odezvou/rematchem.
   const CORE_GAMES = ['ttt', 'ships', '2048', 'snake', 'flap', 'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'pampuch', 'daily'];
   const EXTRA_GAMES = [];
   const ALL_GAMES = CORE_GAMES.concat(EXTRA_GAMES);
@@ -150,7 +150,7 @@
     const rawShiftLabel = String(activeShift && activeShift.label ? activeShift.label : '').trim();
     const label = rawShiftLabel.toLowerCase();
     const isShiftD = !!activeShift && rawShiftTeam === 'D';
-    // v.1.1 (737): herní achievementy s podmínkou „ve směně“ se počítají jen tehdy,
+    // v.1.1 (738): herní achievementy s podmínkou „ve směně“ se počítají jen tehdy,
     // když je opravdu aktivní směna D v práci. Ostatní směny zůstanou uložené jen diagnosticky v lastContext.
     return {
       dateKey: gamesLocalDateKey(when),
@@ -4040,6 +4040,33 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       local.placing = { manual: false, selected: 'carrier', horizontal: true };
       renderMenu(msg || '');
     };
+    const shipsStartRematch = async () => {
+      const current = shipsNormalizeState(local.state, local.code);
+      const role = shipsRoleForState(current);
+      if (!current || !current.code || !current.playerXAccountNumber || !current.playerOAccountNumber || !role) {
+        shipsReturnToMenu('Novou hru se stejným soupeřem nejde založit. Vytvoř novou pozvánku.');
+        return;
+      }
+      const next = shipsFreshState(current.code, current.playerXAccountNumber);
+      next.playerOAccountNumber = current.playerOAccountNumber;
+      next.x = shipsBuildPlayerBoard();
+      next.o = shipsBuildPlayerBoard();
+      next.xReady = false;
+      next.oReady = false;
+      next.status = 'placing';
+      next.turn = 'X';
+      next.round = (Number(current.round || 1) || 1) + 1;
+      next.revision = (Number(current.revision || 0) || 0) + 1;
+      next.message = 'Nová hra se stejným soupeřem. Oba jen potvrďte flotilu a pokračujete.';
+      local.state = next;
+      local.view = 'own';
+      local.lastStatus = '';
+      local.lastTurn = '';
+      local.savedFinishedCode = '';
+      local.placing = { manual: false, selected: nextUnplaced(role === 'O' ? next.o : next.x), horizontal: true };
+      renderGame();
+      await shipsSaveState(next);
+    };
     const maybeRecordFinished = () => {
       const st = local.state;
       const role = st ? shipsRoleForState(st) : '';
@@ -4188,12 +4215,14 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         <div class="shipsSingleBoardWrap">
           <div class="shipsBoardCard shipsBoardCardLift"><div class="smallText uBold">${escapeHtml(activeBoardTitle)}</div><div class="smallText shipsInlineHint">${escapeHtml(viewHint)}</div>${activeBoard}</div>
         </div>
-        ${st.status === 'finished' ? `<div class="arcadeResultOverlay shipsResult"><div class="arcadeResultCard"><strong>${st.winner === role ? 'Výhra!' : 'Konec hry'}</strong><div class="smallText">Zásahy: ${sum.hits} · Potopené: ${sum.sunk}</div><button type="button" class="gameControlBtn" id="shipsBackBtn">Zpět do Lodí</button></div></div>` : ''}
+        ${st.status === 'finished' ? `<div class="arcadeResultOverlay shipsResult"><div class="arcadeResultCard"><strong>${st.winner === role ? 'Výhra!' : 'Konec hry'}</strong><div class="smallText">Score: ${st.winner === role ? 1000 + (sum.hits * 80) + (sum.sunk * 220) : Math.max(100, sum.hits * 70)} · Zásahy: ${sum.hits} · Potopené: ${sum.sunk}</div><div class="shipsResultActions"><button type="button" class="gameControlBtn primary" id="shipsRematchBtn">Nová hra se soupeřem</button><button type="button" class="gameControlBtn ghost" id="shipsBackBtn">Zpět do Lodí</button></div></div></div>` : ''}
       </div>`;
       body.querySelectorAll('[data-ships-view]').forEach((btn) => btn.addEventListener('click', () => {
         local.view = btn.getAttribute('data-ships-view') === 'enemy' ? 'enemy' : 'own';
         renderGame();
       }));
+      const rematch = body.querySelector('#shipsRematchBtn');
+      if (rematch) rematch.addEventListener('click', () => { void shipsStartRematch(); });
       const back = body.querySelector('#shipsBackBtn');
       if (back) back.addEventListener('click', () => shipsReturnToMenu(''));
       const menuBack = body.querySelector('#shipsMenuBackBtn');
@@ -4212,7 +4241,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         });
       });
       if (!fromPoll && local.poll) { clearInterval(local.poll); local.poll = 0; }
-      if (!local.poll && st.status !== 'finished') local.poll = rakGameSetInterval(() => refreshRemote(true), 2200);
+      if (!local.poll && st.status !== 'finished') local.poll = rakGameSetInterval(() => refreshRemote(true), 900);
     };
     addCleanup(() => { if (local.poll) clearInterval(local.poll); local.poll = 0; });
     if (local.code && local.state) renderGame();
@@ -4225,7 +4254,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   const PAMP_LEVELS = [
     {
       name: 'Level 1',
-      speed: 148,
+      speed: 210,
       ghostDelay: 2,
       map: [
         '###################',
@@ -4247,8 +4276,8 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     },
     {
       name: 'Level 2',
-      speed: 140,
-      ghostDelay: 1,
+      speed: 210,
+      ghostDelay: 2,
       map: [
         '###################',
         '#P..#.......#....G#',
@@ -4269,8 +4298,8 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     },
     {
       name: 'Level 3',
-      speed: 134,
-      ghostDelay: 1,
+      speed: 210,
+      ghostDelay: 2,
       map: [
         '###################',
         '#P......#......G..#',
@@ -4291,8 +4320,8 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     },
     {
       name: 'Level 4',
-      speed: 128,
-      ghostDelay: 0,
+      speed: 210,
+      ghostDelay: 2,
       map: [
         '###################',
         '#P....#.....#....G#',
@@ -4319,6 +4348,8 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     { name: 'up', dr: -1, dc: 0 },
     { name: 'down', dr: 1, dc: 0 }
   ];
+  const PAMP_BASE_TICK_MS = 210;
+  const PAMP_GHOST_COLOR = '#ff4f88';
 
   function pampDir(name) {
     return PAMP_DIRS.find(d => d.name === name) || null;
@@ -4348,7 +4379,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       steps: 0,
       frightened: 0,
       invuln: 0,
-      tickMs: 148,
+      tickMs: PAMP_BASE_TICK_MS,
       ghostSlowTurn: 0,
       moveAcc: 0,
       lastTs: 0,
@@ -4380,7 +4411,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       const cells = String(row).split('');
       cells.forEach((cell, c) => {
         if (cell === 'P') { player = { r, c, dir: pampDir('right'), queued: pampDir('right'), mouth: 0 }; cells[c] = '.'; total += 1; }
-        else if (cell === 'G') { ghosts.push({ r, c, homeR: r, homeC: c, dir: randomPick(PAMP_DIRS), color: ['#ff4f88', '#00f5ff', '#ffb347', '#b875ff'][ghosts.length % 4], wait: Number(def.ghostDelay || 0) + ghosts.length }); cells[c] = '.'; total += 1; }
+        else if (cell === 'G') { ghosts.push({ r, c, homeR: r, homeC: c, dir: randomPick(PAMP_DIRS), color: PAMP_GHOST_COLOR, wait: Number(def.ghostDelay || 0) + ghosts.length }); cells[c] = '.'; total += 1; }
         else if (cell === '.' || cell === 'o') total += 1;
       });
       grid.push(cells);
@@ -4397,7 +4428,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     state.frightened = 0;
     state.invuln = 0;
     state.moveAcc = 0;
-    state.tickMs = Math.max(86, Number(def.speed || 126) - Math.min(22, Number(state.levelClears || 0) * 3));
+    state.tickMs = PAMP_BASE_TICK_MS;
     if (!keepScore) {
       state.score = 0;
       state.lives = 3;
@@ -4452,8 +4483,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     state.combo += 1;
     state.bestCombo = Math.max(Number(state.bestCombo || 0) || 0, Number(state.combo || 0) || 0);
     if (cell === 'o') {
-      state.score += 80 + Math.min(300, Number(state.combo || 0) * 8);
-      state.frightened = 6500;
+      state.score += 80 + Math.min(220, Number(state.combo || 0) * 6);
     } else {
       state.score += 10 + Math.min(70, Math.floor(Number(state.combo || 0) / 6) * 5);
     }
@@ -4471,7 +4501,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       g.r = g.homeR; g.c = g.homeC; g.dir = randomPick(PAMP_DIRS); g.wait = 1 + idx;
     });
     state.invuln = 1700;
-    state.frightened = Math.max(0, Number(state.frightened || 0) - 1200);
+    state.frightened = 0;
     state.combo = 0;
   }
 
@@ -4480,34 +4510,21 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     if (!dirs.length) return null;
     if (dirs.length > 1) dirs = dirs.filter(d => !pampOpposite(d, ghost.dir));
     const target = state.player;
-    const chase = Math.random() < (state.frightened > 0 ? .22 : .72);
     dirs.sort((a, b) => {
       const ar = ghost.r + a.dr, ac = ghost.c + a.dc;
       const br = ghost.r + b.dr, bc = ghost.c + b.dc;
       const ad = Math.abs(ar - target.r) + Math.abs(ac - target.c);
       const bd = Math.abs(br - target.r) + Math.abs(bc - target.c);
-      return state.frightened > 0 ? bd - ad : ad - bd;
+      return ad - bd;
     });
-    if (!chase && dirs.length > 1) return randomPick(dirs.slice(0, Math.min(3, dirs.length)));
+    if (Math.random() < .24 && dirs.length > 1) return randomPick(dirs.slice(0, Math.min(3, dirs.length)));
     return dirs[0] || randomPick(PAMP_DIRS);
   }
 
   function pampuchCollideGhosts(state) {
     if (state.invuln > 0) return false;
     const p = state.player;
-    let hit = false;
-    state.ghosts.forEach((g) => {
-      if (g.r !== p.r || g.c !== p.c || hit) return;
-      if (state.frightened > 0) {
-        state.eatenGhosts += 1;
-        state.score += 240 + Math.min(600, Number(state.eatenGhosts || 0) * 40);
-        g.r = g.homeR; g.c = g.homeC; g.wait = 4; g.dir = randomPick(PAMP_DIRS);
-        state.combo += 3;
-        state.bestCombo = Math.max(Number(state.bestCombo || 0) || 0, Number(state.combo || 0) || 0);
-      } else {
-        hit = true;
-      }
-    });
+    const hit = state.ghosts.some((g) => g.r === p.r && g.c === p.c);
     if (!hit) return false;
     state.lives -= 1;
     if (state.lives <= 0) return true;
@@ -4570,7 +4587,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
         bestDistance: Number(state.levelClears || 0) + 1,
         bestPops: Math.max(Number(state.bestLevelPoints || 0) || 0, Number(state.points || 0) || 0),
         bestCombo: state.bestCombo || 0,
-        bestJumps: state.eatenGhosts || 0,
+        bestJumps: 0,
         bestSurvivalSec: state.startAt ? Math.floor((Date.now() - state.startAt) / 1000) : 0,
         lastResult: `${pampuchTotalScore(state)} bodů · ${state.runPoints || state.points || 0} bodů celkem`
       });
@@ -4647,10 +4664,9 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       state.steps += 1;
       pampuchHandlePoint(state);
       if (pampuchCollideGhosts(state)) { end(); return; }
-      state.ghostSlowTurn = (Number(state.ghostSlowTurn || 0) + 1) % (state.frightened > 0 ? 2 : 1);
-      state.ghosts.forEach((g, idx) => {
+      state.ghostSlowTurn = 0;
+      state.ghosts.forEach((g) => {
         if (g.wait > 0) { g.wait -= 1; return; }
-        if (state.frightened > 0 && ((state.steps + idx) % 2 === 0)) return;
         const dir = pampuchGhostChoice(state, g);
         if (dir) pampuchMoveActor(state, g, dir);
       });
@@ -4669,10 +4685,9 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     const drawGhost = (x, y, r, ghost, colors) => {
       ctx.save();
       ctx.translate(x, y);
-      const scared = state.frightened > 0;
-      ctx.fillStyle = scared ? 'rgba(98,190,255,.92)' : ghost.color;
-      ctx.shadowColor = scared ? '#60d8ff' : ghost.color;
-      ctx.shadowBlur = rakGameIsLadaMode() ? 0 : 10;
+      ctx.fillStyle = PAMP_GHOST_COLOR;
+      ctx.shadowColor = PAMP_GHOST_COLOR;
+      ctx.shadowBlur = rakGameIsLadaMode() ? 0 : 8;
       ctx.beginPath();
       ctx.arc(0, -r * .12, r * .72, Math.PI, 0);
       ctx.lineTo(r * .72, r * .55);
@@ -4685,7 +4700,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       ctx.shadowBlur = 0;
       ctx.fillStyle = '#fff';
       ctx.beginPath(); ctx.arc(-r * .24, -r * .12, r * .17, 0, Math.PI * 2); ctx.arc(r * .24, -r * .12, r * .17, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = scared ? '#1b2c42' : '#0d1020';
+      ctx.fillStyle = '#0d1020';
       ctx.beginPath(); ctx.arc(-r * .22, -r * .10, r * .08, 0, Math.PI * 2); ctx.arc(r * .26, -r * .10, r * .08, 0, Math.PI * 2); ctx.fill();
       ctx.restore();
     };
@@ -4752,9 +4767,6 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       }
       state.ghosts.forEach((g) => drawGhost(m.ox + (g.c + .5) * m.tile, m.oy + (g.r + .5) * m.tile, m.tile * .45, g, colors));
       drawPlayer(m.ox + (state.player.c + .5) * m.tile, m.oy + (state.player.r + .5) * m.tile, m.tile * .48, colors);
-      if (state.frightened > 0) {
-        ctx.save(); ctx.fillStyle = colors.accent || '#7cff7c'; ctx.globalAlpha = .75; ctx.font = `700 ${Math.max(10, m.tile * .48)}px system-ui`; ctx.textAlign = 'center'; ctx.fillText('BONUS', m.ox + state.cols * m.tile / 2, m.oy + m.tile * .85); ctx.restore();
-      }
       if (!state.running || state.paused || state.over) {
         ctx.save(); ctx.fillStyle = 'rgba(0,0,0,.18)'; ctx.fillRect(0, 0, m.w, m.h); ctx.restore();
       }
@@ -4770,9 +4782,8 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       const dt = rakGameDelta(state, ts);
       if (!state.over && state.running && !state.paused) {
         state.moveAcc += dt;
-        state.frightened = Math.max(0, Number(state.frightened || 0) - dt);
         state.invuln = Math.max(0, Number(state.invuln || 0) - dt);
-        const tickMs = Math.max(96, Number(state.tickMs || 148) || 148);
+        const tickMs = Math.max(180, Number(state.tickMs || PAMP_BASE_TICK_MS) || PAMP_BASE_TICK_MS);
         let guard = 0;
         while (state.moveAcc >= tickMs && guard < 4) {
           state.moveAcc -= tickMs;
@@ -4851,7 +4862,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     const allHot = EXTRA_GAMES.length === 0;
     const completedOnlyGuard = typeof window.gamesRecordStat === 'function';
     return {
-      version: 'v.1.1 (737)',
+      version: 'v.1.1 (738)',
       ok: !missingMeta.length && !missingRenderer.length && allHot && completedOnlyGuard,
       totalGames: ids.length,
       coreGames: ids,

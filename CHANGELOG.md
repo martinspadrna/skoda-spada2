@@ -1,7 +1,8 @@
-## v.1.1 (737)
-- Opravené pravidlo ročního fondu statistik: hodnota Práce + absence = 164 platí jen pro ověřený rok 2025.
-- Další roky se už nedorovnávají naslepo na 164, protože každý rok může mít jiný počet směn; u nich se ukáže skutečný součet z importovaných rozpisů/absencí.
-- Verze sjednocena na v.1.1 (737), cache na v1.1-737 a Supabase realtime kanál na rak-public-live-v737.
+## v.1.1 (738)
+- Pampuch zpomalený a víc přiblížený původnímu stylu: duchové mají jednu barvu, nemění rychlost/barvu, nejdou jíst a každý dotyk ducha bere život.
+- Lodě online: mobilní plocha posunutá výš, menší prázdno kolem hracího pole, čistší výsledkové okno se scorem a tlačítkem Nová hra se soupeřem.
+- Lodě online: rychlejší polling pro odezvu zásahů, odstraněné šipkovité konce lodí při odhaleném zásahu a menší blikání lodi po zásahu.
+- Verze sjednocena na v.1.1 (738), cache na v1.1-738 a Supabase realtime kanál na rak-public-live-v738.
 
 ## v.1.1 (735)
 - Opravené roční statistiky: u uzavřeného/importovaného roku se pro každého pracovníka drží roční fond 164, takže karta „Práce + absence“ vychází 164 místo hodnot převzatých z aktuálního období.

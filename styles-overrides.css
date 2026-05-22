@@ -9295,3 +9295,123 @@ body.ladaTurboMode #games .pampuchLevelBar .gameControlBtn{
 @media (max-width:420px){
   #games .pampuchLevelBar{grid-template-columns:repeat(3,minmax(0,1fr));}
 }
+
+/* v.1.1 (738): Pampuch bez pacman power režimu + Lodě rychlejší odezva, čistší rematch a mobilní posun výš. */
+#games .shipsResultActions{
+  display:grid !important;
+  grid-template-columns:1fr !important;
+  gap:8px !important;
+  margin-top:12px !important;
+  background:transparent !important;
+  border:0 !important;
+  box-shadow:none !important;
+  padding:0 !important;
+}
+#games .shipsResultActions .gameControlBtn,
+#games #shipsRematchBtn,
+#games #shipsBackBtn{
+  appearance:none !important;
+  -webkit-appearance:none !important;
+  border-radius:18px !important;
+  overflow:hidden !important;
+  clip-path:inset(0 round 18px) !important;
+  background:linear-gradient(135deg,rgba(124,255,255,.20),rgba(124,255,124,.12)) !important;
+  border:1px solid rgba(124,255,255,.34) !important;
+  box-shadow:0 10px 26px rgba(0,0,0,.20),inset 0 0 0 1px rgba(255,255,255,.08) !important;
+}
+#games #shipsBackBtn.ghost{
+  background:rgba(255,255,255,.055) !important;
+  border-color:rgba(255,255,255,.14) !important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.04) !important;
+}
+#games .shipsCell.isHit .shipsShipSegment{
+  animation:none !important;
+}
+#games .shipsShipSegment.isH,
+#games .shipsShipSegment.isH.isMid,
+#games .shipsShipSegment.isH.isBow,
+#games .shipsShipSegment.isH.isStern{
+  inset:13% -26% !important;
+  border-radius:5px !important;
+  clip-path:none !important;
+}
+#games .shipsShipSegment.isV,
+#games .shipsShipSegment.isV.isMid,
+#games .shipsShipSegment.isV.isBow,
+#games .shipsShipSegment.isV.isStern{
+  inset:-26% 13% !important;
+  border-radius:5px !important;
+  clip-path:none !important;
+}
+#games .shipsShipSegment::after{
+  display:none !important;
+}
+body.shipsGameOpen #games .gamesShellNoTitle{
+  padding-top:calc(2px + env(safe-area-inset-top)) !important;
+  gap:2px !important;
+}
+body.shipsGameOpen #games .gamesShellBackFloating{
+  top:calc(5px + env(safe-area-inset-top)) !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"]{
+  padding-top:0 !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .arcadeStage,
+#games .shipsStage{
+  margin-top:-16px !important;
+  gap:5px !important;
+  padding-bottom:calc(8px + env(safe-area-inset-bottom)) !important;
+}
+#games .shipsSetupPrimaryActions,
+#games .shipsSetupSecondaryActions,
+#games .shipsCompactHud,
+#games .shipsPlayInfoLine,
+#games .shipsViewToggle,
+#games .shipsMenuBackLine{
+  width:min(100%,430px) !important;
+}
+#games .shipsSetupPrimaryActions .gameControlBtn,
+#games .shipsSetupSecondaryActions .gameControlBtn,
+#games .shipsViewBtn,
+#games .shipsMenuBackLine .gameControlBtn{
+  min-height:31px !important;
+  padding:5px 8px !important;
+  font-size:10.5px !important;
+}
+#games .shipsPlayInfoLine{
+  min-height:26px !important;
+  padding:4px 7px !important;
+}
+#games .shipsSingleBoardWrap,
+#games .shipsSetupBoardWrap{
+  max-width:420px !important;
+}
+#games .shipsSetupStage .shipsBoardCardLift,
+#games .shipsPlayStage .shipsBoardCardLift,
+#games .shipsBoardCardLift{
+  width:min(100%,410px) !important;
+  max-width:410px !important;
+  padding:5px !important;
+}
+#games .shipsSetupStage .shipsBoard,
+#games .shipsPlayStage .shipsBoard,
+#games .shipsBoard{
+  max-width:390px !important;
+  gap:2px !important;
+  padding:3px !important;
+}
+#games .shipsInlineHint{
+  display:none !important;
+}
+@media (max-width:390px){
+  body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .arcadeStage,
+  #games .shipsStage{margin-top:-20px !important;gap:4px !important;}
+  #games .shipsSetupStage .shipsBoardCardLift,
+  #games .shipsPlayStage .shipsBoardCardLift,
+  #games .shipsBoardCardLift{width:min(100%,386px) !important;max-width:386px !important;}
+  #games .shipsSetupStage .shipsBoard,
+  #games .shipsPlayStage .shipsBoard,
+  #games .shipsBoard{max-width:366px !important;}
+  #games .shipsSetupPrimaryActions,
+  #games .shipsSetupSecondaryActions{gap:5px !important;margin-top:0 !important;margin-bottom:0 !important;}
+}

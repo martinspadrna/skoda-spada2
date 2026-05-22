@@ -1,4 +1,4 @@
-// v.1.1 (737) – Statistiky: roční fond 164 platí jen pro rok 2025; další roky se nedorovnávají naslepo; TNKS01/TPKW01 se mimo neděli počítá 0,5/0,5.
+// v.1.1 (738) – Pampuch zpomalený bez power režimu duchů; Lodě mají rychlejší odezvu, mobilní posun výš a rematch po konci hry.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

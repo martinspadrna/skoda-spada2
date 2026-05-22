@@ -4289,7 +4289,7 @@ function buildAppHistoryHtml(versionText) {
       range: versionText,
       title: 'Aktuální build',
       lines: [
-        'Build v.1.1 (737) opravuje roční fond: 164 platí jen pro rok 2025; další roky se nedorovnávají naslepo. TNKS01/TPKW01 dál drží půlení mimo neděli.',
+        'Build v.1.1 (738) ladí Pampucha blíž původnímu stylu bez power režimu duchů a upravuje Lodě: rychlejší odezva, čistší mobilní layout a nová hra se stejným soupeřem po konci.',
         'Série v.1.1 650–706 dotáhla Piškvorky, online pozvánky, PWA launch handler, všechny hlavní hry, herní profily, reporty chyb, theme polish, těžší/chytřejší achievementy a společný herní QA průchod včetně app-like dotykového polishu.',
         'Sekce „O aplikaci“ je nově stručnější: detailní změny zůstávají v changelogu a tady se historie drží po větších blocích.',
         'Stabilizační audity, Supabase guardy, Láďův režim a finální readiness kontroly zůstávají součástí diagnostiky.'
