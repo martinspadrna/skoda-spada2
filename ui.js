@@ -378,22 +378,20 @@ function buildRakDevicePerformanceSettingsHtml() {
   const status = getRakDevicePerformanceStatus();
   const probe = status.probe || null;
   const profileText = status.active ? (status.mode === 'turbo' ? 'Láďův turbo režim' : 'odlehčený režim') : 'normální režim';
-  const lowReasons = status.lowEndReasons && status.lowEndReasons.length ? status.lowEndReasons.join(', ') : 'žádný výrazný důvod';
   const probeText = probe
-    ? ('Skóre ' + String(probe.score || 0) + '/100 · ' + String(probe.avgFps || '—') + ' FPS · nejhorší snímek ' + String(probe.worstFrameMs || '—') + ' ms · doporučení ' + String(probe.label || profileText))
-    : 'Změř plynulost a appka si přesněji řekne, jestli má použít odlehčený režim.';
+    ? ('Skóre ' + String(probe.score || 0) + '/100 · ' + String(probe.avgFps || '—') + ' FPS · ' + escapeHtml(formatRakProbeAge(probe)))
+    : 'Ještě neměřeno';
   return [
     '<div class="appMenuCard appMenuSettingsCard rakDevicePerfCard">',
     '  <div class="appMenuCardTitle">Výkon zařízení</div>',
-    '  <div class="appMenuText">',
-    '    <div>Aktuálně: <b>' + escapeHtml(profileText) + '</b>' + (status.manual ? ' · ručně nastaveno' : ' · automatika povolená') + '</div>',
-    '    <div class="smallText">Detekce: ' + (status.lowEndDetected ? 'slabší zařízení' : 'bez automatického omezení') + ' · ' + escapeHtml(lowReasons) + '</div>',
-    '    <div class="smallText">Měření: ' + escapeHtml(probeText) + ' · ' + escapeHtml(formatRakProbeAge(probe)) + '</div>',
+    '  <div class="appMenuText rakDevicePerfText">',
+    '    <div>Režim: <b>' + escapeHtml(profileText) + '</b>' + (status.manual ? ' · ručně' : ' · auto') + '</div>',
+    '    <div class="smallText">' + (status.lowEndDetected ? 'Slabší zařízení · ' : 'Bez omezení · ') + escapeHtml(probeText) + '</div>',
     '  </div>',
     '  <div class="appMenuActionRow rakDevicePerfActions">',
-    '    <button type="button" class="appMenuAction isActive" data-menu-action="device-performance-test">Změřit plynulost</button>',
+    '    <button type="button" class="appMenuAction isActive" data-menu-action="device-performance-test">Změřit</button>',
     '    <button type="button" class="appMenuAction" data-menu-action="device-performance-auto">Automatika</button>',
-    '    <button type="button" class="appMenuAction" data-ui-pref="lightweight">' + (status.active ? 'Vypnout Láďův režim' : 'Zapnout Láďův režim') + '</button>',
+    '    <button type="button" class="appMenuAction" data-ui-pref="lightweight">' + (status.active ? 'Vypnout Láďův' : 'Zapnout Láďův') + '</button>',
     '  </div>',
     '</div>'
   ].join('');
@@ -4286,7 +4284,7 @@ function renderGamesAppearanceStatus() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText || 'v.1.5 (743)',
+      range: versionText || 'v.1.5 (744)',
       title: 'Přechod na řadu 1.5',
       lines: [
         'Přepnutí verze na v.1.5 a vyčištění sekce O aplikaci.',
@@ -6195,19 +6193,18 @@ function openAppMenu(view) {
       body.innerHTML = [
         profileCard,
         performanceCard,
-        '<div class="appMenuCard appMenuSettingsCard">',
+        '<div class="appMenuCard appMenuSettingsCard appMenuAppSettingsCard">',
         '  <div class="appMenuCardTitle">Nastavení aplikace</div>',
-        '  <div class="appMenuSettingsList">',
-        '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-pref="compact">' + (prefs.compact ? '✓ ' : '') + 'Kompaktní režim</button>',
-        '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-pref="lightweight">' + (prefs.lightweight ? '✓ ' : '') + LIGHTWEIGHT_MODE_LABEL + ' · méně animací a efektů</button>',
-        '    <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="clear-cache">Vyčistit cache a tvrdě obnovit</button>',
-        '    <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="app-diagnostics">Diagnostika aplikace</button>',
-        '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-reset="1">Obnovit výchozí nastavení</button>',
-        '    <button type="button" class="appMenuAction appMenuSettingBtn appMenuDangerBtn" data-menu-action="reset-state">Smazat lokální data</button>',
+        '  <div class="appMenuSettingsList appMenuSettingsGrid">',
+        '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-pref="compact">' + (prefs.compact ? '✓ ' : '') + 'Kompaktní</button>',
+        '    <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="clear-cache">Vyčistit cache</button>',
+        '    <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="app-diagnostics">Diagnostika</button>',
+        '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-reset="1">Výchozí</button>',
+        '    <button type="button" class="appMenuAction appMenuSettingBtn appMenuDangerBtn" data-menu-action="reset-state">Smazat data</button>',
         '  </div>',
-        '  <button type="button" class="appMenuAction appMenuBack" data-menu-back="1">Zpět</button>',
         '</div>',
-        themeCards
+        themeCards,
+        '<button type="button" class="appMenuAction appMenuBack appMenuStandaloneBack" data-menu-back="1">Zpět</button>'
       ].join('');
       if (typeof gamesRenderAccountChips === 'function') {
         try { gamesRenderAccountChips(); } catch (err) {}

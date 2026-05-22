@@ -1,4 +1,4 @@
-// v.1.5 (743) – Lodě: spodní tlačítka pro přehazování/otáčení flotily jsou v toku pod hrací plochou, nad spodní lištou.
+// v.1.5 (744) – Nastavení: kompaktnější profil, výkon zařízení, theme a samostatné Zpět pod vzhledem.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

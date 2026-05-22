@@ -1,3 +1,9 @@
+## v.1.5 (744)
+- Více → Nastavení: zmenšená karta Profil a přihlášení, zúžená karta Výkon zařízení a kratší texty.
+- Z Nastavení aplikace odebrané duplicitní tlačítko Láďův režim, protože zůstává ve Výkonu zařízení.
+- Tlačítka Nastavení aplikace a Theme/Pozadí jsou kompaktnější a drží dvě položky vedle sebe i na mobilu.
+- Tlačítko Zpět je samostatně až pod Theme / barvy aplikace a Pozadí.
+
 ## v.1.5 (743)
 - Přechod aktuální build řady na v.1.5 (743), cache na v1.5-743 a Supabase realtime kanál na rak-public-live-v743.
 - Sekce „O aplikaci“ přepracovaná do stručného přehledu po blocích cca 50 verzí.
