@@ -1,3 +1,9 @@
+## v.1.5 (743)
+- Přechod aktuální build řady na v.1.5 (743), cache na v1.5-743 a Supabase realtime kanál na rak-public-live-v743.
+- Sekce „O aplikaci“ přepracovaná do stručného přehledu po blocích cca 50 verzí.
+- Z popisu „O aplikaci“ odstraněné zbytečné vysvětlivky o aktuálním buildu, changelogu, theme a pozadí.
+- V Nastavení aplikace a v Theme odstraněné zbytečné popisky; zůstaly samotné volby.
+
 ## v.1.1 (742)
 - Lodě: opravené umístění spodních tlačítek při rozmisťování flotily.
 - Tlačítka Přehodit automaticky a Otočit vybranou jsou nově v běžném toku pod hrací plochou a nad spodní lištou, ne jako sticky vrstva přes board.

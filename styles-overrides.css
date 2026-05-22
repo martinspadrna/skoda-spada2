@@ -9727,7 +9727,7 @@ body:not(.lightweightMode):not(.lowEndDevice) #games #gamesShellBody[data-arcade
 }
 
 
-/* v.1.1 (742): Statistiky + Lodě kotvené od spodní lišty + Pampuch bez cíleného lovení. */
+/* v.1.5 (743): Statistiky + Lodě kotvené od spodní lišty + Pampuch bez cíleného lovení. */
 #games #gamesShellBody[data-arcade-game="ships"]{
   --ships-bottom-safe:calc(74px + env(safe-area-inset-bottom));
   --ships-board-size:min(calc(100vw - 28px), calc(100dvh - 292px - env(safe-area-inset-top) - env(safe-area-inset-bottom)), 390px);
@@ -9841,7 +9841,7 @@ body.shipsGameOpen #games .gamesShellBackFloating{
 }
 
 
-/* v.1.1 (742): Lodě – spodní ovládání flotily je v běžném toku těsně nad spodní lištou, ne přes hrací pole. */
+/* v.1.5 (743): Lodě – spodní ovládání flotily je v běžném toku těsně nad spodní lištou, ne přes hrací pole. */
 #games #gamesShellBody[data-arcade-game="ships"]{
   --ships-bottom-safe:calc(72px + env(safe-area-inset-bottom));
   --ships-setup-actions-h:44px;

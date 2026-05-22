@@ -4286,110 +4286,120 @@ function renderGamesAppearanceStatus() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText,
-      title: 'Aktuální build',
+      range: versionText || 'v.1.5 (743)',
+      title: 'Přechod na řadu 1.5',
       lines: [
-        'Build v.1.1 (742) opravuje spodní ovládání flotily v Lodích, aby tlačítka Přehodit automaticky a Otočit vybranou neležela přes hrací pole.',
-        'Série v.1.1 650–706 dotáhla Piškvorky, online pozvánky, PWA launch handler, všechny hlavní hry, herní profily, reporty chyb, theme polish, těžší/chytřejší achievementy a společný herní QA průchod včetně app-like dotykového polishu.',
-        'Sekce „O aplikaci“ je nově stručnější: detailní změny zůstávají v changelogu a tady se historie drží po větších blocích.',
-        'Stabilizační audity, Supabase guardy, Láďův režim a finální readiness kontroly zůstávají součástí diagnostiky.'
+        'Přepnutí verze na v.1.5 a vyčištění sekce O aplikaci.',
+        'Stručnější historie po větších blocích, bez dlouhých vysvětlivek.',
+        'V Nastavení zůstaly volby, ale zmizely zbytečné popisky.'
+      ]
+    },
+    {
+      range: 'v.1.1 700–742',
+      title: 'Importy, statistiky a hry',
+      lines: [
+        'Dotažený import Excelu podle měsíčních listů, online ukládání rozpisů a přepínání let.',
+        'Statistiky hlídají správný rok, fond 2025, průběžný rok 2026 a pravidlo TNKS01/TPKW01.',
+        'Přibyly a ladily se Lodě, Pampuch, správa pozvánek, servisní synchronizace a kontrola aktualizací.'
+      ]
+    },
+    {
+      range: 'v.1.1 650–699',
+      title: 'Velké herní ladění',
+      lines: [
+        'Piškvorky, 2048, Snake, Flappy Car, Aim Trainer, Reaction Test, Tetris, Space Shooter, Brick, Doodle a Bubble prošly mobile-first úpravami.',
+        'Hry dostaly lepší dotykové ovládání, výsledkové obrazovky, achievementy, Top výsledky a zápis jen po dokončení.',
+        'Online hraní, pozvánky, skóre a herní profily se stabilizovaly pro běžné používání.'
       ]
     },
     {
       range: 'v.1.1 600–649',
-      title: 'Finální stabilizace a výkon',
+      title: 'Stabilizace a výkon',
       lines: [
-        'Dokončila se Fáze 8–10: PWA/service worker hardening, security/render cleanup a finální readiness diagnostika.',
-        'Přibyl post-stabilization watch, Láďův režim dostal další výkonové pojistky a Supabase kontroly se zpřesnily.',
-        'Aplikace se čistila hlavně kvůli stabilitě, cache, offline chování a slabším mobilům.'
+        'Dokončené PWA/service worker hardening, security/render cleanup a finální readiness kontroly.',
+        'Přibyly výkonové pojistky pro Láďův režim, méně náročný render a lepší diagnostika.',
+        'Supabase vrstva dostala víc kontrol, auditů a bezpečnější chování při syncu.'
       ]
     },
     {
       range: 'v.1.1 550–599',
-      title: 'Data, Supabase a odlehčení renderu',
+      title: 'Data a online vrstva',
       lines: [
-        'Probíhala Fáze 7: úspornější lokální cache, méně zbytečných DOM renderů a bezpečnější práce s uloženými daty.',
-        'Supabase vrstva dostala frontu, retry/backoff, deduplikaci, fallback cache a lepší reconnect chování.',
-        'Theme/Pozadí a profilové nastavení vzhledu se začalo ukládat k hernímu profilu.'
+        'Probíhalo zrychlení lokální cache, omezení zbytečných renderů a bezpečnější práce s uloženými daty.',
+        'Online synchronizace dostala frontu, retry/backoff, deduplikaci a fallback cache.',
+        'Ladily se profily, herní data, rozpisy a spolehlivější návrat po výpadku internetu.'
       ]
     },
     {
       range: 'v.1.1 500–549',
-      title: 'CalcPanel, Láďův režim a herní výkon',
+      title: 'Kalkulačky a odlehčení UI',
       lines: [
-        'Kalkulačky se sjednotily přes calcPanel systém a opravovaly se výšky, tlačítka, indexy a rozdělané dávky.',
-        'Láďův režim začal víc šetřit blur efekty, stíny a animace pro slabší zařízení.',
-        'Herní hub dostal cache profilů/statistik, lepší leaderboardy a základ výkonových guardů.'
+        'Kalkulačky se sjednotily přes calcPanel systém a opravovaly se výšky, tlačítka, indexy i rozdělané dávky.',
+        'Láďův režim začal šetřit náročné efekty, stíny a animace pro slabší zařízení.',
+        'Herní hub dostal cache profilů, výsledků a základ výkonových guardů.'
       ]
     },
     {
       range: 'v.1 450–499',
-      title: 'Příprava velkého refactoru',
+      title: 'Příprava refactoru',
       lines: [
-        'Upevnil se postup práce: vždy pokračovat z posledního potvrzeného buildu a safepoint použít jen na výslovný pokyn.',
-        'Začal se víc řešit technický dluh, duplicity, přebíjení stylů a potřeba bezpečnějších guardů místo náhodného ladění jednotlivých prvků.',
-        'Mobilní použitelnost šla nahoru hlavně přes safe-area, spodní lištu, výšky panelů, mezery a čitelnost na iPhonu i Androidu.',
-        'Vzhled se začal posouvat k iOS/glassmorphism směru, ale opatrně, aby se nerozbily funkce.'
+        'Upevnil se postup práce: pokračovat z posledního potvrzeného buildu a safepoint použít jen na výslovný pokyn.',
+        'Začaly se řešit duplicity, přebíjení stylů, technický dluh a bezpečnější guardy.',
+        'Mobilní použitelnost šla nahoru přes safe-area, spodní lištu, výšky panelů a čitelnost.'
       ]
     },
     {
       range: 'v.1 400–449',
-      title: 'Herní rozšíření a online data',
+      title: 'Hry a online data',
       lines: [
         'Rozšířily se hráčské profily, herní statistiky, leaderboardy a vazba na Supabase.',
-        'Začal větší herní plán: Snake, Piškvorky, 2048, Flappy Car a příprava dalších her do jednotného hubu.',
-        'Appka se víc posouvala k mobile-first rozložení a menšímu počtu rušivých reloadů.',
-        'Supabase začala být důležitý základ pro online data, ale bylo potřeba dál řešit fallbacky a stabilitu při slabém internetu.'
+        'Začal větší herní plán a přesun her do jednotného hubu.',
+        'Appka se posouvala k mobilnímu ovládání a menšímu počtu rušivých reloadů.'
       ]
     },
     {
       range: 'v.1 350–399',
-      title: 'Hry, spodní lišta a tile rozložení',
+      title: 'Herní hub a přehledy',
       lines: [
         'Výrazně se ladily hry, spodní lišta, Rotace a Statistiky.',
-        'Přibylo víc herních modulů a společný herní hub včetně leaderboardů a online invite flow.',
-        'Piškvorky dostaly tvrdší AI, online režim a lepší návrat do rozehrané hry.',
-        'Rotace a Statistiky dostaly více dlaždic, menší rozestupy a lepší zobrazení jmen/strojů.'
+        'Přibyly herní moduly, online pozvánky a lepší návrat do rozehrané hry.',
+        'Rotace a Statistiky dostaly více dlaždic, menší rozestupy a lepší zobrazení jmen a strojů.'
       ]
     },
     {
       range: 'v.1 300–349',
-      title: 'PWA, cache a první větší online vrstva',
+      title: 'PWA a cache',
       lines: [
-        'Vznikal stabilnější PWA základ: service worker, manifest, offline fallback, cache a aktualizační hooky.',
+        'Vznikal stabilnější PWA základ: service worker, manifest, offline fallback a aktualizační hooky.',
         'Rozdělovaly se části inline skriptů do samostatnějších modulů.',
-        'Stabilizovala se herní sekce, invite flow a první větší online/offline sync vrstvy.',
-        'Dashboard, spodní lišta a přihlášení se ladily kvůli menšímu chaosu při načítání a přepínání stránek.'
+        'Dashboard, spodní lišta a přihlášení se ladily kvůli stabilnějšímu načítání.'
       ]
     },
     {
       range: 'v.1 250–299',
-      title: 'Dashboard, kantýna/jídelna a kalkulačky',
+      title: 'Dashboard a kalkulačky',
       lines: [
-        'Dashboard se rozšířil o směny, absenci, procenta průběhu, výplatu, kantýnu/jídelnu a stavové karty.',
-        'Jídelna a kantýna se sjednocovaly do přehlednějšího zobrazení s lepším výpočtem otevřeno/zavřeno a dalšího termínu.',
+        'Dashboard se rozšířil o směny, absenci, průběh směny, výplatu, kantýnu a jídelnu.',
         'Kalkulačky pro Frézky a Brusy se zpřesňovaly v časech, dávkách a hotových kusech.',
         'Mobilní layout se čistil, aby šel používat bez zoomu a bez posouvání mimo obrazovku.'
       ]
     },
     {
       range: 'v.1 200–249',
-      title: 'Z prototypu do vícestránkové appky',
+      title: 'Vícestránková appka',
       lines: [
-        'Aplikace se posouvala do stabilnější vícestránkové appky s Dashboardem, Rotací, Rozpisy, Statistikami a Kalkulačkami.',
-        'Začalo se víc řešit ukládání dat, export, verze buildu a kontrola, aby změny nezmizely mezi ZIPy.',
-        'Rozpisy a rotace se ladily podle reálného použití v práci, včetně směn, strojů, absencí a přehledů pro lidi.',
-        'Přibývaly první větší úpravy vzhledu a použitelnosti na mobilu.'
+        'Aplikace se posouvala do stabilnější struktury s Dashboardem, Rotací, Rozpisy, Statistikami a Kalkulačkami.',
+        'Začalo se víc řešit ukládání dat, export, build verze a návaznost mezi ZIPy.',
+        'Rozpisy a rotace se ladily podle reálného provozu v práci.'
       ]
     },
     {
       range: 'v.0.xx až v.1 199',
-      title: 'Základ Rotace a kalkulačky',
+      title: 'Základ projektu',
       lines: [
-        'Vznikl základ aplikace: směnová logika, dashboard, první kalkulačky a pracovní přehledy.',
-        'Přidávaly se stroje, jména, směny, první statistiky a základní exportní/logická vrstva.',
-        'Priorita byla funkčnost výpočtů a ruční ladění podle testování, ne ještě finální vzhled ani čistá architektura.',
-        'Postupně se ukázala potřeba silnějších pravidel pro verze, safepointy, navazování na poslední ZIP a pozdější refactor.'
+        'Vznikl základ směnové logiky, dashboardu, prvních kalkulaček a pracovních přehledů.',
+        'Přidávaly se stroje, jména, směny, první statistiky a základ exportní/logické vrstvy.',
+        'Postupně vznikla potřeba pevnějších pravidel verzí, safepointů a bezpečnějšího refactoru.'
       ]
     }
   ];
@@ -6154,11 +6164,6 @@ function openAppMenu(view) {
         '<div class="appMenuCard">',
         '  <div class="appMenuCardTitle">O aplikaci</div>',
         '  <div class="appMenuVersion">' + escapeHtml(versionText || '—') + '</div>',
-        '  <div class="appMenuText">',
-        '    <div>Aktuální build je nahoře, pod ním je přehled největších změn po větších blocích cca 50 verzí.</div>',
-        '    <div>Detailní changelog zůstává v souboru CHANGELOG.md, tady je rychlejší přehled přímo v aplikaci.</div>',
-        '    <div>Theme mění barvy/akcenty aplikace, Pozadí mění hlavně atmosféru za glass vrstvami.</div>',
-        '  </div>',
         '  ' + buildAppHistoryHtml(versionText),
         '  <button type="button" class="appMenuAction appMenuBack" data-menu-back="1">Zpět</button>',
         '</div>'
@@ -6192,10 +6197,6 @@ function openAppMenu(view) {
         performanceCard,
         '<div class="appMenuCard appMenuSettingsCard">',
         '  <div class="appMenuCardTitle">Nastavení aplikace</div>',
-        '  <div class="appMenuText">',
-        '    <div>Kompaktní režim se ukládá jen do tohoto zařízení. Theme a pozadí jsou napojené na herní profil, když je hráč přihlášený.</div>',
-        '    <div>Láďův režim umí jet ručně nebo automaticky podle zařízení a měření plynulosti. Vypíná těžký blur, stíny, animace a snižuje zátěž canvas her.</div>',
-        '  </div>',
         '  <div class="appMenuSettingsList">',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-pref="compact">' + (prefs.compact ? '✓ ' : '') + 'Kompaktní režim</button>',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-pref="lightweight">' + (prefs.lightweight ? '✓ ' : '') + LIGHTWEIGHT_MODE_LABEL + ' · méně animací a efektů</button>',
@@ -9798,7 +9799,6 @@ function buildThemeSystemSettingsHtml() {
       '<div class="appMenuThemeSwatch" style="--theme-swatch:' + escapeHtml(String(theme.color || '#7CFF7C')) + '"></div>' +
       '<div class="appMenuThemeInfo">' +
       '<div class="appMenuThemeTitle">' + escapeHtml(String(theme.label || '')) + '</div>' +
-      '<div class="appMenuThemeSub">' + escapeHtml(String(theme.subtitle || '')) + '</div>' +
       '<div class="appMenuThemeBadge">' + escapeHtml(unlockedText) + '</div>' +
       '</div>' +
     '</button>';
@@ -9812,19 +9812,13 @@ function buildThemeSystemSettingsHtml() {
       '<div class="appMenuBackgroundSwatch" style="--background-swatch:' + escapeHtml(swatch) + '"></div>' +
       '<div class="appMenuThemeInfo">' +
       '<div class="appMenuThemeTitle">' + escapeHtml(String(bg.label || '')) + '</div>' +
-      '<div class="appMenuThemeSub">' + escapeHtml(String(bg.subtitle || '')) + '</div>' +
       '<div class="appMenuThemeBadge">Dostupné</div>' +
       '</div>' +
     '</button>';
   }).join('');
-  const activeUiAccount = getActiveProfileUiAccount();
-  const profileThemeText = activeUiAccount
-    ? 'Jsi přihlášený jako ' + String(activeUiAccount.name || activeUiAccount.id || '').trim() + ': theme i pozadí se ukládá k hernímu profilu a načte se i na jiném zařízení.'
-    : 'Bez přihlášení se theme i pozadí ukládá jen do tohoto zařízení. Po přihlášení herním profilem se začne ukládat k profilu.';
   return [
     '<div class="appMenuCard appMenuSettingsCard appMenuThemeCardWrap">',
     '  <div class="appMenuCardTitle">Theme / barvy aplikace</div>',
-    '  <div class="appMenuText">Theme mění barvy, akcenty, aktivní prvky a některé odemykatelné skiny. Pozadí je samostatné, aby šlo doladit glass efekt bez změny rozložení.<br>' + escapeHtml(profileThemeText) + '</div>',
     '  <details class="appMenuThemeAccordion" id="appMenuThemeAccordion">',
     '    <summary class="appMenuAction appMenuSettingBtn appMenuThemeSummary">',
     '      <span class="appMenuThemeSummaryLeft">',
@@ -9848,7 +9842,7 @@ function buildThemeSystemSettingsHtml() {
     '    </summary>',
     '    <div class="appMenuThemeAccordionBody">',
     '      <div class="appMenuBackgroundGrid" id="appMenuBackgroundGrid">' + bgCards + '</div>',
-    '      <div class="appMenuThemeHint" id="appMenuBackgroundHint">Pozadí mění jen atmosféru a kontrast glass prvků, ne velikosti ani funkce.</div>',
+    '      <div class="appMenuThemeHint" id="appMenuBackgroundHint"></div>',
     '    </div>',
     '  </details>',
     '</div>'
@@ -9893,7 +9887,7 @@ function renderThemeSettingsCards() {
         const nextUnlocked = id === 'default' || (Number(nextTheme.minPlays || 0) <= nextMetrics.totalPlays && Number(nextTheme.minAchievements || 0) <= nextMetrics.achievements);
         if (!nextUnlocked) {
           if (hint) {
-            const nextHintText = 'Zatím zamčeno: ' + (nextTheme.unlockText || 'podmínka nesplněna') + '. Aktuálně máš ' + String(nextMetrics.totalPlays) + ' her a ' + String(nextMetrics.achievements) + ' achievementů.';
+            const nextHintText = '';
             if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(hint, nextHintText, 'themeHintLocked');
             else hint.textContent = nextHintText;
           }
@@ -9903,7 +9897,7 @@ function renderThemeSettingsCards() {
         if (typeof applyBackgroundPreference === 'function') applyBackgroundPreference(getBackgroundPreference(), false);
         renderThemeSettingsCards();
         if (hint) {
-          const nextHintText = 'Theme „' + String(nextTheme.label || id) + '“ je teď aktivní.';
+          const nextHintText = '';
           if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(hint, nextHintText, 'themeHintActive');
           else hint.textContent = nextHintText;
         }
@@ -9931,7 +9925,7 @@ function renderThemeSettingsCards() {
           if (typeof applyBackgroundPreference === 'function') applyBackgroundPreference(id, true);
           renderThemeSettingsCards();
           if (bgHint) {
-            const nextBgHintText = 'Pozadí „' + String(nextBg.label || id) + '“ je teď aktivní.';
+            const nextBgHintText = '';
             if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(bgHint, nextBgHintText, 'backgroundHintActive');
             else bgHint.textContent = nextBgHintText;
           }
@@ -9954,10 +9948,7 @@ function renderThemeSettingsCards() {
   }
 
   if (hint) {
-    const activeName = (themeById.get(current) || themeList[0] || { label: 'Výchozí' }).label;
-    const nextThemeHint = profile && profile.activeAccountId
-      ? 'Theme i pozadí se ukládá k přihlášenému hernímu profilu. Aktivní: ' + activeName + '.'
-      : 'Theme mění barvy/akcenty aplikace. Bez přihlášení se ukládá jen lokálně v tomto zařízení.';
+    const nextThemeHint = '';
     if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(hint, nextThemeHint, 'themeHintSummary');
     else hint.textContent = nextThemeHint;
   }
