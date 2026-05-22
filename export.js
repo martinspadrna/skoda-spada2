@@ -75,6 +75,14 @@ function primeSourceCache() {
 
 primeSourceCache();
 
+function setRakExportStatus(text, isError) {
+  const status = document.getElementById('rakExcelImportStatus') || document.getElementById('adminOnlineSaveStatus');
+  if (!status) return;
+  status.textContent = text || '';
+  status.classList.toggle('isError', !!isError);
+}
+
+
 async function readExportText(relativePath) {
   if (SOURCE_CACHE[relativePath]) {
     return SOURCE_CACHE[relativePath];
@@ -116,11 +124,13 @@ async function readExportBinary(relativePath) {
 
 async function exportCurrentHtml() {
   if (typeof JSZip === "undefined") {
+    setRakExportStatus("Export ZIP není dostupný, nenačetla se knihovna JSZip.", true);
     alert("Export ZIP není dostupný, nenačetla se knihovna JSZip.");
     return;
   }
 
   try {
+    setRakExportStatus("Připravuju ZIP build…", false);
     const jsFiles = [
       'app.js',
       'core.js',
@@ -254,12 +264,20 @@ ${document.documentElement.cloneNode(true).outerHTML}`;
     document.body.appendChild(a);
     a.click();
     a.remove();
+    setRakExportStatus("ZIP export spuštěný: " + a.download, false);
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   } catch (err) {
     console.error(err);
+    setRakExportStatus("Export ZIP se nepovedl: " + (err && err.message ? err.message : err), true);
     alert("Export ZIP se nepovedl: " + (err && err.message ? err.message : err));
   }
 }
+window.exportCurrentHtml = exportCurrentHtml;
+
+async function triggerRakZipExport() {
+  return exportCurrentHtml();
+}
+window.triggerRakZipExport = triggerRakZipExport;
 
 document.getElementById("exportBtn")?.addEventListener("click", () => {
   exportCurrentHtml();

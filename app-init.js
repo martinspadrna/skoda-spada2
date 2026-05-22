@@ -159,13 +159,199 @@ function normalizeExcelImportMonthKey(value, fallbackYear) {
 
 function getExcelImportOptions() {
   const scopeEl = document.getElementById('rakExcelImportScope');
-  const monthEl = document.getElementById('rakExcelImportMonth');
+  const detectedMonthEl = document.getElementById('rakExcelImportDetectedMonth');
+  const legacyMonthEl = document.getElementById('rakExcelImportMonth');
   const yearEl = document.getElementById('rakExcelImportYear') || document.getElementById('importYearSelect');
   const fallbackYear = parseInt(yearEl && yearEl.value, 10) || app.importYear || app.selectedYear || new Date().getFullYear();
   const scope = scopeEl && scopeEl.value ? String(scopeEl.value) : 'all';
-  const monthKey = normalizeExcelImportMonthKey(monthEl && monthEl.value ? monthEl.value : '', fallbackYear);
+  const selectedMonth = detectedMonthEl && detectedMonthEl.value ? String(detectedMonthEl.value) : '';
+  const legacyMonth = legacyMonthEl && legacyMonthEl.value ? String(legacyMonthEl.value) : '';
+  const monthKey = selectedMonth || normalizeExcelImportMonthKey(legacyMonth, fallbackYear);
   return { scope, monthKey, fallbackYear };
 }
+
+function rakExcelFormatMonthLabel(monthKey) {
+  const parsed = typeof parseMonthKey === 'function' ? parseMonthKey(monthKey) : null;
+  const names = ['', 'leden', 'únor', 'březen', 'duben', 'květen', 'červen', 'červenec', 'srpen', 'září', 'říjen', 'listopad', 'prosinec'];
+  if (parsed && parsed.month && parsed.year) {
+    return monthKey + ' · ' + (names[parsed.month] || ('měsíc ' + parsed.month)) + ' ' + parsed.year;
+  }
+  return String(monthKey || '');
+}
+
+function getRakExcelImportPreview() {
+  if (!app.excelImportPreview || !app.excelImportPreview.months) return null;
+  return app.excelImportPreview;
+}
+
+function setRakExcelImportStatus(text, isError) {
+  const status = document.getElementById('rakExcelImportStatus') || document.getElementById('adminOnlineSaveStatus');
+  if (!status) return;
+  status.textContent = text || '';
+  status.classList.toggle('isError', !!isError);
+}
+
+function updateRakExcelImportPreviewUi() {
+  const preview = getRakExcelImportPreview();
+  const fileStatus = document.getElementById('rakExcelImportFileStatus');
+  const monthSelect = document.getElementById('rakExcelImportDetectedMonth');
+  const commitBtn = document.getElementById('rakExcelImportCommitBtn');
+  const scopeEl = document.getElementById('rakExcelImportScope');
+  if (fileStatus) {
+    fileStatus.textContent = preview
+      ? ('Načteno: ' + preview.fileName + ' · měsíců: ' + preview.monthKeys.length)
+      : 'Zatím není vybraný žádný Excel.';
+  }
+  if (monthSelect) {
+    const selectedBefore = monthSelect.value;
+    monthSelect.innerHTML = '';
+    if (!preview || !preview.monthKeys.length) {
+      const opt = document.createElement('option');
+      opt.value = '';
+      opt.textContent = 'Nejdřív vyber Excel';
+      monthSelect.appendChild(opt);
+      monthSelect.disabled = true;
+    } else {
+      preview.monthKeys.forEach((monthKey) => {
+        const opt = document.createElement('option');
+        opt.value = monthKey;
+        opt.textContent = rakExcelFormatMonthLabel(monthKey);
+        monthSelect.appendChild(opt);
+      });
+      monthSelect.disabled = false;
+      if (selectedBefore && preview.monthKeys.includes(selectedBefore)) monthSelect.value = selectedBefore;
+    }
+  }
+  if (commitBtn) commitBtn.disabled = !(preview && preview.monthKeys.length);
+  if (scopeEl && !scopeEl.value) scopeEl.value = 'all';
+}
+window.updateRakExcelImportPreviewUi = updateRakExcelImportPreviewUi;
+
+async function buildRakExcelImportPreview(file) {
+  if (!file) throw new Error('Vyber Excel soubor.');
+  if (typeof XLSX === 'undefined') throw new Error('Knihovna pro Excel se nenačetla.');
+  const yearEl = document.getElementById('rakExcelImportYear') || document.getElementById('importYearSelect');
+  const fallbackYear = parseInt(yearEl && yearEl.value, 10) || app.importYear || app.selectedYear || new Date().getFullYear();
+  const buffer = await file.arrayBuffer();
+  const wb = XLSX.read(buffer, { type: 'array', cellDates: true });
+  const imported = parseWorkbookFromSheetJS(wb, { scope: 'all', fallbackYear });
+  const months = imported && imported.months ? imported.months : {};
+  const monthKeys = Object.keys(months).sort((a, b) => {
+    const pa = typeof parseMonthKey === 'function' ? parseMonthKey(a) : null;
+    const pb = typeof parseMonthKey === 'function' ? parseMonthKey(b) : null;
+    const ya = pa && pa.year ? pa.year : 0;
+    const yb = pb && pb.year ? pb.year : 0;
+    const ma = pa && pa.month ? pa.month : 0;
+    const mb = pb && pb.month ? pb.month : 0;
+    return ya === yb ? ma - mb : ya - yb;
+  });
+  app.excelImportPreview = {
+    file,
+    fileName: file.name || 'Excel',
+    fallbackYear,
+    imported,
+    months,
+    monthKeys,
+    createdAt: Date.now()
+  };
+  updateRakExcelImportPreviewUi();
+  if (!monthKeys.length) {
+    const warn = imported && imported.warnings && imported.warnings.length ? ' · ' + imported.warnings.slice(0, 2).join(' / ') : '';
+    setRakExcelImportStatus('Excel jsem načetl, ale nenašel jsem použitelný měsíc.' + warn, true);
+  } else {
+    setRakExcelImportStatus('Excel načtený. Vyber celý rok/Excel nebo konkrétní měsíc a klikni na Načíst do rozpisů.', false);
+  }
+  return app.excelImportPreview;
+}
+window.buildRakExcelImportPreview = buildRakExcelImportPreview;
+
+async function ensureFreshRakExcelImportPreview() {
+  const input = document.getElementById('excelFile');
+  const file = input && input.files && input.files[0];
+  const options = getExcelImportOptions();
+  const preview = getRakExcelImportPreview();
+  if (!preview || (file && preview.file !== file) || Number(preview.fallbackYear) !== Number(options.fallbackYear)) {
+    if (!file && !preview) throw new Error('Nejdřív vyber Excel soubor.');
+    return buildRakExcelImportPreview(file || preview.file);
+  }
+  return preview;
+}
+
+async function performRakExcelImportFromPreview() {
+  const preview = await ensureFreshRakExcelImportPreview();
+  const importOptions = getExcelImportOptions();
+  const importedMonths = preview && preview.months ? preview.months : {};
+  const sourceEntries = Object.entries(importedMonths);
+  const entries = importOptions.scope === 'month'
+    ? sourceEntries.filter(([monthKey]) => monthKey === importOptions.monthKey)
+    : sourceEntries;
+
+  if (importOptions.scope === 'month' && !importOptions.monthKey) {
+    alert('Vyber měsíc z načteného Excelu.');
+    return;
+  }
+
+  if (!entries.length) {
+    const warn = preview.imported && preview.imported.warnings && preview.imported.warnings.length ? '\n\n' + preview.imported.warnings.slice(0, 4).join('\n') : '';
+    alert(importOptions.scope === 'month'
+      ? ('V Excelu jsem nenašel vybraný měsíc ' + importOptions.monthKey + '.' + warn)
+      : ('V Excelu jsem nenašel žádný použitelný rozpis.' + warn));
+    return;
+  }
+
+  let added = 0;
+  let overwritten = 0;
+  let selectedImportedMonth = '';
+
+  entries.forEach(([monthKey, monthData]) => {
+    const fallback = app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
+    const normalized = normalizeMonthForImport(monthData, fallback);
+    const existed = !!(app.rotation && app.rotation.months && app.rotation.months[monthKey]);
+    if (!app.rotation.months) app.rotation.months = {};
+    app.rotation.months[monthKey] = normalized;
+    selectedImportedMonth = selectedImportedMonth || monthKey;
+    if (existed) overwritten += 1;
+    else added += 1;
+  });
+
+  app.rotation = normalizeRotationData(app.rotation);
+  if (selectedImportedMonth) app.selectedMonth = selectedImportedMonth;
+  if (!getAvailableYears(app.rotation).includes(parseInt(app.selectedYear, 10))) {
+    app.selectedYear = getInitialSelectedYear(app.rotation);
+  }
+  saveRotationData();
+
+  let onlineMessage = 'Online uložení se přeskočilo.';
+  const onlineResult = await saveRotationToSupabase(app.rotation, {
+    source: 'excel-import',
+    importScope: importOptions.scope,
+    monthKey: importOptions.scope === 'month' ? importOptions.monthKey : '',
+    importedMonths: entries.map(([monthKey]) => monthKey)
+  });
+  if (onlineResult && onlineResult.ok === true) {
+    onlineMessage = 'Uloženo online ✓ · měsíců: ' + String(onlineResult.months || entries.length) + ' · řádků: ' + String(onlineResult.entries || 0);
+  } else if (onlineResult && onlineResult.reason === 'missing-bridge') {
+    onlineMessage = 'Online můstek není dostupný, zůstalo lokálně.';
+  } else {
+    onlineMessage = 'Online uložení se nepodařilo, zůstalo lokálně.';
+  }
+
+  renderRotace();
+
+  if (app.selectedMonth && app.rotation.months[app.selectedMonth]) {
+    renderMonth(app.selectedMonth);
+  }
+  if (app.selectedName) renderPerson(app.selectedName);
+
+  const msg = [];
+  if (added) msg.push('Přidáno měsíců: ' + added);
+  if (overwritten) msg.push('Přepsáno měsíců: ' + overwritten);
+  msg.push(onlineMessage);
+  if (preview.imported && preview.imported.warnings && preview.imported.warnings.length) msg.push('Upozornění: ' + preview.imported.warnings.slice(0, 2).join(' / '));
+  setRakExcelImportStatus(msg.join(' | '), false);
+  alert(msg.join(' | '));
+}
+window.performRakExcelImportFromPreview = performRakExcelImportFromPreview;
 
 function rakExcelCellText(value) {
   if (value === null || value === undefined) return '';
@@ -403,105 +589,32 @@ function initAppInitBindings() {
 
   const excelFileInput = document.getElementById("excelFile");
   if (excelFileInput) {
-    registerListener(excelFileInput, "change", () => {
-      if (!app.pendingMenuImport) return;
+    registerListener(excelFileInput, "change", async () => {
+      const input = document.getElementById("excelFile");
+      const file = input && input.files && input.files[0];
       app.pendingMenuImport = false;
-      document.getElementById("importBtn")?.click();
+      if (!file) return;
+      try {
+        setRakExcelImportStatus('Načítám Excel…', false);
+        await buildRakExcelImportPreview(file);
+      } catch (err) {
+        console.error(err);
+        setRakExcelImportStatus('Excel se nepodařilo načíst: ' + (err && err.message ? err.message : err), true);
+        alert('Excel se nepodařilo načíst: ' + (err && err.message ? err.message : err));
+      }
     });
   }
 
   const importBtn = document.getElementById("importBtn");
   if (importBtn) {
     registerListener(importBtn, "click", async () => {
-      const input = document.getElementById("excelFile");
-      const file = input && input.files && input.files[0];
-      if (!file) {
-        alert("Vyber Excel soubor.");
-        return;
+      try {
+        await performRakExcelImportFromPreview();
+      } catch (err) {
+        console.error(err);
+        setRakExcelImportStatus('Import se nepovedl: ' + (err && err.message ? err.message : err), true);
+        alert('Import se nepovedl: ' + (err && err.message ? err.message : err));
       }
-      if (typeof XLSX === "undefined") {
-        alert("Knihovna pro Excel se nenačetla.");
-        return;
-      }
-
-      const importOptions = getExcelImportOptions();
-      if (importOptions.scope === 'month' && !importOptions.monthKey) {
-        alert('Zadej měsíc pro import, třeba 1/25 nebo 1/2025.');
-        return;
-      }
-
-      const buffer = await file.arrayBuffer();
-      const wb = XLSX.read(buffer, { type: "array", cellDates: true });
-      const imported = parseWorkbookFromSheetJS(wb, importOptions);
-      const importedMonths = imported && imported.months ? imported.months : {};
-      const sourceEntries = Object.entries(importedMonths);
-      const entries = importOptions.scope === 'month'
-        ? sourceEntries.filter(([monthKey]) => monthKey === importOptions.monthKey)
-        : sourceEntries;
-
-      if (!entries.length) {
-        const warn = imported && imported.warnings && imported.warnings.length ? '\n\n' + imported.warnings.slice(0, 4).join('\n') : '';
-        alert(importOptions.scope === 'month'
-          ? ('V Excelu jsem nenašel měsíc ' + importOptions.monthKey + '.' + warn)
-          : ('V Excelu jsem nenašel žádný použitelný rozpis.' + warn));
-        if (input) input.value = '';
-        return;
-      }
-
-      let added = 0;
-      let overwritten = 0;
-      let selectedImportedMonth = '';
-
-      entries.forEach(([monthKey, monthData]) => {
-        const fallback = app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
-        const normalized = normalizeMonthForImport(monthData, fallback);
-        const existed = !!(app.rotation && app.rotation.months && app.rotation.months[monthKey]);
-        if (!app.rotation.months) app.rotation.months = {};
-        app.rotation.months[monthKey] = normalized;
-        selectedImportedMonth = selectedImportedMonth || monthKey;
-        if (existed) overwritten += 1;
-        else added += 1;
-      });
-
-      app.rotation = normalizeRotationData(app.rotation);
-      if (selectedImportedMonth) app.selectedMonth = selectedImportedMonth;
-      if (!getAvailableYears(app.rotation).includes(parseInt(app.selectedYear, 10))) {
-        app.selectedYear = getInitialSelectedYear(app.rotation);
-      }
-      saveRotationData();
-
-      let onlineMessage = 'Online uložení se přeskočilo.';
-      const onlineResult = await saveRotationToSupabase(app.rotation, {
-        source: 'excel-import',
-        importScope: importOptions.scope,
-        monthKey: importOptions.scope === 'month' ? importOptions.monthKey : '',
-        importedMonths: entries.map(([monthKey]) => monthKey)
-      });
-      if (onlineResult && onlineResult.ok === true) {
-        onlineMessage = 'Uloženo online ✓ · měsíců: ' + String(onlineResult.months || entries.length) + ' · řádků: ' + String(onlineResult.entries || 0);
-      } else if (onlineResult && onlineResult.reason === 'missing-bridge') {
-        onlineMessage = 'Online můstek není dostupný, zůstalo lokálně.';
-      } else {
-        onlineMessage = 'Online uložení se nepodařilo, zůstalo lokálně.';
-      }
-
-      renderRotace();
-
-      if (app.selectedMonth && app.rotation.months[app.selectedMonth]) {
-        renderMonth(app.selectedMonth);
-      }
-      if (app.selectedName) renderPerson(app.selectedName);
-
-      const statusEl = document.getElementById('adminOnlineSaveStatus');
-      if (statusEl) statusEl.textContent = onlineMessage;
-
-      const msg = [];
-      if (added) msg.push("Přidáno měsíců: " + added);
-      if (overwritten) msg.push("Přepsáno měsíců: " + overwritten);
-      msg.push(onlineMessage);
-      if (imported && imported.warnings && imported.warnings.length) msg.push('Upozornění: ' + imported.warnings.slice(0, 2).join(' / '));
-      if (input) input.value = '';
-      alert(msg.join(" | "));
     });
   }
 

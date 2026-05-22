@@ -1,4 +1,4 @@
-// v.1.1 (728) – opravený import Excelu a export ZIP buildu 1:1.
+// v.1.1 (729) – opravený dvoukrokový import Excelu a funkční export ZIP buildu.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

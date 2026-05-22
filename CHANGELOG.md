@@ -1,3 +1,10 @@
+## v.1.1 (729)
+- Opravený Export / import v administraci: tlačítka teď používají správné `data-admin-action`, takže export ZIP i import Excelu skutečně reagují na kliknutí.
+- Import Excelu je nově dvoukrokový: nejdřív se vybere soubor, appka ho načte, zobrazí nalezené měsíce v rozbalovacím menu a potom jde importovat celý načtený Excel/rok nebo jen vybraný měsíc.
+- Importované rozpisy se po potvrzení dál ukládají lokálně i online přes Supabase, aby je po synchronizaci viděli všichni.
+- Export ZIP má přímý veřejný helper `triggerRakZipExport()` / `exportCurrentHtml()` a stavovou hlášku, takže se neschovává za nefunkční skryté tlačítko.
+- Verze sjednocena na v.1.1 (729), cache na v1.1-729 a Supabase realtime kanál na rak-public-live-v729.
+
 ## v.1.1 (728)
 - Opravený import Excelu v administraci: jde zvolit import celého Excelu/roku nebo jen jednoho měsíce zadaného jako např. 1/25 nebo 1/2025.
 - Import Excelu nově po načtení rozpis uloží lokálně i online přes Supabase, aby se rozpis promítl všem po synchronizaci.

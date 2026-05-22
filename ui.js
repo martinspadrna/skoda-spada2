@@ -4289,7 +4289,7 @@ function buildAppHistoryHtml(versionText) {
       range: versionText,
       title: 'Aktuální build',
       lines: [
-        'Build v.1.1 (728) opravuje import Excelu do rozpisů, online uložení importu a export ZIP buildu.',
+        'Build v.1.1 (729) opravuje dvoukrokový import Excelu a funkční export ZIP buildu.',
         'Série v.1.1 650–706 dotáhla Piškvorky, online pozvánky, PWA launch handler, všechny hlavní hry, herní profily, reporty chyb, theme polish, těžší/chytřejší achievementy a společný herní QA průchod včetně app-like dotykového polishu.',
         'Sekce „O aplikaci“ je nově stručnější: detailní změny zůstávají v changelogu a tady se historie drží po větších blocích.',
         'Stabilizační audity, Supabase guardy, Láďův režim a finální readiness kontroly zůstávají součástí diagnostiky.'
@@ -5435,26 +5435,31 @@ function renderAdminMenuBody(body, section) {
     '</div>'
   ].join('');
 
+  const importPreview = (typeof getRakExcelImportPreview === 'function') ? getRakExcelImportPreview() : null;
   const exportHtml = [
     '<div class="appMenuCard appMenuAdminCard">',
     '  <div class="appMenuCardTitle">Export / import</div>',
     '  <div class="appMenuText">',
-    '    <div>Excel nahraješ buď jako jeden měsíc, nebo celý soubor/rok. Po importu se rozpis uloží lokálně i online do Supabase.</div>',
-    '    <div class="smallText" id="adminOnlineSaveStatus">Export ZIP se stáhne jako kompletní build aplikace.</div>',
+    '    <div>Import teď funguje ve dvou krocích: nejdřív vybereš Excel, appka ho načte a potom si vybereš celý načtený Excel/rok nebo konkrétní měsíc z rozbalovacího seznamu.</div>',
+    '    <div class="smallText" id="rakExcelImportStatus">Export ZIP se stáhne jako kompletní build aplikace.</div>',
     '  </div>',
     '  <div class="appMenuSettingsList">',
-    '    <label class="appMenuFieldLabel" for="rakExcelImportScope">Co importovat</label>',
-    '    <select id="rakExcelImportScope" class="appMenuSelect">',
-    '      <option value="all" selected>Celý Excel / celý rok</option>',
-    '      <option value="month">Jen jeden měsíc</option>',
-    '    </select>',
-    '    <label class="appMenuFieldLabel" for="rakExcelImportMonth">Měsíc, když chceš jen jeden</label>',
-    '    <input id="rakExcelImportMonth" class="appMenuInput" inputmode="text" placeholder="např. 1/25 nebo 1/2025">',
     '    <label class="appMenuFieldLabel" for="rakExcelImportYear">Rok pro listy pojmenované jen měsícem</label>',
     '    <input id="rakExcelImportYear" class="appMenuInput" inputmode="numeric" value="' + escapeHtml(String(app.selectedYear || new Date().getFullYear())) + '" placeholder="2025">',
+    '    <div class="smallText" id="rakExcelImportFileStatus">' + escapeHtml(importPreview ? ('Načteno: ' + importPreview.fileName + ' · měsíců: ' + importPreview.monthKeys.length) : 'Zatím není vybraný žádný Excel.') + '</div>',
+    '    <button type="button" class="appMenuAction" data-admin-action="excel-pick">Vybrat Excel</button>',
+    '    <label class="appMenuFieldLabel" for="rakExcelImportScope">Co importovat</label>',
+    '    <select id="rakExcelImportScope" class="appMenuSelect">',
+    '      <option value="all" selected>Celý načtený Excel / rok</option>',
+    '      <option value="month">Jen vybraný měsíc</option>',
+    '    </select>',
+    '    <label class="appMenuFieldLabel" for="rakExcelImportDetectedMonth">Načtené měsíce z Excelu</label>',
+    '    <select id="rakExcelImportDetectedMonth" class="appMenuSelect" disabled>',
+    '      <option value="">Nejdřív vyber Excel</option>',
+    '    </select>',
     '  </div>',
     '  <div class="appMenuActionRow">',
-    '    <button type="button" class="appMenuAction" data-admin-action="import">Import Excelu</button>',
+    '    <button type="button" class="appMenuAction isActive" id="rakExcelImportCommitBtn" data-admin-action="excel-import" disabled>Načíst do rozpisů</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="export">Export ZIP</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
     '  </div>',
@@ -5493,6 +5498,11 @@ function renderAdminMenuBody(body, section) {
   if (mode === 'rotation') {
     adminRefreshRotationSuggestions(body);
     adminRenderRotationAvailabilitySummary(body);
+  }
+  if (mode === 'export' && typeof updateRakExcelImportPreviewUi === 'function') {
+    setTimeout(() => {
+      try { updateRakExcelImportPreviewUi(); } catch (err) { console.warn('Excel preview UI update failed', err); }
+    }, 0);
   }
 }
 
@@ -5682,12 +5692,22 @@ function bindAppMenuHandlers(body) {
         }
       }
 
-      if (menuAction === 'import') {
+      if (menuAction === 'import' || adminAction === 'import' || adminAction === 'excel-pick') {
         startMenuImport();
         return;
       }
-      if (menuAction === 'export') {
-        document.getElementById('exportBtn')?.click();
+      if (adminAction === 'excel-import') {
+        document.getElementById('importBtn')?.click();
+        return;
+      }
+      if (menuAction === 'export' || adminAction === 'export') {
+        if (typeof triggerRakZipExport === 'function') {
+          await triggerRakZipExport();
+        } else if (typeof exportCurrentHtml === 'function') {
+          await exportCurrentHtml();
+        } else {
+          document.getElementById('exportBtn')?.click();
+        }
         return;
       }
       if (menuAction === 'settings') {
