@@ -1,4 +1,4 @@
-// v.1.5 (764) – Machine settings realtime refresh pro Pračku a korekce fhβ.
+// v.1.5 (765) – Sjednocené nadpisové panely a mezery v celé sekci Kalkulaček.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

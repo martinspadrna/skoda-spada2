@@ -1,8 +1,8 @@
-## v.1.5 (764)
+## v.1.5 (765)
 - Supabase změny `machine_settings` nově po realtime/sync refreshi rovnou překreslí otevřenou Pračku a Korekce → Frézky.
 - Pračka po online změně času výroby kusu aktualizuje informační řádek i už spočítané výsledky bez přechodu na jinou stránku.
 - Korekce → Frézky po online změně středů fhβ aktualizují tlačítka indexů, skrytý vybraný střed a případně přepočítají otevřený výsledek.
-- Verze sjednocena na v.1.5 (764), cache na v1.5-764 a Supabase realtime kanál na rak-public-live-v764.
+- Verze sjednocena na v.1.5 (765), cache na v1.5-765 a Supabase realtime kanál na rak-public-live-v765.
 
 ## v.1.5 (763)
 - Výpočet kusů má nový stroj Pračka v přehledu kalkulaček.

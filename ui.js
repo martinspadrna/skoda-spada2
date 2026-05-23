@@ -710,7 +710,7 @@ html[data-lightweight="1"] body.tttOpen .tttOverlay .tttBoardWrap{
   backdrop-filter:none !important;
 }
 
-/* v.1.5 (764): Piškvorky – za spodní lištou nesmí být vidět ani scrollovat jiná stránka. */
+/* v.1.5 (765): Piškvorky – za spodní lištou nesmí být vidět ani scrollovat jiná stránka. */
 html:has(body.tttOpen){
   height:100% !important;
   overflow:hidden !important;
@@ -4335,7 +4335,7 @@ function renderGamesAppearanceStatus() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText || 'v.1.5 (764)',
+      range: versionText || 'v.1.5 (765)',
       title: 'Přechod na řadu 1.5',
       lines: [
         'Korekce jsou oddělené od Výpočtu kusů; Frézky jsou označené jako nutné doladit.',
@@ -4343,6 +4343,7 @@ function buildAppHistoryHtml(versionText) {
         'Frézky → konicita a fhβ jsou v jedné kalkulačce; středy fhβ se dají měnit v administraci a výstup přednostně vybere jednu nejlepší korekci.',
         'Online změny strojních nastavení se po Supabase syncu promítají rovnou do otevřené Pračky i korekcí frézky.',
         'Piškvorky při otevření hry uzamykají pozadí, aby pod spodní lištou nebyly vidět ani scrollovat ostatní hry.',
+        'Kalkulačky mají sjednocené horní nadpisové panely a stejnou malou mezeru pod nadpisem ve Výpočtu kusů i Korekcích.',
         'Korekce mají kompaktnější centrované nadpisy; Frézky mají volbu indexu s malou mezerou jako u Výpočtu kusů a AF/AG pozadí správně modrá vlevo, zelená vpravo.',
         'Sekce O aplikaci se průběžně drží stručná a aktualizovaná podle aktuálních buildů.'
       ]

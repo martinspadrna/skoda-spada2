@@ -10989,3 +10989,104 @@ html body.tttOpen .tttOverlay::after{
   z-index:1 !important;
   background:linear-gradient(180deg, rgba(5,8,22,0), var(--rakBgBase, var(--bg, #050816)) 42%, var(--rakBgBase, var(--bg, #050816)) 100%) !important;
 }
+
+/* v.1.5 (765): Kalkulačky – sjednocené nadpisové panely a mezery napříč Výpočtem kusů i Korekcemi. */
+:is(#soustruhy, #frezky, #brusy, #pracka, #korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage.active{
+  align-content:start !important;
+  align-items:start !important;
+  grid-auto-rows:max-content !important;
+  row-gap:8px !important;
+  gap:8px !important;
+}
+:is(#soustruhy, #frezky, #brusy, #pracka, #korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage > .headerBar.calcHeaderBar{
+  position:relative !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  width:calc(100% - 12px) !important;
+  max-width:calc(100% - 12px) !important;
+  min-height:42px !important;
+  height:42px !important;
+  max-height:42px !important;
+  margin:6px 6px 0 !important;
+  padding:4px 86px 4px 42px !important;
+  box-sizing:border-box !important;
+  overflow:hidden !important;
+  flex:0 0 auto !important;
+}
+:is(#soustruhy, #frezky, #brusy, #pracka, #korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage > .headerBar.calcHeaderBar > div:first-child{
+  display:none !important;
+}
+:is(#soustruhy, #frezky, #brusy, #pracka, #korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage > .headerBar.calcHeaderBar h3,
+:is(#soustruhy, #frezky, #brusy, #pracka, #korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage > .headerBar.calcHeaderBar .calcHeaderTitleOneLine{
+  position:absolute !important;
+  left:50% !important;
+  top:50% !important;
+  transform:translate(-50%, -50%) !important;
+  width:auto !important;
+  max-width:calc(100% - 142px) !important;
+  min-width:0 !important;
+  margin:0 !important;
+  padding:0 !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  text-align:center !important;
+  font-size:clamp(15px, 3.9vw, 18px) !important;
+  line-height:1 !important;
+}
+:is(#soustruhy, #frezky, #brusy, #pracka, #korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage > .headerBar.calcHeaderBar .calcHeaderActions{
+  position:absolute !important;
+  right:7px !important;
+  top:50% !important;
+  transform:translateY(-50%) !important;
+  z-index:2 !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-end !important;
+  gap:5px !important;
+  margin:0 !important;
+  width:auto !important;
+}
+:is(#soustruhy, #frezky, #brusy, #pracka, #korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage > .headerBar.calcHeaderBar .calcHeaderActions .resetBtn,
+:is(#soustruhy, #frezky, #brusy, #pracka, #korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage > .headerBar.calcHeaderBar .calcHeaderActions .calcCloseBtn{
+  width:32px !important;
+  height:32px !important;
+  min-width:32px !important;
+  max-width:32px !important;
+  min-height:32px !important;
+  max-height:32px !important;
+  flex:0 0 32px !important;
+  margin:0 !important;
+  padding:0 !important;
+  border-radius:11px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  line-height:1 !important;
+}
+:is(#soustruhy, #frezky, #brusy, #pracka).page.calcPage > :not(.headerBar):first-of-type,
+:is(#korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage.calcCorrectionPage > :not(.headerBar):first-of-type{
+  margin-top:0 !important;
+}
+:is(#soustruhy, #frezky, #brusy, #pracka).page.calcPage > .calcPanel--modeCard,
+:is(#soustruhy, #frezky, #brusy, #pracka).page.calcPage > .brusDetails:first-of-type,
+:is(#soustruhy, #frezky, #brusy, #pracka).page.calcPage > .bgrid:first-of-type,
+:is(#soustruhy, #frezky, #brusy, #pracka).page.calcPage > .calcInfoCard:first-of-type,
+:is(#korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage.calcCorrectionPage > .card:first-of-type,
+:is(#korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage.calcCorrectionPage > .calcPanel:first-of-type,
+#korekce-frezky.page.calcPage.calcCorrectionPage > .card.calcCorrectionFhbCard,
+#korekce-frezky.page.calcPage.calcCorrectionPage > .calcCorrectionFhbCard{
+  margin-top:0 !important;
+}
+#korekce-frezky.page.calcPage.calcCorrectionPage > .card.calcCorrectionFhbCard,
+#korekce-frezky.page.calcPage.calcCorrectionPage > .calcCorrectionFhbCard{
+  padding-top:8px !important;
+}
+#korekce-frezky .calcCorrectionFhbCard .calcCorrectionEmptyTitle{
+  margin:0 0 6px !important;
+}
+#korekce-frezky .calcCorrectionFhbCard .calcCorrectionPresetGroup{
+  margin-top:0 !important;
+  padding-top:6px !important;
+}
