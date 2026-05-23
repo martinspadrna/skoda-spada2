@@ -1117,6 +1117,65 @@ function calcLatheAxisCorrection(options) {
   setCalcOutputHtml(out, html, out.id || 'latheAxisCorrectionResult');
 }
 
+
+function openLatheAxisCorrectionHelp() {
+  let overlay = document.getElementById('latheAxisCorrectionHelpOverlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'latheAxisCorrectionHelpOverlay';
+    overlay.className = 'calcCorrectionHelpOverlay';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.innerHTML = [
+      '<div class="calcCorrectionHelpModal">',
+      '  <div class="calcCorrectionHelpTop">',
+      '    <div>',
+      '      <div class="calcCorrectionHelpTitle" id="latheAxisCorrectionHelpTitle"></div>',
+      '      <div class="calcCorrectionHelpSubtitle" id="latheAxisCorrectionHelpSubtitle"></div>',
+      '    </div>',
+      '    <button type="button" class="calcCorrectionHelpClose" aria-label="Zavřít nápovědu">×</button>',
+      '  </div>',
+      '  <img class="calcCorrectionHelpImage" id="latheAxisCorrectionHelpImage" src="" alt="">',
+      '</div>'
+    ].join('');
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', (event) => {
+      if (event.target === overlay || event.target.closest('.calcCorrectionHelpClose')) {
+        closeLatheAxisCorrectionHelp();
+      }
+    });
+  }
+
+  const title = overlay.querySelector('#latheAxisCorrectionHelpTitle');
+  const subtitle = overlay.querySelector('#latheAxisCorrectionHelpSubtitle');
+  const img = overlay.querySelector('#latheAxisCorrectionHelpImage');
+  if (title) title.textContent = 'Kde hledat hodnoty pro vrták 3 a 7';
+  if (subtitle) subtitle.textContent = 'Pomocný obrázek ukazuje konkrétně, kde v protokolu najít hodnotu pro vrták 3 a vrták 7.';
+  if (img) {
+    img.src = 'assets/help/soustruhy-vrtaky-x-help.png';
+    img.alt = 'Nápověda pro nalezení hodnot vrtáku 3 a 7 v protokolu';
+  }
+  overlay.classList.add('isVisible');
+  document.body.classList.add('calcCorrectionHelpOpen');
+}
+window.openLatheAxisCorrectionHelp = openLatheAxisCorrectionHelp;
+
+function closeLatheAxisCorrectionHelp() {
+  const overlay = document.getElementById('latheAxisCorrectionHelpOverlay');
+  if (overlay) overlay.classList.remove('isVisible');
+  document.body.classList.remove('calcCorrectionHelpOpen');
+}
+window.closeLatheAxisCorrectionHelp = closeLatheAxisCorrectionHelp;
+
+if (typeof window !== 'undefined' && !window.__rakLatheAxisCorrectionHelpEscBound) {
+  window.__rakLatheAxisCorrectionHelpEscBound = true;
+  try {
+    window.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') closeLatheAxisCorrectionHelp();
+    });
+  } catch (err) {}
+}
+
 const FHB_TARGET_PRESET_DEFAULTS = [
   { key: 'afag-lis', label: 'AF/AG lis', left: 50, right: 70 },
   { key: 'ah-lis', label: 'AH lis', left: 20, right: 80 },

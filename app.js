@@ -1,4 +1,4 @@
-// v.1.5 (783) – Soustruhy: zkrácený výrazný výstup korekce vrtáků X.
+// v.1.5 (785) – Soustruhy: otazník s obrázkovou nápovědou pro vrtáky 3 a 7.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;
@@ -106,6 +106,7 @@ function installDelegatedAppActions() {
     'set-lathe-axis-machine': (el) => setLatheAxisCorrectionMachine(el),
     'calc-lathe-axis-correction': () => calcLatheAxisCorrection(),
     'toggle-lathe-axis-sign': (el) => toggleLatheAxisInputSign(el),
+    'open-lathe-axis-help': () => openLatheAxisCorrectionHelp(),
     'page-korekce-frezky': () => showPage('korekce-frezky'),
     'page-korekce-brusy': () => showPage('korekce-brusy'),
     'page-kalkulacky': () => openKalkulacky(),
@@ -1151,6 +1152,7 @@ function getPhaseTenActionHealth() {
       'set-lathe-axis-machine',
       'calc-lathe-axis-correction',
       'toggle-lathe-axis-sign',
+      'open-lathe-axis-help',
       'page-korekce-frezky',
       'page-korekce-brusy',
       'calc-frezky-fhb',
@@ -1300,6 +1302,7 @@ function getPhaseTenFormHealth() {
       'set-lathe-axis-machine',
       'calc-lathe-axis-correction',
       'toggle-lathe-axis-sign',
+      'open-lathe-axis-help',
       'reset-soustruhy',
       'reset-fields',
       'page-kalkulacky'

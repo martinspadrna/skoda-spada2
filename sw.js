@@ -1,5 +1,5 @@
-const CACHE_VERSION = 'v1.5-783';
-const SW_APP_VERSION = 'v.1.5 (783)';
+const CACHE_VERSION = 'v1.5-785';
+const SW_APP_VERSION = 'v.1.5 (785)';
 const STATIC_CACHE = `rotace-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `rotace-runtime-${CACHE_VERSION}`;
 const APP_SHELL = [
@@ -56,6 +56,7 @@ const APP_SHELL = [
   './assets/nav-icons/statistiky-green.png',
   './assets/help/frezky-konicita-help.png',
   './assets/help/frezky-fhb-help.png',
+  './assets/help/soustruhy-vrtaky-x-help.png',
   './manifest.webmanifest',
   './icon-192.png',
   './icon-512.png',

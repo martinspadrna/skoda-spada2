@@ -1,3 +1,15 @@
+## v.1.5 (785)
+- Korekce → Soustruhy → Poloha vrtáků v ose X má nad zadáváním hodnot nový otazník s obrázkovou nápovědou, aby bylo hned vidět, kde v protokolu hledat hodnoty pro vrták 3 a vrták 7.
+- Do buildu je přibalený nový pomocný obrázek `assets/help/soustruhy-vrtaky-x-help.png`; je zahrnutý i do service worker cache a exportu ZIPu pro offline použití.
+- Výpočet korekce vrtáků, přepínače +/− i výsledný text zůstávají beze změny proti v.1.5 (784).
+- Verze sjednocena na v.1.5 (785), cache na v1.5-785 a Supabase realtime kanál na rak-public-live-v785.
+
+## v.1.5 (784)
+- Korekce → Soustruhy → Poloha vrtáků v ose X: zavřený rozklikávací panel je vyšší a má o něco větší nadpis, aby šel na mobilu líp trefit i přečíst.
+- Odstraněný doplňkový popisek pod nadpisem panelu, zůstává jen čistý název „Poloha vrtáků v ose X“.
+- Výpočet korekce vrtáků zůstává beze změny proti potvrzené v.1.5 (783).
+- Verze sjednocena na v.1.5 (784), cache na v1.5-784 a Supabase realtime kanál na rak-public-live-v784.
+
 ## v.1.5 (783)
 - Korekce → Soustruhy → Poloha vrtáků v ose X: výsledek je zkrácený jen na zvolený stroj, výraznou větu s korekcí do osy X na vrtácích a očekávaný výsledek.
 - Z výsledku je odstraněná hodnota před násobením i další vysvětlovací řádky, aby se obsluha nemátla.

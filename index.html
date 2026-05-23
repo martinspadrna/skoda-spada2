@@ -664,7 +664,7 @@
   </div>
 
   <details class="brusDetails calcDetails calcPanel calcPanel--compact calcCorrectionLatheAxisPanel" open>
-    <summary><span class="calcSummaryTitle">Poloha vrtáků v ose X</span><span class="calcSummarySub">Volba soustruhu pro další doladění</span></summary>
+    <summary><span class="calcSummaryTitle">Poloha vrtáků v ose X</span></summary>
     <div class="brusDetailsBody calcCorrectionLatheAxisBody">
       <input id="lathe_axis_machine" type="hidden" value="mskc010304">
       <div class="bgrid calcCorrectionLatheMachineGrid" role="group" aria-label="Volba soustruhu pro polohu vrtáků v ose X">
@@ -674,6 +674,10 @@
         <button type="button" class="bbtn calcCorrectionLatheMachineBtn" data-action="set-lathe-axis-machine" data-lathe-axis-machine="mskc02">
           <b>MSKC02</b>
         </button>
+      </div>
+      <div class="calcCorrectionHelpLabel calcCorrectionLatheHelpLabel">
+        <span>Kde hledat hodnoty pro vrták 3 a 7</span>
+        <button type="button" class="calcCorrectionHelpBtn" data-action="open-lathe-axis-help" aria-label="Otevřít nápovědu pro vrtáky 3 a 7">?</button>
       </div>
       <div class="calcCorrectionLatheAxisInputs" aria-label="Naměřené odchylky vrtáků od středu">
         <label for="lathe_axis_drill3">

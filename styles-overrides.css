@@ -11961,3 +11961,79 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   line-height:1.35 !important;
   color:rgba(255,255,255,.82) !important;
 }
+
+
+
+
+/* v.1.5 (785): Korekce Soustruhy – otazník s obrázkovou nápovědou pro vrtáky 3 a 7. */
+#korekce-soustruhy .calcCorrectionLatheHelpLabel{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:8px !important;
+  width:100% !important;
+  margin-top:10px !important;
+  margin-bottom:2px !important;
+}
+#korekce-soustruhy .calcCorrectionLatheHelpLabel > span{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+  color:rgba(231,255,240,.88) !important;
+  font-size:13px !important;
+  line-height:1.25 !important;
+  font-weight:800 !important;
+}
+#korekce-soustruhy .calcCorrectionLatheHelpLabel .calcCorrectionHelpBtn{
+  flex:0 0 auto !important;
+  width:24px !important;
+  height:24px !important;
+  min-width:24px !important;
+  min-height:24px !important;
+  padding:0 !important;
+  border-radius:999px !important;
+  border:1px solid rgba(124,255,124,.45) !important;
+  background:linear-gradient(145deg, rgba(0,245,255,.18), rgba(124,255,124,.14)) !important;
+  color:var(--soft, #e7fff0) !important;
+  box-shadow:0 8px 18px rgba(0,0,0,.20), inset 0 1px 0 rgba(255,255,255,.18) !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  font-size:14px !important;
+  font-weight:950 !important;
+  line-height:1 !important;
+  cursor:pointer !important;
+  -webkit-tap-highlight-color:transparent !important;
+}
+#korekce-soustruhy .calcCorrectionLatheHelpLabel .calcCorrectionHelpBtn:active{
+  transform:scale(.96) !important;
+}
+@media (max-width:360px){
+  #korekce-soustruhy .calcCorrectionLatheHelpLabel > span{font-size:12px !important;}
+}
+
+/* v.1.5 (784): Korekce Soustruhy – vyšší zavřený panel Poloha vrtáků. */
+#korekce-soustruhy .calcCorrectionLatheAxisPanel > summary{
+  min-height:64px !important;
+  padding-top:16px !important;
+  padding-bottom:16px !important;
+  align-items:center !important;
+}
+#korekce-soustruhy .calcCorrectionLatheAxisPanel:not([open]) > summary{
+  min-height:88px !important;
+  padding-top:22px !important;
+  padding-bottom:22px !important;
+}
+#korekce-soustruhy .calcCorrectionLatheAxisPanel > summary .calcSummaryTitle{
+  font-size:clamp(16px,4.5vw,20px) !important;
+  line-height:1.12 !important;
+  font-weight:950 !important;
+  letter-spacing:.01em !important;
+}
+#korekce-soustruhy .calcCorrectionLatheAxisPanel > summary .calcSummarySub{
+  display:none !important;
+}
+#korekce-soustruhy .calcCorrectionLatheAxisPanel > summary::after{
+  grid-row:1 !important;
+  font-size:15px !important;
+}
