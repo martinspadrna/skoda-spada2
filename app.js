@@ -1,4 +1,4 @@
-// v.1.5 (785) – Soustruhy: otazník s obrázkovou nápovědou pro vrtáky 3 a 7.
+// v.1.5 (786) – Soustruhy: skrytý popisek u otazníku a upřesněná 3D nápověda.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

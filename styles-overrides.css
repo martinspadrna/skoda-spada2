@@ -12008,6 +12008,13 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
 #korekce-soustruhy .calcCorrectionLatheHelpLabel .calcCorrectionHelpBtn:active{
   transform:scale(.96) !important;
 }
+
+#korekce-soustruhy .calcCorrectionHelpLabel--iconOnly{
+  justify-content:flex-end !important;
+}
+#korekce-soustruhy .calcCorrectionHelpLabel--iconOnly > span{
+  display:none !important;
+}
 @media (max-width:360px){
   #korekce-soustruhy .calcCorrectionLatheHelpLabel > span{font-size:12px !important;}
 }

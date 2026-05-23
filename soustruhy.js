@@ -1150,7 +1150,7 @@ function openLatheAxisCorrectionHelp() {
   const subtitle = overlay.querySelector('#latheAxisCorrectionHelpSubtitle');
   const img = overlay.querySelector('#latheAxisCorrectionHelpImage');
   if (title) title.textContent = 'Kde hledat hodnoty pro vrták 3 a 7';
-  if (subtitle) subtitle.textContent = 'Pomocný obrázek ukazuje konkrétně, kde v protokolu najít hodnotu pro vrták 3 a vrták 7.';
+  if (subtitle) subtitle.textContent = 'Pomocný obrázek ukazuje 3D protokol a konkrétně místo, kde v něm najít hodnotu pro vrták 3 a vrták 7.';
   if (img) {
     img.src = 'assets/help/soustruhy-vrtaky-x-help.png';
     img.alt = 'Nápověda pro nalezení hodnot vrtáku 3 a 7 v protokolu';
