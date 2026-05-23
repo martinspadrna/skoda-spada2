@@ -11528,7 +11528,7 @@ body.gamesOpen #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuNumberPi
 #korekce-frezky .calcFhbPresetBtn .fhbIndexSep{display:inline !important;color:rgba(255,255,255,.65) !important;}
 
 
-/* v.1.5 (774): Sudoku bez zbytečného scrollu + přesné názvy indexů Frézek. */
+/* v.1.5 (776): Sudoku bez zbytečného scrollu + přesné názvy indexů Frézek. */
 body.gamesOpen[data-rak-arcade-game="sudoku"] #games .arcadeShellRoot{
   padding-top:calc(6px + env(safe-area-inset-top)) !important;
   gap:4px !important;
@@ -11657,7 +11657,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
 #korekce-frezky .calcFhbPresetBtn .fhbIndexSep{display:inline !important;color:rgba(255,255,255,.65) !important;}
 
 
-/* v.1.5 (774): finální pojistka Sudoku a indexů Frézky. */
+/* v.1.5 (776): finální pojistka Sudoku a indexů Frézky. */
 #korekce-frezky .calcFhbPresetGrid{display:grid !important;grid-template-columns:repeat(2,minmax(0,1fr)) !important;gap:8px !important;}
 #korekce-frezky .calcFhbPresetBtn{display:grid !important;grid-template-rows:auto auto !important;align-content:center !important;justify-items:center !important;gap:4px !important;min-height:58px !important;padding:8px 7px !important;text-align:center !important;}
 #korekce-frezky .calcFhbPresetBtn > b.calcFhbPresetTitle{display:flex !important;align-items:center !important;justify-content:center !important;gap:1px !important;width:100% !important;min-height:18px !important;font-size:14px !important;line-height:1 !important;font-weight:950 !important;opacity:1 !important;visibility:visible !important;white-space:nowrap !important;color:rgba(246,255,250,.96) !important;}
@@ -11668,7 +11668,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
 #korekce-frezky .calcFhbPresetBtn .fhbIndexAh{display:inline !important;color:#ffc173 !important;text-shadow:0 0 12px rgba(255,178,86,.36) !important;}
 #korekce-frezky .calcFhbPresetBtn .fhbIndexSep{display:inline !important;color:rgba(255,255,255,.65) !important;}
 
-/* v.1.5 (774): Sudoku větší – číselník drží nad spodní lištou, deska nad ním bez zbytečného scrollu. */
+/* v.1.5 (776): Sudoku větší – číselník drží nad spodní lištou, deska nad ním bez zbytečného scrollu. */
 body.gamesOpen[data-rak-arcade-game="sudoku"] #games .arcadeShellRoot{
   padding-top:calc(2px + env(safe-area-inset-top)) !important;
   padding-bottom:calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 4px) !important;
@@ -11724,7 +11724,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
 }
 
 
-/* v.1.5 (774): finální herní pojistky – Snake dlaždice, Pexeso 4×4, Sudoku obtížnost. */
+/* v.1.5 (776): finální herní pojistky – Snake dlaždice, Pexeso 4×4, Sudoku obtížnost. */
 #games .gamesLaunchTile{
   display:grid !important;
   grid-template-columns:44px minmax(0, 1fr) !important;
@@ -11744,3 +11744,49 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
 #games .arcadeMemoryBoard.grid-4{display:grid !important;grid-template-columns:repeat(4,minmax(0,1fr)) !important;grid-template-rows:repeat(4,minmax(0,1fr)) !important;grid-auto-rows:minmax(0,1fr) !important;aspect-ratio:1/1 !important;width:min(100%,360px,calc(100vw - 24px)) !important;max-width:360px !important;max-height:min(360px,calc(100vw - 24px)) !important;gap:9px !important;padding:8px !important;align-items:stretch !important;justify-items:stretch !important;box-sizing:border-box !important;overflow:hidden !important;}
 #games .arcadeMemoryBoard.grid-4 .arcadeMemoryCard{width:100% !important;height:100% !important;min-width:0 !important;min-height:0 !important;max-width:none !important;max-height:none !important;aspect-ratio:auto !important;display:grid !important;place-items:center !important;padding:0 !important;line-height:1 !important;overflow:hidden !important;contain:layout paint !important;font-size:clamp(28px,9vw,42px) !important;}
 #games .arcadeMemoryBoard.grid-4 .arcadeMemoryCard.isFlipped,#games .arcadeMemoryBoard.grid-4 .arcadeMemoryCard.isMatched{transform:none !important;}
+
+
+/* v.1.5 (776): Korekce Soustruhy – Poloha vrtáků v ose X. */
+#korekce-soustruhy .calcCorrectionLatheAxisPanel{
+  margin-top:var(--calc-page-content-gap, 10px) !important;
+}
+#korekce-soustruhy .calcCorrectionLatheMachineGrid{
+  display:grid !important;
+  grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
+  gap:8px !important;
+  width:100% !important;
+}
+#korekce-soustruhy .calcCorrectionLatheMachineBtn{
+  min-height:54px !important;
+  display:grid !important;
+  place-items:center !important;
+  text-align:center !important;
+  border-radius:18px !important;
+  padding:8px 10px !important;
+  font-weight:900 !important;
+}
+#korekce-soustruhy .calcCorrectionLatheMachineBtn.isActive,
+#korekce-soustruhy .calcCorrectionLatheMachineBtn.activeChoice{
+  border-color:color-mix(in srgb,var(--rakThemeAccent,var(--green2)) 62%,rgba(255,255,255,.22)) !important;
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--rakThemeAccent,var(--green2)) 26%,transparent) inset,0 12px 28px rgba(0,0,0,.24) !important;
+}
+#korekce-soustruhy .calcCorrectionLatheAxisInfo{
+  margin-top:8px !important;
+}
+
+/* v.1.5 (776): Sudoku menu – volba obtížnosti výš i přes pozdější CSS vrstvy. */
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuMenuStage{
+  align-content:start !important;
+  justify-content:start !important;
+  padding-top:0 !important;
+  margin-top:-14px !important;
+  gap:8px !important;
+}
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuMenuCard{
+  transform:translateY(-10px) !important;
+  margin-top:0 !important;
+}
+@media (max-height:720px){
+  body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuMenuStage{margin-top:-20px !important;}
+  body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuMenuCard{transform:translateY(-14px) !important;}
+}

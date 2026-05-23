@@ -342,7 +342,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v774');
+      const channel = client.channel('rak-public-live-v778');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -2152,7 +2152,9 @@
   }
 
   async function recordTttSessionResultByInviteCodeDirect(client, code, options) {
-    const loaded = await loadGameInviteByCode(client, code);
+    const inviteCode = String(code || '').trim();
+    if (!inviteCode) return { ok: false, reason: 'missing-code' };
+    const loaded = await loadGameInviteByCode(client, inviteCode);
     if (!loaded.invite) return { ok: false, reason: 'missing-invite' };
     const { data: sessionRows, error: sessionErr } = await runSupabaseOperation('game_sessions.record_result_lookup', () => client
       .from('game_sessions')
@@ -2168,34 +2170,42 @@
     const winner = String(boardState.winner || sessionData.winner || '').trim();
     const gameOver = !!boardState.gameOver || String(sessionData.status || '').toLowerCase() === 'finished';
     if (!gameOver || !winner) return { ok: false, reason: 'not-finished' };
-    if (boardState.statsRecordedAt && !(options && options.force)) return { ok: true, skipped: true, reason: 'already-recorded' };
+    if (boardState.statsRecordedAt) return { ok: true, skipped: true, reason: 'already-recorded', session: sessionData };
 
     const xAcc = String(sessionData.player_x_account_number || boardState.playerXAccountNumber || loaded.invite.inviter_account_number || '').trim();
     const oAcc = String(sessionData.player_o_account_number || boardState.playerOAccountNumber || loaded.invite.invitee_account_number || '').trim();
     if (!xAcc || !oAcc) return { ok: false, reason: 'missing-players' };
 
+    let xKind = '';
+    let oKind = '';
     if (winner === 'draw') {
-      await bumpTttGameStat(client, xAcc, 'draw');
-      await bumpTttGameStat(client, oAcc, 'draw');
+      xKind = 'draw';
+      oKind = 'draw';
     } else if (winner === 'X') {
-      await bumpTttGameStat(client, xAcc, 'win');
-      await bumpTttGameStat(client, oAcc, 'loss');
+      xKind = 'win';
+      oKind = 'loss';
     } else if (winner === 'O') {
-      await bumpTttGameStat(client, xAcc, 'loss');
-      await bumpTttGameStat(client, oAcc, 'win');
+      xKind = 'loss';
+      oKind = 'win';
     } else {
       return { ok: false, reason: 'unknown-winner' };
     }
 
     boardState.statsRecordedAt = new Date().toISOString();
-    boardState.statsRecordedBy = 'client';
-    const { data: updatedSession, error: updateErr } = await runSupabaseOperation('game_sessions.record_result_mark', () => client
+    boardState.statsRecordedBy = 'client-once-guard';
+    boardState.statsRecordedSessionId = sessionData.id || null;
+    const { data: updatedSession, error: updateErr } = await runSupabaseOperation('game_sessions.record_result_mark_once', () => client
       .from('game_sessions')
       .update({ board_state: boardState, winner_account_number: (winner === 'X' ? xAcc : (winner === 'O' ? oAcc : null)), status: 'finished', finished_at: sessionData.finished_at || new Date().toISOString(), updated_at: new Date().toISOString() })
       .eq('id', sessionData.id)
+      .is('board_state->>statsRecordedAt', null)
       .select('*')
       .maybeSingle(), { mode: 'write' });
     if (updateErr) throw updateErr;
+    if (!updatedSession) return { ok: true, skipped: true, reason: 'already-recorded', session: sessionData };
+
+    await bumpTttGameStat(client, xAcc, xKind);
+    await bumpTttGameStat(client, oAcc, oKind);
     clearGameStatsCache('ttt');
     return { ok: true, session: updatedSession || sessionData, recorded: true };
   }

@@ -1519,17 +1519,17 @@ function tttWriteOnlineResultStore(store) {
   } catch (err) {}
 }
 
-function tttBuildOnlineResultKey(code, revision, winner, role) {
+function tttBuildOnlineResultKey(code, revision, winner, role, sessionId) {
+  const sessionPart = String(sessionId || code || '').trim().toUpperCase();
   return [
-    String(code || '').trim().toUpperCase(),
+    sessionPart || 'NOSESSION',
     String(role || '').trim().toUpperCase() || 'N',
-    String(winner || 'draw').trim().toUpperCase() || 'DRAW',
-    String(Number(revision) || 0)
+    String(winner || 'draw').trim().toUpperCase() || 'DRAW'
   ].join(':');
 }
 
-function tttMarkOnlineResultSeen(code, revision, winner, role) {
-  const key = tttBuildOnlineResultKey(code, revision, winner, role);
+function tttMarkOnlineResultSeen(code, revision, winner, role, sessionId) {
+  const key = tttBuildOnlineResultKey(code, revision, winner, role, sessionId);
   const store = tttReadOnlineResultStore();
   if (store[key]) return false;
   store[key] = Date.now();
@@ -1788,6 +1788,8 @@ function tttApplyOnlineState(statePatch, remote) {
   state.online.connected = true;
   state.online.dirty = false;
   state.online.resultSavedKey = state.online.resultSavedKey || '';
+  state.online.statsRecordedAt = statePatch.statsRecordedAt || state.online.statsRecordedAt || '';
+  state.online.statsRecordedBy = statePatch.statsRecordedBy || state.online.statsRecordedBy || '';
   tttSetOnlineStatus(state.message, state.gameOver ? 'finished' : state.online.status);
   return true;
 }
@@ -1797,7 +1799,7 @@ function tttMaybeRecordOnlineResult(winner) {
   const online = state.online || null;
   if (!online || !online.code) return false;
   if (!['X', 'O', 'draw'].includes(String(winner || '').trim())) return false;
-  const key = tttBuildOnlineResultKey(online.code, online.revision || online.pendingRevision || 0, winner, online.role || '');
+  const key = tttBuildOnlineResultKey(online.code, online.revision || online.pendingRevision || 0, winner, online.role || '', online.sessionId || '');
   if (online.resultSavedKey === key) return false;
   const store = tttReadOnlineResultStore();
   if (store[key]) {
@@ -1815,8 +1817,13 @@ function tttMaybeRecordOnlineResult(winner) {
     const isDraw = winner === 'draw';
     const role = String(online.role || '').toUpperCase();
     const won = !isDraw && String(winner || '').toUpperCase() === role;
+    const onlineLocalGuard = {
+      skipOnlineSync: true,
+      onlineSessionId: String(online.sessionId || online.code || '').trim(),
+      onlineResultKey: key
+    };
     gamesRecordStat('ttt', isDraw
-      ? {
+      ? Object.assign({
           completed: true,
           online: true,
           onlinePlay: true,
@@ -1826,8 +1833,8 @@ function tttMaybeRecordOnlineResult(winner) {
           bestMoves: stats.bestMoves || null,
           bestTimeMs: stats.bestTimeMs || null,
           lastResult: 'Online remíza · ' + String(state.moveCount || 0) + ' tahů'
-        }
-      : {
+        }, onlineLocalGuard)
+      : Object.assign({
           completed: true,
           online: true,
           onlinePlay: true,
@@ -1841,7 +1848,7 @@ function tttMaybeRecordOnlineResult(winner) {
           bestMoves: won ? Math.min(stats.bestMoves || 9999, state.moveCount || 0) : stats.bestMoves || null,
           bestTimeMs: won ? Math.min(stats.bestTimeMs || 999999999, Date.now() - (state.startedAt || Date.now())) : stats.bestTimeMs || null,
           lastResult: (won ? 'Online výhra' : 'Online prohra') + ' · ' + String(state.moveCount || 0) + ' tahů'
-        });
+        }, onlineLocalGuard));
   }
   void tttRecordOnlineSessionResult(false);
   void gamesRefreshRemoteLeaderboards('ttt', true);
@@ -2135,7 +2142,7 @@ async function tttPushOnlineSession(extraPatch) {
         state.online.connected = true;
         state.online.status = result.status || payload.status || state.online.status || 'active';
         if (payload.status === 'finished' || payload.gameOver) {
-          state.online.lastPushedResultKey = tttBuildOnlineResultKey(state.online.code, nextRevision, payload.winner || state.winner || 'draw', state.online.role || '');
+          state.online.lastPushedResultKey = tttBuildOnlineResultKey(state.online.code, nextRevision, payload.winner || state.winner || 'draw', state.online.role || '', state.online.sessionId || '');
           void tttRecordOnlineSessionResult(false);
         }
       }
@@ -4346,10 +4353,13 @@ function renderGamesAppearanceStatus() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText || 'v.1.5 (774)',
+      range: versionText || 'v.1.5 (778)',
       title: 'Přechod na řadu 1.5',
       lines: [
         'Korekce jsou oddělené od Výpočtu kusů; Frézky jsou označené jako nutné doladit.',
+        'Pexeso a Sudoku mají Top výsledky oddělené podle zvolené obtížnosti/velikosti a časy se ukazují ve vteřinách.',
+        'XP a ranky jsou sjednocené napříč hrami: dokončená hra má podobnou hodnotu a surové skóre už nepřestřeluje postup.',
+
         'Výpočet kusů má Pračku s časem výroby nastavitelným v administraci, přepočtem na dávky po 32 ks a dokončením podle rozdělané dávky.',
         'Frézky → konicita a fhβ jsou v jedné kalkulačce; středy fhβ se dají měnit v administraci a výstup přednostně vybere jednu nejlepší korekci.',
         'Online změny strojních nastavení se po Supabase syncu promítají rovnou do otevřené Pračky i korekcí frézky.',
@@ -4357,7 +4367,8 @@ function buildAppHistoryHtml(versionText) {
         'Kalkulačky mají horní nadpisové panely a mezeru pod nadpisem sjednocené přesně podle hlavního menu Kalkulačky.',
         'Denní výzva u Bombermana má vlastní stav a ovládání, aby šlo hýbat i když běžný Bomberman fungoval samostatně.',
         'Korekce Frézky mají otazníky s obrázkovou nápovědou pro konicitu a fhβ, včetně zvýraznění aktuální hodnoty i tlačítka Změnit.',
-        'Sudoku má větší volbu obtížnosti i číselník nad spodní lištou; Pexeso 4×4 drží stejnou velikost karet při otočení a herní dlaždice mají sjednocené zarovnání textu.',
+        'Sudoku má větší volbu obtížnosti posunutou výš i číselník nad spodní lištou; Pexeso 4×4 drží stejnou velikost karet při otočení a herní dlaždice mají sjednocené zarovnání textu.',
+        'Korekce Soustruhy mají první rozbalovací panel Poloha vrtáků v ose X s volbou MSKC01/03/04 nebo MSKC02.',
         'Korekce mají kompaktnější centrované nadpisy; Frézky mají volbu indexu s malou mezerou jako u Výpočtu kusů a AF/AG pozadí správně modrá vlevo, zelená vpravo.',
         'Sekce O aplikaci se průběžně drží stručná a aktualizovaná podle aktuálních buildů.'
       ]
@@ -7791,20 +7802,28 @@ function gamesRecordStat(gameId, patch) {
   const active = profile.accounts[profile.activeAccountId];
   if (!active) return;
   const nextPatch = Object.assign({ lastPlayedAt: Date.now() }, patch || {});
+  const statPatch = Object.assign({}, nextPatch);
+  delete statPatch.skipOnlineSync;
+  delete statPatch.localOnly;
+  delete statPatch.noOnlineSync;
+  delete statPatch.onlineResultKey;
+  delete statPatch.onlineSessionId;
   active.updatedAt = nextPatch.lastPlayedAt;
   if (gameId === 'ttt') {
-    active.stats.ttt = Object.assign({}, active.stats.ttt, nextPatch);
+    active.stats.ttt = Object.assign({}, active.stats.ttt, statPatch);
   } else if (gameId === '2048') {
-    active.stats.g2048 = Object.assign({}, active.stats.g2048, nextPatch);
+    active.stats.g2048 = Object.assign({}, active.stats.g2048, statPatch);
   } else if (gameId === 'snake') {
-    active.stats.snake = Object.assign({}, active.stats.snake, nextPatch);
+    active.stats.snake = Object.assign({}, active.stats.snake, statPatch);
   } else if (gameId === 'flap') {
-    active.stats.flap = Object.assign({}, active.stats.flap, nextPatch);
+    active.stats.flap = Object.assign({}, active.stats.flap, statPatch);
   }
   gamesSaveProfile(profile);
   gamesRenderProfiles();
-  void gamesSyncStatOnline(gameId, nextPatch);
-  void gamesRefreshRemoteLeaderboards(gameId, true);
+  if (!nextPatch.skipOnlineSync && !nextPatch.localOnly && !nextPatch.noOnlineSync) {
+    void gamesSyncStatOnline(gameId, nextPatch);
+    void gamesRefreshRemoteLeaderboards(gameId, true);
+  }
 }
 
 

@@ -1,4 +1,4 @@
-// v.1.5 (774) – herní UI: Sudoku obtížnost, Pexeso 4×4 stabilní karty, sjednocené herní dlaždice.
+// v.1.5 (778) – pojistka proti duplicitním online statistikám Piškvorek.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;
@@ -103,6 +103,7 @@ function installDelegatedAppActions() {
     'page-brusy': () => showPage('brusy'),
     'page-pracka': () => showPage('pracka'),
     'page-korekce-soustruhy': () => showPage('korekce-soustruhy'),
+    'set-lathe-axis-machine': (el) => setLatheAxisCorrectionMachine(el),
     'page-korekce-frezky': () => showPage('korekce-frezky'),
     'page-korekce-brusy': () => showPage('korekce-brusy'),
     'page-kalkulacky': () => openKalkulacky(),
@@ -1137,6 +1138,7 @@ function getPhaseTenActionHealth() {
       'page-brusy',
       'page-pracka',
       'page-korekce-soustruhy',
+      'set-lathe-axis-machine',
       'page-korekce-frezky',
       'page-korekce-brusy',
       'calc-frezky-fhb',
@@ -1281,6 +1283,7 @@ function getPhaseTenFormHealth() {
       'calc-p',
       'calc-p-finish',
       'page-pracka',
+      'set-lathe-axis-machine',
       'reset-soustruhy',
       'reset-fields',
       'page-kalkulacky'

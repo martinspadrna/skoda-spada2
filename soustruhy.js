@@ -972,6 +972,33 @@ function formatCalcDecimalWhole(value) {
   return value.toLocaleString('cs-CZ', { maximumFractionDigits: 0, minimumFractionDigits: 0 });
 }
 
+
+
+function setLatheAxisCorrectionMachine(button) {
+  if (!button) return;
+  const key = String((button.dataset && button.dataset.latheAxisMachine) || '').trim() || 'mskc010304';
+  const labels = {
+    mskc010304: 'MSKC01, 03, 04',
+    mskc02: 'MSKC02'
+  };
+  const page = document.getElementById('korekce-soustruhy');
+  const input = document.getElementById('lathe_axis_machine');
+  if (input) input.value = key;
+  if (page) {
+    page.querySelectorAll('.calcCorrectionLatheMachineBtn').forEach((btn) => {
+      const active = String(btn.dataset.latheAxisMachine || '') === key;
+      btn.classList.toggle('activeChoice', active);
+      btn.classList.toggle('isActive', active);
+      btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+  }
+  const info = document.getElementById('latheAxisCorrectionInfo');
+  if (info) {
+    info.innerHTML = '<b>' + escapeHtml(labels[key] || key) + '</b>' +
+      '<div class="smallText">Základ je připravený. Výpočet a konkrétní hodnoty doplníme postupně podle reálného měření.</div>';
+  }
+}
+
 const FHB_TARGET_PRESET_DEFAULTS = [
   { key: 'afag-lis', label: 'AF/AG lis', left: 50, right: 70 },
   { key: 'ah-lis', label: 'AH lis', left: 20, right: 80 },

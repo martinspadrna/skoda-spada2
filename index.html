@@ -658,15 +658,29 @@
     <div></div>
     <h3 class="calcHeaderTitleOneLine">Korekce · Soustruhy</h3>
     <div class="calcHeaderActions">
-      <button class="resetBtn" data-action="reset-fields" title="Reset polí" aria-label="Reset polí">↻</button>
+      <button class="resetBtn" data-action="reset-fields" data-reset-fields="lathe_axis_machine" title="Reset polí" aria-label="Reset polí">↻</button>
       <button class="calcCloseBtn" data-action="page-kalkulacky" title="Zpět na přehled kalkulaček" aria-label="Zpět na přehled kalkulaček">×</button>
     </div>
   </div>
 
-  <div class="card calcPanel calcCorrectionEmptyCard">
-    <div class="calcCorrectionEmptyTitle">Korekce pro soustruhy</div>
-    <div class="smallText">Tady postupně doplníme konkrétní korekce.</div>
-  </div>
+  <details class="brusDetails calcDetails calcPanel calcPanel--compact calcCorrectionLatheAxisPanel" open>
+    <summary><span class="calcSummaryTitle">Poloha vrtáků v ose X</span><span class="calcSummarySub">Volba soustruhu pro další doladění</span></summary>
+    <div class="brusDetailsBody calcCorrectionLatheAxisBody">
+      <input id="lathe_axis_machine" type="hidden" value="mskc010304">
+      <div class="bgrid calcCorrectionLatheMachineGrid" role="group" aria-label="Volba soustruhu pro polohu vrtáků v ose X">
+        <button type="button" class="bbtn calcCorrectionLatheMachineBtn activeChoice isActive" data-action="set-lathe-axis-machine" data-lathe-axis-machine="mskc010304">
+          <b>MSKC01, 03, 04</b>
+        </button>
+        <button type="button" class="bbtn calcCorrectionLatheMachineBtn" data-action="set-lathe-axis-machine" data-lathe-axis-machine="mskc02">
+          <b>MSKC02</b>
+        </button>
+      </div>
+      <div class="card calcInfoCard calcCorrectionLatheAxisInfo" id="latheAxisCorrectionInfo">
+        <b>MSKC01, 03, 04</b>
+        <div class="smallText">Základ je připravený. Výpočet a konkrétní hodnoty doplníme postupně podle reálného měření.</div>
+      </div>
+    </div>
+  </details>
 </div>
 
 <!-- KOREKCE FREZKY -->

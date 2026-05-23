@@ -1,8 +1,16 @@
-## v.1.5 (774)
-- Sudoku: deska je znovu větší, ale číselník zůstává pevně nad spodní lištou.
-- Odstraněné agresivní zmenšování Sudoku na nižších displejích; místo toho se používá dostupná výška mezi horní částí hry, číselníkem a spodní lištou.
-- Korekce Frézky beze změny, protože indexy jsou po v.1.5 (772) potvrzené jako OK.
-- Verze sjednocena na v.1.5 (774), cache na v1.5-774 a Supabase realtime kanál na rak-public-live-v774.
+## v.1.5 (778)
+- Piškvorky online: přidaná pojistka proti duplicitnímu započítání jedné online partie po realtime refreshi, reloadu nebo otevření výsledku na obou telefonech.
+- Lokální zobrazení výsledku Piškvorek už při online hře neposílá samostatný přímý zápis do `game_stats`; online statistiku má řídit jedna dokončená session.
+- Klíč lokálního uložení výsledku online Piškvorek je navázaný hlavně na session/kód + roli + výsledek, ne na proměnlivou revizi.
+- Supabase fallback při zápisu výsledku nejdřív označí session jako zapsanou a teprve potom přičítá statistiku hráčům.
+- Verze sjednocena na v.1.5 (778), cache na v1.5-778 a Supabase realtime kanál na rak-public-live-v778.
+
+## v.1.5 (777)
+- Sjednocený XP/rank systém napříč hrami: každá dokončená hra dává podobný základ XP bez ohledu na surové skóre.
+- Skóre, čas a výhra nově přidávají jen omezený bonus, takže Space Shooter nebo jiné bodové hry už nemají násobně větší vliv než Piškvorky, Sudoku nebo Pexeso.
+- Variantní výsledky Pexesa/Sudoku se nepočítají do XP duplicitně; pro rank se bere základní hra, Top výsledky podle obtížnosti zůstávají zachované.
+- Ranky dál berou v potaz achievementy, ale férověji vůči všem hrám.
+- Verze sjednocena na v.1.5 (777), cache na v1.5-777 a Supabase realtime kanál na rak-public-live-v777.
 
 ## v.1.5 (770)
 - Sudoku: spodní nabídka čísel má větší bezpečný prostor nad spodní lištou.

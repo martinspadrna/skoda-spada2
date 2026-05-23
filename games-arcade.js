@@ -34,6 +34,16 @@
     daily: { title: 'Denní challenge', subtitle: 'Každý den jiná hra a stejná výzva', unit: 'bodů', mode: 'high', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="6.5" width="15" height="13" rx="2"></rect><path d="M8 4.5v4M16 4.5v4M4.5 10h15"></path><path d="M8 14l2.1 2.1L16.3 10"></path></svg>' }
   };
 
+  // v.1.5 (778): Top výsledky pro hry s obtížností/volbou se vedou zvlášť podle vybrané volby.
+  Object.assign(META, {
+    memory_4x4: { title: 'Pexeso 4×4', subtitle: 'Top čas pro 4×4', unit: 's', mode: 'low', icon: META.memory.icon },
+    memory_6x6: { title: 'Pexeso 6×6', subtitle: 'Top čas pro 6×6', unit: 's', mode: 'low', icon: META.memory.icon },
+    memory_8x8: { title: 'Pexeso 8×8', subtitle: 'Top čas pro 8×8', unit: 's', mode: 'low', icon: META.memory.icon },
+    sudoku_easy: { title: 'Sudoku lehké', subtitle: 'Top čas pro lehké Sudoku', unit: 's', mode: 'low', icon: META.sudoku.icon },
+    sudoku_medium: { title: 'Sudoku střední', subtitle: 'Top čas pro střední Sudoku', unit: 's', mode: 'low', icon: META.sudoku.icon },
+    sudoku_hard: { title: 'Sudoku těžké', subtitle: 'Top čas pro těžké Sudoku', unit: 's', mode: 'low', icon: META.sudoku.icon }
+  });
+
   window.RAK_ARCADE_GAMES = {
     core: CORE_GAMES.slice(),
     extra: EXTRA_GAMES.slice(),
@@ -83,13 +93,90 @@
     { name: 'RaK nesmrtelný', minXp: 110000 }
   ];
 
+  // v.1.5 (778): XP už nesmí být závislé hlavně na surovém skóre jedné hry.
+  // Každá dokončená hra dává podobný základ a skóre/čas přidává jen rozumně omezený bonus.
+  const GAMES_XP_VARIANT_IDS = new Set(['memory_4x4', 'memory_6x6', 'memory_8x8', 'sudoku_easy', 'sudoku_medium', 'sudoku_hard']);
+  const GAMES_BALANCED_XP_BASE = 95;
+
+  function gamesBalancedXpScoreBonus(id, stat) {
+    const score = Math.max(0, Number(stat && (stat.bestScore || stat.leaderboardValue || stat.points) || 0) || 0);
+    const time = Math.max(0, Number(stat && (stat.bestTimeMs || stat.timeMs || stat.elapsedMs) || 0) || 0);
+    if (isLowBetter(id)) {
+      if (!time) return 0;
+      const seconds = Math.max(1, Math.round(time / 1000));
+      const fastBonus = Math.max(0, Math.min(90, Math.round(95 - Math.log(seconds + 1) * 12)));
+      const diff = String(stat && stat.difficulty || '').toLowerCase();
+      const size = Number(stat && stat.bestSize || 0) || 0;
+      const difficultyBonus = diff.includes('hard') || diff.includes('těž') || size >= 8 ? 55 : (diff.includes('medium') || diff.includes('střed') || size >= 6 ? 32 : 14);
+      return Math.max(40, Math.min(150, fastBonus + difficultyBonus));
+    }
+    if (!score) return 0;
+    return Math.max(8, Math.min(170, Math.round(Math.log(score + 1) * 20)));
+  }
+
+  function gamesBalancedXpForStat(id, stat) {
+    const gid = key(id);
+    if (!gid || GAMES_XP_VARIANT_IDS.has(gid)) return { xp: 0, plays: 0, wins: 0, bestScore: 0 };
+    const st = stat && typeof stat === 'object' ? stat : {};
+    const plays = Math.max(0, Number(st.plays || st.games_played || st.completedPlays || 0) || 0);
+    if (!plays && !(Number(st.bestScore || 0) > 0) && !(Number(st.bestTimeMs || 0) > 0)) return { xp: 0, plays: 0, wins: 0, bestScore: 0 };
+    const wins = Math.max(0, Number(st.wins || 0) || 0) + Math.max(0, Number(st.onlineWins || 0) || 0);
+    const draws = Math.max(0, Number(st.draws || 0) || 0);
+    const clears = Math.max(0, Number(st.bestClears || st.bestStageClear || st.perfectClears || st.perfectRuns || 0) || 0);
+    const outcomeBonus = Math.min(plays * 45, (wins * 34) + (draws * 14) + (clears * 18));
+    const scoreBonus = gamesBalancedXpScoreBonus(gid, st);
+    const bestScore = Math.max(0, Number(st.bestScore || st.leaderboardValue || 0) || 0);
+    const xp = Math.max(0, Math.round((plays * GAMES_BALANCED_XP_BASE) + outcomeBonus + scoreBonus));
+    return { xp, plays, wins: wins + clears, bestScore };
+  }
+
+  function gamesBuildBalancedXpSummary(account, achievements) {
+    const stats = account && account.stats ? account.stats : {};
+    const items = [
+      ['ttt', stats.ttt || {}],
+      ['2048', stats.g2048 || {}],
+      ['snake', stats.snake || {}],
+      ['flap', stats.flap || {}]
+    ];
+    const arcade = stats[ARC_KEY] && typeof stats[ARC_KEY] === 'object' ? stats[ARC_KEY] : {};
+    Object.keys(arcade).forEach((id) => {
+      if (!GAMES_XP_VARIANT_IDS.has(key(id))) items.push([id, arcade[id] || {}]);
+    });
+    let xp = 0;
+    let plays = 0;
+    let wins = 0;
+    let bestScore = 0;
+    let favorite = null;
+    let favoriteXp = -1;
+    items.forEach(([id, stat]) => {
+      const part = gamesBalancedXpForStat(id, stat);
+      xp += part.xp;
+      plays += part.plays;
+      wins += part.wins;
+      bestScore = Math.max(bestScore, part.bestScore);
+      if (part.xp > favoriteXp) {
+        favoriteXp = part.xp;
+        favorite = id;
+      }
+    });
+    xp += Math.max(0, Number(achievements || 0) || 0) * 110;
+    return {
+      xp: Math.max(0, Math.round(xp)),
+      plays,
+      wins,
+      bestScore,
+      favorite: favorite && META[favorite] ? META[favorite].title : '—'
+    };
+  }
+
   function gamesBuildProgressSummary(account) {
     const total = gamesGetTotals(account);
     const achievements = gamesGetAchievementCount(account);
-    const wins = Number(total.ttt && total.ttt.wins || 0) + Math.max(Number(total.g2048 && total.g2048.bestScore || 0) > 0 ? 1 : 0, 0) + Math.max(Number(total.snake && total.snake.bestScore || 0) > 0 ? 1 : 0, 0) + Math.max(Number(total.flap && total.flap.bestScore || 0) > 0 ? 1 : 0, 0);
-    const plays = Number(total.totalPlays || 0) || 0;
-    const bestScore = Number(total.bestScore || 0) || 0;
-    const xp = Math.max(0, Math.round((plays * 4) + (wins * 14) + (achievements * 42) + Math.min(1400, Math.floor(bestScore / 10))));
+    const balancedXp = gamesBuildBalancedXpSummary(account, achievements);
+    const wins = Number(balancedXp.wins || 0) || 0;
+    const plays = Number(balancedXp.plays || 0) || 0;
+    const bestScore = Number(balancedXp.bestScore || total.bestScore || 0) || 0;
+    const xp = Math.max(0, Math.round(Number(balancedXp.xp || 0) || 0));
     const levelStep = 600;
     const level = Math.max(1, Math.floor(xp / levelStep) + 1);
     const levelBase = (level - 1) * levelStep;
@@ -102,20 +189,7 @@
     const rankSpan = Math.max(1, rankTarget - rankBase);
     const rankPct = nextRank ? Math.max(0, Math.min(100, Math.round(((xp - rankBase) / rankSpan) * 100))) : 100;
     const rankRemaining = Math.max(0, rankTarget - xp);
-    const favorite = (() => {
-      const defs = ALL_GAMES.map((id) => Object.assign({ id }, META[id] || { title: id, subtitle: '', unit: 'bodů', mode: 'high' }));
-      let best = defs[0] || null;
-      let bestScoreLocal = -1;
-      defs.forEach((game) => {
-        const stat = getArcadeProfileStat(account, game.id);
-        const value = game.id === 'ttt' ? Number(stat.plays || 0) || 0 : (game.mode === 'low' ? Number(stat.bestTimeMs || 0) : Number(stat.bestScore || 0));
-        if (value > bestScoreLocal) {
-          bestScoreLocal = value;
-          best = game;
-        }
-      });
-      return best ? best.title : '—';
-    })();
+    const favorite = balancedXp.favorite || '—';
     const winRate = plays > 0 ? Math.round((wins / plays) * 100) : 0;
     return { xp, level, currentXp, nextXp, rank: rank.name, nextRank: nextRank ? nextRank.name : '', rankPct, rankRemaining, plays, achievements, wins, winRate, favorite, bestScore };
   }
@@ -770,7 +844,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   #games .arcadeControls .gameControlBtn{min-height:40px;min-width:40px;}
 }
 
-/* v.1.5 (774) – Sudoku: větší deska, číselník napevno nad spodní lištou bez zbytečného horního prostoru. */
+/* v.1.5 (778) – Sudoku: větší deska, číselník napevno nad spodní lištou bez zbytečného horního prostoru. */
 body.gamesOpen[data-rak-arcade-game="sudoku"] #games .arcadeShellRoot{
   padding-top:calc(2px + env(safe-area-inset-top)) !important;
   padding-bottom:calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 4px) !important;
@@ -898,7 +972,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
 
 
 
-/* v.1.5 (774) – herní dlaždice sjednocené: ikona vlevo, nadpis a popis rovně vedle ní. */
+/* v.1.5 (778) – herní dlaždice sjednocené: ikona vlevo, nadpis a popis rovně vedle ní. */
 #games .gamesLaunchTile{
   display:grid !important;
   grid-template-columns:44px minmax(0, 1fr) !important;
@@ -929,7 +1003,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   text-overflow:ellipsis !important;
 }
 
-/* v.1.5 (774) – Sudoku: větší volba obtížnosti. */
+/* v.1.5 (778) – Sudoku: větší volba obtížnosti. */
 body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuMenuStage{
   width:100% !important;
   min-height:0 !important;
@@ -972,7 +1046,25 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   opacity:.72 !important;
 }
 
-/* v.1.5 (774) – Pexeso 4×4: odhalená karta nesmí měnit velikost pole. */
+
+/* v.1.5 (778) – Sudoku: volba obtížnosti výš bez zbytečného horního prostoru. */
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuMenuStage{
+  align-content:start !important;
+  justify-content:start !important;
+  padding-top:0 !important;
+  margin-top:-14px !important;
+  gap:8px !important;
+}
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuMenuCard{
+  transform:translateY(-10px) !important;
+  margin-top:0 !important;
+}
+@media (max-height:720px){
+  body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuMenuStage{margin-top:-20px !important;}
+  body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuMenuCard{transform:translateY(-14px) !important;}
+}
+
+/* v.1.5 (778) – Pexeso 4×4: odhalená karta nesmí měnit velikost pole. */
 #games .arcadeMemoryBoard.grid-4{
   display:grid !important;
   grid-template-columns:repeat(4, minmax(0, 1fr)) !important;
@@ -1021,6 +1113,22 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   const cleanups = new Set();
   const currentState = { id: '', state: null };
   const key = (id) => String(id || '').trim();
+
+  function memoryVariantId(size) {
+    const n = Math.max(4, Math.min(8, Number(size || 6) || 6));
+    return `memory_${n}x${n}`;
+  }
+  function sudokuVariantId(diff) {
+    const d = String(diff || 'easy').trim().toLowerCase();
+    return `sudoku_${d === 'medium' || d === 'hard' ? d : 'easy'}`;
+  }
+  function difficultyTopTitle(id) {
+    const meta = gameMeta(id);
+    return meta && meta.title ? `Top 5 · ${meta.title}` : 'Top 5 výsledků';
+  }
+  function leaderboardGameIds() {
+    return Array.from(new Set(ALL_GAMES.concat(['memory_4x4','memory_6x6','memory_8x8','sudoku_easy','sudoku_medium','sudoku_hard'])));
+  }
 
   function addCleanup(fn) { if (typeof fn === 'function') cleanups.add(fn); }
   function clearCleanups() { cleanups.forEach((fn) => { try { fn(); } catch (err) {} }); cleanups.clear(); }
@@ -1278,9 +1386,8 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   function fmtSeconds(ms) {
     const n = Number(ms);
     if (!Number.isFinite(n) || n <= 0) return '—';
-    const seconds = n / 1000;
-    const decimals = seconds < 10 ? 2 : (seconds < 60 ? 1 : 0);
-    return `${seconds.toFixed(decimals).replace(/\.0+$/, '')} s`;
+    const seconds = Math.max(1, Math.round(n / 1000));
+    return `${seconds} s`;
   }
 
   function fmtTime(ms) { return fmtSeconds(ms); }
@@ -1452,7 +1559,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   function renderLaunchTiles() {
     const grid = document.getElementById('gamesGrid');
     if (!grid) return;
-    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v774';
+    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v777';
     if (grid.dataset && grid.dataset.arcadeLaunchSig === launchSig && grid.querySelector('[data-game="ttt"]')) {
       gamePerf.launchRenderSkips = Number(gamePerf.launchRenderSkips || 0) + 1;
       return;
@@ -1573,13 +1680,18 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return gameLeaderboardSort(id, rows).slice(0, Math.max(1, Math.min(50, Number(limit) || 10)));
   };
 
-  window.gamesTop3Block = function gamesTop3BlockArcade(gameId, label, limit = 10) {
+  window.gamesTop3Block = function gamesTop3BlockArcade(gameId, label, limit = 10, titleOverride) {
     const id = key(gameId);
     const rows = window.gamesGetGameLeaderboard(id, limit);
+    const valueText = (row) => {
+      if (isLowBetter(id)) return fmtGameValue(id, Number(row.value || 0) || 0);
+      return `${String(row.value)} ${escapeHtml(label || gameMeta(id).unit || '')}`.trim();
+    };
     const body = rows.length ? rows.map((row, idx) => (
-      `<div class="gamesTop3Row"><div class="gamesTop3Rank">${String(idx + 1)}.</div><div class="gamesTop3Name">${escapeHtml(row.name)}</div><div class="gamesTop3Value">${String(row.value)} ${escapeHtml(label)}${row.playedText ? ' · ' + escapeHtml(row.playedText) : ''}</div></div>`
+      `<div class="gamesTop3Row"><div class="gamesTop3Rank">${String(idx + 1)}.</div><div class="gamesTop3Name">${escapeHtml(row.name)}</div><div class="gamesTop3Value">${valueText(row)}${row.playedText ? ' · ' + escapeHtml(row.playedText) : ''}</div></div>`
     )).join('') : '<div class="gamesTop3Empty">Zatím žádné výsledky.</div>';
-    return `<div class="gamesTop3Card gamesTop5ScrollCard" data-score-game="${escapeHtml(id)}"><div class="gamesTop3Title">Top ${String(limit)} výsledků</div><div class="gamesTop3Body gamesTop5ScrollBody">${body}</div></div>`;
+    const title = String(titleOverride || `Top ${String(limit)} výsledků`).trim();
+    return `<div class="gamesTop3Card gamesTop5ScrollCard" data-score-game="${escapeHtml(id)}"><div class="gamesTop3Title">${escapeHtml(title)}</div><div class="gamesTop3Body gamesTop5ScrollBody">${body}</div></div>`;
   };
 
   const leaderboardInFlight = new Map();
@@ -1589,7 +1701,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
       gamePerf.leaderboardHiddenSkips = Number(gamePerf.leaderboardHiddenSkips || 0) + 1;
       return [];
     }
-    const ids = gameId ? [key(gameId)] : ALL_GAMES.slice();
+    const ids = gameId ? [key(gameId)] : leaderboardGameIds();
     const requestKey = ids.join('|') || 'all';
     if (leaderboardInFlight.has(requestKey)) {
       gamePerf.leaderboardInFlightSkips = Number(gamePerf.leaderboardInFlightSkips || 0) + 1;
@@ -3215,7 +3327,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
             <div class="arcadeControls sudokuDifficultyMenu">${diffBtns}</div>
             <button type="button" class="gameControlBtn primary" data-sudoku-start="1">Spustit Sudoku</button>
           </div>
-          ${gamesTop3Block('sudoku', 'ms', 5).replace('gamesTop5ScrollCard', 'gamesTop5ScrollCard arcadeTopScoreTight')}
+          ${gamesTop3Block(sudokuVariantId(state.selected), 's', 5, difficultyTopTitle(sudokuVariantId(state.selected))).replace('gamesTop5ScrollCard', 'gamesTop5ScrollCard arcadeTopScoreTight')}
         </div>`;
       body.querySelectorAll('[data-sudoku-diff]').forEach((btn) => btn.addEventListener('click', () => { state.selected = btn.dataset.sudokuDiff; renderSudoku(body); }));
       const startBtn = body.querySelector('[data-sudoku-start]');
@@ -3272,7 +3384,9 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
       if (valid && !state.finished) {
         state.finished = true;
         const time = Date.now() - state.startAt;
-        gamesRecordStat('sudoku', { completed: true, plays: 1, bestTimeMs: time, bestScore: encodePoints('sudoku', time), lastResult: fmtTime(time) });
+        const sudokuBoardId = sudokuVariantId(state.selected);
+        gamesRecordStat('sudoku', { completed: true, plays: 1, bestTimeMs: time, bestScore: encodePoints('sudoku', time), difficulty: state.selected, lastResult: `${pick.label || state.selected} · ${fmtTime(time)}` });
+        gamesRecordStat(sudokuBoardId, { completed: true, plays: 1, bestTimeMs: time, bestScore: encodePoints(sudokuBoardId, time), difficulty: state.selected, lastResult: `${pick.label || state.selected} · ${fmtTime(time)}` });
         const done = body.querySelector('.sudokuGameControls');
         if (done) done.insertAdjacentHTML('beforebegin', `<div class="arcadeBar arcadePanel uPad10x12"><div class="arcadeStatus"><strong>Vyřešeno!</strong> Čas ${fmtTime(time)}.</div></div>`);
       }
@@ -3451,7 +3565,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
             <div class="arcadeControls memoryDifficultyMenu">${buttons}</div>
             <button type="button" class="gameControlBtn primary" data-memory-start="1">Spustit Pexeso</button>
           </div>
-          ${gamesTop3Block('memory', 'ms', 5).replace('gamesTop5ScrollCard', 'gamesTop5ScrollCard arcadeTopScoreTight')}
+          ${gamesTop3Block(memoryVariantId(state.size), 's', 5, difficultyTopTitle(memoryVariantId(state.size))).replace('gamesTop5ScrollCard', 'gamesTop5ScrollCard arcadeTopScoreTight')}
         </div>`;
       body.querySelectorAll('[data-memory-size]').forEach((btn) => btn.addEventListener('click', () => { state.size = Number(btn.dataset.memorySize) || 6; renderMemory(body); }));
       const startBtn = body.querySelector('[data-memory-start]');
@@ -3477,9 +3591,11 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
       if (state.matched.size >= state.deck.length && !state.over) {
         state.over = true;
         state.bestTimeMs = Date.now() - state.startAt;
-        gamesRecordStat('memory', { completed: true, plays: 1, bestTimeMs: state.bestTimeMs, bestScore: encodePoints('memory', state.bestTimeMs), bestMoves: state.moves, bestSize: size, lastResult: `${size}×${size} · ${state.moves} tahů` });
+        const memoryBoardId = memoryVariantId(size);
+        gamesRecordStat('memory', { completed: true, plays: 1, bestTimeMs: state.bestTimeMs, bestScore: encodePoints('memory', state.bestTimeMs), bestMoves: state.moves, bestSize: size, difficulty: `${size}x${size}`, lastResult: `${size}×${size} · ${fmtTime(state.bestTimeMs)} · ${state.moves} tahů` });
+        gamesRecordStat(memoryBoardId, { completed: true, plays: 1, bestTimeMs: state.bestTimeMs, bestScore: encodePoints(memoryBoardId, state.bestTimeMs), bestMoves: state.moves, bestSize: size, difficulty: `${size}x${size}`, lastResult: `${size}×${size} · ${fmtTime(state.bestTimeMs)} · ${state.moves} tahů` });
         const controls = body.querySelector('.arcadeControls');
-        if (controls) controls.insertAdjacentHTML('beforebegin', `<div class="arcadeBar arcadePanel uPad10x12"><div class="arcadeStatus"><strong>Vyhráno!</strong> ${fmtMs(state.bestTimeMs)} · ${state.moves} tahů · ${size}×${size}.</div></div>`);
+        if (controls) controls.insertAdjacentHTML('beforebegin', `<div class="arcadeBar arcadePanel uPad10x12"><div class="arcadeStatus"><strong>Vyhráno!</strong> ${fmtTime(state.bestTimeMs)} · ${state.moves} tahů · ${size}×${size}.</div></div>`);
       }
     };
     grid.querySelectorAll('button').forEach((btn) => {
@@ -5143,7 +5259,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     const allHot = EXTRA_GAMES.length === 0;
     const completedOnlyGuard = typeof window.gamesRecordStat === 'function';
     return {
-      version: 'v.1.5 (774)',
+      version: 'v.1.5 (778)',
       ok: !missingMeta.length && !missingRenderer.length && allHot && completedOnlyGuard,
       totalGames: ids.length,
       coreGames: ids,
