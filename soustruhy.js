@@ -1030,6 +1030,26 @@ function getAllFhbTargetPresets() {
   return getDefaultFhbTargetPresets().map(item => getFhbTargetPreset(item.key, item));
 }
 
+
+function renderFhbPresetButtonTitle(button, preset) {
+  if (!button) return;
+  const title = button.querySelector('b');
+  if (!title) return;
+  const key = String(button.dataset.fhbKey || (preset && preset.key) || '').trim().toLowerCase();
+  const label = String((preset && preset.label) || button.dataset.fhbLabel || '').trim().toLowerCase();
+  const isVolne = key.indexOf('volne') >= 0 || label.indexOf('voln') >= 0;
+  const suffix = isVolne ? ' volné' : ' lis';
+  if (key.indexOf('afag') >= 0 || label.indexOf('af/ag') >= 0) {
+    title.innerHTML = '<span class="fhbIndexAf">AF</span><span class="fhbIndexSep">/</span><span class="fhbIndexAg">AG</span>' + suffix;
+    return;
+  }
+  if (key.indexOf('ah') >= 0 || /\bah\b/.test(label)) {
+    title.innerHTML = '<span class="fhbIndexAh">AH</span>' + suffix;
+    return;
+  }
+  title.textContent = String((preset && preset.label) || button.dataset.fhbLabel || key || 'Index');
+}
+
 function updateFhbPresetButtons() {
   document.querySelectorAll('.calcFhbPresetBtn').forEach((button) => {
     const key = String(button.dataset.fhbKey || '').trim();
@@ -1043,6 +1063,7 @@ function updateFhbPresetButtons() {
     button.dataset.fhbLabel = preset.label;
     button.dataset.fhbLeft = String(preset.left);
     button.dataset.fhbRight = String(preset.right);
+    renderFhbPresetButtonTitle(button, preset);
     const valueSpan = button.querySelector('span:last-child');
     if (valueSpan) valueSpan.textContent = 'L ' + formatCalcDecimalWhole(preset.left) + ' / P ' + formatCalcDecimalWhole(preset.right);
   });
@@ -1099,6 +1120,7 @@ function setFhbTargetPreset(button) {
     right: Number(String(button.dataset.fhbRight || '').replace(',', '.'))
   });
   const label = String(preset && preset.label ? preset.label : button.dataset.fhbLabel || '').trim();
+  renderFhbPresetButtonTitle(button, preset);
   const left = Number(preset && preset.left);
   const right = Number(preset && preset.right);
   if (!key || !Number.isFinite(left) || !Number.isFinite(right)) return;

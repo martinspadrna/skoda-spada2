@@ -3368,7 +3368,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     const statId = isChallenge ? 'daily' : 'bomber';
     const state = getState(stateId, () => { const s = bomberState(); initBomber(s); return s; });
     state.challenge = isChallenge;
-    // v.1.5 (769): Denní výzva může spustit Bombermana do stejného shell body jako Daily.
+    // v.1.5 (770): Denní výzva může spustit Bombermana do stejného shell body jako Daily.
     // Starý bound stav z běžného Bombermana by jinak nechal ovládání navázané na původní DOM.
     if (state.bound && (state.boundBody !== body || state.boundGameId !== stateId)) {
       state.bound = false;
@@ -4901,7 +4901,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     const allHot = EXTRA_GAMES.length === 0;
     const completedOnlyGuard = typeof window.gamesRecordStat === 'function';
     return {
-      version: 'v.1.5 (769)',
+      version: 'v.1.5 (770)',
       ok: !missingMeta.length && !missingRenderer.length && allHot && completedOnlyGuard,
       totalGames: ids.length,
       coreGames: ids,

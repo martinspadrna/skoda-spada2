@@ -4346,7 +4346,7 @@ function renderGamesAppearanceStatus() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText || 'v.1.5 (769)',
+      range: versionText || 'v.1.5 (770)',
       title: 'Přechod na řadu 1.5',
       lines: [
         'Korekce jsou oddělené od Výpočtu kusů; Frézky jsou označené jako nutné doladit.',
@@ -4357,6 +4357,7 @@ function buildAppHistoryHtml(versionText) {
         'Kalkulačky mají horní nadpisové panely a mezeru pod nadpisem sjednocené přesně podle hlavního menu Kalkulačky.',
         'Denní výzva u Bombermana má vlastní stav a ovládání, aby šlo hýbat i když běžný Bomberman fungoval samostatně.',
         'Korekce Frézky mají otazníky s obrázkovou nápovědou pro konicitu a fhβ, včetně zvýraznění aktuální hodnoty i tlačítka Změnit.',
+        'Sudoku má bezpečnější spodní číselník nad spodní lištou a Korekce mají zpevněné reset/křížek i názvy indexů AF/AG a AH.',
         'Korekce mají kompaktnější centrované nadpisy; Frézky mají volbu indexu s malou mezerou jako u Výpočtu kusů a AF/AG pozadí správně modrá vlevo, zelená vpravo.',
         'Sekce O aplikaci se průběžně drží stručná a aktualizovaná podle aktuálních buildů.'
       ]

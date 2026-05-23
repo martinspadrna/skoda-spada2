@@ -1,8 +1,8 @@
-## v.1.5 (769)
+## v.1.5 (770)
 - Korekce → Frézky: u polí Konicita a fhβ jsou nově otazníky s obrázkovou nápovědou.
 - Kliknutí na otazník otevře modal s připravenou fotkou, kde je zvýrazněná aktuální hodnota korekce i tlačítko Změnit.
 - Obrázky jsou přibalené do PWA/ZIPu jako offline assety a zahrnuté v service worker cache i exportu ZIPu.
-- Verze sjednocena na v.1.5 (769), cache na v1.5-769 a Supabase realtime kanál na rak-public-live-v769.
+- Verze sjednocena na v.1.5 (770), cache na v1.5-770 a Supabase realtime kanál na rak-public-live-v770.
 
 ## v.1.5 (768)
 - Denní výzva: Bomberman mini má při spuštění z Daily vlastní stav a znovu navázané ovládání, takže se nezasekne na starém běžném Bombermanovi.

@@ -1,4 +1,4 @@
-// v.1.5 (769) – Korekce Frézky: nápověda pod otazníky pro konicitu a fhβ.
+// v.1.5 (770) – Sudoku bezpečně nad spodní lištou + Korekce: header akce a indexy.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;
