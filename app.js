@@ -1,4 +1,4 @@
-// v.1.5 (771) – Sudoku bez zbytečného scrollu + Korekce Frézky: přesné názvy indexů.
+// v.1.5 (772) – Sudoku číselník fix nad spodní lištou + Frézky indexy přegenerované v renderu.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

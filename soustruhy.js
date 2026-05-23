@@ -1031,23 +1031,29 @@ function getAllFhbTargetPresets() {
 }
 
 
+function getFhbShortLabelHtml(preset, button) {
+  const key = String((button && button.dataset && button.dataset.fhbKey) || (preset && preset.key) || '').trim().toLowerCase();
+  const label = String((preset && preset.label) || (button && button.dataset ? button.dataset.fhbLabel : '') || '').trim().toLowerCase();
+  const isVolne = key.indexOf('volne') >= 0 || label.indexOf('voln') >= 0;
+  const free = isVolne ? '<span class="fhbIndexFree">volné</span>' : '';
+  if (key.indexOf('afag') >= 0 || label.indexOf('af/ag') >= 0) {
+    return '<span class="fhbIndexAf">AF</span><span class="fhbIndexSep">/</span><span class="fhbIndexAg">AG</span>' + free;
+  }
+  if (key.indexOf('ah') >= 0 || /ah/.test(label)) {
+    return '<span class="fhbIndexAh">AH</span>' + free;
+  }
+  return escapeHtml(String((preset && preset.label) || (button && button.dataset ? button.dataset.fhbLabel : '') || key || 'Index'));
+}
+
 function renderFhbPresetButtonTitle(button, preset) {
   if (!button) return;
-  const title = button.querySelector('b');
-  if (!title) return;
-  const key = String(button.dataset.fhbKey || (preset && preset.key) || '').trim().toLowerCase();
-  const label = String((preset && preset.label) || button.dataset.fhbLabel || '').trim().toLowerCase();
-  const isVolne = key.indexOf('volne') >= 0 || label.indexOf('voln') >= 0;
-  const suffix = isVolne ? ' <span class="fhbIndexFree">volné</span>' : '';
-  if (key.indexOf('afag') >= 0 || label.indexOf('af/ag') >= 0) {
-    title.innerHTML = '<span class="fhbIndexAf">AF</span><span class="fhbIndexSep">/</span><span class="fhbIndexAg">AG</span>' + suffix;
-    return;
+  let title = button.querySelector(':scope > b.calcFhbPresetTitle');
+  if (!title) {
+    title = button.querySelector(':scope > b') || document.createElement('b');
+    title.classList.add('calcFhbPresetTitle');
+    button.prepend(title);
   }
-  if (key.indexOf('ah') >= 0 || /\bah\b/.test(label)) {
-    title.innerHTML = '<span class="fhbIndexAh">AH</span>' + suffix;
-    return;
-  }
-  title.textContent = String((preset && preset.label) || button.dataset.fhbLabel || key || 'Index');
+  title.innerHTML = getFhbShortLabelHtml(preset, button);
 }
 
 function updateFhbPresetButtons() {
@@ -1066,10 +1072,11 @@ function updateFhbPresetButtons() {
     renderFhbPresetButtonTitle(button, preset);
     let valueSpan = button.querySelector(':scope > .calcFhbPresetValue');
     if (!valueSpan) {
-      valueSpan = button.querySelector(':scope > span:last-child');
-      if (valueSpan) valueSpan.classList.add('calcFhbPresetValue');
+      valueSpan = document.createElement('span');
+      valueSpan.className = 'calcFhbPresetValue';
+      button.appendChild(valueSpan);
     }
-    if (valueSpan) valueSpan.textContent = 'L ' + formatCalcDecimalWhole(preset.left) + ' / P ' + formatCalcDecimalWhole(preset.right);
+    valueSpan.textContent = 'L ' + formatCalcDecimalWhole(preset.left) + ' / P ' + formatCalcDecimalWhole(preset.right);
   });
 }
 

@@ -1,7 +1,7 @@
-## v.1.5 (771)
-- Sudoku má odstraněný zbytečný scroll: obrazovka se posouvá výš, zmenšuje horní prázdnou vrstvu a číselník se má vejít nad spodní panel.
-- Korekce → Frézky: indexová tlačítka jsou přejmenovaná na AF/AG, AH, AF/AG volné a AH volné; rozměry L/P jsou pod názvem indexu.
-- Verze sjednocena na v.1.5 (771), cache na v1.5-771 a Supabase realtime kanál na rak-public-live-v771.
+## v.1.5 (772)
+- Sudoku: opravena příčina starého scrollu přímo v dynamickém arcade CSS; číselník je pevně pod deskou a nad spodní lištou, Sudoku deska sedí nad ním.
+- Korekce → Frézky: indexová tlačítka se nově přegenerují přímo v JS jako název nahoře a L/P dole, aby se názvy AF/AG, AH a volné varianty neztrácely po načtení administrace/Supabase.
+- Verze sjednocena na v.1.5 (772), cache na v1.5-772 a Supabase realtime kanál na rak-public-live-v772.
 
 ## v.1.5 (770)
 - Sudoku: spodní nabídka čísel má větší bezpečný prostor nad spodní lištou.

@@ -769,6 +769,133 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   #games .arcadeCell{min-height:38px;border-radius:14px;}
   #games .arcadeControls .gameControlBtn{min-height:40px;min-width:40px;}
 }
+
+/* v.1.5 (772) – Sudoku bez scrolu: číselník napevno nad spodním panelem, Sudoku nad ním. */
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games .arcadeShellRoot{
+  padding-top:calc(2px + env(safe-area-inset-top)) !important;
+  padding-bottom:calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 4px) !important;
+  height:100dvh !important;
+  min-height:0 !important;
+  overflow:hidden !important;
+  gap:0 !important;
+  box-sizing:border-box !important;
+}
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games .gamesShellBackFloating{
+  position:fixed !important;
+  left:10px !important;
+  top:calc(4px + env(safe-area-inset-top)) !important;
+  z-index:50 !important;
+  height:28px !important;
+  min-height:28px !important;
+  padding:0 9px !important;
+  font-size:11px !important;
+  border-radius:12px !important;
+}
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"]{
+  flex:1 1 auto !important;
+  min-height:0 !important;
+  height:calc(100dvh - var(--bottom-nav-h, 72px) - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 10px) !important;
+  max-height:calc(100dvh - var(--bottom-nav-h, 72px) - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 10px) !important;
+  overflow:hidden !important;
+  padding:30px 6px 0 !important;
+  display:flex !important;
+  align-items:stretch !important;
+  justify-content:center !important;
+  box-sizing:border-box !important;
+}
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuGameStage{
+  width:100% !important;
+  height:100% !important;
+  max-height:100% !important;
+  min-height:0 !important;
+  display:grid !important;
+  grid-template-rows:min-content min-content minmax(0,1fr) auto !important;
+  align-items:center !important;
+  justify-items:center !important;
+  align-content:start !important;
+  gap:4px !important;
+  overflow:hidden !important;
+  padding:0 !important;
+  box-sizing:border-box !important;
+}
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuHud{
+  grid-row:1 !important;
+  width:min(100%,340px) !important;
+  margin:0 auto !important;
+  gap:4px !important;
+}
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuHud .gamesStatCard,
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuHud .gamesStatLine{
+  min-height:28px !important;
+  padding:4px 6px !important;
+}
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuRestartTop{
+  grid-row:2 !important;
+  margin:0 auto !important;
+  min-height:28px !important;
+}
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuRestartTop .gameControlBtn{
+  min-height:28px !important;
+  height:28px !important;
+  padding:0 10px !important;
+  font-size:11px !important;
+  border-radius:12px !important;
+}
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .arcadeSudokuPaper{
+  grid-row:3 !important;
+  align-self:end !important;
+  width:min(100%, 330px, calc(100dvh - var(--bottom-nav-h, 72px) - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 156px)) !important;
+  max-width:330px !important;
+  margin:0 auto !important;
+  gap:3px !important;
+}
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .arcadeSudokuCell{
+  border-radius:8px !important;
+  font-size:clamp(13px,4.1vw,18px) !important;
+}
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuNumberPickerDocked,
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuNumberPickerTwoRows{
+  grid-row:4 !important;
+  position:static !important;
+  left:auto !important;
+  right:auto !important;
+  bottom:auto !important;
+  transform:none !important;
+  width:max-content !important;
+  max-width:100% !important;
+  margin:5px auto 0 !important;
+  display:grid !important;
+  grid-template-columns:repeat(5, 38px) !important;
+  gap:5px !important;
+  padding:6px !important;
+  z-index:4 !important;
+  box-sizing:border-box !important;
+}
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuNumberPickerTwoRows button{
+  width:38px !important;
+  min-width:38px !important;
+  max-width:38px !important;
+  height:36px !important;
+  min-height:36px !important;
+  max-height:36px !important;
+  font-size:15px !important;
+}
+@media (max-height:700px){
+  body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"]{padding-top:28px !important;}
+  body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .arcadeSudokuPaper{width:min(100%,306px,calc(100dvh - var(--bottom-nav-h, 72px) - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 144px)) !important;max-width:306px !important;}
+  body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuNumberPickerTwoRows{grid-template-columns:repeat(5,36px) !important;gap:4px !important;padding:5px !important;}
+  body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuNumberPickerTwoRows button{width:36px !important;min-width:36px !important;height:34px !important;min-height:34px !important;font-size:14px !important;}
+}
+@media (max-height:630px){
+  body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"]{padding-top:24px !important;}
+  body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuHud .gamesStatCard,
+  body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuHud .gamesStatLine{min-height:24px !important;padding:3px 5px !important;}
+  body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuRestartTop .gameControlBtn{height:24px !important;min-height:24px !important;font-size:10px !important;}
+  body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .arcadeSudokuPaper{width:min(100%,282px,calc(100dvh - var(--bottom-nav-h, 72px) - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 128px)) !important;max-width:282px !important;gap:2px !important;}
+  body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuNumberPickerTwoRows{grid-template-columns:repeat(5,33px) !important;gap:4px !important;padding:4px !important;}
+  body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuNumberPickerTwoRows button{width:33px !important;min-width:33px !important;height:31px !important;min-height:31px !important;font-size:13px !important;}
+}
+
 `;
   if (!document.getElementById('rakArcadeStyles')) {
     const style = document.createElement('style');
@@ -4902,7 +5029,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     const allHot = EXTRA_GAMES.length === 0;
     const completedOnlyGuard = typeof window.gamesRecordStat === 'function';
     return {
-      version: 'v.1.5 (771)',
+      version: 'v.1.5 (772)',
       ok: !missingMeta.length && !missingRenderer.length && allHot && completedOnlyGuard,
       totalGames: ids.length,
       coreGames: ids,

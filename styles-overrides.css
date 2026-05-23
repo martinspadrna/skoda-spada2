@@ -11528,7 +11528,7 @@ body.gamesOpen #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuNumberPi
 #korekce-frezky .calcFhbPresetBtn .fhbIndexSep{display:inline !important;color:rgba(255,255,255,.65) !important;}
 
 
-/* v.1.5 (771): Sudoku bez zbytečného scrollu + přesné názvy indexů Frézek. */
+/* v.1.5 (772): Sudoku bez zbytečného scrollu + přesné názvy indexů Frézek. */
 body.gamesOpen[data-rak-arcade-game="sudoku"] #games .arcadeShellRoot{
   padding-top:calc(6px + env(safe-area-inset-top)) !important;
   gap:4px !important;
@@ -11651,6 +11651,18 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   color:rgba(255,255,255,.84) !important;
   font-weight:900 !important;
 }
+#korekce-frezky .calcFhbPresetBtn .fhbIndexAf{display:inline !important;color:#82c8ff !important;text-shadow:0 0 12px rgba(83,163,255,.40) !important;}
+#korekce-frezky .calcFhbPresetBtn .fhbIndexAg{display:inline !important;color:#80ffad !important;text-shadow:0 0 12px rgba(93,225,137,.40) !important;}
+#korekce-frezky .calcFhbPresetBtn .fhbIndexAh{display:inline !important;color:#ffc173 !important;text-shadow:0 0 12px rgba(255,178,86,.36) !important;}
+#korekce-frezky .calcFhbPresetBtn .fhbIndexSep{display:inline !important;color:rgba(255,255,255,.65) !important;}
+
+
+/* v.1.5 (772): finální pojistka Sudoku a indexů Frézky. */
+#korekce-frezky .calcFhbPresetGrid{display:grid !important;grid-template-columns:repeat(2,minmax(0,1fr)) !important;gap:8px !important;}
+#korekce-frezky .calcFhbPresetBtn{display:grid !important;grid-template-rows:auto auto !important;align-content:center !important;justify-items:center !important;gap:4px !important;min-height:58px !important;padding:8px 7px !important;text-align:center !important;}
+#korekce-frezky .calcFhbPresetBtn > b.calcFhbPresetTitle{display:flex !important;align-items:center !important;justify-content:center !important;gap:1px !important;width:100% !important;min-height:18px !important;font-size:14px !important;line-height:1 !important;font-weight:950 !important;opacity:1 !important;visibility:visible !important;white-space:nowrap !important;color:rgba(246,255,250,.96) !important;}
+#korekce-frezky .calcFhbPresetBtn > .calcFhbPresetValue{display:block !important;width:100% !important;font-size:11px !important;line-height:1.05 !important;font-weight:850 !important;opacity:.9 !important;visibility:visible !important;color:rgba(240,250,255,.9) !important;white-space:nowrap !important;}
+#korekce-frezky .calcFhbPresetBtn .fhbIndexFree{display:inline !important;margin-left:4px !important;color:rgba(255,255,255,.84) !important;font-weight:900 !important;}
 #korekce-frezky .calcFhbPresetBtn .fhbIndexAf{display:inline !important;color:#82c8ff !important;text-shadow:0 0 12px rgba(83,163,255,.40) !important;}
 #korekce-frezky .calcFhbPresetBtn .fhbIndexAg{display:inline !important;color:#80ffad !important;text-shadow:0 0 12px rgba(93,225,137,.40) !important;}
 #korekce-frezky .calcFhbPresetBtn .fhbIndexAh{display:inline !important;color:#ffc173 !important;text-shadow:0 0 12px rgba(255,178,86,.36) !important;}
