@@ -1,3 +1,9 @@
+## v.1.5 (783)
+- Korekce → Soustruhy → Poloha vrtáků v ose X: výsledek je zkrácený jen na zvolený stroj, výraznou větu s korekcí do osy X na vrtácích a očekávaný výsledek.
+- Z výsledku je odstraněná hodnota před násobením i další vysvětlovací řádky, aby se obsluha nemátla.
+- Výpočet korekce zůstává stejný jako v potvrzené v.1.5 (782).
+- Verze sjednocena na v.1.5 (783), cache na v1.5-783 a Supabase realtime kanál na rak-public-live-v783.
+
 ## v.1.5 (782)
 - Korekce → Soustruhy → Poloha vrtáků v ose X: přepínače +/− u polí jsou dorovnané na stejnou výšku jako zadávací pole.
 - Odstraněný zbytečný popis pod zadáváním hodnot a zjednodušený výsledek: výrazně ukazuje hlavně korekci, kterou zadat do X, směr a očekávaný stav vrtáků po korekci.

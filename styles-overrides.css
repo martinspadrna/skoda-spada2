@@ -11855,7 +11855,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
 }
 
 
-/* v.1.5 (782): Korekce Soustruhy – přepínač znaménka u vrtáků 3/7. */
+/* v.1.5 (783): Korekce Soustruhy – přepínač znaménka u vrtáků 3/7. */
 #korekce-soustruhy .calcSignedInput{
   display:grid !important;
   grid-template-columns:42px minmax(0,1fr) !important;
@@ -11893,7 +11893,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
 }
 
 
-/* v.1.5 (782): Korekce Soustruhy – čistší vstup a výrazný krátký výsledek. */
+/* v.1.5 (783): Korekce Soustruhy – čistší vstup a výrazný krátký výsledek. */
 #korekce-soustruhy .calcSignedInput{
   align-items:stretch !important;
 }
@@ -11931,4 +11931,33 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
 @media (max-width:360px){
   #korekce-soustruhy .calcSignToggle{height:44px !important;min-height:44px !important;}
   #korekce-soustruhy .calcSignedInput input{height:44px !important;min-height:44px !important;}
+}
+
+
+/* v.1.5 (783): Korekce Soustruhy – finální krátký výsledek korekce vrtáků X. */
+#korekce-soustruhy .calcCorrectionLatheAxisResult .latheAxisCorrectionMain{
+  margin-top:2px !important;
+  padding:14px 12px !important;
+  text-align:center !important;
+  font-size:clamp(19px,5.2vw,25px) !important;
+  line-height:1.18 !important;
+  color:rgba(255,255,255,.98) !important;
+  border-radius:20px !important;
+  border:1px solid color-mix(in srgb,var(--rakThemeAccent,var(--green2)) 62%,rgba(255,255,255,.18)) !important;
+  background:linear-gradient(135deg,color-mix(in srgb,var(--rakThemeAccent,var(--green2)) 34%,rgba(255,255,255,.10)),rgba(255,255,255,.07)) !important;
+  box-shadow:0 16px 38px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.14) !important;
+}
+#korekce-soustruhy .calcCorrectionLatheAxisResult .latheAxisCorrectionMain b:last-child{
+  display:inline-block !important;
+  margin-left:4px !important;
+  font-size:1.12em !important;
+  color:color-mix(in srgb,var(--rakThemeAccent,var(--green2)) 72%,#ffffff) !important;
+  text-shadow:0 0 18px color-mix(in srgb,var(--rakThemeAccent,var(--green2)) 45%,transparent) !important;
+}
+#korekce-soustruhy .calcCorrectionLatheAxisResult .latheAxisCorrectionExpected{
+  margin-top:8px !important;
+  text-align:center !important;
+  font-size:14px !important;
+  line-height:1.35 !important;
+  color:rgba(255,255,255,.82) !important;
 }

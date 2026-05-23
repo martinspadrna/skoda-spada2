@@ -1,4 +1,4 @@
-// v.1.5 (782) – Soustruhy: čistší výstup korekce vrtáků X a zarovnání přepínačů znaménka.
+// v.1.5 (783) – Soustruhy: zkrácený výrazný výstup korekce vrtáků X.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

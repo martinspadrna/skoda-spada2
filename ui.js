@@ -4353,7 +4353,7 @@ function renderGamesAppearanceStatus() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText || 'v.1.5 (782)',
+      range: versionText || 'v.1.5 (783)',
       title: 'Přechod na řadu 1.5',
       lines: [
         'Korekce jsou oddělené od Výpočtu kusů; Frézky jsou označené jako nutné doladit.',
@@ -4370,7 +4370,7 @@ function buildAppHistoryHtml(versionText) {
         'Denní výzva u Bombermana má vlastní stav a ovládání, aby šlo hýbat i když běžný Bomberman fungoval samostatně.',
         'Korekce Frézky mají otazníky s obrázkovou nápovědou pro konicitu a fhβ, včetně zvýraznění aktuální hodnoty i tlačítka Změnit.',
         'Sudoku má větší volbu obtížnosti posunutou výš i číselník nad spodní lištou; Pexeso 4×4 drží stejnou velikost karet při otočení a herní dlaždice mají sjednocené zarovnání textu.',
-        'Korekce Soustruhy mají první rozbalovací panel Poloha vrtáků v ose X s volbou MSKC01/03/04 nebo MSKC02.',
+        'Korekce Soustruhy mají zkrácený výsledek polohy vrtáků v ose X: stroj, korekce do X a očekávaný výsledek.',
         'Korekce mají kompaktnější centrované nadpisy; Frézky mají volbu indexu s malou mezerou jako u Výpočtu kusů a AF/AG pozadí správně modrá vlevo, zelená vpravo.',
         'Sekce O aplikaci se průběžně drží stručná a aktualizovaná podle aktuálních buildů.'
       ]

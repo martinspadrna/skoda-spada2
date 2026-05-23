@@ -1105,21 +1105,15 @@ function calcLatheAxisCorrection(options) {
   const offsets = getLatheAxisDrillPhysicalOffsets(drill3, drill7);
   const averageRight = (offsets.drill3Right + offsets.drill7Right) / 2;
   const correction = averageRight * 2 * cfg.leftSign;
-  const moveText = Math.abs(averageRight) < 0.0005 ? 'bez výrazného posunu' : (averageRight > 0 ? 'doleva' : 'doprava');
-  const halfCorrection = averageRight * cfg.leftSign;
-  const moveDistance = Math.abs(averageRight);
   const expectedDrill3Right = offsets.drill3Right - averageRight;
   const expectedDrill7Right = offsets.drill7Right - averageRight;
   const expectedDrill3 = -expectedDrill3Right;
   const expectedDrill7 = expectedDrill7Right;
-  const main = 'Do X zadej: <b>' + escapeHtml(formatLatheAxisCorrectionValue(correction)) + '</b>';
-  const moveLine = Math.abs(averageRight) < 0.0005
-    ? 'Směr: <b>bez posunu</b>'
-    : 'Směr: <b>' + escapeHtml(moveText) + '</b>';
-  const html = "<div class='calcResultTitle'>" + escapeHtml(cfg.label) + "</div>" +
-    "<div class='calcResultMain latheAxisCorrectionMain'>" + main + "</div>" +
-    "<div class='calcResultLine'>" + moveLine + "</div>" +
-    "<div class='calcResultLine'>Poté cca: vrták 3 <b>" + escapeHtml(formatLatheAxisCorrectionValue(expectedDrill3)) + "</b> · vrták 7 <b>" + escapeHtml(formatLatheAxisCorrectionValue(expectedDrill7)) + "</b></div>";
+  const correctionText = formatLatheAxisCorrectionValue(correction);
+  const html = "<div class='calcResultMain latheAxisCorrectionMain'>" +
+    "Na stroji <b>" + escapeHtml(cfg.label) + "</b> zadej na vrtácích korekci v ose X: <b>" + escapeHtml(correctionText) + "</b>" +
+    "</div>" +
+    "<div class='calcResultLine latheAxisCorrectionExpected'>Očekávaný výsledek: vrták 3 <b>" + escapeHtml(formatLatheAxisCorrectionValue(expectedDrill3)) + "</b> · vrták 7 <b>" + escapeHtml(formatLatheAxisCorrectionValue(expectedDrill7)) + "</b></div>";
   setCalcOutputHtml(out, html, out.id || 'latheAxisCorrectionResult');
 }
 
