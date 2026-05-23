@@ -1,4 +1,4 @@
-// v.1.5 (765) – Sjednocené nadpisové panely a mezery v celé sekci Kalkulaček.
+// v.1.5 (768) – Denní výzva: Bomberman má vlastní ovládání a stav.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

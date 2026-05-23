@@ -1,8 +1,18 @@
-## v.1.5 (765)
-- Supabase změny `machine_settings` nově po realtime/sync refreshi rovnou překreslí otevřenou Pračku a Korekce → Frézky.
-- Pračka po online změně času výroby kusu aktualizuje informační řádek i už spočítané výsledky bez přechodu na jinou stránku.
-- Korekce → Frézky po online změně středů fhβ aktualizují tlačítka indexů, skrytý vybraný střed a případně přepočítají otevřený výsledek.
-- Verze sjednocena na v.1.5 (765), cache na v1.5-765 a Supabase realtime kanál na rak-public-live-v765.
+## v.1.5 (768)
+- Denní výzva: Bomberman mini má při spuštění z Daily vlastní stav a znovu navázané ovládání, takže se nezasekne na starém běžném Bombermanovi.
+- Bomberman v Daily používá vlastní bind body/shellu, aby dotykový joystick a klávesy fungovaly i po přepnutí mezi běžnou hrou a denní výzvou.
+- Verze sjednocena na v.1.5 (768), cache na v1.5-768 a Supabase realtime kanál na rak-public-live-v768.
+
+## v.1.5 (767)
+- Piškvorky: hrací pole má spodní okraj pevně nad spodním panelem/navigací, aby do něj nelezlo a neztrácelo se pod lištou.
+- Kalkulačky: hlavní menu Kalkulačky, Výpočet kusů a Korekce mají sjednocenou výšku nadpisového panelu i mezeru pod ním.
+- Korekce: nadpisy Soustruhy / Frézky / Brusy používají stejnou výšku jako stránky Výpočtu kusů.
+- Verze sjednocena na v.1.5 (767), cache na v1.5-767 a Supabase realtime kanál na rak-public-live-v767.
+
+## v.1.5 (766)
+- Kalkulačky: sjednocení horních nadpisových panelů a mezery pod nadpisem podle hlavního menu Kalkulačky.
+- O aplikaci a changelog průběžně aktualizované pro aktuální stav.
+- Verze sjednocena na v.1.5 (766), cache na v1.5-766 a Supabase realtime kanál na rak-public-live-v766.
 
 ## v.1.5 (763)
 - Výpočet kusů má nový stroj Pračka v přehledu kalkulaček.

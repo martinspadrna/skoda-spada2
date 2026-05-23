@@ -3362,8 +3362,19 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     if (state.shield > 0) { state.shield -= 1; state.hint = 'Štít tě zachránil.'; return; }
     state.over = true; state.won = false; state.hint = 'Příšerka tě dostala.';
   }
-  function renderBomber(body) {
-    const state = getState('bomber', () => { const s = bomberState(); initBomber(s); return s; });
+  function renderBomber(body, opts) {
+    const isChallenge = !!(opts && opts.challenge);
+    const stateId = isChallenge ? 'daily_bomber' : 'bomber';
+    const statId = isChallenge ? 'daily' : 'bomber';
+    const state = getState(stateId, () => { const s = bomberState(); initBomber(s); return s; });
+    state.challenge = isChallenge;
+    // v.1.5 (768): Denní výzva může spustit Bombermana do stejného shell body jako Daily.
+    // Starý bound stav z běžného Bombermana by jinak nechal ovládání navázané na původní DOM.
+    if (state.bound && (state.boundBody !== body || state.boundGameId !== stateId)) {
+      state.bound = false;
+      state.boundBody = null;
+      state.boundGameId = '';
+    }
     const cellClass = (x, y) => {
       let cls = 'arcadeBomberCell';
       if (state.map[y][x] === 'wall') cls += ' wall';
@@ -3435,7 +3446,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
           <div class="arcadeHud arcadeHudSingleLine bomberHud">${hudHtml()}</div>
           <div class="arcadeBar arcadePanel uPad10x12"><div class="arcadeStatus bomberStatus">${state.hint}</div></div>
           <div class="arcadeBomberBoard arcadePanel" id="bomberGrid">${boardHtml()}<div class="bomberResultMount">${resultHtml()}</div></div>
-          ${gamesTop3Block('bomber', 'bodů', 5).replace('gamesTop5ScrollCard', 'gamesTop5ScrollCard arcadeTopScoreTight')}
+          ${gamesTop3Block(statId, 'bodů', 5).replace('gamesTop5ScrollCard', 'gamesTop5ScrollCard arcadeTopScoreTight')}
         </div>`;
       bindButtons();
     };
@@ -3519,14 +3530,20 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       else if (ev.key === ' ' || ev.key === 'Enter') { ev.preventDefault(); placeBomb(); }
     };
     const resetBomberGame = () => {
+      const keepBoundBody = state.boundBody || body;
       Object.assign(state, bomberState());
       initBomber(state);
+      state.challenge = isChallenge;
       state.bound = true;
+      state.boundBody = keepBoundBody;
+      state.boundGameId = stateId;
       draw();
     };
     const bindButtons = () => {
-      if (state.bound) return;
+      if (state.bound && state.boundBody === body && state.boundGameId === stateId) return;
       state.bound = true;
+      state.boundBody = body;
+      state.boundGameId = stateId;
       document.addEventListener('keydown', keyHandler);
       body.addEventListener('pointerdown', (ev) => {
         const btn = ev.target && ev.target.closest ? ev.target.closest('[data-bomber="restart"]') : null;
@@ -3593,7 +3610,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     const saveResult = () => {
       if (state.saved) return;
       state.saved = true;
-      gamesRecordStat('bomber', {
+      gamesRecordStat(statId, {
         completed: true,
         plays: 1,
         bestScore: state.score,
@@ -3640,9 +3657,14 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       clearInterval(state.timer);
       state.timer = 0;
       document.removeEventListener('keydown', keyHandler);
+      if (state.boundBody === body && state.boundGameId === stateId) {
+        state.bound = false;
+        state.boundBody = null;
+        state.boundGameId = '';
+      }
       if (state.over) saveResult();
     });
-    setActiveState('bomber', state);
+    setActiveState(isChallenge ? 'daily' : 'bomber', state);
   }
 
 
@@ -4856,7 +4878,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
       else if (mode === 'doodle') renderDoodle(body);
       else if (mode === 'brick') renderBrick(body);
       else if (mode === 'shooter') renderShooter(body);
-      else if (mode === 'bomber') renderBomber(body);
+      else if (mode === 'bomber') renderBomber(body, { challenge: true });
       else if (mode === 'pampuch') renderPampuch(body);
       else if (mode === 'ships') renderShips(body);
     };
@@ -4879,7 +4901,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     const allHot = EXTRA_GAMES.length === 0;
     const completedOnlyGuard = typeof window.gamesRecordStat === 'function';
     return {
-      version: 'v.1.5 (765)',
+      version: 'v.1.5 (768)',
       ok: !missingMeta.length && !missingRenderer.length && allHot && completedOnlyGuard,
       totalGames: ids.length,
       coreGames: ids,

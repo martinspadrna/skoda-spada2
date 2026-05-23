@@ -710,7 +710,7 @@ html[data-lightweight="1"] body.tttOpen .tttOverlay .tttBoardWrap{
   backdrop-filter:none !important;
 }
 
-/* v.1.5 (765): Piškvorky – za spodní lištou nesmí být vidět ani scrollovat jiná stránka. */
+/* v.1.5 (767): Piškvorky – za spodní lištou nesmí být vidět ani scrollovat jiná stránka. */
 html:has(body.tttOpen){
   height:100% !important;
   overflow:hidden !important;
@@ -759,6 +759,17 @@ html body.tttOpen .tttOverlay::after{
   pointer-events:none !important;
   z-index:1 !important;
   background:linear-gradient(180deg, rgba(5,8,22,0), var(--rakBgBase, var(--bg, #050816)) 42%, var(--rakBgBase, var(--bg, #050816)) 100%) !important;
+}
+html body.tttOpen #tttOverlay.tttOverlay.isVisible .tttBoardWrap{
+  top:56px !important;
+  right:10px !important;
+  bottom:calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 18px) !important;
+  left:10px !important;
+  inset:56px 10px calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 18px) 10px !important;
+  max-height:calc(100dvh - 56px - var(--bottom-nav-h, 72px) - env(safe-area-inset-bottom) - 18px) !important;
+}
+html body.tttOpen #tttOverlay.tttOverlay.isVisible .tttResultCard{
+  bottom:calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 26px) !important;
 }
 `;
     if (existing) {
@@ -4335,7 +4346,7 @@ function renderGamesAppearanceStatus() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText || 'v.1.5 (765)',
+      range: versionText || 'v.1.5 (768)',
       title: 'Přechod na řadu 1.5',
       lines: [
         'Korekce jsou oddělené od Výpočtu kusů; Frézky jsou označené jako nutné doladit.',
@@ -4343,7 +4354,8 @@ function buildAppHistoryHtml(versionText) {
         'Frézky → konicita a fhβ jsou v jedné kalkulačce; středy fhβ se dají měnit v administraci a výstup přednostně vybere jednu nejlepší korekci.',
         'Online změny strojních nastavení se po Supabase syncu promítají rovnou do otevřené Pračky i korekcí frézky.',
         'Piškvorky při otevření hry uzamykají pozadí, aby pod spodní lištou nebyly vidět ani scrollovat ostatní hry.',
-        'Kalkulačky mají sjednocené horní nadpisové panely a stejnou malou mezeru pod nadpisem ve Výpočtu kusů i Korekcích.',
+        'Kalkulačky mají horní nadpisové panely a mezeru pod nadpisem sjednocené přesně podle hlavního menu Kalkulačky.',
+        'Denní výzva u Bombermana má vlastní stav a ovládání, aby šlo hýbat i když běžný Bomberman fungoval samostatně.',
         'Korekce mají kompaktnější centrované nadpisy; Frézky mají volbu indexu s malou mezerou jako u Výpočtu kusů a AF/AG pozadí správně modrá vlevo, zelená vpravo.',
         'Sekce O aplikaci se průběžně drží stručná a aktualizovaná podle aktuálních buildů.'
       ]

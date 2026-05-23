@@ -10990,7 +10990,7 @@ html body.tttOpen .tttOverlay::after{
   background:linear-gradient(180deg, rgba(5,8,22,0), var(--rakBgBase, var(--bg, #050816)) 42%, var(--rakBgBase, var(--bg, #050816)) 100%) !important;
 }
 
-/* v.1.5 (765): Kalkulačky – sjednocené nadpisové panely a mezery napříč Výpočtem kusů i Korekcemi. */
+/* v.1.5 (766): Kalkulačky – sjednocené nadpisové panely a mezery napříč Výpočtem kusů i Korekcemi. */
 :is(#soustruhy, #frezky, #brusy, #pracka, #korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage.active{
   align-content:start !important;
   align-items:start !important;
@@ -11089,4 +11089,187 @@ html body.tttOpen .tttOverlay::after{
 #korekce-frezky .calcCorrectionFhbCard .calcCorrectionPresetGroup{
   margin-top:0 !important;
   padding-top:6px !important;
+}
+
+/* v.1.5 (766): Kalkulačky – finální sjednocení podle hlavního menu Kalkulačky. */
+:is(#soustruhy, #frezky, #brusy, #pracka, #korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage{
+  align-content:start !important;
+  align-items:start !important;
+  grid-auto-rows:max-content !important;
+  row-gap:0 !important;
+  gap:0 !important;
+}
+:is(#soustruhy, #frezky, #brusy, #pracka, #korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage > .headerBar.calcHeaderBar{
+  position:relative !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  width:calc(100% - 12px) !important;
+  max-width:calc(100% - 12px) !important;
+  min-height:44px !important;
+  height:44px !important;
+  max-height:44px !important;
+  margin:8px 6px 10px !important;
+  padding:8px 86px 8px 44px !important;
+  box-sizing:border-box !important;
+  overflow:hidden !important;
+  flex:0 0 auto !important;
+  border-radius:22px !important;
+}
+:is(#soustruhy, #frezky, #brusy, #pracka, #korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage > .headerBar.calcHeaderBar > div:first-child{
+  display:none !important;
+}
+:is(#soustruhy, #frezky, #brusy, #pracka, #korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage > .headerBar.calcHeaderBar h3,
+:is(#soustruhy, #frezky, #brusy, #pracka, #korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage > .headerBar.calcHeaderBar .calcHeaderTitleOneLine{
+  position:absolute !important;
+  left:50% !important;
+  top:50% !important;
+  transform:translate(-50%, -50%) !important;
+  width:auto !important;
+  max-width:calc(100% - 150px) !important;
+  min-width:0 !important;
+  margin:0 !important;
+  padding:0 !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  text-align:center !important;
+  font-size:clamp(15px, 3.9vw, 18px) !important;
+  font-weight:900 !important;
+  line-height:1 !important;
+}
+:is(#soustruhy, #frezky, #brusy, #pracka, #korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage > .headerBar.calcHeaderBar .calcHeaderActions{
+  position:absolute !important;
+  right:8px !important;
+  top:50% !important;
+  transform:translateY(-50%) !important;
+  z-index:3 !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-end !important;
+  gap:6px !important;
+  margin:0 !important;
+  width:auto !important;
+  min-width:0 !important;
+  flex:0 0 auto !important;
+}
+:is(#soustruhy, #frezky, #brusy, #pracka, #korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage > .headerBar.calcHeaderBar .calcHeaderActions .resetBtn,
+:is(#soustruhy, #frezky, #brusy, #pracka, #korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage > .headerBar.calcHeaderBar .calcHeaderActions .calcCloseBtn{
+  width:32px !important;
+  height:32px !important;
+  min-width:32px !important;
+  max-width:32px !important;
+  min-height:32px !important;
+  max-height:32px !important;
+  flex:0 0 32px !important;
+  margin:0 !important;
+  padding:0 !important;
+  border-radius:11px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  line-height:1 !important;
+}
+:is(#soustruhy, #frezky, #brusy, #pracka, #korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage > .headerBar.calcHeaderBar + *,
+:is(#soustruhy, #frezky, #brusy, #pracka, #korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage > :not(.headerBar):first-of-type{
+  margin-top:0 !important;
+}
+#korekce-frezky.page.calcPage.calcCorrectionPage > .card.calcCorrectionFhbCard,
+#korekce-frezky.page.calcPage.calcCorrectionPage > .calcCorrectionFhbCard{
+  margin-top:0 !important;
+}
+
+
+/* v.1.5 (767): Piškvorky – hrací pole končí nad spodním panelem + kalkulačkové nadpisy mají stejnou výšku i v Korekcích. */
+html body.tttOpen #tttOverlay.tttOverlay.isVisible .tttGameScreen{
+  padding-bottom:calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 8px) !important;
+  overflow:hidden !important;
+}
+html body.tttOpen #tttOverlay.tttOverlay.isVisible .tttBoardWrap{
+  top:56px !important;
+  right:10px !important;
+  bottom:calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 18px) !important;
+  left:10px !important;
+  inset:56px 10px calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 18px) 10px !important;
+  max-height:calc(100dvh - 56px - var(--bottom-nav-h, 72px) - env(safe-area-inset-bottom) - 18px) !important;
+}
+html body.tttOpen #tttOverlay.tttOverlay.isVisible .tttResultCard{
+  bottom:calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 26px) !important;
+}
+#kalkulacky.page > .headerBar,
+:is(#soustruhy, #frezky, #brusy, #pracka, #korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage > .headerBar.calcHeaderBar,
+:is(#soustruhy, #frezky, #brusy, #pracka, #korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage.calcCorrectionPage > .headerBar.calcHeaderBar{
+  --rakCalcTitleHeight:46px;
+  position:relative !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  width:calc(100% - 12px) !important;
+  max-width:calc(100% - 12px) !important;
+  min-height:var(--rakCalcTitleHeight) !important;
+  height:var(--rakCalcTitleHeight) !important;
+  max-height:var(--rakCalcTitleHeight) !important;
+  margin:8px 6px 10px !important;
+  padding:0 44px !important;
+  box-sizing:border-box !important;
+  border-radius:22px !important;
+  overflow:hidden !important;
+  flex:0 0 auto !important;
+}
+:is(#soustruhy, #frezky, #brusy, #pracka, #korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage > .headerBar.calcHeaderBar,
+:is(#soustruhy, #frezky, #brusy, #pracka, #korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage.calcCorrectionPage > .headerBar.calcHeaderBar{
+  padding:0 86px 0 44px !important;
+}
+#kalkulacky.page > .headerBar h3,
+:is(#soustruhy, #frezky, #brusy, #pracka, #korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage > .headerBar.calcHeaderBar h3,
+:is(#soustruhy, #frezky, #brusy, #pracka, #korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage > .headerBar.calcHeaderBar .calcHeaderTitleOneLine{
+  position:absolute !important;
+  left:50% !important;
+  top:50% !important;
+  transform:translate(-50%, -50%) !important;
+  width:auto !important;
+  max-width:calc(100% - 150px) !important;
+  min-width:0 !important;
+  margin:0 !important;
+  padding:0 !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  text-align:center !important;
+  font-size:clamp(16px, 4.1vw, 19px) !important;
+  font-weight:900 !important;
+  line-height:1 !important;
+}
+#kalkulacky.page > .headerBar + *,
+:is(#soustruhy, #frezky, #brusy, #pracka, #korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage > .headerBar.calcHeaderBar + *{
+  margin-top:0 !important;
+}
+:is(#soustruhy, #frezky, #brusy, #pracka, #korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage > .headerBar.calcHeaderBar .calcHeaderActions{
+  position:absolute !important;
+  right:8px !important;
+  top:50% !important;
+  transform:translateY(-50%) !important;
+  z-index:3 !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-end !important;
+  gap:6px !important;
+  margin:0 !important;
+}
+:is(#soustruhy, #frezky, #brusy, #pracka, #korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage > .headerBar.calcHeaderBar .calcHeaderActions .resetBtn,
+:is(#soustruhy, #frezky, #brusy, #pracka, #korekce-soustruhy, #korekce-frezky, #korekce-brusy).page.calcPage > .headerBar.calcHeaderBar .calcHeaderActions .calcCloseBtn{
+  width:32px !important;
+  height:32px !important;
+  min-width:32px !important;
+  max-width:32px !important;
+  min-height:32px !important;
+  max-height:32px !important;
+  flex:0 0 32px !important;
+  margin:0 !important;
+  padding:0 !important;
+  border-radius:11px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  line-height:1 !important;
 }
