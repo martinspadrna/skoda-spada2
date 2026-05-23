@@ -1,4 +1,4 @@
-// v.1.5 (772) – Sudoku číselník fix nad spodní lištou + Frézky indexy přegenerované v renderu.
+// v.1.5 (773) – Sudoku zvětšené při zachování číselníku nad spodní lištou.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

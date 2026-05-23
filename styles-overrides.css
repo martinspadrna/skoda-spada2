@@ -11528,7 +11528,7 @@ body.gamesOpen #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuNumberPi
 #korekce-frezky .calcFhbPresetBtn .fhbIndexSep{display:inline !important;color:rgba(255,255,255,.65) !important;}
 
 
-/* v.1.5 (772): Sudoku bez zbytečného scrollu + přesné názvy indexů Frézek. */
+/* v.1.5 (773): Sudoku bez zbytečného scrollu + přesné názvy indexů Frézek. */
 body.gamesOpen[data-rak-arcade-game="sudoku"] #games .arcadeShellRoot{
   padding-top:calc(6px + env(safe-area-inset-top)) !important;
   gap:4px !important;
@@ -11657,7 +11657,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
 #korekce-frezky .calcFhbPresetBtn .fhbIndexSep{display:inline !important;color:rgba(255,255,255,.65) !important;}
 
 
-/* v.1.5 (772): finální pojistka Sudoku a indexů Frézky. */
+/* v.1.5 (773): finální pojistka Sudoku a indexů Frézky. */
 #korekce-frezky .calcFhbPresetGrid{display:grid !important;grid-template-columns:repeat(2,minmax(0,1fr)) !important;gap:8px !important;}
 #korekce-frezky .calcFhbPresetBtn{display:grid !important;grid-template-rows:auto auto !important;align-content:center !important;justify-items:center !important;gap:4px !important;min-height:58px !important;padding:8px 7px !important;text-align:center !important;}
 #korekce-frezky .calcFhbPresetBtn > b.calcFhbPresetTitle{display:flex !important;align-items:center !important;justify-content:center !important;gap:1px !important;width:100% !important;min-height:18px !important;font-size:14px !important;line-height:1 !important;font-weight:950 !important;opacity:1 !important;visibility:visible !important;white-space:nowrap !important;color:rgba(246,255,250,.96) !important;}
@@ -11667,3 +11667,58 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
 #korekce-frezky .calcFhbPresetBtn .fhbIndexAg{display:inline !important;color:#80ffad !important;text-shadow:0 0 12px rgba(93,225,137,.40) !important;}
 #korekce-frezky .calcFhbPresetBtn .fhbIndexAh{display:inline !important;color:#ffc173 !important;text-shadow:0 0 12px rgba(255,178,86,.36) !important;}
 #korekce-frezky .calcFhbPresetBtn .fhbIndexSep{display:inline !important;color:rgba(255,255,255,.65) !important;}
+
+/* v.1.5 (773): Sudoku větší – číselník drží nad spodní lištou, deska nad ním bez zbytečného scrollu. */
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games .arcadeShellRoot{
+  padding-top:calc(2px + env(safe-area-inset-top)) !important;
+  padding-bottom:calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 4px) !important;
+  height:100dvh !important;
+  overflow:hidden !important;
+}
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"]{
+  padding:4px 6px 0 !important;
+  height:calc(100dvh - var(--bottom-nav-h, 72px) - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 8px) !important;
+  max-height:calc(100dvh - var(--bottom-nav-h, 72px) - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 8px) !important;
+  overflow:hidden !important;
+  align-items:flex-start !important;
+}
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuGameStage{
+  display:grid !important;
+  grid-template-rows:min-content min-content minmax(0,auto) min-content !important;
+  align-content:start !important;
+  gap:5px !important;
+  height:100% !important;
+  overflow:hidden !important;
+}
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .arcadeSudokuPaper{
+  width:min(calc(100vw - 18px), 360px, calc(100dvh - var(--bottom-nav-h, 72px) - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 150px)) !important;
+  max-width:360px !important;
+  align-self:end !important;
+}
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuNumberPickerDocked,
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuNumberPickerTwoRows{
+  position:static !important;
+  transform:none !important;
+  margin:6px auto 0 !important;
+  grid-template-columns:repeat(5,42px) !important;
+  gap:5px !important;
+  padding:7px !important;
+}
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuNumberPickerTwoRows button{
+  width:42px !important;
+  min-width:42px !important;
+  height:39px !important;
+  min-height:39px !important;
+  font-size:16px !important;
+}
+@media (max-height:720px){
+  body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"]{padding-top:2px !important;}
+  body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .arcadeSudokuPaper{width:min(calc(100vw - 16px),350px,calc(100dvh - var(--bottom-nav-h, 72px) - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 140px)) !important;max-width:350px !important;}
+  body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuNumberPickerTwoRows{grid-template-columns:repeat(5,40px) !important;padding:6px !important;}
+  body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuNumberPickerTwoRows button{width:40px !important;min-width:40px !important;height:37px !important;min-height:37px !important;font-size:15px !important;}
+}
+@media (max-height:630px){
+  body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .arcadeSudokuPaper{width:min(calc(100vw - 14px),338px,calc(100dvh - var(--bottom-nav-h, 72px) - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 128px)) !important;max-width:338px !important;}
+  body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuNumberPickerTwoRows{grid-template-columns:repeat(5,38px) !important;padding:5px !important;}
+  body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuNumberPickerTwoRows button{width:38px !important;min-width:38px !important;height:35px !important;min-height:35px !important;font-size:14px !important;}
+}
