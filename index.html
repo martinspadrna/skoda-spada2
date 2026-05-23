@@ -720,12 +720,12 @@
     <div class="calcCorrectionGroup calcCorrectionGroup--soft">
       <div class="calcCorrectionGroupTitle">Aktuální korekce ve stroji</div>
       <div class="calcCorrectionTwoCols">
-        <label class="calcCorrectionField">
-          <span>Konicita</span>
+        <label class="calcCorrectionField calcCorrectionField--withHelp">
+          <span class="calcCorrectionHelpLabel"><span>Konicita</span><button type="button" class="calcCorrectionHelpBtn" data-action="open-frezky-correction-help" data-help-type="konicita" aria-label="Nápověda ke konicitě">?</button></span>
           <input id="fhb_current_taper_corr" type="text" inputmode="decimal" placeholder="např. 35 nebo 0,035">
         </label>
-        <label class="calcCorrectionField">
-          <span>fhβ</span>
+        <label class="calcCorrectionField calcCorrectionField--withHelp">
+          <span class="calcCorrectionHelpLabel"><span>fhβ</span><button type="button" class="calcCorrectionHelpBtn" data-action="open-frezky-correction-help" data-help-type="fhb" aria-label="Nápověda k fhβ">?</button></span>
           <input id="fhb_current_shift_corr" type="text" inputmode="decimal" placeholder="např. 57 nebo 0,057">
         </label>
       </div>

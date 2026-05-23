@@ -1311,6 +1311,81 @@ function calcFrezkyFhbCorrection() {
   setCalcOutputHtml(out, html, 'fhbBestSingleResult:' + selected.type + ':' + [targetLeft, targetRight, currentTaperCorr, currentShiftCorr, centerScore, spreadScore, taperDelta, shiftDelta, selected.metrics.score].join('|'));
 }
 
+
+function openFrezkyCorrectionHelp(type) {
+  const rawType = String(type || '').trim().toLowerCase();
+  const isKonicita = rawType === 'konicita' || rawType === 'taper';
+  const cfg = isKonicita
+    ? {
+        title: 'Kde zadat konicitu',
+        subtitle: 'Ve stroji otevři modifikace konicita a přes tlačítko Změnit uprav hodnotu konicity.',
+        image: 'assets/help/frezky-konicita-help.png',
+        alt: 'Nápověda pro korekci konicity na frézce'
+      }
+    : {
+        title: 'Kde zadat fhβ',
+        subtitle: 'Ve stroji otevři korekce úhlu a přes tlačítko Změnit uprav hodnotu fhβ korekce.',
+        image: 'assets/help/frezky-fhb-help.png',
+        alt: 'Nápověda pro korekci fhβ na frézce'
+      };
+
+  let overlay = document.getElementById('frezkyCorrectionHelpOverlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'frezkyCorrectionHelpOverlay';
+    overlay.className = 'calcCorrectionHelpOverlay';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.innerHTML = [
+      '<div class="calcCorrectionHelpModal">',
+      '  <div class="calcCorrectionHelpTop">',
+      '    <div>',
+      '      <div class="calcCorrectionHelpTitle" id="frezkyCorrectionHelpTitle"></div>',
+      '      <div class="calcCorrectionHelpSubtitle" id="frezkyCorrectionHelpSubtitle"></div>',
+      '    </div>',
+      '    <button type="button" class="calcCorrectionHelpClose" aria-label="Zavřít nápovědu">×</button>',
+      '  </div>',
+      '  <img class="calcCorrectionHelpImage" id="frezkyCorrectionHelpImage" src="" alt="">',
+      '</div>'
+    ].join('');
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', (event) => {
+      if (event.target === overlay || event.target.closest('.calcCorrectionHelpClose')) {
+        closeFrezkyCorrectionHelp();
+      }
+    });
+  }
+
+  const title = overlay.querySelector('#frezkyCorrectionHelpTitle');
+  const subtitle = overlay.querySelector('#frezkyCorrectionHelpSubtitle');
+  const img = overlay.querySelector('#frezkyCorrectionHelpImage');
+  if (title) title.textContent = cfg.title;
+  if (subtitle) subtitle.textContent = cfg.subtitle;
+  if (img) {
+    img.src = cfg.image;
+    img.alt = cfg.alt;
+  }
+  overlay.classList.add('isVisible');
+  document.body.classList.add('calcCorrectionHelpOpen');
+}
+window.openFrezkyCorrectionHelp = openFrezkyCorrectionHelp;
+
+function closeFrezkyCorrectionHelp() {
+  const overlay = document.getElementById('frezkyCorrectionHelpOverlay');
+  if (overlay) overlay.classList.remove('isVisible');
+  document.body.classList.remove('calcCorrectionHelpOpen');
+}
+window.closeFrezkyCorrectionHelp = closeFrezkyCorrectionHelp;
+
+if (typeof window !== 'undefined' && !window.__rakFrezkyCorrectionHelpEscBound) {
+  window.__rakFrezkyCorrectionHelpEscBound = true;
+  try {
+    window.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') closeFrezkyCorrectionHelp();
+    });
+  } catch (err) {}
+}
+
 if (typeof window !== 'undefined' && !window.__rakMachineSettingsUiRefreshBound) {
   window.__rakMachineSettingsUiRefreshBound = true;
   try {

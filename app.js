@@ -1,4 +1,4 @@
-// v.1.5 (768) – Denní výzva: Bomberman má vlastní ovládání a stav.
+// v.1.5 (769) – Korekce Frézky: nápověda pod otazníky pro konicitu a fhβ.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;
@@ -132,6 +132,7 @@ function installDelegatedAppActions() {
     'calc-f-finish': () => calcFFinish(),
     'calc-frezky-fhb': () => calcFrezkyFhbCorrection(),
     'set-fhb-target-preset': (el) => setFhbTargetPreset(el),
+    'open-frezky-correction-help': (el) => openFrezkyCorrectionHelp(String(el.dataset.helpType || '')),
     'calc-brusy': () => calcBrusy(),
     'calc-brusy-finish': () => calcBrusyFinish(),
     'calc-p': () => calcP(),
@@ -1140,6 +1141,7 @@ function getPhaseTenActionHealth() {
       'page-korekce-brusy',
       'calc-frezky-fhb',
       'set-fhb-target-preset',
+      'open-frezky-correction-help',
       'calc-brusy',
       'calc-brusy-finish',
       'calc-p',
@@ -1171,6 +1173,7 @@ function getPhaseTenActionHealth() {
         if (!String(node.getAttribute('data-fhb-left') || '').trim()) health.missingTargets.push('set-fhb-target-preset data-fhb-left');
         if (!String(node.getAttribute('data-fhb-right') || '').trim()) health.missingTargets.push('set-fhb-target-preset data-fhb-right');
       }
+      if (action === 'open-frezky-correction-help' && !String(node.getAttribute('data-help-type') || '').trim()) health.missingTargets.push('open-frezky-correction-help data-help-type');
       if (action === 'open-game' && !String(node.getAttribute('data-game') || '').trim()) health.missingTargets.push('open-game data-game');
       if (action === 'reset-fields' && !String(node.getAttribute('data-reset-fields') || '').trim()) health.missingTargets.push('reset-fields data-reset-fields');
       if (action === 'soustruh-mode' && !String(node.getAttribute('data-soustruh-mode') || '').trim()) health.missingTargets.push('soustruh-mode data-soustruh-mode');
@@ -1272,6 +1275,7 @@ function getPhaseTenFormHealth() {
       'calc-f-finish',
       'calc-frezky-fhb',
       'set-fhb-target-preset',
+      'open-frezky-correction-help',
       'calc-brusy',
       'calc-brusy-finish',
       'calc-p',

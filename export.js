@@ -66,7 +66,9 @@ const EXPORT_BINARY_FILES = new Set([
   'assets/nav-icons/rozpisy-gray.png',
   'assets/nav-icons/rozpisy-green.png',
   'assets/nav-icons/statistiky-gray.png',
-  'assets/nav-icons/statistiky-green.png'
+  'assets/nav-icons/statistiky-green.png',
+  'assets/help/frezky-konicita-help.png',
+  'assets/help/frezky-fhb-help.png'
 ]);
 
 function primeSourceCache() {
@@ -194,7 +196,9 @@ async function exportCurrentHtml() {
       'assets/nav-icons/rozpisy-gray.png',
       'assets/nav-icons/rozpisy-green.png',
       'assets/nav-icons/statistiky-gray.png',
-      'assets/nav-icons/statistiky-green.png'
+      'assets/nav-icons/statistiky-green.png',
+      'assets/help/frezky-konicita-help.png',
+      'assets/help/frezky-fhb-help.png'
     ];
 
     const stylesSource = await readExportText('styles.css');
