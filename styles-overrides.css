@@ -11853,3 +11853,41 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   #korekce-soustruhy .calcCorrectionLatheAxisInputs{gap:8px !important;}
   #korekce-soustruhy .calcCorrectionLatheAxisInputs input{font-size:17px !important;padding-left:8px !important;padding-right:8px !important;}
 }
+
+
+/* v.1.5 (781): Korekce Soustruhy – přepínač znaménka u vrtáků 3/7. */
+#korekce-soustruhy .calcSignedInput{
+  display:grid !important;
+  grid-template-columns:42px minmax(0,1fr) !important;
+  align-items:center !important;
+  gap:7px !important;
+  width:100% !important;
+}
+#korekce-soustruhy .calcSignToggle{
+  min-width:42px !important;
+  min-height:46px !important;
+  border:1px solid rgba(255,255,255,.18) !important;
+  border-radius:15px !important;
+  background:linear-gradient(135deg,rgba(255,255,255,.16),rgba(255,255,255,.06)) !important;
+  color:rgba(255,255,255,.94) !important;
+  font-size:22px !important;
+  font-weight:950 !important;
+  line-height:1 !important;
+  display:grid !important;
+  place-items:center !important;
+  box-shadow:0 10px 26px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.12) !important;
+  -webkit-tap-highlight-color:transparent !important;
+}
+#korekce-soustruhy .calcSignToggle.isNegative{
+  border-color:color-mix(in srgb,var(--rakThemeAccent,var(--green2)) 62%,rgba(255,255,255,.16)) !important;
+  background:linear-gradient(135deg,color-mix(in srgb,var(--rakThemeAccent,var(--green2)) 35%,rgba(255,255,255,.08)),rgba(255,255,255,.07)) !important;
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--rakThemeAccent,var(--green2)) 24%,transparent) inset,0 12px 28px rgba(0,0,0,.26) !important;
+}
+#korekce-soustruhy .calcSignedInput input{
+  width:100% !important;
+  min-width:0 !important;
+}
+@media (max-width:360px){
+  #korekce-soustruhy .calcSignedInput{grid-template-columns:38px minmax(0,1fr) !important;gap:6px !important;}
+  #korekce-soustruhy .calcSignToggle{min-width:38px !important;min-height:44px !important;font-size:20px !important;border-radius:14px !important;}
+}

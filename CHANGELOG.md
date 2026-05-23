@@ -1,3 +1,8 @@
+## v.1.5 (781)
+- Korekce → Soustruhy → Poloha vrtáků v ose X má u polí Vrták 3 a Vrták 7 přepínač znaménka +/− přímo u zadávacího pole, aby šlo zadat minus i na mobilní numerické klávesnici.
+- Zpřesněné popisky logiky: vrták 3 je vlevo od středu, vrták 7 vpravo od středu a vrtáky se hýbou jen společně doleva/doprava. Výsledek ukazuje i posun před násobením a korekci X po násobení ×2.
+- Verze sjednocena na v.1.5 (781), cache na v1.5-781 a Supabase realtime kanál na rak-public-live-v781.
+
 ## v.1.5 (780)
 - Korekce → Soustruhy: panel Poloha vrtáků v ose X má nově výpočet pro vrták 3 vlevo a vrták 7 vpravo.
 - Výpočet převádí znaménka podle strany obrobku, najde společný posun obou vrtáků, zohlední rozdílný směr osy X pro MSKC01/03/04 a MSKC02 a výslednou korekci násobí ×2 kvůli průměrovému zadání.

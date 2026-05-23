@@ -1,4 +1,4 @@
-// v.1.5 (780) – Soustruhy: korekce polohy vrtáků 3/7 v ose X.
+// v.1.5 (781) – Soustruhy: znaménka u vrtáků 3/7 a zpřesnění společného posunu X.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;
@@ -105,6 +105,7 @@ function installDelegatedAppActions() {
     'page-korekce-soustruhy': () => showPage('korekce-soustruhy'),
     'set-lathe-axis-machine': (el) => setLatheAxisCorrectionMachine(el),
     'calc-lathe-axis-correction': () => calcLatheAxisCorrection(),
+    'toggle-lathe-axis-sign': (el) => toggleLatheAxisInputSign(el),
     'page-korekce-frezky': () => showPage('korekce-frezky'),
     'page-korekce-brusy': () => showPage('korekce-brusy'),
     'page-kalkulacky': () => openKalkulacky(),
@@ -197,6 +198,14 @@ function installDelegatedAppActions() {
     if (!handler || !allowed) return;
     event.preventDefault();
     handler(target);
+  });
+
+  document.addEventListener('input', (event) => {
+    const target = event.target && typeof event.target.matches === 'function'
+      ? event.target
+      : null;
+    if (!target || !target.matches('input[data-lathe-axis-signed="1"]')) return;
+    if (typeof updateLatheAxisSignToggleForInput === 'function') updateLatheAxisSignToggleForInput(target);
   });
 
   document.addEventListener('change', (event) => {
@@ -1141,6 +1150,7 @@ function getPhaseTenActionHealth() {
       'page-korekce-soustruhy',
       'set-lathe-axis-machine',
       'calc-lathe-axis-correction',
+      'toggle-lathe-axis-sign',
       'page-korekce-frezky',
       'page-korekce-brusy',
       'calc-frezky-fhb',
@@ -1289,6 +1299,7 @@ function getPhaseTenFormHealth() {
       'page-pracka',
       'set-lathe-axis-machine',
       'calc-lathe-axis-correction',
+      'toggle-lathe-axis-sign',
       'reset-soustruhy',
       'reset-fields',
       'page-kalkulacky'

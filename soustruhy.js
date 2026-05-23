@@ -23,10 +23,14 @@ function resetSoustruhy() {
 }
 
 function resetFields(ids, resultIds) {
-  (Array.isArray(ids) ? ids : []).forEach(id => {
+  const safeIds = Array.isArray(ids) ? ids : [];
+  safeIds.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = "";
   });
+  if (safeIds.some(id => String(id || '').indexOf('lathe_axis_drill') === 0)) {
+    resetLatheAxisSignButtons();
+  }
   (Array.isArray(resultIds) ? resultIds : []).forEach(id => {
     const el = document.getElementById(id);
     if (el) setCalcOutputHtml(el, "", id);
@@ -955,8 +959,8 @@ function calcSoustruhyComboHeat() {
 function readCalcDecimal(id) {
   const el = document.getElementById(id);
   if (!el) return NaN;
-  const raw = String(el.value || '').trim().replace(/\s+/g, '').replace(',', '.');
-  if (!raw) return NaN;
+  const raw = String(el.value || '').trim().replace(/[−–—]/g, '-').replace(/\s+/g, '').replace(',', '.');
+  if (!raw || raw === '-' || raw === '+') return NaN;
   const value = Number(raw);
   return Number.isFinite(value) ? value : NaN;
 }
@@ -998,6 +1002,46 @@ function getSelectedLatheAxisCorrectionMachineKey() {
   return key || 'mskc010304';
 }
 
+function updateLatheAxisSignToggleForInput(inputOrId) {
+  const input = typeof inputOrId === 'string' ? document.getElementById(inputOrId) : inputOrId;
+  if (!input || !input.id) return;
+  const raw = String(input.value || '').trim().replace(/[−–—]/g, '-');
+  const isNegative = raw.indexOf('-') === 0;
+  const btn = document.querySelector('[data-action="toggle-lathe-axis-sign"][data-target-input="' + input.id + '"]');
+  if (!btn) return;
+  btn.textContent = isNegative ? '−' : '+';
+  btn.classList.toggle('isNegative', isNegative);
+  btn.setAttribute('aria-pressed', isNegative ? 'true' : 'false');
+}
+
+function resetLatheAxisSignButtons() {
+  ['lathe_axis_drill3', 'lathe_axis_drill7'].forEach(updateLatheAxisSignToggleForInput);
+}
+
+function toggleLatheAxisInputSign(button) {
+  if (!button) return;
+  const id = String((button.dataset && button.dataset.targetInput) || '').trim();
+  const input = id ? document.getElementById(id) : null;
+  if (!input) return;
+  let raw = String(input.value || '').trim().replace(/[−–—]/g, '-');
+  if (raw.indexOf('-') === 0) {
+    raw = raw.replace(/^-+/, '');
+  } else if (raw.indexOf('+') === 0) {
+    raw = '-' + raw.slice(1);
+  } else {
+    raw = raw ? '-' + raw : '-';
+  }
+  input.value = raw;
+  updateLatheAxisSignToggleForInput(input);
+  try {
+    input.focus({ preventScroll: true });
+    const pos = String(input.value || '').length;
+    if (typeof input.setSelectionRange === 'function') input.setSelectionRange(pos, pos);
+  } catch (err) {}
+  const result = document.getElementById('latheAxisCorrectionResult');
+  if (result && String(result.innerHTML || '').trim()) calcLatheAxisCorrection({ keepEmpty: true });
+}
+
 function formatLatheAxisCorrectionValue(value, options) {
   if (!Number.isFinite(value)) return '—';
   const opts = options || {};
@@ -1012,7 +1056,7 @@ function renderLatheAxisCorrectionInfo(key) {
   if (!info) return;
   const cfg = getLatheAxisCorrectionMachine(key);
   info.innerHTML = '<b>' + escapeHtml(cfg.label) + '</b>' +
-    '<div class="smallText">Osa X: ' + escapeHtml(cfg.axisText) + '. Korekce se na konci násobí ×2, protože X se zadává průměrově.</div>';
+    '<div class="smallText">Osa X: ' + escapeHtml(cfg.axisText) + '. Vrtáky 3 a 7 jde hýbat jen společně doleva/doprava. Výsledný posun se při zadání do X násobí ×2.</div>';
 }
 
 function setLatheAxisCorrectionMachine(button) {
@@ -1047,12 +1091,14 @@ function calcLatheAxisCorrection(options) {
   const key = getSelectedLatheAxisCorrectionMachineKey();
   const cfg = getLatheAxisCorrectionMachine(key);
   renderLatheAxisCorrectionInfo(key);
+  updateLatheAxisSignToggleForInput('lathe_axis_drill3');
+  updateLatheAxisSignToggleForInput('lathe_axis_drill7');
   const drill3 = readCalcDecimal('lathe_axis_drill3');
   const drill7 = readCalcDecimal('lathe_axis_drill7');
   if (!out) return;
   if (!Number.isFinite(drill3) || !Number.isFinite(drill7)) {
     if (opts.keepEmpty) return;
-    setCalcOutputHtml(out, "<div class='smallText'>Zadej odchylku pro vrták 3 i vrták 7. Použít můžeš tečku nebo čárku.</div>", out.id || 'latheAxisCorrectionEmpty');
+    setCalcOutputHtml(out, "<div class='smallText'>Zadej hodnotu pro vrták 3 i vrták 7. Znaménko můžeš přepnout tlačítkem +/− u pole.</div>", out.id || 'latheAxisCorrectionEmpty');
     return;
   }
 
@@ -1060,6 +1106,7 @@ function calcLatheAxisCorrection(options) {
   const averageRight = (offsets.drill3Right + offsets.drill7Right) / 2;
   const correction = averageRight * 2 * cfg.leftSign;
   const moveText = Math.abs(averageRight) < 0.0005 ? 'bez výrazného posunu' : (averageRight > 0 ? 'doleva' : 'doprava');
+  const halfCorrection = averageRight * cfg.leftSign;
   const moveDistance = Math.abs(averageRight);
   const expectedDrill3Right = offsets.drill3Right - averageRight;
   const expectedDrill7Right = offsets.drill7Right - averageRight;
@@ -1073,9 +1120,10 @@ function calcLatheAxisCorrection(options) {
   const html = "<div class='calcResultTitle'>" + escapeHtml(cfg.label) + " · Poloha vrtáků v ose X</div>" +
     "<div class='calcResultMain'>" + main + "</div>" +
     "<div class='calcResultLine'>Hýbej: <b>" + escapeHtml(moveText) + "</b> " + (moveDistance > 0.0005 ? "o " + escapeHtml(formatLatheAxisCorrectionValue(moveDistance, { withSign: false })) + " mm" : "") + "</div>" +
+    "<div class='calcResultLine'>Posun před násobením: " + escapeHtml(formatLatheAxisCorrectionValue(halfCorrection)) + " · do X zadat ×2 = " + escapeHtml(formatLatheAxisCorrectionValue(correction)) + "</div>" +
     "<div class='calcResultLine'>Přepočet: vrták 3 " + escapeHtml(formatLatheAxisCorrectionValue(drill3)) + " · vrták 7 " + escapeHtml(formatLatheAxisCorrectionValue(drill7)) + "</div>" +
     "<div class='calcResultLine'>Očekávaně po korekci: vrták 3 " + escapeHtml(formatLatheAxisCorrectionValue(expectedDrill3)) + " · vrták 7 " + escapeHtml(formatLatheAxisCorrectionValue(expectedDrill7)) + "</div>" +
-    "<div class='calcResultSub'>Vnitřně: vrták 3 vlevo se převádí obráceně, vrták 7 vpravo stejně. Rozdíl mezi vrtáky je " + escapeHtml(formatLatheAxisCorrectionValue(spread, { withSign: false })) + " mm; tato korekce řeší společný posun obou vrtáků.</div>";
+    "<div class='calcResultSub'>Vrták 3 je vlevo: + znamená dál od středu doleva, − blíž ke středu doprava. Vrták 7 je vpravo: + znamená dál od středu doprava, − blíž ke středu doleva. Rozdíl mezi vrtáky je " + escapeHtml(formatLatheAxisCorrectionValue(spread, { withSign: false })) + " mm; tato korekce řeší jen společný posun obou vrtáků.</div>";
   setCalcOutputHtml(out, html, out.id || 'latheAxisCorrectionResult');
 }
 

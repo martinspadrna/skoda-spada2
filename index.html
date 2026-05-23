@@ -678,18 +678,24 @@
       <div class="calcCorrectionLatheAxisInputs" aria-label="Naměřené odchylky vrtáků od středu">
         <label for="lathe_axis_drill3">
           <span>Vrták 3</span>
-          <input id="lathe_axis_drill3" type="text" inputmode="decimal" autocomplete="off" placeholder="např. -0,02">
+          <div class="calcSignedInput">
+            <button type="button" class="calcSignToggle" data-action="toggle-lathe-axis-sign" data-target-input="lathe_axis_drill3" aria-label="Přepnout znaménko u vrtáku 3">+</button>
+            <input id="lathe_axis_drill3" type="text" inputmode="decimal" autocomplete="off" data-lathe-axis-signed="1" placeholder="0,02">
+          </div>
         </label>
         <label for="lathe_axis_drill7">
           <span>Vrták 7</span>
-          <input id="lathe_axis_drill7" type="text" inputmode="decimal" autocomplete="off" placeholder="např. 0,05">
+          <div class="calcSignedInput">
+            <button type="button" class="calcSignToggle" data-action="toggle-lathe-axis-sign" data-target-input="lathe_axis_drill7" aria-label="Přepnout znaménko u vrtáku 7">+</button>
+            <input id="lathe_axis_drill7" type="text" inputmode="decimal" autocomplete="off" data-lathe-axis-signed="1" placeholder="0,05">
+          </div>
         </label>
       </div>
-      <div class="smallText calcCorrectionLatheAxisHint">Vrták 3 je vlevo, vrták 7 vpravo. Zadej naměřenou odchylku od středu v mm.</div>
+      <div class="smallText calcCorrectionLatheAxisHint">Znaménko přepni tlačítkem u pole. Vrták 3 je vlevo: + je dál vlevo od středu, − blíž ke středu. Vrták 7 je vpravo: + je dál vpravo od středu, − blíž ke středu.</div>
       <button type="button" class="calcPrimaryBtn calcCorrectionLatheAxisCalcBtn" data-action="calc-lathe-axis-correction">Spočítat korekci X</button>
       <div class="card calcInfoCard calcCorrectionLatheAxisInfo" id="latheAxisCorrectionInfo">
         <b>MSKC01, 03, 04</b>
-        <div class="smallText">Osa X: doleva +, doprava −. Vrták 3 vlevo bere zápornou hodnotu jako posun doprava, vrták 7 vpravo bere kladnou hodnotu jako posun doprava.</div>
+        <div class="smallText">Osa X: doleva +, doprava −. Vrták 3: + je dál vlevo od středu, − blíž ke středu. Vrták 7: + je dál vpravo od středu, − blíž ke středu.</div>
       </div>
       <div class="card calcResultCard calcCorrectionLatheAxisResult" id="latheAxisCorrectionResult"></div>
     </div>

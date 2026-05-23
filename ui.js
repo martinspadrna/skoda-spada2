@@ -4353,11 +4353,11 @@ function renderGamesAppearanceStatus() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText || 'v.1.5 (780)',
+      range: versionText || 'v.1.5 (781)',
       title: 'Přechod na řadu 1.5',
       lines: [
         'Korekce jsou oddělené od Výpočtu kusů; Frézky jsou označené jako nutné doladit.',
-        'Korekce Soustruhy umí spočítat osu X podle vrtáku 3 vlevo a vrtáku 7 vpravo, včetně opačného směru pro MSKC02.',
+        'Korekce Soustruhy umí spočítat osu X podle vrtáku 3 vlevo a vrtáku 7 vpravo, včetně přepínače znaménka u polí a opačného směru pro MSKC02.',
         'Pexeso a Sudoku mají Top výsledky oddělené podle zvolené obtížnosti/velikosti a časy se ukazují ve vteřinách.',
         'Sudoku má panel volby obtížnosti posunutý o kousek níž, aby byl vidět celý horní okraj panelu.',
         'XP a ranky jsou sjednocené napříč hrami: dokončená hra má podobnou hodnotu a surové skóre už nepřestřeluje postup.',
