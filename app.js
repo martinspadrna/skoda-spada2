@@ -1,4 +1,4 @@
-// v.1.5 (778) – pojistka proti duplicitním online statistikám Piškvorek.
+// v.1.5 (780) – Soustruhy: korekce polohy vrtáků 3/7 v ose X.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;
@@ -104,6 +104,7 @@ function installDelegatedAppActions() {
     'page-pracka': () => showPage('pracka'),
     'page-korekce-soustruhy': () => showPage('korekce-soustruhy'),
     'set-lathe-axis-machine': (el) => setLatheAxisCorrectionMachine(el),
+    'calc-lathe-axis-correction': () => calcLatheAxisCorrection(),
     'page-korekce-frezky': () => showPage('korekce-frezky'),
     'page-korekce-brusy': () => showPage('korekce-brusy'),
     'page-kalkulacky': () => openKalkulacky(),
@@ -1139,6 +1140,7 @@ function getPhaseTenActionHealth() {
       'page-pracka',
       'page-korekce-soustruhy',
       'set-lathe-axis-machine',
+      'calc-lathe-axis-correction',
       'page-korekce-frezky',
       'page-korekce-brusy',
       'calc-frezky-fhb',
@@ -1262,6 +1264,8 @@ function getPhaseTenFormHealth() {
       'p_kusy',
       'p_finish_davky',
       'p_finish_davka',
+      'lathe_axis_drill3',
+      'lathe_axis_drill7',
     ];
     const requiredSelects = ['statsYearSelect', 'monthYearSelect', 'monthSelect'];
     const requiredButtons = ['importBtn', 'exportBtn'];
@@ -1284,6 +1288,7 @@ function getPhaseTenFormHealth() {
       'calc-p-finish',
       'page-pracka',
       'set-lathe-axis-machine',
+      'calc-lathe-axis-correction',
       'reset-soustruhy',
       'reset-fields',
       'page-kalkulacky'

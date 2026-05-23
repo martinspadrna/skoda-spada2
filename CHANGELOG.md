@@ -1,3 +1,14 @@
+## v.1.5 (780)
+- Korekce → Soustruhy: panel Poloha vrtáků v ose X má nově výpočet pro vrták 3 vlevo a vrták 7 vpravo.
+- Výpočet převádí znaménka podle strany obrobku, najde společný posun obou vrtáků, zohlední rozdílný směr osy X pro MSKC01/03/04 a MSKC02 a výslednou korekci násobí ×2 kvůli průměrovému zadání.
+- Přidaná dvě vstupní pole, výsledek korekce X, směr pohybu a očekávané hodnoty po korekci.
+- Verze sjednocena na v.1.5 (780), cache na v1.5-780 a Supabase realtime kanál na rak-public-live-v780.
+
+## v.1.5 (779)
+- Sudoku: panel s volbou obtížnosti je posunutý o kousek níž a má viditelný horní okraj i při menší výšce displeje.
+- Úprava je přidaná jak do runtime stylu her, tak do finální override vrstvy, aby ji nepřebily starší Sudoku pojistky.
+- Verze sjednocena na v.1.5 (779), cache na v1.5-779 a Supabase realtime kanál na rak-public-live-v779.
+
 ## v.1.5 (778)
 - Piškvorky online: přidaná pojistka proti duplicitnímu započítání jedné online partie po realtime refreshi, reloadu nebo otevření výsledku na obou telefonech.
 - Lokální zobrazení výsledku Piškvorek už při online hře neposílá samostatný přímý zápis do `game_stats`; online statistiku má řídit jedna dokončená session.

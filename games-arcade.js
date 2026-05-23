@@ -1102,6 +1102,22 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   transform:none !important;
 }
 
+/* v.1.5 (779) – Sudoku: menu obtížnosti o kousek níž, aby nebyl useknutý horní okraj panelu. */
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuMenuStage{
+  padding-top:6px !important;
+  margin-top:-4px !important;
+  overflow:visible !important;
+}
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuMenuCard{
+  transform:translateY(0) !important;
+  margin-top:0 !important;
+  overflow:visible !important;
+}
+@media (max-height:720px){
+  body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuMenuStage{padding-top:6px !important;margin-top:-6px !important;}
+  body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuMenuCard{transform:translateY(0) !important;}
+}
+
 `;
   if (!document.getElementById('rakArcadeStyles')) {
     const style = document.createElement('style');
@@ -5259,7 +5275,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     const allHot = EXTRA_GAMES.length === 0;
     const completedOnlyGuard = typeof window.gamesRecordStat === 'function';
     return {
-      version: 'v.1.5 (778)',
+      version: 'v.1.5 (780)',
       ok: !missingMeta.length && !missingRenderer.length && allHot && completedOnlyGuard,
       totalGames: ids.length,
       coreGames: ids,

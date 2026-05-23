@@ -974,13 +974,50 @@ function formatCalcDecimalWhole(value) {
 
 
 
+const LATHE_AXIS_CORRECTION_MACHINES = {
+  mskc010304: {
+    label: 'MSKC01, 03, 04',
+    leftSign: 1,
+    axisText: 'doleva +, doprava −'
+  },
+  mskc02: {
+    label: 'MSKC02',
+    leftSign: -1,
+    axisText: 'doleva −, doprava +'
+  }
+};
+
+function getLatheAxisCorrectionMachine(key) {
+  const safeKey = String(key || '').trim() || 'mskc010304';
+  return LATHE_AXIS_CORRECTION_MACHINES[safeKey] || LATHE_AXIS_CORRECTION_MACHINES.mskc010304;
+}
+
+function getSelectedLatheAxisCorrectionMachineKey() {
+  const input = document.getElementById('lathe_axis_machine');
+  const key = String(input && input.value ? input.value : '').trim();
+  return key || 'mskc010304';
+}
+
+function formatLatheAxisCorrectionValue(value, options) {
+  if (!Number.isFinite(value)) return '—';
+  const opts = options || {};
+  const sign = value > 0 ? '+' : (value < 0 ? '−' : '');
+  const abs = Math.abs(value);
+  const text = abs.toLocaleString('cs-CZ', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+  return opts.withSign === false ? text : sign + text;
+}
+
+function renderLatheAxisCorrectionInfo(key) {
+  const info = document.getElementById('latheAxisCorrectionInfo');
+  if (!info) return;
+  const cfg = getLatheAxisCorrectionMachine(key);
+  info.innerHTML = '<b>' + escapeHtml(cfg.label) + '</b>' +
+    '<div class="smallText">Osa X: ' + escapeHtml(cfg.axisText) + '. Korekce se na konci násobí ×2, protože X se zadává průměrově.</div>';
+}
+
 function setLatheAxisCorrectionMachine(button) {
   if (!button) return;
   const key = String((button.dataset && button.dataset.latheAxisMachine) || '').trim() || 'mskc010304';
-  const labels = {
-    mskc010304: 'MSKC01, 03, 04',
-    mskc02: 'MSKC02'
-  };
   const page = document.getElementById('korekce-soustruhy');
   const input = document.getElementById('lathe_axis_machine');
   if (input) input.value = key;
@@ -992,11 +1029,54 @@ function setLatheAxisCorrectionMachine(button) {
       btn.setAttribute('aria-pressed', active ? 'true' : 'false');
     });
   }
-  const info = document.getElementById('latheAxisCorrectionInfo');
-  if (info) {
-    info.innerHTML = '<b>' + escapeHtml(labels[key] || key) + '</b>' +
-      '<div class="smallText">Základ je připravený. Výpočet a konkrétní hodnoty doplníme postupně podle reálného měření.</div>';
+  renderLatheAxisCorrectionInfo(key);
+  const result = document.getElementById('latheAxisCorrectionResult');
+  if (result && String(result.innerHTML || '').trim()) calcLatheAxisCorrection({ keepEmpty: true });
+}
+
+function getLatheAxisDrillPhysicalOffsets(drill3Value, drill7Value) {
+  return {
+    drill3Right: -drill3Value,
+    drill7Right: drill7Value
+  };
+}
+
+function calcLatheAxisCorrection(options) {
+  const opts = options || {};
+  const out = document.getElementById('latheAxisCorrectionResult');
+  const key = getSelectedLatheAxisCorrectionMachineKey();
+  const cfg = getLatheAxisCorrectionMachine(key);
+  renderLatheAxisCorrectionInfo(key);
+  const drill3 = readCalcDecimal('lathe_axis_drill3');
+  const drill7 = readCalcDecimal('lathe_axis_drill7');
+  if (!out) return;
+  if (!Number.isFinite(drill3) || !Number.isFinite(drill7)) {
+    if (opts.keepEmpty) return;
+    setCalcOutputHtml(out, "<div class='smallText'>Zadej odchylku pro vrták 3 i vrták 7. Použít můžeš tečku nebo čárku.</div>", out.id || 'latheAxisCorrectionEmpty');
+    return;
   }
+
+  const offsets = getLatheAxisDrillPhysicalOffsets(drill3, drill7);
+  const averageRight = (offsets.drill3Right + offsets.drill7Right) / 2;
+  const correction = averageRight * 2 * cfg.leftSign;
+  const moveText = Math.abs(averageRight) < 0.0005 ? 'bez výrazného posunu' : (averageRight > 0 ? 'doleva' : 'doprava');
+  const moveDistance = Math.abs(averageRight);
+  const expectedDrill3Right = offsets.drill3Right - averageRight;
+  const expectedDrill7Right = offsets.drill7Right - averageRight;
+  const expectedDrill3 = -expectedDrill3Right;
+  const expectedDrill7 = expectedDrill7Right;
+  const spread = Math.abs(offsets.drill7Right - offsets.drill3Right);
+
+  const main = Math.abs(correction) < 0.0005
+    ? 'Korekce X: 0,000'
+    : 'Zadej korekci X: <b>' + escapeHtml(formatLatheAxisCorrectionValue(correction)) + '</b>';
+  const html = "<div class='calcResultTitle'>" + escapeHtml(cfg.label) + " · Poloha vrtáků v ose X</div>" +
+    "<div class='calcResultMain'>" + main + "</div>" +
+    "<div class='calcResultLine'>Hýbej: <b>" + escapeHtml(moveText) + "</b> " + (moveDistance > 0.0005 ? "o " + escapeHtml(formatLatheAxisCorrectionValue(moveDistance, { withSign: false })) + " mm" : "") + "</div>" +
+    "<div class='calcResultLine'>Přepočet: vrták 3 " + escapeHtml(formatLatheAxisCorrectionValue(drill3)) + " · vrták 7 " + escapeHtml(formatLatheAxisCorrectionValue(drill7)) + "</div>" +
+    "<div class='calcResultLine'>Očekávaně po korekci: vrták 3 " + escapeHtml(formatLatheAxisCorrectionValue(expectedDrill3)) + " · vrták 7 " + escapeHtml(formatLatheAxisCorrectionValue(expectedDrill7)) + "</div>" +
+    "<div class='calcResultSub'>Vnitřně: vrták 3 vlevo se převádí obráceně, vrták 7 vpravo stejně. Rozdíl mezi vrtáky je " + escapeHtml(formatLatheAxisCorrectionValue(spread, { withSign: false })) + " mm; tato korekce řeší společný posun obou vrtáků.</div>";
+  setCalcOutputHtml(out, html, out.id || 'latheAxisCorrectionResult');
 }
 
 const FHB_TARGET_PRESET_DEFAULTS = [

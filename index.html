@@ -658,7 +658,7 @@
     <div></div>
     <h3 class="calcHeaderTitleOneLine">Korekce · Soustruhy</h3>
     <div class="calcHeaderActions">
-      <button class="resetBtn" data-action="reset-fields" data-reset-fields="lathe_axis_machine" title="Reset polí" aria-label="Reset polí">↻</button>
+      <button class="resetBtn" data-action="reset-fields" data-reset-fields="lathe_axis_drill3,lathe_axis_drill7" data-reset-results="latheAxisCorrectionResult" title="Reset polí" aria-label="Reset polí">↻</button>
       <button class="calcCloseBtn" data-action="page-kalkulacky" title="Zpět na přehled kalkulaček" aria-label="Zpět na přehled kalkulaček">×</button>
     </div>
   </div>
@@ -675,10 +675,23 @@
           <b>MSKC02</b>
         </button>
       </div>
+      <div class="calcCorrectionLatheAxisInputs" aria-label="Naměřené odchylky vrtáků od středu">
+        <label for="lathe_axis_drill3">
+          <span>Vrták 3</span>
+          <input id="lathe_axis_drill3" type="text" inputmode="decimal" autocomplete="off" placeholder="např. -0,02">
+        </label>
+        <label for="lathe_axis_drill7">
+          <span>Vrták 7</span>
+          <input id="lathe_axis_drill7" type="text" inputmode="decimal" autocomplete="off" placeholder="např. 0,05">
+        </label>
+      </div>
+      <div class="smallText calcCorrectionLatheAxisHint">Vrták 3 je vlevo, vrták 7 vpravo. Zadej naměřenou odchylku od středu v mm.</div>
+      <button type="button" class="calcPrimaryBtn calcCorrectionLatheAxisCalcBtn" data-action="calc-lathe-axis-correction">Spočítat korekci X</button>
       <div class="card calcInfoCard calcCorrectionLatheAxisInfo" id="latheAxisCorrectionInfo">
         <b>MSKC01, 03, 04</b>
-        <div class="smallText">Základ je připravený. Výpočet a konkrétní hodnoty doplníme postupně podle reálného měření.</div>
+        <div class="smallText">Osa X: doleva +, doprava −. Vrták 3 vlevo bere zápornou hodnotu jako posun doprava, vrták 7 vpravo bere kladnou hodnotu jako posun doprava.</div>
       </div>
+      <div class="card calcResultCard calcCorrectionLatheAxisResult" id="latheAxisCorrectionResult"></div>
     </div>
   </details>
 </div>

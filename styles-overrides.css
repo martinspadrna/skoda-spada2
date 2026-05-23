@@ -11790,3 +11790,66 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuMenuStage{margin-top:-20px !important;}
   body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuMenuCard{transform:translateY(-14px) !important;}
 }
+
+/* v.1.5 (779): Sudoku menu obtížnosti níž – horní okraj panelu nesmí být useknutý. */
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuMenuStage{
+  padding-top:6px !important;
+  margin-top:-4px !important;
+  overflow:visible !important;
+}
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuMenuCard{
+  transform:translateY(0) !important;
+  margin-top:0 !important;
+  overflow:visible !important;
+}
+@media (max-height:720px){
+  body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuMenuStage{padding-top:6px !important;margin-top:-6px !important;}
+  body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuMenuCard{transform:translateY(0) !important;}
+}
+
+
+/* v.1.5 (780): Korekce Soustruhy – výpočet polohy vrtáků 3/7 v ose X. */
+#korekce-soustruhy .calcCorrectionLatheAxisInputs{
+  display:grid !important;
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  gap:10px !important;
+  margin-top:10px !important;
+}
+#korekce-soustruhy .calcCorrectionLatheAxisInputs label{
+  display:grid !important;
+  gap:6px !important;
+  margin:0 !important;
+  font-weight:850 !important;
+  color:rgba(255,255,255,.86) !important;
+}
+#korekce-soustruhy .calcCorrectionLatheAxisInputs span{
+  text-align:center !important;
+  font-size:13px !important;
+  letter-spacing:.01em !important;
+}
+#korekce-soustruhy .calcCorrectionLatheAxisInputs input{
+  min-height:46px !important;
+  text-align:center !important;
+  font-size:18px !important;
+  font-weight:900 !important;
+  border-radius:16px !important;
+}
+#korekce-soustruhy .calcCorrectionLatheAxisHint{
+  margin-top:8px !important;
+  text-align:center !important;
+  line-height:1.35 !important;
+}
+#korekce-soustruhy .calcCorrectionLatheAxisCalcBtn{
+  width:100% !important;
+  margin-top:10px !important;
+}
+#korekce-soustruhy .calcCorrectionLatheAxisResult{
+  margin-top:8px !important;
+}
+#korekce-soustruhy .calcCorrectionLatheAxisResult:empty{
+  display:none !important;
+}
+@media (max-width:360px){
+  #korekce-soustruhy .calcCorrectionLatheAxisInputs{gap:8px !important;}
+  #korekce-soustruhy .calcCorrectionLatheAxisInputs input{font-size:17px !important;padding-left:8px !important;padding-right:8px !important;}
+}
