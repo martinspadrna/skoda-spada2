@@ -1,4 +1,4 @@
-// v.1.5 (773) – Sudoku zvětšené při zachování číselníku nad spodní lištou.
+// v.1.5 (774) – herní UI: Sudoku obtížnost, Pexeso 4×4 stabilní karty, sjednocené herní dlaždice.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

@@ -770,7 +770,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
   #games .arcadeControls .gameControlBtn{min-height:40px;min-width:40px;}
 }
 
-/* v.1.5 (773) – Sudoku: větší deska, číselník napevno nad spodní lištou bez zbytečného horního prostoru. */
+/* v.1.5 (774) – Sudoku: větší deska, číselník napevno nad spodní lištou bez zbytečného horního prostoru. */
 body.gamesOpen[data-rak-arcade-game="sudoku"] #games .arcadeShellRoot{
   padding-top:calc(2px + env(safe-area-inset-top)) !important;
   padding-bottom:calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 4px) !important;
@@ -896,6 +896,119 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuNumberPickerTwoRows button{width:38px !important;min-width:38px !important;height:35px !important;min-height:35px !important;font-size:14px !important;}
 }
 
+
+
+/* v.1.5 (774) – herní dlaždice sjednocené: ikona vlevo, nadpis a popis rovně vedle ní. */
+#games .gamesLaunchTile{
+  display:grid !important;
+  grid-template-columns:44px minmax(0, 1fr) !important;
+  column-gap:10px !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+  text-align:left !important;
+}
+#games .gamesLaunchTile .calcTileIcon{
+  grid-column:1 !important;
+  justify-self:center !important;
+  align-self:center !important;
+  min-width:42px !important;
+}
+#games .gamesLaunchTile .gamesLaunchText{
+  grid-column:2 !important;
+  min-width:0 !important;
+  max-width:100% !important;
+  overflow:hidden !important;
+  text-align:left !important;
+}
+#games .gamesLaunchTile .calcTileText,
+#games .gamesLaunchTile .smallText{
+  display:block !important;
+  text-align:left !important;
+  max-width:100% !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+}
+
+/* v.1.5 (774) – Sudoku: větší volba obtížnosti. */
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuMenuStage{
+  width:100% !important;
+  min-height:0 !important;
+  align-content:start !important;
+  justify-content:center !important;
+  padding-top:4px !important;
+}
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuMenuCard{
+  width:min(100%, 390px) !important;
+  margin:0 auto !important;
+  gap:12px !important;
+  padding:14px !important;
+}
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuDifficultyMenu{
+  display:grid !important;
+  grid-template-columns:repeat(3, minmax(0, 1fr)) !important;
+  gap:8px !important;
+  width:100% !important;
+}
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuDifficultyBtn{
+  min-height:62px !important;
+  height:auto !important;
+  padding:8px 6px !important;
+  display:grid !important;
+  place-items:center !important;
+  gap:3px !important;
+  font-size:14px !important;
+  line-height:1.05 !important;
+  text-align:center !important;
+  border-radius:16px !important;
+}
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuDifficultyBtn strong{
+  font-size:clamp(16px, 4.4vw, 20px) !important;
+  line-height:1 !important;
+  font-weight:950 !important;
+}
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuDifficultyBtn span{
+  font-size:10px !important;
+  line-height:1 !important;
+  opacity:.72 !important;
+}
+
+/* v.1.5 (774) – Pexeso 4×4: odhalená karta nesmí měnit velikost pole. */
+#games .arcadeMemoryBoard.grid-4{
+  display:grid !important;
+  grid-template-columns:repeat(4, minmax(0, 1fr)) !important;
+  grid-template-rows:repeat(4, minmax(0, 1fr)) !important;
+  grid-auto-rows:minmax(0, 1fr) !important;
+  aspect-ratio:1 / 1 !important;
+  width:min(100%, 360px, calc(100vw - 24px)) !important;
+  max-width:360px !important;
+  max-height:min(360px, calc(100vw - 24px)) !important;
+  gap:9px !important;
+  padding:8px !important;
+  align-items:stretch !important;
+  justify-items:stretch !important;
+  box-sizing:border-box !important;
+  overflow:hidden !important;
+}
+#games .arcadeMemoryBoard.grid-4 .arcadeMemoryCard{
+  width:100% !important;
+  height:100% !important;
+  min-width:0 !important;
+  min-height:0 !important;
+  max-width:none !important;
+  max-height:none !important;
+  aspect-ratio:auto !important;
+  display:grid !important;
+  place-items:center !important;
+  padding:0 !important;
+  line-height:1 !important;
+  overflow:hidden !important;
+  contain:layout paint !important;
+  font-size:clamp(28px, 9vw, 42px) !important;
+}
+#games .arcadeMemoryBoard.grid-4 .arcadeMemoryCard.isFlipped,
+#games .arcadeMemoryBoard.grid-4 .arcadeMemoryCard.isMatched{
+  transform:none !important;
+}
 
 `;
   if (!document.getElementById('rakArcadeStyles')) {
@@ -1339,7 +1452,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   function renderLaunchTiles() {
     const grid = document.getElementById('gamesGrid');
     if (!grid) return;
-    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v737';
+    const launchSig = CORE_GAMES.join('|') + '::' + EXTRA_GAMES.join('|') + '::v774';
     if (grid.dataset && grid.dataset.arcadeLaunchSig === launchSig && grid.querySelector('[data-game="ttt"]')) {
       gamePerf.launchRenderSkips = Number(gamePerf.launchRenderSkips || 0) + 1;
       return;
@@ -1349,7 +1462,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
       return `
         <div class="tile calcTile calcTileStack gamesLaunchTile" data-action="open-game" data-game="${id}">
           <div class="calcTileIcon" aria-hidden="true">${meta.icon}</div>
-          <div>
+          <div class="gamesLaunchText">
             <div class="calcTileText">${escapeHtml(meta.title)}</div>
             <div class="smallText">${escapeHtml(meta.subtitle)}</div>
           </div>
@@ -3094,7 +3207,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     const state = getState('sudoku', () => createSudokuState('easy'));
     const pick = SUDOKU_PUZZLES.find(p => p.difficulty === state.selected) || SUDOKU_PUZZLES[0];
     if (!state.started) {
-      const diffBtns = SUDOKU_PUZZLES.map((p) => `<button type="button" class="gameControlBtn sudokuDifficultyBtn${state.selected === p.difficulty ? ' isActive' : ''}" data-sudoku-diff="${p.difficulty}">${p.label}</button>`).join('');
+      const diffBtns = SUDOKU_PUZZLES.map((p) => `<button type="button" class="gameControlBtn sudokuDifficultyBtn${state.selected === p.difficulty ? ' isActive' : ''}" data-sudoku-diff="${p.difficulty}"><strong>${p.label}</strong><span>Obtížnost</span></button>`).join('');
       body.innerHTML = `
         <div class="arcadeStage sudokuMenuStage">
           <div class="arcadePanel sudokuMenuCard">
@@ -5030,7 +5143,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     const allHot = EXTRA_GAMES.length === 0;
     const completedOnlyGuard = typeof window.gamesRecordStat === 'function';
     return {
-      version: 'v.1.5 (773)',
+      version: 'v.1.5 (774)',
       ok: !missingMeta.length && !missingRenderer.length && allHot && completedOnlyGuard,
       totalGames: ids.length,
       coreGames: ids,

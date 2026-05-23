@@ -1,8 +1,8 @@
-## v.1.5 (773)
+## v.1.5 (774)
 - Sudoku: deska je znovu větší, ale číselník zůstává pevně nad spodní lištou.
 - Odstraněné agresivní zmenšování Sudoku na nižších displejích; místo toho se používá dostupná výška mezi horní částí hry, číselníkem a spodní lištou.
 - Korekce Frézky beze změny, protože indexy jsou po v.1.5 (772) potvrzené jako OK.
-- Verze sjednocena na v.1.5 (773), cache na v1.5-773 a Supabase realtime kanál na rak-public-live-v773.
+- Verze sjednocena na v.1.5 (774), cache na v1.5-774 a Supabase realtime kanál na rak-public-live-v774.
 
 ## v.1.5 (770)
 - Sudoku: spodní nabídka čísel má větší bezpečný prostor nad spodní lištou.

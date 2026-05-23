@@ -342,7 +342,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v773');
+      const channel = client.channel('rak-public-live-v774');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });

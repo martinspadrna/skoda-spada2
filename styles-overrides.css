@@ -11528,7 +11528,7 @@ body.gamesOpen #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuNumberPi
 #korekce-frezky .calcFhbPresetBtn .fhbIndexSep{display:inline !important;color:rgba(255,255,255,.65) !important;}
 
 
-/* v.1.5 (773): Sudoku bez zbytečného scrollu + přesné názvy indexů Frézek. */
+/* v.1.5 (774): Sudoku bez zbytečného scrollu + přesné názvy indexů Frézek. */
 body.gamesOpen[data-rak-arcade-game="sudoku"] #games .arcadeShellRoot{
   padding-top:calc(6px + env(safe-area-inset-top)) !important;
   gap:4px !important;
@@ -11657,7 +11657,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
 #korekce-frezky .calcFhbPresetBtn .fhbIndexSep{display:inline !important;color:rgba(255,255,255,.65) !important;}
 
 
-/* v.1.5 (773): finální pojistka Sudoku a indexů Frézky. */
+/* v.1.5 (774): finální pojistka Sudoku a indexů Frézky. */
 #korekce-frezky .calcFhbPresetGrid{display:grid !important;grid-template-columns:repeat(2,minmax(0,1fr)) !important;gap:8px !important;}
 #korekce-frezky .calcFhbPresetBtn{display:grid !important;grid-template-rows:auto auto !important;align-content:center !important;justify-items:center !important;gap:4px !important;min-height:58px !important;padding:8px 7px !important;text-align:center !important;}
 #korekce-frezky .calcFhbPresetBtn > b.calcFhbPresetTitle{display:flex !important;align-items:center !important;justify-content:center !important;gap:1px !important;width:100% !important;min-height:18px !important;font-size:14px !important;line-height:1 !important;font-weight:950 !important;opacity:1 !important;visibility:visible !important;white-space:nowrap !important;color:rgba(246,255,250,.96) !important;}
@@ -11668,7 +11668,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
 #korekce-frezky .calcFhbPresetBtn .fhbIndexAh{display:inline !important;color:#ffc173 !important;text-shadow:0 0 12px rgba(255,178,86,.36) !important;}
 #korekce-frezky .calcFhbPresetBtn .fhbIndexSep{display:inline !important;color:rgba(255,255,255,.65) !important;}
 
-/* v.1.5 (773): Sudoku větší – číselník drží nad spodní lištou, deska nad ním bez zbytečného scrollu. */
+/* v.1.5 (774): Sudoku větší – číselník drží nad spodní lištou, deska nad ním bez zbytečného scrollu. */
 body.gamesOpen[data-rak-arcade-game="sudoku"] #games .arcadeShellRoot{
   padding-top:calc(2px + env(safe-area-inset-top)) !important;
   padding-bottom:calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 4px) !important;
@@ -11722,3 +11722,25 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuNumberPickerTwoRows{grid-template-columns:repeat(5,38px) !important;padding:5px !important;}
   body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuNumberPickerTwoRows button{width:38px !important;min-width:38px !important;height:35px !important;min-height:35px !important;font-size:14px !important;}
 }
+
+
+/* v.1.5 (774): finální herní pojistky – Snake dlaždice, Pexeso 4×4, Sudoku obtížnost. */
+#games .gamesLaunchTile{
+  display:grid !important;
+  grid-template-columns:44px minmax(0, 1fr) !important;
+  column-gap:10px !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+  text-align:left !important;
+}
+#games .gamesLaunchTile .calcTileIcon{grid-column:1 !important;justify-self:center !important;align-self:center !important;min-width:42px !important;}
+#games .gamesLaunchTile .gamesLaunchText{grid-column:2 !important;min-width:0 !important;max-width:100% !important;overflow:hidden !important;text-align:left !important;}
+#games .gamesLaunchTile .calcTileText,#games .gamesLaunchTile .smallText{display:block !important;text-align:left !important;max-width:100% !important;overflow:hidden !important;text-overflow:ellipsis !important;}
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuMenuCard{width:min(100%,390px) !important;margin:0 auto !important;gap:12px !important;padding:14px !important;}
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuDifficultyMenu{display:grid !important;grid-template-columns:repeat(3,minmax(0,1fr)) !important;gap:8px !important;width:100% !important;}
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuDifficultyBtn{min-height:62px !important;height:auto !important;padding:8px 6px !important;display:grid !important;place-items:center !important;gap:3px !important;font-size:14px !important;line-height:1.05 !important;text-align:center !important;border-radius:16px !important;}
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuDifficultyBtn strong{font-size:clamp(16px,4.4vw,20px) !important;line-height:1 !important;font-weight:950 !important;}
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuDifficultyBtn span{font-size:10px !important;line-height:1 !important;opacity:.72 !important;}
+#games .arcadeMemoryBoard.grid-4{display:grid !important;grid-template-columns:repeat(4,minmax(0,1fr)) !important;grid-template-rows:repeat(4,minmax(0,1fr)) !important;grid-auto-rows:minmax(0,1fr) !important;aspect-ratio:1/1 !important;width:min(100%,360px,calc(100vw - 24px)) !important;max-width:360px !important;max-height:min(360px,calc(100vw - 24px)) !important;gap:9px !important;padding:8px !important;align-items:stretch !important;justify-items:stretch !important;box-sizing:border-box !important;overflow:hidden !important;}
+#games .arcadeMemoryBoard.grid-4 .arcadeMemoryCard{width:100% !important;height:100% !important;min-width:0 !important;min-height:0 !important;max-width:none !important;max-height:none !important;aspect-ratio:auto !important;display:grid !important;place-items:center !important;padding:0 !important;line-height:1 !important;overflow:hidden !important;contain:layout paint !important;font-size:clamp(28px,9vw,42px) !important;}
+#games .arcadeMemoryBoard.grid-4 .arcadeMemoryCard.isFlipped,#games .arcadeMemoryBoard.grid-4 .arcadeMemoryCard.isMatched{transform:none !important;}
