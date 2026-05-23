@@ -1,4 +1,4 @@
-// v.1.5 (770) – Sudoku bezpečně nad spodní lištou + Korekce: header akce a indexy.
+// v.1.5 (771) – Sudoku bez zbytečného scrollu + Korekce Frézky: přesné názvy indexů.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

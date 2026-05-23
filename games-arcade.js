@@ -1502,6 +1502,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     clearCleanups();
     setActiveState(gameId, null);
     window.document.body.classList.add('gamesOpen');
+    if (window.document.body && window.document.body.dataset) window.document.body.dataset.rakArcadeGame = key(gameId);
     window.gamesApplyCompactMode && window.gamesApplyCompactMode();
     stage.innerHTML = `<div class="gamesShell gamesShellNoTitle arcadeShellRoot">${shellHeader(meta.title, meta.subtitle)}<div class="gamesArcadeRoot" id="gamesShellBody"></div></div>`;
     const backBtn = document.getElementById('arcadeBackBtn');
@@ -4901,7 +4902,7 @@ html[data-lightweight="1"] #games .arcadeAimTarget{box-shadow:0 0 0 6px rgba(124
     const allHot = EXTRA_GAMES.length === 0;
     const completedOnlyGuard = typeof window.gamesRecordStat === 'function';
     return {
-      version: 'v.1.5 (770)',
+      version: 'v.1.5 (771)',
       ok: !missingMeta.length && !missingRenderer.length && allHot && completedOnlyGuard,
       totalGames: ids.length,
       coreGames: ids,

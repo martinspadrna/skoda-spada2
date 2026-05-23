@@ -11526,3 +11526,132 @@ body.gamesOpen #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuNumberPi
 #korekce-frezky .calcFhbPresetBtn .fhbIndexAg{display:inline !important;color:#80ffad !important;text-shadow:0 0 12px rgba(93,225,137,.40) !important;}
 #korekce-frezky .calcFhbPresetBtn .fhbIndexAh{display:inline !important;color:#ffc173 !important;text-shadow:0 0 12px rgba(255,178,86,.36) !important;}
 #korekce-frezky .calcFhbPresetBtn .fhbIndexSep{display:inline !important;color:rgba(255,255,255,.65) !important;}
+
+
+/* v.1.5 (771): Sudoku bez zbytečného scrollu + přesné názvy indexů Frézek. */
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games .arcadeShellRoot{
+  padding-top:calc(6px + env(safe-area-inset-top)) !important;
+  gap:4px !important;
+  min-height:0 !important;
+  height:100% !important;
+  overflow:hidden !important;
+}
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games .gamesShellBackFloating{
+  top:calc(6px + env(safe-area-inset-top)) !important;
+  min-height:30px !important;
+  height:30px !important;
+  padding:0 9px !important;
+  font-size:11px !important;
+  border-radius:12px !important;
+}
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"]{
+  flex:1 1 auto !important;
+  min-height:0 !important;
+  height:auto !important;
+  overflow:hidden !important;
+  padding-top:0 !important;
+  padding-bottom:calc(6px + env(safe-area-inset-bottom)) !important;
+  display:flex !important;
+  align-items:flex-start !important;
+  justify-content:center !important;
+  box-sizing:border-box !important;
+}
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuGameStage{
+  width:100% !important;
+  min-height:0 !important;
+  height:calc(100dvh - var(--bottom-nav-h, 72px) - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 48px) !important;
+  max-height:calc(100dvh - var(--bottom-nav-h, 72px) - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 48px) !important;
+  overflow:hidden !important;
+  align-content:start !important;
+  justify-content:center !important;
+  gap:5px !important;
+  padding:0 6px 4px !important;
+  box-sizing:border-box !important;
+}
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuHud{
+  margin:0 auto !important;
+  gap:5px !important;
+}
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuRestartTop{
+  margin:0 auto !important;
+}
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .arcadeSudokuPaper{
+  width:min(100%, 338px, calc(100dvh - var(--bottom-nav-h, 72px) - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 214px)) !important;
+  max-width:338px !important;
+}
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuNumberPickerDocked,
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuNumberPickerTwoRows{
+  position:relative !important;
+  margin:4px auto 0 !important;
+  transform:none !important;
+  grid-template-columns:repeat(5, minmax(34px, 40px)) !important;
+  gap:5px !important;
+  padding:7px !important;
+  z-index:4 !important;
+}
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuNumberPickerTwoRows button{
+  width:40px !important;
+  min-width:34px !important;
+  max-width:40px !important;
+  height:38px !important;
+  min-height:34px !important;
+  max-height:38px !important;
+  font-size:15px !important;
+}
+@media (max-height:720px){
+  body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuGameStage{gap:4px !important;height:calc(100dvh - var(--bottom-nav-h, 72px) - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 44px) !important;max-height:calc(100dvh - var(--bottom-nav-h, 72px) - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 44px) !important;}
+  body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuHud .gamesStatLine{min-height:30px !important;padding:4px 6px !important;}
+  body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .arcadeSudokuPaper{width:min(100%, 312px, calc(100dvh - var(--bottom-nav-h, 72px) - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 196px)) !important;max-width:312px !important;}
+  body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuNumberPickerTwoRows{grid-template-columns:repeat(5,36px) !important;gap:4px !important;padding:6px !important;}
+  body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuNumberPickerTwoRows button{width:36px !important;min-width:36px !important;height:34px !important;min-height:34px !important;font-size:14px !important;}
+}
+@media (max-height:650px){
+  body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .arcadeSudokuPaper{width:min(100%, 288px, calc(100dvh - var(--bottom-nav-h, 72px) - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 178px)) !important;max-width:288px !important;}
+  body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuNumberPickerTwoRows{grid-template-columns:repeat(5,34px) !important;gap:4px !important;padding:5px !important;}
+  body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .sudokuNumberPickerTwoRows button{width:34px !important;min-width:34px !important;height:32px !important;min-height:32px !important;font-size:13px !important;}
+}
+#korekce-frezky .calcFhbPresetBtn{
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:4px !important;
+  min-height:50px !important;
+  padding:7px 8px !important;
+  text-align:center !important;
+}
+#korekce-frezky .calcFhbPresetBtn b{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:1px !important;
+  min-height:17px !important;
+  width:100% !important;
+  font-size:13px !important;
+  line-height:1 !important;
+  font-weight:950 !important;
+  opacity:1 !important;
+  visibility:visible !important;
+  white-space:nowrap !important;
+}
+#korekce-frezky .calcFhbPresetBtn > .calcFhbPresetValue{
+  display:block !important;
+  width:100% !important;
+  font-size:11px !important;
+  line-height:1.05 !important;
+  font-weight:850 !important;
+  opacity:.88 !important;
+  visibility:visible !important;
+  color:rgba(240,250,255,.88) !important;
+  white-space:nowrap !important;
+}
+#korekce-frezky .calcFhbPresetBtn .fhbIndexFree{
+  display:inline !important;
+  margin-left:3px !important;
+  color:rgba(255,255,255,.84) !important;
+  font-weight:900 !important;
+}
+#korekce-frezky .calcFhbPresetBtn .fhbIndexAf{display:inline !important;color:#82c8ff !important;text-shadow:0 0 12px rgba(83,163,255,.40) !important;}
+#korekce-frezky .calcFhbPresetBtn .fhbIndexAg{display:inline !important;color:#80ffad !important;text-shadow:0 0 12px rgba(93,225,137,.40) !important;}
+#korekce-frezky .calcFhbPresetBtn .fhbIndexAh{display:inline !important;color:#ffc173 !important;text-shadow:0 0 12px rgba(255,178,86,.36) !important;}
+#korekce-frezky .calcFhbPresetBtn .fhbIndexSep{display:inline !important;color:rgba(255,255,255,.65) !important;}

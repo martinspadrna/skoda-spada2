@@ -1,8 +1,18 @@
+## v.1.5 (771)
+- Sudoku má odstraněný zbytečný scroll: obrazovka se posouvá výš, zmenšuje horní prázdnou vrstvu a číselník se má vejít nad spodní panel.
+- Korekce → Frézky: indexová tlačítka jsou přejmenovaná na AF/AG, AH, AF/AG volné a AH volné; rozměry L/P jsou pod názvem indexu.
+- Verze sjednocena na v.1.5 (771), cache na v1.5-771 a Supabase realtime kanál na rak-public-live-v771.
+
 ## v.1.5 (770)
+- Sudoku: spodní nabídka čísel má větší bezpečný prostor nad spodní lištou.
+- Korekce: reset a křížek v horním panelu jsou znovu ukotvené vpravo a Frézky mají pojistku pro názvy indexů.
+- Verze sjednocena na v.1.5 (770), cache na v1.5-770 a Supabase realtime kanál na rak-public-live-v770.
+
+## v.1.5 (769)
 - Korekce → Frézky: u polí Konicita a fhβ jsou nově otazníky s obrázkovou nápovědou.
 - Kliknutí na otazník otevře modal s připravenou fotkou, kde je zvýrazněná aktuální hodnota korekce i tlačítko Změnit.
 - Obrázky jsou přibalené do PWA/ZIPu jako offline assety a zahrnuté v service worker cache i exportu ZIPu.
-- Verze sjednocena na v.1.5 (770), cache na v1.5-770 a Supabase realtime kanál na rak-public-live-v770.
+- Verze sjednocena na v.1.5 (769), cache na v1.5-769 a Supabase realtime kanál na rak-public-live-v769.
 
 ## v.1.5 (768)
 - Denní výzva: Bomberman mini má při spuštění z Daily vlastní stav a znovu navázané ovládání, takže se nezasekne na starém běžném Bombermanovi.

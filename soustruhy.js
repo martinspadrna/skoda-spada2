@@ -1038,7 +1038,7 @@ function renderFhbPresetButtonTitle(button, preset) {
   const key = String(button.dataset.fhbKey || (preset && preset.key) || '').trim().toLowerCase();
   const label = String((preset && preset.label) || button.dataset.fhbLabel || '').trim().toLowerCase();
   const isVolne = key.indexOf('volne') >= 0 || label.indexOf('voln') >= 0;
-  const suffix = isVolne ? ' volné' : ' lis';
+  const suffix = isVolne ? ' <span class="fhbIndexFree">volné</span>' : '';
   if (key.indexOf('afag') >= 0 || label.indexOf('af/ag') >= 0) {
     title.innerHTML = '<span class="fhbIndexAf">AF</span><span class="fhbIndexSep">/</span><span class="fhbIndexAg">AG</span>' + suffix;
     return;
@@ -1064,7 +1064,11 @@ function updateFhbPresetButtons() {
     button.dataset.fhbLeft = String(preset.left);
     button.dataset.fhbRight = String(preset.right);
     renderFhbPresetButtonTitle(button, preset);
-    const valueSpan = button.querySelector('span:last-child');
+    let valueSpan = button.querySelector(':scope > .calcFhbPresetValue');
+    if (!valueSpan) {
+      valueSpan = button.querySelector(':scope > span:last-child');
+      if (valueSpan) valueSpan.classList.add('calcFhbPresetValue');
+    }
     if (valueSpan) valueSpan.textContent = 'L ' + formatCalcDecimalWhole(preset.left) + ' / P ' + formatCalcDecimalWhole(preset.right);
   });
 }
