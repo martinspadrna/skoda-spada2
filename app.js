@@ -1,4 +1,4 @@
-// v.1.5 (781) – Soustruhy: znaménka u vrtáků 3/7 a zpřesnění společného posunu X.
+// v.1.5 (782) – Soustruhy: čistší výstup korekce vrtáků X a zarovnání přepínačů znaménka.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

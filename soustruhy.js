@@ -1056,7 +1056,7 @@ function renderLatheAxisCorrectionInfo(key) {
   if (!info) return;
   const cfg = getLatheAxisCorrectionMachine(key);
   info.innerHTML = '<b>' + escapeHtml(cfg.label) + '</b>' +
-    '<div class="smallText">Osa X: ' + escapeHtml(cfg.axisText) + '. Vrtáky 3 a 7 jde hýbat jen společně doleva/doprava. Výsledný posun se při zadání do X násobí ×2.</div>';
+    '<div class="smallText">Osa X: ' + escapeHtml(cfg.axisText) + '.</div>';
 }
 
 function setLatheAxisCorrectionMachine(button) {
@@ -1112,18 +1112,14 @@ function calcLatheAxisCorrection(options) {
   const expectedDrill7Right = offsets.drill7Right - averageRight;
   const expectedDrill3 = -expectedDrill3Right;
   const expectedDrill7 = expectedDrill7Right;
-  const spread = Math.abs(offsets.drill7Right - offsets.drill3Right);
-
-  const main = Math.abs(correction) < 0.0005
-    ? 'Korekce X: 0,000'
-    : 'Zadej korekci X: <b>' + escapeHtml(formatLatheAxisCorrectionValue(correction)) + '</b>';
-  const html = "<div class='calcResultTitle'>" + escapeHtml(cfg.label) + " · Poloha vrtáků v ose X</div>" +
-    "<div class='calcResultMain'>" + main + "</div>" +
-    "<div class='calcResultLine'>Hýbej: <b>" + escapeHtml(moveText) + "</b> " + (moveDistance > 0.0005 ? "o " + escapeHtml(formatLatheAxisCorrectionValue(moveDistance, { withSign: false })) + " mm" : "") + "</div>" +
-    "<div class='calcResultLine'>Posun před násobením: " + escapeHtml(formatLatheAxisCorrectionValue(halfCorrection)) + " · do X zadat ×2 = " + escapeHtml(formatLatheAxisCorrectionValue(correction)) + "</div>" +
-    "<div class='calcResultLine'>Přepočet: vrták 3 " + escapeHtml(formatLatheAxisCorrectionValue(drill3)) + " · vrták 7 " + escapeHtml(formatLatheAxisCorrectionValue(drill7)) + "</div>" +
-    "<div class='calcResultLine'>Očekávaně po korekci: vrták 3 " + escapeHtml(formatLatheAxisCorrectionValue(expectedDrill3)) + " · vrták 7 " + escapeHtml(formatLatheAxisCorrectionValue(expectedDrill7)) + "</div>" +
-    "<div class='calcResultSub'>Vrták 3 je vlevo: + znamená dál od středu doleva, − blíž ke středu doprava. Vrták 7 je vpravo: + znamená dál od středu doprava, − blíž ke středu doleva. Rozdíl mezi vrtáky je " + escapeHtml(formatLatheAxisCorrectionValue(spread, { withSign: false })) + " mm; tato korekce řeší jen společný posun obou vrtáků.</div>";
+  const main = 'Do X zadej: <b>' + escapeHtml(formatLatheAxisCorrectionValue(correction)) + '</b>';
+  const moveLine = Math.abs(averageRight) < 0.0005
+    ? 'Směr: <b>bez posunu</b>'
+    : 'Směr: <b>' + escapeHtml(moveText) + '</b>';
+  const html = "<div class='calcResultTitle'>" + escapeHtml(cfg.label) + "</div>" +
+    "<div class='calcResultMain latheAxisCorrectionMain'>" + main + "</div>" +
+    "<div class='calcResultLine'>" + moveLine + "</div>" +
+    "<div class='calcResultLine'>Poté cca: vrták 3 <b>" + escapeHtml(formatLatheAxisCorrectionValue(expectedDrill3)) + "</b> · vrták 7 <b>" + escapeHtml(formatLatheAxisCorrectionValue(expectedDrill7)) + "</b></div>";
   setCalcOutputHtml(out, html, out.id || 'latheAxisCorrectionResult');
 }
 
