@@ -1,4 +1,4 @@
-// v.1.5 (795) – Spodní lišta jako průhledný glass dock s kulatým aktivním zvýrazněním.
+// v.1.5 (796) – Spodní lišta: čisté ikonky bez rámečků a průhlednější glass dock.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

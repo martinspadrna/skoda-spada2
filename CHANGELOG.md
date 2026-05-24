@@ -1,3 +1,10 @@
+## v.1.5 (796)
+- Spodní lišta: velikost a umístění z v.1.5 (795) zůstává beze změny.
+- Neaktivní ikonky na spodní liště mají odstraněné vlastní ohraničení, stíny a podkladové rámečky.
+- Aktivní ikonka má jen jemné kulaté glass ohraničení kolem samotné ikonky.
+- Panel spodní lišty je ještě průhlednější, ale zůstává čitelný a pevně ukotvený dole.
+- Verze sjednocena na v.1.5 (796), cache na v1.5-796 a Supabase realtime kanál na rak-public-live-v796.
+
 ## v.1.5 (795)
 - Spodní lišta je přepracovaná do průhlednějšího glass dock stylu podle návrhu: neaktivní ikony jsou čisté bez tvrdého ohraničení.
 - Aktivní položka má větší ikonu a kulaté jemné glass zvýraznění s decentním neonovým glow efektem.
