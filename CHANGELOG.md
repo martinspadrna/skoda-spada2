@@ -1,3 +1,31 @@
+## v.1.5 (809)
+- Fáze 2C Supabase hardening: RPC funkce `rak_save_rotation_state` a `rak_save_machine_settings` byly aplikované do Supabase a ověřené přes `pg_proc`.
+- Klient zůstává bezpečně RPC-first: nejdřív zkusí RPC a při problému spadne na původní přímý upsert, aby se nerozbily rozpisy ani administrace strojů.
+- Přímé veřejné write/delete policies zatím nebyly zúžené; zůstanou až do dalšího reálného smoke testu jako kompatibilní fallback.
+- Diagnostika Supabase nově ukazuje fázi 2C, potvrzené RPC funkce a další fázi 2D.
+- Verze sjednocena na v.1.5 (809), cache na v1.5-809 a Supabase realtime kanál na rak-public-live-v809.
+
+## v.1.5 (808)
+- Fáze 2B Supabase hardening: přidaná RPC-first klientská příprava pro `rotation_state` a `machine_settings`.
+- Zápisy se nejdřív pokusí použít plánované úzké RPC (`rak_save_rotation_state`, `rak_save_machine_settings`) a pokud RPC v databázi zatím není dostupné, bezpečně spadnou zpět na dosavadní přímý upsert, takže se nerozbije administrace ani rozpisy.
+- Přidaný soubor `supabase_rpc_hardening_v808.sql` jako přesný návrh DB migrace pro další krok. Migrace v tomto běhu nebyla aplikovaná, protože Supabase nástroj SQL zablokoval bezpečnostní kontrolou.
+- Diagnostika Supabase nově ukazuje RPC hardening stav, aktuální fázi 2B a další fázi 2C.
+- Verze sjednocena na v.1.5 (808), cache na v1.5-808 a Supabase realtime kanál na rak-public-live-v808.
+
+## v.1.5 (807)
+- Supabase/RLS audit: přidaná klientská diagnostika posledního live policy auditu bez zásahu do databáze.
+- Diagnostika v „O aplikaci“ nově ukazuje počet P0/P1/P2 rizik, počet veřejných write tabulek, destruktivní policies a aktuální/další fázi Supabase hardeningu.
+- Potvrzená live rizika: veřejné/anon write policies u rotation_state, machine_settings, game_stats, game_sessions, game_invites, bug_reports a gomoku_wins. Databáze v tomto buildu nebyla měněná, aby se neriskovala funkčnost.
+- Další fáze po tomto buildu: 2B – připravit a bezpečně otestovat úzké RPC/RLS úpravy pro nejrizikovější write cesty.
+- Verze sjednocena na v.1.5 (807), cache na v1.5-807 a Supabase realtime kanál na rak-public-live-v807.
+
+## v.1.5 (806)
+- Audit stabilizační build po rozboru RaK: ROTATION_BUILD už nepoužívá Date.now() a loadRotationData nezahazuje lokální rozpis jen kvůli změně buildu.
+- Admin odemčení se už neukládá do localStorage; při startu se starý adminUnlocked z localStorage maže a odemčení platí jen pro aktuální relaci.
+- Destruktivní klientský reset online herního progresu je vypnutý, chráněný explicitním maintenance flagem a už se nevystavuje jako veřejný window helper.
+- Profil hráče se při online synchronizaci doplňuje z více typů herních statistik včetně Pampucha a Lodí, ne jen z Piškvorek.
+- Verze sjednocena na v.1.5 (806), cache na v1.5-806 a Supabase realtime kanál na rak-public-live-v806.
+
 ## v.1.5 (805)
 - Piškvorky mají ještě upravenou hrací plochu přímo podle výšky spodní lišty; board se může lehce zmenšit, aby spodní řada nebyla za panelem.
 - Spodní lišta: ikonky jsou znovu o chlup větší a aktivní ikonka je posazená nad popisek, aby nelezla do textu.

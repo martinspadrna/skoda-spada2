@@ -1,8 +1,9 @@
 
 const APP_KEY = "rotace_kalkulacky_state_v123";
-const APP_VERSION = "v.1.5 (805)";
+const APP_VERSION = "v.1.5 (809)";
 window.APP_VERSION = APP_VERSION;
-const ROTATION_BUILD = "2026-05-18-" + APP_VERSION + "-" + Date.now();
+const ROTATION_BUILD = "2026-05-18-" + APP_VERSION;
+window.ROTATION_BUILD = ROTATION_BUILD;
 
 const HARD_MACHINE_HEADERS = ["TNKS01", "TBKR07", "TPKW01", "TPKW02", "TBKR01"];
 const SOFT_MACHINE_HEADERS = ["MSKC01", "MSKC03", "MSKC04", "MFKF06", "MFKF10"];
@@ -1027,12 +1028,10 @@ function defaultRotation() {
 
 function loadRotationData() {
   try {
-    // Fáze 7: startovní načtení používá stejnou lokální read/JSON cache jako zbytek appky.
-    // Tím se při reloadu a opakovaných init kontrolách nečte/parsuje velký stav zbytečně víckrát.
-    const savedBuild = getLocalStorageCached("rotationBuild", "");
-    if (savedBuild && savedBuild !== ROTATION_BUILD) {
-      return defaultRotation();
-    }
+    // v.1.5 (809): lokální rozpis už se nezahazuje jen kvůli jiné build značce.
+    // Starší ROTATION_BUILD obsahoval Date.now(), takže se měnil při každém reloadu a mohl
+    // vynutit návrat na defaultní rotace i když byl uložený stav v pořádku.
+    // Build ponecháváme jen jako diagnostickou značku; kompatibilitu řeší normalizeRotationData().
     const parsed = parseLocalStorageJsonCached(APP_KEY, null);
     if (!parsed || !parsed.months) return defaultRotation();
     return normalizeRotationData(parsed);
@@ -1080,7 +1079,7 @@ function saveRotationData() {
     write("combo_second_start", document.getElementById("combo_second_start")?.value || "");
     write("combo_second_plan", document.getElementById("combo_second_plan")?.value || "");
     write("soustruh106Counts", JSON.stringify(app.soustruh106Counts || ["", "", "", ""]));
-    write("adminUnlocked", app.adminUnlocked ? "1" : "0");
+    // v.1.5 (809): admin odemčení je jen pro aktuální relaci a nesmí se ukládat do localStorage.
     if (changed && typeof window.__rotaceSignalStateChange === "function") {
       window.__rotaceSignalStateChange("local-save");
     }

@@ -30,6 +30,7 @@ const EXPORT_SOURCE_IDS = {
   "CHANGELOG.md": "src-changelog-md",
   "manifest.webmanifest": "src-manifest-webmanifest",
   "sw.js": "src-sw-js",
+  "supabase_rpc_hardening_v809.sql": "src-supabase-rpc-hardening-v809-sql",
   "icon-16.png": "src-icon-16-png",
   "icon-32.png": "src-icon-32-png",
   "icon-180.png": "src-icon-180-png",
@@ -168,7 +169,8 @@ async function exportCurrentHtml() {
       'CHANGELOG.md',
       'manifest.webmanifest',
       'sw.js',
-      'data.js'
+      'data.js',
+      'supabase_rpc_hardening_v809.sql'
     ];
 
     const binaryFiles = [

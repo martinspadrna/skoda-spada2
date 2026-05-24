@@ -1,4 +1,4 @@
-// v.1.5 (805) – Piškvorky nad lištou, stabilní větší aktivní ikona a denní score podle dnešní hry.
+// v.1.5 (809) – Supabase hardening 2C: RPC migrace aplikovaná, klient jede RPC-first s fallbackem a public DELETE policies zatím zůstávají pro kompatibilitu.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

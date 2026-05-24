@@ -4364,13 +4364,13 @@ function renderGamesAppearanceStatus() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText || 'v.1.5 (805)',
-      title: 'Aktuální doladění',
+      range: versionText || 'v.1.5 (809)',
+      title: 'Aktuální stabilizace',
       lines: [
-        'Piškvorky mají tvrdší spodní rezervu počítanou podle reálné výšky spodní lišty, aby hrací plocha končila nad panelem.',
-        'Spodní lišta zůstává velikostí i umístěním zachovaná; ikonky jsou větší a aktivní ikonka se zvětší na místě bez posunu nahoru.',
-        'Denní challenge v Top score ukazuje jen aktuální dnešní hru a v titulku score píše, o jakou hru jde.',
-        'Profil hráče bere online výsledky ze všech načtených Top score her, ne jen Piškvorky.'
+        'Fáze 2C Supabase hardening: RPC funkce pro rotation_state a machine_settings jsou aplikované v databázi a klient je používá jako první volbu.',
+        'Přímé write/delete policies zatím zůstávají jako kompatibilní fallback, aby se nerozbilo online ukládání před reálným mobilním smoke testem.',
+        'Aktuální fáze: 2C hotová po stránce RPC migrace. Následuje 2D: postupné vypnutí veřejných DELETE policies a zúžení přímých write cest.',
+        'Stabilizační opravy z v.1.5 (806) zůstávají zachované: rozpis se nezahazuje kvůli buildu, admin není v localStorage a veřejný reset statistik je vypnutý.'
       ]
     },
     {
@@ -6241,6 +6241,7 @@ function bindAppMenuHandlers(body) {
         const supabaseCacheGuard = supabaseHardening && supabaseHardening.cacheGuard ? supabaseHardening.cacheGuard : null;
         const supabasePerformanceHealth = typeof window.getSupabasePerformanceHealth === 'function' ? window.getSupabasePerformanceHealth() : (supabaseHardening && supabaseHardening.performanceHealth ? supabaseHardening.performanceHealth : null);
         const supabaseStructureHealth = typeof window.getSupabaseStructureHealth === 'function' ? window.getSupabaseStructureHealth() : (supabaseHardening && supabaseHardening.structureHealth ? supabaseHardening.structureHealth : null);
+        const supabasePolicyRiskHealth = typeof window.getSupabasePolicyRiskHealth === 'function' ? window.getSupabasePolicyRiskHealth() : (supabaseHardening && supabaseHardening.policyRiskHealth ? supabaseHardening.policyRiskHealth : null);
         const profileUiStatus = typeof window.getProfileUiSyncStatus === 'function' ? window.getProfileUiSyncStatus() : null;
         const profileUiGuard = profileUiStatus && profileUiStatus.guard ? profileUiStatus.guard : null;
         const dataOptStatus = typeof window.getDataOptimizationStatus === 'function' ? window.getDataOptimizationStatus() : null;
@@ -6312,6 +6313,8 @@ function bindAppMenuHandlers(body) {
           supabasePerformanceHealth ? ('Supabase zápisy: check/start/join/skip ' + String(supabasePerformanceHealth.writeOptimizationChecks || 0) + '/' + String(supabasePerformanceHealth.writeOptimizationStarts || 0) + '/' + String(supabasePerformanceHealth.writeOptimizationJoins || 0) + '/' + String(supabasePerformanceHealth.writeOptimizationSkips || 0) + ' · aktivní/peak ' + String(supabasePerformanceHealth.writeOptimizationActive || 0) + '/' + String(supabasePerformanceHealth.writeOptimizationPeak || 0)) : '',
           supabaseStructureHealth ? ('Supabase struktura/RLS: ' + (supabaseStructureHealth.ok ? 'OK' : 'kontrola') + ' · tabulky ' + String(supabaseStructureHealth.expectedTableCount || 0) + ' · realtime chybí ' + String(supabaseStructureHealth.missingRealtimeTableCount || 0) + ' · queue chybí ' + String(supabaseStructureHealth.missingQueueTypeCount || 0) + ' · helpery chybí ' + String(supabaseStructureHealth.missingHelperCount || 0)) : '',
           supabaseStructureHealth ? ('Supabase GRANT/policies checklist: signály ' + String(supabaseStructureHealth.grantSignalCount || 0) + ' · policies ' + String(supabaseStructureHealth.rlsPolicyChecklistCount || 0) + ' · problémy ' + String((supabaseStructureHealth.issues || []).length || 0)) : '',
+          supabasePolicyRiskHealth ? ('Supabase RLS audit: ' + (supabasePolicyRiskHealth.ok ? 'OK' : 'rizika') + ' · P0/P1/P2 ' + String(supabasePolicyRiskHealth.p0Count || 0) + '/' + String(supabasePolicyRiskHealth.p1Count || 0) + '/' + String(supabasePolicyRiskHealth.p2Count || 0) + ' · veřejný write tabulek ' + String(supabasePolicyRiskHealth.publicWriteTableCount || 0) + ' · destruktivní ' + String(supabasePolicyRiskHealth.destructiveTableCount || 0)) : '',
+          supabasePolicyRiskHealth && supabasePolicyRiskHealth.phase ? ('Supabase fáze: ' + String(supabasePolicyRiskHealth.phase.current || '—') + ' · další: ' + String(supabasePolicyRiskHealth.phase.next || '—')) : '',
           supabaseGuard ? ('Supabase guard: sloučeno ' + String(supabaseGuard.deduped || 0) + ' · ořezáno ' + String(supabaseGuard.trimmed || 0) + ' · odmítnuto ' + String((supabaseGuard.rejected || 0) + (supabaseGuard.oversized || 0))) : '',
           supabaseSyncGuard ? ('Supabase sync: timeouty R/W ' + String(supabaseSyncGuard.readTimeouts || 0) + '/' + String(supabaseSyncGuard.writeTimeouts || 0) + ' · retry R/W ' + String(supabaseSyncGuard.readRetries || 0) + '/' + String(supabaseSyncGuard.writeRetries || 0) + ' · fallback ' + String(supabaseSyncGuard.queuedFallbacks || 0)) : '',
           supabaseSyncGuard ? ('Supabase chyby: čtení ' + String(supabaseSyncGuard.failedReads || 0) + ' · zápis ' + String(supabaseSyncGuard.failedWrites || 0) + ' · cooldown ' + String(supabaseSyncGuard.cooldownSkips || 0)) : '',
@@ -7348,6 +7351,100 @@ function gamesParseRemoteTimestamp(value) {
   return Number.isFinite(ts) ? ts : 0;
 }
 
+function gamesGetRemoteProfileStatIds() {
+  // v.1.5 (809): profil hráče se doplňuje ze všech veřejných Top score typů, ne jen z Piškvorek.
+  // Variants necháváme jako samostatné arcade statistiky, aby se nemíchalo Pexeso/Sudoku podle obtížnosti.
+  return [
+    'ttt', '2048', 'snake', 'flap',
+    'aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble',
+    'sudoku', 'sudoku_easy', 'sudoku_medium', 'sudoku_hard',
+    'mines', 'memory', 'memory_4x4', 'memory_6x6', 'memory_8x8',
+    'bomber', 'pampuch', 'ships', 'daily'
+  ];
+}
+
+function gamesApplyRemoteProfileStat(profile, row) {
+  if (!profile || !row) return false;
+  const remoteUpdated = gamesParseRemoteTimestamp(row.updated_at || row.last_played_at || row.updatedAt);
+  if (Number.isFinite(GAMES_REMOTE_STATS_RESET_CUTOFF_MS) && remoteUpdated && remoteUpdated < GAMES_REMOTE_STATS_RESET_CUTOFF_MS) return false;
+  const accountId = String((row.account_number || row.accountNumber || row.id || '')).trim();
+  if (!accountId || GAMES_ACCOUNT_BLOCKLIST.has(accountId)) return false;
+  const gameType = String((row.game_type || row.gameType || '')).trim();
+  if (!gameType || gameType === '__profile_ui') return false;
+  const remoteName = String((row.player_name || row.full_name || row.name || accountId)).trim() || accountId;
+  let changed = false;
+  if (!profile.accounts[accountId]) {
+    profile.accounts[accountId] = gamesMakeAccountEntry(accountId, remoteName);
+    changed = true;
+  } else if (remoteName && (!profile.accounts[accountId].name || profile.accounts[accountId].name === accountId)) {
+    profile.accounts[accountId].name = remoteName;
+    changed = true;
+  }
+  const acc = profile.accounts[accountId];
+  if (!acc.stats || typeof acc.stats !== 'object') acc.stats = gamesEmptyStats();
+  if (!acc.stats.arcade || typeof acc.stats.arcade !== 'object') acc.stats.arcade = {};
+  const plays = Number(row.games_played ?? row.plays ?? 0) || 0;
+  const wins = Number(row.wins || 0) || 0;
+  const losses = Number(row.losses || 0) || 0;
+  const draws = Number(row.draws || 0) || 0;
+  const points = Number(row.points ?? row.best_score ?? row.bestScore ?? row.value ?? 0) || 0;
+  const lastTs = gamesParseRemoteTimestamp(row.last_played_at || row.updated_at || row.updatedAt);
+
+  const mergeGeneric = (current) => Object.assign({}, current || {}, {
+    plays: Math.max(Number(current && current.plays || 0) || 0, plays),
+    wins: Math.max(Number(current && current.wins || 0) || 0, wins),
+    losses: Math.max(Number(current && current.losses || 0) || 0, losses),
+    draws: Math.max(Number(current && current.draws || 0) || 0, draws),
+    bestScore: Math.max(Number(current && current.bestScore || 0) || 0, points),
+    leaderboardValue: Math.max(Number(current && current.leaderboardValue || 0) || 0, points),
+    lastPlayedAt: Math.max(Number(current && current.lastPlayedAt || 0) || 0, lastTs || 0)
+  });
+
+  if (gameType === 'ttt') {
+    const current = acc.stats.ttt && typeof acc.stats.ttt === 'object' ? acc.stats.ttt : {};
+    const nextTtt = Object.assign({}, current, {
+      plays: Math.max(Number(current.plays || 0) || 0, plays || points),
+      wins: Math.max(Number(current.wins || 0) || 0, wins),
+      losses: Math.max(Number(current.losses || 0) || 0, losses),
+      draws: Math.max(Number(current.draws || 0) || 0, draws),
+      lastPlayedAt: Math.max(Number(current.lastPlayedAt || 0) || 0, lastTs || 0)
+    });
+    if (JSON.stringify(current) !== JSON.stringify(nextTtt)) { acc.stats.ttt = nextTtt; changed = true; }
+  } else if (gameType === '2048') {
+    const current = acc.stats.g2048 && typeof acc.stats.g2048 === 'object' ? acc.stats.g2048 : {};
+    const next = Object.assign({}, current, {
+      plays: Math.max(Number(current.plays || 0) || 0, plays),
+      bestScore: Math.max(Number(current.bestScore || 0) || 0, points),
+      lastPlayedAt: Math.max(Number(current.lastPlayedAt || 0) || 0, lastTs || 0)
+    });
+    if (JSON.stringify(current) !== JSON.stringify(next)) { acc.stats.g2048 = next; changed = true; }
+  } else if (gameType === 'snake') {
+    const current = acc.stats.snake && typeof acc.stats.snake === 'object' ? acc.stats.snake : {};
+    const next = Object.assign({}, current, {
+      plays: Math.max(Number(current.plays || 0) || 0, plays),
+      bestScore: Math.max(Number(current.bestScore || 0) || 0, points),
+      lastPlayedAt: Math.max(Number(current.lastPlayedAt || 0) || 0, lastTs || 0)
+    });
+    if (JSON.stringify(current) !== JSON.stringify(next)) { acc.stats.snake = next; changed = true; }
+  } else if (gameType === 'flap') {
+    const current = acc.stats.flap && typeof acc.stats.flap === 'object' ? acc.stats.flap : {};
+    const next = Object.assign({}, current, {
+      plays: Math.max(Number(current.plays || 0) || 0, plays),
+      bestScore: Math.max(Number(current.bestScore || 0) || 0, points),
+      bestPipes: Math.max(Number(current.bestPipes || 0) || 0, points),
+      lastPlayedAt: Math.max(Number(current.lastPlayedAt || 0) || 0, lastTs || 0)
+    });
+    if (JSON.stringify(current) !== JSON.stringify(next)) { acc.stats.flap = next; changed = true; }
+  } else {
+    const current = acc.stats.arcade[gameType] && typeof acc.stats.arcade[gameType] === 'object' ? acc.stats.arcade[gameType] : {};
+    const next = mergeGeneric(current);
+    if (JSON.stringify(current) !== JSON.stringify(next)) { acc.stats.arcade[gameType] = next; changed = true; }
+  }
+
+  if (changed) acc.updatedAt = Math.max(Number(acc.updatedAt || 0) || 0, lastTs || Date.now());
+  return changed;
+}
+
 async function gamesSyncProfileFromRemote(force = false) {
   const bridge = window.RotationSupabaseBridge;
   if (!bridge || typeof bridge.loadGameAccounts !== 'function') return null;
@@ -7356,8 +7453,11 @@ async function gamesSyncProfileFromRemote(force = false) {
   try {
     const profile = gamesGetProfile();
     const remoteAccounts = await bridge.loadGameAccounts().catch(() => []);
-    const remoteTttStats = typeof bridge.loadGameStats === 'function'
-      ? await bridge.loadGameStats('ttt', 100, { force: !!force }).catch(() => [])
+    const remoteStatsRows = typeof bridge.loadGameStats === 'function'
+      ? (await Promise.all(gamesGetRemoteProfileStatIds().map((id) => {
+          const limit = id === 'ttt' ? 100 : 20;
+          return bridge.loadGameStats(id, limit, { force: !!force }).catch(() => []);
+        }))).flat()
       : [];
     let changed = false;
 
@@ -7385,39 +7485,8 @@ async function gamesSyncProfileFromRemote(force = false) {
       }
     });
 
-    (Array.isArray(remoteTttStats) ? remoteTttStats : []).forEach((row) => {
-      const remoteUpdated = gamesParseRemoteTimestamp(row && (row.updated_at || row.last_played_at || row.updatedAt));
-      if (Number.isFinite(GAMES_REMOTE_STATS_RESET_CUTOFF_MS) && remoteUpdated && remoteUpdated < GAMES_REMOTE_STATS_RESET_CUTOFF_MS) return;
-      const accountId = String(row && (row.account_number || row.accountNumber || row.id) ? (row.account_number || row.accountNumber || row.id) : '').trim();
-      if (!accountId || GAMES_ACCOUNT_BLOCKLIST.has(accountId)) return;
-      const remoteName = String(row && (row.player_name || row.full_name || row.name) ? (row.player_name || row.full_name || row.name) : accountId).trim() || accountId;
-      if (!profile.accounts[accountId]) {
-        profile.accounts[accountId] = gamesMakeAccountEntry(accountId, remoteName);
-        changed = true;
-      } else if (remoteName && (!profile.accounts[accountId].name || profile.accounts[accountId].name === accountId)) {
-        profile.accounts[accountId].name = remoteName;
-        changed = true;
-      }
-      const acc = profile.accounts[accountId];
-      if (!acc.stats || typeof acc.stats !== 'object') acc.stats = gamesEmptyStats();
-      const current = acc.stats.ttt && typeof acc.stats.ttt === 'object' ? acc.stats.ttt : {};
-      const plays = Number(row && (row.games_played ?? row.plays ?? row.value ?? row.points) || 0) || 0;
-      const wins = Number(row && row.wins || 0) || 0;
-      const losses = Number(row && row.losses || 0) || 0;
-      const draws = Number(row && row.draws || 0) || 0;
-      const lastTs = gamesParseRemoteTimestamp(row && (row.last_played_at || row.updated_at || row.updatedAt));
-      const nextTtt = Object.assign({}, current, {
-        plays: Math.max(Number(current.plays || 0) || 0, plays),
-        wins: Math.max(Number(current.wins || 0) || 0, wins),
-        losses: Math.max(Number(current.losses || 0) || 0, losses),
-        draws: Math.max(Number(current.draws || 0) || 0, draws),
-        lastPlayedAt: Math.max(Number(current.lastPlayedAt || 0) || 0, lastTs || 0)
-      });
-      if (JSON.stringify(current) !== JSON.stringify(nextTtt)) {
-        acc.stats.ttt = nextTtt;
-        acc.updatedAt = Math.max(Number(acc.updatedAt || 0) || 0, nextTtt.lastPlayedAt || Date.now());
-        changed = true;
-      }
+    (Array.isArray(remoteStatsRows) ? remoteStatsRows : []).forEach((row) => {
+      if (gamesApplyRemoteProfileStat(profile, row)) changed = true;
     });
 
     Object.keys(profile.accounts || {}).forEach((id) => {
@@ -7747,6 +7816,8 @@ const GAMES_PROFILE_GAME_DEFS = [
   { id: 'mines', title: 'Minesweeper', unit: 'bodů' },
   { id: 'memory', title: 'Memory / Pexeso', unit: 's' },
   { id: 'bomber', title: 'Bomberman mini', unit: 'bodů' },
+  { id: 'pampuch', title: 'Pampuch', unit: 'bodů' },
+  { id: 'ships', title: 'Lodě', unit: 'bodů' },
   { id: 'daily', title: 'Denní challenge', unit: 'bodů' }
 ];
 
@@ -8016,19 +8087,9 @@ function gamesRenderStats() {
 }
 
 function gamesEnsureOnlineProgressReset() {
-  try {
-    const resetKey = APP_KEY + ':games_online_progress_reset_v720';
-    if (localStorage.getItem(resetKey) === 'done') return Promise.resolve({ ok: true, skipped: true });
-    const bridge = window.RotationSupabaseBridge;
-    if (!bridge || typeof bridge.resetGameProgressOnline !== 'function' || !navigator.onLine) return Promise.resolve({ ok: false, reason: 'offline-or-missing-bridge' });
-    return bridge.resetGameProgressOnline({ version: 'v.1.1 (720)', cutoffIso: '2026-05-21T17:30:00+02:00' }).then((res) => {
-      if (res && res.ok) localStorage.setItem(resetKey, 'done');
-      return res;
-    }).catch((err) => { console.warn('gamesEnsureOnlineProgressReset failed', err); return { ok: false, error: err }; });
-  } catch (err) {
-    console.warn('gamesEnsureOnlineProgressReset failed', err);
-    return Promise.resolve({ ok: false, error: err });
-  }
+  // v.1.5 (809): automatický klientský reset online statistik je vypnutý.
+  // Starý jednorázový maintenance reset už nemá běžet při otevření herního hubu, protože jde o destruktivní write cestu.
+  return Promise.resolve({ ok: true, skipped: true, disabled: true, reason: 'client-maintenance-reset-disabled' });
 }
 
 function renderGamesHub() {

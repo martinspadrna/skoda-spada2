@@ -213,6 +213,81 @@
     { table: 'gomoku_wins', realtime: true, queueType: 'gomoku_win', access: 'anon SELECT/INSERT/UPDATE', note: 'výhry piškvorek / legacy leaderboard' }
   ];
 
+  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (809)';
+  const SUPABASE_POLICY_AUDIT_SNAPSHOT_AT = '2026-05-24';
+  const SUPABASE_POLICY_HARDENING_PHASE = {
+    current: 'Fáze 2C – RPC migrace aplikovaná a ověřená, klient používá RPC-first zápisy s fallbackem',
+    next: 'Fáze 2D – po reálném smoke testu postupně vypnout veřejné DELETE policies a zúžit přímé write cesty',
+    rollback: 'Fáze 2C má bezpečný fallback; při selhání RPC klient spadne zpět na původní přímé upserty. Databázové funkce lze ponechat nebo odstranit bez dopadu na čtení.'
+  };
+  const SUPABASE_POLICY_AUDIT_SNAPSHOT = [
+    {
+      table: 'rotation_state',
+      priority: 'P0',
+      risk: 'anon INSERT/UPDATE nad hlavním snapshotem rozpisů',
+      observed: 'policy rak_rotation_state_insert_anon / rak_rotation_state_update_anon s with_check=true',
+      recommendation: 'ponechat SELECT pro čtení, zápis přes úzkou RPC/admin flow nebo serverově ověřený maintenance token'
+    },
+    {
+      table: 'machine_settings',
+      priority: 'P0',
+      risk: 'anon ALL/INSERT/UPDATE nad parametry strojů a kalkulaček',
+      observed: 'policies machine_settings_anon_write_v622/v624 s qual=true a with_check=true',
+      recommendation: 'zápisy omezit na RPC s validací povolených klíčů a rozsahů; klientský admin nesmí být autorita'
+    },
+    {
+      table: 'game_stats',
+      priority: 'P0',
+      risk: 'public INSERT/UPDATE/DELETE nad žebříčky, XP a profilovým vzhledem',
+      observed: 'policies game_stats_insert_public/update_public/delete_public s true',
+      recommendation: 'nejdřív zrušit public DELETE; potom oddělit běžné score zápisy od admin/maintenance akcí'
+    },
+    {
+      table: 'game_sessions',
+      priority: 'P0',
+      risk: 'public INSERT/UPDATE/DELETE nad online session',
+      observed: 'policies game_sessions_insert_public/update_public/delete_public s true',
+      recommendation: 'nejdřív zrušit public DELETE; UPDATE omezit minimálně podle invite_code/účastníků a stavu session'
+    },
+    {
+      table: 'game_invites',
+      priority: 'P1',
+      risk: 'public UPDATE/DELETE nad pozvánkami',
+      observed: 'policies game_invites_update_public/delete_public s true',
+      recommendation: 'mazání omezit na expirované pozvánky přes RPC/cron; UPDATE povolit jen pro očekávané přijetí pozvánky'
+    },
+    {
+      table: 'bug_reports',
+      priority: 'P1',
+      risk: 'anon/auth SELECT a UPDATE reportů chyb',
+      observed: 'read/update policies pro anon/auth umožňují číst reporty a měnit status',
+      recommendation: 'INSERT ponechat veřejný s limity; SELECT/UPDATE přes admin RPC nebo chráněné rozhraní'
+    },
+    {
+      table: 'gomoku_wins',
+      priority: 'P2',
+      risk: 'anon INSERT/SELECT legacy výsledků Piškvorek',
+      observed: 'allow_insert_gomoku_wins / allow_read_gomoku_wins',
+      recommendation: 'ponechat jen pokud je legacy žebříček potřeba; jinak sjednotit přes game_stats/game_sessions'
+    }
+  ];
+
+  const SUPABASE_RPC_HARDENING_STATUS = {
+    version: 'v.1.5 (809)',
+    phase: '2C',
+    rpcPreferred: true,
+    migrationApplied: true,
+    migrationNote: 'RPC funkce rak_save_rotation_state a rak_save_machine_settings jsou aplikované v Supabase a ověřené přes pg_proc. Přímé write/delete policies zatím zůstávají jako kompatibilní fallback pro tento release.',
+    dbVerifiedAt: '2026-05-24',
+    verifiedRpcCount: 2,
+    plannedRpc: [
+      'rak_save_rotation_state',
+      'rak_save_machine_settings',
+      'rak_cleanup_expired_game_invites (existující cleanup helper)'
+    ],
+    fallback: 'direct-upsert-fallback-until-rpc-migration-confirmed'
+  };
+
   const SUPABASE_STRUCTURE_REQUIRED_HELPERS = [
     'getClient',
     'runSupabaseOperation',
@@ -342,7 +417,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v805');
+      const channel = client.channel('rak-public-live-v809');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -829,48 +904,103 @@
     return true;
   }
 
-  async function upsertMachineSettingsDirect(client, rows) {
-    let savedCount = 0;
-    const list = Array.isArray(rows) ? rows : [];
-    for (const row of list) {
-      const settings = row && typeof row.settings_json === 'object' && row.settings_json !== null
-        ? row.settings_json
-        : (() => {
-            try { return row && row.settings_json ? JSON.parse(String(row.settings_json)) : {}; }
-            catch (err) { return {}; }
-          })();
+  function isSupabaseRpcUnavailableError(err) {
+    const text = String((err && (err.message || err.details || err.hint || err.code)) || err || '').toLowerCase();
+    return /pgrst202|function .*does not exist|could not find.*function|schema cache|rpc.*not found|not found/.test(text);
+  }
 
-      const machineCode = String(row && (row.machine_code || row.machine) ? (row.machine_code || row.machine) : settings.machine || '').trim();
-      const machineIndex = String(row && (row.machine_index || row.index) ? (row.machine_index || row.index) : settings.index || '').trim();
-      const label = String(row && row.label ? row.label : '').trim() || (machineCode + (machineIndex ? '-' + machineIndex : ''));
-      const category = String(row && row.category ? row.category : (String(machineCode).toUpperCase().startsWith('TBKR') ? 'brus' : (String(machineCode).toUpperCase().startsWith('TPKW') ? 'pracka' : 'frezka'))).trim();
-      const machine_key = String(row && row.machine_key ? row.machine_key : (machineCode + (machineIndex ? '-' + machineIndex : ''))).trim();
+  function normalizeMachineSettingsPayload(row) {
+    const settings = row && typeof row.settings_json === 'object' && row.settings_json !== null
+      ? row.settings_json
+      : (() => {
+          try { return row && row.settings_json ? JSON.parse(String(row.settings_json)) : {}; }
+          catch (err) { return {}; }
+        })();
 
-      const cycleTime = row && row.cycle_time !== '' && row.cycle_time !== null && row.cycle_time !== undefined
-        ? Number(row.cycle_time)
-        : (row && row.speed !== '' && row.speed !== null && row.speed !== undefined ? Number(row.speed) : null);
-      const dressTime = row && row.dress_time !== '' && row.dress_time !== null && row.dress_time !== undefined ? Number(row.dress_time) : null;
-      const dressCount = row && row.dress_count !== '' && row.dress_count !== null && row.dress_count !== undefined ? parseInt(row.dress_count, 10) : null;
-      const payload = {
-        machine_key,
-        machine_code: machineCode || null,
-        machine_index: machineIndex || null,
-        label,
-        category,
-        speed: cycleTime,
-        cycle_time: cycleTime,
-        dress_time: dressTime,
-        dress_count: Number.isFinite(dressCount) ? dressCount : null,
-        settings_json: Object.assign({}, settings, {
-          machine: machineCode,
-          index: machineIndex,
-          cycle_time: row && row.cycle_time !== '' && row.cycle_time !== null && row.cycle_time !== undefined ? String(row.cycle_time) : (row && row.speed !== '' && row.speed !== null && row.speed !== undefined ? String(row.speed) : ''),
-          dress_time: row && row.dress_time !== '' && row.dress_time !== null && row.dress_time !== undefined ? String(row.dress_time) : '',
-          dress_count: row && row.dress_count !== '' && row.dress_count !== null && row.dress_count !== undefined ? String(row.dress_count) : ''
-        }),
-        updated_at: new Date().toISOString()
+    const machineCode = String(row && (row.machine_code || row.machine) ? (row.machine_code || row.machine) : settings.machine || '').trim();
+    const machineIndex = String(row && (row.machine_index || row.index) ? (row.machine_index || row.index) : settings.index || '').trim();
+    const label = String(row && row.label ? row.label : '').trim() || (machineCode + (machineIndex ? '-' + machineIndex : ''));
+    const category = String(row && row.category ? row.category : (String(machineCode).toUpperCase().startsWith('TBKR') ? 'brus' : (String(machineCode).toUpperCase().startsWith('TPKW') ? 'pracka' : 'frezka'))).trim();
+    const machine_key = String(row && row.machine_key ? row.machine_key : (machineCode + (machineIndex ? '-' + machineIndex : ''))).trim();
+
+    const cycleTime = row && row.cycle_time !== '' && row.cycle_time !== null && row.cycle_time !== undefined
+      ? Number(row.cycle_time)
+      : (row && row.speed !== '' && row.speed !== null && row.speed !== undefined ? Number(row.speed) : null);
+    const dressTime = row && row.dress_time !== '' && row.dress_time !== null && row.dress_time !== undefined ? Number(row.dress_time) : null;
+    const dressCount = row && row.dress_count !== '' && row.dress_count !== null && row.dress_count !== undefined ? parseInt(row.dress_count, 10) : null;
+
+    return {
+      machine_key,
+      machine_code: machineCode || null,
+      machine_index: machineIndex || null,
+      label,
+      category,
+      speed: Number.isFinite(cycleTime) ? cycleTime : null,
+      cycle_time: Number.isFinite(cycleTime) ? cycleTime : null,
+      dress_time: Number.isFinite(dressTime) ? dressTime : null,
+      dress_count: Number.isFinite(dressCount) ? dressCount : null,
+      settings_json: Object.assign({}, settings, {
+        machine: machineCode,
+        index: machineIndex,
+        cycle_time: row && row.cycle_time !== '' && row.cycle_time !== null && row.cycle_time !== undefined ? String(row.cycle_time) : (row && row.speed !== '' && row.speed !== null && row.speed !== undefined ? String(row.speed) : ''),
+        dress_time: row && row.dress_time !== '' && row.dress_time !== null && row.dress_time !== undefined ? String(row.dress_time) : '',
+        dress_count: row && row.dress_count !== '' && row.dress_count !== null && row.dress_count !== undefined ? String(row.dress_count) : ''
+      }),
+      updated_at: new Date().toISOString()
+    };
+  }
+
+  async function trySaveMachineSettingsViaRpc(client, payloads) {
+    if (!client || typeof client.rpc !== 'function' || !Array.isArray(payloads) || !payloads.length) return null;
+    try {
+      const { data, error } = await client.rpc('rak_save_machine_settings', { p_rows: payloads });
+      if (error) throw error;
+      return {
+        ok: true,
+        rpc: true,
+        savedCount: Number((data && (data.saved_count || data.count)) || data || payloads.length) || payloads.length
       };
-      if (!payload.machine_key || !payload.label) continue;
+    } catch (err) {
+      if (isSupabaseRpcUnavailableError(err)) {
+        SUPABASE_RPC_HARDENING_STATUS.lastUnavailableAt = new Date().toISOString();
+        SUPABASE_RPC_HARDENING_STATUS.lastUnavailableMessage = String(err && err.message ? err.message : err);
+        return null;
+      }
+      throw err;
+    }
+  }
+
+  async function trySaveRotationStateViaRpc(client, row) {
+    if (!client || typeof client.rpc !== 'function' || !row) return null;
+    try {
+      const { data, error } = await client.rpc('rak_save_rotation_state', {
+        p_key: row.key || 'main',
+        p_payload: row.payload || null,
+        p_meta: row.meta || {}
+      });
+      if (error) throw error;
+      return data || row;
+    } catch (err) {
+      if (isSupabaseRpcUnavailableError(err)) {
+        SUPABASE_RPC_HARDENING_STATUS.lastUnavailableAt = new Date().toISOString();
+        SUPABASE_RPC_HARDENING_STATUS.lastUnavailableMessage = String(err && err.message ? err.message : err);
+        return null;
+      }
+      throw err;
+    }
+  }
+
+  async function upsertMachineSettingsDirect(client, rows) {
+    const list = Array.isArray(rows) ? rows : [];
+    const payloads = list
+      .map((row) => normalizeMachineSettingsPayload(row))
+      .filter((payload) => payload && payload.machine_key && payload.label);
+
+    const rpcResult = await trySaveMachineSettingsViaRpc(client, payloads);
+    if (rpcResult && rpcResult.ok) return rpcResult.savedCount;
+
+    let savedCount = 0;
+    for (const payload of payloads) {
       const { error } = await client.from('machine_settings').upsert([payload], { onConflict: 'machine_key' });
       if (error) throw error;
       savedCount += 1;
@@ -886,6 +1016,17 @@
       meta: meta && typeof meta === 'object' ? meta : {},
       updated_at: new Date().toISOString()
     };
+
+    const rpcRow = await trySaveRotationStateViaRpc(client, row);
+    if (rpcRow) {
+      return {
+        key: rpcRow.key || row.key,
+        payload: rpcRow.payload || row.payload,
+        meta: rpcRow.meta || row.meta,
+        updated_at: rpcRow.updated_at || row.updated_at
+      };
+    }
+
     const { error } = await client.from('rotation_state').upsert([row], { onConflict: 'key' });
     if (error) throw error;
     return row;
@@ -1966,7 +2107,19 @@
     try { return query.gte('updated_at', GAME_PROGRESS_RESET_CUTOFF_ISO); } catch (err) { return query; }
   }
 
+  function isClientGameProgressResetAllowed(options = {}) {
+    // v.1.5 (809): destruktivní maintenance reset nesmí být spustitelný běžným klientem ani z konzole.
+    // Původně byl reset dostupný přes veřejný bridge/window helper a mohl přepsat game_stats/game_sessions.
+    return !!(options && options.allowClientMaintenanceReset === true
+      && window.__RAK_ENABLE_CLIENT_MAINTENANCE_RESET === true
+      && typeof app !== 'undefined'
+      && app.adminUnlocked === true);
+  }
+
   async function resetGameProgressOnlineDirect(client, options = {}) {
+    if (!isClientGameProgressResetAllowed(options)) {
+      return { ok: false, disabled: true, reason: 'client-maintenance-reset-disabled' };
+    }
     const cutoffIso = String(options.cutoffIso || GAME_PROGRESS_RESET_CUTOFF_ISO || '').trim();
     const nowIso = new Date().toISOString();
     const result = { ok: true, version: GAME_PROGRESS_RESET_VERSION, cutoffIso, statsRows: 0, sessionRows: 0, errors: [] };
@@ -2602,6 +2755,43 @@
   }
 
 
+  function getSupabasePolicyRiskHealth() {
+    const snapshot = Array.isArray(SUPABASE_POLICY_AUDIT_SNAPSHOT) ? SUPABASE_POLICY_AUDIT_SNAPSHOT : [];
+    const byPriority = snapshot.reduce((acc, item) => {
+      const key = String(item && item.priority ? item.priority : 'PX');
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
+    const destructiveTables = snapshot
+      .filter(item => /delete|reset|destruktiv/i.test(String((item && item.risk) || '') + ' ' + String((item && item.observed) || '')))
+      .map(item => String(item.table || ''))
+      .filter(Boolean);
+    const publicWriteTables = snapshot
+      .filter(item => /(public|anon).*(INSERT|UPDATE|DELETE|ALL)|INSERT|UPDATE|DELETE|ALL/i.test(String((item && item.observed) || '')))
+      .map(item => String(item.table || ''))
+      .filter(Boolean);
+    const issues = [];
+    if (byPriority.P0) issues.push('P0 Supabase/RLS: veřejné nebo anon zápisy u kritických tabulek (' + String(byPriority.P0) + ' nálezů)');
+    if (destructiveTables.length) issues.push('Riziko destruktivních akcí přes veřejné policies: ' + Array.from(new Set(destructiveTables)).join(', '));
+    if (publicWriteTables.length) issues.push('Veřejné/anon write policies vyžadují serverové zúžení: ' + Array.from(new Set(publicWriteTables)).join(', '));
+    return {
+      ok: issues.length === 0,
+      mode: 'supabase-live-policy-audit-snapshot',
+      version: SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION,
+      checkedAt: SUPABASE_POLICY_AUDIT_SNAPSHOT_AT,
+      phase: Object.assign({}, SUPABASE_POLICY_HARDENING_PHASE),
+      issues: issues.slice(0, 12),
+      p0Count: Number(byPriority.P0 || 0),
+      p1Count: Number(byPriority.P1 || 0),
+      p2Count: Number(byPriority.P2 || 0),
+      publicWriteTableCount: Array.from(new Set(publicWriteTables)).length,
+      destructiveTableCount: Array.from(new Set(destructiveTables)).length,
+      publicWriteTables: Array.from(new Set(publicWriteTables)).slice(0, 16),
+      destructiveTables: Array.from(new Set(destructiveTables)).slice(0, 16),
+      findings: snapshot.map(item => Object.assign({}, item)).slice(0, 20)
+    };
+  }
+
   function getSupabaseStructureHealth() {
     const issues = [];
     const warnings = [];
@@ -2760,6 +2950,8 @@
       performanceGuard: Object.assign({}, state.performanceGuard),
       performanceHealth: getSupabasePerformanceHealth(),
       structureHealth: getSupabaseStructureHealth(),
+      policyRiskHealth: getSupabasePolicyRiskHealth(),
+      rpcHardening: Object.assign({}, SUPABASE_RPC_HARDENING_STATUS),
       readTimeoutMs: SUPABASE_READ_TIMEOUT_MS,
       writeTimeoutMs: SUPABASE_WRITE_TIMEOUT_MS,
       queueFlushBatchSize: SUPABASE_QUEUE_FLUSH_BATCH_SIZE,
@@ -3152,6 +3344,9 @@
     resetGameProgressOnline: async (options = {}) => {
       const client = getClient();
       if (!client || !navigator.onLine) return { ok: false, reason: 'offline-or-missing-client' };
+      if (!isClientGameProgressResetAllowed(options || {})) {
+        return { ok: false, disabled: true, reason: 'client-maintenance-reset-disabled' };
+      }
       try { const result = await resetGameProgressOnlineDirect(client, options || {}); state.lastError = result && result.ok ? null : state.lastError; return result; }
       catch (err) { state.lastError = err; console.error('Game progress reset failed', err); return { ok: false, error: err }; }
     },
@@ -3167,6 +3362,7 @@
   window.getSupabaseHardeningStatus = getSupabaseHardeningStatus;
   window.getSupabasePerformanceHealth = getSupabasePerformanceHealth;
   window.getSupabaseStructureHealth = getSupabaseStructureHealth;
+  window.getSupabasePolicyRiskHealth = getSupabasePolicyRiskHealth;
   window.createGameInvite = async (payload) => window.RotationSupabaseBridge.createGameInvite(payload);
   window.acceptGameInvite = async (code, inviteeAccountNumber) => window.RotationSupabaseBridge.acceptGameInvite(code, inviteeAccountNumber);
   window.loadGameSessionByInviteCode = async (code) => window.RotationSupabaseBridge.loadGameSessionByInviteCode(code);
@@ -3176,7 +3372,7 @@
   window.loadGameHeadToHeadList = async (gameType, options) => window.RotationSupabaseBridge.loadGameHeadToHeadList(gameType, options || {});
   window.loadBugReports = async (options) => window.RotationSupabaseBridge.loadBugReports(options || {});
   window.updateBugReportStatus = async (id, status, note) => window.RotationSupabaseBridge.updateBugReportStatus(id, status, note || '');
-  window.resetGameProgressOnline = async (options) => window.RotationSupabaseBridge.resetGameProgressOnline(options || {});
+  // v.1.5 (809): destruktivní reset herního progresu už se nevystavuje jako veřejný window helper.
 
   window.addEventListener('online', () => {
     requestSupabaseQueueWake('online', 350);

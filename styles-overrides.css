@@ -14331,7 +14331,7 @@ html body.tttOpen #tttOverlay.tttOverlay.isVisible .tttResultCard{
 }
 
 
-/* v.1.5 (805): Piškvorky nad lištou + čistější větší ikony spodního panelu. */
+/* v.1.5 (806): audit stabilizace bez změny vzhledu spodní lišty. */
 :root{
   --rak-ttt-live-bottom-clearance:calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 118px);
 }

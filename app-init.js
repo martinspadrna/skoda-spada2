@@ -1,4 +1,5 @@
 function bindAdminSecretUnlock() {
+  try { localStorage.removeItem('adminUnlocked'); } catch (err) {}
   if (document.documentElement.dataset.adminSecretBound === '1') return true;
   document.documentElement.dataset.adminSecretBound = '1';
 
@@ -26,7 +27,8 @@ function bindAdminSecretUnlock() {
         app.contactTapCount = 0;
       }
       try {
-        localStorage.setItem('adminUnlocked', '1');
+        sessionStorage.setItem('adminUnlockedSession', '1');
+        localStorage.removeItem('adminUnlocked');
       } catch (err) {
         console.warn(err);
       }
