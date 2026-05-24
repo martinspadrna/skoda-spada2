@@ -4364,13 +4364,14 @@ function renderGamesAppearanceStatus() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText || 'v.1.5 (817)',
+      range: versionText || 'v.1.5 (818)',
       title: 'Aktuální stabilizace',
       lines: [
-        'Hotfix v817 opravuje Vercel/GitHub deploy: odstraněný package.json a zrušené build/output nastavení, aby Vercel bral appku jako statický web z kořene.',
-        'Struktura ZIPu zůstává čistá: jediná složka je assets/, bez public/ a scripts/.',
-        'Funkční logika aplikace, hry i Supabase policies zůstaly beze změny proti v816.',
-        'Supabase hardening zůstává ve fázi 2E-C/2E-D: před dalším zužováním game_stats INSERT/UPDATE je potřeba mobilní ověření RPC zápisů.'
+        'Hotfix v818 odstraňuje vercel.json i .vercelignore, aby Vercel nepadal na konfiguračním build/output nastavení z repozitáře.',
+        'Struktura ZIPu zůstává čistá: jediná složka je assets/, bez public/, scripts/ a bez dalších pomocných složek.',
+        'Funkční logika aplikace, hry i Supabase policies zůstaly beze změny proti v817.',
+        'Pokud Vercel dál selže, je potřeba v jeho Project Settings na mobilu vyčistit uložený Build Command a Output Directory.',
+        'Supabase hardening zůstává ve fázi 2E-D: před dalším zužováním game_stats INSERT/UPDATE je potřeba mobilní ověření RPC zápisů.'
       ]
     },
     {

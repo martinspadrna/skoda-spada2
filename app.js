@@ -1,4 +1,4 @@
-// v.1.5 (817) – Vercel/GitHub hotfix: odstraněn package.json a build/output konfigurace, Vercel má deployovat statickou appku přímo z kořene.
+// v.1.5 (818) – Vercel/GitHub clean static-root hotfix: odstraněn vercel.json i .vercelignore, repo zůstává čistá statická appka z kořene.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

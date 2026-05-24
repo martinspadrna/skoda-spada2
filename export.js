@@ -30,9 +30,7 @@ const EXPORT_SOURCE_IDS = {
   "CHANGELOG.md": "src-changelog-md",
   "manifest.webmanifest": "src-manifest-webmanifest",
   "sw.js": "src-sw-js",
-  "supabase_rpc_hardening_v817.sql": "src-supabase-rpc-hardening-v817-sql",
-  "vercel.json": "src-vercel-json",
-  ".vercelignore": "src-vercelignore",
+  "supabase_rpc_hardening_v818.sql": "src-supabase-rpc-hardening-v818-sql",
   "icon-16.png": "src-icon-16-png",
   "icon-32.png": "src-icon-32-png",
   "icon-180.png": "src-icon-180-png",
@@ -172,9 +170,7 @@ async function exportCurrentHtml() {
       'manifest.webmanifest',
       'sw.js',
       'data.js',
-      'supabase_rpc_hardening_v817.sql',
-      'vercel.json',
-      '.vercelignore',
+      'supabase_rpc_hardening_v818.sql',
     ];
 
     const binaryFiles = [
