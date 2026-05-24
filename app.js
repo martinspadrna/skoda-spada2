@@ -1,4 +1,4 @@
-// v.1.5 (801) – Spodní lišta: větší ikonky a oprava aktivní ikonky ve glass výběru.
+// v.1.5 (802) – Spodní lišta: průhlednější panel a aktivní ikonka už neujíždí dolů.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

@@ -4353,7 +4353,7 @@ function renderGamesAppearanceStatus() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText || 'v.1.5 (801)',
+      range: versionText || 'v.1.5 (802)',
       title: 'Přechod na řadu 1.5',
       lines: [
         'Korekce jsou oddělené od Výpočtu kusů; Frézky jsou označené jako nutné doladit.',
@@ -4361,7 +4361,7 @@ function buildAppHistoryHtml(versionText) {
         'Pexeso a Sudoku mají Top výsledky oddělené podle zvolené obtížnosti/velikosti a časy se ukazují ve vteřinách.',
         'Sudoku má panel volby obtížnosti posunutý o kousek níž, aby byl vidět celý horní okraj panelu.',
         'XP a ranky jsou sjednocené napříč hrami: dokončená hra má podobnou hodnotu a surové skóre už nepřestřeluje postup.',
-        'Spodní lišta je pevně ukotvená dole; panel je průhlednější, ikonky jsou větší a aktivní položka má vyšší centrovanou glass kapsli.',
+        'Spodní lišta je pevně ukotvená dole; panel je ještě průhlednější, ikonky jsou větší a aktivní ikonka má vyšší užší glass zvýraznění bez schování dolů.',
 
         'Výpočet kusů má Pračku s časem výroby nastavitelným v administraci, přepočtem na dávky po 32 ks a dokončením podle rozdělané dávky.',
         'Frézky → konicita a fhβ jsou v jedné kalkulačce; středy fhβ se dají měnit v administraci a výstup přednostně vybere jednu nejlepší korekci.',

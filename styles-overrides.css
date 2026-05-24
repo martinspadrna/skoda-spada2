@@ -13902,3 +13902,221 @@ nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn.active .bottomNavLabel{
     border-radius:22px !important;
   }
 }
+
+
+/* v.1.5 (802): Spodní lišta – průhlednější panel, větší ikonky a aktivní výběr vyšší/užší bez schování ikonky. */
+nav.bottomNav,
+body.tttOpen nav.bottomNav,
+body.gamesOpen nav.bottomNav{
+  background:
+    linear-gradient(180deg, rgba(34,56,142,.15), rgba(13,22,72,.095) 54%, rgba(6,12,42,.13)),
+    rgba(8,14,42,.10) !important;
+  border-color:rgba(190,220,255,.052) !important;
+  box-shadow:0 -5px 14px rgba(0,0,0,.115), inset 0 1px 0 rgba(255,255,255,.055) !important;
+  backdrop-filter:blur(19px) saturate(132%) !important;
+  -webkit-backdrop-filter:blur(19px) saturate(132%) !important;
+  overflow:visible !important;
+}
+nav.bottomNav #bottomNavScroll{
+  align-items:center !important;
+  overflow:visible !important;
+}
+nav.bottomNav #bottomNavScroll > button.bottomNavBtn,
+nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn{
+  position:relative !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  min-height:46px !important;
+  height:46px !important;
+  padding:0 0 2px !important;
+  gap:0 !important;
+  overflow:visible !important;
+  transform:none !important;
+  background:transparent !important;
+  border:0 !important;
+  outline:0 !important;
+  box-shadow:none !important;
+}
+nav.bottomNav #bottomNavScroll > button.bottomNavBtn:not(.bottomNavMenuBtn){
+  max-width:68px !important;
+}
+nav.bottomNav #bottomNavScroll > button.bottomNavBtn::before,
+nav.bottomNav #bottomNavScroll > button.bottomNavBtn::after,
+nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn::before,
+nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn::after{
+  pointer-events:none !important;
+}
+nav.bottomNav #bottomNavScroll > button.bottomNavBtn:not(.active)::before,
+nav.bottomNav #bottomNavScroll > button.bottomNavBtn:not(.active)::after,
+nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn:not(.active)::before,
+nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn:not(.active)::after{
+  content:none !important;
+  display:none !important;
+}
+nav.bottomNav #bottomNavScroll > button.bottomNavBtn .bottomNavIcon{
+  position:relative !important;
+  z-index:3 !important;
+  display:block !important;
+  width:clamp(34px, 8.4vw, 42px) !important;
+  height:clamp(34px, 8.4vw, 42px) !important;
+  flex:0 0 clamp(34px, 8.4vw, 42px) !important;
+  margin:0 auto -1px !important;
+  transform:none !important;
+  background:transparent !important;
+  border:0 !important;
+  outline:0 !important;
+  box-shadow:none !important;
+  overflow:visible !important;
+}
+nav.bottomNav #bottomNavScroll > button.bottomNavBtn .bottomNavIconImg{
+  position:absolute !important;
+  inset:0 !important;
+  width:100% !important;
+  height:100% !important;
+  object-fit:contain !important;
+  object-position:center center !important;
+  transform:none !important;
+  border:0 !important;
+  outline:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+}
+nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn .moreIcon{
+  position:relative !important;
+  z-index:3 !important;
+  width:clamp(22px, 5.6vw, 28px) !important;
+  height:clamp(22px, 5.6vw, 28px) !important;
+  margin:0 auto -1px !important;
+  transform:none !important;
+}
+nav.bottomNav #bottomNavScroll > button.bottomNavBtn .bottomNavLabel,
+nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn .bottomNavLabel{
+  position:relative !important;
+  z-index:3 !important;
+  margin:0 !important;
+  line-height:1.03 !important;
+}
+nav.bottomNav #bottomNavScroll > button.bottomNavBtn.active,
+nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn.active{
+  display:block !important;
+  position:relative !important;
+  height:46px !important;
+  min-height:46px !important;
+  padding:0 !important;
+  overflow:visible !important;
+  isolation:isolate !important;
+  transform:none !important;
+  z-index:30 !important;
+}
+nav.bottomNav #bottomNavScroll > button.bottomNavBtn.active::before,
+nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn.active::before{
+  content:"" !important;
+  display:block !important;
+  position:absolute !important;
+  left:8px !important;
+  right:8px !important;
+  top:-11px !important;
+  bottom:-4px !important;
+  width:auto !important;
+  height:auto !important;
+  border-radius:24px !important;
+  transform:none !important;
+  background:
+    radial-gradient(circle at 50% 8%, rgba(255,255,255,.24), transparent 42%),
+    linear-gradient(145deg, rgba(255,255,255,.17), rgba(255,255,255,.035) 48%, rgba(var(--theme-rgb,145,240,70),.14)),
+    rgba(8,18,42,.11) !important;
+  border:1px solid rgba(226,246,255,.20) !important;
+  outline:1px solid rgba(var(--theme-rgb,145,240,70),.07) !important;
+  outline-offset:-2px !important;
+  box-shadow:0 0 18px rgba(var(--theme-rgb,145,240,70),.16), 0 7px 14px rgba(0,0,0,.105), inset 0 1px 0 rgba(255,255,255,.15), inset 0 -1px 0 rgba(0,0,0,.08) !important;
+  backdrop-filter:blur(17px) saturate(158%) !important;
+  -webkit-backdrop-filter:blur(17px) saturate(158%) !important;
+  pointer-events:none !important;
+  z-index:0 !important;
+}
+nav.bottomNav #bottomNavScroll > button.bottomNavBtn.active::after,
+nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn.active::after{
+  content:"" !important;
+  position:absolute !important;
+  left:18px !important;
+  right:18px !important;
+  top:-6px !important;
+  height:1px !important;
+  border-radius:999px !important;
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,.34), transparent) !important;
+  z-index:1 !important;
+}
+nav.bottomNav #bottomNavScroll > button.bottomNavBtn.active .bottomNavIcon{
+  position:absolute !important;
+  left:50% !important;
+  top:-8px !important;
+  z-index:4 !important;
+  width:clamp(42px, 10.2vw, 52px) !important;
+  height:clamp(42px, 10.2vw, 52px) !important;
+  flex:0 0 auto !important;
+  margin:0 !important;
+  transform:translate3d(-50%, 0, 0) !important;
+  background:transparent !important;
+  border:0 !important;
+  outline:0 !important;
+  box-shadow:none !important;
+  overflow:visible !important;
+}
+nav.bottomNav #bottomNavScroll > button.bottomNavBtn.active .bottomNavIconImg--on{
+  opacity:1 !important;
+  filter:drop-shadow(0 0 10px rgba(var(--theme-rgb,145,240,70),.50)) !important;
+}
+nav.bottomNav #bottomNavScroll > button.bottomNavBtn.active .bottomNavIconImg--off,
+nav.bottomNav #bottomNavScroll > button.bottomNavBtn:not(.active) .bottomNavIconImg--on{
+  opacity:0 !important;
+}
+nav.bottomNav #bottomNavScroll > button.bottomNavBtn.active .bottomNavLabel,
+nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn.active .bottomNavLabel{
+  position:absolute !important;
+  left:0 !important;
+  right:0 !important;
+  bottom:2px !important;
+  z-index:4 !important;
+  transform:none !important;
+  text-align:center !important;
+}
+nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn.active .moreIcon{
+  position:absolute !important;
+  left:50% !important;
+  top:2px !important;
+  z-index:4 !important;
+  width:clamp(27px, 6.6vw, 34px) !important;
+  height:clamp(27px, 6.6vw, 34px) !important;
+  margin:0 !important;
+  transform:translate3d(-50%, 0, 0) !important;
+}
+body.lightweightMode nav.bottomNav,
+body.lowEndDevice nav.bottomNav{
+  background:rgba(8,14,32,.18) !important;
+  border-color:rgba(255,255,255,.045) !important;
+  box-shadow:0 -4px 11px rgba(0,0,0,.10) !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
+@media (max-width:390px){
+  nav.bottomNav #bottomNavScroll > button.bottomNavBtn .bottomNavIcon{
+    width:35px !important;
+    height:35px !important;
+    flex-basis:35px !important;
+  }
+  nav.bottomNav #bottomNavScroll > button.bottomNavBtn.active .bottomNavIcon{
+    top:-7px !important;
+    width:46px !important;
+    height:46px !important;
+  }
+  nav.bottomNav #bottomNavScroll > button.bottomNavBtn.active::before,
+  nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn.active::before{
+    left:5px !important;
+    right:5px !important;
+    top:-10px !important;
+    bottom:-4px !important;
+    border-radius:22px !important;
+  }
+}
