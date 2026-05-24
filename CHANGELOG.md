@@ -1,3 +1,10 @@
+## v.1.5 (795)
+- Spodní lišta je přepracovaná do průhlednějšího glass dock stylu podle návrhu: neaktivní ikony jsou čisté bez tvrdého ohraničení.
+- Aktivní položka má větší ikonu a kulaté jemné glass zvýraznění s decentním neonovým glow efektem.
+- Lišta zůstává pevně ukotvená dole, obsah aplikace dál končí nad ní a Piškvorky si drží spodní rezervu nad panelem.
+- U tlačítka Více je dorovnaná velikost, aby opticky sedělo k nové liště a nerozbíjelo zarovnání.
+- Verze sjednocena na v.1.5 (795), cache na v1.5-795 a Supabase realtime kanál na rak-public-live-v795.
+
 ## v.1.5 (794)
 - Spodní lišta je posazená níž k samotné spodní hraně displeje: safe-area odsazení je omezené, aby panel nebyl zbytečně vysoko, ale pořád zůstal použitelný na různých mobilech.
 - Rezerva obsahu nad spodní lištou je přepočítaná podle reálné výšky panelu, takže stránky nemají zalézat pod lištu.

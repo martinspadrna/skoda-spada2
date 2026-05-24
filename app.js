@@ -1,4 +1,4 @@
-// v.1.5 (794) – Spodní lišta níž u spodku a Piškvorky těsně nad panelem.
+// v.1.5 (795) – Spodní lišta jako průhledný glass dock s kulatým aktivním zvýrazněním.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;
@@ -530,10 +530,10 @@ function applyBottomNavMoreHardFix() {
       || document.querySelector('nav.bottomNav > .bottomNavScroll > .bottomNavBtn:not(.bottomNavMenuBtn)');
     const peerRect = peer && peer.getBoundingClientRect ? peer.getBoundingClientRect() : null;
     const peerWidth = peerRect && peerRect.width ? Math.round(peerRect.width) : (compact ? 58 : 64);
-    const widthPx = Math.max(lightweight ? 22 : 24, Math.min(Math.round(peerWidth * 0.42), lightweight ? 30 : 34));
+    const widthPx = Math.max(lightweight ? 40 : 44, Math.min(Math.round(peerWidth * 0.78), lightweight ? 50 : 56));
     const width = String(widthPx) + 'px';
-    const peerHeight = peerRect && peerRect.height ? Math.round(peerRect.height) : 46;
-    const height = Math.max(lightweight ? 40 : 44, Math.min(peerHeight || 46, lightweight ? 50 : 56)) + 'px';
+    const peerHeight = peerRect && peerRect.height ? Math.round(peerRect.height) : 52;
+    const height = Math.max(lightweight ? 46 : 50, Math.min(peerHeight || 52, lightweight ? 54 : 58)) + 'px';
     const setStyle = typeof setStylePropertyIfChanged === 'function'
       ? setStylePropertyIfChanged
       : ((el, prop, value, priority) => { if (el && el.style) el.style.setProperty(prop, value, priority || ''); return true; });
@@ -551,11 +551,11 @@ function applyBottomNavMoreHardFix() {
     setStyle(btn, 'box-sizing', 'border-box', 'important', 'bottomNavMore-boxSizing');
     setStyle(btn, 'justify-content', 'center', 'important', 'bottomNavMore-justify');
     setStyle(btn, 'gap', '1px', 'important', 'bottomNavMore-gap');
-    setStyle(btn, 'transform', btn.classList.contains('active') ? 'translateY(-1px) scale(1.08)' : 'translateY(2px)', 'important', 'bottomNavMore-transform');
+    setStyle(btn, 'transform', 'none', 'important', 'bottomNavMore-transform');
 
     const icon = btn.querySelector('.moreIcon');
     if (icon && icon.style) {
-      const iconSize = lightweight ? '14px' : (compact ? '15px' : '16px');
+      const iconSize = lightweight ? '20px' : (compact ? '21px' : '24px');
       setStyle(icon, 'flex', '0 0 ' + iconSize, 'important', 'bottomNavMoreIcon-flex');
       setStyle(icon, 'width', iconSize, 'important', 'bottomNavMoreIcon-width');
       setStyle(icon, 'height', iconSize, 'important', 'bottomNavMoreIcon-height');
@@ -569,7 +569,7 @@ function applyBottomNavMoreHardFix() {
 
     const label = btn.querySelector('.bottomNavLabel');
     if (label && label.style) {
-      setStyle(label, 'font-size', lightweight ? '7.4px' : '8px', 'important', 'bottomNavMoreLabel-fontSize');
+      setStyle(label, 'font-size', lightweight ? '7.8px' : '8.4px', 'important', 'bottomNavMoreLabel-fontSize');
       setStyle(label, 'line-height', '1', 'important', 'bottomNavMoreLabel-lineHeight');
       setStyle(label, 'margin', '0', 'important', 'bottomNavMoreLabel-margin');
       setStyle(label, 'padding', '0', 'important', 'bottomNavMoreLabel-padding');
