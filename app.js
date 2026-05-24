@@ -1,4 +1,4 @@
-// v.1.5 (798) – Spodní lišta: čisté SVG ikony bez rámečků a nové glass aktivní zvýraznění.
+// v.1.5 (799) – Spodní lišta: původní PNG ikonky, bez podkladů neaktivních položek a větší aktivní glass kapsle.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

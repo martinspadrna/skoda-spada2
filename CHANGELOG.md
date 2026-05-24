@@ -1,3 +1,11 @@
+## v.1.5 (799)
+- Spodní lišta: vrácené původní PNG ikonky místo SVG ikon z v.1.5 (798).
+- Do buildu jsou doplněné chybějící soubory `assets/nav-icons/*.png`, aby ikonky nebyly závislé jen na cache prohlížeče.
+- Neaktivní položky lišty mají tvrdší CSS reset podkladů, rámečků, stínů a pseudo-vrstev.
+- Aktivní položka už nemá kulatou bublinu; má větší jemnou glass kapsli za ikonou a popiskem.
+- Velikost ani umístění spodního panelu se neměnilo proti v.1.5 (798).
+- Verze sjednocena na v.1.5 (799), cache na v1.5-799 a Supabase realtime kanál na rak-public-live-v799.
+
 ## v.1.5 (798)
 - Spodní lišta: velikost ani umístění panelu se nemění proti v.1.5 (797).
 - Neaktivní ikony jsou převedené na čisté inline SVG bez PNG podkladů, aby kolem nich nezůstávaly staré tmavé rámečky ani cached ikony s vlastním ohraničením.
