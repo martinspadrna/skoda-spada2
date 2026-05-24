@@ -4353,7 +4353,7 @@ function renderGamesAppearanceStatus() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText || 'v.1.5 (796)',
+      range: versionText || 'v.1.5 (797)',
       title: 'Přechod na řadu 1.5',
       lines: [
         'Korekce jsou oddělené od Výpočtu kusů; Frézky jsou označené jako nutné doladit.',
@@ -4365,7 +4365,7 @@ function buildAppHistoryHtml(versionText) {
         'Výpočet kusů má Pračku s časem výroby nastavitelným v administraci, přepočtem na dávky po 32 ks a dokončením podle rozdělané dávky.',
         'Frézky → konicita a fhβ jsou v jedné kalkulačce; středy fhβ se dají měnit v administraci a výstup přednostně vybere jednu nejlepší korekci.',
         'Online změny strojních nastavení se po Supabase syncu promítají rovnou do otevřené Pračky i korekcí frézky.',
-        'Spodní lišta je pevně dole jako průhledný glass dock; neaktivní ikony jsou čisté bez rámečku a aktivní ikona má větší kulaté glass zvýraznění.',
+        'Spodní lišta je pevně dole jako průhlednější glass dock; neaktivní ikony jsou čisté bez tmavých podkladů a aktivní ikona má větší vnější glass zvýraznění kolem sebe.',
         'Kalkulačky mají horní nadpisové panely a mezeru pod nadpisem sjednocené přesně podle hlavního menu Kalkulačky.',
         'Denní výzva u Bombermana má vlastní stav a ovládání, aby šlo hýbat i když běžný Bomberman fungoval samostatně.',
         'Korekce Frézky mají otazníky s obrázkovou nápovědou pro konicitu a fhβ, včetně zvýraznění aktuální hodnoty i tlačítka Změnit.',

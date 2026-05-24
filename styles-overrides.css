@@ -13069,3 +13069,157 @@ body.lowEndDevice .bottomNavBtn.active .bottomNavIcon{
   backdrop-filter:none !important;
   -webkit-backdrop-filter:none !important;
 }
+
+
+/* v.1.5 (797): Spodní lišta – neaktivní ikony úplně bez podkladu, aktivní má větší vnější glass kolem ikonky. */
+.bottomNav,
+body.tttOpen .bottomNav,
+body.gamesOpen .bottomNav{
+  background:linear-gradient(180deg, rgba(20,32,52,.28), rgba(5,10,18,.15)) !important;
+  border-color:rgba(255,255,255,.045) !important;
+  box-shadow:0 -7px 24px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.055) !important;
+  backdrop-filter:blur(20px) saturate(160%) !important;
+  -webkit-backdrop-filter:blur(20px) saturate(160%) !important;
+}
+.bottomNavBtn,
+.bottomNavBtn:not(.bottomNavMenuBtn),
+.bottomNavMenuBtn{
+  border:0 !important;
+  outline:0 !important;
+  box-shadow:none !important;
+  background:transparent !important;
+  -webkit-tap-highlight-color:transparent !important;
+}
+.bottomNavBtn:not(.active),
+.bottomNavBtn:not(.active):hover,
+.bottomNavBtn:not(.active):focus,
+.bottomNavBtn:not(.active):focus-visible,
+.bottomNavBtn:not(.active):active,
+.bottomNavMenuBtn:not(.active),
+.bottomNavMenuBtn:not(.active):hover,
+.bottomNavMenuBtn:not(.active):focus,
+.bottomNavMenuBtn:not(.active):focus-visible,
+.bottomNavMenuBtn:not(.active):active{
+  background:transparent !important;
+  background-color:transparent !important;
+  background-image:none !important;
+  border:0 !important;
+  outline:0 !important;
+  box-shadow:none !important;
+  filter:none !important;
+}
+.bottomNavBtn:not(.active)::before,
+.bottomNavBtn:not(.active)::after,
+.bottomNavMenuBtn:not(.active)::before,
+.bottomNavMenuBtn:not(.active)::after,
+.bottomNavBtn:not(.active) .bottomNavIcon::before,
+.bottomNavBtn:not(.active) .bottomNavIcon::after,
+.bottomNavMenuBtn:not(.active) .moreIcon::before,
+.bottomNavMenuBtn:not(.active) .moreIcon::after{
+  content:none !important;
+  display:none !important;
+  opacity:0 !important;
+  background:transparent !important;
+  border:0 !important;
+  outline:0 !important;
+  box-shadow:none !important;
+}
+.bottomNavBtn:not(.active) .bottomNavIcon,
+.bottomNavBtn:not(.active) .bottomNavIcon *,
+.bottomNavBtn:not(.active) .bottomNavIconImg,
+.bottomNavBtn:not(.active) .bottomNavIcon svg,
+.bottomNavBtn:not(.active) .bottomNavIcon path,
+.bottomNavMenuBtn:not(.active) .moreIcon,
+.bottomNavMenuBtn:not(.active) .moreIcon *,
+.bottomNavMenuBtn:not(.active) .moreIcon svg,
+.bottomNavMenuBtn:not(.active) .moreIcon path,
+.bottomNavMenuBtn:not(.active) .moreIcon circle{
+  background:transparent !important;
+  background-color:transparent !important;
+  background-image:none !important;
+  border:0 !important;
+  outline:0 !important;
+  box-shadow:none !important;
+  text-shadow:none !important;
+  filter:none !important;
+}
+.bottomNavBtn.active{
+  position:relative !important;
+  isolation:isolate !important;
+  background:transparent !important;
+  border:0 !important;
+  outline:0 !important;
+  box-shadow:none !important;
+}
+.bottomNavBtn.active::before{
+  content:"" !important;
+  display:block !important;
+  position:absolute !important;
+  left:50% !important;
+  top:0 !important;
+  width:50px !important;
+  height:50px !important;
+  transform:translateX(-50%) !important;
+  border-radius:999px !important;
+  background:radial-gradient(circle at 34% 24%, rgba(255,255,255,.25), rgba(var(--theme-rgb, 70,139,255),.16) 52%, rgba(7,14,25,.18) 100%) !important;
+  border:1px solid rgba(220,242,255,.34) !important;
+  outline:1px solid rgba(var(--theme-rgb, 70,139,255),.14) !important;
+  outline-offset:2px !important;
+  box-shadow:0 0 20px rgba(var(--theme-rgb, 70,139,255),.30), 0 8px 20px rgba(0,0,0,.16), inset 0 1px 0 rgba(255,255,255,.20) !important;
+  backdrop-filter:blur(14px) saturate(170%) !important;
+  -webkit-backdrop-filter:blur(14px) saturate(170%) !important;
+  pointer-events:none !important;
+  z-index:0 !important;
+}
+.bottomNavBtn.active::after{
+  content:none !important;
+  display:none !important;
+}
+.bottomNavBtn.active .bottomNavIcon{
+  position:relative !important;
+  z-index:1 !important;
+  background:transparent !important;
+  background-color:transparent !important;
+  background-image:none !important;
+  border:0 !important;
+  outline:0 !important;
+  box-shadow:none !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
+.bottomNavBtn.active .bottomNavIconImg,
+.bottomNavBtn.active .bottomNavIcon svg,
+.bottomNavBtn.active .bottomNavIcon path{
+  position:relative !important;
+  z-index:2 !important;
+  background:transparent !important;
+  border:0 !important;
+  outline:0 !important;
+  box-shadow:none !important;
+}
+.bottomNavBtn.active .bottomNavLabel{
+  position:relative !important;
+  z-index:1 !important;
+}
+body.lightweightMode .bottomNav,
+body.lowEndDevice .bottomNav{
+  background:rgba(8,14,24,.42) !important;
+  border-color:rgba(255,255,255,.04) !important;
+  box-shadow:0 -5px 16px rgba(0,0,0,.16) !important;
+}
+body.lightweightMode .bottomNavBtn.active::before,
+body.lowEndDevice .bottomNavBtn.active::before{
+  background:rgba(var(--theme-rgb, 70,139,255),.12) !important;
+  border:1px solid rgba(220,242,255,.24) !important;
+  outline:1px solid rgba(var(--theme-rgb, 70,139,255),.10) !important;
+  box-shadow:0 0 10px rgba(var(--theme-rgb, 70,139,255),.18) !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
+@media (max-width:390px){
+  .bottomNavBtn.active::before{
+    width:47px !important;
+    height:47px !important;
+    top:1px !important;
+  }
+}

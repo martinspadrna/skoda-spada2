@@ -1,4 +1,4 @@
-// v.1.5 (796) – Spodní lišta: čisté ikonky bez rámečků a průhlednější glass dock.
+// v.1.5 (797) – Spodní lišta: čisté neaktivní ikony a větší vnější glass kolem aktivní ikony.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

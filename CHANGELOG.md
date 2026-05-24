@@ -1,3 +1,10 @@
+## v.1.5 (797)
+- Spodní lišta: velikost a umístění panelu z v.1.5 (796) zůstávají beze změny.
+- Neaktivní ikonky jsou dočištěné bez tmavého podkladu, stínu, rámečku a pseudo-vrstev kolem sebe.
+- Aktivní ikona má větší vnější kulaté glass zvýraznění kolem celé ikonky; samotná ikonka už nemá malou bublinu uvnitř.
+- Panel spodní lišty je ještě o něco průhlednější, ale zůstává čitelný a pevně ukotvený dole.
+- Verze sjednocena na v.1.5 (797), cache na v1.5-797 a Supabase realtime kanál na rak-public-live-v797.
+
 ## v.1.5 (796)
 - Spodní lišta: velikost a umístění z v.1.5 (795) zůstává beze změny.
 - Neaktivní ikonky na spodní liště mají odstraněné vlastní ohraničení, stíny a podkladové rámečky.
