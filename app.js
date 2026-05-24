@@ -1,4 +1,4 @@
-// v.1.5 (816) – Vercel/GitHub cleanup hotfix: odstraněné public/ a scripts/, ZIP má znovu jen assets/ jako jedinou složku; deploy podpora zůstává v kořeni.
+// v.1.5 (817) – Vercel/GitHub hotfix: odstraněn package.json a build/output konfigurace, Vercel má deployovat statickou appku přímo z kořene.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

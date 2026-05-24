@@ -1,15 +1,22 @@
-## v.1.5 (816)
+## v.1.5 (817)
+- Vercel/GitHub hotfix: odstraněný `package.json`, aby Vercel nespouštěl npm build a nemusel řešit výstupní složku.
+- `vercel.json` je zjednodušený jen na statické hlavičky pro `sw.js`, manifest a assety; neobsahuje `buildCommand`, `installCommand` ani `outputDirectory`.
+- Struktura ZIPu zůstává čistá: jediná složka je `assets/` a appka se deployuje přímo z kořene repozitáře.
+- Přidaný kontrolní SQL soubor `supabase_rpc_hardening_v817.sql`; databáze ani Supabase policies se ve v817 nemění.
+- Verze sjednocena na v.1.5 (817), cache na v1.5-817 a Supabase realtime kanál na rak-public-live-v817.
+
+## v.1.5 (817)
 - Hotfix struktury ZIPu po Vercel/GitHub úpravě: odstraněné složky `public/` a `scripts/`.
 - ZIP má znovu pouze jednu hlavní složku `assets/` s obrázky; ostatní podpůrné soubory jsou přímo v kořeni.
 - Vercel podpora zůstává bez generování složky `public/`: `package.json`, `vercel.json` a `.vercelignore` jsou jen kořenové soubory.
 - Funkční logika aplikace, hry, rozpisy a Supabase policies beze změny proti v.1.5 (815).
-- Verze sjednocena na v.1.5 (816), cache na v1.5-816 a Supabase realtime kanál na rak-public-live-v816.
+- Verze sjednocena na v.1.5 (817), cache na v1.5-817 a Supabase realtime kanál na rak-public-live-v817.
 
-## v.1.5 (816)
+## v.1.5 (817)
 - Fáze 2E-C Supabase hardening: herní RPC smoke metriky pro `game_stats` jsou nově perzistentní v zařízení, takže po mobilním hraní zůstane vidět počet RPC pokusů, úspěchů a fallbacků i po návratu do diagnostiky.
 - Přímé `INSERT/UPDATE` policies u `game_stats` zatím zůstávají zapnuté. Bez reálného mobilního ověření by jejich zúžení bylo zbytečně rizikové pro hry, Top 5 a profily.
-- Přidaný kontrolní SQL soubor `supabase_rpc_hardening_v816.sql`, který ověřuje existenci tří RPC funkcí a že veřejné DELETE policies u herních tabulek zůstávají odstraněné.
-- Verze sjednocena na v.1.5 (816), cache na v1.5-816 a Supabase realtime kanál na rak-public-live-v816.
+- Přidaný kontrolní SQL soubor `supabase_rpc_hardening_v817.sql`, který ověřuje existenci tří RPC funkcí a že veřejné DELETE policies u herních tabulek zůstávají odstraněné.
+- Verze sjednocena na v.1.5 (817), cache na v1.5-817 a Supabase realtime kanál na rak-public-live-v817.
 - Aktuální fáze: 2E-C připravená k mobilnímu ověření. Následuje 2E-D – po potvrzení RPC zápisů bez fallbacků začít bezpečně zužovat přímé INSERT/UPDATE policies u `game_stats`.
 
 ## v.1.5 (813)

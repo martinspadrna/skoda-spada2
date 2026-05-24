@@ -4364,11 +4364,11 @@ function renderGamesAppearanceStatus() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText || 'v.1.5 (816)',
+      range: versionText || 'v.1.5 (817)',
       title: 'Aktuální stabilizace',
       lines: [
-        'Hotfix v816 uklízí Vercel/GitHub podporu: odstraněné složky public/ a scripts/, v ZIPu zůstává jako jediná složka assets/.',
-        'Vercel podpůrné soubory zůstaly jen v kořeni: package.json, vercel.json a .vercelignore.',
+        'Hotfix v817 opravuje Vercel/GitHub deploy: odstraněný package.json a zrušené build/output nastavení, aby Vercel bral appku jako statický web z kořene.',
+        'Struktura ZIPu zůstává čistá: jediná složka je assets/, bez public/ a scripts/.',
         'Funkční logika aplikace, hry i Supabase policies zůstaly beze změny proti v816.',
         'Supabase hardening zůstává ve fázi 2E-C/2E-D: před dalším zužováním game_stats INSERT/UPDATE je potřeba mobilní ověření RPC zápisů.'
       ]
