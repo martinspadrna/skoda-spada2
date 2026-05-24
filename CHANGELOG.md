@@ -1,3 +1,9 @@
+## v.1.5 (803)
+- Piškvorky: hrací plocha má silnější spodní rezervu nad pevným spodním panelem, aby spodní řada/políčka neležely za lištou.
+- Spodní lišta: velikost ani umístění panelu se nemění; aktivní glass zvýraznění je jen malinko širší a aktivní ikonka je větší na stejném místě.
+- „O aplikaci“ je zkrácené a řada v.1.5 751–800 je seskupená do většího přehledového bloku.
+- Verze sjednocena na v.1.5 (803), cache na v1.5-803 a Supabase realtime kanál na rak-public-live-v803.
+
 ## v.1.5 (802)
 - Spodní lišta: panel je ještě průhlednější, ale velikost ani umístění panelu zůstaly zachované proti potvrzenému stavu.
 - Ikonky ve spodní liště jsou zvětšené a původní sada ikon zůstává zachovaná.

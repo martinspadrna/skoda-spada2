@@ -14120,3 +14120,81 @@ body.lowEndDevice nav.bottomNav{
     border-radius:22px !important;
   }
 }
+
+
+/* v.1.5 (803): Piškvorky nad spodním panelem + doladění aktivní položky spodní lišty. */
+:root{
+  --rak-ttt-bottom-clearance:calc(var(--rak-fixed-bottom-space, 78px) + 28px);
+}
+nav.bottomNav,
+body.tttOpen nav.bottomNav,
+body.gamesOpen nav.bottomNav{
+  background:
+    linear-gradient(180deg, rgba(34,56,142,.135), rgba(13,22,72,.075) 54%, rgba(6,12,42,.105)),
+    rgba(8,14,42,.075) !important;
+  border-color:rgba(190,220,255,.045) !important;
+  box-shadow:0 -5px 13px rgba(0,0,0,.10), inset 0 1px 0 rgba(255,255,255,.048) !important;
+}
+nav.bottomNav #bottomNavScroll > button.bottomNavBtn.active::before,
+nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn.active::before{
+  left:4px !important;
+  right:4px !important;
+  top:-11px !important;
+  bottom:-4px !important;
+  border-radius:24px !important;
+}
+nav.bottomNav #bottomNavScroll > button.bottomNavBtn.active .bottomNavIcon{
+  top:-8px !important;
+  width:clamp(46px, 10.8vw, 56px) !important;
+  height:clamp(46px, 10.8vw, 56px) !important;
+  transform:translate3d(-50%, 0, 0) !important;
+}
+nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn.active .moreIcon{
+  top:2px !important;
+  width:clamp(29px, 6.9vw, 36px) !important;
+  height:clamp(29px, 6.9vw, 36px) !important;
+  transform:translate3d(-50%, 0, 0) !important;
+}
+html body.tttOpen #tttOverlay.tttOverlay.isVisible .tttGameScreen{
+  padding-bottom:var(--rak-ttt-bottom-clearance) !important;
+  overflow:hidden !important;
+}
+html body.tttOpen #tttOverlay.tttOverlay.isVisible .tttBoardWrap{
+  top:50px !important;
+  right:8px !important;
+  bottom:var(--rak-ttt-bottom-clearance) !important;
+  left:8px !important;
+  inset:50px 8px var(--rak-ttt-bottom-clearance) 8px !important;
+  max-height:calc(100dvh - 50px - var(--rak-ttt-bottom-clearance)) !important;
+}
+html body.tttOpen #tttOverlay.tttOverlay.isVisible .tttOverlay::after,
+html body.tttOpen .tttOverlay::after{
+  height:calc(var(--rak-ttt-bottom-clearance) + 16px) !important;
+}
+html body.tttOpen #tttOverlay.tttOverlay.isVisible .tttResultCard{
+  bottom:calc(var(--rak-ttt-bottom-clearance) + 10px) !important;
+}
+@media (max-width:390px){
+  :root{
+    --rak-ttt-bottom-clearance:calc(var(--rak-fixed-bottom-space, 78px) + 34px);
+  }
+  nav.bottomNav #bottomNavScroll > button.bottomNavBtn.active::before,
+  nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn.active::before{
+    left:3px !important;
+    right:3px !important;
+    top:-10px !important;
+    bottom:-4px !important;
+  }
+  nav.bottomNav #bottomNavScroll > button.bottomNavBtn.active .bottomNavIcon{
+    top:-7px !important;
+    width:50px !important;
+    height:50px !important;
+  }
+  html body.tttOpen #tttOverlay.tttOverlay.isVisible .tttBoardWrap{
+    top:48px !important;
+    right:6px !important;
+    left:6px !important;
+    inset:48px 6px var(--rak-ttt-bottom-clearance) 6px !important;
+    max-height:calc(100dvh - 48px - var(--rak-ttt-bottom-clearance)) !important;
+  }
+}

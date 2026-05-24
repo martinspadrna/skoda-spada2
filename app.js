@@ -1,4 +1,4 @@
-// v.1.5 (802) – Spodní lišta: průhlednější panel a aktivní ikonka už neujíždí dolů.
+// v.1.5 (803) – Piškvorky nad spodním panelem a širší aktivní glass v liště.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

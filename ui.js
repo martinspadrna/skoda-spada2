@@ -4353,31 +4353,23 @@ function renderGamesAppearanceStatus() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText || 'v.1.5 (802)',
-      title: 'Přechod na řadu 1.5',
+      range: versionText || 'v.1.5 (803)',
+      title: 'Aktuální doladění',
       lines: [
-        'Korekce jsou oddělené od Výpočtu kusů; Frézky jsou označené jako nutné doladit.',
-        'Korekce Soustruhy umí spočítat osu X podle vrtáku 3 vlevo a vrtáku 7 vpravo; výsledek je zkrácený a výrazně ukazuje hlavně korekci do X.',
-        'Pexeso a Sudoku mají Top výsledky oddělené podle zvolené obtížnosti/velikosti a časy se ukazují ve vteřinách.',
-        'Sudoku má panel volby obtížnosti posunutý o kousek níž, aby byl vidět celý horní okraj panelu.',
-        'XP a ranky jsou sjednocené napříč hrami: dokončená hra má podobnou hodnotu a surové skóre už nepřestřeluje postup.',
-        'Spodní lišta je pevně ukotvená dole; panel je ještě průhlednější, ikonky jsou větší a aktivní ikonka má vyšší užší glass zvýraznění bez schování dolů.',
-
-        'Výpočet kusů má Pračku s časem výroby nastavitelným v administraci, přepočtem na dávky po 32 ks a dokončením podle rozdělané dávky.',
-        'Frézky → konicita a fhβ jsou v jedné kalkulačce; středy fhβ se dají měnit v administraci a výstup přednostně vybere jednu nejlepší korekci.',
-        'Online změny strojních nastavení se po Supabase syncu promítají rovnou do otevřené Pračky i korekcí frézky.',
-        'Spodní lišta je pevně dole jako průhlednější glass dock; původní ikonky jsou zpátky, neaktivní položky nemají tmavé podklady a aktivní položka má větší glass kapsli.',
-        'Kalkulačky mají horní nadpisové panely a mezeru pod nadpisem sjednocené přesně podle hlavního menu Kalkulačky.',
-        'Denní výzva u Bombermana má vlastní stav a ovládání, aby šlo hýbat i když běžný Bomberman fungoval samostatně.',
-        'Korekce Frézky mají otazníky s obrázkovou nápovědou pro konicitu a fhβ, včetně zvýraznění aktuální hodnoty i tlačítka Změnit.',
-        'Sudoku má větší volbu obtížnosti posunutou výš i číselník nad spodní lištou; Pexeso 4×4 drží stejnou velikost karet při otočení a herní dlaždice mají sjednocené zarovnání textu.',
-        'Korekce Soustruhy mají zkrácený výsledek polohy vrtáků v ose X, vyšší čistý panel bez doplňkového popisku a otazník s nápovědou pro vrtáky 3 a 7 z 3D protokolu.',
-        'Spodní lišta je natvrdo ukotvená u spodku obrazovky bez plavání a obsah včetně Piškvorek má pevnou rezervu nad ní.',
-        'Administrace rozpisů má stabilní lokální editor: změny se ukládají až tlačítkem, nahoře je Uložit rozpis, přehled měsíce a po kliknutí na jméno bezpečné Odebrat vybrané.',
-        'Administrace rozpisů má bezpečnější ruční editaci: klepnutí do pole už nespouští mazací dialog, kontroly se přepočítávají odlehčeně a chyba kontroly neshodí obrazovku.',
-        'Korekce Soustruhy mají nad zadáváním hodnot i otazník s obrázkovou nápovědou, kde v protokolu najít vrták 3 a 7.',
-        'Korekce mají kompaktnější centrované nadpisy; Frézky mají volbu indexu s malou mezerou jako u Výpočtu kusů a AF/AG pozadí správně modrá vlevo, zelená vpravo.',
-        'Sekce O aplikaci se průběžně drží stručná a aktualizovaná podle aktuálních buildů.'
+        'Piškvorky mají silnější spodní rezervu, aby hrací plocha a spodní políčka končily nad pevným spodním panelem.',
+        'Spodní lišta zůstává velikostí i umístěním zachovaná; aktivní glass zvýraznění je jen o trochu širší a aktivní ikonka větší na stejném místě.',
+        'Historie v O aplikaci je zkrácená a řada 1.5 je seskupená do většího bloku.'
+      ]
+    },
+    {
+      range: 'v.1.5 751–800',
+      title: 'Korekce, administrace a spodní lišta',
+      lines: [
+        'Výpočet kusů a Korekce se oddělily; přibyla Pračka, konicita/fhβ pro Frézky a osa X vrtáků 3/7 pro Soustruhy.',
+        'Frézky a Soustruhy dostaly obrázkové nápovědy, stručnější výsledky a strojní hodnoty napojené na administraci / machine_settings.',
+        'Sudoku, Pexeso, XP/ranky a Top výsledky se sjednotily podle obtížnosti, velikosti a dokončených her.',
+        'Administrace rozpisů má stabilnější lokální editor, sticky Uložit rozpis, bezpečné Odebrat vybrané a ochrany proti iOS auto-zoomu.',
+        'Spodní lišta se postupně usadila jako pevný průhledný glass dock dole; původní ikonky zůstaly, neaktivní položky jsou čistší a aktivní položka má větší glass zvýraznění.'
       ]
     },
     {
