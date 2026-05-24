@@ -4353,7 +4353,7 @@ function renderGamesAppearanceStatus() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText || 'v.1.5 (792)',
+      range: versionText || 'v.1.5 (793)',
       title: 'Přechod na řadu 1.5',
       lines: [
         'Korekce jsou oddělené od Výpočtu kusů; Frézky jsou označené jako nutné doladit.',
@@ -4371,7 +4371,7 @@ function buildAppHistoryHtml(versionText) {
         'Korekce Frézky mají otazníky s obrázkovou nápovědou pro konicitu a fhβ, včetně zvýraznění aktuální hodnoty i tlačítka Změnit.',
         'Sudoku má větší volbu obtížnosti posunutou výš i číselník nad spodní lištou; Pexeso 4×4 drží stejnou velikost karet při otočení a herní dlaždice mají sjednocené zarovnání textu.',
         'Korekce Soustruhy mají zkrácený výsledek polohy vrtáků v ose X, vyšší čistý panel bez doplňkového popisku a otazník s nápovědou pro vrtáky 3 a 7 z 3D protokolu.',
-        'Spodní lišta je pevně ukotvená dole napříč aplikací a obsah včetně Piškvorek se drží bezpečně nad ní.',
+        'Spodní lišta je natvrdo ukotvená u spodku obrazovky bez plavání a obsah včetně Piškvorek má pevnou rezervu nad ní.',
         'Administrace rozpisů má stabilní lokální editor: změny se ukládají až tlačítkem, nahoře je Uložit rozpis, přehled měsíce a po kliknutí na jméno bezpečné Odebrat vybrané.',
         'Administrace rozpisů má bezpečnější ruční editaci: klepnutí do pole už nespouští mazací dialog, kontroly se přepočítávají odlehčeně a chyba kontroly neshodí obrazovku.',
         'Korekce Soustruhy mají nad zadáváním hodnot i otazník s obrázkovou nápovědou, kde v protokolu najít vrták 3 a 7.',

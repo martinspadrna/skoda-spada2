@@ -1,3 +1,9 @@
+## v.1.5 (793)
+- Spodní lišta je upravená natvrdo jako pevný prvek u úplného spodku obrazovky, bez plavání a bez zbytečného odsazení odspodu.
+- Odstraněné je průběžné přepočítávání pozice lišty při `visualViewport` scrollu, které mohlo na mobilech působit jako poskakování lišty.
+- Obsah aplikace dostává pevnou spodní rezervu nad lištou, aby pod ni nezalézaly stránky ani hry; Piškvorky mají znovu zajištěný spodní prostor pro hrací pole.
+- Verze sjednocena na v.1.5 (793), cache na v1.5-793 a Supabase realtime kanál na rak-public-live-v793.
+
 ## v.1.5 (792)
 - Spodní lišta je nově globálně pevně ukotvená ke spodku obrazovky přes celou aplikaci, s podporou safe-area pro různé iPhony a Android/Samsung telefony.
 - Obsah stránek dostává dynamickou spodní rezervu podle skutečné výšky lišty, aby neležel pod navigací.
