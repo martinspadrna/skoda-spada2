@@ -1,3 +1,17 @@
+## v.1.5 (792)
+- Spodní lišta je nově globálně pevně ukotvená ke spodku obrazovky přes celou aplikaci, s podporou safe-area pro různé iPhony a Android/Samsung telefony.
+- Obsah stránek dostává dynamickou spodní rezervu podle skutečné výšky lišty, aby neležel pod navigací.
+- Piškvorky mají přepočítaný spodní prostor hrací plochy podle skutečné spodní lišty, aby spodní řádek/políčko nebylo schované za lištou.
+- Přidaný runtime měřič spodní lišty, který aktualizuje `--bottom-nav-h` a `--rak-fixed-bottom-space` po resize/orientaci/visualViewport změně.
+- Verze sjednocena na v.1.5 (792), cache na v1.5-792 a Supabase realtime kanál na rak-public-live-v792.
+
+## v.1.5 (791)
+- Administrace → Rozpisy: po kliknutí na obsazené jméno se ve sticky horní liště zobrazí bezpečné tlačítko „Odebrat vybrané“, které smaže vybranou buňku bez plovoucí bubliny nad tabulkou.
+- Do ruční editace rozpisu je přidaný kompaktní „Přehled měsíce“ jako statická mini tabulka pro rychlou orientaci, aby šlo vidět větší část rozpisu najednou.
+- Editor dál zůstává lokální: změny se do aplikace a Supabase ukládají až po kliknutí na „Uložit rozpis“.
+- Stabilizační úpravy z v.1.5 (790) proti iOS auto-zoomu a rychlému scrollu zůstávají zachované.
+- Verze sjednocena na v.1.5 (791), cache na v1.5-791 a Supabase realtime kanál na rak-public-live-v791.
+
 ## v.1.5 (790)
 - Administrace → Rozpisy: ruční editor se chová víc jako lokální rozepsaná tabulka; změny se do Supabase posílají až po kliknutí na Uložit rozpis.
 - Přidaná pevná/sticky akční lišta přímo v editoru rozpisů, aby bylo tlačítko Uložit rozpis pořád po ruce i při dlouhé tabulce.

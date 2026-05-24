@@ -12260,3 +12260,199 @@ body.ladaMode #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adm
   backdrop-filter:none !important;
   -webkit-backdrop-filter:none !important;
 }
+
+
+/* v.1.5 (791): Administrace rozpisů – přehled měsíce a bezpečné Odebrat vybrané. */
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adminRotationSelectedRemoveBtn{
+  flex:0 0 auto !important;
+  min-height:34px !important;
+  padding:0 10px !important;
+  margin:0 !important;
+  border:1px solid rgba(255,110,130,.42) !important;
+  background:linear-gradient(135deg,rgba(255,75,105,.88),rgba(255,145,70,.76)) !important;
+  color:#fff !important;
+  font-size:12px !important;
+  font-weight:950 !important;
+  box-shadow:0 10px 22px rgba(255,80,110,.16) !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adminRotationSelectedRemoveBtn[hidden]{
+  display:none !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adminRotationCompactOverview{
+  margin:8px 0 10px !important;
+  border-radius:18px !important;
+  border:1px solid rgba(255,255,255,.10) !important;
+  background:rgba(255,255,255,.045) !important;
+  overflow:hidden !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adminRotationCompactOverview > summary{
+  min-height:38px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  padding:0 12px !important;
+  color:rgba(239,255,248,.94) !important;
+  font-size:13px !important;
+  font-weight:950 !important;
+  cursor:pointer !important;
+  list-style:none !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adminRotationCompactOverview > summary::-webkit-details-marker{display:none !important;}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adminRotationCompactOverview > summary::after{content:'⌄';font-size:16px;opacity:.82;}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adminRotationCompactOverview:not([open]) > summary::after{transform:rotate(-90deg);}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adminRotationCompactHint{
+  padding:0 12px 8px !important;
+  color:rgba(235,255,245,.62) !important;
+  font-size:10px !important;
+  line-height:1.25 !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adminRotationMiniSection{
+  padding:0 8px 8px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adminRotationMiniTitle{
+  padding:4px 2px 5px !important;
+  color:rgba(235,255,245,.82) !important;
+  font-size:11px !important;
+  font-weight:950 !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adminRotationMiniScroll{
+  overflow:auto !important;
+  -webkit-overflow-scrolling:touch !important;
+  border-radius:12px !important;
+  border:1px solid rgba(255,255,255,.08) !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adminRotationMiniTable{
+  width:100% !important;
+  table-layout:fixed !important;
+  border-collapse:separate !important;
+  border-spacing:0 !important;
+  min-width:0 !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adminRotationMiniTable th,
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adminRotationMiniTable td{
+  padding:2px 1px !important;
+  border-right:1px solid rgba(255,255,255,.05) !important;
+  border-bottom:1px solid rgba(255,255,255,.05) !important;
+  font-size:8px !important;
+  line-height:1.05 !important;
+  text-align:center !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  color:rgba(240,255,248,.88) !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adminRotationMiniTable th:first-child,
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adminRotationMiniTable td:first-child{
+  width:34px !important;
+  color:rgba(179,255,210,.9) !important;
+  font-weight:900 !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuInlineFieldWrapCanRemove{
+  position:relative !important;
+}
+
+/* v.1.5 (792): Globální spodní lišta pevně ukotvená dole + obsah vždy nad ní. */
+:root{
+  --bottom-nav-h:64px;
+  --rak-fixed-bottom-space:calc(var(--bottom-nav-h, 64px) + env(safe-area-inset-bottom) + 12px);
+}
+html,
+body{
+  min-height:100dvh !important;
+  overflow-x:hidden !important;
+}
+body{
+  padding-bottom:var(--rak-fixed-bottom-space) !important;
+  scroll-padding-bottom:var(--rak-fixed-bottom-space) !important;
+}
+.page,
+.page.active{
+  box-sizing:border-box !important;
+  scroll-margin-bottom:var(--rak-fixed-bottom-space) !important;
+}
+.page.active:not(#games){
+  padding-bottom:var(--rak-fixed-bottom-space) !important;
+}
+.bottomNav{
+  position:fixed !important;
+  z-index:12050 !important;
+  left:50% !important;
+  right:auto !important;
+  top:auto !important;
+  bottom:0 !important;
+  width:min(760px, calc(100vw - 8px - env(safe-area-inset-left) - env(safe-area-inset-right))) !important;
+  max-width:none !important;
+  margin:0 !important;
+  transform:translate3d(-50%,0,0) !important;
+  padding:4px 5px max(5px, env(safe-area-inset-bottom)) !important;
+  border-radius:18px 18px 0 0 !important;
+  box-sizing:border-box !important;
+  overflow:visible !important;
+  contain:layout paint !important;
+  will-change:transform !important;
+  touch-action:manipulation !important;
+}
+@supports (width:100dvw){
+  .bottomNav{
+    width:min(760px, calc(100dvw - 8px - env(safe-area-inset-left) - env(safe-area-inset-right))) !important;
+  }
+}
+.bottomNavScroll,
+.bottomNavInner{
+  width:100% !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  overflow:visible !important;
+  justify-content:center !important;
+  align-items:center !important;
+}
+.bottomNavBtn:not(.bottomNavMenuBtn){
+  min-height:46px !important;
+  max-height:54px !important;
+}
+.bottomNavMenuBtn{
+  min-height:46px !important;
+  max-height:54px !important;
+}
+@media (max-width:390px){
+  .bottomNav{
+    bottom:0 !important;
+    width:min(760px, calc(100vw - 6px - env(safe-area-inset-left) - env(safe-area-inset-right))) !important;
+    padding:3px 4px max(5px, env(safe-area-inset-bottom)) !important;
+  }
+  @supports (width:100dvw){
+    .bottomNav{width:min(760px, calc(100dvw - 6px - env(safe-area-inset-left) - env(safe-area-inset-right))) !important;}
+  }
+  .bottomNavBtn:not(.bottomNavMenuBtn),
+  .bottomNavMenuBtn{min-height:44px !important;}
+}
+body.tttOpen .bottomNav,
+body.gamesOpen .bottomNav{
+  bottom:0 !important;
+  z-index:12050 !important;
+}
+html body.tttOpen #tttOverlay.tttOverlay.isVisible .tttGameScreen{
+  padding-bottom:calc(var(--rak-fixed-bottom-space, 84px) + 8px) !important;
+  overflow:hidden !important;
+}
+html body.tttOpen #tttOverlay.tttOverlay.isVisible .tttBoardWrap{
+  top:56px !important;
+  right:10px !important;
+  bottom:calc(var(--rak-fixed-bottom-space, 84px) + 10px) !important;
+  left:10px !important;
+  inset:56px 10px calc(var(--rak-fixed-bottom-space, 84px) + 10px) 10px !important;
+  max-height:calc(100dvh - 56px - var(--rak-fixed-bottom-space, 84px) - 10px) !important;
+}
+html body.tttOpen #tttOverlay.tttOverlay.isVisible .tttOverlay::after,
+html body.tttOpen .tttOverlay::after{
+  height:calc(var(--rak-fixed-bottom-space, 84px) + 18px) !important;
+}
+html body.tttOpen #tttOverlay.tttOverlay.isVisible .tttResultCard{
+  bottom:auto !important;
+}
+body.gamesOpen #games,
+body.gamesOpen #games .gamesStage,
+body.gamesOpen #games .arcadeShellRoot{
+  padding-bottom:var(--rak-fixed-bottom-space, 84px) !important;
+}
+

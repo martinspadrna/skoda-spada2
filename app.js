@@ -1,4 +1,4 @@
-// v.1.5 (790) – Administrace rozpisů: kompaktní lokální editor, sticky Uložit a stabilnější scroll.
+// v.1.5 (792) – Globální spodní lišta pevně dole + bezpečný prostor nad ní.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;
@@ -335,6 +335,83 @@ function runPhaseOneFinalAudit() {
   }
   return report;
 }
+
+function applyRakFixedBottomNavMetrics() {
+  if (window.__rakFixedBottomNavMetricsBound) {
+    if (typeof window.__rakApplyFixedBottomNavMetricsNow === 'function') window.__rakApplyFixedBottomNavMetricsNow();
+    return;
+  }
+  window.__rakFixedBottomNavMetricsBound = true;
+
+  let pending = false;
+  const root = document.documentElement;
+  const getViewportHeight = () => {
+    try {
+      if (window.visualViewport && Number.isFinite(window.visualViewport.height)) return window.visualViewport.height;
+    } catch (err) {}
+    return window.innerHeight || document.documentElement.clientHeight || 0;
+  };
+  const apply = () => {
+    pending = false;
+    try {
+      const nav = document.querySelector('.bottomNav');
+      if (!nav || !nav.getBoundingClientRect || !root || !root.style) return false;
+      const rect = nav.getBoundingClientRect();
+      const viewportH = getViewportHeight();
+      const navHeight = Math.max(54, Math.ceil(rect.height || 0));
+      const occupiedFromBottom = viewportH ? Math.max(navHeight, Math.ceil(viewportH - rect.top)) : navHeight;
+      const contentSpace = Math.max(74, occupiedFromBottom + 10);
+      root.style.setProperty('--bottom-nav-h', navHeight + 'px');
+      root.style.setProperty('--rak-fixed-bottom-space', contentSpace + 'px');
+      root.dataset.rakBottomNavFixed = '1';
+      if (document.body && document.body.classList && document.body.classList.contains('tttOpen') && typeof scheduleTttLayout === 'function') {
+        try { scheduleTttLayout(); } catch (err) {}
+      }
+      return true;
+    } catch (err) {
+      return false;
+    }
+  };
+  const schedule = () => {
+    if (pending) return;
+    pending = true;
+    requestAnimationFrame(apply);
+  };
+  window.__rakApplyFixedBottomNavMetricsNow = apply;
+  const bind = (target, type, handler, opts) => {
+    if (!target || !target.addEventListener) return;
+    try {
+      if (typeof registerListener === 'function') registerListener(target, type, handler, opts || { passive: true });
+      else target.addEventListener(type, handler, opts || { passive: true });
+    } catch (err) {}
+  };
+
+  const run = () => {
+    apply();
+    requestAnimationFrame(apply);
+    setTimeout(apply, 80);
+    setTimeout(apply, 360);
+  };
+  if (document.readyState === 'loading') bind(document, 'DOMContentLoaded', run, { once: true });
+  else run();
+  bind(window, 'resize', schedule, { passive: true });
+  bind(window, 'orientationchange', () => setTimeout(run, 120), { passive: true });
+  try {
+    if (window.visualViewport) {
+      bind(window.visualViewport, 'resize', schedule, { passive: true });
+      bind(window.visualViewport, 'scroll', schedule, { passive: true });
+    }
+  } catch (err) {}
+  try {
+    const nav = document.querySelector('.bottomNav');
+    if (nav && typeof ResizeObserver !== 'undefined') {
+      const observer = new ResizeObserver(schedule);
+      observer.observe(nav);
+      window.__rakBottomNavResizeObserver = observer;
+    }
+  } catch (err) {}
+}
+
 
 function runPhaseTwoCalcScopeAudit() {
   const calcPageIds = ['soustruhy', 'frezky', 'brusy', 'pracka'];
@@ -2231,6 +2308,7 @@ function runPhaseTenFinalStabilizationAudit() {
   installPwaAndConnectivityHooks();
   installBottomNavBindings();
   try { applyBottomNavMoreHardFix(); } catch (err) { console.warn('Bottom nav Více hard-fix failed', err); }
+  try { applyRakFixedBottomNavMetrics(); } catch (err) { console.warn('Bottom nav fixed metrics failed', err); }
   installDelegatedAppActions();
   try { runPhaseOneFinalAudit(); } catch (err) { console.warn('Phase 1 final audit failed', err); }
   try { runPhaseTwoCalcScopeAudit(); } catch (err) { console.warn('Phase 2 calc scope audit failed', err); }

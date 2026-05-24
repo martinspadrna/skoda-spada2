@@ -4353,7 +4353,7 @@ function renderGamesAppearanceStatus() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText || 'v.1.5 (790)',
+      range: versionText || 'v.1.5 (792)',
       title: 'Přechod na řadu 1.5',
       lines: [
         'Korekce jsou oddělené od Výpočtu kusů; Frézky jsou označené jako nutné doladit.',
@@ -4371,7 +4371,8 @@ function buildAppHistoryHtml(versionText) {
         'Korekce Frézky mají otazníky s obrázkovou nápovědou pro konicitu a fhβ, včetně zvýraznění aktuální hodnoty i tlačítka Změnit.',
         'Sudoku má větší volbu obtížnosti posunutou výš i číselník nad spodní lištou; Pexeso 4×4 drží stejnou velikost karet při otočení a herní dlaždice mají sjednocené zarovnání textu.',
         'Korekce Soustruhy mají zkrácený výsledek polohy vrtáků v ose X, vyšší čistý panel bez doplňkového popisku a otazník s nápovědou pro vrtáky 3 a 7 z 3D protokolu.',
-        'Administrace rozpisů má stabilnější ruční editaci: změny se chovají jako lokální rozepsaná tabulka, Uložit rozpis je přímo u editoru a rychlý scroll už nevynucuje těžké našeptávání.',
+        'Spodní lišta je pevně ukotvená dole napříč aplikací a obsah včetně Piškvorek se drží bezpečně nad ní.',
+        'Administrace rozpisů má stabilní lokální editor: změny se ukládají až tlačítkem, nahoře je Uložit rozpis, přehled měsíce a po kliknutí na jméno bezpečné Odebrat vybrané.',
         'Administrace rozpisů má bezpečnější ruční editaci: klepnutí do pole už nespouští mazací dialog, kontroly se přepočítávají odlehčeně a chyba kontroly neshodí obrazovku.',
         'Korekce Soustruhy mají nad zadáváním hodnot i otazník s obrázkovou nápovědou, kde v protokolu najít vrták 3 a 7.',
         'Korekce mají kompaktnější centrované nadpisy; Frézky mají volbu indexu s malou mezerou jako u Výpočtu kusů a AF/AG pozadí správně modrá vlevo, zelená vpravo.',
@@ -4529,13 +4530,20 @@ function renderAdminInlineFieldHtml(fieldAttr, fieldName, value, placeholder, ti
   const safeValue = String(value || '');
   const classes = ['appMenuInlineFieldWrap'];
   if (tiny) classes.push('appMenuInlineFieldWrapTiny');
-  const isDateField = String(fieldName || '') === 'date';
+  const fieldKey = String(fieldName || '');
+  const attrKey = String(fieldAttr || '');
+  const isDateField = fieldKey === 'date';
+  const canRemove = !isDateField && (
+    (attrKey === 'data-rot-field' && fieldKey.indexOf('cell-') === 0) ||
+    (attrKey === 'data-note-field' && fieldKey === 'person')
+  );
+  if (canRemove) classes.push('appMenuInlineFieldWrapCanRemove');
   const inputAttrs = [
     'class="appMenuInlineInput' + (tiny ? ' appMenuInlineInputTiny' : '') + '"',
     fieldAttr ? fieldAttr + '="' + escapeHtml(fieldName) + '"' : '',
     'value="' + escapeHtml(safeValue) + '"',
     'placeholder="' + escapeHtml(placeholder || '') + '"',
-    'title="' + escapeHtml(isDateField ? 'Datum upravíš ručně.' : 'Uprav text ručně. Pro vymazání smaž hodnotu nebo napiš odebrat.') + '"',
+    'title="' + escapeHtml(isDateField ? 'Datum upravíš ručně.' : 'Uprav text ručně. Po kliknutí na obsazené jméno se nahoře ukáže Odebrat vybrané.') + '"',
     'autocomplete="off"',
     'autocorrect="off"',
     'autocapitalize="off"',
@@ -5092,6 +5100,51 @@ function buildAdminMachineSettingsTableHtml() {
   ].join('');
 }
 
+
+function adminShortRotationName(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  if (adminRotationIsRemoveValue(raw)) return '';
+  const parts = raw.split(/\s+/).filter(Boolean);
+  const base = parts.length > 1 ? parts[parts.length - 1] : parts[0];
+  const clean = String(base || raw).replace(/[^0-9A-Za-zÁ-Žá-ž]/g, '');
+  return clean ? clean.slice(0, 6) : raw.slice(0, 6);
+}
+
+function buildAdminRotationCompactOverviewHtml(monthKey, hardRows, softRows, hardMachines, softMachines) {
+  const renderSection = (title, rows, machines) => {
+    const safeRows = Array.isArray(rows) ? rows : [];
+    const safeMachines = Array.isArray(machines) ? machines : [];
+    if (!safeRows.length) return '';
+    const head = '<tr><th>Den</th>' + safeMachines.map((m) => '<th>' + escapeHtml(String(m || '').replace(/^T/, '')) + '</th>').join('') + '</tr>';
+    const body = safeRows.map((row) => {
+      const date = adminRotationDateLabel(row && row.date ? row.date : '') || String(row && row.date ? row.date : '');
+      const cells = Array.isArray(row && row.cells) ? row.cells : [];
+      return '<tr><td>' + escapeHtml(String(date || '')) + '</td>' + safeMachines.map((_, idx) => {
+        const raw = String(cells[idx] || '').trim();
+        const shortName = adminShortRotationName(raw);
+        return '<td data-full-name="' + escapeHtml(raw) + '">' + escapeHtml(shortName || '·') + '</td>';
+      }).join('') + '</tr>';
+    }).join('');
+    return [
+      '<div class="adminRotationMiniSection">',
+      '  <div class="adminRotationMiniTitle">' + escapeHtml(title) + '</div>',
+      '  <div class="adminRotationMiniScroll">',
+      '    <table class="adminRotationMiniTable"><thead>' + head + '</thead><tbody>' + body + '</tbody></table>',
+      '  </div>',
+      '</div>'
+    ].join('');
+  };
+  return [
+    '<details class="adminRotationCompactOverview" open>',
+    '  <summary>Přehled měsíce</summary>',
+    '  <div class="adminRotationCompactHint">Mini přehled je jen pro orientaci. Upravuje se v tabulkách níž.</div>',
+    renderSection('Tvrdota', hardRows, hardMachines),
+    renderSection('Měkota', softRows, softMachines),
+    '</details>'
+  ].join('');
+}
+
 function buildAdminRotationTableHtml(monthKey) {
 
   const month = app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
@@ -5124,8 +5177,10 @@ function buildAdminRotationTableHtml(monthKey) {
     '  <div class="appMenuText">Stejný rozpis, jen editovatelný. Změny zůstávají rozepsané lokálně a do Supabase jdou až po kliknutí na Uložit rozpis.</div>',
     '  <div class="adminRotationSaveDock">',
     '    <button type="button" class="appMenuAction isActive adminRotationSaveDockBtn" data-admin-action="save-rotation">Uložit rozpis</button>',
+    '    <button type="button" class="appMenuAction adminRotationSelectedRemoveBtn" data-admin-selected-remove hidden>Odebrat vybrané</button>',
     '    <span id="adminRotationDraftStatus" class="adminRotationDraftStatus">Rozepsané změny se uloží až tlačítkem.</span>',
     '  </div>',
+    buildAdminRotationCompactOverviewHtml(monthKey, hardRows, softRows, hardMachines, softMachines),
     '  <div class="appMenuFreeNamesBox" id="adminRotationFreeNamesSummary">',
     '    <div class="appMenuFreeNamesTitle">Kontrola měsíce</div>',
     '    <div class="appMenuFreeNamesText">Vyber měsíc a hned uvidíš, kdo v něm není zapsaný ani jednou a na kterých dnech ještě někdo chybí.</div>',
@@ -5761,6 +5816,64 @@ async function handleBugReportAction(action) {
 }
 
 
+
+function adminGetSelectedRemoveButton() {
+  const body = document.getElementById('appMenuBody');
+  return body ? body.querySelector('[data-admin-selected-remove]') : null;
+}
+
+function adminHideRotationSelectedRemove() {
+  const btn = adminGetSelectedRemoveButton();
+  if (btn) {
+    btn.hidden = true;
+    btn.dataset.targetReady = '';
+  }
+  window.__rakAdminRotationSelectedInput = null;
+}
+
+function adminShowRotationSelectedRemove(input) {
+  try {
+    const body = document.getElementById('appMenuBody');
+    const btn = adminGetSelectedRemoveButton();
+    if (!body || body.dataset.adminView !== 'rotation' || !btn || !input || !body.contains(input)) {
+      adminHideRotationSelectedRemove();
+      return;
+    }
+    if (!input.matches('[data-rot-field^="cell-"], [data-note-field="person"]')) {
+      adminHideRotationSelectedRemove();
+      return;
+    }
+    const value = String(input.value || '').trim();
+    if (!value || adminRotationIsRemoveValue(value)) {
+      adminHideRotationSelectedRemove();
+      return;
+    }
+    window.__rakAdminRotationSelectedInput = input;
+    btn.hidden = false;
+    btn.dataset.targetReady = '1';
+    btn.textContent = 'Odebrat vybrané';
+    const status = document.getElementById('adminRotationDraftStatus');
+    if (status) status.textContent = 'Vybrané: ' + value + ' · změny se uloží až tlačítkem.';
+  } catch (err) {
+    console.warn('Admin selected remove failed', err);
+  }
+}
+
+function adminRemoveSelectedRotationName() {
+  const input = window.__rakAdminRotationSelectedInput;
+  if (!input || !input.isConnected) {
+    adminHideRotationSelectedRemove();
+    return;
+  }
+  input.value = '';
+  input.dispatchEvent(new Event('input', { bubbles: true }));
+  input.dispatchEvent(new Event('change', { bubbles: true }));
+  try { input.focus({ preventScroll: true }); } catch (err) { try { input.focus(); } catch (err2) {} }
+  adminHideRotationSelectedRemove();
+  const status = document.getElementById('adminRotationDraftStatus');
+  if (status) status.textContent = 'Jméno odebrané z rozepsané tabulky. Nezapomeň dát Uložit rozpis.';
+}
+
 function adminRotationIsRemoveValue(value) {
   const v = String(value || '').trim().toLowerCase();
   return v === 'dát pryč' || v === 'dat pryc' || v === 'pryč' || v === 'pryc' || v === 'odebrat' || v === 'remove';
@@ -5854,6 +5967,7 @@ function adminBindRotationZoomGuard() {
     if (!isAdminRotation()) return;
     adminSetRotationViewportLock(true);
     try { adminCloseRotationQuickRemove(); } catch (err) {}
+    try { adminHideRotationSelectedRemove(); } catch (err) {}
     if (event && event.touches && event.touches.length < 2) return;
     try { event.preventDefault(); } catch (err) {}
   };
@@ -5867,6 +5981,7 @@ function adminBindRotationZoomGuard() {
     if (!isAdminRotation()) return;
     adminSetRotationViewportLock(true);
     try { adminCloseRotationQuickRemove(); } catch (err) {}
+    try { adminHideRotationSelectedRemove(); } catch (err) {}
     try {
       const active = document.activeElement;
       if (active && isAdminRotationField(active) && window.visualViewport && Number(window.visualViewport.scale || 1) > 1.01) {
@@ -5925,9 +6040,19 @@ function bindAppMenuHandlers(body) {
   body.dataset.menuHandlersBound = '1';
   adminBindRotationZoomGuard();
 
+  body.addEventListener('focusin', (event) => {
+    const target = event.target;
+    if (target && target.matches && target.matches('[data-rot-field^="cell-"], [data-note-field="person"]')) adminShowRotationSelectedRemove(target);
+    else adminHideRotationSelectedRemove();
+  }, true);
+  body.addEventListener('input', (event) => {
+    const target = event.target;
+    if (target && target.matches && target.matches('[data-rot-field^="cell-"], [data-note-field="person"]')) adminShowRotationSelectedRemove(target);
+  }, true);
+
   body.addEventListener('click', async (event) => {
     const target = event.target && typeof event.target.closest === 'function'
-      ? event.target.closest('[data-menu-action], [data-admin-action], [data-admin-month-key], [data-admin-year-key], [data-admin-clear-field], [data-ui-pref], [data-ui-reset], [data-menu-back], [data-rot-field], [data-note-field]')
+      ? event.target.closest('[data-menu-action], [data-admin-action], [data-admin-month-key], [data-admin-year-key], [data-admin-clear-field], [data-admin-selected-remove], [data-ui-pref], [data-ui-reset], [data-menu-back], [data-rot-field], [data-note-field]')
       : null;
     if (!target || !body.contains(target)) return;
 
@@ -5942,13 +6067,20 @@ function bindAppMenuHandlers(body) {
     const adminMonthKey = target.getAttribute('data-admin-month-key');
 
     try {
+      if (target.hasAttribute('data-admin-selected-remove')) {
+        event.preventDefault();
+        adminRemoveSelectedRotationName();
+        return;
+      }
+
       if (menuBack) {
         openAppMenu('menu');
         return;
       }
 
       if (target.matches && target.matches('[data-rot-field], [data-note-field]')) {
-        adminScheduleRotationQuickRemove(target);
+        if (target.matches('[data-rot-field^="cell-"], [data-note-field="person"]')) adminShowRotationSelectedRemove(target);
+        else adminHideRotationSelectedRemove();
         return;
       }
 
