@@ -4364,7 +4364,7 @@ function renderGamesAppearanceStatus() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText || 'v.1.5 (819)',
+      range: versionText || 'v.1.5 (813)',
       title: 'Aktuální stabilizace',
       lines: [
         'Opravený přehled otevírací doby jídelny: nedělní přesčas nově ukazuje i 21:30–23:30 přímo v modalu/přehledu.',

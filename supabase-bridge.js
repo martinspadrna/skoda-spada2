@@ -213,7 +213,7 @@
     { table: 'gomoku_wins', realtime: true, queueType: 'gomoku_win', access: 'anon SELECT/INSERT/UPDATE', note: 'výhry piškvorek / legacy leaderboard' }
   ];
 
-  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (819)';
+  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (813)';
   const SUPABASE_POLICY_AUDIT_SNAPSHOT_AT = '2026-05-24';
   const SUPABASE_POLICY_HARDENING_PHASE = {
     current: 'Fáze 2E-B – game_stats RPC cesta má runtime smoke metriky; v813 jen opravuje přehled jídelny, přímé INSERT/UPDATE fallbacky zatím zůstávají do mobilního ověření',
@@ -273,7 +273,7 @@
   ];
 
   const SUPABASE_RPC_HARDENING_STATUS = {
-    version: 'v.1.5 (819)',
+    version: 'v.1.5 (813)',
     phase: '2E-B',
     rpcPreferred: true,
     migrationApplied: true,
@@ -426,7 +426,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v819');
+      const channel = client.channel('rak-public-live-v813');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });

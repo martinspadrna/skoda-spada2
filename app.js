@@ -1,4 +1,4 @@
-// v.1.5 (819) – Vercel/GitHub deploy-clean rollback na strukturu funkční v.1.5 (813); zachovaná oprava jídelny 21:30 v nedělním přesčasu.
+// v.1.5 (813) – Oprava přehledu otevírací doby jídelny: nedělní přesčasové datum používá speciální okno 21:30–23:30 i v modalu/přehledu.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

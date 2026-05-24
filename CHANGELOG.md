@@ -1,10 +1,9 @@
-## v.1.5 (819)
-- Vercel/GitHub deploy-clean hotfix: build je znovu postavený z poslední verze, která na Vercelu prošla, tedy z v.1.5 (813).
-- Odstraněné jsou všechny pozdější Vercel experimenty a pomocné konfigurační soubory z v.1.5 (815–818): žádné `package.json`, `vercel.json`, `.vercelignore`, `public/`, `scripts/` ani README deploy soubor.
-- Struktura ZIPu je znovu stejná jako u funkční v.1.5 (813): v kořeni jsou zdrojové soubory a jediná složka je `assets/` s obrázky.
-- Zachovaná je oprava jídelny z v.1.5 (813): u nedělního přesčasu se v přehledu jídelny ukazuje večerní okno 21:30–23:30.
-- Bezpečnostní Supabase fáze 2E-D je dočasně pozastavená; build v.1.5 (819) neobsahuje změny z v.1.5 (814–818), aby se ověřil čistý deploy.
-- Verze sjednocena na v.1.5 (819), cache na v1.5-819 a Supabase realtime kanál na rak-public-live-v819.
+## v.1.5 (813)
+- Opravený přehled otevírací doby jídelny pro nedělní přesčas: pokud je aktuální týden v seznamu mimořádných nedělních nočních směn, neděle v modalu/přehledu ukazuje i 21:30–23:30.
+- Kořenová příčina: stav otevřeno/zavřeno používal speciální nedělní override, ale přehled otevírací doby skládal řádky jen ze statického týdenního rozpisu `location.days`, takže u jídelny chybělo přesčasové okno.
+- Kantýna beze změny, protože její nedělní přehled už večerní okno obsahoval.
+- Verze sjednocena na v.1.5 (813), cache na v1.5-813 a Supabase realtime kanál na rak-public-live-v813.
+- Aktuální fáze: 2E-B/2E-C pozastavená kvůli funkční opravě otevírací doby. Následuje návrat na 2E-C – po mobilním ověření zužovat přímé INSERT/UPDATE policies u `game_stats`.
 
 ## v.1.5 (812)
 - Fáze 2E-B Supabase hardening: game_stats RPC cesta má runtime smoke metriky pro pokusy, úspěšné zápisy a fallbacky.
