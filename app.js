@@ -1,4 +1,4 @@
-// v.1.5 (800) – Spodní lišta: větší ikonky, průhlednější panel a vyšší centrovaná aktivní glass kapsle.
+// v.1.5 (801) – Spodní lišta: větší ikonky a oprava aktivní ikonky ve glass výběru.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

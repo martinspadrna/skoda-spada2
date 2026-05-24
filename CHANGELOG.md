@@ -1,3 +1,9 @@
+## v.1.5 (801)
+- Spodní lišta: panel zůstává stejně velký a na stejném místě, jen je ještě průhlednější.
+- Ikonky jsou větší; aktivní ikonka je větší také, ale už nemá ujíždět dolů mimo panel.
+- Aktivní glass zvýraznění je roztažené víc do krajů položky a skoro přes celou výšku panelu.
+- Verze sjednocena na v.1.5 (801), cache na v1.5-801 a Supabase realtime kanál na rak-public-live-v801.
+
 ## v.1.5 (800)
 - Spodní lišta: velikost ani umístění panelu se nemění proti potvrzené v.1.5 (799).
 - Panel je vizuálně ještě průhlednější, aby víc zapadl do pozadí aplikace.
