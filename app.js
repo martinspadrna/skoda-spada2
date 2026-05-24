@@ -1,4 +1,4 @@
-// v.1.5 (821) – Fáze 2E-E: RPC pro profilový vzhled (__profile_ui) + příprava na budoucí zúžení game_stats INSERT/UPDATE.
+// v.1.5 (825) – Fáze 2E-I: game_invites/game_sessions RPC scaffold; online session zapisují RPC-first s přímým fallbackem.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

@@ -1,11 +1,19 @@
-## v.1.5 (821)
-- Fáze 2E-E Supabase hardening: do DB byla přidaná a ověřená RPC funkce `rak_save_game_ui_settings` pro profilový vzhled uložený v `game_stats` jako `__profile_ui`.
-- Aplikace ukládá theme/pozadí herního profilu RPC-first a přímý INSERT/UPDATE fallback zatím nechává kvůli kompatibilitě.
-- Diagnostika nově ukazuje i perzistentní profile UI RPC smoke metriky: pokusy, úspěchy, fallbacky a připravenost na další utažení policies.
-- Přímé INSERT/UPDATE policies u `game_stats` zatím nejsou zúžené, dokud nebude potvrzené ukládání her i profilového vzhledu přes RPC bez fallbacků.
-- Přidaný kontrolní SQL soubor `supabase_rpc_hardening_v821.sql`.
-- Verze sjednocena na v.1.5 (821), cache na v1.5-821 a Supabase realtime kanál na rak-public-live-v821.
-- Aktuální fáze: 2E-E hotovo. Následuje 2E-F – po mobilním ověření game_stats i profile UI RPC začít opatrně zužovat `game_stats` INSERT/UPDATE policies.
+## v.1.5 (825)
+- Fáze 2E-I Supabase hardening: přidané RPC scaffold cesty pro `game_invites` a `game_sessions`.
+- Appka nově u vytvoření online pozvánky a ukládání online session zkouší RPC-first cestu a až při selhání ponechává původní přímý fallback.
+- Přidané perzistentní smoke metriky pro online session/pozvánky, aby bylo vidět, jestli RPC opravdu funguje bez fallbacků.
+- Přímé INSERT/UPDATE policies u `game_sessions` a `game_invites` zatím zůstávají zapnuté kvůli kompatibilitě online her.
+- Přidaný kontrolní SQL soubor `supabase_rpc_hardening_v825.sql`.
+- Verze sjednocena na v.1.5 (825), cache na v1.5-825 a Supabase realtime kanál na rak-public-live-v825.
+- Aktuální fáze: 2E-I hotovo. Následuje 2E-J – po mobilním ověření online Piškvorek/pozvánek bez fallbacků začít opatrně omezovat přímé INSERT/UPDATE u `game_sessions` a `game_invites`.
+
+## v.1.5 (824)
+- Fáze 2E-H Supabase hardening: přímé veřejné INSERT/UPDATE cesty u `game_stats` jsou nově omezené restriktivními policies `game_stats_insert_rpc_only_v824` a `game_stats_update_rpc_only_v824`.
+- Změna je nedestruktivní: data se nemažou, public SELECT zůstává kvůli Top 5/profilům a zápisy mají jít přes RPC `rak_record_game_stat_delta` a `rak_save_game_ui_settings`.
+- Šlo se bez `DROP POLICY`, protože ten krok nástroj dřív blokoval; staré permisivní policies fyzicky zůstávají, ale restriktivní policies blokují přímý public write.
+- Přidaný kontrolní SQL soubor `supabase_rpc_hardening_v824.sql`, který ověřuje RPC funkce, restriktivní policies a obsahuje rollback poznámku.
+- Verze sjednocena na v.1.5 (824), cache na v1.5-824 a Supabase realtime kanál na rak-public-live-v824.
+- Aktuální fáze: 2E-H hotovo. Následuje 2E-I – po mobilním ověření bez fallbacků připravit podobné RPC/omezení pro `game_sessions` a `game_invites`.
 
 ## v.1.5 (814)
 - Fáze 2E-C Supabase hardening: herní RPC smoke metriky pro `game_stats` jsou nově perzistentní v zařízení, takže po mobilním hraní zůstane vidět počet RPC pokusů, úspěchů a fallbacků i po návratu do diagnostiky.

@@ -14450,7 +14450,7 @@ nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn.active::before{
 }
 
 
-/* v.1.5 (821): Spodní panel – aktivní glass bublina nižší a širší, bez změny panelu. */
+/* v.1.5 (825): Spodní panel – beze změny; build řeší Supabase 2E-G preflight. */
 nav.bottomNav #bottomNavScroll > button.bottomNavBtn.active::before,
 nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn.active::before{
   left:-12px !important;
