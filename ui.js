@@ -4353,7 +4353,7 @@ function renderGamesAppearanceStatus() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText || 'v.1.5 (787)',
+      range: versionText || 'v.1.5 (788)',
       title: 'Přechod na řadu 1.5',
       lines: [
         'Korekce jsou oddělené od Výpočtu kusů; Frézky jsou označené jako nutné doladit.',
@@ -4371,6 +4371,7 @@ function buildAppHistoryHtml(versionText) {
         'Korekce Frézky mají otazníky s obrázkovou nápovědou pro konicitu a fhβ, včetně zvýraznění aktuální hodnoty i tlačítka Změnit.',
         'Sudoku má větší volbu obtížnosti posunutou výš i číselník nad spodní lištou; Pexeso 4×4 drží stejnou velikost karet při otočení a herní dlaždice mají sjednocené zarovnání textu.',
         'Korekce Soustruhy mají zkrácený výsledek polohy vrtáků v ose X, vyšší čistý panel bez doplňkového popisku a otazník s nápovědou pro vrtáky 3 a 7 z 3D protokolu.',
+        'Administrace rozpisů má stabilnější ruční editaci: po kliknutí na vyplněné jméno nabídne rychlé Odebrat a editor blokuje problematické oddálení, které na mobilu shazovalo stránku.',
         'Administrace rozpisů má bezpečnější ruční editaci: klepnutí do pole už nespouští mazací dialog, kontroly se přepočítávají odlehčeně a chyba kontroly neshodí obrazovku.',
         'Korekce Soustruhy mají nad zadáváním hodnot i otazník s obrázkovou nápovědou, kde v protokolu najít vrták 3 a 7.',
         'Korekce mají kompaktnější centrované nadpisy; Frézky mají volbu indexu s malou mezerou jako u Výpočtu kusů a AF/AG pozadí správně modrá vlevo, zelená vpravo.',
@@ -4881,9 +4882,8 @@ function adminRenderRotationAvailabilitySummary(root) {
 }
 
 function adminRefreshRotationSuggestions(root) {
-  if (!root || root.dataset.adminView !== 'rotation') return;
-  root.querySelectorAll('datalist[data-admin-rotation-suggest]').forEach((el) => el.remove());
-
+  if (!root || root.dataset.adminView !== 'rotation' || !root.isConnected) return;
+  const activeIds = new Set();
   const knownNames = adminGetKnownNames();
   const usedByDate = adminBuildUsedNamesByDate(root);
 
@@ -4891,32 +4891,42 @@ function adminRefreshRotationSuggestions(root) {
     const used = usedByDate.get(dateKey) || new Set();
     const current = String(currentValue || '').trim();
     const options = [];
+    const seen = new Set();
     const addOption = (value) => {
       const v = String(value || '').trim();
-      if (!v) return;
-      if (!options.includes(v)) options.push(v);
+      if (!v || seen.has(v)) return;
+      seen.add(v);
+      options.push(v);
     };
 
     addOption('odebrat');
+    if (current) addOption(current);
     knownNames.forEach((name) => {
-      if (!used.has(name) || name === current) addOption(name);
+      if (String(name) === current || !used.has(name)) addOption(name);
     });
-    if (current && !options.includes(current)) addOption(current);
 
-    const list = document.createElement('datalist');
-    list.id = id;
-    list.dataset.adminRotationSuggest = '1';
+    let list = document.getElementById(id);
+    if (!list) {
+      list = document.createElement('datalist');
+      list.id = id;
+      list.dataset.adminRotationSuggest = '1';
+      root.appendChild(list);
+    }
+    activeIds.add(id);
+    const fingerprint = JSON.stringify(options);
+    if (list.dataset.optionsFingerprint === fingerprint) return;
+    list.dataset.optionsFingerprint = fingerprint;
     const buildOptions = () => options.map((value) => {
       const opt = document.createElement('option');
       opt.value = String(value || '');
       return opt;
     });
-    if (typeof setElementChildrenIfChanged === 'function') {
-      setElementChildrenIfChanged(list, JSON.stringify(options), buildOptions, 'adminRotationSuggest');
-    } else {
-      list.replaceChildren(...buildOptions());
+    try {
+      if (typeof setElementChildrenIfChanged === 'function') setElementChildrenIfChanged(list, fingerprint, buildOptions, 'adminRotationSuggest');
+      else list.replaceChildren(...buildOptions());
+    } catch (err) {
+      try { list.innerHTML = ''; buildOptions().forEach((node) => list.appendChild(node)); } catch (err2) {}
     }
-    root.appendChild(list);
   };
 
   root.querySelectorAll('tr[data-rotation-section]').forEach((tr, rowIndex) => {
@@ -4940,9 +4950,12 @@ function adminRefreshRotationSuggestions(root) {
     personInput.setAttribute('list', listId);
     buildList(listId, dateKey, current);
   });
+
+  root.querySelectorAll('datalist[data-admin-rotation-suggest]').forEach((list) => {
+    if (list && list.id && !activeIds.has(list.id)) list.remove();
+  });
   adminRenderRotationAvailabilitySummary(root);
 }
-
 function splitMachineKey(rawKey) {
   const raw = String(rawKey || '').trim();
   if (!raw) return { machine: '', index: '' };
@@ -5801,6 +5814,106 @@ async function handleBugReportAction(action) {
 }
 
 
+function adminRotationIsRemoveValue(value) {
+  const v = String(value || '').trim().toLowerCase();
+  return v === 'dát pryč' || v === 'dat pryc' || v === 'pryč' || v === 'pryc' || v === 'odebrat' || v === 'remove';
+}
+
+function adminCloseRotationQuickRemove() {
+  const box = document.getElementById('adminRotationQuickRemove');
+  if (box) box.remove();
+  window.__rakAdminRotationQuickRemoveInput = null;
+}
+
+function adminShowRotationQuickRemove(input) {
+  try {
+    const body = document.getElementById('appMenuBody');
+    if (!body || body.dataset.adminView !== 'rotation' || !input || !body.contains(input)) return;
+    if (!input.matches('[data-rot-field^="cell-"], [data-note-field="person"]')) {
+      adminCloseRotationQuickRemove();
+      return;
+    }
+    const value = String(input.value || '').trim();
+    if (!value || adminRotationIsRemoveValue(value)) {
+      adminCloseRotationQuickRemove();
+      return;
+    }
+    let box = document.getElementById('adminRotationQuickRemove');
+    if (!box) {
+      box = document.createElement('div');
+      box.id = 'adminRotationQuickRemove';
+      box.className = 'adminRotationQuickRemove';
+      box.innerHTML = '<span class="adminRotationQuickRemoveText"></span><button type="button" class="adminRotationQuickRemoveBtn">Odebrat</button>';
+      document.body.appendChild(box);
+      box.addEventListener('click', (ev) => {
+        const btn = ev.target && ev.target.closest ? ev.target.closest('.adminRotationQuickRemoveBtn') : null;
+        if (!btn) return;
+        ev.preventDefault();
+        const target = window.__rakAdminRotationQuickRemoveInput;
+        if (target && target.isConnected) {
+          target.value = 'odebrat';
+          target.dispatchEvent(new Event('input', { bubbles: true }));
+          target.dispatchEvent(new Event('change', { bubbles: true }));
+          try { target.focus({ preventScroll: true }); } catch (err) { try { target.focus(); } catch (err2) {} }
+        }
+        adminCloseRotationQuickRemove();
+      });
+    }
+    window.__rakAdminRotationQuickRemoveInput = input;
+    const txt = box.querySelector('.adminRotationQuickRemoveText');
+    if (txt) txt.textContent = 'Jméno: ' + value;
+    const rect = input.getBoundingClientRect();
+    const vw = Math.max(320, window.innerWidth || document.documentElement.clientWidth || 320);
+    const top = Math.max(8, Math.round(rect.top - 50));
+    const left = Math.max(8, Math.min(vw - 196, Math.round(rect.left)));
+    box.style.top = String(top) + 'px';
+    box.style.left = String(left) + 'px';
+    box.classList.add('isVisible');
+  } catch (err) {
+    console.warn('Admin quick remove failed', err);
+  }
+}
+
+function adminScheduleRotationQuickRemove(input) {
+  try {
+    window.clearTimeout(window.__rakAdminRotationQuickRemoveTimer || 0);
+    window.__rakAdminRotationQuickRemoveTimer = window.setTimeout(() => adminShowRotationQuickRemove(input), 35);
+  } catch (err) {
+    adminShowRotationQuickRemove(input);
+  }
+}
+
+function adminBindRotationZoomGuard() {
+  if (window.__rakAdminRotationZoomGuardBound) return;
+  window.__rakAdminRotationZoomGuardBound = true;
+  const isAdminRotation = () => {
+    const body = document.getElementById('appMenuBody');
+    return !!(body && body.dataset.adminView === 'rotation' && document.getElementById('adminRotationEditor'));
+  };
+  const blockZoom = (event) => {
+    if (!isAdminRotation()) return;
+    try { adminCloseRotationQuickRemove(); } catch (err) {}
+    if (event && event.touches && event.touches.length < 2) return;
+    try { event.preventDefault(); } catch (err) {}
+  };
+  try { document.addEventListener('gesturestart', blockZoom, { passive: false }); } catch (err) {}
+  try { document.addEventListener('gesturechange', blockZoom, { passive: false }); } catch (err) {}
+  try { document.addEventListener('touchmove', blockZoom, { passive: false }); } catch (err) {}
+  try {
+    window.addEventListener('resize', () => {
+      if (isAdminRotation()) adminCloseRotationQuickRemove();
+    }, { passive: true });
+  } catch (err) {}
+  try {
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', () => {
+        if (isAdminRotation()) adminCloseRotationQuickRemove();
+      }, { passive: true });
+    }
+  } catch (err) {}
+}
+
+
 function runAdminRotationEditorMaintenance(body, reason) {
   if (!body || body.dataset.adminView !== 'rotation') return;
   try {
@@ -5830,6 +5943,7 @@ function scheduleAdminRotationEditorMaintenance(body, reason, delayMs) {
 function bindAppMenuHandlers(body) {
   if (!body || body.dataset.menuHandlersBound === '1') return;
   body.dataset.menuHandlersBound = '1';
+  adminBindRotationZoomGuard();
 
   body.addEventListener('click', async (event) => {
     const target = event.target && typeof event.target.closest === 'function'
@@ -5854,8 +5968,7 @@ function bindAppMenuHandlers(body) {
       }
 
       if (target.matches && target.matches('[data-rot-field], [data-note-field]')) {
-        // Ruční editace rozpisu nesmí při obyčejném klepnutí na vyplněné pole spouštět potvrzovací okno.
-        // Mazání zůstává přes vymazání hodnoty nebo přes text „odebrat“ v input handleru.
+        adminScheduleRotationQuickRemove(target);
         return;
       }
 
@@ -6288,16 +6401,30 @@ function bindAppMenuHandlers(body) {
     }
   });
 
+  body.addEventListener('focusout', (event) => {
+    const target = event.target;
+    if (!target || typeof target.matches !== 'function') return;
+    if (!target.matches('[data-rot-field], [data-note-field]')) return;
+    window.setTimeout(() => {
+      const next = document.activeElement;
+      const quick = document.getElementById('adminRotationQuickRemove');
+      if (quick && (next === quick || (next && quick.contains && quick.contains(next)))) return;
+      if (!next || !next.matches || !next.matches('[data-rot-field], [data-note-field]')) adminCloseRotationQuickRemove();
+    }, 120);
+  });
+
   body.addEventListener('input', (event) => {
     const target = event.target;
     if (!target || typeof target.matches !== 'function') return;
     if (!target.matches('[data-rot-field], [data-note-field]')) return;
-    const value = String(target.value || '').trim().toLowerCase();
-    if (value === 'dát pryč' || value === 'dat pryc' || value === 'pryč' || value === 'pryc' || value === 'odebrat' || value === 'remove') {
+    if (adminRotationIsRemoveValue(target.value)) {
       target.value = '';
+      adminCloseRotationQuickRemove();
+    } else {
+      adminScheduleRotationQuickRemove(target);
     }
     if (body.dataset.adminView === 'rotation') {
-      scheduleAdminRotationEditorMaintenance(body, 'input', 220);
+      scheduleAdminRotationEditorMaintenance(body, 'input', 280);
     }
   });
 
@@ -6306,7 +6433,8 @@ function bindAppMenuHandlers(body) {
     if (!target || typeof target.matches !== 'function') return;
     if (!target.matches('[data-rot-field], [data-note-field]')) return;
     if (body.dataset.adminView === 'rotation') {
-      scheduleAdminRotationEditorMaintenance(body, 'focusin', 90);
+      adminScheduleRotationQuickRemove(target);
+      scheduleAdminRotationEditorMaintenance(body, 'focusin', 260);
     }
   });
 }

@@ -1,3 +1,10 @@
+## v.1.5 (788)
+- Administrace → Rozpisy: po kliknutí na vyplněné jméno se znovu hned nabízí rychlá akce Odebrat, tentokrát jako vlastní malé tlačítko nad polem, ne jen přes systémový datalist.
+- Našeptávání jmen v ručním editoru už nepřestavuje datalisty zbytečně celé dokola při každém focusu; aktualizuje jen změněné seznamy, aby se editor na mobilu nechoval těžce.
+- Přidaná ochrana proti problematickému pinch/zoom oddálení v ruční editaci rozpisu, které na mobilu mohlo shodit stránku do bílé obrazovky.
+- Výpočet korekcí, hry a ostatní části aplikace zůstávají beze změny proti v.1.5 (787).
+- Verze sjednocena na v.1.5 (788), cache na v1.5-788 a Supabase realtime kanál na rak-public-live-v788.
+
 ## v.1.5 (787)
 - Administrace → Rozpisy: ruční editace je stabilnější. Klepnutí do vyplněného pole už nespouští potvrzovací mazací okno, takže se na mobilu dá normálně upravovat text.
 - Kontrola jmen a našeptávání u ruční editace rozpisu se po psaní přepočítává odlehčeně se zpožděním místo okamžitě při každém znaku; tím se snižuje riziko bílé obrazovky/resetu na mobilu.

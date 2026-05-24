@@ -1,4 +1,4 @@
-// v.1.5 (787) – Administrace rozpisů: bezpečnější ruční editace bez pádu obrazovky.
+// v.1.5 (788) – Administrace rozpisů: rychlé Odebrat a ochrana proti pádu při oddálení.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;
