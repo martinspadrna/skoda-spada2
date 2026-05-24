@@ -1,3 +1,10 @@
+## v.1.5 (790)
+- Administrace → Rozpisy: ruční editor se chová víc jako lokální rozepsaná tabulka; změny se do Supabase posílají až po kliknutí na Uložit rozpis.
+- Přidaná pevná/sticky akční lišta přímo v editoru rozpisů, aby bylo tlačítko Uložit rozpis pořád po ruce i při dlouhé tabulce.
+- Editor je znovu kompaktnější: pole si nechávají 16px proti iOS auto-zoomu, ale výšky, mezery a šířky buněk jsou stažené kvůli lepšímu přehledu.
+- Vypnuté těžké datalist našeptávání pro každou buňku a při rychlém scrollu se zavírá jen malé Odebrat okno; přepočet kontroly měsíce je odlehčený.
+- Verze sjednocena na v.1.5 (790), cache na v1.5-790 a Supabase realtime kanál na rak-public-live-v790.
+
 ## v.1.5 (789)
 - Administrace → Rozpisy: opravená hlavní příčina pádu na iPhonu při ruční editaci. Pole v tabulkách už nemají malé písmo 9–11 px, které na iOS po kliknutí automaticky přibližovalo stránku.
 - Ruční editor rozpisu má při otevření uzamčený viewport proti iOS auto-zoomu a při změně visual viewportu jen bezpečně zavře rychlé Odebrat místo rozbití celé obrazovky.

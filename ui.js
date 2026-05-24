@@ -4353,7 +4353,7 @@ function renderGamesAppearanceStatus() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText || 'v.1.5 (789)',
+      range: versionText || 'v.1.5 (790)',
       title: 'Přechod na řadu 1.5',
       lines: [
         'Korekce jsou oddělené od Výpočtu kusů; Frézky jsou označené jako nutné doladit.',
@@ -4371,7 +4371,7 @@ function buildAppHistoryHtml(versionText) {
         'Korekce Frézky mají otazníky s obrázkovou nápovědou pro konicitu a fhβ, včetně zvýraznění aktuální hodnoty i tlačítka Změnit.',
         'Sudoku má větší volbu obtížnosti posunutou výš i číselník nad spodní lištou; Pexeso 4×4 drží stejnou velikost karet při otočení a herní dlaždice mají sjednocené zarovnání textu.',
         'Korekce Soustruhy mají zkrácený výsledek polohy vrtáků v ose X, vyšší čistý panel bez doplňkového popisku a otazník s nápovědou pro vrtáky 3 a 7 z 3D protokolu.',
-        'Administrace rozpisů má stabilnější ruční editaci: po kliknutí na vyplněné jméno nabídne rychlé Odebrat a editor už nepoužívá malé inputy, které na iPhonu spouštěly automatické přiblížení.',
+        'Administrace rozpisů má stabilnější ruční editaci: změny se chovají jako lokální rozepsaná tabulka, Uložit rozpis je přímo u editoru a rychlý scroll už nevynucuje těžké našeptávání.',
         'Administrace rozpisů má bezpečnější ruční editaci: klepnutí do pole už nespouští mazací dialog, kontroly se přepočítávají odlehčeně a chyba kontroly neshodí obrazovku.',
         'Korekce Soustruhy mají nad zadáváním hodnot i otazník s obrázkovou nápovědou, kde v protokolu najít vrták 3 a 7.',
         'Korekce mají kompaktnější centrované nadpisy; Frézky mají volbu indexu s malou mezerou jako u Výpočtu kusů a AF/AG pozadí správně modrá vlevo, zelená vpravo.',
@@ -4888,79 +4888,16 @@ function adminRenderRotationAvailabilitySummary(root) {
 
 function adminRefreshRotationSuggestions(root) {
   if (!root || root.dataset.adminView !== 'rotation' || !root.isConnected) return;
-  const activeIds = new Set();
-  const knownNames = adminGetKnownNames();
-  const usedByDate = adminBuildUsedNamesByDate(root);
-
-  const buildList = (id, dateKey, currentValue) => {
-    const used = usedByDate.get(dateKey) || new Set();
-    const current = String(currentValue || '').trim();
-    const options = [];
-    const seen = new Set();
-    const addOption = (value) => {
-      const v = String(value || '').trim();
-      if (!v || seen.has(v)) return;
-      seen.add(v);
-      options.push(v);
-    };
-
-    addOption('odebrat');
-    if (current) addOption(current);
-    knownNames.forEach((name) => {
-      if (String(name) === current || !used.has(name)) addOption(name);
-    });
-
-    let list = document.getElementById(id);
-    if (!list) {
-      list = document.createElement('datalist');
-      list.id = id;
-      list.dataset.adminRotationSuggest = '1';
-      root.appendChild(list);
-    }
-    activeIds.add(id);
-    const fingerprint = JSON.stringify(options);
-    if (list.dataset.optionsFingerprint === fingerprint) return;
-    list.dataset.optionsFingerprint = fingerprint;
-    const buildOptions = () => options.map((value) => {
-      const opt = document.createElement('option');
-      opt.value = String(value || '');
-      return opt;
-    });
-    try {
-      if (typeof setElementChildrenIfChanged === 'function') setElementChildrenIfChanged(list, fingerprint, buildOptions, 'adminRotationSuggest');
-      else list.replaceChildren(...buildOptions());
-    } catch (err) {
-      try { list.innerHTML = ''; buildOptions().forEach((node) => list.appendChild(node)); } catch (err2) {}
-    }
-  };
-
-  root.querySelectorAll('tr[data-rotation-section]').forEach((tr, rowIndex) => {
-    const dateInput = tr.querySelector('[data-rot-field="date"], [data-note-field="date"]');
-    const dateKey = adminRotationDateLabel(dateInput ? dateInput.value : '');
-    tr.querySelectorAll('[data-rot-field^="cell-"]').forEach((input, cellIndex) => {
-      const current = String(input.value || '').trim();
-      const listId = 'admin-rot-suggest-' + String(rowIndex) + '-' + String(cellIndex);
-      input.setAttribute('list', listId);
-      buildList(listId, dateKey, current);
-    });
-  });
-
-  root.querySelectorAll('tr[data-note-row-index]').forEach((tr, rowIndex) => {
-    const dateInput = tr.querySelector('[data-note-field="date"]');
-    const dateKey = adminRotationDateLabel(dateInput ? dateInput.value : '');
-    const personInput = tr.querySelector('[data-note-field="person"]');
-    if (!personInput) return;
-    const current = String(personInput.value || '').trim();
-    const listId = 'admin-note-suggest-' + String(rowIndex);
-    personInput.setAttribute('list', listId);
-    buildList(listId, dateKey, current);
-  });
-
-  root.querySelectorAll('datalist[data-admin-rotation-suggest]').forEach((list) => {
-    if (list && list.id && !activeIds.has(list.id)) list.remove();
-  });
-  adminRenderRotationAvailabilitySummary(root);
+  try {
+    root.querySelectorAll('datalist[data-admin-rotation-suggest]').forEach((list) => list.remove());
+  } catch (err) {}
+  try {
+    adminRenderRotationAvailabilitySummary(root);
+  } catch (err) {
+    console.warn('Admin rotation summary failed', err);
+  }
 }
+
 function splitMachineKey(rawKey) {
   const raw = String(rawKey || '').trim();
   if (!raw) return { machine: '', index: '' };
@@ -5184,7 +5121,11 @@ function buildAdminRotationTableHtml(monthKey) {
   return [
     '<div class="appMenuSubSection" id="adminRotationEditor">',
     '  <div class="appMenuSubTitle">Rozpis – ' + escapeHtml(monthKey) + '</div>',
-    '  <div class="appMenuText">Stejný rozpis, jen editovatelný. Vyplňuj rovnou v mřížce, jako bys upravoval samotný rozpis. Prázdné řádky se při uložení ignorují.</div>',
+    '  <div class="appMenuText">Stejný rozpis, jen editovatelný. Změny zůstávají rozepsané lokálně a do Supabase jdou až po kliknutí na Uložit rozpis.</div>',
+    '  <div class="adminRotationSaveDock">',
+    '    <button type="button" class="appMenuAction isActive adminRotationSaveDockBtn" data-admin-action="save-rotation">Uložit rozpis</button>',
+    '    <span id="adminRotationDraftStatus" class="adminRotationDraftStatus">Rozepsané změny se uloží až tlačítkem.</span>',
+    '  </div>',
     '  <div class="appMenuFreeNamesBox" id="adminRotationFreeNamesSummary">',
     '    <div class="appMenuFreeNamesTitle">Kontrola měsíce</div>',
     '    <div class="appMenuFreeNamesText">Vyber měsíc a hned uvidíš, kdo v něm není zapsaný ani jednou a na kterých dnech ještě někdo chybí.</div>',
@@ -5942,14 +5883,12 @@ function adminBindRotationZoomGuard() {
   try { document.addEventListener('gestureend', blockZoom, { passive: false }); } catch (err) {}
   try { document.addEventListener('touchstart', lockForField, { passive: true, capture: true }); } catch (err) {}
   try { document.addEventListener('focusin', lockForField, true); } catch (err) {}
-  try { document.addEventListener('touchmove', blockZoom, { passive: false }); } catch (err) {}
   try {
     window.addEventListener('resize', recoverAfterViewportChange, { passive: true });
   } catch (err) {}
   try {
     if (window.visualViewport) {
       window.visualViewport.addEventListener('resize', recoverAfterViewportChange, { passive: true });
-      window.visualViewport.addEventListener('scroll', recoverAfterViewportChange, { passive: true });
     }
   } catch (err) {}
 }
@@ -6454,6 +6393,19 @@ function bindAppMenuHandlers(body) {
     }, 120);
   });
 
+  body.addEventListener('scroll', () => {
+    if (body.dataset.adminView !== 'rotation') return;
+    try {
+      if (window.__rakAdminRotationScrollCloseRaf) return;
+      window.__rakAdminRotationScrollCloseRaf = window.requestAnimationFrame(() => {
+        window.__rakAdminRotationScrollCloseRaf = 0;
+        adminCloseRotationQuickRemove();
+      });
+    } catch (err) {
+      adminCloseRotationQuickRemove();
+    }
+  }, { passive: true });
+
   body.addEventListener('input', (event) => {
     const target = event.target;
     if (!target || typeof target.matches !== 'function') return;
@@ -6465,7 +6417,7 @@ function bindAppMenuHandlers(body) {
       adminScheduleRotationQuickRemove(target);
     }
     if (body.dataset.adminView === 'rotation') {
-      scheduleAdminRotationEditorMaintenance(body, 'input', 280);
+      scheduleAdminRotationEditorMaintenance(body, 'input', 900);
     }
   });
 
@@ -6475,7 +6427,7 @@ function bindAppMenuHandlers(body) {
     if (!target.matches('[data-rot-field], [data-note-field]')) return;
     if (body.dataset.adminView === 'rotation') {
       adminScheduleRotationQuickRemove(target);
-      scheduleAdminRotationEditorMaintenance(body, 'focusin', 260);
+      
     }
   });
 }

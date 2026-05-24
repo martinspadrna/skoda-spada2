@@ -1,4 +1,4 @@
-// v.1.5 (789) – Administrace rozpisů: vypnutí iOS auto-zoomu inputů a stabilizace při oddálení.
+// v.1.5 (790) – Administrace rozpisů: kompaktní lokální editor, sticky Uložit a stabilnější scroll.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;
