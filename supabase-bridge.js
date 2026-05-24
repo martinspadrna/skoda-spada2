@@ -213,7 +213,7 @@
     { table: 'gomoku_wins', realtime: true, queueType: 'gomoku_win', access: 'anon SELECT/INSERT/UPDATE', note: 'výhry piškvorek / legacy leaderboard' }
   ];
 
-  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (814)';
+  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (816)';
   const SUPABASE_POLICY_AUDIT_SNAPSHOT_AT = '2026-05-24';
   const SUPABASE_POLICY_HARDENING_PHASE = {
     current: 'Fáze 2E-C – perzistentní RPC smoke metriky pro game_stats; přímé INSERT/UPDATE fallbacky zatím zůstávají, dokud nebude potvrzené mobilní hraní bez fallbacků',
@@ -273,11 +273,11 @@
   ];
 
   const SUPABASE_RPC_HARDENING_STATUS = {
-    version: 'v.1.5 (814)',
+    version: 'v.1.5 (816)',
     phase: '2E-C',
     rpcPreferred: true,
     migrationApplied: true,
-    migrationNote: 'RPC funkce pro rotation_state, machine_settings a game_stats jsou aplikované. Ve v814 jsou game_stats RPC smoke metriky perzistentní v zařízení, aby šlo po mobilním hraní ověřit, jestli zápisy opravdu jedou přes RPC. Veřejné DELETE policies zůstávají odstraněné, přímé INSERT/UPDATE zatím zůstávají kvůli kompatibilitě.',
+    migrationNote: 'RPC funkce pro rotation_state, machine_settings a game_stats jsou aplikované. Ve v815 jsou game_stats RPC smoke metriky perzistentní v zařízení, aby šlo po mobilním hraní ověřit, jestli zápisy opravdu jedou přes RPC. Veřejné DELETE policies zůstávají odstraněné, přímé INSERT/UPDATE zatím zůstávají kvůli kompatibilitě.',
     dbVerifiedAt: '2026-05-24',
     verifiedRpcCount: 3,
     plannedRpc: [
@@ -507,7 +507,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v814');
+      const channel = client.channel('rak-public-live-v816');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });

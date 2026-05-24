@@ -4364,13 +4364,13 @@ function renderGamesAppearanceStatus() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText || 'v.1.5 (814)',
+      range: versionText || 'v.1.5 (816)',
       title: 'Aktuální stabilizace',
       lines: [
-        'Supabase hardening je ve fázi 2E-C: herní RPC smoke metriky pro game_stats jsou perzistentní v zařízení.',
-        'Po odehrání několika her má diagnostika ukázat, že RPC úspěchy rostou a fallbacky zůstávají 0.',
-        'Přímé INSERT/UPDATE policies u game_stats zatím zůstávají kvůli kompatibilitě, dokud nebude mobilní ověření potvrzené.',
-        'Následuje 2E-D: po potvrzení RPC zápisů bez fallbacků bezpečně zužovat přímé INSERT/UPDATE policies u game_stats.'
+        'Hotfix v816 uklízí Vercel/GitHub podporu: odstraněné složky public/ a scripts/, v ZIPu zůstává jako jediná složka assets/.',
+        'Vercel podpůrné soubory zůstaly jen v kořeni: package.json, vercel.json a .vercelignore.',
+        'Funkční logika aplikace, hry i Supabase policies zůstaly beze změny proti v816.',
+        'Supabase hardening zůstává ve fázi 2E-C/2E-D: před dalším zužováním game_stats INSERT/UPDATE je potřeba mobilní ověření RPC zápisů.'
       ]
     },
     {

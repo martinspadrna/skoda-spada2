@@ -1,4 +1,4 @@
-// v.1.5 (814) – Supabase hardening: perzistentní RPC smoke metriky pro game_stats, bez dalšího zužování INSERT/UPDATE policies před mobilním ověřením.
+// v.1.5 (816) – Vercel/GitHub cleanup hotfix: odstraněné public/ a scripts/, ZIP má znovu jen assets/ jako jedinou složku; deploy podpora zůstává v kořeni.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;
