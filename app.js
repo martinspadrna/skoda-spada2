@@ -1,4 +1,4 @@
-// v.1.5 (803) – Piškvorky nad spodním panelem a širší aktivní glass v liště.
+// v.1.5 (804) – Piškvorky nad lištou, stabilní větší aktivní ikona a denní score podle dnešní hry.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;
@@ -530,7 +530,7 @@ function applyBottomNavMoreHardFix() {
       || document.querySelector('nav.bottomNav > .bottomNavScroll > .bottomNavBtn:not(.bottomNavMenuBtn)');
     const peerRect = peer && peer.getBoundingClientRect ? peer.getBoundingClientRect() : null;
     const peerWidth = peerRect && peerRect.width ? Math.round(peerRect.width) : (compact ? 58 : 64);
-    const widthPx = Math.max(lightweight ? 40 : 44, Math.min(Math.round(peerWidth * 0.78), lightweight ? 50 : 56));
+    const widthPx = Math.max(lightweight ? 42 : 46, Math.min(Math.round(peerWidth * 0.86), lightweight ? 54 : 60));
     const width = String(widthPx) + 'px';
     const peerHeight = peerRect && peerRect.height ? Math.round(peerRect.height) : 52;
     const height = Math.max(lightweight ? 46 : 50, Math.min(peerHeight || 52, lightweight ? 54 : 58)) + 'px';
@@ -555,7 +555,7 @@ function applyBottomNavMoreHardFix() {
 
     const icon = btn.querySelector('.moreIcon');
     if (icon && icon.style) {
-      const iconSize = lightweight ? '20px' : (compact ? '21px' : '24px');
+      const iconSize = lightweight ? '24px' : (compact ? '28px' : '31px');
       setStyle(icon, 'flex', '0 0 ' + iconSize, 'important', 'bottomNavMoreIcon-flex');
       setStyle(icon, 'width', iconSize, 'important', 'bottomNavMoreIcon-width');
       setStyle(icon, 'height', iconSize, 'important', 'bottomNavMoreIcon-height');

@@ -1,3 +1,9 @@
+## v.1.5 (804)
+- Spodní lišta: ikonky jsou zvětšené a aktivní ikonka se už nemá posouvat nahoru; zvětší se na svém místě. Aktivní „Více“ má tečky centrované, aby neutíkaly doprava.
+- Piškvorky: oprava spodního prostoru je posílená i v runtime patchi Piškvorek, který dřív přepisoval statické CSS; hrací plocha se počítá podle reálné výšky spodní lišty a má končit nad panelem.
+- Denní challenge: přehled score na úvodní obrazovce nově ukazuje jen výsledky aktuální dnešní hry a v titulku score je přímo napsané, pro kterou hru to je.
+- Verze sjednocena na v.1.5 (804), cache na v1.5-804 a Supabase realtime kanál na rak-public-live-v804.
+
 ## v.1.5 (803)
 - Piškvorky: hrací plocha má silnější spodní rezervu nad pevným spodním panelem, aby spodní řada/políčka neležely za lištou.
 - Spodní lišta: velikost ani umístění panelu se nemění; aktivní glass zvýraznění je jen malinko širší a aktivní ikonka je větší na stejném místě.

@@ -755,7 +755,7 @@ html body.tttOpen .tttOverlay::after{
   left:0 !important;
   right:0 !important;
   bottom:0 !important;
-  height:calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 18px) !important;
+  height:var(--rak-ttt-live-bottom-clearance, calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 72px)) !important;
   pointer-events:none !important;
   z-index:1 !important;
   background:linear-gradient(180deg, rgba(5,8,22,0), var(--rakBgBase, var(--bg, #050816)) 42%, var(--rakBgBase, var(--bg, #050816)) 100%) !important;
@@ -763,13 +763,13 @@ html body.tttOpen .tttOverlay::after{
 html body.tttOpen #tttOverlay.tttOverlay.isVisible .tttBoardWrap{
   top:56px !important;
   right:10px !important;
-  bottom:calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 18px) !important;
+  bottom:var(--rak-ttt-live-bottom-clearance, calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 72px)) !important;
   left:10px !important;
-  inset:56px 10px calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 18px) 10px !important;
-  max-height:calc(100dvh - 56px - var(--bottom-nav-h, 72px) - env(safe-area-inset-bottom) - 18px) !important;
+  inset:56px 10px var(--rak-ttt-live-bottom-clearance, calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 72px)) 10px !important;
+  max-height:calc(100dvh - 56px - var(--rak-ttt-live-bottom-clearance, calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 72px))) !important;
 }
 html body.tttOpen #tttOverlay.tttOverlay.isVisible .tttResultCard{
-  bottom:calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 26px) !important;
+  bottom:calc(var(--rak-ttt-live-bottom-clearance, calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 72px)) + 8px) !important;
 }
 `;
     if (existing) {
@@ -4116,6 +4116,17 @@ function tttLayoutBoard() {
   const wrap = overlay.querySelector('.tttBoardWrap');
   if (!board || !wrap) return;
 
+  try {
+    const nav = document.querySelector('.bottomNav');
+    const viewportH = (window.visualViewport && Number(window.visualViewport.height)) || window.innerHeight || document.documentElement.clientHeight || 0;
+    const navRect = nav && nav.getBoundingClientRect ? nav.getBoundingClientRect() : null;
+    const navTop = navRect && Number.isFinite(navRect.top) ? navRect.top : 0;
+    const navClearance = navRect && viewportH
+      ? Math.ceil(Math.max(96, (viewportH - navTop) + 30))
+      : Math.ceil(Math.max(96, ((navRect && navRect.height) || 72) + 44));
+    document.documentElement.style.setProperty('--rak-ttt-live-bottom-clearance', navClearance + 'px');
+  } catch (err) {}
+
   const wrapRect = wrap.getBoundingClientRect();
   const edge = 1;
   const cellW = Math.floor((wrapRect.width - edge) / TTT_COLS);
@@ -4353,12 +4364,12 @@ function renderGamesAppearanceStatus() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText || 'v.1.5 (803)',
+      range: versionText || 'v.1.5 (804)',
       title: 'Aktuální doladění',
       lines: [
-        'Piškvorky mají silnější spodní rezervu, aby hrací plocha a spodní políčka končily nad pevným spodním panelem.',
-        'Spodní lišta zůstává velikostí i umístěním zachovaná; aktivní glass zvýraznění je jen o trochu širší a aktivní ikonka větší na stejném místě.',
-        'Historie v O aplikaci je zkrácená a řada 1.5 je seskupená do většího bloku.'
+        'Piškvorky mají tvrdší spodní rezervu počítanou podle reálné výšky spodní lišty, aby hrací plocha končila nad panelem.',
+        'Spodní lišta zůstává velikostí i umístěním zachovaná; ikonky jsou větší a aktivní ikonka se zvětší na místě bez posunu nahoru.',
+        'Denní challenge v Top score ukazuje jen aktuální dnešní hru a v titulku score píše, o jakou hru jde.'
       ]
     },
     {

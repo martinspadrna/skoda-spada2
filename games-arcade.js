@@ -5239,10 +5239,24 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     if (mode === 'ships') return 'Vyhraj online námořní souboj.';
     return 'Každý den jiná výzva.';
   }
+  function dailyScoreGameId(mode) {
+    const id = key(mode || 'daily');
+    return DAILY_MODES.includes(id) ? id : 'daily';
+  }
+  function dailyScoreUnit(mode) {
+    const id = dailyScoreGameId(mode);
+    return gameMeta(id).unit || 'bodů';
+  }
+  function dailyScoreTitle(mode) {
+    return 'Top score dnešní hry: ' + dailyLabel(mode);
+  }
   function renderDaily(body) {
     const mode = dailyChallengeId();
     const label = dailyLabel(mode);
-    body.innerHTML = `<div class="arcadeStage dailyStage"><div class="arcadeHud arcadeHudSingleLine">${gamesStatLine('Dnešní hra', label)}${gamesStatLine('Datum', new Date().toLocaleDateString('cs-CZ'))}${gamesStatLine('Střídání', `${DAILY_MODES.length} her`)}</div><div class="arcadeBar arcadePanel uPad12"><div class="arcadeStatus"><strong>Denní challenge:</strong> ${dailyText(mode)} Zítra se automaticky vybere jiná hra podle data.</div></div><div class="arcadeControls"><button type="button" class="gameControlBtn" id="dailyStartBtn">Spustit dnešní výzvu</button><button type="button" class="gameControlBtn" id="dailyResetBtn">Obnovit</button></div>${gamesTop3Block('daily', 'bodů', 5).replace('gamesTop5ScrollCard', 'gamesTop5ScrollCard arcadeTopScoreTight')}</div>`;
+    const scoreGame = dailyScoreGameId(mode);
+    const scoreUnit = dailyScoreUnit(mode);
+    const scoreTitle = dailyScoreTitle(mode);
+    body.innerHTML = `<div class="arcadeStage dailyStage"><div class="arcadeHud arcadeHudSingleLine">${gamesStatLine('Dnešní hra', label)}${gamesStatLine('Datum', new Date().toLocaleDateString('cs-CZ'))}${gamesStatLine('Score', label)}</div><div class="arcadeBar arcadePanel uPad12"><div class="arcadeStatus"><strong>Denní challenge:</strong> ${dailyText(mode)} Zítra se automaticky vybere jiná hra podle data.</div></div><div class="arcadeControls"><button type="button" class="gameControlBtn" id="dailyStartBtn">Spustit dnešní výzvu</button><button type="button" class="gameControlBtn" id="dailyResetBtn">Obnovit</button></div>${gamesTop3Block(scoreGame, scoreUnit, 5, scoreTitle).replace('gamesTop5ScrollCard', 'gamesTop5ScrollCard arcadeTopScoreTight')}</div>`;
     const start = () => {
       if (mode === 'aim') renderAim(body, { challenge: true, duration: 30000 });
       else if (mode === 'reaction') renderReaction(body);
@@ -5275,7 +5289,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     const allHot = EXTRA_GAMES.length === 0;
     const completedOnlyGuard = typeof window.gamesRecordStat === 'function';
     return {
-      version: 'v.1.5 (803)',
+      version: 'v.1.5 (804)',
       ok: !missingMeta.length && !missingRenderer.length && allHot && completedOnlyGuard,
       totalGames: ids.length,
       coreGames: ids,
