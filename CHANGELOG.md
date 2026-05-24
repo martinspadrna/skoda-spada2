@@ -1,3 +1,10 @@
+## v.1.5 (787)
+- Administrace → Rozpisy: ruční editace je stabilnější. Klepnutí do vyplněného pole už nespouští potvrzovací mazací okno, takže se na mobilu dá normálně upravovat text.
+- Kontrola jmen a našeptávání u ruční editace rozpisu se po psaní přepočítává odlehčeně se zpožděním místo okamžitě při každém znaku; tím se snižuje riziko bílé obrazovky/resetu na mobilu.
+- Přidaná ochrana, aby chyba v pomocné kontrole rozpisu neshodila administraci ani nerozbila rozepsané změny.
+- Opravené čtení data u řádků absence v administraci rozpisů a zpevněné čtení prázdných/neúplných řádků.
+- Verze sjednocena na v.1.5 (787), cache na v1.5-787 a Supabase realtime kanál na rak-public-live-v787.
+
 ## v.1.5 (786)
 - Korekce → Soustruhy → Poloha vrtáků v ose X: textový popisek „Kde hledat…“ nad zadáváním hodnot je odstraněný; zůstává jen samotný otazník.
 - Po rozkliknutí otazníku zůstává obrázková nápověda zachovaná a její doprovodný text nově říká, že jde o 3D protokol, kde se hledají hodnoty pro vrták 3 a vrták 7.

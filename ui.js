@@ -4353,7 +4353,7 @@ function renderGamesAppearanceStatus() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText || 'v.1.5 (786)',
+      range: versionText || 'v.1.5 (787)',
       title: 'Přechod na řadu 1.5',
       lines: [
         'Korekce jsou oddělené od Výpočtu kusů; Frézky jsou označené jako nutné doladit.',
@@ -4371,6 +4371,7 @@ function buildAppHistoryHtml(versionText) {
         'Korekce Frézky mají otazníky s obrázkovou nápovědou pro konicitu a fhβ, včetně zvýraznění aktuální hodnoty i tlačítka Změnit.',
         'Sudoku má větší volbu obtížnosti posunutou výš i číselník nad spodní lištou; Pexeso 4×4 drží stejnou velikost karet při otočení a herní dlaždice mají sjednocené zarovnání textu.',
         'Korekce Soustruhy mají zkrácený výsledek polohy vrtáků v ose X, vyšší čistý panel bez doplňkového popisku a otazník s nápovědou pro vrtáky 3 a 7 z 3D protokolu.',
+        'Administrace rozpisů má bezpečnější ruční editaci: klepnutí do pole už nespouští mazací dialog, kontroly se přepočítávají odlehčeně a chyba kontroly neshodí obrazovku.',
         'Korekce Soustruhy mají nad zadáváním hodnot i otazník s obrázkovou nápovědou, kde v protokolu najít vrták 3 a 7.',
         'Korekce mají kompaktnější centrované nadpisy; Frézky mají volbu indexu s malou mezerou jako u Výpočtu kusů a AF/AG pozadí správně modrá vlevo, zelená vpravo.',
         'Sekce O aplikaci se průběžně drží stručná a aktualizovaná podle aktuálních buildů.'
@@ -4533,7 +4534,7 @@ function renderAdminInlineFieldHtml(fieldAttr, fieldName, value, placeholder, ti
     fieldAttr ? fieldAttr + '="' + escapeHtml(fieldName) + '"' : '',
     'value="' + escapeHtml(safeValue) + '"',
     'placeholder="' + escapeHtml(placeholder || '') + '"',
-    'title="' + escapeHtml(isDateField ? 'Datum upravíš ručně.' : 'Klikni pro odebrání nebo uprav text.') + '"'
+    'title="' + escapeHtml(isDateField ? 'Datum upravíš ručně.' : 'Uprav text ručně. Pro vymazání smaž hodnotu nebo napiš odebrat.') + '"'
   ].filter(Boolean).join(' ');
   return [
     '<div class="' + classes.join(' ') + '">',
@@ -4650,7 +4651,7 @@ function adminNotesRowTemplate(row, rowIndex, allowBlankTail) {
   if (!hasAny && !allowBlankTail) return '';
   return [
     '<tr data-note-row-index="' + String(rowIndex) + '">',
-    '  <td>' + renderAdminInlineFieldHtml('data-rot-field', 'date', date, 'datum', false) + '</td>',
+    '  <td>' + renderAdminInlineFieldHtml('data-note-field', 'date', date, 'datum', false) + '</td>',
     '  <td>' + renderAdminInlineFieldHtml('data-note-field', 'person', person, 'jméno', false) + '</td>',
     '  <td>' + renderAdminInlineFieldHtml('data-note-field', 'code', code, 'kód', false) + '</td>',
     '</tr>'
@@ -4756,7 +4757,7 @@ function adminBuildMonthUsageSummary(monthKey) {
       const label = adminRotationDateLabel(row && row.date ? row.date : '');
       if (!label) return;
       register(label);
-      const cells = Array.isArray(row && row.cells ? row.cells : []) ? row.cells : [];
+      const cells = row && Array.isArray(row.cells) ? row.cells : [];
       cells.forEach((cell) => {
         const name = String(cell || '').trim();
         if (name && !['dát pryč','odebrat','remove','pryc','pryč'].includes(name.toLowerCase())) addName(label, name);
@@ -4767,7 +4768,7 @@ function adminBuildMonthUsageSummary(monthKey) {
       const label = adminRotationDateLabel(row && row.date ? row.date : '');
       if (!label) return;
       register(label);
-      const cells = Array.isArray(row && row.cells ? row.cells : []) ? row.cells : [];
+      const cells = row && Array.isArray(row.cells) ? row.cells : [];
       cells.forEach((cell) => {
         const name = String(cell || '').trim();
         if (name && !['dát pryč','odebrat','remove','pryc','pryč'].includes(name.toLowerCase())) addName(label, name);
@@ -5643,8 +5644,7 @@ function renderAdminMenuBody(body, section) {
   }
 
   if (mode === 'rotation') {
-    adminRefreshRotationSuggestions(body);
-    adminRenderRotationAvailabilitySummary(body);
+    runAdminRotationEditorMaintenance(body, 'render-admin-rotation');
   }
   if (mode === 'export' && typeof updateRakExcelImportPreviewUi === 'function') {
     setTimeout(() => {
@@ -5800,6 +5800,33 @@ async function handleBugReportAction(action) {
   }
 }
 
+
+function runAdminRotationEditorMaintenance(body, reason) {
+  if (!body || body.dataset.adminView !== 'rotation') return;
+  try {
+    if (typeof adminRefreshRotationSuggestions === 'function') adminRefreshRotationSuggestions(body);
+    else if (typeof adminRenderRotationAvailabilitySummary === 'function') adminRenderRotationAvailabilitySummary(body);
+  } catch (err) {
+    console.warn('Admin rotation maintenance failed', reason || '', err);
+    const status = body.querySelector('#adminOnlineSaveStatus');
+    if (status) status.textContent = 'Kontrola rozpisu se teď nepřepočítala, ale editace zůstala zachovaná.';
+  }
+}
+
+function scheduleAdminRotationEditorMaintenance(body, reason, delayMs) {
+  if (!body || body.dataset.adminView !== 'rotation') return;
+  try {
+    if (body.__adminRotationMaintenanceTimer) window.clearTimeout(body.__adminRotationMaintenanceTimer);
+    const delay = Number.isFinite(delayMs) ? delayMs : 180;
+    body.__adminRotationMaintenanceTimer = window.setTimeout(() => {
+      body.__adminRotationMaintenanceTimer = 0;
+      runAdminRotationEditorMaintenance(body, reason || 'scheduled');
+    }, delay);
+  } catch (err) {
+    runAdminRotationEditorMaintenance(body, reason || 'fallback');
+  }
+}
+
 function bindAppMenuHandlers(body) {
   if (!body || body.dataset.menuHandlersBound === '1') return;
   body.dataset.menuHandlersBound = '1';
@@ -5827,16 +5854,9 @@ function bindAppMenuHandlers(body) {
       }
 
       if (target.matches && target.matches('[data-rot-field], [data-note-field]')) {
-        const fieldName = target.getAttribute('data-rot-field') || target.getAttribute('data-note-field') || '';
-        const value = String(target.value || '').trim();
-        if (fieldName !== 'date' && value) {
-          const ok = confirm('Odebrat "' + value + '" z rozpisu?');
-          if (ok) {
-            target.value = '';
-            target.dispatchEvent(new Event('input', { bubbles: true }));
-            return;
-          }
-        }
+        // Ruční editace rozpisu nesmí při obyčejném klepnutí na vyplněné pole spouštět potvrzovací okno.
+        // Mazání zůstává přes vymazání hodnoty nebo přes text „odebrat“ v input handleru.
+        return;
       }
 
       if (menuAction === 'import' || adminAction === 'import' || adminAction === 'excel-pick') {
@@ -6277,8 +6297,7 @@ function bindAppMenuHandlers(body) {
       target.value = '';
     }
     if (body.dataset.adminView === 'rotation') {
-      adminRefreshRotationSuggestions(body);
-      adminRenderRotationAvailabilitySummary(body);
+      scheduleAdminRotationEditorMaintenance(body, 'input', 220);
     }
   });
 
@@ -6287,8 +6306,7 @@ function bindAppMenuHandlers(body) {
     if (!target || typeof target.matches !== 'function') return;
     if (!target.matches('[data-rot-field], [data-note-field]')) return;
     if (body.dataset.adminView === 'rotation') {
-      adminRefreshRotationSuggestions(body);
-      adminRenderRotationAvailabilitySummary(body);
+      scheduleAdminRotationEditorMaintenance(body, 'focusin', 90);
     }
   });
 }

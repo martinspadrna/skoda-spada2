@@ -1,4 +1,4 @@
-// v.1.5 (786) – Soustruhy: skrytý popisek u otazníku a upřesněná 3D nápověda.
+// v.1.5 (787) – Administrace rozpisů: bezpečnější ruční editace bez pádu obrazovky.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;
