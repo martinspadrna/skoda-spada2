@@ -1,3 +1,9 @@
+## v.1.5 (794)
+- Spodní lišta je posazená níž k samotné spodní hraně displeje: safe-area odsazení je omezené, aby panel nebyl zbytečně vysoko, ale pořád zůstal použitelný na různých mobilech.
+- Rezerva obsahu nad spodní lištou je přepočítaná podle reálné výšky panelu, takže stránky nemají zalézat pod lištu.
+- Piškvorky mají hrací plochu dotaženou těsně nad spodní panel; spodní řada se nemá schovávat pod lištu ani zbytečně utíkat nahoru.
+- Verze sjednocena na v.1.5 (794), cache na v1.5-794 a Supabase realtime kanál na rak-public-live-v794.
+
 ## v.1.5 (793)
 - Spodní lišta je upravená natvrdo jako pevný prvek u úplného spodku obrazovky, bez plavání a bez zbytečného odsazení odspodu.
 - Odstraněné je průběžné přepočítávání pozice lišty při `visualViewport` scrollu, které mohlo na mobilech působit jako poskakování lišty.

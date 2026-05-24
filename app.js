@@ -1,4 +1,4 @@
-// v.1.5 (793) – Spodní lišta natvrdo ukotvená dole bez poskakování.
+// v.1.5 (794) – Spodní lišta níž u spodku a Piškvorky těsně nad panelem.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;
@@ -351,7 +351,7 @@ function applyRakFixedBottomNavMetrics() {
       const nav = document.querySelector('.bottomNav');
       if (!nav || !root || !root.style) return false;
       const navHeight = Math.max(48, Math.ceil(nav.offsetHeight || (nav.getBoundingClientRect ? nav.getBoundingClientRect().height : 0) || 56));
-      const contentSpace = Math.max(62, navHeight + 10);
+      const contentSpace = Math.max(52, navHeight + 4);
       root.style.setProperty('--bottom-nav-h', navHeight + 'px');
       root.style.setProperty('--rak-fixed-bottom-space', contentSpace + 'px');
       root.dataset.rakBottomNavFixed = '1';
