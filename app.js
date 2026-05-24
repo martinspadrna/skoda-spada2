@@ -1,4 +1,4 @@
-// v.1.5 (818) – Vercel/GitHub clean static-root hotfix: odstraněn vercel.json i .vercelignore, repo zůstává čistá statická appka z kořene.
+// v.1.5 (819) – Vercel/GitHub deploy-clean rollback na strukturu funkční v.1.5 (813); zachovaná oprava jídelny 21:30 v nedělním přesčasu.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

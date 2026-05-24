@@ -1,30 +1,10 @@
-## v.1.5 (818)
-- Vercel/GitHub hotfix: odstraněný `package.json`, aby Vercel nespouštěl npm build a nemusel řešit výstupní složku.
-- `vercel.json` je zjednodušený jen na statické hlavičky pro `sw.js`, manifest a assety; neobsahuje `buildCommand`, `installCommand` ani `outputDirectory`.
-- Struktura ZIPu zůstává čistá: jediná složka je `assets/` a appka se deployuje přímo z kořene repozitáře.
-- Přidaný kontrolní SQL soubor `supabase_rpc_hardening_v818.sql`; databáze ani Supabase policies se ve v818 nemění.
-- Verze sjednocena na v.1.5 (818), cache na v1.5-818 a Supabase realtime kanál na rak-public-live-v818.
-
-## v.1.5 (818)
-- Hotfix struktury ZIPu po Vercel/GitHub úpravě: odstraněné složky `public/` a `scripts/`.
-- ZIP má znovu pouze jednu hlavní složku `assets/` s obrázky; ostatní podpůrné soubory jsou přímo v kořeni.
-- Vercel podpora zůstává bez generování složky `public/`: `package.json`, `vercel.json` a `.vercelignore` jsou jen kořenové soubory.
-- Funkční logika aplikace, hry, rozpisy a Supabase policies beze změny proti v.1.5 (818).
-- Verze sjednocena na v.1.5 (818), cache na v1.5-818 a Supabase realtime kanál na rak-public-live-v818.
-
-## v.1.5 (818)
-- Fáze 2E-C Supabase hardening: herní RPC smoke metriky pro `game_stats` jsou nově perzistentní v zařízení, takže po mobilním hraní zůstane vidět počet RPC pokusů, úspěchů a fallbacků i po návratu do diagnostiky.
-- Přímé `INSERT/UPDATE` policies u `game_stats` zatím zůstávají zapnuté. Bez reálného mobilního ověření by jejich zúžení bylo zbytečně rizikové pro hry, Top 5 a profily.
-- Přidaný kontrolní SQL soubor `supabase_rpc_hardening_v818.sql`, který ověřuje existenci tří RPC funkcí a že veřejné DELETE policies u herních tabulek zůstávají odstraněné.
-- Verze sjednocena na v.1.5 (818), cache na v1.5-818 a Supabase realtime kanál na rak-public-live-v818.
-- Aktuální fáze: 2E-C připravená k mobilnímu ověření. Následuje 2E-D – po potvrzení RPC zápisů bez fallbacků začít bezpečně zužovat přímé INSERT/UPDATE policies u `game_stats`.
-
-## v.1.5 (813)
-- Opravený přehled otevírací doby jídelny pro nedělní přesčas: pokud je aktuální týden v seznamu mimořádných nedělních nočních směn, neděle v modalu/přehledu ukazuje i 21:30–23:30.
-- Kořenová příčina: stav otevřeno/zavřeno používal speciální nedělní override, ale přehled otevírací doby skládal řádky jen ze statického týdenního rozpisu `location.days`, takže u jídelny chybělo přesčasové okno.
-- Kantýna beze změny, protože její nedělní přehled už večerní okno obsahoval.
-- Verze sjednocena na v.1.5 (813), cache na v1.5-813 a Supabase realtime kanál na rak-public-live-v813.
-- Aktuální fáze: 2E-B/2E-C pozastavená kvůli funkční opravě otevírací doby. Následuje návrat na 2E-C – po mobilním ověření zužovat přímé INSERT/UPDATE policies u `game_stats`.
+## v.1.5 (819)
+- Vercel/GitHub deploy-clean hotfix: build je znovu postavený z poslední verze, která na Vercelu prošla, tedy z v.1.5 (813).
+- Odstraněné jsou všechny pozdější Vercel experimenty a pomocné konfigurační soubory z v.1.5 (815–818): žádné `package.json`, `vercel.json`, `.vercelignore`, `public/`, `scripts/` ani README deploy soubor.
+- Struktura ZIPu je znovu stejná jako u funkční v.1.5 (813): v kořeni jsou zdrojové soubory a jediná složka je `assets/` s obrázky.
+- Zachovaná je oprava jídelny z v.1.5 (813): u nedělního přesčasu se v přehledu jídelny ukazuje večerní okno 21:30–23:30.
+- Bezpečnostní Supabase fáze 2E-D je dočasně pozastavená; build v.1.5 (819) neobsahuje změny z v.1.5 (814–818), aby se ověřil čistý deploy.
+- Verze sjednocena na v.1.5 (819), cache na v1.5-819 a Supabase realtime kanál na rak-public-live-v819.
 
 ## v.1.5 (812)
 - Fáze 2E-B Supabase hardening: game_stats RPC cesta má runtime smoke metriky pro pokusy, úspěšné zápisy a fallbacky.
