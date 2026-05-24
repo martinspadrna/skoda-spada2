@@ -1,3 +1,19 @@
+## v.1.5 (821)
+- Fáze 2E-E Supabase hardening: do DB byla přidaná a ověřená RPC funkce `rak_save_game_ui_settings` pro profilový vzhled uložený v `game_stats` jako `__profile_ui`.
+- Aplikace ukládá theme/pozadí herního profilu RPC-first a přímý INSERT/UPDATE fallback zatím nechává kvůli kompatibilitě.
+- Diagnostika nově ukazuje i perzistentní profile UI RPC smoke metriky: pokusy, úspěchy, fallbacky a připravenost na další utažení policies.
+- Přímé INSERT/UPDATE policies u `game_stats` zatím nejsou zúžené, dokud nebude potvrzené ukládání her i profilového vzhledu přes RPC bez fallbacků.
+- Přidaný kontrolní SQL soubor `supabase_rpc_hardening_v821.sql`.
+- Verze sjednocena na v.1.5 (821), cache na v1.5-821 a Supabase realtime kanál na rak-public-live-v821.
+- Aktuální fáze: 2E-E hotovo. Následuje 2E-F – po mobilním ověření game_stats i profile UI RPC začít opatrně zužovat `game_stats` INSERT/UPDATE policies.
+
+## v.1.5 (814)
+- Fáze 2E-C Supabase hardening: herní RPC smoke metriky pro `game_stats` jsou nově perzistentní v zařízení, takže po mobilním hraní zůstane vidět počet RPC pokusů, úspěchů a fallbacků i po návratu do diagnostiky.
+- Přímé `INSERT/UPDATE` policies u `game_stats` zatím zůstávají zapnuté. Bez reálného mobilního ověření by jejich zúžení bylo zbytečně rizikové pro hry, Top 5 a profily.
+- Přidaný kontrolní SQL soubor `supabase_rpc_hardening_v814.sql`, který ověřuje existenci tří RPC funkcí a že veřejné DELETE policies u herních tabulek zůstávají odstraněné.
+- Verze sjednocena na v.1.5 (814), cache na v1.5-814 a Supabase realtime kanál na rak-public-live-v814.
+- Aktuální fáze: 2E-C připravená k mobilnímu ověření. Následuje 2E-D – po potvrzení RPC zápisů bez fallbacků začít bezpečně zužovat přímé INSERT/UPDATE policies u `game_stats`.
+
 ## v.1.5 (813)
 - Opravený přehled otevírací doby jídelny pro nedělní přesčas: pokud je aktuální týden v seznamu mimořádných nedělních nočních směn, neděle v modalu/přehledu ukazuje i 21:30–23:30.
 - Kořenová příčina: stav otevřeno/zavřeno používal speciální nedělní override, ale přehled otevírací doby skládal řádky jen ze statického týdenního rozpisu `location.days`, takže u jídelny chybělo přesčasové okno.

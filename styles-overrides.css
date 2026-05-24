@@ -14448,3 +14448,24 @@ nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn.active::before{
     border-radius:20px !important;
   }
 }
+
+
+/* v.1.5 (821): Spodní panel – aktivní glass bublina nižší a širší, bez změny panelu. */
+nav.bottomNav #bottomNavScroll > button.bottomNavBtn.active::before,
+nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn.active::before{
+  left:-12px !important;
+  right:-12px !important;
+  top:-2px !important;
+  bottom:4px !important;
+  border-radius:20px !important;
+}
+@media (max-width:390px){
+  nav.bottomNav #bottomNavScroll > button.bottomNavBtn.active::before,
+  nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn.active::before{
+    left:-14px !important;
+    right:-14px !important;
+    top:-2px !important;
+    bottom:4px !important;
+    border-radius:20px !important;
+  }
+}

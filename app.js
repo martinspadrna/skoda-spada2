@@ -1,4 +1,4 @@
-// v.1.5 (813) – Oprava přehledu otevírací doby jídelny: nedělní přesčasové datum používá speciální okno 21:30–23:30 i v modalu/přehledu.
+// v.1.5 (821) – Fáze 2E-E: RPC pro profilový vzhled (__profile_ui) + příprava na budoucí zúžení game_stats INSERT/UPDATE.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;
