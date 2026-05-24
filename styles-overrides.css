@@ -12099,3 +12099,53 @@ body.ladaMode .adminRotationQuickRemove{
   backdrop-filter:none !important;
   -webkit-backdrop-filter:none !important;
 }
+
+
+/* v.1.5 (789): Administrace rozpisů – stop iOS auto-zoomu při kliknutí do jména. */
+html,
+body{
+  -webkit-text-size-adjust:100% !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor{
+  touch-action:pan-x pan-y !important;
+  -webkit-text-size-adjust:100% !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuTableWrap{
+  overflow-x:auto !important;
+  overflow-y:visible !important;
+  -webkit-overflow-scrolling:touch !important;
+  touch-action:pan-x pan-y !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuTableWrap:nth-of-type(1) .appMenuAdminTable,
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuTableWrap:nth-of-type(2) .appMenuAdminTable{
+  min-width:680px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuTableWrap:nth-of-type(3) .appMenuAdminTable{
+  min-width:560px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuInlineInput,
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuInlineInputTiny,
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor input[data-rot-field],
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor input[data-note-field]{
+  font-size:16px !important;
+  line-height:1.12 !important;
+  min-height:36px !important;
+  padding:6px 5px !important;
+  transform:none !important;
+  -webkit-appearance:none !important;
+  appearance:none !important;
+  touch-action:manipulation !important;
+  -webkit-text-size-adjust:100% !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuInlineInputTiny,
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor input[data-rot-field^="cell-"]{
+  min-width:58px !important;
+  text-align:center !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor input[data-rot-field="date"],
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor input[data-note-field="date"]{
+  min-width:96px !important;
+}
+#appMenuBody[data-admin-view="rotation"].adminRotationViewportRecovered #adminRotationEditor{
+  min-height:240px !important;
+}

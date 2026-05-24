@@ -1,3 +1,10 @@
+## v.1.5 (789)
+- Administrace → Rozpisy: opravená hlavní příčina pádu na iPhonu při ruční editaci. Pole v tabulkách už nemají malé písmo 9–11 px, které na iOS po kliknutí automaticky přibližovalo stránku.
+- Ruční editor rozpisu má při otevření uzamčený viewport proti iOS auto-zoomu a při změně visual viewportu jen bezpečně zavře rychlé Odebrat místo rozbití celé obrazovky.
+- Tabulky v ruční editaci jsou raději širší a horizontálně scrollovatelné, aby inputy mohly mít bezpečných 16 px a Safari je nepřibližovalo.
+- Rychlé tlačítko Odebrat po kliknutí na obsazené jméno zůstává zachované.
+- Verze sjednocena na v.1.5 (789), cache na v1.5-789 a Supabase realtime kanál na rak-public-live-v789.
+
 ## v.1.5 (788)
 - Administrace → Rozpisy: po kliknutí na vyplněné jméno se znovu hned nabízí rychlá akce Odebrat, tentokrát jako vlastní malé tlačítko nad polem, ne jen přes systémový datalist.
 - Našeptávání jmen v ručním editoru už nepřestavuje datalisty zbytečně celé dokola při každém focusu; aktualizuje jen změněné seznamy, aby se editor na mobilu nechoval těžce.

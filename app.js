@@ -1,4 +1,4 @@
-// v.1.5 (788) – Administrace rozpisů: rychlé Odebrat a ochrana proti pádu při oddálení.
+// v.1.5 (789) – Administrace rozpisů: vypnutí iOS auto-zoomu inputů a stabilizace při oddálení.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

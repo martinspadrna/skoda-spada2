@@ -4353,7 +4353,7 @@ function renderGamesAppearanceStatus() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText || 'v.1.5 (788)',
+      range: versionText || 'v.1.5 (789)',
       title: 'Přechod na řadu 1.5',
       lines: [
         'Korekce jsou oddělené od Výpočtu kusů; Frézky jsou označené jako nutné doladit.',
@@ -4371,7 +4371,7 @@ function buildAppHistoryHtml(versionText) {
         'Korekce Frézky mají otazníky s obrázkovou nápovědou pro konicitu a fhβ, včetně zvýraznění aktuální hodnoty i tlačítka Změnit.',
         'Sudoku má větší volbu obtížnosti posunutou výš i číselník nad spodní lištou; Pexeso 4×4 drží stejnou velikost karet při otočení a herní dlaždice mají sjednocené zarovnání textu.',
         'Korekce Soustruhy mají zkrácený výsledek polohy vrtáků v ose X, vyšší čistý panel bez doplňkového popisku a otazník s nápovědou pro vrtáky 3 a 7 z 3D protokolu.',
-        'Administrace rozpisů má stabilnější ruční editaci: po kliknutí na vyplněné jméno nabídne rychlé Odebrat a editor blokuje problematické oddálení, které na mobilu shazovalo stránku.',
+        'Administrace rozpisů má stabilnější ruční editaci: po kliknutí na vyplněné jméno nabídne rychlé Odebrat a editor už nepoužívá malé inputy, které na iPhonu spouštěly automatické přiblížení.',
         'Administrace rozpisů má bezpečnější ruční editaci: klepnutí do pole už nespouští mazací dialog, kontroly se přepočítávají odlehčeně a chyba kontroly neshodí obrazovku.',
         'Korekce Soustruhy mají nad zadáváním hodnot i otazník s obrázkovou nápovědou, kde v protokolu najít vrták 3 a 7.',
         'Korekce mají kompaktnější centrované nadpisy; Frézky mají volbu indexu s malou mezerou jako u Výpočtu kusů a AF/AG pozadí správně modrá vlevo, zelená vpravo.',
@@ -4535,7 +4535,12 @@ function renderAdminInlineFieldHtml(fieldAttr, fieldName, value, placeholder, ti
     fieldAttr ? fieldAttr + '="' + escapeHtml(fieldName) + '"' : '',
     'value="' + escapeHtml(safeValue) + '"',
     'placeholder="' + escapeHtml(placeholder || '') + '"',
-    'title="' + escapeHtml(isDateField ? 'Datum upravíš ručně.' : 'Uprav text ručně. Pro vymazání smaž hodnotu nebo napiš odebrat.') + '"'
+    'title="' + escapeHtml(isDateField ? 'Datum upravíš ručně.' : 'Uprav text ručně. Pro vymazání smaž hodnotu nebo napiš odebrat.') + '"',
+    'autocomplete="off"',
+    'autocorrect="off"',
+    'autocapitalize="off"',
+    'spellcheck="false"',
+    'inputmode="text"'
   ].filter(Boolean).join(' ');
   return [
     '<div class="' + classes.join(' ') + '">',
@@ -5542,6 +5547,7 @@ function renderAdminMenuBody(body, section) {
   const months = getAdminRotationMonthKeys();
   const monthKey = getAdminSelectedMonthKey();
   body.dataset.adminView = mode;
+  try { adminSetRotationViewportLock(mode === 'rotation'); } catch (err) {}
   const page = document.getElementById('menu');
   if (page) page.dataset.adminView = mode;
 
@@ -5883,6 +5889,18 @@ function adminScheduleRotationQuickRemove(input) {
   }
 }
 
+function adminSetRotationViewportLock(active) {
+  try {
+    const meta = document.querySelector('meta[name="viewport"]');
+    if (!meta) return;
+    if (!window.__rakDefaultViewportContent) {
+      window.__rakDefaultViewportContent = meta.getAttribute('content') || 'width=device-width, initial-scale=1.0, viewport-fit=cover';
+    }
+    const locked = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover';
+    meta.setAttribute('content', active ? locked : window.__rakDefaultViewportContent);
+  } catch (err) {}
+}
+
 function adminBindRotationZoomGuard() {
   if (window.__rakAdminRotationZoomGuardBound) return;
   window.__rakAdminRotationZoomGuardBound = true;
@@ -5890,25 +5908,48 @@ function adminBindRotationZoomGuard() {
     const body = document.getElementById('appMenuBody');
     return !!(body && body.dataset.adminView === 'rotation' && document.getElementById('adminRotationEditor'));
   };
+  const isAdminRotationField = (node) => !!(node && node.matches && node.matches('[data-rot-field], [data-note-field]'));
   const blockZoom = (event) => {
     if (!isAdminRotation()) return;
+    adminSetRotationViewportLock(true);
     try { adminCloseRotationQuickRemove(); } catch (err) {}
     if (event && event.touches && event.touches.length < 2) return;
     try { event.preventDefault(); } catch (err) {}
   };
+  const lockForField = (event) => {
+    if (!isAdminRotation()) return;
+    const target = event && event.target;
+    if (!isAdminRotationField(target)) return;
+    adminSetRotationViewportLock(true);
+  };
+  const recoverAfterViewportChange = () => {
+    if (!isAdminRotation()) return;
+    adminSetRotationViewportLock(true);
+    try { adminCloseRotationQuickRemove(); } catch (err) {}
+    try {
+      const active = document.activeElement;
+      if (active && isAdminRotationField(active) && window.visualViewport && Number(window.visualViewport.scale || 1) > 1.01) {
+        active.blur();
+      }
+    } catch (err) {}
+    try {
+      const body = document.getElementById('appMenuBody');
+      if (body) body.classList.add('adminRotationViewportRecovered');
+    } catch (err) {}
+  };
   try { document.addEventListener('gesturestart', blockZoom, { passive: false }); } catch (err) {}
   try { document.addEventListener('gesturechange', blockZoom, { passive: false }); } catch (err) {}
+  try { document.addEventListener('gestureend', blockZoom, { passive: false }); } catch (err) {}
+  try { document.addEventListener('touchstart', lockForField, { passive: true, capture: true }); } catch (err) {}
+  try { document.addEventListener('focusin', lockForField, true); } catch (err) {}
   try { document.addEventListener('touchmove', blockZoom, { passive: false }); } catch (err) {}
   try {
-    window.addEventListener('resize', () => {
-      if (isAdminRotation()) adminCloseRotationQuickRemove();
-    }, { passive: true });
+    window.addEventListener('resize', recoverAfterViewportChange, { passive: true });
   } catch (err) {}
   try {
     if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', () => {
-        if (isAdminRotation()) adminCloseRotationQuickRemove();
-      }, { passive: true });
+      window.visualViewport.addEventListener('resize', recoverAfterViewportChange, { passive: true });
+      window.visualViewport.addEventListener('scroll', recoverAfterViewportChange, { passive: true });
     }
   } catch (err) {}
 }
