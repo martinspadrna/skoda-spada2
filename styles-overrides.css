@@ -14329,3 +14329,101 @@ html body.tttOpen #tttOverlay.tttOverlay.isVisible .tttResultCard{
     max-height:calc(100dvh - 52px - var(--rak-ttt-live-bottom-clearance, calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 76px))) !important;
   }
 }
+
+
+/* v.1.5 (805): Piškvorky nad lištou + čistější větší ikony spodního panelu. */
+:root{
+  --rak-ttt-live-bottom-clearance:calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 118px);
+}
+nav.bottomNav #bottomNavScroll > button.bottomNavBtn .bottomNavIcon,
+nav.bottomNav #bottomNavScroll > button.bottomNavBtn .bottomNavIcon svg,
+nav.bottomNav #bottomNavScroll > button.bottomNavBtn .bottomNavIcon img{
+  width:clamp(38px, 9vw, 47px) !important;
+  height:clamp(38px, 9vw, 47px) !important;
+}
+nav.bottomNav #bottomNavScroll > button.bottomNavBtn .bottomNavIcon{
+  flex-basis:clamp(38px, 9vw, 47px) !important;
+  margin:-3px auto -3px !important;
+}
+nav.bottomNav #bottomNavScroll > button.bottomNavBtn.active,
+nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn.active{
+  padding:0 1px 1px !important;
+  gap:1px !important;
+}
+nav.bottomNav #bottomNavScroll > button.bottomNavBtn.active .bottomNavIcon{
+  width:clamp(48px, 11.6vw, 60px) !important;
+  height:clamp(48px, 11.6vw, 60px) !important;
+  flex-basis:clamp(48px, 11.6vw, 60px) !important;
+  margin:-12px auto 1px !important;
+  transform:none !important;
+  z-index:2 !important;
+}
+nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn .moreIcon,
+nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn.active .moreIcon{
+  width:clamp(33px, 7.8vw, 40px) !important;
+  height:clamp(33px, 7.8vw, 40px) !important;
+  margin:-7px auto 1px !important;
+  transform:none !important;
+  z-index:2 !important;
+}
+nav.bottomNav #bottomNavScroll > button.bottomNavBtn.active .bottomNavLabel,
+nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn.active .bottomNavLabel{
+  margin:0 auto -1px !important;
+  transform:none !important;
+  z-index:2 !important;
+}
+nav.bottomNav #bottomNavScroll > button.bottomNavBtn.active::before,
+nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn.active::before{
+  top:-12px !important;
+  bottom:-4px !important;
+}
+html body.tttOpen #tttOverlay.tttOverlay.isVisible .tttOverlay::after,
+html body.tttOpen .tttOverlay::after{
+  height:var(--rak-ttt-live-bottom-clearance, calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 118px)) !important;
+}
+html body.tttOpen #tttOverlay.tttOverlay.isVisible .tttGameScreen{
+  padding-bottom:var(--rak-ttt-live-bottom-clearance, calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 118px)) !important;
+}
+html body.tttOpen #tttOverlay.tttOverlay.isVisible .tttBoardWrap{
+  top:48px !important;
+  right:8px !important;
+  bottom:var(--rak-ttt-live-bottom-clearance, calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 118px)) !important;
+  left:8px !important;
+  inset:48px 8px var(--rak-ttt-live-bottom-clearance, calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 118px)) 8px !important;
+  max-height:calc(100dvh - 48px - var(--rak-ttt-live-bottom-clearance, calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 118px))) !important;
+  padding:6px !important;
+}
+html body.tttOpen #tttOverlay.tttOverlay.isVisible .tttBoard{
+  max-height:100% !important;
+  max-width:100% !important;
+}
+html body.tttOpen #tttOverlay.tttOverlay.isVisible .tttResultCard{
+  bottom:calc(var(--rak-ttt-live-bottom-clearance, calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 118px)) + 8px) !important;
+}
+@media (max-width:390px){
+  nav.bottomNav #bottomNavScroll > button.bottomNavBtn .bottomNavIcon,
+  nav.bottomNav #bottomNavScroll > button.bottomNavBtn .bottomNavIcon svg,
+  nav.bottomNav #bottomNavScroll > button.bottomNavBtn .bottomNavIcon img{
+    width:40px !important;
+    height:40px !important;
+  }
+  nav.bottomNav #bottomNavScroll > button.bottomNavBtn.active .bottomNavIcon{
+    width:54px !important;
+    height:54px !important;
+    flex-basis:54px !important;
+    margin:-12px auto 1px !important;
+  }
+  nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn .moreIcon,
+  nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn.active .moreIcon{
+    width:36px !important;
+    height:36px !important;
+    margin:-7px auto 1px !important;
+  }
+  html body.tttOpen #tttOverlay.tttOverlay.isVisible .tttBoardWrap{
+    top:46px !important;
+    right:6px !important;
+    left:6px !important;
+    inset:46px 6px var(--rak-ttt-live-bottom-clearance, calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 126px)) 6px !important;
+    max-height:calc(100dvh - 46px - var(--rak-ttt-live-bottom-clearance, calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 126px))) !important;
+  }
+}

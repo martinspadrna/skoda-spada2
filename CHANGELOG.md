@@ -1,3 +1,10 @@
+## v.1.5 (805)
+- Piškvorky mají ještě upravenou hrací plochu přímo podle výšky spodní lišty; board se může lehce zmenšit, aby spodní řada nebyla za panelem.
+- Spodní lišta: ikonky jsou znovu o chlup větší a aktivní ikonka je posazená nad popisek, aby nelezla do textu.
+- Herní profily nově při skládání přehledu berou online Top score/cache ze všech her, ne jen Piškvorky, takže profil hráče lépe odpovídá výsledkům viditelným v Top 5.
+- Denní challenge ponechává Top score podle aktuální dnešní hry a v názvu score ukazuje, ke které hře patří.
+- Verze sjednocena na v.1.5 (805), cache na v1.5-805 a Supabase realtime kanál na rak-public-live-v805.
+
 ## v.1.5 (804)
 - Spodní lišta: ikonky jsou zvětšené a aktivní ikonka se už nemá posouvat nahoru; zvětší se na svém místě. Aktivní „Více“ má tečky centrované, aby neutíkaly doprava.
 - Piškvorky: oprava spodního prostoru je posílená i v runtime patchi Piškvorek, který dřív přepisoval statické CSS; hrací plocha se počítá podle reálné výšky spodní lišty a má končit nad panelem.

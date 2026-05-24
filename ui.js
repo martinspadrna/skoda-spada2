@@ -755,7 +755,7 @@ html body.tttOpen .tttOverlay::after{
   left:0 !important;
   right:0 !important;
   bottom:0 !important;
-  height:var(--rak-ttt-live-bottom-clearance, calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 72px)) !important;
+  height:var(--rak-ttt-live-bottom-clearance, calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 118px)) !important;
   pointer-events:none !important;
   z-index:1 !important;
   background:linear-gradient(180deg, rgba(5,8,22,0), var(--rakBgBase, var(--bg, #050816)) 42%, var(--rakBgBase, var(--bg, #050816)) 100%) !important;
@@ -763,13 +763,13 @@ html body.tttOpen .tttOverlay::after{
 html body.tttOpen #tttOverlay.tttOverlay.isVisible .tttBoardWrap{
   top:56px !important;
   right:10px !important;
-  bottom:var(--rak-ttt-live-bottom-clearance, calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 72px)) !important;
+  bottom:var(--rak-ttt-live-bottom-clearance, calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 118px)) !important;
   left:10px !important;
-  inset:56px 10px var(--rak-ttt-live-bottom-clearance, calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 72px)) 10px !important;
-  max-height:calc(100dvh - 56px - var(--rak-ttt-live-bottom-clearance, calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 72px))) !important;
+  inset:56px 10px var(--rak-ttt-live-bottom-clearance, calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 118px)) 10px !important;
+  max-height:calc(100dvh - 56px - var(--rak-ttt-live-bottom-clearance, calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 118px))) !important;
 }
 html body.tttOpen #tttOverlay.tttOverlay.isVisible .tttResultCard{
-  bottom:calc(var(--rak-ttt-live-bottom-clearance, calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 72px)) + 8px) !important;
+  bottom:calc(var(--rak-ttt-live-bottom-clearance, calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 118px)) + 8px) !important;
 }
 `;
     if (existing) {
@@ -4122,8 +4122,8 @@ function tttLayoutBoard() {
     const navRect = nav && nav.getBoundingClientRect ? nav.getBoundingClientRect() : null;
     const navTop = navRect && Number.isFinite(navRect.top) ? navRect.top : 0;
     const navClearance = navRect && viewportH
-      ? Math.ceil(Math.max(96, (viewportH - navTop) + 30))
-      : Math.ceil(Math.max(96, ((navRect && navRect.height) || 72) + 44));
+      ? Math.ceil(Math.max(136, (viewportH - navTop) + 74))
+      : Math.ceil(Math.max(136, ((navRect && navRect.height) || 72) + 92));
     document.documentElement.style.setProperty('--rak-ttt-live-bottom-clearance', navClearance + 'px');
   } catch (err) {}
 
@@ -4364,12 +4364,13 @@ function renderGamesAppearanceStatus() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText || 'v.1.5 (804)',
+      range: versionText || 'v.1.5 (805)',
       title: 'Aktuální doladění',
       lines: [
         'Piškvorky mají tvrdší spodní rezervu počítanou podle reálné výšky spodní lišty, aby hrací plocha končila nad panelem.',
         'Spodní lišta zůstává velikostí i umístěním zachovaná; ikonky jsou větší a aktivní ikonka se zvětší na místě bez posunu nahoru.',
-        'Denní challenge v Top score ukazuje jen aktuální dnešní hru a v titulku score píše, o jakou hru jde.'
+        'Denní challenge v Top score ukazuje jen aktuální dnešní hru a v titulku score píše, o jakou hru jde.',
+        'Profil hráče bere online výsledky ze všech načtených Top score her, ne jen Piškvorky.'
       ]
     },
     {
@@ -7749,47 +7750,84 @@ const GAMES_PROFILE_GAME_DEFS = [
   { id: 'daily', title: 'Denní challenge', unit: 'bodů' }
 ];
 
+function gamesMergeRemoteLeaderboardRowIntoAccount(account, gameId, row) {
+  const id = String(gameId || '').trim();
+  if (!account || !id || id === '__profile_ui') return account;
+  account.stats = account.stats && typeof account.stats === 'object' ? account.stats : {};
+  const updated = gamesParseRemoteTimestamp(row && (row.updated_at || row.last_played_at || row.updatedAt));
+  const value = Number(row && (row.value ?? row.points ?? row.bestScore ?? row.best_score ?? row.games_played) || 0) || 0;
+  const gamesPlayed = Number(row && (row.games_played ?? row.plays) || 0) || 0;
+  const wins = Number(row && row.wins || 0) || 0;
+  const losses = Number(row && row.losses || 0) || 0;
+  const draws = Number(row && row.draws || 0) || 0;
+  const target = id === '2048' ? 'g2048' : id;
+  if (target === 'ttt') {
+    const local = account.stats.ttt && typeof account.stats.ttt === 'object' ? account.stats.ttt : {};
+    account.stats.ttt = Object.assign({}, local, {
+      plays: Math.max(Number(local.plays || 0) || 0, gamesPlayed || value || 0),
+      wins: Math.max(Number(local.wins || 0) || 0, wins),
+      losses: Math.max(Number(local.losses || 0) || 0, losses),
+      draws: Math.max(Number(local.draws || 0) || 0, draws),
+      lastPlayedAt: Math.max(Number(local.lastPlayedAt || 0) || 0, updated || 0)
+    });
+  } else if (target === 'g2048' || target === 'snake' || target === 'flap') {
+    const local = account.stats[target] && typeof account.stats[target] === 'object' ? account.stats[target] : {};
+    account.stats[target] = Object.assign({}, local, {
+      plays: Math.max(Number(local.plays || 0) || 0, gamesPlayed || (value > 0 ? 1 : 0)),
+      bestScore: Math.max(Number(local.bestScore || 0) || 0, value),
+      points: Math.max(Number(local.points || 0) || 0, value),
+      lastPlayedAt: Math.max(Number(local.lastPlayedAt || 0) || 0, updated || 0)
+    });
+  } else {
+    account.stats.arcade = account.stats.arcade && typeof account.stats.arcade === 'object' ? account.stats.arcade : {};
+    const local = account.stats.arcade[id] && typeof account.stats.arcade[id] === 'object' ? account.stats.arcade[id] : {};
+    const lowBetter = typeof isLowBetter === 'function' && isLowBetter(id);
+    const merged = Object.assign({}, local, {
+      plays: Math.max(Number(local.plays || 0) || 0, gamesPlayed || (value > 0 ? 1 : 0)),
+      points: Math.max(Number(local.points || 0) || 0, value),
+      leaderboardValue: Math.max(Number(local.leaderboardValue || 0) || 0, value),
+      lastPlayedAt: Math.max(Number(local.lastPlayedAt || 0) || 0, updated || 0)
+    });
+    if (lowBetter) {
+      const oldTime = Number(local.bestTimeMs || 0) || 0;
+      merged.bestTimeMs = oldTime && value ? Math.min(oldTime, value) : (oldTime || value || 0);
+    } else {
+      merged.bestScore = Math.max(Number(local.bestScore || 0) || 0, value);
+    }
+    account.stats.arcade[id] = merged;
+  }
+  if (updated) account.updatedAt = Math.max(Number(account.updatedAt || 0) || 0, updated);
+  return account;
+}
+
 function gamesBuildProfilesWithRemoteRows(profile) {
   const base = Object.values(profile && profile.accounts || {}).filter(acc => !GAMES_ACCOUNT_BLOCKLIST.has(String(acc && acc.id || '').trim()));
   const byId = new Map(base.map(acc => [String(acc && acc.id || '').trim(), acc]));
-  const remoteTtt = app.gamesLeaderboardCache && Array.isArray(app.gamesLeaderboardCache.ttt) ? app.gamesLeaderboardCache.ttt : [];
-  remoteTtt.forEach((row) => {
-    const remoteUpdated = gamesParseRemoteTimestamp(row && (row.updated_at || row.last_played_at || row.updatedAt));
-    if (Number.isFinite(GAMES_REMOTE_STATS_RESET_CUTOFF_MS) && remoteUpdated && remoteUpdated < GAMES_REMOTE_STATS_RESET_CUTOFF_MS) return;
-    const id = String(row && (row.id || row.account_number || row.accountNumber) ? (row.id || row.account_number || row.accountNumber) : '').trim();
-    if (!id || GAMES_ACCOUNT_BLOCKLIST.has(id)) return;
-    const value = Number(row && (row.value || row.games_played || row.points) || 0) || 0;
-    if (value <= 0) return;
-    const remoteStats = {
-      plays: value,
-      wins: Number(row && row.wins || 0) || 0,
-      losses: Number(row && row.losses || 0) || 0,
-      draws: Number(row && row.draws || 0) || 0,
-      lastPlayedAt: row && row.updatedAt ? Date.parse(row.updatedAt) || 0 : 0
-    };
-    const remoteName = String(row && (row.name || row.player_name) ? (row.name || row.player_name) : ('Hráč ' + id)).trim();
-    if (byId.has(id)) {
-      const existing = byId.get(id) || {};
-      existing.stats = existing.stats && typeof existing.stats === 'object' ? existing.stats : {};
-      const localTtt = existing.stats.ttt && typeof existing.stats.ttt === 'object' ? existing.stats.ttt : {};
-      existing.stats.ttt = Object.assign({}, localTtt, {
-        plays: Math.max(Number(localTtt.plays || 0) || 0, remoteStats.plays),
-        wins: Math.max(Number(localTtt.wins || 0) || 0, remoteStats.wins),
-        losses: Math.max(Number(localTtt.losses || 0) || 0, remoteStats.losses),
-        draws: Math.max(Number(localTtt.draws || 0) || 0, remoteStats.draws),
-        lastPlayedAt: Math.max(Number(localTtt.lastPlayedAt || 0) || 0, remoteStats.lastPlayedAt)
-      });
-      if (!existing.name && remoteName) existing.name = remoteName;
-      existing.updatedAt = Math.max(Number(existing.updatedAt || 0) || 0, remoteStats.lastPlayedAt || Date.now());
-      byId.set(id, existing);
-      return;
-    }
-    byId.set(id, gamesNormalizeStoredAccount({
-      id,
-      name: remoteName,
-      stats: { ttt: remoteStats },
-      updatedAt: remoteStats.lastPlayedAt || Date.now()
-    }, remoteName));
+  const cache = app.gamesLeaderboardCache && typeof app.gamesLeaderboardCache === 'object' ? app.gamesLeaderboardCache : {};
+  Object.keys(cache).forEach((gameId) => {
+    if (!gameId || gameId === '__profile_ui') return;
+    const rows = Array.isArray(cache[gameId]) ? cache[gameId] : [];
+    rows.forEach((row) => {
+      const remoteUpdated = gamesParseRemoteTimestamp(row && (row.updated_at || row.last_played_at || row.updatedAt));
+      if (Number.isFinite(GAMES_REMOTE_STATS_RESET_CUTOFF_MS) && remoteUpdated && remoteUpdated < GAMES_REMOTE_STATS_RESET_CUTOFF_MS) return;
+      const id = String(row && (row.id || row.account_number || row.accountNumber) ? (row.id || row.account_number || row.accountNumber) : '').trim();
+      if (!id || GAMES_ACCOUNT_BLOCKLIST.has(id)) return;
+      const value = Number(row && (row.value ?? row.games_played ?? row.points) || 0) || 0;
+      if (value <= 0) return;
+      const remoteName = String(row && (row.name || row.player_name || row.full_name) ? (row.name || row.player_name || row.full_name) : ('Hráč ' + id)).trim();
+      let account = byId.get(id);
+      if (!account) {
+        account = gamesNormalizeStoredAccount({
+          id,
+          name: remoteName,
+          stats: {},
+          updatedAt: remoteUpdated || Date.now()
+        }, remoteName);
+      }
+      if (!account.name && remoteName) account.name = remoteName;
+      account = gamesMergeRemoteLeaderboardRowIntoAccount(account, gameId, row);
+      byId.set(id, account);
+    });
   });
   return Array.from(byId.values());
 }

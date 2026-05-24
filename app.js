@@ -1,4 +1,4 @@
-// v.1.5 (804) – Piškvorky nad lištou, stabilní větší aktivní ikona a denní score podle dnešní hry.
+// v.1.5 (805) – Piškvorky nad lištou, stabilní větší aktivní ikona a denní score podle dnešní hry.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;
