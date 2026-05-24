@@ -4364,13 +4364,13 @@ function renderGamesAppearanceStatus() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText || 'v.1.5 (814)',
+      range: versionText || 'v.1.5 (813)',
       title: 'Aktuální stabilizace',
       lines: [
-        'Supabase hardening je ve fázi 2E-C: herní RPC smoke metriky pro game_stats jsou perzistentní v zařízení.',
-        'Po odehrání několika her má diagnostika ukázat, že RPC úspěchy rostou a fallbacky zůstávají 0.',
-        'Přímé INSERT/UPDATE policies u game_stats zatím zůstávají kvůli kompatibilitě, dokud nebude mobilní ověření potvrzené.',
-        'Následuje 2E-D: po potvrzení RPC zápisů bez fallbacků bezpečně zužovat přímé INSERT/UPDATE policies u game_stats.'
+        'Opravený přehled otevírací doby jídelny: nedělní přesčas nově ukazuje i 21:30–23:30 přímo v modalu/přehledu.',
+        'Kantýna zůstala beze změny, protože její nedělní večerní okno už v přehledu bylo.',
+        'Supabase hardening zůstává ve stavu 2E-B/2E-C: RPC-first zápisy jsou připravené a přímé INSERT/UPDATE fallbacky zatím zůstávají kvůli kompatibilitě.',
+        'Následuje návrat na 2E-C: po mobilním ověření začít zužovat přímé INSERT/UPDATE policies u game_stats.'
       ]
     },
     {
@@ -6237,7 +6237,6 @@ function bindAppMenuHandlers(body) {
         ].filter(Boolean).join(' · ');
         const supabaseHardening = typeof window.getSupabaseHardeningStatus === 'function' ? window.getSupabaseHardeningStatus() : null;
         const supabaseGuard = supabaseHardening && supabaseHardening.guard ? supabaseHardening.guard : null;
-        const gameStatsRpcSmoke = typeof window.getGameStatsRpcSmokeStatus === 'function' ? window.getGameStatsRpcSmokeStatus() : (supabaseHardening && supabaseHardening.gameStatsRpcSmoke ? supabaseHardening.gameStatsRpcSmoke : null);
         const supabaseSyncGuard = supabaseHardening && supabaseHardening.syncGuard ? supabaseHardening.syncGuard : null;
         const supabaseCacheGuard = supabaseHardening && supabaseHardening.cacheGuard ? supabaseHardening.cacheGuard : null;
         const supabasePerformanceHealth = typeof window.getSupabasePerformanceHealth === 'function' ? window.getSupabasePerformanceHealth() : (supabaseHardening && supabaseHardening.performanceHealth ? supabaseHardening.performanceHealth : null);
@@ -6316,7 +6315,6 @@ function bindAppMenuHandlers(body) {
           supabaseStructureHealth ? ('Supabase GRANT/policies checklist: signály ' + String(supabaseStructureHealth.grantSignalCount || 0) + ' · policies ' + String(supabaseStructureHealth.rlsPolicyChecklistCount || 0) + ' · problémy ' + String((supabaseStructureHealth.issues || []).length || 0)) : '',
           supabasePolicyRiskHealth ? ('Supabase RLS audit: ' + (supabasePolicyRiskHealth.ok ? 'OK' : 'rizika') + ' · P0/P1/P2 ' + String(supabasePolicyRiskHealth.p0Count || 0) + '/' + String(supabasePolicyRiskHealth.p1Count || 0) + '/' + String(supabasePolicyRiskHealth.p2Count || 0) + ' · veřejný write tabulek ' + String(supabasePolicyRiskHealth.publicWriteTableCount || 0) + ' · destruktivní ' + String(supabasePolicyRiskHealth.destructiveTableCount || 0)) : '',
           supabasePolicyRiskHealth && supabasePolicyRiskHealth.phase ? ('Supabase fáze: ' + String(supabasePolicyRiskHealth.phase.current || '—') + ' · další: ' + String(supabasePolicyRiskHealth.phase.next || '—')) : '',
-          gameStatsRpcSmoke ? ('Supabase game_stats RPC smoke: pokusy/OK/fallback ' + String(gameStatsRpcSmoke.attempts || 0) + '/' + String(gameStatsRpcSmoke.successes || 0) + '/' + String(gameStatsRpcSmoke.fallbacks || 0) + ' · ready ' + (gameStatsRpcSmoke.readyForPolicyTightening ? 'ano' : 'ne') + ' · poslední OK ' + String(gameStatsRpcSmoke.lastSuccessType || '—')) : '',
           supabaseGuard ? ('Supabase guard: sloučeno ' + String(supabaseGuard.deduped || 0) + ' · ořezáno ' + String(supabaseGuard.trimmed || 0) + ' · odmítnuto ' + String((supabaseGuard.rejected || 0) + (supabaseGuard.oversized || 0))) : '',
           supabaseSyncGuard ? ('Supabase sync: timeouty R/W ' + String(supabaseSyncGuard.readTimeouts || 0) + '/' + String(supabaseSyncGuard.writeTimeouts || 0) + ' · retry R/W ' + String(supabaseSyncGuard.readRetries || 0) + '/' + String(supabaseSyncGuard.writeRetries || 0) + ' · fallback ' + String(supabaseSyncGuard.queuedFallbacks || 0)) : '',
           supabaseSyncGuard ? ('Supabase chyby: čtení ' + String(supabaseSyncGuard.failedReads || 0) + ' · zápis ' + String(supabaseSyncGuard.failedWrites || 0) + ' · cooldown ' + String(supabaseSyncGuard.cooldownSkips || 0)) : '',
