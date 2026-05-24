@@ -1,3 +1,10 @@
+## v.1.5 (800)
+- Spodní lišta: velikost ani umístění panelu se nemění proti potvrzené v.1.5 (799).
+- Panel je vizuálně ještě průhlednější, aby víc zapadl do pozadí aplikace.
+- Ikonky ve spodní liště jsou lehce zvětšené, aktivní ikonka je zvětšená výrazněji.
+- Aktivní glass zvýraznění je nově centrované na položku a natažené skoro přes celou výšku panelu, aby nepůsobilo jako malá bublina mimo ikonu.
+- Verze sjednocena na v.1.5 (800), cache na v1.5-800 a Supabase realtime kanál na rak-public-live-v800.
+
 ## v.1.5 (799)
 - Spodní lišta: vrácené původní PNG ikonky místo SVG ikon z v.1.5 (798).
 - Do buildu jsou doplněné chybějící soubory `assets/nav-icons/*.png`, aby ikonky nebyly závislé jen na cache prohlížeče.

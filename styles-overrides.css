@@ -13592,3 +13592,200 @@ body.lowEndDevice nav.bottomNav #bottomNavScroll > button.bottomNavBtn.active::b
     margin-top:-4px !important;
   }
 }
+
+
+/* v.1.5 (800): Spodní lišta – doladění aktivního zvýraznění, větší ikonky a průhlednější panel. */
+nav.bottomNav,
+body.tttOpen nav.bottomNav,
+body.gamesOpen nav.bottomNav{
+  background:
+    linear-gradient(180deg, rgba(30,50,128,.30), rgba(14,22,74,.24) 52%, rgba(8,13,44,.30)),
+    rgba(12,18,52,.26) !important;
+  border-color:rgba(180,210,255,.10) !important;
+  box-shadow:0 -8px 22px rgba(0,0,0,.20), inset 0 1px 0 rgba(255,255,255,.10) !important;
+  backdrop-filter:blur(18px) saturate(150%) !important;
+  -webkit-backdrop-filter:blur(18px) saturate(150%) !important;
+}
+nav.bottomNav #bottomNavScroll{
+  align-items:stretch !important;
+}
+nav.bottomNav #bottomNavScroll > button.bottomNavBtn,
+nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn{
+  position:relative !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  text-align:center !important;
+  gap:1px !important;
+  isolation:isolate !important;
+  background:transparent !important;
+  border:0 !important;
+  outline:0 !important;
+  box-shadow:none !important;
+  -webkit-appearance:none !important;
+  appearance:none !important;
+}
+nav.bottomNav #bottomNavScroll > button.bottomNavBtn::before,
+nav.bottomNav #bottomNavScroll > button.bottomNavBtn::after,
+nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn::before,
+nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn::after{
+  pointer-events:none !important;
+}
+nav.bottomNav #bottomNavScroll > button.bottomNavBtn:not(.active)::before,
+nav.bottomNav #bottomNavScroll > button.bottomNavBtn:not(.active)::after,
+nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn:not(.active)::before,
+nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn:not(.active)::after{
+  content:none !important;
+  display:none !important;
+}
+nav.bottomNav #bottomNavScroll > button.bottomNavBtn .bottomNavIcon{
+  position:relative !important;
+  z-index:2 !important;
+  display:block !important;
+  width:clamp(28px, 7.3vw, 36px) !important;
+  height:clamp(28px, 7.3vw, 36px) !important;
+  flex:0 0 clamp(28px, 7.3vw, 36px) !important;
+  margin:0 auto !important;
+  background:transparent !important;
+  border:0 !important;
+  outline:0 !important;
+  box-shadow:none !important;
+  filter:none !important;
+  transform:none !important;
+}
+nav.bottomNav #bottomNavScroll > button.bottomNavBtn .bottomNavIconImg{
+  width:100% !important;
+  height:100% !important;
+  object-fit:contain !important;
+  border:0 !important;
+  outline:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+}
+nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn .moreIcon{
+  position:relative !important;
+  z-index:2 !important;
+  width:clamp(18px, 4.8vw, 24px) !important;
+  height:clamp(18px, 4.8vw, 24px) !important;
+  margin:0 auto !important;
+  background:transparent !important;
+  border:0 !important;
+  outline:0 !important;
+  box-shadow:none !important;
+  filter:none !important;
+}
+nav.bottomNav #bottomNavScroll > button.bottomNavBtn .bottomNavLabel,
+nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn .bottomNavLabel{
+  position:relative !important;
+  z-index:2 !important;
+  margin:0 !important;
+  line-height:1.05 !important;
+}
+nav.bottomNav #bottomNavScroll > button.bottomNavBtn.active,
+nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn.active{
+  transform:none !important;
+  z-index:20 !important;
+  background:transparent !important;
+  border:0 !important;
+  outline:0 !important;
+  box-shadow:none !important;
+}
+nav.bottomNav #bottomNavScroll > button.bottomNavBtn.active::before,
+nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn.active::before{
+  content:"" !important;
+  display:block !important;
+  position:absolute !important;
+  left:-3px !important;
+  right:-3px !important;
+  top:-2px !important;
+  bottom:-2px !important;
+  width:auto !important;
+  height:auto !important;
+  transform:none !important;
+  border-radius:22px !important;
+  background:
+    radial-gradient(circle at 50% 16%, rgba(255,255,255,.22), transparent 42%),
+    linear-gradient(145deg, rgba(255,255,255,.16), rgba(255,255,255,.045) 45%, rgba(var(--theme-rgb,145,240,70),.18)),
+    rgba(8,18,42,.20) !important;
+  border:1px solid rgba(226,246,255,.24) !important;
+  outline:1px solid rgba(var(--theme-rgb,145,240,70),.10) !important;
+  outline-offset:-2px !important;
+  box-shadow:0 0 22px rgba(var(--theme-rgb,145,240,70),.20), 0 8px 18px rgba(0,0,0,.14), inset 0 1px 0 rgba(255,255,255,.18), inset 0 -1px 0 rgba(0,0,0,.13) !important;
+  backdrop-filter:blur(16px) saturate(170%) !important;
+  -webkit-backdrop-filter:blur(16px) saturate(170%) !important;
+  z-index:0 !important;
+}
+nav.bottomNav #bottomNavScroll > button.bottomNavBtn.active::after,
+nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn.active::after{
+  content:"" !important;
+  display:block !important;
+  position:absolute !important;
+  left:12px !important;
+  right:12px !important;
+  top:3px !important;
+  height:1px !important;
+  border-radius:999px !important;
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,.40), transparent) !important;
+  border:0 !important;
+  outline:0 !important;
+  box-shadow:none !important;
+  z-index:1 !important;
+}
+nav.bottomNav #bottomNavScroll > button.bottomNavBtn.active .bottomNavIcon{
+  width:clamp(34px, 8.4vw, 43px) !important;
+  height:clamp(34px, 8.4vw, 43px) !important;
+  flex:0 0 clamp(34px, 8.4vw, 43px) !important;
+  margin:0 auto !important;
+  transform:none !important;
+}
+nav.bottomNav #bottomNavScroll > button.bottomNavBtn.active .bottomNavIconImg--on{
+  opacity:1 !important;
+  filter:drop-shadow(0 0 10px rgba(var(--theme-rgb,145,240,70),.52)) !important;
+}
+nav.bottomNav #bottomNavScroll > button.bottomNavBtn.active .bottomNavIconImg--off,
+nav.bottomNav #bottomNavScroll > button.bottomNavBtn:not(.active) .bottomNavIconImg--on{
+  opacity:0 !important;
+}
+nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn.active .moreIcon{
+  width:clamp(22px, 5.8vw, 29px) !important;
+  height:clamp(22px, 5.8vw, 29px) !important;
+}
+body.lightweightMode nav.bottomNav,
+body.lowEndDevice nav.bottomNav{
+  background:rgba(8,14,32,.30) !important;
+  border-color:rgba(255,255,255,.06) !important;
+  box-shadow:0 -5px 14px rgba(0,0,0,.13) !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
+body.lightweightMode nav.bottomNav #bottomNavScroll > button.bottomNavBtn.active::before,
+body.lowEndDevice nav.bottomNav #bottomNavScroll > button.bottomNavBtn.active::before,
+body.lightweightMode nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn.active::before,
+body.lowEndDevice nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn.active::before{
+  background:rgba(var(--theme-rgb,145,240,70),.12) !important;
+  border-color:rgba(226,246,255,.16) !important;
+  box-shadow:0 0 10px rgba(var(--theme-rgb,145,240,70),.14), inset 0 1px 0 rgba(255,255,255,.10) !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
+@media (max-width:390px){
+  nav.bottomNav #bottomNavScroll > button.bottomNavBtn .bottomNavIcon{
+    width:31px !important;
+    height:31px !important;
+    flex-basis:31px !important;
+  }
+  nav.bottomNav #bottomNavScroll > button.bottomNavBtn.active .bottomNavIcon{
+    width:38px !important;
+    height:38px !important;
+    flex-basis:38px !important;
+  }
+  nav.bottomNav #bottomNavScroll > button.bottomNavBtn.active::before,
+  nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn.active::before{
+    left:-3px !important;
+    right:-3px !important;
+    top:-2px !important;
+    bottom:-2px !important;
+    border-radius:20px !important;
+  }
+}

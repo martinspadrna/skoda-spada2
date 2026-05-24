@@ -1,4 +1,4 @@
-// v.1.5 (799) – Spodní lišta: původní PNG ikonky, bez podkladů neaktivních položek a větší aktivní glass kapsle.
+// v.1.5 (800) – Spodní lišta: větší ikonky, průhlednější panel a vyšší centrovaná aktivní glass kapsle.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;
