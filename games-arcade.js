@@ -5289,7 +5289,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     const allHot = EXTRA_GAMES.length === 0;
     const completedOnlyGuard = typeof window.gamesRecordStat === 'function';
     return {
-      version: 'v.1.5 (809)',
+      version: 'v.1.5 (814)',
       ok: !missingMeta.length && !missingRenderer.length && allHot && completedOnlyGuard,
       totalGames: ids.length,
       coreGames: ids,
@@ -5305,7 +5305,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
       touchGuard: true,
       notes: [
         'Build 741 opravuje statistiky aktuálního roku po aktuální měsíc, skládá Lodě od spodní lišty a zklidňuje Pampuchovy duchy bez cíleného honění.',
-        'Reálnou hratelnost a citlivost dotyku je potřeba potvrdit na mobilu.'
+        'Reálnou hratelnost, citlivost dotyku a RPC zápis skóre je potřeba potvrdit na mobilu.'
       ]
     };
   }

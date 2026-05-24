@@ -1,4 +1,4 @@
-// v.1.5 (809) – Supabase hardening 2C: RPC migrace aplikovaná, klient jede RPC-first s fallbackem a public DELETE policies zatím zůstávají pro kompatibilitu.
+// v.1.5 (814) – Supabase hardening: perzistentní RPC smoke metriky pro game_stats, bez dalšího zužování INSERT/UPDATE policies před mobilním ověřením.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

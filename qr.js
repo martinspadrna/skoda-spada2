@@ -390,13 +390,28 @@ function foodWindowMatchesHighlight(window, highlight) {
   return String(window && window[0]) === highlight.startText && String(window && window[1]) === highlight.endText;
 }
 
-function buildFoodScheduleGroups(location) {
+function getFoodScheduleDateForDay(dayIndex, referenceDate) {
+  const reference = getPragueNow(referenceDate || new Date());
+  const monday = new Date(reference);
+  const referenceDay = monday.getDay();
+  const diffToMonday = referenceDay === 0 ? -6 : 1 - referenceDay;
+  monday.setDate(monday.getDate() + diffToMonday);
+  monday.setHours(0, 0, 0, 0);
+
+  const target = new Date(monday);
+  const offset = dayIndex === 0 ? 6 : dayIndex - 1;
+  target.setDate(monday.getDate() + offset);
+  return target;
+}
+
+function buildFoodScheduleGroups(location, referenceDate) {
   const dayOrder = [1, 2, 3, 4, 5, 6, 0];
   const groups = [];
   let current = null;
 
   dayOrder.forEach((dayIndex) => {
-    const windows = (location.days && location.days[dayIndex]) || [];
+    const dayDate = getFoodScheduleDateForDay(dayIndex, referenceDate || new Date());
+    const windows = getFoodScheduleForDay(location, dayIndex, dayDate);
     const signature = JSON.stringify(windows);
     if (!current || current.signature !== signature) {
       current = {
@@ -415,8 +430,9 @@ function buildFoodScheduleGroups(location) {
 }
 
 function buildFoodScheduleHtml(location) {
-  const highlight = getFoodScheduleHighlight(location, new Date());
-  const rows = buildFoodScheduleGroups(location).map((group) => {
+  const reference = new Date();
+  const highlight = getFoodScheduleHighlight(location, reference);
+  const rows = buildFoodScheduleGroups(location, reference).map((group) => {
     const dayLabel = formatFoodDayRangeLabel(group.startDay, group.endDay);
     const groupHasHighlightDay = isFoodDayInsideGroup(highlight.dayIndex, group);
     const rowClass = groupHasHighlightDay && highlight.type !== 'none' ? ' foodScheduleRow--hasHighlight' : '';
