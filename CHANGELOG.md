@@ -1,3 +1,10 @@
+## v.1.5 (798)
+- Spodní lišta: velikost ani umístění panelu se nemění proti v.1.5 (797).
+- Neaktivní ikony jsou převedené na čisté inline SVG bez PNG podkladů, aby kolem nich nezůstávaly staré tmavé rámečky ani cached ikony s vlastním ohraničením.
+- Aktivní zvýraznění už není kulatá bublina mimo/uvnitř ikonky; je nahrazené jemnou glass kapslí za aktivní položkou.
+- Panel je ještě lehce průhlednější, ale spodní rezerva obsahu a fixní ukotvení zůstávají zachované.
+- Verze sjednocena na v.1.5 (798), cache na v1.5-798 a Supabase realtime kanál na rak-public-live-v798.
+
 ## v.1.5 (797)
 - Spodní lišta: velikost a umístění panelu z v.1.5 (796) zůstávají beze změny.
 - Neaktivní ikonky jsou dočištěné bez tmavého podkladu, stínu, rámečku a pseudo-vrstev kolem sebe.

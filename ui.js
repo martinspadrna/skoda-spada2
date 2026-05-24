@@ -4353,7 +4353,7 @@ function renderGamesAppearanceStatus() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText || 'v.1.5 (797)',
+      range: versionText || 'v.1.5 (798)',
       title: 'Přechod na řadu 1.5',
       lines: [
         'Korekce jsou oddělené od Výpočtu kusů; Frézky jsou označené jako nutné doladit.',
