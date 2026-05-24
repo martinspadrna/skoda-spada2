@@ -1,4 +1,4 @@
-// v.1.5 (813) – Oprava přehledu otevírací doby jídelny: nedělní přesčasové datum používá speciální okno 21:30–23:30 i v modalu/přehledu.
+// v.1.5 (809) – Supabase hardening 2C: RPC migrace aplikovaná, klient jede RPC-first s fallbackem a public DELETE policies zatím zůstávají pro kompatibilitu.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;
