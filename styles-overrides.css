@@ -14427,3 +14427,24 @@ html body.tttOpen #tttOverlay.tttOverlay.isVisible .tttResultCard{
     max-height:calc(100dvh - 46px - var(--rak-ttt-live-bottom-clearance, calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 126px))) !important;
   }
 }
+
+
+/* v.1.5 (812): Spodní panel – aktivní glass bublina o trochu nižší a širší, panel se neposouvá. */
+nav.bottomNav #bottomNavScroll > button.bottomNavBtn.active::before,
+nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn.active::before{
+  left:-7px !important;
+  right:-7px !important;
+  top:-5px !important;
+  bottom:1px !important;
+  border-radius:20px !important;
+}
+@media (max-width:390px){
+  nav.bottomNav #bottomNavScroll > button.bottomNavBtn.active::before,
+  nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn.active::before{
+    left:-9px !important;
+    right:-9px !important;
+    top:-5px !important;
+    bottom:1px !important;
+    border-radius:20px !important;
+  }
+}

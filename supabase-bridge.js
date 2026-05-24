@@ -213,12 +213,12 @@
     { table: 'gomoku_wins', realtime: true, queueType: 'gomoku_win', access: 'anon SELECT/INSERT/UPDATE', note: 'výhry piškvorek / legacy leaderboard' }
   ];
 
-  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (809)';
+  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (813)';
   const SUPABASE_POLICY_AUDIT_SNAPSHOT_AT = '2026-05-24';
   const SUPABASE_POLICY_HARDENING_PHASE = {
-    current: 'Fáze 2C – RPC migrace aplikovaná a ověřená, klient používá RPC-first zápisy s fallbackem',
-    next: 'Fáze 2D – po reálném smoke testu postupně vypnout veřejné DELETE policies a zúžit přímé write cesty',
-    rollback: 'Fáze 2C má bezpečný fallback; při selhání RPC klient spadne zpět na původní přímé upserty. Databázové funkce lze ponechat nebo odstranit bez dopadu na čtení.'
+    current: 'Fáze 2E-B – game_stats RPC cesta má runtime smoke metriky; v813 jen opravuje přehled jídelny, přímé INSERT/UPDATE fallbacky zatím zůstávají do mobilního ověření',
+    next: 'Fáze 2E-C – po potvrzení RPC zápisů na mobilu začít zužovat přímé INSERT/UPDATE policies u game_stats',
+    rollback: 'Fáze 2E-B je rollbackovatelná vypnutím RPC-first větve; public INSERT/UPDATE se zatím neměnily a data nebyla mazána.'
   };
   const SUPABASE_POLICY_AUDIT_SNAPSHOT = [
     {
@@ -238,22 +238,22 @@
     {
       table: 'game_stats',
       priority: 'P0',
-      risk: 'public INSERT/UPDATE/DELETE nad žebříčky, XP a profilovým vzhledem',
-      observed: 'policies game_stats_insert_public/update_public/delete_public s true',
-      recommendation: 'nejdřív zrušit public DELETE; potom oddělit běžné score zápisy od admin/maintenance akcí'
+      risk: 'public INSERT/UPDATE nad žebříčky, XP a profilovým vzhledem; public DELETE už odstraněn ve Fázi 2D',
+      observed: 'policies game_stats_insert_public/update_public zůstávají; game_stats_delete_public odstraněná v DB migraci v810',
+      recommendation: 'běžné přírůstkové score zápisy směrovat přes rak_record_game_stat_delta; direct INSERT/UPDATE zúžit až po smoke testu'
     },
     {
       table: 'game_sessions',
       priority: 'P0',
-      risk: 'public INSERT/UPDATE/DELETE nad online session',
-      observed: 'policies game_sessions_insert_public/update_public/delete_public s true',
+      risk: 'public INSERT/UPDATE nad online session; public DELETE už odstraněn ve Fázi 2D',
+      observed: 'policies game_sessions_insert_public/update_public zůstávají; game_sessions_delete_public odstraněná v DB migraci v810',
       recommendation: 'nejdřív zrušit public DELETE; UPDATE omezit minimálně podle invite_code/účastníků a stavu session'
     },
     {
       table: 'game_invites',
       priority: 'P1',
-      risk: 'public UPDATE/DELETE nad pozvánkami',
-      observed: 'policies game_invites_update_public/delete_public s true',
+      risk: 'public UPDATE nad pozvánkami; public DELETE už odstraněn ve Fázi 2D',
+      observed: 'policy game_invites_update_public zůstává; game_invites_delete_public odstraněná v DB migraci v810',
       recommendation: 'mazání omezit na expirované pozvánky přes RPC/cron; UPDATE povolit jen pro očekávané přijetí pozvánky'
     },
     {
@@ -273,19 +273,28 @@
   ];
 
   const SUPABASE_RPC_HARDENING_STATUS = {
-    version: 'v.1.5 (809)',
-    phase: '2C',
+    version: 'v.1.5 (813)',
+    phase: '2E-B',
     rpcPreferred: true,
     migrationApplied: true,
-    migrationNote: 'RPC funkce rak_save_rotation_state a rak_save_machine_settings jsou aplikované v Supabase a ověřené přes pg_proc. Přímé write/delete policies zatím zůstávají jako kompatibilní fallback pro tento release.',
+    migrationNote: 'RPC funkce pro rotation_state, machine_settings a game_stats jsou aplikované. Runtime smoke metriky pro herní RPC zápisy přibyly ve v812; v813 pouze opravuje přehled jídelny. Veřejné DELETE policies zůstávají odstraněné, přímé INSERT/UPDATE zatím zůstávají kvůli kompatibilitě.',
     dbVerifiedAt: '2026-05-24',
-    verifiedRpcCount: 2,
+    verifiedRpcCount: 3,
     plannedRpc: [
       'rak_save_rotation_state',
       'rak_save_machine_settings',
-      'rak_cleanup_expired_game_invites (existující cleanup helper)'
+      'rak_cleanup_expired_game_invites (existující cleanup helper)',
+      'rak_record_game_stat_delta'
     ],
-    fallback: 'direct-upsert-fallback-until-rpc-migration-confirmed'
+    fallback: 'direct-insert-update-fallback-kept-until-phase-2e-c',
+    gameStatsRpcSmoke: 'instrumented-not-browser-tested',
+    gameStatsRpcAttempts: 0,
+    gameStatsRpcSuccesses: 0,
+    gameStatsRpcFallbacks: 0,
+    lastGameStatsRpcAt: null,
+    lastGameStatsRpcType: '',
+    lastGameStatsFallbackAt: null,
+    lastGameStatsFallbackReason: ''
   };
 
   const SUPABASE_STRUCTURE_REQUIRED_HELPERS = [
@@ -417,7 +426,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v809');
+      const channel = client.channel('rak-public-live-v813');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -2200,6 +2209,51 @@
     }
   }
 
+
+  function getSafeGameStatNumber(value, fallback) {
+    const num = Number(value);
+    return Number.isFinite(num) ? num : (Number.isFinite(Number(fallback)) ? Number(fallback) : 0);
+  }
+
+  async function tryRecordGameStatDeltaViaRpc(client, accountNumber, gameType, deltas) {
+    if (!client || typeof client.rpc !== 'function') return null;
+    const account = String(accountNumber || '').trim();
+    const type = String(gameType || '').trim();
+    if (!account || !type || type === GAME_UI_SETTINGS_TYPE) return null;
+    try {
+      SUPABASE_RPC_HARDENING_STATUS.gameStatsRpcAttempts += 1;
+      const { data, error } = await runSupabaseOperation('game_stats.rpc_delta', () => client.rpc('rak_record_game_stat_delta', {
+        p_account_number: account,
+        p_game_type: type,
+        p_games_played_delta: Math.max(0, Math.min(5, Math.round(getSafeGameStatNumber(deltas && deltas.gamesPlayedDelta, 0)))),
+        p_wins_delta: Math.max(0, Math.min(5, Math.round(getSafeGameStatNumber(deltas && deltas.winsDelta, 0)))),
+        p_losses_delta: Math.max(0, Math.min(5, Math.round(getSafeGameStatNumber(deltas && deltas.lossesDelta, 0)))),
+        p_draws_delta: Math.max(0, Math.min(5, Math.round(getSafeGameStatNumber(deltas && deltas.drawsDelta, 0)))),
+        p_points_delta: Math.max(0, Math.min(5000, Math.round(getSafeGameStatNumber(deltas && deltas.pointsDelta, 0))))
+      }), { mode: 'write', attempts: 1 });
+      if (error) throw error;
+      SUPABASE_RPC_HARDENING_STATUS.gameStatsRpcSuccesses += 1;
+      SUPABASE_RPC_HARDENING_STATUS.lastGameStatsRpcAt = new Date().toISOString();
+      SUPABASE_RPC_HARDENING_STATUS.lastGameStatsRpcType = type;
+      return data || null;
+    } catch (err) {
+      if (isSupabaseRpcUnavailableError(err)) {
+        SUPABASE_RPC_HARDENING_STATUS.lastUnavailableAt = new Date().toISOString();
+        SUPABASE_RPC_HARDENING_STATUS.lastUnavailableMessage = String(err && err.message ? err.message : err);
+        SUPABASE_RPC_HARDENING_STATUS.gameStatsRpcFallbacks += 1;
+        SUPABASE_RPC_HARDENING_STATUS.lastGameStatsFallbackAt = new Date().toISOString();
+        SUPABASE_RPC_HARDENING_STATUS.lastGameStatsFallbackReason = 'rpc-unavailable';
+        return null;
+      }
+      // Fáze 2E-B: RPC je preferovaná a měří se, ale přímý fallback zatím zůstává kvůli kompatibilitě.
+      SUPABASE_RPC_HARDENING_STATUS.gameStatsRpcFallbacks += 1;
+      SUPABASE_RPC_HARDENING_STATUS.lastGameStatsFallbackAt = new Date().toISOString();
+      SUPABASE_RPC_HARDENING_STATUS.lastGameStatsFallbackReason = String(err && err.message ? err.message : err).slice(0, 180);
+      console.warn('rak_record_game_stat_delta failed, falling back to direct game_stats write', err);
+      return null;
+    }
+  }
+
   async function saveGameStatDirect(client, entry) {
     const accountNumber = String(entry && entry.account_number ? entry.account_number : '').trim();
     const gameType = String(entry && entry.game_type ? entry.game_type : '').trim();
@@ -2241,6 +2295,21 @@
       updated_at: lastPlayedIso
     };
 
+    const deltas = {
+      gamesPlayedDelta: Math.max(0, next.games_played - existingGamesPlayed),
+      winsDelta: Math.max(0, next.wins - existingWins),
+      lossesDelta: Math.max(0, next.losses - existingLosses),
+      drawsDelta: Math.max(0, next.draws - existingDraws),
+      pointsDelta: Math.max(0, next.points - existingPoints)
+    };
+    if (deltas.gamesPlayedDelta || deltas.winsDelta || deltas.lossesDelta || deltas.drawsDelta || deltas.pointsDelta) {
+      const rpcRow = await tryRecordGameStatDeltaViaRpc(client, accountNumber, gameType, deltas);
+      if (rpcRow) {
+        clearGameStatsCache(gameType);
+        return rpcRow;
+      }
+    }
+
     if (existing && existing.id) {
       const { data, error } = await runSupabaseOperation('game_stats.update', () => client.from('game_stats').update(next).eq('id', existing.id).select('*').maybeSingle(), { mode: 'write' });
       if (error) throw error;
@@ -2253,7 +2322,6 @@
     clearGameStatsCache(gameType);
     return data || next;
   }
-
 
 
   async function getExistingGameStat(client, accountNumber, gameType) {
@@ -2292,6 +2360,18 @@
       last_played_at: nowIso,
       updated_at: nowIso
     };
+    const rpcRow = await tryRecordGameStatDeltaViaRpc(client, account, 'ttt', {
+      gamesPlayedDelta: 1,
+      winsDelta: resultKind === 'win' ? 1 : 0,
+      lossesDelta: resultKind === 'loss' ? 1 : 0,
+      drawsDelta: resultKind === 'draw' ? 1 : 0,
+      pointsDelta: 1
+    });
+    if (rpcRow) {
+      clearGameStatsCache('ttt');
+      return rpcRow;
+    }
+
     if (existing && existing.id) {
       const { data, error } = await runSupabaseOperation('game_stats.ttt_bump_update', () => client.from('game_stats').update(next).eq('id', existing.id).select('*').maybeSingle(), { mode: 'write' });
       if (error) throw error;

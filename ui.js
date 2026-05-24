@@ -4364,13 +4364,13 @@ function renderGamesAppearanceStatus() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText || 'v.1.5 (809)',
+      range: versionText || 'v.1.5 (813)',
       title: 'Aktuální stabilizace',
       lines: [
-        'Fáze 2C Supabase hardening: RPC funkce pro rotation_state a machine_settings jsou aplikované v databázi a klient je používá jako první volbu.',
-        'Přímé write/delete policies zatím zůstávají jako kompatibilní fallback, aby se nerozbilo online ukládání před reálným mobilním smoke testem.',
-        'Aktuální fáze: 2C hotová po stránce RPC migrace. Následuje 2D: postupné vypnutí veřejných DELETE policies a zúžení přímých write cest.',
-        'Stabilizační opravy z v.1.5 (806) zůstávají zachované: rozpis se nezahazuje kvůli buildu, admin není v localStorage a veřejný reset statistik je vypnutý.'
+        'Opravený přehled otevírací doby jídelny: nedělní přesčas nově ukazuje i 21:30–23:30 přímo v modalu/přehledu.',
+        'Kantýna zůstala beze změny, protože její nedělní večerní okno už v přehledu bylo.',
+        'Supabase hardening zůstává ve stavu 2E-B/2E-C: RPC-first zápisy jsou připravené a přímé INSERT/UPDATE fallbacky zatím zůstávají kvůli kompatibilitě.',
+        'Následuje návrat na 2E-C: po mobilním ověření začít zužovat přímé INSERT/UPDATE policies u game_stats.'
       ]
     },
     {
