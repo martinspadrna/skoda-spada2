@@ -213,12 +213,12 @@
     { table: 'gomoku_wins', realtime: true, queueType: 'gomoku_win', access: 'anon SELECT/INSERT/UPDATE', note: 'výhry piškvorek / legacy leaderboard' }
   ];
 
-  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (813)';
+  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (814)';
   const SUPABASE_POLICY_AUDIT_SNAPSHOT_AT = '2026-05-24';
   const SUPABASE_POLICY_HARDENING_PHASE = {
-    current: 'Fáze 2E-B – game_stats RPC cesta má runtime smoke metriky; v813 jen opravuje přehled jídelny, přímé INSERT/UPDATE fallbacky zatím zůstávají do mobilního ověření',
-    next: 'Fáze 2E-C – po potvrzení RPC zápisů na mobilu začít zužovat přímé INSERT/UPDATE policies u game_stats',
-    rollback: 'Fáze 2E-B je rollbackovatelná vypnutím RPC-first větve; public INSERT/UPDATE se zatím neměnily a data nebyla mazána.'
+    current: 'Fáze 2E-C – perzistentní RPC smoke metriky pro game_stats; přímé INSERT/UPDATE fallbacky zatím zůstávají, dokud nebude potvrzené mobilní hraní bez fallbacků',
+    next: 'Fáze 2E-D – po potvrzení úspěšných RPC zápisů bez fallbacků začít zužovat přímé INSERT/UPDATE policies u game_stats',
+    rollback: 'Fáze 2E-C je rollbackovatelná vypnutím RPC-first větve; public INSERT/UPDATE se zatím neměnily a data nebyla mazána.'
   };
   const SUPABASE_POLICY_AUDIT_SNAPSHOT = [
     {
@@ -273,11 +273,11 @@
   ];
 
   const SUPABASE_RPC_HARDENING_STATUS = {
-    version: 'v.1.5 (813)',
-    phase: '2E-B',
+    version: 'v.1.5 (814)',
+    phase: '2E-C',
     rpcPreferred: true,
     migrationApplied: true,
-    migrationNote: 'RPC funkce pro rotation_state, machine_settings a game_stats jsou aplikované. Runtime smoke metriky pro herní RPC zápisy přibyly ve v812; v813 pouze opravuje přehled jídelny. Veřejné DELETE policies zůstávají odstraněné, přímé INSERT/UPDATE zatím zůstávají kvůli kompatibilitě.',
+    migrationNote: 'RPC funkce pro rotation_state, machine_settings a game_stats jsou aplikované. Ve v814 jsou game_stats RPC smoke metriky perzistentní v zařízení, aby šlo po mobilním hraní ověřit, jestli zápisy opravdu jedou přes RPC. Veřejné DELETE policies zůstávají odstraněné, přímé INSERT/UPDATE zatím zůstávají kvůli kompatibilitě.',
     dbVerifiedAt: '2026-05-24',
     verifiedRpcCount: 3,
     plannedRpc: [
@@ -286,8 +286,8 @@
       'rak_cleanup_expired_game_invites (existující cleanup helper)',
       'rak_record_game_stat_delta'
     ],
-    fallback: 'direct-insert-update-fallback-kept-until-phase-2e-c',
-    gameStatsRpcSmoke: 'instrumented-not-browser-tested',
+    fallback: 'direct-insert-update-fallback-kept-until-mobile-rpc-smoke-ok',
+    gameStatsRpcSmoke: 'persistent-mobile-smoke-required-before-policy-tightening',
     gameStatsRpcAttempts: 0,
     gameStatsRpcSuccesses: 0,
     gameStatsRpcFallbacks: 0,
@@ -296,6 +296,87 @@
     lastGameStatsFallbackAt: null,
     lastGameStatsFallbackReason: ''
   };
+
+
+
+  const GAME_STATS_RPC_SMOKE_STORAGE_KEY = 'rak_game_stats_rpc_smoke_v1';
+
+  function normalizeGameStatsRpcSmoke(raw) {
+    const base = raw && typeof raw === 'object' ? raw : {};
+    return {
+      attempts: Math.max(0, Number(base.attempts || 0) || 0),
+      successes: Math.max(0, Number(base.successes || 0) || 0),
+      fallbacks: Math.max(0, Number(base.fallbacks || 0) || 0),
+      lastAttemptAt: base.lastAttemptAt || null,
+      lastSuccessAt: base.lastSuccessAt || null,
+      lastSuccessType: String(base.lastSuccessType || ''),
+      lastFallbackAt: base.lastFallbackAt || null,
+      lastFallbackType: String(base.lastFallbackType || ''),
+      lastFallbackReason: String(base.lastFallbackReason || ''),
+      updatedAt: base.updatedAt || null
+    };
+  }
+
+  function readGameStatsRpcSmokeStatus() {
+    try {
+      if (typeof localStorage === 'undefined') return normalizeGameStatsRpcSmoke(null);
+      return normalizeGameStatsRpcSmoke(JSON.parse(localStorage.getItem(GAME_STATS_RPC_SMOKE_STORAGE_KEY) || '{}'));
+    } catch (err) {
+      return normalizeGameStatsRpcSmoke(null);
+    }
+  }
+
+  function writeGameStatsRpcSmokeStatus(next) {
+    const safe = normalizeGameStatsRpcSmoke(next);
+    try {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem(GAME_STATS_RPC_SMOKE_STORAGE_KEY, JSON.stringify(safe));
+      }
+    } catch (err) {}
+    SUPABASE_RPC_HARDENING_STATUS.gameStatsRpcAttempts = safe.attempts;
+    SUPABASE_RPC_HARDENING_STATUS.gameStatsRpcSuccesses = safe.successes;
+    SUPABASE_RPC_HARDENING_STATUS.gameStatsRpcFallbacks = safe.fallbacks;
+    SUPABASE_RPC_HARDENING_STATUS.lastGameStatsRpcAt = safe.lastSuccessAt;
+    SUPABASE_RPC_HARDENING_STATUS.lastGameStatsRpcType = safe.lastSuccessType;
+    SUPABASE_RPC_HARDENING_STATUS.lastGameStatsFallbackAt = safe.lastFallbackAt;
+    SUPABASE_RPC_HARDENING_STATUS.lastGameStatsFallbackReason = safe.lastFallbackReason;
+    return safe;
+  }
+
+  function rememberGameStatsRpcSmoke(kind, gameType, reason) {
+    const nowIso = new Date().toISOString();
+    const type = String(gameType || '').trim();
+    const next = readGameStatsRpcSmokeStatus();
+    if (kind === 'attempt') {
+      next.attempts += 1;
+      next.lastAttemptAt = nowIso;
+    } else if (kind === 'success') {
+      next.successes += 1;
+      next.lastSuccessAt = nowIso;
+      next.lastSuccessType = type;
+    } else if (kind === 'fallback') {
+      next.fallbacks += 1;
+      next.lastFallbackAt = nowIso;
+      next.lastFallbackType = type;
+      next.lastFallbackReason = String(reason || 'unknown').slice(0, 180);
+    }
+    next.updatedAt = nowIso;
+    return writeGameStatsRpcSmokeStatus(next);
+  }
+
+  function getGameStatsRpcSmokeStatus() {
+    const persisted = readGameStatsRpcSmokeStatus();
+    const readyForPolicyTightening = persisted.attempts >= 3 && persisted.successes >= 3 && persisted.fallbacks === 0;
+    return Object.assign({}, persisted, {
+      persistent: true,
+      readyForPolicyTightening,
+      requiredSuccessesBeforeTightening: 3,
+      requiredFallbacksBeforeTightening: 0,
+      recommendation: readyForPolicyTightening
+        ? 'Po reálném mobilním hraní jsou RPC zápisy game_stats bez fallbacků; je možné připravit úzké zúžení INSERT/UPDATE policies.'
+        : 'Před zúžením INSERT/UPDATE policies odehraj na mobilu několik her a zkontroluj, že úspěchy RPC rostou a fallbacky zůstávají 0.'
+    });
+  }
 
   const SUPABASE_STRUCTURE_REQUIRED_HELPERS = [
     'getClient',
@@ -426,7 +507,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v813');
+      const channel = client.channel('rak-public-live-v814');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -2221,7 +2302,7 @@
     const type = String(gameType || '').trim();
     if (!account || !type || type === GAME_UI_SETTINGS_TYPE) return null;
     try {
-      SUPABASE_RPC_HARDENING_STATUS.gameStatsRpcAttempts += 1;
+      rememberGameStatsRpcSmoke('attempt', type);
       const { data, error } = await runSupabaseOperation('game_stats.rpc_delta', () => client.rpc('rak_record_game_stat_delta', {
         p_account_number: account,
         p_game_type: type,
@@ -2232,23 +2313,17 @@
         p_points_delta: Math.max(0, Math.min(5000, Math.round(getSafeGameStatNumber(deltas && deltas.pointsDelta, 0))))
       }), { mode: 'write', attempts: 1 });
       if (error) throw error;
-      SUPABASE_RPC_HARDENING_STATUS.gameStatsRpcSuccesses += 1;
-      SUPABASE_RPC_HARDENING_STATUS.lastGameStatsRpcAt = new Date().toISOString();
-      SUPABASE_RPC_HARDENING_STATUS.lastGameStatsRpcType = type;
+      rememberGameStatsRpcSmoke('success', type);
       return data || null;
     } catch (err) {
       if (isSupabaseRpcUnavailableError(err)) {
         SUPABASE_RPC_HARDENING_STATUS.lastUnavailableAt = new Date().toISOString();
         SUPABASE_RPC_HARDENING_STATUS.lastUnavailableMessage = String(err && err.message ? err.message : err);
-        SUPABASE_RPC_HARDENING_STATUS.gameStatsRpcFallbacks += 1;
-        SUPABASE_RPC_HARDENING_STATUS.lastGameStatsFallbackAt = new Date().toISOString();
-        SUPABASE_RPC_HARDENING_STATUS.lastGameStatsFallbackReason = 'rpc-unavailable';
+        rememberGameStatsRpcSmoke('fallback', type, 'rpc-unavailable');
         return null;
       }
-      // Fáze 2E-B: RPC je preferovaná a měří se, ale přímý fallback zatím zůstává kvůli kompatibilitě.
-      SUPABASE_RPC_HARDENING_STATUS.gameStatsRpcFallbacks += 1;
-      SUPABASE_RPC_HARDENING_STATUS.lastGameStatsFallbackAt = new Date().toISOString();
-      SUPABASE_RPC_HARDENING_STATUS.lastGameStatsFallbackReason = String(err && err.message ? err.message : err).slice(0, 180);
+      // Fáze 2E-C: RPC je preferovaná a perzistentně měřená, ale přímý fallback zatím zůstává kvůli kompatibilitě.
+      rememberGameStatsRpcSmoke('fallback', type, err && err.message ? err.message : err);
       console.warn('rak_record_game_stat_delta failed, falling back to direct game_stats write', err);
       return null;
     }
@@ -3031,7 +3106,8 @@
       performanceHealth: getSupabasePerformanceHealth(),
       structureHealth: getSupabaseStructureHealth(),
       policyRiskHealth: getSupabasePolicyRiskHealth(),
-      rpcHardening: Object.assign({}, SUPABASE_RPC_HARDENING_STATUS),
+      rpcHardening: Object.assign({}, SUPABASE_RPC_HARDENING_STATUS, getGameStatsRpcSmokeStatus()),
+      gameStatsRpcSmoke: getGameStatsRpcSmokeStatus(),
       readTimeoutMs: SUPABASE_READ_TIMEOUT_MS,
       writeTimeoutMs: SUPABASE_WRITE_TIMEOUT_MS,
       queueFlushBatchSize: SUPABASE_QUEUE_FLUSH_BATCH_SIZE,
@@ -3439,6 +3515,7 @@
   window.getSupabaseAnnouncement = getBridgeText;
   window.getSupabaseCanteenStatus = getCanteenStatus;
   window.getSupabaseSyncStatus = getSyncUiStatus;
+  window.getGameStatsRpcSmokeStatus = getGameStatsRpcSmokeStatus;
   window.getSupabaseHardeningStatus = getSupabaseHardeningStatus;
   window.getSupabasePerformanceHealth = getSupabasePerformanceHealth;
   window.getSupabaseStructureHealth = getSupabaseStructureHealth;

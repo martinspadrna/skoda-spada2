@@ -1,4 +1,4 @@
-// v.1.5 (813) – Oprava přehledu otevírací doby jídelny: nedělní přesčasové datum používá speciální okno 21:30–23:30 i v modalu/přehledu.
+// v.1.5 (814) – Supabase hardening: perzistentní RPC smoke metriky pro game_stats, bez dalšího zužování INSERT/UPDATE policies před mobilním ověřením.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;
