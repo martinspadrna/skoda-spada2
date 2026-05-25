@@ -4540,7 +4540,15 @@ function closeTicTacToeGame() {
   renderGamesHub();
 }
 
+function tttUrlLooksLikeShipsInvite() {
+  try {
+    const raw = String((window.location.hash || '') + '&' + (window.location.search || ''));
+    return /(?:^|[?#&])(?:games|game)=ships(?:$|[&#])|(?:^|[?#&])(?:shipsInvite|ships|battleship)=/i.test(raw);
+  } catch (err) { return false; }
+}
+
 async function tttAutoOpenFromHash() {
+  if (tttUrlLooksLikeShipsInvite()) return false;
   const invite = tttReadUrlInviteData();
   const code = invite.code || '';
   if (!code) return false;
@@ -4892,9 +4900,11 @@ function buildSupabaseKeepaliveStatusHtml(options) {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText || 'v.1.5 (844)',
+      range: versionText || 'v.1.5 (846)',
       title: 'Aktuální stabilizace',
       lines: [
+        'V846 upravuje Láďův režim: spodní panel je v odlehčeném režimu neprůhledný, aby nepouštěl skrz obsah; normální režim zůstává beze změny.',
+        'V845 opravuje Lodě přes zvací odkaz: link #games=ships&invite už má přednost před Piškvorkami a příprava flotily má menší/čistší pole bez zakrytého spodku.',
         'V844 doplňuje Lodím skutečný zvací odkaz ve stejném overlayi jako Piškvorky, vypíná zbytečné scrollování a odstraňuje kód z HUDu nad hracím polem; Piškvorky zároveň obnovují online skóre bez ručního přepínání.',
         'V843 převádí Supabase heartbeat čas do českého času, sjednocuje vzhled zvacího overlaye Lodí s Piškvorkami a odstraňuje volné místo mezi polem a spodními tlačítky.',
         'V842 uklízí duplicitní heartbeat v O aplikaci/Diagnostice, opravuje živé vzájemné skóre Piškvorek a zjednodušuje přípravu Lodí včetně velkého banneru s kódem.',
@@ -10226,9 +10236,13 @@ async function shipsAutoOpenFromHash() {
 
 if (!window.__tttHashInviteBound) {
   window.__tttHashInviteBound = true;
-  window.addEventListener('load', () => { void tttAutoOpenFromHash(); void shipsAutoOpenFromHash(); }, { once: true });
-  window.addEventListener('hashchange', () => { void tttAutoOpenFromHash(); void shipsAutoOpenFromHash(); });
-  window.addEventListener('popstate', () => { void tttAutoOpenFromHash(); void shipsAutoOpenFromHash(); });
+  const openGameInviteFromUrl = async () => {
+    const shipsOpened = await shipsAutoOpenFromHash();
+    if (!shipsOpened) await tttAutoOpenFromHash();
+  };
+  window.addEventListener('load', () => { void openGameInviteFromUrl(); }, { once: true });
+  window.addEventListener('hashchange', () => { void openGameInviteFromUrl(); });
+  window.addEventListener('popstate', () => { void openGameInviteFromUrl(); });
 }
 
 

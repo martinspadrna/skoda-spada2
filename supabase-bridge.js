@@ -234,10 +234,10 @@
     { table: 'gomoku_wins', realtime: true, queueType: 'gomoku_win', access: 'anon SELECT/INSERT/UPDATE', note: 'výhry piškvorek / legacy leaderboard' }
   ];
 
-  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (844)';
+  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (846)';
   const SUPABASE_POLICY_AUDIT_SNAPSHOT_AT = '2026-05-24';
   const SUPABASE_POLICY_HARDENING_PHASE = {
-    current: 'V844 – online hry UI cleanup: Lodě mají zvací overlay s odkazem jako Piškvorky, bez scrollu a Piškvorky refreshují online skóre bez přepínání; DB policies se dál neutahují.',
+    current: 'V846 – Láďův režim má neprůhledný spodní panel pouze v odlehčeném režimu; normální režim a DB policies se nemění.',
     next: 'Nasbírat RPC smoke signály create/accept/save zvlášť pro Piškvorky i Lodě bez fallbacků; až potom připravit úzké policy zúžení po jednotlivých tabulkách.',
     rollback: 'Rollback v828 byl proveden jen pro game_invites/game_sessions restriktivní policies z v826; game_stats restriktivní policies z v824 zůstávají zachované.'
   };
@@ -294,11 +294,11 @@
   ];
 
   const SUPABASE_RPC_HARDENING_STATUS = {
-    version: 'v.1.5 (844)',
+    version: 'v.1.5 (846)',
     phase: '2E-O online invite/session RPC smoke + accept RPC / no policy tightening',
     rpcPreferred: true,
     migrationApplied: true,
-    migrationNote: 'game_stats direct INSERT/UPDATE zůstávají omezené restriktivními policies v824. Restriktivní policies pro game_invites/game_sessions z v826 byly v DB ve v828 odstraněné. V834–V837 stabilizovalo app_keepalive heartbeat přes RPC. V839 přidala RPC cestu pro přijetí online pozvánky; V841 zpřesnila smoke audit po hrách: Piškvorky i Lodě musí projít create/accept/save zvlášť před dalším utažením policies. V842 upravila klientské UI/flow, V843 sjednotila Lodě zvací overlay s Piškvorkami a V844 doplňuje link/share flow Lodí plus živější refresh skóre Piškvorek; policies dál nemění.',
+    migrationNote: 'game_stats direct INSERT/UPDATE zůstávají omezené restriktivními policies v824. Restriktivní policies pro game_invites/game_sessions z v826 byly v DB ve v828 odstraněné. V834–V837 stabilizovalo app_keepalive heartbeat přes RPC. V839 přidala RPC cestu pro přijetí online pozvánky; V841 zpřesnila smoke audit po hrách: Piškvorky i Lodě musí projít create/accept/save zvlášť před dalším utažením policies. V842 upravila klientské UI/flow, V843 sjednotila Lodě zvací overlay s Piškvorkami, V844 doplnila link/share flow Lodí a V845 opravuje router Lodí přes odkaz plus zakrytý spodek flotily; V846 upravuje pouze neprůhlednost spodní lišty v Láďově režimu; policies dál nemění.',
     dbVerifiedAt: '2026-05-25',
     verifiedRpcCount: 7,
     bugReportsHardeningPhase: 'znovu otevřeno jen jako audit; DB změna zatím ne',
@@ -906,7 +906,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v844');
+      const channel = client.channel('rak-public-live-v846');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -1175,7 +1175,7 @@
         timezone: (typeof Intl !== 'undefined' && Intl.DateTimeFormat) ? (Intl.DateTimeFormat().resolvedOptions().timeZone || '') : '',
         online: typeof navigator !== 'undefined' ? navigator.onLine !== false : true,
         transport: 'rpc',
-        build: '844'
+        build: '846'
       }
     };
 
@@ -3795,12 +3795,12 @@
     return {
       ok: blockers.length === 0,
       mode: 'supabase-hardening-readiness-audit-only',
-      version: 'v.1.5 (844)',
+      version: 'v.1.5 (846)',
       checkedAt: new Date().toISOString(),
       confirmed,
       readinessPercent,
       policyChangeAllowedNow: false,
-      policyChangeReason: 'V844 je klientský UI cleanup pro Lodě invite/link overlay a živější online skóre Piškvorek; policies game_invites/game_sessions se v tomto buildu neutahují.',
+      policyChangeReason: 'V846 je klientský UI hotfix pro Láďův režim: spodní panel je neprůhledný jen v odlehčeném režimu; policies game_invites/game_sessions se v tomto buildu neutahují.',
       nextSafeStep: 'Nejdřív reálný RPC smoke create/accept/save zvlášť pro Piškvorky i Lodě bez fallbacku; potom připravit úzký SQL návrh pro jednu tabulku.',
       items,
       itemCount: items.length,

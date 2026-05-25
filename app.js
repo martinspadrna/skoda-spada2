@@ -1,4 +1,4 @@
-// v.1.5 (844) – Lodě invite link/overlay bez scrollu a živé online skóre Piškvorek.
+// v.1.5 (846) – Láďův režim: neprůhledný spodní panel bez zásahu do normálního režimu.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

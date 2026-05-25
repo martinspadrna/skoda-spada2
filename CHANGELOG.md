@@ -1,3 +1,16 @@
+## v.1.5 (846)
+- Láďův režim: spodní panel / bottom lišta je nově neprůhledná jen při zapnutém Láďově režimu, aby přes ni neprosvítal obsah.
+- Normální režim spodní lišty zůstává beze změny.
+- DB ani Supabase policies se v tomto buildu neměnily.
+- Verze sjednocena na v.1.5 (846), cache na v1.5-846 a Supabase realtime kanál na rak-public-live-v846.
+
+## v.1.5 (845)
+- Lodě online: zvací odkaz `#games=ships&invite=1234` má v routeru přednost před obecnou invite logikou Piškvorek, takže otevření odkazu Lodí už nespouští Piškvorky.
+- Lodě příprava flotily: hrací plocha je menší a layout je znovu srovnaný do pořadí potvrzení/menu, HUD, pole, spodní akce; spodní panel už nemá překrývat ani řezat spodní část pole.
+- Lodě setup: odstraněné další zbytky fixního/panelového chování u spodních akcí, aby nevznikala neviditelná stěna nad spodní lištou.
+- DB ani Supabase policies se v tomto buildu neměnily.
+- Verze sjednocena na v.1.5 (845), cache na v1.5-845 a Supabase realtime kanál na rak-public-live-v845.
+
 ## v.1.5 (844)
 - Piškvorky online: vzájemné skóre a online tabulka se po dohrané partii a po návratu do Online režimu obnovují hned, bez nutnosti ručně přepínat mimo Online a zpět.
 - Lodě online: zvací overlay je sjednocený s Piškvorkami, obsahuje výrazný kód, skutečný zvací odkaz, Kopírovat odkaz a Sdílet. Link používá #games=ships&invite=1234.

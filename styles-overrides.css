@@ -14598,7 +14598,7 @@ body.lowEndDevice .appMenuKeepaliveCard {
   #games .shipsInviteBanner .shipsInviteCode{font-size:clamp(28px,9vw,44px) !important;}
 }
 
-/* v.1.5 (844): Heartbeat čas v českém pásmu, Lodě zvací overlay 1:1 jako Piškvorky a bez prázdného pole pod mapou. */
+/* v.1.5 (843): Heartbeat čas v českém pásmu, Lodě zvací overlay 1:1 jako Piškvorky a bez prázdného pole pod mapou. */
 #games #gamesShellBody[data-arcade-game="ships"]{
   --ships-board-size:min(
     calc(100vw - 28px),
@@ -14827,4 +14827,124 @@ body.shipsGameOpen #games .shipsInviteOverlayBtn{min-height:40px !important;bord
   body.shipsGameOpen #games .shipsInviteOverlay{padding:14px 13px !important;width:min(88%, 304px) !important;}
   body.shipsGameOpen #games .shipsInviteOverlayCode{font-size:clamp(36px,10vw,48px) !important;}
   body.shipsGameOpen #games .shipsInviteOverlayHint{display:none !important;}
+}
+
+
+/* v.1.5 (845): Lodě setup bez zakrytého spodku pole a router linku lodí mimo Piškvorky. */
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"]{
+  overflow:hidden !important;
+  padding-bottom:0 !important;
+  --ships-board-size:min(
+    calc(100vw - 34px),
+    calc(100dvh - 322px - env(safe-area-inset-top) - env(safe-area-inset-bottom)),
+    360px
+  ) !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSetupStage{
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+  overflow:hidden !important;
+  height:calc(100dvh - 104px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+  max-height:calc(100dvh - 104px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+  min-height:0 !important;
+  gap:4px !important;
+  padding:calc(5px + env(safe-area-inset-top)) 0 calc(6px + env(safe-area-inset-bottom)) !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSetupPrimaryActions{order:1 !important;}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsCompactHud{order:2 !important;}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSetupBoardWrap{
+  order:3 !important;
+  flex:0 0 auto !important;
+  width:100% !important;
+  max-width:calc(var(--ships-board-size) + 12px) !important;
+  min-height:0 !important;
+  height:auto !important;
+  margin:0 auto !important;
+  padding:0 !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSetupSecondaryActions{
+  order:4 !important;
+  position:relative !important;
+  inset:auto !important;
+  left:auto !important;
+  right:auto !important;
+  top:auto !important;
+  bottom:auto !important;
+  transform:none !important;
+  z-index:4 !important;
+  width:min(calc(100vw - 24px),420px) !important;
+  margin:2px auto 0 !important;
+  padding:0 !important;
+  display:grid !important;
+  grid-template-columns:1fr 1fr !important;
+  gap:7px !important;
+  background:transparent !important;
+  border:0 !important;
+  box-shadow:none !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSetupPrimaryActions .gameControlBtn,
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSetupSecondaryActions .gameControlBtn{
+  min-height:34px !important;
+  padding:6px 8px !important;
+  font-size:11px !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSetupStage .shipsBoardCardLift{
+  width:calc(var(--ships-board-size) + 10px) !important;
+  max-width:calc(var(--ships-board-size) + 10px) !important;
+  padding:4px !important;
+  margin:0 auto !important;
+  overflow:visible !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSetupStage .shipsBoard{
+  width:var(--ships-board-size) !important;
+  max-width:var(--ships-board-size) !important;
+  margin:0 auto !important;
+  padding:3px !important;
+  gap:2px !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSetupStage .shipsInlineHint{display:none !important;}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSetupStage .shipsBoardCardLift > .smallText.uBold{
+  display:block !important;
+  font-size:11px !important;
+  line-height:1.15 !important;
+  margin-bottom:3px !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSetupSecondaryActions::before,
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSetupSecondaryActions::after,
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSetupPrimaryActions::before,
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSetupPrimaryActions::after{
+  display:none !important;
+  content:none !important;
+}
+@media (min-height:860px) and (min-width:410px){
+  body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"]{
+    --ships-board-size:min(calc(100vw - 38px), calc(100dvh - 350px - env(safe-area-inset-top) - env(safe-area-inset-bottom)), 350px) !important;
+  }
+}
+@media (max-height:760px){
+  body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"]{
+    --ships-board-size:min(calc(100vw - 34px), calc(100dvh - 316px - env(safe-area-inset-top) - env(safe-area-inset-bottom)), 334px) !important;
+  }
+  body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSetupPrimaryActions .gameControlBtn,
+  body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSetupSecondaryActions .gameControlBtn{min-height:32px !important;padding:5px 7px !important;}
+}
+
+/* v.1.5 (846): Láďův režim – spodní lišta je neprůhledná jen v odlehčeném režimu. Normální režim beze změny. */
+body.lightweightMode .bottomNav,
+body.ladaMode .bottomNav{
+  background:linear-gradient(180deg, #0b1410 0%, #070d0a 100%) !important;
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+  border-color:rgba(124,255,124,.22) !important;
+  box-shadow:0 -6px 18px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.045) !important;
+}
+body.lightweightMode .bottomNavScroll,
+body.ladaMode .bottomNavScroll,
+body.lightweightMode .bottomNavInner,
+body.ladaMode .bottomNavInner{
+  background:transparent !important;
 }

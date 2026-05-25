@@ -4577,12 +4577,12 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
           <button type="button" class="gameControlBtn ghost" id="shipsMenuBackBtn">Zpět do menu</button>
         </div>
         <div class="arcadeHud arcadeHudSingleLine shipsCompactHud">${gamesStatLine('Role', role || '—')}${gamesStatLine('Lodí', `${mine.ships.length}/${SHIPS_FLEET.length}`)}${gamesStatLine('Loď', selectedName)}</div>
+        <div class="shipsSingleBoardWrap shipsSetupBoardWrap">
+          <div class="shipsBoardCard shipsBoardCardLift shipsInviteHost"><div class="smallText uBold">Tvoje flotila</div><div class="smallText shipsInlineHint">${escapeHtml(hintText)}</div>${shipsRenderBoard(mine, { own: true, placement: true, selectedShipId: selectedShip && selectedShip.id })}${shipsInviteOverlayHtml(st)}</div>
+        </div>
         <div class="arcadeControls shipsSetupActions shipsSetupSecondaryActions">
           <button type="button" class="gameControlBtn" id="shipsShuffleBtn">Přehodit automaticky</button>
           <button type="button" class="gameControlBtn" id="shipsRotateBtn">Otočit vybranou</button>
-        </div>
-        <div class="shipsSingleBoardWrap shipsSetupBoardWrap">
-          <div class="shipsBoardCard shipsBoardCardLift shipsInviteHost"><div class="smallText uBold">Tvoje flotila · klepni na loď a přesuň ji</div><div class="smallText shipsInlineHint">${escapeHtml(hintText)}</div>${shipsRenderBoard(mine, { own: true, placement: true, selectedShipId: selectedShip && selectedShip.id })}${shipsInviteOverlayHtml(st)}</div>
         </div>
       </div>`;
       shipsBindInviteBannerActions();
