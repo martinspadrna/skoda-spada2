@@ -1,4 +1,4 @@
-// v.1.5 (836) – Supabase heartbeat přes RPC rak_app_keepalive kvůli RLS upsert chybě.
+// v.1.5 (837) – Supabase heartbeat RPC v2: po staré RLS chybě nečeká na interval a app_keepalive má vlastní RLS opravu.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

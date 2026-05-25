@@ -229,15 +229,15 @@
     { table: 'game_sessions', realtime: true, queueType: 'game_session', access: 'anon SELECT/INSERT/UPDATE', note: 'online herní session' },
     { table: 'game_stats', realtime: true, queueType: 'game_stat', access: 'anon SELECT/INSERT/UPDATE', note: 'skóre a žebříčky' },
     { table: 'game_ui_settings', realtime: false, queueType: 'game_ui_settings', access: 'anon SELECT/INSERT/UPDATE', note: 'profilové nastavení vzhledu' },
-    { table: 'app_keepalive', realtime: false, queueType: '', access: 'RPC rak_app_keepalive only', note: 'bezpečný heartbeat proti pauze free projektu, mimo herní data a mimo RLS upsert problém' },
+    { table: 'app_keepalive', realtime: false, queueType: '', access: 'RPC rak_app_keepalive + app_keepalive-only RLS', note: 'bezpečný heartbeat proti pauze free projektu, mimo herní data; klient používá RPC, tabulka má jen úzké heartbeat RLS' },
     { table: 'bug_reports', realtime: false, queueType: 'bug_report', access: 'anon INSERT only', note: 'uživatelské reporty chyb / nápadů' },
     { table: 'gomoku_wins', realtime: true, queueType: 'gomoku_win', access: 'anon SELECT/INSERT/UPDATE', note: 'výhry piškvorek / legacy leaderboard' }
   ];
 
-  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (836)';
+  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (837)';
   const SUPABASE_POLICY_AUDIT_SNAPSHOT_AT = '2026-05-24';
   const SUPABASE_POLICY_HARDENING_PHASE = {
-    current: 'V836 – Supabase heartbeat zapisuje přes RPC rak_app_keepalive, aby ho neblokoval křehký RLS upsert; V835 zůstává UI diagnostika.',
+    current: 'V837 – Supabase heartbeat má RPC cestu + app_keepalive-only RLS opravu a klient po staré RLS chybě nečeká 12 hodin, ale zkusí zápis znovu.',
     next: 'Nejdřív znovu otestovat online Piškvorky na dvou mobilech; potom pokračovat opatrně přes RPC smoke, ne přes další restriktivní policies naslepo',
     rollback: 'Rollback v828 byl proveden jen pro game_invites/game_sessions restriktivní policies z v826; game_stats restriktivní policies z v824 zůstávají zachované.'
   };
@@ -294,12 +294,12 @@
   ];
 
   const SUPABASE_RPC_HARDENING_STATUS = {
-    version: 'v.1.5 (836)',
+    version: 'v.1.5 (837)',
     phase: '2E-M keepalive heartbeat / online TTT hardening paused',
     rpcPreferred: true,
     migrationApplied: true,
-    migrationNote: 'game_stats direct INSERT/UPDATE zůstávají omezené restriktivními policies v824. Restriktivní policies pro game_invites/game_sessions z v826 byly v DB ve v828 odstraněné. V834 přidává app_keepalive tabulku, V835 zlepšuje diagnostiku a V836 převádí heartbeat na RPC rak_app_keepalive kvůli RLS upsert chybě; Piškvorky policies zůstávají beze změny.',
-    dbVerifiedAt: '2026-05-24',
+    migrationNote: 'game_stats direct INSERT/UPDATE zůstávají omezené restriktivními policies v824. Restriktivní policies pro game_invites/game_sessions z v826 byly v DB ve v828 odstraněné. V834 přidává app_keepalive tabulku, V835 zlepšuje diagnostiku, V836 převádí heartbeat na RPC a V837 opravuje čekání po staré RLS chybě + app_keepalive-only RLS; Piškvorky policies zůstávají beze změny.',
+    dbVerifiedAt: '2026-05-25',
     verifiedRpcCount: 7,
     bugReportsHardeningPhase: 'pozastaveno kvůli online TTT hotfixu',
     bugReportsPublicSelectUpdatePolicies: 2,
@@ -705,7 +705,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v836');
+      const channel = client.channel('rak-public-live-v837');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -767,6 +767,7 @@
   const SUPABASE_KEEPALIVE_DEVICE_KEY = 'rak_supabase_keepalive_device_v1';
   const SUPABASE_KEEPALIVE_MIN_INTERVAL_MS = 12 * 60 * 60 * 1000;
   const SUPABASE_KEEPALIVE_TIMEOUT_MS = 6500;
+  const SUPABASE_KEEPALIVE_RETRY_INTERVAL_MS = 5 * 60 * 1000;
   let flushPromise = null;
   let flushScheduleTimer = null;
   let lastQueueWakeRequestAt = 0;
@@ -825,6 +826,8 @@
       lastDurationMs: Math.max(0, Number(base.lastDurationMs || 0) || 0),
       lastHttpStatus: base.lastHttpStatus === null || base.lastHttpStatus === undefined ? null : (Number(base.lastHttpStatus) || null),
       lastClassification: String(base.lastClassification || 'unknown').slice(0, 80),
+      lastTransport: String(base.lastTransport || '').slice(0, 40),
+      lastAppVersion: String(base.lastAppVersion || '').slice(0, 40),
       lastSkipReason: String(base.lastSkipReason || '').slice(0, 120),
       lastSkipAt: base.lastSkipAt || null,
       minIntervalHours: Math.round(SUPABASE_KEEPALIVE_MIN_INTERVAL_MS / 60 / 60 / 1000),
@@ -892,8 +895,25 @@
     const opts = options || {};
     if (opts.force) return { ok: true };
     const current = readSupabaseKeepaliveState();
-    const last = Date.parse(current.lastAttemptAt || current.lastSuccessAt || '') || 0;
-    if (last && Date.now() - last < SUPABASE_KEEPALIVE_MIN_INTERVAL_MS) {
+    const now = Date.now();
+    const appVersion = String(window.APP_VERSION || '').trim();
+    const lastSuccess = Date.parse(current.lastSuccessAt || '') || 0;
+    const lastAttempt = Date.parse(current.lastAttemptAt || '') || 0;
+    const hadSuccessfulHeartbeat = !!lastSuccess;
+
+    if (!hadSuccessfulHeartbeat) {
+      const rlsError = current.lastClassification === 'rls-or-permission' || /row-level security|permission denied/i.test(String(current.lastErrorMessage || ''));
+      const appChanged = !!appVersion && current.lastAppVersion !== appVersion;
+      if (rlsError || appChanged || current.lastTransport !== 'rpc') {
+        return { ok: true, current, reason: 'retry-after-heartbeat-fix' };
+      }
+      if (lastAttempt && now - lastAttempt < SUPABASE_KEEPALIVE_RETRY_INTERVAL_MS) {
+        return { ok: false, reason: 'retry-wait', current };
+      }
+      return { ok: true, current, reason: 'no-success-yet' };
+    }
+
+    if (lastSuccess && now - lastSuccess < SUPABASE_KEEPALIVE_MIN_INTERVAL_MS) {
       return { ok: false, reason: 'interval', current };
     }
     return { ok: true, current };
@@ -910,8 +930,16 @@
     }
     const allowed = shouldRunSupabaseKeepalive(opts);
     if (!allowed.ok) {
+      const keepCurrentError = !current.lastSuccessAt && (current.status === 'unavailable' || current.status === 'possibly_paused');
       const next = writeSupabaseKeepaliveState(Object.assign({}, current, {
-        status: current.status === 'ok' ? 'ok' : 'skipped', label: current.status === 'ok' ? getKeepaliveLabel('ok') : getKeepaliveLabel('skipped'), lastSkipReason: allowed.reason || 'interval', lastSkipAt: new Date().toISOString(), skips: current.skips + 1
+        status: keepCurrentError ? current.status : (current.status === 'ok' ? 'ok' : 'skipped'),
+        label: keepCurrentError ? current.label : (current.status === 'ok' ? getKeepaliveLabel('ok') : getKeepaliveLabel('skipped')),
+        lastSkipReason: allowed.reason || 'interval',
+        lastSkipAt: new Date().toISOString(),
+        lastReason: String(reason || current.lastReason || 'scheduled').slice(0, 80),
+        lastAppVersion: String(window.APP_VERSION || '').trim().slice(0, 40),
+        lastTransport: current.lastTransport || 'rpc',
+        skips: current.skips + 1
       }));
       return { ok: true, skipped: true, reason: allowed.reason || 'interval', status: next };
     }
@@ -930,7 +958,9 @@
       attempts: current.attempts + 1,
       lastAttemptAt: nowIso,
       lastReason: String(reason || 'init').slice(0, 80),
-      lastDeviceKey: deviceKey
+      lastDeviceKey: deviceKey,
+      lastAppVersion: String(window.APP_VERSION || '').trim().slice(0, 40),
+      lastTransport: 'rpc'
     });
     writeSupabaseKeepaliveState(Object.assign({}, attemptBase, { status: current.status || 'unknown', label: current.label || getKeepaliveLabel(current.status || 'unknown') }));
 
@@ -942,7 +972,9 @@
       payload: {
         reason: String(reason || 'init').slice(0, 80),
         timezone: (typeof Intl !== 'undefined' && Intl.DateTimeFormat) ? (Intl.DateTimeFormat().resolvedOptions().timeZone || '') : '',
-        online: typeof navigator !== 'undefined' ? navigator.onLine !== false : true
+        online: typeof navigator !== 'undefined' ? navigator.onLine !== false : true,
+        transport: 'rpc',
+        build: '837'
       }
     };
 
@@ -956,7 +988,7 @@
       const result = await runSupabaseOperation('app_keepalive.rpc', () => client.rpc('rak_app_keepalive', rpcArgs), { mode: 'write', attempts: 1, timeoutMs: SUPABASE_KEEPALIVE_TIMEOUT_MS });
       if (result && result.error) throw result.error;
       const next = writeSupabaseKeepaliveState(Object.assign({}, attemptBase, {
-        status: 'ok', label: getKeepaliveLabel('ok'), successes: current.successes + 1, lastSuccessAt: new Date().toISOString(), lastErrorMessage: '', lastErrorCode: '', lastErrorAt: current.lastErrorAt || null, lastDurationMs: Date.now() - started, lastHttpStatus: null, lastClassification: 'ok-rpc'
+        status: 'ok', label: getKeepaliveLabel('ok'), successes: current.successes + 1, lastSuccessAt: new Date().toISOString(), lastErrorMessage: '', lastErrorCode: '', lastErrorAt: current.lastErrorAt || null, lastDurationMs: Date.now() - started, lastHttpStatus: null, lastClassification: 'ok-rpc', lastTransport: 'rpc', lastAppVersion: String(window.APP_VERSION || '').trim().slice(0, 40)
       }));
       return { ok: true, status: next };
     } catch (err) {
@@ -1001,6 +1033,7 @@
       stale,
       ageMs: Number.isFinite(ageMs) ? ageMs : null,
       minIntervalMs: SUPABASE_KEEPALIVE_MIN_INTERVAL_MS,
+      retryIntervalMs: SUPABASE_KEEPALIVE_RETRY_INTERVAL_MS,
       timeoutMs: SUPABASE_KEEPALIVE_TIMEOUT_MS,
       issues: issues.slice(0, 8),
       checkedAt: new Date().toISOString()

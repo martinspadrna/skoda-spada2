@@ -4799,7 +4799,9 @@ function formatSupabaseKeepaliveLine(status) {
   const lastError = String(st.lastErrorMessage || st.lastErrorCode || 'žádná');
   const attempts = String(st.attempts || 0) + '/' + String(st.successes || 0) + '/' + String(st.failures || 0) + '/' + String(st.skips || 0);
   const reason = String(st.lastReason || st.lastSkipReason || '—');
-  return 'Supabase heartbeat: ' + label + ' · poslední OK ' + lastOk + ' · chyba ' + lastError + ' · pokusy/OK/chyby/skip ' + attempts + ' · důvod ' + reason;
+  const transport = String(st.lastTransport || '—');
+  const kind = String(st.lastClassification || '—');
+  return 'Supabase heartbeat: ' + label + ' · poslední OK ' + lastOk + ' · chyba ' + lastError + ' · pokusy/OK/chyby/skip ' + attempts + ' · důvod ' + reason + ' · cesta ' + transport + ' · typ ' + kind;
 }
 
 function buildSupabaseKeepaliveStatusHtml() {
@@ -4810,6 +4812,8 @@ function buildSupabaseKeepaliveStatusHtml() {
   const lastError = status ? String(status.lastErrorMessage || status.lastErrorCode || 'žádná') : 'žádná';
   const counts = status ? (String(status.attempts || 0) + '/' + String(status.successes || 0) + '/' + String(status.failures || 0) + '/' + String(status.skips || 0)) : '0/0/0/0';
   const reason = status ? String(status.lastReason || status.lastSkipReason || '—') : '—';
+  const transport = status ? String(status.lastTransport || '—') : '—';
+  const kind = status ? String(status.lastClassification || '—') : '—';
   return [
     '<div class="appMenuCard appMenuKeepaliveCard">',
     '  <div class="appMenuCardTitle">Supabase heartbeat</div>',
@@ -4817,6 +4821,7 @@ function buildSupabaseKeepaliveStatusHtml() {
     '  <div class="smallText">Poslední OK: ' + escapeHtml(lastOk) + '</div>',
     '  <div class="smallText">Poslední chyba: ' + escapeHtml(lastError) + '</div>',
     '  <div class="smallText">Pokusy / OK / chyby / skip: ' + escapeHtml(counts) + ' · důvod: ' + escapeHtml(reason) + '</div>',
+    '  <div class="smallText">Cesta: ' + escapeHtml(transport) + ' · typ: ' + escapeHtml(kind) + '</div>',
     '  <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="supabase-heartbeat-now">Otestovat heartbeat teď</button>',
     '</div>'
   ].join('');
@@ -4825,10 +4830,10 @@ function buildSupabaseKeepaliveStatusHtml() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText || 'v.1.5 (836)',
+      range: versionText || 'v.1.5 (837)',
       title: 'Aktuální stabilizace',
       lines: [
-        'V836 převádí Supabase heartbeat na RPC rak_app_keepalive, aby ho neblokovala RLS chyba přímého upsertu; tlačítko Otestovat heartbeat teď zůstává.',
+        'V837 opravuje Supabase heartbeat po RLS chybě: klient už po neúspěchu nečeká 12 hodin, používá RPC cestu a diagnostika ukazuje cestu/typ chyby.',
         'V834 přidává bezpečný Supabase heartbeat přes samostatnou tabulku app_keepalive: appka při startu/při návratu pošle malý ping maximálně 1× za 12 hodin na zařízení a při chybě dál jede offline.',
         'V833 doplňuje online Piškvorkám čitelný move guard: když tah nejde udělat kvůli čekání, chybějící roli nebo špatnému tahu, appka ukáže důvod, zapíše diagnostiku a zkusí rychlý resync session.',
         'V832 zpevňuje deep-link pozvánky: appka nově čte kód z hash i query URL, uklidí URL po přijetí a v diagnostice ukáže, jestli přišel přes hash nebo query.',

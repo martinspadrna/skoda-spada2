@@ -14493,4 +14493,6 @@ body.lowEndDevice .appMenuKeepaliveCard {
   -webkit-backdrop-filter: none;
 }
 
-/* v.1.5 (836): Supabase heartbeat zapisuje přes RPC rak_app_keepalive, Piškvorky policies beze změny. */
+/* v.1.5 (837): Supabase heartbeat zapisuje přes RPC rak_app_keepalive, Piškvorky policies beze změny. */
+
+/* v.1.5 (837): Supabase heartbeat RPC v2 – po staré RLS chybě se nečeká 12 h, diagnostika ukazuje cestu/typ. */

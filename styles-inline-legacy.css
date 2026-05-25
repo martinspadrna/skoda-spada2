@@ -394,7 +394,6 @@ body.tttOpen #tttOverlay{inset: 0 0 calc(70px + env(safe-area-inset-bottom)) 0 !
 .tttToggleRow, .tttLevelRow{grid-template-columns:repeat(1, minmax(0, 1fr)) !important;}
 .tttBoardWrap{inset:52px 8px 74px !important;}
 .tttBoard{--tttCellSize: clamp(19px, 5.2vw, 24px) !important;}
-}
 
 
 .bottomNav{padding:0 0 calc(0px + env(safe-area-inset-bottom)) !important;
