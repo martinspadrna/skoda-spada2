@@ -14597,3 +14597,150 @@ body.lowEndDevice .appMenuKeepaliveCard {
   #games .shipsInviteBanner{padding:8px 10px !important;}
   #games .shipsInviteBanner .shipsInviteCode{font-size:clamp(28px,9vw,44px) !important;}
 }
+
+/* v.1.5 (843): Heartbeat čas v českém pásmu, Lodě zvací overlay 1:1 jako Piškvorky a bez prázdného pole pod mapou. */
+#games #gamesShellBody[data-arcade-game="ships"]{
+  --ships-board-size:min(
+    calc(100vw - 28px),
+    calc(100dvh - 270px - env(safe-area-inset-top) - env(safe-area-inset-bottom)),
+    382px
+  ) !important;
+  padding-bottom:calc(12px + env(safe-area-inset-bottom)) !important;
+  overflow-y:auto !important;
+}
+#games .shipsSetupStage{
+  min-height:0 !important;
+  height:auto !important;
+  justify-content:flex-start !important;
+  align-items:center !important;
+  gap:4px !important;
+  padding-top:calc(6px + env(safe-area-inset-top)) !important;
+  padding-bottom:calc(6px + env(safe-area-inset-bottom)) !important;
+  overflow:visible !important;
+}
+#games .shipsSetupBoardWrap,
+#games .shipsSingleBoardWrap{
+  flex:0 0 auto !important;
+  min-height:0 !important;
+  height:auto !important;
+  margin:0 auto !important;
+  padding:0 !important;
+  place-items:center !important;
+}
+#games .shipsSetupPrimaryActions,
+#games .shipsSetupSecondaryActions{
+  position:relative !important;
+  inset:auto !important;
+  left:auto !important;
+  right:auto !important;
+  top:auto !important;
+  bottom:auto !important;
+  transform:none !important;
+  order:initial !important;
+  flex:0 0 auto !important;
+  margin:0 auto !important;
+  padding:0 !important;
+  width:min(calc(100vw - 24px),420px) !important;
+  display:grid !important;
+  grid-template-columns:1fr 1fr !important;
+  gap:7px !important;
+  background:transparent !important;
+  border:0 !important;
+  box-shadow:none !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
+#games .shipsSetupBoardWrap + .shipsSetupSecondaryActions{
+  margin-top:2px !important;
+}
+#games .shipsSetupStage .shipsBoardCardLift,
+#games .shipsPlayStage .shipsBoardCardLift,
+#games .shipsBoardCardLift{
+  position:relative !important;
+  overflow:hidden !important;
+}
+#games .shipsInviteHost{
+  position:relative !important;
+}
+#games .shipsInviteOverlay{
+  position:absolute !important;
+  left:50% !important;
+  top:50% !important;
+  right:auto !important;
+  bottom:auto !important;
+  transform:translate(-50%, -50%) !important;
+  width:min(86%, 320px) !important;
+  z-index:26 !important;
+  display:block !important;
+  padding:18px 16px !important;
+  border-radius:24px !important;
+  border:1px solid rgba(124,255,124,.58) !important;
+  background:linear-gradient(180deg, rgba(5,12,10,.94), rgba(2,7,6,.98)) !important;
+  -webkit-backdrop-filter:blur(18px) saturate(170%) !important;
+  backdrop-filter:blur(18px) saturate(170%) !important;
+  box-shadow:0 24px 70px rgba(0,0,0,.66), 0 0 40px rgba(124,255,124,.28), inset 0 0 0 1px rgba(255,255,255,.08) !important;
+  text-align:center !important;
+  pointer-events:auto !important;
+}
+#games .shipsInviteOverlayLabel{
+  font-size:12px !important;
+  text-transform:uppercase !important;
+  letter-spacing:.12em !important;
+  color:rgba(235,255,235,.72) !important;
+  font-weight:900 !important;
+}
+#games .shipsInviteOverlayCode{
+  margin-top:8px !important;
+  font-size:52px !important;
+  line-height:1 !important;
+  font-weight:1000 !important;
+  letter-spacing:.14em !important;
+  color:#39FF14 !important;
+  text-shadow:0 0 10px rgba(57,255,20,.86), 0 0 32px rgba(57,255,20,.48) !important;
+}
+#games .shipsInviteOverlayHint{
+  margin-top:10px !important;
+  font-size:12px !important;
+  line-height:1.35 !important;
+  color:rgba(235,255,235,.76) !important;
+}
+#games .shipsInviteOverlayLink{
+  margin-top:9px !important;
+  padding:7px 8px !important;
+  border-radius:12px !important;
+  background:rgba(255,255,255,.055) !important;
+  border:1px solid rgba(255,255,255,.08) !important;
+  color:rgba(235,255,235,.78) !important;
+  font-size:10px !important;
+  line-height:1.25 !important;
+  word-break:break-all !important;
+}
+#games .shipsInviteOverlayActions{
+  display:grid !important;
+  grid-template-columns:1fr 1fr !important;
+  gap:8px !important;
+  margin-top:12px !important;
+}
+#games .shipsInviteOverlayBtn{
+  min-height:40px !important;
+  border-radius:14px !important;
+  color:#FFFFFF !important;
+  -webkit-text-fill-color:#FFFFFF !important;
+  background:linear-gradient(180deg, rgba(24,42,30,.98), rgba(5,14,9,.98)) !important;
+  border:1px solid rgba(124,255,124,.62) !important;
+  text-shadow:0 1px 2px rgba(0,0,0,.9) !important;
+  box-shadow:0 0 18px rgba(57,255,20,.20), inset 0 0 0 1px rgba(255,255,255,.10) !important;
+}
+#games .shipsInviteBanner{display:none !important;}
+@media (max-height:760px){
+  #games #gamesShellBody[data-arcade-game="ships"]{
+    --ships-board-size:min(
+      calc(100vw - 30px),
+      calc(100dvh - 250px - env(safe-area-inset-top) - env(safe-area-inset-bottom)),
+      352px
+    ) !important;
+  }
+  #games .shipsInviteOverlay{padding:14px 13px !important;width:min(88%, 304px) !important;}
+  #games .shipsInviteOverlayCode{font-size:clamp(36px,10vw,48px) !important;}
+  #games .shipsInviteOverlayHint{display:none !important;}
+}

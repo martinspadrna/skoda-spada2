@@ -1,3 +1,11 @@
+## v.1.5 (843)
+- Supabase heartbeat v Diagnostice převádí čas posledního OK do českého lokálního času `Europe/Prague`, aby neukazoval matoucí UTC hodnotu.
+- Lodě online mají zvací tabulku sjednocenou vzhledově s Piškvorkami: výrazný overlay přes hrací pole, 4místný kód, Kopírovat kód a Sdílet.
+- Zvací overlay Lodí už není běžný blok v layoutu, takže nezabírá výšku mezi hrací plochou a spodními tlačítky.
+- Příprava flotily v Lodích má finální CSS pojistku proti neviditelnému prostoru pod hracím polem; spodní ovládání je v normálním toku těsně pod polem.
+- DB ani Supabase policies se v tomto buildu neměnily; online invite/session hardening zůstává v audit/RPC režimu.
+- Verze sjednocena na v.1.5 (843), cache na v1.5-843 a Supabase realtime kanál na rak-public-live-v843.
+
 ## v.1.5 (842)
 - O aplikaci už nezobrazuje samostatnou kartu Supabase heartbeat; stav zůstává jen v Diagnostice, aby se stejná informace neduplikovala.
 - Z Diagnostiky byl odstraněný vysvětlovací popisek o přesunu heartbeat testu; zůstává přímo karta s tlačítkem, protože to je samo o sobě jasné.

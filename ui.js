@@ -4817,11 +4817,32 @@ function readSupabaseKeepaliveStatusForUi() {
   return null;
 }
 
+function formatRakLocalDateTime(value) {
+  const raw = String(value || '').trim();
+  if (!raw || raw === 'zatím nic' || raw === '—') return raw || 'zatím nic';
+  const d = new Date(raw);
+  if (!Number.isFinite(d.getTime())) return raw;
+  try {
+    return new Intl.DateTimeFormat('cs-CZ', {
+      timeZone: 'Europe/Prague',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    }).format(d).replace(',', '') + ' (Praha)';
+  } catch (err) {
+    return d.toLocaleString('cs-CZ') + ' (lokálně)';
+  }
+}
+
 function formatSupabaseKeepaliveLine(status) {
   const st = status && typeof status === 'object' ? status : null;
   if (!st) return 'Supabase heartbeat: zatím bez dat';
   const label = String(st.label || st.status || 'neznámá');
-  const lastOk = String(st.lastSuccessAt || 'zatím nic');
+  const lastOk = formatRakLocalDateTime(st.lastSuccessAt || 'zatím nic');
   const lastError = String(st.lastErrorMessage || st.lastErrorCode || 'žádná');
   const attempts = String(st.attempts || 0) + '/' + String(st.successes || 0) + '/' + String(st.failures || 0) + '/' + String(st.skips || 0);
   const reason = String(st.lastReason || st.lastSkipReason || '—');
@@ -4836,7 +4857,7 @@ function buildSupabaseKeepaliveStatusHtml(options) {
   const status = readSupabaseKeepaliveStatusForUi();
   const label = status ? String(status.label || status.status || 'neznámá') : 'zatím bez dat';
   const stateClass = status && status.status === 'ok' ? ' isOk' : (status && (status.status === 'possibly_paused' || status.status === 'unavailable') ? ' isWarn' : '');
-  const lastOk = status ? String(status.lastSuccessAt || 'zatím nic') : 'zatím nic';
+  const lastOk = status ? formatRakLocalDateTime(status.lastSuccessAt || 'zatím nic') : 'zatím nic';
   const lastError = status ? String(status.lastErrorMessage || status.lastErrorCode || 'žádná') : 'žádná';
   const counts = status ? (String(status.attempts || 0) + '/' + String(status.successes || 0) + '/' + String(status.failures || 0) + '/' + String(status.skips || 0)) : '0/0/0/0';
   const reason = status ? String(status.lastReason || status.lastSkipReason || '—') : '—';
@@ -4859,9 +4880,10 @@ function buildSupabaseKeepaliveStatusHtml(options) {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText || 'v.1.5 (842)',
+      range: versionText || 'v.1.5 (843)',
       title: 'Aktuální stabilizace',
       lines: [
+        'V843 převádí Supabase heartbeat čas do českého času, sjednocuje vzhled zvacího overlaye Lodí s Piškvorkami a odstraňuje volné místo mezi polem a spodními tlačítky.',
         'V842 uklízí duplicitní heartbeat v O aplikaci/Diagnostice, opravuje živé vzájemné skóre Piškvorek a zjednodušuje přípravu Lodí včetně velkého banneru s kódem.',
         'V841 zpřesňuje Supabase online hry audit: RPC smoke se nově počítá zvlášť pro Piškvorky i Lodě, takže se další hardening neodemkne jen podle jedné hry.',
         'V840 uklízí Supabase heartbeat UI: popisek mizí z Nastavení aplikace, tlačítko Otestovat heartbeat teď je přesunuté z O aplikaci přímo do Diagnostiky a O aplikaci zůstává jen jako přehled stavu.',

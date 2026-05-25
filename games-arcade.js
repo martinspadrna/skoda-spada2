@@ -4378,29 +4378,32 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
       const code = String(st && st.code || local.code || '').trim();
       return 'Přidej se do Lodí v RaK. Kód pozvánky: ' + code;
     };
-    const shipsInviteBannerHtml = (st) => {
+    const shipsInviteOverlayHtml = (st) => {
       const code = String(st && st.code || local.code || '').trim();
-      if (!code || st.playerOAccountNumber || String(st.status || '').toLowerCase() !== 'waiting') return '';
-      return `<div class="arcadeBar arcadePanel uPad12 shipsInviteBanner">
-        <div class="shipsInviteLabel">Pozvánka pro soupeře</div>
-        <div class="shipsInviteCode">${escapeHtml(code)}</div>
-        <div class="smallText shipsInviteHint">Soupeř může opsat 4 čísla do Lodí. Kód můžeš zkopírovat nebo nasdílet.</div>
-        <div class="shipsInviteBannerActions">
-          <button type="button" class="gameControlBtn primary" data-ships-copy-code="${escapeHtml(code)}">Kopírovat kód</button>
-          <button type="button" class="gameControlBtn" data-ships-share-code="${escapeHtml(code)}">Sdílet</button>
+      const waitingForOpponent = !!(code && !st.playerOAccountNumber && !st.o && String(st.status || '').toLowerCase() === 'waiting');
+      if (!waitingForOpponent) return '';
+      return `<div class="shipsInviteOverlay" data-ships-invite-overlay="1">
+        <div class="shipsInviteOverlayLabel">Pozvánka pro spoluhráče</div>
+        <div class="shipsInviteOverlayCode">${escapeHtml(code)}</div>
+        <div class="shipsInviteOverlayHint">Soupeř může opsat 4 čísla do Lodí. Kód můžeš zkopírovat nebo nasdílet.</div>
+        <div class="shipsInviteOverlayActions">
+          <button type="button" class="tttBtn shipsInviteOverlayBtn" data-ships-copy-code="${escapeHtml(code)}" data-ships-copy-kind="code">Kopírovat kód</button>
+          <button type="button" class="tttBtn shipsInviteOverlayBtn" data-ships-share-code="${escapeHtml(code)}">Sdílet</button>
         </div>
       </div>`;
     };
     const shipsBindInviteBannerActions = () => {
       body.querySelectorAll('[data-ships-copy-code]').forEach((btn) => btn.addEventListener('click', async () => {
-        const code = String(btn.getAttribute('data-ships-copy-code') || '').trim();
+        const value = String(btn.getAttribute('data-ships-copy-code') || '').trim();
+        const kind = String(btn.getAttribute('data-ships-copy-kind') || 'code');
+        const original = btn.textContent || (kind === 'link' ? 'Kopírovat odkaz' : 'Kopírovat kód');
         try {
-          await navigator.clipboard.writeText(code);
-          btn.textContent = 'Kód zkopírován';
-          setTimeout(() => { btn.textContent = 'Kopírovat kód'; }, 1400);
+          await navigator.clipboard.writeText(value);
+          btn.textContent = kind === 'link' ? 'Odkaz zkopírován' : 'Kód zkopírován';
+          setTimeout(() => { btn.textContent = original; }, 1400);
         } catch (err) {
           btn.textContent = 'Nešlo zkopírovat';
-          setTimeout(() => { btn.textContent = 'Kopírovat kód'; }, 1400);
+          setTimeout(() => { btn.textContent = original; }, 1400);
         }
       }));
       body.querySelectorAll('[data-ships-share-code]').forEach((btn) => btn.addEventListener('click', async () => {
@@ -4554,7 +4557,6 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
       const selectedName = selectedShip ? selectedShip.name : 'loď';
       const hintText = message || st.message || 'Klepni na loď = výběr. Druhé klepnutí na moře = přesun. Lodě se nesmí dotýkat ani rohem.';
       body.innerHTML = `<div class="arcadeStage shipsStage shipsSetupStage shipsScrollableStage">
-        ${shipsInviteBannerHtml(st)}
         <div class="arcadeControls shipsSetupActions shipsSetupPrimaryActions">
           <button type="button" class="gameControlBtn ${valid ? 'primary' : 'isDisabled'}" id="shipsReadyBtn">Potvrdit flotilu</button>
           <button type="button" class="gameControlBtn ghost" id="shipsMenuBackBtn">Zpět do menu</button>
@@ -4565,7 +4567,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
           <button type="button" class="gameControlBtn" id="shipsRotateBtn">Otočit vybranou</button>
         </div>
         <div class="shipsSingleBoardWrap shipsSetupBoardWrap">
-          <div class="shipsBoardCard shipsBoardCardLift"><div class="smallText uBold">Tvoje flotila · klepni na loď a přesuň ji</div><div class="smallText shipsInlineHint">${escapeHtml(hintText)}</div>${shipsRenderBoard(mine, { own: true, placement: true, selectedShipId: selectedShip && selectedShip.id })}</div>
+          <div class="shipsBoardCard shipsBoardCardLift shipsInviteHost"><div class="smallText uBold">Tvoje flotila · klepni na loď a přesuň ji</div><div class="smallText shipsInlineHint">${escapeHtml(hintText)}</div>${shipsRenderBoard(mine, { own: true, placement: true, selectedShipId: selectedShip && selectedShip.id })}${shipsInviteOverlayHtml(st)}</div>
         </div>
       </div>`;
       shipsBindInviteBannerActions();
@@ -4661,11 +4663,10 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
       body.innerHTML = `<div class="arcadeStage shipsStage shipsScrollableStage shipsPlayStage">
         <div class="arcadeHud arcadeHudSingleLine shipsCompactHud">${gamesStatLine('Kód', st.code || '—')}${gamesStatLine('Role', role || 'divák')}${gamesStatLine('Zásahy', sum.hits)}${gamesStatLine('Potopené', sum.sunk)}</div>
         <div class="shipsPlayInfoLine"><strong>${escapeHtml(headline)}</strong><span>${escapeHtml(st.message || viewHint || '')}</span></div>
-        ${shipsInviteBannerHtml(st)}
         ${toggleHtml}
         <div class="shipsMenuBackLine"><button type="button" class="gameControlBtn ghost" id="shipsMenuBackBtn">Zpět do menu Lodí</button></div>
         <div class="shipsSingleBoardWrap">
-          <div class="shipsBoardCard shipsBoardCardLift shipsBoardCardResultHost"><div class="smallText uBold">${escapeHtml(activeBoardTitle)}</div><div class="smallText shipsInlineHint">${escapeHtml(viewHint)}</div>${activeBoard}${st.status === 'finished' ? `<div class="arcadeGameOverlay arcadeEndOverlay shipsResult"><div class="arcadeOverlayCard shipsResultCard"><strong>${st.winner === role ? 'Výhra!' : 'Konec hry'}</strong><span>Score: ${st.winner === role ? 1000 + (sum.hits * 80) + (sum.sunk * 220) : Math.max(100, sum.hits * 70)} · Zásahy: ${sum.hits} · Potopené: ${sum.sunk}</span><div class="shipsResultActions"><button type="button" class="gameControlBtn primary" id="shipsRematchBtn">Nová hra se soupeřem</button><button type="button" class="gameControlBtn ghost" id="shipsBackBtn">Zpět do Lodí</button></div></div></div>` : ''}</div>
+          <div class="shipsBoardCard shipsBoardCardLift shipsBoardCardResultHost shipsInviteHost"><div class="smallText uBold">${escapeHtml(activeBoardTitle)}</div><div class="smallText shipsInlineHint">${escapeHtml(viewHint)}</div>${activeBoard}${shipsInviteOverlayHtml(st)}${st.status === 'finished' ? `<div class="arcadeGameOverlay arcadeEndOverlay shipsResult"><div class="arcadeOverlayCard shipsResultCard"><strong>${st.winner === role ? 'Výhra!' : 'Konec hry'}</strong><span>Score: ${st.winner === role ? 1000 + (sum.hits * 80) + (sum.sunk * 220) : Math.max(100, sum.hits * 70)} · Zásahy: ${sum.hits} · Potopené: ${sum.sunk}</span><div class="shipsResultActions"><button type="button" class="gameControlBtn primary" id="shipsRematchBtn">Nová hra se soupeřem</button><button type="button" class="gameControlBtn ghost" id="shipsBackBtn">Zpět do Lodí</button></div></div></div>` : ''}</div>
         </div>
       </div>`;
       shipsBindInviteBannerActions();

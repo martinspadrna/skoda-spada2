@@ -1,4 +1,4 @@
-// v.1.5 (842) – UI úklid heartbeatu, živé skóre Piškvorek a doladění online Lodí.
+// v.1.5 (843) – lokální čas heartbeatu a sjednocený zvací overlay Lodí.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;
