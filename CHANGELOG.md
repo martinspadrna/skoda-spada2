@@ -1,3 +1,10 @@
+## v.1.5 (850)
+- Lodě: větší mobil už nemá řezat spodní část automaticky položeného bitevního pole při vytváření flotily; setup pole je kompaktnější a bez vysoké spodní rezervy.
+- Lodě online: po připojení přes zvací odkaz se při aktivní hře automaticky přepne na soupeřovo pole, refresh session víc hlídá změnu soupeře/stavu/tahu a při blokované střelbě se spustí rychlé obnovení stavu.
+- Spodní ikonky zůstaly beze změny, protože byly potvrzené OK.
+- DB/Supabase beze změny, policies se neměnily.
+- Verze sjednocena na v.1.5 (850), cache na v1.5-850 a Supabase realtime kanál na rak-public-live-v850.
+
 ## v.1.5 (849)
 - Lodě online: zvací odkaz `#games=ships&invite=1234` přepíná stránku na Hry a otevírá přímo shell Lodí, takže už nezůstane jen na hlavní RaK stránce.
 - Lodě online: přidaná bootstrap pojistka pro případ, kdy se odkaz načte dřív než modul Lodí; po načtení modulu se pozvánka z URL znovu zpracuje.

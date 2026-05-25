@@ -4443,18 +4443,29 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
       const code = String(rawCode || '').replace(/\D/g, '').slice(0, 4);
       if (code.length !== 4) { renderMenu('Zadej 4místný číselný kód pozvánky.'); return { ok: false, reason: 'invalid-code' }; }
       renderMenu(source === 'link' ? 'Připojuji se z odkazu…' : 'Připojuji se k online hře…');
-      const accepted = await window.acceptGameInvite(code, account);
+      const accepted = await window.acceptGameInvite(code, account, { gameType: 'battleship', source: source || 'manual' });
       if (!accepted || !accepted.ok) { renderMenu((accepted && accepted.message) || (accepted && accepted.error && accepted.error.message) || 'Pozvánku se nepodařilo přijmout.'); return { ok: false, reason: 'accept-failed' }; }
       const loaded = accepted && accepted.session ? accepted : await window.loadGameSessionByInviteCode(code);
-      let st = shipsNormalizeState(loaded && loaded.session && loaded.session.board_state, code);
-      st.playerOAccountNumber = st.playerOAccountNumber || account;
+      const sessionRow = loaded && loaded.session ? loaded.session : null;
+      const inviteRow = loaded && loaded.invite ? loaded.invite : (accepted && accepted.invite ? accepted.invite : null);
+      let st = shipsNormalizeState(sessionRow && sessionRow.board_state, code);
+      st.gameType = 'battleship';
+      st.playerXAccountNumber = st.playerXAccountNumber || (sessionRow && sessionRow.player_x_account_number) || (inviteRow && inviteRow.inviter_account_number) || null;
+      st.playerOAccountNumber = st.playerOAccountNumber || (sessionRow && sessionRow.player_o_account_number) || account;
       st.o = st.o && st.o.ships && st.o.ships.length ? st.o : shipsBuildPlayerBoard();
-      st.oReady = false;
-      st.status = 'placing';
+      st.oReady = !!st.oReady;
+      shipsRecomputeStatus(st);
       st.message = 'Připojeno. Připrav si flotilu a potvrď ji.';
       st.revision = (Number(st.revision || 0) || 0) + 1;
       await shipsSaveState(st);
-      local.code = code; local.state = st; local.placing = { manual: false, selected: nextUnplaced(st.o), horizontal: true }; renderGame();
+      local.code = code;
+      local.state = st;
+      local.view = 'own';
+      local.lastTurn = '';
+      local.lastStatus = '';
+      local.lastHasOpponent = false;
+      local.placing = { manual: false, selected: nextUnplaced(st.o), horizontal: true };
+      renderGame();
       return { ok: true, code };
     };
     const renderMenu = (message) => {
@@ -4550,11 +4561,17 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
       }
       const remote = res && res.session && res.session.board_state ? shipsRecomputeStatus(shipsNormalizeState(res.session.board_state, local.code)) : null;
       if (!remote) return;
-      const oldRev = Number(local.state && local.state.revision || 0) || 0;
-      const role = shipsRoleForState(local.state || remote);
+      const oldState = local.state || {};
+      const oldRev = Number(oldState.revision || 0) || 0;
+      const nextRev = Number(remote.revision || 0) || 0;
+      const role = shipsRoleForState(remote || oldState);
       const mineReady = role ? !!remote[readyKey(role)] : true;
-      if (!soft || mineReady || Number(remote.revision || 0) > oldRev) {
+      const opponentChanged = String(oldState.playerOAccountNumber || '') !== String(remote.playerOAccountNumber || '') || (!!oldState.o !== !!remote.o);
+      const statusChanged = String(oldState.status || '') !== String(remote.status || '') || String(oldState.turn || '') !== String(remote.turn || '');
+      const becameActive = String(remote.status || '') === 'active' && !!remote.xReady && !!remote.oReady && !!remote.x && !!remote.o;
+      if (!soft || mineReady || opponentChanged || statusChanged || becameActive || nextRev > oldRev) {
         local.state = remote;
+        if (becameActive && role && remote.turn === role) local.view = 'enemy';
         maybeRecordFinished();
         renderGame(true);
       }
@@ -4659,7 +4676,8 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
       const ownShots = enemy && Array.isArray(enemy.shots) ? enemy.shots : [];
       const myShots = mine && Array.isArray(mine.shots) ? mine.shots : [];
       const preferredView = canShoot ? 'enemy' : 'own';
-      if (!local.view || local.lastTurn !== st.turn || st.status !== local.lastStatus || local.lastHasOpponent !== hasOpponent) local.view = preferredView;
+      if (canShoot) local.view = 'enemy';
+      else if (!local.view || local.lastTurn !== st.turn || st.status !== local.lastStatus || local.lastHasOpponent !== hasOpponent) local.view = preferredView;
       if (!hasOpponent && local.view === 'enemy') local.view = 'own';
       local.lastTurn = st.turn;
       local.lastStatus = st.status;
@@ -4702,7 +4720,17 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
           const roleNow = shipsRoleForState(stNow);
           const parts = String(btn.getAttribute('data-ships-shot') || '').split(':').map(Number);
           const result = shipsApplyShot(stNow, roleNow, parts[0], parts[1]);
-          if (!result.ok) { stNow.message = result.reason === 'already-shot' ? 'Sem už jsi střílel.' : 'Teď nejsi na tahu.'; local.state = stNow; renderGame(); return; }
+          if (!result.ok) {
+            stNow.message = result.reason === 'already-shot'
+              ? 'Sem už jsi střílel.'
+              : (result.reason === 'missing-board'
+                ? 'Soupeřovo pole ještě není načtené. Zkouším obnovit hru.'
+                : 'Teď nejsi na tahu. Zkouším obnovit stav hry.');
+            local.state = stNow;
+            renderGame();
+            setTimeout(() => { void refreshRemote(true); }, 250);
+            return;
+          }
           local.state = stNow;
           renderGame();
           await shipsSaveState(stNow);
@@ -4730,7 +4758,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
       window.__rakShipsPendingInviteCode = inviteCode;
       window.__rakShipsPendingInviteSource = options && options.source ? String(options.source) : 'url';
       try {
-        // v.1.5 (849): Lodě nejsou full-screen overlay jako Piškvorky, běží uvnitř stránky Hry.
+        // v.1.5 (850): Lodě nejsou full-screen overlay jako Piškvorky, běží uvnitř stránky Hry.
         // Při deep-linku proto nejdřív přepneme stránku na Hry a až potom otevřeme shell Lodí.
         if (typeof showPage === 'function') showPage('games');
         else if (typeof window.showPage === 'function') window.showPage('games');
@@ -5413,7 +5441,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return true;
   }
 
-  // v.1.5 (849): pojistka pro případ, kdy se #games=ships&invite načte dřív než modul Lodí.
+  // v.1.5 (850): pojistka pro případ, kdy se #games=ships&invite načte dřív než modul Lodí.
   shipsScheduleOpenFromUrl('games-arcade-boot');
   if (!window.__rakShipsArcadeUrlInviteBound) {
     window.__rakShipsArcadeUrlInviteBound = true;

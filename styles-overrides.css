@@ -15034,7 +15034,7 @@ html body nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn.active .moreI
 }
 
 
-/* v.1.5 (849): Spodní navigace – vrácení neaktivních ikon o polovinu posledního posunu zpět doleva.
+/* v.1.5 (850): Spodní navigace – vrácení neaktivních ikon o polovinu posledního posunu zpět doleva.
    Aktvní stav zůstává beze změny. */
 html body nav.bottomNav #bottomNavScroll > button.bottomNavBtn:not(.active) .bottomNavIcon{
   transform:translate3d(2.375px, 0, 0) !important;
@@ -15047,7 +15047,7 @@ html body nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn.active .moreI
   transform:translateY(0) scale(1) !important;
 }
 
-/* v.1.5 (849): Lodě – setup flotily nesmí být řezaný spodním panelem.
+/* v.1.5 (850): Lodě – setup flotily nesmí být řezaný spodním panelem.
    Raději mírně menší pole než schovaný spodní řádek. */
 body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"]{
   --ships-board-size:min(
@@ -15104,5 +15104,62 @@ body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSetupS
   body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSetupSecondaryActions .gameControlBtn{
     min-height:31px !important;
     padding:4px 7px !important;
+  }
+}
+
+/* v.1.5 (850): Lodě – větší mobily nesmí řezat automaticky položené bitevní pole.
+   Pole je raději kompaktnější a setup stage neudržuje žádnou vysokou spodní rezervu. */
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"]{
+  --ships-board-size:min(
+    calc(100vw - 58px),
+    calc(100dvh - 444px - env(safe-area-inset-top) - env(safe-area-inset-bottom)),
+    306px
+  ) !important;
+  overflow:hidden !important;
+  padding-bottom:0 !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSetupStage{
+  overflow:hidden !important;
+  height:calc(100dvh - 128px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+  max-height:calc(100dvh - 128px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+  min-height:0 !important;
+  padding-top:calc(4px + env(safe-area-inset-top)) !important;
+  padding-bottom:2px !important;
+  gap:3px !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSetupStage .shipsBoardCardLift > .smallText.uBold{
+  display:none !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSetupStage .shipsBoardCardLift{
+  width:calc(var(--ships-board-size) + 8px) !important;
+  max-width:calc(var(--ships-board-size) + 8px) !important;
+  padding:3px !important;
+  overflow:visible !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSetupStage .shipsBoard{
+  width:var(--ships-board-size) !important;
+  max-width:var(--ships-board-size) !important;
+  padding:2px !important;
+  gap:2px !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSetupPrimaryActions,
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSetupSecondaryActions{
+  flex:0 0 auto !important;
+  min-height:0 !important;
+  margin:0 auto !important;
+  padding:0 !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsCompactHud{
+  flex:0 0 auto !important;
+  min-height:0 !important;
+}
+@media (min-height:860px) and (min-width:410px){
+  body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"]{
+    --ships-board-size:min(calc(100vw - 62px), calc(100dvh - 470px - env(safe-area-inset-top) - env(safe-area-inset-bottom)), 292px) !important;
+  }
+}
+@media (max-height:760px){
+  body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"]{
+    --ships-board-size:min(calc(100vw - 58px), calc(100dvh - 412px - env(safe-area-inset-top) - env(safe-area-inset-bottom)), 284px) !important;
   }
 }

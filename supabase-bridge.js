@@ -234,10 +234,10 @@
     { table: 'gomoku_wins', realtime: true, queueType: 'gomoku_win', access: 'anon SELECT/INSERT/UPDATE', note: 'výhry piškvorek / legacy leaderboard' }
   ];
 
-  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (849)';
+  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (850)';
   const SUPABASE_POLICY_AUDIT_SNAPSHOT_AT = '2026-05-24';
   const SUPABASE_POLICY_HARDENING_PHASE = {
-    current: 'V849 – Lodě přes zvací odkaz otevírají přímo Lodě, setup flotily má nižší pole bez zakrytého spodku a spodní ikony jsou doladěné zpět doleva. DB policies se nemění.',
+    current: 'V850 – Lodě: setup pole je kompaktnější na větších mobilech a střelba po připojení přes odkaz se lépe přepíná/obnovuje. Spodní ikony zůstávají OK. DB policies se nemění.',
     next: 'Nasbírat RPC smoke signály create/accept/save zvlášť pro Piškvorky i Lodě bez fallbacků; až potom připravit úzké policy zúžení po jednotlivých tabulkách.',
     rollback: 'Rollback v828 byl proveden jen pro game_invites/game_sessions restriktivní policies z v826; game_stats restriktivní policies z v824 zůstávají zachované.'
   };
@@ -294,11 +294,11 @@
   ];
 
   const SUPABASE_RPC_HARDENING_STATUS = {
-    version: 'v.1.5 (849)',
+    version: 'v.1.5 (850)',
     phase: '2E-O online invite/session RPC smoke + accept RPC / no policy tightening',
     rpcPreferred: true,
     migrationApplied: true,
-    migrationNote: 'game_stats direct INSERT/UPDATE zůstávají omezené restriktivními policies v824. Restriktivní policies pro game_invites/game_sessions z v826 byly v DB ve v828 odstraněné. V834–V837 stabilizovalo app_keepalive heartbeat přes RPC. V839 přidala RPC cestu pro přijetí online pozvánky; V841 zpřesnila smoke audit po hrách: Piškvorky i Lodě musí projít create/accept/save zvlášť před dalším utažením policies. V842 upravila klientské UI/flow, V843 sjednotila Lodě zvací overlay s Piškvorkami, V844 doplnila link/share flow Lodí a V845 opravuje router Lodí přes odkaz plus zakrytý spodek flotily; V847 tvrdě zajišťuje neprůhlednou spodní lištu v Láďově režimu; V848 přesněji dorovnává neaktivní ikonky spodní navigace vůči popiskům; V849 opravuje otevření Lodí přes zvací odkaz, snižuje setup pole Lodí proti zakrytému spodku a vrací ikonky spodní navigace o polovinu posledního posunu zpět doleva; policies dál nemění.',
+    migrationNote: 'game_stats direct INSERT/UPDATE zůstávají omezené restriktivními policies v824. Restriktivní policies pro game_invites/game_sessions z v826 byly v DB ve v828 odstraněné. V834–V837 stabilizovalo app_keepalive heartbeat přes RPC. V839 přidala RPC cestu pro přijetí online pozvánky; V841 zpřesnila smoke audit po hrách: Piškvorky i Lodě musí projít create/accept/save zvlášť před dalším utažením policies. V842 upravila klientské UI/flow, V843 sjednotila Lodě zvací overlay s Piškvorkami, V844 doplnila link/share flow Lodí a V845 opravuje router Lodí přes odkaz plus zakrytý spodek flotily; V847 tvrdě zajišťuje neprůhlednou spodní lištu v Láďově režimu; V848 přesněji dorovnává neaktivní ikonky spodní navigace vůči popiskům; V850 zmenšuje/kompaktuje setup pole Lodí pro větší mobily a zpevňuje obnovu stavu/střelbu po připojení přes zvací odkaz; spodní ikonky zůstávají beze změny; policies dál nemění.',
     dbVerifiedAt: '2026-05-25',
     verifiedRpcCount: 7,
     bugReportsHardeningPhase: 'znovu otevřeno jen jako audit; DB změna zatím ne',
@@ -906,7 +906,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v849');
+      const channel = client.channel('rak-public-live-v850');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -1175,7 +1175,7 @@
         timezone: (typeof Intl !== 'undefined' && Intl.DateTimeFormat) ? (Intl.DateTimeFormat().resolvedOptions().timeZone || '') : '',
         online: typeof navigator !== 'undefined' ? navigator.onLine !== false : true,
         transport: 'rpc',
-        build: '849'
+        build: '850'
       }
     };
 
@@ -3795,12 +3795,12 @@
     return {
       ok: blockers.length === 0,
       mode: 'supabase-hardening-readiness-audit-only',
-      version: 'v.1.5 (849)',
+      version: 'v.1.5 (850)',
       checkedAt: new Date().toISOString(),
       confirmed,
       readinessPercent,
       policyChangeAllowedNow: false,
-      policyChangeReason: 'V849 je klientský hotfix Lodí a spodní navigace: zvací odkaz otevírá přímo Lodě, setup flotily má nižší pole bez zakrytého spodku a neaktivní ikonky jsou vrácené o polovinu posledního posunu zpět doleva; policies game_invites/game_sessions se v tomto buildu neutahují.',
+      policyChangeReason: 'V850 je klientský hotfix Lodí: setup flotily je kompaktnější na větších mobilech a střelba po připojení přes link má pevnější refresh/přepnutí na soupeřovo pole; policies game_invites/game_sessions se v tomto buildu neutahují.',
       nextSafeStep: 'Nejdřív reálný RPC smoke create/accept/save zvlášť pro Piškvorky i Lodě bez fallbacku; potom připravit úzký SQL návrh pro jednu tabulku.',
       items,
       itemCount: items.length,
@@ -4295,10 +4295,10 @@
       try { const result = Object.assign({ ok: true }, await createGameInviteDirect(client, payload)); state.lastError = null; return result; }
       catch (err) { state.lastError = err; console.error('Game invite create failed', err); return { ok: false, error: err }; }
     },
-    acceptGameInvite: async (code, inviteeAccountNumber) => {
+    acceptGameInvite: async (code, inviteeAccountNumber, context) => {
       const client = getClient();
       if (!client || !navigator.onLine) return { ok: false, reason: 'offline-or-missing-client' };
-      try { const result = Object.assign({ ok: true }, await acceptGameInviteDirect(client, code, inviteeAccountNumber)); state.lastError = null; return result; }
+      try { const result = Object.assign({ ok: true }, await acceptGameInviteDirect(client, code, inviteeAccountNumber)); state.lastError = null; if (context && context.gameType) result.requestedGameType = String(context.gameType); return result; }
       catch (err) {
         state.lastError = err;
         console.error('Game invite accept failed', err);
@@ -4406,7 +4406,7 @@
   window.getSupabasePolicyRiskHealth = getSupabasePolicyRiskHealth;
   window.getSupabaseHardeningReadiness = getSupabaseHardeningReadiness;
   window.createGameInvite = async (payload) => window.RotationSupabaseBridge.createGameInvite(payload);
-  window.acceptGameInvite = async (code, inviteeAccountNumber) => window.RotationSupabaseBridge.acceptGameInvite(code, inviteeAccountNumber);
+  window.acceptGameInvite = async (code, inviteeAccountNumber, context) => window.RotationSupabaseBridge.acceptGameInvite(code, inviteeAccountNumber, context);
   window.loadGameSessionByInviteCode = async (code) => window.RotationSupabaseBridge.loadGameSessionByInviteCode(code);
   window.saveGameSessionByInviteCode = async (code, payload) => window.RotationSupabaseBridge.saveGameSessionByInviteCode(code, payload);
   window.loadTttHeadToHead = async (playerA, playerB, options) => window.RotationSupabaseBridge.loadTttHeadToHead(playerA, playerB, options || {});

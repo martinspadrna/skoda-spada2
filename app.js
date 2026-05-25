@@ -1,4 +1,4 @@
-// v.1.5 (849) – Lodě: zvací odkaz otevírá přímo Lodě a setup flotily má nižší pole bez zakrytého spodku; spodní ikony doladěny zpět doleva; DB/Supabase beze změny.
+// v.1.5 (850) – Lodě: větší mobil už neřeže automatické bitevní pole; po připojení přes odkaz se střelba lépe obnovuje a automaticky přepíná na soupeřovo pole; DB/Supabase beze změny.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;
