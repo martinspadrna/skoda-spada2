@@ -4900,10 +4900,10 @@ function buildSupabaseKeepaliveStatusHtml(options) {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText || 'v.1.5 (846)',
+      range: versionText || 'v.1.5 (847)',
       title: 'Aktuální stabilizace',
       lines: [
-        'V846 upravuje Láďův režim: spodní panel je v odlehčeném režimu neprůhledný, aby nepouštěl skrz obsah; normální režim zůstává beze změny.',
+        'V847 opravuje spodní navigaci: Láďův režim má tvrdě neprůhledný panel a neaktivní ikonky jsou jemně dorovnané vůči popisku; aktivní stav zůstává beze změny.',
         'V845 opravuje Lodě přes zvací odkaz: link #games=ships&invite už má přednost před Piškvorkami a příprava flotily má menší/čistší pole bez zakrytého spodku.',
         'V844 doplňuje Lodím skutečný zvací odkaz ve stejném overlayi jako Piškvorky, vypíná zbytečné scrollování a odstraňuje kód z HUDu nad hracím polem; Piškvorky zároveň obnovují online skóre bez ručního přepínání.',
         'V843 převádí Supabase heartbeat čas do českého času, sjednocuje vzhled zvacího overlaye Lodí s Piškvorkami a odstraňuje volné místo mezi polem a spodními tlačítky.',

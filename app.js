@@ -1,4 +1,4 @@
-// v.1.5 (846) – Láďův režim: neprůhledný spodní panel bez zásahu do normálního režimu.
+// v.1.5 (847) – Láďův režim: tvrdě neprůhledná spodní lišta + dorovnání neaktivních ikon spodní navigace.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

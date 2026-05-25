@@ -14948,3 +14948,68 @@ body.lightweightMode .bottomNavInner,
 body.ladaMode .bottomNavInner{
   background:transparent !important;
 }
+
+
+/* v.1.5 (847): Láďův režim – tvrdá neprůhledná spodní lišta a jemné dorovnání neaktivních ikon.
+   Normální režim zůstává beze změny kromě optického centrování neaktivních ikon vůči popisku. */
+html body.ladaMode nav.bottomNav,
+html body.lightweightMode nav.bottomNav,
+html body.lowEndDevice nav.bottomNav,
+html[data-rak-performance-mode^="lada"] body nav.bottomNav{
+  background:#07110d !important;
+  background-color:#07110d !important;
+  background-image:linear-gradient(180deg,#0d1914 0%,#07110d 54%,#050b08 100%) !important;
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+  opacity:1 !important;
+  isolation:isolate !important;
+  border-color:rgba(124,255,124,.24) !important;
+  box-shadow:0 -8px 22px rgba(0,0,0,.46), inset 0 1px 0 rgba(255,255,255,.045) !important;
+}
+html body.ladaMode nav.bottomNav::before,
+html body.ladaMode nav.bottomNav::after,
+html body.lightweightMode nav.bottomNav::before,
+html body.lightweightMode nav.bottomNav::after,
+html body.lowEndDevice nav.bottomNav::before,
+html body.lowEndDevice nav.bottomNav::after,
+html[data-rak-performance-mode^="lada"] body nav.bottomNav::before,
+html[data-rak-performance-mode^="lada"] body nav.bottomNav::after{
+  display:block !important;
+  content:"" !important;
+  position:absolute !important;
+  inset:0 !important;
+  border-radius:inherit !important;
+  pointer-events:none !important;
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+}
+html body.ladaMode nav.bottomNav::before,
+html body.lightweightMode nav.bottomNav::before,
+html body.lowEndDevice nav.bottomNav::before,
+html[data-rak-performance-mode^="lada"] body nav.bottomNav::before{
+  z-index:-1 !important;
+  background:#07110d !important;
+  opacity:1 !important;
+}
+html body.ladaMode nav.bottomNav::after,
+html body.lightweightMode nav.bottomNav::after,
+html body.lowEndDevice nav.bottomNav::after,
+html[data-rak-performance-mode^="lada"] body nav.bottomNav::after{
+  z-index:0 !important;
+  background:linear-gradient(180deg,rgba(124,255,124,.055),rgba(0,0,0,.10)) !important;
+  opacity:1 !important;
+}
+html body.ladaMode nav.bottomNav > .bottomNavScroll,
+html body.lightweightMode nav.bottomNav > .bottomNavScroll,
+html body.lowEndDevice nav.bottomNav > .bottomNavScroll,
+html[data-rak-performance-mode^="lada"] body nav.bottomNav > .bottomNavScroll{
+  position:relative !important;
+  z-index:2 !important;
+  background:transparent !important;
+}
+nav.bottomNav > .bottomNavScroll > .bottomNavBtn:not(.active):not(.bottomNavMenuBtn) .bottomNavIcon{
+  transform:translateX(1.5px) !important;
+}
+nav.bottomNav > .bottomNavScroll > .bottomNavBtn.active .bottomNavIcon{
+  transform:translateY(0) scale(1) !important;
+}

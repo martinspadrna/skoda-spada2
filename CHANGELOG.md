@@ -1,8 +1,8 @@
-## v.1.5 (846)
+## v.1.5 (847)
 - Láďův režim: spodní panel / bottom lišta je nově neprůhledná jen při zapnutém Láďově režimu, aby přes ni neprosvítal obsah.
 - Normální režim spodní lišty zůstává beze změny.
 - DB ani Supabase policies se v tomto buildu neměnily.
-- Verze sjednocena na v.1.5 (846), cache na v1.5-846 a Supabase realtime kanál na rak-public-live-v846.
+- Verze sjednocena na v.1.5 (847), cache na v1.5-847 a Supabase realtime kanál na rak-public-live-v847.
 
 ## v.1.5 (845)
 - Lodě online: zvací odkaz `#games=ships&invite=1234` má v routeru přednost před obecnou invite logikou Piškvorek, takže otevření odkazu Lodí už nespouští Piškvorky.
