@@ -2069,7 +2069,7 @@ async function tttRecordOnlineSessionResult(force) {
       void tttRefreshOnlineHeadToHead(true).then(() => {
         if (typeof tttRender === 'function') tttRender();
       });
-      void tttRefreshOnlineScoreRows(false);
+      void tttRefreshOnlineScoreRows(true);
     }
     return res;
   } catch (err) {
@@ -2216,7 +2216,10 @@ function tttMaybeRecordOnlineResult(winner) {
   }
   void tttRecordOnlineSessionResult(false);
   void gamesRefreshRemoteLeaderboards('ttt', true);
-  void tttRefreshOnlineHeadToHead(true);
+  void tttRefreshOnlineHeadToHead(true).then(() => {
+    if (typeof tttRender === 'function' && document.getElementById('tttOverlay')?.classList.contains('isVisible')) tttRender();
+  });
+  void tttRefreshOnlineScoreRows(true);
   return true;
 }
 
@@ -3773,9 +3776,11 @@ async function tttRefreshOnlineScoreRows(forceRender) {
       state.onlineScoreRemote = rows;
     }
     state.onlineScoreLoaded = true;
+    state.onlineScoreLoadedAt = Date.now();
   } catch (err) {
     console.warn('TTT online score list load failed', err);
     state.onlineScoreLoaded = true;
+    state.onlineScoreLoadedAt = Date.now();
   } finally {
     state.onlineScoreLoading = false;
   }
@@ -4082,8 +4087,14 @@ function tttRender() {
       btn.addEventListener('click', () => {
         const nextMode = btn.getAttribute('data-ttt-mode') || 'ai';
         tttSwitchModeClean(nextMode);
+        if (nextMode === 'pvp') {
+          const currentState = tttGetState();
+          currentState.onlineScoreLoaded = false;
+          currentState.onlineScoreLoadedAt = 0;
+        }
         tttRender();
         scheduleTttLayout();
+        if (nextMode === 'pvp') void tttRefreshOnlineScoreRows(true);
       });
     });
     const inviteInfo = () => start.querySelector('#tttInviteInfo');
@@ -4169,8 +4180,9 @@ function tttRender() {
     } else {
       tttUpdateDashboardMeta();
     }
-    if (state.mode === 'pvp' && !state.onlineScoreLoaded && !state.onlineScoreLoading) {
-      void tttRefreshOnlineScoreRows(false);
+    if (state.mode === 'pvp' && !state.onlineScoreLoading) {
+      const scoreAge = Date.now() - Number(state.onlineScoreLoadedAt || 0);
+      if (!state.onlineScoreLoaded || scoreAge > 15000) void tttRefreshOnlineScoreRows(true);
     }
     return;
   }
@@ -4880,9 +4892,10 @@ function buildSupabaseKeepaliveStatusHtml(options) {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText || 'v.1.5 (843)',
+      range: versionText || 'v.1.5 (844)',
       title: 'Aktuální stabilizace',
       lines: [
+        'V844 doplňuje Lodím skutečný zvací odkaz ve stejném overlayi jako Piškvorky, vypíná zbytečné scrollování a odstraňuje kód z HUDu nad hracím polem; Piškvorky zároveň obnovují online skóre bez ručního přepínání.',
         'V843 převádí Supabase heartbeat čas do českého času, sjednocuje vzhled zvacího overlaye Lodí s Piškvorkami a odstraňuje volné místo mezi polem a spodními tlačítky.',
         'V842 uklízí duplicitní heartbeat v O aplikaci/Diagnostice, opravuje živé vzájemné skóre Piškvorek a zjednodušuje přípravu Lodí včetně velkého banneru s kódem.',
         'V841 zpřesňuje Supabase online hry audit: RPC smoke se nově počítá zvlášť pro Piškvorky i Lodě, takže se další hardening neodemkne jen podle jedné hry.',
@@ -10179,11 +10192,43 @@ function renderGamesTttShell() {
 }
 
 
+
+function shipsReadUrlInviteData() {
+  try {
+    const readFrom = (text, source) => {
+      const raw = String(text || '');
+      if (!raw) return null;
+      const isShips = /(?:^|[?#&])(?:games|game)=ships(?:$|[&#=])|(?:^|[?#&])(?:shipsInvite|ships|battleship)=/i.test(raw);
+      if (!isShips) return null;
+      const code = typeof tttFindInviteCodeInParamText === 'function' ? tttFindInviteCodeInParamText(raw) : '';
+      return code ? { code, source } : null;
+    };
+    return readFrom(window.location.hash || '', 'hash') || readFrom(window.location.search || '', 'query') || { code: '', source: '' };
+  } catch (err) { return { code: '', source: '' }; }
+}
+function shipsClearInviteFromUrl() {
+  try {
+    const url = new URL(window.location.href);
+    ['invite', 'code', 'shipsInvite', 'ships', 'battleship'].forEach(key => url.searchParams.delete(key));
+    if (/games=ships|game=ships|shipsInvite=|battleship=|invite=|code=/i.test(url.hash || '')) url.hash = '';
+    history.replaceState(history.state, document.title, url.toString());
+  } catch (err) {}
+}
+async function shipsAutoOpenFromHash() {
+  const invite = shipsReadUrlInviteData();
+  const code = invite && invite.code ? String(invite.code).replace(/\D/g, '').slice(0, 4) : '';
+  if (!code) return false;
+  if (typeof window.openShipsFromInviteCode !== 'function') return false;
+  const opened = await window.openShipsFromInviteCode(code, { source: invite.source || 'url' });
+  if (opened) shipsClearInviteFromUrl();
+  return !!opened;
+}
+
 if (!window.__tttHashInviteBound) {
   window.__tttHashInviteBound = true;
-  window.addEventListener('load', () => { void tttAutoOpenFromHash(); }, { once: true });
-  window.addEventListener('hashchange', () => { void tttAutoOpenFromHash(); });
-  window.addEventListener('popstate', () => { void tttAutoOpenFromHash(); });
+  window.addEventListener('load', () => { void tttAutoOpenFromHash(); void shipsAutoOpenFromHash(); }, { once: true });
+  window.addEventListener('hashchange', () => { void tttAutoOpenFromHash(); void shipsAutoOpenFromHash(); });
+  window.addEventListener('popstate', () => { void tttAutoOpenFromHash(); void shipsAutoOpenFromHash(); });
 }
 
 

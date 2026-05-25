@@ -14598,7 +14598,7 @@ body.lowEndDevice .appMenuKeepaliveCard {
   #games .shipsInviteBanner .shipsInviteCode{font-size:clamp(28px,9vw,44px) !important;}
 }
 
-/* v.1.5 (843): Heartbeat čas v českém pásmu, Lodě zvací overlay 1:1 jako Piškvorky a bez prázdného pole pod mapou. */
+/* v.1.5 (844): Heartbeat čas v českém pásmu, Lodě zvací overlay 1:1 jako Piškvorky a bez prázdného pole pod mapou. */
 #games #gamesShellBody[data-arcade-game="ships"]{
   --ships-board-size:min(
     calc(100vw - 28px),
@@ -14743,4 +14743,88 @@ body.lowEndDevice .appMenuKeepaliveCard {
   #games .shipsInviteOverlay{padding:14px 13px !important;width:min(88%, 304px) !important;}
   #games .shipsInviteOverlayCode{font-size:clamp(36px,10vw,48px) !important;}
   #games .shipsInviteOverlayHint{display:none !important;}
+}
+
+/* v.1.5 (844): Lodě bez scrollování, zvací overlay 1:1 jako Piškvorky a bez kódu v HUDu. */
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"]{
+  overflow:hidden !important;
+  padding-bottom:0 !important;
+  max-height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsScrollableStage,
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSetupStage,
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsPlayStage{
+  overflow:hidden !important;
+  min-height:0 !important;
+  height:auto !important;
+  max-height:calc(100dvh - 78px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+  gap:3px !important;
+  padding-top:calc(4px + env(safe-area-inset-top)) !important;
+  padding-bottom:calc(4px + env(safe-area-inset-bottom)) !important;
+  justify-content:flex-start !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSetupBoardWrap,
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSingleBoardWrap{
+  min-height:0 !important;
+  height:auto !important;
+  margin:0 auto !important;
+  padding:0 !important;
+  flex:0 0 auto !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsBoardCardLift{
+  margin:0 auto !important;
+  padding:4px !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSetupPrimaryActions,
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSetupSecondaryActions,
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsCompactHud,
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsMenuBackLine,
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsViewToggle,
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsPlayInfoLine{
+  margin-top:0 !important;
+  margin-bottom:0 !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsInlineHint{
+  display:none !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"]{
+  --ships-board-size:min(
+    calc(100vw - 30px),
+    calc(100dvh - 244px - env(safe-area-inset-top) - env(safe-area-inset-bottom)),
+    370px
+  ) !important;
+}
+body.shipsGameOpen #games .shipsInviteOverlay{
+  position:absolute !important;
+  left:50% !important;
+  top:50% !important;
+  right:auto !important;
+  bottom:auto !important;
+  transform:translate(-50%, -50%) !important;
+  width:min(86%, 320px) !important;
+  z-index:26 !important;
+  display:block !important;
+  padding:18px 16px !important;
+  border-radius:24px !important;
+  border:1px solid rgba(124,255,124,.58) !important;
+  background:linear-gradient(180deg, rgba(5,12,10,.94), rgba(2,7,6,.98)) !important;
+  -webkit-backdrop-filter:blur(18px) saturate(170%) !important;
+  backdrop-filter:blur(18px) saturate(170%) !important;
+  box-shadow:0 24px 70px rgba(0,0,0,.66), 0 0 40px rgba(124,255,124,.28), inset 0 0 0 1px rgba(255,255,255,.08) !important;
+  text-align:center !important;
+  pointer-events:auto !important;
+}
+body.shipsGameOpen #games .shipsInviteOverlayLabel{font-size:12px !important;text-transform:uppercase !important;letter-spacing:.12em !important;color:rgba(235,255,235,.72) !important;font-weight:900 !important;}
+body.shipsGameOpen #games .shipsInviteOverlayCode{margin-top:8px !important;font-size:52px !important;line-height:1 !important;font-weight:1000 !important;letter-spacing:.14em !important;color:#39FF14 !important;text-shadow:0 0 10px rgba(57,255,20,.86), 0 0 32px rgba(57,255,20,.48) !important;}
+body.shipsGameOpen #games .shipsInviteOverlayHint{margin-top:10px !important;font-size:12px !important;line-height:1.35 !important;color:rgba(235,255,235,.76) !important;}
+body.shipsGameOpen #games .shipsInviteOverlayLink{margin-top:9px !important;padding:7px 8px !important;border-radius:12px !important;background:rgba(255,255,255,.055) !important;border:1px solid rgba(255,255,255,.08) !important;color:rgba(235,255,235,.78) !important;font-size:10px !important;line-height:1.25 !important;word-break:break-all !important;}
+body.shipsGameOpen #games .shipsInviteOverlayActions{display:grid !important;grid-template-columns:1fr 1fr !important;gap:8px !important;margin-top:12px !important;}
+body.shipsGameOpen #games .shipsInviteOverlayBtn{min-height:40px !important;border-radius:14px !important;color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important;background:linear-gradient(180deg, rgba(24,42,30,.98), rgba(5,14,9,.98)) !important;border:1px solid rgba(124,255,124,.62) !important;text-shadow:0 1px 2px rgba(0,0,0,.9) !important;box-shadow:0 0 18px rgba(57,255,20,.20), inset 0 0 0 1px rgba(255,255,255,.10) !important;}
+@media (max-height:760px){
+  body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"]{
+    --ships-board-size:min(calc(100vw - 30px), calc(100dvh - 226px - env(safe-area-inset-top) - env(safe-area-inset-bottom)), 344px) !important;
+  }
+  body.shipsGameOpen #games .shipsInviteOverlay{padding:14px 13px !important;width:min(88%, 304px) !important;}
+  body.shipsGameOpen #games .shipsInviteOverlayCode{font-size:clamp(36px,10vw,48px) !important;}
+  body.shipsGameOpen #games .shipsInviteOverlayHint{display:none !important;}
 }

@@ -4374,44 +4374,55 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
       renderGame();
       await shipsSaveState(st);
     };
+    const shipsInviteUrl = (code) => {
+      try {
+        const url = new URL(window.location.href);
+        url.hash = 'games=ships&invite=' + encodeURIComponent(String(code || '').trim());
+        return url.toString();
+      } catch (err) {
+        return '#games=ships&invite=' + encodeURIComponent(String(code || '').trim());
+      }
+    };
     const shipsInviteShareText = (st) => {
       const code = String(st && st.code || local.code || '').trim();
-      return 'Přidej se do Lodí v RaK. Kód pozvánky: ' + code;
+      return 'Přidej se do Lodí v RaK.' + (code ? (' Kód pozvánky: ' + code + ' · ' + shipsInviteUrl(code)) : '');
     };
     const shipsInviteOverlayHtml = (st) => {
       const code = String(st && st.code || local.code || '').trim();
       const waitingForOpponent = !!(code && !st.playerOAccountNumber && !st.o && String(st.status || '').toLowerCase() === 'waiting');
       if (!waitingForOpponent) return '';
+      const inviteUrl = shipsInviteUrl(code);
       return `<div class="shipsInviteOverlay" data-ships-invite-overlay="1">
-        <div class="shipsInviteOverlayLabel">Pozvánka pro spoluhráče</div>
-        <div class="shipsInviteOverlayCode">${escapeHtml(code)}</div>
-        <div class="shipsInviteOverlayHint">Soupeř může opsat 4 čísla do Lodí. Kód můžeš zkopírovat nebo nasdílet.</div>
-        <div class="shipsInviteOverlayActions">
-          <button type="button" class="tttBtn shipsInviteOverlayBtn" data-ships-copy-code="${escapeHtml(code)}" data-ships-copy-kind="code">Kopírovat kód</button>
-          <button type="button" class="tttBtn shipsInviteOverlayBtn" data-ships-share-code="${escapeHtml(code)}">Sdílet</button>
+        <div class="shipsInviteOverlayLabel tttInviteOverlayLabel">Pozvánka pro spoluhráče</div>
+        <div class="shipsInviteOverlayCode tttInviteOverlayCode">${escapeHtml(code)}</div>
+        <div class="shipsInviteOverlayHint tttInviteOverlayHint">Může opsat 4 čísla, nebo mu pošli odkaz a hra se mu otevře rovnou.</div>
+        <div class="shipsInviteOverlayLink tttInviteOverlayLink">${escapeHtml(inviteUrl)}</div>
+        <div class="shipsInviteOverlayActions tttInviteOverlayActions">
+          <button type="button" class="tttBtn shipsInviteOverlayBtn tttInviteOverlayBtn" data-ships-copy-link="${escapeHtml(inviteUrl)}">Kopírovat odkaz</button>
+          <button type="button" class="tttBtn shipsInviteOverlayBtn tttInviteOverlayBtn" data-ships-share-link="${escapeHtml(inviteUrl)}" data-ships-share-code="${escapeHtml(code)}">Sdílet</button>
         </div>
       </div>`;
     };
     const shipsBindInviteBannerActions = () => {
-      body.querySelectorAll('[data-ships-copy-code]').forEach((btn) => btn.addEventListener('click', async () => {
-        const value = String(btn.getAttribute('data-ships-copy-code') || '').trim();
-        const kind = String(btn.getAttribute('data-ships-copy-kind') || 'code');
-        const original = btn.textContent || (kind === 'link' ? 'Kopírovat odkaz' : 'Kopírovat kód');
+      body.querySelectorAll('[data-ships-copy-link]').forEach((btn) => btn.addEventListener('click', async () => {
+        const value = String(btn.getAttribute('data-ships-copy-link') || '').trim();
+        const original = btn.textContent || 'Kopírovat odkaz';
         try {
           await navigator.clipboard.writeText(value);
-          btn.textContent = kind === 'link' ? 'Odkaz zkopírován' : 'Kód zkopírován';
+          btn.textContent = 'Odkaz zkopírován';
           setTimeout(() => { btn.textContent = original; }, 1400);
         } catch (err) {
           btn.textContent = 'Nešlo zkopírovat';
           setTimeout(() => { btn.textContent = original; }, 1400);
         }
       }));
-      body.querySelectorAll('[data-ships-share-code]').forEach((btn) => btn.addEventListener('click', async () => {
+      body.querySelectorAll('[data-ships-share-link]').forEach((btn) => btn.addEventListener('click', async () => {
+        const inviteUrl = String(btn.getAttribute('data-ships-share-link') || '').trim();
         const code = String(btn.getAttribute('data-ships-share-code') || '').trim();
         const text = shipsInviteShareText({ code });
         try {
-          if (navigator.share) await navigator.share({ title: 'Lodě v RaK', text });
-          else await navigator.clipboard.writeText(text);
+          if (navigator.share) await navigator.share({ title: 'Lodě v RaK', text: 'Přidej se do Lodí v RaK.', url: inviteUrl });
+          else await navigator.clipboard.writeText(inviteUrl || text);
         } catch (err) {}
       }));
     };
@@ -4426,6 +4437,25 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
         st.status = 'waiting';
       }
       return st;
+    };
+    const joinShipsByCode = async (rawCode, source) => {
+      if (!account) { renderMenu('Nejdřív se přihlas do herního profilu.'); return { ok: false, reason: 'missing-account' }; }
+      const code = String(rawCode || '').replace(/\D/g, '').slice(0, 4);
+      if (code.length !== 4) { renderMenu('Zadej 4místný číselný kód pozvánky.'); return { ok: false, reason: 'invalid-code' }; }
+      renderMenu(source === 'link' ? 'Připojuji se z odkazu…' : 'Připojuji se k online hře…');
+      const accepted = await window.acceptGameInvite(code, account);
+      if (!accepted || !accepted.ok) { renderMenu((accepted && accepted.message) || (accepted && accepted.error && accepted.error.message) || 'Pozvánku se nepodařilo přijmout.'); return { ok: false, reason: 'accept-failed' }; }
+      const loaded = accepted && accepted.session ? accepted : await window.loadGameSessionByInviteCode(code);
+      let st = shipsNormalizeState(loaded && loaded.session && loaded.session.board_state, code);
+      st.playerOAccountNumber = st.playerOAccountNumber || account;
+      st.o = st.o && st.o.ships && st.o.ships.length ? st.o : shipsBuildPlayerBoard();
+      st.oReady = false;
+      st.status = 'placing';
+      st.message = 'Připojeno. Připrav si flotilu a potvrď ji.';
+      st.revision = (Number(st.revision || 0) || 0) + 1;
+      await shipsSaveState(st);
+      local.code = code; local.state = st; local.placing = { manual: false, selected: nextUnplaced(st.o), horizontal: true }; renderGame();
+      return { ok: true, code };
     };
     const renderMenu = (message) => {
       body.innerHTML = `<div class="arcadeStage shipsStage shipsMenuStage shipsScrollableStage">
@@ -4462,23 +4492,8 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
       });
       void renderShipsHeadToHeadMenu();
       if (join) join.addEventListener('click', async () => {
-        if (!account) { renderMenu('Nejdřív se přihlas do herního profilu.'); return; }
         const input = body.querySelector('#shipsJoinCode');
-        const code = String(input && input.value || '').replace(/\D/g, '').slice(0, 4);
-        if (code.length !== 4) { renderMenu('Zadej 4místný číselný kód pozvánky.'); return; }
-        renderMenu('Připojuji se k online hře…');
-        const accepted = await window.acceptGameInvite(code, account);
-        if (!accepted || !accepted.ok) { renderMenu((accepted && accepted.message) || (accepted && accepted.error && accepted.error.message) || 'Pozvánku se nepodařilo přijmout.'); return; }
-        const loaded = accepted && accepted.session ? accepted : await window.loadGameSessionByInviteCode(code);
-        let st = shipsNormalizeState(loaded && loaded.session && loaded.session.board_state, code);
-        st.playerOAccountNumber = st.playerOAccountNumber || account;
-        st.o = st.o && st.o.ships && st.o.ships.length ? st.o : shipsBuildPlayerBoard();
-        st.oReady = false;
-        st.status = st.xReady ? 'placing' : 'placing';
-        st.message = 'Připojeno. Připrav si flotilu a potvrď ji.';
-        st.revision = (Number(st.revision || 0) || 0) + 1;
-        await shipsSaveState(st);
-        local.code = code; local.state = st; local.placing = { manual: false, selected: nextUnplaced(st.o), horizontal: true }; renderGame();
+        await joinShipsByCode(input && input.value, 'manual');
       });
     };
     const shipsReturnToMenu = (msg) => {
@@ -4561,7 +4576,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
           <button type="button" class="gameControlBtn ${valid ? 'primary' : 'isDisabled'}" id="shipsReadyBtn">Potvrdit flotilu</button>
           <button type="button" class="gameControlBtn ghost" id="shipsMenuBackBtn">Zpět do menu</button>
         </div>
-        <div class="arcadeHud arcadeHudSingleLine shipsCompactHud">${gamesStatLine('Kód', st.code || '—')}${gamesStatLine('Role', role || '—')}${gamesStatLine('Lodí', `${mine.ships.length}/${SHIPS_FLEET.length}`)}${gamesStatLine('Loď', selectedName)}</div>
+        <div class="arcadeHud arcadeHudSingleLine shipsCompactHud">${gamesStatLine('Role', role || '—')}${gamesStatLine('Lodí', `${mine.ships.length}/${SHIPS_FLEET.length}`)}${gamesStatLine('Loď', selectedName)}</div>
         <div class="arcadeControls shipsSetupActions shipsSetupSecondaryActions">
           <button type="button" class="gameControlBtn" id="shipsShuffleBtn">Přehodit automaticky</button>
           <button type="button" class="gameControlBtn" id="shipsRotateBtn">Otočit vybranou</button>
@@ -4571,6 +4586,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
         </div>
       </div>`;
       shipsBindInviteBannerActions();
+      if (!local.poll && st.status !== 'finished') local.poll = rakGameSetInterval(() => refreshRemote(true), 900);
       const menuBack = body.querySelector('#shipsMenuBackBtn');
       if (menuBack) menuBack.addEventListener('click', () => shipsReturnToMenu('Zpět v menu Lodí. Hru můžeš založit znovu nebo přijmout kód.'));
       const shuffle = body.querySelector('#shipsShuffleBtn');
@@ -4661,7 +4677,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
         ? (canShoot ? 'Jsi na tahu, proto se ti rovnou ukazuje pole soupeře.' : 'Hraje soupeř, proto se ti rovnou ukazuje tvoje flotila a zásahy proti tobě.')
         : (hasOpponent ? 'Soupeř je připojený. Přepni si flotilu nebo pole pro střelbu.' : 'Čeká se na soupeře.');
       body.innerHTML = `<div class="arcadeStage shipsStage shipsScrollableStage shipsPlayStage">
-        <div class="arcadeHud arcadeHudSingleLine shipsCompactHud">${gamesStatLine('Kód', st.code || '—')}${gamesStatLine('Role', role || 'divák')}${gamesStatLine('Zásahy', sum.hits)}${gamesStatLine('Potopené', sum.sunk)}</div>
+        <div class="arcadeHud arcadeHudSingleLine shipsCompactHud">${gamesStatLine('Role', role || 'divák')}${gamesStatLine('Zásahy', sum.hits)}${gamesStatLine('Potopené', sum.sunk)}</div>
         <div class="shipsPlayInfoLine"><strong>${escapeHtml(headline)}</strong><span>${escapeHtml(st.message || viewHint || '')}</span></div>
         ${toggleHtml}
         <div class="shipsMenuBackLine"><button type="button" class="gameControlBtn ghost" id="shipsMenuBackBtn">Zpět do menu Lodí</button></div>
@@ -4699,7 +4715,27 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     addCleanup(() => { if (local.poll) clearInterval(local.poll); local.poll = 0; });
     if (local.code && local.state) renderGame();
     else renderMenu('');
+    const pendingInvite = String(window.__rakShipsPendingInviteCode || '').replace(/\D/g, '').slice(0, 4);
+    if (pendingInvite) {
+      window.__rakShipsPendingInviteCode = '';
+      setTimeout(() => { void joinShipsByCode(pendingInvite, 'link'); }, 60);
+    }
     setActiveState('ships', local);
+  }
+
+  if (typeof window !== 'undefined' && !window.openShipsFromInviteCode) {
+    window.openShipsFromInviteCode = async function openShipsFromInviteCode(code, options) {
+      const inviteCode = String(code || '').replace(/\D/g, '').slice(0, 4);
+      if (!inviteCode) return false;
+      window.__rakShipsPendingInviteCode = inviteCode;
+      try {
+        if (typeof window.openGameShell === 'function') window.openGameShell('ships');
+        else if (typeof openGameShell === 'function') openGameShell('ships');
+        return true;
+      } catch (err) {
+        return false;
+      }
+    };
   }
 
 

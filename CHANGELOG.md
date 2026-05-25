@@ -1,3 +1,10 @@
+## v.1.5 (844)
+- Piškvorky online: vzájemné skóre a online tabulka se po dohrané partii a po návratu do Online režimu obnovují hned, bez nutnosti ručně přepínat mimo Online a zpět.
+- Lodě online: zvací overlay je sjednocený s Piškvorkami, obsahuje výrazný kód, skutečný zvací odkaz, Kopírovat odkaz a Sdílet. Link používá #games=ships&invite=1234.
+- Lodě online: při přípravě/střelbě je vypnuté zbytečné scrollování, kód je odstraněný z horního HUDu a host při čekání na soupeře polluje session i v přípravě, takže overlay po připojení soupeře zmizí.
+- DB a Supabase policies beze změny.
+- Verze sjednocena na v.1.5 (844), cache na v1.5-844 a Supabase realtime kanál na rak-public-live-v844.
+
 ## v.1.5 (843)
 - Supabase heartbeat v Diagnostice převádí čas posledního OK do českého lokálního času `Europe/Prague`, aby neukazoval matoucí UTC hodnotu.
 - Lodě online mají zvací tabulku sjednocenou vzhledově s Piškvorkami: výrazný overlay přes hrací pole, 4místný kód, Kopírovat kód a Sdílet.
@@ -24,13 +31,13 @@
 - DB ani Supabase policies se v tomto buildu neměnily; změna je klientská diagnostika/audit a bezpečnější plánování dalšího hardeningu.
 - Verze sjednocena na v.1.5 (841), cache na v1.5-841 a Supabase realtime kanál na rak-public-live-v841.
 
-## v.1.5 (841)
+## v.1.5 (840)
 - UI úklid Supabase heartbeatu: stručný heartbeat popisek byl odstraněný z Nastavení aplikace, protože stejný stav je dostupný v Diagnostice.
 - Tlačítko `Otestovat heartbeat teď` bylo přesunuté z O aplikaci přímo do Diagnostiky, aby bylo u technických kontrol a neduplikovalo běžný přehled aplikace.
 - O aplikaci dál ukazuje kartu Supabase heartbeat jen jako přehled stavu bez ručního testovacího tlačítka.
 - Diagnostika se nově zobrazuje jako čitelná karta v menu s heartbeat testem nahoře a kompletním diagnostickým výpisem pod ní.
 - DB ani Supabase policies se v tomto buildu neměnily; online pozvánky/session vrstva zůstává ve stavu v839.
-- Verze sjednocena na v.1.5 (841), cache na v1.5-841 a Supabase realtime kanál na rak-public-live-v841.
+- Verze sjednocena na v.1.5 (840), cache na v1.5-840 a Supabase realtime kanál na rak-public-live-v840.
 - Aktuální fáze: UI cleanup heartbeatu hotovo. Následuje ověřit na mobilu, že Diagnostika ukáže tlačítko testu a že O aplikaci už ho nemá.
 
 ## v.1.5 (839)

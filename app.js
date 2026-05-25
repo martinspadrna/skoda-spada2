@@ -1,4 +1,4 @@
-// v.1.5 (843) – lokální čas heartbeatu a sjednocený zvací overlay Lodí.
+// v.1.5 (844) – Lodě invite link/overlay bez scrollu a živé online skóre Piškvorek.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;
