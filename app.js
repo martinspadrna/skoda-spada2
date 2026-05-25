@@ -1,4 +1,4 @@
-// v.1.5 (835) – Supabase heartbeat viditelně v O aplikaci a Diagnostice, ruční test heartbeatu.
+// v.1.5 (836) – Supabase heartbeat přes RPC rak_app_keepalive kvůli RLS upsert chybě.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

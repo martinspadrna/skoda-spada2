@@ -229,15 +229,15 @@
     { table: 'game_sessions', realtime: true, queueType: 'game_session', access: 'anon SELECT/INSERT/UPDATE', note: 'online herní session' },
     { table: 'game_stats', realtime: true, queueType: 'game_stat', access: 'anon SELECT/INSERT/UPDATE', note: 'skóre a žebříčky' },
     { table: 'game_ui_settings', realtime: false, queueType: 'game_ui_settings', access: 'anon SELECT/INSERT/UPDATE', note: 'profilové nastavení vzhledu' },
-    { table: 'app_keepalive', realtime: false, queueType: '', access: 'anon INSERT/UPDATE only', note: 'bezpečný heartbeat proti pauze free projektu, mimo herní data' },
+    { table: 'app_keepalive', realtime: false, queueType: '', access: 'RPC rak_app_keepalive only', note: 'bezpečný heartbeat proti pauze free projektu, mimo herní data a mimo RLS upsert problém' },
     { table: 'bug_reports', realtime: false, queueType: 'bug_report', access: 'anon INSERT only', note: 'uživatelské reporty chyb / nápadů' },
     { table: 'gomoku_wins', realtime: true, queueType: 'gomoku_win', access: 'anon SELECT/INSERT/UPDATE', note: 'výhry piškvorek / legacy leaderboard' }
   ];
 
-  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (835)';
+  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (836)';
   const SUPABASE_POLICY_AUDIT_SNAPSHOT_AT = '2026-05-24';
   const SUPABASE_POLICY_HARDENING_PHASE = {
-    current: 'V835 – Supabase heartbeat je vidět přímo v O aplikaci/Diagnostice a jde ručně otestovat; samotná app_keepalive migrace zůstává z v834.',
+    current: 'V836 – Supabase heartbeat zapisuje přes RPC rak_app_keepalive, aby ho neblokoval křehký RLS upsert; V835 zůstává UI diagnostika.',
     next: 'Nejdřív znovu otestovat online Piškvorky na dvou mobilech; potom pokračovat opatrně přes RPC smoke, ne přes další restriktivní policies naslepo',
     rollback: 'Rollback v828 byl proveden jen pro game_invites/game_sessions restriktivní policies z v826; game_stats restriktivní policies z v824 zůstávají zachované.'
   };
@@ -294,11 +294,11 @@
   ];
 
   const SUPABASE_RPC_HARDENING_STATUS = {
-    version: 'v.1.5 (835)',
+    version: 'v.1.5 (836)',
     phase: '2E-M keepalive heartbeat / online TTT hardening paused',
     rpcPreferred: true,
     migrationApplied: true,
-    migrationNote: 'game_stats direct INSERT/UPDATE zůstávají omezené restriktivními policies v824. Restriktivní policies pro game_invites/game_sessions z v826 byly v DB ve v828 odstraněné. V834 přidává app_keepalive heartbeat, V835 jen zlepšuje jeho zobrazení/test; Piškvorky policies zůstávají beze změny.',
+    migrationNote: 'game_stats direct INSERT/UPDATE zůstávají omezené restriktivními policies v824. Restriktivní policies pro game_invites/game_sessions z v826 byly v DB ve v828 odstraněné. V834 přidává app_keepalive tabulku, V835 zlepšuje diagnostiku a V836 převádí heartbeat na RPC rak_app_keepalive kvůli RLS upsert chybě; Piškvorky policies zůstávají beze změny.',
     dbVerifiedAt: '2026-05-24',
     verifiedRpcCount: 7,
     bugReportsHardeningPhase: 'pozastaveno kvůli online TTT hotfixu',
@@ -705,7 +705,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v835');
+      const channel = client.channel('rak-public-live-v836');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -947,10 +947,16 @@
     };
 
     try {
-      const result = await runSupabaseOperation('app_keepalive.upsert', () => client.from('app_keepalive').upsert(payload, { onConflict: 'device_key' }), { mode: 'write', attempts: 1, timeoutMs: SUPABASE_KEEPALIVE_TIMEOUT_MS });
+      const rpcArgs = {
+        p_device_key: payload.device_key,
+        p_app_version: payload.app_version,
+        p_user_agent: payload.user_agent,
+        p_payload: payload.payload
+      };
+      const result = await runSupabaseOperation('app_keepalive.rpc', () => client.rpc('rak_app_keepalive', rpcArgs), { mode: 'write', attempts: 1, timeoutMs: SUPABASE_KEEPALIVE_TIMEOUT_MS });
       if (result && result.error) throw result.error;
       const next = writeSupabaseKeepaliveState(Object.assign({}, attemptBase, {
-        status: 'ok', label: getKeepaliveLabel('ok'), successes: current.successes + 1, lastSuccessAt: new Date().toISOString(), lastErrorMessage: '', lastErrorCode: '', lastErrorAt: current.lastErrorAt || null, lastDurationMs: Date.now() - started, lastHttpStatus: null, lastClassification: 'ok'
+        status: 'ok', label: getKeepaliveLabel('ok'), successes: current.successes + 1, lastSuccessAt: new Date().toISOString(), lastErrorMessage: '', lastErrorCode: '', lastErrorAt: current.lastErrorAt || null, lastDurationMs: Date.now() - started, lastHttpStatus: null, lastClassification: 'ok-rpc'
       }));
       return { ok: true, status: next };
     } catch (err) {

@@ -1,3 +1,9 @@
+## v.1.5 (836)
+- Opravený Supabase heartbeat: místo přímého `upsert` do tabulky `app_keepalive` se nově používá bezpečná RPC funkce `rak_app_keepalive`, protože přímý zápis blokovala RLS policy hláškou `new row violates row-level security policy`.
+- Přidaný SQL soubor `supabase_keepalive_rpc_v836.sql`; migrace vytváří/aktualizuje funkci `rak_app_keepalive`, validuje a zkracuje vstupy a zapisuje pouze do samostatné tabulky `app_keepalive`.
+- `game_invites`, `game_sessions` ani online Piškvorky policies se neměnily; Piškvorky přes link i ruční kód jsou označené jako potvrzené OK.
+- Verze sjednocena na v.1.5 (836), cache na v1.5-836 a Supabase realtime kanál na rak-public-live-v836.
+
 ## v.1.5 (835)
 - Supabase heartbeat je nově vidět přímo v O aplikaci v samostatné kartě, ne jen hluboko v dlouhé diagnostice.
 - Do Nastavení aplikace přibyl stručný řádek `Supabase heartbeat`, aby šlo hned poznat stav OK / nedostupná / možná paused.

@@ -4825,10 +4825,10 @@ function buildSupabaseKeepaliveStatusHtml() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText || 'v.1.5 (835)',
+      range: versionText || 'v.1.5 (836)',
       title: 'Aktuální stabilizace',
       lines: [
-        'V835 vytahuje Supabase heartbeat přímo do O aplikaci i na začátek Diagnostiky a přidává ruční tlačítko Otestovat heartbeat teď.',
+        'V836 převádí Supabase heartbeat na RPC rak_app_keepalive, aby ho neblokovala RLS chyba přímého upsertu; tlačítko Otestovat heartbeat teď zůstává.',
         'V834 přidává bezpečný Supabase heartbeat přes samostatnou tabulku app_keepalive: appka při startu/při návratu pošle malý ping maximálně 1× za 12 hodin na zařízení a při chybě dál jede offline.',
         'V833 doplňuje online Piškvorkám čitelný move guard: když tah nejde udělat kvůli čekání, chybějící roli nebo špatnému tahu, appka ukáže důvod, zapíše diagnostiku a zkusí rychlý resync session.',
         'V832 zpevňuje deep-link pozvánky: appka nově čte kód z hash i query URL, uklidí URL po přijetí a v diagnostice ukáže, jestli přišel přes hash nebo query.',

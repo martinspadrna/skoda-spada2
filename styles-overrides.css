@@ -14492,3 +14492,5 @@ body.lowEndDevice .appMenuKeepaliveCard {
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
+
+/* v.1.5 (836): Supabase heartbeat zapisuje přes RPC rak_app_keepalive, Piškvorky policies beze změny. */
