@@ -1,4 +1,4 @@
-// v.1.5 (837) – Supabase heartbeat RPC v2: po staré RLS chybě nečeká na interval a app_keepalive má vlastní RLS opravu.
+// v.1.5 (839) – Supabase invite/session RPC smoke: přidává accept RPC a přesnější readiness create/accept/save bez utažení DB policies.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

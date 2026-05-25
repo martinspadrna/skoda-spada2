@@ -234,11 +234,11 @@
     { table: 'gomoku_wins', realtime: true, queueType: 'gomoku_win', access: 'anon SELECT/INSERT/UPDATE', note: 'výhry piškvorek / legacy leaderboard' }
   ];
 
-  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (837)';
+  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (839)';
   const SUPABASE_POLICY_AUDIT_SNAPSHOT_AT = '2026-05-24';
   const SUPABASE_POLICY_HARDENING_PHASE = {
-    current: 'V837 – Supabase heartbeat má RPC cestu + app_keepalive-only RLS opravu a klient po staré RLS chybě nečeká 12 hodin, ale zkusí zápis znovu.',
-    next: 'Nejdřív znovu otestovat online Piškvorky na dvou mobilech; potom pokračovat opatrně přes RPC smoke, ne přes další restriktivní policies naslepo',
+    current: 'V839 – bezpečný Supabase RPC smoke krok po potvrzených online Piškvorkách a funkčním heartbeatu; přidává accept RPC bez utažení policies game_invites/game_sessions.',
+    next: 'Nasbírat RPC smoke signály create/accept/save u pozvánek/session bez fallbacků; až potom připravit úzké policy zúžení po jednotlivých tabulkách.',
     rollback: 'Rollback v828 byl proveden jen pro game_invites/game_sessions restriktivní policies z v826; game_stats restriktivní policies z v824 zůstávají zachované.'
   };
   const SUPABASE_POLICY_AUDIT_SNAPSHOT = [
@@ -268,14 +268,14 @@
       priority: 'P0',
       risk: 'přímé public INSERT/UPDATE nad online session je po rollbacku v828 dočasně povolené kvůli funkčnosti online Piškvorek; public DELETE zůstává odstraněný',
       observed: 'v828 odstranil restriktivní policies game_sessions_insert_rpc_only_v826/game_sessions_update_rpc_only_v826, protože online Piškvorky přestaly fungovat; DELETE zůstává odstraněné v810',
-      recommendation: 'nejdřív obnovit a ověřit online Piškvorky; RPC cestu pro session dál ladit s fallbacky a restriktivní policies vracet až po dvoumobilovém smoke testu'
+      recommendation: 'online Piškvorky link/kód jsou potvrzené OK; před dalším utažením nejdřív nasbírat RPC smoke bez fallbacku a teprve potom připravit úzké policies'
     },
     {
       table: 'game_invites',
       priority: 'P1',
       risk: 'přímé public INSERT/UPDATE nad pozvánkami je po rollbacku v828 dočasně povolené kvůli funkčnosti online Piškvorek; public DELETE zůstává odstraněný',
       observed: 'v828 odstranil restriktivní policies game_invites_insert_rpc_only_v826/game_invites_update_rpc_only_v826, protože online Piškvorky přestaly fungovat; DELETE zůstává odstraněné v810',
-      recommendation: 'nejdřív obnovit a ověřit vytvoření/přijetí pozvánky; RPC cestu dál ladit s fallbacky a restriktivní policies vracet až po dvoumobilovém smoke testu'
+      recommendation: 'vytvoření/přijetí pozvánky je potvrzené přes link i kód; další krok je RPC smoke evidence bez fallbacku, ne okamžité vrácení restriktivních policies'
     },
     {
       table: 'bug_reports',
@@ -294,17 +294,17 @@
   ];
 
   const SUPABASE_RPC_HARDENING_STATUS = {
-    version: 'v.1.5 (837)',
-    phase: '2E-M keepalive heartbeat / online TTT hardening paused',
+    version: 'v.1.5 (839)',
+    phase: '2E-O online invite/session RPC smoke + accept RPC / no policy tightening',
     rpcPreferred: true,
     migrationApplied: true,
-    migrationNote: 'game_stats direct INSERT/UPDATE zůstávají omezené restriktivními policies v824. Restriktivní policies pro game_invites/game_sessions z v826 byly v DB ve v828 odstraněné. V834 přidává app_keepalive tabulku, V835 zlepšuje diagnostiku, V836 převádí heartbeat na RPC a V837 opravuje čekání po staré RLS chybě + app_keepalive-only RLS; Piškvorky policies zůstávají beze změny.',
+    migrationNote: 'game_stats direct INSERT/UPDATE zůstávají omezené restriktivními policies v824. Restriktivní policies pro game_invites/game_sessions z v826 byly v DB ve v828 odstraněné. V834–V837 stabilizovalo app_keepalive heartbeat přes RPC. V839 přidává RPC cestu pro přijetí online pozvánky a přesnější smoke readiness pro create/accept/save; game_invites/game_sessions policies se neutahují.',
     dbVerifiedAt: '2026-05-25',
     verifiedRpcCount: 7,
-    bugReportsHardeningPhase: 'pozastaveno kvůli online TTT hotfixu',
+    bugReportsHardeningPhase: 'znovu otevřeno jen jako audit; DB změna zatím ne',
     bugReportsPublicSelectUpdatePolicies: 2,
     bugReportsDbChanged: false,
-    bugReportsNextStep: 'vrátit se až po ověření online Piškvorek; prioritou je nechat funkční online hry',
+    bugReportsNextStep: 'připravit oddělený admin/review tok; SELECT/UPDATE neutahovat, dokud nebude jasný bezpečný způsob čtení reportů',
     plannedRpc: [
       'rak_save_rotation_state',
       'rak_save_machine_settings',
@@ -312,6 +312,7 @@
       'rak_record_game_stat_delta',
       'rak_save_game_ui_settings',
       'rak_create_game_invite_session',
+      'rak_accept_game_invite',
       'rak_save_game_session_by_invite_code',
       'rak_submit_bug_report (DB scaffold, klient zatím nepoužívá)'
     ],
@@ -342,6 +343,55 @@
 
 
 
+
+  const SUPABASE_HARDENING_READINESS_ITEMS = [
+    {
+      area: 'app_keepalive',
+      priority: 'P2',
+      state: 'hotovo',
+      rpc: 'rak_app_keepalive',
+      directFallback: 'ne',
+      risk: 'nízké – oddělená heartbeat tabulka mimo herní data',
+      next: 'jen sledovat OK stav v diagnostice'
+    },
+    {
+      area: 'game_stats / game_ui_settings',
+      priority: 'P0',
+      state: 'částečně zpevněno',
+      rpc: 'rak_record_game_stat_delta + rak_save_game_ui_settings',
+      directFallback: 'game_stats přímý write je blokovaný restriktivními policies v824; UI nastavení sleduje vlastní RPC smoke',
+      risk: 'střední – před dalším utažením musí být smoke bez fallbacků',
+      next: 'odehrát několik her a uložit theme/pozadí profilu, potom zkontrolovat RPC smoke počítadla'
+    },
+    {
+      area: 'game_invites / game_sessions',
+      priority: 'P0',
+      state: 'funkční po rollbacku, accept RPC přidané, policy zatím otevřená',
+      rpc: 'rak_create_game_invite_session + rak_accept_game_invite + rak_save_game_session_by_invite_code',
+      directFallback: 'ano, po rollbacku v828 dočasně zachováno kvůli kompatibilitě online Piškvorek',
+      risk: 'vyšší – online hra je funkční, ale policy se nesmí vracet naslepo',
+      next: 'nasbírat reálné RPC úspěchy create/accept/save bez fallbacku; potom připravit postupné zúžení INSERT/UPDATE'
+    },
+    {
+      area: 'bug_reports',
+      priority: 'P1',
+      state: 'čeká na bezpečný admin tok',
+      rpc: 'rak_submit_bug_report je plánovaná/částečná cesta pro odeslání',
+      directFallback: 'public SELECT/UPDATE zatím zůstává kvůli čtení/správě reportů',
+      risk: 'střední – riziko soukromí u reportů, ale nemá blokovat online hry',
+      next: 'připravit oddělený admin/review přístup a až pak utáhnout SELECT/UPDATE'
+    },
+    {
+      area: 'rotation_state / machine_settings / rotation_entries',
+      priority: 'P0',
+      state: 'starší veřejný write kontrakt',
+      rpc: 'zatím není plně dokončená bezpečná RPC náhrada pro všechny zápisy',
+      directFallback: 'ano',
+      risk: 'vyšší – pracovní data a parametry strojů',
+      next: 'řešit až po online hrách/reportech; vyžaduje samostatný migrační plán a testy rozpisů/kalkulaček'
+    }
+  ];
+
   const GAME_STATS_RPC_SMOKE_STORAGE_KEY = 'rak_game_stats_rpc_smoke_v1';
 
   function normalizeGameStatsRpcSmoke(raw) {
@@ -350,6 +400,8 @@
       attempts: Math.max(0, Number(base.attempts || 0) || 0),
       successes: Math.max(0, Number(base.successes || 0) || 0),
       fallbacks: Math.max(0, Number(base.fallbacks || 0) || 0),
+      successByType: base.successByType && typeof base.successByType === 'object' ? Object.assign({}, base.successByType) : {},
+      fallbackByType: base.fallbackByType && typeof base.fallbackByType === 'object' ? Object.assign({}, base.fallbackByType) : {},
       lastAttemptAt: base.lastAttemptAt || null,
       lastSuccessAt: base.lastSuccessAt || null,
       lastSuccessType: String(base.lastSuccessType || ''),
@@ -397,11 +449,15 @@
       next.successes += 1;
       next.lastSuccessAt = nowIso;
       next.lastSuccessType = type;
+      next.successByType = next.successByType && typeof next.successByType === 'object' ? next.successByType : {};
+      if (type) next.successByType[type] = Math.max(0, Number(next.successByType[type] || 0) || 0) + 1;
     } else if (kind === 'fallback') {
       next.fallbacks += 1;
       next.lastFallbackAt = nowIso;
       next.lastFallbackType = type;
       next.lastFallbackReason = String(reason || 'unknown').slice(0, 180);
+      next.fallbackByType = next.fallbackByType && typeof next.fallbackByType === 'object' ? next.fallbackByType : {};
+      if (type) next.fallbackByType[type] = Math.max(0, Number(next.fallbackByType[type] || 0) || 0) + 1;
     }
     next.updatedAt = nowIso;
     return writeGameStatsRpcSmokeStatus(next);
@@ -538,6 +594,8 @@
     SUPABASE_RPC_HARDENING_STATUS.lastGameSessionRpcType = safe.lastSuccessType;
     SUPABASE_RPC_HARDENING_STATUS.lastGameSessionFallbackAt = safe.lastFallbackAt;
     SUPABASE_RPC_HARDENING_STATUS.lastGameSessionFallbackReason = safe.lastFallbackReason;
+    SUPABASE_RPC_HARDENING_STATUS.gameSessionRpcSuccessByType = Object.assign({}, safe.successByType || {});
+    SUPABASE_RPC_HARDENING_STATUS.gameSessionRpcFallbackByType = Object.assign({}, safe.fallbackByType || {});
     return safe;
   }
 
@@ -564,15 +622,35 @@
 
   function getGameSessionRpcSmokeStatus() {
     const persisted = readGameSessionRpcSmokeStatus();
-    const readyForPolicyTightening = persisted.attempts >= 3 && persisted.successes >= 3 && persisted.fallbacks === 0;
+    const successByType = persisted.successByType || {};
+    const fallbackByType = persisted.fallbackByType || {};
+    const operationCoverage = {
+      create: Math.max(0, Number(successByType.create_invite_session || 0) || 0),
+      accept: Math.max(0, Number(successByType.accept_invite || 0) || 0),
+      save: Math.max(0, Number(successByType.save_session || 0) || 0)
+    };
+    const fallbackCoverage = {
+      create: Math.max(0, Number(fallbackByType.create_invite_session || 0) || 0),
+      accept: Math.max(0, Number(fallbackByType.accept_invite || 0) || 0),
+      save: Math.max(0, Number(fallbackByType.save_session || 0) || 0)
+    };
+    const missingOperations = [];
+    if (operationCoverage.create < 1) missingOperations.push('create');
+    if (operationCoverage.accept < 1) missingOperations.push('accept');
+    if (operationCoverage.save < 1) missingOperations.push('save');
+    const readyForPolicyTightening = persisted.attempts >= 3 && persisted.successes >= 3 && persisted.fallbacks === 0 && missingOperations.length === 0;
     return Object.assign({}, persisted, {
       persistent: true,
       readyForPolicyTightening,
       requiredSuccessesBeforeTightening: 3,
       requiredFallbacksBeforeTightening: 0,
+      operationCoverage,
+      fallbackCoverage,
+      missingOperations,
+      coverageText: 'create ' + String(operationCoverage.create) + ' · accept ' + String(operationCoverage.accept) + ' · save ' + String(operationCoverage.save),
       recommendation: readyForPolicyTightening
-        ? 'Online pozvánky/session proběhly přes RPC bez fallbacků; po rollbacku v828 ale další omezení game_sessions/game_invites dělat jen po ručním dvoumobilovém smoke testu.'
-        : 'Po rollbacku v828 nejdřív ověř online Piškvorky na dvou mobilech. Restriktivní INSERT/UPDATE policies pro session/pozvánky už nepřidávat naslepo.'
+        ? 'Online pozvánky/session proběhly přes RPC bez fallbacků ve všech krocích create/accept/save; další omezení game_sessions/game_invites dělat až po dalším ručním dvoumobilovém smoke testu.'
+        : 'Před zúžením policies musí být online Piškvorky ověřené přes RPC pro create/accept/save bez fallbacku. Chybí: ' + (missingOperations.length ? missingOperations.join(', ') : 'žádné, ale jsou fallbacky nebo málo pokusů') + '.'
     });
   }
   const SUPABASE_STRUCTURE_REQUIRED_HELPERS = [
@@ -586,7 +664,8 @@
     'bindRealtime',
     'getSupabasePerformanceHealth',
     'getSupabaseKeepaliveStatus',
-    'getSupabaseHardeningStatus'
+    'getSupabaseHardeningStatus',
+    'getSupabaseHardeningReadiness'
   ];
 
   let realtimeRefreshTimer = null;
@@ -705,7 +784,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v837');
+      const channel = client.channel('rak-public-live-v839');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -974,7 +1053,7 @@
         timezone: (typeof Intl !== 'undefined' && Intl.DateTimeFormat) ? (Intl.DateTimeFormat().resolvedOptions().timeZone || '') : '',
         online: typeof navigator !== 'undefined' ? navigator.onLine !== false : true,
         transport: 'rpc',
-        build: '837'
+        build: '839'
       }
     };
 
@@ -1822,6 +1901,41 @@
     }
   }
 
+  async function tryAcceptGameInviteViaRpc(client, inviteCode, inviteeAccountNumber, boardState) {
+    if (!client || typeof client.rpc !== 'function') return null;
+    const code = normalizeInviteCode(inviteCode);
+    const invitee = String(inviteeAccountNumber || '').trim();
+    if (!code || !invitee) return null;
+    try {
+      rememberGameSessionRpcSmoke('attempt', 'accept_invite');
+      const { data, error } = await runSupabaseOperation('game_invites_sessions.rpc_accept', () => client.rpc('rak_accept_game_invite', {
+        p_invite_code: code,
+        p_invitee_account_number: invitee,
+        p_board_state: boardState && typeof boardState === 'object' ? boardState : null
+      }), { mode: 'write', attempts: 1 });
+      if (error) throw error;
+      const result = normalizeSupabaseRpcJsonPayload(data);
+      if (!result || result.ok === false) return null;
+      rememberGameSessionRpcSmoke('success', 'accept_invite');
+      return {
+        invite: result.invite || null,
+        session: result.session || null,
+        localRole: result.local_role || result.localRole || null,
+        rpc: true
+      };
+    } catch (err) {
+      if (isSupabaseRpcUnavailableError(err)) {
+        SUPABASE_RPC_HARDENING_STATUS.lastUnavailableAt = new Date().toISOString();
+        SUPABASE_RPC_HARDENING_STATUS.lastUnavailableMessage = String(err && err.message ? err.message : err);
+        rememberGameSessionRpcSmoke('fallback', 'accept_invite', 'rpc-unavailable');
+        return null;
+      }
+      rememberGameSessionRpcSmoke('fallback', 'accept_invite', err && err.message ? err.message : err);
+      console.warn('rak_accept_game_invite failed; direct game_invites/game_sessions fallback may be blocked after hardening', err);
+      return null;
+    }
+  }
+
   async function trySaveGameSessionByInviteCodeViaRpc(client, inviteCode, sessionRow, startsNewRound) {
     if (!client || typeof client.rpc !== 'function') return null;
     const code = normalizeInviteCode(inviteCode);
@@ -1951,13 +2065,6 @@
       accepted_at: new Date().toISOString(),
       invitee_account_number: invitee
     };
-    const { data: updatedInvite, error: inviteUpdErr } = await runSupabaseOperation('game_invites.accept', () => client
-      .from('game_invites')
-      .update(nextInvite)
-      .eq('id', invite.id)
-      .select('*')
-      .maybeSingle(), { mode: 'write' });
-    if (inviteUpdErr) throw inviteUpdErr;
     const boardState = sessionData && sessionData.board_state && typeof sessionData.board_state === 'object' ? sessionData.board_state : { board: Array(180).fill(''), turn: 'X', status: 'active' };
     const inviteGameType = String(invite.game_type || boardState.gameType || 'gomoku').trim() || 'gomoku';
     boardState.gameType = inviteGameType;
@@ -1967,6 +2074,22 @@
     boardState.revision = Math.max(Number(boardState.revision || 0) || 0, 1);
     boardState.updatedAtTs = Date.now();
     boardState.acceptedAt = new Date().toISOString();
+    const rpcAccepted = await tryAcceptGameInviteViaRpc(client, inviteCode, invitee, boardState);
+    if (rpcAccepted && (rpcAccepted.invite || rpcAccepted.session)) {
+      const savedInvite = rpcAccepted.invite || invite;
+      const savedSession = rpcAccepted.session || sessionData || null;
+      writeGameSessionCache(inviteCode, savedInvite, savedSession);
+      return { invite: savedInvite, session: savedSession, rpc: true, localRole: rpcAccepted.localRole || null };
+    }
+
+    const { data: updatedInvite, error: inviteUpdErr } = await runSupabaseOperation('game_invites.accept', () => client
+      .from('game_invites')
+      .update(nextInvite)
+      .eq('id', invite.id)
+      .select('*')
+      .maybeSingle(), { mode: 'write' });
+    if (inviteUpdErr) throw inviteUpdErr;
+
     const sessionRow = {
       game_type: inviteGameType,
       invite_id: invite.id,
@@ -3522,6 +3645,50 @@
     };
   }
 
+
+  function getSupabaseHardeningReadiness() {
+    const gameStatsSmoke = getGameStatsRpcSmokeStatus();
+    const gameUiSmoke = getGameUiRpcSmokeStatus();
+    const gameSessionSmoke = getGameSessionRpcSmokeStatus();
+    const keepalive = getSupabaseKeepaliveStatus();
+    const items = SUPABASE_HARDENING_READINESS_ITEMS.map(item => Object.assign({}, item));
+    const directFallbackItems = items.filter(item => /ano|zůstává|veřejný|direct/i.test(String(item.directFallback || '')));
+    const p0Items = items.filter(item => String(item.priority || '') === 'P0');
+    const blockers = [];
+    if (!keepalive || keepalive.status !== 'ok') blockers.push('heartbeat ještě není v lokální diagnostice OK');
+    if (!gameSessionSmoke.readyForPolicyTightening) blockers.push('session/pozvánky RPC smoke ještě nemá 3 OK bez fallbacků');
+    if (!gameStatsSmoke.readyForPolicyTightening) blockers.push('game_stats RPC smoke ještě nemá 3 OK bez fallbacků');
+    if (!gameUiSmoke.readyForPolicyTightening) blockers.push('profile UI RPC smoke ještě nemá OK bez fallbacku');
+    const confirmed = {
+      tttLinkAndCode: true,
+      keepaliveRpc: keepalive && keepalive.status === 'ok',
+      noPolicyChangeInThisBuild: true
+    };
+    const smokeOkCount = [gameStatsSmoke, gameUiSmoke, gameSessionSmoke].filter(item => item && item.readyForPolicyTightening).length;
+    const readinessPercent = Math.min(100, Math.round((Number(confirmed.keepaliveRpc ? 1 : 0) + smokeOkCount + 1) / 5 * 100));
+    return {
+      ok: blockers.length === 0,
+      mode: 'supabase-hardening-readiness-audit-only',
+      version: 'v.1.5 (839)',
+      checkedAt: new Date().toISOString(),
+      confirmed,
+      readinessPercent,
+      policyChangeAllowedNow: false,
+      policyChangeReason: 'V839 přidává bezpečnou RPC cestu pro accept pozvánky, ale policies game_invites/game_sessions se v tomto buildu neutahují.',
+      nextSafeStep: 'Nejdřív reálný RPC smoke u create/accept/save online session bez fallbacku; potom připravit úzký SQL návrh pro jednu tabulku.',
+      items,
+      itemCount: items.length,
+      p0Count: p0Items.length,
+      directFallbackCount: directFallbackItems.length,
+      directFallbackAreas: directFallbackItems.map(item => item.area).slice(0, 12),
+      blockers: blockers.slice(0, 12),
+      gameStatsSmoke,
+      gameUiSmoke,
+      gameSessionSmoke,
+      keepaliveStatus: keepalive
+    };
+  }
+
   function getSupabaseStructureHealth() {
     const issues = [];
     const warnings = [];
@@ -3552,6 +3719,7 @@
         if (name === 'getSupabasePerformanceHealth') return typeof getSupabasePerformanceHealth !== 'function';
         if (name === 'getSupabaseKeepaliveStatus') return typeof getSupabaseKeepaliveStatus !== 'function';
         if (name === 'getSupabaseHardeningStatus') return typeof getSupabaseHardeningStatus !== 'function';
+        if (name === 'getSupabaseHardeningReadiness') return typeof getSupabaseHardeningReadiness !== 'function';
       } catch (err) {
         return true;
       }
@@ -3683,6 +3851,7 @@
       keepaliveStatus: getSupabaseKeepaliveStatus(),
       structureHealth: getSupabaseStructureHealth(),
       policyRiskHealth: getSupabasePolicyRiskHealth(),
+      hardeningReadiness: getSupabaseHardeningReadiness(),
       rpcHardening: Object.assign({}, SUPABASE_RPC_HARDENING_STATUS, getGameStatsRpcSmokeStatus()),
       gameStatsRpcSmoke: getGameStatsRpcSmokeStatus(),
       gameUiRpcSmoke: getGameUiRpcSmokeStatus(),
@@ -4109,6 +4278,7 @@
   window.runSupabaseKeepaliveNow = (reason) => runSupabaseKeepalive(reason || 'manual', { force: true });
   window.getSupabaseStructureHealth = getSupabaseStructureHealth;
   window.getSupabasePolicyRiskHealth = getSupabasePolicyRiskHealth;
+  window.getSupabaseHardeningReadiness = getSupabaseHardeningReadiness;
   window.createGameInvite = async (payload) => window.RotationSupabaseBridge.createGameInvite(payload);
   window.acceptGameInvite = async (code, inviteeAccountNumber) => window.RotationSupabaseBridge.acceptGameInvite(code, inviteeAccountNumber);
   window.loadGameSessionByInviteCode = async (code) => window.RotationSupabaseBridge.loadGameSessionByInviteCode(code);

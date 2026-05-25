@@ -1,3 +1,13 @@
+## v.1.5 (839)
+- Přidaná bezpečná RPC cesta `rak_accept_game_invite` pro přijetí online pozvánky a napojení hráče do `game_sessions` včetně `board_state`, role hráče a aktivního stavu hry.
+- Klient při přijetí pozvánky nejdřív zkusí RPC `rak_accept_game_invite`; přímý update `game_invites/game_sessions` zůstává jen jako kompatibilní fallback, aby se znovu nerozbily online Piškvorky.
+- Supabase session/pozvánky RPC smoke nově sleduje pokrytí kroků `create / accept / save`, počítá fallbacky podle typu a readiness nepustí dál, dokud nejsou všechny tři kroky ověřené bez fallbacku.
+- Diagnostika v O aplikaci ukazuje `Supabase session RPC pokrytí: create · accept · save` a jasně vypíše, který krok ještě chybí.
+- DB migrace přidala/finálně ponechala kanonickou tříparametrovou funkci `rak_accept_game_invite(text, text, jsonb)`; starý mezikrok dvouparametrové signatury byl odstraněný.
+- `game_invites` a `game_sessions` policies se v tomto buildu neutahovaly; Piškvorky link/kód zůstávají na ověřené funkční cestě.
+- Verze sjednocena na v.1.5 (839), cache na v1.5-839 a Supabase realtime kanál na rak-public-live-v839.
+- Aktuální fáze: Supabase invite/session RPC smoke příprava hotovo. Následuje reálný dvoumobilový smoke test create/accept/save a kontrola, že fallbacky zůstávají 0.
+
 ## v.1.5 (837)
 - Opravený Supabase heartbeat po reálném testu v.1.5 (836): když appka ještě nemá žádný úspěšný heartbeat a v lokální diagnostice zůstala stará RLS chyba, už se nečeká 12 hodin na interval, ale zápis se zkusí znovu přes RPC.
 - RPC funkce `rak_app_keepalive` zůstává bezpečná cesta klienta a tabulka `app_keepalive` má vlastní úzké RLS/grant pravidlo jen pro heartbeat zápisy.
