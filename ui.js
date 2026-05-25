@@ -1940,6 +1940,31 @@ function tttBuildOnlineScoreText() {
   return xName + ' (x) ' + xWins + ':' + oWins + ' ' + oName + ' (o)';
 }
 
+
+function tttBumpOnlineHeadToHeadLocally(winner) {
+  const state = tttGetState();
+  const online = state.online || {};
+  const xAcc = String(online.playerXAccountNumber || '').trim();
+  const oAcc = String(online.playerOAccountNumber || '').trim();
+  const result = String(winner || '').trim();
+  if (!xAcc || !oAcc || !['X', 'O', 'draw'].includes(result)) return false;
+  const current = online.headToHead && typeof online.headToHead === 'object' ? online.headToHead : { ok: true, score: {}, players: { a: xAcc, b: oAcc }, rows: [] };
+  const score = Object.assign({ xWins: 0, oWins: 0, aWins: 0, bWins: 0, draws: 0, total: 0 }, current.score && typeof current.score === 'object' ? current.score : {});
+  const players = Object.assign({ a: xAcc, b: oAcc }, current.players && typeof current.players === 'object' ? current.players : {});
+  if (result === 'draw') score.draws = (Number(score.draws || 0) || 0) + 1;
+  else if (result === 'X') score.xWins = (Number(score.xWins || 0) || 0) + 1;
+  else if (result === 'O') score.oWins = (Number(score.oWins || 0) || 0) + 1;
+  const winnerAcc = result === 'X' ? xAcc : (result === 'O' ? oAcc : '');
+  if (winnerAcc && String(players.a || '').trim() === winnerAcc) score.aWins = (Number(score.aWins || 0) || 0) + 1;
+  else if (winnerAcc && String(players.b || '').trim() === winnerAcc) score.bWins = (Number(score.bWins || 0) || 0) + 1;
+  score.total = (Number(score.total || 0) || 0) + 1;
+  online.headToHead = Object.assign({}, current, { ok: true, optimistic: true, score, players, updatedAt: new Date().toISOString() });
+  online.headToHeadText = tttBuildOnlineScoreText();
+  online.headToHeadLoadedAt = Date.now();
+  state.online = online;
+  return true;
+}
+
 function tttRenderInviteOverlay(overlay) {
   const state = tttGetState();
   const el = overlay ? overlay.querySelector('#tttInviteOverlay') : null;
@@ -2147,6 +2172,7 @@ function tttMaybeRecordOnlineResult(winner) {
   store[key] = Date.now();
   tttWriteOnlineResultStore(store);
   online.resultSavedKey = key;
+  tttBumpOnlineHeadToHeadLocally(winner);
 
   const active = typeof gamesGetActiveAccount === 'function' ? gamesGetActiveAccount() : null;
   if (active && active.stats && active.stats.ttt && typeof gamesRecordStat === 'function') {
@@ -4833,9 +4859,10 @@ function buildSupabaseKeepaliveStatusHtml(options) {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText || 'v.1.5 (841)',
+      range: versionText || 'v.1.5 (842)',
       title: 'Aktuální stabilizace',
       lines: [
+        'V842 uklízí duplicitní heartbeat v O aplikaci/Diagnostice, opravuje živé vzájemné skóre Piškvorek a zjednodušuje přípravu Lodí včetně velkého banneru s kódem.',
         'V841 zpřesňuje Supabase online hry audit: RPC smoke se nově počítá zvlášť pro Piškvorky i Lodě, takže se další hardening neodemkne jen podle jedné hry.',
         'V840 uklízí Supabase heartbeat UI: popisek mizí z Nastavení aplikace, tlačítko Otestovat heartbeat teď je přesunuté z O aplikaci přímo do Diagnostiky a O aplikaci zůstává jen jako přehled stavu.',
         'V839 přidává RPC cestu pro přijetí online pozvánky a přesnější smoke readiness create/accept/save bez utažení game_invites/game_sessions policies.',
@@ -6849,7 +6876,6 @@ function bindAppMenuHandlers(body) {
         body.innerHTML = [
           '<div class="appMenuCard appMenuDiagnosticsCard">',
           '  <div class="appMenuCardTitle">Diagnostika</div>',
-          '  <div class="smallText">Heartbeat test je tady, aby nebyl duplicitně v O aplikaci ani v Nastavení.</div>',
           '</div>',
           buildSupabaseKeepaliveStatusHtml({ includeButton: true }),
           '<div class="appMenuCard appMenuDiagnosticsCard">',
@@ -7121,7 +7147,6 @@ function openAppMenu(view) {
         '<div class="appMenuCard">',
         '  <div class="appMenuCardTitle">O aplikaci</div>',
         '  <div class="appMenuVersion">' + escapeHtml(versionText || '—') + '</div>',
-        '  ' + buildSupabaseKeepaliveStatusHtml({ includeButton: false }),
         '  ' + buildAppHistoryHtml(versionText),
         '  <button type="button" class="appMenuAction appMenuBack" data-menu-back="1">Zpět</button>',
         '</div>'

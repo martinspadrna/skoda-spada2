@@ -4368,10 +4368,61 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     };
     const saveAndRender = async (st, msg) => {
       st.message = msg || st.message || '';
+      shipsRecomputeStatus(st);
       st.revision = (Number(st.revision || 0) || 0) + 1;
       local.state = st;
       renderGame();
       await shipsSaveState(st);
+    };
+    const shipsInviteShareText = (st) => {
+      const code = String(st && st.code || local.code || '').trim();
+      return 'Přidej se do Lodí v RaK. Kód pozvánky: ' + code;
+    };
+    const shipsInviteBannerHtml = (st) => {
+      const code = String(st && st.code || local.code || '').trim();
+      if (!code || st.playerOAccountNumber || String(st.status || '').toLowerCase() !== 'waiting') return '';
+      return `<div class="arcadeBar arcadePanel uPad12 shipsInviteBanner">
+        <div class="shipsInviteLabel">Pozvánka pro soupeře</div>
+        <div class="shipsInviteCode">${escapeHtml(code)}</div>
+        <div class="smallText shipsInviteHint">Soupeř může opsat 4 čísla do Lodí. Kód můžeš zkopírovat nebo nasdílet.</div>
+        <div class="shipsInviteBannerActions">
+          <button type="button" class="gameControlBtn primary" data-ships-copy-code="${escapeHtml(code)}">Kopírovat kód</button>
+          <button type="button" class="gameControlBtn" data-ships-share-code="${escapeHtml(code)}">Sdílet</button>
+        </div>
+      </div>`;
+    };
+    const shipsBindInviteBannerActions = () => {
+      body.querySelectorAll('[data-ships-copy-code]').forEach((btn) => btn.addEventListener('click', async () => {
+        const code = String(btn.getAttribute('data-ships-copy-code') || '').trim();
+        try {
+          await navigator.clipboard.writeText(code);
+          btn.textContent = 'Kód zkopírován';
+          setTimeout(() => { btn.textContent = 'Kopírovat kód'; }, 1400);
+        } catch (err) {
+          btn.textContent = 'Nešlo zkopírovat';
+          setTimeout(() => { btn.textContent = 'Kopírovat kód'; }, 1400);
+        }
+      }));
+      body.querySelectorAll('[data-ships-share-code]').forEach((btn) => btn.addEventListener('click', async () => {
+        const code = String(btn.getAttribute('data-ships-share-code') || '').trim();
+        const text = shipsInviteShareText({ code });
+        try {
+          if (navigator.share) await navigator.share({ title: 'Lodě v RaK', text });
+          else await navigator.clipboard.writeText(text);
+        } catch (err) {}
+      }));
+    };
+    const shipsRecomputeStatus = (st) => {
+      if (!st || st.status === 'finished') return st;
+      if (st.o && st.xReady && st.oReady) {
+        st.status = 'active';
+        st.message = st.message && String(st.message).includes('Hra začala') ? st.message : 'Hra začala. Střílí hráč X.';
+      } else if (st.o) {
+        st.status = 'placing';
+      } else {
+        st.status = 'waiting';
+      }
+      return st;
     };
     const renderMenu = (message) => {
       body.innerHTML = `<div class="arcadeStage shipsStage shipsMenuStage shipsScrollableStage">
@@ -4479,7 +4530,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
         shipsReturnToMenu(res.message || 'Tahle pozvánka už vypršela. Vytvoř novou.');
         return;
       }
-      const remote = res && res.session && res.session.board_state ? shipsNormalizeState(res.session.board_state, local.code) : null;
+      const remote = res && res.session && res.session.board_state ? shipsRecomputeStatus(shipsNormalizeState(res.session.board_state, local.code)) : null;
       if (!remote) return;
       const oldRev = Number(local.state && local.state.revision || 0) || 0;
       const role = shipsRoleForState(local.state || remote);
@@ -4503,19 +4554,21 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
       const selectedName = selectedShip ? selectedShip.name : 'loď';
       const hintText = message || st.message || 'Klepni na loď = výběr. Druhé klepnutí na moře = přesun. Lodě se nesmí dotýkat ani rohem.';
       body.innerHTML = `<div class="arcadeStage shipsStage shipsSetupStage shipsScrollableStage">
+        ${shipsInviteBannerHtml(st)}
         <div class="arcadeControls shipsSetupActions shipsSetupPrimaryActions">
           <button type="button" class="gameControlBtn ${valid ? 'primary' : 'isDisabled'}" id="shipsReadyBtn">Potvrdit flotilu</button>
           <button type="button" class="gameControlBtn ghost" id="shipsMenuBackBtn">Zpět do menu</button>
         </div>
         <div class="arcadeHud arcadeHudSingleLine shipsCompactHud">${gamesStatLine('Kód', st.code || '—')}${gamesStatLine('Role', role || '—')}${gamesStatLine('Lodí', `${mine.ships.length}/${SHIPS_FLEET.length}`)}${gamesStatLine('Loď', selectedName)}</div>
-        <div class="shipsSingleBoardWrap shipsSetupBoardWrap">
-          <div class="shipsBoardCard shipsBoardCardLift"><div class="smallText uBold">Tvoje flotila · klepni na loď a přesuň ji</div><div class="smallText shipsInlineHint">${escapeHtml(hintText)}</div>${shipsRenderBoard(mine, { own: true, placement: true, selectedShipId: selectedShip && selectedShip.id })}</div>
-        </div>
         <div class="arcadeControls shipsSetupActions shipsSetupSecondaryActions">
           <button type="button" class="gameControlBtn" id="shipsShuffleBtn">Přehodit automaticky</button>
           <button type="button" class="gameControlBtn" id="shipsRotateBtn">Otočit vybranou</button>
         </div>
+        <div class="shipsSingleBoardWrap shipsSetupBoardWrap">
+          <div class="shipsBoardCard shipsBoardCardLift"><div class="smallText uBold">Tvoje flotila · klepni na loď a přesuň ji</div><div class="smallText shipsInlineHint">${escapeHtml(hintText)}</div>${shipsRenderBoard(mine, { own: true, placement: true, selectedShipId: selectedShip && selectedShip.id })}</div>
+        </div>
       </div>`;
+      shipsBindInviteBannerActions();
       const menuBack = body.querySelector('#shipsMenuBackBtn');
       if (menuBack) menuBack.addEventListener('click', () => shipsReturnToMenu('Zpět v menu Lodí. Hru můžeš založit znovu nebo přijmout kód.'));
       const shuffle = body.querySelector('#shipsShuffleBtn');
@@ -4564,13 +4617,15 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
       if (ready) ready.addEventListener('click', async () => {
         if (!shipsValidateFleet(st[keyName])) { renderPlacement(st, role, 'Flotila ještě není správně složená. Musí být 5 lodí a nesmí se dotýkat.'); return; }
         st[readyKey(role)] = true;
-        if (st.xReady && st.oReady && st.o) { st.status = 'active'; st.message = 'Hra začala. Střílí hráč X.'; }
-        else { st.status = st.o ? 'placing' : 'waiting'; st.message = st.o ? 'Čeká se, až soupeř potvrdí flotilu.' : 'Flotila potvrzená. Čeká se na protihráče.'; }
+        shipsRecomputeStatus(st);
+        if (st.status === 'active') st.message = 'Hra začala. Střílí hráč X.';
+        else st.message = st.o ? 'Čeká se, až soupeř potvrdí flotilu.' : 'Flotila potvrzená. Čeká se na protihráče.';
         await saveAndRender(st, st.message);
+        setTimeout(() => { void refreshRemote(true); }, 350);
       });
     };
     const renderGame = (fromPoll) => {
-      const st = shipsNormalizeState(local.state, local.code);
+      const st = shipsRecomputeStatus(shipsNormalizeState(local.state, local.code));
       local.state = st;
       const role = shipsRoleForState(st);
       const keyName = role === 'O' ? 'o' : 'x';
@@ -4606,12 +4661,14 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
       body.innerHTML = `<div class="arcadeStage shipsStage shipsScrollableStage shipsPlayStage">
         <div class="arcadeHud arcadeHudSingleLine shipsCompactHud">${gamesStatLine('Kód', st.code || '—')}${gamesStatLine('Role', role || 'divák')}${gamesStatLine('Zásahy', sum.hits)}${gamesStatLine('Potopené', sum.sunk)}</div>
         <div class="shipsPlayInfoLine"><strong>${escapeHtml(headline)}</strong><span>${escapeHtml(st.message || viewHint || '')}</span></div>
+        ${shipsInviteBannerHtml(st)}
         ${toggleHtml}
         <div class="shipsMenuBackLine"><button type="button" class="gameControlBtn ghost" id="shipsMenuBackBtn">Zpět do menu Lodí</button></div>
         <div class="shipsSingleBoardWrap">
           <div class="shipsBoardCard shipsBoardCardLift shipsBoardCardResultHost"><div class="smallText uBold">${escapeHtml(activeBoardTitle)}</div><div class="smallText shipsInlineHint">${escapeHtml(viewHint)}</div>${activeBoard}${st.status === 'finished' ? `<div class="arcadeGameOverlay arcadeEndOverlay shipsResult"><div class="arcadeOverlayCard shipsResultCard"><strong>${st.winner === role ? 'Výhra!' : 'Konec hry'}</strong><span>Score: ${st.winner === role ? 1000 + (sum.hits * 80) + (sum.sunk * 220) : Math.max(100, sum.hits * 70)} · Zásahy: ${sum.hits} · Potopené: ${sum.sunk}</span><div class="shipsResultActions"><button type="button" class="gameControlBtn primary" id="shipsRematchBtn">Nová hra se soupeřem</button><button type="button" class="gameControlBtn ghost" id="shipsBackBtn">Zpět do Lodí</button></div></div></div>` : ''}</div>
         </div>
       </div>`;
+      shipsBindInviteBannerActions();
       body.querySelectorAll('[data-ships-view]').forEach((btn) => btn.addEventListener('click', () => {
         local.view = btn.getAttribute('data-ships-view') === 'enemy' ? 'enemy' : 'own';
         renderGame();

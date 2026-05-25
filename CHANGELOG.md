@@ -1,3 +1,13 @@
+## v.1.5 (842)
+- O aplikaci už nezobrazuje samostatnou kartu Supabase heartbeat; stav zůstává jen v Diagnostice, aby se stejná informace neduplikovala.
+- Z Diagnostiky byl odstraněný vysvětlovací popisek o přesunu heartbeat testu; zůstává přímo karta s tlačítkem, protože to je samo o sobě jasné.
+- Piškvorky online opravují živé vzájemné skóre: opravené načítání head-to-head podle game_type a po dohrané online partii se skóre lokálně navýší hned, ne až po pozdějším reloadu tabulky.
+- Lodě online dostaly výrazný banner s kódem pozvánky, tlačítkem Kopírovat kód a Sdílet, aby založení hry působilo podobně jako u Piškvorek.
+- Příprava flotily v Lodích je kompaktnější: odstraněné zbytečné spodní místo, ovládací tlačítka jsou výš a layout lépe drží na větším mobilu bez nutnosti scrollovat.
+- Logika připravenosti Lodí nově po každém potvrzení flotily přepočítá stav waiting/placing/active a po uložení provede krátký refresh session, aby se hra po potvrzení obou flotil spustila spolehlivěji.
+- DB ani Supabase policies se v tomto buildu neměnily; online invite/session vrstva zůstává na bezpečné audit/RPC cestě z předchozích buildů.
+- Verze sjednocena na v.1.5 (842), cache na v1.5-842 a Supabase realtime kanál na rak-public-live-v842.
+
 ## v.1.5 (841)
 - Online pozvánky/session už se v diagnostice neberou jako čistě piškvorková vrstva, ale jako společná vrstva online her.
 - Supabase RPC smoke pro `game_invites/game_sessions` nově rozlišuje herní typ zvlášť pro Piškvorky (`gomoku`) a Lodě (`battleship`).

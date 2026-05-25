@@ -170,7 +170,11 @@ async function exportCurrentHtml() {
       'manifest.webmanifest',
       'sw.js',
       'data.js',
-      'supabase_rpc_hardening_v828.sql'
+      'supabase_rpc_hardening_v828.sql',
+      'supabase_keepalive_v834.sql',
+      'supabase_keepalive_rpc_v836.sql',
+      'supabase_keepalive_rpc_v837.sql',
+      'supabase_game_accept_invite_rpc_v839.sql'
     ];
 
     const binaryFiles = [

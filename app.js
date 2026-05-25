@@ -1,4 +1,4 @@
-// v.1.5 (841) – Online hry: Supabase RPC smoke audit rozlišuje Piškvorky i Lodě; policies beze změny.
+// v.1.5 (842) – UI úklid heartbeatu, živé skóre Piškvorek a doladění online Lodí.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

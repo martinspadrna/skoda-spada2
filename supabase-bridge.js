@@ -234,10 +234,10 @@
     { table: 'gomoku_wins', realtime: true, queueType: 'gomoku_win', access: 'anon SELECT/INSERT/UPDATE', note: 'výhry piškvorek / legacy leaderboard' }
   ];
 
-  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (841)';
+  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (842)';
   const SUPABASE_POLICY_AUDIT_SNAPSHOT_AT = '2026-05-24';
   const SUPABASE_POLICY_HARDENING_PHASE = {
-    current: 'V841 – online hry smoke audit rozlišuje Piškvorky i Lodě; DB policies se dál neutahují.',
+    current: 'V842 – online hry UI/diagnostika: Lodě dostaly pozvánkový banner a Piškvorky živé skóre; DB policies se dál neutahují.',
     next: 'Nasbírat RPC smoke signály create/accept/save zvlášť pro Piškvorky i Lodě bez fallbacků; až potom připravit úzké policy zúžení po jednotlivých tabulkách.',
     rollback: 'Rollback v828 byl proveden jen pro game_invites/game_sessions restriktivní policies z v826; game_stats restriktivní policies z v824 zůstávají zachované.'
   };
@@ -294,11 +294,11 @@
   ];
 
   const SUPABASE_RPC_HARDENING_STATUS = {
-    version: 'v.1.5 (841)',
+    version: 'v.1.5 (842)',
     phase: '2E-O online invite/session RPC smoke + accept RPC / no policy tightening',
     rpcPreferred: true,
     migrationApplied: true,
-    migrationNote: 'game_stats direct INSERT/UPDATE zůstávají omezené restriktivními policies v824. Restriktivní policies pro game_invites/game_sessions z v826 byly v DB ve v828 odstraněné. V834–V837 stabilizovalo app_keepalive heartbeat přes RPC. V839 přidala RPC cestu pro přijetí online pozvánky; V841 zpřesňuje smoke audit po hrách: Piškvorky i Lodě musí projít create/accept/save zvlášť před dalším utažením policies.',
+    migrationNote: 'game_stats direct INSERT/UPDATE zůstávají omezené restriktivními policies v824. Restriktivní policies pro game_invites/game_sessions z v826 byly v DB ve v828 odstraněné. V834–V837 stabilizovalo app_keepalive heartbeat přes RPC. V839 přidala RPC cestu pro přijetí online pozvánky; V841 zpřesnila smoke audit po hrách: Piškvorky i Lodě musí projít create/accept/save zvlášť před dalším utažením policies. V842 upravuje jen klientské UI/flow a policies dál nemění.',
     dbVerifiedAt: '2026-05-25',
     verifiedRpcCount: 7,
     bugReportsHardeningPhase: 'znovu otevřeno jen jako audit; DB změna zatím ne',
@@ -906,7 +906,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v841');
+      const channel = client.channel('rak-public-live-v842');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -1175,7 +1175,7 @@
         timezone: (typeof Intl !== 'undefined' && Intl.DateTimeFormat) ? (Intl.DateTimeFormat().resolvedOptions().timeZone || '') : '',
         online: typeof navigator !== 'undefined' ? navigator.onLine !== false : true,
         transport: 'rpc',
-        build: '841'
+        build: '842'
       }
     };
 
@@ -3303,8 +3303,9 @@
   async function loadTttHeadToHeadDirect(client, playerA, playerB, options) {
     const a = String(playerA || '').trim();
     const b = String(playerB || '').trim();
-    if (!a || !b || a === b) return { ok: true, rows: [], score: { xWins: 0, oWins: 0, aWins: 0, bWins: 0, draws: 0, total: 0 } };
-    const cacheKey = LOCAL_GAME_SESSIONS_PREFIX + 'h2h:' + encodeURIComponent([a, b].sort().join(':'));
+    const gameType = String(options && (options.gameType || options.game_type) || 'gomoku').trim() || 'gomoku';
+    if (!a || !b || a === b) return { ok: true, rows: [], score: { xWins: 0, oWins: 0, aWins: 0, bWins: 0, draws: 0, total: 0 }, players: { a, b } };
+    const cacheKey = LOCAL_GAME_SESSIONS_PREFIX + 'h2h:' + encodeURIComponent(gameType + ':' + [a, b].sort().join(':'));
     const forceRefresh = !!(options && options.force);
     const cached = forceRefresh ? null : readTimedCache(cacheKey, SUPABASE_GAME_CACHE_TTL_MS);
     if (cached && cached.fresh && cached.rows && cached.rows[0]) {
@@ -3794,12 +3795,12 @@
     return {
       ok: blockers.length === 0,
       mode: 'supabase-hardening-readiness-audit-only',
-      version: 'v.1.5 (841)',
+      version: 'v.1.5 (842)',
       checkedAt: new Date().toISOString(),
       confirmed,
       readinessPercent,
       policyChangeAllowedNow: false,
-      policyChangeReason: 'V841 je audit smoke signálů pro online hry po jednotlivých hrách; policies game_invites/game_sessions se v tomto buildu neutahují.',
+      policyChangeReason: 'V842 je klientský UI/flow cleanup pro online hry; policies game_invites/game_sessions se v tomto buildu neutahují.',
       nextSafeStep: 'Nejdřív reálný RPC smoke create/accept/save zvlášť pro Piškvorky i Lodě bez fallbacku; potom připravit úzký SQL návrh pro jednu tabulku.',
       items,
       itemCount: items.length,

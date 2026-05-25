@@ -14496,3 +14496,104 @@ body.lowEndDevice .appMenuKeepaliveCard {
 /* v.1.5 (837): Supabase heartbeat zapisuje přes RPC rak_app_keepalive, Piškvorky policies beze změny. */
 
 /* v.1.5 (837): Supabase heartbeat RPC v2 – po staré RLS chybě se nečeká 12 h, diagnostika ukazuje cestu/typ. */
+
+/* v.1.5 (842): O aplikaci bez duplicitního heartbeat stavu, Lodě – kompaktní příprava a pozvánka jako výrazný banner. */
+#games #gamesShellBody[data-arcade-game="ships"]{
+  --ships-board-size:min(
+    calc(100vw - 30px),
+    calc(100dvh - 384px - env(safe-area-inset-top) - env(safe-area-inset-bottom)),
+    370px
+  ) !important;
+}
+#games .shipsSetupStage{
+  min-height:auto !important;
+  justify-content:flex-start !important;
+  align-items:center !important;
+  gap:5px !important;
+  padding-top:calc(8px + env(safe-area-inset-top)) !important;
+  padding-bottom:calc(8px + env(safe-area-inset-bottom)) !important;
+  overflow:visible !important;
+}
+#games .shipsSetupBoardWrap,
+#games .shipsSingleBoardWrap{
+  min-height:0 !important;
+  margin:0 auto !important;
+}
+#games .shipsSetupPrimaryActions,
+#games .shipsSetupSecondaryActions{
+  position:relative !important;
+  inset:auto !important;
+  order:initial !important;
+  width:min(calc(100vw - 24px), 420px) !important;
+  margin:0 auto !important;
+  gap:7px !important;
+  padding:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
+#games .shipsSetupPrimaryActions .gameControlBtn,
+#games .shipsSetupSecondaryActions .gameControlBtn{
+  min-height:36px !important;
+  padding:7px 8px !important;
+  font-size:11px !important;
+}
+#games .shipsSetupStage .shipsBoardCardLift{
+  padding:4px !important;
+}
+#games .shipsSetupStage .shipsInlineHint{
+  display:none !important;
+}
+#games .shipsInviteBanner{
+  width:min(calc(100vw - 24px), 420px) !important;
+  margin:0 auto 4px !important;
+  padding:10px 12px !important;
+  text-align:center !important;
+  border-radius:22px !important;
+  border:1px solid rgba(160,255,210,.28) !important;
+  background:linear-gradient(145deg,rgba(5,32,52,.78),rgba(4,12,24,.58)) !important;
+  box-shadow:0 16px 46px rgba(0,0,0,.22), inset 0 0 0 1px rgba(124,255,190,.08) !important;
+}
+#games .shipsInviteLabel{
+  font-size:12px !important;
+  font-weight:800 !important;
+  opacity:.86 !important;
+  margin-bottom:2px !important;
+}
+#games .shipsInviteBanner .shipsInviteCode{
+  font-size:clamp(32px,10vw,52px) !important;
+  font-weight:1000 !important;
+  letter-spacing:.18em !important;
+  line-height:1 !important;
+  color:rgb(184,255,103) !important;
+  text-shadow:0 0 22px rgba(124,255,124,.38) !important;
+}
+#games .shipsInviteHint{
+  margin-top:4px !important;
+  font-size:11px !important;
+  line-height:1.25 !important;
+}
+#games .shipsInviteBannerActions{
+  display:grid !important;
+  grid-template-columns:1fr 1fr !important;
+  gap:8px !important;
+  margin-top:8px !important;
+}
+#games .shipsInviteBannerActions .gameControlBtn{
+  min-height:36px !important;
+  padding:7px 8px !important;
+  font-size:11px !important;
+}
+@media (max-height:760px){
+  #games #gamesShellBody[data-arcade-game="ships"]{
+    --ships-board-size:min(
+      calc(100vw - 34px),
+      calc(100dvh - 408px - env(safe-area-inset-top) - env(safe-area-inset-bottom)),
+      342px
+    ) !important;
+  }
+  #games .shipsInviteHint{display:none !important;}
+  #games .shipsInviteBanner{padding:8px 10px !important;}
+  #games .shipsInviteBanner .shipsInviteCode{font-size:clamp(28px,9vw,44px) !important;}
+}
