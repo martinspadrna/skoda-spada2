@@ -15033,3 +15033,76 @@ html body nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn.active .moreI
   /* aktivní stav nechávám bez zásahu */
 }
 
+
+/* v.1.5 (849): Spodní navigace – vrácení neaktivních ikon o polovinu posledního posunu zpět doleva.
+   Aktvní stav zůstává beze změny. */
+html body nav.bottomNav #bottomNavScroll > button.bottomNavBtn:not(.active) .bottomNavIcon{
+  transform:translate3d(2.375px, 0, 0) !important;
+}
+html body nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn:not(.active) .moreIcon{
+  transform:translate3d(2.375px, 0, 0) !important;
+}
+html body nav.bottomNav #bottomNavScroll > button.bottomNavBtn.active .bottomNavIcon,
+html body nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn.active .moreIcon{
+  transform:translateY(0) scale(1) !important;
+}
+
+/* v.1.5 (849): Lodě – setup flotily nesmí být řezaný spodním panelem.
+   Raději mírně menší pole než schovaný spodní řádek. */
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"]{
+  --ships-board-size:min(
+    calc(100vw - 42px),
+    calc(100dvh - 394px - env(safe-area-inset-top) - env(safe-area-inset-bottom)),
+    336px
+  ) !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSetupStage{
+  overflow:visible !important;
+  height:auto !important;
+  min-height:0 !important;
+  max-height:none !important;
+  padding-top:calc(4px + env(safe-area-inset-top)) !important;
+  padding-bottom:calc(90px + env(safe-area-inset-bottom)) !important;
+  gap:4px !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSetupBoardWrap{
+  overflow:visible !important;
+  margin:0 auto !important;
+  padding:0 !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSetupStage .shipsBoardCardLift{
+  overflow:visible !important;
+  padding:3px !important;
+  width:calc(var(--ships-board-size) + 8px) !important;
+  max-width:calc(var(--ships-board-size) + 8px) !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSetupStage .shipsBoard{
+  width:var(--ships-board-size) !important;
+  max-width:var(--ships-board-size) !important;
+  padding:2px !important;
+  gap:2px !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSetupPrimaryActions,
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSetupSecondaryActions{
+  position:relative !important;
+  z-index:8 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+}
+@media (min-height:860px) and (min-width:410px){
+  body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"]{
+    --ships-board-size:min(calc(100vw - 46px), calc(100dvh - 420px - env(safe-area-inset-top) - env(safe-area-inset-bottom)), 326px) !important;
+  }
+}
+@media (max-height:760px){
+  body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"]{
+    --ships-board-size:min(calc(100vw - 44px), calc(100dvh - 370px - env(safe-area-inset-top) - env(safe-area-inset-bottom)), 310px) !important;
+  }
+  body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSetupPrimaryActions .gameControlBtn,
+  body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSetupSecondaryActions .gameControlBtn{
+    min-height:31px !important;
+    padding:4px 7px !important;
+  }
+}

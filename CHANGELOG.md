@@ -1,3 +1,11 @@
+## v.1.5 (849)
+- Lodě online: zvací odkaz `#games=ships&invite=1234` přepíná stránku na Hry a otevírá přímo shell Lodí, takže už nezůstane jen na hlavní RaK stránce.
+- Lodě online: přidaná bootstrap pojistka pro případ, kdy se odkaz načte dřív než modul Lodí; po načtení modulu se pozvánka z URL znovu zpracuje.
+- Lodě příprava flotily: hrací pole je v setupu o něco menší a layout má větší bezpečnou rezervu nad spodní lištou, aby nebyl schovaný spodní řádek pole.
+- Spodní navigace: neaktivní ikonky jsou vrácené doleva o polovinu posledního posunu doprava; aktivní položka zůstává beze změny.
+- DB ani Supabase policies se v tomto buildu neměnily.
+- Verze sjednocena na v.1.5 (849), cache na v1.5-849 a Supabase realtime kanál na rak-public-live-v849.
+
 ## v.1.5 (848)
 - Spodní navigace: neaktivní ikonky jsou posunuté přesněji doprava, aby seděly na střed vůči svému popisku.
 - Aktivní položka spodní navigace zůstává beze změny, protože její zarovnání bylo v pořádku.

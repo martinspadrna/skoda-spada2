@@ -4728,9 +4728,22 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
       const inviteCode = String(code || '').replace(/\D/g, '').slice(0, 4);
       if (!inviteCode) return false;
       window.__rakShipsPendingInviteCode = inviteCode;
+      window.__rakShipsPendingInviteSource = options && options.source ? String(options.source) : 'url';
       try {
+        // v.1.5 (849): Lodě nejsou full-screen overlay jako Piškvorky, běží uvnitř stránky Hry.
+        // Při deep-linku proto nejdřív přepneme stránku na Hry a až potom otevřeme shell Lodí.
+        if (typeof showPage === 'function') showPage('games');
+        else if (typeof window.showPage === 'function') window.showPage('games');
+        else {
+          try {
+            document.querySelectorAll('.page').forEach((page) => page.classList.remove('active'));
+            const gamesPage = document.getElementById('games');
+            if (gamesPage) gamesPage.classList.add('active');
+          } catch (navErr) {}
+        }
         if (typeof window.openGameShell === 'function') window.openGameShell('ships');
         else if (typeof openGameShell === 'function') openGameShell('ships');
+        else return false;
         return true;
       } catch (err) {
         return false;
@@ -5370,6 +5383,43 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   }
 
   const renderers = { aim: renderAim, reaction: renderReaction, tetris: renderTetris, shooter: renderShooter, brick: renderBrick, doodle: renderDoodle, bubble: renderBubble, sudoku: renderSudoku, mines: renderMines, memory: renderMemory, bomber: renderBomber, pampuch: renderPampuch, ships: renderShips, daily: renderDaily };
+
+  function shipsReadInviteCodeFromCurrentUrl() {
+    try {
+      const raw = String((window.location.hash || '') + '&' + (window.location.search || ''));
+      if (!/(?:^|[?#&])(?:games|game)=ships(?:$|[&#=])|(?:^|[?#&])(?:shipsInvite|ships|battleship)=/i.test(raw)) return '';
+      let code = '';
+      const paramsText = raw.replace(/^#/, '&').replace(/^\?/, '&');
+      const match = paramsText.match(/(?:^|[?&#])(?:invite|code|shipsInvite|ships|battleship)=([^&#]+)/i);
+      if (match && match[1]) code = decodeURIComponent(match[1]);
+      if (!code && typeof tttFindInviteCodeInParamText === 'function') code = tttFindInviteCodeInParamText(raw);
+      return String(code || '').replace(/\D/g, '').slice(0, 4);
+    } catch (err) { return ''; }
+  }
+
+  function shipsScheduleOpenFromUrl(source) {
+    const code = shipsReadInviteCodeFromCurrentUrl();
+    if (!code) return false;
+    if (window.__rakShipsUrlInviteHandled === code && window.app && window.app.activeGameShell === 'ships') return true;
+    window.__rakShipsUrlInviteHandled = code;
+    window.__rakShipsPendingInviteCode = code;
+    const open = () => {
+      try {
+        if (typeof window.openShipsFromInviteCode === 'function') return void window.openShipsFromInviteCode(code, { source: source || 'url' });
+      } catch (err) {}
+    };
+    setTimeout(open, 0);
+    setTimeout(open, 180);
+    return true;
+  }
+
+  // v.1.5 (849): pojistka pro případ, kdy se #games=ships&invite načte dřív než modul Lodí.
+  shipsScheduleOpenFromUrl('games-arcade-boot');
+  if (!window.__rakShipsArcadeUrlInviteBound) {
+    window.__rakShipsArcadeUrlInviteBound = true;
+    window.addEventListener('hashchange', () => shipsScheduleOpenFromUrl('games-arcade-hashchange'));
+    window.addEventListener('popstate', () => shipsScheduleOpenFromUrl('games-arcade-popstate'));
+  }
 
   function runArcadeGamesFullAudit() {
     const ids = CORE_GAMES.slice();

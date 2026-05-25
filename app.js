@@ -1,4 +1,4 @@
-// v.1.5 (848) – Spodní navigace: přesné dorovnání neaktivních ikon vůči popiskům; DB/Supabase beze změny.
+// v.1.5 (849) – Lodě: zvací odkaz otevírá přímo Lodě a setup flotily má nižší pole bez zakrytého spodku; spodní ikony doladěny zpět doleva; DB/Supabase beze změny.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;
