@@ -15013,3 +15013,23 @@ nav.bottomNav > .bottomNavScroll > .bottomNavBtn:not(.active):not(.bottomNavMenu
 nav.bottomNav > .bottomNavScroll > .bottomNavBtn.active .bottomNavIcon{
   transform:translateY(0) scale(1) !important;
 }
+
+/* v.1.5 (848): Spodní navigace – silnější dorovnání NEAKTIVNÍCH ikon vůči popiskům.
+   Aktivní položka zůstává beze změny, protože její zarovnání bylo už v pořádku. */
+html body nav.bottomNav #bottomNavScroll > button.bottomNavBtn:not(.active) .bottomNavIcon{
+  transform:translate3d(3.25px, 0, 0) !important;
+}
+html body nav.bottomNav #bottomNavScroll > button.bottomNavBtn:not(.active) .bottomNavIconImg,
+html body nav.bottomNav #bottomNavScroll > button.bottomNavBtn:not(.active) .bottomNavIcon svg,
+html body nav.bottomNav #bottomNavScroll > button.bottomNavBtn:not(.active) .bottomNavIcon img{
+  transform:none !important;
+  object-position:center center !important;
+}
+html body nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn:not(.active) .moreIcon{
+  transform:translate3d(3.25px, 0, 0) !important;
+}
+html body nav.bottomNav #bottomNavScroll > button.bottomNavBtn.active .bottomNavIcon,
+html body nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn.active .moreIcon{
+  /* aktivní stav nechávám bez zásahu */
+}
+

@@ -1,3 +1,9 @@
+## v.1.5 (848)
+- Spodní navigace: neaktivní ikonky jsou posunuté přesněji doprava, aby seděly na střed vůči svému popisku.
+- Aktivní položka spodní navigace zůstává beze změny, protože její zarovnání bylo v pořádku.
+- Láďův režim, normální glass režim, DB a Supabase policies se v tomto buildu neměnily.
+- Verze sjednocena na v.1.5 (848), cache na v1.5-848 a Supabase realtime kanál na rak-public-live-v848.
+
 ## v.1.5 (847)
 - Láďův režim: spodní panel / bottom lišta je nově neprůhledná jen při zapnutém Láďově režimu, aby přes ni neprosvítal obsah.
 - Normální režim spodní lišty zůstává beze změny.

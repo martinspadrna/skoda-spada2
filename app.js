@@ -1,4 +1,4 @@
-// v.1.5 (847) – Láďův režim: tvrdě neprůhledná spodní lišta + dorovnání neaktivních ikon spodní navigace.
+// v.1.5 (848) – Spodní navigace: přesné dorovnání neaktivních ikon vůči popiskům; DB/Supabase beze změny.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;
