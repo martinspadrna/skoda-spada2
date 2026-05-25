@@ -15163,3 +15163,185 @@ body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsCompac
     --ships-board-size:min(calc(100vw - 58px), calc(100dvh - 412px - env(safe-area-inset-top) - env(safe-area-inset-bottom)), 284px) !important;
   }
 }
+
+/* v.1.5 (851): Lodě – mobile-first fullscreen vzhled.
+   Technika Lodí zůstává beze změny; cílem je odstranit překážky nahoře/dole a dát pole maximum prostoru. */
+body.shipsGameOpen #games .gamesShellNoTitle{
+  padding-top:calc(2px + env(safe-area-inset-top)) !important;
+  gap:0 !important;
+  background:transparent !important;
+  border-color:transparent !important;
+  box-shadow:none !important;
+  clip-path:none !important;
+}
+body.shipsGameOpen #games .gamesShellBackFloating{
+  top:calc(4px + env(safe-area-inset-top)) !important;
+  min-height:30px !important;
+  padding:5px 9px !important;
+  font-size:10px !important;
+  opacity:.86 !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"]{
+  --ships-board-size:min(
+    calc(100vw - 16px),
+    calc(100dvh - 176px - env(safe-area-inset-top) - env(safe-area-inset-bottom)),
+    430px
+  ) !important;
+  height:calc(100dvh - 70px - env(safe-area-inset-bottom)) !important;
+  min-height:0 !important;
+  overflow:hidden !important;
+  padding:0 5px calc(5px + env(safe-area-inset-bottom)) !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+  box-sizing:border-box !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .arcadeStage,
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsStage{
+  width:100% !important;
+  height:100% !important;
+  min-height:0 !important;
+  max-height:100% !important;
+  margin:0 auto !important;
+  padding:0 !important;
+  gap:4px !important;
+  overflow:hidden !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+  box-sizing:border-box !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSetupStage{
+  grid-template-rows:none !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsCompactHud{
+  display:none !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsPlayInfoLine{
+  width:min(100%, calc(var(--ships-board-size) + 10px)) !important;
+  min-height:24px !important;
+  height:auto !important;
+  padding:4px 7px !important;
+  margin:0 auto !important;
+  font-size:10px !important;
+  line-height:1.15 !important;
+  border-radius:12px !important;
+  flex:0 0 auto !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsPlayInfoLine span{
+  display:none !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsViewToggle{
+  width:min(100%, calc(var(--ships-board-size) + 10px)) !important;
+  margin:0 auto !important;
+  gap:5px !important;
+  flex:0 0 auto !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsViewBtn{
+  min-height:30px !important;
+  padding:5px 7px !important;
+  font-size:10px !important;
+  border-radius:13px !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsMenuBackLine{
+  display:none !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSetupPrimaryActions,
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSetupSecondaryActions{
+  width:min(100%, calc(var(--ships-board-size) + 10px)) !important;
+  margin:0 auto !important;
+  gap:5px !important;
+  padding:0 !important;
+  flex:0 0 auto !important;
+  position:relative !important;
+  inset:auto !important;
+  background:transparent !important;
+  border:0 !important;
+  box-shadow:none !important;
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSetupPrimaryActions{
+  order:1 !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSetupBoardWrap,
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSingleBoardWrap{
+  order:2 !important;
+  width:100% !important;
+  max-width:calc(var(--ships-board-size) + 10px) !important;
+  flex:1 1 auto !important;
+  min-height:0 !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  margin:0 auto !important;
+  padding:0 !important;
+  overflow:visible !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSetupSecondaryActions{
+  order:3 !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSetupPrimaryActions .gameControlBtn,
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSetupSecondaryActions .gameControlBtn{
+  min-height:30px !important;
+  padding:5px 7px !important;
+  font-size:10px !important;
+  border-radius:13px !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsBoardCardLift{
+  width:calc(var(--ships-board-size) + 8px) !important;
+  max-width:calc(var(--ships-board-size) + 8px) !important;
+  padding:3px !important;
+  margin:0 auto !important;
+  overflow:visible !important;
+  border-radius:16px !important;
+  box-sizing:border-box !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsBoardTitleLine{
+  display:block !important;
+  margin:0 0 3px !important;
+  text-align:center !important;
+  font-size:10px !important;
+  line-height:1.1 !important;
+  color:rgba(255,255,255,.88) !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsInlineHint{
+  display:block !important;
+  margin:0 0 3px !important;
+  text-align:center !important;
+  font-size:9.5px !important;
+  line-height:1.12 !important;
+  color:rgba(245,255,250,.66) !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsBoard{
+  width:var(--ships-board-size) !important;
+  height:var(--ships-board-size) !important;
+  max-width:var(--ships-board-size) !important;
+  max-height:var(--ships-board-size) !important;
+  gap:2px !important;
+  padding:2px !important;
+  margin:0 auto !important;
+  box-sizing:border-box !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsCell{
+  min-height:0 !important;
+  aspect-ratio:1/1 !important;
+  border-radius:6px !important;
+}
+@media (min-width:410px) and (min-height:800px){
+  body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"]{
+    --ships-board-size:min(calc(100vw - 18px), calc(100dvh - 170px - env(safe-area-inset-top) - env(safe-area-inset-bottom)), 438px) !important;
+  }
+}
+@media (max-height:760px){
+  body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"]{
+    --ships-board-size:min(calc(100vw - 18px), calc(100dvh - 158px - env(safe-area-inset-top) - env(safe-area-inset-bottom)), 398px) !important;
+  }
+  body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsInlineHint{display:none !important;}
+}

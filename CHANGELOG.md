@@ -1,3 +1,10 @@
+## v.1.5 (851)
+- Lodě: technicky funkční stav z v850 zůstává zachovaný, úprava je zaměřená na vzhled a využití obrazovky.
+- Lodě příprava/střelba: herní pole je zvětšené přes maximum dostupné výšky, horní HUD a spodní akce jsou zmenšené/odlehčené a nepřekáží poli.
+- Lodě: popisek k poli je nově přímo u herní plochy, bez zbytečných velkých bloků nahoře a dole.
+- DB ani Supabase policies se v tomto buildu neměnily.
+- Verze sjednocena na v.1.5 (851), cache na v1.5-851 a Supabase realtime kanál na rak-public-live-v851.
+
 ## v.1.5 (850)
 - Lodě: větší mobil už nemá řezat spodní část automaticky položeného bitevního pole při vytváření flotily; setup pole je kompaktnější a bez vysoké spodní rezervy.
 - Lodě online: po připojení přes zvací odkaz se při aktivní hře automaticky přepne na soupeřovo pole, refresh session víc hlídá změnu soupeře/stavu/tahu a při blokované střelbě se spustí rychlé obnovení stavu.

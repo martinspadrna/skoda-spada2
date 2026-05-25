@@ -4587,7 +4587,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
         local.placing.horizontal = !!selectedShip.horizontal;
       }
       const selectedName = selectedShip ? selectedShip.name : 'loď';
-      const hintText = message || st.message || 'Klepni na loď = výběr. Druhé klepnutí na moře = přesun. Lodě se nesmí dotýkat ani rohem.';
+      const hintText = message || st.message || 'Klepni na loď, potom na nové místo. Lodě se nesmí dotýkat ani rohem.';
       body.innerHTML = `<div class="arcadeStage shipsStage shipsSetupStage shipsScrollableStage">
         <div class="arcadeControls shipsSetupActions shipsSetupPrimaryActions">
           <button type="button" class="gameControlBtn ${valid ? 'primary' : 'isDisabled'}" id="shipsReadyBtn">Potvrdit flotilu</button>
@@ -4595,7 +4595,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
         </div>
         <div class="arcadeHud arcadeHudSingleLine shipsCompactHud">${gamesStatLine('Role', role || '—')}${gamesStatLine('Lodí', `${mine.ships.length}/${SHIPS_FLEET.length}`)}${gamesStatLine('Loď', selectedName)}</div>
         <div class="shipsSingleBoardWrap shipsSetupBoardWrap">
-          <div class="shipsBoardCard shipsBoardCardLift shipsInviteHost"><div class="smallText uBold">Tvoje flotila</div><div class="smallText shipsInlineHint">${escapeHtml(hintText)}</div>${shipsRenderBoard(mine, { own: true, placement: true, selectedShipId: selectedShip && selectedShip.id })}${shipsInviteOverlayHtml(st)}</div>
+          <div class="shipsBoardCard shipsBoardCardLift shipsInviteHost"><div class="smallText uBold shipsBoardTitleLine">Tvoje flotila · ${escapeHtml(role || "—")} · ${escapeHtml(selectedName)}</div><div class="smallText shipsInlineHint">${escapeHtml(hintText)}</div>${shipsRenderBoard(mine, { own: true, placement: true, selectedShipId: selectedShip && selectedShip.id })}${shipsInviteOverlayHtml(st)}</div>
         </div>
         <div class="arcadeControls shipsSetupActions shipsSetupSecondaryActions">
           <button type="button" class="gameControlBtn" id="shipsShuffleBtn">Přehodit automaticky</button>
@@ -4700,7 +4700,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
         ${toggleHtml}
         <div class="shipsMenuBackLine"><button type="button" class="gameControlBtn ghost" id="shipsMenuBackBtn">Zpět do menu Lodí</button></div>
         <div class="shipsSingleBoardWrap">
-          <div class="shipsBoardCard shipsBoardCardLift shipsBoardCardResultHost shipsInviteHost"><div class="smallText uBold">${escapeHtml(activeBoardTitle)}</div><div class="smallText shipsInlineHint">${escapeHtml(viewHint)}</div>${activeBoard}${shipsInviteOverlayHtml(st)}${st.status === 'finished' ? `<div class="arcadeGameOverlay arcadeEndOverlay shipsResult"><div class="arcadeOverlayCard shipsResultCard"><strong>${st.winner === role ? 'Výhra!' : 'Konec hry'}</strong><span>Score: ${st.winner === role ? 1000 + (sum.hits * 80) + (sum.sunk * 220) : Math.max(100, sum.hits * 70)} · Zásahy: ${sum.hits} · Potopené: ${sum.sunk}</span><div class="shipsResultActions"><button type="button" class="gameControlBtn primary" id="shipsRematchBtn">Nová hra se soupeřem</button><button type="button" class="gameControlBtn ghost" id="shipsBackBtn">Zpět do Lodí</button></div></div></div>` : ''}</div>
+          <div class="shipsBoardCard shipsBoardCardLift shipsBoardCardResultHost shipsInviteHost"><div class="smallText uBold shipsBoardTitleLine">${escapeHtml(activeBoardTitle)}</div><div class="smallText shipsInlineHint">${escapeHtml(viewHint)}</div>${activeBoard}${shipsInviteOverlayHtml(st)}${st.status === 'finished' ? `<div class="arcadeGameOverlay arcadeEndOverlay shipsResult"><div class="arcadeOverlayCard shipsResultCard"><strong>${st.winner === role ? 'Výhra!' : 'Konec hry'}</strong><span>Score: ${st.winner === role ? 1000 + (sum.hits * 80) + (sum.sunk * 220) : Math.max(100, sum.hits * 70)} · Zásahy: ${sum.hits} · Potopené: ${sum.sunk}</span><div class="shipsResultActions"><button type="button" class="gameControlBtn primary" id="shipsRematchBtn">Nová hra se soupeřem</button><button type="button" class="gameControlBtn ghost" id="shipsBackBtn">Zpět do Lodí</button></div></div></div>` : ''}</div>
         </div>
       </div>`;
       shipsBindInviteBannerActions();
@@ -4758,7 +4758,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
       window.__rakShipsPendingInviteCode = inviteCode;
       window.__rakShipsPendingInviteSource = options && options.source ? String(options.source) : 'url';
       try {
-        // v.1.5 (850): Lodě nejsou full-screen overlay jako Piškvorky, běží uvnitř stránky Hry.
+        // v.1.5 (851): Lodě dál běží uvnitř stránky Hry, ale herní plocha je mobile-first natažená přes dostupnou výšku.
         // Při deep-linku proto nejdřív přepneme stránku na Hry a až potom otevřeme shell Lodí.
         if (typeof showPage === 'function') showPage('games');
         else if (typeof window.showPage === 'function') window.showPage('games');
@@ -5441,7 +5441,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return true;
   }
 
-  // v.1.5 (850): pojistka pro případ, kdy se #games=ships&invite načte dřív než modul Lodí.
+  // v.1.5 (851): pojistka pro případ, kdy se #games=ships&invite načte dřív než modul Lodí.
   shipsScheduleOpenFromUrl('games-arcade-boot');
   if (!window.__rakShipsArcadeUrlInviteBound) {
     window.__rakShipsArcadeUrlInviteBound = true;

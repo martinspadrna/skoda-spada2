@@ -1,4 +1,4 @@
-// v.1.5 (850) – Lodě: větší mobil už neřeže automatické bitevní pole; po připojení přes odkaz se střelba lépe obnovuje a automaticky přepíná na soupeřovo pole; DB/Supabase beze změny.
+// v.1.5 (851) – Lodě: technika zachovaná, vzhled přestavěný na mobile-first herní plochu přes maximum obrazovky; méně překážek nahoře/dole; DB/Supabase beze změny.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;
