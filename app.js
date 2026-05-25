@@ -1,4 +1,4 @@
-// v.1.5 (825) – Fáze 2E-I: game_invites/game_sessions RPC scaffold; online session zapisují RPC-first s přímým fallbackem.
+// v.1.5 (827) – Fáze 2E-K-A: bug_reports hardening preflight bez zásahu do herních RPC cest.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

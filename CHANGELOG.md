@@ -1,3 +1,18 @@
+## v.1.5 (827)
+- Fáze 2E-K-A Supabase hardening: bug_reports preflight bez zásahu do DB policies; potvrzené riziko veřejných SELECT/UPDATE cest je nově vidět v diagnostice.
+- Hry, online session a pozvánky zůstaly beze změny proti v826, aby se bez mobilního testu neriskovaly nové regrese.
+- Přidaný kontrolní SQL soubor `supabase_rpc_hardening_v827.sql` s ověřením RPC funkcí, herních restriktivních policies a bug_reports veřejných SELECT/UPDATE policies.
+- Verze sjednocena na v.1.5 (827), cache na v1.5-827 a Supabase realtime kanál na rak-public-live-v827.
+- Aktuální fáze: 2E-K-A hotovo. Následuje 2E-K-B – připravit bezpečný admin/RPC review tok pro bug_reports a až potom omezovat veřejné SELECT/UPDATE.
+
+## v.1.5 (826)
+- Fáze 2E-J Supabase hardening: přímé veřejné INSERT/UPDATE cesty u `game_invites` a `game_sessions` jsou nově omezené restriktivními policies `*_rpc_only_v826`.
+- Změna je nedestruktivní: data se nemažou, public SELECT zůstává kvůli realtime/čtení a online zápisy mají jít přes RPC `rak_create_game_invite_session` a `rak_save_game_session_by_invite_code`.
+- Opraveno klientské volání RPC `rak_save_game_ui_settings`, které mohlo kvůli špatně předaným parametrům padat do fallbacku.
+- Přidaný kontrolní SQL soubor `supabase_rpc_hardening_v827.sql` s ověřením restriktivních policies a rollback poznámkou.
+- Verze sjednocena na v.1.5 (827), cache na v1.5-827 a Supabase realtime kanál na rak-public-live-v827.
+- Aktuální fáze: 2E-J hotovo. Následuje 2E-K – po mobilním ověření online Piškvorek/pozvánek řešit bug_reports SELECT/UPDATE a následně rotation_state/machine_settings write cesty.
+
 ## v.1.5 (825)
 - Fáze 2E-I Supabase hardening: přidané RPC scaffold cesty pro `game_invites` a `game_sessions`.
 - Appka nově u vytvoření online pozvánky a ukládání online session zkouší RPC-first cestu a až při selhání ponechává původní přímý fallback.

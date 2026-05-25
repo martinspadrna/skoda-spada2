@@ -14450,7 +14450,7 @@ nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn.active::before{
 }
 
 
-/* v.1.5 (825): Spodní panel – beze změny; build řeší Supabase 2E-G preflight. */
+/* v.1.5 (827): Spodní panel beze změny; build řeší Supabase 2E-K-A bug_reports preflight. */
 nav.bottomNav #bottomNavScroll > button.bottomNavBtn.active::before,
 nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn.active::before{
   left:-12px !important;

@@ -213,12 +213,12 @@
     { table: 'gomoku_wins', realtime: true, queueType: 'gomoku_win', access: 'anon SELECT/INSERT/UPDATE', note: 'výhry piškvorek / legacy leaderboard' }
   ];
 
-  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (825)';
+  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (827)';
   const SUPABASE_POLICY_AUDIT_SNAPSHOT_AT = '2026-05-24';
   const SUPABASE_POLICY_HARDENING_PHASE = {
-    current: 'Fáze 2E-I – game_sessions/game_invites mají připravené RPC scaffold cesty; přímé INSERT/UPDATE zůstávají kvůli kompatibilitě',
-    next: 'Fáze 2E-J – po mobilním ověření online Piškvorek/pozvánek začít omezovat přímé INSERT/UPDATE u game_sessions a game_invites',
-    rollback: 'Fáze 2E-I je rollbackovatelná klientsky vypnutím RPC-first helperů pro pozvánky/session; data nebyla měněná.'
+    current: 'Fáze 2E-K-A – bug_reports hardening preflight: veřejné SELECT/UPDATE jsou potvrzené riziko, zatím bez DB omezení kvůli kompatibilitě admin přehledu',
+    next: 'Fáze 2E-K-B – připravit bezpečný admin/RPC review tok pro bug_reports a až potom omezovat veřejné SELECT/UPDATE',
+    rollback: 'Fáze 2E-K-A nemění data ani RLS policies; rollback není potřeba. Restriktivní policies pro hry z v824/v826 zůstávají zachované.'
   };
   const SUPABASE_POLICY_AUDIT_SNAPSHOT = [
     {
@@ -245,23 +245,23 @@
     {
       table: 'game_sessions',
       priority: 'P0',
-      risk: 'public INSERT/UPDATE nad online session; public DELETE už odstraněn ve Fázi 2D',
-      observed: 'policies game_sessions_insert_public/update_public zůstávají; game_sessions_delete_public odstraněná v DB migraci v810',
-      recommendation: 'nejdřív zrušit public DELETE; UPDATE omezit minimálně podle invite_code/účastníků a stavu session'
+      risk: 'přímé public INSERT/UPDATE nad online session je od v826 omezené restriktivními policies; public DELETE už odstraněn ve Fázi 2D',
+      observed: 'původní permisivní policies fyzicky zůstávají, ale přímé public write blokují restriktivní policies game_sessions_insert_rpc_only_v826/game_sessions_update_rpc_only_v826; DELETE odstraněné v810',
+      recommendation: 'online session držet přes rak_save_game_session_by_invite_code; po smoke testu bez fallbacků pokračovat na bug_reports a rozpisové/nastavovací write cesty'
     },
     {
       table: 'game_invites',
       priority: 'P1',
-      risk: 'public UPDATE nad pozvánkami; public DELETE už odstraněn ve Fázi 2D',
-      observed: 'policy game_invites_update_public zůstává; game_invites_delete_public odstraněná v DB migraci v810',
-      recommendation: 'mazání omezit na expirované pozvánky přes RPC/cron; UPDATE povolit jen pro očekávané přijetí pozvánky'
+      risk: 'přímé public INSERT/UPDATE nad pozvánkami je od v826 omezené restriktivními policies; public DELETE už odstraněn ve Fázi 2D',
+      observed: 'původní permisivní policies fyzicky zůstávají, ale přímé public write blokují restriktivní policies game_invites_insert_rpc_only_v826/game_invites_update_rpc_only_v826; DELETE odstraněné v810',
+      recommendation: 'pozvánky držet přes rak_create_game_invite_session / navazující RPC cesty; po smoke testu bez fallbacků teprve rozšiřovat tvrdší validace'
     },
     {
       table: 'bug_reports',
       priority: 'P1',
-      risk: 'anon/auth SELECT a UPDATE reportů chyb',
-      observed: 'read/update policies pro anon/auth umožňují číst reporty a měnit status',
-      recommendation: 'INSERT ponechat veřejný s limity; SELECT/UPDATE přes admin RPC nebo chráněné rozhraní'
+      risk: 'anon/auth SELECT a UPDATE reportů chyb je potvrzené riziko soukromí/admin flow',
+      observed: 'DB kontrola v827 potvrdila 2 veřejné SELECT/UPDATE policies; zatím ponecháno kvůli kompatibilitě admin přehledu a bez DB změny',
+      recommendation: 'INSERT ponechat veřejný s limity, ale připravit admin/RPC review tok a potom zúžit SELECT/UPDATE přes chráněné rozhraní'
     },
     {
       table: 'gomoku_wins',
@@ -273,13 +273,17 @@
   ];
 
   const SUPABASE_RPC_HARDENING_STATUS = {
-    version: 'v.1.5 (825)',
-    phase: '2E-I',
+    version: 'v.1.5 (827)',
+    phase: '2E-J',
     rpcPreferred: true,
     migrationApplied: true,
-    migrationNote: 'game_stats direct INSERT/UPDATE jsou omezené restriktivními policies v824. Ve v825 jsou navíc připravené RPC scaffold cesty pro game_invites/game_sessions, ale přímé INSERT/UPDATE zůstává do mobilního smoke testu.',
+    migrationNote: 'game_stats direct INSERT/UPDATE jsou omezené restriktivními policies v824. Ve v826 jsou omezené i přímé game_invites/game_sessions INSERT/UPDATE pomocí restriktivních policies; ve v827 je pouze potvrzené bug_reports SELECT/UPDATE riziko bez změny DB policies.',
     dbVerifiedAt: '2026-05-24',
     verifiedRpcCount: 6,
+    bugReportsHardeningPhase: '2E-K-A',
+    bugReportsPublicSelectUpdatePolicies: 2,
+    bugReportsDbChanged: false,
+    bugReportsNextStep: 'připravit admin/RPC review tok a teprve potom zúžit bug_reports SELECT/UPDATE',
     plannedRpc: [
       'rak_save_rotation_state',
       'rak_save_machine_settings',
@@ -289,9 +293,9 @@
       'rak_create_game_invite_session',
       'rak_save_game_session_by_invite_code'
     ],
-    fallback: 'direct-write-fallback-should-now-be-blocked-by-restrictive-policies; monitor RPC smoke and fallback errors',
-    gameStatsRpcSmoke: 'persistent-mobile-smoke-required-before-insert-update-tightening',
-    gameUiSettingsRpcSmoke: 'persistent-mobile-smoke-required-before-insert-update-tightening',
+    fallback: 'direct-write-fallback-is-now-blocked-for-game_stats-game_invites-game_sessions; bug_reports SELECT/UPDATE zatím ponecháno kvůli admin přehledu; monitor RPC smoke and fallback errors',
+    gameStatsRpcSmoke: 'rpc-required-after-v824-restrictive-policy',
+    gameUiSettingsRpcSmoke: 'rpc-required-after-v824-restrictive-policy',
     gameStatsRpcAttempts: 0,
     gameStatsRpcSuccesses: 0,
     gameStatsRpcFallbacks: 0,
@@ -678,7 +682,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v825');
+      const channel = client.channel('rak-public-live-v827');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -1551,7 +1555,7 @@
         return null;
       }
       rememberGameSessionRpcSmoke('fallback', 'create_invite_session', err && err.message ? err.message : err);
-      console.warn('rak_create_game_invite_session failed, falling back to direct game_invites/game_sessions write', err);
+      console.warn('rak_create_game_invite_session failed; direct game_invites/game_sessions fallback may be blocked after v826', err);
       return null;
     }
   }
@@ -1584,7 +1588,7 @@
         return null;
       }
       rememberGameSessionRpcSmoke('fallback', 'save_session', err && err.message ? err.message : err);
-      console.warn('rak_save_game_session_by_invite_code failed, falling back to direct game_sessions write', err);
+      console.warn('rak_save_game_session_by_invite_code failed; direct game_sessions fallback may be blocked after v826', err);
       return null;
     }
   }
@@ -3011,9 +3015,7 @@
     if (!client || typeof client.rpc !== 'function' || !normalized || !normalized.account_number) return null;
     try {
       rememberGameUiRpcSmoke('attempt');
-      const { data, error } = await runSupabaseOperation('game_ui_settings.rpc_save', () => client.rpc('rak_save_game_ui_settings',
-      'rak_create_game_invite_session',
-      'rak_save_game_session_by_invite_code', {
+      const { data, error } = await runSupabaseOperation('game_ui_settings.rpc_save', () => client.rpc('rak_save_game_ui_settings', {
         p_account_number: normalized.account_number,
         p_theme_index: Math.max(0, Math.min(999, Math.round(getSafeGameStatNumber(normalized.theme_index, 0)))),
         p_background_index: Math.max(0, Math.min(999, Math.round(getSafeGameStatNumber(normalized.background_index, 0)))),
@@ -3030,7 +3032,7 @@
         return null;
       }
       rememberGameUiRpcSmoke('fallback', err && err.message ? err.message : err);
-      console.warn('rak_save_game_ui_settings failed, falling back to direct game_stats __profile_ui write', err);
+      console.warn('rak_save_game_ui_settings failed; direct game_stats __profile_ui fallback should be blocked after v824', err);
       return null;
     }
   }
