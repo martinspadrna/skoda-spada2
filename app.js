@@ -1,4 +1,4 @@
-// v.1.5 (833) – Piškvorky online: čitelný move guard, diagnostika blokovaných tahů a rychlý resync.
+// v.1.5 (834) – Supabase heartbeat přes app_keepalive, diagnostika stavu OK/nedostupná/možná paused.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

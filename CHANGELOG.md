@@ -1,3 +1,11 @@
+## v.1.5 (834)
+- Přidaný bezpečný Supabase heartbeat přes samostatnou tabulku `app_keepalive`, mimo herní data a bez zásahu do policies online Piškvorek.
+- Heartbeat se plánuje po startu aplikace, po návratu online/viditelnosti/focusu, ale vzdálený ping se na jednom zařízení spustí maximálně 1× za 12 hodin.
+- Heartbeat je best-effort: neblokuje start, při offline/stalled/paused Supabase jen zapíše stav do lokální diagnostiky a aplikace dál funguje z cache/offline.
+- Diagnostika v O aplikaci ukazuje Supabase stav OK / nedostupná / možná paused, poslední úspěšný heartbeat, poslední chybu, počet pokusů a interval.
+- Přidaný SQL soubor `supabase_keepalive_v834.sql`; migrace vytváří tabulku app_keepalive s RLS jen pro anon/auth INSERT/UPDATE.
+- Verze sjednocena na v.1.5 (834), cache na v1.5-834 a Supabase realtime kanál na rak-public-live-v834.
+
 ## v.1.5 (833)
 - Online Piškvorky mají čitelnější move guard: když tah nejde udělat kvůli čekání na soupeře, chybějící roli nebo tomu, že není tah aktuálního hráče, appka už jen tiše neignoruje kliknutí, ale ukáže důvod.
 - Při blokovaném online tahu se do lokální diagnostiky zapíše důvod, role, aktuální tah, session/pozvánka a flow link/manual; Diagnostika v O aplikaci nově ukazuje počet blokovaných tahů.

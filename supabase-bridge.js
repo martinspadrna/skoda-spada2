@@ -133,6 +133,26 @@
       lastRealtimeRefreshHiddenAt: null,
       lastSharedReadKey: '',
       lastSharedReadAt: null
+    },
+    keepalive: {
+      status: 'unknown',
+      label: 'neznámá',
+      attempts: 0,
+      successes: 0,
+      failures: 0,
+      skips: 0,
+      lastAttemptAt: null,
+      lastSuccessAt: null,
+      lastErrorAt: null,
+      lastErrorMessage: '',
+      lastErrorCode: '',
+      lastReason: '',
+      lastDeviceKey: '',
+      lastDurationMs: 0,
+      lastHttpStatus: null,
+      lastClassification: 'unknown',
+      lastSkipReason: '',
+      lastSkipAt: null
     }
   };
 
@@ -209,14 +229,15 @@
     { table: 'game_sessions', realtime: true, queueType: 'game_session', access: 'anon SELECT/INSERT/UPDATE', note: 'online herní session' },
     { table: 'game_stats', realtime: true, queueType: 'game_stat', access: 'anon SELECT/INSERT/UPDATE', note: 'skóre a žebříčky' },
     { table: 'game_ui_settings', realtime: false, queueType: 'game_ui_settings', access: 'anon SELECT/INSERT/UPDATE', note: 'profilové nastavení vzhledu' },
+    { table: 'app_keepalive', realtime: false, queueType: '', access: 'anon INSERT/UPDATE only', note: 'bezpečný heartbeat proti pauze free projektu, mimo herní data' },
     { table: 'bug_reports', realtime: false, queueType: 'bug_report', access: 'anon INSERT only', note: 'uživatelské reporty chyb / nápadů' },
     { table: 'gomoku_wins', realtime: true, queueType: 'gomoku_win', access: 'anon SELECT/INSERT/UPDATE', note: 'výhry piškvorek / legacy leaderboard' }
   ];
 
-  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (833)';
+  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (834)';
   const SUPABASE_POLICY_AUDIT_SNAPSHOT_AT = '2026-05-24';
   const SUPABASE_POLICY_HARDENING_PHASE = {
-    current: 'V833 – online Piškvorky mají čitelný move guard: blokovaný tah kvůli čekání, chybějící roli nebo špatnému tahu ukáže důvod, zapíše diagnostiku a spustí rychlý resync; DB rollback z v828 zůstává zachovaný a policies pro pozvánky/session se dál neutahují.',
+    current: 'V834 – přidaný bezpečný Supabase heartbeat přes samostatnou tabulku app_keepalive: maximálně 1× za 12 hodin na zařízení, bez blokování startu a bez zásahu do policies Piškvorek.',
     next: 'Nejdřív znovu otestovat online Piškvorky na dvou mobilech; potom pokračovat opatrně přes RPC smoke, ne přes další restriktivní policies naslepo',
     rollback: 'Rollback v828 byl proveden jen pro game_invites/game_sessions restriktivní policies z v826; game_stats restriktivní policies z v824 zůstávají zachované.'
   };
@@ -273,11 +294,11 @@
   ];
 
   const SUPABASE_RPC_HARDENING_STATUS = {
-    version: 'v.1.5 (833)',
-    phase: '2E-L rollback / online TTT move guard diagnostics',
+    version: 'v.1.5 (834)',
+    phase: '2E-M keepalive heartbeat / online TTT hardening paused',
     rpcPreferred: true,
     migrationApplied: true,
-    migrationNote: 'game_stats direct INSERT/UPDATE zůstávají omezené restriktivními policies v824. Restriktivní policies pro game_invites/game_sessions z v826 byly v DB ve v828 odstraněné, protože rozbily online Piškvorky. DELETE policies zůstávají odstraněné.',
+    migrationNote: 'game_stats direct INSERT/UPDATE zůstávají omezené restriktivními policies v824. Restriktivní policies pro game_invites/game_sessions z v826 byly v DB ve v828 odstraněné. V834 přidává jen app_keepalive heartbeat; Piškvorky policies zůstávají beze změny.',
     dbVerifiedAt: '2026-05-24',
     verifiedRpcCount: 7,
     bugReportsHardeningPhase: 'pozastaveno kvůli online TTT hotfixu',
@@ -564,6 +585,7 @@
     'requestRealtimeRefresh',
     'bindRealtime',
     'getSupabasePerformanceHealth',
+    'getSupabaseKeepaliveStatus',
     'getSupabaseHardeningStatus'
   ];
 
@@ -683,7 +705,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v833');
+      const channel = client.channel('rak-public-live-v834');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -741,6 +763,10 @@
   const SUPABASE_GAME_CACHE_TTL_MS = 30 * 1000;
   const SUPABASE_WRITE_DEDUPE_WINDOW_MS = 1400;
   const SUPABASE_WRITE_FINGERPRINT_LIMIT = 180000;
+  const SUPABASE_KEEPALIVE_STORAGE_KEY = 'rak_supabase_keepalive_v1';
+  const SUPABASE_KEEPALIVE_DEVICE_KEY = 'rak_supabase_keepalive_device_v1';
+  const SUPABASE_KEEPALIVE_MIN_INTERVAL_MS = 12 * 60 * 60 * 1000;
+  const SUPABASE_KEEPALIVE_TIMEOUT_MS = 6500;
   let flushPromise = null;
   let flushScheduleTimer = null;
   let lastQueueWakeRequestAt = 0;
@@ -777,6 +803,202 @@
     } catch (err) {
       return false;
     }
+  }
+
+
+  function normalizeSupabaseKeepalive(raw) {
+    const base = raw && typeof raw === 'object' ? raw : {};
+    return {
+      status: String(base.status || 'unknown'),
+      label: String(base.label || 'neznámá'),
+      attempts: Math.max(0, Number(base.attempts || 0) || 0),
+      successes: Math.max(0, Number(base.successes || 0) || 0),
+      failures: Math.max(0, Number(base.failures || 0) || 0),
+      skips: Math.max(0, Number(base.skips || 0) || 0),
+      lastAttemptAt: base.lastAttemptAt || null,
+      lastSuccessAt: base.lastSuccessAt || null,
+      lastErrorAt: base.lastErrorAt || null,
+      lastErrorMessage: String(base.lastErrorMessage || '').slice(0, 220),
+      lastErrorCode: String(base.lastErrorCode || '').slice(0, 80),
+      lastReason: String(base.lastReason || '').slice(0, 80),
+      lastDeviceKey: String(base.lastDeviceKey || '').slice(0, 96),
+      lastDurationMs: Math.max(0, Number(base.lastDurationMs || 0) || 0),
+      lastHttpStatus: base.lastHttpStatus === null || base.lastHttpStatus === undefined ? null : (Number(base.lastHttpStatus) || null),
+      lastClassification: String(base.lastClassification || 'unknown').slice(0, 80),
+      lastSkipReason: String(base.lastSkipReason || '').slice(0, 120),
+      lastSkipAt: base.lastSkipAt || null,
+      minIntervalHours: Math.round(SUPABASE_KEEPALIVE_MIN_INTERVAL_MS / 60 / 60 / 1000),
+      table: 'app_keepalive'
+    };
+  }
+
+  function readSupabaseKeepaliveState() {
+    return normalizeSupabaseKeepalive(safeReadJson(SUPABASE_KEEPALIVE_STORAGE_KEY, {}));
+  }
+
+  function writeSupabaseKeepaliveState(next) {
+    const safe = normalizeSupabaseKeepalive(next);
+    Object.assign(state.keepalive, safe);
+    safeWriteJson(SUPABASE_KEEPALIVE_STORAGE_KEY, safe);
+    return safe;
+  }
+
+  function getKeepaliveLabel(status) {
+    if (status === 'ok') return 'OK';
+    if (status === 'possibly_paused') return 'možná paused';
+    if (status === 'unavailable') return 'nedostupná';
+    if (status === 'skipped') return 'čeká na interval';
+    if (status === 'offline') return 'offline';
+    return 'neznámá';
+  }
+
+  function ensureSupabaseKeepaliveDeviceKey() {
+    try {
+      let key = String(localStorage.getItem(SUPABASE_KEEPALIVE_DEVICE_KEY) || '').trim();
+      if (/^rak-[a-z0-9]{10,}$/i.test(key)) return key.slice(0, 96);
+      const hasCrypto = typeof crypto !== 'undefined' && crypto && typeof crypto.getRandomValues === 'function';
+      const rnd = hasCrypto
+        ? Array.from(crypto.getRandomValues(new Uint32Array(3))).map(n => n.toString(36)).join('')
+        : (Date.now().toString(36) + Math.random().toString(36).slice(2, 12));
+      key = ('rak-' + rnd).slice(0, 80);
+      localStorage.setItem(SUPABASE_KEEPALIVE_DEVICE_KEY, key);
+      return key;
+    } catch (err) {
+      return ('rak-memory-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8)).slice(0, 80);
+    }
+  }
+
+  function classifySupabaseKeepaliveError(err) {
+    const msg = String(err && (err.message || err.error_description || err.details || err.hint || err.statusText || err.code || err.status) ? (err.message || err.error_description || err.details || err.hint || err.statusText || err.code || err.status) : err || '').toLowerCase();
+    const code = String(err && (err.code || err.status || err.statusCode) || '').trim();
+    const status = Number(err && (err.status || err.statusCode || err.code));
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) return { status: 'offline', label: getKeepaliveLabel('offline'), classification: 'offline', httpStatus: Number.isFinite(status) ? status : null, code };
+    if (msg.includes('paused') || msg.includes('project is paused') || msg.includes('project is not active') || msg.includes('inactive') || [502, 503, 504, 521, 522, 523, 524].includes(status)) {
+      return { status: 'possibly_paused', label: getKeepaliveLabel('possibly_paused'), classification: 'paused-or-gateway', httpStatus: Number.isFinite(status) ? status : null, code };
+    }
+    if (msg.includes('relation') && msg.includes('app_keepalive')) {
+      return { status: 'unavailable', label: getKeepaliveLabel('unavailable'), classification: 'missing-app_keepalive-table', httpStatus: Number.isFinite(status) ? status : null, code };
+    }
+    if (msg.includes('violates row-level security') || msg.includes('permission denied') || status === 401 || status === 403) {
+      return { status: 'unavailable', label: getKeepaliveLabel('unavailable'), classification: 'rls-or-permission', httpStatus: Number.isFinite(status) ? status : null, code };
+    }
+    if (msg.includes('failed to fetch') || msg.includes('network') || msg.includes('timeout') || msg.includes('load failed') || msg.includes('abort')) {
+      return { status: 'unavailable', label: getKeepaliveLabel('unavailable'), classification: 'network-or-timeout', httpStatus: Number.isFinite(status) ? status : null, code };
+    }
+    return { status: 'unavailable', label: getKeepaliveLabel('unavailable'), classification: 'unknown-error', httpStatus: Number.isFinite(status) ? status : null, code };
+  }
+
+  function shouldRunSupabaseKeepalive(options) {
+    const opts = options || {};
+    if (opts.force) return { ok: true };
+    const current = readSupabaseKeepaliveState();
+    const last = Date.parse(current.lastAttemptAt || current.lastSuccessAt || '') || 0;
+    if (last && Date.now() - last < SUPABASE_KEEPALIVE_MIN_INTERVAL_MS) {
+      return { ok: false, reason: 'interval', current };
+    }
+    return { ok: true, current };
+  }
+
+  async function runSupabaseKeepalive(reason, options) {
+    const opts = options || {};
+    const current = readSupabaseKeepaliveState();
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      const next = writeSupabaseKeepaliveState(Object.assign({}, current, {
+        status: 'offline', label: getKeepaliveLabel('offline'), lastReason: String(reason || 'offline'), lastSkipReason: 'offline', lastSkipAt: new Date().toISOString(), skips: current.skips + 1
+      }));
+      return { ok: false, skipped: true, reason: 'offline', status: next };
+    }
+    const allowed = shouldRunSupabaseKeepalive(opts);
+    if (!allowed.ok) {
+      const next = writeSupabaseKeepaliveState(Object.assign({}, current, {
+        status: current.status === 'ok' ? 'ok' : 'skipped', label: current.status === 'ok' ? getKeepaliveLabel('ok') : getKeepaliveLabel('skipped'), lastSkipReason: allowed.reason || 'interval', lastSkipAt: new Date().toISOString(), skips: current.skips + 1
+      }));
+      return { ok: true, skipped: true, reason: allowed.reason || 'interval', status: next };
+    }
+    const client = getClient();
+    if (!client) {
+      const next = writeSupabaseKeepaliveState(Object.assign({}, current, {
+        status: 'unavailable', label: getKeepaliveLabel('unavailable'), failures: current.failures + 1, lastErrorAt: new Date().toISOString(), lastErrorMessage: 'Supabase klient není připravený.', lastClassification: 'missing-client', lastReason: String(reason || 'init')
+      }));
+      return { ok: false, reason: 'missing-client', status: next };
+    }
+
+    const started = Date.now();
+    const nowIso = new Date().toISOString();
+    const deviceKey = ensureSupabaseKeepaliveDeviceKey();
+    const attemptBase = Object.assign({}, current, {
+      attempts: current.attempts + 1,
+      lastAttemptAt: nowIso,
+      lastReason: String(reason || 'init').slice(0, 80),
+      lastDeviceKey: deviceKey
+    });
+    writeSupabaseKeepaliveState(Object.assign({}, attemptBase, { status: current.status || 'unknown', label: current.label || getKeepaliveLabel(current.status || 'unknown') }));
+
+    const payload = {
+      device_key: deviceKey,
+      app_version: String(window.APP_VERSION || '').trim().slice(0, 40) || null,
+      heartbeat_at: nowIso,
+      user_agent: String((typeof navigator !== 'undefined' && navigator.userAgent) ? navigator.userAgent : '').slice(0, 300),
+      payload: {
+        reason: String(reason || 'init').slice(0, 80),
+        timezone: (typeof Intl !== 'undefined' && Intl.DateTimeFormat) ? (Intl.DateTimeFormat().resolvedOptions().timeZone || '') : '',
+        online: typeof navigator !== 'undefined' ? navigator.onLine !== false : true
+      }
+    };
+
+    try {
+      const result = await runSupabaseOperation('app_keepalive.upsert', () => client.from('app_keepalive').upsert(payload, { onConflict: 'device_key' }), { mode: 'write', attempts: 1, timeoutMs: SUPABASE_KEEPALIVE_TIMEOUT_MS });
+      if (result && result.error) throw result.error;
+      const next = writeSupabaseKeepaliveState(Object.assign({}, attemptBase, {
+        status: 'ok', label: getKeepaliveLabel('ok'), successes: current.successes + 1, lastSuccessAt: new Date().toISOString(), lastErrorMessage: '', lastErrorCode: '', lastErrorAt: current.lastErrorAt || null, lastDurationMs: Date.now() - started, lastHttpStatus: null, lastClassification: 'ok'
+      }));
+      return { ok: true, status: next };
+    } catch (err) {
+      const classified = classifySupabaseKeepaliveError(err);
+      const next = writeSupabaseKeepaliveState(Object.assign({}, attemptBase, {
+        status: classified.status,
+        label: classified.label,
+        failures: current.failures + 1,
+        lastErrorAt: new Date().toISOString(),
+        lastErrorMessage: String(err && (err.message || err.details || err.hint || err.code || err.status) ? (err.message || err.details || err.hint || err.code || err.status) : err || 'unknown').slice(0, 220),
+        lastErrorCode: classified.code || '',
+        lastDurationMs: Date.now() - started,
+        lastHttpStatus: classified.httpStatus,
+        lastClassification: classified.classification
+      }));
+      return { ok: false, error: err, status: next };
+    }
+  }
+
+  function scheduleSupabaseKeepalive(reason, delayMs, options) {
+    const delay = Math.max(0, Number(delayMs) || 0);
+    setTimeout(() => {
+      try { void runSupabaseKeepalive(reason || 'scheduled', options || {}); }
+      catch (err) { console.warn('Supabase keepalive schedule failed', err); }
+    }, delay);
+  }
+
+  function getSupabaseKeepaliveStatus() {
+    const current = readSupabaseKeepaliveState();
+    const online = typeof navigator !== 'undefined' ? navigator.onLine !== false : true;
+    const ageMs = current.lastSuccessAt ? (Date.now() - (Date.parse(current.lastSuccessAt) || 0)) : null;
+    const stale = Number.isFinite(ageMs) && ageMs > 36 * 60 * 60 * 1000;
+    const issues = [];
+    if (!online) issues.push('zařízení je offline');
+    if (!current.lastSuccessAt) issues.push('heartbeat ještě nemá úspěšný zápis');
+    if (current.status === 'possibly_paused') issues.push('Supabase může být paused nebo gateway nedostupná');
+    if (current.status === 'unavailable') issues.push('Supabase heartbeat je nedostupný: ' + String(current.lastClassification || 'neznámý důvod'));
+    if (stale) issues.push('poslední úspěšný heartbeat je starší než 36 hodin');
+    return Object.assign({}, current, {
+      ok: current.status === 'ok' && !!current.lastSuccessAt,
+      online,
+      stale,
+      ageMs: Number.isFinite(ageMs) ? ageMs : null,
+      minIntervalMs: SUPABASE_KEEPALIVE_MIN_INTERVAL_MS,
+      timeoutMs: SUPABASE_KEEPALIVE_TIMEOUT_MS,
+      issues: issues.slice(0, 8),
+      checkedAt: new Date().toISOString()
+    });
   }
 
   function readTimedCache(key, maxAgeMs) {
@@ -3289,6 +3511,7 @@
         if (name === 'requestRealtimeRefresh') return typeof requestRealtimeRefresh !== 'function';
         if (name === 'bindRealtime') return typeof bindRealtime !== 'function';
         if (name === 'getSupabasePerformanceHealth') return typeof getSupabasePerformanceHealth !== 'function';
+        if (name === 'getSupabaseKeepaliveStatus') return typeof getSupabaseKeepaliveStatus !== 'function';
         if (name === 'getSupabaseHardeningStatus') return typeof getSupabaseHardeningStatus !== 'function';
       } catch (err) {
         return true;
@@ -3418,6 +3641,7 @@
       cacheGuard: Object.assign({}, state.cacheGuard),
       performanceGuard: Object.assign({}, state.performanceGuard),
       performanceHealth: getSupabasePerformanceHealth(),
+      keepaliveStatus: getSupabaseKeepaliveStatus(),
       structureHealth: getSupabaseStructureHealth(),
       policyRiskHealth: getSupabasePolicyRiskHealth(),
       rpcHardening: Object.assign({}, SUPABASE_RPC_HARDENING_STATUS, getGameStatsRpcSmokeStatus()),
@@ -3491,6 +3715,7 @@
   function init() {
     if (state.ready) {
       bindRealtimeSubscriptions();
+      scheduleSupabaseKeepalive('init-ready', 1400);
       return refreshPublicData();
     }
     if (!hasClient()) {
@@ -3498,6 +3723,7 @@
     }
     bindRealtimeSubscriptions();
     scheduleSupabaseQueueFlush('init', 650);
+    scheduleSupabaseKeepalive('init', 1600);
     return refreshPublicData();
   }
 
@@ -3708,6 +3934,8 @@
         return { ok: false, error: err };
       }
     },
+    runSupabaseKeepalive,
+    getSupabaseKeepaliveStatus,
     seedFromLocalSnapshot,
     flushPendingWrites,
     bindRealtimeSubscriptions,
@@ -3836,6 +4064,8 @@
   window.getGameSessionRpcSmokeStatus = getGameSessionRpcSmokeStatus;
   window.getSupabaseHardeningStatus = getSupabaseHardeningStatus;
   window.getSupabasePerformanceHealth = getSupabasePerformanceHealth;
+  window.getSupabaseKeepaliveStatus = getSupabaseKeepaliveStatus;
+  window.runSupabaseKeepalive = runSupabaseKeepalive;
   window.getSupabaseStructureHealth = getSupabaseStructureHealth;
   window.getSupabasePolicyRiskHealth = getSupabasePolicyRiskHealth;
   window.createGameInvite = async (payload) => window.RotationSupabaseBridge.createGameInvite(payload);
@@ -3853,6 +4083,7 @@
     requestSupabaseQueueWake('online', 350);
     scheduleRealtimeRebind('online', 900);
     void refreshPublicData();
+    scheduleSupabaseKeepalive('online', 2200);
   });
 
   document.addEventListener('visibilitychange', () => {
@@ -3861,16 +4092,19 @@
     state.syncGuard.lastQueueVisibilityFlushAt = Date.now();
     requestSupabaseQueueWake('visible', 450);
     scheduleRealtimeRebind('visible', 1200);
+    scheduleSupabaseKeepalive('visible', 2600);
   });
 
   window.addEventListener('pageshow', () => {
     requestSupabaseQueueWake('pageshow', 650);
     scheduleRealtimeRebind('pageshow', 1450);
+    scheduleSupabaseKeepalive('pageshow', 2800);
   });
 
   window.addEventListener('focus', () => {
     requestSupabaseQueueWake('focus', 850);
     scheduleRealtimeRebind('focus', 1800);
+    scheduleSupabaseKeepalive('focus', 3200);
   });
 
   if (document.readyState === 'loading') {
