@@ -1,3 +1,20 @@
+## v.1.5 (841)
+- Online pozvánky/session už se v diagnostice neberou jako čistě piškvorková vrstva, ale jako společná vrstva online her.
+- Supabase RPC smoke pro `game_invites/game_sessions` nově rozlišuje herní typ zvlášť pro Piškvorky (`gomoku`) a Lodě (`battleship`).
+- Readiness před dalším utažením policies nově vyžaduje `create/accept/save` bez fallbacku pro Piškvorky i Lodě, ne jen obecný součet.
+- Diagnostika ukazuje samostatné pokrytí „Piškvorky c/a/s“ a „Lodě c/a/s“ a vypisuje konkrétní chybějící kroky.
+- DB ani Supabase policies se v tomto buildu neměnily; změna je klientská diagnostika/audit a bezpečnější plánování dalšího hardeningu.
+- Verze sjednocena na v.1.5 (841), cache na v1.5-841 a Supabase realtime kanál na rak-public-live-v841.
+
+## v.1.5 (841)
+- UI úklid Supabase heartbeatu: stručný heartbeat popisek byl odstraněný z Nastavení aplikace, protože stejný stav je dostupný v Diagnostice.
+- Tlačítko `Otestovat heartbeat teď` bylo přesunuté z O aplikaci přímo do Diagnostiky, aby bylo u technických kontrol a neduplikovalo běžný přehled aplikace.
+- O aplikaci dál ukazuje kartu Supabase heartbeat jen jako přehled stavu bez ručního testovacího tlačítka.
+- Diagnostika se nově zobrazuje jako čitelná karta v menu s heartbeat testem nahoře a kompletním diagnostickým výpisem pod ní.
+- DB ani Supabase policies se v tomto buildu neměnily; online pozvánky/session vrstva zůstává ve stavu v839.
+- Verze sjednocena na v.1.5 (841), cache na v1.5-841 a Supabase realtime kanál na rak-public-live-v841.
+- Aktuální fáze: UI cleanup heartbeatu hotovo. Následuje ověřit na mobilu, že Diagnostika ukáže tlačítko testu a že O aplikaci už ho nemá.
+
 ## v.1.5 (839)
 - Přidaná bezpečná RPC cesta `rak_accept_game_invite` pro přijetí online pozvánky a napojení hráče do `game_sessions` včetně `board_state`, role hráče a aktivního stavu hry.
 - Klient při přijetí pozvánky nejdřív zkusí RPC `rak_accept_game_invite`; přímý update `game_invites/game_sessions` zůstává jen jako kompatibilní fallback, aby se znovu nerozbily online Piškvorky.
@@ -5,7 +22,7 @@
 - Diagnostika v O aplikaci ukazuje `Supabase session RPC pokrytí: create · accept · save` a jasně vypíše, který krok ještě chybí.
 - DB migrace přidala/finálně ponechala kanonickou tříparametrovou funkci `rak_accept_game_invite(text, text, jsonb)`; starý mezikrok dvouparametrové signatury byl odstraněný.
 - `game_invites` a `game_sessions` policies se v tomto buildu neutahovaly; Piškvorky link/kód zůstávají na ověřené funkční cestě.
-- Verze sjednocena na v.1.5 (839), cache na v1.5-839 a Supabase realtime kanál na rak-public-live-v839.
+- Verze sjednocena na v.1.5 (841), cache na v1.5-841 a Supabase realtime kanál na rak-public-live-v841.
 - Aktuální fáze: Supabase invite/session RPC smoke příprava hotovo. Následuje reálný dvoumobilový smoke test create/accept/save a kontrola, že fallbacky zůstávají 0.
 
 ## v.1.5 (837)

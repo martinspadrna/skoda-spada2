@@ -1,4 +1,4 @@
-// v.1.5 (839) – Supabase invite/session RPC smoke: přidává accept RPC a přesnější readiness create/accept/save bez utažení DB policies.
+// v.1.5 (841) – Online hry: Supabase RPC smoke audit rozlišuje Piškvorky i Lodě; policies beze změny.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

@@ -234,11 +234,11 @@
     { table: 'gomoku_wins', realtime: true, queueType: 'gomoku_win', access: 'anon SELECT/INSERT/UPDATE', note: 'výhry piškvorek / legacy leaderboard' }
   ];
 
-  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (839)';
+  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (841)';
   const SUPABASE_POLICY_AUDIT_SNAPSHOT_AT = '2026-05-24';
   const SUPABASE_POLICY_HARDENING_PHASE = {
-    current: 'V839 – bezpečný Supabase RPC smoke krok po potvrzených online Piškvorkách a funkčním heartbeatu; přidává accept RPC bez utažení policies game_invites/game_sessions.',
-    next: 'Nasbírat RPC smoke signály create/accept/save u pozvánek/session bez fallbacků; až potom připravit úzké policy zúžení po jednotlivých tabulkách.',
+    current: 'V841 – online hry smoke audit rozlišuje Piškvorky i Lodě; DB policies se dál neutahují.',
+    next: 'Nasbírat RPC smoke signály create/accept/save zvlášť pro Piškvorky i Lodě bez fallbacků; až potom připravit úzké policy zúžení po jednotlivých tabulkách.',
     rollback: 'Rollback v828 byl proveden jen pro game_invites/game_sessions restriktivní policies z v826; game_stats restriktivní policies z v824 zůstávají zachované.'
   };
   const SUPABASE_POLICY_AUDIT_SNAPSHOT = [
@@ -266,16 +266,16 @@
     {
       table: 'game_sessions',
       priority: 'P0',
-      risk: 'přímé public INSERT/UPDATE nad online session je po rollbacku v828 dočasně povolené kvůli funkčnosti online Piškvorek; public DELETE zůstává odstraněný',
-      observed: 'v828 odstranil restriktivní policies game_sessions_insert_rpc_only_v826/game_sessions_update_rpc_only_v826, protože online Piškvorky přestaly fungovat; DELETE zůstává odstraněné v810',
-      recommendation: 'online Piškvorky link/kód jsou potvrzené OK; před dalším utažením nejdřív nasbírat RPC smoke bez fallbacku a teprve potom připravit úzké policies'
+      risk: 'přímé public INSERT/UPDATE nad online session je po rollbacku v828 dočasně povolené kvůli funkčnosti online her; public DELETE zůstává odstraněný',
+      observed: 'v828 odstranil restriktivní policies game_sessions_insert_rpc_only_v826/game_sessions_update_rpc_only_v826, protože online hry přestaly být bezpečně ověřené; DELETE zůstává odstraněné v810',
+      recommendation: 'online Piškvorky link/kód jsou potvrzené OK; Lodě se musí ověřit samostatně; před dalším utažením nejdřív nasbírat RPC smoke bez fallbacku a teprve potom připravit úzké policies'
     },
     {
       table: 'game_invites',
       priority: 'P1',
-      risk: 'přímé public INSERT/UPDATE nad pozvánkami je po rollbacku v828 dočasně povolené kvůli funkčnosti online Piškvorek; public DELETE zůstává odstraněný',
-      observed: 'v828 odstranil restriktivní policies game_invites_insert_rpc_only_v826/game_invites_update_rpc_only_v826, protože online Piškvorky přestaly fungovat; DELETE zůstává odstraněné v810',
-      recommendation: 'vytvoření/přijetí pozvánky je potvrzené přes link i kód; další krok je RPC smoke evidence bez fallbacku, ne okamžité vrácení restriktivních policies'
+      risk: 'přímé public INSERT/UPDATE nad pozvánkami je po rollbacku v828 dočasně povolené kvůli funkčnosti online her; public DELETE zůstává odstraněný',
+      observed: 'v828 odstranil restriktivní policies game_invites_insert_rpc_only_v826/game_invites_update_rpc_only_v826, protože online hry přestaly být bezpečně ověřené; DELETE zůstává odstraněné v810',
+      recommendation: 'pozvánky jsou společná vrstva online her; Piškvorky jsou potvrzené, Lodě musí mít vlastní create/accept/save smoke; další krok je RPC smoke evidence bez fallbacku, ne okamžité vrácení restriktivních policies'
     },
     {
       table: 'bug_reports',
@@ -294,11 +294,11 @@
   ];
 
   const SUPABASE_RPC_HARDENING_STATUS = {
-    version: 'v.1.5 (839)',
+    version: 'v.1.5 (841)',
     phase: '2E-O online invite/session RPC smoke + accept RPC / no policy tightening',
     rpcPreferred: true,
     migrationApplied: true,
-    migrationNote: 'game_stats direct INSERT/UPDATE zůstávají omezené restriktivními policies v824. Restriktivní policies pro game_invites/game_sessions z v826 byly v DB ve v828 odstraněné. V834–V837 stabilizovalo app_keepalive heartbeat přes RPC. V839 přidává RPC cestu pro přijetí online pozvánky a přesnější smoke readiness pro create/accept/save; game_invites/game_sessions policies se neutahují.',
+    migrationNote: 'game_stats direct INSERT/UPDATE zůstávají omezené restriktivními policies v824. Restriktivní policies pro game_invites/game_sessions z v826 byly v DB ve v828 odstraněné. V834–V837 stabilizovalo app_keepalive heartbeat přes RPC. V839 přidala RPC cestu pro přijetí online pozvánky; V841 zpřesňuje smoke audit po hrách: Piškvorky i Lodě musí projít create/accept/save zvlášť před dalším utažením policies.',
     dbVerifiedAt: '2026-05-25',
     verifiedRpcCount: 7,
     bugReportsHardeningPhase: 'znovu otevřeno jen jako audit; DB změna zatím ne',
@@ -316,7 +316,7 @@
       'rak_save_game_session_by_invite_code',
       'rak_submit_bug_report (DB scaffold, klient zatím nepoužívá)'
     ],
-    fallback: 'game_stats direct-write je blokovaný v824; game_invites/game_sessions direct-write je ve v828 dočasně obnovený kvůli online Piškvorkám; bug_reports SELECT/UPDATE zatím ponecháno' ,
+    fallback: 'game_stats direct-write je blokovaný v824; game_invites/game_sessions direct-write je ve v828 dočasně obnovený kvůli online hrám; bug_reports SELECT/UPDATE zatím ponecháno' ,
     gameStatsRpcSmoke: 'rpc-required-after-v824-restrictive-policy',
     gameUiSettingsRpcSmoke: 'rpc-required-after-v824-restrictive-policy',
     gameStatsRpcAttempts: 0,
@@ -368,9 +368,9 @@
       priority: 'P0',
       state: 'funkční po rollbacku, accept RPC přidané, policy zatím otevřená',
       rpc: 'rak_create_game_invite_session + rak_accept_game_invite + rak_save_game_session_by_invite_code',
-      directFallback: 'ano, po rollbacku v828 dočasně zachováno kvůli kompatibilitě online Piškvorek',
+      directFallback: 'ano, po rollbacku v828 dočasně zachováno kvůli kompatibilitě online her',
       risk: 'vyšší – online hra je funkční, ale policy se nesmí vracet naslepo',
-      next: 'nasbírat reálné RPC úspěchy create/accept/save bez fallbacku; potom připravit postupné zúžení INSERT/UPDATE'
+      next: 'nasbírat reálné RPC úspěchy create/accept/save zvlášť pro Piškvorky i Lodě bez fallbacku; potom připravit postupné zúžení INSERT/UPDATE'
     },
     {
       area: 'bug_reports',
@@ -553,7 +553,74 @@
   }
 
 
-  const GAME_SESSION_RPC_SMOKE_STORAGE_KEY = 'rak_game_session_rpc_smoke_v1';
+  const GAME_SESSION_RPC_REQUIRED_GAMES = [
+    { key: 'gomoku', label: 'Piškvorky' },
+    { key: 'battleship', label: 'Lodě' }
+  ];
+  const GAME_SESSION_RPC_SMOKE_STORAGE_KEY = 'rak_game_session_rpc_smoke_v2';
+
+  function cloneSmokeCountMap(value) {
+    const out = {};
+    if (!value || typeof value !== 'object') return out;
+    Object.keys(value).forEach((key) => {
+      const safeKey = String(key || '').trim().slice(0, 80);
+      if (!safeKey) return;
+      const num = Math.max(0, Number(value[key] || 0) || 0);
+      if (num) out[safeKey] = num;
+    });
+    return out;
+  }
+
+  function cloneSmokeNestedCountMap(value) {
+    const out = {};
+    if (!value || typeof value !== 'object') return out;
+    Object.keys(value).forEach((gameKey) => {
+      const safeGame = normalizeGameTypeForSmoke(gameKey);
+      if (!safeGame) return;
+      const inner = cloneSmokeCountMap(value[gameKey]);
+      if (Object.keys(inner).length) out[safeGame] = inner;
+    });
+    return out;
+  }
+
+  function normalizeGameTypeForSmoke(value) {
+    const gameType = String(value || '').trim().toLowerCase();
+    if (!gameType) return '';
+    if (gameType === 'ttt' || gameType === 'gomoku' || gameType === 'piskvorky' || gameType === 'piškvorky') return 'gomoku';
+    if (gameType === 'ships' || gameType === 'lode' || gameType === 'lodě' || gameType === 'battleship') return 'battleship';
+    return gameType.slice(0, 60);
+  }
+
+  function inferGameTypeFromSessionPayload(inviteRow, sessionRow, boardState) {
+    const candidates = [
+      inviteRow && inviteRow.game_type,
+      sessionRow && sessionRow.game_type,
+      boardState && boardState.gameType,
+      sessionRow && sessionRow.board_state && sessionRow.board_state.gameType,
+      inviteRow && inviteRow.payload && inviteRow.payload.gameType
+    ];
+    for (const item of candidates) {
+      const normalized = normalizeGameTypeForSmoke(item);
+      if (normalized) return normalized;
+    }
+    return 'unknown';
+  }
+
+  function incrementSmokeCount(map, key) {
+    const safeKey = String(key || '').trim().slice(0, 80);
+    if (!safeKey) return map;
+    map[safeKey] = Math.max(0, Number(map[safeKey] || 0) || 0) + 1;
+    return map;
+  }
+
+  function incrementNestedSmokeCount(map, gameType, opType) {
+    const gameKey = normalizeGameTypeForSmoke(gameType) || 'unknown';
+    const opKey = String(opType || '').trim().slice(0, 80);
+    if (!opKey) return map;
+    map[gameKey] = cloneSmokeCountMap(map[gameKey]);
+    map[gameKey][opKey] = Math.max(0, Number(map[gameKey][opKey] || 0) || 0) + 1;
+    return map;
+  }
 
   function normalizeGameSessionRpcSmoke(raw) {
     const base = raw && typeof raw === 'object' ? raw : {};
@@ -561,11 +628,21 @@
       attempts: Math.max(0, Number(base.attempts || 0) || 0),
       successes: Math.max(0, Number(base.successes || 0) || 0),
       fallbacks: Math.max(0, Number(base.fallbacks || 0) || 0),
+      attemptByType: cloneSmokeCountMap(base.attemptByType),
+      successByType: cloneSmokeCountMap(base.successByType),
+      fallbackByType: cloneSmokeCountMap(base.fallbackByType),
+      attemptByGame: cloneSmokeNestedCountMap(base.attemptByGame),
+      successByGame: cloneSmokeNestedCountMap(base.successByGame),
+      fallbackByGame: cloneSmokeNestedCountMap(base.fallbackByGame),
       lastAttemptAt: base.lastAttemptAt || null,
+      lastAttemptType: String(base.lastAttemptType || ''),
+      lastAttemptGameType: normalizeGameTypeForSmoke(base.lastAttemptGameType || ''),
       lastSuccessAt: base.lastSuccessAt || null,
       lastSuccessType: String(base.lastSuccessType || ''),
+      lastSuccessGameType: normalizeGameTypeForSmoke(base.lastSuccessGameType || ''),
       lastFallbackAt: base.lastFallbackAt || null,
       lastFallbackType: String(base.lastFallbackType || ''),
+      lastFallbackGameType: normalizeGameTypeForSmoke(base.lastFallbackGameType || ''),
       lastFallbackReason: String(base.lastFallbackReason || ''),
       updatedAt: base.updatedAt || null
     };
@@ -599,22 +676,33 @@
     return safe;
   }
 
-  function rememberGameSessionRpcSmoke(kind, opType, reason) {
+  function rememberGameSessionRpcSmoke(kind, opType, reason, gameType) {
     const nowIso = new Date().toISOString();
     const type = String(opType || '').trim();
+    const gameKey = normalizeGameTypeForSmoke(gameType) || 'unknown';
     const next = readGameSessionRpcSmokeStatus();
     if (kind === 'attempt') {
       next.attempts += 1;
       next.lastAttemptAt = nowIso;
+      next.lastAttemptType = type;
+      next.lastAttemptGameType = gameKey;
+      next.attemptByType = incrementSmokeCount(next.attemptByType || {}, type);
+      next.attemptByGame = incrementNestedSmokeCount(next.attemptByGame || {}, gameKey, type);
     } else if (kind === 'success') {
       next.successes += 1;
       next.lastSuccessAt = nowIso;
       next.lastSuccessType = type;
+      next.lastSuccessGameType = gameKey;
+      next.successByType = incrementSmokeCount(next.successByType || {}, type);
+      next.successByGame = incrementNestedSmokeCount(next.successByGame || {}, gameKey, type);
     } else if (kind === 'fallback') {
       next.fallbacks += 1;
       next.lastFallbackAt = nowIso;
       next.lastFallbackType = type;
+      next.lastFallbackGameType = gameKey;
       next.lastFallbackReason = String(reason || 'unknown').slice(0, 180);
+      next.fallbackByType = incrementSmokeCount(next.fallbackByType || {}, type);
+      next.fallbackByGame = incrementNestedSmokeCount(next.fallbackByGame || {}, gameKey, type);
     }
     next.updatedAt = nowIso;
     return writeGameSessionRpcSmokeStatus(next);
@@ -634,23 +722,57 @@
       accept: Math.max(0, Number(fallbackByType.accept_invite || 0) || 0),
       save: Math.max(0, Number(fallbackByType.save_session || 0) || 0)
     };
+    const perGameCoverage = {};
+    const perGameFallbackCoverage = {};
+    const missingGameOperations = [];
+    GAME_SESSION_RPC_REQUIRED_GAMES.forEach((game) => {
+      const successForGame = persisted.successByGame && persisted.successByGame[game.key] ? persisted.successByGame[game.key] : {};
+      const fallbackForGame = persisted.fallbackByGame && persisted.fallbackByGame[game.key] ? persisted.fallbackByGame[game.key] : {};
+      const coverage = {
+        create: Math.max(0, Number(successForGame.create_invite_session || 0) || 0),
+        accept: Math.max(0, Number(successForGame.accept_invite || 0) || 0),
+        save: Math.max(0, Number(successForGame.save_session || 0) || 0)
+      };
+      const fallbacks = {
+        create: Math.max(0, Number(fallbackForGame.create_invite_session || 0) || 0),
+        accept: Math.max(0, Number(fallbackForGame.accept_invite || 0) || 0),
+        save: Math.max(0, Number(fallbackForGame.save_session || 0) || 0)
+      };
+      perGameCoverage[game.key] = coverage;
+      perGameFallbackCoverage[game.key] = fallbacks;
+      if (coverage.create < 1) missingGameOperations.push(game.label + ':create');
+      if (coverage.accept < 1) missingGameOperations.push(game.label + ':accept');
+      if (coverage.save < 1) missingGameOperations.push(game.label + ':save');
+      if (fallbacks.create > 0) missingGameOperations.push(game.label + ':create fallback');
+      if (fallbacks.accept > 0) missingGameOperations.push(game.label + ':accept fallback');
+      if (fallbacks.save > 0) missingGameOperations.push(game.label + ':save fallback');
+    });
     const missingOperations = [];
     if (operationCoverage.create < 1) missingOperations.push('create');
     if (operationCoverage.accept < 1) missingOperations.push('accept');
     if (operationCoverage.save < 1) missingOperations.push('save');
-    const readyForPolicyTightening = persisted.attempts >= 3 && persisted.successes >= 3 && persisted.fallbacks === 0 && missingOperations.length === 0;
+    const readyForPolicyTightening = persisted.attempts >= 6 && persisted.successes >= 6 && persisted.fallbacks === 0 && missingGameOperations.length === 0;
+    const gameCoverageText = GAME_SESSION_RPC_REQUIRED_GAMES.map((game) => {
+      const item = perGameCoverage[game.key] || { create: 0, accept: 0, save: 0 };
+      const fb = perGameFallbackCoverage[game.key] || { create: 0, accept: 0, save: 0 };
+      return game.label + ' c/a/s ' + item.create + '/' + item.accept + '/' + item.save + ' · fallback ' + (fb.create + fb.accept + fb.save);
+    }).join(' | ');
     return Object.assign({}, persisted, {
       persistent: true,
       readyForPolicyTightening,
-      requiredSuccessesBeforeTightening: 3,
+      requiredSuccessesBeforeTightening: 6,
       requiredFallbacksBeforeTightening: 0,
       operationCoverage,
       fallbackCoverage,
+      perGameCoverage,
+      perGameFallbackCoverage,
       missingOperations,
+      missingGameOperations,
       coverageText: 'create ' + String(operationCoverage.create) + ' · accept ' + String(operationCoverage.accept) + ' · save ' + String(operationCoverage.save),
+      gameCoverageText,
       recommendation: readyForPolicyTightening
-        ? 'Online pozvánky/session proběhly přes RPC bez fallbacků ve všech krocích create/accept/save; další omezení game_sessions/game_invites dělat až po dalším ručním dvoumobilovém smoke testu.'
-        : 'Před zúžením policies musí být online Piškvorky ověřené přes RPC pro create/accept/save bez fallbacku. Chybí: ' + (missingOperations.length ? missingOperations.join(', ') : 'žádné, ale jsou fallbacky nebo málo pokusů') + '.'
+        ? 'Online pozvánky/session proběhly přes RPC bez fallbacků pro Piškvorky i Lodě ve všech krocích create/accept/save; další omezení game_sessions/game_invites dělat až po dalším ručním dvoumobilovém smoke testu obou her.'
+        : 'Před zúžením policies musí být online hry ověřené přes RPC zvlášť pro Piškvorky i Lodě bez fallbacku. Chybí: ' + (missingGameOperations.length ? missingGameOperations.join(', ') : (missingOperations.length ? missingOperations.join(', ') : 'žádné, ale jsou fallbacky nebo málo pokusů')) + '.'
     });
   }
   const SUPABASE_STRUCTURE_REQUIRED_HELPERS = [
@@ -784,7 +906,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v839');
+      const channel = client.channel('rak-public-live-v841');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -1053,7 +1175,7 @@
         timezone: (typeof Intl !== 'undefined' && Intl.DateTimeFormat) ? (Intl.DateTimeFormat().resolvedOptions().timeZone || '') : '',
         online: typeof navigator !== 'undefined' ? navigator.onLine !== false : true,
         transport: 'rpc',
-        build: '839'
+        build: '841'
       }
     };
 
@@ -1873,8 +1995,9 @@
 
   async function tryCreateGameInviteSessionViaRpc(client, inviteRow, sessionRow) {
     if (!client || typeof client.rpc !== 'function') return null;
+    const smokeGameType = inferGameTypeFromSessionPayload(inviteRow, sessionRow, sessionRow && sessionRow.board_state);
     try {
-      rememberGameSessionRpcSmoke('attempt', 'create_invite_session');
+      rememberGameSessionRpcSmoke('attempt', 'create_invite_session', '', smokeGameType);
       const { data, error } = await runSupabaseOperation('game_invites_sessions.rpc_create', () => client.rpc('rak_create_game_invite_session', {
         p_invite_row: inviteRow,
         p_session_row: sessionRow
@@ -1882,7 +2005,7 @@
       if (error) throw error;
       const result = normalizeSupabaseRpcJsonPayload(data);
       if (!result || result.ok === false) return null;
-      rememberGameSessionRpcSmoke('success', 'create_invite_session');
+      rememberGameSessionRpcSmoke('success', 'create_invite_session', '', smokeGameType);
       return {
         invite: result.invite || null,
         session: result.session || null,
@@ -1892,10 +2015,10 @@
       if (isSupabaseRpcUnavailableError(err)) {
         SUPABASE_RPC_HARDENING_STATUS.lastUnavailableAt = new Date().toISOString();
         SUPABASE_RPC_HARDENING_STATUS.lastUnavailableMessage = String(err && err.message ? err.message : err);
-        rememberGameSessionRpcSmoke('fallback', 'create_invite_session', 'rpc-unavailable');
+        rememberGameSessionRpcSmoke('fallback', 'create_invite_session', 'rpc-unavailable', smokeGameType);
         return null;
       }
-      rememberGameSessionRpcSmoke('fallback', 'create_invite_session', err && err.message ? err.message : err);
+      rememberGameSessionRpcSmoke('fallback', 'create_invite_session', err && err.message ? err.message : err, smokeGameType);
       console.warn('rak_create_game_invite_session failed; direct game_invites/game_sessions fallback may be blocked after v826', err);
       return null;
     }
@@ -1905,9 +2028,10 @@
     if (!client || typeof client.rpc !== 'function') return null;
     const code = normalizeInviteCode(inviteCode);
     const invitee = String(inviteeAccountNumber || '').trim();
+    const smokeGameType = inferGameTypeFromSessionPayload(null, null, boardState);
     if (!code || !invitee) return null;
     try {
-      rememberGameSessionRpcSmoke('attempt', 'accept_invite');
+      rememberGameSessionRpcSmoke('attempt', 'accept_invite', '', smokeGameType);
       const { data, error } = await runSupabaseOperation('game_invites_sessions.rpc_accept', () => client.rpc('rak_accept_game_invite', {
         p_invite_code: code,
         p_invitee_account_number: invitee,
@@ -1916,7 +2040,7 @@
       if (error) throw error;
       const result = normalizeSupabaseRpcJsonPayload(data);
       if (!result || result.ok === false) return null;
-      rememberGameSessionRpcSmoke('success', 'accept_invite');
+      rememberGameSessionRpcSmoke('success', 'accept_invite', '', smokeGameType);
       return {
         invite: result.invite || null,
         session: result.session || null,
@@ -1927,10 +2051,10 @@
       if (isSupabaseRpcUnavailableError(err)) {
         SUPABASE_RPC_HARDENING_STATUS.lastUnavailableAt = new Date().toISOString();
         SUPABASE_RPC_HARDENING_STATUS.lastUnavailableMessage = String(err && err.message ? err.message : err);
-        rememberGameSessionRpcSmoke('fallback', 'accept_invite', 'rpc-unavailable');
+        rememberGameSessionRpcSmoke('fallback', 'accept_invite', 'rpc-unavailable', smokeGameType);
         return null;
       }
-      rememberGameSessionRpcSmoke('fallback', 'accept_invite', err && err.message ? err.message : err);
+      rememberGameSessionRpcSmoke('fallback', 'accept_invite', err && err.message ? err.message : err, smokeGameType);
       console.warn('rak_accept_game_invite failed; direct game_invites/game_sessions fallback may be blocked after hardening', err);
       return null;
     }
@@ -1939,9 +2063,10 @@
   async function trySaveGameSessionByInviteCodeViaRpc(client, inviteCode, sessionRow, startsNewRound) {
     if (!client || typeof client.rpc !== 'function') return null;
     const code = normalizeInviteCode(inviteCode);
+    const smokeGameType = inferGameTypeFromSessionPayload(null, sessionRow, sessionRow && sessionRow.board_state);
     if (!code) return null;
     try {
-      rememberGameSessionRpcSmoke('attempt', 'save_session');
+      rememberGameSessionRpcSmoke('attempt', 'save_session', '', smokeGameType);
       const { data, error } = await runSupabaseOperation('game_sessions.rpc_save_by_invite', () => client.rpc('rak_save_game_session_by_invite_code', {
         p_invite_code: code,
         p_session_row: sessionRow,
@@ -1950,7 +2075,7 @@
       if (error) throw error;
       const result = normalizeSupabaseRpcJsonPayload(data);
       if (!result || result.ok === false) return null;
-      rememberGameSessionRpcSmoke('success', 'save_session');
+      rememberGameSessionRpcSmoke('success', 'save_session', '', smokeGameType);
       return {
         invite: result.invite || null,
         session: result.session || null,
@@ -1960,10 +2085,10 @@
       if (isSupabaseRpcUnavailableError(err)) {
         SUPABASE_RPC_HARDENING_STATUS.lastUnavailableAt = new Date().toISOString();
         SUPABASE_RPC_HARDENING_STATUS.lastUnavailableMessage = String(err && err.message ? err.message : err);
-        rememberGameSessionRpcSmoke('fallback', 'save_session', 'rpc-unavailable');
+        rememberGameSessionRpcSmoke('fallback', 'save_session', 'rpc-unavailable', smokeGameType);
         return null;
       }
-      rememberGameSessionRpcSmoke('fallback', 'save_session', err && err.message ? err.message : err);
+      rememberGameSessionRpcSmoke('fallback', 'save_session', err && err.message ? err.message : err, smokeGameType);
       console.warn('rak_save_game_session_by_invite_code failed; direct game_sessions fallback may be blocked after v826', err);
       return null;
     }
@@ -3656,7 +3781,7 @@
     const p0Items = items.filter(item => String(item.priority || '') === 'P0');
     const blockers = [];
     if (!keepalive || keepalive.status !== 'ok') blockers.push('heartbeat ještě není v lokální diagnostice OK');
-    if (!gameSessionSmoke.readyForPolicyTightening) blockers.push('session/pozvánky RPC smoke ještě nemá 3 OK bez fallbacků');
+    if (!gameSessionSmoke.readyForPolicyTightening) blockers.push('online hry RPC smoke ještě nemá Piškvorky i Lodě create/accept/save bez fallbacků');
     if (!gameStatsSmoke.readyForPolicyTightening) blockers.push('game_stats RPC smoke ještě nemá 3 OK bez fallbacků');
     if (!gameUiSmoke.readyForPolicyTightening) blockers.push('profile UI RPC smoke ještě nemá OK bez fallbacku');
     const confirmed = {
@@ -3669,13 +3794,13 @@
     return {
       ok: blockers.length === 0,
       mode: 'supabase-hardening-readiness-audit-only',
-      version: 'v.1.5 (839)',
+      version: 'v.1.5 (841)',
       checkedAt: new Date().toISOString(),
       confirmed,
       readinessPercent,
       policyChangeAllowedNow: false,
-      policyChangeReason: 'V839 přidává bezpečnou RPC cestu pro accept pozvánky, ale policies game_invites/game_sessions se v tomto buildu neutahují.',
-      nextSafeStep: 'Nejdřív reálný RPC smoke u create/accept/save online session bez fallbacku; potom připravit úzký SQL návrh pro jednu tabulku.',
+      policyChangeReason: 'V841 je audit smoke signálů pro online hry po jednotlivých hrách; policies game_invites/game_sessions se v tomto buildu neutahují.',
+      nextSafeStep: 'Nejdřív reálný RPC smoke create/accept/save zvlášť pro Piškvorky i Lodě bez fallbacku; potom připravit úzký SQL návrh pro jednu tabulku.',
       items,
       itemCount: items.length,
       p0Count: p0Items.length,

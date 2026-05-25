@@ -4804,7 +4804,9 @@ function formatSupabaseKeepaliveLine(status) {
   return 'Supabase heartbeat: ' + label + ' · poslední OK ' + lastOk + ' · chyba ' + lastError + ' · pokusy/OK/chyby/skip ' + attempts + ' · důvod ' + reason + ' · cesta ' + transport + ' · typ ' + kind;
 }
 
-function buildSupabaseKeepaliveStatusHtml() {
+function buildSupabaseKeepaliveStatusHtml(options) {
+  const opts = options && typeof options === 'object' ? options : {};
+  const includeButton = !!opts.includeButton;
   const status = readSupabaseKeepaliveStatusForUi();
   const label = status ? String(status.label || status.status || 'neznámá') : 'zatím bez dat';
   const stateClass = status && status.status === 'ok' ? ' isOk' : (status && (status.status === 'possibly_paused' || status.status === 'unavailable') ? ' isWarn' : '');
@@ -4814,25 +4816,28 @@ function buildSupabaseKeepaliveStatusHtml() {
   const reason = status ? String(status.lastReason || status.lastSkipReason || '—') : '—';
   const transport = status ? String(status.lastTransport || '—') : '—';
   const kind = status ? String(status.lastClassification || '—') : '—';
-  return [
+  const rows = [
     '<div class="appMenuCard appMenuKeepaliveCard">',
     '  <div class="appMenuCardTitle">Supabase heartbeat</div>',
     '  <div class="appMenuVersion' + stateClass + '">Stav: ' + escapeHtml(label) + '</div>',
     '  <div class="smallText">Poslední OK: ' + escapeHtml(lastOk) + '</div>',
     '  <div class="smallText">Poslední chyba: ' + escapeHtml(lastError) + '</div>',
     '  <div class="smallText">Pokusy / OK / chyby / skip: ' + escapeHtml(counts) + ' · důvod: ' + escapeHtml(reason) + '</div>',
-    '  <div class="smallText">Cesta: ' + escapeHtml(transport) + ' · typ: ' + escapeHtml(kind) + '</div>',
-    '  <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="supabase-heartbeat-now">Otestovat heartbeat teď</button>',
-    '</div>'
-  ].join('');
+    '  <div class="smallText">Cesta: ' + escapeHtml(transport) + ' · typ: ' + escapeHtml(kind) + '</div>'
+  ];
+  if (includeButton) rows.push('  <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="supabase-heartbeat-now">Otestovat heartbeat teď</button>');
+  rows.push('</div>');
+  return rows.join('');
 }
 
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText || 'v.1.5 (839)',
+      range: versionText || 'v.1.5 (841)',
       title: 'Aktuální stabilizace',
       lines: [
+        'V841 zpřesňuje Supabase online hry audit: RPC smoke se nově počítá zvlášť pro Piškvorky i Lodě, takže se další hardening neodemkne jen podle jedné hry.',
+        'V840 uklízí Supabase heartbeat UI: popisek mizí z Nastavení aplikace, tlačítko Otestovat heartbeat teď je přesunuté z O aplikaci přímo do Diagnostiky a O aplikaci zůstává jen jako přehled stavu.',
         'V839 přidává RPC cestu pro přijetí online pozvánky a přesnější smoke readiness create/accept/save bez utažení game_invites/game_sessions policies.',
         'V837 opravuje Supabase heartbeat po RLS chybě: klient už po neúspěchu nečeká 12 hodin, používá RPC cestu a diagnostika ukazuje cestu/typ chyby.',
         'V834 přidává bezpečný Supabase heartbeat přes samostatnou tabulku app_keepalive: appka při startu/při návratu pošle malý ping maximálně 1× za 12 hodin na zařízení a při chybě dál jede offline.',
@@ -6802,13 +6807,14 @@ function bindAppMenuHandlers(body) {
           supabasePolicyRiskHealth && supabasePolicyRiskHealth.phase ? ('Supabase fáze: ' + String(supabasePolicyRiskHealth.phase.current || '—') + ' · další: ' + String(supabasePolicyRiskHealth.phase.next || '—')) : '',
           supabaseHardeningReadiness ? ('Supabase readiness: ' + String(supabaseHardeningReadiness.readinessPercent || 0) + '% · policy změna teď ' + (supabaseHardeningReadiness.policyChangeAllowedNow ? 'ano' : 'ne') + ' · přímé fallback oblasti ' + String(supabaseHardeningReadiness.directFallbackCount || 0) + ' · P0 ' + String(supabaseHardeningReadiness.p0Count || 0)) : '',
           supabaseHardeningReadiness ? ('Supabase další bezpečný krok: ' + String(supabaseHardeningReadiness.nextSafeStep || '—')) : '',
-          supabaseHardeningReadiness ? ('Supabase potvrzeno: TTT link/kód ' + (supabaseHardeningReadiness.confirmed && supabaseHardeningReadiness.confirmed.tttLinkAndCode ? 'OK' : 'ne') + ' · heartbeat RPC ' + (supabaseHardeningReadiness.confirmed && supabaseHardeningReadiness.confirmed.keepaliveRpc ? 'OK' : 'kontrola') + ' · DB policies v tomto buildu ' + (supabaseHardeningReadiness.confirmed && supabaseHardeningReadiness.confirmed.noPolicyChangeInThisBuild ? 'beze změny' : 'kontrola')) : '',
+          supabaseHardeningReadiness ? ('Supabase potvrzeno: Piškvorky link/kód ' + (supabaseHardeningReadiness.confirmed && supabaseHardeningReadiness.confirmed.tttLinkAndCode ? 'OK' : 'ne') + ' · Lodě smoke ' + (gameSessionRpcSmoke && gameSessionRpcSmoke.perGameCoverage && gameSessionRpcSmoke.perGameCoverage.battleship && gameSessionRpcSmoke.perGameCoverage.battleship.create && gameSessionRpcSmoke.perGameCoverage.battleship.accept && gameSessionRpcSmoke.perGameCoverage.battleship.save ? 'OK' : 'čeká') + ' · heartbeat RPC ' + (supabaseHardeningReadiness.confirmed && supabaseHardeningReadiness.confirmed.keepaliveRpc ? 'OK' : 'kontrola') + ' · DB policies v tomto buildu ' + (supabaseHardeningReadiness.confirmed && supabaseHardeningReadiness.confirmed.noPolicyChangeInThisBuild ? 'beze změny' : 'kontrola')) : '',
 
           rpcHardeningStatus ? ('Supabase bug_reports: veřejné SELECT/UPDATE policies ' + String(rpcHardeningStatus.bugReportsPublicSelectUpdatePolicies || 0) + ' · DB změna ' + (rpcHardeningStatus.bugReportsDbChanged ? 'ano' : 'ne') + ' · další ' + String(rpcHardeningStatus.bugReportsNextStep || '—')) : '',
           gameStatsRpcSmoke ? ('Supabase game_stats RPC smoke: pokusy/OK/fallback ' + String(gameStatsRpcSmoke.attempts || 0) + '/' + String(gameStatsRpcSmoke.successes || 0) + '/' + String(gameStatsRpcSmoke.fallbacks || 0) + ' · ready ' + (gameStatsRpcSmoke.readyForPolicyTightening ? 'ano' : 'ne') + ' · poslední OK ' + String(gameStatsRpcSmoke.lastSuccessType || '—')) : '',
           gameUiRpcSmoke ? ('Supabase profile UI RPC smoke: pokusy/OK/fallback ' + String(gameUiRpcSmoke.attempts || 0) + '/' + String(gameUiRpcSmoke.successes || 0) + '/' + String(gameUiRpcSmoke.fallbacks || 0) + ' · ready ' + (gameUiRpcSmoke.readyForPolicyTightening ? 'ano' : 'ne')) : '',
           gameSessionRpcSmoke ? ('Supabase session/pozvánky RPC smoke: pokusy/OK/fallback ' + String(gameSessionRpcSmoke.attempts || 0) + '/' + String(gameSessionRpcSmoke.successes || 0) + '/' + String(gameSessionRpcSmoke.fallbacks || 0) + ' · ready ' + (gameSessionRpcSmoke.readyForPolicyTightening ? 'ano' : 'ne') + ' · poslední OK ' + String(gameSessionRpcSmoke.lastSuccessType || '—')) : '',
-          gameSessionRpcSmoke ? ('Supabase session RPC pokrytí: ' + String(gameSessionRpcSmoke.coverageText || 'create 0 · accept 0 · save 0') + ' · chybí ' + String((gameSessionRpcSmoke.missingOperations || []).length ? gameSessionRpcSmoke.missingOperations.join(', ') : 'nic')) : '',
+          gameSessionRpcSmoke ? ('Supabase online hry RPC pokrytí: ' + String(gameSessionRpcSmoke.gameCoverageText || gameSessionRpcSmoke.coverageText || 'Piškvorky c/a/s 0/0/0 · fallback 0 | Lodě c/a/s 0/0/0 · fallback 0')) : '',
+          gameSessionRpcSmoke ? ('Supabase online hry chybí: ' + String((gameSessionRpcSmoke.missingGameOperations || []).length ? gameSessionRpcSmoke.missingGameOperations.join(', ') : 'nic')) : '',
           supabaseGuard ? ('Supabase guard: sloučeno ' + String(supabaseGuard.deduped || 0) + ' · ořezáno ' + String(supabaseGuard.trimmed || 0) + ' · odmítnuto ' + String((supabaseGuard.rejected || 0) + (supabaseGuard.oversized || 0))) : '',
           supabaseSyncGuard ? ('Supabase sync: timeouty R/W ' + String(supabaseSyncGuard.readTimeouts || 0) + '/' + String(supabaseSyncGuard.writeTimeouts || 0) + ' · retry R/W ' + String(supabaseSyncGuard.readRetries || 0) + '/' + String(supabaseSyncGuard.writeRetries || 0) + ' · fallback ' + String(supabaseSyncGuard.queuedFallbacks || 0)) : '',
           supabaseSyncGuard ? ('Supabase chyby: čtení ' + String(supabaseSyncGuard.failedReads || 0) + ' · zápis ' + String(supabaseSyncGuard.failedWrites || 0) + ' · cooldown ' + String(supabaseSyncGuard.cooldownSkips || 0)) : '',
@@ -6840,7 +6846,17 @@ function bindAppMenuHandlers(body) {
           ...dataOptDiag,
           ...supabaseDiag
         ].join('\n');
-        alert(diag);
+        body.innerHTML = [
+          '<div class="appMenuCard appMenuDiagnosticsCard">',
+          '  <div class="appMenuCardTitle">Diagnostika</div>',
+          '  <div class="smallText">Heartbeat test je tady, aby nebyl duplicitně v O aplikaci ani v Nastavení.</div>',
+          '</div>',
+          buildSupabaseKeepaliveStatusHtml({ includeButton: true }),
+          '<div class="appMenuCard appMenuDiagnosticsCard">',
+          '  <pre class="appMenuDiagnosticsText">' + escapeHtml(diag) + '</pre>',
+          '</div>',
+          '<button type="button" class="appMenuAction appMenuStandaloneBack" data-menu-action="settings">Zpět do nastavení</button>'
+        ].join('');
         return;
       }
       if (menuAction === 'supabase-heartbeat-now') {
@@ -7105,7 +7121,7 @@ function openAppMenu(view) {
         '<div class="appMenuCard">',
         '  <div class="appMenuCardTitle">O aplikaci</div>',
         '  <div class="appMenuVersion">' + escapeHtml(versionText || '—') + '</div>',
-        '  ' + buildSupabaseKeepaliveStatusHtml(),
+        '  ' + buildSupabaseKeepaliveStatusHtml({ includeButton: false }),
         '  ' + buildAppHistoryHtml(versionText),
         '  <button type="button" class="appMenuAction appMenuBack" data-menu-back="1">Zpět</button>',
         '</div>'
@@ -7139,7 +7155,6 @@ function openAppMenu(view) {
         performanceCard,
         '<div class="appMenuCard appMenuSettingsCard appMenuAppSettingsCard">',
         '  <div class="appMenuCardTitle">Nastavení aplikace</div>',
-        '  <div class="smallText">' + escapeHtml(formatSupabaseKeepaliveLine(readSupabaseKeepaliveStatusForUi())) + '</div>',
         '  <div class="appMenuSettingsList appMenuSettingsGrid">',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-pref="compact">' + (prefs.compact ? '✓ ' : '') + 'Kompaktní</button>',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="clear-cache">Vyčistit cache</button>',
