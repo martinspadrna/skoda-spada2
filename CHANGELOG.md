@@ -1,3 +1,46 @@
+## v.1.5 (833)
+- Online Piškvorky mají čitelnější move guard: když tah nejde udělat kvůli čekání na soupeře, chybějící roli nebo tomu, že není tah aktuálního hráče, appka už jen tiše neignoruje kliknutí, ale ukáže důvod.
+- Při blokovaném online tahu se do lokální diagnostiky zapíše důvod, role, aktuální tah, session/pozvánka a flow link/manual; Diagnostika v O aplikaci nově ukazuje počet blokovaných tahů.
+- Move guard při podezřelém stavu automaticky spustí rychlý resync online session, aby se link/deep-link stav mohl sám dorovnat bez obcházení pravidel tahu.
+- Pravidla tahu zůstávají zachovaná: bez platné role X/O nebo mimo vlastní tah se pořád nedá hrát, takže nevzniká možnost hrát za oba hráče.
+- Ruční kód, zvací link i společná `tttJoinInviteSession()` cesta zůstávají zachované; Supabase `game_invites/game_sessions` policies se dál neutahují, dokud nebude potvrzený dvoumobilový test.
+- Verze sjednocena na v.1.5 (833), cache na v1.5-833 a Supabase realtime kanál na rak-public-live-v833.
+- Aktuální fáze: online TTT move guard diagnostika hotovo. Následuje dvoumobilový smoke test link/kód a až potom návrat k opatrnému Supabase hardeningu.
+
+## v.1.5 (832)
+- Online Piškvorky mají odolnější vstup přes zvací odkaz: kód pozvánky se nově čte nejen z `#games=ttt&invite=1234`, ale i z query tvarů jako `?invite=1234`, `?code=1234`, `?tttInvite=1234` nebo `?ttt=1234`.
+- Po úspěšném přijetí pozvánky se invite parametry uklidí z URL, aby se stejná pozvánka po návratu do aplikace zbytečně nespouštěla znovu.
+- Deep-link diagnostika rozlišuje zdroj `hash` / `query`, propisuje ho do společného `tttJoinInviteSession()` flow a move guard už ukládá chybu pod skutečným flow link/manual.
+- Přidaná `popstate` kontrola pro případy, kdy PWA nebo prohlížeč změní adresu existující aplikace bez klasického reloadu.
+- Supabase `game_invites/game_sessions` policies se dál neutahují, dokud nebude potvrzený reálný dvoumobilový test přes link i ruční kód.
+- Verze sjednocena na v.1.5 (832), cache na v1.5-832 a Supabase realtime kanál na rak-public-live-v832.
+- Aktuální fáze: online TTT deep-link resilience hotovo. Následuje dvoumobilový smoke test link/kód a až potom návrat k opatrnému Supabase hardeningu.
+
+## v.1.5 (831)
+- Online Piškvorky mají runtime pojistku role podle session/účtu: když vzdálená session jasně ukáže, že aktuální profil patří hráči X nebo O, lokální klient si roli bezpečně opraví.
+- Tah v online režimu už nejde udělat bez platné lokální role X/O, takže se neotevírá cesta hrát omylem za oba hráče; zároveň se tím líp odhalí špatný link/deep-link stav.
+- Diagnostika v O aplikaci nově ukazuje počet automatických oprav role, aby šlo po dvoumobilovém testu poznat, jestli link potřeboval runtime opravu nebo prošel čistě.
+- Ruční zadání kódu a společná `tttJoinInviteSession()` cesta zůstávají zachované; Supabase `game_invites/game_sessions` policies se dál neutahují, dokud nebude potvrzený reálný test přes link i kód.
+- Verze sjednocena na v.1.5 (831), cache na v1.5-831 a Supabase realtime kanál na rak-public-live-v831.
+- Aktuální fáze: online TTT runtime role guard hotovo. Následuje dvoumobilový smoke test link/kód a až potom návrat k opatrnému Supabase hardeningu.
+
+## v.1.5 (830)
+- Bez zásahu do Supabase policies doplněná klientská diagnostika online Piškvorek pro vstup přes zvací odkaz i ruční 4místný kód.
+- Join flow si nově lokálně ukládá poslední pokus/úspěch/chybu, rozlišuje `link` vs `manual`, zapisuje režim `pvp`, roli hráče, aktuální tah, session/pozvánku a informaci, jestli klient může právě hrát.
+- Diagnostika v O aplikaci nově ukazuje „Piškvorky online join“ a „Piškvorky online stav“, aby šlo po dvoumobilovém testu rychle poznat, jestli druhý mobil skončil jako hráč O a ne jako spectator/AI flow.
+- Link i ruční kód dál používají společnou `tttJoinInviteSession()` cestu; výsledná hláška se po přijetí drží podle skutečné role a tahu, ne podle obecného textu.
+- Supabase `game_invites/game_sessions` hardening zůstává pozastavený, dokud nebude potvrzený reálný test přes odkaz i kód.
+- Verze sjednocena na v.1.5 (830), cache na v1.5-830 a Supabase realtime kanál na rak-public-live-v830.
+- Aktuální fáze: online TTT testovatelnost/diagnostika hotovo. Následuje dvoumobilový smoke test a teprve po potvrzení návrat k opatrnému Supabase hardeningu.
+
+## v.1.5 (829)
+- Hotfix online Piškvorek přes zvací odkaz: vstup z linku nově nastaví stejný `pvp`/join stav jako ruční zadání 4místného kódu.
+- Opravená kořenová příčina: link sice načetl session a realtime desku, ale lokální klient mohl zůstat v režimu AI/start flow, takže druhý hráč po prvním tahu X nemohl položit O.
+- `tttJoinInviteSession()` teď před přijetím pozvánky sjednotí lokální stav na online režim, nastaví invite URL/code a po načtení session zobrazí stav podle skutečného tahu hráče O.
+- Ruční zadání kódu zůstává na stejné cestě a Supabase policies pro `game_invites/game_sessions` se znovu neutahovaly.
+- Verze sjednocena na v.1.5 (829), cache na v1.5-829 a Supabase realtime kanál na rak-public-live-v829.
+- Aktuální fáze: online TTT link hotfix hotovo. Následuje dvoumobilový smoke test: vytvořit pozvánku, otevřít odkaz na druhém mobilu, odehrát tah O a ověřit zápis výsledku/Top 5/profil.
+
 ## v.1.5 (828)
 - Hotfix online Piškvorek: v DB byly odstraněné restriktivní policies `game_invites_insert_rpc_only_v826`, `game_invites_update_rpc_only_v826`, `game_sessions_insert_rpc_only_v826` a `game_sessions_update_rpc_only_v826`, protože po nich online hra přestala fungovat.
 - Přímé INSERT/UPDATE pro `game_invites` a `game_sessions` jsou dočasně obnovené kvůli kompatibilitě online pozvánek/session; veřejné DELETE policies zůstávají odstraněné.

@@ -213,10 +213,10 @@
     { table: 'gomoku_wins', realtime: true, queueType: 'gomoku_win', access: 'anon SELECT/INSERT/UPDATE', note: 'výhry piškvorek / legacy leaderboard' }
   ];
 
-  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (828)';
+  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (833)';
   const SUPABASE_POLICY_AUDIT_SNAPSHOT_AT = '2026-05-24';
   const SUPABASE_POLICY_HARDENING_PHASE = {
-    current: 'Hotfix v828 – online Piškvorky: rollback restriktivních INSERT/UPDATE policies z v826 pro game_invites/game_sessions, aby se obnovila funkčnost online pozvánek a session',
+    current: 'V833 – online Piškvorky mají čitelný move guard: blokovaný tah kvůli čekání, chybějící roli nebo špatnému tahu ukáže důvod, zapíše diagnostiku a spustí rychlý resync; DB rollback z v828 zůstává zachovaný a policies pro pozvánky/session se dál neutahují.',
     next: 'Nejdřív znovu otestovat online Piškvorky na dvou mobilech; potom pokračovat opatrně přes RPC smoke, ne přes další restriktivní policies naslepo',
     rollback: 'Rollback v828 byl proveden jen pro game_invites/game_sessions restriktivní policies z v826; game_stats restriktivní policies z v824 zůstávají zachované.'
   };
@@ -273,8 +273,8 @@
   ];
 
   const SUPABASE_RPC_HARDENING_STATUS = {
-    version: 'v.1.5 (828)',
-    phase: '2E-J rollback / online TTT hotfix',
+    version: 'v.1.5 (833)',
+    phase: '2E-L rollback / online TTT move guard diagnostics',
     rpcPreferred: true,
     migrationApplied: true,
     migrationNote: 'game_stats direct INSERT/UPDATE zůstávají omezené restriktivními policies v824. Restriktivní policies pro game_invites/game_sessions z v826 byly v DB ve v828 odstraněné, protože rozbily online Piškvorky. DELETE policies zůstávají odstraněné.',
@@ -683,7 +683,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v828');
+      const channel = client.channel('rak-public-live-v833');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });

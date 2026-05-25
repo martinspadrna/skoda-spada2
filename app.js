@@ -1,4 +1,4 @@
-// v.1.5 (828) – Hotfix online Piškvorek: rollback restriktivních policies pro game_invites/game_sessions.
+// v.1.5 (833) – Piškvorky online: čitelný move guard, diagnostika blokovaných tahů a rychlý resync.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

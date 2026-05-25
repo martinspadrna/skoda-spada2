@@ -1299,7 +1299,9 @@ function tttGetState() {
         playerXAccountNumber: null,
         playerOAccountNumber: null,
         connected: false,
-        resultSavedKey: ''
+        resultSavedKey: '',
+        joinFlow: '',
+        joinSource: ''
       },
       onlineSyncTimer: null,
       onlineStatus: '',
@@ -1326,6 +1328,8 @@ function tttCreateEmptyOnlineState() {
     playerOAccountNumber: null,
     connected: false,
     resultSavedKey: '',
+    joinFlow: '',
+    joinSource: '',
     inviteUrl: '',
     headToHead: null,
     headToHeadText: '',
@@ -1392,39 +1396,75 @@ function tttGetInviteUrl(code) {
   return url.toString();
 }
 
-function tttReadHashInviteCode() {
-  try {
-    const hash = String(window.location.hash || '').replace(/^#/, '');
-    if (!hash) return '';
-    const params = new URLSearchParams(hash.replace(/&/g, '&'));
-    const invite = params.get('invite') || params.get('code') || '';
-    return tttNormalizeInviteCode(invite);
-  } catch (err) {
-    return '';
+function tttFindInviteCodeInParamText(text) {
+  const raw = String(text || '').trim();
+  if (!raw) return '';
+  const cleaned = raw.replace(/^[#?]/, '');
+  const candidates = [cleaned];
+  const qIndex = cleaned.indexOf('?');
+  if (qIndex >= 0) candidates.push(cleaned.slice(qIndex + 1));
+  for (const candidate of candidates) {
+    try {
+      const params = new URLSearchParams(candidate);
+      const invite = params.get('invite') || params.get('code') || params.get('tttInvite') || params.get('ttt') || '';
+      const normalized = tttNormalizeInviteCode(invite);
+      if (normalized) return normalized;
+    } catch (err) {}
   }
+  const match = cleaned.match(/(?:^|[?&#])(?:invite|code|tttInvite|ttt)=([^&#]+)/i);
+  return match ? tttNormalizeInviteCode(decodeURIComponent(match[1] || '')) : '';
 }
 
-async function tttOpenFromInviteCode(code) {
+function tttReadUrlInviteData() {
+  try {
+    const hashCode = tttFindInviteCodeInParamText(window.location.hash || '');
+    if (hashCode) return { code: hashCode, source: 'hash' };
+    const queryCode = tttFindInviteCodeInParamText(window.location.search || '');
+    if (queryCode) return { code: queryCode, source: 'query' };
+  } catch (err) {}
+  return { code: '', source: '' };
+}
+
+function tttReadHashInviteCode() {
+  return tttReadUrlInviteData().code || '';
+}
+
+function tttClearInviteFromUrl() {
+  try {
+    const url = new URL(window.location.href);
+    url.hash = '';
+    ['invite', 'code', 'tttInvite', 'ttt'].forEach(key => url.searchParams.delete(key));
+    history.replaceState(null, '', url.toString());
+  } catch (err) {}
+}
+
+async function tttOpenFromInviteCode(code, options) {
   const inviteCode = tttNormalizeInviteCode(code);
   if (!inviteCode) return false;
   try {
     showPage('games');
   } catch (err) {}
+  const inviteState = tttGetState();
+  inviteState.mode = 'pvp';
+  inviteState.difficulty = 'ai';
   openGameShell('ttt');
-  const result = await tttJoinInviteSession(inviteCode);
+  const linkSource = options && options.source ? String(options.source) : 'hash';
+  const result = await tttJoinInviteSession(inviteCode, { flow: 'link', source: linkSource });
   if (result && result.ok) {
     const state = tttGetState();
     state.screen = 'game';
     state.gameOver = false;
     state.winner = null;
     state.startedAt = Date.now();
-    state.message = 'Pozvánka přijata. Hraješ proti spoluhráči.';
+    tttSetJoinedOnlineMessage(state);
+    tttRememberOnlineJoinDiag('link', 'ready', { code: inviteCode, source: linkSource + '-open', message: state.message });
     tttRender();
     scheduleTttLayout();
     tttStartOnlineSyncLoop();
     void tttSyncOnlineSession(true);
     return true;
   }
+  tttRememberOnlineJoinDiag('link', 'error', { code: inviteCode, source: linkSource + '-open', reason: tttInviteResultMessage(result, 'Pozvánku z odkazu se nepodařilo přijmout.') });
   return false;
 }
 
@@ -1499,6 +1539,7 @@ async function tttRefreshOnlineHeadToHead(force) {
 
 const TTT_ONLINE_POLL_MS = 650;
 const TTT_ONLINE_RESULT_STORE_KEY = 'rotace_ttt_online_results_v1';
+const TTT_ONLINE_JOIN_DIAG_KEY = 'rotace_ttt_online_join_diag_v1';
 
 function tttReadOnlineResultStore() {
   try {
@@ -1519,7 +1560,303 @@ function tttWriteOnlineResultStore(store) {
   } catch (err) {}
 }
 
+
+function tttNormalizeOnlineJoinDiag(raw) {
+  const src = raw && typeof raw === 'object' ? raw : {};
+  const safeEntry = (entry) => entry && typeof entry === 'object' ? {
+    flow: String(entry.flow || '').slice(0, 24),
+    stage: String(entry.stage || '').slice(0, 32),
+    ok: entry.ok === true || String(entry.stage || '') === 'success' || String(entry.stage || '') === 'ready',
+    code: tttNormalizeInviteCode(entry.code || ''),
+    role: String(entry.role || '').slice(0, 8),
+    turn: String(entry.turn || '').slice(0, 8),
+    mode: String(entry.mode || '').slice(0, 12),
+    canMoveNow: entry.canMoveNow === true,
+    sessionId: String(entry.sessionId || '').slice(0, 80),
+    inviteId: String(entry.inviteId || '').slice(0, 80),
+    source: String(entry.source || '').slice(0, 32),
+    message: String(entry.message || '').slice(0, 180),
+    reason: String(entry.reason || '').slice(0, 180),
+    at: Number(entry.at || 0) || 0,
+    version: String(entry.version || '').slice(0, 40)
+  } : null;
+  const history = Array.isArray(src.history) ? src.history.map(safeEntry).filter(Boolean).slice(-12) : [];
+  return {
+    version: String(src.version || window.APP_VERSION || '').slice(0, 40),
+    attempts: Number(src.attempts || 0) || 0,
+    linkAttempts: Number(src.linkAttempts || 0) || 0,
+    manualAttempts: Number(src.manualAttempts || 0) || 0,
+    successes: Number(src.successes || 0) || 0,
+    linkSuccesses: Number(src.linkSuccesses || 0) || 0,
+    manualSuccesses: Number(src.manualSuccesses || 0) || 0,
+    errors: Number(src.errors || 0) || 0,
+    roleRepairs: Number(src.roleRepairs || 0) || 0,
+    moveBlocks: Number(src.moveBlocks || 0) || 0,
+    last: safeEntry(src.last),
+    lastLink: safeEntry(src.lastLink),
+    lastManual: safeEntry(src.lastManual),
+    lastRoleRepair: safeEntry(src.lastRoleRepair),
+    lastMoveBlock: safeEntry(src.lastMoveBlock),
+    history
+  };
+}
+
+function tttReadOnlineJoinDiag() {
+  try {
+    const raw = typeof parseLocalStorageJsonCached === 'function'
+      ? parseLocalStorageJsonCached(TTT_ONLINE_JOIN_DIAG_KEY, {})
+      : JSON.parse(localStorage.getItem(TTT_ONLINE_JOIN_DIAG_KEY) || '{}');
+    return tttNormalizeOnlineJoinDiag(raw);
+  } catch (err) {
+    return tttNormalizeOnlineJoinDiag(null);
+  }
+}
+
+function tttWriteOnlineJoinDiag(next) {
+  const safe = tttNormalizeOnlineJoinDiag(next);
+  try {
+    const payload = JSON.stringify(safe);
+    if (typeof setLocalStorageIfChanged === 'function') setLocalStorageIfChanged(TTT_ONLINE_JOIN_DIAG_KEY, payload);
+    else localStorage.setItem(TTT_ONLINE_JOIN_DIAG_KEY, payload);
+  } catch (err) {}
+  return safe;
+}
+
+function tttRememberOnlineJoinDiag(flow, stage, details) {
+  const normalizedFlow = String(flow || 'manual').trim() === 'link' ? 'link' : 'manual';
+  const normalizedStage = String(stage || 'start').trim() || 'start';
+  const state = tttGetState();
+  const online = state.online || {};
+  const role = String((details && details.role) || online.role || '').toUpperCase();
+  const turn = String((details && details.turn) || state.turn || '').toUpperCase();
+  const entry = {
+    flow: normalizedFlow,
+    stage: normalizedStage,
+    ok: normalizedStage === 'success',
+    code: (details && details.code) || online.code || '',
+    role,
+    turn,
+    mode: (details && details.mode) || state.mode || '',
+    canMoveNow: !!(state.mode === 'pvp' && role && turn && role === turn && !state.gameOver),
+    sessionId: (details && details.sessionId) || online.sessionId || '',
+    inviteId: (details && details.inviteId) || online.inviteId || '',
+    source: (details && details.source) || normalizedFlow,
+    message: (details && details.message) || state.message || '',
+    reason: (details && details.reason) || '',
+    at: Date.now(),
+    version: window.APP_VERSION || ''
+  };
+  const next = tttReadOnlineJoinDiag();
+  next.version = window.APP_VERSION || next.version || '';
+  if (normalizedStage === 'start') {
+    next.attempts += 1;
+    if (normalizedFlow === 'link') next.linkAttempts += 1;
+    else next.manualAttempts += 1;
+  } else if (normalizedStage === 'success') {
+    next.successes += 1;
+    if (normalizedFlow === 'link') next.linkSuccesses += 1;
+    else next.manualSuccesses += 1;
+  } else if (normalizedStage === 'error') {
+    next.errors += 1;
+  }
+  next.last = entry;
+  if (normalizedFlow === 'link') next.lastLink = entry;
+  else next.lastManual = entry;
+  next.history = (next.history || []).concat(entry).slice(-12);
+  return tttWriteOnlineJoinDiag(next);
+}
+
+
+function tttRememberOnlineMoveBlock(reason, details) {
+  try {
+    const next = tttReadOnlineJoinDiag();
+    const state = tttGetState();
+    const online = state.online || {};
+    const flow = String(online.joinFlow || '').trim() === 'link' ? 'link' : 'manual';
+    const role = tttNormalizeOnlineRole((details && details.role) || online.role || '');
+    const turn = String((details && details.turn) || state.turn || '').toUpperCase();
+    const entry = {
+      flow,
+      stage: 'move-block',
+      ok: false,
+      code: (details && details.code) || online.code || '',
+      role,
+      turn,
+      mode: state.mode || '',
+      canMoveNow: !!(state.mode === 'pvp' && role && turn && role === turn && !state.gameOver),
+      sessionId: (details && details.sessionId) || online.sessionId || '',
+      inviteId: (details && details.inviteId) || online.inviteId || '',
+      source: (details && details.source) || 'move-guard',
+      message: (details && details.message) || state.message || '',
+      reason: String(reason || 'blocked-move').slice(0, 180),
+      at: Date.now(),
+      version: window.APP_VERSION || ''
+    };
+    next.moveBlocks = (Number(next.moveBlocks || 0) || 0) + 1;
+    next.lastMoveBlock = entry;
+    next.last = entry;
+    if (flow === 'link') next.lastLink = entry;
+    else next.lastManual = entry;
+    next.history = (next.history || []).concat(entry).slice(-12);
+    tttWriteOnlineJoinDiag(next);
+  } catch (err) {}
+}
+
+function tttRequestOnlineGuardResync(reason) {
+  try {
+    const state = tttGetState();
+    if (!state || state.mode !== 'pvp' || !state.online || !state.online.code) return false;
+    tttStartOnlineSyncLoop();
+    window.setTimeout(() => { void tttSyncOnlineSession(true); }, 80);
+    window.setTimeout(() => { void tttSyncOnlineSession(true); }, 650);
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
+
+function tttGetOnlineJoinHealth() {
+  const state = typeof app !== 'undefined' && app ? tttGetState() : null;
+  const online = state && state.online ? state.online : {};
+  const diag = tttReadOnlineJoinDiag();
+  const issues = [];
+  const warnings = [];
+  if (typeof tttOpenFromInviteCode !== 'function') issues.push('chybí otevření pozvánky z odkazu');
+  if (typeof tttJoinInviteSession !== 'function') issues.push('chybí společné přijetí pozvánky');
+  if (typeof tttPrepareOnlineJoinState !== 'function') issues.push('chybí příprava online join stavu');
+  if (diag.lastLink && diag.lastLink.stage === 'start') warnings.push('poslední link join zatím nemá potvrzený úspěch');
+  if (diag.lastLink && diag.lastLink.stage === 'success' && diag.lastLink.mode !== 'pvp') issues.push('poslední link join neskončil v online režimu');
+  if (diag.lastLink && diag.lastLink.stage === 'success' && String(diag.lastLink.role || '').toUpperCase() !== 'O') issues.push('poslední link join nemá roli O');
+  if (diag.lastMoveBlock && String(diag.lastMoveBlock.reason || '') === 'missing-role-before-move') warnings.push('poslední online tah se zastavil kvůli nenačtené roli');
+  if (diag.lastMoveBlock && String(diag.lastMoveBlock.reason || '') === 'turn-mismatch-before-move') warnings.push('poslední online tah byl mimo tah aktuálního hráče');
+  if (state && state.mode === 'pvp' && online && online.code && !tttNormalizeOnlineRole(online.role || '')) issues.push('online režim nemá lokální roli hráče');
+  return {
+    ok: issues.length === 0,
+    mode: 'ttt-online-link-join-runtime-guard',
+    issues: issues.slice(0, 8),
+    warnings: warnings.slice(0, 8),
+    attempts: diag.attempts,
+    linkAttempts: diag.linkAttempts,
+    manualAttempts: diag.manualAttempts,
+    successes: diag.successes,
+    linkSuccesses: diag.linkSuccesses,
+    manualSuccesses: diag.manualSuccesses,
+    errors: diag.errors,
+    roleRepairs: diag.roleRepairs,
+    moveBlocks: diag.moveBlocks,
+    last: diag.last,
+    lastLink: diag.lastLink,
+    lastManual: diag.lastManual,
+    lastRoleRepair: diag.lastRoleRepair,
+    lastMoveBlock: diag.lastMoveBlock,
+    activeMode: state ? String(state.mode || '') : '',
+    activeRole: String(online.role || '').toUpperCase(),
+    activeTurn: state ? String(state.turn || '').toUpperCase() : '',
+    activeCanMoveNow: !!(state && state.mode === 'pvp' && online.role && String(online.role).toUpperCase() === String(state.turn || '').toUpperCase() && !state.gameOver),
+    activeCode: tttNormalizeInviteCode(online.code || ''),
+    checkedAt: new Date().toISOString()
+  };
+}
+
+if (typeof window !== 'undefined') {
+  window.getTttOnlineJoinHealth = tttGetOnlineJoinHealth;
+}
+
+function tttNormalizeOnlineRole(role) {
+  const upper = String(role || '').trim().toUpperCase();
+  return upper === 'X' || upper === 'O' ? upper : '';
+}
+
+function tttExtractOnlinePlayerAccounts(statePatch, remote) {
+  const patch = statePatch && typeof statePatch === 'object' ? statePatch : {};
+  const online = tttGetState().online || {};
+  const result = {
+    x: String(patch.playerXAccountNumber || patch.player_x_account_number || online.playerXAccountNumber || '').trim(),
+    o: String(patch.playerOAccountNumber || patch.player_o_account_number || online.playerOAccountNumber || '').trim()
+  };
+  const session = remote && remote.session && typeof remote.session === 'object' ? remote.session : null;
+  const invite = remote && remote.invite && typeof remote.invite === 'object' ? remote.invite : null;
+  if (session) {
+    result.x = String(session.player_x_account_number || result.x || '').trim();
+    result.o = String(session.player_o_account_number || result.o || '').trim();
+  }
+  if (invite) {
+    result.x = String(invite.inviter_account_number || result.x || '').trim();
+    result.o = String(invite.invitee_account_number || result.o || '').trim();
+  }
+  return result;
+}
+
+function tttRememberOnlineRoleRepair(details) {
+  try {
+    const next = tttReadOnlineJoinDiag();
+    const state = tttGetState();
+    const online = state.online || {};
+    const entry = {
+      flow: 'runtime',
+      stage: 'role-repair',
+      ok: true,
+      code: (details && details.code) || online.code || '',
+      role: tttNormalizeOnlineRole((details && details.role) || online.role || ''),
+      turn: String((details && details.turn) || state.turn || '').toUpperCase(),
+      mode: state.mode || '',
+      canMoveNow: !!(state.mode === 'pvp' && online.role && tttNormalizeOnlineRole(online.role) === String(state.turn || '').toUpperCase() && !state.gameOver),
+      sessionId: (details && details.sessionId) || online.sessionId || '',
+      inviteId: (details && details.inviteId) || online.inviteId || '',
+      source: (details && details.source) || 'role-guard',
+      message: (details && details.message) || state.message || '',
+      reason: (details && details.reason) || '',
+      at: Date.now(),
+      version: window.APP_VERSION || ''
+    };
+    next.roleRepairs = (Number(next.roleRepairs || 0) || 0) + 1;
+    next.lastRoleRepair = entry;
+    next.last = entry;
+    next.history = (next.history || []).concat(entry).slice(-12);
+    tttWriteOnlineJoinDiag(next);
+  } catch (err) {}
+}
+
+function tttEnsureOnlineRoleFromAccounts(state, statePatch, remote, source) {
+  const s = state || tttGetState();
+  if (!s.online) s.online = tttCreateEmptyOnlineState();
+  const accounts = tttExtractOnlinePlayerAccounts(statePatch, remote);
+  if (accounts.x && !s.online.playerXAccountNumber) s.online.playerXAccountNumber = accounts.x;
+  if (accounts.o && !s.online.playerOAccountNumber) s.online.playerOAccountNumber = accounts.o;
+  const activeAccount = tttGetActiveAccountId();
+  const previousRole = tttNormalizeOnlineRole(s.online.role);
+  let nextRole = previousRole;
+  if (activeAccount && accounts.o && String(activeAccount) === String(accounts.o)) nextRole = 'O';
+  else if (activeAccount && accounts.x && String(activeAccount) === String(accounts.x)) nextRole = 'X';
+  else if (!nextRole) nextRole = tttNormalizeOnlineRole(remote && remote.role);
+  if (nextRole && nextRole !== previousRole) {
+    s.online.role = nextRole.toLowerCase();
+    tttRememberOnlineRoleRepair({
+      code: s.online.code || '',
+      role: nextRole,
+      turn: s.turn || '',
+      sessionId: s.online.sessionId || '',
+      inviteId: s.online.inviteId || '',
+      source: source || 'role-guard',
+      reason: previousRole ? ('role-conflict-' + previousRole + '-to-' + nextRole) : 'missing-role'
+    });
+  }
+  return tttNormalizeOnlineRole(s.online.role);
+}
+
+function tttSetJoinedOnlineMessage(state) {
+  const s = state || tttGetState();
+  const online = s.online || {};
+  const role = String(online.role || '').toUpperCase() || 'O';
+  const turn = String(s.turn || 'X').toUpperCase();
+  if (s.gameOver) return s.message || 'Partie je dokončená.';
+  s.message = role && turn === role ? ('Jsi ' + role + '. Hraješ.') : ('Čekáš na tah hráče ' + turn + '.');
+  tttSetOnlineStatus(s.message, 'active');
+  return s.message;
+}
+
 function tttBuildOnlineResultKey(code, revision, winner, role, sessionId) {
+
   const sessionPart = String(sessionId || code || '').trim().toUpperCase();
   return [
     sessionPart || 'NOSESSION',
@@ -1783,6 +2120,7 @@ function tttApplyOnlineState(statePatch, remote) {
   state.online.lastRemoteUpdatedAt = state.online.lastUpdatedAt;
   state.online.playerXAccountNumber = statePatch.playerXAccountNumber || state.online.playerXAccountNumber || null;
   state.online.playerOAccountNumber = statePatch.playerOAccountNumber || state.online.playerOAccountNumber || null;
+  tttEnsureOnlineRoleFromAccounts(state, statePatch, remote, 'apply-online-state');
   if (state.online.playerOAccountNumber && String(state.online.status || '').toLowerCase() === 'waiting') state.online.status = 'active';
   state.online.headToHeadText = tttBuildOnlineScoreText();
   state.online.connected = true;
@@ -1898,7 +2236,9 @@ async function tttCreateInviteSession() {
         playerOAccountNumber: null,
         connected: true,
         resultSavedKey: '',
-        inviteUrl: ''
+        inviteUrl: '',
+        joinFlow: 'create',
+        joinSource: 'create-invite'
       };
       state.online.inviteUrl = tttGetInviteUrl(code);
       tttSetOnlineStatus('Pozvánka vytvořená na 60 minut. Kód pro spoluhráče: ' + code + '.', 'waiting');
@@ -1920,7 +2260,9 @@ async function tttCreateInviteSession() {
     playerOAccountNumber: null,
     connected: true,
     resultSavedKey: '',
-    inviteUrl: tttGetInviteUrl(code)
+    inviteUrl: tttGetInviteUrl(code),
+    joinFlow: 'create',
+    joinSource: 'create-invite-local'
   };
   tttSetOnlineStatus('Pozvánka vytvořená lokálně. Kód pro spoluhráče: ' + code + '.', 'waiting');
   return { ok: true, code, url: tttGetInviteUrl(code), local: true };
@@ -1934,10 +2276,42 @@ function tttInviteResultMessage(result, fallback) {
   return fallback || 'Pozvánku se nepodařilo načíst.';
 }
 
-async function tttJoinInviteSession(code) {
+function tttPrepareOnlineJoinState(state, inviteCode) {
+  const s = state || tttGetState();
+  const code = tttNormalizeInviteCode(inviteCode);
+  if (!s.online) s.online = tttCreateEmptyOnlineState();
+  s.mode = 'pvp';
+  s.difficulty = 'ai';
+  s.screen = 'game';
+  s.gameOver = false;
+  s.winner = null;
+  s.hardWinPrompt = false;
+  s.hardWinStats = null;
+  s.resultSaved = false;
+  s.resultOnlineSaved = false;
+  s.resultSummary = null;
+  if (code) {
+    s.online.code = code;
+    s.online.inviteUrl = tttGetInviteUrl(code);
+  }
+  return s;
+}
+
+async function tttJoinInviteSession(code, options) {
   const state = tttGetState();
   const inviteCode = tttNormalizeInviteCode(code);
-  if (!inviteCode || inviteCode.length !== 4) return { ok: false, error: new Error('Zadej 4 čísla kódu pozvánky.') };
+  const flow = options && String(options.flow || '').trim() === 'link' ? 'link' : 'manual';
+  const joinSource = String(options && options.source || 'join-session').slice(0, 32) || 'join-session';
+  if (!inviteCode || inviteCode.length !== 4) {
+    tttRememberOnlineJoinDiag(flow, 'error', { code: inviteCode, reason: 'neplatný 4místný kód' });
+    return { ok: false, error: new Error('Zadej 4 čísla kódu pozvánky.') };
+  }
+  tttPrepareOnlineJoinState(state, inviteCode);
+  if (state.online) {
+    state.online.joinFlow = flow;
+    state.online.joinSource = joinSource;
+  }
+  tttRememberOnlineJoinDiag(flow, 'start', { code: inviteCode, source: joinSource });
   const active = typeof gamesGetActiveAccount === 'function' ? gamesGetActiveAccount() : null;
   const joiner = active && active.id ? String(active.id) : null;
   if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.acceptGameInvite === 'function') {
@@ -1958,7 +2332,9 @@ async function tttJoinInviteSession(code) {
         playerOAccountNumber: joiner,
         connected: true,
         resultSavedKey: '',
-        inviteUrl: ''
+        inviteUrl: '',
+        joinFlow: flow,
+        joinSource
       };
       const session = result.session || (result.result && result.result.session) || null;
       const boardState = session && session.board_state && typeof session.board_state === 'object' ? session.board_state : null;
@@ -1975,13 +2351,14 @@ async function tttJoinInviteSession(code) {
           status: 'active'
         });
       }
-      state.message = 'Jsi O. Čekáš na tah hráče X.';
-      tttSetOnlineStatus(state.message, 'active');
+      tttSetJoinedOnlineMessage(state);
+      tttRememberOnlineJoinDiag(flow, 'success', { code: inviteCode, source: joinSource + '-supabase-accept', role: state.online && state.online.role, turn: state.turn, sessionId: state.online && state.online.sessionId, inviteId: state.online && state.online.inviteId, message: state.message });
       return { ok: true, code: inviteCode, result };
     }
     if (result && result.ok === false) {
       state.message = tttInviteResultMessage(result, 'Pozvánku se nepodařilo načíst online. Zkontroluj 4místný kód.');
       tttSetOnlineStatus(state.message, 'error');
+      tttRememberOnlineJoinDiag(flow, 'error', { code: inviteCode, source: joinSource + '-supabase-accept', reason: state.message });
       return result;
     }
   }
@@ -2000,9 +2377,12 @@ async function tttJoinInviteSession(code) {
     playerOAccountNumber: joiner,
     connected: true,
     resultSavedKey: '',
-    inviteUrl: tttGetInviteUrl(inviteCode)
+    inviteUrl: tttGetInviteUrl(inviteCode),
+    joinFlow: flow,
+    joinSource
   };
-  tttSetOnlineStatus('Pozvánka přijata lokálně. Kód načten.', 'active');
+  tttSetJoinedOnlineMessage(state);
+  tttRememberOnlineJoinDiag(flow, 'success', { code: inviteCode, source: joinSource + '-local-fallback', role: state.online && state.online.role, turn: state.turn, message: state.message });
   return { ok: true, code: inviteCode, local: true };
 }
 
@@ -2035,6 +2415,7 @@ async function tttSyncOnlineSession(force) {
         state.online.status = 'active';
         if (remote.invite && remote.invite.invitee_account_number) state.online.playerOAccountNumber = remote.invite.invitee_account_number;
         if (remote.invite && remote.invite.inviter_account_number) state.online.playerXAccountNumber = remote.invite.inviter_account_number;
+        tttEnsureOnlineRoleFromAccounts(state, {}, { invite: remote.invite }, 'sync-accepted-invite');
         state.online.headToHeadText = tttBuildOnlineScoreText();
         void tttRefreshOnlineHeadToHead(true);
         state.message = String(state.online.role || '').toUpperCase() === 'X' ? 'Jsi X. Hraješ.' : 'Čekáš na tah hráče X.';
@@ -3713,13 +4094,14 @@ function tttRender() {
     start.querySelector('#tttJoinInviteBtn')?.addEventListener('click', async () => {
       const code = prompt('Zadej 4místný číselný kód pozvánky');
       if (code) {
-        const result = await tttJoinInviteSession(code);
+        const result = await tttJoinInviteSession(code, { flow: 'manual' });
         if (result && result.ok) {
           state.screen = 'game';
           state.gameOver = false;
           state.winner = null;
           state.startedAt = Date.now();
-          state.message = 'Pozvánka přijata. Hraješ proti spoluhráči.';
+          tttSetJoinedOnlineMessage(state);
+          tttRememberOnlineJoinDiag('manual', 'ready', { code, source: 'manual-prompt', message: state.message });
           tttRender();
           scheduleTttLayout();
           tttStartOnlineSyncLoop();
@@ -3802,9 +4184,44 @@ function tttHandleMove(index) {
   if (state.gameOver || state.board[index]) return;
   if (state.mode === 'ai' && (state.turn !== 'X' || state.aiBusy)) return;
   if (state.mode === 'pvp') {
-    if (!state.online || !state.online.code || state.online.status === 'waiting') return;
-    const role = String(state.online.role || '').toUpperCase();
-    if (role && state.turn !== role) return;
+    if (!state.online || !state.online.code) {
+      state.message = 'Online hra ještě nemá načtený kód pozvánky.';
+      tttSetOnlineStatus(state.message, 'error');
+      tttRememberOnlineMoveBlock('missing-code-before-move', { source: 'move-guard' });
+      tttRender();
+      scheduleTttLayout();
+      return;
+    }
+    if (state.online.status === 'waiting') {
+      state.message = 'Čekám na přijetí pozvánky druhým hráčem.';
+      tttSetOnlineStatus(state.message, 'waiting');
+      tttRememberOnlineMoveBlock('waiting-for-opponent-before-move', { code: state.online.code || '', source: 'move-guard' });
+      tttRequestOnlineGuardResync('waiting-for-opponent-before-move');
+      tttRender();
+      scheduleTttLayout();
+      return;
+    }
+    const role = tttEnsureOnlineRoleFromAccounts(state, {}, null, 'move-guard');
+    if (!role) {
+      state.message = 'Online role hráče se ještě nenačetla. Zkus chvilku počkat, appka si stav znovu ověřuje.';
+      tttSetOnlineStatus(state.message, 'error');
+      const guardFlow = String(state.online && state.online.joinFlow || '').trim() === 'link' ? 'link' : 'manual';
+      tttRememberOnlineJoinDiag(guardFlow, 'error', { code: state.online.code || '', source: 'move-guard', reason: 'missing-role-before-move' });
+      tttRememberOnlineMoveBlock('missing-role-before-move', { code: state.online.code || '', source: 'move-guard' });
+      tttRequestOnlineGuardResync('missing-role-before-move');
+      tttRender();
+      scheduleTttLayout();
+      return;
+    }
+    if (state.turn !== role) {
+      state.message = 'Teď hraje ' + state.turn + '. Ty jsi ' + role + '.';
+      tttSetOnlineStatus(state.message, 'active');
+      tttRememberOnlineMoveBlock('turn-mismatch-before-move', { code: state.online.code || '', role, turn: state.turn, source: 'move-guard', message: state.message });
+      tttRequestOnlineGuardResync('turn-mismatch-before-move');
+      tttRender();
+      scheduleTttLayout();
+      return;
+    }
   }
 
   const mark = state.turn;
@@ -4086,16 +4503,11 @@ function closeTicTacToeGame() {
 }
 
 async function tttAutoOpenFromHash() {
-  const code = tttReadHashInviteCode();
+  const invite = tttReadUrlInviteData();
+  const code = invite.code || '';
   if (!code) return false;
-  const opened = await tttOpenFromInviteCode(code);
-  if (opened) {
-    try {
-      const url = new URL(window.location.href);
-      url.hash = '';
-      history.replaceState(null, '', url.toString());
-    } catch (err) {}
-  }
+  const opened = await tttOpenFromInviteCode(code, { source: invite.source || 'url' });
+  if (opened) tttClearInviteFromUrl();
   return opened;
 }
 
@@ -4364,13 +4776,16 @@ function renderGamesAppearanceStatus() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText || 'v.1.5 (828)',
+      range: versionText || 'v.1.5 (833)',
       title: 'Aktuální stabilizace',
       lines: [
-        'Hotfix v828 vrací online Piškvorkám funkční DB přístup: restriktivní INSERT/UPDATE policies z v826 pro game_invites a game_sessions byly v DB odstraněné.',
-        'Game_stats hardening z v824 zůstává zachovaný, ale online pozvánky/session jsou kvůli funkčnosti dočasně zpět na přímém INSERT/UPDATE fallbacku.',
-        'Bug reports hardening je pozastavený, dokud se online Piškvorky neověří na dvou mobilech.',
-        'Následuje ruční smoke test: vytvořit pozvánku, přijmout ji na druhém mobilu, odehrát partii a zkontrolovat Top 5/profil.'
+        'V833 doplňuje online Piškvorkám čitelný move guard: když tah nejde udělat kvůli čekání, chybějící roli nebo špatnému tahu, appka ukáže důvod, zapíše diagnostiku a zkusí rychlý resync session.',
+        'V832 zpevňuje deep-link pozvánky: appka nově čte kód z hash i query URL, uklidí URL po přijetí a v diagnostice ukáže, jestli přišel přes hash nebo query.',
+        'V831 přidává runtime pojistku role u online Piškvorek: pokud session podle účtu pozná hráče X/O, klient si roli opraví a bez platné role nepovolí tah.',
+        'V830 doplňuje diagnostiku online Piškvorek: po vstupu přes odkaz nebo ruční kód je v Diagnostice vidět režim, role, tah a jestli klient může právě hrát.',
+        'Link i ruční kód používají společnou join cestu a výsledná hláška se drží podle skutečné role a tahu, ne podle obecného textu.',
+        'Hotfix v829 opravuje vstup přes zvací odkaz tak, aby druhý hráč neotevíral hru jako AI/spectator, ale jako hráč O.',
+        'Ruční zadání kódu zůstává zachované a DB rollback z v828 pro game_invites/game_sessions zůstává bez dalšího utahování.'
       ]
     },
     {
@@ -6240,6 +6655,7 @@ function bindAppMenuHandlers(body) {
         const gameStatsRpcSmoke = typeof window.getGameStatsRpcSmokeStatus === 'function' ? window.getGameStatsRpcSmokeStatus() : (supabaseHardening && supabaseHardening.gameStatsRpcSmoke ? supabaseHardening.gameStatsRpcSmoke : null);
         const gameUiRpcSmoke = typeof window.getGameUiRpcSmokeStatus === 'function' ? window.getGameUiRpcSmokeStatus() : (supabaseHardening && supabaseHardening.gameUiRpcSmoke ? supabaseHardening.gameUiRpcSmoke : null);
         const gameSessionRpcSmoke = typeof window.getGameSessionRpcSmokeStatus === 'function' ? window.getGameSessionRpcSmokeStatus() : (supabaseHardening && supabaseHardening.gameSessionRpcSmoke ? supabaseHardening.gameSessionRpcSmoke : null);
+        const tttOnlineJoinHealth = typeof window.getTttOnlineJoinHealth === 'function' ? window.getTttOnlineJoinHealth() : null;
         const rpcHardeningStatus = supabaseHardening && supabaseHardening.rpcHardening ? supabaseHardening.rpcHardening : null;
         const supabaseSyncGuard = supabaseHardening && supabaseHardening.syncGuard ? supabaseHardening.syncGuard : null;
         const supabaseCacheGuard = supabaseHardening && supabaseHardening.cacheGuard ? supabaseHardening.cacheGuard : null;
@@ -6272,6 +6688,10 @@ function bindAppMenuHandlers(body) {
         const gameEngineDiag = gameEngineStatus ? [
           'Herní engine: ' + (gameEngineStatus.ok ? 'OK' : 'kontrola') + ' · režim ' + String(gameEngineStatus.mode || '—') + ' · aktivní hra ' + String(gameEngineStatus.activeGame || '—') + ' · pauza ' + (gameEngineStatus.paused ? 'ano' : 'ne'),
           'Herní engine lifecycle: otevřeno/zavřeno ' + String(gameEngineStatus.openedCount || 0) + '/' + String(gameEngineStatus.closedCount || 0) + ' · pauza/resume ' + String(gameEngineStatus.pausedCount || 0) + '/' + String(gameEngineStatus.resumedCount || 0) + ' · stop loop ' + String(gameEngineStatus.loopStopRequests || 0) + ' · problémy ' + String((gameEngineStatus.issues || []).length || 0)
+        ] : [];
+        const tttOnlineJoinDiag = tttOnlineJoinHealth ? [
+          'Piškvorky online join: ' + (tttOnlineJoinHealth.ok ? 'OK' : 'kontrola') + ' · link pokusy/OK ' + String(tttOnlineJoinHealth.linkAttempts || 0) + '/' + String(tttOnlineJoinHealth.linkSuccesses || 0) + ' · ruční pokusy/OK ' + String(tttOnlineJoinHealth.manualAttempts || 0) + '/' + String(tttOnlineJoinHealth.manualSuccesses || 0) + ' · chyby ' + String(tttOnlineJoinHealth.errors || 0),
+          'Piškvorky online stav: režim ' + String(tttOnlineJoinHealth.activeMode || '—') + ' · role ' + String(tttOnlineJoinHealth.activeRole || '—') + ' · tah ' + String(tttOnlineJoinHealth.activeTurn || '—') + ' · může hrát teď ' + (tttOnlineJoinHealth.activeCanMoveNow ? 'ano' : 'ne') + ' · opravy role ' + String(tttOnlineJoinHealth.roleRepairs || 0) + ' · blokované tahy ' + String(tttOnlineJoinHealth.moveBlocks || 0) + ' · problémy ' + String((tttOnlineJoinHealth.issues || []).length || 0)
         ] : [];
         const finalStabilizationDiag = finalStabilizationStatus ? [
           'Finální stabilizace: fáze ' + String(finalStabilizationStatus.phasePercent || 0) + '% · audit ' + (finalStabilizationStatus.lastAuditOk ? 'OK' : 'kontrola') + ' · běhy ' + String(finalStabilizationStatus.audits || 0) + ' · chybí ' + String(finalStabilizationStatus.lastMissingCount || 0),
@@ -6348,6 +6768,7 @@ function bindAppMenuHandlers(body) {
           ...ladaPerformanceDiag,
           ...devicePerformanceDiag,
           ...gameEngineDiag,
+          ...tttOnlineJoinDiag,
           ...pwaDiag,
           ...dataOptDiag,
           ...supabaseDiag
@@ -9611,7 +10032,8 @@ function renderGamesTttShell() {
 if (!window.__tttHashInviteBound) {
   window.__tttHashInviteBound = true;
   window.addEventListener('load', () => { void tttAutoOpenFromHash(); }, { once: true });
-window.addEventListener('hashchange', () => { void tttAutoOpenFromHash(); });
+  window.addEventListener('hashchange', () => { void tttAutoOpenFromHash(); });
+  window.addEventListener('popstate', () => { void tttAutoOpenFromHash(); });
 }
 
 
