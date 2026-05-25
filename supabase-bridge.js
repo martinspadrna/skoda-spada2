@@ -213,12 +213,12 @@
     { table: 'gomoku_wins', realtime: true, queueType: 'gomoku_win', access: 'anon SELECT/INSERT/UPDATE', note: 'výhry piškvorek / legacy leaderboard' }
   ];
 
-  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (827)';
+  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (828)';
   const SUPABASE_POLICY_AUDIT_SNAPSHOT_AT = '2026-05-24';
   const SUPABASE_POLICY_HARDENING_PHASE = {
-    current: 'Fáze 2E-K-A – bug_reports hardening preflight: veřejné SELECT/UPDATE jsou potvrzené riziko, zatím bez DB omezení kvůli kompatibilitě admin přehledu',
-    next: 'Fáze 2E-K-B – připravit bezpečný admin/RPC review tok pro bug_reports a až potom omezovat veřejné SELECT/UPDATE',
-    rollback: 'Fáze 2E-K-A nemění data ani RLS policies; rollback není potřeba. Restriktivní policies pro hry z v824/v826 zůstávají zachované.'
+    current: 'Hotfix v828 – online Piškvorky: rollback restriktivních INSERT/UPDATE policies z v826 pro game_invites/game_sessions, aby se obnovila funkčnost online pozvánek a session',
+    next: 'Nejdřív znovu otestovat online Piškvorky na dvou mobilech; potom pokračovat opatrně přes RPC smoke, ne přes další restriktivní policies naslepo',
+    rollback: 'Rollback v828 byl proveden jen pro game_invites/game_sessions restriktivní policies z v826; game_stats restriktivní policies z v824 zůstávají zachované.'
   };
   const SUPABASE_POLICY_AUDIT_SNAPSHOT = [
     {
@@ -245,22 +245,22 @@
     {
       table: 'game_sessions',
       priority: 'P0',
-      risk: 'přímé public INSERT/UPDATE nad online session je od v826 omezené restriktivními policies; public DELETE už odstraněn ve Fázi 2D',
-      observed: 'původní permisivní policies fyzicky zůstávají, ale přímé public write blokují restriktivní policies game_sessions_insert_rpc_only_v826/game_sessions_update_rpc_only_v826; DELETE odstraněné v810',
-      recommendation: 'online session držet přes rak_save_game_session_by_invite_code; po smoke testu bez fallbacků pokračovat na bug_reports a rozpisové/nastavovací write cesty'
+      risk: 'přímé public INSERT/UPDATE nad online session je po rollbacku v828 dočasně povolené kvůli funkčnosti online Piškvorek; public DELETE zůstává odstraněný',
+      observed: 'v828 odstranil restriktivní policies game_sessions_insert_rpc_only_v826/game_sessions_update_rpc_only_v826, protože online Piškvorky přestaly fungovat; DELETE zůstává odstraněné v810',
+      recommendation: 'nejdřív obnovit a ověřit online Piškvorky; RPC cestu pro session dál ladit s fallbacky a restriktivní policies vracet až po dvoumobilovém smoke testu'
     },
     {
       table: 'game_invites',
       priority: 'P1',
-      risk: 'přímé public INSERT/UPDATE nad pozvánkami je od v826 omezené restriktivními policies; public DELETE už odstraněn ve Fázi 2D',
-      observed: 'původní permisivní policies fyzicky zůstávají, ale přímé public write blokují restriktivní policies game_invites_insert_rpc_only_v826/game_invites_update_rpc_only_v826; DELETE odstraněné v810',
-      recommendation: 'pozvánky držet přes rak_create_game_invite_session / navazující RPC cesty; po smoke testu bez fallbacků teprve rozšiřovat tvrdší validace'
+      risk: 'přímé public INSERT/UPDATE nad pozvánkami je po rollbacku v828 dočasně povolené kvůli funkčnosti online Piškvorek; public DELETE zůstává odstraněný',
+      observed: 'v828 odstranil restriktivní policies game_invites_insert_rpc_only_v826/game_invites_update_rpc_only_v826, protože online Piškvorky přestaly fungovat; DELETE zůstává odstraněné v810',
+      recommendation: 'nejdřív obnovit a ověřit vytvoření/přijetí pozvánky; RPC cestu dál ladit s fallbacky a restriktivní policies vracet až po dvoumobilovém smoke testu'
     },
     {
       table: 'bug_reports',
       priority: 'P1',
       risk: 'anon/auth SELECT a UPDATE reportů chyb je potvrzené riziko soukromí/admin flow',
-      observed: 'DB kontrola v827 potvrdila 2 veřejné SELECT/UPDATE policies; zatím ponecháno kvůli kompatibilitě admin přehledu a bez DB změny',
+      observed: 'DB kontrola v827 potvrdila 2 veřejné SELECT/UPDATE policies; příprava bug_reports RPC byla odložena kvůli hotfixu online Piškvorek',
       recommendation: 'INSERT ponechat veřejný s limity, ale připravit admin/RPC review tok a potom zúžit SELECT/UPDATE přes chráněné rozhraní'
     },
     {
@@ -273,17 +273,17 @@
   ];
 
   const SUPABASE_RPC_HARDENING_STATUS = {
-    version: 'v.1.5 (827)',
-    phase: '2E-J',
+    version: 'v.1.5 (828)',
+    phase: '2E-J rollback / online TTT hotfix',
     rpcPreferred: true,
     migrationApplied: true,
-    migrationNote: 'game_stats direct INSERT/UPDATE jsou omezené restriktivními policies v824. Ve v826 jsou omezené i přímé game_invites/game_sessions INSERT/UPDATE pomocí restriktivních policies; ve v827 je pouze potvrzené bug_reports SELECT/UPDATE riziko bez změny DB policies.',
+    migrationNote: 'game_stats direct INSERT/UPDATE zůstávají omezené restriktivními policies v824. Restriktivní policies pro game_invites/game_sessions z v826 byly v DB ve v828 odstraněné, protože rozbily online Piškvorky. DELETE policies zůstávají odstraněné.',
     dbVerifiedAt: '2026-05-24',
-    verifiedRpcCount: 6,
-    bugReportsHardeningPhase: '2E-K-A',
+    verifiedRpcCount: 7,
+    bugReportsHardeningPhase: 'pozastaveno kvůli online TTT hotfixu',
     bugReportsPublicSelectUpdatePolicies: 2,
     bugReportsDbChanged: false,
-    bugReportsNextStep: 'připravit admin/RPC review tok a teprve potom zúžit bug_reports SELECT/UPDATE',
+    bugReportsNextStep: 'vrátit se až po ověření online Piškvorek; prioritou je nechat funkční online hry',
     plannedRpc: [
       'rak_save_rotation_state',
       'rak_save_machine_settings',
@@ -291,9 +291,10 @@
       'rak_record_game_stat_delta',
       'rak_save_game_ui_settings',
       'rak_create_game_invite_session',
-      'rak_save_game_session_by_invite_code'
+      'rak_save_game_session_by_invite_code',
+      'rak_submit_bug_report (DB scaffold, klient zatím nepoužívá)'
     ],
-    fallback: 'direct-write-fallback-is-now-blocked-for-game_stats-game_invites-game_sessions; bug_reports SELECT/UPDATE zatím ponecháno kvůli admin přehledu; monitor RPC smoke and fallback errors',
+    fallback: 'game_stats direct-write je blokovaný v824; game_invites/game_sessions direct-write je ve v828 dočasně obnovený kvůli online Piškvorkám; bug_reports SELECT/UPDATE zatím ponecháno' ,
     gameStatsRpcSmoke: 'rpc-required-after-v824-restrictive-policy',
     gameUiSettingsRpcSmoke: 'rpc-required-after-v824-restrictive-policy',
     gameStatsRpcAttempts: 0,
@@ -549,8 +550,8 @@
       requiredSuccessesBeforeTightening: 3,
       requiredFallbacksBeforeTightening: 0,
       recommendation: readyForPolicyTightening
-        ? 'Online pozvánky/session proběhly přes RPC bez fallbacků; je možné připravovat omezení přímých INSERT/UPDATE u game_sessions/game_invites.'
-        : 'Před omezením game_sessions/game_invites odehraj online Piškvorky/pozvánku a ověř, že session RPC úspěchy rostou a fallbacky zůstávají 0.'
+        ? 'Online pozvánky/session proběhly přes RPC bez fallbacků; po rollbacku v828 ale další omezení game_sessions/game_invites dělat jen po ručním dvoumobilovém smoke testu.'
+        : 'Po rollbacku v828 nejdřív ověř online Piškvorky na dvou mobilech. Restriktivní INSERT/UPDATE policies pro session/pozvánky už nepřidávat naslepo.'
     });
   }
   const SUPABASE_STRUCTURE_REQUIRED_HELPERS = [
@@ -682,7 +683,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v827');
+      const channel = client.channel('rak-public-live-v828');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });

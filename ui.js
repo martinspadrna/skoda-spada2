@@ -4364,13 +4364,13 @@ function renderGamesAppearanceStatus() {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText || 'v.1.5 (827)',
+      range: versionText || 'v.1.5 (828)',
       title: 'Aktuální stabilizace',
       lines: [
-        'Supabase hardening je ve fázi 2E-I: game_stats už zapisuje přes RPC a pro online pozvánky/session jsou připravené RPC-first scaffold cesty.',
-        'Zápisy skóre jedou přes rak_record_game_stat_delta, profilové theme/pozadí přes rak_save_game_ui_settings a online session nově zkouší RPC před přímým zápisem.',
-        'Public SELECT zůstává kvůli Top 5 a profilům, takže čtení žebříčků se nemění.',
-        'Následuje 2E-J: po mobilním ověření online Piškvorek/pozvánek bez fallbacků začít omezovat přímé INSERT/UPDATE u game_sessions a game_invites.'
+        'Hotfix v828 vrací online Piškvorkám funkční DB přístup: restriktivní INSERT/UPDATE policies z v826 pro game_invites a game_sessions byly v DB odstraněné.',
+        'Game_stats hardening z v824 zůstává zachovaný, ale online pozvánky/session jsou kvůli funkčnosti dočasně zpět na přímém INSERT/UPDATE fallbacku.',
+        'Bug reports hardening je pozastavený, dokud se online Piškvorky neověří na dvou mobilech.',
+        'Následuje ruční smoke test: vytvořit pozvánku, přijmout ji na druhém mobilu, odehrát partii a zkontrolovat Top 5/profil.'
       ]
     },
     {

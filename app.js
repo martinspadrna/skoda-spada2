@@ -1,4 +1,4 @@
-// v.1.5 (827) – Fáze 2E-K-A: bug_reports hardening preflight bez zásahu do herních RPC cest.
+// v.1.5 (828) – Hotfix online Piškvorek: rollback restriktivních policies pro game_invites/game_sessions.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;
