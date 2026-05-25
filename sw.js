@@ -1,5 +1,5 @@
-const CACHE_VERSION = 'v1.5-851';
-const SW_APP_VERSION = 'v.1.5 (851)';
+const CACHE_VERSION = 'v1.5-852';
+const SW_APP_VERSION = 'v.1.5 (852)';
 const STATIC_CACHE = `rotace-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `rotace-runtime-${CACHE_VERSION}`;
 const APP_SHELL = [
@@ -58,12 +58,12 @@ const APP_SHELL = [
   './assets/help/frezky-fhb-help.png',
   './assets/help/soustruhy-vrtaky-x-help.png',
   './manifest.webmanifest',
-  './icon-192.png',
-  './icon-512.png',
-  './icon-32.png',
-  './icon-180.png',
-  './icon-16.png',
-  './icon-1024.png'
+  './assets/app-icons/icon-192.png',
+  './assets/app-icons/icon-512.png',
+  './assets/app-icons/icon-32.png',
+  './assets/app-icons/icon-180.png',
+  './assets/app-icons/icon-16.png',
+  './assets/app-icons/icon-1024.png'
 ];
 
 const APP_SHELL_URLS = Array.from(new Set(APP_SHELL));

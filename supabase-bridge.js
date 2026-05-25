@@ -234,7 +234,7 @@
     { table: 'gomoku_wins', realtime: true, queueType: 'gomoku_win', access: 'anon SELECT/INSERT/UPDATE', note: 'výhry piškvorek / legacy leaderboard' }
   ];
 
-  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (851)';
+  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (852)';
   const SUPABASE_POLICY_AUDIT_SNAPSHOT_AT = '2026-05-24';
   const SUPABASE_POLICY_HARDENING_PHASE = {
     current: 'V850 – Lodě: setup pole je kompaktnější na větších mobilech a střelba po připojení přes odkaz se lépe přepíná/obnovuje. Spodní ikony zůstávají OK. DB policies se nemění.',
@@ -294,7 +294,7 @@
   ];
 
   const SUPABASE_RPC_HARDENING_STATUS = {
-    version: 'v.1.5 (851)',
+    version: 'v.1.5 (852)',
     phase: '2E-O online invite/session RPC smoke + accept RPC / no policy tightening',
     rpcPreferred: true,
     migrationApplied: true,
@@ -906,7 +906,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v851');
+      const channel = client.channel('rak-public-live-v852');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -3795,7 +3795,7 @@
     return {
       ok: blockers.length === 0,
       mode: 'supabase-hardening-readiness-audit-only',
-      version: 'v.1.5 (851)',
+      version: 'v.1.5 (852)',
       checkedAt: new Date().toISOString(),
       confirmed,
       readinessPercent,

@@ -1,4 +1,4 @@
-// v.1.5 (851) – Lodě: technika zachovaná, vzhled přestavěný na mobile-first herní plochu přes maximum obrazovky; méně překážek nahoře/dole; DB/Supabase beze změny.
+// v.1.5 (852) – App ikony přesunuté do assets/app-icons; manifest, HTML, SW cache i ZIP export míří na nové cesty. Funkce, DB a Supabase beze změny.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

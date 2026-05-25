@@ -31,23 +31,23 @@ const EXPORT_SOURCE_IDS = {
   "manifest.webmanifest": "src-manifest-webmanifest",
   "sw.js": "src-sw-js",
   "supabase_rpc_hardening_v828.sql": "src-supabase-rpc-hardening-v828-sql",
-  "icon-16.png": "src-icon-16-png",
-  "icon-32.png": "src-icon-32-png",
-  "icon-180.png": "src-icon-180-png",
-  "icon-192.png": "src-icon-192-png",
-  "icon-512.png": "src-icon-512-png",
-  "icon-1024.png": "src-icon-1024-png"
+  "assets/app-icons/icon-16.png": "src-icon-16-png",
+  "assets/app-icons/icon-32.png": "src-icon-32-png",
+  "assets/app-icons/icon-180.png": "src-icon-180-png",
+  "assets/app-icons/icon-192.png": "src-icon-192-png",
+  "assets/app-icons/icon-512.png": "src-icon-512-png",
+  "assets/app-icons/icon-1024.png": "src-icon-1024-png"
 };
 
 const SOURCE_CACHE = window.__ROTACE_SOURCE_CACHE__ || (window.__ROTACE_SOURCE_CACHE__ = {});
 
 const EXPORT_BINARY_FILES = new Set([
-  'icon-16.png',
-  'icon-32.png',
-  'icon-180.png',
-  'icon-192.png',
-  'icon-512.png',
-  'icon-1024.png',
+  'assets/app-icons/icon-16.png',
+  'assets/app-icons/icon-32.png',
+  'assets/app-icons/icon-180.png',
+  'assets/app-icons/icon-192.png',
+  'assets/app-icons/icon-512.png',
+  'assets/app-icons/icon-1024.png',
   'assets/dashboard-icons/calendar.png',
   'assets/dashboard-icons/dovolena.png',
   'assets/dashboard-icons/eportal.png',
@@ -178,12 +178,12 @@ async function exportCurrentHtml() {
     ];
 
     const binaryFiles = [
-      'icon-16.png',
-      'icon-32.png',
-      'icon-180.png',
-      'icon-192.png',
-      'icon-512.png',
-      'icon-1024.png',
+      'assets/app-icons/icon-16.png',
+      'assets/app-icons/icon-32.png',
+      'assets/app-icons/icon-180.png',
+      'assets/app-icons/icon-192.png',
+      'assets/app-icons/icon-512.png',
+      'assets/app-icons/icon-1024.png',
       'assets/dashboard-icons/calendar.png',
       'assets/dashboard-icons/dovolena.png',
       'assets/dashboard-icons/eportal.png',

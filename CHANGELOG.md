@@ -1,3 +1,8 @@
+## v.1.5 (852)
+- Úklid assetů: všechny app ikony `icon-16/32/180/192/512/1024.png` jsou přesunuté z kořene do `assets/app-icons/`, aby v kořeni ZIPu nezůstávaly obrázky.
+- Opravené odkazy na app ikony v `index.html`, `manifest.webmanifest`, `sw.js` a ZIP exportu. Service worker cachuje nové cesty a export už zahrnuje app ikony jen z `assets/app-icons/`.
+- Funkce aplikace, hry, Supabase a DB policies beze změny. Verze sjednocena na v.1.5 (852), cache na v1.5-852 a Supabase realtime kanál na rak-public-live-v852.
+
 ## v.1.5 (851)
 - Lodě: technicky funkční stav z v850 zůstává zachovaný, úprava je zaměřená na vzhled a využití obrazovky.
 - Lodě příprava/střelba: herní pole je zvětšené přes maximum dostupné výšky, horní HUD a spodní akce jsou zmenšené/odlehčené a nepřekáží poli.
