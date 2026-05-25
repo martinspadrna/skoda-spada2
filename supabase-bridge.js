@@ -234,10 +234,10 @@
     { table: 'gomoku_wins', realtime: true, queueType: 'gomoku_win', access: 'anon SELECT/INSERT/UPDATE', note: 'výhry piškvorek / legacy leaderboard' }
   ];
 
-  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (834)';
+  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (835)';
   const SUPABASE_POLICY_AUDIT_SNAPSHOT_AT = '2026-05-24';
   const SUPABASE_POLICY_HARDENING_PHASE = {
-    current: 'V834 – přidaný bezpečný Supabase heartbeat přes samostatnou tabulku app_keepalive: maximálně 1× za 12 hodin na zařízení, bez blokování startu a bez zásahu do policies Piškvorek.',
+    current: 'V835 – Supabase heartbeat je vidět přímo v O aplikaci/Diagnostice a jde ručně otestovat; samotná app_keepalive migrace zůstává z v834.',
     next: 'Nejdřív znovu otestovat online Piškvorky na dvou mobilech; potom pokračovat opatrně přes RPC smoke, ne přes další restriktivní policies naslepo',
     rollback: 'Rollback v828 byl proveden jen pro game_invites/game_sessions restriktivní policies z v826; game_stats restriktivní policies z v824 zůstávají zachované.'
   };
@@ -294,11 +294,11 @@
   ];
 
   const SUPABASE_RPC_HARDENING_STATUS = {
-    version: 'v.1.5 (834)',
+    version: 'v.1.5 (835)',
     phase: '2E-M keepalive heartbeat / online TTT hardening paused',
     rpcPreferred: true,
     migrationApplied: true,
-    migrationNote: 'game_stats direct INSERT/UPDATE zůstávají omezené restriktivními policies v824. Restriktivní policies pro game_invites/game_sessions z v826 byly v DB ve v828 odstraněné. V834 přidává jen app_keepalive heartbeat; Piškvorky policies zůstávají beze změny.',
+    migrationNote: 'game_stats direct INSERT/UPDATE zůstávají omezené restriktivními policies v824. Restriktivní policies pro game_invites/game_sessions z v826 byly v DB ve v828 odstraněné. V834 přidává app_keepalive heartbeat, V835 jen zlepšuje jeho zobrazení/test; Piškvorky policies zůstávají beze změny.',
     dbVerifiedAt: '2026-05-24',
     verifiedRpcCount: 7,
     bugReportsHardeningPhase: 'pozastaveno kvůli online TTT hotfixu',
@@ -705,7 +705,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v834');
+      const channel = client.channel('rak-public-live-v835');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -3935,6 +3935,7 @@
       }
     },
     runSupabaseKeepalive,
+    runKeepaliveNow: (reason) => runSupabaseKeepalive(reason || 'manual', { force: true }),
     getSupabaseKeepaliveStatus,
     seedFromLocalSnapshot,
     flushPendingWrites,
@@ -4066,6 +4067,7 @@
   window.getSupabasePerformanceHealth = getSupabasePerformanceHealth;
   window.getSupabaseKeepaliveStatus = getSupabaseKeepaliveStatus;
   window.runSupabaseKeepalive = runSupabaseKeepalive;
+  window.runSupabaseKeepaliveNow = (reason) => runSupabaseKeepalive(reason || 'manual', { force: true });
   window.getSupabaseStructureHealth = getSupabaseStructureHealth;
   window.getSupabasePolicyRiskHealth = getSupabasePolicyRiskHealth;
   window.createGameInvite = async (payload) => window.RotationSupabaseBridge.createGameInvite(payload);

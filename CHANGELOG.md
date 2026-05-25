@@ -1,3 +1,11 @@
+## v.1.5 (835)
+- Supabase heartbeat je nově vidět přímo v O aplikaci v samostatné kartě, ne jen hluboko v dlouhé diagnostice.
+- Do Nastavení aplikace přibyl stručný řádek `Supabase heartbeat`, aby šlo hned poznat stav OK / nedostupná / možná paused.
+- Diagnostika teď dává heartbeat hned nahoru mezi první řádky, takže se neztratí za dlouhým výpisem Supabase struktury.
+- Přidané tlačítko `Otestovat heartbeat teď`, které spustí bezpečný ruční ping přes stejnou `app_keepalive` tabulku.
+- Piškvorky přes link i ruční kód jsou po Martinově testu brané jako ověřené OK; žádné policies pro `game_invites/game_sessions` se v tomto buildu neměnily.
+- Verze sjednocena na v.1.5 (835), cache na v1.5-835 a Supabase realtime kanál na rak-public-live-v835.
+
 ## v.1.5 (834)
 - Přidaný bezpečný Supabase heartbeat přes samostatnou tabulku `app_keepalive`, mimo herní data a bez zásahu do policies online Piškvorek.
 - Heartbeat se plánuje po startu aplikace, po návratu online/viditelnosti/focusu, ale vzdálený ping se na jednom zařízení spustí maximálně 1× za 12 hodin.

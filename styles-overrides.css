@@ -14470,4 +14470,25 @@ nav.bottomNav #bottomNavScroll > button.bottomNavMenuBtn.active::before{
   }
 }
 
-/* v.1.5 (834): Supabase heartbeat běží přes samostatnou app_keepalive tabulku; Piškvorky policies beze změny. */
+/* v.1.5 (835): Supabase heartbeat běží přes samostatnou app_keepalive tabulku; Piškvorky policies beze změny. */
+
+/* v.1.5 (835): viditelný Supabase heartbeat v O aplikaci / Nastavení. */
+.appMenuKeepaliveCard {
+  margin-top: 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.16);
+  background: rgba(255,255,255,.07);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.appMenuVersion.isOk {
+  color: #86efac;
+}
+.appMenuVersion.isWarn {
+  color: #fde68a;
+}
+body.lightweightMode .appMenuKeepaliveCard,
+body.lowEndDevice .appMenuKeepaliveCard {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}

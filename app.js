@@ -1,4 +1,4 @@
-// v.1.5 (834) – Supabase heartbeat přes app_keepalive, diagnostika stavu OK/nedostupná/možná paused.
+// v.1.5 (835) – Supabase heartbeat viditelně v O aplikaci a Diagnostice, ruční test heartbeatu.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;

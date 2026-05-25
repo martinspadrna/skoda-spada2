@@ -4773,12 +4773,62 @@ function renderGamesAppearanceStatus() {
   if (bgBtn && !bgBtn.dataset.bound) { bgBtn.dataset.bound = '1'; bgBtn.addEventListener('click', (ev) => { ev.preventDefault(); openGamesAppearanceSettings('background'); }); }
 }
 
+
+function readSupabaseKeepaliveStatusForUi() {
+  try {
+    if (typeof window.getSupabaseKeepaliveStatus === 'function') {
+      const status = window.getSupabaseKeepaliveStatus();
+      if (status && typeof status === 'object') return status;
+    }
+  } catch (err) {}
+  try {
+    const raw = localStorage.getItem('rak_supabase_keepalive_v1');
+    const parsed = raw ? JSON.parse(raw) : null;
+    if (parsed && typeof parsed === 'object') {
+      return Object.assign({ source: 'localStorage' }, parsed);
+    }
+  } catch (err) {}
+  return null;
+}
+
+function formatSupabaseKeepaliveLine(status) {
+  const st = status && typeof status === 'object' ? status : null;
+  if (!st) return 'Supabase heartbeat: zatím bez dat';
+  const label = String(st.label || st.status || 'neznámá');
+  const lastOk = String(st.lastSuccessAt || 'zatím nic');
+  const lastError = String(st.lastErrorMessage || st.lastErrorCode || 'žádná');
+  const attempts = String(st.attempts || 0) + '/' + String(st.successes || 0) + '/' + String(st.failures || 0) + '/' + String(st.skips || 0);
+  const reason = String(st.lastReason || st.lastSkipReason || '—');
+  return 'Supabase heartbeat: ' + label + ' · poslední OK ' + lastOk + ' · chyba ' + lastError + ' · pokusy/OK/chyby/skip ' + attempts + ' · důvod ' + reason;
+}
+
+function buildSupabaseKeepaliveStatusHtml() {
+  const status = readSupabaseKeepaliveStatusForUi();
+  const label = status ? String(status.label || status.status || 'neznámá') : 'zatím bez dat';
+  const stateClass = status && status.status === 'ok' ? ' isOk' : (status && (status.status === 'possibly_paused' || status.status === 'unavailable') ? ' isWarn' : '');
+  const lastOk = status ? String(status.lastSuccessAt || 'zatím nic') : 'zatím nic';
+  const lastError = status ? String(status.lastErrorMessage || status.lastErrorCode || 'žádná') : 'žádná';
+  const counts = status ? (String(status.attempts || 0) + '/' + String(status.successes || 0) + '/' + String(status.failures || 0) + '/' + String(status.skips || 0)) : '0/0/0/0';
+  const reason = status ? String(status.lastReason || status.lastSkipReason || '—') : '—';
+  return [
+    '<div class="appMenuCard appMenuKeepaliveCard">',
+    '  <div class="appMenuCardTitle">Supabase heartbeat</div>',
+    '  <div class="appMenuVersion' + stateClass + '">Stav: ' + escapeHtml(label) + '</div>',
+    '  <div class="smallText">Poslední OK: ' + escapeHtml(lastOk) + '</div>',
+    '  <div class="smallText">Poslední chyba: ' + escapeHtml(lastError) + '</div>',
+    '  <div class="smallText">Pokusy / OK / chyby / skip: ' + escapeHtml(counts) + ' · důvod: ' + escapeHtml(reason) + '</div>',
+    '  <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="supabase-heartbeat-now">Otestovat heartbeat teď</button>',
+    '</div>'
+  ].join('');
+}
+
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText || 'v.1.5 (834)',
+      range: versionText || 'v.1.5 (835)',
       title: 'Aktuální stabilizace',
       lines: [
+        'V835 vytahuje Supabase heartbeat přímo do O aplikaci i na začátek Diagnostiky a přidává ruční tlačítko Otestovat heartbeat teď.',
         'V834 přidává bezpečný Supabase heartbeat přes samostatnou tabulku app_keepalive: appka při startu/při návratu pošle malý ping maximálně 1× za 12 hodin na zařízení a při chybě dál jede offline.',
         'V833 doplňuje online Piškvorkám čitelný move guard: když tah nejde udělat kvůli čekání, chybějící roli nebo špatnému tahu, appka ukáže důvod, zapíše diagnostiku a zkusí rychlý resync session.',
         'V832 zpevňuje deep-link pozvánky: appka nově čte kód z hash i query URL, uklidí URL po přijetí a v diagnostice ukáže, jestli přišel přes hash nebo query.',
@@ -6758,6 +6808,7 @@ function bindAppMenuHandlers(body) {
         const diag = [
           'Verze: ' + String((typeof app !== "undefined" && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '—')),
           'Online: ' + (navigator.onLine ? 'ano' : 'ne'),
+          formatSupabaseKeepaliveLine(supabaseKeepaliveStatus || readSupabaseKeepaliveStatusForUi()),
           'Kompaktní režim: ' + (document.body.classList.contains('compactUI') ? 'zapnutý' : 'vypnutý'),
           LIGHTWEIGHT_MODE_LABEL + ': ' + (document.body.classList.contains('lightweightMode') ? 'zapnutý' : 'vypnutý') + (document.body.classList.contains('reduceMotion') ? ' · méně animací aktivní' : '') + (lightweightManual ? ' · ručně' : ''),
           'Výkonový profil: ' + (document.body.classList.contains('lightweightMode') || document.body.classList.contains('lowEndDevice') ? 'odlehčený' : 'normální'),
@@ -6778,6 +6829,25 @@ function bindAppMenuHandlers(body) {
           ...supabaseDiag
         ].join('\n');
         alert(diag);
+        return;
+      }
+      if (menuAction === 'supabase-heartbeat-now') {
+        try {
+          const before = readSupabaseKeepaliveStatusForUi();
+          const run = typeof window.runSupabaseKeepaliveNow === 'function'
+            ? window.runSupabaseKeepaliveNow
+            : (typeof window.RotationSupabaseBridge !== 'undefined' && window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.runKeepaliveNow === 'function' ? window.RotationSupabaseBridge.runKeepaliveNow : null);
+          if (!run) {
+            alert('Supabase heartbeat ještě není připravený. Zkus to po pár sekundách znovu.\n\n' + formatSupabaseKeepaliveLine(before));
+            return;
+          }
+          await Promise.resolve(run('manual-diagnostics'));
+          const after = readSupabaseKeepaliveStatusForUi();
+          alert(formatSupabaseKeepaliveLine(after));
+        } catch (err) {
+          const after = readSupabaseKeepaliveStatusForUi();
+          alert('Supabase heartbeat test se nepovedl: ' + String(err && err.message ? err.message : err || 'neznámá chyba') + '\n\n' + formatSupabaseKeepaliveLine(after));
+        }
         return;
       }
       if (menuAction === 'hard-reload') {
@@ -7023,6 +7093,7 @@ function openAppMenu(view) {
         '<div class="appMenuCard">',
         '  <div class="appMenuCardTitle">O aplikaci</div>',
         '  <div class="appMenuVersion">' + escapeHtml(versionText || '—') + '</div>',
+        '  ' + buildSupabaseKeepaliveStatusHtml(),
         '  ' + buildAppHistoryHtml(versionText),
         '  <button type="button" class="appMenuAction appMenuBack" data-menu-back="1">Zpět</button>',
         '</div>'
@@ -7056,6 +7127,7 @@ function openAppMenu(view) {
         performanceCard,
         '<div class="appMenuCard appMenuSettingsCard appMenuAppSettingsCard">',
         '  <div class="appMenuCardTitle">Nastavení aplikace</div>',
+        '  <div class="smallText">' + escapeHtml(formatSupabaseKeepaliveLine(readSupabaseKeepaliveStatusForUi())) + '</div>',
         '  <div class="appMenuSettingsList appMenuSettingsGrid">',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-pref="compact">' + (prefs.compact ? '✓ ' : '') + 'Kompaktní</button>',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="clear-cache">Vyčistit cache</button>',
