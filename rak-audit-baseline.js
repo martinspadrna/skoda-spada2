@@ -1,4 +1,4 @@
-// v.1.5 (893) – release/architecture readiness bere i Supabase client/queue audit jako read-only signál.
+// v.1.5 (895) – release/architecture readiness bere i online game contract audit jako read-only signál.
 
 (function setupRakAuditBaselineHelpers() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -52,6 +52,7 @@ function getRakReleaseReadinessHealth() {
   let supabaseClientQueueAudit = null;
   let supabaseQueueSmokeReport = null;
   let supabaseQueueClosure = null;
+  let onlineGameContracts = null;
 
   try {
     externalDependencyStatus = Object.assign({}, window.__RAK_EXTERNAL_DEP_STATUS__ || {});
@@ -116,6 +117,12 @@ function getRakReleaseReadinessHealth() {
   }
 
   try {
+    onlineGameContracts = readRakDiagnosticForAudit('onlineGameContracts', 'getRakOnlineGameContractAuditHealth');
+  } catch (err) {
+    onlineGameContracts = { ok: false, status: 'read-error', lastError: String(err && err.message ? err.message : err) };
+  }
+
+  try {
     externalScripts = Array.from(document.scripts || [])
       .map((script) => String(script && script.getAttribute ? script.getAttribute('src') || '' : '').trim())
       .filter((src) => /^https?:\/\//i.test(src));
@@ -172,10 +179,13 @@ function getRakReleaseReadinessHealth() {
   if (supabaseQueueClosure && supabaseQueueClosure.ok === false) {
     warnings.push('Supabase queue closure warning: ' + String((supabaseQueueClosure.issues || []).join(', ') || supabaseQueueClosure.status || 'kontrola'));
   }
+  if (onlineGameContracts && onlineGameContracts.ok === false) {
+    warnings.push('Online game contracts warning: ' + String((onlineGameContracts.issues || []).join(', ') || onlineGameContracts.status || 'kontrola'));
+  }
 
   return {
     ok: issues.length === 0,
-    mode: 'audit-baseline-split-release-readiness-v893',
+    mode: 'audit-baseline-split-release-readiness-v895',
     checkedAt,
     version: currentVersion || 'unknown',
     issueCount: issues.length,
@@ -204,6 +214,10 @@ function getRakReleaseReadinessHealth() {
     supabaseQueueClosureAvailable: !!supabaseQueueClosure,
     supabaseQueueClosureOk: supabaseQueueClosure ? !!supabaseQueueClosure.ok : null,
     supabaseQueueClosurePhasePercent: supabaseQueueClosure ? Number(supabaseQueueClosure.phasePercent || 0) : 0,
+    onlineGameContractsAvailable: !!onlineGameContracts,
+    onlineGameContractsOk: onlineGameContracts ? !!onlineGameContracts.ok : null,
+    onlineGameContractsPhasePercent: onlineGameContracts ? Number(onlineGameContracts.phasePercent || 0) : 0,
+    onlineGameContractsFallbackCount: onlineGameContracts ? Number(onlineGameContracts.fallbackCount || 0) : 0,
     domActionSmokeReportIssueCount: domActionSmokeReport ? Number(domActionSmokeReport.issueCount || 0) : 0,
     domActionSmokeReportWarningCount: domActionSmokeReport ? Number(domActionSmokeReport.warningCount || 0) : 0,
     storageSyncAuditLinked: !!storageSyncAudit,
@@ -284,6 +298,7 @@ function getRakArchitectureBaselineHealth() {
   let storageSyncAudit = null;
   let supabaseClientQueueAudit = null;
   let supabaseQueueClosure = null;
+  let onlineGameContracts = null;
 
   try {
     scripts = Array.from(document.scripts || [])
@@ -359,6 +374,11 @@ function getRakArchitectureBaselineHealth() {
   } catch (err) {
     supabaseQueueClosure = null;
   }
+  try {
+    onlineGameContracts = readRakDiagnosticForAudit('onlineGameContracts', 'getRakOnlineGameContractAuditHealth');
+  } catch (err) {
+    onlineGameContracts = null;
+  }
 
   const requiredGlobals = [
     'app',
@@ -377,6 +397,7 @@ function getRakArchitectureBaselineHealth() {
     'getRakSupabaseClientQueueAuditHealth',
     'getRakSupabaseQueueSmokeReport',
     'getRakSupabaseQueueClosureHealth',
+    'getRakOnlineGameContractAuditHealth',
     'getPwaHardeningStatus',
     'getSupabaseHardeningStatus'
   ];
@@ -414,10 +435,12 @@ function getRakArchitectureBaselineHealth() {
   else if (!supabaseClientQueueAudit.ok) warnings.push('Supabase client/queue audit warnings: ' + String(supabaseClientQueueAudit.warningCount || 0));
   if (!supabaseQueueClosure) warnings.push('Supabase queue closure unavailable');
   else if (!supabaseQueueClosure.ok) warnings.push('Supabase queue closure warnings: ' + String(supabaseQueueClosure.warningCount || 0));
+  if (!onlineGameContracts) warnings.push('Online game contracts audit unavailable');
+  else if (!onlineGameContracts.ok) warnings.push('Online game contracts warnings: ' + String(onlineGameContracts.warningCount || 0));
 
   return {
     ok: issues.length === 0,
-    mode: 'audit-baseline-split-architecture-boot-audit-v893',
+    mode: 'audit-baseline-split-architecture-boot-audit-v895',
     checkedAt,
     version: version || 'unknown',
     issueCount: issues.length,
@@ -473,6 +496,10 @@ function getRakArchitectureBaselineHealth() {
     supabaseQueueClosureAvailable: !!supabaseQueueClosure,
     supabaseQueueClosureOk: supabaseQueueClosure ? !!supabaseQueueClosure.ok : null,
     supabaseQueueClosurePhasePercent: supabaseQueueClosure ? Number(supabaseQueueClosure.phasePercent || 0) : 0,
+    onlineGameContractsAvailable: !!onlineGameContracts,
+    onlineGameContractsOk: onlineGameContracts ? !!onlineGameContracts.ok : null,
+    onlineGameContractsPhasePercent: onlineGameContracts ? Number(onlineGameContracts.phasePercent || 0) : 0,
+    onlineGameContractsFallbackCount: onlineGameContracts ? Number(onlineGameContracts.fallbackCount || 0) : 0,
     architectureBootAuditPercent: 100,
     namespaceDiagnosticsReadOnly: !!(window.RaK && window.RaK.diagnostics && typeof window.RaK.diagnostics.read === 'function'),
     architectureBootAuditClosed: true,
@@ -493,7 +520,8 @@ function getRakArchitectureBaselineHealth() {
       'phase D: isolate export/release tooling from runtime app code – uzavřeno ve v880 přes manifest, preflight, smoke report a release readiness linkage',
       'phase E: DOM/action registry audit a DOM smoke testy pro zamčené sekce – uzavřeno ve v885 přes release readiness linkage bez změny funkčnosti',
       'phase G: storage/localStorage a offline/sync audit – uzavřeno ve v889 jako read-only diagnostika bez mazání dat',
-      'phase H: Supabase client/offline queue audit – uzavřen ve v893 jako read-only diagnostika bez DB změn, policies, auto flush nebo mazání'
+      'phase H: Supabase client/offline queue audit – uzavřen ve v892 jako read-only diagnostika bez DB změn, policies, auto flush nebo mazání',
+      'phase I: Online game create/accept/save contract audit – zahájen ve v895 jako read-only diagnostika bez DB změn, policies a zásahu do online flow'
     ]
   };
 }

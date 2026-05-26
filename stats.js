@@ -711,7 +711,7 @@ function createStatsYearOverviewNodes(stats, year) {
   grid.className = 'statsYearOverviewGrid';
 
   const trend = document.createElement('div');
-  trend.className = 'statsYearChartBox statsYearLineBox';
+  trend.className = 'statsYearPane statsYearLinePane';
   trend.appendChild(createStatsTextNode('div', 'smallText statsYearChartTitle', 'Vývoj obsazenosti během roku'));
   const chart = document.createElement('div');
   chart.className = 'statsOccupancyLineChart';
@@ -726,10 +726,15 @@ function createStatsYearOverviewNodes(stats, year) {
     gridLine.setAttribute('d', 'M8 18H232 M8 52H232 M8 86H232');
     svg.appendChild(gridLine);
     const count = Math.max(1, months.length - 1);
+    const pctValues = months.map(item => Math.max(0, Math.min(100, Number(item.percent || 0) || 0)));
+    const minPct = pctValues.length ? Math.min(...pctValues) : 0;
+    const maxPct = pctValues.length ? Math.max(...pctValues) : 100;
+    const pctRange = Math.max(1, maxPct - minPct);
+    const flatLine = Math.abs(maxPct - minPct) < 0.1;
     const points = months.map((item, index) => {
       const x = 14 + (index / count) * 212;
-      const pct = Math.max(0, Math.min(100, Number(item.percent || 0) || 0));
-      const y = 96 - (pct / 100) * 80;
+      const pct = pctValues[index] ?? Math.max(0, Math.min(100, Number(item.percent || 0) || 0));
+      const y = flatLine ? 56 : 96 - ((pct - minPct) / pctRange) * 80;
       return { x, y, item, pct };
     });
     const area = document.createElementNS('http://www.w3.org/2000/svg', 'path');
@@ -762,13 +767,17 @@ function createStatsYearOverviewNodes(stats, year) {
       labels.appendChild(label);
     });
     chart.appendChild(labels);
+    const scale = document.createElement('div');
+    scale.className = 'statsOccupancyScaleLabel';
+    scale.textContent = 'Rozsah grafu: ' + formatStatsPercent(minPct) + '–' + formatStatsPercent(maxPct);
+    chart.appendChild(scale);
   } else {
     chart.appendChild(createStatsTextNode('div', 'smallText', 'Zatím nejsou data pro graf.'));
   }
   trend.appendChild(chart);
 
   const pieBox = document.createElement('div');
-  pieBox.className = 'statsYearChartBox';
+  pieBox.className = 'statsYearPane statsYearPiePane';
   pieBox.appendChild(createStatsTextNode('div', 'smallText statsYearChartTitle', 'Důvody absencí v započteném roce'));
   const reasons = Array.isArray(stats.absenceReasonList) ? stats.absenceReasonList.slice(0, 8) : [];
   const totalAbs = reasons.reduce((sum, item) => sum + (Number(item.value) || 0), 0);
@@ -814,8 +823,15 @@ function createStatsYearOverviewNodes(stats, year) {
   pieWrap.appendChild(legend);
   pieBox.appendChild(pieWrap);
 
-  grid.appendChild(trend);
-  grid.appendChild(pieBox);
+  const combinedBox = document.createElement('div');
+  combinedBox.className = 'statsYearChartBox statsYearCombinedBox';
+  const combinedGrid = document.createElement('div');
+  combinedGrid.className = 'statsYearCombinedGrid';
+  combinedGrid.appendChild(trend);
+  combinedGrid.appendChild(pieBox);
+  combinedBox.appendChild(combinedGrid);
+
+  grid.appendChild(combinedBox);
   wrap.appendChild(header);
   wrap.appendChild(grid);
 

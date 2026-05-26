@@ -3664,6 +3664,111 @@ function tttBestDeepSafetyMove(board, deadline) {
 
 
 
+function tttBestHumanTrapBrakeMove(board, deadline) {
+  const occupied = board.reduce((sum, cell) => sum + (cell ? 1 : 0), 0);
+  if (occupied < 4) return -1;
+  const centerRow = (TTT_ROWS - 1) / 2;
+  const centerCol = (TTT_COLS - 1) / 2;
+  const currentPressure = tttTacticalPressureScore(board, 'X');
+  let candidates = Array.from(new Set(tttCandidateMoves(board, occupied < 22 ? 3 : 2))).filter(idx => !board[idx]);
+  candidates = candidates
+    .map(idx => {
+      const row = Math.floor(idx / TTT_COLS);
+      const col = idx % TTT_COLS;
+      return {
+        idx,
+        score: tttCheapMovePotential(board, idx, 'O') * 1.18
+          + tttCheapMovePotential(board, idx, 'X') * 1.28
+          + Math.max(0, 110 - (Math.abs(row - centerRow) + Math.abs(col - centerCol)) * 5)
+      };
+    })
+    .sort((a, b) => b.score - a.score)
+    .slice(0, occupied < 16 ? 40 : (occupied < 30 ? 32 : 22))
+    .map(item => item.idx);
+
+  let bestIdx = -1;
+  let bestScore = -Infinity;
+  let bestWorstRisk = Infinity;
+  for (const idx of candidates) {
+    const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    if (deadline && now > deadline - 24 && bestIdx >= 0) break;
+
+    board[idx] = 'O';
+    const directLosses = tttWinningMoves(board, 'X').length;
+    const ownImmediateWins = tttWinningMoves(board, 'O').length;
+    const ownFork = tttBestForkMove(board, 'O') >= 0 ? 1 : 0;
+    const ownPressure = tttTacticalPressureScore(board, 'O');
+
+    let replies = Array.from(new Set(tttCandidateMoves(board, occupied < 18 ? 3 : 2))).filter(reply => !board[reply]);
+    replies = replies
+      .map(reply => {
+        board[reply] = 'X';
+        const replyWins = tttWinningMoves(board, 'X').length;
+        const replyPressure = tttTacticalPressureScore(board, 'X');
+        const replyFork = tttBestForkMove(board, 'X') >= 0 ? 1 : 0;
+        board[reply] = '';
+        return {
+          reply,
+          score: tttCheapMovePotential(board, reply, 'X') * 1.05
+            + replyWins * 2400000
+            + replyFork * 950000
+            + replyPressure * 0.00012
+        };
+      })
+      .sort((a, b) => b.score - a.score)
+      .slice(0, occupied < 18 ? 18 : 12)
+      .map(item => item.reply);
+
+    let worstRisk = directLosses * 36000000;
+    for (const reply of replies) {
+      board[reply] = 'X';
+      const replyWinner = tttWinner(board).winner === 'X' ? 1 : 0;
+      const xWins = tttWinningMoves(board, 'X').length;
+      const xCritical = tttCriticalThreatMoves(board, 'X').length;
+      const xWindows = tttThreatWindowMoves(board, 'X').length;
+      const xOpenThrees = tttOpenThreeThreatMoves(board, 'X').length;
+      const xOpenTwos = typeof tttOpenTwoThreatMoves === 'function' ? tttOpenTwoThreatMoves(board, 'X').length : 0;
+      const xFork = tttBestForkMove(board, 'X') >= 0 ? 1 : 0;
+      const xPressure = tttTacticalPressureScore(board, 'X');
+      const oWins = tttWinningMoves(board, 'O').length;
+      const oPressure = tttTacticalPressureScore(board, 'O');
+      board[reply] = '';
+
+      const multiWinTrap = xWins >= 2 ? 1 : 0;
+      const risk = replyWinner * 120000000
+        + multiWinTrap * 86000000
+        + xWins * 24000000
+        + xCritical * 5200000
+        + xWindows * 2400000
+        + xOpenThrees * 1700000
+        + xFork * 2600000
+        + xOpenTwos * 62000
+        + xPressure * 0.94
+        - oWins * 18000000
+        - oPressure * 0.24;
+      if (risk > worstRisk) worstRisk = risk;
+    }
+
+    board[idx] = '';
+    const candidateScore = ownImmediateWins * 32000000
+      + ownFork * 4200000
+      + ownPressure * 0.82
+      + tttCheapMovePotential(board, idx, 'O') * 1.22
+      + tttCheapMovePotential(board, idx, 'X') * 0.74
+      - worstRisk * 1.38;
+    if (candidateScore > bestScore || (Math.abs(candidateScore - bestScore) < 1 && worstRisk < bestWorstRisk)) {
+      bestScore = candidateScore;
+      bestIdx = idx;
+      bestWorstRisk = worstRisk;
+    }
+  }
+
+  if (bestIdx < 0) return -1;
+  if (occupied >= 7 || currentPressure > 26000 || bestWorstRisk < 1600000) return bestIdx;
+  return -1;
+}
+
+
 function tttBestUltraSafetyMove(board, deadline) {
   const occupied = board.reduce((sum, cell) => sum + (cell ? 1 : 0), 0);
   if (occupied < 5) return -1;
@@ -3796,6 +3901,9 @@ function tttBestMove(board, difficulty) {
   const openThreeBlock = tttPickBestBlockMove(board, tttOpenThreeThreatMoves(board, 'X'), 'X');
   if (openThreeBlock >= 0) return openThreeBlock;
 
+  const trapBrakeMove = tttBestHumanTrapBrakeMove(board, (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 520);
+  if (trapBrakeMove >= 0) return trapBrakeMove;
+
   const opponentFork = tttBestForkMove(board, 'X');
   if (opponentFork >= 0) return opponentFork;
 
@@ -3805,10 +3913,10 @@ function tttBestMove(board, difficulty) {
   const lookaheadSafeMove = tttBestLookaheadSafeMove(board, 'O', 'X');
   if (lookaheadSafeMove >= 0) return lookaheadSafeMove;
 
-  const deepSafetyMove = tttBestDeepSafetyMove(board, (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 260);
+  const deepSafetyMove = tttBestDeepSafetyMove(board, (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 320);
   if (deepSafetyMove >= 0) return deepSafetyMove;
 
-  const ultraSafetyMove = tttBestUltraSafetyMove(board, (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 340);
+  const ultraSafetyMove = tttBestUltraSafetyMove(board, (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 430);
   if (ultraSafetyMove >= 0) return ultraSafetyMove;
 
   const ownFork = tttBestForkMove(board, 'O');
@@ -3821,7 +3929,7 @@ function tttBestMove(board, difficulty) {
   if (ownOpenThree >= 0) return ownOpenThree;
 
   const radius = occupied < 14 ? 3 : 2;
-  const deadline = (typeof performance !== 'undefined' ? performance.now() : Date.now()) + (difficulty === 'ai' ? 420 : 80);
+  const deadline = (typeof performance !== 'undefined' ? performance.now() : Date.now()) + (difficulty === 'ai' ? 540 : 80);
   let candidates = tttCandidateMoves(board, radius);
   if (!candidates.length) candidates = free.slice();
 
@@ -5192,14 +5300,14 @@ function buildSupabaseKeepaliveStatusHtml(options) {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v.1.5 851–893',
+      range: 'v.1.5 851–895',
       title: 'Release audit, namespace a export tooling',
       lines: [
-        'V893 znovu přitvrdilo Piškvorky proti AI a upravilo statistiky obsazenosti: vlevo je čárový graf vývoje, vpravo barevný koláč důvodů absencí a N je Neschopenka. V892 uzavírá Supabase client/offline queue audit na 100 % bez DB změn, policies, automatického flushování nebo mazání; V891 přidalo roční obsazenost/grafy do Statistik a přejmenovalo Korekce Soustruhy/Frézky; V889 uzavřelo storage/sync audit na 100 % bez automatického mazání; V885–881 uzavřely DOM/action registry audit.',
+        'V895 slučuje graf obsazenosti a koláč absencí do jednoho pole, škáluje graf od nejnižší započtené hodnoty a přidává tvrdší trap-brake obranu Piškvorek proti hráči. V894 přidalo read-only audit kontraktů online her create/accept/save bez DB/policy změn; V893 znovu přitvrdilo Piškvorky proti AI a upravilo statistiky obsazenosti; V892 uzavírá Supabase client/offline queue audit na 100 % bez automatického flushování nebo mazání.',
         'V867–875 uzavírá window.RaK read-only namespace fázi: mapuje diagnostické aliasy, zachovává staré globály a nepřepojuje navigaci, render, hry ani online flow.',
         'V860–866 uzavírá architecture/boot baseline audit: module readiness, runtime health, boot sequence a auditní helpery se oddělily mimo app.js bez změny funkčnosti.',
         'V853–859 řeší reset herních výsledků, opravu času Piškvorek, PWA/assets/SW audit, čistší ZIP strukturu a release readiness dokumentaci.',
-        'V870 přitvrdilo Piškvorky proti AI; po testu 5 her bez výhry hráče je AI brána jako potvrzeně OK.'
+        'Piškvorky proti AI se dál ladí podle reálných partií; online Piškvorky zůstávají při AI hardeningu bez zásahu.'
       ]
     },
     {
@@ -7120,6 +7228,8 @@ function bindAppMenuHandlers(body) {
         const supabaseQueueSmokeReport = readRakDiag('supabaseQueueSmokeReport', 'getRakSupabaseQueueSmokeReport');
         const supabaseQueueManualGuard = readRakDiag('supabaseQueueManualGuard', 'getRakSupabaseQueueManualGuard');
         const supabaseQueueClosure = readRakDiag('supabaseQueueClosure', 'getRakSupabaseQueueClosureHealth');
+        const onlineGameContracts = readRakDiag('onlineGameContracts', 'getRakOnlineGameContractAuditHealth');
+        const onlineGameContractSmoke = readRakDiag('onlineGameContractSmoke', 'getRakOnlineGameContractSmokeReport');
         const bootSequence = readRakDiag('bootSequence', 'getRakBootSequenceHealth');
         const namespaceHealth = readRakDiag('namespace', 'getRakNamespaceHealth');
         const namespaceReadOnlyMap = readRakDiag('namespaceReadOnlyMap', 'getRakNamespaceReadOnlyMapHealth');
@@ -7190,6 +7300,8 @@ function bindAppMenuHandlers(body) {
           supabaseQueueSmokeReport ? ('Supabase queue smoke: ' + (supabaseQueueSmokeReport.ok === true ? 'OK' : (supabaseQueueSmokeReport.ok === false ? 'kontrola' : 'zatím neběžel')) + ' · stav ' + String(supabaseQueueSmokeReport.status || '—') + ' · fronta ' + String(supabaseQueueSmokeReport.queueLength || 0) + ' · stale ' + String(supabaseQueueSmokeReport.staleTaskCount || 0) + ' · guard ' + (supabaseQueueSmokeReport.manualGuardReady ? 'OK' : 'kontrola') + ' · online ' + (supabaseQueueSmokeReport.online ? 'ano' : 'ne')) : '',
           supabaseQueueManualGuard ? ('Supabase queue guard: ' + (supabaseQueueManualGuard.ok ? 'OK' : 'kontrola') + ' · auto flush ' + (supabaseQueueManualGuard.autoFlushEnabled ? 'zapnuto' : 'vypnuto') + ' · auto mazání ' + (supabaseQueueManualGuard.autoDeleteEnabled ? 'zapnuto' : 'vypnuto') + ' · fronta ' + String(supabaseQueueManualGuard.queueLength || 0)) : '',
           supabaseQueueClosure ? ('Supabase queue closure: ' + (supabaseQueueClosure.ok ? 'OK' : 'kontrola') + ' · fáze ' + String(supabaseQueueClosure.phasePercent || 0) + '% · auto flush ' + (supabaseQueueClosure.autoFlushEnabled ? 'zapnuto' : 'vypnuto') + ' · DB změny ' + (supabaseQueueClosure.dbMutations ? 'ano' : 'ne') + ' · policies ' + (supabaseQueueClosure.policyChanges ? 'ano' : 'ne')) : '',
+          onlineGameContracts ? ('Online hry kontrakty: ' + (onlineGameContracts.ok ? 'OK' : 'kontrola') + ' · fáze ' + String(onlineGameContracts.phasePercent || 0) + '% · bridge ' + (onlineGameContracts.bridgeMethodsReady ? 'OK' : 'kontrola') + ' · c/a/s ' + String(onlineGameContracts.gameCoverageText || '—') + ' · fallback ' + String(onlineGameContracts.fallbackCount || 0)) : '',
+          onlineGameContractSmoke ? ('Online hry smoke: ' + (onlineGameContractSmoke.ok ? 'OK' : 'kontrola') + ' · pokusy/OK/fallback ' + String(onlineGameContractSmoke.attempts || 0) + '/' + String(onlineGameContractSmoke.successes || 0) + '/' + String(onlineGameContractSmoke.fallbackCount || 0) + ' · policies ' + (onlineGameContractSmoke.readyForPolicyTightening ? 'lze zvažovat' : 'neutahovat')) : '',
           exportReleaseTooling ? ('Export/release tooling: ' + (exportReleaseTooling.ok ? 'OK' : 'kontrola') + ' · source ID ' + String(exportReleaseTooling.sourceIdCount || 0) + ' · binární ' + String(exportReleaseTooling.binaryFileCount || 0) + ' · duplicit ' + String(exportReleaseTooling.duplicateBinaryCount || 0) + ' · warningy ' + String(exportReleaseTooling.warningCount || 0)) : '',
           exportSmokeReport ? ('Export smoke report: ' + (exportSmokeReport.ok === true ? 'OK' : (exportSmokeReport.ok === false ? 'kontrola' : 'zatím neběžel')) + ' · stav ' + String(exportSmokeReport.status || '—') + ' · text/bin ' + String(exportSmokeReport.checkedTextFileCount || 0) + '/' + String(exportSmokeReport.checkedBinaryFileCount || 0) + ' · chybí ' + String((exportSmokeReport.missingTextFileCount || 0) + (exportSmokeReport.missingBinaryFileCount || 0)) + ' · poslední ' + String(exportSmokeReport.lastStage || '—')) : '',
           domActionRegistry ? ('DOM/action registry: ' + (domActionRegistry.ok ? 'OK' : 'kontrola') + ' · akce ' + String(domActionRegistry.actionElementCount || 0) + ' · unikátní ' + String(domActionRegistry.uniqueActionCount || 0) + ' · kategorie ' + String(domActionRegistry.categoryCount || 0) + ' · target mapa ' + String(domActionRegistry.targetCoveragePercent || 0) + '% · target warningy ' + String(domActionRegistry.actionTargetWarningCount || 0) + ' · neznámé ' + String(domActionRegistry.unknownActionCount || 0) + ' · cíle ' + String(domActionRegistry.missingTargetCount || 0) + ' · warningy ' + String(domActionRegistry.warningCount || 0)) : '',

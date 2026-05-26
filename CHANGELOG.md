@@ -1,3 +1,16 @@
+## v.1.5 (895)
+- Statistiky → Obsazenost strojů: čárový graf vývoje a koláč důvodů absencí jsou nově v jednom společném poli, aby nezabíraly dvě oddělené karty.
+- Graf obsazenosti už neškáluje od 0 %, ale od nejnižší započtené hodnoty v roce po nejvyšší, takže menší rozdíly v obsazenosti jsou čitelnější.
+- Piškvorky proti AI: přidaná tvrdší trap-brake obrana `tttBestHumanTrapBrakeMove()`, která přednostně vyhodnocuje dvoutahové pasti hráče, dvojité výhry, forky, otevřené trojky/dvojky a nejhorší odpověď hráče. Online Piškvorky zůstaly beze změny.
+- Verze sjednocena na v.1.5 (895), cache na `v1.5-895`, realtime kanál na `rak-public-live-v895`, package na `1.5.895`.
+
+## v.1.5 (894)
+- Zahájen read-only audit kontraktů online her create/accept/save přes helpery `getRakOnlineGameContractAuditHealth()`, `getRakOnlineGameContractSmokeReport()` a `runRakOnlineGameContractSmokeReport()`.
+- Audit kontroluje klientské bridge metody, legacy wrappery a lokální smoke evidenci zvlášť pro Piškvorky a Lodě; fallbacky a chybějící smoke jsou jen diagnostické warningy.
+- Supabase DB, Supabase policies, online Piškvorky, Lodě, dashboard, spodní lišta, kalkulačky, navigace a render stránek beze změny.
+- Přidaný dokument `assets/docs/online-game-contract-audit-v894.md`; historie v O aplikaci rozšířená na stručný blok `v.1.5 851–894`.
+- Verze sjednocena na v.1.5 (894), cache na `v1.5-894`, realtime kanál na `rak-public-live-v894`, package na `1.5.894`.
+
 ## v.1.5 (893)
 - Statistiky → box `Obsazenost strojů` je očištěný od dlouhého textu; vlevo je čárový graf vývoje obsazenosti, vpravo barevný koláč důvodů absencí.
 - Absence kód `N` se nově zobrazuje jako `Neschopenka`; každý důvod absence má vlastní výkroj/barvu v koláči i legendě.

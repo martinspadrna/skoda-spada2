@@ -1,4 +1,4 @@
-// v.1.5 (893) – Supabase klient/offline queue smoke + ruční guard read-only bez DB změn.
+// v.1.5 (895) – Supabase queue + online game contract audit read-only bez DB/policy změn.
 
 (function setupRakSupabaseClientAudit() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -159,7 +159,7 @@
 
     return {
       ok: issues.length === 0,
-      mode: 'supabase-client-queue-audit-v893',
+      mode: 'supabase-client-queue-audit-v895',
       phase: 'supabase-client-offline-queue-audit',
       phasePercent: PHASE_PERCENT,
       phaseClosed: true,
@@ -200,7 +200,7 @@
     return {
       ok: !!(health && health.ok),
       status: health ? (health.ok ? 'ok' : 'kontrola') : 'unavailable',
-      mode: 'supabase-client-queue-smoke-v893',
+      mode: 'supabase-client-queue-smoke-v895',
       checkedAt: nowIso(),
       version: safeString(window.APP_VERSION || 'unknown'),
       readOnly: true,
@@ -235,7 +235,7 @@
     if (safeNumber(queue.maxRetryCount, 0) >= 3) warnings.push('některý úkol má 3+ pokusy: ' + queue.maxRetryCount);
     return {
       ok: issues.length === 0,
-      mode: 'supabase-client-queue-manual-guard-v893',
+      mode: 'supabase-client-queue-manual-guard-v895',
       checkedAt: nowIso(),
       version: safeString(window.APP_VERSION || 'unknown'),
       readOnly: true,
@@ -287,9 +287,9 @@
 
     return {
       ok: issues.length === 0,
-      mode: 'supabase-client-queue-closure-v893',
+      mode: 'supabase-client-queue-closure-v895',
       checkedAt: nowIso(),
-      version: safeString(window.APP_VERSION || 'v.1.5 (893)'),
+      version: safeString(window.APP_VERSION || 'v.1.5 (895)'),
       phase: 'phase H Supabase client/offline queue audit',
       phasePercent: 100,
       phaseClosed: true,
@@ -318,6 +318,172 @@
       warnings: warnings.concat(audit && audit.warnings ? audit.warnings : []).slice(0, 12),
       nextStep: 'Supabase client/offline queue audit je uzavřený. Ruční flush/cleanup řešit jen po výslovném potvrzení a s konkrétním seznamem položek.'
     };
+  };
+
+
+  function readOnlineGameContractBridgeStatus() {
+    const bridge = window.RotationSupabaseBridge || null;
+    const globals = {
+      create: typeof window.createGameInvite === 'function',
+      accept: typeof window.acceptGameInvite === 'function',
+      load: typeof window.loadGameSessionByInviteCode === 'function',
+      save: typeof window.saveGameSessionByInviteCode === 'function'
+    };
+    const bridgeMethods = {
+      create: !!(bridge && typeof bridge.createGameInvite === 'function'),
+      accept: !!(bridge && typeof bridge.acceptGameInvite === 'function'),
+      load: !!(bridge && typeof bridge.loadGameSessionByInviteCode === 'function'),
+      save: !!(bridge && typeof bridge.saveGameSessionByInviteCode === 'function')
+    };
+    return {
+      bridgeAvailable: !!bridge,
+      bridgeMethods,
+      globals,
+      allBridgeMethodsReady: bridgeMethods.create && bridgeMethods.accept && bridgeMethods.load && bridgeMethods.save,
+      allGlobalWrappersReady: globals.create && globals.accept && globals.load && globals.save
+    };
+  }
+
+  function readOnlineGameContractSmoke() {
+    let hardening = null;
+    try {
+      if (typeof window.getSupabaseHardeningStatus === 'function') hardening = window.getSupabaseHardeningStatus();
+    } catch (err) {
+      hardening = { error: safeString(err && err.message ? err.message : err) };
+    }
+    const smoke = hardening && hardening.gameSessionRpcSmoke ? hardening.gameSessionRpcSmoke : null;
+    const readiness = hardening && hardening.hardeningReadiness ? hardening.hardeningReadiness : null;
+    const perGameCoverage = smoke && smoke.perGameCoverage ? smoke.perGameCoverage : {};
+    const perGameFallbackCoverage = smoke && smoke.perGameFallbackCoverage ? smoke.perGameFallbackCoverage : {};
+    const requiredGames = [
+      { key: 'ttt', label: 'Piškvorky' },
+      { key: 'battleship', label: 'Lodě' }
+    ];
+    const rows = requiredGames.map((game) => {
+      const coverage = perGameCoverage[game.key] || {};
+      const fallbacks = perGameFallbackCoverage[game.key] || {};
+      return {
+        key: game.key,
+        label: game.label,
+        create: safeNumber(coverage.create, 0),
+        accept: safeNumber(coverage.accept, 0),
+        save: safeNumber(coverage.save, 0),
+        fallbackCreate: safeNumber(fallbacks.create, 0),
+        fallbackAccept: safeNumber(fallbacks.accept, 0),
+        fallbackSave: safeNumber(fallbacks.save, 0)
+      };
+    });
+    const missing = [];
+    const fallbacks = [];
+    rows.forEach((row) => {
+      if (row.create < 1) missing.push(row.label + ':create');
+      if (row.accept < 1) missing.push(row.label + ':accept');
+      if (row.save < 1) missing.push(row.label + ':save');
+      if (row.fallbackCreate > 0) fallbacks.push(row.label + ':create');
+      if (row.fallbackAccept > 0) fallbacks.push(row.label + ':accept');
+      if (row.fallbackSave > 0) fallbacks.push(row.label + ':save');
+    });
+    return {
+      available: !!smoke,
+      hardeningAvailable: !!hardening,
+      hardeningError: safeString(hardening && hardening.error || ''),
+      readyForPolicyTightening: !!(smoke && smoke.readyForPolicyTightening),
+      attempts: safeNumber(smoke && smoke.attempts, 0),
+      successes: safeNumber(smoke && smoke.successes, 0),
+      fallbackCount: safeNumber(smoke && smoke.fallbacks, 0),
+      operationCoverage: smoke && smoke.operationCoverage ? Object.assign({}, smoke.operationCoverage) : null,
+      fallbackCoverage: smoke && smoke.fallbackCoverage ? Object.assign({}, smoke.fallbackCoverage) : null,
+      perGameCoverage: rows,
+      missingGameOperations: Array.isArray(smoke && smoke.missingGameOperations) ? smoke.missingGameOperations.slice(0, 16) : missing.slice(0, 16),
+      fallbackGameOperations: fallbacks.slice(0, 16),
+      gameCoverageText: safeString(smoke && smoke.gameCoverageText || rows.map((row) => row.label + ' c/a/s ' + row.create + '/' + row.accept + '/' + row.save + ' · fallback ' + (row.fallbackCreate + row.fallbackAccept + row.fallbackSave)).join(' | ')),
+      recommendation: safeString(smoke && smoke.recommendation || (readiness && readiness.nextSafeStep) || 'Nasbírat ruční create/accept/save smoke pro Piškvorky i Lodě bez fallbacku.'),
+      policyChangeAllowedNow: false
+    };
+  }
+
+  window.getRakOnlineGameContractAuditHealth = function getRakOnlineGameContractAuditHealth() {
+    const issues = [];
+    const warnings = [];
+    const bridge = readOnlineGameContractBridgeStatus();
+    const smoke = readOnlineGameContractSmoke();
+
+    if (!bridge.bridgeAvailable) issues.push('RotationSupabaseBridge není dostupný');
+    if (!bridge.allBridgeMethodsReady) issues.push('chybí některý bridge method create/accept/load/save');
+    if (!bridge.allGlobalWrappersReady) warnings.push('chybí některý legacy wrapper create/accept/load/save');
+    if (!smoke.hardeningAvailable) warnings.push('Supabase hardening status zatím není dostupný');
+    if (smoke.hardeningError) warnings.push('Supabase hardening status read error: ' + smoke.hardeningError);
+    if (!smoke.available) warnings.push('gameSessionRpcSmoke zatím není dostupný');
+    if (smoke.missingGameOperations.length) warnings.push('chybí ruční RPC smoke: ' + smoke.missingGameOperations.join(', '));
+    if (smoke.fallbackCount > 0 || smoke.fallbackGameOperations.length) warnings.push('online hry mají fallback záznamy: ' + (smoke.fallbackGameOperations.join(', ') || smoke.fallbackCount));
+
+    return {
+      ok: issues.length === 0,
+      mode: 'online-game-contract-audit-v895',
+      checkedAt: nowIso(),
+      version: safeString(window.APP_VERSION || 'v.1.5 (895)'),
+      phase: 'phase I Supabase online hry create/accept/save kontrakty',
+      phasePercent: 35,
+      phaseClosed: false,
+      readOnly: true,
+      dbMutations: false,
+      policyChanges: false,
+      onlineFlowMutations: false,
+      bridgeAvailable: bridge.bridgeAvailable,
+      bridgeMethods: bridge.bridgeMethods,
+      globalWrappers: bridge.globals,
+      bridgeMethodsReady: bridge.allBridgeMethodsReady,
+      globalWrappersReady: bridge.allGlobalWrappersReady,
+      smokeAvailable: smoke.available,
+      readyForPolicyTightening: false,
+      policyChangeAllowedNow: false,
+      attempts: smoke.attempts,
+      successes: smoke.successes,
+      fallbackCount: smoke.fallbackCount,
+      operationCoverage: smoke.operationCoverage,
+      fallbackCoverage: smoke.fallbackCoverage,
+      perGameCoverage: smoke.perGameCoverage,
+      gameCoverageText: smoke.gameCoverageText,
+      missingGameOperations: smoke.missingGameOperations,
+      fallbackGameOperations: smoke.fallbackGameOperations,
+      issueCount: issues.length,
+      warningCount: warnings.length,
+      issues: issues.slice(0, 12),
+      warnings: warnings.slice(0, 12),
+      nextSafeStep: 'Dál jen sbírat reálný dvoumobilový create/accept/save smoke pro Piškvorky i Lodě; DB policies neutahovat bez potvrzení obou her bez fallbacku.',
+      recommendation: smoke.recommendation
+    };
+  };
+
+  window.getRakOnlineGameContractSmokeReport = function getRakOnlineGameContractSmokeReport() {
+    const audit = typeof window.getRakOnlineGameContractAuditHealth === 'function' ? window.getRakOnlineGameContractAuditHealth() : null;
+    return {
+      ok: !!(audit && audit.ok),
+      status: audit ? (audit.ok ? 'audit-ready' : 'kontrola') : 'unavailable',
+      mode: 'online-game-contract-smoke-v895',
+      checkedAt: nowIso(),
+      version: safeString(window.APP_VERSION || 'v.1.5 (895)'),
+      readOnly: true,
+      dbMutations: false,
+      policyChanges: false,
+      onlineFlowMutations: false,
+      phasePercent: safeNumber(audit && audit.phasePercent, 0),
+      bridgeMethodsReady: !!(audit && audit.bridgeMethodsReady),
+      globalWrappersReady: !!(audit && audit.globalWrappersReady),
+      smokeAvailable: !!(audit && audit.smokeAvailable),
+      readyForPolicyTightening: false,
+      attempts: safeNumber(audit && audit.attempts, 0),
+      successes: safeNumber(audit && audit.successes, 0),
+      fallbackCount: safeNumber(audit && audit.fallbackCount, 0),
+      missingGameOperations: Array.isArray(audit && audit.missingGameOperations) ? audit.missingGameOperations.slice(0, 16) : [],
+      gameCoverageText: safeString(audit && audit.gameCoverageText || ''),
+      lastWarningSample: Array.isArray(audit && audit.warnings) ? audit.warnings.slice(0, 8) : [],
+      lastIssueSample: Array.isArray(audit && audit.issues) ? audit.issues.slice(0, 8) : []
+    };
+  };
+
+  window.runRakOnlineGameContractSmokeReport = function runRakOnlineGameContractSmokeReport() {
+    return window.getRakOnlineGameContractSmokeReport();
   };
 
 

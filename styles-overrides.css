@@ -15437,3 +15437,23 @@ body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsCell{
 .statsAbsenceLegendRow span{flex:1 1 auto;}
 .statsAbsenceLegendSwatch{display:inline-block;width:9px;height:9px;border-radius:999px;flex:0 0 auto;box-shadow:0 0 8px rgba(255,255,255,.12);}
 @media (max-width:430px){.statsYearOverviewGrid{grid-template-columns:1fr !important;}.statsYearChartBox{min-height:142px !important;}.statsOccupancyLineChart svg{height:96px}.statsAbsencePieWrap{grid-template-columns:84px minmax(0,1fr) !important;}.statsAbsencePie{width:78px !important;height:78px !important;}}
+
+/* v.1.5 (895) – Statistiky: graf obsazenosti a koláč absencí v jednom poli */
+.statsYearOverviewGrid{grid-template-columns:1fr !important;}
+.statsYearCombinedBox{min-height:0 !important;padding:10px !important;}
+.statsYearCombinedGrid{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);gap:12px;align-items:stretch;min-width:0;}
+.statsYearPane{min-width:0;display:flex;flex-direction:column;justify-content:flex-start;}
+.statsYearLinePane{padding-right:10px;border-right:1px solid rgba(255,255,255,.10);}
+.statsYearPiePane{padding-left:0;}
+.statsOccupancyScaleLabel{margin-top:2px;text-align:center;font-size:9.5px;line-height:1.1;color:rgba(255,255,255,.55);}
+.statsYearCombinedBox .statsOccupancyLineChart{min-height:134px;}
+.statsYearCombinedBox .statsOccupancyLineChart svg{height:102px;}
+.statsYearCombinedBox .statsAbsencePieWrap{min-height:134px !important;}
+@media (max-width:430px){
+  .statsYearCombinedGrid{grid-template-columns:1fr;gap:10px;}
+  .statsYearLinePane{padding-right:0;padding-bottom:10px;border-right:0;border-bottom:1px solid rgba(255,255,255,.10);}
+  .statsYearPiePane{padding-left:0;}
+  .statsYearCombinedBox .statsOccupancyLineChart{min-height:126px;}
+  .statsYearCombinedBox .statsOccupancyLineChart svg{height:94px;}
+  .statsYearCombinedBox .statsAbsencePieWrap{min-height:112px !important;}
+}

@@ -1,4 +1,4 @@
-// v.1.5 (893) – storage/sync audit closure, smoke report a cleanup guard bez automatického mazání dat.
+// v.1.5 (895) – storage/sync audit closure, smoke report a cleanup guard bez automatického mazání dat.
 
 (function setupRakStorageSyncAudit() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -249,7 +249,7 @@
 
     return {
       ok: issues.length === 0,
-      mode: 'storage-sync-readonly-closure-v893',
+      mode: 'storage-sync-readonly-closure-v895',
       checkedAt: nowIso(),
       version: safeString(window.APP_VERSION || 'unknown'),
       phase: 'phase G storage/localStorage/offline sync audit',
@@ -283,7 +283,7 @@
     const mediumRiskCount = Number(riskCounts.medium || 0);
     return {
       ok: true,
-      mode: 'manual-cleanup-guard-v893',
+      mode: 'manual-cleanup-guard-v895',
       checkedAt: nowIso(),
       version: safeString(window.APP_VERSION || 'unknown'),
       readOnly: true,
@@ -307,8 +307,8 @@
   function updateRakStorageSyncSmokeReport(partial) {
     const data = partial && typeof partial === 'object' ? partial : {};
     Object.assign(STORAGE_SYNC_SMOKE_REPORT, data, {
-      mode: 'storage-sync-smoke-report-v893',
-      version: safeString(window.APP_VERSION || 'v.1.5 (893)'),
+      mode: 'storage-sync-smoke-report-v895',
+      version: safeString(window.APP_VERSION || 'v.1.5 (895)'),
       checkedAt: nowIso()
     });
     return getRakStorageSyncSmokeReport();
@@ -319,7 +319,7 @@
     return Object.assign({}, STORAGE_SYNC_SMOKE_REPORT, {
       ok: STORAGE_SYNC_SMOKE_REPORT.ok,
       status: safeString(STORAGE_SYNC_SMOKE_REPORT.status || 'not-run'),
-      mode: safeString(STORAGE_SYNC_SMOKE_REPORT.mode || 'storage-sync-smoke-report-v893'),
+      mode: safeString(STORAGE_SYNC_SMOKE_REPORT.mode || 'storage-sync-smoke-report-v895'),
       version: safeString(STORAGE_SYNC_SMOKE_REPORT.version || window.APP_VERSION || 'unknown'),
       lastStage: safeString(STORAGE_SYNC_SMOKE_REPORT.lastStage || '—'),
       lastError: safeString(STORAGE_SYNC_SMOKE_REPORT.lastError || '')
@@ -386,9 +386,9 @@
 
     return {
       ok: issues.length === 0,
-      mode: 'storage-sync-audit-closure-v893',
+      mode: 'storage-sync-audit-closure-v895',
       checkedAt: nowIso(),
-      version: safeString(window.APP_VERSION || 'v.1.5 (893)'),
+      version: safeString(window.APP_VERSION || 'v.1.5 (895)'),
       phase: 'phase G storage/localStorage/offline sync audit',
       phasePercent: 100,
       phaseClosed: true,

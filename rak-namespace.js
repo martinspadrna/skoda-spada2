@@ -1,4 +1,4 @@
-// v.1.5 (893) – window.RaK namespace doplněný o Supabase client/queue audit aliasy.
+// v.1.5 (895) – window.RaK namespace doplněný o online game contract audit aliasy.
 
 (function setupRakNamespaceBridge() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -11,8 +11,8 @@
 
   const root = window.RaK || {};
   const existingVersion = root.namespaceVersion || '';
-  root.namespaceVersion = 'v.1.5 (893)';
-  root.mode = 'passive-namespace-readonly-phase-closed-supabase-client-queue-v893';
+  root.namespaceVersion = 'v.1.5 (895)';
+  root.mode = 'passive-namespace-readonly-phase-closed-online-game-contracts-v895';
   root.createdAt = root.createdAt || new Date().toISOString();
   root.updatedAt = new Date().toISOString();
   root.compatibility = 'legacy-globals-preserved';
@@ -48,6 +48,8 @@
     { group: 'diagnostics', alias: 'supabaseQueueSmokeReport', globalName: 'getRakSupabaseQueueSmokeReport', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only smoke report Supabase queue bez flushování fronty.' },
     { group: 'diagnostics', alias: 'supabaseQueueManualGuard', globalName: 'getRakSupabaseQueueManualGuard', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only manual guard; potvrzuje vypnutý auto flush a auto mazání fronty.' },
     { group: 'diagnostics', alias: 'supabaseQueueClosure', globalName: 'getRakSupabaseQueueClosureHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only closure Supabase client/offline queue auditu bez DB změn.' },
+    { group: 'diagnostics', alias: 'onlineGameContracts', globalName: 'getRakOnlineGameContractAuditHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only audit create/accept/save kontraktů online her bez DB/policy změn.' },
+    { group: 'diagnostics', alias: 'onlineGameContractSmoke', globalName: 'getRakOnlineGameContractSmokeReport', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only smoke report kontraktů online her bez zápisu do DB.' },
     { group: 'diagnostics', alias: 'exportReleaseTooling', globalName: 'getRakExportReleaseToolingHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only audit export/release tooling vrstvy bez spuštění exportu.' },
     { group: 'diagnostics', alias: 'exportSmokeReport', globalName: 'getRakExportSmokeReport', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only poslední smoke/preflight stav exportu ZIPu.' },
     { group: 'diagnostics', alias: 'domActionRegistry', globalName: 'getRakDomActionRegistryHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only mapa data-action prvků a allowlistů bez přepojení navigace/renderu/her.' },
@@ -102,14 +104,14 @@
   };
   root.getNamespaceMap = cloneMap;
   root.namespaceMap = cloneMap();
-  root.namespaceMapVersion = 'v.1.5 (893)';
+  root.namespaceMapVersion = 'v.1.5 (895)';
   root.namespacePlan = {
     phase: 'phase C',
-    mode: 'namespace-readonly-phase-closed-with-supabase-client-queue-alias-v893',
+    mode: 'namespace-readonly-phase-closed-with-online-game-contract-alias-v895',
     progressPercent: 100,
     mapClosed: true,
     rule: 'Staré globály zůstávají zdroj pravdy; read-only aliasy mají fallback na legacy globály a nesmí mutovat stav.',
-    nextStep: 'Namespace read-only fáze je uzavřená; export/release, DOM/action a storage/sync audity jsou uzavřené; Supabase client/offline queue audit je uzavřený; další fáze může být další stabilizační audit.'
+    nextStep: 'Namespace read-only fáze je uzavřená; export/release, DOM/action a storage/sync audity jsou uzavřené; Supabase client/offline queue audit je uzavřený; v895 přidává read-only online game contract audit jako další bezpečnou stabilizační fázi.'
   };
 
   ensureGroup('modules');
@@ -183,7 +185,7 @@
     const safeList = list.filter((item) => item.phase === 'safe-now');
     return {
       ok: true,
-      mode: 'diagnostics-readonly-phase-closed-summary-v893',
+      mode: 'diagnostics-readonly-phase-closed-summary-v895',
       aliasCount: list.length,
       safeNowCount: safeList.length,
       laterCount: list.filter((item) => item.phase === 'later').length,
@@ -215,7 +217,7 @@
     if (unresolvedSafe.length) warnings.push('safe-now legacy globals čekají na pozdější moduly: ' + unresolvedSafe.slice(0, 6).join(', '));
     return {
       ok: missingReaders.length === 0 && mutatingRisk.length === 0,
-      mode: 'namespace-readonly-phase-closed-v893',
+      mode: 'namespace-readonly-phase-closed-v895',
       mapClosed: true,
       namespacePhaseClosed: true,
       phasePercent: 100,
@@ -315,7 +317,7 @@
 
     return {
       ok: issues.length === 0,
-      mode: 'passive-namespace-readonly-phase-closed-export-release-v893',
+      mode: 'passive-namespace-readonly-phase-closed-export-release-v895',
       checkedAt,
       version: String(window.APP_VERSION || 'unknown'),
       namespaceVersion,
@@ -353,7 +355,7 @@
       namespaceMapClosed: true,
       namespacePhaseClosed: true,
       phasePercent: 100,
-      nextRefactorRule: 'Namespace read-only fáze je uzavřená. Další fáze smí řešit jen export/release tooling; navigaci/render/hry pořád nepřepojovat.',
+      nextRefactorRule: 'Namespace read-only fáze je uzavřená. Další fáze smí řešit jen pasivní audit kontraktů; navigaci/render/hry pořád nepřepojovat.',
       namespaceMap: cloneMap().slice(0, 24),
       hasResolver: !!(window.RaK && typeof window.RaK.resolve === 'function'),
       hasCaller: !!(window.RaK && typeof window.RaK.call === 'function'),
@@ -366,7 +368,7 @@
     const health = (typeof window.getRakNamespaceHealth === 'function') ? window.getRakNamespaceHealth() : null;
     return {
       ok: !!(mapHealth && mapHealth.ok && health && health.ok),
-      mode: 'namespace-readonly-phase-closure-v893',
+      mode: 'namespace-readonly-phase-closure-v895',
       phasePercent: 100,
       namespacePhaseClosed: true,
       legacyGlobalsPreserved: !!(health && health.legacyGlobalsPreserved),
