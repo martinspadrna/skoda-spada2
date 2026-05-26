@@ -4926,10 +4926,16 @@ function buildSupabaseKeepaliveStatusHtml(options) {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText || 'v.1.5 (847)',
+      range: versionText || 'v.1.5 (861)',
       title: 'Aktuální stabilizace',
       lines: [
-        'V854 přidává PWA/assets/SW audit po přesunu ikon: diagnostika hlídá manifest, favicon, apple-touch, SW precache ikony a ZIP pravidlo assets-only.',
+        'V861 přidává module readiness registry: Diagnostika nově vidí, které runtime moduly se načetly, v jakém pořadí a jestli některý spadl.',
+        'V860 přidává bezpečný architecture/boot baseline audit: mapuje boot sekvenci, runtime vrstvy, coupling body a refactor backlog bez zásahu do her, DB nebo policies.',
+        'V859 uzavírá PWA/release baseline: doplňuje finální checklist, Google Fonts load/error signál a rollback poznámky bez zásahu do her, DB nebo policies.',
+        'V858 zpevňuje boot/CDN diagnostiku: externí knihovny XLSX, JSZip a Supabase nově zapisují load/error signál a release readiness ukáže, jestli appka běží jen ve fallback režimu.',
+        'V857 přidává finální release readiness checklist, audit CDN/externích závislostí a opravuje runtime kontrolu formátu verze pro v.X.Y; hry a Supabase policies zůstávají beze změny.',
+        'V856 opravuje release historii po kontrole buildů a přesouvá SQL auditní soubory z kořene ZIPu do assets/docs/sql; runtime, hry a Supabase policies zůstávají beze změny.',
+        'V855 přidává PWA/assets/SW audit po přesunu ikon: diagnostika hlídá manifest, favicon, apple-touch, SW precache ikony a ZIP pravidlo assets-only.',
         'V853 resetuje herní výsledky a lokální herní cache: všichni začínají od nuly, profily a vzhled zůstávají zachované a Piškvorky měří skutečný čas partie místo 0 s.',
         'V852 přesouvá app ikony do assets/app-icons a sjednocuje manifest, HTML, service worker i ZIP export na nové cesty.',
         'V847 opravuje spodní navigaci: Láďův režim má tvrdě neprůhledný panel a neaktivní ikonky jsou jemně dorovnané vůči popisku; aktivní stav zůstává beze změny.',
@@ -6827,6 +6833,9 @@ function bindAppMenuHandlers(body) {
         const supabaseStructureHealth = typeof window.getSupabaseStructureHealth === 'function' ? window.getSupabaseStructureHealth() : (supabaseHardening && supabaseHardening.structureHealth ? supabaseHardening.structureHealth : null);
         const supabasePolicyRiskHealth = typeof window.getSupabasePolicyRiskHealth === 'function' ? window.getSupabasePolicyRiskHealth() : (supabaseHardening && supabaseHardening.policyRiskHealth ? supabaseHardening.policyRiskHealth : null);
         const supabaseHardeningReadiness = typeof window.getSupabaseHardeningReadiness === 'function' ? window.getSupabaseHardeningReadiness() : (supabaseHardening && supabaseHardening.hardeningReadiness ? supabaseHardening.hardeningReadiness : null);
+        const releaseReadiness = typeof window.getRakReleaseReadinessHealth === 'function' ? window.getRakReleaseReadinessHealth() : null;
+        const architectureBaseline = typeof window.getRakArchitectureBaselineHealth === 'function' ? window.getRakArchitectureBaselineHealth() : null;
+        const moduleReadiness = typeof window.getRakModuleReadinessHealth === 'function' ? window.getRakModuleReadinessHealth() : null;
         const profileUiStatus = typeof window.getProfileUiSyncStatus === 'function' ? window.getProfileUiSyncStatus() : null;
         const profileUiGuard = profileUiStatus && profileUiStatus.guard ? profileUiStatus.guard : null;
         const dataOptStatus = typeof window.getDataOptimizationStatus === 'function' ? window.getDataOptimizationStatus() : null;
@@ -6874,6 +6883,11 @@ function bindAppMenuHandlers(body) {
           'Post-stabilizace helpery: ' + (finalStabilizationStatus.lastSafeHelperHealthOk ? 'OK' : 'kontrola') + ' · helpery ' + String(finalStabilizationStatus.lastSafeHelperCount || 0) + ' · chybí ' + String(finalStabilizationStatus.lastSafeHelperMissingCount || 0),
           'Post-stabilizace: ' + (finalStabilizationStatus.lastPostStabilizationOk ? 'OK' : 'kontrola') + ' · režim ' + String(finalStabilizationStatus.lastPostStabilizationMode || '—') + ' · body ke kontrole ' + String(finalStabilizationStatus.lastPostStabilizationIssueCount || 0)
         ] : [];
+        const architectureDiag = architectureBaseline ? [
+          'Architektura/boot: ' + (architectureBaseline.ok ? 'OK' : 'kontrola') + ' · režim ' + String(architectureBaseline.mode || '—') + ' · skripty ' + String(architectureBaseline.scriptCount || 0) + ' · styly ' + String(architectureBaseline.stylesheetCount || 0) + ' · data-action ' + String(architectureBaseline.dataActionCount || 0),
+          'Architektura coupling: chybějící globály ' + String((architectureBaseline.missingGlobals || []).length || 0) + ' · duplicitní ID ' + String(architectureBaseline.duplicateIdCount || 0) + ' · warningy ' + String(architectureBaseline.warningCount || 0),
+          moduleReadiness ? ('Module readiness: ' + (moduleReadiness.ok ? 'OK' : 'kontrola') + ' · načteno ' + String(moduleReadiness.loadedCount || 0) + '/' + String(moduleReadiness.expectedCount || 0) + ' · chyby ' + String(moduleReadiness.errorCount || 0) + ' · chybí ' + String(moduleReadiness.missingCount || 0) + ' · boot ' + String(moduleReadiness.bootDurationMs || 0) + ' ms') : ''
+        ].filter(Boolean) : [];
         const pwaDiag = pwaStatus ? [
           'PWA/SW: fáze ' + String(pwaStatus.phasePercent || 0) + '% · controller ' + (pwaStatus.hasController ? 'ano' : 'ne') + ' · update toast ' + (pwaStatus.updateToastVisible ? 'viditelný' : 'ne') + ' · verze cache ' + (pwaStatus.swVersionMismatch ? 'nesedí' : 'sedí'),
           'PWA update check: běhy/skip/join ' + String(pwaStatus.updateChecks || 0) + '/' + String(pwaStatus.updateCheckSkips || 0) + '/' + String(pwaStatus.updateCheckJoins || 0) + ' · update volání ' + String(pwaStatus.registrationUpdates || 0) + ' · chyby ' + String(pwaStatus.registrationUpdateErrors || 0),
@@ -6881,7 +6895,8 @@ function bindAppMenuHandlers(body) {
           'PWA cache: verze ' + String(pwaStatus.swCacheVersion || '—') + ' / oček. ' + String(pwaStatus.swExpectedCacheVersion || '—') + ' · mismatch ' + String(pwaStatus.swVersionMismatchCount || 0) + ' · update/skip ' + String(pwaStatus.swVersionMismatchUpdateChecks || 0) + '/' + String(pwaStatus.swVersionMismatchUpdateSkips || 0) + ' · static/runtime ' + String(pwaStatus.swStaticCacheEntries || 0) + '/' + String(pwaStatus.swRuntimeCacheEntries || 0) + ' · runtime trim ' + String(pwaStatus.swRuntimeTrimDeletedCount || 0) + '/' + String(pwaStatus.swRuntimeTrimBeforeCount || 0) + ' · staré RaK cache/smazáno ' + String(pwaStatus.swStaleRakCacheCount || 0) + '/' + String(pwaStatus.swStaleRakCacheDeletedCount || 0) + ' · precache OK/chyby/chybí ' + String(pwaStatus.swPrecacheSuccessCount || 0) + '/' + String(pwaStatus.swPrecacheFailedCount || 0) + '/' + String(pwaStatus.swPrecacheMissingCount || 0) + ' · požadavky/skip ' + String(pwaStatus.swCacheStatusRequests || 0) + '/' + String(pwaStatus.swCacheStatusRequestSkips || 0) + ' · klienti ' + String(pwaStatus.swClientsCount || 0) + ' · preload ' + (pwaStatus.swNavigationPreloadEnabled ? 'ano' : 'ne'),
           'PWA cache režim: lookup ' + String(pwaStatus.swCacheLookupMode || '—') + ' · ukládání ' + String(pwaStatus.swCacheableResponseMode || '—') + ' · trim ' + String(pwaStatus.swActivateRuntimeTrimMode || '—') + ' · síť fallback ' + String(pwaStatus.swNetworkTimeoutFallbackMode || '—') + ' (' + String(pwaStatus.swNetworkFallbackTimeoutMs || 0) + ' ms)' + ' · static timeout ' + String(pwaStatus.swStaticCacheFirstTimeoutMode || '—'),
           'PWA asset audit: ' + String(pwaStatus.pwaAssetAuditMode || '—') + ' · manifest ' + (pwaStatus.pwaAssetManifestOk ? 'OK' : 'kontrola') + ' · favicon ' + (pwaStatus.pwaAssetFaviconOk ? 'OK' : 'kontrola') + ' · apple ' + (pwaStatus.pwaAssetAppleTouchOk ? 'OK' : 'kontrola') + ' · SW ikony ' + String(pwaStatus.swAssetIconCount || 0) + '/' + String(pwaStatus.pwaAssetExpectedIconCount || 0) + ' · root odkazy ' + (pwaStatus.pwaAssetRootIconRefsBlocked && !Number(pwaStatus.swAssetLegacyRootIconCount || 0) ? 'žádné' : 'kontrola') + ' · ZIP ' + String(pwaStatus.swExportZipRootMode || '—'),
-          'PWA dokončení: ' + String(pwaStatus.swPhase8CompletionMode || '—') + ' · připraveno ' + (pwaStatus.swPhase8Ready ? 'ano' : 'ne') + ' · app shell ' + String(pwaStatus.swAppShellCachedRatio || 0) + '%'
+          'PWA dokončení: ' + String(pwaStatus.swPhase8CompletionMode || '—') + ' · připraveno ' + (pwaStatus.swPhase8Ready ? 'ano' : 'ne') + ' · app shell ' + String(pwaStatus.swAppShellCachedRatio || 0) + '%',
+          releaseReadiness ? ('Release readiness: ' + (releaseReadiness.ok ? 'OK' : 'kontrola') + ' · verze ' + String(releaseReadiness.version || '—') + ' · CDN skripty ' + String(releaseReadiness.externalScriptCount || 0) + ' · warningy ' + String(releaseReadiness.warningCount || 0)) : ''
         ] : [];
         const dataOptDiag = dataOptStatus ? [
           'Data opt: zápisy/skipy ' + String(dataOptStatus.localStorageWrites || 0) + '/' + String(dataOptStatus.localStorageSkippedWrites || 0) + ' · čtení/cache ' + String(dataOptStatus.localStorageReads || 0) + '/' + String(dataOptStatus.localStorageReadCacheHits || 0),
@@ -6943,6 +6958,7 @@ function bindAppMenuHandlers(body) {
           ...ladaPerformanceDiag,
           ...devicePerformanceDiag,
           ...gameEngineDiag,
+          ...architectureDiag,
           ...tttOnlineJoinDiag,
           ...pwaDiag,
           ...dataOptDiag,

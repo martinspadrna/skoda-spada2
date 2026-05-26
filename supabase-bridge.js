@@ -234,10 +234,10 @@
     { table: 'gomoku_wins', realtime: true, queueType: 'gomoku_win', access: 'anon SELECT/INSERT/UPDATE', note: 'výhry piškvorek / legacy leaderboard' }
   ];
 
-  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (854)';
+  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (861)';
   const SUPABASE_POLICY_AUDIT_SNAPSHOT_AT = '2026-05-24';
   const SUPABASE_POLICY_HARDENING_PHASE = {
-    current: 'V854 – PWA/assets/SW audit po přesunu ikon: app-icons jsou v assets/app-icons, cache/export verze sjednocené. DB policies se nemění.',
+    current: 'V856 – release hygiene po kontrole vlastních buildů: changelog opravený, SQL auditní soubory jsou archivované v assets/docs/sql a DB policies se nemění.',
     next: 'Nasbírat RPC smoke signály create/accept/save zvlášť pro Piškvorky i Lodě bez fallbacků; až potom připravit úzké policy zúžení po jednotlivých tabulkách.',
     rollback: 'Rollback v828 byl proveden jen pro game_invites/game_sessions restriktivní policies z v826; game_stats restriktivní policies z v824 zůstávají zachované.'
   };
@@ -294,11 +294,11 @@
   ];
 
   const SUPABASE_RPC_HARDENING_STATUS = {
-    version: 'v.1.5 (854)',
+    version: 'v.1.5 (861)',
     phase: '2E-O online invite/session RPC smoke + accept RPC / no policy tightening',
     rpcPreferred: true,
     migrationApplied: true,
-    migrationNote: 'game_stats direct INSERT/UPDATE zůstávají omezené restriktivními policies v824. Restriktivní policies pro game_invites/game_sessions z v826 byly v DB ve v828 odstraněné. V834–V837 stabilizovalo app_keepalive heartbeat přes RPC. V839 přidala RPC cestu pro přijetí online pozvánky; V841 zpřesnila smoke audit po hrách: Piškvorky i Lodě musí projít create/accept/save zvlášť před dalším utažením policies. V842 upravila klientské UI/flow, V843 sjednotila Lodě zvací overlay s Piškvorkami, V844 doplnila link/share flow Lodí a V845 opravuje router Lodí přes odkaz plus zakrytý spodek flotily; V847 tvrdě zajišťuje neprůhlednou spodní lištu v Láďově režimu; V848 přesněji dorovnává neaktivní ikonky spodní navigace vůči popiskům; V850 zmenšuje/kompaktuje setup pole Lodí pro větší mobily a zpevňuje obnovu stavu/střelbu po připojení přes zvací odkaz; V854 kontroluje PWA/assets/SW po přesunu ikon bez změny policies; spodní ikonky zůstávají beze změny; policies dál nemění.',
+    migrationNote: 'game_stats direct INSERT/UPDATE zůstávají omezené restriktivními policies v824. Restriktivní policies pro game_invites/game_sessions z v826 byly v DB ve v828 odstraněné. V834–V837 stabilizovalo app_keepalive heartbeat přes RPC. V839 přidala RPC cestu pro přijetí online pozvánky; V841 zpřesnila smoke audit po hrách: Piškvorky i Lodě musí projít create/accept/save zvlášť před dalším utažením policies. V842 upravila klientské UI/flow, V843 sjednotila Lodě zvací overlay s Piškvorkami, V844 doplnila link/share flow Lodí a V845 opravuje router Lodí přes odkaz plus zakrytý spodek flotily; V847 tvrdě zajišťuje neprůhlednou spodní lištu v Láďově režimu; V848 přesněji dorovnává neaktivní ikonky spodní navigace vůči popiskům; V850 zmenšuje/kompaktuje setup pole Lodí pro větší mobily a zpevňuje obnovu stavu/střelbu po připojení přes zvací odkaz; V855 kontroluje PWA/assets/SW po přesunu ikon bez změny policies; V856 opravuje release historii a přesouvá SQL auditní soubory z kořene do assets/docs/sql; spodní ikonky zůstávají beze změny; policies dál nemění.',
     dbVerifiedAt: '2026-05-25',
     verifiedRpcCount: 7,
     bugReportsHardeningPhase: 'znovu otevřeno jen jako audit; DB změna zatím ne',
@@ -906,7 +906,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v854');
+      const channel = client.channel('rak-public-live-v861');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -954,11 +954,11 @@
   const LOCAL_ANNOUNCEMENTS_KEY = 'rotace_supabase_announcements_v1';
   const LOCAL_MACHINE_SETTINGS_KEY = 'rotace_supabase_machine_settings_v1';
   const LOCAL_GAME_ACCOUNTS_KEY = 'rotace_supabase_game_accounts_v1';
-  const LOCAL_GAME_STATS_PREFIX = 'rotace_supabase_game_stats_v854:';
+  const LOCAL_GAME_STATS_PREFIX = 'rotace_supabase_game_stats_v856:';
   const LOCAL_GAME_UI_SETTINGS_PREFIX = 'rotace_supabase_game_ui_settings_v1:';
-  const LOCAL_GAME_SESSIONS_PREFIX = 'rotace_supabase_game_sessions_v854:';
+  const LOCAL_GAME_SESSIONS_PREFIX = 'rotace_supabase_game_sessions_v856:';
   const GAME_UI_SETTINGS_TYPE = '__profile_ui';
-  const GAME_PROGRESS_RESET_VERSION = 'v.1.5 (854)';
+  const GAME_PROGRESS_RESET_VERSION = 'v.1.5 (856)';
   const GAME_PROGRESS_RESET_CUTOFF_ISO = '2026-05-26T02:10:00+02:00';
   const GAME_PROGRESS_RESET_CUTOFF_MS = Date.parse(GAME_PROGRESS_RESET_CUTOFF_ISO);
   const SUPABASE_GAME_CACHE_TTL_MS = 30 * 1000;
@@ -3806,12 +3806,12 @@
     return {
       ok: blockers.length === 0,
       mode: 'supabase-hardening-readiness-audit-only',
-      version: 'v.1.5 (854)',
+      version: 'v.1.5 (861)',
       checkedAt: new Date().toISOString(),
       confirmed,
       readinessPercent,
       policyChangeAllowedNow: false,
-      policyChangeReason: 'V854 je PWA/assets/SW audit a release checklist; policies game_invites/game_sessions se v tomto buildu neutahují.',
+      policyChangeReason: 'V856 je release hygiene a SQL inventory cleanup; policies game_invites/game_sessions se v tomto buildu neutahují.',
       nextSafeStep: 'Nejdřív reálný RPC smoke create/accept/save zvlášť pro Piškvorky i Lodě bez fallbacku; potom připravit úzký SQL návrh pro jednu tabulku.',
       items,
       itemCount: items.length,
@@ -4450,7 +4450,7 @@
   });
 
   window.addEventListener('focus', () => {
-    requestSupabaseQueueWake('focus', 854);
+    requestSupabaseQueueWake('focus', 856);
     scheduleRealtimeRebind('focus', 1800);
     scheduleSupabaseKeepalive('focus', 3200);
   });

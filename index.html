@@ -15,9 +15,23 @@
 <title>Rotace a Kalkulačky</title>
 
 <link rel="icon" type="image/png" href="assets/app-icons/icon-192.png">
-<link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&amp;display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script>
+window.__RAK_EXTERNAL_DEP_STATUS__ = window.__RAK_EXTERNAL_DEP_STATUS__ || {};
+window.rakNoteExternalDependency = function(name, status, src) {
+  try {
+    var key = String(name || 'external').trim() || 'external';
+    window.__RAK_EXTERNAL_DEP_STATUS__[key] = {
+      status: String(status || 'unknown'),
+      src: String(src || ''),
+      at: new Date().toISOString()
+    };
+    document.documentElement.dataset['rakExt' + key.charAt(0).toUpperCase() + key.slice(1)] = String(status || 'unknown');
+  } catch (err) {}
+};
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&amp;display=swap" rel="stylesheet" onload="rakNoteExternalDependency('googleFonts','loaded',this.href)" onerror="rakNoteExternalDependency('googleFonts','failed',this.href)">
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js" onload="rakNoteExternalDependency('xlsx','loaded',this.src)" onerror="rakNoteExternalDependency('xlsx','failed',this.src)"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js" onload="rakNoteExternalDependency('jszip','loaded',this.src)" onerror="rakNoteExternalDependency('jszip','failed',this.src)"></script>
 <script src="data.js"></script>
 
 <link rel="stylesheet" href="styles.css">
@@ -821,7 +835,7 @@
   </details>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onload="rakNoteExternalDependency('supabase','loaded',this.src)" onerror="rakNoteExternalDependency('supabase','failed',this.src)"></script>
 <script src="app.js"></script>
 <nav class="bottomNav" aria-label="Spodní navigace">
   <div class="bottomNavScroll" id="bottomNavScroll">

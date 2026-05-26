@@ -1,3 +1,54 @@
+## v.1.5 (861)
+
+- Přidaný bezpečný module readiness registry: aplikace nově eviduje načtení runtime modulů, pořadí bootu, chyby načtení a orientační dobu bootu.
+- Diagnostika / O aplikaci nově ukazuje „Module readiness“ a architektura/boot audit ho bere jako další readiness signál.
+- Přidaný dokument `assets/docs/module-readiness-audit-v861.md` s popisem, co registry hlídá a jak se má použít při dalším refactoru.
+- Funkčnost her, online flow, Supabase DB, policies, dashboard, spodní lišta i kalkulačky zůstaly beze změny.
+- Verze sjednocena na v.1.5 (861), cache na `v1.5-861`, realtime kanál na `rak-public-live-v861`, package na `1.5.861`.
+
+## v.1.5 (860)
+- Bezpečný architecture/boot baseline audit bez zásahu do funkční logiky her, DB nebo Supabase policies.
+- Přidaný runtime health `getRakArchitectureBaselineHealth()`, který mapuje boot skripty, stylesheety, data-action prvky, duplicitní ID, chybějící globály a refactor backlog.
+- Diagnostika v O aplikaci nově ukazuje architektura/boot baseline a coupling signály.
+- Přidaný dokument `assets/docs/architecture-boot-audit-v860.md` s boot diagramem, runtime vrstvami, coupling body, prioritami a bezpečným refactor plánem.
+- Verze sjednocena na v.1.5 (860), cache na `v1.5-860`, realtime kanál na `rak-public-live-v860`, package na `1.5.860`.
+
+## v.1.5 (859)
+
+- Finální uzavření PWA/release baseline fáze: doplněný checklist pro ZIP strukturu, app ikony, SW precache, CDN fallbacky, rollback a post-release ověření.
+- Google Fonts link nově zapisuje `loaded/failed` signál do stejné boot diagnostiky jako XLSX, JSZip a Supabase; výpadek fontu je jen warning, ne blokace aplikace.
+- Přidaný dokument `assets/docs/release-readiness-v859.md`; původní v858 dokumentace zůstává zachovaná jako samostatný historický krok.
+- Verze sjednocena na v.1.5 (859), cache na `v1.5-859` a realtime kanál na `rak-public-live-v859`.
+- Runtime her, online flow, Supabase DB, Supabase policies, dashboard, spodní lišta a kalkulačky beze změny.
+
+## v.1.5 (858)
+
+- Boot/CDN hardening: externí knihovny XLSX, JSZip a Supabase mají v HTML `onload/onerror` signály do `window.__RAK_EXTERNAL_DEP_STATUS__`.
+- Release readiness diagnostika ukazuje stav CDN načtení a warning, když appka běží s omezením kvůli nedostupné externí knihovně.
+- Přidaný dokument `assets/docs/release-readiness-v858.md` pro boot/CDN kontrolu.
+- Verze sjednocena na v.1.5 (858), cache na `v1.5-858` a realtime kanál na `rak-public-live-v858`.
+- Runtime her, Supabase DB a Supabase policies beze změny.
+
+## v.1.5 (857)
+- Finální release readiness krok po v856: doplněný runtime checklist pro manifest/app ikony/SW/ZIP/CDN a diagnostický řádek v O aplikaci.
+- Opravený runtime readiness audit: formát verze už není natvrdo omezený na `v.1.1 (...)`, ale bere obecný formát `v.X.Y (build)`, takže v.1.5 nepadá na falešnou chybu verze.
+- Přidaný dokument `assets/docs/release-readiness-v857.md` s release checklistem, rollback postupem a poznámkou k CDN fallbackům.
+- Hry, online flow, Supabase DB a Supabase policies beze změny.
+- Verze sjednocena na v.1.5 (857), cache na `v1.5-857` a realtime kanál na `rak-public-live-v857`.
+
+## v.1.5 (856)
+- Release hygiene po vlastní kontrole buildů: navazujeme na poslední reálně existující artefakt v.1.5 (855), předchozí neexistující v856/v857 se nepočítají jako platné buildy.
+- Opravený `CHANGELOG.md`: druhý duplicitní blok `v.1.5 (855)` byl správně vrácen na `v.1.5 (854)`, aby historie odpovídala skutečným artefaktům.
+- SQL auditní/migrační soubory byly přesunuté z kořene ZIPu do `assets/docs/sql/`, takže v kořeni zůstávají jen runtime/release soubory a jediná složka je dál `assets/`.
+- Export ZIPu nově přibaluje SQL reference z `assets/docs/sql/`; runtime aplikace, online hry, Supabase DB a policies zůstaly beze změny.
+- Verze sjednocena na v.1.5 (856), cache na `v1.5-856` a realtime kanál na `rak-public-live-v856`.
+
+## v.1.5 (855)
+- ZIP/source inventory audit po PWA assets úpravách: odstraněný prázdný soubor `assets/app-icons/1`, který nebyl runtime asset ani validní ikona.
+- `package.json` má sjednocenou verzi `1.5.855`, aby neukazoval starý build.
+- Service worker má novou cache `v1.5-855`, realtime kanál je `rak-public-live-v855` a PWA/assets audit mód je posunutý na v855.
+- Online hry, Supabase policies, dashboard, spodní lišta a kalkulačky beze změny.
+
 ## v.1.5 (854)
 - Asset/PWA/SW audit po přesunu app ikon: ověřené nové cesty `assets/app-icons/` v HTML, manifestu, service workeru a exportu bez návratu root ikon do kořene ZIPu.
 - Service worker má novou cache `v1.5-854`, realtime kanál je `rak-public-live-v854` a diagnostika PWA nově hlídá app-icons audit/release checklist pro manifest, favicon, SW precache a ZIP export.
