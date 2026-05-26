@@ -1,4 +1,4 @@
-// v.1.5 (897) – window.RaK namespace doplněný o online game contract audit aliasy.
+// v.1.5 (898) – window.RaK namespace doplněný o online game contract audit aliasy.
 
 (function setupRakNamespaceBridge() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -11,7 +11,7 @@
 
   const root = window.RaK || {};
   const existingVersion = root.namespaceVersion || '';
-  root.namespaceVersion = 'v.1.5 (897)';
+  root.namespaceVersion = 'v.1.5 (898)';
   root.mode = 'passive-namespace-readonly-phase-closed-online-game-contracts-v897';
   root.createdAt = root.createdAt || new Date().toISOString();
   root.updatedAt = new Date().toISOString();
@@ -104,7 +104,7 @@
   };
   root.getNamespaceMap = cloneMap;
   root.namespaceMap = cloneMap();
-  root.namespaceMapVersion = 'v.1.5 (897)';
+  root.namespaceMapVersion = 'v.1.5 (898)';
   root.namespacePlan = {
     phase: 'phase C',
     mode: 'namespace-readonly-phase-closed-with-online-game-contract-alias-v897',

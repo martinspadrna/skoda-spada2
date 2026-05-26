@@ -1,4 +1,4 @@
-// v.1.5 (897) – reset herních výsledků, čas v Top score a tvrdší AI reply-lockdown bez zásahu do online her.
+// v.1.5 (898) – reset herních/top score výsledků, klikací body obsazenosti a tvrdší AI bez zásahu do online her.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app.js', 'loaded', { source: 'index' }); } catch (err) {}
 
 
@@ -2521,7 +2521,7 @@ function installPwaAndConnectivityHooks() {
     swAppShellCachedRatio: 0,
     swNetworkFallbackTimeoutMs: 0,
     swNavigationPreloadTimeoutMs: 0,
-    pwaAssetAuditMode: 'zip-source-inventory-assets-pwa-sql-release-readiness-architecture-module-readiness-runtime-health-storage-sync-namespace-closed-export-manifest-preflight-dom-action-v897',
+    pwaAssetAuditMode: 'zip-source-inventory-assets-pwa-sql-release-readiness-architecture-module-readiness-runtime-health-storage-sync-namespace-closed-export-manifest-preflight-dom-action-v898',
     pwaAssetExpectedIconCount: 6,
     pwaAssetManifestOk: false,
     pwaAssetFaviconOk: false,
@@ -2567,7 +2567,7 @@ function installPwaAndConnectivityHooks() {
     const appleTouchOk = linkHrefs.some(href => href.indexOf('assets/app-icons/icon-180.png') >= 0);
     const legacyRootIconRefs = linkHrefs.filter(href => /(^|\/)icon-(16|32|180|192|512|1024)\.png(?:$|[?#])/.test(href) && href.indexOf('assets/app-icons/') < 0);
     return {
-      pwaAssetAuditMode: 'zip-source-inventory-assets-pwa-sql-release-readiness-architecture-module-readiness-runtime-health-storage-sync-namespace-closed-export-manifest-preflight-dom-action-v897',
+      pwaAssetAuditMode: 'zip-source-inventory-assets-pwa-sql-release-readiness-architecture-module-readiness-runtime-health-storage-sync-namespace-closed-export-manifest-preflight-dom-action-v898',
       pwaAssetExpectedIconCount: expectedIcons.length,
       pwaAssetManifestOk: manifestOk,
       pwaAssetFaviconOk: faviconOk,

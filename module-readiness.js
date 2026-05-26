@@ -1,4 +1,4 @@
-// v.1.5 (897) – module readiness registry včetně online game contract audit helperu.
+// v.1.5 (898) – module readiness registry včetně online game contract audit helperu.
 
 (function setupRakModuleReadinessRegistry() {
   if (window.__rakModuleReadinessRegistry && typeof window.rakMarkModuleReady === 'function') {

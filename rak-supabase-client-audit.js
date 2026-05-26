@@ -1,4 +1,4 @@
-// v.1.5 (897) – Supabase queue + online game contract audit read-only bez DB/policy změn.
+// v.1.5 (898) – Supabase queue + online game contract audit read-only bez DB/policy změn.
 
 (function setupRakSupabaseClientAudit() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -289,7 +289,7 @@
       ok: issues.length === 0,
       mode: 'supabase-client-queue-closure-v897',
       checkedAt: nowIso(),
-      version: safeString(window.APP_VERSION || 'v.1.5 (897)'),
+      version: safeString(window.APP_VERSION || 'v.1.5 (898)'),
       phase: 'phase H Supabase client/offline queue audit',
       phasePercent: 100,
       phaseClosed: true,
@@ -421,7 +421,7 @@
       ok: issues.length === 0,
       mode: 'online-game-contract-audit-v897',
       checkedAt: nowIso(),
-      version: safeString(window.APP_VERSION || 'v.1.5 (897)'),
+      version: safeString(window.APP_VERSION || 'v.1.5 (898)'),
       phase: 'phase I Supabase online hry create/accept/save kontrakty',
       phasePercent: 35,
       phaseClosed: false,
@@ -462,7 +462,7 @@
       status: audit ? (audit.ok ? 'audit-ready' : 'kontrola') : 'unavailable',
       mode: 'online-game-contract-smoke-v897',
       checkedAt: nowIso(),
-      version: safeString(window.APP_VERSION || 'v.1.5 (897)'),
+      version: safeString(window.APP_VERSION || 'v.1.5 (898)'),
       readOnly: true,
       dbMutations: false,
       policyChanges: false,

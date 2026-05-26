@@ -234,7 +234,7 @@
     { table: 'gomoku_wins', realtime: true, queueType: 'gomoku_win', access: 'anon SELECT/INSERT/UPDATE', note: 'výhry piškvorek / legacy leaderboard' }
   ];
 
-  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (897)';
+  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (898)';
   const SUPABASE_POLICY_AUDIT_SNAPSHOT_AT = '2026-05-24';
   const SUPABASE_POLICY_HARDENING_PHASE = {
     current: 'V856 – release hygiene po kontrole vlastních buildů: changelog opravený, SQL auditní soubory jsou archivované v assets/docs/sql a DB policies se nemění.',
@@ -294,7 +294,7 @@
   ];
 
   const SUPABASE_RPC_HARDENING_STATUS = {
-    version: 'v.1.5 (897)',
+    version: 'v.1.5 (898)',
     phase: '2E-O online invite/session RPC smoke + accept RPC / no policy tightening',
     rpcPreferred: true,
     migrationApplied: true,
@@ -906,7 +906,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v897');
+      const channel = client.channel('rak-public-live-v898');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -958,8 +958,8 @@
   const LOCAL_GAME_UI_SETTINGS_PREFIX = 'rotace_supabase_game_ui_settings_v1:';
   const LOCAL_GAME_SESSIONS_PREFIX = 'rotace_supabase_game_sessions_v856:';
   const GAME_UI_SETTINGS_TYPE = '__profile_ui';
-  const GAME_PROGRESS_RESET_VERSION = 'v.1.5 (856)';
-  const GAME_PROGRESS_RESET_CUTOFF_ISO = '2026-05-26T02:10:00+02:00';
+  const GAME_PROGRESS_RESET_VERSION = 'v.1.5 (898)';
+  const GAME_PROGRESS_RESET_CUTOFF_ISO = '2026-05-26T14:17:00+02:00';
   const GAME_PROGRESS_RESET_CUTOFF_MS = Date.parse(GAME_PROGRESS_RESET_CUTOFF_ISO);
   const SUPABASE_GAME_CACHE_TTL_MS = 30 * 1000;
   const SUPABASE_WRITE_DEDUPE_WINDOW_MS = 1400;
@@ -3806,7 +3806,7 @@
     return {
       ok: blockers.length === 0,
       mode: 'supabase-hardening-readiness-audit-only',
-      version: 'v.1.5 (897)',
+      version: 'v.1.5 (898)',
       checkedAt: new Date().toISOString(),
       confirmed,
       readinessPercent,

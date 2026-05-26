@@ -15475,3 +15475,10 @@ body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsCell{
   .statsYearCombinedBox .statsAbsenceLegendRow{font-size:8px !important;}
   .statsYearCombinedBox .statsAbsenceLegendRow strong{font-size:8px !important;}
 }
+
+/* v.1.5 (898) – Statistiky: klikací body v grafu obsazenosti */
+.statsOccupancyLineHit{fill:transparent;stroke:transparent;cursor:pointer;pointer-events:auto;outline:none;}
+.statsOccupancyLineHit:focus-visible{stroke:var(--accent);stroke-width:1.4;fill:color-mix(in srgb,var(--accent) 12%,transparent);}
+.statsOccupancyPointInfo{margin-top:4px;text-align:center;font-size:10px;line-height:1.2;color:rgba(255,255,255,.62);min-height:1.2em;}
+.statsOccupancyPointInfo[data-active="1"]{color:var(--soft);font-weight:760;}
+@media (max-width:430px){.statsOccupancyPointInfo{font-size:8.4px;margin-top:2px;}}

@@ -705,6 +705,18 @@ function formatStatsPercent(value) {
   return String(rounded).replace('.', ',') + ' %';
 }
 
+function formatStatsMonthLabel(monthKey) {
+  const parsed = typeof parseMonthKey === 'function' ? parseMonthKey(monthKey) : null;
+  if (parsed && Number.isFinite(parsed.month) && Number.isFinite(parsed.year)) {
+    try {
+      return new Intl.DateTimeFormat('cs-CZ', { month: 'long', year: 'numeric' }).format(new Date(parsed.year, parsed.month - 1, 1));
+    } catch (err) {
+      return String(parsed.month) + '/' + String(parsed.year);
+    }
+  }
+  return String(monthKey || '').trim() || 'měsíc';
+}
+
 function createStatsYearOverviewNodes(stats, year) {
   if (!stats) return [];
   const wrap = document.createElement('div');
@@ -735,6 +747,9 @@ function createStatsYearOverviewNodes(stats, year) {
     gridLine.setAttribute('class', 'statsOccupancyLineGrid');
     gridLine.setAttribute('d', 'M8 18H232 M8 52H232 M8 86H232');
     svg.appendChild(gridLine);
+    const pointInfo = document.createElement('div');
+    pointInfo.className = 'statsOccupancyPointInfo';
+    pointInfo.textContent = 'Klepni na bod v grafu a ukážu měsíc i obsazenost.';
     const count = Math.max(1, months.length - 1);
     const pctValues = months.map(item => Math.max(0, Math.min(100, Number(item.percent || 0) || 0)));
     const minPct = pctValues.length ? Math.min(...pctValues) : 0;
@@ -756,12 +771,36 @@ function createStatsYearOverviewNodes(stats, year) {
     line.setAttribute('points', points.map(p => p.x.toFixed(1) + ',' + p.y.toFixed(1)).join(' '));
     svg.appendChild(line);
     points.forEach(point => {
+      const monthLabel = formatStatsMonthLabel(point.item && point.item.monthKey);
+      const label = monthLabel + ' · ' + formatStatsPercent(point.pct);
+      const updatePointInfo = () => {
+        pointInfo.textContent = monthLabel + ': ' + formatStatsPercent(point.pct);
+        pointInfo.setAttribute('data-active', '1');
+      };
+      const hit = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      hit.setAttribute('class', 'statsOccupancyLineHit');
+      hit.setAttribute('cx', point.x.toFixed(1));
+      hit.setAttribute('cy', point.y.toFixed(1));
+      hit.setAttribute('r', '8.8');
+      hit.setAttribute('role', 'button');
+      hit.setAttribute('tabindex', '0');
+      hit.setAttribute('aria-label', label);
+      const hitTitle = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+      hitTitle.textContent = label;
+      hit.appendChild(hitTitle);
+      hit.addEventListener('click', updatePointInfo);
+      hit.addEventListener('keydown', (event) => {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        event.preventDefault();
+        updatePointInfo();
+      });
+      svg.appendChild(hit);
+
       const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
       dot.setAttribute('class', 'statsOccupancyLineDot');
       dot.setAttribute('cx', point.x.toFixed(1));
       dot.setAttribute('cy', point.y.toFixed(1));
       dot.setAttribute('r', '3.2');
-      const label = String(point.item && point.item.monthKey ? point.item.monthKey : '') + ' · ' + formatStatsPercent(point.pct);
       const titleNode = document.createElementNS('http://www.w3.org/2000/svg', 'title');
       titleNode.textContent = label;
       dot.appendChild(titleNode);
@@ -781,6 +820,7 @@ function createStatsYearOverviewNodes(stats, year) {
     scale.className = 'statsOccupancyScaleLabel';
     scale.textContent = 'Rozsah grafu: ' + formatStatsPercent(minPct) + '–' + formatStatsPercent(maxPct);
     chart.appendChild(scale);
+    chart.appendChild(pointInfo);
   } else {
     chart.appendChild(createStatsTextNode('div', 'smallText', 'Zatím nejsou data pro graf.'));
   }

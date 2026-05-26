@@ -4068,6 +4068,155 @@ function tttBestReplyLockdownMove(board, deadline) {
   return -1;
 }
 
+
+function tttBestHumanPressureLockMove(board, deadline) {
+  const occupied = board.reduce((sum, cell) => sum + (cell ? 1 : 0), 0);
+  if (occupied < 5) return -1;
+  const baseHumanRisk = tttReplyLockdownRisk(board, 'X') + tttLineVectorScore(board, 'X') * 0.52;
+  const baseAiRisk = tttReplyLockdownRisk(board, 'O') + tttLineVectorScore(board, 'O') * 0.34;
+  const centerRow = (TTT_ROWS - 1) / 2;
+  const centerCol = (TTT_COLS - 1) / 2;
+  const rawCandidates = new Set([
+    ...tttWinningMoves(board, 'O'),
+    ...tttWinningMoves(board, 'X'),
+    ...tttThreatWindowMoves(board, 'X'),
+    ...tttCriticalThreatMoves(board, 'X'),
+    ...tttOpenThreeThreatMoves(board, 'X'),
+    ...tttOpenTwoThreatMoves(board, 'X'),
+    ...tttThreatWindowMoves(board, 'O'),
+    ...tttCriticalThreatMoves(board, 'O'),
+    ...tttCandidateMoves(board, occupied < 26 ? 3 : 2)
+  ]);
+
+  let candidates = Array.from(rawCandidates)
+    .filter(idx => Number.isFinite(Number(idx)) && !board[Number(idx)])
+    .map(Number)
+    .map(idx => {
+      const row = Math.floor(idx / TTT_COLS);
+      const col = idx % TTT_COLS;
+      const centerBias = Math.max(0, 145 - (Math.abs(row - centerRow) + Math.abs(col - centerCol)) * 5.4);
+      board[idx] = 'O';
+      const humanReduction = baseHumanRisk - (tttReplyLockdownRisk(board, 'X') + tttLineVectorScore(board, 'X') * 0.52);
+      const aiGain = tttReplyLockdownRisk(board, 'O') - baseAiRisk;
+      board[idx] = '';
+      return {
+        idx,
+        score: humanReduction * 1.22
+          + aiGain * 0.38
+          + tttCheapMovePotential(board, idx, 'X') * 1.22
+          + tttCheapMovePotential(board, idx, 'O') * 1.02
+          + centerBias
+      };
+    })
+    .sort((a, b) => b.score - a.score)
+    .slice(0, occupied < 16 ? 42 : (occupied < 32 ? 34 : 24))
+    .map(item => item.idx);
+
+  let bestIdx = -1;
+  let bestScore = -Infinity;
+  let bestWorstRisk = Infinity;
+  for (const idx of candidates) {
+    const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    if (deadline && now > deadline - 32 && bestIdx >= 0) break;
+
+    board[idx] = 'O';
+    const ownWinNow = tttWinner(board).winner === 'O' ? 1 : 0;
+    const humanRiskAfterMove = tttReplyLockdownRisk(board, 'X') + tttLineVectorScore(board, 'X') * 0.58;
+    const aiPressureAfterMove = tttReplyLockdownRisk(board, 'O') + tttLineVectorScore(board, 'O') * 0.44;
+    const immediateHumanWins = tttWinningMoves(board, 'X').length;
+
+    const replyPool = new Set([
+      ...tttWinningMoves(board, 'X'),
+      ...tttThreatWindowMoves(board, 'X'),
+      ...tttCriticalThreatMoves(board, 'X'),
+      ...tttOpenThreeThreatMoves(board, 'X'),
+      ...tttOpenTwoThreatMoves(board, 'X'),
+      ...tttCandidateMoves(board, occupied < 26 ? 3 : 2)
+    ]);
+    let replies = Array.from(replyPool)
+      .filter(reply => Number.isFinite(Number(reply)) && !board[Number(reply)])
+      .map(Number)
+      .map(reply => {
+        board[reply] = 'X';
+        const replyScore = (tttWinner(board).winner === 'X' ? 220000000 : 0)
+          + tttWinningMoves(board, 'X').length * 52000000
+          + tttReplyLockdownRisk(board, 'X')
+          + tttLineVectorScore(board, 'X') * 0.86
+          + tttCheapMovePotential(board, reply, 'X') * 1.08;
+        board[reply] = '';
+        return { reply, score: replyScore };
+      })
+      .sort((a, b) => b.score - a.score)
+      .slice(0, occupied < 18 ? 20 : 14)
+      .map(item => item.reply);
+
+    let worstRisk = immediateHumanWins * 180000000 + humanRiskAfterMove;
+    for (const reply of replies) {
+      board[reply] = 'X';
+      const replyWinner = tttWinner(board).winner === 'X' ? 1 : 0;
+      const replyHumanWins = tttWinningMoves(board, 'X').length;
+      const replyBaseRisk = replyWinner * 260000000
+        + replyHumanWins * 76000000
+        + tttReplyLockdownRisk(board, 'X')
+        + tttLineVectorScore(board, 'X') * 0.92
+        - tttReplyLockdownRisk(board, 'O') * 0.22;
+
+      const counterPool = new Set([
+        ...tttWinningMoves(board, 'O'),
+        ...tttWinningMoves(board, 'X'),
+        ...tttThreatWindowMoves(board, 'X'),
+        ...tttCriticalThreatMoves(board, 'X'),
+        ...tttOpenThreeThreatMoves(board, 'X'),
+        ...tttCandidateMoves(board, 2)
+      ]);
+      const counters = Array.from(counterPool)
+        .filter(counter => Number.isFinite(Number(counter)) && !board[Number(counter)])
+        .map(Number)
+        .map(counter => ({
+          counter,
+          score: tttCheapMovePotential(board, counter, 'O') * 1.16
+            + tttCheapMovePotential(board, counter, 'X') * 1.28
+        }))
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 10)
+        .map(item => item.counter);
+
+      let bestCounterRisk = replyBaseRisk;
+      for (const counter of counters) {
+        board[counter] = 'O';
+        const counterRisk = (tttWinner(board).winner === 'O' ? -70000000 : 0)
+          + tttWinningMoves(board, 'X').length * 42000000
+          + tttReplyLockdownRisk(board, 'X')
+          + tttLineVectorScore(board, 'X') * 0.82
+          - tttReplyLockdownRisk(board, 'O') * 0.42;
+        board[counter] = '';
+        if (counterRisk < bestCounterRisk) bestCounterRisk = counterRisk;
+      }
+      board[reply] = '';
+      const replyRisk = Math.max(replyBaseRisk * 0.62, bestCounterRisk * 0.96);
+      if (replyRisk > worstRisk) worstRisk = replyRisk;
+    }
+
+    board[idx] = '';
+    const humanReduction = baseHumanRisk - humanRiskAfterMove;
+    const candidateScore = ownWinNow * 320000000
+      + humanReduction * 1.75
+      + aiPressureAfterMove * 0.64
+      + tttCheapMovePotential(board, idx, 'O') * 1.16
+      + tttCheapMovePotential(board, idx, 'X') * 0.92
+      - worstRisk * 1.34;
+    if (candidateScore > bestScore || (Math.abs(candidateScore - bestScore) < 1 && worstRisk < bestWorstRisk)) {
+      bestScore = candidateScore;
+      bestIdx = idx;
+      bestWorstRisk = worstRisk;
+    }
+  }
+
+  if (bestIdx < 0) return -1;
+  if (occupied >= 8 || baseHumanRisk > 90000 || bestWorstRisk < Math.max(1800000, baseHumanRisk * 1.65)) return bestIdx;
+  return -1;
+}
+
 function tttBestUltraSafetyMove(board, deadline) {
   const occupied = board.reduce((sum, cell) => sum + (cell ? 1 : 0), 0);
   if (occupied < 5) return -1;
@@ -4199,6 +4348,9 @@ function tttBestMove(board, difficulty) {
 
   const openThreeBlock = tttPickBestBlockMove(board, tttOpenThreeThreatMoves(board, 'X'), 'X');
   if (openThreeBlock >= 0) return openThreeBlock;
+
+  const humanPressureLockMove = tttBestHumanPressureLockMove(board, (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 820);
+  if (humanPressureLockMove >= 0) return humanPressureLockMove;
 
   const replyLockdownMove = tttBestReplyLockdownMove(board, (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 760);
   if (replyLockdownMove >= 0) return replyLockdownMove;
@@ -5605,10 +5757,10 @@ function buildSupabaseKeepaliveStatusHtml(options) {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v.1.5 851–897',
+      range: 'v.1.5 851–898',
       title: 'Release audit, namespace a export tooling',
       lines: [
-        'V897 resetuje herní/profilové výsledky na nulu, skrývá starší remote score přes cutoff, doplňuje čas do Top score a přidává reply-lockdown obranu Piškvorek proti AI. V896 drží Obsazenost a Důvody absencí vedle sebe i na mobilu; V895 sloučilo graf a koláč do jednoho pole; V894 přidalo read-only audit kontraktů online her bez DB/policy změn.',
+        'V898 znovu resetuje herní/profilové výsledky i Top score, přidává klikací body v grafu obsazenosti a přitvrzuje AI Piškvorek. V897 sjednotilo N jako Neschopenka, doplnilo čas do Top score a přidalo reply-lockdown obranu. V896 drží Obsazenost a Důvody absencí vedle sebe i na mobilu.',
         'V867–875 uzavírá window.RaK read-only namespace fázi: mapuje diagnostické aliasy, zachovává staré globály a nepřepojuje navigaci, render, hry ani online flow.',
         'V860–866 uzavírá architecture/boot baseline audit: module readiness, runtime health, boot sequence a auditní helpery se oddělily mimo app.js bez změny funkčnosti.',
         'V853–859 řeší reset herních výsledků, opravu času Piškvorek, PWA/assets/SW audit, čistší ZIP strukturu a release readiness dokumentaci.',
@@ -8576,10 +8728,10 @@ function bindCalendarTile() {
 // Games hub + account profile
 // -------------------------
 const GAMES_PROFILE_KEY = APP_KEY + ':games_profile_v1';
-const GAMES_PROFILE_RESET_VERSION = 897;
-const GAMES_SCORE_RESET_VERSION = 897;
-const GAMES_SCORE_RESET_MARKER_KEY = APP_KEY + ':games_score_reset_v897';
-const GAMES_REMOTE_STATS_RESET_CUTOFF_MS = Date.parse('2026-05-26T13:49:00+02:00');
+const GAMES_PROFILE_RESET_VERSION = 898;
+const GAMES_SCORE_RESET_VERSION = 898;
+const GAMES_SCORE_RESET_MARKER_KEY = APP_KEY + ':games_score_reset_v898';
+const GAMES_REMOTE_STATS_RESET_CUTOFF_MS = Date.parse('2026-05-26T14:17:00+02:00');
 const GAMES_ACCOUNT_BLOCKLIST = new Set(['4157']);
 const GAMES_ACCOUNT_LIST = [];
 
@@ -8634,7 +8786,7 @@ function gamesResetAccountScoresOnly(account, fallbackName) {
   return normalized;
 }
 
-function gamesEnsureScoreResetV897() {
+function gamesEnsureScoreResetV898() {
   try {
     if (localStorage.getItem(GAMES_SCORE_RESET_MARKER_KEY) === '1') return false;
     const parsed = JSON.parse(localStorage.getItem(GAMES_PROFILE_KEY) || 'null');
@@ -8667,10 +8819,10 @@ function gamesEnsureScoreResetV897() {
     }
     if (typeof setLocalStorageIfChanged === 'function') setLocalStorageIfChanged(GAMES_SCORE_RESET_MARKER_KEY, '1');
     else localStorage.setItem(GAMES_SCORE_RESET_MARKER_KEY, '1');
-    window.__rakGamesScoreResetV897 = { ok: true, version: GAMES_SCORE_RESET_VERSION, cutoff: GAMES_REMOTE_STATS_RESET_CUTOFF_MS, accounts: Object.keys(next.accounts || {}).length, at: Date.now() };
+    window.__rakGamesScoreResetV898 = { ok: true, version: GAMES_SCORE_RESET_VERSION, cutoff: GAMES_REMOTE_STATS_RESET_CUTOFF_MS, accounts: Object.keys(next.accounts || {}).length, at: Date.now() };
     return true;
   } catch (err) {
-    console.warn('gamesEnsureScoreResetV897 failed', err);
+    console.warn('gamesEnsureScoreResetV898 failed', err);
     return false;
   }
 }
@@ -8725,7 +8877,7 @@ function gamesNormalizeStoredAccount(account, fallbackName) {
 
 function gamesLoadProfile() {
   try {
-    gamesEnsureScoreResetV897();
+    gamesEnsureScoreResetV898();
     const parsed = typeof parseLocalStorageJsonCached === 'function'
       ? parseLocalStorageJsonCached(GAMES_PROFILE_KEY, null)
       : JSON.parse(localStorage.getItem(GAMES_PROFILE_KEY) || 'null');
