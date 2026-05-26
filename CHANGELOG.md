@@ -1,3 +1,14 @@
+## v.1.5 (854)
+- Asset/PWA/SW audit po přesunu app ikon: ověřené nové cesty `assets/app-icons/` v HTML, manifestu, service workeru a exportu bez návratu root ikon do kořene ZIPu.
+- Service worker má novou cache `v1.5-854`, realtime kanál je `rak-public-live-v854` a diagnostika PWA nově hlídá app-icons audit/release checklist pro manifest, favicon, SW precache a ZIP export.
+- ZIP export a výsledný archiv drží release pravidlo: soubory rovnou v kořeni, jediná složka `assets/`. Online hry, Supabase DB a policies beze změny.
+
+## v.1.5 (853)
+- Resetované herní výsledky: Supabase tabulky `game_stats`, `game_sessions`, `game_invites` a legacy `gomoku_wins` byly vyčištěné, herní účty `game_accounts` zůstaly zachované.
+- Lokální herní profil má nový reset marker `GAMES_PROFILE_RESET_VERSION = 853`, takže se na mobilech vynulují lokální statistiky, achievementy a staré cache výsledků, ale zůstane přihlášení/profilové nastavení vzhledu.
+- Piškvorky mají opravené měření času partie: čas se při první akci jistí přes herní clock a už nespadne na `Date.now() - Date.now()`, které zapisovalo výhru proti AI jako 0 s.
+- Staré lokální queue položky herních výsledků před resetem se zahodí, aby po návratu online znovu nenahrály staré skóre. Verze sjednocena na v.1.5 (853), cache na v1.5-853 a Supabase realtime kanál na rak-public-live-v853.
+
 ## v.1.5 (852)
 - Úklid assetů: všechny app ikony `icon-16/32/180/192/512/1024.png` jsou přesunuté z kořene do `assets/app-icons/`, aby v kořeni ZIPu nezůstávaly obrázky.
 - Opravené odkazy na app ikony v `index.html`, `manifest.webmanifest`, `sw.js` a ZIP exportu. Service worker cachuje nové cesty a export už zahrnuje app ikony jen z `assets/app-icons/`.

@@ -1,4 +1,4 @@
-// v.1.5 (852) – App ikony přesunuté do assets/app-icons; manifest, HTML, SW cache i ZIP export míří na nové cesty. Funkce, DB a Supabase beze změny.
+// v.1.5 (854) – Asset/PWA/SW audit po přesunu ikon: release checklist, app-icons precache status a verze/cache sjednocené. Online hry a Supabase policies beze změny.
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;
@@ -2442,6 +2442,16 @@ function installPwaAndConnectivityHooks() {
     swAppShellCachedRatio: 0,
     swNetworkFallbackTimeoutMs: 0,
     swNavigationPreloadTimeoutMs: 0,
+    pwaAssetAuditMode: 'app-icons-assets-release-checklist-v854',
+    pwaAssetExpectedIconCount: 6,
+    pwaAssetManifestOk: false,
+    pwaAssetFaviconOk: false,
+    pwaAssetAppleTouchOk: false,
+    pwaAssetRootIconRefsBlocked: true,
+    pwaReleaseChecklist: 'manifest/favicon/apple-touch/sw-precache/export-zip/assets-only',
+    swAssetIconCount: 0,
+    swAssetLegacyRootIconCount: 0,
+    swExportZipRootMode: 'root-files-assets-folder-only',
     swRuntimeTrimBeforeCount: 0,
     swRuntimeTrimAfterCount: 0,
     swRuntimeTrimDeletedCount: 0,
@@ -2462,8 +2472,36 @@ function installPwaAndConnectivityHooks() {
     throttleMs: SW_UPDATE_CHECK_INTERVAL_MS
   };
   window.__rakPwaHardeningStatus = pwaHardeningStatus;
+
+  function getRakPwaAssetRuntimeAudit() {
+    const expectedIcons = [
+      'assets/app-icons/icon-16.png',
+      'assets/app-icons/icon-32.png',
+      'assets/app-icons/icon-180.png',
+      'assets/app-icons/icon-192.png',
+      'assets/app-icons/icon-512.png',
+      'assets/app-icons/icon-1024.png'
+    ];
+    const linkHrefs = Array.from(document.querySelectorAll('link[href]')).map(link => String(link.getAttribute('href') || ''));
+    const manifestOk = linkHrefs.some(href => /manifest\.webmanifest(?:$|[?#])/.test(href));
+    const faviconOk = linkHrefs.some(href => href.indexOf('assets/app-icons/icon-32.png') >= 0 || href.indexOf('assets/app-icons/icon-192.png') >= 0);
+    const appleTouchOk = linkHrefs.some(href => href.indexOf('assets/app-icons/icon-180.png') >= 0);
+    const legacyRootIconRefs = linkHrefs.filter(href => /(^|\/)icon-(16|32|180|192|512|1024)\.png(?:$|[?#])/.test(href) && href.indexOf('assets/app-icons/') < 0);
+    return {
+      pwaAssetAuditMode: 'app-icons-assets-release-checklist-v854',
+      pwaAssetExpectedIconCount: expectedIcons.length,
+      pwaAssetManifestOk: manifestOk,
+      pwaAssetFaviconOk: faviconOk,
+      pwaAssetAppleTouchOk: appleTouchOk,
+      pwaAssetRootIconRefsBlocked: legacyRootIconRefs.length === 0,
+      pwaAssetLegacyRootIconRefs: legacyRootIconRefs.slice(0, 8),
+      pwaReleaseChecklist: 'manifest/favicon/apple-touch/sw-precache/export-zip/assets-only'
+    };
+  }
+
   window.getPwaHardeningStatus = function getPwaHardeningStatus() {
-    return Object.assign({}, pwaHardeningStatus, {
+    const assetAudit = getRakPwaAssetRuntimeAudit();
+    return Object.assign({}, pwaHardeningStatus, assetAudit, {
       hasController: !!(navigator.serviceWorker && navigator.serviceWorker.controller),
       updateToastVisible: !!(swUpdateToastEl && document.body && document.body.contains(swUpdateToastEl)),
       updateReloading: !!swUpdateReloading,
@@ -2708,6 +2746,10 @@ function installPwaAndConnectivityHooks() {
     pwaHardeningStatus.swAppShellCachedRatio = Number(data.appShellCachedRatio || pwaHardeningStatus.swAppShellCachedRatio || 0);
     pwaHardeningStatus.swNetworkFallbackTimeoutMs = Number(data.networkFallbackTimeoutMs || pwaHardeningStatus.swNetworkFallbackTimeoutMs || 0);
     pwaHardeningStatus.swNavigationPreloadTimeoutMs = Number(data.navigationPreloadTimeoutMs || pwaHardeningStatus.swNavigationPreloadTimeoutMs || 0);
+    pwaHardeningStatus.pwaAssetAuditMode = String(data.assetAuditMode || pwaHardeningStatus.pwaAssetAuditMode || '');
+    pwaHardeningStatus.swAssetIconCount = Number(data.assetIconCount || pwaHardeningStatus.swAssetIconCount || 0);
+    pwaHardeningStatus.swAssetLegacyRootIconCount = Number(data.assetLegacyRootIconCount || pwaHardeningStatus.swAssetLegacyRootIconCount || 0);
+    pwaHardeningStatus.swExportZipRootMode = String(data.exportZipRootMode || pwaHardeningStatus.swExportZipRootMode || '');
     pwaHardeningStatus.swRuntimeTrimBeforeCount = Number(data.runtimeTrimBeforeCount || pwaHardeningStatus.swRuntimeTrimBeforeCount || 0);
     pwaHardeningStatus.swRuntimeTrimAfterCount = Number(data.runtimeTrimAfterCount || pwaHardeningStatus.swRuntimeTrimAfterCount || 0);
     pwaHardeningStatus.swRuntimeTrimDeletedCount = Number(data.runtimeTrimDeletedCount || pwaHardeningStatus.swRuntimeTrimDeletedCount || 0);

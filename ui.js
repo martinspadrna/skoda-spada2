@@ -1249,10 +1249,19 @@ const TTT_HARD_WIN_KEY = 'tttHardWins';
 function tttEnsureAiWinsResetV667() {
   try {
     const marker = 'rak_ttt_ai_wins_reset_v667';
-    if (localStorage.getItem(marker) === '1') return;
-    localStorage.removeItem(TTT_HARD_WIN_KEY);
-    localStorage.removeItem('rotace_supabase_gomoku_wins_v1');
-    localStorage.setItem(marker, '1');
+    if (localStorage.getItem(marker) !== '1') {
+      localStorage.removeItem(TTT_HARD_WIN_KEY);
+      localStorage.removeItem('rotace_supabase_gomoku_wins_v1');
+      localStorage.setItem(marker, '1');
+    }
+    const reset853 = 'rak_games_full_stats_reset_v853';
+    if (localStorage.getItem(reset853) !== '1') {
+      localStorage.removeItem(TTT_HARD_WIN_KEY);
+      localStorage.removeItem('rotace_supabase_gomoku_wins_v1');
+      localStorage.removeItem('rotace_ttt_online_results_v1');
+      localStorage.removeItem('rotace_ttt_online_join_diag_v1');
+      localStorage.setItem(reset853, '1');
+    }
   } catch (err) {}
 }
 
@@ -2210,7 +2219,7 @@ function tttMaybeRecordOnlineResult(winner) {
           losses: won ? (stats.losses || 0) : (stats.losses || 0) + 1,
           draws: stats.draws || 0,
           bestMoves: won ? Math.min(stats.bestMoves || 9999, state.moveCount || 0) : stats.bestMoves || null,
-          bestTimeMs: won ? Math.min(stats.bestTimeMs || 999999999, Date.now() - (state.startedAt || Date.now())) : stats.bestTimeMs || null,
+          bestTimeMs: won ? Math.min(stats.bestTimeMs || 999999999, tttGetElapsedMs(state)) : stats.bestTimeMs || null,
           lastResult: (won ? 'Online výhra' : 'Online prohra') + ' · ' + String(state.moveCount || 0) + ' tahů'
         }, onlineLocalGuard));
   }
@@ -3587,16 +3596,31 @@ function tttSaveHardWin(entry) {
 
 function tttFormatElapsed(ms) {
   const total = Math.max(0, Number(ms) || 0);
-  const seconds = Math.floor(total / 1000);
+  const seconds = total > 0 ? Math.max(1, Math.floor(total / 1000)) : 0;
   const minutes = Math.floor(seconds / 60);
   const secs = seconds % 60;
   if (minutes <= 0) return secs + ' s';
   return minutes + ' min ' + String(secs).padStart(2, '0') + ' s';
 }
 
+function tttEnsureGameClockStarted(state) {
+  const s = state || tttGetState();
+  if (!s.startedAt || !Number.isFinite(Number(s.startedAt))) {
+    s.startedAt = Date.now();
+  }
+  return s.startedAt;
+}
+
+function tttGetElapsedMs(state) {
+  const s = state || tttGetState();
+  const start = Number(s.startedAt || 0) || 0;
+  if (!start) return 0;
+  return Math.max(0, Date.now() - start);
+}
+
 function tttReadHardWinStats() {
   const state = tttGetState();
-  const elapsedMs = state.startedAt ? Math.max(0, Date.now() - state.startedAt) : 0;
+  const elapsedMs = tttGetElapsedMs(state);
   return {
     totalMoves: state.moveCount || 0,
     xMoves: state.moveCountX || 0,
@@ -4262,6 +4286,8 @@ function tttHandleMove(index) {
     }
   }
 
+  tttEnsureGameClockStarted(state);
+
   const mark = state.turn;
   state.board[index] = mark;
   state.lastMoveIndex = index;
@@ -4313,7 +4339,7 @@ function tttHandleMove(index) {
           plays: (gamesGetActiveAccount()?.stats.ttt.plays || 0) + 1,
           wins: (gamesGetActiveAccount()?.stats.ttt.wins || 0) + 1,
           bestMoves: Math.min(gamesGetActiveAccount()?.stats.ttt.bestMoves || 9999, state.moveCount || 0),
-          bestTimeMs: Math.min(gamesGetActiveAccount()?.stats.ttt.bestTimeMs || 999999999, Date.now() - (state.startedAt || Date.now())),
+          bestTimeMs: Math.min(gamesGetActiveAccount()?.stats.ttt.bestTimeMs || 999999999, tttGetElapsedMs(state)),
           lastResult: 'Výhra X · ' + String(state.moveCount || 0) + ' tahů'
         });
       }
@@ -4443,7 +4469,7 @@ function resetTicTacToeGame(keepScreen) {
   state.nextStarter = starter;
   state.gameOver = false;
   state.winner = null;
-  state.startedAt = state.mode === 'pvp' ? Date.now() : 0;
+  state.startedAt = keepScreen ? Date.now() : (state.mode === 'pvp' ? Date.now() : 0);
   state.moveCount = 0;
   state.moveCountX = 0;
   state.moveCountO = 0;
@@ -4903,6 +4929,9 @@ function buildAppHistoryHtml(versionText) {
       range: versionText || 'v.1.5 (847)',
       title: 'Aktuální stabilizace',
       lines: [
+        'V854 přidává PWA/assets/SW audit po přesunu ikon: diagnostika hlídá manifest, favicon, apple-touch, SW precache ikony a ZIP pravidlo assets-only.',
+        'V853 resetuje herní výsledky a lokální herní cache: všichni začínají od nuly, profily a vzhled zůstávají zachované a Piškvorky měří skutečný čas partie místo 0 s.',
+        'V852 přesouvá app ikony do assets/app-icons a sjednocuje manifest, HTML, service worker i ZIP export na nové cesty.',
         'V847 opravuje spodní navigaci: Láďův režim má tvrdě neprůhledný panel a neaktivní ikonky jsou jemně dorovnané vůči popisku; aktivní stav zůstává beze změny.',
         'V845 opravuje Lodě přes zvací odkaz: link #games=ships&invite už má přednost před Piškvorkami a příprava flotily má menší/čistší pole bez zakrytého spodku.',
         'V844 doplňuje Lodím skutečný zvací odkaz ve stejném overlayi jako Piškvorky, vypíná zbytečné scrollování a odstraňuje kód z HUDu nad hracím polem; Piškvorky zároveň obnovují online skóre bez ručního přepínání.',
@@ -6851,6 +6880,7 @@ function bindAppMenuHandlers(body) {
           'PWA zprávy SW: celkem/verze/aktivace/cache ' + String(pwaStatus.swMessages || 0) + '/' + String(pwaStatus.swVersionMessages || 0) + '/' + String(pwaStatus.swActivatedMessages || 0) + '/' + String(pwaStatus.swCacheStatusMessages || 0) + ' · poslední ' + String(pwaStatus.lastMessageType || '—'),
           'PWA cache: verze ' + String(pwaStatus.swCacheVersion || '—') + ' / oček. ' + String(pwaStatus.swExpectedCacheVersion || '—') + ' · mismatch ' + String(pwaStatus.swVersionMismatchCount || 0) + ' · update/skip ' + String(pwaStatus.swVersionMismatchUpdateChecks || 0) + '/' + String(pwaStatus.swVersionMismatchUpdateSkips || 0) + ' · static/runtime ' + String(pwaStatus.swStaticCacheEntries || 0) + '/' + String(pwaStatus.swRuntimeCacheEntries || 0) + ' · runtime trim ' + String(pwaStatus.swRuntimeTrimDeletedCount || 0) + '/' + String(pwaStatus.swRuntimeTrimBeforeCount || 0) + ' · staré RaK cache/smazáno ' + String(pwaStatus.swStaleRakCacheCount || 0) + '/' + String(pwaStatus.swStaleRakCacheDeletedCount || 0) + ' · precache OK/chyby/chybí ' + String(pwaStatus.swPrecacheSuccessCount || 0) + '/' + String(pwaStatus.swPrecacheFailedCount || 0) + '/' + String(pwaStatus.swPrecacheMissingCount || 0) + ' · požadavky/skip ' + String(pwaStatus.swCacheStatusRequests || 0) + '/' + String(pwaStatus.swCacheStatusRequestSkips || 0) + ' · klienti ' + String(pwaStatus.swClientsCount || 0) + ' · preload ' + (pwaStatus.swNavigationPreloadEnabled ? 'ano' : 'ne'),
           'PWA cache režim: lookup ' + String(pwaStatus.swCacheLookupMode || '—') + ' · ukládání ' + String(pwaStatus.swCacheableResponseMode || '—') + ' · trim ' + String(pwaStatus.swActivateRuntimeTrimMode || '—') + ' · síť fallback ' + String(pwaStatus.swNetworkTimeoutFallbackMode || '—') + ' (' + String(pwaStatus.swNetworkFallbackTimeoutMs || 0) + ' ms)' + ' · static timeout ' + String(pwaStatus.swStaticCacheFirstTimeoutMode || '—'),
+          'PWA asset audit: ' + String(pwaStatus.pwaAssetAuditMode || '—') + ' · manifest ' + (pwaStatus.pwaAssetManifestOk ? 'OK' : 'kontrola') + ' · favicon ' + (pwaStatus.pwaAssetFaviconOk ? 'OK' : 'kontrola') + ' · apple ' + (pwaStatus.pwaAssetAppleTouchOk ? 'OK' : 'kontrola') + ' · SW ikony ' + String(pwaStatus.swAssetIconCount || 0) + '/' + String(pwaStatus.pwaAssetExpectedIconCount || 0) + ' · root odkazy ' + (pwaStatus.pwaAssetRootIconRefsBlocked && !Number(pwaStatus.swAssetLegacyRootIconCount || 0) ? 'žádné' : 'kontrola') + ' · ZIP ' + String(pwaStatus.swExportZipRootMode || '—'),
           'PWA dokončení: ' + String(pwaStatus.swPhase8CompletionMode || '—') + ' · připraveno ' + (pwaStatus.swPhase8Ready ? 'ano' : 'ne') + ' · app shell ' + String(pwaStatus.swAppShellCachedRatio || 0) + '%'
         ] : [];
         const dataOptDiag = dataOptStatus ? [
@@ -7806,8 +7836,8 @@ function bindCalendarTile() {
 // Games hub + account profile
 // -------------------------
 const GAMES_PROFILE_KEY = APP_KEY + ':games_profile_v1';
-const GAMES_PROFILE_RESET_VERSION = 720;
-const GAMES_REMOTE_STATS_RESET_CUTOFF_MS = Date.parse('2026-05-21T17:30:00+02:00');
+const GAMES_PROFILE_RESET_VERSION = 853;
+const GAMES_REMOTE_STATS_RESET_CUTOFF_MS = Date.parse('2026-05-26T02:10:00+02:00');
 const GAMES_ACCOUNT_BLOCKLIST = new Set(['4157']);
 const GAMES_ACCOUNT_LIST = [];
 

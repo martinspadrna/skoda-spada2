@@ -1,5 +1,5 @@
-const CACHE_VERSION = 'v1.5-852';
-const SW_APP_VERSION = 'v.1.5 (852)';
+const CACHE_VERSION = 'v1.5-854';
+const SW_APP_VERSION = 'v.1.5 (854)';
 const STATIC_CACHE = `rotace-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `rotace-runtime-${CACHE_VERSION}`;
 const APP_SHELL = [
@@ -67,6 +67,10 @@ const APP_SHELL = [
 ];
 
 const APP_SHELL_URLS = Array.from(new Set(APP_SHELL));
+const PWA_APP_ICON_PATHS = APP_SHELL_URLS.filter(url => /\.\/assets\/app-icons\/icon-\d+\.png$/.test(url));
+const PWA_LEGACY_ROOT_ICON_PATHS = APP_SHELL_URLS.filter(url => /\.\/icon-\d+\.png$/.test(url));
+const PWA_ASSET_AUDIT_MODE = 'app-icons-assets-release-checklist-v854';
+const EXPORT_ZIP_ROOT_MODE = 'root-files-assets-folder-only';
 const RUNTIME_EXTENSIONS = ['.js', '.css', '.png', '.jpg', '.jpeg', '.webp', '.svg', '.ico', '.json', '.webmanifest'];
 const MAX_RUNTIME_CACHE_ENTRIES = 96;
 const SW_CACHE_META_URL = './__rak-sw-cache-status.json';
@@ -368,6 +372,10 @@ async function writeCacheStatusMeta(cache, summary) {
       phase8CompletionMode: PHASE8_COMPLETION_MODE,
       networkFallbackTimeoutMs: NETWORK_FALLBACK_TIMEOUT_MS,
       navigationPreloadTimeoutMs: NAVIGATION_PRELOAD_TIMEOUT_MS,
+      assetAuditMode: PWA_ASSET_AUDIT_MODE,
+      assetIconCount: PWA_APP_ICON_PATHS.length,
+      assetLegacyRootIconCount: PWA_LEGACY_ROOT_ICON_PATHS.length,
+      exportZipRootMode: EXPORT_ZIP_ROOT_MODE,
       savedAt: Date.now()
     }, summary || {});
     await cache.put(SW_CACHE_META_URL, new Response(JSON.stringify(payload), {
@@ -465,6 +473,10 @@ async function getSwCacheStatus() {
       phase8CompletionMode: PHASE8_COMPLETION_MODE,
       networkFallbackTimeoutMs: NETWORK_FALLBACK_TIMEOUT_MS,
       navigationPreloadTimeoutMs: NAVIGATION_PRELOAD_TIMEOUT_MS,
+      assetAuditMode: PWA_ASSET_AUDIT_MODE,
+      assetIconCount: PWA_APP_ICON_PATHS.length,
+      assetLegacyRootIconCount: PWA_LEGACY_ROOT_ICON_PATHS.length,
+      exportZipRootMode: EXPORT_ZIP_ROOT_MODE,
       navigationPreloadEnabled,
       clientsCount,
       checkedAt: Date.now()
@@ -574,7 +586,7 @@ self.addEventListener('message', (event) => {
   if (data.type === 'GET_VERSION') {
     try {
       if (event.source && event.source.postMessage) {
-        event.source.postMessage({ type: 'sw-version', version: CACHE_VERSION, appVersion: SW_APP_VERSION, appShellCount: APP_SHELL_URLS.length, runtimeMaxEntries: MAX_RUNTIME_CACHE_ENTRIES, cacheLookupMode: CACHE_LOOKUP_MODE, precacheFetchMode: PRECACHE_FETCH_MODE, runtimeStoreMode: RUNTIME_STORE_MODE, sameOriginFallbackMode: SAME_ORIGIN_FALLBACK_MODE, precacheIntegrityMode: PRECACHE_INTEGRITY_MODE, precacheRepairMode: PRECACHE_REPAIR_MODE, activatePrecacheRepairMode: ACTIVATE_PRECACHE_REPAIR_MODE, staleCacheCleanupMode: STALE_CACHE_CLEANUP_MODE, cacheableResponseMode: CACHEABLE_RESPONSE_MODE, activateRuntimeTrimMode: ACTIVATE_RUNTIME_TRIM_MODE, networkTimeoutFallbackMode: NETWORK_TIMEOUT_FALLBACK_MODE, staticCacheFirstTimeoutMode: STATIC_CACHE_FIRST_TIMEOUT_MODE, phase8CompletionMode: PHASE8_COMPLETION_MODE, networkFallbackTimeoutMs: NETWORK_FALLBACK_TIMEOUT_MS, navigationPreloadTimeoutMs: NAVIGATION_PRELOAD_TIMEOUT_MS });
+        event.source.postMessage({ type: 'sw-version', version: CACHE_VERSION, appVersion: SW_APP_VERSION, appShellCount: APP_SHELL_URLS.length, runtimeMaxEntries: MAX_RUNTIME_CACHE_ENTRIES, cacheLookupMode: CACHE_LOOKUP_MODE, precacheFetchMode: PRECACHE_FETCH_MODE, runtimeStoreMode: RUNTIME_STORE_MODE, sameOriginFallbackMode: SAME_ORIGIN_FALLBACK_MODE, precacheIntegrityMode: PRECACHE_INTEGRITY_MODE, precacheRepairMode: PRECACHE_REPAIR_MODE, activatePrecacheRepairMode: ACTIVATE_PRECACHE_REPAIR_MODE, staleCacheCleanupMode: STALE_CACHE_CLEANUP_MODE, cacheableResponseMode: CACHEABLE_RESPONSE_MODE, activateRuntimeTrimMode: ACTIVATE_RUNTIME_TRIM_MODE, networkTimeoutFallbackMode: NETWORK_TIMEOUT_FALLBACK_MODE, staticCacheFirstTimeoutMode: STATIC_CACHE_FIRST_TIMEOUT_MODE, phase8CompletionMode: PHASE8_COMPLETION_MODE, assetAuditMode: PWA_ASSET_AUDIT_MODE, assetIconCount: PWA_APP_ICON_PATHS.length, assetLegacyRootIconCount: PWA_LEGACY_ROOT_ICON_PATHS.length, exportZipRootMode: EXPORT_ZIP_ROOT_MODE, networkFallbackTimeoutMs: NETWORK_FALLBACK_TIMEOUT_MS, navigationPreloadTimeoutMs: NAVIGATION_PRELOAD_TIMEOUT_MS });
       }
     } catch (err) {}
     return;
