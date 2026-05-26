@@ -15438,7 +15438,7 @@ body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsCell{
 .statsAbsenceLegendSwatch{display:inline-block;width:9px;height:9px;border-radius:999px;flex:0 0 auto;box-shadow:0 0 8px rgba(255,255,255,.12);}
 @media (max-width:430px){.statsYearOverviewGrid{grid-template-columns:1fr !important;}.statsYearChartBox{min-height:142px !important;}.statsOccupancyLineChart svg{height:96px}.statsAbsencePieWrap{grid-template-columns:84px minmax(0,1fr) !important;}.statsAbsencePie{width:78px !important;height:78px !important;}}
 
-/* v.1.5 (896) – Statistiky: obsazenost a důvody absencí vedle sebe i na mobilu */
+/* v.1.5 (897) – Statistiky: obsazenost a důvody absencí vedle sebe i na mobilu */
 .statsYearOverviewGrid{grid-template-columns:1fr !important;}
 .statsYearCombinedBox{min-height:0 !important;padding:10px !important;}
 .statsYearCombinedGrid{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);gap:12px;align-items:stretch;min-width:0;}

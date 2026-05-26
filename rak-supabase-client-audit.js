@@ -1,4 +1,4 @@
-// v.1.5 (896) – Supabase queue + online game contract audit read-only bez DB/policy změn.
+// v.1.5 (897) – Supabase queue + online game contract audit read-only bez DB/policy změn.
 
 (function setupRakSupabaseClientAudit() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -159,7 +159,7 @@
 
     return {
       ok: issues.length === 0,
-      mode: 'supabase-client-queue-audit-v896',
+      mode: 'supabase-client-queue-audit-v897',
       phase: 'supabase-client-offline-queue-audit',
       phasePercent: PHASE_PERCENT,
       phaseClosed: true,
@@ -200,7 +200,7 @@
     return {
       ok: !!(health && health.ok),
       status: health ? (health.ok ? 'ok' : 'kontrola') : 'unavailable',
-      mode: 'supabase-client-queue-smoke-v896',
+      mode: 'supabase-client-queue-smoke-v897',
       checkedAt: nowIso(),
       version: safeString(window.APP_VERSION || 'unknown'),
       readOnly: true,
@@ -235,7 +235,7 @@
     if (safeNumber(queue.maxRetryCount, 0) >= 3) warnings.push('některý úkol má 3+ pokusy: ' + queue.maxRetryCount);
     return {
       ok: issues.length === 0,
-      mode: 'supabase-client-queue-manual-guard-v896',
+      mode: 'supabase-client-queue-manual-guard-v897',
       checkedAt: nowIso(),
       version: safeString(window.APP_VERSION || 'unknown'),
       readOnly: true,
@@ -287,9 +287,9 @@
 
     return {
       ok: issues.length === 0,
-      mode: 'supabase-client-queue-closure-v896',
+      mode: 'supabase-client-queue-closure-v897',
       checkedAt: nowIso(),
-      version: safeString(window.APP_VERSION || 'v.1.5 (896)'),
+      version: safeString(window.APP_VERSION || 'v.1.5 (897)'),
       phase: 'phase H Supabase client/offline queue audit',
       phasePercent: 100,
       phaseClosed: true,
@@ -419,9 +419,9 @@
 
     return {
       ok: issues.length === 0,
-      mode: 'online-game-contract-audit-v896',
+      mode: 'online-game-contract-audit-v897',
       checkedAt: nowIso(),
-      version: safeString(window.APP_VERSION || 'v.1.5 (896)'),
+      version: safeString(window.APP_VERSION || 'v.1.5 (897)'),
       phase: 'phase I Supabase online hry create/accept/save kontrakty',
       phasePercent: 35,
       phaseClosed: false,
@@ -460,9 +460,9 @@
     return {
       ok: !!(audit && audit.ok),
       status: audit ? (audit.ok ? 'audit-ready' : 'kontrola') : 'unavailable',
-      mode: 'online-game-contract-smoke-v896',
+      mode: 'online-game-contract-smoke-v897',
       checkedAt: nowIso(),
-      version: safeString(window.APP_VERSION || 'v.1.5 (896)'),
+      version: safeString(window.APP_VERSION || 'v.1.5 (897)'),
       readOnly: true,
       dbMutations: false,
       policyChanges: false,

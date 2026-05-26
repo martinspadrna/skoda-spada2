@@ -1,3 +1,13 @@
+## v.1.5 (897)
+- Statistiky → Obsazenost strojů: důvod absence `N` se normalizuje jako `Neschopenka` i v souhrnu důvodů absencí, aby se v koláči/legendě neukazovalo jen holé `N`.
+- Herní profily a výsledky: přidaný jednorázový reset `GAMES_PROFILE_RESET_VERSION = 897`; profily si nechají číslo, jméno a UI nastavení, ale hry, achievementy a lokální cache výsledků začínají od 0.
+- Vzdálené Top score: starší záznamy `game_stats` se po resetu v klientovi odříznou přes nový cutoff, takže se staré výsledky nevrací z remote leaderboardů ani profilů. Supabase DB ani policies se nemění.
+- Top tabulky skóre nově robustně zobrazují datum včetně hodiny a minut i u ISO timestampů ze Supabase.
+- Piškvorky proti AI: po výhře hráče ve 33. tahu přidaná reply-lockdown obrana `tttReplyLockdownRisk()` a `tttBestReplyLockdownMove()`, která hodnotí nejhorší odpověď hráče a následnou protiodpověď AI.
+- Online Piškvorky, Lodě, Supabase DB/policies, dashboard, spodní lišta, kalkulačky, navigace a hotové online flow zůstaly beze změny.
+- Přidané dokumenty `assets/docs/games-score-reset-v897.md` a `assets/docs/ttt-ai-hardening-v897.md`; historie v O aplikaci rozšířená na blok `v.1.5 851–897`.
+- Verze sjednocena na v.1.5 (897), cache na `v1.5-897`, realtime kanál na `rak-public-live-v897`, package na `1.5.897`.
+
 ## v.1.5 (896)
 - Statistiky → Obsazenost strojů: Obsazenost a Důvody absencí zůstávají vedle sebe i na mobilu, aby se graf a koláč zbytečně neskládaly pod sebe a nezabíraly výšku stránky.
 - Čárový graf obsazenosti dál používá dynamický rozsah od nejmenší započtené hodnoty po nejvyšší, ne pevný začátek od 0 %.

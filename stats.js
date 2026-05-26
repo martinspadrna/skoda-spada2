@@ -68,6 +68,15 @@ if (typeof window.absenceLabelFromCode !== 'function') {
   };
 }
 
+if (typeof window.normalizeStatsAbsenceReasonName !== 'function') {
+  window.normalizeStatsAbsenceReasonName = function normalizeStatsAbsenceReasonName(reason) {
+    const raw = String(reason || '').trim();
+    if (!raw) return 'Ostatní';
+    if (/^N$/i.test(raw) || /^PN$/i.test(raw) || /neschopen/i.test(raw)) return 'Neschopenka';
+    return raw;
+  };
+}
+
 if (typeof window.sanitizeAbsencePersonName !== 'function') {
   window.sanitizeAbsencePersonName = function sanitizeAbsencePersonName(text) {
     return String(text || '')
@@ -301,8 +310,9 @@ function getStatsMonthOverview(stats, monthKey) {
 function getStatsAbsenceReasonLabel(note) {
   const code = String(note && note.code ? note.code : '').trim();
   const fromCode = typeof absenceLabelFromCode === 'function' ? String(absenceLabelFromCode(code) || '').trim() : '';
-  if (fromCode) return fromCode;
+  if (fromCode) return normalizeStatsAbsenceReasonName(fromCode);
   const text = String(note && note.text ? note.text : '').trim();
+  if (/\bN\b/i.test(text) || /neschopen/i.test(text)) return 'Neschopenka';
   if (/dovolen/i.test(text)) return 'Dovolená';
   if (/škol|skol/i.test(text)) return 'Školení';
   if (/paragraf|§/i.test(text)) return 'Paragraf';
@@ -342,7 +352,7 @@ function finalizeStatsYearOverview(stats) {
 
   const absenceReasons = stats.absenceReasons || {};
   stats.absenceReasonList = Object.entries(absenceReasons)
-    .map(([reason, value]) => ({ reason: String(reason || 'Ostatní'), value: roundStatsValue(value) }))
+    .map(([reason, value]) => ({ reason: normalizeStatsAbsenceReasonName(reason || 'Ostatní'), value: roundStatsValue(value) }))
     .filter(item => item.value > 0)
     .sort((a, b) => b.value - a.value || a.reason.localeCompare(b.reason, 'cs'));
   return stats;

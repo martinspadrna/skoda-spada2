@@ -1,4 +1,4 @@
-// v.1.5 (896) – window.RaK namespace doplněný o online game contract audit aliasy.
+// v.1.5 (897) – window.RaK namespace doplněný o online game contract audit aliasy.
 
 (function setupRakNamespaceBridge() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -11,8 +11,8 @@
 
   const root = window.RaK || {};
   const existingVersion = root.namespaceVersion || '';
-  root.namespaceVersion = 'v.1.5 (896)';
-  root.mode = 'passive-namespace-readonly-phase-closed-online-game-contracts-v896';
+  root.namespaceVersion = 'v.1.5 (897)';
+  root.mode = 'passive-namespace-readonly-phase-closed-online-game-contracts-v897';
   root.createdAt = root.createdAt || new Date().toISOString();
   root.updatedAt = new Date().toISOString();
   root.compatibility = 'legacy-globals-preserved';
@@ -104,10 +104,10 @@
   };
   root.getNamespaceMap = cloneMap;
   root.namespaceMap = cloneMap();
-  root.namespaceMapVersion = 'v.1.5 (896)';
+  root.namespaceMapVersion = 'v.1.5 (897)';
   root.namespacePlan = {
     phase: 'phase C',
-    mode: 'namespace-readonly-phase-closed-with-online-game-contract-alias-v896',
+    mode: 'namespace-readonly-phase-closed-with-online-game-contract-alias-v897',
     progressPercent: 100,
     mapClosed: true,
     rule: 'Staré globály zůstávají zdroj pravdy; read-only aliasy mají fallback na legacy globály a nesmí mutovat stav.',
@@ -185,7 +185,7 @@
     const safeList = list.filter((item) => item.phase === 'safe-now');
     return {
       ok: true,
-      mode: 'diagnostics-readonly-phase-closed-summary-v896',
+      mode: 'diagnostics-readonly-phase-closed-summary-v897',
       aliasCount: list.length,
       safeNowCount: safeList.length,
       laterCount: list.filter((item) => item.phase === 'later').length,
@@ -217,7 +217,7 @@
     if (unresolvedSafe.length) warnings.push('safe-now legacy globals čekají na pozdější moduly: ' + unresolvedSafe.slice(0, 6).join(', '));
     return {
       ok: missingReaders.length === 0 && mutatingRisk.length === 0,
-      mode: 'namespace-readonly-phase-closed-v896',
+      mode: 'namespace-readonly-phase-closed-v897',
       mapClosed: true,
       namespacePhaseClosed: true,
       phasePercent: 100,
@@ -317,7 +317,7 @@
 
     return {
       ok: issues.length === 0,
-      mode: 'passive-namespace-readonly-phase-closed-export-release-v896',
+      mode: 'passive-namespace-readonly-phase-closed-export-release-v897',
       checkedAt,
       version: String(window.APP_VERSION || 'unknown'),
       namespaceVersion,
@@ -368,7 +368,7 @@
     const health = (typeof window.getRakNamespaceHealth === 'function') ? window.getRakNamespaceHealth() : null;
     return {
       ok: !!(mapHealth && mapHealth.ok && health && health.ok),
-      mode: 'namespace-readonly-phase-closure-v896',
+      mode: 'namespace-readonly-phase-closure-v897',
       phasePercent: 100,
       namespacePhaseClosed: true,
       legacyGlobalsPreserved: !!(health && health.legacyGlobalsPreserved),

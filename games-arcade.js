@@ -1409,10 +1409,10 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   function fmtTime(ms) { return fmtSeconds(ms); }
   function fmtGameValue(gameId, ms) { return key(gameId) === 'reaction' ? fmtMs(ms) : fmtSeconds(ms); }
   function formatDate(ms) {
-    const n = Number(ms);
+    const n = typeof gamesParseStatTimestamp === 'function' ? gamesParseStatTimestamp(ms) : (typeof ms === 'number' ? Number(ms) : Date.parse(String(ms || '')));
     if (!Number.isFinite(n) || n <= 0) return '';
     try {
-      return new Intl.DateTimeFormat('cs-CZ', { timeZone: 'Europe/Prague', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).format(new Date(n));
+      return new Intl.DateTimeFormat('cs-CZ', { timeZone: 'Europe/Prague', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(n));
     } catch (err) {
       const d = new Date(n);
       return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
@@ -1743,7 +1743,9 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
         const results = await Promise.all(freshIds.map(async (gid) => {
         try {
           const rows = await window.RotationSupabaseBridge.loadGameStats(gid, 10);
-          const normalized = (Array.isArray(rows) ? rows : []).map((row) => {
+          const normalized = (Array.isArray(rows) ? rows : [])
+            .filter((row) => typeof window.gamesIsRemoteStatAfterReset === 'function' ? window.gamesIsRemoteStatAfterReset(row) : true)
+            .map((row) => {
             const accountNumber = String(row && (row.account_number ?? row.accountNumber ?? row.id) ? (row.account_number ?? row.accountNumber ?? row.id) : '').trim();
             const name = String(row && (row.player_name ?? row.full_name ?? row.name) ? (row.player_name ?? row.full_name ?? row.name) : accountNumber || '').trim() || accountNumber || 'Hráč';
             const points = Number(row && (row.points ?? row.best_score ?? row.bestScore ?? row.value) ? (row.points ?? row.best_score ?? row.bestScore ?? row.value) : 0) || 0;

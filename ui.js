@@ -3934,6 +3934,140 @@ function tttBestHumanTrapBrakeMove(board, deadline) {
 }
 
 
+
+function tttReplyLockdownRisk(board, mark) {
+  const wins = tttWinningMoves(board, mark).length;
+  const critical = tttCriticalThreatMoves(board, mark).length;
+  const windows = tttThreatWindowMoves(board, mark).length;
+  const openThrees = tttOpenThreeThreatMoves(board, mark).length;
+  const openTwos = typeof tttOpenTwoThreatMoves === 'function' ? tttOpenTwoThreatMoves(board, mark).length : 0;
+  const fork = tttBestForkMove(board, mark) >= 0 ? 1 : 0;
+  const pressure = tttTacticalPressureScore(board, mark);
+  const vector = typeof tttLineVectorScore === 'function' ? tttLineVectorScore(board, mark) : 0;
+  return wins * 125000000
+    + critical * 8200000
+    + windows * 4200000
+    + openThrees * 2600000
+    + fork * 3400000
+    + openTwos * 120000
+    + pressure
+    + vector * 0.72;
+}
+
+function tttBestReplyLockdownMove(board, deadline) {
+  const occupied = board.reduce((sum, cell) => sum + (cell ? 1 : 0), 0);
+  if (occupied < 6) return -1;
+  const currentRisk = tttReplyLockdownRisk(board, 'X');
+  const centerRow = (TTT_ROWS - 1) / 2;
+  const centerCol = (TTT_COLS - 1) / 2;
+  const rawCandidates = new Set([
+    ...tttCandidateMoves(board, occupied < 24 ? 3 : 2),
+    ...tttThreatWindowMoves(board, 'X'),
+    ...tttCriticalThreatMoves(board, 'X'),
+    ...tttOpenThreeThreatMoves(board, 'X'),
+    ...tttOpenTwoThreatMoves(board, 'X'),
+    ...tttThreatWindowMoves(board, 'O'),
+    ...tttCriticalThreatMoves(board, 'O')
+  ]);
+
+  let candidates = Array.from(rawCandidates)
+    .filter(idx => Number.isFinite(Number(idx)) && !board[Number(idx)])
+    .map(Number)
+    .map(idx => {
+      const row = Math.floor(idx / TTT_COLS);
+      const col = idx % TTT_COLS;
+      return {
+        idx,
+        score: tttCheapMovePotential(board, idx, 'O') * 1.24
+          + tttCheapMovePotential(board, idx, 'X') * 1.08
+          + Math.max(0, 120 - (Math.abs(row - centerRow) + Math.abs(col - centerCol)) * 5)
+      };
+    })
+    .sort((a, b) => b.score - a.score)
+    .slice(0, occupied < 16 ? 38 : (occupied < 32 ? 30 : 22))
+    .map(item => item.idx);
+
+  let bestIdx = -1;
+  let bestScore = -Infinity;
+  let bestWorstRisk = Infinity;
+
+  for (const idx of candidates) {
+    const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    if (deadline && now > deadline - 30 && bestIdx >= 0) break;
+
+    board[idx] = 'O';
+    const ownWinNow = tttWinner(board).winner === 'O' ? 1 : 0;
+    const ownRisk = tttReplyLockdownRisk(board, 'O');
+    const xImmediate = tttWinningMoves(board, 'X').length;
+
+    let replies = Array.from(new Set(tttCandidateMoves(board, occupied < 24 ? 3 : 2))).filter(reply => !board[reply]);
+    replies = replies
+      .map(reply => {
+        board[reply] = 'X';
+        const replyWin = tttWinner(board).winner === 'X' ? 1 : 0;
+        const replyRisk = tttReplyLockdownRisk(board, 'X');
+        board[reply] = '';
+        return { reply, score: replyWin * 90000000 + replyRisk + tttCheapMovePotential(board, reply, 'X') * 1.08 };
+      })
+      .sort((a, b) => b.score - a.score)
+      .slice(0, occupied < 18 ? 18 : 12)
+      .map(item => item.reply);
+
+    let worstRisk = xImmediate * 150000000;
+    for (const reply of replies) {
+      board[reply] = 'X';
+      const replyWinner = tttWinner(board).winner === 'X' ? 1 : 0;
+      let replyRisk = replyWinner * 180000000 + tttReplyLockdownRisk(board, 'X') - tttReplyLockdownRisk(board, 'O') * 0.18;
+
+      const counterSet = new Set([
+        ...tttWinningMoves(board, 'O'),
+        ...tttWinningMoves(board, 'X'),
+        ...tttCriticalThreatMoves(board, 'X'),
+        ...tttThreatWindowMoves(board, 'X'),
+        ...tttOpenThreeThreatMoves(board, 'X'),
+        ...tttCandidateMoves(board, 2)
+      ]);
+      let counters = Array.from(counterSet)
+        .filter(counter => Number.isFinite(Number(counter)) && !board[Number(counter)])
+        .map(Number)
+        .map(counter => ({
+          counter,
+          score: tttCheapMovePotential(board, counter, 'O') * 1.18 + tttCheapMovePotential(board, counter, 'X') * 1.06
+        }))
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 12)
+        .map(item => item.counter);
+
+      let bestCounterRisk = replyRisk;
+      for (const counter of counters) {
+        board[counter] = 'O';
+        const counterRisk = tttReplyLockdownRisk(board, 'X') - tttReplyLockdownRisk(board, 'O') * 0.32;
+        board[counter] = '';
+        if (counterRisk < bestCounterRisk) bestCounterRisk = counterRisk;
+      }
+      board[reply] = '';
+      const combinedRisk = replyRisk * 0.46 + bestCounterRisk * 0.78;
+      if (combinedRisk > worstRisk) worstRisk = combinedRisk;
+    }
+
+    board[idx] = '';
+    const candidateScore = ownWinNow * 220000000
+      + ownRisk * 0.72
+      + tttCheapMovePotential(board, idx, 'O') * 1.32
+      + tttCheapMovePotential(board, idx, 'X') * 0.82
+      - worstRisk * 1.18;
+    if (candidateScore > bestScore || (Math.abs(candidateScore - bestScore) < 1 && worstRisk < bestWorstRisk)) {
+      bestScore = candidateScore;
+      bestIdx = idx;
+      bestWorstRisk = worstRisk;
+    }
+  }
+
+  if (bestIdx < 0) return -1;
+  if (occupied >= 9 || currentRisk > 180000 || bestWorstRisk < 2600000) return bestIdx;
+  return -1;
+}
+
 function tttBestUltraSafetyMove(board, deadline) {
   const occupied = board.reduce((sum, cell) => sum + (cell ? 1 : 0), 0);
   if (occupied < 5) return -1;
@@ -4065,6 +4199,9 @@ function tttBestMove(board, difficulty) {
 
   const openThreeBlock = tttPickBestBlockMove(board, tttOpenThreeThreatMoves(board, 'X'), 'X');
   if (openThreeBlock >= 0) return openThreeBlock;
+
+  const replyLockdownMove = tttBestReplyLockdownMove(board, (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 760);
+  if (replyLockdownMove >= 0) return replyLockdownMove;
 
   const lineContainmentMove = tttBestLineContainmentMove(board, (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 620);
   if (lineContainmentMove >= 0) return lineContainmentMove;
@@ -5468,10 +5605,10 @@ function buildSupabaseKeepaliveStatusHtml(options) {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v.1.5 851–896',
+      range: 'v.1.5 851–897',
       title: 'Release audit, namespace a export tooling',
       lines: [
-        'V896 drží Obsazenost strojů a Důvody absencí vedle sebe i na mobilu a přidává line-containment obranu Piškvorek proti pozdějším pastem hráče. V895 sloučilo graf a koláč do jednoho pole a škáluje graf od nejnižší započtené hodnoty. V894 přidalo read-only audit kontraktů online her create/accept/save bez DB/policy změn; V893 znovu přitvrdilo Piškvorky proti AI.',
+        'V897 resetuje herní/profilové výsledky na nulu, skrývá starší remote score přes cutoff, doplňuje čas do Top score a přidává reply-lockdown obranu Piškvorek proti AI. V896 drží Obsazenost a Důvody absencí vedle sebe i na mobilu; V895 sloučilo graf a koláč do jednoho pole; V894 přidalo read-only audit kontraktů online her bez DB/policy změn.',
         'V867–875 uzavírá window.RaK read-only namespace fázi: mapuje diagnostické aliasy, zachovává staré globály a nepřepojuje navigaci, render, hry ani online flow.',
         'V860–866 uzavírá architecture/boot baseline audit: module readiness, runtime health, boot sequence a auditní helpery se oddělily mimo app.js bez změny funkčnosti.',
         'V853–859 řeší reset herních výsledků, opravu času Piškvorek, PWA/assets/SW audit, čistší ZIP strukturu a release readiness dokumentaci.',
@@ -8439,8 +8576,10 @@ function bindCalendarTile() {
 // Games hub + account profile
 // -------------------------
 const GAMES_PROFILE_KEY = APP_KEY + ':games_profile_v1';
-const GAMES_PROFILE_RESET_VERSION = 853;
-const GAMES_REMOTE_STATS_RESET_CUTOFF_MS = Date.parse('2026-05-26T02:10:00+02:00');
+const GAMES_PROFILE_RESET_VERSION = 897;
+const GAMES_SCORE_RESET_VERSION = 897;
+const GAMES_SCORE_RESET_MARKER_KEY = APP_KEY + ':games_score_reset_v897';
+const GAMES_REMOTE_STATS_RESET_CUTOFF_MS = Date.parse('2026-05-26T13:49:00+02:00');
 const GAMES_ACCOUNT_BLOCKLIST = new Set(['4157']);
 const GAMES_ACCOUNT_LIST = [];
 
@@ -8469,6 +8608,71 @@ function gamesMakeAccountEntry(accountId, name) {
 
 function gamesDefaultProfile() {
   return { activeAccountId: '', accounts: {}, profileVersion: GAMES_PROFILE_RESET_VERSION };
+}
+
+function gamesParseStatTimestamp(value) {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
+  const raw = String(value || '').trim();
+  if (!raw) return 0;
+  const parsed = Date.parse(raw);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function gamesIsRemoteStatAfterReset(row) {
+  const cutoff = Number(GAMES_REMOTE_STATS_RESET_CUTOFF_MS || 0) || 0;
+  if (!Number.isFinite(cutoff) || cutoff <= 0) return true;
+  const ts = gamesParseStatTimestamp(row && (row.updated_at || row.last_played_at || row.created_at || row.updatedAt || row.lastPlayedAt));
+  return ts >= cutoff;
+}
+if (typeof window !== 'undefined') window.gamesIsRemoteStatAfterReset = gamesIsRemoteStatAfterReset;
+
+function gamesResetAccountScoresOnly(account, fallbackName) {
+  const normalized = gamesNormalizeStoredAccount(account || {}, fallbackName || account && account.name || account && account.id || '');
+  normalized.stats = gamesEmptyStats();
+  normalized.achievements = [];
+  normalized.updatedAt = 0;
+  return normalized;
+}
+
+function gamesEnsureScoreResetV897() {
+  try {
+    if (localStorage.getItem(GAMES_SCORE_RESET_MARKER_KEY) === '1') return false;
+    const parsed = JSON.parse(localStorage.getItem(GAMES_PROFILE_KEY) || 'null');
+    const next = gamesDefaultProfile();
+    const accounts = parsed && parsed.accounts && typeof parsed.accounts === 'object' ? parsed.accounts : {};
+    Object.keys(accounts).forEach((id) => {
+      const accountId = String(id || '').trim();
+      if (!accountId || GAMES_ACCOUNT_BLOCKLIST.has(accountId)) return;
+      next.accounts[accountId] = gamesResetAccountScoresOnly(Object.assign({ id: accountId }, accounts[accountId] || {}), accountId);
+    });
+    const activeId = String(parsed && parsed.activeAccountId || '').trim();
+    next.activeAccountId = activeId && next.accounts[activeId] ? activeId : '';
+    next.profileVersion = GAMES_PROFILE_RESET_VERSION;
+    if (typeof setLocalStorageIfChanged === 'function') setLocalStorageIfChanged(GAMES_PROFILE_KEY, JSON.stringify(next));
+    else localStorage.setItem(GAMES_PROFILE_KEY, JSON.stringify(next));
+    localStorage.removeItem(TTT_HARD_WIN_KEY);
+    localStorage.removeItem('rotace_supabase_gomoku_wins_v1');
+    localStorage.removeItem(TTT_ONLINE_RESULT_STORE_KEY);
+    localStorage.removeItem(TTT_ONLINE_JOIN_DIAG_KEY);
+    const toRemove = [];
+    for (let i = 0; i < localStorage.length; i += 1) {
+      const key = String(localStorage.key(i) || '');
+      if (key.indexOf('rotace_supabase_game_stats_v856:') === 0) toRemove.push(key);
+    }
+    toRemove.forEach((key) => localStorage.removeItem(key));
+    if (app && typeof app === 'object') {
+      app.gamesLeaderboardCache = {};
+      app.gamesLeaderboardThrottle = {};
+      app.gamesProfile = next;
+    }
+    if (typeof setLocalStorageIfChanged === 'function') setLocalStorageIfChanged(GAMES_SCORE_RESET_MARKER_KEY, '1');
+    else localStorage.setItem(GAMES_SCORE_RESET_MARKER_KEY, '1');
+    window.__rakGamesScoreResetV897 = { ok: true, version: GAMES_SCORE_RESET_VERSION, cutoff: GAMES_REMOTE_STATS_RESET_CUTOFF_MS, accounts: Object.keys(next.accounts || {}).length, at: Date.now() };
+    return true;
+  } catch (err) {
+    console.warn('gamesEnsureScoreResetV897 failed', err);
+    return false;
+  }
 }
 
 function gamesNormalizeStoredAccount(account, fallbackName) {
@@ -8521,6 +8725,7 @@ function gamesNormalizeStoredAccount(account, fallbackName) {
 
 function gamesLoadProfile() {
   try {
+    gamesEnsureScoreResetV897();
     const parsed = typeof parseLocalStorageJsonCached === 'function'
       ? parseLocalStorageJsonCached(GAMES_PROFILE_KEY, null)
       : JSON.parse(localStorage.getItem(GAMES_PROFILE_KEY) || 'null');
@@ -8582,8 +8787,7 @@ function gamesGetActiveAccount() {
 }
 
 function gamesParseRemoteTimestamp(value) {
-  const ts = Date.parse(String(value || ''));
-  return Number.isFinite(ts) ? ts : 0;
+  return gamesParseStatTimestamp(value);
 }
 
 function gamesGetRemoteProfileStatIds() {
@@ -8600,8 +8804,8 @@ function gamesGetRemoteProfileStatIds() {
 
 function gamesApplyRemoteProfileStat(profile, row) {
   if (!profile || !row) return false;
-  const remoteUpdated = gamesParseRemoteTimestamp(row.updated_at || row.last_played_at || row.updatedAt);
-  if (Number.isFinite(GAMES_REMOTE_STATS_RESET_CUTOFF_MS) && remoteUpdated && remoteUpdated < GAMES_REMOTE_STATS_RESET_CUTOFF_MS) return false;
+  if (!gamesIsRemoteStatAfterReset(row)) return false;
+  const remoteUpdated = gamesParseRemoteTimestamp(row.updated_at || row.last_played_at || row.updatedAt || row.created_at);
   const accountId = String((row.account_number || row.accountNumber || row.id || '')).trim();
   if (!accountId || GAMES_ACCOUNT_BLOCKLIST.has(accountId)) return false;
   const gameType = String((row.game_type || row.gameType || '')).trim();
@@ -8894,7 +9098,7 @@ function gamesFormatTimeLabel(value) {
 }
 
 function gamesFormatPlayedLabel(value) {
-  const ms = Number(value);
+  const ms = gamesParseStatTimestamp(value);
   if (!Number.isFinite(ms) || ms <= 0) return '';
   try {
     return new Intl.DateTimeFormat('cs-CZ', {
@@ -9114,8 +9318,8 @@ function gamesBuildProfilesWithRemoteRows(profile) {
     if (!gameId || gameId === '__profile_ui') return;
     const rows = Array.isArray(cache[gameId]) ? cache[gameId] : [];
     rows.forEach((row) => {
-      const remoteUpdated = gamesParseRemoteTimestamp(row && (row.updated_at || row.last_played_at || row.updatedAt));
-      if (Number.isFinite(GAMES_REMOTE_STATS_RESET_CUTOFF_MS) && remoteUpdated && remoteUpdated < GAMES_REMOTE_STATS_RESET_CUTOFF_MS) return;
+      if (!gamesIsRemoteStatAfterReset(row)) return;
+      const remoteUpdated = gamesParseRemoteTimestamp(row && (row.updated_at || row.last_played_at || row.created_at || row.updatedAt));
       const id = String(row && (row.id || row.account_number || row.accountNumber) ? (row.id || row.account_number || row.accountNumber) : '').trim();
       if (!id || GAMES_ACCOUNT_BLOCKLIST.has(id)) return;
       const value = Number(row && (row.value ?? row.games_played ?? row.points) || 0) || 0;
@@ -9442,6 +9646,7 @@ function gamesRecordStat(gameId, patch) {
 function gamesNormalizeRemoteLeaderboardRows(gameId, rows, limit = 10) {
   const key = String(gameId || '').trim();
   return (Array.isArray(rows) ? rows : [])
+    .filter((row) => gamesIsRemoteStatAfterReset(row))
     .map((row) => {
       const accountNumber = String(row && (row.account_number ?? row.accountNumber ?? row.id) ? (row.account_number ?? row.accountNumber ?? row.id) : '').trim();
       const name = String(row && (row.player_name ?? row.full_name ?? row.name) ? (row.player_name ?? row.full_name ?? row.name) : accountNumber || '').trim();
