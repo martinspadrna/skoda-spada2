@@ -1,9 +1,9 @@
-// v.1.5 (906) – release gating/checklist vrstva nad read-only audity bez mutací.
+// v.1.5 (909) – release gating/checklist vrstva nad read-only audity bez mutací.
 
 (function setupRakReleaseGates() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
-  const VERSION = 'v.1.5 (906)';
-  const MODE = 'release-gates-readonly-v906';
+  const VERSION = 'v.1.5 (909)';
+  const MODE = 'release-gates-readonly-v909';
 
   try {
     if (typeof window.rakMarkModuleReady === 'function') {
@@ -79,6 +79,8 @@
     const releaseReadiness = readDiag('releaseReadiness', 'getRakReleaseReadinessHealth');
     const bootSequence = readDiag('bootSequence', 'getRakBootSequenceHealth');
     const runtimeGuard = readDiag('runtimeGuard', 'getRakRuntimeGuardHealth');
+    const gamesTopScoreDomHardening = readDiag('gamesTopScoreDomHardening', 'getRakGamesTopScoreDomHardeningHealth');
+    const gamesProfileDomHardening = readDiag('gamesProfileDomHardening', 'getRakGamesProfileDomHardeningHealth');
 
     return {
       releaseOpsChecklist,
@@ -94,14 +96,16 @@
       moduleReadiness,
       releaseReadiness,
       bootSequence,
-      runtimeGuard
+      runtimeGuard,
+      gamesTopScoreDomHardening,
+      gamesProfileDomHardening
     };
   }
 
   function buildGateMatrix(signals) {
     const gates = [];
     const version = safeString(window.APP_VERSION || VERSION);
-    const versionOk = /^v\.1\.5 \(905\)$/.test(version);
+    const versionOk = /^v\.1\.5 \(908\)$/.test(version);
 
     gates.push(makeGate(
       'version-consistency',
@@ -191,7 +195,7 @@
       signals.foodSundayGuard && signals.foodSundayGuard.ok ? 'ok' : 'warning',
       'warning',
       signals.foodSundayGuard ? ('přesčasových nedělí ' + String(signals.foodSundayGuard.overtimeSundayCount || 0)) : 'guard chybí',
-      'Běžná neděle bez přesčasu musí zůstat zavřená; přesčasová okna musí být označená.',
+      'Běžná neděle musí použít normální rozpis; přesčasová neděle musí přepnout na mimořádný režim a být označená.',
       'dashboard/food schedule'
     ));
 
@@ -225,6 +229,26 @@
       'rak-release-ops-audit'
     ));
 
+
+    gates.push(makeGate(
+      'games-profile-dom-hardening',
+      'Hry profily/achievementy DOM hardening',
+      signals.gamesProfileDomHardening && signals.gamesProfileDomHardening.ok ? 'ok' : 'warning',
+      'warning',
+      signals.gamesProfileDomHardening ? ('escapovaná pole ' + String((signals.gamesProfileDomHardening.escapedFields || []).length || 0) + ', číselná pole ' + String((signals.gamesProfileDomHardening.numericFields || []).length || 0)) : 'guard chybí',
+      'Profily, statistiky a achievementy musí escapovat jména/texty a normalizovat čísla bez čtení uložených hodnot.',
+      'games-arcade.js'
+    ));
+
+    gates.push(makeGate(
+      'games-top-score-dom-hardening',
+      'Hry Top score DOM hardening',
+      signals.gamesTopScoreDomHardening && signals.gamesTopScoreDomHardening.ok ? 'ok' : 'warning',
+      'warning',
+      signals.gamesTopScoreDomHardening ? ('escapovaná pole ' + String((signals.gamesTopScoreDomHardening.escapedFields || []).length || 0)) : 'guard chybí',
+      'Top score renderer musí escapovat jména, jednotky, hodnoty i čas bez čtení uložených hodnot.',
+      'games-arcade.js'
+    ));
 
     gates.push(makeGate(
       'dom-security-hardening',
@@ -262,7 +286,7 @@
   window.getRakReleaseGatePolicy = function getRakReleaseGatePolicy() {
     return {
       ok: true,
-      mode: 'release-gate-policy-v906',
+      mode: 'release-gate-policy-v909',
       version: safeString(window.APP_VERSION || VERSION),
       checkedAt: nowIso(),
       statuses: [
@@ -327,7 +351,7 @@
     const policy = window.getRakReleaseGatePolicy();
     return {
       ok: !!(matrix && matrix.ok),
-      mode: 'release-gates-closure-v906',
+      mode: 'release-gates-closure-v909',
       version: safeString(window.APP_VERSION || VERSION),
       checkedAt: nowIso(),
       phase: 'phase K release gating / checklist matrix',

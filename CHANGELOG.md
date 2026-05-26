@@ -1,3 +1,31 @@
+## v.1.5 (909)
+
+- Hry: přidaný malý DOM/security hardening pro profily, statistiky a achievementy.
+- Jména profilů, ID, iniciály, názvy her, ranky, oblíbená hra a texty achievementů se normalizují před složením HTML.
+- Číselné hodnoty v profilech a achievementech se převádějí na bezpečné rozsahy.
+- Přidaný read-only guard `getRakGamesProfileDomHardeningHealth()` a release gate `games-profile-dom-hardening`.
+- Přidaný dokument `assets/docs/games-profile-dom-hardening-v909.md`.
+- Verze sjednocena na v.1.5 (909), cache na `v1.5-909`, realtime kanál na `rak-public-live-v909`, package na `1.5.909`.
+
+## v.1.5 (908)
+
+- Navázáno na potvrzenou v.1.5 (907).
+- Přidaný první konkrétní DOM/security hardening pro herní Top score v `games-arcade.js`.
+- Top score renderer teď normalizuje a escapuje jména hráčů, jednotky, hodnoty a čas přes společný helper.
+- Přidaný read-only guard `getRakGamesTopScoreDomHardeningHealth()` a release gate warning pro Top score DOM hardening.
+- Online Piškvorky, Lodě, Supabase DB/policies, dashboard a kalkulačky beze změny.
+- Přidaný dokument `assets/docs/games-top-score-dom-hardening-v908.md`.
+- Verze sjednocena na v.1.5 (908), cache na `v1.5-908`, realtime kanál na `rak-public-live-v908`, package na `1.5.908`.
+
+## v.1.5 (907)
+
+- Kantýna a jídelna byly srovnané podle dodaných fotek běžné a mimořádné provozní doby.
+- Dashboard nově správně rozlišuje běžnou neděli a přesčasovou neděli podle seznamu `FOOD_SPECIAL_SUNDAY_DATES`.
+- V detailu po rozkliknutí je běžná otevírací doba oddělená od mimořádné nedělní provozní doby a přesčas je jasně označený.
+- Jídelna má upravenou sobotu: ranní okno `07:00–09:00` se v sobotu nepoužívá podle vyvěšené provozní doby.
+- Přidaný dokument `assets/docs/food-hours-alignment-v907.md`.
+- Verze sjednocena na v.1.5 (907), cache na `v1.5-907`, realtime kanál na `rak-public-live-v907`, package na `1.5.907`.
+
 ## v.1.5 (906)
 
 - Přidaná read-only vrstva `rak-dom-security-hardening.js` pro nízkorizikové DOM/security hardening návrhy po jednotlivých sink skupinách.

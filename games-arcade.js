@@ -361,6 +361,55 @@
     return nextPatch;
   }
 
+  // v.1.5 (909): Malý DOM/security hardening pro profily, statistiky a achievementy.
+  // Uživatelské texty a číselné hodnoty se normalizují před složením HTML.
+  const GAMES_PROFILE_DOM_HARDENING = {
+    mode: 'games-profile-achievement-dom-hardening-v909',
+    sinks: ['gamesProfilesGrid', 'gamesAchievementsGrid', 'gamesStatsGrid'],
+    escapedFields: ['profileName', 'profileId', 'initials', 'rank', 'favorite', 'gameTitle', 'valueText', 'achievementTitle', 'achievementId', 'achievementDesc', 'achievementGoal'],
+    numericFields: ['level', 'xp', 'winRate', 'plays', 'achievements', 'progress', 'target', 'pct'],
+    maxNameLength: 48,
+    maxIdLength: 40,
+    maxLabelLength: 80,
+    maxLongTextLength: 160
+  };
+
+  function gamesProfileSafeText(value, fallback, maxLength) {
+    const raw = String(value == null ? '' : value)
+      .replace(/[\u0000-\u001f\u007f]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    const text = raw || String(fallback || '');
+    return text.slice(0, Math.max(1, Number(maxLength || GAMES_PROFILE_DOM_HARDENING.maxLabelLength) || GAMES_PROFILE_DOM_HARDENING.maxLabelLength));
+  }
+
+  function gamesProfileSafeName(value, fallback) {
+    return gamesProfileSafeText(value, fallback || 'Hráč', GAMES_PROFILE_DOM_HARDENING.maxNameLength) || 'Hráč';
+  }
+
+  function gamesProfileSafeId(value) {
+    return gamesProfileSafeText(value, '', GAMES_PROFILE_DOM_HARDENING.maxIdLength);
+  }
+
+  function gamesProfileSafeInitials(name, id) {
+    const source = gamesProfileSafeName(name, id ? ('Hráč ' + String(id)) : '?');
+    return gamesProfileSafeText(source, '?', 2).toUpperCase() || '?';
+  }
+
+  function gamesProfileSafeInt(value, maxValue) {
+    const n = Number(value);
+    if (!Number.isFinite(n)) return 0;
+    return Math.max(0, Math.min(Number(maxValue || 999999999) || 999999999, Math.round(n)));
+  }
+
+  function gamesProfileSafePct(value) {
+    return Math.max(0, Math.min(100, gamesProfileSafeInt(value, 100)));
+  }
+
+  function gamesProfileValueText(value, fallback, maxLength) {
+    return gamesProfileSafeText(value, fallback || '0', maxLength || GAMES_PROFILE_DOM_HARDENING.maxLabelLength);
+  }
+
   function renderProfilesExtended() {
     const grid = document.getElementById('gamesProfilesGrid');
     if (!grid) return;
@@ -393,13 +442,22 @@
       const progress = gamesBuildProgressSummary(acc);
       const last = acc.updatedAt ? gamesFormatPlayedLabel(acc.updatedAt) : 'Ještě bez hry';
       const profileRows = defs.map((game) => {
-        const display = getArcadeProfileDisplay(acc, game.id);
-        const unit = game.unit || '';
+        const display = gamesProfileValueText(getArcadeProfileDisplay(acc, game.id), '0', 48);
+        const unit = gamesProfileSafeText(game.unit || '', '', 16);
         const suffix = game.id === 'ttt' ? '' : (unit ? ' ' + unit : '');
-        return '<div class="gamesProfileRow"><strong>' + escapeHtml(game.title) + '</strong><span>' + escapeHtml(display + suffix) + '</span></div>';
+        return '<div class="gamesProfileRow"><strong>' + escapeHtml(gamesProfileSafeText(game.title, game.id, GAMES_PROFILE_DOM_HARDENING.maxLabelLength)) + '</strong><span>' + escapeHtml(display + suffix) + '</span></div>';
       }).join('');
-      const initials = String(acc.name || acc.id || '?').trim().slice(0, 2).toUpperCase();
-      const xpPct = Math.max(0, Math.min(100, Math.round(Number(progress.rankPct || 0) || 0)));
+      const safeName = gamesProfileSafeName(acc.name, acc.id ? ('Hráč ' + String(acc.id)) : 'Hráč');
+      const safeId = gamesProfileSafeId(acc.id || '');
+      const initials = gamesProfileSafeInitials(safeName, safeId);
+      const xpPct = gamesProfileSafePct(progress.rankPct);
+      const safeLevel = gamesProfileSafeInt(progress.level, 999);
+      const safeXp = gamesProfileSafeInt(progress.xp, 999999999);
+      const safeWinRate = gamesProfileSafePct(progress.winRate);
+      const safePlays = gamesProfileSafeInt(progress.plays, 999999999);
+      const safeAchievements = gamesProfileSafeInt(progress.achievements, 999999);
+      const safeFavorite = gamesProfileSafeText(progress.favorite, '—', GAMES_PROFILE_DOM_HARDENING.maxLabelLength);
+      const safeLast = gamesProfileSafeText(last, 'Ještě bez hry', GAMES_PROFILE_DOM_HARDENING.maxLabelLength);
       const isActive = String(acc.id) === String(activeId);
       return [
         '<details class="gamesStatsCard' + (isActive ? ' isActive' : '') + '"' + (isActive ? ' open' : '') + '>',
@@ -407,18 +465,18 @@
         '    <div class="gamesStatsCardHead">',
         '      <div class="gamesProfileAvatar">' + escapeHtml(initials) + '</div>',
         '      <div class="gamesStatsCardHeadMain">',
-        '        <div class="gamesStatsCardName">' + escapeHtml(acc.name || ('Hráč ' + String(acc.id || ''))) + '</div>',
-        '        <div class="gamesStatsCardId">' + escapeHtml(acc.id || '') + '</div>',
-        '        <div class="gamesStatsCardMeta gamesStatsCardMetaDense">' + escapeHtml(progress.rank) + ' · Level ' + String(progress.level) + ' · XP ' + String(progress.xp) + ' · Win rate ' + String(progress.winRate) + '%</div>',
+        '        <div class="gamesStatsCardName">' + escapeHtml(safeName) + '</div>',
+        '        <div class="gamesStatsCardId">' + escapeHtml(safeId) + '</div>',
+        '        <div class="gamesStatsCardMeta gamesStatsCardMetaDense">' + escapeHtml(gamesProfileSafeText(progress.rank, 'Nováček', 32)) + ' · Level ' + String(safeLevel) + ' · XP ' + String(safeXp) + ' · Win rate ' + String(safeWinRate) + '%</div>',
         '      </div>',
-        '      <div class="gamesStatsCardTotal">' + String(progress.plays) + ' her</div>',
+        '      <div class="gamesStatsCardTotal">' + String(safePlays) + ' her</div>',
         '    </div>',
         '  </summary>',
         '  <div class="gamesStatsCardBody">',
         '    <div class="gamesStatsXpBar"><span style="--fill:' + String(xpPct) + '%"></span></div>',
-        '    <div class="gamesStatsCardMeta gamesStatsCardMetaDense">Nejoblíbenější hra: ' + escapeHtml(progress.favorite) + ' · Achievementy: ' + String(progress.achievements) + '</div>',
+        '    <div class="gamesStatsCardMeta gamesStatsCardMetaDense">Nejoblíbenější hra: ' + escapeHtml(safeFavorite) + ' · Achievementy: ' + String(safeAchievements) + '</div>',
         profileRows,
-        '    <div class="gamesStatsCardMeta">' + escapeHtml(last) + '</div>',
+        '    <div class="gamesStatsCardMeta">' + escapeHtml(safeLast) + '</div>',
         '  </div>',
         '</details>'
       ].join('');
@@ -572,21 +630,23 @@
   }
 
   function renderAchievementCard(def, current) {
-    const target = Number(def.target || 1) || 1;
-    const pct = Math.max(0, Math.min(100, Math.round((current / target) * 100)));
-    const isUnlocked = current >= target;
+    const target = Math.max(1, gamesProfileSafeInt(def && def.target, 999999999) || 1);
+    const currentSafe = gamesProfileSafeInt(current, 999999999);
+    const cappedCurrent = Math.min(currentSafe, target);
+    const pct = gamesProfileSafePct((currentSafe / target) * 100);
+    const isUnlocked = currentSafe >= target;
     return [
       '<div class="gamesStatsCard' + (isUnlocked ? ' isActive' : '') + '">',
       '  <div class="gamesStatsCardHead">',
       '    <div>',
-      '      <div class="gamesStatsCardName">' + escapeHtml(def.title) + '</div>',
-      '      <div class="gamesStatsCardId">' + escapeHtml(def.id) + '</div>',
+      '      <div class="gamesStatsCardName">' + escapeHtml(gamesProfileSafeText(def && def.title, 'Achievement', GAMES_PROFILE_DOM_HARDENING.maxLabelLength)) + '</div>',
+      '      <div class="gamesStatsCardId">' + escapeHtml(gamesProfileSafeId(def && def.id)) + '</div>',
       '    </div>',
-      '    <div class="gamesStatsCardTotal">' + String(Math.min(current, target)) + '/' + String(target) + '</div>',
+      '    <div class="gamesStatsCardTotal">' + String(cappedCurrent) + '/' + String(target) + '</div>',
       '  </div>',
       '  <div class="gamesStatsCardBody">',
-      '    <div class="gamesStatsCardLine">' + escapeHtml(def.desc) + '</div>',
-      '    <div class="gamesStatsCardLine">' + escapeHtml(def.goalText) + '</div>',
+      '    <div class="gamesStatsCardLine">' + escapeHtml(gamesProfileSafeText(def && def.desc, '', GAMES_PROFILE_DOM_HARDENING.maxLongTextLength)) + '</div>',
+      '    <div class="gamesStatsCardLine">' + escapeHtml(gamesProfileSafeText(def && def.goalText, '', GAMES_PROFILE_DOM_HARDENING.maxLabelLength)) + '</div>',
       '    <div class="gamesAchievementBar"><span style="--fill:' + String(pct) + '%"></span></div>',
       '  </div>',
       '</div>'
@@ -594,12 +654,13 @@
   }
 
   function renderAchievementGroup(title, items, open) {
-    const body = items.length
-      ? items.map(item => renderAchievementCard(item.def, item.current)).join('')
+    const safeItems = Array.isArray(items) ? items : [];
+    const body = safeItems.length
+      ? safeItems.map(item => renderAchievementCard(item.def, item.current)).join('')
       : '<div class="smallText gamesAchievementEmpty">Tady zatím nic není.</div>';
     return [
       '<details class="gamesAchievementGroup"' + (open ? ' open' : '') + '>',
-      '  <summary class="gamesAchievementGroupSummary"><span>' + escapeHtml(title) + '</span><strong>' + String(items.length) + '</strong></summary>',
+      '  <summary class="gamesAchievementGroupSummary"><span>' + escapeHtml(gamesProfileSafeText(title, 'Achievementy', 40)) + '</span><strong>' + String(gamesProfileSafeInt(safeItems.length, 999999)) + '</strong></summary>',
       '  <div class="gamesAchievementGroupBody">' + body + '</div>',
       '</details>'
     ].join('');
@@ -1146,6 +1207,128 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return Array.from(new Set(ALL_GAMES.concat(['memory_4x4','memory_6x6','memory_8x8','sudoku_easy','sudoku_medium','sudoku_hard'])));
   }
 
+
+  // v.1.5 (909): Malý DOM/security hardening pro Top score.
+  // Jména, jednotky a hodnoty se normalizují na text ještě před složením HTML řádku.
+  const GAMES_TOP_SCORE_DOM_HARDENING = {
+    mode: 'games-top-score-dom-hardening-v909',
+    sinks: ['gamesTop3Block'],
+    escapedFields: ['id', 'name', 'valueText', 'playedText', 'title', 'unit'],
+    maxNameLength: 48,
+    maxUnitLength: 16,
+    maxRows: 50
+  };
+
+  function gamesSafePlainText(value, fallback, maxLength) {
+    const raw = String(value == null ? '' : value)
+      .replace(/[\u0000-\u001f\u007f]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    const text = raw || String(fallback || '');
+    return text.slice(0, Math.max(1, Number(maxLength || 80) || 80));
+  }
+
+  function gamesSafePlayerName(value) {
+    return gamesSafePlainText(value, 'Hráč', GAMES_TOP_SCORE_DOM_HARDENING.maxNameLength) || 'Hráč';
+  }
+
+  function gamesSafeScoreUnit(value, fallback) {
+    return gamesSafePlainText(value, fallback || '', GAMES_TOP_SCORE_DOM_HARDENING.maxUnitLength);
+  }
+
+  function gamesSafeLeaderboardValue(gameId, value) {
+    const n = Number(value);
+    if (!Number.isFinite(n) || n <= 0) return 0;
+    if (isLowBetter(gameId)) return Math.max(1, Math.min(86400000, Math.round(n)));
+    return Math.max(1, Math.min(999999999, Math.round(n)));
+  }
+
+  function gamesNormalizeLeaderboardRow(gameId, row) {
+    const safeRow = row && typeof row === 'object' ? row : {};
+    const fallbackName = safeRow.id ? ('Hráč ' + String(safeRow.id)) : 'Hráč';
+    const playedText = gamesSafePlainText(safeRow.playedText || safeRow.played_text || '', '', 32);
+    return {
+      id: gamesSafePlainText(safeRow.id || safeRow.account_number || safeRow.accountNumber || '', '', 40),
+      name: gamesSafePlayerName(safeRow.name || safeRow.player_name || safeRow.full_name || fallbackName),
+      value: gamesSafeLeaderboardValue(gameId, safeRow.value),
+      playedText,
+      gameId: key(gameId)
+    };
+  }
+
+  function gamesLeaderboardValueText(gameId, row, unitLabel) {
+    const value = gamesSafeLeaderboardValue(gameId, row && row.value);
+    if (!value) return '';
+    if (isLowBetter(gameId)) return fmtGameValue(gameId, value);
+    const unit = gamesSafeScoreUnit(unitLabel || (gameMeta(gameId).unit || ''), '');
+    return (String(value) + (unit ? ' ' + unit : '')).trim();
+  }
+
+  function gamesLeaderboardRowHtml(gameId, row, index, unitLabel) {
+    const safe = gamesNormalizeLeaderboardRow(gameId, row);
+    const valueText = gamesLeaderboardValueText(gameId, safe, unitLabel);
+    const played = safe.playedText ? ' · ' + escapeHtml(safe.playedText) : '';
+    return '<div class="gamesTop3Row">' +
+      '<div class="gamesTop3Rank">' + String(Math.max(1, Number(index || 0) + 1)) + '.</div>' +
+      '<div class="gamesTop3Name">' + escapeHtml(safe.name) + '</div>' +
+      '<div class="gamesTop3Value">' + escapeHtml(valueText) + played + '</div>' +
+    '</div>';
+  }
+
+  function getRakGamesTopScoreDomHardeningHealth() {
+    const probe = gamesNormalizeLeaderboardRow('aim', {
+      id: '<id>',
+      name: '<img src=x onerror=alert(1)> Martin',
+      value: '123',
+      playedText: '<script>alert(1)</script>'
+    });
+    const probeHtml = gamesLeaderboardRowHtml('aim', probe, 0, 'bodů');
+    const ok = probeHtml.includes('&lt;img') && probeHtml.includes('&lt;script') && !probeHtml.includes('<img') && !probeHtml.includes('<script');
+    return {
+      ok,
+      mode: GAMES_TOP_SCORE_DOM_HARDENING.mode,
+      version: String(window.APP_VERSION || 'v.1.5 (909)'),
+      scope: 'Top score řádky ve hrách',
+      sinks: GAMES_TOP_SCORE_DOM_HARDENING.sinks.slice(),
+      escapedFields: GAMES_TOP_SCORE_DOM_HARDENING.escapedFields.slice(),
+      maxNameLength: GAMES_TOP_SCORE_DOM_HARDENING.maxNameLength,
+      maxUnitLength: GAMES_TOP_SCORE_DOM_HARDENING.maxUnitLength,
+      probeEscaped: ok,
+      note: 'Read-only diagnostika; hodnoty z localStorage ani Supabase se nečtou, jen se ověřuje renderer Top score.'
+    };
+  }
+  window.getRakGamesTopScoreDomHardeningHealth = getRakGamesTopScoreDomHardeningHealth;
+
+
+  function getRakGamesProfileDomHardeningHealth() {
+    const probeName = gamesProfileSafeName('<img src=x onerror=alert(1)> Martin', 'Hráč');
+    const probeAchievement = {
+      id: '<script>id</script>',
+      title: '<b>Achievement</b>',
+      desc: '<img src=x onerror=alert(1)> popis',
+      goalText: '<svg onload=alert(1)>',
+      target: '10'
+    };
+    const probeProfileHtml = '<div>' + escapeHtml(probeName) + '</div>';
+    const probeAchievementHtml = renderAchievementCard(probeAchievement, '5');
+    const joined = probeProfileHtml + probeAchievementHtml;
+    const ok = joined.includes('&lt;img') && joined.includes('&lt;b') && joined.includes('&lt;script') && joined.includes('&lt;svg') && !joined.includes('<img') && !joined.includes('<script') && !joined.includes('<svg') && !joined.includes('<b>Achievement</b>');
+    return {
+      ok,
+      mode: GAMES_PROFILE_DOM_HARDENING.mode,
+      version: String(window.APP_VERSION || 'v.1.5 (909)'),
+      scope: 'Profily, statistiky a achievementy ve hrách',
+      sinks: GAMES_PROFILE_DOM_HARDENING.sinks.slice(),
+      escapedFields: GAMES_PROFILE_DOM_HARDENING.escapedFields.slice(),
+      numericFields: GAMES_PROFILE_DOM_HARDENING.numericFields.slice(),
+      maxNameLength: GAMES_PROFILE_DOM_HARDENING.maxNameLength,
+      maxIdLength: GAMES_PROFILE_DOM_HARDENING.maxIdLength,
+      probeEscaped: ok,
+      note: 'Read-only diagnostika rendererů profilů/statistik/achievementů; hodnoty storage ani Supabase se nečtou.'
+    };
+  }
+  window.getRakGamesProfileDomHardeningHealth = getRakGamesProfileDomHardeningHealth;
+
   function addCleanup(fn) { if (typeof fn === 'function') cleanups.add(fn); }
   function clearCleanups() { cleanups.forEach((fn) => { try { fn(); } catch (err) {} }); cleanups.clear(); }
   function setActiveState(id, state) { currentState.id = key(id); currentState.state = state || null; }
@@ -1614,10 +1797,10 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     const id = key(gameId);
     const meta = gameMeta(id);
     let value = '—';
-    if (id === 'ttt') value = `${Number(st.plays || 0) || 0}×`;
-    else if (isLowBetter(id)) value = st.bestTimeMs ? fmtGameValue(id, st.bestTimeMs) : '—';
-    else value = String(Number(st.bestScore || st.leaderboardValue || 0) || 0);
-    return `<div class="gamesStatsCardLine"><strong>${escapeHtml(meta.title)}</strong> · ${escapeHtml(value)}</div>`;
+    if (id === 'ttt') value = String(gamesProfileSafeInt(st.plays, 999999999)) + '×';
+    else if (isLowBetter(id)) value = st.bestTimeMs ? fmtGameValue(id, gamesProfileSafeInt(st.bestTimeMs, 86400000)) : '—';
+    else value = String(gamesProfileSafeInt(st.bestScore || st.leaderboardValue, 999999999));
+    return `<div class="gamesStatsCardLine"><strong>${escapeHtml(gamesProfileSafeText(meta.title, id, GAMES_PROFILE_DOM_HARDENING.maxLabelLength))}</strong> · ${escapeHtml(gamesProfileValueText(value, '—', 48))}</div>`;
   }
 
   function renderStatsExtended(reason) {
@@ -1637,10 +1820,11 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
       return;
     }
     const nextHtml = accounts.map((acc) => {
-      const totalPlays = ALL_GAMES.reduce((sum, gid) => sum + Number(getAccountStat(acc, gid).plays || 0), 0);
+      const totalPlays = gamesProfileSafeInt(ALL_GAMES.reduce((sum, gid) => sum + Number(getAccountStat(acc, gid).plays || 0), 0), 999999999);
       const lines = ALL_GAMES.map((gid) => summaryLine(acc, gid)).join('');
       const isActive = String(acc.id) === String(activeId);
-      return `<details class="gamesStatsCard${isActive ? ' isActive' : ''}"${isActive ? ' open' : ''}><summary class="gamesStatsCardSummary"><div class="gamesStatsCardHead"><div><div class="gamesStatsCardName">${escapeHtml(acc.name || '')}</div></div><div class="gamesStatsCardTotal">${String(totalPlays)} her</div></div></summary><div class="gamesStatsCardBody">${lines}</div></details>`;
+      const safeName = gamesProfileSafeName(acc.name, acc.id ? ('Hráč ' + String(acc.id)) : 'Hráč');
+      return `<details class="gamesStatsCard${isActive ? ' isActive' : ''}"${isActive ? ' open' : ''}><summary class="gamesStatsCardSummary"><div class="gamesStatsCardHead"><div><div class="gamesStatsCardName">${escapeHtml(safeName)}</div></div><div class="gamesStatsCardTotal">${String(totalPlays)} her</div></div></summary><div class="gamesStatsCardBody">${lines}</div></details>`;
     }).join('');
     if (grid.__rakLastStatsHtml === nextHtml && grid.childElementCount) {
       gamePerf.statsRenderSkips = Number(gamePerf.statsRenderSkips || 0) + 1;
@@ -1686,28 +1870,24 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     const rows = Object.values(profile.accounts || {}).map((acc) => {
       const stat = getAccountStat(acc, id);
       const value = gameLeaderboardMetric(id, stat);
-      return {
+      return gamesNormalizeLeaderboardRow(id, {
         id: acc.id,
         name: acc.name || ('Hráč ' + String(acc.id || '')),
         value,
         playedText: formatDate(Number(stat.lastPlayedAt || acc.updatedAt || 0) || 0)
-      };
+      });
     }).filter((row) => row.value > 0);
     return gameLeaderboardSort(id, rows).slice(0, Math.max(1, Math.min(50, Number(limit) || 10)));
   };
 
   window.gamesTop3Block = function gamesTop3BlockArcade(gameId, label, limit = 10, titleOverride) {
     const id = key(gameId);
-    const rows = window.gamesGetGameLeaderboard(id, limit);
-    const valueText = (row) => {
-      if (isLowBetter(id)) return fmtGameValue(id, Number(row.value || 0) || 0);
-      return `${String(row.value)} ${escapeHtml(label || gameMeta(id).unit || '')}`.trim();
-    };
-    const body = rows.length ? rows.map((row, idx) => (
-      `<div class="gamesTop3Row"><div class="gamesTop3Rank">${String(idx + 1)}.</div><div class="gamesTop3Name">${escapeHtml(row.name)}</div><div class="gamesTop3Value">${valueText(row)}${row.playedText ? ' · ' + escapeHtml(row.playedText) : ''}</div></div>`
-    )).join('') : '<div class="gamesTop3Empty">Zatím žádné výsledky.</div>';
-    const title = String(titleOverride || `Top ${String(limit)} výsledků`).trim();
-    return `<div class="gamesTop3Card gamesTop5ScrollCard" data-score-game="${escapeHtml(id)}"><div class="gamesTop3Title">${escapeHtml(title)}</div><div class="gamesTop3Body gamesTop5ScrollBody">${body}</div></div>`;
+    const safeLimit = Math.max(1, Math.min(GAMES_TOP_SCORE_DOM_HARDENING.maxRows, Number(limit) || 10));
+    const rows = window.gamesGetGameLeaderboard(id, safeLimit).map((row) => gamesNormalizeLeaderboardRow(id, row)).filter((row) => row.value > 0);
+    const unit = gamesSafeScoreUnit(label || gameMeta(id).unit || '', gameMeta(id).unit || '');
+    const body = rows.length ? rows.map((row, idx) => gamesLeaderboardRowHtml(id, row, idx, unit)).join('') : '<div class="gamesTop3Empty">Zatím žádné výsledky.</div>';
+    const title = gamesSafePlainText(titleOverride || ('Top ' + String(safeLimit) + ' výsledků'), 'Top výsledků', 48);
+    return '<div class="gamesTop3Card gamesTop5ScrollCard" data-score-game="' + escapeHtml(id) + '"><div class="gamesTop3Title">' + escapeHtml(title) + '</div><div class="gamesTop3Body gamesTop5ScrollBody">' + body + '</div></div>';
   };
 
   const leaderboardInFlight = new Map();
@@ -1751,7 +1931,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
             const points = Number(row && (row.points ?? row.best_score ?? row.bestScore ?? row.value) ? (row.points ?? row.best_score ?? row.bestScore ?? row.value) : 0) || 0;
             const value = decodePoints(gid, points);
             const updatedAt = String(row && (row.last_played_at ?? row.lastPlayedAt ?? row.updated_at ?? row.created_at) ? (row.last_played_at ?? row.lastPlayedAt ?? row.updated_at ?? row.created_at) : '').trim();
-            return { id: accountNumber || name, name, value, games_played: Number(row && (row.games_played ?? row.plays) || 0) || 0, wins: Number(row && row.wins || 0) || 0, losses: Number(row && row.losses || 0) || 0, draws: Number(row && row.draws || 0) || 0, updated_at: updatedAt, playedText: formatDate(Date.parse(updatedAt) || 0), gameId: gid };
+            return Object.assign(gamesNormalizeLeaderboardRow(gid, { id: accountNumber || name, name, value, playedText: formatDate(Date.parse(updatedAt) || 0), gameId: gid }), { games_played: Number(row && (row.games_played ?? row.plays) || 0) || 0, wins: Number(row && row.wins || 0) || 0, losses: Number(row && row.losses || 0) || 0, draws: Number(row && row.draws || 0) || 0, updated_at: updatedAt });
           }).filter((row) => row.value > 0);
           window.app.gamesLeaderboardCache[gid] = gameLeaderboardSort(gid, normalized).slice(0, 10);
           window.app.gamesLeaderboardThrottle[gid] = Date.now();

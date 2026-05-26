@@ -1,4 +1,4 @@
-# RaK v.1.5 (907) – Safe helper policy
+# RaK v.1.5 (909) – Safe helper policy
 
 ## Doporučená pravidla pro další změny
 

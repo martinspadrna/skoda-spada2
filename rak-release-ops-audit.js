@@ -1,4 +1,4 @@
-// v.1.5 (906) – release ops checklist, monitoring map a rollback playbook jako read-only diagnostika.
+// v.1.5 (909) – release ops checklist, monitoring map a rollback playbook jako read-only diagnostika.
 
 (function setupRakReleaseOpsAudit() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -150,7 +150,7 @@
       signals.foodSundayGuard && signals.foodSundayGuard.ok ? 'ok' : 'warning',
       'warning',
       signals.foodSundayGuard ? ('přesčasových nedělí ' + String(signals.foodSundayGuard.overtimeSundayCount || 0)) : 'guard není dostupný',
-      'Neděle bez přesčasu musí zůstat zavřená; přesčasové okno musí být v detailu označené jako přesčas.'
+      'Běžná neděle musí používat normální rozpis; mimořádná neděle musí být v detailu rozeznatelná jako přesčas.'
     ));
 
     gates.push(buildGate(
@@ -177,7 +177,7 @@
 
     return {
       ok: blockers.length === 0,
-      mode: 'release-ops-checklist-v906',
+      mode: 'release-ops-checklist-v909',
       version: String(window.APP_VERSION || 'unknown'),
       checkedAt: nowIso(),
       gateCount: gates.length,
@@ -209,13 +209,13 @@
       { id: 'online-game-fallbacks', label: 'Fallbacky online her', source: 'online game contract smoke/closure', current: signals.onlineGameContractClosure ? Number(signals.onlineGameContractClosure.fallbackCount || 0) : null, threshold: '> 0 po čistém online testu', action: 'Neutahovat policies, dokud nejsou Piškvorky i Lodě ověřené bez fallbacků.' },
       { id: 'pwa-cache-version', label: 'PWA cache verze', source: 'getPwaHardeningStatus()', current: String(pwa.swCacheVersion || '—') + ' / ' + String(pwa.swExpectedCacheVersion || '—'), threshold: 'mismatch po tvrdém reloadu', action: 'Vyčistit cache v Nastavení a reloadnout aplikaci.' },
       { id: 'leaderboard-cache', label: 'Leaderboard cache', source: 'game localStorage + Supabase game_stats/gomoku_wins', current: 'sledovat ručně po resetu', threshold: 'staré výsledky po resetu', action: 'Ověřit DB tabulky game_stats/gomoku_wins a klientský cutoff podle last_played_at.' },
-      { id: 'food-sunday-guard', label: 'Kantýna/jídelna neděle', source: 'getFoodScheduleSundayGuardHealth()', current: signals.foodSundayGuard ? (signals.foodSundayGuard.ok ? 'OK' : 'kontrola') : '—', threshold: 'neděle bez přesčasu otevřená', action: 'Opravit jen food schedule mapu; neměnit rotace ani dashboard layout.' },
+      { id: 'food-sunday-guard', label: 'Kantýna/jídelna neděle', source: 'getFoodScheduleSundayGuardHealth()', current: signals.foodSundayGuard ? (signals.foodSundayGuard.ok ? 'OK' : 'kontrola') : '—', threshold: 'nedělní rozpis neodpovídá normální vs. přesčasové variantě', action: 'Opravit jen food schedule mapu; neměnit rotace ani dashboard layout.' },
       { id: 'cache-shared-read', label: 'Supabase cache hit/write', source: 'cacheGuard', current: String(Number(cacheGuard.accountCacheHits || 0)) + '/' + String(Number(cacheGuard.accountCacheWrites || 0)), threshold: 'extrémní churn na low-end mobilu', action: 'Zvýšit debounce/TTL až po měření, ne preventivně.' }
     ];
 
     return {
       ok: true,
-      mode: 'release-ops-monitoring-map-v906',
+      mode: 'release-ops-monitoring-map-v909',
       version: String(window.APP_VERSION || 'unknown'),
       checkedAt: nowIso(),
       metricCount: metrics.length,
@@ -223,7 +223,7 @@
       alertRules: [
         'P0: znovu se objeví staré Top score po resetu → ověřit Supabase game_stats/gomoku_wins a lokální cache/SW.',
         'P0: online Piškvorky/Lodě nejdou založit nebo přijmout → rollback na poslední potvrzený ZIP, policies neměnit.',
-        'P1: běžná neděle ukáže kantýnu/jídelnu otevřenou → fix food schedule guard, bez změny rotací.',
+        'P1: běžná nebo přesčasová neděle ukáže špatný rozpis → opravit jen food schedule data/guard, bez změny rotací.',
         'P1: service worker drží starý build po tvrdém reloadu → zvýšit cache verzi, vyčistit staré RaK cache.',
         'P2: offline queue roste nad 80 → ruční diagnostika, ne automatické mazání.'
       ]
@@ -248,7 +248,7 @@
 
     return {
       ok: true,
-      mode: 'release-ops-rollback-playbook-v906',
+      mode: 'release-ops-rollback-playbook-v909',
       version: String(window.APP_VERSION || 'unknown'),
       checkedAt: nowIso(),
       rollbackArtifactRule: 'Poslední potvrzený ZIP je rollback bod; nový ZIP čeká na „ok“.',
@@ -261,7 +261,7 @@
         'Top score neukazuje staré výsledky.',
         'Online Piškvorky: link i ruční kód.',
         'Lodě: vytvoření, připojení, potvrzení flotil, střelba.',
-        'Kantýna/jídelna: běžná neděle zavřeno, přesčasová neděle označená jako přesčas.'
+        'Kantýna/jídelna: běžná neděle odpovídá normálnímu rozpisu, přesčasová neděle má odlišený mimořádný režim.'
       ]
     };
   };
@@ -279,7 +279,7 @@
 
     return {
       ok: issues.length === 0,
-      mode: 'release-ops-closure-v906',
+      mode: 'release-ops-closure-v909',
       version: String(window.APP_VERSION || 'unknown'),
       checkedAt: nowIso(),
       phase: 'phase J release readiness / monitoring / rollback',

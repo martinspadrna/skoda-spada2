@@ -25,12 +25,12 @@ const FOOD_LOCATIONS = [
     place: "Kiosek M2",
     days: {
       0: [["05:30", "09:00"], ["10:00", "12:00"], ["21:30", "00:00"], ["01:00", "03:00"]],
-      1: [["05:30", "09:00"], ["10:00", "12:00"], ["13:00", "16:00"], ["17:30", "21:00"], ["22:00", "00:00"], ["01:00", "04:00"]],
-      2: [["05:30", "09:00"], ["10:00", "12:00"], ["13:00", "16:00"], ["17:30", "21:00"], ["22:00", "00:00"], ["01:00", "04:00"]],
-      3: [["05:30", "09:00"], ["10:00", "12:00"], ["13:00", "16:00"], ["17:30", "21:00"], ["22:00", "00:00"], ["01:00", "04:00"]],
-      4: [["05:30", "09:00"], ["10:00", "12:00"], ["13:00", "16:00"], ["17:30", "21:00"], ["22:00", "00:00"], ["01:00", "04:00"]],
-      5: [["05:30", "09:00"], ["10:00", "12:00"], ["13:00", "16:00"], ["17:30", "21:00"], ["22:00", "00:00"], ["01:00", "04:00"]],
-      6: [["05:30", "09:00"], ["10:00", "12:00"], ["13:00", "16:00"], ["17:30", "21:00"], ["22:00", "00:00"], ["01:00", "04:00"]]
+      1: [["01:00", "04:00"], ["05:30", "09:00"], ["10:00", "12:00"], ["13:00", "16:00"], ["17:30", "21:00"], ["22:00", "00:00"]],
+      2: [["01:00", "04:00"], ["05:30", "09:00"], ["10:00", "12:00"], ["13:00", "16:00"], ["17:30", "21:00"], ["22:00", "00:00"]],
+      3: [["01:00", "04:00"], ["05:30", "09:00"], ["10:00", "12:00"], ["13:00", "16:00"], ["17:30", "21:00"], ["22:00", "00:00"]],
+      4: [["01:00", "04:00"], ["05:30", "09:00"], ["10:00", "12:00"], ["13:00", "16:00"], ["17:30", "21:00"], ["22:00", "00:00"]],
+      5: [["01:00", "04:00"], ["05:30", "09:00"], ["10:00", "12:00"], ["13:00", "16:00"], ["17:30", "21:00"], ["22:00", "00:00"]],
+      6: [["01:00", "04:00"], ["05:30", "09:00"], ["10:00", "12:00"], ["13:00", "16:00"], ["17:30", "21:00"], ["22:00", "00:00"]]
     }
   },
   {
@@ -44,12 +44,12 @@ const FOOD_LOCATIONS = [
       3: [["07:00", "09:00"], ["10:30", "12:30"], ["15:00", "16:30"], ["22:30", "00:00"]],
       4: [["07:00", "09:00"], ["10:30", "12:30"], ["15:00", "16:30"], ["22:30", "00:00"]],
       5: [["07:00", "09:00"], ["10:30", "12:30"], ["15:00", "16:30"], ["22:30", "00:00"]],
-      6: [["07:00", "09:00"], ["10:30", "12:30"], ["15:00", "16:30"], ["22:30", "00:00"]]
+      6: [["10:30", "12:30"], ["15:00", "16:30"], ["22:30", "00:00"]]
     }
   }
 ];
 
-// Přesčasové neděle: jen v tyto konkrétní dny se má nedělní kantýna/jídelna tvářit jako otevřená.
+// Přesčasové neděle: v tyto konkrétní dny se nedělní rozpis přepne na mimořádný přesčasový režim.
 const FOOD_SPECIAL_SUNDAY_DATES = new Set([
   "2026-01-11",
   "2026-01-18",
@@ -177,11 +177,8 @@ function getFoodScheduleForDay(location, dayIndex, date) {
   const day = date instanceof Date ? date : null;
   const isSpecialSunday = isFoodSpecialSunday(day);
 
-  if (dayIndex === 0) {
-    if (isSpecialSunday && location && FOOD_SPECIAL_OVERRIDES[location.key]) {
-      return FOOD_SPECIAL_OVERRIDES[location.key];
-    }
-    return [];
+  if (dayIndex === 0 && isSpecialSunday && location && FOOD_SPECIAL_OVERRIDES[location.key]) {
+    return FOOD_SPECIAL_OVERRIDES[location.key];
   }
 
   return dayWindows;
@@ -368,6 +365,21 @@ function formatFoodDayRangeLabel(startDayIndex, endDayIndex) {
   return startLabel + ' – ' + endLabel;
 }
 
+function getFoodRegularWindows(location, dayIndex) {
+  return (location && location.days && Array.isArray(location.days[dayIndex])) ? location.days[dayIndex] : [];
+}
+
+function formatFoodSpecialSundayDates() {
+  return Array.from(FOOD_SPECIAL_SUNDAY_DATES)
+    .sort()
+    .map((value) => {
+      const parts = String(value || '').split('-');
+      if (parts.length !== 3) return value;
+      return String(Number(parts[2])) + '.' + String(Number(parts[1])) + '.' + parts[0];
+    })
+    .join(', ');
+}
+
 function isFoodDayInsideGroup(dayIndex, group) {
   if (!group) return false;
   if (group.startDay <= group.endDay) {
@@ -423,23 +435,20 @@ function getFoodScheduleDateForDay(dayIndex, referenceDate) {
   return target;
 }
 
-function buildFoodScheduleGroups(location, referenceDate) {
+function buildFoodRegularScheduleGroups(location) {
   const dayOrder = [1, 2, 3, 4, 5, 6, 0];
   const groups = [];
   let current = null;
 
   dayOrder.forEach((dayIndex) => {
-    const dayDate = getFoodScheduleDateForDay(dayIndex, referenceDate || new Date());
-    const windows = getFoodScheduleForDay(location, dayIndex, dayDate);
-    const specialOvertime = isFoodSpecialSunday(dayDate);
-    const signature = JSON.stringify({ windows, specialOvertime });
+    const windows = getFoodRegularWindows(location, dayIndex);
+    const signature = JSON.stringify({ windows });
     if (!current || current.signature !== signature) {
       current = {
         startDay: dayIndex,
         endDay: dayIndex,
         signature,
-        windows,
-        specialOvertime
+        windows
       };
       groups.push(current);
     } else {
@@ -450,32 +459,60 @@ function buildFoodScheduleGroups(location, referenceDate) {
   return groups;
 }
 
+function buildFoodSpecialSundaySection(location, highlight) {
+  const specialWindows = location && FOOD_SPECIAL_OVERRIDES[location.key] ? FOOD_SPECIAL_OVERRIDES[location.key] : [];
+  if (!Array.isArray(specialWindows) || !specialWindows.length) return '';
+  const highlightIsSunday = highlight && highlight.dayIndex === 0 && (highlight.type === 'open' || highlight.type === 'next');
+  const lines = specialWindows.map((window) => {
+    const isHighlighted = highlightIsSunday && foodWindowMatchesHighlight(window, highlight);
+    const stateClass = isHighlighted ? (highlight.type === 'open' ? ' foodScheduleWindowLine--currentOpen' : ' foodScheduleWindowLine--nextOpen') : '';
+    return '<div class="foodScheduleWindowLine' + stateClass + '">' + escapeHtml(window[0] + '–' + window[1] + ' · jen při přesčasu') + '</div>';
+  }).join('');
+  return [
+    '<div class="foodScheduleTitleBlock foodScheduleTitleBlock--compact uMt12">',
+    '<div class="sectionTitle">Mimořádná nedělní provozní doba</div>',
+    '<div class="smallText uMt0 uMb10">Platí jen při mimořádné noční směně z neděle na pondělí.</div>',
+    '</div>',
+    '<div class="foodScheduleRow' + (highlightIsSunday ? ' foodScheduleRow--hasHighlight' : '') + '">',
+    '<div class="foodScheduleDay">Neděle (přesčas)</div>',
+    '<div class="foodScheduleWindows">' + lines + '</div>',
+    '</div>',
+    '<div class="smallText uMt8">Seznam přesčasových nedělí 2026: ' + escapeHtml(formatFoodSpecialSundayDates()) + '</div>'
+  ].join('');
+}
+
 function getFoodScheduleSundayGuardHealth() {
   const samplePlainSunday = new Date(2026, 6, 5, 10, 30, 0); // 5. 7. 2026 není v seznamu přesčasových nedělí
   const sampleOvertimeSunday = new Date(2026, 4, 24, 10, 30, 0); // 24. 5. 2026 je v seznamu přesčasových nedělí
   const rows = FOOD_LOCATIONS.map((location) => {
     const plainWindows = getFoodScheduleForDay(location, 0, samplePlainSunday);
     const overtimeWindows = getFoodScheduleForDay(location, 0, sampleOvertimeSunday);
+    const regularSundayWindows = getFoodRegularWindows(location, 0);
+    const regularSignature = JSON.stringify(regularSundayWindows);
+    const plainSignature = JSON.stringify(plainWindows);
+    const overtimeSignature = JSON.stringify(overtimeWindows);
     return {
       key: location.key,
       label: location.label,
+      regularSundayWindows: regularSundayWindows.length,
       plainSundayWindows: plainWindows.length,
       overtimeSundayWindows: overtimeWindows.length,
-      plainSundayClosed: plainWindows.length === 0,
+      plainMatchesRegular: plainSignature === regularSignature,
+      overtimeDiffersFromRegular: overtimeSignature !== regularSignature,
       overtimeSundayMarked: overtimeWindows.length > 0
     };
   });
-  const ok = rows.every((row) => row.plainSundayClosed && row.overtimeSundayMarked);
+  const ok = rows.every((row) => row.plainMatchesRegular && row.overtimeDiffersFromRegular && row.overtimeSundayMarked);
   return {
     ok,
-    mode: 'food-sunday-overtime-guard-v901',
-    version: String(window.APP_VERSION || 'v.1.5 (906)'),
+    mode: 'food-sunday-overtime-guard-v909',
+    version: String(window.APP_VERSION || 'v.1.5 (909)'),
     overtimeSundayCount: FOOD_SPECIAL_SUNDAY_DATES.size,
     plainSundaySample: foodIsoDate(samplePlainSunday),
     overtimeSundaySample: foodIsoDate(sampleOvertimeSunday),
     rows,
-    issues: ok ? [] : rows.filter((row) => !row.plainSundayClosed).map((row) => row.label + ': neděle bez přesčasu má okna'),
-    note: 'Nedělní otevírací doba se bere jen z pevného seznamu přesčasových nedělí.'
+    issues: ok ? [] : rows.filter((row) => !row.plainMatchesRegular || !row.overtimeDiffersFromRegular).map((row) => row.label + ': nedělní rozpis neodpovídá normální vs. přesčasové variantě'),
+    note: 'Běžná neděle používá normální rozpis; jen vybrané přesčasové neděle přepnou na mimořádný režim.'
   };
 }
 
@@ -486,14 +523,14 @@ if (typeof window !== 'undefined') {
 function buildFoodScheduleHtml(location) {
   const reference = new Date();
   const highlight = getFoodScheduleHighlight(location, reference);
-  const rows = buildFoodScheduleGroups(location, reference).map((group) => {
-    const dayLabel = formatFoodDayRangeLabel(group.startDay, group.endDay) + (group.specialOvertime ? ' (přesčas)' : '');
+  const rows = buildFoodRegularScheduleGroups(location).map((group) => {
+    const dayLabel = formatFoodDayRangeLabel(group.startDay, group.endDay);
     const groupHasHighlightDay = isFoodDayInsideGroup(highlight.dayIndex, group);
     const rowClass = groupHasHighlightDay && highlight.type !== 'none' ? ' foodScheduleRow--hasHighlight' : '';
     const windowsHtml = (Array.isArray(group.windows) && group.windows.length ? group.windows.map(window => {
       const isHighlighted = groupHasHighlightDay && foodWindowMatchesHighlight(window, highlight);
       const stateClass = isHighlighted ? (highlight.type === 'open' ? ' foodScheduleWindowLine--currentOpen' : ' foodScheduleWindowLine--nextOpen') : '';
-      return '<div class="foodScheduleWindowLine' + stateClass + '">' + escapeHtml(window[0] + '–' + window[1] + (group.specialOvertime ? ' · při přesčasu' : '')) + '</div>';
+      return '<div class="foodScheduleWindowLine' + stateClass + '">' + escapeHtml(window[0] + '–' + window[1]) + '</div>';
     }).join('') : '<div class="foodScheduleWindowLine foodScheduleWindowEmpty">Zavřeno</div>');
     return '<div class="foodScheduleRow' + rowClass + '">' +
       '<div class="foodScheduleDay">' + escapeHtml(dayLabel) + '</div>' +
@@ -501,12 +538,17 @@ function buildFoodScheduleHtml(location) {
     '</div>';
   }).join('');
 
+  const highlightSummary = highlight && highlight.type !== 'none'
+    ? '<div class="smallText uMt0 uMb10">' + escapeHtml(highlight.label + ' · ' + highlight.detail) + '</div>'
+    : '<div class="smallText uMt0 uMb10">Otevřeno podle běžného rozpisu; mimořádná nedělní noční směna má vlastní režim níže.</div>';
+
   return [
     '<div class="foodScheduleTitleBlock foodScheduleTitleBlock--compact">',
-    '<div class="sectionTitle">Otevírací doba</div>',
-    '<div class="smallText uMt0 uMb10">' + escapeHtml(location.label) + ' · Neděle jen při přesčasu podle seznamu</div>',
+    '<div class="sectionTitle">Běžná otevírací doba</div>',
+    highlightSummary,
     '</div>',
-    rows
+    rows,
+    buildFoodSpecialSundaySection(location, highlight)
   ].join('');
 }
 

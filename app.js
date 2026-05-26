@@ -1,4 +1,4 @@
-// v.1.5 (906) – release gating/checklist matice nad hotovými read-only audity bez zásahu do online flow.
+// v.1.5 (909) – release gating/checklist matice nad hotovými read-only audity bez zásahu do online flow.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app.js', 'loaded', { source: 'index' }); } catch (err) {}
 
 
@@ -2533,7 +2533,7 @@ function installPwaAndConnectivityHooks() {
     swAppShellCachedRatio: 0,
     swNetworkFallbackTimeoutMs: 0,
     swNavigationPreloadTimeoutMs: 0,
-    pwaAssetAuditMode: 'zip-source-inventory-assets-pwa-sql-release-readiness-architecture-module-readiness-runtime-health-storage-sync-namespace-closed-export-manifest-preflight-appsec-gates-v906',
+    pwaAssetAuditMode: 'zip-source-inventory-assets-pwa-sql-release-readiness-architecture-module-readiness-runtime-health-storage-sync-namespace-closed-export-manifest-preflight-appsec-gates-v909',
     pwaAssetExpectedIconCount: 6,
     pwaAssetManifestOk: false,
     pwaAssetFaviconOk: false,
@@ -2579,7 +2579,7 @@ function installPwaAndConnectivityHooks() {
     const appleTouchOk = linkHrefs.some(href => href.indexOf('assets/app-icons/icon-180.png') >= 0);
     const legacyRootIconRefs = linkHrefs.filter(href => /(^|\/)icon-(16|32|180|192|512|1024)\.png(?:$|[?#])/.test(href) && href.indexOf('assets/app-icons/') < 0);
     return {
-      pwaAssetAuditMode: 'zip-source-inventory-assets-pwa-sql-release-readiness-architecture-module-readiness-runtime-health-storage-sync-namespace-closed-export-manifest-preflight-appsec-gates-v906',
+      pwaAssetAuditMode: 'zip-source-inventory-assets-pwa-sql-release-readiness-architecture-module-readiness-runtime-health-storage-sync-namespace-closed-export-manifest-preflight-appsec-gates-v909',
       pwaAssetExpectedIconCount: expectedIcons.length,
       pwaAssetManifestOk: manifestOk,
       pwaAssetFaviconOk: faviconOk,
