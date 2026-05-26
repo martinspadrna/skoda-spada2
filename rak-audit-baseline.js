@@ -1,4 +1,4 @@
-// v.1.5 (898) – release/architecture readiness bere i online game contract audit jako read-only signál.
+// v.1.5 (906) – release/architecture readiness bere i release ops checklist jako read-only signál.
 
 (function setupRakAuditBaselineHelpers() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -122,6 +122,7 @@ function getRakReleaseReadinessHealth() {
     onlineGameContracts = { ok: false, status: 'read-error', lastError: String(err && err.message ? err.message : err) };
   }
 
+
   try {
     externalScripts = Array.from(document.scripts || [])
       .map((script) => String(script && script.getAttribute ? script.getAttribute('src') || '' : '').trim())
@@ -185,7 +186,7 @@ function getRakReleaseReadinessHealth() {
 
   return {
     ok: issues.length === 0,
-    mode: 'audit-baseline-split-release-readiness-v897',
+    mode: 'audit-baseline-split-release-readiness-v906',
     checkedAt,
     version: currentVersion || 'unknown',
     issueCount: issues.length,
@@ -274,7 +275,8 @@ function getRakReleaseReadinessHealth() {
       'storage/sync smoke report a ruční cleanup guard bez automatického mazání dat',
       'storage/sync closure fáze 100 % bez automatického mazání dat',
       'Supabase klient/offline queue audit read-only bez DB změn a bez automatického flush/mazání',
-      'Supabase client/offline queue closure 100 % bez DB změn, policies, auto flush nebo mazání'
+      'Supabase client/offline queue closure 100 % bez DB změn, policies, auto flush nebo mazání',
+      'release ops checklist, monitoring mapa a rollback playbook jako read-only closure'
     ]
   };
 }
@@ -380,6 +382,7 @@ function getRakArchitectureBaselineHealth() {
     onlineGameContracts = null;
   }
 
+
   const requiredGlobals = [
     'app',
     'openPage',
@@ -440,7 +443,7 @@ function getRakArchitectureBaselineHealth() {
 
   return {
     ok: issues.length === 0,
-    mode: 'audit-baseline-split-architecture-boot-audit-v897',
+    mode: 'audit-baseline-split-architecture-boot-audit-v906',
     checkedAt,
     version: version || 'unknown',
     issueCount: issues.length,
@@ -521,7 +524,8 @@ function getRakArchitectureBaselineHealth() {
       'phase E: DOM/action registry audit a DOM smoke testy pro zamčené sekce – uzavřeno ve v885 přes release readiness linkage bez změny funkčnosti',
       'phase G: storage/localStorage a offline/sync audit – uzavřeno ve v889 jako read-only diagnostika bez mazání dat',
       'phase H: Supabase client/offline queue audit – uzavřen ve v892 jako read-only diagnostika bez DB změn, policies, auto flush nebo mazání',
-      'phase I: Online game create/accept/save contract audit – zahájen ve v894/v895 jako read-only diagnostika bez DB změn, policies a zásahu do online flow'
+      'phase I: Online game create/accept/save contract audit – uzavřen ve v901 jako read-only diagnostika bez DB změn, policies a zásahu do online flow',
+      'phase J: release readiness / monitoring / rollback checklist – uzavřen ve v902 jako read-only release ops vrstva'
     ]
   };
 }

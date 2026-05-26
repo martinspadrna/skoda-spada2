@@ -4217,6 +4217,157 @@ function tttBestHumanPressureLockMove(board, deadline) {
   return -1;
 }
 
+
+function tttEarlyTrapRiskScore(board, mark) {
+  const winner = tttWinner(board).winner === mark ? 1 : 0;
+  const wins = tttWinningMoves(board, mark).length;
+  const critical = tttCriticalThreatMoves(board, mark).length;
+  const windows = tttThreatWindowMoves(board, mark).length;
+  const openThrees = tttOpenThreeThreatMoves(board, mark).length;
+  const openTwos = typeof tttOpenTwoThreatMoves === 'function' ? tttOpenTwoThreatMoves(board, mark).length : 0;
+  const fork = tttBestForkMove(board, mark) >= 0 ? 1 : 0;
+  const vector = tttLineVectorScore(board, mark);
+  const pressure = tttTacticalPressureScore(board, mark);
+  return winner * 420000000
+    + wins * 88000000
+    + critical * 24000000
+    + windows * 9600000
+    + openThrees * 5200000
+    + openTwos * 560000
+    + fork * 8200000
+    + vector * 1.72
+    + pressure * 1.08;
+}
+
+function tttBestEarlyTrapLockMove(board, deadline) {
+  const occupied = board.reduce((sum, cell) => sum + (cell ? 1 : 0), 0);
+  if (occupied < 4) return -1;
+  const centerRow = (TTT_ROWS - 1) / 2;
+  const centerCol = (TTT_COLS - 1) / 2;
+  const baseHumanRisk = tttEarlyTrapRiskScore(board, 'X');
+  const baseAiRisk = tttEarlyTrapRiskScore(board, 'O');
+
+  const rawCandidates = new Set([
+    ...tttCandidateMoves(board, occupied < 18 ? 4 : 3),
+    ...tttThreatWindowMoves(board, 'X'),
+    ...tttCriticalThreatMoves(board, 'X'),
+    ...tttOpenThreeThreatMoves(board, 'X'),
+    ...tttOpenTwoThreatMoves(board, 'X'),
+    ...tttThreatWindowMoves(board, 'O'),
+    ...tttCriticalThreatMoves(board, 'O'),
+    ...tttOpenThreeThreatMoves(board, 'O')
+  ]);
+
+  let candidates = Array.from(rawCandidates)
+    .filter(idx => Number.isFinite(Number(idx)) && !board[Number(idx)])
+    .map(Number)
+    .map(idx => {
+      const row = Math.floor(idx / TTT_COLS);
+      const col = idx % TTT_COLS;
+      board[idx] = 'O';
+      const humanRiskAfter = tttEarlyTrapRiskScore(board, 'X');
+      const aiRiskAfter = tttEarlyTrapRiskScore(board, 'O');
+      board[idx] = '';
+      return {
+        idx,
+        score: (baseHumanRisk - humanRiskAfter) * 1.32
+          + (aiRiskAfter - baseAiRisk) * 0.64
+          + tttCheapMovePotential(board, idx, 'X') * 1.28
+          + tttCheapMovePotential(board, idx, 'O') * 1.06
+          + Math.max(0, 120 - (Math.abs(row - centerRow) + Math.abs(col - centerCol)) * 5)
+      };
+    })
+    .sort((a, b) => b.score - a.score)
+    .slice(0, occupied < 16 ? 46 : (occupied < 28 ? 34 : 24))
+    .map(item => item.idx);
+
+  if (!candidates.length) return -1;
+
+  let bestIdx = -1;
+  let bestScore = -Infinity;
+  let bestWorstRisk = Infinity;
+  for (const idx of candidates) {
+    const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    if (deadline && now > deadline - 24 && bestIdx >= 0) break;
+    board[idx] = 'O';
+    const ownWin = tttWinner(board).winner === 'O' ? 1 : 0;
+    const humanRiskAfterO = tttEarlyTrapRiskScore(board, 'X');
+    const aiRiskAfterO = tttEarlyTrapRiskScore(board, 'O');
+    const immediateHumanWins = tttWinningMoves(board, 'X').length;
+
+    let replies = Array.from(new Set([
+      ...tttCandidateMoves(board, occupied < 18 ? 3 : 2),
+      ...tttThreatWindowMoves(board, 'X'),
+      ...tttCriticalThreatMoves(board, 'X'),
+      ...tttOpenThreeThreatMoves(board, 'X'),
+      ...tttOpenTwoThreatMoves(board, 'X')
+    ])).filter(reply => Number.isFinite(Number(reply)) && !board[Number(reply)]).map(Number);
+    replies = replies
+      .map(reply => {
+        board[reply] = 'X';
+        const replyScore = tttEarlyTrapRiskScore(board, 'X')
+          - tttEarlyTrapRiskScore(board, 'O') * 0.24
+          + tttCheapMovePotential(board, reply, 'X') * 1.1;
+        board[reply] = '';
+        return { reply, score: replyScore };
+      })
+      .sort((a, b) => b.score - a.score)
+      .slice(0, occupied < 18 ? 22 : 16)
+      .map(item => item.reply);
+
+    let worstRisk = immediateHumanWins * 120000000 + humanRiskAfterO;
+    for (const reply of replies) {
+      const tick = typeof performance !== 'undefined' ? performance.now() : Date.now();
+      if (deadline && tick > deadline - 12 && worstRisk > bestWorstRisk) break;
+      board[reply] = 'X';
+      const replyWins = tttWinningMoves(board, 'X').length;
+      const replyRiskBase = tttEarlyTrapRiskScore(board, 'X');
+      const aiImmediate = tttWinningMoves(board, 'O').length;
+      let bestCounterRelief = 0;
+      const counters = Array.from(new Set([
+        ...tttCandidateMoves(board, 2),
+        ...tttThreatWindowMoves(board, 'X'),
+        ...tttCriticalThreatMoves(board, 'X'),
+        ...tttOpenThreeThreatMoves(board, 'X'),
+        ...tttThreatWindowMoves(board, 'O')
+      ])).filter(counter => Number.isFinite(Number(counter)) && !board[Number(counter)]).map(Number)
+        .map(counter => {
+          board[counter] = 'O';
+          const relief = replyRiskBase - tttEarlyTrapRiskScore(board, 'X') + tttEarlyTrapRiskScore(board, 'O') * 0.26;
+          board[counter] = '';
+          return relief;
+        })
+        .sort((a, b) => b - a)
+        .slice(0, 10);
+      if (counters.length) bestCounterRelief = Math.max(0, counters[0]);
+      const replyRisk = replyWins * 130000000
+        + replyRiskBase
+        - aiImmediate * 42000000
+        - bestCounterRelief * 0.52;
+      board[reply] = '';
+      if (replyRisk > worstRisk) worstRisk = replyRisk;
+    }
+
+    board[idx] = '';
+    const candidateScore = ownWin * 500000000
+      + (baseHumanRisk - humanRiskAfterO) * 1.9
+      + (aiRiskAfterO - baseAiRisk) * 0.82
+      + tttCheapMovePotential(board, idx, 'O') * 1.14
+      + tttCheapMovePotential(board, idx, 'X') * 1.22
+      - worstRisk * 1.46;
+
+    if (candidateScore > bestScore || (Math.abs(candidateScore - bestScore) < 1 && worstRisk < bestWorstRisk)) {
+      bestScore = candidateScore;
+      bestIdx = idx;
+      bestWorstRisk = worstRisk;
+    }
+  }
+
+  if (bestIdx < 0) return -1;
+  if (occupied >= 6 || baseHumanRisk > 60000 || bestWorstRisk < Math.max(2600000, baseHumanRisk * 1.35)) return bestIdx;
+  return -1;
+}
+
 function tttBestUltraSafetyMove(board, deadline) {
   const occupied = board.reduce((sum, cell) => sum + (cell ? 1 : 0), 0);
   if (occupied < 5) return -1;
@@ -4306,10 +4457,10 @@ function tttBestUltraSafetyMove(board, deadline) {
 
 function tttHardSearchDepth(board) {
   const occupied = board.reduce((sum, cell) => sum + (cell ? 1 : 0), 0);
-  if (occupied < 8) return 5;
-  if (occupied < 18) return 5;
-  if (occupied < 30) return 4;
-  if (occupied < 42) return 3;
+  if (occupied < 8) return 7;
+  if (occupied < 18) return 7;
+  if (occupied < 30) return 6;
+  if (occupied < 42) return 4;
   return 2;
 }
 
@@ -4349,10 +4500,13 @@ function tttBestMove(board, difficulty) {
   const openThreeBlock = tttPickBestBlockMove(board, tttOpenThreeThreatMoves(board, 'X'), 'X');
   if (openThreeBlock >= 0) return openThreeBlock;
 
-  const humanPressureLockMove = tttBestHumanPressureLockMove(board, (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 820);
+  const earlyTrapLockMove = tttBestEarlyTrapLockMove(board, (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 1320);
+  if (earlyTrapLockMove >= 0) return earlyTrapLockMove;
+
+  const humanPressureLockMove = tttBestHumanPressureLockMove(board, (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 1280);
   if (humanPressureLockMove >= 0) return humanPressureLockMove;
 
-  const replyLockdownMove = tttBestReplyLockdownMove(board, (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 760);
+  const replyLockdownMove = tttBestReplyLockdownMove(board, (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 980);
   if (replyLockdownMove >= 0) return replyLockdownMove;
 
   const lineContainmentMove = tttBestLineContainmentMove(board, (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 620);
@@ -4386,7 +4540,7 @@ function tttBestMove(board, difficulty) {
   if (ownOpenThree >= 0) return ownOpenThree;
 
   const radius = occupied < 14 ? 3 : 2;
-  const deadline = (typeof performance !== 'undefined' ? performance.now() : Date.now()) + (difficulty === 'ai' ? 540 : 80);
+  const deadline = (typeof performance !== 'undefined' ? performance.now() : Date.now()) + (difficulty === 'ai' ? 980 : 80);
   let candidates = tttCandidateMoves(board, radius);
   if (!candidates.length) candidates = free.slice();
 
@@ -4399,7 +4553,7 @@ function tttBestMove(board, difficulty) {
         - tttTacticalPressureScore((() => { board[idx] = 'O'; const snapshot = board.slice(); board[idx] = ''; return snapshot; })(), 'X') * 0.18
     }))
     .sort((a, b) => b.score - a.score)
-    .slice(0, difficulty === 'ai' ? 28 : 12)
+    .slice(0, difficulty === 'ai' ? 42 : 12)
     .map(item => item.idx);
 
   let bestIdx = candidates[0] ?? free[0];
@@ -5757,10 +5911,10 @@ function buildSupabaseKeepaliveStatusHtml(options) {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v.1.5 851–898',
+      range: 'v.1.5 851–906',
       title: 'Release audit, namespace a export tooling',
       lines: [
-        'V898 znovu resetuje herní/profilové výsledky i Top score, přidává klikací body v grafu obsazenosti a přitvrzuje AI Piškvorek. V897 sjednotilo N jako Neschopenka, doplnilo čas do Top score a přidalo reply-lockdown obranu. V896 drží Obsazenost a Důvody absencí vedle sebe i na mobilu.',
+        'V906 přidává read-only DOM/security hardening plán po jednotlivých sink skupinách a safe-helper policy bez přepisu renderu. V905 přidává release gating/checklist matici: diagnostiky se skládají do blocker/warning/manual/ok pohledu před ZIPem. V904 uzavírá AppSec/privacy baseline na 100 %: storage klíče jsou klasifikované bez čtení hodnot, DOM sinky jsou inventarizované a CSP/SRI je připravené jako report-only plán. V903 přidala AppSec/privacy baseline audit a další hardening AI Piškvorek po rychlé výhře hráče. V902 doplnila release readiness, monitoring a rollback playbook. V901 uzavírá read-only online game contract audit na 100 % a opravuje kantýnu/jídelnu: neděle bez přesčasu je zavřeno, přesčasová otevírací doba je označená. V900 navazuje na potvrzené vyčištění Supabase výsledků: top tabulky a profilové herní statistiky jedou od nuly. V899 opravilo návrat starých Top score filtrováním podle času odehrání výsledku.',
         'V867–875 uzavírá window.RaK read-only namespace fázi: mapuje diagnostické aliasy, zachovává staré globály a nepřepojuje navigaci, render, hry ani online flow.',
         'V860–866 uzavírá architecture/boot baseline audit: module readiness, runtime health, boot sequence a auditní helpery se oddělily mimo app.js bez změny funkčnosti.',
         'V853–859 řeší reset herních výsledků, opravu času Piškvorek, PWA/assets/SW audit, čistší ZIP strukturu a release readiness dokumentaci.',
@@ -7687,6 +7841,24 @@ function bindAppMenuHandlers(body) {
         const supabaseQueueClosure = readRakDiag('supabaseQueueClosure', 'getRakSupabaseQueueClosureHealth');
         const onlineGameContracts = readRakDiag('onlineGameContracts', 'getRakOnlineGameContractAuditHealth');
         const onlineGameContractSmoke = readRakDiag('onlineGameContractSmoke', 'getRakOnlineGameContractSmokeReport');
+        const onlineGameContractClosure = readRakDiag('onlineGameContractClosure', 'getRakOnlineGameContractClosureHealth');
+        const foodSundayGuard = readRakDiag('foodSundayGuard', 'getFoodScheduleSundayGuardHealth');
+        const releaseOpsChecklist = readRakDiag('releaseOpsChecklist', 'getRakReleaseOpsChecklistHealth');
+        const monitoringPlan = readRakDiag('monitoringPlan', 'getRakMonitoringPlanHealth');
+        const rollbackPlaybook = readRakDiag('rollbackPlaybook', 'getRakRollbackPlaybookHealth');
+        const releaseOpsClosure = readRakDiag('releaseOpsClosure', 'getRakReleaseOpsClosureHealth');
+        const appSecPrivacySurface = readRakDiag('appSecPrivacySurface', 'getRakAppSecPrivacySurfaceHealth');
+        const appSecPrivacyRisks = readRakDiag('appSecPrivacyRisks', 'getRakAppSecPrivacyRiskRegister');
+        const appSecStorageKeys = readRakDiag('appSecStorageKeys', 'getRakAppSecStorageKeyClassificationHealth');
+        const appSecDomSurface = readRakDiag('appSecDomSurface', 'getRakAppSecDomInjectionSurfaceHealth');
+        const appSecCspSriPlan = readRakDiag('appSecCspSriPlan', 'getRakAppSecCspSriReportOnlyPlan');
+        const appSecPrivacyClosure = readRakDiag('appSecPrivacyClosure', 'getRakAppSecPrivacyClosureHealth');
+        const releaseGatePolicy = readRakDiag('releaseGatePolicy', 'getRakReleaseGatePolicy');
+        const releaseGateMatrix = readRakDiag('releaseGateMatrix', 'getRakReleaseGateMatrixHealth');
+        const releaseGateClosure = readRakDiag('releaseGateClosure', 'getRakReleaseGateClosureHealth');
+        const domSafeHelperPolicy = readRakDiag('domSafeHelperPolicy', 'getRakDomSafeHelperPolicy');
+        const domSecurityHardeningPlan = readRakDiag('domSecurityHardeningPlan', 'getRakDomSecurityHardeningPlan');
+        const domSecurityHardeningClosure = readRakDiag('domSecurityHardeningClosure', 'getRakDomSecurityHardeningClosureHealth');
         const bootSequence = readRakDiag('bootSequence', 'getRakBootSequenceHealth');
         const namespaceHealth = readRakDiag('namespace', 'getRakNamespaceHealth');
         const namespaceReadOnlyMap = readRakDiag('namespaceReadOnlyMap', 'getRakNamespaceReadOnlyMapHealth');
@@ -7759,6 +7931,24 @@ function bindAppMenuHandlers(body) {
           supabaseQueueClosure ? ('Supabase queue closure: ' + (supabaseQueueClosure.ok ? 'OK' : 'kontrola') + ' · fáze ' + String(supabaseQueueClosure.phasePercent || 0) + '% · auto flush ' + (supabaseQueueClosure.autoFlushEnabled ? 'zapnuto' : 'vypnuto') + ' · DB změny ' + (supabaseQueueClosure.dbMutations ? 'ano' : 'ne') + ' · policies ' + (supabaseQueueClosure.policyChanges ? 'ano' : 'ne')) : '',
           onlineGameContracts ? ('Online hry kontrakty: ' + (onlineGameContracts.ok ? 'OK' : 'kontrola') + ' · fáze ' + String(onlineGameContracts.phasePercent || 0) + '% · bridge ' + (onlineGameContracts.bridgeMethodsReady ? 'OK' : 'kontrola') + ' · c/a/s ' + String(onlineGameContracts.gameCoverageText || '—') + ' · fallback ' + String(onlineGameContracts.fallbackCount || 0)) : '',
           onlineGameContractSmoke ? ('Online hry smoke: ' + (onlineGameContractSmoke.ok ? 'OK' : 'kontrola') + ' · pokusy/OK/fallback ' + String(onlineGameContractSmoke.attempts || 0) + '/' + String(onlineGameContractSmoke.successes || 0) + '/' + String(onlineGameContractSmoke.fallbackCount || 0) + ' · policies ' + (onlineGameContractSmoke.readyForPolicyTightening ? 'lze zvažovat' : 'neutahovat')) : '',
+          onlineGameContractClosure ? ('Online hry closure: ' + (onlineGameContractClosure.ok ? 'OK' : 'kontrola') + ' · fáze ' + String(onlineGameContractClosure.phasePercent || 0) + '% · policies ' + (onlineGameContractClosure.policyChangeAllowedNow ? 'lze' : 'neutahovat') + ' · warningy ' + String(onlineGameContractClosure.warningCount || 0)) : '',
+          foodSundayGuard ? ('Kantýna/jídelna neděle: ' + (foodSundayGuard.ok ? 'OK' : 'kontrola') + ' · přesčasových nedělí ' + String(foodSundayGuard.overtimeSundayCount || 0) + ' · běžná neděle zavřeno ' + (foodSundayGuard.rows && foodSundayGuard.rows.every ? (foodSundayGuard.rows.every((row) => row.plainSundayClosed) ? 'ano' : 'ne') : '—')) : '',
+          releaseOpsChecklist ? ('Release ops checklist: ' + (releaseOpsChecklist.ok ? 'OK' : 'kontrola') + ' · gate ' + String(releaseOpsChecklist.gateCount || 0) + ' · blockery ' + String(releaseOpsChecklist.blockerCount || 0) + ' · ruční kontroly ' + String(releaseOpsChecklist.manualCount || 0) + ' · ZIP ' + (releaseOpsChecklist.readyForZip ? 'ano' : 'ne')) : '',
+          monitoringPlan ? ('Monitoring mapa: metriky ' + String(monitoringPlan.metricCount || 0) + ' · alerty ' + String((monitoringPlan.alertRules || []).length || 0) + ' · režim ' + String(monitoringPlan.mode || '—')) : '',
+          rollbackPlaybook ? ('Rollback playbook: kroky ' + String((rollbackPlaybook.steps || []).length || 0) + ' · pravidla ' + String((rollbackPlaybook.decisionRules || []).length || 0) + ' · artefakt ' + String(rollbackPlaybook.rollbackArtifactRule || '—')) : '',
+          releaseOpsClosure ? ('Release ops closure: ' + (releaseOpsClosure.ok ? 'OK' : 'kontrola') + ' · fáze ' + String(releaseOpsClosure.phasePercent || 0) + '% · monitoring ' + String(releaseOpsClosure.monitoringMetricCount || 0) + ' · rollback kroky ' + String(releaseOpsClosure.rollbackStepCount || 0)) : '',
+          appSecPrivacySurface ? ('AppSec/privacy: ' + (appSecPrivacySurface.ok ? 'OK' : 'kontrola') + ' · CSP ' + (appSecPrivacySurface.cspMetaPresent ? 'ano' : 'ne') + ' · CDN skripty ' + String(appSecPrivacySurface.externalScriptCount || 0) + ' · bez SRI ' + String(appSecPrivacySurface.externalScriptsWithoutSri || 0) + ' · storage podezřelé ' + String(appSecPrivacySurface.storage && appSecPrivacySurface.storage.suspiciousKeyCount || 0) + ' · warningy ' + String(appSecPrivacySurface.warningCount || 0)) : '',
+          appSecPrivacyRisks ? ('AppSec risk register: položky ' + String(appSecPrivacyRisks.itemCount || 0) + ' · P0 ' + String(appSecPrivacyRisks.p0Count || 0) + ' · P1 ' + String(appSecPrivacyRisks.p1Count || 0) + ' · P2 ' + String(appSecPrivacyRisks.p2Count || 0)) : '',
+          appSecStorageKeys ? ('AppSec storage: klíče ' + String(appSecStorageKeys.classifiedKeyCount || 0) + ' · kategorie ' + String(appSecStorageKeys.categoryCount || 0) + ' · neznámé ' + String(appSecStorageKeys.unknownKeyCount || 0) + ' · podezřelé ' + String(appSecStorageKeys.suspiciousKeyCount || 0) + ' · hodnoty ' + String(appSecStorageKeys.valueInspectionMode || '—')) : '',
+          appSecDomSurface ? ('AppSec DOM: sinky ' + String(appSecDomSurface.staticSinkCount || 0) + ' · innerHTML ' + String(appSecDomSurface.staticBySink && appSecDomSurface.staticBySink.innerHTML || 0) + ' · insertAdjacentHTML ' + String(appSecDomSurface.staticBySink && appSecDomSurface.staticBySink.insertAdjacentHTML || 0) + ' · target blank bez noopener ' + String(appSecDomSurface.targetBlankWithoutNoopener || 0)) : '',
+          appSecCspSriPlan ? ('AppSec CSP/SRI: report-only ' + (appSecCspSriPlan.enforceNow ? 'ne' : 'ano') + ' · CDN skripty bez SRI ' + String(appSecCspSriPlan.externalScriptsWithoutSri || 0) + ' · rollout kroky ' + String((appSecCspSriPlan.rolloutSteps || []).length || 0)) : '',
+          appSecPrivacyClosure ? ('AppSec closure: ' + (appSecPrivacyClosure.ok ? 'OK' : 'kontrola') + ' · fáze ' + String(appSecPrivacyClosure.phasePercent || 0) + '% · storage neznámé ' + String(appSecPrivacyClosure.storageUnknownKeyCount || 0) + ' · DOM sinky ' + String(appSecPrivacyClosure.domStaticSinkCount || 0)) : '',
+          releaseGateMatrix ? ('Release gate matrix: ' + (releaseGateMatrix.ok ? 'OK' : 'blocker') + ' · gate ' + String(releaseGateMatrix.gateCount || 0) + ' · blockery ' + String(releaseGateMatrix.blockerCount || 0) + ' · warningy ' + String(releaseGateMatrix.warningCount || 0) + ' · ruční ' + String(releaseGateMatrix.manualCount || 0) + ' · ZIP ' + (releaseGateMatrix.readyForZip ? 'ano' : 'ne')) : '',
+          releaseGateClosure ? ('Release gate closure: ' + (releaseGateClosure.ok ? 'OK' : 'kontrola') + ' · fáze ' + String(releaseGateClosure.phasePercent || 0) + '% · produkce ' + (releaseGateClosure.readyForProduction ? 'ano' : 'čeká na ruční smoke')) : '',
+          releaseGatePolicy ? ('Release gate pravidla: statusy ' + String(releaseGatePolicy.policyStatusCount || (releaseGatePolicy.statuses || []).length || 0) + ' · mutace ' + String(releaseGatePolicy.mutationPolicy || 'read-only')) : '',
+          domSecurityHardeningPlan ? ('DOM/security hardening: kandidáti ' + String(domSecurityHardeningPlan.candidateCount || 0) + ' · P1 review ' + String(domSecurityHardeningPlan.p1ReviewCount || 0) + ' · sinky ' + String(domSecurityHardeningPlan.staticSinkCount || 0)) : '',
+          domSafeHelperPolicy ? ('DOM safe helper policy: helpery ' + String(domSafeHelperPolicy.helperCount || 0) + ' · režim ' + String(domSafeHelperPolicy.rule || 'read-only')) : '',
+          domSecurityHardeningClosure ? ('DOM/security closure: ' + (domSecurityHardeningClosure.ok ? 'OK' : 'kontrola') + ' · fáze ' + String(domSecurityHardeningClosure.phasePercent || 0) + '% · render změny ' + (domSecurityHardeningClosure.renderChanges ? 'ano' : 'ne')) : '',
           exportReleaseTooling ? ('Export/release tooling: ' + (exportReleaseTooling.ok ? 'OK' : 'kontrola') + ' · source ID ' + String(exportReleaseTooling.sourceIdCount || 0) + ' · binární ' + String(exportReleaseTooling.binaryFileCount || 0) + ' · duplicit ' + String(exportReleaseTooling.duplicateBinaryCount || 0) + ' · warningy ' + String(exportReleaseTooling.warningCount || 0)) : '',
           exportSmokeReport ? ('Export smoke report: ' + (exportSmokeReport.ok === true ? 'OK' : (exportSmokeReport.ok === false ? 'kontrola' : 'zatím neběžel')) + ' · stav ' + String(exportSmokeReport.status || '—') + ' · text/bin ' + String(exportSmokeReport.checkedTextFileCount || 0) + '/' + String(exportSmokeReport.checkedBinaryFileCount || 0) + ' · chybí ' + String((exportSmokeReport.missingTextFileCount || 0) + (exportSmokeReport.missingBinaryFileCount || 0)) + ' · poslední ' + String(exportSmokeReport.lastStage || '—')) : '',
           domActionRegistry ? ('DOM/action registry: ' + (domActionRegistry.ok ? 'OK' : 'kontrola') + ' · akce ' + String(domActionRegistry.actionElementCount || 0) + ' · unikátní ' + String(domActionRegistry.uniqueActionCount || 0) + ' · kategorie ' + String(domActionRegistry.categoryCount || 0) + ' · target mapa ' + String(domActionRegistry.targetCoveragePercent || 0) + '% · target warningy ' + String(domActionRegistry.actionTargetWarningCount || 0) + ' · neznámé ' + String(domActionRegistry.unknownActionCount || 0) + ' · cíle ' + String(domActionRegistry.missingTargetCount || 0) + ' · warningy ' + String(domActionRegistry.warningCount || 0)) : '',
@@ -8728,10 +8918,10 @@ function bindCalendarTile() {
 // Games hub + account profile
 // -------------------------
 const GAMES_PROFILE_KEY = APP_KEY + ':games_profile_v1';
-const GAMES_PROFILE_RESET_VERSION = 898;
-const GAMES_SCORE_RESET_VERSION = 898;
-const GAMES_SCORE_RESET_MARKER_KEY = APP_KEY + ':games_score_reset_v898';
-const GAMES_REMOTE_STATS_RESET_CUTOFF_MS = Date.parse('2026-05-26T14:17:00+02:00');
+const GAMES_PROFILE_RESET_VERSION = 901;
+const GAMES_SCORE_RESET_VERSION = 899;
+const GAMES_SCORE_RESET_MARKER_KEY = APP_KEY + ':games_score_reset_v901';
+const GAMES_REMOTE_STATS_RESET_CUTOFF_MS = Date.parse('2026-05-26T15:08:00+02:00');
 const GAMES_ACCOUNT_BLOCKLIST = new Set(['4157']);
 const GAMES_ACCOUNT_LIST = [];
 
@@ -8770,13 +8960,25 @@ function gamesParseStatTimestamp(value) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function gamesRemoteStatPlayedTimestamp(row) {
+  if (!row) return 0;
+  // Pro reset Top score je rozhodující čas odehrání výsledku, ne updated_at.
+  // updated_at se může změnit i při dodatečné synchronizaci starého řádku a tím by staré score znovu prolezlo do tabulek.
+  const played = gamesParseStatTimestamp(row.last_played_at || row.lastPlayedAt || row.played_at || row.playedAt);
+  if (played > 0) return played;
+  return gamesParseStatTimestamp(row.created_at || row.createdAt || row.updated_at || row.updatedAt);
+}
+
 function gamesIsRemoteStatAfterReset(row) {
   const cutoff = Number(GAMES_REMOTE_STATS_RESET_CUTOFF_MS || 0) || 0;
   if (!Number.isFinite(cutoff) || cutoff <= 0) return true;
-  const ts = gamesParseStatTimestamp(row && (row.updated_at || row.last_played_at || row.created_at || row.updatedAt || row.lastPlayedAt));
+  const ts = gamesRemoteStatPlayedTimestamp(row);
   return ts >= cutoff;
 }
-if (typeof window !== 'undefined') window.gamesIsRemoteStatAfterReset = gamesIsRemoteStatAfterReset;
+if (typeof window !== 'undefined') {
+  window.gamesRemoteStatPlayedTimestamp = gamesRemoteStatPlayedTimestamp;
+  window.gamesIsRemoteStatAfterReset = gamesIsRemoteStatAfterReset;
+}
 
 function gamesResetAccountScoresOnly(account, fallbackName) {
   const normalized = gamesNormalizeStoredAccount(account || {}, fallbackName || account && account.name || account && account.id || '');
@@ -8786,7 +8988,7 @@ function gamesResetAccountScoresOnly(account, fallbackName) {
   return normalized;
 }
 
-function gamesEnsureScoreResetV898() {
+function gamesEnsureScoreResetV899() {
   try {
     if (localStorage.getItem(GAMES_SCORE_RESET_MARKER_KEY) === '1') return false;
     const parsed = JSON.parse(localStorage.getItem(GAMES_PROFILE_KEY) || 'null');
@@ -8807,9 +9009,17 @@ function gamesEnsureScoreResetV898() {
     localStorage.removeItem(TTT_ONLINE_RESULT_STORE_KEY);
     localStorage.removeItem(TTT_ONLINE_JOIN_DIAG_KEY);
     const toRemove = [];
+    const removePrefixes = [
+      'rotace_supabase_game_stats_',
+      'rotace_supabase_gomoku_wins',
+      APP_KEY + ':games_score_reset_',
+      APP_KEY + ':games_leaderboard_',
+      APP_KEY + ':games_top_score_'
+    ];
     for (let i = 0; i < localStorage.length; i += 1) {
       const key = String(localStorage.key(i) || '');
-      if (key.indexOf('rotace_supabase_game_stats_v856:') === 0) toRemove.push(key);
+      if (key === GAMES_SCORE_RESET_MARKER_KEY) continue;
+      if (removePrefixes.some(prefix => key.indexOf(prefix) === 0)) toRemove.push(key);
     }
     toRemove.forEach((key) => localStorage.removeItem(key));
     if (app && typeof app === 'object') {
@@ -8819,10 +9029,10 @@ function gamesEnsureScoreResetV898() {
     }
     if (typeof setLocalStorageIfChanged === 'function') setLocalStorageIfChanged(GAMES_SCORE_RESET_MARKER_KEY, '1');
     else localStorage.setItem(GAMES_SCORE_RESET_MARKER_KEY, '1');
-    window.__rakGamesScoreResetV898 = { ok: true, version: GAMES_SCORE_RESET_VERSION, cutoff: GAMES_REMOTE_STATS_RESET_CUTOFF_MS, accounts: Object.keys(next.accounts || {}).length, at: Date.now() };
+    window.__rakGamesScoreResetV899 = { ok: true, version: GAMES_SCORE_RESET_VERSION, cutoff: GAMES_REMOTE_STATS_RESET_CUTOFF_MS, accounts: Object.keys(next.accounts || {}).length, at: Date.now() };
     return true;
   } catch (err) {
-    console.warn('gamesEnsureScoreResetV898 failed', err);
+    console.warn('gamesEnsureScoreResetV899 failed', err);
     return false;
   }
 }
@@ -8877,7 +9087,7 @@ function gamesNormalizeStoredAccount(account, fallbackName) {
 
 function gamesLoadProfile() {
   try {
-    gamesEnsureScoreResetV898();
+    gamesEnsureScoreResetV899();
     const parsed = typeof parseLocalStorageJsonCached === 'function'
       ? parseLocalStorageJsonCached(GAMES_PROFILE_KEY, null)
       : JSON.parse(localStorage.getItem(GAMES_PROFILE_KEY) || 'null');
@@ -8957,7 +9167,7 @@ function gamesGetRemoteProfileStatIds() {
 function gamesApplyRemoteProfileStat(profile, row) {
   if (!profile || !row) return false;
   if (!gamesIsRemoteStatAfterReset(row)) return false;
-  const remoteUpdated = gamesParseRemoteTimestamp(row.updated_at || row.last_played_at || row.updatedAt || row.created_at);
+  const remoteUpdated = gamesParseRemoteTimestamp(row.last_played_at || row.lastPlayedAt || row.updated_at || row.updatedAt || row.created_at);
   const accountId = String((row.account_number || row.accountNumber || row.id || '')).trim();
   if (!accountId || GAMES_ACCOUNT_BLOCKLIST.has(accountId)) return false;
   const gameType = String((row.game_type || row.gameType || '')).trim();
@@ -8979,7 +9189,7 @@ function gamesApplyRemoteProfileStat(profile, row) {
   const losses = Number(row.losses || 0) || 0;
   const draws = Number(row.draws || 0) || 0;
   const points = Number(row.points ?? row.best_score ?? row.bestScore ?? row.value ?? 0) || 0;
-  const lastTs = gamesParseRemoteTimestamp(row.last_played_at || row.updated_at || row.updatedAt);
+  const lastTs = gamesParseRemoteTimestamp(row.last_played_at || row.lastPlayedAt || row.updated_at || row.updatedAt);
 
   const mergeGeneric = (current) => Object.assign({}, current || {}, {
     plays: Math.max(Number(current && current.plays || 0) || 0, plays),
@@ -9416,7 +9626,7 @@ function gamesMergeRemoteLeaderboardRowIntoAccount(account, gameId, row) {
   const id = String(gameId || '').trim();
   if (!account || !id || id === '__profile_ui') return account;
   account.stats = account.stats && typeof account.stats === 'object' ? account.stats : {};
-  const updated = gamesParseRemoteTimestamp(row && (row.updated_at || row.last_played_at || row.updatedAt));
+  const updated = gamesParseRemoteTimestamp(row && (row.last_played_at || row.lastPlayedAt || row.updated_at || row.updatedAt));
   const value = Number(row && (row.value ?? row.points ?? row.bestScore ?? row.best_score ?? row.games_played) || 0) || 0;
   const gamesPlayed = Number(row && (row.games_played ?? row.plays) || 0) || 0;
   const wins = Number(row && row.wins || 0) || 0;
@@ -9471,7 +9681,7 @@ function gamesBuildProfilesWithRemoteRows(profile) {
     const rows = Array.isArray(cache[gameId]) ? cache[gameId] : [];
     rows.forEach((row) => {
       if (!gamesIsRemoteStatAfterReset(row)) return;
-      const remoteUpdated = gamesParseRemoteTimestamp(row && (row.updated_at || row.last_played_at || row.created_at || row.updatedAt));
+      const remoteUpdated = gamesParseRemoteTimestamp(row && (row.last_played_at || row.lastPlayedAt || row.updated_at || row.created_at || row.updatedAt));
       const id = String(row && (row.id || row.account_number || row.accountNumber) ? (row.id || row.account_number || row.accountNumber) : '').trim();
       if (!id || GAMES_ACCOUNT_BLOCKLIST.has(id)) return;
       const value = Number(row && (row.value ?? row.games_played ?? row.points) || 0) || 0;
@@ -9806,7 +10016,7 @@ function gamesNormalizeRemoteLeaderboardRows(gameId, rows, limit = 10) {
         ? (row && (row.games_played ?? row.plays ?? row.points ?? row.best_score ?? row.bestScore ?? row.value))
         : (row && (row.points ?? row.best_score ?? row.bestScore ?? row.value));
       const points = Number(rawPoints || 0) || 0;
-      const updatedAt = String(row && (row.updated_at ?? row.last_played_at ?? row.created_at) ? (row.updated_at ?? row.last_played_at ?? row.created_at) : '').trim();
+      const updatedAt = String(row && (row.last_played_at ?? row.lastPlayedAt ?? row.updated_at ?? row.created_at) ? (row.last_played_at ?? row.lastPlayedAt ?? row.updated_at ?? row.created_at) : '').trim();
       return {
         id: accountNumber || name,
         name: name || accountNumber || 'Hráč',

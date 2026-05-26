@@ -1750,7 +1750,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
             const name = String(row && (row.player_name ?? row.full_name ?? row.name) ? (row.player_name ?? row.full_name ?? row.name) : accountNumber || '').trim() || accountNumber || 'Hráč';
             const points = Number(row && (row.points ?? row.best_score ?? row.bestScore ?? row.value) ? (row.points ?? row.best_score ?? row.bestScore ?? row.value) : 0) || 0;
             const value = decodePoints(gid, points);
-            const updatedAt = String(row && (row.updated_at ?? row.last_played_at ?? row.created_at) ? (row.updated_at ?? row.last_played_at ?? row.created_at) : '').trim();
+            const updatedAt = String(row && (row.last_played_at ?? row.lastPlayedAt ?? row.updated_at ?? row.created_at) ? (row.last_played_at ?? row.lastPlayedAt ?? row.updated_at ?? row.created_at) : '').trim();
             return { id: accountNumber || name, name, value, games_played: Number(row && (row.games_played ?? row.plays) || 0) || 0, wins: Number(row && row.wins || 0) || 0, losses: Number(row && row.losses || 0) || 0, draws: Number(row && row.draws || 0) || 0, updated_at: updatedAt, playedText: formatDate(Date.parse(updatedAt) || 0), gameId: gid };
           }).filter((row) => row.value > 0);
           window.app.gamesLeaderboardCache[gid] = gameLeaderboardSort(gid, normalized).slice(0, 10);

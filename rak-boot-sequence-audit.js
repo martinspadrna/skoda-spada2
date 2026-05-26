@@ -1,4 +1,4 @@
-// v.1.5 (898) – boot sequence audit včetně online game contract audit helperu.
+// v.1.5 (906) – boot sequence audit včetně online game contract audit helperu.
 
 (function setupRakBootSequenceAudit() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -47,6 +47,10 @@
       'rak-export-release-audit.js',
       'rak-dom-action-audit.js',
       'rak-supabase-client-audit.js',
+      'rak-release-ops-audit.js',
+      'rak-appsec-privacy-audit.js',
+      'rak-release-gates.js',
+      'rak-dom-security-hardening.js',
       'app.js'
     ];
     const indices = expectedStaticOrder.map((name) => ({ name, index: findIndexByTail(scripts, name) }));

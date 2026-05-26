@@ -1,4 +1,4 @@
-// v.1.5 (898) – runtime health vrstva bere online game contract audit jako read-only warning signál.
+// v.1.5 (906) – runtime health vrstva bere release ops closure jako read-only warning signál.
 
 (function setupRakRuntimeHealthHelpers() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -125,6 +125,7 @@
     const storageSyncSmokeReport = typeof window.getRakStorageSyncSmokeReport === 'function' ? window.getRakStorageSyncSmokeReport() : null;
     const storageSyncClosure = typeof window.getRakStorageSyncClosureHealth === 'function' ? window.getRakStorageSyncClosureHealth() : null;
     const onlineGameContracts = typeof window.getRakOnlineGameContractAuditHealth === 'function' ? window.getRakOnlineGameContractAuditHealth() : null;
+    const releaseOpsClosure = typeof window.getRakReleaseOpsClosureHealth === 'function' ? window.getRakReleaseOpsClosureHealth() : null;
 
     if (!storage.ok || !storage.writable) issues.push('localStorage not writable');
     if (pwa && pwa.swVersionMismatch) issues.push('service worker cache version mismatch');
@@ -134,11 +135,12 @@
     if (storageSyncSmokeReport && storageSyncSmokeReport.ok === false) warnings.push('storage/sync smoke warning: ' + String(storageSyncSmokeReport.lastError || storageSyncSmokeReport.status || 'kontrola'));
     if (storageSyncClosure && storageSyncClosure.ok === false) warnings.push('storage/sync closure warning: ' + String((storageSyncClosure.issues || []).join(', ') || storageSyncClosure.status || 'kontrola'));
     if (onlineGameContracts && onlineGameContracts.ok === false) warnings.push('online game contracts warning: ' + String((onlineGameContracts.issues || []).join(', ') || onlineGameContracts.status || 'kontrola'));
+    if (releaseOpsClosure && releaseOpsClosure.ok === false) warnings.push('release ops closure warning: ' + String((releaseOpsClosure.issues || []).join(', ') || releaseOpsClosure.status || 'kontrola'));
     if (statsScope && statsScope.futureImportedMonthCount > 0) warnings.push('budoucí měsíce ve statistikách zatím nejsou započtené: ' + statsScope.futureImportedMonths.join(', '));
 
     return {
       ok: issues.length === 0,
-      mode: 'runtime-health-split-storage-pwa-stats-scope-v897',
+      mode: 'runtime-health-split-storage-pwa-stats-scope-v906',
       checkedAt: nowIso(),
       version: String(window.APP_VERSION || 'unknown'),
       issueCount: issues.length,
@@ -158,7 +160,10 @@
       storageSyncClosurePhasePercent: storageSyncClosure ? Number(storageSyncClosure.phasePercent || 0) : 0,
       onlineGameContractsOk: onlineGameContracts ? !!onlineGameContracts.ok : null,
       onlineGameContractsPhasePercent: onlineGameContracts ? Number(onlineGameContracts.phasePercent || 0) : 0,
-      onlineGameContractsFallbackCount: onlineGameContracts ? Number(onlineGameContracts.fallbackCount || 0) : 0
+      onlineGameContractsFallbackCount: onlineGameContracts ? Number(onlineGameContracts.fallbackCount || 0) : 0,
+      releaseOpsClosureOk: releaseOpsClosure ? !!releaseOpsClosure.ok : null,
+      releaseOpsPhasePercent: releaseOpsClosure ? Number(releaseOpsClosure.phasePercent || 0) : 0,
+      releaseOpsManualCount: releaseOpsClosure ? Number(releaseOpsClosure.checklistManualCount || 0) : 0
     };
   };
 

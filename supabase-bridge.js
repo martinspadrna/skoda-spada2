@@ -234,7 +234,7 @@
     { table: 'gomoku_wins', realtime: true, queueType: 'gomoku_win', access: 'anon SELECT/INSERT/UPDATE', note: 'výhry piškvorek / legacy leaderboard' }
   ];
 
-  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (898)';
+  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (906)';
   const SUPABASE_POLICY_AUDIT_SNAPSHOT_AT = '2026-05-24';
   const SUPABASE_POLICY_HARDENING_PHASE = {
     current: 'V856 – release hygiene po kontrole vlastních buildů: changelog opravený, SQL auditní soubory jsou archivované v assets/docs/sql a DB policies se nemění.',
@@ -294,7 +294,7 @@
   ];
 
   const SUPABASE_RPC_HARDENING_STATUS = {
-    version: 'v.1.5 (898)',
+    version: 'v.1.5 (906)',
     phase: '2E-O online invite/session RPC smoke + accept RPC / no policy tightening',
     rpcPreferred: true,
     migrationApplied: true,
@@ -906,7 +906,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v898');
+      const channel = client.channel('rak-public-live-v906');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -958,8 +958,8 @@
   const LOCAL_GAME_UI_SETTINGS_PREFIX = 'rotace_supabase_game_ui_settings_v1:';
   const LOCAL_GAME_SESSIONS_PREFIX = 'rotace_supabase_game_sessions_v856:';
   const GAME_UI_SETTINGS_TYPE = '__profile_ui';
-  const GAME_PROGRESS_RESET_VERSION = 'v.1.5 (898)';
-  const GAME_PROGRESS_RESET_CUTOFF_ISO = '2026-05-26T14:17:00+02:00';
+  const GAME_PROGRESS_RESET_VERSION = 'v.1.5 (906)';
+  const GAME_PROGRESS_RESET_CUTOFF_ISO = '2026-05-26T15:08:00+02:00';
   const GAME_PROGRESS_RESET_CUTOFF_MS = Date.parse(GAME_PROGRESS_RESET_CUTOFF_ISO);
   const SUPABASE_GAME_CACHE_TTL_MS = 30 * 1000;
   const SUPABASE_WRITE_DEDUPE_WINDOW_MS = 1400;
@@ -2981,13 +2981,13 @@
 
   function gameProgressIsBeforeReset(row) {
     if (!row || String(row.game_type || '') === GAME_UI_SETTINGS_TYPE) return false;
-    const ts = Date.parse(String(row.updated_at || row.last_played_at || row.created_at || ''));
+    const ts = Date.parse(String(row.last_played_at || row.finished_at || row.updated_at || row.created_at || ''));
     return Number.isFinite(GAME_PROGRESS_RESET_CUTOFF_MS) && Number.isFinite(ts) && ts < GAME_PROGRESS_RESET_CUTOFF_MS;
   }
 
   function gameProgressQueryAfterReset(query) {
     if (!query || !GAME_PROGRESS_RESET_CUTOFF_ISO) return query;
-    try { return query.gte('updated_at', GAME_PROGRESS_RESET_CUTOFF_ISO); } catch (err) { return query; }
+    try { return query.gte('last_played_at', GAME_PROGRESS_RESET_CUTOFF_ISO); } catch (err) { return query; }
   }
 
   function isClientGameProgressResetAllowed(options = {}) {
@@ -3048,9 +3048,9 @@
           .from('game_stats')
           .select('id,account_number,game_type,games_played,wins,losses,draws,points,last_played_at,updated_at')
           .eq('game_type', type)
-          .gte('updated_at', GAME_PROGRESS_RESET_CUTOFF_ISO)
+          .gte('last_played_at', GAME_PROGRESS_RESET_CUTOFF_ISO)
           .order('points', { ascending: false })
-          .order('updated_at', { ascending: false })
+          .order('last_played_at', { ascending: false })
           .limit(safeLimit), { mode: 'read' }))
       ]);
       if (statsRes && statsRes.error) throw statsRes.error;
@@ -3329,7 +3329,7 @@
       .select('id,player_x_account_number,player_o_account_number,winner_account_number,status,board_state,updated_at,finished_at')
       .eq('game_type', gameType)
       .eq('status', 'finished')
-      .gte('updated_at', GAME_PROGRESS_RESET_CUTOFF_ISO)
+      .gte('finished_at', GAME_PROGRESS_RESET_CUTOFF_ISO)
       .or(orExpr)
       .order('updated_at', { ascending: false })
       .limit(100), { mode: 'read' });
@@ -3370,7 +3370,7 @@
       .select('id,player_x_account_number,player_o_account_number,winner_account_number,status,board_state,updated_at,finished_at')
       .eq('game_type', gameType)
       .eq('status', 'finished')
-      .gte('updated_at', GAME_PROGRESS_RESET_CUTOFF_ISO)
+      .gte('finished_at', GAME_PROGRESS_RESET_CUTOFF_ISO)
       .not('player_x_account_number', 'is', null)
       .not('player_o_account_number', 'is', null)
       .order('updated_at', { ascending: false })
@@ -3806,7 +3806,7 @@
     return {
       ok: blockers.length === 0,
       mode: 'supabase-hardening-readiness-audit-only',
-      version: 'v.1.5 (898)',
+      version: 'v.1.5 (906)',
       checkedAt: new Date().toISOString(),
       confirmed,
       readinessPercent,

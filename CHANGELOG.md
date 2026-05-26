@@ -1,10 +1,69 @@
-## v.1.5 (898)
-- Statistiky → Obsazenost strojů: body v čárovém grafu jsou klikací/focusovatelné a pod grafem zobrazí konkrétní měsíc a přesnou obsazenost v procentech. Graf dál používá min/max škálu místo začátku od 0 %.
-- Herní profily a Top score: přidaný nový reset marker `GAMES_PROFILE_RESET_VERSION = 898`; lokální skóre, achievementy a leaderboard cache se znovu vynulují, jména a UI nastavení profilů zůstávají.
-- Vzdálené Top score / `game_stats`: klientský cutoff posunut na `2026-05-26T14:17:00+02:00`, takže starší výsledky a starší H2H záznamy se v appce nezobrazují. Supabase DB ani policies se nemění.
-- Piškvorky proti AI: po další výhře hráče přidaná obranná vrstva `tttBestHumanPressureLockMove()`, která agresivněji vyhodnocuje nejsilnější odpovědi hráče a vybírá tah s nejnižším následným tlakem X. Online Piškvorky zůstaly beze změny.
-- Přidané dokumenty `assets/docs/games-score-reset-v898.md`, `assets/docs/stats-occupancy-point-tooltip-v898.md` a `assets/docs/ttt-ai-hardening-v898.md`; historie v O aplikaci rozšířená na blok `v.1.5 851–898`.
-- Verze sjednocena na v.1.5 (898), cache na `v1.5-898`, realtime kanál na `rak-public-live-v898`, package na `1.5.898`.
+## v.1.5 (906)
+
+- Přidaná read-only vrstva `rak-dom-security-hardening.js` pro nízkorizikové DOM/security hardening návrhy po jednotlivých sink skupinách.
+- Přidané diagnostiky `getRakDomSafeHelperPolicy()`, `getRakDomSecurityHardeningPlan()` a `getRakDomSecurityHardeningClosureHealth()`.
+- Release gate matice nově sleduje i DOM/security hardening closure jako warning gate.
+- Přidané dokumenty `assets/docs/dom-security-hardening-plan-v906.md` a `assets/docs/dom-safe-helper-policy-v906.md`.
+- Bez DB změn, bez Supabase policy změn, bez online-flow změn a bez přepisu renderu.
+- Verze sjednocena na v.1.5 (906), cache na `v1.5-906`, realtime kanál na `rak-public-live-v906`, package na `1.5.906`.
+
+## v.1.5 (905)
+- Navázáno na potvrzenou v.1.5 (904).
+- Přidána read-only release gating/checklist vrstva `rak-release-gates.js`, která skládá hotové diagnostiky do statusů `blocker`, `warning`, `manual` a `ok`.
+- Nové helpery `getRakReleaseGatePolicy()`, `getRakReleaseGateMatrixHealth()` a `getRakReleaseGateClosureHealth()`; Diagnostika/O aplikaci ukazuje gate count, blockery, warningy, ruční kontroly a připravenost pro ZIP.
+- Přidané dokumenty `assets/docs/release-gates-matrix-v905.md` a `assets/docs/release-gates-policy-v905.md`.
+- Bez změn Supabase DB, Supabase policies, online flow, dashboardu, kalkulaček, rotací, statistik a Piškvorky AI.
+- Verze sjednocena na v.1.5 (905), cache na `v1.5-905`, realtime kanál na `rak-public-live-v905`, package na `1.5.905`.
+
+## v.1.5 (904)
+- Navázáno na potvrzenou v.1.5 (903).
+- AppSec/privacy baseline uzavřený na 100 %: přidána klasifikace storage klíčů bez čtení hodnot, statická inventura DOM sinků a report-only CSP/SRI plán.
+- Přidané diagnostiky `appSecStorageKeys`, `appSecDomSurface` a `appSecCspSriPlan`; AppSec closure nově vrací fázi 100 %.
+- Přidané dokumenty `assets/docs/appsec-privacy-completion-v904.md`, `assets/docs/storage-key-classification-v904.md` a `assets/docs/csp-sri-report-only-plan-v904.md`.
+- Bez změn Supabase DB, Supabase policies, online flow, dashboardu, kalkulaček, rotací, statistik a Piškvorek AI.
+- Verze sjednocena na v.1.5 (904), cache na `v1.5-904`, realtime kanál na `rak-public-live-v904`, package na `1.5.904`.
+
+## v.1.5 (903)
+- Piškvorky proti AI: po rychlé výhře hráče kolem 15. tahu přidána early-trap obrana `tttEarlyTrapRiskScore()` / `tttBestEarlyTrapLockMove()`, navýšená raná search depth a širší kandidáti. Online Piškvorky beze změny.
+- Přidán read-only AppSec/privacy baseline `rak-appsec-privacy-audit.js` s helpery `getRakAppSecPrivacySurfaceHealth()`, `getRakAppSecPrivacyRiskRegister()` a `getRakAppSecPrivacyClosureHealth()`.
+- Diagnostika / O aplikaci ukazuje AppSec/privacy stav, risk register a closure fáze.
+- Přidané dokumenty `assets/docs/appsec-privacy-baseline-v903.md` a `assets/docs/ttt-ai-hardening-v903.md`.
+- Verze sjednocena na v.1.5 (903), cache na `v1.5-903`, realtime kanál na `rak-public-live-v903`, package na `1.5.903`.
+
+## v.1.5 (902)
+- Build navazuje na potvrzenou v901 a přidává read-only release ops vrstvu bez DB změn, bez Supabase policies a bez zásahu do online flow.
+- Přidán `rak-release-ops-audit.js` s helpery `getRakReleaseOpsChecklistHealth()`, `getRakMonitoringPlanHealth()`, `getRakRollbackPlaybookHealth()` a `getRakReleaseOpsClosureHealth()`.
+- Diagnostika aplikace nově ukazuje release ops checklist, monitoring mapu, rollback playbook a closure stav.
+- Release readiness / architektura / runtime health jsou napojené na release ops closure jako pasivní signál.
+- Přidané dokumenty `assets/docs/release-ops-checklist-v902.md`, `assets/docs/monitoring-alerting-v902.md` a `assets/docs/rollback-playbook-v902.md`.
+- Verze sjednocena na v.1.5 (902), cache na `v1.5-902`, realtime kanál na `rak-public-live-v902`, package na `1.5.902`.
+
+## v.1.5 (901)
+- Kantýna/jídelna: neděle bez přesčasu je nově vždy zavřeno; nedělní otevírací doba se bere jen ze seznamu přesčasových nedělí `FOOD_SPECIAL_SUNDAY_DATES`.
+- Detail otevírací doby označuje přesčasové neděle textem „přesčas“ / „při přesčasu“ a doplňuje read-only guard `getFoodScheduleSundayGuardHealth()`.
+- Online game create/accept/save contract audit uzavřen na 100 % přes `getRakOnlineGameContractClosureHealth()`, stále bez DB změn, bez policies a bez zásahu do online flow.
+- Lokální herní reset marker posunut na `GAMES_PROFILE_RESET_VERSION = 901`; Supabase výsledkové tabulky zůstávají vyčištěné z v900.
+- Přidané dokumenty `assets/docs/food-sunday-overtime-guard-v901.md`, `assets/docs/online-game-contract-audit-v901.md`, `assets/docs/online-game-contract-closure-v901.md`, `assets/docs/games-score-reset-v901.md`, `assets/docs/stats-occupancy-point-tooltip-v901.md` a `assets/docs/ttt-ai-hardening-v901.md`.
+- Verze sjednocena na v.1.5 (901), cache na `v1.5-901`, realtime kanál na `rak-public-live-v901`, package na `1.5.901`.
+
+## v.1.5 (900)
+- Supabase vyčištění výsledků: po kontrolním SELECTu byly smazány pouze výsledkové řádky `game_stats` (3) a `gomoku_wins` (7); následná kontrola ukázala `game_stats = 0` a `gomoku_wins = 0`.
+- Zachováno: `game_accounts` (10 řádků), `game_invites = 0`, `game_sessions = 0`; profily/účty, rozpisy, stroje, heartbeat, RLS ani policies se neměnily.
+- Herní profily a Top score: lokální reset marker posunutý na `GAMES_PROFILE_RESET_VERSION = 900`, marker `games_score_reset_v900` a cutoff `2026-05-26T15:08:00+02:00`, aby i lokální cache na mobilech začínaly od nuly.
+- Top tabulky dál zobrazují datum i čas včetně hodiny a minut.
+- Read-only audit podle plánu: online game create/accept/save contract audit posunut na 75 %; pořád bez DB schema změn, bez policies a bez zásahu do online flow.
+- Přidané dokumenty `assets/docs/games-score-reset-v900.md`, `assets/docs/ttt-ai-hardening-v900.md` a `assets/docs/online-game-contract-audit-v900.md`; historie v O aplikaci rozšířená na blok `v.1.5 851–900`.
+- Verze sjednocena na v.1.5 (900), cache na `v1.5-900`, realtime kanál na `rak-public-live-v900`, package na `1.5.900`.
+
+## v.1.5 (899)
+- Herní profily a Top score: přidaný nový reset marker `GAMES_PROFILE_RESET_VERSION = 899`; lokální skóre, achievementy, leaderboard cache i staré reset markery se znovu vyčistí, jména a UI nastavení profilů zůstávají.
+- Oprava skutečné příčiny návratu starých Top score: vzdálené výsledky se filtrují podle `last_played_at` / času odehrání výsledku, ne podle `updated_at`, protože starý řádek může dostat nové `updated_at` při pozdější synchronizaci.
+- Vzdálené Top score / `game_stats`: klientský cutoff posunut na `2026-05-26T14:38:00+02:00`; Supabase DB ani policies se fyzicky nemažou.
+- Top tabulky dál zobrazují datum i čas včetně hodiny a minut, nově prioritně podle času odehrání výsledku.
+- Piškvorky proti AI: po další výhře hráče navýšen search depth a rozšířen časový rozpočet pressure/reply lockdown vrstev. Online Piškvorky zůstaly beze změny.
+- Read-only audit podle plánu: online game create/accept/save contract audit posunut na 55 %; pořád bez DB změn, bez policies a bez zásahu do online flow.
+- Přidané dokumenty `assets/docs/games-score-reset-v899.md`, `assets/docs/ttt-ai-hardening-v899.md` a `assets/docs/online-game-contract-audit-v899.md`; historie v O aplikaci rozšířená na blok `v.1.5 851–899`.
+- Verze sjednocena na v.1.5 (899), cache na `v1.5-899`, realtime kanál na `rak-public-live-v899`, package na `1.5.899`.
 
 ## v.1.5 (897)
 - Statistiky → Obsazenost strojů: důvod absence `N` se normalizuje jako `Neschopenka` i v souhrnu důvodů absencí, aby se v koláči/legendě neukazovalo jen holé `N`.

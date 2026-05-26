@@ -1,4 +1,4 @@
-// v.1.5 (898) – window.RaK namespace doplněný o online game contract audit aliasy.
+// v.1.5 (906) – window.RaK namespace doplněný o release gating/checklist diagnostiku.
 
 (function setupRakNamespaceBridge() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -11,8 +11,8 @@
 
   const root = window.RaK || {};
   const existingVersion = root.namespaceVersion || '';
-  root.namespaceVersion = 'v.1.5 (898)';
-  root.mode = 'passive-namespace-readonly-phase-closed-online-game-contracts-v897';
+  root.namespaceVersion = 'v.1.5 (906)';
+  root.mode = 'passive-namespace-readonly-release-gates-v906';
   root.createdAt = root.createdAt || new Date().toISOString();
   root.updatedAt = new Date().toISOString();
   root.compatibility = 'legacy-globals-preserved';
@@ -50,6 +50,21 @@
     { group: 'diagnostics', alias: 'supabaseQueueClosure', globalName: 'getRakSupabaseQueueClosureHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only closure Supabase client/offline queue auditu bez DB změn.' },
     { group: 'diagnostics', alias: 'onlineGameContracts', globalName: 'getRakOnlineGameContractAuditHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only audit create/accept/save kontraktů online her bez DB/policy změn.' },
     { group: 'diagnostics', alias: 'onlineGameContractSmoke', globalName: 'getRakOnlineGameContractSmokeReport', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only smoke report kontraktů online her bez zápisu do DB.' },
+    { group: 'diagnostics', alias: 'onlineGameContractClosure', globalName: 'getRakOnlineGameContractClosureHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only closure online game contract auditu bez DB/policy/online-flow změn.' },
+    { group: 'diagnostics', alias: 'foodSundayGuard', globalName: 'getFoodScheduleSundayGuardHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only guard: neděle bez přesčasu nesmí otevřít kantýnu/jídelnu.' },
+    { group: 'diagnostics', alias: 'releaseOpsChecklist', globalName: 'getRakReleaseOpsChecklistHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only release readiness checklist bez mutací.' },
+    { group: 'diagnostics', alias: 'monitoringPlan', globalName: 'getRakMonitoringPlanHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only mapa metrik, alertů a ručních kontrol.' },
+    { group: 'diagnostics', alias: 'rollbackPlaybook', globalName: 'getRakRollbackPlaybookHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only rollback playbook pro poslední potvrzený ZIP.' },
+    { group: 'diagnostics', alias: 'releaseOpsClosure', globalName: 'getRakReleaseOpsClosureHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only closure release ops fáze bez DB/policy/online-flow změn.' },
+    { group: 'diagnostics', alias: 'appSecPrivacySurface', globalName: 'getRakAppSecPrivacySurfaceHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only AppSec/privacy audit klientského povrchu bez čtení citlivých hodnot.' },
+    { group: 'diagnostics', alias: 'appSecPrivacyRisks', globalName: 'getRakAppSecPrivacyRiskRegister', type: 'function', phase: 'safe-now', risk: 'medium', note: 'Read-only risk register: CSP/SRI/localStorage/Supabase klientská rizika.' },
+    { group: 'diagnostics', alias: 'appSecStorageKeys', globalName: 'getRakAppSecStorageKeyClassificationHealth', type: 'function', phase: 'safe-now', risk: 'medium', note: 'Read-only klasifikace názvů storage klíčů bez čtení hodnot.' },
+    { group: 'diagnostics', alias: 'appSecDomSurface', globalName: 'getRakAppSecDomInjectionSurfaceHealth', type: 'function', phase: 'safe-now', risk: 'medium', note: 'Read-only inventura DOM sinků innerHTML/insertAdjacentHTML/window.open.' },
+    { group: 'diagnostics', alias: 'appSecCspSriPlan', globalName: 'getRakAppSecCspSriReportOnlyPlan', type: 'function', phase: 'safe-now', risk: 'medium', note: 'Report-only CSP/SRI plán bez vynucení a bez přepojení CDN.' },
+    { group: 'diagnostics', alias: 'appSecPrivacyClosure', globalName: 'getRakAppSecPrivacyClosureHealth', type: 'function', phase: 'safe-now', risk: 'medium', note: 'Read-only closure AppSec/privacy baseline fáze bez mutací.' },
+    { group: 'diagnostics', alias: 'releaseGatePolicy', globalName: 'getRakReleaseGatePolicy', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only pravidla blocker/warning/manual/ok pro release gating.' },
+    { group: 'diagnostics', alias: 'releaseGateMatrix', globalName: 'getRakReleaseGateMatrixHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only gate matice před ZIPem: blockery, warningy a ruční kontroly.' },
+    { group: 'diagnostics', alias: 'releaseGateClosure', globalName: 'getRakReleaseGateClosureHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only closure release gating fáze bez DB/policy/online-flow změn.' },
     { group: 'diagnostics', alias: 'exportReleaseTooling', globalName: 'getRakExportReleaseToolingHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only audit export/release tooling vrstvy bez spuštění exportu.' },
     { group: 'diagnostics', alias: 'exportSmokeReport', globalName: 'getRakExportSmokeReport', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only poslední smoke/preflight stav exportu ZIPu.' },
     { group: 'diagnostics', alias: 'domActionRegistry', globalName: 'getRakDomActionRegistryHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only mapa data-action prvků a allowlistů bez přepojení navigace/renderu/her.' },
@@ -104,14 +119,14 @@
   };
   root.getNamespaceMap = cloneMap;
   root.namespaceMap = cloneMap();
-  root.namespaceMapVersion = 'v.1.5 (898)';
+  root.namespaceMapVersion = 'v.1.5 (906)';
   root.namespacePlan = {
     phase: 'phase C',
     mode: 'namespace-readonly-phase-closed-with-online-game-contract-alias-v897',
     progressPercent: 100,
     mapClosed: true,
     rule: 'Staré globály zůstávají zdroj pravdy; read-only aliasy mají fallback na legacy globály a nesmí mutovat stav.',
-    nextStep: 'Namespace read-only fáze je uzavřená; export/release, DOM/action a storage/sync audity jsou uzavřené; Supabase client/offline queue audit je uzavřený; v894/v895 přidává read-only online game contract audit jako další bezpečnou stabilizační fázi.'
+    nextStep: 'Namespace read-only fáze je uzavřená; export/release, DOM/action a storage/sync audity jsou uzavřené; Supabase client/offline queue audit je uzavřený; online game contract audit je ve v901 uzavřený jako read-only gate, AppSec/privacy audit je ve v904 uzavřený a v905 přidává release gating matici.'
   };
 
   ensureGroup('modules');
@@ -355,7 +370,7 @@
       namespaceMapClosed: true,
       namespacePhaseClosed: true,
       phasePercent: 100,
-      nextRefactorRule: 'Namespace read-only fáze je uzavřená. Další fáze smí řešit jen pasivní audit kontraktů; navigaci/render/hry pořád nepřepojovat.',
+      nextRefactorRule: 'Namespace read-only fáze je uzavřená. Další fáze smí řešit jen pasivní DOM/security hardening plán; navigaci/render/hry pořád nepřepojovat.',
       namespaceMap: cloneMap().slice(0, 24),
       hasResolver: !!(window.RaK && typeof window.RaK.resolve === 'function'),
       hasCaller: !!(window.RaK && typeof window.RaK.call === 'function'),

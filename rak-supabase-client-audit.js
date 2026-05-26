@@ -1,4 +1,4 @@
-// v.1.5 (898) – Supabase queue + online game contract audit read-only bez DB/policy změn.
+// v.1.5 (906) – Online game contract audit closure read-only bez DB/policy/online-flow změn.
 
 (function setupRakSupabaseClientAudit() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -289,7 +289,7 @@
       ok: issues.length === 0,
       mode: 'supabase-client-queue-closure-v897',
       checkedAt: nowIso(),
-      version: safeString(window.APP_VERSION || 'v.1.5 (898)'),
+      version: safeString(window.APP_VERSION || 'v.1.5 (906)'),
       phase: 'phase H Supabase client/offline queue audit',
       phasePercent: 100,
       phaseClosed: true,
@@ -419,12 +419,12 @@
 
     return {
       ok: issues.length === 0,
-      mode: 'online-game-contract-audit-v897',
+      mode: 'online-game-contract-audit-v901',
       checkedAt: nowIso(),
-      version: safeString(window.APP_VERSION || 'v.1.5 (898)'),
+      version: safeString(window.APP_VERSION || 'v.1.5 (906)'),
       phase: 'phase I Supabase online hry create/accept/save kontrakty',
-      phasePercent: 35,
-      phaseClosed: false,
+      phasePercent: 100,
+      phaseClosed: true,
       readOnly: true,
       dbMutations: false,
       policyChanges: false,
@@ -450,8 +450,54 @@
       warningCount: warnings.length,
       issues: issues.slice(0, 12),
       warnings: warnings.slice(0, 12),
-      nextSafeStep: 'Dál jen sbírat reálný dvoumobilový create/accept/save smoke pro Piškvorky i Lodě; DB policies neutahovat bez potvrzení obou her bez fallbacku.',
-      recommendation: smoke.recommendation
+      nextSafeStep: 'Read-only kontrakt mapa je uzavřená. Dál sbírat reálný dvoumobilový create/accept/save smoke pro Piškvorky i Lodě; DB policies neutahovat bez potvrzení obou her bez fallbacku.',
+      recommendation: smoke.recommendation,
+      scoreCleanup: {
+        confirmedExternally: true,
+        tables: ['game_stats', 'gomoku_wins'],
+        expectedRowsAfterCleanup: 0,
+        note: 'Supabase výsledkové tabulky byly jednorázově vyčištěné mimo klienta; klient zůstává read-only a DB/policies se v aplikaci nemění.'
+      }
+    };
+  };
+
+  window.getRakOnlineGameContractClosureHealth = function getRakOnlineGameContractClosureHealth() {
+    const audit = typeof window.getRakOnlineGameContractAuditHealth === 'function' ? window.getRakOnlineGameContractAuditHealth() : null;
+    const issues = [];
+    const warnings = [];
+    if (!audit) issues.push('online game contract audit není dostupný');
+    if (audit && !audit.bridgeMethodsReady) issues.push('bridge create/accept/load/save není kompletní');
+    if (audit && !audit.globalWrappersReady) warnings.push('legacy wrappery nejsou kompletní');
+    if (audit && audit.fallbackCount > 0) warnings.push('v online smoke jsou fallback záznamy');
+    if (audit && Array.isArray(audit.missingGameOperations) && audit.missingGameOperations.length) warnings.push('čeká reálný dvoumobilový smoke: ' + audit.missingGameOperations.join(', '));
+    return {
+      ok: issues.length === 0,
+      mode: 'online-game-contract-closure-v901',
+      checkedAt: nowIso(),
+      version: safeString(window.APP_VERSION || 'v.1.5 (906)'),
+      phase: 'phase I Supabase online hry create/accept/save kontrakty',
+      phasePercent: 100,
+      phaseClosed: true,
+      readOnly: true,
+      dbMutations: false,
+      policyChanges: false,
+      onlineFlowMutations: false,
+      bridgeMethodsReady: !!(audit && audit.bridgeMethodsReady),
+      globalWrappersReady: !!(audit && audit.globalWrappersReady),
+      smokeAvailable: !!(audit && audit.smokeAvailable),
+      readyForPolicyTightening: false,
+      policyChangeAllowedNow: false,
+      closureScope: [
+        'zmapované create/accept/load/save bridge metody',
+        'zmapované legacy wrappery',
+        'pasivní smoke čtení pro Piškvorky a Lodě',
+        'explicitní blokace policy změn bez reálného dvoumobilového smoke'
+      ],
+      issueCount: issues.length,
+      warningCount: warnings.length,
+      issues,
+      warnings,
+      nextSafeStep: 'Uzavřený audit používat jako release gate. Policies neutahovat, dokud Piškvorky i Lodě neprojdou reálným create/accept/save testem na dvou mobilech bez fallbacku.'
     };
   };
 
@@ -460,9 +506,9 @@
     return {
       ok: !!(audit && audit.ok),
       status: audit ? (audit.ok ? 'audit-ready' : 'kontrola') : 'unavailable',
-      mode: 'online-game-contract-smoke-v897',
+      mode: 'online-game-contract-smoke-v901',
       checkedAt: nowIso(),
-      version: safeString(window.APP_VERSION || 'v.1.5 (898)'),
+      version: safeString(window.APP_VERSION || 'v.1.5 (906)'),
       readOnly: true,
       dbMutations: false,
       policyChanges: false,

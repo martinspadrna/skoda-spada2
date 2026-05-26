@@ -1,4 +1,4 @@
-// v.1.5 (898) – export manifest pro reset score, klikací graf obsazenosti a další AI hardening.
+// v.1.5 (906) – export manifest doplněný o DOM/security hardening docs.
 const EXPORT_SOURCE_IDS = {
   "module-readiness.js": "src-module-readiness-js",
   "rak-namespace.js": "src-rak-namespace-js",
@@ -9,6 +9,10 @@ const EXPORT_SOURCE_IDS = {
   "rak-export-release-audit.js": "src-rak-export-release-audit-js",
   "rak-dom-action-audit.js": "src-rak-dom-action-audit-js",
   "rak-supabase-client-audit.js": "src-rak-supabase-client-audit-js",
+  "rak-release-ops-audit.js": "src-rak-release-ops-audit-js",
+  "rak-appsec-privacy-audit.js": "src-rak-appsec-privacy-audit-js",
+  "rak-release-gates.js": "src-rak-release-gates-js",
+  "rak-dom-security-hardening.js": "src-rak-dom-security-hardening-js",
   "app.js": "src-app-js",
   "core.js": "src-core-js",
   "lifecycle.js": "src-lifecycle-js",
@@ -86,10 +90,25 @@ const EXPORT_SOURCE_IDS = {
   "assets/docs/ttt-ai-hardening-v896.md": "src-ttt-ai-hardening-v896-md",
   "assets/docs/games-score-reset-v897.md": "src-games-score-reset-v897-md",
   "assets/docs/ttt-ai-hardening-v897.md": "src-ttt-ai-hardening-v897-md",
-  "assets/docs/games-score-reset-v898.md": "src-games-score-reset-v898-md",
-  "assets/docs/stats-occupancy-point-tooltip-v898.md": "src-stats-occupancy-point-tooltip-v898-md",
-  "assets/docs/ttt-ai-hardening-v898.md": "src-ttt-ai-hardening-v898-md",
+  "assets/docs/games-score-reset-v901.md": "src-games-score-reset-v901-md",
+  "assets/docs/stats-occupancy-point-tooltip-v901.md": "src-stats-occupancy-point-tooltip-v901-md",
+  "assets/docs/ttt-ai-hardening-v901.md": "src-ttt-ai-hardening-v901-md",
   "assets/docs/online-game-contract-audit-v895.md": "src-online-game-contract-audit-v895-md",
+  "assets/docs/online-game-contract-audit-v901.md": "src-online-game-contract-audit-v901-md",
+  "assets/docs/online-game-contract-closure-v901.md": "src-online-game-contract-closure-v901-md",
+  "assets/docs/food-sunday-overtime-guard-v901.md": "src-food-sunday-overtime-guard-v901-md",
+  "assets/docs/release-ops-checklist-v902.md": "src-release-ops-checklist-v902-md",
+  "assets/docs/monitoring-alerting-v902.md": "src-monitoring-alerting-v902-md",
+  "assets/docs/rollback-playbook-v902.md": "src-rollback-playbook-v902-md",
+  "assets/docs/ttt-ai-hardening-v903.md": "src-ttt-ai-hardening-v903-md",
+  "assets/docs/appsec-privacy-baseline-v903.md": "src-appsec-privacy-baseline-v903-md",
+  "assets/docs/appsec-privacy-completion-v904.md": "src-appsec-privacy-completion-v904-md",
+  "assets/docs/storage-key-classification-v904.md": "src-storage-key-classification-v904-md",
+  "assets/docs/csp-sri-report-only-plan-v904.md": "src-csp-sri-report-only-plan-v904-md",
+  "assets/docs/release-gates-matrix-v905.md": "src-release-gates-matrix-v905-md",
+  "assets/docs/release-gates-policy-v905.md": "src-release-gates-policy-v905-md",
+  "assets/docs/dom-security-hardening-plan-v906.md": "src-dom-security-hardening-plan-v906-md",
+  "assets/docs/dom-safe-helper-policy-v906.md": "src-dom-safe-helper-policy-v906-md",
 "assets/app-icons/icon-16.png": "src-icon-16-png",
   "assets/app-icons/icon-32.png": "src-icon-32-png",
   "assets/app-icons/icon-180.png": "src-icon-180-png",
@@ -103,8 +122,8 @@ const BINARY_SOURCE_CACHE = window.__ROTACE_BINARY_SOURCE_CACHE__ || (window.__R
 const EXPORT_SMOKE_REPORT = window.__RAK_EXPORT_SMOKE_REPORT__ || (window.__RAK_EXPORT_SMOKE_REPORT__ = {
   ok: null,
   status: 'not-run',
-  mode: 'export-smoke-report-v898',
-  version: 'v.1.5 (898)',
+  mode: 'export-smoke-report-v906',
+  version: 'v.1.5 (906)',
   checkedAt: null,
   lastStage: 'čeká na export',
   runCount: 0,
@@ -161,6 +180,10 @@ const EXPORT_JS_FILES = [
       'rak-export-release-audit.js',
       'rak-dom-action-audit.js',
       'rak-supabase-client-audit.js',
+  'rak-release-ops-audit.js',
+  'rak-appsec-privacy-audit.js',
+  'rak-release-gates.js',
+  'rak-dom-security-hardening.js',
       'app.js',
       'core.js',
       'lifecycle.js',
@@ -257,16 +280,31 @@ const EXPORT_TEXT_FILES = [
       'assets/docs/ttt-ai-hardening-v896.md',
       'assets/docs/games-score-reset-v897.md',
       'assets/docs/ttt-ai-hardening-v897.md',
-      'assets/docs/games-score-reset-v898.md',
-      'assets/docs/stats-occupancy-point-tooltip-v898.md',
-      'assets/docs/ttt-ai-hardening-v898.md',
-      'assets/docs/online-game-contract-audit-v895.md'
+      'assets/docs/games-score-reset-v901.md',
+      'assets/docs/stats-occupancy-point-tooltip-v901.md',
+      'assets/docs/ttt-ai-hardening-v901.md',
+      'assets/docs/online-game-contract-audit-v895.md',
+      'assets/docs/online-game-contract-audit-v901.md',
+      'assets/docs/online-game-contract-closure-v901.md',
+      'assets/docs/food-sunday-overtime-guard-v901.md',
+      'assets/docs/release-ops-checklist-v902.md',
+      'assets/docs/monitoring-alerting-v902.md',
+      'assets/docs/rollback-playbook-v902.md',
+      'assets/docs/appsec-privacy-baseline-v903.md',
+      'assets/docs/appsec-privacy-completion-v904.md',
+      'assets/docs/storage-key-classification-v904.md',
+      'assets/docs/csp-sri-report-only-plan-v904.md',
+      'assets/docs/ttt-ai-hardening-v903.md',
+      'assets/docs/release-gates-matrix-v905.md',
+      'assets/docs/release-gates-policy-v905.md',
+      'assets/docs/dom-security-hardening-plan-v906.md',
+      'assets/docs/dom-safe-helper-policy-v906.md'
 ];
 
 function getRakExportManifest() {
   return {
-    version: String(window.APP_VERSION || 'v.1.5 (898)'),
-    mode: 'export-manifest-preflight-v898',
+    version: String(window.APP_VERSION || 'v.1.5 (906)'),
+    mode: 'export-manifest-preflight-v906',
     indexFile: 'index.html',
     jsFiles: Array.from(new Set(EXPORT_JS_FILES)),
     textFiles: Array.from(new Set(EXPORT_TEXT_FILES)),
@@ -287,7 +325,7 @@ function getRakExportSourceInventoryHealth() {
   const duplicateManifestPathCount = manifestPaths.length - new Set(manifestPaths).size;
   return {
     ok: duplicateSourceCount === 0 && duplicateBinaryCount === 0 && duplicateManifestPathCount === 0,
-    mode: 'export-source-inventory-v898',
+    mode: 'export-source-inventory-v906',
     version: String(window.APP_VERSION || 'unknown'),
     sourceIdCount: sourcePaths.length,
     manifestTextPathCount: manifestPaths.length,
@@ -374,8 +412,8 @@ async function readExportBinary(relativePath) {
 function updateRakExportSmokeReport(partial) {
   const data = partial && typeof partial === 'object' ? partial : {};
   Object.assign(EXPORT_SMOKE_REPORT, data, {
-    mode: 'export-smoke-report-v898',
-    version: String(window.APP_VERSION || 'v.1.5 (898)'),
+    mode: 'export-smoke-report-v906',
+    version: String(window.APP_VERSION || 'v.1.5 (906)'),
     checkedAt: new Date().toISOString()
   });
   return getRakExportSmokeReport();
@@ -386,7 +424,7 @@ function getRakExportSmokeReport() {
   return Object.assign({}, EXPORT_SMOKE_REPORT, {
     ok: EXPORT_SMOKE_REPORT.ok,
     status: String(EXPORT_SMOKE_REPORT.status || 'not-run'),
-    mode: String(EXPORT_SMOKE_REPORT.mode || 'export-smoke-report-v898'),
+    mode: String(EXPORT_SMOKE_REPORT.mode || 'export-smoke-report-v906'),
     version: String(EXPORT_SMOKE_REPORT.version || window.APP_VERSION || 'unknown'),
     lastStage: String(EXPORT_SMOKE_REPORT.lastStage || '—'),
     lastError: String(EXPORT_SMOKE_REPORT.lastError || ''),
@@ -473,7 +511,7 @@ async function validateRakExportManifestFiles(exportManifest) {
   const ok = duplicateReport.ok && missingTextFiles.length === 0 && missingBinaryFiles.length === 0;
   const report = {
     ok,
-    mode: 'export-manifest-preflight-v898',
+    mode: 'export-manifest-preflight-v906',
     version: String(window.APP_VERSION || 'unknown'),
     checkedAt: new Date().toISOString(),
     duplicateReport,
