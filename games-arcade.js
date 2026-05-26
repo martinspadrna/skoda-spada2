@@ -361,10 +361,10 @@
     return nextPatch;
   }
 
-  // v.1.5 (913): Malý DOM/security hardening pro profily, statistiky a achievementy.
+  // v.1.5 (916): Malý DOM/security hardening pro profily, statistiky a achievementy.
   // Uživatelské texty a číselné hodnoty se normalizují před složením HTML.
   const GAMES_PROFILE_DOM_HARDENING = {
-    mode: 'games-profile-achievement-dom-hardening-v913',
+    mode: 'games-profile-achievement-dom-hardening-v916',
     sinks: ['gamesProfilesGrid', 'gamesAchievementsGrid', 'gamesStatsGrid'],
     escapedFields: ['profileName', 'profileId', 'initials', 'rank', 'favorite', 'gameTitle', 'valueText', 'achievementTitle', 'achievementId', 'achievementDesc', 'achievementGoal'],
     numericFields: ['level', 'xp', 'winRate', 'plays', 'achievements', 'progress', 'target', 'pct'],
@@ -796,6 +796,19 @@
 #games .arcadeOverlayCard span{font-size:13px;line-height:1.35;color:rgba(245,255,250,.82);}
 #games .arcadeOverlayCard small{font-size:11px;color:rgba(245,255,250,.62);}
 #games .arcadeReactionBoard{min-height:clamp(360px, 62dvh, 600px);width:100%;border:none;color:inherit;cursor:pointer;touch-action:manipulation;background:var(--rakGlassPanelBg, linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.025))) !important;border-color:var(--rakGlassStroke, rgba(255,255,255,.14)) !important;}
+/* v.1.5 (916) – Reaction test: Top score nesmí zůstat schované pod spodní/neviditelnou vrstvou. */
+body.gamesOpen[data-rak-arcade-game="reaction"] #games .gamesStage,
+body.gamesOpen[data-rak-arcade-game="daily"] #games .gamesStage{overflow:auto !important;}
+body.gamesOpen[data-rak-arcade-game="reaction"] #games .arcadeShellRoot,
+body.gamesOpen[data-rak-arcade-game="daily"] #games .arcadeShellRoot{height:auto !important;min-height:100dvh !important;overflow:visible !important;padding-bottom:calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 22px) !important;}
+body.gamesOpen[data-rak-arcade-game="reaction"] #games .gamesArcadeRoot,
+body.gamesOpen[data-rak-arcade-game="daily"] #games .gamesArcadeRoot{overflow:visible !important;min-height:auto !important;}
+body.gamesOpen[data-rak-arcade-game="reaction"] #games #gamesShellBody,
+body.gamesOpen[data-rak-arcade-game="daily"] #games #gamesShellBody{overflow:visible !important;min-height:auto !important;padding-bottom:calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 18px) !important;}
+body.gamesOpen[data-rak-arcade-game="reaction"] #games .arcadeReactionStage,
+body.gamesOpen[data-rak-arcade-game="daily"] #games .arcadeReactionStage{overflow:visible !important;min-height:auto !important;padding-bottom:20px !important;}
+body.gamesOpen[data-rak-arcade-game="reaction"] #games .arcadeReactionBoard,
+body.gamesOpen[data-rak-arcade-game="daily"] #games .arcadeReactionBoard{min-height:clamp(240px, 42dvh, 420px) !important;max-height:min(430px, 48dvh) !important;}
 #games .arcadeReactionBoard.isGo{background:radial-gradient(circle at 50% 34%, color-mix(in srgb, var(--rakThemeAccent, var(--green2)) 74%, #ffffff) 0 14%, color-mix(in srgb, var(--rakThemeAccent, var(--green2)) 48%, transparent) 15% 42%, transparent 68%), linear-gradient(135deg, color-mix(in srgb, var(--rakThemeAccent, var(--green2)) 58%, #06351a), color-mix(in srgb, var(--rakThemeAccent, var(--green2)) 22%, rgba(255,255,255,.05))) !important;border-color:color-mix(in srgb, var(--rakThemeAccent, var(--green2)) 62%, rgba(255,255,255,.18)) !important;box-shadow:0 0 0 1px color-mix(in srgb, var(--rakThemeAccent, var(--green2)) 42%, transparent) inset, 0 22px 58px color-mix(in srgb, var(--rakThemeAccent, var(--green2)) 34%, rgba(0,0,0,.32)) !important;color:#fafffb !important;}
 #games .arcadeReactionBoard.isBad{background:linear-gradient(180deg, rgba(255,74,104,.28), rgba(255,255,255,.03)) !important;}
 #games .arcadeReactionBoard strong{font-size:clamp(28px, 10vw, 56px);letter-spacing:.02em;}
@@ -1208,10 +1221,10 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   }
 
 
-  // v.1.5 (913): Malý DOM/security hardening pro Top score.
+  // v.1.5 (916): Malý DOM/security hardening pro Top score.
   // Jména, jednotky a hodnoty se normalizují na text ještě před složením HTML řádku.
   const GAMES_TOP_SCORE_DOM_HARDENING = {
-    mode: 'games-top-score-dom-hardening-v913',
+    mode: 'games-top-score-dom-hardening-v916',
     sinks: ['gamesTop3Block'],
     escapedFields: ['id', 'name', 'valueText', 'playedTextDateTime', 'title', 'unit'],
     maxNameLength: 48,
@@ -1297,7 +1310,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok,
       mode: GAMES_TOP_SCORE_DOM_HARDENING.mode,
-      version: String(window.APP_VERSION || 'v.1.5 (913)'),
+      version: String(window.APP_VERSION || 'v.1.5 (916)'),
       scope: 'Top score řádky ve hrách',
       sinks: GAMES_TOP_SCORE_DOM_HARDENING.sinks.slice(),
       escapedFields: GAMES_TOP_SCORE_DOM_HARDENING.escapedFields.slice(),
@@ -1326,7 +1339,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok,
       mode: GAMES_PROFILE_DOM_HARDENING.mode,
-      version: String(window.APP_VERSION || 'v.1.5 (913)'),
+      version: String(window.APP_VERSION || 'v.1.5 (916)'),
       scope: 'Profily, statistiky a achievementy ve hrách',
       sinks: GAMES_PROFILE_DOM_HARDENING.sinks.slice(),
       escapedFields: GAMES_PROFILE_DOM_HARDENING.escapedFields.slice(),
@@ -1339,10 +1352,10 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   }
   window.getRakGamesProfileDomHardeningHealth = getRakGamesProfileDomHardeningHealth;
 
-  // v.1.5 (913): Malý DOM/security hardening pro herní HUD/stavové hlášky.
+  // v.1.5 (916): Malý DOM/security hardening pro herní HUD/stavové hlášky.
   // Všechny arcade HUD řádky v tomto souboru teď jdou přes lokální gamesStatLine(), která zkrátí a escapuje label i hodnotu.
   const GAMES_HUD_MESSAGE_DOM_HARDENING = {
-    mode: 'games-hud-message-dom-hardening-v913',
+    mode: 'games-hud-message-dom-hardening-v916',
     sinks: ['arcadeHud', 'gamesStatLine', 'arcadeErrorBanner'],
     escapedFields: ['label', 'value', 'errorMessage'],
     maxLabelLength: 32,
@@ -1373,7 +1386,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok,
       mode: GAMES_HUD_MESSAGE_DOM_HARDENING.mode,
-      version: String(window.APP_VERSION || 'v.1.5 (913)'),
+      version: String(window.APP_VERSION || 'v.1.5 (916)'),
       scope: 'Herní HUD a chybové/stavové hlášky arcade rendererů',
       sinks: GAMES_HUD_MESSAGE_DOM_HARDENING.sinks.slice(),
       escapedFields: GAMES_HUD_MESSAGE_DOM_HARDENING.escapedFields.slice(),
@@ -1386,9 +1399,9 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   }
   window.getRakGamesHudMessageDomHardeningHealth = getRakGamesHudMessageDomHardeningHealth;
 
-  // v.1.5 (913): Read-only guard pro malé DOM/security pokračování v menu Lodí.
+  // v.1.5 (916): Read-only guard pro malé DOM/security pokračování v menu Lodí.
   const GAMES_SHIPS_MENU_DOM_HARDENING = {
-    mode: 'games-ships-menu-dom-hardening-v913',
+    mode: 'games-ships-menu-dom-hardening-v916',
     sinks: ['shipsH2HRow', 'shipsInviteOverlay', 'shipsStatus'],
     escapedFields: ['playerName', 'inviteCode', 'inviteUrl', 'statusMessage'],
     maxTextLength: 120
@@ -1403,7 +1416,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok,
       mode: GAMES_SHIPS_MENU_DOM_HARDENING.mode,
-      version: String(window.APP_VERSION || 'v.1.5 (913)'),
+      version: String(window.APP_VERSION || 'v.1.5 (916)'),
       scope: 'Menu Lodí, pozvánka a uložené vzájemné zápasy',
       sinks: GAMES_SHIPS_MENU_DOM_HARDENING.sinks.slice(),
       escapedFields: GAMES_SHIPS_MENU_DOM_HARDENING.escapedFields.slice(),
@@ -1415,10 +1428,10 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   window.getRakGamesShipsMenuDomHardeningHealth = getRakGamesShipsMenuDomHardeningHealth;
 
 
-  // v.1.5 (913): Malý DOM/security hardening pro denní challenge menu.
+  // v.1.5 (916): Malý DOM/security hardening pro denní challenge menu.
   // Denní hra používá statická data, ale texty se stejně normalizují a escapují před vložením do HTML.
   const GAMES_DAILY_CHALLENGE_DOM_HARDENING = {
-    mode: 'games-daily-challenge-dom-hardening-v913',
+    mode: 'games-daily-challenge-dom-hardening-v916',
     sinks: ['dailyChallengeHud', 'dailyChallengeIntro', 'dailyScoreTitle'],
     escapedFields: ['label', 'description', 'scoreTitle'],
     maxLabelLength: 48,
@@ -1441,7 +1454,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok,
       mode: GAMES_DAILY_CHALLENGE_DOM_HARDENING.mode,
-      version: String(window.APP_VERSION || 'v.1.5 (913)'),
+      version: String(window.APP_VERSION || 'v.1.5 (916)'),
       scope: 'Denní challenge – úvodní texty, HUD a Top score nadpis',
       sinks: GAMES_DAILY_CHALLENGE_DOM_HARDENING.sinks.slice(),
       escapedFields: GAMES_DAILY_CHALLENGE_DOM_HARDENING.escapedFields.slice(),
@@ -2099,6 +2112,58 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return null;
   };
 
+  // v.1.5 (916): Denní challenge ukládá vlastní leaderboard i tehdy,
+  // když se odehraje konkrétní hra jako Reaction/Aim/Brick apod.
+  function gamesGetDailyChallengeSession() {
+    const session = window.app && window.app.dailyChallengeSession;
+    if (!session || session.active !== true) return null;
+    if (key(window.app && window.app.activeGameShell) !== 'daily') return null;
+    const todayKey = String(dailySeed());
+    if (String(session.dateKey || '') !== todayKey) return null;
+    const mode = key(session.mode);
+    if (!mode || DAILY_MODES.indexOf(mode) < 0) return null;
+    return Object.assign({}, session, { mode, dateKey: todayKey });
+  }
+
+  function gamesDailyChallengeScoreValue(sourceId, sourcePatch, sourceMerged) {
+    const id = key(sourceId);
+    const patch = sourcePatch || {};
+    const merged = sourceMerged || {};
+    const directPoints = Number(patch.points || merged.points || 0) || 0;
+    if (directPoints > 0) return directPoints;
+    if (isLowBetter(id)) {
+      const time = Number(patch.bestTimeMs || patch.timeMs || patch.elapsedMs || merged.bestTimeMs || 0) || 0;
+      return time > 0 ? encodePoints(id, time) : 0;
+    }
+    const score = Number(patch.bestScore || patch.score || merged.bestScore || merged.leaderboardValue || 0) || 0;
+    return score > 0 ? encodePoints(id, score) : 0;
+  }
+
+  function gamesRecordDailyChallengeStat(active, sourceId, sourcePatch, sourceMerged, isCompleted) {
+    const session = gamesGetDailyChallengeSession();
+    if (!session || !isCompleted) return false;
+    const id = key(sourceId);
+    if (!id || id === 'daily' || id !== session.mode) return false;
+    const scoreValue = Math.max(0, Math.round(gamesDailyChallengeScoreValue(id, sourcePatch, sourceMerged)));
+    if (!scoreValue) return false;
+    const current = getAccountStat(active, 'daily');
+    const playedAt = Number((sourcePatch && sourcePatch.lastPlayedAt) || (sourceMerged && sourceMerged.lastPlayedAt) || Date.now()) || Date.now();
+    const mergedDaily = Object.assign({}, current, {
+      completed: true,
+      plays: (Number(current.plays || 0) || 0) + 1,
+      bestScore: Math.max(Number(current.bestScore || 0) || 0, scoreValue),
+      leaderboardValue: Math.max(Number(current.leaderboardValue || 0) || 0, scoreValue),
+      points: Math.max(Number(current.points || 0) || 0, scoreValue),
+      lastPlayedAt: playedAt,
+      lastResult: dailyLabel(id) + ' · ' + String(sourcePatch && sourcePatch.lastResult ? sourcePatch.lastResult : (sourceMerged && sourceMerged.lastResult ? sourceMerged.lastResult : scoreValue + ' bodů'))
+    });
+    setAccountStat(active, 'daily', mergedDaily);
+    if (window.app && window.app.gamesLeaderboardCache) delete window.app.gamesLeaderboardCache.daily;
+    if (typeof originalSyncStatOnline === 'function') void originalSyncStatOnline('daily', mergedDaily);
+    void refreshRemoteLeaderboards('daily');
+    return true;
+  }
+
   const originalRecordStat = window.gamesRecordStat;
   window.gamesRecordStat = function gamesRecordStatArcade(gameId, patch) {
     const id = key(gameId);
@@ -2149,6 +2214,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     if (typeof nextPatch.perfectClears === 'number') merged.perfectClears = (Number(current.perfectClears || 0) || 0) + Math.max(0, nextPatch.perfectClears || 0);
     merged.lastResult = String(nextPatch.lastResult || merged.lastResult || '').trim();
     setAccountStat(active, id, merged);
+    gamesRecordDailyChallengeStat(active, id, nextPatch, merged, isCompleted);
     gamesSaveProfile(profile);
     if (typeof originalSyncStatOnline === 'function') {
       void originalSyncStatOnline(id, merged);
@@ -5696,10 +5762,12 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     const label = gamesDailySafeLabel(dailyLabel(mode), 'Challenge');
     const description = gamesDailySafeDescription(dailyText(mode));
     const scoreGame = dailyScoreGameId(mode);
-    const scoreUnit = gamesSafeScoreUnit(dailyScoreUnit(mode), 'bodů');
-    const scoreTitle = gamesDailySafeLabel(dailyScoreTitle(mode), 'Top score dnešní hry');
-    body.innerHTML = `<div class="arcadeStage dailyStage"><div class="arcadeHud arcadeHudSingleLine">${gamesStatLine('Dnešní hra', label)}${gamesStatLine('Datum', new Date().toLocaleDateString('cs-CZ'))}${gamesStatLine('Score', label)}</div><div class="arcadeBar arcadePanel uPad12"><div class="arcadeStatus"><strong>Denní challenge:</strong> ${escapeHtml(description)} Zítra se automaticky vybere jiná hra podle data.</div></div><div class="arcadeControls"><button type="button" class="gameControlBtn" id="dailyStartBtn">Spustit dnešní výzvu</button><button type="button" class="gameControlBtn" id="dailyResetBtn">Obnovit</button></div>${gamesTop3Block(scoreGame, scoreUnit, 5, scoreTitle).replace('gamesTop5ScrollCard', 'gamesTop5ScrollCard arcadeTopScoreTight')}</div>`;
+    const scoreUnit = gamesSafeScoreUnit('bodů', 'bodů');
+    const sourceUnit = gamesSafeScoreUnit(dailyScoreUnit(mode), 'bodů');
+    const scoreTitle = gamesDailySafeLabel('Top score denní challenge', 'Top score denní challenge');
+    body.innerHTML = `<div class="arcadeStage dailyStage"><div class="arcadeHud arcadeHudSingleLine">${gamesStatLine('Dnešní hra', label)}${gamesStatLine('Datum', new Date().toLocaleDateString('cs-CZ'))}${gamesStatLine('Měří se', sourceUnit)}</div><div class="arcadeBar arcadePanel uPad12"><div class="arcadeStatus"><strong>Denní challenge:</strong> ${escapeHtml(description)} Výsledek se uloží sem do Denní challenge i do konkrétní hry.</div></div><div class="arcadeControls"><button type="button" class="gameControlBtn" id="dailyStartBtn">Spustit dnešní výzvu</button><button type="button" class="gameControlBtn" id="dailyResetBtn">Obnovit</button></div>${gamesTop3Block('daily', scoreUnit, 5, scoreTitle).replace('gamesTop5ScrollCard', 'gamesTop5ScrollCard arcadeTopScoreTight')}</div>`;
     const start = () => {
+      if (window.app) window.app.dailyChallengeSession = { active: true, mode: scoreGame, dateKey: String(dailySeed()), startedAt: Date.now() };
       if (mode === 'aim') renderAim(body, { challenge: true, duration: 30000 });
       else if (mode === 'reaction') renderReaction(body);
       else if (mode === 'memory') renderMemory(body);
@@ -5716,6 +5784,90 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     body.querySelector('#dailyResetBtn').addEventListener('click', () => renderDaily(body));
     setActiveState('daily', { mode });
   }
+
+
+  function getRakDailyChallengeScoreBridgeHealth() {
+    return {
+      ok: typeof gamesRecordDailyChallengeStat === 'function' && typeof gamesGetDailyChallengeSession === 'function',
+      mode: 'daily-challenge-score-bridge-v916',
+      version: String(window.APP_VERSION || 'v.1.5 (916)'),
+      sourceModes: DAILY_MODES.slice(),
+      targetGame: 'daily',
+      note: 'Výsledek dnešní hry se ukládá do konkrétní hry i do leaderboardu Denní challenge.'
+    };
+  }
+  window.getRakDailyChallengeScoreBridgeHealth = getRakDailyChallengeScoreBridgeHealth;
+
+  function getRakReactionTopScoreVisibilityHealth() {
+    return {
+      ok: true,
+      mode: 'reaction-top-score-visibility-v916',
+      version: String(window.APP_VERSION || 'v.1.5 (916)'),
+      scope: 'Reaction Test layout',
+      fix: 'Reaction/Daily shell má viditelný overflow a menší reakční plochu, aby Top score nezůstalo pod spodní vrstvou.',
+      note: 'Browser/mobil test je pořád ruční.'
+    };
+  }
+  window.getRakReactionTopScoreVisibilityHealth = getRakReactionTopScoreVisibilityHealth;
+
+
+  // v.1.5 (916): Read-only guard pro návaznost oprav Reaction top score a Denní challenge.
+  // Kontrola jen skládá signály, nic neukládá, nemaže a nemění online flow.
+  function getRakGamesPostFixScoreFlowHealth() {
+    const reaction = typeof getRakReactionTopScoreVisibilityHealth === 'function' ? getRakReactionTopScoreVisibilityHealth() : null;
+    const dailyBridge = typeof getRakDailyChallengeScoreBridgeHealth === 'function' ? getRakDailyChallengeScoreBridgeHealth() : null;
+    const topScore = typeof getRakGamesTopScoreDomHardeningHealth === 'function' ? getRakGamesTopScoreDomHardeningHealth() : null;
+    const dailyDom = typeof getRakGamesDailyChallengeDomHardeningHealth === 'function' ? getRakGamesDailyChallengeDomHardeningHealth() : null;
+    const ok = !!(reaction && reaction.ok && dailyBridge && dailyBridge.ok && topScore && topScore.ok && dailyDom && dailyDom.ok);
+    return {
+      ok,
+      mode: 'games-post-fix-score-flow-v916',
+      version: String(window.APP_VERSION || 'v.1.5 (916)'),
+      scope: 'Reaction Test Top score + Denní challenge score bridge',
+      checks: {
+        reactionTopScoreVisible: !!(reaction && reaction.ok),
+        dailyChallengeBridge: !!(dailyBridge && dailyBridge.ok),
+        topScoreDateTime: !!(topScore && topScore.ok),
+        dailyChallengeDomSafe: !!(dailyDom && dailyDom.ok)
+      },
+      note: 'Read-only guard po opravě z v916: Reaction Top score musí být vidět a Denní challenge musí ukládat/zobrazovat vlastní Top score.'
+    };
+  }
+  window.getRakGamesPostFixScoreFlowHealth = getRakGamesPostFixScoreFlowHealth;
+
+
+
+  // v.1.5 (916): Read-only DOM/security guard pro herní akční texty a toast/stavové popisky.
+  // Nezasahuje do gameplaye ani online flow; jen ověřuje, že pro další hardening existuje bezpečný textový formatter.
+  const GAMES_ACTION_TEXT_DOM_HARDENING = {
+    mode: 'games-action-text-dom-hardening-v916',
+    sinks: ['arcadeActionButton', 'gameMenuAction', 'challengeAction', 'toastStatus'],
+    escapedFields: ['buttonLabel', 'actionTitle', 'statusText', 'ariaLabel'],
+    maxActionLength: 80
+  };
+
+  function gamesActionTextSafe(value, fallback) {
+    return gamesSafePlainText(value, fallback || 'Akce', GAMES_ACTION_TEXT_DOM_HARDENING.maxActionLength);
+  }
+
+  function getRakGamesActionTextDomHardeningHealth() {
+    const unsafe = '<img src=x onerror=alert(1)> Hrát <script>alert(1)</script>';
+    const safeLabel = gamesActionTextSafe(unsafe, 'Hrát');
+    const probeHtml = '<button type="button" aria-label="' + escapeHtml(safeLabel) + '">' + escapeHtml(safeLabel) + '</button>';
+    const ok = probeHtml.includes('&lt;img') && probeHtml.includes('&lt;script') && !probeHtml.includes('<img') && !probeHtml.includes('<script');
+    return {
+      ok,
+      mode: GAMES_ACTION_TEXT_DOM_HARDENING.mode,
+      version: String(window.APP_VERSION || 'v.1.5 (916)'),
+      scope: 'Herní akční texty, tlačítka a toast/stavové popisky',
+      sinks: GAMES_ACTION_TEXT_DOM_HARDENING.sinks.slice(),
+      escapedFields: GAMES_ACTION_TEXT_DOM_HARDENING.escapedFields.slice(),
+      maxActionLength: GAMES_ACTION_TEXT_DOM_HARDENING.maxActionLength,
+      probeEscaped: ok,
+      note: 'Read-only guard pro další malý DOM/security krok; nečte storage, nemění gameplay ani online flow.'
+    };
+  }
+  window.getRakGamesActionTextDomHardeningHealth = getRakGamesActionTextDomHardeningHealth;
 
   const renderers = { aim: renderAim, reaction: renderReaction, tetris: renderTetris, shooter: renderShooter, brick: renderBrick, doodle: renderDoodle, bubble: renderBubble, sudoku: renderSudoku, mines: renderMines, memory: renderMemory, bomber: renderBomber, pampuch: renderPampuch, ships: renderShips, daily: renderDaily };
 

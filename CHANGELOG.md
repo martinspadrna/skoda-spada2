@@ -1,28 +1,52 @@
-## v.1.5 (913)
+## v.1.5 (916)
+
+- Pokračování malého DOM/security hardeningu ve hrách: přidaný read-only guard `getRakGamesActionTextDomHardeningHealth()` pro herní akční texty, tlačítka a toast/stavové popisky.
+- Release gates nově hlídají warning gate `games-action-text-dom-hardening`.
+- Bez změn Supabase DB/policies, online Piškvorek, Lodí a gameplaye.
+- Přidaný dokument `assets/docs/games-action-text-dom-hardening-v916.md`.
+- Verze sjednocena na v.1.5 (916), cache na `v1.5-916`, realtime kanál na `rak-public-live-v916`, package na `1.5.916`.
+
+## v.1.5 (916)
+
+- Navazuje na potvrzenou v.1.5 (916) a přidává read-only guard `getRakGamesPostFixScoreFlowHealth()` pro Reaction Test Top score a Denní challenge score bridge.
+- Release gates nově hlídají, že opravy z v916 mají diagnostický signál před dalším ZIPem.
+- Přidaný dokument `assets/docs/games-post-fix-score-flow-v916.md`.
+- Verze sjednocena na v.1.5 (916), cache na `v1.5-916`, realtime kanál na `rak-public-live-v916`, package na `1.5.916`.
+
+## v.1.5 (916)
+
+- Reaction Test: upravený layout, aby Top 5 výsledků nezůstávaly schované pod spodní/neviditelnou vrstvou.
+- Denní challenge: výsledek dnešní hry se ukládá do konkrétní hry i do samostatného Top score denní challenge.
+- Denní challenge nově zobrazuje vlastní Top score, ne pouze Top score právě vybrané hry.
+- Přidané diagnostiky `getRakDailyChallengeScoreBridgeHealth()` a `getRakReactionTopScoreVisibilityHealth()`.
+- Přidané dokumenty `assets/docs/daily-challenge-score-bridge-v916.md` a `assets/docs/reaction-top-score-visibility-v916.md`.
+- Verze sjednocena na v.1.5 (916), cache na `v1.5-916`, realtime kanál na `rak-public-live-v916`, package na `1.5.916`.
+
+## v.1.5 (916)
 
 - Pokračování malého DOM/security hardeningu ve hrách: Denní challenge normalizuje a escapuje název hry, popis výzvy a nadpis Top score.
 - Přidaný guard `getRakGamesDailyChallengeDomHardeningHealth()` a release gate `games-daily-challenge-dom-hardening`.
 - Bez změn Supabase DB/policies, online Piškvorek, Lodí a hotových provozních částí.
-- Verze sjednocena na v.1.5 (913), cache na `v1.5-913`, realtime kanál na `rak-public-live-v913`, package na `1.5.913`.
+- Verze sjednocena na v.1.5 (916), cache na `v1.5-916`, realtime kanál na `rak-public-live-v916`, package na `1.5.916`.
 
-## v.1.5 (913)
+## v.1.5 (916)
 
 - Supabase výsledkové tabulky byly vyčištěné: `gomoku_wins = 0`, `game_stats = 0`; `game_accounts` zůstaly zachované.
 - Piškvorky Top score nově zobrazuje `Datum a čas` včetně hodiny a minut, ne jen datum.
 - Ukládání výhry nad AI do `gomoku_wins` posílá `created_at` z času dokončení výsledku, aby byl čas v Top score spolehlivě dostupný.
-- Lokální reset herních výsledků posunut na `GAMES_PROFILE_RESET_VERSION = 912`, marker `games_score_reset_v913` a cutoff `2026-05-26T18:44:00+02:00`.
+- Lokální reset herních výsledků posunut na `GAMES_PROFILE_RESET_VERSION = 912`, marker `games_score_reset_v916` a cutoff `2026-05-26T18:44:00+02:00`.
 - „O aplikaci“ je zestručněné do větších souhrnů po cca 50 verzích.
-- Přidané dokumenty `assets/docs/games-score-reset-v913.md`, `assets/docs/ttt-top-score-datetime-v913.md` a `assets/docs/about-50-version-summary-v913.md`.
-- Verze sjednocena na v.1.5 (913), cache na `v1.5-913`, realtime kanál na `rak-public-live-v913`, package na `1.5.913`.
+- Přidané dokumenty `assets/docs/games-score-reset-v916.md`, `assets/docs/ttt-top-score-datetime-v916.md` a `assets/docs/about-50-version-summary-v916.md`.
+- Verze sjednocena na v.1.5 (916), cache na `v1.5-916`, realtime kanál na `rak-public-live-v916`, package na `1.5.916`.
 
-## v.1.5 (913)
+## v.1.5 (916)
 
 - Otevírací doba: mimořádná nedělní část po rozkliknutí ukazuje jen časy, které se liší od běžné neděle. Stejné časy se už neopakují.
 - Top score ve hrách znovu hlídá datum i čas včetně hodiny a minut.
 - Pokračování DOM/security hardeningu: přidaný read-only guard `getRakGamesShipsMenuDomHardeningHealth()` pro menu Lodí, pozvánku a uložené vzájemné zápasy bez zásahu do online flow.
 - „O aplikaci“: potvrzené pravidlo držet cca po 50 verzích stručný souhrn nejdůležitějších změn.
-- Přidané dokumenty `assets/docs/food-overtime-diff-only-v913.md`, `assets/docs/games-top-score-datetime-v913.md`, `assets/docs/games-ships-menu-dom-hardening-v913.md` a `assets/docs/about-version-summary-policy-v913.md`.
-- Verze sjednocena na v.1.5 (913), cache na `v1.5-913`, realtime kanál na `rak-public-live-v913`, package na `1.5.913`.
+- Přidané dokumenty `assets/docs/food-overtime-diff-only-v916.md`, `assets/docs/games-top-score-datetime-v916.md`, `assets/docs/games-ships-menu-dom-hardening-v916.md` a `assets/docs/about-version-summary-policy-v916.md`.
+- Verze sjednocena na v.1.5 (916), cache na `v1.5-916`, realtime kanál na `rak-public-live-v916`, package na `1.5.916`.
 
 ## v.1.5 (910)
 

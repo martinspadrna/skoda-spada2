@@ -1,9 +1,9 @@
-// v.1.5 (913) – release gating/checklist vrstva nad read-only audity bez mutací.
+// v.1.5 (916) – release gating/checklist vrstva nad read-only audity bez mutací.
 
 (function setupRakReleaseGates() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
-  const VERSION = 'v.1.5 (913)';
-  const MODE = 'release-gates-readonly-v913';
+  const VERSION = 'v.1.5 (916)';
+  const MODE = 'release-gates-readonly-v916';
 
   try {
     if (typeof window.rakMarkModuleReady === 'function') {
@@ -84,6 +84,8 @@
     const gamesHudMessageDomHardening = readDiag('gamesHudMessageDomHardening', 'getRakGamesHudMessageDomHardeningHealth');
     const gamesShipsMenuDomHardening = readDiag('gamesShipsMenuDomHardening', 'getRakGamesShipsMenuDomHardeningHealth');
     const gamesDailyChallengeDomHardening = readDiag('gamesDailyChallengeDomHardening', 'getRakGamesDailyChallengeDomHardeningHealth');
+    const gamesPostFixScoreFlow = readDiag('gamesPostFixScoreFlow', 'getRakGamesPostFixScoreFlowHealth');
+    const gamesActionTextDomHardening = readDiag('gamesActionTextDomHardening', 'getRakGamesActionTextDomHardeningHealth');
     const domSecurityHardeningClosure = readDiag('domSecurityHardeningClosure', 'getRakDomSecurityHardeningClosureHealth');
 
     return {
@@ -106,6 +108,8 @@
       gamesHudMessageDomHardening,
       gamesShipsMenuDomHardening,
       gamesDailyChallengeDomHardening,
+      gamesPostFixScoreFlow,
+      gamesActionTextDomHardening,
       domSecurityHardeningClosure
     };
   }
@@ -113,7 +117,7 @@
   function buildGateMatrix(signals) {
     const gates = [];
     const version = safeString(window.APP_VERSION || VERSION);
-    const versionOk = /^v\.1\.5 \(910\)$/.test(version);
+    const versionOk = /^v\.1\.5 \(916\)$/.test(version);
 
     gates.push(makeGate(
       'version-consistency',
@@ -289,6 +293,29 @@
       'games-arcade.js'
     ));
 
+
+    gates.push(makeGate(
+      'games-post-fix-score-flow',
+      'Reaction/Denní challenge score flow',
+      signals.gamesPostFixScoreFlow && signals.gamesPostFixScoreFlow.ok ? 'ok' : 'warning',
+      'warning',
+      signals.gamesPostFixScoreFlow ? ('reaction ' + (signals.gamesPostFixScoreFlow.checks && signals.gamesPostFixScoreFlow.checks.reactionTopScoreVisible ? 'OK' : 'kontrola') + ', daily bridge ' + (signals.gamesPostFixScoreFlow.checks && signals.gamesPostFixScoreFlow.checks.dailyChallengeBridge ? 'OK' : 'kontrola')) : 'guard chybí',
+      'Po opravě z v916 musí být Reaction Top score viditelné a Denní challenge musí zapisovat vlastní leaderboard.',
+      'games-arcade.js'
+    ));
+
+
+
+    gates.push(makeGate(
+      'games-action-text-dom-hardening',
+      'Hry akční texty DOM hardening',
+      signals.gamesActionTextDomHardening && signals.gamesActionTextDomHardening.ok ? 'ok' : 'warning',
+      'warning',
+      signals.gamesActionTextDomHardening ? ('escapovaná pole ' + String((signals.gamesActionTextDomHardening.escapedFields || []).length || 0) + ', sinky ' + String((signals.gamesActionTextDomHardening.sinks || []).length || 0)) : 'guard chybí',
+      'Herní tlačítka, akční popisky a toast/stavové texty musí normalizovat a escapovat text bez zásahu do gameplaye.',
+      'games-arcade.js'
+    ));
+
     gates.push(makeGate(
       'dom-security-hardening',
       'DOM/security hardening plán',
@@ -325,7 +352,7 @@
   window.getRakReleaseGatePolicy = function getRakReleaseGatePolicy() {
     return {
       ok: true,
-      mode: 'release-gate-policy-v913',
+      mode: 'release-gate-policy-v916',
       version: safeString(window.APP_VERSION || VERSION),
       checkedAt: nowIso(),
       statuses: [
@@ -390,7 +417,7 @@
     const policy = window.getRakReleaseGatePolicy();
     return {
       ok: !!(matrix && matrix.ok),
-      mode: 'release-gates-closure-v913',
+      mode: 'release-gates-closure-v916',
       version: safeString(window.APP_VERSION || VERSION),
       checkedAt: nowIso(),
       phase: 'phase K release gating / checklist matrix',

@@ -1,4 +1,4 @@
-# RaK v.1.5 (913) – Souhrny v O aplikaci
+# RaK v.1.5 (916) – Souhrny v O aplikaci
 
 ## Pravidlo
 

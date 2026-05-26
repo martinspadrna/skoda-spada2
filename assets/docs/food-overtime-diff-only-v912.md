@@ -1,4 +1,4 @@
-# RaK v.1.5 (913) – Mimořádná otevírací doba jen jako rozdíl
+# RaK v.1.5 (916) – Mimořádná otevírací doba jen jako rozdíl
 
 ## Úprava
 
