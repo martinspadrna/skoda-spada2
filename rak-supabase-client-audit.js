@@ -1,9 +1,9 @@
-// v.1.5 (891) – Supabase klient/offline queue smoke + ruční guard read-only bez DB změn.
+// v.1.5 (893) – Supabase klient/offline queue smoke + ruční guard read-only bez DB změn.
 
 (function setupRakSupabaseClientAudit() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
   const QUEUE_KEY = 'rotace_supabase_queue_v1';
-  const PHASE_PERCENT = 55;
+  const PHASE_PERCENT = 100;
 
   try {
     if (typeof window.rakMarkModuleReady === 'function') {
@@ -159,10 +159,10 @@
 
     return {
       ok: issues.length === 0,
-      mode: 'supabase-client-queue-audit-v891',
+      mode: 'supabase-client-queue-audit-v893',
       phase: 'supabase-client-offline-queue-audit',
       phasePercent: PHASE_PERCENT,
-      phaseClosed: false,
+      phaseClosed: true,
       checkedAt: nowIso(),
       version: safeString(window.APP_VERSION || 'unknown'),
       readOnly: true,
@@ -191,7 +191,7 @@
       performanceGuard: performanceGuard ? Object.assign({}, performanceGuard) : null,
       cacheHits: hardening && hardening.performanceHealth ? safeNumber(hardening.performanceHealth.cacheHits, 0) : null,
       cacheWrites: hardening && hardening.performanceHealth ? safeNumber(hardening.performanceHealth.cacheWrites, 0) : null,
-      nextSafeStep: 'Dál jen closure/guard kontrola. Žádné DB změny, žádné policies, žádný automatický flush ani mazání.'
+      nextSafeStep: 'Supabase client/offline queue audit je uzavřený. Ruční flush nebo cleanup řešit jen po výslovném potvrzení.'
     };
   };
 
@@ -200,7 +200,7 @@
     return {
       ok: !!(health && health.ok),
       status: health ? (health.ok ? 'ok' : 'kontrola') : 'unavailable',
-      mode: 'supabase-client-queue-smoke-v891',
+      mode: 'supabase-client-queue-smoke-v893',
       checkedAt: nowIso(),
       version: safeString(window.APP_VERSION || 'unknown'),
       readOnly: true,
@@ -235,7 +235,7 @@
     if (safeNumber(queue.maxRetryCount, 0) >= 3) warnings.push('některý úkol má 3+ pokusy: ' + queue.maxRetryCount);
     return {
       ok: issues.length === 0,
-      mode: 'supabase-client-queue-manual-guard-v891',
+      mode: 'supabase-client-queue-manual-guard-v893',
       checkedAt: nowIso(),
       version: safeString(window.APP_VERSION || 'unknown'),
       readOnly: true,
@@ -259,6 +259,67 @@
       nextSafeStep: 'Ruční flush nebo cleanup řešit jen po výslovném potvrzení a po zobrazení konkrétních položek fronty.'
     };
   };
+
+  window.getRakSupabaseQueueClosureHealth = function getRakSupabaseQueueClosureHealth() {
+    let audit = null;
+    let smoke = null;
+    let guard = null;
+    const issues = [];
+    const warnings = [];
+    try { audit = window.getRakSupabaseClientQueueAuditHealth(); }
+    catch (err) { issues.push('Supabase queue audit read error: ' + safeString(err && err.message ? err.message : err)); }
+    try { smoke = window.getRakSupabaseQueueSmokeReport(); }
+    catch (err) { warnings.push('Supabase queue smoke read error: ' + safeString(err && err.message ? err.message : err)); }
+    try { guard = window.getRakSupabaseQueueManualGuard(); }
+    catch (err) { issues.push('Supabase queue manual guard read error: ' + safeString(err && err.message ? err.message : err)); }
+
+    if (!audit) warnings.push('Supabase client/queue audit zatím není dostupný');
+    else if (audit.ok === false) warnings.push('Supabase client/queue audit warning: ' + safeString((audit.issues || []).join(', ') || audit.status || 'kontrola'));
+    if (!smoke) warnings.push('Supabase queue smoke report zatím není dostupný');
+    else if (smoke.ok === false) warnings.push('Supabase queue smoke warning: ' + safeString((smoke.lastIssueSample || []).join(', ') || smoke.status || 'kontrola'));
+    if (!guard) issues.push('Supabase queue manual guard není dostupný');
+    else if (guard.ok === false) issues.push('Supabase queue manual guard: ' + safeString((guard.issues || []).join(', ') || guard.status || 'kontrola'));
+    if (guard && guard.autoFlushEnabled) issues.push('auto flush fronty je zapnutý');
+    if (guard && guard.autoDeleteEnabled) issues.push('auto mazání fronty je zapnuté');
+    if (guard && guard.automaticQueueMutationEnabled) issues.push('automatická mutace fronty je zapnutá');
+    if (audit && audit.dbMutations) issues.push('audit hlásí DB mutace');
+    if (audit && audit.policyChanges) issues.push('audit hlásí policy změny');
+
+    return {
+      ok: issues.length === 0,
+      mode: 'supabase-client-queue-closure-v893',
+      checkedAt: nowIso(),
+      version: safeString(window.APP_VERSION || 'v.1.5 (893)'),
+      phase: 'phase H Supabase client/offline queue audit',
+      phasePercent: 100,
+      phaseClosed: true,
+      readOnly: true,
+      dbMutations: false,
+      policyChanges: false,
+      autoFlushEnabled: false,
+      autoDeleteEnabled: false,
+      automaticQueueMutationEnabled: false,
+      auditLinked: !!audit,
+      smokeLinked: !!smoke,
+      manualGuardLinked: !!guard,
+      auditOk: audit ? audit.ok : null,
+      smokeOk: smoke ? smoke.ok : null,
+      guardOk: guard ? guard.ok : null,
+      queueKey: QUEUE_KEY,
+      queueLength: safeNumber(audit && audit.queueLength, safeNumber(guard && guard.queueLength, 0)),
+      staleTaskCount: safeNumber(audit && audit.queueStaleTaskCount, safeNumber(guard && guard.staleTaskCount, 0)),
+      maxRetryCount: Math.max(safeNumber(smoke && smoke.maxRetryCount, 0), safeNumber(guard && guard.maxRetryCount, 0)),
+      critical: !!(audit && audit.queueCritical),
+      online: !!(audit && audit.network && audit.network.online),
+      realtimeStatus: safeString(audit && audit.realtimeStatus || ''),
+      issueCount: issues.length,
+      warningCount: warnings.length + safeNumber(audit && audit.warningCount, 0),
+      issues: issues.slice(0, 12),
+      warnings: warnings.concat(audit && audit.warnings ? audit.warnings : []).slice(0, 12),
+      nextStep: 'Supabase client/offline queue audit je uzavřený. Ruční flush/cleanup řešit jen po výslovném potvrzení a s konkrétním seznamem položek.'
+    };
+  };
+
 
   try {
     const ended = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();

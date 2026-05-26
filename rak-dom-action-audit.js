@@ -1,4 +1,4 @@
-// v.1.5 (891) – DOM/action registry audit uzavřený, bez přepojení handlerů.
+// v.1.5 (893) – DOM/action registry audit uzavřený, bez přepojení handlerů.
 
 (function setupRakDomActionRegistryAudit() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -41,8 +41,8 @@
   const DOM_ACTION_SMOKE_REPORT = window.__RAK_DOM_ACTION_SMOKE_REPORT__ || (window.__RAK_DOM_ACTION_SMOKE_REPORT__ = {
     ok: null,
     status: 'not-run',
-    mode: 'dom-action-smoke-report-v891',
-    version: 'v.1.5 (891)',
+    mode: 'dom-action-smoke-report-v893',
+    version: 'v.1.5 (893)',
     checkedAt: null,
     lastStage: 'čeká na DOM/action kontrolu',
     runCount: 0,
@@ -76,8 +76,8 @@
       const ok = !!(health && health.ok);
       DOM_ACTION_SMOKE_REPORT.ok = ok;
       DOM_ACTION_SMOKE_REPORT.status = ok ? 'ok' : 'kontrola';
-      DOM_ACTION_SMOKE_REPORT.mode = 'dom-action-smoke-report-v891';
-      DOM_ACTION_SMOKE_REPORT.version = String(window.APP_VERSION || 'v.1.5 (891)');
+      DOM_ACTION_SMOKE_REPORT.mode = 'dom-action-smoke-report-v893';
+      DOM_ACTION_SMOKE_REPORT.version = String(window.APP_VERSION || 'v.1.5 (893)');
       DOM_ACTION_SMOKE_REPORT.checkedAt = new Date().toISOString();
       DOM_ACTION_SMOKE_REPORT.lastStage = String(stage || 'dom-action-health');
       DOM_ACTION_SMOKE_REPORT.runCount = Number(DOM_ACTION_SMOKE_REPORT.runCount || 0) + 1;
@@ -507,7 +507,7 @@
 
     const health = {
       ok: issues.length === 0,
-      mode: 'dom-action-registry-audit-closure-v891',
+      mode: 'dom-action-registry-audit-closure-v893',
       version: String(window.APP_VERSION || 'unknown'),
       checkedAt: new Date().toISOString(),
       issueCount: issues.length,
@@ -537,7 +537,7 @@
       actionTargetWarningCount: unique(targetWarnings).length,
       actionTargetMatrix: actionTargetMatrix.slice(0, 80),
       targetAttributeCategorySummary,
-      targetAttributeRule: 'v891 uzavírá read-only DOM/action registry audit; cílové atributy jsou jen diagnostická mapa pro bezpečný budoucí refactor handlerů.',
+      targetAttributeRule: 'v893 uzavírá read-only DOM/action registry audit; cílové atributy jsou jen diagnostická mapa pro bezpečný budoucí refactor handlerů.',
       uncategorizedActionCount: unique(uncategorizedActions).length,
       uncategorizedActions: unique(uncategorizedActions).slice(0, 16),
       unknownActions: unknownActions.slice(0, 16),
@@ -569,7 +569,7 @@
     const health = collectDomActionRegistryHealth();
     return {
       ok: !!(health && health.ok),
-      mode: 'dom-action-registry-closure-v891',
+      mode: 'dom-action-registry-closure-v893',
       version: String(window.APP_VERSION || 'unknown'),
       checkedAt: new Date().toISOString(),
       phase: 'phase E DOM/action registry audit closure',

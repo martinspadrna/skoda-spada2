@@ -1,4 +1,4 @@
-// v.1.5 (891) – export manifest přibaluje AI/statistiky/korekce a Supabase queue guard dokumentaci.
+// v.1.5 (893) – export manifest přibaluje úpravy statistik a Piškvorky AI hardening.
 const EXPORT_SOURCE_IDS = {
   "module-readiness.js": "src-module-readiness-js",
   "rak-namespace.js": "src-rak-namespace-js",
@@ -76,9 +76,12 @@ const EXPORT_SOURCE_IDS = {
   "assets/docs/storage-sync-closure-v889.md": "src-storage-sync-closure-v889-md",
   "assets/docs/supabase-client-queue-audit-v890.md": "src-supabase-client-queue-audit-v890-md",
   "assets/docs/supabase-client-queue-smoke-guard-v891.md": "src-supabase-client-queue-smoke-guard-v891-md",
+  "assets/docs/supabase-client-queue-closure-v892.md": "src-supabase-client-queue-closure-v892-md",
   "assets/docs/corrections-labels-v891.md": "src-corrections-labels-v891-md",
   "assets/docs/stats-year-occupancy-v891.md": "src-stats-year-occupancy-v891-md",
   "assets/docs/ttt-ai-hardening-v891.md": "src-ttt-ai-hardening-v891-md",
+  "assets/docs/stats-occupancy-charts-v893.md": "src-stats-occupancy-charts-v893-md",
+  "assets/docs/ttt-ai-hardening-v893.md": "src-ttt-ai-hardening-v893-md",
 "assets/app-icons/icon-16.png": "src-icon-16-png",
   "assets/app-icons/icon-32.png": "src-icon-32-png",
   "assets/app-icons/icon-180.png": "src-icon-180-png",
@@ -92,8 +95,8 @@ const BINARY_SOURCE_CACHE = window.__ROTACE_BINARY_SOURCE_CACHE__ || (window.__R
 const EXPORT_SMOKE_REPORT = window.__RAK_EXPORT_SMOKE_REPORT__ || (window.__RAK_EXPORT_SMOKE_REPORT__ = {
   ok: null,
   status: 'not-run',
-  mode: 'export-smoke-report-v891',
-  version: 'v.1.5 (891)',
+  mode: 'export-smoke-report-v893',
+  version: 'v.1.5 (893)',
   checkedAt: null,
   lastStage: 'čeká na export',
   runCount: 0,
@@ -236,15 +239,18 @@ const EXPORT_TEXT_FILES = [
       'assets/docs/storage-sync-closure-v889.md',
       'assets/docs/supabase-client-queue-audit-v890.md',
       'assets/docs/supabase-client-queue-smoke-guard-v891.md',
+      'assets/docs/supabase-client-queue-closure-v892.md',
       'assets/docs/corrections-labels-v891.md',
       'assets/docs/stats-year-occupancy-v891.md',
-      'assets/docs/ttt-ai-hardening-v891.md'
+      'assets/docs/ttt-ai-hardening-v891.md',
+      'assets/docs/stats-occupancy-charts-v893.md',
+      'assets/docs/ttt-ai-hardening-v893.md'
 ];
 
 function getRakExportManifest() {
   return {
-    version: String(window.APP_VERSION || 'v.1.5 (891)'),
-    mode: 'export-manifest-preflight-v891',
+    version: String(window.APP_VERSION || 'v.1.5 (893)'),
+    mode: 'export-manifest-preflight-v893',
     indexFile: 'index.html',
     jsFiles: Array.from(new Set(EXPORT_JS_FILES)),
     textFiles: Array.from(new Set(EXPORT_TEXT_FILES)),
@@ -265,7 +271,7 @@ function getRakExportSourceInventoryHealth() {
   const duplicateManifestPathCount = manifestPaths.length - new Set(manifestPaths).size;
   return {
     ok: duplicateSourceCount === 0 && duplicateBinaryCount === 0 && duplicateManifestPathCount === 0,
-    mode: 'export-source-inventory-v891',
+    mode: 'export-source-inventory-v893',
     version: String(window.APP_VERSION || 'unknown'),
     sourceIdCount: sourcePaths.length,
     manifestTextPathCount: manifestPaths.length,
@@ -352,8 +358,8 @@ async function readExportBinary(relativePath) {
 function updateRakExportSmokeReport(partial) {
   const data = partial && typeof partial === 'object' ? partial : {};
   Object.assign(EXPORT_SMOKE_REPORT, data, {
-    mode: 'export-smoke-report-v891',
-    version: String(window.APP_VERSION || 'v.1.5 (891)'),
+    mode: 'export-smoke-report-v893',
+    version: String(window.APP_VERSION || 'v.1.5 (893)'),
     checkedAt: new Date().toISOString()
   });
   return getRakExportSmokeReport();
@@ -364,7 +370,7 @@ function getRakExportSmokeReport() {
   return Object.assign({}, EXPORT_SMOKE_REPORT, {
     ok: EXPORT_SMOKE_REPORT.ok,
     status: String(EXPORT_SMOKE_REPORT.status || 'not-run'),
-    mode: String(EXPORT_SMOKE_REPORT.mode || 'export-smoke-report-v891'),
+    mode: String(EXPORT_SMOKE_REPORT.mode || 'export-smoke-report-v893'),
     version: String(EXPORT_SMOKE_REPORT.version || window.APP_VERSION || 'unknown'),
     lastStage: String(EXPORT_SMOKE_REPORT.lastStage || '—'),
     lastError: String(EXPORT_SMOKE_REPORT.lastError || ''),
@@ -451,7 +457,7 @@ async function validateRakExportManifestFiles(exportManifest) {
   const ok = duplicateReport.ok && missingTextFiles.length === 0 && missingBinaryFiles.length === 0;
   const report = {
     ok,
-    mode: 'export-manifest-preflight-v891',
+    mode: 'export-manifest-preflight-v893',
     version: String(window.APP_VERSION || 'unknown'),
     checkedAt: new Date().toISOString(),
     duplicateReport,

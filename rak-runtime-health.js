@@ -1,4 +1,4 @@
-// v.1.5 (891) – runtime health vrstva bere storage/sync closure jako read-only warning signál.
+// v.1.5 (893) – runtime health vrstva bere storage/sync closure jako read-only warning signál.
 
 (function setupRakRuntimeHealthHelpers() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -60,7 +60,7 @@
   function getStatsYearScopeHealth() {
     const health = {
       ok: true,
-      mode: 'current-year-excludes-future-imported-months-v891',
+      mode: 'current-year-excludes-future-imported-months-v893',
       selectedYear: null,
       currentYear: null,
       currentMonth: null,
@@ -136,7 +136,7 @@
 
     return {
       ok: issues.length === 0,
-      mode: 'runtime-health-split-storage-pwa-stats-scope-v891',
+      mode: 'runtime-health-split-storage-pwa-stats-scope-v893',
       checkedAt: nowIso(),
       version: String(window.APP_VERSION || 'unknown'),
       issueCount: issues.length,

@@ -3663,11 +3663,100 @@ function tttBestDeepSafetyMove(board, deadline) {
 }
 
 
+
+function tttBestUltraSafetyMove(board, deadline) {
+  const occupied = board.reduce((sum, cell) => sum + (cell ? 1 : 0), 0);
+  if (occupied < 5) return -1;
+  const centerRow = (TTT_ROWS - 1) / 2;
+  const centerCol = (TTT_COLS - 1) / 2;
+  const baseRisk = tttTacticalPressureScore(board, 'X');
+  let candidates = Array.from(new Set(tttCandidateMoves(board, occupied < 20 ? 3 : 2))).filter(idx => !board[idx]);
+  candidates = candidates
+    .map(idx => {
+      const row = Math.floor(idx / TTT_COLS);
+      const col = idx % TTT_COLS;
+      return {
+        idx,
+        score: tttCheapMovePotential(board, idx, 'O') * 1.05
+          + tttCheapMovePotential(board, idx, 'X') * 1.18
+          + Math.max(0, 100 - (Math.abs(row - centerRow) + Math.abs(col - centerCol)) * 5)
+      };
+    })
+    .sort((a, b) => b.score - a.score)
+    .slice(0, occupied < 16 ? 34 : (occupied < 28 ? 28 : 20))
+    .map(item => item.idx);
+
+  let bestIdx = -1;
+  let bestScore = -Infinity;
+  let bestWorstRisk = Infinity;
+  for (const idx of candidates) {
+    const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    if (deadline && now > deadline - 20 && bestIdx >= 0) break;
+    board[idx] = 'O';
+    const ownImmediate = tttWinningMoves(board, 'O').length;
+    const ownPressure = tttTacticalPressureScore(board, 'O');
+    const xImmediateAfterO = tttWinningMoves(board, 'X').length;
+    let replies = Array.from(new Set(tttCandidateMoves(board, occupied < 18 ? 3 : 2))).filter(reply => !board[reply]);
+    replies = replies
+      .map(reply => {
+        board[reply] = 'X';
+        const replyPressure = tttTacticalPressureScore(board, 'X');
+        const replyWin = tttWinner(board).winner === 'X' ? 1 : 0;
+        const replyWins = tttWinningMoves(board, 'X').length;
+        board[reply] = '';
+        return { reply, score: tttCheapMovePotential(board, reply, 'X') + replyPressure * 0.0001 + replyWin * 1000000 + replyWins * 300000 };
+      })
+      .sort((a, b) => b.score - a.score)
+      .slice(0, occupied < 18 ? 14 : 10)
+      .map(item => item.reply);
+
+    let worstRisk = xImmediateAfterO * 28000000;
+    for (const reply of replies) {
+      board[reply] = 'X';
+      const replyWinner = tttWinner(board).winner === 'X' ? 1 : 0;
+      const xWins = tttWinningMoves(board, 'X').length;
+      const xCritical = tttCriticalThreatMoves(board, 'X').length;
+      const xWindows = tttThreatWindowMoves(board, 'X').length;
+      const xOpenThrees = tttOpenThreeThreatMoves(board, 'X').length;
+      const xFork = tttBestForkMove(board, 'X') >= 0 ? 1 : 0;
+      const xPressure = tttTacticalPressureScore(board, 'X');
+      const oCounterWin = tttWinningMoves(board, 'O').length;
+      const oPressure = tttTacticalPressureScore(board, 'O');
+      board[reply] = '';
+      const risk = replyWinner * 70000000
+        + xWins * 19000000
+        + xCritical * 3600000
+        + xWindows * 1700000
+        + xOpenThrees * 980000
+        + xFork * 1350000
+        + xPressure * 0.9
+        - oCounterWin * 8500000
+        - oPressure * 0.22;
+      if (risk > worstRisk) worstRisk = risk;
+    }
+    board[idx] = '';
+    const candidateScore = ownImmediate * 16000000
+      + ownPressure * 0.96
+      + tttCheapMovePotential(board, idx, 'O') * 1.1
+      - worstRisk * 1.24;
+    if (candidateScore > bestScore || (Math.abs(candidateScore - bestScore) < 1 && worstRisk < bestWorstRisk)) {
+      bestScore = candidateScore;
+      bestIdx = idx;
+      bestWorstRisk = worstRisk;
+    }
+  }
+
+  if (bestIdx < 0) return -1;
+  if (baseRisk > 40000 || bestWorstRisk < 2200000 || occupied >= 8) return bestIdx;
+  return -1;
+}
+
 function tttHardSearchDepth(board) {
   const occupied = board.reduce((sum, cell) => sum + (cell ? 1 : 0), 0);
-  if (occupied < 10) return 4;
-  if (occupied < 24) return 4;
-  if (occupied < 34) return 3;
+  if (occupied < 8) return 5;
+  if (occupied < 18) return 5;
+  if (occupied < 30) return 4;
+  if (occupied < 42) return 3;
   return 2;
 }
 
@@ -3716,8 +3805,11 @@ function tttBestMove(board, difficulty) {
   const lookaheadSafeMove = tttBestLookaheadSafeMove(board, 'O', 'X');
   if (lookaheadSafeMove >= 0) return lookaheadSafeMove;
 
-  const deepSafetyMove = tttBestDeepSafetyMove(board, (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 210);
+  const deepSafetyMove = tttBestDeepSafetyMove(board, (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 260);
   if (deepSafetyMove >= 0) return deepSafetyMove;
+
+  const ultraSafetyMove = tttBestUltraSafetyMove(board, (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 340);
+  if (ultraSafetyMove >= 0) return ultraSafetyMove;
 
   const ownFork = tttBestForkMove(board, 'O');
   if (ownFork >= 0) return ownFork;
@@ -3729,7 +3821,7 @@ function tttBestMove(board, difficulty) {
   if (ownOpenThree >= 0) return ownOpenThree;
 
   const radius = occupied < 14 ? 3 : 2;
-  const deadline = (typeof performance !== 'undefined' ? performance.now() : Date.now()) + (difficulty === 'ai' ? 260 : 80);
+  const deadline = (typeof performance !== 'undefined' ? performance.now() : Date.now()) + (difficulty === 'ai' ? 420 : 80);
   let candidates = tttCandidateMoves(board, radius);
   if (!candidates.length) candidates = free.slice();
 
@@ -3742,7 +3834,7 @@ function tttBestMove(board, difficulty) {
         - tttTacticalPressureScore((() => { board[idx] = 'O'; const snapshot = board.slice(); board[idx] = ''; return snapshot; })(), 'X') * 0.18
     }))
     .sort((a, b) => b.score - a.score)
-    .slice(0, difficulty === 'ai' ? 22 : 12)
+    .slice(0, difficulty === 'ai' ? 28 : 12)
     .map(item => item.idx);
 
   let bestIdx = candidates[0] ?? free[0];
@@ -5100,10 +5192,10 @@ function buildSupabaseKeepaliveStatusHtml(options) {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v.1.5 851–891',
+      range: 'v.1.5 851–893',
       title: 'Release audit, namespace a export tooling',
       lines: [
-        'V891 přitvrzuje Piškvorky proti AI, přidává roční obsazenost/grafy do Statistik, přejmenovává Korekce Soustruhy/Frézky a pokračuje v Supabase queue guardu; V890 zahájilo read-only audit Supabase klientské/offline queue vrstvy bez DB změn; V889 uzavřelo storage/sync audit na 100 % bez automatického mazání; V888–886 řešily storage smoke, cleanup mapu a localStorage/offline audit, V885–881 uzavřely DOM/action registry audit.',
+        'V893 znovu přitvrdilo Piškvorky proti AI a upravilo statistiky obsazenosti: vlevo je čárový graf vývoje, vpravo barevný koláč důvodů absencí a N je Neschopenka. V892 uzavírá Supabase client/offline queue audit na 100 % bez DB změn, policies, automatického flushování nebo mazání; V891 přidalo roční obsazenost/grafy do Statistik a přejmenovalo Korekce Soustruhy/Frézky; V889 uzavřelo storage/sync audit na 100 % bez automatického mazání; V885–881 uzavřely DOM/action registry audit.',
         'V867–875 uzavírá window.RaK read-only namespace fázi: mapuje diagnostické aliasy, zachovává staré globály a nepřepojuje navigaci, render, hry ani online flow.',
         'V860–866 uzavírá architecture/boot baseline audit: module readiness, runtime health, boot sequence a auditní helpery se oddělily mimo app.js bez změny funkčnosti.',
         'V853–859 řeší reset herních výsledků, opravu času Piškvorek, PWA/assets/SW audit, čistší ZIP strukturu a release readiness dokumentaci.',
@@ -7027,6 +7119,7 @@ function bindAppMenuHandlers(body) {
         const supabaseClientQueueAudit = readRakDiag('supabaseClientQueueAudit', 'getRakSupabaseClientQueueAuditHealth');
         const supabaseQueueSmokeReport = readRakDiag('supabaseQueueSmokeReport', 'getRakSupabaseQueueSmokeReport');
         const supabaseQueueManualGuard = readRakDiag('supabaseQueueManualGuard', 'getRakSupabaseQueueManualGuard');
+        const supabaseQueueClosure = readRakDiag('supabaseQueueClosure', 'getRakSupabaseQueueClosureHealth');
         const bootSequence = readRakDiag('bootSequence', 'getRakBootSequenceHealth');
         const namespaceHealth = readRakDiag('namespace', 'getRakNamespaceHealth');
         const namespaceReadOnlyMap = readRakDiag('namespaceReadOnlyMap', 'getRakNamespaceReadOnlyMapHealth');
@@ -7096,6 +7189,7 @@ function bindAppMenuHandlers(body) {
           supabaseClientQueueAudit ? ('Supabase client/queue: ' + (supabaseClientQueueAudit.ok ? 'OK' : 'kontrola') + ' · fronta ' + String(supabaseClientQueueAudit.queueLength || 0) + '/' + String(supabaseClientQueueAudit.queueMaxItems || '—') + ' · stale ' + String(supabaseClientQueueAudit.queueStaleTaskCount || 0) + ' · realtime ' + String(supabaseClientQueueAudit.realtimeStatus || '—') + ' · fáze ' + String(supabaseClientQueueAudit.phasePercent || 0) + '%') : '',
           supabaseQueueSmokeReport ? ('Supabase queue smoke: ' + (supabaseQueueSmokeReport.ok === true ? 'OK' : (supabaseQueueSmokeReport.ok === false ? 'kontrola' : 'zatím neběžel')) + ' · stav ' + String(supabaseQueueSmokeReport.status || '—') + ' · fronta ' + String(supabaseQueueSmokeReport.queueLength || 0) + ' · stale ' + String(supabaseQueueSmokeReport.staleTaskCount || 0) + ' · guard ' + (supabaseQueueSmokeReport.manualGuardReady ? 'OK' : 'kontrola') + ' · online ' + (supabaseQueueSmokeReport.online ? 'ano' : 'ne')) : '',
           supabaseQueueManualGuard ? ('Supabase queue guard: ' + (supabaseQueueManualGuard.ok ? 'OK' : 'kontrola') + ' · auto flush ' + (supabaseQueueManualGuard.autoFlushEnabled ? 'zapnuto' : 'vypnuto') + ' · auto mazání ' + (supabaseQueueManualGuard.autoDeleteEnabled ? 'zapnuto' : 'vypnuto') + ' · fronta ' + String(supabaseQueueManualGuard.queueLength || 0)) : '',
+          supabaseQueueClosure ? ('Supabase queue closure: ' + (supabaseQueueClosure.ok ? 'OK' : 'kontrola') + ' · fáze ' + String(supabaseQueueClosure.phasePercent || 0) + '% · auto flush ' + (supabaseQueueClosure.autoFlushEnabled ? 'zapnuto' : 'vypnuto') + ' · DB změny ' + (supabaseQueueClosure.dbMutations ? 'ano' : 'ne') + ' · policies ' + (supabaseQueueClosure.policyChanges ? 'ano' : 'ne')) : '',
           exportReleaseTooling ? ('Export/release tooling: ' + (exportReleaseTooling.ok ? 'OK' : 'kontrola') + ' · source ID ' + String(exportReleaseTooling.sourceIdCount || 0) + ' · binární ' + String(exportReleaseTooling.binaryFileCount || 0) + ' · duplicit ' + String(exportReleaseTooling.duplicateBinaryCount || 0) + ' · warningy ' + String(exportReleaseTooling.warningCount || 0)) : '',
           exportSmokeReport ? ('Export smoke report: ' + (exportSmokeReport.ok === true ? 'OK' : (exportSmokeReport.ok === false ? 'kontrola' : 'zatím neběžel')) + ' · stav ' + String(exportSmokeReport.status || '—') + ' · text/bin ' + String(exportSmokeReport.checkedTextFileCount || 0) + '/' + String(exportSmokeReport.checkedBinaryFileCount || 0) + ' · chybí ' + String((exportSmokeReport.missingTextFileCount || 0) + (exportSmokeReport.missingBinaryFileCount || 0)) + ' · poslední ' + String(exportSmokeReport.lastStage || '—')) : '',
           domActionRegistry ? ('DOM/action registry: ' + (domActionRegistry.ok ? 'OK' : 'kontrola') + ' · akce ' + String(domActionRegistry.actionElementCount || 0) + ' · unikátní ' + String(domActionRegistry.uniqueActionCount || 0) + ' · kategorie ' + String(domActionRegistry.categoryCount || 0) + ' · target mapa ' + String(domActionRegistry.targetCoveragePercent || 0) + '% · target warningy ' + String(domActionRegistry.actionTargetWarningCount || 0) + ' · neznámé ' + String(domActionRegistry.unknownActionCount || 0) + ' · cíle ' + String(domActionRegistry.missingTargetCount || 0) + ' · warningy ' + String(domActionRegistry.warningCount || 0)) : '',

@@ -1,3 +1,19 @@
+## v.1.5 (893)
+- Statistiky → box `Obsazenost strojů` je očištěný od dlouhého textu; vlevo je čárový graf vývoje obsazenosti, vpravo barevný koláč důvodů absencí.
+- Absence kód `N` se nově zobrazuje jako `Neschopenka`; každý důvod absence má vlastní výkroj/barvu v koláči i legendě.
+- Piškvorky proti AI jsou znovu tvrdší přes novou dvoutahovou bezpečnostní kontrolu `tttBestUltraSafetyMove()`, hlubší search a mírně delší časový limit AI.
+- Online Piškvorky, Supabase DB/policies, dashboard, spodní lišta, kalkulačky, navigace a render stránek beze změny.
+- Přidané dokumenty `assets/docs/stats-occupancy-charts-v893.md` a `assets/docs/ttt-ai-hardening-v893.md`; historie v O aplikaci zůstává ve stručném bloku `v.1.5 851–893`.
+- Verze sjednocena na v.1.5 (893), cache na `v1.5-893`, realtime kanál na `rak-public-live-v893`, package na `1.5.893`.
+
+## v.1.5 (892)
+- Supabase client/offline queue audit uzavřený na 100 % přes nový read-only helper `getRakSupabaseQueueClosureHealth()`.
+- Closure sjednocuje queue audit, smoke report a ruční guard a výslovně hlídá, že nejsou zapnuté DB změny, Supabase policy změny, automatický flush ani automatické mazání fronty.
+- Release readiness, architecture baseline, namespace aliasy a Diagnostika / O aplikaci nově vidí `Supabase queue closure`.
+- Přidaný dokument `assets/docs/supabase-client-queue-closure-v892.md`; historie v O aplikaci zůstává ve stručném bloku `v.1.5 851–892`.
+- Verze sjednocena na v.1.5 (892), cache na `v1.5-892`, realtime kanál na `rak-public-live-v892`, package na `1.5.892`.
+- Hry, online flow, Supabase DB/policies, dashboard, spodní lišta, kalkulačky, navigace a render stránek beze změny.
+
 ## v.1.5 (891)
 - Piškvorky proti AI znovu přitvrzené: přidaný hlubší bezpečnostní tah proti forkům/dvojitým hrozbám, vyšší search depth ve střední fázi a mírně delší časový limit AI; online Piškvorky beze změny.
 - Korekce → přehled: názvy zkrácené na „Soustruhy“ a „Frézky“ bez štítků „ve vývoji“ / „nutno doladit“.

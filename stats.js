@@ -61,7 +61,7 @@ if (typeof window.absenceLabelFromCode !== 'function') {
     const raw = String(code || '').trim();
     if (!raw) return '';
     const key = raw.toUpperCase();
-    const labels = { D: 'Dovolená', NV: 'Náhradní volno', Š: 'Školení', '§': 'Paragraf', S: 'Senior', L: 'Lázně' };
+    const labels = { D: 'Dovolená', N: 'Neschopenka', NV: 'Náhradní volno', Š: 'Školení', '§': 'Paragraf', S: 'Senior', L: 'Lázně' };
     if (labels[key]) return labels[key];
     if (/^\d+(?:[.,]\d+)?$/.test(raw)) return '';
     return raw;
@@ -707,51 +707,83 @@ function createStatsYearOverviewNodes(stats, year) {
   header.appendChild(title);
   header.appendChild(percent);
 
-  const meta = createStatsTextNode('div', 'smallText statsYearOverviewMeta', 'Započtené měsíce: ' + ((stats.includedMonthKeys || []).join(', ') || '—') + ' · obsazeno ' + formatCount(stats.occupancy && stats.occupancy.occupiedSlots || 0) + ' z ' + formatCount(stats.occupancy && stats.occupancy.totalSlots || 0) + ' slotů');
-
   const grid = document.createElement('div');
   grid.className = 'statsYearOverviewGrid';
 
   const trend = document.createElement('div');
-  trend.className = 'statsYearChartBox';
+  trend.className = 'statsYearChartBox statsYearLineBox';
   trend.appendChild(createStatsTextNode('div', 'smallText statsYearChartTitle', 'Vývoj obsazenosti během roku'));
-  const bars = document.createElement('div');
-  bars.className = 'statsOccupancyBars';
+  const chart = document.createElement('div');
+  chart.className = 'statsOccupancyLineChart';
   const months = Array.isArray(stats.monthlyOccupancy) ? stats.monthlyOccupancy : [];
-  months.forEach(item => {
-    const bar = document.createElement('div');
-    bar.className = 'statsOccupancyBar';
-    const fill = document.createElement('span');
-    const pct = Math.max(2, Math.min(100, Number(item.percent || 0) || 0));
-    fill.style.height = pct + '%';
-    bar.title = String(item.monthKey || '') + ' · ' + formatStatsPercent(item.percent || 0);
-    const label = document.createElement('em');
-    const parsed = typeof parseMonthKey === 'function' ? parseMonthKey(item.monthKey) : null;
-    label.textContent = parsed ? String(parsed.month) : String(item.monthKey || '').slice(5);
-    bar.appendChild(fill);
-    bar.appendChild(label);
-    bars.appendChild(bar);
-  });
-  if (!months.length) bars.appendChild(createStatsTextNode('div', 'smallText', 'Zatím nejsou data pro graf.'));
-  trend.appendChild(bars);
+  if (months.length) {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 240 112');
+    svg.setAttribute('role', 'img');
+    svg.setAttribute('aria-label', 'Vývoj obsazenosti strojů během roku');
+    const gridLine = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    gridLine.setAttribute('class', 'statsOccupancyLineGrid');
+    gridLine.setAttribute('d', 'M8 18H232 M8 52H232 M8 86H232');
+    svg.appendChild(gridLine);
+    const count = Math.max(1, months.length - 1);
+    const points = months.map((item, index) => {
+      const x = 14 + (index / count) * 212;
+      const pct = Math.max(0, Math.min(100, Number(item.percent || 0) || 0));
+      const y = 96 - (pct / 100) * 80;
+      return { x, y, item, pct };
+    });
+    const area = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    area.setAttribute('class', 'statsOccupancyLineArea');
+    area.setAttribute('d', 'M' + points.map(p => p.x.toFixed(1) + ' ' + p.y.toFixed(1)).join(' L') + ' L' + points[points.length - 1].x.toFixed(1) + ' 100 L' + points[0].x.toFixed(1) + ' 100 Z');
+    svg.appendChild(area);
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+    line.setAttribute('class', 'statsOccupancyLine');
+    line.setAttribute('points', points.map(p => p.x.toFixed(1) + ',' + p.y.toFixed(1)).join(' '));
+    svg.appendChild(line);
+    points.forEach(point => {
+      const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      dot.setAttribute('class', 'statsOccupancyLineDot');
+      dot.setAttribute('cx', point.x.toFixed(1));
+      dot.setAttribute('cy', point.y.toFixed(1));
+      dot.setAttribute('r', '3.2');
+      const label = String(point.item && point.item.monthKey ? point.item.monthKey : '') + ' · ' + formatStatsPercent(point.pct);
+      const titleNode = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+      titleNode.textContent = label;
+      dot.appendChild(titleNode);
+      svg.appendChild(dot);
+    });
+    chart.appendChild(svg);
+    const labels = document.createElement('div');
+    labels.className = 'statsOccupancyLineLabels';
+    months.forEach(item => {
+      const label = document.createElement('span');
+      const parsed = typeof parseMonthKey === 'function' ? parseMonthKey(item.monthKey) : null;
+      label.textContent = parsed ? String(parsed.month) : String(item.monthKey || '').slice(5);
+      labels.appendChild(label);
+    });
+    chart.appendChild(labels);
+  } else {
+    chart.appendChild(createStatsTextNode('div', 'smallText', 'Zatím nejsou data pro graf.'));
+  }
+  trend.appendChild(chart);
 
   const pieBox = document.createElement('div');
   pieBox.className = 'statsYearChartBox';
   pieBox.appendChild(createStatsTextNode('div', 'smallText statsYearChartTitle', 'Důvody absencí v započteném roce'));
-  const reasons = Array.isArray(stats.absenceReasonList) ? stats.absenceReasonList.slice(0, 6) : [];
+  const reasons = Array.isArray(stats.absenceReasonList) ? stats.absenceReasonList.slice(0, 8) : [];
   const totalAbs = reasons.reduce((sum, item) => sum + (Number(item.value) || 0), 0);
+  const pieColors = ['#5eead4', '#60a5fa', '#a78bfa', '#f472b6', '#fb7185', '#fbbf24', '#86efac', '#f97316'];
   const pieWrap = document.createElement('div');
   pieWrap.className = 'statsAbsencePieWrap';
   const pie = document.createElement('div');
   pie.className = 'statsAbsencePie';
   if (totalAbs > 0) {
-    const colors = ['var(--accent)', 'var(--accent2)', 'rgba(255,255,255,.74)', 'rgba(124,255,178,.58)', 'rgba(255,214,102,.64)', 'rgba(255,122,122,.58)'];
     let current = 0;
     const segments = reasons.map((item, index) => {
       const start = current;
       const deg = ((Number(item.value) || 0) / totalAbs) * 360;
       current += deg;
-      return colors[index % colors.length] + ' ' + start.toFixed(2) + 'deg ' + current.toFixed(2) + 'deg';
+      return pieColors[index % pieColors.length] + ' ' + start.toFixed(2) + 'deg ' + current.toFixed(2) + 'deg';
     });
     pie.style.background = 'conic-gradient(' + segments.join(', ') + ')';
     pie.textContent = formatCount(totalAbs);
@@ -762,11 +794,15 @@ function createStatsYearOverviewNodes(stats, year) {
   const legend = document.createElement('div');
   legend.className = 'statsAbsenceLegend';
   if (reasons.length) {
-    reasons.forEach(item => {
+    reasons.forEach((item, index) => {
       const row = document.createElement('div');
       row.className = 'statsAbsenceLegendRow';
+      const swatch = document.createElement('i');
+      swatch.className = 'statsAbsenceLegendSwatch';
+      swatch.style.background = pieColors[index % pieColors.length];
       const name = createStatsTextNode('span', '', item.reason);
       const value = createStatsTextNode('strong', '', formatCount(item.value));
+      row.appendChild(swatch);
       row.appendChild(name);
       row.appendChild(value);
       legend.appendChild(row);
@@ -781,7 +817,6 @@ function createStatsYearOverviewNodes(stats, year) {
   grid.appendChild(trend);
   grid.appendChild(pieBox);
   wrap.appendChild(header);
-  wrap.appendChild(meta);
   wrap.appendChild(grid);
 
   const scopeNoteText = getStatsFutureMonthScopeNote(year, stats);

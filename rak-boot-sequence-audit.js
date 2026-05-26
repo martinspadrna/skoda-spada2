@@ -1,4 +1,4 @@
-// v.1.5 (891) – boot sequence audit včetně Supabase client/queue audit helperu.
+// v.1.5 (893) – boot sequence audit včetně Supabase client/queue audit helperu.
 
 (function setupRakBootSequenceAudit() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -86,7 +86,7 @@
 
     return {
       ok: issues.length === 0,
-      mode: 'boot-sequence-audit-v891',
+      mode: 'boot-sequence-audit-v893',
       checkedAt: new Date().toISOString(),
       version: String(window.APP_VERSION || 'unknown'),
       issueCount: issues.length,
