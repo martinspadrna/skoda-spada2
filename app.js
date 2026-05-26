@@ -1,4 +1,4 @@
-// v.1.5 (875) – namespace fáze uzavřená na 100 %, Piškvorky AI potvrzené OK; funkční logika beze změny.
+// v.1.5 (885) – DOM/action registry audit uzavřený bez změny funkčnosti aplikace.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app.js', 'loaded', { source: 'index' }); } catch (err) {}
 
 
@@ -1452,7 +1452,9 @@ function getPostStabilizationSafeHelperHealth() {
     'setupRakGameEngineLifecycleBindings',
     'getRakModuleReadinessHealth',
     'getRakRuntimeGuardHealth',
-    'getRakStatsYearScopeHealth'
+    'getRakStatsYearScopeHealth',
+    'getRakDomActionRegistryHealth',
+    'getRakDomActionSmokeReport'
   ];
   const missing = [];
 
@@ -1755,7 +1757,9 @@ function getGameEngineBaselineHealth() {
     'setupRakGameEngineLifecycleBindings',
     'getRakModuleReadinessHealth',
     'getRakRuntimeGuardHealth',
-    'getRakStatsYearScopeHealth'
+    'getRakStatsYearScopeHealth',
+    'getRakDomActionRegistryHealth',
+    'getRakDomActionSmokeReport'
   ];
   requiredHelpers.forEach((name) => {
     if (typeof window[name] !== 'function') issues.push('helper ' + name);
@@ -2052,7 +2056,9 @@ function runPhaseTenFinalStabilizationAudit() {
       'setupRakGameEngineLifecycleBindings',
     'getRakModuleReadinessHealth',
     'getRakRuntimeGuardHealth',
-    'getRakStatsYearScopeHealth'
+    'getRakStatsYearScopeHealth',
+    'getRakDomActionRegistryHealth',
+      'getRakDomActionSmokeReport'
     ];
     requiredFns.forEach((name) => {
       if (typeof window[name] !== 'function') missing.push('fn ' + name);
@@ -2336,7 +2342,7 @@ function runPhaseTenFinalStabilizationAudit() {
 
   try {
     if (window.__rakModuleReadinessRegistry) {
-      window.__rakModuleReadinessRegistry.expected = ['module-readiness.js', 'rak-namespace.js', 'rak-audit-baseline.js', 'rak-runtime-health.js', 'rak-boot-sequence-audit.js', 'app.js', 'data.js'].concat(files.slice());
+      window.__rakModuleReadinessRegistry.expected = ['module-readiness.js', 'rak-namespace.js', 'rak-audit-baseline.js', 'rak-runtime-health.js', 'rak-boot-sequence-audit.js', 'rak-export-release-audit.js', 'rak-dom-action-audit.js', 'app.js', 'data.js'].concat(files.slice());
       if (typeof initialRotationData !== 'undefined' && typeof window.rakMarkModuleReady === 'function') {
         window.rakMarkModuleReady('data.js', 'loaded', { source: 'index-preload' });
       }
@@ -2515,7 +2521,7 @@ function installPwaAndConnectivityHooks() {
     swAppShellCachedRatio: 0,
     swNetworkFallbackTimeoutMs: 0,
     swNavigationPreloadTimeoutMs: 0,
-    pwaAssetAuditMode: 'zip-source-inventory-assets-pwa-sql-release-readiness-architecture-module-readiness-runtime-health-namespace-phase-closed-v875',
+    pwaAssetAuditMode: 'zip-source-inventory-assets-pwa-sql-release-readiness-architecture-module-readiness-runtime-health-namespace-closed-export-manifest-preflight-dom-action-v885',
     pwaAssetExpectedIconCount: 6,
     pwaAssetManifestOk: false,
     pwaAssetFaviconOk: false,
@@ -2561,7 +2567,7 @@ function installPwaAndConnectivityHooks() {
     const appleTouchOk = linkHrefs.some(href => href.indexOf('assets/app-icons/icon-180.png') >= 0);
     const legacyRootIconRefs = linkHrefs.filter(href => /(^|\/)icon-(16|32|180|192|512|1024)\.png(?:$|[?#])/.test(href) && href.indexOf('assets/app-icons/') < 0);
     return {
-      pwaAssetAuditMode: 'zip-source-inventory-assets-pwa-sql-release-readiness-architecture-module-readiness-runtime-health-namespace-phase-closed-v875',
+      pwaAssetAuditMode: 'zip-source-inventory-assets-pwa-sql-release-readiness-architecture-module-readiness-runtime-health-namespace-closed-export-manifest-preflight-dom-action-v885',
       pwaAssetExpectedIconCount: expectedIcons.length,
       pwaAssetManifestOk: manifestOk,
       pwaAssetFaviconOk: faviconOk,

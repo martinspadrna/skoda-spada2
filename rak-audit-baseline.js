@@ -1,4 +1,4 @@
-// v.1.5 (875) – release/architecture audit helpery, namespace fáze uzavřená na 100 %.
+// v.1.5 (885) – release readiness bere i DOM/action smoke report a uzavírá DOM/action audit.
 
 (function setupRakAuditBaselineHelpers() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -43,11 +43,27 @@ function getRakReleaseReadinessHealth() {
   let externalScripts = [];
   let externalLinks = [];
   let externalDependencyStatus = {};
+  let exportSmokeReport = null;
+  let domActionSmokeReport = null;
 
   try {
     externalDependencyStatus = Object.assign({}, window.__RAK_EXTERNAL_DEP_STATUS__ || {});
   } catch (err) {
     externalDependencyStatus = {};
+  }
+
+  try {
+    if (typeof window.getRakExportSmokeReport === 'function') {
+      exportSmokeReport = window.getRakExportSmokeReport();
+    }
+  } catch (err) {
+    exportSmokeReport = { ok: false, status: 'read-error', lastError: String(err && err.message ? err.message : err) };
+  }
+
+  try {
+    domActionSmokeReport = readRakDiagnosticForAudit('domActionSmokeReport', 'getRakDomActionSmokeReport');
+  } catch (err) {
+    domActionSmokeReport = { ok: false, status: 'read-error', lastError: String(err && err.message ? err.message : err) };
   }
 
   try {
@@ -80,10 +96,16 @@ function getRakReleaseReadinessHealth() {
   if (typeof window.XLSX === 'undefined') warnings.push('XLSX CDN unavailable: Excel import/export může být omezený');
   if (typeof window.JSZip === 'undefined') warnings.push('JSZip CDN unavailable: ZIP export nebude dostupný');
   if (typeof window.supabase === 'undefined') warnings.push('Supabase CDN unavailable: online sync poběží jen offline/fallback režimem');
+  if (exportSmokeReport && exportSmokeReport.ok === false) {
+    warnings.push('export smoke report failed: ' + String(exportSmokeReport.lastError || exportSmokeReport.status || 'kontrola'));
+  }
+  if (domActionSmokeReport && domActionSmokeReport.ok === false) {
+    warnings.push('DOM/action smoke report failed: ' + String(domActionSmokeReport.lastError || domActionSmokeReport.status || 'kontrola'));
+  }
 
   return {
     ok: issues.length === 0,
-    mode: 'audit-baseline-split-release-readiness-v875',
+    mode: 'audit-baseline-split-release-readiness-v885',
     checkedAt,
     version: currentVersion || 'unknown',
     issueCount: issues.length,
@@ -95,6 +117,18 @@ function getRakReleaseReadinessHealth() {
     externalDependencyStatus,
     externalDependencyStatusCount: Object.keys(externalDependencyStatus || {}).length,
     externalDependencyFailedCount: Object.keys(externalDependencyStatus || {}).filter((key) => String(externalDependencyStatus[key] && externalDependencyStatus[key].status || '') === 'failed').length,
+    exportSmokeReportLinked: !!exportSmokeReport,
+    exportSmokeReportOk: exportSmokeReport ? exportSmokeReport.ok : null,
+    exportSmokeReportStatus: exportSmokeReport ? String(exportSmokeReport.status || '—') : '—',
+    exportSmokeReportLastStage: exportSmokeReport ? String(exportSmokeReport.lastStage || '—') : '—',
+    exportSmokeReportFailureCount: exportSmokeReport ? Number(exportSmokeReport.failureCount || 0) : 0,
+    exportSmokeReportMissingFileCount: exportSmokeReport ? Number((exportSmokeReport.missingTextFileCount || 0) + (exportSmokeReport.missingBinaryFileCount || 0)) : 0,
+    domActionSmokeReportLinked: !!domActionSmokeReport,
+    domActionSmokeReportOk: domActionSmokeReport ? domActionSmokeReport.ok : null,
+    domActionSmokeReportStatus: domActionSmokeReport ? String(domActionSmokeReport.status || '—') : '—',
+    domActionSmokeReportRunCount: domActionSmokeReport ? Number(domActionSmokeReport.runCount || 0) : 0,
+    domActionSmokeReportIssueCount: domActionSmokeReport ? Number(domActionSmokeReport.issueCount || 0) : 0,
+    domActionSmokeReportWarningCount: domActionSmokeReport ? Number(domActionSmokeReport.warningCount || 0) : 0,
     externalLinkCount: externalLinks.length,
     externalLinks: externalLinks.slice(0, 8),
     requiredChecks: [
@@ -108,7 +142,9 @@ function getRakReleaseReadinessHealth() {
       'CSS brace kontrola',
       'browser/mobil smoke po nasazení',
       'rollback bod a release baseline dokumentace',
-      'architecture/boot baseline dokumentace a refactor backlog'
+      'architecture/boot baseline dokumentace a refactor backlog',
+      'export smoke report napojený na release readiness',
+      'DOM/action registry smoke report napojený na release readiness bez přepojení navigace/renderu/her'
     ]
   };
 }
@@ -126,6 +162,9 @@ function getRakArchitectureBaselineHealth() {
   let moduleReadiness = null;
   let bootSequence = null;
   let namespaceHealth = null;
+  let exportReleaseTooling = null;
+  let domActionRegistry = null;
+  let domActionSmokeReport = null;
 
   try {
     scripts = Array.from(document.scripts || [])
@@ -172,6 +211,24 @@ function getRakArchitectureBaselineHealth() {
     namespaceHealth = null;
   }
 
+  try {
+    exportReleaseTooling = readRakDiagnosticForAudit('exportReleaseTooling', 'getRakExportReleaseToolingHealth');
+  } catch (err) {
+    exportReleaseTooling = null;
+  }
+
+  try {
+    domActionRegistry = readRakDiagnosticForAudit('domActionRegistry', 'getRakDomActionRegistryHealth');
+  } catch (err) {
+    domActionRegistry = null;
+  }
+
+  try {
+    domActionSmokeReport = readRakDiagnosticForAudit('domActionSmokeReport', 'getRakDomActionSmokeReport');
+  } catch (err) {
+    domActionSmokeReport = null;
+  }
+
   const requiredGlobals = [
     'app',
     'openPage',
@@ -182,6 +239,9 @@ function getRakArchitectureBaselineHealth() {
     'getRakNamespaceHealth',
     'getRakRuntimeGuardHealth',
     'getRakBootSequenceHealth',
+    'getRakExportReleaseToolingHealth',
+    'getRakDomActionRegistryHealth',
+    'getRakDomActionSmokeReport',
     'getPwaHardeningStatus',
     'getSupabaseHardeningStatus'
   ];
@@ -194,6 +254,8 @@ function getRakArchitectureBaselineHealth() {
   if (!scripts.some((src) => /rak-audit-baseline\.js$/.test(src))) issues.push('rak-audit-baseline.js script missing');
   if (!scripts.some((src) => /rak-runtime-health\.js$/.test(src))) issues.push('rak-runtime-health.js script missing');
   if (!scripts.some((src) => /rak-boot-sequence-audit\.js$/.test(src))) issues.push('rak-boot-sequence-audit.js script missing');
+  if (!scripts.some((src) => /rak-export-release-audit\.js$/.test(src))) issues.push('rak-export-release-audit.js script missing');
+  if (!scripts.some((src) => /rak-dom-action-audit\.js$/.test(src))) issues.push('rak-dom-action-audit.js script missing');
   if (!scripts.some((src) => /app\.js$/.test(src))) issues.push('app.js script missing');
   if (!scripts.some((src) => /app-init\.js$/.test(src))) issues.push('app-init.js script missing');
   if (!stylesheets.some((href) => /styles\.css$/.test(href))) issues.push('main stylesheet missing');
@@ -205,10 +267,16 @@ function getRakArchitectureBaselineHealth() {
   else if (!bootSequence.ok) issues.push('boot sequence audit: ' + String(bootSequence.issueCount || 0) + ' issues');
   if (!namespaceHealth) warnings.push('RaK namespace health unavailable');
   else if (!namespaceHealth.ok) issues.push('RaK namespace bridge: ' + String(namespaceHealth.issueCount || 0) + ' issues');
+  if (!exportReleaseTooling) warnings.push('export/release tooling health unavailable');
+  else if (!exportReleaseTooling.ok) issues.push('export/release tooling: ' + String(exportReleaseTooling.issueCount || 0) + ' issues');
+  if (!domActionRegistry) warnings.push('DOM/action registry health unavailable');
+  else if (!domActionRegistry.ok) issues.push('DOM/action registry: ' + String(domActionRegistry.issueCount || 0) + ' issues');
+  if (!domActionSmokeReport) warnings.push('DOM/action smoke report unavailable');
+  else if (domActionSmokeReport.ok === false) warnings.push('DOM/action smoke report: ' + String(domActionSmokeReport.status || 'kontrola'));
 
   return {
     ok: issues.length === 0,
-    mode: 'audit-baseline-split-architecture-boot-audit-v875',
+    mode: 'audit-baseline-split-architecture-boot-audit-v885',
     checkedAt,
     version: version || 'unknown',
     issueCount: issues.length,
@@ -245,10 +313,22 @@ function getRakArchitectureBaselineHealth() {
     namespaceMapCount: namespaceHealth ? Number(namespaceHealth.namespaceMapCount || 0) : 0,
     namespaceRefactorProgressPercent: namespaceHealth ? Number(namespaceHealth.refactorProgressPercent || 0) : 0,
     namespacePassiveBridgeOnly: !!(namespaceHealth && namespaceHealth.passiveBridgeOnly),
+    exportReleaseToolingOk: !!(exportReleaseTooling && exportReleaseTooling.ok),
+    exportReleaseToolingIssueCount: exportReleaseTooling ? Number(exportReleaseTooling.issueCount || 0) : 0,
+    exportReleaseToolingWarningCount: exportReleaseTooling ? Number(exportReleaseTooling.warningCount || 0) : 0,
+    exportSourceIdCount: exportReleaseTooling ? Number(exportReleaseTooling.sourceIdCount || 0) : 0,
+    exportBinaryFileCount: exportReleaseTooling ? Number(exportReleaseTooling.binaryFileCount || 0) : 0,
+    domActionRegistryOk: !!(domActionRegistry && domActionRegistry.ok),
+    domActionRegistryIssueCount: domActionRegistry ? Number(domActionRegistry.issueCount || 0) : 0,
+    domActionRegistryWarningCount: domActionRegistry ? Number(domActionRegistry.warningCount || 0) : 0,
+    domActionRegistryActionCount: domActionRegistry ? Number(domActionRegistry.actionElementCount || 0) : 0,
+    domActionRegistryUnknownCount: domActionRegistry ? Number(domActionRegistry.unknownActionCount || 0) : 0,
+    domActionSmokeReportStatus: domActionSmokeReport ? String(domActionSmokeReport.status || '—') : '—',
+    domActionSmokeReportRunCount: domActionSmokeReport ? Number(domActionSmokeReport.runCount || 0) : 0,
     architectureBootAuditPercent: 100,
     namespaceDiagnosticsReadOnly: !!(window.RaK && window.RaK.diagnostics && typeof window.RaK.diagnostics.read === 'function'),
     architectureBootAuditClosed: true,
-    nextRecommendedPhase: 'phase C uzavřena: window.RaK read-only diagnostika má fallbacky; další směr phase D export/release tooling',
+    nextRecommendedPhase: 'phase E DOM/action registry audit uzavřený; další směr je pouze read-only sledování a případný budoucí handler refactor po samostatném rozhodnutí',
     runtimeLayers: [
       'index.html boot shell + CDN dependency notes',
       'core/app state + routing',
@@ -262,8 +342,8 @@ function getRakArchitectureBaselineHealth() {
       'phase A: boot order guard + explicit module readiness map – hotovo a uzavřeno',
       'phase B: split app.js runtime audits from page/business logic – module readiness, release/architecture, runtime health a boot sequence uzavřené',
       'phase C: window.RaK namespace read-only mapa a fallbacky – hotovo a uzavřeno ve v875; navigace/render/hry zůstávají mimo přepojení',
-      'phase D: isolate export/release tooling from runtime app code',
-      'phase E: add DOM smoke tests for locked sections before every build'
+      'phase D: isolate export/release tooling from runtime app code – uzavřeno ve v880 přes manifest, preflight, smoke report a release readiness linkage',
+      'phase E: DOM/action registry audit a DOM smoke testy pro zamčené sekce – uzavřeno ve v885 přes release readiness linkage bez změny funkčnosti'
     ]
   };
 }

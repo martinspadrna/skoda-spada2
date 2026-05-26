@@ -1,4 +1,4 @@
-// v.1.5 (875) – module readiness registry oddělený z app.js bez změny funkčnosti.
+// v.1.5 (885) – module readiness registry včetně DOM/action audit helperu.
 
 (function setupRakModuleReadinessRegistry() {
   if (window.__rakModuleReadinessRegistry && typeof window.rakMarkModuleReady === 'function') {
@@ -14,7 +14,7 @@
   };
   const registry = window.__rakModuleReadinessRegistry = {
     version: window.APP_VERSION || 'pre-core',
-    mode: 'module-readiness-registry-v875',
+    mode: 'module-readiness-registry-v885',
     startedAt: nowIso(),
     startedMs: nowMs(),
     expected: [],
@@ -64,7 +64,7 @@
     const bootDurationMs = Math.max(0, nowMs() - Number(registry.startedMs || nowMs()));
     return {
       ok: missing.length === 0 && errored.length === 0,
-      mode: registry.mode || 'module-readiness-registry-v875',
+      mode: registry.mode || 'module-readiness-registry-v885',
       version: window.APP_VERSION || registry.version || 'unknown',
       checkedAt: nowIso(),
       expectedCount: expected.length,

@@ -1,4 +1,4 @@
-// v.1.5 (875) – samostatná runtime health vrstva pro storage/PWA/statistiky bez změny funkčnosti aplikace.
+// v.1.5 (885) – runtime health vrstva ponechaná beze změny funkčnosti.
 
 (function setupRakRuntimeHealthHelpers() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -60,7 +60,7 @@
   function getStatsYearScopeHealth() {
     const health = {
       ok: true,
-      mode: 'current-year-excludes-future-imported-months-v875',
+      mode: 'current-year-excludes-future-imported-months-v885',
       selectedYear: null,
       currentYear: null,
       currentMonth: null,
@@ -130,7 +130,7 @@
 
     return {
       ok: issues.length === 0,
-      mode: 'runtime-health-split-storage-pwa-stats-scope-v875',
+      mode: 'runtime-health-split-storage-pwa-stats-scope-v885',
       checkedAt: nowIso(),
       version: String(window.APP_VERSION || 'unknown'),
       issueCount: issues.length,

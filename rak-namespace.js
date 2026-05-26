@@ -1,4 +1,4 @@
-// v.1.5 (875) – window.RaK namespace read-only fáze uzavřená na 100 %, legacy globály zůstávají zdroj pravdy.
+// v.1.5 (885) – window.RaK namespace doplněný o DOM/action registry read-only alias.
 
 (function setupRakNamespaceBridge() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -11,8 +11,8 @@
 
   const root = window.RaK || {};
   const existingVersion = root.namespaceVersion || '';
-  root.namespaceVersion = 'v.1.5 (875)';
-  root.mode = 'passive-namespace-readonly-phase-closed-v875';
+  root.namespaceVersion = 'v.1.5 (885)';
+  root.mode = 'passive-namespace-readonly-phase-closed-dom-action-v885';
   root.createdAt = root.createdAt || new Date().toISOString();
   root.updatedAt = new Date().toISOString();
   root.compatibility = 'legacy-globals-preserved';
@@ -40,6 +40,11 @@
     { group: 'diagnostics', alias: 'supabaseStructure', globalName: 'getSupabaseStructureHealth', type: 'function', phase: 'safe-now', risk: 'medium', note: 'Read-only klientský audit Supabase struktury bez DB změn.' },
     { group: 'diagnostics', alias: 'supabasePolicyRisk', globalName: 'getSupabasePolicyRiskHealth', type: 'function', phase: 'safe-now', risk: 'medium', note: 'Read-only klientský audit Supabase policy rizik bez DB změn.' },
     { group: 'diagnostics', alias: 'supabasePerformance', globalName: 'getSupabasePerformanceHealth', type: 'function', phase: 'safe-now', risk: 'medium', note: 'Read-only klientský audit Supabase výkonu bez síťové mutace.' },
+    { group: 'diagnostics', alias: 'exportReleaseTooling', globalName: 'getRakExportReleaseToolingHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only audit export/release tooling vrstvy bez spuštění exportu.' },
+    { group: 'diagnostics', alias: 'exportSmokeReport', globalName: 'getRakExportSmokeReport', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only poslední smoke/preflight stav exportu ZIPu.' },
+    { group: 'diagnostics', alias: 'domActionRegistry', globalName: 'getRakDomActionRegistryHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only mapa data-action prvků a allowlistů bez přepojení navigace/renderu/her.' },
+    { group: 'diagnostics', alias: 'domActionSmokeReport', globalName: 'getRakDomActionSmokeReport', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only poslední DOM/action smoke stav bez přepojení handlerů.' },
+    { group: 'diagnostics', alias: 'domActionClosure', globalName: 'getRakDomActionRegistryClosureHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only closure stav DOM/action registry fáze bez přepojení handlerů.' },
     { group: 'runtime', alias: 'appVersion', globalName: 'APP_VERSION', type: 'value', phase: 'safe-now', risk: 'low', note: 'Read-only verze aplikace pro nové auditní čtení.' },
     { group: 'runtime', alias: 'rotationBuild', globalName: 'ROTATION_BUILD', type: 'value', phase: 'safe-now', risk: 'low', note: 'Read-only build tag bez zápisu do stavu.' },
     { group: 'runtime', alias: 'externalDependencies', globalName: '__RAK_EXTERNAL_DEP_STATUS__', type: 'value', phase: 'safe-now', risk: 'low', note: 'Read-only stav externích CDN knihoven.' },
@@ -89,14 +94,14 @@
   };
   root.getNamespaceMap = cloneMap;
   root.namespaceMap = cloneMap();
-  root.namespaceMapVersion = 'v.1.5 (875)';
+  root.namespaceMapVersion = 'v.1.5 (885)';
   root.namespacePlan = {
     phase: 'phase C',
-    mode: 'namespace-readonly-phase-closed-with-legacy-fallback-v875',
+    mode: 'namespace-readonly-phase-closed-with-export-smoke-alias-v885',
     progressPercent: 100,
     mapClosed: true,
     rule: 'Staré globály zůstávají zdroj pravdy; read-only aliasy mají fallback na legacy globály a nesmí mutovat stav.',
-    nextStep: 'Namespace read-only fáze je uzavřená; další směr je phase D: izolovat export/release tooling bez přepojení navigace, renderu nebo her.'
+    nextStep: 'Namespace read-only fáze je uzavřená; phase D export/release tooling je uzavřená; další směr je phase E: DOM/action registry audit bez přepojení funkční logiky.'
   };
 
   ensureGroup('modules');
@@ -170,7 +175,7 @@
     const safeList = list.filter((item) => item.phase === 'safe-now');
     return {
       ok: true,
-      mode: 'diagnostics-readonly-phase-closed-summary-v875',
+      mode: 'diagnostics-readonly-phase-closed-summary-v885',
       aliasCount: list.length,
       safeNowCount: safeList.length,
       laterCount: list.filter((item) => item.phase === 'later').length,
@@ -202,7 +207,7 @@
     if (unresolvedSafe.length) warnings.push('safe-now legacy globals čekají na pozdější moduly: ' + unresolvedSafe.slice(0, 6).join(', '));
     return {
       ok: missingReaders.length === 0 && mutatingRisk.length === 0,
-      mode: 'namespace-readonly-phase-closed-v875',
+      mode: 'namespace-readonly-phase-closed-v885',
       mapClosed: true,
       namespacePhaseClosed: true,
       phasePercent: 100,
@@ -302,7 +307,7 @@
 
     return {
       ok: issues.length === 0,
-      mode: 'passive-namespace-readonly-phase-closed-v875',
+      mode: 'passive-namespace-readonly-phase-closed-export-release-v885',
       checkedAt,
       version: String(window.APP_VERSION || 'unknown'),
       namespaceVersion,
@@ -353,7 +358,7 @@
     const health = (typeof window.getRakNamespaceHealth === 'function') ? window.getRakNamespaceHealth() : null;
     return {
       ok: !!(mapHealth && mapHealth.ok && health && health.ok),
-      mode: 'namespace-readonly-phase-closure-v875',
+      mode: 'namespace-readonly-phase-closure-v885',
       phasePercent: 100,
       namespacePhaseClosed: true,
       legacyGlobalsPreserved: !!(health && health.legacyGlobalsPreserved),
@@ -361,7 +366,7 @@
       mapClosureOk: !!(mapHealth && mapHealth.ok),
       issueCount: health ? Number(health.issueCount || 0) : 1,
       warningCount: (health ? Number(health.warningCount || 0) : 0) + (mapHealth && Array.isArray(mapHealth.warnings) ? mapHealth.warnings.length : 0),
-      nextSafePhase: 'phase D: export/release tooling izolace bez zásahu do navigace, renderu, her a online flow'
+      nextSafePhase: 'phase D: export/release tooling smoke report bez zásahu do navigace, renderu, her a online flow'
     };
   };
 

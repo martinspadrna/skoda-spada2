@@ -5021,43 +5021,25 @@ function buildSupabaseKeepaliveStatusHtml(options) {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText || 'v.1.5 (875)',
-      title: 'Aktuální stabilizace',
+      range: 'v.1.5 851–885',
+      title: 'Release audit, namespace a export tooling',
       lines: [
-        'V875 uzavírá window.RaK namespace read-only fázi na 100 %: fallbacky a mapa jsou hotové, staré globály zůstávají zdroj pravdy a další fáze se má týkat jen export/release tooling vrstvy.',
-        'V874 přepíná první čistě auditní čtení na window.RaK.diagnostics.readWithFallback se zachovaným legacy fallbackem; navigace, render, hry a online flow zůstávají mimo přepojení.',
-        'V873 uzavírá mapovací část window.RaK namespace: přidává kontrolu read-only fallbacků a potvrzuje, že navigace, render, hry a online flow zůstávají mimo přepojení.',
-        'V872 rozšiřuje read-only diagnostickou mapu v window.RaK bez přepojení navigace, renderu, her nebo online flow. Piškvorky AI zůstávají potvrzené OK z v870/v871.',
-        'V870 přitvrzuje Piškvorky proti AI: lepší lookahead, blokování forků, otevřených hrozeb a tvrdší opening book; online flow a Supabase beze změny.',
-        'V864 odděluje runtime health helper do samostatného rak-runtime-health.js a přidává poznámku ke statistikám, že budoucí nahrané měsíce se započítají až v daném měsíci.',
-        'V863 odděluje release readiness a architecture baseline helpery z app.js do samostatného rak-audit-baseline.js; funkčnost zůstává stejná a boot/readiness diagnostika je přehlednější.',
-        'V862 odděluje module readiness registry z app.js do samostatného module-readiness.js; funkčnost zůstává stejná a registry dál hlídá boot pořadí.',
-        'V861 přidává module readiness registry: Diagnostika nově vidí, které runtime moduly se načetly, v jakém pořadí a jestli některý spadl.',
-        'V860 přidává bezpečný architecture/boot baseline audit: mapuje boot sekvenci, runtime vrstvy, coupling body a refactor backlog bez zásahu do her, DB nebo policies.',
-        'V859 uzavírá PWA/release baseline: doplňuje finální checklist, Google Fonts load/error signál a rollback poznámky bez zásahu do her, DB nebo policies.',
-        'V858 zpevňuje boot/CDN diagnostiku: externí knihovny XLSX, JSZip a Supabase nově zapisují load/error signál a release readiness ukáže, jestli appka běží jen ve fallback režimu.',
-        'V857 přidává finální release readiness checklist, audit CDN/externích závislostí a opravuje runtime kontrolu formátu verze pro v.X.Y; hry a Supabase policies zůstávají beze změny.',
-        'V856 opravuje release historii po kontrole buildů a přesouvá SQL auditní soubory z kořene ZIPu do assets/docs/sql; runtime, hry a Supabase policies zůstávají beze změny.',
-        'V855 přidává PWA/assets/SW audit po přesunu ikon: diagnostika hlídá manifest, favicon, apple-touch, SW precache ikony a ZIP pravidlo assets-only.',
-        'V853 resetuje herní výsledky a lokální herní cache: všichni začínají od nuly, profily a vzhled zůstávají zachované a Piškvorky měří skutečný čas partie místo 0 s.',
-        'V852 přesouvá app ikony do assets/app-icons a sjednocuje manifest, HTML, service worker i ZIP export na nové cesty.',
-        'V847 opravuje spodní navigaci: Láďův režim má tvrdě neprůhledný panel a neaktivní ikonky jsou jemně dorovnané vůči popisku; aktivní stav zůstává beze změny.',
-        'V845 opravuje Lodě přes zvací odkaz: link #games=ships&invite už má přednost před Piškvorkami a příprava flotily má menší/čistší pole bez zakrytého spodku.',
-        'V844 doplňuje Lodím skutečný zvací odkaz ve stejném overlayi jako Piškvorky, vypíná zbytečné scrollování a odstraňuje kód z HUDu nad hracím polem; Piškvorky zároveň obnovují online skóre bez ručního přepínání.',
-        'V843 převádí Supabase heartbeat čas do českého času, sjednocuje vzhled zvacího overlaye Lodí s Piškvorkami a odstraňuje volné místo mezi polem a spodními tlačítky.',
-        'V842 uklízí duplicitní heartbeat v O aplikaci/Diagnostice, opravuje živé vzájemné skóre Piškvorek a zjednodušuje přípravu Lodí včetně velkého banneru s kódem.',
-        'V841 zpřesňuje Supabase online hry audit: RPC smoke se nově počítá zvlášť pro Piškvorky i Lodě, takže se další hardening neodemkne jen podle jedné hry.',
-        'V840 uklízí Supabase heartbeat UI: popisek mizí z Nastavení aplikace, tlačítko Otestovat heartbeat teď je přesunuté z O aplikaci přímo do Diagnostiky a O aplikaci zůstává jen jako přehled stavu.',
-        'V839 přidává RPC cestu pro přijetí online pozvánky a přesnější smoke readiness create/accept/save bez utažení game_invites/game_sessions policies.',
-        'V837 opravuje Supabase heartbeat po RLS chybě: klient už po neúspěchu nečeká 12 hodin, používá RPC cestu a diagnostika ukazuje cestu/typ chyby.',
-        'V834 přidává bezpečný Supabase heartbeat přes samostatnou tabulku app_keepalive: appka při startu/při návratu pošle malý ping maximálně 1× za 12 hodin na zařízení a při chybě dál jede offline.',
-        'V833 doplňuje online Piškvorkám čitelný move guard: když tah nejde udělat kvůli čekání, chybějící roli nebo špatnému tahu, appka ukáže důvod, zapíše diagnostiku a zkusí rychlý resync session.',
-        'V832 zpevňuje deep-link pozvánky: appka nově čte kód z hash i query URL, uklidí URL po přijetí a v diagnostice ukáže, jestli přišel přes hash nebo query.',
-        'V831 přidává runtime pojistku role u online Piškvorek: pokud session podle účtu pozná hráče X/O, klient si roli opraví a bez platné role nepovolí tah.',
-        'V830 doplňuje diagnostiku online Piškvorek: po vstupu přes odkaz nebo ruční kód je v Diagnostice vidět režim, role, tah a jestli klient může právě hrát.',
-        'Link i ruční kód používají společnou join cestu a výsledná hláška se drží podle skutečné role a tahu, ne podle obecného textu.',
-        'Hotfix v829 opravuje vstup přes zvací odkaz tak, aby druhý hráč neotevíral hru jako AI/spectator, ale jako hráč O.',
-        'Ruční zadání kódu zůstává zachované a DB rollback z v828 pro game_invites/game_sessions zůstává bez dalšího utahování.'
+        'V885 uzavírá DOM/action registry audit a napojuje smoke report do release readiness; V884 doplnilo DOM/action smoke report, V883 cílové atributy akcí, V882 kategorie akcí a V881 audit zahájilo bez přepojení funkční logiky.',
+        'V867–875 uzavírá window.RaK read-only namespace fázi: mapuje diagnostické aliasy, zachovává staré globály a nepřepojuje navigaci, render, hry ani online flow.',
+        'V860–866 uzavírá architecture/boot baseline audit: module readiness, runtime health, boot sequence a auditní helpery se oddělily mimo app.js bez změny funkčnosti.',
+        'V853–859 řeší reset herních výsledků, opravu času Piškvorek, PWA/assets/SW audit, čistší ZIP strukturu a release readiness dokumentaci.',
+        'V870 přitvrdilo Piškvorky proti AI; po testu 5 her bez výhry hráče je AI brána jako potvrzeně OK.'
+      ]
+    },
+    {
+      range: 'v.1.5 801–850',
+      title: 'Online hry, Supabase a PWA úklid',
+      lines: [
+        'Online Piškvorky a Lodě dostaly stabilnější pozvánky, role hráčů, move guard, deep-link flow a vzájemné skóre bez ručního přepínání.',
+        'Supabase heartbeat se přesunul na RPC/app_keepalive a Diagnostika ukazuje čitelný lokální stav bez matoucího UTC.',
+        'Supabase hardening se posunul jen bezpečnými kroky: RPC smoke/readiness kontroly bez naslepo utažených game_invites/game_sessions policies.',
+        'PWA ikony se přesunuly do assets/app-icons, ZIP se vyčistil na root soubory + assets/ a SQL skripty se přesunuly do assets/docs/sql.',
+        'Spodní lišta a Láďův režim dostaly drobné vizuální/výkonové opravy bez změny běžného glass režimu.'
       ]
     },
     {
@@ -6962,6 +6944,10 @@ function bindAppMenuHandlers(body) {
         const bootSequence = readRakDiag('bootSequence', 'getRakBootSequenceHealth');
         const namespaceHealth = readRakDiag('namespace', 'getRakNamespaceHealth');
         const namespaceReadOnlyMap = readRakDiag('namespaceReadOnlyMap', 'getRakNamespaceReadOnlyMapHealth');
+        const exportReleaseTooling = readRakDiag('exportReleaseTooling', 'getRakExportReleaseToolingHealth');
+        const exportSmokeReport = readRakDiag('exportSmokeReport', 'getRakExportSmokeReport');
+        const domActionRegistry = readRakDiag('domActionRegistry', 'getRakDomActionRegistryHealth');
+        const domActionSmokeReport = readRakDiag('domActionSmokeReport', 'getRakDomActionSmokeReport');
         const profileUiStatus = typeof window.getProfileUiSyncStatus === 'function' ? window.getProfileUiSyncStatus() : null;
         const profileUiGuard = profileUiStatus && profileUiStatus.guard ? profileUiStatus.guard : null;
         const dataOptStatus = typeof window.getDataOptimizationStatus === 'function' ? window.getDataOptimizationStatus() : null;
@@ -7016,7 +7002,11 @@ function bindAppMenuHandlers(body) {
           bootSequence ? ('Boot sekvence: ' + (bootSequence.ok ? 'OK' : 'kontrola') + ' · statická ' + (bootSequence.staticOrderOk ? 'OK' : 'kontrola') + ' · dynamická ' + (bootSequence.dynamicOrderOk ? 'OK' : 'kontrola') + ' · chybí ' + String(bootSequence.dynamicMissingCount || 0)) : '',
           namespaceHealth ? ('RaK namespace: ' + (namespaceHealth.ok ? 'OK' : 'kontrola') + ' · režim ' + String(namespaceHealth.mode || '—') + ' · mapa ' + String(namespaceHealth.namespaceMapCount || 0) + ' · fáze ' + String(namespaceHealth.refactorProgressPercent || 0) + '% · mapa uzavřená ' + (namespaceHealth.namespaceMapClosed ? 'ano' : 'ne') + ' · warningy ' + String(namespaceHealth.warningCount || 0)) : '',
           namespaceReadOnlyMap ? ('RaK namespace fallbacky: ' + (namespaceReadOnlyMap.ok ? 'OK' : 'kontrola') + ' · read-only aliasy ' + String(namespaceReadOnlyMap.safeNowCount || 0) + ' · runtime ' + String(namespaceReadOnlyMap.runtimeAliasCount || 0) + ' · chybí čtečky ' + String(namespaceReadOnlyMap.missingReaderCount || 0) + ' · rizikové mutace ' + String(namespaceReadOnlyMap.mutatingRiskCount || 0)) : '',
-          runtimeGuard ? ('Runtime health: ' + (runtimeGuard.ok ? 'OK' : 'kontrola') + ' · warningy ' + String(runtimeGuard.warningCount || 0) + ' · storage ' + (runtimeGuard.storage && runtimeGuard.storage.writable ? 'OK' : 'kontrola') + ' · budoucí měsíce ' + String(runtimeGuard.statsScope && runtimeGuard.statsScope.futureImportedMonthCount || 0)) : ''
+          runtimeGuard ? ('Runtime health: ' + (runtimeGuard.ok ? 'OK' : 'kontrola') + ' · warningy ' + String(runtimeGuard.warningCount || 0) + ' · storage ' + (runtimeGuard.storage && runtimeGuard.storage.writable ? 'OK' : 'kontrola') + ' · budoucí měsíce ' + String(runtimeGuard.statsScope && runtimeGuard.statsScope.futureImportedMonthCount || 0)) : '',
+          exportReleaseTooling ? ('Export/release tooling: ' + (exportReleaseTooling.ok ? 'OK' : 'kontrola') + ' · source ID ' + String(exportReleaseTooling.sourceIdCount || 0) + ' · binární ' + String(exportReleaseTooling.binaryFileCount || 0) + ' · duplicit ' + String(exportReleaseTooling.duplicateBinaryCount || 0) + ' · warningy ' + String(exportReleaseTooling.warningCount || 0)) : '',
+          exportSmokeReport ? ('Export smoke report: ' + (exportSmokeReport.ok === true ? 'OK' : (exportSmokeReport.ok === false ? 'kontrola' : 'zatím neběžel')) + ' · stav ' + String(exportSmokeReport.status || '—') + ' · text/bin ' + String(exportSmokeReport.checkedTextFileCount || 0) + '/' + String(exportSmokeReport.checkedBinaryFileCount || 0) + ' · chybí ' + String((exportSmokeReport.missingTextFileCount || 0) + (exportSmokeReport.missingBinaryFileCount || 0)) + ' · poslední ' + String(exportSmokeReport.lastStage || '—')) : '',
+          domActionRegistry ? ('DOM/action registry: ' + (domActionRegistry.ok ? 'OK' : 'kontrola') + ' · akce ' + String(domActionRegistry.actionElementCount || 0) + ' · unikátní ' + String(domActionRegistry.uniqueActionCount || 0) + ' · kategorie ' + String(domActionRegistry.categoryCount || 0) + ' · target mapa ' + String(domActionRegistry.targetCoveragePercent || 0) + '% · target warningy ' + String(domActionRegistry.actionTargetWarningCount || 0) + ' · neznámé ' + String(domActionRegistry.unknownActionCount || 0) + ' · cíle ' + String(domActionRegistry.missingTargetCount || 0) + ' · warningy ' + String(domActionRegistry.warningCount || 0)) : '',
+          domActionSmokeReport ? ('DOM/action smoke: ' + (domActionSmokeReport.ok === true ? 'OK' : (domActionSmokeReport.ok === false ? 'kontrola' : 'zatím neběžel')) + ' · stav ' + String(domActionSmokeReport.status || '—') + ' · běhy ' + String(domActionSmokeReport.runCount || 0) + ' · akce ' + String(domActionSmokeReport.actionElementCount || 0) + ' · target mapa ' + String(domActionSmokeReport.targetCoveragePercent || 0) + '% · problémy ' + String(domActionSmokeReport.issueCount || 0) + ' · warningy ' + String(domActionSmokeReport.warningCount || 0)) : ''
         ].filter(Boolean) : [];
         const pwaDiag = pwaStatus ? [
           'PWA/SW: fáze ' + String(pwaStatus.phasePercent || 0) + '% · controller ' + (pwaStatus.hasController ? 'ano' : 'ne') + ' · update toast ' + (pwaStatus.updateToastVisible ? 'viditelný' : 'ne') + ' · verze cache ' + (pwaStatus.swVersionMismatch ? 'nesedí' : 'sedí'),
@@ -7026,7 +7016,7 @@ function bindAppMenuHandlers(body) {
           'PWA cache režim: lookup ' + String(pwaStatus.swCacheLookupMode || '—') + ' · ukládání ' + String(pwaStatus.swCacheableResponseMode || '—') + ' · trim ' + String(pwaStatus.swActivateRuntimeTrimMode || '—') + ' · síť fallback ' + String(pwaStatus.swNetworkTimeoutFallbackMode || '—') + ' (' + String(pwaStatus.swNetworkFallbackTimeoutMs || 0) + ' ms)' + ' · static timeout ' + String(pwaStatus.swStaticCacheFirstTimeoutMode || '—'),
           'PWA asset audit: ' + String(pwaStatus.pwaAssetAuditMode || '—') + ' · manifest ' + (pwaStatus.pwaAssetManifestOk ? 'OK' : 'kontrola') + ' · favicon ' + (pwaStatus.pwaAssetFaviconOk ? 'OK' : 'kontrola') + ' · apple ' + (pwaStatus.pwaAssetAppleTouchOk ? 'OK' : 'kontrola') + ' · SW ikony ' + String(pwaStatus.swAssetIconCount || 0) + '/' + String(pwaStatus.pwaAssetExpectedIconCount || 0) + ' · root odkazy ' + (pwaStatus.pwaAssetRootIconRefsBlocked && !Number(pwaStatus.swAssetLegacyRootIconCount || 0) ? 'žádné' : 'kontrola') + ' · ZIP ' + String(pwaStatus.swExportZipRootMode || '—'),
           'PWA dokončení: ' + String(pwaStatus.swPhase8CompletionMode || '—') + ' · připraveno ' + (pwaStatus.swPhase8Ready ? 'ano' : 'ne') + ' · app shell ' + String(pwaStatus.swAppShellCachedRatio || 0) + '%',
-          releaseReadiness ? ('Release readiness: ' + (releaseReadiness.ok ? 'OK' : 'kontrola') + ' · verze ' + String(releaseReadiness.version || '—') + ' · CDN skripty ' + String(releaseReadiness.externalScriptCount || 0) + ' · warningy ' + String(releaseReadiness.warningCount || 0)) : ''
+          releaseReadiness ? ('Release readiness: ' + (releaseReadiness.ok ? 'OK' : 'kontrola') + ' · verze ' + String(releaseReadiness.version || '—') + ' · CDN skripty ' + String(releaseReadiness.externalScriptCount || 0) + ' · export ' + String(releaseReadiness.exportSmokeReportStatus || '—') + ' · DOM ' + String(releaseReadiness.domActionSmokeReportStatus || '—') + ' · warningy ' + String(releaseReadiness.warningCount || 0)) : ''
         ] : [];
         const dataOptDiag = dataOptStatus ? [
           'Data opt: zápisy/skipy ' + String(dataOptStatus.localStorageWrites || 0) + '/' + String(dataOptStatus.localStorageSkippedWrites || 0) + ' · čtení/cache ' + String(dataOptStatus.localStorageReads || 0) + '/' + String(dataOptStatus.localStorageReadCacheHits || 0),

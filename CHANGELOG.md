@@ -1,3 +1,87 @@
+## v.1.5 (885)
+- DOM/action registry audit je uzavřený na 100 % bez přepojování klikání, navigace, renderu, her nebo online flow.
+- Release readiness nově čte `getRakDomActionSmokeReport()` a ukazuje DOM/action smoke stav jako warning signál, ne jako zásah do funkčnosti.
+- `getRakDomActionRegistryHealth()` vrací `phasePercent: 100`, `phaseClosed: true` a closure metadata pro další bezpečný refactor směr.
+- Přidaný helper `getRakDomActionRegistryClosureHealth()` a namespace alias `domActionClosure` jen pro read-only diagnostiku.
+- Přidaný dokument `assets/docs/dom-action-registry-closure-v885.md`; historie v O aplikaci zůstává ve stručném bloku `v.1.5 851–885`.
+- Verze sjednocena na v.1.5 (885), cache na `v1.5-885`, realtime kanál na `rak-public-live-v885`, package na `1.5.885`.
+- Piškvorky AI, herní logika, online flow, Supabase DB/policies, dashboard, spodní lišta a kalkulačky beze změny.
+
+## v.1.5 (884)
+- DOM/action registry audit má nově smoke report: `getRakDomActionSmokeReport()` a ruční `runRakDomActionSmokeReport()`.
+- Diagnostika / O aplikaci nově ukazuje poslední DOM/action smoke stav: počet akcí, target mapu, issue/warning počty a stav poslední kontroly.
+- Namespace read-only mapa má nový alias `domActionSmokeReport`; staré globály zůstávají zachované a žádné klikání, navigace, render, hry ani online flow se nepřepojují.
+- Přidaný dokument `assets/docs/dom-action-smoke-report-v884.md`; historie v O aplikaci zůstává ve stručném bloku `v.1.5 851–884`.
+- Verze sjednocena na v.1.5 (884), cache na `v1.5-884`, realtime kanál na `rak-public-live-v884`, package na `1.5.884`.
+
+## v.1.5 (883)
+- DOM/action registry audit nově mapuje i cílové atributy akcí podle kategorií, hlavně pro kalkulačky, korekce a hry.
+- `getRakDomActionRegistryHealth()` vrací `actionTargetMatrix`, `targetAttributeCategorySummary`, `targetCoveragePercent`, počty target warningů/issue a pravidlo pro budoucí bezpečný refactor handlerů.
+- Opravená auditní kontrola přepínače znaménka u korekcí vrtáků: správný cílový atribut je `data-target-input`.
+- Diagnostika / O aplikaci u DOM/action registry nově ukazuje i pokrytí target mapy a target warningy; historie zůstává v souhrnném bloku `v.1.5 851–883`.
+- Přidaný dokument `assets/docs/dom-action-target-attribute-map-v883.md` a exportní manifest ho přibaluje do ZIPu.
+- Verze sjednocena na v.1.5 (883), cache na `v1.5-883`, realtime kanál na `rak-public-live-v883`, package na `1.5.883`.
+- Hry, Piškvorky AI, navigace, render, online flow, Supabase DB/policies, dashboard, spodní lišta a kalkulačky beze změny.
+
+## v.1.5 (882)
+- DOM/action registry audit nově třídí `data-action` prvky do kategorií: navigace, dashboard, externí odkazy, kalkulačky, korekce, hry, rotace/statistiky a nastavení/diagnostika.
+- `getRakDomActionRegistryHealth()` vrací `categorySummary`, `actionCategoryCounts`, `categoryCount` a seznam nekategorizovaných akcí jen jako warning.
+- Diagnostika / O aplikaci u DOM/action registry nově ukazuje i počet kategorií a souhrnný blok historie zůstává `v.1.5 851–882`.
+- Přidaný dokument `assets/docs/dom-action-category-map-v882.md` a exportní manifest ho přibaluje do ZIPu.
+- Verze sjednocena na v.1.5 (882), cache na `v1.5-882`, realtime kanál na `rak-public-live-v882`, package na `1.5.882`.
+- Hry, navigace, render, online flow, Supabase DB/policies, dashboard, spodní lišta a kalkulačky beze změny.
+
+## v.1.5 (881)
+- Zahájena další bezpečná fáze: DOM/action registry audit bez přepojení navigace, renderu, her nebo online flow.
+- Přidán `rak-dom-action-audit.js` s helperem `getRakDomActionRegistryHealth()`, který read-only mapuje `data-action`, allowlisty, spodní navigaci a vybrané cílové atributy.
+- Diagnostika / O aplikaci nově ukazuje stav DOM/action registry a historie v O aplikaci zůstává shrnutá v bloku `v.1.5 851–881`.
+- Exportní manifest, service worker, module readiness, boot audit a ZIP export počítají s novým helperem a dokumentem `assets/docs/dom-action-registry-audit-v881.md`.
+- Verze sjednocena na v.1.5 (881), cache na `v1.5-881`, realtime kanál na `rak-public-live-v881`, package na `1.5.881`.
+
+## v.1.5 (880)
+- Export smoke report je nově napojený přímo do release readiness kontroly, aby finální release stav viděl i poslední ZIP/preflight výsledek.
+- `getRakReleaseReadinessHealth()` hlídá stav `getRakExportSmokeReport()` a varuje jen při skutečně neúspěšné poslední kontrole; stav „zatím neběžel“ není blokace.
+- `getRakExportReleaseToolingHealth()` uzavírá export/release tooling fázi na 100 % a vrací `phaseClosed: true`.
+- Přidaný dokument `assets/docs/export-release-tooling-closure-v880.md`.
+- Verze sjednocena na v.1.5 (880), cache na `v1.5-880`, realtime kanál na `rak-public-live-v880`, package na `1.5.880`.
+- Hry, navigace, render, online flow, Supabase DB/policies, dashboard, spodní lišta a kalkulačky beze změny.
+
+## v.1.5 (879)
+- Přidaný exportní smoke report pro poslední předexportní/exportní kontrolu: `getRakExportSmokeReport()` a `runRakExportSmokeReport()`.
+- `validateRakExportManifestFiles()` nově ukládá poslední preflight výsledek, aby byl vidět v Diagnostice bez dohledávání v konzoli.
+- `exportCurrentHtml()` ukládá stav exportu od startu přes preflight až po úspěšné stažení/chybu, včetně počtu kontrolovaných textových a binárních souborů.
+- Diagnostika/O aplikaci nově ukazuje řádek „Export smoke report“ se stavem poslední kontroly ZIP exportu.
+- Přidaný dokument `assets/docs/export-smoke-report-v879.md`.
+- Verze sjednocena na v.1.5 (879), cache na `v1.5-879`, realtime kanál na `rak-public-live-v879`, package na `1.5.879`.
+- Hry, navigace, online flow, Supabase DB/policies, dashboard, spodní lišta a kalkulačky beze změny.
+
+## v.1.5 (878)
+- Exportní manifest z v877 se nově používá i pro předexportní kontrolu chybějících souborů přes `validateRakExportManifestFiles()`.
+- Přidaný `getRakExportManifestDuplicateReport()` a `preflightValidation` signál v `getRakExportSourceInventoryHealth()`.
+- `exportCurrentHtml()` nejdřív ověří textové, JS i binární soubory z manifestu a až potom skládá ZIP; chyba se tak objeví dřív a čitelněji.
+- Binární assety mají jednoduchou exportní cache, aby se po preflightu nenačítaly zbytečně znovu.
+- Přidaný dokument `assets/docs/export-manifest-preflight-v878.md`.
+- Verze sjednocena na v.1.5 (878), cache na `v1.5-878`, realtime kanál na `rak-public-live-v878`, package na `1.5.878`.
+
+## v.1.5 (877)
+- Oddělený exportní manifest v `export.js`: ZIP export i audit teď používají stejný zdroj pravdy přes `getRakExportManifest()`.
+- `getRakExportSourceInventoryHealth()` nově hlídá i manifest split, počet manifest cest a režim `export-manifest-split-v877`.
+- „O aplikaci“ má zkrácenou historii po větších blocích cca po 50 verzích: aktuální úsek 851–877 je stručný souhrn místo dlouhého výpisu každé drobné verze.
+- Diagnostika/O aplikaci má opravené zalamování dlouhých řádků, aby text nepřetékal mimo vyznačenou buňku na mobilu.
+- Přidaný dokument `assets/docs/export-manifest-split-v877.md`.
+- Verze sjednocena na v.1.5 (877), cache na `v1.5-877`, realtime kanál na `rak-public-live-v877`, package na `1.5.877`.
+- Piškvorky AI, herní logika, online flow, Supabase DB/policies, dashboard, spodní lišta a kalkulačky beze změny.
+
+## v.1.5 (876)
+- Zahájená další bezpečná fáze: export/release tooling mapa po uzavření `window.RaK` namespace read-only vrstvy.
+- Přidaný helper `rak-export-release-audit.js` a diagnostika `getRakExportReleaseToolingHealth()`.
+- `export.js` nově vystavuje read-only inventuru ZIP zdrojů přes `getRakExportSourceInventoryHealth()`.
+- Seznam binárních assetů v exportu ZIPu je deduplikovaný přes `Set`, aby se stejné soubory nepřibalovaly zbytečně vícekrát.
+- Nový helper je přidaný do `index.html`, `sw.js`, `export.js`, `package.json`, boot auditů a dokumentace.
+- Přidaný dokument `assets/docs/export-release-tooling-map-v876.md`.
+- Verze sjednocena na v.1.5 (876), cache na `v1.5-876`, realtime kanál na `rak-public-live-v876`, package na `1.5.876`.
+- Piškvorky AI, herní logika, online flow, Supabase DB/policies, dashboard, spodní lišta a kalkulačky beze změny.
+
 ## v.1.5 (875)
 - Uzavřená `window.RaK` namespace read-only fáze na 100 %.
 - `getRakNamespaceHealth()` a nová closure kontrola potvrzují uzavřenou mapu, fallback čtení a zachované legacy globály.

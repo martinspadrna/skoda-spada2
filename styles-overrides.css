@@ -15345,3 +15345,48 @@ body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsCell{
   }
   body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsInlineHint{display:none !important;}
 }
+
+/* v.1.5 (877): Diagnostika/O aplikaci – dlouhé řádky zůstávají uvnitř buňky. */
+.appMenuDiagnosticsCard,
+.appMenuKeepaliveCard{
+  max-width:100% !important;
+  min-width:0 !important;
+  overflow:hidden !important;
+  box-sizing:border-box !important;
+}
+.appMenuDiagnosticsText{
+  display:block !important;
+  width:100% !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  box-sizing:border-box !important;
+  margin:0 !important;
+  padding:10px 11px !important;
+  border-radius:14px !important;
+  border:1px solid rgba(124,255,124,.10) !important;
+  background:rgba(0,0,0,.18) !important;
+  color:rgba(238,255,240,.92) !important;
+  font-size:11px !important;
+  line-height:1.45 !important;
+  font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace !important;
+  white-space:pre-wrap !important;
+  overflow-wrap:anywhere !important;
+  word-break:break-word !important;
+  overflow:auto !important;
+  max-height:min(52vh, 520px) !important;
+  -webkit-overflow-scrolling:touch !important;
+}
+.appMenuKeepaliveCard .smallText,
+.appMenuDiagnosticsCard .smallText,
+.appMenuDiagnosticsCard .appMenuCardTitle{
+  max-width:100% !important;
+  min-width:0 !important;
+  overflow-wrap:anywhere !important;
+  word-break:break-word !important;
+}
+@media (max-width:420px){
+  .appMenuDiagnosticsText{
+    font-size:10.5px !important;
+    padding:9px 10px !important;
+  }
+}

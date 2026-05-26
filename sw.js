@@ -1,5 +1,5 @@
-const CACHE_VERSION = 'v1.5-875';
-const SW_APP_VERSION = 'v.1.5 (875)';
+const CACHE_VERSION = 'v1.5-885';
+const SW_APP_VERSION = 'v.1.5 (885)';
 const STATIC_CACHE = `rotace-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `rotace-runtime-${CACHE_VERSION}`;
 const APP_SHELL = [
@@ -10,6 +10,8 @@ const APP_SHELL = [
   './rak-audit-baseline.js',
   './rak-runtime-health.js',
   './rak-boot-sequence-audit.js',
+  './rak-export-release-audit.js',
+  './rak-dom-action-audit.js',
   './app.js',
   './core.js',
   './lifecycle.js',
@@ -74,7 +76,7 @@ const APP_SHELL = [
 const APP_SHELL_URLS = Array.from(new Set(APP_SHELL));
 const PWA_APP_ICON_PATHS = APP_SHELL_URLS.filter(url => /\.\/assets\/app-icons\/icon-\d+\.png$/.test(url));
 const PWA_LEGACY_ROOT_ICON_PATHS = APP_SHELL_URLS.filter(url => /\.\/icon-\d+\.png$/.test(url));
-const PWA_ASSET_AUDIT_MODE = 'zip-source-inventory-assets-pwa-sql-release-readiness-architecture-module-readiness-runtime-health-namespace-phase-closed-v875';
+const PWA_ASSET_AUDIT_MODE = 'zip-source-inventory-assets-pwa-sql-release-readiness-architecture-module-readiness-runtime-health-namespace-closed-export-manifest-preflight-v885';
 const EXPORT_ZIP_ROOT_MODE = 'root-files-assets-folder-only';
 const RUNTIME_EXTENSIONS = ['.js', '.css', '.png', '.jpg', '.jpeg', '.webp', '.svg', '.ico', '.json', '.webmanifest'];
 const MAX_RUNTIME_CACHE_ENTRIES = 96;
