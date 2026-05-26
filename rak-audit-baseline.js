@@ -1,4 +1,4 @@
-// v.1.5 (885) – release readiness bere i DOM/action smoke report a uzavírá DOM/action audit.
+// v.1.5 (891) – release/architecture readiness bere i Supabase client/queue audit jako read-only signál.
 
 (function setupRakAuditBaselineHelpers() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -45,6 +45,12 @@ function getRakReleaseReadinessHealth() {
   let externalDependencyStatus = {};
   let exportSmokeReport = null;
   let domActionSmokeReport = null;
+  let storageSyncAudit = null;
+  let storageSyncSmokeReport = null;
+  let storageManualCleanupGuard = null;
+  let storageSyncClosure = null;
+  let supabaseClientQueueAudit = null;
+  let supabaseQueueSmokeReport = null;
 
   try {
     externalDependencyStatus = Object.assign({}, window.__RAK_EXTERNAL_DEP_STATUS__ || {});
@@ -64,6 +70,42 @@ function getRakReleaseReadinessHealth() {
     domActionSmokeReport = readRakDiagnosticForAudit('domActionSmokeReport', 'getRakDomActionSmokeReport');
   } catch (err) {
     domActionSmokeReport = { ok: false, status: 'read-error', lastError: String(err && err.message ? err.message : err) };
+  }
+
+  try {
+    storageSyncAudit = readRakDiagnosticForAudit('storageSyncAudit', 'getRakStorageSyncAuditHealth');
+  } catch (err) {
+    storageSyncAudit = { ok: false, status: 'read-error', lastError: String(err && err.message ? err.message : err) };
+  }
+
+  try {
+    storageSyncSmokeReport = readRakDiagnosticForAudit('storageSyncSmokeReport', 'getRakStorageSyncSmokeReport');
+  } catch (err) {
+    storageSyncSmokeReport = { ok: false, status: 'read-error', lastError: String(err && err.message ? err.message : err) };
+  }
+
+  try {
+    storageManualCleanupGuard = readRakDiagnosticForAudit('storageManualCleanupGuard', 'getRakStorageManualCleanupGuard');
+  } catch (err) {
+    storageManualCleanupGuard = { ok: false, status: 'read-error', lastError: String(err && err.message ? err.message : err) };
+  }
+
+  try {
+    storageSyncClosure = readRakDiagnosticForAudit('storageSyncClosure', 'getRakStorageSyncClosureHealth');
+  } catch (err) {
+    storageSyncClosure = { ok: false, status: 'read-error', lastError: String(err && err.message ? err.message : err) };
+  }
+
+  try {
+    supabaseClientQueueAudit = readRakDiagnosticForAudit('supabaseClientQueueAudit', 'getRakSupabaseClientQueueAuditHealth');
+  } catch (err) {
+    supabaseClientQueueAudit = { ok: false, status: 'read-error', lastError: String(err && err.message ? err.message : err) };
+  }
+
+  try {
+    supabaseQueueSmokeReport = readRakDiagnosticForAudit('supabaseQueueSmokeReport', 'getRakSupabaseQueueSmokeReport');
+  } catch (err) {
+    supabaseQueueSmokeReport = { ok: false, status: 'read-error', lastError: String(err && err.message ? err.message : err) };
   }
 
   try {
@@ -102,10 +144,28 @@ function getRakReleaseReadinessHealth() {
   if (domActionSmokeReport && domActionSmokeReport.ok === false) {
     warnings.push('DOM/action smoke report failed: ' + String(domActionSmokeReport.lastError || domActionSmokeReport.status || 'kontrola'));
   }
+  if (storageSyncAudit && storageSyncAudit.ok === false) {
+    warnings.push('storage/sync audit warning: ' + String((storageSyncAudit.issues || []).join(', ') || storageSyncAudit.status || 'kontrola'));
+  }
+  if (storageSyncSmokeReport && storageSyncSmokeReport.ok === false) {
+    warnings.push('storage/sync smoke report failed: ' + String(storageSyncSmokeReport.lastError || storageSyncSmokeReport.status || 'kontrola'));
+  }
+  if (storageManualCleanupGuard && storageManualCleanupGuard.autoCleanupEnabled) {
+    issues.push('storage manual cleanup guard: auto cleanup enabled');
+  }
+  if (storageSyncClosure && storageSyncClosure.ok === false) {
+    warnings.push('storage/sync closure warning: ' + String((storageSyncClosure.issues || []).join(', ') || storageSyncClosure.status || 'kontrola'));
+  }
+  if (supabaseClientQueueAudit && supabaseClientQueueAudit.ok === false) {
+    warnings.push('Supabase client/queue audit warning: ' + String((supabaseClientQueueAudit.issues || []).join(', ') || supabaseClientQueueAudit.status || 'kontrola'));
+  }
+  if (supabaseQueueSmokeReport && supabaseQueueSmokeReport.ok === false) {
+    warnings.push('Supabase queue smoke warning: ' + String((supabaseQueueSmokeReport.lastIssueSample || []).join(', ') || supabaseQueueSmokeReport.status || 'kontrola'));
+  }
 
   return {
     ok: issues.length === 0,
-    mode: 'audit-baseline-split-release-readiness-v885',
+    mode: 'audit-baseline-split-release-readiness-v891',
     checkedAt,
     version: currentVersion || 'unknown',
     issueCount: issues.length,
@@ -127,8 +187,38 @@ function getRakReleaseReadinessHealth() {
     domActionSmokeReportOk: domActionSmokeReport ? domActionSmokeReport.ok : null,
     domActionSmokeReportStatus: domActionSmokeReport ? String(domActionSmokeReport.status || '—') : '—',
     domActionSmokeReportRunCount: domActionSmokeReport ? Number(domActionSmokeReport.runCount || 0) : 0,
+    supabaseClientQueueAuditAvailable: !!supabaseClientQueueAudit,
+    supabaseClientQueueAuditOk: supabaseClientQueueAudit ? !!supabaseClientQueueAudit.ok : null,
+    supabaseClientQueuePhasePercent: supabaseClientQueueAudit ? Number(supabaseClientQueueAudit.phasePercent || 0) : 0,
+    supabaseClientQueueLength: supabaseClientQueueAudit ? Number(supabaseClientQueueAudit.queueLength || 0) : 0,
     domActionSmokeReportIssueCount: domActionSmokeReport ? Number(domActionSmokeReport.issueCount || 0) : 0,
     domActionSmokeReportWarningCount: domActionSmokeReport ? Number(domActionSmokeReport.warningCount || 0) : 0,
+    storageSyncAuditLinked: !!storageSyncAudit,
+    storageSyncAuditOk: storageSyncAudit ? storageSyncAudit.ok : null,
+    storageSyncAuditPhasePercent: storageSyncAudit ? Number(storageSyncAudit.phasePercent || 0) : 0,
+    storageSyncAuditWarningCount: storageSyncAudit ? Number(storageSyncAudit.warningCount || 0) : 0,
+    storageSyncAuditIssueCount: storageSyncAudit ? Number(storageSyncAudit.issueCount || 0) : 0,
+    storageSyncSmokeReportLinked: !!storageSyncSmokeReport,
+    storageSyncSmokeReportOk: storageSyncSmokeReport ? storageSyncSmokeReport.ok : null,
+    storageSyncSmokeReportStatus: storageSyncSmokeReport ? String(storageSyncSmokeReport.status || '—') : '—',
+    storageSyncSmokeReportRunCount: storageSyncSmokeReport ? Number(storageSyncSmokeReport.runCount || 0) : 0,
+    storageManualCleanupGuardLinked: !!storageManualCleanupGuard,
+    storageManualCleanupGuardOk: storageManualCleanupGuard ? storageManualCleanupGuard.ok : null,
+    storageManualCleanupGuardAutoCleanupEnabled: storageManualCleanupGuard ? !!storageManualCleanupGuard.autoCleanupEnabled : false,
+    storageManualCleanupGuardCandidateCount: storageManualCleanupGuard ? Number(storageManualCleanupGuard.candidateCount || 0) : 0,
+    storageSyncClosureLinked: !!storageSyncClosure,
+    storageSyncClosureOk: storageSyncClosure ? storageSyncClosure.ok : null,
+    storageSyncClosurePhasePercent: storageSyncClosure ? Number(storageSyncClosure.phasePercent || 0) : 0,
+    storageSyncClosureIssueCount: storageSyncClosure ? Number(storageSyncClosure.issueCount || 0) : 0,
+    storageSyncClosureWarningCount: storageSyncClosure ? Number(storageSyncClosure.warningCount || 0) : 0,
+    supabaseClientQueueAuditLinked: !!supabaseClientQueueAudit,
+    supabaseClientQueueAuditOk: supabaseClientQueueAudit ? supabaseClientQueueAudit.ok : null,
+    supabaseClientQueuePhasePercent: supabaseClientQueueAudit ? Number(supabaseClientQueueAudit.phasePercent || 0) : 0,
+    supabaseClientQueueLength: supabaseClientQueueAudit ? Number(supabaseClientQueueAudit.queueLength || 0) : 0,
+    supabaseClientQueueStaleTaskCount: supabaseClientQueueAudit ? Number(supabaseClientQueueAudit.queueStaleTaskCount || 0) : 0,
+    supabaseQueueSmokeReportLinked: !!supabaseQueueSmokeReport,
+    supabaseQueueSmokeReportOk: supabaseQueueSmokeReport ? supabaseQueueSmokeReport.ok : null,
+    supabaseQueueSmokeReportStatus: supabaseQueueSmokeReport ? String(supabaseQueueSmokeReport.status || '—') : '—',
     externalLinkCount: externalLinks.length,
     externalLinks: externalLinks.slice(0, 8),
     requiredChecks: [
@@ -144,7 +234,11 @@ function getRakReleaseReadinessHealth() {
       'rollback bod a release baseline dokumentace',
       'architecture/boot baseline dokumentace a refactor backlog',
       'export smoke report napojený na release readiness',
-      'DOM/action registry smoke report napojený na release readiness bez přepojení navigace/renderu/her'
+      'DOM/action registry smoke report napojený na release readiness bez přepojení navigace/renderu/her',
+      'storage/localStorage a offline/sync audit jako read-only kontrola bez mazání dat',
+      'storage/sync smoke report a ruční cleanup guard bez automatického mazání dat',
+      'storage/sync closure fáze 100 % bez automatického mazání dat',
+      'Supabase klient/offline queue audit read-only bez DB změn a bez automatického flush/mazání'
     ]
   };
 }
@@ -165,6 +259,8 @@ function getRakArchitectureBaselineHealth() {
   let exportReleaseTooling = null;
   let domActionRegistry = null;
   let domActionSmokeReport = null;
+  let storageSyncAudit = null;
+  let supabaseClientQueueAudit = null;
 
   try {
     scripts = Array.from(document.scripts || [])
@@ -229,6 +325,12 @@ function getRakArchitectureBaselineHealth() {
     domActionSmokeReport = null;
   }
 
+  try {
+    supabaseClientQueueAudit = readRakDiagnosticForAudit('supabaseClientQueueAudit', 'getRakSupabaseClientQueueAuditHealth');
+  } catch (err) {
+    supabaseClientQueueAudit = null;
+  }
+
   const requiredGlobals = [
     'app',
     'openPage',
@@ -238,10 +340,13 @@ function getRakArchitectureBaselineHealth() {
     'RaK',
     'getRakNamespaceHealth',
     'getRakRuntimeGuardHealth',
+    'getRakStorageSyncAuditHealth',
     'getRakBootSequenceHealth',
     'getRakExportReleaseToolingHealth',
     'getRakDomActionRegistryHealth',
     'getRakDomActionSmokeReport',
+    'getRakSupabaseClientQueueAuditHealth',
+    'getRakSupabaseQueueSmokeReport',
     'getPwaHardeningStatus',
     'getSupabaseHardeningStatus'
   ];
@@ -253,9 +358,11 @@ function getRakArchitectureBaselineHealth() {
   if (!scripts.some((src) => /rak-namespace\.js$/.test(src))) issues.push('rak-namespace.js script missing');
   if (!scripts.some((src) => /rak-audit-baseline\.js$/.test(src))) issues.push('rak-audit-baseline.js script missing');
   if (!scripts.some((src) => /rak-runtime-health\.js$/.test(src))) issues.push('rak-runtime-health.js script missing');
+  if (!scripts.some((src) => /rak-storage-sync-audit\.js$/.test(src))) issues.push('rak-storage-sync-audit.js script missing');
   if (!scripts.some((src) => /rak-boot-sequence-audit\.js$/.test(src))) issues.push('rak-boot-sequence-audit.js script missing');
   if (!scripts.some((src) => /rak-export-release-audit\.js$/.test(src))) issues.push('rak-export-release-audit.js script missing');
   if (!scripts.some((src) => /rak-dom-action-audit\.js$/.test(src))) issues.push('rak-dom-action-audit.js script missing');
+  if (!scripts.some((src) => /rak-supabase-client-audit\.js$/.test(src))) issues.push('rak-supabase-client-audit.js script missing');
   if (!scripts.some((src) => /app\.js$/.test(src))) issues.push('app.js script missing');
   if (!scripts.some((src) => /app-init\.js$/.test(src))) issues.push('app-init.js script missing');
   if (!stylesheets.some((href) => /styles\.css$/.test(href))) issues.push('main stylesheet missing');
@@ -273,10 +380,12 @@ function getRakArchitectureBaselineHealth() {
   else if (!domActionRegistry.ok) issues.push('DOM/action registry: ' + String(domActionRegistry.issueCount || 0) + ' issues');
   if (!domActionSmokeReport) warnings.push('DOM/action smoke report unavailable');
   else if (domActionSmokeReport.ok === false) warnings.push('DOM/action smoke report: ' + String(domActionSmokeReport.status || 'kontrola'));
+  if (!supabaseClientQueueAudit) warnings.push('Supabase client/queue audit unavailable');
+  else if (!supabaseClientQueueAudit.ok) warnings.push('Supabase client/queue audit warnings: ' + String(supabaseClientQueueAudit.warningCount || 0));
 
   return {
     ok: issues.length === 0,
-    mode: 'audit-baseline-split-architecture-boot-audit-v885',
+    mode: 'audit-baseline-split-architecture-boot-audit-v891',
     checkedAt,
     version: version || 'unknown',
     issueCount: issues.length,
@@ -325,6 +434,10 @@ function getRakArchitectureBaselineHealth() {
     domActionRegistryUnknownCount: domActionRegistry ? Number(domActionRegistry.unknownActionCount || 0) : 0,
     domActionSmokeReportStatus: domActionSmokeReport ? String(domActionSmokeReport.status || '—') : '—',
     domActionSmokeReportRunCount: domActionSmokeReport ? Number(domActionSmokeReport.runCount || 0) : 0,
+    supabaseClientQueueAuditAvailable: !!supabaseClientQueueAudit,
+    supabaseClientQueueAuditOk: supabaseClientQueueAudit ? !!supabaseClientQueueAudit.ok : null,
+    supabaseClientQueuePhasePercent: supabaseClientQueueAudit ? Number(supabaseClientQueueAudit.phasePercent || 0) : 0,
+    supabaseClientQueueLength: supabaseClientQueueAudit ? Number(supabaseClientQueueAudit.queueLength || 0) : 0,
     architectureBootAuditPercent: 100,
     namespaceDiagnosticsReadOnly: !!(window.RaK && window.RaK.diagnostics && typeof window.RaK.diagnostics.read === 'function'),
     architectureBootAuditClosed: true,
@@ -343,7 +456,9 @@ function getRakArchitectureBaselineHealth() {
       'phase B: split app.js runtime audits from page/business logic – module readiness, release/architecture, runtime health a boot sequence uzavřené',
       'phase C: window.RaK namespace read-only mapa a fallbacky – hotovo a uzavřeno ve v875; navigace/render/hry zůstávají mimo přepojení',
       'phase D: isolate export/release tooling from runtime app code – uzavřeno ve v880 přes manifest, preflight, smoke report a release readiness linkage',
-      'phase E: DOM/action registry audit a DOM smoke testy pro zamčené sekce – uzavřeno ve v885 přes release readiness linkage bez změny funkčnosti'
+      'phase E: DOM/action registry audit a DOM smoke testy pro zamčené sekce – uzavřeno ve v885 přes release readiness linkage bez změny funkčnosti',
+      'phase G: storage/localStorage a offline/sync audit – uzavřeno ve v889 jako read-only diagnostika bez mazání dat',
+      'phase H: Supabase client/offline queue audit – zahájeno ve v891 jako read-only diagnostika bez DB změn'
     ]
   };
 }

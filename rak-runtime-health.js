@@ -1,4 +1,4 @@
-// v.1.5 (885) – runtime health vrstva ponechaná beze změny funkčnosti.
+// v.1.5 (891) – runtime health vrstva bere storage/sync closure jako read-only warning signál.
 
 (function setupRakRuntimeHealthHelpers() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -60,7 +60,7 @@
   function getStatsYearScopeHealth() {
     const health = {
       ok: true,
-      mode: 'current-year-excludes-future-imported-months-v885',
+      mode: 'current-year-excludes-future-imported-months-v891',
       selectedYear: null,
       currentYear: null,
       currentMonth: null,
@@ -121,16 +121,22 @@
     const pwa = typeof window.getPwaHardeningStatus === 'function' ? window.getPwaHardeningStatus() : null;
     const release = typeof window.getRakReleaseReadinessHealth === 'function' ? window.getRakReleaseReadinessHealth() : null;
     const moduleReadiness = typeof window.getRakModuleReadinessHealth === 'function' ? window.getRakModuleReadinessHealth() : null;
+    const storageSyncAudit = typeof window.getRakStorageSyncAuditHealth === 'function' ? window.getRakStorageSyncAuditHealth() : null;
+    const storageSyncSmokeReport = typeof window.getRakStorageSyncSmokeReport === 'function' ? window.getRakStorageSyncSmokeReport() : null;
+    const storageSyncClosure = typeof window.getRakStorageSyncClosureHealth === 'function' ? window.getRakStorageSyncClosureHealth() : null;
 
     if (!storage.ok || !storage.writable) issues.push('localStorage not writable');
     if (pwa && pwa.swVersionMismatch) issues.push('service worker cache version mismatch');
     if (release && !release.ok) warnings.push('release readiness warning: ' + String((release.issues || []).join(', ') || 'kontrola'));
     if (moduleReadiness && !moduleReadiness.ok) warnings.push('module readiness incomplete');
+    if (storageSyncAudit && storageSyncAudit.ok === false) warnings.push('storage/sync audit warning: ' + String((storageSyncAudit.issues || []).join(', ') || 'kontrola'));
+    if (storageSyncSmokeReport && storageSyncSmokeReport.ok === false) warnings.push('storage/sync smoke warning: ' + String(storageSyncSmokeReport.lastError || storageSyncSmokeReport.status || 'kontrola'));
+    if (storageSyncClosure && storageSyncClosure.ok === false) warnings.push('storage/sync closure warning: ' + String((storageSyncClosure.issues || []).join(', ') || storageSyncClosure.status || 'kontrola'));
     if (statsScope && statsScope.futureImportedMonthCount > 0) warnings.push('budoucí měsíce ve statistikách zatím nejsou započtené: ' + statsScope.futureImportedMonths.join(', '));
 
     return {
       ok: issues.length === 0,
-      mode: 'runtime-health-split-storage-pwa-stats-scope-v885',
+      mode: 'runtime-health-split-storage-pwa-stats-scope-v891',
       checkedAt: nowIso(),
       version: String(window.APP_VERSION || 'unknown'),
       issueCount: issues.length,
@@ -141,7 +147,13 @@
       statsScope,
       pwaOk: pwa ? !pwa.swVersionMismatch : null,
       releaseOk: release ? !!release.ok : null,
-      moduleReadinessOk: moduleReadiness ? !!moduleReadiness.ok : null
+      moduleReadinessOk: moduleReadiness ? !!moduleReadiness.ok : null,
+      storageSyncAuditOk: storageSyncAudit ? storageSyncAudit.ok : null,
+      storageSyncAuditWarningCount: storageSyncAudit ? Number(storageSyncAudit.warningCount || 0) : 0,
+      storageSyncSmokeReportStatus: storageSyncSmokeReport ? String(storageSyncSmokeReport.status || '—') : '—',
+      storageSyncSmokeReportOk: storageSyncSmokeReport ? storageSyncSmokeReport.ok : null,
+      storageSyncClosureOk: storageSyncClosure ? storageSyncClosure.ok : null,
+      storageSyncClosurePhasePercent: storageSyncClosure ? Number(storageSyncClosure.phasePercent || 0) : 0
     };
   };
 

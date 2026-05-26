@@ -1,4 +1,4 @@
-// v.1.5 (885) – export/release audit vidí i DOM/action smoke linkage v release readiness.
+// v.1.5 (891) – export/release audit ponechán a Supabase client/queue audit je read-only readiness signál.
 
 (function setupRakExportReleaseAudit() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -119,7 +119,7 @@
 
     return {
       ok: issues.length === 0,
-      mode: 'export-release-tooling-audit-v885',
+      mode: 'export-release-tooling-audit-v891',
       checkedAt: new Date().toISOString(),
       version: String(window.APP_VERSION || 'unknown'),
       issueCount: issues.length,

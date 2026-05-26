@@ -1,4 +1,4 @@
-// v.1.5 (885) – window.RaK namespace doplněný o DOM/action registry read-only alias.
+// v.1.5 (891) – window.RaK namespace doplněný o Supabase client/queue audit aliasy.
 
 (function setupRakNamespaceBridge() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -11,8 +11,8 @@
 
   const root = window.RaK || {};
   const existingVersion = root.namespaceVersion || '';
-  root.namespaceVersion = 'v.1.5 (885)';
-  root.mode = 'passive-namespace-readonly-phase-closed-dom-action-v885';
+  root.namespaceVersion = 'v.1.5 (891)';
+  root.mode = 'passive-namespace-readonly-phase-closed-supabase-client-queue-v891';
   root.createdAt = root.createdAt || new Date().toISOString();
   root.updatedAt = new Date().toISOString();
   root.compatibility = 'legacy-globals-preserved';
@@ -23,6 +23,10 @@
     { group: 'diagnostics', alias: 'releaseReadiness', globalName: 'getRakReleaseReadinessHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Čistě diagnostický helper.' },
     { group: 'diagnostics', alias: 'architectureBaseline', globalName: 'getRakArchitectureBaselineHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Čistě diagnostický helper.' },
     { group: 'diagnostics', alias: 'runtimeGuard', globalName: 'getRakRuntimeGuardHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Čistě diagnostický helper.' },
+    { group: 'diagnostics', alias: 'storageSyncAudit', globalName: 'getRakStorageSyncAuditHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only storage/localStorage a offline/sync audit bez mazání dat.' },
+    { group: 'diagnostics', alias: 'storageSyncSmokeReport', globalName: 'getRakStorageSyncSmokeReport', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only poslední storage/sync smoke report bez mazání dat.' },
+    { group: 'diagnostics', alias: 'storageManualCleanupGuard', globalName: 'getRakStorageManualCleanupGuard', type: 'function', phase: 'safe-now', risk: 'low', note: 'Ruční cleanup guard; potvrzuje, že automatické mazání není zapnuté.' },
+    { group: 'diagnostics', alias: 'storageSyncClosure', globalName: 'getRakStorageSyncClosureHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only closure storage/sync audit fáze bez automatického mazání dat.' },
     { group: 'diagnostics', alias: 'bootSequence', globalName: 'getRakBootSequenceHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Čistě diagnostický helper.' },
     { group: 'diagnostics', alias: 'namespace', globalName: 'getRakNamespaceHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Sebekontrola namespace bridge.' },
     { group: 'diagnostics', alias: 'namespaceReadOnlyMap', globalName: 'getRakNamespaceReadOnlyMapHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only kontrola uzavřené mapy aliasů a fallbacků.' },
@@ -94,14 +98,14 @@
   };
   root.getNamespaceMap = cloneMap;
   root.namespaceMap = cloneMap();
-  root.namespaceMapVersion = 'v.1.5 (885)';
+  root.namespaceMapVersion = 'v.1.5 (891)';
   root.namespacePlan = {
     phase: 'phase C',
-    mode: 'namespace-readonly-phase-closed-with-export-smoke-alias-v885',
+    mode: 'namespace-readonly-phase-closed-with-supabase-client-queue-alias-v891',
     progressPercent: 100,
     mapClosed: true,
     rule: 'Staré globály zůstávají zdroj pravdy; read-only aliasy mají fallback na legacy globály a nesmí mutovat stav.',
-    nextStep: 'Namespace read-only fáze je uzavřená; phase D export/release tooling je uzavřená; další směr je phase E: DOM/action registry audit bez přepojení funkční logiky.'
+    nextStep: 'Namespace read-only fáze je uzavřená; export/release, DOM/action a storage/sync audity jsou uzavřené; další fáze je Supabase client/offline queue audit read-only.'
   };
 
   ensureGroup('modules');
@@ -175,7 +179,7 @@
     const safeList = list.filter((item) => item.phase === 'safe-now');
     return {
       ok: true,
-      mode: 'diagnostics-readonly-phase-closed-summary-v885',
+      mode: 'diagnostics-readonly-phase-closed-summary-v891',
       aliasCount: list.length,
       safeNowCount: safeList.length,
       laterCount: list.filter((item) => item.phase === 'later').length,
@@ -207,7 +211,7 @@
     if (unresolvedSafe.length) warnings.push('safe-now legacy globals čekají na pozdější moduly: ' + unresolvedSafe.slice(0, 6).join(', '));
     return {
       ok: missingReaders.length === 0 && mutatingRisk.length === 0,
-      mode: 'namespace-readonly-phase-closed-v885',
+      mode: 'namespace-readonly-phase-closed-v891',
       mapClosed: true,
       namespacePhaseClosed: true,
       phasePercent: 100,
@@ -307,7 +311,7 @@
 
     return {
       ok: issues.length === 0,
-      mode: 'passive-namespace-readonly-phase-closed-export-release-v885',
+      mode: 'passive-namespace-readonly-phase-closed-export-release-v891',
       checkedAt,
       version: String(window.APP_VERSION || 'unknown'),
       namespaceVersion,
@@ -358,7 +362,7 @@
     const health = (typeof window.getRakNamespaceHealth === 'function') ? window.getRakNamespaceHealth() : null;
     return {
       ok: !!(mapHealth && mapHealth.ok && health && health.ok),
-      mode: 'namespace-readonly-phase-closure-v885',
+      mode: 'namespace-readonly-phase-closure-v891',
       phasePercent: 100,
       namespacePhaseClosed: true,
       legacyGlobalsPreserved: !!(health && health.legacyGlobalsPreserved),

@@ -1,4 +1,4 @@
-// v.1.5 (885) – boot sequence audit včetně DOM/action registry helperu.
+// v.1.5 (891) – boot sequence audit včetně Supabase client/queue audit helperu.
 
 (function setupRakBootSequenceAudit() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -42,9 +42,11 @@
       'rak-namespace.js',
       'rak-audit-baseline.js',
       'rak-runtime-health.js',
+      'rak-storage-sync-audit.js',
       'rak-boot-sequence-audit.js',
       'rak-export-release-audit.js',
       'rak-dom-action-audit.js',
+      'rak-supabase-client-audit.js',
       'app.js'
     ];
     const indices = expectedStaticOrder.map((name) => ({ name, index: findIndexByTail(scripts, name) }));
@@ -84,7 +86,7 @@
 
     return {
       ok: issues.length === 0,
-      mode: 'boot-sequence-audit-v885',
+      mode: 'boot-sequence-audit-v891',
       checkedAt: new Date().toISOString(),
       version: String(window.APP_VERSION || 'unknown'),
       issueCount: issues.length,

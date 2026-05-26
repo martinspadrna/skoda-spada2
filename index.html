@@ -37,9 +37,11 @@ window.rakNoteExternalDependency = function(name, status, src) {
 <script src="rak-namespace.js"></script>
 <script src="rak-audit-baseline.js"></script>
 <script src="rak-runtime-health.js"></script>
+<script src="rak-storage-sync-audit.js"></script>
 <script src="rak-boot-sequence-audit.js"></script>
 <script src="rak-export-release-audit.js"></script>
 <script src="rak-dom-action-audit.js"></script>
+<script src="rak-supabase-client-audit.js"></script>
 
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="styles-inline-legacy.css">
@@ -317,7 +319,7 @@ window.rakNoteExternalDependency = function(name, status, src) {
         </svg>
       </div>
         <div>
-          <div class="calcTileText">Soustruhy <span class="calcDevBadge">ve vývoji</span></div>
+          <div class="calcTileText">Soustruhy</div>
         </div>
       </div>
       <div class="tile calcTile calcTileStack" data-action="page-korekce-frezky">
@@ -329,7 +331,7 @@ window.rakNoteExternalDependency = function(name, status, src) {
         </svg>
       </div>
         <div>
-          <div class="calcTileText">Frézky <span class="calcDevBadge">(nutno doladit)</span></div>
+          <div class="calcTileText">Frézky</div>
         </div>
       </div>
       <div class="tile calcTile calcTileStack" data-action="page-korekce-brusy">
@@ -366,6 +368,7 @@ window.rakNoteExternalDependency = function(name, status, src) {
       <div class="sectionTitle">Statistiky</div>
       <label for="statsYearSelect">Rok</label>
       <select id="statsYearSelect"><option value="2025">2025</option><option value="2026">2026</option></select>
+      <div id="statsYearOverview" class="statsYearOverview" aria-live="polite"></div>
 
       <div class="sectionTitle mt12">Jména</div>
       <div id="statsNameGrid" class="listGrid"></div>

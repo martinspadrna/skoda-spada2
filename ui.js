@@ -3588,10 +3588,86 @@ function tttBestLookaheadSafeMove(board, defender, attacker) {
   return bestIdx;
 }
 
+
+function tttBestDeepSafetyMove(board, deadline) {
+  const occupied = board.reduce((sum, cell) => sum + (cell ? 1 : 0), 0);
+  if (occupied < 6) return -1;
+  const centerRow = (TTT_ROWS - 1) / 2;
+  const centerCol = (TTT_COLS - 1) / 2;
+  let candidates = Array.from(new Set(tttCandidateMoves(board, occupied < 18 ? 3 : 2))).filter(idx => !board[idx]);
+  candidates = candidates
+    .map(idx => {
+      const row = Math.floor(idx / TTT_COLS);
+      const col = idx % TTT_COLS;
+      return {
+        idx,
+        score: tttCheapMovePotential(board, idx, 'O') * 0.95
+          + tttCheapMovePotential(board, idx, 'X') * 0.86
+          + Math.max(0, 90 - (Math.abs(row - centerRow) + Math.abs(col - centerCol)) * 5)
+      };
+    })
+    .sort((a, b) => b.score - a.score)
+    .slice(0, occupied < 20 ? 28 : 20)
+    .map(item => item.idx);
+
+  let bestIdx = -1;
+  let bestScore = -Infinity;
+  let bestWorstRisk = Infinity;
+  for (const idx of candidates) {
+    const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    if (deadline && now > deadline - 18 && bestIdx >= 0) break;
+    board[idx] = 'O';
+    const immediateLosses = tttWinningMoves(board, 'X').length;
+    const ownPressure = tttTacticalPressureScore(board, 'O');
+    let replies = Array.from(new Set(tttCandidateMoves(board, 2))).filter(reply => !board[reply]);
+    replies = replies
+      .map(reply => ({ reply, score: tttCheapMovePotential(board, reply, 'X') + tttTacticalPressureScore((() => { board[reply] = 'X'; const snap = board.slice(); board[reply] = ''; return snap; })(), 'X') * 0.00008 }))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, occupied < 18 ? 12 : 9)
+      .map(item => item.reply);
+
+    let worstRisk = immediateLosses * 24000000;
+    for (const reply of replies) {
+      board[reply] = 'X';
+      const replyWinner = tttWinner(board).winner === 'X' ? 1 : 0;
+      const xWins = tttWinningMoves(board, 'X').length;
+      const xCritical = tttCriticalThreatMoves(board, 'X').length;
+      const xWindows = tttThreatWindowMoves(board, 'X').length;
+      const xOpenThrees = tttOpenThreeThreatMoves(board, 'X').length;
+      const xPressure = tttTacticalPressureScore(board, 'X');
+      const oCounter = tttTacticalPressureScore(board, 'O');
+      board[reply] = '';
+      const risk = replyWinner * 50000000
+        + xWins * 15000000
+        + xCritical * 2400000
+        + xWindows * 1200000
+        + xOpenThrees * 700000
+        + xPressure * 0.72
+        - oCounter * 0.18;
+      if (risk > worstRisk) worstRisk = risk;
+    }
+
+    const candidateScore = ownPressure * 0.74 + tttCheapMovePotential(board, idx, 'O') * 1.25 - worstRisk;
+    board[idx] = '';
+    if (candidateScore > bestScore) {
+      bestScore = candidateScore;
+      bestIdx = idx;
+      bestWorstRisk = worstRisk;
+    }
+  }
+
+  if (bestIdx < 0) return -1;
+  const currentRisk = tttTacticalPressureScore(board, 'X');
+  if (currentRisk > 120000 || bestWorstRisk < 1400000 || occupied >= 10) return bestIdx;
+  return -1;
+}
+
+
 function tttHardSearchDepth(board) {
   const occupied = board.reduce((sum, cell) => sum + (cell ? 1 : 0), 0);
-  if (occupied < 10) return 3;
-  if (occupied < 26) return 3;
+  if (occupied < 10) return 4;
+  if (occupied < 24) return 4;
+  if (occupied < 34) return 3;
   return 2;
 }
 
@@ -3640,6 +3716,9 @@ function tttBestMove(board, difficulty) {
   const lookaheadSafeMove = tttBestLookaheadSafeMove(board, 'O', 'X');
   if (lookaheadSafeMove >= 0) return lookaheadSafeMove;
 
+  const deepSafetyMove = tttBestDeepSafetyMove(board, (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 210);
+  if (deepSafetyMove >= 0) return deepSafetyMove;
+
   const ownFork = tttBestForkMove(board, 'O');
   if (ownFork >= 0) return ownFork;
 
@@ -3650,7 +3729,7 @@ function tttBestMove(board, difficulty) {
   if (ownOpenThree >= 0) return ownOpenThree;
 
   const radius = occupied < 14 ? 3 : 2;
-  const deadline = (typeof performance !== 'undefined' ? performance.now() : Date.now()) + (difficulty === 'ai' ? 160 : 65);
+  const deadline = (typeof performance !== 'undefined' ? performance.now() : Date.now()) + (difficulty === 'ai' ? 260 : 80);
   let candidates = tttCandidateMoves(board, radius);
   if (!candidates.length) candidates = free.slice();
 
@@ -3663,7 +3742,7 @@ function tttBestMove(board, difficulty) {
         - tttTacticalPressureScore((() => { board[idx] = 'O'; const snapshot = board.slice(); board[idx] = ''; return snapshot; })(), 'X') * 0.18
     }))
     .sort((a, b) => b.score - a.score)
-    .slice(0, difficulty === 'ai' ? 16 : 10)
+    .slice(0, difficulty === 'ai' ? 22 : 12)
     .map(item => item.idx);
 
   let bestIdx = candidates[0] ?? free[0];
@@ -5021,10 +5100,10 @@ function buildSupabaseKeepaliveStatusHtml(options) {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v.1.5 851–885',
+      range: 'v.1.5 851–891',
       title: 'Release audit, namespace a export tooling',
       lines: [
-        'V885 uzavírá DOM/action registry audit a napojuje smoke report do release readiness; V884 doplnilo DOM/action smoke report, V883 cílové atributy akcí, V882 kategorie akcí a V881 audit zahájilo bez přepojení funkční logiky.',
+        'V891 přitvrzuje Piškvorky proti AI, přidává roční obsazenost/grafy do Statistik, přejmenovává Korekce Soustruhy/Frézky a pokračuje v Supabase queue guardu; V890 zahájilo read-only audit Supabase klientské/offline queue vrstvy bez DB změn; V889 uzavřelo storage/sync audit na 100 % bez automatického mazání; V888–886 řešily storage smoke, cleanup mapu a localStorage/offline audit, V885–881 uzavřely DOM/action registry audit.',
         'V867–875 uzavírá window.RaK read-only namespace fázi: mapuje diagnostické aliasy, zachovává staré globály a nepřepojuje navigaci, render, hry ani online flow.',
         'V860–866 uzavírá architecture/boot baseline audit: module readiness, runtime health, boot sequence a auditní helpery se oddělily mimo app.js bez změny funkčnosti.',
         'V853–859 řeší reset herních výsledků, opravu času Piškvorek, PWA/assets/SW audit, čistší ZIP strukturu a release readiness dokumentaci.',
@@ -6941,6 +7020,13 @@ function bindAppMenuHandlers(body) {
         const architectureBaseline = readRakDiag('architectureBaseline', 'getRakArchitectureBaselineHealth');
         const moduleReadiness = readRakDiag('health', 'getRakModuleReadinessHealth');
         const runtimeGuard = readRakDiag('runtimeGuard', 'getRakRuntimeGuardHealth');
+        const storageSyncAudit = readRakDiag('storageSyncAudit', 'getRakStorageSyncAuditHealth');
+        const storageSyncSmokeReport = readRakDiag('storageSyncSmokeReport', 'getRakStorageSyncSmokeReport');
+        const storageManualCleanupGuard = readRakDiag('storageManualCleanupGuard', 'getRakStorageManualCleanupGuard');
+        const storageSyncClosure = readRakDiag('storageSyncClosure', 'getRakStorageSyncClosureHealth');
+        const supabaseClientQueueAudit = readRakDiag('supabaseClientQueueAudit', 'getRakSupabaseClientQueueAuditHealth');
+        const supabaseQueueSmokeReport = readRakDiag('supabaseQueueSmokeReport', 'getRakSupabaseQueueSmokeReport');
+        const supabaseQueueManualGuard = readRakDiag('supabaseQueueManualGuard', 'getRakSupabaseQueueManualGuard');
         const bootSequence = readRakDiag('bootSequence', 'getRakBootSequenceHealth');
         const namespaceHealth = readRakDiag('namespace', 'getRakNamespaceHealth');
         const namespaceReadOnlyMap = readRakDiag('namespaceReadOnlyMap', 'getRakNamespaceReadOnlyMapHealth');
@@ -7003,6 +7089,13 @@ function bindAppMenuHandlers(body) {
           namespaceHealth ? ('RaK namespace: ' + (namespaceHealth.ok ? 'OK' : 'kontrola') + ' · režim ' + String(namespaceHealth.mode || '—') + ' · mapa ' + String(namespaceHealth.namespaceMapCount || 0) + ' · fáze ' + String(namespaceHealth.refactorProgressPercent || 0) + '% · mapa uzavřená ' + (namespaceHealth.namespaceMapClosed ? 'ano' : 'ne') + ' · warningy ' + String(namespaceHealth.warningCount || 0)) : '',
           namespaceReadOnlyMap ? ('RaK namespace fallbacky: ' + (namespaceReadOnlyMap.ok ? 'OK' : 'kontrola') + ' · read-only aliasy ' + String(namespaceReadOnlyMap.safeNowCount || 0) + ' · runtime ' + String(namespaceReadOnlyMap.runtimeAliasCount || 0) + ' · chybí čtečky ' + String(namespaceReadOnlyMap.missingReaderCount || 0) + ' · rizikové mutace ' + String(namespaceReadOnlyMap.mutatingRiskCount || 0)) : '',
           runtimeGuard ? ('Runtime health: ' + (runtimeGuard.ok ? 'OK' : 'kontrola') + ' · warningy ' + String(runtimeGuard.warningCount || 0) + ' · storage ' + (runtimeGuard.storage && runtimeGuard.storage.writable ? 'OK' : 'kontrola') + ' · budoucí měsíce ' + String(runtimeGuard.statsScope && runtimeGuard.statsScope.futureImportedMonthCount || 0)) : '',
+          storageSyncAudit ? ('Storage/sync audit: ' + (storageSyncAudit.ok ? 'OK' : 'kontrola') + ' · položky ' + String(storageSyncAudit.storage && storageSyncAudit.storage.itemCount || 0) + ' · JSON chyby ' + String(storageSyncAudit.storage && storageSyncAudit.storage.invalidJsonCount || 0) + ' · velké klíče ' + String(storageSyncAudit.storage && storageSyncAudit.storage.largeKeyCount || 0) + ' · kandidáti úklidu ' + String(storageSyncAudit.staleCleanupCandidateCount || 0) + ' · offline/sync klíče ' + String(storageSyncAudit.storage && storageSyncAudit.storage.offlineSyncKeyCount || 0) + ' · fáze ' + String(storageSyncAudit.phasePercent || 0) + '%') : '',
+          storageSyncSmokeReport ? ('Storage/sync smoke: ' + (storageSyncSmokeReport.ok === true ? 'OK' : (storageSyncSmokeReport.ok === false ? 'kontrola' : 'zatím neběžel')) + ' · stav ' + String(storageSyncSmokeReport.status || '—') + ' · běhy ' + String(storageSyncSmokeReport.runCount || 0) + ' · kandidáti ' + String(storageSyncSmokeReport.cleanupCandidateCount || 0) + ' · JSON chyby ' + String(storageSyncSmokeReport.invalidJsonCount || 0) + ' · guard ' + (storageSyncSmokeReport.manualGuardReady ? 'OK' : 'kontrola')) : '',
+          storageManualCleanupGuard ? ('Storage cleanup guard: ruční režim ' + (storageManualCleanupGuard.manualOnly ? 'OK' : 'kontrola') + ' · auto mazání ' + (storageManualCleanupGuard.autoCleanupEnabled ? 'zapnuto' : 'vypnuto') + ' · kandidáti ' + String(storageManualCleanupGuard.candidateCount || 0) + ' · ruční kontrola ' + (storageManualCleanupGuard.requiresHumanReview ? 'ano' : 'ne')) : '',
+          storageSyncClosure ? ('Storage/sync closure: ' + (storageSyncClosure.ok ? 'OK' : 'kontrola') + ' · fáze ' + String(storageSyncClosure.phasePercent || 0) + '% · kandidáti ' + String(storageSyncClosure.candidateCount || 0) + ' · auto mazání ' + (storageSyncClosure.autoCleanupEnabled ? 'zapnuto' : 'vypnuto')) : '',
+          supabaseClientQueueAudit ? ('Supabase client/queue: ' + (supabaseClientQueueAudit.ok ? 'OK' : 'kontrola') + ' · fronta ' + String(supabaseClientQueueAudit.queueLength || 0) + '/' + String(supabaseClientQueueAudit.queueMaxItems || '—') + ' · stale ' + String(supabaseClientQueueAudit.queueStaleTaskCount || 0) + ' · realtime ' + String(supabaseClientQueueAudit.realtimeStatus || '—') + ' · fáze ' + String(supabaseClientQueueAudit.phasePercent || 0) + '%') : '',
+          supabaseQueueSmokeReport ? ('Supabase queue smoke: ' + (supabaseQueueSmokeReport.ok === true ? 'OK' : (supabaseQueueSmokeReport.ok === false ? 'kontrola' : 'zatím neběžel')) + ' · stav ' + String(supabaseQueueSmokeReport.status || '—') + ' · fronta ' + String(supabaseQueueSmokeReport.queueLength || 0) + ' · stale ' + String(supabaseQueueSmokeReport.staleTaskCount || 0) + ' · guard ' + (supabaseQueueSmokeReport.manualGuardReady ? 'OK' : 'kontrola') + ' · online ' + (supabaseQueueSmokeReport.online ? 'ano' : 'ne')) : '',
+          supabaseQueueManualGuard ? ('Supabase queue guard: ' + (supabaseQueueManualGuard.ok ? 'OK' : 'kontrola') + ' · auto flush ' + (supabaseQueueManualGuard.autoFlushEnabled ? 'zapnuto' : 'vypnuto') + ' · auto mazání ' + (supabaseQueueManualGuard.autoDeleteEnabled ? 'zapnuto' : 'vypnuto') + ' · fronta ' + String(supabaseQueueManualGuard.queueLength || 0)) : '',
           exportReleaseTooling ? ('Export/release tooling: ' + (exportReleaseTooling.ok ? 'OK' : 'kontrola') + ' · source ID ' + String(exportReleaseTooling.sourceIdCount || 0) + ' · binární ' + String(exportReleaseTooling.binaryFileCount || 0) + ' · duplicit ' + String(exportReleaseTooling.duplicateBinaryCount || 0) + ' · warningy ' + String(exportReleaseTooling.warningCount || 0)) : '',
           exportSmokeReport ? ('Export smoke report: ' + (exportSmokeReport.ok === true ? 'OK' : (exportSmokeReport.ok === false ? 'kontrola' : 'zatím neběžel')) + ' · stav ' + String(exportSmokeReport.status || '—') + ' · text/bin ' + String(exportSmokeReport.checkedTextFileCount || 0) + '/' + String(exportSmokeReport.checkedBinaryFileCount || 0) + ' · chybí ' + String((exportSmokeReport.missingTextFileCount || 0) + (exportSmokeReport.missingBinaryFileCount || 0)) + ' · poslední ' + String(exportSmokeReport.lastStage || '—')) : '',
           domActionRegistry ? ('DOM/action registry: ' + (domActionRegistry.ok ? 'OK' : 'kontrola') + ' · akce ' + String(domActionRegistry.actionElementCount || 0) + ' · unikátní ' + String(domActionRegistry.uniqueActionCount || 0) + ' · kategorie ' + String(domActionRegistry.categoryCount || 0) + ' · target mapa ' + String(domActionRegistry.targetCoveragePercent || 0) + '% · target warningy ' + String(domActionRegistry.actionTargetWarningCount || 0) + ' · neznámé ' + String(domActionRegistry.unknownActionCount || 0) + ' · cíle ' + String(domActionRegistry.missingTargetCount || 0) + ' · warningy ' + String(domActionRegistry.warningCount || 0)) : '',
@@ -7016,7 +7109,7 @@ function bindAppMenuHandlers(body) {
           'PWA cache režim: lookup ' + String(pwaStatus.swCacheLookupMode || '—') + ' · ukládání ' + String(pwaStatus.swCacheableResponseMode || '—') + ' · trim ' + String(pwaStatus.swActivateRuntimeTrimMode || '—') + ' · síť fallback ' + String(pwaStatus.swNetworkTimeoutFallbackMode || '—') + ' (' + String(pwaStatus.swNetworkFallbackTimeoutMs || 0) + ' ms)' + ' · static timeout ' + String(pwaStatus.swStaticCacheFirstTimeoutMode || '—'),
           'PWA asset audit: ' + String(pwaStatus.pwaAssetAuditMode || '—') + ' · manifest ' + (pwaStatus.pwaAssetManifestOk ? 'OK' : 'kontrola') + ' · favicon ' + (pwaStatus.pwaAssetFaviconOk ? 'OK' : 'kontrola') + ' · apple ' + (pwaStatus.pwaAssetAppleTouchOk ? 'OK' : 'kontrola') + ' · SW ikony ' + String(pwaStatus.swAssetIconCount || 0) + '/' + String(pwaStatus.pwaAssetExpectedIconCount || 0) + ' · root odkazy ' + (pwaStatus.pwaAssetRootIconRefsBlocked && !Number(pwaStatus.swAssetLegacyRootIconCount || 0) ? 'žádné' : 'kontrola') + ' · ZIP ' + String(pwaStatus.swExportZipRootMode || '—'),
           'PWA dokončení: ' + String(pwaStatus.swPhase8CompletionMode || '—') + ' · připraveno ' + (pwaStatus.swPhase8Ready ? 'ano' : 'ne') + ' · app shell ' + String(pwaStatus.swAppShellCachedRatio || 0) + '%',
-          releaseReadiness ? ('Release readiness: ' + (releaseReadiness.ok ? 'OK' : 'kontrola') + ' · verze ' + String(releaseReadiness.version || '—') + ' · CDN skripty ' + String(releaseReadiness.externalScriptCount || 0) + ' · export ' + String(releaseReadiness.exportSmokeReportStatus || '—') + ' · DOM ' + String(releaseReadiness.domActionSmokeReportStatus || '—') + ' · warningy ' + String(releaseReadiness.warningCount || 0)) : ''
+          releaseReadiness ? ('Release readiness: ' + (releaseReadiness.ok ? 'OK' : 'kontrola') + ' · verze ' + String(releaseReadiness.version || '—') + ' · CDN skripty ' + String(releaseReadiness.externalScriptCount || 0) + ' · export ' + String(releaseReadiness.exportSmokeReportStatus || '—') + ' · DOM ' + String(releaseReadiness.domActionSmokeReportStatus || '—') + ' · SQ ' + String(releaseReadiness.supabaseQueueSmokeReportStatus || '—') + ' · warningy ' + String(releaseReadiness.warningCount || 0)) : ''
         ] : [];
         const dataOptDiag = dataOptStatus ? [
           'Data opt: zápisy/skipy ' + String(dataOptStatus.localStorageWrites || 0) + '/' + String(dataOptStatus.localStorageSkippedWrites || 0) + ' · čtení/cache ' + String(dataOptStatus.localStorageReads || 0) + '/' + String(dataOptStatus.localStorageReadCacheHits || 0),

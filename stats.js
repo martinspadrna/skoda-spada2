@@ -288,6 +288,67 @@ function inferWorkAbsenceTargetForStats(people, explicitTarget) {
   return Math.max(...sums);
 }
 
+function getStatsMonthOverview(stats, monthKey) {
+  if (!stats.monthlyOverview) stats.monthlyOverview = {};
+  const key = String(monthKey || '').trim();
+  if (!key) return { monthKey: '', totalSlots: 0, occupiedSlots: 0, absenceReasons: {} };
+  if (!stats.monthlyOverview[key]) {
+    stats.monthlyOverview[key] = { monthKey: key, totalSlots: 0, occupiedSlots: 0, absenceReasons: {} };
+  }
+  return stats.monthlyOverview[key];
+}
+
+function getStatsAbsenceReasonLabel(note) {
+  const code = String(note && note.code ? note.code : '').trim();
+  const fromCode = typeof absenceLabelFromCode === 'function' ? String(absenceLabelFromCode(code) || '').trim() : '';
+  if (fromCode) return fromCode;
+  const text = String(note && note.text ? note.text : '').trim();
+  if (/dovolen/i.test(text)) return 'Dovolená';
+  if (/škol|skol/i.test(text)) return 'Školení';
+  if (/paragraf|§/i.test(text)) return 'Paragraf';
+  if (/náhrad|nahrad|\bNV\b/i.test(text)) return 'Náhradní volno';
+  if (/lázn|lazn/i.test(text)) return 'Lázně';
+  if (/senior|\bS\b/i.test(text)) return 'Senior';
+  return 'Ostatní';
+}
+
+function roundStatsValue(value) {
+  return Math.round((Number(value) || 0) * 10) / 10;
+}
+
+function finalizeStatsYearOverview(stats) {
+  const totalSlots = Math.max(0, Number(stats && stats.occupancy && stats.occupancy.totalSlots || 0) || 0);
+  const occupiedSlots = Math.max(0, Math.min(totalSlots, Number(stats && stats.occupancy && stats.occupancy.occupiedSlots || 0) || 0));
+  const percent = totalSlots > 0 ? Math.round((occupiedSlots / totalSlots) * 1000) / 10 : 0;
+  stats.occupancy = Object.assign({}, stats.occupancy || {}, {
+    totalSlots: roundStatsValue(totalSlots),
+    occupiedSlots: roundStatsValue(occupiedSlots),
+    freeSlots: roundStatsValue(Math.max(0, totalSlots - occupiedSlots)),
+    percent
+  });
+
+  const monthKeys = Array.isArray(stats.includedMonthKeys) ? stats.includedMonthKeys : [];
+  stats.monthlyOccupancy = monthKeys.map(key => {
+    const item = stats.monthlyOverview && stats.monthlyOverview[key] ? stats.monthlyOverview[key] : { monthKey: key, totalSlots: 0, occupiedSlots: 0 };
+    const monthTotal = Math.max(0, Number(item.totalSlots || 0) || 0);
+    const monthOccupied = Math.max(0, Math.min(monthTotal, Number(item.occupiedSlots || 0) || 0));
+    return {
+      monthKey: key,
+      totalSlots: roundStatsValue(monthTotal),
+      occupiedSlots: roundStatsValue(monthOccupied),
+      percent: monthTotal > 0 ? Math.round((monthOccupied / monthTotal) * 1000) / 10 : 0
+    };
+  });
+
+  const absenceReasons = stats.absenceReasons || {};
+  stats.absenceReasonList = Object.entries(absenceReasons)
+    .map(([reason, value]) => ({ reason: String(reason || 'Ostatní'), value: roundStatsValue(value) }))
+    .filter(item => item.value > 0)
+    .sort((a, b) => b.value - a.value || a.reason.localeCompare(b.reason, 'cs'));
+  return stats;
+}
+
+
 function buildStatsForYear(year) {
   const stats = {
     year,
@@ -296,6 +357,11 @@ function buildStatsForYear(year) {
     machineTotals: {},
     cleanTotals: {},
     absenceTotals: {},
+    absenceReasons: {},
+    monthlyOverview: {},
+    monthlyOccupancy: [],
+    absenceReasonList: [],
+    occupancy: { totalSlots: 0, occupiedSlots: 0, freeSlots: 0, percent: 0 },
     machineCleanLeaders: {},
     machineTopWorkers: {},
     includedMonthKeys: []
@@ -341,6 +407,7 @@ function buildStatsForYear(year) {
     const parsedMonth = parseMonthKey(monthKey);
     if (!shouldIncludeMonthInStats(parsedMonth, year)) return;
     includedMonthSet.add(monthKey);
+    const monthOverview = getStatsMonthOverview(stats, monthKey);
 
     ["hard", "soft"].forEach(section => {
       const sec = month[section];
@@ -357,8 +424,14 @@ function buildStatsForYear(year) {
         (row.cells || []).forEach((cell, idx) => {
           const name = String(cell || "").trim();
           const machine = (sec.machines || [])[idx] || "";
+          if (String(machine || '').trim()) {
+            stats.occupancy.totalSlots += 1;
+            monthOverview.totalSlots += 1;
+          }
           if (!name || !machine || !knownStatNames.has(name)) return;
 
+          stats.occupancy.occupiedSlots += 1;
+          monthOverview.occupiedSlots += 1;
           rowNames.add(name);
           const person = ensurePerson(name);
           // TNKS01 + TPKW01: mimo neděli se střídá půl směny/půl směny; v neděli se nepůlí.
@@ -411,6 +484,7 @@ function buildStatsForYear(year) {
   Object.entries(app.rotation.months || {}).forEach(([monthKey, month]) => {
     const parsedMonth = parseMonthKey(monthKey);
     if (!shouldIncludeMonthInStats(parsedMonth, year)) return;
+    const monthOverview = getStatsMonthOverview(stats, monthKey);
 
     (month.notes || []).forEach(note => {
       const n = normalizeNoteEntry(note);
@@ -424,6 +498,9 @@ function buildStatsForYear(year) {
         if (!name || !knownStatNames.has(name)) return;
 
         const person = ensurePerson(name);
+        const reasonLabel = getStatsAbsenceReasonLabel(n);
+        stats.absenceReasons[reasonLabel] = (stats.absenceReasons[reasonLabel] || 0) + weight;
+        monthOverview.absenceReasons[reasonLabel] = (monthOverview.absenceReasons[reasonLabel] || 0) + weight;
         const candidates = (nameIndex[name] || []).filter(entry => {
           if (entry.absence) return false;
           if (entry.monthKey !== monthKey) return false;
@@ -440,6 +517,8 @@ function buildStatsForYear(year) {
             stats.absenceTotals[column] = (stats.absenceTotals[column] || 0) + weight;
             person.work[column] = Math.max(0, (Number(person.work[column] || 0) || 0) - weight);
             stats.machineTotals[column] = Math.max(0, (Number(stats.machineTotals[column] || 0) || 0) - weight);
+            stats.occupancy.occupiedSlots = Math.max(0, (Number(stats.occupancy.occupiedSlots || 0) || 0) - weight);
+            monthOverview.occupiedSlots = Math.max(0, (Number(monthOverview.occupiedSlots || 0) || 0) - weight);
           }
         }
         person.totalAbsence += weight;
@@ -516,6 +595,7 @@ function buildStatsForYear(year) {
     }
   });
 
+  finalizeStatsYearOverview(stats);
   return stats;
 }
 
@@ -605,6 +685,109 @@ function createStatsSummaryTile(label, value, valueClassName) {
   tile.appendChild(createStatsTextNode('div', 'smallText', label));
   tile.appendChild(createStatsTextNode('div', valueClassName || 'statsSummaryValue', value));
   return tile;
+}
+
+
+function formatStatsPercent(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return '0 %';
+  const rounded = Math.round(n * 10) / 10;
+  return String(rounded).replace('.', ',') + ' %';
+}
+
+function createStatsYearOverviewNodes(stats, year) {
+  if (!stats) return [];
+  const wrap = document.createElement('div');
+  wrap.className = 'statsYearOverviewCard';
+
+  const header = document.createElement('div');
+  header.className = 'statsYearOverviewHeader';
+  const title = createStatsTextNode('div', 'statsYearOverviewTitle', 'Obsazenost strojů · ' + String(year));
+  const percent = createStatsTextNode('div', 'statsYearOverviewPercent', formatStatsPercent(stats.occupancy && stats.occupancy.percent));
+  header.appendChild(title);
+  header.appendChild(percent);
+
+  const meta = createStatsTextNode('div', 'smallText statsYearOverviewMeta', 'Započtené měsíce: ' + ((stats.includedMonthKeys || []).join(', ') || '—') + ' · obsazeno ' + formatCount(stats.occupancy && stats.occupancy.occupiedSlots || 0) + ' z ' + formatCount(stats.occupancy && stats.occupancy.totalSlots || 0) + ' slotů');
+
+  const grid = document.createElement('div');
+  grid.className = 'statsYearOverviewGrid';
+
+  const trend = document.createElement('div');
+  trend.className = 'statsYearChartBox';
+  trend.appendChild(createStatsTextNode('div', 'smallText statsYearChartTitle', 'Vývoj obsazenosti během roku'));
+  const bars = document.createElement('div');
+  bars.className = 'statsOccupancyBars';
+  const months = Array.isArray(stats.monthlyOccupancy) ? stats.monthlyOccupancy : [];
+  months.forEach(item => {
+    const bar = document.createElement('div');
+    bar.className = 'statsOccupancyBar';
+    const fill = document.createElement('span');
+    const pct = Math.max(2, Math.min(100, Number(item.percent || 0) || 0));
+    fill.style.height = pct + '%';
+    bar.title = String(item.monthKey || '') + ' · ' + formatStatsPercent(item.percent || 0);
+    const label = document.createElement('em');
+    const parsed = typeof parseMonthKey === 'function' ? parseMonthKey(item.monthKey) : null;
+    label.textContent = parsed ? String(parsed.month) : String(item.monthKey || '').slice(5);
+    bar.appendChild(fill);
+    bar.appendChild(label);
+    bars.appendChild(bar);
+  });
+  if (!months.length) bars.appendChild(createStatsTextNode('div', 'smallText', 'Zatím nejsou data pro graf.'));
+  trend.appendChild(bars);
+
+  const pieBox = document.createElement('div');
+  pieBox.className = 'statsYearChartBox';
+  pieBox.appendChild(createStatsTextNode('div', 'smallText statsYearChartTitle', 'Důvody absencí v započteném roce'));
+  const reasons = Array.isArray(stats.absenceReasonList) ? stats.absenceReasonList.slice(0, 6) : [];
+  const totalAbs = reasons.reduce((sum, item) => sum + (Number(item.value) || 0), 0);
+  const pieWrap = document.createElement('div');
+  pieWrap.className = 'statsAbsencePieWrap';
+  const pie = document.createElement('div');
+  pie.className = 'statsAbsencePie';
+  if (totalAbs > 0) {
+    const colors = ['var(--accent)', 'var(--accent2)', 'rgba(255,255,255,.74)', 'rgba(124,255,178,.58)', 'rgba(255,214,102,.64)', 'rgba(255,122,122,.58)'];
+    let current = 0;
+    const segments = reasons.map((item, index) => {
+      const start = current;
+      const deg = ((Number(item.value) || 0) / totalAbs) * 360;
+      current += deg;
+      return colors[index % colors.length] + ' ' + start.toFixed(2) + 'deg ' + current.toFixed(2) + 'deg';
+    });
+    pie.style.background = 'conic-gradient(' + segments.join(', ') + ')';
+    pie.textContent = formatCount(totalAbs);
+  } else {
+    pie.classList.add('isEmpty');
+    pie.textContent = '0';
+  }
+  const legend = document.createElement('div');
+  legend.className = 'statsAbsenceLegend';
+  if (reasons.length) {
+    reasons.forEach(item => {
+      const row = document.createElement('div');
+      row.className = 'statsAbsenceLegendRow';
+      const name = createStatsTextNode('span', '', item.reason);
+      const value = createStatsTextNode('strong', '', formatCount(item.value));
+      row.appendChild(name);
+      row.appendChild(value);
+      legend.appendChild(row);
+    });
+  } else {
+    legend.appendChild(createStatsTextNode('div', 'smallText', 'Žádné absence v započteném období.'));
+  }
+  pieWrap.appendChild(pie);
+  pieWrap.appendChild(legend);
+  pieBox.appendChild(pieWrap);
+
+  grid.appendChild(trend);
+  grid.appendChild(pieBox);
+  wrap.appendChild(header);
+  wrap.appendChild(meta);
+  wrap.appendChild(grid);
+
+  const scopeNoteText = getStatsFutureMonthScopeNote(year, stats);
+  if (scopeNoteText) wrap.appendChild(createStatsTextNode('div', 'smallText statsScopeNote', scopeNoteText));
+
+  return [wrap];
 }
 
 function renderStatsNameViewNodes(person, year, stats, topWork, topClean) {
@@ -706,6 +889,7 @@ function renderStatsPanel() {
   const statsMachineGrid = document.getElementById("statsMachineGrid");
   const statsNameView = document.getElementById("statsNameView");
   const statsMachineView = document.getElementById("statsMachineView");
+  const statsYearOverview = document.getElementById("statsYearOverview");
   if (!statsNameGrid || !statsMachineGrid || !statsNameView || !statsMachineView) return;
 
   const year = parseInt(app.selectedYear, 10) || getInitialSelectedYear(app.rotation);
@@ -719,6 +903,25 @@ function renderStatsPanel() {
   }
 
   bindStatsGridDelegates();
+
+  if (statsYearOverview) {
+    const statsYearOverviewFingerprint = JSON.stringify({
+      year,
+      occupancy: stats.occupancy || {},
+      monthly: stats.monthlyOccupancy || [],
+      reasons: stats.absenceReasonList || [],
+      scopeNote: getStatsFutureMonthScopeNote(year, stats)
+    });
+    if (typeof setElementChildrenIfChanged === 'function') {
+      setElementChildrenIfChanged(statsYearOverview, statsYearOverviewFingerprint, () => createStatsYearOverviewNodes(stats, year), 'statsYearOverview');
+    } else if (typeof clearElementChildrenSafely === 'function') {
+      clearElementChildrenSafely(statsYearOverview, 'statsYearOverview');
+      createStatsYearOverviewNodes(stats, year).forEach(node => statsYearOverview.appendChild(node));
+    } else {
+      statsYearOverview.innerHTML = '';
+      createStatsYearOverviewNodes(stats, year).forEach(node => statsYearOverview.appendChild(node));
+    }
+  }
 
   const statsNameGridFingerprint = JSON.stringify({ names: stats.names || [], selected: app.selectedStatsName || '' });
   if (typeof setElementChildrenIfChanged === 'function') {

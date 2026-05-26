@@ -1,3 +1,49 @@
+## v.1.5 (891)
+- Piškvorky proti AI znovu přitvrzené: přidaný hlubší bezpečnostní tah proti forkům/dvojitým hrozbám, vyšší search depth ve střední fázi a mírně delší časový limit AI; online Piškvorky beze změny.
+- Korekce → přehled: názvy zkrácené na „Soustruhy“ a „Frézky“ bez štítků „ve vývoji“ / „nutno doladit“.
+- Statistiky → pod volbu roku přidaný přehled obsazenosti strojů: procento za započtené období, měsíční graf vývoje a koláč důvodů absencí.
+- Supabase client/offline queue audit má nový read-only manual guard; automatický flush ani automatické mazání dat zůstává vypnuté.
+- Přidané dokumenty `ttt-ai-hardening-v891.md`, `stats-year-occupancy-v891.md`, `corrections-labels-v891.md` a `supabase-client-queue-smoke-guard-v891.md`.
+- Verze sjednocena na v.1.5 (891), cache na `v1.5-891`, realtime kanál na `rak-public-live-v891`, package na `1.5.891`.
+
+## v.1.5 (890)
+- Zahájen read-only audit Supabase klientské/offline queue vrstvy přes nový `rak-supabase-client-audit.js`.
+- Přidané helpery `getRakSupabaseClientQueueAuditHealth()`, `getRakSupabaseQueueSmokeReport()` a `runRakSupabaseQueueSmokeReport()`; audit nic nemaže, nespouští flush fronty, nemění DB ani Supabase policies.
+- Diagnostika / O aplikaci nově ukazuje stav `Supabase client/queue` a `Supabase queue smoke`; Release readiness bere výsledek jen jako warning signál.
+- Přidaný dokument `assets/docs/supabase-client-queue-audit-v890.md`; historie v O aplikaci zůstává ve stručném bloku `v.1.5 851–890`.
+- Verze sjednocena na v.1.5 (890), cache na `v1.5-890`, realtime kanál na `rak-public-live-v890`, package na `1.5.890`.
+
+## v.1.5 (889)
+- Storage / localStorage / offline sync audit je uzavřený na 100 % jako read-only diagnostická fáze bez automatického mazání dat.
+- Přidaný helper `getRakStorageSyncClosureHealth()` sjednocuje storage audit, smoke report a manual cleanup guard do finální closure kontroly.
+- Release/runtime readiness a Diagnostika / O aplikaci nově vidí `Storage/sync closure`; případné cleanup kandidáty dál ukazují jen jako návrh pro ruční kontrolu.
+- Přidaný dokument `assets/docs/storage-sync-closure-v889.md`; historie v O aplikaci zůstává ve stručném bloku `v.1.5 851–889`.
+- Verze sjednocena na v.1.5 (889), cache na `v1.5-889`, realtime kanál na `rak-public-live-v889`, package na `1.5.889`.
+- Hry, online flow, Supabase DB/policies, dashboard, spodní lišta, kalkulačky, navigace a render stránek beze změny.
+
+## v.1.5 (888)
+- Storage/localStorage cleanup mapa je nově napojená do samostatného smoke reportu `getRakStorageSyncSmokeReport()` a ručního běhu `runRakStorageSyncSmokeReport()`.
+- Přidaný ruční cleanup guard `getRakStorageManualCleanupGuard()` potvrzuje, že automatické mazání localStorage není zapnuté a cleanup kandidáti jsou jen návrh pro ruční kontrolu.
+- Diagnostika / O aplikaci nově ukazuje `Storage/sync smoke` a `Storage cleanup guard`; release/runtime readiness bere smoke/guard jen jako warning signál.
+- Přidaný dokument `assets/docs/storage-sync-smoke-guard-v888.md`; historie v O aplikaci zůstává ve stručném bloku `v.1.5 851–888`.
+- Verze sjednocena na v.1.5 (888), cache na `v1.5-888`, realtime kanál na `rak-public-live-v888`, package na `1.5.888`.
+- Hry, online flow, Supabase DB/policies, dashboard, spodní lišta, kalkulačky, navigace a render stránek beze změny.
+
+## v.1.5 (887)
+- Storage/localStorage audit nově mapuje kandidáty na ruční stale cleanup bez automatického mazání dat.
+- `getRakStorageSyncAuditHealth()` vrací `staleCleanupCandidateCount`, odhad velikosti, bucket/risk/action souhrny a ukázku kandidátů pro ruční kontrolu.
+- Diagnostika / O aplikaci u `Storage/sync audit` nově ukazuje počet kandidátů úklidu; jde jen o warning/read-only informaci, ne o mazání.
+- Přidaný dokument `assets/docs/storage-sync-cleanup-map-v887.md`; historie v O aplikaci zůstává ve stručném bloku `v.1.5 851–887`.
+- Verze sjednocena na v.1.5 (887), cache na `v1.5-887`, realtime kanál na `rak-public-live-v887`, package na `1.5.887`.
+- Hry, online flow, Supabase DB/policies, dashboard, spodní lišta, kalkulačky, navigace a render stránek beze změny.
+
+## v.1.5 (886)
+- Zahájená nová read-only fáze `Storage / localStorage / offline sync audit` bez mazání nebo přepisování dat.
+- Přidaný nový helper `rak-storage-sync-audit.js` a diagnostika `getRakStorageSyncAuditHealth()`, která mapuje localStorage klíče, JSON chyby, velké položky, offline/sync bucket a Supabase queue/cache snapshot.
+- Diagnostika / O aplikaci nově ukazuje řádek `Storage/sync audit`; release/runtime readiness bere storage audit jako warning signál, ne jako zásah do funkce.
+- Přidaný dokument `assets/docs/storage-sync-audit-v886.md`; historie v O aplikaci zůstává ve stručném bloku `v.1.5 851–886`.
+- Verze sjednocena na v.1.5 (886), cache na `v1.5-886`, realtime kanál na `rak-public-live-v886`, package na `1.5.886`.
+
 ## v.1.5 (885)
 - DOM/action registry audit je uzavřený na 100 % bez přepojování klikání, navigace, renderu, her nebo online flow.
 - Release readiness nově čte `getRakDomActionSmokeReport()` a ukazuje DOM/action smoke stav jako warning signál, ne jako zásah do funkčnosti.
