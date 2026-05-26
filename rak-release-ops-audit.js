@@ -1,4 +1,4 @@
-// v.1.5 (922) – release ops checklist, monitoring map a rollback playbook jako read-only diagnostika.
+// v.1.5 (923) – release ops checklist, monitoring map a rollback playbook jako read-only diagnostika.
 
 (function setupRakReleaseOpsAudit() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -177,7 +177,7 @@
 
     return {
       ok: blockers.length === 0,
-      mode: 'release-ops-checklist-v922',
+      mode: 'release-ops-checklist-v923',
       version: String(window.APP_VERSION || 'unknown'),
       checkedAt: nowIso(),
       gateCount: gates.length,
@@ -215,7 +215,7 @@
 
     return {
       ok: true,
-      mode: 'release-ops-monitoring-map-v922',
+      mode: 'release-ops-monitoring-map-v923',
       version: String(window.APP_VERSION || 'unknown'),
       checkedAt: nowIso(),
       metricCount: metrics.length,
@@ -248,7 +248,7 @@
 
     return {
       ok: true,
-      mode: 'release-ops-rollback-playbook-v922',
+      mode: 'release-ops-rollback-playbook-v923',
       version: String(window.APP_VERSION || 'unknown'),
       checkedAt: nowIso(),
       rollbackArtifactRule: 'Poslední potvrzený ZIP je rollback bod; nový ZIP čeká na „ok“.',
@@ -279,7 +279,7 @@
 
     return {
       ok: issues.length === 0,
-      mode: 'release-ops-closure-v922',
+      mode: 'release-ops-closure-v923',
       version: String(window.APP_VERSION || 'unknown'),
       checkedAt: nowIso(),
       phase: 'phase J release readiness / monitoring / rollback',

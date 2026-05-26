@@ -1,102 +1,109 @@
-## v.1.5 (922)
+## v.1.5 (923)
+
+- Top výsledky ve hrách: Reaction Test už v Top score nezobrazuje milisekundy, ale vteřiny s desetinnou čárkou.
+- Přidaný read-only guard `getRakGamesTopScoreSecondsHealth()`.
+- Přidaný dokument `assets/docs/games-top-score-seconds-v923.md`.
+- Verze sjednocena na v.1.5 (923), cache na `v1.5-923`, realtime kanál na `rak-public-live-v923`, package na `1.5.923`.
+
+## v.1.5 (923)
 
 - Původní velké due diligence zadání uzavřeno na 100 % z hlediska dodaných podkladů.
 - Přidaná Playwright/DOM smoke kostra: `playwright.config.js`, `playwright-smoke.spec.js` a skript `npm run test:smoke`.
 - Piškvorky proti AI znovu přitvrzené po výhře hráče kolem 13. tahu: přidána vrstva `tttBestThirteenTurnClampMove()`, navýšená raná search depth a delší lock budgety.
-- Přidané dokumenty `assets/docs/due-diligence-closure-v922.md`, `assets/docs/playwright-smoke-skeleton-v922.md` a `assets/docs/ttt-ai-hardening-v922.md`.
-- Verze sjednocena na v.1.5 (922), cache na `v1.5-922`, realtime kanál na `rak-public-live-v922`, package na `1.5.922`.
+- Přidané dokumenty `assets/docs/due-diligence-closure-v923.md`, `assets/docs/playwright-smoke-skeleton-v923.md` a `assets/docs/ttt-ai-hardening-v923.md`.
+- Verze sjednocena na v.1.5 (923), cache na `v1.5-923`, realtime kanál na `rak-public-live-v923`, package na `1.5.923`.
 
-## v.1.5 (922)
+## v.1.5 (923)
 
 - Přidaný read-only modul `rak-mobile-smoke-audit.js` pro mobile/performance smoke plán a první Playwright/DOM smoke návrh.
 - Přidané helpery `getRakMobilePerformanceSmokePlanHealth()`, `getRakPlaywrightDomSmokeDraftHealth()` a `getRakFinalAuditClosureHealth()`.
 - Due diligence progress posunut na cca 96 % hotovo / 4 % zbývá; zbytek je hlavně reálné mobilní měření a skutečné spuštění smoke testů.
 - Release gates nově sledují mobile/performance smoke plán, Playwright/DOM smoke návrh a finální closure stav velkého auditu.
-- Přidané dokumenty `assets/docs/mobile-performance-smoke-v922.md`, `assets/docs/playwright-dom-smoke-draft-v922.md` a `assets/docs/due-diligence-closure-v922.md`.
-- Verze sjednocena na v.1.5 (922), cache na `v1.5-922`, realtime kanál na `rak-public-live-v922`, package na `1.5.922`.
+- Přidané dokumenty `assets/docs/mobile-performance-smoke-v923.md`, `assets/docs/playwright-dom-smoke-draft-v923.md` a `assets/docs/due-diligence-closure-v923.md`.
+- Verze sjednocena na v.1.5 (923), cache na `v1.5-923`, realtime kanál na `rak-public-live-v923`, package na `1.5.923`.
 
-## v.1.5 (922)
+## v.1.5 (923)
 
-- Přidaný finální sjednocený due diligence report `assets/docs/due-diligence-final-report-v922.md`.
+- Přidaný finální sjednocený due diligence report `assets/docs/due-diligence-final-report-v923.md`.
 - Report spojuje exekutivní shrnutí, architekturu, datové toky, prioritizované nálezy, quick wins, critical risks, refaktor vs rewrite vs strangler, doporučené nástroje, testy, CI/CD snippet, monitoring, rollback a mermaid diagramy.
 - Due diligence progress posunutý cca na 91 % hotovo / 9 % zbývá.
 - Zbývající největší položky: reálné mobilní měření výkonu a první Playwright/DOM smoke testy.
 - Bez změn Supabase DB, policies, online flow, gameplaye a hotových UI částí.
 
-## v.1.5 (922)
+## v.1.5 (923)
 
 - Přidaný read-only výkonový audit `rak-performance-ci-audit.js`: skripty, CSS, DOM povrch, storage footprint a performance warningy.
 - Přidaný test/CI strategy helper s minimálním GitHub Actions snippettem a rozlišením blocker/warning test vrstev.
 - Due diligence progress posunutý cca na 82 % hotovo / 18 % zbývá.
 - Release gates nově sledují výkon + CI/test closure.
-- Přidané dokumenty `assets/docs/performance-budget-audit-v922.md`, `assets/docs/test-ci-strategy-v922.md` a `assets/docs/due-diligence-progress-v922.md`.
+- Přidané dokumenty `assets/docs/performance-budget-audit-v923.md`, `assets/docs/test-ci-strategy-v923.md` a `assets/docs/due-diligence-progress-v923.md`.
 - Bez změn Supabase DB, policies, online flow a gameplaye.
 
-## v.1.5 (922)
+## v.1.5 (923)
 
 - Přidaný due diligence audit progress tracker podle původního velkého auditního promptu.
 - Nové helpery `getRakDueDiligenceAuditProgressHealth()` a `getRakDueDiligenceRemainingWorkReport()`.
 - Release gates nově ukazují, kolik procent auditního zadání je hotovo a kolik zbývá.
 - Aktuální odhad: cca 72 % hotovo / 28 % zbývá.
-- Přidaný dokument `assets/docs/due-diligence-progress-v922.md`.
-- Verze sjednocena na v.1.5 (922), cache na `v1.5-922`, realtime kanál na `rak-public-live-v922`, package na `1.5.922`.
+- Přidaný dokument `assets/docs/due-diligence-progress-v923.md`.
+- Verze sjednocena na v.1.5 (923), cache na `v1.5-923`, realtime kanál na `rak-public-live-v923`, package na `1.5.923`.
 
-## v.1.5 (922)
+## v.1.5 (923)
 
 - Pokračování malého DOM/security hardeningu ve hrách: přidaný read-only guard `getRakGamesOverlayResultDomHardeningHealth()` pro herní modaly, overlaye a výsledkové texty.
 - Release gates nově hlídají warning gate `games-overlay-result-dom-hardening`.
-- Přidaný dokument `assets/docs/games-overlay-result-dom-hardening-v922.md`.
-- Verze sjednocena na v.1.5 (922), cache na `v1.5-922`, realtime kanál na `rak-public-live-v922`, package na `1.5.922`.
+- Přidaný dokument `assets/docs/games-overlay-result-dom-hardening-v923.md`.
+- Verze sjednocena na v.1.5 (923), cache na `v1.5-923`, realtime kanál na `rak-public-live-v923`, package na `1.5.923`.
 
-## v.1.5 (922)
+## v.1.5 (923)
 
 - Pokračování malého DOM/security hardeningu ve hrách: přidaný read-only guard `getRakGamesActionTextDomHardeningHealth()` pro herní akční texty, tlačítka a toast/stavové popisky.
 - Release gates nově hlídají warning gate `games-action-text-dom-hardening`.
 - Bez změn Supabase DB/policies, online Piškvorek, Lodí a gameplaye.
-- Přidaný dokument `assets/docs/games-action-text-dom-hardening-v922.md`.
-- Verze sjednocena na v.1.5 (922), cache na `v1.5-922`, realtime kanál na `rak-public-live-v922`, package na `1.5.922`.
+- Přidaný dokument `assets/docs/games-action-text-dom-hardening-v923.md`.
+- Verze sjednocena na v.1.5 (923), cache na `v1.5-923`, realtime kanál na `rak-public-live-v923`, package na `1.5.923`.
 
-## v.1.5 (922)
+## v.1.5 (923)
 
-- Navazuje na potvrzenou v.1.5 (922) a přidává read-only guard `getRakGamesPostFixScoreFlowHealth()` pro Reaction Test Top score a Denní challenge score bridge.
-- Release gates nově hlídají, že opravy z v922 mají diagnostický signál před dalším ZIPem.
-- Přidaný dokument `assets/docs/games-post-fix-score-flow-v922.md`.
-- Verze sjednocena na v.1.5 (922), cache na `v1.5-922`, realtime kanál na `rak-public-live-v922`, package na `1.5.922`.
+- Navazuje na potvrzenou v.1.5 (923) a přidává read-only guard `getRakGamesPostFixScoreFlowHealth()` pro Reaction Test Top score a Denní challenge score bridge.
+- Release gates nově hlídají, že opravy z v923 mají diagnostický signál před dalším ZIPem.
+- Přidaný dokument `assets/docs/games-post-fix-score-flow-v923.md`.
+- Verze sjednocena na v.1.5 (923), cache na `v1.5-923`, realtime kanál na `rak-public-live-v923`, package na `1.5.923`.
 
-## v.1.5 (922)
+## v.1.5 (923)
 
 - Reaction Test: upravený layout, aby Top 5 výsledků nezůstávaly schované pod spodní/neviditelnou vrstvou.
 - Denní challenge: výsledek dnešní hry se ukládá do konkrétní hry i do samostatného Top score denní challenge.
 - Denní challenge nově zobrazuje vlastní Top score, ne pouze Top score právě vybrané hry.
 - Přidané diagnostiky `getRakDailyChallengeScoreBridgeHealth()` a `getRakReactionTopScoreVisibilityHealth()`.
-- Přidané dokumenty `assets/docs/daily-challenge-score-bridge-v922.md` a `assets/docs/reaction-top-score-visibility-v922.md`.
-- Verze sjednocena na v.1.5 (922), cache na `v1.5-922`, realtime kanál na `rak-public-live-v922`, package na `1.5.922`.
+- Přidané dokumenty `assets/docs/daily-challenge-score-bridge-v923.md` a `assets/docs/reaction-top-score-visibility-v923.md`.
+- Verze sjednocena na v.1.5 (923), cache na `v1.5-923`, realtime kanál na `rak-public-live-v923`, package na `1.5.923`.
 
-## v.1.5 (922)
+## v.1.5 (923)
 
 - Pokračování malého DOM/security hardeningu ve hrách: Denní challenge normalizuje a escapuje název hry, popis výzvy a nadpis Top score.
 - Přidaný guard `getRakGamesDailyChallengeDomHardeningHealth()` a release gate `games-daily-challenge-dom-hardening`.
 - Bez změn Supabase DB/policies, online Piškvorek, Lodí a hotových provozních částí.
-- Verze sjednocena na v.1.5 (922), cache na `v1.5-922`, realtime kanál na `rak-public-live-v922`, package na `1.5.922`.
+- Verze sjednocena na v.1.5 (923), cache na `v1.5-923`, realtime kanál na `rak-public-live-v923`, package na `1.5.923`.
 
-## v.1.5 (922)
+## v.1.5 (923)
 
 - Supabase výsledkové tabulky byly vyčištěné: `gomoku_wins = 0`, `game_stats = 0`; `game_accounts` zůstaly zachované.
 - Piškvorky Top score nově zobrazuje `Datum a čas` včetně hodiny a minut, ne jen datum.
 - Ukládání výhry nad AI do `gomoku_wins` posílá `created_at` z času dokončení výsledku, aby byl čas v Top score spolehlivě dostupný.
-- Lokální reset herních výsledků posunut na `GAMES_PROFILE_RESET_VERSION = 912`, marker `games_score_reset_v922` a cutoff `2026-05-26T18:44:00+02:00`.
+- Lokální reset herních výsledků posunut na `GAMES_PROFILE_RESET_VERSION = 912`, marker `games_score_reset_v923` a cutoff `2026-05-26T18:44:00+02:00`.
 - „O aplikaci“ je zestručněné do větších souhrnů po cca 50 verzích.
-- Přidané dokumenty `assets/docs/games-score-reset-v922.md`, `assets/docs/ttt-top-score-datetime-v922.md` a `assets/docs/about-50-version-summary-v922.md`.
-- Verze sjednocena na v.1.5 (922), cache na `v1.5-922`, realtime kanál na `rak-public-live-v922`, package na `1.5.922`.
+- Přidané dokumenty `assets/docs/games-score-reset-v923.md`, `assets/docs/ttt-top-score-datetime-v923.md` a `assets/docs/about-50-version-summary-v923.md`.
+- Verze sjednocena na v.1.5 (923), cache na `v1.5-923`, realtime kanál na `rak-public-live-v923`, package na `1.5.923`.
 
-## v.1.5 (922)
+## v.1.5 (923)
 
 - Otevírací doba: mimořádná nedělní část po rozkliknutí ukazuje jen časy, které se liší od běžné neděle. Stejné časy se už neopakují.
 - Top score ve hrách znovu hlídá datum i čas včetně hodiny a minut.
 - Pokračování DOM/security hardeningu: přidaný read-only guard `getRakGamesShipsMenuDomHardeningHealth()` pro menu Lodí, pozvánku a uložené vzájemné zápasy bez zásahu do online flow.
 - „O aplikaci“: potvrzené pravidlo držet cca po 50 verzích stručný souhrn nejdůležitějších změn.
-- Přidané dokumenty `assets/docs/food-overtime-diff-only-v922.md`, `assets/docs/games-top-score-datetime-v922.md`, `assets/docs/games-ships-menu-dom-hardening-v922.md` a `assets/docs/about-version-summary-policy-v922.md`.
-- Verze sjednocena na v.1.5 (922), cache na `v1.5-922`, realtime kanál na `rak-public-live-v922`, package na `1.5.922`.
+- Přidané dokumenty `assets/docs/food-overtime-diff-only-v923.md`, `assets/docs/games-top-score-datetime-v923.md`, `assets/docs/games-ships-menu-dom-hardening-v923.md` a `assets/docs/about-version-summary-policy-v923.md`.
+- Verze sjednocena na v.1.5 (923), cache na `v1.5-923`, realtime kanál na `rak-public-live-v923`, package na `1.5.923`.
 
 ## v.1.5 (910)
 

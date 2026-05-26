@@ -1,4 +1,4 @@
-# RaK v.1.5 (922) – První Playwright/DOM smoke návrh
+# RaK v.1.5 (923) – První Playwright/DOM smoke návrh
 
 ## Cíl
 

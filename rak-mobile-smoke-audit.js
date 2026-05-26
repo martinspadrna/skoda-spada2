@@ -1,7 +1,7 @@
-// v.1.5 (922) – mobile performance smoke and executable DOM/Playwright smoke skeleton, read-only.
+// v.1.5 (923) – mobile performance smoke and executable DOM/Playwright smoke skeleton, read-only.
 (function setupRakMobileSmokeAudit() {
-  const VERSION = 'v.1.5 (922)';
-  const MODE = 'mobile-performance-smoke-readonly-v922';
+  const VERSION = 'v.1.5 (923)';
+  const MODE = 'mobile-performance-smoke-readonly-v923';
 
   try {
     if (typeof window.rakMarkModuleReady === 'function') {
@@ -96,7 +96,7 @@
   window.getRakPlaywrightDomSmokeDraftHealth = function getRakPlaywrightDomSmokeDraftHealth() {
     return {
       ok: true,
-      mode: 'playwright-dom-smoke-skeleton-v922',
+      mode: 'playwright-dom-smoke-skeleton-v923',
       version: String(window.APP_VERSION || VERSION),
       checkedAt: nowIso(),
       implementationStatus: 'root-playwright-smoke-spec-ready',
@@ -123,7 +123,7 @@
     const playwrightDraft = window.getRakPlaywrightDomSmokeDraftHealth();
     return {
       ok: true,
-      mode: 'due-diligence-final-closure-v922',
+      mode: 'due-diligence-final-closure-v923',
       version: String(window.APP_VERSION || VERSION),
       checkedAt: nowIso(),
       percentComplete: 100,

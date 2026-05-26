@@ -1,7 +1,7 @@
-// v.1.5 (922) – performance / CI / test strategy audit as read-only diagnostics.
+// v.1.5 (923) – performance / CI / test strategy audit as read-only diagnostics.
 (function setupRakPerformanceCiAudit() {
-  const VERSION = 'v.1.5 (922)';
-  const MODE = 'performance-ci-audit-readonly-v922';
+  const VERSION = 'v.1.5 (923)';
+  const MODE = 'performance-ci-audit-readonly-v923';
 
   try {
     if (typeof window.rakMarkModuleReady === 'function') {
@@ -125,7 +125,7 @@
 
     return {
       ok: true,
-      mode: 'performance-budget-audit-v922',
+      mode: 'performance-budget-audit-v923',
       version: safeString(window.APP_VERSION || VERSION),
       checkedAt: nowIso(),
       readOnly: true,
@@ -169,7 +169,7 @@
 
     return {
       ok: true,
-      mode: 'test-automation-ci-plan-v922',
+      mode: 'test-automation-ci-plan-v923',
       version: safeString(window.APP_VERSION || VERSION),
       checkedAt: nowIso(),
       readOnly: true,
@@ -205,7 +205,7 @@
     const ci = getRakTestAutomationCiPlanHealth();
     return {
       ok: !!(perf && ci),
-      mode: 'performance-ci-closure-v922',
+      mode: 'performance-ci-closure-v923',
       version: safeString(window.APP_VERSION || VERSION),
       checkedAt: nowIso(),
       phase: 'phase L performance + CI/test strategy',

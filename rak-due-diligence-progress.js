@@ -1,7 +1,7 @@
-// v.1.5 (922) – due diligence audit progress tracker for the original RaK audit prompt.
+// v.1.5 (923) – due diligence audit progress tracker for the original RaK audit prompt.
 (function setupRakDueDiligenceAuditProgress() {
-  const VERSION = 'v.1.5 (922)';
-  const MODE = 'due-diligence-audit-progress-v922';
+  const VERSION = 'v.1.5 (923)';
+  const MODE = 'due-diligence-audit-progress-v923';
 
   try {
     if (typeof window.rakMarkModuleReady === 'function') {
@@ -37,7 +37,7 @@
     item('build-delivery', '8. Build / delivery / deployment', 100, '0 %', 'ZIP pravidla, export manifest, SW verze, release ops checklist a CI/CD snippet jsou pokryté.', 'Doplnit reálný hosting/staging postup podle toho, kde se bude app nasazovat.'),
     item('monitoring-rollback', '9. Monitoring / alerting / rollback', 100, '0 %', 'Release ops, monitoring map, rollback playbook a výkonové KPI jsou hotové jako read-only dokumentace.', 'Doplnit reálné prahy až po nasbírání mobilních měření a provozních chyb.'),
     item('implementation-plan', '10. Implementační plán', 100, '0 %', 'Plán se průběžně realizuje v malých i větších bezpečných buildech bez zásahů do hotových funkcí.', 'Doplnit finální fázovou tabulku a mermaid gantt do jedné zprávy.'),
-    item('final-report', 'Povinný finální auditní výstup', 100, '0 %', 'Finální sjednocený report existuje v assets/docs/due-diligence-final-report-v922.md a spojuje shrnutí, tabulky, CI/CD, monitoring, rollback i mermaid diagramy.', 'Doplnit reálná mobilní měření a první Playwright smoke testy.')
+    item('final-report', 'Povinný finální auditní výstup', 100, '0 %', 'Finální sjednocený report existuje v assets/docs/due-diligence-final-report-v923.md a spojuje shrnutí, tabulky, CI/CD, monitoring, rollback i mermaid diagramy.', 'Doplnit reálná mobilní měření a první Playwright smoke testy.')
   ];
 
   function summarize(list) {
@@ -74,7 +74,7 @@
     const health = window.getRakDueDiligenceAuditProgressHealth();
     return {
       ok: true,
-      mode: 'due-diligence-remaining-work-v922',
+      mode: 'due-diligence-remaining-work-v923',
       version: health.version,
       checkedAt: health.checkedAt,
       percentRemaining: health.percentRemaining,

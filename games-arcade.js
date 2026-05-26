@@ -18,7 +18,7 @@
     snake: { title: 'Snake', subtitle: 'Klasická hadí hra', unit: 'bodů', mode: 'high', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 16.5c1.8-5 4.3-8 8.1-8 2.5 0 4.5 1.1 5.9 3"></path><circle cx="18.3" cy="11.7" r="2"></circle></svg>' },
     flap: { title: 'Flappy Car', subtitle: 'Klepni a proleť mezi překážkami', unit: 'bodů', mode: 'high', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5.8 14.8c2.2-4.8 5.8-7 8.4-7 1.8 0 3.4.7 4.8 2"></path><path d="M9.2 11.2c1.6 0 3.2.4 4.8 1.5"></path><path d="M14.2 14.5c1.4 0 2.8.6 4.2 1.9"></path></svg>' },
     aim: { title: 'Aim Trainer', subtitle: 'Klikání na targety, combo a accuracy', unit: 'bodů', mode: 'high', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="6.8"></circle><circle cx="12" cy="12" r="2.2"></circle><path d="M12 2.8v3.2M21.2 12h-3.2M12 21.2V18M2.8 12H6"></path></svg>' },
-    reaction: { title: 'Reaction Test', subtitle: 'Klikni po změně barvy', unit: 'ms', mode: 'low', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 6h10M7 18h10"></path><path d="M9 6v4l-2 2 2 2v4M15 6v4l2 2-2 2v4"></path></svg>' },
+    reaction: { title: 'Reaction Test', subtitle: 'Klikni po změně barvy', unit: 's', mode: 'low', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 6h10M7 18h10"></path><path d="M9 6v4l-2 2 2 2v4M15 6v4l2 2-2 2v4"></path></svg>' },
     tetris: { title: 'Tetris', subtitle: 'Moderní glow styl a ghost piece', unit: 'bodů', mode: 'high', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5h4v4H5zM9 5h4v4H9zM9 9h4v4H9zM13 9h4v4h-4zM13 13h4v4h-4z"></path></svg>' },
     shooter: { title: 'Space Shooter', subtitle: 'Neon střílečka se score', unit: 'bodů', mode: 'high', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l3.2 6.2L21 12l-5.8 2.8L12 21l-3.2-6.2L3 12l5.8-2.8z"></path><path d="M12 8.5v7"></path></svg>' },
     brick: { title: 'Brick Breaker', subtitle: 'Neon arkanoid a combo odrazy', unit: 'bodů', mode: 'high', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h16v3H4zM6 13h12v3H6zM8 18h8v2H8z"></path><path d="M12 4v3"></path></svg>' },
@@ -1322,6 +1322,21 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   }
   window.getRakGamesTopScoreDomHardeningHealth = getRakGamesTopScoreDomHardeningHealth;
 
+  function getRakGamesTopScoreSecondsHealth() {
+    const probe = fmtGameValue('reaction', 184);
+    const noMs = probe.indexOf('ms') < 0;
+    const hasSeconds = probe.indexOf('s') >= 0;
+    return {
+      ok: noMs && hasSeconds,
+      mode: 'games-top-score-seconds-v923',
+      version: String(window.APP_VERSION || 'v.1.5 (923)'),
+      scope: 'Top výsledky her – reakční čas ve vteřinách místo milisekund',
+      probe,
+      note: 'Herní Top score pro Reaction Test zobrazuje čas jako sekundy s desetinnou čárkou, ne jako ms.'
+    };
+  }
+  window.getRakGamesTopScoreSecondsHealth = getRakGamesTopScoreSecondsHealth;
+
 
   function getRakGamesProfileDomHardeningHealth() {
     const probeName = gamesProfileSafeName('<img src=x onerror=alert(1)> Martin', 'Hráč');
@@ -1719,6 +1734,14 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return `${Math.round(n)} ms`;
   }
 
+  function fmtReactionSeconds(ms) {
+    const n = Number(ms);
+    if (!Number.isFinite(n) || n <= 0) return '—';
+    const seconds = n / 1000;
+    const decimals = seconds < 10 ? 2 : 1;
+    return seconds.toFixed(decimals).replace('.', ',') + ' s';
+  }
+
   function fmtSeconds(ms) {
     const n = Number(ms);
     if (!Number.isFinite(n) || n <= 0) return '—';
@@ -1727,7 +1750,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   }
 
   function fmtTime(ms) { return fmtSeconds(ms); }
-  function fmtGameValue(gameId, ms) { return key(gameId) === 'reaction' ? fmtMs(ms) : fmtSeconds(ms); }
+  function fmtGameValue(gameId, ms) { return key(gameId) === 'reaction' ? fmtReactionSeconds(ms) : fmtSeconds(ms); }
   function formatDate(ms) {
     const n = typeof gamesParseStatTimestamp === 'function' ? gamesParseStatTimestamp(ms) : (typeof ms === 'number' ? Number(ms) : Date.parse(String(ms || '')));
     if (!Number.isFinite(n) || n <= 0) return '';
@@ -2579,7 +2602,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
         <div class="arcadeControls">
           <button type="button" class="gameControlBtn" id="reactionResetBtn">Nová hra</button>
         </div>
-        ${gamesTop3Block('reaction', 'ms', 5)}
+        ${gamesTop3Block('reaction', 's', 5)}
       </div>`;
     const board = body.querySelector('#reactionBoard');
     const title = body.querySelector('#reactionTitle');
@@ -2618,7 +2641,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
           bestAvgTimeMs: avg,
           bestScore: best ? encodePoints('reaction', best) : 0,
           perfectRuns: state.times.every(t => t && t < 250) ? 1 : 0,
-          lastResult: `${best} ms`
+          lastResult: fmtReactionSeconds(best)
         });
       }
     };

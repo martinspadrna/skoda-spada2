@@ -1,4 +1,4 @@
-// RaK v.1.5 (922) – první DOM smoke kostra.
+// RaK v.1.5 (923) – první DOM smoke kostra.
 // Instalace/spuštění mimo hotfix: npx playwright install chromium && npm run test:smoke
 const { test, expect } = require('@playwright/test');
 

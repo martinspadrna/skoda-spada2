@@ -1,4 +1,4 @@
-// v.1.5 (922) – export manifest doplněný o DOM/security hardening docs.
+// v.1.5 (923) – export manifest doplněný o DOM/security hardening docs.
 const EXPORT_SOURCE_IDS = {
   "module-readiness.js": "src-module-readiness-js",
   "rak-namespace.js": "src-rak-namespace-js",
@@ -133,14 +133,15 @@ const EXPORT_SOURCE_IDS = {
   "assets/docs/games-overlay-result-dom-hardening-v920.md": "src-games-overlay-result-dom-hardening-v920-md",
   "assets/docs/due-diligence-progress-v920.md": "src-due-diligence-progress-v920-md",
   "assets/docs/due-diligence-final-report-v920.md": "src-due-diligence-final-report-v920-md",
-  "assets/docs/mobile-performance-smoke-v922.md": "src-mobile-performance-smoke-v922-md",
-  "assets/docs/playwright-dom-smoke-draft-v922.md": "src-playwright-dom-smoke-draft-v922-md",
-  "assets/docs/due-diligence-closure-v922.md": "src-due-diligence-closure-v922-md",
-  "assets/docs/due-diligence-closure-v922.md": "src-due-diligence-closure-v922-md",
-  "assets/docs/playwright-smoke-skeleton-v922.md": "src-playwright-smoke-skeleton-v922-md",
-  "assets/docs/ttt-ai-hardening-v922.md": "src-ttt-ai-hardening-v922-md",
+  "assets/docs/mobile-performance-smoke-v923.md": "src-mobile-performance-smoke-v923-md",
+  "assets/docs/playwright-dom-smoke-draft-v923.md": "src-playwright-dom-smoke-draft-v923-md",
+  "assets/docs/due-diligence-closure-v923.md": "src-due-diligence-closure-v923-md",
+  "assets/docs/due-diligence-closure-v923.md": "src-due-diligence-closure-v923-md",
+  "assets/docs/playwright-smoke-skeleton-v923.md": "src-playwright-smoke-skeleton-v923-md",
+  "assets/docs/ttt-ai-hardening-v923.md": "src-ttt-ai-hardening-v923-md",
   "assets/docs/test-ci-strategy-v920.md": "src-test-ci-strategy-v920-md",
   "assets/docs/performance-budget-audit-v920.md": "src-performance-budget-audit-v920-md",
+  "assets/docs/games-top-score-seconds-v923.md": "src-games-top-score-seconds-v923-md",
 "assets/app-icons/icon-16.png": "src-icon-16-png",
   "assets/app-icons/icon-32.png": "src-icon-32-png",
   "assets/app-icons/icon-180.png": "src-icon-180-png",
@@ -154,8 +155,8 @@ const BINARY_SOURCE_CACHE = window.__ROTACE_BINARY_SOURCE_CACHE__ || (window.__R
 const EXPORT_SMOKE_REPORT = window.__RAK_EXPORT_SMOKE_REPORT__ || (window.__RAK_EXPORT_SMOKE_REPORT__ = {
   ok: null,
   status: 'not-run',
-  mode: 'export-smoke-report-v922',
-  version: 'v.1.5 (922)',
+  mode: 'export-smoke-report-v923',
+  version: 'v.1.5 (923)',
   checkedAt: null,
   lastStage: 'čeká na export',
   runCount: 0,
@@ -354,18 +355,19 @@ const EXPORT_TEXT_FILES = [
       'assets/docs/due-diligence-final-report-v920.md',
       'assets/docs/test-ci-strategy-v920.md',
       'assets/docs/performance-budget-audit-v920.md',
-      'assets/docs/mobile-performance-smoke-v922.md',
-      'assets/docs/playwright-dom-smoke-draft-v922.md',
-      'assets/docs/due-diligence-closure-v922.md',
-      'assets/docs/ttt-ai-hardening-v922.md',
-      'assets/docs/playwright-smoke-skeleton-v922.md',
-      'assets/docs/due-diligence-closure-v922.md'
+      'assets/docs/mobile-performance-smoke-v923.md',
+      'assets/docs/playwright-dom-smoke-draft-v923.md',
+      'assets/docs/due-diligence-closure-v923.md',
+      'assets/docs/ttt-ai-hardening-v923.md',
+      'assets/docs/games-top-score-seconds-v923.md',
+      'assets/docs/playwright-smoke-skeleton-v923.md',
+      'assets/docs/due-diligence-closure-v923.md'
 ];
 
 function getRakExportManifest() {
   return {
-    version: String(window.APP_VERSION || 'v.1.5 (922)'),
-    mode: 'export-manifest-preflight-v922',
+    version: String(window.APP_VERSION || 'v.1.5 (923)'),
+    mode: 'export-manifest-preflight-v923',
     indexFile: 'index.html',
     jsFiles: Array.from(new Set(EXPORT_JS_FILES)),
     textFiles: Array.from(new Set(EXPORT_TEXT_FILES)),
@@ -386,7 +388,7 @@ function getRakExportSourceInventoryHealth() {
   const duplicateManifestPathCount = manifestPaths.length - new Set(manifestPaths).size;
   return {
     ok: duplicateSourceCount === 0 && duplicateBinaryCount === 0 && duplicateManifestPathCount === 0,
-    mode: 'export-source-inventory-v922',
+    mode: 'export-source-inventory-v923',
     version: String(window.APP_VERSION || 'unknown'),
     sourceIdCount: sourcePaths.length,
     manifestTextPathCount: manifestPaths.length,
@@ -473,8 +475,8 @@ async function readExportBinary(relativePath) {
 function updateRakExportSmokeReport(partial) {
   const data = partial && typeof partial === 'object' ? partial : {};
   Object.assign(EXPORT_SMOKE_REPORT, data, {
-    mode: 'export-smoke-report-v922',
-    version: String(window.APP_VERSION || 'v.1.5 (922)'),
+    mode: 'export-smoke-report-v923',
+    version: String(window.APP_VERSION || 'v.1.5 (923)'),
     checkedAt: new Date().toISOString()
   });
   return getRakExportSmokeReport();
@@ -485,7 +487,7 @@ function getRakExportSmokeReport() {
   return Object.assign({}, EXPORT_SMOKE_REPORT, {
     ok: EXPORT_SMOKE_REPORT.ok,
     status: String(EXPORT_SMOKE_REPORT.status || 'not-run'),
-    mode: String(EXPORT_SMOKE_REPORT.mode || 'export-smoke-report-v922'),
+    mode: String(EXPORT_SMOKE_REPORT.mode || 'export-smoke-report-v923'),
     version: String(EXPORT_SMOKE_REPORT.version || window.APP_VERSION || 'unknown'),
     lastStage: String(EXPORT_SMOKE_REPORT.lastStage || '—'),
     lastError: String(EXPORT_SMOKE_REPORT.lastError || ''),
@@ -572,7 +574,7 @@ async function validateRakExportManifestFiles(exportManifest) {
   const ok = duplicateReport.ok && missingTextFiles.length === 0 && missingBinaryFiles.length === 0;
   const report = {
     ok,
-    mode: 'export-manifest-preflight-v922',
+    mode: 'export-manifest-preflight-v923',
     version: String(window.APP_VERSION || 'unknown'),
     checkedAt: new Date().toISOString(),
     duplicateReport,

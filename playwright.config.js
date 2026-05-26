@@ -1,4 +1,4 @@
-// RaK v.1.5 (922) – minimální Playwright smoke konfigurace.
+// RaK v.1.5 (923) – minimální Playwright smoke konfigurace.
 // Spouští se ručně přes: npm run test:smoke
 const { defineConfig, devices } = require('@playwright/test');
 

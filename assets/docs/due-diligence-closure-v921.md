@@ -1,4 +1,4 @@
-# RaK v.1.5 (922) – Due diligence closure stav
+# RaK v.1.5 (923) – Due diligence closure stav
 
 ## Stav
 

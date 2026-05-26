@@ -1,4 +1,4 @@
-# RaK v.1.5 (922) – Mobile/performance smoke plán
+# RaK v.1.5 (923) – Mobile/performance smoke plán
 
 ## Cíl
 

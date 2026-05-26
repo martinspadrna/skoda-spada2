@@ -1,4 +1,4 @@
-// v.1.5 (922) – window.RaK namespace doplněný o release gating/checklist diagnostiku.
+// v.1.5 (923) – window.RaK namespace doplněný o release gating/checklist diagnostiku.
 
 (function setupRakNamespaceBridge() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -11,8 +11,8 @@
 
   const root = window.RaK || {};
   const existingVersion = root.namespaceVersion || '';
-  root.namespaceVersion = 'v.1.5 (922)';
-  root.mode = 'passive-namespace-readonly-release-gates-v922';
+  root.namespaceVersion = 'v.1.5 (923)';
+  root.mode = 'passive-namespace-readonly-release-gates-v923';
   root.createdAt = root.createdAt || new Date().toISOString();
   root.updatedAt = new Date().toISOString();
   root.compatibility = 'legacy-globals-preserved';
@@ -65,10 +65,11 @@
     { group: 'diagnostics', alias: 'releaseGatePolicy', globalName: 'getRakReleaseGatePolicy', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only pravidla blocker/warning/manual/ok pro release gating.' },
     { group: 'diagnostics', alias: 'releaseGateMatrix', globalName: 'getRakReleaseGateMatrixHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only gate matice před ZIPem: blockery, warningy a ruční kontroly.' },
     { group: 'diagnostics', alias: 'releaseGateClosure', globalName: 'getRakReleaseGateClosureHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only closure release gating fáze bez DB/policy/online-flow změn.' },
+    { group: 'diagnostics', alias: 'gamesTopScoreSeconds', globalName: 'getRakGamesTopScoreSecondsHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only guard: Reaction Top score zobrazuje vteřiny místo ms.' },
     { group: 'diagnostics', alias: 'gamesTopScoreDomHardening', globalName: 'getRakGamesTopScoreDomHardeningHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only guard: Top score renderer escapuje jména, jednotky, hodnoty a čas bez čtení uložených dat.' },
     { group: 'diagnostics', alias: 'gamesHudMessageDomHardening', globalName: 'getRakGamesHudMessageDomHardeningHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only guard: herní HUD a chybové hlášky escapují texty bez čtení uložených dat.' },
     { group: 'diagnostics', alias: 'gamesShipsMenuDomHardening', globalName: 'getRakGamesShipsMenuDomHardeningHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only guard: menu Lodí, pozvánka a vzájemné zápasy escapují texty bez zásahu do online flow.' },
-    { group: 'diagnostics', alias: 'gamesPostFixScoreFlow', globalName: 'getRakGamesPostFixScoreFlowHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only guard: Reaction Top score + Denní challenge score bridge po opravě z v922.' },
+    { group: 'diagnostics', alias: 'gamesPostFixScoreFlow', globalName: 'getRakGamesPostFixScoreFlowHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only guard: Reaction Top score + Denní challenge score bridge po opravě z v923.' },
     { group: 'diagnostics', alias: 'gamesActionTextDomHardening', globalName: 'getRakGamesActionTextDomHardeningHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only guard: herní akční texty, tlačítka a toast/stavové popisky escapují texty bez zásahu do gameplaye.' },
     { group: 'diagnostics', alias: 'gamesOverlayResultDomHardening', globalName: 'getRakGamesOverlayResultDomHardeningHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only guard: herní modaly, overlaye a výsledkové texty.' },
     { group: 'diagnostics', alias: 'dueDiligenceProgress', globalName: 'getRakDueDiligenceAuditProgressHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only tracker celkového due diligence auditu a procent zbývající práce.' },
@@ -133,7 +134,7 @@
   };
   root.getNamespaceMap = cloneMap;
   root.namespaceMap = cloneMap();
-  root.namespaceMapVersion = 'v.1.5 (922)';
+  root.namespaceMapVersion = 'v.1.5 (923)';
   root.namespacePlan = {
     phase: 'phase C',
     mode: 'namespace-readonly-phase-closed-with-online-game-contract-alias-v897',

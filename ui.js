@@ -4531,8 +4531,8 @@ function tttBestThirteenTurnClampMove(board, deadline) {
 function getRakTttAiHardeningV922Health() {
   return {
     ok: true,
-    mode: 'ttt-ai-hardening-v922',
-    version: String(window.APP_VERSION || 'v.1.5 (922)'),
+    mode: 'ttt-ai-hardening-v923',
+    version: String(window.APP_VERSION || 'v.1.5 (923)'),
     thirteenTurnClamp: true,
     hardSearchDepthEarly: 8,
     hardSearchDepthMid: 8,
@@ -9135,7 +9135,7 @@ function bindCalendarTile() {
 const GAMES_PROFILE_KEY = APP_KEY + ':games_profile_v1';
 const GAMES_PROFILE_RESET_VERSION = 912;
 const GAMES_SCORE_RESET_VERSION = 912;
-const GAMES_SCORE_RESET_MARKER_KEY = APP_KEY + ':games_score_reset_v922';
+const GAMES_SCORE_RESET_MARKER_KEY = APP_KEY + ':games_score_reset_v923';
 const GAMES_REMOTE_STATS_RESET_CUTOFF_MS = Date.parse('2026-05-26T18:44:00+02:00');
 const GAMES_ACCOUNT_BLOCKLIST = new Set(['4157']);
 const GAMES_ACCOUNT_LIST = [];

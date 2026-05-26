@@ -1,9 +1,9 @@
-// v.1.5 (922) – release gating/checklist vrstva nad read-only audity bez mutací.
+// v.1.5 (923) – release gating/checklist vrstva nad read-only audity bez mutací.
 
 (function setupRakReleaseGates() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
-  const VERSION = 'v.1.5 (922)';
-  const MODE = 'release-gates-readonly-v922';
+  const VERSION = 'v.1.5 (923)';
+  const MODE = 'release-gates-readonly-v923';
 
   try {
     if (typeof window.rakMarkModuleReady === 'function') {
@@ -80,6 +80,7 @@
     const bootSequence = readDiag('bootSequence', 'getRakBootSequenceHealth');
     const runtimeGuard = readDiag('runtimeGuard', 'getRakRuntimeGuardHealth');
     const gamesTopScoreDomHardening = readDiag('gamesTopScoreDomHardening', 'getRakGamesTopScoreDomHardeningHealth');
+    const gamesTopScoreSeconds = readDiag('gamesTopScoreSeconds', 'getRakGamesTopScoreSecondsHealth');
     const gamesProfileDomHardening = readDiag('gamesProfileDomHardening', 'getRakGamesProfileDomHardeningHealth');
     const gamesHudMessageDomHardening = readDiag('gamesHudMessageDomHardening', 'getRakGamesHudMessageDomHardeningHealth');
     const gamesShipsMenuDomHardening = readDiag('gamesShipsMenuDomHardening', 'getRakGamesShipsMenuDomHardeningHealth');
@@ -112,6 +113,7 @@
       bootSequence,
       runtimeGuard,
       gamesTopScoreDomHardening,
+      gamesTopScoreSeconds,
       gamesProfileDomHardening,
       gamesHudMessageDomHardening,
       gamesShipsMenuDomHardening,
@@ -288,6 +290,17 @@
       'games-arcade.js'
     ));
 
+
+    gates.push(makeGate(
+      'games-top-score-seconds',
+      'Top score čas ve vteřinách',
+      signals.gamesTopScoreSeconds && signals.gamesTopScoreSeconds.ok ? 'ok' : 'warning',
+      'warning',
+      signals.gamesTopScoreSeconds ? String(signals.gamesTopScoreSeconds.probe || '—') : 'guard chybí',
+      'Reaction Top score nemá ukazovat ms, ale vteřiny.',
+      'games-arcade.js'
+    ));
+
     gates.push(makeGate(
       'games-ships-menu-dom-hardening',
       'Lodě menu/zápasy DOM hardening',
@@ -316,7 +329,7 @@
       signals.gamesPostFixScoreFlow && signals.gamesPostFixScoreFlow.ok ? 'ok' : 'warning',
       'warning',
       signals.gamesPostFixScoreFlow ? ('reaction ' + (signals.gamesPostFixScoreFlow.checks && signals.gamesPostFixScoreFlow.checks.reactionTopScoreVisible ? 'OK' : 'kontrola') + ', daily bridge ' + (signals.gamesPostFixScoreFlow.checks && signals.gamesPostFixScoreFlow.checks.dailyChallengeBridge ? 'OK' : 'kontrola')) : 'guard chybí',
-      'Po opravě z v922 musí být Reaction Top score viditelné a Denní challenge musí zapisovat vlastní leaderboard.',
+      'Po opravě z v923 musí být Reaction Top score viditelné a Denní challenge musí zapisovat vlastní leaderboard.',
       'games-arcade.js'
     ));
 
@@ -433,7 +446,7 @@
   window.getRakReleaseGatePolicy = function getRakReleaseGatePolicy() {
     return {
       ok: true,
-      mode: 'release-gate-policy-v922',
+      mode: 'release-gate-policy-v923',
       version: safeString(window.APP_VERSION || VERSION),
       checkedAt: nowIso(),
       statuses: [
@@ -498,7 +511,7 @@
     const policy = window.getRakReleaseGatePolicy();
     return {
       ok: !!(matrix && matrix.ok),
-      mode: 'release-gates-closure-v922',
+      mode: 'release-gates-closure-v923',
       version: safeString(window.APP_VERSION || VERSION),
       checkedAt: nowIso(),
       phase: 'phase K release gating / checklist matrix',
