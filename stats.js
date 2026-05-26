@@ -256,6 +256,26 @@ function shouldIncludeMonthInStats(parsedMonth, selectedYear) {
   return true;
 }
 
+function getStatsFutureMonthScopeNote(year, stats) {
+  const selectedYear = parseInt(year, 10);
+  if (!Number.isFinite(selectedYear)) return '';
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth() + 1;
+  if (selectedYear !== currentYear) return '';
+  const monthKeys = typeof getMonthsForYear === 'function' && window.app && Array.isArray(window.app.rotation) ? getMonthsForYear(window.app.rotation, selectedYear) : (Array.isArray(stats && stats.includedMonthKeys) ? stats.includedMonthKeys : []);
+  const futureMonths = monthKeys
+    .map(key => {
+      const parsed = typeof parseMonthKey === 'function' ? parseMonthKey(key) : null;
+      return parsed ? { key, year: parsed.year, month: parsed.month } : null;
+    })
+    .filter(item => item && item.year === selectedYear && item.month > currentMonth)
+    .map(item => item.key);
+  if (!futureMonths.length) return '';
+  return 'Nahrané budoucí měsíce (' + futureMonths.join(', ') + ') jsou zatím jen pro plánování. Do statistik se započítají až v daném měsíci.';
+}
+
+
 function inferWorkAbsenceTargetForStats(people, explicitTarget) {
   const numericExplicit = Number(explicitTarget);
   if (Number.isFinite(numericExplicit) && numericExplicit > 0) return numericExplicit;
@@ -591,6 +611,8 @@ function renderStatsNameViewNodes(person, year, stats, topWork, topClean) {
   if (!person || !stats) return [];
 
   const title = createStatsTextNode('div', 'sectionTitle', `${person.name} — ${year}`);
+  const scopeNoteText = getStatsFutureMonthScopeNote(year, stats);
+  const scopeNote = scopeNoteText ? createStatsTextNode('div', 'smallText statsScopeNote', scopeNoteText) : null;
 
   const summary = document.createElement('div');
   summary.className = 'statsSummary';
@@ -631,7 +653,7 @@ function renderStatsNameViewNodes(person, year, stats, topWork, topClean) {
   table.appendChild(tbody);
   wrap.appendChild(table);
 
-  return [title, summary, wrap];
+  return [title].concat(scopeNote ? [scopeNote] : [], [summary, wrap]);
 }
 
 function renderStatsMachineViewNodes(machine, leaderNames, topWorkersText) {
@@ -727,7 +749,8 @@ function renderStatsPanel() {
         totals: [person.totalWork, person.totalClean, person.totalAbsence],
         topWork,
         topClean,
-        machines: (stats.machineOrder || []).map(machine => [machine, person.work[machine] || 0, person.clean[machine] || 0])
+        machines: (stats.machineOrder || []).map(machine => [machine, person.work[machine] || 0, person.clean[machine] || 0]),
+        scopeNote: getStatsFutureMonthScopeNote(year, stats)
       });
       if (typeof setElementChildrenIfChanged === 'function') {
         setElementChildrenIfChanged(
@@ -739,6 +762,7 @@ function renderStatsPanel() {
       } else {
         const statsNameHtml =
           "<div class='sectionTitle'>" + escapeHtml(person.name) + " — " + escapeHtml(String(year)) + "</div>" +
+          (getStatsFutureMonthScopeNote(year, stats) ? "<div class='smallText statsScopeNote'>" + escapeHtml(getStatsFutureMonthScopeNote(year, stats)) + "</div>" : "") +
           "<div class='statsSummary'>" +
           "<div class='tile'><div class='smallText'>Práce celkem</div><div class='statsSummaryValue'>" + formatCount(person.totalWork) + "</div></div>" +
           "<div class='tile'><div class='smallText'>Úklid celkem</div><div class='statsSummaryValue'>" + formatCount(person.totalClean) + "</div></div>" +

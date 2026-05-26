@@ -33,6 +33,11 @@ window.rakNoteExternalDependency = function(name, status, src) {
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js" onload="rakNoteExternalDependency('xlsx','loaded',this.src)" onerror="rakNoteExternalDependency('xlsx','failed',this.src)"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js" onload="rakNoteExternalDependency('jszip','loaded',this.src)" onerror="rakNoteExternalDependency('jszip','failed',this.src)"></script>
 <script src="data.js"></script>
+<script src="module-readiness.js"></script>
+<script src="rak-namespace.js"></script>
+<script src="rak-audit-baseline.js"></script>
+<script src="rak-runtime-health.js"></script>
+<script src="rak-boot-sequence-audit.js"></script>
 
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="styles-inline-legacy.css">

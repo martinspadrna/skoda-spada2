@@ -3344,12 +3344,22 @@ function tttHardMoveSearchScore(board, index, deadline) {
   const xThreats = tttCriticalThreatMoves(board, 'X').length + tttThreatWindowMoves(board, 'X').length;
   const xDanger = tttBoardDangerScore(board, 'X');
   const ownDanger = tttBoardDangerScore(board, 'O');
-  score += ownWins * 520000;
-  score += ownThreats * 98000;
-  score += ownDanger * 0.22;
-  score -= xWins * 1800000;
-  score -= xThreats * 180000;
-  score -= xDanger * 0.62;
+  const xTacticalPressure = typeof tttTacticalPressureScore === 'function' ? tttTacticalPressureScore(board, 'X') : xDanger;
+  const ownTacticalPressure = typeof tttTacticalPressureScore === 'function' ? tttTacticalPressureScore(board, 'O') : ownDanger;
+  score += ownWins * 620000;
+  score += ownThreats * 125000;
+  score += ownDanger * 0.28;
+  score += ownTacticalPressure * 0.16;
+  score -= xWins * 3200000;
+  score -= xThreats * 260000;
+  score -= xDanger * 0.86;
+  score -= xTacticalPressure * 0.42;
+
+  const searchDepth = typeof tttHardSearchDepth === 'function' ? tttHardSearchDepth(board) : 2;
+  if (!deadline || (typeof performance === 'undefined') || performance.now() < deadline - 12) {
+    const lookahead = tttSearch(board, searchDepth, -Infinity, Infinity, false, {}, deadline);
+    if (Number.isFinite(lookahead)) score += lookahead * 0.42;
+  }
   board[index] = '';
 
   return score;
@@ -3509,6 +3519,82 @@ function tttBestAntiForkMove(board) {
   return bestIdx;
 }
 
+
+function tttTacticalPressureScore(board, mark) {
+  const wins = tttWinningMoves(board, mark).length;
+  const critical = tttCriticalThreatMoves(board, mark).length;
+  const windows = tttThreatWindowMoves(board, mark).length;
+  const openThrees = tttOpenThreeThreatMoves(board, mark).length;
+  const forks = tttBestForkMove(board, mark) >= 0 ? 1 : 0;
+  const danger = tttBoardDangerScore(board, mark);
+  return wins * 9000000 + critical * 1450000 + windows * 520000 + openThrees * 360000 + forks * 650000 + danger;
+}
+
+function tttBestLookaheadSafeMove(board, defender, attacker) {
+  const occupied = board.reduce((sum, cell) => sum + (cell ? 1 : 0), 0);
+  if (occupied < 5) return -1;
+  const currentRisk = tttTacticalPressureScore(board, attacker);
+  if (currentRisk < 8500) return -1;
+
+  const centerRow = (TTT_ROWS - 1) / 2;
+  const centerCol = (TTT_COLS - 1) / 2;
+  const radius = currentRisk > 500000 ? 3 : 2;
+  let candidates = Array.from(new Set(tttCandidateMoves(board, radius))).filter(idx => !board[idx]);
+  candidates = candidates
+    .map(idx => {
+      const row = Math.floor(idx / TTT_COLS);
+      const col = idx % TTT_COLS;
+      return {
+        idx,
+        score: tttCheapMovePotential(board, idx, defender) * 0.9
+          + tttCheapMovePotential(board, idx, attacker) * 0.72
+          + Math.max(0, 80 - (Math.abs(row - centerRow) + Math.abs(col - centerCol)) * 6)
+      };
+    })
+    .sort((a, b) => b.score - a.score)
+    .slice(0, currentRisk > 500000 ? 28 : 22)
+    .map(item => item.idx);
+
+  let bestIdx = -1;
+  let bestScore = -Infinity;
+  for (const idx of candidates) {
+    board[idx] = defender;
+    const immediateLosses = tttWinningMoves(board, attacker).length;
+    const nextRisk = tttTacticalPressureScore(board, attacker);
+    const ownPressure = tttTacticalPressureScore(board, defender);
+
+    let worstReplyRisk = 0;
+    let replies = Array.from(new Set(tttCandidateMoves(board, 2))).filter(reply => !board[reply]);
+    replies = replies
+      .map(reply => ({ reply, score: tttCheapMovePotential(board, reply, attacker) }))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 8)
+      .map(item => item.reply);
+    for (const reply of replies) {
+      board[reply] = attacker;
+      const replyRisk = tttTacticalPressureScore(board, attacker) - tttTacticalPressureScore(board, defender) * 0.22;
+      board[reply] = '';
+      if (replyRisk > worstReplyRisk) worstReplyRisk = replyRisk;
+    }
+
+    board[idx] = '';
+    const score = ownPressure * 0.82 - nextRisk * 1.64 - worstReplyRisk * 0.88 - immediateLosses * 12000000 + tttCheapMovePotential(board, idx, defender) * 0.42;
+    if (score > bestScore) {
+      bestScore = score;
+      bestIdx = idx;
+    }
+  }
+
+  return bestIdx;
+}
+
+function tttHardSearchDepth(board) {
+  const occupied = board.reduce((sum, cell) => sum + (cell ? 1 : 0), 0);
+  if (occupied < 10) return 3;
+  if (occupied < 26) return 3;
+  return 2;
+}
+
 function tttBestMove(board, difficulty) {
   const free = [];
   for (let i = 0; i < board.length; i += 1) {
@@ -3527,6 +3613,10 @@ function tttBestMove(board, difficulty) {
 
   const occupied = board.length - free.length;
   const center = tttIndex(Math.floor(TTT_ROWS / 2), Math.floor(TTT_COLS / 2));
+  if (occupied <= 2) {
+    const opening = tttOpeningBookMove(board);
+    if (opening >= 0 && !board[opening]) return opening;
+  }
   if (occupied <= 1 && !board[center]) return center;
 
   const urgentThreatBlock = tttPickBestBlockMove(board, tttThreatWindowMoves(board, 'X'), 'X');
@@ -3547,6 +3637,9 @@ function tttBestMove(board, difficulty) {
   const antiFork = tttBestAntiForkMove(board);
   if (antiFork >= 0) return antiFork;
 
+  const lookaheadSafeMove = tttBestLookaheadSafeMove(board, 'O', 'X');
+  if (lookaheadSafeMove >= 0) return lookaheadSafeMove;
+
   const ownFork = tttBestForkMove(board, 'O');
   if (ownFork >= 0) return ownFork;
 
@@ -3556,8 +3649,8 @@ function tttBestMove(board, difficulty) {
   const ownOpenThree = tttPickBestIndexedMove(board, tttOpenThreeThreatMoves(board, 'O'), 'O');
   if (ownOpenThree >= 0) return ownOpenThree;
 
-  const radius = occupied < 12 ? 3 : 2;
-  const deadline = (typeof performance !== 'undefined' ? performance.now() : Date.now()) + (difficulty === 'ai' ? 90 : 45);
+  const radius = occupied < 14 ? 3 : 2;
+  const deadline = (typeof performance !== 'undefined' ? performance.now() : Date.now()) + (difficulty === 'ai' ? 160 : 65);
   let candidates = tttCandidateMoves(board, radius);
   if (!candidates.length) candidates = free.slice();
 
@@ -3565,10 +3658,12 @@ function tttBestMove(board, difficulty) {
     .filter(idx => !board[idx])
     .map(idx => ({
       idx,
-      score: tttSimpleMoveScore(board, idx, 'O') + tttFastAiMoveScore(board, idx, 'O', deadline) * 0.8
+      score: tttSimpleMoveScore(board, idx, 'O')
+        + tttFastAiMoveScore(board, idx, 'O', deadline) * 0.86
+        - tttTacticalPressureScore((() => { board[idx] = 'O'; const snapshot = board.slice(); board[idx] = ''; return snapshot; })(), 'X') * 0.18
     }))
     .sort((a, b) => b.score - a.score)
-    .slice(0, difficulty === 'ai' ? 12 : 8)
+    .slice(0, difficulty === 'ai' ? 16 : 10)
     .map(item => item.idx);
 
   let bestIdx = candidates[0] ?? free[0];
@@ -4926,9 +5021,12 @@ function buildSupabaseKeepaliveStatusHtml(options) {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText || 'v.1.5 (861)',
+      range: versionText || 'v.1.5 (870)',
       title: 'Aktuální stabilizace',
       lines: [
+        'V864 odděluje runtime health helper do samostatného rak-runtime-health.js a přidává poznámku ke statistikám, že budoucí nahrané měsíce se započítají až v daném měsíci.',
+        'V863 odděluje release readiness a architecture baseline helpery z app.js do samostatného rak-audit-baseline.js; funkčnost zůstává stejná a boot/readiness diagnostika je přehlednější.',
+        'V862 odděluje module readiness registry z app.js do samostatného module-readiness.js; funkčnost zůstává stejná a registry dál hlídá boot pořadí.',
         'V861 přidává module readiness registry: Diagnostika nově vidí, které runtime moduly se načetly, v jakém pořadí a jestli některý spadl.',
         'V860 přidává bezpečný architecture/boot baseline audit: mapuje boot sekvenci, runtime vrstvy, coupling body a refactor backlog bez zásahu do her, DB nebo policies.',
         'V859 uzavírá PWA/release baseline: doplňuje finální checklist, Google Fonts load/error signál a rollback poznámky bez zásahu do her, DB nebo policies.',
@@ -6833,9 +6931,26 @@ function bindAppMenuHandlers(body) {
         const supabaseStructureHealth = typeof window.getSupabaseStructureHealth === 'function' ? window.getSupabaseStructureHealth() : (supabaseHardening && supabaseHardening.structureHealth ? supabaseHardening.structureHealth : null);
         const supabasePolicyRiskHealth = typeof window.getSupabasePolicyRiskHealth === 'function' ? window.getSupabasePolicyRiskHealth() : (supabaseHardening && supabaseHardening.policyRiskHealth ? supabaseHardening.policyRiskHealth : null);
         const supabaseHardeningReadiness = typeof window.getSupabaseHardeningReadiness === 'function' ? window.getSupabaseHardeningReadiness() : (supabaseHardening && supabaseHardening.hardeningReadiness ? supabaseHardening.hardeningReadiness : null);
-        const releaseReadiness = typeof window.getRakReleaseReadinessHealth === 'function' ? window.getRakReleaseReadinessHealth() : null;
-        const architectureBaseline = typeof window.getRakArchitectureBaselineHealth === 'function' ? window.getRakArchitectureBaselineHealth() : null;
-        const moduleReadiness = typeof window.getRakModuleReadinessHealth === 'function' ? window.getRakModuleReadinessHealth() : null;
+        const readRakDiag = (alias, fallbackGlobalName) => {
+          try {
+            if (window.RaK && window.RaK.diagnostics && typeof window.RaK.diagnostics.read === 'function') {
+              const result = window.RaK.diagnostics.read(alias);
+              if (result) return result;
+            }
+          } catch (err) {}
+          try {
+            const fn = window[String(fallbackGlobalName || '')];
+            return typeof fn === 'function' ? fn() : null;
+          } catch (err) {
+            return null;
+          }
+        };
+        const releaseReadiness = readRakDiag('releaseReadiness', 'getRakReleaseReadinessHealth');
+        const architectureBaseline = readRakDiag('architectureBaseline', 'getRakArchitectureBaselineHealth');
+        const moduleReadiness = readRakDiag('health', 'getRakModuleReadinessHealth');
+        const runtimeGuard = readRakDiag('runtimeGuard', 'getRakRuntimeGuardHealth');
+        const bootSequence = readRakDiag('bootSequence', 'getRakBootSequenceHealth');
+        const namespaceHealth = readRakDiag('namespace', 'getRakNamespaceHealth');
         const profileUiStatus = typeof window.getProfileUiSyncStatus === 'function' ? window.getProfileUiSyncStatus() : null;
         const profileUiGuard = profileUiStatus && profileUiStatus.guard ? profileUiStatus.guard : null;
         const dataOptStatus = typeof window.getDataOptimizationStatus === 'function' ? window.getDataOptimizationStatus() : null;
@@ -6886,7 +7001,10 @@ function bindAppMenuHandlers(body) {
         const architectureDiag = architectureBaseline ? [
           'Architektura/boot: ' + (architectureBaseline.ok ? 'OK' : 'kontrola') + ' · režim ' + String(architectureBaseline.mode || '—') + ' · skripty ' + String(architectureBaseline.scriptCount || 0) + ' · styly ' + String(architectureBaseline.stylesheetCount || 0) + ' · data-action ' + String(architectureBaseline.dataActionCount || 0),
           'Architektura coupling: chybějící globály ' + String((architectureBaseline.missingGlobals || []).length || 0) + ' · duplicitní ID ' + String(architectureBaseline.duplicateIdCount || 0) + ' · warningy ' + String(architectureBaseline.warningCount || 0),
-          moduleReadiness ? ('Module readiness: ' + (moduleReadiness.ok ? 'OK' : 'kontrola') + ' · načteno ' + String(moduleReadiness.loadedCount || 0) + '/' + String(moduleReadiness.expectedCount || 0) + ' · chyby ' + String(moduleReadiness.errorCount || 0) + ' · chybí ' + String(moduleReadiness.missingCount || 0) + ' · boot ' + String(moduleReadiness.bootDurationMs || 0) + ' ms') : ''
+          moduleReadiness ? ('Module readiness: ' + (moduleReadiness.ok ? 'OK' : 'kontrola') + ' · načteno ' + String(moduleReadiness.loadedCount || 0) + '/' + String(moduleReadiness.expectedCount || 0) + ' · chyby ' + String(moduleReadiness.errorCount || 0) + ' · chybí ' + String(moduleReadiness.missingCount || 0) + ' · boot ' + String(moduleReadiness.bootDurationMs || 0) + ' ms') : '',
+          bootSequence ? ('Boot sekvence: ' + (bootSequence.ok ? 'OK' : 'kontrola') + ' · statická ' + (bootSequence.staticOrderOk ? 'OK' : 'kontrola') + ' · dynamická ' + (bootSequence.dynamicOrderOk ? 'OK' : 'kontrola') + ' · chybí ' + String(bootSequence.dynamicMissingCount || 0)) : '',
+          namespaceHealth ? ('RaK namespace: ' + (namespaceHealth.ok ? 'OK' : 'kontrola') + ' · režim ' + String(namespaceHealth.mode || '—') + ' · mapa ' + String(namespaceHealth.namespaceMapCount || 0) + ' · fáze ' + String(namespaceHealth.refactorProgressPercent || 0) + '% · staré globály ' + (namespaceHealth.legacyGlobalsPreserved ? 'OK' : 'čekají') + ' · warningy ' + String(namespaceHealth.warningCount || 0)) : '',
+          runtimeGuard ? ('Runtime health: ' + (runtimeGuard.ok ? 'OK' : 'kontrola') + ' · warningy ' + String(runtimeGuard.warningCount || 0) + ' · storage ' + (runtimeGuard.storage && runtimeGuard.storage.writable ? 'OK' : 'kontrola') + ' · budoucí měsíce ' + String(runtimeGuard.statsScope && runtimeGuard.statsScope.futureImportedMonthCount || 0)) : ''
         ].filter(Boolean) : [];
         const pwaDiag = pwaStatus ? [
           'PWA/SW: fáze ' + String(pwaStatus.phasePercent || 0) + '% · controller ' + (pwaStatus.hasController ? 'ano' : 'ne') + ' · update toast ' + (pwaStatus.updateToastVisible ? 'viditelný' : 'ne') + ' · verze cache ' + (pwaStatus.swVersionMismatch ? 'nesedí' : 'sedí'),

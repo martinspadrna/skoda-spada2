@@ -1,3 +1,89 @@
+## v.1.5 (870)
+
+- Piškvorky proti AI jsou přitvrzené: doplněný taktický tlak `tttTacticalPressureScore()`, bezpečnostní lookahead `tttBestLookaheadSafeMove()` a hlubší omezený search přes `tttSearch()`.
+- AI lépe hlídá dvojité hrozby, fork situace, otevřené trojky/čtyřky a tahy, které by hráči nechaly okamžitou odpověď.
+- Opening book se použije i v úvodu, když hráč začne středem; AI tak nezačíná měkkým náhodným okolním tahem.
+- Timeout AI je mírně navýšený jen pro hard/AI režim, aby byl silnější, ale pořád bezpečný pro mobil.
+- Přidaný dokument `assets/docs/ttt-ai-hardening-v870.md`.
+- Verze sjednocena na v.1.5 (870), cache na `v1.5-870`, realtime kanál na `rak-public-live-v870`, package na `1.5.870`.
+- Online Piškvorky, Lodě, Supabase DB/policies, dashboard, spodní lišta a kalkulačky beze změny.
+
+## v.1.5 (869)
+
+- Začaté bezpečné používání `window.RaK.diagnostics.*` pouze pro nové auditní čtení.
+- `rak-namespace.js` má nový `window.RaK.diagnostics.read(alias)` a počítá read-only diagnostická čtení.
+- `rak-audit-baseline.js`, `app.js` a diagnostika v menu čtou nové auditní helpery přes namespace reader s fallbackem na staré globály.
+- Navigace, render stránky, hry, online flow a Supabase zůstávají přes původní legacy globály beze změny.
+- Přidaný dokument `assets/docs/rak-namespace-diagnostics-v869.md`.
+- Verze sjednocena na v.1.5 (869), cache na `v1.5-869`, realtime kanál na `rak-public-live-v869`, package na `1.5.869`.
+- Hry, online flow, Supabase DB/policies, dashboard, spodní lišta a kalkulačky beze změny.
+
+## v.1.5 (868)
+
+- Doplněná mapa `window.RaK` namespace bridge bez změny funkčnosti aplikace.
+- `rak-namespace.js` nově vrací `namespaceMap`, `namespacePlan`, `safeNowCount`, `laterCount`, `highRiskCount` a pravidlo dalšího refactoru.
+- `getRakNamespaceHealth()` nově kontroluje nejen existenci bridge, ale i úplnost mapy aliasů a zachování starých globálů.
+- Diagnostika / O aplikaci u RaK namespace nově umí zobrazit počet mapovaných položek a průběh fáze.
+- Přidaný dokument `assets/docs/rak-namespace-map-v868.md`.
+- Verze sjednocena na v.1.5 (868), cache na `v1.5-868`, realtime kanál na `rak-public-live-v868`, package na `1.5.868`.
+- Hry, online flow, Supabase DB/policies, dashboard, spodní lišta a kalkulačky beze změny.
+
+## v.1.5 (867)
+
+- Zahájená další refactor fáze přes pasivní `window.RaK` namespace bridge bez změny funkčnosti aplikace.
+- Přidaný nový soubor `rak-namespace.js`, který jen zrcadlí vybrané existující globální helpery a ponechává staré globály kvůli kompatibilitě.
+- Přidaný helper `getRakNamespaceHealth()` a nový řádek „RaK namespace“ v Diagnostice / O aplikaci.
+- `module-readiness.js`, `rak-boot-sequence-audit.js`, `rak-audit-baseline.js`, `index.html`, `sw.js`, `export.js` a `package.json` nově počítají s namespace bridge souborem.
+- Přidaný dokument `assets/docs/rak-namespace-bridge-v867.md`.
+- Verze sjednocena na v.1.5 (867), cache na `v1.5-867`, realtime kanál na `rak-public-live-v867`, package na `1.5.867`.
+- Hry, online flow, Supabase DB/policies, dashboard, spodní lišta a kalkulačky beze změny.
+
+## v.1.5 (866)
+
+- Uzavřený architecture / boot baseline audit na 100 % bez změny funkčnosti aplikace.
+- `getRakArchitectureBaselineHealth()` nově vrací `architectureBootAuditPercent: 100`, `architectureBootAuditClosed: true` a doporučení pro další fázi: postupné snižování globálního coupling přes `window.RaK` namespace.
+- Auditní mode stringy sjednocené na v866, aby diagnostika odpovídala aktuálnímu buildu.
+- Přidaný dokument `assets/docs/architecture-boot-baseline-v866.md` s potvrzeným stavem, dalším směrem a rollbackem.
+- `export.js` nově přibaluje i dokumentaci v866.
+- Verze sjednocena na v.1.5 (866), cache na `v1.5-866`, realtime kanál na `rak-public-live-v866`, package na `1.5.866`.
+- Hry, online flow, Supabase DB/policies, dashboard, spodní lišta a kalkulačky beze změny.
+
+## v.1.5 (865)
+
+- Přidaný samostatný boot sequence audit do nového souboru `rak-boot-sequence-audit.js` bez změny funkčnosti aplikace.
+- Nový helper `getRakBootSequenceHealth()` hlídá statické pořadí bootstrap souborů i dynamické načítání modulů podle `module-readiness.js`.
+- Diagnostika / O aplikaci nově ukazuje řádek „Boot sekvence“ a architecture baseline bere boot audit jako další readiness signál.
+- `index.html`, `sw.js`, `export.js`, `package.json`, `ui.js` a `rak-audit-baseline.js` nově počítají s boot audit helperem.
+- Přidaný dokument `assets/docs/boot-sequence-audit-v865.md` s dopadem a rollbackem.
+- Verze sjednocena na v.1.5 (865), cache na `v1.5-865`, realtime kanál na `rak-public-live-v865`, package na `1.5.865`.
+- Hry, online flow, Supabase DB/policies, dashboard, spodní lišta a kalkulačky beze změny.
+
+## v.1.5 (864)
+
+- Oddělená další audit/runtime vrstva do nového souboru `rak-runtime-health.js` bez změny funkčnosti aplikace.
+- Přidané helpery `getRakRuntimeGuardHealth()` a `getRakStatsYearScopeHealth()`: diagnostika nově vidí storage/PWA/module readiness a vysvětlí, když jsou v aktuálním roce nahrané budoucí měsíce, které se do statistik započítají až v daném měsíci.
+- Statistiky u detailu člověka zobrazí krátkou poznámku, pokud jsou pro aktuální rok nahrané budoucí měsíce mimo aktuálně započtené období.
+- `index.html`, `sw.js`, `export.js`, `package.json` a module readiness registry nově počítají s `rak-runtime-health.js`.
+- Přidaný dokument `assets/docs/runtime-health-split-v864.md` s dopadem, statistikami a rollbackem.
+- Verze sjednocena na v.1.5 (864), cache na `v1.5-864`, realtime kanál na `rak-public-live-v864`, package na `1.5.864`.
+- Hry, online flow, Supabase DB/policies, dashboard, spodní lišta a kalkulačky beze změny.
+
+## v.1.5 (863)
+
+- Release readiness a architecture baseline helpery přesunuté z `app.js` do nového `rak-audit-baseline.js` bez změny funkčnosti.
+- `index.html`, `sw.js`, `export.js` a `package.json` nově počítají s `rak-audit-baseline.js`.
+- Module readiness registry hlídá i nový auditní helper, takže další refaktor má lepší boot kontrolu.
+- Přidaný dokument `assets/docs/audit-baseline-split-v863.md` s dopadem a rollbackem.
+- Verze sjednocena na v.1.5 (863), cache na `v1.5-863`, realtime kanál na `rak-public-live-v863`, package na `1.5.863`.
+- Neměněny hry, Supabase DB/policies, dashboard, spodní lišta ani kalkulačky.
+
+## v.1.5 (862)
+- Zahájený malý in-place refactor audit/runtime helperů: module readiness registry je oddělený z `app.js` do nového `module-readiness.js`.
+- `index.html`, `sw.js`, `export.js` a `package.json` nově počítají s `module-readiness.js`, takže boot diagnostika, precache, export ZIPu i npm kontrola drží stejný kontrakt.
+- Přidaný dokument `assets/docs/module-readiness-split-v862.md` s popisem ověření a rollback-safe dopadu.
+- Verze sjednocena na v.1.5 (862), cache na `v1.5-862`, realtime kanál na `rak-public-live-v862`, package na `1.5.862`.
+- Hry, online flow, Supabase DB/policies, dashboard, spodní lišta a kalkulačky beze změny.
+
 ## v.1.5 (861)
 
 - Přidaný bezpečný module readiness registry: aplikace nově eviduje načtení runtime modulů, pořadí bootu, chyby načtení a orientační dobu bootu.

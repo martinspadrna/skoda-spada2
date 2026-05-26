@@ -1,4 +1,9 @@
 const EXPORT_SOURCE_IDS = {
+  "module-readiness.js": "src-module-readiness-js",
+  "rak-namespace.js": "src-rak-namespace-js",
+  "rak-audit-baseline.js": "src-rak-audit-baseline-js",
+  "rak-runtime-health.js": "src-rak-runtime-health-js",
+  "rak-boot-sequence-audit.js": "src-rak-boot-sequence-audit-js",
   "app.js": "src-app-js",
   "core.js": "src-core-js",
   "lifecycle.js": "src-lifecycle-js",
@@ -36,6 +41,15 @@ const EXPORT_SOURCE_IDS = {
   "assets/docs/release-readiness-v859.md": "src-release-readiness-v859-md",
   "assets/docs/architecture-boot-audit-v860.md": "src-architecture-boot-audit-v860-md",
   "assets/docs/module-readiness-audit-v861.md": "src-module-readiness-audit-v861-md",
+  "assets/docs/module-readiness-split-v862.md": "src-module-readiness-split-v862-md",
+  "assets/docs/audit-baseline-split-v863.md": "src-audit-baseline-split-v863-md",
+  "assets/docs/runtime-health-split-v864.md": "src-runtime-health-split-v864-md",
+  "assets/docs/boot-sequence-audit-v865.md": "src-boot-sequence-audit-v865-md",
+  "assets/docs/architecture-boot-baseline-v866.md": "src-architecture-boot-baseline-v866-md",
+  "assets/docs/rak-namespace-bridge-v867.md": "src-rak-namespace-bridge-v867-md",
+  "assets/docs/rak-namespace-map-v868.md": "src-rak-namespace-map-v868-md",
+  "assets/docs/rak-namespace-diagnostics-v869.md": "src-rak-namespace-diagnostics-v869-md",
+  "assets/docs/ttt-ai-hardening-v870.md": "src-ttt-ai-hardening-v870-md",
   "assets/app-icons/icon-16.png": "src-icon-16-png",
   "assets/app-icons/icon-32.png": "src-icon-32-png",
   "assets/app-icons/icon-180.png": "src-icon-180-png",
@@ -141,6 +155,11 @@ async function exportCurrentHtml() {
   try {
     setRakExportStatus("Připravuju ZIP build…", false);
     const jsFiles = [
+      'module-readiness.js',
+      'rak-namespace.js',
+      'rak-audit-baseline.js',
+      'rak-runtime-health.js',
+      'rak-boot-sequence-audit.js',
       'app.js',
       'core.js',
       'lifecycle.js',
@@ -196,7 +215,16 @@ async function exportCurrentHtml() {
       'assets/docs/release-readiness-v858.md',
       'assets/docs/release-readiness-v859.md',
       'assets/docs/architecture-boot-audit-v860.md',
-      'assets/docs/module-readiness-audit-v861.md'
+      'assets/docs/module-readiness-audit-v861.md',
+      'assets/docs/module-readiness-split-v862.md',
+      'assets/docs/audit-baseline-split-v863.md',
+      'assets/docs/runtime-health-split-v864.md',
+      'assets/docs/boot-sequence-audit-v865.md',
+      'assets/docs/architecture-boot-baseline-v866.md',
+      'assets/docs/rak-namespace-bridge-v867.md',
+      'assets/docs/rak-namespace-map-v868.md',
+      'assets/docs/rak-namespace-diagnostics-v869.md',
+      'assets/docs/ttt-ai-hardening-v870.md'
     ];
 
     const binaryFiles = [
