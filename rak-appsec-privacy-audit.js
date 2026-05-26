@@ -1,4 +1,4 @@
-// v.1.5 (909) – AppSec/privacy klientský povrch uzavřený jako read-only audit bez mutací.
+// v.1.5 (911) – AppSec/privacy klientský povrch uzavřený jako read-only audit bez mutací.
 (function setupRakAppSecPrivacyAudit() {
   try {
     if (typeof window.rakMarkModuleReady === 'function') {
@@ -7,8 +7,8 @@
   } catch (err) {}
 
   const startedAt = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
-  const VERSION = 'v.1.5 (909)';
-  const MODE = 'appsec-privacy-client-surface-readonly-v909';
+  const VERSION = 'v.1.5 (911)';
+  const MODE = 'appsec-privacy-client-surface-readonly-v911';
   const sensitiveKeyPattern = /(password|passwd|secret|token|bearer|jwt|private|admin|role|auth|session|cookie|api[_-]?key|service[_-]?role)/i;
 
   const STORAGE_CLASSIFICATION_RULES = [
@@ -267,7 +267,7 @@
     return {
       ok: storage.unknownKeyCount === 0,
       version: safeString(window.APP_VERSION || VERSION),
-      mode: 'appsec-storage-key-classification-v909',
+      mode: 'appsec-storage-key-classification-v911',
       checkedAt: new Date().toISOString(),
       readOnly: true,
       noMutation: true,
@@ -291,7 +291,7 @@
     return {
       ok: dom.targetBlankWithoutNoopener === 0,
       version: safeString(window.APP_VERSION || VERSION),
-      mode: 'appsec-dom-injection-surface-v909',
+      mode: 'appsec-dom-injection-surface-v911',
       checkedAt: new Date().toISOString(),
       readOnly: true,
       noMutation: true,
@@ -311,7 +311,7 @@
     return Object.assign({
       ok: true,
       version: safeString(window.APP_VERSION || VERSION),
-      mode: 'appsec-csp-sri-report-only-plan-v909',
+      mode: 'appsec-csp-sri-report-only-plan-v911',
       checkedAt: new Date().toISOString(),
       readOnly: true,
       noMutation: true,
@@ -389,7 +389,7 @@
     return {
       ok: true,
       version: safeString(window.APP_VERSION || VERSION),
-      mode: 'appsec-privacy-risk-register-v909',
+      mode: 'appsec-privacy-risk-register-v911',
       checkedAt: new Date().toISOString(),
       readOnly: true,
       noMutation: true,
@@ -411,7 +411,7 @@
     return {
       ok: surface.ok && risk.p0Count === 0 && dom.ok,
       version: safeString(window.APP_VERSION || VERSION),
-      mode: 'appsec-privacy-baseline-closure-v909',
+      mode: 'appsec-privacy-baseline-closure-v911',
       checkedAt: new Date().toISOString(),
       phase: 'phase-k-appsec-privacy-baseline',
       phasePercent: 100,

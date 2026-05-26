@@ -1,9 +1,9 @@
-// v.1.5 (909) – release gating/checklist vrstva nad read-only audity bez mutací.
+// v.1.5 (911) – release gating/checklist vrstva nad read-only audity bez mutací.
 
 (function setupRakReleaseGates() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
-  const VERSION = 'v.1.5 (909)';
-  const MODE = 'release-gates-readonly-v909';
+  const VERSION = 'v.1.5 (911)';
+  const MODE = 'release-gates-readonly-v911';
 
   try {
     if (typeof window.rakMarkModuleReady === 'function') {
@@ -81,6 +81,9 @@
     const runtimeGuard = readDiag('runtimeGuard', 'getRakRuntimeGuardHealth');
     const gamesTopScoreDomHardening = readDiag('gamesTopScoreDomHardening', 'getRakGamesTopScoreDomHardeningHealth');
     const gamesProfileDomHardening = readDiag('gamesProfileDomHardening', 'getRakGamesProfileDomHardeningHealth');
+    const gamesHudMessageDomHardening = readDiag('gamesHudMessageDomHardening', 'getRakGamesHudMessageDomHardeningHealth');
+    const gamesShipsMenuDomHardening = readDiag('gamesShipsMenuDomHardening', 'getRakGamesShipsMenuDomHardeningHealth');
+    const domSecurityHardeningClosure = readDiag('domSecurityHardeningClosure', 'getRakDomSecurityHardeningClosureHealth');
 
     return {
       releaseOpsChecklist,
@@ -98,14 +101,17 @@
       bootSequence,
       runtimeGuard,
       gamesTopScoreDomHardening,
-      gamesProfileDomHardening
+      gamesProfileDomHardening,
+      gamesHudMessageDomHardening,
+      gamesShipsMenuDomHardening,
+      domSecurityHardeningClosure
     };
   }
 
   function buildGateMatrix(signals) {
     const gates = [];
     const version = safeString(window.APP_VERSION || VERSION);
-    const versionOk = /^v\.1\.5 \(908\)$/.test(version);
+    const versionOk = /^v\.1\.5 \(910\)$/.test(version);
 
     gates.push(makeGate(
       'version-consistency',
@@ -241,12 +247,32 @@
     ));
 
     gates.push(makeGate(
+      'games-hud-message-dom-hardening',
+      'Hry HUD/hlášky DOM hardening',
+      signals.gamesHudMessageDomHardening && signals.gamesHudMessageDomHardening.ok ? 'ok' : 'warning',
+      'warning',
+      signals.gamesHudMessageDomHardening ? ('escapovaná pole ' + String((signals.gamesHudMessageDomHardening.escapedFields || []).length || 0) + ', sinky ' + String((signals.gamesHudMessageDomHardening.sinks || []).length || 0)) : 'guard chybí',
+      'Herní HUD řádky a fallback chybové hlášky musí zkracovat a escapovat texty bez čtení uložených hodnot.',
+      'games-arcade.js'
+    ));
+
+    gates.push(makeGate(
       'games-top-score-dom-hardening',
       'Hry Top score DOM hardening',
       signals.gamesTopScoreDomHardening && signals.gamesTopScoreDomHardening.ok ? 'ok' : 'warning',
       'warning',
       signals.gamesTopScoreDomHardening ? ('escapovaná pole ' + String((signals.gamesTopScoreDomHardening.escapedFields || []).length || 0)) : 'guard chybí',
       'Top score renderer musí escapovat jména, jednotky, hodnoty i čas bez čtení uložených hodnot.',
+      'games-arcade.js'
+    ));
+
+    gates.push(makeGate(
+      'games-ships-menu-dom-hardening',
+      'Lodě menu/zápasy DOM hardening',
+      signals.gamesShipsMenuDomHardening && signals.gamesShipsMenuDomHardening.ok ? 'ok' : 'warning',
+      'warning',
+      signals.gamesShipsMenuDomHardening ? ('escapovaná pole ' + String((signals.gamesShipsMenuDomHardening.escapedFields || []).length || 0) + ', sinky ' + String((signals.gamesShipsMenuDomHardening.sinks || []).length || 0)) : 'guard chybí',
+      'Menu Lodí, pozvánka a uložené vzájemné zápasy musí escapovat texty bez zásahu do online flow.',
       'games-arcade.js'
     ));
 
@@ -286,7 +312,7 @@
   window.getRakReleaseGatePolicy = function getRakReleaseGatePolicy() {
     return {
       ok: true,
-      mode: 'release-gate-policy-v909',
+      mode: 'release-gate-policy-v911',
       version: safeString(window.APP_VERSION || VERSION),
       checkedAt: nowIso(),
       statuses: [
@@ -351,7 +377,7 @@
     const policy = window.getRakReleaseGatePolicy();
     return {
       ok: !!(matrix && matrix.ok),
-      mode: 'release-gates-closure-v909',
+      mode: 'release-gates-closure-v911',
       version: safeString(window.APP_VERSION || VERSION),
       checkedAt: nowIso(),
       phase: 'phase K release gating / checklist matrix',

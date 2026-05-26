@@ -361,10 +361,10 @@
     return nextPatch;
   }
 
-  // v.1.5 (909): Malý DOM/security hardening pro profily, statistiky a achievementy.
+  // v.1.5 (911): Malý DOM/security hardening pro profily, statistiky a achievementy.
   // Uživatelské texty a číselné hodnoty se normalizují před složením HTML.
   const GAMES_PROFILE_DOM_HARDENING = {
-    mode: 'games-profile-achievement-dom-hardening-v909',
+    mode: 'games-profile-achievement-dom-hardening-v911',
     sinks: ['gamesProfilesGrid', 'gamesAchievementsGrid', 'gamesStatsGrid'],
     escapedFields: ['profileName', 'profileId', 'initials', 'rank', 'favorite', 'gameTitle', 'valueText', 'achievementTitle', 'achievementId', 'achievementDesc', 'achievementGoal'],
     numericFields: ['level', 'xp', 'winRate', 'plays', 'achievements', 'progress', 'target', 'pct'],
@@ -1208,12 +1208,12 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   }
 
 
-  // v.1.5 (909): Malý DOM/security hardening pro Top score.
+  // v.1.5 (911): Malý DOM/security hardening pro Top score.
   // Jména, jednotky a hodnoty se normalizují na text ještě před složením HTML řádku.
   const GAMES_TOP_SCORE_DOM_HARDENING = {
-    mode: 'games-top-score-dom-hardening-v909',
+    mode: 'games-top-score-dom-hardening-v911',
     sinks: ['gamesTop3Block'],
-    escapedFields: ['id', 'name', 'valueText', 'playedText', 'title', 'unit'],
+    escapedFields: ['id', 'name', 'valueText', 'playedTextDateTime', 'title', 'unit'],
     maxNameLength: 48,
     maxUnitLength: 16,
     maxRows: 50
@@ -1243,10 +1243,19 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return Math.max(1, Math.min(999999999, Math.round(n)));
   }
 
+  function gamesLeaderboardPlayedText(row) {
+    const safeRow = row && typeof row === 'object' ? row : {};
+    const timestamp = safeRow.playedAt || safeRow.played_at || safeRow.lastPlayedAt || safeRow.last_played_at || safeRow.updatedAt || safeRow.updated_at || safeRow.createdAt || safeRow.created_at || 0;
+    const formatted = timestamp ? formatDate(timestamp) : '';
+    const rawText = gamesSafePlainText(safeRow.playedText || safeRow.played_text || '', '', 40);
+    if (formatted && (!rawText || rawText.indexOf(':') < 0)) return formatted;
+    return rawText || formatted;
+  }
+
   function gamesNormalizeLeaderboardRow(gameId, row) {
     const safeRow = row && typeof row === 'object' ? row : {};
     const fallbackName = safeRow.id ? ('Hráč ' + String(safeRow.id)) : 'Hráč';
-    const playedText = gamesSafePlainText(safeRow.playedText || safeRow.played_text || '', '', 32);
+    const playedText = gamesSafePlainText(gamesLeaderboardPlayedText(safeRow), '', 40);
     return {
       id: gamesSafePlainText(safeRow.id || safeRow.account_number || safeRow.accountNumber || '', '', 40),
       name: gamesSafePlayerName(safeRow.name || safeRow.player_name || safeRow.full_name || fallbackName),
@@ -1280,21 +1289,22 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
       id: '<id>',
       name: '<img src=x onerror=alert(1)> Martin',
       value: '123',
-      playedText: '<script>alert(1)</script>'
+      playedText: '<script>alert(1)</script>',
+      lastPlayedAt: '2026-05-26T15:42:00+02:00'
     });
     const probeHtml = gamesLeaderboardRowHtml('aim', probe, 0, 'bodů');
-    const ok = probeHtml.includes('&lt;img') && probeHtml.includes('&lt;script') && !probeHtml.includes('<img') && !probeHtml.includes('<script');
+    const ok = probeHtml.includes('&lt;img') && probeHtml.includes('15:42') && !probeHtml.includes('<img') && !probeHtml.includes('<script');
     return {
       ok,
       mode: GAMES_TOP_SCORE_DOM_HARDENING.mode,
-      version: String(window.APP_VERSION || 'v.1.5 (909)'),
+      version: String(window.APP_VERSION || 'v.1.5 (911)'),
       scope: 'Top score řádky ve hrách',
       sinks: GAMES_TOP_SCORE_DOM_HARDENING.sinks.slice(),
       escapedFields: GAMES_TOP_SCORE_DOM_HARDENING.escapedFields.slice(),
       maxNameLength: GAMES_TOP_SCORE_DOM_HARDENING.maxNameLength,
       maxUnitLength: GAMES_TOP_SCORE_DOM_HARDENING.maxUnitLength,
       probeEscaped: ok,
-      note: 'Read-only diagnostika; hodnoty z localStorage ani Supabase se nečtou, jen se ověřuje renderer Top score.'
+      note: 'Read-only diagnostika; Top score renderer escapuje texty a u výsledku vyžaduje datum i čas.'
     };
   }
   window.getRakGamesTopScoreDomHardeningHealth = getRakGamesTopScoreDomHardeningHealth;
@@ -1316,7 +1326,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok,
       mode: GAMES_PROFILE_DOM_HARDENING.mode,
-      version: String(window.APP_VERSION || 'v.1.5 (909)'),
+      version: String(window.APP_VERSION || 'v.1.5 (911)'),
       scope: 'Profily, statistiky a achievementy ve hrách',
       sinks: GAMES_PROFILE_DOM_HARDENING.sinks.slice(),
       escapedFields: GAMES_PROFILE_DOM_HARDENING.escapedFields.slice(),
@@ -1328,6 +1338,81 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     };
   }
   window.getRakGamesProfileDomHardeningHealth = getRakGamesProfileDomHardeningHealth;
+
+  // v.1.5 (911): Malý DOM/security hardening pro herní HUD/stavové hlášky.
+  // Všechny arcade HUD řádky v tomto souboru teď jdou přes lokální gamesStatLine(), která zkrátí a escapuje label i hodnotu.
+  const GAMES_HUD_MESSAGE_DOM_HARDENING = {
+    mode: 'games-hud-message-dom-hardening-v911',
+    sinks: ['arcadeHud', 'gamesStatLine', 'arcadeErrorBanner'],
+    escapedFields: ['label', 'value', 'errorMessage'],
+    maxLabelLength: 32,
+    maxValueLength: 64,
+    maxErrorLength: 140
+  };
+
+  function gamesHudSafeText(value, fallback, maxLength) {
+    return gamesSafePlainText(value, fallback || '', maxLength || GAMES_HUD_MESSAGE_DOM_HARDENING.maxValueLength);
+  }
+
+  function gamesStatLine(label, value) {
+    const safeLabel = gamesHudSafeText(label, '—', GAMES_HUD_MESSAGE_DOM_HARDENING.maxLabelLength);
+    const safeValue = gamesHudSafeText(value, '—', GAMES_HUD_MESSAGE_DOM_HARDENING.maxValueLength);
+    return '<div class="gamesStatCard"><div class="gamesStatLabel">' + escapeHtml(safeLabel) + '</div><div class="gamesStatValue">' + escapeHtml(safeValue) + '</div></div>';
+  }
+
+  function gamesArcadeErrorBannerHtml(error) {
+    const message = gamesHudSafeText(error && error.message ? error.message : (error || 'Neznámá chyba'), 'Neznámá chyba', GAMES_HUD_MESSAGE_DOM_HARDENING.maxErrorLength);
+    return '<div class="arcadeStage"><div class="arcadeBanner arcadePanel isBad"><div class="arcadeBannerTitle">Hra se nenačetla</div><div class="arcadeBannerText">V téhle hře se něco rozbilo při vykreslení. Zkus ji otevřít znovu, nebo se podívej do diagnostiky.</div><div class="arcadeMiniNote">' + escapeHtml(message) + '</div></div></div>';
+  }
+
+  function getRakGamesHudMessageDomHardeningHealth() {
+    const probeHud = gamesStatLine('<img src=x onerror=alert(1)>', '<script>alert(1)</script> 123');
+    const probeError = gamesArcadeErrorBannerHtml(new Error('<svg onload=alert(1)> chyba'));
+    const joined = probeHud + probeError;
+    const ok = joined.includes('&lt;img') && joined.includes('&lt;script') && joined.includes('&lt;svg') && !joined.includes('<img') && !joined.includes('<script') && !joined.includes('<svg');
+    return {
+      ok,
+      mode: GAMES_HUD_MESSAGE_DOM_HARDENING.mode,
+      version: String(window.APP_VERSION || 'v.1.5 (911)'),
+      scope: 'Herní HUD a chybové/stavové hlášky arcade rendererů',
+      sinks: GAMES_HUD_MESSAGE_DOM_HARDENING.sinks.slice(),
+      escapedFields: GAMES_HUD_MESSAGE_DOM_HARDENING.escapedFields.slice(),
+      maxLabelLength: GAMES_HUD_MESSAGE_DOM_HARDENING.maxLabelLength,
+      maxValueLength: GAMES_HUD_MESSAGE_DOM_HARDENING.maxValueLength,
+      maxErrorLength: GAMES_HUD_MESSAGE_DOM_HARDENING.maxErrorLength,
+      probeEscaped: ok,
+      note: 'Read-only diagnostika lokálního HUD formatteru; hodnoty storage ani Supabase se nečtou.'
+    };
+  }
+  window.getRakGamesHudMessageDomHardeningHealth = getRakGamesHudMessageDomHardeningHealth;
+
+  // v.1.5 (911): Read-only guard pro malé DOM/security pokračování v menu Lodí.
+  const GAMES_SHIPS_MENU_DOM_HARDENING = {
+    mode: 'games-ships-menu-dom-hardening-v911',
+    sinks: ['shipsH2HRow', 'shipsInviteOverlay', 'shipsStatus'],
+    escapedFields: ['playerName', 'inviteCode', 'inviteUrl', 'statusMessage'],
+    maxTextLength: 120
+  };
+
+  function getRakGamesShipsMenuDomHardeningHealth() {
+    const probeStatus = '<div class="arcadeStatus shipsStatus">' + escapeHtml(gamesSafePlainText('<img src=x onerror=alert(1)>', '', GAMES_SHIPS_MENU_DOM_HARDENING.maxTextLength)) + '</div>';
+    const probeInvite = '<div data-ships-copy-link="' + escapeHtml('https://example.invalid/?x=<script>') + '">' + escapeHtml('1234<script>') + '</div>';
+    const probeRow = '<div class="shipsH2HRow"><span>' + escapeHtml('A<img>') + ' vs ' + escapeHtml('B<script>') + '</span></div>';
+    const joined = probeStatus + probeInvite + probeRow;
+    const ok = joined.includes('&lt;img') && joined.includes('&lt;script') && !joined.includes('<img') && !joined.includes('<script');
+    return {
+      ok,
+      mode: GAMES_SHIPS_MENU_DOM_HARDENING.mode,
+      version: String(window.APP_VERSION || 'v.1.5 (911)'),
+      scope: 'Menu Lodí, pozvánka a uložené vzájemné zápasy',
+      sinks: GAMES_SHIPS_MENU_DOM_HARDENING.sinks.slice(),
+      escapedFields: GAMES_SHIPS_MENU_DOM_HARDENING.escapedFields.slice(),
+      maxTextLength: GAMES_SHIPS_MENU_DOM_HARDENING.maxTextLength,
+      probeEscaped: ok,
+      note: 'Read-only guard navazuje na DOM/security hardening; online flow ani Supabase se nemění.'
+    };
+  }
+  window.getRakGamesShipsMenuDomHardeningHealth = getRakGamesShipsMenuDomHardeningHealth;
 
   function addCleanup(fn) { if (typeof fn === 'function') cleanups.add(fn); }
   function clearCleanups() { cleanups.forEach((fn) => { try { fn(); } catch (err) {} }); cleanups.clear(); }
@@ -1931,7 +2016,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
             const points = Number(row && (row.points ?? row.best_score ?? row.bestScore ?? row.value) ? (row.points ?? row.best_score ?? row.bestScore ?? row.value) : 0) || 0;
             const value = decodePoints(gid, points);
             const updatedAt = String(row && (row.last_played_at ?? row.lastPlayedAt ?? row.updated_at ?? row.created_at) ? (row.last_played_at ?? row.lastPlayedAt ?? row.updated_at ?? row.created_at) : '').trim();
-            return Object.assign(gamesNormalizeLeaderboardRow(gid, { id: accountNumber || name, name, value, playedText: formatDate(Date.parse(updatedAt) || 0), gameId: gid }), { games_played: Number(row && (row.games_played ?? row.plays) || 0) || 0, wins: Number(row && row.wins || 0) || 0, losses: Number(row && row.losses || 0) || 0, draws: Number(row && row.draws || 0) || 0, updated_at: updatedAt });
+            return Object.assign(gamesNormalizeLeaderboardRow(gid, { id: accountNumber || name, name, value, playedText: formatDate(Date.parse(updatedAt) || 0), last_played_at: updatedAt, updated_at: updatedAt, gameId: gid }), { games_played: Number(row && (row.games_played ?? row.plays) || 0) || 0, wins: Number(row && row.wins || 0) || 0, losses: Number(row && row.losses || 0) || 0, draws: Number(row && row.draws || 0) || 0, updated_at: updatedAt });
           }).filter((row) => row.value > 0);
           window.app.gamesLeaderboardCache[gid] = gameLeaderboardSort(gid, normalized).slice(0, 10);
           window.app.gamesLeaderboardThrottle[gid] = Date.now();
@@ -2102,7 +2187,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
           return;
         }
         console.error('arcade render failed', id, err);
-        body.innerHTML = `<div class="arcadeStage"><div class="arcadeBanner arcadePanel isBad"><div class="arcadeBannerTitle">Hra se nenačetla</div><div class="arcadeBannerText">V téhle hře se něco rozbilo při vykreslení. Zkus ji otevřít znovu, nebo se podívej do diagnostiky.</div><div class="arcadeMiniNote">${escapeHtml(String(err && err.message ? err.message : err || 'Neznámá chyba'))}</div></div></div>`;
+        body.innerHTML = gamesArcadeErrorBannerHtml(err);
       }
     };
     runRenderer();

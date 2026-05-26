@@ -1,4 +1,4 @@
-// v.1.5 (909) – window.RaK namespace doplněný o release gating/checklist diagnostiku.
+// v.1.5 (911) – window.RaK namespace doplněný o release gating/checklist diagnostiku.
 
 (function setupRakNamespaceBridge() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -11,8 +11,8 @@
 
   const root = window.RaK || {};
   const existingVersion = root.namespaceVersion || '';
-  root.namespaceVersion = 'v.1.5 (909)';
-  root.mode = 'passive-namespace-readonly-release-gates-v909';
+  root.namespaceVersion = 'v.1.5 (911)';
+  root.mode = 'passive-namespace-readonly-release-gates-v911';
   root.createdAt = root.createdAt || new Date().toISOString();
   root.updatedAt = new Date().toISOString();
   root.compatibility = 'legacy-globals-preserved';
@@ -66,6 +66,8 @@
     { group: 'diagnostics', alias: 'releaseGateMatrix', globalName: 'getRakReleaseGateMatrixHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only gate matice před ZIPem: blockery, warningy a ruční kontroly.' },
     { group: 'diagnostics', alias: 'releaseGateClosure', globalName: 'getRakReleaseGateClosureHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only closure release gating fáze bez DB/policy/online-flow změn.' },
     { group: 'diagnostics', alias: 'gamesTopScoreDomHardening', globalName: 'getRakGamesTopScoreDomHardeningHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only guard: Top score renderer escapuje jména, jednotky, hodnoty a čas bez čtení uložených dat.' },
+    { group: 'diagnostics', alias: 'gamesHudMessageDomHardening', globalName: 'getRakGamesHudMessageDomHardeningHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only guard: herní HUD a chybové hlášky escapují texty bez čtení uložených dat.' },
+    { group: 'diagnostics', alias: 'gamesShipsMenuDomHardening', globalName: 'getRakGamesShipsMenuDomHardeningHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only guard: menu Lodí, pozvánka a vzájemné zápasy escapují texty bez zásahu do online flow.' },
     { group: 'diagnostics', alias: 'exportReleaseTooling', globalName: 'getRakExportReleaseToolingHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only audit export/release tooling vrstvy bez spuštění exportu.' },
     { group: 'diagnostics', alias: 'exportSmokeReport', globalName: 'getRakExportSmokeReport', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only poslední smoke/preflight stav exportu ZIPu.' },
     { group: 'diagnostics', alias: 'domActionRegistry', globalName: 'getRakDomActionRegistryHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only mapa data-action prvků a allowlistů bez přepojení navigace/renderu/her.' },
@@ -120,7 +122,7 @@
   };
   root.getNamespaceMap = cloneMap;
   root.namespaceMap = cloneMap();
-  root.namespaceMapVersion = 'v.1.5 (909)';
+  root.namespaceMapVersion = 'v.1.5 (911)';
   root.namespacePlan = {
     phase: 'phase C',
     mode: 'namespace-readonly-phase-closed-with-online-game-contract-alias-v897',

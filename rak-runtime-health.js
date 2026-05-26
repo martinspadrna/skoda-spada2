@@ -1,4 +1,4 @@
-// v.1.5 (909) – runtime health vrstva bere release ops closure jako read-only warning signál.
+// v.1.5 (911) – runtime health vrstva bere release ops closure jako read-only warning signál.
 
 (function setupRakRuntimeHealthHelpers() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -140,7 +140,7 @@
 
     return {
       ok: issues.length === 0,
-      mode: 'runtime-health-split-storage-pwa-stats-scope-v909',
+      mode: 'runtime-health-split-storage-pwa-stats-scope-v911',
       checkedAt: nowIso(),
       version: String(window.APP_VERSION || 'unknown'),
       issueCount: issues.length,

@@ -1,3 +1,21 @@
+## v.1.5 (911)
+
+- Otevírací doba: mimořádná nedělní část po rozkliknutí ukazuje jen časy, které se liší od běžné neděle. Stejné časy se už neopakují.
+- Top score ve hrách znovu hlídá datum i čas včetně hodiny a minut.
+- Pokračování DOM/security hardeningu: přidaný read-only guard `getRakGamesShipsMenuDomHardeningHealth()` pro menu Lodí, pozvánku a uložené vzájemné zápasy bez zásahu do online flow.
+- „O aplikaci“: potvrzené pravidlo držet cca po 50 verzích stručný souhrn nejdůležitějších změn.
+- Přidané dokumenty `assets/docs/food-overtime-diff-only-v911.md`, `assets/docs/games-top-score-datetime-v911.md`, `assets/docs/games-ships-menu-dom-hardening-v911.md` a `assets/docs/about-version-summary-policy-v911.md`.
+- Verze sjednocena na v.1.5 (911), cache na `v1.5-911`, realtime kanál na `rak-public-live-v911`, package na `1.5.911`.
+
+## v.1.5 (910)
+
+- Hry: přidaný malý DOM/security hardening pro arcade HUD a fallback chybové hlášky.
+- Arcade `gamesStatLine()` teď normalizuje, zkracuje a escapuje label i hodnotu přímo v `games-arcade.js`.
+- Fallback karta `Hra se nenačetla` používá společný bezpečný formatter pro chybovou zprávu.
+- Přidaný read-only guard `getRakGamesHudMessageDomHardeningHealth()` a release gate `games-hud-message-dom-hardening`.
+- Přidaný dokument `assets/docs/games-hud-message-dom-hardening-v910.md`.
+- Verze sjednocena na v.1.5 (910), cache na `v1.5-910`, realtime kanál na `rak-public-live-v910`, package na `1.5.910`.
+
 ## v.1.5 (909)
 
 - Hry: přidaný malý DOM/security hardening pro profily, statistiky a achievementy.

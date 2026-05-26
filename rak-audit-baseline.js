@@ -1,4 +1,4 @@
-// v.1.5 (909) – release/architecture readiness bere i release ops checklist jako read-only signál.
+// v.1.5 (911) – release/architecture readiness bere i release ops checklist jako read-only signál.
 
 (function setupRakAuditBaselineHelpers() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -186,7 +186,7 @@ function getRakReleaseReadinessHealth() {
 
   return {
     ok: issues.length === 0,
-    mode: 'audit-baseline-split-release-readiness-v909',
+    mode: 'audit-baseline-split-release-readiness-v911',
     checkedAt,
     version: currentVersion || 'unknown',
     issueCount: issues.length,
@@ -443,7 +443,7 @@ function getRakArchitectureBaselineHealth() {
 
   return {
     ok: issues.length === 0,
-    mode: 'audit-baseline-split-architecture-boot-audit-v909',
+    mode: 'audit-baseline-split-architecture-boot-audit-v911',
     checkedAt,
     version: version || 'unknown',
     issueCount: issues.length,

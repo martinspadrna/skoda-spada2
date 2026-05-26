@@ -462,16 +462,19 @@ function buildFoodRegularScheduleGroups(location) {
 function buildFoodSpecialSundaySection(location, highlight) {
   const specialWindows = location && FOOD_SPECIAL_OVERRIDES[location.key] ? FOOD_SPECIAL_OVERRIDES[location.key] : [];
   if (!Array.isArray(specialWindows) || !specialWindows.length) return '';
+  const regularSundayWindows = getFoodRegularWindows(location, 0);
+  const regularSet = new Set((Array.isArray(regularSundayWindows) ? regularSundayWindows : []).map((window) => String(window && window[0]) + '–' + String(window && window[1])));
+  const changedWindows = specialWindows.filter((window) => !regularSet.has(String(window && window[0]) + '–' + String(window && window[1])));
   const highlightIsSunday = highlight && highlight.dayIndex === 0 && (highlight.type === 'open' || highlight.type === 'next');
-  const lines = specialWindows.map((window) => {
+  const lines = changedWindows.length ? changedWindows.map((window) => {
     const isHighlighted = highlightIsSunday && foodWindowMatchesHighlight(window, highlight);
     const stateClass = isHighlighted ? (highlight.type === 'open' ? ' foodScheduleWindowLine--currentOpen' : ' foodScheduleWindowLine--nextOpen') : '';
     return '<div class="foodScheduleWindowLine' + stateClass + '">' + escapeHtml(window[0] + '–' + window[1] + ' · jen při přesčasu') + '</div>';
-  }).join('');
+  }).join('') : '<div class="foodScheduleWindowLine foodScheduleWindowEmpty">Žádný čas navíc proti běžné neděli.</div>';
   return [
     '<div class="foodScheduleTitleBlock foodScheduleTitleBlock--compact uMt12">',
     '<div class="sectionTitle">Mimořádná nedělní provozní doba</div>',
-    '<div class="smallText uMt0 uMb10">Platí jen při mimořádné noční směně z neděle na pondělí.</div>',
+    '<div class="smallText uMt0 uMb10">Zobrazuji jen časy, které jsou jiné než běžná neděle.</div>',
     '</div>',
     '<div class="foodScheduleRow' + (highlightIsSunday ? ' foodScheduleRow--hasHighlight' : '') + '">',
     '<div class="foodScheduleDay">Neděle (přesčas)</div>',
@@ -497,6 +500,7 @@ function getFoodScheduleSundayGuardHealth() {
       regularSundayWindows: regularSundayWindows.length,
       plainSundayWindows: plainWindows.length,
       overtimeSundayWindows: overtimeWindows.length,
+      overtimeChangedWindows: overtimeWindows.filter((window) => !new Set(regularSundayWindows.map((regularWindow) => String(regularWindow && regularWindow[0]) + '–' + String(regularWindow && regularWindow[1]))).has(String(window && window[0]) + '–' + String(window && window[1]))).length,
       plainMatchesRegular: plainSignature === regularSignature,
       overtimeDiffersFromRegular: overtimeSignature !== regularSignature,
       overtimeSundayMarked: overtimeWindows.length > 0
@@ -505,14 +509,14 @@ function getFoodScheduleSundayGuardHealth() {
   const ok = rows.every((row) => row.plainMatchesRegular && row.overtimeDiffersFromRegular && row.overtimeSundayMarked);
   return {
     ok,
-    mode: 'food-sunday-overtime-guard-v909',
-    version: String(window.APP_VERSION || 'v.1.5 (909)'),
+    mode: 'food-sunday-overtime-guard-v911',
+    version: String(window.APP_VERSION || 'v.1.5 (911)'),
     overtimeSundayCount: FOOD_SPECIAL_SUNDAY_DATES.size,
     plainSundaySample: foodIsoDate(samplePlainSunday),
     overtimeSundaySample: foodIsoDate(sampleOvertimeSunday),
     rows,
     issues: ok ? [] : rows.filter((row) => !row.plainMatchesRegular || !row.overtimeDiffersFromRegular).map((row) => row.label + ': nedělní rozpis neodpovídá normální vs. přesčasové variantě'),
-    note: 'Běžná neděle používá normální rozpis; jen vybrané přesčasové neděle přepnou na mimořádný režim.'
+    note: 'Běžná neděle používá normální rozpis; detail mimořádné neděle ukazuje jen rozdíly proti normální otevírací době.'
   };
 }
 
