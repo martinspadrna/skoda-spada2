@@ -1,4 +1,4 @@
-# RaK v.1.5 (916) – Denní challenge score bridge
+# RaK v.1.5 (920) – Denní challenge score bridge
 
 ## Oprava
 

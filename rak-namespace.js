@@ -1,4 +1,4 @@
-// v.1.5 (916) – window.RaK namespace doplněný o release gating/checklist diagnostiku.
+// v.1.5 (922) – window.RaK namespace doplněný o release gating/checklist diagnostiku.
 
 (function setupRakNamespaceBridge() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -11,8 +11,8 @@
 
   const root = window.RaK || {};
   const existingVersion = root.namespaceVersion || '';
-  root.namespaceVersion = 'v.1.5 (916)';
-  root.mode = 'passive-namespace-readonly-release-gates-v916';
+  root.namespaceVersion = 'v.1.5 (922)';
+  root.mode = 'passive-namespace-readonly-release-gates-v922';
   root.createdAt = root.createdAt || new Date().toISOString();
   root.updatedAt = new Date().toISOString();
   root.compatibility = 'legacy-globals-preserved';
@@ -68,8 +68,17 @@
     { group: 'diagnostics', alias: 'gamesTopScoreDomHardening', globalName: 'getRakGamesTopScoreDomHardeningHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only guard: Top score renderer escapuje jména, jednotky, hodnoty a čas bez čtení uložených dat.' },
     { group: 'diagnostics', alias: 'gamesHudMessageDomHardening', globalName: 'getRakGamesHudMessageDomHardeningHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only guard: herní HUD a chybové hlášky escapují texty bez čtení uložených dat.' },
     { group: 'diagnostics', alias: 'gamesShipsMenuDomHardening', globalName: 'getRakGamesShipsMenuDomHardeningHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only guard: menu Lodí, pozvánka a vzájemné zápasy escapují texty bez zásahu do online flow.' },
-    { group: 'diagnostics', alias: 'gamesPostFixScoreFlow', globalName: 'getRakGamesPostFixScoreFlowHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only guard: Reaction Top score + Denní challenge score bridge po opravě z v916.' },
+    { group: 'diagnostics', alias: 'gamesPostFixScoreFlow', globalName: 'getRakGamesPostFixScoreFlowHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only guard: Reaction Top score + Denní challenge score bridge po opravě z v922.' },
     { group: 'diagnostics', alias: 'gamesActionTextDomHardening', globalName: 'getRakGamesActionTextDomHardeningHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only guard: herní akční texty, tlačítka a toast/stavové popisky escapují texty bez zásahu do gameplaye.' },
+    { group: 'diagnostics', alias: 'gamesOverlayResultDomHardening', globalName: 'getRakGamesOverlayResultDomHardeningHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only guard: herní modaly, overlaye a výsledkové texty.' },
+    { group: 'diagnostics', alias: 'dueDiligenceProgress', globalName: 'getRakDueDiligenceAuditProgressHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only tracker celkového due diligence auditu a procent zbývající práce.' },
+    { group: 'diagnostics', alias: 'dueDiligenceRemainingWork', globalName: 'getRakDueDiligenceRemainingWorkReport', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only soupis zbývajících auditních částí podle původního promptu.' },
+    { group: 'diagnostics', alias: 'performanceBudgetAudit', globalName: 'getRakPerformanceBudgetAuditHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only výkonový audit: skripty, CSS, DOM, storage a měřicí doporučení.' },
+    { group: 'diagnostics', alias: 'testAutomationCiPlan', globalName: 'getRakTestAutomationCiPlanHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only test/CI plán: blokující kontroly, warningy a minimální GitHub Actions snippet.' },
+    { group: 'diagnostics', alias: 'performanceCiClosure', globalName: 'getRakPerformanceCiClosureHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only closure výkonového a CI/test auditního kroku.' },
+    { group: 'diagnostics', alias: 'mobilePerformanceSmokePlan', globalName: 'getRakMobilePerformanceSmokePlanHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only mobile/performance smoke plán a runtime snapshot bez tvrzení, že mobilní test proběhl.' },
+    { group: 'diagnostics', alias: 'playwrightDomSmokeDraft', globalName: 'getRakPlaywrightDomSmokeDraftHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only návrh prvních Playwright/DOM smoke testů bez zavedení závislosti.' },
+    { group: 'diagnostics', alias: 'finalAuditClosure', globalName: 'getRakFinalAuditClosureHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only closure stav velkého due diligence auditu.' },
     { group: 'diagnostics', alias: 'exportReleaseTooling', globalName: 'getRakExportReleaseToolingHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only audit export/release tooling vrstvy bez spuštění exportu.' },
     { group: 'diagnostics', alias: 'exportSmokeReport', globalName: 'getRakExportSmokeReport', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only poslední smoke/preflight stav exportu ZIPu.' },
     { group: 'diagnostics', alias: 'domActionRegistry', globalName: 'getRakDomActionRegistryHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only mapa data-action prvků a allowlistů bez přepojení navigace/renderu/her.' },
@@ -124,7 +133,7 @@
   };
   root.getNamespaceMap = cloneMap;
   root.namespaceMap = cloneMap();
-  root.namespaceMapVersion = 'v.1.5 (916)';
+  root.namespaceMapVersion = 'v.1.5 (922)';
   root.namespacePlan = {
     phase: 'phase C',
     mode: 'namespace-readonly-phase-closed-with-online-game-contract-alias-v897',

@@ -1,9 +1,9 @@
-// v.1.5 (916) – release gating/checklist vrstva nad read-only audity bez mutací.
+// v.1.5 (922) – release gating/checklist vrstva nad read-only audity bez mutací.
 
 (function setupRakReleaseGates() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
-  const VERSION = 'v.1.5 (916)';
-  const MODE = 'release-gates-readonly-v916';
+  const VERSION = 'v.1.5 (922)';
+  const MODE = 'release-gates-readonly-v922';
 
   try {
     if (typeof window.rakMarkModuleReady === 'function') {
@@ -86,7 +86,15 @@
     const gamesDailyChallengeDomHardening = readDiag('gamesDailyChallengeDomHardening', 'getRakGamesDailyChallengeDomHardeningHealth');
     const gamesPostFixScoreFlow = readDiag('gamesPostFixScoreFlow', 'getRakGamesPostFixScoreFlowHealth');
     const gamesActionTextDomHardening = readDiag('gamesActionTextDomHardening', 'getRakGamesActionTextDomHardeningHealth');
+    const gamesOverlayResultDomHardening = readDiag('gamesOverlayResultDomHardening', 'getRakGamesOverlayResultDomHardeningHealth');
     const domSecurityHardeningClosure = readDiag('domSecurityHardeningClosure', 'getRakDomSecurityHardeningClosureHealth');
+    const dueDiligenceProgress = readDiag('dueDiligenceProgress', 'getRakDueDiligenceAuditProgressHealth');
+    const performanceBudgetAudit = readDiag('performanceBudgetAudit', 'getRakPerformanceBudgetAuditHealth');
+    const testAutomationCiPlan = readDiag('testAutomationCiPlan', 'getRakTestAutomationCiPlanHealth');
+    const performanceCiClosure = readDiag('performanceCiClosure', 'getRakPerformanceCiClosureHealth');
+    const mobilePerformanceSmokePlan = readDiag('mobilePerformanceSmokePlan', 'getRakMobilePerformanceSmokePlanHealth');
+    const playwrightDomSmokeDraft = readDiag('playwrightDomSmokeDraft', 'getRakPlaywrightDomSmokeDraftHealth');
+    const finalAuditClosure = readDiag('finalAuditClosure', 'getRakFinalAuditClosureHealth');
 
     return {
       releaseOpsChecklist,
@@ -110,14 +118,22 @@
       gamesDailyChallengeDomHardening,
       gamesPostFixScoreFlow,
       gamesActionTextDomHardening,
-      domSecurityHardeningClosure
+      gamesOverlayResultDomHardening,
+      domSecurityHardeningClosure,
+      dueDiligenceProgress,
+      performanceBudgetAudit,
+      testAutomationCiPlan,
+      performanceCiClosure,
+      mobilePerformanceSmokePlan,
+      playwrightDomSmokeDraft,
+      finalAuditClosure
     };
   }
 
   function buildGateMatrix(signals) {
     const gates = [];
     const version = safeString(window.APP_VERSION || VERSION);
-    const versionOk = /^v\.1\.5 \(916\)$/.test(version);
+    const versionOk = /^v\.1\.5 \(921\)$/.test(version);
 
     gates.push(makeGate(
       'version-consistency',
@@ -300,7 +316,7 @@
       signals.gamesPostFixScoreFlow && signals.gamesPostFixScoreFlow.ok ? 'ok' : 'warning',
       'warning',
       signals.gamesPostFixScoreFlow ? ('reaction ' + (signals.gamesPostFixScoreFlow.checks && signals.gamesPostFixScoreFlow.checks.reactionTopScoreVisible ? 'OK' : 'kontrola') + ', daily bridge ' + (signals.gamesPostFixScoreFlow.checks && signals.gamesPostFixScoreFlow.checks.dailyChallengeBridge ? 'OK' : 'kontrola')) : 'guard chybí',
-      'Po opravě z v916 musí být Reaction Top score viditelné a Denní challenge musí zapisovat vlastní leaderboard.',
+      'Po opravě z v922 musí být Reaction Top score viditelné a Denní challenge musí zapisovat vlastní leaderboard.',
       'games-arcade.js'
     ));
 
@@ -316,6 +332,17 @@
       'games-arcade.js'
     ));
 
+
+    gates.push(makeGate(
+      'games-overlay-result-dom-hardening',
+      'Hry modaly/výsledky DOM hardening',
+      signals.gamesOverlayResultDomHardening && signals.gamesOverlayResultDomHardening.ok ? 'ok' : 'warning',
+      'warning',
+      signals.gamesOverlayResultDomHardening ? ('escapovaná pole ' + String((signals.gamesOverlayResultDomHardening.escapedFields || []).length || 0) + ', sinky ' + String((signals.gamesOverlayResultDomHardening.sinks || []).length || 0)) : 'guard chybí',
+      'Herní modaly, overlaye a výsledkové texty musí normalizovat a escapovat text bez zásahu do gameplaye.',
+      'games-arcade.js'
+    ));
+
     gates.push(makeGate(
       'dom-security-hardening',
       'DOM/security hardening plán',
@@ -324,6 +351,60 @@
       signals.domSecurityHardeningClosure ? ('fáze ' + String(signals.domSecurityHardeningClosure.phasePercent || 0) + '%, kandidáti ' + String(signals.domSecurityHardeningClosure.candidateCount || 0) + ', P1 review ' + String(signals.domSecurityHardeningClosure.p1ReviewCount || 0)) : 'closure chybí',
       'DOM hardening dělat jen po jedné sink skupině; žádný hromadný přepis innerHTML bez regression testu.',
       'rak-dom-security-hardening'
+    ));
+
+
+
+
+    gates.push(makeGate(
+      'performance-ci-audit',
+      'Výkon + CI/test audit',
+      signals.performanceCiClosure && signals.performanceCiClosure.ok ? 'ok' : 'warning',
+      'warning',
+      signals.performanceCiClosure ? ('fáze ' + String(signals.performanceCiClosure.phasePercent || 0) + '%, test vrstvy ' + String(signals.performanceCiClosure.testLayerCount || 0) + ', performance warningy ' + String(signals.performanceCiClosure.performanceWarnings || 0)) : 'performance/CI closure chybí',
+      'Výkonový audit a minimální CI/test strategy musí zůstat read-only; reálné mobilní měření je ruční kontrola.',
+      'rak-performance-ci-audit'
+    ));
+
+    gates.push(makeGate(
+      'due-diligence-progress',
+      'Due diligence audit progress',
+      signals.dueDiligenceProgress && signals.dueDiligenceProgress.ok ? 'ok' : 'warning',
+      'warning',
+      signals.dueDiligenceProgress ? ('hotovo ' + String(signals.dueDiligenceProgress.percentComplete || 0) + '%, chybí ' + String(signals.dueDiligenceProgress.percentRemaining || 0) + '%') : 'progress helper chybí',
+      'Před předáním dalších velkých úkolů držet přehled zbývajících auditních částí podle původního promptu.',
+      'rak-due-diligence-progress'
+    ));
+
+
+    gates.push(makeGate(
+      'mobile-performance-smoke-plan',
+      'Mobile/performance smoke plán',
+      signals.mobilePerformanceSmokePlan && signals.mobilePerformanceSmokePlan.ok ? 'manual' : 'warning',
+      'manual',
+      signals.mobilePerformanceSmokePlan ? ('zařízení ' + String(signals.mobilePerformanceSmokePlan.deviceCount || 0) + ', trasy ' + String(signals.mobilePerformanceSmokePlan.routeSmokeCount || 0) + ', real device ' + (signals.mobilePerformanceSmokePlan.realDeviceMeasured ? 'ano' : 'ne')) : 'mobile smoke helper chybí',
+      'Skutečné měření na mobilu je ruční gate; netvrdit, že proběhlo, dokud nebude otestováno.',
+      'rak-mobile-smoke-audit'
+    ));
+
+    gates.push(makeGate(
+      'playwright-dom-smoke-draft',
+      'Playwright/DOM smoke návrh',
+      signals.playwrightDomSmokeDraft && signals.playwrightDomSmokeDraft.ok ? 'ok' : 'warning',
+      'warning',
+      signals.playwrightDomSmokeDraft ? ('stav ' + String(signals.playwrightDomSmokeDraft.implementationStatus || 'draft')) : 'Playwright draft helper chybí',
+      'První test spustit mimo produkční DB; zatím nezavádět jako povinnou závislost do hotfix buildu.',
+      'rak-mobile-smoke-audit'
+    ));
+
+    gates.push(makeGate(
+      'due-diligence-final-closure',
+      'Due diligence closure',
+      signals.finalAuditClosure && signals.finalAuditClosure.ok ? 'manual' : 'warning',
+      'manual',
+      signals.finalAuditClosure ? ('hotovo ' + String(signals.finalAuditClosure.percentComplete || 0) + ' %, zbývá ' + String(signals.finalAuditClosure.percentRemaining || 0) + ' %') : 'closure helper chybí',
+      'Zbývající část je hlavně ruční měření a skutečně spuštěné smoke testy.',
+      'rak-mobile-smoke-audit'
     ));
 
     gates.push(makeGate(
@@ -352,7 +433,7 @@
   window.getRakReleaseGatePolicy = function getRakReleaseGatePolicy() {
     return {
       ok: true,
-      mode: 'release-gate-policy-v916',
+      mode: 'release-gate-policy-v922',
       version: safeString(window.APP_VERSION || VERSION),
       checkedAt: nowIso(),
       statuses: [
@@ -417,7 +498,7 @@
     const policy = window.getRakReleaseGatePolicy();
     return {
       ok: !!(matrix && matrix.ok),
-      mode: 'release-gates-closure-v916',
+      mode: 'release-gates-closure-v922',
       version: safeString(window.APP_VERSION || VERSION),
       checkedAt: nowIso(),
       phase: 'phase K release gating / checklist matrix',

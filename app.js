@@ -1,4 +1,4 @@
-// v.1.5 (916) – release gating/checklist matice nad hotovými read-only audity bez zásahu do online flow.
+// v.1.5 (922) – release gating/checklist matice nad hotovými read-only audity bez zásahu do online flow.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app.js', 'loaded', { source: 'index' }); } catch (err) {}
 
 
@@ -1010,6 +1010,8 @@ function getPhaseTenScriptLoadHealth() {
     'rak-appsec-privacy-audit.js',
     'rak-release-gates.js',
     'rak-dom-security-hardening.js',
+    'rak-due-diligence-progress.js',
+    'rak-performance-ci-audit.js',
     'app.js',
     'core.js',
     'lifecycle.js',
@@ -2354,7 +2356,7 @@ function runPhaseTenFinalStabilizationAudit() {
 
   try {
     if (window.__rakModuleReadinessRegistry) {
-      window.__rakModuleReadinessRegistry.expected = ['module-readiness.js', 'rak-namespace.js', 'rak-audit-baseline.js', 'rak-runtime-health.js', 'rak-storage-sync-audit.js', 'rak-boot-sequence-audit.js', 'rak-export-release-audit.js', 'rak-dom-action-audit.js', 'rak-supabase-client-audit.js', 'rak-release-ops-audit.js', 'rak-appsec-privacy-audit.js', 'rak-release-gates.js', 'rak-dom-security-hardening.js', 'app.js', 'data.js'].concat(files.slice());
+      window.__rakModuleReadinessRegistry.expected = ['module-readiness.js', 'rak-namespace.js', 'rak-audit-baseline.js', 'rak-runtime-health.js', 'rak-storage-sync-audit.js', 'rak-boot-sequence-audit.js', 'rak-export-release-audit.js', 'rak-dom-action-audit.js', 'rak-supabase-client-audit.js', 'rak-release-ops-audit.js', 'rak-appsec-privacy-audit.js', 'rak-release-gates.js', 'rak-dom-security-hardening.js', 'rak-due-diligence-progress.js', 'rak-performance-ci-audit.js', 'app.js', 'data.js'].concat(files.slice());
       if (typeof initialRotationData !== 'undefined' && typeof window.rakMarkModuleReady === 'function') {
         window.rakMarkModuleReady('data.js', 'loaded', { source: 'index-preload' });
       }
@@ -2533,7 +2535,7 @@ function installPwaAndConnectivityHooks() {
     swAppShellCachedRatio: 0,
     swNetworkFallbackTimeoutMs: 0,
     swNavigationPreloadTimeoutMs: 0,
-    pwaAssetAuditMode: 'zip-source-inventory-assets-pwa-sql-release-readiness-architecture-module-readiness-runtime-health-storage-sync-namespace-closed-export-manifest-preflight-appsec-gates-v916',
+    pwaAssetAuditMode: 'zip-source-inventory-assets-pwa-sql-release-readiness-architecture-module-readiness-runtime-health-storage-sync-namespace-closed-export-manifest-preflight-appsec-gates-v922',
     pwaAssetExpectedIconCount: 6,
     pwaAssetManifestOk: false,
     pwaAssetFaviconOk: false,
@@ -2579,7 +2581,7 @@ function installPwaAndConnectivityHooks() {
     const appleTouchOk = linkHrefs.some(href => href.indexOf('assets/app-icons/icon-180.png') >= 0);
     const legacyRootIconRefs = linkHrefs.filter(href => /(^|\/)icon-(16|32|180|192|512|1024)\.png(?:$|[?#])/.test(href) && href.indexOf('assets/app-icons/') < 0);
     return {
-      pwaAssetAuditMode: 'zip-source-inventory-assets-pwa-sql-release-readiness-architecture-module-readiness-runtime-health-storage-sync-namespace-closed-export-manifest-preflight-appsec-gates-v916',
+      pwaAssetAuditMode: 'zip-source-inventory-assets-pwa-sql-release-readiness-architecture-module-readiness-runtime-health-storage-sync-namespace-closed-export-manifest-preflight-appsec-gates-v922',
       pwaAssetExpectedIconCount: expectedIcons.length,
       pwaAssetManifestOk: manifestOk,
       pwaAssetFaviconOk: faviconOk,

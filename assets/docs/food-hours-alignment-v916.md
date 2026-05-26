@@ -1,4 +1,4 @@
-# RaK v.1.5 (916) – Srovnání provozní doby kantýny a jídelny
+# RaK v.1.5 (920) – Srovnání provozní doby kantýny a jídelny
 
 ## Co je upravené
 

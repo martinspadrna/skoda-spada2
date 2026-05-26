@@ -1,4 +1,4 @@
-# RaK v.1.5 (916) – Reaction Test Top score visibility
+# RaK v.1.5 (920) – Reaction Test Top score visibility
 
 ## Oprava
 

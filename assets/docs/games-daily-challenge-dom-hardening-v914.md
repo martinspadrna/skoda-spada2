@@ -1,4 +1,4 @@
-# RaK v.1.5 (916) – Denní challenge DOM hardening
+# RaK v.1.5 (920) – Denní challenge DOM hardening
 
 ## Co se mění
 

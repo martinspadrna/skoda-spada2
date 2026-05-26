@@ -1,4 +1,4 @@
-# RaK v.1.5 (916) – Datum i čas v Top score
+# RaK v.1.5 (920) – Datum i čas v Top score
 
 ## Úprava
 

@@ -1,8 +1,8 @@
-// v.1.5 (916) – DOM/security hardening návrhy po jednotlivých sinkách bez runtime mutací.
+// v.1.5 (922) – DOM/security hardening návrhy po jednotlivých sinkách bez runtime mutací.
 (function setupRakDomSecurityHardening() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
-  const VERSION = 'v.1.5 (916)';
-  const MODE = 'dom-security-hardening-readonly-v916';
+  const VERSION = 'v.1.5 (922)';
+  const MODE = 'dom-security-hardening-readonly-v922';
 
   try {
     if (typeof window.rakMarkModuleReady === 'function') {
@@ -160,7 +160,7 @@
   window.getRakDomSafeHelperPolicy = function getRakDomSafeHelperPolicy() {
     return {
       ok: true,
-      mode: 'dom-safe-helper-policy-v916',
+      mode: 'dom-safe-helper-policy-v922',
       version: safeString(window.APP_VERSION || VERSION),
       checkedAt: nowIso(),
       readOnly: true,
@@ -200,7 +200,7 @@
     const elapsedMs = Math.round(((typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now()) - started);
     return {
       ok: !!(plan && policy && plan.ok && policy.ok),
-      mode: 'dom-security-hardening-closure-v916',
+      mode: 'dom-security-hardening-closure-v922',
       version: safeString(window.APP_VERSION || VERSION),
       checkedAt: nowIso(),
       phase: 'phase L DOM/security hardening plan',

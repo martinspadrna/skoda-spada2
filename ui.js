@@ -4368,6 +4368,180 @@ function tttBestEarlyTrapLockMove(board, deadline) {
   return -1;
 }
 
+
+function tttBestThirteenTurnClampMove(board, deadline) {
+  const occupied = board.reduce((sum, cell) => sum + (cell ? 1 : 0), 0);
+  if (occupied < 5) return -1;
+  const centerRow = (TTT_ROWS - 1) / 2;
+  const centerCol = (TTT_COLS - 1) / 2;
+  const baseHuman = tttEarlyTrapRiskScore(board, 'X') + tttReplyLockdownRisk(board, 'X') * 0.62 + tttLineVectorScore(board, 'X') * 0.44;
+  const baseAi = tttEarlyTrapRiskScore(board, 'O') + tttReplyLockdownRisk(board, 'O') * 0.44 + tttLineVectorScore(board, 'O') * 0.28;
+
+  const rawCandidates = new Set([
+    ...tttCandidateMoves(board, occupied < 20 ? 4 : 3),
+    ...tttThreatWindowMoves(board, 'X'),
+    ...tttCriticalThreatMoves(board, 'X'),
+    ...tttOpenThreeThreatMoves(board, 'X'),
+    ...tttOpenTwoThreatMoves(board, 'X'),
+    ...tttThreatWindowMoves(board, 'O'),
+    ...tttCriticalThreatMoves(board, 'O'),
+    ...tttOpenThreeThreatMoves(board, 'O'),
+    ...tttOpenTwoThreatMoves(board, 'O')
+  ]);
+
+  let candidates = Array.from(rawCandidates)
+    .filter(idx => Number.isFinite(Number(idx)) && !board[Number(idx)])
+    .map(Number)
+    .map(idx => {
+      const row = Math.floor(idx / TTT_COLS);
+      const col = idx % TTT_COLS;
+      board[idx] = 'O';
+      const xRisk = tttEarlyTrapRiskScore(board, 'X') + tttReplyLockdownRisk(board, 'X') * 0.68 + tttLineVectorScore(board, 'X') * 0.52;
+      const oRisk = tttEarlyTrapRiskScore(board, 'O') + tttReplyLockdownRisk(board, 'O') * 0.5 + tttLineVectorScore(board, 'O') * 0.34;
+      const xWins = tttWinningMoves(board, 'X').length;
+      board[idx] = '';
+      return {
+        idx,
+        score: (baseHuman - xRisk) * 2.2
+          + (oRisk - baseAi) * 0.74
+          - xWins * 95000000
+          + tttCheapMovePotential(board, idx, 'X') * 1.48
+          + tttCheapMovePotential(board, idx, 'O') * 1.18
+          + Math.max(0, 140 - (Math.abs(row - centerRow) + Math.abs(col - centerCol)) * 6)
+      };
+    })
+    .sort((a, b) => b.score - a.score)
+    .slice(0, occupied < 16 ? 54 : (occupied < 28 ? 40 : 26))
+    .map(item => item.idx);
+
+  if (!candidates.length) return -1;
+
+  let bestIdx = -1;
+  let bestScore = -Infinity;
+  let bestWorstRisk = Infinity;
+
+  for (const idx of candidates) {
+    const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    if (deadline && now > deadline - 34 && bestIdx >= 0) break;
+    board[idx] = 'O';
+    const ownWinNow = tttWinner(board).winner === 'O' ? 1 : 0;
+    const ownImmediateWins = tttWinningMoves(board, 'O').length;
+    const xImmediateWins = tttWinningMoves(board, 'X').length;
+    const xAfterO = tttEarlyTrapRiskScore(board, 'X') + tttReplyLockdownRisk(board, 'X') * 0.74 + tttLineVectorScore(board, 'X') * 0.58;
+    const oAfterO = tttEarlyTrapRiskScore(board, 'O') + tttReplyLockdownRisk(board, 'O') * 0.54 + tttLineVectorScore(board, 'O') * 0.38;
+
+    const replyPool = new Set([
+      ...tttCandidateMoves(board, occupied < 20 ? 4 : 3),
+      ...tttThreatWindowMoves(board, 'X'),
+      ...tttCriticalThreatMoves(board, 'X'),
+      ...tttOpenThreeThreatMoves(board, 'X'),
+      ...tttOpenTwoThreatMoves(board, 'X'),
+      ...tttThreatWindowMoves(board, 'O')
+    ]);
+    let replies = Array.from(replyPool)
+      .filter(reply => Number.isFinite(Number(reply)) && !board[Number(reply)])
+      .map(Number)
+      .map(reply => {
+        board[reply] = 'X';
+        const score = (tttWinner(board).winner === 'X' ? 320000000 : 0)
+          + tttWinningMoves(board, 'X').length * 92000000
+          + tttEarlyTrapRiskScore(board, 'X')
+          + tttReplyLockdownRisk(board, 'X') * 0.86
+          + tttLineVectorScore(board, 'X') * 0.62
+          + tttCheapMovePotential(board, reply, 'X') * 1.2
+          - tttWinningMoves(board, 'O').length * 46000000;
+        board[reply] = '';
+        return { reply, score };
+      })
+      .sort((a, b) => b.score - a.score)
+      .slice(0, occupied < 18 ? 26 : 18)
+      .map(item => item.reply);
+
+    let worstRisk = xImmediateWins * 220000000 + xAfterO;
+    for (const reply of replies) {
+      const tick = typeof performance !== 'undefined' ? performance.now() : Date.now();
+      if (deadline && tick > deadline - 16 && worstRisk > bestWorstRisk) break;
+      board[reply] = 'X';
+      const replyWinner = tttWinner(board).winner === 'X' ? 1 : 0;
+      const replyWins = tttWinningMoves(board, 'X').length;
+      const replyCritical = tttCriticalThreatMoves(board, 'X').length;
+      const replyOpenThree = tttOpenThreeThreatMoves(board, 'X').length;
+      const replyOpenTwo = tttOpenTwoThreatMoves(board, 'X').length;
+      const replyFork = tttBestForkMove(board, 'X') >= 0 ? 1 : 0;
+      const replyBaseRisk = tttEarlyTrapRiskScore(board, 'X')
+        + tttReplyLockdownRisk(board, 'X') * 0.92
+        + tttLineVectorScore(board, 'X') * 0.72
+        - tttEarlyTrapRiskScore(board, 'O') * 0.18;
+
+      let bestCounterRelief = 0;
+      const counters = Array.from(new Set([
+        ...tttCandidateMoves(board, 3),
+        ...tttThreatWindowMoves(board, 'X'),
+        ...tttCriticalThreatMoves(board, 'X'),
+        ...tttOpenThreeThreatMoves(board, 'X'),
+        ...tttThreatWindowMoves(board, 'O'),
+        ...tttCriticalThreatMoves(board, 'O')
+      ])).filter(counter => Number.isFinite(Number(counter)) && !board[Number(counter)]).map(Number)
+        .map(counter => {
+          board[counter] = 'O';
+          const relief = replyBaseRisk
+            - (tttEarlyTrapRiskScore(board, 'X') + tttReplyLockdownRisk(board, 'X') * 0.82 + tttLineVectorScore(board, 'X') * 0.6)
+            + tttWinningMoves(board, 'O').length * 52000000
+            + tttEarlyTrapRiskScore(board, 'O') * 0.24;
+          board[counter] = '';
+          return relief;
+        })
+        .sort((a, b) => b - a)
+        .slice(0, 12);
+      if (counters.length) bestCounterRelief = Math.max(0, counters[0]);
+      board[reply] = '';
+
+      const replyRisk = replyWinner * 420000000
+        + replyWins * 135000000
+        + replyCritical * 54000000
+        + replyOpenThree * 22000000
+        + replyOpenTwo * 2600000
+        + replyFork * 30000000
+        + replyBaseRisk
+        - bestCounterRelief * 0.48;
+      if (replyRisk > worstRisk) worstRisk = replyRisk;
+    }
+
+    board[idx] = '';
+    const candidateScore = ownWinNow * 700000000
+      + ownImmediateWins * 160000000
+      + (baseHuman - xAfterO) * 2.45
+      + (oAfterO - baseAi) * 0.92
+      + tttCheapMovePotential(board, idx, 'O') * 1.26
+      + tttCheapMovePotential(board, idx, 'X') * 1.42
+      - worstRisk * 1.62;
+
+    if (candidateScore > bestScore || (Math.abs(candidateScore - bestScore) < 1 && worstRisk < bestWorstRisk)) {
+      bestScore = candidateScore;
+      bestIdx = idx;
+      bestWorstRisk = worstRisk;
+    }
+  }
+
+  if (bestIdx < 0) return -1;
+  if (occupied >= 5 || baseHuman > 26000 || bestWorstRisk < Math.max(3600000, baseHuman * 1.22)) return bestIdx;
+  return -1;
+}
+
+function getRakTttAiHardeningV922Health() {
+  return {
+    ok: true,
+    mode: 'ttt-ai-hardening-v922',
+    version: String(window.APP_VERSION || 'v.1.5 (922)'),
+    thirteenTurnClamp: true,
+    hardSearchDepthEarly: 8,
+    hardSearchDepthMid: 8,
+    onlineFlowTouched: false,
+    note: 'AI proti počítači má novou clamp vrstvu proti výhrám kolem 13. tahu; online Piškvorky beze změny.'
+  };
+}
+if (typeof window !== 'undefined') window.getRakTttAiHardeningV922Health = getRakTttAiHardeningV922Health;
+
 function tttBestUltraSafetyMove(board, deadline) {
   const occupied = board.reduce((sum, cell) => sum + (cell ? 1 : 0), 0);
   if (occupied < 5) return -1;
@@ -4457,9 +4631,9 @@ function tttBestUltraSafetyMove(board, deadline) {
 
 function tttHardSearchDepth(board) {
   const occupied = board.reduce((sum, cell) => sum + (cell ? 1 : 0), 0);
-  if (occupied < 8) return 7;
-  if (occupied < 18) return 7;
-  if (occupied < 30) return 6;
+  if (occupied < 8) return 8;
+  if (occupied < 18) return 8;
+  if (occupied < 30) return 7;
   if (occupied < 42) return 4;
   return 2;
 }
@@ -4500,13 +4674,19 @@ function tttBestMove(board, difficulty) {
   const openThreeBlock = tttPickBestBlockMove(board, tttOpenThreeThreatMoves(board, 'X'), 'X');
   if (openThreeBlock >= 0) return openThreeBlock;
 
-  const earlyTrapLockMove = tttBestEarlyTrapLockMove(board, (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 1320);
+  const earlyOpenTwoBlock = occupied <= 18 ? tttPickBestBlockMove(board, tttOpenTwoThreatMoves(board, 'X'), 'X') : -1;
+  if (earlyOpenTwoBlock >= 0) return earlyOpenTwoBlock;
+
+  const thirteenTurnClampMove = tttBestThirteenTurnClampMove(board, (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 1780);
+  if (thirteenTurnClampMove >= 0) return thirteenTurnClampMove;
+
+  const earlyTrapLockMove = tttBestEarlyTrapLockMove(board, (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 1680);
   if (earlyTrapLockMove >= 0) return earlyTrapLockMove;
 
-  const humanPressureLockMove = tttBestHumanPressureLockMove(board, (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 1280);
+  const humanPressureLockMove = tttBestHumanPressureLockMove(board, (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 1580);
   if (humanPressureLockMove >= 0) return humanPressureLockMove;
 
-  const replyLockdownMove = tttBestReplyLockdownMove(board, (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 980);
+  const replyLockdownMove = tttBestReplyLockdownMove(board, (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 1240);
   if (replyLockdownMove >= 0) return replyLockdownMove;
 
   const lineContainmentMove = tttBestLineContainmentMove(board, (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 620);
@@ -4540,7 +4720,7 @@ function tttBestMove(board, difficulty) {
   if (ownOpenThree >= 0) return ownOpenThree;
 
   const radius = occupied < 14 ? 3 : 2;
-  const deadline = (typeof performance !== 'undefined' ? performance.now() : Date.now()) + (difficulty === 'ai' ? 980 : 80);
+  const deadline = (typeof performance !== 'undefined' ? performance.now() : Date.now()) + (difficulty === 'ai' ? 1320 : 80);
   let candidates = tttCandidateMoves(board, radius);
   if (!candidates.length) candidates = free.slice();
 
@@ -4553,7 +4733,7 @@ function tttBestMove(board, difficulty) {
         - tttTacticalPressureScore((() => { board[idx] = 'O'; const snapshot = board.slice(); board[idx] = ''; return snapshot; })(), 'X') * 0.18
     }))
     .sort((a, b) => b.score - a.score)
-    .slice(0, difficulty === 'ai' ? 42 : 12)
+    .slice(0, difficulty === 'ai' ? 54 : 12)
     .map(item => item.idx);
 
   let bestIdx = candidates[0] ?? free[0];
@@ -5940,7 +6120,7 @@ function buildAppHistoryHtml(versionText) {
       range: 'v.1.5 901–950',
       title: 'Aktuální stabilizace, bezpečnost a provozní detaily',
       lines: [
-        'Hlavní změny: dokončení online game contract auditu, release readiness/monitoring/rollback vrstvy, AppSec/privacy audit, release gates a postupný DOM/security hardening her bez zásahu do online flow.',
+        'Hlavní změny: dokončení online game contract auditu, release readiness/monitoring/rollback vrstvy, AppSec/privacy audit, release gates, výkonový/CI audit, finální due diligence report a mobile/Playwright smoke plán.',
         'Kantýna/jídelna se srovnala podle běžné a mimořádné provozní doby; rozklik teď odděluje běžný režim a přesčasové rozdíly.',
         'Herní Top score a profily se resetovaly na čistý start; Piškvorky Top score mají zobrazovat datum i čas a Supabase výsledky byly znovu vyčištěné.',
         'Pravidlo historie: O aplikaci má držet hlavně stručné souhrny po cca 50 verzích, ne dlouhý seznam každého mikrobuildu.'
@@ -8955,7 +9135,7 @@ function bindCalendarTile() {
 const GAMES_PROFILE_KEY = APP_KEY + ':games_profile_v1';
 const GAMES_PROFILE_RESET_VERSION = 912;
 const GAMES_SCORE_RESET_VERSION = 912;
-const GAMES_SCORE_RESET_MARKER_KEY = APP_KEY + ':games_score_reset_v916';
+const GAMES_SCORE_RESET_MARKER_KEY = APP_KEY + ':games_score_reset_v922';
 const GAMES_REMOTE_STATS_RESET_CUTOFF_MS = Date.parse('2026-05-26T18:44:00+02:00');
 const GAMES_ACCOUNT_BLOCKLIST = new Set(['4157']);
 const GAMES_ACCOUNT_LIST = [];

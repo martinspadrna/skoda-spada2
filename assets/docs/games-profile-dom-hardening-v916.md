@@ -1,8 +1,8 @@
-# RaK v.1.5 (916) – DOM/security hardening profilů a achievementů
+# RaK v.1.5 (920) – DOM/security hardening profilů a achievementů
 
 ## Cíl
 
-Navazuje na v916, kde se bezpečnostně zpevnil renderer Top score. V909 stejným malým krokem zpevňuje textové výpisy v herních profilech, statistikách a achievementech.
+Navazuje na v920, kde se bezpečnostně zpevnil renderer Top score. V909 stejným malým krokem zpevňuje textové výpisy v herních profilech, statistikách a achievementech.
 
 ## Co se mění
 
