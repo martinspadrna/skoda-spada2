@@ -1,4 +1,4 @@
-// v.1.5 (895) – release/architecture readiness bere i online game contract audit jako read-only signál.
+// v.1.5 (896) – release/architecture readiness bere i online game contract audit jako read-only signál.
 
 (function setupRakAuditBaselineHelpers() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -185,7 +185,7 @@ function getRakReleaseReadinessHealth() {
 
   return {
     ok: issues.length === 0,
-    mode: 'audit-baseline-split-release-readiness-v895',
+    mode: 'audit-baseline-split-release-readiness-v896',
     checkedAt,
     version: currentVersion || 'unknown',
     issueCount: issues.length,
@@ -440,7 +440,7 @@ function getRakArchitectureBaselineHealth() {
 
   return {
     ok: issues.length === 0,
-    mode: 'audit-baseline-split-architecture-boot-audit-v895',
+    mode: 'audit-baseline-split-architecture-boot-audit-v896',
     checkedAt,
     version: version || 'unknown',
     issueCount: issues.length,
@@ -521,7 +521,7 @@ function getRakArchitectureBaselineHealth() {
       'phase E: DOM/action registry audit a DOM smoke testy pro zamčené sekce – uzavřeno ve v885 přes release readiness linkage bez změny funkčnosti',
       'phase G: storage/localStorage a offline/sync audit – uzavřeno ve v889 jako read-only diagnostika bez mazání dat',
       'phase H: Supabase client/offline queue audit – uzavřen ve v892 jako read-only diagnostika bez DB změn, policies, auto flush nebo mazání',
-      'phase I: Online game create/accept/save contract audit – zahájen ve v895 jako read-only diagnostika bez DB změn, policies a zásahu do online flow'
+      'phase I: Online game create/accept/save contract audit – zahájen ve v894/v895 jako read-only diagnostika bez DB změn, policies a zásahu do online flow'
     ]
   };
 }

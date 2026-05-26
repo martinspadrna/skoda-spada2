@@ -3520,14 +3520,179 @@ function tttBestAntiForkMove(board) {
 }
 
 
+function tttLineVectorScore(board, mark) {
+  const opponent = mark === 'O' ? 'X' : 'O';
+  const directions = [[0,1],[1,0],[1,1],[1,-1]];
+  let score = 0;
+
+  for (let row = 0; row < TTT_ROWS; row += 1) {
+    for (let col = 0; col < TTT_COLS; col += 1) {
+      for (const [dr, dc] of directions) {
+        for (const size of [TTT_WIN_LENGTH, TTT_WIN_LENGTH + 1]) {
+          const cells = [];
+          let ok = true;
+          for (let step = 0; step < size; step += 1) {
+            const r = row + dr * step;
+            const c = col + dc * step;
+            if (!tttInBounds(r, c)) { ok = false; break; }
+            cells.push(tttIndex(r, c));
+          }
+          if (!ok) continue;
+
+          let marks = 0;
+          let empties = 0;
+          let blocked = false;
+          for (const idx of cells) {
+            const cell = board[idx];
+            if (cell === opponent) { blocked = true; break; }
+            if (cell === mark) marks += 1;
+            else if (!cell) empties += 1;
+          }
+          if (blocked || !marks || !empties) continue;
+
+          const beforeRow = row - dr;
+          const beforeCol = col - dc;
+          const afterRow = row + dr * size;
+          const afterCol = col + dc * size;
+          const openBefore = tttInBounds(beforeRow, beforeCol) && !board[tttIndex(beforeRow, beforeCol)];
+          const openAfter = tttInBounds(afterRow, afterCol) && !board[tttIndex(afterRow, afterCol)];
+          const openBonus = (openBefore ? 1 : 0) + (openAfter ? 1 : 0);
+          const sizeBonus = size > TTT_WIN_LENGTH ? 1.34 : 1;
+
+          if (marks >= 5) score += 90000000 * sizeBonus;
+          else if (marks === 4) score += (empties === 1 ? 22000000 : 7600000) * sizeBonus + openBonus * 1800000;
+          else if (marks === 3) score += (empties <= 2 ? 1150000 : 420000) * sizeBonus + openBonus * 260000;
+          else if (marks === 2) score += 72000 * sizeBonus + openBonus * 18000;
+          else score += 2400 * sizeBonus;
+        }
+      }
+    }
+  }
+  return score;
+}
+
 function tttTacticalPressureScore(board, mark) {
   const wins = tttWinningMoves(board, mark).length;
   const critical = tttCriticalThreatMoves(board, mark).length;
   const windows = tttThreatWindowMoves(board, mark).length;
   const openThrees = tttOpenThreeThreatMoves(board, mark).length;
+  const openTwos = typeof tttOpenTwoThreatMoves === 'function' ? tttOpenTwoThreatMoves(board, mark).length : 0;
   const forks = tttBestForkMove(board, mark) >= 0 ? 1 : 0;
   const danger = tttBoardDangerScore(board, mark);
-  return wins * 9000000 + critical * 1450000 + windows * 520000 + openThrees * 360000 + forks * 650000 + danger;
+  const vector = tttLineVectorScore(board, mark);
+  return wins * 9000000 + critical * 1450000 + windows * 520000 + openThrees * 360000 + openTwos * 42000 + forks * 650000 + danger + vector * 0.62;
+}
+
+function tttBestLineContainmentMove(board, deadline) {
+  const occupied = board.reduce((sum, cell) => sum + (cell ? 1 : 0), 0);
+  if (occupied < 6) return -1;
+
+  const currentVector = tttLineVectorScore(board, 'X');
+  const currentPressure = tttTacticalPressureScore(board, 'X');
+  if (currentVector < 90000 && currentPressure < 180000 && occupied < 10) return -1;
+
+  const rawCandidates = new Set([
+    ...tttCandidateMoves(board, occupied < 28 ? 3 : 2),
+    ...tttThreatWindowMoves(board, 'X'),
+    ...tttCriticalThreatMoves(board, 'X'),
+    ...tttOpenThreeThreatMoves(board, 'X'),
+    ...tttOpenTwoThreatMoves(board, 'X')
+  ]);
+
+  let candidates = Array.from(rawCandidates).filter(idx => Number.isFinite(Number(idx)) && !board[Number(idx)]).map(Number);
+  candidates = candidates
+    .map(idx => ({
+      idx,
+      score: tttCheapMovePotential(board, idx, 'X') * 1.2
+        + tttCheapMovePotential(board, idx, 'O') * 0.94
+        + (() => { board[idx] = 'O'; const reduced = currentVector - tttLineVectorScore(board, 'X'); board[idx] = ''; return reduced; })() * 0.75
+    }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, occupied < 18 ? 34 : (occupied < 34 ? 28 : 22))
+    .map(item => item.idx);
+
+  let bestIdx = -1;
+  let bestScore = -Infinity;
+  let bestWorstRisk = Infinity;
+  for (const idx of candidates) {
+    const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    if (deadline && now > deadline - 26 && bestIdx >= 0) break;
+
+    board[idx] = 'O';
+    const ownWinNow = tttWinner(board).winner === 'O' ? 1 : 0;
+    const xImmediateAfter = tttWinningMoves(board, 'X').length;
+    const nextVector = tttLineVectorScore(board, 'X');
+    const nextPressure = tttTacticalPressureScore(board, 'X');
+    const ownVector = tttLineVectorScore(board, 'O');
+    const ownPressure = tttTacticalPressureScore(board, 'O');
+
+    let replies = Array.from(new Set(tttCandidateMoves(board, occupied < 26 ? 3 : 2))).filter(reply => !board[reply]);
+    replies = replies
+      .map(reply => {
+        board[reply] = 'X';
+        const replyScore = tttLineVectorScore(board, 'X') * 0.00012
+          + tttTacticalPressureScore(board, 'X') * 0.00008
+          + tttCheapMovePotential(board, reply, 'X')
+          + (tttWinner(board).winner === 'X' ? 5000000 : 0)
+          + tttWinningMoves(board, 'X').length * 800000;
+        board[reply] = '';
+        return { reply, score: replyScore };
+      })
+      .sort((a, b) => b.score - a.score)
+      .slice(0, occupied < 20 ? 18 : 12)
+      .map(item => item.reply);
+
+    let worstRisk = xImmediateAfter * 52000000 + nextVector * 1.25 + nextPressure * 0.68;
+    for (const reply of replies) {
+      board[reply] = 'X';
+      const replyWinner = tttWinner(board).winner === 'X' ? 1 : 0;
+      const xWins = tttWinningMoves(board, 'X').length;
+      const xCritical = tttCriticalThreatMoves(board, 'X').length;
+      const xWindows = tttThreatWindowMoves(board, 'X').length;
+      const xOpenThrees = tttOpenThreeThreatMoves(board, 'X').length;
+      const xOpenTwos = tttOpenTwoThreatMoves(board, 'X').length;
+      const xFork = tttBestForkMove(board, 'X') >= 0 ? 1 : 0;
+      const replyVector = tttLineVectorScore(board, 'X');
+      const replyPressure = tttTacticalPressureScore(board, 'X');
+      const oCounterWins = tttWinningMoves(board, 'O').length;
+      const oCounterPressure = tttTacticalPressureScore(board, 'O');
+      board[reply] = '';
+
+      const replyRisk = replyWinner * 180000000
+        + xWins * 52000000
+        + xCritical * 9200000
+        + xWindows * 4200000
+        + xOpenThrees * 2400000
+        + xOpenTwos * 130000
+        + xFork * 3600000
+        + replyVector * 1.34
+        + replyPressure * 0.72
+        - oCounterWins * 24000000
+        - oCounterPressure * 0.2;
+      if (replyRisk > worstRisk) worstRisk = replyRisk;
+    }
+
+    board[idx] = '';
+    const reduction = currentVector - nextVector;
+    const candidateScore = ownWinNow * 260000000
+      + reduction * 2.15
+      + (currentPressure - nextPressure) * 1.08
+      + ownVector * 0.92
+      + ownPressure * 0.46
+      + tttCheapMovePotential(board, idx, 'O') * 1.05
+      + tttCheapMovePotential(board, idx, 'X') * 0.82
+      - worstRisk * 1.28;
+
+    if (candidateScore > bestScore || (Math.abs(candidateScore - bestScore) < 1 && worstRisk < bestWorstRisk)) {
+      bestScore = candidateScore;
+      bestIdx = idx;
+      bestWorstRisk = worstRisk;
+    }
+  }
+
+  if (bestIdx < 0) return -1;
+  if (occupied >= 9 || currentVector > 180000 || currentPressure > 420000 || bestWorstRisk < 1800000) return bestIdx;
+  return -1;
 }
 
 function tttBestLookaheadSafeMove(board, defender, attacker) {
@@ -3900,6 +4065,9 @@ function tttBestMove(board, difficulty) {
 
   const openThreeBlock = tttPickBestBlockMove(board, tttOpenThreeThreatMoves(board, 'X'), 'X');
   if (openThreeBlock >= 0) return openThreeBlock;
+
+  const lineContainmentMove = tttBestLineContainmentMove(board, (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 620);
+  if (lineContainmentMove >= 0) return lineContainmentMove;
 
   const trapBrakeMove = tttBestHumanTrapBrakeMove(board, (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 520);
   if (trapBrakeMove >= 0) return trapBrakeMove;
@@ -5300,10 +5468,10 @@ function buildSupabaseKeepaliveStatusHtml(options) {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v.1.5 851–895',
+      range: 'v.1.5 851–896',
       title: 'Release audit, namespace a export tooling',
       lines: [
-        'V895 slučuje graf obsazenosti a koláč absencí do jednoho pole, škáluje graf od nejnižší započtené hodnoty a přidává tvrdší trap-brake obranu Piškvorek proti hráči. V894 přidalo read-only audit kontraktů online her create/accept/save bez DB/policy změn; V893 znovu přitvrdilo Piškvorky proti AI a upravilo statistiky obsazenosti; V892 uzavírá Supabase client/offline queue audit na 100 % bez automatického flushování nebo mazání.',
+        'V896 drží Obsazenost strojů a Důvody absencí vedle sebe i na mobilu a přidává line-containment obranu Piškvorek proti pozdějším pastem hráče. V895 sloučilo graf a koláč do jednoho pole a škáluje graf od nejnižší započtené hodnoty. V894 přidalo read-only audit kontraktů online her create/accept/save bez DB/policy změn; V893 znovu přitvrdilo Piškvorky proti AI.',
         'V867–875 uzavírá window.RaK read-only namespace fázi: mapuje diagnostické aliasy, zachovává staré globály a nepřepojuje navigaci, render, hry ani online flow.',
         'V860–866 uzavírá architecture/boot baseline audit: module readiness, runtime health, boot sequence a auditní helpery se oddělily mimo app.js bez změny funkčnosti.',
         'V853–859 řeší reset herních výsledků, opravu času Piškvorek, PWA/assets/SW audit, čistší ZIP strukturu a release readiness dokumentaci.',

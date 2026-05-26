@@ -1,3 +1,11 @@
+## v.1.5 (896)
+- Statistiky → Obsazenost strojů: Obsazenost a Důvody absencí zůstávají vedle sebe i na mobilu, aby se graf a koláč zbytečně neskládaly pod sebe a nezabíraly výšku stránky.
+- Čárový graf obsazenosti dál používá dynamický rozsah od nejmenší započtené hodnoty po nejvyšší, ne pevný začátek od 0 %.
+- Piškvorky proti AI: po výhře hráče ve 29. tahu přidaná line-containment obrana `tttLineVectorScore()` a `tttBestLineContainmentMove()`, která hlídá pěticová/šesticová okna, rozbité linie, pozdější pasti a nejhorší odpověď hráče.
+- Online Piškvorky, Lodě, Supabase DB/policies, dashboard, spodní lišta, kalkulačky, navigace a hotové online flow zůstaly beze změny.
+- Přidané dokumenty `assets/docs/stats-occupancy-layout-v896.md` a `assets/docs/ttt-ai-hardening-v896.md`; historie v O aplikaci rozšířená na blok `v.1.5 851–896`.
+- Verze sjednocena na v.1.5 (896), cache na `v1.5-896`, realtime kanál na `rak-public-live-v896`, package na `1.5.896`.
+
 ## v.1.5 (895)
 - Statistiky → Obsazenost strojů: čárový graf vývoje a koláč důvodů absencí jsou nově v jednom společném poli, aby nezabíraly dvě oddělené karty.
 - Graf obsazenosti už neškáluje od 0 %, ale od nejnižší započtené hodnoty v roce po nejvyšší, takže menší rozdíly v obsazenosti jsou čitelnější.

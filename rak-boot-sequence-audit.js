@@ -1,4 +1,4 @@
-// v.1.5 (895) – boot sequence audit včetně online game contract audit helperu.
+// v.1.5 (896) – boot sequence audit včetně online game contract audit helperu.
 
 (function setupRakBootSequenceAudit() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -86,7 +86,7 @@
 
     return {
       ok: issues.length === 0,
-      mode: 'boot-sequence-audit-v895',
+      mode: 'boot-sequence-audit-v896',
       checkedAt: new Date().toISOString(),
       version: String(window.APP_VERSION || 'unknown'),
       issueCount: issues.length,

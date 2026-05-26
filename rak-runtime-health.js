@@ -1,4 +1,4 @@
-// v.1.5 (895) – runtime health vrstva bere online game contract audit jako read-only warning signál.
+// v.1.5 (896) – runtime health vrstva bere online game contract audit jako read-only warning signál.
 
 (function setupRakRuntimeHealthHelpers() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -60,7 +60,7 @@
   function getStatsYearScopeHealth() {
     const health = {
       ok: true,
-      mode: 'current-year-excludes-future-imported-months-v895',
+      mode: 'current-year-excludes-future-imported-months-v896',
       selectedYear: null,
       currentYear: null,
       currentMonth: null,
@@ -138,7 +138,7 @@
 
     return {
       ok: issues.length === 0,
-      mode: 'runtime-health-split-storage-pwa-stats-scope-v895',
+      mode: 'runtime-health-split-storage-pwa-stats-scope-v896',
       checkedAt: nowIso(),
       version: String(window.APP_VERSION || 'unknown'),
       issueCount: issues.length,

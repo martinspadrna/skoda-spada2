@@ -15438,7 +15438,7 @@ body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsCell{
 .statsAbsenceLegendSwatch{display:inline-block;width:9px;height:9px;border-radius:999px;flex:0 0 auto;box-shadow:0 0 8px rgba(255,255,255,.12);}
 @media (max-width:430px){.statsYearOverviewGrid{grid-template-columns:1fr !important;}.statsYearChartBox{min-height:142px !important;}.statsOccupancyLineChart svg{height:96px}.statsAbsencePieWrap{grid-template-columns:84px minmax(0,1fr) !important;}.statsAbsencePie{width:78px !important;height:78px !important;}}
 
-/* v.1.5 (895) – Statistiky: graf obsazenosti a koláč absencí v jednom poli */
+/* v.1.5 (896) – Statistiky: obsazenost a důvody absencí vedle sebe i na mobilu */
 .statsYearOverviewGrid{grid-template-columns:1fr !important;}
 .statsYearCombinedBox{min-height:0 !important;padding:10px !important;}
 .statsYearCombinedGrid{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);gap:12px;align-items:stretch;min-width:0;}
@@ -15450,10 +15450,28 @@ body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsCell{
 .statsYearCombinedBox .statsOccupancyLineChart svg{height:102px;}
 .statsYearCombinedBox .statsAbsencePieWrap{min-height:134px !important;}
 @media (max-width:430px){
-  .statsYearCombinedGrid{grid-template-columns:1fr;gap:10px;}
-  .statsYearLinePane{padding-right:0;padding-bottom:10px;border-right:0;border-bottom:1px solid rgba(255,255,255,.10);}
-  .statsYearPiePane{padding-left:0;}
-  .statsYearCombinedBox .statsOccupancyLineChart{min-height:126px;}
-  .statsYearCombinedBox .statsOccupancyLineChart svg{height:94px;}
-  .statsYearCombinedBox .statsAbsencePieWrap{min-height:112px !important;}
+  .statsYearCombinedBox{padding:8px !important;}
+  .statsYearCombinedGrid{grid-template-columns:minmax(0,1fr) minmax(0,.92fr) !important;gap:7px !important;align-items:start !important;}
+  .statsYearLinePane{padding-right:7px !important;padding-bottom:0 !important;border-right:1px solid rgba(255,255,255,.10) !important;border-bottom:0 !important;}
+  .statsYearPiePane{padding-left:0 !important;}
+  .statsYearCombinedGrid .statsYearChartTitle{font-size:10px !important;line-height:1.15 !important;margin-bottom:5px !important;}
+  .statsYearCombinedBox .statsOccupancyLineChart{min-height:104px !important;gap:2px !important;}
+  .statsYearCombinedBox .statsOccupancyLineChart svg{height:78px !important;}
+  .statsOccupancyLineLabels{font-size:7.5px !important;padding:0 1px !important;}
+  .statsOccupancyScaleLabel{font-size:7.8px !important;margin-top:1px !important;}
+  .statsYearCombinedBox .statsAbsencePieWrap{grid-template-columns:1fr !important;gap:5px !important;min-height:104px !important;align-items:start !important;}
+  .statsYearCombinedBox .statsAbsencePie{width:58px !important;height:58px !important;font-size:10px !important;box-shadow:inset 0 0 0 6px rgba(0,0,0,.16),0 0 14px rgba(0,0,0,.22) !important;}
+  .statsYearCombinedBox .statsAbsenceLegend{gap:2px !important;}
+  .statsYearCombinedBox .statsAbsenceLegendRow{font-size:8.8px !important;line-height:1.05 !important;gap:4px !important;}
+  .statsYearCombinedBox .statsAbsenceLegendRow strong{font-size:8.8px !important;}
+  .statsYearCombinedBox .statsAbsenceLegendSwatch{width:7px !important;height:7px !important;}
+}
+@media (max-width:360px){
+  .statsYearCombinedGrid{grid-template-columns:minmax(0,1.04fr) minmax(0,.86fr) !important;gap:5px !important;}
+  .statsYearCombinedBox{padding:7px !important;}
+  .statsYearLinePane{padding-right:5px !important;}
+  .statsYearCombinedBox .statsOccupancyLineChart svg{height:72px !important;}
+  .statsYearCombinedBox .statsAbsencePie{width:52px !important;height:52px !important;}
+  .statsYearCombinedBox .statsAbsenceLegendRow{font-size:8px !important;}
+  .statsYearCombinedBox .statsAbsenceLegendRow strong{font-size:8px !important;}
 }
