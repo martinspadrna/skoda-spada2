@@ -509,8 +509,8 @@ function getFoodScheduleSundayGuardHealth() {
   const ok = rows.every((row) => row.plainMatchesRegular && row.overtimeDiffersFromRegular && row.overtimeSundayMarked);
   return {
     ok,
-    mode: 'food-sunday-overtime-guard-v911',
-    version: String(window.APP_VERSION || 'v.1.5 (911)'),
+    mode: 'food-sunday-overtime-guard-v913',
+    version: String(window.APP_VERSION || 'v.1.5 (913)'),
     overtimeSundayCount: FOOD_SPECIAL_SUNDAY_DATES.size,
     plainSundaySample: foodIsoDate(samplePlainSunday),
     overtimeSundaySample: foodIsoDate(sampleOvertimeSunday),

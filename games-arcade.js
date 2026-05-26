@@ -361,10 +361,10 @@
     return nextPatch;
   }
 
-  // v.1.5 (911): Malý DOM/security hardening pro profily, statistiky a achievementy.
+  // v.1.5 (913): Malý DOM/security hardening pro profily, statistiky a achievementy.
   // Uživatelské texty a číselné hodnoty se normalizují před složením HTML.
   const GAMES_PROFILE_DOM_HARDENING = {
-    mode: 'games-profile-achievement-dom-hardening-v911',
+    mode: 'games-profile-achievement-dom-hardening-v913',
     sinks: ['gamesProfilesGrid', 'gamesAchievementsGrid', 'gamesStatsGrid'],
     escapedFields: ['profileName', 'profileId', 'initials', 'rank', 'favorite', 'gameTitle', 'valueText', 'achievementTitle', 'achievementId', 'achievementDesc', 'achievementGoal'],
     numericFields: ['level', 'xp', 'winRate', 'plays', 'achievements', 'progress', 'target', 'pct'],
@@ -1208,10 +1208,10 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   }
 
 
-  // v.1.5 (911): Malý DOM/security hardening pro Top score.
+  // v.1.5 (913): Malý DOM/security hardening pro Top score.
   // Jména, jednotky a hodnoty se normalizují na text ještě před složením HTML řádku.
   const GAMES_TOP_SCORE_DOM_HARDENING = {
-    mode: 'games-top-score-dom-hardening-v911',
+    mode: 'games-top-score-dom-hardening-v913',
     sinks: ['gamesTop3Block'],
     escapedFields: ['id', 'name', 'valueText', 'playedTextDateTime', 'title', 'unit'],
     maxNameLength: 48,
@@ -1297,7 +1297,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok,
       mode: GAMES_TOP_SCORE_DOM_HARDENING.mode,
-      version: String(window.APP_VERSION || 'v.1.5 (911)'),
+      version: String(window.APP_VERSION || 'v.1.5 (913)'),
       scope: 'Top score řádky ve hrách',
       sinks: GAMES_TOP_SCORE_DOM_HARDENING.sinks.slice(),
       escapedFields: GAMES_TOP_SCORE_DOM_HARDENING.escapedFields.slice(),
@@ -1326,7 +1326,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok,
       mode: GAMES_PROFILE_DOM_HARDENING.mode,
-      version: String(window.APP_VERSION || 'v.1.5 (911)'),
+      version: String(window.APP_VERSION || 'v.1.5 (913)'),
       scope: 'Profily, statistiky a achievementy ve hrách',
       sinks: GAMES_PROFILE_DOM_HARDENING.sinks.slice(),
       escapedFields: GAMES_PROFILE_DOM_HARDENING.escapedFields.slice(),
@@ -1339,10 +1339,10 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   }
   window.getRakGamesProfileDomHardeningHealth = getRakGamesProfileDomHardeningHealth;
 
-  // v.1.5 (911): Malý DOM/security hardening pro herní HUD/stavové hlášky.
+  // v.1.5 (913): Malý DOM/security hardening pro herní HUD/stavové hlášky.
   // Všechny arcade HUD řádky v tomto souboru teď jdou přes lokální gamesStatLine(), která zkrátí a escapuje label i hodnotu.
   const GAMES_HUD_MESSAGE_DOM_HARDENING = {
-    mode: 'games-hud-message-dom-hardening-v911',
+    mode: 'games-hud-message-dom-hardening-v913',
     sinks: ['arcadeHud', 'gamesStatLine', 'arcadeErrorBanner'],
     escapedFields: ['label', 'value', 'errorMessage'],
     maxLabelLength: 32,
@@ -1373,7 +1373,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok,
       mode: GAMES_HUD_MESSAGE_DOM_HARDENING.mode,
-      version: String(window.APP_VERSION || 'v.1.5 (911)'),
+      version: String(window.APP_VERSION || 'v.1.5 (913)'),
       scope: 'Herní HUD a chybové/stavové hlášky arcade rendererů',
       sinks: GAMES_HUD_MESSAGE_DOM_HARDENING.sinks.slice(),
       escapedFields: GAMES_HUD_MESSAGE_DOM_HARDENING.escapedFields.slice(),
@@ -1386,9 +1386,9 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   }
   window.getRakGamesHudMessageDomHardeningHealth = getRakGamesHudMessageDomHardeningHealth;
 
-  // v.1.5 (911): Read-only guard pro malé DOM/security pokračování v menu Lodí.
+  // v.1.5 (913): Read-only guard pro malé DOM/security pokračování v menu Lodí.
   const GAMES_SHIPS_MENU_DOM_HARDENING = {
-    mode: 'games-ships-menu-dom-hardening-v911',
+    mode: 'games-ships-menu-dom-hardening-v913',
     sinks: ['shipsH2HRow', 'shipsInviteOverlay', 'shipsStatus'],
     escapedFields: ['playerName', 'inviteCode', 'inviteUrl', 'statusMessage'],
     maxTextLength: 120
@@ -1403,7 +1403,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok,
       mode: GAMES_SHIPS_MENU_DOM_HARDENING.mode,
-      version: String(window.APP_VERSION || 'v.1.5 (911)'),
+      version: String(window.APP_VERSION || 'v.1.5 (913)'),
       scope: 'Menu Lodí, pozvánka a uložené vzájemné zápasy',
       sinks: GAMES_SHIPS_MENU_DOM_HARDENING.sinks.slice(),
       escapedFields: GAMES_SHIPS_MENU_DOM_HARDENING.escapedFields.slice(),
@@ -1413,6 +1413,45 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     };
   }
   window.getRakGamesShipsMenuDomHardeningHealth = getRakGamesShipsMenuDomHardeningHealth;
+
+
+  // v.1.5 (913): Malý DOM/security hardening pro denní challenge menu.
+  // Denní hra používá statická data, ale texty se stejně normalizují a escapují před vložením do HTML.
+  const GAMES_DAILY_CHALLENGE_DOM_HARDENING = {
+    mode: 'games-daily-challenge-dom-hardening-v913',
+    sinks: ['dailyChallengeHud', 'dailyChallengeIntro', 'dailyScoreTitle'],
+    escapedFields: ['label', 'description', 'scoreTitle'],
+    maxLabelLength: 48,
+    maxDescriptionLength: 180
+  };
+
+  function gamesDailySafeLabel(value, fallback) {
+    return gamesSafePlainText(value, fallback || 'Challenge', GAMES_DAILY_CHALLENGE_DOM_HARDENING.maxLabelLength);
+  }
+
+  function gamesDailySafeDescription(value) {
+    return gamesSafePlainText(value, 'Každý den jiná výzva.', GAMES_DAILY_CHALLENGE_DOM_HARDENING.maxDescriptionLength);
+  }
+
+  function getRakGamesDailyChallengeDomHardeningHealth() {
+    const probeLabel = gamesDailySafeLabel('<img src=x onerror=alert(1)>', 'Challenge');
+    const probeText = gamesDailySafeDescription('<script>alert(1)</script> Dnes hraj.');
+    const probeHtml = '<div>' + escapeHtml(probeLabel) + '</div><div>' + escapeHtml(probeText) + '</div>';
+    const ok = probeHtml.includes('&lt;img') && probeHtml.includes('&lt;script') && !probeHtml.includes('<img') && !probeHtml.includes('<script');
+    return {
+      ok,
+      mode: GAMES_DAILY_CHALLENGE_DOM_HARDENING.mode,
+      version: String(window.APP_VERSION || 'v.1.5 (913)'),
+      scope: 'Denní challenge – úvodní texty, HUD a Top score nadpis',
+      sinks: GAMES_DAILY_CHALLENGE_DOM_HARDENING.sinks.slice(),
+      escapedFields: GAMES_DAILY_CHALLENGE_DOM_HARDENING.escapedFields.slice(),
+      maxLabelLength: GAMES_DAILY_CHALLENGE_DOM_HARDENING.maxLabelLength,
+      maxDescriptionLength: GAMES_DAILY_CHALLENGE_DOM_HARDENING.maxDescriptionLength,
+      probeEscaped: ok,
+      note: 'Read-only guard; denní challenge texty se normalizují před HTML a online flow se nemění.'
+    };
+  }
+  window.getRakGamesDailyChallengeDomHardeningHealth = getRakGamesDailyChallengeDomHardeningHealth;
 
   function addCleanup(fn) { if (typeof fn === 'function') cleanups.add(fn); }
   function clearCleanups() { cleanups.forEach((fn) => { try { fn(); } catch (err) {} }); cleanups.clear(); }
@@ -1683,7 +1722,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
       return new Intl.DateTimeFormat('cs-CZ', { timeZone: 'Europe/Prague', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(n));
     } catch (err) {
       const d = new Date(n);
-      return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+      return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getFullYear())} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
     }
   }
 
@@ -5654,11 +5693,12 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   }
   function renderDaily(body) {
     const mode = dailyChallengeId();
-    const label = dailyLabel(mode);
+    const label = gamesDailySafeLabel(dailyLabel(mode), 'Challenge');
+    const description = gamesDailySafeDescription(dailyText(mode));
     const scoreGame = dailyScoreGameId(mode);
-    const scoreUnit = dailyScoreUnit(mode);
-    const scoreTitle = dailyScoreTitle(mode);
-    body.innerHTML = `<div class="arcadeStage dailyStage"><div class="arcadeHud arcadeHudSingleLine">${gamesStatLine('Dnešní hra', label)}${gamesStatLine('Datum', new Date().toLocaleDateString('cs-CZ'))}${gamesStatLine('Score', label)}</div><div class="arcadeBar arcadePanel uPad12"><div class="arcadeStatus"><strong>Denní challenge:</strong> ${dailyText(mode)} Zítra se automaticky vybere jiná hra podle data.</div></div><div class="arcadeControls"><button type="button" class="gameControlBtn" id="dailyStartBtn">Spustit dnešní výzvu</button><button type="button" class="gameControlBtn" id="dailyResetBtn">Obnovit</button></div>${gamesTop3Block(scoreGame, scoreUnit, 5, scoreTitle).replace('gamesTop5ScrollCard', 'gamesTop5ScrollCard arcadeTopScoreTight')}</div>`;
+    const scoreUnit = gamesSafeScoreUnit(dailyScoreUnit(mode), 'bodů');
+    const scoreTitle = gamesDailySafeLabel(dailyScoreTitle(mode), 'Top score dnešní hry');
+    body.innerHTML = `<div class="arcadeStage dailyStage"><div class="arcadeHud arcadeHudSingleLine">${gamesStatLine('Dnešní hra', label)}${gamesStatLine('Datum', new Date().toLocaleDateString('cs-CZ'))}${gamesStatLine('Score', label)}</div><div class="arcadeBar arcadePanel uPad12"><div class="arcadeStatus"><strong>Denní challenge:</strong> ${escapeHtml(description)} Zítra se automaticky vybere jiná hra podle data.</div></div><div class="arcadeControls"><button type="button" class="gameControlBtn" id="dailyStartBtn">Spustit dnešní výzvu</button><button type="button" class="gameControlBtn" id="dailyResetBtn">Obnovit</button></div>${gamesTop3Block(scoreGame, scoreUnit, 5, scoreTitle).replace('gamesTop5ScrollCard', 'gamesTop5ScrollCard arcadeTopScoreTight')}</div>`;
     const start = () => {
       if (mode === 'aim') renderAim(body, { challenge: true, duration: 30000 });
       else if (mode === 'reaction') renderReaction(body);

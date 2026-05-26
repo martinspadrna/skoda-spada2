@@ -1,4 +1,4 @@
-// v.1.5 (911) – export manifest doplněný o DOM/security hardening docs.
+// v.1.5 (913) – export manifest doplněný o DOM/security hardening docs.
 const EXPORT_SOURCE_IDS = {
   "module-readiness.js": "src-module-readiness-js",
   "rak-namespace.js": "src-rak-namespace-js",
@@ -107,16 +107,20 @@ const EXPORT_SOURCE_IDS = {
   "assets/docs/csp-sri-report-only-plan-v904.md": "src-csp-sri-report-only-plan-v904-md",
   "assets/docs/release-gates-matrix-v905.md": "src-release-gates-matrix-v905-md",
   "assets/docs/release-gates-policy-v905.md": "src-release-gates-policy-v905-md",
-  "assets/docs/dom-security-hardening-plan-v911.md": "src-dom-security-hardening-plan-v911-md",
-  "assets/docs/dom-safe-helper-policy-v911.md": "src-dom-safe-helper-policy-v911-md",
-  "assets/docs/food-hours-alignment-v911.md": "src-food-hours-alignment-v911-md",
-  "assets/docs/games-top-score-dom-hardening-v911.md": "src-games-top-score-dom-hardening-v911-md",
-  "assets/docs/games-profile-dom-hardening-v911.md": "src-games-profile-dom-hardening-v911-md",
-  "assets/docs/games-hud-message-dom-hardening-v911.md": "src-games-hud-message-dom-hardening-v911-md",
-  "assets/docs/food-overtime-diff-only-v911.md": "src-food-overtime-diff-only-v911-md",
-  "assets/docs/games-top-score-datetime-v911.md": "src-games-top-score-datetime-v911-md",
-  "assets/docs/games-ships-menu-dom-hardening-v911.md": "src-games-ships-menu-dom-hardening-v911-md",
-  "assets/docs/about-version-summary-policy-v911.md": "src-about-version-summary-policy-v911-md",
+  "assets/docs/dom-security-hardening-plan-v913.md": "src-dom-security-hardening-plan-v913-md",
+  "assets/docs/dom-safe-helper-policy-v913.md": "src-dom-safe-helper-policy-v913-md",
+  "assets/docs/food-hours-alignment-v913.md": "src-food-hours-alignment-v913-md",
+  "assets/docs/games-top-score-dom-hardening-v913.md": "src-games-top-score-dom-hardening-v913-md",
+  "assets/docs/games-profile-dom-hardening-v913.md": "src-games-profile-dom-hardening-v913-md",
+  "assets/docs/games-hud-message-dom-hardening-v913.md": "src-games-hud-message-dom-hardening-v913-md",
+  "assets/docs/food-overtime-diff-only-v913.md": "src-food-overtime-diff-only-v913-md",
+  "assets/docs/games-top-score-datetime-v913.md": "src-games-top-score-datetime-v913-md",
+  "assets/docs/games-ships-menu-dom-hardening-v913.md": "src-games-ships-menu-dom-hardening-v913-md",
+  "assets/docs/about-version-summary-policy-v913.md": "src-about-version-summary-policy-v913-md",
+  "assets/docs/games-score-reset-v913.md": "src-games-score-reset-v913-md",
+  "assets/docs/ttt-top-score-datetime-v913.md": "src-ttt-top-score-datetime-v913-md",
+  "assets/docs/about-50-version-summary-v913.md": "src-about-50-version-summary-v913-md",
+  "assets/docs/games-daily-challenge-dom-hardening-v913.md": "src-games-daily-challenge-dom-hardening-v913-md",
 "assets/app-icons/icon-16.png": "src-icon-16-png",
   "assets/app-icons/icon-32.png": "src-icon-32-png",
   "assets/app-icons/icon-180.png": "src-icon-180-png",
@@ -130,8 +134,8 @@ const BINARY_SOURCE_CACHE = window.__ROTACE_BINARY_SOURCE_CACHE__ || (window.__R
 const EXPORT_SMOKE_REPORT = window.__RAK_EXPORT_SMOKE_REPORT__ || (window.__RAK_EXPORT_SMOKE_REPORT__ = {
   ok: null,
   status: 'not-run',
-  mode: 'export-smoke-report-v911',
-  version: 'v.1.5 (911)',
+  mode: 'export-smoke-report-v913',
+  version: 'v.1.5 (913)',
   checkedAt: null,
   lastStage: 'čeká na export',
   runCount: 0,
@@ -305,22 +309,26 @@ const EXPORT_TEXT_FILES = [
       'assets/docs/ttt-ai-hardening-v903.md',
       'assets/docs/release-gates-matrix-v905.md',
       'assets/docs/release-gates-policy-v905.md',
-      'assets/docs/dom-security-hardening-plan-v911.md',
-      'assets/docs/dom-safe-helper-policy-v911.md',
-      'assets/docs/food-hours-alignment-v911.md',
-      'assets/docs/games-top-score-dom-hardening-v911.md',
-      'assets/docs/games-profile-dom-hardening-v911.md',
-      'assets/docs/games-hud-message-dom-hardening-v911.md',
-      'assets/docs/food-overtime-diff-only-v911.md',
-      'assets/docs/games-top-score-datetime-v911.md',
-      'assets/docs/games-ships-menu-dom-hardening-v911.md',
-      'assets/docs/about-version-summary-policy-v911.md'
+      'assets/docs/dom-security-hardening-plan-v913.md',
+      'assets/docs/dom-safe-helper-policy-v913.md',
+      'assets/docs/food-hours-alignment-v913.md',
+      'assets/docs/games-top-score-dom-hardening-v913.md',
+      'assets/docs/games-profile-dom-hardening-v913.md',
+      'assets/docs/games-hud-message-dom-hardening-v913.md',
+      'assets/docs/food-overtime-diff-only-v913.md',
+      'assets/docs/games-top-score-datetime-v913.md',
+      'assets/docs/games-ships-menu-dom-hardening-v913.md',
+      'assets/docs/about-version-summary-policy-v913.md',
+      'assets/docs/games-score-reset-v913.md',
+      'assets/docs/ttt-top-score-datetime-v913.md',
+      'assets/docs/about-50-version-summary-v913.md',
+      'assets/docs/games-daily-challenge-dom-hardening-v913.md'
 ];
 
 function getRakExportManifest() {
   return {
-    version: String(window.APP_VERSION || 'v.1.5 (911)'),
-    mode: 'export-manifest-preflight-v911',
+    version: String(window.APP_VERSION || 'v.1.5 (913)'),
+    mode: 'export-manifest-preflight-v913',
     indexFile: 'index.html',
     jsFiles: Array.from(new Set(EXPORT_JS_FILES)),
     textFiles: Array.from(new Set(EXPORT_TEXT_FILES)),
@@ -341,7 +349,7 @@ function getRakExportSourceInventoryHealth() {
   const duplicateManifestPathCount = manifestPaths.length - new Set(manifestPaths).size;
   return {
     ok: duplicateSourceCount === 0 && duplicateBinaryCount === 0 && duplicateManifestPathCount === 0,
-    mode: 'export-source-inventory-v911',
+    mode: 'export-source-inventory-v913',
     version: String(window.APP_VERSION || 'unknown'),
     sourceIdCount: sourcePaths.length,
     manifestTextPathCount: manifestPaths.length,
@@ -428,8 +436,8 @@ async function readExportBinary(relativePath) {
 function updateRakExportSmokeReport(partial) {
   const data = partial && typeof partial === 'object' ? partial : {};
   Object.assign(EXPORT_SMOKE_REPORT, data, {
-    mode: 'export-smoke-report-v911',
-    version: String(window.APP_VERSION || 'v.1.5 (911)'),
+    mode: 'export-smoke-report-v913',
+    version: String(window.APP_VERSION || 'v.1.5 (913)'),
     checkedAt: new Date().toISOString()
   });
   return getRakExportSmokeReport();
@@ -440,7 +448,7 @@ function getRakExportSmokeReport() {
   return Object.assign({}, EXPORT_SMOKE_REPORT, {
     ok: EXPORT_SMOKE_REPORT.ok,
     status: String(EXPORT_SMOKE_REPORT.status || 'not-run'),
-    mode: String(EXPORT_SMOKE_REPORT.mode || 'export-smoke-report-v911'),
+    mode: String(EXPORT_SMOKE_REPORT.mode || 'export-smoke-report-v913'),
     version: String(EXPORT_SMOKE_REPORT.version || window.APP_VERSION || 'unknown'),
     lastStage: String(EXPORT_SMOKE_REPORT.lastStage || '—'),
     lastError: String(EXPORT_SMOKE_REPORT.lastError || ''),
@@ -527,7 +535,7 @@ async function validateRakExportManifestFiles(exportManifest) {
   const ok = duplicateReport.ok && missingTextFiles.length === 0 && missingBinaryFiles.length === 0;
   const report = {
     ok,
-    mode: 'export-manifest-preflight-v911',
+    mode: 'export-manifest-preflight-v913',
     version: String(window.APP_VERSION || 'unknown'),
     checkedAt: new Date().toISOString(),
     duplicateReport,

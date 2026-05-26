@@ -1,11 +1,28 @@
-## v.1.5 (911)
+## v.1.5 (913)
+
+- Pokračování malého DOM/security hardeningu ve hrách: Denní challenge normalizuje a escapuje název hry, popis výzvy a nadpis Top score.
+- Přidaný guard `getRakGamesDailyChallengeDomHardeningHealth()` a release gate `games-daily-challenge-dom-hardening`.
+- Bez změn Supabase DB/policies, online Piškvorek, Lodí a hotových provozních částí.
+- Verze sjednocena na v.1.5 (913), cache na `v1.5-913`, realtime kanál na `rak-public-live-v913`, package na `1.5.913`.
+
+## v.1.5 (913)
+
+- Supabase výsledkové tabulky byly vyčištěné: `gomoku_wins = 0`, `game_stats = 0`; `game_accounts` zůstaly zachované.
+- Piškvorky Top score nově zobrazuje `Datum a čas` včetně hodiny a minut, ne jen datum.
+- Ukládání výhry nad AI do `gomoku_wins` posílá `created_at` z času dokončení výsledku, aby byl čas v Top score spolehlivě dostupný.
+- Lokální reset herních výsledků posunut na `GAMES_PROFILE_RESET_VERSION = 912`, marker `games_score_reset_v913` a cutoff `2026-05-26T18:44:00+02:00`.
+- „O aplikaci“ je zestručněné do větších souhrnů po cca 50 verzích.
+- Přidané dokumenty `assets/docs/games-score-reset-v913.md`, `assets/docs/ttt-top-score-datetime-v913.md` a `assets/docs/about-50-version-summary-v913.md`.
+- Verze sjednocena na v.1.5 (913), cache na `v1.5-913`, realtime kanál na `rak-public-live-v913`, package na `1.5.913`.
+
+## v.1.5 (913)
 
 - Otevírací doba: mimořádná nedělní část po rozkliknutí ukazuje jen časy, které se liší od běžné neděle. Stejné časy se už neopakují.
 - Top score ve hrách znovu hlídá datum i čas včetně hodiny a minut.
 - Pokračování DOM/security hardeningu: přidaný read-only guard `getRakGamesShipsMenuDomHardeningHealth()` pro menu Lodí, pozvánku a uložené vzájemné zápasy bez zásahu do online flow.
 - „O aplikaci“: potvrzené pravidlo držet cca po 50 verzích stručný souhrn nejdůležitějších změn.
-- Přidané dokumenty `assets/docs/food-overtime-diff-only-v911.md`, `assets/docs/games-top-score-datetime-v911.md`, `assets/docs/games-ships-menu-dom-hardening-v911.md` a `assets/docs/about-version-summary-policy-v911.md`.
-- Verze sjednocena na v.1.5 (911), cache na `v1.5-911`, realtime kanál na `rak-public-live-v911`, package na `1.5.911`.
+- Přidané dokumenty `assets/docs/food-overtime-diff-only-v913.md`, `assets/docs/games-top-score-datetime-v913.md`, `assets/docs/games-ships-menu-dom-hardening-v913.md` a `assets/docs/about-version-summary-policy-v913.md`.
+- Verze sjednocena na v.1.5 (913), cache na `v1.5-913`, realtime kanál na `rak-public-live-v913`, package na `1.5.913`.
 
 ## v.1.5 (910)
 

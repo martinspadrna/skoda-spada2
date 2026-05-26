@@ -1,9 +1,9 @@
-// v.1.5 (911) – release gating/checklist vrstva nad read-only audity bez mutací.
+// v.1.5 (913) – release gating/checklist vrstva nad read-only audity bez mutací.
 
 (function setupRakReleaseGates() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
-  const VERSION = 'v.1.5 (911)';
-  const MODE = 'release-gates-readonly-v911';
+  const VERSION = 'v.1.5 (913)';
+  const MODE = 'release-gates-readonly-v913';
 
   try {
     if (typeof window.rakMarkModuleReady === 'function') {
@@ -83,6 +83,7 @@
     const gamesProfileDomHardening = readDiag('gamesProfileDomHardening', 'getRakGamesProfileDomHardeningHealth');
     const gamesHudMessageDomHardening = readDiag('gamesHudMessageDomHardening', 'getRakGamesHudMessageDomHardeningHealth');
     const gamesShipsMenuDomHardening = readDiag('gamesShipsMenuDomHardening', 'getRakGamesShipsMenuDomHardeningHealth');
+    const gamesDailyChallengeDomHardening = readDiag('gamesDailyChallengeDomHardening', 'getRakGamesDailyChallengeDomHardeningHealth');
     const domSecurityHardeningClosure = readDiag('domSecurityHardeningClosure', 'getRakDomSecurityHardeningClosureHealth');
 
     return {
@@ -104,6 +105,7 @@
       gamesProfileDomHardening,
       gamesHudMessageDomHardening,
       gamesShipsMenuDomHardening,
+      gamesDailyChallengeDomHardening,
       domSecurityHardeningClosure
     };
   }
@@ -276,6 +278,17 @@
       'games-arcade.js'
     ));
 
+
+    gates.push(makeGate(
+      'games-daily-challenge-dom-hardening',
+      'Denní challenge DOM hardening',
+      signals.gamesDailyChallengeDomHardening && signals.gamesDailyChallengeDomHardening.ok ? 'ok' : 'warning',
+      'warning',
+      signals.gamesDailyChallengeDomHardening ? ('escapovaná pole ' + String((signals.gamesDailyChallengeDomHardening.escapedFields || []).length || 0) + ', sinky ' + String((signals.gamesDailyChallengeDomHardening.sinks || []).length || 0)) : 'guard chybí',
+      'Denní challenge musí escapovat úvodní texty, HUD labely a Top score nadpis bez zásahu do flow her.',
+      'games-arcade.js'
+    ));
+
     gates.push(makeGate(
       'dom-security-hardening',
       'DOM/security hardening plán',
@@ -312,7 +325,7 @@
   window.getRakReleaseGatePolicy = function getRakReleaseGatePolicy() {
     return {
       ok: true,
-      mode: 'release-gate-policy-v911',
+      mode: 'release-gate-policy-v913',
       version: safeString(window.APP_VERSION || VERSION),
       checkedAt: nowIso(),
       statuses: [
@@ -377,7 +390,7 @@
     const policy = window.getRakReleaseGatePolicy();
     return {
       ok: !!(matrix && matrix.ok),
-      mode: 'release-gates-closure-v911',
+      mode: 'release-gates-closure-v913',
       version: safeString(window.APP_VERSION || VERSION),
       checkedAt: nowIso(),
       phase: 'phase K release gating / checklist matrix',

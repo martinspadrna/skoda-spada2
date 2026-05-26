@@ -1,4 +1,4 @@
-// v.1.5 (911) – window.RaK namespace doplněný o release gating/checklist diagnostiku.
+// v.1.5 (913) – window.RaK namespace doplněný o release gating/checklist diagnostiku.
 
 (function setupRakNamespaceBridge() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -11,8 +11,8 @@
 
   const root = window.RaK || {};
   const existingVersion = root.namespaceVersion || '';
-  root.namespaceVersion = 'v.1.5 (911)';
-  root.mode = 'passive-namespace-readonly-release-gates-v911';
+  root.namespaceVersion = 'v.1.5 (913)';
+  root.mode = 'passive-namespace-readonly-release-gates-v913';
   root.createdAt = root.createdAt || new Date().toISOString();
   root.updatedAt = new Date().toISOString();
   root.compatibility = 'legacy-globals-preserved';
@@ -122,7 +122,7 @@
   };
   root.getNamespaceMap = cloneMap;
   root.namespaceMap = cloneMap();
-  root.namespaceMapVersion = 'v.1.5 (911)';
+  root.namespaceMapVersion = 'v.1.5 (913)';
   root.namespacePlan = {
     phase: 'phase C',
     mode: 'namespace-readonly-phase-closed-with-online-game-contract-alias-v897',

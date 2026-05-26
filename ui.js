@@ -4693,6 +4693,32 @@ async function tttRefreshHardWinRows(forceRender) {
   return state.hardWinRemote || [];
 }
 
+function tttFormatHardWinDateTime(value) {
+  if (typeof gamesFormatPlayedLabel === 'function') return gamesFormatPlayedLabel(value);
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  const d = new Date(raw);
+  if (!Number.isFinite(d.getTime())) return raw;
+  try {
+    return new Intl.DateTimeFormat('cs-CZ', {
+      timeZone: 'Europe/Prague',
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    }).format(d);
+  } catch (err) {
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const yy = String(d.getFullYear());
+    const hh = String(d.getHours()).padStart(2, '0');
+    const mi = String(d.getMinutes()).padStart(2, '0');
+    return dd + '.' + mm + '.' + yy + ' ' + hh + ':' + mi;
+  }
+}
+
 function tttBuildHardWinTableHtml() {
   const state = tttGetState();
   const rows = tttGetHardWinRows();
@@ -4704,20 +4730,20 @@ function tttBuildHardWinTableHtml() {
   }
 
   const rowsHtml = rows.map((row, idx) => {
-    const dateText = row.date ? new Date(row.date).toLocaleDateString('cs-CZ', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
+    const dateText = row.date ? tttFormatHardWinDateTime(row.date) : '—';
     return '<tr>' +
       '<td>' + escapeHtml(String(idx + 1)) + '</td>' +
       '<td>' + escapeHtml(row.name || '—') + '</td>' +
       '<td>' + escapeHtml(formatCount(row.totalMoves || 0)) + '</td>' +
       '<td>' + escapeHtml(row.elapsedText || '—') + '</td>' +
-      '<td>' + escapeHtml(dateText) + '</td>' +
+      '<td>' + escapeHtml(dateText || '—') + '</td>' +
       '</tr>';
   }).join('');
 
   return [
     '<div class="tableWrap tttWinHistory">',
     '  <table class="tttWinTable">',
-    '    <thead><tr><th>#</th><th>Jméno</th><th>Tahy</th><th>Čas</th><th>Datum</th></tr></thead>',
+    '    <thead><tr><th>#</th><th>Jméno</th><th>Tahy</th><th>Čas</th><th>Datum a čas</th></tr></thead>',
     '    <tbody>' + rowsHtml + '</tbody>',
     '  </table>',
     '</div>'
@@ -5911,14 +5937,23 @@ function buildSupabaseKeepaliveStatusHtml(options) {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v.1.5 851–910',
-      title: 'Release audit, namespace a export tooling',
+      range: 'v.1.5 901–950',
+      title: 'Aktuální stabilizace, bezpečnost a provozní detaily',
       lines: [
-        'V910 přidává malý DOM/security hardening herního HUD a fallback chybových hlášek: labely, hodnoty a chybové texty se normalizují, zkracují a escapují přes lokální helper. V909 přidává malý DOM/security hardening profilů, statistik a achievementů ve hrách. V908 přidává první konkrétní DOM/security hardening v Top score hrách: jména, jednotky, hodnoty a časy v žebříčcích se normalizují a escapují přes jeden malý helper bez hromadného přepisu renderu. V911 upravuje mimořádnou otevírací dobu tak, aby ukazovala jen rozdíly proti běžné neděli, hlídá datum i čas v Top score a přidává pravidlo pro stručné souhrny v O aplikaci cca po 50 verzích. V907 upravuje kantýnu a jídelnu podle dodaných otevíracích dob: dashboard teď rozlišuje běžný a přesčasový nedělní režim a detail po rozkliknutí jasně odděluje mimořádnou nedělní provozní dobu. V906 přidává read-only DOM/security hardening plán po jednotlivých sink skupinách a safe-helper policy bez přepisu renderu. V905 přidává release gating/checklist matici: diagnostiky se skládají do blocker/warning/manual/ok pohledu před ZIPem. V904 uzavírá AppSec/privacy baseline na 100 %: storage klíče jsou klasifikované bez čtení hodnot, DOM sinky jsou inventarizované a CSP/SRI je připravené jako report-only plán. V903 přidala AppSec/privacy baseline audit a další hardening AI Piškvorek po rychlé výhře hráče. V902 doplnila release readiness, monitoring a rollback playbook. V901 uzavírá read-only online game contract audit na 100 %. V900 navazuje na potvrzené vyčištění Supabase výsledků: top tabulky a profilové herní statistiky jedou od nuly. V899 opravilo návrat starých Top score filtrováním podle času odehrání výsledku.',
-        'V867–875 uzavírá window.RaK read-only namespace fázi: mapuje diagnostické aliasy, zachovává staré globály a nepřepojuje navigaci, render, hry ani online flow.',
-        'V860–866 uzavírá architecture/boot baseline audit: module readiness, runtime health, boot sequence a auditní helpery se oddělily mimo app.js bez změny funkčnosti.',
-        'V853–859 řeší reset herních výsledků, opravu času Piškvorek, PWA/assets/SW audit, čistší ZIP strukturu a release readiness dokumentaci.',
-        'Piškvorky proti AI se dál ladí podle reálných partií; online Piškvorky zůstávají při AI hardeningu bez zásahu.'
+        'Hlavní změny: dokončení online game contract auditu, release readiness/monitoring/rollback vrstvy, AppSec/privacy audit, release gates a postupný DOM/security hardening her bez zásahu do online flow.',
+        'Kantýna/jídelna se srovnala podle běžné a mimořádné provozní doby; rozklik teď odděluje běžný režim a přesčasové rozdíly.',
+        'Herní Top score a profily se resetovaly na čistý start; Piškvorky Top score mají zobrazovat datum i čas a Supabase výsledky byly znovu vyčištěné.',
+        'Pravidlo historie: O aplikaci má držet hlavně stručné souhrny po cca 50 verzích, ne dlouhý seznam každého mikrobuildu.'
+      ]
+    },
+    {
+      range: 'v.1.5 851–900',
+      title: 'Auditní základ, PWA/export a reset her',
+      lines: [
+        'Vznikl read-only auditní základ: boot/runtime/storage/Supabase/DOM/namespace/export kontroly a větší jistota před ZIPem.',
+        'PWA a export se uklidily: ikony v assets, ZIP bez vnitřní hlavní složky, export manifest a service worker cache kontroly.',
+        'Supabase heartbeat drží Free projekt aktivní přes RPC/app_keepalive a aplikace zůstává použitelná offline.',
+        'Top score se začalo filtrovat podle skutečného času odehrání výsledku, aby se staré score nevracelo přes updated_at.'
       ]
     },
     {
@@ -8918,10 +8953,10 @@ function bindCalendarTile() {
 // Games hub + account profile
 // -------------------------
 const GAMES_PROFILE_KEY = APP_KEY + ':games_profile_v1';
-const GAMES_PROFILE_RESET_VERSION = 901;
-const GAMES_SCORE_RESET_VERSION = 899;
-const GAMES_SCORE_RESET_MARKER_KEY = APP_KEY + ':games_score_reset_v901';
-const GAMES_REMOTE_STATS_RESET_CUTOFF_MS = Date.parse('2026-05-26T15:08:00+02:00');
+const GAMES_PROFILE_RESET_VERSION = 912;
+const GAMES_SCORE_RESET_VERSION = 912;
+const GAMES_SCORE_RESET_MARKER_KEY = APP_KEY + ':games_score_reset_v913';
+const GAMES_REMOTE_STATS_RESET_CUTOFF_MS = Date.parse('2026-05-26T18:44:00+02:00');
 const GAMES_ACCOUNT_BLOCKLIST = new Set(['4157']);
 const GAMES_ACCOUNT_LIST = [];
 
@@ -8988,7 +9023,7 @@ function gamesResetAccountScoresOnly(account, fallbackName) {
   return normalized;
 }
 
-function gamesEnsureScoreResetV899() {
+function gamesEnsureScoreResetV912() {
   try {
     if (localStorage.getItem(GAMES_SCORE_RESET_MARKER_KEY) === '1') return false;
     const parsed = JSON.parse(localStorage.getItem(GAMES_PROFILE_KEY) || 'null');
@@ -9029,10 +9064,10 @@ function gamesEnsureScoreResetV899() {
     }
     if (typeof setLocalStorageIfChanged === 'function') setLocalStorageIfChanged(GAMES_SCORE_RESET_MARKER_KEY, '1');
     else localStorage.setItem(GAMES_SCORE_RESET_MARKER_KEY, '1');
-    window.__rakGamesScoreResetV899 = { ok: true, version: GAMES_SCORE_RESET_VERSION, cutoff: GAMES_REMOTE_STATS_RESET_CUTOFF_MS, accounts: Object.keys(next.accounts || {}).length, at: Date.now() };
+    window.__rakGamesScoreResetV912 = { ok: true, version: GAMES_SCORE_RESET_VERSION, cutoff: GAMES_REMOTE_STATS_RESET_CUTOFF_MS, accounts: Object.keys(next.accounts || {}).length, at: Date.now() };
     return true;
   } catch (err) {
-    console.warn('gamesEnsureScoreResetV899 failed', err);
+    console.warn('gamesEnsureScoreResetV912 failed', err);
     return false;
   }
 }
@@ -9087,7 +9122,7 @@ function gamesNormalizeStoredAccount(account, fallbackName) {
 
 function gamesLoadProfile() {
   try {
-    gamesEnsureScoreResetV899();
+    gamesEnsureScoreResetV912();
     const parsed = typeof parseLocalStorageJsonCached === 'function'
       ? parseLocalStorageJsonCached(GAMES_PROFILE_KEY, null)
       : JSON.parse(localStorage.getItem(GAMES_PROFILE_KEY) || 'null');
