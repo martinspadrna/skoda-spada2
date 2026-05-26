@@ -1,4 +1,4 @@
-// v.1.5 (870) – app shell bez změny navigace; Piškvorky AI mají tvrdší taktický lookahead.
+// v.1.5 (875) – namespace fáze uzavřená na 100 %, Piškvorky AI potvrzené OK; funkční logika beze změny.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app.js', 'loaded', { source: 'index' }); } catch (err) {}
 
 
@@ -1836,6 +1836,11 @@ window.runGameEngineBaselineAudit = runGameEngineBaselineAudit;
 
 function readRakAuditDiagnostic(alias, fallbackGlobalName) {
   try {
+    if (window.RaK && window.RaK.diagnostics && typeof window.RaK.diagnostics.readWithFallback === 'function') {
+      return window.RaK.diagnostics.readWithFallback(alias, fallbackGlobalName);
+    }
+  } catch (err) {}
+  try {
     if (window.RaK && window.RaK.diagnostics && typeof window.RaK.diagnostics.read === 'function') {
       const result = window.RaK.diagnostics.read(alias);
       if (result) return result;
@@ -1912,7 +1917,7 @@ function getPhaseTenRuntimeReadinessHealth(parts = {}) {
 window.getPhaseTenRuntimeReadinessHealth = getPhaseTenRuntimeReadinessHealth;
 
 
-// Release readiness a architecture baseline helpery jsou od v.1.5 (863) v souboru rak-audit-baseline.js; namespace bridge od v.1.5 (867), namespace mapa od v.1.5 (870) v rak-namespace.js.
+// Release readiness a architecture baseline helpery jsou v rak-audit-baseline.js; namespace bridge a read-only aliasy jsou v rak-namespace.js.
 
 function getPostStabilizationBaselineHealth(parts = {}) {
   const issues = [];
@@ -2510,7 +2515,7 @@ function installPwaAndConnectivityHooks() {
     swAppShellCachedRatio: 0,
     swNetworkFallbackTimeoutMs: 0,
     swNavigationPreloadTimeoutMs: 0,
-    pwaAssetAuditMode: 'zip-source-inventory-assets-pwa-sql-release-readiness-architecture-module-readiness-runtime-health-architecture-boot-closed-v870',
+    pwaAssetAuditMode: 'zip-source-inventory-assets-pwa-sql-release-readiness-architecture-module-readiness-runtime-health-namespace-phase-closed-v875',
     pwaAssetExpectedIconCount: 6,
     pwaAssetManifestOk: false,
     pwaAssetFaviconOk: false,
@@ -2556,7 +2561,7 @@ function installPwaAndConnectivityHooks() {
     const appleTouchOk = linkHrefs.some(href => href.indexOf('assets/app-icons/icon-180.png') >= 0);
     const legacyRootIconRefs = linkHrefs.filter(href => /(^|\/)icon-(16|32|180|192|512|1024)\.png(?:$|[?#])/.test(href) && href.indexOf('assets/app-icons/') < 0);
     return {
-      pwaAssetAuditMode: 'zip-source-inventory-assets-pwa-sql-release-readiness-architecture-module-readiness-runtime-health-architecture-boot-closed-v870',
+      pwaAssetAuditMode: 'zip-source-inventory-assets-pwa-sql-release-readiness-architecture-module-readiness-runtime-health-namespace-phase-closed-v875',
       pwaAssetExpectedIconCount: expectedIcons.length,
       pwaAssetManifestOk: manifestOk,
       pwaAssetFaviconOk: faviconOk,

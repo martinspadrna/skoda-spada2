@@ -1,4 +1,4 @@
-// v.1.5 (870) – release/architecture audit helpery, napojené na samostatný runtime health helper.
+// v.1.5 (875) – release/architecture audit helpery, namespace fáze uzavřená na 100 %.
 
 (function setupRakAuditBaselineHelpers() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -10,6 +10,11 @@
   } catch (err) {}
 
 function readRakDiagnosticForAudit(alias, fallbackGlobalName) {
+  try {
+    if (window.RaK && window.RaK.diagnostics && typeof window.RaK.diagnostics.readWithFallback === 'function') {
+      return window.RaK.diagnostics.readWithFallback(alias, fallbackGlobalName);
+    }
+  } catch (err) {}
   try {
     if (window.RaK && window.RaK.diagnostics && typeof window.RaK.diagnostics.read === 'function') {
       const result = window.RaK.diagnostics.read(alias);
@@ -78,7 +83,7 @@ function getRakReleaseReadinessHealth() {
 
   return {
     ok: issues.length === 0,
-    mode: 'audit-baseline-split-release-readiness-v870',
+    mode: 'audit-baseline-split-release-readiness-v875',
     checkedAt,
     version: currentVersion || 'unknown',
     issueCount: issues.length,
@@ -203,7 +208,7 @@ function getRakArchitectureBaselineHealth() {
 
   return {
     ok: issues.length === 0,
-    mode: 'audit-baseline-split-architecture-boot-audit-v870',
+    mode: 'audit-baseline-split-architecture-boot-audit-v875',
     checkedAt,
     version: version || 'unknown',
     issueCount: issues.length,
@@ -243,7 +248,7 @@ function getRakArchitectureBaselineHealth() {
     architectureBootAuditPercent: 100,
     namespaceDiagnosticsReadOnly: !!(window.RaK && window.RaK.diagnostics && typeof window.RaK.diagnostics.read === 'function'),
     architectureBootAuditClosed: true,
-    nextRecommendedPhase: 'phase C: window.RaK diagnostics read-only – auditní čtení běží přes namespace, runtime logika zatím přes legacy globály',
+    nextRecommendedPhase: 'phase C uzavřena: window.RaK read-only diagnostika má fallbacky; další směr phase D export/release tooling',
     runtimeLayers: [
       'index.html boot shell + CDN dependency notes',
       'core/app state + routing',
@@ -254,9 +259,9 @@ function getRakArchitectureBaselineHealth() {
       'PWA service worker/cache/export'
     ],
     refactorBacklog: [
-      'phase A: boot order guard + explicit module readiness map – hotovo a uzavřeno v870',
-      'phase B: split app.js runtime audits from page/business logic – module readiness v862, release/architecture v863, runtime health v864, boot sequence v865, baseline uzavřený v870',
-      'phase C: window.RaK namespace map – v870 zmapováno, staré globály zachované, funkční logiku zatím nepřepojovat',
+      'phase A: boot order guard + explicit module readiness map – hotovo a uzavřeno',
+      'phase B: split app.js runtime audits from page/business logic – module readiness, release/architecture, runtime health a boot sequence uzavřené',
+      'phase C: window.RaK namespace read-only mapa a fallbacky – hotovo a uzavřeno ve v875; navigace/render/hry zůstávají mimo přepojení',
       'phase D: isolate export/release tooling from runtime app code',
       'phase E: add DOM smoke tests for locked sections before every build'
     ]

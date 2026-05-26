@@ -1,3 +1,51 @@
+## v.1.5 (875)
+- Uzavřená `window.RaK` namespace read-only fáze na 100 %.
+- `getRakNamespaceHealth()` a nová closure kontrola potvrzují uzavřenou mapu, fallback čtení a zachované legacy globály.
+- `window.RaK.diagnostics.readWithFallback()` zůstává jen pro auditní čtení; navigace, render, hry a online flow se pořád nepřepojují.
+- Přidaný dokument `assets/docs/rak-namespace-phase-closure-v875.md`.
+- Verze sjednocena na v.1.5 (875), cache na `v1.5-875`, realtime kanál na `rak-public-live-v875`, package na `1.5.875`.
+
+## v.1.5 (874)
+- První malé auditní přepojení přes `window.RaK`: přidaný `window.RaK.diagnostics.readWithFallback(alias, fallbackGlobalName, args)`.
+- `app.js`, `ui.js` a `rak-audit-baseline.js` používají nový read-only helper pro diagnostické čtení, ale při chybě dál padají zpět na původní legacy globály.
+- Namespace diagnostika nově hlídá fallback čtení a poslední fallback alias.
+- Navigace, render, hry, online flow, Supabase DB i policies zůstávají beze změny.
+- Přidaný dokument `assets/docs/rak-namespace-audit-read-bridge-v874.md`.
+- Verze sjednocena na v.1.5 (874), cache na `v1.5-874`, realtime kanál na `rak-public-live-v874`, package na `1.5.874`.
+
+## v.1.5 (873)
+
+- Uzavřená mapovací část `window.RaK` namespace fáze pro read-only diagnostiku a runtime snapshoty.
+- Přidaný helper `getRakNamespaceReadOnlyMapHealth()` a kontrola `window.RaK.diagnostics.validateReadOnlyMap()`.
+- Diagnostika / O aplikaci nově ukazuje, jestli je namespace mapa uzavřená a jestli read-only aliasy mají bezpečné fallbacky bez rizika mutace.
+- Staré globály zůstávají zdroj pravdy; navigace, render, hry a online flow se pořád nepřepojují.
+- Přidaný dokument `assets/docs/rak-namespace-map-closure-v873.md`.
+- Verze sjednocena na v.1.5 (873), cache na `v1.5-873`, realtime kanál na `rak-public-live-v873`, package na `1.5.873`.
+- Hry, online flow, Supabase DB/policies, dashboard, spodní lišta a kalkulačky beze změny.
+
+## v.1.5 (872)
+
+- Rozšířená read-only diagnostická mapa v `window.RaK.diagnostics.*` bez změny funkčnosti aplikace.
+- Přidané aliasy pro storage, skripty, page shell, akce, formuláře, Láďův režim, game engine baseline, statistiky aktuálního roku a klientské Supabase readiness kontroly.
+- Přidané `window.RaK.diagnostics.readMany()` a `window.RaK.diagnostics.summary()`; `summary()` aliasy nespouští, jen popisuje mapu.
+- Staré globály zůstávají zdroj pravdy; navigace, render, hry a online flow se nepřepojují.
+- Piškvorky AI zůstávají beze změny a potvrzené OK z v870/v871.
+- Odstraněná duplicitní položka `assets/help/frezky-fhb-help.png` ze seznamu binárních souborů v exportu ZIPu.
+- Přidaný dokument `assets/docs/rak-namespace-diagnostic-map-v872.md`.
+- Verze sjednocena na v.1.5 (872), cache na `v1.5-872`, realtime kanál na `rak-public-live-v872`, package na `1.5.872`.
+- Hry, online flow, Supabase DB/policies, dashboard, spodní lišta a kalkulačky beze změny.
+
+## v.1.5 (871)
+
+- Piškvorky proti AI jsou potvrzené jako OK po build v870; AI hardening se v tomto buildu nemění.
+- `window.RaK` namespace bridge dostal read-only runtime aliasy přes `window.RaK.runtime.read(alias)`.
+- Přidané aliasy pro nové auditní čtení: `appVersion`, `rotationBuild`, `externalDependencies` a bezpečný `appStateSnapshot`.
+- `getRakNamespaceHealth()` nově hlídá i runtime reader a počet runtime aliasů.
+- Staré globály zůstávají zdroj pravdy; navigace, render, hry a online flow se nepřepojují.
+- Přidaný dokument `assets/docs/rak-namespace-runtime-aliases-v871.md`.
+- Verze sjednocena na v.1.5 (871), cache na `v1.5-871`, realtime kanál na `rak-public-live-v871`, package na `1.5.871`.
+- Supabase DB/policies, online hry, dashboard, spodní lišta a kalkulačky beze změny.
+
 ## v.1.5 (870)
 
 - Piškvorky proti AI jsou přitvrzené: doplněný taktický tlak `tttTacticalPressureScore()`, bezpečnostní lookahead `tttBestLookaheadSafeMove()` a hlubší omezený search přes `tttSearch()`.

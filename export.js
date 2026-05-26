@@ -50,6 +50,11 @@ const EXPORT_SOURCE_IDS = {
   "assets/docs/rak-namespace-map-v868.md": "src-rak-namespace-map-v868-md",
   "assets/docs/rak-namespace-diagnostics-v869.md": "src-rak-namespace-diagnostics-v869-md",
   "assets/docs/ttt-ai-hardening-v870.md": "src-ttt-ai-hardening-v870-md",
+  "assets/docs/rak-namespace-runtime-aliases-v871.md": "src-rak-namespace-runtime-aliases-v871-md",
+  "assets/docs/rak-namespace-diagnostic-map-v872.md": "src-rak-namespace-diagnostic-map-v872-md",
+  "assets/docs/rak-namespace-map-closure-v873.md": "src-rak-namespace-map-closure-v873-md",
+  "assets/docs/rak-namespace-audit-read-bridge-v874.md": "src-rak-namespace-audit-read-bridge-v874-md",
+  "assets/docs/rak-namespace-phase-closure-v875.md": "src-rak-namespace-phase-closure-v875-md",
   "assets/app-icons/icon-16.png": "src-icon-16-png",
   "assets/app-icons/icon-32.png": "src-icon-32-png",
   "assets/app-icons/icon-180.png": "src-icon-180-png",
@@ -224,7 +229,12 @@ async function exportCurrentHtml() {
       'assets/docs/rak-namespace-bridge-v867.md',
       'assets/docs/rak-namespace-map-v868.md',
       'assets/docs/rak-namespace-diagnostics-v869.md',
-      'assets/docs/ttt-ai-hardening-v870.md'
+      'assets/docs/ttt-ai-hardening-v870.md',
+      'assets/docs/rak-namespace-runtime-aliases-v871.md',
+      'assets/docs/rak-namespace-diagnostic-map-v872.md',
+      'assets/docs/rak-namespace-map-closure-v873.md',
+      'assets/docs/rak-namespace-audit-read-bridge-v874.md',
+      'assets/docs/rak-namespace-phase-closure-v875.md'
     ];
 
     const binaryFiles = [

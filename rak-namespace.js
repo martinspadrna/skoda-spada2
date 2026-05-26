@@ -1,4 +1,4 @@
-// v.1.5 (870) – pasivní window.RaK namespace bridge s mapou budoucího přepojování bez změny starých globálů.
+// v.1.5 (875) – window.RaK namespace read-only fáze uzavřená na 100 %, legacy globály zůstávají zdroj pravdy.
 
 (function setupRakNamespaceBridge() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -11,8 +11,8 @@
 
   const root = window.RaK || {};
   const existingVersion = root.namespaceVersion || '';
-  root.namespaceVersion = 'v.1.5 (870)';
-  root.mode = 'passive-namespace-map-v870';
+  root.namespaceVersion = 'v.1.5 (875)';
+  root.mode = 'passive-namespace-readonly-phase-closed-v875';
   root.createdAt = root.createdAt || new Date().toISOString();
   root.updatedAt = new Date().toISOString();
   root.compatibility = 'legacy-globals-preserved';
@@ -25,6 +25,25 @@
     { group: 'diagnostics', alias: 'runtimeGuard', globalName: 'getRakRuntimeGuardHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Čistě diagnostický helper.' },
     { group: 'diagnostics', alias: 'bootSequence', globalName: 'getRakBootSequenceHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Čistě diagnostický helper.' },
     { group: 'diagnostics', alias: 'namespace', globalName: 'getRakNamespaceHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Sebekontrola namespace bridge.' },
+    { group: 'diagnostics', alias: 'namespaceReadOnlyMap', globalName: 'getRakNamespaceReadOnlyMapHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only kontrola uzavřené mapy aliasů a fallbacků.' },
+    { group: 'diagnostics', alias: 'phaseTenStorage', globalName: 'getPhaseTenStorageHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only kontrola storage vrstvy.' },
+    { group: 'diagnostics', alias: 'phaseTenScripts', globalName: 'getPhaseTenScriptLoadHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only kontrola načtení skriptů.' },
+    { group: 'diagnostics', alias: 'phaseTenNavigation', globalName: 'getPhaseTenNavigationHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only kontrola navigační vrstvy bez přepojení navigace.' },
+    { group: 'diagnostics', alias: 'phaseTenPageShell', globalName: 'getPhaseTenPageShellHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only kontrola page shellu.' },
+    { group: 'diagnostics', alias: 'phaseTenActions', globalName: 'getPhaseTenActionHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only kontrola data-action mapy.' },
+    { group: 'diagnostics', alias: 'phaseTenForms', globalName: 'getPhaseTenFormHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only kontrola formulářů.' },
+    { group: 'diagnostics', alias: 'safeHelpers', globalName: 'getPostStabilizationSafeHelperHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only kontrola stabilizačních helperů.' },
+    { group: 'diagnostics', alias: 'ladaPerformance', globalName: 'getLadaPerformanceHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only kontrola Láďova/low-end režimu.' },
+    { group: 'diagnostics', alias: 'gameEngineBaseline', globalName: 'getGameEngineBaselineHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only baseline herního enginu bez změny herní logiky.' },
+    { group: 'diagnostics', alias: 'statsYearScope', globalName: 'getRakStatsYearScopeHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only kontrola filtrování budoucích měsíců ve statistikách.' },
+    { group: 'diagnostics', alias: 'postStabilizationBaseline', globalName: 'getPostStabilizationBaselineHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only souhrn post-stabilization baseline.' },
+    { group: 'diagnostics', alias: 'supabaseStructure', globalName: 'getSupabaseStructureHealth', type: 'function', phase: 'safe-now', risk: 'medium', note: 'Read-only klientský audit Supabase struktury bez DB změn.' },
+    { group: 'diagnostics', alias: 'supabasePolicyRisk', globalName: 'getSupabasePolicyRiskHealth', type: 'function', phase: 'safe-now', risk: 'medium', note: 'Read-only klientský audit Supabase policy rizik bez DB změn.' },
+    { group: 'diagnostics', alias: 'supabasePerformance', globalName: 'getSupabasePerformanceHealth', type: 'function', phase: 'safe-now', risk: 'medium', note: 'Read-only klientský audit Supabase výkonu bez síťové mutace.' },
+    { group: 'runtime', alias: 'appVersion', globalName: 'APP_VERSION', type: 'value', phase: 'safe-now', risk: 'low', note: 'Read-only verze aplikace pro nové auditní čtení.' },
+    { group: 'runtime', alias: 'rotationBuild', globalName: 'ROTATION_BUILD', type: 'value', phase: 'safe-now', risk: 'low', note: 'Read-only build tag bez zápisu do stavu.' },
+    { group: 'runtime', alias: 'externalDependencies', globalName: '__RAK_EXTERNAL_DEP_STATUS__', type: 'value', phase: 'safe-now', risk: 'low', note: 'Read-only stav externích CDN knihoven.' },
+    { group: 'runtime', alias: 'appStateSnapshot', globalName: 'app', type: 'snapshot', phase: 'safe-now', risk: 'low', note: 'Bezpečný ořez hlavního app state pro diagnostiku, bez mutace.' },
     { group: 'diagnostics', alias: 'pwaHardening', globalName: 'getPwaHardeningStatus', type: 'function', phase: 'later', risk: 'medium', note: 'PWA stav zatím ponechat jako legacy global kvůli SW vazbám.' },
     { group: 'diagnostics', alias: 'supabaseHardening', globalName: 'getSupabaseHardeningStatus', type: 'function', phase: 'later', risk: 'medium', note: 'Supabase audit zatím ponechat jako legacy global kvůli online flow.' },
     { group: 'diagnostics', alias: 'phaseTenReadiness', globalName: 'getPhaseTenRuntimeReadinessHealth', type: 'function', phase: 'later', risk: 'medium', note: 'Starší readiness helper ponechat kvůli kompatibilitě diagnostiky.' },
@@ -70,17 +89,19 @@
   };
   root.getNamespaceMap = cloneMap;
   root.namespaceMap = cloneMap();
-  root.namespaceMapVersion = 'v.1.5 (870)';
+  root.namespaceMapVersion = 'v.1.5 (875)';
   root.namespacePlan = {
     phase: 'phase C',
-    mode: 'diagnostics-read-only',
-    progressPercent: 50,
-    rule: 'Staré globály zůstávají zdroj pravdy; nové auditní čtení může jít přes window.RaK.diagnostics.read().',
-    nextStep: 'Postupně číst jen diagnostické helpery přes namespace, ne runtime navigaci/render.'
+    mode: 'namespace-readonly-phase-closed-with-legacy-fallback-v875',
+    progressPercent: 100,
+    mapClosed: true,
+    rule: 'Staré globály zůstávají zdroj pravdy; read-only aliasy mají fallback na legacy globály a nesmí mutovat stav.',
+    nextStep: 'Namespace read-only fáze je uzavřená; další směr je phase D: izolovat export/release tooling bez přepojení navigace, renderu nebo her.'
   };
 
   ensureGroup('modules');
   ensureGroup('diagnostics');
+  ensureGroup('runtime');
   ensureGroup('app');
 
   namespaceMap.forEach((item) => {
@@ -101,11 +122,146 @@
       return { ok: false, alias: key, error: String(err && err.message ? err.message : err) };
     }
   };
+  root.diagnostics.readWithFallback = function readRakDiagnosticWithFallback(alias, fallbackGlobalName, args) {
+    const key = String(alias || '').trim();
+    let result = null;
+    try {
+      if (key && typeof root.diagnostics.read === 'function') {
+        result = root.diagnostics.read(key, args);
+        if (result) return result;
+      }
+    } catch (err) {
+      result = { ok: false, alias: key, error: String(err && err.message ? err.message : err) };
+    }
+    const fallbackName = String(fallbackGlobalName || '').trim();
+    if (!fallbackName) return result || null;
+    try {
+      const fallback = resolveGlobal(fallbackName);
+      if (typeof fallback !== 'function') return result || null;
+      root.diagnosticFallbackReadCount = Number(root.diagnosticFallbackReadCount || 0) + 1;
+      root.lastDiagnosticFallbackRead = { alias: key || fallbackName, fallbackGlobalName: fallbackName, at: new Date().toISOString() };
+      return fallback.apply(window, Array.isArray(args) ? args : []);
+    } catch (err) {
+      return { ok: false, alias: key || fallbackName, fallbackGlobalName: fallbackName, error: String(err && err.message ? err.message : err) };
+    }
+  };
+
   root.diagnostics.list = function listRakDiagnosticsAliases() {
     return namespaceMap
       .filter((item) => item.group === 'diagnostics')
-      .map((item) => ({ alias: item.alias, globalName: item.globalName, phase: item.phase, risk: item.risk }));
+      .map((item) => ({ alias: item.alias, globalName: item.globalName, phase: item.phase, risk: item.risk, note: item.note || '' }));
   };
+
+  root.diagnostics.readMany = function readManyRakDiagnosticsViaNamespace(aliases) {
+    const requested = Array.isArray(aliases) && aliases.length
+      ? aliases
+      : root.diagnostics.list().filter((item) => item.phase === 'safe-now').map((item) => item.alias);
+    const out = {};
+    requested.forEach((alias) => {
+      const key = String(alias || '').trim();
+      if (!key) return;
+      out[key] = root.diagnostics.read(key);
+    });
+    return out;
+  };
+
+  root.diagnostics.summary = function summarizeRakDiagnosticsViaNamespace() {
+    const list = root.diagnostics.list();
+    const safeList = list.filter((item) => item.phase === 'safe-now');
+    return {
+      ok: true,
+      mode: 'diagnostics-readonly-phase-closed-summary-v875',
+      aliasCount: list.length,
+      safeNowCount: safeList.length,
+      laterCount: list.filter((item) => item.phase === 'later').length,
+      lowRiskCount: list.filter((item) => item.risk === 'low').length,
+      mediumRiskCount: list.filter((item) => item.risk === 'medium').length,
+      highRiskCount: list.filter((item) => item.risk === 'high').length,
+      aliases: list.map((item) => item.alias),
+      readWithFallbackEnabled: !!(root.diagnostics && typeof root.diagnostics.readWithFallback === 'function'),
+      rule: 'Souhrn jen popisuje dostupné read-only aliasy; žádné aliasy se při summary automaticky nespouští.'
+    };
+  };
+
+  root.diagnostics.validateReadOnlyMap = function validateRakNamespaceReadOnlyMap() {
+    const diagnostics = namespaceMap.filter((item) => item.group === 'diagnostics');
+    const runtime = namespaceMap.filter((item) => item.group === 'runtime');
+    const safeNow = namespaceMap.filter((item) => item.phase === 'safe-now');
+    const mutatingRisk = safeNow.filter((item) => item.group === 'app' || item.risk === 'high');
+    const unresolvedSafe = safeNow
+      .filter((item) => item.globalName && typeof resolveGlobal(item.globalName) === 'undefined')
+      .map((item) => item.alias + '→' + item.globalName);
+    const missingReaders = [];
+    if (!root.diagnostics || typeof root.diagnostics.read !== 'function') missingReaders.push('diagnostics.read');
+    if (!root.diagnostics || typeof root.diagnostics.readMany !== 'function') missingReaders.push('diagnostics.readMany');
+    if (!root.diagnostics || typeof root.diagnostics.summary !== 'function') missingReaders.push('diagnostics.summary');
+    if (!root.diagnostics || typeof root.diagnostics.readWithFallback !== 'function') missingReaders.push('diagnostics.readWithFallback');
+    if (!root.runtime || typeof root.runtime.read !== 'function') missingReaders.push('runtime.read');
+    if (!root.runtime || typeof root.runtime.list !== 'function') missingReaders.push('runtime.list');
+    const warnings = [];
+    if (unresolvedSafe.length) warnings.push('safe-now legacy globals čekají na pozdější moduly: ' + unresolvedSafe.slice(0, 6).join(', '));
+    return {
+      ok: missingReaders.length === 0 && mutatingRisk.length === 0,
+      mode: 'namespace-readonly-phase-closed-v875',
+      mapClosed: true,
+      namespacePhaseClosed: true,
+      phasePercent: 100,
+      compatibility: root.compatibility || 'legacy-globals-preserved',
+      namespaceMapCount: namespaceMap.length,
+      diagnosticAliasCount: diagnostics.length,
+      runtimeAliasCount: runtime.length,
+      safeNowCount: safeNow.length,
+      laterCount: namespaceMap.filter((item) => item.phase === 'later').length,
+      mutatingRiskCount: mutatingRisk.length,
+      missingReaderCount: missingReaders.length,
+      unresolvedSafeCount: unresolvedSafe.length,
+      missingReaders,
+      warnings,
+      rule: 'Mapovací fáze je uzavřená jen pro read-only diagnostiku a runtime snapshoty. Navigace, render, hry a online flow zůstávají mimo namespace přepojení.'
+    };
+  };
+  window.getRakNamespaceReadOnlyMapHealth = root.diagnostics.validateReadOnlyMap;
+
+  function snapshotAppState(source) {
+    const state = source && typeof source === 'object' ? source : null;
+    if (!state) return null;
+    return {
+      version: String(state.version || window.APP_VERSION || '').slice(0, 40),
+      currentPage: String(state.currentPage || state.page || '').slice(0, 80),
+      selectedMonth: state.selectedMonth || null,
+      selectedName: state.selectedName || null,
+      selectedStatsName: state.selectedStatsName || null,
+      selectedStatsMachine: state.selectedStatsMachine || null,
+      ladaMode: !!state.ladaMode,
+      lowEndDevice: !!state.lowEndDevice,
+      gameProfileAccount: String(state.gameProfileAccount || state.selectedGameAccount || '').slice(0, 40),
+      hasSupabaseClient: typeof window.supabase !== 'undefined'
+    };
+  }
+
+  root.runtime.read = function readRakRuntimeAlias(alias) {
+    const key = String(alias || '').trim();
+    const item = namespaceMap.find((entry) => entry.group === 'runtime' && entry.alias === key);
+    if (!item) return null;
+    try {
+      if (item.type === 'snapshot') return snapshotAppState(resolveGlobal(item.globalName));
+      const value = resolveGlobal(item.globalName);
+      if (value && typeof value === 'object') return JSON.parse(JSON.stringify(value));
+      return value == null ? null : value;
+    } catch (err) {
+      return { ok: false, alias: key, error: String(err && err.message ? err.message : err) };
+    }
+  };
+
+  root.runtime.list = function listRakRuntimeAliases() {
+    return namespaceMap
+      .filter((item) => item.group === 'runtime')
+      .map((item) => ({ alias: item.alias, globalName: item.globalName, type: item.type, phase: item.phase, risk: item.risk }));
+  };
+
+  root.runtime.version = function readRakRuntimeVersion() { return root.runtime.read('appVersion'); };
+  root.runtime.externalDependencies = function readRakExternalDependencies() { return root.runtime.read('externalDependencies'); };
+  root.runtime.appStateSnapshot = function readRakAppStateSnapshot() { return root.runtime.read('appStateSnapshot'); };
 
   root.app.state = function getLegacyAppState() { return resolveGlobal('app') || null; };
 
@@ -137,6 +293,8 @@
     if (!window.RaK || typeof window.RaK.getNamespaceMap !== 'function') issues.push('namespace map getter missing');
     if (!window.RaK || !window.RaK.diagnostics || typeof window.RaK.diagnostics.read !== 'function') issues.push('diagnostics reader missing');
     if (!window.RaK || !window.RaK.diagnostics || typeof window.RaK.diagnostics.list !== 'function') warnings.push('diagnostics alias list missing');
+    if (!window.RaK || !window.RaK.runtime || typeof window.RaK.runtime.read !== 'function') issues.push('runtime reader missing');
+    if (!window.RaK || !window.RaK.runtime || typeof window.RaK.runtime.list !== 'function') warnings.push('runtime alias list missing');
 
     const safeNowCount = namespaceMap.filter((item) => item.phase === 'safe-now').length;
     const laterCount = namespaceMap.filter((item) => item.phase === 'later').length;
@@ -144,7 +302,7 @@
 
     return {
       ok: issues.length === 0,
-      mode: 'passive-namespace-map-v870',
+      mode: 'passive-namespace-readonly-phase-closed-v875',
       checkedAt,
       version: String(window.APP_VERSION || 'unknown'),
       namespaceVersion,
@@ -165,15 +323,45 @@
       legacyGlobalsPreserved: missingLegacy.length === 0,
       passiveBridgeOnly: true,
       migratedRuntimeCount: 0,
-      refactorProgressPercent: 50,
+      refactorProgressPercent: 100,
       diagnosticsReadOnlyEnabled: !!(window.RaK && window.RaK.diagnostics && typeof window.RaK.diagnostics.read === 'function'),
+      runtimeReadOnlyEnabled: !!(window.RaK && window.RaK.runtime && typeof window.RaK.runtime.read === 'function'),
+      runtimeAliasCount: namespaceMap.filter((item) => item.group === 'runtime').length,
+      diagnosticsReadManyEnabled: !!(window.RaK && window.RaK.diagnostics && typeof window.RaK.diagnostics.readMany === 'function'),
+      diagnosticsReadWithFallbackEnabled: !!(window.RaK && window.RaK.diagnostics && typeof window.RaK.diagnostics.readWithFallback === 'function'),
+      diagnosticsSummaryEnabled: !!(window.RaK && window.RaK.diagnostics && typeof window.RaK.diagnostics.summary === 'function'),
+      diagnosticSafeNowCount: namespaceMap.filter((item) => item.group === 'diagnostics' && item.phase === 'safe-now').length,
+      diagnosticLaterCount: namespaceMap.filter((item) => item.group === 'diagnostics' && item.phase === 'later').length,
       diagnosticReadCount: Number(window.RaK && window.RaK.diagnosticReadCount || 0),
+      diagnosticFallbackReadCount: Number(window.RaK && window.RaK.diagnosticFallbackReadCount || 0),
       lastDiagnosticRead: window.RaK && window.RaK.lastDiagnosticRead || null,
-      nextRefactorRule: 'Nové auditní čtení může používat window.RaK.diagnostics.read(), ale navigace/render/hry zůstávají přes legacy globály.',
+      lastDiagnosticFallbackRead: window.RaK && window.RaK.lastDiagnosticFallbackRead || null,
+      mapClosureOk: !!(window.RaK && window.RaK.diagnostics && typeof window.RaK.diagnostics.validateReadOnlyMap === 'function' && window.RaK.diagnostics.validateReadOnlyMap().ok),
+      namespaceMapClosed: true,
+      namespacePhaseClosed: true,
+      phasePercent: 100,
+      nextRefactorRule: 'Namespace read-only fáze je uzavřená. Další fáze smí řešit jen export/release tooling; navigaci/render/hry pořád nepřepojovat.',
       namespaceMap: cloneMap().slice(0, 24),
       hasResolver: !!(window.RaK && typeof window.RaK.resolve === 'function'),
       hasCaller: !!(window.RaK && typeof window.RaK.call === 'function'),
       hasMapGetter: !!(window.RaK && typeof window.RaK.getNamespaceMap === 'function')
+    };
+  };
+
+  window.getRakNamespacePhaseClosureHealth = function getRakNamespacePhaseClosureHealth() {
+    const mapHealth = (root.diagnostics && typeof root.diagnostics.validateReadOnlyMap === 'function') ? root.diagnostics.validateReadOnlyMap() : null;
+    const health = (typeof window.getRakNamespaceHealth === 'function') ? window.getRakNamespaceHealth() : null;
+    return {
+      ok: !!(mapHealth && mapHealth.ok && health && health.ok),
+      mode: 'namespace-readonly-phase-closure-v875',
+      phasePercent: 100,
+      namespacePhaseClosed: true,
+      legacyGlobalsPreserved: !!(health && health.legacyGlobalsPreserved),
+      readWithFallbackEnabled: !!(root.diagnostics && typeof root.diagnostics.readWithFallback === 'function'),
+      mapClosureOk: !!(mapHealth && mapHealth.ok),
+      issueCount: health ? Number(health.issueCount || 0) : 1,
+      warningCount: (health ? Number(health.warningCount || 0) : 0) + (mapHealth && Array.isArray(mapHealth.warnings) ? mapHealth.warnings.length : 0),
+      nextSafePhase: 'phase D: export/release tooling izolace bez zásahu do navigace, renderu, her a online flow'
     };
   };
 

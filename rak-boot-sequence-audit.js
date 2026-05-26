@@ -1,4 +1,4 @@
-// v.1.5 (870) – samostatný boot sequence audit bez změny funkčnosti aplikace.
+// v.1.5 (875) – samostatný boot sequence audit bez změny funkčnosti aplikace.
 
 (function setupRakBootSequenceAudit() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -82,7 +82,7 @@
 
     return {
       ok: issues.length === 0,
-      mode: 'boot-sequence-audit-v870',
+      mode: 'boot-sequence-audit-v875',
       checkedAt: new Date().toISOString(),
       version: String(window.APP_VERSION || 'unknown'),
       issueCount: issues.length,

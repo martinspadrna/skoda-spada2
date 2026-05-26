@@ -5021,9 +5021,14 @@ function buildSupabaseKeepaliveStatusHtml(options) {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: versionText || 'v.1.5 (870)',
+      range: versionText || 'v.1.5 (875)',
       title: 'Aktuální stabilizace',
       lines: [
+        'V875 uzavírá window.RaK namespace read-only fázi na 100 %: fallbacky a mapa jsou hotové, staré globály zůstávají zdroj pravdy a další fáze se má týkat jen export/release tooling vrstvy.',
+        'V874 přepíná první čistě auditní čtení na window.RaK.diagnostics.readWithFallback se zachovaným legacy fallbackem; navigace, render, hry a online flow zůstávají mimo přepojení.',
+        'V873 uzavírá mapovací část window.RaK namespace: přidává kontrolu read-only fallbacků a potvrzuje, že navigace, render, hry a online flow zůstávají mimo přepojení.',
+        'V872 rozšiřuje read-only diagnostickou mapu v window.RaK bez přepojení navigace, renderu, her nebo online flow. Piškvorky AI zůstávají potvrzené OK z v870/v871.',
+        'V870 přitvrzuje Piškvorky proti AI: lepší lookahead, blokování forků, otevřených hrozeb a tvrdší opening book; online flow a Supabase beze změny.',
         'V864 odděluje runtime health helper do samostatného rak-runtime-health.js a přidává poznámku ke statistikám, že budoucí nahrané měsíce se započítají až v daném měsíci.',
         'V863 odděluje release readiness a architecture baseline helpery z app.js do samostatného rak-audit-baseline.js; funkčnost zůstává stejná a boot/readiness diagnostika je přehlednější.',
         'V862 odděluje module readiness registry z app.js do samostatného module-readiness.js; funkčnost zůstává stejná a registry dál hlídá boot pořadí.',
@@ -6933,6 +6938,11 @@ function bindAppMenuHandlers(body) {
         const supabaseHardeningReadiness = typeof window.getSupabaseHardeningReadiness === 'function' ? window.getSupabaseHardeningReadiness() : (supabaseHardening && supabaseHardening.hardeningReadiness ? supabaseHardening.hardeningReadiness : null);
         const readRakDiag = (alias, fallbackGlobalName) => {
           try {
+            if (window.RaK && window.RaK.diagnostics && typeof window.RaK.diagnostics.readWithFallback === 'function') {
+              return window.RaK.diagnostics.readWithFallback(alias, fallbackGlobalName);
+            }
+          } catch (err) {}
+          try {
             if (window.RaK && window.RaK.diagnostics && typeof window.RaK.diagnostics.read === 'function') {
               const result = window.RaK.diagnostics.read(alias);
               if (result) return result;
@@ -6951,6 +6961,7 @@ function bindAppMenuHandlers(body) {
         const runtimeGuard = readRakDiag('runtimeGuard', 'getRakRuntimeGuardHealth');
         const bootSequence = readRakDiag('bootSequence', 'getRakBootSequenceHealth');
         const namespaceHealth = readRakDiag('namespace', 'getRakNamespaceHealth');
+        const namespaceReadOnlyMap = readRakDiag('namespaceReadOnlyMap', 'getRakNamespaceReadOnlyMapHealth');
         const profileUiStatus = typeof window.getProfileUiSyncStatus === 'function' ? window.getProfileUiSyncStatus() : null;
         const profileUiGuard = profileUiStatus && profileUiStatus.guard ? profileUiStatus.guard : null;
         const dataOptStatus = typeof window.getDataOptimizationStatus === 'function' ? window.getDataOptimizationStatus() : null;
@@ -7003,7 +7014,8 @@ function bindAppMenuHandlers(body) {
           'Architektura coupling: chybějící globály ' + String((architectureBaseline.missingGlobals || []).length || 0) + ' · duplicitní ID ' + String(architectureBaseline.duplicateIdCount || 0) + ' · warningy ' + String(architectureBaseline.warningCount || 0),
           moduleReadiness ? ('Module readiness: ' + (moduleReadiness.ok ? 'OK' : 'kontrola') + ' · načteno ' + String(moduleReadiness.loadedCount || 0) + '/' + String(moduleReadiness.expectedCount || 0) + ' · chyby ' + String(moduleReadiness.errorCount || 0) + ' · chybí ' + String(moduleReadiness.missingCount || 0) + ' · boot ' + String(moduleReadiness.bootDurationMs || 0) + ' ms') : '',
           bootSequence ? ('Boot sekvence: ' + (bootSequence.ok ? 'OK' : 'kontrola') + ' · statická ' + (bootSequence.staticOrderOk ? 'OK' : 'kontrola') + ' · dynamická ' + (bootSequence.dynamicOrderOk ? 'OK' : 'kontrola') + ' · chybí ' + String(bootSequence.dynamicMissingCount || 0)) : '',
-          namespaceHealth ? ('RaK namespace: ' + (namespaceHealth.ok ? 'OK' : 'kontrola') + ' · režim ' + String(namespaceHealth.mode || '—') + ' · mapa ' + String(namespaceHealth.namespaceMapCount || 0) + ' · fáze ' + String(namespaceHealth.refactorProgressPercent || 0) + '% · staré globály ' + (namespaceHealth.legacyGlobalsPreserved ? 'OK' : 'čekají') + ' · warningy ' + String(namespaceHealth.warningCount || 0)) : '',
+          namespaceHealth ? ('RaK namespace: ' + (namespaceHealth.ok ? 'OK' : 'kontrola') + ' · režim ' + String(namespaceHealth.mode || '—') + ' · mapa ' + String(namespaceHealth.namespaceMapCount || 0) + ' · fáze ' + String(namespaceHealth.refactorProgressPercent || 0) + '% · mapa uzavřená ' + (namespaceHealth.namespaceMapClosed ? 'ano' : 'ne') + ' · warningy ' + String(namespaceHealth.warningCount || 0)) : '',
+          namespaceReadOnlyMap ? ('RaK namespace fallbacky: ' + (namespaceReadOnlyMap.ok ? 'OK' : 'kontrola') + ' · read-only aliasy ' + String(namespaceReadOnlyMap.safeNowCount || 0) + ' · runtime ' + String(namespaceReadOnlyMap.runtimeAliasCount || 0) + ' · chybí čtečky ' + String(namespaceReadOnlyMap.missingReaderCount || 0) + ' · rizikové mutace ' + String(namespaceReadOnlyMap.mutatingRiskCount || 0)) : '',
           runtimeGuard ? ('Runtime health: ' + (runtimeGuard.ok ? 'OK' : 'kontrola') + ' · warningy ' + String(runtimeGuard.warningCount || 0) + ' · storage ' + (runtimeGuard.storage && runtimeGuard.storage.writable ? 'OK' : 'kontrola') + ' · budoucí měsíce ' + String(runtimeGuard.statsScope && runtimeGuard.statsScope.futureImportedMonthCount || 0)) : ''
         ].filter(Boolean) : [];
         const pwaDiag = pwaStatus ? [
