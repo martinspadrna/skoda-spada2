@@ -1,4 +1,4 @@
-// v.1.5 (929) – validační readiness build bez zásahu do online flow.
+// v.1.5 (930) – Rotace dock stabilizace a Dashboard iOS glass bez zásahu do online flow.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app.js', 'loaded', { source: 'index' }); } catch (err) {}
 
 

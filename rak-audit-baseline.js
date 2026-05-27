@@ -1,4 +1,4 @@
-// v.1.5 (929) – release/architecture readiness bere i release ops checklist jako read-only signál.
+// v.1.5 (930) – release/architecture readiness bere i release ops checklist jako read-only signál.
 
 (function setupRakAuditBaselineHelpers() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();

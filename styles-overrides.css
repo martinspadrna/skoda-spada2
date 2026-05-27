@@ -15664,7 +15664,7 @@ body.ladaTurboMode #games .gamesStage{
 }
 
 
-/* v.1.5 (929) – Dashboard: theme-aware průhledný glass styl panelů. */
+/* v.1.5 (930) – Dashboard: theme-aware průhledný glass styl panelů. */
 :root{
   --rakDashboardGlassAlpha:.62;
   --rakDashboardGlassBlur:18px;
@@ -15773,4 +15773,196 @@ body.ladaMode #home .dashboardCard::before,
 body.ladaMode #home .dashboardCard::after{
   display:none !important;
   content:none !important;
+}
+
+/* v.1.5 (930) – Rotace: stabilní dock bez doskoku + vrácená velikost panelů se jmény. */
+:root{
+  --rak-rotace-names-dock-bottom:calc(82px + env(safe-area-inset-bottom));
+  --rak-rotace-names-dock-max-height:min(38dvh, 156px);
+  --rak-rotace-names-content-bottom:calc(var(--rak-rotace-names-dock-bottom) + var(--rak-rotace-names-dock-max-height) + 26px);
+}
+#rotace.page.active #rotaceNamesPanel.active{
+  padding-bottom:var(--rak-rotace-names-content-bottom) !important;
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid{
+  position:fixed !important;
+  z-index:1100 !important;
+  left:50% !important;
+  right:auto !important;
+  bottom:var(--rak-rotace-names-dock-bottom) !important;
+  width:min(760px, calc(100vw - 14px - env(safe-area-inset-left) - env(safe-area-inset-right))) !important;
+  max-height:var(--rak-rotace-names-dock-max-height) !important;
+  overflow-y:auto !important;
+  overflow-x:visible !important;
+  overscroll-behavior:contain !important;
+  -webkit-overflow-scrolling:touch !important;
+  transform:translate3d(-50%, 0, 0) !important;
+  transition:none !important;
+  animation:none !important;
+  will-change:auto !important;
+  contain:layout style paint !important;
+  margin:0 !important;
+  padding:8px 6px !important;
+  gap:6px !important;
+  grid-template-columns:repeat(5, minmax(0, 1fr)) !important;
+  box-sizing:border-box !important;
+}
+@supports (width:100dvw){
+  #rotace.page.active #rotaceNamesPanel.active #namesGrid{
+    width:min(760px, calc(100dvw - 14px - env(safe-area-inset-left) - env(safe-area-inset-right))) !important;
+  }
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem,
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceNameTile{
+  min-height:48px !important;
+  padding:7px 4px !important;
+  border-radius:14px !important;
+  transition:none !important;
+  animation:none !important;
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceTileTitle,
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem .rotaceTileTitle{
+  font-size:clamp(11.5px, 2.85vw, 13px) !important;
+  line-height:1.1 !important;
+  font-weight:850 !important;
+}
+@media (max-width:430px), (max-height:700px){
+  :root{
+    --rak-rotace-names-dock-bottom:calc(78px + env(safe-area-inset-bottom));
+    --rak-rotace-names-dock-max-height:min(36dvh, 146px);
+    --rak-rotace-names-content-bottom:calc(var(--rak-rotace-names-dock-bottom) + var(--rak-rotace-names-dock-max-height) + 22px);
+  }
+  #rotace.page.active #rotaceNamesPanel.active #namesGrid{
+    padding:7px 5px !important;
+    gap:5px !important;
+    border-radius:16px !important;
+  }
+  #rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem,
+  #rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceNameTile{
+    min-height:44px !important;
+    padding:6px 3px !important;
+  }
+  #rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceTileTitle,
+  #rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem .rotaceTileTitle{
+    font-size:clamp(11px, 2.8vw, 12.5px) !important;
+  }
+}
+@media (max-height:620px){
+  :root{
+    --rak-rotace-names-dock-bottom:calc(74px + env(safe-area-inset-bottom));
+    --rak-rotace-names-dock-max-height:min(34dvh, 132px);
+  }
+}
+body.lightweightMode #rotace.page.active #rotaceNamesPanel.active #namesGrid,
+body.lowEndDevice #rotace.page.active #rotaceNamesPanel.active #namesGrid,
+body.ladaMode #rotace.page.active #rotaceNamesPanel.active #namesGrid{
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+  box-shadow:0 8px 18px rgba(0,0,0,.24) !important;
+}
+
+/* v.1.5 (930) – Dashboard: víc iOS glass a ikonky bez vlastní kapsle/pozadí. */
+:root{
+  --rakDashboardGlassAlpha:.46;
+  --rakDashboardGlassBlur:26px;
+  --rakDashboardCardBg:
+    linear-gradient(145deg, rgba(255,255,255,.18), rgba(255,255,255,.055) 46%, rgba(255,255,255,.025)),
+    linear-gradient(180deg, color-mix(in srgb, var(--green, #7CFF7C) 10%, transparent), transparent 58%);
+  --rakDashboardCardTint:
+    radial-gradient(circle at 12% 0%, color-mix(in srgb, var(--green2, #B7FFBE) 18%, transparent), transparent 42%),
+    radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--green, #7CFF7C) 16%, transparent), transparent 46%);
+  --rakDashboardCardLine:color-mix(in srgb, var(--green, #7CFF7C) 28%, rgba(255,255,255,.20));
+}
+#home .dashboardShell{
+  background:
+    radial-gradient(circle at 8% 0%, color-mix(in srgb, var(--green2, #B7FFBE) 20%, transparent), transparent 38%),
+    radial-gradient(circle at 100% 8%, color-mix(in srgb, var(--green, #7CFF7C) 22%, transparent), transparent 44%),
+    linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.025)),
+    rgba(5,8,7,.30) !important;
+  border-color:color-mix(in srgb, var(--green, #7CFF7C) 22%, rgba(255,255,255,.18)) !important;
+  -webkit-backdrop-filter:blur(var(--rakDashboardGlassBlur)) saturate(185%) !important;
+  backdrop-filter:blur(var(--rakDashboardGlassBlur)) saturate(185%) !important;
+  box-shadow:0 24px 70px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.16) !important;
+}
+#home .dashboardHeroCard,
+#home .dashboardCard{
+  background:
+    var(--rakDashboardCardTint),
+    var(--rakDashboardCardBg),
+    color-mix(in srgb, var(--panel, rgba(18,28,22,.72)) 46%, transparent) !important;
+  border-color:var(--rakDashboardCardLine) !important;
+  -webkit-backdrop-filter:blur(var(--rakDashboardGlassBlur)) saturate(185%) !important;
+  backdrop-filter:blur(var(--rakDashboardGlassBlur)) saturate(185%) !important;
+  box-shadow:
+    0 16px 42px rgba(0,0,0,.24),
+    0 0 0 1px rgba(255,255,255,.055) inset,
+    inset 0 1px 0 rgba(255,255,255,.18),
+    inset 0 -1px 0 color-mix(in srgb, var(--green, #7CFF7C) 12%, transparent) !important;
+}
+#home .dashboardHeroCard::before,
+#home .dashboardCard::before{
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.22), rgba(255,255,255,.03) 34%, transparent 62%),
+    radial-gradient(circle at 22% 12%, rgba(255,255,255,.12), transparent 34%) !important;
+  opacity:.78 !important;
+}
+#home .dashboardHeroCard::after,
+#home .dashboardCard::after{
+  inset:auto 14px 0 14px !important;
+  background:linear-gradient(90deg, transparent, color-mix(in srgb, var(--green2, #B7FFBE) 70%, white), transparent) !important;
+  opacity:.20 !important;
+}
+#home .dashboardCardClickable:hover{
+  border-color:color-mix(in srgb, var(--green2, #B7FFBE) 42%, rgba(255,255,255,.22)) !important;
+  box-shadow:
+    0 20px 48px rgba(0,0,0,.28),
+    0 0 0 1px rgba(255,255,255,.075) inset,
+    0 0 28px color-mix(in srgb, var(--green, #7CFF7C) 12%, transparent) !important;
+}
+#home .dashboardIcon.dashboardIconInline,
+#home .dashboardCard .dashboardIcon.dashboardIconInline,
+.dashboardCard .dashboardIcon.dashboardIconInline{
+  background:transparent !important;
+  background-image:none !important;
+  border:0 !important;
+  box-shadow:none !important;
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+  padding:0 !important;
+  overflow:visible !important;
+}
+#home .dashboardIcon.dashboardIconInline::before,
+#home .dashboardIcon.dashboardIconInline::after,
+.dashboardCard .dashboardIcon.dashboardIconInline::before,
+.dashboardCard .dashboardIcon.dashboardIconInline::after{
+  display:none !important;
+  content:none !important;
+}
+#home .dashboardIcon.dashboardIconInline img,
+#home .dashboardIcon.dashboardIconInline svg,
+.dashboardCard .dashboardIcon.dashboardIconInline img,
+.dashboardCard .dashboardIcon.dashboardIconInline svg{
+  filter:drop-shadow(0 7px 11px rgba(0,0,0,.20)) drop-shadow(0 0 10px color-mix(in srgb, var(--green, #7CFF7C) 12%, transparent)) !important;
+}
+body.lightweightMode #home .dashboardIcon.dashboardIconInline img,
+body.lowEndDevice #home .dashboardIcon.dashboardIconInline img,
+body.ladaMode #home .dashboardIcon.dashboardIconInline img,
+body.lightweightMode #home .dashboardIcon.dashboardIconInline svg,
+body.lowEndDevice #home .dashboardIcon.dashboardIconInline svg,
+body.ladaMode #home .dashboardIcon.dashboardIconInline svg{
+  filter:none !important;
+}
+body.lightweightMode #home .dashboardShell,
+body.lowEndDevice #home .dashboardShell,
+body.ladaMode #home .dashboardShell,
+body.lightweightMode #home .dashboardHeroCard,
+body.lowEndDevice #home .dashboardHeroCard,
+body.ladaMode #home .dashboardHeroCard,
+body.lightweightMode #home .dashboardCard,
+body.lowEndDevice #home .dashboardCard,
+body.ladaMode #home .dashboardCard{
+  background:linear-gradient(180deg, color-mix(in srgb, var(--panel, rgba(18,28,22,.72)) 70%, rgba(255,255,255,.05)), color-mix(in srgb, var(--panel2, rgba(24,36,28,.68)) 78%, rgba(0,0,0,.08))) !important;
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+  box-shadow:0 7px 16px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.08) !important;
 }

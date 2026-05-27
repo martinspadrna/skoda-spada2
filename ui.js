@@ -4534,7 +4534,7 @@ function getRakTttAiHardeningV922Health() {
   return {
     ok: true,
     mode: 'ttt-ai-hardening-v923',
-    version: String(window.APP_VERSION || 'v.1.5 (929)'),
+    version: String(window.APP_VERSION || 'v.1.5 (930)'),
     thirteenTurnClamp: true,
     hardSearchDepthEarly: 8,
     hardSearchDepthMid: 8,
@@ -6122,10 +6122,10 @@ function buildAppHistoryHtml(versionText) {
       range: 'v.1.5 901–950',
       title: 'Aktuální stabilizace, bezpečnost a provozní detaily',
       lines: [
-        'Hlavní změny: dokončení online game contract auditu, release readiness/monitoring/rollback vrstvy, AppSec/privacy audit, release gates, výkonový/CI audit, finální due diligence report, prompt-compliance dokumenty v924, validační runbook v925, herní odměnová vrstva v926 a mobilní stabilizace Rotace/Láďova režimu v928 a dashboard glass podle tématu ve v929.',
+        'Hlavní změny: dokončení online game contract auditu, release readiness/monitoring/rollback vrstvy, AppSec/privacy audit, release gates, výkonový/CI audit, finální due diligence report, prompt-compliance dokumenty v924, validační runbook v925, herní odměnová vrstva v926 a mobilní stabilizace Rotace/Láďova režimu v928 a dashboard glass podle tématu ve v929. V930 vrací větší dlaždice jmen v Rotaci, odstraňuje opožděné přeměřování docku a posouvá Dashboard víc do iOS glass stylu bez pozadí kolem ikon.',
         'Kantýna/jídelna se srovnala podle běžné a mimořádné provozní doby; rozklik teď odděluje běžný režim a přesčasové rozdíly.',
         'Herní Top score a profily se resetovaly na čistý start; Piškvorky Top score mají zobrazovat datum i čas a Supabase výsledky byly znovu vyčištěné. V926 přidala achievementy pro každou hru včetně D-směnových cílů; v928 řeší stabilitu docku jmen v Rotaci a v929 průhledný theme-aware glass dashboard.',
-        'Pravidlo historie: O aplikaci drží hlavně stručné souhrny po cca 50 verzích; v924 formálně uzavřela auditní prompty, v925 přidala praktický validační checklist a v926 ukládá aktivní téma/pozadí na profil jako odměny za progres a v928 přidává adaptivní mobilní dock + odlehčení Láďova režimu a v929 sjednocuje dashboard panely s aktivním tématem.'
+        'Pravidlo historie: O aplikaci drží hlavně stručné souhrny po cca 50 verzích; v924 formálně uzavřela auditní prompty, v925 přidala praktický validační checklist a v926 ukládá aktivní téma/pozadí na profil jako odměny za progres a v928 přidává adaptivní mobilní dock + odlehčení Láďova režimu v929 sjednocuje dashboard panely s aktivním tématem a v930 řeší stabilní dock jmen + čistší iOS glass Dashboard bez ikonových kapslí.'
       ]
     },
     {
@@ -8677,43 +8677,39 @@ function updateRotaceNamesDockMetrics(reason) {
     ok: true,
     reason: String(reason || 'manual'),
     checkedAt: new Date().toISOString(),
+    mode: 'stable-css-no-post-open-jump-v930',
     bottomPx: 0,
     maxHeightPx: 0,
     contentBottomPx: 0,
     navHeightPx: 0,
     viewportHeightPx: 0,
-    viewportWidthPx: 0
+    viewportWidthPx: 0,
+    cssLocked: true
   };
   try {
     const root = document.documentElement;
     const nav = document.querySelector('nav.bottomNav') || document.querySelector('.bottomNav');
+    const grid = document.getElementById('namesGrid');
     const navRect = nav && typeof nav.getBoundingClientRect === 'function' ? nav.getBoundingClientRect() : null;
     const viewport = window.visualViewport || null;
     const vh = Math.round(Number(viewport && viewport.height || window.innerHeight || root.clientHeight || 720) || 720);
     const vw = Math.round(Number(viewport && viewport.width || window.innerWidth || root.clientWidth || 390) || 390);
     const navHeightRaw = navRect ? Math.ceil(Number(navRect.height || 0) || 0) : 0;
-    const navHeight = Math.max(50, Math.min(92, navHeightRaw || 62));
-    const compactHeight = vh > 0 && vh <= 700;
-    const compactWidth = vw > 0 && vw <= 380;
-    const gap = compactHeight || compactWidth ? 8 : 10;
-    const bottom = navHeight + gap;
-    const maxByViewport = Math.floor(vh * (compactHeight ? 0.30 : 0.34));
-    const maxHeight = Math.max(92, Math.min(compactHeight ? 112 : 136, maxByViewport || 118));
-    const contentBottom = bottom + maxHeight + (compactHeight ? 18 : 24);
-    root.style.setProperty('--rak-rotace-names-dock-bottom', bottom + 'px');
-    root.style.setProperty('--rak-rotace-names-dock-max-height', maxHeight + 'px');
-    root.style.setProperty('--rak-rotace-names-content-bottom', contentBottom + 'px');
-    root.style.setProperty('--rak-rotace-names-dock-gap', gap + 'px');
-    root.dataset.rakRotaceNamesDockReady = '1';
-    root.dataset.rakRotaceNamesDockReason = result.reason;
-    root.dataset.rakRotaceNamesDockBottom = String(bottom);
-    root.dataset.rakRotaceNamesDockMaxHeight = String(maxHeight);
-    result.bottomPx = bottom;
-    result.maxHeightPx = maxHeight;
-    result.contentBottomPx = contentBottom;
-    result.navHeightPx = navHeight;
+    const gridStyles = grid && window.getComputedStyle ? window.getComputedStyle(grid) : null;
+    const parsePx = (value) => {
+      const n = parseFloat(String(value || '').replace(',', '.'));
+      return Number.isFinite(n) ? Math.round(n) : 0;
+    };
+    result.bottomPx = gridStyles ? parsePx(gridStyles.bottom) : 0;
+    result.maxHeightPx = gridStyles ? parsePx(gridStyles.maxHeight) : 0;
+    result.contentBottomPx = parsePx((window.getComputedStyle ? getComputedStyle(root).getPropertyValue('--rak-rotace-names-content-bottom') : '') || '0');
+    result.navHeightPx = navHeightRaw;
     result.viewportHeightPx = vh;
     result.viewportWidthPx = vw;
+    root.dataset.rakRotaceNamesDockReady = '1';
+    root.dataset.rakRotaceNamesDockReason = result.reason;
+    root.dataset.rakRotaceNamesDockBottom = String(result.bottomPx || 'css');
+    root.dataset.rakRotaceNamesDockMaxHeight = String(result.maxHeightPx || 'css');
   } catch (err) {
     result.ok = false;
     result.error = String(err && err.message || err);
@@ -8723,11 +8719,10 @@ function updateRotaceNamesDockMetrics(reason) {
 }
 
 function scheduleRotaceNamesDockMetrics(reason) {
-  try { updateRotaceNamesDockMetrics(reason || 'schedule-now'); } catch (err) {}
-  try {
-    requestAnimationFrame(() => updateRotaceNamesDockMetrics((reason || 'schedule') + '-raf'));
-    setTimeout(() => updateRotaceNamesDockMetrics((reason || 'schedule') + '-settled'), 80);
-  } catch (err) {}
+  /* v930: pozice docku je záměrně stabilní CSS hodnota.
+     Žádné opožděné přepisování bottom/max-height po otevření Rotace,
+     protože právě to na mobilech vytvářelo viditelné cuknutí panelu. */
+  try { return updateRotaceNamesDockMetrics(reason || 'stable-css'); } catch (err) { return null; }
 }
 
 if (!window.__rakRotaceNamesDockMetricsBound) {
@@ -12406,7 +12401,7 @@ function applyProfileUiPreferencesForActiveAccount(options = {}) {
   const defaultTheme = normalizeThemePreferenceId('default', 'default');
   const defaultBg = normalizeBackgroundPreferenceId('ios-mesh', 'ios-mesh');
   let changed = false;
-  // v.1.5 (929): vzhled je profilový. Nový/prázdný profil nezačne omylem vzhledem po předchozím přihlášeném profilu.
+  // v.1.5 (930): vzhled je profilový. Nový/prázdný profil nezačne omylem vzhledem po předchozím přihlášeném profilu.
   if (!ui.themeId) { ui.themeId = defaultTheme; changed = true; }
   if (!ui.backgroundId) { ui.backgroundId = defaultBg; changed = true; }
   const rewardMetrics = getThemeUnlockMetrics(profile);
@@ -12805,7 +12800,7 @@ function getRakProfileAppearanceRewardHealth() {
   const themeRewards = themes.filter(item => String(item && item.id || '') !== 'default');
   const backgroundRewards = backgrounds.filter(item => String(item && item.id || '') !== 'ios-mesh');
   return {
-    version: window.APP_VERSION || 'v.1.5 (929)',
+    version: window.APP_VERSION || 'v.1.5 (930)',
     mode: 'profile-appearance-reward-health-v928',
     activeProfile: metrics.hasProfile,
     profileThemeStorage: 'account.uiSettings.themeId',
@@ -12894,8 +12889,8 @@ function getRakDashboardGlassThemeHealth() {
   const lightweight = /(?:^|\s)(?:lightweightMode|lowEndDevice|ladaMode)(?:\s|$)/.test(bodyClass);
   return {
     ok: true,
-    version: window.APP_VERSION || 'v.1.5 (929)',
-    mode: 'dashboard-glass-theme-v929',
+    version: window.APP_VERSION || 'v.1.5 (930)',
+    mode: 'dashboard-ios-glass-icons-flat-v930',
     theme,
     background,
     themeAware: !!(readVar('--green') && readVar('--green2')),
@@ -12917,7 +12912,7 @@ function getRakDashboardGlassThemeHealth() {
       'body.ladaMode #home .dashboardCard'
     ],
     lightweightSafe: lightweight ? 'blur-off' : 'full-glass',
-    note: 'Dashboard panely používají theme proměnné pro border/glow/barvu; Láďův a low-end režim vypíná těžký blur.'
+    note: 'Dashboard panely používají průhlednější iOS glass podle theme proměnných; ikonky už nemají vlastní kapsli/pozadí a low-end režim vypíná těžký blur.'
   };
 }
 window.getRakDashboardGlassThemeHealth = getRakDashboardGlassThemeHealth;
@@ -12930,12 +12925,12 @@ try {
 function getRakRotaceNamesDockHealth() {
   const result = {
     ok: true,
-    version: window.APP_VERSION || 'v.1.5 (929)',
-    mode: 'rotace-names-dock-stable-adaptive-v928',
+    version: window.APP_VERSION || 'v.1.5 (930)',
+    mode: 'rotace-names-dock-stable-css-v930',
     checkedAt: new Date().toISOString(),
-    scope: 'Rotace / seznam jmen / adaptivní spodní dock',
+    scope: 'Rotace / seznam jmen / stabilní spodní dock',
     expected: {
-      position: 'fixed podle skutečné výšky spodní navigace',
+      position: 'fixed se stabilní CSS rezervou bez opožděného přepisu pozice',
       noJump: true,
       visibleOnSmallMobiles: true,
       rootFolderChange: false,
@@ -12943,7 +12938,7 @@ function getRakRotaceNamesDockHealth() {
     },
     manual: {
       mobileVisualSmoke: 'manual',
-      note: 'Ověřit na mobilu, že seznam jmen po otevření Rotace necukne a zůstane viditelný nad spodním panelem.'
+      note: 'Ověřit na mobilu, že seznam jmen po otevření Rotace necukne, má původní větší dlaždice a zůstane viditelný nad spodním panelem.'
     }
   };
   try {
@@ -12964,7 +12959,7 @@ function getRakRotaceNamesDockHealth() {
       metrics
     };
     result.ok = !!(rotace && grid && nav);
-    if (styles && styles.position !== 'fixed') result.ok = false;
+    if (rotace && rotace.classList && rotace.classList.contains('active') && styles && styles.position !== 'fixed') result.ok = false;
   } catch (err) {
     result.ok = false;
     result.error = String(err && err.message || err);

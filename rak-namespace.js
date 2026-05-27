@@ -1,4 +1,4 @@
-// v.1.5 (929) – window.RaK namespace doplněný o validation readiness diagnostiku.
+// v.1.5 (930) – window.RaK namespace doplněný o validation readiness diagnostiku.
 
 (function setupRakNamespaceBridge() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -11,7 +11,7 @@
 
   const root = window.RaK || {};
   const existingVersion = root.namespaceVersion || '';
-  root.namespaceVersion = 'v.1.5 (929)';
+  root.namespaceVersion = 'v.1.5 (930)';
   root.mode = 'passive-namespace-readonly-release-gates-prompt-compliance-validation-v929';
   root.createdAt = root.createdAt || new Date().toISOString();
   root.updatedAt = new Date().toISOString();
@@ -85,10 +85,10 @@
     { group: 'diagnostics', alias: 'validationReadinessClosure', globalName: 'getRakValidationReadinessClosureHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only v928 closure pro mobil/browser/Playwright/post-release validaci.' },
     { group: 'diagnostics', alias: 'gamesAchievementRewards', globalName: 'getRakGamesAchievementRewardHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only v928 kontrola: každá hra má achievementy a D-směnové odměny.' },
     { group: 'diagnostics', alias: 'profileAppearanceRewards', globalName: 'getRakProfileAppearanceRewardHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only v928 kontrola: témata a pozadí jsou odměny uložené na aktivní profil.' },
-    { group: 'diagnostics', alias: 'dashboardGlassTheme', globalName: 'getRakDashboardGlassThemeHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only v929 kontrola: Dashboard panely jsou průhledný theme-aware glass s low-end/Láďa fallbackem.' },
-    { group: 'diagnostics', alias: 'rotaceNamesDock', globalName: 'getRakRotaceNamesDockHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only v928 kontrola: adaptivní seznam jmen v Rotaci je stabilní nad spodním panelem.' },
+    { group: 'diagnostics', alias: 'dashboardGlassTheme', globalName: 'getRakDashboardGlassThemeHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only v930 kontrola: Dashboard panely jsou průhlednější iOS glass podle tématu a ikonky jsou bez vlastní kapsle.' },
+    { group: 'diagnostics', alias: 'rotaceNamesDock', globalName: 'getRakRotaceNamesDockHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only v930 kontrola: seznam jmen v Rotaci drží stabilní CSS dock bez opožděného doskoku a s vrácenou velikostí dlaždic.' },
     { group: 'diagnostics', alias: 'rotaceNamesDockUpdate', globalName: 'updateRotaceNamesDockMetrics', type: 'function', phase: 'safe-now', risk: 'low', note: 'v928 bezpečné přeměření pozice docku jmen podle spodní navigace.' },
-    { group: 'diagnostics', alias: 'rotaceNamesDockSchedule', globalName: 'scheduleRotaceNamesDockMetrics', type: 'function', phase: 'safe-now', risk: 'low', note: 'v928 bezpečné naplánování přeměření docku po dosednutí layoutu.' },
+    { group: 'diagnostics', alias: 'rotaceNamesDockSchedule', globalName: 'scheduleRotaceNamesDockMetrics', type: 'function', phase: 'safe-now', risk: 'low', note: 'v930 read-only kontrola docku bez opožděného přepisu po dosednutí layoutu.' },
     { group: 'diagnostics', alias: 'exportReleaseTooling', globalName: 'getRakExportReleaseToolingHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only audit export/release tooling vrstvy bez spuštění exportu.' },
     { group: 'diagnostics', alias: 'exportSmokeReport', globalName: 'getRakExportSmokeReport', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only poslední smoke/preflight stav exportu ZIPu.' },
     { group: 'diagnostics', alias: 'domActionRegistry', globalName: 'getRakDomActionRegistryHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only mapa data-action prvků a allowlistů bez přepojení navigace/renderu/her.' },
@@ -143,7 +143,7 @@
   };
   root.getNamespaceMap = cloneMap;
   root.namespaceMap = cloneMap();
-  root.namespaceMapVersion = 'v.1.5 (929)';
+  root.namespaceMapVersion = 'v.1.5 (930)';
   root.namespacePlan = {
     phase: 'phase C',
     mode: 'namespace-readonly-phase-closed-with-online-game-contract-alias-v897',

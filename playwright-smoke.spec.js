@@ -1,4 +1,4 @@
-// RaK v.1.5 (929) – DOM smoke kostra rozšířená o validační readiness helpery.
+// RaK v.1.5 (930) – DOM smoke kostra rozšířená o validační readiness helpery.
 // Instalace/spuštění mimo hotfix: npx playwright install chromium && npm run test:smoke
 const { test, expect } = require('@playwright/test');
 
@@ -80,7 +80,7 @@ test('v928 profile appearance rewards are exposed', async ({ page }) => {
   expect(appearance.backgrounds.total).toBeGreaterThan(1);
 });
 
-test('v928 rotace names dock helper is exposed', async ({ page }) => {
+test('v930 rotace names dock helper is exposed', async ({ page }) => {
   await openApp(page);
   const rotaceNav = page.locator('[data-action="rotace"], [data-page="rotace"]').first();
   if (await rotaceNav.count()) await rotaceNav.click();
@@ -90,7 +90,7 @@ test('v928 rotace names dock helper is exposed', async ({ page }) => {
   });
   expect(dock).toBeTruthy();
   expect(dock.ok).toBeTruthy();
-  expect(dock.mode).toContain('v928');
+  expect(dock.mode).toContain('v930');
 });
 
 test('v928 lada performance profile exposes conservative frame budget', async ({ page }) => {
@@ -108,11 +108,11 @@ test('v928 lada performance profile exposes conservative frame budget', async ({
 });
 
 
-test('v929 dashboard glass theme helper is exposed', async ({ page }) => {
+test('v930 dashboard iOS glass theme helper is exposed', async ({ page }) => {
   await page.goto('./index.html');
   const health = await page.evaluate(() => typeof window.getRakDashboardGlassThemeHealth === 'function' ? window.getRakDashboardGlassThemeHealth() : null);
   expect(health).toBeTruthy();
   expect(health.ok).toBeTruthy();
-  expect(health.mode).toContain('v929');
+  expect(health.mode).toContain('v930');
   expect(health.themeAware).toBeTruthy();
 });

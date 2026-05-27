@@ -1,8 +1,8 @@
-// v.1.5 (929) – release gating/checklist vrstva s validační readiness closure bez mutací.
+// v.1.5 (930) – release gating/checklist vrstva s validační readiness closure bez mutací.
 
 (function setupRakReleaseGates() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
-  const VERSION = 'v.1.5 (929)';
+  const VERSION = 'v.1.5 (930)';
   const MODE = 'release-gates-readonly-v929';
 
   try {
@@ -493,23 +493,23 @@
 
 
     gates.push(makeGate(
-      'v929-dashboard-glass-theme',
-      'Dashboard glass podle tématu',
+      'v930-dashboard-ios-glass-icons',
+      'Dashboard iOS glass bez ikonových kapslí',
       signals.dashboardGlassTheme && signals.dashboardGlassTheme.ok ? 'ok' : 'warning',
       'warning',
       signals.dashboardGlassTheme ? ('theme ' + String(signals.dashboardGlassTheme.theme || '—') + ', bg ' + String(signals.dashboardGlassTheme.background || '—') + ', mode ' + String(signals.dashboardGlassTheme.lightweightSafe || '—')) : 'dashboard glass helper chybí',
-      'Na mobilu ověřit čitelnost a plynulost Dashboardu; v Láďově/low-end režimu musí zůstat vypnutý těžký blur.',
+      'Na mobilu ověřit čitelnost, průhlednější iOS glass a že ikonky už nemají vlastní pozadí; v Láďově/low-end režimu musí zůstat vypnutý těžký blur.',
       'styles/ui'
     ));
 
 
     gates.push(makeGate(
-      'v928-rotace-names-dock-stability',
-      'Rotace seznam jmen bez cuknutí',
+      'v930-rotace-names-dock-stability',
+      'Rotace seznam jmen bez cuknutí a se správnou velikostí',
       signals.rotaceNamesDock && signals.rotaceNamesDock.ok ? 'ok' : 'warning',
       'warning',
       signals.rotaceNamesDock && signals.rotaceNamesDock.dom ? ('position ' + String(signals.rotaceNamesDock.dom.namesGridPosition || '—') + ', bottom ' + String(signals.rotaceNamesDock.dom.namesGridBottom || '—')) : 'rotace dock helper chybí',
-      'Na mobilu ověřit, že seznam jmen po přepnutí na Rotaci necukne a zůstane nad spodním panelem.',
+      'Na mobilu ověřit, že seznam jmen po přepnutí na Rotaci necukne, zůstane nad spodním panelem a dlaždice nejsou zmenšené.',
       'ui/styles'
     ));
 

@@ -1,4 +1,15 @@
+## v.1.5 (930)
+
+- Rotace: spodní panel se jmény už nepoužívá opožděné přeměřování pozice po otevření stránky; dock drží stabilní CSS rezervu, aby po přepnutí na Rotaci necukal.
+- Rotace: dlaždice se jmény vrácené na větší velikost, aby nepůsobily zmenšeně po stabilizační vrstvě z v928.
+- Dashboard: glass styl posunut víc do iOS vzhledu – průhlednější panely, silnější saturace/blur a jemnější theme-aware odlesky.
+- Dashboard: ikonky v kartách už nemají vlastní barevnou kapsli/pozadí; zůstává samotná ikona bez dalšího panelu kolem.
+- Láďův / lightweight režim pořád drží levnější fallback bez těžkého blur efektu.
+- Přidané dokumenty `rotace-dock-dashboard-glass-v930.md` a `about-50-version-summary-v930.md`.
+- Verze sjednocena na v.1.5 (930), cache na `v1.5-930`, realtime kanál na `rak-public-live-v930`, package na `1.5.930`.
+
 ## v.1.5 (929)
+
 - Dashboard panely dostaly průhlednější glass styl: hero karta, dashboard shell i jednotlivé karty používají aktivní theme proměnné, border/glow podle tématu a jemný barevný overlay.
 - Láďův / lightweight režim má vlastní levnější variantu bez těžkého blur efektu, aby glass styl nezhoršoval plynulost na slabším mobilu.
 - Přidaný read-only helper `getRakDashboardGlassThemeHealth()` a release gate signál pro kontrolu theme-aware dashboard glass vrstvy.
