@@ -4534,7 +4534,7 @@ function getRakTttAiHardeningV922Health() {
   return {
     ok: true,
     mode: 'ttt-ai-hardening-v923',
-    version: String(window.APP_VERSION || 'v.1.5 (931)'),
+    version: String(window.APP_VERSION || 'v.1.5 (935)'),
     thirteenTurnClamp: true,
     hardSearchDepthEarly: 8,
     hardSearchDepthMid: 8,
@@ -6122,10 +6122,10 @@ function buildAppHistoryHtml(versionText) {
       range: 'v.1.5 901–950',
       title: 'Aktuální stabilizace, bezpečnost a provozní detaily',
       lines: [
-        'Hlavní změny: dokončení online game contract auditu, release readiness/monitoring/rollback vrstvy, AppSec/privacy audit, release gates, výkonový/CI audit, finální due diligence report, prompt-compliance dokumenty v924, validační runbook v925, herní odměnová vrstva v926 a mobilní stabilizace Rotace/Láďova režimu v928 a dashboard glass podle tématu ve v929. V930 vrací větší dlaždice jmen v Rotaci, odstraňuje opožděné přeměřování docku a posouvá Dashboard víc do iOS glass stylu bez pozadí kolem ikon. V931 doplňuje u korekcí frézek přepínání znaménka +/− pro konicitu a fhβ stejně jako u soustruhů.',
+        'Hlavní změny: dokončení online game contract auditu, release readiness/monitoring/rollback vrstvy, AppSec/privacy audit, release gates, výkonový/CI audit, finální due diligence report, prompt-compliance dokumenty v924, validační runbook v925, herní odměnová vrstva v926 a mobilní stabilizace Rotace/Láďova režimu v928 a dashboard glass podle tématu ve v929. V930 vrací větší dlaždice jmen v Rotaci, odstraňuje opožděné přeměřování docku a posouvá Dashboard víc do iOS glass stylu bez pozadí kolem ikon. V931 doplňuje u korekcí frézek přepínání znaménka +/− pro konicitu a fhβ; v932 přidává stejné +/− i pro Naměřeno a v933 čistí Dashboard do průhlednějšího iOS glass stylu bez flekatých karet a přidává lokální announcement ticker z administrace; v934 ladí tmavší jednotný glass, volitelný nadpis oznámení, ticker bez dvojitého textu a theme barvy ikon; v935 zachovává tmavší odstín, ale dělá panely průhlednější a přepíná oznámení na online-first Supabase režim s lokálním fallbackem.',
         'Kantýna/jídelna se srovnala podle běžné a mimořádné provozní doby; rozklik teď odděluje běžný režim a přesčasové rozdíly.',
         'Herní Top score a profily se resetovaly na čistý start; Piškvorky Top score mají zobrazovat datum i čas a Supabase výsledky byly znovu vyčištěné. V926 přidala achievementy pro každou hru včetně D-směnových cílů; v928 řeší stabilitu docku jmen v Rotaci a v929 průhledný theme-aware glass dashboard.',
-        'Pravidlo historie: O aplikaci drží hlavně stručné souhrny po cca 50 verzích; v924 formálně uzavřela auditní prompty, v925 přidala praktický validační checklist a v926 ukládá aktivní téma/pozadí na profil jako odměny za progres a v928 přidává adaptivní mobilní dock + odlehčení Láďova režimu v929 sjednocuje dashboard panely s aktivním tématem a v930 řeší stabilní dock jmen + čistší iOS glass Dashboard bez ikonových kapslí a v931 sjednocuje znaménkové přepínače u korekcí frézek.'
+        'Pravidlo historie: O aplikaci drží hlavně stručné souhrny po cca 50 verzích; v924 formálně uzavřela auditní prompty, v925 přidala praktický validační checklist a v926 ukládá aktivní téma/pozadí na profil jako odměny za progres. V928 přidává adaptivní mobilní dock + odlehčení Láďova režimu, v929–v930 ladí Dashboard a Rotace, v931–v932 sjednocují znaménkové přepínače frézek a v933 přidává čistší glass Dashboard + announcement systém, v934 ladí tmavší jednotný glass a v935 přidává online-first oznámení přes Supabase.'
       ]
     },
     {
@@ -7319,6 +7319,76 @@ function buildAdminServiceHtml() {
   ].join('');
 }
 
+
+
+function rakFormatDatetimeLocal(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  const d = new Date(raw);
+  if (Number.isNaN(d.getTime())) return '';
+  const pad = (n) => String(n).padStart(2, '0');
+  return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+}
+
+function rakDatetimeLocalToIso(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  const d = new Date(raw);
+  return Number.isNaN(d.getTime()) ? '' : d.toISOString();
+}
+
+function buildAdminAnnouncementHtml() {
+  const current = typeof window.readRakDashboardAdminAnnouncement === 'function'
+    ? window.readRakDashboardAdminAnnouncement()
+    : (typeof window.readRakLocalDashboardAnnouncement === 'function' ? window.readRakLocalDashboardAnnouncement() : null);
+  const active = current && current.isActive !== false;
+  const marquee = !current || current.marquee !== false;
+  const health = typeof window.getRakDashboardAnnouncementHealth === 'function' ? window.getRakDashboardAnnouncementHealth() : null;
+  const status = health
+    ? ('Stav: ' + (health.domPresent ? 'panel připraven' : 'panel nenalezen') + ' · aktivní teď: ' + (health.activeHasMessage ? 'ano' : 'ne'))
+    : 'Oznámení se uloží online přes Supabase, lokální úložiště zůstává jako fallback.';
+  return [
+    '<div class="appMenuCard appMenuAdminCard adminAnnouncementCard">',
+    '  <div class="appMenuCardTitle">Oznámení na Dashboardu</div>',
+    '  <div class="appMenuText">',
+    '    <div>Nastavíš text, který se zobrazí nad prvním panelem na Dashboardu. Uložení se pokusí proběhnout online přes Supabase, lokálně zůstává záloha.</div>',
+    '    <div class="smallText" id="adminOnlineSaveStatus">' + escapeHtml(status) + '</div>',
+    '  </div>',
+    '  <label class="appMenuFieldLabel" for="adminAnnouncementTitle">Nadpis <span class="smallText">volitelné</span></label>',
+    '  <input class="appMenuInlineInput adminAnnouncementInput" id="adminAnnouncementTitle" maxlength="80" value="' + escapeHtml(current ? current.title || '' : '') + '" placeholder="Volitelné – klidně nech prázdné">',
+    '  <label class="appMenuFieldLabel" for="adminAnnouncementMessage">Text</label>',
+    '  <textarea class="appMenuReportTextarea adminAnnouncementTextarea" id="adminAnnouncementMessage" maxlength="500" rows="4" placeholder="Třeba: V pátek bude odstávka, počítej s tím.">' + escapeHtml(current ? current.message || '' : '') + '</textarea>',
+    '  <div class="adminAnnouncementTwoCols">',
+    '    <div><label class="appMenuFieldLabel" for="adminAnnouncementStart">Od</label><input class="appMenuInlineInput" id="adminAnnouncementStart" type="datetime-local" value="' + escapeHtml(rakFormatDatetimeLocal(current ? current.startAt : '')) + '"></div>',
+    '    <div><label class="appMenuFieldLabel" for="adminAnnouncementEnd">Do</label><input class="appMenuInlineInput" id="adminAnnouncementEnd" type="datetime-local" value="' + escapeHtml(rakFormatDatetimeLocal(current ? current.endAt : '')) + '"></div>',
+    '  </div>',
+    '  <div class="adminAnnouncementToggleRow">',
+    '    <label class="adminAnnouncementCheck"><input id="adminAnnouncementActive" type="checkbox" ' + (active ? 'checked' : '') + '> Aktivní</label>',
+    '    <label class="adminAnnouncementCheck"><input id="adminAnnouncementMarquee" type="checkbox" ' + (marquee ? 'checked' : '') + '> Text má jezdit</label>',
+    '  </div>',
+    '  <div class="dashboardAnnouncementBar adminAnnouncementPreview isVisible" aria-hidden="true">',
+    '    <div class="dashboardAnnouncementLabel">Náhled</div>',
+    '    <div class="dashboardAnnouncementTrack isMarquee"><span>' + escapeHtml((current && current.message) ? current.message : 'Tady pojede nastavený text oznámení.') + '</span></div>',
+    '  </div>',
+    '  <div class="appMenuActionRow adminAnnouncementActions">',
+    '    <button type="button" class="appMenuAction isActive" data-admin-action="save-announcement">Uložit online</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="clear-announcement">Vypnout online</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
+function readAdminAnnouncementFromDom() {
+  const title = String(document.getElementById('adminAnnouncementTitle')?.value || '').trim();
+  const message = String(document.getElementById('adminAnnouncementMessage')?.value || '').trim();
+  const startAt = rakDatetimeLocalToIso(document.getElementById('adminAnnouncementStart')?.value || '');
+  const endAt = rakDatetimeLocalToIso(document.getElementById('adminAnnouncementEnd')?.value || '');
+  const isActive = !!document.getElementById('adminAnnouncementActive')?.checked;
+  const marquee = !!document.getElementById('adminAnnouncementMarquee')?.checked;
+  return { title, message, startAt, endAt, isActive, marquee };
+}
+
 function renderAdminMenuBody(body, section) {
   const mode = String(section || 'home').trim() || 'home';
   const months = getAdminRotationMonthKeys();
@@ -7338,6 +7408,7 @@ function renderAdminMenuBody(body, section) {
     '  <div class="appMenuSettingsList">',
     '    <button type="button" class="appMenuAction" data-admin-action="open-machines">Nastavení strojů</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-rotation">Rozpisy</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="open-announcement">Oznámení Dashboard</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-export">Export / import</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-reports">Reporty chyb</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-service">Servis / synchronizace</button>',
@@ -7380,6 +7451,8 @@ function renderAdminMenuBody(body, section) {
     buildAdminRotationTableHtml(monthKey),
     '</div>'
   ].join('');
+
+  const announcementHtml = buildAdminAnnouncementHtml();
 
   const importPreview = (typeof getRakExcelImportPreview === 'function') ? getRakExcelImportPreview() : null;
   const exportHtml = [
@@ -7429,6 +7502,8 @@ function renderAdminMenuBody(body, section) {
     body.innerHTML = machinesHtml;
   } else if (mode === 'rotation') {
     body.innerHTML = rotationHtml;
+  } else if (mode === 'announcement') {
+    body.innerHTML = announcementHtml;
   } else if (mode === 'export') {
     body.innerHTML = exportHtml;
   } else if (mode === 'reports') {
@@ -8318,6 +8393,10 @@ function bindAppMenuHandlers(body) {
         openAppMenu('admin-rotation');
         return;
       }
+      if (adminAction === 'open-announcement') {
+        openAppMenu('admin-announcement');
+        return;
+      }
       if (adminAction === 'open-export') {
         openAppMenu('admin-export');
         return;
@@ -8376,6 +8455,48 @@ function bindAppMenuHandlers(body) {
         const result = await updateAdminBugReportStatus(reportId, nextStatus);
         if (!result || result.ok === false) throw (result && result.error ? result.error : new Error('Report se nepodařilo upravit.'));
         renderAdminMenuBody(body, 'reports');
+        return;
+      }
+      if (adminAction === 'save-announcement') {
+        const statusEl = document.getElementById('adminOnlineSaveStatus');
+        const payload = readAdminAnnouncementFromDom();
+        if (!payload.message) {
+          if (statusEl) statusEl.textContent = 'Nejdřív napiš text oznámení.';
+          document.getElementById('adminAnnouncementMessage')?.focus?.();
+          return;
+        }
+        if (payload.startAt && payload.endAt && new Date(payload.startAt).getTime() > new Date(payload.endAt).getTime()) {
+          if (statusEl) statusEl.textContent = 'Čas „Od“ musí být před časem „Do“.';
+          return;
+        }
+        if (typeof window.writeRakDashboardAnnouncement === 'function') {
+          if (statusEl) statusEl.textContent = 'Ukládám oznámení online…';
+          const result = await window.writeRakDashboardAnnouncement(payload);
+          if (statusEl) {
+            statusEl.textContent = result && result.ok
+              ? 'Oznámení uložené online ✓ · ostatním se načte přes Supabase/realtime.'
+              : 'Oznámení je uložené lokálně, online zápis se nepovedl: ' + String((result && (result.reason || result.message || (result.status && result.status.lastErrorMessage))) || 'zkontroluj Supabase policy.');
+          }
+          renderAdminMenuBody(body, 'announcement');
+        } else if (statusEl) {
+          statusEl.textContent = 'Oznámení se nepodařilo uložit, chybí dashboard helper.';
+        }
+        return;
+      }
+      if (adminAction === 'clear-announcement') {
+        const statusEl = document.getElementById('adminOnlineSaveStatus');
+        if (typeof window.clearRakDashboardAnnouncement === 'function') {
+          if (statusEl) statusEl.textContent = 'Vypínám oznámení online…';
+          const result = await window.clearRakDashboardAnnouncement();
+          if (statusEl) {
+            statusEl.textContent = result && result.ok
+              ? 'Oznámení vypnuté online ✓'
+              : 'Oznámení je vypnuté lokálně, online vypnutí se nepovedlo: ' + String((result && (result.reason || result.message || (result.status && result.status.lastErrorMessage))) || 'zkontroluj Supabase policy.');
+          }
+          renderAdminMenuBody(body, 'announcement');
+        } else if (statusEl) {
+          statusEl.textContent = 'Oznámení se nepodařilo vypnout, chybí dashboard helper.';
+        }
         return;
       }
       if (adminAction === 'load-month') {
@@ -8606,6 +8727,8 @@ function openAppMenu(view) {
           renderAdminMenuBody(body, 'rotation');
         }
       })();
+    } else if (v === 'admin-announcement') {
+      renderAdminMenuBody(body, 'announcement');
     } else if (v === 'admin-export') {
       renderAdminMenuBody(body, 'export');
     } else if (v === 'admin-reports') {
@@ -12401,7 +12524,7 @@ function applyProfileUiPreferencesForActiveAccount(options = {}) {
   const defaultTheme = normalizeThemePreferenceId('default', 'default');
   const defaultBg = normalizeBackgroundPreferenceId('ios-mesh', 'ios-mesh');
   let changed = false;
-  // v.1.5 (931): vzhled je profilový. Nový/prázdný profil nezačne omylem vzhledem po předchozím přihlášeném profilu.
+  // v.1.5 (935): vzhled je profilový. Nový/prázdný profil nezačne omylem vzhledem po předchozím přihlášeném profilu.
   if (!ui.themeId) { ui.themeId = defaultTheme; changed = true; }
   if (!ui.backgroundId) { ui.backgroundId = defaultBg; changed = true; }
   const rewardMetrics = getThemeUnlockMetrics(profile);
@@ -12800,7 +12923,7 @@ function getRakProfileAppearanceRewardHealth() {
   const themeRewards = themes.filter(item => String(item && item.id || '') !== 'default');
   const backgroundRewards = backgrounds.filter(item => String(item && item.id || '') !== 'ios-mesh');
   return {
-    version: window.APP_VERSION || 'v.1.5 (931)',
+    version: window.APP_VERSION || 'v.1.5 (935)',
     mode: 'profile-appearance-reward-health-v928',
     activeProfile: metrics.hasProfile,
     profileThemeStorage: 'account.uiSettings.themeId',
@@ -12889,11 +13012,15 @@ function getRakDashboardGlassThemeHealth() {
   const lightweight = /(?:^|\s)(?:lightweightMode|lowEndDevice|ladaMode)(?:\s|$)/.test(bodyClass);
   return {
     ok: true,
-    version: window.APP_VERSION || 'v.1.5 (931)',
-    mode: 'dashboard-ios-glass-icons-flat-v930',
+    version: window.APP_VERSION || 'v.1.5 (935)',
+    mode: 'dashboard-ios-glass-transparent-online-announcement-v935',
     theme,
     background,
     themeAware: !!(readVar('--green') && readVar('--green2')),
+    themeIconAware: true,
+    dashboardCards: 'dark-unified-transparent-glass',
+    dashboardIcons: 'theme-color',
+    activeBottomNavIcon: 'theme-color',
     glassVariables: {
       panel: readVar('--panel'),
       panel2: readVar('--panel2'),
@@ -12912,7 +13039,7 @@ function getRakDashboardGlassThemeHealth() {
       'body.ladaMode #home .dashboardCard'
     ],
     lightweightSafe: lightweight ? 'blur-off' : 'full-glass',
-    note: 'Dashboard panely používají průhlednější iOS glass podle theme proměnných; ikonky už nemají vlastní kapsli/pozadí a low-end režim vypíná těžký blur.'
+    note: 'Dashboard panely drží tmavší odstín, ale jsou průhlednější než v934; ikony Dashboardu i aktivní ikony spodního panelu přebírají barvu theme a low-end režim vypíná těžký blur.'
   };
 }
 window.getRakDashboardGlassThemeHealth = getRakDashboardGlassThemeHealth;
@@ -12925,7 +13052,7 @@ try {
 function getRakRotaceNamesDockHealth() {
   const result = {
     ok: true,
-    version: window.APP_VERSION || 'v.1.5 (931)',
+    version: window.APP_VERSION || 'v.1.5 (935)',
     mode: 'rotace-names-dock-stable-css-v930',
     checkedAt: new Date().toISOString(),
     scope: 'Rotace / seznam jmen / stabilní spodní dock',

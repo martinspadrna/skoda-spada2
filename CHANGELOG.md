@@ -1,3 +1,32 @@
+## v.1.5 (935)
+- Dashboard zachovává tmavší odstín, ale panely jsou průhlednější a víc glass bez návratu k flekatým odleskům.
+- Oznámení Dashboardu je online-first přes Supabase tabulku `announcements`; lokální úložiště zůstává jen fallback, když online zápis nepustí policy nebo je zařízení offline.
+- Administrace ukládá/vypíná oznámení přes nové online helpery a zobrazí jasný stav, jestli proběhl online zápis, nebo jen lokální fallback.
+- Přidané dokumenty `dashboard-online-announcement-glass-v935.md` a `about-50-version-summary-v935.md`.
+- Verze sjednocena na v.1.5 (935), cache na `v1.5-935`, realtime kanál na `rak-public-live-v935`, package na `1.5.935`.
+
+## v.1.5 (934)
+- Dashboard je tmavší, jednotnější a průhlednější ve více iOS glass stylu bez flekatých lokálních odlesků.
+- Aktivní ikonky spodního panelu a ikonky na Dashboardu víc přebírají barvu aktivního theme.
+- Announcement editor: nadpis je volitelný, přepínače Aktivní / Text má jezdit jsou vedle sebe a ticker už neopakuje zadaný text dvakrát za sebou.
+- Přidané dokumenty `dashboard-glass-announcement-polish-v934.md` a `about-50-version-summary-v934.md`.
+- Verze sjednocena na v.1.5 (934), cache na `v1.5-934`, realtime kanál na `rak-public-live-v934`, package na `1.5.934`.
+
+## v.1.5 (933)
+- Dashboard glass styl je očištěný: méně flekatých lokálních odlesků, víc jednotné průhledné iOS sklo, theme barva hlavně v obrysu/glow.
+- Ikonky na Dashboardu jsou bez vlastního pozadí/kapsle.
+- Přidaný lokální admin announcement systém: text, platnost od–do, aktivní stav a jezdící ticker nad prvním panelem Dashboardu.
+- Přidaný helper `getRakDashboardAnnouncementHealth()` a release gate `v933-dashboard-announcement-system`.
+- Přidané dokumenty `dashboard-glass-clean-announcement-v933.md` a `about-50-version-summary-v933.md`.
+- Verze sjednocena na v.1.5 (933), cache na `v1.5-933`, realtime kanál na `rak-public-live-v933`, package na `1.5.933`.
+
+## v.1.5 (932)
+- Korekce Frézky: přidané přepínače +/− také k naměřeným hodnotám C1/C2 vlevo/vpravo.
+- Sjednocené vycentrování a výška všech +/− tlačítek ve frézkách, aby seděla stejně vůči inputům.
+- Rozšířený read-only helper `getRakFrezkyCorrectionSignToggleHealth()` a release gate signál `v932-frezky-correction-sign-toggle`.
+- Přidané dokumenty `frezky-measured-sign-toggle-v932.md` a `about-50-version-summary-v932.md`.
+- Verze sjednocena na v.1.5 (932), cache na `v1.5-932`, realtime kanál na `rak-public-live-v932`, package na `1.5.932`.
+
 ## v.1.5 (931)
 
 - Korekce → Frézky: u aktuální korekce `Konicita` a `fhβ` jsou nově přepínací tlačítka `+ / −` stejně jako u korekcí na soustruhách.

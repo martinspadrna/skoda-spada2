@@ -219,7 +219,7 @@
 
 
   const SUPABASE_STRUCTURE_CONTRACTS = [
-    { table: 'announcements', realtime: true, queueType: '', access: 'anon SELECT', note: 'dashboard oznámení / veřejné čtení' },
+    { table: 'announcements', realtime: true, queueType: '', access: 'anon SELECT + optional INSERT/UPDATE for admin announcement', note: 'dashboard oznámení / online-first čtení a pokus o admin zápis bez změny policies' },
     { table: 'machine_settings', realtime: true, queueType: 'machine_settings', access: 'anon SELECT/INSERT/UPDATE', note: 'nastavení strojů a parametrů kalkulaček' },
     { table: 'rotation_state', realtime: true, queueType: 'rotation_state', access: 'anon SELECT/INSERT/UPDATE', note: 'hlavní snapshot rotace' },
     { table: 'rotation_months', realtime: true, queueType: '', access: 'anon SELECT/INSERT/UPDATE', note: 'měsíce rozpisů' },
@@ -234,7 +234,7 @@
     { table: 'gomoku_wins', realtime: true, queueType: 'gomoku_win', access: 'anon SELECT/INSERT/UPDATE', note: 'výhry piškvorek / legacy leaderboard' }
   ];
 
-  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (931)';
+  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (935)';
   const SUPABASE_POLICY_AUDIT_SNAPSHOT_AT = '2026-05-24';
   const SUPABASE_POLICY_HARDENING_PHASE = {
     current: 'V856 – release hygiene po kontrole vlastních buildů: changelog opravený, SQL auditní soubory jsou archivované v assets/docs/sql a DB policies se nemění.',
@@ -294,7 +294,7 @@
   ];
 
   const SUPABASE_RPC_HARDENING_STATUS = {
-    version: 'v.1.5 (931)',
+    version: 'v.1.5 (935)',
     phase: '2E-O online invite/session RPC smoke + accept RPC / no policy tightening',
     rpcPreferred: true,
     migrationApplied: true,
@@ -906,7 +906,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v931');
+      const channel = client.channel('rak-public-live-v935');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -940,9 +940,216 @@
   function getBridgeText() {
     const active = state.announcements.find(item => item && item.is_active !== false) || state.announcements[0] || null;
     return active ? {
+      id: String(active.id || '').trim(),
       title: String(active.title || '').trim(),
-      message: String(active.message || '').trim()
+      message: String(active.message || active.text || active.body || '').trim(),
+      is_active: active.is_active !== false,
+      start_at: String(active.start_at || active.valid_from || active.from || '').trim(),
+      end_at: String(active.end_at || active.valid_to || active.to || '').trim(),
+      marquee: active.marquee === false ? false : true,
+      updated_at: String(active.updated_at || active.created_at || '').trim()
     } : null;
+  }
+
+  const DASHBOARD_ANNOUNCEMENT_ONLINE_STATUS_KEY = 'rak_dashboard_announcement_online_status_v1';
+
+  function normalizeDashboardAnnouncementForOnline(raw) {
+    const base = raw && typeof raw === 'object' ? raw : {};
+    return {
+      title: String(base.title || '').trim().slice(0, 80),
+      message: String(base.message || base.text || base.body || '').trim().slice(0, 500),
+      is_active: base.isActive === false || base.is_active === false ? false : true,
+      start_at: String(base.startAt || base.start_at || base.valid_from || base.from || '').trim() || null,
+      end_at: String(base.endAt || base.end_at || base.valid_to || base.to || '').trim() || null,
+      marquee: base.marquee === false ? false : true
+    };
+  }
+
+  function cleanAnnouncementRow(row) {
+    const out = {};
+    Object.keys(row || {}).forEach((key) => {
+      if (row[key] !== undefined) out[key] = row[key];
+    });
+    return out;
+  }
+
+  function normalizeAnnouncementOnlineStatus(raw) {
+    const base = raw && typeof raw === 'object' ? raw : {};
+    return {
+      mode: 'dashboard-announcement-online-v935',
+      lastAttemptAt: base.lastAttemptAt || null,
+      lastSuccessAt: base.lastSuccessAt || null,
+      lastErrorAt: base.lastErrorAt || null,
+      lastWriteOk: !!base.lastWriteOk,
+      lastClearOk: !!base.lastClearOk,
+      lastOperation: String(base.lastOperation || '').slice(0, 80),
+      lastAttemptShape: String(base.lastAttemptShape || '').slice(0, 80),
+      lastErrorMessage: String(base.lastErrorMessage || '').slice(0, 240),
+      lastErrorCode: String(base.lastErrorCode || '').slice(0, 80),
+      writePolicyRequired: base.writePolicyRequired === false ? false : true,
+      fallback: String(base.fallback || '').slice(0, 120)
+    };
+  }
+
+  function readDashboardAnnouncementOnlineStatus() {
+    return normalizeAnnouncementOnlineStatus(safeReadJson(DASHBOARD_ANNOUNCEMENT_ONLINE_STATUS_KEY, {}));
+  }
+
+  function rememberDashboardAnnouncementOnlineStatus(patch) {
+    const next = normalizeAnnouncementOnlineStatus(Object.assign({}, readDashboardAnnouncementOnlineStatus(), patch || {}));
+    safeWriteJson(DASHBOARD_ANNOUNCEMENT_ONLINE_STATUS_KEY, next);
+    return next;
+  }
+
+  function supabaseErrorText(err) {
+    if (!err) return '';
+    return String(err.message || err.details || err.hint || err.code || err.reason || err).slice(0, 240);
+  }
+
+  function buildAnnouncementInsertAttempts(payload, nowIso) {
+    const rowFull = cleanAnnouncementRow({
+      title: payload.title || null,
+      message: payload.message,
+      text: payload.message,
+      body: payload.message,
+      is_active: payload.is_active,
+      start_at: payload.start_at,
+      end_at: payload.end_at,
+      valid_from: payload.start_at,
+      valid_to: payload.end_at,
+      marquee: payload.marquee,
+      updated_at: nowIso
+    });
+    return [
+      { name: 'title-message-window-marquee', row: rowFull },
+      { name: 'title-message-window', row: cleanAnnouncementRow({ title: payload.title || null, message: payload.message, is_active: payload.is_active, start_at: payload.start_at, end_at: payload.end_at, updated_at: nowIso }) },
+      { name: 'title-text-valid-window', row: cleanAnnouncementRow({ title: payload.title || null, text: payload.message, is_active: payload.is_active, valid_from: payload.start_at, valid_to: payload.end_at, updated_at: nowIso }) },
+      { name: 'message-active-updated', row: cleanAnnouncementRow({ title: payload.title || null, message: payload.message, is_active: payload.is_active, updated_at: nowIso }) },
+      { name: 'message-active', row: cleanAnnouncementRow({ title: payload.title || null, message: payload.message, is_active: payload.is_active }) },
+      { name: 'text-active', row: cleanAnnouncementRow({ title: payload.title || null, text: payload.message, is_active: payload.is_active }) },
+      { name: 'message-active-no-title', row: cleanAnnouncementRow({ message: payload.message, is_active: payload.is_active }) },
+      { name: 'text-active-no-title', row: cleanAnnouncementRow({ text: payload.message, is_active: payload.is_active }) }
+    ];
+  }
+
+  async function softDeactivateDashboardAnnouncements(client) {
+    const attempts = [
+      { name: 'is_active-updated', row: { is_active: false, updated_at: new Date().toISOString() } },
+      { name: 'is_active', row: { is_active: false } }
+    ];
+    let lastErr = null;
+    for (const attempt of attempts) {
+      try {
+        const res = await runSupabaseOperation('announcements.deactivate:' + attempt.name, () => client
+          .from('announcements')
+          .update(attempt.row)
+          .eq('is_active', true), { mode: 'write', timeoutMs: 6500, attempts: 1 });
+        if (!res || !res.error) return { ok: true, shape: attempt.name };
+        lastErr = res.error;
+      } catch (err) {
+        lastErr = err;
+      }
+    }
+    return { ok: false, error: lastErr, message: supabaseErrorText(lastErr) };
+  }
+
+  async function saveDashboardAnnouncementOnline(payload) {
+    const client = getClient();
+    const nowIso = new Date().toISOString();
+    const safe = normalizeDashboardAnnouncementForOnline(payload || {});
+    rememberDashboardAnnouncementOnlineStatus({ lastAttemptAt: nowIso, lastOperation: 'save', lastWriteOk: false, fallback: '' });
+    if (!safe.message) {
+      const status = rememberDashboardAnnouncementOnlineStatus({ lastErrorAt: nowIso, lastErrorMessage: 'missing-message', lastErrorCode: 'RAK_ANNOUNCEMENT_EMPTY' });
+      return { ok: false, reason: 'missing-message', status };
+    }
+    if (!client || !navigator.onLine) {
+      const status = rememberDashboardAnnouncementOnlineStatus({ lastErrorAt: nowIso, lastErrorMessage: 'offline-or-missing-client', lastErrorCode: 'RAK_ANNOUNCEMENT_OFFLINE', fallback: 'local-only' });
+      return { ok: false, reason: 'offline-or-missing-client', status };
+    }
+
+    const deactivate = await softDeactivateDashboardAnnouncements(client);
+    const attempts = buildAnnouncementInsertAttempts(safe, nowIso);
+    let lastErr = deactivate && deactivate.ok ? null : deactivate.error;
+    for (const attempt of attempts) {
+      try {
+        const res = await runSupabaseOperation('announcements.insert:' + attempt.name, () => client
+          .from('announcements')
+          .insert(attempt.row)
+          .select('*')
+          .limit(1)
+          .maybeSingle(), { mode: 'write', timeoutMs: 7000, attempts: 1 });
+        if (!res || !res.error) {
+          const row = res && res.data ? res.data : Object.assign({}, attempt.row, { updated_at: nowIso });
+          state.announcements = [row].concat((state.announcements || []).filter(item => item && item.is_active === false).slice(0, 4));
+          safeWriteJson(LOCAL_ANNOUNCEMENTS_KEY, state.announcements);
+          state.lastError = null;
+          try { requestRealtimeRefresh({ table: 'announcements', eventType: 'client-save' }); } catch (err) {}
+          const status = rememberDashboardAnnouncementOnlineStatus({
+            lastSuccessAt: nowIso,
+            lastWriteOk: true,
+            lastClearOk: false,
+            lastAttemptShape: attempt.name,
+            lastErrorMessage: deactivate && deactivate.ok ? '' : ('starší aktivní oznámení možná nešlo deaktivovat: ' + supabaseErrorText(deactivate && deactivate.error)),
+            lastErrorCode: '',
+            fallback: deactivate && deactivate.ok ? '' : 'inserted-latest-active-but-deactivate-failed'
+          });
+          return { ok: true, row, shape: attempt.name, deactivate, status };
+        }
+        lastErr = res.error;
+      } catch (err) {
+        lastErr = err;
+      }
+    }
+    state.lastError = lastErr;
+    const status = rememberDashboardAnnouncementOnlineStatus({
+      lastErrorAt: nowIso,
+      lastWriteOk: false,
+      lastAttemptShape: attempts[attempts.length - 1].name,
+      lastErrorMessage: supabaseErrorText(lastErr),
+      lastErrorCode: String(lastErr && (lastErr.code || lastErr.status || '') || '').slice(0, 80),
+      fallback: 'local-only'
+    });
+    return { ok: false, reason: 'supabase-write-failed', error: lastErr, status };
+  }
+
+  async function clearDashboardAnnouncementOnline() {
+    const client = getClient();
+    const nowIso = new Date().toISOString();
+    rememberDashboardAnnouncementOnlineStatus({ lastAttemptAt: nowIso, lastOperation: 'clear', lastClearOk: false, fallback: '' });
+    if (!client || !navigator.onLine) {
+      const status = rememberDashboardAnnouncementOnlineStatus({ lastErrorAt: nowIso, lastErrorMessage: 'offline-or-missing-client', lastErrorCode: 'RAK_ANNOUNCEMENT_OFFLINE', fallback: 'local-only' });
+      return { ok: false, reason: 'offline-or-missing-client', status };
+    }
+    const result = await softDeactivateDashboardAnnouncements(client);
+    if (result.ok) {
+      state.announcements = [];
+      safeWriteJson(LOCAL_ANNOUNCEMENTS_KEY, state.announcements);
+      try { requestRealtimeRefresh({ table: 'announcements', eventType: 'client-clear' }); } catch (err) {}
+      const status = rememberDashboardAnnouncementOnlineStatus({ lastSuccessAt: nowIso, lastClearOk: true, lastWriteOk: false, lastErrorMessage: '', lastErrorCode: '', lastAttemptShape: result.shape || '' });
+      return { ok: true, cleared: true, status };
+    }
+    state.lastError = result.error || state.lastError;
+    const status = rememberDashboardAnnouncementOnlineStatus({
+      lastErrorAt: nowIso,
+      lastErrorMessage: result.message || supabaseErrorText(result.error),
+      lastErrorCode: String(result.error && (result.error.code || result.error.status || '') || '').slice(0, 80),
+      fallback: 'local-clear-only'
+    });
+    return { ok: false, reason: 'supabase-clear-failed', error: result.error, status };
+  }
+
+  function getDashboardAnnouncementOnlineStatus() {
+    const status = readDashboardAnnouncementOnlineStatus();
+    return Object.assign({}, status, {
+      ok: true,
+      hasClient: !!getClient(),
+      online: typeof navigator === 'undefined' ? false : !!navigator.onLine,
+      cachedAnnouncementCount: Array.isArray(state.announcements) ? state.announcements.length : 0,
+      table: 'announcements',
+      realtimeChannel: 'rak-public-live-v935',
+      readMode: 'existing public SELECT + realtime refresh',
+      writeMode: 'client INSERT/deactivate when policy allows; local fallback otherwise'
+    });
   }
 
   function getCanteenStatus() {
@@ -3807,7 +4014,7 @@
     return {
       ok: blockers.length === 0,
       mode: 'supabase-hardening-readiness-audit-only',
-      version: 'v.1.5 (931)',
+      version: 'v.1.5 (935)',
       checkedAt: new Date().toISOString(),
       confirmed,
       readinessPercent,
@@ -4280,6 +4487,9 @@
         return { ok: false, error: err };
       }
     },
+    saveDashboardAnnouncementOnline,
+    clearDashboardAnnouncementOnline,
+    getDashboardAnnouncementOnlineStatus,
     runSupabaseKeepalive,
     runKeepaliveNow: (reason) => runSupabaseKeepalive(reason || 'manual', { force: true }),
     getSupabaseKeepaliveStatus,
@@ -4404,6 +4614,9 @@
   window.seedSupabaseFromLocalSnapshot = seedFromLocalSnapshot;
 
   window.getSupabaseAnnouncement = getBridgeText;
+  window.saveRakDashboardAnnouncementOnline = (payload) => window.RotationSupabaseBridge.saveDashboardAnnouncementOnline(payload);
+  window.clearRakDashboardAnnouncementOnline = () => window.RotationSupabaseBridge.clearDashboardAnnouncementOnline();
+  window.getRakDashboardAnnouncementOnlineStatus = () => window.RotationSupabaseBridge.getDashboardAnnouncementOnlineStatus();
   window.getSupabaseCanteenStatus = getCanteenStatus;
   window.getSupabaseSyncStatus = getSyncUiStatus;
   window.getGameStatsRpcSmokeStatus = getGameStatsRpcSmokeStatus;

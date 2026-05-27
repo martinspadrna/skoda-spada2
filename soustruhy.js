@@ -31,7 +31,10 @@ function resetFields(ids, resultIds) {
   if (safeIds.some(id => String(id || '').indexOf('lathe_axis_drill') === 0)) {
     resetLatheAxisSignButtons();
   }
-  if (safeIds.some(id => String(id || '').indexOf('fhb_current_') === 0)) {
+  if (safeIds.some(id => {
+    const el = document.getElementById(String(id || ''));
+    return String(id || '').indexOf('fhb_current_') === 0 || String(id || '').indexOf('fhb_c') === 0 || !!(el && el.matches && el.matches('input[data-frezky-correction-signed="1"]'));
+  })) {
     resetFrezkyCorrectionSignButtons();
   }
   (Array.isArray(resultIds) ? resultIds : []).forEach(id => {
@@ -1057,8 +1060,12 @@ function updateFrezkyCorrectionSignToggleForInput(inputOrId) {
   btn.setAttribute('aria-pressed', isNegative ? 'true' : 'false');
 }
 
+function getFrezkyCorrectionSignedInputIds() {
+  return ['fhb_c1_left', 'fhb_c1_right', 'fhb_c2_left', 'fhb_c2_right', 'fhb_current_taper_corr', 'fhb_current_shift_corr'];
+}
+
 function resetFrezkyCorrectionSignButtons() {
-  ['fhb_current_taper_corr', 'fhb_current_shift_corr'].forEach(updateFrezkyCorrectionSignToggleForInput);
+  getFrezkyCorrectionSignedInputIds().forEach(updateFrezkyCorrectionSignToggleForInput);
 }
 
 function toggleFrezkyCorrectionInputSign(button) {
@@ -1716,22 +1723,38 @@ function formatSignedFhbCorrection(value) {
 
 
 function getRakFrezkyCorrectionSignToggleHealth() {
-  const taperButton = document.querySelector('[data-action="toggle-frezky-correction-sign"][data-target-input="fhb_current_taper_corr"]');
-  const shiftButton = document.querySelector('[data-action="toggle-frezky-correction-sign"][data-target-input="fhb_current_shift_corr"]');
-  const taperInput = document.getElementById('fhb_current_taper_corr');
-  const shiftInput = document.getElementById('fhb_current_shift_corr');
+  const ids = getFrezkyCorrectionSignedInputIds();
+  const status = ids.reduce((acc, id) => {
+    const button = document.querySelector('[data-action="toggle-frezky-correction-sign"][data-target-input="' + id + '"]');
+    const input = document.getElementById(id);
+    acc.buttons[id] = !!button;
+    acc.inputs[id] = !!input && String(input.getAttribute('data-frezky-correction-signed') || '') === '1';
+    return acc;
+  }, { buttons: {}, inputs: {} });
+  const allButtons = ids.every(id => status.buttons[id]);
+  const allInputs = ids.every(id => status.inputs[id]);
   return {
-    ok: !!(taperButton && shiftButton && taperInput && shiftInput),
-    version: window.APP_VERSION || 'v.1.5 (931)',
-    mode: 'frezky-correction-sign-toggle-v931',
-    scope: 'Korekce Frézky / aktuální korekce ve stroji',
-    buttons: {
-      taper: !!taperButton,
-      shift: !!shiftButton
-    },
-    inputs: {
-      taper: !!taperInput && String(taperInput.getAttribute('data-frezky-correction-signed') || '') === '1',
-      shift: !!shiftInput && String(shiftInput.getAttribute('data-frezky-correction-signed') || '') === '1'
+    ok: !!(allButtons && allInputs),
+    version: window.APP_VERSION || 'v.1.5 (935)',
+    mode: 'frezky-correction-sign-toggle-v932',
+    scope: 'Korekce Frézky / naměřeno i aktuální korekce ve stroji',
+    buttons: Object.assign({
+      measured: !!(status.buttons.fhb_c1_left && status.buttons.fhb_c1_right && status.buttons.fhb_c2_left && status.buttons.fhb_c2_right),
+      taper: !!status.buttons.fhb_current_taper_corr,
+      shift: !!status.buttons.fhb_current_shift_corr
+    }, status.buttons),
+    inputs: Object.assign({
+      measured: !!(status.inputs.fhb_c1_left && status.inputs.fhb_c1_right && status.inputs.fhb_c2_left && status.inputs.fhb_c2_right),
+      taper: !!status.inputs.fhb_current_taper_corr,
+      shift: !!status.inputs.fhb_current_shift_corr
+    }, status.inputs),
+    buttonCount: ids.length,
+    expectedButtonCount: 6,
+    alignment: {
+      sharedClass: 'calcFrezkySignedInput',
+      targetHeightPx: 46,
+      mobileTargetHeightPx: 44,
+      centered: true
     },
     note: 'Přepínače +/− jsou jen UI pomůcka pro zadání znaménka; výpočet dál používá hodnotu z inputu.'
   };

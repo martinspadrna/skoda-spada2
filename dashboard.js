@@ -250,6 +250,234 @@ function formatDashboardNextShiftMeta(shift) {
   }
 }
 
+
+
+// v.1.5 (935) – announcement online-first: Supabase zápis/čtení + lokální fallback.
+const RAK_DASHBOARD_ANNOUNCEMENT_KEY = (typeof APP_KEY !== 'undefined' ? APP_KEY : 'rak') + ':dashboardAnnouncementV1';
+
+function parseRakAnnouncementDate(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return null;
+  const parsed = new Date(raw);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function normalizeRakDashboardAnnouncement(raw) {
+  const base = raw && typeof raw === 'object' ? raw : {};
+  const message = String(base.message || base.text || base.body || '').trim().slice(0, 500);
+  const title = String(base.title || '').trim().slice(0, 80);
+  const startAt = String(base.startAt || base.start_at || base.valid_from || base.from || '').trim();
+  const endAt = String(base.endAt || base.end_at || base.valid_to || base.to || '').trim();
+  return {
+    id: String(base.id || 'local-dashboard-announcement').trim().slice(0, 80) || 'local-dashboard-announcement',
+    title,
+    message,
+    startAt,
+    endAt,
+    isActive: base.isActive === false || base.is_active === false ? false : true,
+    marquee: base.marquee === false ? false : true,
+    source: String(base.source || 'local-admin').trim().slice(0, 40) || 'local-admin',
+    updatedAt: String(base.updatedAt || base.updated_at || base.created_at || new Date().toISOString())
+  };
+}
+
+function readRakLocalDashboardAnnouncement() {
+  try {
+    const stored = typeof parseLocalStorageJsonCached === 'function'
+      ? parseLocalStorageJsonCached(RAK_DASHBOARD_ANNOUNCEMENT_KEY, null)
+      : JSON.parse(localStorage.getItem(RAK_DASHBOARD_ANNOUNCEMENT_KEY) || 'null');
+    return stored ? normalizeRakDashboardAnnouncement(stored) : null;
+  } catch (err) {
+    return null;
+  }
+}
+
+function writeRakLocalDashboardAnnouncement(payload) {
+  const normalized = normalizeRakDashboardAnnouncement(Object.assign({}, payload || {}, {
+    id: (payload && payload.id) || 'local-dashboard-announcement',
+    source: (payload && payload.source) || 'local-admin',
+    updatedAt: new Date().toISOString()
+  }));
+  try {
+    const encoded = JSON.stringify(normalized);
+    if (typeof setLocalStorageIfChanged === 'function') setLocalStorageIfChanged(RAK_DASHBOARD_ANNOUNCEMENT_KEY, encoded);
+    else localStorage.setItem(RAK_DASHBOARD_ANNOUNCEMENT_KEY, encoded);
+  } catch (err) {
+    try { localStorage.setItem(RAK_DASHBOARD_ANNOUNCEMENT_KEY, JSON.stringify(normalized)); } catch (err2) {}
+  }
+  try { renderRakDashboardAnnouncement(); } catch (err) {}
+  try { if (typeof updateDashboard === 'function') updateDashboard(); } catch (err) {}
+  return normalized;
+}
+
+function clearRakLocalDashboardAnnouncement() {
+  try { localStorage.removeItem(RAK_DASHBOARD_ANNOUNCEMENT_KEY); } catch (err) {}
+  try { renderRakDashboardAnnouncement(); } catch (err) {}
+  try { if (typeof updateDashboard === 'function') updateDashboard(); } catch (err) {}
+  return { ok: true, cleared: true, key: RAK_DASHBOARD_ANNOUNCEMENT_KEY };
+}
+
+function isRakDashboardAnnouncementActive(item, now) {
+  const a = normalizeRakDashboardAnnouncement(item);
+  if (!a.isActive || !a.message) return false;
+  const current = now instanceof Date ? now : new Date();
+  const start = parseRakAnnouncementDate(a.startAt);
+  const end = parseRakAnnouncementDate(a.endAt);
+  if (start && current < start) return false;
+  if (end && current > end) return false;
+  return true;
+}
+
+function getRakSupabaseDashboardAnnouncement() {
+  try {
+    const bridge = typeof getSupabaseAnnouncement === 'function' ? getSupabaseAnnouncement() : null;
+    if (bridge && (bridge.message || bridge.title)) {
+      return normalizeRakDashboardAnnouncement(Object.assign({}, bridge, { source: 'supabase-online' }));
+    }
+  } catch (err) {}
+  return null;
+}
+
+function getRakDashboardAnnouncementCandidates() {
+  const items = [];
+  const online = getRakSupabaseDashboardAnnouncement();
+  if (online) items.push(online);
+  const local = readRakLocalDashboardAnnouncement();
+  if (local) items.push(local);
+  return items;
+}
+
+function getRakActiveDashboardAnnouncement(now) {
+  const current = now instanceof Date ? now : new Date();
+  return getRakDashboardAnnouncementCandidates()
+    .map(normalizeRakDashboardAnnouncement)
+    .filter(item => isRakDashboardAnnouncementActive(item, current))[0] || null;
+}
+
+function readRakDashboardAdminAnnouncement() {
+  return getRakSupabaseDashboardAnnouncement() || readRakLocalDashboardAnnouncement();
+}
+
+function formatRakAnnouncementWindow(item) {
+  const start = parseRakAnnouncementDate(item && item.startAt);
+  const end = parseRakAnnouncementDate(item && item.endAt);
+  const fmt = (d) => {
+    try {
+      return new Intl.DateTimeFormat('cs-CZ', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).format(d).replace(/\s+/g, ' ');
+    } catch (err) { return ''; }
+  };
+  if (start && end) return fmt(start) + ' – ' + fmt(end);
+  if (start) return 'od ' + fmt(start);
+  if (end) return 'do ' + fmt(end);
+  return '';
+}
+
+function renderRakDashboardAnnouncement(now) {
+  const box = document.getElementById('dashboardAnnouncementBar');
+  if (!box) return null;
+  const active = getRakActiveDashboardAnnouncement(now || new Date());
+  const esc = typeof escapeHtml === 'function'
+    ? escapeHtml
+    : (value) => String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+  if (!active) {
+    box.hidden = true;
+    box.classList.remove('isVisible');
+    box.innerHTML = '';
+    return null;
+  }
+  const windowText = formatRakAnnouncementWindow(active);
+  const tickerText = active.message;
+  box.hidden = false;
+  box.classList.add('isVisible');
+  box.dataset.source = active.source || '';
+  box.setAttribute('role', 'status');
+  box.setAttribute('aria-live', 'polite');
+  setDashboardHtmlIfChanged(box, [
+    active.title ? '<div class="dashboardAnnouncementLabel">' + esc(active.title) + '</div>' : '',
+    '<div class="dashboardAnnouncementTrack' + (active.marquee ? ' isMarquee' : '') + '"><span>' + esc(tickerText) + '</span></div>',
+    windowText ? '<div class="dashboardAnnouncementWindow">' + esc(windowText) + '</div>' : ''
+  ].join(''), 'dashboardAnnouncementBar');
+  return active;
+}
+
+async function writeRakDashboardAnnouncement(payload) {
+  const normalized = normalizeRakDashboardAnnouncement(Object.assign({}, payload || {}, {
+    source: 'local-fallback-before-online'
+  }));
+  writeRakLocalDashboardAnnouncement(normalized);
+  let online = null;
+  if (typeof window.saveRakDashboardAnnouncementOnline === 'function') {
+    try { online = await window.saveRakDashboardAnnouncementOnline(normalized); }
+    catch (err) { online = { ok: false, error: err, reason: 'online-exception' }; }
+  } else {
+    online = { ok: false, reason: 'missing-online-bridge' };
+  }
+  if (online && online.ok && online.row) {
+    writeRakLocalDashboardAnnouncement(Object.assign({}, normalized, online.row, { source: 'supabase-online-cache' }));
+  }
+  try { renderRakDashboardAnnouncement(); } catch (err) {}
+  try { if (typeof updateDashboard === 'function') updateDashboard(); } catch (err) {}
+  return Object.assign({ local: true, payload: normalized }, online || {});
+}
+
+async function clearRakDashboardAnnouncement() {
+  const local = clearRakLocalDashboardAnnouncement();
+  let online = null;
+  if (typeof window.clearRakDashboardAnnouncementOnline === 'function') {
+    try { online = await window.clearRakDashboardAnnouncementOnline(); }
+    catch (err) { online = { ok: false, error: err, reason: 'online-exception' }; }
+  } else {
+    online = { ok: false, reason: 'missing-online-bridge' };
+  }
+  try { renderRakDashboardAnnouncement(); } catch (err) {}
+  try { if (typeof updateDashboard === 'function') updateDashboard(); } catch (err) {}
+  return Object.assign({ local }, online || {});
+}
+
+function getRakDashboardAnnouncementHealth() {
+  const now = new Date();
+  const local = readRakLocalDashboardAnnouncement();
+  const online = getRakSupabaseDashboardAnnouncement();
+  const active = getRakActiveDashboardAnnouncement(now);
+  const box = typeof document !== 'undefined' ? document.getElementById('dashboardAnnouncementBar') : null;
+  let onlineStatus = null;
+  try { onlineStatus = typeof window.getRakDashboardAnnouncementOnlineStatus === 'function' ? window.getRakDashboardAnnouncementOnlineStatus() : null; } catch (err) {}
+  return {
+    ok: true,
+    version: String(window.APP_VERSION || 'unknown'),
+    mode: 'dashboard-announcement-online-first-v935',
+    key: RAK_DASHBOARD_ANNOUNCEMENT_KEY,
+    hasLocalAnnouncement: !!(local && local.message),
+    hasOnlineAnnouncement: !!(online && online.message),
+    localIsActiveNow: !!(local && isRakDashboardAnnouncementActive(local, now)),
+    onlineIsActiveNow: !!(online && isRakDashboardAnnouncementActive(online, now)),
+    activeSource: active ? active.source : '',
+    titleOptional: true,
+    tickerDuplicatesMessage: false,
+    activeTitle: active ? active.title : '',
+    activeHasMessage: !!(active && active.message),
+    marquee: !!(active && active.marquee),
+    domPresent: !!box,
+    domVisible: !!(box && !box.hidden && box.classList.contains('isVisible')),
+    storageMode: 'supabase-online-first-local-fallback',
+    supabaseWrite: onlineStatus && onlineStatus.lastWriteOk ? 'ok-last-write' : 'attempt-on-admin-save',
+    onlineStatus,
+    manualValidation: 'mobile/browser/real-supabase-policy'
+  };
+}
+
+try {
+  window.readRakLocalDashboardAnnouncement = readRakLocalDashboardAnnouncement;
+  window.writeRakLocalDashboardAnnouncement = writeRakLocalDashboardAnnouncement;
+  window.clearRakLocalDashboardAnnouncement = clearRakLocalDashboardAnnouncement;
+  window.readRakDashboardAdminAnnouncement = readRakDashboardAdminAnnouncement;
+  window.writeRakDashboardAnnouncement = writeRakDashboardAnnouncement;
+  window.clearRakDashboardAnnouncement = clearRakDashboardAnnouncement;
+  window.getRakActiveDashboardAnnouncement = getRakActiveDashboardAnnouncement;
+  window.renderRakDashboardAnnouncement = renderRakDashboardAnnouncement;
+  window.getRakDashboardAnnouncementHealth = getRakDashboardAnnouncementHealth;
+} catch (err) {}
+
 function updateDashboard() {
   const now = typeof getPragueNow === 'function' ? getPragueNow(new Date()) : new Date();
   const active = typeof getDashboardActiveWorkShift === 'function' ? getDashboardActiveWorkShift(now) : null;

@@ -69,6 +69,8 @@ window.rakNoteExternalDependency = function(name, status, src) {
       <div class="dashboardSyncBadge dashboardSyncBadge--offline" id="dashboardSyncBadge">🟡 Offline cache</div>
     </div>
 
+    <div class="dashboardAnnouncementBar" id="dashboardAnnouncementBar" hidden aria-live="polite"></div>
+
     <div class="dashboardHeroCard" id="dashHero">
       <div class="dashboardHeroLine1"><span class="dashboardHeroLine1Text">Načítám směnu…</span></div>
       <div class="dashboardHeroLine2">Směna D začne za: --</div>
@@ -762,19 +764,31 @@ window.rakNoteExternalDependency = function(name, status, src) {
       <div class="calcCorrectionTwoCols">
         <label class="calcCorrectionField">
           <span>C1 · levá</span>
-          <input id="fhb_c1_left" type="text" inputmode="decimal">
+          <div class="calcSignedInput calcFrezkySignedInput calcFrezkySignedInput--measured">
+            <button type="button" class="calcSignToggle calcFrezkySignToggle" data-action="toggle-frezky-correction-sign" data-target-input="fhb_c1_left" aria-label="Přepnout znaménko u naměřené hodnoty C1 levá">+</button>
+            <input id="fhb_c1_left" type="text" inputmode="decimal" autocomplete="off" data-frezky-correction-signed="1">
+          </div>
         </label>
         <label class="calcCorrectionField">
           <span>C1 · pravá</span>
-          <input id="fhb_c1_right" type="text" inputmode="decimal">
+          <div class="calcSignedInput calcFrezkySignedInput calcFrezkySignedInput--measured">
+            <button type="button" class="calcSignToggle calcFrezkySignToggle" data-action="toggle-frezky-correction-sign" data-target-input="fhb_c1_right" aria-label="Přepnout znaménko u naměřené hodnoty C1 pravá">+</button>
+            <input id="fhb_c1_right" type="text" inputmode="decimal" autocomplete="off" data-frezky-correction-signed="1">
+          </div>
         </label>
         <label class="calcCorrectionField">
           <span>C2 · levá</span>
-          <input id="fhb_c2_left" type="text" inputmode="decimal">
+          <div class="calcSignedInput calcFrezkySignedInput calcFrezkySignedInput--measured">
+            <button type="button" class="calcSignToggle calcFrezkySignToggle" data-action="toggle-frezky-correction-sign" data-target-input="fhb_c2_left" aria-label="Přepnout znaménko u naměřené hodnoty C2 levá">+</button>
+            <input id="fhb_c2_left" type="text" inputmode="decimal" autocomplete="off" data-frezky-correction-signed="1">
+          </div>
         </label>
         <label class="calcCorrectionField">
           <span>C2 · pravá</span>
-          <input id="fhb_c2_right" type="text" inputmode="decimal">
+          <div class="calcSignedInput calcFrezkySignedInput calcFrezkySignedInput--measured">
+            <button type="button" class="calcSignToggle calcFrezkySignToggle" data-action="toggle-frezky-correction-sign" data-target-input="fhb_c2_right" aria-label="Přepnout znaménko u naměřené hodnoty C2 pravá">+</button>
+            <input id="fhb_c2_right" type="text" inputmode="decimal" autocomplete="off" data-frezky-correction-signed="1">
+          </div>
         </label>
       </div>
     </div>

@@ -16011,3 +16011,448 @@ body.ladaMode #home .dashboardCard{
   #korekce-frezky .calcFrezkySignToggle{min-width:38px !important;height:44px !important;min-height:44px !important;font-size:20px !important;border-radius:14px !important;}
   #korekce-frezky .calcFrezkySignedInput input{height:44px !important;min-height:44px !important;}
 }
+
+
+/* v.1.5 (935) – Korekce Frézky: +/− i pro Naměřeno a pevné vycentrování tlačítek. */
+#korekce-frezky{
+  --rakFrezkySignButtonW:42px;
+  --rakFrezkySignedInputH:46px;
+}
+#korekce-frezky .calcFrezkySignedInput{
+  display:grid !important;
+  grid-template-columns:var(--rakFrezkySignButtonW) minmax(0,1fr) !important;
+  align-items:center !important;
+  gap:7px !important;
+  width:100% !important;
+}
+#korekce-frezky .calcFrezkySignedInput > .calcFrezkySignToggle,
+#korekce-frezky .calcFrezkySignedInput > input{
+  height:var(--rakFrezkySignedInputH) !important;
+  min-height:var(--rakFrezkySignedInputH) !important;
+  max-height:var(--rakFrezkySignedInputH) !important;
+  align-self:center !important;
+  box-sizing:border-box !important;
+}
+#korekce-frezky .calcFrezkySignedInput > .calcFrezkySignToggle{
+  width:var(--rakFrezkySignButtonW) !important;
+  min-width:var(--rakFrezkySignButtonW) !important;
+  max-width:var(--rakFrezkySignButtonW) !important;
+  padding:0 !important;
+  margin:0 !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  line-height:1 !important;
+  transform:none !important;
+  position:relative !important;
+  top:auto !important;
+}
+#korekce-frezky .calcFrezkySignedInput > input{
+  width:100% !important;
+  min-width:0 !important;
+  margin:0 !important;
+  line-height:1.2 !important;
+}
+#korekce-frezky .calcFrezkySignedInput--measured{
+  margin-top:0 !important;
+}
+@media (max-width:360px){
+  #korekce-frezky{
+    --rakFrezkySignButtonW:38px;
+    --rakFrezkySignedInputH:44px;
+  }
+  #korekce-frezky .calcFrezkySignedInput{gap:6px !important;}
+  #korekce-frezky .calcFrezkySignToggle{font-size:20px !important;border-radius:14px !important;}
+}
+
+/* v.1.5 (935) – Dashboard: čistší iOS glass bez flekatých lokálních odlesků + announcement ticker. */
+#home.page.active .dashboardShell{
+  --rak-dash-glass-bg: color-mix(in srgb, var(--theme-surface, rgba(255,255,255,.12)) 34%, transparent);
+  --rak-dash-glass-bg-strong: color-mix(in srgb, var(--theme-surface, rgba(255,255,255,.16)) 42%, transparent);
+  --rak-dash-glass-border: color-mix(in srgb, var(--theme-accent, #7cff7c) 34%, rgba(255,255,255,.38));
+  --rak-dash-glass-glow: color-mix(in srgb, var(--theme-accent, #7cff7c) 24%, transparent);
+}
+body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) #home .dashboardHeroCard,
+body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) #home .dashboardCard,
+body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) #home .tile.dashboardCard{
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.18), rgba(255,255,255,.075)) !important;
+  background-color: var(--rak-dash-glass-bg) !important;
+  border: 1px solid var(--rak-dash-glass-border) !important;
+  box-shadow:
+    0 18px 38px rgba(0,0,0,.18),
+    inset 0 1px 0 rgba(255,255,255,.36),
+    inset 0 -1px 0 rgba(255,255,255,.06),
+    0 0 0 1px rgba(255,255,255,.055) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(1.55) !important;
+  backdrop-filter: blur(22px) saturate(1.55) !important;
+}
+body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) #home .dashboardHeroCard::before,
+body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) #home .dashboardHeroCard::after,
+body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) #home .dashboardCard::before,
+body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) #home .dashboardCard::after,
+body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) #home .tile.dashboardCard::before,
+body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) #home .tile.dashboardCard::after{
+  content: none !important;
+  display: none !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) #home .dashboardGrid{
+  position: relative;
+}
+body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) #home .dashboardGrid::before{
+  content:"";
+  position:absolute;
+  inset:-8px -6px;
+  border-radius:30px;
+  pointer-events:none;
+  background: radial-gradient(circle at 50% -12%, var(--rak-dash-glass-glow), transparent 58%);
+  opacity:.42;
+  z-index:0;
+}
+body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) #home .dashboardGrid > .dashboardCard,
+body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) #home .dashboardGrid > .tile.dashboardCard{
+  position:relative;
+  z-index:1;
+}
+#home .dashboardIcon,
+#home .dashboardIcon.dashboardIconInline,
+#home .dashboardCardIcon{
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+#home .dashboardIcon::before,
+#home .dashboardIcon::after,
+#home .dashboardCardIcon::before,
+#home .dashboardCardIcon::after{
+  content:none !important;
+  display:none !important;
+}
+#home .dashboardIconImg,
+#home .dashboardIconSvg{
+  filter: drop-shadow(0 3px 10px rgba(0,0,0,.20)) saturate(1.06) !important;
+}
+.dashboardAnnouncementBar{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-height:42px;
+  margin: 10px 0 12px;
+  padding: 8px 11px;
+  border-radius: 18px;
+  overflow:hidden;
+  color: var(--text, #fff);
+  background: linear-gradient(135deg, rgba(255,255,255,.20), rgba(255,255,255,.075)) !important;
+  border: 1px solid color-mix(in srgb, var(--theme-accent, #7cff7c) 34%, rgba(255,255,255,.42));
+  box-shadow: 0 12px 28px rgba(0,0,0,.16), inset 0 1px 0 rgba(255,255,255,.32);
+  -webkit-backdrop-filter: blur(24px) saturate(1.55);
+  backdrop-filter: blur(24px) saturate(1.55);
+}
+.dashboardAnnouncementBar[hidden]{
+  display:none !important;
+}
+.dashboardAnnouncementLabel{
+  flex:0 0 auto;
+  max-width: 96px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .02em;
+  white-space:nowrap;
+  color: color-mix(in srgb, var(--theme-accent, #7cff7c) 72%, #fff);
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.14);
+}
+.dashboardAnnouncementTrack{
+  flex: 1 1 auto;
+  min-width:0;
+  overflow:hidden;
+  white-space:nowrap;
+  font-weight:800;
+  font-size:13px;
+  line-height:1.2;
+}
+.dashboardAnnouncementTrack span{
+  display:inline-block;
+  padding-left:0;
+}
+.dashboardAnnouncementTrack.isMarquee span{
+  min-width:max-content;
+  padding-left:100%;
+  animation: rakAnnouncementMarquee 16s linear infinite;
+}
+.dashboardAnnouncementWindow{
+  flex:0 0 auto;
+  max-width: 116px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:10px;
+  opacity:.72;
+}
+@keyframes rakAnnouncementMarquee{
+  from{ transform: translateX(0); }
+  to{ transform: translateX(-100%); }
+}
+.adminAnnouncementTwoCols{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:10px;
+  margin-top:8px;
+}
+.adminAnnouncementCheck{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  margin-top:10px;
+  font-weight:800;
+  font-size:13px;
+}
+.adminAnnouncementPreview{
+  margin-top:12px !important;
+  margin-bottom:4px !important;
+}
+.adminAnnouncementTextarea{
+  min-height:92px;
+}
+body.lightweightMode #home .dashboardHeroCard,
+body.lightweightMode #home .dashboardCard,
+body.lightweightMode #home .tile.dashboardCard,
+body.lowEndDevice #home .dashboardHeroCard,
+body.lowEndDevice #home .dashboardCard,
+body.lowEndDevice #home .tile.dashboardCard,
+body.ladaMode #home .dashboardHeroCard,
+body.ladaMode #home .dashboardCard,
+body.ladaMode #home .tile.dashboardCard{
+  background: rgba(255,255,255,.10) !important;
+  border-color: rgba(255,255,255,.16) !important;
+  box-shadow: 0 8px 20px rgba(0,0,0,.14) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+body.lightweightMode .dashboardAnnouncementBar,
+body.lowEndDevice .dashboardAnnouncementBar,
+body.ladaMode .dashboardAnnouncementBar{
+  background: rgba(255,255,255,.10) !important;
+  box-shadow: 0 8px 18px rgba(0,0,0,.14) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+body.lightweightMode .dashboardAnnouncementTrack.isMarquee span,
+body.lowEndDevice .dashboardAnnouncementTrack.isMarquee span,
+body.ladaMode .dashboardAnnouncementTrack.isMarquee span{
+  animation-duration: 22s;
+}
+@media (max-width: 430px){
+  .dashboardAnnouncementBar{ gap:8px; padding:7px 9px; border-radius:16px; }
+  .dashboardAnnouncementLabel{ max-width:82px; font-size:10px; padding:4px 7px; }
+  .dashboardAnnouncementWindow{ display:none; }
+  .adminAnnouncementTwoCols{ grid-template-columns:1fr; }
+}
+@media (prefers-reduced-motion: reduce){
+  .dashboardAnnouncementTrack.isMarquee span{ animation:none !important; padding-left:0 !important; }
+}
+
+/* v.1.5 (935) – Dashboard: tmavší, jednotnější a průhlednější glass + theme barvy ikon; announcement bez zdvojení textu. */
+#home.page.active .dashboardShell{
+  --rak-dash-glass-bg: color-mix(in srgb, rgba(4,8,16,.58) 72%, var(--theme-surface, rgba(255,255,255,.10)) 28%);
+  --rak-dash-glass-bg-strong: color-mix(in srgb, rgba(5,10,20,.62) 76%, var(--theme-surface, rgba(255,255,255,.12)) 24%);
+  --rak-dash-glass-border: color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, var(--green2))) 28%, rgba(255,255,255,.24));
+  --rak-dash-glass-glow: color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, var(--green2))) 16%, transparent);
+  --rak-dash-icon-theme: var(--rakThemeAccent, var(--theme-accent, var(--green2)));
+}
+body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) #home .dashboardHeroCard,
+body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) #home .dashboardCard,
+body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) #home .tile.dashboardCard{
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.072), rgba(255,255,255,.024)) !important;
+  background-color: var(--rak-dash-glass-bg) !important;
+  border: 1px solid var(--rak-dash-glass-border) !important;
+  box-shadow:
+    0 20px 46px rgba(0,0,0,.24),
+    inset 0 1px 0 rgba(255,255,255,.18),
+    inset 0 -1px 0 rgba(255,255,255,.035),
+    0 0 0 1px rgba(255,255,255,.035) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(1.82) contrast(1.03) !important;
+  backdrop-filter: blur(28px) saturate(1.82) contrast(1.03) !important;
+}
+body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) #home .dashboardGrid::before{
+  inset:-10px -8px;
+  border-radius:32px;
+  background: linear-gradient(180deg, var(--rak-dash-glass-glow), transparent 62%);
+  opacity:.26;
+  filter: blur(8px);
+}
+#home .dashboardIcon,
+#home .dashboardIcon.dashboardIconInline,
+#home .dashboardCardIcon{
+  color: var(--rak-dash-icon-theme) !important;
+  text-shadow:0 0 14px color-mix(in srgb, var(--rak-dash-icon-theme) 34%, transparent) !important;
+}
+#home .dashboardIcon svg,
+#home .dashboardIcon.dashboardIconInline svg,
+#home .dashboardCardIcon svg,
+#home .dashboardIconSvg{
+  color: var(--rak-dash-icon-theme) !important;
+  stroke: currentColor !important;
+  fill: none;
+  filter: drop-shadow(0 0 11px color-mix(in srgb, var(--rak-dash-icon-theme) 34%, transparent)) drop-shadow(0 3px 8px rgba(0,0,0,.22)) !important;
+}
+#home .dashboardIcon img,
+#home .dashboardIconImg{
+  filter: drop-shadow(0 0 10px rgba(var(--theme-rgb, 124,255,124),.30)) drop-shadow(0 3px 8px rgba(0,0,0,.22)) saturate(1.14) !important;
+}
+.bottomNavBtn.active,
+.bottomNavBtn.active .bottomNavLabel{
+  color: color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, var(--green2))) 70%, #ffffff) !important;
+}
+.bottomNavBtn.active::before{
+  background: radial-gradient(circle at 34% 24%, rgba(255,255,255,.22), rgba(var(--theme-rgb, 124,255,124),.22) 52%, rgba(7,14,25,.18) 100%) !important;
+  border-color: color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, var(--green2))) 44%, rgba(255,255,255,.22)) !important;
+  outline-color: color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, var(--green2))) 24%, transparent) !important;
+  box-shadow:0 0 22px rgba(var(--theme-rgb, 124,255,124),.34), 0 8px 20px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.20) !important;
+}
+.bottomNavBtn.active .bottomNavIcon{
+  color: var(--rakThemeAccent, var(--theme-accent, var(--green2))) !important;
+}
+.bottomNavBtn.active .bottomNavIcon svg,
+.bottomNavBtn.active .bottomNavIcon path,
+.bottomNavBtn.active .bottomNavIcon circle,
+.bottomNavBtn.active .bottomNavIconImg{
+  color: var(--rakThemeAccent, var(--theme-accent, var(--green2))) !important;
+  stroke: currentColor !important;
+  filter: drop-shadow(0 0 12px rgba(var(--theme-rgb, 124,255,124),.62)) !important;
+}
+.dashboardAnnouncementBar{
+  background: linear-gradient(145deg, rgba(255,255,255,.085), rgba(255,255,255,.026)) !important;
+  background-color: color-mix(in srgb, rgba(4,8,16,.60) 74%, var(--theme-surface, rgba(255,255,255,.08)) 26%) !important;
+  border-color: color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, var(--green2))) 30%, rgba(255,255,255,.24)) !important;
+  box-shadow:0 14px 34px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.16) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(1.75) !important;
+  backdrop-filter: blur(28px) saturate(1.75) !important;
+}
+.dashboardAnnouncementLabel{
+  color: color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, var(--green2))) 76%, #fff) !important;
+  background: transparent !important;
+  border-color: color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, var(--green2))) 24%, rgba(255,255,255,.18)) !important;
+}
+.dashboardAnnouncementTrack.isMarquee span{
+  padding-left:100%;
+  padding-right:42vw;
+  animation-name: rakAnnouncementMarqueeGap;
+  animation-duration: 17s;
+}
+@keyframes rakAnnouncementMarqueeGap{
+  from{ transform: translateX(0); }
+  to{ transform: translateX(-100%); }
+}
+.adminAnnouncementToggleRow{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:10px;
+}
+.adminAnnouncementToggleRow .adminAnnouncementCheck{
+  margin-top:0;
+  min-height:42px;
+  padding:9px 10px;
+  border-radius:15px;
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.10);
+}
+body.lightweightMode #home .dashboardHeroCard,
+body.lightweightMode #home .dashboardCard,
+body.lightweightMode #home .tile.dashboardCard,
+body.lowEndDevice #home .dashboardHeroCard,
+body.lowEndDevice #home .dashboardCard,
+body.lowEndDevice #home .tile.dashboardCard,
+body.ladaMode #home .dashboardHeroCard,
+body.ladaMode #home .dashboardCard,
+body.ladaMode #home .tile.dashboardCard{
+  background:rgba(6,11,20,.50) !important;
+  border-color:color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, var(--green2))) 24%, rgba(255,255,255,.12)) !important;
+}
+@media (max-width:430px){
+  .adminAnnouncementToggleRow{grid-template-columns:1fr 1fr; gap:8px;}
+  .adminAnnouncementToggleRow .adminAnnouncementCheck{font-size:12px; padding:8px;}
+}
+@media (max-width:350px){
+  .adminAnnouncementToggleRow{grid-template-columns:1fr;}
+}
+@media (prefers-reduced-motion: reduce){
+  .dashboardAnnouncementTrack.isMarquee span{animation:none !important; padding-left:0 !important; padding-right:0 !important;}
+}
+
+/* v.1.5 (935) – Dashboard: tmavý odstín zachován, panely jsou průhlednější a víc glass; announcement online-first. */
+#home.page.active .dashboardShell{
+  --rak-dash-glass-bg: color-mix(in srgb, rgba(2,6,14,.38) 82%, var(--theme-surface, rgba(255,255,255,.08)) 18%);
+  --rak-dash-glass-bg-strong: color-mix(in srgb, rgba(2,6,14,.44) 84%, var(--theme-surface, rgba(255,255,255,.10)) 16%);
+  --rak-dash-glass-border: color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, var(--green2))) 25%, rgba(255,255,255,.28));
+  --rak-dash-glass-glow: color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, var(--green2))) 12%, transparent);
+  --rak-dash-icon-theme: var(--rakThemeAccent, var(--theme-accent, var(--green2)));
+}
+body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) #home .dashboardHeroCard,
+body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) #home .dashboardCard,
+body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) #home .tile.dashboardCard{
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.055), rgba(255,255,255,.012)) !important;
+  background-color: var(--rak-dash-glass-bg) !important;
+  border-color: var(--rak-dash-glass-border) !important;
+  box-shadow:
+    0 18px 44px rgba(0,0,0,.22),
+    inset 0 1px 0 rgba(255,255,255,.16),
+    inset 0 -1px 0 rgba(255,255,255,.025),
+    0 0 0 1px rgba(255,255,255,.025) !important;
+  -webkit-backdrop-filter: blur(34px) saturate(2.05) contrast(1.04) !important;
+  backdrop-filter: blur(34px) saturate(2.05) contrast(1.04) !important;
+}
+body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) #home .dashboardHeroCard{
+  background-color: var(--rak-dash-glass-bg-strong) !important;
+}
+body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) #home .dashboardGrid::before{
+  opacity:.18 !important;
+  filter: blur(10px) !important;
+}
+.dashboardAnnouncementBar{
+  background: linear-gradient(145deg, rgba(255,255,255,.060), rgba(255,255,255,.014)) !important;
+  background-color: color-mix(in srgb, rgba(2,6,14,.36) 84%, var(--theme-surface, rgba(255,255,255,.08)) 16%) !important;
+  border-color: color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, var(--green2))) 26%, rgba(255,255,255,.28)) !important;
+  box-shadow:0 14px 34px rgba(0,0,0,.20), inset 0 1px 0 rgba(255,255,255,.15), 0 0 0 1px rgba(255,255,255,.018) !important;
+  -webkit-backdrop-filter: blur(34px) saturate(2.0) !important;
+  backdrop-filter: blur(34px) saturate(2.0) !important;
+}
+.dashboardAnnouncementBar[data-source="supabase-online"]::after,
+.dashboardAnnouncementBar[data-source="supabase-online-cache"]::after{
+  content:'online';
+  flex:0 0 auto;
+  padding:3px 7px;
+  border-radius:999px;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  color:color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, var(--green2))) 72%, #fff);
+  border:1px solid color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, var(--green2))) 28%, rgba(255,255,255,.18));
+  background:rgba(255,255,255,.035);
+}
+body.lightweightMode #home .dashboardHeroCard,
+body.lightweightMode #home .dashboardCard,
+body.lightweightMode #home .tile.dashboardCard,
+body.lowEndDevice #home .dashboardHeroCard,
+body.lowEndDevice #home .dashboardCard,
+body.lowEndDevice #home .tile.dashboardCard,
+body.ladaMode #home .dashboardHeroCard,
+body.ladaMode #home .dashboardCard,
+body.ladaMode #home .tile.dashboardCard{
+  background:rgba(5,10,18,.38) !important;
+}
+body.lightweightMode .dashboardAnnouncementBar,
+body.lowEndDevice .dashboardAnnouncementBar,
+body.ladaMode .dashboardAnnouncementBar{
+  background:rgba(5,10,18,.38) !important;
+}

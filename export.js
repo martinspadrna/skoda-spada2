@@ -1,4 +1,4 @@
-// v.1.5 (931) – export manifest doplněný o korekce frézek +/− dokumenty.
+// v.1.5 (935) – export manifest doplněný o průhlednější Dashboard glass a online announcement dokumenty.
 const EXPORT_SOURCE_IDS = {
   "module-readiness.js": "src-module-readiness-js",
   "rak-namespace.js": "src-rak-namespace-js",
@@ -169,6 +169,14 @@ const EXPORT_SOURCE_IDS = {
   "assets/docs/about-50-version-summary-v930.md": "src-about-50-version-summary-v930-md",
   "assets/docs/frezky-correction-sign-toggle-v931.md": "src-frezky-correction-sign-toggle-v931-md",
   "assets/docs/about-50-version-summary-v931.md": "src-about-50-version-summary-v931-md",
+  "assets/docs/frezky-measured-sign-toggle-v932.md": "src-frezky-measured-sign-toggle-v932-md",
+  "assets/docs/about-50-version-summary-v932.md": "src-about-50-version-summary-v932-md",
+  "assets/docs/dashboard-glass-clean-announcement-v933.md": "src-dashboard-glass-clean-announcement-v933-md",
+  "assets/docs/about-50-version-summary-v933.md": "src-about-50-version-summary-v933-md",
+  "assets/docs/dashboard-glass-announcement-polish-v934.md": "src-dashboard-glass-announcement-polish-v934-md",
+  "assets/docs/about-50-version-summary-v934.md": "src-about-50-version-summary-v934-md",
+  "assets/docs/dashboard-online-announcement-glass-v935.md": "src-dashboard-online-announcement-glass-v935-md",
+  "assets/docs/about-50-version-summary-v935.md": "src-about-50-version-summary-v935-md",
   "assets/app-icons/icon-16.png": "src-icon-16-png",
   "assets/app-icons/icon-32.png": "src-icon-32-png",
   "assets/app-icons/icon-180.png": "src-icon-180-png",
@@ -182,8 +190,8 @@ const BINARY_SOURCE_CACHE = window.__ROTACE_BINARY_SOURCE_CACHE__ || (window.__R
 const EXPORT_SMOKE_REPORT = window.__RAK_EXPORT_SMOKE_REPORT__ || (window.__RAK_EXPORT_SMOKE_REPORT__ = {
   ok: null,
   status: 'not-run',
-  mode: 'export-smoke-report-v931',
-  version: 'v.1.5 (931)',
+  mode: 'export-smoke-report-v935',
+  version: 'v.1.5 (935)',
   checkedAt: null,
   lastStage: 'čeká na export',
   runCount: 0,
@@ -415,13 +423,21 @@ const EXPORT_TEXT_FILES = [
       'assets/docs/rotace-dock-dashboard-glass-v930.md',
       'assets/docs/about-50-version-summary-v930.md',
       'assets/docs/frezky-correction-sign-toggle-v931.md',
-      'assets/docs/about-50-version-summary-v931.md'
+      'assets/docs/about-50-version-summary-v931.md',
+      'assets/docs/frezky-measured-sign-toggle-v932.md',
+      'assets/docs/about-50-version-summary-v932.md',
+      'assets/docs/dashboard-glass-clean-announcement-v933.md',
+      'assets/docs/about-50-version-summary-v933.md',
+      'assets/docs/dashboard-glass-announcement-polish-v934.md',
+      'assets/docs/about-50-version-summary-v934.md',
+      'assets/docs/dashboard-online-announcement-glass-v935.md',
+      'assets/docs/about-50-version-summary-v935.md'
 ];
 
 function getRakExportManifest() {
   return {
-    version: String(window.APP_VERSION || 'v.1.5 (931)'),
-    mode: 'export-manifest-preflight-v931',
+    version: String(window.APP_VERSION || 'v.1.5 (935)'),
+    mode: 'export-manifest-preflight-v935',
     indexFile: 'index.html',
     jsFiles: Array.from(new Set(EXPORT_JS_FILES)),
     textFiles: Array.from(new Set(EXPORT_TEXT_FILES)),
@@ -442,7 +458,7 @@ function getRakExportSourceInventoryHealth() {
   const duplicateManifestPathCount = manifestPaths.length - new Set(manifestPaths).size;
   return {
     ok: duplicateSourceCount === 0 && duplicateBinaryCount === 0 && duplicateManifestPathCount === 0,
-    mode: 'export-source-inventory-v929',
+    mode: 'export-source-inventory-v935',
     version: String(window.APP_VERSION || 'unknown'),
     sourceIdCount: sourcePaths.length,
     manifestTextPathCount: manifestPaths.length,
@@ -529,8 +545,8 @@ async function readExportBinary(relativePath) {
 function updateRakExportSmokeReport(partial) {
   const data = partial && typeof partial === 'object' ? partial : {};
   Object.assign(EXPORT_SMOKE_REPORT, data, {
-    mode: 'export-smoke-report-v931',
-    version: String(window.APP_VERSION || 'v.1.5 (931)'),
+    mode: 'export-smoke-report-v935',
+    version: String(window.APP_VERSION || 'v.1.5 (935)'),
     checkedAt: new Date().toISOString()
   });
   return getRakExportSmokeReport();
@@ -628,7 +644,7 @@ async function validateRakExportManifestFiles(exportManifest) {
   const ok = duplicateReport.ok && missingTextFiles.length === 0 && missingBinaryFiles.length === 0;
   const report = {
     ok,
-    mode: 'export-manifest-preflight-v931',
+    mode: 'export-manifest-preflight-v935',
     version: String(window.APP_VERSION || 'unknown'),
     checkedAt: new Date().toISOString(),
     duplicateReport,

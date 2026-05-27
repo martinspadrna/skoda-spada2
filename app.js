@@ -1,4 +1,4 @@
-// v.1.5 (931) – Korekce Frézky: přepínače znaménka u aktuálních korekcí bez zásahu do online flow.
+// v.1.5 (935) – Dashboard glass průhlednější a announcement systém online-first přes Supabase fallback.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app.js', 'loaded', { source: 'index' }); } catch (err) {}
 
 

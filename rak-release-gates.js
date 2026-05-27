@@ -1,8 +1,8 @@
-// v.1.5 (931) – release gating/checklist vrstva včetně znaménkových přepínačů frézek.
+// v.1.5 (935) – release gating/checklist vrstva včetně Dashboard glass cleanupu a announcement tickeru.
 
 (function setupRakReleaseGates() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
-  const VERSION = 'v.1.5 (931)';
+  const VERSION = 'v.1.5 (935)';
   const MODE = 'release-gates-readonly-v929';
 
   try {
@@ -102,6 +102,7 @@
     const gamesAchievementRewards = readDiag('gamesAchievementRewards', 'getRakGamesAchievementRewardHealth');
     const profileAppearanceRewards = readDiag('profileAppearanceRewards', 'getRakProfileAppearanceRewardHealth');
     const dashboardGlassTheme = readDiag('dashboardGlassTheme', 'getRakDashboardGlassThemeHealth');
+    const dashboardAnnouncement = readDiag('dashboardAnnouncement', 'getRakDashboardAnnouncementHealth');
     const rotaceNamesDock = readDiag('rotaceNamesDock', 'getRakRotaceNamesDockHealth');
     const frezkyCorrectionSignToggle = readDiag('frezkyCorrectionSignToggle', 'getRakFrezkyCorrectionSignToggleHealth');
     const ladaPerformance = readDiag('ladaPerformance', 'getLadaPerformanceHealth');
@@ -144,6 +145,7 @@
       gamesAchievementRewards,
       profileAppearanceRewards,
       dashboardGlassTheme,
+      dashboardAnnouncement,
       rotaceNamesDock,
       frezkyCorrectionSignToggle,
       ladaPerformance
@@ -153,7 +155,7 @@
   function buildGateMatrix(signals) {
     const gates = [];
     const version = safeString(window.APP_VERSION || VERSION);
-    const versionOk = /^v\.1\.5 \(931\)$/.test(version);
+    const versionOk = /^v\.1\.5 \(933\)$/.test(version);
 
     gates.push(makeGate(
       'version-consistency',
@@ -505,6 +507,27 @@
     ));
 
 
+
+    gates.push(makeGate(
+      'v935-dashboard-announcement-system',
+      'Dashboard announcement ticker online-first přes Supabase',
+      signals.dashboardAnnouncement && signals.dashboardAnnouncement.ok ? 'ok' : 'warning',
+      'warning',
+      signals.dashboardAnnouncement ? ('online ' + String(signals.dashboardAnnouncement.hasOnlineAnnouncement ? 'ano' : 'ne') + ', local fallback ' + String(signals.dashboardAnnouncement.hasLocalAnnouncement ? 'ano' : 'ne') + ', active ' + String(signals.dashboardAnnouncement.activeHasMessage ? 'ano' : 'ne') + ', source ' + String(signals.dashboardAnnouncement.activeSource || '—')) : 'announcement helper chybí',
+      'Ručně ověřit v Administraci: uložit online, otevřít na druhém zařízení, ověřit realtime/refresh a vypnutí. Pokud policy nepustí zápis, zobrazí se lokální fallback a je potřeba upravit Supabase policy mimo build.',
+      'dashboard/ui/supabase/local-fallback'
+    ));
+
+    gates.push(makeGate(
+      'v935-dashboard-glass-announcement-polish',
+      'Dashboard průhlednější glass + online announcement',
+      signals.dashboardGlassTheme && signals.dashboardGlassTheme.ok && signals.dashboardAnnouncement && signals.dashboardAnnouncement.ok ? 'ok' : 'warning',
+      'warning',
+      signals.dashboardGlassTheme ? ('theme ikony ' + String(signals.dashboardGlassTheme.themeIconAware ? 'ano' : 'ne') + ', glass ' + String(signals.dashboardGlassTheme.dashboardCards || '—')) : 'dashboard glass helper chybí',
+      'Ručně ověřit tmavší, ale průhlednější glass panely, theme barvy ikon a online announcement s lokálním fallbackem.',
+      'dashboard/ui/theme/supabase'
+    ));
+
     gates.push(makeGate(
       'v930-rotace-names-dock-stability',
       'Rotace seznam jmen bez cuknutí a se správnou velikostí',
@@ -517,12 +540,12 @@
 
 
     gates.push(makeGate(
-      'v931-frezky-correction-sign-toggle',
+      'v932-frezky-correction-sign-toggle',
       'Korekce Frézky +/− přepínače',
       signals.frezkyCorrectionSignToggle && signals.frezkyCorrectionSignToggle.ok ? 'ok' : 'warning',
       'warning',
-      signals.frezkyCorrectionSignToggle ? ('konicita ' + String(signals.frezkyCorrectionSignToggle.buttons && signals.frezkyCorrectionSignToggle.buttons.taper ? 'OK' : 'chybí') + ', fhβ ' + String(signals.frezkyCorrectionSignToggle.buttons && signals.frezkyCorrectionSignToggle.buttons.shift ? 'OK' : 'chybí')) : 'helper znaménka frézek chybí',
-      'Na mobilu ověřit, že tlačítko +/− u konicity a fhβ mění znaménko stejně jako u korekcí soustruhů a výpočet přebírá správnou hodnotu.',
+      signals.frezkyCorrectionSignToggle ? ('naměřeno ' + String(signals.frezkyCorrectionSignToggle.buttons && signals.frezkyCorrectionSignToggle.buttons.measured ? 'OK' : 'chybí') + ', konicita ' + String(signals.frezkyCorrectionSignToggle.buttons && signals.frezkyCorrectionSignToggle.buttons.taper ? 'OK' : 'chybí') + ', fhβ ' + String(signals.frezkyCorrectionSignToggle.buttons && signals.frezkyCorrectionSignToggle.buttons.shift ? 'OK' : 'chybí')) : 'helper znaménka frézek chybí',
+      'Na mobilu ověřit, že tlačítka +/− u Naměřeno, konicity a fhβ jsou stejně vysoká, vycentrovaná a mění znaménko stejně jako u korekcí soustruhů.',
       'soustruhy/index/styles'
     ));
 
