@@ -15522,3 +15522,143 @@ body.lowEndDevice #rotace.page.active #rotaceNamesPanel.active #namesGrid{
   bottom:calc(72px + env(safe-area-inset-bottom)) !important;
   max-height:calc(116px + env(safe-area-inset-bottom)) !important;
 }
+
+/* v.1.5 (928) – Rotace: stabilní adaptivní dock jmen bez cuknutí při přepnutí. */
+:root{
+  --rak-rotace-names-dock-gap:10px;
+  --rak-rotace-names-dock-bottom:calc(74px + env(safe-area-inset-bottom));
+  --rak-rotace-names-dock-max-height:min(34dvh, 136px);
+  --rak-rotace-names-content-bottom:calc(var(--rak-rotace-names-dock-bottom) + var(--rak-rotace-names-dock-max-height) + 24px);
+}
+#rotace #rotaceNamesPanel.active{
+  padding-bottom:var(--rak-rotace-names-content-bottom) !important;
+}
+#rotace #rotaceNamesPanel.active #namesGrid{
+  position:fixed !important;
+  z-index:1100 !important;
+  left:50% !important;
+  right:auto !important;
+  bottom:var(--rak-rotace-names-dock-bottom) !important;
+  width:min(760px, calc(100vw - 14px - env(safe-area-inset-left) - env(safe-area-inset-right))) !important;
+  max-height:var(--rak-rotace-names-dock-max-height) !important;
+  overflow-y:auto !important;
+  overflow-x:visible !important;
+  overscroll-behavior:contain !important;
+  -webkit-overflow-scrolling:touch !important;
+  transform:translate3d(-50%, 0, 0) !important;
+  transition:none !important;
+  animation:none !important;
+  will-change:auto !important;
+  contain:layout style paint !important;
+  margin:0 !important;
+  padding:10px 5px 6px !important;
+  gap:6px !important;
+  grid-template-columns:repeat(5, minmax(0, 1fr)) !important;
+}
+@supports (width:100dvw){
+  #rotace #rotaceNamesPanel.active #namesGrid{
+    width:min(760px, calc(100dvw - 14px - env(safe-area-inset-left) - env(safe-area-inset-right))) !important;
+  }
+}
+#rotace.page:not(.active) #rotaceNamesPanel #namesGrid,
+#rotaceNamesPanel:not(.active) #namesGrid{
+  visibility:hidden !important;
+  pointer-events:none !important;
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem,
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceNameTile{
+  min-height:36px !important;
+  transition:none !important;
+  animation:none !important;
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem.activeChoice,
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceNameTile.activeChoice{
+  transform:none !important;
+  outline:2px solid rgba(124,255,124,.64) !important;
+  outline-offset:1px !important;
+}
+@media (max-width:430px), (max-height:700px){
+  :root{
+    --rak-rotace-names-dock-gap:8px;
+    --rak-rotace-names-dock-max-height:min(30dvh, 112px);
+  }
+  #rotace #rotaceNamesPanel.active #namesGrid{
+    padding:8px 4px 5px !important;
+    gap:5px !important;
+    border-radius:15px !important;
+  }
+  #rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem,
+  #rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceNameTile{
+    min-height:32px !important;
+    padding:4px 2px !important;
+  }
+  #rotaceNamesPanel .rotaceTileTitle{
+    font-size:10.5px !important;
+    line-height:1.05 !important;
+  }
+}
+
+/* v.1.5 (928) – Láďův režim: tvrdší odlehčení pro slabší mobily bez změny funkcí. */
+body.ladaMode,
+body.lightweightMode,
+body.lowEndDevice{
+  --rakGlassBlur:0px !important;
+  --rakGlassBlurSoft:0px !important;
+  --rak-lada-blur-px:0px !important;
+}
+body.ladaMode::before,
+body.lightweightMode::before,
+body.lowEndDevice::before{
+  opacity:.42 !important;
+  filter:none !important;
+  transform:none !important;
+}
+body.ladaMode .card,
+body.ladaMode .tile,
+body.ladaMode .listItem,
+body.ladaMode .personCard,
+body.ladaMode .dashboardCard,
+body.ladaMode .dashboardHeroCard,
+body.ladaMode .bottomNav,
+body.ladaMode .bottomNavBtn,
+body.ladaMode .appMenuCard,
+body.ladaMode .appMenuAction,
+body.ladaMode .appMenuThemeCard,
+body.ladaMode .appMenuThemeSummary,
+body.ladaMode .calcTile,
+body.ladaMode .calcPanel,
+body.ladaMode .calcResultCard,
+body.ladaMode .gamesStatsCard,
+body.ladaMode #games .gamesStage,
+body.ladaMode #games .gamesShellTop,
+body.ladaMode #games .arcadePanel,
+body.ladaMode #games .gameBoard,
+body.ladaMode #games .gamesActiveAccountBar,
+body.ladaMode .tttOverlay,
+body.ladaMode .personScheduleOverlay,
+body.ladaMode .personScheduleModal{
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+  filter:none !important;
+  box-shadow:0 5px 12px rgba(0,0,0,.18) !important;
+}
+body.ladaMode #games .gameBoardCell,
+body.ladaMode #games .arcadeAimTarget,
+body.ladaMode #games .arcadeCanvasWrap,
+body.ladaMode #games .arcadePanel *,
+body.ladaMode .rotaceNameTile,
+body.ladaMode #rotaceNamesPanel #namesGrid{
+  transition:none !important;
+  animation:none !important;
+  filter:none !important;
+  text-shadow:none !important;
+}
+body.ladaMode #games .gamesStage,
+body.ladaMode .tttOverlay{
+  background:rgba(5,8,7,.98) !important;
+}
+body.ladaTurboMode #games .arcadeCanvasWrap,
+body.ladaTurboMode #games .gameBoard,
+body.ladaTurboMode #games .gamesStage{
+  contain:layout style paint !important;
+}

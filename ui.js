@@ -513,14 +513,16 @@ function buildRakLadaPerformanceProfile(active, lowEndInfo, prefs) {
   return {
     active: !!active,
     level: active ? (isTurbo ? 'turbo' : 'lite') : 'normal',
-    frameMs: active ? (isTurbo ? 34 : 28) : 0,
+    frameMs: active ? (isTurbo ? 42 : 34) : 0,
     canvasDprMax: active ? 1 : 2,
-    resizeThrottleMs: active ? (isTurbo ? 520 : 360) : 120,
-    onlineRefreshDelayMs: active ? 1200 : 420,
-    leaderboardTtlMs: active ? (isTurbo ? 180000 : 120000) : 60000,
-    idleDelayMs: active ? (isTurbo ? 220 : 160) : 60,
-    maxDeltaMs: active ? 34 : 48,
+    resizeThrottleMs: active ? (isTurbo ? 700 : 460) : 120,
+    onlineRefreshDelayMs: active ? (isTurbo ? 1800 : 1200) : 420,
+    leaderboardTtlMs: active ? (isTurbo ? 240000 : 180000) : 60000,
+    idleDelayMs: active ? (isTurbo ? 360 : 220) : 60,
+    maxDeltaMs: active ? (isTurbo ? 42 : 34) : 48,
     cssEffects: active ? 'minimal' : 'full',
+    domBatchDelayMs: active ? (isTurbo ? 220 : 140) : 40,
+    maxShadowPx: active ? 0 : 24,
     reasons,
     manual,
     detectedDpr: Number(info.dpr || window.devicePixelRatio || 1) || 1,
@@ -4532,7 +4534,7 @@ function getRakTttAiHardeningV922Health() {
   return {
     ok: true,
     mode: 'ttt-ai-hardening-v923',
-    version: String(window.APP_VERSION || 'v.1.5 (927)'),
+    version: String(window.APP_VERSION || 'v.1.5 (928)'),
     thirteenTurnClamp: true,
     hardSearchDepthEarly: 8,
     hardSearchDepthMid: 8,
@@ -6120,10 +6122,10 @@ function buildAppHistoryHtml(versionText) {
       range: 'v.1.5 901–950',
       title: 'Aktuální stabilizace, bezpečnost a provozní detaily',
       lines: [
-        'Hlavní změny: dokončení online game contract auditu, release readiness/monitoring/rollback vrstvy, AppSec/privacy audit, release gates, výkonový/CI audit, finální due diligence report, prompt-compliance dokumenty v924, validační runbook v925 a herní odměnová vrstva v927.',
+        'Hlavní změny: dokončení online game contract auditu, release readiness/monitoring/rollback vrstvy, AppSec/privacy audit, release gates, výkonový/CI audit, finální due diligence report, prompt-compliance dokumenty v924, validační runbook v925, herní odměnová vrstva v926 a mobilní stabilizace Rotace/Láďova režimu v928.',
         'Kantýna/jídelna se srovnala podle běžné a mimořádné provozní doby; rozklik teď odděluje běžný režim a přesčasové rozdíly.',
-        'Herní Top score a profily se resetovaly na čistý start; Piškvorky Top score mají zobrazovat datum i čas a Supabase výsledky byly znovu vyčištěné. V927 přidává achievementy pro každou hru včetně D-směnových cílů.',
-        'Pravidlo historie: O aplikaci drží hlavně stručné souhrny po cca 50 verzích; v924 formálně uzavřela auditní prompty, v925 přidala praktický validační checklist a v927 ukládá aktivní téma/pozadí na profil jako odměny za progres.'
+        'Herní Top score a profily se resetovaly na čistý start; Piškvorky Top score mají zobrazovat datum i čas a Supabase výsledky byly znovu vyčištěné. V926 přidala achievementy pro každou hru včetně D-směnových cílů; v928 řeší stabilitu docku jmen v Rotaci.',
+        'Pravidlo historie: O aplikaci drží hlavně stručné souhrny po cca 50 verzích; v924 formálně uzavřela auditní prompty, v925 přidala praktický validační checklist a v926 ukládá aktivní téma/pozadí na profil jako odměny za progres a v928 přidává adaptivní mobilní dock + odlehčení Láďova režimu.'
       ]
     },
     {
@@ -8670,6 +8672,77 @@ function showFoodSchedule(which) {
 }
 
 
+function updateRotaceNamesDockMetrics(reason) {
+  const result = {
+    ok: true,
+    reason: String(reason || 'manual'),
+    checkedAt: new Date().toISOString(),
+    bottomPx: 0,
+    maxHeightPx: 0,
+    contentBottomPx: 0,
+    navHeightPx: 0,
+    viewportHeightPx: 0,
+    viewportWidthPx: 0
+  };
+  try {
+    const root = document.documentElement;
+    const nav = document.querySelector('nav.bottomNav') || document.querySelector('.bottomNav');
+    const navRect = nav && typeof nav.getBoundingClientRect === 'function' ? nav.getBoundingClientRect() : null;
+    const viewport = window.visualViewport || null;
+    const vh = Math.round(Number(viewport && viewport.height || window.innerHeight || root.clientHeight || 720) || 720);
+    const vw = Math.round(Number(viewport && viewport.width || window.innerWidth || root.clientWidth || 390) || 390);
+    const navHeightRaw = navRect ? Math.ceil(Number(navRect.height || 0) || 0) : 0;
+    const navHeight = Math.max(50, Math.min(92, navHeightRaw || 62));
+    const compactHeight = vh > 0 && vh <= 700;
+    const compactWidth = vw > 0 && vw <= 380;
+    const gap = compactHeight || compactWidth ? 8 : 10;
+    const bottom = navHeight + gap;
+    const maxByViewport = Math.floor(vh * (compactHeight ? 0.30 : 0.34));
+    const maxHeight = Math.max(92, Math.min(compactHeight ? 112 : 136, maxByViewport || 118));
+    const contentBottom = bottom + maxHeight + (compactHeight ? 18 : 24);
+    root.style.setProperty('--rak-rotace-names-dock-bottom', bottom + 'px');
+    root.style.setProperty('--rak-rotace-names-dock-max-height', maxHeight + 'px');
+    root.style.setProperty('--rak-rotace-names-content-bottom', contentBottom + 'px');
+    root.style.setProperty('--rak-rotace-names-dock-gap', gap + 'px');
+    root.dataset.rakRotaceNamesDockReady = '1';
+    root.dataset.rakRotaceNamesDockReason = result.reason;
+    root.dataset.rakRotaceNamesDockBottom = String(bottom);
+    root.dataset.rakRotaceNamesDockMaxHeight = String(maxHeight);
+    result.bottomPx = bottom;
+    result.maxHeightPx = maxHeight;
+    result.contentBottomPx = contentBottom;
+    result.navHeightPx = navHeight;
+    result.viewportHeightPx = vh;
+    result.viewportWidthPx = vw;
+  } catch (err) {
+    result.ok = false;
+    result.error = String(err && err.message || err);
+  }
+  try { window.__rakRotaceNamesDockMetrics = result; } catch (err) {}
+  return result;
+}
+
+function scheduleRotaceNamesDockMetrics(reason) {
+  try { updateRotaceNamesDockMetrics(reason || 'schedule-now'); } catch (err) {}
+  try {
+    requestAnimationFrame(() => updateRotaceNamesDockMetrics((reason || 'schedule') + '-raf'));
+    setTimeout(() => updateRotaceNamesDockMetrics((reason || 'schedule') + '-settled'), 80);
+  } catch (err) {}
+}
+
+if (!window.__rakRotaceNamesDockMetricsBound) {
+  window.__rakRotaceNamesDockMetricsBound = true;
+  try { window.addEventListener('resize', () => scheduleRotaceNamesDockMetrics('window-resize'), { passive: true }); } catch (err) {}
+  try { window.addEventListener('orientationchange', () => scheduleRotaceNamesDockMetrics('orientationchange'), { passive: true }); } catch (err) {}
+  try {
+    if (window.visualViewport) window.visualViewport.addEventListener('resize', () => scheduleRotaceNamesDockMetrics('visual-viewport-resize'), { passive: true });
+  } catch (err) {}
+  try { document.addEventListener('DOMContentLoaded', () => scheduleRotaceNamesDockMetrics('dom-ready'), { once: true }); } catch (err) {}
+}
+try { window.updateRotaceNamesDockMetrics = updateRotaceNamesDockMetrics; } catch (err) {}
+try { window.scheduleRotaceNamesDockMetrics = scheduleRotaceNamesDockMetrics; } catch (err) {}
+
+
 function showPage(id) {
   const currentPage = typeof document !== 'undefined' ? document.querySelector('.page.active')?.id || '' : '';
   const isSamePageRefresh = currentPage === id;
@@ -8700,6 +8773,10 @@ function showPage(id) {
     if (openEportal()) return;
     id = 'home';
     navPage = 'home';
+  }
+
+  if (id === 'rotace' && typeof scheduleRotaceNamesDockMetrics === 'function') {
+    scheduleRotaceNamesDockMetrics('showPage-pre-rotace');
   }
 
   if (id === 'games') {
@@ -8742,9 +8819,11 @@ function showPage(id) {
     if (el) el.classList.add('active');
 
     if (id === 'rotace') {
+      if (typeof updateRotaceNamesDockMetrics === 'function') updateRotaceNamesDockMetrics('showPage-before-render');
       if (typeof initRotaceCurrentMonth === 'function') initRotaceCurrentMonth();
       setRotaceView('names');
       if (typeof renderRotace === 'function') renderRotace();
+      if (typeof scheduleRotaceNamesDockMetrics === 'function') scheduleRotaceNamesDockMetrics('showPage-after-render');
     } else if (id === 'brusy') {
       if (typeof renderBrusy === 'function') renderBrusy();
     } else if (id === 'soustruhy') {
@@ -8992,6 +9071,7 @@ function setRotaceView(view) {
 
   if (view === 'names') {
     namesPanel && namesPanel.classList.add('active');
+    if (typeof scheduleRotaceNamesDockMetrics === 'function') scheduleRotaceNamesDockMetrics('setRotaceView-names');
     tabNames && (tabNames.style.outline = '3px solid #7CFF7C');
   } else if (view === 'stats') {
     statsPanel && statsPanel.classList.add('active');
@@ -12326,7 +12406,7 @@ function applyProfileUiPreferencesForActiveAccount(options = {}) {
   const defaultTheme = normalizeThemePreferenceId('default', 'default');
   const defaultBg = normalizeBackgroundPreferenceId('ios-mesh', 'ios-mesh');
   let changed = false;
-  // v.1.5 (927): vzhled je profilový. Nový/prázdný profil nezačne omylem vzhledem po předchozím přihlášeném profilu.
+  // v.1.5 (928): vzhled je profilový. Nový/prázdný profil nezačne omylem vzhledem po předchozím přihlášeném profilu.
   if (!ui.themeId) { ui.themeId = defaultTheme; changed = true; }
   if (!ui.backgroundId) { ui.backgroundId = defaultBg; changed = true; }
   const rewardMetrics = getThemeUnlockMetrics(profile);
@@ -12725,8 +12805,8 @@ function getRakProfileAppearanceRewardHealth() {
   const themeRewards = themes.filter(item => String(item && item.id || '') !== 'default');
   const backgroundRewards = backgrounds.filter(item => String(item && item.id || '') !== 'ios-mesh');
   return {
-    version: window.APP_VERSION || 'v.1.5 (927)',
-    mode: 'profile-appearance-reward-health-v927',
+    version: window.APP_VERSION || 'v.1.5 (928)',
+    mode: 'profile-appearance-reward-health-v928',
     activeProfile: metrics.hasProfile,
     profileThemeStorage: 'account.uiSettings.themeId',
     profileBackgroundStorage: 'account.uiSettings.backgroundId',
@@ -12802,30 +12882,41 @@ window.addEventListener('load', () => {
 function getRakRotaceNamesDockHealth() {
   const result = {
     ok: true,
-    version: window.APP_VERSION || 'v.1.5 (927)',
-    mode: 'rotace-names-dock-position-v927',
+    version: window.APP_VERSION || 'v.1.5 (928)',
+    mode: 'rotace-names-dock-stable-adaptive-v928',
     checkedAt: new Date().toISOString(),
-    scope: 'Rotace / seznam jmen / spodní dock',
+    scope: 'Rotace / seznam jmen / adaptivní spodní dock',
     expected: {
-      desktopBottom: '76px + safe-area',
-      mobileBottom: '72px + safe-area',
+      position: 'fixed podle skutečné výšky spodní navigace',
+      noJump: true,
+      visibleOnSmallMobiles: true,
       rootFolderChange: false,
       onlineFlowChange: false
     },
     manual: {
       mobileVisualSmoke: 'manual',
-      note: 'Ověřit na mobilu, že seznam jmen po otevření Rotace neleze do spodního panelu a nepůsobí nalepeně.'
+      note: 'Ověřit na mobilu, že seznam jmen po otevření Rotace necukne a zůstane viditelný nad spodním panelem.'
     }
   };
   try {
+    if (typeof updateRotaceNamesDockMetrics === 'function') updateRotaceNamesDockMetrics('health-check');
     const grid = document.getElementById('namesGrid');
     const rotace = document.getElementById('rotace');
+    const nav = document.querySelector('nav.bottomNav') || document.querySelector('.bottomNav');
+    const styles = grid && window.getComputedStyle ? window.getComputedStyle(grid) : null;
+    const metrics = window.__rakRotaceNamesDockMetrics || null;
     result.dom = {
       hasRotacePage: !!rotace,
       hasNamesGrid: !!grid,
-      isRotaceActive: !!(rotace && rotace.classList && rotace.classList.contains('active'))
+      hasBottomNav: !!nav,
+      isRotaceActive: !!(rotace && rotace.classList && rotace.classList.contains('active')),
+      namesGridPosition: styles ? styles.position : '',
+      namesGridBottom: styles ? styles.bottom : '',
+      namesGridMaxHeight: styles ? styles.maxHeight : '',
+      metrics
     };
-    result.ok = !!(rotace && grid);
+    result.ok = !!(rotace && grid && nav);
+    if (styles && styles.position !== 'fixed') result.ok = false;
   } catch (err) {
     result.ok = false;
     result.error = String(err && err.message || err);

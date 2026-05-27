@@ -1,4 +1,4 @@
-// v.1.5 (927) – window.RaK namespace doplněný o validation readiness diagnostiku.
+// v.1.5 (928) – window.RaK namespace doplněný o validation readiness diagnostiku.
 
 (function setupRakNamespaceBridge() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -11,8 +11,8 @@
 
   const root = window.RaK || {};
   const existingVersion = root.namespaceVersion || '';
-  root.namespaceVersion = 'v.1.5 (927)';
-  root.mode = 'passive-namespace-readonly-release-gates-prompt-compliance-validation-v927';
+  root.namespaceVersion = 'v.1.5 (928)';
+  root.mode = 'passive-namespace-readonly-release-gates-prompt-compliance-validation-v928';
   root.createdAt = root.createdAt || new Date().toISOString();
   root.updatedAt = new Date().toISOString();
   root.compatibility = 'legacy-globals-preserved';
@@ -81,11 +81,13 @@
     { group: 'diagnostics', alias: 'mobilePerformanceSmokePlan', globalName: 'getRakMobilePerformanceSmokePlanHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only mobile/performance smoke plán a runtime snapshot bez tvrzení, že mobilní test proběhl.' },
     { group: 'diagnostics', alias: 'playwrightDomSmokeDraft', globalName: 'getRakPlaywrightDomSmokeDraftHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only návrh prvních Playwright/DOM smoke testů bez zavedení závislosti.' },
     { group: 'diagnostics', alias: 'finalAuditClosure', globalName: 'getRakFinalAuditClosureHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only closure stav velkého due diligence auditu.' },
-    { group: 'diagnostics', alias: 'manualValidationReadiness', globalName: 'getRakManualValidationReadinessHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only v927 ruční validační checklist: připraveno, ale testy zůstávají manual.' },
-    { group: 'diagnostics', alias: 'validationReadinessClosure', globalName: 'getRakValidationReadinessClosureHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only v927 closure pro mobil/browser/Playwright/post-release validaci.' },
-    { group: 'diagnostics', alias: 'gamesAchievementRewards', globalName: 'getRakGamesAchievementRewardHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only v927 kontrola: každá hra má achievementy a D-směnové odměny.' },
-    { group: 'diagnostics', alias: 'profileAppearanceRewards', globalName: 'getRakProfileAppearanceRewardHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only v927 kontrola: témata a pozadí jsou odměny uložené na aktivní profil.' },
-    { group: 'diagnostics', alias: 'rotaceNamesDock', globalName: 'getRakRotaceNamesDockHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only v927 kontrola: seznam jmen v Rotaci je odsazený nad spodní panel.' },
+    { group: 'diagnostics', alias: 'manualValidationReadiness', globalName: 'getRakManualValidationReadinessHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only v928 ruční validační checklist: připraveno, ale testy zůstávají manual.' },
+    { group: 'diagnostics', alias: 'validationReadinessClosure', globalName: 'getRakValidationReadinessClosureHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only v928 closure pro mobil/browser/Playwright/post-release validaci.' },
+    { group: 'diagnostics', alias: 'gamesAchievementRewards', globalName: 'getRakGamesAchievementRewardHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only v928 kontrola: každá hra má achievementy a D-směnové odměny.' },
+    { group: 'diagnostics', alias: 'profileAppearanceRewards', globalName: 'getRakProfileAppearanceRewardHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only v928 kontrola: témata a pozadí jsou odměny uložené na aktivní profil.' },
+    { group: 'diagnostics', alias: 'rotaceNamesDock', globalName: 'getRakRotaceNamesDockHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only v928 kontrola: adaptivní seznam jmen v Rotaci je stabilní nad spodním panelem.' },
+    { group: 'diagnostics', alias: 'rotaceNamesDockUpdate', globalName: 'updateRotaceNamesDockMetrics', type: 'function', phase: 'safe-now', risk: 'low', note: 'v928 bezpečné přeměření pozice docku jmen podle spodní navigace.' },
+    { group: 'diagnostics', alias: 'rotaceNamesDockSchedule', globalName: 'scheduleRotaceNamesDockMetrics', type: 'function', phase: 'safe-now', risk: 'low', note: 'v928 bezpečné naplánování přeměření docku po dosednutí layoutu.' },
     { group: 'diagnostics', alias: 'exportReleaseTooling', globalName: 'getRakExportReleaseToolingHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only audit export/release tooling vrstvy bez spuštění exportu.' },
     { group: 'diagnostics', alias: 'exportSmokeReport', globalName: 'getRakExportSmokeReport', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only poslední smoke/preflight stav exportu ZIPu.' },
     { group: 'diagnostics', alias: 'domActionRegistry', globalName: 'getRakDomActionRegistryHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only mapa data-action prvků a allowlistů bez přepojení navigace/renderu/her.' },
@@ -140,14 +142,14 @@
   };
   root.getNamespaceMap = cloneMap;
   root.namespaceMap = cloneMap();
-  root.namespaceMapVersion = 'v.1.5 (927)';
+  root.namespaceMapVersion = 'v.1.5 (928)';
   root.namespacePlan = {
     phase: 'phase C',
     mode: 'namespace-readonly-phase-closed-with-online-game-contract-alias-v897',
     progressPercent: 100,
     mapClosed: true,
     rule: 'Staré globály zůstávají zdroj pravdy; read-only aliasy mají fallback na legacy globály a nesmí mutovat stav.',
-    nextStep: 'Namespace read-only fáze je uzavřená; v927 přidává validační readiness aliasy pro ruční mobilní smoke, Playwright běh a post-release PWA kontrolu.'
+    nextStep: 'Namespace read-only fáze je uzavřená; v928 navazuje na validační readiness aliasy pro ruční mobilní smoke, Playwright běh a post-release PWA kontrolu.'
   };
 
   ensureGroup('modules');

@@ -1,3 +1,12 @@
+## v.1.5 (928)
+
+- Rotace: spodní seznam jmen je nově stabilní adaptivní dock podle skutečné výšky spodní navigace, aby po přepnutí na Rotaci necukal a zůstal viditelný na různých mobilech.
+- Přidané měření `updateRotaceNamesDockMetrics()` / `scheduleRotaceNamesDockMetrics()` a rozšířený helper `getRakRotaceNamesDockHealth()`.
+- Láďův režim dostal tvrdší výkonové odlehčení: méně blur/stínů/animací, pomalejší frame budget pro hry a delší throttling na slabších telefonech.
+- Přidané dokumenty `rotace-names-dock-stability-v928.md`, `lada-mode-performance-v928.md` a `about-50-version-summary-v928.md`.
+- Bez změn Supabase DB, policies, online Piškvorek, online Lodí, gameplay pravidel, dashboardu, rotací výpočtově a kalkulaček.
+- Verze sjednocena na v.1.5 (928), cache na `v1.5-928`, realtime kanál na `rak-public-live-v928`, package na `1.5.928`.
+
 ## v.1.5 (927)
 
 - Rozšířené achievementy pro všechny hry včetně D-směnových cílů; každá hra má vlastní odměny navázané na dokončení během aktivní směny D.

@@ -1,7 +1,7 @@
-// v.1.5 (927) – mobile/Playwright validation readiness a smoke runbook, read-only.
+// v.1.5 (928) – mobile/Playwright validation readiness a smoke runbook, read-only.
 (function setupRakMobileSmokeAudit() {
-  const VERSION = 'v.1.5 (927)';
-  const MODE = 'mobile-performance-smoke-readonly-v927';
+  const VERSION = 'v.1.5 (928)';
+  const MODE = 'mobile-performance-smoke-readonly-v928';
 
   try {
     if (typeof window.rakMarkModuleReady === 'function') {
@@ -96,7 +96,7 @@
   window.getRakPlaywrightDomSmokeDraftHealth = function getRakPlaywrightDomSmokeDraftHealth() {
     return {
       ok: true,
-      mode: 'playwright-dom-smoke-skeleton-v927',
+      mode: 'playwright-dom-smoke-skeleton-v928',
       version: String(window.APP_VERSION || VERSION),
       checkedAt: nowIso(),
       implementationStatus: 'root-playwright-smoke-spec-ready',
@@ -123,7 +123,7 @@
     const playwrightDraft = window.getRakPlaywrightDomSmokeDraftHealth();
     return {
       ok: true,
-      mode: 'due-diligence-final-closure-v927',
+      mode: 'due-diligence-final-closure-v928',
       version: String(window.APP_VERSION || VERSION),
       checkedAt: nowIso(),
       percentComplete: 100,
@@ -161,16 +161,19 @@
   window.getRakManualValidationReadinessHealth = function getRakManualValidationReadinessHealth() {
     const checklist = getManualValidationChecklist();
     const docs = [
-      'assets/docs/manual-validation-runbook-v927.md',
-      'assets/docs/playwright-real-run-readiness-v927.md',
-      'assets/docs/post-release-validation-v927.md',
-      'assets/docs/validation-readiness-closure-v927.md',
-      'assets/docs/games-achievement-rewards-v927.md',
-      'assets/docs/profile-appearance-rewards-v927.md'
+      'assets/docs/manual-validation-runbook-v926.md',
+      'assets/docs/playwright-real-run-readiness-v926.md',
+      'assets/docs/post-release-validation-v926.md',
+      'assets/docs/validation-readiness-closure-v926.md',
+      'assets/docs/games-achievement-rewards-v926.md',
+      'assets/docs/profile-appearance-rewards-v926.md',
+      'assets/docs/rotace-names-dock-stability-v928.md',
+      'assets/docs/lada-mode-performance-v928.md',
+      'assets/docs/about-50-version-summary-v928.md'
     ];
     return {
       ok: true,
-      mode: 'manual-validation-readiness-v927',
+      mode: 'manual-validation-readiness-v928',
       version: String(window.APP_VERSION || VERSION),
       checkedAt: nowIso(),
       readyForUserTesting: true,
@@ -185,7 +188,7 @@
       blockingChecklistCount: checklist.filter((item) => item.blocksRelease).length,
       deviceMatrix: getDeviceMatrix(),
       checklist,
-      note: 'v927 připravuje ruční a Playwright validaci; skutečné testy zůstávají manual, dokud je člověk nespustí.'
+      note: 'v928 připravuje ruční a Playwright validaci; skutečné testy zůstávají manual, dokud je člověk nespustí.'
     };
   };
 
@@ -195,7 +198,7 @@
     const playwright = window.getRakPlaywrightDomSmokeDraftHealth();
     return {
       ok: !!(manual && manual.ok && mobilePlan && mobilePlan.ok && playwright && playwright.ok),
-      mode: 'validation-readiness-closure-v927',
+      mode: 'validation-readiness-closure-v928',
       version: String(window.APP_VERSION || VERSION),
       checkedAt: nowIso(),
       phase: 'post-audit manual validation readiness',

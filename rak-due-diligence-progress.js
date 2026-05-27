@@ -1,7 +1,7 @@
-// v.1.5 (927) – due diligence audit progress + prompt-compliance closure tracker.
+// v.1.5 (928) – due diligence audit progress + prompt-compliance closure tracker.
 (function setupRakDueDiligenceAuditProgress() {
-  const VERSION = 'v.1.5 (927)';
-  const MODE = 'due-diligence-audit-progress-v927';
+  const VERSION = 'v.1.5 (928)';
+  const MODE = 'due-diligence-audit-progress-v928';
 
 
   try {
@@ -38,7 +38,7 @@
     item('build-delivery', '8. Build / delivery / deployment', 100, '0 %', 'ZIP pravidla, export manifest, SW verze, release ops checklist a CI/CD snippet jsou pokryté.', 'Doplnit reálný hosting/staging postup podle toho, kde se bude app nasazovat.'),
     item('monitoring-rollback', '9. Monitoring / alerting / rollback', 100, '0 %', 'Release ops, monitoring map, rollback playbook a výkonové KPI jsou hotové jako read-only dokumentace.', 'Doplnit reálné prahy až po nasbírání mobilních měření a provozních chyb.'),
     item('implementation-plan', '10. Implementační plán', 100, '0 %', 'Plán se průběžně realizuje v malých i větších bezpečných buildech bez zásahů do hotových funkcí.', 'Doplnit finální fázovou tabulku a mermaid gantt do jedné zprávy.'),
-    item('final-report', 'Povinný finální auditní výstup', 100, '0 %', 'Finální prompt-compliance sada existuje v assets/docs/*final-v924.md a formálně uzavírá architekturu, bezpečnost/výkon/stabilitu, test/CI, rollout/rollback i finální syntézu.', 'v927 doplnila ruční runbook; zbývá skutečné mobilní ověření a reálný Playwright smoke běh.')
+    item('final-report', 'Povinný finální auditní výstup', 100, '0 %', 'Finální prompt-compliance sada existuje v assets/docs/*final-v924.md a formálně uzavírá architekturu, bezpečnost/výkon/stabilitu, test/CI, rollout/rollback i finální syntézu.', 'v928 doplnila ruční runbook; zbývá skutečné mobilní ověření a reálný Playwright smoke běh.')
   ];
 
   function summarize(list) {
@@ -64,7 +64,7 @@
       needsWorkCount: coverage.filter((row) => row.percentComplete < 80).length,
       nextFocus: [
         'Původní auditní zadání je zpracované podle dodaných podkladů.',
-        'Reálný mobilní test a skutečné spuštění Playwrightu zůstává ruční post-release validace podle v927 checklistu.',
+        'Reálný mobilní test a skutečné spuštění Playwrightu zůstává ruční post-release validace podle v928 checklistu.',
         'Další práce může přejít na nové požadavky nebo implementaci výsledků auditu.'
       ],
       coverage
@@ -100,7 +100,7 @@
     const percent = Math.round(docs.reduce((sum, row) => sum + row.percent, 0) / docs.length);
     return {
       ok: percent === 100,
-      mode: 'prompt-compliance-closure-v927',
+      mode: 'prompt-compliance-closure-v928',
       version: String(window.APP_VERSION || VERSION),
       checkedAt: nowIso(),
       percentComplete: percent,

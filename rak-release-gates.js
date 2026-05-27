@@ -1,9 +1,9 @@
-// v.1.5 (927) – release gating/checklist vrstva s validační readiness closure bez mutací.
+// v.1.5 (928) – release gating/checklist vrstva s validační readiness closure bez mutací.
 
 (function setupRakReleaseGates() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
-  const VERSION = 'v.1.5 (927)';
-  const MODE = 'release-gates-readonly-v927';
+  const VERSION = 'v.1.5 (928)';
+  const MODE = 'release-gates-readonly-v928';
 
   try {
     if (typeof window.rakMarkModuleReady === 'function') {
@@ -101,6 +101,8 @@
     const validationReadinessClosure = readDiag('validationReadinessClosure', 'getRakValidationReadinessClosureHealth');
     const gamesAchievementRewards = readDiag('gamesAchievementRewards', 'getRakGamesAchievementRewardHealth');
     const profileAppearanceRewards = readDiag('profileAppearanceRewards', 'getRakProfileAppearanceRewardHealth');
+    const rotaceNamesDock = readDiag('rotaceNamesDock', 'getRakRotaceNamesDockHealth');
+    const ladaPerformance = readDiag('ladaPerformance', 'getLadaPerformanceHealth');
 
     return {
       releaseOpsChecklist,
@@ -138,14 +140,16 @@
       manualValidationReadiness,
       validationReadinessClosure,
       gamesAchievementRewards,
-      profileAppearanceRewards
+      profileAppearanceRewards,
+      rotaceNamesDock,
+      ladaPerformance
     };
   }
 
   function buildGateMatrix(signals) {
     const gates = [];
     const version = safeString(window.APP_VERSION || VERSION);
-    const versionOk = /^v\.1\.5 \(927\)$/.test(version);
+    const versionOk = /^v\.1\.5 \(928\)$/.test(version);
 
     gates.push(makeGate(
       'version-consistency',
@@ -452,19 +456,19 @@
 
 
     gates.push(makeGate(
-      'v927-validation-readiness-package',
-      'v927 validační balíček',
+      'v928-validation-readiness-package',
+      'v928 validační balíček',
       signals.validationReadinessClosure && signals.validationReadinessClosure.ok ? 'ok' : 'warning',
       'warning',
       signals.validationReadinessClosure ? ('manual gates ' + String(signals.validationReadinessClosure.manualGateCount || 0) + ', user testing ' + (signals.validationReadinessClosure.readyForUserTesting ? 'ready' : 'ne')) : 'validation helper chybí',
-      'v927 musí mít připravený ruční runbook, Playwright runbook, post-release checklist a closure helper; skutečné testy zůstávají manual.',
+      'v928 musí mít připravený ruční runbook, Playwright runbook, post-release checklist a closure helper; skutečné testy zůstávají manual.',
       'rak-mobile-smoke-audit'
     ));
 
 
 
     gates.push(makeGate(
-      'v927-games-achievement-rewards',
+      'v928-games-achievement-rewards',
       'Achievementy a D-směnové odměny her',
       signals.gamesAchievementRewards && signals.gamesAchievementRewards.gamesCovered >= 18 ? 'ok' : 'warning',
       'warning',
@@ -474,7 +478,7 @@
     ));
 
     gates.push(makeGate(
-      'v927-profile-appearance-rewards',
+      'v928-profile-appearance-rewards',
       'Témata a pozadí jako profilové odměny',
       signals.profileAppearanceRewards && signals.profileAppearanceRewards.themes && signals.profileAppearanceRewards.backgrounds ? 'ok' : 'warning',
       'warning',
@@ -483,9 +487,30 @@
       'ui'
     ));
 
+
     gates.push(makeGate(
-      'v927-manual-test-status',
-      'v927 skutečné mobil/Playwright testy',
+      'v928-rotace-names-dock-stability',
+      'Rotace seznam jmen bez cuknutí',
+      signals.rotaceNamesDock && signals.rotaceNamesDock.ok ? 'ok' : 'warning',
+      'warning',
+      signals.rotaceNamesDock && signals.rotaceNamesDock.dom ? ('position ' + String(signals.rotaceNamesDock.dom.namesGridPosition || '—') + ', bottom ' + String(signals.rotaceNamesDock.dom.namesGridBottom || '—')) : 'rotace dock helper chybí',
+      'Na mobilu ověřit, že seznam jmen po přepnutí na Rotaci necukne a zůstane nad spodním panelem.',
+      'ui/styles'
+    ));
+
+    gates.push(makeGate(
+      'v928-lada-performance-lite',
+      'Láďův režim výkon',
+      signals.ladaPerformance && signals.ladaPerformance.ok ? 'ok' : 'warning',
+      'warning',
+      signals.ladaPerformance ? ('active ' + String(!!signals.ladaPerformance.active) + ', mode ' + String(signals.ladaPerformance.mode || '—') + ', frame ' + String(signals.ladaPerformance.frameMs || signals.ladaPerformance.ladaPerformanceFrameMs || '—')) : 'lada performance helper chybí',
+      'Na Ládově telefonu ručně ověřit plynulost; staticky lze potvrdit jen odlehčený profil a CSS guardy.',
+      'ui/games/css'
+    ));
+
+    gates.push(makeGate(
+      'v928-manual-test-status',
+      'v928 skutečné mobil/Playwright testy',
       'manual',
       'manual',
       signals.manualValidationReadiness ? ('checklist ' + String(signals.manualValidationReadiness.checklistCount || 0) + ', blocking ' + String(signals.manualValidationReadiness.blockingChecklistCount || 0)) : 'staticky nelze potvrdit',
@@ -519,7 +544,7 @@
   window.getRakReleaseGatePolicy = function getRakReleaseGatePolicy() {
     return {
       ok: true,
-      mode: 'release-gate-policy-v927',
+      mode: 'release-gate-policy-v928',
       version: safeString(window.APP_VERSION || VERSION),
       checkedAt: nowIso(),
       statuses: [
@@ -584,7 +609,7 @@
     const policy = window.getRakReleaseGatePolicy();
     return {
       ok: !!(matrix && matrix.ok),
-      mode: 'release-gates-closure-v927',
+      mode: 'release-gates-closure-v928',
       version: safeString(window.APP_VERSION || VERSION),
       checkedAt: nowIso(),
       phase: 'phase K release gating / checklist matrix',
@@ -601,7 +626,7 @@
       policyChanges: false,
       onlineFlowChanges: false,
       dataMutation: false,
-      nextStep: 'Další bezpečný krok: reálný mobil/browser smoke podle v927 checklistu; případné chyby opravit po jedné bez zásahu do online flow.'
+      nextStep: 'Další bezpečný krok: reálný mobil/browser smoke podle v928 checklistu; případné chyby opravit po jedné bez zásahu do online flow.'
     };
   };
 

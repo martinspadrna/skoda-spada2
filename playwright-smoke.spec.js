@@ -1,4 +1,4 @@
-// RaK v.1.5 (927) – DOM smoke kostra rozšířená o validační readiness helpery.
+// RaK v.1.5 (928) – DOM smoke kostra rozšířená o validační readiness helpery.
 // Instalace/spuštění mimo hotfix: npx playwright install chromium && npm run test:smoke
 const { test, expect } = require('@playwright/test');
 
@@ -31,7 +31,7 @@ test('diagnostics expose due diligence closure', async ({ page }) => {
   expect(closure.percentComplete).toBeGreaterThanOrEqual(100);
 });
 
-test('v927 validation readiness helpers are exposed', async ({ page }) => {
+test('v928 validation readiness helpers are exposed', async ({ page }) => {
   await openApp(page);
   const readiness = await page.evaluate(() => {
     if (typeof window.getRakManualValidationReadinessHealth !== 'function') return null;
@@ -55,7 +55,7 @@ test('release gates stay readable and keep manual gates explicit', async ({ page
 });
 
 
-test('v927 games reward helpers are exposed', async ({ page }) => {
+test('v928 games reward helpers are exposed', async ({ page }) => {
   await openApp(page);
   const rewards = await page.evaluate(() => {
     if (typeof window.getRakGamesAchievementRewardHealth !== 'function') return null;
@@ -67,7 +67,7 @@ test('v927 games reward helpers are exposed', async ({ page }) => {
   expect(rewards.shiftDRewards).toBeGreaterThanOrEqual(36);
 });
 
-test('v927 profile appearance rewards are exposed', async ({ page }) => {
+test('v928 profile appearance rewards are exposed', async ({ page }) => {
   await openApp(page);
   const appearance = await page.evaluate(() => {
     if (typeof window.getRakProfileAppearanceRewardHealth !== 'function') return null;
@@ -78,4 +78,31 @@ test('v927 profile appearance rewards are exposed', async ({ page }) => {
   expect(appearance.profileBackgroundStorage).toContain('uiSettings.backgroundId');
   expect(appearance.themes.total).toBeGreaterThan(1);
   expect(appearance.backgrounds.total).toBeGreaterThan(1);
+});
+
+test('v928 rotace names dock helper is exposed', async ({ page }) => {
+  await openApp(page);
+  const rotaceNav = page.locator('[data-action="rotace"], [data-page="rotace"]').first();
+  if (await rotaceNav.count()) await rotaceNav.click();
+  const dock = await page.evaluate(() => {
+    if (typeof window.getRakRotaceNamesDockHealth !== 'function') return null;
+    return window.getRakRotaceNamesDockHealth();
+  });
+  expect(dock).toBeTruthy();
+  expect(dock.ok).toBeTruthy();
+  expect(dock.mode).toContain('v928');
+});
+
+test('v928 lada performance profile exposes conservative frame budget', async ({ page }) => {
+  await openApp(page);
+  const profile = await page.evaluate(() => {
+    if (typeof window.getRakLadaPerformanceProfile !== 'function') return null;
+    return window.buildRakLadaPerformanceProfile
+      ? window.buildRakLadaPerformanceProfile(true, { reasons: ['test'], memory: 4, dpr: 3, width: 360 }, { lightweightManual: true })
+      : window.getRakLadaPerformanceProfile();
+  });
+  expect(profile).toBeTruthy();
+  expect(profile.active).toBeTruthy();
+  expect(profile.frameMs).toBeGreaterThanOrEqual(34);
+  expect(profile.canvasDprMax).toBe(1);
 });

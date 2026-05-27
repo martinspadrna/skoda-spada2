@@ -691,8 +691,8 @@
       perGame[id] = { achievementCount: direct, shiftDRewardCount: dShift, ok: direct >= 3 && dShift >= 2 };
     });
     return {
-      version: window.APP_VERSION || 'v.1.5 (927)',
-      mode: 'games-achievement-reward-health-v927',
+      version: window.APP_VERSION || 'v.1.5 (928)',
+      mode: 'games-achievement-reward-health-v928',
       totalAchievementDefs: defs.length,
       gamesCovered: ids.length,
       perGame,
@@ -1402,7 +1402,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok: noMs && hasSeconds,
       mode: 'games-top-score-seconds-v923',
-      version: String(window.APP_VERSION || 'v.1.5 (927)'),
+      version: String(window.APP_VERSION || 'v.1.5 (928)'),
       scope: 'Top výsledky her – reakční čas ve vteřinách místo milisekund',
       probe,
       note: 'Herní Top score pro Reaction Test zobrazuje čas jako sekundy s desetinnou čárkou, ne jako ms.'
@@ -1717,28 +1717,28 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     try {
       if (typeof window.getRakLadaPerformanceProfile === 'function') return window.getRakLadaPerformanceProfile();
     } catch (err) {}
-    return { active: rakGameIsLadaMode(), level: rakGameIsLadaMode() ? 'lite' : 'normal', frameMs: rakGameIsLadaMode() ? 34 : 0, resizeThrottleMs: rakGameIsLadaMode() ? 520 : 120, leaderboardTtlMs: rakGameIsLadaMode() ? 180000 : 60000, idleDelayMs: rakGameIsLadaMode() ? 220 : 60, maxDeltaMs: rakGameIsLadaMode() ? 34 : 48 };
+    return { active: rakGameIsLadaMode(), level: rakGameIsLadaMode() ? 'turbo' : 'normal', frameMs: rakGameIsLadaMode() ? 42 : 0, resizeThrottleMs: rakGameIsLadaMode() ? 700 : 120, leaderboardTtlMs: rakGameIsLadaMode() ? 240000 : 60000, idleDelayMs: rakGameIsLadaMode() ? 360 : 60, maxDeltaMs: rakGameIsLadaMode() ? 42 : 48, domBatchDelayMs: rakGameIsLadaMode() ? 220 : 40 };
   }
 
   function rakGameFrameMs() {
     const profile = rakGamePerformanceProfile();
-    return rakGameIsLadaMode() ? Math.max(28, Number(profile.frameMs || 34) || 34) : 0;
+    return rakGameIsLadaMode() ? Math.max(34, Number(profile.frameMs || 42) || 42) : 0;
   }
 
   function rakGameResizeThrottleMs() {
     const profile = rakGamePerformanceProfile();
-    return rakGameIsLadaMode() ? Math.max(240, Number(profile.resizeThrottleMs || 520) || 520) : Math.max(80, Number(profile.resizeThrottleMs || 120) || 120);
+    return rakGameIsLadaMode() ? Math.max(360, Number(profile.resizeThrottleMs || 700) || 700) : Math.max(80, Number(profile.resizeThrottleMs || 120) || 120);
   }
 
   function rakGameLeaderboardTtl() {
     const base = Number(gamePerf && gamePerf.leaderboardTtlMs || 60000) || 60000;
     const profile = rakGamePerformanceProfile();
-    return rakGameIsLadaMode() ? Math.max(base, Number(profile.leaderboardTtlMs || 180000) || 180000) : base;
+    return rakGameIsLadaMode() ? Math.max(base, Number(profile.leaderboardTtlMs || 240000) || 240000) : base;
   }
 
   function rakGameSetInterval(fn, delay) {
     const profile = rakGamePerformanceProfile();
-    const ms = Math.max(rakGameIsLadaMode() ? Math.max(140, Number(profile.frameMs || 34) * 4) : 80, Number(delay) || 120);
+    const ms = Math.max(rakGameIsLadaMode() ? Math.max(180, Number(profile.frameMs || 42) * 4) : 80, Number(delay) || 120);
     const wrapped = () => {
       if (!rakGameShouldTick()) {
         gamePerf.intervalHiddenSkips += 1;
@@ -1768,7 +1768,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   let statsRenderPending = false;
   function rakGameScheduleIdle(fn, delay) {
     const profile = rakGamePerformanceProfile();
-    const ms = Math.max(20, Number(delay) || (rakGameIsLadaMode() ? Math.max(160, Number(profile.idleDelayMs || 220) || 220) : 60));
+    const ms = Math.max(20, Number(delay) || (rakGameIsLadaMode() ? Math.max(220, Number(profile.idleDelayMs || 360) || 360) : 60));
     const ric = window.requestIdleCallback;
     if (typeof ric === 'function') {
       return ric(() => {
