@@ -1,4 +1,4 @@
-// RaK v.1.5 (930) – DOM smoke kostra rozšířená o validační readiness helpery.
+// RaK v.1.5 (931) – DOM smoke kostra rozšířená o validační readiness helpery.
 // Instalace/spuštění mimo hotfix: npx playwright install chromium && npm run test:smoke
 const { test, expect } = require('@playwright/test');
 
@@ -115,4 +115,17 @@ test('v930 dashboard iOS glass theme helper is exposed', async ({ page }) => {
   expect(health.ok).toBeTruthy();
   expect(health.mode).toContain('v930');
   expect(health.themeAware).toBeTruthy();
+});
+
+test('v931 frezky correction sign toggle helper is exposed', async ({ page }) => {
+  await openApp(page);
+  const health = await page.evaluate(() => {
+    if (typeof window.getRakFrezkyCorrectionSignToggleHealth !== 'function') return null;
+    return window.getRakFrezkyCorrectionSignToggleHealth();
+  });
+  expect(health).toBeTruthy();
+  expect(health.ok).toBeTruthy();
+  expect(health.mode).toContain('v931');
+  expect(health.buttons.taper).toBeTruthy();
+  expect(health.buttons.shift).toBeTruthy();
 });

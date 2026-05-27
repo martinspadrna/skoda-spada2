@@ -1,8 +1,8 @@
-// v.1.5 (930) – release gating/checklist vrstva s validační readiness closure bez mutací.
+// v.1.5 (931) – release gating/checklist vrstva včetně znaménkových přepínačů frézek.
 
 (function setupRakReleaseGates() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
-  const VERSION = 'v.1.5 (930)';
+  const VERSION = 'v.1.5 (931)';
   const MODE = 'release-gates-readonly-v929';
 
   try {
@@ -103,6 +103,7 @@
     const profileAppearanceRewards = readDiag('profileAppearanceRewards', 'getRakProfileAppearanceRewardHealth');
     const dashboardGlassTheme = readDiag('dashboardGlassTheme', 'getRakDashboardGlassThemeHealth');
     const rotaceNamesDock = readDiag('rotaceNamesDock', 'getRakRotaceNamesDockHealth');
+    const frezkyCorrectionSignToggle = readDiag('frezkyCorrectionSignToggle', 'getRakFrezkyCorrectionSignToggleHealth');
     const ladaPerformance = readDiag('ladaPerformance', 'getLadaPerformanceHealth');
 
     return {
@@ -144,6 +145,7 @@
       profileAppearanceRewards,
       dashboardGlassTheme,
       rotaceNamesDock,
+      frezkyCorrectionSignToggle,
       ladaPerformance
     };
   }
@@ -151,7 +153,7 @@
   function buildGateMatrix(signals) {
     const gates = [];
     const version = safeString(window.APP_VERSION || VERSION);
-    const versionOk = /^v\.1\.5 \(929\)$/.test(version);
+    const versionOk = /^v\.1\.5 \(931\)$/.test(version);
 
     gates.push(makeGate(
       'version-consistency',
@@ -511,6 +513,17 @@
       signals.rotaceNamesDock && signals.rotaceNamesDock.dom ? ('position ' + String(signals.rotaceNamesDock.dom.namesGridPosition || '—') + ', bottom ' + String(signals.rotaceNamesDock.dom.namesGridBottom || '—')) : 'rotace dock helper chybí',
       'Na mobilu ověřit, že seznam jmen po přepnutí na Rotaci necukne, zůstane nad spodním panelem a dlaždice nejsou zmenšené.',
       'ui/styles'
+    ));
+
+
+    gates.push(makeGate(
+      'v931-frezky-correction-sign-toggle',
+      'Korekce Frézky +/− přepínače',
+      signals.frezkyCorrectionSignToggle && signals.frezkyCorrectionSignToggle.ok ? 'ok' : 'warning',
+      'warning',
+      signals.frezkyCorrectionSignToggle ? ('konicita ' + String(signals.frezkyCorrectionSignToggle.buttons && signals.frezkyCorrectionSignToggle.buttons.taper ? 'OK' : 'chybí') + ', fhβ ' + String(signals.frezkyCorrectionSignToggle.buttons && signals.frezkyCorrectionSignToggle.buttons.shift ? 'OK' : 'chybí')) : 'helper znaménka frézek chybí',
+      'Na mobilu ověřit, že tlačítko +/− u konicity a fhβ mění znaménko stejně jako u korekcí soustruhů a výpočet přebírá správnou hodnotu.',
+      'soustruhy/index/styles'
     ));
 
     gates.push(makeGate(

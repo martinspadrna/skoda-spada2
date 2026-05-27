@@ -31,6 +31,9 @@ function resetFields(ids, resultIds) {
   if (safeIds.some(id => String(id || '').indexOf('lathe_axis_drill') === 0)) {
     resetLatheAxisSignButtons();
   }
+  if (safeIds.some(id => String(id || '').indexOf('fhb_current_') === 0)) {
+    resetFrezkyCorrectionSignButtons();
+  }
   (Array.isArray(resultIds) ? resultIds : []).forEach(id => {
     const el = document.getElementById(id);
     if (el) setCalcOutputHtml(el, "", id);
@@ -1042,6 +1045,46 @@ function toggleLatheAxisInputSign(button) {
   if (result && String(result.innerHTML || '').trim()) calcLatheAxisCorrection({ keepEmpty: true });
 }
 
+function updateFrezkyCorrectionSignToggleForInput(inputOrId) {
+  const input = typeof inputOrId === 'string' ? document.getElementById(inputOrId) : inputOrId;
+  if (!input || !input.id) return;
+  const raw = String(input.value || '').trim().replace(/[−–—]/g, '-');
+  const isNegative = raw.indexOf('-') === 0;
+  const btn = document.querySelector('[data-action="toggle-frezky-correction-sign"][data-target-input="' + input.id + '"]');
+  if (!btn) return;
+  btn.textContent = isNegative ? '−' : '+';
+  btn.classList.toggle('isNegative', isNegative);
+  btn.setAttribute('aria-pressed', isNegative ? 'true' : 'false');
+}
+
+function resetFrezkyCorrectionSignButtons() {
+  ['fhb_current_taper_corr', 'fhb_current_shift_corr'].forEach(updateFrezkyCorrectionSignToggleForInput);
+}
+
+function toggleFrezkyCorrectionInputSign(button) {
+  if (!button) return;
+  const id = String((button.dataset && button.dataset.targetInput) || '').trim();
+  const input = id ? document.getElementById(id) : null;
+  if (!input) return;
+  let raw = String(input.value || '').trim().replace(/[−–—]/g, '-');
+  if (raw.indexOf('-') === 0) {
+    raw = raw.replace(/^-+/, '');
+  } else if (raw.indexOf('+') === 0) {
+    raw = '-' + raw.slice(1);
+  } else {
+    raw = raw ? '-' + raw : '-';
+  }
+  input.value = raw;
+  updateFrezkyCorrectionSignToggleForInput(input);
+  try {
+    input.focus({ preventScroll: true });
+    const pos = String(input.value || '').length;
+    if (typeof input.setSelectionRange === 'function') input.setSelectionRange(pos, pos);
+  } catch (err) {}
+  const result = document.getElementById('fhbResult');
+  if (result && String(result.innerHTML || '').trim()) calcFrezkyFhbCorrection();
+}
+
 function formatLatheAxisCorrectionValue(value, options) {
   if (!Number.isFinite(value)) return '—';
   const opts = options || {};
@@ -1377,6 +1420,8 @@ function calcFrezkyFhbCorrection() {
   const c1Right = readCalcDecimal('fhb_c1_right');
   const c2Left = readCalcDecimal('fhb_c2_left');
   const c2Right = readCalcDecimal('fhb_c2_right');
+  updateFrezkyCorrectionSignToggleForInput('fhb_current_taper_corr');
+  updateFrezkyCorrectionSignToggleForInput('fhb_current_shift_corr');
   const currentTaperCorr = readFhbCorrectionInput('fhb_current_taper_corr');
   const currentShiftCorr = readFhbCorrectionInput('fhb_current_shift_corr');
 
@@ -1668,3 +1713,27 @@ function formatSignedFhbCorrection(value) {
   return sign + formatFhbCorrection(value);
 }
 
+
+
+function getRakFrezkyCorrectionSignToggleHealth() {
+  const taperButton = document.querySelector('[data-action="toggle-frezky-correction-sign"][data-target-input="fhb_current_taper_corr"]');
+  const shiftButton = document.querySelector('[data-action="toggle-frezky-correction-sign"][data-target-input="fhb_current_shift_corr"]');
+  const taperInput = document.getElementById('fhb_current_taper_corr');
+  const shiftInput = document.getElementById('fhb_current_shift_corr');
+  return {
+    ok: !!(taperButton && shiftButton && taperInput && shiftInput),
+    version: window.APP_VERSION || 'v.1.5 (931)',
+    mode: 'frezky-correction-sign-toggle-v931',
+    scope: 'Korekce Frézky / aktuální korekce ve stroji',
+    buttons: {
+      taper: !!taperButton,
+      shift: !!shiftButton
+    },
+    inputs: {
+      taper: !!taperInput && String(taperInput.getAttribute('data-frezky-correction-signed') || '') === '1',
+      shift: !!shiftInput && String(shiftInput.getAttribute('data-frezky-correction-signed') || '') === '1'
+    },
+    note: 'Přepínače +/− jsou jen UI pomůcka pro zadání znaménka; výpočet dál používá hodnotu z inputu.'
+  };
+}
+window.getRakFrezkyCorrectionSignToggleHealth = getRakFrezkyCorrectionSignToggleHealth;

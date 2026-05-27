@@ -4534,7 +4534,7 @@ function getRakTttAiHardeningV922Health() {
   return {
     ok: true,
     mode: 'ttt-ai-hardening-v923',
-    version: String(window.APP_VERSION || 'v.1.5 (930)'),
+    version: String(window.APP_VERSION || 'v.1.5 (931)'),
     thirteenTurnClamp: true,
     hardSearchDepthEarly: 8,
     hardSearchDepthMid: 8,
@@ -6122,10 +6122,10 @@ function buildAppHistoryHtml(versionText) {
       range: 'v.1.5 901–950',
       title: 'Aktuální stabilizace, bezpečnost a provozní detaily',
       lines: [
-        'Hlavní změny: dokončení online game contract auditu, release readiness/monitoring/rollback vrstvy, AppSec/privacy audit, release gates, výkonový/CI audit, finální due diligence report, prompt-compliance dokumenty v924, validační runbook v925, herní odměnová vrstva v926 a mobilní stabilizace Rotace/Láďova režimu v928 a dashboard glass podle tématu ve v929. V930 vrací větší dlaždice jmen v Rotaci, odstraňuje opožděné přeměřování docku a posouvá Dashboard víc do iOS glass stylu bez pozadí kolem ikon.',
+        'Hlavní změny: dokončení online game contract auditu, release readiness/monitoring/rollback vrstvy, AppSec/privacy audit, release gates, výkonový/CI audit, finální due diligence report, prompt-compliance dokumenty v924, validační runbook v925, herní odměnová vrstva v926 a mobilní stabilizace Rotace/Láďova režimu v928 a dashboard glass podle tématu ve v929. V930 vrací větší dlaždice jmen v Rotaci, odstraňuje opožděné přeměřování docku a posouvá Dashboard víc do iOS glass stylu bez pozadí kolem ikon. V931 doplňuje u korekcí frézek přepínání znaménka +/− pro konicitu a fhβ stejně jako u soustruhů.',
         'Kantýna/jídelna se srovnala podle běžné a mimořádné provozní doby; rozklik teď odděluje běžný režim a přesčasové rozdíly.',
         'Herní Top score a profily se resetovaly na čistý start; Piškvorky Top score mají zobrazovat datum i čas a Supabase výsledky byly znovu vyčištěné. V926 přidala achievementy pro každou hru včetně D-směnových cílů; v928 řeší stabilitu docku jmen v Rotaci a v929 průhledný theme-aware glass dashboard.',
-        'Pravidlo historie: O aplikaci drží hlavně stručné souhrny po cca 50 verzích; v924 formálně uzavřela auditní prompty, v925 přidala praktický validační checklist a v926 ukládá aktivní téma/pozadí na profil jako odměny za progres a v928 přidává adaptivní mobilní dock + odlehčení Láďova režimu v929 sjednocuje dashboard panely s aktivním tématem a v930 řeší stabilní dock jmen + čistší iOS glass Dashboard bez ikonových kapslí.'
+        'Pravidlo historie: O aplikaci drží hlavně stručné souhrny po cca 50 verzích; v924 formálně uzavřela auditní prompty, v925 přidala praktický validační checklist a v926 ukládá aktivní téma/pozadí na profil jako odměny za progres a v928 přidává adaptivní mobilní dock + odlehčení Láďova režimu v929 sjednocuje dashboard panely s aktivním tématem a v930 řeší stabilní dock jmen + čistší iOS glass Dashboard bez ikonových kapslí a v931 sjednocuje znaménkové přepínače u korekcí frézek.'
       ]
     },
     {
@@ -12401,7 +12401,7 @@ function applyProfileUiPreferencesForActiveAccount(options = {}) {
   const defaultTheme = normalizeThemePreferenceId('default', 'default');
   const defaultBg = normalizeBackgroundPreferenceId('ios-mesh', 'ios-mesh');
   let changed = false;
-  // v.1.5 (930): vzhled je profilový. Nový/prázdný profil nezačne omylem vzhledem po předchozím přihlášeném profilu.
+  // v.1.5 (931): vzhled je profilový. Nový/prázdný profil nezačne omylem vzhledem po předchozím přihlášeném profilu.
   if (!ui.themeId) { ui.themeId = defaultTheme; changed = true; }
   if (!ui.backgroundId) { ui.backgroundId = defaultBg; changed = true; }
   const rewardMetrics = getThemeUnlockMetrics(profile);
@@ -12800,7 +12800,7 @@ function getRakProfileAppearanceRewardHealth() {
   const themeRewards = themes.filter(item => String(item && item.id || '') !== 'default');
   const backgroundRewards = backgrounds.filter(item => String(item && item.id || '') !== 'ios-mesh');
   return {
-    version: window.APP_VERSION || 'v.1.5 (930)',
+    version: window.APP_VERSION || 'v.1.5 (931)',
     mode: 'profile-appearance-reward-health-v928',
     activeProfile: metrics.hasProfile,
     profileThemeStorage: 'account.uiSettings.themeId',
@@ -12889,7 +12889,7 @@ function getRakDashboardGlassThemeHealth() {
   const lightweight = /(?:^|\s)(?:lightweightMode|lowEndDevice|ladaMode)(?:\s|$)/.test(bodyClass);
   return {
     ok: true,
-    version: window.APP_VERSION || 'v.1.5 (930)',
+    version: window.APP_VERSION || 'v.1.5 (931)',
     mode: 'dashboard-ios-glass-icons-flat-v930',
     theme,
     background,
@@ -12925,7 +12925,7 @@ try {
 function getRakRotaceNamesDockHealth() {
   const result = {
     ok: true,
-    version: window.APP_VERSION || 'v.1.5 (930)',
+    version: window.APP_VERSION || 'v.1.5 (931)',
     mode: 'rotace-names-dock-stable-css-v930',
     checkedAt: new Date().toISOString(),
     scope: 'Rotace / seznam jmen / stabilní spodní dock',

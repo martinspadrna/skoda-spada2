@@ -1,4 +1,4 @@
-// v.1.5 (930) – Rotace dock stabilizace a Dashboard iOS glass bez zásahu do online flow.
+// v.1.5 (931) – Korekce Frézky: přepínače znaménka u aktuálních korekcí bez zásahu do online flow.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app.js', 'loaded', { source: 'index' }); } catch (err) {}
 
 
@@ -108,6 +108,7 @@ function installDelegatedAppActions() {
     'set-lathe-axis-machine': (el) => setLatheAxisCorrectionMachine(el),
     'calc-lathe-axis-correction': () => calcLatheAxisCorrection(),
     'toggle-lathe-axis-sign': (el) => toggleLatheAxisInputSign(el),
+    'toggle-frezky-correction-sign': (el) => toggleFrezkyCorrectionInputSign(el),
     'open-lathe-axis-help': () => openLatheAxisCorrectionHelp(),
     'page-korekce-frezky': () => showPage('korekce-frezky'),
     'page-korekce-brusy': () => showPage('korekce-brusy'),
@@ -207,8 +208,14 @@ function installDelegatedAppActions() {
     const target = event.target && typeof event.target.matches === 'function'
       ? event.target
       : null;
-    if (!target || !target.matches('input[data-lathe-axis-signed="1"]')) return;
-    if (typeof updateLatheAxisSignToggleForInput === 'function') updateLatheAxisSignToggleForInput(target);
+    if (!target) return;
+    if (target.matches('input[data-lathe-axis-signed="1"]')) {
+      if (typeof updateLatheAxisSignToggleForInput === 'function') updateLatheAxisSignToggleForInput(target);
+      return;
+    }
+    if (target.matches('input[data-frezky-correction-signed="1"]')) {
+      if (typeof updateFrezkyCorrectionSignToggleForInput === 'function') updateFrezkyCorrectionSignToggleForInput(target);
+    }
   });
 
   document.addEventListener('change', (event) => {
@@ -1237,6 +1244,7 @@ function getPhaseTenActionHealth() {
       'set-lathe-axis-machine',
       'calc-lathe-axis-correction',
       'toggle-lathe-axis-sign',
+      'toggle-frezky-correction-sign',
       'open-lathe-axis-help',
       'page-korekce-frezky',
       'page-korekce-brusy',
@@ -1387,6 +1395,7 @@ function getPhaseTenFormHealth() {
       'set-lathe-axis-machine',
       'calc-lathe-axis-correction',
       'toggle-lathe-axis-sign',
+      'toggle-frezky-correction-sign',
       'open-lathe-axis-help',
       'reset-soustruhy',
       'reset-fields',

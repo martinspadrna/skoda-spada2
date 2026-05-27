@@ -1,3 +1,11 @@
+## v.1.5 (931)
+
+- Korekce → Frézky: u aktuální korekce `Konicita` a `fhβ` jsou nově přepínací tlačítka `+ / −` stejně jako u korekcí na soustruhách.
+- Přepínač mění znaménko přímo v inputu, synchronizuje se i při ručním zápisu mínusu a při zobrazeném výsledku přepočítá výsledek.
+- Přidaný read-only helper `getRakFrezkyCorrectionSignToggleHealth()` a release gate signál `v931-frezky-correction-sign-toggle`.
+- Přidané dokumenty `frezky-correction-sign-toggle-v931.md` a `about-50-version-summary-v931.md`.
+- Verze sjednocena na v.1.5 (931), cache na `v1.5-931`, realtime kanál na `rak-public-live-v931`, package na `1.5.931`.
+
 ## v.1.5 (930)
 
 - Rotace: spodní panel se jmény už nepoužívá opožděné přeměřování pozice po otevření stránky; dock drží stabilní CSS rezervu, aby po přepnutí na Rotaci necukal.

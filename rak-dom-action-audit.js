@@ -1,4 +1,4 @@
-// v.1.5 (930) – DOM/action registry audit uzavřený, bez přepojení handlerů.
+// v.1.5 (931) – DOM/action registry audit včetně přepínačů znaménka u korekcí frézek.
 
 (function setupRakDomActionRegistryAudit() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -42,7 +42,7 @@
     ok: null,
     status: 'not-run',
     mode: 'dom-action-smoke-report-v897',
-    version: 'v.1.5 (930)',
+    version: 'v.1.5 (931)',
     checkedAt: null,
     lastStage: 'čeká na DOM/action kontrolu',
     runCount: 0,
@@ -77,7 +77,7 @@
       DOM_ACTION_SMOKE_REPORT.ok = ok;
       DOM_ACTION_SMOKE_REPORT.status = ok ? 'ok' : 'kontrola';
       DOM_ACTION_SMOKE_REPORT.mode = 'dom-action-smoke-report-v897';
-      DOM_ACTION_SMOKE_REPORT.version = String(window.APP_VERSION || 'v.1.5 (930)');
+      DOM_ACTION_SMOKE_REPORT.version = String(window.APP_VERSION || 'v.1.5 (931)');
       DOM_ACTION_SMOKE_REPORT.checkedAt = new Date().toISOString();
       DOM_ACTION_SMOKE_REPORT.lastStage = String(stage || 'dom-action-health');
       DOM_ACTION_SMOKE_REPORT.runCount = Number(DOM_ACTION_SMOKE_REPORT.runCount || 0) + 1;
@@ -137,6 +137,7 @@
     'soustruh-combo126-start': { category: 'calculators', required: ['data-combo-startsize'], severity: 'issue', note: 'combo 126 start musí znát data-combo-startsize' },
     'set-lathe-axis-machine': { category: 'corrections', required: ['data-lathe-axis-machine'], severity: 'issue', note: 'korekce vrtáků musí znát zvolený stroj' },
     'toggle-lathe-axis-sign': { category: 'corrections', required: ['data-target-input'], severity: 'issue', note: 'přepínač znaménka musí znát cílové input pole' },
+    'toggle-frezky-correction-sign': { category: 'corrections', required: ['data-target-input'], severity: 'issue', note: 'přepínač znaménka frézek musí znát cílové input pole' },
     'set-fhb-target-preset': { category: 'corrections', required: ['data-fhb-key', 'data-fhb-left', 'data-fhb-right'], optional: ['data-fhb-label'], severity: 'issue', note: 'fhβ preset musí znát klíč a cílové hodnoty' },
     'open-frezky-correction-help': { category: 'corrections', required: ['data-help-type'], severity: 'issue', note: 'nápověda frézek musí znát typ obrázku' },
     'month-select': { category: 'rotationStats', required: [], severity: 'warning', note: 'select má cílový měsíc přímo v options' },
@@ -414,6 +415,7 @@
       if (action === 'set-prog' && !String(node.getAttribute('data-prog') || '').trim()) missingTargets.push('set-prog data-prog');
       if (action === 'set-lathe-axis-machine' && !String(node.getAttribute('data-lathe-axis-machine') || '').trim()) missingTargets.push('set-lathe-axis-machine data-lathe-axis-machine');
       if (action === 'toggle-lathe-axis-sign' && !String(node.getAttribute('data-target-input') || '').trim()) missingTargets.push('toggle-lathe-axis-sign data-target-input');
+      if (action === 'toggle-frezky-correction-sign' && !String(node.getAttribute('data-target-input') || '').trim()) missingTargets.push('toggle-frezky-correction-sign data-target-input');
       if (action === 'set-fhb-target-preset') {
         if (!String(node.getAttribute('data-fhb-key') || '').trim()) missingTargets.push('set-fhb-target-preset data-fhb-key');
         if (!String(node.getAttribute('data-fhb-left') || '').trim()) missingTargets.push('set-fhb-target-preset data-fhb-left');
@@ -446,7 +448,7 @@
     });
 
     seen.forEach((items, action) => {
-      if (items.length > 1 && !['reset-fields', 'open-game', 'set-machine', 'set-prog', 'set-fhb-target-preset', 'set-lathe-axis-machine', 'toggle-lathe-axis-sign'].includes(action)) {
+      if (items.length > 1 && !['reset-fields', 'open-game', 'set-machine', 'set-prog', 'set-fhb-target-preset', 'set-lathe-axis-machine', 'toggle-lathe-axis-sign', 'toggle-frezky-correction-sign'].includes(action)) {
         duplicateActions.push(action + ' ×' + items.length);
       }
     });
