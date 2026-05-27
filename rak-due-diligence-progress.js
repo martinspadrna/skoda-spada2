@@ -1,7 +1,8 @@
-// v.1.5 (923) – due diligence audit progress tracker for the original RaK audit prompt.
+// v.1.5 (927) – due diligence audit progress + prompt-compliance closure tracker.
 (function setupRakDueDiligenceAuditProgress() {
-  const VERSION = 'v.1.5 (923)';
-  const MODE = 'due-diligence-audit-progress-v923';
+  const VERSION = 'v.1.5 (927)';
+  const MODE = 'due-diligence-audit-progress-v927';
+
 
   try {
     if (typeof window.rakMarkModuleReady === 'function') {
@@ -37,7 +38,7 @@
     item('build-delivery', '8. Build / delivery / deployment', 100, '0 %', 'ZIP pravidla, export manifest, SW verze, release ops checklist a CI/CD snippet jsou pokryté.', 'Doplnit reálný hosting/staging postup podle toho, kde se bude app nasazovat.'),
     item('monitoring-rollback', '9. Monitoring / alerting / rollback', 100, '0 %', 'Release ops, monitoring map, rollback playbook a výkonové KPI jsou hotové jako read-only dokumentace.', 'Doplnit reálné prahy až po nasbírání mobilních měření a provozních chyb.'),
     item('implementation-plan', '10. Implementační plán', 100, '0 %', 'Plán se průběžně realizuje v malých i větších bezpečných buildech bez zásahů do hotových funkcí.', 'Doplnit finální fázovou tabulku a mermaid gantt do jedné zprávy.'),
-    item('final-report', 'Povinný finální auditní výstup', 100, '0 %', 'Finální sjednocený report existuje v assets/docs/due-diligence-final-report-v923.md a spojuje shrnutí, tabulky, CI/CD, monitoring, rollback i mermaid diagramy.', 'Doplnit reálná mobilní měření a první Playwright smoke testy.')
+    item('final-report', 'Povinný finální auditní výstup', 100, '0 %', 'Finální prompt-compliance sada existuje v assets/docs/*final-v924.md a formálně uzavírá architekturu, bezpečnost/výkon/stabilitu, test/CI, rollout/rollback i finální syntézu.', 'v927 doplnila ruční runbook; zbývá skutečné mobilní ověření a reálný Playwright smoke běh.')
   ];
 
   function summarize(list) {
@@ -63,7 +64,7 @@
       needsWorkCount: coverage.filter((row) => row.percentComplete < 80).length,
       nextFocus: [
         'Původní auditní zadání je zpracované podle dodaných podkladů.',
-        'Reálný mobilní test a skutečné spuštění Playwrightu zůstává ruční post-release validace.',
+        'Reálný mobilní test a skutečné spuštění Playwrightu zůstává ruční post-release validace podle v927 checklistu.',
         'Další práce může přejít na nové požadavky nebo implementaci výsledků auditu.'
       ],
       coverage
@@ -74,7 +75,7 @@
     const health = window.getRakDueDiligenceAuditProgressHealth();
     return {
       ok: true,
-      mode: 'due-diligence-remaining-work-v923',
+      mode: 'due-diligence-remaining-work-v924',
       version: health.version,
       checkedAt: health.checkedAt,
       percentRemaining: health.percentRemaining,
@@ -82,6 +83,50 @@
       remainingItems: []
     };
   };
+
+
+  window.getRakPromptComplianceClosureHealth = function getRakPromptComplianceClosureHealth() {
+    const docs = [
+      { id: 'architectureTechnicalAudit', label: 'Architektonický a technický audit', document: 'assets/docs/architecture-technical-audit-final-v924.md', percent: 100 },
+      { id: 'securityPerformanceStability', label: 'Security / performance / stability / UX audit', document: 'assets/docs/security-performance-stability-audit-final-v924.md', percent: 100 },
+      { id: 'refactorTestCicd', label: 'Refaktor, testy a CI/CD plán', document: 'assets/docs/refactor-test-cicd-plan-final-v924.md', percent: 100 },
+      { id: 'rolloutMonitoringRollback', label: 'Rollout, monitoring a rollback', document: 'assets/docs/rollout-monitoring-rollback-final-v924.md', percent: 100 },
+      { id: 'finalSynthesis', label: 'Finální seniorní due diligence syntéza', document: 'assets/docs/final-synthesis-report-v924.md', percent: 100 }
+    ];
+    const manual = [
+      { id: 'mobileManualValidation', label: 'Reálný mobilní/browser smoke test', status: 'manual', reason: 'Statický audit nemůže nahradit test na fyzickém mobilu a hostingu.' },
+      { id: 'realPlaywrightRun', label: 'Skutečný Playwright běh', status: 'manual', reason: 'Kostra existuje, ale reálný běh musí proběhnout mimo tento statický ZIP audit.' }
+    ];
+    const percent = Math.round(docs.reduce((sum, row) => sum + row.percent, 0) / docs.length);
+    return {
+      ok: percent === 100,
+      mode: 'prompt-compliance-closure-v927',
+      version: String(window.APP_VERSION || VERSION),
+      checkedAt: nowIso(),
+      percentComplete: percent,
+      documentaryComplete: percent === 100,
+      architectureTechnicalAudit: 100,
+      securityPerformanceStability: 100,
+      refactorTestCicd: 100,
+      rolloutMonitoringRollback: 100,
+      finalSynthesis: 100,
+      mobileManualValidation: 'manual',
+      realPlaywrightRun: 'manual',
+      documentCount: docs.length,
+      manualGateCount: manual.length,
+      documents: docs,
+      manualChecks: manual,
+      note: 'Prompt compliance je dokumentačně uzavřené; mobilní validace a reálný Playwright běh zůstávají ruční gate.'
+    };
+  };
+
+  try {
+    if (window.RaK && window.RaK.diagnostics && typeof window.RaK.diagnostics.register === 'function') {
+      window.RaK.diagnostics.register('promptComplianceClosure', window.getRakPromptComplianceClosureHealth);
+      window.RaK.diagnostics.register('dueDiligenceProgress', window.getRakDueDiligenceAuditProgressHealth);
+      window.RaK.diagnostics.register('dueDiligenceRemainingWork', window.getRakDueDiligenceRemainingWorkReport);
+    }
+  } catch (err) {}
 
   try {
     if (typeof window.rakMarkModuleReady === 'function') {

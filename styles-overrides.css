@@ -15482,3 +15482,43 @@ body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsCell{
 .statsOccupancyPointInfo{margin-top:4px;text-align:center;font-size:10px;line-height:1.2;color:rgba(255,255,255,.62);min-height:1.2em;}
 .statsOccupancyPointInfo[data-active="1"]{color:var(--soft);font-weight:760;}
 @media (max-width:430px){.statsOccupancyPointInfo{font-size:8.4px;margin-top:2px;}}
+
+/* v.1.5 (927): zamčené odměnové pozadí v nastavení vzhledu */
+.appMenuBackgroundCard.isLocked{
+  opacity:.62 !important;
+  filter:saturate(.72) brightness(.88) !important;
+}
+.appMenuBackgroundCard.isLocked .appMenuThemeBadge,
+.appMenuThemeCard.isLocked .appMenuThemeBadge{
+  color:rgba(255,255,255,.72) !important;
+}
+
+
+/* v.1.5 (927) – Rotace: seznam jmen o kousek výš nad spodním panelem. */
+#rotace.page.active #rotaceNamesPanel.active{
+  padding-bottom:calc(204px + env(safe-area-inset-bottom)) !important;
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid{
+  bottom:calc(76px + env(safe-area-inset-bottom)) !important;
+  max-height:calc(128px + env(safe-area-inset-bottom)) !important;
+  padding-top:16px !important;
+  padding-bottom:8px !important;
+  scroll-padding-top:16px !important;
+  scroll-margin-bottom:calc(76px + env(safe-area-inset-bottom)) !important;
+}
+@media (max-width:430px){
+  #rotace.page.active #rotaceNamesPanel.active{
+    padding-bottom:calc(198px + env(safe-area-inset-bottom)) !important;
+  }
+  #rotace.page.active #rotaceNamesPanel.active #namesGrid{
+    bottom:calc(72px + env(safe-area-inset-bottom)) !important;
+    max-height:calc(122px + env(safe-area-inset-bottom)) !important;
+    padding-top:16px !important;
+    padding-bottom:8px !important;
+  }
+}
+body.lightweightMode #rotace.page.active #rotaceNamesPanel.active #namesGrid,
+body.lowEndDevice #rotace.page.active #rotaceNamesPanel.active #namesGrid{
+  bottom:calc(72px + env(safe-area-inset-bottom)) !important;
+  max-height:calc(116px + env(safe-area-inset-bottom)) !important;
+}

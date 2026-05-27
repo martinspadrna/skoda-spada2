@@ -338,6 +338,22 @@
     return totals;
   }
 
+  function gamesGetContextForGame(account, id) {
+    const stat = gamesGetCurrentStatForContext(account, id);
+    return gamesGetStatContext(stat);
+  }
+
+  function gamesContextProgressForGame(account, id, field) {
+    const ctx = gamesGetContextForGame(account, id);
+    return Number(ctx && ctx[field] || 0) || 0;
+  }
+
+  function gamesContextDistinctDaysForGame(account, id, field) {
+    const ctx = gamesGetContextForGame(account, id);
+    const values = Array.isArray(ctx && ctx[field]) ? ctx[field] : [];
+    return new Set(values.map(String).filter(Boolean)).size;
+  }
+
   function gamesGetCurrentStatForContext(account, id) {
     if (!account || !account.stats) return {};
     if (id === 'ttt') return account.stats.ttt || {};
@@ -606,6 +622,42 @@
       { id: 'ships_online_25', title: 'Mořský veterán', desc: 'Dohraj 25 online her Lodí.', goalText: '25 online duelů', progress: (a) => arcadeStat(a.account, 'ships', 'plays'), target: 25 },
       { id: 'ships_online_wins_25', title: 'Admirál flotily', desc: 'Vyhraj 25 online her Lodí.', goalText: '25 online výher', progress: (a) => arcadeStat(a.account, 'ships', 'wins'), target: 25 },
       { id: 'daily_200', title: 'Denní železo', desc: 'Splň 200 denních challenge.', goalText: '200 challenge', progress: (a) => arcadeStat(a.account, 'daily', 'plays'), target: 200 },
+      { id: 'ttt_d_5', title: 'Piškvorky na D', desc: 'Dokonči 5 partií Piškvorek během aktivní směny D.', goalText: '5 partií na D', progress: (a) => gamesContextProgressForGame(a.account, 'ttt', 'shiftDPlays'), target: 5 },
+      { id: 'ttt_d_20', title: 'Déčkový taktik', desc: 'Dokonči 20 partií Piškvorek během aktivní směny D.', goalText: '20 partií na D', progress: (a) => gamesContextProgressForGame(a.account, 'ttt', 'shiftDPlays'), target: 20 },
+      { id: '2048_d_5', title: '2048 na D', desc: 'Dokonči 5 her 2048 během aktivní směny D.', goalText: '5 her 2048 na D', progress: (a) => gamesContextProgressForGame(a.account, '2048', 'shiftDPlays'), target: 5 },
+      { id: '2048_d_20', title: 'Noční skládání', desc: 'Dokonči 20 her 2048 během aktivní směny D.', goalText: '20 her 2048 na D', progress: (a) => gamesContextProgressForGame(a.account, '2048', 'shiftDPlays'), target: 20 },
+      { id: 'snake_d_5', title: 'Had na směně D', desc: 'Dokonči 5 her Snake během aktivní směny D.', goalText: '5 hadů na D', progress: (a) => gamesContextProgressForGame(a.account, 'snake', 'shiftDPlays'), target: 5 },
+      { id: 'snake_d_20', title: 'Déčkový had', desc: 'Dokonči 20 her Snake během aktivní směny D.', goalText: '20 hadů na D', progress: (a) => gamesContextProgressForGame(a.account, 'snake', 'shiftDPlays'), target: 20 },
+      { id: 'flap_d_5', title: 'Flappy na D', desc: 'Dokonči 5 jízd Flappy Car během aktivní směny D.', goalText: '5 jízd na D', progress: (a) => gamesContextProgressForGame(a.account, 'flap', 'shiftDPlays'), target: 5 },
+      { id: 'flap_d_20', title: 'Pilot déčka', desc: 'Dokonči 20 jízd Flappy Car během aktivní směny D.', goalText: '20 jízd na D', progress: (a) => gamesContextProgressForGame(a.account, 'flap', 'shiftDPlays'), target: 20 },
+      { id: 'aim_d_5', title: 'Terče na D', desc: 'Dokonči 5 kol Aim Traineru během aktivní směny D.', goalText: '5 Aim kol na D', progress: (a) => gamesContextProgressForGame(a.account, 'aim', 'shiftDPlays'), target: 5 },
+      { id: 'aim_d_20', title: 'Déčková muška', desc: 'Dokonči 20 kol Aim Traineru během aktivní směny D.', goalText: '20 Aim kol na D', progress: (a) => gamesContextProgressForGame(a.account, 'aim', 'shiftDPlays'), target: 20 },
+      { id: 'reaction_d_5', title: 'Reflex na D', desc: 'Dokonči 5 Reaction testů během aktivní směny D.', goalText: '5 reflexů na D', progress: (a) => gamesContextProgressForGame(a.account, 'reaction', 'shiftDPlays'), target: 5 },
+      { id: 'reaction_d_20', title: 'Déčkový blesk', desc: 'Dokonči 20 Reaction testů během aktivní směny D.', goalText: '20 reflexů na D', progress: (a) => gamesContextProgressForGame(a.account, 'reaction', 'shiftDPlays'), target: 20 },
+      { id: 'tetris_d_5', title: 'Tetris na D', desc: 'Dokonči 5 her Tetrisu během aktivní směny D.', goalText: '5 Tetris her na D', progress: (a) => gamesContextProgressForGame(a.account, 'tetris', 'shiftDPlays'), target: 5 },
+      { id: 'tetris_d_20', title: 'Bloky po směně', desc: 'Dokonči 20 her Tetrisu během aktivní směny D.', goalText: '20 Tetris her na D', progress: (a) => gamesContextProgressForGame(a.account, 'tetris', 'shiftDPlays'), target: 20 },
+      { id: 'shooter_d_5', title: 'Hangár D', desc: 'Dokonči 5 Space Shooter her během aktivní směny D.', goalText: '5 letů na D', progress: (a) => gamesContextProgressForGame(a.account, 'shooter', 'shiftDPlays'), target: 5 },
+      { id: 'shooter_d_20', title: 'Noční hlídka', desc: 'Dokonči 20 Space Shooter her během aktivní směny D.', goalText: '20 letů na D', progress: (a) => gamesContextProgressForGame(a.account, 'shooter', 'shiftDPlays'), target: 20 },
+      { id: 'brick_d_5', title: 'Cihly na D', desc: 'Dokonči 5 Brick Breaker her během aktivní směny D.', goalText: '5 bourání na D', progress: (a) => gamesContextProgressForGame(a.account, 'brick', 'shiftDPlays'), target: 5 },
+      { id: 'brick_d_20', title: 'Déčková demolice', desc: 'Dokonči 20 Brick Breaker her během aktivní směny D.', goalText: '20 bourání na D', progress: (a) => gamesContextProgressForGame(a.account, 'brick', 'shiftDPlays'), target: 20 },
+      { id: 'doodle_d_5', title: 'Skoky na D', desc: 'Dokonči 5 Doodle Jump her během aktivní směny D.', goalText: '5 skoků na D', progress: (a) => gamesContextProgressForGame(a.account, 'doodle', 'shiftDPlays'), target: 5 },
+      { id: 'doodle_d_20', title: 'Strop směny D', desc: 'Dokonči 20 Doodle Jump her během aktivní směny D.', goalText: '20 skoků na D', progress: (a) => gamesContextProgressForGame(a.account, 'doodle', 'shiftDPlays'), target: 20 },
+      { id: 'bubble_d_5', title: 'Bubliny na D', desc: 'Dokonči 5 Bubble Shooter her během aktivní směny D.', goalText: '5 bublin na D', progress: (a) => gamesContextProgressForGame(a.account, 'bubble', 'shiftDPlays'), target: 5 },
+      { id: 'bubble_d_20', title: 'Déčkový pop', desc: 'Dokonči 20 Bubble Shooter her během aktivní směny D.', goalText: '20 bublin na D', progress: (a) => gamesContextProgressForGame(a.account, 'bubble', 'shiftDPlays'), target: 20 },
+      { id: 'sudoku_d_5', title: 'Sudoku na D', desc: 'Vyřeš 5 Sudoku během aktivní směny D.', goalText: '5 Sudoku na D', progress: (a) => gamesContextProgressForGame(a.account, 'sudoku', 'shiftDPlays'), target: 5 },
+      { id: 'sudoku_d_20', title: 'Déčková logika', desc: 'Vyřeš 20 Sudoku během aktivní směny D.', goalText: '20 Sudoku na D', progress: (a) => gamesContextProgressForGame(a.account, 'sudoku', 'shiftDPlays'), target: 20 },
+      { id: 'mines_d_5', title: 'Miny na D', desc: 'Dokonči 5 Minesweeper her během aktivní směny D.', goalText: '5 min na D', progress: (a) => gamesContextProgressForGame(a.account, 'mines', 'shiftDPlays'), target: 5 },
+      { id: 'mines_d_20', title: 'Noční odminování', desc: 'Dokonči 20 Minesweeper her během aktivní směny D.', goalText: '20 min na D', progress: (a) => gamesContextProgressForGame(a.account, 'mines', 'shiftDPlays'), target: 20 },
+      { id: 'memory_d_5', title: 'Pexeso na D', desc: 'Dokonči 5 her Memory během aktivní směny D.', goalText: '5 pexes na D', progress: (a) => gamesContextProgressForGame(a.account, 'memory', 'shiftDPlays'), target: 5 },
+      { id: 'memory_d_20', title: 'Paměť směny D', desc: 'Dokonči 20 her Memory během aktivní směny D.', goalText: '20 pexes na D', progress: (a) => gamesContextProgressForGame(a.account, 'memory', 'shiftDPlays'), target: 20 },
+      { id: 'bomber_d_5', title: 'Bomby na D', desc: 'Dokonči 5 Bomberman mini her během aktivní směny D.', goalText: '5 bomb na D', progress: (a) => gamesContextProgressForGame(a.account, 'bomber', 'shiftDPlays'), target: 5 },
+      { id: 'bomber_d_20', title: 'Déčkový pyrotechnik', desc: 'Dokonči 20 Bomberman mini her během aktivní směny D.', goalText: '20 bomb na D', progress: (a) => gamesContextProgressForGame(a.account, 'bomber', 'shiftDPlays'), target: 20 },
+      { id: 'pampuch_d_5', title: 'Pampuch na D', desc: 'Dokonči 5 her Pampuch během aktivní směny D.', goalText: '5 Pampuchů na D', progress: (a) => gamesContextProgressForGame(a.account, 'pampuch', 'shiftDPlays'), target: 5 },
+      { id: 'pampuch_d_20', title: 'Bludiště po D', desc: 'Dokonči 20 her Pampuch během aktivní směny D.', goalText: '20 Pampuchů na D', progress: (a) => gamesContextProgressForGame(a.account, 'pampuch', 'shiftDPlays'), target: 20 },
+      { id: 'ships_d_5', title: 'Lodě na D', desc: 'Dohraj 5 her Lodí během aktivní směny D.', goalText: '5 duelů na D', progress: (a) => gamesContextProgressForGame(a.account, 'ships', 'shiftDPlays'), target: 5 },
+      { id: 'ships_d_20', title: 'Noční admirál', desc: 'Dohraj 20 her Lodí během aktivní směny D.', goalText: '20 duelů na D', progress: (a) => gamesContextProgressForGame(a.account, 'ships', 'shiftDPlays'), target: 20 },
+      { id: 'daily_d_5', title: 'Daily na D', desc: 'Splň 5 denních challenge během aktivní směny D.', goalText: '5 daily na D', progress: (a) => gamesContextProgressForGame(a.account, 'daily', 'shiftDPlays'), target: 5 },
+      { id: 'daily_d_20', title: 'Déčková rutina', desc: 'Splň 20 denních challenge během aktivní směny D.', goalText: '20 daily na D', progress: (a) => gamesContextProgressForGame(a.account, 'daily', 'shiftDPlays'), target: 20 },
       { id: 'ctx_shift_d_10', title: 'Déčko zapnuto', desc: 'Dokonči 10 her přímo v době, kdy běží směna D.', goalText: '10 her na D', progress: (a) => a.context.shiftDPlays || 0, target: 10 },
       { id: 'ctx_shift_d_40', title: 'D jako držák', desc: 'Dokonči 40 her přímo v době, kdy běží směna D.', goalText: '40 her na D', progress: (a) => a.context.shiftDPlays || 0, target: 40 },
       { id: 'ctx_online_25', title: 'Hraní s někým', desc: 'Dokonči 25 online her s dalším hráčem.', goalText: '25 online her', progress: (a) => a.context.onlinePlays || 0, target: 25 },
@@ -628,6 +680,27 @@
     const ctx = Object.assign({ account, context: gamesGetContextTotals(account) }, total);
     return getExtendedAchievementDefs().filter((def) => Number(def.progress(ctx) || 0) >= Number(def.target || 0)).length;
   }
+
+  function getRakGamesAchievementRewardHealth() {
+    const defs = getExtendedAchievementDefs();
+    const ids = ALL_GAMES.slice();
+    const perGame = {};
+    ids.forEach((id) => {
+      const direct = defs.filter(def => String(def && def.id || '').indexOf(id + '_') === 0 || String(def && def.id || '').indexOf(id.replace('2048','2048') + '_') === 0).length;
+      const dShift = defs.filter(def => String(def && def.id || '').indexOf(id + '_d_') === 0).length;
+      perGame[id] = { achievementCount: direct, shiftDRewardCount: dShift, ok: direct >= 3 && dShift >= 2 };
+    });
+    return {
+      version: window.APP_VERSION || 'v.1.5 (927)',
+      mode: 'games-achievement-reward-health-v927',
+      totalAchievementDefs: defs.length,
+      gamesCovered: ids.length,
+      perGame,
+      shiftDRewards: defs.filter(def => String(def && def.id || '').indexOf('_d_') >= 0 || String(def && def.id || '').indexOf('ctx_shift_d_') === 0).length,
+      notes: 'Read-only kontrola: každá hra má vlastní achievementy a D-směnové odměny; skutečné odemykání záleží na dokončených hrách profilu.'
+    };
+  }
+  window.getRakGamesAchievementRewardHealth = getRakGamesAchievementRewardHealth;
 
   function renderAchievementCard(def, current) {
     const target = Math.max(1, gamesProfileSafeInt(def && def.target, 999999999) || 1);
@@ -1329,7 +1402,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok: noMs && hasSeconds,
       mode: 'games-top-score-seconds-v923',
-      version: String(window.APP_VERSION || 'v.1.5 (923)'),
+      version: String(window.APP_VERSION || 'v.1.5 (927)'),
       scope: 'Top výsledky her – reakční čas ve vteřinách místo milisekund',
       probe,
       note: 'Herní Top score pro Reaction Test zobrazuje čas jako sekundy s desetinnou čárkou, ne jako ms.'

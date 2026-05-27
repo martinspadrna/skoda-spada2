@@ -1,9 +1,9 @@
-// v.1.5 (923) – release gating/checklist vrstva nad read-only audity bez mutací.
+// v.1.5 (927) – release gating/checklist vrstva s validační readiness closure bez mutací.
 
 (function setupRakReleaseGates() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
-  const VERSION = 'v.1.5 (923)';
-  const MODE = 'release-gates-readonly-v923';
+  const VERSION = 'v.1.5 (927)';
+  const MODE = 'release-gates-readonly-v927';
 
   try {
     if (typeof window.rakMarkModuleReady === 'function') {
@@ -96,6 +96,11 @@
     const mobilePerformanceSmokePlan = readDiag('mobilePerformanceSmokePlan', 'getRakMobilePerformanceSmokePlanHealth');
     const playwrightDomSmokeDraft = readDiag('playwrightDomSmokeDraft', 'getRakPlaywrightDomSmokeDraftHealth');
     const finalAuditClosure = readDiag('finalAuditClosure', 'getRakFinalAuditClosureHealth');
+    const promptComplianceClosure = readDiag('promptComplianceClosure', 'getRakPromptComplianceClosureHealth');
+    const manualValidationReadiness = readDiag('manualValidationReadiness', 'getRakManualValidationReadinessHealth');
+    const validationReadinessClosure = readDiag('validationReadinessClosure', 'getRakValidationReadinessClosureHealth');
+    const gamesAchievementRewards = readDiag('gamesAchievementRewards', 'getRakGamesAchievementRewardHealth');
+    const profileAppearanceRewards = readDiag('profileAppearanceRewards', 'getRakProfileAppearanceRewardHealth');
 
     return {
       releaseOpsChecklist,
@@ -128,14 +133,19 @@
       performanceCiClosure,
       mobilePerformanceSmokePlan,
       playwrightDomSmokeDraft,
-      finalAuditClosure
+      finalAuditClosure,
+      promptComplianceClosure,
+      manualValidationReadiness,
+      validationReadinessClosure,
+      gamesAchievementRewards,
+      profileAppearanceRewards
     };
   }
 
   function buildGateMatrix(signals) {
     const gates = [];
     const version = safeString(window.APP_VERSION || VERSION);
-    const versionOk = /^v\.1\.5 \(921\)$/.test(version);
+    const versionOk = /^v\.1\.5 \(927\)$/.test(version);
 
     gates.push(makeGate(
       'version-consistency',
@@ -421,6 +431,69 @@
     ));
 
     gates.push(makeGate(
+      'prompt-compliance-docs',
+      'Prompt compliance dokumenty',
+      signals.promptComplianceClosure && signals.promptComplianceClosure.documentaryComplete ? 'ok' : 'warning',
+      'warning',
+      signals.promptComplianceClosure ? ('dokumentačně ' + String(signals.promptComplianceClosure.percentComplete || 0) + ' %, dokumentů ' + String(signals.promptComplianceClosure.documentCount || 0)) : 'prompt compliance helper chybí',
+      'Dokumenty v924 musí existovat v assets/docs a být v export manifestu; mobilní a Playwright validace zůstává ruční gate.',
+      'rak-due-diligence-progress'
+    ));
+
+    gates.push(makeGate(
+      'prompt-compliance-manual-validation',
+      'Prompt compliance ruční validace',
+      'manual',
+      'manual',
+      signals.promptComplianceClosure ? ('manual gate ' + String(signals.promptComplianceClosure.manualGateCount || 0) + ': mobil + Playwright') : 'staticky nelze potvrdit',
+      'Po nahrání ověřit mobil/browser smoke a skutečný Playwright běh; nevydávat za hotové bez reálného testu.',
+      'manual'
+    ));
+
+
+    gates.push(makeGate(
+      'v927-validation-readiness-package',
+      'v927 validační balíček',
+      signals.validationReadinessClosure && signals.validationReadinessClosure.ok ? 'ok' : 'warning',
+      'warning',
+      signals.validationReadinessClosure ? ('manual gates ' + String(signals.validationReadinessClosure.manualGateCount || 0) + ', user testing ' + (signals.validationReadinessClosure.readyForUserTesting ? 'ready' : 'ne')) : 'validation helper chybí',
+      'v927 musí mít připravený ruční runbook, Playwright runbook, post-release checklist a closure helper; skutečné testy zůstávají manual.',
+      'rak-mobile-smoke-audit'
+    ));
+
+
+
+    gates.push(makeGate(
+      'v927-games-achievement-rewards',
+      'Achievementy a D-směnové odměny her',
+      signals.gamesAchievementRewards && signals.gamesAchievementRewards.gamesCovered >= 18 ? 'ok' : 'warning',
+      'warning',
+      signals.gamesAchievementRewards ? ('her ' + String(signals.gamesAchievementRewards.gamesCovered || 0) + ', achievementů ' + String(signals.gamesAchievementRewards.totalAchievementDefs || 0) + ', D odměn ' + String(signals.gamesAchievementRewards.shiftDRewards || 0)) : 'achievement reward helper chybí',
+      'Každá hra má mít vlastní achievementy i D-směnové odměny; skutečné odemčení záleží na profilu a odehraných hrách.',
+      'games-arcade'
+    ));
+
+    gates.push(makeGate(
+      'v927-profile-appearance-rewards',
+      'Témata a pozadí jako profilové odměny',
+      signals.profileAppearanceRewards && signals.profileAppearanceRewards.themes && signals.profileAppearanceRewards.backgrounds ? 'ok' : 'warning',
+      'warning',
+      signals.profileAppearanceRewards ? ('themes ' + String((signals.profileAppearanceRewards.themes || {}).total || 0) + ', backgrounds ' + String((signals.profileAppearanceRewards.backgrounds || {}).total || 0) + ', storage ' + String(signals.profileAppearanceRewards.profileThemeStorage || 'profil')) : 'appearance reward helper chybí',
+      'Aktivní téma i pozadí se při přihlášeném profilu ukládají do account.uiSettings; localStorage zůstává fallback mimo profil.',
+      'ui'
+    ));
+
+    gates.push(makeGate(
+      'v927-manual-test-status',
+      'v927 skutečné mobil/Playwright testy',
+      'manual',
+      'manual',
+      signals.manualValidationReadiness ? ('checklist ' + String(signals.manualValidationReadiness.checklistCount || 0) + ', blocking ' + String(signals.manualValidationReadiness.blockingChecklistCount || 0)) : 'staticky nelze potvrdit',
+      'Až Martin otestuje mobil/browser/Playwright, zapsat výsledek do dalšího buildu nebo opravit nalezené chyby.',
+      'manual'
+    ));
+
+    gates.push(makeGate(
       'manual-mobile-smoke',
       'Ruční mobil/browser smoke',
       'manual',
@@ -446,7 +519,7 @@
   window.getRakReleaseGatePolicy = function getRakReleaseGatePolicy() {
     return {
       ok: true,
-      mode: 'release-gate-policy-v923',
+      mode: 'release-gate-policy-v927',
       version: safeString(window.APP_VERSION || VERSION),
       checkedAt: nowIso(),
       statuses: [
@@ -511,7 +584,7 @@
     const policy = window.getRakReleaseGatePolicy();
     return {
       ok: !!(matrix && matrix.ok),
-      mode: 'release-gates-closure-v923',
+      mode: 'release-gates-closure-v927',
       version: safeString(window.APP_VERSION || VERSION),
       checkedAt: nowIso(),
       phase: 'phase K release gating / checklist matrix',
@@ -528,7 +601,7 @@
       policyChanges: false,
       onlineFlowChanges: false,
       dataMutation: false,
-      nextStep: 'Další bezpečný krok: první konkrétní sink skupina v games-arcade.js – jen jména/skóre přes safe helper, bez hromadného přepisu šablon.'
+      nextStep: 'Další bezpečný krok: reálný mobil/browser smoke podle v927 checklistu; případné chyby opravit po jedné bez zásahu do online flow.'
     };
   };
 

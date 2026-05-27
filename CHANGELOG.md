@@ -1,3 +1,32 @@
+## v.1.5 (927)
+
+- Rozšířené achievementy pro všechny hry včetně D-směnových cílů; každá hra má vlastní odměny navázané na dokončení během aktivní směny D.
+- Přidané syté odměnové motivy a pozadí: Hyper Magenta, Acid Cyber, Lava Core, Ultra Violet, Neon Carnival, Lava Neon, Acid Night a Violet Blackout.
+- Aktivní téma a pozadí se při přihlášeném profilu ukládají do `account.uiSettings.themeId` a `account.uiSettings.backgroundId`; nový profil už nepřebírá vzhled po předchozím profilu.
+- Témata a pozadí se odemykají jako odměny za počet her, achievementy nebo rank.
+- Přidané read-only helpery `getRakGamesAchievementRewardHealth()` a `getRakProfileAppearanceRewardHealth()` a release gate signály pro odměnovou vrstvu.
+- Doplněné dokumenty `games-achievement-rewards-v927.md`, `profile-appearance-rewards-v927.md`, validační dokumenty v927 a stručný souhrn `about-50-version-summary-v927.md`.
+- Bez změn Supabase DB, policies, online Piškvorek, online Lodí a bez přepojení online flow.
+- Verze sjednocena na v.1.5 (927), cache na `v1.5-927`, realtime kanál na `rak-public-live-v927`, package na `1.5.927`.
+
+## v.1.5 (925)
+
+- Navazuje na potvrzenou v924 a přidává praktický validační balíček pro ruční mobilní/browser smoke, skutečný Playwright běh a post-release/PWA kontrolu.
+- Doplněné dokumenty `manual-validation-runbook-v925.md`, `playwright-real-run-readiness-v925.md`, `post-release-validation-v925.md`, `validation-readiness-closure-v925.md` a stručný souhrn `about-50-version-summary-v925.md`.
+- Přidané read-only helpery `getRakManualValidationReadinessHealth()` a `getRakValidationReadinessClosureHealth()`; release gates ukazují připravené podklady jako OK a skutečné testy jako manual.
+- Playwright smoke skeleton rozšířený o kontrolu v925 validačních helperů a čitelnosti release gate matrixu.
+- Bez změn Supabase DB, policies, online Piškvorek, online Lodí, gameplaye, dashboardu, spodní lišty, rotací a kalkulaček.
+- Verze sjednocena na v.1.5 (925), cache na `v1.5-925`, realtime kanál na `rak-public-live-v925`, package na `1.5.925`.
+
+## v.1.5 (924)
+
+- Doplněné finální prompt-compliance dokumenty: architektura, security/performance/stabilita/UX, refaktor/testy/CI/CD, rollout/monitoring/rollback a finální syntéza.
+- Přidaný read-only helper `getRakPromptComplianceClosureHealth()` s dokumentačním stavem 100 % a ručními gate pro mobilní validaci a reálný Playwright běh.
+- Release gates nově ukazují prompt compliance jako OK pro dokumenty a manual pro mobil/Playwright.
+- Export manifest doplněný o nové dokumenty v924 a historii O aplikaci ponechanou ve stručném bloku v.1.5 901–950.
+- Bez změn Supabase DB, policies, online Piškvorek, online Lodí, gameplaye, dashboardu, spodní lišty, rotací a kalkulaček.
+- Verze sjednocena na v.1.5 (924), cache na `v1.5-924`, realtime kanál na `rak-public-live-v924`, package na `1.5.924`.
+
 ## v.1.5 (923)
 
 - Top výsledky ve hrách: Reaction Test už v Top score nezobrazuje milisekundy, ale vteřiny s desetinnou čárkou.

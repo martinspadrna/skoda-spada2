@@ -1,0 +1,3 @@
+# RaK v.1.5 (924) – stručný souhrn pro blok O aplikaci 901–950
+
+Build v924 formálně uzavírá auditní/prompty dokumentačně. Doplněné jsou finální dokumenty pro architekturu, bezpečnost/výkon/stabilitu/UX, refaktor/testy/CI/CD, rollout/monitoring/rollback a závěrečnou due diligence syntézu. Přidaný read-only helper `getRakPromptComplianceClosureHealth()` vrací dokumentační stav 100 % a nechává mobilní validaci i skutečný Playwright běh jako manual. Release gates nově rozlišují, že dokumenty jsou OK, ale reálný mobil a Playwright nejsou vydávané za otestované, dokud skutečně neproběhnou. Bez změn Supabase DB, policies, online Piškvorek, online Lodí, gameplaye, dashboardu, spodní lišty, rotací a kalkulaček.

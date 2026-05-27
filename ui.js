@@ -4532,7 +4532,7 @@ function getRakTttAiHardeningV922Health() {
   return {
     ok: true,
     mode: 'ttt-ai-hardening-v923',
-    version: String(window.APP_VERSION || 'v.1.5 (923)'),
+    version: String(window.APP_VERSION || 'v.1.5 (927)'),
     thirteenTurnClamp: true,
     hardSearchDepthEarly: 8,
     hardSearchDepthMid: 8,
@@ -6120,10 +6120,10 @@ function buildAppHistoryHtml(versionText) {
       range: 'v.1.5 901–950',
       title: 'Aktuální stabilizace, bezpečnost a provozní detaily',
       lines: [
-        'Hlavní změny: dokončení online game contract auditu, release readiness/monitoring/rollback vrstvy, AppSec/privacy audit, release gates, výkonový/CI audit, finální due diligence report a mobile/Playwright smoke plán.',
+        'Hlavní změny: dokončení online game contract auditu, release readiness/monitoring/rollback vrstvy, AppSec/privacy audit, release gates, výkonový/CI audit, finální due diligence report, prompt-compliance dokumenty v924, validační runbook v925 a herní odměnová vrstva v927.',
         'Kantýna/jídelna se srovnala podle běžné a mimořádné provozní doby; rozklik teď odděluje běžný režim a přesčasové rozdíly.',
-        'Herní Top score a profily se resetovaly na čistý start; Piškvorky Top score mají zobrazovat datum i čas a Supabase výsledky byly znovu vyčištěné.',
-        'Pravidlo historie: O aplikaci má držet hlavně stručné souhrny po cca 50 verzích, ne dlouhý seznam každého mikrobuildu.'
+        'Herní Top score a profily se resetovaly na čistý start; Piškvorky Top score mají zobrazovat datum i čas a Supabase výsledky byly znovu vyčištěné. V927 přidává achievementy pro každou hru včetně D-směnových cílů.',
+        'Pravidlo historie: O aplikaci drží hlavně stručné souhrny po cca 50 verzích; v924 formálně uzavřela auditní prompty, v925 přidala praktický validační checklist a v927 ukládá aktivní téma/pozadí na profil jako odměny za progres.'
       ]
     },
     {
@@ -11685,7 +11685,11 @@ const RAK_THEME_DEFS = [
   { id: 'ice-prism', label: 'Ice Prism', subtitle: 'Ledově světlý cyan/teal akcent', color: '#99F6E4', unlockText: '120 her + 16 achievementů', minPlays: 120, minAchievements: 16, vars: { '--bg': '#011011', '--panel': 'rgba(10,49,59,.74)', '--panel2': 'rgba(17,90,92,.58)', '--green': '#99F6E4', '--green2': '#CCFBF1', '--muted': '#9ec5c3', '--soft': '#edfffb', '--rakThemeGlow': 'rgba(153,246,228,.38)', '--rakThemeBorder': 'rgba(153,246,228,.30)' } },
   { id: 'toxic-lime', label: 'Toxic Lime', subtitle: 'Fosforová limetka pro maximální arcade vibe', color: '#C6FF00', unlockText: '145 her + 18 achievementů', minPlays: 145, minAchievements: 18, vars: { '--bg': '#071100', '--panel': 'rgba(25,45,4,.78)', '--panel2': 'rgba(46,72,8,.64)', '--green': '#C6FF00', '--green2': '#F1FFB3', '--muted': '#b6c98f', '--soft': '#fbffe6', '--rakThemeGlow': 'rgba(198,255,0,.42)', '--rakThemeBorder': 'rgba(198,255,0,.32)' } },
   { id: 'royal-gold', label: 'Royal Gold', subtitle: 'Zlatý achievement skin pro dlouhodobé hraní', color: '#FACC15', unlockText: '170 her + 20 achievementů', minPlays: 170, minAchievements: 20, vars: { '--bg': '#130d02', '--panel': 'rgba(54,38,5,.78)', '--panel2': 'rgba(84,58,8,.66)', '--green': '#FACC15', '--green2': '#FEF3C7', '--muted': '#c7b78a', '--soft': '#fff8dc', '--rakThemeGlow': 'rgba(250,204,21,.40)', '--rakThemeBorder': 'rgba(250,204,21,.32)' } },
-  { id: 'amoled-legend', label: 'AMOLED Legend', subtitle: 'Skoro černá, ostrý neon, odměna pro největší grind', color: '#B8FF67', unlockText: '200 her + 22 achievementů', minPlays: 200, minAchievements: 22, vars: { '--bg': '#000000', '--panel': 'rgba(5,8,6,.86)', '--panel2': 'rgba(10,16,11,.74)', '--green': '#B8FF67', '--green2': '#ECFCCB', '--muted': '#939c91', '--soft': '#f4ffe9', '--rakThemeGlow': 'rgba(184,255,103,.45)', '--rakThemeBorder': 'rgba(184,255,103,.34)' } }
+  { id: 'amoled-legend', label: 'AMOLED Legend', subtitle: 'Skoro černá, ostrý neon, odměna pro největší grind', color: '#B8FF67', unlockText: '200 her + 22 achievementů', minPlays: 200, minAchievements: 22, vars: { '--bg': '#000000', '--panel': 'rgba(5,8,6,.86)', '--panel2': 'rgba(10,16,11,.74)', '--green': '#B8FF67', '--green2': '#ECFCCB', '--muted': '#939c91', '--soft': '#f4ffe9', '--rakThemeGlow': 'rgba(184,255,103,.45)', '--rakThemeBorder': 'rgba(184,255,103,.34)' } },
+  { id: 'hyper-magenta', label: 'Hyper Magenta', subtitle: 'Hodně sytý růžovo-fialový arcade skin', color: '#FF00E5', unlockText: 'Rank Mistr nebo 28 achievementů', minRank: 'Mistr', minAchievements: 28, vars: { '--bg': '#16001f', '--panel': 'rgba(64,0,82,.82)', '--panel2': 'rgba(110,0,135,.66)', '--green': '#FF00E5', '--green2': '#FFD1FA', '--muted': '#d89de0', '--soft': '#fff0ff', '--rakThemeGlow': 'rgba(255,0,229,.54)', '--rakThemeBorder': 'rgba(255,0,229,.38)' } },
+  { id: 'acid-cyber', label: 'Acid Cyber', subtitle: 'Kyselá limetka a cyan, opravdu výrazné UI', color: '#D7FF00', unlockText: 'Rank Senior nebo 34 achievementů', minRank: 'Senior', minAchievements: 34, vars: { '--bg': '#050a00', '--panel': 'rgba(25,44,0,.86)', '--panel2': 'rgba(50,82,0,.72)', '--green': '#D7FF00', '--green2': '#F5FF9E', '--muted': '#c8d889', '--soft': '#fdffe8', '--rakThemeGlow': 'rgba(215,255,0,.56)', '--rakThemeBorder': 'rgba(215,255,0,.40)' } },
+  { id: 'lava-core', label: 'Lava Core', subtitle: 'Sytá červená a oranžová jako herní reward', color: '#FF2D00', unlockText: 'Rank Legenda RaK nebo 42 achievementů', minRank: 'Legenda RaK', minAchievements: 42, vars: { '--bg': '#180200', '--panel': 'rgba(70,11,0,.86)', '--panel2': 'rgba(124,23,0,.72)', '--green': '#FF2D00', '--green2': '#FFD3C7', '--muted': '#d8a192', '--soft': '#fff1ed', '--rakThemeGlow': 'rgba(255,45,0,.58)', '--rakThemeBorder': 'rgba(255,45,0,.42)' } },
+  { id: 'ultra-violet', label: 'Ultra Violet', subtitle: 'Sytá ultrafialová odměna pro dlouhé hraní', color: '#7C3AED', unlockText: 'Rank RaK nesmrtelný nebo 55 achievementů', minRank: 'RaK nesmrtelný', minAchievements: 55, vars: { '--bg': '#090021', '--panel': 'rgba(35,10,88,.88)', '--panel2': 'rgba(62,22,150,.72)', '--green': '#7C3AED', '--green2': '#DDD6FE', '--muted': '#b7a6da', '--soft': '#f4f0ff', '--rakThemeGlow': 'rgba(124,58,237,.60)', '--rakThemeBorder': 'rgba(124,58,237,.44)' } }
 ];
 window.RAK_THEME_DEFS = RAK_THEME_DEFS;
 
@@ -11946,8 +11950,99 @@ const RAK_BACKGROUND_DEFS = [
       '--rakAppBackgroundLite': 'linear-gradient(160deg, #0b0f0c 0%, #101612 54%, #141a17 100%)',
       '--rakBgAccent': 'rgba(124,255,124,.14)'
     }
+  },
+  {
+    id: 'neon-carnival',
+    label: 'Neon carnival',
+    subtitle: 'Hodně sytý cyan, magenta a limetka',
+    color: '#00f5ff',
+    swatch: 'radial-gradient(circle at 12% 18%, rgba(0,245,255,.98), transparent 32%), radial-gradient(circle at 86% 18%, rgba(255,0,229,.92), transparent 36%), radial-gradient(circle at 52% 86%, rgba(215,255,0,.82), transparent 42%), linear-gradient(145deg, #020617, #13001f)',
+    unlockText: 'Rank Mistr nebo 28 achievementů', minRank: 'Mistr', minAchievements: 28,
+    vars: {
+      '--rakBgBase': '#030014',
+      '--rakAppBackground': 'radial-gradient(circle at 12% 10%, rgba(0,245,255,.42), transparent 31%), radial-gradient(circle at 88% 18%, rgba(255,0,229,.34), transparent 36%), radial-gradient(circle at 52% 88%, rgba(215,255,0,.22), transparent 42%), linear-gradient(160deg, #020617 0%, #090024 48%, #13001f 100%)',
+      '--rakAppBackgroundOverlay': 'linear-gradient(90deg, rgba(2,6,23,.52), transparent 24%, rgba(255,255,255,.075) 50%, transparent 76%, rgba(2,6,23,.52)), radial-gradient(circle at 48% 42%, rgba(255,255,255,.09), transparent 46%)',
+      '--rakAppBackgroundLite': 'linear-gradient(160deg, #020617 0%, #090024 55%, #13001f 100%)',
+      '--rakBgAccent': 'rgba(0,245,255,.42)',
+      '--green': '#00F5FF',
+      '--green2': '#D7FF00'
+    }
+  },
+  {
+    id: 'lava-neon',
+    label: 'Lava neon',
+    subtitle: 'Sytá červená, oranžová a růžová',
+    color: '#ff2d00',
+    swatch: 'radial-gradient(circle at 16% 18%, rgba(255,45,0,.98), transparent 34%), radial-gradient(circle at 82% 24%, rgba(255,0,119,.86), transparent 38%), radial-gradient(circle at 50% 86%, rgba(250,204,21,.76), transparent 42%), linear-gradient(145deg, #180200, #431407)',
+    unlockText: 'Rank Senior nebo 36 achievementů', minRank: 'Senior', minAchievements: 36,
+    vars: {
+      '--rakBgBase': '#180200',
+      '--rakAppBackground': 'radial-gradient(circle at 14% 11%, rgba(255,45,0,.42), transparent 32%), radial-gradient(circle at 86% 20%, rgba(255,0,119,.30), transparent 38%), radial-gradient(circle at 52% 86%, rgba(250,204,21,.20), transparent 42%), linear-gradient(160deg, #120200 0%, #2a0714 48%, #431407 100%)',
+      '--rakAppBackgroundOverlay': 'linear-gradient(90deg, rgba(18,2,0,.54), transparent 24%, rgba(255,210,120,.070) 50%, transparent 76%, rgba(18,2,0,.54)), radial-gradient(circle at 48% 42%, rgba(255,255,255,.070), transparent 46%)',
+      '--rakAppBackgroundLite': 'linear-gradient(160deg, #120200 0%, #2a0714 55%, #431407 100%)',
+      '--rakBgAccent': 'rgba(255,45,0,.42)',
+      '--green': '#FF2D00',
+      '--green2': '#FFD3C7'
+    }
+  },
+  {
+    id: 'acid-night',
+    label: 'Acid night',
+    subtitle: 'Fosforová limetka na černém glassu',
+    color: '#d7ff00',
+    swatch: 'radial-gradient(circle at 18% 18%, rgba(215,255,0,.98), transparent 34%), radial-gradient(circle at 82% 22%, rgba(0,245,255,.78), transparent 38%), radial-gradient(circle at 50% 86%, rgba(34,197,94,.72), transparent 42%), linear-gradient(145deg, #000000, #071100)',
+    unlockText: 'Rank Legenda RaK nebo 44 achievementů', minRank: 'Legenda RaK', minAchievements: 44,
+    vars: {
+      '--rakBgBase': '#000000',
+      '--rakAppBackground': 'radial-gradient(circle at 13% 10%, rgba(215,255,0,.42), transparent 31%), radial-gradient(circle at 86% 18%, rgba(0,245,255,.25), transparent 37%), radial-gradient(circle at 52% 86%, rgba(34,197,94,.20), transparent 42%), linear-gradient(160deg, #000 0%, #061000 50%, #071100 100%)',
+      '--rakAppBackgroundOverlay': 'linear-gradient(90deg, rgba(0,0,0,.56), transparent 24%, rgba(215,255,0,.075) 50%, transparent 76%, rgba(0,0,0,.56)), radial-gradient(circle at 48% 42%, rgba(215,255,0,.070), transparent 46%)',
+      '--rakAppBackgroundLite': 'linear-gradient(160deg, #000 0%, #061000 55%, #071100 100%)',
+      '--rakBgAccent': 'rgba(215,255,0,.42)',
+      '--green': '#D7FF00',
+      '--green2': '#F5FF9E'
+    }
+  },
+  {
+    id: 'violet-blackout',
+    label: 'Violet blackout',
+    subtitle: 'Ultrafialová odměna s tmavým AMOLED dojmem',
+    color: '#7c3aed',
+    swatch: 'radial-gradient(circle at 16% 16%, rgba(124,58,237,.98), transparent 34%), radial-gradient(circle at 82% 20%, rgba(255,0,229,.78), transparent 38%), radial-gradient(circle at 50% 86%, rgba(56,189,248,.64), transparent 42%), linear-gradient(145deg, #000000, #090021)',
+    unlockText: 'Rank RaK nesmrtelný nebo 55 achievementů', minRank: 'RaK nesmrtelný', minAchievements: 55,
+    vars: {
+      '--rakBgBase': '#000000',
+      '--rakAppBackground': 'radial-gradient(circle at 13% 10%, rgba(124,58,237,.40), transparent 31%), radial-gradient(circle at 86% 20%, rgba(255,0,229,.28), transparent 37%), radial-gradient(circle at 52% 86%, rgba(56,189,248,.18), transparent 42%), linear-gradient(160deg, #000 0%, #050015 50%, #090021 100%)',
+      '--rakAppBackgroundOverlay': 'linear-gradient(90deg, rgba(0,0,0,.56), transparent 24%, rgba(255,255,255,.065) 50%, transparent 76%, rgba(0,0,0,.56)), radial-gradient(circle at 48% 42%, rgba(124,58,237,.080), transparent 46%)',
+      '--rakAppBackgroundLite': 'linear-gradient(160deg, #000 0%, #050015 55%, #090021 100%)',
+      '--rakBgAccent': 'rgba(124,58,237,.40)',
+      '--green': '#7C3AED',
+      '--green2': '#DDD6FE'
+    }
   }
 ];
+
+const RAK_BACKGROUND_UNLOCKS_V927 = {
+  'ios-mesh': { unlockText: 'Vždy dostupné', minPlays: 0, minAchievements: 0 },
+  'skoda-green': { unlockText: '5 her nebo 1 achievement', minPlays: 5, minAchievements: 1 },
+  'light-green': { unlockText: '10 her nebo 2 achievementy', minPlays: 10, minAchievements: 2 },
+  'deep-aurora': { unlockText: '20 her nebo 4 achievementy', minPlays: 20, minAchievements: 4 },
+  'ember': { unlockText: '30 her nebo 5 achievementů', minPlays: 30, minAchievements: 5 },
+  'neon-lagoon': { unlockText: '40 her nebo 6 achievementů', minPlays: 40, minAchievements: 6 },
+  'electric-lime': { unlockText: '55 her nebo 8 achievementů', minPlays: 55, minAchievements: 8 },
+  'skoda-electric': { unlockText: '70 her nebo 10 achievementů', minPlays: 70, minAchievements: 10 },
+  'candy-glass': { unlockText: '90 her nebo 12 achievementů', minPlays: 90, minAchievements: 12 },
+  'aurora-punch': { unlockText: '110 her nebo 14 achievementů', minPlays: 110, minAchievements: 14 },
+  'violet-storm': { unlockText: '130 her nebo 16 achievementů', minPlays: 130, minAchievements: 16 },
+  'sunset-plasma': { unlockText: '145 her nebo 17 achievementů', minPlays: 145, minAchievements: 17 },
+  'polar-mint': { unlockText: '150 her nebo 18 achievementů', minPlays: 150, minAchievements: 18 },
+  'blue-orbit': { unlockText: 'Rank Týmař nebo 20 achievementů', minRank: 'Týmař', minAchievements: 20 },
+  'magma-lime': { unlockText: 'Rank Mistr nebo 24 achievementů', minRank: 'Mistr', minAchievements: 24 },
+  'classic-rak': { unlockText: 'Rank Učeň nebo 6 achievementů', minRank: 'Učeň', minAchievements: 6 }
+};
+RAK_BACKGROUND_DEFS.forEach((bg) => {
+  const unlock = RAK_BACKGROUND_UNLOCKS_V927[String(bg && bg.id || '')] || null;
+  if (unlock) Object.assign(bg, unlock);
+});
 window.RAK_BACKGROUND_DEFS = RAK_BACKGROUND_DEFS;
 
 const RAK_PROFILE_UI_REMOTE_DEBOUNCE_MS = 650;
@@ -12184,6 +12279,11 @@ async function loadActiveAccountUiRemoteSettings(accountId) {
       let changed = false;
       if (remoteTheme && ui.themeId !== remoteTheme) { ui.themeId = remoteTheme; changed = true; }
       if (remoteBg && ui.backgroundId !== remoteBg) { ui.backgroundId = remoteBg; changed = true; }
+      const rewardMetrics = getThemeUnlockMetrics(profile);
+      const remoteThemeDef = RAK_THEME_DEFS.find(theme => String(theme.id || '') === String(ui.themeId)) || RAK_THEME_DEFS[0];
+      const remoteBgDef = RAK_BACKGROUND_DEFS.find(bg => String(bg.id || '') === String(ui.backgroundId)) || RAK_BACKGROUND_DEFS[0];
+      if (!isAppearanceRewardUnlocked(remoteThemeDef, rewardMetrics, 'default')) { ui.themeId = 'default'; changed = true; }
+      if (!isAppearanceRewardUnlocked(remoteBgDef, rewardMetrics, 'ios-mesh')) { ui.backgroundId = 'ios-mesh'; changed = true; }
       ui.updatedAt = Math.max(localTs, remoteTs || Date.now());
       if (changed) {
         rakProfileUiSyncGuard.remoteApplies += 1;
@@ -12192,8 +12292,9 @@ async function loadActiveAccountUiRemoteSettings(accountId) {
         profile.profileVersion = GAMES_PROFILE_RESET_VERSION;
         gamesSaveProfile(profile);
         app.gamesProfile = profile;
-        if (remoteTheme) applyThemePreference(remoteTheme, true, { skipProfile: true });
-        if (remoteBg) applyBackgroundPreference(remoteBg, true, { skipProfile: true });
+        applyThemePreference(ui.themeId || 'default', true, { skipProfile: true });
+        applyBackgroundPreference(ui.backgroundId || 'ios-mesh', true, { skipProfile: true });
+        if (ui.themeId !== remoteTheme || ui.backgroundId !== remoteBg) scheduleActiveAccountUiRemoteSave('profile-ui-locked-remote-normalized');
         if (typeof renderThemeSettingsCards === 'function') renderThemeSettingsCards();
       } else {
         rakProfileUiSyncGuard.remoteSameSkips += 1;
@@ -12222,9 +12323,17 @@ function applyProfileUiPreferencesForActiveAccount(options = {}) {
   if (!profile || !account || !ui) return false;
   const localTheme = getLocalThemePreference();
   const localBg = getLocalBackgroundPreference();
+  const defaultTheme = normalizeThemePreferenceId('default', 'default');
+  const defaultBg = normalizeBackgroundPreferenceId('ios-mesh', 'ios-mesh');
   let changed = false;
-  if (!ui.themeId) { ui.themeId = localTheme; changed = true; }
-  if (!ui.backgroundId) { ui.backgroundId = localBg; changed = true; }
+  // v.1.5 (927): vzhled je profilový. Nový/prázdný profil nezačne omylem vzhledem po předchozím přihlášeném profilu.
+  if (!ui.themeId) { ui.themeId = defaultTheme; changed = true; }
+  if (!ui.backgroundId) { ui.backgroundId = defaultBg; changed = true; }
+  const rewardMetrics = getThemeUnlockMetrics(profile);
+  const savedTheme = RAK_THEME_DEFS.find(theme => String(theme.id || '') === String(ui.themeId)) || RAK_THEME_DEFS[0];
+  const savedBg = RAK_BACKGROUND_DEFS.find(bg => String(bg.id || '') === String(ui.backgroundId)) || RAK_BACKGROUND_DEFS[0];
+  if (!isAppearanceRewardUnlocked(savedTheme, rewardMetrics, 'default')) { ui.themeId = defaultTheme; changed = true; }
+  if (!isAppearanceRewardUnlocked(savedBg, rewardMetrics, 'ios-mesh')) { ui.backgroundId = defaultBg; changed = true; }
   if (changed || !ui.updatedAt) {
     ui.updatedAt = Date.now();
     account.updatedAt = Math.max(Number(account.updatedAt || 0) || 0, ui.updatedAt);
@@ -12286,7 +12395,11 @@ function setRakStyleProperty(target, key, value, priority = '', statKey = '') {
 }
 
 function applyBackgroundPreference(bgId, persist = true, options = {}) {
-  const bg = RAK_BACKGROUND_DEFS.find(item => item.id === normalizeBackgroundPreferenceId(bgId, 'ios-mesh')) || RAK_BACKGROUND_DEFS[0];
+  let bg = RAK_BACKGROUND_DEFS.find(item => item.id === normalizeBackgroundPreferenceId(bgId, 'ios-mesh')) || RAK_BACKGROUND_DEFS[0];
+  if (!options.allowLocked) {
+    const metrics = getThemeUnlockMetrics(typeof gamesGetProfile === 'function' ? gamesGetProfile() : null);
+    if (!isAppearanceRewardUnlocked(bg, metrics, 'ios-mesh')) bg = RAK_BACKGROUND_DEFS[0];
+  }
   const root = document.documentElement;
   root.dataset.rakBackground = bg.id;
   Object.entries(RAK_BACKGROUND_BASE_VARS).forEach(([key, value]) => {
@@ -12335,23 +12448,67 @@ window.RAK_BACKGROUND_STORAGE_KEY = RAK_BACKGROUND_STORAGE_KEY;
 
 function getThemeUnlockMetrics(profile) {
   const active = profile && profile.activeAccountId && profile.accounts ? profile.accounts[profile.activeAccountId] : null;
-  if (!active) return { totalPlays: 0, bestScore: 0, achievements: 0 };
+  if (!active) return { totalPlays: 0, bestScore: 0, achievements: 0, xp: 0, rank: '', rankIndex: 0, hasProfile: false };
   const total = typeof gamesGetTotals === 'function' ? gamesGetTotals(active) : { totalPlays: 0, bestScore: 0 };
   const achievements = typeof gamesGetAchievementCount === 'function' ? gamesGetAchievementCount(active) : 0;
+  const progress = typeof window.gamesBuildProgressSummary === 'function' ? window.gamesBuildProgressSummary(active) : null;
+  const rankName = String(progress && progress.rank || '').trim();
+  const ranks = Array.isArray(window.GAMES_RANK_DEFS) ? window.GAMES_RANK_DEFS : [];
+  const rankIndex = Math.max(0, ranks.findIndex(rank => String(rank && rank.name || '') === rankName));
   return {
     totalPlays: Number(total.totalPlays || 0) || 0,
     bestScore: Number(total.bestScore || 0) || 0,
-    achievements: Number(achievements || 0) || 0
+    achievements: Number(achievements || 0) || 0,
+    xp: Number(progress && progress.xp || 0) || 0,
+    rank: rankName,
+    rankIndex: rankIndex < 0 ? 0 : rankIndex,
+    hasProfile: true
   };
 }
 
 function getThemeUnlockScore(profile) {
   const metrics = getThemeUnlockMetrics(profile);
-  return metrics.totalPlays + Math.floor(metrics.bestScore / 50) + (metrics.achievements * 2);
+  return metrics.totalPlays + Math.floor(metrics.bestScore / 50) + (metrics.achievements * 2) + (metrics.rankIndex * 8);
+}
+
+function getRewardRequiredRankIndex(reward) {
+  const required = String(reward && reward.minRank || '').trim();
+  if (!required) return 0;
+  const ranks = Array.isArray(window.GAMES_RANK_DEFS) ? window.GAMES_RANK_DEFS : [];
+  const idx = ranks.findIndex(rank => String(rank && rank.name || '') === required);
+  return idx < 0 ? 0 : idx;
+}
+
+function isAppearanceRewardUnlocked(reward, metrics, defaultId) {
+  const id = String(reward && reward.id || '').trim();
+  if (!reward || id === defaultId) return true;
+  const playsNeed = Number(reward.minPlays || 0) || 0;
+  const achNeed = Number(reward.minAchievements || 0) || 0;
+  const rankNeed = getRewardRequiredRankIndex(reward);
+  const byPlays = playsNeed > 0 && Number(metrics.totalPlays || 0) >= playsNeed;
+  const byAchievements = achNeed > 0 && Number(metrics.achievements || 0) >= achNeed;
+  const byRank = rankNeed > 0 && Number(metrics.rankIndex || 0) >= rankNeed;
+  if (!playsNeed && !achNeed && !rankNeed) return true;
+  return byPlays || byAchievements || byRank;
+}
+
+function buildAppearanceRewardProgressText(reward, metrics) {
+  const parts = [];
+  const playsNeed = Number(reward && reward.minPlays || 0) || 0;
+  const achNeed = Number(reward && reward.minAchievements || 0) || 0;
+  const rankNeed = getRewardRequiredRankIndex(reward);
+  if (playsNeed) parts.push(String(metrics.totalPlays || 0) + '/' + String(playsNeed) + ' her');
+  if (achNeed) parts.push(String(metrics.achievements || 0) + '/' + String(achNeed) + ' ach.');
+  if (rankNeed) parts.push('rank ' + (metrics.rank || '—') + '/' + String(reward.minRank || ''));
+  return parts.length ? (' · máš ' + parts.join(', ')) : '';
 }
 
 function applyThemePreference(themeId, persist = true, options = {}) {
-  const theme = RAK_THEME_DEFS.find(t => t.id === normalizeThemePreferenceId(themeId, 'default')) || RAK_THEME_DEFS[0];
+  let theme = RAK_THEME_DEFS.find(t => t.id === normalizeThemePreferenceId(themeId, 'default')) || RAK_THEME_DEFS[0];
+  if (!options.allowLocked) {
+    const metrics = getThemeUnlockMetrics(typeof gamesGetProfile === 'function' ? gamesGetProfile() : null);
+    if (!isAppearanceRewardUnlocked(theme, metrics, 'default')) theme = RAK_THEME_DEFS[0];
+  }
   const root = document.documentElement;
   root.dataset.rakTheme = theme.id;
   setRakStyleProperty(root, '--rakThemeAccent', String(theme.color || '#7CFF7C'), '', 'theme-accent');
@@ -12397,11 +12554,12 @@ function buildThemeSystemSettingsHtml() {
   const currentBg = bgDefs.find(bg => String(bg.id || '') === String(currentBgId)) || bgDefs[0] || { label: 'iOS mesh' };
   const bgCards = bgDefs.map(bg => {
     const swatch = String(bg.swatch || bg.color || '#38bdf8');
+    const unlockedText = bg && bg.unlockText ? String(bg.unlockText) : 'Odměna za hraní';
     return '<button type="button" class="appMenuBackgroundCard" data-bg-id="' + escapeHtml(String(bg.id || '')) + '">' +
       '<div class="appMenuBackgroundSwatch" style="--background-swatch:' + escapeHtml(swatch) + '"></div>' +
       '<div class="appMenuThemeInfo">' +
       '<div class="appMenuThemeTitle">' + escapeHtml(String(bg.label || '')) + '</div>' +
-      '<div class="appMenuThemeBadge">Dostupné</div>' +
+      '<div class="appMenuThemeBadge">' + escapeHtml(unlockedText) + '</div>' +
       '</div>' +
     '</button>';
   }).join('');
@@ -12452,17 +12610,13 @@ function renderThemeSettingsCards() {
   Array.from(grid.querySelectorAll('.appMenuThemeCard')).forEach(card => {
     const id = String(card.dataset.themeId || '').trim();
     const theme = themeById.get(id) || null;
-    const unlocked = !!theme && (id === 'default' || (Number(theme.minPlays || 0) <= metrics.totalPlays && Number(theme.minAchievements || 0) <= metrics.achievements));
+    const unlocked = isAppearanceRewardUnlocked(theme, metrics, 'default');
     card.classList.toggle('isActive', id === current);
     card.classList.toggle('isLocked', !unlocked && id !== 'default');
     card.setAttribute('aria-pressed', id === current ? 'true' : 'false');
     const badge = card.querySelector('.appMenuThemeBadge');
     if (badge && theme) {
-      const neededPlays = Number(theme.minPlays || 0) || 0;
-      const neededAchievements = Number(theme.minAchievements || 0) || 0;
-      const progressText = neededPlays || neededAchievements
-        ? (' · máš ' + String(metrics.totalPlays) + '/' + String(neededPlays) + ' her, ' + String(metrics.achievements) + '/' + String(neededAchievements) + ' ach.')
-        : '';
+      const progressText = buildAppearanceRewardProgressText(theme, metrics);
       const nextBadgeText = unlocked ? 'Odemčeno' : ('Zamčeno · ' + (theme.unlockText || 'podmínka nesplněna') + progressText);
       if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(badge, nextBadgeText, 'themeBadge-' + id);
       else badge.textContent = nextBadgeText;
@@ -12473,7 +12627,7 @@ function renderThemeSettingsCards() {
         const nextTheme = themeById.get(id) || null;
         if (!nextTheme) return;
         const nextMetrics = getThemeUnlockMetrics(typeof gamesGetProfile === 'function' ? gamesGetProfile() : null);
-        const nextUnlocked = id === 'default' || (Number(nextTheme.minPlays || 0) <= nextMetrics.totalPlays && Number(nextTheme.minAchievements || 0) <= nextMetrics.achievements);
+        const nextUnlocked = isAppearanceRewardUnlocked(nextTheme, nextMetrics, 'default');
         if (!nextUnlocked) {
           if (hint) {
             const nextHintText = '';
@@ -12504,13 +12658,32 @@ function renderThemeSettingsCards() {
     Array.from(bgGrid.querySelectorAll('.appMenuBackgroundCard')).forEach(card => {
       const id = String(card.dataset.bgId || '').trim();
       const bg = bgById.get(id) || null;
+      const bgUnlocked = isAppearanceRewardUnlocked(bg, metrics, 'ios-mesh');
       card.classList.toggle('isActive', id === currentBg);
+      card.classList.toggle('isLocked', !bgUnlocked && id !== 'ios-mesh');
       card.setAttribute('aria-pressed', id === currentBg ? 'true' : 'false');
+      const bgBadge = card.querySelector('.appMenuThemeBadge');
+      if (bgBadge && bg) {
+        const progressText = buildAppearanceRewardProgressText(bg, metrics);
+        const nextBgBadgeText = bgUnlocked ? 'Odemčeno' : ('Zamčeno · ' + (bg.unlockText || 'odměna za hraní') + progressText);
+        if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(bgBadge, nextBgBadgeText, 'backgroundBadge-' + id);
+        else bgBadge.textContent = nextBgBadgeText;
+      }
       if (!card.dataset.bound) {
         card.dataset.bound = '1';
         card.addEventListener('click', () => {
           const nextBg = bgById.get(id) || null;
           if (!nextBg) return;
+          const nextMetrics = getThemeUnlockMetrics(typeof gamesGetProfile === 'function' ? gamesGetProfile() : null);
+          const nextUnlocked = isAppearanceRewardUnlocked(nextBg, nextMetrics, 'ios-mesh');
+          if (!nextUnlocked) {
+            if (bgHint) {
+              const nextBgHintText = '';
+              if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(bgHint, nextBgHintText, 'backgroundHintLocked');
+              else bgHint.textContent = nextBgHintText;
+            }
+            return;
+          }
           if (typeof applyBackgroundPreference === 'function') applyBackgroundPreference(id, true);
           renderThemeSettingsCards();
           if (bgHint) {
@@ -12531,7 +12704,8 @@ function renderThemeSettingsCards() {
 
   if (summaryMeta) {
     const activeName = (themeById.get(current) || themeList[0] || { label: 'Výchozí' }).label;
-    const nextThemeSummary = 'Aktivní: ' + String(activeName) + ' · ' + String(metrics.totalPlays) + ' her / ' + String(metrics.achievements) + ' achievementů';
+    const rankPart = metrics.rank ? (' · Rank ' + String(metrics.rank)) : '';
+    const nextThemeSummary = 'Aktivní: ' + String(activeName) + ' · ' + String(metrics.totalPlays) + ' her / ' + String(metrics.achievements) + ' achievementů' + rankPart;
     if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(summaryMeta, nextThemeSummary, 'themeSummaryMeta');
     else summaryMeta.textContent = nextThemeSummary;
   }
@@ -12542,6 +12716,28 @@ function renderThemeSettingsCards() {
     else hint.textContent = nextThemeHint;
   }
 }
+
+function getRakProfileAppearanceRewardHealth() {
+  const profile = typeof gamesGetProfile === 'function' ? gamesGetProfile() : null;
+  const metrics = getThemeUnlockMetrics(profile);
+  const themes = Array.isArray(window.RAK_THEME_DEFS) ? window.RAK_THEME_DEFS : [];
+  const backgrounds = Array.isArray(window.RAK_BACKGROUND_DEFS) ? window.RAK_BACKGROUND_DEFS : [];
+  const themeRewards = themes.filter(item => String(item && item.id || '') !== 'default');
+  const backgroundRewards = backgrounds.filter(item => String(item && item.id || '') !== 'ios-mesh');
+  return {
+    version: window.APP_VERSION || 'v.1.5 (927)',
+    mode: 'profile-appearance-reward-health-v927',
+    activeProfile: metrics.hasProfile,
+    profileThemeStorage: 'account.uiSettings.themeId',
+    profileBackgroundStorage: 'account.uiSettings.backgroundId',
+    globalFallbackStorage: [RAK_THEME_STORAGE_KEY, RAK_BACKGROUND_STORAGE_KEY],
+    metrics,
+    themes: { total: themes.length, rewards: themeRewards.length, unlocked: themes.filter(item => isAppearanceRewardUnlocked(item, metrics, 'default')).length },
+    backgrounds: { total: backgrounds.length, rewards: backgroundRewards.length, unlocked: backgrounds.filter(item => isAppearanceRewardUnlocked(item, metrics, 'ios-mesh')).length },
+    note: 'Aktivní téma a pozadí se při přihlášeném profilu ukládají do uiSettings konkrétního účtu; localStorage je už jen fallback mimo profil.'
+  };
+}
+window.getRakProfileAppearanceRewardHealth = getRakProfileAppearanceRewardHealth;
 
 window.openGameShell = function openGameShellPublic(gameId) {
   const id = String(gameId || '').trim();
@@ -12601,3 +12797,39 @@ window.addEventListener('load', () => {
     if (typeof renderThemeSettingsCards === 'function') renderThemeSettingsCards();
   } catch (err) {}
 }, { once: true });
+
+
+function getRakRotaceNamesDockHealth() {
+  const result = {
+    ok: true,
+    version: window.APP_VERSION || 'v.1.5 (927)',
+    mode: 'rotace-names-dock-position-v927',
+    checkedAt: new Date().toISOString(),
+    scope: 'Rotace / seznam jmen / spodní dock',
+    expected: {
+      desktopBottom: '76px + safe-area',
+      mobileBottom: '72px + safe-area',
+      rootFolderChange: false,
+      onlineFlowChange: false
+    },
+    manual: {
+      mobileVisualSmoke: 'manual',
+      note: 'Ověřit na mobilu, že seznam jmen po otevření Rotace neleze do spodního panelu a nepůsobí nalepeně.'
+    }
+  };
+  try {
+    const grid = document.getElementById('namesGrid');
+    const rotace = document.getElementById('rotace');
+    result.dom = {
+      hasRotacePage: !!rotace,
+      hasNamesGrid: !!grid,
+      isRotaceActive: !!(rotace && rotace.classList && rotace.classList.contains('active'))
+    };
+    result.ok = !!(rotace && grid);
+  } catch (err) {
+    result.ok = false;
+    result.error = String(err && err.message || err);
+  }
+  return result;
+}
+window.getRakRotaceNamesDockHealth = getRakRotaceNamesDockHealth;

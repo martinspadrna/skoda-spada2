@@ -1,4 +1,4 @@
-// v.1.5 (923) – window.RaK namespace doplněný o release gating/checklist diagnostiku.
+// v.1.5 (927) – window.RaK namespace doplněný o validation readiness diagnostiku.
 
 (function setupRakNamespaceBridge() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -11,8 +11,8 @@
 
   const root = window.RaK || {};
   const existingVersion = root.namespaceVersion || '';
-  root.namespaceVersion = 'v.1.5 (923)';
-  root.mode = 'passive-namespace-readonly-release-gates-v923';
+  root.namespaceVersion = 'v.1.5 (927)';
+  root.mode = 'passive-namespace-readonly-release-gates-prompt-compliance-validation-v927';
   root.createdAt = root.createdAt || new Date().toISOString();
   root.updatedAt = new Date().toISOString();
   root.compatibility = 'legacy-globals-preserved';
@@ -74,12 +74,18 @@
     { group: 'diagnostics', alias: 'gamesOverlayResultDomHardening', globalName: 'getRakGamesOverlayResultDomHardeningHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only guard: herní modaly, overlaye a výsledkové texty.' },
     { group: 'diagnostics', alias: 'dueDiligenceProgress', globalName: 'getRakDueDiligenceAuditProgressHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only tracker celkového due diligence auditu a procent zbývající práce.' },
     { group: 'diagnostics', alias: 'dueDiligenceRemainingWork', globalName: 'getRakDueDiligenceRemainingWorkReport', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only soupis zbývajících auditních částí podle původního promptu.' },
+    { group: 'diagnostics', alias: 'promptComplianceClosure', globalName: 'getRakPromptComplianceClosureHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only prompt compliance closure: dokumenty 100 %, mobil a Playwright jako manual gate.' },
     { group: 'diagnostics', alias: 'performanceBudgetAudit', globalName: 'getRakPerformanceBudgetAuditHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only výkonový audit: skripty, CSS, DOM, storage a měřicí doporučení.' },
     { group: 'diagnostics', alias: 'testAutomationCiPlan', globalName: 'getRakTestAutomationCiPlanHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only test/CI plán: blokující kontroly, warningy a minimální GitHub Actions snippet.' },
     { group: 'diagnostics', alias: 'performanceCiClosure', globalName: 'getRakPerformanceCiClosureHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only closure výkonového a CI/test auditního kroku.' },
     { group: 'diagnostics', alias: 'mobilePerformanceSmokePlan', globalName: 'getRakMobilePerformanceSmokePlanHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only mobile/performance smoke plán a runtime snapshot bez tvrzení, že mobilní test proběhl.' },
     { group: 'diagnostics', alias: 'playwrightDomSmokeDraft', globalName: 'getRakPlaywrightDomSmokeDraftHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only návrh prvních Playwright/DOM smoke testů bez zavedení závislosti.' },
     { group: 'diagnostics', alias: 'finalAuditClosure', globalName: 'getRakFinalAuditClosureHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only closure stav velkého due diligence auditu.' },
+    { group: 'diagnostics', alias: 'manualValidationReadiness', globalName: 'getRakManualValidationReadinessHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only v927 ruční validační checklist: připraveno, ale testy zůstávají manual.' },
+    { group: 'diagnostics', alias: 'validationReadinessClosure', globalName: 'getRakValidationReadinessClosureHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only v927 closure pro mobil/browser/Playwright/post-release validaci.' },
+    { group: 'diagnostics', alias: 'gamesAchievementRewards', globalName: 'getRakGamesAchievementRewardHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only v927 kontrola: každá hra má achievementy a D-směnové odměny.' },
+    { group: 'diagnostics', alias: 'profileAppearanceRewards', globalName: 'getRakProfileAppearanceRewardHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only v927 kontrola: témata a pozadí jsou odměny uložené na aktivní profil.' },
+    { group: 'diagnostics', alias: 'rotaceNamesDock', globalName: 'getRakRotaceNamesDockHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only v927 kontrola: seznam jmen v Rotaci je odsazený nad spodní panel.' },
     { group: 'diagnostics', alias: 'exportReleaseTooling', globalName: 'getRakExportReleaseToolingHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only audit export/release tooling vrstvy bez spuštění exportu.' },
     { group: 'diagnostics', alias: 'exportSmokeReport', globalName: 'getRakExportSmokeReport', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only poslední smoke/preflight stav exportu ZIPu.' },
     { group: 'diagnostics', alias: 'domActionRegistry', globalName: 'getRakDomActionRegistryHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only mapa data-action prvků a allowlistů bez přepojení navigace/renderu/her.' },
@@ -134,14 +140,14 @@
   };
   root.getNamespaceMap = cloneMap;
   root.namespaceMap = cloneMap();
-  root.namespaceMapVersion = 'v.1.5 (923)';
+  root.namespaceMapVersion = 'v.1.5 (927)';
   root.namespacePlan = {
     phase: 'phase C',
     mode: 'namespace-readonly-phase-closed-with-online-game-contract-alias-v897',
     progressPercent: 100,
     mapClosed: true,
     rule: 'Staré globály zůstávají zdroj pravdy; read-only aliasy mají fallback na legacy globály a nesmí mutovat stav.',
-    nextStep: 'Namespace read-only fáze je uzavřená; export/release, DOM/action a storage/sync audity jsou uzavřené; Supabase client/offline queue audit je uzavřený; online game contract audit je ve v901 uzavřený jako read-only gate, AppSec/privacy audit je ve v904 uzavřený a v905 přidává release gating matici.'
+    nextStep: 'Namespace read-only fáze je uzavřená; v927 přidává validační readiness aliasy pro ruční mobilní smoke, Playwright běh a post-release PWA kontrolu.'
   };
 
   ensureGroup('modules');
