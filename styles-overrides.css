@@ -15662,3 +15662,115 @@ body.ladaTurboMode #games .gameBoard,
 body.ladaTurboMode #games .gamesStage{
   contain:layout style paint !important;
 }
+
+
+/* v.1.5 (929) – Dashboard: theme-aware průhledný glass styl panelů. */
+:root{
+  --rakDashboardGlassAlpha:.62;
+  --rakDashboardGlassBlur:18px;
+  --rakDashboardCardBg:linear-gradient(180deg, rgba(255,255,255,.105), rgba(255,255,255,.035));
+  --rakDashboardCardTint:radial-gradient(circle at 88% 0%, var(--rakThemeGlow, rgba(124,255,124,.26)), transparent 46%);
+  --rakDashboardCardLine:var(--rakThemeBorder, rgba(124,255,124,.22));
+}
+#home .dashboardShell{
+  background:
+    radial-gradient(circle at 12% 0%, var(--rakBgAccent, rgba(124,255,124,.18)), transparent 36%),
+    radial-gradient(circle at 100% 8%, var(--rakThemeGlow, rgba(124,255,124,.24)), transparent 42%),
+    linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.020)),
+    rgba(5,8,7,.42) !important;
+  border-color:color-mix(in srgb, var(--green, #7CFF7C) 24%, rgba(255,255,255,.08)) !important;
+  -webkit-backdrop-filter:blur(var(--rakDashboardGlassBlur)) saturate(150%) !important;
+  backdrop-filter:blur(var(--rakDashboardGlassBlur)) saturate(150%) !important;
+  box-shadow:0 20px 54px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.075) !important;
+}
+#home .dashboardHeroCard,
+#home .dashboardCard{
+  position:relative !important;
+  overflow:hidden !important;
+  isolation:isolate !important;
+  background:
+    var(--rakDashboardCardTint),
+    var(--rakDashboardCardBg),
+    color-mix(in srgb, var(--panel, rgba(18,28,22,.72)) 72%, transparent) !important;
+  border-color:var(--rakDashboardCardLine) !important;
+  -webkit-backdrop-filter:blur(var(--rakDashboardGlassBlur)) saturate(155%) !important;
+  backdrop-filter:blur(var(--rakDashboardGlassBlur)) saturate(155%) !important;
+  box-shadow:
+    0 14px 34px rgba(0,0,0,.26),
+    0 0 0 1px color-mix(in srgb, var(--green, #7CFF7C) 10%, transparent) inset,
+    inset 0 1px 0 rgba(255,255,255,.10) !important;
+}
+#home .dashboardHeroCard::before,
+#home .dashboardCard::before{
+  content:"" !important;
+  position:absolute !important;
+  inset:0 !important;
+  z-index:-1 !important;
+  pointer-events:none !important;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.135), transparent 28%),
+    radial-gradient(circle at 16% 14%, color-mix(in srgb, var(--green2, #B7FFBE) 18%, transparent), transparent 36%) !important;
+  opacity:.72 !important;
+}
+#home .dashboardHeroCard::after,
+#home .dashboardCard::after{
+  content:"" !important;
+  position:absolute !important;
+  inset:auto 12px 0 12px !important;
+  height:1px !important;
+  z-index:0 !important;
+  pointer-events:none !important;
+  background:linear-gradient(90deg, transparent, var(--green, #7CFF7C), transparent) !important;
+  opacity:.32 !important;
+}
+#home .dashboardCardClickable:hover{
+  border-color:color-mix(in srgb, var(--green, #7CFF7C) 44%, rgba(255,255,255,.12)) !important;
+  box-shadow:
+    0 18px 38px rgba(0,0,0,.30),
+    0 0 0 1px color-mix(in srgb, var(--green, #7CFF7C) 16%, transparent) inset,
+    0 0 22px color-mix(in srgb, var(--green, #7CFF7C) 12%, transparent) !important;
+}
+#home .dashboardLabel{
+  color:color-mix(in srgb, var(--green2, #B7FFBE) 54%, rgba(255,255,255,.48)) !important;
+}
+#home .dashboardValue{
+  color:color-mix(in srgb, var(--soft, #e5f7e9) 88%, white) !important;
+}
+#home .dashboardMeta{
+  color:color-mix(in srgb, var(--soft, #e5f7e9) 58%, rgba(255,255,255,.52)) !important;
+}
+#home .dashboardIcon.dashboardIconInline{
+  border-radius:16px !important;
+  background:linear-gradient(180deg, color-mix(in srgb, var(--green, #7CFF7C) 18%, transparent), rgba(255,255,255,.035)) !important;
+  box-shadow:0 8px 18px rgba(0,0,0,.16), inset 0 1px 0 rgba(255,255,255,.08) !important;
+}
+body.lightweightMode #home .dashboardShell,
+body.lowEndDevice #home .dashboardShell,
+body.ladaMode #home .dashboardShell,
+body.lightweightMode #home .dashboardHeroCard,
+body.lowEndDevice #home .dashboardHeroCard,
+body.ladaMode #home .dashboardHeroCard,
+body.lightweightMode #home .dashboardCard,
+body.lowEndDevice #home .dashboardCard,
+body.ladaMode #home .dashboardCard{
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--panel, rgba(18,28,22,.72)) 82%, rgba(255,255,255,.04)), color-mix(in srgb, var(--panel2, rgba(24,36,28,.68)) 86%, rgba(0,0,0,.12))) !important;
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+  box-shadow:0 7px 16px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.06) !important;
+}
+body.lightweightMode #home .dashboardHeroCard::before,
+body.lightweightMode #home .dashboardHeroCard::after,
+body.lightweightMode #home .dashboardCard::before,
+body.lightweightMode #home .dashboardCard::after,
+body.lowEndDevice #home .dashboardHeroCard::before,
+body.lowEndDevice #home .dashboardHeroCard::after,
+body.lowEndDevice #home .dashboardCard::before,
+body.lowEndDevice #home .dashboardCard::after,
+body.ladaMode #home .dashboardHeroCard::before,
+body.ladaMode #home .dashboardHeroCard::after,
+body.ladaMode #home .dashboardCard::before,
+body.ladaMode #home .dashboardCard::after{
+  display:none !important;
+  content:none !important;
+}

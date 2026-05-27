@@ -1,4 +1,4 @@
-// v.1.5 (928) – release ops checklist, monitoring map a rollback playbook jako read-only diagnostika.
+// v.1.5 (929) – release ops checklist, monitoring map a rollback playbook jako read-only diagnostika.
 
 (function setupRakReleaseOpsAudit() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();

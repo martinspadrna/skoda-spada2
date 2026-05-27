@@ -1,9 +1,9 @@
-// v.1.5 (928) – release gating/checklist vrstva s validační readiness closure bez mutací.
+// v.1.5 (929) – release gating/checklist vrstva s validační readiness closure bez mutací.
 
 (function setupRakReleaseGates() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
-  const VERSION = 'v.1.5 (928)';
-  const MODE = 'release-gates-readonly-v928';
+  const VERSION = 'v.1.5 (929)';
+  const MODE = 'release-gates-readonly-v929';
 
   try {
     if (typeof window.rakMarkModuleReady === 'function') {
@@ -101,6 +101,7 @@
     const validationReadinessClosure = readDiag('validationReadinessClosure', 'getRakValidationReadinessClosureHealth');
     const gamesAchievementRewards = readDiag('gamesAchievementRewards', 'getRakGamesAchievementRewardHealth');
     const profileAppearanceRewards = readDiag('profileAppearanceRewards', 'getRakProfileAppearanceRewardHealth');
+    const dashboardGlassTheme = readDiag('dashboardGlassTheme', 'getRakDashboardGlassThemeHealth');
     const rotaceNamesDock = readDiag('rotaceNamesDock', 'getRakRotaceNamesDockHealth');
     const ladaPerformance = readDiag('ladaPerformance', 'getLadaPerformanceHealth');
 
@@ -141,6 +142,7 @@
       validationReadinessClosure,
       gamesAchievementRewards,
       profileAppearanceRewards,
+      dashboardGlassTheme,
       rotaceNamesDock,
       ladaPerformance
     };
@@ -149,7 +151,7 @@
   function buildGateMatrix(signals) {
     const gates = [];
     const version = safeString(window.APP_VERSION || VERSION);
-    const versionOk = /^v\.1\.5 \(928\)$/.test(version);
+    const versionOk = /^v\.1\.5 \(929\)$/.test(version);
 
     gates.push(makeGate(
       'version-consistency',
@@ -488,6 +490,19 @@
     ));
 
 
+
+
+    gates.push(makeGate(
+      'v929-dashboard-glass-theme',
+      'Dashboard glass podle tématu',
+      signals.dashboardGlassTheme && signals.dashboardGlassTheme.ok ? 'ok' : 'warning',
+      'warning',
+      signals.dashboardGlassTheme ? ('theme ' + String(signals.dashboardGlassTheme.theme || '—') + ', bg ' + String(signals.dashboardGlassTheme.background || '—') + ', mode ' + String(signals.dashboardGlassTheme.lightweightSafe || '—')) : 'dashboard glass helper chybí',
+      'Na mobilu ověřit čitelnost a plynulost Dashboardu; v Láďově/low-end režimu musí zůstat vypnutý těžký blur.',
+      'styles/ui'
+    ));
+
+
     gates.push(makeGate(
       'v928-rotace-names-dock-stability',
       'Rotace seznam jmen bez cuknutí',
@@ -626,7 +641,7 @@
       policyChanges: false,
       onlineFlowChanges: false,
       dataMutation: false,
-      nextStep: 'Další bezpečný krok: reálný mobil/browser smoke podle v928 checklistu; případné chyby opravit po jedné bez zásahu do online flow.'
+      nextStep: 'Další bezpečný krok: reálný mobil/browser smoke podle v929 checklistu; případné chyby opravit po jedné bez zásahu do online flow.'
     };
   };
 

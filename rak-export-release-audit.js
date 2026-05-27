@@ -1,4 +1,4 @@
-// v.1.5 (928) – export/release audit ponechán a Supabase client/queue audit je read-only readiness signál.
+// v.1.5 (929) – export/release audit ponechán a Supabase client/queue audit je read-only readiness signál.
 
 (function setupRakExportReleaseAudit() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();

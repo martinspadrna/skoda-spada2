@@ -1,4 +1,4 @@
-// RaK v.1.5 (928) – DOM smoke kostra rozšířená o validační readiness helpery.
+// RaK v.1.5 (929) – DOM smoke kostra rozšířená o validační readiness helpery.
 // Instalace/spuštění mimo hotfix: npx playwright install chromium && npm run test:smoke
 const { test, expect } = require('@playwright/test');
 
@@ -105,4 +105,14 @@ test('v928 lada performance profile exposes conservative frame budget', async ({
   expect(profile.active).toBeTruthy();
   expect(profile.frameMs).toBeGreaterThanOrEqual(34);
   expect(profile.canvasDprMax).toBe(1);
+});
+
+
+test('v929 dashboard glass theme helper is exposed', async ({ page }) => {
+  await page.goto('./index.html');
+  const health = await page.evaluate(() => typeof window.getRakDashboardGlassThemeHealth === 'function' ? window.getRakDashboardGlassThemeHealth() : null);
+  expect(health).toBeTruthy();
+  expect(health.ok).toBeTruthy();
+  expect(health.mode).toContain('v929');
+  expect(health.themeAware).toBeTruthy();
 });

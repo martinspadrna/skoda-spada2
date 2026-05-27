@@ -4534,7 +4534,7 @@ function getRakTttAiHardeningV922Health() {
   return {
     ok: true,
     mode: 'ttt-ai-hardening-v923',
-    version: String(window.APP_VERSION || 'v.1.5 (928)'),
+    version: String(window.APP_VERSION || 'v.1.5 (929)'),
     thirteenTurnClamp: true,
     hardSearchDepthEarly: 8,
     hardSearchDepthMid: 8,
@@ -6122,10 +6122,10 @@ function buildAppHistoryHtml(versionText) {
       range: 'v.1.5 901–950',
       title: 'Aktuální stabilizace, bezpečnost a provozní detaily',
       lines: [
-        'Hlavní změny: dokončení online game contract auditu, release readiness/monitoring/rollback vrstvy, AppSec/privacy audit, release gates, výkonový/CI audit, finální due diligence report, prompt-compliance dokumenty v924, validační runbook v925, herní odměnová vrstva v926 a mobilní stabilizace Rotace/Láďova režimu v928.',
+        'Hlavní změny: dokončení online game contract auditu, release readiness/monitoring/rollback vrstvy, AppSec/privacy audit, release gates, výkonový/CI audit, finální due diligence report, prompt-compliance dokumenty v924, validační runbook v925, herní odměnová vrstva v926 a mobilní stabilizace Rotace/Láďova režimu v928 a dashboard glass podle tématu ve v929.',
         'Kantýna/jídelna se srovnala podle běžné a mimořádné provozní doby; rozklik teď odděluje běžný režim a přesčasové rozdíly.',
-        'Herní Top score a profily se resetovaly na čistý start; Piškvorky Top score mají zobrazovat datum i čas a Supabase výsledky byly znovu vyčištěné. V926 přidala achievementy pro každou hru včetně D-směnových cílů; v928 řeší stabilitu docku jmen v Rotaci.',
-        'Pravidlo historie: O aplikaci drží hlavně stručné souhrny po cca 50 verzích; v924 formálně uzavřela auditní prompty, v925 přidala praktický validační checklist a v926 ukládá aktivní téma/pozadí na profil jako odměny za progres a v928 přidává adaptivní mobilní dock + odlehčení Láďova režimu.'
+        'Herní Top score a profily se resetovaly na čistý start; Piškvorky Top score mají zobrazovat datum i čas a Supabase výsledky byly znovu vyčištěné. V926 přidala achievementy pro každou hru včetně D-směnových cílů; v928 řeší stabilitu docku jmen v Rotaci a v929 průhledný theme-aware glass dashboard.',
+        'Pravidlo historie: O aplikaci drží hlavně stručné souhrny po cca 50 verzích; v924 formálně uzavřela auditní prompty, v925 přidala praktický validační checklist a v926 ukládá aktivní téma/pozadí na profil jako odměny za progres a v928 přidává adaptivní mobilní dock + odlehčení Láďova režimu a v929 sjednocuje dashboard panely s aktivním tématem.'
       ]
     },
     {
@@ -12406,7 +12406,7 @@ function applyProfileUiPreferencesForActiveAccount(options = {}) {
   const defaultTheme = normalizeThemePreferenceId('default', 'default');
   const defaultBg = normalizeBackgroundPreferenceId('ios-mesh', 'ios-mesh');
   let changed = false;
-  // v.1.5 (928): vzhled je profilový. Nový/prázdný profil nezačne omylem vzhledem po předchozím přihlášeném profilu.
+  // v.1.5 (929): vzhled je profilový. Nový/prázdný profil nezačne omylem vzhledem po předchozím přihlášeném profilu.
   if (!ui.themeId) { ui.themeId = defaultTheme; changed = true; }
   if (!ui.backgroundId) { ui.backgroundId = defaultBg; changed = true; }
   const rewardMetrics = getThemeUnlockMetrics(profile);
@@ -12805,7 +12805,7 @@ function getRakProfileAppearanceRewardHealth() {
   const themeRewards = themes.filter(item => String(item && item.id || '') !== 'default');
   const backgroundRewards = backgrounds.filter(item => String(item && item.id || '') !== 'ios-mesh');
   return {
-    version: window.APP_VERSION || 'v.1.5 (928)',
+    version: window.APP_VERSION || 'v.1.5 (929)',
     mode: 'profile-appearance-reward-health-v928',
     activeProfile: metrics.hasProfile,
     profileThemeStorage: 'account.uiSettings.themeId',
@@ -12879,10 +12879,58 @@ window.addEventListener('load', () => {
 }, { once: true });
 
 
+
+
+function getRakDashboardGlassThemeHealth() {
+  let rootStyle = null;
+  let bodyClass = '';
+  try { rootStyle = getComputedStyle(document.documentElement); } catch (err) { rootStyle = null; }
+  try { bodyClass = String(document.body && document.body.className || ''); } catch (err) { bodyClass = ''; }
+  const readVar = (name) => {
+    try { return rootStyle ? String(rootStyle.getPropertyValue(name) || '').trim() : ''; } catch (err) { return ''; }
+  };
+  const theme = String(typeof getThemePreference === 'function' ? getThemePreference() : (document.documentElement.dataset.rakTheme || 'default'));
+  const background = String(typeof getBackgroundPreference === 'function' ? getBackgroundPreference() : (document.documentElement.dataset.rakBackground || 'ios-mesh'));
+  const lightweight = /(?:^|\s)(?:lightweightMode|lowEndDevice|ladaMode)(?:\s|$)/.test(bodyClass);
+  return {
+    ok: true,
+    version: window.APP_VERSION || 'v.1.5 (929)',
+    mode: 'dashboard-glass-theme-v929',
+    theme,
+    background,
+    themeAware: !!(readVar('--green') && readVar('--green2')),
+    glassVariables: {
+      panel: readVar('--panel'),
+      panel2: readVar('--panel2'),
+      green: readVar('--green'),
+      green2: readVar('--green2'),
+      themeGlow: readVar('--rakThemeGlow'),
+      themeBorder: readVar('--rakThemeBorder'),
+      dashboardBlur: readVar('--rakDashboardGlassBlur')
+    },
+    selectors: [
+      '#home .dashboardShell',
+      '#home .dashboardHeroCard',
+      '#home .dashboardCard',
+      'body.lightweightMode #home .dashboardCard',
+      'body.lowEndDevice #home .dashboardCard',
+      'body.ladaMode #home .dashboardCard'
+    ],
+    lightweightSafe: lightweight ? 'blur-off' : 'full-glass',
+    note: 'Dashboard panely používají theme proměnné pro border/glow/barvu; Láďův a low-end režim vypíná těžký blur.'
+  };
+}
+window.getRakDashboardGlassThemeHealth = getRakDashboardGlassThemeHealth;
+try {
+  if (window.RaK && window.RaK.diagnostics && typeof window.RaK.diagnostics.register === 'function') {
+    window.RaK.diagnostics.register('dashboardGlassTheme', getRakDashboardGlassThemeHealth);
+  }
+} catch (err) {}
+
 function getRakRotaceNamesDockHealth() {
   const result = {
     ok: true,
-    version: window.APP_VERSION || 'v.1.5 (928)',
+    version: window.APP_VERSION || 'v.1.5 (929)',
     mode: 'rotace-names-dock-stable-adaptive-v928',
     checkedAt: new Date().toISOString(),
     scope: 'Rotace / seznam jmen / adaptivní spodní dock',

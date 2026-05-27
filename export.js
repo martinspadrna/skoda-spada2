@@ -1,4 +1,4 @@
-// v.1.5 (928) – export manifest doplněný o herní achievement/appearance reward dokumenty.
+// v.1.5 (929) – export manifest doplněný o herní achievement/appearance reward dokumenty.
 const EXPORT_SOURCE_IDS = {
   "module-readiness.js": "src-module-readiness-js",
   "rak-namespace.js": "src-rak-namespace-js",
@@ -163,6 +163,8 @@ const EXPORT_SOURCE_IDS = {
   "assets/docs/rotace-names-dock-stability-v928.md": "src-rotace-names-dock-stability-v928-md",
   "assets/docs/lada-mode-performance-v928.md": "src-lada-mode-performance-v928-md",
   "assets/docs/about-50-version-summary-v928.md": "src-about-50-version-summary-v928-md",
+  "assets/docs/dashboard-glass-theme-v929.md": "src-dashboard-glass-theme-v929-md",
+  "assets/docs/about-50-version-summary-v929.md": "src-about-50-version-summary-v929-md",
   "assets/app-icons/icon-16.png": "src-icon-16-png",
   "assets/app-icons/icon-32.png": "src-icon-32-png",
   "assets/app-icons/icon-180.png": "src-icon-180-png",
@@ -176,8 +178,8 @@ const BINARY_SOURCE_CACHE = window.__ROTACE_BINARY_SOURCE_CACHE__ || (window.__R
 const EXPORT_SMOKE_REPORT = window.__RAK_EXPORT_SMOKE_REPORT__ || (window.__RAK_EXPORT_SMOKE_REPORT__ = {
   ok: null,
   status: 'not-run',
-  mode: 'export-smoke-report-v928',
-  version: 'v.1.5 (928)',
+  mode: 'export-smoke-report-v929',
+  version: 'v.1.5 (929)',
   checkedAt: null,
   lastStage: 'čeká na export',
   runCount: 0,
@@ -403,13 +405,15 @@ const EXPORT_TEXT_FILES = [
       'assets/docs/rotace-names-dock-position-v927.md',
       'assets/docs/rotace-names-dock-stability-v928.md',
       'assets/docs/lada-mode-performance-v928.md',
-      'assets/docs/about-50-version-summary-v928.md'
+      'assets/docs/about-50-version-summary-v928.md',
+      'assets/docs/dashboard-glass-theme-v929.md',
+      'assets/docs/about-50-version-summary-v929.md'
 ];
 
 function getRakExportManifest() {
   return {
-    version: String(window.APP_VERSION || 'v.1.5 (928)'),
-    mode: 'export-manifest-preflight-v928',
+    version: String(window.APP_VERSION || 'v.1.5 (929)'),
+    mode: 'export-manifest-preflight-v929',
     indexFile: 'index.html',
     jsFiles: Array.from(new Set(EXPORT_JS_FILES)),
     textFiles: Array.from(new Set(EXPORT_TEXT_FILES)),
@@ -430,7 +434,7 @@ function getRakExportSourceInventoryHealth() {
   const duplicateManifestPathCount = manifestPaths.length - new Set(manifestPaths).size;
   return {
     ok: duplicateSourceCount === 0 && duplicateBinaryCount === 0 && duplicateManifestPathCount === 0,
-    mode: 'export-source-inventory-v928',
+    mode: 'export-source-inventory-v929',
     version: String(window.APP_VERSION || 'unknown'),
     sourceIdCount: sourcePaths.length,
     manifestTextPathCount: manifestPaths.length,
@@ -517,8 +521,8 @@ async function readExportBinary(relativePath) {
 function updateRakExportSmokeReport(partial) {
   const data = partial && typeof partial === 'object' ? partial : {};
   Object.assign(EXPORT_SMOKE_REPORT, data, {
-    mode: 'export-smoke-report-v928',
-    version: String(window.APP_VERSION || 'v.1.5 (928)'),
+    mode: 'export-smoke-report-v929',
+    version: String(window.APP_VERSION || 'v.1.5 (929)'),
     checkedAt: new Date().toISOString()
   });
   return getRakExportSmokeReport();
@@ -529,7 +533,7 @@ function getRakExportSmokeReport() {
   return Object.assign({}, EXPORT_SMOKE_REPORT, {
     ok: EXPORT_SMOKE_REPORT.ok,
     status: String(EXPORT_SMOKE_REPORT.status || 'not-run'),
-    mode: String(EXPORT_SMOKE_REPORT.mode || 'export-smoke-report-v928'),
+    mode: String(EXPORT_SMOKE_REPORT.mode || 'export-smoke-report-v929'),
     version: String(EXPORT_SMOKE_REPORT.version || window.APP_VERSION || 'unknown'),
     lastStage: String(EXPORT_SMOKE_REPORT.lastStage || '—'),
     lastError: String(EXPORT_SMOKE_REPORT.lastError || ''),
@@ -616,7 +620,7 @@ async function validateRakExportManifestFiles(exportManifest) {
   const ok = duplicateReport.ok && missingTextFiles.length === 0 && missingBinaryFiles.length === 0;
   const report = {
     ok,
-    mode: 'export-manifest-preflight-v928',
+    mode: 'export-manifest-preflight-v929',
     version: String(window.APP_VERSION || 'unknown'),
     checkedAt: new Date().toISOString(),
     duplicateReport,

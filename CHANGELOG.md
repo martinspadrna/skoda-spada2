@@ -1,3 +1,10 @@
+## v.1.5 (929)
+- Dashboard panely dostaly průhlednější glass styl: hero karta, dashboard shell i jednotlivé karty používají aktivní theme proměnné, border/glow podle tématu a jemný barevný overlay.
+- Láďův / lightweight režim má vlastní levnější variantu bez těžkého blur efektu, aby glass styl nezhoršoval plynulost na slabším mobilu.
+- Přidaný read-only helper `getRakDashboardGlassThemeHealth()` a release gate signál pro kontrolu theme-aware dashboard glass vrstvy.
+- Přidané dokumenty `dashboard-glass-theme-v929.md` a `about-50-version-summary-v929.md`.
+- Verze sjednocena na v.1.5 (929), cache na `v1.5-929`, realtime kanál na `rak-public-live-v929`, package na `1.5.929`.
+
 ## v.1.5 (928)
 
 - Rotace: spodní seznam jmen je nově stabilní adaptivní dock podle skutečné výšky spodní navigace, aby po přepnutí na Rotaci necukal a zůstal viditelný na různých mobilech.

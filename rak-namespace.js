@@ -1,4 +1,4 @@
-// v.1.5 (928) – window.RaK namespace doplněný o validation readiness diagnostiku.
+// v.1.5 (929) – window.RaK namespace doplněný o validation readiness diagnostiku.
 
 (function setupRakNamespaceBridge() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -11,8 +11,8 @@
 
   const root = window.RaK || {};
   const existingVersion = root.namespaceVersion || '';
-  root.namespaceVersion = 'v.1.5 (928)';
-  root.mode = 'passive-namespace-readonly-release-gates-prompt-compliance-validation-v928';
+  root.namespaceVersion = 'v.1.5 (929)';
+  root.mode = 'passive-namespace-readonly-release-gates-prompt-compliance-validation-v929';
   root.createdAt = root.createdAt || new Date().toISOString();
   root.updatedAt = new Date().toISOString();
   root.compatibility = 'legacy-globals-preserved';
@@ -85,6 +85,7 @@
     { group: 'diagnostics', alias: 'validationReadinessClosure', globalName: 'getRakValidationReadinessClosureHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only v928 closure pro mobil/browser/Playwright/post-release validaci.' },
     { group: 'diagnostics', alias: 'gamesAchievementRewards', globalName: 'getRakGamesAchievementRewardHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only v928 kontrola: každá hra má achievementy a D-směnové odměny.' },
     { group: 'diagnostics', alias: 'profileAppearanceRewards', globalName: 'getRakProfileAppearanceRewardHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only v928 kontrola: témata a pozadí jsou odměny uložené na aktivní profil.' },
+    { group: 'diagnostics', alias: 'dashboardGlassTheme', globalName: 'getRakDashboardGlassThemeHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only v929 kontrola: Dashboard panely jsou průhledný theme-aware glass s low-end/Láďa fallbackem.' },
     { group: 'diagnostics', alias: 'rotaceNamesDock', globalName: 'getRakRotaceNamesDockHealth', type: 'function', phase: 'safe-now', risk: 'low', note: 'Read-only v928 kontrola: adaptivní seznam jmen v Rotaci je stabilní nad spodním panelem.' },
     { group: 'diagnostics', alias: 'rotaceNamesDockUpdate', globalName: 'updateRotaceNamesDockMetrics', type: 'function', phase: 'safe-now', risk: 'low', note: 'v928 bezpečné přeměření pozice docku jmen podle spodní navigace.' },
     { group: 'diagnostics', alias: 'rotaceNamesDockSchedule', globalName: 'scheduleRotaceNamesDockMetrics', type: 'function', phase: 'safe-now', risk: 'low', note: 'v928 bezpečné naplánování přeměření docku po dosednutí layoutu.' },
@@ -142,7 +143,7 @@
   };
   root.getNamespaceMap = cloneMap;
   root.namespaceMap = cloneMap();
-  root.namespaceMapVersion = 'v.1.5 (928)';
+  root.namespaceMapVersion = 'v.1.5 (929)';
   root.namespacePlan = {
     phase: 'phase C',
     mode: 'namespace-readonly-phase-closed-with-online-game-contract-alias-v897',
