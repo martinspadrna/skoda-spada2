@@ -17216,7 +17216,7 @@ body.ladaMode #stats .statsOccupancyLineArea{
   }
 }
 
-/* v.1.5 (955) – Dashboard: absence pill je skutečně centrovaný vůči celé horní kartě, ne natažený doleva. */
+/* v.1.5 (956) – Dashboard: absence pill je skutečně centrovaný vůči celé horní kartě, ne natažený doleva. */
 #home #dashHero .dashboardHeroLine3,
 #dashHero .dashboardHeroLine3{
   display:grid !important;
@@ -17261,5 +17261,74 @@ body.ladaMode #stats .statsOccupancyLineArea{
   #dashHero .dashboardHeroLine3Pill{
     max-width:94% !important;
     padding-inline:clamp(14px, 5vw, 30px) !important;
+  }
+}
+
+
+/* v.1.5 (956) – Dashboard: absence pill bez roztáhnuté pseudo-karty a stabilně na středu. */
+#home #dashHero .dashboardHeroLine3,
+#dashHero .dashboardHeroLine3{
+  display:flex !important;
+  justify-content:center !important;
+  align-items:center !important;
+  width:100% !important;
+  max-width:100% !important;
+  margin:clamp(7px, 1.2dvh, 10px) auto 0 !important;
+  padding:0 !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  transform:none !important;
+  translate:0 0 !important;
+  position:relative !important;
+  left:auto !important;
+  right:auto !important;
+  text-align:center !important;
+  overflow:visible !important;
+}
+#home #dashHero .dashboardHeroLine3Pill,
+#dashHero .dashboardHeroLine3Pill{
+  box-sizing:border-box !important;
+  display:inline-flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  width:fit-content !important;
+  min-width:min(210px, 74vw) !important;
+  max-width:min(88%, 620px) !important;
+  margin:0 auto !important;
+  padding:7px clamp(16px, 4.6vw, 34px) !important;
+  border-radius:999px !important;
+  border:1px solid rgba(var(--theme-rgb, 124,255,124), .26) !important;
+  background:rgba(var(--theme-rgb, 124,255,124), .075) !important;
+  box-shadow:inset 0 0 0 1px rgba(var(--theme-rgb, 124,255,124), .08) !important;
+  text-align:center !important;
+  transform:none !important;
+}
+#home #dashHero .dashboardHeroLine3Main,
+#home #dashHero .dashboardHeroLine3Sub,
+#dashHero .dashboardHeroLine3Main,
+#dashHero .dashboardHeroLine3Sub{
+  display:block !important;
+  width:100% !important;
+  text-align:center !important;
+  margin:0 auto !important;
+  white-space:normal !important;
+  overflow-wrap:anywhere !important;
+}
+@media (max-width:370px) and (max-height:820px){
+  #home #dashHero .dashboardHeroLine3Pill,
+  #dashHero .dashboardHeroLine3Pill{
+    min-width:min(190px, 72vw) !important;
+    padding:6px 14px !important;
+    border-bottom-color:rgba(var(--theme-rgb, 124,255,124), .34) !important;
+    box-shadow:inset 0 0 0 1px rgba(var(--theme-rgb, 124,255,124), .10), 0 1px 0 rgba(255,255,255,.04) !important;
+  }
+}
+@media (min-width:405px) and (max-width:435px) and (min-height:900px){
+  #home #dashHero .dashboardHeroLine3,
+  #dashHero .dashboardHeroLine3{
+    transform:translateX(-1px) !important;
   }
 }

@@ -44,6 +44,19 @@
     sudoku_hard: { title: 'Sudoku těžké', subtitle: 'Top čas pro těžké Sudoku', unit: 's', mode: 'low', icon: META.sudoku.icon }
   });
 
+  // v.1.5 (957): Denní challenge má vlastní leaderboard pro právě vybranou denní hru.
+  // Nemíchá se tak Aim/Reaction/Pexeso/Miny atd. do jednoho společného denního Top score.
+  DAILY_MODES.forEach((dailyMode) => {
+    const source = META[dailyMode] || META.daily;
+    META['daily_' + dailyMode] = {
+      title: 'Daily · ' + (source.title || dailyMode),
+      subtitle: 'Denní challenge jen pro tuto hru',
+      unit: source.unit || 'bodů',
+      mode: source.mode || 'high',
+      icon: META.daily.icon
+    };
+  });
+
   window.RAK_ARCADE_GAMES = {
     core: CORE_GAMES.slice(),
     extra: EXTRA_GAMES.slice(),
@@ -691,7 +704,7 @@
       perGame[id] = { achievementCount: direct, shiftDRewardCount: dShift, ok: direct >= 3 && dShift >= 2 };
     });
     return {
-      version: window.APP_VERSION || 'v.1.5 (955)',
+      version: window.APP_VERSION || 'v.1.5 (957)',
       mode: 'games-achievement-reward-health-v928',
       totalAchievementDefs: defs.length,
       gamesCovered: ids.length,
@@ -1290,7 +1303,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return meta && meta.title ? `Top 5 · ${meta.title}` : 'Top 5 výsledků';
   }
   function leaderboardGameIds() {
-    return Array.from(new Set(ALL_GAMES.concat(['memory_4x4','memory_6x6','memory_8x8','sudoku_easy','sudoku_medium','sudoku_hard'])));
+    return Array.from(new Set(ALL_GAMES.concat(['memory_4x4','memory_6x6','memory_8x8','sudoku_easy','sudoku_medium','sudoku_hard'], DAILY_MODES.map((id) => 'daily_' + id))));
   }
 
 
@@ -1402,7 +1415,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok: noMs && hasSeconds,
       mode: 'games-top-score-seconds-v923',
-      version: String(window.APP_VERSION || 'v.1.5 (955)'),
+      version: String(window.APP_VERSION || 'v.1.5 (957)'),
       scope: 'Top výsledky her – reakční čas ve vteřinách místo milisekund',
       probe,
       note: 'Herní Top score pro Reaction Test zobrazuje čas jako sekundy s desetinnou čárkou, ne jako ms.'
@@ -1824,6 +1837,15 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
 
   function fmtTime(ms) { return fmtSeconds(ms); }
   function fmtGameValue(gameId, ms) { return key(gameId) === 'reaction' ? fmtReactionSeconds(ms) : fmtSeconds(ms); }
+  function gamesIsMemoryLike(id) { const gid = key(id); return gid === 'memory' || /^memory_\d+x\d+$/.test(gid) || gid === 'daily_memory'; }
+  function gamesSanitizeLowBestTime(gameId, ms) {
+    const n = Number(ms) || 0;
+    if (!Number.isFinite(n) || n <= 0) return 0;
+    // v.1.5 (957): Pexeso někdy zdědilo chybnou hodnotu 86 400 s z denního/time fallbacku.
+    // Takový čas nebereme jako platný rekord a nová dohraná hra jej přepíše reálným elapsed časem.
+    if (gamesIsMemoryLike(gameId) && n >= 86400000) return 0;
+    return n;
+  }
   function formatDate(ms) {
     const n = typeof gamesParseStatTimestamp === 'function' ? gamesParseStatTimestamp(ms) : (typeof ms === 'number' ? Number(ms) : Date.parse(String(ms || '')));
     if (!Number.isFinite(n) || n <= 0) return '';
@@ -1862,7 +1884,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     Object.values(profile.accounts).forEach((acc) => {
       if (!acc || !acc.stats || typeof acc.stats !== 'object') return;
       if (!acc.stats[ARC_KEY] || typeof acc.stats[ARC_KEY] !== 'object') acc.stats[ARC_KEY] = {};
-      ARCADE_RENDER_GAMES.forEach((id) => {
+      leaderboardGameIds().forEach((id) => {
         const cur = acc.stats[ARC_KEY][id] || {};
         acc.stats[ARC_KEY][id] = Object.assign(arcadeDefaults(id), cur);
       });
@@ -1882,7 +1904,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
         const rawArcade = incoming && incoming.stats && incoming.stats[ARC_KEY] && typeof incoming.stats[ARC_KEY] === 'object' ? incoming.stats[ARC_KEY] : null;
         if (!rawArcade) return;
         profile.accounts[id].stats[ARC_KEY] = profile.accounts[id].stats[ARC_KEY] || {};
-        ARCADE_RENDER_GAMES.forEach((gid) => {
+        leaderboardGameIds().forEach((gid) => {
           if (rawArcade[gid]) {
             profile.accounts[id].stats[ARC_KEY][gid] = Object.assign(arcadeDefaults(gid), profile.accounts[id].stats[ARC_KEY][gid] || {}, rawArcade[gid]);
           }
@@ -1984,7 +2006,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     const st = getAccountStat(account, gameId);
     const id = key(gameId);
     if (id === 'ttt') return `${Number(st.plays || 0) || 0}×`;
-    if (isLowBetter(id)) return fmtGameValue(id, Number(st.bestTimeMs || 0) || 0);
+    if (isLowBetter(id)) return fmtGameValue(id, gamesSanitizeLowBestTime(id, st.bestTimeMs || st.leaderboardValue || 0));
     return `${Number(st.bestScore || 0) || 0}`;
   }
 
@@ -2031,7 +2053,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     const meta = gameMeta(id);
     let value = '—';
     if (id === 'ttt') value = String(gamesProfileSafeInt(st.plays, 999999999)) + '×';
-    else if (isLowBetter(id)) value = st.bestTimeMs ? fmtGameValue(id, gamesProfileSafeInt(st.bestTimeMs, 86400000)) : '—';
+    else if (isLowBetter(id)) { const safeTime = gamesSanitizeLowBestTime(id, st.bestTimeMs || st.leaderboardValue || 0); value = safeTime ? fmtGameValue(id, gamesProfileSafeInt(safeTime, 86400000)) : '—'; }
     else value = String(gamesProfileSafeInt(st.bestScore || st.leaderboardValue, 999999999));
     return `<div class="gamesStatsCardLine"><strong>${escapeHtml(gamesProfileSafeText(meta.title, id, GAMES_PROFILE_DOM_HARDENING.maxLabelLength))}</strong> · ${escapeHtml(gamesProfileValueText(value, '—', 48))}</div>`;
   }
@@ -2082,7 +2104,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     if (id === '2048') return Number(stat.bestScore || 0) || 0;
     if (id === 'snake') return Number(stat.bestScore || 0) || 0;
     if (id === 'flap') return Number(stat.bestScore || 0) || 0;
-    if (isLowBetter(id)) return Number(stat.bestTimeMs || 0) || 0;
+    if (isLowBetter(id)) return gamesSanitizeLowBestTime(id, stat.bestTimeMs || stat.leaderboardValue || 0);
     return Number(stat.bestScore || 0) || 0;
   }
 
@@ -2130,7 +2152,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
       gamePerf.leaderboardHiddenSkips = Number(gamePerf.leaderboardHiddenSkips || 0) + 1;
       return [];
     }
-    const ids = gameId ? [key(gameId)] : leaderboardGameIds();
+    const ids = Array.isArray(gameId) ? gameId.map(key).filter(Boolean) : (gameId ? [key(gameId)] : leaderboardGameIds());
     const requestKey = ids.join('|') || 'all';
     if (leaderboardInFlight.has(requestKey)) {
       gamePerf.leaderboardInFlightSkips = Number(gamePerf.leaderboardInFlightSkips || 0) + 1;
@@ -2244,6 +2266,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     if (!scoreValue) return false;
     const current = getAccountStat(active, 'daily');
     const playedAt = Number((sourcePatch && sourcePatch.lastPlayedAt) || (sourceMerged && sourceMerged.lastPlayedAt) || Date.now()) || Date.now();
+    const resultText = dailyLabel(id) + ' · ' + String(sourcePatch && sourcePatch.lastResult ? sourcePatch.lastResult : (sourceMerged && sourceMerged.lastResult ? sourceMerged.lastResult : scoreValue + ' bodů'));
     const mergedDaily = Object.assign({}, current, {
       completed: true,
       plays: (Number(current.plays || 0) || 0) + 1,
@@ -2251,12 +2274,44 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
       leaderboardValue: Math.max(Number(current.leaderboardValue || 0) || 0, scoreValue),
       points: Math.max(Number(current.points || 0) || 0, scoreValue),
       lastPlayedAt: playedAt,
-      lastResult: dailyLabel(id) + ' · ' + String(sourcePatch && sourcePatch.lastResult ? sourcePatch.lastResult : (sourceMerged && sourceMerged.lastResult ? sourceMerged.lastResult : scoreValue + ' bodů'))
+      lastResult: resultText,
+      dailyMode: id
     });
     setAccountStat(active, 'daily', mergedDaily);
-    if (window.app && window.app.gamesLeaderboardCache) delete window.app.gamesLeaderboardCache.daily;
-    if (typeof originalSyncStatOnline === 'function') void originalSyncStatOnline('daily', mergedDaily);
-    void refreshRemoteLeaderboards('daily');
+
+    const dailyStatId = dailyLeaderboardGameId(id);
+    const currentModeDaily = getAccountStat(active, dailyStatId);
+    const sourceValue = Math.max(0, Math.round(dailySourceValueForStatId(dailyStatId, id, sourcePatch, sourceMerged)));
+    const mergedModeDaily = Object.assign({}, currentModeDaily, {
+      completed: true,
+      plays: (Number(currentModeDaily.plays || 0) || 0) + 1,
+      lastPlayedAt: playedAt,
+      lastResult: resultText,
+      dailyMode: id
+    });
+    if (isLowBetter(dailyStatId)) {
+      const previous = Number(currentModeDaily.bestTimeMs || 0) || 0;
+      const nextTime = sourceValue > 0 ? (previous > 0 ? Math.min(previous, sourceValue) : sourceValue) : previous;
+      mergedModeDaily.bestTimeMs = nextTime;
+      mergedModeDaily.leaderboardValue = nextTime;
+      mergedModeDaily.points = encodePoints(dailyStatId, nextTime || 0);
+    } else {
+      const previous = Number(currentModeDaily.bestScore || currentModeDaily.leaderboardValue || 0) || 0;
+      const nextScore = Math.max(previous, sourceValue || decodePoints(id, scoreValue));
+      mergedModeDaily.bestScore = nextScore;
+      mergedModeDaily.leaderboardValue = nextScore;
+      mergedModeDaily.points = encodePoints(dailyStatId, nextScore || 0);
+    }
+    setAccountStat(active, dailyStatId, mergedModeDaily);
+    if (window.app && window.app.gamesLeaderboardCache) {
+      delete window.app.gamesLeaderboardCache.daily;
+      delete window.app.gamesLeaderboardCache[dailyStatId];
+    }
+    if (typeof originalSyncStatOnline === 'function') {
+      void originalSyncStatOnline('daily', mergedDaily);
+      void originalSyncStatOnline(dailyStatId, mergedModeDaily);
+    }
+    void refreshRemoteLeaderboards(['daily', dailyStatId]);
     return true;
   }
 
@@ -2281,8 +2336,9 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     const patchPlays = Number(nextPatch.plays || nextPatch.games_played || 0) || 0;
     merged.plays = isCompleted ? currentPlays + Math.max(1, patchPlays || 1) : currentPlays;
     if (isLowBetter(id)) {
-      const bestTime = Number(nextPatch.bestTimeMs || nextPatch.timeMs || nextPatch.elapsedMs || 0) || 0;
-      merged.bestTimeMs = Math.max(0, Math.min(Number(current.bestTimeMs || 0) || 0, bestTime) || bestTime || current.bestTimeMs || 0);
+      const bestTime = gamesSanitizeLowBestTime(id, nextPatch.bestTimeMs || nextPatch.timeMs || nextPatch.elapsedMs || 0);
+      const currentBestTime = gamesSanitizeLowBestTime(id, current.bestTimeMs || current.leaderboardValue || 0);
+      merged.bestTimeMs = bestTime > 0 ? (currentBestTime > 0 ? Math.min(currentBestTime, bestTime) : bestTime) : currentBestTime;
       merged.leaderboardValue = merged.bestTimeMs || 0;
       merged.points = encodePoints(id, merged.bestTimeMs || bestTime || 0);
     } else {
@@ -5846,6 +5902,24 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     const id = key(mode || 'daily');
     return DAILY_MODES.includes(id) ? id : 'daily';
   }
+  function dailyLeaderboardGameId(mode) {
+    const id = dailyScoreGameId(mode);
+    return id === 'daily' ? 'daily' : ('daily_' + id);
+  }
+  function dailySourceValueForStatId(statId, sourceId, sourcePatch, sourceMerged) {
+    const sid = key(statId);
+    const id = key(sourceId);
+    const patch = sourcePatch || {};
+    const merged = sourceMerged || {};
+    if (isLowBetter(sid)) {
+      const raw = Number(patch.bestTimeMs || patch.timeMs || patch.elapsedMs || merged.bestTimeMs || 0) || 0;
+      return raw > 0 ? raw : 0;
+    }
+    const score = Number(patch.bestScore || patch.score || merged.bestScore || merged.leaderboardValue || 0) || 0;
+    if (score > 0) return score;
+    const directPoints = Number(patch.points || merged.points || 0) || 0;
+    return directPoints > 0 ? decodePoints(id, directPoints) : 0;
+  }
   function dailyScoreUnit(mode) {
     const id = dailyScoreGameId(mode);
     return gameMeta(id).unit || 'bodů';
@@ -5858,10 +5932,10 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     const label = gamesDailySafeLabel(dailyLabel(mode), 'Challenge');
     const description = gamesDailySafeDescription(dailyText(mode));
     const scoreGame = dailyScoreGameId(mode);
-    const scoreUnit = gamesSafeScoreUnit('bodů', 'bodů');
+    const dailyStatGame = dailyLeaderboardGameId(scoreGame);
     const sourceUnit = gamesSafeScoreUnit(dailyScoreUnit(mode), 'bodů');
-    const scoreTitle = gamesDailySafeLabel('Top score denní challenge', 'Top score denní challenge');
-    body.innerHTML = `<div class="arcadeStage dailyStage"><div class="arcadeHud arcadeHudSingleLine">${gamesStatLine('Dnešní hra', label)}${gamesStatLine('Datum', new Date().toLocaleDateString('cs-CZ'))}${gamesStatLine('Měří se', sourceUnit)}</div><div class="arcadeBar arcadePanel uPad12"><div class="arcadeStatus"><strong>Denní challenge:</strong> ${escapeHtml(description)} Výsledek se uloží sem do Denní challenge i do konkrétní hry.</div></div><div class="arcadeControls"><button type="button" class="gameControlBtn" id="dailyStartBtn">Spustit dnešní výzvu</button><button type="button" class="gameControlBtn" id="dailyResetBtn">Obnovit</button></div>${gamesTop3Block('daily', scoreUnit, 5, scoreTitle).replace('gamesTop5ScrollCard', 'gamesTop5ScrollCard arcadeTopScoreTight')}</div>`;
+    const scoreTitle = gamesDailySafeLabel('Top score dnešní challenge: ' + dailyLabel(scoreGame), 'Top score dnešní challenge');
+    body.innerHTML = `<div class="arcadeStage dailyStage"><div class="arcadeHud arcadeHudSingleLine">${gamesStatLine('Dnešní hra', label)}${gamesStatLine('Datum', new Date().toLocaleDateString('cs-CZ'))}${gamesStatLine('Měří se', sourceUnit)}</div><div class="arcadeBar arcadePanel uPad12"><div class="arcadeStatus"><strong>Denní challenge:</strong> ${escapeHtml(description)} Top výsledky níže jsou jen pro dnešní hru.</div></div><div class="arcadeControls"><button type="button" class="gameControlBtn" id="dailyStartBtn">Spustit dnešní výzvu</button><button type="button" class="gameControlBtn" id="dailyResetBtn">Obnovit</button></div>${gamesTop3Block(dailyStatGame, sourceUnit, 5, scoreTitle).replace('gamesTop5ScrollCard', 'gamesTop5ScrollCard arcadeTopScoreTight')}</div>`;
     const start = () => {
       if (window.app) window.app.dailyChallengeSession = { active: true, mode: scoreGame, dateKey: String(dailySeed()), startedAt: Date.now() };
       if (mode === 'aim') renderAim(body, { challenge: true, duration: 30000 });
@@ -5885,7 +5959,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   function getRakDailyChallengeScoreBridgeHealth() {
     return {
       ok: typeof gamesRecordDailyChallengeStat === 'function' && typeof gamesGetDailyChallengeSession === 'function',
-      mode: 'daily-challenge-score-bridge-v920',
+      mode: 'daily-challenge-filtered-by-current-game-v957',
       version: String(window.APP_VERSION || 'v.1.5 (920)'),
       sourceModes: DAILY_MODES.slice(),
       targetGame: 'daily',

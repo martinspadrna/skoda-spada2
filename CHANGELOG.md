@@ -1,3 +1,16 @@
+## v.1.5 (957)
+- Daily challenge: top výsledky se nově filtrují podle právě vybrané denní hry (`daily_aim`, `daily_memory`, `daily_reaction`…), takže se nemíchají odehrané challenge různých her.
+- Pexeso: opravený chybný čas 86400 s; neplatný 24h fallback se ignoruje a nově dohraná hra jej přepíše skutečným časem.
+- Piškvorky AI: přidaný diagonální gain guard, který blokuje tahy hráče vedoucí k čtyřce/forku/forcing sekvenci ještě před tím, než vznikne hotová otevřená trojka.
+- Piškvorky: ruleset verze navýšena na `gomoku-10col-19row-ai-rules-v7`, protože se měnila obtížnost/herní logika.
+- Verze sjednocena na v.1.5 (957), cache na `v1.5-957`, realtime kanál na `rak-public-live-v957`, package na `1.5.957`.
+
+## v.1.5 (956)
+- Dashboard: řádek `chybí / bude chybět` v horním panelu je opravdu centrovaný vůči celé kartě, obal už nemá roztáhlé pozadí do jedné strany a na 360×800 drží spodní linku.
+- Piškvorky AI: přidaná přímá detekce endpointů otevřených trojek; AI má blokovat skutečný konec hrozby, ne pole o krok vedle.
+- Piškvorky: ruleset verze navýšena na `gomoku-10col-19row-ai-rules-v6`; změna se týká obtížnosti/logiky, ne vzhledu appky.
+- Verze sjednocena na v.1.5 (956), cache na `v1.5-956`, realtime kanál na `rak-public-live-v956`, package na `1.5.956`.
+
 ## v.1.5 (955)
 - Dashboard: řádek „chybí“ v horním směnovém panelu je centrovaný vůči celé kartě; pill už není natažený doleva.
 - Piškvorky: AI proti počítači má předělanou bounded threat/safety pipeline, silnější blokování open-four/fork/open-three hrozeb a legální fallback proti zaseknutí.

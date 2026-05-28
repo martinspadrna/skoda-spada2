@@ -1,4 +1,4 @@
-# RaK v.1.5 (955) – stručný souhrn pro O aplikaci
+# RaK v.1.5 (956) – stručný souhrn pro O aplikaci
 
 - Dashboard: řádek s absencemi v horním panelu je centrovaný vůči celé kartě.
 - Piškvorky: AI logika byla předělaná na bezpečnější bounded threat/safety pipeline bez změny rozměru pole 10×19.
