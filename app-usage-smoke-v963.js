@@ -1,0 +1,30 @@
+#!/usr/bin/env node
+const fs = require('fs');
+const path = require('path');
+
+function read(file) {
+  return fs.readFileSync(path.join(__dirname, file), 'utf8');
+}
+function assert(cond, msg) {
+  if (!cond) throw new Error(msg);
+}
+
+const bridge = read('supabase-bridge.js');
+const ui = read('ui.js');
+const sql = read('assets/docs/sql/supabase_app_usage_v963.sql');
+
+assert(bridge.includes('recordAppUsage'), 'RotationSupabaseBridge.recordAppUsage chybí');
+assert(bridge.includes('loadAppUsage'), 'RotationSupabaseBridge.loadAppUsage chybí');
+assert(bridge.includes('rak_usage_presence_touch'), 'RPC rak_usage_presence_touch není napojená');
+assert(bridge.includes('rak_usage_presence_admin'), 'RPC rak_usage_presence_admin není napojená');
+assert(bridge.includes('APP_USAGE_MIN_INTERVAL_MS'), 'App usage throttle chybí');
+assert(ui.includes('buildAdminUsageHtml'), 'Admin UI přehledu připojení chybí');
+assert(ui.includes('data-admin-action="open-usage"'), 'Tlačítko Přehled připojení chybí');
+assert(ui.includes("openAppMenu('admin-usage')"), 'Admin usage routing chybí');
+assert(sql.includes('create table if not exists public.app_usage_devices'), 'SQL app_usage_devices chybí');
+assert(sql.includes('create table if not exists public.app_usage_events'), 'SQL app_usage_events chybí');
+assert(sql.includes('returns jsonb'), 'SQL RPC návrat JSONB chybí');
+assert(sql.includes('last_ip_hash'), 'SQL hash IP pole chybí');
+assert(!sql.includes(' ip text not null'), 'SQL nesmí ukládat surovou IP jako povinný sloupec');
+
+console.log('app-usage-smoke-v963 OK');

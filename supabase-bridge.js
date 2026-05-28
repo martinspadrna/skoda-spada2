@@ -230,11 +230,12 @@
     { table: 'game_stats', realtime: true, queueType: 'game_stat', access: 'anon SELECT/INSERT/UPDATE', note: 'skóre a žebříčky' },
     { table: 'game_ui_settings', realtime: false, queueType: 'game_ui_settings', access: 'anon SELECT/INSERT/UPDATE', note: 'profilové nastavení vzhledu' },
     { table: 'app_keepalive', realtime: false, queueType: '', access: 'RPC rak_app_keepalive + app_keepalive-only RLS', note: 'bezpečný heartbeat proti pauze free projektu, mimo herní data; klient používá RPC, tabulka má jen úzké heartbeat RLS' },
+    { table: 'rak_usage_presence', realtime: false, queueType: '', access: 'RPC rak_usage_presence_touch + RPC rak_usage_presence_admin', note: 'anonymní přehled zařízení / poslední připojení pro administraci bez ukládání surové IP' },
     { table: 'bug_reports', realtime: false, queueType: 'bug_report', access: 'anon INSERT only', note: 'uživatelské reporty chyb / nápadů' },
     { table: 'gomoku_wins', realtime: true, queueType: 'gomoku_win', access: 'anon SELECT/INSERT/UPDATE', note: 'výhry piškvorek / legacy leaderboard' }
   ];
 
-  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (961)';
+  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (964)';
   const SUPABASE_POLICY_AUDIT_SNAPSHOT_AT = '2026-05-24';
   const SUPABASE_POLICY_HARDENING_PHASE = {
     current: 'V856 – release hygiene po kontrole vlastních buildů: changelog opravený, SQL auditní soubory jsou archivované v assets/docs/sql a DB policies se nemění.',
@@ -294,7 +295,7 @@
   ];
 
   const SUPABASE_RPC_HARDENING_STATUS = {
-    version: 'v.1.5 (961)',
+    version: 'v.1.5 (964)',
     phase: '2E-O online invite/session RPC smoke + accept RPC / no policy tightening',
     rpcPreferred: true,
     migrationApplied: true,
@@ -906,7 +907,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v961');
+      const channel = client.channel('rak-public-live-v964');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -1017,7 +1018,7 @@
       ends_at: payload.ends_at,
       marquee: payload.marquee,
       updated_at: nowIso,
-      app_version: String(window.APP_VERSION || 'v.1.5 (961)'),
+      app_version: String(window.APP_VERSION || 'v.1.5 (964)'),
       priority: 0
     });
     return [
@@ -1062,7 +1063,7 @@
           ends_at: fallback.ends_at,
           marquee: fallback.marquee,
           updated_at: new Date().toISOString(),
-          app_version: String(window.APP_VERSION || 'v.1.5 (961)'),
+          app_version: String(window.APP_VERSION || 'v.1.5 (964)'),
           priority: 0
         });
   }
@@ -1077,7 +1078,7 @@
         p_ends_at: safe.ends_at,
         p_marquee: safe.marquee,
         p_updated_by: 'rak-admin-ui',
-        p_app_version: String(window.APP_VERSION || 'v.1.5 (961)'),
+        p_app_version: String(window.APP_VERSION || 'v.1.5 (964)'),
         p_priority: 0
       }), { mode: 'write', timeoutMs: 8000, attempts: 1 });
       if (res && res.error) return { ok: false, error: res.error, shape: 'rpc-save' };
@@ -1091,7 +1092,7 @@
     try {
       const res = await runSupabaseOperation('announcements.rpc-clear', () => client.rpc('rak_clear_dashboard_announcement', {
         p_updated_by: 'rak-admin-ui',
-        p_app_version: String(window.APP_VERSION || 'v.1.5 (961)')
+        p_app_version: String(window.APP_VERSION || 'v.1.5 (964)')
       }), { mode: 'write', timeoutMs: 8000, attempts: 1 });
       if (res && res.error) return { ok: false, error: res.error, shape: 'rpc-clear' };
       return { ok: true, cleared: true, count: Number(res && res.data || 0), shape: 'rpc-clear' };
@@ -1213,7 +1214,7 @@
       online: typeof navigator === 'undefined' ? false : !!navigator.onLine,
       cachedAnnouncementCount: Array.isArray(state.announcements) ? state.announcements.length : 0,
       table: 'announcements',
-      realtimeChannel: 'rak-public-live-v961',
+      realtimeChannel: 'rak-public-live-v964',
       readMode: 'public SELECT + realtime refresh + local cache fallback',
       writeMode: 'RPC security definer save/clear; direct table fallback only if RPC unavailable'
     });
@@ -1243,6 +1244,11 @@
   const SUPABASE_KEEPALIVE_MIN_INTERVAL_MS = 12 * 60 * 60 * 1000;
   const SUPABASE_KEEPALIVE_TIMEOUT_MS = 6500;
   const SUPABASE_KEEPALIVE_RETRY_INTERVAL_MS = 5 * 60 * 1000;
+  const APP_USAGE_DEVICE_KEY = 'rak_app_usage_device_v1';
+  const APP_USAGE_STATUS_KEY = 'rak_app_usage_status_v1';
+  const APP_USAGE_MIN_INTERVAL_MS = 8 * 60 * 1000;
+  const APP_USAGE_TIMEOUT_MS = 8000;
+  const APP_USAGE_ADMIN_PIN = '772326';
   let flushPromise = null;
   let flushScheduleTimer = null;
   let lastQueueWakeRequestAt = 0;
@@ -2091,6 +2097,265 @@
     const { data, error } = await client.from('gomoku_wins').insert([payload]).select('*');
     if (error) throw error;
     return Array.isArray(data) ? data : [];
+  }
+
+
+  function normalizeAppUsageStatus(raw) {
+    const base = raw && typeof raw === 'object' ? raw : {};
+    return {
+      ok: base.ok === true,
+      status: String(base.status || (base.ok ? 'ok' : 'unknown')).slice(0, 60),
+      lastAttemptAt: base.lastAttemptAt || null,
+      lastSuccessAt: base.lastSuccessAt || null,
+      lastErrorAt: base.lastErrorAt || null,
+      lastErrorMessage: String(base.lastErrorMessage || '').slice(0, 220),
+      lastEventType: String(base.lastEventType || '').slice(0, 80),
+      lastDeviceKey: String(base.lastDeviceKey || '').slice(0, 96),
+      lastAppVersion: String(base.lastAppVersion || '').slice(0, 60),
+      lastSkipReason: String(base.lastSkipReason || '').slice(0, 120),
+      skipped: Number(base.skipped || 0) || 0,
+      attempts: Number(base.attempts || 0) || 0,
+      successes: Number(base.successes || 0) || 0,
+      failures: Number(base.failures || 0) || 0,
+      table: 'app_usage_devices/app_usage_events'
+    };
+  }
+
+  function readAppUsageStatus() {
+    return normalizeAppUsageStatus(safeReadJson(APP_USAGE_STATUS_KEY, {}));
+  }
+
+  function writeAppUsageStatus(next) {
+    const safe = normalizeAppUsageStatus(next);
+    safeWriteJson(APP_USAGE_STATUS_KEY, safe);
+    return safe;
+  }
+
+  function ensureAppUsageDeviceKey() {
+    try {
+      let key = String(localStorage.getItem(APP_USAGE_DEVICE_KEY) || '').trim();
+      if (/^rakd-[a-z0-9]{10,}$/i.test(key)) return key.slice(0, 96);
+      const keepaliveKey = String(localStorage.getItem(SUPABASE_KEEPALIVE_DEVICE_KEY) || '').trim();
+      if (/^rak-[a-z0-9]{10,}$/i.test(keepaliveKey)) {
+        key = ('rakd-' + keepaliveKey.replace(/^rak-/i, '')).slice(0, 90);
+        localStorage.setItem(APP_USAGE_DEVICE_KEY, key);
+        return key;
+      }
+      const hasCrypto = typeof crypto !== 'undefined' && crypto && typeof crypto.getRandomValues === 'function';
+      const rnd = hasCrypto
+        ? Array.from(crypto.getRandomValues(new Uint32Array(4))).map(n => n.toString(36)).join('')
+        : (Date.now().toString(36) + Math.random().toString(36).slice(2, 14));
+      key = ('rakd-' + rnd).slice(0, 90);
+      localStorage.setItem(APP_USAGE_DEVICE_KEY, key);
+      return key;
+    } catch (err) {
+      return ('rakd-memory-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8)).slice(0, 90);
+    }
+  }
+
+  function getAppUsageAccount() {
+    try {
+      if (typeof gamesGetActiveAccount === 'function') return gamesGetActiveAccount();
+    } catch (err) {}
+    try {
+      const profile = typeof gamesGetProfile === 'function' ? gamesGetProfile() : (typeof app !== 'undefined' && app ? app.gamesProfile : null);
+      if (profile && profile.activeAccountId && profile.accounts) return profile.accounts[profile.activeAccountId] || null;
+    } catch (err) {}
+    return null;
+  }
+
+  function getAppUsageRoute() {
+    try {
+      const page = document.querySelector('.page.active');
+      const id = page && page.id ? String(page.id) : '';
+      const game = typeof app !== 'undefined' && app && app.activeGameShell ? String(app.activeGameShell) : '';
+      return [id || 'home', game].filter(Boolean).join(' · ').slice(0, 200);
+    } catch (err) {
+      return 'unknown';
+    }
+  }
+
+  function getAppUsageDeviceInfo(extra) {
+    const ex = extra && typeof extra === 'object' ? extra : {};
+    const viewport = typeof window !== 'undefined' ? {
+      width: Math.round(Number(window.innerWidth || 0) || 0),
+      height: Math.round(Number(window.innerHeight || 0) || 0),
+      dpr: Math.round((Number(window.devicePixelRatio || 1) || 1) * 100) / 100
+    } : {};
+    const screenInfo = typeof screen !== 'undefined' && screen ? {
+      width: Math.round(Number(screen.width || 0) || 0),
+      height: Math.round(Number(screen.height || 0) || 0)
+    } : {};
+    const nav = typeof navigator !== 'undefined' ? navigator : {};
+    const connection = nav && nav.connection ? nav.connection : null;
+    return Object.assign({
+      viewport,
+      screen: screenInfo,
+      language: String(nav.language || '').slice(0, 40),
+      platform: String(nav.platform || '').slice(0, 80),
+      timezone: (typeof Intl !== 'undefined' && Intl.DateTimeFormat) ? String(Intl.DateTimeFormat().resolvedOptions().timeZone || '').slice(0, 80) : '',
+      standalone: !!(window.matchMedia && window.matchMedia('(display-mode: standalone)').matches),
+      visibility: typeof document !== 'undefined' ? String(document.visibilityState || '') : '',
+      connection: connection ? {
+        effectiveType: String(connection.effectiveType || '').slice(0, 40),
+        downlink: Number(connection.downlink || 0) || 0,
+        saveData: !!connection.saveData
+      } : null,
+      source: 'rak-v964-client'
+    }, ex.deviceInfo && typeof ex.deviceInfo === 'object' ? ex.deviceInfo : {});
+  }
+
+  function buildAppUsagePayload(options) {
+    const opts = options && typeof options === 'object' ? options : {};
+    const account = getAppUsageAccount();
+    const eventType = String(opts.eventType || opts.reason || 'app-open').trim().slice(0, 80) || 'app-open';
+    return {
+      deviceKey: ensureAppUsageDeviceKey(),
+      eventType,
+      accountNumber: String(opts.accountNumber || (account && (account.accountNumber || account.account_number || account.id)) || '').trim().slice(0, 80),
+      playerName: String(opts.playerName || (account && (account.name || account.playerName || account.id)) || '').trim().slice(0, 160),
+      appVersion: String(opts.appVersion || window.APP_VERSION || '').trim().slice(0, 80),
+      route: String(opts.route || getAppUsageRoute()).trim().slice(0, 220),
+      userAgent: String(opts.userAgent || (typeof navigator !== 'undefined' ? navigator.userAgent : '') || '').slice(0, 1000),
+      deviceInfo: getAppUsageDeviceInfo(opts),
+      online: typeof navigator !== 'undefined' ? navigator.onLine !== false : true
+    };
+  }
+
+  function shouldLogAppUsage(payload, options) {
+    const opts = options || {};
+    if (opts.force) return { ok: true };
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) return { ok: false, reason: 'offline' };
+    const current = readAppUsageStatus();
+    const last = Date.parse(current.lastAttemptAt || current.lastSuccessAt || '') || 0;
+    const now = Date.now();
+    if (last && now - last < APP_USAGE_MIN_INTERVAL_MS) return { ok: false, reason: 'throttle' };
+    return { ok: true };
+  }
+
+  async function recordAppUsageDirect(client, options = {}) {
+    const payload = buildAppUsagePayload(options || {});
+    const allowed = shouldLogAppUsage(payload, options || {});
+    const current = readAppUsageStatus();
+    if (!allowed.ok) {
+      writeAppUsageStatus(Object.assign({}, current, {
+        ok: current.ok === true,
+        status: allowed.reason === 'offline' ? 'offline' : 'skipped',
+        lastSkipReason: allowed.reason,
+        lastEventType: payload.eventType,
+        lastDeviceKey: payload.deviceKey,
+        lastAppVersion: payload.appVersion,
+        skipped: Number(current.skipped || 0) + 1
+      }));
+      return { ok: true, skipped: true, reason: allowed.reason, payload };
+    }
+    const attempt = writeAppUsageStatus(Object.assign({}, current, {
+      ok: current.ok === true,
+      status: 'attempt',
+      lastAttemptAt: new Date().toISOString(),
+      lastEventType: payload.eventType,
+      lastDeviceKey: payload.deviceKey,
+      lastAppVersion: payload.appVersion,
+      attempts: Number(current.attempts || 0) + 1
+    }));
+    const rpcArgs = {
+      payload: {
+        device_id: payload.deviceKey,
+        user_name: payload.playerName || null,
+        profile_id: payload.accountNumber || null,
+        app_version: payload.appVersion || null,
+        build_number: String(payload.appVersion || '').match(/\((\d+)\)/) ? String(payload.appVersion || '').match(/\((\d+)\)/)[1] : null,
+        user_agent: payload.userAgent || null,
+        platform: payload.deviceInfo && payload.deviceInfo.platform ? payload.deviceInfo.platform : null,
+        language: payload.deviceInfo && payload.deviceInfo.language ? payload.deviceInfo.language : null,
+        screen: payload.deviceInfo && payload.deviceInfo.screen ? payload.deviceInfo.screen : null,
+        timezone: payload.deviceInfo && payload.deviceInfo.timezone ? payload.deviceInfo.timezone : null,
+        connection_type: payload.deviceInfo && payload.deviceInfo.connection && payload.deviceInfo.connection.effectiveType ? payload.deviceInfo.connection.effectiveType : null,
+        last_path: payload.route || null,
+        last_source: payload.eventType || 'app-open'
+      }
+    };
+    try {
+      const { data, error } = await runSupabaseOperation('app_usage.rpc.presence_touch', () => client.rpc('rak_usage_presence_touch', rpcArgs), { mode: 'write', attempts: 1, timeoutMs: APP_USAGE_TIMEOUT_MS });
+      if (error) throw error;
+      const next = writeAppUsageStatus(Object.assign({}, attempt, {
+        ok: true,
+        status: 'ok',
+        lastSuccessAt: new Date().toISOString(),
+        lastErrorAt: attempt.lastErrorAt || null,
+        lastErrorMessage: '',
+        successes: Number(current.successes || 0) + 1
+      }));
+      return { ok: true, status: next, data, payload };
+    } catch (err) {
+      const next = writeAppUsageStatus(Object.assign({}, attempt, {
+        ok: false,
+        status: 'error',
+        lastErrorAt: new Date().toISOString(),
+        lastErrorMessage: String(err && (err.message || err.details || err.hint || err.code || err.status) ? (err.message || err.details || err.hint || err.code || err.status) : err || 'unknown').slice(0, 220),
+        failures: Number(current.failures || 0) + 1
+      }));
+      return { ok: false, error: err, status: next, payload };
+    }
+  }
+
+  function normalizeAppUsageRow(row) {
+    const src = row && typeof row === 'object' ? row : {};
+    const now = Date.now();
+    const lastSeen = src.last_seen_at || src.last_seen || null;
+    const minutes = lastSeen ? Math.floor(Math.max(0, now - (Date.parse(lastSeen) || now)) / 60000) : null;
+    return {
+      device_key: String(src.device_key || src.device_id || '').slice(0, 128),
+      account_number: src.account_number || src.profile_id || null,
+      player_name: src.player_name || src.user_name || null,
+      app_version: src.app_version || null,
+      route: src.route || src.last_path || null,
+      user_agent: src.user_agent || null,
+      device_info: src.device_info && typeof src.device_info === 'object' ? src.device_info : {
+        platform: src.platform || '',
+        language: src.language || '',
+        screen: src.screen || '',
+        timezone: src.timezone || '',
+        connection: { effectiveType: src.connection_type || '' }
+      },
+      first_seen_at: src.first_seen_at || src.first_seen || null,
+      last_seen_at: lastSeen,
+      open_count: Number(src.open_count || src.session_count || 0) || 0,
+      last_event_type: src.last_event_type || src.last_source || null,
+      last_ip_hash: src.last_ip_hash || src.ip_hash || null,
+      minutes_since_seen: src.minutes_since_seen === null || typeof src.minutes_since_seen === 'undefined' ? minutes : Number(src.minutes_since_seen)
+    };
+  }
+
+  async function loadAppUsageDirect(client, options = {}) {
+    const limit = Math.max(1, Math.min(200, Number(options.limit || 80) || 80));
+    const { data, error } = await runSupabaseOperation('app_usage.rpc.presence_admin', () => client.rpc('rak_usage_presence_admin', {
+      limit_count: limit
+    }), { mode: 'read', attempts: 1, timeoutMs: 10000 });
+    if (error) throw error;
+    const rows = Array.isArray(data) ? data : [];
+    const devices = rows.map(normalizeAppUsageRow);
+    const now = Date.now();
+    const summary = {
+      device_count: devices.length,
+      active_24h: devices.filter(d => d.last_seen_at && now - (Date.parse(d.last_seen_at) || 0) <= 24 * 60 * 60 * 1000).length,
+      active_7d: devices.filter(d => d.last_seen_at && now - (Date.parse(d.last_seen_at) || 0) <= 7 * 24 * 60 * 60 * 1000).length,
+      events_24h: null,
+      generated_at: new Date().toISOString()
+    };
+    return { ok: true, devices, events: [], summary, fetchedAt: new Date().toISOString() };
+  }
+
+  function scheduleAppUsage(reason, delayMs, options) {
+    const delay = Number.isFinite(Number(delayMs)) ? Math.max(0, Number(delayMs)) : 2000;
+    try {
+      window.setTimeout(() => {
+        try {
+          if (!window.RotationSupabaseBridge || typeof window.RotationSupabaseBridge.recordAppUsage !== 'function') return;
+          void window.RotationSupabaseBridge.recordAppUsage(Object.assign({ eventType: reason || 'app-open' }, options || {}));
+        } catch (err) {}
+      }, delay);
+    } catch (err) {}
   }
 
 
@@ -4087,7 +4352,7 @@
     return {
       ok: blockers.length === 0,
       mode: 'supabase-hardening-readiness-audit-only',
-      version: 'v.1.5 (961)',
+      version: 'v.1.5 (964)',
       checkedAt: new Date().toISOString(),
       confirmed,
       readinessPercent,
@@ -4267,6 +4532,7 @@
       performanceGuard: Object.assign({}, state.performanceGuard),
       performanceHealth: getSupabasePerformanceHealth(),
       keepaliveStatus: getSupabaseKeepaliveStatus(),
+      appUsageStatus: readAppUsageStatus(),
       structureHealth: getSupabaseStructureHealth(),
       policyRiskHealth: getSupabasePolicyRiskHealth(),
       hardeningReadiness: getSupabaseHardeningReadiness(),
@@ -4342,6 +4608,7 @@
     if (state.ready) {
       bindRealtimeSubscriptions();
       scheduleSupabaseKeepalive('init-ready', 1400);
+      scheduleAppUsage('app-open', 2600);
       return refreshPublicData();
     }
     if (!hasClient()) {
@@ -4350,6 +4617,7 @@
     bindRealtimeSubscriptions();
     scheduleSupabaseQueueFlush('init', 650);
     scheduleSupabaseKeepalive('init', 1600);
+    scheduleAppUsage('app-open', 2800);
     return refreshPublicData();
   }
 
@@ -4376,7 +4644,9 @@
       game_invites_pending: await countAdminRowsDirect(client, 'game_invites', q => q.eq('status', 'pending')),
       game_sessions: await countAdminRowsDirect(client, 'game_sessions'),
       game_sessions_active: await countAdminRowsDirect(client, 'game_sessions', q => q.in('status', ['active', 'waiting', 'placing'])),
-      bug_reports_new: await countAdminRowsDirect(client, 'bug_reports', q => q.eq('status', 'new'))
+      bug_reports_new: await countAdminRowsDirect(client, 'bug_reports', q => q.eq('status', 'new')),
+      app_usage_devices: await countAdminRowsDirect(client, 'app_usage_devices'),
+      app_usage_events_24h: await countAdminRowsDirect(client, 'app_usage_events', q => q.gte('seen_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()))
     };
     const profileUiRows = await countAdminRowsDirect(client, 'game_stats', q => q.eq('game_type', GAME_UI_SETTINGS_TYPE));
     counts.profile_ui_settings = profileUiRows;
@@ -4560,6 +4830,32 @@
         return { ok: false, error: err };
       }
     },
+    recordAppUsage: async (options = {}) => {
+      const client = getClient();
+      if (!client || !navigator.onLine) {
+        const current = readAppUsageStatus();
+        writeAppUsageStatus(Object.assign({}, current, { ok: current.ok === true, status: 'offline-or-missing-client', lastSkipReason: !client ? 'missing-client' : 'offline', skipped: Number(current.skipped || 0) + 1 }));
+        return { ok: false, reason: 'offline-or-missing-client' };
+      }
+      const result = await recordAppUsageDirect(client, options || {});
+      if (result && result.ok) state.lastError = null;
+      else if (result && result.error) state.lastError = result.error;
+      return result;
+    },
+    loadAppUsage: async (options = {}) => {
+      const client = getClient();
+      if (!client || !navigator.onLine) return { ok: false, reason: 'offline-or-missing-client', devices: [], events: [], summary: {} };
+      try {
+        const result = await runSharedSupabaseRead('app_usage.load:' + String(options.limit || 80), () => loadAppUsageDirect(client, options || {}));
+        state.lastError = null;
+        return result;
+      } catch (err) {
+        state.lastError = err;
+        console.error('App usage load failed', err);
+        return { ok: false, error: err, devices: [], events: [], summary: {} };
+      }
+    },
+    getAppUsageStatus: () => readAppUsageStatus(),
     saveDashboardAnnouncementOnline,
     clearDashboardAnnouncementOnline,
     getDashboardAnnouncementOnlineStatus,
@@ -4712,6 +5008,9 @@
   window.loadGameHeadToHeadList = async (gameType, options) => window.RotationSupabaseBridge.loadGameHeadToHeadList(gameType, options || {});
   window.loadBugReports = async (options) => window.RotationSupabaseBridge.loadBugReports(options || {});
   window.updateBugReportStatus = async (id, status, note) => window.RotationSupabaseBridge.updateBugReportStatus(id, status, note || '');
+  window.recordRakAppUsage = async (options) => window.RotationSupabaseBridge.recordAppUsage(options || {});
+  window.loadRakAppUsage = async (options) => window.RotationSupabaseBridge.loadAppUsage(options || {});
+  window.getRakAppUsageStatus = () => window.RotationSupabaseBridge.getAppUsageStatus();
   // v.1.5 (809): destruktivní reset herního progresu už se nevystavuje jako veřejný window helper.
 
   window.addEventListener('online', () => {
@@ -4719,6 +5018,7 @@
     scheduleRealtimeRebind('online', 900);
     void refreshPublicData();
     scheduleSupabaseKeepalive('online', 2200);
+    scheduleAppUsage('online', 4200);
   });
 
   document.addEventListener('visibilitychange', () => {
@@ -4728,18 +5028,21 @@
     requestSupabaseQueueWake('visible', 450);
     scheduleRealtimeRebind('visible', 1200);
     scheduleSupabaseKeepalive('visible', 2600);
+    scheduleAppUsage('visible', 4800);
   });
 
   window.addEventListener('pageshow', () => {
     requestSupabaseQueueWake('pageshow', 650);
     scheduleRealtimeRebind('pageshow', 1450);
     scheduleSupabaseKeepalive('pageshow', 2800);
+    scheduleAppUsage('pageshow', 5200);
   });
 
   window.addEventListener('focus', () => {
     requestSupabaseQueueWake('focus', 856);
     scheduleRealtimeRebind('focus', 1800);
     scheduleSupabaseKeepalive('focus', 3200);
+    scheduleAppUsage('focus', 5800);
   });
 
   if (document.readyState === 'loading') {

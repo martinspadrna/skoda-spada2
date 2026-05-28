@@ -1249,7 +1249,7 @@ const TTT_HARD_WIN_EMAIL = 'martinspadrna@gmail.com';
 const TTT_HARD_WIN_KEY = 'tttHardWins';
 // Samostatná verze pravidel/obtížnosti Piškvorek. Není to verze celé aplikace.
 // Zvyšovat jen při změně AI obtížnosti nebo pravidel, ne při vzhledových úpravách.
-const GOMOKU_RULESET_VERSION = 'gomoku-10col-19row-ai-rules-v11';
+const GOMOKU_RULESET_VERSION = 'gomoku-10col-19row-ai-rules-v12';
 if (typeof window !== 'undefined') window.GOMOKU_RULESET_VERSION = GOMOKU_RULESET_VERSION;
 
 function tttEnsureAiWinsResetV667() {
@@ -4573,7 +4573,7 @@ function getRakTttAiHardeningV922Health() {
   return {
     ok: true,
     mode: 'ttt-ai-hardening-v923',
-    version: String(window.APP_VERSION || 'v.1.5 (961)'),
+    version: String(window.APP_VERSION || 'v.1.5 (963)'),
     thirteenTurnClamp: true,
     hardSearchDepthEarly: 8,
     hardSearchDepthMid: 8,
@@ -4928,7 +4928,7 @@ function tttV952RootSafetyMove(board, difficulty, deadline) {
 function getRakOnlineGomokuEngineV954Health() {
   return {
     ok: true,
-    version: String(window.APP_VERSION || 'v.1.5 (961)'),
+    version: String(window.APP_VERSION || 'v.1.5 (963)'),
     board: { rows: TTT_ROWS, cols: TTT_COLS, total: TTT_TOTAL_CELLS },
     rulesetVersion: GOMOKU_RULESET_VERSION,
     winLength: TTT_WIN_LENGTH,
@@ -5360,7 +5360,7 @@ function tttV955BestMove(board, difficulty) {
     if (opening >= 0 && !board[opening]) return opening;
   }
 
-  // v.1.5 (961): prevent the human from placing the diagonal/straight gain square
+  // v.1.5 (963): prevent the human from placing the diagonal/straight gain square
   // that creates a four, fork, or clean open-three chain on the next move.
   const xNextGains = tttV957HumanNextThreatGains(board, deadline);
   const hardNextGains = xNextGains.filter(item => item.level >= (occupied >= 8 ? 3 : 5));
@@ -5418,7 +5418,7 @@ function tttV955BestMove(board, difficulty) {
 function getRakGomokuAiV955Health() {
   return {
     ok: true,
-    version: String(window.APP_VERSION || 'v.1.5 (961)'),
+    version: String(window.APP_VERSION || 'v.1.5 (963)'),
     board: { rows: TTT_ROWS, cols: TTT_COLS, total: TTT_TOTAL_CELLS },
     rulesetVersion: GOMOKU_RULESET_VERSION,
     aiPipeline: ['immediate-win', 'immediate-loss-block', 'forcing-threats', 'opponent-danger-block', 'bounded-root-safety-search', 'center-fallback'],
@@ -5762,7 +5762,7 @@ function tttV956BestMove(board, difficulty) {
 function getRakGomokuAiV956Health() {
   return {
     ok: true,
-    version: String(window.APP_VERSION || 'v.1.5 (961)'),
+    version: String(window.APP_VERSION || 'v.1.5 (963)'),
     board: { rows: TTT_ROWS, cols: TTT_COLS, total: TTT_TOTAL_CELLS },
     rulesetVersion: GOMOKU_RULESET_VERSION,
     openThreeEndpointGuard: true,
@@ -5781,7 +5781,7 @@ if (typeof window !== 'undefined') {
 function getRakGomokuAiV957Health() {
   return {
     ok: true,
-    version: String(window.APP_VERSION || 'v.1.5 (961)'),
+    version: String(window.APP_VERSION || 'v.1.5 (963)'),
     board: { rows: TTT_ROWS, cols: TTT_COLS, total: TTT_TOTAL_CELLS },
     rulesetVersion: GOMOKU_RULESET_VERSION,
     diagonalGainPrevention: true,
@@ -5800,7 +5800,7 @@ if (typeof window !== 'undefined') {
 
 
 
-// v.1.5 (961) – Piškvorky AI: tvrdší diagonální threat engine pro 10×19 bez zaseknutí.
+// v.1.5 (963) – Piškvorky AI: tvrdší diagonální threat engine pro 10×19 bez zaseknutí.
 function tttV958Dirs() {
   return [[0,1],[1,0],[1,1],[1,-1]];
 }
@@ -6224,7 +6224,7 @@ function tttV958BestMove(board, difficulty) {
 function getRakGomokuAiV958Health() {
   return {
     ok: true,
-    version: String(window.APP_VERSION || 'v.1.5 (961)'),
+    version: String(window.APP_VERSION || 'v.1.5 (963)'),
     board: { rows: TTT_ROWS, cols: TTT_COLS, total: TTT_TOTAL_CELLS },
     rulesetVersion: GOMOKU_RULESET_VERSION,
     diagonalThreatGuard: true,
@@ -6243,7 +6243,7 @@ if (typeof window !== 'undefined') {
 
 
 
-// v.1.5 (961) – Piškvorky AI: tvrdší line-window obrana, hlavně proti diagonálním build-upům.
+// v.1.5 (963) – Piškvorky AI: tvrdší line-window obrana, hlavně proti diagonálním build-upům.
 function tttV959Directions() {
   return [[0, 1], [1, 0], [1, 1], [1, -1]];
 }
@@ -6569,7 +6569,7 @@ function tttV959BestMove(board, difficulty) {
 function getRakGomokuAiV959Health() {
   return {
     ok: true,
-    version: String(window.APP_VERSION || 'v.1.5 (961)'),
+    version: String(window.APP_VERSION || 'v.1.5 (963)'),
     rulesetVersion: GOMOKU_RULESET_VERSION,
     board: { rows: TTT_ROWS, cols: TTT_COLS, total: TTT_TOTAL_CELLS },
     lineWindowDefense: true,
@@ -6600,7 +6600,7 @@ function tttBestMove(board, difficulty) {
 }
 
 
-// v.1.5 (961) – Piškvorky AI: deterministic tactical engine smoke-tested locally.
+// v.1.5 (963) – Piškvorky AI: deterministic tactical engine smoke-tested locally.
 // Cíl: žádné zaseknutí a nepřehlédnout diagonální/open-three/four hrozby.
 function tttV960Dirs() {
   return [[0, 1], [1, 0], [1, 1], [1, -1]];
@@ -6870,7 +6870,7 @@ function tttV960BestMove(board, difficulty) {
 function getRakGomokuAiV960Health() {
   return {
     ok: true,
-    version: String(window.APP_VERSION || 'v.1.5 (961)'),
+    version: String(window.APP_VERSION || 'v.1.5 (963)'),
     rulesetVersion: GOMOKU_RULESET_VERSION,
     board: { rows: TTT_ROWS, cols: TTT_COLS, total: TTT_TOTAL_CELLS },
     localSmokeTested: true,
@@ -6888,7 +6888,7 @@ if (typeof window !== 'undefined') {
 
 
 
-// v.1.5 (961) – Piškvorky AI: pomalejší, bezpečnější tactical verification nad v960.
+// v.1.5 (963) – Piškvorky AI: pomalejší, bezpečnější tactical verification nad v960.
 const TTT_V961_SOFT_DEADLINE_MS = 1600;
 const TTT_V961_HARD_DEADLINE_MS = 2200;
 
@@ -7353,6 +7353,423 @@ function tttBestMove(board, difficulty) {
 }
 
 
+// v.1.5 (963) – Piškvorky AI: anti-fork/anti-open-four vrstva nad v961.
+// Cíl: nenechat X vytvořit dvojité okamžité výhry typu .XXXX. a podobné pasti.
+const TTT_V962_SOFT_DEADLINE_MS = 1700;
+const TTT_V962_HARD_DEADLINE_MS = 2300;
+
+function tttV962Budget(difficulty) {
+  const prev = typeof tttV961Budget === 'function' ? tttV961Budget(difficulty || 'ai') : { soft: 1600, hard: 2200 };
+  const lowEnd = !!(typeof document !== 'undefined' && document.body && document.body.classList && (document.body.classList.contains('ladaMode') || document.body.classList.contains('lowEndDevice') || document.body.classList.contains('lightweightMode')));
+  if (difficulty !== 'ai') return { soft: Math.max(420, Number(prev.soft || 0) || 0), hard: Math.max(720, Number(prev.hard || 0) || 0) };
+  return lowEnd ? { soft: 1300, hard: 2000 } : { soft: TTT_V962_SOFT_DEADLINE_MS, hard: TTT_V962_HARD_DEADLINE_MS };
+}
+
+function tttV962Now() {
+  return typeof tttEngineNow === 'function' ? tttEngineNow() : ((typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now());
+}
+
+function tttV962TimeUp(deadline, margin) {
+  return !!(deadline && tttV962Now() > deadline - (Number(margin || 0) || 0));
+}
+
+function tttV962Legal(board, idx) {
+  return typeof tttV961Legal === 'function' ? tttV961Legal(board, idx) : (Number.isFinite(Number(idx)) && idx >= 0 && idx < board.length && !board[idx]);
+}
+
+function tttV962CenterScore(idx) {
+  return typeof tttV961CenterScore === 'function' ? tttV961CenterScore(idx) : 0;
+}
+
+function tttV962Coord(idx) {
+  return { row: Math.floor(Number(idx) / TTT_COLS), col: Number(idx) % TTT_COLS };
+}
+
+function tttV962UniqueEntries(entries) {
+  const map = new Map();
+  for (const e of entries || []) {
+    if (!e || !Number.isFinite(Number(e.idx))) continue;
+    const idx = Number(e.idx);
+    const prev = map.get(idx);
+    if (!prev || Number(e.level || 0) > Number(prev.level || 0) || (Number(e.level || 0) === Number(prev.level || 0) && Number(e.hits || 0) > Number(prev.hits || 0))) {
+      map.set(idx, Object.assign({}, e, { idx }));
+    }
+  }
+  return Array.from(map.values()).sort((a, b) =>
+    (Number(b.level || 0) - Number(a.level || 0))
+    || (Number(b.hits || 0) - Number(a.hits || 0))
+    || (Number(b.immediateWins || 0) - Number(a.immediateWins || 0))
+    || ((b.diagonal ? 1 : 0) - (a.diagonal ? 1 : 0))
+    || (tttV962CenterScore(b.idx) - tttV962CenterScore(a.idx))
+    || (a.idx - b.idx)
+  );
+}
+
+function tttV962CandidateSet(board, radius) {
+  const occupied = typeof tttV960Occupied === 'function' ? tttV960Occupied(board) : board.filter(Boolean).length;
+  const pool = new Set(typeof tttV960CandidateSet === 'function' ? tttV960CandidateSet(board, radius || (occupied < 22 ? 3 : 2)) : []);
+  if (!occupied) {
+    [tttIndex(9, 4), tttIndex(9, 5), tttIndex(8, 4), tttIndex(10, 5)].forEach(idx => pool.add(idx));
+  }
+  try { tttV960WinningMoves(board, 'O').forEach(idx => pool.add(idx)); } catch (_) {}
+  try { tttV960WinningMoves(board, 'X').forEach(idx => pool.add(idx)); } catch (_) {}
+  try { tttV961ThreatEntries(board, 'X').slice(0, 42).forEach(e => pool.add(e.idx)); } catch (_) {}
+  try { tttV961ThreatEntries(board, 'O').slice(0, 32).forEach(e => pool.add(e.idx)); } catch (_) {}
+  return Array.from(pool).map(Number).filter(idx => tttV962Legal(board, idx));
+}
+
+function tttV962StrongThreatCount(entries, minLevel) {
+  let n = 0;
+  const seen = new Set();
+  for (const e of entries || []) {
+    if (!e || seen.has(e.idx)) continue;
+    if (Number(e.level || 0) >= Number(minLevel || 84)) {
+      seen.add(e.idx);
+      n += 1;
+    }
+  }
+  return n;
+}
+
+function tttV962KillerEntries(board, mark, deadline) {
+  const opponent = mark === 'X' ? 'O' : 'X';
+  const pool = tttV962CandidateSet(board, (tttV960Occupied(board) < 24 ? 3 : 2));
+  const out = [];
+  for (const idx of pool) {
+    if (tttV962TimeUp(deadline, 22) && out.length) break;
+    if (!tttV962Legal(board, idx)) continue;
+    board[idx] = mark;
+    const winNow = tttWinner(board).winner === mark;
+    const immediateWins = winNow ? 99 : tttV960WinningMoves(board, mark).length;
+    const threats = tttV961ThreatEntries(board, mark);
+    const top = threats[0] || null;
+    const severeThreats = tttV962StrongThreatCount(threats, 84);
+    const forcedThreats = tttV962StrongThreatCount(threats, 110);
+    const forkMove = immediateWins >= 2 || severeThreats >= 2;
+    const diagonal = !!(top && top.diagonal);
+    const exact = !!(top && top.exact);
+    const gap = !!(top && top.gap);
+    const endpoint = !!(top && top.endpoint);
+    board[idx] = '';
+
+    let level = 0;
+    if (winNow) level = 240;
+    else if (immediateWins >= 2) level = 218;
+    else if (immediateWins === 1 && severeThreats >= 2) level = 196;
+    else if (immediateWins === 1) level = 176;
+    else if (forcedThreats >= 2) level = 166;
+    else if (forcedThreats >= 1 && severeThreats >= 2) level = 158;
+    else if (severeThreats >= 3) level = 148;
+    else if (severeThreats >= 2) level = 138;
+    else if (top && Number(top.level || 0) >= 116) level = 128;
+    else if (top && Number(top.level || 0) >= 88 && exact) level = 108;
+    else if (top && Number(top.level || 0) >= 84) level = 102;
+    if (level < 102) continue;
+
+    out.push({
+      idx,
+      level,
+      hits: immediateWins * 800 + forcedThreats * 300 + severeThreats * 90 + (top ? Number(top.hits || 0) : 0),
+      immediateWins,
+      severeThreats,
+      severeGains: 0,
+      forcedThreats,
+      forkMove,
+      diagonal,
+      exact,
+      gap,
+      endpoint,
+      kinds: ['killer'].concat(top && top.kinds ? top.kinds.slice(0, 4) : []),
+      opponent
+    });
+  }
+  return tttV962UniqueEntries(out);
+}
+
+function tttV962LineRunAfterMove(board, idx, mark) {
+  if (!Number.isFinite(Number(idx))) return 0;
+  const row = Math.floor(Number(idx) / TTT_COLS);
+  const col = Number(idx) % TTT_COLS;
+  let best = 0;
+  for (const dir of tttV960Dirs()) {
+    const dr = dir[0], dc = dir[1];
+    let len = 1;
+    let r = row + dr, c = col + dc;
+    while (tttInBounds(r, c) && board[tttIndex(r, c)] === mark) { len += 1; r += dr; c += dc; }
+    r = row - dr; c = col - dc;
+    while (tttInBounds(r, c) && board[tttIndex(r, c)] === mark) { len += 1; r -= dr; c -= dc; }
+    if (len > best) best = len;
+  }
+  return best;
+}
+
+function tttV962PositionRisk(board, mark, deadline) {
+  // Rychlý odhad rizika bez vnořeného killer scanu; ten se řeší samostatně.
+  const wins = tttV960WinningMoves(board, mark).length;
+  const threats = tttV961ThreatEntries(board, mark);
+  const gains = tttV961GainEntries(board, mark, deadline);
+  const top = threats[0] || null;
+  const topGain = gains[0] || null;
+  const severeThreats = tttV962StrongThreatCount(threats, 84);
+  const severeGains = tttV962StrongThreatCount(gains, 104);
+  return wins * 9e18
+    + severeThreats * 6e16
+    + severeGains * 9e16
+    + (top ? Number(top.level || 0) * 3e14 + Number(top.hits || 0) * 2.8e12 + (top.exact ? 8e13 : 0) : 0)
+    + (topGain ? Number(topGain.level || 0) * 4e14 + Number(topGain.hits || 0) * 2.6e12 : 0);
+}
+
+function tttV962SafetyReport(board, idx, deadline) {
+  if (!tttV962Legal(board, idx)) return { idx, illegal: true, risk: 1e30, immediateLosses: 99, killerLevel: 999, killerCount: 99 };
+  board[idx] = 'O';
+  const ownWinNow = tttWinner(board).winner === 'O';
+  const immediateLosses = tttV960WinningMoves(board, 'X').length;
+  const killers = tttV962KillerEntries(board, 'X', deadline);
+  const killerLevel = killers[0] ? Number(killers[0].level || 0) : 0;
+  const killerCount = killers.filter(e => Number(e.level || 0) >= 138).length;
+  const xRisk = tttV962PositionRisk(board, 'X', deadline);
+  const oRisk = tttV962PositionRisk(board, 'O', deadline);
+  let worstReply = 0;
+  const replies = tttV962UniqueEntries(killers.concat(tttV961GainEntries(board, 'X', deadline)).concat(tttV961ThreatEntries(board, 'X')))
+    .filter(e => tttV962Legal(board, e.idx))
+    .slice(0, 8);
+  for (const e of replies) {
+    if (tttV962TimeUp(deadline, 20) && worstReply > 0) break;
+    const reply = Number(e.idx);
+    board[reply] = 'X';
+    const replyWin = tttWinner(board).winner === 'X' ? 1 : 0;
+    const replyWins = tttV960WinningMoves(board, 'X').length;
+    const replyThreat = tttV961ThreatEntries(board, 'X')[0] || null;
+    const replyGain = tttV961GainEntries(board, 'X', deadline)[0] || null;
+    const oImmediate = tttV960WinningMoves(board, 'O').length;
+    board[reply] = '';
+    const score = replyWin * 1e24
+      + replyWins * 8e21
+      + (replyThreat ? Number(replyThreat.level || 0) * 3e18 + Number(replyThreat.hits || 0) * 8e15 : 0)
+      + (replyGain ? Number(replyGain.level || 0) * 5e18 + Number(replyGain.hits || 0) * 9e15 : 0)
+      - oImmediate * 2e20;
+    if (score > worstReply) worstReply = score;
+  }
+  board[idx] = '';
+  const risk = (ownWinNow ? 0 : immediateLosses * 1e25)
+    + killerLevel * 2.6e20
+    + killerCount * 6e21
+    + xRisk * 1.7
+    + worstReply * 0.8
+    - oRisk * 0.34;
+  return { idx, illegal: false, ownWinNow, immediateLosses, killerLevel, killerCount, xRisk, oRisk, worstReply, risk };
+}
+
+function tttV962PickDefense(board, entries, deadline) {
+  const list = tttV962UniqueEntries(entries).filter(e => tttV962Legal(board, e.idx)).slice(0, 34);
+  if (!list.length) return -1;
+  let best = -1;
+  let bestRank = null;
+  for (const e of list) {
+    if (tttV962TimeUp(deadline, 26) && best >= 0) break;
+    const idx = Number(e.idx);
+    const safety = tttV962SafetyReport(board, idx, deadline);
+    board[idx] = 'O';
+    const ownWin = tttWinner(board).winner === 'O' ? 1 : 0;
+    const ownThreat = tttV961ThreatEntries(board, 'O')[0] || null;
+    const ownKill = tttV962KillerEntries(board, 'O', deadline)[0] || null;
+    const runBlock = tttV962LineRunAfterMove(board, idx, 'O') + tttV962LineRunAfterMove(board, idx, 'X') * 0.35;
+    board[idx] = '';
+    const rank = [
+      ownWin ? 1 : 0,
+      -Number(safety.immediateLosses || 0),
+      -Number(safety.killerCount || 0),
+      -Number(safety.killerLevel || 0),
+      -Number(safety.risk || 0),
+      Number(e.level || 0) * 1e16 + Number(e.hits || 0) * 1e13,
+      ownKill ? Number(ownKill.level || 0) * 1e14 + Number(ownKill.hits || 0) * 1e12 : 0,
+      ownThreat ? Number(ownThreat.level || 0) * 1e13 + Number(ownThreat.hits || 0) * 1e11 : 0,
+      runBlock * 1e12,
+      (e.exact ? 4e12 : 0) + (e.gap ? 3e12 : 0) + (e.endpoint ? 2e12 : 0) + (e.diagonal ? 1e12 : 0),
+      tttV962CenterScore(idx)
+    ];
+    if (!bestRank || tttV962CompareRank(rank, bestRank) > 0) {
+      bestRank = rank;
+      best = idx;
+    }
+  }
+  return best;
+}
+
+function tttV962CompareRank(a, b) {
+  for (let i = 0; i < Math.max(a.length, b.length); i += 1) {
+    const av = Number(a[i] || 0);
+    const bv = Number(b[i] || 0);
+    if (av > bv) return 1;
+    if (av < bv) return -1;
+  }
+  return 0;
+}
+
+function tttV962MoveScore(board, idx, deadline) {
+  const safety = tttV962SafetyReport(board, idx, deadline);
+  if (safety.illegal) return -Infinity;
+  board[idx] = 'O';
+  const ownWin = tttWinner(board).winner === 'O' ? 1 : 0;
+  const ownKill = tttV962KillerEntries(board, 'O', deadline)[0] || null;
+  const ownThreat = tttV961ThreatEntries(board, 'O')[0] || null;
+  const xThreat = tttV961ThreatEntries(board, 'X')[0] || null;
+  board[idx] = '';
+  return ownWin * 1e30
+    - Number(safety.immediateLosses || 0) * 1e28
+    - Number(safety.killerCount || 0) * 6e26
+    - Number(safety.killerLevel || 0) * 2e24
+    - Number(safety.risk || 0) * 2.2
+    + (ownKill ? Number(ownKill.level || 0) * 9e21 + Number(ownKill.hits || 0) * 5e18 : 0)
+    + (ownThreat ? Number(ownThreat.level || 0) * 8e20 + Number(ownThreat.hits || 0) * 4e18 : 0)
+    - (xThreat ? Number(xThreat.level || 0) * 5e20 + Number(xThreat.hits || 0) * 4e18 : 0)
+    + tttCheapMovePotential(board, idx, 'O') * 12000
+    + tttCheapMovePotential(board, idx, 'X') * 15000
+    + tttV962CenterScore(idx) * 3500;
+}
+
+function tttV962PickRoot(board, candidates, deadline) {
+  const list = Array.from(new Set((candidates || []).map(Number).filter(idx => tttV962Legal(board, idx)))).slice(0, 24);
+  let best = -1;
+  let bestScore = -Infinity;
+  let safest = -1;
+  let safestScore = -Infinity;
+  for (const idx of list) {
+    if (tttV962TimeUp(deadline, 28) && best >= 0) break;
+    const score = tttV962MoveScore(board, idx, deadline);
+    const safety = tttV962SafetyReport(board, idx, deadline);
+    const safe = safety.ownWinNow || (!safety.immediateLosses && !safety.killerCount && Number(safety.killerLevel || 0) < 138);
+    if (score > bestScore) { bestScore = score; best = idx; }
+    if (safe && score > safestScore) { safestScore = score; safest = idx; }
+  }
+  return safest >= 0 ? safest : best;
+}
+
+function tttV962BestMove(board, difficulty) {
+  const free = [];
+  for (let i = 0; i < board.length; i += 1) if (!board[i]) free.push(i);
+  if (!free.length) return -1;
+  const terminal = tttWinner(board).winner;
+  if (terminal) return tttNearestCenterFallbackMove(board);
+  const budget = tttV962Budget(difficulty || 'ai');
+  const hardDeadline = tttV962Now() + Number(budget.hard || TTT_V962_HARD_DEADLINE_MS);
+
+  const ownWins = tttV960WinningMoves(board, 'O');
+  if (ownWins.length) return ownWins[0];
+
+  const xWins = tttV960WinningMoves(board, 'X');
+  if (xWins.length === 1) return xWins[0];
+  if (xWins.length > 1) {
+    const multiBlock = typeof tttV961PickDefense === 'function' ? tttV961PickDefense(board, tttV961EntryListFromMoves(xWins, 260, 'multi-immediate-loss-block'), hardDeadline) : xWins[0];
+    if (tttV962Legal(board, multiBlock)) return multiBlock;
+    return xWins[0];
+  }
+
+  const occupied = board.length - free.length;
+  if (occupied <= 1) {
+    const opening = tttPromptEngineOpeningMove(board);
+    if (opening >= 0 && !board[opening]) return opening;
+  }
+
+  const currentX = tttV961ThreatEntries(board, 'X');
+  const forcedX = currentX.filter(e => Number(e.level || 0) >= 110 || (e.exact && Number(e.level || 0) >= 84));
+  if (forcedX.length) {
+    const quickBlock = typeof tttV961PickDefense === 'function' ? tttV961PickDefense(board, forcedX, hardDeadline) : forcedX[0].idx;
+    if (tttV962Legal(board, quickBlock)) return quickBlock;
+  }
+
+  // Nejdůležitější novinka v962: dřív než AI zaútočí, blokuje tah X,
+  // který by příštím tahem vytvořil dvě a více okamžitých výher.
+  const xKillers = tttV962KillerEntries(board, 'X', hardDeadline);
+  const unstoppableBuilder = xKillers.filter(e => Number(e.immediateWins || 0) >= 2 || Number(e.level || 0) >= 176);
+  if (unstoppableBuilder.length) {
+    const block = tttV962PickDefense(board, unstoppableBuilder, hardDeadline);
+    if (tttV962Legal(board, block)) return block;
+  }
+
+  const strongXKillers = xKillers.filter(e => Number(e.level || 0) >= 138 || (e.diagonal && Number(e.level || 0) >= 120));
+  if (strongXKillers.length) {
+    const block = tttV962PickDefense(board, strongXKillers, hardDeadline);
+    if (tttV962Legal(board, block)) return block;
+  }
+
+  const xGains = tttV961GainEntries(board, 'X', hardDeadline).filter(e => Number(e.level || 0) >= 92 || (e.diagonal && Number(e.level || 0) >= 78));
+  if (xGains.length) {
+    const block = tttV962PickDefense(board, xGains, hardDeadline);
+    if (tttV962Legal(board, block)) return block;
+  }
+
+  const ownKillers = tttV962KillerEntries(board, 'O', hardDeadline).filter(e => Number(e.level || 0) >= 148);
+  if (ownKillers.length) {
+    const attack = tttV962PickDefense(board, ownKillers, hardDeadline);
+    if (tttV962Legal(board, attack)) {
+      const safety = tttV962SafetyReport(board, attack, hardDeadline);
+      if (safety.ownWinNow || (!safety.immediateLosses && Number(safety.killerLevel || 0) < 176)) return attack;
+    }
+  }
+
+  const candidates = tttV962CandidateSet(board, occupied < 24 ? 3 : 2)
+    .map(idx => ({ idx, score: tttCheapMovePotential(board, idx, 'X') * 7.5 + tttCheapMovePotential(board, idx, 'O') * 5.2 + tttV962CenterScore(idx) }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, occupied < 24 ? 34 : 26)
+    .map(x => x.idx);
+  const verified = tttV962PickRoot(board, candidates, hardDeadline);
+  if (tttV962Legal(board, verified)) return verified;
+
+  const v961 = typeof tttV961BestMove === 'function' ? tttV961BestMove(board, difficulty || 'ai') : -1;
+  if (tttV962Legal(board, v961)) return v961;
+  const v960 = typeof tttV960BestMove === 'function' ? tttV960BestMove(board, difficulty || 'ai') : -1;
+  if (tttV962Legal(board, v960)) return v960;
+  return tttNearestCenterFallbackMove(board);
+}
+
+function getRakGomokuAiV962Health() {
+  const budget = tttV962Budget('ai');
+  return {
+    ok: true,
+    boardRows: TTT_ROWS,
+    boardCols: TTT_COLS,
+    board: { rows: TTT_ROWS, cols: TTT_COLS, total: TTT_TOTAL_CELLS },
+    rulesetVersion: GOMOKU_RULESET_VERSION,
+    offlineAiOnly: true,
+    onlinePvpUntouched: true,
+    tacticalOpeningWinCheck: true,
+    immediateLossBlock: true,
+    multiImmediateLossBlock: true,
+    diagonalThreatDefense: true,
+    openThreeDefense: true,
+    brokenThreeDefense: true,
+    antiForkDefense: true,
+    antiOpenFourBuilderDefense: true,
+    candidateSafetyVerification: true,
+    tacticalVerificationPly: '1-2 ply on top root candidates + v962 killer scan',
+    softDeadlineMs: Number(budget.soft || TTT_V962_SOFT_DEADLINE_MS),
+    hardDeadlineMs: Number(budget.hard || TTT_V962_HARD_DEADLINE_MS),
+    fallbackLegalMove: true,
+    testedLocallyByScript: 'gomoku-ai-smoke-v962.js',
+    note: 'v962 blokuje i tah X, který by příště vytvořil dvě okamžité výhry / open-four fork. Online PvP zůstává beze změny.'
+  };
+}
+if (typeof window !== 'undefined') {
+  window.getRakGomokuAiV962Health = getRakGomokuAiV962Health;
+  window.getRakGomokuAiV961Health = getRakGomokuAiV962Health;
+  window.getRakGomokuAiV960Health = getRakGomokuAiV962Health;
+  window.getRakGomokuAiV959Health = getRakGomokuAiV962Health;
+}
+
+function tttBestMove(board, difficulty) {
+  const next = typeof tttV962BestMove === 'function' ? tttV962BestMove(board, difficulty || 'ai') : -1;
+  if (tttV962Legal(board, next)) return next;
+  const win = tttV960WinningMoves(board, 'O')[0];
+  if (tttV962Legal(board, win)) return win;
+  const block = tttV960WinningMoves(board, 'X')[0];
+  if (tttV962Legal(board, block)) return block;
+  const prev = typeof tttV961BestMove === 'function' ? tttV961BestMove(board, difficulty || 'ai') : -1;
+  if (tttV962Legal(board, prev)) return prev;
+  return tttNearestCenterFallbackMove(board);
+}
+
+
 function tttHardWinLog() {
   return [];
 }
@@ -7742,7 +8159,7 @@ function getRakGomokuRulesetLeaderboardHealth() {
   const visibleRows = rows.filter(row => !currentRuleset || String(row.rulesetVersion || '').trim() === currentRuleset);
   return {
     ok: true,
-    version: window.APP_VERSION || 'v.1.5 (961)',
+    version: window.APP_VERSION || 'v.1.5 (963)',
     game: 'ttt',
     rulesetVersion: currentRuleset,
     appVersionIsSeparate: true,
@@ -9889,6 +10306,129 @@ function formatAdminServiceCount(value) {
   return String(Number(value || 0) || 0);
 }
 
+function formatAdminUsageDate(value, includeSeconds) {
+  try {
+    const d = value ? new Date(value) : null;
+    if (!d || Number.isNaN(d.getTime())) return '—';
+    const opts = includeSeconds
+      ? { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }
+      : { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' };
+    return d.toLocaleString('cs-CZ', opts);
+  } catch (err) { return '—'; }
+}
+
+function formatAdminUsageAgo(value) {
+  const minutes = Number(value);
+  if (!Number.isFinite(minutes)) return '';
+  if (minutes < 1) return 'teď';
+  if (minutes < 60) return 'před ' + Math.round(minutes) + ' min';
+  if (minutes < 60 * 24) return 'před ' + Math.round(minutes / 60) + ' h';
+  return 'před ' + Math.round(minutes / 60 / 24) + ' dny';
+}
+
+function shortAdminUsageDevice(value) {
+  const ua = String(value || '');
+  if (/iPhone/i.test(ua)) return 'iPhone';
+  if (/iPad/i.test(ua)) return 'iPad';
+  if (/Android/i.test(ua)) return 'Android';
+  if (/Windows/i.test(ua)) return 'Windows';
+  if (/Macintosh|Mac OS/i.test(ua)) return 'Mac';
+  return ua ? ua.slice(0, 42) : 'Zařízení neznámé';
+}
+
+function formatAdminUsageViewport(info) {
+  const obj = info && typeof info === 'object' ? info : {};
+  const vp = obj.viewport && typeof obj.viewport === 'object' ? obj.viewport : {};
+  const w = Number(vp.width || 0) || 0;
+  const h = Number(vp.height || 0) || 0;
+  const dpr = Number(vp.dpr || 0) || 0;
+  return [w && h ? (w + '×' + h) : '', dpr ? ('DPR ' + dpr) : '', obj.timezone ? String(obj.timezone) : ''].filter(Boolean).join(' · ') || '—';
+}
+
+async function loadAdminAppUsageFromSupabase() {
+  if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.loadAppUsage === 'function') {
+    const result = await window.RotationSupabaseBridge.loadAppUsage({ limit: 100 });
+    app.adminUsageSnapshot = result || null;
+    return app.adminUsageSnapshot;
+  }
+  app.adminUsageSnapshot = { ok: false, reason: 'missing-bridge', devices: [], events: [], summary: {} };
+  return app.adminUsageSnapshot;
+}
+
+async function recordAdminAppUsageNow() {
+  if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.recordAppUsage === 'function') {
+    return window.RotationSupabaseBridge.recordAppUsage({ force: true, eventType: 'admin-manual-check' });
+  }
+  return { ok: false, reason: 'missing-bridge' };
+}
+
+function buildAdminUsageHtml() {
+  const snapshot = app && app.adminUsageSnapshot && typeof app.adminUsageSnapshot === 'object'
+    ? app.adminUsageSnapshot
+    : null;
+  const ok = !!(snapshot && snapshot.ok !== false);
+  const devices = snapshot && Array.isArray(snapshot.devices) ? snapshot.devices : [];
+  const events = snapshot && Array.isArray(snapshot.events) ? snapshot.events : [];
+  const summary = snapshot && snapshot.summary && typeof snapshot.summary === 'object' ? snapshot.summary : {};
+  const status = snapshot
+    ? (ok ? ('Načteno ' + formatAdminUsageDate(snapshot.fetchedAt || new Date().toISOString())) : ('Nepodařilo se načíst: ' + String((snapshot.error && snapshot.error.message) || snapshot.reason || 'zkontroluj Supabase migraci.')))
+    : 'Zatím nenačteno. Klikni na Načíst připojení.';
+  const newest = devices[0] || null;
+  const cards = [
+    ['Zařízení celkem', summary.device_count ?? devices.length],
+    ['Aktivní 24 h', summary.active_24h ?? '—'],
+    ['Aktivní 7 dní', summary.active_7d ?? '—'],
+    ['Události 24 h', summary.events_24h ?? '—']
+  ].map(pair => '<div class="adminUsageMetric"><span>' + escapeHtml(pair[0]) + '</span><b>' + escapeHtml(String(pair[1])) + '</b></div>').join('');
+  const list = devices.length ? devices.map((row) => {
+    const name = String(row.player_name || row.account_number || 'Bez profilu').trim();
+    const device = shortAdminUsageDevice(row.user_agent || '');
+    const ago = formatAdminUsageAgo(row.minutes_since_seen);
+    const route = String(row.route || '—');
+    const hash = row.last_ip_hash ? String(row.last_ip_hash).slice(0, 10) + '…' : '—';
+    return [
+      '<details class="adminUsageItem">',
+      '  <summary class="adminUsageSummary">',
+      '    <span><b>' + escapeHtml(name) + '</b><small>' + escapeHtml(device + ' · ' + (ago || formatAdminUsageDate(row.last_seen_at))) + '</small></span>',
+      '    <em>' + escapeHtml(String(row.open_count || 0) + '×') + '</em>',
+      '  </summary>',
+      '  <div class="adminUsageBody">',
+      '    <div><b>Naposledy:</b> ' + escapeHtml(formatAdminUsageDate(row.last_seen_at, true)) + '</div>',
+      '    <div><b>Poprvé:</b> ' + escapeHtml(formatAdminUsageDate(row.first_seen_at, true)) + '</div>',
+      '    <div><b>Verze:</b> ' + escapeHtml(row.app_version || '—') + '</div>',
+      '    <div><b>Stránka:</b> ' + escapeHtml(route) + '</div>',
+      '    <div><b>Displej:</b> ' + escapeHtml(formatAdminUsageViewport(row.device_info)) + '</div>',
+      '    <div><b>IP hash:</b> ' + escapeHtml(hash) + '</div>',
+      '    <div class="smallText adminUsageUa">' + escapeHtml(row.user_agent || '—') + '</div>',
+      '  </div>',
+      '</details>'
+    ].join('');
+  }).join('') : '<div class="smallText adminUsageEmpty">Zatím tu nejsou žádná zařízení. Jakmile někdo otevře novou verzi a Supabase migrace bude nasazená, objeví se tady.</div>';
+  const recentEvents = events.slice(0, 8).map((ev) => {
+    const label = [ev.player_name || ev.account_number || 'Bez profilu', ev.event_type || 'open', formatAdminUsageDate(ev.seen_at)].filter(Boolean).join(' · ');
+    return '<div class="adminUsageEvent">' + escapeHtml(label) + '</div>';
+  }).join('');
+  return [
+    '<div class="appMenuCard appMenuAdminCard adminUsageCard">',
+    '  <div class="appMenuCardTitle">Přehled připojení</div>',
+    '  <div class="appMenuText">',
+    '    <div>Uvidíš tady anonymní podpis zařízení, profil v appce, poslední otevření, počet otevření, verzi a typ zařízení. Surová IP se neukládá, jen krátký hash pro rozlišení.</div>',
+    '    <div class="smallText" id="adminOnlineSaveStatus">' + escapeHtml(status) + '</div>',
+    '  </div>',
+    '  <div class="adminUsageGrid">' + cards + '</div>',
+    newest ? ('  <div class="adminUsageLatest smallText">Naposledy: ' + escapeHtml(String(newest.player_name || newest.account_number || 'Bez profilu')) + ' · ' + escapeHtml(formatAdminUsageDate(newest.last_seen_at, true)) + '</div>') : '',
+    '  <div class="adminUsageList">' + list + '</div>',
+    recentEvents ? ('  <div class="adminUsageEvents"><div class="smallText">Poslední události</div>' + recentEvents + '</div>') : '',
+    '  <div class="appMenuActionRow adminUsageActions">',
+    '    <button type="button" class="appMenuAction isActive" data-admin-action="usage-load">Načíst připojení</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="usage-log-now">Zapsat mě teď</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
+
 function getAdminServiceSnapshotCache() {
   return app && app.adminServiceSnapshot && typeof app.adminServiceSnapshot === 'object' ? app.adminServiceSnapshot : null;
 }
@@ -9927,7 +10467,9 @@ function buildAdminServiceHtml() {
     ['Čekající pozvánky', counts.game_invites_pending],
     ['Session celkem', counts.game_sessions],
     ['Aktivní session', counts.game_sessions_active],
-    ['Nové reporty', counts.bug_reports_new]
+    ['Nové reporty', counts.bug_reports_new],
+    ['Zařízení v appce', counts.app_usage_devices],
+    ['Otevření 24 h', counts.app_usage_events_24h]
   ].map(pair => '<div class="adminServiceMetric"><span>' + escapeHtml(pair[0]) + '</span><b>' + escapeHtml(formatAdminServiceCount(pair[1])) + '</b></div>').join('');
   return [
     '<div class="appMenuCard appMenuAdminCard adminServiceCard">',
@@ -10043,6 +10585,7 @@ function renderAdminMenuBody(body, section) {
     '    <button type="button" class="appMenuAction" data-admin-action="open-machines">Nastavení strojů</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-rotation">Rozpisy</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-announcement">Oznámení Dashboard</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="open-usage">Přehled připojení</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-export">Export / import</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-reports">Reporty chyb</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-service">Servis / synchronizace</button>',
@@ -10087,6 +10630,7 @@ function renderAdminMenuBody(body, section) {
   ].join('');
 
   const announcementHtml = buildAdminAnnouncementHtml();
+  const usageHtml = buildAdminUsageHtml();
 
   const importPreview = (typeof getRakExcelImportPreview === 'function') ? getRakExcelImportPreview() : null;
   const exportHtml = [
@@ -10138,6 +10682,8 @@ function renderAdminMenuBody(body, section) {
     body.innerHTML = rotationHtml;
   } else if (mode === 'announcement') {
     body.innerHTML = announcementHtml;
+  } else if (mode === 'usage') {
+    body.innerHTML = usageHtml;
   } else if (mode === 'export') {
     body.innerHTML = exportHtml;
   } else if (mode === 'reports') {
@@ -11031,6 +11577,10 @@ function bindAppMenuHandlers(body) {
         openAppMenu('admin-announcement');
         return;
       }
+      if (adminAction === 'open-usage') {
+        openAppMenu('admin-usage');
+        return;
+      }
       if (adminAction === 'open-export') {
         openAppMenu('admin-export');
         return;
@@ -11074,6 +11624,22 @@ function bindAppMenuHandlers(body) {
         if (!result || result.ok === false) throw (result && result.error ? result.error : new Error('Úklid pozvánek se nepovedl.'));
         await loadAdminServiceSnapshotFromSupabase();
         renderAdminMenuBody(body, 'service');
+        return;
+      }
+      if (adminAction === 'usage-load') {
+        const statusEl = document.getElementById('adminOnlineSaveStatus');
+        if (statusEl) statusEl.textContent = 'Načítám připojení…';
+        await loadAdminAppUsageFromSupabase();
+        renderAdminMenuBody(body, 'usage');
+        return;
+      }
+      if (adminAction === 'usage-log-now') {
+        const statusEl = document.getElementById('adminOnlineSaveStatus');
+        if (statusEl) statusEl.textContent = 'Zapisuji aktuální zařízení…';
+        const result = await recordAdminAppUsageNow();
+        if (result && result.ok === false && result.error) throw result.error;
+        await loadAdminAppUsageFromSupabase();
+        renderAdminMenuBody(body, 'usage');
         return;
       }
       if (adminAction === 'load-reports') {
@@ -11365,6 +11931,18 @@ function openAppMenu(view) {
       renderAdminMenuBody(body, 'announcement');
     } else if (v === 'admin-export') {
       renderAdminMenuBody(body, 'export');
+    } else if (v === 'admin-usage') {
+      bindAppMenuHandlers(body);
+      void (async () => {
+        try {
+          await loadAdminAppUsageFromSupabase();
+          renderAdminMenuBody(body, 'usage');
+        } catch (err) {
+          console.warn('Admin usage preload failed', err);
+          app.adminUsageSnapshot = { ok: false, error: err, devices: [], events: [], summary: {} };
+          renderAdminMenuBody(body, 'usage');
+        }
+      })();
     } else if (v === 'admin-reports') {
       void (async () => {
         try {
@@ -15158,7 +15736,7 @@ function applyProfileUiPreferencesForActiveAccount(options = {}) {
   const defaultTheme = normalizeThemePreferenceId('default', 'default');
   const defaultBg = normalizeBackgroundPreferenceId('ios-mesh', 'ios-mesh');
   let changed = false;
-  // v.1.5 (961): vzhled je profilový. Nový/prázdný profil nezačne omylem vzhledem po předchozím přihlášeném profilu.
+  // v.1.5 (963): vzhled je profilový. Nový/prázdný profil nezačne omylem vzhledem po předchozím přihlášeném profilu.
   if (!ui.themeId) { ui.themeId = defaultTheme; changed = true; }
   if (!ui.backgroundId) { ui.backgroundId = defaultBg; changed = true; }
   const rewardMetrics = getThemeUnlockMetrics(profile);
@@ -15557,7 +16135,7 @@ function getRakProfileAppearanceRewardHealth() {
   const themeRewards = themes.filter(item => String(item && item.id || '') !== 'default');
   const backgroundRewards = backgrounds.filter(item => String(item && item.id || '') !== 'ios-mesh');
   return {
-    version: window.APP_VERSION || 'v.1.5 (961)',
+    version: window.APP_VERSION || 'v.1.5 (963)',
     mode: 'profile-appearance-reward-health-v928',
     activeProfile: metrics.hasProfile,
     profileThemeStorage: 'account.uiSettings.themeId',
@@ -15646,7 +16224,7 @@ function getRakDashboardGlassThemeHealth() {
   const lightweight = /(?:^|\s)(?:lightweightMode|lowEndDevice|ladaMode)(?:\s|$)/.test(bodyClass);
   return {
     ok: true,
-    version: window.APP_VERSION || 'v.1.5 (961)',
+    version: window.APP_VERSION || 'v.1.5 (963)',
     mode: 'dashboard-ios-glass-viewport-fit-v945',
     theme,
     background,
@@ -15693,7 +16271,7 @@ try {
 function getRakRotaceNamesDockHealth() {
   const result = {
     ok: true,
-    version: window.APP_VERSION || 'v.1.5 (961)',
+    version: window.APP_VERSION || 'v.1.5 (963)',
     mode: 'rotace-names-dock-stable-css-v930',
     checkedAt: new Date().toISOString(),
     scope: 'Rotace / seznam jmen / stabilní spodní dock',

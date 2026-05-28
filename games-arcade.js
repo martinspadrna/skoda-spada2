@@ -44,7 +44,7 @@
     sudoku_hard: { title: 'Sudoku těžké', subtitle: 'Top čas pro těžké Sudoku', unit: 's', mode: 'low', icon: META.sudoku.icon }
   });
 
-  // v.1.5 (961): Denní challenge má vlastní leaderboard pro právě vybranou denní hru.
+  // v.1.5 (963): Denní challenge má vlastní leaderboard pro právě vybranou denní hru.
   // Nemíchá se tak Aim/Reaction/Pexeso/Miny atd. do jednoho společného denního Top score.
   DAILY_MODES.forEach((dailyMode) => {
     const source = META[dailyMode] || META.daily;
@@ -704,7 +704,7 @@
       perGame[id] = { achievementCount: direct, shiftDRewardCount: dShift, ok: direct >= 3 && dShift >= 2 };
     });
     return {
-      version: window.APP_VERSION || 'v.1.5 (961)',
+      version: window.APP_VERSION || 'v.1.5 (963)',
       mode: 'games-achievement-reward-health-v928',
       totalAchievementDefs: defs.length,
       gamesCovered: ids.length,
@@ -1415,7 +1415,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok: noMs && hasSeconds,
       mode: 'games-top-score-seconds-v923',
-      version: String(window.APP_VERSION || 'v.1.5 (961)'),
+      version: String(window.APP_VERSION || 'v.1.5 (963)'),
       scope: 'Top výsledky her – reakční čas ve vteřinách místo milisekund',
       probe,
       note: 'Herní Top score pro Reaction Test zobrazuje čas jako sekundy s desetinnou čárkou, ne jako ms.'
@@ -1841,7 +1841,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   function gamesSanitizeLowBestTime(gameId, ms) {
     const n = Number(ms) || 0;
     if (!Number.isFinite(n) || n <= 0) return 0;
-    // v.1.5 (961): Pexeso někdy zdědilo chybnou hodnotu 86 400 s z denního/time fallbacku.
+    // v.1.5 (963): Pexeso někdy zdědilo chybnou hodnotu 86 400 s z denního/time fallbacku.
     // Takový čas nebereme jako platný rekord a nová dohraná hra jej přepíše reálným elapsed časem.
     if (gamesIsMemoryLike(gameId) && n >= 86400000) return 0;
     return n;

@@ -1,3 +1,22 @@
+## v.1.5 (964)
+- Admin přehled připojení je přepojený na RPC `rak_usage_presence_touch` / `rak_usage_presence_admin`, které se podařilo nasadit do Supabase.
+- Zachované šetrné anonymní logování zařízení bez surové IP.
+- Online hry, Piškvorky a Lodě beze změny.
+- Verze sjednocena na v.1.5 (964), cache na `v1.5-964`, realtime kanál na `rak-public-live-v964`, package na `1.5.964`.
+
+## v.1.5 (964)
+- Administrace: přidaný nový „Přehled připojení“ s anonymním podpisem zařízení, profilem z appky, posledním otevřením, počtem otevření, verzí, stránkou a základním popisem zařízení.
+- Supabase: připravená a nasazená evidence `app_usage_devices` / `app_usage_events` přes RPC `rak_log_app_usage` a admin RPC `rak_admin_get_app_usage`; surová IP se neukládá, jen hash.
+- Přidaný smoke test `app-usage-smoke-v963.js` a dokumentace `assets/docs/app-usage-admin-v963.md` + SQL migrace `assets/docs/sql/supabase_app_usage_v963.sql`.
+- Verze sjednocena na v.1.5 (964), cache na `v1.5-964`, realtime kanál na `rak-public-live-v964`, package na `1.5.964`.
+
+## v.1.5 (962)
+- Piškvorky proti AI: přidaná anti-fork vrstva `tttV962BestMove()` nad v961, aby AI dřív blokovala tahy hráče vedoucí k otevřené čtyřce se dvěma okamžitými výhrami.
+- Doplňený killer scan pro gain square: AI hledá tah X, který by příště vytvořil dvojitou výhru nebo křížový fork, a obsadí skutečné taktické pole.
+- Přidaný helper `getRakGomokuAiV962Health()` a lokální smoke script `gomoku-ai-smoke-v962.js` včetně testu rekonstruované pozice ze screenshotu.
+- Ruleset Piškvorek navýšen na `gomoku-10col-19row-ai-rules-v12`; online PvP, Supabase DB a policies beze změny.
+- Verze sjednocena na v.1.5 (962), cache na `v1.5-962`, realtime kanál na `rak-public-live-v962`, package na `1.5.962`.
+
 ## v.1.5 (961)
 - Piškvorky proti AI: přidána nová vrchní pipeline `tttV961BestMove()` s přesným blokováním endpointů, gapů u broken-three a gain/cost polí.
 - AI nově ověřuje 8–16 nejlepších kandidátů bezpečnostní kontrolou proti okamžité výhře hráče, open-four/fork tlaku a nejhorší odpovědi hráče.
