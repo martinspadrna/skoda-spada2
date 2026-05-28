@@ -1,3 +1,10 @@
+## v.1.5 (955)
+- Dashboard: řádek „chybí“ v horním směnovém panelu je centrovaný vůči celé kartě; pill už není natažený doleva.
+- Piškvorky: AI proti počítači má předělanou bounded threat/safety pipeline, silnější blokování open-four/fork/open-three hrozeb a legální fallback proti zaseknutí.
+- Piškvorky: hrací pole zůstává 10 sloupců × 19 řad, online PvP zůstává člověk proti člověku.
+- Piškvorky: ruleset verze navýšena na `gomoku-10col-19row-ai-rules-v5`, protože se měnila obtížnost/herní logika.
+- Verze sjednocena na v.1.5 (955), cache na `v1.5-955`, realtime kanál na `rak-public-live-v955`, package na `1.5.955`.
+
 ## v.1.5 (954)
 - Dashboard: horní směnový panel má nově vycentrovaný i subřádek/popisek „kdo chybí“, včetně přepsání starších posunů na menších displejích.
 - Piškvorky: hrací pole zůstává 10 sloupců × 19 řad; AI obtížnost má novou bounded tactical/safety vrstvu, kratší pevný deadline a nouzový legální fallback, aby se nezasekla.

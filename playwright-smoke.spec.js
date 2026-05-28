@@ -1,4 +1,4 @@
-// RaK v.1.5 (954) – DOM smoke kostra rozšířená o Dashboard glass a announcement ticker.
+// RaK v.1.5 (955) – DOM smoke kostra rozšířená o Dashboard glass a announcement ticker.
 // Instalace/spuštění mimo hotfix: npx playwright install chromium && npm run test:smoke
 const { test, expect } = require('@playwright/test');
 

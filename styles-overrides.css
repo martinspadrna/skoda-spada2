@@ -17215,3 +17215,51 @@ body.ladaMode #stats .statsOccupancyLineArea{
     width:100% !important;
   }
 }
+
+/* v.1.5 (955) – Dashboard: absence pill je skutečně centrovaný vůči celé horní kartě, ne natažený doleva. */
+#home #dashHero .dashboardHeroLine3,
+#dashHero .dashboardHeroLine3{
+  display:grid !important;
+  grid-template-columns:1fr !important;
+  place-items:center !important;
+  width:100% !important;
+  max-width:100% !important;
+  margin-left:auto !important;
+  margin-right:auto !important;
+  transform:none !important;
+  translate:none !important;
+  left:auto !important;
+  right:auto !important;
+  text-align:center !important;
+}
+#home #dashHero .dashboardHeroLine3Pill,
+#dashHero .dashboardHeroLine3Pill{
+  display:inline-flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  width:auto !important;
+  min-width:0 !important;
+  max-width:min(92%, 720px) !important;
+  margin-inline:auto !important;
+  padding-inline:clamp(18px, 6vw, 46px) !important;
+  text-align:center !important;
+  transform:none !important;
+}
+#home #dashHero .dashboardHeroLine3Main,
+#home #dashHero .dashboardHeroLine3Sub,
+#dashHero .dashboardHeroLine3Main,
+#dashHero .dashboardHeroLine3Sub{
+  display:block !important;
+  width:auto !important;
+  max-width:100% !important;
+  margin-inline:auto !important;
+  text-align:center !important;
+}
+@media (max-width:700px){
+  #home #dashHero .dashboardHeroLine3Pill,
+  #dashHero .dashboardHeroLine3Pill{
+    max-width:94% !important;
+    padding-inline:clamp(14px, 5vw, 30px) !important;
+  }
+}

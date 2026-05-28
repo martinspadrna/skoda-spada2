@@ -1,4 +1,4 @@
-// RaK v.1.5 (954) – bezpečný monkey smoke test bez destruktivních kliků.
+// RaK v.1.5 (955) – bezpečný monkey smoke test bez destruktivních kliků.
 // Spouští se ručně přes: npm run test:monkey
 const { test, expect } = require('@playwright/test');
 

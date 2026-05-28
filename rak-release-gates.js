@@ -1,8 +1,8 @@
-// v.1.5 (954) – release gating/checklist vrstva včetně Dashboard glass cleanupu a announcement tickeru.
+// v.1.5 (955) – release gating/checklist vrstva včetně Dashboard glass cleanupu a announcement tickeru.
 
 (function setupRakReleaseGates() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
-  const VERSION = 'v.1.5 (954)';
+  const VERSION = 'v.1.5 (955)';
   const MODE = 'release-gates-readonly-v929';
 
   try {
