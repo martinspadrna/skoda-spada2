@@ -1,0 +1,46 @@
+#!/usr/bin/env node
+const fs = require('fs');
+const { performance } = require('perf_hooks');
+
+const source = fs.readFileSync('ui.js', 'utf8');
+const start = source.indexOf('const TTT_ROWS = 19;');
+const end = source.indexOf('function tttHardWinLog()');
+if (start < 0 || end < start) {
+  console.error('Nepodařilo se najít AI úsek v ui.js.');
+  process.exit(1);
+}
+
+const aiSource = source.slice(start, end);
+const harness = `
+function cell(row, col) { return tttIndex(row, col); }
+function emptyBoard() { return Array(TTT_TOTAL_CELLS).fill(''); }
+function place(board, mark, cells) { for (const pair of cells) board[cell(pair[0], pair[1])] = mark; return board; }
+function coord(idx) { return [Math.floor(idx / TTT_COLS), idx % TTT_COLS]; }
+function sameCell(idx, pair) { return idx === cell(pair[0], pair[1]); }
+function oneOf(idx, pairs) { return pairs.some(pair => sameCell(idx, pair)); }
+function assertCase(name, setup, accepts, maxMs) {
+  const board = setup(emptyBoard());
+  const before = performance.now();
+  const move = tttBestMove(board, 'ai');
+  const elapsedMs = performance.now() - before;
+  const legal = Number.isFinite(Number(move)) && move >= 0 && move < board.length && !board[move];
+  const ok = legal && (!accepts || accepts(move, board)) && elapsedMs <= (maxMs || TTT_V961_HARD_DEADLINE_MS);
+  return { name, ok, move, coord: legal ? coord(move) : null, elapsedMs: Math.round(elapsedMs * 100) / 100, legal };
+}
+const cases = [
+  assertCase('AI blokuje diagonální otevřenou trojku backslash', (b) => place(b, 'X', [[5,2],[6,3],[7,4]]), (m) => oneOf(m, [[4,1],[8,5]])),
+  assertCase('AI blokuje diagonální otevřenou trojku /', (b) => place(b, 'X', [[7,6],[8,5],[9,4]]), (m) => oneOf(m, [[6,7],[10,3]])),
+  assertCase('AI blokuje horizontální otevřenou trojku', (b) => place(b, 'X', [[9,3],[9,4],[9,5]]), (m) => oneOf(m, [[9,2],[9,6]])),
+  assertCase('AI blokuje svislou otevřenou trojku', (b) => place(b, 'X', [[7,4],[8,4],[9,4]]), (m) => oneOf(m, [[6,4],[10,4]])),
+  assertCase('AI blokuje diagonální čtyřku', (b) => place(b, 'X', [[5,1],[6,2],[7,3],[8,4]]), (m) => oneOf(m, [[4,0],[9,5]])),
+  assertCase('AI zahraje vlastní okamžitou výhru', (b) => place(b, 'O', [[8,2],[8,3],[8,4],[8,5]]), (m) => oneOf(m, [[8,1],[8,6]])),
+  assertCase('AI nevrátí nelegální tah', (b) => place(place(b, 'X', [[9,4],[9,5],[8,5],[10,3],[7,6],[11,2]]), 'O', [[9,3],[8,4],[10,4],[7,5],[11,5]]), null),
+  assertCase('AI se nezasekne u rozehrané pozice', (b) => place(place(b, 'X', [[9,4],[9,5],[8,5],[10,3],[7,6],[11,2],[6,7],[12,1],[5,8],[13,0]]), 'O', [[9,3],[8,4],[10,4],[7,5],[11,5],[6,6],[12,4],[5,7],[13,3]]), null)
+];
+const health = getRakGomokuAiV961Health();
+const summary = { ok: cases.every(c => c.ok), rulesetVersion: GOMOKU_RULESET_VERSION, boardRows: TTT_ROWS, boardCols: TTT_COLS, hardDeadlineMs: health.hardDeadlineMs, cases };
+console.log(JSON.stringify(summary, null, 2));
+if (!summary.ok) process.exit(1);
+`;
+
+new Function('performance', "const window = globalThis;\nconst document = { body: { classList: { contains: () => false } } };\nglobalThis.performance = performance;\n" + aiSource + '\n' + harness)(performance);

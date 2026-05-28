@@ -1249,7 +1249,7 @@ const TTT_HARD_WIN_EMAIL = 'martinspadrna@gmail.com';
 const TTT_HARD_WIN_KEY = 'tttHardWins';
 // Samostatná verze pravidel/obtížnosti Piškvorek. Není to verze celé aplikace.
 // Zvyšovat jen při změně AI obtížnosti nebo pravidel, ne při vzhledových úpravách.
-const GOMOKU_RULESET_VERSION = 'gomoku-10col-19row-ai-rules-v8';
+const GOMOKU_RULESET_VERSION = 'gomoku-10col-19row-ai-rules-v11';
 if (typeof window !== 'undefined') window.GOMOKU_RULESET_VERSION = GOMOKU_RULESET_VERSION;
 
 function tttEnsureAiWinsResetV667() {
@@ -4573,7 +4573,7 @@ function getRakTttAiHardeningV922Health() {
   return {
     ok: true,
     mode: 'ttt-ai-hardening-v923',
-    version: String(window.APP_VERSION || 'v.1.5 (958)'),
+    version: String(window.APP_VERSION || 'v.1.5 (961)'),
     thirteenTurnClamp: true,
     hardSearchDepthEarly: 8,
     hardSearchDepthMid: 8,
@@ -4928,7 +4928,7 @@ function tttV952RootSafetyMove(board, difficulty, deadline) {
 function getRakOnlineGomokuEngineV954Health() {
   return {
     ok: true,
-    version: String(window.APP_VERSION || 'v.1.5 (958)'),
+    version: String(window.APP_VERSION || 'v.1.5 (961)'),
     board: { rows: TTT_ROWS, cols: TTT_COLS, total: TTT_TOTAL_CELLS },
     rulesetVersion: GOMOKU_RULESET_VERSION,
     winLength: TTT_WIN_LENGTH,
@@ -5360,7 +5360,7 @@ function tttV955BestMove(board, difficulty) {
     if (opening >= 0 && !board[opening]) return opening;
   }
 
-  // v.1.5 (958): prevent the human from placing the diagonal/straight gain square
+  // v.1.5 (961): prevent the human from placing the diagonal/straight gain square
   // that creates a four, fork, or clean open-three chain on the next move.
   const xNextGains = tttV957HumanNextThreatGains(board, deadline);
   const hardNextGains = xNextGains.filter(item => item.level >= (occupied >= 8 ? 3 : 5));
@@ -5418,7 +5418,7 @@ function tttV955BestMove(board, difficulty) {
 function getRakGomokuAiV955Health() {
   return {
     ok: true,
-    version: String(window.APP_VERSION || 'v.1.5 (958)'),
+    version: String(window.APP_VERSION || 'v.1.5 (961)'),
     board: { rows: TTT_ROWS, cols: TTT_COLS, total: TTT_TOTAL_CELLS },
     rulesetVersion: GOMOKU_RULESET_VERSION,
     aiPipeline: ['immediate-win', 'immediate-loss-block', 'forcing-threats', 'opponent-danger-block', 'bounded-root-safety-search', 'center-fallback'],
@@ -5762,7 +5762,7 @@ function tttV956BestMove(board, difficulty) {
 function getRakGomokuAiV956Health() {
   return {
     ok: true,
-    version: String(window.APP_VERSION || 'v.1.5 (958)'),
+    version: String(window.APP_VERSION || 'v.1.5 (961)'),
     board: { rows: TTT_ROWS, cols: TTT_COLS, total: TTT_TOTAL_CELLS },
     rulesetVersion: GOMOKU_RULESET_VERSION,
     openThreeEndpointGuard: true,
@@ -5781,7 +5781,7 @@ if (typeof window !== 'undefined') {
 function getRakGomokuAiV957Health() {
   return {
     ok: true,
-    version: String(window.APP_VERSION || 'v.1.5 (958)'),
+    version: String(window.APP_VERSION || 'v.1.5 (961)'),
     board: { rows: TTT_ROWS, cols: TTT_COLS, total: TTT_TOTAL_CELLS },
     rulesetVersion: GOMOKU_RULESET_VERSION,
     diagonalGainPrevention: true,
@@ -5800,7 +5800,7 @@ if (typeof window !== 'undefined') {
 
 
 
-// v.1.5 (958) – Piškvorky AI: tvrdší diagonální threat engine pro 10×19 bez zaseknutí.
+// v.1.5 (961) – Piškvorky AI: tvrdší diagonální threat engine pro 10×19 bez zaseknutí.
 function tttV958Dirs() {
   return [[0,1],[1,0],[1,1],[1,-1]];
 }
@@ -6224,7 +6224,7 @@ function tttV958BestMove(board, difficulty) {
 function getRakGomokuAiV958Health() {
   return {
     ok: true,
-    version: String(window.APP_VERSION || 'v.1.5 (958)'),
+    version: String(window.APP_VERSION || 'v.1.5 (961)'),
     board: { rows: TTT_ROWS, cols: TTT_COLS, total: TTT_TOTAL_CELLS },
     rulesetVersion: GOMOKU_RULESET_VERSION,
     diagonalThreatGuard: true,
@@ -6241,7 +6241,353 @@ if (typeof window !== 'undefined') {
   window.getRakGomokuAiV956Health = getRakGomokuAiV958Health;
 }
 
+
+
+// v.1.5 (961) – Piškvorky AI: tvrdší line-window obrana, hlavně proti diagonálním build-upům.
+function tttV959Directions() {
+  return [[0, 1], [1, 0], [1, 1], [1, -1]];
+}
+
+function tttV959CellRow(idx) { return Math.floor(Number(idx) / TTT_COLS); }
+function tttV959CellCol(idx) { return Number(idx) % TTT_COLS; }
+
+function tttV959CenterScore(idx) {
+  const row = tttV959CellRow(idx);
+  const col = tttV959CellCol(idx);
+  const centerRow = (TTT_ROWS - 1) / 2;
+  const centerCol = (TTT_COLS - 1) / 2;
+  return 1200 - (Math.abs(row - centerRow) * 48 + Math.abs(col - centerCol) * 68);
+}
+
+function tttV959CountOccupied(board) {
+  let n = 0;
+  for (let i = 0; i < board.length; i += 1) if (board[i]) n += 1;
+  return n;
+}
+
+function tttV959CandidateSet(board, radius) {
+  const occupied = [];
+  for (let i = 0; i < board.length; i += 1) if (board[i]) occupied.push(i);
+  if (!occupied.length) {
+    return [tttIndex(9, 4), tttIndex(9, 5), tttIndex(10, 4), tttIndex(8, 4)].filter(idx => idx >= 0 && idx < board.length && !board[idx]);
+  }
+  const out = new Set();
+  const rMax = Number(radius || 2) || 2;
+  for (const idx of occupied) {
+    const row = tttV959CellRow(idx);
+    const col = tttV959CellCol(idx);
+    for (let dr = -rMax; dr <= rMax; dr += 1) {
+      for (let dc = -rMax; dc <= rMax; dc += 1) {
+        const rr = row + dr;
+        const cc = col + dc;
+        if (!tttInBounds(rr, cc)) continue;
+        const next = tttIndex(rr, cc);
+        if (!board[next]) out.add(next);
+      }
+    }
+  }
+  return Array.from(out);
+}
+
+function tttV959WindowDefenseEntries(board, mark) {
+  const opponent = mark === 'X' ? 'O' : 'X';
+  const map = new Map();
+  const add = (idx, level, hits, kind, diagonal, dir, centerBias) => {
+    if (!Number.isFinite(Number(idx)) || idx < 0 || idx >= board.length || board[idx]) return;
+    const prev = map.get(idx) || { idx, level: 0, hits: 0, diagonal: false, kinds: [], dirs: [], centerBias: 0 };
+    prev.level = Math.max(prev.level, level || 0);
+    prev.hits += Number(hits || 1) || 1;
+    prev.centerBias += Number(centerBias || 0) || 0;
+    if (diagonal) prev.diagonal = true;
+    if (kind && prev.kinds.indexOf(kind) < 0) prev.kinds.push(kind);
+    if (dir) {
+      const sig = String(dir[0]) + ',' + String(dir[1]);
+      if (prev.dirs.indexOf(sig) < 0) prev.dirs.push(sig);
+    }
+    map.set(idx, prev);
+  };
+
+  for (let row = 0; row < TTT_ROWS; row += 1) {
+    for (let col = 0; col < TTT_COLS; col += 1) {
+      for (const dir of tttV959Directions()) {
+        const dr = dir[0];
+        const dc = dir[1];
+        for (const size of [5, 6, 7]) {
+          const cells = [];
+          let ok = true;
+          for (let step = 0; step < size; step += 1) {
+            const rr = row + dr * step;
+            const cc = col + dc * step;
+            if (!tttInBounds(rr, cc)) { ok = false; break; }
+            cells.push(tttIndex(rr, cc));
+          }
+          if (!ok) continue;
+          let own = 0;
+          let opp = 0;
+          const empties = [];
+          let pattern = '';
+          for (const idx of cells) {
+            const cell = board[idx];
+            if (cell === mark) { own += 1; pattern += 'M'; }
+            else if (cell === opponent) { opp += 1; pattern += 'B'; }
+            else { empties.push(idx); pattern += '.'; }
+          }
+          if (opp || own < 2 || !empties.length) continue;
+          const diagonal = Math.abs(dr) === 1 && Math.abs(dc) === 1;
+          const lineCenter = (cells.length - 1) / 2;
+          const addAll = (level, hits, kind) => {
+            empties.forEach(emptyIdx => {
+              const pos = cells.indexOf(emptyIdx);
+              add(emptyIdx, level, hits, kind, diagonal, dir, Math.max(0, 5 - Math.abs(pos - lineCenter)));
+            });
+          };
+
+          // 4 in 5 is a direct next-move win. It must be blocked before any scoring.
+          if (size === 5 && own === 4 && empties.length === 1) {
+            add(empties[0], 10, 40, 'four-in-five', diagonal, dir, 10);
+            continue;
+          }
+
+          // Exact .MMM. endpoint threat. Only the real endpoints are tactical blocks.
+          let pos = pattern.indexOf('.MMM.');
+          while (pos >= 0) {
+            add(cells[pos], 8, 22, 'open-three-end', diagonal, dir, 8);
+            add(cells[pos + 4], 8, 22, 'open-three-end', diagonal, dir, 8);
+            pos = pattern.indexOf('.MMM.', pos + 1);
+          }
+
+          // Split/broken threes create the same practical issue Martin saw: AI blocks near it, but not on the needed square.
+          const brokenPatterns = ['.MM.M.', '.M.MM.', 'MM.M.', '.M.MM', 'M.MM.', '.MM.M', 'M.M.M', 'MM..M', 'M..MM', '.M.M.', 'M.M.'];
+          if (own >= 3 && empties.length >= 2) {
+            let broken = false;
+            for (const pat of brokenPatterns) {
+              if (pattern.indexOf(pat) >= 0) { broken = true; break; }
+            }
+            if (broken) addAll(diagonal ? 7 : 6, diagonal ? 16 : 12, diagonal ? 'diagonal-broken-three' : 'broken-three');
+          }
+
+          // Any 3 in an unblocked 5-window is dangerous. Diagonal ones are deliberately treated higher.
+          if (size === 5 && own === 3 && empties.length === 2) {
+            addAll(diagonal ? 7 : 5, diagonal ? 14 : 9, diagonal ? 'diagonal-three-window' : 'three-window');
+          }
+
+          // Diagonal build-up: on 10×19 it is easy to miss long diagonals early, so block 2+ stones in clean diagonal windows sooner.
+          if (diagonal && own === 2 && empties.length >= 3) {
+            addAll(3, 3, 'diagonal-two-window');
+          }
+          if (diagonal && own >= 3 && size >= 6) {
+            addAll(6, 10, 'diagonal-long-threat');
+          }
+        }
+      }
+    }
+  }
+
+  return Array.from(map.values()).sort((a, b) =>
+    (b.level - a.level) ||
+    (b.hits - a.hits) ||
+    ((b.diagonal ? 1 : 0) - (a.diagonal ? 1 : 0)) ||
+    (b.centerBias - a.centerBias) ||
+    (tttV959CenterScore(b.idx) - tttV959CenterScore(a.idx)) ||
+    (a.idx - b.idx)
+  );
+}
+
+function tttV959HumanThreatScore(board, deadline) {
+  if (tttWinningMoves(board, 'X').length) return 1e14;
+  const threats = tttV959WindowDefenseEntries(board, 'X');
+  let score = 0;
+  for (const t of threats.slice(0, 28)) {
+    score += Math.pow(12, Number(t.level || 0)) * (Number(t.hits || 1) || 1) * (t.diagonal ? 1.7 : 1);
+  }
+  // Also evaluate the best human gain move: if X can make a strong diagonal next, this move is unsafe.
+  const occupied = tttV959CountOccupied(board);
+  const pool = new Set(tttV959CandidateSet(board, occupied < 18 ? 3 : 2));
+  threats.slice(0, 24).forEach(t => pool.add(t.idx));
+  let checked = 0;
+  for (const idx of pool) {
+    if (deadline && tttEngineNow() > deadline - 6 && checked > 8) break;
+    if (!Number.isFinite(Number(idx)) || idx < 0 || idx >= board.length || board[idx]) continue;
+    board[idx] = 'X';
+    const wins = tttWinningMoves(board, 'X').length;
+    const nextThreats = tttV959WindowDefenseEntries(board, 'X');
+    board[idx] = '';
+    if (wins >= 2) score += 8e12;
+    else if (wins === 1) score += 2.8e12;
+    if (nextThreats.length) {
+      const top = nextThreats[0];
+      if (top.level >= 8) score += 1.6e12;
+      else if (top.level >= 6) score += 2.8e11 * (top.diagonal ? 1.65 : 1);
+    }
+    checked += 1;
+  }
+  return score;
+}
+
+function tttV959PickDefense(board, entries, deadline) {
+  const filtered = (entries || []).filter(e => e && Number.isFinite(Number(e.idx)) && e.idx >= 0 && e.idx < board.length && !board[e.idx]);
+  if (!filtered.length) return -1;
+  let best = -1;
+  let bestScore = -Infinity;
+  for (const e of filtered.slice(0, 32)) {
+    if (deadline && tttEngineNow() > deadline - 8 && best >= 0) break;
+    const idx = Number(e.idx);
+    board[idx] = 'O';
+    const ownWin = tttWinner(board).winner === 'O' ? 1 : 0;
+    const risk = tttV959HumanThreatScore(board, deadline);
+    const ownThreat = tttV959WindowDefenseEntries(board, 'O')[0];
+    const score = ownWin * 1e15
+      - risk * 2.2
+      + Number(e.level || 0) * 7e10
+      + Number(e.hits || 0) * 3e9
+      + (e.diagonal ? 2.4e10 : 0)
+      + (ownThreat ? Number(ownThreat.level || 0) * 6e8 + Number(ownThreat.hits || 0) * 1e8 : 0)
+      + tttCheapMovePotential(board, idx, 'X') * 2600
+      + tttCheapMovePotential(board, idx, 'O') * 1600
+      + tttV959CenterScore(idx) * 900;
+    board[idx] = '';
+    if (score > bestScore) { bestScore = score; best = idx; }
+  }
+  return best;
+}
+
+function tttV959MoveScore(board, idx, deadline) {
+  if (!Number.isFinite(Number(idx)) || idx < 0 || idx >= board.length || board[idx]) return -Infinity;
+  board[idx] = 'O';
+  if (tttWinner(board).winner === 'O') { board[idx] = ''; return 1e15; }
+  const risk = tttV959HumanThreatScore(board, deadline);
+  const ownThreats = tttV959WindowDefenseEntries(board, 'O');
+  const ownTop = ownThreats[0];
+  let score = -risk * 2.8
+    + (ownTop ? Number(ownTop.level || 0) * 4.8e10 + Number(ownTop.hits || 0) * 1.2e9 + (ownTop.diagonal ? 6e8 : 0) : 0)
+    + tttCheapMovePotential(board, idx, 'O') * 2400
+    + tttCheapMovePotential(board, idx, 'X') * 3200
+    + tttV959CenterScore(idx) * 1300;
+  const replies = tttV959WindowDefenseEntries(board, 'X').slice(0, 8).map(e => e.idx);
+  for (const reply of replies) {
+    if (deadline && tttEngineNow() > deadline - 6) break;
+    if (!Number.isFinite(Number(reply)) || board[reply]) continue;
+    board[reply] = 'X';
+    score -= tttV959HumanThreatScore(board, deadline) * 0.32;
+    board[reply] = '';
+  }
+  board[idx] = '';
+  return score;
+}
+
+function tttV959BestMove(board, difficulty) {
+  const free = [];
+  for (let i = 0; i < board.length; i += 1) if (!board[i]) free.push(i);
+  if (!free.length) return -1;
+  const budget = Math.min(tttEngineBudgetMs(difficulty || 'ai'), difficulty === 'ai' ? 420 : 135);
+  const deadline = tttEngineNow() + budget;
+
+  const ownWins = tttWinningMoves(board, 'O');
+  if (ownWins.length) return tttV955PickBestFrom(board, ownWins, 'O', deadline);
+
+  const xWins = tttWinningMoves(board, 'X');
+  if (xWins.length) {
+    const block = tttV959PickDefense(board, xWins.map(idx => ({ idx, level: 12, hits: 99, diagonal: false, kinds: ['immediate-win-block'] })), deadline);
+    if (block >= 0) return block;
+  }
+
+  const occupied = board.length - free.length;
+  if (occupied <= 1) {
+    const opening = tttPromptEngineOpeningMove(board);
+    if (opening >= 0 && !board[opening]) return opening;
+  }
+
+  // Defensive priority is intentionally earlier than speculative attack. This addresses wins around move 11–25.
+  const xDirect = tttV959WindowDefenseEntries(board, 'X');
+  const mustBlock = xDirect.filter(e => e.level >= 6 || (e.diagonal && e.level >= 3));
+  if (mustBlock.length) {
+    const block = tttV959PickDefense(board, mustBlock, deadline);
+    if (block >= 0) return block;
+  }
+
+  // If X has a move that creates a forced win/fork next turn, occupy that gain square now if possible.
+  const occupiedAfterDirect = tttV959CountOccupied(board);
+  const gainPool = new Set(tttV959CandidateSet(board, occupiedAfterDirect < 18 ? 3 : 2));
+  xDirect.slice(0, 18).forEach(e => gainPool.add(e.idx));
+  const gainEntries = [];
+  for (const idx of gainPool) {
+    if (deadline && tttEngineNow() > deadline - 12 && gainEntries.length) break;
+    if (!Number.isFinite(Number(idx)) || idx < 0 || idx >= board.length || board[idx]) continue;
+    board[idx] = 'X';
+    const wins = tttWinningMoves(board, 'X').length;
+    const threats = tttV959WindowDefenseEntries(board, 'X');
+    const top = threats[0] || null;
+    board[idx] = '';
+    const level = wins >= 2 ? 11 : wins === 1 ? 9 : top ? Number(top.level || 0) : 0;
+    const diagonal = !!(top && top.diagonal);
+    if (level >= 6 || (diagonal && level >= 4)) {
+      gainEntries.push({ idx, level, hits: wins * 20 + (top ? Number(top.hits || 0) : 0), diagonal, kinds: ['human-gain'] });
+    }
+  }
+  gainEntries.sort((a, b) => (b.level - a.level) || (b.hits - a.hits) || ((b.diagonal ? 1 : 0) - (a.diagonal ? 1 : 0)) || (a.idx - b.idx));
+  if (gainEntries.length) {
+    const block = tttV959PickDefense(board, gainEntries, deadline);
+    if (block >= 0) return block;
+  }
+
+  const ownThreat = tttV959WindowDefenseEntries(board, 'O');
+  const ownStrong = ownThreat.filter(e => e.level >= 8);
+  if (ownStrong.length) {
+    const attack = tttV959PickDefense(board, ownStrong, deadline);
+    if (attack >= 0) {
+      board[attack] = 'O';
+      const risk = tttV959HumanThreatScore(board, deadline);
+      board[attack] = '';
+      if (risk < 4.5e11) return attack;
+    }
+  }
+
+  const pool = new Set(tttV959CandidateSet(board, occupied < 18 ? 3 : 2));
+  xDirect.slice(0, 24).forEach(e => pool.add(e.idx));
+  ownThreat.slice(0, 18).forEach(e => pool.add(e.idx));
+  let candidates = Array.from(pool).filter(idx => Number.isFinite(Number(idx)) && idx >= 0 && idx < board.length && !board[idx]);
+  candidates = candidates
+    .map(idx => ({ idx, score: tttCheapMovePotential(board, idx, 'O') * 1.1 + tttCheapMovePotential(board, idx, 'X') * 2.8 + tttV959CenterScore(idx) }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, occupied < 18 ? 30 : 22)
+    .map(item => item.idx);
+
+  let best = -1;
+  let bestScore = -Infinity;
+  for (const idx of candidates) {
+    if (deadline && tttEngineNow() > deadline - 10 && best >= 0) break;
+    const score = tttV959MoveScore(board, idx, deadline);
+    if (score > bestScore) { bestScore = score; best = idx; }
+  }
+  if (best >= 0) return best;
+
+  const emergency = tttV959PickDefense(board, tttV959WindowDefenseEntries(board, 'X'), deadline);
+  if (emergency >= 0) return emergency;
+  return tttNearestCenterFallbackMove(board);
+}
+
+function getRakGomokuAiV959Health() {
+  return {
+    ok: true,
+    version: String(window.APP_VERSION || 'v.1.5 (961)'),
+    rulesetVersion: GOMOKU_RULESET_VERSION,
+    board: { rows: TTT_ROWS, cols: TTT_COLS, total: TTT_TOTAL_CELLS },
+    lineWindowDefense: true,
+    diagonalBuildUpGuard: true,
+    humanGainPrevention: true,
+    hardFallback: true,
+    onlinePvPUnchanged: true,
+    note: 'v959 přidává tvrdší line-window obranu a blokuje diagonální build-up dřív, než z něj vznikne čtyřka nebo výhra.'
+  };
+}
+if (typeof window !== 'undefined') {
+  window.getRakGomokuAiV959Health = getRakGomokuAiV959Health;
+  window.getRakGomokuAiV958Health = getRakGomokuAiV959Health;
+}
+
 function tttBestMove(board, difficulty) {
+  const v959 = typeof tttV959BestMove === 'function' ? tttV959BestMove(board, difficulty || 'ai') : -1;
+  if (Number.isFinite(Number(v959)) && v959 >= 0 && v959 < board.length && !board[v959]) return v959;
   const safe = typeof tttV958BestMove === 'function' ? tttV958BestMove(board, difficulty || 'ai') : -1;
   if (Number.isFinite(Number(safe)) && safe >= 0 && safe < board.length && !board[safe]) return safe;
   const prev = tttV956BestMove(board, difficulty || 'ai');
@@ -6250,6 +6596,759 @@ function tttBestMove(board, difficulty) {
   if (win >= 0) return win;
   const block = tttWinningMove(board, 'X');
   if (block >= 0) return block;
+  return tttNearestCenterFallbackMove(board);
+}
+
+
+// v.1.5 (961) – Piškvorky AI: deterministic tactical engine smoke-tested locally.
+// Cíl: žádné zaseknutí a nepřehlédnout diagonální/open-three/four hrozby.
+function tttV960Dirs() {
+  return [[0, 1], [1, 0], [1, 1], [1, -1]];
+}
+function tttV960Row(idx) { return Math.floor(Number(idx) / TTT_COLS); }
+function tttV960Col(idx) { return Number(idx) % TTT_COLS; }
+function tttV960CenterScore(idx) {
+  const r = tttV960Row(idx);
+  const c = tttV960Col(idx);
+  const cr = (TTT_ROWS - 1) / 2;
+  const cc = (TTT_COLS - 1) / 2;
+  return 10000 - (Math.abs(r - cr) * 360 + Math.abs(c - cc) * 520);
+}
+function tttV960Occupied(board) {
+  let n = 0;
+  for (let i = 0; i < board.length; i += 1) if (board[i]) n += 1;
+  return n;
+}
+function tttV960Legal(board, idx) {
+  return Number.isFinite(Number(idx)) && idx >= 0 && idx < board.length && !board[idx];
+}
+function tttV960CandidateSet(board, radius) {
+  const occupied = [];
+  for (let i = 0; i < board.length; i += 1) if (board[i]) occupied.push(i);
+  if (!occupied.length) return [tttIndex(9, 4), tttIndex(9, 5), tttIndex(8, 4), tttIndex(10, 5)].filter(idx => tttV960Legal(board, idx));
+  const out = new Set();
+  const rMax = Math.max(1, Number(radius || 2) || 2);
+  for (const idx of occupied) {
+    const row = tttV960Row(idx);
+    const col = tttV960Col(idx);
+    for (let dr = -rMax; dr <= rMax; dr += 1) {
+      for (let dc = -rMax; dc <= rMax; dc += 1) {
+        const rr = row + dr;
+        const cc = col + dc;
+        if (!tttInBounds(rr, cc)) continue;
+        const next = tttIndex(rr, cc);
+        if (!board[next]) out.add(next);
+      }
+    }
+  }
+  return Array.from(out);
+}
+function tttV960WinningMoves(board, mark) {
+  const opponent = mark === 'X' ? 'O' : 'X';
+  const moves = new Set();
+  for (let row = 0; row < TTT_ROWS; row += 1) {
+    for (let col = 0; col < TTT_COLS; col += 1) {
+      for (const dir of tttV960Dirs()) {
+        const dr = dir[0];
+        const dc = dir[1];
+        let own = 0;
+        let empty = -1;
+        let ok = true;
+        for (let step = 0; step < TTT_WIN_LENGTH; step += 1) {
+          const rr = row + dr * step;
+          const cc = col + dc * step;
+          if (!tttInBounds(rr, cc)) { ok = false; break; }
+          const idx = tttIndex(rr, cc);
+          const cell = board[idx];
+          if (cell === opponent) { ok = false; break; }
+          if (cell === mark) own += 1;
+          else if (!cell) {
+            if (empty >= 0) { ok = false; break; }
+            empty = idx;
+          }
+        }
+        if (ok && own === TTT_WIN_LENGTH - 1 && empty >= 0) moves.add(empty);
+      }
+    }
+  }
+  return Array.from(moves).sort((a, b) => tttV960CenterScore(b) - tttV960CenterScore(a));
+}
+function tttV960AddEntry(map, board, idx, level, hits, kind, dir, endpointOnly) {
+  if (!tttV960Legal(board, idx)) return;
+  const diagonal = !!(dir && Math.abs(dir[0]) === 1 && Math.abs(dir[1]) === 1);
+  const prev = map.get(idx) || { idx, level: 0, hits: 0, kinds: [], diagonal: false, endpoint: false };
+  prev.level = Math.max(prev.level, Number(level || 0) || 0);
+  prev.hits += Number(hits || 1) || 1;
+  prev.diagonal = prev.diagonal || diagonal;
+  prev.endpoint = prev.endpoint || !!endpointOnly;
+  if (kind && prev.kinds.indexOf(kind) < 0) prev.kinds.push(kind);
+  map.set(idx, prev);
+}
+function tttV960ThreatEntries(board, mark) {
+  const opponent = mark === 'X' ? 'O' : 'X';
+  const map = new Map();
+  for (let row = 0; row < TTT_ROWS; row += 1) {
+    for (let col = 0; col < TTT_COLS; col += 1) {
+      for (const dir of tttV960Dirs()) {
+        const dr = dir[0], dc = dir[1];
+        for (const size of [5, 6, 7]) {
+          const cells = [];
+          let pattern = '';
+          let own = 0;
+          let opp = 0;
+          const empties = [];
+          let ok = true;
+          for (let step = 0; step < size; step += 1) {
+            const rr = row + dr * step;
+            const cc = col + dc * step;
+            if (!tttInBounds(rr, cc)) { ok = false; break; }
+            const idx = tttIndex(rr, cc);
+            cells.push(idx);
+            const cell = board[idx];
+            if (cell === mark) { own += 1; pattern += 'M'; }
+            else if (cell === opponent) { opp += 1; pattern += 'B'; }
+            else { empties.push(idx); pattern += '.'; }
+          }
+          if (!ok || opp || own < 2 || !empties.length) continue;
+          const diagonal = Math.abs(dr) === 1 && Math.abs(dc) === 1;
+          const addAll = (level, hits, kind) => empties.forEach(idx => tttV960AddEntry(map, board, idx, level + (diagonal ? 1 : 0), hits, kind, dir, false));
+          if (size === 5 && own === 4 && empties.length === 1) {
+            tttV960AddEntry(map, board, empties[0], 100, 120, 'four-in-five', dir, true);
+            continue;
+          }
+          let pos = pattern.indexOf('.MMM.');
+          while (pos >= 0) {
+            tttV960AddEntry(map, board, cells[pos], diagonal ? 78 : 74, 52, 'open-three-end', dir, true);
+            tttV960AddEntry(map, board, cells[pos + 4], diagonal ? 78 : 74, 52, 'open-three-end', dir, true);
+            pos = pattern.indexOf('.MMM.', pos + 1);
+          }
+          const broken = ['.MM.M.', '.M.MM.', 'MM.M.', '.M.MM', 'M.MM.', '.MM.M', 'M.M.M', 'MM..M', 'M..MM', '.M.M.', 'M.M.'];
+          if (own >= 3 && empties.length >= 2) {
+            for (const pat of broken) {
+              if (pattern.indexOf(pat) >= 0) {
+                addAll(diagonal ? 70 : 62, diagonal ? 34 : 24, diagonal ? 'diagonal-broken-three' : 'broken-three');
+                break;
+              }
+            }
+          }
+          if (size === 5 && own === 3 && empties.length === 2) addAll(diagonal ? 68 : 55, diagonal ? 28 : 18, diagonal ? 'diagonal-three-window' : 'three-window');
+          if (diagonal && own === 2 && empties.length >= 3) addAll(30, 4, 'diagonal-two-window');
+        }
+      }
+    }
+  }
+  return Array.from(map.values()).sort((a, b) =>
+    (b.level - a.level) || (b.hits - a.hits) || ((b.endpoint ? 1 : 0) - (a.endpoint ? 1 : 0)) || ((b.diagonal ? 1 : 0) - (a.diagonal ? 1 : 0)) || (tttV960CenterScore(b.idx) - tttV960CenterScore(a.idx)) || (a.idx - b.idx)
+  );
+}
+function tttV960GainEntries(board, mark, deadline) {
+  const occupied = tttV960Occupied(board);
+  const pool = new Set(tttV960CandidateSet(board, occupied < 14 ? 3 : 2));
+  tttV960ThreatEntries(board, mark).slice(0, 24).forEach(e => pool.add(e.idx));
+  const out = [];
+  for (const raw of pool) {
+    if (deadline && tttEngineNow() > deadline - 14 && out.length) break;
+    const idx = Number(raw);
+    if (!tttV960Legal(board, idx)) continue;
+    board[idx] = mark;
+    const wins = tttV960WinningMoves(board, mark).length;
+    const threats = tttV960ThreatEntries(board, mark);
+    const top = threats[0] || null;
+    board[idx] = '';
+    const topLevel = top ? Number(top.level || 0) : 0;
+    let level = 0;
+    if (wins >= 2) level = 100;
+    else if (wins === 1) level = 92;
+    else if (topLevel >= 74) level = 78;
+    else if (topLevel >= 65) level = 68;
+    else if (topLevel >= 55) level = 48;
+    if (level < 48) continue;
+    out.push({ idx, level, hits: wins * 40 + (top ? Number(top.hits || 0) : 0), diagonal: !!(top && top.diagonal), kinds: ['gain'] });
+  }
+  return out.sort((a, b) => (b.level - a.level) || (b.hits - a.hits) || ((b.diagonal ? 1 : 0) - (a.diagonal ? 1 : 0)) || (a.idx - b.idx));
+}
+function tttV960HumanRisk(board, deadline) {
+  if (tttV960WinningMoves(board, 'X').length) return 1e15;
+  let risk = 0;
+  for (const e of tttV960ThreatEntries(board, 'X').slice(0, 26)) risk += Math.pow(10, Math.min(9, e.level / 10)) * (e.hits || 1) * (e.diagonal ? 1.6 : 1);
+  for (const g of tttV960GainEntries(board, 'X', deadline).slice(0, 16)) risk += Math.pow(10, Math.min(9, g.level / 10)) * (g.hits || 1) * (g.diagonal ? 1.8 : 1) * 1.2;
+  return risk;
+}
+function tttV960PickBest(board, entries, mark, deadline) {
+  const list = (entries || []).filter(e => e && tttV960Legal(board, e.idx));
+  if (!list.length) return -1;
+  let best = -1, bestScore = -Infinity;
+  for (const e of list.slice(0, 36)) {
+    if (deadline && tttEngineNow() > deadline - 10 && best >= 0) break;
+    const idx = Number(e.idx);
+    board[idx] = mark;
+    const ownWin = tttWinner(board).winner === mark ? 1 : 0;
+    const humanRisk = tttV960HumanRisk(board, deadline);
+    const ownTop = tttV960ThreatEntries(board, mark)[0];
+    const ownGain = tttV960GainEntries(board, mark, deadline)[0];
+    board[idx] = '';
+    const score = ownWin * 1e16
+      - humanRisk * (mark === 'O' ? 3.4 : 1.0)
+      + Number(e.level || 0) * 1e11
+      + Number(e.hits || 0) * 4e9
+      + (e.diagonal ? 6e10 : 0)
+      + (e.endpoint ? 3e10 : 0)
+      + (ownTop ? Number(ownTop.level || 0) * 8e8 + Number(ownTop.hits || 0) * 1e8 : 0)
+      + (ownGain ? Number(ownGain.level || 0) * 7e8 : 0)
+      + tttCheapMovePotential(board, idx, 'O') * 1800
+      + tttCheapMovePotential(board, idx, 'X') * 3600
+      + tttV960CenterScore(idx) * 1000;
+    if (score > bestScore) { bestScore = score; best = idx; }
+  }
+  return best;
+}
+function tttV960MoveScore(board, idx, deadline) {
+  board[idx] = 'O';
+  if (tttWinner(board).winner === 'O') { board[idx] = ''; return 1e16; }
+  const risk = tttV960HumanRisk(board, deadline);
+  const ownThreats = tttV960ThreatEntries(board, 'O');
+  const ownGain = tttV960GainEntries(board, 'O', deadline);
+  const score = -risk * 4.0
+    + (ownThreats[0] ? Number(ownThreats[0].level || 0) * 6e10 + Number(ownThreats[0].hits || 0) * 1.8e9 : 0)
+    + (ownGain[0] ? Number(ownGain[0].level || 0) * 5e10 + Number(ownGain[0].hits || 0) * 1.1e9 : 0)
+    + tttCheapMovePotential(board, idx, 'O') * 2600
+    + tttCheapMovePotential(board, idx, 'X') * 4200
+    + tttV960CenterScore(idx) * 1400;
+  board[idx] = '';
+  return score;
+}
+function tttV960BestMove(board, difficulty) {
+  const free = [];
+  for (let i = 0; i < board.length; i += 1) if (!board[i]) free.push(i);
+  if (!free.length) return -1;
+  const budget = Math.min(tttEngineBudgetMs(difficulty || 'ai'), difficulty === 'ai' ? 220 : 90);
+  const deadline = tttEngineNow() + budget;
+  const ownWins = tttV960WinningMoves(board, 'O');
+  if (ownWins.length) return ownWins[0];
+  const xWins = tttV960WinningMoves(board, 'X');
+  if (xWins.length) return xWins[0];
+  const occupied = board.length - free.length;
+  if (occupied <= 1) {
+    const opening = tttPromptEngineOpeningMove(board);
+    if (opening >= 0 && !board[opening]) return opening;
+  }
+  const currentX = tttV960ThreatEntries(board, 'X');
+  const direct = currentX.filter(e => e.level >= 68 || (e.diagonal && e.level >= 30));
+  if (direct.length) return direct[0].idx;
+  const xGains = tttV960GainEntries(board, 'X', deadline).filter(e => e.level >= 68 || (e.diagonal && e.level >= 48));
+  if (xGains.length) return xGains[0].idx;
+  const ownGains = tttV960GainEntries(board, 'O', deadline).filter(e => e.level >= 78);
+  if (ownGains.length) {
+    const attack = tttV960PickBest(board, ownGains, 'O', deadline);
+    if (attack >= 0) {
+      board[attack] = 'O';
+      const risk = tttV960HumanRisk(board, deadline);
+      board[attack] = '';
+      if (risk < 1e9) return attack;
+    }
+  }
+  const pool = new Set(tttV960CandidateSet(board, occupied < 18 ? 3 : 2));
+  currentX.slice(0, 24).forEach(e => pool.add(e.idx));
+  tttV960ThreatEntries(board, 'O').slice(0, 18).forEach(e => pool.add(e.idx));
+  tttV960GainEntries(board, 'X', deadline).slice(0, 18).forEach(e => pool.add(e.idx));
+  let candidates = Array.from(pool).filter(idx => tttV960Legal(board, idx));
+  candidates = candidates.map(idx => ({ idx, score: tttCheapMovePotential(board, idx, 'X') * 4.2 + tttCheapMovePotential(board, idx, 'O') * 1.7 + tttV960CenterScore(idx) }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, occupied < 18 ? 28 : 20)
+    .map(x => x.idx);
+  let best = -1, bestScore = -Infinity;
+  for (const idx of candidates) {
+    if (deadline && tttEngineNow() > deadline - 8 && best >= 0) break;
+    const score = tttV960MoveScore(board, idx, deadline);
+    if (score > bestScore) { bestScore = score; best = idx; }
+  }
+  if (best >= 0) return best;
+  const emergency = tttV960PickBest(board, currentX.concat(tttV960GainEntries(board, 'X', deadline)), 'O', deadline);
+  if (emergency >= 0) return emergency;
+  return tttNearestCenterFallbackMove(board);
+}
+function getRakGomokuAiV960Health() {
+  return {
+    ok: true,
+    version: String(window.APP_VERSION || 'v.1.5 (961)'),
+    rulesetVersion: GOMOKU_RULESET_VERSION,
+    board: { rows: TTT_ROWS, cols: TTT_COLS, total: TTT_TOTAL_CELLS },
+    localSmokeTested: true,
+    testedCases: ['diagonal-open-three', 'diagonal-four-block', 'horizontal-open-three', 'ai-immediate-win'],
+    deterministicFallback: true,
+    onlinePvPUnchanged: true,
+    note: 'v960 nahrazuje vrchní AI výběr jednodušší deterministickou threat pipeline, která v lokálním smoke testu blokuje diagonální i vodorovné základní hrozby a netrvá sekundy.'
+  };
+}
+if (typeof window !== 'undefined') {
+  window.getRakGomokuAiV960Health = getRakGomokuAiV960Health;
+  window.getRakGomokuAiV959Health = getRakGomokuAiV960Health;
+  window.getRakGomokuAiV958Health = getRakGomokuAiV960Health;
+}
+
+
+
+// v.1.5 (961) – Piškvorky AI: pomalejší, bezpečnější tactical verification nad v960.
+const TTT_V961_SOFT_DEADLINE_MS = 1600;
+const TTT_V961_HARD_DEADLINE_MS = 2200;
+
+function tttV961Budget(difficulty) {
+  const lowEnd = !!(typeof document !== 'undefined' && document.body && document.body.classList && (document.body.classList.contains('ladaMode') || document.body.classList.contains('lowEndDevice') || document.body.classList.contains('lightweightMode')));
+  if (difficulty !== 'ai') return { soft: 360, hard: 620 };
+  return lowEnd ? { soft: 1200, hard: 1900 } : { soft: TTT_V961_SOFT_DEADLINE_MS, hard: TTT_V961_HARD_DEADLINE_MS };
+}
+
+function tttV961TimeUp(deadline, margin) {
+  return !!(deadline && tttEngineNow() > deadline - (Number(margin || 0) || 0));
+}
+
+function tttV961Legal(board, idx) {
+  return typeof tttV960Legal === 'function' ? tttV960Legal(board, idx) : (Number.isFinite(Number(idx)) && idx >= 0 && idx < board.length && !board[idx]);
+}
+
+function tttV961CenterScore(idx) {
+  return typeof tttV960CenterScore === 'function' ? tttV960CenterScore(idx) : tttV954CenterScore(idx);
+}
+
+function tttV961AddThreatEntry(map, board, idx, level, hits, kind, dir, flags) {
+  const n = Number(idx);
+  if (!tttV961Legal(board, n)) return;
+  const opts = flags || {};
+  const diagonal = !!(opts.diagonal || (dir && Math.abs(Number(dir[0] || 0)) === 1 && Math.abs(Number(dir[1] || 0)) === 1));
+  const prev = map.get(n) || { idx: n, level: 0, hits: 0, diagonal: false, endpoint: false, gap: false, exact: false, kinds: [], dirs: [] };
+  prev.level = Math.max(prev.level, Number(level || 0) || 0);
+  prev.hits += Number(hits || 1) || 1;
+  prev.diagonal = prev.diagonal || diagonal;
+  prev.endpoint = prev.endpoint || !!opts.endpoint;
+  prev.gap = prev.gap || !!opts.gap;
+  prev.exact = prev.exact || !!opts.exact;
+  if (kind && prev.kinds.indexOf(kind) < 0) prev.kinds.push(kind);
+  if (dir) {
+    const sig = String(dir[0]) + ',' + String(dir[1]);
+    if (prev.dirs.indexOf(sig) < 0) prev.dirs.push(sig);
+  }
+  map.set(n, prev);
+}
+
+function tttV961ThreatEntries(board, mark) {
+  const opponent = mark === 'X' ? 'O' : 'X';
+  const map = new Map();
+  const patternRules = [
+    { pat: 'MMMM.', defs: [{ p: 4, level: 116, hits: 160, kind: 'simple-four', endpoint: true, exact: true }] },
+    { pat: '.MMMM', defs: [{ p: 0, level: 116, hits: 160, kind: 'simple-four', endpoint: true, exact: true }] },
+    { pat: '.MMM.', defs: [{ p: 0, level: 84, hits: 58, kind: 'open-three-end', endpoint: true, exact: true }, { p: 4, level: 84, hits: 58, kind: 'open-three-end', endpoint: true, exact: true }] },
+    { pat: 'MM.M.', defs: [{ p: 2, level: 86, hits: 68, kind: 'broken-three-gap', gap: true, exact: true }, { p: 4, level: 67, hits: 18, kind: 'broken-three-end', endpoint: true }] },
+    { pat: '.M.MM', defs: [{ p: 2, level: 86, hits: 68, kind: 'broken-three-gap', gap: true, exact: true }, { p: 0, level: 67, hits: 18, kind: 'broken-three-end', endpoint: true }] },
+    { pat: 'M.MM.', defs: [{ p: 1, level: 86, hits: 68, kind: 'broken-three-gap', gap: true, exact: true }, { p: 4, level: 67, hits: 18, kind: 'broken-three-end', endpoint: true }] },
+    { pat: '.MM.M', defs: [{ p: 3, level: 86, hits: 68, kind: 'broken-three-gap', gap: true, exact: true }, { p: 0, level: 67, hits: 18, kind: 'broken-three-end', endpoint: true }] },
+    { pat: '.MM.M.', defs: [{ p: 3, level: 88, hits: 72, kind: 'open-broken-three-gap', gap: true, exact: true }, { p: 0, level: 70, hits: 22, kind: 'open-broken-three-end', endpoint: true }, { p: 5, level: 70, hits: 22, kind: 'open-broken-three-end', endpoint: true }] },
+    { pat: '.M.MM.', defs: [{ p: 2, level: 88, hits: 72, kind: 'open-broken-three-gap', gap: true, exact: true }, { p: 0, level: 70, hits: 22, kind: 'open-broken-three-end', endpoint: true }, { p: 5, level: 70, hits: 22, kind: 'open-broken-three-end', endpoint: true }] },
+    { pat: 'M.M.M', defs: [{ p: 1, level: 82, hits: 50, kind: 'split-three-gap', gap: true, exact: true }, { p: 3, level: 82, hits: 50, kind: 'split-three-gap', gap: true, exact: true }] },
+    { pat: 'MM..M', defs: [{ p: 2, level: 71, hits: 26, kind: 'wide-broken-three-gap', gap: true }, { p: 3, level: 71, hits: 26, kind: 'wide-broken-three-gap', gap: true }] },
+    { pat: 'M..MM', defs: [{ p: 1, level: 71, hits: 26, kind: 'wide-broken-three-gap', gap: true }, { p: 2, level: 71, hits: 26, kind: 'wide-broken-three-gap', gap: true }] }
+  ];
+
+  for (let row = 0; row < TTT_ROWS; row += 1) {
+    for (let col = 0; col < TTT_COLS; col += 1) {
+      for (const dir of tttV960Dirs()) {
+        const dr = dir[0];
+        const dc = dir[1];
+        const diagonal = Math.abs(dr) === 1 && Math.abs(dc) === 1;
+        for (const size of [5, 6, 7]) {
+          const cells = [];
+          let pattern = '';
+          let own = 0;
+          let opp = 0;
+          const empties = [];
+          let ok = true;
+          for (let step = 0; step < size; step += 1) {
+            const rr = row + dr * step;
+            const cc = col + dc * step;
+            if (!tttInBounds(rr, cc)) { ok = false; break; }
+            const idx = tttIndex(rr, cc);
+            cells.push(idx);
+            const cell = board[idx];
+            if (cell === mark) { own += 1; pattern += 'M'; }
+            else if (cell === opponent) { opp += 1; pattern += 'B'; }
+            else { empties.push(idx); pattern += '.'; }
+          }
+          if (!ok || opp || own < 2 || !empties.length) continue;
+
+          const addAtPatternPos = (patStart, def, extraLevel) => {
+            const pos = patStart + Number(def.p || 0);
+            const idx = cells[pos];
+            const flags = { diagonal, endpoint: !!def.endpoint, gap: !!def.gap, exact: !!def.exact };
+            tttV961AddThreatEntry(map, board, idx, Number(def.level || 0) + (diagonal ? Number(extraLevel || 0) : 0), Number(def.hits || 1), diagonal && def.kind && !/^diagonal-/.test(def.kind) ? 'diagonal-' + def.kind : def.kind, dir, flags);
+          };
+
+          for (const rule of patternRules) {
+            let from = pattern.indexOf(rule.pat);
+            while (from >= 0) {
+              for (const def of rule.defs) addAtPatternPos(from, def, rule.pat.indexOf('MMMM') >= 0 ? 8 : 6);
+              from = pattern.indexOf(rule.pat, from + 1);
+            }
+          }
+
+          if (size === 5 && own === 4 && empties.length === 1) {
+            tttV961AddThreatEntry(map, board, empties[0], diagonal ? 124 : 120, 180, diagonal ? 'diagonal-four-in-five' : 'four-in-five', dir, { diagonal, exact: true, endpoint: true });
+            continue;
+          }
+
+          if (size === 5 && own === 3 && empties.length === 2) {
+            const level = diagonal ? 78 : 68;
+            for (const idx of empties) tttV961AddThreatEntry(map, board, idx, level, diagonal ? 36 : 24, diagonal ? 'diagonal-three-window' : 'three-window', dir, { diagonal, exact: false });
+          }
+
+          if (size >= 6 && own >= 3 && empties.length >= 2) {
+            for (const idx of empties) tttV961AddThreatEntry(map, board, idx, diagonal ? 69 : 58, diagonal ? 18 : 12, diagonal ? 'diagonal-long-three-window' : 'long-three-window', dir, { diagonal });
+          }
+
+          if (diagonal && own === 2 && empties.length >= 3) {
+            for (const idx of empties) tttV961AddThreatEntry(map, board, idx, 38, 4, 'diagonal-two-build-up', dir, { diagonal });
+          }
+        }
+      }
+    }
+  }
+
+  return Array.from(map.values()).sort((a, b) =>
+    (b.level - a.level)
+    || (b.hits - a.hits)
+    || ((b.exact ? 1 : 0) - (a.exact ? 1 : 0))
+    || ((b.gap ? 1 : 0) - (a.gap ? 1 : 0))
+    || ((b.endpoint ? 1 : 0) - (a.endpoint ? 1 : 0))
+    || ((b.diagonal ? 1 : 0) - (a.diagonal ? 1 : 0))
+    || (tttV961CenterScore(b.idx) - tttV961CenterScore(a.idx))
+    || (a.idx - b.idx)
+  );
+}
+
+function tttV961GainEntries(board, mark, deadline) {
+  const occupied = tttV960Occupied(board);
+  const pool = new Set(tttV960CandidateSet(board, occupied < 18 ? 3 : 2));
+  tttV961ThreatEntries(board, mark).slice(0, 28).forEach(e => pool.add(e.idx));
+  tttV961ThreatEntries(board, mark === 'X' ? 'O' : 'X').slice(0, 18).forEach(e => pool.add(e.idx));
+  const out = [];
+  for (const raw of pool) {
+    if (tttV961TimeUp(deadline, 20) && out.length) break;
+    const idx = Number(raw);
+    if (!tttV961Legal(board, idx)) continue;
+    board[idx] = mark;
+    const wins = tttV960WinningMoves(board, mark).length;
+    const threats = tttV961ThreatEntries(board, mark);
+    const top = threats[0] || null;
+    const fork = typeof tttBestForkMove === 'function' && tttBestForkMove(board, mark) >= 0 ? 1 : 0;
+    board[idx] = '';
+    const topLevel = top ? Number(top.level || 0) : 0;
+    let level = 0;
+    if (wins >= 2) level = 122;
+    else if (wins >= 1) level = 112;
+    else if (fork && topLevel >= 78) level = 104;
+    else if (topLevel >= 116) level = 104;
+    else if (topLevel >= 86) level = 92;
+    else if (topLevel >= 78) level = 82;
+    else if (topLevel >= 68) level = 70;
+    if (level < 70) continue;
+    out.push({ idx, level, hits: wins * 100 + (top ? Number(top.hits || 0) : 0) + fork * 36, diagonal: !!(top && top.diagonal), endpoint: !!(top && top.endpoint), gap: !!(top && top.gap), kinds: ['gain'].concat(top && top.kinds ? top.kinds : []) });
+  }
+  return out.sort((a, b) => (b.level - a.level) || (b.hits - a.hits) || ((b.diagonal ? 1 : 0) - (a.diagonal ? 1 : 0)) || (a.idx - b.idx));
+}
+
+function tttV961ThreatRisk(board, mark, deadline) {
+  const winner = tttWinner(board).winner;
+  if (winner === mark) return 1e18;
+  const wins = tttV960WinningMoves(board, mark).length;
+  const threats = tttV961ThreatEntries(board, mark);
+  const gains = tttV961GainEntries(board, mark, deadline);
+  const fork = typeof tttBestForkMove === 'function' && tttBestForkMove(board, mark) >= 0 ? 1 : 0;
+  let score = wins * 8e16 + fork * 8e12;
+  for (const e of threats.slice(0, 30)) {
+    score += Math.pow(12, Math.min(12, Number(e.level || 0) / 10)) * (Number(e.hits || 1) || 1) * (e.diagonal ? 1.65 : 1) * (e.exact ? 1.18 : 1);
+  }
+  for (const g of gains.slice(0, 18)) {
+    score += Math.pow(12, Math.min(12, Number(g.level || 0) / 10)) * (Number(g.hits || 1) || 1) * (g.diagonal ? 1.8 : 1) * 1.35;
+  }
+  return score;
+}
+
+function tttV961EntryListFromMoves(moves, level, kind) {
+  return (moves || []).map(idx => ({ idx: Number(idx), level: Number(level || 0), hits: 999, exact: true, endpoint: true, kinds: [kind || 'move'] }));
+}
+
+function tttV961PickDefense(board, entries, deadline) {
+  const list = (entries || []).filter(e => e && tttV961Legal(board, e.idx));
+  if (!list.length) return -1;
+  let best = -1;
+  let bestScore = -Infinity;
+  let bestImmediateLosses = Infinity;
+  for (const e of list.slice(0, 24)) {
+    if (tttV961TimeUp(deadline, 12) && best >= 0) break;
+    const idx = Number(e.idx);
+    board[idx] = 'O';
+    const ownWin = tttWinner(board).winner === 'O' ? 1 : 0;
+    const immediateLosses = tttV960WinningMoves(board, 'X').length;
+    const xThreats = tttV961ThreatEntries(board, 'X');
+    const xTop = xThreats[0] || null;
+    const oThreats = tttV961ThreatEntries(board, 'O');
+    const oTop = oThreats[0] || null;
+    board[idx] = '';
+    const remainingSevere = xThreats.filter(t => Number(t.level || 0) >= 110).length;
+    const score = ownWin * 1e19
+      - immediateLosses * 9e17
+      - remainingSevere * 8e16
+      - (xTop ? Number(xTop.level || 0) * 5e13 + Number(xTop.hits || 0) * 2e12 : 0)
+      + (oTop ? Number(oTop.level || 0) * 2.6e13 + Number(oTop.hits || 0) * 8e11 : 0)
+      + Number(e.level || 0) * 3.2e14
+      + Number(e.hits || 0) * 1.8e12
+      + (e.exact ? 5e13 : 0)
+      + (e.gap ? 3e13 : 0)
+      + (e.endpoint ? 1.4e13 : 0)
+      + (e.diagonal ? 1.2e13 : 0)
+      + tttCheapMovePotential(board, idx, 'X') * 5200
+      + tttCheapMovePotential(board, idx, 'O') * 2600
+      + tttV961CenterScore(idx) * 1800;
+    if (immediateLosses < bestImmediateLosses || (immediateLosses === bestImmediateLosses && score > bestScore)) {
+      bestImmediateLosses = immediateLosses;
+      bestScore = score;
+      best = idx;
+    }
+  }
+  return best;
+}
+
+function tttV961CandidatePool(board, deadline) {
+  const occupied = tttV960Occupied(board);
+  const pool = new Set(tttV960CandidateSet(board, occupied < 20 ? 3 : 2));
+  tttV960WinningMoves(board, 'O').forEach(idx => pool.add(idx));
+  tttV960WinningMoves(board, 'X').forEach(idx => pool.add(idx));
+  tttV961ThreatEntries(board, 'X').slice(0, 32).forEach(e => pool.add(e.idx));
+  tttV961ThreatEntries(board, 'O').slice(0, 24).forEach(e => pool.add(e.idx));
+  tttV961GainEntries(board, 'X', deadline).slice(0, 20).forEach(e => pool.add(e.idx));
+  tttV961GainEntries(board, 'O', deadline).slice(0, 18).forEach(e => pool.add(e.idx));
+  return Array.from(pool)
+    .map(Number)
+    .filter(idx => tttV961Legal(board, idx))
+    .map(idx => {
+      board[idx] = 'O';
+      const ownWin = tttWinner(board).winner === 'O' ? 1 : 0;
+      const xWins = tttV960WinningMoves(board, 'X').length;
+      const oTop = tttV961ThreatEntries(board, 'O')[0];
+      const xTop = tttV961ThreatEntries(board, 'X')[0];
+      board[idx] = '';
+      return {
+        idx,
+        score: ownWin * 1e18
+          - xWins * 9e16
+          + (oTop ? Number(oTop.level || 0) * 8e12 + Number(oTop.hits || 0) * 7e10 : 0)
+          + (xTop ? Number(xTop.level || 0) * 7e12 + Number(xTop.hits || 0) * 8e10 : 0)
+          + tttCheapMovePotential(board, idx, 'X') * 5800
+          + tttCheapMovePotential(board, idx, 'O') * 3600
+          + tttV961CenterScore(idx) * 2000
+      };
+    })
+    .sort((a, b) => b.score - a.score)
+    .map(item => item.idx);
+}
+
+function tttV961SafetyReport(board, idx, deadline) {
+  if (!tttV961Legal(board, idx)) return { idx, illegal: true, risk: 1e20, immediateLosses: 99, openFourThreats: 99, forkThreat: true };
+  const occupied = tttV960Occupied(board);
+  board[idx] = 'O';
+  const ownWinNow = tttWinner(board).winner === 'O';
+  const immediateLosses = tttV960WinningMoves(board, 'X').length;
+  const xThreats = tttV961ThreatEntries(board, 'X');
+  const xGains = tttV961GainEntries(board, 'X', deadline);
+  const openFourThreats = xThreats.filter(e => e.level >= 110).length + xGains.filter(e => e.level >= 112).length;
+  const forkThreat = typeof tttBestForkMove === 'function' && tttBestForkMove(board, 'X') >= 0;
+  const replyPool = new Set(tttV960CandidateSet(board, occupied < 22 ? 3 : 2));
+  xThreats.slice(0, 18).forEach(e => replyPool.add(e.idx));
+  xGains.slice(0, 16).forEach(e => replyPool.add(e.idx));
+  tttV961ThreatEntries(board, 'O').slice(0, 12).forEach(e => replyPool.add(e.idx));
+  let replies = Array.from(replyPool).map(Number).filter(reply => tttV961Legal(board, reply));
+  replies = replies.map(reply => {
+    board[reply] = 'X';
+    const score = (tttWinner(board).winner === 'X' ? 1e18 : 0)
+      + tttV960WinningMoves(board, 'X').length * 9e16
+      + tttV961ThreatRisk(board, 'X', deadline) * 0.04
+      + tttCheapMovePotential(board, reply, 'X') * 4600
+      - tttV960WinningMoves(board, 'O').length * 7e16;
+    board[reply] = '';
+    return { reply, score };
+  }).sort((a, b) => b.score - a.score).slice(0, occupied < 22 ? 16 : 12).map(item => item.reply);
+
+  let worstReplyRisk = 0;
+  for (const reply of replies) {
+    if (tttV961TimeUp(deadline, 18) && worstReplyRisk > 0) break;
+    board[reply] = 'X';
+    const replyWinner = tttWinner(board).winner === 'X' ? 1 : 0;
+    const xWins = tttV960WinningMoves(board, 'X').length;
+    const xRisk = tttV961ThreatRisk(board, 'X', deadline);
+    const oWins = tttV960WinningMoves(board, 'O').length;
+    const oRisk = tttV961ThreatRisk(board, 'O', deadline);
+    let bestCounterRelief = 0;
+    const counters = tttV961CandidatePool(board, deadline).slice(0, 8);
+    for (const counter of counters) {
+      if (tttV961TimeUp(deadline, 10)) break;
+      board[counter] = 'O';
+      const relief = xRisk - tttV961ThreatRisk(board, 'X', deadline) + (tttWinner(board).winner === 'O' ? 1e17 : 0) + tttV960WinningMoves(board, 'O').length * 3e16;
+      board[counter] = '';
+      if (relief > bestCounterRelief) bestCounterRelief = relief;
+    }
+    board[reply] = '';
+    const risk = replyWinner * 1e19 + xWins * 6e17 + xRisk * 1.15 - oWins * 2.2e17 - oRisk * 0.16 - bestCounterRelief * 0.32;
+    if (risk > worstReplyRisk) worstReplyRisk = risk;
+  }
+
+  const ownRisk = tttV961ThreatRisk(board, 'O', deadline);
+  const xRiskAfter = tttV961ThreatRisk(board, 'X', deadline);
+  board[idx] = '';
+  const risk = (ownWinNow ? 0 : 0)
+    + immediateLosses * 1e19
+    + openFourThreats * 8e17
+    + (forkThreat ? 8e16 : 0)
+    + xRiskAfter * 1.24
+    + worstReplyRisk * 0.9
+    - ownRisk * 0.24;
+  return { idx, illegal: false, ownWinNow, immediateLosses, openFourThreats, forkThreat, worstReplyRisk, risk };
+}
+
+function tttV961MoveScore(board, idx, deadline) {
+  const safety = tttV961SafetyReport(board, idx, deadline);
+  if (safety.illegal) return -Infinity;
+  board[idx] = 'O';
+  const ownWin = tttWinner(board).winner === 'O' ? 1 : 0;
+  const ownRisk = tttV961ThreatRisk(board, 'O', deadline);
+  const xRisk = tttV961ThreatRisk(board, 'X', deadline);
+  const ownGains = tttV961GainEntries(board, 'O', deadline);
+  board[idx] = '';
+  const safeBonus = (!safety.immediateLosses && !safety.openFourThreats && !safety.forkThreat) ? 2e15 : 0;
+  return ownWin * 1e20
+    + safeBonus
+    + ownRisk * 1.08
+    + (ownGains[0] ? Number(ownGains[0].level || 0) * 1.2e14 + Number(ownGains[0].hits || 0) * 7e12 : 0)
+    - xRisk * 1.55
+    - safety.risk * 1.85
+    + tttCheapMovePotential(board, idx, 'O') * 5000
+    + tttCheapMovePotential(board, idx, 'X') * 6200
+    + tttV961CenterScore(idx) * 2400;
+}
+
+function tttV961PickVerifiedRootMove(board, candidates, deadline) {
+  const list = (candidates || []).filter(idx => tttV961Legal(board, idx)).slice(0, 16);
+  let best = -1;
+  let bestScore = -Infinity;
+  let bestSafe = -1;
+  let bestSafeScore = -Infinity;
+  for (const idx of list) {
+    if (tttV961TimeUp(deadline, 26) && best >= 0) break;
+    const score = tttV961MoveScore(board, idx, deadline);
+    if (score > bestScore) { bestScore = score; best = idx; }
+    const safety = tttV961SafetyReport(board, idx, deadline);
+    const safe = safety.ownWinNow || (!safety.immediateLosses && !safety.openFourThreats && !safety.forkThreat);
+    if (safe && score > bestSafeScore) { bestSafeScore = score; bestSafe = idx; }
+  }
+  return bestSafe >= 0 ? bestSafe : best;
+}
+
+function tttV961BestMove(board, difficulty) {
+  const free = [];
+  for (let i = 0; i < board.length; i += 1) if (!board[i]) free.push(i);
+  if (!free.length) return -1;
+  const terminal = tttWinner(board).winner;
+  if (terminal) return tttNearestCenterFallbackMove(board);
+  const budget = tttV961Budget(difficulty || 'ai');
+  const hardDeadline = tttEngineNow() + Number(budget.hard || TTT_V961_HARD_DEADLINE_MS);
+
+  const ownWins = tttV960WinningMoves(board, 'O');
+  if (ownWins.length) return tttV961PickDefense(board, tttV961EntryListFromMoves(ownWins, 160, 'own-immediate-win'), hardDeadline);
+
+  const xWins = tttV960WinningMoves(board, 'X');
+  if (xWins.length) return tttV961PickDefense(board, tttV961EntryListFromMoves(xWins, 180, 'immediate-loss-block'), hardDeadline);
+
+  const occupied = board.length - free.length;
+  if (occupied <= 1) {
+    const opening = tttPromptEngineOpeningMove(board);
+    if (opening >= 0 && !board[opening]) return opening;
+  }
+
+  const currentX = tttV961ThreatEntries(board, 'X');
+  const forcedFours = currentX.filter(e => e.level >= 110);
+  if (forcedFours.length) {
+    const block = tttV961PickDefense(board, forcedFours, hardDeadline);
+    if (tttV961Legal(board, block)) return block;
+  }
+
+  const openThreeAndBroken = currentX.filter(e => e.level >= 78 || (e.diagonal && e.level >= 69) || e.gap || e.exact);
+  if (openThreeAndBroken.length) {
+    const block = tttV961PickDefense(board, openThreeAndBroken, hardDeadline);
+    if (tttV961Legal(board, block)) return block;
+  }
+
+  const xGains = tttV961GainEntries(board, 'X', hardDeadline).filter(e => e.level >= 82 || (e.diagonal && e.level >= 70));
+  if (xGains.length) {
+    const block = tttV961PickDefense(board, xGains, hardDeadline);
+    if (tttV961Legal(board, block)) return block;
+  }
+
+  const ownForcing = tttV961GainEntries(board, 'O', hardDeadline).filter(e => e.level >= 104);
+  if (ownForcing.length) {
+    const attack = tttV961PickDefense(board, ownForcing, hardDeadline);
+    if (tttV961Legal(board, attack)) {
+      const safety = tttV961SafetyReport(board, attack, hardDeadline);
+      if (safety.ownWinNow || (!safety.immediateLosses && !safety.openFourThreats)) return attack;
+    }
+  }
+
+  const candidates = tttV961CandidatePool(board, hardDeadline);
+  const verified = tttV961PickVerifiedRootMove(board, candidates, hardDeadline);
+  if (tttV961Legal(board, verified)) return verified;
+
+  const emergency = tttV961PickDefense(board, currentX.concat(tttV961GainEntries(board, 'X', hardDeadline)), hardDeadline);
+  if (tttV961Legal(board, emergency)) return emergency;
+  const v960 = typeof tttV960BestMove === 'function' ? tttV960BestMove(board, difficulty || 'ai') : -1;
+  if (tttV961Legal(board, v960)) return v960;
+  return tttNearestCenterFallbackMove(board);
+}
+
+function getRakGomokuAiV961Health() {
+  const budget = tttV961Budget('ai');
+  return {
+    ok: true,
+    boardRows: TTT_ROWS,
+    boardCols: TTT_COLS,
+    board: { rows: TTT_ROWS, cols: TTT_COLS, total: TTT_TOTAL_CELLS },
+    rulesetVersion: GOMOKU_RULESET_VERSION,
+    offlineAiOnly: true,
+    onlinePvpUntouched: true,
+    tacticalOpeningWinCheck: true,
+    immediateLossBlock: true,
+    diagonalThreatDefense: true,
+    openThreeDefense: true,
+    brokenThreeDefense: true,
+    candidateSafetyVerification: true,
+    tacticalVerificationPly: '1-2 ply on top root candidates',
+    softDeadlineMs: Number(budget.soft || TTT_V961_SOFT_DEADLINE_MS),
+    hardDeadlineMs: Number(budget.hard || TTT_V961_HARD_DEADLINE_MS),
+    fallbackLegalMove: true,
+    testedLocallyByScript: 'gomoku-ai-smoke-v961.js',
+    note: 'v961 nechává online PvP beze změny a přidává nad offline AI bezpečnostní ověření kandidátů včetně přesných diagonálních endpoint/gap defense squares.'
+  };
+}
+if (typeof window !== 'undefined') {
+  window.getRakGomokuAiV961Health = getRakGomokuAiV961Health;
+  window.getRakGomokuAiV960Health = getRakGomokuAiV961Health;
+  window.getRakGomokuAiV959Health = getRakGomokuAiV961Health;
+}
+
+function tttBestMove(board, difficulty) {
+  const next = typeof tttV961BestMove === 'function' ? tttV961BestMove(board, difficulty || 'ai') : -1;
+  if (tttV961Legal(board, next)) return next;
+  const win = tttV960WinningMoves(board, 'O')[0];
+  if (tttV961Legal(board, win)) return win;
+  const block = tttV960WinningMoves(board, 'X')[0];
+  if (tttV961Legal(board, block)) return block;
+  const prev = typeof tttV960BestMove === 'function' ? tttV960BestMove(board, difficulty || 'ai') : -1;
+  if (tttV961Legal(board, prev)) return prev;
   return tttNearestCenterFallbackMove(board);
 }
 
@@ -6643,7 +7742,7 @@ function getRakGomokuRulesetLeaderboardHealth() {
   const visibleRows = rows.filter(row => !currentRuleset || String(row.rulesetVersion || '').trim() === currentRuleset);
   return {
     ok: true,
-    version: window.APP_VERSION || 'v.1.5 (958)',
+    version: window.APP_VERSION || 'v.1.5 (961)',
     game: 'ttt',
     rulesetVersion: currentRuleset,
     appVersionIsSeparate: true,
@@ -14059,7 +15158,7 @@ function applyProfileUiPreferencesForActiveAccount(options = {}) {
   const defaultTheme = normalizeThemePreferenceId('default', 'default');
   const defaultBg = normalizeBackgroundPreferenceId('ios-mesh', 'ios-mesh');
   let changed = false;
-  // v.1.5 (958): vzhled je profilový. Nový/prázdný profil nezačne omylem vzhledem po předchozím přihlášeném profilu.
+  // v.1.5 (961): vzhled je profilový. Nový/prázdný profil nezačne omylem vzhledem po předchozím přihlášeném profilu.
   if (!ui.themeId) { ui.themeId = defaultTheme; changed = true; }
   if (!ui.backgroundId) { ui.backgroundId = defaultBg; changed = true; }
   const rewardMetrics = getThemeUnlockMetrics(profile);
@@ -14458,7 +15557,7 @@ function getRakProfileAppearanceRewardHealth() {
   const themeRewards = themes.filter(item => String(item && item.id || '') !== 'default');
   const backgroundRewards = backgrounds.filter(item => String(item && item.id || '') !== 'ios-mesh');
   return {
-    version: window.APP_VERSION || 'v.1.5 (958)',
+    version: window.APP_VERSION || 'v.1.5 (961)',
     mode: 'profile-appearance-reward-health-v928',
     activeProfile: metrics.hasProfile,
     profileThemeStorage: 'account.uiSettings.themeId',
@@ -14547,7 +15646,7 @@ function getRakDashboardGlassThemeHealth() {
   const lightweight = /(?:^|\s)(?:lightweightMode|lowEndDevice|ladaMode)(?:\s|$)/.test(bodyClass);
   return {
     ok: true,
-    version: window.APP_VERSION || 'v.1.5 (958)',
+    version: window.APP_VERSION || 'v.1.5 (961)',
     mode: 'dashboard-ios-glass-viewport-fit-v945',
     theme,
     background,
@@ -14594,7 +15693,7 @@ try {
 function getRakRotaceNamesDockHealth() {
   const result = {
     ok: true,
-    version: window.APP_VERSION || 'v.1.5 (958)',
+    version: window.APP_VERSION || 'v.1.5 (961)',
     mode: 'rotace-names-dock-stable-css-v930',
     checkedAt: new Date().toISOString(),
     scope: 'Rotace / seznam jmen / stabilní spodní dock',

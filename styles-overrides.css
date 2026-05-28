@@ -17394,3 +17394,46 @@ body.ladaMode #stats .statsOccupancyLineArea{
     transform:translateX(-1px) !important;
   }
 }
+
+
+/* v.1.5 (961) – update toast: větší ikona a Dashboard hero text dorovnání jen na problematických viewportech. */
+.rakUpdateToastBadge{
+  width:54px !important;
+  height:54px !important;
+  flex-basis:54px !important;
+  border-radius:18px !important;
+  font-size:24px !important;
+  line-height:1 !important;
+}
+@media (max-width:420px){
+  .rakUpdateToastBadge{
+    width:58px !important;
+    height:58px !important;
+    flex-basis:58px !important;
+    font-size:27px !important;
+  }
+}
+@media (min-width:405px) and (max-width:420px) and (min-height:910px) and (max-height:925px){
+  #home #dashHero .dashboardHeroLine1Text,
+  #home #dashHero .dashboardHeroLine2,
+  #home #dashHero .dashboardHeroLine3,
+  #home #dashHero .dashboardHeroBarRow,
+  #dashHero .dashboardHeroLine1Text,
+  #dashHero .dashboardHeroLine2,
+  #dashHero .dashboardHeroLine3,
+  #dashHero .dashboardHeroBarRow{
+    transform:translateX(-3px) !important;
+  }
+}
+@media (min-width:425px) and (max-width:435px) and (min-height:925px) and (max-height:940px){
+  #home #dashHero .dashboardHeroLine1Text,
+  #home #dashHero .dashboardHeroLine2,
+  #home #dashHero .dashboardHeroLine3,
+  #home #dashHero .dashboardHeroBarRow,
+  #dashHero .dashboardHeroLine1Text,
+  #dashHero .dashboardHeroLine2,
+  #dashHero .dashboardHeroLine3,
+  #dashHero .dashboardHeroBarRow{
+    transform:translateX(-1px) !important;
+  }
+}

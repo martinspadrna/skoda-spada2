@@ -1,3 +1,17 @@
+## v.1.5 (961)
+- Piškvorky proti AI: přidána nová vrchní pipeline `tttV961BestMove()` s přesným blokováním endpointů, gapů u broken-three a gain/cost polí.
+- AI nově ověřuje 8–16 nejlepších kandidátů bezpečnostní kontrolou proti okamžité výhře hráče, open-four/fork tlaku a nejhorší odpovědi hráče.
+- Posílené diagonální hrozby `\` i `/`: open-three, broken/split three, čtyřky a příští gain tahy hráče.
+- Ruleset Piškvorek navýšen na `gomoku-10col-19row-ai-rules-v11`; změna se týká pravidel/obtížnosti, ne vzhledu.
+- Přidaný helper `getRakGomokuAiV961Health()` a lokální smoke script `gomoku-ai-smoke-v961.js`.
+- Verze sjednocena na v.1.5 (961), cache na `v1.5-961`, realtime kanál na `rak-public-live-v961`, package na `1.5.961`.
+
+## v.1.5 (960)
+- Piškvorky AI: posílená line-window obrana hlavně proti diagonálním build-upům po výhře kolem 23. tahu diagonálně; ruleset navýšen na `gomoku-10col-19row-ai-rules-v9`.
+- Dashboard: jemné dorovnání textu horního směnového panelu pro viewporty 412×918 a 430×932 bez zásahu do viewportů, které už seděly.
+- Aktualizační popup: větší a výraznější ikona.
+- Verze sjednocena na v.1.5 (960), cache na `v1.5-960`, realtime kanál na `rak-public-live-v960`, package na `1.5.960`.
+
 ## v.1.5 (958)
 - Daily challenge: top výsledky se nově filtrují podle právě vybrané denní hry (`daily_aim`, `daily_memory`, `daily_reaction`…), takže se nemíchají odehrané challenge různých her.
 - Pexeso: opravený chybný čas 86400 s; neplatný 24h fallback se ignoruje a nově dohraná hra jej přepíše skutečným časem.

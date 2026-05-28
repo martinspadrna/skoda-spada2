@@ -1,4 +1,4 @@
-// v.1.5 (958) – export manifest doplněný o opravu přepínačů oznámení a theme graf obsazenosti.
+// v.1.5 (961) – export manifest doplněný o opravu přepínačů oznámení a theme graf obsazenosti.
 const EXPORT_SOURCE_IDS = {
   "module-readiness.js": "src-module-readiness-js",
   "rak-namespace.js": "src-rak-namespace-js",
@@ -50,6 +50,7 @@ const EXPORT_SOURCE_IDS = {
   "playwright.config.js": "src-playwright-config-js",
   "playwright-smoke.spec.js": "src-playwright-smoke-spec-js",
   "playwright-monkey.spec.js": "src-playwright-monkey-spec-js",
+  "gomoku-ai-smoke-v961.js": "src-gomoku-ai-smoke-v961-js",
   "assets/docs/sql/supabase_rpc_hardening_v828.sql": "src-supabase-rpc-hardening-v828-sql",
   "assets/docs/release-readiness-v857.md": "src-release-readiness-v857-md",
   "assets/docs/release-readiness-v858.md": "src-release-readiness-v858-md",
@@ -221,6 +222,13 @@ const EXPORT_SOURCE_IDS = {
   "assets/docs/gomoku-diagonal-ai-hardening-v958.md": "src-gomoku-diagonal-ai-hardening-v958-md",
   "assets/docs/dashboard-hero-centering-viewports-v958.md": "src-dashboard-hero-centering-viewports-v958-md",
   "assets/docs/about-50-version-summary-v958.md": "src-about-50-version-summary-v958-md",
+  "assets/docs/gomoku-ai-diagonal-defense-v959.md": "src-gomoku-ai-diagonal-defense-v959-md",
+  "assets/docs/dashboard-update-toast-polish-v959.md": "src-dashboard-update-toast-polish-v959-md",
+  "assets/docs/about-50-version-summary-v959.md": "src-about-50-version-summary-v959-md",
+  "assets/docs/gomoku-ai-local-smoke-v960.md": "src-gomoku-ai-local-smoke-v960-md",
+  "assets/docs/about-50-version-summary-v960.md": "src-about-50-version-summary-v960-md",
+  "assets/docs/gomoku-ai-tactical-verification-v961.md": "src-gomoku-ai-tactical-verification-v961-md",
+  "assets/docs/about-50-version-summary-v961.md": "src-about-50-version-summary-v961-md",
   "assets/docs/dashboard-hero-absence-centering-v956.md": "src-dashboard-hero-absence-centering-v956-md",
   "assets/docs/about-50-version-summary-v956.md": "src-about-50-version-summary-v956-md",
   "assets/docs/about-50-version-summary-v954.md": "src-about-50-version-summary-v954-md",
@@ -248,7 +256,7 @@ const EXPORT_SMOKE_REPORT = window.__RAK_EXPORT_SMOKE_REPORT__ || (window.__RAK_
   ok: null,
   status: 'not-run',
   mode: 'export-smoke-report-v939',
-  version: 'v.1.5 (958)',
+  version: 'v.1.5 (961)',
   checkedAt: null,
   lastStage: 'čeká na export',
   runCount: 0,
@@ -328,7 +336,8 @@ const EXPORT_JS_FILES = [
       'supabase-bridge.js',
       'playwright.config.js',
       'playwright-smoke.spec.js',
-      'playwright-monkey.spec.js'
+      'playwright-monkey.spec.js',
+      'gomoku-ai-smoke-v961.js'
 ];
 
 const EXPORT_TEXT_FILES = [
@@ -533,6 +542,13 @@ const EXPORT_TEXT_FILES = [
       'assets/docs/gomoku-diagonal-ai-hardening-v958.md',
       'assets/docs/dashboard-hero-centering-viewports-v958.md',
       'assets/docs/about-50-version-summary-v958.md',
+      'assets/docs/gomoku-ai-diagonal-defense-v959.md',
+      'assets/docs/dashboard-update-toast-polish-v959.md',
+      'assets/docs/about-50-version-summary-v959.md',
+      'assets/docs/gomoku-ai-local-smoke-v960.md',
+      'assets/docs/about-50-version-summary-v960.md',
+      'assets/docs/gomoku-ai-tactical-verification-v961.md',
+      'assets/docs/about-50-version-summary-v961.md',
       'assets/docs/dashboard-hero-absence-centering-v956.md',
       'assets/docs/about-50-version-summary-v956.md',
       'assets/docs/about-50-version-summary-v954.md',
@@ -550,7 +566,7 @@ const EXPORT_TEXT_FILES = [
 
 function getRakExportManifest() {
   return {
-    version: String(window.APP_VERSION || 'v.1.5 (958)'),
+    version: String(window.APP_VERSION || 'v.1.5 (961)'),
     mode: 'export-manifest-preflight-v939',
     indexFile: 'index.html',
     jsFiles: Array.from(new Set(EXPORT_JS_FILES)),
@@ -660,7 +676,7 @@ function updateRakExportSmokeReport(partial) {
   const data = partial && typeof partial === 'object' ? partial : {};
   Object.assign(EXPORT_SMOKE_REPORT, data, {
     mode: 'export-smoke-report-v939',
-    version: String(window.APP_VERSION || 'v.1.5 (958)'),
+    version: String(window.APP_VERSION || 'v.1.5 (961)'),
     checkedAt: new Date().toISOString()
   });
   return getRakExportSmokeReport();

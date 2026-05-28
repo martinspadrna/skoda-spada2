@@ -1,6 +1,6 @@
-// v.1.5 (958) – due diligence audit progress + prompt-compliance closure tracker.
+// v.1.5 (961) – due diligence audit progress + prompt-compliance closure tracker.
 (function setupRakDueDiligenceAuditProgress() {
-  const VERSION = 'v.1.5 (958)';
+  const VERSION = 'v.1.5 (961)';
   const MODE = 'due-diligence-audit-progress-v928';
 
 

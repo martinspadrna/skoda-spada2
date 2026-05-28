@@ -1,6 +1,6 @@
-// v.1.5 (958) – performance / CI / test strategy audit as read-only diagnostics.
+// v.1.5 (961) – performance / CI / test strategy audit as read-only diagnostics.
 (function setupRakPerformanceCiAudit() {
-  const VERSION = 'v.1.5 (958)';
+  const VERSION = 'v.1.5 (961)';
   const MODE = 'performance-ci-audit-readonly-v923';
 
   try {
