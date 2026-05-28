@@ -1,12 +1,24 @@
+## v.1.5 (949)
+- Dashboard oznámení je znovu globální online-first: administrace ukládá přes Supabase RPC a Dashboard preferuje online oznámení pro všechny uživatele.
+- Lokální úložiště zůstává jen jako cache/fallback, aby oznámení nezmizelo při pomalejším startu nebo offline režimu.
+- Supabase `announcements` je dočištěná na jedno aktivní oznámení, aby klienti nečetli duplicitní staré řádky.
+- Verze sjednocena na v.1.5 (949), cache na `v1.5-949`, realtime kanál na `rak-public-live-v949`, package na `1.5.949`.
+
+## v.1.5 (948)
+- Dashboard: lokální oznámení se znovu vykreslí při každém refreshi Dashboardu, takže má zůstat viditelné i po vypnutí a zapnutí appky.
+- Dashboard: čtení lokálního oznámení jde primárně přímo z localStorage, ne ze staré JSON cache.
+- Dashboard: jemné viewport-fit doladění pro 412×892, kde ještě zůstával malý scroll.
+- Verze sjednocena na v.1.5 (948), cache na `v1.5-948`, realtime kanál na `rak-public-live-v948`, package na `1.5.948`.
+
 ## v.1.5 (947)
 - Administrace → Oznámení Dashboard: odstraněné samostatné online ukládání přímo z oznámení; oznámení je lokální nastavení a obecné tlačítko online synchronizace appky zůstává beze změny.
 - Dashboard: jemný viewport-fit breakpoint pro 390×844, aby se odstranil malý scroll bez zbytečného zmenšení ostatních rozlišení.
 - Verze sjednocena na v.1.5 (947), cache na `v1.5-947`, realtime kanál na `rak-public-live-v947`, package na `1.5.947`.
 
-## v.1.5 (947)
+## v.1.5 (946)
 - Administrace → Oznámení Dashboard: online ukládání opraveno přes Supabase RPC `rak_save_dashboard_announcement`; oznámení už nemá zůstávat jen lokálně a po restartu appky se má načíst z online cache/refresh.
 - Supabase: doplněná RPC cesta pro save/clear oznámení, prázdný nadpis je povolený.
-- Verze sjednocena na v.1.5 (947), cache na `v1.5-947`, realtime kanál na `rak-public-live-v947`, package na `1.5.947`.
+- Verze sjednocena na v.1.5 (946), cache na `v1.5-946`, realtime kanál na `rak-public-live-v946`, package na `1.5.946`.
 
 ## v.1.5 (945)
 - Dashboard: ve viewport-fit režimu jsou běžné panely lehce větší, protože nad spodní lištou zůstávala rezerva skoro na další panel.

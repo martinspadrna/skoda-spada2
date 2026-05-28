@@ -1735,7 +1735,7 @@ function getRakFrezkyCorrectionSignToggleHealth() {
   const allInputs = ids.every(id => status.inputs[id]);
   return {
     ok: !!(allButtons && allInputs),
-    version: window.APP_VERSION || 'v.1.5 (947)',
+    version: window.APP_VERSION || 'v.1.5 (949)',
     mode: 'frezky-correction-sign-toggle-v932',
     scope: 'Korekce Frézky / naměřeno i aktuální korekce ve stroji',
     buttons: Object.assign({

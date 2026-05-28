@@ -1,4 +1,4 @@
-// v.1.5 (947) – storage/sync audit closure, smoke report a cleanup guard bez automatického mazání dat.
+// v.1.5 (949) – storage/sync audit closure, smoke report a cleanup guard bez automatického mazání dat.
 
 (function setupRakStorageSyncAudit() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -308,7 +308,7 @@
     const data = partial && typeof partial === 'object' ? partial : {};
     Object.assign(STORAGE_SYNC_SMOKE_REPORT, data, {
       mode: 'storage-sync-smoke-report-v897',
-      version: safeString(window.APP_VERSION || 'v.1.5 (947)'),
+      version: safeString(window.APP_VERSION || 'v.1.5 (949)'),
       checkedAt: nowIso()
     });
     return getRakStorageSyncSmokeReport();
@@ -388,7 +388,7 @@
       ok: issues.length === 0,
       mode: 'storage-sync-audit-closure-v897',
       checkedAt: nowIso(),
-      version: safeString(window.APP_VERSION || 'v.1.5 (947)'),
+      version: safeString(window.APP_VERSION || 'v.1.5 (949)'),
       phase: 'phase G storage/localStorage/offline sync audit',
       phasePercent: 100,
       phaseClosed: true,

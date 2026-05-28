@@ -252,7 +252,7 @@ function formatDashboardNextShiftMeta(shift) {
 
 
 
-// v.1.5 (947) – Dashboard oznámení je lokální nastavení; globální online synchronizace appky zůstává zvlášť.
+// v.1.5 (949) – Dashboard oznámení je globální online-first; localStorage slouží jen jako rychlá cache/fallback.
 const RAK_DASHBOARD_ANNOUNCEMENT_KEY = (typeof APP_KEY !== 'undefined' ? APP_KEY : 'rak') + ':dashboardAnnouncementV1';
 
 function parseRakAnnouncementDate(value) {
@@ -283,12 +283,21 @@ function normalizeRakDashboardAnnouncement(raw) {
 
 function readRakLocalDashboardAnnouncement() {
   try {
-    const stored = typeof parseLocalStorageJsonCached === 'function'
-      ? parseLocalStorageJsonCached(RAK_DASHBOARD_ANNOUNCEMENT_KEY, null)
-      : JSON.parse(localStorage.getItem(RAK_DASHBOARD_ANNOUNCEMENT_KEY) || 'null');
+    // v.1.5 (949): čteme přímo z localStorage, aby se po restartu / návratu z bfcache
+    // nepoužil starý JSON cache stav a oznámení se na Dashboardu spolehlivě obnovilo.
+    const raw = localStorage.getItem(RAK_DASHBOARD_ANNOUNCEMENT_KEY);
+    if (!raw) return null;
+    const stored = JSON.parse(raw);
     return stored ? normalizeRakDashboardAnnouncement(stored) : null;
   } catch (err) {
-    return null;
+    try {
+      const stored = typeof parseLocalStorageJsonCached === 'function'
+        ? parseLocalStorageJsonCached(RAK_DASHBOARD_ANNOUNCEMENT_KEY, null)
+        : null;
+      return stored ? normalizeRakDashboardAnnouncement(stored) : null;
+    } catch (err2) {
+      return null;
+    }
   }
 }
 
@@ -340,9 +349,10 @@ function getRakSupabaseDashboardAnnouncement() {
 
 function getRakDashboardAnnouncementCandidates() {
   const items = [];
-  // v.1.5 (947): oznámení z administrace je záměrně lokální.
-  // Supabase / online synchronizační tlačítko v appce zůstává beze změny,
-  // ale Dashboard oznámení už nezkouší číst ani přepisovat online řádek.
+  // v.1.5 (949): globální oznámení má přednost. Lokální kopie je jen cache/fallback,
+  // aby se poslední online oznámení ukázalo i při pomalejším startu nebo offline režimu.
+  const online = getRakSupabaseDashboardAnnouncement();
+  if (online) items.push(online);
   const local = readRakLocalDashboardAnnouncement();
   if (local) items.push(local);
   return items;
@@ -356,7 +366,7 @@ function getRakActiveDashboardAnnouncement(now) {
 }
 
 function readRakDashboardAdminAnnouncement() {
-  return readRakLocalDashboardAnnouncement();
+  return getRakSupabaseDashboardAnnouncement() || readRakLocalDashboardAnnouncement();
 }
 
 function formatRakAnnouncementWindow(item) {
@@ -403,39 +413,78 @@ function renderRakDashboardAnnouncement(now) {
 
 async function writeRakDashboardAnnouncement(payload) {
   const normalized = normalizeRakDashboardAnnouncement(Object.assign({}, payload || {}, {
-    source: 'local-admin',
+    source: 'admin-online',
     updatedAt: new Date().toISOString()
   }));
-  const local = writeRakLocalDashboardAnnouncement(normalized);
+  let onlineResult = null;
+  let onlineOk = false;
+  if (typeof window.saveRakDashboardAnnouncementOnline === 'function') {
+    try {
+      onlineResult = await window.saveRakDashboardAnnouncementOnline(normalized);
+      onlineOk = !!(onlineResult && onlineResult.ok);
+    } catch (err) {
+      onlineResult = { ok: false, message: err && err.message ? err.message : String(err || 'online-save-failed') };
+    }
+  } else {
+    onlineResult = { ok: false, message: 'online-helper-missing' };
+  }
+  const cachePayload = normalizeRakDashboardAnnouncement(Object.assign({}, normalized, {
+    id: (onlineResult && onlineResult.row && onlineResult.row.id) || normalized.id || 'dashboard-announcement-cache',
+    source: onlineOk ? 'supabase-online-cache' : 'local-fallback'
+  }));
+  const local = writeRakLocalDashboardAnnouncement(cachePayload);
   try { renderRakDashboardAnnouncement(); } catch (err) {}
   try { if (typeof updateDashboard === 'function') updateDashboard(); } catch (err) {}
-  return { ok: true, local: true, online: false, payload: local, source: 'local-admin' };
+  return {
+    ok: onlineOk || !!local,
+    online: onlineOk,
+    localFallback: !onlineOk,
+    payload: local,
+    onlineResult,
+    source: onlineOk ? 'supabase-online' : 'local-fallback'
+  };
 }
 
 async function clearRakDashboardAnnouncement() {
+  let onlineResult = null;
+  let onlineOk = false;
+  if (typeof window.clearRakDashboardAnnouncementOnline === 'function') {
+    try {
+      onlineResult = await window.clearRakDashboardAnnouncementOnline();
+      onlineOk = !!(onlineResult && onlineResult.ok);
+    } catch (err) {
+      onlineResult = { ok: false, message: err && err.message ? err.message : String(err || 'online-clear-failed') };
+    }
+  } else {
+    onlineResult = { ok: false, message: 'online-helper-missing' };
+  }
   const local = clearRakLocalDashboardAnnouncement();
   try { renderRakDashboardAnnouncement(); } catch (err) {}
   try { if (typeof updateDashboard === 'function') updateDashboard(); } catch (err) {}
-  return { ok: true, local, online: false, source: 'local-admin' };
+  return { ok: onlineOk || !!local, online: onlineOk, local, onlineResult, source: onlineOk ? 'supabase-online' : 'local-fallback' };
 }
 
 function getRakDashboardAnnouncementHealth() {
   const now = new Date();
   const local = readRakLocalDashboardAnnouncement();
-  const online = null;
+  const online = getRakSupabaseDashboardAnnouncement();
   const active = getRakActiveDashboardAnnouncement(now);
   const box = typeof document !== 'undefined' ? document.getElementById('dashboardAnnouncementBar') : null;
-  const onlineStatus = null;
+  const onlineStatus = typeof window.getRakDashboardAnnouncementOnlineStatus === 'function'
+    ? window.getRakDashboardAnnouncementOnlineStatus()
+    : null;
   return {
     ok: true,
     version: String(window.APP_VERSION || 'unknown'),
-    mode: 'dashboard-announcement-local-v947',
+    mode: 'dashboard-announcement-global-online-v949',
     key: RAK_DASHBOARD_ANNOUNCEMENT_KEY,
     hasLocalAnnouncement: !!(local && local.message),
     hasOnlineAnnouncement: !!(online && online.message),
     localIsActiveNow: !!(local && isRakDashboardAnnouncementActive(local, now)),
     onlineIsActiveNow: !!(online && isRakDashboardAnnouncementActive(online, now)),
     activeSource: active ? active.source : '',
+    onlineFirst: true,
+    localFallback: true,
     titleOptional: true,
     tickerDuplicatesMessage: false,
     activeTitle: active ? active.title : '',
@@ -443,10 +492,10 @@ function getRakDashboardAnnouncementHealth() {
     marquee: !!(active && active.marquee),
     domPresent: !!box,
     domVisible: !!(box && !box.hidden && box.classList.contains('isVisible')),
-    storageMode: 'local-dashboard-announcement',
-    supabaseWrite: 'not-used-for-dashboard-announcement',
+    storageMode: 'supabase-online-with-local-cache',
+    supabaseWrite: 'rpc-primary',
     onlineStatus,
-    manualValidation: 'mobile/browser/local-storage-persistence'
+    manualValidation: 'save-on-one-device-reopen-on-second-device'
   };
 }
 
@@ -616,6 +665,7 @@ function updateDashboard() {
   setCard('dashCzd', 'Dovolená', vacationCountdown.text, vacationCountdown.meta || 'Odpočet do dovolené', '', false, palmIcon);
   setCard('dashFoodLink', 'Jídelní lístek', 'Otevřít', 'Aktuální menu', '', true, bookIcon);
   setCard('dashEportalLink', 'Eportal', 'Otevřít', 'Firemní portál', '', true, eportalIcon);
+  try { renderRakDashboardAnnouncement(now); } catch (err) {}
 }
 
 function scheduleDashboardInitialPaint() {
