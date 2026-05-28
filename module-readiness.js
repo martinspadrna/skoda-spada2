@@ -1,4 +1,4 @@
-// v.1.5 (946) – module readiness registry včetně release gate helperu.
+// v.1.5 (947) – module readiness registry včetně release gate helperu.
 
 (function setupRakModuleReadinessRegistry() {
   if (window.__rakModuleReadinessRegistry && typeof window.rakMarkModuleReady === 'function') {

@@ -1,4 +1,4 @@
-// v.1.5 (946) – export manifest doplněný o opravu přepínačů oznámení a theme graf obsazenosti.
+// v.1.5 (947) – export manifest doplněný o opravu přepínačů oznámení a theme graf obsazenosti.
 const EXPORT_SOURCE_IDS = {
   "module-readiness.js": "src-module-readiness-js",
   "rak-namespace.js": "src-rak-namespace-js",
@@ -197,6 +197,9 @@ const EXPORT_SOURCE_IDS = {
   "assets/docs/about-50-version-summary-v944.md": "src-about-50-version-summary-v944-md",
   "assets/docs/dashboard-viewport-fit-panel-size-v945.md": "src-dashboard-viewport-fit-panel-size-v945-md",
   "assets/docs/dashboard-announcement-rpc-online-v946.md": "src-dashboard-announcement-rpc-online-v946-md",
+  "assets/docs/dashboard-announcement-local-v947.md": "src-dashboard-announcement-local-v947-md",
+  "assets/docs/dashboard-viewport-fit-390x844-v947.md": "src-dashboard-viewport-fit-390x844-v947-md",
+  "assets/docs/about-50-version-summary-v947.md": "src-about-50-version-summary-v947-md",
   "assets/docs/about-50-version-summary-v946.md": "src-about-50-version-summary-v946-md",
   "assets/docs/about-50-version-summary-v945.md": "src-about-50-version-summary-v945-md",
   "assets/docs/about-50-version-summary-v940.md": "src-about-50-version-summary-v940-md",
@@ -217,7 +220,7 @@ const EXPORT_SMOKE_REPORT = window.__RAK_EXPORT_SMOKE_REPORT__ || (window.__RAK_
   ok: null,
   status: 'not-run',
   mode: 'export-smoke-report-v939',
-  version: 'v.1.5 (946)',
+  version: 'v.1.5 (947)',
   checkedAt: null,
   lastStage: 'čeká na export',
   runCount: 0,
@@ -478,6 +481,9 @@ const EXPORT_TEXT_FILES = [
       'assets/docs/about-50-version-summary-v944.md',
       'assets/docs/dashboard-viewport-fit-panel-size-v945.md',
       'assets/docs/dashboard-announcement-rpc-online-v946.md',
+      'assets/docs/dashboard-announcement-local-v947.md',
+      'assets/docs/dashboard-viewport-fit-390x844-v947.md',
+      'assets/docs/about-50-version-summary-v947.md',
       'assets/docs/about-50-version-summary-v946.md',
       'assets/docs/about-50-version-summary-v945.md',
       'assets/docs/about-50-version-summary-v940.md',
@@ -488,7 +494,7 @@ const EXPORT_TEXT_FILES = [
 
 function getRakExportManifest() {
   return {
-    version: String(window.APP_VERSION || 'v.1.5 (946)'),
+    version: String(window.APP_VERSION || 'v.1.5 (947)'),
     mode: 'export-manifest-preflight-v939',
     indexFile: 'index.html',
     jsFiles: Array.from(new Set(EXPORT_JS_FILES)),
@@ -598,7 +604,7 @@ function updateRakExportSmokeReport(partial) {
   const data = partial && typeof partial === 'object' ? partial : {};
   Object.assign(EXPORT_SMOKE_REPORT, data, {
     mode: 'export-smoke-report-v939',
-    version: String(window.APP_VERSION || 'v.1.5 (946)'),
+    version: String(window.APP_VERSION || 'v.1.5 (947)'),
     checkedAt: new Date().toISOString()
   });
   return getRakExportSmokeReport();

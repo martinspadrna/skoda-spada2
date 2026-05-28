@@ -1,8 +1,8 @@
-// v.1.5 (946) – release gating/checklist vrstva včetně Dashboard glass cleanupu a announcement tickeru.
+// v.1.5 (947) – release gating/checklist vrstva včetně Dashboard glass cleanupu a announcement tickeru.
 
 (function setupRakReleaseGates() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
-  const VERSION = 'v.1.5 (946)';
+  const VERSION = 'v.1.5 (947)';
   const MODE = 'release-gates-readonly-v929';
 
   try {
@@ -512,10 +512,10 @@
 
     gates.push(makeGate(
       'v935-dashboard-announcement-system',
-      'Dashboard announcement ticker online-first přes Supabase',
+      'Dashboard announcement ticker jako lokální nastavení',
       signals.dashboardAnnouncement && signals.dashboardAnnouncement.ok ? 'ok' : 'warning',
       'warning',
-      signals.dashboardAnnouncement ? ('online ' + String(signals.dashboardAnnouncement.hasOnlineAnnouncement ? 'ano' : 'ne') + ', local fallback ' + String(signals.dashboardAnnouncement.hasLocalAnnouncement ? 'ano' : 'ne') + ', active ' + String(signals.dashboardAnnouncement.activeHasMessage ? 'ano' : 'ne') + ', source ' + String(signals.dashboardAnnouncement.activeSource || '—')) : 'announcement helper chybí',
+      signals.dashboardAnnouncement ? ('lokální oznámení ' + String(signals.dashboardAnnouncement.hasLocalAnnouncement ? 'ano' : 'ne') + ', active ' + String(signals.dashboardAnnouncement.activeHasMessage ? 'ano' : 'ne') + ', source ' + String(signals.dashboardAnnouncement.activeSource || '—')) : 'announcement helper chybí',
       'Ručně ověřit v Administraci: uložit online, otevřít na druhém zařízení, ověřit realtime/refresh a vypnutí. Pokud policy nepustí zápis, zobrazí se lokální fallback a je potřeba upravit Supabase policy mimo build.',
       'dashboard/ui/supabase/local-fallback'
     ));

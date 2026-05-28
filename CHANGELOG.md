@@ -1,7 +1,12 @@
-## v.1.5 (946)
+## v.1.5 (947)
+- Administrace → Oznámení Dashboard: odstraněné samostatné online ukládání přímo z oznámení; oznámení je lokální nastavení a obecné tlačítko online synchronizace appky zůstává beze změny.
+- Dashboard: jemný viewport-fit breakpoint pro 390×844, aby se odstranil malý scroll bez zbytečného zmenšení ostatních rozlišení.
+- Verze sjednocena na v.1.5 (947), cache na `v1.5-947`, realtime kanál na `rak-public-live-v947`, package na `1.5.947`.
+
+## v.1.5 (947)
 - Administrace → Oznámení Dashboard: online ukládání opraveno přes Supabase RPC `rak_save_dashboard_announcement`; oznámení už nemá zůstávat jen lokálně a po restartu appky se má načíst z online cache/refresh.
 - Supabase: doplněná RPC cesta pro save/clear oznámení, prázdný nadpis je povolený.
-- Verze sjednocena na v.1.5 (946), cache na `v1.5-946`, realtime kanál na `rak-public-live-v946`, package na `1.5.946`.
+- Verze sjednocena na v.1.5 (947), cache na `v1.5-947`, realtime kanál na `rak-public-live-v947`, package na `1.5.947`.
 
 ## v.1.5 (945)
 - Dashboard: ve viewport-fit režimu jsou běžné panely lehce větší, protože nad spodní lištou zůstávala rezerva skoro na další panel.

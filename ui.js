@@ -4534,7 +4534,7 @@ function getRakTttAiHardeningV922Health() {
   return {
     ok: true,
     mode: 'ttt-ai-hardening-v923',
-    version: String(window.APP_VERSION || 'v.1.5 (946)'),
+    version: String(window.APP_VERSION || 'v.1.5 (947)'),
     thirteenTurnClamp: true,
     hardSearchDepthEarly: 8,
     hardSearchDepthMid: 8,
@@ -6122,10 +6122,10 @@ function buildAppHistoryHtml(versionText) {
       range: 'v.1.5 901–950',
       title: 'Aktuální stabilizace, bezpečnost a provozní detaily',
       lines: [
-        'Hlavní změny: dokončení online game contract auditu, release readiness/monitoring/rollback vrstvy, AppSec/privacy audit, release gates, výkonový/CI audit, finální due diligence report, prompt-compliance dokumenty v924, validační runbook v925, herní odměnová vrstva v926 a mobilní stabilizace Rotace/Láďova režimu v928 a dashboard glass podle tématu ve v929. V930 vrací větší dlaždice jmen v Rotaci, odstraňuje opožděné přeměřování docku a posouvá Dashboard víc do iOS glass stylu bez pozadí kolem ikon. V931 doplňuje u korekcí frézek přepínání znaménka +/− pro konicitu a fhβ; v932 přidává stejné +/− i pro Naměřeno a v933 čistí Dashboard do průhlednějšího iOS glass stylu bez flekatých karet a přidává lokální announcement ticker z administrace; v934 ladí tmavší jednotný glass, volitelný nadpis oznámení, ticker bez dvojitého textu a theme barvy ikon; v935 zachovává tmavší odstín, ale dělá panely průhlednější a přepíná oznámení na online-first Supabase režim s lokálním fallbackem; v936 čistí přepínače oznámení bez zbytečného panelu a v937 opravuje zbylou černou výplň v měsíčním grafu obsazenosti a přidává bezpečný monkey test; v938 snižuje dashboard panely cca o 5 % a v939 vypíná rizikovou SVG výplň pod čárou grafu obsazenosti, aby už nemohla spadnout do černého fallbacku.',
+        'Hlavní změny: dokončení online game contract auditu, release readiness/monitoring/rollback vrstvy, AppSec/privacy audit, release gates, výkonový/CI audit, finální due diligence report, prompt-compliance dokumenty v924, validační runbook v925, herní odměnová vrstva v926 a mobilní stabilizace Rotace/Láďova režimu v928 a dashboard glass podle tématu ve v929. V930 vrací větší dlaždice jmen v Rotaci, odstraňuje opožděné přeměřování docku a posouvá Dashboard víc do iOS glass stylu bez pozadí kolem ikon. V931 doplňuje u korekcí frézek přepínání znaménka +/− pro konicitu a fhβ; v932 přidává stejné +/− i pro Naměřeno a v933 čistí Dashboard do průhlednějšího iOS glass stylu bez flekatých karet a přidává lokální announcement ticker z administrace; v934 ladí tmavší jednotný glass, volitelný nadpis oznámení, ticker bez dvojitého textu a theme barvy ikon; v935 zachovává tmavší odstín a dělá panely průhlednější; v936 čistí přepínače oznámení bez zbytečného panelu a v937 opravuje zbylou černou výplň v měsíčním grafu obsazenosti a přidává bezpečný monkey test; v938 snižuje dashboard panely cca o 5 %, v939 vypíná rizikovou SVG výplň pod čárou grafu a v947 zjednodušuje oznámení Dashboard na lokální nastavení + ladí 390×844 viewport.',
         'Kantýna/jídelna se srovnala podle běžné a mimořádné provozní doby; rozklik teď odděluje běžný režim a přesčasové rozdíly.',
         'Herní Top score a profily se resetovaly na čistý start; Piškvorky Top score mají zobrazovat datum i čas a Supabase výsledky byly znovu vyčištěné. V926 přidala achievementy pro každou hru včetně D-směnových cílů; v928 řeší stabilitu docku jmen v Rotaci a v929 průhledný theme-aware glass dashboard.',
-        'Pravidlo historie: O aplikaci drží hlavně stručné souhrny po cca 50 verzích; v924 formálně uzavřela auditní prompty, v925 přidala praktický validační checklist a v926 ukládá aktivní téma/pozadí na profil jako odměny za progres. V928 přidává adaptivní mobilní dock + odlehčení Láďova režimu, v929–v930 ladí Dashboard a Rotace, v931–v932 sjednocují znaménkové přepínače frézek a v933 přidává čistší glass Dashboard + announcement systém, v934 ladí tmavší jednotný glass a v935 přidává online-first oznámení přes Supabase, v936 ladí přepínače oznámení + theme graf obsazenosti a v937 doplňuje monkey test + dočištění černé výplně grafu a v938 lehce snižuje dashboard panely a v939 vypíná rizikovou výplň pod čárou měsíčního grafu obsazenosti.'
+        'Pravidlo historie: O aplikaci drží hlavně stručné souhrny po cca 50 verzích; v924 formálně uzavřela auditní prompty, v925 přidala praktický validační checklist a v926 ukládá aktivní téma/pozadí na profil jako odměny za progres. V928 přidává adaptivní mobilní dock + odlehčení Láďova režimu, v929–v930 ladí Dashboard a Rotace, v931–v932 sjednocují znaménkové přepínače frézek a v933 přidává čistší glass Dashboard + announcement systém, v934 ladí tmavší jednotný glass, v936 ladí přepínače oznámení + theme graf obsazenosti, v937 doplňuje monkey test + dočištění černé výplně grafu, v938 lehce snižuje dashboard panely, v939 vypíná rizikovou výplň pod čárou měsíčního grafu a v947 nechává oznámení jako lokální nastavení bez vlastního online ukládání.'
       ]
     },
     {
@@ -7371,8 +7371,8 @@ function buildAdminAnnouncementHtml() {
     '    <div class="dashboardAnnouncementTrack isMarquee"><span>' + escapeHtml((current && current.message) ? current.message : 'Tady pojede nastavený text oznámení.') + '</span></div>',
     '  </div>',
     '  <div class="appMenuActionRow adminAnnouncementActions">',
-    '    <button type="button" class="appMenuAction isActive" data-admin-action="save-announcement">Uložit online</button>',
-    '    <button type="button" class="appMenuAction" data-admin-action="clear-announcement">Vypnout online</button>',
+    '    <button type="button" class="appMenuAction isActive" data-admin-action="save-announcement">Uložit oznámení</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="clear-announcement">Vypnout oznámení</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
     '  </div>',
     '</div>'
@@ -8470,12 +8470,12 @@ function bindAppMenuHandlers(body) {
           return;
         }
         if (typeof window.writeRakDashboardAnnouncement === 'function') {
-          if (statusEl) statusEl.textContent = 'Ukládám oznámení online…';
+          if (statusEl) statusEl.textContent = 'Ukládám oznámení…';
           const result = await window.writeRakDashboardAnnouncement(payload);
           if (statusEl) {
             statusEl.textContent = result && result.ok
-              ? 'Oznámení uložené online ✓ · ostatním se načte přes Supabase/realtime.'
-              : 'Online uložení se nepovedlo, zůstává jen lokálně: ' + String((result && (result.reason || result.message || (result.status && result.status.lastErrorMessage))) || 'zkontroluj Supabase RPC/policy.');
+              ? 'Oznámení uložené ✓ · zůstane v této appce i po restartu.'
+              : 'Oznámení se nepodařilo uložit: ' + String((result && (result.reason || result.message)) || 'zkontroluj lokální úložiště.');
           }
           renderAdminMenuBody(body, 'announcement');
         } else if (statusEl) {
@@ -8486,12 +8486,12 @@ function bindAppMenuHandlers(body) {
       if (adminAction === 'clear-announcement') {
         const statusEl = document.getElementById('adminOnlineSaveStatus');
         if (typeof window.clearRakDashboardAnnouncement === 'function') {
-          if (statusEl) statusEl.textContent = 'Vypínám oznámení online…';
+          if (statusEl) statusEl.textContent = 'Vypínám oznámení…';
           const result = await window.clearRakDashboardAnnouncement();
           if (statusEl) {
             statusEl.textContent = result && result.ok
-              ? 'Oznámení vypnuté online ✓'
-              : 'Online vypnutí se nepovedlo, lokálně je vypnuté: ' + String((result && (result.reason || result.message || (result.status && result.status.lastErrorMessage))) || 'zkontroluj Supabase RPC/policy.');
+              ? 'Oznámení vypnuté ✓'
+              : 'Oznámení se nepodařilo vypnout: ' + String((result && (result.reason || result.message)) || 'zkontroluj lokální úložiště.');
           }
           renderAdminMenuBody(body, 'announcement');
         } else if (statusEl) {
@@ -12524,7 +12524,7 @@ function applyProfileUiPreferencesForActiveAccount(options = {}) {
   const defaultTheme = normalizeThemePreferenceId('default', 'default');
   const defaultBg = normalizeBackgroundPreferenceId('ios-mesh', 'ios-mesh');
   let changed = false;
-  // v.1.5 (946): vzhled je profilový. Nový/prázdný profil nezačne omylem vzhledem po předchozím přihlášeném profilu.
+  // v.1.5 (947): vzhled je profilový. Nový/prázdný profil nezačne omylem vzhledem po předchozím přihlášeném profilu.
   if (!ui.themeId) { ui.themeId = defaultTheme; changed = true; }
   if (!ui.backgroundId) { ui.backgroundId = defaultBg; changed = true; }
   const rewardMetrics = getThemeUnlockMetrics(profile);
@@ -12923,7 +12923,7 @@ function getRakProfileAppearanceRewardHealth() {
   const themeRewards = themes.filter(item => String(item && item.id || '') !== 'default');
   const backgroundRewards = backgrounds.filter(item => String(item && item.id || '') !== 'ios-mesh');
   return {
-    version: window.APP_VERSION || 'v.1.5 (946)',
+    version: window.APP_VERSION || 'v.1.5 (947)',
     mode: 'profile-appearance-reward-health-v928',
     activeProfile: metrics.hasProfile,
     profileThemeStorage: 'account.uiSettings.themeId',
@@ -13012,7 +13012,7 @@ function getRakDashboardGlassThemeHealth() {
   const lightweight = /(?:^|\s)(?:lightweightMode|lowEndDevice|ladaMode)(?:\s|$)/.test(bodyClass);
   return {
     ok: true,
-    version: window.APP_VERSION || 'v.1.5 (946)',
+    version: window.APP_VERSION || 'v.1.5 (947)',
     mode: 'dashboard-ios-glass-viewport-fit-v945',
     theme,
     background,
@@ -13059,7 +13059,7 @@ try {
 function getRakRotaceNamesDockHealth() {
   const result = {
     ok: true,
-    version: window.APP_VERSION || 'v.1.5 (946)',
+    version: window.APP_VERSION || 'v.1.5 (947)',
     mode: 'rotace-names-dock-stable-css-v930',
     checkedAt: new Date().toISOString(),
     scope: 'Rotace / seznam jmen / stabilní spodní dock',

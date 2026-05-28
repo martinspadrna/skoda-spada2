@@ -1,6 +1,6 @@
-// v.1.5 (946) – mobile/Playwright validation readiness a smoke runbook, read-only.
+// v.1.5 (947) – mobile/Playwright validation readiness a smoke runbook, read-only.
 (function setupRakMobileSmokeAudit() {
-  const VERSION = 'v.1.5 (946)';
+  const VERSION = 'v.1.5 (947)';
   const MODE = 'mobile-performance-smoke-readonly-v928';
 
   try {

@@ -17034,3 +17034,52 @@ body.ladaMode #stats .statsOccupancyLineArea{
     min-height:78px !important;
   }
 }
+
+
+/* v.1.5 (947) – Dashboard viewport-fit: jemné doladění pro 390×844 bez zbytečného stlačení ostatních mobilů. */
+@media (min-width:380px) and (max-width:400px) and (min-height:821px) and (max-height:860px){
+  body{
+    --rak-dashboard-fit-card-min:84px;
+    --rak-dashboard-fit-gap:8px;
+  }
+  #home.page.active .dashboardShell{
+    padding:8px !important;
+    max-height:calc(100dvh - 76px - env(safe-area-inset-bottom)) !important;
+  }
+  #home .dashboardAppTitleRow{
+    margin-bottom:6px !important;
+  }
+  #home .dashboardAnnouncementBar{
+    min-height:26px !important;
+    padding:5px 9px !important;
+    margin-bottom:6px !important;
+  }
+  #home .dashboardHeroCard,
+  #dashHero.dashboardHeroCard{
+    min-height:84px !important;
+    padding:11px 12px !important;
+  }
+  #home .dashboardGrid{
+    gap:var(--rak-dashboard-fit-gap) !important;
+    margin-top:8px !important;
+  }
+  #home .dashboardCard,
+  #home .tile.dashboardCard{
+    min-height:var(--rak-dashboard-fit-card-min) !important;
+    padding:8px 10px !important;
+  }
+  #home .dashboardIcon.dashboardIconInline{
+    width:31px !important;
+    height:31px !important;
+    min-width:31px !important;
+    flex-basis:31px !important;
+  }
+  #home .dashboardValue{
+    font-size:clamp(13.5px, 4.3vw, 16px) !important;
+    line-height:1.08 !important;
+  }
+  #home .dashboardMeta{
+    max-height:22px !important;
+    line-height:1.14 !important;
+  }
+}

@@ -783,7 +783,7 @@ function createStatsYearOverviewNodes(stats, year) {
     area.style.setProperty('stroke', 'none', 'important');
     area.style.setProperty('opacity', '1', 'important');
     svg.appendChild(area);
-    // v.1.5 (946): jemné podbarvení je jen v oblasti pod čárou.
+    // v.1.5 (947): jemné podbarvení je jen v oblasti pod čárou.
     // Barva je explicitní rgb + fill-opacity, aby SVG nespadlo do černého fallbacku ani na mobilním WebView.
     const line = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
     line.setAttribute('class', 'statsOccupancyLine');
@@ -1368,7 +1368,7 @@ function updateShift() {
   if (typeof updateDashboard === "function") updateDashboard();
 }
 
-// v.1.5 (946) – read-only kontrola: měsíční graf obsazenosti má bezpečnou jemnou theme výplň jen pod čárou.
+// v.1.5 (947) – read-only kontrola: měsíční graf obsazenosti má bezpečnou jemnou theme výplň jen pod čárou.
 function getRakStatsMonthlyThemeChartHealth() {
   let rootStyle = null;
   try { rootStyle = window.getComputedStyle ? window.getComputedStyle(document.documentElement) : null; } catch (err) { rootStyle = null; }
@@ -1382,7 +1382,7 @@ function getRakStatsMonthlyThemeChartHealth() {
   const lineStyle = line && window.getComputedStyle ? window.getComputedStyle(line) : null;
   return {
     ok: true,
-    version: window.APP_VERSION || 'v.1.5 (946)',
+    version: window.APP_VERSION || 'v.1.5 (947)',
     mode: 'stats-monthly-occupancy-theme-chart-v942',
     chartPresent: !!chart,
     containerPresent: !!box,

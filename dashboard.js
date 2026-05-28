@@ -252,7 +252,7 @@ function formatDashboardNextShiftMeta(shift) {
 
 
 
-// v.1.5 (935) – announcement online-first: Supabase zápis/čtení + lokální fallback.
+// v.1.5 (947) – Dashboard oznámení je lokální nastavení; globální online synchronizace appky zůstává zvlášť.
 const RAK_DASHBOARD_ANNOUNCEMENT_KEY = (typeof APP_KEY !== 'undefined' ? APP_KEY : 'rak') + ':dashboardAnnouncementV1';
 
 function parseRakAnnouncementDate(value) {
@@ -340,8 +340,9 @@ function getRakSupabaseDashboardAnnouncement() {
 
 function getRakDashboardAnnouncementCandidates() {
   const items = [];
-  const online = getRakSupabaseDashboardAnnouncement();
-  if (online) items.push(online);
+  // v.1.5 (947): oznámení z administrace je záměrně lokální.
+  // Supabase / online synchronizační tlačítko v appce zůstává beze změny,
+  // ale Dashboard oznámení už nezkouší číst ani přepisovat online řádek.
   const local = readRakLocalDashboardAnnouncement();
   if (local) items.push(local);
   return items;
@@ -355,7 +356,7 @@ function getRakActiveDashboardAnnouncement(now) {
 }
 
 function readRakDashboardAdminAnnouncement() {
-  return getRakSupabaseDashboardAnnouncement() || readRakLocalDashboardAnnouncement();
+  return readRakLocalDashboardAnnouncement();
 }
 
 function formatRakAnnouncementWindow(item) {
@@ -402,50 +403,33 @@ function renderRakDashboardAnnouncement(now) {
 
 async function writeRakDashboardAnnouncement(payload) {
   const normalized = normalizeRakDashboardAnnouncement(Object.assign({}, payload || {}, {
-    source: 'local-fallback-before-online'
+    source: 'local-admin',
+    updatedAt: new Date().toISOString()
   }));
-  writeRakLocalDashboardAnnouncement(normalized);
-  let online = null;
-  if (typeof window.saveRakDashboardAnnouncementOnline === 'function') {
-    try { online = await window.saveRakDashboardAnnouncementOnline(normalized); }
-    catch (err) { online = { ok: false, error: err, reason: 'online-exception' }; }
-  } else {
-    online = { ok: false, reason: 'missing-online-bridge' };
-  }
-  if (online && online.ok && online.row) {
-    writeRakLocalDashboardAnnouncement(Object.assign({}, normalized, online.row, { source: 'supabase-online-cache' }));
-  }
+  const local = writeRakLocalDashboardAnnouncement(normalized);
   try { renderRakDashboardAnnouncement(); } catch (err) {}
   try { if (typeof updateDashboard === 'function') updateDashboard(); } catch (err) {}
-  return Object.assign({ local: true, payload: normalized }, online || {});
+  return { ok: true, local: true, online: false, payload: local, source: 'local-admin' };
 }
 
 async function clearRakDashboardAnnouncement() {
   const local = clearRakLocalDashboardAnnouncement();
-  let online = null;
-  if (typeof window.clearRakDashboardAnnouncementOnline === 'function') {
-    try { online = await window.clearRakDashboardAnnouncementOnline(); }
-    catch (err) { online = { ok: false, error: err, reason: 'online-exception' }; }
-  } else {
-    online = { ok: false, reason: 'missing-online-bridge' };
-  }
   try { renderRakDashboardAnnouncement(); } catch (err) {}
   try { if (typeof updateDashboard === 'function') updateDashboard(); } catch (err) {}
-  return Object.assign({ local }, online || {});
+  return { ok: true, local, online: false, source: 'local-admin' };
 }
 
 function getRakDashboardAnnouncementHealth() {
   const now = new Date();
   const local = readRakLocalDashboardAnnouncement();
-  const online = getRakSupabaseDashboardAnnouncement();
+  const online = null;
   const active = getRakActiveDashboardAnnouncement(now);
   const box = typeof document !== 'undefined' ? document.getElementById('dashboardAnnouncementBar') : null;
-  let onlineStatus = null;
-  try { onlineStatus = typeof window.getRakDashboardAnnouncementOnlineStatus === 'function' ? window.getRakDashboardAnnouncementOnlineStatus() : null; } catch (err) {}
+  const onlineStatus = null;
   return {
     ok: true,
     version: String(window.APP_VERSION || 'unknown'),
-    mode: 'dashboard-announcement-rpc-online-v946',
+    mode: 'dashboard-announcement-local-v947',
     key: RAK_DASHBOARD_ANNOUNCEMENT_KEY,
     hasLocalAnnouncement: !!(local && local.message),
     hasOnlineAnnouncement: !!(online && online.message),
@@ -459,10 +443,10 @@ function getRakDashboardAnnouncementHealth() {
     marquee: !!(active && active.marquee),
     domPresent: !!box,
     domVisible: !!(box && !box.hidden && box.classList.contains('isVisible')),
-    storageMode: 'supabase-online-first-local-fallback',
-    supabaseWrite: onlineStatus && onlineStatus.lastWriteOk ? 'ok-last-write' : 'attempt-on-admin-save',
+    storageMode: 'local-dashboard-announcement',
+    supabaseWrite: 'not-used-for-dashboard-announcement',
     onlineStatus,
-    manualValidation: 'mobile/browser/real-supabase-policy'
+    manualValidation: 'mobile/browser/local-storage-persistence'
   };
 }
 
