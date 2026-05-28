@@ -1,9 +1,9 @@
-## v.1.5 (957)
+## v.1.5 (958)
 - Daily challenge: top výsledky se nově filtrují podle právě vybrané denní hry (`daily_aim`, `daily_memory`, `daily_reaction`…), takže se nemíchají odehrané challenge různých her.
 - Pexeso: opravený chybný čas 86400 s; neplatný 24h fallback se ignoruje a nově dohraná hra jej přepíše skutečným časem.
 - Piškvorky AI: přidaný diagonální gain guard, který blokuje tahy hráče vedoucí k čtyřce/forku/forcing sekvenci ještě před tím, než vznikne hotová otevřená trojka.
-- Piškvorky: ruleset verze navýšena na `gomoku-10col-19row-ai-rules-v7`, protože se měnila obtížnost/herní logika.
-- Verze sjednocena na v.1.5 (957), cache na `v1.5-957`, realtime kanál na `rak-public-live-v957`, package na `1.5.957`.
+- Piškvorky: ruleset verze navýšena na `gomoku-10col-19row-ai-rules-v8`, protože se měnila obtížnost/herní logika.
+- Verze sjednocena na v.1.5 (958), cache na `v1.5-958`, realtime kanál na `rak-public-live-v958`, package na `1.5.958`.
 
 ## v.1.5 (956)
 - Dashboard: řádek `chybí / bude chybět` v horním panelu je opravdu centrovaný vůči celé kartě, obal už nemá roztáhlé pozadí do jedné strany a na 360×800 drží spodní linku.
