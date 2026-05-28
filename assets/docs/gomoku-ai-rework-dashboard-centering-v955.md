@@ -1,4 +1,4 @@
-# RaK v.1.5 (955) – Piškvorky AI rework + centrování absence
+# RaK v.1.5 (956) – Piškvorky AI rework + centrování absence
 
 ## Piškvorky
 
