@@ -1,4 +1,4 @@
-// v.1.5 (953) – Dashboard panely snížené cca o 5 % bez zásahu do logiky.
+// v.1.5 (954) – Dashboard panely snížené cca o 5 % bez zásahu do logiky.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app.js', 'loaded', { source: 'index' }); } catch (err) {}
 
 

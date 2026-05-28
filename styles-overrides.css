@@ -17178,3 +17178,40 @@ body.ladaMode #stats .statsOccupancyLineArea{
     max-width:100% !important;
   }
 }
+
+
+/* v.1.5 (954) – Dashboard: skutečné vycentrování i řádku „kdo chybí“. */
+#home #dashHero .dashboardHeroLine3{
+  display:flex !important;
+  justify-content:center !important;
+  align-items:center !important;
+  width:100% !important;
+  transform:none !important;
+  left:auto !important;
+  right:auto !important;
+}
+#home #dashHero .dashboardHeroLine3Pill{
+  display:flex !important;
+  flex-direction:column !important;
+  justify-content:center !important;
+  align-items:center !important;
+  width:min(100%, 520px) !important;
+  max-width:100% !important;
+  margin-left:auto !important;
+  margin-right:auto !important;
+  transform:none !important;
+  text-align:center !important;
+}
+#home #dashHero .dashboardHeroLine3Main,
+#home #dashHero .dashboardHeroLine3Sub{
+  display:block !important;
+  width:100% !important;
+  margin-left:auto !important;
+  margin-right:auto !important;
+  text-align:center !important;
+}
+@media (max-width:700px){
+  #home #dashHero .dashboardHeroLine3Pill{
+    width:100% !important;
+  }
+}

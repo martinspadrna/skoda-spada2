@@ -1,3 +1,9 @@
+## v.1.5 (954)
+- Dashboard: horní směnový panel má nově vycentrovaný i subřádek/popisek „kdo chybí“, včetně přepsání starších posunů na menších displejích.
+- Piškvorky: hrací pole zůstává 10 sloupců × 19 řad; AI obtížnost má novou bounded tactical/safety vrstvu, kratší pevný deadline a nouzový legální fallback, aby se nezasekla.
+- Piškvorky: ruleset verze navýšena na `gomoku-10col-19row-ai-rules-v4`, protože se měnila obtížnost/herní logika, ne vzhled aplikace.
+- Verze sjednocena na v.1.5 (954), cache na `v1.5-954`, realtime kanál na `rak-public-live-v954`, package na `1.5.954`.
+
 ## v.1.5 (953)
 - Dashboard: horní směnový panel má vycentrované texty pro aktuální směnu, odpočet, směnu D a absence napříč displeji.
 - Přidán read-only helper `getRakDashboardHeroCenteringHealth()`.
