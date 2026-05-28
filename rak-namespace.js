@@ -1,4 +1,4 @@
-// v.1.5 (949) – window.RaK namespace doplněný o Dashboard announcement diagnostiku.
+// v.1.5 (953) – window.RaK namespace doplněný o Dashboard announcement diagnostiku.
 
 (function setupRakNamespaceBridge() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -11,7 +11,7 @@
 
   const root = window.RaK || {};
   const existingVersion = root.namespaceVersion || '';
-  root.namespaceVersion = 'v.1.5 (949)';
+  root.namespaceVersion = 'v.1.5 (953)';
   root.mode = 'passive-namespace-readonly-release-gates-frezky-sign-toggle-v931';
   root.createdAt = root.createdAt || new Date().toISOString();
   root.updatedAt = new Date().toISOString();
@@ -146,7 +146,7 @@
   };
   root.getNamespaceMap = cloneMap;
   root.namespaceMap = cloneMap();
-  root.namespaceMapVersion = 'v.1.5 (949)';
+  root.namespaceMapVersion = 'v.1.5 (953)';
   root.namespacePlan = {
     phase: 'phase C',
     mode: 'namespace-readonly-phase-closed-with-online-game-contract-alias-v897',

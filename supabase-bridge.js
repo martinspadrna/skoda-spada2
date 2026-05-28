@@ -234,7 +234,7 @@
     { table: 'gomoku_wins', realtime: true, queueType: 'gomoku_win', access: 'anon SELECT/INSERT/UPDATE', note: 'výhry piškvorek / legacy leaderboard' }
   ];
 
-  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (949)';
+  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (953)';
   const SUPABASE_POLICY_AUDIT_SNAPSHOT_AT = '2026-05-24';
   const SUPABASE_POLICY_HARDENING_PHASE = {
     current: 'V856 – release hygiene po kontrole vlastních buildů: changelog opravený, SQL auditní soubory jsou archivované v assets/docs/sql a DB policies se nemění.',
@@ -294,7 +294,7 @@
   ];
 
   const SUPABASE_RPC_HARDENING_STATUS = {
-    version: 'v.1.5 (949)',
+    version: 'v.1.5 (953)',
     phase: '2E-O online invite/session RPC smoke + accept RPC / no policy tightening',
     rpcPreferred: true,
     migrationApplied: true,
@@ -906,7 +906,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v949');
+      const channel = client.channel('rak-public-live-v953');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -1017,7 +1017,7 @@
       ends_at: payload.ends_at,
       marquee: payload.marquee,
       updated_at: nowIso,
-      app_version: String(window.APP_VERSION || 'v.1.5 (949)'),
+      app_version: String(window.APP_VERSION || 'v.1.5 (953)'),
       priority: 0
     });
     return [
@@ -1062,7 +1062,7 @@
           ends_at: fallback.ends_at,
           marquee: fallback.marquee,
           updated_at: new Date().toISOString(),
-          app_version: String(window.APP_VERSION || 'v.1.5 (949)'),
+          app_version: String(window.APP_VERSION || 'v.1.5 (953)'),
           priority: 0
         });
   }
@@ -1077,7 +1077,7 @@
         p_ends_at: safe.ends_at,
         p_marquee: safe.marquee,
         p_updated_by: 'rak-admin-ui',
-        p_app_version: String(window.APP_VERSION || 'v.1.5 (949)'),
+        p_app_version: String(window.APP_VERSION || 'v.1.5 (953)'),
         p_priority: 0
       }), { mode: 'write', timeoutMs: 8000, attempts: 1 });
       if (res && res.error) return { ok: false, error: res.error, shape: 'rpc-save' };
@@ -1091,7 +1091,7 @@
     try {
       const res = await runSupabaseOperation('announcements.rpc-clear', () => client.rpc('rak_clear_dashboard_announcement', {
         p_updated_by: 'rak-admin-ui',
-        p_app_version: String(window.APP_VERSION || 'v.1.5 (949)')
+        p_app_version: String(window.APP_VERSION || 'v.1.5 (953)')
       }), { mode: 'write', timeoutMs: 8000, attempts: 1 });
       if (res && res.error) return { ok: false, error: res.error, shape: 'rpc-clear' };
       return { ok: true, cleared: true, count: Number(res && res.data || 0), shape: 'rpc-clear' };
@@ -1213,7 +1213,7 @@
       online: typeof navigator === 'undefined' ? false : !!navigator.onLine,
       cachedAnnouncementCount: Array.isArray(state.announcements) ? state.announcements.length : 0,
       table: 'announcements',
-      realtimeChannel: 'rak-public-live-v949',
+      realtimeChannel: 'rak-public-live-v953',
       readMode: 'public SELECT + realtime refresh + local cache fallback',
       writeMode: 'RPC security definer save/clear; direct table fallback only if RPC unavailable'
     });
@@ -2085,7 +2085,8 @@
       elapsed_ms: Number(entry && entry.elapsedMs ? entry.elapsedMs : 0) || 0,
       elapsed_text: String(entry && entry.elapsedText ? entry.elapsedText : '').trim(),
       x_moves: Number(entry && entry.xMoves ? entry.xMoves : 0) || 0,
-      o_moves: Number(entry && entry.oMoves ? entry.oMoves : 0) || 0
+      o_moves: Number(entry && entry.oMoves ? entry.oMoves : 0) || 0,
+      ruleset_version: String((entry && (entry.rulesetVersion || entry.ruleset_version)) || window.GOMOKU_RULESET_VERSION || 'gomoku-10col-19row-ai-rules-v3').trim() || 'gomoku-10col-19row-ai-rules-v3'
     };
     const { data, error } = await client.from('gomoku_wins').insert([payload]).select('*');
     if (error) throw error;
@@ -3982,16 +3983,18 @@
     }
   }
 
-  async function loadGomokuWins(limit) {
+  async function loadGomokuWins(limit, options) {
     const client = getClient();
     if (!client || !navigator.onLine) return [];
     try {
       const safeLimit = Math.max(1, Math.min(100, Number(limit) || 20));
-      const res = await runSharedSupabaseRead('gomoku_wins.load:' + safeLimit, () => runSupabaseOperation('gomoku_wins.load', () => client
+      const rulesetVersion = String(options && (options.rulesetVersion || options.ruleset_version) || window.GOMOKU_RULESET_VERSION || 'gomoku-10col-19row-ai-rules-v3').trim() || 'gomoku-10col-19row-ai-rules-v3';
+      const readKey = 'gomoku_wins.load:' + safeLimit + ':' + rulesetVersion;
+      const res = await runSharedSupabaseRead(readKey, () => runSupabaseOperation('gomoku_wins.load', () => client
         .from('gomoku_wins')
-        .select('player_name,difficulty,moves,elapsed_ms,elapsed_text,x_moves,o_moves,created_at,app_version')
-        .order('priority', { ascending: false })
-          .order('updated_at', { ascending: false })
+        .select('player_name,difficulty,moves,elapsed_ms,elapsed_text,x_moves,o_moves,created_at,app_version,ruleset_version')
+        .eq('ruleset_version', rulesetVersion)
+        .order('created_at', { ascending: false })
         .limit(safeLimit), { mode: 'read' }));
       if (res && res.error) throw res.error;
       return Array.isArray(res && res.data) ? res.data : [];
@@ -4084,7 +4087,7 @@
     return {
       ok: blockers.length === 0,
       mode: 'supabase-hardening-readiness-audit-only',
-      version: 'v.1.5 (949)',
+      version: 'v.1.5 (953)',
       checkedAt: new Date().toISOString(),
       confirmed,
       readinessPercent,

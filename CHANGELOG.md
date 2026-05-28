@@ -1,8 +1,33 @@
-## v.1.5 (949)
+## v.1.5 (953)
+- Dashboard: horní směnový panel má vycentrované texty pro aktuální směnu, odpočet, směnu D a absence napříč displeji.
+- Přidán read-only helper `getRakDashboardHeroCenteringHealth()`.
+- Verze sjednocena na v.1.5 (953), cache na `v1.5-953`, realtime kanál na `rak-public-live-v953`, package na `1.5.953`.
+
+## v.1.5 (952)
+- Piškvorky: oprava rozměru hracího pole zpět na 10 sloupců × 19 řad.
+- Piškvorky AI: posílená promptová safety pipeline pro okamžité výhry, povinné bloky, fork/anti-fork, root safety ověření odpovědí a deadline fallback bez zaseknutí.
+- Piškvorky: nová samostatná ruleset verze `gomoku-10col-19row-ai-rules-v3`; mění se kvůli pravidlům/obtížnosti, ne kvůli vzhledu appky.
+- Online PvP Piškvorky zůstává člověk proti člověku; AI se nepouští do online tahu.
+- Verze sjednocena na v.1.5 (952), cache na `v1.5-952`, realtime kanál na `rak-public-live-v952`, package na `1.5.952`.
+
+## v.1.5 (951)
+- Piškvorky: převedení hlavního rulesetu na 10×19 podle Gomocup/Piskvork notace `RECTSTART 19,10`; nové hry používají 10 řad × 19 sloupců a samostatnou verzi pravidel `gomoku-10x19-ai-rules-v2`.
+- Piškvorky: AI tah používá jednotný deadline, okamžité taktické testy výhra/blok a bezpečný fallback nejblíže středu, aby se nezasekla ani na slabším zařízení.
+- Online Piškvorky: do session payloadu se ukládá ruleset, rozměr desky a win length; klient odmítne nekompatibilní starou online hru místo tichého rozbití stavu.
+- Žebříček poražené AI dál filtruje podle `ruleset_version`, takže změna obtížnosti/pravidel začne čistou tabulku bez vazby na verzi celé appky.
+- Verze sjednocena na v.1.5 (951), cache na `v1.5-951`, realtime kanál na `rak-public-live-v951`, package na `1.5.951`.
+
+## v.1.5 (950)
+- Piškvorky: online žebříček výher se znovu zobrazuje v aplikaci; opravené načítání `gomoku_wins`, které dřív řadilo podle neexistujících sloupců `priority/updated_at`.
+- Piškvorky: přidaná samostatná `GOMOKU_RULESET_VERSION`, oddělená od verze celé aplikace. Žebříček se filtruje podle aktuální verze pravidel/obtížnosti Piškvorek.
+- Supabase: tabulka `gomoku_wins` má nový sloupec `ruleset_version` a index pro rychlé načítání aktuálního žebříčku.
+- Verze sjednocena na v.1.5 (950), cache na `v1.5-950`, realtime kanál na `rak-public-live-v950`, package na `1.5.950`.
+
+## v.1.5 (950)
 - Dashboard oznámení je znovu globální online-first: administrace ukládá přes Supabase RPC a Dashboard preferuje online oznámení pro všechny uživatele.
 - Lokální úložiště zůstává jen jako cache/fallback, aby oznámení nezmizelo při pomalejším startu nebo offline režimu.
 - Supabase `announcements` je dočištěná na jedno aktivní oznámení, aby klienti nečetli duplicitní staré řádky.
-- Verze sjednocena na v.1.5 (949), cache na `v1.5-949`, realtime kanál na `rak-public-live-v949`, package na `1.5.949`.
+- Verze sjednocena na v.1.5 (950), cache na `v1.5-950`, realtime kanál na `rak-public-live-v950`, package na `1.5.950`.
 
 ## v.1.5 (948)
 - Dashboard: lokální oznámení se znovu vykreslí při každém refreshi Dashboardu, takže má zůstat viditelné i po vypnutí a zapnutí appky.

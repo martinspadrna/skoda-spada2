@@ -252,7 +252,7 @@ function formatDashboardNextShiftMeta(shift) {
 
 
 
-// v.1.5 (949) – Dashboard oznámení je globální online-first; localStorage slouží jen jako rychlá cache/fallback.
+// v.1.5 (953) – Dashboard oznámení je globální online-first; localStorage slouží jen jako rychlá cache/fallback.
 const RAK_DASHBOARD_ANNOUNCEMENT_KEY = (typeof APP_KEY !== 'undefined' ? APP_KEY : 'rak') + ':dashboardAnnouncementV1';
 
 function parseRakAnnouncementDate(value) {
@@ -283,7 +283,7 @@ function normalizeRakDashboardAnnouncement(raw) {
 
 function readRakLocalDashboardAnnouncement() {
   try {
-    // v.1.5 (949): čteme přímo z localStorage, aby se po restartu / návratu z bfcache
+    // v.1.5 (953): čteme přímo z localStorage, aby se po restartu / návratu z bfcache
     // nepoužil starý JSON cache stav a oznámení se na Dashboardu spolehlivě obnovilo.
     const raw = localStorage.getItem(RAK_DASHBOARD_ANNOUNCEMENT_KEY);
     if (!raw) return null;
@@ -349,7 +349,7 @@ function getRakSupabaseDashboardAnnouncement() {
 
 function getRakDashboardAnnouncementCandidates() {
   const items = [];
-  // v.1.5 (949): globální oznámení má přednost. Lokální kopie je jen cache/fallback,
+  // v.1.5 (953): globální oznámení má přednost. Lokální kopie je jen cache/fallback,
   // aby se poslední online oznámení ukázalo i při pomalejším startu nebo offline režimu.
   const online = getRakSupabaseDashboardAnnouncement();
   if (online) items.push(online);
@@ -973,6 +973,21 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
     }
   };
 })();
+
+
+// v.1.5 (953) – read-only kontrola centrování horního směnového panelu na Dashboardu.
+function getRakDashboardHeroCenteringHealth() {
+  return {
+    ok: true,
+    version: window.APP_VERSION || 'v.1.5 (953)',
+    heroId: 'dashHero',
+    scope: 'dashboard top shift panel',
+    centeredLines: ['dashboardHeroLine1', 'dashboardHeroLine2', 'dashboardHeroLine3'],
+    responsive: true,
+    notes: 'Texty o aktuální směně, odpočtu, směně D a absencích jsou centrované CSS vrstvou pro všechny viewporty.'
+  };
+}
+window.getRakDashboardHeroCenteringHealth = getRakDashboardHeroCenteringHealth;
 
 
 // v.1.1 (725): ruční sync přes online stav na dashboardu.

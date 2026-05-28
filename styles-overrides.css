@@ -17132,3 +17132,49 @@ body.ladaMode #stats .statsOccupancyLineArea{
     line-height:1.14 !important;
   }
 }
+
+
+/* v.1.5 (953) – Dashboard: horní směnový panel má vycentrované texty napříč viewporty. */
+#home #dashHero.dashboardHeroCard{
+  text-align:center !important;
+}
+#home #dashHero .dashboardHeroLine1,
+#home #dashHero .dashboardHeroLine2,
+#home #dashHero .dashboardHeroLine3,
+#home #dashHero .dashboardHeroBarRow{
+  width:100% !important;
+  text-align:center !important;
+  justify-content:center !important;
+  align-items:center !important;
+}
+#home #dashHero .dashboardHeroLine1{
+  display:flex !important;
+}
+#home #dashHero .dashboardHeroLine1Text,
+#home #dashHero .dashboardHeroLine2{
+  display:block !important;
+  width:100% !important;
+  max-width:100% !important;
+  text-align:center !important;
+  margin-left:auto !important;
+  margin-right:auto !important;
+}
+#home #dashHero .dashboardHeroLine3Pill{
+  margin-left:auto !important;
+  margin-right:auto !important;
+  text-align:center !important;
+  justify-content:center !important;
+  align-items:center !important;
+}
+#home #dashHero .dashboardHeroLine3Main,
+#home #dashHero .dashboardHeroLine3Sub{
+  text-align:center !important;
+}
+#home #dashHero .dashboardHeroBar{
+  max-width:420px !important;
+}
+@media (max-width:700px){
+  #home #dashHero .dashboardHeroBar{
+    max-width:100% !important;
+  }
+}

@@ -976,7 +976,7 @@ function ensureTicTacToeStyles() {
   position:relative;
   display:grid;
   grid-template-columns:repeat(10, var(--tttCellSize, 24px));
-  grid-template-rows:repeat(18, var(--tttCellSize, 24px));
+  grid-template-rows:repeat(19, var(--tttCellSize, 24px));
   gap:0;
   justify-content:center;
   align-content:center;
@@ -1241,12 +1241,16 @@ function ensureTicTacToeOverlay() {
   return overlay;
 }
 
-const TTT_ROWS = 18;
+const TTT_ROWS = 19;
 const TTT_COLS = 10;
 const TTT_WIN_LENGTH = 5;
 const TTT_TOTAL_CELLS = TTT_ROWS * TTT_COLS;
 const TTT_HARD_WIN_EMAIL = 'martinspadrna@gmail.com';
 const TTT_HARD_WIN_KEY = 'tttHardWins';
+// Samostatná verze pravidel/obtížnosti Piškvorek. Není to verze celé aplikace.
+// Zvyšovat jen při změně AI obtížnosti nebo pravidel, ne při vzhledových úpravách.
+const GOMOKU_RULESET_VERSION = 'gomoku-10col-19row-ai-rules-v3';
+if (typeof window !== 'undefined') window.GOMOKU_RULESET_VERSION = GOMOKU_RULESET_VERSION;
 
 function tttEnsureAiWinsResetV667() {
   try {
@@ -1341,6 +1345,10 @@ function tttCreateEmptyOnlineState() {
     resultSavedKey: '',
     joinFlow: '',
     joinSource: '',
+    rulesetVersion: GOMOKU_RULESET_VERSION,
+    rows: TTT_ROWS,
+    cols: TTT_COLS,
+    winLength: TTT_WIN_LENGTH,
     inviteUrl: '',
     headToHead: null,
     headToHeadText: '',
@@ -2115,6 +2123,11 @@ function tttMakeOnlineStatePatch(extraPatch) {
     playerOAccountNumber: online.playerOAccountNumber || null,
     winnerRole: state.gameOver ? (state.winner || null) : null,
     nextStarter: state.nextStarter || (state.gameOver && ['X','O'].includes(String(state.winner || '')) ? state.winner : null),
+    rulesetVersion: GOMOKU_RULESET_VERSION,
+    rows: TTT_ROWS,
+    cols: TTT_COLS,
+    winLength: TTT_WIN_LENGTH,
+    engineProfile: 'deterministic-10x19-tss-pvs-safe-v951',
     winnerAccountNumber: null
   };
   if (patch.winner === 'X') patch.winnerAccountNumber = online.playerXAccountNumber || null;
@@ -2127,8 +2140,34 @@ function tttApplyOnlineState(statePatch, remote) {
   const state = tttGetState();
   if (!statePatch || typeof statePatch !== 'object') return false;
 
-  if (Array.isArray(statePatch.board) && statePatch.board.length === TTT_TOTAL_CELLS) {
-    state.board = statePatch.board.slice();
+  const remoteBoard = Array.isArray(statePatch.board) ? statePatch.board : null;
+  const remoteRows = Number(statePatch.rows || statePatch.boardRows || 0) || 0;
+  const remoteCols = Number(statePatch.cols || statePatch.columns || statePatch.boardCols || 0) || 0;
+  const remoteWinLength = Number(statePatch.winLength || statePatch.win_length || 0) || 0;
+  const remoteRuleset = String(statePatch.rulesetVersion || statePatch.ruleset_version || '').trim();
+  const dimensionMismatch = (remoteBoard && remoteBoard.length !== TTT_TOTAL_CELLS)
+    || (remoteRows && remoteRows !== TTT_ROWS)
+    || (remoteCols && remoteCols !== TTT_COLS)
+    || (remoteWinLength && remoteWinLength !== TTT_WIN_LENGTH);
+  if (dimensionMismatch) {
+    if (!state.online) state.online = {};
+    state.online.status = 'incompatible';
+    state.online.connected = false;
+    state.message = 'Tahle online pozvánka je z jiné verze Piškvorek. Vytvoř novou hru.';
+    tttSetOnlineStatus(state.message, 'error');
+    return false;
+  }
+  if (remoteRuleset && remoteRuleset !== GOMOKU_RULESET_VERSION) {
+    if (!state.online) state.online = {};
+    state.online.status = 'incompatible';
+    state.online.connected = false;
+    state.message = 'Tahle online hra používá jinou verzi pravidel Piškvorek. Vytvoř novou hru.';
+    tttSetOnlineStatus(state.message, 'error');
+    return false;
+  }
+
+  if (remoteBoard && remoteBoard.length === TTT_TOTAL_CELLS) {
+    state.board = remoteBoard.slice();
   }
   state.turn = statePatch.turn === 'O' ? 'O' : 'X';
   state.gameOver = !!statePatch.gameOver;
@@ -4534,12 +4573,12 @@ function getRakTttAiHardeningV922Health() {
   return {
     ok: true,
     mode: 'ttt-ai-hardening-v923',
-    version: String(window.APP_VERSION || 'v.1.5 (949)'),
+    version: String(window.APP_VERSION || 'v.1.5 (953)'),
     thirteenTurnClamp: true,
     hardSearchDepthEarly: 8,
     hardSearchDepthMid: 8,
-    onlineFlowTouched: false,
-    note: 'AI proti počítači má novou clamp vrstvu proti výhrám kolem 13. tahu; online Piškvorky beze změny.'
+    onlineFlowTouched: true,
+    note: 'AI proti počítači má clamp vrstvy; od v951 má online Piškvorky samostatná 10 sloupců × 19 řad ruleset metadata a kompatibilitní guard.'
   };
 }
 if (typeof window !== 'undefined') window.getRakTttAiHardeningV922Health = getRakTttAiHardeningV922Health;
@@ -4640,12 +4679,285 @@ function tttHardSearchDepth(board) {
   return 2;
 }
 
+function tttEngineNow() {
+  return (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+}
+
+function tttEngineBudgetMs(difficulty) {
+  const lowEnd = !!(typeof document !== 'undefined' && document.body && (document.body.classList.contains('ladaMode') || document.body.classList.contains('lowEndDevice') || document.body.classList.contains('lightweightMode')));
+  if (difficulty !== 'ai') return 90;
+  return lowEnd ? 720 : 1120;
+}
+
+function tttNearestCenterFallbackMove(board) {
+  const centerRow = (TTT_ROWS - 1) / 2;
+  const centerCol = (TTT_COLS - 1) / 2;
+  let best = -1;
+  let bestScore = Infinity;
+  for (let idx = 0; idx < board.length; idx += 1) {
+    if (board[idx]) continue;
+    const row = Math.floor(idx / TTT_COLS);
+    const col = idx % TTT_COLS;
+    const score = Math.abs(row - centerRow) + Math.abs(col - centerCol) * 0.94;
+    if (score < bestScore) {
+      bestScore = score;
+      best = idx;
+    }
+  }
+  return best;
+}
+
+function tttPromptEngineOpeningMove(board) {
+  const preferred = [[9, 4], [9, 5], [8, 4], [10, 5], [8, 5], [10, 4], [9, 3], [9, 6]];
+  for (const pair of preferred) {
+    const row = pair[0];
+    const col = pair[1];
+    if (!tttInBounds(row, col)) continue;
+    const idx = tttIndex(row, col);
+    if (!board[idx]) return idx;
+  }
+  return tttOpeningBookMove(board);
+}
+
+function tttPromptEnginePickThreatMove(board, moves, mark) {
+  const unique = Array.from(new Set((moves || []).map(Number).filter(idx => Number.isFinite(idx) && idx >= 0 && idx < board.length && !board[idx])));
+  if (!unique.length) return -1;
+  let best = unique[0];
+  let bestScore = -Infinity;
+  for (const idx of unique) {
+    board[idx] = mark;
+    const score = (tttWinner(board).winner === mark ? 900000000 : 0)
+      + tttWinningMoves(board, mark).length * 120000000
+      + tttCriticalThreatMoves(board, mark).length * 24000000
+      + tttOpenThreeThreatMoves(board, mark).length * 6000000
+      + tttSimpleMoveScore(board, idx, mark);
+    board[idx] = '';
+    if (score > bestScore) {
+      bestScore = score;
+      best = idx;
+    }
+  }
+  return best;
+}
+
+function tttPromptEngineTacticalMove(board, difficulty, deadline) {
+  const free = [];
+  for (let i = 0; i < board.length; i += 1) if (!board[i]) free.push(i);
+  if (!free.length) return -1;
+
+  const ownWins = tttWinningMoves(board, 'O');
+  if (ownWins.length) return tttPromptEnginePickThreatMove(board, ownWins, 'O');
+
+  const opponentWins = tttWinningMoves(board, 'X');
+  if (opponentWins.length) {
+    const block = tttPromptEnginePickThreatMove(board, opponentWins, 'O');
+    if (block >= 0) return block;
+  }
+
+  const occupied = board.length - free.length;
+  if (occupied <= 1) {
+    const opening = tttPromptEngineOpeningMove(board);
+    if (opening >= 0 && !board[opening]) return opening;
+  }
+
+  const opponentFours = Array.from(new Set([
+    ...tttThreatWindowMoves(board, 'X'),
+    ...tttCriticalThreatMoves(board, 'X')
+  ]));
+  const forcedBlock = tttPromptEnginePickThreatMove(board, opponentFours, 'O');
+  if (forcedBlock >= 0) return forcedBlock;
+
+  if (deadline && tttEngineNow() > deadline - 28) {
+    const emergency = tttPromptEnginePickThreatMove(board, tttCandidateMoves(board, occupied < 10 ? 3 : 2), 'O');
+    return emergency >= 0 ? emergency : tttNearestCenterFallbackMove(board);
+  }
+
+  return -1;
+}
+
+
+function tttV952PromptCandidateSet(board, occupied, radius) {
+  const set = new Set();
+  const add = (moves) => (moves || []).forEach(idx => {
+    const n = Number(idx);
+    if (Number.isFinite(n) && n >= 0 && n < board.length && !board[n]) set.add(n);
+  });
+  add(tttWinningMoves(board, 'O'));
+  add(tttWinningMoves(board, 'X'));
+  add(tttThreatWindowMoves(board, 'O'));
+  add(tttThreatWindowMoves(board, 'X'));
+  add(tttCriticalThreatMoves(board, 'O'));
+  add(tttCriticalThreatMoves(board, 'X'));
+  add(tttOpenThreeThreatMoves(board, 'O'));
+  add(tttOpenThreeThreatMoves(board, 'X'));
+  add(tttCandidateMoves(board, radius || (occupied < 18 ? 3 : 2)));
+  if (!set.size) {
+    const fallback = tttNearestCenterFallbackMove(board);
+    if (fallback >= 0) set.add(fallback);
+  }
+  const centerRow = (TTT_ROWS - 1) / 2;
+  const centerCol = (TTT_COLS - 1) / 2;
+  return Array.from(set).sort((a, b) => {
+    const as = tttCheapMovePotential(board, a, 'O') * 1.12 + tttCheapMovePotential(board, a, 'X') * 1.08;
+    const bs = tttCheapMovePotential(board, b, 'O') * 1.12 + tttCheapMovePotential(board, b, 'X') * 1.08;
+    if (Math.abs(bs - as) > 0.001) return bs - as;
+    const ar = Math.floor(a / TTT_COLS), ac = a % TTT_COLS;
+    const br = Math.floor(b / TTT_COLS), bc = b % TTT_COLS;
+    return (Math.abs(ar - centerRow) + Math.abs(ac - centerCol)) - (Math.abs(br - centerRow) + Math.abs(bc - centerCol));
+  });
+}
+
+function tttV952StaticThreatScore(board, mark) {
+  const wins = tttWinningMoves(board, mark).length;
+  const critical = tttCriticalThreatMoves(board, mark).length;
+  const windows = tttThreatWindowMoves(board, mark).length;
+  const openThree = tttOpenThreeThreatMoves(board, mark).length;
+  const openTwo = tttOpenTwoThreatMoves(board, mark).length;
+  const fork = tttBestForkMove(board, mark) >= 0 ? 1 : 0;
+  const pressure = tttTacticalPressureScore(board, mark);
+  return wins * 120000000 + critical * 18500000 + windows * 6200000 + openThree * 2400000 + fork * 5200000 + openTwo * 220000 + pressure * 0.74;
+}
+
+function tttV952PickVerifiedBlock(board, opponentWins, deadline) {
+  const occupied = board.reduce((sum, cell) => sum + (cell ? 1 : 0), 0);
+  const candidates = Array.from(new Set([...(opponentWins || []), ...tttV952PromptCandidateSet(board, occupied, 2)]))
+    .filter(idx => Number.isFinite(Number(idx)) && idx >= 0 && idx < board.length && !board[idx]);
+  let best = -1;
+  let bestScore = -Infinity;
+  for (const idx of candidates) {
+    if (deadline && tttEngineNow() > deadline - 18 && best >= 0) break;
+    board[idx] = 'O';
+    const remainingWins = tttWinningMoves(board, 'X').length;
+    const ownWin = tttWinningMoves(board, 'O').length;
+    const ownPressure = tttV952StaticThreatScore(board, 'O');
+    const xPressure = tttV952StaticThreatScore(board, 'X');
+    board[idx] = '';
+    const score = -remainingWins * 900000000 + ownWin * 140000000 + ownPressure * 0.72 - xPressure * 1.18 + tttCheapMovePotential(board, idx, 'O');
+    if (remainingWins === 0 && score > bestScore) {
+      bestScore = score;
+      best = idx;
+    }
+  }
+  if (best >= 0) return best;
+  return tttPromptEnginePickThreatMove(board, opponentWins, 'O');
+}
+
+function tttV952RootSafetyMove(board, difficulty, deadline) {
+  const free = [];
+  for (let i = 0; i < board.length; i += 1) if (!board[i]) free.push(i);
+  if (!free.length) return -1;
+
+  const ownWins = tttWinningMoves(board, 'O');
+  if (ownWins.length) return tttPromptEnginePickThreatMove(board, ownWins, 'O');
+
+  const opponentWins = tttWinningMoves(board, 'X');
+  if (opponentWins.length) return tttV952PickVerifiedBlock(board, opponentWins, deadline);
+
+  const occupied = board.length - free.length;
+  if (occupied <= 1) {
+    const opening = tttPromptEngineOpeningMove(board);
+    if (opening >= 0 && !board[opening]) return opening;
+  }
+
+  const ownFork = tttBestForkMove(board, 'O');
+  if (ownFork >= 0 && !board[ownFork]) {
+    board[ownFork] = 'O';
+    const xWin = tttWinningMoves(board, 'X').length;
+    board[ownFork] = '';
+    if (!xWin) return ownFork;
+  }
+
+  const opponentFork = tttBestForkMove(board, 'X');
+  if (opponentFork >= 0 && !board[opponentFork]) {
+    const blockFork = tttV952PickVerifiedBlock(board, [opponentFork], deadline);
+    if (blockFork >= 0) return blockFork;
+  }
+
+  const candidates = tttV952PromptCandidateSet(board, occupied, occupied < 18 ? 3 : 2)
+    .slice(0, difficulty === 'ai' ? (occupied < 20 ? 30 : 24) : 12);
+  if (!candidates.length) return tttNearestCenterFallbackMove(board);
+
+  const centerRow = (TTT_ROWS - 1) / 2;
+  const centerCol = (TTT_COLS - 1) / 2;
+  let best = -1;
+  let bestScore = -Infinity;
+  for (const idx of candidates) {
+    if (deadline && tttEngineNow() > deadline - 24 && best >= 0) break;
+    board[idx] = 'O';
+    if (tttWinner(board).winner === 'O') {
+      board[idx] = '';
+      return idx;
+    }
+    const immediateLosses = tttWinningMoves(board, 'X').length;
+    const ownThreat = tttV952StaticThreatScore(board, 'O');
+    const xThreat = tttV952StaticThreatScore(board, 'X');
+    let replies = tttV952PromptCandidateSet(board, occupied + 1, 2)
+      .map(reply => ({ reply, score: tttCheapMovePotential(board, reply, 'X') + tttV952StaticThreatScore((() => { board[reply] = 'X'; const snap = board.slice(); board[reply] = ''; return snap; })(), 'X') * 0.0002 }))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, occupied < 24 ? 12 : 8)
+      .map(item => item.reply);
+    if (!replies.length) replies = [tttNearestCenterFallbackMove(board)].filter(n => n >= 0 && !board[n]);
+
+    let worstReply = immediateLosses * 950000000;
+    for (const reply of replies) {
+      if (deadline && tttEngineNow() > deadline - 12 && worstReply > 0) break;
+      board[reply] = 'X';
+      const xWinsNow = tttWinner(board).winner === 'X' ? 1 : 0;
+      const xNextWins = tttWinningMoves(board, 'X').length;
+      const oCounterWins = tttWinningMoves(board, 'O').length;
+      const xPressure = tttV952StaticThreatScore(board, 'X');
+      const oPressure = tttV952StaticThreatScore(board, 'O');
+      board[reply] = '';
+      const risk = xWinsNow * 1400000000 + xNextWins * 260000000 + xPressure * 1.08 - oCounterWins * 180000000 - oPressure * 0.34;
+      if (risk > worstReply) worstReply = risk;
+    }
+
+    const row = Math.floor(idx / TTT_COLS);
+    const col = idx % TTT_COLS;
+    const centerBonus = Math.max(0, 90 - (Math.abs(row - centerRow) + Math.abs(col - centerCol)) * 7);
+    const score = ownThreat * 1.02 - xThreat * 0.44 - worstReply * 1.12 + tttCheapMovePotential(board, idx, 'O') * 1.3 + centerBonus;
+    board[idx] = '';
+    if (score > bestScore) {
+      bestScore = score;
+      best = idx;
+    }
+  }
+  return best >= 0 ? best : tttNearestCenterFallbackMove(board);
+}
+
+function getRakOnlineGomokuEngineV952Health() {
+  return {
+    ok: true,
+    version: String(window.APP_VERSION || 'v.1.5 (953)'),
+    board: { rows: TTT_ROWS, cols: TTT_COLS, total: TTT_TOTAL_CELLS },
+    rulesetVersion: GOMOKU_RULESET_VERSION,
+    winLength: TTT_WIN_LENGTH,
+    deterministic: true,
+    onlineMetadata: true,
+    immediateWinLossGuard: true,
+    deadlineGuard: true,
+    legacyOnlineDimensionGuard: true,
+    note: 'Piškvorky drží 10 sloupců × 19 řad, AI má promptovou safety pipeline a online PvP zůstává člověk proti člověku.'
+  };
+}
+if (typeof window !== 'undefined') {
+  window.getRakOnlineGomokuEngineV952Health = getRakOnlineGomokuEngineV952Health;
+  window.getRakOnlineGomokuEngineV951Health = getRakOnlineGomokuEngineV952Health;
+}
+
 function tttBestMove(board, difficulty) {
   const free = [];
   for (let i = 0; i < board.length; i += 1) {
     if (!board[i]) free.push(i);
   }
   if (!free.length) return -1;
+
+  const deadline = tttEngineNow() + tttEngineBudgetMs(difficulty || 'ai');
+  const promptEngineMove = tttPromptEngineTacticalMove(board, difficulty || 'ai', deadline);
+  if (promptEngineMove >= 0 && !board[promptEngineMove]) return promptEngineMove;
+
+  const v952RootMove = tttV952RootSafetyMove(board, difficulty || 'ai', deadline);
+  if (v952RootMove >= 0 && !board[v952RootMove]) return v952RootMove;
 
   const immediateWin = tttWinningMove(board, 'O');
   if (immediateWin >= 0) return immediateWin;
@@ -4679,22 +4991,22 @@ function tttBestMove(board, difficulty) {
   const earlyOpenTwoBlock = occupied <= 18 ? tttPickBestBlockMove(board, tttOpenTwoThreatMoves(board, 'X'), 'X') : -1;
   if (earlyOpenTwoBlock >= 0) return earlyOpenTwoBlock;
 
-  const thirteenTurnClampMove = tttBestThirteenTurnClampMove(board, (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 1780);
+  const thirteenTurnClampMove = tttBestThirteenTurnClampMove(board, deadline);
   if (thirteenTurnClampMove >= 0) return thirteenTurnClampMove;
 
-  const earlyTrapLockMove = tttBestEarlyTrapLockMove(board, (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 1680);
+  const earlyTrapLockMove = tttBestEarlyTrapLockMove(board, deadline);
   if (earlyTrapLockMove >= 0) return earlyTrapLockMove;
 
-  const humanPressureLockMove = tttBestHumanPressureLockMove(board, (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 1580);
+  const humanPressureLockMove = tttBestHumanPressureLockMove(board, deadline);
   if (humanPressureLockMove >= 0) return humanPressureLockMove;
 
-  const replyLockdownMove = tttBestReplyLockdownMove(board, (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 1240);
+  const replyLockdownMove = tttBestReplyLockdownMove(board, deadline);
   if (replyLockdownMove >= 0) return replyLockdownMove;
 
-  const lineContainmentMove = tttBestLineContainmentMove(board, (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 620);
+  const lineContainmentMove = tttBestLineContainmentMove(board, deadline);
   if (lineContainmentMove >= 0) return lineContainmentMove;
 
-  const trapBrakeMove = tttBestHumanTrapBrakeMove(board, (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 520);
+  const trapBrakeMove = tttBestHumanTrapBrakeMove(board, deadline);
   if (trapBrakeMove >= 0) return trapBrakeMove;
 
   const opponentFork = tttBestForkMove(board, 'X');
@@ -4706,10 +5018,10 @@ function tttBestMove(board, difficulty) {
   const lookaheadSafeMove = tttBestLookaheadSafeMove(board, 'O', 'X');
   if (lookaheadSafeMove >= 0) return lookaheadSafeMove;
 
-  const deepSafetyMove = tttBestDeepSafetyMove(board, (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 320);
+  const deepSafetyMove = tttBestDeepSafetyMove(board, deadline);
   if (deepSafetyMove >= 0) return deepSafetyMove;
 
-  const ultraSafetyMove = tttBestUltraSafetyMove(board, (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 430);
+  const ultraSafetyMove = tttBestUltraSafetyMove(board, deadline);
   if (ultraSafetyMove >= 0) return ultraSafetyMove;
 
   const ownFork = tttBestForkMove(board, 'O');
@@ -4722,7 +5034,7 @@ function tttBestMove(board, difficulty) {
   if (ownOpenThree >= 0) return ownOpenThree;
 
   const radius = occupied < 14 ? 3 : 2;
-  const deadline = (typeof performance !== 'undefined' ? performance.now() : Date.now()) + (difficulty === 'ai' ? 1320 : 80);
+  const searchDeadline = deadline;
   let candidates = tttCandidateMoves(board, radius);
   if (!candidates.length) candidates = free.slice();
 
@@ -4731,7 +5043,7 @@ function tttBestMove(board, difficulty) {
     .map(idx => ({
       idx,
       score: tttSimpleMoveScore(board, idx, 'O')
-        + tttFastAiMoveScore(board, idx, 'O', deadline) * 0.86
+        + tttFastAiMoveScore(board, idx, 'O', searchDeadline) * 0.86
         - tttTacticalPressureScore((() => { board[idx] = 'O'; const snapshot = board.slice(); board[idx] = ''; return snapshot; })(), 'X') * 0.18
     }))
     .sort((a, b) => b.score - a.score)
@@ -4741,9 +5053,9 @@ function tttBestMove(board, difficulty) {
   let bestIdx = candidates[0] ?? free[0];
   let bestScore = -Infinity;
   for (const idx of candidates) {
-    const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
-    if (now > deadline && bestIdx >= 0) break;
-    const score = tttHardMoveSearchScore(board, idx, deadline);
+    const now = tttEngineNow();
+    if (now > searchDeadline && bestIdx >= 0) break;
+    const score = tttHardMoveSearchScore(board, idx, searchDeadline);
     if (score > bestScore) {
       bestScore = score;
       bestIdx = idx;
@@ -4820,6 +5132,7 @@ function tttNormalizeHardWinEntry(entry) {
     elapsedText,
     date: String(entry && (entry.date ?? entry.created_at) ? (entry.date ?? entry.created_at) : '').trim(),
     appVersion: String(entry && (entry.appVersion ?? entry.app_version) ? (entry.appVersion ?? entry.app_version) : '').trim(),
+    rulesetVersion: String(entry && (entry.rulesetVersion ?? entry.ruleset_version) ? (entry.rulesetVersion ?? entry.ruleset_version) : GOMOKU_RULESET_VERSION).trim() || GOMOKU_RULESET_VERSION,
     note: String(entry && entry.note ? entry.note : '').trim()
   };
 }
@@ -4828,9 +5141,11 @@ function tttGetHardWinRows() {
   const state = tttGetState();
   const remote = Array.isArray(state.hardWinRemote) ? state.hardWinRemote : [];
 
+  const currentRuleset = String(GOMOKU_RULESET_VERSION || '').trim();
   const normalized = remote
     .map(tttNormalizeHardWinEntry)
-    .filter(entry => entry.name);
+    .filter(entry => entry.name)
+    .filter(entry => !currentRuleset || String(entry.rulesetVersion || '').trim() === currentRuleset);
 
   normalized.sort((a, b) => {
     const moveDiff = (a.totalMoves || 0) - (b.totalMoves || 0);
@@ -4858,7 +5173,7 @@ async function tttRefreshHardWinRows(forceRender) {
   tttRender();
   try {
     if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.loadGomokuWins === 'function') {
-      const rows = await window.RotationSupabaseBridge.loadGomokuWins(25);
+      const rows = await window.RotationSupabaseBridge.loadGomokuWins(25, { rulesetVersion: GOMOKU_RULESET_VERSION });
       state.hardWinRemote = Array.isArray(rows) ? rows : [];
     }
     state.hardWinLoaded = true;
@@ -5013,7 +5328,7 @@ function tttBuildStartLeaderboardHtml() {
     return [
       '<div class="tttCard tttWinHistory">',
       '  <div class="tttSectionTitle">Kdo porazil AI</div>',
-      '  <div class="tttNote">Žebříček online .</div>',
+      '  <div class="tttNote">Žebříček online · aktuální pravidla Piškvorek.</div>',
       '  ' + tttBuildHardWinTableHtml(),
       '</div>'
     ].join('');
@@ -5111,6 +5426,7 @@ async function tttSubmitHardWin() {
     oMoves: stats.oMoves,
     elapsedMs: stats.elapsedMs,
     elapsedText: stats.elapsedText,
+    rulesetVersion: GOMOKU_RULESET_VERSION,
     note: 'Výhra nad nejtvrdší AI'
   };
 
@@ -5129,6 +5445,27 @@ async function tttSubmitHardWin() {
   await tttRefreshHardWinRows(true);
   if (typeof tttRender === 'function') tttRender();
 }
+
+
+function getRakGomokuRulesetLeaderboardHealth() {
+  const state = tttGetState();
+  const rows = Array.isArray(state.hardWinRemote) ? state.hardWinRemote.map(tttNormalizeHardWinEntry).filter(Boolean) : [];
+  const currentRuleset = String(GOMOKU_RULESET_VERSION || '').trim();
+  const visibleRows = rows.filter(row => !currentRuleset || String(row.rulesetVersion || '').trim() === currentRuleset);
+  return {
+    ok: true,
+    version: window.APP_VERSION || 'v.1.5 (953)',
+    game: 'ttt',
+    rulesetVersion: currentRuleset,
+    appVersionIsSeparate: true,
+    remoteRowsLoaded: rows.length,
+    visibleCurrentRulesetRows: visibleRows.length,
+    loadFilter: 'supabase gomoku_wins.ruleset_version = ' + currentRuleset,
+    sort: 'UI sorts by moves, elapsedMs, created_at; Supabase query orders by created_at only',
+    note: 'Ruleset verzi zvyšovat jen při změně AI obtížnosti/pravidel, ne při vzhledové úpravě aplikace.'
+  };
+}
+if (typeof window !== 'undefined') window.getRakGomokuRulesetLeaderboardHealth = getRakGomokuRulesetLeaderboardHealth;
 
 
 function tttBuildResultSummary(winner) {
@@ -12524,7 +12861,7 @@ function applyProfileUiPreferencesForActiveAccount(options = {}) {
   const defaultTheme = normalizeThemePreferenceId('default', 'default');
   const defaultBg = normalizeBackgroundPreferenceId('ios-mesh', 'ios-mesh');
   let changed = false;
-  // v.1.5 (949): vzhled je profilový. Nový/prázdný profil nezačne omylem vzhledem po předchozím přihlášeném profilu.
+  // v.1.5 (953): vzhled je profilový. Nový/prázdný profil nezačne omylem vzhledem po předchozím přihlášeném profilu.
   if (!ui.themeId) { ui.themeId = defaultTheme; changed = true; }
   if (!ui.backgroundId) { ui.backgroundId = defaultBg; changed = true; }
   const rewardMetrics = getThemeUnlockMetrics(profile);
@@ -12923,7 +13260,7 @@ function getRakProfileAppearanceRewardHealth() {
   const themeRewards = themes.filter(item => String(item && item.id || '') !== 'default');
   const backgroundRewards = backgrounds.filter(item => String(item && item.id || '') !== 'ios-mesh');
   return {
-    version: window.APP_VERSION || 'v.1.5 (949)',
+    version: window.APP_VERSION || 'v.1.5 (953)',
     mode: 'profile-appearance-reward-health-v928',
     activeProfile: metrics.hasProfile,
     profileThemeStorage: 'account.uiSettings.themeId',
@@ -13012,7 +13349,7 @@ function getRakDashboardGlassThemeHealth() {
   const lightweight = /(?:^|\s)(?:lightweightMode|lowEndDevice|ladaMode)(?:\s|$)/.test(bodyClass);
   return {
     ok: true,
-    version: window.APP_VERSION || 'v.1.5 (949)',
+    version: window.APP_VERSION || 'v.1.5 (953)',
     mode: 'dashboard-ios-glass-viewport-fit-v945',
     theme,
     background,
@@ -13059,7 +13396,7 @@ try {
 function getRakRotaceNamesDockHealth() {
   const result = {
     ok: true,
-    version: window.APP_VERSION || 'v.1.5 (949)',
+    version: window.APP_VERSION || 'v.1.5 (953)',
     mode: 'rotace-names-dock-stable-css-v930',
     checkedAt: new Date().toISOString(),
     scope: 'Rotace / seznam jmen / stabilní spodní dock',

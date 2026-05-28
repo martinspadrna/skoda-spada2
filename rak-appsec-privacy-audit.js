@@ -1,4 +1,4 @@
-// v.1.5 (949) – AppSec/privacy klientský povrch uzavřený jako read-only audit bez mutací.
+// v.1.5 (953) – AppSec/privacy klientský povrch uzavřený jako read-only audit bez mutací.
 (function setupRakAppSecPrivacyAudit() {
   try {
     if (typeof window.rakMarkModuleReady === 'function') {
@@ -7,7 +7,7 @@
   } catch (err) {}
 
   const startedAt = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
-  const VERSION = 'v.1.5 (949)';
+  const VERSION = 'v.1.5 (953)';
   const MODE = 'appsec-privacy-client-surface-readonly-v923';
   const sensitiveKeyPattern = /(password|passwd|secret|token|bearer|jwt|private|admin|role|auth|session|cookie|api[_-]?key|service[_-]?role)/i;
 
