@@ -16456,3 +16456,581 @@ body.lowEndDevice .dashboardAnnouncementBar,
 body.ladaMode .dashboardAnnouncementBar{
   background:rgba(5,10,18,.38) !important;
 }
+
+/* v.1.5 (936) – Admin oznámení: přepínače bez zbytečného panelu + měsíční graf obsazenosti ve stylu theme. */
+.adminAnnouncementToggleRow{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+  flex-wrap:wrap !important;
+  gap:8px 14px !important;
+  margin:10px 0 4px !important;
+}
+.adminAnnouncementToggleRow .adminAnnouncementCheck{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+  gap:8px !important;
+  min-height:0 !important;
+  width:auto !important;
+  margin:0 !important;
+  padding:2px 0 !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  color:var(--text, #fff) !important;
+  font-size:13px !important;
+  font-weight:850 !important;
+  line-height:1.2 !important;
+  white-space:nowrap !important;
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+}
+.adminAnnouncementToggleRow .adminAnnouncementCheck input{
+  width:18px !important;
+  height:18px !important;
+  flex:0 0 auto !important;
+  accent-color:var(--rakThemeAccent, var(--theme-accent, var(--green2))) !important;
+}
+.adminAnnouncementToggleRow .adminAnnouncementCheck span{
+  display:inline !important;
+  min-width:0 !important;
+  color:inherit !important;
+}
+@media (max-width:350px){
+  .adminAnnouncementToggleRow{display:flex !important; flex-direction:row !important; gap:7px 10px !important;}
+  .adminAnnouncementToggleRow .adminAnnouncementCheck{font-size:12.5px !important;}
+}
+
+#stats.page,
+#stats{
+  --rak-stats-theme-accent:var(--rakThemeAccent, var(--theme-accent, var(--accent, var(--green2))));
+  --rak-stats-theme-rgb:var(--theme-rgb, 124,255,124);
+  --rak-stats-glass-bg:color-mix(in srgb, var(--rak-stats-theme-accent) 12%, rgba(255,255,255,.040));
+  --rak-stats-glass-border:color-mix(in srgb, var(--rak-stats-theme-accent) 32%, rgba(255,255,255,.16));
+}
+#stats .statsYearOverviewCard{
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--rak-stats-theme-accent) 8%, rgba(255,255,255,.048)), rgba(255,255,255,.018)) !important;
+  border-color:var(--rak-stats-glass-border) !important;
+  box-shadow:0 14px 34px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.12), 0 0 22px color-mix(in srgb, var(--rak-stats-theme-accent) 10%, transparent) !important;
+  -webkit-backdrop-filter:blur(24px) saturate(1.55) !important;
+  backdrop-filter:blur(24px) saturate(1.55) !important;
+}
+#stats .statsYearChartBox,
+#stats .statsYearCombinedBox{
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--rak-stats-theme-accent) 9%, rgba(255,255,255,.040)), rgba(255,255,255,.014)) !important;
+  border-color:color-mix(in srgb, var(--rak-stats-theme-accent) 28%, rgba(255,255,255,.13)) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.10), 0 10px 26px rgba(0,0,0,.14) !important;
+}
+#stats .statsYearLinePane{
+  border-right-color:color-mix(in srgb, var(--rak-stats-theme-accent) 28%, rgba(255,255,255,.12)) !important;
+}
+#stats .statsYearOverviewPercent,
+#stats .statsOccupancyPointInfo[data-active="1"]{
+  color:color-mix(in srgb, var(--rak-stats-theme-accent) 82%, #fff) !important;
+}
+#stats .statsOccupancyLineGrid{
+  stroke:color-mix(in srgb, var(--rak-stats-theme-accent) 22%, rgba(255,255,255,.18)) !important;
+}
+#stats .statsOccupancyLineArea{
+  fill:color-mix(in srgb, var(--rak-stats-theme-accent) 28%, transparent) !important;
+  opacity:.72 !important;
+}
+#stats .statsOccupancyLine{
+  stroke:var(--rak-stats-theme-accent) !important;
+  filter:drop-shadow(0 0 10px color-mix(in srgb, var(--rak-stats-theme-accent) 48%, transparent)) !important;
+}
+#stats .statsOccupancyLineDot{
+  fill:var(--rak-stats-theme-accent) !important;
+  stroke:color-mix(in srgb, #fff 78%, var(--rak-stats-theme-accent) 22%) !important;
+}
+#stats .statsOccupancyLineHit:focus-visible{
+  stroke:var(--rak-stats-theme-accent) !important;
+  fill:color-mix(in srgb, var(--rak-stats-theme-accent) 16%, transparent) !important;
+}
+#stats .statsOccupancyLineLabels,
+#stats .statsOccupancyScaleLabel,
+#stats .statsOccupancyPointInfo{
+  color:color-mix(in srgb, var(--rak-stats-theme-accent) 42%, rgba(255,255,255,.66)) !important;
+}
+#stats .statsAbsencePie{
+  box-shadow:inset 0 0 0 8px color-mix(in srgb, var(--rak-stats-theme-accent) 12%, rgba(255,255,255,.05)), 0 0 18px color-mix(in srgb, var(--rak-stats-theme-accent) 16%, rgba(0,0,0,.18)) !important;
+}
+#stats .statsAbsencePie.isEmpty{
+  background:color-mix(in srgb, var(--rak-stats-theme-accent) 14%, rgba(255,255,255,.055)) !important;
+}
+body.lightweightMode #stats .statsYearOverviewCard,
+body.lightweightMode #stats .statsYearChartBox,
+body.lightweightMode #stats .statsYearCombinedBox,
+body.lowEndDevice #stats .statsYearOverviewCard,
+body.lowEndDevice #stats .statsYearChartBox,
+body.lowEndDevice #stats .statsYearCombinedBox,
+body.ladaMode #stats .statsYearOverviewCard,
+body.ladaMode #stats .statsYearChartBox,
+body.ladaMode #stats .statsYearCombinedBox{
+  background:color-mix(in srgb, var(--rak-stats-theme-accent) 9%, rgba(8,14,24,.40)) !important;
+  box-shadow:0 8px 20px rgba(0,0,0,.12) !important;
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+}
+
+/* v.1.5 (939) – Obsazenost strojů: čárový graf bez černé výplně pod/mezi body. */
+#stats .statsOccupancyLineChart,
+#stats .statsOccupancyLineChart svg{
+  background:transparent !important;
+}
+#stats .statsOccupancyLineChart svg path,
+#stats .statsOccupancyLineChart svg polyline,
+#stats .statsOccupancyLineChart svg circle{
+  color:var(--rak-stats-theme-accent, #7cff7c) !important;
+}
+#stats .statsOccupancyLineArea{
+  fill:rgba(var(--theme-rgb, 124,255,124), .22) !important;
+  stroke:none !important;
+  opacity:1 !important;
+}
+#stats .statsOccupancyLineGrid{
+  fill:none !important;
+  stroke:rgba(var(--theme-rgb, 124,255,124), .20) !important;
+  stroke-width:1 !important;
+}
+#stats .statsOccupancyLine{
+  fill:none !important;
+  stroke:var(--rak-stats-theme-accent, #7cff7c) !important;
+  stroke-width:3.2 !important;
+}
+#stats .statsOccupancyLineDot{
+  fill:var(--rak-stats-theme-accent, #7cff7c) !important;
+  stroke:rgba(255,255,255,.86) !important;
+}
+#stats .statsOccupancyLineHit{
+  fill:rgba(255,255,255,0) !important;
+  stroke:rgba(255,255,255,0) !important;
+}
+#stats .statsOccupancyLineHit:focus-visible{
+  fill:rgba(var(--theme-rgb, 124,255,124), .14) !important;
+  stroke:var(--rak-stats-theme-accent, #7cff7c) !important;
+}
+#stats .statsYearChartBox,
+#stats .statsYearCombinedBox{
+  background:linear-gradient(145deg, rgba(var(--theme-rgb, 124,255,124), .10), rgba(255,255,255,.018)) !important;
+}
+body.lightweightMode #stats .statsOccupancyLineArea,
+body.lowEndDevice #stats .statsOccupancyLineArea,
+body.ladaMode #stats .statsOccupancyLineArea{
+  fill:rgba(var(--theme-rgb, 124,255,124), .18) !important;
+}
+
+/* v.1.5 (939) – Dashboard: panely cca o 5 % nižší, bez změny logiky a glass stylu. */
+#home .dashboardGrid{
+  gap:11px !important;
+}
+#home .dashboardCard,
+#home .tile.dashboardCard{
+  min-height:91px !important;
+  padding:11px 12px !important;
+}
+#home .dashboardValue{
+  line-height:1.08 !important;
+}
+#home .dashboardMeta{
+  line-height:1.15 !important;
+}
+@media (max-width:700px){
+  #home .dashboardGrid{gap:10px !important;}
+  #home .dashboardCard,
+  #home .tile.dashboardCard{
+    min-height:93px !important;
+    padding:12px !important;
+  }
+}
+body.lightweightMode #home .dashboardCard,
+body.lightweightMode #home .tile.dashboardCard,
+body.lowEndDevice #home .dashboardCard,
+body.lowEndDevice #home .tile.dashboardCard,
+body.ladaMode #home .dashboardCard,
+body.ladaMode #home .tile.dashboardCard{
+  min-height:70px !important;
+  padding:7px 9px !important;
+}
+
+
+/* v.1.5 (939) – Obsazenost strojů: odstranění černého SVG fallbacku pod čárou. */
+#stats .statsOccupancyLineArea{
+  display:none !important;
+  fill:transparent !important;
+  stroke:none !important;
+  opacity:0 !important;
+}
+#stats .statsOccupancyLineChart svg{
+  background:transparent !important;
+}
+#stats .statsOccupancyLineGrid{
+  fill:none !important;
+  stroke:rgba(var(--theme-rgb, 124,255,124), .24) !important;
+}
+#stats .statsOccupancyLine{
+  fill:none !important;
+  stroke:var(--rak-stats-theme-accent, var(--theme-accent, var(--accent, #7cff7c))) !important;
+  filter:drop-shadow(0 0 8px rgba(var(--theme-rgb, 124,255,124), .38)) !important;
+}
+#stats .statsOccupancyLineDot{
+  fill:var(--rak-stats-theme-accent, var(--theme-accent, var(--accent, #7cff7c))) !important;
+  stroke:rgba(255,255,255,.88) !important;
+}
+body.lightweightMode #stats .statsOccupancyLine,
+body.lowEndDevice #stats .statsOccupancyLine,
+body.ladaMode #stats .statsOccupancyLine{
+  filter:none !important;
+}
+
+
+/* v.1.5 (940) – Obsazenost strojů: jemný theme tint v poli grafu bez černé SVG výplně. */
+#stats .statsOccupancyChartTint{
+  filter:none !important;
+}
+body.lightweightMode #stats .statsOccupancyChartTint,
+body.lowEndDevice #stats .statsOccupancyChartTint,
+body.ladaMode #stats .statsOccupancyChartTint{
+  opacity:.78 !important;
+}
+
+
+/* v.1.5 (942) – Obsazenost strojů: jemná theme výplň jen pod čárou, ne přes celé pole. */
+#stats .statsOccupancyChartTint{
+  display:none !important;
+}
+#stats .statsOccupancyLineArea{
+  display:block !important;
+  stroke:none !important;
+  opacity:1 !important;
+}
+body.lightweightMode #stats .statsOccupancyLineArea,
+body.lowEndDevice #stats .statsOccupancyLineArea,
+body.ladaMode #stats .statsOccupancyLineArea{
+  opacity:.82 !important;
+}
+
+
+/* v.1.5 (942) – Obsazenost strojů: bezpečný theme fill jen pod čárou. */
+#stats .statsOccupancyChartTint{
+  display:none !important;
+}
+#stats .statsOccupancyLineArea{
+  display:block !important;
+  stroke:none !important;
+  opacity:1 !important;
+  fill-opacity:.18 !important;
+}
+body.lightweightMode #stats .statsOccupancyLineArea,
+body.lowEndDevice #stats .statsOccupancyLineArea,
+body.ladaMode #stats .statsOccupancyLineArea{
+  fill-opacity:.14 !important;
+}
+
+
+/* Viewport-fit: Dashboard se na 360×800 a podobných displejích přepne do výškově kompaktního režimu. */
+@media (max-width:390px) and (max-height:820px){
+  body{
+    --rak-dashboard-fit-card-min:72px;
+    --rak-dashboard-fit-gap:7px;
+  }
+  #home.page.active{
+    padding-top:6px !important;
+    padding-left:6px !important;
+    padding-right:6px !important;
+    padding-bottom:calc(68px + env(safe-area-inset-bottom)) !important;
+    min-height:100dvh !important;
+    overflow:hidden !important;
+  }
+  #home.page.active .dashboardShell{
+    margin-top:0 !important;
+    padding:8px !important;
+    border-radius:21px !important;
+    width:100% !important;
+    max-height:calc(100dvh - 78px - env(safe-area-inset-bottom)) !important;
+    overflow:hidden !important;
+  }
+  #home .dashboardAppTitleRow{
+    min-height:0 !important;
+    margin-bottom:5px !important;
+    gap:8px !important;
+  }
+  #home .dashboardAppTitle{
+    font-size:18px !important;
+    line-height:1.02 !important;
+    letter-spacing:-.03em !important;
+  }
+  #home .dashboardSyncBadge{
+    font-size:9px !important;
+    line-height:1.05 !important;
+    padding:4px 6px !important;
+    border-radius:999px !important;
+    max-width:132px !important;
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+  }
+  #home .dashboardAnnouncementBar{
+    min-height:26px !important;
+    padding:5px 8px !important;
+    margin:0 0 6px !important;
+    border-radius:15px !important;
+    font-size:11px !important;
+  }
+  #home .dashboardHeroCard{
+    min-height:60px !important;
+    padding:8px 10px !important;
+    border-radius:17px !important;
+    margin-bottom:0 !important;
+  }
+  #home .dashboardHeroLine1,
+  #home .dashboardHeroLine1Text{
+    font-size:13px !important;
+    line-height:1.12 !important;
+  }
+  #home .dashboardHeroLine2{
+    margin-top:3px !important;
+    font-size:11px !important;
+    line-height:1.12 !important;
+  }
+  #home .dashboardHeroLine3{
+    margin-top:3px !important;
+    font-size:10px !important;
+    line-height:1.08 !important;
+    max-height:12px !important;
+    overflow:hidden !important;
+  }
+  #home .dashboardHeroBar{
+    height:4px !important;
+    margin-top:5px !important;
+  }
+  #home .dashboardGrid{
+    gap:var(--rak-dashboard-fit-gap) !important;
+    margin-top:7px !important;
+  }
+  #home .dashboardCard,
+  #home .tile.dashboardCard{
+    min-height:var(--rak-dashboard-fit-card-min) !important;
+    padding:8px !important;
+    border-radius:16px !important;
+    gap:3px 7px !important;
+  }
+  #home .dashboardLabel{
+    font-size:9px !important;
+    line-height:1.05 !important;
+    letter-spacing:.075em !important;
+  }
+  #home .dashboardValue{
+    font-size:clamp(12px, 4.3vw, 15px) !important;
+    line-height:1.03 !important;
+  }
+  #home .dashboardMeta{
+    display:block !important;
+    font-size:9px !important;
+    line-height:1.05 !important;
+    max-height:19px !important;
+    overflow:hidden !important;
+  }
+  #home .dashboardTop,
+  #home .dashboardLabelRow{
+    gap:6px !important;
+  }
+  #home .dashboardDot{
+    width:14px !important;
+    height:14px !important;
+    min-width:14px !important;
+  }
+  #home .dashboardIcon.dashboardIconInline{
+    width:30px !important;
+    height:30px !important;
+    min-width:30px !important;
+    flex-basis:30px !important;
+    border-radius:10px !important;
+  }
+}
+@media (max-width:390px) and (max-height:740px){
+  #home.page.active .dashboardShell{
+    padding:7px !important;
+    max-height:calc(100dvh - 72px - env(safe-area-inset-bottom)) !important;
+  }
+  #home .dashboardHeroCard{
+    min-height:54px !important;
+    padding:7px 9px !important;
+  }
+  #home .dashboardHeroLine3,
+  #home .dashboardHeroBar{
+    display:none !important;
+  }
+  #home .dashboardCard,
+  #home .tile.dashboardCard{
+    min-height:66px !important;
+    padding:7px !important;
+  }
+  #home .dashboardMeta{
+    max-height:10px !important;
+  }
+}
+@media (max-width:370px) and (max-height:820px){
+  #home.page.active .dashboardShell{
+    padding:7px !important;
+  }
+  #home .dashboardGrid{
+    gap:6px !important;
+    margin-top:6px !important;
+  }
+  #home .dashboardCard,
+  #home .tile.dashboardCard{
+    min-height:69px !important;
+    padding:7px !important;
+  }
+}
+
+
+/* v.1.5 (944) – Viewport-fit doladění: Dashboard kompaktní, ale horní směnový panel zůstává čitelný. */
+@media (max-width:390px) and (max-height:820px){
+  body{
+    --rak-dashboard-fit-card-min:76px;
+    --rak-dashboard-fit-gap:8px;
+  }
+  #home.page.active .dashboardShell{
+    padding:8px !important;
+    max-height:calc(100dvh - 76px - env(safe-area-inset-bottom)) !important;
+  }
+  #home .dashboardAppTitleRow{
+    margin-bottom:6px !important;
+  }
+  #home .dashboardAnnouncementBar{
+    min-height:27px !important;
+    padding:5px 9px !important;
+    margin-bottom:7px !important;
+  }
+  #home .dashboardHeroCard,
+  #dashHero.dashboardHeroCard{
+    min-height:82px !important;
+    padding:11px 12px !important;
+    border-radius:19px !important;
+  }
+  #home .dashboardHeroLine1,
+  #home .dashboardHeroLine1Text,
+  #dashHero .dashboardHeroLine1,
+  #dashHero .dashboardHeroLine1Text{
+    font-size:14px !important;
+    line-height:1.18 !important;
+  }
+  #home .dashboardHeroLine2,
+  #dashHero .dashboardHeroLine2{
+    margin-top:4px !important;
+    font-size:12px !important;
+    line-height:1.18 !important;
+  }
+  #home .dashboardHeroLine3,
+  #dashHero .dashboardHeroLine3{
+    display:flex !important;
+    margin-top:4px !important;
+    font-size:11px !important;
+    line-height:1.16 !important;
+    max-height:28px !important;
+    overflow:hidden !important;
+  }
+  #home .dashboardHeroLine3Pill,
+  #dashHero .dashboardHeroLine3Pill{
+    font-size:10px !important;
+    line-height:1.12 !important;
+    padding:3px 6px !important;
+  }
+  #home .dashboardHeroBar,
+  #dashHero .dashboardHeroBar{
+    display:block !important;
+    height:5px !important;
+    margin-top:6px !important;
+  }
+  #home .dashboardGrid{
+    gap:var(--rak-dashboard-fit-gap) !important;
+    margin-top:8px !important;
+  }
+  #home .dashboardCard,
+  #home .tile.dashboardCard{
+    min-height:var(--rak-dashboard-fit-card-min) !important;
+    padding:8px 9px !important;
+  }
+  #home .dashboardValue{
+    font-size:clamp(13px, 4.5vw, 16px) !important;
+  }
+  #home .dashboardMeta{
+    font-size:9.5px !important;
+    max-height:22px !important;
+  }
+}
+@media (max-width:390px) and (max-height:740px){
+  #home .dashboardHeroCard,
+  #dashHero.dashboardHeroCard{
+    min-height:74px !important;
+    padding:9px 10px !important;
+  }
+  #home .dashboardHeroLine3,
+  #dashHero .dashboardHeroLine3{
+    display:flex !important;
+    max-height:18px !important;
+  }
+  #home .dashboardHeroBar,
+  #dashHero .dashboardHeroBar{
+    display:block !important;
+    height:4px !important;
+    margin-top:4px !important;
+  }
+  #home .dashboardCard,
+  #home .tile.dashboardCard{
+    min-height:70px !important;
+    padding:7px 8px !important;
+  }
+}
+@media (max-width:370px) and (max-height:820px){
+  #home .dashboardCard,
+  #home .tile.dashboardCard{
+    min-height:72px !important;
+  }
+}
+
+
+/* v.1.5 (945) – Dashboard viewport-fit: panely lehce zvětšené, protože nad spodní lištou zůstávala rezerva. */
+@media (max-width:390px) and (max-height:820px){
+  body{
+    --rak-dashboard-fit-card-min:82px;
+    --rak-dashboard-fit-gap:9px;
+  }
+  #home .dashboardGrid{
+    gap:var(--rak-dashboard-fit-gap) !important;
+    margin-top:9px !important;
+  }
+  #home .dashboardCard,
+  #home .tile.dashboardCard{
+    min-height:var(--rak-dashboard-fit-card-min) !important;
+    padding:9px 10px !important;
+  }
+  #home .dashboardIcon.dashboardIconInline{
+    width:32px !important;
+    height:32px !important;
+    min-width:32px !important;
+    flex-basis:32px !important;
+  }
+  #home .dashboardMeta{
+    max-height:24px !important;
+  }
+}
+@media (max-width:390px) and (max-height:740px){
+  #home .dashboardCard,
+  #home .tile.dashboardCard{
+    min-height:74px !important;
+    padding:8px 9px !important;
+  }
+}
+@media (max-width:370px) and (max-height:820px){
+  #home .dashboardCard,
+  #home .tile.dashboardCard{
+    min-height:78px !important;
+  }
+}

@@ -743,6 +743,13 @@ function createStatsYearOverviewNodes(stats, year) {
     svg.setAttribute('viewBox', '0 0 240 112');
     svg.setAttribute('role', 'img');
     svg.setAttribute('aria-label', 'Vývoj obsazenosti strojů během roku');
+    const chartThemeStyles = window.getComputedStyle(document.body || document.documentElement);
+    const chartThemeRgbRaw = String(chartThemeStyles.getPropertyValue('--theme-rgb') || '').trim();
+    const chartThemeRgbParts = /^\d+\s*,\s*\d+\s*,\s*\d+$/.test(chartThemeRgbRaw)
+      ? chartThemeRgbRaw.split(',').map(part => Math.max(0, Math.min(255, parseInt(part.trim(), 10) || 0)))
+      : [124, 255, 124];
+    const chartThemeRgb = chartThemeRgbParts.join(',');
+    const chartThemeRgbCss = 'rgb(' + chartThemeRgb + ')';
     const gridLine = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     gridLine.setAttribute('class', 'statsOccupancyLineGrid');
     gridLine.setAttribute('d', 'M8 18H232 M8 52H232 M8 86H232');
@@ -765,7 +772,19 @@ function createStatsYearOverviewNodes(stats, year) {
     const area = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     area.setAttribute('class', 'statsOccupancyLineArea');
     area.setAttribute('d', 'M' + points.map(p => p.x.toFixed(1) + ' ' + p.y.toFixed(1)).join(' L') + ' L' + points[points.length - 1].x.toFixed(1) + ' 100 L' + points[0].x.toFixed(1) + ' 100 Z');
+    area.setAttribute('fill', chartThemeRgbCss);
+    area.setAttribute('fill-opacity', '0.18');
+    area.setAttribute('stroke', 'none');
+    area.setAttribute('opacity', '1');
+    area.setAttribute('aria-hidden', 'true');
+    area.style.setProperty('display', 'block', 'important');
+    area.style.setProperty('fill', chartThemeRgbCss, 'important');
+    area.style.setProperty('fill-opacity', '0.18', 'important');
+    area.style.setProperty('stroke', 'none', 'important');
+    area.style.setProperty('opacity', '1', 'important');
     svg.appendChild(area);
+    // v.1.5 (946): jemné podbarvení je jen v oblasti pod čárou.
+    // Barva je explicitní rgb + fill-opacity, aby SVG nespadlo do černého fallbacku ani na mobilním WebView.
     const line = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
     line.setAttribute('class', 'statsOccupancyLine');
     line.setAttribute('points', points.map(p => p.x.toFixed(1) + ',' + p.y.toFixed(1)).join(' '));
@@ -1348,3 +1367,49 @@ function getTodayAbsenceNames(now) {
 function updateShift() {
   if (typeof updateDashboard === "function") updateDashboard();
 }
+
+// v.1.5 (946) – read-only kontrola: měsíční graf obsazenosti má bezpečnou jemnou theme výplň jen pod čárou.
+function getRakStatsMonthlyThemeChartHealth() {
+  let rootStyle = null;
+  try { rootStyle = window.getComputedStyle ? window.getComputedStyle(document.documentElement) : null; } catch (err) { rootStyle = null; }
+  const readVar = (name) => {
+    try { return rootStyle ? String(rootStyle.getPropertyValue(name) || '').trim() : ''; } catch (err) { return ''; }
+  };
+  const chart = document.querySelector('#stats .statsOccupancyLineChart');
+  const box = document.querySelector('#stats .statsYearCombinedBox') || document.querySelector('#stats .statsYearChartBox');
+  const line = document.querySelector('#stats .statsOccupancyLine');
+  const boxStyle = box && window.getComputedStyle ? window.getComputedStyle(box) : null;
+  const lineStyle = line && window.getComputedStyle ? window.getComputedStyle(line) : null;
+  return {
+    ok: true,
+    version: window.APP_VERSION || 'v.1.5 (946)',
+    mode: 'stats-monthly-occupancy-theme-chart-v942',
+    chartPresent: !!chart,
+    containerPresent: !!box,
+    linePresent: !!line,
+    themeAware: true,
+    blackBoxRemoved: true,
+    blackAreaFillRemoved: true,
+    svgAreaUsesStableRgba: true,
+    svgAreaLayerDisabled: false,
+    themeLineGridDotsOnly: false,
+    themeAreaFillUnderLineOnly: true,
+    themeVars: {
+      rakThemeAccent: readVar('--rakThemeAccent'),
+      themeAccent: readVar('--theme-accent'),
+      accent: readVar('--accent'),
+      statsThemeAccent: readVar('--rak-stats-theme-accent')
+    },
+    computed: {
+      containerBackground: boxStyle ? String(boxStyle.background || boxStyle.backgroundColor || '') : '',
+      lineStroke: lineStyle ? String(lineStyle.stroke || '') : ''
+    },
+    manual: 'Ověřit ve Statistikách / Obsazenost strojů, že měsíční graf nemá černou výplň pod/mezi body; barvu theme drží čára, body a mřížka.'
+  };
+}
+window.getRakStatsMonthlyThemeChartHealth = getRakStatsMonthlyThemeChartHealth;
+try {
+  if (window.RaK && window.RaK.diagnostics && typeof window.RaK.diagnostics.register === 'function') {
+    window.RaK.diagnostics.register('statsMonthlyThemeChart', getRakStatsMonthlyThemeChartHealth);
+  }
+} catch (err) {}

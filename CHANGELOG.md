@@ -1,3 +1,51 @@
+## v.1.5 (946)
+- Administrace → Oznámení Dashboard: online ukládání opraveno přes Supabase RPC `rak_save_dashboard_announcement`; oznámení už nemá zůstávat jen lokálně a po restartu appky se má načíst z online cache/refresh.
+- Supabase: doplněná RPC cesta pro save/clear oznámení, prázdný nadpis je povolený.
+- Verze sjednocena na v.1.5 (946), cache na `v1.5-946`, realtime kanál na `rak-public-live-v946`, package na `1.5.946`.
+
+## v.1.5 (945)
+- Dashboard: ve viewport-fit režimu jsou běžné panely lehce větší, protože nad spodní lištou zůstávala rezerva skoro na další panel.
+- Horní směnový panel zůstává chráněný proti přílišnému zmenšení.
+- Verze sjednocena na v.1.5 (945), cache na `v1.5-945`, realtime kanál na `rak-public-live-v945`, package na `1.5.945`.
+
+## v.1.5 (944)
+- Dashboard: viewport-fit režim z v943 doladěn, aby na malých displejích nebyl horní směnový panel příliš zmenšený.
+- Horní panel s informací kdo je v práci, kdy půjde směna D a kdo bude chybět je v kompaktním režimu čitelnější.
+- Verze sjednocena na v.1.5 (944), cache na `v1.5-944`, realtime kanál na `rak-public-live-v944`, package na `1.5.944`.
+
+## v.1.5 (943)
+- Dashboard: přidaný viewport-fit režim pro 360×800 a podobné displeje; kompaktní layout se spíná podle šířky i výšky, ne jen podle šířky.
+- Menší výška dashboard karet, menší mezery, kompaktnější hero karta, menší ikony a popisky jen na nízkých/úzkých displejích.
+- Verze sjednocena na v.1.5 (943), cache na `v1.5-943`, realtime kanál na `rak-public-live-v943`, package na `1.5.943`.
+
+## v.1.5 (942)
+- Statistiky → Obsazenost strojů: jemné theme podbarvení je jen pod čárou grafu, ne přes celé pole; SVG výplň používá bezpečné `rgb(...)` + `fill-opacity` místo rizikového fallbacku.
+- Přidán kritický CSS fallback v hlavičce aplikace, aby se při problémovém/pozdním načtení stylů nezobrazila bílá stránka s obřími ikonami.
+- Verze sjednocena na v.1.5 (942), cache na `v1.5-942`, realtime kanál na `rak-public-live-v942`, package na `1.5.942`.
+
+## v.1.5 (941)
+- Statistiky → Obsazenost strojů: podbarvení grafu je nově jen pod čárou, tedy v místě původní černé plochy; celoplošný tint z v940 je vypnutý.
+- Area fill používá explicitní inline `rgba(...)` z aktuálního theme, aby se nevrátil černý SVG fallback.
+- Verze sjednocena na v.1.5 (941), cache na `v1.5-941`, realtime kanál na `rak-public-live-v941`, package na `1.5.941`.
+
+## v.1.5 (940)
+- Statistiky → Obsazenost strojů: měsíční graf už není ani černý, ani úplně prázdný; pole grafu má jemný theme tint přes celý chart box, ale bez rizikové area fill vrstvy pod čárou.
+- Verze sjednocena na v.1.5 (940), cache na `v1.5-940`, realtime kanál na `rak-public-live-v940`, package na `1.5.940`.
+
+## v.1.5 (939)
+
+- Statistiky → Obsazenost strojů: měsíční graf už nemá černou výplň pod/mezi body; SVG plocha používá stabilní theme-aware `rgba(var(--theme-rgb), …)` místo rizikového fallbacku.
+- Přidaný bezpečný Playwright monkey test `playwright-monkey.spec.js` a skript `npm run test:monkey`; test nekliká na destruktivní/admin/online akce.
+- Přidané dokumenty `stats-monthly-chart-black-fill-v937.md`, `safe-monkey-test-v937.md`, `monkey-run-attempt-v937.md` a `about-50-version-summary-v937.md`.
+- Verze sjednocena na v.1.5 (939), cache na `v1.5-939`, realtime kanál na `rak-public-live-v939`, package na `1.5.939`.
+
+## v.1.5 (936)
+- Administrace → Oznámení Dashboard: přepínače `Aktivní` a `Text má jezdit` jsou nově bez zbytečného panelového pozadí, čitelnější a pořád vedle sebe kvůli úspoře místa.
+- Statistiky → Obsazenost strojů: měsíční graf už není černý box; karta, čára, plocha, body i mřížka používají barvy aktuálního theme.
+- Přidaný helper `getRakStatsMonthlyThemeChartHealth()` a release gate `v936-stats-monthly-theme-chart`.
+- Přidané dokumenty `dashboard-announcement-stats-theme-v936.md` a `about-50-version-summary-v936.md`.
+- Verze sjednocena na v.1.5 (936), cache na `v1.5-936`, realtime kanál na `rak-public-live-v936`, package na `1.5.936`.
+
 ## v.1.5 (935)
 - Dashboard zachovává tmavší odstín, ale panely jsou průhlednější a víc glass bez návratu k flekatým odleskům.
 - Oznámení Dashboardu je online-first přes Supabase tabulku `announcements`; lokální úložiště zůstává jen fallback, když online zápis nepustí policy nebo je zařízení offline.

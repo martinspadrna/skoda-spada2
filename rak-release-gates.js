@@ -1,8 +1,8 @@
-// v.1.5 (935) – release gating/checklist vrstva včetně Dashboard glass cleanupu a announcement tickeru.
+// v.1.5 (946) – release gating/checklist vrstva včetně Dashboard glass cleanupu a announcement tickeru.
 
 (function setupRakReleaseGates() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
-  const VERSION = 'v.1.5 (935)';
+  const VERSION = 'v.1.5 (946)';
   const MODE = 'release-gates-readonly-v929';
 
   try {
@@ -104,6 +104,7 @@
     const dashboardGlassTheme = readDiag('dashboardGlassTheme', 'getRakDashboardGlassThemeHealth');
     const dashboardAnnouncement = readDiag('dashboardAnnouncement', 'getRakDashboardAnnouncementHealth');
     const rotaceNamesDock = readDiag('rotaceNamesDock', 'getRakRotaceNamesDockHealth');
+    const statsMonthlyThemeChart = readDiag('statsMonthlyThemeChart', 'getRakStatsMonthlyThemeChartHealth');
     const frezkyCorrectionSignToggle = readDiag('frezkyCorrectionSignToggle', 'getRakFrezkyCorrectionSignToggleHealth');
     const ladaPerformance = readDiag('ladaPerformance', 'getLadaPerformanceHealth');
 
@@ -147,6 +148,7 @@
       dashboardGlassTheme,
       dashboardAnnouncement,
       rotaceNamesDock,
+      statsMonthlyThemeChart,
       frezkyCorrectionSignToggle,
       ladaPerformance
     };
@@ -155,7 +157,7 @@
   function buildGateMatrix(signals) {
     const gates = [];
     const version = safeString(window.APP_VERSION || VERSION);
-    const versionOk = /^v\.1\.5 \(933\)$/.test(version);
+    const versionOk = /^v\.1\.5 \(937\)$/.test(version);
 
     gates.push(makeGate(
       'version-consistency',
@@ -526,6 +528,30 @@
       signals.dashboardGlassTheme ? ('theme ikony ' + String(signals.dashboardGlassTheme.themeIconAware ? 'ano' : 'ne') + ', glass ' + String(signals.dashboardGlassTheme.dashboardCards || '—')) : 'dashboard glass helper chybí',
       'Ručně ověřit tmavší, ale průhlednější glass panely, theme barvy ikon a online announcement s lokálním fallbackem.',
       'dashboard/ui/theme/supabase'
+    ));
+
+
+
+    gates.push(makeGate(
+      'v938-dashboard-panel-height',
+      'Dashboard: panely cca o 5 % nižší',
+      signals.dashboardGlassTheme && signals.dashboardGlassTheme.ok ? 'ok' : 'warning',
+      'warning',
+      signals.dashboardGlassTheme ? String(signals.dashboardGlassTheme.dashboardPanelHeight || 'panel height info chybí') : 'dashboard glass helper chybí',
+      'Ručně ověřit Dashboard na mobilu, že panely působí o trochu nižší, ale texty a ikony nejsou natlačené.',
+      'dashboard/styles'
+    ));
+
+
+
+    gates.push(makeGate(
+      'v941-stats-monthly-chart-theme-area-fill',
+      'Obsazenost strojů: jemná theme výplň jen pod čárou',
+      signals.statsMonthlyThemeChart && signals.statsMonthlyThemeChart.ok ? 'ok' : 'warning',
+      'warning',
+      signals.statsMonthlyThemeChart ? ('theme ' + String(signals.statsMonthlyThemeChart.themeAware ? 'ano' : 'ne') + ', area rgba ' + String(signals.statsMonthlyThemeChart.svgAreaUsesStableRgba ? 'ano' : 'ne')) : 'stats monthly chart helper chybí',
+      'Ručně ověřit ve Statistikách, že jemné podbarvení je jen pod linkou grafu, ne přes celé pole, a že se nevrací černý fallback.',
+      'stats/styles/theme'
     ));
 
     gates.push(makeGate(

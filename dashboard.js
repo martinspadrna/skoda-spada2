@@ -266,8 +266,8 @@ function normalizeRakDashboardAnnouncement(raw) {
   const base = raw && typeof raw === 'object' ? raw : {};
   const message = String(base.message || base.text || base.body || '').trim().slice(0, 500);
   const title = String(base.title || '').trim().slice(0, 80);
-  const startAt = String(base.startAt || base.start_at || base.valid_from || base.from || '').trim();
-  const endAt = String(base.endAt || base.end_at || base.valid_to || base.to || '').trim();
+  const startAt = String(base.startAt || base.start_at || base.starts_at || base.valid_from || base.from || '').trim();
+  const endAt = String(base.endAt || base.end_at || base.ends_at || base.valid_to || base.to || '').trim();
   return {
     id: String(base.id || 'local-dashboard-announcement').trim().slice(0, 80) || 'local-dashboard-announcement',
     title,
@@ -445,7 +445,7 @@ function getRakDashboardAnnouncementHealth() {
   return {
     ok: true,
     version: String(window.APP_VERSION || 'unknown'),
-    mode: 'dashboard-announcement-online-first-v935',
+    mode: 'dashboard-announcement-rpc-online-v946',
     key: RAK_DASHBOARD_ANNOUNCEMENT_KEY,
     hasLocalAnnouncement: !!(local && local.message),
     hasOnlineAnnouncement: !!(online && online.message),

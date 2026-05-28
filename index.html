@@ -29,6 +29,21 @@ window.rakNoteExternalDependency = function(name, status, src) {
   } catch (err) {}
 };
 </script>
+<style id="rak-critical-shell-fallback">
+  html{background:#07111c;color:#eef7ff;}
+  body{margin:0;min-height:100vh;background:#07111c;color:#eef7ff;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}
+  .page:not(.active){display:none;}
+  .bottomNav{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;justify-content:center;background:rgba(7,17,28,.82);}
+  .bottomNavScroll{display:flex;gap:6px;max-width:720px;width:100%;overflow-x:auto;padding:6px 8px calc(6px + env(safe-area-inset-bottom));}
+  .bottomNavBtn{appearance:none;border:0;background:transparent;color:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:54px;max-width:72px;padding:5px 4px;font:600 10px/1.1 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}
+  .bottomNavIcon,.bottomNavIcon svg,.bottomNavIcon img,.bottomNavIconImg{width:26px!important;height:26px!important;max-width:26px!important;max-height:26px!important;object-fit:contain;}
+  .bottomNavIcon{position:relative;display:block;flex:0 0 26px;overflow:hidden;}
+  .bottomNavIconImg{position:absolute;inset:0;}
+  .bottomNavIconImg--on{opacity:0;}
+  .bottomNavBtn.active .bottomNavIconImg--on{opacity:1;}
+  .bottomNavBtn.active .bottomNavIconImg--off{opacity:0;}
+</style>
+
 <link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&amp;display=swap" rel="stylesheet" onload="rakNoteExternalDependency('googleFonts','loaded',this.href)" onerror="rakNoteExternalDependency('googleFonts','failed',this.href)">
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js" onload="rakNoteExternalDependency('xlsx','loaded',this.src)" onerror="rakNoteExternalDependency('xlsx','failed',this.src)"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js" onload="rakNoteExternalDependency('jszip','loaded',this.src)" onerror="rakNoteExternalDependency('jszip','failed',this.src)"></script>

@@ -1,4 +1,4 @@
-// v.1.5 (935) – Dashboard glass průhlednější a announcement systém online-first přes Supabase fallback.
+// v.1.5 (946) – Dashboard panely snížené cca o 5 % bez zásahu do logiky.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app.js', 'loaded', { source: 'index' }); } catch (err) {}
 
 

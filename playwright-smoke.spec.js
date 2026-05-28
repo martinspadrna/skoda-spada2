@@ -1,4 +1,4 @@
-// RaK v.1.5 (935) – DOM smoke kostra rozšířená o Dashboard glass a announcement ticker.
+// RaK v.1.5 (946) – DOM smoke kostra rozšířená o Dashboard glass a announcement ticker.
 // Instalace/spuštění mimo hotfix: npx playwright install chromium && npm run test:smoke
 const { test, expect } = require('@playwright/test');
 
@@ -108,12 +108,12 @@ test('v928 lada performance profile exposes conservative frame budget', async ({
 });
 
 
-test('v930 dashboard iOS glass theme helper is exposed', async ({ page }) => {
+test('v939 dashboard compact glass theme helper is exposed', async ({ page }) => {
   await page.goto('./index.html');
   const health = await page.evaluate(() => typeof window.getRakDashboardGlassThemeHealth === 'function' ? window.getRakDashboardGlassThemeHealth() : null);
   expect(health).toBeTruthy();
   expect(health.ok).toBeTruthy();
-  expect(health.mode).toContain('v930');
+  expect(health.mode).toContain('v939');
   expect(health.themeAware).toBeTruthy();
 });
 
@@ -132,7 +132,7 @@ test('v932 frezky correction sign toggle helper is exposed', async ({ page }) =>
   expect(health.buttonCount).toBe(6);
 });
 
-test('v935 dashboard announcement helper and ticker DOM are exposed', async ({ page }) => {
+test('v937 dashboard announcement helper and ticker DOM are exposed', async ({ page }) => {
   await openApp(page);
   const health = await page.evaluate(() => {
     if (typeof window.getRakDashboardAnnouncementHealth !== 'function') return null;
@@ -140,6 +140,6 @@ test('v935 dashboard announcement helper and ticker DOM are exposed', async ({ p
   });
   expect(health).toBeTruthy();
   expect(health.ok).toBeTruthy();
-  expect(health.mode).toContain('v935');
+  expect(health.mode).toContain('v937');
   expect(health.domPresent).toBeTruthy();
 });

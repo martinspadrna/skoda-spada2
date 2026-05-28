@@ -234,7 +234,7 @@
     { table: 'gomoku_wins', realtime: true, queueType: 'gomoku_win', access: 'anon SELECT/INSERT/UPDATE', note: 'výhry piškvorek / legacy leaderboard' }
   ];
 
-  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (935)';
+  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (946)';
   const SUPABASE_POLICY_AUDIT_SNAPSHOT_AT = '2026-05-24';
   const SUPABASE_POLICY_HARDENING_PHASE = {
     current: 'V856 – release hygiene po kontrole vlastních buildů: changelog opravený, SQL auditní soubory jsou archivované v assets/docs/sql a DB policies se nemění.',
@@ -294,7 +294,7 @@
   ];
 
   const SUPABASE_RPC_HARDENING_STATUS = {
-    version: 'v.1.5 (935)',
+    version: 'v.1.5 (946)',
     phase: '2E-O online invite/session RPC smoke + accept RPC / no policy tightening',
     rpcPreferred: true,
     migrationApplied: true,
@@ -906,7 +906,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v935');
+      const channel = client.channel('rak-public-live-v946');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -944,8 +944,10 @@
       title: String(active.title || '').trim(),
       message: String(active.message || active.text || active.body || '').trim(),
       is_active: active.is_active !== false,
-      start_at: String(active.start_at || active.valid_from || active.from || '').trim(),
-      end_at: String(active.end_at || active.valid_to || active.to || '').trim(),
+      start_at: String(active.start_at || active.starts_at || active.valid_from || active.from || '').trim(),
+      starts_at: String(active.starts_at || active.start_at || active.valid_from || active.from || '').trim(),
+      end_at: String(active.end_at || active.ends_at || active.valid_to || active.to || '').trim(),
+      ends_at: String(active.ends_at || active.end_at || active.valid_to || active.to || '').trim(),
       marquee: active.marquee === false ? false : true,
       updated_at: String(active.updated_at || active.created_at || '').trim()
     } : null;
@@ -959,8 +961,8 @@
       title: String(base.title || '').trim().slice(0, 80),
       message: String(base.message || base.text || base.body || '').trim().slice(0, 500),
       is_active: base.isActive === false || base.is_active === false ? false : true,
-      start_at: String(base.startAt || base.start_at || base.valid_from || base.from || '').trim() || null,
-      end_at: String(base.endAt || base.end_at || base.valid_to || base.to || '').trim() || null,
+      starts_at: String(base.startAt || base.start_at || base.starts_at || base.valid_from || base.from || '').trim() || null,
+      ends_at: String(base.endAt || base.end_at || base.ends_at || base.valid_to || base.to || '').trim() || null,
       marquee: base.marquee === false ? false : true
     };
   }
@@ -976,7 +978,7 @@
   function normalizeAnnouncementOnlineStatus(raw) {
     const base = raw && typeof raw === 'object' ? raw : {};
     return {
-      mode: 'dashboard-announcement-online-v935',
+      mode: 'dashboard-announcement-rpc-online-v946',
       lastAttemptAt: base.lastAttemptAt || null,
       lastSuccessAt: base.lastSuccessAt || null,
       lastErrorAt: base.lastErrorAt || null,
@@ -1010,25 +1012,20 @@
     const rowFull = cleanAnnouncementRow({
       title: payload.title || null,
       message: payload.message,
-      text: payload.message,
-      body: payload.message,
       is_active: payload.is_active,
-      start_at: payload.start_at,
-      end_at: payload.end_at,
-      valid_from: payload.start_at,
-      valid_to: payload.end_at,
+      starts_at: payload.starts_at,
+      ends_at: payload.ends_at,
       marquee: payload.marquee,
-      updated_at: nowIso
+      updated_at: nowIso,
+      app_version: String(window.APP_VERSION || 'v.1.5 (946)'),
+      priority: 0
     });
     return [
-      { name: 'title-message-window-marquee', row: rowFull },
-      { name: 'title-message-window', row: cleanAnnouncementRow({ title: payload.title || null, message: payload.message, is_active: payload.is_active, start_at: payload.start_at, end_at: payload.end_at, updated_at: nowIso }) },
-      { name: 'title-text-valid-window', row: cleanAnnouncementRow({ title: payload.title || null, text: payload.message, is_active: payload.is_active, valid_from: payload.start_at, valid_to: payload.end_at, updated_at: nowIso }) },
+      { name: 'title-message-starts-ends-marquee', row: rowFull },
+      { name: 'title-message-starts-ends', row: cleanAnnouncementRow({ title: payload.title || null, message: payload.message, is_active: payload.is_active, starts_at: payload.starts_at, ends_at: payload.ends_at, updated_at: nowIso }) },
       { name: 'message-active-updated', row: cleanAnnouncementRow({ title: payload.title || null, message: payload.message, is_active: payload.is_active, updated_at: nowIso }) },
       { name: 'message-active', row: cleanAnnouncementRow({ title: payload.title || null, message: payload.message, is_active: payload.is_active }) },
-      { name: 'text-active', row: cleanAnnouncementRow({ title: payload.title || null, text: payload.message, is_active: payload.is_active }) },
-      { name: 'message-active-no-title', row: cleanAnnouncementRow({ message: payload.message, is_active: payload.is_active }) },
-      { name: 'text-active-no-title', row: cleanAnnouncementRow({ text: payload.message, is_active: payload.is_active }) }
+      { name: 'message-active-no-title', row: cleanAnnouncementRow({ message: payload.message, is_active: payload.is_active }) }
     ];
   }
 
@@ -1053,6 +1050,56 @@
     return { ok: false, error: lastErr, message: supabaseErrorText(lastErr) };
   }
 
+  function normalizeRpcAnnouncementRow(data, fallback) {
+    const row = Array.isArray(data) ? data[0] : data;
+    return row && typeof row === 'object'
+      ? row
+      : cleanAnnouncementRow({
+          title: fallback.title || null,
+          message: fallback.message,
+          is_active: fallback.is_active,
+          starts_at: fallback.starts_at,
+          ends_at: fallback.ends_at,
+          marquee: fallback.marquee,
+          updated_at: new Date().toISOString(),
+          app_version: String(window.APP_VERSION || 'v.1.5 (946)'),
+          priority: 0
+        });
+  }
+
+  async function saveDashboardAnnouncementViaRpc(client, safe, nowIso) {
+    try {
+      const res = await runSupabaseOperation('announcements.rpc-save', () => client.rpc('rak_save_dashboard_announcement', {
+        p_title: safe.title || null,
+        p_message: safe.message,
+        p_is_active: safe.is_active,
+        p_starts_at: safe.starts_at,
+        p_ends_at: safe.ends_at,
+        p_marquee: safe.marquee,
+        p_updated_by: 'rak-admin-ui',
+        p_app_version: String(window.APP_VERSION || 'v.1.5 (946)'),
+        p_priority: 0
+      }), { mode: 'write', timeoutMs: 8000, attempts: 1 });
+      if (res && res.error) return { ok: false, error: res.error, shape: 'rpc-save' };
+      return { ok: true, row: normalizeRpcAnnouncementRow(res && res.data, safe), shape: 'rpc-save' };
+    } catch (err) {
+      return { ok: false, error: err, shape: 'rpc-save' };
+    }
+  }
+
+  async function clearDashboardAnnouncementViaRpc(client, nowIso) {
+    try {
+      const res = await runSupabaseOperation('announcements.rpc-clear', () => client.rpc('rak_clear_dashboard_announcement', {
+        p_updated_by: 'rak-admin-ui',
+        p_app_version: String(window.APP_VERSION || 'v.1.5 (946)')
+      }), { mode: 'write', timeoutMs: 8000, attempts: 1 });
+      if (res && res.error) return { ok: false, error: res.error, shape: 'rpc-clear' };
+      return { ok: true, cleared: true, count: Number(res && res.data || 0), shape: 'rpc-clear' };
+    } catch (err) {
+      return { ok: false, error: err, shape: 'rpc-clear' };
+    }
+  }
+
   async function saveDashboardAnnouncementOnline(payload) {
     const client = getClient();
     const nowIso = new Date().toISOString();
@@ -1067,9 +1114,28 @@
       return { ok: false, reason: 'offline-or-missing-client', status };
     }
 
+    const rpc = await saveDashboardAnnouncementViaRpc(client, safe, nowIso);
+    if (rpc && rpc.ok) {
+      const row = rpc.row;
+      state.announcements = [row].concat((state.announcements || []).filter(item => item && item.is_active === false).slice(0, 4));
+      safeWriteJson(LOCAL_ANNOUNCEMENTS_KEY, state.announcements);
+      state.lastError = null;
+      try { requestRealtimeRefresh({ table: 'announcements', eventType: 'client-rpc-save' }); } catch (err) {}
+      const status = rememberDashboardAnnouncementOnlineStatus({
+        lastSuccessAt: nowIso,
+        lastWriteOk: true,
+        lastClearOk: false,
+        lastAttemptShape: rpc.shape || 'rpc-save',
+        lastErrorMessage: '',
+        lastErrorCode: '',
+        fallback: ''
+      });
+      return { ok: true, row, shape: rpc.shape || 'rpc-save', status };
+    }
+
     const deactivate = await softDeactivateDashboardAnnouncements(client);
     const attempts = buildAnnouncementInsertAttempts(safe, nowIso);
-    let lastErr = deactivate && deactivate.ok ? null : deactivate.error;
+    let lastErr = rpc && rpc.error ? rpc.error : (deactivate && deactivate.ok ? null : deactivate.error);
     for (const attempt of attempts) {
       try {
         const res = await runSupabaseOperation('announcements.insert:' + attempt.name, () => client
@@ -1120,11 +1186,12 @@
       const status = rememberDashboardAnnouncementOnlineStatus({ lastErrorAt: nowIso, lastErrorMessage: 'offline-or-missing-client', lastErrorCode: 'RAK_ANNOUNCEMENT_OFFLINE', fallback: 'local-only' });
       return { ok: false, reason: 'offline-or-missing-client', status };
     }
-    const result = await softDeactivateDashboardAnnouncements(client);
+    const rpc = await clearDashboardAnnouncementViaRpc(client, nowIso);
+    const result = rpc && rpc.ok ? rpc : await softDeactivateDashboardAnnouncements(client);
     if (result.ok) {
       state.announcements = [];
       safeWriteJson(LOCAL_ANNOUNCEMENTS_KEY, state.announcements);
-      try { requestRealtimeRefresh({ table: 'announcements', eventType: 'client-clear' }); } catch (err) {}
+      try { requestRealtimeRefresh({ table: 'announcements', eventType: rpc && rpc.ok ? 'client-rpc-clear' : 'client-clear' }); } catch (err) {}
       const status = rememberDashboardAnnouncementOnlineStatus({ lastSuccessAt: nowIso, lastClearOk: true, lastWriteOk: false, lastErrorMessage: '', lastErrorCode: '', lastAttemptShape: result.shape || '' });
       return { ok: true, cleared: true, status };
     }
@@ -1146,9 +1213,9 @@
       online: typeof navigator === 'undefined' ? false : !!navigator.onLine,
       cachedAnnouncementCount: Array.isArray(state.announcements) ? state.announcements.length : 0,
       table: 'announcements',
-      realtimeChannel: 'rak-public-live-v935',
-      readMode: 'existing public SELECT + realtime refresh',
-      writeMode: 'client INSERT/deactivate when policy allows; local fallback otherwise'
+      realtimeChannel: 'rak-public-live-v946',
+      readMode: 'public SELECT + realtime refresh + local cache fallback',
+      writeMode: 'RPC security definer save/clear; direct table fallback only if RPC unavailable'
     });
   }
 
@@ -2082,7 +2149,8 @@
     const status = String(options.status || '').trim();
     let query = client.from('bug_reports')
       .select('id, account_number, player_name, report_type, message, app_version, route, user_agent, device_info, status, created_at, handled_at, handled_note')
-      .order('created_at', { ascending: false })
+      .order('priority', { ascending: false })
+          .order('updated_at', { ascending: false })
       .limit(limit);
     if (status && status !== 'all') query = query.eq('status', normalizeBugReportStatus(status));
     const { data, error } = await runSupabaseOperation('bug_reports.select', () => query, { mode: 'read', attempts: 1 });
@@ -2851,7 +2919,8 @@
           .from('announcements')
           .select('*')
           .eq('is_active', true)
-          .order('created_at', { ascending: false })
+          .order('priority', { ascending: false })
+          .order('updated_at', { ascending: false })
           .limit(5), { mode: 'read' }));
 
         if (announcementsRes && !announcementsRes.error) {
@@ -3921,7 +3990,8 @@
       const res = await runSharedSupabaseRead('gomoku_wins.load:' + safeLimit, () => runSupabaseOperation('gomoku_wins.load', () => client
         .from('gomoku_wins')
         .select('player_name,difficulty,moves,elapsed_ms,elapsed_text,x_moves,o_moves,created_at,app_version')
-        .order('created_at', { ascending: false })
+        .order('priority', { ascending: false })
+          .order('updated_at', { ascending: false })
         .limit(safeLimit), { mode: 'read' }));
       if (res && res.error) throw res.error;
       return Array.isArray(res && res.data) ? res.data : [];
@@ -4014,7 +4084,7 @@
     return {
       ok: blockers.length === 0,
       mode: 'supabase-hardening-readiness-audit-only',
-      version: 'v.1.5 (935)',
+      version: 'v.1.5 (946)',
       checkedAt: new Date().toISOString(),
       confirmed,
       readinessPercent,

@@ -1,7 +1,7 @@
-// v.1.5 (935) – DOM/security hardening návrhy po jednotlivých sinkách bez runtime mutací.
+// v.1.5 (946) – DOM/security hardening návrhy po jednotlivých sinkách bez runtime mutací.
 (function setupRakDomSecurityHardening() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
-  const VERSION = 'v.1.5 (935)';
+  const VERSION = 'v.1.5 (946)';
   const MODE = 'dom-security-hardening-readonly-v923';
 
   try {
