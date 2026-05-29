@@ -1,4 +1,4 @@
-// v.1.5 (964) – Dashboard panely snížené cca o 5 % bez zásahu do logiky.
+// v.1.5 (965) – Navigace 5 tlačítek, přehled připojení UI cleanup a silnější offline AI Piškvorek.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app.js', 'loaded', { source: 'index' }); } catch (err) {}
 
 
@@ -113,6 +113,8 @@ function installDelegatedAppActions() {
     'page-korekce-frezky': () => showPage('korekce-frezky'),
     'page-korekce-brusy': () => showPage('korekce-brusy'),
     'page-kalkulacky': () => openKalkulacky(),
+    'open-rotace-months': () => openRotaceMonths(),
+    'open-rotace-stats': () => openRotaceStats(),
     'reset-soustruhy': () => resetSoustruhy(),
     'soustruh-mode': (el) => setSoustruhMode(String(el.dataset.soustruhMode || '')),
     'calc-soustruhy-lis': () => calcSoustruhyLis(),
@@ -649,7 +651,7 @@ function runPhaseFourCleanupManagerAudit() {
 
     const bottomNav = document.querySelector('.bottomNav');
     report.bottomNav.exists = !!bottomNav;
-    const requiredNavActions = ['home', 'rotace', 'kalkulacky', 'rozpisy', 'statistiky', 'games', 'menu'];
+    const requiredNavActions = ['home', 'rotace', 'kalkulacky', 'games', 'menu'];
     if (bottomNav) {
       requiredNavActions.forEach((action) => {
         if (!bottomNav.querySelector('[data-action="' + action + '"]')) report.bottomNav.missingButtons.push(action);
@@ -1100,9 +1102,9 @@ function getPhaseTenNavigationHealth() {
     health.bound = !!nav.__rotaceBound;
     if (!health.bound) health.missing.push('bottom nav binding');
 
-    const allowedActions = new Set(['home', 'rotace', 'kalkulacky', 'rozpisy', 'statistiky', 'games', 'menu']);
-    const allowedPages = new Set(['home', 'rotace', 'kalkulacky', 'rozpisy', 'statistiky', 'games', 'menu']);
-    const requiredActions = ['home', 'rotace', 'kalkulacky', 'rozpisy', 'statistiky', 'games', 'menu'];
+    const allowedActions = new Set(['home', 'rotace', 'kalkulacky', 'games', 'menu']);
+    const allowedPages = new Set(['home', 'rotace', 'kalkulacky', 'games', 'menu']);
+    const requiredActions = ['home', 'rotace', 'kalkulacky', 'games', 'menu'];
     const seenActions = new Set();
     const buttons = Array.from(nav.querySelectorAll('.bottomNavBtn[data-action]'));
     health.buttonCount = buttons.length;

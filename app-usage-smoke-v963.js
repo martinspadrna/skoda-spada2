@@ -21,6 +21,9 @@ assert(bridge.includes('APP_USAGE_MIN_INTERVAL_MS'), 'App usage throttle chybí'
 assert(ui.includes('buildAdminUsageHtml'), 'Admin UI přehledu připojení chybí');
 assert(ui.includes('data-admin-action="open-usage"'), 'Tlačítko Přehled připojení chybí');
 assert(ui.includes("openAppMenu('admin-usage')"), 'Admin usage routing chybí');
+assert(!ui.includes('Zapsat mě teď'), 'Testovací tlačítko Zapsat mě teď nemá být viditelné');
+assert(!ui.includes('<b>Stránka:</b>'), 'Přehled připojení už nemá ukazovat stránku');
+assert(ui.includes('Viewport '), 'Displej má ukazovat viewport/rozlišení, ne časovou zónu');
 assert(sql.includes('create table if not exists public.app_usage_devices'), 'SQL app_usage_devices chybí');
 assert(sql.includes('create table if not exists public.app_usage_events'), 'SQL app_usage_events chybí');
 assert(sql.includes('returns jsonb'), 'SQL RPC návrat JSONB chybí');

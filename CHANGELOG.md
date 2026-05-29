@@ -1,13 +1,16 @@
+## v.1.5 (965)
+- Piškvorky proti AI: přidaná vrstva `tttV965BestMove()` se strategickým pressure scanem a kontrolou nejhorších odpovědí hráče, aby AI víc brzdila výhry kolem 19.–31. tahu.
+- Ruleset Piškvorek navýšen na `gomoku-10col-19row-ai-rules-v13`; online PvP zůstává beze změny.
+- Spodní navigace má nově 5 tlačítek: Home, Rotace, Kalkulačky, Hry a Více. Rozpisy a Statistiky jsou jako rychlé prokliky v Rotaci.
+- Dashboard: jemnější dorovnání horního textu pro viewporty 412×918 a 430×932.
+- Admin / Přehled připojení: odstraněné testovací tlačítko „Zapsat mě teď“, odstraněn údaj o stránce a Displej nově ukazuje viewport/screen rozlišení + DPR.
+- O aplikaci: souhrny 951–1000 a 901–950 zkrácené na stručné bloky.
+- Verze sjednocena na v.1.5 (965), cache na `v1.5-965`, realtime kanál na `rak-public-live-v965`, package na `1.5.965`.
+
 ## v.1.5 (964)
 - Admin přehled připojení je přepojený na RPC `rak_usage_presence_touch` / `rak_usage_presence_admin`, které se podařilo nasadit do Supabase.
 - Zachované šetrné anonymní logování zařízení bez surové IP.
 - Online hry, Piškvorky a Lodě beze změny.
-- Verze sjednocena na v.1.5 (964), cache na `v1.5-964`, realtime kanál na `rak-public-live-v964`, package na `1.5.964`.
-
-## v.1.5 (964)
-- Administrace: přidaný nový „Přehled připojení“ s anonymním podpisem zařízení, profilem z appky, posledním otevřením, počtem otevření, verzí, stránkou a základním popisem zařízení.
-- Supabase: připravená a nasazená evidence `app_usage_devices` / `app_usage_events` přes RPC `rak_log_app_usage` a admin RPC `rak_admin_get_app_usage`; surová IP se neukládá, jen hash.
-- Přidaný smoke test `app-usage-smoke-v963.js` a dokumentace `assets/docs/app-usage-admin-v963.md` + SQL migrace `assets/docs/sql/supabase_app_usage_v963.sql`.
 - Verze sjednocena na v.1.5 (964), cache na `v1.5-964`, realtime kanál na `rak-public-live-v964`, package na `1.5.964`.
 
 ## v.1.5 (962)

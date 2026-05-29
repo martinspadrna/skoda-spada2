@@ -1,4 +1,4 @@
-// v.1.5 (964) – export manifest doplněný o opravu přepínačů oznámení a theme graf obsazenosti.
+// v.1.5 (965) – export manifest doplněný o opravu přepínačů oznámení a theme graf obsazenosti.
 const EXPORT_SOURCE_IDS = {
   "module-readiness.js": "src-module-readiness-js",
   "rak-namespace.js": "src-rak-namespace-js",
@@ -52,6 +52,7 @@ const EXPORT_SOURCE_IDS = {
   "playwright-monkey.spec.js": "src-playwright-monkey-spec-js",
   "gomoku-ai-smoke-v961.js": "src-gomoku-ai-smoke-v961-js",
   "gomoku-ai-smoke-v962.js": "src-gomoku-ai-smoke-v962-js",
+  "gomoku-ai-smoke-v965.js": "src-gomoku-ai-smoke-v965-js",
   "app-usage-smoke-v963.js": "src-app-usage-smoke-v963-js",
   "assets/docs/sql/supabase_rpc_hardening_v828.sql": "src-supabase-rpc-hardening-v828-sql",
   "assets/docs/release-readiness-v857.md": "src-release-readiness-v857-md",
@@ -237,6 +238,9 @@ const EXPORT_SOURCE_IDS = {
   "assets/docs/app-usage-admin-v963.md": "src-app-usage-admin-v963-md",
   "assets/docs/about-50-version-summary-v963.md": "src-about-50-version-summary-v963-md",
   "assets/docs/about-50-version-summary-v964.md": "src-about-50-version-summary-v964-md",
+  "assets/docs/about-50-version-summary-v965.md": "src-about-50-version-summary-v965-md",
+  "assets/docs/gomoku-ai-strategic-pressure-v965.md": "src-gomoku-ai-strategic-pressure-v965-md",
+  "assets/docs/navigation-admin-dashboard-polish-v965.md": "src-navigation-admin-dashboard-polish-v965-md",
   "assets/docs/dashboard-hero-absence-centering-v956.md": "src-dashboard-hero-absence-centering-v956-md",
   "assets/docs/about-50-version-summary-v956.md": "src-about-50-version-summary-v956-md",
   "assets/docs/about-50-version-summary-v954.md": "src-about-50-version-summary-v954-md",
@@ -264,7 +268,7 @@ const EXPORT_SMOKE_REPORT = window.__RAK_EXPORT_SMOKE_REPORT__ || (window.__RAK_
   ok: null,
   status: 'not-run',
   mode: 'export-smoke-report-v939',
-  version: 'v.1.5 (964)',
+  version: 'v.1.5 (965)',
   checkedAt: null,
   lastStage: 'čeká na export',
   runCount: 0,
@@ -347,6 +351,7 @@ const EXPORT_JS_FILES = [
       'playwright-monkey.spec.js',
       'gomoku-ai-smoke-v961.js',
       'gomoku-ai-smoke-v962.js',
+      'gomoku-ai-smoke-v965.js',
       'app-usage-smoke-v963.js'
 ];
 
@@ -565,6 +570,9 @@ const EXPORT_TEXT_FILES = [
       'assets/docs/app-usage-admin-v963.md',
       'assets/docs/about-50-version-summary-v963.md',
       'assets/docs/about-50-version-summary-v964.md',
+      'assets/docs/about-50-version-summary-v965.md',
+      'assets/docs/gomoku-ai-strategic-pressure-v965.md',
+      'assets/docs/navigation-admin-dashboard-polish-v965.md',
       'assets/docs/dashboard-hero-absence-centering-v956.md',
       'assets/docs/about-50-version-summary-v956.md',
       'assets/docs/about-50-version-summary-v954.md',
@@ -582,7 +590,7 @@ const EXPORT_TEXT_FILES = [
 
 function getRakExportManifest() {
   return {
-    version: String(window.APP_VERSION || 'v.1.5 (964)'),
+    version: String(window.APP_VERSION || 'v.1.5 (965)'),
     mode: 'export-manifest-preflight-v939',
     indexFile: 'index.html',
     jsFiles: Array.from(new Set(EXPORT_JS_FILES)),
@@ -692,7 +700,7 @@ function updateRakExportSmokeReport(partial) {
   const data = partial && typeof partial === 'object' ? partial : {};
   Object.assign(EXPORT_SMOKE_REPORT, data, {
     mode: 'export-smoke-report-v939',
-    version: String(window.APP_VERSION || 'v.1.5 (964)'),
+    version: String(window.APP_VERSION || 'v.1.5 (965)'),
     checkedAt: new Date().toISOString()
   });
   return getRakExportSmokeReport();

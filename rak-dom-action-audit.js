@@ -9,7 +9,7 @@
     }
   } catch (err) {}
 
-  const REQUIRED_NAV_ACTIONS = ['home', 'rotace', 'kalkulacky', 'rozpisy', 'statistiky', 'games', 'menu'];
+  const REQUIRED_NAV_ACTIONS = ['home', 'rotace', 'kalkulacky', 'games', 'menu'];
   const REQUIRED_CORE_ACTIONS = [
     'show-food-kantyna',
     'show-food-jidelna',
@@ -123,8 +123,8 @@
     home: { category: 'navigation', required: ['data-page'], severity: 'issue', note: 'spodní navigace musí znát cílovou stránku' },
     rotace: { category: 'navigation', required: ['data-page'], severity: 'issue', note: 'spodní navigace musí znát cílovou stránku' },
     kalkulacky: { category: 'navigation', required: ['data-page'], severity: 'issue', note: 'spodní navigace musí znát cílovou stránku' },
-    rozpisy: { category: 'navigation', required: ['data-page'], severity: 'issue', note: 'spodní navigace musí znát cílovou stránku' },
-    statistiky: { category: 'navigation', required: ['data-page'], severity: 'issue', note: 'spodní navigace musí znát cílovou stránku' },
+    'open-rotace-months': { category: 'navigation', required: [], severity: 'info', note: 'rychlý proklik z Rotace na Rozpisy' },
+    'open-rotace-stats': { category: 'navigation', required: [], severity: 'info', note: 'rychlý proklik z Rotace na Statistiky' },
     games: { category: 'navigation', required: ['data-page'], severity: 'issue', note: 'spodní navigace musí znát cílovou stránku' },
     menu: { category: 'navigation', required: ['data-page'], severity: 'issue', note: 'spodní navigace musí znát cílovou stránku' },
     'open-game': { category: 'games', required: ['data-game'], severity: 'issue', note: 'spouštění hry musí znát game id' },

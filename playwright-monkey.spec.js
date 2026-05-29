@@ -2,7 +2,7 @@
 // Spouští se ručně přes: npm run test:monkey
 const { test, expect } = require('@playwright/test');
 
-const SAFE_NAV_ACTIONS = ['home', 'rotace', 'kalkulacky', 'rozpisy', 'statistiky', 'games', 'menu'];
+const SAFE_NAV_ACTIONS = ['home', 'rotace', 'kalkulacky', 'games', 'menu'];
 const BLOCKED_TEXT = /smazat|vymazat|reset|uložit|odeslat|delete|clear|supabase|online|pozvat|přijmout|odmítnout|admin|administrace/i;
 const BLOCKED_SELECTORS = [
   '[data-action*="delete" i]',
