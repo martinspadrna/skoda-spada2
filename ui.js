@@ -11002,42 +11002,103 @@ async function recordAdminAppUsageNow() {
   return { ok: false, reason: 'missing-bridge' };
 }
 
+function buildAdminUsageGroups(devices) {
+  const rows = Array.isArray(devices) ? devices : [];
+  const map = new Map();
+  rows.forEach((row) => {
+    const displayName = String(row.player_name || row.account_number || 'Bez profilu').trim() || 'Bez profilu';
+    const keyBase = String(row.player_name || row.account_number || '').trim().toLowerCase();
+    const key = keyBase || ('device:' + String(row.device_key || row.device_id || Math.random()).slice(0, 96));
+    if (!map.has(key)) {
+      map.set(key, {
+        key,
+        name: displayName,
+        account: String(row.account_number || '').trim(),
+        devices: [],
+        openCount: 0,
+        firstSeen: null,
+        lastSeen: null,
+        newest: null,
+        appVersions: new Set(),
+        displays: new Set()
+      });
+    }
+    const group = map.get(key);
+    group.devices.push(row);
+    group.openCount += Number(row.open_count || 0) || 0;
+    if (row.app_version) group.appVersions.add(String(row.app_version));
+    const display = formatAdminUsageViewport(row.device_info);
+    if (display && display !== '—') group.displays.add(display);
+    const lastTime = Date.parse(row.last_seen_at || '') || 0;
+    const firstTime = Date.parse(row.first_seen_at || '') || 0;
+    if (!group.lastSeen || lastTime > (Date.parse(group.lastSeen) || 0)) {
+      group.lastSeen = row.last_seen_at || group.lastSeen;
+      group.newest = row;
+    }
+    if (row.first_seen_at && (!group.firstSeen || firstTime < (Date.parse(group.firstSeen) || 0))) {
+      group.firstSeen = row.first_seen_at;
+    }
+  });
+  return Array.from(map.values()).sort((a, b) => (Date.parse(b.lastSeen || '') || 0) - (Date.parse(a.lastSeen || '') || 0));
+}
+
 function buildAdminUsageHtml() {
   const snapshot = app && app.adminUsageSnapshot && typeof app.adminUsageSnapshot === 'object'
     ? app.adminUsageSnapshot
     : null;
   const ok = !!(snapshot && snapshot.ok !== false);
   const devices = snapshot && Array.isArray(snapshot.devices) ? snapshot.devices : [];
+  const groups = buildAdminUsageGroups(devices);
   const events = snapshot && Array.isArray(snapshot.events) ? snapshot.events : [];
   const summary = snapshot && snapshot.summary && typeof snapshot.summary === 'object' ? snapshot.summary : {};
   const status = snapshot
     ? (ok ? ('Načteno ' + formatAdminUsageDate(snapshot.fetchedAt || new Date().toISOString())) : ('Nepodařilo se načíst: ' + String((snapshot.error && snapshot.error.message) || snapshot.reason || 'zkontroluj Supabase migraci.')))
     : 'Zatím nenačteno. Klikni na Načíst připojení.';
-  const newest = devices[0] || null;
+  const newestGroup = groups[0] || null;
   const cards = [
+    ['Jména / profily', groups.length],
     ['Zařízení celkem', summary.device_count ?? devices.length],
     ['Aktivní 24 h', summary.active_24h ?? '—'],
-    ['Aktivní 7 dní', summary.active_7d ?? '—'],
-    ['Události 24 h', summary.events_24h ?? '—']
+    ['Aktivní 7 dní', summary.active_7d ?? '—']
   ].map(pair => '<div class="adminUsageMetric"><span>' + escapeHtml(pair[0]) + '</span><b>' + escapeHtml(String(pair[1])) + '</b></div>').join('');
-  const list = devices.length ? devices.map((row) => {
-    const name = String(row.player_name || row.account_number || 'Bez profilu').trim();
-    const device = shortAdminUsageDevice(row.user_agent || '');
-    const ago = formatAdminUsageAgo(row.minutes_since_seen);
-    const hash = row.last_ip_hash ? String(row.last_ip_hash).slice(0, 10) + '…' : '—';
+  const list = groups.length ? groups.map((group) => {
+    const newest = group.newest || group.devices[0] || {};
+    const ago = formatAdminUsageAgo(newest.minutes_since_seen);
+    const deviceCount = group.devices.length;
+    const versions = Array.from(group.appVersions).slice(0, 3).join(' · ') || '—';
+    const displays = Array.from(group.displays).slice(0, 4);
+    const displayText = displays.length ? displays.join(' | ') : '—';
+    const deviceRows = group.devices
+      .slice()
+      .sort((a, b) => (Date.parse(b.last_seen_at || '') || 0) - (Date.parse(a.last_seen_at || '') || 0))
+      .map((row, index) => {
+        const device = shortAdminUsageDevice(row.user_agent || '');
+        const hash = row.last_ip_hash ? String(row.last_ip_hash).slice(0, 10) + '…' : '—';
+        return [
+          '<div class="adminUsageDeviceRow">',
+          '  <div class="adminUsageDeviceHead"><b>' + escapeHtml(device || ('Zařízení ' + (index + 1))) + '</b><em>' + escapeHtml(String(row.open_count || 0) + '×') + '</em></div>',
+          '  <div><b>Naposledy:</b> ' + escapeHtml(formatAdminUsageDate(row.last_seen_at, true)) + '</div>',
+          '  <div><b>Poprvé:</b> ' + escapeHtml(formatAdminUsageDate(row.first_seen_at, true)) + '</div>',
+          '  <div><b>Verze:</b> ' + escapeHtml(row.app_version || '—') + '</div>',
+          '  <div><b>Displej:</b> ' + escapeHtml(formatAdminUsageViewport(row.device_info)) + '</div>',
+          '  <div><b>IP hash:</b> ' + escapeHtml(hash) + '</div>',
+          '  <div class="smallText adminUsageUa">' + escapeHtml(row.user_agent || '—') + '</div>',
+          '</div>'
+        ].join('');
+      }).join('');
     return [
       '<details class="adminUsageItem">',
       '  <summary class="adminUsageSummary">',
-      '    <span><b>' + escapeHtml(name) + '</b><small>' + escapeHtml(device + ' · ' + (ago || formatAdminUsageDate(row.last_seen_at))) + '</small></span>',
-      '    <em>' + escapeHtml(String(row.open_count || 0) + '×') + '</em>',
+      '    <span><b>' + escapeHtml(group.name) + '</b><small>' + escapeHtml(String(deviceCount) + ' zařízení · ' + (ago || formatAdminUsageDate(group.lastSeen))) + '</small></span>',
+      '    <em>' + escapeHtml(String(group.openCount || 0) + '×') + '</em>',
       '  </summary>',
       '  <div class="adminUsageBody">',
-      '    <div><b>Naposledy:</b> ' + escapeHtml(formatAdminUsageDate(row.last_seen_at, true)) + '</div>',
-      '    <div><b>Poprvé:</b> ' + escapeHtml(formatAdminUsageDate(row.first_seen_at, true)) + '</div>',
-      '    <div><b>Verze:</b> ' + escapeHtml(row.app_version || '—') + '</div>',
-      '    <div><b>Displej:</b> ' + escapeHtml(formatAdminUsageViewport(row.device_info)) + '</div>',
-      '    <div><b>IP hash:</b> ' + escapeHtml(hash) + '</div>',
-      '    <div class="smallText adminUsageUa">' + escapeHtml(row.user_agent || '—') + '</div>',
+      '    <div><b>Naposledy:</b> ' + escapeHtml(formatAdminUsageDate(group.lastSeen, true)) + '</div>',
+      '    <div><b>Poprvé:</b> ' + escapeHtml(formatAdminUsageDate(group.firstSeen, true)) + '</div>',
+      group.account ? ('    <div><b>Profil:</b> ' + escapeHtml(group.account) + '</div>') : '',
+      '    <div><b>Verze:</b> ' + escapeHtml(versions) + '</div>',
+      '    <div><b>Displeje:</b> ' + escapeHtml(displayText) + '</div>',
+      '    <div class="adminUsageDeviceList">' + deviceRows + '</div>',
       '  </div>',
       '</details>'
     ].join('');
@@ -11050,11 +11111,11 @@ function buildAdminUsageHtml() {
     '<div class="appMenuCard appMenuAdminCard adminUsageCard">',
     '  <div class="appMenuCardTitle">Přehled připojení</div>',
     '  <div class="appMenuText">',
-    '    <div>Uvidíš tady anonymní podpis zařízení, profil v appce, poslední otevření, počet otevření, verzi a rozlišení displeje. Surová IP se neukládá, jen krátký hash pro rozlišení.</div>',
+    '    <div>Každé jméno je tady jen jednou. Po rozkliknutí uvidíš všechna zařízení, ze kterých se profil připojil, včetně rozlišení displeje.</div>',
     '    <div class="smallText" id="adminOnlineSaveStatus">' + escapeHtml(status) + '</div>',
     '  </div>',
     '  <div class="adminUsageGrid">' + cards + '</div>',
-    newest ? ('  <div class="adminUsageLatest smallText">Naposledy: ' + escapeHtml(String(newest.player_name || newest.account_number || 'Bez profilu')) + ' · ' + escapeHtml(formatAdminUsageDate(newest.last_seen_at, true)) + '</div>') : '',
+    newestGroup ? ('  <div class="adminUsageLatest smallText">Naposledy: ' + escapeHtml(String(newestGroup.name || 'Bez profilu')) + ' · ' + escapeHtml(formatAdminUsageDate(newestGroup.lastSeen, true)) + '</div>') : '',
     '  <div class="adminUsageList">' + list + '</div>',
     recentEvents ? ('  <div class="adminUsageEvents"><div class="smallText">Poslední události</div>' + recentEvents + '</div>') : '',
     '  <div class="appMenuActionRow adminUsageActions">',

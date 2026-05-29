@@ -18770,3 +18770,489 @@ body.lowEndDevice nav.bottomNav > #bottomNavScroll.bottomNavScroll .bottomNavAct
 @media (prefers-reduced-motion: reduce){
   html body nav.bottomNav > #bottomNavScroll.bottomNavScroll .bottomNavActiveIndicator{transition:none !important;}
 }
+
+/* v.1.5 (978) – Dashboard bez umělé linky: jen skutečný border panelu; spodní nav indikátor pouze průhledné glass ohraničení bez výplně. */
+#home.page.active .dashboardShell::before,
+#home.page.active .dashboardShell::after{
+  content:none !important;
+  display:none !important;
+  visibility:hidden !important;
+  opacity:0 !important;
+  background:transparent !important;
+  border:0 !important;
+  box-shadow:none !important;
+}
+#home.page.active .dashboardShell{
+  border-width:1px !important;
+  border-style:solid !important;
+  border-color:rgba(142,255,191,.28) !important;
+  border-top-color:rgba(210,255,225,.58) !important;
+  outline:0 !important;
+  background-clip:border-box !important;
+  box-shadow:0 20px 54px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.11) !important;
+}
+@media (min-width:390px) and (max-width:435px){
+  #home.page.active .dashboardShell{
+    border-top-color:rgba(220,255,232,.72) !important;
+    margin-top:0 !important;
+    max-height:100% !important;
+  }
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll .bottomNavActiveIndicator{
+  z-index:1 !important;
+  pointer-events:none !important;
+  top:2px !important;
+  height:calc(100% - 4px) !important;
+  border-radius:18px !important;
+  border:1px solid rgba(226,246,255,.42) !important;
+  outline:0 !important;
+  background:transparent !important;
+  background-color:transparent !important;
+  background-image:none !important;
+  box-shadow:0 0 13px rgba(226,246,255,.16), inset 0 0 0 1px rgba(255,255,255,.07) !important;
+  backdrop-filter:blur(18px) saturate(150%) !important;
+  -webkit-backdrop-filter:blur(18px) saturate(150%) !important;
+  transition:transform .88s cubic-bezier(.18,.88,.18,1), width .88s cubic-bezier(.18,.88,.18,1), opacity .24s ease !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll .bottomNavActiveIndicator::before,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll .bottomNavActiveIndicator::after{
+  content:none !important;
+  display:none !important;
+  visibility:hidden !important;
+  opacity:0 !important;
+  background:transparent !important;
+  border:0 !important;
+  box-shadow:none !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn.active,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn.active,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn.active:hover,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn.active:hover,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn.active:focus,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn.active:focus,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn.active:active,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn.active:active{
+  background:transparent !important;
+  background-color:transparent !important;
+  background-image:none !important;
+  border-color:transparent !important;
+  box-shadow:none !important;
+  outline:0 !important;
+  filter:none !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn.active::before,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn.active::before,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn.active::after,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn.active::after{
+  content:none !important;
+  display:none !important;
+  visibility:hidden !important;
+  opacity:0 !important;
+  background:transparent !important;
+  background-color:transparent !important;
+  background-image:none !important;
+  border:0 !important;
+  box-shadow:none !important;
+  transition:none !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn.active .bottomNavIcon,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn.active .moreIcon{
+  background:transparent !important;
+  background-color:transparent !important;
+  background-image:none !important;
+  border:0 !important;
+  outline:0 !important;
+  box-shadow:none !important;
+}
+body.lightweightMode nav.bottomNav > #bottomNavScroll.bottomNavScroll .bottomNavActiveIndicator,
+body.lowEndDevice nav.bottomNav > #bottomNavScroll.bottomNavScroll .bottomNavActiveIndicator{
+  background:transparent !important;
+  background-color:transparent !important;
+  background-image:none !important;
+  border-color:rgba(226,246,255,.30) !important;
+  box-shadow:0 0 9px rgba(226,246,255,.10), inset 0 0 0 1px rgba(255,255,255,.05) !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
+@media (prefers-reduced-motion: reduce){
+  html body nav.bottomNav > #bottomNavScroll.bottomNavScroll .bottomNavActiveIndicator{transition:none !important;}
+}
+
+/* v.1.5 (980) – skutečný zásah do aktivní vrstvy: spodní nav jen obrys bez výplně, dashboard border posunutý z ořezu bez změny velikosti. */
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll{
+  position:relative !important;
+  isolation:isolate !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll .bottomNavActiveIndicator{
+  z-index:1 !important;
+  pointer-events:none !important;
+  top:2px !important;
+  height:calc(100% - 4px) !important;
+  width:var(--rak-nav-indicator-width, 64px) !important;
+  transform:translate3d(var(--rak-nav-indicator-left, 0px), 0, 0) !important;
+  border-radius:18px !important;
+  border:1.5px solid rgba(226,246,255,.54) !important;
+  outline:0 !important;
+  background:transparent !important;
+  background-color:transparent !important;
+  background-image:none !important;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.055) inset,
+    0 0 15px rgba(226,246,255,.18),
+    0 0 26px rgba(var(--theme-rgb,124,255,124),.10) !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+  filter:none !important;
+  opacity:1 !important;
+  transition:
+    transform .96s cubic-bezier(.18,.88,.18,1),
+    width .96s cubic-bezier(.18,.88,.18,1),
+    opacity .24s ease !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll .bottomNavActiveIndicator::before{
+  content:"" !important;
+  position:absolute !important;
+  inset:-2px !important;
+  border-radius:inherit !important;
+  border:1px solid rgba(226,246,255,.18) !important;
+  background:transparent !important;
+  background-color:transparent !important;
+  background-image:none !important;
+  box-shadow:none !important;
+  filter:blur(2.4px) !important;
+  opacity:.72 !important;
+  pointer-events:none !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll .bottomNavActiveIndicator::after{
+  content:none !important;
+  display:none !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn.active,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn.active,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn.active:hover,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn.active:hover,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn.active:focus,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn.active:focus,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn.active:active,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn.active:active{
+  background:transparent !important;
+  background-color:transparent !important;
+  background-image:none !important;
+  border-color:transparent !important;
+  box-shadow:none !important;
+  outline:0 !important;
+  filter:none !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn.active::before,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn.active::before,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn.active::after,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn.active::after{
+  content:none !important;
+  display:none !important;
+  visibility:hidden !important;
+  opacity:0 !important;
+  background:transparent !important;
+  background-color:transparent !important;
+  background-image:none !important;
+  border:0 !important;
+  outline:0 !important;
+  box-shadow:none !important;
+  transition:none !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn.active .bottomNavIcon,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn.active .moreIcon,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn.active .bottomNavIcon svg,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn.active .bottomNavIcon img,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn.active .bottomNavIconImg{
+  background:transparent !important;
+  background-color:transparent !important;
+  background-image:none !important;
+  border:0 !important;
+  outline:0 !important;
+  box-shadow:none !important;
+}
+@media (prefers-reduced-motion: reduce){
+  html body nav.bottomNav > #bottomNavScroll.bottomNavScroll .bottomNavActiveIndicator{transition:none !important;}
+}
+html body #home.page.active{
+  overflow:visible !important;
+}
+html body #home.page.active > .dashboardShell{
+  box-sizing:border-box !important;
+  position:relative !important;
+  overflow:visible !important;
+  border-width:1px !important;
+  border-style:solid !important;
+  border-color:rgba(142,255,191,.30) !important;
+  border-top-color:rgba(226,255,235,.92) !important;
+  background-clip:padding-box !important;
+  outline:none !important;
+  transform:translateY(2px) !important;
+  margin-bottom:-2px !important;
+  box-shadow:
+    0 20px 54px rgba(0,0,0,.32),
+    inset 0 1px 0 rgba(255,255,255,.18) !important;
+}
+html body #home.page.active > .dashboardShell::before,
+html body #home.page.active > .dashboardShell::after{
+  content:none !important;
+  display:none !important;
+  visibility:hidden !important;
+  opacity:0 !important;
+  background:transparent !important;
+  border:0 !important;
+  box-shadow:none !important;
+}
+@media (min-width:390px) and (max-width:435px), (width:390px), (width:412px), (width:430px){
+  html body #home.page.active > .dashboardShell{
+    transform:translateY(3px) !important;
+    margin-bottom:-3px !important;
+    border-top-color:rgba(232,255,239,.96) !important;
+  }
+}
+
+/* v.1.5 (980) – doladění aktivního obrysu spodní lišty, dashboard borderu a admin přehledu připojení. */
+html body #home.page.active > .dashboardShell{
+  border-top-color:rgba(142,255,191,.38) !important;
+  box-shadow:
+    0 20px 54px rgba(0,0,0,.32),
+    inset 0 1px 0 rgba(255,255,255,.10) !important;
+}
+@media (min-width:390px) and (max-width:435px), (width:390px), (width:412px), (width:430px){
+  html body #home.page.active > .dashboardShell{
+    border-top-color:rgba(142,255,191,.40) !important;
+  }
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll .bottomNavActiveIndicator{
+  background:transparent !important;
+  background-color:transparent !important;
+  background-image:none !important;
+  border:1.5px solid rgba(226,246,255,.42) !important;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.035) inset,
+    0 0 10px rgba(226,246,255,.12) !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+  filter:none !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll .bottomNavActiveIndicator::before{
+  content:"" !important;
+  position:absolute !important;
+  inset:-2px !important;
+  border-radius:inherit !important;
+  border:1px solid rgba(226,246,255,.14) !important;
+  background:transparent !important;
+  background-color:transparent !important;
+  background-image:none !important;
+  box-shadow:none !important;
+  filter:blur(2px) !important;
+  opacity:.55 !important;
+  pointer-events:none !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn.active,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn.active,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn.active .bottomNavIcon,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn.active .moreIcon,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn.active .bottomNavIcon *,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn.active .moreIcon *{
+  background:transparent !important;
+  background-color:transparent !important;
+  background-image:none !important;
+  box-shadow:none !important;
+  filter:none !important;
+}
+#rotace .rotaceHeaderBar .rotaceBackBtn,
+#rotaceBackBtn.calcCloseBtn.rotaceBackBtn{
+  top:calc(50% - 11px) !important;
+}
+#menu .adminUsageCard{
+  max-height:min(78dvh, 720px) !important;
+  overflow:hidden !important;
+  grid-template-rows:auto auto auto auto minmax(0, 1fr) auto auto !important;
+}
+#menu .adminUsageList{
+  max-height:min(44dvh, 420px) !important;
+  min-height:0 !important;
+  overflow:auto !important;
+  overscroll-behavior:contain !important;
+  padding-right:4px !important;
+}
+#menu .adminUsageItem[open] .adminUsageBody{
+  max-height:min(35dvh, 310px) !important;
+  overflow:auto !important;
+  overscroll-behavior:contain !important;
+  padding-bottom:12px !important;
+}
+#menu .adminUsageDeviceList{
+  display:flex !important;
+  flex-direction:column !important;
+  gap:8px !important;
+  margin-top:4px !important;
+}
+#menu .adminUsageDeviceRow{
+  display:flex !important;
+  flex-direction:column !important;
+  gap:5px !important;
+  padding:9px 10px !important;
+  border-radius:14px !important;
+  background:rgba(0,0,0,.13) !important;
+  border:1px solid rgba(255,255,255,.08) !important;
+}
+#menu .adminUsageDeviceHead{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:8px !important;
+  color:var(--soft,#f4fff6) !important;
+}
+#menu .adminUsageDeviceHead b{
+  min-width:0 !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  white-space:nowrap !important;
+  font-size:13px !important;
+}
+#menu .adminUsageDeviceHead em{
+  flex:0 0 auto !important;
+  font-style:normal !important;
+  border-radius:999px !important;
+  padding:3px 7px !important;
+  background:rgba(124,255,124,.10) !important;
+  color:var(--rakThemeAccent,#7CFF7C) !important;
+  font-weight:900 !important;
+  font-size:11px !important;
+}
+@media (max-height:760px){
+  #menu .adminUsageCard{max-height:74dvh !important;}
+  #menu .adminUsageList{max-height:38dvh !important;}
+  #menu .adminUsageItem[open] .adminUsageBody{max-height:28dvh !important;}
+}
+
+
+/* v.1.5 (981) – spodní navigace: žádné aktivní pozadí, jen pohyblivý průhledný glass obrys. */
+html body nav.bottomNav,
+html body nav.bottomNav *,
+html body nav.bottomNav *::before,
+html body nav.bottomNav *::after{
+  -webkit-tap-highlight-color: transparent !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll{
+  position:relative !important;
+  isolation:isolate !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll .bottomNavActiveIndicator{
+  z-index:0 !important;
+  pointer-events:none !important;
+  top:3px !important;
+  bottom:3px !important;
+  height:auto !important;
+  width:var(--rak-nav-indicator-width, 64px) !important;
+  transform:translate3d(var(--rak-nav-indicator-left, 0px), 0, 0) !important;
+  border-radius:18px !important;
+  border:1.4px solid rgba(226,246,255,.48) !important;
+  outline:0 !important;
+  background:transparent !important;
+  background-color:transparent !important;
+  background-image:none !important;
+  box-shadow:0 0 12px rgba(226,246,255,.15) !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+  filter:none !important;
+  opacity:1 !important;
+  transition:
+    transform 1.05s cubic-bezier(.16,.82,.16,1),
+    width 1.05s cubic-bezier(.16,.82,.16,1),
+    opacity .22s ease !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll .bottomNavActiveIndicator::before{
+  content:"" !important;
+  position:absolute !important;
+  inset:-3px !important;
+  border-radius:inherit !important;
+  border:1px solid rgba(226,246,255,.16) !important;
+  background:transparent !important;
+  background-color:transparent !important;
+  background-image:none !important;
+  box-shadow:none !important;
+  filter:blur(2.6px) !important;
+  opacity:.65 !important;
+  pointer-events:none !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll .bottomNavActiveIndicator::after{
+  content:none !important;
+  display:none !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn:hover,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn:focus,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn:focus-visible,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn:active,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn.active,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn.active:hover,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn.active:focus,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn.active:focus-visible,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn.active:active{
+  background:transparent !important;
+  background-color:transparent !important;
+  background-image:none !important;
+  border-color:transparent !important;
+  box-shadow:none !important;
+  outline:0 !important;
+  filter:none !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn::before,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn::after,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn.active::before,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn.active::after,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn:active::before,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn:active::after,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn:focus::before,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn:focus::after,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn:focus-visible::before,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn:focus-visible::after{
+  content:none !important;
+  display:none !important;
+  visibility:hidden !important;
+  opacity:0 !important;
+  background:transparent !important;
+  background-color:transparent !important;
+  background-image:none !important;
+  border:0 !important;
+  outline:0 !important;
+  box-shadow:none !important;
+  filter:none !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn > *,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn.active > *,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn:active > *,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn:focus > *,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn .bottomNavIcon,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn.active .bottomNavIcon,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn .bottomNavIcon *,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn.active .bottomNavIcon *,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn .moreIcon,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn.active .moreIcon,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn .moreIcon *{
+  background:transparent !important;
+  background-color:transparent !important;
+  background-image:none !important;
+  border-color:transparent !important;
+  box-shadow:none !important;
+  outline:0 !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn.active .bottomNavIconImg,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn.active .bottomNavIcon svg,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn.active .bottomNavIcon path,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn.active .bottomNavIcon circle{
+  background:transparent !important;
+  background-color:transparent !important;
+  background-image:none !important;
+  box-shadow:none !important;
+}
+@media (prefers-reduced-motion: reduce){
+  html body nav.bottomNav > #bottomNavScroll.bottomNavScroll .bottomNavActiveIndicator{transition:none !important;}
+}

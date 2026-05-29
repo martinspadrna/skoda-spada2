@@ -1,13 +1,31 @@
+## v.1.5 (981)
+- Spodní lišta: aktivní stav už nemá žádné šedé ani mléčné pozadí; zůstává jen průhledné glass ohraničení s plynulým přesunem.
+- Přidána tvrdší ochrana proti iOS/Android tap highlightu a starým active/focus vrstvám.
+- ZIP znovu zkontrolován bez pracovních/temp souborů, ponechány jen runtime soubory a aktuální testovací skripty.
+- Verze sjednocena na v.1.5 (981), cache na `v1.5-981`, realtime kanál na `rak-public-live-v981`, package na `1.5.981`.
+
+## v.1.5 (980)
+- Dashboard: horní linka zůstává viditelná, ale je ztlumená, aby nepůsobila běleji než zbytek ohraničení.
+- Spodní lišta: aktivní stav je jen průhledný rozmazaný glass obrys bez šedé výplně ikonky.
+- Administrace / Přehled připojení: zařízení se seskupují pod jedno jméno/profil, detail ukazuje jednotlivá zařízení a otevřený detail má vlastní scroll.
+- Verze sjednocena na v.1.5 (980), cache na `v1.5-980`, realtime kanál na `rak-public-live-v980`, package na `1.5.980`.
+
+## v.1.5 (979)
+- Spodní aktivní zvýraznění je jen průhledný glass obrys bez výplně a bez vlastního pozadí aktivního tlačítka.
+- Dashboard: bez umělé horní linky; posunutí skutečného horního borderu mimo ořez na problematických viewports 390/412/430 px.
+- Verze sjednocena na v.1.5 (979), cache na `v1.5-979`, realtime kanál na `rak-public-live-v979`, package na `1.5.979`.
+
 ## v.1.5 (977)
 - Opraven nepovedený spodní panel z v976: aktivní pozadí je zpět jako průhledný glass indikátor bez zeleného výplňového pozadí.
 - Aktivní indikátor na spodní liště se hýbe jako jeden celek, takže pozadí a ohraničení dojíždí současně.
 - Dashboard: odstraněná dodatečně vykreslená horní čára z v976, ponechané jen skutečné horní ohraničení panelu.
 - Verze sjednocena na v.1.5 (977), cache na `v1.5-977`, realtime kanál na `rak-public-live-v977`, package na `1.5.977`.
 
+## v.1.5 (974)
 - Spodní lišta: aktivní položka má ikonku zvětšenou cca o 20 % a její text se při aktivaci skryje, bez změny výšky panelu.
 - Plynulý přesun aktivního glass zvýraznění zůstává zachovaný a pořadí ikon se nemění.
 - Rozpisy/Statistiky: křížek zpět je opticky posunut výš, aby seděl s nadpisem.
-- Verze sjednocena na v.1.5 (977), cache na `v1.5-977`, realtime kanál na `rak-public-live-v977`, package na `1.5.977`.
+- Verze sjednocena na v.1.5 (974), cache na `v1.5-974`, realtime kanál na `rak-public-live-v974`, package na `1.5.974`.
 
 ## v.1.5 (973)
 - Hotfix spodní lišty: vrácena výška, pořadí ikon a rozměry podle v971.
