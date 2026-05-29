@@ -63,6 +63,62 @@ function ensurePageScrollAvailable(pageId, reason) {
   }
 }
 
+
+
+function ensureBottomNavActiveIndicator() {
+  try {
+    if (typeof document === 'undefined') return null;
+    const rail = document.getElementById('bottomNavScroll');
+    if (!rail) return null;
+    let indicator = rail.querySelector('.bottomNavActiveIndicator');
+    if (!indicator) {
+      indicator = document.createElement('span');
+      indicator.className = 'bottomNavActiveIndicator';
+      indicator.setAttribute('aria-hidden', 'true');
+      rail.appendChild(indicator);
+    }
+    return indicator;
+  } catch (err) {
+    return null;
+  }
+}
+
+function updateBottomNavActiveIndicator(reason) {
+  try {
+    if (typeof document === 'undefined') return false;
+    const rail = document.getElementById('bottomNavScroll');
+    const indicator = ensureBottomNavActiveIndicator();
+    if (!rail || !indicator) return false;
+    const active = rail.querySelector('.bottomNavBtn.active');
+    if (!active) {
+      indicator.style.opacity = '0';
+      return false;
+    }
+    const railRect = rail.getBoundingClientRect();
+    const activeRect = active.getBoundingClientRect();
+    const left = Math.max(0, activeRect.left - railRect.left + rail.scrollLeft);
+    const width = Math.max(20, activeRect.width);
+    indicator.style.setProperty('--rak-nav-indicator-left', left.toFixed(2) + 'px');
+    indicator.style.setProperty('--rak-nav-indicator-width', width.toFixed(2) + 'px');
+    indicator.style.opacity = '1';
+    indicator.dataset.reason = String(reason || 'active');
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
+
+function scheduleBottomNavActiveIndicator(reason) {
+  try {
+    const run = () => updateBottomNavActiveIndicator(reason || 'scheduled');
+    if (typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(() => requestAnimationFrame(run));
+    } else {
+      setTimeout(run, 0);
+    }
+  } catch (err) {}
+}
+
 function setBottomNavActive(pageId) {
   const buttons = document.querySelectorAll('.bottomNavBtn');
   buttons.forEach(btn => {
@@ -72,6 +128,7 @@ function setBottomNavActive(pageId) {
       centerBottomNavButton(btn);
     }
   });
+  scheduleBottomNavActiveIndicator('setBottomNavActive:' + String(pageId || ''));
 }
 
 function appGoBackFromGesture() {
@@ -1249,7 +1306,7 @@ const TTT_HARD_WIN_EMAIL = 'martinspadrna@gmail.com';
 const TTT_HARD_WIN_KEY = 'tttHardWins';
 // Samostatná verze pravidel/obtížnosti Piškvorek. Není to verze celé aplikace.
 // Zvyšovat jen při změně AI obtížnosti nebo pravidel, ne při vzhledových úpravách.
-const GOMOKU_RULESET_VERSION = 'gomoku-10col-19row-ai-rules-v13';
+const GOMOKU_RULESET_VERSION = 'gomoku-10col-19row-ai-rules-v14';
 if (typeof window !== 'undefined') window.GOMOKU_RULESET_VERSION = GOMOKU_RULESET_VERSION;
 
 function tttEnsureAiWinsResetV667() {
@@ -8029,6 +8086,303 @@ function tttBestMove(board, difficulty) {
   return tttNearestCenterFallbackMove(board);
 }
 
+
+// v.1.5 (966) – Piškvorky AI: priorita vlastního forcing tahu před slabým blokem.
+const TTT_V966_SOFT_DEADLINE_MS = 2050;
+const TTT_V966_HARD_DEADLINE_MS = 4200;
+
+function tttV966Budget(difficulty) {
+  const prev = typeof tttV965Budget === 'function' ? tttV965Budget(difficulty || 'ai') : { soft: 1900, hard: 3800 };
+  const lowEnd = !!(typeof document !== 'undefined' && document.body && document.body.classList && (document.body.classList.contains('ladaMode') || document.body.classList.contains('lowEndDevice') || document.body.classList.contains('lightweightMode')));
+  if (difficulty !== 'ai') return { soft: Math.max(520, Number(prev.soft || 0) || 0), hard: Math.max(900, Number(prev.hard || 0) || 0) };
+  return lowEnd ? { soft: 1500, hard: 2800 } : { soft: TTT_V966_SOFT_DEADLINE_MS, hard: TTT_V966_HARD_DEADLINE_MS };
+}
+
+function tttV966TimeUp(deadline, margin) {
+  return !!(deadline && tttV962Now() > deadline - (Number(margin || 0) || 0));
+}
+
+function tttV966CountLevel(entries, minLevel) {
+  const seen = new Set();
+  for (const e of entries || []) {
+    if (!e || seen.has(e.idx)) continue;
+    if (Number(e.level || 0) >= Number(minLevel || 0)) seen.add(e.idx);
+  }
+  return seen.size;
+}
+
+function tttV966MoveProfile(board, idx, mark, deadline) {
+  if (!tttV962Legal(board, idx)) return null;
+  board[idx] = mark;
+  const winNow = tttWinner(board).winner === mark;
+  const wins = winNow ? 99 : tttV960WinningMoves(board, mark).length;
+  const threats = tttV961ThreatEntries(board, mark);
+  const gains = tttV961GainEntries(board, mark, deadline);
+  const pressure = typeof tttV965PressureEntries === 'function' ? tttV965PressureEntries(board, mark, deadline) : [];
+  const topThreat = threats[0] || null;
+  const topGain = gains[0] || null;
+  const topPressure = pressure[0] || null;
+  const run = typeof tttV962LineRunAfterMove === 'function' ? tttV962LineRunAfterMove(board, idx, mark) : 0;
+  const severeThreats = tttV966CountLevel(threats, 84);
+  const forcedThreats = tttV966CountLevel(threats, 110);
+  const severeGains = tttV966CountLevel(gains, 92);
+  const fork = typeof tttBestForkMove === 'function' && tttBestForkMove(board, mark) >= 0;
+  board[idx] = '';
+  const maxLevel = Math.max(Number(topThreat && topThreat.level || 0), Number(topGain && topGain.level || 0), Number(topPressure && topPressure.level || 0));
+  return {
+    idx,
+    mark,
+    winNow,
+    wins,
+    threats,
+    gains,
+    pressure,
+    topThreat,
+    topGain,
+    topPressure,
+    run,
+    severeThreats,
+    forcedThreats,
+    severeGains,
+    fork,
+    maxLevel,
+    diagonal: !!((topThreat && topThreat.diagonal) || (topGain && topGain.diagonal) || (topPressure && topPressure.diagonal)),
+    exact: !!((topThreat && topThreat.exact) || (topGain && topGain.exact) || (topPressure && topPressure.exact)),
+    gap: !!((topThreat && topThreat.gap) || (topGain && topGain.gap) || (topPressure && topPressure.gap)),
+    hits: wins * 1600 + forcedThreats * 560 + severeThreats * 190 + severeGains * 150 + run * 55 + Number(topThreat && topThreat.hits || 0) + Number(topGain && topGain.hits || 0)
+  };
+}
+
+function tttV966ForcingEntries(board, mark, deadline) {
+  const occupied = typeof tttV960Occupied === 'function' ? tttV960Occupied(board) : board.filter(Boolean).length;
+  const pool = new Set();
+  const priority = new Set();
+  const addPriority = (idx) => { const n = Number(idx); if (Number.isFinite(n)) { pool.add(n); priority.add(n); } };
+  try { tttV961ThreatEntries(board, mark).slice(0, 52).forEach(e => addPriority(e.idx)); } catch (_) {}
+  try { tttV961GainEntries(board, mark, deadline).slice(0, 42).forEach(e => addPriority(e.idx)); } catch (_) {}
+  try { tttV965PressureEntries(board, mark, deadline).slice(0, 42).forEach(e => addPriority(e.idx)); } catch (_) {}
+  try { tttV962KillerEntries(board, mark, deadline).slice(0, 34).forEach(e => addPriority(e.idx)); } catch (_) {}
+  try { tttV962CandidateSet(board, occupied < 34 ? 3 : 2).forEach(idx => pool.add(Number(idx))); } catch (_) {}
+  const candidates = Array.from(pool).map(Number).filter(idx => tttV962Legal(board, idx))
+    .map(idx => ({
+      idx,
+      score: (priority.has(idx) ? 1e9 : 0)
+        + tttCheapMovePotential(board, idx, mark) * 140
+        + tttCheapMovePotential(board, idx, mark === 'X' ? 'O' : 'X') * 18
+        + tttV962CenterScore(idx)
+    }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, occupied < 34 ? 56 : 44)
+    .map(item => item.idx);
+  const out = [];
+  for (const idx of candidates) {
+    if (tttV966TimeUp(deadline, 28) && out.length >= 8) break;
+    const p = tttV966MoveProfile(board, idx, mark, deadline);
+    if (!p) continue;
+    let level = 0;
+    if (p.winNow) level = 300;
+    else if (p.wins >= 2) level = 276;                 // otevřená čtyřka / dvě koncovky
+    else if (p.wins === 1 && (p.run >= 4 || p.severeThreats >= 1)) level = 244; // udělej čtyřku
+    else if (p.wins === 1) level = 228;
+    else if (p.forcedThreats >= 2 || p.fork) level = 206;
+    else if (p.forcedThreats >= 1 && p.severeThreats >= 2) level = 190;
+    else if (p.severeThreats >= 3) level = 178;
+    else if (p.severeThreats >= 2 && p.severeGains >= 1) level = 166;
+    else if (p.run >= 4 && p.maxLevel >= 84) level = 160;
+    else if (p.maxLevel >= 136) level = 150;
+    else if (p.run >= 3 && p.maxLevel >= 84) level = 134;
+    if (level < 134) continue;
+    out.push(Object.assign({}, p, {
+      level,
+      kinds: ['v966-forcing'],
+      endpoint: !!(p.topThreat && p.topThreat.endpoint),
+      immediateWins: p.wins
+    }));
+  }
+  return tttV962UniqueEntries(out);
+}
+
+function tttV966PickForcingMove(board, entries, deadline) {
+  const list = tttV962UniqueEntries(entries).filter(e => tttV962Legal(board, e.idx)).slice(0, 28);
+  let best = -1;
+  let bestScore = -Infinity;
+  for (const e of list) {
+    if (tttV966TimeUp(deadline, 30) && best >= 0) break;
+    const idx = Number(e.idx);
+    const safety = tttV962SafetyReport(board, idx, deadline);
+    board[idx] = 'O';
+    const xImmediate = tttV960WinningMoves(board, 'X').length;
+    const ownImmediate = tttV960WinningMoves(board, 'O').length;
+    const replyDanger = typeof tttV965ReplyDanger === 'function' ? tttV965ReplyDanger(board, deadline) : 0;
+    const xPressure = typeof tttV965PressureEntries === 'function' ? tttV965PressureEntries(board, 'X', deadline)[0] : null;
+    board[idx] = '';
+    if (xImmediate > 0 && ownImmediate < 2) continue;
+    const score = Number(e.level || 0) * 1e28
+      + Number(e.hits || 0) * 1e24
+      + ownImmediate * 8e31
+      + (e.run || 0) * 6e25
+      + (e.fork ? 8e27 : 0)
+      + (e.diagonal ? 4e24 : 0)
+      - Number(safety.immediateLosses || 0) * 1e34
+      - Number(safety.killerCount || 0) * 6e31
+      - Math.max(0, Number(safety.killerLevel || 0) - 176) * 4e28
+      - (xPressure ? Math.max(0, Number(xPressure.level || 0) - 170) * 6e26 : 0)
+      - replyDanger * 0.12
+      + tttV962CenterScore(idx) * 4200;
+    if (score > bestScore) { bestScore = score; best = idx; }
+  }
+  return best;
+}
+
+
+function tttV966DirectForcingEntries(board, mark, deadline) {
+  const seeds = new Set();
+  try { tttV961ThreatEntries(board, mark).slice(0, 38).forEach(e => seeds.add(Number(e.idx))); } catch (_) {}
+  try { tttV960WinningMoves(board, mark).forEach(idx => seeds.add(Number(idx))); } catch (_) {}
+  const opponent = mark === 'X' ? 'O' : 'X';
+  try { tttV961ThreatEntries(board, opponent).slice(0, 16).forEach(e => seeds.add(Number(e.idx))); } catch (_) {}
+  const out = [];
+  for (const idx of Array.from(seeds).filter(idx => tttV962Legal(board, idx)).slice(0, 42)) {
+    if (tttV966TimeUp(deadline, 16) && out.length) break;
+    board[idx] = mark;
+    const winNow = tttWinner(board).winner === mark;
+    const wins = winNow ? 99 : tttV960WinningMoves(board, mark).length;
+    const threats = tttV961ThreatEntries(board, mark);
+    const top = threats[0] || null;
+    const run = typeof tttV962LineRunAfterMove === 'function' ? tttV962LineRunAfterMove(board, idx, mark) : 0;
+    const severe = tttV966CountLevel(threats, 84);
+    const forced = tttV966CountLevel(threats, 110);
+    board[idx] = '';
+    if (!winNow && wins < 1 && forced < 2 && !(run >= 4 && top && Number(top.level || 0) >= 84)) continue;
+    let level = 0;
+    if (winNow) level = 320;
+    else if (wins >= 2) level = 286;
+    else if (wins === 1 && run >= 4) level = 252;
+    else if (wins === 1) level = 232;
+    else if (forced >= 2) level = 204;
+    else if (run >= 4) level = 176;
+    out.push({ idx, level, hits: wins * 2000 + forced * 480 + severe * 120 + run * 50 + (top ? Number(top.hits || 0) : 0), immediateWins: wins, run, forcedThreats: forced, severeThreats: severe, diagonal: !!(top && top.diagonal), endpoint: !!(top && top.endpoint), gap: !!(top && top.gap), exact: !!(top && top.exact), kinds: ['v966-direct-forcing'] });
+  }
+  return tttV962UniqueEntries(out);
+}
+
+function tttV966PickDirectForcing(board, entries, deadline) {
+  const list = tttV962UniqueEntries(entries).filter(e => tttV962Legal(board, e.idx)).slice(0, 16);
+  let best = -1;
+  let bestScore = -Infinity;
+  for (const e of list) {
+    const idx = Number(e.idx);
+    if (tttV966TimeUp(deadline, 18) && best >= 0) break;
+    board[idx] = 'O';
+    const xWins = tttV960WinningMoves(board, 'X').length;
+    const oWins = tttV960WinningMoves(board, 'O').length;
+    const xTop = tttV961ThreatEntries(board, 'X')[0] || null;
+    board[idx] = '';
+    if (xWins > 0 && oWins < 2) continue;
+    const score = Number(e.level || 0) * 1e12
+      + Number(e.hits || 0) * 1e8
+      + oWins * 1e13
+      - xWins * 1e14
+      - (xTop ? Math.max(0, Number(xTop.level || 0) - 116) * 1e9 : 0)
+      + tttV962CenterScore(idx) * 1000;
+    if (score > bestScore) { bestScore = score; best = idx; }
+  }
+  return best;
+}
+
+function tttV966BestMove(board, difficulty) {
+  const free = [];
+  for (let i = 0; i < board.length; i += 1) if (!board[i]) free.push(i);
+  if (!free.length) return -1;
+  if (tttWinner(board).winner) return tttNearestCenterFallbackMove(board);
+  const budget = tttV966Budget(difficulty || 'ai');
+  const hardDeadline = tttV962Now() + Math.max(900, Number(budget.hard || TTT_V966_HARD_DEADLINE_MS) - 520);
+
+  const ownWins = tttV960WinningMoves(board, 'O');
+  if (ownWins.length) return ownWins[0];
+
+  const xWins = tttV960WinningMoves(board, 'X');
+  if (xWins.length) return xWins[0];
+
+  const occupied = board.length - free.length;
+  if (occupied <= 1) {
+    const opening = tttPromptEngineOpeningMove(board);
+    if (opening >= 0 && !board[opening]) return opening;
+  }
+
+  const currentX = tttV961ThreatEntries(board, 'X');
+  const xForcedFour = currentX.filter(e => Number(e.level || 0) >= 110);
+  if (xForcedFour.length) {
+    const block = Number(xForcedFour[0].idx);
+    if (tttV962Legal(board, block)) return block;
+  }
+
+  // Rychlá prioritní vrstva: vlastní čtyřka / přímý forcing před blokem slabé trojky.
+  const directOwn = tttV966DirectForcingEntries(board, 'O', hardDeadline).filter(e => Number(e.level || 0) >= 232 || Number(e.immediateWins || 0) >= 1);
+  if (directOwn.length) {
+    const attack = tttV966PickDirectForcing(board, directOwn, hardDeadline);
+    if (tttV962Legal(board, attack)) return attack;
+  }
+
+  const directX = tttV966DirectForcingEntries(board, 'X', hardDeadline).filter(e => Number(e.level || 0) >= 252 || Number(e.immediateWins || 0) >= 2);
+  if (directX.length) {
+    const block = Number(directX[0].idx);
+    if (tttV962Legal(board, block)) return block;
+  }
+
+  const v965 = typeof tttV965BestMove === 'function' ? tttV965BestMove(board, difficulty || 'ai') : -1;
+  if (tttV962Legal(board, v965)) return v965;
+  const v962 = typeof tttV962BestMove === 'function' ? tttV962BestMove(board, difficulty || 'ai') : -1;
+  if (tttV962Legal(board, v962)) return v962;
+  return tttNearestCenterFallbackMove(board);
+}
+function getRakGomokuAiV966Health() {
+  const budget = tttV966Budget('ai');
+  return {
+    ok: true,
+    boardRows: TTT_ROWS,
+    boardCols: TTT_COLS,
+    board: { rows: TTT_ROWS, cols: TTT_COLS, total: TTT_TOTAL_CELLS },
+    rulesetVersion: GOMOKU_RULESET_VERSION,
+    offlineAiOnly: true,
+    onlinePvpUntouched: true,
+    tacticalOpeningWinCheck: true,
+    immediateLossBlock: true,
+    ownForcingBeforeWeakBlock: true,
+    openFourAttack: true,
+    blockedThreeDeprioritized: true,
+    diagonalThreatDefense: true,
+    openThreeDefense: true,
+    brokenThreeDefense: true,
+    candidateSafetyVerification: true,
+    tacticalVerificationPly: 'v966 forcing priority layer over v965',
+    softDeadlineMs: Number(budget.soft || TTT_V966_SOFT_DEADLINE_MS),
+    hardDeadlineMs: Number(budget.hard || TTT_V966_HARD_DEADLINE_MS),
+    fallbackLegalMove: true,
+    testedLocallyByScript: 'gomoku-ai-smoke-v966.js',
+    note: 'v966 dává vlastnímu forcing tahu přednost před blokem slabé nebo z jedné strany zavřené trojky. Online PvP zůstává beze změny.'
+  };
+}
+if (typeof window !== 'undefined') {
+  window.getRakGomokuAiV966Health = getRakGomokuAiV966Health;
+  window.getRakGomokuAiV965Health = getRakGomokuAiV966Health;
+  window.getRakGomokuAiV962Health = getRakGomokuAiV966Health;
+  window.getRakGomokuAiV961Health = getRakGomokuAiV966Health;
+  window.getRakGomokuAiV960Health = getRakGomokuAiV966Health;
+}
+
+function tttBestMove(board, difficulty) {
+  const next = typeof tttV966BestMove === 'function' ? tttV966BestMove(board, difficulty || 'ai') : -1;
+  if (tttV962Legal(board, next)) return next;
+  const win = tttV960WinningMoves(board, 'O')[0];
+  if (tttV962Legal(board, win)) return win;
+  const block = tttV960WinningMoves(board, 'X')[0];
+  if (tttV962Legal(board, block)) return block;
+  const prev = typeof tttV965BestMove === 'function' ? tttV965BestMove(board, difficulty || 'ai') : -1;
+  if (tttV962Legal(board, prev)) return prev;
+  return tttNearestCenterFallbackMove(board);
+}
+
 function tttHardWinLog() {
   return [];
 }
@@ -9423,8 +9777,8 @@ function buildAppHistoryHtml(versionText) {
       range: 'v.1.5 951–1000',
       title: 'Piškvorky, Dashboard a administrace',
       lines: [
-        'Piškvorky mají vlastní ruleset verzi oddělenou od verze aplikace, silnější offline AI a žebříček filtrovaný podle aktuálních pravidel.',
-        'Dashboard se průběžně ladí pro různé mobilní displeje a administrace nově ukazuje základní přehled připojených zařízení.',
+        'Piškvorky mají vlastní ruleset verzi oddělenou od verze aplikace, silnější offline AI s forcing prioritami a žebříček filtrovaný podle aktuálních pravidel.',
+        'Dashboard se průběžně ladí pro různé mobilní displeje a administrace ukazuje základní přehled připojených zařízení včetně rozlišení.',
         'Spodní navigace se zjednodušila: Rozpisy a Statistiky jsou dostupné z Rotace, dole zůstává víc místa pro hlavní sekce.'
       ]
     },
@@ -10595,24 +10949,37 @@ function shortAdminUsageDevice(value) {
 }
 
 function formatAdminUsageViewport(info) {
-  const obj = info && typeof info === 'object' ? info : {};
+  const base = info && typeof info === 'object' ? info : {};
   const parseMaybeJson = (value) => {
     if (value && typeof value === 'object') return value;
     const raw = String(value || '').trim();
     if (!raw) return {};
     try { return JSON.parse(raw); } catch (err) { return { raw }; }
   };
+  const mergeDeviceInfo = (value) => {
+    const parsed = parseMaybeJson(value);
+    if (parsed && (parsed.viewport || parsed.screen || parsed.dpr || parsed.viewportWidth || parsed.screenWidth)) return parsed;
+    return {};
+  };
+  const nested = Object.assign({}, mergeDeviceInfo(base.screen), mergeDeviceInfo(base.raw), mergeDeviceInfo(base.deviceInfo));
+  const obj = Object.assign({}, base, nested);
   const vp = parseMaybeJson(obj.viewport);
-  const scr = parseMaybeJson(obj.screen);
-  const w = Number(vp.width || obj.viewportWidth || 0) || 0;
-  const h = Number(vp.height || obj.viewportHeight || 0) || 0;
-  const dpr = Number(vp.dpr || obj.dpr || 0) || 0;
-  const sw = Number(scr.width || obj.screenWidth || 0) || 0;
-  const sh = Number(scr.height || obj.screenHeight || 0) || 0;
+  const scrCandidate = parseMaybeJson(obj.screen);
+  const scr = scrCandidate && (scrCandidate.width || scrCandidate.height)
+    ? scrCandidate
+    : parseMaybeJson(scrCandidate.screen || obj.screenInfo || obj.display || '');
+  const nestedVp = scrCandidate && scrCandidate.viewport ? parseMaybeJson(scrCandidate.viewport) : {};
+  const nestedScr = scrCandidate && scrCandidate.screen ? parseMaybeJson(scrCandidate.screen) : {};
+  const w = Number(vp.width || nestedVp.width || obj.viewportWidth || obj.innerWidth || 0) || 0;
+  const h = Number(vp.height || nestedVp.height || obj.viewportHeight || obj.innerHeight || 0) || 0;
+  const dpr = Number(vp.dpr || nestedVp.dpr || obj.dpr || obj.devicePixelRatio || 0) || 0;
+  const sw = Number(nestedScr.width || scr.width || obj.screenWidth || 0) || 0;
+  const sh = Number(nestedScr.height || scr.height || obj.screenHeight || 0) || 0;
   const rawScreen = scr.raw && !/^Europe\//i.test(String(scr.raw)) ? String(scr.raw) : '';
   const parts = [];
   if (w && h) parts.push('Viewport ' + w + '×' + h);
   if (sw && sh && (sw !== w || sh !== h)) parts.push('Screen ' + sw + '×' + sh);
+  else if (!w && !h && sw && sh) parts.push('Screen ' + sw + '×' + sh);
   else if (!w && !h && rawScreen) parts.push(rawScreen);
   if (dpr) parts.push('DPR ' + dpr);
   return parts.filter(Boolean).join(' · ') || '—';
@@ -12315,10 +12682,28 @@ function updateRotaceNamesDockMetrics(reason) {
 }
 
 function scheduleRotaceNamesDockMetrics(reason) {
-  /* v930: pozice docku je záměrně stabilní CSS hodnota.
-     Žádné opožděné přepisování bottom/max-height po otevření Rotace,
-     protože právě to na mobilech vytvářelo viditelné cuknutí panelu. */
-  try { return updateRotaceNamesDockMetrics(reason || 'stable-css'); } catch (err) { return null; }
+  // v966: dock se znovu přizpůsobuje reálné spodní liště a safe-area,
+  // aby jména seděla těsně nad panelem místo ručního ladění po pixelech.
+  try {
+    const root = document.documentElement;
+    const nav = document.querySelector('nav.bottomNav') || document.querySelector('.bottomNav');
+    const grid = document.getElementById('namesGrid');
+    const viewport = window.visualViewport || null;
+    const vh = Math.round(Number(viewport && viewport.height || window.innerHeight || root.clientHeight || 720) || 720);
+    const navRect = nav && typeof nav.getBoundingClientRect === 'function' ? nav.getBoundingClientRect() : null;
+    const gridRect = grid && typeof grid.getBoundingClientRect === 'function' ? grid.getBoundingClientRect() : null;
+    const navTopGap = navRect ? Math.max(0, Math.round(vh - Number(navRect.top || vh))) : 72;
+    const dockGap = vh >= 850 ? 8 : 6;
+    const dockBottom = Math.max(54, Math.min(124, navTopGap + dockGap));
+    const gridHeight = gridRect ? Math.max(88, Math.min(156, Math.round(Number(gridRect.height || 0) || 120))) : 120;
+    root.style.setProperty('--rak-rotace-names-dock-bottom', dockBottom + 'px');
+    root.style.setProperty('--rak-rotace-names-content-bottom', (dockBottom + gridHeight + 24) + 'px');
+    root.dataset.rakRotaceNamesDockMode = 'adaptive-v966';
+    setTimeout(() => { try { updateRotaceNamesDockMetrics(reason || 'adaptive-v966'); } catch (err) {} }, 0);
+    return updateRotaceNamesDockMetrics(reason || 'adaptive-v966');
+  } catch (err) {
+    try { return updateRotaceNamesDockMetrics(reason || 'adaptive-v966-fallback'); } catch (_) { return null; }
+  }
 }
 
 if (!window.__rakRotaceNamesDockMetricsBound) {
@@ -12643,6 +13028,7 @@ function setRotaceView(view) {
   const statsPanel = document.getElementById('rotaceStatsPanel');
   const monthsPanel = document.getElementById('rotaceMonthsPanel');
   const rotaceTitle = document.getElementById('rotacePageTitle');
+  const rotaceBackBtn = document.getElementById('rotaceBackBtn');
   const tabNames = document.getElementById('tabNames');
   const tabStats = document.getElementById('tabStats');
   const tabMonths = document.getElementById('tabMonths');
@@ -12658,6 +13044,11 @@ function setRotaceView(view) {
     } else {
       rotaceTitle.textContent = 'Rotace';
     }
+  }
+  if (rotaceBackBtn) {
+    const showBack = view === 'stats' || view === 'months';
+    rotaceBackBtn.hidden = !showBack;
+    rotaceBackBtn.style.display = showBack ? 'inline-grid' : 'none';
   }
 
   if (view === 'names') {
@@ -16574,3 +16965,17 @@ function getRakRotaceNamesDockHealth() {
   return result;
 }
 window.getRakRotaceNamesDockHealth = getRakRotaceNamesDockHealth;
+
+
+try {
+  if (typeof window !== 'undefined' && !window.__rakBottomNavIndicatorResizeBound) {
+    window.__rakBottomNavIndicatorResizeBound = true;
+    window.addEventListener('resize', () => scheduleBottomNavActiveIndicator('resize'), { passive: true });
+    window.addEventListener('orientationchange', () => scheduleBottomNavActiveIndicator('orientationchange'), { passive: true });
+    if (document && document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => scheduleBottomNavActiveIndicator('dom-ready'), { once: true });
+    } else {
+      scheduleBottomNavActiveIndicator('init');
+    }
+  }
+} catch (err) {}

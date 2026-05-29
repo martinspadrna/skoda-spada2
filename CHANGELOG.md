@@ -1,11 +1,47 @@
-## v.1.5 (965)
-- Piškvorky proti AI: přidaná vrstva `tttV965BestMove()` se strategickým pressure scanem a kontrolou nejhorších odpovědí hráče, aby AI víc brzdila výhry kolem 19.–31. tahu.
-- Ruleset Piškvorek navýšen na `gomoku-10col-19row-ai-rules-v13`; online PvP zůstává beze změny.
-- Spodní navigace má nově 5 tlačítek: Home, Rotace, Kalkulačky, Hry a Více. Rozpisy a Statistiky jsou jako rychlé prokliky v Rotaci.
-- Dashboard: jemnější dorovnání horního textu pro viewporty 412×918 a 430×932.
-- Admin / Přehled připojení: odstraněné testovací tlačítko „Zapsat mě teď“, odstraněn údaj o stránce a Displej nově ukazuje viewport/screen rozlišení + DPR.
-- O aplikaci: souhrny 951–1000 a 901–950 zkrácené na stručné bloky.
-- Verze sjednocena na v.1.5 (965), cache na `v1.5-965`, realtime kanál na `rak-public-live-v965`, package na `1.5.965`.
+## v.1.5 (973)
+- Hotfix spodní lišty: vrácena výška, pořadí ikon a rozměry podle v971.
+- Aktivní glass zvýraznění se dál plynule přesouvá mezi ikonami, ale už nemění výšku panelu ani neprohazuje pořadí.
+- Verze sjednocena na v.1.5 (973), cache na `v1.5-973`, realtime kanál na `rak-public-live-v973`, package na `1.5.973`.
+
+## v.1.5 (972)
+- Spodní lišta má nový aktivní glass panel přes celou výšku položky, který se mezi ikonami plynule přesouvá místo skokového „teleportu".
+- Ikonky ve spodní liště jsou větší a zarovnané nad textem; „Více" zůstává úzké.
+- Tlačítka Rozpisy/Statistiky v Rotaci jsou lehce větší a křížek v Rozpisech/Statistikách je opticky srovnaný s nadpisem.
+- Dashboard má ještě větší ikonky v dlaždicích.
+- Verze sjednocena na v.1.5 (972), cache na `v1.5-972`, realtime kanál na `rak-public-live-v972`, package na `1.5.972`.
+
+## v.1.5 (971)
+- Spodní lišta: ikonky jsou o něco větší a přesněji vycentrované nad textem.
+- Spodní lišta: položka „Více“ zůstává úzká, je posunutá víc doprava a text se nemá ořezávat.
+- Rotace: tlačítka „Rozpisy“ a „Statistiky“ jsou užší a nepůsobí jako plnošířkové panely.
+- Dashboard: ikonky v dlaždicích jsou větší, bez změny pravidel Piškvorek nebo Supabase DB.
+
+## v.1.5 (970)
+- Rotace: v detailu po kliknutí na jméno jsou datum, označení směny a stroj na jednom řádku.
+- Rotace: detail směn je znovu zkompaktněný bez změny velikosti textu.
+- Spodní lišta: položka „Více“ má výrazně užší klikací panel, zůstává vpravo a její text je lehce posunutý doleva, aby byl vidět celý.
+
+## v.1.5 (968)
+- Layout hotfix: položka „Více“ ve spodní liště má užší klikací panel a ostatní tlačítka se roztahují do zbytku šířky.
+- Dashboard se nově řídí reálnou výškou viewportu a spodní navigace, aby nezasahoval do nadpisu, nezajížděl pod lištu a nemusel scrollovat ani při viditelné systémové liště telefonu.
+- Vrchní panel Dashboardu má znovu centrovaný řádek směny bez ručních posunů na šířkách 412 px a 430 px.
+- Detail jména v Rotaci je nižší zhruba o 10 % a křížky v Rozpisech/Statistikách jsou centrované v tlačítku.
+
+## v.1.5 (967)
+- Hotfix spodní navigace: položka „Více“ je napevno umístěná v pátém sloupci a nesmí spadnout na druhý řádek.
+- Hlavní čtyři položky spodní lišty se dál roztahují do zbylého prostoru, „Více“ zůstává užší.
+- Piškvorky a ostatní funkce beze změny oproti v966.
+- Verze sjednocena na v.1.5 (967), cache na `v1.5-967`, realtime kanál na `rak-public-live-v967`, package na `1.5.967`.
+
+## v.1.5 (966)
+- Piškvorky proti AI: přidaná vrstva `tttV966BestMove()` s prioritou vlastního forcing tahu před blokováním slabší / zavřené trojky soupeře.
+- Ruleset Piškvorek navýšen na `gomoku-10col-19row-ai-rules-v14`; online PvP zůstává beze změny.
+- Dashboard se adaptivně přizpůsobuje výšce displeje a lépe využívá volné místo nad spodní lištou.
+- Rotace: výběr jmen se kotví nad spodní navigaci a Rozpisy/Statistiky mají křížek zpět na Rotace.
+- Spodní navigace: „Více“ zůstává užší, ostatní hlavní panely se roztahují do zbylého místa a ikony jsou větší.
+- Admin / Přehled připojení lépe zobrazuje rozlišení zařízení / viewport / DPR.
+- O aplikaci: souhrny po cca 50 verzích jsou zkrácené na stručné bloky.
+- Verze sjednocena na v.1.5 (966), cache na `v1.5-966`, realtime kanál na `rak-public-live-v966`, package na `1.5.966`.
 
 ## v.1.5 (964)
 - Admin přehled připojení je přepojený na RPC `rak_usage_presence_touch` / `rak_usage_presence_admin`, které se podařilo nasadit do Supabase.

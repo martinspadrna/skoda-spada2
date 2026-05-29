@@ -17464,7 +17464,7 @@ body.lightweightMode #menu .adminUsageMetric,
 body.lowEndDevice #menu .adminUsageMetric,
 body.ladaMode #menu .adminUsageMetric{backdrop-filter:none !important;-webkit-backdrop-filter:none !important;box-shadow:none !important;}
 
-/* v.1.5 (965) – Dashboard stabilnější centrování + spodní lišta 5 tlačítek + prokliky v Rotaci. */
+/* v.1.5 (966) – Navazuje na stabilizaci Dashboardu, 5tlačítkovou lištu a prokliky v Rotaci. */
 @media (min-width:405px) and (max-width:420px) and (min-height:910px) and (max-height:925px){
   #home #dashHero .dashboardHeroLine1Text,
   #home #dashHero .dashboardHeroLine2,
@@ -17524,3 +17524,998 @@ nav.bottomNav > .bottomNavScroll > .bottomNavBtn.bottomNavMenuBtn{
 }
 .rotaceQuickLinkBtn:active{transform:translateY(1px) scale(.99) !important;}
 @media (max-width:360px){.rotaceQuickLinks{gap:6px !important}.rotaceQuickLinkBtn{padding:9px 8px !important;font-size:13px !important;}}
+
+/* v.1.5 (966) – adaptivní Dashboard, ukotvená jména Rotace a spodní lišta 5 položek s úzkým „Více“. */
+:root{
+  --rak-v966-nav-more-w:clamp(30px, 7.4vw, 38px);
+  --rak-v966-nav-gap:clamp(5px, 1.45vw, 10px);
+  --rak-dashboard-usable-h:calc(100dvh - var(--bottom-nav-h, 72px) - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 34px);
+}
+nav.bottomNav > .bottomNavScroll{
+  display:grid !important;
+  grid-template-columns:repeat(4, minmax(0, 1fr)) var(--rak-v966-nav-more-w) !important;
+  align-items:end !important;
+  gap:var(--rak-v966-nav-gap) !important;
+  padding-inline:clamp(7px, 1.8vw, 12px) !important;
+  overflow:visible !important;
+  box-sizing:border-box !important;
+}
+nav.bottomNav > .bottomNavScroll > .bottomNavBtn:not(.bottomNavMenuBtn){
+  width:100% !important;
+  min-width:0 !important;
+  max-width:none !important;
+  flex:1 1 auto !important;
+  min-height:clamp(48px, 6.1dvh, 62px) !important;
+  padding:4px 3px 3px !important;
+}
+nav.bottomNav > .bottomNavScroll > .bottomNavBtn:not(.bottomNavMenuBtn) .bottomNavIcon,
+nav.bottomNav > .bottomNavScroll > .bottomNavBtn:not(.bottomNavMenuBtn) .bottomNavIcon svg,
+nav.bottomNav > .bottomNavScroll > .bottomNavBtn:not(.bottomNavMenuBtn) .bottomNavIcon img,
+nav.bottomNav > .bottomNavScroll > .bottomNavBtn:not(.bottomNavMenuBtn) .bottomNavIconImg{
+  width:clamp(25px, 6.9vw, 33px) !important;
+  height:clamp(25px, 6.9vw, 33px) !important;
+  max-width:clamp(25px, 6.9vw, 33px) !important;
+  max-height:clamp(25px, 6.9vw, 33px) !important;
+  flex-basis:clamp(25px, 6.9vw, 33px) !important;
+}
+nav.bottomNav > .bottomNavScroll > .bottomNavBtn:not(.bottomNavMenuBtn) .bottomNavLabel{
+  font-size:clamp(8.4px, 2.15vw, 10.6px) !important;
+  line-height:1.05 !important;
+}
+nav.bottomNav > .bottomNavScroll > .bottomNavBtn.bottomNavMenuBtn{
+  width:var(--rak-v966-nav-more-w) !important;
+  min-width:var(--rak-v966-nav-more-w) !important;
+  max-width:var(--rak-v966-nav-more-w) !important;
+  flex:0 0 var(--rak-v966-nav-more-w) !important;
+  min-height:clamp(44px, 5.7dvh, 58px) !important;
+  padding:4px 0 3px !important;
+}
+nav.bottomNav > .bottomNavScroll > .bottomNavBtn.bottomNavMenuBtn .moreIcon{
+  width:clamp(14px, 3.9vw, 18px) !important;
+  height:clamp(23px, 5.8vw, 27px) !important;
+  max-width:18px !important;
+  transform:none !important;
+}
+nav.bottomNav > .bottomNavScroll > .bottomNavBtn.bottomNavMenuBtn .bottomNavLabel{
+  font-size:clamp(7px, 1.7vw, 8.4px) !important;
+}
+#home.page.active{
+  min-height:calc(100dvh - env(safe-area-inset-bottom)) !important;
+}
+#home .dashboardShell{
+  box-sizing:border-box !important;
+  min-height:min(100%, var(--rak-dashboard-usable-h)) !important;
+  display:flex !important;
+  flex-direction:column !important;
+  gap:clamp(10px, 1.35dvh, 16px) !important;
+  margin-bottom:clamp(8px, 1.2dvh, 18px) !important;
+}
+#home .dashboardGrid{
+  flex:1 1 auto !important;
+  display:grid !important;
+  grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
+  grid-auto-rows:minmax(clamp(102px, 12.8dvh, 150px), 1fr) !important;
+  gap:clamp(10px, 1.45dvh, 16px) !important;
+}
+#home .dashboardHeroCard{
+  min-height:clamp(128px, 17.8dvh, 190px) !important;
+  padding-top:clamp(16px, 2.2dvh, 24px) !important;
+  padding-bottom:clamp(15px, 2.0dvh, 22px) !important;
+}
+#home .dashboardCard{
+  min-height:clamp(102px, 12.8dvh, 150px) !important;
+  padding:clamp(13px, 1.75dvh, 18px) !important;
+}
+@media (min-height:880px) and (max-width:700px){
+  #home .dashboardShell{
+    min-height:calc(100dvh - var(--bottom-nav-h, 72px) - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 18px) !important;
+  }
+  #home .dashboardGrid{
+    grid-auto-rows:minmax(clamp(122px, 13.8dvh, 168px), 1fr) !important;
+  }
+  #home .dashboardCard{
+    min-height:clamp(122px, 13.8dvh, 168px) !important;
+  }
+}
+@media (max-height:760px){
+  #home .dashboardShell{gap:10px !important;min-height:auto !important;}
+  #home .dashboardGrid{grid-auto-rows:minmax(94px, auto) !important;gap:10px !important;}
+  #home .dashboardCard{min-height:94px !important;padding:12px !important;}
+  #home .dashboardHeroCard{min-height:118px !important;}
+}
+#rotace.page.active #rotaceNamesPanel.active{
+  padding-bottom:var(--rak-rotace-names-content-bottom, 206px) !important;
+  scroll-padding-bottom:var(--rak-rotace-names-content-bottom, 206px) !important;
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid{
+  bottom:var(--rak-rotace-names-dock-bottom, calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 8px)) !important;
+  max-height:min(32dvh, 138px) !important;
+  padding:6px 5px !important;
+  gap:6px !important;
+  border-radius:18px !important;
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem,
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceNameTile{
+  min-height:clamp(42px, 5.2dvh, 50px) !important;
+  border-radius:15px !important;
+}
+#rotace .rotaceHeaderBar .rotaceBackBtn{
+  position:absolute !important;
+  right:8px !important;
+  top:50% !important;
+  transform:translateY(-50%) !important;
+  width:34px !important;
+  min-width:34px !important;
+  height:34px !important;
+  min-height:34px !important;
+  display:inline-grid !important;
+  place-items:center !important;
+  border-radius:13px !important;
+  font-size:22px !important;
+  line-height:1 !important;
+  z-index:2 !important;
+}
+#rotace .rotaceHeaderBar .rotaceBackBtn[hidden]{
+  display:none !important;
+}
+
+
+/* v.1.5 (968) – spodní navigace: tvrdá pojistka proti zalomení položky „Více“ na druhý řádek. */
+:root{
+  --rak-v967-nav-more-w:clamp(36px, 8.6vw, 44px);
+  --rak-v967-nav-gap:clamp(3px, .95vw, 7px);
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll{
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) var(--rak-v967-nav-more-w) !important;
+  grid-template-rows:1fr !important;
+  grid-auto-flow:column !important;
+  grid-auto-rows:1fr !important;
+  align-items:end !important;
+  justify-items:stretch !important;
+  gap:var(--rak-v967-nav-gap) !important;
+  width:100% !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  overflow:visible !important;
+  box-sizing:border-box !important;
+  padding-inline:clamp(6px, 1.45vw, 10px) !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn{
+  grid-row:1 !important;
+  align-self:end !important;
+  min-width:0 !important;
+  max-width:none !important;
+  box-sizing:border-box !important;
+  white-space:nowrap !important;
+  margin-left:0 !important;
+  margin-right:0 !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn:nth-child(1){grid-column:1 !important;}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn:nth-child(2){grid-column:2 !important;}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn:nth-child(3){grid-column:3 !important;}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn:nth-child(4){grid-column:4 !important;}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn{
+  grid-column:5 !important;
+  grid-row:1 !important;
+  justify-self:stretch !important;
+  width:var(--rak-v967-nav-more-w) !important;
+  min-width:var(--rak-v967-nav-more-w) !important;
+  max-width:var(--rak-v967-nav-more-w) !important;
+  flex:0 0 var(--rak-v967-nav-more-w) !important;
+  padding-left:0 !important;
+  padding-right:0 !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn:not(.bottomNavMenuBtn){
+  width:100% !important;
+  flex:1 1 0 !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn .bottomNavLabel{
+  display:block !important;
+  max-width:100% !important;
+  overflow:hidden !important;
+  text-overflow:clip !important;
+  white-space:nowrap !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn .moreIcon{
+  margin-left:auto !important;
+  margin-right:auto !important;
+}
+@media (max-width:370px){
+  :root{--rak-v967-nav-more-w:34px;--rak-v967-nav-gap:3px;}
+  html body nav.bottomNav > #bottomNavScroll.bottomNavScroll{padding-inline:5px !important;}
+  html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn:not(.bottomNavMenuBtn) .bottomNavIcon,
+  html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn:not(.bottomNavMenuBtn) .bottomNavIcon svg,
+  html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn:not(.bottomNavMenuBtn) .bottomNavIcon img,
+  html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn:not(.bottomNavMenuBtn) .bottomNavIconImg{
+    width:clamp(24px, 6.6vw, 29px) !important;
+    height:clamp(24px, 6.6vw, 29px) !important;
+    max-width:clamp(24px, 6.6vw, 29px) !important;
+    max-height:clamp(24px, 6.6vw, 29px) !important;
+  }
+}
+
+
+/* v.1.5 (968) – Layout hotfix: Dashboard bez překryvu/scrollu, úzké „Více“, kompaktnější Rotace a centrované křížky. */
+:root{
+  --rak-v968-nav-more-w:clamp(24px, 6.2vw, 30px);
+  --rak-v968-nav-gap:clamp(2px, .7vw, 5px);
+  --rak-v968-dashboard-bottom-space:var(--rak-bottom-total-space, calc(var(--bottom-nav-h, 64px) + env(safe-area-inset-bottom) + 12px));
+  --rak-v968-home-h:calc(var(--rak-visual-viewport-h, 100dvh) - var(--rak-v968-dashboard-bottom-space) - env(safe-area-inset-top) - 8px);
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll{
+  display:grid !important;
+  grid-template-columns:repeat(4, minmax(0, 1fr)) var(--rak-v968-nav-more-w) !important;
+  grid-template-rows:1fr !important;
+  align-items:end !important;
+  justify-items:stretch !important;
+  gap:var(--rak-v968-nav-gap) !important;
+  padding-inline:clamp(5px, 1.35vw, 9px) !important;
+  overflow:visible !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn:not(.bottomNavMenuBtn){
+  width:100% !important;
+  min-width:0 !important;
+  max-width:none !important;
+  flex:1 1 0 !important;
+  padding-left:1px !important;
+  padding-right:1px !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn{
+  grid-column:5 !important;
+  width:var(--rak-v968-nav-more-w) !important;
+  min-width:var(--rak-v968-nav-more-w) !important;
+  max-width:var(--rak-v968-nav-more-w) !important;
+  flex:0 0 var(--rak-v968-nav-more-w) !important;
+  padding-left:0 !important;
+  padding-right:0 !important;
+  overflow:visible !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn .moreIcon{
+  width:clamp(12px, 3.5vw, 15px) !important;
+  height:clamp(16px, 4.4vw, 20px) !important;
+  max-width:15px !important;
+  max-height:20px !important;
+  margin:0 auto !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn .bottomNavLabel{
+  display:block !important;
+  width:100% !important;
+  font-size:clamp(6.4px, 1.55vw, 7.3px) !important;
+  line-height:1 !important;
+  letter-spacing:-.08em !important;
+  text-align:center !important;
+  white-space:nowrap !important;
+  overflow:visible !important;
+}
+@media (max-width:370px){
+  :root{--rak-v968-nav-more-w:23px;--rak-v968-nav-gap:2px;}
+  html body nav.bottomNav > #bottomNavScroll.bottomNavScroll{padding-inline:4px !important;}
+  html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn .bottomNavLabel{font-size:6.1px !important;letter-spacing:-.1em !important;}
+}
+
+#home.page.active{
+  height:max(620px, var(--rak-v968-home-h)) !important;
+  min-height:0 !important;
+  max-height:var(--rak-v968-home-h) !important;
+  overflow:hidden !important;
+  padding-bottom:0 !important;
+  box-sizing:border-box !important;
+}
+#home.page.active .dashboardShell{
+  height:100% !important;
+  min-height:0 !important;
+  max-height:100% !important;
+  display:grid !important;
+  grid-template-rows:auto auto minmax(0, 1fr) !important;
+  gap:clamp(6px, 1dvh, 12px) !important;
+  margin:0 auto !important;
+  padding:clamp(7px, 1.2dvh, 12px) clamp(8px, 2vw, 14px) 0 !important;
+  box-sizing:border-box !important;
+  overflow:hidden !important;
+}
+#home.page.active .dashboardAppTitleRow{
+  min-height:0 !important;
+  margin:0 !important;
+  flex:0 0 auto !important;
+}
+#home.page.active .dashboardAppTitle{
+  font-size:clamp(23px, 6vw, 32px) !important;
+  line-height:.92 !important;
+}
+#home.page.active #dashHero.dashboardHeroCard{
+  min-height:clamp(96px, 14.2dvh, 142px) !important;
+  padding:clamp(10px, 1.65dvh, 16px) clamp(12px, 3vw, 18px) !important;
+  box-sizing:border-box !important;
+  overflow:visible !important;
+}
+#home.page.active #dashHero .dashboardHeroLine1{
+  font-size:clamp(13px, 3.5vw, 17px) !important;
+  line-height:1.12 !important;
+}
+#home.page.active #dashHero .dashboardHeroLine2{
+  font-size:clamp(15px, 4.35vw, 22px) !important;
+  line-height:1.08 !important;
+  margin-top:clamp(3px, .55dvh, 7px) !important;
+}
+#home.page.active #dashHero .dashboardHeroLine3{
+  display:flex !important;
+  justify-content:center !important;
+  align-items:center !important;
+  width:100% !important;
+  max-width:100% !important;
+  margin:clamp(5px, .8dvh, 8px) auto 0 !important;
+  padding:0 !important;
+  transform:none !important;
+  left:auto !important;
+  right:auto !important;
+  text-align:center !important;
+}
+#home.page.active #dashHero .dashboardHeroLine3Pill{
+  max-width:calc(100% - 4px) !important;
+  margin:0 auto !important;
+  padding:clamp(5px, .75dvh, 7px) clamp(8px, 2.2vw, 11px) !important;
+  text-align:center !important;
+}
+#home.page.active .dashboardGrid{
+  min-height:0 !important;
+  height:100% !important;
+  display:grid !important;
+  grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
+  grid-template-rows:repeat(4, minmax(0, 1fr)) !important;
+  grid-auto-rows:minmax(0, 1fr) !important;
+  gap:clamp(7px, 1dvh, 12px) !important;
+  margin:0 !important;
+  overflow:hidden !important;
+}
+#home.page.active .dashboardCard{
+  min-height:0 !important;
+  height:100% !important;
+  padding:clamp(8px, 1.25dvh, 13px) !important;
+  gap:clamp(3px, .55dvh, 6px) clamp(6px, 1.5vw, 10px) !important;
+  overflow:hidden !important;
+  box-sizing:border-box !important;
+}
+#home.page.active .dashboardLabel{font-size:clamp(10.5px, 2.9vw, 13.5px) !important;line-height:1.05 !important;}
+#home.page.active .dashboardValue{font-size:clamp(12px, 3.8vw, 17px) !important;line-height:1.08 !important;}
+#home.page.active .dashboardMeta{font-size:clamp(9.2px, 2.45vw, 11.5px) !important;line-height:1.08 !important;}
+#home.page.active .dashboardIcon.dashboardIconInline{width:clamp(33px, 8.8vw, 44px) !important;height:clamp(33px, 8.8vw, 44px) !important;min-width:clamp(33px, 8.8vw, 44px) !important;flex-basis:clamp(33px, 8.8vw, 44px) !important;}
+@media (max-height:820px){
+  #home.page.active{height:var(--rak-v968-home-h) !important;}
+  #home.page.active .dashboardShell{gap:6px !important;padding-top:6px !important;}
+  #home.page.active .dashboardAppTitle{font-size:clamp(22px, 5.8vw, 28px) !important;}
+  #home.page.active #dashHero.dashboardHeroCard{min-height:clamp(86px, 12.5dvh, 110px) !important;padding-top:8px !important;padding-bottom:8px !important;}
+  #home.page.active .dashboardGrid{gap:6px !important;}
+  #home.page.active .dashboardCard{padding:8px !important;}
+}
+@media (max-width:370px) and (max-height:820px){
+  #home.page.active .dashboardShell{gap:5px !important;padding-inline:7px !important;}
+  #home.page.active #dashHero.dashboardHeroCard{min-height:82px !important;}
+  #home.page.active .dashboardGrid{gap:5px !important;}
+  #home.page.active .dashboardCard{padding:7px !important;}
+  #home.page.active .dashboardLabel{font-size:10px !important;}
+  #home.page.active .dashboardMeta{font-size:9px !important;}
+}
+
+#rotaceNamesPanel #personView .rotaceQuickStack,
+#rotace #personView .rotaceQuickStack{
+  gap:6px !important;
+}
+#rotaceNamesPanel #personView .rotaceMiniCard.rotaceShiftCard,
+#rotace #personView .rotaceMiniCard.rotaceShiftCard{
+  min-height:65px !important;
+  padding:9px 12px !important;
+  border-radius:16px !important;
+}
+#rotaceNamesPanel #personView .rotaceShiftDate,
+#rotace #personView .rotaceShiftDate{font-size:clamp(16px, 4.4vw, 18px) !important;line-height:1.06 !important;}
+#rotaceNamesPanel #personView .rotaceShiftName,
+#rotace #personView .rotaceShiftName{font-size:clamp(15px, 4vw, 17px) !important;line-height:1.06 !important;}
+#rotaceNamesPanel #personView .rotaceShiftTarget,
+#rotace #personView .rotaceShiftTarget{font-size:clamp(17px, 4.8vw, 19px) !important;line-height:1.05 !important;}
+
+#rotace .rotaceHeaderBar .rotaceBackBtn,
+#rotaceBackBtn.calcCloseBtn.rotaceBackBtn{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  text-align:center !important;
+  padding:0 !important;
+  line-height:1 !important;
+  font-size:22px !important;
+  font-weight:900 !important;
+}
+#rotace .rotaceHeaderBar .rotaceBackBtn[hidden],
+#rotaceBackBtn.calcCloseBtn.rotaceBackBtn[hidden]{display:none !important;}
+
+
+/* v.1.5 (970) – přesné doladění Rotace detailu a opravdu úzkého „Více“ ve spodní liště. */
+:root{
+  --rak-v969-nav-more-w:clamp(20px, 5.2vw, 24px);
+  --rak-v969-nav-gap:clamp(2px, .75vw, 5px);
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll{
+  grid-template-columns:repeat(4, minmax(0, 1fr)) var(--rak-v969-nav-more-w) !important;
+  gap:var(--rak-v969-nav-gap) !important;
+  padding-left:clamp(5px, 1.2vw, 8px) !important;
+  padding-right:clamp(3px, .9vw, 6px) !important;
+  overflow:visible !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn{
+  grid-column:5 !important;
+  justify-self:end !important;
+  width:var(--rak-v969-nav-more-w) !important;
+  min-width:var(--rak-v969-nav-more-w) !important;
+  max-width:var(--rak-v969-nav-more-w) !important;
+  flex:0 0 var(--rak-v969-nav-more-w) !important;
+  padding-left:0 !important;
+  padding-right:0 !important;
+  overflow:hidden !important;
+  box-sizing:border-box !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn .moreIcon{
+  width:clamp(11px, 3vw, 13px) !important;
+  height:clamp(17px, 4.5vw, 20px) !important;
+  max-width:13px !important;
+  max-height:20px !important;
+  margin-left:auto !important;
+  margin-right:auto !important;
+  transform:translateX(-1.5px) !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn .bottomNavLabel{
+  display:block !important;
+  width:100% !important;
+  max-width:100% !important;
+  font-size:clamp(5.6px, 1.48vw, 6.5px) !important;
+  line-height:1 !important;
+  letter-spacing:-.12em !important;
+  text-align:center !important;
+  white-space:nowrap !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  transform:translateX(-1.5px) !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn:not(.bottomNavMenuBtn){
+  min-width:0 !important;
+  width:100% !important;
+  max-width:none !important;
+}
+@media (max-width:370px){
+  :root{--rak-v969-nav-more-w:19px;--rak-v969-nav-gap:2px;}
+  html body nav.bottomNav > #bottomNavScroll.bottomNavScroll{padding-left:4px !important;padding-right:3px !important;}
+  html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn .bottomNavLabel{font-size:5.35px !important;letter-spacing:-.15em !important;}
+  html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn .moreIcon,
+  html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn .bottomNavLabel{transform:translateX(-1px) !important;}
+}
+
+#rotaceNamesPanel #personView .rotaceQuickStack,
+#rotace #personView .rotaceQuickStack{
+  gap:5px !important;
+}
+#rotaceNamesPanel #personView .rotaceMiniCard.rotaceShiftCard,
+#rotace #personView .rotaceMiniCard.rotaceShiftCard{
+  min-height:55px !important;
+  padding:6px 10px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:stretch !important;
+  gap:0 !important;
+  border-radius:15px !important;
+  box-sizing:border-box !important;
+}
+#rotaceNamesPanel #personView .rotaceShiftLine,
+#rotace #personView .rotaceShiftLine{
+  width:100% !important;
+  min-width:0 !important;
+  display:flex !important;
+  flex-direction:row !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+  gap:clamp(6px, 1.6vw, 10px) !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+}
+#rotaceNamesPanel #personView .rotaceShiftDate,
+#rotace #personView .rotaceShiftDate,
+#rotaceNamesPanel #personView .rotaceShiftName,
+#rotace #personView .rotaceShiftName{
+  flex:0 0 auto !important;
+  min-width:0 !important;
+  white-space:nowrap !important;
+}
+#rotaceNamesPanel #personView .rotaceShiftTarget,
+#rotace #personView .rotaceShiftTarget{
+  flex:1 1 auto !important;
+  min-width:0 !important;
+  max-width:none !important;
+  margin-left:auto !important;
+  text-align:right !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+}
+@media (max-width:390px){
+  #rotaceNamesPanel #personView .rotaceMiniCard.rotaceShiftCard,
+  #rotace #personView .rotaceMiniCard.rotaceShiftCard{
+    min-height:52px !important;
+    padding-top:5px !important;
+    padding-bottom:5px !important;
+  }
+  #rotaceNamesPanel #personView .rotaceShiftLine,
+  #rotace #personView .rotaceShiftLine{gap:5px !important;}
+}
+
+
+/* v.1.5 (971) – spodní lišta: větší centrované ikony, užší „Více“ bez přetékání; Rotace rychlé odkazy užší; Dashboard ikony větší. */
+:root{
+  --rak-v971-nav-more-w:clamp(36px, 9vw, 42px);
+  --rak-v971-nav-gap:clamp(3px, .9vw, 6px);
+  --rak-v971-main-nav-icon:clamp(32px, 8.8vw, 36px);
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll{
+  display:grid !important;
+  grid-template-columns:repeat(4, minmax(0, 1fr)) var(--rak-v971-nav-more-w) !important;
+  gap:var(--rak-v971-nav-gap) !important;
+  align-items:center !important;
+  justify-items:stretch !important;
+  width:100% !important;
+  min-width:0 !important;
+  overflow:visible !important;
+  padding-left:clamp(5px, 1.2vw, 8px) !important;
+  padding-right:clamp(4px, 1.1vw, 7px) !important;
+  box-sizing:border-box !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn{
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  text-align:center !important;
+  gap:0 !important;
+  min-width:0 !important;
+  max-width:none !important;
+  box-sizing:border-box !important;
+  overflow:visible !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn:not(.bottomNavMenuBtn){
+  width:100% !important;
+  min-width:0 !important;
+  max-width:none !important;
+  flex:1 1 0 !important;
+  padding-left:1px !important;
+  padding-right:1px !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn:not(.bottomNavMenuBtn) .bottomNavIcon{
+  width:var(--rak-v971-main-nav-icon) !important;
+  height:var(--rak-v971-main-nav-icon) !important;
+  min-width:var(--rak-v971-main-nav-icon) !important;
+  flex:0 0 var(--rak-v971-main-nav-icon) !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  margin:0 auto !important;
+  transform:none !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn:not(.bottomNavMenuBtn) .bottomNavIcon img,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn:not(.bottomNavMenuBtn) .bottomNavIcon svg,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn:not(.bottomNavMenuBtn) .bottomNavIconImg{
+  width:100% !important;
+  height:100% !important;
+  max-width:100% !important;
+  max-height:100% !important;
+  object-fit:contain !important;
+  left:0 !important;
+  right:0 !important;
+  margin:auto !important;
+  transform:none !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn .bottomNavLabel{
+  align-self:center !important;
+  text-align:center !important;
+  max-width:100% !important;
+  overflow:visible !important;
+  transform:none !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn{
+  grid-column:5 !important;
+  justify-self:end !important;
+  width:var(--rak-v971-nav-more-w) !important;
+  min-width:var(--rak-v971-nav-more-w) !important;
+  max-width:var(--rak-v971-nav-more-w) !important;
+  flex:0 0 var(--rak-v971-nav-more-w) !important;
+  padding-left:0 !important;
+  padding-right:0 !important;
+  margin-left:auto !important;
+  overflow:visible !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn .moreIcon{
+  width:clamp(16px, 4.8vw, 20px) !important;
+  height:clamp(23px, 6.4vw, 27px) !important;
+  max-width:20px !important;
+  max-height:27px !important;
+  margin:0 auto !important;
+  transform:translateX(1px) !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn .bottomNavLabel{
+  display:block !important;
+  width:auto !important;
+  max-width:none !important;
+  font-size:clamp(7.8px, 2vw, 8.6px) !important;
+  line-height:1 !important;
+  letter-spacing:-.02em !important;
+  text-align:center !important;
+  white-space:nowrap !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  transform:translateX(1px) !important;
+}
+@media (max-width:370px){
+  :root{--rak-v971-nav-more-w:36px;--rak-v971-nav-gap:3px;--rak-v971-main-nav-icon:32px;}
+  html body nav.bottomNav > #bottomNavScroll.bottomNavScroll{padding-left:4px !important;padding-right:4px !important;}
+  html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn .bottomNavLabel{font-size:7.6px !important;}
+}
+
+#rotace .rotaceQuickLinks,
+#rotaceNamesPanel .rotaceQuickLinks{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:clamp(7px, 2vw, 10px) !important;
+  width:100% !important;
+  margin:0 0 9px !important;
+}
+#rotace .rotaceQuickLinkBtn,
+#rotaceNamesPanel .rotaceQuickLinkBtn{
+  flex:0 0 auto !important;
+  width:auto !important;
+  min-width:clamp(104px, 28vw, 126px) !important;
+  max-width:clamp(118px, 34vw, 146px) !important;
+  padding:8px 13px !important;
+  min-height:38px !important;
+}
+@media (max-width:370px){
+  #rotace .rotaceQuickLinkBtn,
+  #rotaceNamesPanel .rotaceQuickLinkBtn{min-width:98px !important;max-width:118px !important;padding:8px 10px !important;}
+}
+
+#home.page.active .dashboardIcon.dashboardIconInline,
+#home.page.active .dashboardCard .dashboardIcon.dashboardIconInline,
+#home.page.active .dashboardCardIcon{
+  width:clamp(38px, 10.2vw, 52px) !important;
+  height:clamp(38px, 10.2vw, 52px) !important;
+  min-width:clamp(38px, 10.2vw, 52px) !important;
+  flex:0 0 clamp(38px, 10.2vw, 52px) !important;
+}
+#home.page.active .dashboardIcon.dashboardIconInline img,
+#home.page.active .dashboardIcon.dashboardIconInline svg,
+#home.page.active .dashboardIconImg,
+#home.page.active .dashboardIconSvg{
+  width:100% !important;
+  height:100% !important;
+  max-width:100% !important;
+  max-height:100% !important;
+  object-fit:contain !important;
+}
+@media (max-width:370px) and (max-height:820px){
+  #home.page.active .dashboardIcon.dashboardIconInline,
+  #home.page.active .dashboardCard .dashboardIcon.dashboardIconInline,
+  #home.page.active .dashboardCardIcon{
+    width:36px !important;
+    height:36px !important;
+    min-width:36px !important;
+    flex-basis:36px !important;
+  }
+}
+
+/* v.1.5 (972) – spodní lišta: aktivní glass panel přes celou výšku s plynulým přesunem; Rotace odkazy a Dashboard ikony. */
+:root{
+  --rak-v972-main-nav-icon:clamp(34px, 9.4vw, 39px);
+  --rak-v972-dashboard-icon:clamp(44px, 11.4vw, 60px);
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll{
+  position:relative !important;
+  isolation:isolate !important;
+  align-items:stretch !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll .bottomNavActiveIndicator{
+  position:absolute !important;
+  z-index:0 !important;
+  pointer-events:none !important;
+  left:0 !important;
+  top:clamp(3px, .75dvh, 5px) !important;
+  height:calc(100% - clamp(6px, 1.5dvh, 10px)) !important;
+  width:var(--rak-nav-indicator-width, 64px) !important;
+  transform:translate3d(var(--rak-nav-indicator-left, 0px), 0, 0) !important;
+  border-radius:clamp(18px, 4.9vw, 26px) !important;
+  border:1px solid rgba(var(--theme-rgb,124,255,124), .45) !important;
+  background:linear-gradient(180deg, rgba(var(--theme-rgb,124,255,124), .18), rgba(255,255,255,.055)) !important;
+  box-shadow:0 12px 32px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.18), inset 0 0 0 1px rgba(255,255,255,.045) !important;
+  backdrop-filter:blur(18px) saturate(165%) !important;
+  -webkit-backdrop-filter:blur(18px) saturate(165%) !important;
+  opacity:0;
+  transition:transform .34s cubic-bezier(.2,.82,.22,1), width .34s cubic-bezier(.2,.82,.22,1), opacity .18s ease !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn{
+  position:relative !important;
+  z-index:1 !important;
+  border-color:transparent !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  transform:none !important;
+  min-height:clamp(50px, 6.4dvh, 62px) !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn.active,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn:active,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn.active{
+  transform:none !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  border-color:transparent !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn.active::before,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn.active::before{
+  display:none !important;
+  content:none !important;
+  opacity:0 !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn:not(.bottomNavMenuBtn) .bottomNavIcon{
+  width:var(--rak-v972-main-nav-icon) !important;
+  height:var(--rak-v972-main-nav-icon) !important;
+  min-width:var(--rak-v972-main-nav-icon) !important;
+  flex:0 0 var(--rak-v972-main-nav-icon) !important;
+  transform:none !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn:not(.bottomNavMenuBtn) .bottomNavIcon img,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn:not(.bottomNavMenuBtn) .bottomNavIcon svg,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn:not(.bottomNavMenuBtn) .bottomNavIconImg{
+  transform:none !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn{
+  min-height:clamp(50px, 6.4dvh, 62px) !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn .moreIcon,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn .bottomNavLabel{
+  transform:translateX(1.5px) !important;
+}
+@media (prefers-reduced-motion: reduce){
+  html body nav.bottomNav > #bottomNavScroll.bottomNavScroll .bottomNavActiveIndicator{transition:none !important;}
+}
+@media (max-width:370px){
+  :root{--rak-v972-main-nav-icon:34px;--rak-v972-dashboard-icon:42px;}
+}
+
+#rotace .rotaceQuickLinks,
+#rotaceNamesPanel .rotaceQuickLinks{
+  gap:clamp(8px, 2.2vw, 12px) !important;
+}
+#rotace .rotaceQuickLinkBtn,
+#rotaceNamesPanel .rotaceQuickLinkBtn{
+  min-width:clamp(116px, 31vw, 136px) !important;
+  max-width:clamp(132px, 37vw, 158px) !important;
+  min-height:41px !important;
+  padding:9px 15px !important;
+  border-radius:18px !important;
+}
+@media (max-width:370px){
+  #rotace .rotaceQuickLinkBtn,
+  #rotaceNamesPanel .rotaceQuickLinkBtn{min-width:108px !important;max-width:128px !important;padding:9px 12px !important;}
+}
+#rotace .rotaceHeaderBar{
+  display:grid !important;
+  grid-template-columns:40px minmax(0,1fr) 40px !important;
+  align-items:center !important;
+  justify-items:center !important;
+}
+#rotace .rotaceHeaderBar > div:first-child{width:40px !important;min-width:40px !important;}
+#rotace .rotaceHeaderBar #rotacePageTitle{
+  grid-column:2 !important;
+  align-self:center !important;
+  line-height:1.1 !important;
+  transform:translateY(0) !important;
+}
+#rotace .rotaceHeaderBar .rotaceBackBtn,
+#rotaceBackBtn.calcCloseBtn.rotaceBackBtn{
+  right:8px !important;
+  top:50% !important;
+  width:36px !important;
+  min-width:36px !important;
+  height:36px !important;
+  min-height:36px !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  padding:0 0 2px 0 !important;
+  line-height:1 !important;
+  font-size:24px !important;
+  font-weight:900 !important;
+  transform:translateY(-50%) !important;
+}
+#rotace .rotaceHeaderBar .rotaceBackBtn[hidden],
+#rotaceBackBtn.calcCloseBtn.rotaceBackBtn[hidden]{display:none !important;}
+
+#home.page.active .dashboardIcon.dashboardIconInline,
+#home.page.active .dashboardCard .dashboardIcon.dashboardIconInline,
+#home.page.active .dashboardCardIcon{
+  width:var(--rak-v972-dashboard-icon) !important;
+  height:var(--rak-v972-dashboard-icon) !important;
+  min-width:var(--rak-v972-dashboard-icon) !important;
+  flex:0 0 var(--rak-v972-dashboard-icon) !important;
+}
+#home.page.active .dashboardIcon.dashboardIconInline img,
+#home.page.active .dashboardIcon.dashboardIconInline svg,
+#home.page.active .dashboardIconImg,
+#home.page.active .dashboardIconSvg{
+  width:100% !important;
+  height:100% !important;
+  max-width:100% !important;
+  max-height:100% !important;
+  object-fit:contain !important;
+}
+
+
+/* v.1.5 (973) – hotfix spodní lišty: zpět výška/pořadí jako v971, animuje se jen aktivní glass panel. */
+:root{
+  --rak-v973-nav-more-w:clamp(36px, 9vw, 42px);
+  --rak-v973-nav-gap:clamp(3px, .9vw, 6px);
+  --rak-v973-main-nav-icon:clamp(32px, 8.8vw, 36px);
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll{
+  position:relative !important;
+  isolation:isolate !important;
+  display:grid !important;
+  grid-template-columns:repeat(4, minmax(0, 1fr)) var(--rak-v973-nav-more-w) !important;
+  grid-template-rows:1fr !important;
+  grid-auto-flow:column !important;
+  align-items:center !important;
+  justify-items:stretch !important;
+  gap:var(--rak-v973-nav-gap) !important;
+  width:100% !important;
+  min-width:0 !important;
+  max-width:100% !important;
+  overflow:visible !important;
+  padding-left:clamp(5px, 1.2vw, 8px) !important;
+  padding-right:clamp(4px, 1.1vw, 7px) !important;
+  box-sizing:border-box !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn{
+  position:relative !important;
+  z-index:1 !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  text-align:center !important;
+  gap:0 !important;
+  grid-row:1 !important;
+  align-self:center !important;
+  min-width:0 !important;
+  max-width:none !important;
+  box-sizing:border-box !important;
+  overflow:visible !important;
+  white-space:nowrap !important;
+  margin-left:0 !important;
+  margin-right:0 !important;
+  border-color:transparent !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  transform:none !important;
+  padding-top:4px !important;
+  padding-bottom:3px !important;
+  min-height:clamp(46px, 6.1dvh, 58px) !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn:nth-of-type(1){grid-column:1 !important;}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn:nth-of-type(2){grid-column:2 !important;}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn:nth-of-type(3){grid-column:3 !important;}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn:nth-of-type(4){grid-column:4 !important;}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn:not(.bottomNavMenuBtn){
+  width:100% !important;
+  min-width:0 !important;
+  max-width:none !important;
+  flex:1 1 0 !important;
+  padding-left:1px !important;
+  padding-right:1px !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn{
+  grid-column:5 !important;
+  justify-self:end !important;
+  width:var(--rak-v973-nav-more-w) !important;
+  min-width:var(--rak-v973-nav-more-w) !important;
+  max-width:var(--rak-v973-nav-more-w) !important;
+  flex:0 0 var(--rak-v973-nav-more-w) !important;
+  padding-left:0 !important;
+  padding-right:0 !important;
+  margin-left:auto !important;
+  overflow:visible !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn.active,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn:active,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn.active{
+  transform:none !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  border-color:transparent !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn.active::before,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn.active::before{
+  display:none !important;
+  content:none !important;
+  opacity:0 !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn:not(.bottomNavMenuBtn) .bottomNavIcon{
+  width:var(--rak-v973-main-nav-icon) !important;
+  height:var(--rak-v973-main-nav-icon) !important;
+  min-width:var(--rak-v973-main-nav-icon) !important;
+  flex:0 0 var(--rak-v973-main-nav-icon) !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  margin:0 auto !important;
+  transform:none !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn:not(.bottomNavMenuBtn) .bottomNavIcon img,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn:not(.bottomNavMenuBtn) .bottomNavIcon svg,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn:not(.bottomNavMenuBtn) .bottomNavIconImg{
+  width:100% !important;
+  height:100% !important;
+  max-width:100% !important;
+  max-height:100% !important;
+  object-fit:contain !important;
+  left:0 !important;
+  right:0 !important;
+  margin:auto !important;
+  transform:none !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn .bottomNavLabel{
+  align-self:center !important;
+  text-align:center !important;
+  max-width:100% !important;
+  overflow:visible !important;
+  transform:none !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn .moreIcon{
+  width:clamp(16px, 4.8vw, 20px) !important;
+  height:clamp(23px, 6.4vw, 27px) !important;
+  max-width:20px !important;
+  max-height:27px !important;
+  margin:0 auto !important;
+  transform:translateX(1px) !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn .bottomNavLabel{
+  display:block !important;
+  width:auto !important;
+  max-width:none !important;
+  font-size:clamp(7.8px, 2vw, 8.6px) !important;
+  line-height:1 !important;
+  letter-spacing:-.02em !important;
+  text-align:center !important;
+  white-space:nowrap !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  transform:translateX(1px) !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll .bottomNavActiveIndicator{
+  position:absolute !important;
+  z-index:0 !important;
+  pointer-events:none !important;
+  left:0 !important;
+  top:2px !important;
+  height:calc(100% - 4px) !important;
+  width:var(--rak-nav-indicator-width, 64px) !important;
+  transform:translate3d(var(--rak-nav-indicator-left, 0px), 0, 0) !important;
+  border-radius:18px !important;
+  border:1px solid rgba(var(--theme-rgb,124,255,124), .38) !important;
+  background:linear-gradient(180deg, rgba(var(--theme-rgb,124,255,124), .15), rgba(255,255,255,.045)) !important;
+  box-shadow:0 8px 24px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.15), inset 0 0 0 1px rgba(255,255,255,.04) !important;
+  backdrop-filter:blur(16px) saturate(155%) !important;
+  -webkit-backdrop-filter:blur(16px) saturate(155%) !important;
+  opacity:0;
+  transition:transform .34s cubic-bezier(.2,.82,.22,1), width .34s cubic-bezier(.2,.82,.22,1), opacity .18s ease !important;
+}
+@media (prefers-reduced-motion: reduce){
+  html body nav.bottomNav > #bottomNavScroll.bottomNavScroll .bottomNavActiveIndicator{transition:none !important;}
+}
+@media (max-width:370px){
+  :root{--rak-v973-nav-more-w:36px;--rak-v973-nav-gap:3px;--rak-v973-main-nav-icon:32px;}
+  html body nav.bottomNav > #bottomNavScroll.bottomNavScroll{padding-left:4px !important;padding-right:4px !important;}
+  html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn .bottomNavLabel{font-size:7.6px !important;}
+}

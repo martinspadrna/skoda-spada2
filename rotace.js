@@ -552,11 +552,11 @@ function renderPerson(name) {
 
   const formatEntry = (entry, isCurrent) => [
     '<div class="rotaceMiniCard rotaceShiftCard' + (isCurrent ? ' current' : '') + '">',
-    '  <div class="rotaceShiftLeft">',
-    '    <div class="rotaceShiftDate">' + escapeHtml(entry.dateLabel || "") + '</div>',
-    '    <div class="rotaceShiftName">' + escapeHtml(entry.shift || "") + '</div>',
+    '  <div class="rotaceShiftLine">',
+    '    <span class="rotaceShiftDate">' + escapeHtml(entry.dateLabel || "") + '</span>',
+    '    <span class="rotaceShiftName">' + escapeHtml(entry.shift || "") + '</span>',
+    '    <span class="rotaceShiftTarget">' + escapeHtml(entry.target || "") + '</span>',
     '  </div>',
-    '  <div class="rotaceShiftTarget">' + escapeHtml(entry.target || "") + '</div>',
     '</div>'
   ].join('');
 

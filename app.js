@@ -1,4 +1,4 @@
-// v.1.5 (965) – Navigace 5 tlačítek, přehled připojení UI cleanup a silnější offline AI Piškvorek.
+// v.1.5 (973) – hotfix spodní lišty: původní výška a pořadí ikon, plynulý aktivní panel bez zvětšení lišty.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app.js', 'loaded', { source: 'index' }); } catch (err) {}
 
 
@@ -115,6 +115,7 @@ function installDelegatedAppActions() {
     'page-kalkulacky': () => openKalkulacky(),
     'open-rotace-months': () => openRotaceMonths(),
     'open-rotace-stats': () => openRotaceStats(),
+    'open-rotace-names': () => openRotaceNames(),
     'reset-soustruhy': () => resetSoustruhy(),
     'soustruh-mode': (el) => setSoustruhMode(String(el.dataset.soustruhMode || '')),
     'calc-soustruhy-lis': () => calcSoustruhyLis(),
@@ -361,10 +362,16 @@ function applyRakFixedBottomNavMetrics() {
     try {
       const nav = document.querySelector('.bottomNav');
       if (!nav || !root || !root.style) return false;
-      const navHeight = Math.max(48, Math.ceil(nav.offsetHeight || (nav.getBoundingClientRect ? nav.getBoundingClientRect().height : 0) || 56));
+      const navRect = nav.getBoundingClientRect ? nav.getBoundingClientRect() : null;
+      const navHeight = Math.max(48, Math.ceil(nav.offsetHeight || (navRect ? navRect.height : 0) || 56));
+      const visualHeight = Math.max(480, Math.floor((window.visualViewport && window.visualViewport.height) || window.innerHeight || document.documentElement.clientHeight || 0));
+      const navTop = navRect && Number.isFinite(navRect.top) ? navRect.top : (visualHeight - navHeight);
+      const bottomTotalSpace = Math.max(navHeight + 8, Math.ceil(visualHeight - navTop + 8));
       const contentSpace = Math.max(52, navHeight + 4);
       root.style.setProperty('--bottom-nav-h', navHeight + 'px');
       root.style.setProperty('--rak-fixed-bottom-space', contentSpace + 'px');
+      root.style.setProperty('--rak-visual-viewport-h', visualHeight + 'px');
+      root.style.setProperty('--rak-bottom-total-space', bottomTotalSpace + 'px');
       root.dataset.rakBottomNavFixed = '1';
       if (document.body && document.body.classList && document.body.classList.contains('tttOpen') && typeof scheduleTttLayout === 'function') {
         try { scheduleTttLayout(); } catch (err) {}
@@ -541,10 +548,11 @@ function applyBottomNavMoreHardFix() {
       || document.querySelector('nav.bottomNav > .bottomNavScroll > .bottomNavBtn:not(.bottomNavMenuBtn)');
     const peerRect = peer && peer.getBoundingClientRect ? peer.getBoundingClientRect() : null;
     const peerWidth = peerRect && peerRect.width ? Math.round(peerRect.width) : (compact ? 58 : 64);
-    const widthPx = Math.max(lightweight ? 42 : 46, Math.min(Math.round(peerWidth * 0.86), lightweight ? 54 : 60));
+    // v971: „Více“ má zůstat opravdu úzké, ale text musí být čitelný a celé tlačítko nesmí přetékat.
+    const widthPx = Math.max(lightweight ? 34 : 38, Math.min(Math.round(peerWidth * 0.58), lightweight ? 38 : 42));
     const width = String(widthPx) + 'px';
-    const peerHeight = peerRect && peerRect.height ? Math.round(peerRect.height) : 52;
-    const height = Math.max(lightweight ? 46 : 50, Math.min(peerHeight || 52, lightweight ? 54 : 58)) + 'px';
+    const peerHeight = peerRect && peerRect.height ? Math.round(peerRect.height) : 44;
+    const height = Math.max(lightweight ? 40 : 42, Math.min(peerHeight || 44, lightweight ? 46 : 48)) + 'px';
     const setStyle = typeof setStylePropertyIfChanged === 'function'
       ? setStylePropertyIfChanged
       : ((el, prop, value, priority) => { if (el && el.style) el.style.setProperty(prop, value, priority || ''); return true; });
@@ -557,8 +565,9 @@ function applyBottomNavMoreHardFix() {
     setStyle(btn, 'min-height', height, 'important', 'bottomNavMore-minHeight');
     setStyle(btn, 'max-height', height, 'important', 'bottomNavMore-maxHeight');
     setStyle(btn, 'align-self', 'center', 'important', 'bottomNavMore-alignSelf');
+    setStyle(btn, 'justify-self', 'end', 'important', 'bottomNavMore-justifySelf');
     setStyle(btn, 'padding', lightweight ? '1px 0' : '2px 0 1px', 'important', 'bottomNavMore-padding');
-    setStyle(btn, 'margin', '0', 'important', 'bottomNavMore-margin');
+    setStyle(btn, 'margin', '0 0 0 auto', 'important', 'bottomNavMore-margin');
     setStyle(btn, 'box-sizing', 'border-box', 'important', 'bottomNavMore-boxSizing');
     setStyle(btn, 'justify-content', 'center', 'important', 'bottomNavMore-justify');
     setStyle(btn, 'gap', '1px', 'important', 'bottomNavMore-gap');
@@ -566,26 +575,28 @@ function applyBottomNavMoreHardFix() {
 
     const icon = btn.querySelector('.moreIcon');
     if (icon && icon.style) {
-      const iconSize = lightweight ? '24px' : (compact ? '28px' : '31px');
-      setStyle(icon, 'flex', '0 0 ' + iconSize, 'important', 'bottomNavMoreIcon-flex');
-      setStyle(icon, 'width', iconSize, 'important', 'bottomNavMoreIcon-width');
-      setStyle(icon, 'height', iconSize, 'important', 'bottomNavMoreIcon-height');
-      setStyle(icon, 'max-width', iconSize, 'important', 'bottomNavMoreIcon-maxWidth');
-      setStyle(icon, 'max-height', iconSize, 'important', 'bottomNavMoreIcon-maxHeight');
+      const iconWidth = lightweight ? '16px' : (compact ? '18px' : '20px');
+      const iconHeight = lightweight ? '23px' : (compact ? '25px' : '27px');
+      setStyle(icon, 'flex', '0 0 ' + iconHeight, 'important', 'bottomNavMoreIcon-flex');
+      setStyle(icon, 'width', iconWidth, 'important', 'bottomNavMoreIcon-width');
+      setStyle(icon, 'height', iconHeight, 'important', 'bottomNavMoreIcon-height');
+      setStyle(icon, 'max-width', iconWidth, 'important', 'bottomNavMoreIcon-maxWidth');
+      setStyle(icon, 'max-height', iconHeight, 'important', 'bottomNavMoreIcon-maxHeight');
       setStyle(icon, 'padding', '0', 'important', 'bottomNavMoreIcon-padding');
       setStyle(icon, 'margin', '0 auto', 'important', 'bottomNavMoreIcon-margin');
-      setStyle(icon, 'transform', 'none', 'important', 'bottomNavMoreIcon-transform');
+      setStyle(icon, 'transform', 'translateX(1px)', 'important', 'bottomNavMoreIcon-transform');
       setStyle(icon, 'box-sizing', 'border-box', 'important', 'bottomNavMoreIcon-boxSizing');
     }
 
     const label = btn.querySelector('.bottomNavLabel');
     if (label && label.style) {
-      setStyle(label, 'font-size', lightweight ? '7.8px' : '8.4px', 'important', 'bottomNavMoreLabel-fontSize');
+      setStyle(label, 'font-size', lightweight ? '7.9px' : '8.5px', 'important', 'bottomNavMoreLabel-fontSize');
       setStyle(label, 'line-height', '1', 'important', 'bottomNavMoreLabel-lineHeight');
       setStyle(label, 'margin', '0', 'important', 'bottomNavMoreLabel-margin');
       setStyle(label, 'padding', '0', 'important', 'bottomNavMoreLabel-padding');
       setStyle(label, 'white-space', 'nowrap', 'important', 'bottomNavMoreLabel-whiteSpace');
-      setStyle(label, 'transform', 'none', 'important', 'bottomNavMoreLabel-transform');
+      setStyle(label, 'letter-spacing', '-.02em', 'important', 'bottomNavMoreLabel-letterSpacing');
+      setStyle(label, 'transform', 'translateX(1px)', 'important', 'bottomNavMoreLabel-transform');
     }
     return true;
   };
