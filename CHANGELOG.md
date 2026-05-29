@@ -1,8 +1,13 @@
-## v.1.5 (974)
+## v.1.5 (977)
+- Opraven nepovedený spodní panel z v976: aktivní pozadí je zpět jako průhledný glass indikátor bez zeleného výplňového pozadí.
+- Aktivní indikátor na spodní liště se hýbe jako jeden celek, takže pozadí a ohraničení dojíždí současně.
+- Dashboard: odstraněná dodatečně vykreslená horní čára z v976, ponechané jen skutečné horní ohraničení panelu.
+- Verze sjednocena na v.1.5 (977), cache na `v1.5-977`, realtime kanál na `rak-public-live-v977`, package na `1.5.977`.
+
 - Spodní lišta: aktivní položka má ikonku zvětšenou cca o 20 % a její text se při aktivaci skryje, bez změny výšky panelu.
 - Plynulý přesun aktivního glass zvýraznění zůstává zachovaný a pořadí ikon se nemění.
 - Rozpisy/Statistiky: křížek zpět je opticky posunut výš, aby seděl s nadpisem.
-- Verze sjednocena na v.1.5 (974), cache na `v1.5-974`, realtime kanál na `rak-public-live-v974`, package na `1.5.974`.
+- Verze sjednocena na v.1.5 (977), cache na `v1.5-977`, realtime kanál na `rak-public-live-v977`, package na `1.5.977`.
 
 ## v.1.5 (973)
 - Hotfix spodní lišty: vrácena výška, pořadí ikon a rozměry podle v971.
