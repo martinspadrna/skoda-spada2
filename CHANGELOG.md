@@ -1,3 +1,9 @@
+## v.1.5 (974)
+- Spodní lišta: aktivní položka má ikonku zvětšenou cca o 20 % a její text se při aktivaci skryje, bez změny výšky panelu.
+- Plynulý přesun aktivního glass zvýraznění zůstává zachovaný a pořadí ikon se nemění.
+- Rozpisy/Statistiky: křížek zpět je opticky posunut výš, aby seděl s nadpisem.
+- Verze sjednocena na v.1.5 (974), cache na `v1.5-974`, realtime kanál na `rak-public-live-v974`, package na `1.5.974`.
+
 ## v.1.5 (973)
 - Hotfix spodní lišty: vrácena výška, pořadí ikon a rozměry podle v971.
 - Aktivní glass zvýraznění se dál plynule přesouvá mezi ikonami, ale už nemění výšku panelu ani neprohazuje pořadí.

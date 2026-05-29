@@ -1,4 +1,4 @@
-// v.1.5 (973) – hotfix spodní lišty: původní výška a pořadí ikon, plynulý aktivní panel bez zvětšení lišty.
+// v.1.5 (974) – spodní lišta beze změny výšky: aktivní ikona větší, text aktivní položky skrytý.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app.js', 'loaded', { source: 'index' }); } catch (err) {}
 
 

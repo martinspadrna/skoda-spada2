@@ -18519,3 +18519,52 @@ html body nav.bottomNav > #bottomNavScroll.bottomNavScroll .bottomNavActiveIndic
   html body nav.bottomNav > #bottomNavScroll.bottomNavScroll{padding-left:4px !important;padding-right:4px !important;}
   html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn .bottomNavLabel{font-size:7.6px !important;}
 }
+
+/* v.1.5 (974) – spodní lišta beze změny rozměrů: aktivní ikona +20 %, text aktivní položky skrytý; křížek v Rozpisech/Statistikách opticky výš. */
+:root{
+  --rak-v974-active-nav-icon-scale:1.2;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn.active{
+  justify-content:center !important;
+  gap:0 !important;
+  padding-top:3px !important;
+  padding-bottom:3px !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn.active .bottomNavIcon{
+  transform:scale(var(--rak-v974-active-nav-icon-scale)) !important;
+  transform-origin:center center !important;
+  margin-top:0 !important;
+  margin-bottom:0 !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn.active .bottomNavIcon img,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn.active .bottomNavIcon svg,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn.active .bottomNavIconImg{
+  transform:none !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn.active .bottomNavLabel{
+  display:block !important;
+  height:0 !important;
+  min-height:0 !important;
+  line-height:0 !important;
+  margin:0 !important;
+  padding:0 !important;
+  opacity:0 !important;
+  visibility:hidden !important;
+  pointer-events:none !important;
+  overflow:hidden !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn.active .moreIcon{
+  transform:translateX(1px) scale(var(--rak-v974-active-nav-icon-scale)) !important;
+  transform-origin:center center !important;
+}
+#rotace .rotaceHeaderBar .rotaceBackBtn,
+#rotaceBackBtn.calcCloseBtn.rotaceBackBtn{
+  top:calc(50% - 2px) !important;
+  padding:0 !important;
+  line-height:1 !important;
+}
+@media (max-width:370px){
+  html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn.active .bottomNavIcon{transform:scale(1.18) !important;}
+  html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn.active .moreIcon{transform:translateX(1px) scale(1.18) !important;}
+}
+
