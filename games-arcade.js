@@ -917,6 +917,10 @@ body.gamesOpen[data-rak-arcade-game="daily"] #games .arcadeReactionBoard{min-hei
 #games .arcadeTileBtn{border-radius:16px;border:1px solid rgba(124,255,124,.12);background:rgba(255,255,255,.03);color:#eef7ee;min-height:54px;font:inherit;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;}
 #games .arcadeDigit{font-size:14px;line-height:1;}
 #games .arcadeSudokuCell{width:100%;aspect-ratio:1 / 1;border-radius:10px;border:1px solid rgba(124,255,124,.10);background:rgba(255,255,255,.03);color:#eef7ee;text-align:center;font:inherit;font-weight:800;font-size:15px;}
+#games .arcadeSudokuCell.sudokuBlockTop{border-top-color:rgba(226,246,255,.42);border-top-width:2px;}
+#games .arcadeSudokuCell.sudokuBlockLeft{border-left-color:rgba(226,246,255,.42);border-left-width:2px;}
+#games .arcadeSudokuCell.sudokuBlockRight{border-right-color:rgba(226,246,255,.36);border-right-width:2px;}
+#games .arcadeSudokuCell.sudokuBlockBottom{border-bottom-color:rgba(226,246,255,.36);border-bottom-width:2px;}
 #games .arcadeSudokuCell[readonly]{background:rgba(255,255,255,.06);color:#dfffe3;}
 #games .arcadeMiniNote{font-size:11px;line-height:1.3;color:rgba(231,255,240,.64);}
 #games .arcadeMemoryCard{aspect-ratio:1 / 1;border-radius:14px;border:1px solid rgba(124,255,124,.12);background:rgba(255,255,255,.035);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;transition:transform .15s ease, background .15s ease;}
@@ -1338,7 +1342,10 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   function gamesSafeLeaderboardValue(gameId, value) {
     const n = Number(value);
     if (!Number.isFinite(n) || n <= 0) return 0;
-    if (isLowBetter(gameId)) return Math.max(1, Math.min(86400000, Math.round(n)));
+    if (isLowBetter(gameId)) {
+      const safe = gamesSanitizeLowBestTime(gameId, n);
+      return safe > 0 ? Math.round(safe) : 0;
+    }
     return Math.max(1, Math.min(999999999, Math.round(n)));
   }
 
@@ -1841,9 +1848,10 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   function gamesSanitizeLowBestTime(gameId, ms) {
     const n = Number(ms) || 0;
     if (!Number.isFinite(n) || n <= 0) return 0;
-    // v.1.5 (963): Pexeso někdy zdědilo chybnou hodnotu 86 400 s z denního/time fallbacku.
-    // Takový čas nebereme jako platný rekord a nová dohraná hra jej přepíše reálným elapsed časem.
-    if (gamesIsMemoryLike(gameId) && n >= 86400000) return 0;
+    // v.1.5 (982): sentinel 86 400 s z vadně dekódovaných low-score bodů není platný rekord.
+    // Chrání to hlavně Pexeso a Reaction Test, aby se v Top score neukazovalo 86400s.
+    if (isLowBetter(gameId) && n >= 86400000) return 0;
+    if ((key(gameId) === 'reaction' || key(gameId) === 'daily_reaction') && n > 60000) return 0;
     return n;
   }
   function formatDate(ms) {
@@ -1861,7 +1869,15 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   function isLowBetter(id) { return META[key(id)] && META[key(id)].mode === 'low'; }
   function gameMeta(id) { return META[key(id)] || { title: String(id), subtitle: '', unit: 'bodů', mode: 'high', icon: '' }; }
   function encodePoints(id, value) { const v = Number(value) || 0; return isLowBetter(id) ? (POINT_SCALE - Math.max(0, Math.round(v))) : Math.max(0, Math.round(v)); }
-  function decodePoints(id, value) { const v = Number(value) || 0; return isLowBetter(id) ? Math.max(0, POINT_SCALE - Math.max(0, Math.round(v))) : Math.max(0, Math.round(v)); }
+  function decodePoints(id, value) {
+    const v = Number(value) || 0;
+    if (isLowBetter(id)) {
+      const rounded = Math.max(0, Math.round(v));
+      if (rounded <= 0 || rounded >= POINT_SCALE) return 0;
+      return Math.max(0, POINT_SCALE - rounded);
+    }
+    return Math.max(0, Math.round(v));
+  }
 
   function arcadeDefaults(id) {
     const mid = key(id);
@@ -2119,11 +2135,13 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   const originalGetLeaderboard = window.gamesGetGameLeaderboard;
   window.gamesGetGameLeaderboard = function gamesGetGameLeaderboardArcade(gameId, limit = 10) {
     const id = key(gameId);
+    const todayKey = String(dailySeed());
     const cache = (window.app && window.app.gamesLeaderboardCache) ? window.app.gamesLeaderboardCache : (window.app.gamesLeaderboardCache = {});
-    if (Array.isArray(cache[id]) && cache[id].length) return cache[id].slice(0, limit);
+    if (!gamesIsDailyStatId(id) && Array.isArray(cache[id]) && cache[id].length) return cache[id].slice(0, limit);
     const profile = gamesGetProfile();
     const rows = Object.values(profile.accounts || {}).map((acc) => {
       const stat = getAccountStat(acc, id);
+      if (gamesIsDailyStatId(id) && String(stat.dailyDateKey || '') !== todayKey) return null;
       const value = gameLeaderboardMetric(id, stat);
       return gamesNormalizeLeaderboardRow(id, {
         id: acc.id,
@@ -2131,7 +2149,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
         value,
         playedText: formatDate(Number(stat.lastPlayedAt || acc.updatedAt || 0) || 0)
       });
-    }).filter((row) => row.value > 0);
+    }).filter((row) => row && row.value > 0);
     return gameLeaderboardSort(id, rows).slice(0, Math.max(1, Math.min(50, Number(limit) || 10)));
   };
 
@@ -2257,6 +2275,19 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return score > 0 ? encodePoints(id, score) : 0;
   }
 
+  function gamesIsDailyStatId(gameId) {
+    const id = key(gameId);
+    return id === 'daily' || id.indexOf('daily_') === 0;
+  }
+
+  function gamesDailyCurrentStat(active, gameId, dateKey) {
+    const id = key(gameId);
+    const todayKey = String(dateKey || dailySeed());
+    const current = getAccountStat(active, id);
+    if (String(current.dailyDateKey || '') === todayKey) return current;
+    return Object.assign(arcadeDefaults(id), { dailyDateKey: todayKey, dailyOnly: true });
+  }
+
   function gamesRecordDailyChallengeStat(active, sourceId, sourcePatch, sourceMerged, isCompleted) {
     const session = gamesGetDailyChallengeSession();
     if (!session || !isCompleted) return false;
@@ -2264,7 +2295,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     if (!id || id === 'daily' || id !== session.mode) return false;
     const scoreValue = Math.max(0, Math.round(gamesDailyChallengeScoreValue(id, sourcePatch, sourceMerged)));
     if (!scoreValue) return false;
-    const current = getAccountStat(active, 'daily');
+    const current = gamesDailyCurrentStat(active, 'daily', session.dateKey);
     const playedAt = Number((sourcePatch && sourcePatch.lastPlayedAt) || (sourceMerged && sourceMerged.lastPlayedAt) || Date.now()) || Date.now();
     const resultText = dailyLabel(id) + ' · ' + String(sourcePatch && sourcePatch.lastResult ? sourcePatch.lastResult : (sourceMerged && sourceMerged.lastResult ? sourceMerged.lastResult : scoreValue + ' bodů'));
     const mergedDaily = Object.assign({}, current, {
@@ -2275,19 +2306,23 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
       points: Math.max(Number(current.points || 0) || 0, scoreValue),
       lastPlayedAt: playedAt,
       lastResult: resultText,
-      dailyMode: id
+      dailyMode: id,
+      dailyDateKey: session.dateKey,
+      dailyOnly: true
     });
     setAccountStat(active, 'daily', mergedDaily);
 
     const dailyStatId = dailyLeaderboardGameId(id);
-    const currentModeDaily = getAccountStat(active, dailyStatId);
+    const currentModeDaily = gamesDailyCurrentStat(active, dailyStatId, session.dateKey);
     const sourceValue = Math.max(0, Math.round(dailySourceValueForStatId(dailyStatId, id, sourcePatch, sourceMerged)));
     const mergedModeDaily = Object.assign({}, currentModeDaily, {
       completed: true,
       plays: (Number(currentModeDaily.plays || 0) || 0) + 1,
       lastPlayedAt: playedAt,
       lastResult: resultText,
-      dailyMode: id
+      dailyMode: id,
+      dailyDateKey: session.dateKey,
+      dailyOnly: true
     });
     if (isLowBetter(dailyStatId)) {
       const previous = Number(currentModeDaily.bestTimeMs || 0) || 0;
@@ -2307,11 +2342,9 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
       delete window.app.gamesLeaderboardCache.daily;
       delete window.app.gamesLeaderboardCache[dailyStatId];
     }
-    if (typeof originalSyncStatOnline === 'function') {
-      void originalSyncStatOnline('daily', mergedDaily);
-      void originalSyncStatOnline(dailyStatId, mergedModeDaily);
-    }
-    void refreshRemoteLeaderboards(['daily', dailyStatId]);
+    // Daily Challenge ve v982 zůstává oddělený lokálně podle aktuálního dne.
+    // Bez DB filtru podle dne ho neposíláme do běžného online leaderboardu, aby se nemíchaly staré denní výsledky.
+    if (!window.app || !window.app.activeGameShell) scheduleStatsExtended('daily-record-stat');
     return true;
   }
 
@@ -2326,6 +2359,13 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     if (!isCompleted && (Number(nextPatch.plays || nextPatch.games_played || 0) || 0) > 0) return;
     if (isCompleted) nextPatch = gamesAttachCompletionContext(active, id, nextPatch);
     active.updatedAt = nextPatch.lastPlayedAt;
+    const dailySession = gamesGetDailyChallengeSession();
+    if (dailySession && id === dailySession.mode) {
+      gamesRecordDailyChallengeStat(active, id, nextPatch, nextPatch, isCompleted);
+      gamesSaveProfile(profile);
+      if (!window.app || !window.app.activeGameShell) scheduleStatsExtended('daily-record-stat');
+      return;
+    }
     if (id === 'ttt' || id === '2048' || id === 'snake' || id === 'flap') {
       if (typeof originalRecordStat === 'function') return originalRecordStat(id, nextPatch);
       return;
@@ -2598,7 +2638,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
         <div class="arcadeControls">
           <button type="button" class="gameControlBtn" id="aimResetBtn">Nová hra</button>
         </div>
-        ${gamesTop3Block(state.challenge ? 'daily' : 'aim', 'bodů', 5)}
+        ${gamesTop3Block(state.challenge ? dailyLeaderboardGameId('aim') : 'aim', 'bodů', 5)}
       </div>`;
     const board = body.querySelector('#aimBoard');
     const target = body.querySelector('#aimTarget');
@@ -2637,7 +2677,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
       hudUpdate();
       if (!state.saved) {
         state.saved = true;
-        gamesRecordStat(state.challenge ? 'daily' : 'aim', {
+        gamesRecordStat('aim', {
           completed: true,
           plays: 1,
           bestScore: state.score,
@@ -2766,11 +2806,12 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
         gamesRecordStat('reaction', {
           completed: true,
           plays: 1,
-          bestTimeMs: best,
+          bestTimeMs: avg,
+          bestSingleTimeMs: best,
           bestAvgTimeMs: avg,
-          bestScore: best ? encodePoints('reaction', best) : 0,
+          bestScore: avg ? encodePoints('reaction', avg) : 0,
           perfectRuns: state.times.every(t => t && t < 250) ? 1 : 0,
-          lastResult: fmtReactionSeconds(best)
+          lastResult: fmtReactionSeconds(avg) + ' průměr'
         });
       }
     };
@@ -3396,13 +3437,33 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   }
 
   // Brick Breaker ----------------------------------------------------------
-  function brickState() { return { score: 0, over: false, won: false, lastTs: 0, raf: 0, paddleX: 0, ball: { x: 160, y: 280, vx: 3.4, vy: -3.6 }, launched: false, bricks: [], combo: 0, bestCombo: 0, saved: false }; }
-  function initBricks(state) { state.bricks = []; for (let r = 0; r < 6; r += 1) { for (let c = 0; c < 8; c += 1) state.bricks.push({ x: c, y: r, alive: true, hp: r > 3 ? 2 : 1 }); } }
+  function brickState() { return { score: 0, over: false, won: false, lastTs: 0, raf: 0, paddleX: 0, ball: { x: 160, y: 280, vx: 3.4, vy: -3.6 }, launched: false, bricks: [], combo: 0, bestCombo: 0, saved: false, level: 1, clearedLevels: 0, totalBricks: 0, destroyedBricks: 0, paddleReady: false }; }
+  function initBricks(state) {
+    const level = Math.max(1, Math.min(5, Number(state.level || 1) || 1));
+    state.level = level;
+    state.bricks = [];
+    const layouts = [
+      (r, c) => r < 6,
+      (r, c) => r < 6 && (r < 2 || ((r + c) % 2 === 0)),
+      (r, c) => r < 7 && c >= Math.floor(r / 2) && c < 8 - Math.floor(r / 2),
+      (r, c) => r < 7 && (r === 0 || r === 3 || c === 0 || c === 7 || ((r + c) % 3 !== 0)),
+      (r, c) => r < 7 && !(r === 2 && (c === 2 || c === 5)) && !(r === 5 && (c === 1 || c === 6))
+    ];
+    const include = layouts[level - 1] || layouts[layouts.length - 1];
+    for (let r = 0; r < 7; r += 1) {
+      for (let c = 0; c < 8; c += 1) {
+        if (!include(r, c)) continue;
+        const hp = Math.min(3, 1 + (r > 3 ? 1 : 0) + (level >= 4 && (r + c) % 4 === 0 ? 1 : 0));
+        state.bricks.push({ x: c, y: r, alive: true, hp });
+      }
+    }
+    state.totalBricks = state.bricks.length;
+  }
   function renderBrick(body) {
     const state = getState('brick', () => { const s2 = brickState(); initBricks(s2); return s2; });
     const stage = createCanvas(body, 'clamp(420px, 66dvh, 640px)');
     if (stage.wrap) stage.wrap.classList.add('isFullGame', 'brickNarrowCanvas', 'arcadeNoPageScroll');
-    body.insertAdjacentHTML('afterbegin', `<div class="arcadeHud arcadeHudWide3 arcadeHudSingleLine">${gamesStatLine('Skóre', state.score)}${gamesStatLine('Cihly', state.bricks.filter(b => b.alive).length)}${gamesStatLine('Combo', state.bestCombo || 0)}</div>`);
+    body.insertAdjacentHTML('afterbegin', `<div class="arcadeHud arcadeHudWide3 arcadeHudSingleLine">${gamesStatLine('Level', state.level || 1)}${gamesStatLine('Skóre', state.score)}${gamesStatLine('Cihly', state.bricks.filter(b => b.alive).length)}${gamesStatLine('Combo', state.bestCombo || 0)}</div>`);
     if (stage.wrap) stage.wrap.insertAdjacentHTML('beforeend', `<div class="arcadeGameOverlay arcadeEndOverlay" id="brickEndOverlay" hidden><div class="arcadeOverlayCard"><strong>Konec hry</strong><span data-brick-end-text>Score 0</span><button type="button" class="gameControlBtn" id="brickRestartBtn">Nová hra</button></div></div>`);
     const brickStage = body.querySelector('.arcadeStage');
     if (brickStage) brickStage.insertAdjacentHTML('afterend', gamesTop3Block('brick', 'bodů', 5));
@@ -3414,7 +3475,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
         plays: 1,
         bestScore: state.score,
         bestCombo: state.bestCombo || 0,
-        bestBricks: 48 - state.bricks.filter(b => b.alive).length,
+        bestBricks: Number(state.destroyedBricks || 0) || ((Number(state.totalBricks || 0) || state.bricks.length) - state.bricks.filter(b => b.alive).length),
         perfectClears: state.won ? 1 : 0,
         lastResult: `${state.score} bodů`
       });
@@ -3464,6 +3525,16 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     canvas.addEventListener('pointercancel', brickPointerEnd);
     body.querySelector('#brickRestartBtn').addEventListener('click', reset);
     const end = (won = false) => { if (!state.over) { state.over = true; state.won = !!won; finishBrick(); } };
+    const advanceBrickLevel = () => {
+      state.level = Math.min(5, Number(state.level || 1) + 1);
+      state.clearedLevels = Number(state.clearedLevels || 0) + 1;
+      state.score += 120 + state.level * 80;
+      state.combo = 0;
+      initBricks(state);
+      state.launched = false;
+      state.paddleReady = false;
+      state.ball = { x: 160, y: 280, vx: 3.4 + state.level * .22, vy: -(3.6 + state.level * .24) };
+    };
     const draw = () => {
       const { w, h } = stage.resize();
       const colors = arcadeThemeColors();
@@ -3510,14 +3581,17 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
             state.ball.vy *= -1;
             state.combo += 1;
             state.bestCombo = Math.max(state.bestCombo || 0, state.combo);
-            if (b.hp <= 0) { b.alive = false; state.score += 18 + Math.min(60, state.combo * 4); }
+            if (b.hp <= 0) { b.alive = false; state.destroyedBricks = Number(state.destroyedBricks || 0) + 1; state.score += 18 + Math.min(60, state.combo * 4); }
           }
         });
         if (state.ball.y > h + 18) end(false);
-        if (!state.bricks.some(b => b.alive)) end(true);
+        if (!state.bricks.some(b => b.alive)) {
+          if ((Number(state.level || 1) || 1) < 5) advanceBrickLevel();
+          else end(true);
+        }
       }
       const hud = body.querySelector('.arcadeHud');
-      if (hud) hud.innerHTML = `${gamesStatLine('Skóre', state.score)}${gamesStatLine('Cihly', state.bricks.filter(b => b.alive).length)}${gamesStatLine('Combo', state.bestCombo || 0)}`;
+      if (hud) hud.innerHTML = `${gamesStatLine('Level', state.level || 1)}${gamesStatLine('Skóre', state.score)}${gamesStatLine('Cihly', state.bricks.filter(b => b.alive).length)}${gamesStatLine('Combo', state.bestCombo || 0)}`;
       const endOverlay = body.querySelector('#brickEndOverlay');
       if (endOverlay) { endOverlay.hidden = !state.over; const txt = endOverlay.querySelector('[data-brick-end-text]'); if (txt) txt.textContent = `${state.score} bodů · combo ${state.bestCombo || 0}`; }
       draw();
@@ -3575,10 +3649,21 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     canvas.addEventListener('pointermove', pointerMove);
     canvas.addEventListener('pointerup', pointerEnd);
     canvas.addEventListener('pointercancel', pointerEnd);
-    const addPlatform = (w, y) => {
+    const addPlatform = (w, requestedY) => {
       const roll = Math.random();
       const kind = roll > .86 ? 'boost' : roll > .70 ? 'moving' : 'normal';
-      state.platforms.push({ x: 18 + Math.random() * Math.max(1, w - 86), y, w: kind === 'boost' ? 44 : 48 + Math.random() * 20, kind, vx: kind === 'moving' ? (Math.random() < .5 ? -0.9 : 0.9) : 0 });
+      const platformW = kind === 'boost' ? 44 : 48 + Math.random() * 20;
+      const top = state.platforms.slice().sort((a, b) => a.y - b.y)[0] || { x: state.x - 27, y: state.y + 42, w: 54 };
+      const minGap = 34;
+      const maxGap = 58;
+      let y = Number.isFinite(Number(requestedY)) ? Number(requestedY) : (top.y - (minGap + Math.random() * (maxGap - minGap)));
+      const gap = top.y - y;
+      if (gap < minGap) y = top.y - minGap;
+      if (gap > maxGap) y = top.y - maxGap;
+      const maxHorizontalStep = Math.max(68, Math.min(118, w * .36));
+      const center = (top.x + top.w / 2) + (Math.random() * 2 - 1) * maxHorizontalStep;
+      const x = clamp(center - platformW / 2, 18, Math.max(18, w - platformW - 18));
+      state.platforms.push({ x, y, w: platformW, kind, vx: kind === 'moving' ? (Math.random() < .5 ? -0.9 : 0.9) : 0 });
     };
     const end = () => { if (!state.over) { state.over = true; finishDoodle(); } };
     const draw = () => {
@@ -3895,7 +3980,16 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
       const idx = r * 9 + c;
       const fixed = v !== '0';
       const entry = fixed ? v : String(state.entries[idx] || '');
-      const cls = ['arcadeSudokuCell', fixed ? 'isFixed' : 'isOpen', selectedIdx === idx ? 'isSelected' : '', entry ? 'hasValue' : ''].filter(Boolean).join(' ');
+      const cls = [
+        'arcadeSudokuCell',
+        fixed ? 'isFixed' : 'isOpen',
+        selectedIdx === idx ? 'isSelected' : '',
+        entry ? 'hasValue' : '',
+        r % 3 === 0 ? 'sudokuBlockTop' : '',
+        c % 3 === 0 ? 'sudokuBlockLeft' : '',
+        r % 3 === 2 ? 'sudokuBlockBottom' : '',
+        c % 3 === 2 ? 'sudokuBlockRight' : ''
+      ].filter(Boolean).join(' ');
       return `<button type="button" class="${cls}" data-r="${r}" data-c="${c}" data-idx="${idx}" ${fixed ? 'aria-disabled="true"' : ''}>${entry}</button>`;
     }).join('')).join('');
     const selectedRow = selectedIdx >= 0 ? Math.floor(selectedIdx / 9) : 0;
@@ -5959,11 +6053,11 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   function getRakDailyChallengeScoreBridgeHealth() {
     return {
       ok: typeof gamesRecordDailyChallengeStat === 'function' && typeof gamesGetDailyChallengeSession === 'function',
-      mode: 'daily-challenge-filtered-by-current-game-v957',
+      mode: 'daily-challenge-current-day-isolated-v982',
       version: String(window.APP_VERSION || 'v.1.5 (920)'),
       sourceModes: DAILY_MODES.slice(),
       targetGame: 'daily',
-      note: 'Výsledek dnešní hry se ukládá do konkrétní hry i do leaderboardu Denní challenge.'
+      note: 'Výsledek dnešní hry se ukládá jen do denního leaderboardu aktuálního dne; běžné skóre hry zůstává oddělené.'
     };
   }
   window.getRakDailyChallengeScoreBridgeHealth = getRakDailyChallengeScoreBridgeHealth;

@@ -10350,6 +10350,36 @@ function adminRefreshRotationSuggestions(root) {
   }
 }
 
+function adminAttachRotationAvailableDatalist(input) {
+  try {
+    const body = document.getElementById('appMenuBody');
+    if (!body || body.dataset.adminView !== 'rotation' || !input || !body.contains(input)) return;
+    if (!input.matches('[data-rot-field^="cell-"]')) return;
+    const currentValue = String(input.value || '').trim();
+    if (currentValue) {
+      input.removeAttribute('list');
+      return;
+    }
+    const row = input.closest('tr[data-rotation-section]');
+    const dateKey = adminRotationDateLabel(row && row.querySelector('[data-rot-field="date"]') ? row.querySelector('[data-rot-field="date"]').value : '');
+    const used = dateKey ? (adminBuildUsedNamesByDate(body).get(dateKey) || new Set()) : new Set();
+    const names = adminGetKnownNames().filter((name) => !used.has(name));
+    const listId = 'adminRotationSuggest-' + Math.random().toString(36).slice(2, 9);
+    const datalist = document.createElement('datalist');
+    datalist.id = listId;
+    datalist.setAttribute('data-admin-rotation-suggest', '1');
+    names.forEach((name) => {
+      const option = document.createElement('option');
+      option.value = name;
+      datalist.appendChild(option);
+    });
+    body.appendChild(datalist);
+    input.setAttribute('list', listId);
+  } catch (err) {
+    console.warn('Admin rotation datalist failed', err);
+  }
+}
+
 function splitMachineKey(rawKey) {
   const raw = String(rawKey || '').trim();
   if (!raw) return { machine: '', index: '' };
@@ -10380,9 +10410,9 @@ function buildAdminRotationColgroupHtml(columnCount, firstWidthPx, otherWidthPx)
 
 function buildAdminAbsenceColgroupHtml() {
   return '<colgroup>' +
-    '<col class="colW40">' +
-    '<col class="colW118">' +
-    '<col class="colW40">' +
+    '<col class="colW42">' +
+    '<col class="colW86">' +
+    '<col class="colW42">' +
     '</colgroup>';
 }
 
@@ -10620,8 +10650,10 @@ function buildAdminRotationTableHtml(monthKey) {
     '  <div class="appMenuSubTitle">Rozpis – ' + escapeHtml(monthKey) + '</div>',
     '  <div class="appMenuText">Stejný rozpis, jen editovatelný. Změny zůstávají rozepsané lokálně a do Supabase jdou až po kliknutí na Uložit rozpis.</div>',
     '  <div class="adminRotationSaveDock">',
-    '    <button type="button" class="appMenuAction isActive adminRotationSaveDockBtn" data-admin-action="save-rotation">Uložit rozpis</button>',
-    '    <button type="button" class="appMenuAction adminRotationSelectedRemoveBtn" data-admin-selected-remove hidden>Odebrat vybrané</button>',
+    '    <div class="adminRotationSaveActions">',
+    '      <button type="button" class="appMenuAction isActive adminRotationSaveDockBtn" data-admin-action="save-rotation">Uložit rozpis</button>',
+    '      <button type="button" class="appMenuAction adminRotationSelectedRemoveBtn" data-admin-selected-remove hidden>Odebrat vybrané</button>',
+    '    </div>',
     '    <span id="adminRotationDraftStatus" class="adminRotationDraftStatus">Rozepsané změny se uloží až tlačítkem.</span>',
     '  </div>',
     buildAdminRotationCompactOverviewHtml(monthKey, hardRows, softRows, hardMachines, softMachines),
@@ -10877,6 +10909,7 @@ function buildAdminReportsHtml() {
     '<div class="adminReportsFolder">',
     '  <div class="adminReportsToolbar">',
     '    <button type="button" class="appMenuAction isActive" data-admin-action="load-reports">Načíst reporty</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="download-reports">Stáhnout reporty</button>',
     '    <span class="smallText">' + String(rows.length || 0) + ' záznamů</span>',
     '  </div>',
     '  <div class="adminReportsList">' + list + '</div>',
@@ -10884,14 +10917,100 @@ function buildAdminReportsHtml() {
   ].join('');
 }
 
-async function loadAdminBugReportsFromSupabase() {
-  if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.loadBugReports === 'function') {
-    const result = await window.RotationSupabaseBridge.loadBugReports({ limit: 50, status: 'all' });
-    app.adminBugReports = result && Array.isArray(result.rows) ? result.rows : [];
-    return result;
+function normalizeLocalBugReportsForAdmin() {
+  try {
+    const raw = typeof parseLocalStorageJsonCached === 'function'
+      ? parseLocalStorageJsonCached(RAK_REPORTS_KEY, [])
+      : JSON.parse(localStorage.getItem(RAK_REPORTS_KEY) || '[]');
+    return (Array.isArray(raw) ? raw : []).map((report, idx) => {
+      const device = {
+        theme: report.theme || '',
+        background: report.background || '',
+        source: 'local-backup',
+        sourceId: report.id || ('local-' + idx),
+        game: report.game || '',
+        online: !!report.online
+      };
+      return {
+        id: report.id || ('local-report-' + idx),
+        account_number: report.accountId || '',
+        player_name: report.accountName || '',
+        report_type: report.type || 'Chyba',
+        message: report.text || '',
+        app_version: report.version || '',
+        route: report.page || '',
+        user_agent: report.userAgent || '',
+        device_info: device,
+        status: 'new',
+        created_at: report.createdAt || new Date().toISOString(),
+        local_only: true
+      };
+    }).filter((row) => String(row.message || '').trim());
+  } catch (err) {
+    console.warn('normalizeLocalBugReportsForAdmin failed', err);
+    return [];
   }
-  app.adminBugReports = [];
-  return { ok: false, rows: [], reason: 'missing-bridge' };
+}
+
+function mergeAdminBugReports(remoteRows, localRows) {
+  const map = new Map();
+  const add = (row) => {
+    if (!row) return;
+    const device = row.device_info && typeof row.device_info === 'object' ? row.device_info : {};
+    const key = String(row.id || device.sourceId || row.created_at || Math.random()).trim();
+    if (!key || map.has(key)) return;
+    map.set(key, row);
+  };
+  (Array.isArray(remoteRows) ? remoteRows : []).forEach(add);
+  (Array.isArray(localRows) ? localRows : []).forEach(add);
+  return Array.from(map.values()).sort((a, b) => Date.parse(b.created_at || 0) - Date.parse(a.created_at || 0));
+}
+
+function downloadAdminBugReports() {
+  try {
+    const rows = getAdminReportsCache();
+    const statusEl = document.getElementById('adminOnlineSaveStatus');
+    if (!rows.length) {
+      if (statusEl) statusEl.textContent = 'Žádné reporty k exportu.';
+      try { showToast('Žádné reporty k exportu.'); } catch (err) {}
+      return { ok: true, empty: true };
+    }
+    const payload = JSON.stringify({ exportedAt: new Date().toISOString(), appVersion: (typeof APP_VERSION !== 'undefined' ? APP_VERSION : ''), rows }, null, 2);
+    const blob = new Blob([payload], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'RaK_reporty_chyb_' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1200);
+    if (statusEl) statusEl.textContent = 'Reporty stažené.';
+    return { ok: true, rows: rows.length };
+  } catch (err) {
+    const statusEl = document.getElementById('adminOnlineSaveStatus');
+    if (statusEl) statusEl.textContent = 'Stažení reportů se nepovedlo.';
+    console.warn('downloadAdminBugReports failed', err);
+    return { ok: false, error: err };
+  }
+}
+
+async function loadAdminBugReportsFromSupabase() {
+  const localRows = normalizeLocalBugReportsForAdmin();
+  if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.loadBugReports === 'function') {
+    try {
+      const result = await window.RotationSupabaseBridge.loadBugReports({ limit: 50, status: 'all' });
+      const remoteRows = result && Array.isArray(result.rows) ? result.rows : [];
+      app.adminBugReports = mergeAdminBugReports(remoteRows, localRows);
+      return Object.assign({}, result || {}, { ok: true, rows: app.adminBugReports });
+    } catch (err) {
+      console.warn('loadAdminBugReportsFromSupabase failed, using local backup', err);
+      app.adminBugReports = localRows;
+      return { ok: false, rows: localRows, reason: 'remote-failed', error: err };
+    }
+  }
+  app.adminBugReports = localRows;
+  return { ok: false, rows: localRows, reason: 'missing-bridge' };
 }
 
 async function updateAdminBugReportStatus(reportId, status) {
@@ -11645,7 +11764,7 @@ function adminShowRotationQuickRemove(input) {
         ev.preventDefault();
         const target = window.__rakAdminRotationQuickRemoveInput;
         if (target && target.isConnected) {
-          target.value = 'odebrat';
+          target.value = '';
           target.dispatchEvent(new Event('input', { bubbles: true }));
           target.dispatchEvent(new Event('change', { bubbles: true }));
           try { target.focus({ preventScroll: true }); } catch (err) { try { target.focus(); } catch (err2) {} }
@@ -12338,6 +12457,10 @@ function bindAppMenuHandlers(body) {
         renderAdminMenuBody(body, 'reports');
         return;
       }
+      if (adminAction === 'download-reports') {
+        downloadAdminBugReports();
+        return;
+      }
       if (adminAction === 'report-seen' || adminAction === 'report-done' || adminAction === 'report-ignore') {
         const reportId = target.getAttribute('data-report-id') || target.closest('[data-report-id]')?.getAttribute('data-report-id') || '';
         const nextStatus = adminAction === 'report-done' ? 'done' : (adminAction === 'report-ignore' ? 'ignored' : 'seen');
@@ -12508,7 +12631,7 @@ function bindAppMenuHandlers(body) {
     if (!target.matches('[data-rot-field], [data-note-field]')) return;
     if (body.dataset.adminView === 'rotation') {
       adminScheduleRotationQuickRemove(target);
-      
+      adminAttachRotationAvailableDatalist(target);
     }
   });
 }
@@ -15032,7 +15155,7 @@ function snakeDefaultState() {
     lastAteAt: 0,
     lastTurnAt: 0,
     lastTickAt: 0,
-    speedMs: 126
+    speedMs: 154
   };
 }
 
@@ -15302,7 +15425,7 @@ function snakeStart() {
   const state = app.gamesSnake || (app.gamesSnake = snakeDefaultState());
   if (state.over) return;
   if (state.timer) clearInterval(state.timer);
-  state.timer = setInterval(snakeTick, Number(state.speedMs || 126));
+  state.timer = setInterval(snakeTick, Number(state.speedMs || 154));
 }
 
 // ---- Flappy Car ----

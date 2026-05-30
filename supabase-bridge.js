@@ -235,7 +235,7 @@
     { table: 'gomoku_wins', realtime: true, queueType: 'gomoku_win', access: 'anon SELECT/INSERT/UPDATE', note: 'výhry piškvorek / legacy leaderboard' }
   ];
 
-  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (981)';
+  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (982)';
   const SUPABASE_POLICY_AUDIT_SNAPSHOT_AT = '2026-05-24';
   const SUPABASE_POLICY_HARDENING_PHASE = {
     current: 'V856 – release hygiene po kontrole vlastních buildů: changelog opravený, SQL auditní soubory jsou archivované v assets/docs/sql a DB policies se nemění.',
@@ -295,7 +295,7 @@
   ];
 
   const SUPABASE_RPC_HARDENING_STATUS = {
-    version: 'v.1.5 (981)',
+    version: 'v.1.5 (982)',
     phase: '2E-O online invite/session RPC smoke + accept RPC / no policy tightening',
     rpcPreferred: true,
     migrationApplied: true,
@@ -907,7 +907,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v981');
+      const channel = client.channel('rak-public-live-v982');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -1018,7 +1018,7 @@
       ends_at: payload.ends_at,
       marquee: payload.marquee,
       updated_at: nowIso,
-      app_version: String(window.APP_VERSION || 'v.1.5 (981)'),
+      app_version: String(window.APP_VERSION || 'v.1.5 (982)'),
       priority: 0
     });
     return [
@@ -1063,7 +1063,7 @@
           ends_at: fallback.ends_at,
           marquee: fallback.marquee,
           updated_at: new Date().toISOString(),
-          app_version: String(window.APP_VERSION || 'v.1.5 (981)'),
+          app_version: String(window.APP_VERSION || 'v.1.5 (982)'),
           priority: 0
         });
   }
@@ -1078,7 +1078,7 @@
         p_ends_at: safe.ends_at,
         p_marquee: safe.marquee,
         p_updated_by: 'rak-admin-ui',
-        p_app_version: String(window.APP_VERSION || 'v.1.5 (981)'),
+        p_app_version: String(window.APP_VERSION || 'v.1.5 (982)'),
         p_priority: 0
       }), { mode: 'write', timeoutMs: 8000, attempts: 1 });
       if (res && res.error) return { ok: false, error: res.error, shape: 'rpc-save' };
@@ -1092,7 +1092,7 @@
     try {
       const res = await runSupabaseOperation('announcements.rpc-clear', () => client.rpc('rak_clear_dashboard_announcement', {
         p_updated_by: 'rak-admin-ui',
-        p_app_version: String(window.APP_VERSION || 'v.1.5 (981)')
+        p_app_version: String(window.APP_VERSION || 'v.1.5 (982)')
       }), { mode: 'write', timeoutMs: 8000, attempts: 1 });
       if (res && res.error) return { ok: false, error: res.error, shape: 'rpc-clear' };
       return { ok: true, cleared: true, count: Number(res && res.data || 0), shape: 'rpc-clear' };
@@ -1214,7 +1214,7 @@
       online: typeof navigator === 'undefined' ? false : !!navigator.onLine,
       cachedAnnouncementCount: Array.isArray(state.announcements) ? state.announcements.length : 0,
       table: 'announcements',
-      realtimeChannel: 'rak-public-live-v981',
+      realtimeChannel: 'rak-public-live-v982',
       readMode: 'public SELECT + realtime refresh + local cache fallback',
       writeMode: 'RPC security definer save/clear; direct table fallback only if RPC unavailable'
     });
@@ -2201,7 +2201,7 @@
         downlink: Number(connection.downlink || 0) || 0,
         saveData: !!connection.saveData
       } : null,
-      source: 'rak-v981-client'
+      source: 'rak-v982-client'
     }, ex.deviceInfo && typeof ex.deviceInfo === 'object' ? ex.deviceInfo : {});
   }
 
@@ -2415,8 +2415,7 @@
     const status = String(options.status || '').trim();
     let query = client.from('bug_reports')
       .select('id, account_number, player_name, report_type, message, app_version, route, user_agent, device_info, status, created_at, handled_at, handled_note')
-      .order('priority', { ascending: false })
-          .order('updated_at', { ascending: false })
+      .order('created_at', { ascending: false })
       .limit(limit);
     if (status && status !== 'all') query = query.eq('status', normalizeBugReportStatus(status));
     const { data, error } = await runSupabaseOperation('bug_reports.select', () => query, { mode: 'read', attempts: 1 });
@@ -4352,7 +4351,7 @@
     return {
       ok: blockers.length === 0,
       mode: 'supabase-hardening-readiness-audit-only',
-      version: 'v.1.5 (981)',
+      version: 'v.1.5 (982)',
       checkedAt: new Date().toISOString(),
       confirmed,
       readinessPercent,

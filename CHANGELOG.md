@@ -1,3 +1,12 @@
+## v.1.5 (982)
+- Dashboard: doplněný spodní bezpečný odstup pro dlaždice Jídelní lístek a Eportal, bez návratu horních umělých linek.
+- Hry: Had zpomalen, Reaction Test ukládá do Top score průměrnou reakci, low-score fallback 86400s se zahazuje, Pexeso už nepřebírá sentinel 86400s, Brick Breaker má 5 postupně těžších levelů, Doodle Jump generuje dosažitelné plošiny, Sudoku má opticky oddělené 3×3 bloky.
+- Daily Challenge: denní score je oddělené od běžného score hry a lokální leaderboard se počítá jen pro aktuální den.
+- Nastavení: Ládův / lightweight režim má spodní lištu drženou kompaktně bez zásahu do pořadí ikon a bez aktivního pozadí.
+- Administrace: kompaktnější Rozpisy, popis ukládání pod tlačítkem, rychlé odebrání obsazeného jména, dostupná jména v prázdných polích, Přehled připojení se rozbaluje do normální délky stránky a Reporty chyb umí načíst lokální zálohy i stáhnout export bez vyvolání globální sync chyby.
+- Supabase DB ani policies se neměnily; změna je jen v klientském načítání reportů bez závislosti na sloupci priority.
+- Verze sjednocena na v.1.5 (982), cache na `v1.5-982`, realtime kanál na `rak-public-live-v982`, package na `1.5.982`.
+
 ## v.1.5 (981)
 - Spodní lišta: aktivní stav už nemá žádné šedé ani mléčné pozadí; zůstává jen průhledné glass ohraničení s plynulým přesunem.
 - Přidána tvrdší ochrana proti iOS/Android tap highlightu a starým active/focus vrstvám.
