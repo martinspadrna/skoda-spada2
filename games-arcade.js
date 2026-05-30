@@ -1848,7 +1848,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   function gamesSanitizeLowBestTime(gameId, ms) {
     const n = Number(ms) || 0;
     if (!Number.isFinite(n) || n <= 0) return 0;
-    // v.1.5 (983): sentinel 86 400 s z vadně dekódovaných low-score bodů není platný rekord.
+    // v.1.5 (985): sentinel 86 400 s z vadně dekódovaných low-score bodů není platný rekord.
     // Chrání to hlavně Pexeso a Reaction Test, aby se v Top score neukazovalo 86400s.
     if (isLowBetter(gameId) && n >= 86400000) return 0;
     if ((key(gameId) === 'reaction' || key(gameId) === 'daily_reaction') && n > 60000) return 0;

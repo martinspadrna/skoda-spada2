@@ -8383,7 +8383,7 @@ function tttBestMove(board, difficulty) {
   return tttNearestCenterFallbackMove(board);
 }
 
-// v.1.5 (983) – Piškvorky AI: tvrdší offline vrstva proti rychlým výhrám 17–27 tahů.
+// v.1.5 (985) – Piškvorky AI: tvrdší offline vrstva proti rychlým výhrám 17–27 tahů.
 // Online PvP zůstává člověk proti člověku; tahle vrstva se používá jen v lokální AI cestě tttBestMove().
 const TTT_V983_SOFT_DEADLINE_MS = 2450;
 const TTT_V983_HARD_DEADLINE_MS = 4700;
@@ -11125,24 +11125,89 @@ function normalizeLocalBugReportsForAdmin() {
         handled_at: report.handledAt || '',
         handled_note: report.handledNote || ''
       };
-    }).filter((row) => String(row.message || '').trim());
+    }).filter((row) => String(row.message || '').trim() && String(row.handled_note || '').trim() !== '__rak_deleted__');
   } catch (err) {
     console.warn('normalizeLocalBugReportsForAdmin failed', err);
     return [];
   }
 }
 
+function getAdminReportSourceKey(row) {
+  try {
+    const device = row && row.device_info && typeof row.device_info === 'object' ? row.device_info : {};
+    const sourceId = String(device.sourceId || device.source_id || row.sourceId || '').trim();
+    if (sourceId) return 'source:' + sourceId;
+    const msg = String(row && row.message || '').trim().slice(0, 220);
+    const player = String(row && (row.account_number || row.player_name) || '').trim().slice(0, 80);
+    const created = String(row && row.created_at || '').trim().slice(0, 19);
+    if (msg && created) return 'fingerprint:' + created + ':' + player + ':' + msg;
+    return 'id:' + String(row && row.id || Math.random()).trim();
+  } catch (err) {
+    return 'id:' + String(row && row.id || Math.random()).trim();
+  }
+}
+
+function getAdminReportLocalSourceId(row) {
+  try {
+    const device = row && row.device_info && typeof row.device_info === 'object' ? row.device_info : {};
+    return String(device.sourceId || device.source_id || row.sourceId || '').trim();
+  } catch (err) {
+    return '';
+  }
+}
+
+function markLocalBugReportDeletedByAdmin(rowOrId) {
+  try {
+    const row = rowOrId && typeof rowOrId === 'object' ? rowOrId : null;
+    const ids = [];
+    if (row) {
+      ids.push(String(row.id || '').trim());
+      ids.push(getAdminReportLocalSourceId(row));
+      ids.push(String(row.created_at || '').trim());
+    } else {
+      ids.push(String(rowOrId || '').trim());
+    }
+    ids.filter(Boolean).forEach((id) => updateLocalBugReportRecord(id, { adminDeleted: true, status: 'deleted', adminStatus: 'deleted' }));
+  } catch (err) {
+    console.warn('markLocalBugReportDeletedByAdmin failed', err);
+  }
+}
+
+function markLocalBugReportStatusByAdmin(rowOrId, status, handledAt, note) {
+  try {
+    const row = rowOrId && typeof rowOrId === 'object' ? rowOrId : null;
+    const ids = [];
+    if (row) {
+      ids.push(String(row.id || '').trim());
+      ids.push(getAdminReportLocalSourceId(row));
+      ids.push(String(row.created_at || '').trim());
+    } else {
+      ids.push(String(rowOrId || '').trim());
+    }
+    ids.filter(Boolean).forEach((id) => updateLocalBugReportRecord(id, { adminStatus: status, status, handledAt, handledNote: note }));
+  } catch (err) {
+    console.warn('markLocalBugReportStatusByAdmin failed', err);
+  }
+}
+
 function mergeAdminBugReports(remoteRows, localRows) {
   const map = new Map();
-  const add = (row) => {
+  const add = (row, source) => {
     if (!row) return;
-    const device = row.device_info && typeof row.device_info === 'object' ? row.device_info : {};
-    const key = String(row.id || device.sourceId || row.created_at || Math.random()).trim();
-    if (!key || map.has(key)) return;
-    map.set(key, row);
+    const key = getAdminReportSourceKey(row);
+    if (!key) return;
+    const existing = map.get(key);
+    if (!existing) {
+      map.set(key, row);
+      return;
+    }
+    // Online záznam má přednost před lokální zálohou stejného reportu, aby se po načtení nevracely duplicity.
+    const existingIsLocal = !!existing.local_only;
+    const incomingIsRemote = !row.local_only || source === 'remote';
+    if (existingIsLocal && incomingIsRemote) map.set(key, row);
   };
-  (Array.isArray(remoteRows) ? remoteRows : []).forEach(add);
-  (Array.isArray(localRows) ? localRows : []).forEach(add);
+  (Array.isArray(localRows) ? localRows : []).forEach((row) => add(row, 'local'));
+  (Array.isArray(remoteRows) ? remoteRows : []).forEach((row) => add(row, 'remote'));
   return Array.from(map.values()).sort((a, b) => Date.parse(b.created_at || 0) - Date.parse(a.created_at || 0));
 }
 
@@ -11180,8 +11245,10 @@ async function loadAdminBugReportsFromSupabase() {
   if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.loadBugReports === 'function') {
     try {
       const result = await window.RotationSupabaseBridge.loadBugReports({ limit: 50, status: 'all' });
-      const remoteRows = result && Array.isArray(result.rows) ? result.rows : [];
-      app.adminBugReports = mergeAdminBugReports(remoteRows, localRows);
+      const remoteRows = result && Array.isArray(result.rows)
+        ? result.rows.filter((row) => String(row && row.handled_note || '').trim() !== '__rak_deleted__')
+        : [];
+      app.adminBugReports = mergeAdminBugReports(remoteRows, localRows).filter((row) => String(row && row.handled_note || '').trim() !== '__rak_deleted__');
       return Object.assign({}, result || {}, { ok: true, rows: app.adminBugReports });
     } catch (err) {
       console.warn('loadAdminBugReportsFromSupabase failed, using local backup', err);
@@ -11235,6 +11302,7 @@ async function updateAdminBugReportStatus(reportId, status) {
         hit.status = status;
         hit.handled_at = handledAt;
         hit.handled_note = note;
+        markLocalBugReportStatusByAdmin(hit, status, handledAt, note);
       }
     }
     return result;
@@ -11254,7 +11322,14 @@ async function deleteAdminBugReport(reportId) {
   }
   if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.deleteBugReport === 'function') {
     const result = await window.RotationSupabaseBridge.deleteBugReport(reportId);
-    if (result && result.ok && index >= 0) rows.splice(index, 1);
+    if (result && result.ok && index >= 0) {
+      if (hit) {
+        hit.status = 'ignored';
+        hit.handled_note = '__rak_deleted__';
+      }
+      markLocalBugReportDeletedByAdmin(hit || reportId);
+      rows.splice(index, 1);
+    }
     return result;
   }
   return { ok: false, reason: 'missing-bridge' };
@@ -11881,6 +11956,7 @@ async function handleBugReportAction(action) {
     if (result && result.ok && result.queued) {
       if (status) status.textContent = 'Report je uložený ve frontě a odešle se automaticky, až bude online spojení.';
     } else if (result && result.ok) {
+      updateLocalBugReportRecord(report.id, { uploadedOnline: true, adminDeleted: true, status: 'sent', adminStatus: 'sent' });
       if (status) status.textContent = 'Díky, report je odeslaný.';
       const textEl = document.getElementById('bugReportText');
       if (textEl) textEl.value = '';

@@ -19129,7 +19129,7 @@ html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMen
 }
 
 
-/* v.1.5 (983) – spodní navigace: žádné aktivní pozadí, jen pohyblivý průhledný glass obrys. */
+/* v.1.5 (985) – spodní navigace: žádné aktivní pozadí, jen pohyblivý průhledný glass obrys. */
 html body nav.bottomNav,
 html body nav.bottomNav *,
 html body nav.bottomNav *::before,
@@ -19258,7 +19258,7 @@ html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn
 }
 
 
-/* v.1.5 (983) – opravný balík: dashboard safe-space, Ládův režim, admin rozpisy/reporty/připojení. */
+/* v.1.5 (985) – opravný balík: dashboard safe-space, Ládův režim, admin rozpisy/reporty/připojení. */
 #home.page.active{
   padding-bottom:calc(96px + env(safe-area-inset-bottom)) !important;
 }
@@ -19361,7 +19361,7 @@ body.lowEndDevice nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bott
 }
 
 
-/* v.1.5 (983) – cílené doladění podle mobilního testu: dashboard, Sudoku, administrace. */
+/* v.1.5 (985) – cílené doladění podle mobilního testu: dashboard, Sudoku, administrace. */
 html body #home.page.active{
   padding-bottom:calc(10px + env(safe-area-inset-bottom)) !important;
 }

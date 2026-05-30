@@ -1,3 +1,17 @@
+## v.1.5 (985)
+- Korekce frézky: výpočet nově vybírá nejlepší možný návrh podle nejbližšího výsledku k nastavenému středu a toleranci ±10.
+- Korekce frézky: porovnává varianty bez zásahu, jen `modifikace- konicita`, jen `korekce úhlu-fhb` i kombinaci obou korekcí a vybere nejlepší očekávaný výsledek.
+- Korekce frézky: pokud ani nejlepší kombinace nedostane hodnoty do ±10, výsledek to jasně napíše a ukáže nejlepší dosažitelný očekávaný stav.
+- Verze sjednocena na v.1.5 (985), cache na `v1.5-985`, realtime kanál na `rak-public-live-v985`, package na `1.5.985`.
+
+## v.1.5 (984)
+- Reporty chyb: deduplikace lokální zálohy a Supabase záznamu podle `device_info.sourceId`, takže se po smazání / načtení nevrací stejný report z lokální kopie.
+- Reporty chyb: po úspěšném online odeslání se lokální záloha skryje z administrace; tlačítko Smazat používá bezpečné soft-delete označení `__rak_deleted__`, takže se report po dalším načtení nevrací.
+- Reporty chyb: stav Hotovo/Viděno/Ignorovat se propisuje i do lokální zálohy stejného reportu.
+- Korekce frézky: ve výsledku je místo samotného `fhb/fhβ` text `korekce úhlu-fhb` a místo `konicita` text `modifikace- konicita`.
+- Supabase DB ani policies nebyly měněné; fyzické DELETE se neotevírá, klient využívá existující UPDATE policy.
+- Verze sjednocena na v.1.5 (984), cache na `v1.5-984`, realtime kanál na `rak-public-live-v984`, package na `1.5.984`.
+
 ## v.1.5 (983)
 - Dashboard: vrácený menší spodní odstup po mobilním testu na iPhone 13 Pro Max; zůstává jen drobná rezerva, aby spodní část dlaždic neležela za spodním panelem.
 - Piškvorky: offline AI má nový ruleset `gomoku-10col-19row-ai-rules-v15` a lehkou tvrdší obrannou vrstvu proti rychlým gain/fork tlakům; online PvP zůstává beze změny.

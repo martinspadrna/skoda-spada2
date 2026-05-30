@@ -1450,11 +1450,6 @@ function calcFrezkyFhbCorrection() {
     return;
   }
 
-  const centerDeadband = 1.0;
-  const spreadDeadband = 1.0;
-  const downSensitivityPer001 = 1.8;
-  const upSensitivityPer001 = 1.45;
-  const shiftSensitivityPer001 = 1.6;
   const checkedPairs = pairs.map((pair) => {
     const leftDiff = pair.left - targetLeft;
     const rightDiff = pair.right - targetRight;
@@ -1476,21 +1471,10 @@ function calcFrezkyFhbCorrection() {
     };
   });
 
-  const maxCenterError = checkedPairs.slice().sort((a, b) => Math.abs(b.centerError) - Math.abs(a.centerError))[0];
-  const maxSpreadError = checkedPairs.slice().sort((a, b) => Math.abs(b.spreadError) - Math.abs(a.spreadError))[0];
-  const centerScore = Math.abs(maxCenterError.centerError);
-  const spreadScore = Math.abs(maxSpreadError.spreadError);
-  const needsShift = centerScore > centerDeadband;
-  const needsTaper = spreadScore > spreadDeadband;
-
-  const taperSensitivityPer001 = maxSpreadError.spreadError > spreadDeadband ? downSensitivityPer001 : upSensitivityPer001;
-  const taperSafeFactor = maxSpreadError.spreadError > spreadDeadband ? 0.45 : 1.0;
-  const taperDelta = needsTaper ? (-(maxSpreadError.spreadError / taperSensitivityPer001) * 0.001 * taperSafeFactor) : 0;
-  const shiftSafeFactor = 0.75;
-  const shiftDelta = needsShift ? (-(maxCenterError.centerError / shiftSensitivityPer001) * 0.001 * shiftSafeFactor) : 0;
-
-  const taperMove = taperSensitivityPer001 * (taperDelta / 0.001);
-  const shiftMove = shiftSensitivityPer001 * (shiftDelta / 0.001);
+  const downSensitivityPer001 = 1.8;
+  const upSensitivityPer001 = 1.45;
+  const shiftSensitivityPer001 = 1.6;
+  const correctionStep = 0.001;
 
   function buildExpected(shiftMoveValue, taperMoveValue) {
     return checkedPairs.map((pair) => {
@@ -1538,33 +1522,118 @@ function calcFrezkyFhbCorrection() {
       outCount,
       maxCenter,
       maxSpread,
-      score: (maxAbs * 2) + (avgAbs * 0.5) + (outCount * 8) + (maxCenter * 0.25) + (maxSpread * 0.25)
+      ok: maxAbs <= tolerance,
+      score: (maxAbs * 3) + (avgAbs * 0.8) + (outCount * 25) + (maxCenter * 0.25) + (maxSpread * 0.25)
     };
   }
 
+  function roundCorrectionDelta(value) {
+    if (!Number.isFinite(value)) return 0;
+    return Math.round(value / correctionStep) * correctionStep;
+  }
+
+  function getTaperSensitivityForMove(taperMoveValue) {
+    return taperMoveValue < 0 ? downSensitivityPer001 : upSensitivityPer001;
+  }
+
+  function getTaperMoveFromDelta(delta) {
+    if (!Number.isFinite(delta) || Math.abs(delta) < 0.0000001) return 0;
+    return (delta < 0 ? downSensitivityPer001 : upSensitivityPer001) * (delta / correctionStep);
+  }
+
+  function getShiftMoveFromDelta(delta) {
+    if (!Number.isFinite(delta) || Math.abs(delta) < 0.0000001) return 0;
+    return shiftSensitivityPer001 * (delta / correctionStep);
+  }
+
+  function minMax(values) {
+    const finite = values.filter(Number.isFinite);
+    if (!finite.length) return { min: 0, max: 0 };
+    return finite.reduce((acc, value) => ({ min: Math.min(acc.min, value), max: Math.max(acc.max, value) }), { min: finite[0], max: finite[0] });
+  }
+
+  function solveContinuousMoves(useTaper, useShift) {
+    const leftDiffs = checkedPairs.map(pair => pair.leftDiff);
+    const rightDiffs = checkedPairs.map(pair => pair.rightDiff);
+    let shiftMoveValue = 0;
+    let taperMoveValue = 0;
+
+    if (useTaper && useShift) {
+      const leftRange = minMax(leftDiffs);
+      const rightRange = minMax(rightDiffs);
+      const leftMove = -((leftRange.min + leftRange.max) / 2);
+      const rightMove = -((rightRange.min + rightRange.max) / 2);
+      shiftMoveValue = (leftMove + rightMove) / 2;
+      taperMoveValue = rightMove - leftMove;
+    } else if (useShift) {
+      const allRange = minMax(leftDiffs.concat(rightDiffs));
+      shiftMoveValue = -((allRange.min + allRange.max) / 2);
+    } else if (useTaper) {
+      const taperTargets = leftDiffs.concat(rightDiffs.map(value => -value));
+      const taperRange = minMax(taperTargets);
+      const halfTaperMove = (taperRange.min + taperRange.max) / 2;
+      taperMoveValue = halfTaperMove * 2;
+    }
+
+    return { shiftMove: shiftMoveValue, taperMove: taperMoveValue };
+  }
+
+  function compareFhbCandidates(a, b) {
+    if (!a) return 1;
+    if (!b) return -1;
+    if (a.metrics.ok !== b.metrics.ok) return a.metrics.ok ? -1 : 1;
+    if (Math.abs(a.metrics.maxAbs - b.metrics.maxAbs) > 0.25) return a.metrics.maxAbs - b.metrics.maxAbs;
+    if (a.metrics.outCount !== b.metrics.outCount) return a.metrics.outCount - b.metrics.outCount;
+    if (Math.abs(a.metrics.avgAbs - b.metrics.avgAbs) > 0.25) return a.metrics.avgAbs - b.metrics.avgAbs;
+    if (Math.abs(a.metrics.maxCenter - b.metrics.maxCenter) > 0.25) return a.metrics.maxCenter - b.metrics.maxCenter;
+    if (a.actionCount !== b.actionCount) return a.actionCount - b.actionCount;
+    return a.metrics.score - b.metrics.score;
+  }
+
   function makeCandidate(type, useTaper, useShift) {
-    const expected = buildExpected(useShift ? shiftMove : 0, useTaper ? taperMove : 0);
-    const metrics = scoreExpected(expected);
-    const taperValue = useTaper && Number.isFinite(currentTaperCorr) ? currentTaperCorr + taperDelta : NaN;
-    const shiftValue = useShift && Number.isFinite(currentShiftCorr) ? currentShiftCorr + shiftDelta : NaN;
-    return { type, useTaper, useShift, expected, metrics, taperValue, shiftValue };
+    const ideal = solveContinuousMoves(useTaper, useShift);
+    const baseShiftDelta = useShift ? roundCorrectionDelta((ideal.shiftMove / shiftSensitivityPer001) * correctionStep) : 0;
+    const taperSensitivity = getTaperSensitivityForMove(ideal.taperMove);
+    const baseTaperDelta = useTaper ? roundCorrectionDelta((ideal.taperMove / taperSensitivity) * correctionStep) : 0;
+    const shiftOffsets = useShift ? [-3, -2, -1, 0, 1, 2, 3] : [0];
+    const taperOffsets = useTaper ? [-3, -2, -1, 0, 1, 2, 3] : [0];
+    let best = null;
+
+    shiftOffsets.forEach((shiftOffset) => {
+      taperOffsets.forEach((taperOffset) => {
+        const shiftDelta = useShift ? roundCorrectionDelta(baseShiftDelta + (shiftOffset * correctionStep)) : 0;
+        const taperDelta = useTaper ? roundCorrectionDelta(baseTaperDelta + (taperOffset * correctionStep)) : 0;
+        const shiftMoveValue = useShift ? getShiftMoveFromDelta(shiftDelta) : 0;
+        const taperMoveValue = useTaper ? getTaperMoveFromDelta(taperDelta) : 0;
+        const expected = buildExpected(shiftMoveValue, taperMoveValue);
+        const metrics = scoreExpected(expected);
+        const candidate = {
+          type,
+          useTaper,
+          useShift,
+          expected,
+          metrics,
+          shiftDelta,
+          taperDelta,
+          actionCount: (useTaper ? 1 : 0) + (useShift ? 1 : 0),
+          taperValue: useTaper && Number.isFinite(currentTaperCorr) ? currentTaperCorr + taperDelta : NaN,
+          shiftValue: useShift && Number.isFinite(currentShiftCorr) ? currentShiftCorr + shiftDelta : NaN
+        };
+        if (!best || compareFhbCandidates(candidate, best) < 0) best = candidate;
+      });
+    });
+
+    return best;
   }
 
   const base = makeCandidate('bez zásahu', false, false);
-  const candidates = [];
-  if (needsTaper) candidates.push(makeCandidate('konicita', true, false));
-  if (needsShift) candidates.push(makeCandidate('fhβ', false, true));
-  const singleCandidates = candidates.slice().sort((a, b) => a.metrics.score - b.metrics.score);
-  const bestSingle = singleCandidates[0] || null;
-  const both = (needsTaper && needsShift) ? makeCandidate('konicita + fhβ', true, true) : null;
-
-  let selected = bestSingle || base;
-  if (both && bestSingle) {
-    const singleGoodEnough = bestSingle.metrics.outCount === 0 || bestSingle.metrics.maxAbs <= tolerance;
-    const bothMuchBetter = (bestSingle.metrics.score - both.metrics.score) >= Math.max(8, bestSingle.metrics.score * 0.25);
-    selected = (!singleGoodEnough && bothMuchBetter) ? both : bestSingle;
-  }
-  if (!needsTaper && !needsShift) selected = base;
+  const candidates = [
+    base,
+    makeCandidate('modifikace- konicita', true, false),
+    makeCandidate('korekce úhlu-fhb', false, true),
+    makeCandidate('modifikace- konicita + korekce úhlu-fhb', true, true)
+  ].filter(Boolean);
+  const selected = candidates.slice().sort(compareFhbCandidates)[0] || base;
 
   const targetLine = targetLabel
     ? "<div class='calcResultLine calcResultPresetLine'>" + escapeHtml(targetLabel) + " · L " + formatCalcDecimalWhole(targetLeft) + " / P " + formatCalcDecimalWhole(targetRight) + "</div>"
@@ -1583,21 +1652,26 @@ function calcFrezkyFhbCorrection() {
   let html = targetLine + "<div class='calcResultMain'>Hýbej: <b>" + escapeHtml(selected.type) + "</b></div>";
   if (selected.useTaper) {
     html += Number.isFinite(selected.taperValue)
-      ? "<div class='calcResultLine'>Zadej konicitu: <b>" + formatFhbCorrection(selected.taperValue) + "</b></div>"
-      : "<div class='calcResultLine'>Konicita: <b>doplň aktuální korekci</b></div>";
+      ? "<div class='calcResultLine'>Zadej modifikace- konicita: <b>" + formatFhbCorrection(selected.taperValue) + "</b></div>"
+      : "<div class='calcResultLine'>Modifikace- konicita: <b>doplň aktuální korekci</b></div>";
   }
   if (selected.useShift) {
     html += Number.isFinite(selected.shiftValue)
-      ? "<div class='calcResultLine'>Zadej fhβ: <b>" + formatFhbCorrection(selected.shiftValue) + "</b></div>"
-      : "<div class='calcResultLine'>fhβ: <b>doplň aktuální korekci</b></div>";
+      ? "<div class='calcResultLine'>Zadej korekce úhlu-fhb: <b>" + formatFhbCorrection(selected.shiftValue) + "</b></div>"
+      : "<div class='calcResultLine'>Korekce úhlu-fhb: <b>doplň aktuální korekci</b></div>";
   }
   if (!selected.useTaper && !selected.useShift) {
-    html += "<div class='calcResultLine'>Hodnoty jsou blízko středu i konicity.</div>";
+    html += "<div class='calcResultLine'>Hodnoty jsou nejblíž středu bez další korekce.</div>";
+  }
+  if (selected.metrics.ok) {
+    html += "<div class='calcResultLine ok'>Výsledek je v toleranci ±" + formatCalcDecimalWhole(tolerance) + ". Největší odchylka vychází " + formatCalcDecimalWhole(selected.metrics.maxAbs) + ".</div>";
+  } else {
+    html += "<div class='calcResultLine warn'>Nejlepší možný výsledek pořád nebude OK. Největší odchylka vychází " + formatCalcDecimalWhole(selected.metrics.maxAbs) + " a je mimo toleranci ±" + formatCalcDecimalWhole(tolerance) + ".</div>";
   }
   html += "<div class='calcResultTitle calcResultTitle--small'>Očekávané hodnoty</div>" + expectedHtml;
   html += "<div class='calcResultTitle calcResultTitle--small'>Naměřeno</div>" + measuredLine;
 
-  setCalcOutputHtml(out, html, 'fhbBestSingleResult:' + selected.type + ':' + [targetLeft, targetRight, currentTaperCorr, currentShiftCorr, centerScore, spreadScore, taperDelta, shiftDelta, selected.metrics.score].join('|'));
+  setCalcOutputHtml(out, html, 'fhbBestCenterResult:' + selected.type + ':' + [targetLeft, targetRight, currentTaperCorr, currentShiftCorr, selected.taperDelta, selected.shiftDelta, selected.metrics.maxAbs, selected.metrics.avgAbs, selected.metrics.score].join('|'));
 }
 
 

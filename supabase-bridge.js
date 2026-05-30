@@ -235,7 +235,7 @@
     { table: 'gomoku_wins', realtime: true, queueType: 'gomoku_win', access: 'anon SELECT/INSERT/UPDATE', note: 'výhry piškvorek / legacy leaderboard' }
   ];
 
-  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (983)';
+  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (985)';
   const SUPABASE_POLICY_AUDIT_SNAPSHOT_AT = '2026-05-24';
   const SUPABASE_POLICY_HARDENING_PHASE = {
     current: 'V856 – release hygiene po kontrole vlastních buildů: changelog opravený, SQL auditní soubory jsou archivované v assets/docs/sql a DB policies se nemění.',
@@ -295,7 +295,7 @@
   ];
 
   const SUPABASE_RPC_HARDENING_STATUS = {
-    version: 'v.1.5 (983)',
+    version: 'v.1.5 (985)',
     phase: '2E-O online invite/session RPC smoke + accept RPC / no policy tightening',
     rpcPreferred: true,
     migrationApplied: true,
@@ -907,7 +907,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v983');
+      const channel = client.channel('rak-public-live-v985');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -1018,7 +1018,7 @@
       ends_at: payload.ends_at,
       marquee: payload.marquee,
       updated_at: nowIso,
-      app_version: String(window.APP_VERSION || 'v.1.5 (983)'),
+      app_version: String(window.APP_VERSION || 'v.1.5 (985)'),
       priority: 0
     });
     return [
@@ -1063,7 +1063,7 @@
           ends_at: fallback.ends_at,
           marquee: fallback.marquee,
           updated_at: new Date().toISOString(),
-          app_version: String(window.APP_VERSION || 'v.1.5 (983)'),
+          app_version: String(window.APP_VERSION || 'v.1.5 (985)'),
           priority: 0
         });
   }
@@ -1078,7 +1078,7 @@
         p_ends_at: safe.ends_at,
         p_marquee: safe.marquee,
         p_updated_by: 'rak-admin-ui',
-        p_app_version: String(window.APP_VERSION || 'v.1.5 (983)'),
+        p_app_version: String(window.APP_VERSION || 'v.1.5 (985)'),
         p_priority: 0
       }), { mode: 'write', timeoutMs: 8000, attempts: 1 });
       if (res && res.error) return { ok: false, error: res.error, shape: 'rpc-save' };
@@ -1092,7 +1092,7 @@
     try {
       const res = await runSupabaseOperation('announcements.rpc-clear', () => client.rpc('rak_clear_dashboard_announcement', {
         p_updated_by: 'rak-admin-ui',
-        p_app_version: String(window.APP_VERSION || 'v.1.5 (983)')
+        p_app_version: String(window.APP_VERSION || 'v.1.5 (985)')
       }), { mode: 'write', timeoutMs: 8000, attempts: 1 });
       if (res && res.error) return { ok: false, error: res.error, shape: 'rpc-clear' };
       return { ok: true, cleared: true, count: Number(res && res.data || 0), shape: 'rpc-clear' };
@@ -1214,7 +1214,7 @@
       online: typeof navigator === 'undefined' ? false : !!navigator.onLine,
       cachedAnnouncementCount: Array.isArray(state.announcements) ? state.announcements.length : 0,
       table: 'announcements',
-      realtimeChannel: 'rak-public-live-v983',
+      realtimeChannel: 'rak-public-live-v985',
       readMode: 'public SELECT + realtime refresh + local cache fallback',
       writeMode: 'RPC security definer save/clear; direct table fallback only if RPC unavailable'
     });
@@ -2201,7 +2201,7 @@
         downlink: Number(connection.downlink || 0) || 0,
         saveData: !!connection.saveData
       } : null,
-      source: 'rak-v983-client'
+      source: 'rak-v985-client'
     }, ex.deviceInfo && typeof ex.deviceInfo === 'object' ? ex.deviceInfo : {});
   }
 
@@ -2443,13 +2443,21 @@
   }
 
 
+  const BUG_REPORT_DELETED_NOTE = '__rak_deleted__';
+
   async function deleteBugReportDirect(client, id) {
     const reportId = String(id || '').trim();
     if (!reportId) throw new Error('Chybí ID reportu.');
     if (!isBugReportUuid(reportId)) return { ok: false, reason: 'non-uuid-report-id', localOnly: true };
-    const { error } = await runSupabaseOperation('bug_reports.delete', () => client.from('bug_reports').delete().eq('id', reportId), { mode: 'write', attempts: 1 });
+    // DB nemá DELETE policy. Mažeme bezpečně přes existující UPDATE cestu: report schováme jako ignorovaný se speciální poznámkou.
+    const patch = {
+      status: 'ignored',
+      handled_at: new Date().toISOString(),
+      handled_note: BUG_REPORT_DELETED_NOTE
+    };
+    const { data, error } = await runSupabaseOperation('bug_reports.soft_delete', () => client.from('bug_reports').update(patch).eq('id', reportId).select('id, status, handled_at, handled_note').maybeSingle(), { mode: 'write', attempts: 1 });
     if (error) throw error;
-    return { ok: true, id: reportId };
+    return { ok: true, id: reportId, softDeleted: true, row: data || patch };
   }
 
 
@@ -4366,7 +4374,7 @@
     return {
       ok: blockers.length === 0,
       mode: 'supabase-hardening-readiness-audit-only',
-      version: 'v.1.5 (983)',
+      version: 'v.1.5 (985)',
       checkedAt: new Date().toISOString(),
       confirmed,
       readinessPercent,
