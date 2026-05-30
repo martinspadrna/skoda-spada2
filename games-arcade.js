@@ -1848,7 +1848,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   function gamesSanitizeLowBestTime(gameId, ms) {
     const n = Number(ms) || 0;
     if (!Number.isFinite(n) || n <= 0) return 0;
-    // v.1.5 (982): sentinel 86 400 s z vadně dekódovaných low-score bodů není platný rekord.
+    // v.1.5 (983): sentinel 86 400 s z vadně dekódovaných low-score bodů není platný rekord.
     // Chrání to hlavně Pexeso a Reaction Test, aby se v Top score neukazovalo 86400s.
     if (isLowBetter(gameId) && n >= 86400000) return 0;
     if ((key(gameId) === 'reaction' || key(gameId) === 'daily_reaction') && n > 60000) return 0;
@@ -2342,7 +2342,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
       delete window.app.gamesLeaderboardCache.daily;
       delete window.app.gamesLeaderboardCache[dailyStatId];
     }
-    // Daily Challenge ve v982 zůstává oddělený lokálně podle aktuálního dne.
+    // Daily Challenge ve v983 zůstává oddělený lokálně podle aktuálního dne.
     // Bez DB filtru podle dne ho neposíláme do běžného online leaderboardu, aby se nemíchaly staré denní výsledky.
     if (!window.app || !window.app.activeGameShell) scheduleStatsExtended('daily-record-stat');
     return true;
@@ -4172,7 +4172,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     { size: 6, label: '6×6', subtitle: 'klasika' },
     { size: 8, label: '8×8', subtitle: 'mozkovna' }
   ];
-  function memoryState(size) { return { started: false, size: size || 6, deck: [], flipped: [], matched: new Set(), moves: 0, startAt: Date.now(), over: false, lock: false, bestTimeMs: 0 }; }
+  function memoryState(size) { return { started: false, size: size || 6, deck: [], flipped: [], matched: new Set(), moves: 0, startAt: Date.now(), gameStartedAt: 0, over: false, lock: false, bestTimeMs: 0 }; }
   function initMemory(state) {
     const size = Math.max(4, Math.min(8, Number(state.size || 6) || 6));
     const total = size * size;
@@ -4184,6 +4184,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     state.matched = new Set();
     state.moves = 0;
     state.startAt = Date.now();
+    state.gameStartedAt = state.startAt;
     state.over = false;
     state.lock = false;
     state.started = true;
@@ -4224,10 +4225,11 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     const finishIfDone = () => {
       if (state.matched.size >= state.deck.length && !state.over) {
         state.over = true;
-        state.bestTimeMs = Date.now() - state.startAt;
+        const totalTimeMs = Math.max(1, Date.now() - Number(state.gameStartedAt || state.startAt || Date.now()));
+        state.bestTimeMs = totalTimeMs;
         const memoryBoardId = memoryVariantId(size);
-        gamesRecordStat('memory', { completed: true, plays: 1, bestTimeMs: state.bestTimeMs, bestScore: encodePoints('memory', state.bestTimeMs), bestMoves: state.moves, bestSize: size, difficulty: `${size}x${size}`, lastResult: `${size}×${size} · ${fmtTime(state.bestTimeMs)} · ${state.moves} tahů` });
-        gamesRecordStat(memoryBoardId, { completed: true, plays: 1, bestTimeMs: state.bestTimeMs, bestScore: encodePoints(memoryBoardId, state.bestTimeMs), bestMoves: state.moves, bestSize: size, difficulty: `${size}x${size}`, lastResult: `${size}×${size} · ${fmtTime(state.bestTimeMs)} · ${state.moves} tahů` });
+        gamesRecordStat('memory', { completed: true, plays: 1, bestTimeMs: totalTimeMs, timeMs: totalTimeMs, elapsedMs: totalTimeMs, bestScore: encodePoints('memory', totalTimeMs), bestMoves: state.moves, bestSize: size, difficulty: `${size}x${size}`, lastResult: `${size}×${size} · ${fmtTime(totalTimeMs)} · ${state.moves} tahů` });
+        gamesRecordStat(memoryBoardId, { completed: true, plays: 1, bestTimeMs: totalTimeMs, timeMs: totalTimeMs, elapsedMs: totalTimeMs, bestScore: encodePoints(memoryBoardId, totalTimeMs), bestMoves: state.moves, bestSize: size, difficulty: `${size}x${size}`, lastResult: `${size}×${size} · ${fmtTime(totalTimeMs)} · ${state.moves} tahů` });
         const controls = body.querySelector('.arcadeControls');
         if (controls) controls.insertAdjacentHTML('beforebegin', `<div class="arcadeBar arcadePanel uPad10x12"><div class="arcadeStatus"><strong>Vyhráno!</strong> ${fmtTime(state.bestTimeMs)} · ${state.moves} tahů · ${size}×${size}.</div></div>`);
       }
@@ -6053,7 +6055,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   function getRakDailyChallengeScoreBridgeHealth() {
     return {
       ok: typeof gamesRecordDailyChallengeStat === 'function' && typeof gamesGetDailyChallengeSession === 'function',
-      mode: 'daily-challenge-current-day-isolated-v982',
+      mode: 'daily-challenge-current-day-isolated-v983',
       version: String(window.APP_VERSION || 'v.1.5 (920)'),
       sourceModes: DAILY_MODES.slice(),
       targetGame: 'daily',

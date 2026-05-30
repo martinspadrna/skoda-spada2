@@ -235,7 +235,7 @@
     { table: 'gomoku_wins', realtime: true, queueType: 'gomoku_win', access: 'anon SELECT/INSERT/UPDATE', note: 'výhry piškvorek / legacy leaderboard' }
   ];
 
-  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (982)';
+  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (983)';
   const SUPABASE_POLICY_AUDIT_SNAPSHOT_AT = '2026-05-24';
   const SUPABASE_POLICY_HARDENING_PHASE = {
     current: 'V856 – release hygiene po kontrole vlastních buildů: changelog opravený, SQL auditní soubory jsou archivované v assets/docs/sql a DB policies se nemění.',
@@ -295,7 +295,7 @@
   ];
 
   const SUPABASE_RPC_HARDENING_STATUS = {
-    version: 'v.1.5 (982)',
+    version: 'v.1.5 (983)',
     phase: '2E-O online invite/session RPC smoke + accept RPC / no policy tightening',
     rpcPreferred: true,
     migrationApplied: true,
@@ -907,7 +907,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v982');
+      const channel = client.channel('rak-public-live-v983');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -1018,7 +1018,7 @@
       ends_at: payload.ends_at,
       marquee: payload.marquee,
       updated_at: nowIso,
-      app_version: String(window.APP_VERSION || 'v.1.5 (982)'),
+      app_version: String(window.APP_VERSION || 'v.1.5 (983)'),
       priority: 0
     });
     return [
@@ -1063,7 +1063,7 @@
           ends_at: fallback.ends_at,
           marquee: fallback.marquee,
           updated_at: new Date().toISOString(),
-          app_version: String(window.APP_VERSION || 'v.1.5 (982)'),
+          app_version: String(window.APP_VERSION || 'v.1.5 (983)'),
           priority: 0
         });
   }
@@ -1078,7 +1078,7 @@
         p_ends_at: safe.ends_at,
         p_marquee: safe.marquee,
         p_updated_by: 'rak-admin-ui',
-        p_app_version: String(window.APP_VERSION || 'v.1.5 (982)'),
+        p_app_version: String(window.APP_VERSION || 'v.1.5 (983)'),
         p_priority: 0
       }), { mode: 'write', timeoutMs: 8000, attempts: 1 });
       if (res && res.error) return { ok: false, error: res.error, shape: 'rpc-save' };
@@ -1092,7 +1092,7 @@
     try {
       const res = await runSupabaseOperation('announcements.rpc-clear', () => client.rpc('rak_clear_dashboard_announcement', {
         p_updated_by: 'rak-admin-ui',
-        p_app_version: String(window.APP_VERSION || 'v.1.5 (982)')
+        p_app_version: String(window.APP_VERSION || 'v.1.5 (983)')
       }), { mode: 'write', timeoutMs: 8000, attempts: 1 });
       if (res && res.error) return { ok: false, error: res.error, shape: 'rpc-clear' };
       return { ok: true, cleared: true, count: Number(res && res.data || 0), shape: 'rpc-clear' };
@@ -1214,7 +1214,7 @@
       online: typeof navigator === 'undefined' ? false : !!navigator.onLine,
       cachedAnnouncementCount: Array.isArray(state.announcements) ? state.announcements.length : 0,
       table: 'announcements',
-      realtimeChannel: 'rak-public-live-v982',
+      realtimeChannel: 'rak-public-live-v983',
       readMode: 'public SELECT + realtime refresh + local cache fallback',
       writeMode: 'RPC security definer save/clear; direct table fallback only if RPC unavailable'
     });
@@ -2201,7 +2201,7 @@
         downlink: Number(connection.downlink || 0) || 0,
         saveData: !!connection.saveData
       } : null,
-      source: 'rak-v982-client'
+      source: 'rak-v983-client'
     }, ex.deviceInfo && typeof ex.deviceInfo === 'object' ? ex.deviceInfo : {});
   }
 
@@ -2402,6 +2402,10 @@
     return { ok: true, row };
   }
 
+  function isBugReportUuid(value) {
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value || '').trim());
+  }
+
   function normalizeBugReportStatus(status) {
     const raw = String(status || '').trim().toLowerCase();
     if (raw === 'seen' || raw.includes('vid')) return 'seen';
@@ -2426,6 +2430,7 @@
   async function updateBugReportStatusDirect(client, id, status, note = '') {
     const reportId = String(id || '').trim();
     if (!reportId) throw new Error('Chybí ID reportu.');
+    if (!isBugReportUuid(reportId)) return { ok: false, reason: 'non-uuid-report-id', localOnly: true };
     const nextStatus = normalizeBugReportStatus(status);
     const patch = {
       status: nextStatus,
@@ -2435,6 +2440,16 @@
     const { data, error } = await runSupabaseOperation('bug_reports.update', () => client.from('bug_reports').update(patch).eq('id', reportId).select('id, status, handled_at, handled_note').maybeSingle(), { mode: 'write', attempts: 1 });
     if (error) throw error;
     return { ok: true, row: data || patch };
+  }
+
+
+  async function deleteBugReportDirect(client, id) {
+    const reportId = String(id || '').trim();
+    if (!reportId) throw new Error('Chybí ID reportu.');
+    if (!isBugReportUuid(reportId)) return { ok: false, reason: 'non-uuid-report-id', localOnly: true };
+    const { error } = await runSupabaseOperation('bug_reports.delete', () => client.from('bug_reports').delete().eq('id', reportId), { mode: 'write', attempts: 1 });
+    if (error) throw error;
+    return { ok: true, id: reportId };
   }
 
 
@@ -4351,7 +4366,7 @@
     return {
       ok: blockers.length === 0,
       mode: 'supabase-hardening-readiness-audit-only',
-      version: 'v.1.5 (982)',
+      version: 'v.1.5 (983)',
       checkedAt: new Date().toISOString(),
       confirmed,
       readinessPercent,
@@ -4829,6 +4844,19 @@
         return { ok: false, error: err };
       }
     },
+    deleteBugReport: async (id) => {
+      const client = getClient();
+      if (!client || !navigator.onLine) return { ok: false, reason: 'offline-or-missing-client' };
+      try {
+        const result = await deleteBugReportDirect(client, id);
+        state.lastError = null;
+        return result;
+      } catch (err) {
+        state.lastError = err;
+        console.error('Bug report delete failed', err);
+        return { ok: false, error: err };
+      }
+    },
     recordAppUsage: async (options = {}) => {
       const client = getClient();
       if (!client || !navigator.onLine) {
@@ -5007,6 +5035,7 @@
   window.loadGameHeadToHeadList = async (gameType, options) => window.RotationSupabaseBridge.loadGameHeadToHeadList(gameType, options || {});
   window.loadBugReports = async (options) => window.RotationSupabaseBridge.loadBugReports(options || {});
   window.updateBugReportStatus = async (id, status, note) => window.RotationSupabaseBridge.updateBugReportStatus(id, status, note || '');
+  window.deleteBugReport = async (id) => window.RotationSupabaseBridge.deleteBugReport(id);
   window.recordRakAppUsage = async (options) => window.RotationSupabaseBridge.recordAppUsage(options || {});
   window.loadRakAppUsage = async (options) => window.RotationSupabaseBridge.loadAppUsage(options || {});
   window.getRakAppUsageStatus = () => window.RotationSupabaseBridge.getAppUsageStatus();

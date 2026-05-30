@@ -1,11 +1,12 @@
-## v.1.5 (982)
-- Dashboard: doplněný spodní bezpečný odstup pro dlaždice Jídelní lístek a Eportal, bez návratu horních umělých linek.
-- Hry: Had zpomalen, Reaction Test ukládá do Top score průměrnou reakci, low-score fallback 86400s se zahazuje, Pexeso už nepřebírá sentinel 86400s, Brick Breaker má 5 postupně těžších levelů, Doodle Jump generuje dosažitelné plošiny, Sudoku má opticky oddělené 3×3 bloky.
-- Daily Challenge: denní score je oddělené od běžného score hry a lokální leaderboard se počítá jen pro aktuální den.
-- Nastavení: Ládův / lightweight režim má spodní lištu drženou kompaktně bez zásahu do pořadí ikon a bez aktivního pozadí.
-- Administrace: kompaktnější Rozpisy, popis ukládání pod tlačítkem, rychlé odebrání obsazeného jména, dostupná jména v prázdných polích, Přehled připojení se rozbaluje do normální délky stránky a Reporty chyb umí načíst lokální zálohy i stáhnout export bez vyvolání globální sync chyby.
-- Supabase DB ani policies se neměnily; změna je jen v klientském načítání reportů bez závislosti na sloupci priority.
-- Verze sjednocena na v.1.5 (982), cache na `v1.5-982`, realtime kanál na `rak-public-live-v982`, package na `1.5.982`.
+## v.1.5 (983)
+- Dashboard: vrácený menší spodní odstup po mobilním testu na iPhone 13 Pro Max; zůstává jen drobná rezerva, aby spodní část dlaždic neležela za spodním panelem.
+- Piškvorky: offline AI má nový ruleset `gomoku-10col-19row-ai-rules-v15` a lehkou tvrdší obrannou vrstvu proti rychlým gain/fork tlakům; online PvP zůstává beze změny.
+- Sudoku: 3×3 bloky jsou výrazněji oddělené linkou po obvodu bloků.
+- Pexeso: výsledek se počítá podle celkového času celé hry od startu do dokončení.
+- Administrace / Rozpisy: jmenná pole v nastavení rozpisu jsou širší, mezery mezi poli výrazně menší a Absence má kompaktnější mezery i menší pole kódu absence.
+- Administrace / Reporty chyb: lokální záložní reporty už nejdou omylem posílat do Supabase jako UUID, takže tlačítko Hotovo nespadne na `invalid input syntax for uuid`; přidáno tlačítko Smazat.
+- Supabase DB ani policies se neměnily; změna je jen v klientské obsluze existujících reportů.
+- Verze sjednocena na v.1.5 (983), cache na `v1.5-983`, realtime kanál na `rak-public-live-v983`, package na `1.5.983`.
 
 ## v.1.5 (981)
 - Spodní lišta: aktivní stav už nemá žádné šedé ani mléčné pozadí; zůstává jen průhledné glass ohraničení s plynulým přesunem.

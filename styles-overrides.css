@@ -19129,7 +19129,7 @@ html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMen
 }
 
 
-/* v.1.5 (982) – spodní navigace: žádné aktivní pozadí, jen pohyblivý průhledný glass obrys. */
+/* v.1.5 (983) – spodní navigace: žádné aktivní pozadí, jen pohyblivý průhledný glass obrys. */
 html body nav.bottomNav,
 html body nav.bottomNav *,
 html body nav.bottomNav *::before,
@@ -19258,7 +19258,7 @@ html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn
 }
 
 
-/* v.1.5 (982) – opravný balík: dashboard safe-space, Ládův režim, admin rozpisy/reporty/připojení. */
+/* v.1.5 (983) – opravný balík: dashboard safe-space, Ládův režim, admin rozpisy/reporty/připojení. */
 #home.page.active{
   padding-bottom:calc(96px + env(safe-area-inset-bottom)) !important;
 }
@@ -19358,4 +19358,87 @@ body.lowEndDevice nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bott
 #menu .adminReportDevice{
   max-height:none !important;
   overflow:visible !important;
+}
+
+
+/* v.1.5 (983) – cílené doladění podle mobilního testu: dashboard, Sudoku, administrace. */
+html body #home.page.active{
+  padding-bottom:calc(10px + env(safe-area-inset-bottom)) !important;
+}
+html body #home.page.active > .dashboardShell{
+  padding-bottom:2px !important;
+}
+html body #dashFoodLink,
+html body #dashEportalLink{
+  margin-bottom:3px !important;
+}
+
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .arcadeSudokuPaper{
+  gap:0 !important;
+  border:2px solid color-mix(in srgb,var(--rakThemeAccent,var(--green2)) 46%,rgba(255,255,255,.32)) !important;
+  overflow:hidden !important;
+}
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .arcadeSudokuCell{
+  border:0 !important;
+  border-right:1px solid color-mix(in srgb,var(--rakThemeAccent,var(--green2)) 22%,rgba(255,255,255,.18)) !important;
+  border-bottom:1px solid color-mix(in srgb,var(--rakThemeAccent,var(--green2)) 22%,rgba(255,255,255,.18)) !important;
+  border-radius:0 !important;
+}
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .arcadeSudokuCell.sudokuBlockLeft{
+  border-left:2px solid color-mix(in srgb,var(--rakThemeAccent,var(--green2)) 58%,rgba(255,255,255,.42)) !important;
+}
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .arcadeSudokuCell.sudokuBlockTop{
+  border-top:2px solid color-mix(in srgb,var(--rakThemeAccent,var(--green2)) 58%,rgba(255,255,255,.42)) !important;
+}
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .arcadeSudokuCell.sudokuBlockRight{
+  border-right:2px solid color-mix(in srgb,var(--rakThemeAccent,var(--green2)) 58%,rgba(255,255,255,.42)) !important;
+}
+body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade-game="sudoku"] .arcadeSudokuCell.sudokuBlockBottom{
+  border-bottom:2px solid color-mix(in srgb,var(--rakThemeAccent,var(--green2)) 58%,rgba(255,255,255,.42)) !important;
+}
+
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable{
+  border-spacing:0 !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable th,
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable td{
+  padding:1px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor input[data-rot-field^="cell-"]{
+  min-width:62px !important;
+  max-width:64px !important;
+  width:62px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuTableWrap:nth-of-type(1) .appMenuAdminTable,
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuTableWrap:nth-of-type(2) .appMenuAdminTable{
+  min-width:620px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable{
+  border-spacing:0 !important;
+  min-width:330px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable th,
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable td{
+  padding:0 1px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable input[data-note-field="date"]{
+  min-width:68px !important;
+  max-width:72px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable input[data-note-field="person"]{
+  min-width:92px !important;
+  max-width:116px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable input[data-note-field="code"]{
+  min-width:28px !important;
+  max-width:32px !important;
+  width:30px !important;
+  text-align:center !important;
+  padding-left:1px !important;
+  padding-right:1px !important;
+}
+#menu .adminReportDeleteBtn{
+  border-color:rgba(255,110,130,.42) !important;
+  color:#fff !important;
+  background:linear-gradient(135deg,rgba(255,75,105,.84),rgba(255,128,80,.62)) !important;
 }

@@ -1306,7 +1306,7 @@ const TTT_HARD_WIN_EMAIL = 'martinspadrna@gmail.com';
 const TTT_HARD_WIN_KEY = 'tttHardWins';
 // Samostatná verze pravidel/obtížnosti Piškvorek. Není to verze celé aplikace.
 // Zvyšovat jen při změně AI obtížnosti nebo pravidel, ne při vzhledových úpravách.
-const GOMOKU_RULESET_VERSION = 'gomoku-10col-19row-ai-rules-v14';
+const GOMOKU_RULESET_VERSION = 'gomoku-10col-19row-ai-rules-v15';
 if (typeof window !== 'undefined') window.GOMOKU_RULESET_VERSION = GOMOKU_RULESET_VERSION;
 
 function tttEnsureAiWinsResetV667() {
@@ -8383,6 +8383,179 @@ function tttBestMove(board, difficulty) {
   return tttNearestCenterFallbackMove(board);
 }
 
+// v.1.5 (983) – Piškvorky AI: tvrdší offline vrstva proti rychlým výhrám 17–27 tahů.
+// Online PvP zůstává člověk proti člověku; tahle vrstva se používá jen v lokální AI cestě tttBestMove().
+const TTT_V983_SOFT_DEADLINE_MS = 2450;
+const TTT_V983_HARD_DEADLINE_MS = 4700;
+
+function tttV983Budget(difficulty) {
+  const prev = typeof tttV966Budget === 'function' ? tttV966Budget(difficulty || 'ai') : { soft: TTT_V966_SOFT_DEADLINE_MS, hard: TTT_V966_HARD_DEADLINE_MS };
+  const lowEnd = !!(typeof document !== 'undefined' && document.body && document.body.classList && (document.body.classList.contains('ladaMode') || document.body.classList.contains('lowEndDevice') || document.body.classList.contains('lightweightMode')));
+  if (difficulty !== 'ai') return { soft: Math.max(520, Number(prev.soft || 0) || 0), hard: Math.max(900, Number(prev.hard || 0) || 0) };
+  return lowEnd ? { soft: 1650, hard: 3100 } : { soft: TTT_V983_SOFT_DEADLINE_MS, hard: TTT_V983_HARD_DEADLINE_MS };
+}
+
+function tttV983UniqueMoves(list) {
+  const out = [];
+  const seen = new Set();
+  (list || []).forEach((item) => {
+    const idx = Number(item && typeof item === 'object' ? item.idx : item);
+    if (!Number.isFinite(idx) || seen.has(idx)) return;
+    seen.add(idx);
+    out.push(item && typeof item === 'object' ? item : { idx });
+  });
+  return out;
+}
+
+function tttV983UrgentDefenseMove(board, deadline) {
+  const entries = [];
+  const push = (item, source) => {
+    const idx = Number(item && typeof item === 'object' ? item.idx : item);
+    if (!tttV962Legal(board, idx)) return;
+    entries.push(Object.assign({ source }, item && typeof item === 'object' ? item : { idx }));
+  };
+  try { tttV960WinningMoves(board, 'X').forEach(idx => push({ idx, level: 999, immediateWins: 1 }, 'x-win')); } catch (_) {}
+  try { tttV961ThreatEntries(board, 'X').slice(0, 18).forEach(e => push(e, 'x-threat')); } catch (_) {}
+  if (!entries.some(e => Number(e.level || 0) >= 136 || Number(e.immediateWins || 0) > 0)) {
+    try {
+      const gainDeadline = Math.min(Number(deadline || 0) || (tttV962Now() + 260), tttV962Now() + 260);
+      tttV961GainEntries(board, 'X', gainDeadline).slice(0, 8).forEach(e => push(e, 'x-gain'));
+    } catch (_) {}
+  }
+  const urgent = tttV983UniqueMoves(entries)
+    .filter(e => tttV962Legal(board, e.idx))
+    .map((e) => {
+      const idx = Number(e.idx);
+      board[idx] = 'X';
+      const xWinsAfter = tttV960WinningMoves(board, 'X').length;
+      const xThreatsAfter = tttV961ThreatEntries(board, 'X');
+      const xForcedAfter = typeof tttV966CountLevel === 'function' ? tttV966CountLevel(xThreatsAfter, 110) : 0;
+      const xSevereAfter = typeof tttV966CountLevel === 'function' ? tttV966CountLevel(xThreatsAfter, 84) : 0;
+      const xRun = typeof tttV962LineRunAfterMove === 'function' ? tttV962LineRunAfterMove(board, idx, 'X') : 0;
+      board[idx] = '';
+      board[idx] = 'O';
+      const oWinsAfterBlock = tttV960WinningMoves(board, 'O').length;
+      const xImmediateAfterBlock = tttV960WinningMoves(board, 'X').length;
+      board[idx] = '';
+      const baseLevel = Number(e.level || 0) || 0;
+      const score = xWinsAfter * 1e18
+        + xForcedAfter * 9e15
+        + xSevereAfter * 4e14
+        + Math.max(0, baseLevel - 70) * 2e12
+        + xRun * 7e12
+        + (e.exact ? 5e12 : 0)
+        + (e.gap ? 3e12 : 0)
+        + (e.diagonal ? 2e12 : 0)
+        + tttCheapMovePotential(board, idx, 'X') * 9e9
+        + tttCheapMovePotential(board, idx, 'O') * 3e9
+        + tttV962CenterScore(idx) * 12000
+        + oWinsAfterBlock * 8e13
+        - xImmediateAfterBlock * 4e17;
+      return Object.assign({}, e, { idx, score, xWinsAfter, xForcedAfter, xSevereAfter, xRun, oWinsAfterBlock, xImmediateAfterBlock });
+    })
+    .filter(e => e.xWinsAfter > 0 || e.xForcedAfter >= 1 || e.xSevereAfter >= 2 || Number(e.level || 0) >= 128)
+    .sort((a, b) => b.score - a.score);
+  const best = urgent[0];
+  return best && tttV962Legal(board, best.idx) ? Number(best.idx) : -1;
+}
+
+function tttV983ValidatedCandidate(board, candidate, deadline) {
+  const idx = Number(candidate);
+  if (!tttV962Legal(board, idx)) return -1;
+  const safetyDeadline = Math.min(Number(deadline || 0) || (tttV962Now() + 650), tttV962Now() + 650);
+  const safety = typeof tttV962SafetyReport === 'function' ? tttV962SafetyReport(board, idx, safetyDeadline) : { immediateLosses: 0, killerCount: 0, killerLevel: 0 };
+  if (Number(safety.immediateLosses || 0) > 0) return -1;
+  if (Number(safety.killerCount || 0) > 1 && Number(safety.killerLevel || 0) >= 206) return -1;
+  return idx;
+}
+
+function tttV983BestMove(board, difficulty) {
+  const free = [];
+  for (let i = 0; i < board.length; i += 1) if (!board[i]) free.push(i);
+  if (!free.length) return -1;
+  if (tttWinner(board).winner) return tttNearestCenterFallbackMove(board);
+  const budget = tttV983Budget(difficulty || 'ai');
+  const hardDeadline = tttV962Now() + Math.max(1000, Number(budget.hard || TTT_V983_HARD_DEADLINE_MS) - 560);
+
+  const ownWins = tttV960WinningMoves(board, 'O');
+  if (ownWins.length) return ownWins[0];
+  const xWins = tttV960WinningMoves(board, 'X');
+  if (xWins.length) return xWins[0];
+
+  const occupied = board.length - free.length;
+  if (occupied <= 1) {
+    const opening = tttPromptEngineOpeningMove(board);
+    if (tttV962Legal(board, opening)) return opening;
+  }
+
+  // Nejdřív zkus vlastní silný forcing, ale jen když nezpůsobí okamžitou ztrátu.
+  try {
+    const ownForce = tttV966DirectForcingEntries(board, 'O', hardDeadline)
+      .filter(e => Number(e.level || 0) >= 232 || Number(e.immediateWins || 0) >= 1);
+    const attack = tttV966PickDirectForcing(board, ownForce, hardDeadline);
+    const attackInfo = ownForce.find(e => Number(e && e.idx) === Number(attack)) || null;
+    if (tttV962Legal(board, attack) && attackInfo && (Number(attackInfo.immediateWins || 0) >= 2 || Number(attackInfo.level || 0) >= 286)) return attack;
+    const safeAttack = tttV983ValidatedCandidate(board, attack, hardDeadline);
+    if (tttV962Legal(board, safeAttack)) return safeAttack;
+  } catch (_) {}
+
+  const urgentDefense = tttV983UrgentDefenseMove(board, hardDeadline);
+  if (tttV962Legal(board, urgentDefense)) return urgentDefense;
+
+  const v966 = typeof tttV966BestMove === 'function' ? tttV966BestMove(board, difficulty || 'ai') : -1;
+  const safeV966 = tttV983ValidatedCandidate(board, v966, hardDeadline);
+  if (tttV962Legal(board, safeV966)) return safeV966;
+
+  const fallbackDefense = tttV983UrgentDefenseMove(board, hardDeadline);
+  if (tttV962Legal(board, fallbackDefense)) return fallbackDefense;
+
+  if (tttV962Legal(board, v966)) return v966;
+  const v965 = typeof tttV965BestMove === 'function' ? tttV965BestMove(board, difficulty || 'ai') : -1;
+  if (tttV962Legal(board, v965)) return v965;
+  return tttNearestCenterFallbackMove(board);
+}
+
+function getRakGomokuAiV983Health() {
+  const budget = tttV983Budget('ai');
+  return {
+    ok: true,
+    boardRows: TTT_ROWS,
+    boardCols: TTT_COLS,
+    board: { rows: TTT_ROWS, cols: TTT_COLS, total: TTT_TOTAL_CELLS },
+    rulesetVersion: GOMOKU_RULESET_VERSION,
+    offlineAiOnly: true,
+    onlinePvpUntouched: true,
+    urgentDefenseLayer: true,
+    validatedForcingAttack: true,
+    fastWinDefenseTarget: 'výhry 17–27 tahů',
+    softDeadlineMs: Number(budget.soft || TTT_V983_SOFT_DEADLINE_MS),
+    hardDeadlineMs: Number(budget.hard || TTT_V983_HARD_DEADLINE_MS),
+    fallbackLegalMove: true,
+    testedLocallyByScript: 'gomoku-ai-smoke-v966.js',
+    note: 'v983 přidává tvrdší obrannou vrstvu proti gain/fork/forcing tahům člověka před původní v966 vrstvu. Online PvP zůstává beze změny.'
+  };
+}
+if (typeof window !== 'undefined') {
+  window.getRakGomokuAiV983Health = getRakGomokuAiV983Health;
+  window.getRakGomokuAiV966Health = getRakGomokuAiV983Health;
+  window.getRakGomokuAiV965Health = getRakGomokuAiV983Health;
+  window.getRakGomokuAiV962Health = getRakGomokuAiV983Health;
+  window.getRakGomokuAiV961Health = getRakGomokuAiV983Health;
+  window.getRakGomokuAiV960Health = getRakGomokuAiV983Health;
+}
+
+function tttBestMove(board, difficulty) {
+  const next = typeof tttV983BestMove === 'function' ? tttV983BestMove(board, difficulty || 'ai') : -1;
+  if (tttV962Legal(board, next)) return next;
+  const win = tttV960WinningMoves(board, 'O')[0];
+  if (tttV962Legal(board, win)) return win;
+  const block = tttV960WinningMoves(board, 'X')[0];
+  if (tttV962Legal(board, block)) return block;
+  const prev = typeof tttV966BestMove === 'function' ? tttV966BestMove(board, difficulty || 'ai') : -1;
+  if (tttV962Legal(board, prev)) return prev;
+  return tttNearestCenterFallbackMove(board);
+}
+
 function tttHardWinLog() {
   return [];
 }
@@ -10874,6 +11047,10 @@ function getAdminReportsCache() {
   return Array.isArray(app.adminBugReports) ? app.adminBugReports : [];
 }
 
+function isAdminReportUuid(value) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value || '').trim());
+}
+
 function buildAdminReportsHtml() {
   const rows = getAdminReportsCache();
   const list = rows.length ? rows.map((row) => {
@@ -10900,6 +11077,7 @@ function buildAdminReportsHtml() {
       '      <button type="button" class="appMenuAction" data-admin-action="report-seen" data-report-id="' + id + '">Viděno</button>',
       '      <button type="button" class="appMenuAction isActive" data-admin-action="report-done" data-report-id="' + id + '">Hotovo</button>',
       '      <button type="button" class="appMenuAction" data-admin-action="report-ignore" data-report-id="' + id + '">Ignorovat</button>',
+      '      <button type="button" class="appMenuAction adminReportDeleteBtn" data-admin-action="report-delete" data-report-id="' + id + '">Smazat</button>',
       '    </div>',
       '  </div>',
       '</details>'
@@ -10922,7 +11100,7 @@ function normalizeLocalBugReportsForAdmin() {
     const raw = typeof parseLocalStorageJsonCached === 'function'
       ? parseLocalStorageJsonCached(RAK_REPORTS_KEY, [])
       : JSON.parse(localStorage.getItem(RAK_REPORTS_KEY) || '[]');
-    return (Array.isArray(raw) ? raw : []).map((report, idx) => {
+    return (Array.isArray(raw) ? raw : []).filter((report) => !(report && report.adminDeleted)).map((report, idx) => {
       const device = {
         theme: report.theme || '',
         background: report.background || '',
@@ -10941,9 +11119,11 @@ function normalizeLocalBugReportsForAdmin() {
         route: report.page || '',
         user_agent: report.userAgent || '',
         device_info: device,
-        status: 'new',
+        status: report.adminStatus || report.status || 'new',
         created_at: report.createdAt || new Date().toISOString(),
-        local_only: true
+        local_only: true,
+        handled_at: report.handledAt || '',
+        handled_note: report.handledNote || ''
       };
     }).filter((row) => String(row.message || '').trim());
   } catch (err) {
@@ -11013,19 +11193,68 @@ async function loadAdminBugReportsFromSupabase() {
   return { ok: false, rows: localRows, reason: 'missing-bridge' };
 }
 
+function updateLocalBugReportRecord(reportId, patch) {
+  try {
+    const raw = typeof parseLocalStorageJsonCached === 'function'
+      ? parseLocalStorageJsonCached(RAK_REPORTS_KEY, [])
+      : JSON.parse(localStorage.getItem(RAK_REPORTS_KEY) || '[]');
+    const rows = Array.isArray(raw) ? raw : [];
+    let changed = false;
+    rows.forEach((report, idx) => {
+      if (!report || typeof report !== 'object') return;
+      const ids = [report.id, 'local-report-' + idx, report.createdAt, report.created_at].map(v => String(v || '').trim()).filter(Boolean);
+      if (!ids.includes(String(reportId || '').trim())) return;
+      Object.assign(report, patch || {});
+      changed = true;
+    });
+    if (changed) localStorage.setItem(RAK_REPORTS_KEY, JSON.stringify(rows));
+    return changed;
+  } catch (err) {
+    console.warn('updateLocalBugReportRecord failed', err);
+    return false;
+  }
+}
+
 async function updateAdminBugReportStatus(reportId, status) {
   if (!reportId) return { ok: false, reason: 'missing-id' };
+  const rows = getAdminReportsCache();
+  const hit = rows.find(r => String(r.id || '') === String(reportId));
+  const note = 'Změněno z administrace RaK';
+  const handledAt = new Date().toISOString();
+  if (hit && (hit.local_only || !isAdminReportUuid(reportId))) {
+    hit.status = status;
+    hit.handled_at = handledAt;
+    hit.handled_note = note;
+    updateLocalBugReportRecord(reportId, { adminStatus: status, status, handledAt, handledNote: note });
+    return { ok: true, localOnly: true };
+  }
   if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.updateBugReportStatus === 'function') {
-    const result = await window.RotationSupabaseBridge.updateBugReportStatus(reportId, status, 'Změněno z administrace RaK');
+    const result = await window.RotationSupabaseBridge.updateBugReportStatus(reportId, status, note);
     if (result && result.ok) {
-      const rows = getAdminReportsCache();
-      const hit = rows.find(r => String(r.id || '') === String(reportId));
       if (hit) {
         hit.status = status;
-        hit.handled_at = new Date().toISOString();
-        hit.handled_note = 'Změněno z administrace RaK';
+        hit.handled_at = handledAt;
+        hit.handled_note = note;
       }
     }
+    return result;
+  }
+  return { ok: false, reason: 'missing-bridge' };
+}
+
+async function deleteAdminBugReport(reportId) {
+  if (!reportId) return { ok: false, reason: 'missing-id' };
+  const rows = getAdminReportsCache();
+  const index = rows.findIndex(r => String(r.id || '') === String(reportId));
+  const hit = index >= 0 ? rows[index] : null;
+  if (hit && (hit.local_only || !isAdminReportUuid(reportId))) {
+    updateLocalBugReportRecord(reportId, { adminDeleted: true, status: 'deleted', adminStatus: 'deleted' });
+    rows.splice(index, 1);
+    return { ok: true, localOnly: true, deleted: true };
+  }
+  if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.deleteBugReport === 'function') {
+    const result = await window.RotationSupabaseBridge.deleteBugReport(reportId);
+    if (result && result.ok && index >= 0) rows.splice(index, 1);
     return result;
   }
   return { ok: false, reason: 'missing-bridge' };
@@ -12459,6 +12688,13 @@ function bindAppMenuHandlers(body) {
       }
       if (adminAction === 'download-reports') {
         downloadAdminBugReports();
+        return;
+      }
+      if (adminAction === 'report-delete') {
+        const reportId = target.getAttribute('data-report-id') || target.closest('[data-report-id]')?.getAttribute('data-report-id') || '';
+        const result = await deleteAdminBugReport(reportId);
+        if (!result || result.ok === false) throw (result && result.error ? result.error : new Error('Report se nepodařilo smazat.'));
+        renderAdminMenuBody(body, 'reports');
         return;
       }
       if (adminAction === 'report-seen' || adminAction === 'report-done' || adminAction === 'report-ignore') {
