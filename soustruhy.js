@@ -1227,10 +1227,10 @@ if (typeof window !== 'undefined' && !window.__rakLatheAxisCorrectionHelpEscBoun
 }
 
 const FHB_TARGET_PRESET_DEFAULTS = [
-  { key: 'afag-lis', label: 'AF/AG lis', left: 50, right: 70 },
-  { key: 'ah-lis', label: 'AH lis', left: 20, right: 80 },
-  { key: 'afag-volne', label: 'AF/AG volné', left: -5, right: 10 },
-  { key: 'ah-volne', label: 'AH volné', left: 10, right: 25 }
+  { key: 'afag-lis', label: 'AF/AG lis', left: 50, right: 70, toleranceMinus: 10, tolerancePlus: 10 },
+  { key: 'ah-lis', label: 'AH lis', left: 20, right: 80, toleranceMinus: 10, tolerancePlus: 10 },
+  { key: 'afag-volne', label: 'AF/AG volné', left: -5, right: 10, toleranceMinus: 10, tolerancePlus: 10 },
+  { key: 'ah-volne', label: 'AH volné', left: 10, right: 25, toleranceMinus: 10, tolerancePlus: 10 }
 ];
 
 function normalizeFhbTargetKey(key) {
@@ -1254,6 +1254,12 @@ function findFhbTargetSetting(key) {
   }) || null;
 }
 
+function normalizeFhbToleranceValue(value, fallback) {
+  const num = Number(String(value ?? '').replace(',', '.'));
+  if (Number.isFinite(num) && num >= 0) return num;
+  return Number.isFinite(fallback) ? fallback : 10;
+}
+
 function getFhbTargetPreset(key, fallback) {
   const targetKey = normalizeFhbTargetKey(key);
   const defaults = getDefaultFhbTargetPresets();
@@ -1272,11 +1278,21 @@ function getFhbTargetPreset(key, fallback) {
     row && row.target_right,
     base.right
   );
+  const toleranceMinus = normalizeFhbToleranceValue(
+    settings.tolerance_minus ?? settings.toleranceMinus ?? settings.fhb_tolerance_minus ?? settings.toleranceMin ?? settings.tolerance_min ?? (row && row.tolerance_minus),
+    normalizeFhbToleranceValue(base.toleranceMinus ?? base.tolerance_minus, 10)
+  );
+  const tolerancePlus = normalizeFhbToleranceValue(
+    settings.tolerance_plus ?? settings.tolerancePlus ?? settings.fhb_tolerance_plus ?? settings.toleranceMax ?? settings.tolerance_max ?? (row && row.tolerance_plus),
+    normalizeFhbToleranceValue(base.tolerancePlus ?? base.tolerance_plus, 10)
+  );
   return {
     key: targetKey || base.key,
     label: String(settings.label || (row && row.label) || base.label || key || '').trim(),
     left,
-    right
+    right,
+    toleranceMinus,
+    tolerancePlus
   };
 }
 
@@ -1423,6 +1439,8 @@ function calcFrezkyFhbCorrection() {
   const targetLeft = readCalcDecimal('fhb_target_left');
   const targetRight = readCalcDecimal('fhb_target_right');
   const targetLabel = getFhbTargetLabel();
+  const targetKey = String(document.getElementById('fhb_target_key')?.value || '').trim();
+  const targetPreset = targetKey ? getFhbTargetPreset(targetKey, null) : null;
   const c1Left = readCalcDecimal('fhb_c1_left');
   const c1Right = readCalcDecimal('fhb_c1_right');
   const c2Left = readCalcDecimal('fhb_c2_left');
@@ -1437,7 +1455,8 @@ function calcFrezkyFhbCorrection() {
     return;
   }
 
-  const tolerance = 10;
+  const toleranceMinus = normalizeFhbToleranceValue(targetPreset && targetPreset.toleranceMinus, 10);
+  const tolerancePlus = normalizeFhbToleranceValue(targetPreset && targetPreset.tolerancePlus, 10);
   const targetCenter = (targetLeft + targetRight) / 2;
   const targetSpread = targetRight - targetLeft;
   const pairs = [
@@ -1448,6 +1467,22 @@ function calcFrezkyFhbCorrection() {
   if (!pairs.length) {
     setCalcOutputHtml(out, "<div class='smallText'>Doplň aspoň jedno celé kolo: levá i pravá strana u C1 nebo C2.</div>", 'fhbMissingMeasuredPair');
     return;
+  }
+
+  function isFhbErrorInTolerance(error) {
+    if (!Number.isFinite(error)) return false;
+    return error >= -toleranceMinus && error <= tolerancePlus;
+  }
+
+  function getFhbToleranceOverflow(error) {
+    if (!Number.isFinite(error)) return 0;
+    if (error < -toleranceMinus) return Math.abs(error + toleranceMinus);
+    if (error > tolerancePlus) return Math.abs(error - tolerancePlus);
+    return 0;
+  }
+
+  function formatFhbToleranceRange() {
+    return '-' + formatCalcDecimalWhole(toleranceMinus) + ' / +' + formatCalcDecimalWhole(tolerancePlus);
   }
 
   const checkedPairs = pairs.map((pair) => {
@@ -1465,8 +1500,8 @@ function calcFrezkyFhbCorrection() {
       measuredSpread,
       centerError,
       spreadError,
-      leftOk: Math.abs(leftDiff) <= tolerance,
-      rightOk: Math.abs(rightDiff) <= tolerance,
+      leftOk: isFhbErrorInTolerance(leftDiff),
+      rightOk: isFhbErrorInTolerance(rightDiff),
       severity: Math.max(Math.abs(centerError), Math.abs(spreadError))
     };
   });
@@ -1492,8 +1527,8 @@ function calcFrezkyFhbCorrection() {
         rightError,
         centerError,
         spreadError,
-        leftOk: Math.abs(leftError) <= tolerance,
-        rightOk: Math.abs(rightError) <= tolerance
+        leftOk: isFhbErrorInTolerance(leftError),
+        rightOk: isFhbErrorInTolerance(rightError)
       };
     });
   }
@@ -1509,12 +1544,16 @@ function calcFrezkyFhbCorrection() {
       const absRight = Math.abs(item.rightError);
       maxAbs = Math.max(maxAbs, absLeft, absRight);
       sumAbs += absLeft + absRight;
-      if (absLeft > tolerance) outCount += 1;
-      if (absRight > tolerance) outCount += 1;
+      if (!isFhbErrorInTolerance(item.leftError)) outCount += 1;
+      if (!isFhbErrorInTolerance(item.rightError)) outCount += 1;
       maxCenter = Math.max(maxCenter, Math.abs(item.centerError));
       maxSpread = Math.max(maxSpread, Math.abs(item.spreadError));
     });
     const avgAbs = sumAbs / Math.max(1, expected.length * 2);
+    let maxOverflow = 0;
+    expected.forEach((item) => {
+      maxOverflow = Math.max(maxOverflow, getFhbToleranceOverflow(item.leftError), getFhbToleranceOverflow(item.rightError));
+    });
     return {
       maxAbs,
       sumAbs,
@@ -1522,8 +1561,9 @@ function calcFrezkyFhbCorrection() {
       outCount,
       maxCenter,
       maxSpread,
-      ok: maxAbs <= tolerance,
-      score: (maxAbs * 3) + (avgAbs * 0.8) + (outCount * 25) + (maxCenter * 0.25) + (maxSpread * 0.25)
+      maxOverflow,
+      ok: outCount === 0,
+      score: (maxAbs * 3) + (avgAbs * 0.8) + (outCount * 25) + (maxOverflow * 12) + (maxCenter * 0.25) + (maxSpread * 0.25)
     };
   }
 
@@ -1664,14 +1704,14 @@ function calcFrezkyFhbCorrection() {
     html += "<div class='calcResultLine'>Hodnoty jsou nejblíž středu bez další korekce.</div>";
   }
   if (selected.metrics.ok) {
-    html += "<div class='calcResultLine ok'>Výsledek je v toleranci ±" + formatCalcDecimalWhole(tolerance) + ". Největší odchylka vychází " + formatCalcDecimalWhole(selected.metrics.maxAbs) + ".</div>";
+    html += "<div class='calcResultLine ok'>Výsledek je v toleranci " + formatFhbToleranceRange() + ". Největší odchylka od středu vychází " + formatCalcDecimalWhole(selected.metrics.maxAbs) + ".</div>";
   } else {
-    html += "<div class='calcResultLine warn'>Nejlepší možný výsledek pořád nebude OK. Největší odchylka vychází " + formatCalcDecimalWhole(selected.metrics.maxAbs) + " a je mimo toleranci ±" + formatCalcDecimalWhole(tolerance) + ".</div>";
+    html += "<div class='calcResultLine warn'>Nejlepší možný výsledek pořád nebude OK. Největší odchylka od středu vychází " + formatCalcDecimalWhole(selected.metrics.maxAbs) + " a mimo nastavený rozsah " + formatFhbToleranceRange() + " je nejhůř o " + formatCalcDecimalWhole(selected.metrics.maxOverflow) + ".</div>";
   }
   html += "<div class='calcResultTitle calcResultTitle--small'>Očekávané hodnoty</div>" + expectedHtml;
   html += "<div class='calcResultTitle calcResultTitle--small'>Naměřeno</div>" + measuredLine;
 
-  setCalcOutputHtml(out, html, 'fhbBestCenterResult:' + selected.type + ':' + [targetLeft, targetRight, currentTaperCorr, currentShiftCorr, selected.taperDelta, selected.shiftDelta, selected.metrics.maxAbs, selected.metrics.avgAbs, selected.metrics.score].join('|'));
+  setCalcOutputHtml(out, html, 'fhbBestCenterResult:' + selected.type + ':' + [targetLeft, targetRight, currentTaperCorr, currentShiftCorr, selected.taperDelta, selected.shiftDelta, toleranceMinus, tolerancePlus, selected.metrics.maxAbs, selected.metrics.avgAbs, selected.metrics.maxOverflow, selected.metrics.score].join('|'));
 }
 
 

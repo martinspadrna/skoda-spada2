@@ -1,8 +1,21 @@
-## v.1.5 (985)
+## v.1.5 (988)
+- Administrace / Nastavení strojů: ke středům fhβ přidané samostatné tolerance `Tol. −` a `Tol. +` pro každý index.
+- Korekce frézky fhβ: výpočet už nepoužívá pevné `±10`, ale bere asymetrickou toleranci z nastavení zvoleného indexu.
+- Výsledek korekcí zobrazuje nastavený rozsah tolerance ve tvaru `-X / +Y` a při nevyhovujícím výsledku ukazuje, o kolik je nejlepší varianta mimo rozsah.
+- Verze sjednocena na v.1.5 (988), cache na `v1.5-988`, realtime kanál na `rak-public-live-v988`, package na `1.5.988`.
+
+## v.1.5 (986)
+
+- Reporty chyb: opravené vracení smazaných reportů z lokální cache / zálohy po dalším načtení.
+- Přidaný trvalý lokální tombstone seznam smazaných reportů, takže se report schovaný online přes `__rak_deleted__` už znovu nezobrazí ani z cache.
+- Lokální update reportů nově invaliduje optimalizační localStorage cache přes `setLocalStorageIfChanged`.
+- Supabase DB ani policies beze změny; smazání dál používá bezpečný soft-delete přes existující UPDATE cestu.
+
+## v.1.5 (986)
 - Korekce frézky: výpočet nově vybírá nejlepší možný návrh podle nejbližšího výsledku k nastavenému středu a toleranci ±10.
 - Korekce frézky: porovnává varianty bez zásahu, jen `modifikace- konicita`, jen `korekce úhlu-fhb` i kombinaci obou korekcí a vybere nejlepší očekávaný výsledek.
 - Korekce frézky: pokud ani nejlepší kombinace nedostane hodnoty do ±10, výsledek to jasně napíše a ukáže nejlepší dosažitelný očekávaný stav.
-- Verze sjednocena na v.1.5 (985), cache na `v1.5-985`, realtime kanál na `rak-public-live-v985`, package na `1.5.985`.
+- Verze sjednocena na v.1.5 (986), cache na `v1.5-986`, realtime kanál na `rak-public-live-v986`, package na `1.5.986`.
 
 ## v.1.5 (984)
 - Reporty chyb: deduplikace lokální zálohy a Supabase záznamu podle `device_info.sourceId`, takže se po smazání / načtení nevrací stejný report z lokální kopie.

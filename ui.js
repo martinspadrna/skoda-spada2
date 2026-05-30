@@ -8383,7 +8383,7 @@ function tttBestMove(board, difficulty) {
   return tttNearestCenterFallbackMove(board);
 }
 
-// v.1.5 (985) – Piškvorky AI: tvrdší offline vrstva proti rychlým výhrám 17–27 tahů.
+// v.1.5 (988) – Piškvorky AI: tvrdší offline vrstva proti rychlým výhrám 17–27 tahů.
 // Online PvP zůstává člověk proti člověku; tahle vrstva se používá jen v lokální AI cestě tttBestMove().
 const TTT_V983_SOFT_DEADLINE_MS = 2450;
 const TTT_V983_HARD_DEADLINE_MS = 4700;
@@ -10583,9 +10583,9 @@ function buildAdminRotationColgroupHtml(columnCount, firstWidthPx, otherWidthPx)
 
 function buildAdminAbsenceColgroupHtml() {
   return '<colgroup>' +
-    '<col class="colW42">' +
-    '<col class="colW86">' +
-    '<col class="colW42">' +
+    '<col style="width:50px;">' +
+    '<col style="width:118px;">' +
+    '<col style="width:34px;">' +
     '</colgroup>';
 }
 
@@ -10640,10 +10640,10 @@ function getAdminFhbTargetRows() {
     return getAllFhbTargetPresets();
   }
   return [
-    { key: 'afag-lis', label: 'AF/AG lis', left: 50, right: 70 },
-    { key: 'ah-lis', label: 'AH lis', left: 20, right: 80 },
-    { key: 'afag-volne', label: 'AF/AG volné', left: -5, right: 10 },
-    { key: 'ah-volne', label: 'AH volné', left: 10, right: 25 }
+    { key: 'afag-lis', label: 'AF/AG lis', left: 50, right: 70, toleranceMinus: 10, tolerancePlus: 10 },
+    { key: 'ah-lis', label: 'AH lis', left: 20, right: 80, toleranceMinus: 10, tolerancePlus: 10 },
+    { key: 'afag-volne', label: 'AF/AG volné', left: -5, right: 10, toleranceMinus: 10, tolerancePlus: 10 },
+    { key: 'ah-volne', label: 'AH volné', left: 10, right: 25, toleranceMinus: 10, tolerancePlus: 10 }
   ];
 }
 
@@ -10652,19 +10652,23 @@ function buildAdminFhbTargetSettingsHtml() {
   const rowsHtml = rows.map((row) => {
     const key = String(row.key || '').trim();
     const label = String(row.label || key || '').trim();
+    const toleranceMinus = row.toleranceMinus ?? row.tolerance_minus ?? row.toleranceMin ?? row.tolerance_min ?? 10;
+    const tolerancePlus = row.tolerancePlus ?? row.tolerance_plus ?? row.toleranceMax ?? row.tolerance_max ?? 10;
     return [
       '<tr data-fhb-target-row="' + escapeHtml(key) + '">',
       '  <td><input class="appMenuInlineInput" data-fhb-target-field="label" value="' + escapeHtml(label) + '" readonly></td>',
       '  <td><input class="appMenuInlineInput" data-fhb-target-field="left" value="' + escapeHtml(String(row.left ?? '')) + '" inputmode="decimal"></td>',
       '  <td><input class="appMenuInlineInput" data-fhb-target-field="right" value="' + escapeHtml(String(row.right ?? '')) + '" inputmode="decimal"></td>',
+      '  <td><input class="appMenuInlineInput" data-fhb-target-field="tolerance_minus" value="' + escapeHtml(String(toleranceMinus)) + '" inputmode="decimal"></td>',
+      '  <td><input class="appMenuInlineInput" data-fhb-target-field="tolerance_plus" value="' + escapeHtml(String(tolerancePlus)) + '" inputmode="decimal"></td>',
       '</tr>'
     ].join('');
   }).join('');
   return [
     '<div class="tableWrap appMenuTableWrap uMt12">',
-    '  <div class="smallText">Korekce frézky · středy fhβ</div>',
+    '  <div class="smallText">Korekce frézky · středy a tolerance fhβ</div>',
     '  <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense appMenuAdminFhbTargetTable">',
-    '    <thead><tr><th>Index</th><th>Levá</th><th>Pravá</th></tr></thead>',
+    '    <thead><tr><th>Index</th><th>Levá</th><th>Pravá</th><th>Tol. −</th><th>Tol. +</th></tr></thead>',
     '    <tbody>' + rowsHtml + '</tbody>',
     '  </table>',
     '</div>'
@@ -10814,8 +10818,8 @@ function buildAdminRotationTableHtml(monthKey) {
     return withBlank.map((row, idx) => adminNotesRowTemplate(row, idx, true)).join('');
   };
 
-  const hardColgroup = buildAdminRotationColgroupHtml(hardMachines.length, 50, 61);
-  const softColgroup = buildAdminRotationColgroupHtml(softMachines.length, 50, 61);
+  const hardColgroup = buildAdminRotationColgroupHtml(hardMachines.length, 42, 48);
+  const softColgroup = buildAdminRotationColgroupHtml(softMachines.length, 42, 48);
   const absenceColgroup = buildAdminAbsenceColgroupHtml();
 
   return [
@@ -10904,6 +10908,8 @@ function readAdminMachineSettingsFromDom() {
     const label = String(get('label')).trim() || key;
     const left = String(get('left')).trim();
     const right = String(get('right')).trim();
+    const toleranceMinus = String(get('tolerance_minus')).trim() || '10';
+    const tolerancePlus = String(get('tolerance_plus')).trim() || '10';
     if (!key) return;
     rows.push({
       machine_key: 'FHB_TARGET_' + key,
@@ -10915,7 +10921,7 @@ function readAdminMachineSettingsFromDom() {
       speed: '',
       dress_time: '',
       dress_count: '',
-      settings_json: { machine: 'FHB', index: key, type: 'fhb_target', key, label, target_left: left, target_right: right }
+      settings_json: { machine: 'FHB', index: key, type: 'fhb_target', key, label, target_left: left, target_right: right, tolerance_minus: toleranceMinus, tolerance_plus: tolerancePlus }
     });
   });
   return rows;
@@ -11095,12 +11101,106 @@ function buildAdminReportsHtml() {
   ].join('');
 }
 
+
+function getAdminReportDeletedNoteMarker() {
+  return '__rak_deleted__';
+}
+
+function getAdminDeletedReportsKey() {
+  try { return String(APP_KEY || 'rak') + ':deletedBugReports'; }
+  catch (err) { return 'rak:deletedBugReports'; }
+}
+
+function readAdminDeletedReportKeys() {
+  try {
+    const raw = localStorage.getItem(getAdminDeletedReportsKey()) || '[]';
+    const parsed = JSON.parse(raw);
+    const list = Array.isArray(parsed) ? parsed : [];
+    return new Set(list.map((value) => String(value || '').trim()).filter(Boolean));
+  } catch (err) {
+    return new Set();
+  }
+}
+
+function writeAdminDeletedReportKeys(keys) {
+  try {
+    const list = Array.from(keys || []).map((value) => String(value || '').trim()).filter(Boolean).slice(-240);
+    const payload = JSON.stringify(list);
+    if (typeof setLocalStorageIfChanged === 'function') setLocalStorageIfChanged(getAdminDeletedReportsKey(), payload);
+    else localStorage.setItem(getAdminDeletedReportsKey(), payload);
+    return true;
+  } catch (err) {
+    console.warn('writeAdminDeletedReportKeys failed', err);
+    return false;
+  }
+}
+
+function getAdminReportIdentityKeys(rowOrId, fallbackIndex) {
+  const keys = [];
+  try {
+    if (rowOrId && typeof rowOrId === 'object') {
+      const row = rowOrId;
+      const device = row.device_info && typeof row.device_info === 'object' ? row.device_info : {};
+      [
+        row.id,
+        row.sourceId,
+        row.source_id,
+        device.sourceId,
+        device.source_id,
+        device.source,
+        row.created_at,
+        row.createdAt,
+        row.handled_at,
+        row.handledAt
+      ].forEach((value) => {
+        const raw = String(value || '').trim();
+        if (raw) keys.push(raw);
+      });
+      const msg = String(row.message || row.text || '').trim().slice(0, 220);
+      const player = String((row.account_number || row.accountId || row.player_name || row.accountName) || '').trim().slice(0, 80);
+      const created = String(row.created_at || row.createdAt || '').trim().slice(0, 19);
+      if (msg && created) keys.push('fingerprint:' + created + ':' + player + ':' + msg);
+      if (Number.isFinite(Number(fallbackIndex))) keys.push('local-report-' + Number(fallbackIndex));
+    } else {
+      const raw = String(rowOrId || '').trim();
+      if (raw) keys.push(raw);
+    }
+  } catch (err) {}
+  return Array.from(new Set(keys.filter(Boolean)));
+}
+
+function isAdminReportMarkedDeleted(rowOrId, fallbackIndex) {
+  try {
+    if (rowOrId && typeof rowOrId === 'object') {
+      const row = rowOrId;
+      const note = String(row.handled_note || row.handledNote || '').trim();
+      const status = String(row.status || row.adminStatus || '').trim().toLowerCase();
+      if (row.adminDeleted || note === getAdminReportDeletedNoteMarker() || status === 'deleted') return true;
+    }
+    const deleted = readAdminDeletedReportKeys();
+    return getAdminReportIdentityKeys(rowOrId, fallbackIndex).some((key) => deleted.has(key));
+  } catch (err) {
+    return false;
+  }
+}
+
+function rememberAdminDeletedReport(rowOrId) {
+  try {
+    const deleted = readAdminDeletedReportKeys();
+    getAdminReportIdentityKeys(rowOrId).forEach((key) => deleted.add(key));
+    return writeAdminDeletedReportKeys(deleted);
+  } catch (err) {
+    console.warn('rememberAdminDeletedReport failed', err);
+    return false;
+  }
+}
+
 function normalizeLocalBugReportsForAdmin() {
   try {
     const raw = typeof parseLocalStorageJsonCached === 'function'
       ? parseLocalStorageJsonCached(RAK_REPORTS_KEY, [])
       : JSON.parse(localStorage.getItem(RAK_REPORTS_KEY) || '[]');
-    return (Array.isArray(raw) ? raw : []).filter((report) => !(report && report.adminDeleted)).map((report, idx) => {
+    return (Array.isArray(raw) ? raw : []).map((report, idx) => {
       const device = {
         theme: report.theme || '',
         background: report.background || '',
@@ -11123,9 +11223,10 @@ function normalizeLocalBugReportsForAdmin() {
         created_at: report.createdAt || new Date().toISOString(),
         local_only: true,
         handled_at: report.handledAt || '',
-        handled_note: report.handledNote || ''
+        handled_note: report.handledNote || '',
+        adminDeleted: !!report.adminDeleted
       };
-    }).filter((row) => String(row.message || '').trim() && String(row.handled_note || '').trim() !== '__rak_deleted__');
+    }).filter((row, idx) => String(row.message || '').trim() && !isAdminReportMarkedDeleted(row, idx));
   } catch (err) {
     console.warn('normalizeLocalBugReportsForAdmin failed', err);
     return [];
@@ -11167,7 +11268,8 @@ function markLocalBugReportDeletedByAdmin(rowOrId) {
     } else {
       ids.push(String(rowOrId || '').trim());
     }
-    ids.filter(Boolean).forEach((id) => updateLocalBugReportRecord(id, { adminDeleted: true, status: 'deleted', adminStatus: 'deleted' }));
+    rememberAdminDeletedReport(row || rowOrId);
+    ids.filter(Boolean).forEach((id) => updateLocalBugReportRecord(id, { adminDeleted: true, status: 'deleted', adminStatus: 'deleted', handledNote: getAdminReportDeletedNoteMarker() }));
   } catch (err) {
     console.warn('markLocalBugReportDeletedByAdmin failed', err);
   }
@@ -11246,9 +11348,9 @@ async function loadAdminBugReportsFromSupabase() {
     try {
       const result = await window.RotationSupabaseBridge.loadBugReports({ limit: 50, status: 'all' });
       const remoteRows = result && Array.isArray(result.rows)
-        ? result.rows.filter((row) => String(row && row.handled_note || '').trim() !== '__rak_deleted__')
+        ? result.rows.filter((row) => !isAdminReportMarkedDeleted(row))
         : [];
-      app.adminBugReports = mergeAdminBugReports(remoteRows, localRows).filter((row) => String(row && row.handled_note || '').trim() !== '__rak_deleted__');
+      app.adminBugReports = mergeAdminBugReports(remoteRows, localRows).filter((row) => !isAdminReportMarkedDeleted(row));
       return Object.assign({}, result || {}, { ok: true, rows: app.adminBugReports });
     } catch (err) {
       console.warn('loadAdminBugReportsFromSupabase failed, using local backup', err);
@@ -11274,7 +11376,11 @@ function updateLocalBugReportRecord(reportId, patch) {
       Object.assign(report, patch || {});
       changed = true;
     });
-    if (changed) localStorage.setItem(RAK_REPORTS_KEY, JSON.stringify(rows));
+    if (changed) {
+      const payload = JSON.stringify(rows);
+      if (typeof setLocalStorageIfChanged === 'function') setLocalStorageIfChanged(RAK_REPORTS_KEY, payload);
+      else localStorage.setItem(RAK_REPORTS_KEY, payload);
+    }
     return changed;
   } catch (err) {
     console.warn('updateLocalBugReportRecord failed', err);
@@ -11316,7 +11422,8 @@ async function deleteAdminBugReport(reportId) {
   const index = rows.findIndex(r => String(r.id || '') === String(reportId));
   const hit = index >= 0 ? rows[index] : null;
   if (hit && (hit.local_only || !isAdminReportUuid(reportId))) {
-    updateLocalBugReportRecord(reportId, { adminDeleted: true, status: 'deleted', adminStatus: 'deleted' });
+    rememberAdminDeletedReport(hit || reportId);
+    updateLocalBugReportRecord(reportId, { adminDeleted: true, status: 'deleted', adminStatus: 'deleted', handledNote: getAdminReportDeletedNoteMarker() });
     rows.splice(index, 1);
     return { ok: true, localOnly: true, deleted: true };
   }
@@ -11325,8 +11432,9 @@ async function deleteAdminBugReport(reportId) {
     if (result && result.ok && index >= 0) {
       if (hit) {
         hit.status = 'ignored';
-        hit.handled_note = '__rak_deleted__';
+        hit.handled_note = getAdminReportDeletedNoteMarker();
       }
+      rememberAdminDeletedReport(hit || reportId);
       markLocalBugReportDeletedByAdmin(hit || reportId);
       rows.splice(index, 1);
     }

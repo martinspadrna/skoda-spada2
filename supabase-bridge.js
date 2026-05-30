@@ -235,7 +235,7 @@
     { table: 'gomoku_wins', realtime: true, queueType: 'gomoku_win', access: 'anon SELECT/INSERT/UPDATE', note: 'výhry piškvorek / legacy leaderboard' }
   ];
 
-  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (985)';
+  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = 'v.1.5 (988)';
   const SUPABASE_POLICY_AUDIT_SNAPSHOT_AT = '2026-05-24';
   const SUPABASE_POLICY_HARDENING_PHASE = {
     current: 'V856 – release hygiene po kontrole vlastních buildů: changelog opravený, SQL auditní soubory jsou archivované v assets/docs/sql a DB policies se nemění.',
@@ -295,7 +295,7 @@
   ];
 
   const SUPABASE_RPC_HARDENING_STATUS = {
-    version: 'v.1.5 (985)',
+    version: 'v.1.5 (988)',
     phase: '2E-O online invite/session RPC smoke + accept RPC / no policy tightening',
     rpcPreferred: true,
     migrationApplied: true,
@@ -907,7 +907,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v985');
+      const channel = client.channel('rak-public-live-v988');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -1018,7 +1018,7 @@
       ends_at: payload.ends_at,
       marquee: payload.marquee,
       updated_at: nowIso,
-      app_version: String(window.APP_VERSION || 'v.1.5 (985)'),
+      app_version: String(window.APP_VERSION || 'v.1.5 (988)'),
       priority: 0
     });
     return [
@@ -1063,7 +1063,7 @@
           ends_at: fallback.ends_at,
           marquee: fallback.marquee,
           updated_at: new Date().toISOString(),
-          app_version: String(window.APP_VERSION || 'v.1.5 (985)'),
+          app_version: String(window.APP_VERSION || 'v.1.5 (988)'),
           priority: 0
         });
   }
@@ -1078,7 +1078,7 @@
         p_ends_at: safe.ends_at,
         p_marquee: safe.marquee,
         p_updated_by: 'rak-admin-ui',
-        p_app_version: String(window.APP_VERSION || 'v.1.5 (985)'),
+        p_app_version: String(window.APP_VERSION || 'v.1.5 (988)'),
         p_priority: 0
       }), { mode: 'write', timeoutMs: 8000, attempts: 1 });
       if (res && res.error) return { ok: false, error: res.error, shape: 'rpc-save' };
@@ -1092,7 +1092,7 @@
     try {
       const res = await runSupabaseOperation('announcements.rpc-clear', () => client.rpc('rak_clear_dashboard_announcement', {
         p_updated_by: 'rak-admin-ui',
-        p_app_version: String(window.APP_VERSION || 'v.1.5 (985)')
+        p_app_version: String(window.APP_VERSION || 'v.1.5 (988)')
       }), { mode: 'write', timeoutMs: 8000, attempts: 1 });
       if (res && res.error) return { ok: false, error: res.error, shape: 'rpc-clear' };
       return { ok: true, cleared: true, count: Number(res && res.data || 0), shape: 'rpc-clear' };
@@ -1214,7 +1214,7 @@
       online: typeof navigator === 'undefined' ? false : !!navigator.onLine,
       cachedAnnouncementCount: Array.isArray(state.announcements) ? state.announcements.length : 0,
       table: 'announcements',
-      realtimeChannel: 'rak-public-live-v985',
+      realtimeChannel: 'rak-public-live-v988',
       readMode: 'public SELECT + realtime refresh + local cache fallback',
       writeMode: 'RPC security definer save/clear; direct table fallback only if RPC unavailable'
     });
@@ -2201,7 +2201,7 @@
         downlink: Number(connection.downlink || 0) || 0,
         saveData: !!connection.saveData
       } : null,
-      source: 'rak-v985-client'
+      source: 'rak-v988-client'
     }, ex.deviceInfo && typeof ex.deviceInfo === 'object' ? ex.deviceInfo : {});
   }
 
@@ -2419,6 +2419,7 @@
     const status = String(options.status || '').trim();
     let query = client.from('bug_reports')
       .select('id, account_number, player_name, report_type, message, app_version, route, user_agent, device_info, status, created_at, handled_at, handled_note')
+      .or('handled_note.is.null,handled_note.neq.' + BUG_REPORT_DELETED_NOTE)
       .order('created_at', { ascending: false })
       .limit(limit);
     if (status && status !== 'all') query = query.eq('status', normalizeBugReportStatus(status));
@@ -3377,10 +3378,10 @@
     return [
       { machine_key: 'FREZKY', machine_code: 'FREZKY', machine_index: '', label: 'Frezky', category: 'frezka', cycle_time: null, dress_time: null, dress_count: null, settings_json: { machine: 'FREZKY', index: '', cycle_time: '', dress_time: '', dress_count: '' } },
       { machine_key: 'TPKW01', machine_code: 'TPKW01', machine_index: '', label: 'Pračka', category: 'pracka', cycle_time: 30, dress_time: null, dress_count: null, settings_json: { machine: 'TPKW01', index: '', cycle_time: '30', dress_time: '', dress_count: '' } },
-      { machine_key: 'FHB_TARGET_afag-lis', machine_code: 'FHB', machine_index: 'afag-lis', label: 'AF/AG lis', category: 'fhb_target', cycle_time: null, dress_time: null, dress_count: null, settings_json: { machine: 'FHB', index: 'afag-lis', type: 'fhb_target', key: 'afag-lis', label: 'AF/AG lis', target_left: '50', target_right: '70' } },
-      { machine_key: 'FHB_TARGET_ah-lis', machine_code: 'FHB', machine_index: 'ah-lis', label: 'AH lis', category: 'fhb_target', cycle_time: null, dress_time: null, dress_count: null, settings_json: { machine: 'FHB', index: 'ah-lis', type: 'fhb_target', key: 'ah-lis', label: 'AH lis', target_left: '20', target_right: '80' } },
-      { machine_key: 'FHB_TARGET_afag-volne', machine_code: 'FHB', machine_index: 'afag-volne', label: 'AF/AG volné', category: 'fhb_target', cycle_time: null, dress_time: null, dress_count: null, settings_json: { machine: 'FHB', index: 'afag-volne', type: 'fhb_target', key: 'afag-volne', label: 'AF/AG volné', target_left: '-5', target_right: '10' } },
-      { machine_key: 'FHB_TARGET_ah-volne', machine_code: 'FHB', machine_index: 'ah-volne', label: 'AH volné', category: 'fhb_target', cycle_time: null, dress_time: null, dress_count: null, settings_json: { machine: 'FHB', index: 'ah-volne', type: 'fhb_target', key: 'ah-volne', label: 'AH volné', target_left: '10', target_right: '25' } },
+      { machine_key: 'FHB_TARGET_afag-lis', machine_code: 'FHB', machine_index: 'afag-lis', label: 'AF/AG lis', category: 'fhb_target', cycle_time: null, dress_time: null, dress_count: null, settings_json: { machine: 'FHB', index: 'afag-lis', type: 'fhb_target', key: 'afag-lis', label: 'AF/AG lis', target_left: '50', target_right: '70', tolerance_minus: '10', tolerance_plus: '10' } },
+      { machine_key: 'FHB_TARGET_ah-lis', machine_code: 'FHB', machine_index: 'ah-lis', label: 'AH lis', category: 'fhb_target', cycle_time: null, dress_time: null, dress_count: null, settings_json: { machine: 'FHB', index: 'ah-lis', type: 'fhb_target', key: 'ah-lis', label: 'AH lis', target_left: '20', target_right: '80', tolerance_minus: '10', tolerance_plus: '10' } },
+      { machine_key: 'FHB_TARGET_afag-volne', machine_code: 'FHB', machine_index: 'afag-volne', label: 'AF/AG volné', category: 'fhb_target', cycle_time: null, dress_time: null, dress_count: null, settings_json: { machine: 'FHB', index: 'afag-volne', type: 'fhb_target', key: 'afag-volne', label: 'AF/AG volné', target_left: '-5', target_right: '10', tolerance_minus: '10', tolerance_plus: '10' } },
+      { machine_key: 'FHB_TARGET_ah-volne', machine_code: 'FHB', machine_index: 'ah-volne', label: 'AH volné', category: 'fhb_target', cycle_time: null, dress_time: null, dress_count: null, settings_json: { machine: 'FHB', index: 'ah-volne', type: 'fhb_target', key: 'ah-volne', label: 'AH volné', target_left: '10', target_right: '25', tolerance_minus: '10', tolerance_plus: '10' } },
       { machine_key: 'TBKR01-AD', machine_code: 'TBKR01', machine_index: 'AD', label: 'TBKR01-AD', category: 'brus', cycle_time: 58.2, dress_time: 323, dress_count: 59, settings_json: { machine: 'TBKR01', index: 'AD', cycle_time: '58.2', dress_time: '323', dress_count: '59' } },
       { machine_key: 'TBKR01-AE', machine_code: 'TBKR01', machine_index: 'AE', label: 'TBKR01-AE', category: 'brus', cycle_time: 57.0, dress_time: 240, dress_count: 58, settings_json: { machine: 'TBKR01', index: 'AE', cycle_time: '57.0', dress_time: '240', dress_count: '58' } },
       { machine_key: 'TBKR01-AH', machine_code: 'TBKR01', machine_index: 'AH', label: 'TBKR01-AH', category: 'brus', cycle_time: 66.0, dress_time: 400, dress_count: 87, settings_json: { machine: 'TBKR01', index: 'AH', cycle_time: '66.0', dress_time: '400', dress_count: '87' } },
@@ -4374,7 +4375,7 @@
     return {
       ok: blockers.length === 0,
       mode: 'supabase-hardening-readiness-audit-only',
-      version: 'v.1.5 (985)',
+      version: 'v.1.5 (988)',
       checkedAt: new Date().toISOString(),
       confirmed,
       readinessPercent,
