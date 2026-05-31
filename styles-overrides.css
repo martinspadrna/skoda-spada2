@@ -19551,7 +19551,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
 }
 
 
-/* v.1.5 (991) – Administrace / Rozpisy: doladěné šířky, čitelnější mini přehled a Odebrat přímo u jména. */
+/* v.1.5 (992) – Administrace / Rozpisy: doladěné šířky, čitelnější mini přehled a Odebrat přímo u jména. */
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable col:first-child{
   width:53px !important;
 }
@@ -19619,7 +19619,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
 }
 
 
-/* v.1.5 (991) – Administrace / Rozpisy: datumy širší, neobsazené mini buňky zvýrazněné, rychlé Odebrat stabilní. */
+/* v.1.5 (992) – Administrace / Rozpisy: datumy širší, neobsazené mini buňky zvýrazněné, rychlé Odebrat stabilní. */
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adminRotationMiniTable tr.adminRotationMiniDayHasEmpty td:first-child{
   color:rgba(255,231,160,.98) !important;
   background:rgba(255,190,72,.10) !important;
@@ -19639,7 +19639,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   transform:translateY(0) !important;
 }
 
-/* v.1.5 (991) – iOS start: spodní lišta sedí hned po otevření dole, bez černého pruhu pod panelem. */
+/* v.1.5 (992) – iOS start: spodní lišta sedí hned po otevření dole, bez černého pruhu pod panelem. */
 :root{
   --rak-nav-ios-start-bottom: max(1px, calc(env(safe-area-inset-bottom) * .12));
   --rak-rotace-names-dock-bottom: calc(var(--bottom-nav-h, 58px) + var(--rak-bottom-nav-live-gap, 2px) + 7px);
@@ -19664,7 +19664,7 @@ html body nav.bottomNav{
   }
 }
 
-/* v.1.5 (991) – Rotace: dock jmen navázaný na reálnou výšku/polohu spodní lišty, ne na starý vysoký safe-area odhad. */
+/* v.1.5 (992) – Rotace: dock jmen navázaný na reálnou výšku/polohu spodní lišty, ne na starý vysoký safe-area odhad. */
 #rotace.page.active #rotaceNamesPanel.active{
   padding-bottom:var(--rak-rotace-names-content-bottom) !important;
   scroll-padding-bottom:var(--rak-rotace-names-content-bottom) !important;
@@ -19683,7 +19683,7 @@ html body nav.bottomNav{
   }
 }
 
-/* v.1.5 (991) – Administrace / Rozpisy: datumy ještě širší podle mobilního testu. */
+/* v.1.5 (992) – Administrace / Rozpisy: datumy ještě širší podle mobilního testu. */
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable col:first-child{
   width:61px !important;
 }
@@ -19718,4 +19718,109 @@ html body nav.bottomNav{
 .adminRotationQuickRemove.isVisible{
   opacity:1 !important;
   transform:translate3d(0,0,0) !important;
+}
+
+/* v.1.5 (992) – iOS start: okamžité dosednutí bez černého spodku při prvním otevření. */
+:root{
+  --rak-nav-ios-start-bottom:0px !important;
+  --rak-start-viewport-h:100dvh;
+}
+html,
+body{
+  min-height:100svh !important;
+  min-height:100dvh !important;
+  background:#07111c !important;
+}
+html.rakViewportPrimed body{
+  min-height:var(--rak-start-viewport-h, 100dvh) !important;
+}
+body::after{
+  content:"";
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:0;
+  height:max(36px, env(safe-area-inset-bottom));
+  pointer-events:none;
+  background:linear-gradient(180deg, rgba(7,17,28,0), #07111c 52%, #07111c 100%);
+  z-index:0;
+}
+html body nav.bottomNav{
+  bottom:0 !important;
+  transition:none !important;
+}
+@supports (-webkit-touch-callout:none){
+  html body nav.bottomNav{
+    bottom:0 !important;
+  }
+}
+
+/* v.1.5 (992) – Administrace / Rozpisy: jmenné sloupce v tvrdotě a měkotě +8 %, volné mini buňky jen barevně. */
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable col:not(:first-child){
+  width:54px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable input[data-rot-field^="cell-"]{
+  width:52px !important;
+  min-width:52px !important;
+  max-width:52px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuTableWrap:nth-of-type(1) .appMenuAdminTable,
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuTableWrap:nth-of-type(2) .appMenuAdminTable{
+  min-width:324px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adminRotationMiniTable td.adminRotationMiniEmpty{
+  color:transparent !important;
+  text-shadow:none !important;
+}
+
+/* v.1.5 (992) – Administrace / Rozpisy: rychlá nabídka kódů absence. */
+.adminAbsenceCodePicker{
+  position:fixed;
+  width:214px;
+  max-width:calc(100vw - 16px);
+  z-index:2147483646;
+  box-sizing:border-box;
+  padding:8px;
+  border:1px solid rgba(124,255,124,.22);
+  border-radius:16px;
+  background:linear-gradient(180deg, rgba(12,26,36,.98), rgba(8,18,28,.96));
+  box-shadow:0 14px 36px rgba(0,0,0,.48), inset 0 1px 0 rgba(255,255,255,.06);
+  backdrop-filter:blur(18px) saturate(145%);
+  -webkit-backdrop-filter:blur(18px) saturate(145%);
+  opacity:0;
+  transform:translateY(3px);
+  transition:opacity .12s ease, transform .12s ease;
+  pointer-events:auto;
+}
+.adminAbsenceCodePicker.isVisible{
+  opacity:1;
+  transform:translateY(0);
+}
+.adminAbsenceCodePickerTitle{
+  font-size:10px;
+  line-height:1.2;
+  font-weight:850;
+  color:rgba(230,255,220,.86);
+  margin:0 2px 6px;
+  letter-spacing:.02em;
+}
+.adminAbsenceCodePickerGrid{
+  display:grid;
+  grid-template-columns:repeat(3, minmax(0, 1fr));
+  gap:5px;
+}
+.adminAbsenceCodeChip{
+  appearance:none;
+  border:1px solid rgba(124,255,124,.20);
+  border-radius:11px;
+  min-height:30px;
+  padding:5px 4px;
+  color:rgba(238,255,232,.96);
+  background:rgba(255,255,255,.055);
+  font:850 11px/1.05 Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  text-align:center;
+}
+.adminAbsenceCodeChip:active{
+  transform:translateY(1px) scale(.98);
+  background:rgba(124,255,124,.13);
 }

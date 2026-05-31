@@ -16,6 +16,24 @@
 
 <link rel="icon" type="image/png" href="assets/app-icons/icon-192.png">
 <script>
+(function(){
+  function rakPrimeViewport(){
+    try {
+      var h = Math.max(480, Math.round((window.visualViewport && window.visualViewport.height) || window.innerHeight || document.documentElement.clientHeight || 0));
+      document.documentElement.style.setProperty('--rak-start-viewport-h', h + 'px');
+      document.documentElement.classList.add('rakViewportPrimed');
+    } catch (err) {}
+  }
+  rakPrimeViewport();
+  window.addEventListener('pageshow', rakPrimeViewport, { passive: true });
+  window.addEventListener('resize', rakPrimeViewport, { passive: true });
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', rakPrimeViewport, { passive: true });
+    window.visualViewport.addEventListener('scroll', rakPrimeViewport, { passive: true });
+  }
+})();
+</script>
+<script>
 window.__RAK_EXTERNAL_DEP_STATUS__ = window.__RAK_EXTERNAL_DEP_STATUS__ || {};
 window.rakNoteExternalDependency = function(name, status, src) {
   try {

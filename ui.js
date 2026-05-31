@@ -10150,6 +10150,7 @@ function renderAdminInlineFieldHtml(fieldAttr, fieldName, value, placeholder, ti
   const fieldKey = String(fieldName || '');
   const attrKey = String(fieldAttr || '');
   const isDateField = fieldKey === 'date';
+  const isAbsenceCodeField = attrKey === 'data-note-field' && fieldKey === 'code';
   const canRemove = !isDateField && (
     (attrKey === 'data-rot-field' && fieldKey.indexOf('cell-') === 0) ||
     (attrKey === 'data-note-field' && fieldKey === 'person')
@@ -10160,7 +10161,8 @@ function renderAdminInlineFieldHtml(fieldAttr, fieldName, value, placeholder, ti
     fieldAttr ? fieldAttr + '="' + escapeHtml(fieldName) + '"' : '',
     'value="' + escapeHtml(safeValue) + '"',
     'placeholder="' + escapeHtml(placeholder || '') + '"',
-    'title="' + escapeHtml(isDateField ? 'Datum upravíš ručně.' : 'Uprav text ručně. Po kliknutí na obsazené jméno se nahoře ukáže Odebrat vybrané.') + '"',
+    'title="' + escapeHtml(isDateField ? 'Datum upravíš ručně.' : (isAbsenceCodeField ? 'Klikni a vyber zkratku absence, nebo napiš vlastní.' : 'Uprav text ručně. Po kliknutí na obsazené jméno se ukáže Odebrat přímo u pole.')) + '"',
+    isAbsenceCodeField ? 'list="adminAbsenceCodeOptions"' : '',
     'autocomplete="off"',
     'autocorrect="off"',
     'autocapitalize="off"',
@@ -10589,6 +10591,12 @@ function buildAdminAbsenceColgroupHtml() {
     '</colgroup>';
 }
 
+
+function buildAdminAbsenceCodeDatalistHtml() {
+  const codes = ['D', 'N', 'NV', '§', 'OČR', 'od 14h D', 'do půlnoci D'];
+  return '<datalist id="adminAbsenceCodeOptions">' + codes.map(code => '<option value="' + escapeHtml(code) + '"></option>').join('') + '</datalist>';
+}
+
 function buildAdminAbsenceSummaryHtml(notesRows) {
   const absNotes = Array.isArray(notesRows) ? notesRows.map(normalizeNoteEntry).filter(n => n.isAbsence) : [];
   if (!absNotes.length) return '<div class="smallText">Bez poznámek.</div>';
@@ -10776,7 +10784,7 @@ function buildAdminRotationCompactOverviewHtml(monthKey, hardRows, softRows, har
         const raw = String(cells[idx] || '').trim();
         const shortName = adminShortRotationName(raw);
         const empty = !shortName;
-        return '<td class="' + (empty ? 'adminRotationMiniEmpty' : '') + '" data-full-name="' + escapeHtml(raw) + '">' + escapeHtml(shortName || 'volno') + '</td>';
+        return '<td class="' + (empty ? 'adminRotationMiniEmpty' : '') + '" data-full-name="' + escapeHtml(raw) + '">' + escapeHtml(shortName || '') + '</td>';
       }).join('') + '</tr>';
     }).join('');
     return [
@@ -10869,6 +10877,7 @@ function buildAdminRotationTableHtml(monthKey) {
     '        <tbody>' + renderNotes() + '</tbody>',
     '      </table>',
     '    </div>',
+    buildAdminAbsenceCodeDatalistHtml(),
     buildAdminAbsenceSummaryHtml(notesRows),
     '  </details>',
     '</div>'
@@ -12117,7 +12126,7 @@ function adminShowRotationSelectedRemove(input) {
       return;
     }
     window.__rakAdminRotationSelectedInput = input;
-    // v.1.5 (991): horní sticky tlačítko už při kliknutí do jména nevytahujeme.
+    // v.1.5 (992): horní sticky tlačítko už při kliknutí do jména nevytahujeme.
     // Rychlé Odebrat se vykreslí přímo u aktivního pole přes adminShowRotationQuickRemove().
     btn.hidden = true;
     btn.dataset.targetReady = '1';
@@ -12214,6 +12223,70 @@ function adminScheduleRotationQuickRemove(input) {
   }
 }
 
+function adminCloseAbsenceCodePicker() {
+  const box = document.getElementById('adminAbsenceCodePicker');
+  if (box) box.remove();
+  window.__rakAdminAbsenceCodeInput = null;
+}
+
+function adminShowAbsenceCodePicker(input) {
+  try {
+    const body = document.getElementById('appMenuBody');
+    if (!body || body.dataset.adminView !== 'rotation' || !input || !body.contains(input) || !input.matches('[data-note-field="code"]')) {
+      adminCloseAbsenceCodePicker();
+      return;
+    }
+    let box = document.getElementById('adminAbsenceCodePicker');
+    if (!box) {
+      box = document.createElement('div');
+      box.id = 'adminAbsenceCodePicker';
+      box.className = 'adminAbsenceCodePicker';
+      const codes = ['D', 'N', 'NV', '§', 'OČR', 'od 14h D', 'do půlnoci D'];
+      box.innerHTML = '<div class="adminAbsenceCodePickerTitle">Zkratka absence</div><div class="adminAbsenceCodePickerGrid">' +
+        codes.map(code => '<button type="button" class="adminAbsenceCodeChip" data-absence-code="' + escapeHtml(code) + '">' + escapeHtml(code) + '</button>').join('') +
+        '</div>';
+      document.body.appendChild(box);
+      box.addEventListener('pointerdown', (ev) => {
+        const btn = ev.target && ev.target.closest ? ev.target.closest('[data-absence-code]') : null;
+        if (!btn) return;
+        ev.preventDefault();
+        const target = window.__rakAdminAbsenceCodeInput;
+        const code = String(btn.getAttribute('data-absence-code') || '').trim();
+        if (target && target.isConnected && code) {
+          target.value = code;
+          target.dispatchEvent(new Event('input', { bubbles: true }));
+          target.dispatchEvent(new Event('change', { bubbles: true }));
+          try { target.focus({ preventScroll: true }); } catch (err) { try { target.focus(); } catch (err2) {} }
+        }
+        adminCloseAbsenceCodePicker();
+      });
+    }
+    window.__rakAdminAbsenceCodeInput = input;
+    const rect = input.getBoundingClientRect();
+    const vw = Math.max(320, window.innerWidth || document.documentElement.clientWidth || 320);
+    const vh = Math.max(480, window.innerHeight || document.documentElement.clientHeight || 480);
+    const pickerWidth = 214;
+    const pickerHeight = 104;
+    let top = Math.round(rect.bottom + 6);
+    if (top + pickerHeight > vh - 8) top = Math.max(8, Math.round(rect.top - pickerHeight - 6));
+    const left = Math.max(8, Math.min(vw - pickerWidth - 8, Math.round(rect.left + (rect.width / 2) - (pickerWidth / 2))));
+    box.style.top = String(top) + 'px';
+    box.style.left = String(left) + 'px';
+    box.classList.add('isVisible');
+  } catch (err) {
+    console.warn('Admin absence code picker failed', err);
+  }
+}
+
+function adminScheduleAbsenceCodePicker(input) {
+  try {
+    window.clearTimeout(window.__rakAdminAbsenceCodePickerTimer || 0);
+    window.__rakAdminAbsenceCodePickerTimer = window.setTimeout(() => adminShowAbsenceCodePicker(input), 40);
+  } catch (err) {
+    adminShowAbsenceCodePicker(input);
+  }
+}
+
 function adminSetRotationViewportLock(active) {
   try {
     const meta = document.querySelector('meta[name="viewport"]');
@@ -12284,9 +12357,12 @@ function adminBindRotationZoomGuard() {
         if (!body || body.dataset.adminView !== 'rotation') return;
         const target = event && event.target;
         const quick = document.getElementById('adminRotationQuickRemove');
+        const codePicker = document.getElementById('adminAbsenceCodePicker');
         if (quick && target && (quick === target || quick.contains(target))) return;
+        if (codePicker && target && (codePicker === target || codePicker.contains(target))) return;
         if (target && target.matches && target.matches('[data-rot-field], [data-note-field]')) return;
         adminCloseRotationQuickRemove();
+        adminCloseAbsenceCodePicker();
       }, true);
     }
   } catch (err) {}
@@ -12363,8 +12439,18 @@ function bindAppMenuHandlers(body) {
       }
 
       if (target.matches && target.matches('[data-rot-field], [data-note-field]')) {
-        if (target.matches('[data-rot-field^="cell-"], [data-note-field="person"]')) adminShowRotationSelectedRemove(target);
-        else adminHideRotationSelectedRemove();
+        if (target.matches('[data-note-field="code"]')) {
+          adminHideRotationSelectedRemove();
+          adminCloseRotationQuickRemove();
+          adminShowAbsenceCodePicker(target);
+        } else if (target.matches('[data-rot-field^="cell-"], [data-note-field="person"]')) {
+          adminCloseAbsenceCodePicker();
+          adminShowRotationSelectedRemove(target);
+          adminShowRotationQuickRemove(target);
+        } else {
+          adminHideRotationSelectedRemove();
+          adminCloseAbsenceCodePicker();
+        }
         return;
       }
 
@@ -13029,6 +13115,11 @@ function bindAppMenuHandlers(body) {
     if (!target.matches('[data-rot-field], [data-note-field]')) return;
     window.setTimeout(() => {
       const next = document.activeElement;
+      const codePicker = document.getElementById('adminAbsenceCodePicker');
+      if (codePicker && codePicker.classList && codePicker.classList.contains('isVisible')) {
+        if (next === codePicker || (next && codePicker.contains && codePicker.contains(next))) return;
+        if (!next || !next.matches || !next.matches('[data-note-field="code"]')) adminCloseAbsenceCodePicker();
+      }
       const quick = document.getElementById('adminRotationQuickRemove');
       if (quick && quick.classList && quick.classList.contains('isVisible')) {
         if (next === quick || (next && quick.contains && quick.contains(next))) return;
@@ -13046,11 +13137,17 @@ function bindAppMenuHandlers(body) {
       if (window.__rakAdminRotationScrollCloseRaf) return;
       window.__rakAdminRotationScrollCloseRaf = window.requestAnimationFrame(() => {
         window.__rakAdminRotationScrollCloseRaf = 0;
+        const codeTarget = window.__rakAdminAbsenceCodeInput;
+        if (codeTarget && codeTarget.isConnected && body.contains(codeTarget)) adminShowAbsenceCodePicker(codeTarget);
+        else adminCloseAbsenceCodePicker();
         const target = window.__rakAdminRotationQuickRemoveInput;
         if (target && target.isConnected && body.contains(target)) adminShowRotationQuickRemove(target);
         else adminCloseRotationQuickRemove();
       });
     } catch (err) {
+      const codeTarget = window.__rakAdminAbsenceCodeInput;
+      if (codeTarget && codeTarget.isConnected && body.contains(codeTarget)) adminShowAbsenceCodePicker(codeTarget);
+      else adminCloseAbsenceCodePicker();
       const target = window.__rakAdminRotationQuickRemoveInput;
       if (target && target.isConnected && body.contains(target)) adminShowRotationQuickRemove(target);
       else adminCloseRotationQuickRemove();
@@ -13061,7 +13158,10 @@ function bindAppMenuHandlers(body) {
     const target = event.target;
     if (!target || typeof target.matches !== 'function') return;
     if (!target.matches('[data-rot-field], [data-note-field]')) return;
-    if (adminRotationIsRemoveValue(target.value)) {
+    if (target.matches('[data-note-field="code"]')) {
+      adminCloseRotationQuickRemove();
+      adminScheduleAbsenceCodePicker(target);
+    } else if (adminRotationIsRemoveValue(target.value)) {
       target.value = '';
       adminCloseRotationQuickRemove();
     } else {
@@ -13077,7 +13177,13 @@ function bindAppMenuHandlers(body) {
     if (!target || typeof target.matches !== 'function') return;
     if (!target.matches('[data-rot-field], [data-note-field]')) return;
     if (body.dataset.adminView === 'rotation') {
-      adminScheduleRotationQuickRemove(target);
+      if (target.matches('[data-note-field="code"]')) {
+        adminCloseRotationQuickRemove();
+        adminScheduleAbsenceCodePicker(target);
+      } else {
+        adminCloseAbsenceCodePicker();
+        adminScheduleRotationQuickRemove(target);
+      }
       adminAttachRotationAvailableDatalist(target);
     }
   });
@@ -13313,7 +13419,7 @@ function updateRotaceNamesDockMetrics(reason) {
 }
 
 function scheduleRotaceNamesDockMetrics(reason) {
-  // v991: dock jmen se drží těsně nad skutečnou spodní lištou i po iOS přepočtu viewportu.
+  // v992: dock jmen se drží těsně nad skutečnou spodní lištou i po iOS přepočtu viewportu.
   try {
     const root = document.documentElement;
     const nav = document.querySelector('nav.bottomNav') || document.querySelector('.bottomNav');
@@ -13329,11 +13435,11 @@ function scheduleRotaceNamesDockMetrics(reason) {
     const gridHeight = gridRect ? Math.max(88, Math.min(146, Math.round(Number(gridRect.height || 0) || 120))) : 120;
     root.style.setProperty('--rak-rotace-names-dock-bottom', dockBottom + 'px');
     root.style.setProperty('--rak-rotace-names-content-bottom', (dockBottom + gridHeight + 20) + 'px');
-    root.dataset.rakRotaceNamesDockMode = 'adaptive-v991';
-    setTimeout(() => { try { updateRotaceNamesDockMetrics(reason || 'adaptive-v991'); } catch (err) {} }, 0);
-    return updateRotaceNamesDockMetrics(reason || 'adaptive-v991');
+    root.dataset.rakRotaceNamesDockMode = 'adaptive-v992';
+    setTimeout(() => { try { updateRotaceNamesDockMetrics(reason || 'adaptive-v992'); } catch (err) {} }, 0);
+    return updateRotaceNamesDockMetrics(reason || 'adaptive-v992');
   } catch (err) {
-    try { return updateRotaceNamesDockMetrics(reason || 'adaptive-v991-fallback'); } catch (_) { return null; }
+    try { return updateRotaceNamesDockMetrics(reason || 'adaptive-v992-fallback'); } catch (_) { return null; }
   }
 }
 

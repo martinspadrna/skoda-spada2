@@ -1,3 +1,10 @@
+## v.1.5 (992)
+- iOS/PWA start: spodní lišta se po prvním otevření kotví hned na spodní hranu a pod panelem nezůstává dočasný černý pruh.
+- Administrace / Rozpisy: v úpravě tvrdoty a měkoty jsou sloupce se jmény rozšířené o cca 8 %.
+- Administrace / Rozpisy: u absencí se po kliknutí do pole Kód zobrazí rychlá nabídka zkratek `D`, `N`, `NV`, `§`, `OČR` a časté varianty s dovolenou.
+- Administrace / Rozpisy: horní mini přehled dál barevně zvýrazňuje neobsazené stroje/dny, ale do prázdných polí už nepíše „volno“.
+- Verze sjednocena na v.1.5 (992), cache na `v1.5-992`, realtime kanál na `rak-public-live-v992`, package na `1.5.992`.
+
 ## v.1.5 (991)
 - Opraveno startovní ukotvení spodní lišty na iOS/Safari/PWA: panel se nemá po prvním spuštění držet výš s černým pruhem pod sebou.
 - Rotace: spodní dock se jmény je znovu navázaný na skutečnou výšku/polohu spodní lišty, aby po kliknutí na Rotaci nevyskočil zbytečně vysoko nad panel.
@@ -5,21 +12,23 @@
 - Administrace / Rozpisy: rychlé tlačítko Odebrat se při focusu/resize/scrollu už nemá jen probliknout a zmizet; drží se u vybraného pole a jen se přepolohuje.
 - Verze sjednocena na v.1.5 (991), cache na `v1.5-991`, realtime kanál na `rak-public-live-v991`, package na `1.5.991`.
 
-## v.1.5 (991)
+## v.1.5 (990)
 - Pexeso: vyčištěné staré chybné top score / cache a online `memory*` výsledky resetované na nulu, aby se netahal zpět nesmyslný čas.
 - Administrace / Rozpisy: datumový sloupec v úpravě tvrdoty, měkoty i absencí rozšířený podle mobilního testu.
 - Administrace / Rozpisy: rychlé tlačítko Odebrat u jména už po tapnutí jen neproblikne a nemizí hned kvůli mobilnímu blur/focus chování.
 - Administrace / Rozpisy: v horním mini přehledu jsou barevně zvýrazněné neobsazené stroje/dny.
-- Verze sjednocena na v.1.5 (991), cache na `v1.5-991`, realtime kanál na `rak-public-live-v991`, package na `1.5.991`.
+- Verze sjednocena na v.1.5 (990), cache na `v1.5-990`, realtime kanál na `rak-public-live-v990`, package na `1.5.990`.
 
-## v.1.5 (991)
+## v.1.5 (989)
 - Administrace / Rozpisy: doladěné šířky editoru tvrdoty, měkoty a absence podle mobilního testu.
 - Horní mini přehled ukazuje delší zkratky jmen, aby se neřezalo poslední písmeno u běžných jmen.
 - Rychlé Odebrat se zobrazuje přímo u kliknutého jména místo horního sticky panelu.
+- Verze sjednocena na v.1.5 (989), cache na `v1.5-989`, realtime kanál na `rak-public-live-v989`, package na `1.5.989`.
+
+## v.1.5 (987)
 - Administrace / Nastavení strojů: ke středům fhβ přidané samostatné tolerance `Tol. −` a `Tol. +` pro každý index.
 - Korekce frézky fhβ: výpočet už nepoužívá pevné `±10`, ale bere asymetrickou toleranci z nastavení zvoleného indexu.
 - Výsledek korekcí zobrazuje nastavený rozsah tolerance ve tvaru `-X / +Y` a při nevyhovujícím výsledku ukazuje, o kolik je nejlepší varianta mimo rozsah.
-- Verze sjednocena na v.1.5 (991), cache na `v1.5-991`, realtime kanál na `rak-public-live-v991`, package na `1.5.991`.
 
 ## v.1.5 (986)
 
