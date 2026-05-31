@@ -1,4 +1,4 @@
-// 1.2 (1.10) – Piškvorky / online PvP / AI oddělené z hlavního UI modulu.
+// 1.2 (1.13) – Piškvorky / online PvP / AI oddělené z hlavního UI modulu.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('games-gomoku.js', 'loaded', { source: 'dynamic-loader' }); } catch (err) {}
 
 function ensureTicTacToeThemeBoardPatch() {

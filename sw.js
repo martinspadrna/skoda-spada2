@@ -1,5 +1,5 @@
-const CACHE_VERSION = 'v1.2-1.10';
-const SW_APP_VERSION = '1.2 (1.10)';
+const CACHE_VERSION = 'v1.2-1.13';
+const SW_APP_VERSION = '1.2 (1.13)';
 const STATIC_CACHE = `rotace-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `rotace-runtime-${CACHE_VERSION}`;
 const APP_SHELL = [
@@ -31,13 +31,17 @@ const APP_SHELL = [
   "./soustruhy.js",
   "./brusy.js",
   "./rotace.js",
+  "./games-profile.js",
+  "./appearance-theme.js",
   "./games-gomoku.js",
+  "./games-classic.js",
   "./changelog.js",
   "./admin-rotation.js",
   "./admin-food.js",
   "./admin-reports.js",
   "./admin-service-usage.js",
   "./ui.js",
+  "./app-menu.js",
   "./games-arcade.js",
   "./export.js",
   "./app-init.js",

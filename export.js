@@ -1,4 +1,4 @@
-// 1.2 (1.10) – zúžený export manifest pro čistý ostrý ZIP.
+// 1.2 (1.13) – zúžený export manifest pro čistý ostrý ZIP.
 const EXPORT_SOURCE_IDS = {
   "module-readiness.js": "src-module-readiness-js",
   "rak-namespace.js": "src-rak-namespace-js",
@@ -26,13 +26,17 @@ const EXPORT_SOURCE_IDS = {
   "soustruhy.js": "src-soustruhy-js",
   "brusy.js": "src-brusy-js",
   "rotace.js": "src-rotace-js",
+  "games-profile.js": "src-games-profile-js",
+  "appearance-theme.js": "src-appearance-theme-js",
   "games-gomoku.js": "src-games-gomoku-js",
+  "games-classic.js": "src-games-classic-js",
   "changelog.js": "src-changelog-js",
   "admin-rotation.js": "src-admin-rotation-js",
   "admin-food.js": "src-admin-food-js",
   "admin-reports.js": "src-admin-reports-js",
   "admin-service-usage.js": "src-admin-service-usage-js",
   "ui.js": "src-ui-js",
+  "app-menu.js": "src-app-menu-js",
   "games-arcade.js": "src-games-arcade-js",
   "export.js": "src-export-js",
   "app-init.js": "src-app-init-js",
@@ -88,7 +92,7 @@ const EXPORT_SMOKE_REPORT = window.__RAK_EXPORT_SMOKE_REPORT__ || (window.__RAK_
   ok: null,
   status: 'not-run',
   mode: 'export-smoke-report-v939',
-  version: '1.2 (1.10)',
+  version: '1.2 (1.13)',
   checkedAt: null,
   lastStage: 'čeká na export',
   runCount: 0,
@@ -158,13 +162,17 @@ const EXPORT_JS_FILES = [
   "soustruhy.js",
   "brusy.js",
   "rotace.js",
+  "games-profile.js",
+  "appearance-theme.js",
   "games-gomoku.js",
+  "games-classic.js",
   "changelog.js",
   "admin-rotation.js",
   "admin-food.js",
   "admin-reports.js",
   "admin-service-usage.js",
   "ui.js",
+  "app-menu.js",
   "games-arcade.js",
   "export.js",
   "app-init.js",
@@ -194,7 +202,7 @@ const EXPORT_TEXT_FILES = [
 
 function getRakExportManifest() {
   return {
-    version: String(window.APP_VERSION || '1.2 (1.10)'),
+    version: String(window.APP_VERSION || '1.2 (1.13)'),
     mode: 'export-manifest-preflight-v939',
     indexFile: 'index.html',
     jsFiles: Array.from(new Set(EXPORT_JS_FILES)),
@@ -304,7 +312,7 @@ function updateRakExportSmokeReport(partial) {
   const data = partial && typeof partial === 'object' ? partial : {};
   Object.assign(EXPORT_SMOKE_REPORT, data, {
     mode: 'export-smoke-report-v939',
-    version: String(window.APP_VERSION || '1.2 (1.10)'),
+    version: String(window.APP_VERSION || '1.2 (1.13)'),
     checkedAt: new Date().toISOString()
   });
   return getRakExportSmokeReport();

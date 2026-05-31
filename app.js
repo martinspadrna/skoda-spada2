@@ -1,4 +1,4 @@
-// 1.2 (1.10) – větší refactor: Piškvorky oddělené do games-gomoku.js.
+// 1.2 (1.13) – větší refactor: app menu oddělené do app-menu.js.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app.js', 'loaded', { source: 'index' }); } catch (err) {}
 
 
@@ -1053,13 +1053,17 @@ function getPhaseTenScriptLoadHealth() {
     'dashboard.js',
     'soustruhy.js',
     'rotace.js',
+    'games-profile.js',
+    'appearance-theme.js',
     'games-gomoku.js',
+    'games-classic.js',
     'changelog.js',
     'admin-rotation.js',
     'admin-food.js',
     'admin-reports.js',
     'admin-service-usage.js',
     'ui.js',
+    'app-menu.js',
     'games-arcade.js',
     'export.js',
     'supabase-config.js',
@@ -2383,13 +2387,17 @@ function runPhaseTenFinalStabilizationAudit() {
     "dashboard.js",
     "soustruhy.js",
     "rotace.js",
+    "games-profile.js",
+    "appearance-theme.js",
     "games-gomoku.js",
+    "games-classic.js",
     "changelog.js",
     "admin-rotation.js",
     "admin-food.js",
     "admin-reports.js",
     "admin-service-usage.js",
     "ui.js",
+    "app-menu.js",
     "games-arcade.js",
     "export.js",
     "supabase-config.js",
