@@ -1,4 +1,4 @@
-// RaK 1.2 (1.70) – release/architecture readiness audit.
+// RaK 1.2 (1.72) – release/architecture readiness audit.
 
 (function setupRakAuditBaselineHelpers() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();

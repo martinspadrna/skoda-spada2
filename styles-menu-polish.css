@@ -1,4 +1,4 @@
-/* RaK 1.2 (1.70) – menu/O aplikaci/diagnostika polish oddělený ze styles-overrides.css.
+/* RaK 1.2 (1.72) – menu/O aplikaci/diagnostika polish oddělený ze styles-overrides.css.
    Jen přesun existujících pravidel kvůli dokončení CSS cleanupu; bez změny vizuální logiky spodní lišty. */
 
 /* v.1.5 (877): Diagnostika/O aplikaci – dlouhé řádky zůstávají uvnitř buňky. */
@@ -81,3 +81,142 @@
 body.lightweightMode #menu .adminUsageMetric,
 body.lowEndDevice #menu .adminUsageMetric,
 body.ladaMode #menu .adminUsageMetric{backdrop-filter:none !important;-webkit-backdrop-filter:none !important;box-shadow:none !important;}
+
+
+/* RaK 1.2 (1.72) – Přehled připojení jako rozklikávací profily. */
+#menu .adminUsageCard{
+  max-height:none !important;
+  overflow:visible !important;
+  grid-template-rows:none !important;
+}
+#menu .adminUsageList{
+  display:flex !important;
+  flex-direction:column !important;
+  gap:10px !important;
+  max-height:none !important;
+  overflow:visible !important;
+  padding-right:0 !important;
+}
+#menu .adminUsageItem{
+  border-radius:20px !important;
+  border:1px solid color-mix(in srgb, var(--rakThemeAccentStrong, #7CFF7C) 22%, rgba(255,255,255,.10)) !important;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--rakThemeAccentStrong, #7CFF7C) 11%, transparent), transparent 38%),
+    rgba(255,255,255,.045) !important;
+  box-shadow:0 14px 32px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.07) !important;
+  overflow:hidden !important;
+}
+#menu .adminUsageItem[open]{
+  border-color:color-mix(in srgb, var(--rakThemeAccentStrong, #7CFF7C) 44%, rgba(255,255,255,.12)) !important;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--rakThemeAccentStrong, #7CFF7C) 18%, transparent), transparent 42%),
+    rgba(255,255,255,.060) !important;
+}
+#menu .adminUsageSummary{
+  display:grid !important;
+  grid-template-columns:40px minmax(0, 1fr) auto !important;
+  align-items:center !important;
+  gap:10px !important;
+  min-height:58px !important;
+  padding:10px 12px !important;
+}
+#menu .adminUsageAvatar{
+  width:40px !important;
+  height:40px !important;
+  min-width:40px !important;
+  min-height:40px !important;
+  border-radius:16px !important;
+  display:grid !important;
+  place-items:center !important;
+  font-size:17px !important;
+  line-height:1 !important;
+  font-weight:950 !important;
+  color:#06130b !important;
+  background:
+    radial-gradient(circle at 28% 22%, rgba(255,255,255,.80), transparent 32%),
+    linear-gradient(135deg, var(--rakThemeAccentStrong, #7CFF7C), var(--rakThemeAccentSoft, #B7FFBE)) !important;
+  box-shadow:0 0 22px color-mix(in srgb, var(--rakThemeAccentStrong, #7CFF7C) 36%, transparent) !important;
+}
+#menu .adminUsageSummaryText{
+  display:flex !important;
+  flex-direction:column !important;
+  min-width:0 !important;
+  gap:3px !important;
+}
+#menu .adminUsageSummaryText b{
+  max-width:100% !important;
+  font-size:15px !important;
+  line-height:1.12 !important;
+  font-weight:900 !important;
+  color:var(--soft,#f4fff6) !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  white-space:nowrap !important;
+}
+#menu .adminUsageSummaryText small{
+  max-width:100% !important;
+  font-size:12px !important;
+  line-height:1.18 !important;
+  color:rgba(238,247,238,.70) !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  white-space:nowrap !important;
+}
+#menu .adminUsageOpenCount{
+  flex:0 0 auto !important;
+  min-width:44px !important;
+  text-align:center !important;
+  border-radius:999px !important;
+  padding:7px 9px !important;
+  background:color-mix(in srgb, var(--rakThemeAccentStrong, #7CFF7C) 15%, transparent) !important;
+  color:var(--rakThemeAccentStrong,#7CFF7C) !important;
+  font-weight:950 !important;
+  font-size:12px !important;
+}
+#menu .adminUsageBody{
+  padding:0 12px 14px !important;
+  gap:10px !important;
+  max-height:none !important;
+  overflow:visible !important;
+}
+#menu .adminUsageItem[open] .adminUsageBody{
+  max-height:none !important;
+  overflow:visible !important;
+}
+#menu .adminUsageProfileMeta{
+  display:grid !important;
+  grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
+  gap:7px 10px !important;
+  padding:10px !important;
+  border-radius:16px !important;
+  background:rgba(0,0,0,.14) !important;
+  border:1px solid rgba(255,255,255,.08) !important;
+}
+#menu .adminUsageDeviceList{
+  display:flex !important;
+  flex-direction:column !important;
+  gap:8px !important;
+  margin-top:0 !important;
+}
+#menu .adminUsageDeviceRow{
+  border-radius:16px !important;
+  background:rgba(255,255,255,.040) !important;
+  border:1px solid rgba(255,255,255,.08) !important;
+  padding:10px 11px !important;
+}
+@media (max-width:420px){
+  #menu .adminUsageSummary{
+    grid-template-columns:36px minmax(0, 1fr) auto !important;
+    gap:9px !important;
+    padding:9px 10px !important;
+  }
+  #menu .adminUsageAvatar{
+    width:36px !important;
+    height:36px !important;
+    min-width:36px !important;
+    min-height:36px !important;
+    border-radius:14px !important;
+    font-size:15px !important;
+  }
+  #menu .adminUsageProfileMeta{grid-template-columns:1fr !important;}
+}

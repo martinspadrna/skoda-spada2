@@ -1,4 +1,4 @@
-// RaK 1.2 (1.70) – theme, pozadí a profilové UI nastavení.
+// RaK 1.2 (1.72) – theme, pozadí a profilové UI nastavení.
 
 const RAK_THEME_STORAGE_KEY = APP_KEY + ':theme_v1';
 const RAK_THEME_BASE_VARS = {
@@ -27,6 +27,13 @@ const RAK_THEME_DEFS = [
   { id: 'hyper-magenta', label: 'Hyper Magenta', subtitle: 'Hodně sytý růžovo-fialový arcade skin', color: '#FF00E5', unlockText: 'Rank Mistr nebo 28 achievementů', minRank: 'Mistr', minAchievements: 28, vars: { '--bg': '#16001f', '--panel': 'rgba(64,0,82,.82)', '--panel2': 'rgba(110,0,135,.66)', '--green': '#FF00E5', '--green2': '#FFD1FA', '--muted': '#d89de0', '--soft': '#fff0ff', '--rakThemeGlow': 'rgba(255,0,229,.54)', '--rakThemeBorder': 'rgba(255,0,229,.38)' } },
   { id: 'acid-cyber', label: 'Acid Cyber', subtitle: 'Kyselá limetka a cyan, opravdu výrazné UI', color: '#D7FF00', unlockText: 'Rank Senior nebo 34 achievementů', minRank: 'Senior', minAchievements: 34, vars: { '--bg': '#050a00', '--panel': 'rgba(25,44,0,.86)', '--panel2': 'rgba(50,82,0,.72)', '--green': '#D7FF00', '--green2': '#F5FF9E', '--muted': '#c8d889', '--soft': '#fdffe8', '--rakThemeGlow': 'rgba(215,255,0,.56)', '--rakThemeBorder': 'rgba(215,255,0,.40)' } },
   { id: 'lava-core', label: 'Lava Core', subtitle: 'Sytá červená a oranžová jako herní reward', color: '#FF2D00', unlockText: 'Rank Legenda RaK nebo 42 achievementů', minRank: 'Legenda RaK', minAchievements: 42, vars: { '--bg': '#180200', '--panel': 'rgba(70,11,0,.86)', '--panel2': 'rgba(124,23,0,.72)', '--green': '#FF2D00', '--green2': '#FFD3C7', '--muted': '#d8a192', '--soft': '#fff1ed', '--rakThemeGlow': 'rgba(255,45,0,.58)', '--rakThemeBorder': 'rgba(255,45,0,.42)' } },
+  { id: 'storm-signal', label: 'Storm Signal', subtitle: 'Výrazný modro-limetkový theme s červeným napětím', color: '#22D3EE', unlockText: 'Vždy dostupné', minPlays: 0, minAchievements: 0, vars: { '--bg': '#020617', '--panel': 'rgba(3,20,38,.86)', '--panel2': 'rgba(5,35,62,.72)', '--green': '#22D3EE', '--green2': '#D7FF00', '--muted': '#9ccfd8', '--soft': '#effcff', '--rakThemeGlow': 'rgba(34,211,238,.62)', '--rakThemeBorder': 'rgba(215,255,0,.34)', '--rakThemeAccentStrong': '#22D3EE', '--rakThemeAccentSoft': '#D7FF00' } },
+  { id: 'matrix-redline', label: 'Matrix Redline', subtitle: 'Černý tech skin s červenou linkou a zeleným kontrastem', color: '#22C55E', unlockText: 'Vždy dostupné', minPlays: 0, minAchievements: 0, vars: { '--bg': '#020403', '--panel': 'rgba(3,16,12,.88)', '--panel2': 'rgba(12,28,24,.74)', '--green': '#22C55E', '--green2': '#FF3B3B', '--muted': '#95b9a4', '--soft': '#effff4', '--rakThemeGlow': 'rgba(34,197,94,.50)', '--rakThemeBorder': 'rgba(255,59,59,.30)', '--rakThemeAccentStrong': '#22C55E', '--rakThemeAccentSoft': '#FF3B3B' } },
+  { id: 'electric-ocean', label: 'Electric Ocean', subtitle: 'Modro-tyrkysový neon jako noční přístav', color: '#06B6D4', unlockText: 'Vždy dostupné', minPlays: 0, minAchievements: 0, vars: { '--bg': '#020a12', '--panel': 'rgba(5,26,46,.86)', '--panel2': 'rgba(8,48,80,.72)', '--green': '#06B6D4', '--green2': '#67E8F9', '--muted': '#90c5d2', '--soft': '#ecfeff', '--rakThemeGlow': 'rgba(6,182,212,.52)', '--rakThemeBorder': 'rgba(103,232,249,.34)', '--rakThemeAccentStrong': '#06B6D4', '--rakThemeAccentSoft': '#67E8F9' } },
+  { id: 'gold-rush-neon', label: 'Gold Rush Neon', subtitle: 'Zlatá, oranžová a tmavý glass pro výrazný premium vzhled', color: '#F59E0B', unlockText: 'Vždy dostupné', minPlays: 0, minAchievements: 0, vars: { '--bg': '#130b02', '--panel': 'rgba(54,32,5,.86)', '--panel2': 'rgba(92,56,8,.72)', '--green': '#F59E0B', '--green2': '#FDE68A', '--muted': '#cfb47c', '--soft': '#fff8df', '--rakThemeGlow': 'rgba(245,158,11,.52)', '--rakThemeBorder': 'rgba(253,230,138,.34)', '--rakThemeAccentStrong': '#F59E0B', '--rakThemeAccentSoft': '#FDE68A' } },
+  { id: 'arctic-radar', label: 'Arctic Radar', subtitle: 'Ledová modrá s radarem do tyrkysu', color: '#7DD3FC', unlockText: 'Vždy dostupné', minPlays: 0, minAchievements: 0, vars: { '--bg': '#03111f', '--panel': 'rgba(5,28,48,.84)', '--panel2': 'rgba(12,54,82,.70)', '--green': '#7DD3FC', '--green2': '#A7F3D0', '--muted': '#a3c7d8', '--soft': '#f0fbff', '--rakThemeGlow': 'rgba(125,211,252,.50)', '--rakThemeBorder': 'rgba(167,243,208,.34)', '--rakThemeAccentStrong': '#7DD3FC', '--rakThemeAccentSoft': '#A7F3D0' } },
+  { id: 'candy-voltage', label: 'Candy Voltage', subtitle: 'Růžová, cyan a fialová – nejvýraznější barevný neon', color: '#EC4899', unlockText: 'Vždy dostupné', minPlays: 0, minAchievements: 0, vars: { '--bg': '#16051a', '--panel': 'rgba(58,12,65,.86)', '--panel2': 'rgba(96,22,110,.70)', '--green': '#EC4899', '--green2': '#67E8F9', '--muted': '#d4a5c8', '--soft': '#fff0fb', '--rakThemeGlow': 'rgba(236,72,153,.56)', '--rakThemeBorder': 'rgba(103,232,249,.34)', '--rakThemeAccentStrong': '#EC4899', '--rakThemeAccentSoft': '#67E8F9' } },
+  { id: 'stealth-purple', label: 'Stealth Purple', subtitle: 'Tmavá fialová s ostrým glass kontrastem', color: '#A855F7', unlockText: 'Vždy dostupné', minPlays: 0, minAchievements: 0, vars: { '--bg': '#080511', '--panel': 'rgba(28,16,48,.88)', '--panel2': 'rgba(52,28,88,.72)', '--green': '#A855F7', '--green2': '#E9D5FF', '--muted': '#baa5d2', '--soft': '#fbf5ff', '--rakThemeGlow': 'rgba(168,85,247,.52)', '--rakThemeBorder': 'rgba(233,213,255,.30)', '--rakThemeAccentStrong': '#A855F7', '--rakThemeAccentSoft': '#E9D5FF' } },
   { id: 'ultra-violet', label: 'Ultra Violet', subtitle: 'Sytá ultrafialová odměna pro dlouhé hraní', color: '#7C3AED', unlockText: 'Rank RaK nesmrtelný nebo 55 achievementů', minRank: 'RaK nesmrtelný', minAchievements: 55, vars: { '--bg': '#090021', '--panel': 'rgba(35,10,88,.88)', '--panel2': 'rgba(62,22,150,.72)', '--green': '#7C3AED', '--green2': '#DDD6FE', '--muted': '#b7a6da', '--soft': '#f4f0ff', '--rakThemeGlow': 'rgba(124,58,237,.60)', '--rakThemeBorder': 'rgba(124,58,237,.44)' } }
 ];
 window.RAK_THEME_DEFS = RAK_THEME_DEFS;
@@ -276,6 +283,23 @@ const RAK_BACKGROUND_DEFS = [
     }
   },
   {
+    id: 'storm-signal',
+    label: 'Storm signal',
+    subtitle: 'Hodně výrazná bouřka: cyan, limetka a červený radar',
+    color: '#22d3ee',
+    swatch: 'radial-gradient(circle at 12% 14%, rgba(34,211,238,.98), transparent 32%), radial-gradient(circle at 86% 18%, rgba(215,255,0,.90), transparent 34%), radial-gradient(circle at 54% 86%, rgba(255,45,85,.76), transparent 42%), linear-gradient(145deg, #020617, #111827)',
+    unlockText: 'Vždy dostupné', minPlays: 0, minAchievements: 0,
+    vars: {
+      '--rakBgBase': '#020617',
+      '--rakAppBackground': 'radial-gradient(circle at 12% 9%, rgba(34,211,238,.42), transparent 31%), radial-gradient(circle at 88% 18%, rgba(215,255,0,.27), transparent 35%), radial-gradient(circle at 50% 88%, rgba(255,45,85,.20), transparent 42%), radial-gradient(circle at 45% 42%, rgba(59,130,246,.22), transparent 42%), linear-gradient(160deg, #020617 0%, #071633 48%, #111827 100%)',
+      '--rakAppBackgroundOverlay': 'linear-gradient(90deg, rgba(2,6,23,.52), transparent 23%, rgba(34,211,238,.080) 50%, transparent 77%, rgba(2,6,23,.52)), radial-gradient(circle at 48% 42%, rgba(215,255,0,.085), transparent 46%)',
+      '--rakAppBackgroundLite': 'linear-gradient(160deg, #020617 0%, #071633 55%, #111827 100%)',
+      '--rakBgAccent': 'rgba(34,211,238,.42)',
+      '--green': '#22D3EE',
+      '--green2': '#D7FF00'
+    }
+  },
+  {
     id: 'classic-rak',
     label: 'Původní RaK',
     subtitle: 'Klidnější tmavé zelené pozadí',
@@ -356,6 +380,108 @@ const RAK_BACKGROUND_DEFS = [
       '--green': '#7C3AED',
       '--green2': '#DDD6FE'
     }
+  },
+  {
+    id: 'nebula-shock',
+    label: 'Nebula shock',
+    subtitle: 'Výrazná fialovo-cyan mlhovina s růžovým středem',
+    color: '#a855f7',
+    swatch: 'radial-gradient(circle at 14% 16%, rgba(168,85,247,.98), transparent 34%), radial-gradient(circle at 84% 18%, rgba(34,211,238,.86), transparent 38%), radial-gradient(circle at 50% 86%, rgba(236,72,153,.76), transparent 42%), linear-gradient(145deg, #020617, #16051a)',
+    unlockText: 'Vždy dostupné', minPlays: 0, minAchievements: 0,
+    vars: {
+      '--rakBgBase': '#050014',
+      '--rakAppBackground': 'radial-gradient(circle at 14% 10%, rgba(168,85,247,.42), transparent 31%), radial-gradient(circle at 86% 18%, rgba(34,211,238,.30), transparent 36%), radial-gradient(circle at 50% 88%, rgba(236,72,153,.22), transparent 42%), radial-gradient(circle at 45% 42%, rgba(255,255,255,.080), transparent 44%), linear-gradient(160deg, #020617 0%, #090024 48%, #16051a 100%)',
+      '--rakAppBackgroundOverlay': 'linear-gradient(90deg, rgba(2,6,23,.54), transparent 24%, rgba(168,85,247,.078) 50%, transparent 76%, rgba(2,6,23,.54)), radial-gradient(circle at 48% 42%, rgba(34,211,238,.085), transparent 46%)',
+      '--rakAppBackgroundLite': 'linear-gradient(160deg, #020617 0%, #090024 55%, #16051a 100%)',
+      '--rakBgAccent': 'rgba(168,85,247,.42)',
+      '--green': '#a855f7',
+      '--green2': '#67e8f9'
+    }
+  },
+  {
+    id: 'emerald-smoke',
+    label: 'Emerald smoke',
+    subtitle: 'Syté zelené kouřové světlo v tmavém glassu',
+    color: '#22c55e',
+    swatch: 'radial-gradient(circle at 16% 18%, rgba(34,197,94,.98), transparent 34%), radial-gradient(circle at 82% 20%, rgba(16,185,129,.84), transparent 38%), radial-gradient(circle at 50% 86%, rgba(132,204,22,.72), transparent 42%), linear-gradient(145deg, #000, #052e16)',
+    unlockText: 'Vždy dostupné', minPlays: 0, minAchievements: 0,
+    vars: {
+      '--rakBgBase': '#000806',
+      '--rakAppBackground': 'radial-gradient(circle at 13% 10%, rgba(34,197,94,.38), transparent 31%), radial-gradient(circle at 86% 18%, rgba(16,185,129,.28), transparent 37%), radial-gradient(circle at 52% 86%, rgba(132,204,22,.18), transparent 42%), linear-gradient(160deg, #000806 0%, #03160f 48%, #052e16 100%)',
+      '--rakAppBackgroundOverlay': 'linear-gradient(90deg, rgba(0,8,6,.56), transparent 24%, rgba(34,197,94,.070) 50%, transparent 76%, rgba(0,8,6,.56)), radial-gradient(circle at 48% 42%, rgba(255,255,255,.065), transparent 46%)',
+      '--rakAppBackgroundLite': 'linear-gradient(160deg, #000806 0%, #03160f 55%, #052e16 100%)',
+      '--rakBgAccent': 'rgba(34,197,94,.38)',
+      '--green': '#22c55e',
+      '--green2': '#bbf7d0'
+    }
+  },
+  {
+    id: 'ruby-circuit',
+    label: 'Ruby circuit',
+    subtitle: 'Červený digitální glow s jemným cyan kontrastem',
+    color: '#f43f5e',
+    swatch: 'radial-gradient(circle at 14% 16%, rgba(244,63,94,.98), transparent 34%), radial-gradient(circle at 84% 20%, rgba(6,182,212,.76), transparent 38%), radial-gradient(circle at 50% 86%, rgba(249,115,22,.70), transparent 42%), linear-gradient(145deg, #120006, #3b0712)',
+    unlockText: 'Vždy dostupné', minPlays: 0, minAchievements: 0,
+    vars: {
+      '--rakBgBase': '#120006',
+      '--rakAppBackground': 'radial-gradient(circle at 13% 10%, rgba(244,63,94,.40), transparent 31%), radial-gradient(circle at 86% 18%, rgba(6,182,212,.22), transparent 36%), radial-gradient(circle at 52% 86%, rgba(249,115,22,.18), transparent 42%), linear-gradient(160deg, #120006 0%, #25030c 50%, #3b0712 100%)',
+      '--rakAppBackgroundOverlay': 'linear-gradient(90deg, rgba(18,0,6,.56), transparent 24%, rgba(244,63,94,.070) 50%, transparent 76%, rgba(18,0,6,.56)), radial-gradient(circle at 48% 42%, rgba(255,255,255,.068), transparent 46%)',
+      '--rakAppBackgroundLite': 'linear-gradient(160deg, #120006 0%, #25030c 55%, #3b0712 100%)',
+      '--rakBgAccent': 'rgba(244,63,94,.40)',
+      '--green': '#f43f5e',
+      '--green2': '#bae6fd'
+    }
+  },
+  {
+    id: 'midnight-gold',
+    label: 'Midnight gold',
+    subtitle: 'Tmavě modrá se zlatými paprsky',
+    color: '#facc15',
+    swatch: 'radial-gradient(circle at 16% 16%, rgba(250,204,21,.98), transparent 34%), radial-gradient(circle at 82% 18%, rgba(96,165,250,.78), transparent 38%), radial-gradient(circle at 50% 86%, rgba(251,146,60,.66), transparent 42%), linear-gradient(145deg, #020617, #312e05)',
+    unlockText: 'Vždy dostupné', minPlays: 0, minAchievements: 0,
+    vars: {
+      '--rakBgBase': '#020617',
+      '--rakAppBackground': 'radial-gradient(circle at 13% 10%, rgba(250,204,21,.34), transparent 31%), radial-gradient(circle at 86% 18%, rgba(96,165,250,.22), transparent 36%), radial-gradient(circle at 52% 86%, rgba(251,146,60,.18), transparent 42%), linear-gradient(160deg, #020617 0%, #101729 48%, #312e05 100%)',
+      '--rakAppBackgroundOverlay': 'linear-gradient(90deg, rgba(2,6,23,.56), transparent 24%, rgba(250,204,21,.070) 50%, transparent 76%, rgba(2,6,23,.56)), radial-gradient(circle at 48% 42%, rgba(255,255,255,.068), transparent 46%)',
+      '--rakAppBackgroundLite': 'linear-gradient(160deg, #020617 0%, #101729 55%, #312e05 100%)',
+      '--rakBgAccent': 'rgba(250,204,21,.34)',
+      '--green': '#facc15',
+      '--green2': '#fef3c7'
+    }
+  },
+  {
+    id: 'cobalt-fire',
+    label: 'Cobalt fire',
+    subtitle: 'Kobaltově modrá s oranžovým spodním žárem',
+    color: '#3b82f6',
+    swatch: 'radial-gradient(circle at 14% 16%, rgba(59,130,246,.98), transparent 34%), radial-gradient(circle at 84% 18%, rgba(249,115,22,.86), transparent 38%), radial-gradient(circle at 50% 86%, rgba(239,68,68,.68), transparent 42%), linear-gradient(145deg, #020617, #1e1b4b)',
+    unlockText: 'Vždy dostupné', minPlays: 0, minAchievements: 0,
+    vars: {
+      '--rakBgBase': '#020617',
+      '--rakAppBackground': 'radial-gradient(circle at 13% 10%, rgba(59,130,246,.38), transparent 31%), radial-gradient(circle at 86% 18%, rgba(249,115,22,.24), transparent 37%), radial-gradient(circle at 52% 86%, rgba(239,68,68,.18), transparent 42%), linear-gradient(160deg, #020617 0%, #071633 48%, #1e1b4b 100%)',
+      '--rakAppBackgroundOverlay': 'linear-gradient(90deg, rgba(2,6,23,.56), transparent 24%, rgba(59,130,246,.070) 50%, transparent 76%, rgba(2,6,23,.56)), radial-gradient(circle at 48% 42%, rgba(255,255,255,.070), transparent 46%)',
+      '--rakAppBackgroundLite': 'linear-gradient(160deg, #020617 0%, #071633 55%, #1e1b4b 100%)',
+      '--rakBgAccent': 'rgba(59,130,246,.38)',
+      '--green': '#3b82f6',
+      '--green2': '#fed7aa'
+    }
+  },
+  {
+    id: 'solar-flare',
+    label: 'Solar flare',
+    subtitle: 'Oranžovo-žlutý výbuch se sytým kontrastem',
+    color: '#fb923c',
+    swatch: 'radial-gradient(circle at 16% 16%, rgba(251,146,60,.98), transparent 34%), radial-gradient(circle at 82% 20%, rgba(250,204,21,.86), transparent 38%), radial-gradient(circle at 50% 86%, rgba(244,63,94,.70), transparent 42%), linear-gradient(145deg, #170903, #431407)',
+    unlockText: 'Vždy dostupné', minPlays: 0, minAchievements: 0,
+    vars: {
+      '--rakBgBase': '#170903',
+      '--rakAppBackground': 'radial-gradient(circle at 13% 10%, rgba(251,146,60,.38), transparent 31%), radial-gradient(circle at 86% 18%, rgba(250,204,21,.25), transparent 37%), radial-gradient(circle at 52% 86%, rgba(244,63,94,.18), transparent 42%), linear-gradient(160deg, #170903 0%, #2a1205 48%, #431407 100%)',
+      '--rakAppBackgroundOverlay': 'linear-gradient(90deg, rgba(23,9,3,.56), transparent 24%, rgba(251,146,60,.072) 50%, transparent 76%, rgba(23,9,3,.56)), radial-gradient(circle at 48% 42%, rgba(255,255,255,.070), transparent 46%)',
+      '--rakAppBackgroundLite': 'linear-gradient(160deg, #170903 0%, #2a1205 55%, #431407 100%)',
+      '--rakBgAccent': 'rgba(251,146,60,.38)',
+      '--green': '#fb923c',
+      '--green2': '#fef3c7'
+    }
   }
 ];
 
@@ -375,7 +501,8 @@ const RAK_BACKGROUND_UNLOCKS_V927 = {
   'polar-mint': { unlockText: '150 her nebo 18 achievementů', minPlays: 150, minAchievements: 18 },
   'blue-orbit': { unlockText: 'Rank Týmař nebo 20 achievementů', minRank: 'Týmař', minAchievements: 20 },
   'magma-lime': { unlockText: 'Rank Mistr nebo 24 achievementů', minRank: 'Mistr', minAchievements: 24 },
-  'classic-rak': { unlockText: 'Rank Učeň nebo 6 achievementů', minRank: 'Učeň', minAchievements: 6 }
+  'classic-rak': { unlockText: 'Rank Učeň nebo 6 achievementů', minRank: 'Učeň', minAchievements: 6 },
+  'storm-signal': { unlockText: 'Vždy dostupné', minPlays: 0, minAchievements: 0 }
 };
 RAK_BACKGROUND_DEFS.forEach((bg) => {
   const unlock = RAK_BACKGROUND_UNLOCKS_V927[String(bg && bg.id || '')] || null;
@@ -1063,7 +1190,7 @@ function getRakProfileAppearanceRewardHealth() {
   const themeRewards = themes.filter(item => String(item && item.id || '') !== 'default');
   const backgroundRewards = backgrounds.filter(item => String(item && item.id || '') !== 'ios-mesh');
   return {
-    version: window.APP_VERSION || '1.2 (1.70)',
+    version: window.APP_VERSION || '1.2 (1.72)',
     mode: 'profile-appearance-reward-health-v928',
     activeProfile: metrics.hasProfile,
     profileThemeStorage: 'account.uiSettings.themeId',
@@ -1152,7 +1279,7 @@ function getRakDashboardGlassThemeHealth() {
   const lightweight = /(?:^|\s)(?:lightweightMode|lowEndDevice|ladaMode)(?:\s|$)/.test(bodyClass);
   return {
     ok: true,
-    version: window.APP_VERSION || '1.2 (1.70)',
+    version: window.APP_VERSION || '1.2 (1.72)',
     mode: 'dashboard-ios-glass-viewport-fit-v945',
     theme,
     background,

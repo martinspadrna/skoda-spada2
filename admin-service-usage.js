@@ -1,4 +1,4 @@
-// RaK 1.2 (1.70) – Administrace Připojení, servis a oznámení oddělené z hlavního UI modulu.
+// RaK 1.2 (1.72) – Administrace Připojení, servis a oznámení oddělené z hlavního UI modulu.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('admin-service-usage.js', 'loaded', { source: 'dynamic-loader' }); } catch (err) {}
 
 function formatAdminServiceCount(value) {
@@ -174,18 +174,22 @@ function buildAdminUsageHtml() {
           '</div>'
         ].join('');
       }).join('');
+    const initial = String(group.name || 'P').trim().slice(0, 1).toUpperCase() || 'P';
     return [
-      '<details class="adminUsageItem">',
+      '<details class="adminUsageItem" name="adminUsageConnectionProfiles">',
       '  <summary class="adminUsageSummary">',
-      '    <span><b>' + escapeHtml(group.name) + '</b><small>' + escapeHtml(String(deviceCount) + ' zařízení · ' + (ago || formatAdminUsageDate(group.lastSeen))) + '</small></span>',
-      '    <em>' + escapeHtml(String(group.openCount || 0) + '×') + '</em>',
+      '    <span class="adminUsageAvatar" aria-hidden="true">' + escapeHtml(initial) + '</span>',
+      '    <span class="adminUsageSummaryText"><b>' + escapeHtml(group.name) + '</b><small>' + escapeHtml(String(deviceCount) + ' zařízení · ' + (ago || formatAdminUsageDate(group.lastSeen))) + '</small></span>',
+      '    <em class="adminUsageOpenCount">' + escapeHtml(String(group.openCount || 0) + '×') + '</em>',
       '  </summary>',
       '  <div class="adminUsageBody">',
-      '    <div><b>Naposledy:</b> ' + escapeHtml(formatAdminUsageDate(group.lastSeen, true)) + '</div>',
-      '    <div><b>Poprvé:</b> ' + escapeHtml(formatAdminUsageDate(group.firstSeen, true)) + '</div>',
-      group.account ? ('    <div><b>Profil:</b> ' + escapeHtml(group.account) + '</div>') : '',
-      '    <div><b>Verze:</b> ' + escapeHtml(versions) + '</div>',
-      '    <div><b>Displeje:</b> ' + escapeHtml(displayText) + '</div>',
+      '    <div class="adminUsageProfileMeta">',
+      '      <div><b>Naposledy:</b> ' + escapeHtml(formatAdminUsageDate(group.lastSeen, true)) + '</div>',
+      '      <div><b>Poprvé:</b> ' + escapeHtml(formatAdminUsageDate(group.firstSeen, true)) + '</div>',
+      group.account ? ('      <div><b>Profil:</b> ' + escapeHtml(group.account) + '</div>') : '',
+      '      <div><b>Verze:</b> ' + escapeHtml(versions) + '</div>',
+      '      <div><b>Displeje:</b> ' + escapeHtml(displayText) + '</div>',
+      '    </div>',
       '    <div class="adminUsageDeviceList">' + deviceRows + '</div>',
       '  </div>',
       '</details>'

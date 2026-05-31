@@ -1,14 +1,14 @@
-## 1.2 (1.70)
+## 1.2 (1.72)
 
-## RaK 1.2 (1.70)
+## RaK 1.2 (1.72)
 - Dokončen aktuální refactor/cleanup balík: poslední bezpečný CSS úklid menu/O aplikaci/diagnostiky do `styles-menu-polish.css`.
 - Přesunuté jen existující vzhledové vrstvy pro O aplikaci, diagnostiku, zamčené vzhledy a admin přehled připojení; bez změny spodní lišty, Supabase DB a online her.
-- Release metadata sjednocená na `RaK 1.2 (1.70)`, technická verze `1.2.70`.
+- Release metadata sjednocená na `RaK 1.2 (1.72)`, technická verze `1.2.72`.
 
 - CSS cleanup: dashboard compact/viewport-fit polish oddělený ze `styles-overrides.css` do nové vrstvy `styles-dashboard-fit.css`.
 - Pořadí kaskády zachováno: nový soubor se načítá hned po `styles-overrides.css`, před admin/stats/theme/release/dashboard polish vrstvami.
 - Bez zásahu do Supabase DB/policies, online her, výpočtové logiky, Rotace logiky a vizuálních pravidel spodní lišty.
-- Verze, cache, realtime kanál, service worker, export metadata a GitHub hlavičky sjednocené na `RaK 1.2 (1.70)`.
+- Verze, cache, realtime kanál, service worker, export metadata a GitHub hlavičky sjednocené na `RaK 1.2 (1.72)`.
 
 ## 1.2 (1.40)
 - CSS cleanup: viewport/iOS/PWA start stabilizační vrstva přesunutá ze `styles-overrides.css` do `styles-viewport-polish.css`.
