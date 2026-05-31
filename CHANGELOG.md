@@ -1,9 +1,10 @@
-## v.1.5 (999)
-- Mobilní stabilizace startu: počáteční výška appky se zamkne před prvním vykreslením podle layout viewportu, ne podle později se měnícího visualViewportu.
-- Odstraněná stará fixní pseudo-vrstva pozadí, která dělala tmavší přechod ve výšce nadpisů a zůstávala na místě při scrollu.
-- Rotace: dock jmen už nepřepisuje polohu z JS po otevření stránky, drží se CSS těsně nad spodním panelem.
-- Kontrola kantýny/jídelny po přesunu do samostatné administrace bez změny DB/policies.
-- Verze sjednocena na v.1.5 (999), cache na `v1.5-999`, realtime kanál na `rak-public-live-v999`, package na `1.5.999`.
+## v.1.5 (1000)
+- Rotace: seznam jmen se při kliknutí na Rotace během prvního vykreslení krátce schová a zobrazí až ve stabilní poloze, aby nebylo vidět poskočení nad spodní panel.
+- Rotace: dock jmen už nepoužívá živou proměnnou `--bottom-nav-h`, která se po startu/změně viewportu přepočítávala a mohla dock vytáhnout nahoru.
+- Administrace → Kantýna / jídelna: opraveno ukládání `FOOD_SCHEDULE_SETTINGS`; food řádek se ukládá přímým upsertem mimo staré RPC pro stroje, které vracelo `invalid category`.
+- Administrace → Kantýna / jídelna: zúžené sloupce Místo/Den, kompaktnější přesčasová tabulka a užší tabulka seznamu přesčasů.
+- Supabase DB schéma ani policies beze změny; změna ukládání je jen klientská.
+- Verze sjednocena na v.1.5 (1000), cache na `v1.5-1000`, realtime kanál na `rak-public-live-v1000`, package na `1.5.1000`.
 
 ## v.1.5 (998)
 

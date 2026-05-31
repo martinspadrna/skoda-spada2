@@ -10777,14 +10777,16 @@ function buildAdminFoodScheduleSettingsHtml() {
     '  <div class="smallText uMb10">Tady si můžeš upravit běžnou otevírací dobu, přesčasovou dobu a seznam přesčasových nedělí. Časy piš třeba <b>05:30–09:00, 10:00–12:00</b>. Datumy piš česky, třeba <b>11.1.2027</b>.</div>',
     '  <div class="tableWrap appMenuTableWrap uMt8">',
     '    <div class="smallText">Běžná otevírací doba</div>',
-    '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminFoodScheduleTable">',
+    '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminFoodScheduleTable adminFoodRegularTable">',
+    '      <colgroup><col class="adminFoodColPlace"><col class="adminFoodColDay"><col class="adminFoodColTime"></colgroup>',
     '      <thead><tr><th>Místo</th><th>Den</th><th>Časy</th></tr></thead>',
     '      <tbody>' + dayRows.join('') + '</tbody>',
     '    </table>',
     '  </div>',
     '  <div class="tableWrap appMenuTableWrap uMt12">',
     '    <div class="smallText">Přesčasová doba</div>',
-    '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminFoodScheduleTable">',
+    '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminFoodScheduleTable adminFoodOvertimeTable">',
+    '      <colgroup><col class="adminFoodColPlace"><col class="adminFoodColTime"></colgroup>',
     '      <thead><tr><th>Místo</th><th>Časy při přesčasu</th></tr></thead>',
     '      <tbody>' + overtimeRows + '</tbody>',
     '    </table>',
@@ -10792,6 +10794,7 @@ function buildAdminFoodScheduleSettingsHtml() {
     '  <div class="tableWrap appMenuTableWrap uMt12">',
     '    <div class="smallText">Seznam přesčasových nedělí</div>',
     '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminFoodDatesTable">',
+    '      <colgroup><col class="adminFoodDateNumberCol"><col class="adminFoodDateValueCol"></colgroup>',
     '      <thead><tr><th>#</th><th>Datum</th></tr></thead>',
     '      <tbody>' + dateRows + '</tbody>',
     '    </table>',
@@ -12294,7 +12297,7 @@ function adminShowRotationSelectedRemove(input) {
       return;
     }
     window.__rakAdminRotationSelectedInput = input;
-    // v.1.5 (999): horní sticky tlačítko už při kliknutí do jména nevytahujeme.
+    // v.1.5 (1000): horní sticky tlačítko už při kliknutí do jména nevytahujeme.
     // Rychlé Odebrat se vykreslí přímo u aktivního pole přes adminShowRotationQuickRemove().
     btn.hidden = true;
     btn.dataset.targetReady = '1';
@@ -13589,7 +13592,7 @@ function updateRotaceNamesDockMetrics(reason) {
     ok: true,
     reason: String(reason || 'manual'),
     checkedAt: new Date().toISOString(),
-    mode: 'stable-css-no-post-open-jump-v930',
+    mode: 'stable-css-fixed-bottom-v1000',
     bottomPx: 0,
     maxHeightPx: 0,
     contentBottomPx: 0,
@@ -13631,17 +13634,17 @@ function updateRotaceNamesDockMetrics(reason) {
 }
 
 function scheduleRotaceNamesDockMetrics(reason) {
-  // v999: už nepřepisujeme polohu doku jmen z JS podle visualViewportu.
+  // v1000: už nepřepisujeme polohu doku jmen z JS podle visualViewportu.
   // iOS po otevření mění viewport a stará metrika tím dock po chvíli vytahovala nahoru.
   try {
     const root = document.documentElement;
-    if (root && root.dataset) root.dataset.rakRotaceNamesDockMode = 'css-locked-v999';
+    if (root && root.dataset) root.dataset.rakRotaceNamesDockMode = 'css-locked-v1000';
     if (typeof requestAnimationFrame === 'function') {
-      requestAnimationFrame(() => { try { updateRotaceNamesDockMetrics(reason || 'css-locked-v999'); } catch (err) {} });
+      requestAnimationFrame(() => { try { updateRotaceNamesDockMetrics(reason || 'css-locked-v1000'); } catch (err) {} });
     }
-    return updateRotaceNamesDockMetrics(reason || 'css-locked-v999');
+    return updateRotaceNamesDockMetrics(reason || 'css-locked-v1000');
   } catch (err) {
-    try { return updateRotaceNamesDockMetrics(reason || 'css-locked-v999-fallback'); } catch (_) { return null; }
+    try { return updateRotaceNamesDockMetrics(reason || 'css-locked-v1000-fallback'); } catch (_) { return null; }
   }
 }
 
@@ -13649,9 +13652,8 @@ if (!window.__rakRotaceNamesDockMetricsBound) {
   window.__rakRotaceNamesDockMetricsBound = true;
   try { window.addEventListener('resize', () => scheduleRotaceNamesDockMetrics('window-resize'), { passive: true }); } catch (err) {}
   try { window.addEventListener('orientationchange', () => scheduleRotaceNamesDockMetrics('orientationchange'), { passive: true }); } catch (err) {}
-  try {
-    if (window.visualViewport) window.visualViewport.addEventListener('resize', () => scheduleRotaceNamesDockMetrics('visual-viewport-resize'), { passive: true });
-  } catch (err) {}
+  // v1000: Rotace dock nesmí po kliknutí viditelně poskočit kvůli iOS visualViewport usazování.
+  // Přeměření podle visualViewportu tu už nepoužíváme; poloha je pevná v CSS.
   try { document.addEventListener('DOMContentLoaded', () => scheduleRotaceNamesDockMetrics('dom-ready'), { once: true }); } catch (err) {}
 }
 try { window.updateRotaceNamesDockMetrics = updateRotaceNamesDockMetrics; } catch (err) {}
@@ -13734,11 +13736,17 @@ function showPage(id) {
     if (el) el.classList.add('active');
 
     if (id === 'rotace') {
+      try { document.documentElement.classList.add('rakRotaceEntering'); } catch (err) {}
       if (typeof updateRotaceNamesDockMetrics === 'function') updateRotaceNamesDockMetrics('showPage-before-render');
       if (typeof initRotaceCurrentMonth === 'function') initRotaceCurrentMonth();
       setRotaceView('names');
       if (typeof renderRotace === 'function') renderRotace();
       if (typeof scheduleRotaceNamesDockMetrics === 'function') scheduleRotaceNamesDockMetrics('showPage-after-render');
+      try {
+        const finishRotaceEnter = () => { try { document.documentElement.classList.remove('rakRotaceEntering'); } catch (err) {} };
+        if (typeof requestAnimationFrame === 'function') requestAnimationFrame(() => requestAnimationFrame(finishRotaceEnter));
+        else setTimeout(finishRotaceEnter, 80);
+      } catch (err) {}
     } else if (id === 'brusy') {
       if (typeof renderBrusy === 'function') renderBrusy();
     } else if (id === 'soustruhy') {

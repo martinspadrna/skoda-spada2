@@ -20379,18 +20379,18 @@ html body #home.page.active > .dashboardShell::after{
   #rotace.page.active #rotaceNamesPanel.active #namesGrid{max-height:min(27dvh,112px) !important;}
 }
 
-/* v.1.5 (999) – stabilizace pozadí, iOS startu a Rotace doku jmen. */
+/* v.1.5 (1000) – stabilizace pozadí, iOS startu a Rotace doku jmen. */
 :root{
-  --rak-v999-start-h:var(--rak-start-viewport-h, 100dvh);
-  --rak-v999-nav-gap:1px;
-  --rak-v999-rotace-names-h:min(26dvh, 112px);
-  --rak-rotace-names-dock-bottom:calc(var(--bottom-nav-h, 58px) + var(--rak-v999-nav-gap)) !important;
-  --rak-rotace-names-content-bottom:calc(var(--bottom-nav-h, 58px) + var(--rak-v999-rotace-names-h) + 12px) !important;
+  --rak-v1000-start-h:var(--rak-start-viewport-h, 100dvh);
+  --rak-v1000-nav-gap:1px;
+  --rak-v1000-rotace-names-h:min(26dvh, 112px);
+  --rak-rotace-names-dock-bottom:calc(var(--bottom-nav-h, 58px) + var(--rak-v1000-nav-gap)) !important;
+  --rak-rotace-names-content-bottom:calc(var(--bottom-nav-h, 58px) + var(--rak-v1000-rotace-names-h) + 12px) !important;
 }
 html,
 html.rakViewportPrimed,
 html.rakStableBootViewport{
-  min-height:var(--rak-v999-start-h) !important;
+  min-height:var(--rak-v1000-start-h) !important;
   background:var(--rakAppBackground, var(--bg, #050816)) !important;
   background-color:var(--rakBgBase, var(--bg, #050816)) !important;
   overflow-x:hidden !important;
@@ -20398,7 +20398,7 @@ html.rakStableBootViewport{
 body,
 html.rakViewportPrimed body,
 html.rakStableBootViewport body{
-  min-height:var(--rak-v999-start-h) !important;
+  min-height:var(--rak-v1000-start-h) !important;
   background:var(--rakAppBackground, var(--bg, #050816)) !important;
   background-color:var(--rakBgBase, var(--bg, #050816)) !important;
   background-attachment:scroll !important;
@@ -20429,7 +20429,7 @@ html body .bottomNav{
 }
 #rotace.page.active #rotaceNamesPanel.active #namesGrid{
   bottom:var(--rak-rotace-names-dock-bottom) !important;
-  max-height:var(--rak-v999-rotace-names-h) !important;
+  max-height:var(--rak-v1000-rotace-names-h) !important;
   transform:translate3d(-50%,0,0) !important;
   transition:none !important;
   animation:none !important;
@@ -20438,7 +20438,7 @@ html body .bottomNav{
 @media (display-mode:standalone){
   html.rakStableBootViewport,
   html.rakStableBootViewport body{
-    min-height:var(--rak-v999-start-h) !important;
+    min-height:var(--rak-v1000-start-h) !important;
   }
 }
 @supports (-webkit-touch-callout:none){
@@ -20446,8 +20446,92 @@ html body .bottomNav{
   body,
   html.rakStableBootViewport,
   html.rakStableBootViewport body{
-    min-height:var(--rak-v999-start-h) !important;
+    min-height:var(--rak-v1000-start-h) !important;
     background:var(--rakAppBackground, var(--bg, #050816)) !important;
     background-color:var(--rakBgBase, var(--bg, #050816)) !important;
   }
+}
+
+
+/* v.1.5 (1000) – Rotace dock bez poskočení + kompaktní Kantýna/jídelna admin. */
+:root{
+  --rak-v1000-rotace-dock-bottom: max(58px, calc(53px + env(safe-area-inset-bottom)));
+  --rak-v1000-rotace-names-h: min(26dvh, 112px);
+  --rak-rotace-names-dock-bottom: var(--rak-v1000-rotace-dock-bottom) !important;
+  --rak-rotace-names-content-bottom: calc(var(--rak-v1000-rotace-dock-bottom) + var(--rak-v1000-rotace-names-h) + 12px) !important;
+}
+html.rakRotaceEntering #rotace.page.active #rotaceNamesPanel.active #namesGrid{
+  opacity:0 !important;
+  pointer-events:none !important;
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid{
+  bottom:var(--rak-v1000-rotace-dock-bottom) !important;
+  max-height:var(--rak-v1000-rotace-names-h) !important;
+  transform:translate3d(-50%,0,0) !important;
+  transition:none !important;
+  animation:none !important;
+  will-change:auto !important;
+}
+#rotace.page.active #rotaceNamesPanel.active{
+  padding-bottom:var(--rak-rotace-names-content-bottom) !important;
+  scroll-padding-bottom:var(--rak-rotace-names-content-bottom) !important;
+}
+#menu .adminFoodScheduleTable{
+  table-layout:fixed !important;
+  width:100% !important;
+}
+#menu .adminFoodScheduleTable th,
+#menu .adminFoodScheduleTable td,
+#menu .adminFoodDatesTable th,
+#menu .adminFoodDatesTable td{
+  padding:6px 5px !important;
+  vertical-align:middle !important;
+}
+#menu .adminFoodRegularTable .adminFoodColPlace{width:18% !important;}
+#menu .adminFoodRegularTable .adminFoodColDay{width:18% !important;}
+#menu .adminFoodRegularTable .adminFoodColTime{width:64% !important;}
+#menu .adminFoodOvertimeTable .adminFoodColPlace{width:18% !important;}
+#menu .adminFoodOvertimeTable .adminFoodColTime{width:82% !important;}
+#menu .adminFoodDatesTable{
+  table-layout:fixed !important;
+  width:min(100%, 360px) !important;
+}
+#menu .adminFoodDatesTable .adminFoodDateNumberCol{width:42px !important;}
+#menu .adminFoodDatesTable .adminFoodDateValueCol{width:170px !important;}
+#menu .adminFoodDatesTable th:first-child,
+#menu .adminFoodDatesTable td:first-child{
+  text-align:center !important;
+  width:42px !important;
+  max-width:42px !important;
+  color:rgba(234,255,234,.62) !important;
+  font-size:11px !important;
+}
+#menu .adminFoodWindowsInput,
+#menu .adminFoodDateInput{
+  width:100% !important;
+  min-width:0 !important;
+  box-sizing:border-box !important;
+}
+#menu .adminFoodRegularTable td:first-child,
+#menu .adminFoodRegularTable td:nth-child(2),
+#menu .adminFoodOvertimeTable td:first-child{
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  font-size:12px !important;
+}
+@media (max-width:430px){
+  :root{
+    --rak-v1000-rotace-dock-bottom:max(56px, calc(51px + env(safe-area-inset-bottom)));
+    --rak-v1000-rotace-names-h:min(25dvh, 108px);
+  }
+  #menu .adminFoodRegularTable .adminFoodColPlace{width:17% !important;}
+  #menu .adminFoodRegularTable .adminFoodColDay{width:17% !important;}
+  #menu .adminFoodRegularTable .adminFoodColTime{width:66% !important;}
+  #menu .adminFoodOvertimeTable .adminFoodColPlace{width:17% !important;}
+  #menu .adminFoodOvertimeTable .adminFoodColTime{width:83% !important;}
+  #menu .adminFoodScheduleTable th,
+  #menu .adminFoodScheduleTable td,
+  #menu .adminFoodDatesTable th,
+  #menu .adminFoodDatesTable td{padding:5px 4px !important;}
 }
