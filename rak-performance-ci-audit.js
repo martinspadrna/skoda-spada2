@@ -1,6 +1,6 @@
-// RaK 1.2 (1.38) – performance/CI/test strategy audit.
+// RaK 1.2 (1.42) – performance/CI/test strategy audit.
 (function setupRakPerformanceCiAudit() {
-  const VERSION = '1.2 (1.38)';
+  const VERSION = '1.2 (1.42)';
   const MODE = 'performance-ci-audit-readonly-v923';
 
   try {

@@ -1,4 +1,4 @@
-// RaK 1.2 (1.38) – dashboard a domácí přehled.
+// RaK 1.2 (1.42) – dashboard a domácí přehled.
 
 function setDashboardHtmlIfChanged(element, html, key) {
   if (!element) return false;
@@ -643,8 +643,7 @@ function updateDashboard() {
   };
   const foodMeta = status => {
     if (!status) return '';
-    const activePrefix = status.isOpen && status.active && status.active.specialOvertime ? 'Přesčas · ' : '';
-    if (!status.next) return status.isOpen ? (activePrefix + 'Dnes už nic dalšího.') : 'Rozpis není dostupný.';
+    if (!status.next) return status.isOpen ? 'Dnes už nic dalšího.' : 'Rozpis není dostupný.';
     const nextStart = new Date(status.next.start);
     const nextEnd = new Date(status.next.end);
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -656,8 +655,8 @@ function updateDashboard() {
       : (nextDay.getTime() === tomorrow.getTime()
         ? 'Zítra ' + formatFoodTime(nextStart)
         : foodDate(nextStart) + ' ' + formatFoodTime(nextStart));
-    const nextPrefix = status.next.specialOvertime ? 'Přesčas · ' : '';
-    return activePrefix + 'Další: ' + nextPrefix + label + '–' + formatFoodTime(nextEnd);
+    const nextPrefix = status.next.specialOvertime ? 'Přesčas ' : '';
+    return 'Další: ' + nextPrefix + label + '–' + formatFoodTime(nextEnd);
   };
   setCard('dashKantyna', 'Kantýna', foodText(kantyna), foodMeta(kantyna), foodDot(kantyna), true, croissantIcon);
   setCard('dashJidelna', 'Jídelna', foodText(jidelna), foodMeta(jidelna), foodDot(jidelna), true, plateIcon);
@@ -915,8 +914,7 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
     };
     const foodMeta = (status) => {
       if (!status) return '';
-      const activePrefix = status.isOpen && status.active && status.active.specialOvertime ? 'Přesčas · ' : '';
-      if (!status.next) return status.isOpen ? (activePrefix + 'Dnes už nic dalšího.') : '';
+      if (!status.next) return status.isOpen ? 'Dnes už nic dalšího.' : '';
       const nextStart = new Date(status.next.start);
       const nextEnd = new Date(status.next.end);
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -928,8 +926,8 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
         : (nextDay.getTime() === tomorrow.getTime()
           ? 'Zítra ' + formatFoodTime(nextStart)
           : foodDate(nextStart) + ' ' + formatFoodTime(nextStart));
-      const nextPrefix = status.next.specialOvertime ? 'Přesčas · ' : '';
-      return activePrefix + 'Další: ' + nextPrefix + label + '–' + formatFoodTime(nextEnd);
+      const nextPrefix = status.next.specialOvertime ? 'Přesčas ' : '';
+      return 'Další: ' + nextPrefix + label + '–' + formatFoodTime(nextEnd);
     };
     const hero = document.getElementById('dashHero');
     if (hero) {
@@ -979,7 +977,7 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
 function getRakDashboardHeroCenteringHealth() {
   return {
     ok: true,
-    version: window.APP_VERSION || '1.2 (1.38)',
+    version: window.APP_VERSION || '1.2 (1.42)',
     heroId: 'dashHero',
     scope: 'dashboard top shift panel',
     centeredLines: ['dashboardHeroLine1', 'dashboardHeroLine2', 'dashboardHeroLine3', 'dashboardHeroLine3Sub'],

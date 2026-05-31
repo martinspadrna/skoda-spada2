@@ -1,6 +1,6 @@
-// RaK 1.2 (1.38) – sw.
-const CACHE_VERSION = 'v1.2-1.38';
-const SW_APP_VERSION = '1.2 (1.38)';
+// RaK 1.2 (1.42) – sw.
+const CACHE_VERSION = 'v1.2-1.42';
+const SW_APP_VERSION = '1.2 (1.42)';
 const STATIC_CACHE = `rotace-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `rotace-runtime-${CACHE_VERSION}`;
 const APP_SHELL = [
@@ -74,10 +74,14 @@ const APP_SHELL = [
   "./styles-calc-panels.css",
   "./styles-games.css",
   "./styles-overrides.css",
+  "./styles-dashboard-fit.css",
   "./styles-admin-polish.css",
+  "./styles-menu-polish.css",
   "./styles-stats-polish.css",
+  "./styles-viewport-polish.css",
   "./styles-theme-polish.css",
   "./styles-release-polish.css",
+  "./styles-dashboard-polish.css",
   "./manifest.webmanifest",
   "./assets/app-icons/icon-16.png",
   "./assets/app-icons/icon-32.png",

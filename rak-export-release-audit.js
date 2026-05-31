@@ -1,4 +1,4 @@
-// RaK 1.2 (1.38) – export/release audit.
+// RaK 1.2 (1.42) – export/release audit.
 
 (function setupRakExportReleaseAudit() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -106,10 +106,14 @@
       'manifest.webmanifest',
       'styles.css',
       'styles-overrides.css',
+      'styles-dashboard-fit.css',
       'styles-admin-polish.css',
+      'styles-menu-polish.css',
       'styles-stats-polish.css',
+      'styles-viewport-polish.css',
       'styles-theme-polish.css',
-      'styles-release-polish.css'
+      'styles-release-polish.css',
+      'styles-dashboard-polish.css'
     ];
     const requiredExportSignals = [
       'exportCurrentHtml',

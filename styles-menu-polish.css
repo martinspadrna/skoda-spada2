@@ -1,0 +1,83 @@
+/* RaK 1.2 (1.42) – menu/O aplikaci/diagnostika polish oddělený ze styles-overrides.css.
+   Jen přesun existujících pravidel kvůli dokončení CSS cleanupu; bez změny vizuální logiky spodní lišty. */
+
+/* v.1.5 (877): Diagnostika/O aplikaci – dlouhé řádky zůstávají uvnitř buňky. */
+.appMenuDiagnosticsCard,
+.appMenuKeepaliveCard{
+  max-width:100% !important;
+  min-width:0 !important;
+  overflow:hidden !important;
+  box-sizing:border-box !important;
+}
+.appMenuDiagnosticsText{
+  display:block !important;
+  width:100% !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  box-sizing:border-box !important;
+  margin:0 !important;
+  padding:10px 11px !important;
+  border-radius:14px !important;
+  border:1px solid rgba(124,255,124,.10) !important;
+  background:rgba(0,0,0,.18) !important;
+  color:rgba(238,255,240,.92) !important;
+  font-size:11px !important;
+  line-height:1.45 !important;
+  font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace !important;
+  white-space:pre-wrap !important;
+  overflow-wrap:anywhere !important;
+  word-break:break-word !important;
+  overflow:auto !important;
+  max-height:min(52vh, 520px) !important;
+  -webkit-overflow-scrolling:touch !important;
+}
+.appMenuKeepaliveCard .smallText,
+.appMenuDiagnosticsCard .smallText,
+.appMenuDiagnosticsCard .appMenuCardTitle{
+  max-width:100% !important;
+  min-width:0 !important;
+  overflow-wrap:anywhere !important;
+  word-break:break-word !important;
+}
+@media (max-width:420px){
+  .appMenuDiagnosticsText{
+    font-size:10.5px !important;
+    padding:9px 10px !important;
+  }
+}
+
+/* v.1.5 (927): zamčené odměnové pozadí v nastavení vzhledu */
+.appMenuBackgroundCard.isLocked{
+  opacity:.62 !important;
+  filter:saturate(.72) brightness(.88) !important;
+}
+.appMenuBackgroundCard.isLocked .appMenuThemeBadge,
+.appMenuThemeCard.isLocked .appMenuThemeBadge{
+  color:rgba(255,255,255,.72) !important;
+}
+
+/* v.1.5 (963) – Admin přehled připojení / anonymní využití aplikace */
+#menu .adminUsageCard{display:grid !important;gap:12px !important;}
+#menu .adminUsageGrid{display:grid !important;grid-template-columns:repeat(2,minmax(0,1fr)) !important;gap:10px !important;margin-top:6px !important;}
+#menu .adminUsageMetric{min-height:54px !important;padding:10px 12px !important;border-radius:18px !important;border:1px solid rgba(255,255,255,.10) !important;background:rgba(255,255,255,.055) !important;display:flex !important;flex-direction:column !important;justify-content:space-between !important;gap:5px !important;}
+#menu .adminUsageMetric span{font-size:11px !important;line-height:1.15 !important;color:rgba(238,247,238,.68) !important;}
+#menu .adminUsageMetric b{font-size:18px !important;line-height:1 !important;color:var(--rakThemeAccent,#7CFF7C) !important;}
+#menu .adminUsageLatest{padding:10px 12px !important;border-radius:16px !important;background:rgba(0,0,0,.14) !important;border:1px solid rgba(255,255,255,.08) !important;}
+#menu .adminUsageList{display:flex !important;flex-direction:column !important;gap:8px !important;max-height:50vh !important;overflow:auto !important;overscroll-behavior:contain !important;padding-right:2px !important;}
+#menu .adminUsageItem{border:1px solid rgba(255,255,255,.12) !important;border-radius:18px !important;background:rgba(255,255,255,.045) !important;overflow:hidden !important;}
+#menu .adminUsageSummary{display:flex !important;align-items:center !important;justify-content:space-between !important;gap:10px !important;padding:10px 12px !important;cursor:pointer !important;list-style:none !important;}
+#menu .adminUsageSummary::-webkit-details-marker{display:none !important;}
+#menu .adminUsageSummary span{display:flex !important;flex-direction:column !important;gap:2px !important;min-width:0 !important;}
+#menu .adminUsageSummary b{font-size:14px !important;line-height:1.15 !important;color:var(--soft,#f4fff6) !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important;max-width:220px !important;}
+#menu .adminUsageSummary small{font-size:12px !important;color:var(--muted,#91a396) !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important;max-width:230px !important;}
+#menu .adminUsageSummary em{font-style:normal !important;border-radius:999px !important;padding:5px 8px !important;background:rgba(124,255,124,.12) !important;color:var(--rakThemeAccent,#7CFF7C) !important;font-weight:900 !important;font-size:12px !important;white-space:nowrap !important;}
+#menu .adminUsageBody{display:flex !important;flex-direction:column !important;gap:6px !important;padding:0 12px 12px !important;font-size:13px !important;line-height:1.35 !important;color:rgba(245,255,247,.86) !important;}
+#menu .adminUsageUa{max-height:62px !important;overflow:auto !important;overscroll-behavior:contain !important;padding:8px 10px !important;border-radius:12px !important;background:rgba(0,0,0,.16) !important;}
+#menu .adminUsageEvents{display:flex !important;flex-direction:column !important;gap:6px !important;padding:10px 12px !important;border-radius:16px !important;background:rgba(255,255,255,.04) !important;border:1px solid rgba(255,255,255,.08) !important;}
+#menu .adminUsageEvent{font-size:12px !important;color:rgba(240,255,245,.76) !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important;}
+#menu .adminUsageEmpty{padding:12px !important;border-radius:16px !important;background:rgba(0,0,0,.14) !important;border:1px dashed rgba(255,255,255,.12) !important;}
+#menu .adminUsageActions{margin-top:2px !important;}
+@media (max-width:380px){#menu .adminUsageGrid{grid-template-columns:1fr !important;}}
+body.lightweightMode #menu .adminUsageMetric,
+body.lowEndDevice #menu .adminUsageMetric,
+body.ladaMode #menu .adminUsageMetric{backdrop-filter:none !important;-webkit-backdrop-filter:none !important;box-shadow:none !important;}

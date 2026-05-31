@@ -1,0 +1,84 @@
+/* RaK 1.2 (1.42) – dashboard panely: průhlednější matný glass. */
+#home.page.active .dashboardShell{
+  --rak-dash-glass-bg: color-mix(in srgb, rgba(5,9,16,.34) 68%, var(--theme-surface, rgba(255,255,255,.10)) 32%) !important;
+  --rak-dash-glass-bg-strong: color-mix(in srgb, rgba(5,9,16,.40) 70%, var(--theme-surface, rgba(255,255,255,.12)) 30%) !important;
+  --rak-dash-glass-border: color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, var(--green2))) 24%, rgba(255,255,255,.26)) !important;
+  --rak-dash-glass-glow: color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, var(--green2))) 11%, transparent) !important;
+}
+#home.page.active .dashboardShell,
+body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) #home.page.active .dashboardShell{
+  background:
+    radial-gradient(circle at 9% 0%, color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, #7cff7c)) 10%, transparent), transparent 42%),
+    linear-gradient(180deg, rgba(255,255,255,.058), rgba(255,255,255,.018)),
+    rgba(5,9,16,.24) !important;
+  border-color: color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, #7cff7c)) 20%, rgba(255,255,255,.22)) !important;
+  -webkit-backdrop-filter: blur(30px) saturate(1.45) contrast(1.02) !important;
+  backdrop-filter: blur(30px) saturate(1.45) contrast(1.02) !important;
+  box-shadow: 0 20px 56px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.14) !important;
+}
+body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) #home .dashboardHeroCard,
+body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) #home .dashboardCard,
+body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) #home .tile.dashboardCard{
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.076), rgba(255,255,255,.022) 58%, rgba(255,255,255,.010)) !important;
+  background-color: color-mix(in srgb, rgba(5,9,16,.36) 68%, var(--theme-surface, rgba(255,255,255,.10)) 32%) !important;
+  border-color: color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, #7cff7c)) 22%, rgba(255,255,255,.24)) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(1.48) contrast(1.03) !important;
+  backdrop-filter: blur(32px) saturate(1.48) contrast(1.03) !important;
+  box-shadow:
+    0 16px 42px rgba(0,0,0,.20),
+    inset 0 1px 0 rgba(255,255,255,.17),
+    inset 0 -1px 0 rgba(255,255,255,.030),
+    0 0 0 1px rgba(255,255,255,.030) !important;
+}
+#home .dashboardHeroCard::before,
+#home .dashboardCard::before{
+  opacity:.34 !important;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.13), transparent 34%),
+    radial-gradient(circle at 14% 0%, color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, #7cff7c)) 9%, transparent), transparent 42%) !important;
+}
+#home .dashboardHeroCard::after,
+#home .dashboardCard::after{
+  opacity:.16 !important;
+}
+#home .dashboardCardClickable:hover{
+  border-color: color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, #7cff7c)) 30%, rgba(255,255,255,.24)) !important;
+  box-shadow:
+    0 18px 44px rgba(0,0,0,.22),
+    inset 0 1px 0 rgba(255,255,255,.18),
+    0 0 18px color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, #7cff7c)) 8%, transparent) !important;
+}
+.dashboardAnnouncementBar{
+  background: linear-gradient(145deg, rgba(255,255,255,.070), rgba(255,255,255,.020)) !important;
+  background-color: color-mix(in srgb, rgba(5,9,16,.36) 68%, var(--theme-surface, rgba(255,255,255,.10)) 32%) !important;
+  border-color: color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, #7cff7c)) 22%, rgba(255,255,255,.24)) !important;
+  -webkit-backdrop-filter: blur(30px) saturate(1.45) !important;
+  backdrop-filter: blur(30px) saturate(1.45) !important;
+  box-shadow:0 14px 36px rgba(0,0,0,.20), inset 0 1px 0 rgba(255,255,255,.15) !important;
+}
+body.lightweightMode #home .dashboardHeroCard,
+body.lightweightMode #home .dashboardCard,
+body.lightweightMode #home .tile.dashboardCard,
+body.lowEndDevice #home .dashboardHeroCard,
+body.lowEndDevice #home .dashboardCard,
+body.lowEndDevice #home .tile.dashboardCard,
+body.ladaMode #home .dashboardHeroCard,
+body.ladaMode #home .dashboardCard,
+body.ladaMode #home .tile.dashboardCard{
+  background:rgba(255,255,255,.075) !important;
+  border-color:rgba(255,255,255,.15) !important;
+  box-shadow:0 8px 20px rgba(0,0,0,.14), inset 0 1px 0 rgba(255,255,255,.10) !important;
+}
+body.lightweightMode #home.page.active .dashboardShell,
+body.lowEndDevice #home.page.active .dashboardShell,
+body.ladaMode #home.page.active .dashboardShell,
+body.lightweightMode .dashboardAnnouncementBar,
+body.lowEndDevice .dashboardAnnouncementBar,
+body.ladaMode .dashboardAnnouncementBar{
+  background:rgba(255,255,255,.075) !important;
+  border-color:rgba(255,255,255,.15) !important;
+  box-shadow:0 8px 20px rgba(0,0,0,.14), inset 0 1px 0 rgba(255,255,255,.09) !important;
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+}

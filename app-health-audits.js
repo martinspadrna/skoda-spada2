@@ -1,4 +1,4 @@
-// RaK 1.2 (1.38) – health/audit helpery oddělené z app.js.
+// RaK 1.2 (1.42) – health/audit helpery oddělené z app.js.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app-health-audits.js', 'loaded', { source: 'dynamic-loader' }); } catch (err) {}
 
 function runPhaseOneFinalAudit() {
@@ -51,10 +51,14 @@ function runPhaseOneFinalAudit() {
     'styles-calc-panels.css',
     'styles-games.css',
     'styles-overrides.css',
+    'styles-dashboard-fit.css',
     'styles-admin-polish.css',
+    'styles-menu-polish.css',
     'styles-stats-polish.css',
+    'styles-viewport-polish.css',
     'styles-theme-polish.css',
-    'styles-release-polish.css'
+    'styles-release-polish.css',
+    'styles-dashboard-polish.css'
   ].forEach((href) => {
     if (!loadedStyles.some((item) => item.endsWith(href))) report.missingStyles.push(href);
   });
@@ -1250,7 +1254,7 @@ function runLadaPerformanceAudit() {
 }
 window.runLadaPerformanceAudit = runLadaPerformanceAudit;
 
-// 1.2 (1.38): Sdílený herní engine baseline je oddělený v games-engine.js.
+// 1.2 (1.42): Sdílený herní engine baseline je oddělený v games-engine.js.
 
 
 
