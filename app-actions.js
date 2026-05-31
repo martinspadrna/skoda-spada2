@@ -1,4 +1,4 @@
-// RaK 1.2 (1.68) – delegované klikací akce aplikace oddělené z app.js.
+// RaK 1.2 (1.69) – delegované klikací akce aplikace oddělené z app.js.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app-actions.js', 'loaded', { source: 'dynamic-loader' }); } catch (err) {}
 
 function installDelegatedAppActions() {
