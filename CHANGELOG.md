@@ -1,9 +1,31 @@
+## 1.2 (1.38)
+- Větší CSS cleanup: statistiky/obsazenost strojů oddělené ze `styles-overrides.css` do nové vrstvy `styles-stats-polish.css`.
+- Pořadí CSS drží bezpečný chain: overrides → admin polish → stats polish → theme polish → release polish.
+- Verze, cache, realtime kanál, service worker, export metadata a GitHub hlavičky sjednocené na `RaK 1.2 (1.38)`.
+
+## 1.2 (1.37)
+- Větší CSS cleanup: admin/rozpis polish oddělený ze `styles-overrides.css` do nového `styles-admin-polish.css`.
+- Pořadí CSS zachované: overrides → admin polish → theme polish → release polish.
+- Verze, cache, realtime kanál, service worker, export metadata a GitHub hlavičky sjednocené na `RaK 1.2 (1.37)`.
+- Supabase DB, online flow, online hry, kalkulačky, Rotace logika a spodní lišta beze změny.
+
+## 1.2 (1.36)
+- CSS cleanup pokračuje větším krokem: finální theme/background polish je přesunutý ze `styles-overrides.css` do samostatného `styles-theme-polish.css`.
+- Pořadí načítání zůstává zachované: `styles-overrides.css` → `styles-theme-polish.css` → `styles-release-polish.css`, takže se nemění vzhledová priorita posledních vrstev.
+- Verze, cache, realtime kanál, service worker, export metadata a GitHub hlavičky sjednocené na `RaK 1.2 (1.36)`.
+- Bez zásahu do Supabase DB/policies, online her, kalkulačkové logiky, Rotace logiky a spodní lišty.
+
+## 1.2 (1.35)
+- CSS cleanup: pozdní release polish pravidla přesunutá ze `styles-overrides.css` do samostatného `styles-release-polish.css`, aby historický override soubor začal postupně hubnout bez změny vizuálního pořadí.
+- Nový CSS soubor doplněný do HTML, service workeru, export manifestu a release auditů.
+- Verze, cache, realtime kanál, service worker, export metadata a GitHub hlavičky sjednocené na `RaK 1.2 (1.35)`.
+
 ## 1.2 (1.34)
 - Větší refactor boot shellu: spodní navigace a její bezpečné metriky jsou oddělené z `app.js` do `app-bottom-nav.js`.
 - Post-load audit orchestrace je oddělená do `app-postload-audits.js`, takže `app.js` zůstává víc jen loader/orchestrátor.
 - Release metadata, cache, realtime kanál, service worker, export manifest a GitHub hlavičky sjednocené na `RaK 1.2 (1.34)`.
 
-## 1.2 (1.34)
+## 1.2 (1.33)
 - Větší refactor startu aplikace: online synchronizace rozpisů je oddělená z `app-init.js` do nového `app-rotation-sync.js`.
 - Startovací vazby voleb Rotace a Excel importu jsou oddělené z `app-init.js` do nového `app-rotation-controls.js`.
 - `app-init.js` zůstává už hlavně jako krátký startovací orchestrátor; nové moduly jsou doplněné do loaderu, module readiness, export manifestu, service workeru a auditů.

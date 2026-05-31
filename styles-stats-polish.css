@@ -1,0 +1,216 @@
+/* RaK 1.2 (1.38) – Statistiky/obsazenost polish oddělený ze styles-overrides.css.
+   Načítá se po styles-admin-polish.css a před theme/release polish vrstvami. */
+
+/* v.1.5 (892) – Statistiky: roční obsazenost a kompaktní grafy */
+.statsYearOverview{margin:10px 0 14px;}
+.statsYearOverviewCard{border:1px solid rgba(255,255,255,.14);background:linear-gradient(145deg,rgba(255,255,255,.08),rgba(255,255,255,.035));border-radius:18px;padding:12px;box-shadow:0 12px 34px rgba(0,0,0,.22);overflow:hidden;}
+.statsYearOverviewHeader{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+.statsYearOverviewTitle{font-size:13px;font-weight:750;letter-spacing:.01em;line-height:1.25;}
+.statsYearOverviewPercent{font-size:24px;font-weight:850;line-height:1;color:var(--accent);white-space:nowrap;}
+.statsYearOverviewMeta{margin-top:6px;line-height:1.35;overflow-wrap:anywhere;}
+.statsYearOverviewGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;align-items:stretch;}
+.statsYearChartBox{min-width:0;border:1px solid rgba(255,255,255,.1);border-radius:15px;background:rgba(0,0,0,.12);padding:9px;overflow:hidden;}
+.statsYearChartTitle{margin-bottom:7px;text-align:center;}
+.statsOccupancyBars{height:120px;display:flex;align-items:flex-end;justify-content:center;gap:4px;padding:6px 2px 0;}
+.statsOccupancyBar{height:100%;min-width:12px;max-width:20px;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;}
+.statsOccupancyBar span{display:block;width:100%;min-height:2px;border-radius:999px 999px 3px 3px;background:linear-gradient(180deg,var(--accent),rgba(255,255,255,.18));box-shadow:0 0 10px color-mix(in srgb,var(--accent) 34%,transparent);}
+.statsOccupancyBar em{font-style:normal;font-size:10px;line-height:1;color:rgba(255,255,255,.66);}
+.statsAbsencePieWrap{display:grid;grid-template-columns:minmax(70px,92px) 1fr;gap:9px;align-items:center;min-height:120px;}
+.statsAbsencePie{width:82px;height:82px;border-radius:50%;display:grid;place-items:center;margin:auto;font-size:12px;font-weight:800;color:var(--soft);box-shadow:inset 0 0 0 10px rgba(0,0,0,.12),0 0 18px rgba(0,0,0,.22);}
+.statsAbsencePie.isEmpty{background:rgba(255,255,255,.08);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);}
+.statsAbsenceLegend{display:flex;flex-direction:column;gap:4px;min-width:0;}
+.statsAbsenceLegendRow{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;line-height:1.18;color:rgba(255,255,255,.78);min-width:0;}
+.statsAbsenceLegendRow span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.statsAbsenceLegendRow strong{font-size:11px;color:var(--soft);white-space:nowrap;}
+@media (max-width:430px){.statsYearOverviewGrid{grid-template-columns:1fr;}.statsOccupancyBars{height:104px}.statsAbsencePieWrap{grid-template-columns:86px 1fr}.statsYearOverviewPercent{font-size:22px;}}
+
+
+/* v.1.5 (893) – Statistiky: čistší obsazenost, čárový graf a barevný koláč absencí */
+.statsYearOverviewCard{padding:12px !important;}
+.statsYearOverviewHeader{margin-bottom:8px !important;}
+.statsYearOverviewMeta{display:none !important;}
+.statsYearOverviewGrid{grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;gap:10px !important;margin-top:8px !important;}
+.statsYearChartBox{min-height:156px !important;display:flex !important;flex-direction:column !important;justify-content:flex-start !important;}
+.statsYearLineBox{padding-bottom:8px !important;}
+.statsOccupancyLineChart{min-height:122px;display:flex;flex-direction:column;justify-content:space-between;gap:4px;}
+.statsOccupancyLineChart svg{width:100%;height:104px;display:block;overflow:visible;}
+.statsOccupancyLineGrid{fill:none;stroke:rgba(255,255,255,.11);stroke-width:1;stroke-linecap:round;}
+.statsOccupancyLineArea{fill:color-mix(in srgb,var(--accent) 20%,transparent);opacity:.75;}
+.statsOccupancyLine{fill:none;stroke:var(--accent);stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 8px color-mix(in srgb,var(--accent) 42%,transparent));}
+.statsOccupancyLineDot{fill:var(--accent);stroke:rgba(255,255,255,.85);stroke-width:1.4;}
+.statsOccupancyLineLabels{display:flex;justify-content:space-between;gap:2px;padding:0 4px;font-size:9px;line-height:1;color:rgba(255,255,255,.62);}
+.statsOccupancyLineLabels span{min-width:0;text-align:center;}
+.statsAbsencePieWrap{grid-template-columns:minmax(76px,92px) minmax(0,1fr) !important;min-height:122px !important;}
+.statsAbsencePie{width:88px !important;height:88px !important;box-shadow:inset 0 0 0 9px rgba(0,0,0,.16),0 0 18px rgba(0,0,0,.26) !important;}
+.statsAbsenceLegendRow{justify-content:flex-start !important;gap:6px !important;}
+.statsAbsenceLegendRow span{flex:1 1 auto;}
+.statsAbsenceLegendSwatch{display:inline-block;width:9px;height:9px;border-radius:999px;flex:0 0 auto;box-shadow:0 0 8px rgba(255,255,255,.12);}
+@media (max-width:430px){.statsYearOverviewGrid{grid-template-columns:1fr !important;}.statsYearChartBox{min-height:142px !important;}.statsOccupancyLineChart svg{height:96px}.statsAbsencePieWrap{grid-template-columns:84px minmax(0,1fr) !important;}.statsAbsencePie{width:78px !important;height:78px !important;}}
+
+/* v.1.5 (897) – Statistiky: obsazenost a důvody absencí vedle sebe i na mobilu */
+.statsYearOverviewGrid{grid-template-columns:1fr !important;}
+.statsYearCombinedBox{min-height:0 !important;padding:10px !important;}
+.statsYearCombinedGrid{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);gap:12px;align-items:stretch;min-width:0;}
+.statsYearPane{min-width:0;display:flex;flex-direction:column;justify-content:flex-start;}
+.statsYearLinePane{padding-right:10px;border-right:1px solid rgba(255,255,255,.10);}
+.statsYearPiePane{padding-left:0;}
+.statsOccupancyScaleLabel{margin-top:2px;text-align:center;font-size:9.5px;line-height:1.1;color:rgba(255,255,255,.55);}
+.statsYearCombinedBox .statsOccupancyLineChart{min-height:134px;}
+.statsYearCombinedBox .statsOccupancyLineChart svg{height:102px;}
+.statsYearCombinedBox .statsAbsencePieWrap{min-height:134px !important;}
+@media (max-width:430px){
+  .statsYearCombinedBox{padding:8px !important;}
+  .statsYearCombinedGrid{grid-template-columns:minmax(0,1fr) minmax(0,.92fr) !important;gap:7px !important;align-items:start !important;}
+  .statsYearLinePane{padding-right:7px !important;padding-bottom:0 !important;border-right:1px solid rgba(255,255,255,.10) !important;border-bottom:0 !important;}
+  .statsYearPiePane{padding-left:0 !important;}
+  .statsYearCombinedGrid .statsYearChartTitle{font-size:10px !important;line-height:1.15 !important;margin-bottom:5px !important;}
+  .statsYearCombinedBox .statsOccupancyLineChart{min-height:104px !important;gap:2px !important;}
+  .statsYearCombinedBox .statsOccupancyLineChart svg{height:78px !important;}
+  .statsOccupancyLineLabels{font-size:7.5px !important;padding:0 1px !important;}
+  .statsOccupancyScaleLabel{font-size:7.8px !important;margin-top:1px !important;}
+  .statsYearCombinedBox .statsAbsencePieWrap{grid-template-columns:1fr !important;gap:5px !important;min-height:104px !important;align-items:start !important;}
+  .statsYearCombinedBox .statsAbsencePie{width:58px !important;height:58px !important;font-size:10px !important;box-shadow:inset 0 0 0 6px rgba(0,0,0,.16),0 0 14px rgba(0,0,0,.22) !important;}
+  .statsYearCombinedBox .statsAbsenceLegend{gap:2px !important;}
+  .statsYearCombinedBox .statsAbsenceLegendRow{font-size:8.8px !important;line-height:1.05 !important;gap:4px !important;}
+  .statsYearCombinedBox .statsAbsenceLegendRow strong{font-size:8.8px !important;}
+  .statsYearCombinedBox .statsAbsenceLegendSwatch{width:7px !important;height:7px !important;}
+}
+@media (max-width:360px){
+  .statsYearCombinedGrid{grid-template-columns:minmax(0,1.04fr) minmax(0,.86fr) !important;gap:5px !important;}
+  .statsYearCombinedBox{padding:7px !important;}
+  .statsYearLinePane{padding-right:5px !important;}
+  .statsYearCombinedBox .statsOccupancyLineChart svg{height:72px !important;}
+  .statsYearCombinedBox .statsAbsencePie{width:52px !important;height:52px !important;}
+  .statsYearCombinedBox .statsAbsenceLegendRow{font-size:8px !important;}
+  .statsYearCombinedBox .statsAbsenceLegendRow strong{font-size:8px !important;}
+}
+
+/* v.1.5 (900) – Statistiky: klikací body v grafu obsazenosti */
+.statsOccupancyLineHit{fill:transparent;stroke:transparent;cursor:pointer;pointer-events:auto;outline:none;}
+.statsOccupancyLineHit:focus-visible{stroke:var(--accent);stroke-width:1.4;fill:color-mix(in srgb,var(--accent) 12%,transparent);}
+.statsOccupancyPointInfo{margin-top:4px;text-align:center;font-size:10px;line-height:1.2;color:rgba(255,255,255,.62);min-height:1.2em;}
+.statsOccupancyPointInfo[data-active="1"]{color:var(--soft);font-weight:760;}
+@media (max-width:430px){.statsOccupancyPointInfo{font-size:8.4px;margin-top:2px;}}
+
+/* v.1.5 (936+) – Statistiky: měsíční graf obsazenosti ve stylu theme. */
+#stats.page,
+#stats{
+  --rak-stats-theme-accent:var(--rakThemeAccent, var(--theme-accent, var(--accent, var(--green2))));
+  --rak-stats-theme-rgb:var(--theme-rgb, 124,255,124);
+  --rak-stats-glass-bg:color-mix(in srgb, var(--rak-stats-theme-accent) 12%, rgba(255,255,255,.040));
+  --rak-stats-glass-border:color-mix(in srgb, var(--rak-stats-theme-accent) 32%, rgba(255,255,255,.16));
+}
+#stats .statsYearOverviewCard{
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--rak-stats-theme-accent) 8%, rgba(255,255,255,.048)), rgba(255,255,255,.018)) !important;
+  border-color:var(--rak-stats-glass-border) !important;
+  box-shadow:0 14px 34px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.12), 0 0 22px color-mix(in srgb, var(--rak-stats-theme-accent) 10%, transparent) !important;
+  -webkit-backdrop-filter:blur(24px) saturate(1.55) !important;
+  backdrop-filter:blur(24px) saturate(1.55) !important;
+}
+#stats .statsYearChartBox,
+#stats .statsYearCombinedBox{
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--rak-stats-theme-accent) 9%, rgba(255,255,255,.040)), rgba(255,255,255,.014)) !important;
+  border-color:color-mix(in srgb, var(--rak-stats-theme-accent) 28%, rgba(255,255,255,.13)) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.10), 0 10px 26px rgba(0,0,0,.14) !important;
+}
+#stats .statsYearLinePane{
+  border-right-color:color-mix(in srgb, var(--rak-stats-theme-accent) 28%, rgba(255,255,255,.12)) !important;
+}
+#stats .statsYearOverviewPercent,
+#stats .statsOccupancyPointInfo[data-active="1"]{
+  color:color-mix(in srgb, var(--rak-stats-theme-accent) 82%, #fff) !important;
+}
+#stats .statsOccupancyLineGrid{
+  stroke:color-mix(in srgb, var(--rak-stats-theme-accent) 22%, rgba(255,255,255,.18)) !important;
+}
+#stats .statsOccupancyLineArea{
+  fill:color-mix(in srgb, var(--rak-stats-theme-accent) 28%, transparent) !important;
+  opacity:.72 !important;
+}
+#stats .statsOccupancyLine{
+  stroke:var(--rak-stats-theme-accent) !important;
+  filter:drop-shadow(0 0 10px color-mix(in srgb, var(--rak-stats-theme-accent) 48%, transparent)) !important;
+}
+#stats .statsOccupancyLineDot{
+  fill:var(--rak-stats-theme-accent) !important;
+  stroke:color-mix(in srgb, #fff 78%, var(--rak-stats-theme-accent) 22%) !important;
+}
+#stats .statsOccupancyLineHit:focus-visible{
+  stroke:var(--rak-stats-theme-accent) !important;
+  fill:color-mix(in srgb, var(--rak-stats-theme-accent) 16%, transparent) !important;
+}
+#stats .statsOccupancyLineLabels,
+#stats .statsOccupancyScaleLabel,
+#stats .statsOccupancyPointInfo{
+  color:color-mix(in srgb, var(--rak-stats-theme-accent) 42%, rgba(255,255,255,.66)) !important;
+}
+#stats .statsAbsencePie{
+  box-shadow:inset 0 0 0 8px color-mix(in srgb, var(--rak-stats-theme-accent) 12%, rgba(255,255,255,.05)), 0 0 18px color-mix(in srgb, var(--rak-stats-theme-accent) 16%, rgba(0,0,0,.18)) !important;
+}
+#stats .statsAbsencePie.isEmpty{
+  background:color-mix(in srgb, var(--rak-stats-theme-accent) 14%, rgba(255,255,255,.055)) !important;
+}
+body.lightweightMode #stats .statsYearOverviewCard,
+body.lightweightMode #stats .statsYearChartBox,
+body.lightweightMode #stats .statsYearCombinedBox,
+body.lowEndDevice #stats .statsYearOverviewCard,
+body.lowEndDevice #stats .statsYearChartBox,
+body.lowEndDevice #stats .statsYearCombinedBox,
+body.ladaMode #stats .statsYearOverviewCard,
+body.ladaMode #stats .statsYearChartBox,
+body.ladaMode #stats .statsYearCombinedBox{
+  background:color-mix(in srgb, var(--rak-stats-theme-accent) 9%, rgba(8,14,24,.40)) !important;
+  box-shadow:0 8px 20px rgba(0,0,0,.12) !important;
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+}
+
+/* v.1.5 (939) – Obsazenost strojů: čárový graf bez černé výplně pod/mezi body. */
+#stats .statsOccupancyLineChart,
+#stats .statsOccupancyLineChart svg{
+  background:transparent !important;
+}
+#stats .statsOccupancyLineChart svg path,
+#stats .statsOccupancyLineChart svg polyline,
+#stats .statsOccupancyLineChart svg circle{
+  color:var(--rak-stats-theme-accent, #7cff7c) !important;
+}
+#stats .statsOccupancyLineArea{
+  fill:rgba(var(--theme-rgb, 124,255,124), .22) !important;
+  stroke:none !important;
+  opacity:1 !important;
+}
+#stats .statsOccupancyLineGrid{
+  fill:none !important;
+  stroke:rgba(var(--theme-rgb, 124,255,124), .20) !important;
+  stroke-width:1 !important;
+}
+#stats .statsOccupancyLine{
+  fill:none !important;
+  stroke:var(--rak-stats-theme-accent, #7cff7c) !important;
+  stroke-width:3.2 !important;
+}
+#stats .statsOccupancyLineDot{
+  fill:var(--rak-stats-theme-accent, #7cff7c) !important;
+  stroke:rgba(255,255,255,.86) !important;
+}
+#stats .statsOccupancyLineHit{
+  fill:rgba(255,255,255,0) !important;
+  stroke:rgba(255,255,255,0) !important;
+}
+#stats .statsOccupancyLineHit:focus-visible{
+  fill:rgba(var(--theme-rgb, 124,255,124), .14) !important;
+  stroke:var(--rak-stats-theme-accent, #7cff7c) !important;
+}
+#stats .statsYearChartBox,
+#stats .statsYearCombinedBox{
+  background:linear-gradient(145deg, rgba(var(--theme-rgb, 124,255,124), .10), rgba(255,255,255,.018)) !important;
+}
+body.lightweightMode #stats .statsOccupancyLineArea,
+body.lowEndDevice #stats .statsOccupancyLineArea,
+body.ladaMode #stats .statsOccupancyLineArea{
+  fill:rgba(var(--theme-rgb, 124,255,124), .18) !important;
+}
+

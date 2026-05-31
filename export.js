@@ -1,4 +1,4 @@
-// RaK 1.2 (1.34) – export manifest a release metadata.
+// RaK 1.2 (1.38) – export manifest a release metadata.
 const EXPORT_SOURCE_IDS = {
   "module-readiness.js": "src-module-readiness-js",
   "rak-namespace.js": "src-rak-namespace-js",
@@ -68,6 +68,10 @@ const EXPORT_SOURCE_IDS = {
   "styles-calc-panels.css": "src-styles-calc-panels-css",
   "styles-games.css": "src-styles-games-css",
   "styles-overrides.css": "src-styles-overrides-css",
+  "styles-admin-polish.css": "src-styles-admin-polish-css",
+  "styles-stats-polish.css": "src-styles-stats-polish-css",
+  "styles-theme-polish.css": "src-styles-theme-polish-css",
+  "styles-release-polish.css": "src-styles-release-polish-css",
   "CHANGELOG.md": "src-changelog-md",
   "manifest.webmanifest": "src-manifest-webmanifest",
   "sw.js": "src-sw-js",
@@ -106,7 +110,7 @@ const EXPORT_SMOKE_REPORT = window.__RAK_EXPORT_SMOKE_REPORT__ || (window.__RAK_
   ok: null,
   status: 'not-run',
   mode: 'export-smoke-report-v939',
-  version: '1.2 (1.34)',
+  version: '1.2 (1.38)',
   checkedAt: null,
   lastStage: 'čeká na export',
   runCount: 0,
@@ -221,6 +225,10 @@ const EXPORT_TEXT_FILES = [
   "styles-calc-panels.css",
   "styles-games.css",
   "styles-overrides.css",
+  "styles-admin-polish.css",
+  "styles-stats-polish.css",
+  "styles-theme-polish.css",
+  "styles-release-polish.css",
   "CHANGELOG.md",
   "manifest.webmanifest",
   "sw.js",
@@ -230,7 +238,7 @@ const EXPORT_TEXT_FILES = [
 
 function getRakExportManifest() {
   return {
-    version: String(window.APP_VERSION || '1.2 (1.34)'),
+    version: String(window.APP_VERSION || '1.2 (1.38)'),
     mode: 'export-manifest-preflight-v939',
     indexFile: 'index.html',
     jsFiles: Array.from(new Set(EXPORT_JS_FILES)),
@@ -340,7 +348,7 @@ function updateRakExportSmokeReport(partial) {
   const data = partial && typeof partial === 'object' ? partial : {};
   Object.assign(EXPORT_SMOKE_REPORT, data, {
     mode: 'export-smoke-report-v939',
-    version: String(window.APP_VERSION || '1.2 (1.34)'),
+    version: String(window.APP_VERSION || '1.2 (1.38)'),
     checkedAt: new Date().toISOString()
   });
   return getRakExportSmokeReport();

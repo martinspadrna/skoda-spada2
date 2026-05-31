@@ -1,4 +1,4 @@
-// RaK 1.2 (1.34) – startovací vazby voleb Rotace a Excel importu oddělené z app-init.js.
+// RaK 1.2 (1.38) – startovací vazby voleb Rotace a Excel importu oddělené z app-init.js.
 
 function installRakRotationControlBindings() {
   registerListener(document.getElementById("monthYearSelect"), "change", (e) => {

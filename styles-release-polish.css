@@ -1,0 +1,982 @@
+/* RaK 1.2 (1.38) – release polish override vrstva oddělená ze styles-overrides.css.
+   Tady jsou pozdní opravy vzhledu, které musí zůstat načtené až po historických overridech. */
+
+/* 1.2 (1.9) – stabilizace pozadí, iOS startu a Rotace doku jmen. */
+:root{
+  --rak-v1003-start-h:var(--rak-start-viewport-h, 100dvh);
+  --rak-v1003-nav-gap:1px;
+  --rak-v1003-rotace-names-h:min(26dvh, 112px);
+  --rak-rotace-names-dock-bottom:calc(var(--bottom-nav-h, 58px) + var(--rak-v1003-nav-gap)) !important;
+  --rak-rotace-names-content-bottom:calc(var(--bottom-nav-h, 58px) + var(--rak-v1003-rotace-names-h) + 12px) !important;
+}
+html,
+html.rakViewportPrimed,
+html.rakStableBootViewport{
+  min-height:var(--rak-v1003-start-h) !important;
+  background:var(--rakAppBackground, var(--bg, #050816)) !important;
+  background-color:var(--rakBgBase, var(--bg, #050816)) !important;
+  overflow-x:hidden !important;
+}
+body,
+html.rakViewportPrimed body,
+html.rakStableBootViewport body{
+  min-height:var(--rak-v1003-start-h) !important;
+  background:var(--rakAppBackground, var(--bg, #050816)) !important;
+  background-color:var(--rakBgBase, var(--bg, #050816)) !important;
+  background-attachment:scroll !important;
+  transition:none !important;
+}
+body::before,
+body::after{
+  content:none !important;
+  display:none !important;
+  background:none !important;
+  opacity:0 !important;
+}
+#home,
+.page,
+.page.active{
+  background:transparent !important;
+  background-color:transparent !important;
+}
+html body nav.bottomNav,
+html body .bottomNav{
+  bottom:0 !important;
+  transform:translate3d(-50%,0,0) !important;
+  transition:none !important;
+}
+#rotace.page.active #rotaceNamesPanel.active{
+  padding-bottom:var(--rak-rotace-names-content-bottom) !important;
+  scroll-padding-bottom:var(--rak-rotace-names-content-bottom) !important;
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid{
+  bottom:var(--rak-rotace-names-dock-bottom) !important;
+  max-height:var(--rak-v1003-rotace-names-h) !important;
+  transform:translate3d(-50%,0,0) !important;
+  transition:none !important;
+  animation:none !important;
+  will-change:auto !important;
+}
+@media (display-mode:standalone){
+  html.rakStableBootViewport,
+  html.rakStableBootViewport body{
+    min-height:var(--rak-v1003-start-h) !important;
+  }
+}
+@supports (-webkit-touch-callout:none){
+  html,
+  body,
+  html.rakStableBootViewport,
+  html.rakStableBootViewport body{
+    min-height:var(--rak-v1003-start-h) !important;
+    background:var(--rakAppBackground, var(--bg, #050816)) !important;
+    background-color:var(--rakBgBase, var(--bg, #050816)) !important;
+  }
+}
+
+
+/* 1.2 (1.9) – Rotace dock bez poskočení + kompaktní Kantýna/jídelna admin. */
+:root{
+  --rak-v1003-rotace-dock-bottom: max(58px, calc(53px + env(safe-area-inset-bottom)));
+  --rak-v1003-rotace-names-h: min(26dvh, 112px);
+  --rak-rotace-names-dock-bottom: var(--rak-v1003-rotace-dock-bottom) !important;
+  --rak-rotace-names-content-bottom: calc(var(--rak-v1003-rotace-dock-bottom) + var(--rak-v1003-rotace-names-h) + 12px) !important;
+}
+html.rakRotaceEntering #rotace.page.active #rotaceNamesPanel.active #namesGrid{
+  opacity:0 !important;
+  pointer-events:none !important;
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid{
+  bottom:var(--rak-v1003-rotace-dock-bottom) !important;
+  max-height:var(--rak-v1003-rotace-names-h) !important;
+  transform:translate3d(-50%,0,0) !important;
+  transition:none !important;
+  animation:none !important;
+  will-change:auto !important;
+}
+#rotace.page.active #rotaceNamesPanel.active{
+  padding-bottom:var(--rak-rotace-names-content-bottom) !important;
+  scroll-padding-bottom:var(--rak-rotace-names-content-bottom) !important;
+}
+#menu .adminFoodScheduleTable{
+  table-layout:fixed !important;
+  width:100% !important;
+}
+#menu .adminFoodScheduleTable th,
+#menu .adminFoodScheduleTable td,
+#menu .adminFoodDatesTable th,
+#menu .adminFoodDatesTable td{
+  padding:6px 5px !important;
+  vertical-align:middle !important;
+}
+#menu .adminFoodRegularTable .adminFoodColPlace{width:18% !important;}
+#menu .adminFoodRegularTable .adminFoodColDay{width:18% !important;}
+#menu .adminFoodRegularTable .adminFoodColTime{width:64% !important;}
+#menu .adminFoodOvertimeTable .adminFoodColPlace{width:18% !important;}
+#menu .adminFoodOvertimeTable .adminFoodColTime{width:82% !important;}
+#menu .adminFoodDatesTable{
+  table-layout:fixed !important;
+  width:min(100%, 360px) !important;
+}
+#menu .adminFoodDatesTable .adminFoodDateNumberCol{width:42px !important;}
+#menu .adminFoodDatesTable .adminFoodDateValueCol{width:170px !important;}
+#menu .adminFoodDatesTable th:first-child,
+#menu .adminFoodDatesTable td:first-child{
+  text-align:center !important;
+  width:42px !important;
+  max-width:42px !important;
+  color:rgba(234,255,234,.62) !important;
+  font-size:11px !important;
+}
+#menu .adminFoodWindowsInput,
+#menu .adminFoodDateInput{
+  width:100% !important;
+  min-width:0 !important;
+  box-sizing:border-box !important;
+}
+#menu .adminFoodRegularTable td:first-child,
+#menu .adminFoodRegularTable td:nth-child(2),
+#menu .adminFoodOvertimeTable td:first-child{
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  font-size:12px !important;
+}
+@media (max-width:430px){
+  :root{
+    --rak-v1003-rotace-dock-bottom:max(56px, calc(51px + env(safe-area-inset-bottom)));
+    --rak-v1003-rotace-names-h:min(25dvh, 108px);
+  }
+  #menu .adminFoodRegularTable .adminFoodColPlace{width:17% !important;}
+  #menu .adminFoodRegularTable .adminFoodColDay{width:17% !important;}
+  #menu .adminFoodRegularTable .adminFoodColTime{width:66% !important;}
+  #menu .adminFoodOvertimeTable .adminFoodColPlace{width:17% !important;}
+  #menu .adminFoodOvertimeTable .adminFoodColTime{width:83% !important;}
+  #menu .adminFoodScheduleTable th,
+  #menu .adminFoodScheduleTable td,
+  #menu .adminFoodDatesTable th,
+  #menu .adminFoodDatesTable td{padding:5px 4px !important;}
+}
+
+/* 1.2 (1.9) – kompaktní jídlo na dashboardu + užší datumy přesčasů. */
+.dashboardValue,
+.dashboardMeta{
+  overflow-wrap:normal;
+}
+#dashKantyna .dashboardValue,
+#dashJidelna .dashboardValue,
+#dashKantyna .dashboardMeta,
+#dashJidelna .dashboardMeta{
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  line-height:1.12 !important;
+}
+#dashKantyna .dashboardMeta,
+#dashJidelna .dashboardMeta{
+  font-size:clamp(10px, 2.55vw, 12px) !important;
+}
+#menu .adminFoodDatesTable{
+  width:min(100%, 220px) !important;
+  max-width:220px !important;
+}
+#menu .adminFoodDatesTable .adminFoodDateNumberCol{width:30px !important;}
+#menu .adminFoodDatesTable .adminFoodDateValueCol{width:118px !important;}
+#menu .adminFoodDatesTable th:first-child,
+#menu .adminFoodDatesTable td:first-child{
+  width:30px !important;
+  max-width:30px !important;
+  padding-left:3px !important;
+  padding-right:3px !important;
+}
+#menu .adminFoodDateInput{
+  max-width:118px !important;
+  text-align:center !important;
+}
+@media (max-width:430px){
+  #menu .adminFoodDatesTable{
+    width:206px !important;
+    max-width:206px !important;
+  }
+  #menu .adminFoodDatesTable .adminFoodDateNumberCol{width:28px !important;}
+  #menu .adminFoodDatesTable .adminFoodDateValueCol{width:112px !important;}
+  #menu .adminFoodDateInput{max-width:112px !important;}
+}
+
+
+/* 1.2 (1.9) – Rotace: vyšší volba jmen bez zbytečného scrollu a bez uřezaných jmen. */
+:root{
+  --rak-v1003-rotace-dock-bottom:max(56px, calc(51px + env(safe-area-inset-bottom)));
+  --rak-v1003-rotace-names-h:min(36svh, 188px);
+  --rak-rotace-names-dock-bottom:var(--rak-v1003-rotace-dock-bottom) !important;
+  --rak-rotace-names-content-bottom:calc(var(--rak-v1003-rotace-dock-bottom) + var(--rak-v1003-rotace-names-h) + 14px) !important;
+}
+#rotace.page.active #rotaceNamesPanel.active{
+  padding-bottom:var(--rak-rotace-names-content-bottom) !important;
+  scroll-padding-bottom:var(--rak-rotace-names-content-bottom) !important;
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid{
+  bottom:var(--rak-v1003-rotace-dock-bottom) !important;
+  max-height:var(--rak-v1003-rotace-names-h) !important;
+  grid-template-columns:repeat(5, minmax(0, 1fr)) !important;
+  align-content:start !important;
+  overflow-y:auto !important;
+  overflow-x:visible !important;
+  padding:7px 6px !important;
+  gap:6px !important;
+  scroll-padding:8px !important;
+  scrollbar-gutter:stable both-edges !important;
+  transform:translate3d(-50%,0,0) !important;
+  transition:none !important;
+  animation:none !important;
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem,
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceNameTile{
+  min-height:42px !important;
+  padding:6px 4px !important;
+  overflow:visible !important;
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceTileTitle,
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem .rotaceTileTitle{
+  white-space:normal !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  display:block !important;
+  -webkit-line-clamp:unset !important;
+  line-clamp:unset !important;
+  max-width:100% !important;
+  line-height:1.08 !important;
+}
+@media (max-width:430px){
+  :root{
+    --rak-v1003-rotace-dock-bottom:max(54px, calc(49px + env(safe-area-inset-bottom)));
+    --rak-v1003-rotace-names-h:min(35svh, 176px);
+  }
+  #rotace.page.active #rotaceNamesPanel.active #namesGrid{
+    padding:6px 5px !important;
+    gap:5px !important;
+  }
+  #rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem,
+  #rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceNameTile{
+    min-height:41px !important;
+    padding:5px 3px !important;
+  }
+}
+@media (max-height:700px){
+  :root{--rak-v1003-rotace-names-h:min(34svh, 166px);}
+}
+
+/* 1.2 (1.9) – Rotace: spodní volba jmen bezpečně nad spodním panelem na všech výškách. */
+:root{
+  --rak-v1003-rotace-safe-bottom:max(74px, var(--rak-bottom-total-space, calc(var(--bottom-nav-h, 64px) + env(safe-area-inset-bottom) + 10px)));
+  --rak-v1003-rotace-names-h:clamp(118px, 34svh, 184px);
+  --rak-rotace-names-dock-bottom:calc(var(--rak-v1003-rotace-safe-bottom) + 4px) !important;
+  --rak-rotace-names-content-bottom:calc(var(--rak-v1003-rotace-safe-bottom) + var(--rak-v1003-rotace-names-h) + 18px) !important;
+}
+#rotace.page.active #rotaceNamesPanel.active{
+  padding-bottom:var(--rak-rotace-names-content-bottom) !important;
+  scroll-padding-bottom:var(--rak-rotace-names-content-bottom) !important;
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid{
+  bottom:calc(var(--rak-v1003-rotace-safe-bottom) + 4px) !important;
+  max-height:var(--rak-v1003-rotace-names-h) !important;
+  padding-bottom:12px !important;
+  overscroll-behavior:contain !important;
+  transform:translate3d(-50%,0,0) !important;
+  transition:none !important;
+  animation:none !important;
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid::after{
+  content:"";
+  display:block;
+  height:2px;
+  grid-column:1 / -1;
+}
+@media (max-width:430px){
+  :root{
+    --rak-v1003-rotace-safe-bottom:max(72px, var(--rak-bottom-total-space, calc(var(--bottom-nav-h, 62px) + env(safe-area-inset-bottom) + 8px)));
+    --rak-v1003-rotace-names-h:clamp(112px, 33svh, 176px);
+  }
+  #rotace.page.active #rotaceNamesPanel.active #namesGrid{
+    padding-bottom:11px !important;
+  }
+}
+@media (max-height:700px){
+  :root{--rak-v1003-rotace-names-h:clamp(104px, 31svh, 158px);}
+}
+
+
+/* 1.2 (1.9) – Rotace: pozice jmen zůstává dobrá, ale bez viditelného vyskočení po kliknutí. */
+:root{
+  --rak-v1008-rotace-safe-bottom:calc(76px + env(safe-area-inset-bottom));
+  --rak-v1008-rotace-names-h:clamp(112px, 33svh, 176px);
+  --rak-rotace-names-dock-bottom:var(--rak-v1008-rotace-safe-bottom) !important;
+  --rak-rotace-names-content-bottom:calc(var(--rak-v1008-rotace-safe-bottom) + var(--rak-v1008-rotace-names-h) + 16px) !important;
+}
+html.rakRotaceEntering #rotace.page.active #rotaceNamesPanel.active #namesGrid{
+  opacity:1 !important;
+  pointer-events:auto !important;
+  visibility:visible !important;
+}
+#rotace.page.active #rotaceNamesPanel.active{
+  padding-bottom:var(--rak-rotace-names-content-bottom) !important;
+  scroll-padding-bottom:var(--rak-rotace-names-content-bottom) !important;
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid{
+  bottom:var(--rak-v1008-rotace-safe-bottom) !important;
+  max-height:var(--rak-v1008-rotace-names-h) !important;
+  transform:translate3d(-50%,0,0) !important;
+  transition:none !important;
+  animation:none !important;
+  will-change:auto !important;
+  opacity:1 !important;
+}
+@media (max-width:430px){
+  :root{
+    --rak-v1008-rotace-safe-bottom:calc(74px + env(safe-area-inset-bottom));
+    --rak-v1008-rotace-names-h:clamp(108px, 32svh, 168px);
+  }
+}
+@media (max-height:700px){
+  :root{--rak-v1008-rotace-names-h:clamp(104px, 30svh, 154px);}
+}
+body.lightweightMode,
+body.lowEndDevice,
+body.ladaMode{
+  --rak-v1008-rotace-safe-bottom:calc(74px + env(safe-area-inset-bottom));
+}
+
+/* 1.2 (1.9) – Rotace: definitivně bez vstupního poskoku panelu jmen. 
+   Příčina byla pageIn transform na .page.active; fixed dock uvnitř transformovaného rodiče se hýbal s celou stránkou. */
+:root{
+  --rak-v1008-rotace-safe-bottom:calc(76px + env(safe-area-inset-bottom));
+  --rak-v1008-rotace-names-h:clamp(112px, 33svh, 176px);
+  --rak-rotace-names-dock-bottom:var(--rak-v1008-rotace-safe-bottom) !important;
+  --rak-rotace-names-content-bottom:calc(var(--rak-v1008-rotace-safe-bottom) + var(--rak-v1008-rotace-names-h) + 16px) !important;
+}
+#rotace.page.active{
+  animation:none !important;
+  transform:none !important;
+  transition:none !important;
+}
+#rotace.page.active #rotaceNamesPanel,
+#rotace.page.active #rotaceNamesPanel.active{
+  animation:none !important;
+  transform:none !important;
+  transition:none !important;
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid{
+  position:fixed !important;
+  left:50% !important;
+  bottom:var(--rak-v1008-rotace-safe-bottom) !important;
+  max-height:var(--rak-v1008-rotace-names-h) !important;
+  transform:translate3d(-50%,0,0) !important;
+  animation:none !important;
+  transition:none !important;
+  will-change:auto !important;
+  opacity:1 !important;
+  visibility:visible !important;
+  pointer-events:auto !important;
+}
+html.rakRotaceEntering #rotace.page.active,
+html.rakRotaceEntering #rotace.page.active #rotaceNamesPanel,
+html.rakRotaceEntering #rotace.page.active #rotaceNamesPanel.active #namesGrid{
+  animation:none !important;
+  transition:none !important;
+}
+@media (max-width:430px){
+  :root{
+    --rak-v1008-rotace-safe-bottom:calc(74px + env(safe-area-inset-bottom));
+    --rak-v1008-rotace-names-h:clamp(108px, 32svh, 168px);
+  }
+}
+@media (max-height:700px){
+  :root{--rak-v1008-rotace-names-h:clamp(104px, 30svh, 154px);}
+}
+
+/* 1.2 (1.9) – Rotace: jmenný dock je portál v body, takže nedědí animaci stránky a nemá kam vyskočit. */
+body > #namesGrid[data-rak-dock-portal="body-fixed"]{
+  display:none !important;
+}
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"],
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"]{
+  position:fixed !important;
+  left:50% !important;
+  right:auto !important;
+  bottom:var(--rak-v1008-rotace-safe-bottom, calc(76px + env(safe-area-inset-bottom))) !important;
+  width:min(680px, calc(100vw - 28px)) !important;
+  max-width:calc(100vw - 28px) !important;
+  max-height:var(--rak-v1008-rotace-names-h, clamp(112px, 33svh, 176px)) !important;
+  display:grid !important;
+  grid-template-columns:repeat(5, minmax(0, 1fr)) !important;
+  gap:8px !important;
+  overflow:auto !important;
+  overscroll-behavior:contain !important;
+  -webkit-overflow-scrolling:touch !important;
+  transform:translate3d(-50%,0,0) !important;
+  transition:none !important;
+  animation:none !important;
+  will-change:auto !important;
+  opacity:1 !important;
+  visibility:visible !important;
+  pointer-events:auto !important;
+  z-index:2200 !important;
+  box-sizing:border-box !important;
+  padding:8px 7px 12px !important;
+  border-radius:18px !important;
+  border:1px solid rgba(var(--rakThemeRgb, 124,255,124), .26) !important;
+  background:linear-gradient(160deg, rgba(10,22,32,.86), rgba(8,18,26,.72)) !important;
+  box-shadow:0 18px 45px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.10) !important;
+  backdrop-filter:blur(18px) saturate(1.15) !important;
+  -webkit-backdrop-filter:blur(18px) saturate(1.15) !important;
+}
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem,
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile,
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem,
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile{
+  min-height:38px !important;
+  padding:8px 4px !important;
+  font-size:.82rem !important;
+  line-height:1.08 !important;
+  white-space:normal !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  word-break:normal !important;
+}
+@media (max-width:430px){
+  html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"],
+  body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"]{
+    grid-template-columns:repeat(5, minmax(0,1fr)) !important;
+    gap:7px !important;
+    width:calc(100vw - 24px) !important;
+    max-width:calc(100vw - 24px) !important;
+  }
+}
+@media (max-height:700px){
+  html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"],
+  body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"]{
+    max-height:clamp(104px, 30svh, 154px) !important;
+  }
+}
+
+/* 1.2 (1.11) – Rotace: panel jmen se při vstupu nejdřív stabilizuje skrytě, potom se ukáže ve finální pozici. */
+html.rakRotaceDockSettling body > #namesGrid[data-rak-dock-portal="body-fixed"]{
+  opacity:0 !important;
+  visibility:hidden !important;
+  pointer-events:none !important;
+  transition:none !important;
+  animation:none !important;
+}
+html:not(.rakRotaceDockSettling).rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"]{
+  opacity:1 !important;
+  visibility:visible !important;
+  pointer-events:auto !important;
+  transition:none !important;
+  animation:none !important;
+}
+
+
+/* 1.2 (1.11) – Rotace: spodní panel jmen sjednocený do glass stylu appky + dlaždice jmen cca o 10 % vyšší. */
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"],
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"]{
+  padding:10px 9px 14px !important;
+  border-radius:22px !important;
+  border:1px solid rgba(var(--rakThemeRgb, 124,255,124), .32) !important;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.13), rgba(255,255,255,.045)),
+    linear-gradient(160deg, rgba(var(--rakThemeRgb, 124,255,124), .18), rgba(8,18,28,.58)),
+    rgba(8,18,28,.64) !important;
+  box-shadow:
+    0 18px 48px rgba(0,0,0,.36),
+    0 0 0 1px rgba(255,255,255,.045),
+    0 0 28px rgba(var(--rakThemeRgb, 124,255,124), .16),
+    inset 0 1px 0 rgba(255,255,255,.18),
+    inset 0 -1px 0 rgba(255,255,255,.055) !important;
+  backdrop-filter:blur(22px) saturate(1.25) !important;
+  -webkit-backdrop-filter:blur(22px) saturate(1.25) !important;
+}
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem,
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile,
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem,
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile{
+  min-height:42px !important;
+  padding:9px 5px !important;
+  border-radius:16px !important;
+  border:1px solid rgba(var(--rakThemeRgb, 124,255,124), .24) !important;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.16), rgba(255,255,255,.045)),
+    rgba(var(--rakThemeRgb, 124,255,124), .085) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.16),
+    0 7px 18px rgba(0,0,0,.18) !important;
+  color:rgba(245,255,248,.95) !important;
+}
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem.activeChoice,
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile.activeChoice,
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem.activeChoice,
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile.activeChoice{
+  border-color:rgba(var(--rakThemeRgb, 124,255,124), .58) !important;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.20), rgba(255,255,255,.06)),
+    rgba(var(--rakThemeRgb, 124,255,124), .18) !important;
+  box-shadow:
+    0 0 0 1px rgba(var(--rakThemeRgb, 124,255,124), .18),
+    0 8px 24px rgba(var(--rakThemeRgb, 124,255,124), .16),
+    inset 0 1px 0 rgba(255,255,255,.20) !important;
+}
+
+/* 1.2 (1.15) – Soustruhy: starý obecný override byl v 1.16 nahrazen cílenou třídou .soustruhChoiceBtn. */
+/* 1.2 (1.15) – Rotace: panel jmen a jmenné dlaždice víc průhledný glass bez zelené výplně. */
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"],
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"]{
+  border:1px solid rgba(var(--rakThemeRgb, 124,255,124), .20) !important;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.105), rgba(255,255,255,.032)),
+    rgba(8,18,28,.42) !important;
+  box-shadow:
+    0 18px 48px rgba(0,0,0,.32),
+    0 0 0 1px rgba(255,255,255,.04),
+    0 0 20px rgba(var(--rakThemeRgb, 124,255,124), .055),
+    inset 0 1px 0 rgba(255,255,255,.16),
+    inset 0 -1px 0 rgba(255,255,255,.045) !important;
+  backdrop-filter:blur(22px) saturate(1.22) !important;
+  -webkit-backdrop-filter:blur(22px) saturate(1.22) !important;
+}
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem,
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile,
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem,
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile{
+  border:1px solid rgba(255,255,255,.13) !important;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.11), rgba(255,255,255,.032)),
+    rgba(8,18,28,.18) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.14),
+    0 7px 18px rgba(0,0,0,.16) !important;
+  color:rgba(245,255,248,.95) !important;
+}
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem.activeChoice,
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile.activeChoice,
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem.activeChoice,
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile.activeChoice{
+  border-color:rgba(var(--rakThemeRgb, 124,255,124), .42) !important;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.14), rgba(255,255,255,.045)),
+    rgba(8,18,28,.24) !important;
+  box-shadow:
+    0 0 0 1px rgba(var(--rakThemeRgb, 124,255,124), .14),
+    0 8px 24px rgba(0,0,0,.20),
+    inset 0 1px 0 rgba(255,255,255,.18) !important;
+}
+
+/* 1.2 (1.16) – Soustruhy: volby mají tvrdou výšku podle aktuální volby brusu/indexu, ne obecnou vysokou .bbtn vrstvu. */
+html body #soustruhy.calcPage{
+  --soustruh-choice-h:44px;
+  --soustruh-choice-gap:7px;
+}
+html body #soustruhy.calcPage :is(.calcChoiceGrid, .soustruhComboChoiceGrid){
+  gap:var(--soustruh-choice-gap) !important;
+  grid-auto-rows:auto !important;
+  align-items:stretch !important;
+}
+html body #soustruhy.calcPage .bbtn.soustruhChoiceBtn,
+html body #soustruhy.calcPage .calcChoiceGrid > .bbtn.soustruhChoiceBtn,
+html body #soustruhy.calcPage .soustruhComboChoiceGrid > .bbtn.soustruhChoiceBtn,
+html body #soustruhy.calcPage .soustruhComboFreeOptions .calcChoiceGrid > .bbtn.soustruhChoiceBtn{
+  height:var(--soustruh-choice-h) !important;
+  min-height:var(--soustruh-choice-h) !important;
+  max-height:var(--soustruh-choice-h) !important;
+  padding:5px 9px !important;
+  font-size:14px !important;
+  line-height:1.05 !important;
+  border-radius:13px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  text-align:center !important;
+  box-sizing:border-box !important;
+  overflow:hidden !important;
+}
+@media (max-width:430px){
+  html body #soustruhy.calcPage{--soustruh-choice-h:43px;}
+  html body #soustruhy.calcPage .bbtn.soustruhChoiceBtn,
+  html body #soustruhy.calcPage .calcChoiceGrid > .bbtn.soustruhChoiceBtn,
+  html body #soustruhy.calcPage .soustruhComboChoiceGrid > .bbtn.soustruhChoiceBtn,
+  html body #soustruhy.calcPage .soustruhComboFreeOptions .calcChoiceGrid > .bbtn.soustruhChoiceBtn{
+    height:43px !important;
+    min-height:43px !important;
+    max-height:43px !important;
+    padding:5px 7px !important;
+    font-size:13.5px !important;
+  }
+}
+
+/* 1.2 (1.16) – Rotace: samotná políčka se jmény jsou čistý průhledný glass bez zelené výplně. */
+#rotace.page.active #rotaceNamesPanel.active #namesGrid,
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"],
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"]{
+  border-color:rgba(255,255,255,.16) !important;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.11), rgba(255,255,255,.030)),
+    rgba(8,18,28,.36) !important;
+  box-shadow:
+    0 18px 48px rgba(0,0,0,.32),
+    0 0 0 1px rgba(255,255,255,.045),
+    inset 0 1px 0 rgba(255,255,255,.15),
+    inset 0 -1px 0 rgba(255,255,255,.04) !important;
+  backdrop-filter:blur(22px) saturate(1.22) !important;
+  -webkit-backdrop-filter:blur(22px) saturate(1.22) !important;
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem,
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceNameTile,
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem,
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile,
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem,
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile{
+  border:1px solid rgba(255,255,255,.16) !important;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.105), rgba(255,255,255,.028)),
+    rgba(255,255,255,.035) !important;
+  background-color:rgba(255,255,255,.035) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.16),
+    0 7px 18px rgba(0,0,0,.16) !important;
+  color:rgba(245,255,248,.96) !important;
+  backdrop-filter:blur(18px) saturate(1.16) !important;
+  -webkit-backdrop-filter:blur(18px) saturate(1.16) !important;
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem.activeChoice,
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceNameTile.activeChoice,
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem.activeChoice,
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile.activeChoice,
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem.activeChoice,
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile.activeChoice{
+  border-color:rgba(var(--rakThemeRgb, 124,255,124), .46) !important;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.14), rgba(255,255,255,.04)),
+    rgba(255,255,255,.052) !important;
+  background-color:rgba(255,255,255,.052) !important;
+  box-shadow:
+    0 0 0 1px rgba(var(--rakThemeRgb, 124,255,124), .12),
+    0 8px 24px rgba(0,0,0,.20),
+    inset 0 1px 0 rgba(255,255,255,.18) !important;
+}
+
+/* 1.2 (1.17) – Rotace: jména jako ještě čistší průhledný glass bez barevné výplně. */
+#rotace.page.active #rotaceNamesPanel.active #namesGrid,
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"],
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"]{
+  border-color:rgba(255,255,255,.17) !important;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.080), rgba(255,255,255,.022)),
+    rgba(8,18,28,.28) !important;
+  background-color:rgba(8,18,28,.28) !important;
+  box-shadow:
+    0 18px 46px rgba(0,0,0,.30),
+    0 0 0 1px rgba(255,255,255,.040),
+    inset 0 1px 0 rgba(255,255,255,.135),
+    inset 0 -1px 0 rgba(255,255,255,.035) !important;
+  backdrop-filter:blur(24px) saturate(1.18) !important;
+  -webkit-backdrop-filter:blur(24px) saturate(1.18) !important;
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem,
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceNameTile,
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem,
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile,
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem,
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile{
+  border-color:rgba(255,255,255,.18) !important;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.088), rgba(255,255,255,.018)),
+    rgba(255,255,255,.018) !important;
+  background-color:rgba(255,255,255,.018) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.15),
+    inset 0 -1px 0 rgba(255,255,255,.030),
+    0 6px 16px rgba(0,0,0,.14) !important;
+  color:rgba(246,255,249,.97) !important;
+  text-shadow:0 1px 2px rgba(0,0,0,.35) !important;
+  backdrop-filter:blur(20px) saturate(1.14) !important;
+  -webkit-backdrop-filter:blur(20px) saturate(1.14) !important;
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem.activeChoice,
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceNameTile.activeChoice,
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem.activeChoice,
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile.activeChoice,
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem.activeChoice,
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile.activeChoice{
+  border-color:rgba(var(--rakThemeRgb, 124,255,124), .38) !important;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.110), rgba(255,255,255,.026)),
+    rgba(255,255,255,.030) !important;
+  background-color:rgba(255,255,255,.030) !important;
+  box-shadow:
+    0 0 0 1px rgba(var(--rakThemeRgb, 124,255,124), .10),
+    0 8px 24px rgba(0,0,0,.20),
+    inset 0 1px 0 rgba(255,255,255,.17) !important;
+}
+
+/* 1.2 (1.17) – Kalkulačky: rozbalené plochy Brusy/Frézky a Soustruhy víc glass, bez plné tmavé výplně. */
+:is(#brusy, #frezky).calcPage .brusDetails.calcPanel,
+#soustruhy.calcPage .card.calcPanel--modeCard,
+#soustruhy.calcPage .subPanel.calcPanel--form,
+#soustruhy.calcPage .calcDetails{
+  border-color:rgba(255,255,255,.14) !important;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.080), rgba(255,255,255,.018)),
+    rgba(8,18,28,.32) !important;
+  background-color:rgba(8,18,28,.32) !important;
+  box-shadow:
+    0 14px 34px rgba(0,0,0,.22),
+    inset 0 1px 0 rgba(255,255,255,.12),
+    inset 0 -1px 0 rgba(255,255,255,.030) !important;
+  backdrop-filter:blur(22px) saturate(1.16) !important;
+  -webkit-backdrop-filter:blur(22px) saturate(1.16) !important;
+}
+:is(#brusy, #frezky).calcPage .brusDetails.calcPanel[open],
+:is(#brusy, #frezky).calcPage .brusDetails.calcDetailsInner[open],
+#soustruhy.calcPage .calcDetails[open],
+#soustruhy.calcPage .subPanel.calcPanel--form.active{
+  border-color:rgba(255,255,255,.17) !important;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.092), rgba(255,255,255,.024)),
+    rgba(8,18,28,.26) !important;
+  background-color:rgba(8,18,28,.26) !important;
+  box-shadow:
+    0 16px 38px rgba(0,0,0,.24),
+    inset 0 1px 0 rgba(255,255,255,.14),
+    inset 0 -1px 0 rgba(255,255,255,.035) !important;
+}
+:is(#brusy, #frezky).calcPage .brusDetailsBody,
+#soustruhy.calcPage :is(.soustruhHeatDetailsBody, .soustruhComboDetailsBody),
+#soustruhy.calcPage .subPanel.calcPanel--form.active{
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.055), rgba(255,255,255,.012)),
+    rgba(255,255,255,.014) !important;
+  background-color:rgba(255,255,255,.014) !important;
+  border-color:rgba(255,255,255,.10) !important;
+}
+:is(#brusy, #frezky).calcPage .brusDetails.calcPanel[open] > summary,
+:is(#brusy, #frezky).calcPage .brusDetails.calcDetailsInner[open] > summary,
+#soustruhy.calcPage .calcDetails[open] > summary{
+  border-bottom-color:rgba(255,255,255,.10) !important;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.060), rgba(255,255,255,.012)),
+    rgba(255,255,255,.010) !important;
+  background-color:rgba(255,255,255,.010) !important;
+}
+#soustruhy.calcPage .card.calcPanel--modeCard{
+  padding:10px !important;
+}
+#soustruhy.calcPage .subPanel.calcPanel--form{
+  border:1px solid rgba(255,255,255,.12) !important;
+  border-radius:18px !important;
+  padding:10px !important;
+  margin-top:10px !important;
+}
+#soustruhy.calcPage .subPanel.calcPanel--form:not(.active){
+  display:none !important;
+}
+body.lightweightMode :is(#brusy, #frezky).calcPage .brusDetails.calcPanel,
+body.lowEndDevice :is(#brusy, #frezky).calcPage .brusDetails.calcPanel,
+body.lightweightMode #soustruhy.calcPage :is(.card.calcPanel--modeCard, .subPanel.calcPanel--form, .calcDetails),
+body.lowEndDevice #soustruhy.calcPage :is(.card.calcPanel--modeCard, .subPanel.calcPanel--form, .calcDetails){
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+  background:rgba(8,18,28,.58) !important;
+}
+
+/* 1.2 (1.18) – Rotace: samotné bloky jmen jako hodně průhledný glass, včetně dock/portal a low-end režimu. */
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem,
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceNameTile,
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem,
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile,
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem,
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile,
+body.lightweightMode #rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem,
+body.lowEndDevice #rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem,
+body.lightweightMode #rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceNameTile,
+body.lowEndDevice #rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceNameTile,
+body.lightweightMode.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem,
+body.lowEndDevice.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem,
+body.lightweightMode.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile,
+body.lowEndDevice.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile{
+  border:1px solid rgba(255,255,255,.145) !important;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.030), rgba(255,255,255,.004)) !important;
+  background-color:rgba(255,255,255,.006) !important;
+  background-image:linear-gradient(145deg, rgba(255,255,255,.030), rgba(255,255,255,.004)) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.12),
+    inset 0 -1px 0 rgba(255,255,255,.018),
+    0 4px 12px rgba(0,0,0,.10) !important;
+  color:rgba(247,255,250,.98) !important;
+  text-shadow:0 1px 2px rgba(0,0,0,.42) !important;
+  backdrop-filter:blur(18px) saturate(1.10) !important;
+  -webkit-backdrop-filter:blur(18px) saturate(1.10) !important;
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem.activeChoice,
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceNameTile.activeChoice,
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem.activeChoice,
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile.activeChoice,
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem.activeChoice,
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile.activeChoice,
+body.lightweightMode #rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem.activeChoice,
+body.lowEndDevice #rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem.activeChoice,
+body.lightweightMode #rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceNameTile.activeChoice,
+body.lowEndDevice #rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceNameTile.activeChoice,
+body.lightweightMode.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem.activeChoice,
+body.lowEndDevice.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem.activeChoice,
+body.lightweightMode.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile.activeChoice,
+body.lowEndDevice.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile.activeChoice{
+  border-color:rgba(var(--rakThemeRgb, 124,255,124), .34) !important;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.045), rgba(255,255,255,.007)) !important;
+  background-color:rgba(255,255,255,.010) !important;
+  background-image:linear-gradient(145deg, rgba(255,255,255,.045), rgba(255,255,255,.007)) !important;
+  box-shadow:
+    0 0 0 1px rgba(var(--rakThemeRgb, 124,255,124), .10),
+    0 7px 22px rgba(0,0,0,.16),
+    inset 0 1px 0 rgba(255,255,255,.14) !important;
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceTileTitle,
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceTileTitle,
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceTileTitle{
+  background:transparent !important;
+  background-color:transparent !important;
+}
+
+
+/* 1.2 (1.38) – Rotace: jmenné bloky o cca 15 % vyšší a pořád hodně průhledný glass. */
+:root{
+  --rak-v1008-rotace-names-h:clamp(128px, 38svh, 202px);
+  --rak-rotace-name-chip-h:48px;
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid,
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"],
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"]{
+  max-height:var(--rak-v1008-rotace-names-h) !important;
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem,
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceNameTile,
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem,
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile,
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem,
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile,
+body.lightweightMode #rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem,
+body.lowEndDevice #rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem,
+body.lightweightMode #rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceNameTile,
+body.lowEndDevice #rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceNameTile,
+body.lightweightMode.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem,
+body.lowEndDevice.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem,
+body.lightweightMode.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile,
+body.lowEndDevice.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile{
+  min-height:var(--rak-rotace-name-chip-h) !important;
+  padding:10px 7px !important;
+  border:1px solid rgba(255,255,255,.135) !important;
+  background:linear-gradient(145deg, rgba(255,255,255,.026), rgba(255,255,255,.003)) !important;
+  background-color:rgba(255,255,255,.004) !important;
+  background-image:linear-gradient(145deg, rgba(255,255,255,.026), rgba(255,255,255,.003)) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.115),
+    inset 0 -1px 0 rgba(255,255,255,.014),
+    0 4px 12px rgba(0,0,0,.095) !important;
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceTileTitle,
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem .rotaceTileTitle,
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceTileTitle,
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceTileTitle{
+  font-size:clamp(14px, 3.65vw, 15.8px) !important;
+  line-height:1.12 !important;
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem.activeChoice,
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceNameTile.activeChoice,
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem.activeChoice,
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile.activeChoice,
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem.activeChoice,
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile.activeChoice{
+  border-color:rgba(var(--rakThemeRgb, 124,255,124), .34) !important;
+  background:linear-gradient(145deg, rgba(255,255,255,.040), rgba(255,255,255,.006)) !important;
+  background-color:rgba(255,255,255,.008) !important;
+  background-image:linear-gradient(145deg, rgba(255,255,255,.040), rgba(255,255,255,.006)) !important;
+}
+@media (max-width:430px){
+  :root{
+    --rak-v1008-rotace-names-h:clamp(120px, 35svh, 178px);
+    --rak-rotace-name-chip-h:46px;
+  }
+  #rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem,
+  #rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceNameTile,
+  html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem,
+  html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile,
+  body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem,
+  body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile{
+    padding:9px 6px !important;
+  }
+}
+
+/* 1.2 (1.38) – Rotace: jména zůstávají větší, ale písmo je o chlup menší kvůli delším jménům. */
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceTileTitle,
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem .rotaceTileTitle,
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceTileTitle,
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceTileTitle{
+  font-size:clamp(13.4px, 3.45vw, 15.1px) !important;
+  letter-spacing:-.006em !important;
+  line-height:1.12 !important;
+}
+@media (max-width:430px){
+  #rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceTileTitle,
+  #rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem .rotaceTileTitle,
+  html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceTileTitle,
+  body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceTileTitle{
+    font-size:clamp(13.1px, 3.35vw, 14.8px) !important;
+  }
+}
+
+/* 1.2 (1.38) – Korekce Frézky: aktuální korekce bez zeleného podbarvení, jen neutrální glass. */
+#korekce-frezky .calcCorrectionFhbCard .calcCorrectionGroup--currentCorrection,
+#korekce-frezky .calcCorrectionFhbCard .calcCorrectionGroup--soft.calcCorrectionGroup--currentCorrection{
+  background:linear-gradient(145deg, rgba(255,255,255,.042), rgba(255,255,255,.010)) !important;
+  background-color:rgba(255,255,255,.018) !important;
+  border-color:rgba(255,255,255,.105) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.11), 0 8px 22px rgba(0,0,0,.14) !important;
+}
+#korekce-frezky .calcFrezkySignedInput--current,
+#korekce-frezky .calcFrezkySignedInput--current > input{
+  background:linear-gradient(145deg, rgba(255,255,255,.055), rgba(255,255,255,.012)) !important;
+  background-color:rgba(255,255,255,.018) !important;
+  border-color:rgba(255,255,255,.13) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12), 0 6px 16px rgba(0,0,0,.12) !important;
+}
+#korekce-frezky .calcFrezkySignedInput--current > .calcFrezkySignToggle,
+#korekce-frezky .calcFrezkySignedInput--current > .calcFrezkySignToggle.isNegative{
+  background:linear-gradient(145deg, rgba(255,255,255,.070), rgba(255,255,255,.018)) !important;
+  background-color:rgba(255,255,255,.020) !important;
+  border-color:rgba(255,255,255,.16) !important;
+  color:rgba(247,252,255,.94) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.13), 0 7px 18px rgba(0,0,0,.16) !important;
+}
+#korekce-frezky .calcFrezkySignedInput--current > input:focus,
+#korekce-frezky .calcFrezkySignedInput--current > .calcFrezkySignToggle:focus-visible{
+  border-color:rgba(255,255,255,.30) !important;
+  box-shadow:0 0 0 2px rgba(255,255,255,.10), inset 0 1px 0 rgba(255,255,255,.14) !important;
+}
+
+/* 1.2 (1.38) – Rotace: jména ponechaná vyšší, písmo ještě malinko menší kvůli dvěma delším jménům. */
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceTileTitle,
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem .rotaceTileTitle,
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceTileTitle,
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceTileTitle{
+  font-size:clamp(12.95px, 3.28vw, 14.55px) !important;
+  letter-spacing:-.012em !important;
+  line-height:1.10 !important;
+}
+@media (max-width:430px){
+  #rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceTileTitle,
+  #rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem .rotaceTileTitle,
+  html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceTileTitle,
+  body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceTileTitle{
+    font-size:clamp(12.75px, 3.16vw, 14.25px) !important;
+    letter-spacing:-.014em !important;
+  }
+}

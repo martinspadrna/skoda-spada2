@@ -1,0 +1,304 @@
+/* RaK 1.2 (1.38) – Administrace/Rozpisy polish oddělený ze styles-overrides.css.
+   Bez změny logiky, Supabase ani spodní lišty. */
+
+/* v.1.5 (988) – Administrace / Rozpisy: užší sloupce pro tvrdotu, měkotu a absence. */
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable{
+  width:auto !important;
+  min-width:0 !important;
+  table-layout:fixed !important;
+  border-collapse:separate !important;
+  border-spacing:0 !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable col:first-child{
+  width:42px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable col:not(:first-child){
+  width:48px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuTableWrap:nth-of-type(1) .appMenuAdminTable,
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuTableWrap:nth-of-type(2) .appMenuAdminTable{
+  width:auto !important;
+  min-width:286px !important;
+  max-width:none !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable th,
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable td{
+  width:auto !important;
+  min-width:0 !important;
+  max-width:none !important;
+  padding:0 !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable th{
+  font-size:9px !important;
+  line-height:1.05 !important;
+  padding-bottom:2px !important;
+  white-space:normal !important;
+  overflow-wrap:anywhere !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable input[data-rot-field="date"]{
+  width:40px !important;
+  min-width:40px !important;
+  max-width:40px !important;
+  padding-left:1px !important;
+  padding-right:1px !important;
+  text-align:center !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable input[data-rot-field^="cell-"]{
+  width:46px !important;
+  min-width:46px !important;
+  max-width:46px !important;
+  min-height:30px !important;
+  padding:4px 2px !important;
+  font-size:9px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable{
+  width:auto !important;
+  min-width:204px !important;
+  table-layout:fixed !important;
+  border-collapse:separate !important;
+  border-spacing:0 !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable col:nth-child(1){
+  width:50px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable col:nth-child(2){
+  width:118px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable col:nth-child(3){
+  width:34px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable th,
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable td{
+  width:auto !important;
+  min-width:0 !important;
+  max-width:none !important;
+  padding:0 !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable th{
+  font-size:9px !important;
+  line-height:1.05 !important;
+  padding-bottom:2px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable input[data-note-field="date"]{
+  width:48px !important;
+  min-width:48px !important;
+  max-width:48px !important;
+  padding-left:1px !important;
+  padding-right:1px !important;
+  text-align:center !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable input[data-note-field="person"]{
+  width:116px !important;
+  min-width:116px !important;
+  max-width:116px !important;
+  padding-left:2px !important;
+  padding-right:2px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable input[data-note-field="code"]{
+  width:28px !important;
+  min-width:28px !important;
+  max-width:28px !important;
+  padding-left:0 !important;
+  padding-right:0 !important;
+  text-align:center !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable input,
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable input{
+  box-sizing:border-box !important;
+}
+
+
+/* v.1.5 (998) – Administrace / Rozpisy: doladěné šířky, čitelnější mini přehled a Odebrat přímo u jména. */
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable col:first-child{
+  width:53px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable col:not(:first-child){
+  width:50px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuTableWrap:nth-of-type(1) .appMenuAdminTable,
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuTableWrap:nth-of-type(2) .appMenuAdminTable{
+  width:auto !important;
+  min-width:296px !important;
+  max-width:none !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable input[data-rot-field="date"]{
+  width:51px !important;
+  min-width:51px !important;
+  max-width:51px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable input[data-rot-field^="cell-"]{
+  width:48px !important;
+  min-width:48px !important;
+  max-width:48px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable{
+  min-width:201px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable col:nth-child(1){
+  width:63px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable col:nth-child(2){
+  width:96px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable col:nth-child(3){
+  width:32px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable input[data-note-field="date"]{
+  width:61px !important;
+  min-width:61px !important;
+  max-width:61px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable input[data-note-field="person"]{
+  width:94px !important;
+  min-width:94px !important;
+  max-width:94px !important;
+  padding-right:1px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable input[data-note-field="code"]{
+  width:28px !important;
+  min-width:28px !important;
+  max-width:28px !important;
+  margin-left:-5px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adminRotationMiniTable th,
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adminRotationMiniTable td{
+  font-size:7.6px !important;
+  letter-spacing:-.035em !important;
+  padding-left:0 !important;
+  padding-right:0 !important;
+  text-overflow:clip !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adminRotationSelectedRemoveBtn:not([hidden]){
+  display:none !important;
+}
+.adminRotationQuickRemove{
+  min-width:176px !important;
+}
+
+
+/* v.1.5 (998) – Administrace / Rozpisy: datumy širší, neobsazené mini buňky zvýrazněné, rychlé Odebrat stabilní. */
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adminRotationMiniTable tr.adminRotationMiniDayHasEmpty td:first-child{
+  color:rgba(255,231,160,.98) !important;
+  background:rgba(255,190,72,.10) !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adminRotationMiniTable td.adminRotationMiniEmpty{
+  color:rgba(255,238,185,.98) !important;
+  background:linear-gradient(135deg, rgba(255,184,77,.24), rgba(255,96,96,.12)) !important;
+  box-shadow:inset 0 0 0 1px rgba(255,205,119,.24) !important;
+  font-weight:950 !important;
+}
+.adminRotationQuickRemove{
+  z-index:2147483646 !important;
+  pointer-events:auto !important;
+}
+.adminRotationQuickRemove.isVisible{
+  opacity:1 !important;
+  transform:translateY(0) !important;
+}
+
+/* v.1.5 (998) – Administrace / Rozpisy: datumy ještě širší podle mobilního testu. */
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable col:first-child{
+  width:61px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable input[data-rot-field="date"]{
+  width:59px !important;
+  min-width:59px !important;
+  max-width:59px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuTableWrap:nth-of-type(1) .appMenuAdminTable,
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuTableWrap:nth-of-type(2) .appMenuAdminTable{
+  min-width:304px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable{
+  min-width:210px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable col:nth-child(1){
+  width:72px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable input[data-note-field="date"]{
+  width:70px !important;
+  min-width:70px !important;
+  max-width:70px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable input[data-note-field="code"]{
+  margin-left:-7px !important;
+}
+.adminRotationQuickRemove{
+  position:fixed !important;
+  opacity:0 !important;
+  transition:opacity .12s ease, transform .12s ease !important;
+}
+.adminRotationQuickRemove.isVisible{
+  opacity:1 !important;
+  transform:translate3d(0,0,0) !important;
+}
+
+/* v.1.5 (998) – Administrace / Rozpisy: jmenné sloupce v tvrdotě a měkotě +8 %, volné mini buňky jen barevně. */
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable col:not(:first-child){
+  width:54px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable input[data-rot-field^="cell-"]{
+  width:52px !important;
+  min-width:52px !important;
+  max-width:52px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuTableWrap:nth-of-type(1) .appMenuAdminTable,
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuTableWrap:nth-of-type(2) .appMenuAdminTable{
+  min-width:324px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adminRotationMiniTable td.adminRotationMiniEmpty{
+  color:transparent !important;
+  text-shadow:none !important;
+}
+
+/* v.1.5 (998) – Administrace / Rozpisy: rychlá nabídka kódů absence. */
+.adminAbsenceCodePicker{
+  position:fixed;
+  width:214px;
+  max-width:calc(100vw - 16px);
+  z-index:2147483646;
+  box-sizing:border-box;
+  padding:8px;
+  border:1px solid rgba(124,255,124,.22);
+  border-radius:16px;
+  background:linear-gradient(180deg, rgba(12,26,36,.98), rgba(8,18,28,.96));
+  box-shadow:0 14px 36px rgba(0,0,0,.48), inset 0 1px 0 rgba(255,255,255,.06);
+  backdrop-filter:blur(18px) saturate(145%);
+  -webkit-backdrop-filter:blur(18px) saturate(145%);
+  opacity:0;
+  transform:translateY(3px);
+  transition:opacity .12s ease, transform .12s ease;
+  pointer-events:auto;
+}
+.adminAbsenceCodePicker.isVisible{
+  opacity:1;
+  transform:translateY(0);
+}
+.adminAbsenceCodePickerTitle{
+  font-size:10px;
+  line-height:1.2;
+  font-weight:850;
+  color:rgba(230,255,220,.86);
+  margin:0 2px 6px;
+  letter-spacing:.02em;
+}
+.adminAbsenceCodePickerGrid{
+  display:grid;
+  grid-template-columns:repeat(3, minmax(0, 1fr));
+  gap:5px;
+}
+.adminAbsenceCodeChip{
+  appearance:none;
+  border:1px solid rgba(124,255,124,.20);
+  border-radius:11px;
+  min-height:30px;
+  padding:5px 4px;
+  color:rgba(238,255,232,.96);
+  background:rgba(255,255,255,.055);
+  font:850 11px/1.05 Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  text-align:center;
+}
+.adminAbsenceCodeChip:active{
+  transform:translateY(1px) scale(.98);
+  background:rgba(124,255,124,.13);
+}

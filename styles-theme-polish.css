@@ -1,0 +1,486 @@
+/* RaK 1.2 (1.38) – finální theme/background polish oddělený ze styles-overrides.css. */
+/* v.1.5 (998) – Theme/pozadí globálně: zvolený background musí být vidět na každé stránce a theme má barvit celé UI. */
+:root{
+  --rakThemeAccentStrong:var(--rakThemeAccent, var(--green2, #7CFF7C));
+  --rakThemeAccentSoft:color-mix(in srgb, var(--rakThemeAccentStrong) 18%, transparent);
+  --rakThemeAccentMid:color-mix(in srgb, var(--rakThemeAccentStrong) 34%, transparent);
+  --rakThemeStroke:color-mix(in srgb, var(--rakThemeAccentStrong) 32%, rgba(255,255,255,.14));
+  --rakThemeStrokeSoft:color-mix(in srgb, var(--rakThemeAccentStrong) 20%, rgba(255,255,255,.10));
+  --rakThemeGlowSoft:color-mix(in srgb, var(--rakThemeAccentStrong) 23%, transparent);
+  --rakGlassPanelBg:linear-gradient(180deg, rgba(255,255,255,.105), rgba(255,255,255,.024)), color-mix(in srgb, var(--panel, rgba(8,14,12,.44)) 52%, transparent);
+  --rakGlassCardBg:linear-gradient(180deg, rgba(255,255,255,.088), rgba(255,255,255,.018)), color-mix(in srgb, var(--panel2, rgba(8,14,12,.36)) 46%, transparent);
+  --rakGlassSoftBg:linear-gradient(180deg, rgba(255,255,255,.070), rgba(255,255,255,.014)), color-mix(in srgb, var(--panel2, rgba(8,14,12,.28)) 34%, transparent);
+  --rakGlassActiveBg:linear-gradient(180deg, color-mix(in srgb, var(--rakThemeAccentStrong) 19%, rgba(255,255,255,.09)), rgba(255,255,255,.024)), color-mix(in srgb, var(--panel2, rgba(8,14,12,.32)) 38%, transparent);
+}
+html,
+html.rakStableBootViewport,
+html.rakViewportPrimed{
+  background:var(--rakAppBackground, var(--bg, #050816)) !important;
+  background-color:var(--rakBgBase, var(--bg, #050816)) !important;
+}
+body,
+html.rakStableBootViewport body,
+html.rakViewportPrimed body{
+  background:var(--rakAppBackground, var(--bg, #050816)) !important;
+  background-color:var(--rakBgBase, var(--bg, #050816)) !important;
+  background-attachment:fixed !important;
+}
+body::before{
+  background:var(--rakAppBackgroundOverlay, transparent) !important;
+  opacity:1 !important;
+}
+body::after{
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--rakThemeAccentStrong) 15%, rgba(255,255,255,.05)) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--rakThemeAccentStrong) 12%, rgba(255,255,255,.045)) 1px, transparent 1px) !important;
+  background-color:transparent !important;
+  opacity:.14 !important;
+  z-index:-1 !important;
+}
+@supports (-webkit-touch-callout:none){
+  html,
+  html.rakStableBootViewport,
+  html.rakViewportPrimed,
+  html.rakStableBootViewport body,
+  html.rakViewportPrimed body,
+  body{
+    background:var(--rakAppBackground, var(--bg, #050816)) !important;
+    background-color:var(--rakBgBase, var(--bg, #050816)) !important;
+  }
+  body::after{
+    background-image:none !important;
+    background:linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--rakBgBase, #050816) 76%, transparent) 58%, var(--rakBgBase, #050816) 100%) !important;
+    opacity:.96 !important;
+    z-index:0 !important;
+  }
+}
+.page,
+.page.active,
+#home,
+#rotace,
+#statistiky,
+#rozpisy,
+#kalkulacky,
+#games,
+#soustruhy,
+#frezky,
+#brusy,
+.calcPage{
+  background:transparent !important;
+  background-color:transparent !important;
+}
+.headerBar,
+.dashboardShell,
+.dashboardHeroCard,
+.dashboardCard,
+.tile,
+.card,
+.personCard,
+.adminBox,
+.listItem,
+.calcPanel,
+.calcTile,
+.calcResultCard,
+.calcInfoCard,
+.brusDetails,
+.subNav,
+.bgrid,
+.indexGrid,
+.statsSummary .tile,
+.appMenuSheet,
+.appMenuCard,
+.appMenuAction,
+.appMenuThemeCard,
+.appMenuBackgroundCard,
+.appMenuThemeSummary,
+.appMenuAdminCard,
+.appMenuSubSection,
+.appMenuTableWrap,
+.foodScheduleModal,
+.foodScheduleRow,
+.personScheduleModal,
+.personScheduleRow,
+.calendarModal,
+.qrModal,
+.rakUpdateToast,
+#games .gamesShellTop,
+#games .gamesAccountCard,
+#games .gamesActiveAccountBar,
+#games .gamesLaunchTile,
+#games .gamesStatsCard,
+#games .arcadePanel,
+#games .gameBoard{
+  border-color:var(--rakThemeStrokeSoft, rgba(255,255,255,.12)) !important;
+  box-shadow:
+    0 16px 40px rgba(0,0,0,.22),
+    inset 0 1px 0 rgba(255,255,255,.10),
+    inset 0 -1px 0 color-mix(in srgb, var(--rakThemeAccentStrong) 10%, transparent) !important;
+}
+.dashboardShell,
+.appMenuSheet,
+.foodScheduleModal,
+.personScheduleModal,
+.calendarModal,
+.qrModal,
+#games .gamesShellTop{
+  background:var(--rakGlassPanelBg) !important;
+  background-color:color-mix(in srgb, var(--panel, rgba(8,14,12,.44)) 48%, transparent) !important;
+  -webkit-backdrop-filter:blur(26px) saturate(180%) !important;
+  backdrop-filter:blur(26px) saturate(180%) !important;
+}
+.dashboardHeroCard,
+.dashboardCard,
+.tile,
+.card,
+.personCard,
+.adminBox,
+.listItem,
+.calcPanel,
+.calcTile,
+.calcResultCard,
+.calcInfoCard,
+.brusDetails,
+.appMenuCard,
+.appMenuAction,
+.appMenuThemeCard,
+.appMenuBackgroundCard,
+.appMenuThemeSummary,
+.appMenuAdminCard,
+.appMenuSubSection,
+.appMenuTableWrap,
+.foodScheduleRow,
+.personScheduleRow,
+.rakUpdateToast,
+#games .gamesAccountCard,
+#games .gamesActiveAccountBar,
+#games .gamesLaunchTile,
+#games .gamesStatsCard,
+#games .arcadePanel,
+#games .gameBoard{
+  background:var(--rakGlassCardBg) !important;
+  background-color:color-mix(in srgb, var(--panel2, rgba(8,14,12,.36)) 40%, transparent) !important;
+  -webkit-backdrop-filter:blur(22px) saturate(170%) !important;
+  backdrop-filter:blur(22px) saturate(170%) !important;
+}
+button:not(.bottomNavBtn):not(.bottomNavMenuBtn),
+input,
+select,
+textarea,
+.bbtn,
+.btn,
+.pillBtn,
+.tabBtn,
+.subNavBtn,
+.resetBtn,
+.calcPrimaryBtn,
+.calcCloseBtn,
+.homeBtn,
+.appMenuInlineInput,
+.appMenuInput,
+.appMenuSelect,
+.appMenuTextarea,
+.appMenuInlineClearBtn,
+.gameControlBtn,
+.gameControlBtnSmall{
+  border-color:var(--rakThemeStrokeSoft, rgba(255,255,255,.13)) !important;
+  background:var(--rakGlassSoftBg) !important;
+  color:var(--text, #fff) !important;
+  box-shadow:0 10px 26px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.10) !important;
+}
+button:not(.bottomNavBtn):not(.bottomNavMenuBtn):active,
+.bbtn.activeChoice,
+.bbtn.activeIndex,
+.subNavBtn.active,
+.tabBtn.active,
+.calcPrimaryBtn,
+button.primary,
+.appMenuAction.isActive,
+.appMenuSettingBtn.isActive,
+.appMenuThemeCard.isActive,
+.appMenuBackgroundCard.isActive,
+.dashboardSyncBadge:not(.dashboardSyncBadge--offline){
+  background:var(--rakGlassActiveBg) !important;
+  border-color:var(--rakThemeStroke, rgba(124,255,124,.34)) !important;
+  box-shadow:
+    0 16px 36px rgba(0,0,0,.24),
+    0 0 28px var(--rakThemeGlowSoft, rgba(124,255,124,.18)),
+    inset 0 1px 0 rgba(255,255,255,.14) !important;
+}
+h1,
+h2,
+h3,
+.sectionTitle,
+.dashboardAppTitle,
+.dashboardTitle,
+.dashboardValue,
+.calcHeaderTitleOneLine,
+.appMenuTitle,
+.appMenuCardTitle,
+.appMenuThemeTitle,
+.gamesTitle,
+#games .gameTitle{
+  color:var(--soft, #eef7ff) !important;
+}
+.dashboardLabel,
+.smallText,
+.appMenuThemeBadge,
+.appMenuThemeSummaryMeta,
+.dashboardMeta,
+.rotaceMiniLabel{
+  color:color-mix(in srgb, var(--soft, #eef7ff) 68%, transparent) !important;
+}
+a,
+.dashboardDot.is-open,
+.calcTileIcon,
+.bottomNavBtn.active .bottomNavIcon,
+.appMenuThemeSummaryChevron,
+.gameMetricValue{
+  color:var(--rakThemeAccentStrong, var(--green2, #7CFF7C)) !important;
+}
+.bottomNav,
+nav.bottomNav{
+  background:linear-gradient(180deg, rgba(255,255,255,.085), rgba(255,255,255,.020)), color-mix(in srgb, var(--panel, rgba(7,10,8,.46)) 46%, transparent) !important;
+  border-color:var(--rakThemeStrokeSoft, rgba(255,255,255,.12)) !important;
+  box-shadow:0 18px 42px rgba(0,0,0,.36), 0 0 24px color-mix(in srgb, var(--rakThemeAccentStrong) 10%, transparent) !important;
+}
+.bottomNavBtn{
+  background:transparent !important;
+  border-color:color-mix(in srgb, var(--rakThemeAccentStrong) 18%, rgba(255,255,255,.10)) !important;
+}
+.bottomNavBtn.active{
+  background:transparent !important;
+  border-color:color-mix(in srgb, var(--rakThemeAccentStrong) 76%, rgba(255,255,255,.22)) !important;
+  box-shadow:0 0 0 1px color-mix(in srgb, var(--rakThemeAccentStrong) 20%, transparent) inset, 0 12px 26px rgba(0,0,0,.18), 0 0 18px color-mix(in srgb, var(--rakThemeAccentStrong) 16%, transparent) !important;
+}
+.appMenuOverlay,
+.foodScheduleOverlay,
+.personScheduleOverlay,
+.calendarOverlay,
+.qrModalOverlay,
+.tttOverlay{
+  background:
+    var(--rakAppBackgroundOverlay, transparent),
+    color-mix(in srgb, var(--rakBgBase, #050816) 56%, transparent) !important;
+  -webkit-backdrop-filter:blur(18px) saturate(150%) !important;
+  backdrop-filter:blur(18px) saturate(150%) !important;
+}
+body.gamesOpen #games .gamesStage{
+  background:var(--rakAppBackground, var(--bg, #050816)) !important;
+  background-color:var(--rakBgBase, var(--bg, #050816)) !important;
+}
+body.gamesOpen #games .gamesStage::before{
+  background:var(--rakAppBackgroundOverlay, transparent) !important;
+  opacity:1 !important;
+}
+.appMenuTable,
+.appMenuAdminTable,
+.appMenuAdminTableDense,
+.appMenuAdminRotationTable,
+table.rotTable,
+.statsTable,
+.noteTable{
+  background:color-mix(in srgb, var(--panel, rgba(8,14,12,.34)) 35%, transparent) !important;
+  border-color:var(--rakThemeStrokeSoft, rgba(255,255,255,.10)) !important;
+}
+.appMenuTable th,
+.appMenuAdminTable th,
+.appMenuAdminTableDense th,
+.appMenuAdminRotationTable th,
+table.rotTable th,
+.statsTable th,
+.noteTable th,
+td.dateCell{
+  background:linear-gradient(180deg, color-mix(in srgb, var(--rakThemeAccentStrong) 14%, rgba(255,255,255,.055)), rgba(255,255,255,.018)) !important;
+  color:var(--soft, #eef7ff) !important;
+  border-color:var(--rakThemeStrokeSoft, rgba(255,255,255,.10)) !important;
+}
+.appMenuTable td,
+.appMenuAdminTable td,
+.appMenuAdminTableDense td,
+.appMenuAdminRotationTable td,
+table.rotTable td,
+.statsTable td,
+.noteTable td{
+  background:color-mix(in srgb, var(--panel2, rgba(8,14,12,.22)) 32%, transparent) !important;
+  border-color:color-mix(in srgb, var(--rakThemeAccentStrong) 12%, rgba(255,255,255,.08)) !important;
+}
+body.lightweightMode,
+body.lowEndDevice{
+  background:var(--rakAppBackgroundLite, var(--rakAppBackground, var(--bg, #050816))) !important;
+  background-color:var(--rakBgBase, var(--bg, #050816)) !important;
+}
+body.lightweightMode :is(.dashboardShell,.dashboardCard,.tile,.card,.appMenuCard,.appMenuAction,.calcTile,.bottomNav),
+body.lowEndDevice :is(.dashboardShell,.dashboardCard,.tile,.card,.appMenuCard,.appMenuAction,.calcTile,.bottomNav){
+  border-color:color-mix(in srgb, var(--rakThemeAccentStrong) 18%, rgba(255,255,255,.10)) !important;
+}
+@supports not (color: color-mix(in srgb, white 50%, transparent)){
+  :root{
+    --rakThemeAccentSoft:rgba(124,255,124,.16);
+    --rakThemeAccentMid:rgba(124,255,124,.30);
+    --rakThemeStroke:rgba(124,255,124,.30);
+    --rakThemeStrokeSoft:rgba(124,255,124,.16);
+    --rakThemeGlowSoft:rgba(124,255,124,.18);
+    --rakGlassPanelBg:linear-gradient(180deg, rgba(255,255,255,.105), rgba(255,255,255,.024)), rgba(8,14,12,.42);
+    --rakGlassCardBg:linear-gradient(180deg, rgba(255,255,255,.088), rgba(255,255,255,.018)), rgba(8,14,12,.32);
+    --rakGlassSoftBg:linear-gradient(180deg, rgba(255,255,255,.070), rgba(255,255,255,.014)), rgba(8,14,12,.24);
+    --rakGlassActiveBg:linear-gradient(180deg, rgba(124,255,124,.18), rgba(255,255,255,.024)), rgba(8,14,12,.30);
+  }
+}
+
+
+/* v.1.5 (998) – Theme sjednocení: Dashboard i nadpisové panely berou odstíny z aktuální barvy; žádný natvrdo zelený roh/linka. */
+:root{
+  --rakThemeHue:var(--rakThemeAccent, var(--green, #7CFF7C));
+  --rakThemeHueSoft:color-mix(in srgb, var(--rakThemeHue) 18%, transparent);
+  --rakThemeHueMid:color-mix(in srgb, var(--rakThemeHue) 34%, transparent);
+  --rakThemeHueLine:color-mix(in srgb, var(--rakThemeHue) 62%, rgba(255,255,255,.26));
+  --rakThemeHueBright:color-mix(in srgb, var(--rakThemeHue) 72%, #ffffff);
+  --rakThemeHueShadow:color-mix(in srgb, var(--rakThemeHue) 20%, transparent);
+  --rak-rotace-names-dock-bottom:clamp(48px, calc(min(var(--bottom-nav-h, 56px), 70px) + min(var(--rak-bottom-nav-live-gap, 0px), 6px) + 2px), 76px);
+  --rak-rotace-names-content-bottom:calc(var(--rak-rotace-names-dock-bottom) + min(29dvh, 124px) + 14px);
+}
+#home.page.active .dashboardShell,
+#home .dashboardShell{
+  border-color:color-mix(in srgb, var(--rakThemeHue) 28%, rgba(255,255,255,.16)) !important;
+  border-top-color:color-mix(in srgb, var(--rakThemeHue) 46%, rgba(255,255,255,.22)) !important;
+  background:
+    radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--rakThemeHue) 18%, transparent), transparent 34%),
+    radial-gradient(circle at 0% 12%, color-mix(in srgb, var(--rakThemeHue) 10%, transparent), transparent 38%),
+    var(--rakGlassPanelBg, linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.025))) !important;
+  box-shadow:
+    0 20px 54px rgba(0,0,0,.32),
+    0 0 28px color-mix(in srgb, var(--rakThemeHue) 10%, transparent),
+    inset 0 2px 0 color-mix(in srgb, var(--rakThemeHue) 18%, rgba(255,255,255,.12)),
+    inset 0 1px 0 rgba(255,255,255,.14) !important;
+}
+#home.page.active .dashboardShell::before,
+html body #home.page.active > .dashboardShell::before{
+  content:"" !important;
+  position:absolute !important;
+  left:1px !important;
+  right:1px !important;
+  top:1px !important;
+  height:2px !important;
+  border-top-left-radius:inherit !important;
+  border-top-right-radius:inherit !important;
+  background:linear-gradient(90deg, rgba(255,255,255,.08), var(--rakThemeHueLine), rgba(255,255,255,.10)) !important;
+  box-shadow:0 0 12px var(--rakThemeHueShadow) !important;
+  pointer-events:none !important;
+  z-index:60 !important;
+  display:block !important;
+}
+#home.page.active .dashboardShell::after,
+html body #home.page.active > .dashboardShell::after{
+  content:"" !important;
+  position:absolute !important;
+  left:0 !important;
+  right:0 !important;
+  top:0 !important;
+  height:22px !important;
+  border-top:1px solid color-mix(in srgb, var(--rakThemeHue) 38%, rgba(255,255,255,.18)) !important;
+  border-top-left-radius:inherit !important;
+  border-top-right-radius:inherit !important;
+  background:linear-gradient(180deg, color-mix(in srgb, var(--rakThemeHue) 8%, transparent), transparent) !important;
+  box-shadow:none !important;
+  pointer-events:none !important;
+  z-index:59 !important;
+}
+#home .dashboardHeroCard,
+#home .dashboardCard,
+#home .tile.dashboardCard{
+  border-color:color-mix(in srgb, var(--rakThemeHue) 24%, rgba(255,255,255,.14)) !important;
+  background:
+    radial-gradient(circle at 96% 0%, color-mix(in srgb, var(--rakThemeHue) 16%, transparent), transparent 36%),
+    radial-gradient(circle at 8% 8%, color-mix(in srgb, var(--rakThemeHue) 8%, transparent), transparent 34%),
+    var(--rakGlassCardBg, linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.02))) !important;
+  box-shadow:
+    0 14px 34px rgba(0,0,0,.26),
+    0 0 0 1px color-mix(in srgb, var(--rakThemeHue) 10%, transparent) inset,
+    inset 0 1px 0 rgba(255,255,255,.10) !important;
+}
+#home .dashboardHeroCard::before,
+#home .dashboardCard::before{
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.13), transparent 28%),
+    radial-gradient(circle at 92% 8%, color-mix(in srgb, var(--rakThemeHue) 20%, transparent), transparent 38%),
+    radial-gradient(circle at 16% 14%, color-mix(in srgb, var(--rakThemeHueBright) 12%, transparent), transparent 36%) !important;
+  opacity:.76 !important;
+}
+#home .dashboardHeroCard::after,
+#home .dashboardCard::after{
+  background:linear-gradient(90deg, transparent, color-mix(in srgb, var(--rakThemeHue) 62%, rgba(255,255,255,.22)), transparent) !important;
+  opacity:.34 !important;
+}
+#home .dashboardCardClickable:hover{
+  border-color:color-mix(in srgb, var(--rakThemeHue) 44%, rgba(255,255,255,.12)) !important;
+  box-shadow:
+    0 18px 38px rgba(0,0,0,.30),
+    0 0 0 1px color-mix(in srgb, var(--rakThemeHue) 16%, transparent) inset,
+    0 0 22px color-mix(in srgb, var(--rakThemeHue) 12%, transparent) !important;
+}
+#home .dashboardLabel,
+#home .dashboardIcon.dashboardIconInline,
+#home .dashboardDot.is-open,
+#home .dashboardSyncBadge:not(.dashboardSyncBadge--offline){
+  color:color-mix(in srgb, var(--rakThemeHueBright) 72%, #ffffff) !important;
+  border-color:color-mix(in srgb, var(--rakThemeHue) 28%, rgba(255,255,255,.16)) !important;
+}
+#home .dashboardIcon.dashboardIconInline{
+  background:linear-gradient(180deg, color-mix(in srgb, var(--rakThemeHue) 18%, transparent), rgba(255,255,255,.035)) !important;
+}
+.page:not(#home) > .headerBar,
+#kalkulacky.page > .headerBar,
+:is(#soustruhy,#frezky,#brusy,#pracka,#korekce-soustruhy,#korekce-frezky,#korekce-brusy).page.calcPage > .headerBar.calcHeaderBar,
+:is(#soustruhy,#frezky,#brusy,#pracka,#korekce-soustruhy,#korekce-frezky,#korekce-brusy).page.calcPage.calcCorrectionPage > .headerBar.calcHeaderBar{
+  border-color:color-mix(in srgb, var(--rakThemeHue) 24%, rgba(255,255,255,.13)) !important;
+  border-bottom-color:color-mix(in srgb, var(--rakThemeHue) 30%, rgba(255,255,255,.13)) !important;
+  background:
+    radial-gradient(circle at 92% 0%, color-mix(in srgb, var(--rakThemeHue) 14%, transparent), transparent 34%),
+    linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.035)) !important;
+  box-shadow:
+    0 14px 34px rgba(0,0,0,.22),
+    inset 0 1px 0 rgba(255,255,255,.13),
+    inset 0 -1px 0 color-mix(in srgb, var(--rakThemeHue) 22%, transparent) !important;
+}
+.page:not(#home) > .headerBar::before,
+:is(#soustruhy,#frezky,#brusy,#pracka,#korekce-soustruhy,#korekce-frezky,#korekce-brusy).page.calcPage > .headerBar.calcHeaderBar::before{
+  background:
+    radial-gradient(circle at 18% 0%, rgba(255,255,255,.16), transparent 44%),
+    linear-gradient(180deg, color-mix(in srgb, var(--rakThemeHue) 9%, transparent), transparent 72%) !important;
+  opacity:.78 !important;
+}
+.page:not(#home) > .headerBar::after,
+#kalkulacky.page > .headerBar::after,
+:is(#soustruhy,#frezky,#brusy,#pracka,#korekce-soustruhy,#korekce-frezky,#korekce-brusy).page.calcPage > .headerBar.calcHeaderBar::after,
+:is(#soustruhy,#frezky,#brusy,#pracka,#korekce-soustruhy,#korekce-frezky,#korekce-brusy).page.calcPage.calcCorrectionPage > .headerBar.calcHeaderBar::after{
+  content:"" !important;
+  position:absolute !important;
+  left:14px !important;
+  right:14px !important;
+  bottom:0 !important;
+  height:1px !important;
+  border-radius:999px !important;
+  background:linear-gradient(90deg, transparent, color-mix(in srgb, var(--rakThemeHue) 48%, rgba(255,255,255,.22)), transparent) !important;
+  opacity:.48 !important;
+  pointer-events:none !important;
+  z-index:1 !important;
+}
+#rotace.page.active #rotaceNamesPanel.active{
+  padding-bottom:var(--rak-rotace-names-content-bottom) !important;
+  scroll-padding-bottom:var(--rak-rotace-names-content-bottom) !important;
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid{
+  bottom:var(--rak-rotace-names-dock-bottom) !important;
+  max-height:min(29dvh, 124px) !important;
+  transform:translate3d(-50%,0,0) !important;
+  transition:none !important;
+  animation:none !important;
+}
+@media (max-height:700px), (max-width:430px){
+  :root{
+    --rak-rotace-names-dock-bottom:clamp(46px, calc(min(var(--bottom-nav-h, 54px), 66px) + min(var(--rak-bottom-nav-live-gap, 0px), 5px) + 1px), 72px);
+    --rak-rotace-names-content-bottom:calc(var(--rak-rotace-names-dock-bottom) + min(27dvh, 112px) + 12px);
+  }
+  #rotace.page.active #rotaceNamesPanel.active #namesGrid{max-height:min(27dvh,112px) !important;}
+}
+
