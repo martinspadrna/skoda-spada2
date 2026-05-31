@@ -1,4 +1,4 @@
-/* RaK 1.2 (1.42) – release polish override vrstva oddělená ze styles-overrides.css.
+/* RaK 1.2 (1.61) – release polish override vrstva oddělená ze styles-overrides.css.
    Tady jsou pozdní opravy vzhledu, které musí zůstat načtené až po historických overridech. */
 
 /* 1.2 (1.9) – stabilizace pozadí, iOS startu a Rotace doku jmen. */
@@ -847,7 +847,7 @@ body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .r
 }
 
 
-/* 1.2 (1.42) – Rotace: jmenné bloky o cca 15 % vyšší a pořád hodně průhledný glass. */
+/* 1.2 (1.61) – Rotace: jmenné bloky o cca 15 % vyšší a pořád hodně průhledný glass. */
 :root{
   --rak-v1008-rotace-names-h:clamp(128px, 38svh, 202px);
   --rak-rotace-name-chip-h:48px;
@@ -915,7 +915,7 @@ body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .r
   }
 }
 
-/* 1.2 (1.42) – Rotace: jména zůstávají větší, ale písmo je o chlup menší kvůli delším jménům. */
+/* 1.2 (1.61) – Rotace: jména zůstávají větší, ale písmo je o chlup menší kvůli delším jménům. */
 #rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceTileTitle,
 #rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem .rotaceTileTitle,
 html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceTileTitle,
@@ -933,7 +933,7 @@ body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .r
   }
 }
 
-/* 1.2 (1.42) – Korekce Frézky: aktuální korekce bez zeleného podbarvení, jen neutrální glass. */
+/* 1.2 (1.61) – Korekce Frézky: aktuální korekce bez zeleného podbarvení, jen neutrální glass. */
 #korekce-frezky .calcCorrectionFhbCard .calcCorrectionGroup--currentCorrection,
 #korekce-frezky .calcCorrectionFhbCard .calcCorrectionGroup--soft.calcCorrectionGroup--currentCorrection{
   background:linear-gradient(145deg, rgba(255,255,255,.042), rgba(255,255,255,.010)) !important;
@@ -962,7 +962,7 @@ body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .r
   box-shadow:0 0 0 2px rgba(255,255,255,.10), inset 0 1px 0 rgba(255,255,255,.14) !important;
 }
 
-/* 1.2 (1.42) – Rotace: jména ponechaná vyšší, písmo ještě malinko menší kvůli dvěma delším jménům. */
+/* 1.2 (1.61) – Rotace: jména ponechaná vyšší, písmo ještě malinko menší kvůli dvěma delším jménům. */
 #rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceTileTitle,
 #rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem .rotaceTileTitle,
 html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceTileTitle,
@@ -979,4 +979,28 @@ body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .r
     font-size:clamp(12.75px, 3.16vw, 14.25px) !important;
     letter-spacing:-.014em !important;
   }
+}
+
+/* 1.2 (1.61) – Rozpisy: běžně dostupné stažení PNG bez administrace. */
+.rotaceDownloadMonthBtn{
+  width:100% !important;
+  margin-top:12px !important;
+  min-height:38px !important;
+  border-radius:16px !important;
+  font-weight:900 !important;
+  letter-spacing:.01em !important;
+  background:rgba(255,255,255,.075) !important;
+  border:1px solid rgba(255,255,255,.16) !important;
+  color:var(--text, #fff) !important;
+  box-shadow:0 10px 24px rgba(0,0,0,.14), inset 0 1px 0 rgba(255,255,255,.10) !important;
+  -webkit-backdrop-filter:blur(18px) saturate(1.25) !important;
+  backdrop-filter:blur(18px) saturate(1.25) !important;
+}
+.rotaceDownloadMonthBtn:active{
+  transform:translateY(1px) !important;
+}
+.rotaceDownloadHint{
+  margin-top:6px !important;
+  text-align:center !important;
+  opacity:.72 !important;
 }

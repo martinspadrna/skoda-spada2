@@ -1,4 +1,4 @@
-// RaK 1.2 (1.42) – dashboard a domácí přehled.
+// RaK 1.2 (1.61) – dashboard a domácí přehled.
 
 function setDashboardHtmlIfChanged(element, html, key) {
   if (!element) return false;
@@ -631,7 +631,7 @@ function updateDashboard() {
     : (nextWorkShift ? 'Směna ' + String(nextWorkShift.team || '—') + (nextWorkShift.label ? ' · ' + nextWorkShift.label : '') + ' · ' + formatDashboardNextShiftMeta(nextWorkShift) : '');
   setCard('dashCountdown', shiftCountdownTitle, shiftCountdownValue, shiftCountdownMeta, '', false, clockIcon);
 
-  const foodText = status => (status && status.isOpen && status.active) ? ('Do ' + formatFoodTime(status.active.end) + (status.active.specialOvertime ? ' · přesčas' : '')) : 'Zavřeno';
+  const foodText = status => (status && status.isOpen && status.active) ? ('Do ' + formatFoodTime(status.active.end)) : 'Zavřeno';
   const foodDot = status => (status && status.isOpen) ? 'is-open' : 'is-closed';
   const foodDate = value => {
     try {
@@ -655,8 +655,7 @@ function updateDashboard() {
       : (nextDay.getTime() === tomorrow.getTime()
         ? 'Zítra ' + formatFoodTime(nextStart)
         : foodDate(nextStart) + ' ' + formatFoodTime(nextStart));
-    const nextPrefix = status.next.specialOvertime ? 'Přesčas ' : '';
-    return 'Další: ' + nextPrefix + label + '–' + formatFoodTime(nextEnd);
+    return 'Další: ' + label + '–' + formatFoodTime(nextEnd);
   };
   setCard('dashKantyna', 'Kantýna', foodText(kantyna), foodMeta(kantyna), foodDot(kantyna), true, croissantIcon);
   setCard('dashJidelna', 'Jídelna', foodText(jidelna), foodMeta(jidelna), foodDot(jidelna), true, plateIcon);
@@ -900,7 +899,7 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
     const foodText = (status) => {
       if (!status) return '—';
       if (status.isOpen && status.active) {
-        return 'Do ' + formatFoodTime(status.active.end) + (status.active.specialOvertime ? ' · přesčas' : '');
+        return 'Do ' + formatFoodTime(status.active.end);
       }
       return 'Zavřeno';
     };
@@ -926,8 +925,7 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
         : (nextDay.getTime() === tomorrow.getTime()
           ? 'Zítra ' + formatFoodTime(nextStart)
           : foodDate(nextStart) + ' ' + formatFoodTime(nextStart));
-      const nextPrefix = status.next.specialOvertime ? 'Přesčas ' : '';
-      return 'Další: ' + nextPrefix + label + '–' + formatFoodTime(nextEnd);
+      return 'Další: ' + label + '–' + formatFoodTime(nextEnd);
     };
     const hero = document.getElementById('dashHero');
     if (hero) {
@@ -977,7 +975,7 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
 function getRakDashboardHeroCenteringHealth() {
   return {
     ok: true,
-    version: window.APP_VERSION || '1.2 (1.42)',
+    version: window.APP_VERSION || '1.2 (1.61)',
     heroId: 'dashHero',
     scope: 'dashboard top shift panel',
     centeredLines: ['dashboardHeroLine1', 'dashboardHeroLine2', 'dashboardHeroLine3', 'dashboardHeroLine3Sub'],

@@ -1,4 +1,4 @@
-/* RaK 1.2 (1.42) – dashboard panely: průhlednější matný glass. */
+/* RaK 1.2 (1.61) – dashboard panely, food modaly a home layout polish. */
 #home.page.active .dashboardShell{
   --rak-dash-glass-bg: color-mix(in srgb, rgba(5,9,16,.34) 68%, var(--theme-surface, rgba(255,255,255,.10)) 32%) !important;
   --rak-dash-glass-bg-strong: color-mix(in srgb, rgba(5,9,16,.40) 70%, var(--theme-surface, rgba(255,255,255,.12)) 30%) !important;
@@ -81,4 +81,933 @@ body.ladaMode .dashboardAnnouncementBar{
   box-shadow:0 8px 20px rgba(0,0,0,.14), inset 0 1px 0 rgba(255,255,255,.09) !important;
   -webkit-backdrop-filter:none !important;
   backdrop-filter:none !important;
+}
+
+
+/* 1.2 (1.61) – Dashboard: ještě matnější a průhlednější glass, bez zásahu do spodní lišty. */
+#home.page.active .dashboardShell{
+  --rak-dash-glass-bg: color-mix(in srgb, rgba(5,9,16,.24) 64%, var(--theme-surface, rgba(255,255,255,.12)) 36%) !important;
+  --rak-dash-glass-bg-strong: color-mix(in srgb, rgba(5,9,16,.28) 66%, var(--theme-surface, rgba(255,255,255,.14)) 34%) !important;
+  --rak-dash-glass-border: color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, #7cff7c)) 16%, rgba(255,255,255,.24)) !important;
+  --rak-dash-glass-glow: color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, #7cff7c)) 7%, transparent) !important;
+}
+#home.page.active .dashboardShell,
+body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) #home.page.active .dashboardShell{
+  background:
+    radial-gradient(circle at 9% 0%, color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, #7cff7c)) 7%, transparent), transparent 44%),
+    linear-gradient(180deg, rgba(255,255,255,.046), rgba(255,255,255,.012)),
+    rgba(5,9,16,.18) !important;
+  border-color: color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, #7cff7c)) 14%, rgba(255,255,255,.20)) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(1.28) contrast(1.01) !important;
+  backdrop-filter: blur(32px) saturate(1.28) contrast(1.01) !important;
+  box-shadow: 0 18px 48px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.12) !important;
+}
+body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) #home .dashboardHeroCard,
+body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) #home .dashboardCard,
+body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) #home .tile.dashboardCard{
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.064), rgba(255,255,255,.016) 60%, rgba(255,255,255,.008)) !important;
+  background-color: color-mix(in srgb, rgba(5,9,16,.24) 64%, var(--theme-surface, rgba(255,255,255,.12)) 36%) !important;
+  border-color: color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, #7cff7c)) 14%, rgba(255,255,255,.22)) !important;
+  -webkit-backdrop-filter: blur(34px) saturate(1.32) contrast(1.02) !important;
+  backdrop-filter: blur(34px) saturate(1.32) contrast(1.02) !important;
+  box-shadow:
+    0 14px 34px rgba(0,0,0,.16),
+    inset 0 1px 0 rgba(255,255,255,.15),
+    inset 0 -1px 0 rgba(255,255,255,.028),
+    0 0 0 1px rgba(255,255,255,.024) !important;
+}
+#home .dashboardHeroCard::before,
+#home .dashboardCard::before{
+  opacity:.26 !important;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.11), transparent 34%),
+    radial-gradient(circle at 14% 0%, color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, #7cff7c)) 6%, transparent), transparent 42%) !important;
+}
+#home .dashboardHeroCard::after,
+#home .dashboardCard::after{
+  opacity:.12 !important;
+}
+.dashboardAnnouncementBar{
+  background: linear-gradient(145deg, rgba(255,255,255,.065), rgba(255,255,255,.016)) !important;
+  background-color: color-mix(in srgb, rgba(5,9,16,.24) 64%, var(--theme-surface, rgba(255,255,255,.12)) 36%) !important;
+  border-color: color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, #7cff7c)) 14%, rgba(255,255,255,.22)) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(1.28) !important;
+  backdrop-filter: blur(32px) saturate(1.28) !important;
+  box-shadow:0 12px 30px rgba(0,0,0,.16), inset 0 1px 0 rgba(255,255,255,.14) !important;
+}
+
+/* 1.2 (1.61) – Když je zapnuté oznámení, hero panel dostane víc místa a neschová se za první řádek dlaždic. */
+#dashboardAnnouncementBar:not([hidden]) + #dashHero.dashboardHeroCard{
+  min-height:132px !important;
+  padding-top:12px !important;
+  padding-bottom:16px !important;
+}
+#dashboardAnnouncementBar:not([hidden]) + #dashHero .dashboardHeroLine3,
+#dashboardAnnouncementBar:not([hidden]) + #dashHero .dashboardHeroBarRow,
+#dashboardAnnouncementBar:not([hidden]) + #dashHero .dashboardHeroBar{
+  position:relative !important;
+  z-index:1 !important;
+}
+#dashboardAnnouncementBar:not([hidden]) + #dashHero .dashboardHeroLine3{
+  margin-top:6px !important;
+  max-height:none !important;
+}
+#dashboardAnnouncementBar:not([hidden]) + #dashHero .dashboardHeroBarRow{
+  margin-top:10px !important;
+}
+#dashboardAnnouncementBar:not([hidden]) + #dashHero + .dashboardGrid{
+  margin-top:12px !important;
+}
+@media (max-width:430px){
+  #dashboardAnnouncementBar:not([hidden]) + #dashHero.dashboardHeroCard{
+    min-height:118px !important;
+    padding-bottom:14px !important;
+  }
+  #dashboardAnnouncementBar:not([hidden]) + #dashHero .dashboardHeroLine1,
+  #dashboardAnnouncementBar:not([hidden]) + #dashHero .dashboardHeroLine1Text{
+    font-size:13px !important;
+    line-height:1.12 !important;
+  }
+  #dashboardAnnouncementBar:not([hidden]) + #dashHero .dashboardHeroLine2{
+    font-size:11px !important;
+    line-height:1.14 !important;
+  }
+  #dashboardAnnouncementBar:not([hidden]) + #dashHero .dashboardHeroLine3{
+    font-size:10px !important;
+    line-height:1.12 !important;
+  }
+  #dashboardAnnouncementBar:not([hidden]) + #dashHero .dashboardHeroBar{
+    height:5px !important;
+  }
+  #dashboardAnnouncementBar:not([hidden]) + #dashHero + .dashboardGrid{
+    margin-top:10px !important;
+  }
+}
+
+/* 1.2 (1.61) – Kantýna/Jídelna modal: bez zeleného vzhledu, bere theme/pozadí a je víc matně glass. */
+.foodScheduleOverlay{
+  background:
+    var(--rakAppBackgroundOverlay, transparent),
+    color-mix(in srgb, var(--rakBgBase, #050816) 42%, transparent) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(1.18) !important;
+  backdrop-filter: blur(20px) saturate(1.18) !important;
+}
+body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) .foodScheduleModal{
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.068), rgba(255,255,255,.016) 60%, rgba(255,255,255,.008)) !important;
+  background-color: color-mix(in srgb, rgba(5,9,16,.22) 66%, var(--theme-surface, rgba(255,255,255,.12)) 34%) !important;
+  border-color: color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, #7cff7c)) 14%, rgba(255,255,255,.22)) !important;
+  -webkit-backdrop-filter: blur(34px) saturate(1.32) contrast(1.02) !important;
+  backdrop-filter: blur(34px) saturate(1.32) contrast(1.02) !important;
+  box-shadow:0 20px 54px rgba(0,0,0,.20), inset 0 1px 0 rgba(255,255,255,.16) !important;
+}
+body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) .foodScheduleModal::before{
+  opacity:.18 !important;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.10), transparent 34%),
+    radial-gradient(circle at 12% 0%, color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, #7cff7c)) 7%, transparent), transparent 44%) !important;
+}
+.foodScheduleModalTitle,
+body:not(.lightweightMode) .foodScheduleModalTitle{
+  color: var(--text, #fff) !important;
+  text-shadow: 0 2px 10px rgba(0,0,0,.18) !important;
+}
+.foodScheduleClose,
+body:not(.lightweightMode) .foodScheduleClose{
+  background: rgba(255,255,255,.08) !important;
+  border-color: rgba(255,255,255,.16) !important;
+  color: color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, #7cff7c)) 38%, #fff) !important;
+}
+.foodScheduleRow,
+body:not(.lightweightMode) .foodScheduleRow{
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.055), rgba(255,255,255,.016)) !important;
+  background-color: color-mix(in srgb, rgba(5,9,16,.18) 64%, var(--theme-surface, rgba(255,255,255,.10)) 36%) !important;
+  border-color: color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, #7cff7c)) 10%, rgba(255,255,255,.18)) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(1.22) !important;
+  backdrop-filter: blur(22px) saturate(1.22) !important;
+  box-shadow:0 10px 26px rgba(0,0,0,.12), inset 0 1px 0 rgba(255,255,255,.10) !important;
+}
+.foodScheduleNowBox,
+.foodScheduleNowBox--open,
+.foodScheduleNowBox--next{
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.075), rgba(255,255,255,.018)) !important;
+  background-color: color-mix(in srgb, rgba(5,9,16,.22) 66%, var(--theme-surface, rgba(255,255,255,.12)) 34%) !important;
+  border-color: color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, #7cff7c)) 12%, rgba(255,255,255,.18)) !important;
+  box-shadow:0 14px 32px rgba(0,0,0,.16), inset 0 1px 0 rgba(255,255,255,.12) !important;
+}
+.foodScheduleNowBox--open{
+  background-image:
+    linear-gradient(145deg, rgba(255,255,255,.082), rgba(255,255,255,.018)),
+    radial-gradient(circle at 10% 0%, color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, #7cff7c)) 10%, transparent), transparent 44%) !important;
+  border-color: color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, #7cff7c)) 18%, rgba(255,255,255,.22)) !important;
+}
+.foodScheduleNowBox--next{
+  background-image:
+    linear-gradient(145deg, rgba(255,255,255,.074), rgba(255,255,255,.016)),
+    radial-gradient(circle at 10% 0%, color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, #7cff7c)) 6%, transparent), transparent 46%) !important;
+  border-color: color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, #7cff7c)) 10%, rgba(255,255,255,.18)) !important;
+}
+.foodScheduleNowKicker,
+.foodScheduleNowSub,
+.foodScheduleTitleBlock .smallText{
+  color: rgba(235,242,255,.76) !important;
+}
+.foodScheduleNowMain,
+.foodScheduleTitleBlock .sectionTitle{
+  color: var(--text, #fff) !important;
+}
+.foodScheduleRow--hasHighlight{
+  border-color: color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, #7cff7c)) 14%, rgba(255,255,255,.18)) !important;
+}
+.foodScheduleWindowLine--currentOpen,
+body:not(.lightweightMode) .foodScheduleWindowLine--currentOpen,
+body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleWindowLine--currentOpen{
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.085), rgba(255,255,255,.020)),
+    radial-gradient(circle at 14% 0%, color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, #7cff7c)) 11%, transparent), transparent 46%) !important;
+  border-color: color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, #7cff7c)) 18%, rgba(255,255,255,.24)) !important;
+  color: var(--text, #fff) !important;
+  box-shadow:0 0 0 1px rgba(255,255,255,.04) inset, 0 8px 20px rgba(0,0,0,.10) !important;
+}
+.foodScheduleWindowLine--nextOpen,
+body:not(.lightweightMode) .foodScheduleWindowLine--nextOpen,
+body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleWindowLine--nextOpen{
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.070), rgba(255,255,255,.016)),
+    radial-gradient(circle at 14% 0%, color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, #7cff7c)) 7%, transparent), transparent 48%) !important;
+  border-color: color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, #7cff7c)) 12%, rgba(255,255,255,.20)) !important;
+  color: rgba(248,250,255,.94) !important;
+  box-shadow:0 0 0 1px rgba(255,255,255,.03) inset, 0 8px 18px rgba(0,0,0,.08) !important;
+}
+.foodScheduleWindowBadge{
+  background: rgba(255,255,255,.10) !important;
+  border-color: rgba(255,255,255,.18) !important;
+  color: rgba(245,248,255,.86) !important;
+  box-shadow:none !important;
+}
+body.lightweightMode #home.page.active .dashboardShell,
+body.lowEndDevice #home.page.active .dashboardShell,
+body.ladaMode #home.page.active .dashboardShell,
+body.lightweightMode .dashboardAnnouncementBar,
+body.lowEndDevice .dashboardAnnouncementBar,
+body.ladaMode .dashboardAnnouncementBar,
+body.lightweightMode .foodScheduleModal,
+body.lowEndDevice .foodScheduleModal,
+body.ladaMode .foodScheduleModal,
+body.lightweightMode .foodScheduleRow,
+body.lowEndDevice .foodScheduleRow,
+body.ladaMode .foodScheduleRow,
+body.lightweightMode .foodScheduleNowBox,
+body.lowEndDevice .foodScheduleNowBox,
+body.ladaMode .foodScheduleNowBox{
+  background: rgba(255,255,255,.07) !important;
+  border-color: rgba(255,255,255,.14) !important;
+  box-shadow:0 8px 18px rgba(0,0,0,.12), inset 0 1px 0 rgba(255,255,255,.08) !important;
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+}
+
+/* 1.2 (1.61) – tvrdý finální override Kantýna/Jídelna modalu: nahoře bez zeleného bloku, hodně průhledný glass. */
+html body .foodScheduleOverlay.isVisible{
+  background:
+    var(--rakAppBackgroundOverlay, transparent),
+    color-mix(in srgb, var(--rakBgBase, #050816) 30%, transparent) !important;
+  -webkit-backdrop-filter:blur(22px) saturate(1.12) !important;
+  backdrop-filter:blur(22px) saturate(1.12) !important;
+}
+html body .foodScheduleOverlay.isVisible .foodScheduleModal,
+html body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) .foodScheduleOverlay.isVisible .foodScheduleModal{
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.062), rgba(255,255,255,.012) 58%, rgba(255,255,255,.006)) !important;
+  background-color:color-mix(in srgb, rgba(5,9,16,.16) 68%, var(--theme-surface, rgba(255,255,255,.12)) 32%) !important;
+  border-color:color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, #7cff7c)) 9%, rgba(255,255,255,.20)) !important;
+  box-shadow:0 20px 54px rgba(0,0,0,.16), inset 0 1px 0 rgba(255,255,255,.14) !important;
+  -webkit-backdrop-filter:blur(38px) saturate(1.18) contrast(1.01) !important;
+  backdrop-filter:blur(38px) saturate(1.18) contrast(1.01) !important;
+}
+html body .foodScheduleOverlay.isVisible .foodScheduleModal::before,
+html body:not(.lightweightMode) .foodScheduleOverlay.isVisible .foodScheduleModal::before{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.072), rgba(255,255,255,0)) !important;
+  opacity:.22 !important;
+}
+html body .foodScheduleOverlay.isVisible .foodScheduleModalTitle,
+html body:not(.lightweightMode) .foodScheduleOverlay.isVisible .foodScheduleModalTitle,
+html body .foodScheduleOverlay.isVisible .foodScheduleTitleBlock .sectionTitle{
+  color:var(--text, #fff) !important;
+  text-shadow:0 2px 12px rgba(0,0,0,.18) !important;
+}
+html body .foodScheduleOverlay.isVisible .foodScheduleTitleBlock .smallText,
+html body:not(.lightweightMode) .foodScheduleOverlay.isVisible .foodScheduleTitleBlock .smallText{
+  color:rgba(235,242,255,.68) !important;
+}
+html body .foodScheduleOverlay.isVisible .foodScheduleClose,
+html body:not(.lightweightMode) .foodScheduleOverlay.isVisible .foodScheduleClose{
+  background:rgba(255,255,255,.070) !important;
+  border-color:rgba(255,255,255,.14) !important;
+  color:rgba(248,250,255,.88) !important;
+  box-shadow:0 8px 18px rgba(0,0,0,.12), inset 0 1px 0 rgba(255,255,255,.10) !important;
+}
+html body .foodScheduleOverlay.isVisible .foodScheduleNowBox,
+html body .foodScheduleOverlay.isVisible .foodScheduleNowBox--open,
+html body .foodScheduleOverlay.isVisible .foodScheduleNowBox--next,
+html body:not(.lightweightMode) .foodScheduleOverlay.isVisible .foodScheduleNowBox,
+html body:not(.lightweightMode) .foodScheduleOverlay.isVisible .foodScheduleNowBox--open,
+html body:not(.lightweightMode) .foodScheduleOverlay.isVisible .foodScheduleNowBox--next{
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.066), rgba(255,255,255,.012)) !important;
+  background-color:color-mix(in srgb, rgba(5,9,16,.14) 70%, var(--theme-surface, rgba(255,255,255,.12)) 30%) !important;
+  border-color:color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, #7cff7c)) 8%, rgba(255,255,255,.18)) !important;
+  box-shadow:0 14px 30px rgba(0,0,0,.13), inset 0 1px 0 rgba(255,255,255,.11) !important;
+}
+html body .foodScheduleOverlay.isVisible .foodScheduleNowBox--open,
+html body:not(.lightweightMode) .foodScheduleOverlay.isVisible .foodScheduleNowBox--open{
+  background-image:
+    linear-gradient(145deg, rgba(255,255,255,.070), rgba(255,255,255,.012)),
+    radial-gradient(circle at 10% 0%, color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, #7cff7c)) 5%, transparent), transparent 46%) !important;
+}
+html body .foodScheduleOverlay.isVisible .foodScheduleRow,
+html body:not(.lightweightMode) .foodScheduleOverlay.isVisible .foodScheduleRow{
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.052), rgba(255,255,255,.010)) !important;
+  background-color:color-mix(in srgb, rgba(5,9,16,.12) 70%, var(--theme-surface, rgba(255,255,255,.10)) 30%) !important;
+  border-color:color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, #7cff7c)) 7%, rgba(255,255,255,.16)) !important;
+  box-shadow:0 10px 24px rgba(0,0,0,.10), inset 0 1px 0 rgba(255,255,255,.09) !important;
+}
+html body .foodScheduleOverlay.isVisible .foodScheduleWindowLine--currentOpen,
+html body:not(.lightweightMode) .foodScheduleOverlay.isVisible .foodScheduleWindowLine--currentOpen,
+html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisible .foodScheduleWindowLine--currentOpen,
+html body .foodScheduleOverlay.isVisible .foodScheduleWindowLine--nextOpen,
+html body:not(.lightweightMode) .foodScheduleOverlay.isVisible .foodScheduleWindowLine--nextOpen,
+html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisible .foodScheduleWindowLine--nextOpen{
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.064), rgba(255,255,255,.012)) !important;
+  background-color:color-mix(in srgb, rgba(5,9,16,.10) 72%, var(--theme-surface, rgba(255,255,255,.10)) 28%) !important;
+  border-color:color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, #7cff7c)) 8%, rgba(255,255,255,.18)) !important;
+  color:rgba(248,250,255,.94) !important;
+  box-shadow:0 8px 18px rgba(0,0,0,.09), inset 0 1px 0 rgba(255,255,255,.08) !important;
+}
+
+
+/* 1.2 (1.61) – Dashboard panely ještě o chlup nižší. */
+#home .dashboardCard,
+#home .tile.dashboardCard{
+  min-height: calc(var(--rak-dashboard-fit-card-min, 82px) * .90) !important;
+  padding: 7px 8px !important;
+}
+@media (max-width:390px) and (max-height:740px){
+  #home .dashboardCard,
+  #home .tile.dashboardCard{
+    min-height: 66px !important;
+    padding: 6px 7px !important;
+  }
+}
+@media (max-width:370px) and (max-height:820px){
+  #home .dashboardCard,
+  #home .tile.dashboardCard{
+    min-height: 70px !important;
+  }
+}
+
+
+/* 1.2 (1.61) – Dashboard: 8 běžných panelů větší a všechny stejně vysoké.
+   Auto řádky zůstávají, ale karty mají pevnou cílovou výšku, aby Kalendář/Zbývá/Kantýna/Jídelna/Jídelní lístek/ePortál/Výplata/Dovolená byly stejně velké. */
+#home.page.active .dashboardGrid{
+  height:auto !important;
+  min-height:0 !important;
+  grid-template-rows:none !important;
+  grid-auto-rows:122px !important;
+  align-items:stretch !important;
+  overflow:visible !important;
+  gap:6px !important;
+}
+#home.page.active .dashboardCard,
+#home.page.active .tile.dashboardCard{
+  height:122px !important;
+  min-height:122px !important;
+  padding:14px 14px !important;
+  gap:7px 11px !important;
+  align-self:stretch !important;
+  overflow:hidden !important;
+  box-sizing:border-box !important;
+}
+#home.page.active .dashboardCard .dashboardIcon.dashboardIconInline,
+#home.page.active .dashboardCardIcon{
+  width:clamp(40px, 9.8vw, 48px) !important;
+  height:clamp(40px, 9.8vw, 48px) !important;
+  min-width:clamp(40px, 9.8vw, 48px) !important;
+  flex-basis:clamp(40px, 9.8vw, 48px) !important;
+}
+#home.page.active .dashboardLabel{
+  font-size:clamp(11.1px, 3.02vw, 13.5px) !important;
+  line-height:1.06 !important;
+}
+#home.page.active .dashboardValue{
+  font-size:clamp(14px, 4.05vw, 18.6px) !important;
+  line-height:1.08 !important;
+}
+#home.page.active .dashboardMeta{
+  font-size:clamp(10px, 2.62vw, 11.8px) !important;
+  line-height:1.10 !important;
+}
+@media (max-height:820px){
+  #home.page.active .dashboardGrid{
+    gap:6px !important;
+    grid-auto-rows:116px !important;
+  }
+  #home.page.active .dashboardCard,
+  #home.page.active .tile.dashboardCard{
+    height:116px !important;
+    min-height:116px !important;
+    padding:13px 13px !important;
+  }
+}
+@media (max-width:390px) and (max-height:820px){
+  #home.page.active .dashboardGrid{
+    grid-auto-rows:114px !important;
+  }
+  #home.page.active .dashboardCard,
+  #home.page.active .tile.dashboardCard{
+    height:114px !important;
+    min-height:114px !important;
+    padding:13px 13px !important;
+  }
+  #home.page.active .dashboardCard .dashboardIcon.dashboardIconInline,
+  #home.page.active .dashboardCardIcon{
+    width:39px !important;
+    height:39px !important;
+    min-width:39px !important;
+    flex-basis:39px !important;
+  }
+}
+@media (max-width:370px) and (max-height:820px){
+  #home.page.active .dashboardGrid{
+    gap:5px !important;
+    grid-auto-rows:112px !important;
+  }
+  #home.page.active .dashboardCard,
+  #home.page.active .tile.dashboardCard{
+    height:112px !important;
+    min-height:112px !important;
+    padding:12px 12px !important;
+  }
+}
+
+
+/* 1.2 (1.61) – Dashboard finální doladění po mobilním testu.
+   Panely zůstávají velké a stejně vysoké; jen jídlo dostane delší řádek a hero panel s oznámením víc prostoru dole. */
+#home.page.active #dashKantyna.dashboardCardFood .dashboardValue,
+#home.page.active #dashJidelna.dashboardCardFood .dashboardValue{
+  grid-column:1 / -1 !important;
+  width:100% !important;
+  max-width:100% !important;
+  font-size:clamp(13.2px, 3.55vw, 16px) !important;
+  line-height:1.05 !important;
+  letter-spacing:-.035em !important;
+  white-space:nowrap !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+}
+#home.page.active #dashKantyna.dashboardCardFood .dashboardMeta,
+#home.page.active #dashJidelna.dashboardCardFood .dashboardMeta{
+  grid-column:1 / -1 !important;
+  width:100% !important;
+  max-width:100% !important;
+  font-size:clamp(9.1px, 2.35vw, 10.6px) !important;
+  line-height:1.08 !important;
+  white-space:nowrap !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+}
+#dashboardAnnouncementBar:not([hidden]) + #dashHero.dashboardHeroCard{
+  min-height:150px !important;
+  padding-bottom:24px !important;
+  margin-bottom:10px !important;
+  overflow:visible !important;
+}
+#dashboardAnnouncementBar:not([hidden]) + #dashHero .dashboardHeroBarRow{
+  margin-top:12px !important;
+  margin-bottom:4px !important;
+  position:relative !important;
+  z-index:3 !important;
+}
+#dashboardAnnouncementBar:not([hidden]) + #dashHero .dashboardHeroBarPercent{
+  position:relative !important;
+  z-index:4 !important;
+  padding-left:4px !important;
+}
+#dashboardAnnouncementBar:not([hidden]) + #dashHero + .dashboardGrid{
+  margin-top:14px !important;
+}
+@media (max-width:430px){
+  #dashboardAnnouncementBar:not([hidden]) + #dashHero.dashboardHeroCard{
+    min-height:138px !important;
+    padding-bottom:22px !important;
+    margin-bottom:8px !important;
+  }
+  #dashboardAnnouncementBar:not([hidden]) + #dashHero .dashboardHeroBarRow{
+    margin-top:11px !important;
+    margin-bottom:4px !important;
+  }
+  #dashboardAnnouncementBar:not([hidden]) + #dashHero + .dashboardGrid{
+    margin-top:12px !important;
+  }
+}
+@media (max-width:370px){
+  #home.page.active #dashKantyna.dashboardCardFood .dashboardValue,
+  #home.page.active #dashJidelna.dashboardCardFood .dashboardValue{
+    font-size:12.8px !important;
+    letter-spacing:-.045em !important;
+  }
+  #dashboardAnnouncementBar:not([hidden]) + #dashHero.dashboardHeroCard{
+    min-height:134px !important;
+    padding-bottom:20px !important;
+  }
+}
+
+
+/* 1.2 (1.61) – 390×844 fix: při oznámení držet procenta směny uvnitř hero panelu. */
+@media (min-width:380px) and (max-width:400px) and (min-height:830px) and (max-height:860px){
+  #dashboardAnnouncementBar:not([hidden]) + #dashHero.dashboardHeroCard{
+    min-height:148px !important;
+    padding-bottom:28px !important;
+    margin-bottom:14px !important;
+    overflow:hidden !important;
+  }
+  #dashboardAnnouncementBar:not([hidden]) + #dashHero .dashboardHeroBarRow{
+    margin-top:13px !important;
+    margin-bottom:8px !important;
+    position:relative !important;
+    z-index:5 !important;
+  }
+  #dashboardAnnouncementBar:not([hidden]) + #dashHero .dashboardHeroBarPercent{
+    align-self:center !important;
+    transform:translateY(-1px) !important;
+  }
+  #dashboardAnnouncementBar:not([hidden]) + #dashHero + .dashboardGrid{
+    margin-top:16px !important;
+  }
+}
+
+
+/* 1.2 (1.61) – Dashboard: jídlo bez „přesčas“ na kartě, stejné měřítko textu jako ostatní panely. */
+#home.page.active #dashKantyna.dashboardCardFood .dashboardValue,
+#home.page.active #dashJidelna.dashboardCardFood .dashboardValue{
+  grid-column:1 / -1 !important;
+  width:100% !important;
+  max-width:100% !important;
+  font-size:clamp(14px, 4.05vw, 18.6px) !important;
+  line-height:1.08 !important;
+  letter-spacing:-.03em !important;
+  white-space:nowrap !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+}
+#home.page.active #dashKantyna.dashboardCardFood .dashboardMeta,
+#home.page.active #dashJidelna.dashboardCardFood .dashboardMeta{
+  grid-column:1 / -1 !important;
+  width:100% !important;
+  max-width:100% !important;
+  font-size:clamp(10px, 2.62vw, 11.8px) !important;
+  line-height:1.10 !important;
+  white-space:nowrap !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+}
+
+/* 1.2 (1.61) – 360×800: stavové kolečko u Kantýny/Jídelny zůstává viditelné vedle názvu a Jídelní lístek má název vedle ikony. */
+#home.page.active #dashKantyna .dashboardLabelRow,
+#home.page.active #dashJidelna .dashboardLabelRow,
+#home.page.active #dashFoodLink .dashboardLabelRow{
+  display:flex !important;
+  flex-wrap:nowrap !important;
+  align-items:center !important;
+  gap:6px !important;
+  width:100% !important;
+  min-width:0 !important;
+}
+#home.page.active #dashFoodLink .dashboardLabel{
+  white-space:nowrap !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  min-width:0 !important;
+}
+#home.page.active #dashKantyna .dashboardDot,
+#home.page.active #dashJidelna .dashboardDot{
+  display:inline-block !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  width:14px !important;
+  height:14px !important;
+  min-width:14px !important;
+  flex:0 0 14px !important;
+  margin-left:auto !important;
+  border-radius:999px !important;
+}
+@media (max-width:370px) and (max-height:820px){
+  #home.page.active #dashFoodLink .dashboardLabelRow{
+    gap:5px !important;
+  }
+  #home.page.active #dashFoodLink .dashboardLabel{
+    font-size:clamp(10.6px, 3vw, 12.2px) !important;
+  }
+  #home.page.active #dashKantyna .dashboardDot,
+  #home.page.active #dashJidelna .dashboardDot{
+    width:13px !important;
+    height:13px !important;
+    min-width:13px !important;
+    flex-basis:13px !important;
+  }
+}
+
+/* 1.2 (1.61) – 390×844: procenta směny drží pevně uvnitř hero panelu při zapnutém oznámení. */
+@media (min-width:380px) and (max-width:410px) and (min-height:760px) and (max-height:900px){
+  #home.page.active #dashboardAnnouncementBar:not([hidden]) + #dashHero.dashboardHeroCard{
+    position:relative !important;
+    height:166px !important;
+    min-height:166px !important;
+    padding-bottom:44px !important;
+    margin-bottom:18px !important;
+    overflow:hidden !important;
+  }
+  #home.page.active #dashboardAnnouncementBar:not([hidden]) + #dashHero .dashboardHeroBarRow{
+    position:absolute !important;
+    left:16px !important;
+    right:16px !important;
+    bottom:16px !important;
+    width:auto !important;
+    margin:0 !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    z-index:8 !important;
+  }
+  #home.page.active #dashboardAnnouncementBar:not([hidden]) + #dashHero .dashboardHeroBar{
+    flex:1 1 auto !important;
+    min-width:0 !important;
+  }
+  #home.page.active #dashboardAnnouncementBar:not([hidden]) + #dashHero .dashboardHeroBarPercent{
+    flex:0 0 auto !important;
+    min-width:42px !important;
+    text-align:right !important;
+    position:relative !important;
+    z-index:9 !important;
+    transform:none !important;
+  }
+  #home.page.active #dashboardAnnouncementBar:not([hidden]) + #dashHero + .dashboardGrid{
+    margin-top:18px !important;
+  }
+}
+
+
+/* 1.2 (1.61) – Dashboard: 390×844 finální odskok hero panelu od karet.
+   Funguje i když oznámení změní skutečnou výšku horní části. */
+@media (min-width:380px) and (max-width:410px) and (min-height:760px) and (max-height:900px){
+  #home.page.active #dashHero.dashboardHeroCard{
+    position:relative !important;
+    min-height:176px !important;
+    height:auto !important;
+    padding-bottom:50px !important;
+    margin-bottom:22px !important;
+    overflow:visible !important;
+    z-index:2 !important;
+  }
+  #home.page.active #dashHero .dashboardHeroBarRow{
+    position:absolute !important;
+    left:16px !important;
+    right:16px !important;
+    bottom:18px !important;
+    width:auto !important;
+    margin:0 !important;
+    z-index:5 !important;
+  }
+  #home.page.active #dashHero .dashboardHeroBarPercent{
+    position:relative !important;
+    z-index:6 !important;
+    transform:none !important;
+  }
+  #home.page.active #dashHero + .dashboardGrid,
+  #home.page.active #dashboardAnnouncementBar:not([hidden]) + #dashHero + .dashboardGrid{
+    margin-top:24px !important;
+    position:relative !important;
+    z-index:1 !important;
+  }
+}
+
+/* 1.2 (1.61) – 360×800: top řádek potravin/linku drží ikonu, název a kolečko v jednom řádku. */
+@media (max-width:370px) and (max-height:820px){
+  #home.page.active #dashKantyna .dashboardTop,
+  #home.page.active #dashJidelna .dashboardTop,
+  #home.page.active #dashFoodLink .dashboardTop,
+  #home.page.active #dashKantyna .dashboardHead,
+  #home.page.active #dashJidelna .dashboardHead,
+  #home.page.active #dashFoodLink .dashboardHead,
+  #home.page.active #dashKantyna .dashboardLabelRow,
+  #home.page.active #dashJidelna .dashboardLabelRow,
+  #home.page.active #dashFoodLink .dashboardLabelRow{
+    grid-column:1 / -1 !important;
+    width:100% !important;
+    max-width:100% !important;
+    min-width:0 !important;
+    display:flex !important;
+    flex-direction:row !important;
+    flex-wrap:nowrap !important;
+    align-items:center !important;
+    justify-content:flex-start !important;
+    gap:5px !important;
+    overflow:visible !important;
+  }
+  #home.page.active #dashKantyna .dashboardIcon.dashboardIconInline,
+  #home.page.active #dashJidelna .dashboardIcon.dashboardIconInline,
+  #home.page.active #dashFoodLink .dashboardIcon.dashboardIconInline{
+    width:34px !important;
+    height:34px !important;
+    min-width:34px !important;
+    flex:0 0 34px !important;
+  }
+  #home.page.active #dashKantyna .dashboardLabel,
+  #home.page.active #dashJidelna .dashboardLabel,
+  #home.page.active #dashFoodLink .dashboardLabel{
+    display:block !important;
+    white-space:nowrap !important;
+    overflow:visible !important;
+    text-overflow:clip !important;
+    min-width:0 !important;
+    flex:0 1 auto !important;
+    font-size:11px !important;
+    line-height:1.05 !important;
+  }
+  #home.page.active #dashKantyna .dashboardDot,
+  #home.page.active #dashJidelna .dashboardDot{
+    display:inline-block !important;
+    visibility:visible !important;
+    opacity:1 !important;
+    width:13px !important;
+    height:13px !important;
+    min-width:13px !important;
+    flex:0 0 13px !important;
+    margin-left:auto !important;
+  }
+}
+
+
+/* 1.2 (1.61) – 390×844: progress směny je součástí hero panelu, ne překryvná vrstva přes karty. */
+@media (min-width:380px) and (max-width:410px) and (min-height:760px) and (max-height:900px){
+  #home.page.active #dashHero.dashboardHeroCard,
+  #home.page.active #dashboardAnnouncementBar:not([hidden]) + #dashHero.dashboardHeroCard{
+    display:flex !important;
+    flex-direction:column !important;
+    justify-content:flex-start !important;
+    height:auto !important;
+    min-height:154px !important;
+    padding-top:13px !important;
+    padding-bottom:14px !important;
+    margin-bottom:0 !important;
+    overflow:hidden !important;
+    z-index:2 !important;
+  }
+  #home.page.active #dashHero .dashboardHeroLine1,
+  #home.page.active #dashHero .dashboardHeroLine2,
+  #home.page.active #dashHero .dashboardHeroLine3{
+    flex:0 0 auto !important;
+    transform:none !important;
+  }
+  #home.page.active #dashHero .dashboardHeroBarRow,
+  #home.page.active #dashboardAnnouncementBar:not([hidden]) + #dashHero .dashboardHeroBarRow{
+    position:static !important;
+    left:auto !important;
+    right:auto !important;
+    bottom:auto !important;
+    top:auto !important;
+    width:100% !important;
+    max-width:100% !important;
+    margin:12px 0 0 !important;
+    padding:0 2px !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:10px !important;
+    transform:none !important;
+    z-index:1 !important;
+    flex:0 0 auto !important;
+  }
+  #home.page.active #dashHero .dashboardHeroBar,
+  #home.page.active #dashboardAnnouncementBar:not([hidden]) + #dashHero .dashboardHeroBar{
+    flex:1 1 auto !important;
+    min-width:0 !important;
+    width:auto !important;
+    max-width:none !important;
+    height:7px !important;
+    transform:none !important;
+  }
+  #home.page.active #dashHero .dashboardHeroBarPercent,
+  #home.page.active #dashboardAnnouncementBar:not([hidden]) + #dashHero .dashboardHeroBarPercent{
+    position:static !important;
+    flex:0 0 44px !important;
+    min-width:44px !important;
+    width:44px !important;
+    padding-left:0 !important;
+    text-align:right !important;
+    transform:none !important;
+    z-index:1 !important;
+  }
+  #home.page.active #dashHero + .dashboardGrid,
+  #home.page.active #dashboardAnnouncementBar:not([hidden]) + #dashHero + .dashboardGrid{
+    margin-top:8px !important;
+    position:relative !important;
+    z-index:1 !important;
+    clear:both !important;
+  }
+}
+
+
+/* 1.2 (1.61) – 390×844 + aktivní oznámení: hero panel nesmí pustit progress přes první řadu karet. */
+@media (min-width:380px) and (max-width:410px) and (min-height:760px) and (max-height:900px){
+  #home.page.active #dashboardAnnouncementBar:not([hidden]) + #dashHero.dashboardHeroCard{
+    display:flex !important;
+    flex-direction:column !important;
+    height:auto !important;
+    min-height:178px !important;
+    padding-top:13px !important;
+    padding-bottom:18px !important;
+    margin-bottom:0 !important;
+    overflow:hidden !important;
+    position:relative !important;
+    z-index:2 !important;
+  }
+  #home.page.active #dashboardAnnouncementBar:not([hidden]) + #dashHero .dashboardHeroBarRow{
+    position:static !important;
+    width:100% !important;
+    margin:14px 0 0 !important;
+    padding:0 2px !important;
+    display:flex !important;
+    align-items:center !important;
+    gap:10px !important;
+    flex:0 0 auto !important;
+    transform:none !important;
+  }
+  #home.page.active #dashboardAnnouncementBar:not([hidden]) + #dashHero .dashboardHeroBar,
+  #home.page.active #dashboardAnnouncementBar:not([hidden]) + #dashHero .dashboardHeroBarPercent{
+    position:static !important;
+    transform:none !important;
+  }
+  #home.page.active #dashboardAnnouncementBar:not([hidden]) + #dashHero + .dashboardGrid{
+    margin-top:22px !important;
+    position:relative !important;
+    z-index:1 !important;
+    clear:both !important;
+  }
+}
+
+/* 1.2 (1.61) – 390×844 + aktivní oznámení: oprava skutečné příčiny překryvu.
+   Dashboard shell při oznámení potřebuje 4 řádky: hlavička, oznámení, směnový panel, karty. */
+@media (min-width:380px) and (max-width:410px) and (min-height:830px) and (max-height:860px){
+  #home.page.active .dashboardShell{
+    display:grid !important;
+    grid-template-rows:auto auto auto minmax(0, 1fr) !important;
+    grid-auto-rows:auto !important;
+    align-items:start !important;
+    gap:6px !important;
+    overflow:hidden !important;
+  }
+  #home.page.active #dashboardAnnouncementBar:not([hidden]){
+    grid-row:2 !important;
+    margin:0 !important;
+    min-height:27px !important;
+    align-self:start !important;
+  }
+  #home.page.active #dashboardAnnouncementBar:not([hidden]) + #dashHero.dashboardHeroCard{
+    grid-row:3 !important;
+    align-self:start !important;
+    position:relative !important;
+    display:flex !important;
+    flex-direction:column !important;
+    justify-content:flex-start !important;
+    height:142px !important;
+    min-height:142px !important;
+    max-height:142px !important;
+    padding:10px 14px 12px !important;
+    margin:0 !important;
+    overflow:hidden !important;
+    z-index:2 !important;
+    box-sizing:border-box !important;
+  }
+  #home.page.active #dashboardAnnouncementBar:not([hidden]) + #dashHero .dashboardHeroLine1,
+  #home.page.active #dashboardAnnouncementBar:not([hidden]) + #dashHero .dashboardHeroLine1Text{
+    font-size:13px !important;
+    line-height:1.08 !important;
+    margin:0 !important;
+    flex:0 0 auto !important;
+  }
+  #home.page.active #dashboardAnnouncementBar:not([hidden]) + #dashHero .dashboardHeroLine2{
+    font-size:16px !important;
+    line-height:1.04 !important;
+    margin:4px 0 0 !important;
+    flex:0 0 auto !important;
+  }
+  #home.page.active #dashboardAnnouncementBar:not([hidden]) + #dashHero .dashboardHeroLine3{
+    margin:6px 0 0 !important;
+    max-height:42px !important;
+    overflow:hidden !important;
+    flex:0 0 auto !important;
+  }
+  #home.page.active #dashboardAnnouncementBar:not([hidden]) + #dashHero .dashboardHeroLine3Pill{
+    padding:6px 10px !important;
+    min-width:min(210px, 72vw) !important;
+    max-width:92% !important;
+    font-size:10px !important;
+    line-height:1.14 !important;
+  }
+  #home.page.active #dashboardAnnouncementBar:not([hidden]) + #dashHero .dashboardHeroBarRow{
+    position:static !important;
+    left:auto !important;
+    right:auto !important;
+    top:auto !important;
+    bottom:auto !important;
+    width:100% !important;
+    max-width:100% !important;
+    height:16px !important;
+    min-height:16px !important;
+    margin:auto 0 0 !important;
+    padding:0 2px !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:10px !important;
+    transform:none !important;
+    z-index:3 !important;
+    flex:0 0 16px !important;
+    box-sizing:border-box !important;
+  }
+  #home.page.active #dashboardAnnouncementBar:not([hidden]) + #dashHero .dashboardHeroBar{
+    position:relative !important;
+    flex:1 1 auto !important;
+    min-width:0 !important;
+    width:auto !important;
+    max-width:none !important;
+    height:6px !important;
+    margin:0 !important;
+    transform:none !important;
+  }
+  #home.page.active #dashboardAnnouncementBar:not([hidden]) + #dashHero .dashboardHeroBarPercent{
+    position:static !important;
+    flex:0 0 42px !important;
+    min-width:42px !important;
+    width:42px !important;
+    padding:0 !important;
+    text-align:right !important;
+    transform:none !important;
+    z-index:4 !important;
+  }
+  #home.page.active #dashboardAnnouncementBar:not([hidden]) + #dashHero + .dashboardGrid{
+    grid-row:4 !important;
+    align-self:start !important;
+    position:relative !important;
+    z-index:1 !important;
+    margin:0 !important;
+    clear:both !important;
+  }
 }

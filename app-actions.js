@@ -1,4 +1,4 @@
-// RaK 1.2 (1.42) – delegované klikací akce aplikace oddělené z app.js.
+// RaK 1.2 (1.61) – delegované klikací akce aplikace oddělené z app.js.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app-actions.js', 'loaded', { source: 'dynamic-loader' }); } catch (err) {}
 
 function installDelegatedAppActions() {
@@ -24,6 +24,7 @@ function installDelegatedAppActions() {
     'open-rotace-months': () => openRotaceMonths(),
     'open-rotace-stats': () => openRotaceStats(),
     'open-rotace-names': () => openRotaceNames(),
+    'download-rotation-month-image': () => downloadSelectedRotationMonthImage(),
     'reset-soustruhy': () => resetSoustruhy(),
     'soustruh-mode': (el) => setSoustruhMode(String(el.dataset.soustruhMode || '')),
     'calc-soustruhy-lis': () => calcSoustruhyLis(),

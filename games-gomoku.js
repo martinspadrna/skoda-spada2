@@ -1,4 +1,4 @@
-// RaK 1.2 (1.42) – Piškvorky / online PvP / offline AI.
+// RaK 1.2 (1.61) – Piškvorky / online PvP / offline AI.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('games-gomoku.js', 'loaded', { source: 'dynamic-loader' }); } catch (err) {}
 
 function ensureTicTacToeThemeBoardPatch() {
@@ -3957,7 +3957,7 @@ function getRakTttAiHardeningV922Health() {
   return {
     ok: true,
     mode: 'ttt-ai-hardening-v923',
-    version: String(window.APP_VERSION || '1.2 (1.42)'),
+    version: String(window.APP_VERSION || '1.2 (1.61)'),
     thirteenTurnClamp: true,
     hardSearchDepthEarly: 8,
     hardSearchDepthMid: 8,
@@ -4312,7 +4312,7 @@ function tttV952RootSafetyMove(board, difficulty, deadline) {
 function getRakOnlineGomokuEngineV954Health() {
   return {
     ok: true,
-    version: String(window.APP_VERSION || '1.2 (1.42)'),
+    version: String(window.APP_VERSION || '1.2 (1.61)'),
     board: { rows: TTT_ROWS, cols: TTT_COLS, total: TTT_TOTAL_CELLS },
     rulesetVersion: GOMOKU_RULESET_VERSION,
     winLength: TTT_WIN_LENGTH,
@@ -4802,7 +4802,7 @@ function tttV955BestMove(board, difficulty) {
 function getRakGomokuAiV955Health() {
   return {
     ok: true,
-    version: String(window.APP_VERSION || '1.2 (1.42)'),
+    version: String(window.APP_VERSION || '1.2 (1.61)'),
     board: { rows: TTT_ROWS, cols: TTT_COLS, total: TTT_TOTAL_CELLS },
     rulesetVersion: GOMOKU_RULESET_VERSION,
     aiPipeline: ['immediate-win', 'immediate-loss-block', 'forcing-threats', 'opponent-danger-block', 'bounded-root-safety-search', 'center-fallback'],
@@ -5146,7 +5146,7 @@ function tttV956BestMove(board, difficulty) {
 function getRakGomokuAiV956Health() {
   return {
     ok: true,
-    version: String(window.APP_VERSION || '1.2 (1.42)'),
+    version: String(window.APP_VERSION || '1.2 (1.61)'),
     board: { rows: TTT_ROWS, cols: TTT_COLS, total: TTT_TOTAL_CELLS },
     rulesetVersion: GOMOKU_RULESET_VERSION,
     openThreeEndpointGuard: true,
@@ -5165,7 +5165,7 @@ if (typeof window !== 'undefined') {
 function getRakGomokuAiV957Health() {
   return {
     ok: true,
-    version: String(window.APP_VERSION || '1.2 (1.42)'),
+    version: String(window.APP_VERSION || '1.2 (1.61)'),
     board: { rows: TTT_ROWS, cols: TTT_COLS, total: TTT_TOTAL_CELLS },
     rulesetVersion: GOMOKU_RULESET_VERSION,
     diagonalGainPrevention: true,
@@ -5608,7 +5608,7 @@ function tttV958BestMove(board, difficulty) {
 function getRakGomokuAiV958Health() {
   return {
     ok: true,
-    version: String(window.APP_VERSION || '1.2 (1.42)'),
+    version: String(window.APP_VERSION || '1.2 (1.61)'),
     board: { rows: TTT_ROWS, cols: TTT_COLS, total: TTT_TOTAL_CELLS },
     rulesetVersion: GOMOKU_RULESET_VERSION,
     diagonalThreatGuard: true,
@@ -5953,7 +5953,7 @@ function tttV959BestMove(board, difficulty) {
 function getRakGomokuAiV959Health() {
   return {
     ok: true,
-    version: String(window.APP_VERSION || '1.2 (1.42)'),
+    version: String(window.APP_VERSION || '1.2 (1.61)'),
     rulesetVersion: GOMOKU_RULESET_VERSION,
     board: { rows: TTT_ROWS, cols: TTT_COLS, total: TTT_TOTAL_CELLS },
     lineWindowDefense: true,
@@ -6254,7 +6254,7 @@ function tttV960BestMove(board, difficulty) {
 function getRakGomokuAiV960Health() {
   return {
     ok: true,
-    version: String(window.APP_VERSION || '1.2 (1.42)'),
+    version: String(window.APP_VERSION || '1.2 (1.61)'),
     rulesetVersion: GOMOKU_RULESET_VERSION,
     board: { rows: TTT_ROWS, cols: TTT_COLS, total: TTT_TOTAL_CELLS },
     localSmokeTested: true,
@@ -8272,7 +8272,7 @@ function getRakGomokuRulesetLeaderboardHealth() {
   const visibleRows = rows.filter(row => !currentRuleset || String(row.rulesetVersion || '').trim() === currentRuleset);
   return {
     ok: true,
-    version: window.APP_VERSION || '1.2 (1.42)',
+    version: window.APP_VERSION || '1.2 (1.61)',
     game: 'ttt',
     rulesetVersion: currentRuleset,
     appVersionIsSeparate: true,

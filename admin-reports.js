@@ -1,4 +1,4 @@
-// RaK 1.2 (1.42) – Administrace Reporty chyb oddělená z hlavního UI modulu.
+// RaK 1.2 (1.61) – Administrace Reporty chyb oddělená z hlavního UI modulu.
 (function(){
 'use strict';
 

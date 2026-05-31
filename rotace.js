@@ -1,4 +1,4 @@
-// RaK 1.2 (1.42) – Rotace render a volba jmen.
+// RaK 1.2 (1.61) – Rotace render a volba jmen.
 function renderRotace() {
   const namesGrid = document.getElementById('namesGrid');
   const personView = document.getElementById('personView');
@@ -736,6 +736,298 @@ function renderMonth(monthKey) {
   html += wrapRotationViewSection("Absence", absenceHtml);
 
   setRotaceHtmlIfChanged(monthView, html, 'rotaceMonth-' + String(monthKey || ''));
+}
+
+
+
+function getRotationMonthExportFileName(monthKey) {
+  const parsed = typeof parseMonthKey === 'function' ? parseMonthKey(monthKey) : null;
+  if (parsed && parsed.year && parsed.month) {
+    return 'rozpis_' + String(parsed.year) + '_' + String(parsed.month).padStart(2, '0') + '.png';
+  }
+  return 'rozpis_' + String(monthKey || 'mesic').replace(/[^0-9a-zA-Z_-]+/g, '_') + '.png';
+}
+
+function getRotationMonthExportAbsences(month) {
+  const notes = Array.isArray(month && month.notes) ? month.notes : [];
+  return notes
+    .map(n => (typeof normalizeNoteEntry === 'function' ? normalizeNoteEntry(n) : n))
+    .filter(n => n && n.isAbsence)
+    .map(n => {
+      const parsed = typeof parseDateToken === 'function' ? parseDateToken(n.date) : null;
+      return {
+        date: parsed ? String(parsed.day) + '.' + String(parsed.month) + '.' : String(n.date || ''),
+        shift: String(n.shift || (parsed ? parsed.shift : '') || ''),
+        people: String((n.people && n.people.length) ? n.people.join(' a ') : (n.person || '')),
+        reason: String(n.label || n.code || '')
+      };
+    });
+}
+
+function drawRotationExportRoundRect(ctx, x, y, w, h, r) {
+  const radius = Math.max(0, Math.min(r || 0, w / 2, h / 2));
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + w - radius, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+  ctx.lineTo(x + w, y + h - radius);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+  ctx.lineTo(x + radius, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+  ctx.lineTo(x, y + radius);
+  ctx.quadraticCurveTo(x, y, x + radius, y);
+  ctx.closePath();
+}
+
+function drawRotationExportCellText(ctx, text, x, y, w, h, options) {
+  const opts = options || {};
+  const maxWidth = Math.max(10, w - (opts.pad || 18) * 2);
+  const raw = String(text || '').trim() || '—';
+  const words = raw.split(/\s+/);
+  const lines = [];
+  let current = '';
+  words.forEach(word => {
+    const probe = current ? current + ' ' + word : word;
+    if (ctx.measureText(probe).width <= maxWidth || !current) {
+      current = probe;
+    } else {
+      lines.push(current);
+      current = word;
+    }
+  });
+  if (current) lines.push(current);
+  const visible = lines.slice(0, opts.maxLines || 2);
+  if (lines.length > visible.length) {
+    visible[visible.length - 1] = visible[visible.length - 1].replace(/…?$/, '') + '…';
+  }
+  const lineHeight = opts.lineHeight || 28;
+  const total = visible.length * lineHeight;
+  let ty = y + (h - total) / 2 + lineHeight * .78;
+  ctx.textAlign = opts.align || 'center';
+  ctx.textBaseline = 'alphabetic';
+  const tx = ctx.textAlign === 'left' ? x + (opts.pad || 18) : (ctx.textAlign === 'right' ? x + w - (opts.pad || 18) : x + w / 2);
+  visible.forEach(line => {
+    ctx.fillText(line, tx, ty, maxWidth);
+    ty += lineHeight;
+  });
+}
+
+function drawRotationExportTable(ctx, title, columns, rows, x, y, w, options) {
+  const opts = options || {};
+  const headerH = opts.headerH || 66;
+  const rowH = opts.rowH || 52;
+  const titleH = opts.titleH || 88;
+  const radius = opts.radius || 32;
+  const tableH = titleH + headerH + rowH * Math.max(rows.length, 1);
+  drawRotationExportRoundRect(ctx, x, y, w, tableH, radius);
+  ctx.fillStyle = opts.panelBg || 'rgba(255,255,255,.92)';
+  ctx.fill();
+  ctx.strokeStyle = opts.border || 'rgba(28,38,58,.22)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  ctx.fillStyle = opts.titleBg || '#0f172a';
+  drawRotationExportRoundRect(ctx, x, y, w, titleH, radius);
+  ctx.fill();
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '900 46px system-ui, -apple-system, Segoe UI, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(title, x + 26, y + titleH / 2);
+
+  let cy = y + titleH;
+  const totalWeight = Math.max(0.0001, columns.reduce((sum, col) => sum + Math.max(0, Number(col && col.width) || 0), 0));
+  const colWidths = columns.map(col => Math.round(w * (Math.max(0, Number(col && col.width) || 0) / totalWeight)));
+  colWidths[colWidths.length - 1] += w - colWidths.reduce((a, b) => a + b, 0);
+
+  ctx.fillStyle = opts.headerBg || '#e2e8f0';
+  ctx.fillRect(x, cy, w, headerH);
+  ctx.strokeStyle = opts.grid || 'rgba(28,38,58,.20)';
+  ctx.lineWidth = 1.5;
+  let cx = x;
+  columns.forEach((col, idx) => {
+    const cw = colWidths[idx];
+    ctx.strokeRect(cx, cy, cw, headerH);
+    ctx.fillStyle = '#0f172a';
+    ctx.font = '900 31px system-ui, -apple-system, Segoe UI, sans-serif';
+    drawRotationExportCellText(ctx, col.label, cx, cy, cw, headerH, { maxLines: 1, lineHeight: 34, pad: 18 });
+    cx += cw;
+  });
+
+  cy += headerH;
+  const safeRows = rows.length ? rows : [columns.map(() => '—')];
+  safeRows.forEach((row, rowIdx) => {
+    cx = x;
+    ctx.fillStyle = rowIdx % 2 ? 'rgba(241,245,249,.84)' : 'rgba(255,255,255,.88)';
+    ctx.fillRect(x, cy, w, rowH);
+    row.forEach((cell, idx) => {
+      const cw = colWidths[idx];
+      const column = Array.isArray(columns) ? (columns[idx] || {}) : {};
+      const rawCell = String(cell || '').trim();
+      if (opts.highlightEmptyCells && idx > 0 && !rawCell) {
+        const emptyBg = ctx.createLinearGradient(cx, cy, cx, cy + rowH);
+        emptyBg.addColorStop(0, 'rgba(255,248,184,.92)');
+        emptyBg.addColorStop(1, 'rgba(245,198,64,.78)');
+        ctx.fillStyle = emptyBg;
+        ctx.fillRect(cx + 1, cy + 1, Math.max(0, cw - 2), Math.max(0, rowH - 2));
+      }
+      ctx.strokeStyle = opts.grid || 'rgba(28,38,58,.20)';
+      ctx.strokeRect(cx, cy, cw, rowH);
+      const isDate = idx === 0;
+      const align = column.align || (Array.isArray(opts.aligns) ? opts.aligns[idx] : '') || opts.align || 'center';
+      const textColor = column.textColor || (isDate ? '#0f172a' : '#1e293b');
+      const fontWeight = column.fontWeight || (isDate ? '900 ' : '750 ');
+      ctx.fillStyle = textColor;
+      ctx.font = fontWeight + (opts.fontSize || 22) + 'px system-ui, -apple-system, Segoe UI, sans-serif';
+      drawRotationExportCellText(ctx, cell, cx, cy, cw, rowH, {
+        maxLines: opts.maxLines || 2,
+        lineHeight: opts.lineHeight || 25,
+        align,
+        pad: typeof column.pad === 'number' ? column.pad : 12
+      });
+      cx += cw;
+    });
+    cy += rowH;
+  });
+  return tableH;
+}
+
+function buildRotationExportRows(section) {
+  const sec = section || {};
+  const machines = Array.isArray(sec.machines) ? sec.machines : [];
+  const dateWidth = 0.1215;
+  const columns = [{ label: 'Datum', width: dateWidth }];
+  const rest = machines.length ? (1 - dateWidth) / machines.length : (1 - dateWidth);
+  machines.forEach(machine => columns.push({ label: String(machine || ''), width: rest }));
+  const rows = (Array.isArray(sec.rows) ? sec.rows : []).map(row => {
+    const cells = [String(row && row.date ? row.date : '')];
+    machines.forEach((_, idx) => cells.push(String((row && row.cells ? row.cells[idx] : '') || '')));
+    return cells;
+  });
+  return { columns, rows };
+}
+
+function createRotationMonthExportCanvas(monthKey) {
+  const month = app && app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
+  if (!month) throw new Error('Vybraný měsíc není dostupný.');
+  const hard = buildRotationExportRows(month.hard);
+  const soft = buildRotationExportRows(month.soft);
+  const absences = getRotationMonthExportAbsences(month);
+  const exportDateColWeight = Number(hard && hard.columns && hard.columns[0] && hard.columns[0].width) || 0.1215;
+  const exportMachineColWeight = Number(hard && hard.columns && hard.columns[1] && hard.columns[1].width) || 0.1757;
+  const absenceColumns = [
+    { label: 'Datum', width: exportDateColWeight, align: 'center', fontWeight: '900 ' },
+    { label: 'Jméno', width: exportMachineColWeight, align: 'center', fontWeight: '750 ' },
+    { label: 'Důvod', width: exportMachineColWeight, align: 'center', fontWeight: '750 ' }
+  ];
+  const absenceRows = absences.length
+    ? absences.map(row => [String(row.date || '—') + ' ' + String(row.shift || '').trim(), row.people, row.reason])
+    : [['—', 'Bez absencí', '—']];
+
+  const width = 4800;
+  const margin = 116;
+  const titleH = 88;
+  const gap = 68;
+  const leftW = 1508;
+  const rightW = width - margin * 2 - gap - leftW;
+  const hardH = 88 + 66 + 52 * Math.max(hard.rows.length, 1);
+  const softH = 88 + 66 + 52 * Math.max(soft.rows.length, 1);
+  const absenceH = 88 + 66 + 52 * Math.max(absenceRows.length, 1);
+  const contentH = Math.max(hardH + gap + softH, absenceH);
+  const height = Math.max(2650, margin + titleH + 62 + contentH + margin);
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Canvas není dostupný.');
+
+  ctx.fillStyle = '#edf6ff';
+  ctx.fillRect(0, 0, width, height);
+  const bg = ctx.createLinearGradient(0, 0, width, height);
+  bg.addColorStop(0, '#f6fbff');
+  bg.addColorStop(.46, '#ebf5ff');
+  bg.addColorStop(1, '#e3f0ff');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, width, height);
+
+  ctx.fillStyle = '#0f172a';
+  ctx.font = '950 78px system-ui, -apple-system, Segoe UI, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText('Rozpis ' + String(monthKey || ''), margin, margin + 82);
+
+  const top = margin + titleH + 40;
+  const leftX = margin;
+  const rightX = margin + leftW + gap;
+  const hardTotalWeight = Math.max(0.0001, (hard.columns || []).reduce((sum, col) => sum + Math.max(0, Number(col && col.width) || 0), 0));
+  const hardDatePx = Math.round(leftW * ((Number(hard && hard.columns && hard.columns[0] && hard.columns[0].width) || 0) / hardTotalWeight));
+  const hardMachinePx = Math.round(leftW * ((Number(hard && hard.columns && hard.columns[1] && hard.columns[1].width) || 0) / hardTotalWeight));
+  const absenceTableW = Math.min(rightW, Math.max(hardDatePx + hardMachinePx * 2, 420));
+  const absenceX = rightX;
+  const hardTableH = drawRotationExportTable(ctx, 'Tvrdota', hard.columns, hard.rows, leftX, top, leftW, {
+    rowH: 52,
+    fontSize: 27,
+    lineHeight: 30,
+    titleBg: '#0f172a',
+    highlightEmptyCells: true
+  });
+  drawRotationExportTable(ctx, 'Měkota', soft.columns, soft.rows, leftX, top + hardTableH + gap, leftW, {
+    rowH: 52,
+    fontSize: 27,
+    lineHeight: 30,
+    titleBg: '#172554',
+    highlightEmptyCells: true
+  });
+  drawRotationExportTable(ctx, 'Absence', absenceColumns, absenceRows, absenceX, top, absenceTableW, {
+    rowH: 52,
+    fontSize: 22,
+    lineHeight: 26,
+    maxLines: 2,
+    align: 'center',
+    titleBg: '#172554'
+  });
+
+  ctx.fillStyle = '#64748b';
+  ctx.font = '700 25px system-ui, -apple-system, Segoe UI, sans-serif';
+  ctx.textAlign = 'right';
+  ctx.fillText('RaK ' + String(window.APP_VERSION || ''), width - margin, height - 52);
+  return canvas;
+}
+
+function downloadSelectedRotationMonthImage() {
+  const select = document.getElementById('monthSelect');
+  const monthKey = (select && select.value) || (app && app.selectedMonth) || '';
+  if (!monthKey || !app.rotation || !app.rotation.months || !app.rotation.months[monthKey]) {
+    alert('Nejdřív vyber měsíc v Rozpisech.');
+    return;
+  }
+  try {
+    const canvas = createRotationMonthExportCanvas(monthKey);
+    const fileName = getRotationMonthExportFileName(monthKey);
+    const triggerDownload = (url) => {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    };
+    if (canvas.toBlob) {
+      canvas.toBlob(blob => {
+        if (!blob) {
+          triggerDownload(canvas.toDataURL('image/png'));
+          return;
+        }
+        const url = URL.createObjectURL(blob);
+        triggerDownload(url);
+        setTimeout(() => URL.revokeObjectURL(url), 2500);
+      }, 'image/png', 1);
+    } else {
+      triggerDownload(canvas.toDataURL('image/png'));
+    }
+  } catch (err) {
+    alert('Obrázek rozpisu se nepodařilo vytvořit: ' + (err && err.message ? err.message : err));
+  }
 }
 
 function showMonthByKey(monthKey) {

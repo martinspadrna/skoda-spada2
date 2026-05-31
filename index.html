@@ -143,17 +143,6 @@ window.rakNoteExternalDependency = function(name, status, src) {
         <div class="dashboardMeta"></div>
       </div>
 
-      <div class="tile dashboardCard dashboardCardClickable" id="dashVyplata" data-action="open-payroll-link" role="button" tabindex="0" aria-label="Výplata">
-        <div class="dashboardLabel">Výplata</div>
-        <div class="dashboardValue">--</div>
-        <div class="dashboardMeta"></div>
-      </div>
-      <div class="tile dashboardCard" id="dashCzd">
-        <div class="dashboardLabel">Odpočet do dovolené</div>
-        <div class="dashboardValue">--</div>
-        <div class="dashboardMeta"></div>
-      </div>
-
       <a class="tile dashboardCard dashboardLinkCard" id="dashFoodLink" href="https://sa.gthcatering.cz/restaurant/c1/" target="_blank" rel="noopener noreferrer" role="button" tabindex="0" aria-label="Jídelní lístek" data-action="open-food-link">
         <div class="dashboardLabelRow">
           <span class="dashboardIcon dashboardIconInline" aria-hidden="true"><svg class="dashboardIconSvg" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M6.2 4.8h9.1A2.7 2.7 0 0 1 18 7.5v11H8.7a2.5 2.5 0 0 0-2.5 2.5V4.8Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.2 8.2h6.6M8.2 11.2h4.8M8.2 14.2h5.9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
@@ -170,6 +159,17 @@ window.rakNoteExternalDependency = function(name, status, src) {
         <div class="dashboardValue">Otevřít</div>
         <div class="dashboardMeta">Firemní portál</div>
       </a>
+
+      <div class="tile dashboardCard dashboardCardClickable" id="dashVyplata" data-action="open-payroll-link" role="button" tabindex="0" aria-label="Výplata">
+        <div class="dashboardLabel">Výplata</div>
+        <div class="dashboardValue">--</div>
+        <div class="dashboardMeta"></div>
+      </div>
+      <div class="tile dashboardCard" id="dashCzd">
+        <div class="dashboardLabel">Odpočet do dovolené</div>
+        <div class="dashboardValue">--</div>
+        <div class="dashboardMeta"></div>
+      </div>
 
     </div>
   </div>
@@ -434,6 +434,8 @@ window.rakNoteExternalDependency = function(name, status, src) {
         <select id="monthYearSelect"><option value="2025">2025</option><option value="2026">2026</option></select>
         <label for="monthSelect" class="mt10">Měsíc</label>
         <select id="monthSelect" data-action="month-select"></select>
+        <button type="button" id="downloadRotationMonthBtn" class="rotaceDownloadMonthBtn" data-action="download-rotation-month-image">Stáhnout</button>
+        <div class="smallText rotaceDownloadHint">Stáhne čistý PNG obrázek vybraného měsíce.</div>
       </div>
     </details>
     <div id="monthView" class="card"></div>
