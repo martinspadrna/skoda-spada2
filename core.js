@@ -1,7 +1,7 @@
-// RaK 1.2 (1.63) – core stav, verze a sdílené helpery aplikace.
+// RaK 1.2 (1.64) – core stav, verze a sdílené helpery aplikace.
 
 const APP_KEY = "rotace_kalkulacky_state_v123";
-const APP_VERSION = "1.2 (1.63)";
+const APP_VERSION = "1.2 (1.64)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-05-31-" + APP_VERSION;
 window.ROTATION_BUILD = ROTATION_BUILD;

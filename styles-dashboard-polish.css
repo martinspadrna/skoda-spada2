@@ -1,4 +1,4 @@
-/* RaK 1.2 (1.63) – dashboard panely, food modaly a home layout polish. */
+/* RaK 1.2 (1.64) – dashboard panely, food modaly a home layout polish. */
 #home.page.active .dashboardShell{
   --rak-dash-glass-bg: color-mix(in srgb, rgba(5,9,16,.34) 68%, var(--theme-surface, rgba(255,255,255,.10)) 32%) !important;
   --rak-dash-glass-bg-strong: color-mix(in srgb, rgba(5,9,16,.40) 70%, var(--theme-surface, rgba(255,255,255,.12)) 30%) !important;
@@ -84,7 +84,7 @@ body.ladaMode .dashboardAnnouncementBar{
 }
 
 
-/* 1.2 (1.63) – Dashboard: ještě matnější a průhlednější glass, bez zásahu do spodní lišty. */
+/* 1.2 (1.64) – Dashboard: ještě matnější a průhlednější glass, bez zásahu do spodní lišty. */
 #home.page.active .dashboardShell{
   --rak-dash-glass-bg: color-mix(in srgb, rgba(5,9,16,.24) 64%, var(--theme-surface, rgba(255,255,255,.12)) 36%) !important;
   --rak-dash-glass-bg-strong: color-mix(in srgb, rgba(5,9,16,.28) 66%, var(--theme-surface, rgba(255,255,255,.14)) 34%) !important;
@@ -137,7 +137,7 @@ body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) #home .tile.dashboa
   box-shadow:0 12px 30px rgba(0,0,0,.16), inset 0 1px 0 rgba(255,255,255,.14) !important;
 }
 
-/* 1.2 (1.63) – Když je zapnuté oznámení, hero panel dostane víc místa a neschová se za první řádek dlaždic. */
+/* 1.2 (1.64) – Když je zapnuté oznámení, hero panel dostane víc místa a neschová se za první řádek dlaždic. */
 #dashboardAnnouncementBar:not([hidden]) + #dashHero.dashboardHeroCard{
   min-height:132px !important;
   padding-top:12px !important;
@@ -185,7 +185,7 @@ body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) #home .tile.dashboa
   }
 }
 
-/* 1.2 (1.63) – Kantýna/Jídelna modal: bez zeleného vzhledu, bere theme/pozadí a je víc matně glass. */
+/* 1.2 (1.64) – Kantýna/Jídelna modal: bez zeleného vzhledu, bere theme/pozadí a je víc matně glass. */
 .foodScheduleOverlay{
   background:
     var(--rakAppBackgroundOverlay, transparent),
@@ -310,7 +310,7 @@ body.ladaMode .foodScheduleNowBox{
   backdrop-filter:none !important;
 }
 
-/* 1.2 (1.63) – tvrdý finální override Kantýna/Jídelna modalu: nahoře bez zeleného bloku, hodně průhledný glass. */
+/* 1.2 (1.64) – tvrdý finální override Kantýna/Jídelna modalu: nahoře bez zeleného bloku, hodně průhledný glass. */
 html body .foodScheduleOverlay.isVisible{
   background:
     var(--rakAppBackgroundOverlay, transparent),
@@ -392,7 +392,7 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
 }
 
 
-/* 1.2 (1.63) – Dashboard panely ještě o chlup nižší. */
+/* 1.2 (1.64) – Dashboard panely ještě o chlup nižší. */
 #home .dashboardCard,
 #home .tile.dashboardCard{
   min-height: calc(var(--rak-dashboard-fit-card-min, 82px) * .90) !important;
@@ -413,7 +413,7 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
 }
 
 
-/* 1.2 (1.63) – Dashboard: 8 běžných panelů větší a všechny stejně vysoké.
+/* 1.2 (1.64) – Dashboard: 8 běžných panelů větší a všechny stejně vysoké.
    Auto řádky zůstávají, ale karty mají pevnou cílovou výšku, aby Kalendář/Zbývá/Kantýna/Jídelna/Jídelní lístek/ePortál/Výplata/Dovolená byly stejně velké. */
 #home.page.active .dashboardGrid{
   height:auto !important;
@@ -497,7 +497,7 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
 }
 
 
-/* 1.2 (1.63) – Dashboard finální doladění po mobilním testu.
+/* 1.2 (1.64) – Dashboard finální doladění po mobilním testu.
    Panely zůstávají velké a stejně vysoké; jen jídlo dostane delší řádek a hero panel s oznámením víc prostoru dole. */
 #home.page.active #dashKantyna.dashboardCardFood .dashboardValue,
 #home.page.active #dashJidelna.dashboardCardFood .dashboardValue{
@@ -569,7 +569,7 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
 }
 
 
-/* 1.2 (1.63) – 390×844 fix: při oznámení držet procenta směny uvnitř hero panelu. */
+/* 1.2 (1.64) – 390×844 fix: při oznámení držet procenta směny uvnitř hero panelu. */
 @media (min-width:380px) and (max-width:400px) and (min-height:830px) and (max-height:860px){
   #dashboardAnnouncementBar:not([hidden]) + #dashHero.dashboardHeroCard{
     min-height:148px !important;
@@ -593,7 +593,7 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
 }
 
 
-/* 1.2 (1.63) – Dashboard: jídlo bez „přesčas“ na kartě, stejné měřítko textu jako ostatní panely. */
+/* 1.2 (1.64) – Dashboard: jídlo bez „přesčas“ na kartě, stejné měřítko textu jako ostatní panely. */
 #home.page.active #dashKantyna.dashboardCardFood .dashboardValue,
 #home.page.active #dashJidelna.dashboardCardFood .dashboardValue{
   grid-column:1 / -1 !important;
@@ -618,7 +618,7 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
   text-overflow:clip !important;
 }
 
-/* 1.2 (1.63) – 360×800: stavové kolečko u Kantýny/Jídelny zůstává viditelné vedle názvu a Jídelní lístek má název vedle ikony. */
+/* 1.2 (1.64) – 360×800: stavové kolečko u Kantýny/Jídelny zůstává viditelné vedle názvu a Jídelní lístek má název vedle ikony. */
 #home.page.active #dashKantyna .dashboardLabelRow,
 #home.page.active #dashJidelna .dashboardLabelRow,
 #home.page.active #dashFoodLink .dashboardLabelRow{
@@ -663,7 +663,7 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
   }
 }
 
-/* 1.2 (1.63) – 390×844: procenta směny drží pevně uvnitř hero panelu při zapnutém oznámení. */
+/* 1.2 (1.64) – 390×844: procenta směny drží pevně uvnitř hero panelu při zapnutém oznámení. */
 @media (min-width:380px) and (max-width:410px) and (min-height:760px) and (max-height:900px){
   #home.page.active #dashboardAnnouncementBar:not([hidden]) + #dashHero.dashboardHeroCard{
     position:relative !important;
@@ -703,7 +703,7 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
 }
 
 
-/* 1.2 (1.63) – Dashboard: 390×844 finální odskok hero panelu od karet.
+/* 1.2 (1.64) – Dashboard: 390×844 finální odskok hero panelu od karet.
    Funguje i když oznámení změní skutečnou výšku horní části. */
 @media (min-width:380px) and (max-width:410px) and (min-height:760px) and (max-height:900px){
   #home.page.active #dashHero.dashboardHeroCard{
@@ -737,7 +737,7 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
   }
 }
 
-/* 1.2 (1.63) – 360×800: top řádek potravin/linku drží ikonu, název a kolečko v jednom řádku. */
+/* 1.2 (1.64) – 360×800: top řádek potravin/linku drží ikonu, název a kolečko v jednom řádku. */
 @media (max-width:370px) and (max-height:820px){
   #home.page.active #dashKantyna .dashboardTop,
   #home.page.active #dashJidelna .dashboardTop,
@@ -794,7 +794,7 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
 }
 
 
-/* 1.2 (1.63) – 390×844: progress směny je součástí hero panelu, ne překryvná vrstva přes karty. */
+/* 1.2 (1.64) – 390×844: progress směny je součástí hero panelu, ne překryvná vrstva přes karty. */
 @media (min-width:380px) and (max-width:410px) and (min-height:760px) and (max-height:900px){
   #home.page.active #dashHero.dashboardHeroCard,
   #home.page.active #dashboardAnnouncementBar:not([hidden]) + #dashHero.dashboardHeroCard{
@@ -864,7 +864,7 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
 }
 
 
-/* 1.2 (1.63) – 390×844 + aktivní oznámení: hero panel nesmí pustit progress přes první řadu karet. */
+/* 1.2 (1.64) – 390×844 + aktivní oznámení: hero panel nesmí pustit progress přes první řadu karet. */
 @media (min-width:380px) and (max-width:410px) and (min-height:760px) and (max-height:900px){
   #home.page.active #dashboardAnnouncementBar:not([hidden]) + #dashHero.dashboardHeroCard{
     display:flex !important;
@@ -902,7 +902,7 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
   }
 }
 
-/* 1.2 (1.63) – 390×844 + aktivní oznámení: oprava skutečné příčiny překryvu.
+/* 1.2 (1.64) – 390×844 + aktivní oznámení: oprava skutečné příčiny překryvu.
    Dashboard shell při oznámení potřebuje 4 řádky: hlavička, oznámení, směnový panel, karty. */
 @media (min-width:380px) and (max-width:410px) and (min-height:830px) and (max-height:860px){
   #home.page.active .dashboardShell{
@@ -1013,7 +1013,7 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
 }
 
 
-/* 1.2 (1.63) – 390×844 + aktivní oznámení: posunout jen běžné panely níž.
+/* 1.2 (1.64) – 390×844 + aktivní oznámení: posunout jen běžné panely níž.
    Směnový hero panel s procenty zůstává na místě, odskok dostává až grid karet. */
 @media (min-width:380px) and (max-width:410px) and (min-height:830px) and (max-height:860px){
   #home.page.active #dashboardAnnouncementBar:not([hidden]) + #dashHero + .dashboardGrid{
@@ -1024,7 +1024,7 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
 }
 
 
-/* 1.2 (1.63) – 390×844 + aktivní oznámení: pevná skladba Dashboardu.
+/* 1.2 (1.64) – 390×844 + aktivní oznámení: pevná skladba Dashboardu.
    Příčina: v této kombinaci se míchalo několik starých viewport-fit vrstev a pozdější
    refresh Dashboardu měnil výšku hero obsahu. Grid karet pak znovu vyhrál v kaskádě
    moc nízký margin/řádek a vyskočil pod progress. Tady je pořadí napevno:
@@ -1161,5 +1161,159 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
     transform:none !important;
     clear:both !important;
     overflow:visible !important;
+  }
+}
+
+/* 1.2 (1.64) – Dashboard: finální pevný stack pro iPhone šířky 390–428.
+   Řeší: 390×844 půlšířkový progress, název dole místo nahoře a iPhone 13 Pro Max překryv procent/panelů. */
+@media (min-width:380px) and (max-width:440px) and (min-height:830px) and (max-height:940px){
+  #home.page.active .dashboardShell{
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:stretch !important;
+    justify-content:flex-start !important;
+    grid-template-rows:none !important;
+    grid-auto-rows:auto !important;
+    gap:6px !important;
+    overflow:hidden !important;
+  }
+  #home.page.active .dashboardShell > .dashboardAppTitleRow{
+    order:1 !important;
+    flex:0 0 auto !important;
+    margin:0 0 4px !important;
+    transform:none !important;
+  }
+  #home.page.active .dashboardShell > #dashboardAnnouncementBar{
+    order:2 !important;
+    flex:0 0 auto !important;
+    margin:0 !important;
+    transform:none !important;
+  }
+  #home.page.active .dashboardShell > #dashboardAnnouncementBar[hidden]{
+    display:none !important;
+  }
+  #home.page.active .dashboardShell > #dashHero.dashboardHeroCard,
+  #home.page.active .dashboardShell > #dashboardAnnouncementBar:not([hidden]) + #dashHero.dashboardHeroCard{
+    order:3 !important;
+    flex:0 0 auto !important;
+    width:100% !important;
+    min-width:0 !important;
+    height:auto !important;
+    min-height:152px !important;
+    max-height:none !important;
+    margin:0 !important;
+    padding:12px 14px 14px !important;
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:stretch !important;
+    justify-content:flex-start !important;
+    gap:4px !important;
+    overflow:hidden !important;
+    box-sizing:border-box !important;
+    transform:none !important;
+    position:relative !important;
+    z-index:2 !important;
+  }
+  #home.page.active .dashboardShell > #dashboardAnnouncementBar:not([hidden]) + #dashHero.dashboardHeroCard{
+    min-height:160px !important;
+    padding-bottom:16px !important;
+  }
+  #home.page.active #dashHero .dashboardHeroLine1,
+  #home.page.active #dashHero .dashboardHeroLine1Text,
+  #home.page.active #dashHero .dashboardHeroLine2,
+  #home.page.active #dashHero .dashboardHeroLine3,
+  #home.page.active #dashHero .dashboardHeroLine3Pill,
+  #home.page.active #dashHero .dashboardHeroBarRow,
+  #home.page.active #dashHero .dashboardHeroBar{
+    transform:none !important;
+  }
+  #home.page.active #dashHero .dashboardHeroLine1,
+  #home.page.active #dashHero .dashboardHeroLine1Text{
+    width:100% !important;
+    max-width:100% !important;
+    margin:0 !important;
+    text-align:center !important;
+    flex:0 0 auto !important;
+    font-size:13px !important;
+    line-height:1.10 !important;
+  }
+  #home.page.active #dashHero .dashboardHeroLine2{
+    width:100% !important;
+    max-width:100% !important;
+    margin:4px 0 0 !important;
+    text-align:center !important;
+    flex:0 0 auto !important;
+    font-size:16px !important;
+    line-height:1.05 !important;
+  }
+  #home.page.active #dashHero .dashboardHeroLine3{
+    width:100% !important;
+    max-width:100% !important;
+    margin:6px 0 0 !important;
+    display:flex !important;
+    justify-content:center !important;
+    align-items:center !important;
+    flex:0 0 auto !important;
+    max-height:42px !important;
+    overflow:hidden !important;
+  }
+  #home.page.active #dashHero .dashboardHeroLine3Pill{
+    max-width:92% !important;
+    min-width:0 !important;
+    margin-inline:auto !important;
+    padding:6px 10px !important;
+    font-size:10px !important;
+    line-height:1.14 !important;
+    text-align:center !important;
+  }
+  #home.page.active #dashHero .dashboardHeroBarRow,
+  #home.page.active #dashboardAnnouncementBar:not([hidden]) + #dashHero .dashboardHeroBarRow{
+    order:10 !important;
+    position:static !important;
+    inset:auto !important;
+    width:100% !important;
+    max-width:100% !important;
+    min-width:0 !important;
+    height:8px !important;
+    min-height:8px !important;
+    margin:auto 0 0 !important;
+    padding:0 !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:stretch !important;
+    gap:0 !important;
+    flex:0 0 8px !important;
+    box-sizing:border-box !important;
+    z-index:3 !important;
+  }
+  #home.page.active #dashHero .dashboardHeroBar,
+  #home.page.active #dashboardAnnouncementBar:not([hidden]) + #dashHero .dashboardHeroBar{
+    position:relative !important;
+    display:block !important;
+    flex:1 1 100% !important;
+    width:100% !important;
+    max-width:100% !important;
+    min-width:0 !important;
+    height:7px !important;
+    margin:0 !important;
+    box-sizing:border-box !important;
+  }
+  #home.page.active .dashboardShell > .dashboardGrid,
+  #home.page.active .dashboardShell > #dashHero + .dashboardGrid,
+  #home.page.active .dashboardShell > #dashboardAnnouncementBar:not([hidden]) + #dashHero + .dashboardGrid{
+    order:4 !important;
+    flex:0 1 auto !important;
+    width:100% !important;
+    min-width:0 !important;
+    margin:8px 0 0 !important;
+    padding-top:0 !important;
+    align-self:stretch !important;
+    position:relative !important;
+    z-index:1 !important;
+    transform:none !important;
+    clear:both !important;
+  }
+  #home.page.active .dashboardShell > #dashboardAnnouncementBar:not([hidden]) + #dashHero + .dashboardGrid{
+    margin-top:10px !important;
   }
 }

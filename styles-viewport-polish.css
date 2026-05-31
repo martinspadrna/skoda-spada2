@@ -1,7 +1,7 @@
-/* RaK 1.2 (1.63) – viewport/iOS/PWA start polish oddělený ze styles-overrides.css.
+/* RaK 1.2 (1.64) – viewport/iOS/PWA start polish oddělený ze styles-overrides.css.
    Drží stabilní startovní výšku, spodní safe-area výplň a navázání docku jmen na reálnou spodní lištu. */
 
-/* RaK 1.2 (1.63) – iOS start: spodní lišta sedí hned po otevření dole, bez černého pruhu pod panelem. */
+/* RaK 1.2 (1.64) – iOS start: spodní lišta sedí hned po otevření dole, bez černého pruhu pod panelem. */
 :root{
   --rak-nav-ios-start-bottom: max(1px, calc(env(safe-area-inset-bottom) * .12));
   --rak-rotace-names-dock-bottom: calc(var(--bottom-nav-h, 58px) + var(--rak-bottom-nav-live-gap, 2px) + 7px);
@@ -26,7 +26,7 @@ html body nav.bottomNav{
   }
 }
 
-/* RaK 1.2 (1.63) – Rotace: dock jmen navázaný na reálnou výšku/polohu spodní lišty, ne na starý vysoký safe-area odhad. */
+/* RaK 1.2 (1.64) – Rotace: dock jmen navázaný na reálnou výšku/polohu spodní lišty, ne na starý vysoký safe-area odhad. */
 #rotace.page.active #rotaceNamesPanel.active{
   padding-bottom:var(--rak-rotace-names-content-bottom) !important;
   scroll-padding-bottom:var(--rak-rotace-names-content-bottom) !important;
@@ -45,9 +45,9 @@ html body nav.bottomNav{
   }
 }
 
-/* RaK 1.2 (1.63) – admin/rozpis polish přesunutý do styles-admin-polish.css. */
+/* RaK 1.2 (1.64) – admin/rozpis polish přesunutý do styles-admin-polish.css. */
 
-/* RaK 1.2 (1.63) – iOS start: okamžité dosednutí bez černého spodku při prvním otevření. */
+/* RaK 1.2 (1.64) – iOS start: okamžité dosednutí bez černého spodku při prvním otevření. */
 :root{
   --rak-nav-ios-start-bottom:0px !important;
   --rak-start-viewport-h:100dvh;
@@ -82,9 +82,9 @@ html body nav.bottomNav{
   }
 }
 
-/* RaK 1.2 (1.63) – admin/rozpis polish přesunutý do styles-admin-polish.css. */
+/* RaK 1.2 (1.64) – admin/rozpis polish přesunutý do styles-admin-polish.css. */
 
-/* RaK 1.2 (1.63) – iOS/PWA start: bez viditelného dorůstání viewportu po otevření. */
+/* RaK 1.2 (1.64) – iOS/PWA start: bez viditelného dorůstání viewportu po otevření. */
 :root{
   --rak-start-viewport-h:100svh !important;
   --rak-start-viewport-dynamic-h:100dvh !important;
@@ -135,7 +135,7 @@ html.rakStableBootViewport body{
     transition:none !important;
   }
 }
-/* RaK 1.2 (1.63) – zmrazení startovní výšky Dashboardu; JS metriky dál měří lištu, ale neroztahují appku po startu. */
+/* RaK 1.2 (1.64) – zmrazení startovní výšky Dashboardu; JS metriky dál měří lištu, ale neroztahují appku po startu. */
 html.rakStableBootViewport{
   --rak-visual-viewport-h:100svh !important;
   --rak-v968-home-h:calc(100svh - var(--rak-v968-dashboard-bottom-space) - env(safe-area-inset-top) - 8px) !important;
