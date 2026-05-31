@@ -1,4 +1,4 @@
-// v.1.5 (990) – spodní lišta beze změny výšky: aktivní ikona větší, text aktivní položky skrytý.
+// v.1.5 (991) – spodní lišta beze změny výšky: aktivní ikona větší, text aktivní položky skrytý.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app.js', 'loaded', { source: 'index' }); } catch (err) {}
 
 
@@ -366,12 +366,20 @@ function applyRakFixedBottomNavMetrics() {
       const navHeight = Math.max(48, Math.ceil(nav.offsetHeight || (navRect ? navRect.height : 0) || 56));
       const visualHeight = Math.max(480, Math.floor((window.visualViewport && window.visualViewport.height) || window.innerHeight || document.documentElement.clientHeight || 0));
       const navTop = navRect && Number.isFinite(navRect.top) ? navRect.top : (visualHeight - navHeight);
+      const navBottom = navRect && Number.isFinite(navRect.bottom) ? navRect.bottom : visualHeight;
+      const navBottomGap = Math.max(0, Math.round(visualHeight - navBottom));
+      const viewport = window.visualViewport || null;
+      const viewportOffsetTop = viewport ? Math.max(0, Math.round(Number(viewport.offsetTop || 0) || 0)) : 0;
+      const layoutHeight = Math.max(visualHeight, Math.round(Number(window.innerHeight || 0) || 0), Math.round(Number(document.documentElement.clientHeight || 0) || 0));
+      const visualBottomGap = Math.max(0, Math.round(layoutHeight - visualHeight - viewportOffsetTop));
       const bottomTotalSpace = Math.max(navHeight + 8, Math.ceil(visualHeight - navTop + 8));
       const contentSpace = Math.max(52, navHeight + 4);
       root.style.setProperty('--bottom-nav-h', navHeight + 'px');
       root.style.setProperty('--rak-fixed-bottom-space', contentSpace + 'px');
       root.style.setProperty('--rak-visual-viewport-h', visualHeight + 'px');
       root.style.setProperty('--rak-bottom-total-space', bottomTotalSpace + 'px');
+      root.style.setProperty('--rak-bottom-nav-live-gap', navBottomGap + 'px');
+      root.style.setProperty('--rak-visual-bottom-gap', visualBottomGap + 'px');
       root.dataset.rakBottomNavFixed = '1';
       if (document.body && document.body.classList && document.body.classList.contains('tttOpen') && typeof scheduleTttLayout === 'function') {
         try { scheduleTttLayout(); } catch (err) {}
@@ -405,9 +413,12 @@ function applyRakFixedBottomNavMetrics() {
   else run();
   bind(window, 'resize', schedule, { passive: true });
   bind(window, 'orientationchange', () => setTimeout(run, 120), { passive: true });
+  bind(window, 'scroll', schedule, { passive: true });
+  bind(window, 'pageshow', run, { passive: true });
   try {
     if (window.visualViewport) {
       bind(window.visualViewport, 'resize', () => setTimeout(apply, 80), { passive: true });
+      bind(window.visualViewport, 'scroll', () => setTimeout(apply, 40), { passive: true });
     }
   } catch (err) {}
   try {

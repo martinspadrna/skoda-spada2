@@ -12117,7 +12117,7 @@ function adminShowRotationSelectedRemove(input) {
       return;
     }
     window.__rakAdminRotationSelectedInput = input;
-    // v.1.5 (990): horní sticky tlačítko už při kliknutí do jména nevytahujeme.
+    // v.1.5 (991): horní sticky tlačítko už při kliknutí do jména nevytahujeme.
     // Rychlé Odebrat se vykreslí přímo u aktivního pole přes adminShowRotationQuickRemove().
     btn.hidden = true;
     btn.dataset.targetReady = '1';
@@ -12251,12 +12251,16 @@ function adminBindRotationZoomGuard() {
   const recoverAfterViewportChange = () => {
     if (!isAdminRotation()) return;
     adminSetRotationViewportLock(true);
-    try { adminCloseRotationQuickRemove(); } catch (err) {}
     try { adminHideRotationSelectedRemove(); } catch (err) {}
     try {
       const active = document.activeElement;
-      if (active && isAdminRotationField(active) && window.visualViewport && Number(window.visualViewport.scale || 1) > 1.01) {
-        active.blur();
+      if (active && isAdminRotationField(active)) {
+        if (window.visualViewport && Number(window.visualViewport.scale || 1) > 1.01) active.blur();
+        else if (active.matches && active.matches('[data-rot-field^="cell-"], [data-note-field="person"]')) window.setTimeout(() => adminShowRotationQuickRemove(active), 80);
+      } else if (window.__rakAdminRotationQuickRemoveInput && window.__rakAdminRotationQuickRemoveInput.isConnected) {
+        window.setTimeout(() => adminShowRotationQuickRemove(window.__rakAdminRotationQuickRemoveInput), 80);
+      } else {
+        adminCloseRotationQuickRemove();
       }
     } catch (err) {}
     try {
@@ -13042,10 +13046,14 @@ function bindAppMenuHandlers(body) {
       if (window.__rakAdminRotationScrollCloseRaf) return;
       window.__rakAdminRotationScrollCloseRaf = window.requestAnimationFrame(() => {
         window.__rakAdminRotationScrollCloseRaf = 0;
-        adminCloseRotationQuickRemove();
+        const target = window.__rakAdminRotationQuickRemoveInput;
+        if (target && target.isConnected && body.contains(target)) adminShowRotationQuickRemove(target);
+        else adminCloseRotationQuickRemove();
       });
     } catch (err) {
-      adminCloseRotationQuickRemove();
+      const target = window.__rakAdminRotationQuickRemoveInput;
+      if (target && target.isConnected && body.contains(target)) adminShowRotationQuickRemove(target);
+      else adminCloseRotationQuickRemove();
     }
   }, { passive: true });
 
@@ -13305,8 +13313,7 @@ function updateRotaceNamesDockMetrics(reason) {
 }
 
 function scheduleRotaceNamesDockMetrics(reason) {
-  // v966: dock se znovu přizpůsobuje reálné spodní liště a safe-area,
-  // aby jména seděla těsně nad panelem místo ručního ladění po pixelech.
+  // v991: dock jmen se drží těsně nad skutečnou spodní lištou i po iOS přepočtu viewportu.
   try {
     const root = document.documentElement;
     const nav = document.querySelector('nav.bottomNav') || document.querySelector('.bottomNav');
@@ -13315,17 +13322,18 @@ function scheduleRotaceNamesDockMetrics(reason) {
     const vh = Math.round(Number(viewport && viewport.height || window.innerHeight || root.clientHeight || 720) || 720);
     const navRect = nav && typeof nav.getBoundingClientRect === 'function' ? nav.getBoundingClientRect() : null;
     const gridRect = grid && typeof grid.getBoundingClientRect === 'function' ? grid.getBoundingClientRect() : null;
-    const navTopGap = navRect ? Math.max(0, Math.round(vh - Number(navRect.top || vh))) : 72;
-    const dockGap = vh >= 850 ? 8 : 6;
-    const dockBottom = Math.max(54, Math.min(124, navTopGap + dockGap));
-    const gridHeight = gridRect ? Math.max(88, Math.min(156, Math.round(Number(gridRect.height || 0) || 120))) : 120;
+    const navHeight = navRect ? Math.max(44, Math.round(Number(navRect.height || 0) || 56)) : 58;
+    const navBottomGap = navRect ? Math.max(0, Math.round(vh - Number(navRect.bottom || vh))) : 4;
+    const dockGap = vh >= 850 ? 7 : 5;
+    const dockBottom = Math.max(54, Math.min(96, navHeight + navBottomGap + dockGap));
+    const gridHeight = gridRect ? Math.max(88, Math.min(146, Math.round(Number(gridRect.height || 0) || 120))) : 120;
     root.style.setProperty('--rak-rotace-names-dock-bottom', dockBottom + 'px');
-    root.style.setProperty('--rak-rotace-names-content-bottom', (dockBottom + gridHeight + 24) + 'px');
-    root.dataset.rakRotaceNamesDockMode = 'adaptive-v966';
-    setTimeout(() => { try { updateRotaceNamesDockMetrics(reason || 'adaptive-v966'); } catch (err) {} }, 0);
-    return updateRotaceNamesDockMetrics(reason || 'adaptive-v966');
+    root.style.setProperty('--rak-rotace-names-content-bottom', (dockBottom + gridHeight + 20) + 'px');
+    root.dataset.rakRotaceNamesDockMode = 'adaptive-v991';
+    setTimeout(() => { try { updateRotaceNamesDockMetrics(reason || 'adaptive-v991'); } catch (err) {} }, 0);
+    return updateRotaceNamesDockMetrics(reason || 'adaptive-v991');
   } catch (err) {
-    try { return updateRotaceNamesDockMetrics(reason || 'adaptive-v966-fallback'); } catch (_) { return null; }
+    try { return updateRotaceNamesDockMetrics(reason || 'adaptive-v991-fallback'); } catch (_) { return null; }
   }
 }
 

@@ -19551,7 +19551,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
 }
 
 
-/* v.1.5 (990) – Administrace / Rozpisy: doladěné šířky, čitelnější mini přehled a Odebrat přímo u jména. */
+/* v.1.5 (991) – Administrace / Rozpisy: doladěné šířky, čitelnější mini přehled a Odebrat přímo u jména. */
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable col:first-child{
   width:53px !important;
 }
@@ -19619,7 +19619,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
 }
 
 
-/* v.1.5 (990) – Administrace / Rozpisy: datumy širší, neobsazené mini buňky zvýrazněné, rychlé Odebrat stabilní. */
+/* v.1.5 (991) – Administrace / Rozpisy: datumy širší, neobsazené mini buňky zvýrazněné, rychlé Odebrat stabilní. */
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adminRotationMiniTable tr.adminRotationMiniDayHasEmpty td:first-child{
   color:rgba(255,231,160,.98) !important;
   background:rgba(255,190,72,.10) !important;
@@ -19637,4 +19637,85 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
 .adminRotationQuickRemove.isVisible{
   opacity:1 !important;
   transform:translateY(0) !important;
+}
+
+/* v.1.5 (991) – iOS start: spodní lišta sedí hned po otevření dole, bez černého pruhu pod panelem. */
+:root{
+  --rak-nav-ios-start-bottom: max(1px, calc(env(safe-area-inset-bottom) * .12));
+  --rak-rotace-names-dock-bottom: calc(var(--bottom-nav-h, 58px) + var(--rak-bottom-nav-live-gap, 2px) + 7px);
+  --rak-rotace-names-content-bottom: calc(var(--rak-rotace-names-dock-bottom) + var(--rak-rotace-names-dock-max-height, min(32dvh, 138px)) + 20px);
+}
+html body nav.bottomNav{
+  position:fixed !important;
+  top:auto !important;
+  bottom:var(--rak-nav-ios-start-bottom) !important;
+  transform:translate3d(-50%,0,0) !important;
+  height:auto !important;
+  max-height:none !important;
+}
+@media (display-mode:standalone){
+  html body nav.bottomNav{
+    bottom:var(--rak-nav-ios-start-bottom) !important;
+  }
+}
+@supports (-webkit-touch-callout:none){
+  html body nav.bottomNav{
+    bottom:var(--rak-nav-ios-start-bottom) !important;
+  }
+}
+
+/* v.1.5 (991) – Rotace: dock jmen navázaný na reálnou výšku/polohu spodní lišty, ne na starý vysoký safe-area odhad. */
+#rotace.page.active #rotaceNamesPanel.active{
+  padding-bottom:var(--rak-rotace-names-content-bottom) !important;
+  scroll-padding-bottom:var(--rak-rotace-names-content-bottom) !important;
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid{
+  bottom:var(--rak-rotace-names-dock-bottom) !important;
+  max-height:min(31dvh, 136px) !important;
+}
+@media (max-height:700px), (max-width:430px){
+  :root{
+    --rak-rotace-names-dock-bottom: calc(var(--bottom-nav-h, 56px) + var(--rak-bottom-nav-live-gap, 2px) + 5px);
+    --rak-rotace-names-content-bottom: calc(var(--rak-rotace-names-dock-bottom) + min(29dvh, 124px) + 18px);
+  }
+  #rotace.page.active #rotaceNamesPanel.active #namesGrid{
+    max-height:min(29dvh, 124px) !important;
+  }
+}
+
+/* v.1.5 (991) – Administrace / Rozpisy: datumy ještě širší podle mobilního testu. */
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable col:first-child{
+  width:61px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable input[data-rot-field="date"]{
+  width:59px !important;
+  min-width:59px !important;
+  max-width:59px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuTableWrap:nth-of-type(1) .appMenuAdminTable,
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuTableWrap:nth-of-type(2) .appMenuAdminTable{
+  min-width:304px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable{
+  min-width:210px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable col:nth-child(1){
+  width:72px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable input[data-note-field="date"]{
+  width:70px !important;
+  min-width:70px !important;
+  max-width:70px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable input[data-note-field="code"]{
+  margin-left:-7px !important;
+}
+.adminRotationQuickRemove{
+  position:fixed !important;
+  opacity:0 !important;
+  transition:opacity .12s ease, transform .12s ease !important;
+}
+.adminRotationQuickRemove.isVisible{
+  opacity:1 !important;
+  transform:translate3d(0,0,0) !important;
 }
