@@ -1,4 +1,4 @@
-// 1.2 (1.13) – Administrace / Kantýna-jídelna oddělená z hlavního UI modulu.
+// 1.2 (1.14) – Administrace / Kantýna-jídelna oddělená z hlavního UI modulu.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('admin-food.js', 'loaded', { source: 'dynamic-loader' }); } catch (err) {}
 
 function adminFoodIsoToCzechDate(value) {

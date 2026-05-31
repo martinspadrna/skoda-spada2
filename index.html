@@ -453,10 +453,10 @@ window.rakNoteExternalDependency = function(name, status, src) {
 
   <div class="card calcPanel calcPanel--modeCard">
     <div class="bgrid mt12 calcChoiceGrid">
-      <div class="bbtn" data-action="soustruh-mode" data-soustruh-mode="lis">Lis</div>
-      <div class="bbtn" data-action="soustruh-mode" data-soustruh-mode="126">Volné 126ks</div>
-      <div class="bbtn activeChoice" data-action="soustruh-mode" data-soustruh-mode="106">Volné 106ks</div>
-      <div class="bbtn" data-action="soustruh-mode" data-soustruh-mode="combo">Kombinace</div>
+      <div class="bbtn soustruhChoiceBtn" data-action="soustruh-mode" data-soustruh-mode="lis">Lis</div>
+      <div class="bbtn soustruhChoiceBtn" data-action="soustruh-mode" data-soustruh-mode="126">Volné 126ks</div>
+      <div class="bbtn soustruhChoiceBtn activeChoice" data-action="soustruh-mode" data-soustruh-mode="106">Volné 106ks</div>
+      <div class="bbtn soustruhChoiceBtn" data-action="soustruh-mode" data-soustruh-mode="combo">Kombinace</div>
     </div>
 
     <div id="soustruhyLisPanel" class="subPanel calcPanel calcPanel--form">
@@ -476,8 +476,8 @@ window.rakNoteExternalDependency = function(name, status, src) {
       <label>Plán výroby</label>
       <input id="v126_plan" type="number" value="" autocomplete="off">
       <div class="bgrid calcChoiceGrid">
-        <div class="bbtn activeChoice" data-action="soustruh126-start" data-startsize="32">Začínám 32 ks</div>
-        <div class="bbtn" data-action="soustruh126-start" data-startsize="31">Začínám 31 ks</div>
+        <div class="bbtn soustruhChoiceBtn activeChoice" data-action="soustruh126-start" data-startsize="32">Začínám 32 ks</div>
+        <div class="bbtn soustruhChoiceBtn" data-action="soustruh126-start" data-startsize="31">Začínám 31 ks</div>
       </div>
       <button class="soustruhCalcBtn calcPrimaryBtn" data-action="calc-soustruhy-126">Spočítej 126</button>
       <div class="card calcResultCard" id="soustruhy126Result"></div>
@@ -525,8 +525,8 @@ window.rakNoteExternalDependency = function(name, status, src) {
         <summary>Pořadí práce</summary>
         <div class="soustruhComboDetailsBody">
           <div class="bgrid calcChoiceGrid soustruhComboChoiceGrid">
-            <div class="bbtn activeChoice" data-action="soustruh-combo-first" data-combo-first="lis">Nejdřív Lis</div>
-            <div class="bbtn" data-action="soustruh-combo-first" data-combo-first="free">Nejdřív Volné</div>
+            <div class="bbtn soustruhChoiceBtn activeChoice" data-action="soustruh-combo-first" data-combo-first="lis">Nejdřív Lis</div>
+            <div class="bbtn soustruhChoiceBtn" data-action="soustruh-combo-first" data-combo-first="free">Nejdřív Volné</div>
           </div>
           <div class="smallText">Druhá část se dopočítá automaticky jako ta druhá možnost.</div>
         </div>
@@ -535,14 +535,14 @@ window.rakNoteExternalDependency = function(name, status, src) {
         <summary>Nastavení Volné</summary>
         <div class="soustruhComboDetailsBody">
           <div class="bgrid calcChoiceGrid soustruhComboChoiceGrid">
-            <div class="bbtn activeChoice" data-action="soustruh-combo-free" data-combo-free="126">Volné 126ks</div>
-            <div class="bbtn" data-action="soustruh-combo-free" data-combo-free="106">Volné 106ks</div>
+            <div class="bbtn soustruhChoiceBtn activeChoice" data-action="soustruh-combo-free" data-combo-free="126">Volné 126ks</div>
+            <div class="bbtn soustruhChoiceBtn" data-action="soustruh-combo-free" data-combo-free="106">Volné 106ks</div>
           </div>
           <div id="combo126Options" class="soustruhComboFreeOptions">
             <div class="smallText">Volné 126ks – začátek střídání dávek</div>
             <div class="bgrid calcChoiceGrid">
-              <div class="bbtn activeChoice" data-action="soustruh-combo126-start" data-combo-startsize="32">Začínám 32 ks</div>
-              <div class="bbtn" data-action="soustruh-combo126-start" data-combo-startsize="31">Začínám 31 ks</div>
+              <div class="bbtn soustruhChoiceBtn activeChoice" data-action="soustruh-combo126-start" data-combo-startsize="32">Začínám 32 ks</div>
+              <div class="bbtn soustruhChoiceBtn" data-action="soustruh-combo126-start" data-combo-startsize="31">Začínám 31 ks</div>
             </div>
           </div>
           <div id="combo106Options" class="soustruhComboFreeOptions">

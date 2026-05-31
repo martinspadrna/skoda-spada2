@@ -1,4 +1,4 @@
-// 1.2 (1.13) – Administrace / Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
+// 1.2 (1.14) – Administrace / Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('admin-rotation.js', 'loading', { source: 'dynamic-loader' }); } catch (err) {}
 
 
@@ -957,7 +957,7 @@ function adminShowRotationSelectedRemove(input) {
       return;
     }
     window.__rakAdminRotationSelectedInput = input;
-    // 1.2 (1.13): horní sticky tlačítko už při kliknutí do jména nevytahujeme.
+    // 1.2 (1.14): horní sticky tlačítko už při kliknutí do jména nevytahujeme.
     // Rychlé Odebrat se vykreslí přímo u aktivního pole přes adminShowRotationQuickRemove().
     btn.hidden = true;
     btn.dataset.targetReady = '1';

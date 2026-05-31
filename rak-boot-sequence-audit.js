@@ -60,6 +60,7 @@
     const moduleHealth = getModuleHealth();
     const loadedOrder = moduleHealth && Array.isArray(moduleHealth.loadedOrder) ? moduleHealth.loadedOrder.slice() : [];
     const dynamicExpected = [
+      'app-runtime-guards.js',
       'core.js',
       'lifecycle.js',
       'qr.js',
@@ -69,9 +70,13 @@
       'dashboard.js',
       'soustruhy.js',
       'rotace.js',
+      'games-engine.js',
       'changelog.js',
       'admin-food.js',
       'ui.js',
+      'app-navigation.js',
+      'app-menu.js',
+      'app-actions.js',
       'games-arcade.js',
       'export.js',
       'supabase-config.js',

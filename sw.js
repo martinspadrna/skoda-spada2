@@ -1,5 +1,5 @@
-const CACHE_VERSION = 'v1.2-1.13';
-const SW_APP_VERSION = '1.2 (1.13)';
+const CACHE_VERSION = 'v1.2-1.21';
+const SW_APP_VERSION = '1.2 (1.21)';
 const STATIC_CACHE = `rotace-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `rotace-runtime-${CACHE_VERSION}`;
 const APP_SHELL = [
@@ -22,6 +22,7 @@ const APP_SHELL = [
   "./rak-performance-ci-audit.js",
   "./rak-mobile-smoke-audit.js",
   "./app.js",
+  "./app-runtime-guards.js",
   "./core.js",
   "./lifecycle.js",
   "./qr.js",
@@ -31,6 +32,7 @@ const APP_SHELL = [
   "./soustruhy.js",
   "./brusy.js",
   "./rotace.js",
+  "./games-engine.js",
   "./games-profile.js",
   "./appearance-theme.js",
   "./games-gomoku.js",
@@ -41,7 +43,9 @@ const APP_SHELL = [
   "./admin-reports.js",
   "./admin-service-usage.js",
   "./ui.js",
+  "./app-navigation.js",
   "./app-menu.js",
+  "./app-actions.js",
   "./games-arcade.js",
   "./export.js",
   "./app-init.js",

@@ -1,5 +1,13 @@
-// 1.2 (1.13) – Více/menu shell, O aplikaci, Nastavení, Report chyby a admin menu oddělené z hlavního UI modulu.
+// 1.2 (1.14) – Více/menu shell, O aplikaci, Nastavení, Report chyby a admin menu oddělené z hlavního UI modulu.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app-menu.js', 'loaded', { source: 'dynamic-loader' }); } catch (err) {}
+
+
+function formatRakDisplayVersion(version) {
+  const text = String(version || '').trim();
+  if (!text) return '—';
+  return /^RaK\s+/i.test(text) ? text : ('RaK ' + text);
+}
+
 
 function ensureAppMenuOverlay() {
   let page = document.getElementById('menu');
@@ -362,7 +370,7 @@ async function handleBugReportAction(action) {
 
 
 
-// 1.2 (1.13): Plovoucí odebrání a údržba editoru rozpisů jsou oddělené v admin-rotation.js.
+// 1.2 (1.14): Plovoucí odebrání a údržba editoru rozpisů jsou oddělené v admin-rotation.js.
 
 function bindAppMenuHandlers(body) {
   if (!body || body.dataset.menuHandlersBound === '1') return;
@@ -782,7 +790,7 @@ function bindAppMenuHandlers(body) {
           profileUiGuard ? ('Profilový vzhled guard: stejný save ' + String(profileUiGuard.saveSameSkips || 0) + ' · in-flight load/save ' + String(profileUiGuard.loadInFlightJoins || 0) + '/' + String(profileUiGuard.saveInFlightJoins || 0)) : ''
         ].filter(Boolean) : [];
         const diag = [
-          'Verze: ' + String((typeof app !== "undefined" && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '—')),
+          'Verze: ' + formatRakDisplayVersion((typeof app !== "undefined" && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '')), 
           'Online: ' + (navigator.onLine ? 'ano' : 'ne'),
           formatSupabaseKeepaliveLine(supabaseKeepaliveStatus || readSupabaseKeepaliveStatusForUi()),
           'Kompaktní režim: ' + (document.body.classList.contains('compactUI') ? 'zapnutý' : 'vypnutý'),
@@ -1209,7 +1217,7 @@ function openAppMenu(view) {
       body.innerHTML = [
         '<div class="appMenuCard">',
         '  <div class="appMenuCardTitle">O aplikaci</div>',
-        '  <div class="appMenuVersion">' + escapeHtml(versionText || '—') + '</div>',
+        '  <div class="appMenuVersion">' + escapeHtml(formatRakDisplayVersion(versionText)) + '</div>',
         '  ' + buildAppHistoryHtml(versionText),
         '  <button type="button" class="appMenuAction appMenuBack" data-menu-back="1">Zpět</button>',
         '</div>'

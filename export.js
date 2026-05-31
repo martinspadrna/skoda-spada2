@@ -1,4 +1,4 @@
-// 1.2 (1.13) – zúžený export manifest pro čistý ostrý ZIP.
+// 1.2 (1.21) – export manifest počítá s odděleným modulem app-runtime-guards.js.
 const EXPORT_SOURCE_IDS = {
   "module-readiness.js": "src-module-readiness-js",
   "rak-namespace.js": "src-rak-namespace-js",
@@ -17,6 +17,7 @@ const EXPORT_SOURCE_IDS = {
   "rak-performance-ci-audit.js": "src-rak-performance-ci-audit-js",
   "rak-mobile-smoke-audit.js": "src-rak-mobile-smoke-audit-js",
   "app.js": "src-app-js",
+  "app-runtime-guards.js": "src-app-runtime-guards-js",
   "core.js": "src-core-js",
   "lifecycle.js": "src-lifecycle-js",
   "qr.js": "src-qr-js",
@@ -26,6 +27,7 @@ const EXPORT_SOURCE_IDS = {
   "soustruhy.js": "src-soustruhy-js",
   "brusy.js": "src-brusy-js",
   "rotace.js": "src-rotace-js",
+  "games-engine.js": "src-games-engine-js",
   "games-profile.js": "src-games-profile-js",
   "appearance-theme.js": "src-appearance-theme-js",
   "games-gomoku.js": "src-games-gomoku-js",
@@ -36,7 +38,9 @@ const EXPORT_SOURCE_IDS = {
   "admin-reports.js": "src-admin-reports-js",
   "admin-service-usage.js": "src-admin-service-usage-js",
   "ui.js": "src-ui-js",
+  "app-navigation.js": "src-app-navigation-js",
   "app-menu.js": "src-app-menu-js",
+  "app-actions.js": "src-app-actions-js",
   "games-arcade.js": "src-games-arcade-js",
   "export.js": "src-export-js",
   "app-init.js": "src-app-init-js",
@@ -92,7 +96,7 @@ const EXPORT_SMOKE_REPORT = window.__RAK_EXPORT_SMOKE_REPORT__ || (window.__RAK_
   ok: null,
   status: 'not-run',
   mode: 'export-smoke-report-v939',
-  version: '1.2 (1.13)',
+  version: '1.2 (1.21)',
   checkedAt: null,
   lastStage: 'čeká na export',
   runCount: 0,
@@ -153,6 +157,7 @@ const EXPORT_JS_FILES = [
   "rak-performance-ci-audit.js",
   "rak-mobile-smoke-audit.js",
   "app.js",
+  "app-runtime-guards.js",
   "core.js",
   "lifecycle.js",
   "qr.js",
@@ -162,6 +167,7 @@ const EXPORT_JS_FILES = [
   "soustruhy.js",
   "brusy.js",
   "rotace.js",
+  "games-engine.js",
   "games-profile.js",
   "appearance-theme.js",
   "games-gomoku.js",
@@ -172,7 +178,9 @@ const EXPORT_JS_FILES = [
   "admin-reports.js",
   "admin-service-usage.js",
   "ui.js",
+  "app-navigation.js",
   "app-menu.js",
+  "app-actions.js",
   "games-arcade.js",
   "export.js",
   "app-init.js",
@@ -202,7 +210,7 @@ const EXPORT_TEXT_FILES = [
 
 function getRakExportManifest() {
   return {
-    version: String(window.APP_VERSION || '1.2 (1.13)'),
+    version: String(window.APP_VERSION || '1.2 (1.21)'),
     mode: 'export-manifest-preflight-v939',
     indexFile: 'index.html',
     jsFiles: Array.from(new Set(EXPORT_JS_FILES)),
@@ -312,7 +320,7 @@ function updateRakExportSmokeReport(partial) {
   const data = partial && typeof partial === 'object' ? partial : {};
   Object.assign(EXPORT_SMOKE_REPORT, data, {
     mode: 'export-smoke-report-v939',
-    version: String(window.APP_VERSION || '1.2 (1.13)'),
+    version: String(window.APP_VERSION || '1.2 (1.21)'),
     checkedAt: new Date().toISOString()
   });
   return getRakExportSmokeReport();
