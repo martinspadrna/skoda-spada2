@@ -19551,9 +19551,9 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
 }
 
 
-/* v.1.5 (989) – Administrace / Rozpisy: doladěné šířky, čitelnější mini přehled a Odebrat přímo u jména. */
+/* v.1.5 (990) – Administrace / Rozpisy: doladěné šířky, čitelnější mini přehled a Odebrat přímo u jména. */
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable col:first-child{
-  width:46px !important;
+  width:53px !important;
 }
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable col:not(:first-child){
   width:50px !important;
@@ -19565,9 +19565,9 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   max-width:none !important;
 }
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable input[data-rot-field="date"]{
-  width:44px !important;
-  min-width:44px !important;
-  max-width:44px !important;
+  width:51px !important;
+  min-width:51px !important;
+  max-width:51px !important;
 }
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable input[data-rot-field^="cell-"]{
   width:48px !important;
@@ -19575,33 +19575,33 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   max-width:48px !important;
 }
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable{
-  min-width:193px !important;
+  min-width:201px !important;
 }
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable col:nth-child(1){
-  width:55px !important;
+  width:63px !important;
 }
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable col:nth-child(2){
-  width:106px !important;
+  width:96px !important;
 }
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable col:nth-child(3){
   width:32px !important;
 }
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable input[data-note-field="date"]{
-  width:53px !important;
-  min-width:53px !important;
-  max-width:53px !important;
+  width:61px !important;
+  min-width:61px !important;
+  max-width:61px !important;
 }
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable input[data-note-field="person"]{
-  width:104px !important;
-  min-width:104px !important;
-  max-width:104px !important;
+  width:94px !important;
+  min-width:94px !important;
+  max-width:94px !important;
   padding-right:1px !important;
 }
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable input[data-note-field="code"]{
   width:28px !important;
   min-width:28px !important;
   max-width:28px !important;
-  margin-left:-1px !important;
+  margin-left:-5px !important;
 }
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adminRotationMiniTable th,
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adminRotationMiniTable td{
@@ -19616,4 +19616,25 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
 }
 .adminRotationQuickRemove{
   min-width:176px !important;
+}
+
+
+/* v.1.5 (990) – Administrace / Rozpisy: datumy širší, neobsazené mini buňky zvýrazněné, rychlé Odebrat stabilní. */
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adminRotationMiniTable tr.adminRotationMiniDayHasEmpty td:first-child{
+  color:rgba(255,231,160,.98) !important;
+  background:rgba(255,190,72,.10) !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adminRotationMiniTable td.adminRotationMiniEmpty{
+  color:rgba(255,238,185,.98) !important;
+  background:linear-gradient(135deg, rgba(255,184,77,.24), rgba(255,96,96,.12)) !important;
+  box-shadow:inset 0 0 0 1px rgba(255,205,119,.24) !important;
+  font-weight:950 !important;
+}
+.adminRotationQuickRemove{
+  z-index:2147483646 !important;
+  pointer-events:auto !important;
+}
+.adminRotationQuickRemove.isVisible{
+  opacity:1 !important;
+  transform:translateY(0) !important;
 }

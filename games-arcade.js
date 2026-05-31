@@ -2198,6 +2198,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
           const rows = await window.RotationSupabaseBridge.loadGameStats(gid, 10);
           const normalized = (Array.isArray(rows) ? rows : [])
             .filter((row) => typeof window.gamesIsRemoteStatAfterReset === 'function' ? window.gamesIsRemoteStatAfterReset(row) : true)
+            .filter((row) => typeof window.gamesIsMemoryRemoteStatAfterReset === 'function' ? window.gamesIsMemoryRemoteStatAfterReset(Object.assign({}, row || {}, { game_type: gid })) : true)
             .map((row) => {
             const accountNumber = String(row && (row.account_number ?? row.accountNumber ?? row.id) ? (row.account_number ?? row.accountNumber ?? row.id) : '').trim();
             const name = String(row && (row.player_name ?? row.full_name ?? row.name) ? (row.player_name ?? row.full_name ?? row.name) : accountNumber || '').trim() || accountNumber || 'Hráč';

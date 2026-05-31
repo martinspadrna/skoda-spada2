@@ -10771,10 +10771,12 @@ function buildAdminRotationCompactOverviewHtml(monthKey, hardRows, softRows, har
     const body = safeRows.map((row) => {
       const date = adminRotationDateLabel(row && row.date ? row.date : '') || String(row && row.date ? row.date : '');
       const cells = Array.isArray(row && row.cells) ? row.cells : [];
-      return '<tr><td>' + escapeHtml(String(date || '')) + '</td>' + safeMachines.map((_, idx) => {
+      const missingCount = safeMachines.reduce((count, _, idx) => count + (String(cells[idx] || '').trim() ? 0 : 1), 0);
+      return '<tr class="' + (missingCount ? 'adminRotationMiniDayHasEmpty' : '') + '"><td>' + escapeHtml(String(date || '')) + '</td>' + safeMachines.map((_, idx) => {
         const raw = String(cells[idx] || '').trim();
         const shortName = adminShortRotationName(raw);
-        return '<td data-full-name="' + escapeHtml(raw) + '">' + escapeHtml(shortName || '·') + '</td>';
+        const empty = !shortName;
+        return '<td class="' + (empty ? 'adminRotationMiniEmpty' : '') + '" data-full-name="' + escapeHtml(raw) + '">' + escapeHtml(shortName || 'volno') + '</td>';
       }).join('') + '</tr>';
     }).join('');
     return [
@@ -12115,7 +12117,7 @@ function adminShowRotationSelectedRemove(input) {
       return;
     }
     window.__rakAdminRotationSelectedInput = input;
-    // v.1.5 (989): horní sticky tlačítko už při kliknutí do jména nevytahujeme.
+    // v.1.5 (990): horní sticky tlačítko už při kliknutí do jména nevytahujeme.
     // Rychlé Odebrat se vykreslí přímo u aktivního pole přes adminShowRotationQuickRemove().
     btn.hidden = true;
     btn.dataset.targetReady = '1';
@@ -12188,6 +12190,7 @@ function adminShowRotationQuickRemove(input) {
       });
     }
     window.__rakAdminRotationQuickRemoveInput = input;
+    window.__rakAdminRotationQuickRemoveShownAt = Date.now();
     const txt = box.querySelector('.adminRotationQuickRemoveText');
     if (txt) txt.textContent = 'Jméno: ' + value;
     const rect = input.getBoundingClientRect();
@@ -12270,8 +12273,17 @@ function adminBindRotationZoomGuard() {
     window.addEventListener('resize', recoverAfterViewportChange, { passive: true });
   } catch (err) {}
   try {
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', recoverAfterViewportChange, { passive: true });
+    if (!window.__rakAdminRotationQuickRemoveOutsideBound) {
+      window.__rakAdminRotationQuickRemoveOutsideBound = true;
+      document.addEventListener('pointerdown', (event) => {
+        const body = document.getElementById('appMenuBody');
+        if (!body || body.dataset.adminView !== 'rotation') return;
+        const target = event && event.target;
+        const quick = document.getElementById('adminRotationQuickRemove');
+        if (quick && target && (quick === target || quick.contains(target))) return;
+        if (target && target.matches && target.matches('[data-rot-field], [data-note-field]')) return;
+        adminCloseRotationQuickRemove();
+      }, true);
     }
   } catch (err) {}
 }
@@ -13014,7 +13026,12 @@ function bindAppMenuHandlers(body) {
     window.setTimeout(() => {
       const next = document.activeElement;
       const quick = document.getElementById('adminRotationQuickRemove');
-      if (quick && (next === quick || (next && quick.contains && quick.contains(next)))) return;
+      if (quick && quick.classList && quick.classList.contains('isVisible')) {
+        if (next === quick || (next && quick.contains && quick.contains(next))) return;
+        const shownAt = Number(window.__rakAdminRotationQuickRemoveShownAt || 0) || 0;
+        // Mobilní klávesnice/focus občas po tapnutí pole hned vyvolá blur. Nezavírat rychlé Odebrat okamžitě po zobrazení.
+        if (shownAt && Date.now() - shownAt < 8000) return;
+      }
       if (!next || !next.matches || !next.matches('[data-rot-field], [data-note-field]')) adminCloseRotationQuickRemove();
     }, 120);
   });
@@ -13805,6 +13822,9 @@ const GAMES_PROFILE_RESET_VERSION = 912;
 const GAMES_SCORE_RESET_VERSION = 912;
 const GAMES_SCORE_RESET_MARKER_KEY = APP_KEY + ':games_score_reset_v923';
 const GAMES_REMOTE_STATS_RESET_CUTOFF_MS = Date.parse('2026-05-26T18:44:00+02:00');
+const GAMES_MEMORY_SCORE_RESET_MARKER_KEY = APP_KEY + ':games_memory_score_reset_v990';
+const GAMES_MEMORY_SCORE_RESET_CUTOFF_MS = Date.parse('2026-05-31T04:24:25+02:00');
+const GAMES_MEMORY_SCORE_IDS = new Set(['memory', 'memory_4x4', 'memory_6x6', 'memory_8x8']);
 const GAMES_ACCOUNT_BLOCKLIST = new Set(['4157']);
 const GAMES_ACCOUNT_LIST = [];
 
@@ -13920,6 +13940,65 @@ function gamesEnsureScoreResetV912() {
   }
 }
 
+
+function gamesIsMemoryScoreId(gameId) {
+  return GAMES_MEMORY_SCORE_IDS.has(String(gameId || '').trim().toLowerCase());
+}
+
+function gamesIsMemoryRemoteStatAfterReset(row) {
+  const gameType = String(row && (row.game_type || row.gameType || '') || '').trim().toLowerCase();
+  if (!gamesIsMemoryScoreId(gameType)) return true;
+  const cutoff = Number(GAMES_MEMORY_SCORE_RESET_CUTOFF_MS || 0) || 0;
+  if (!Number.isFinite(cutoff) || cutoff <= 0) return true;
+  return gamesRemoteStatPlayedTimestamp(row) >= cutoff;
+}
+if (typeof window !== 'undefined') {
+  window.gamesIsMemoryRemoteStatAfterReset = gamesIsMemoryRemoteStatAfterReset;
+}
+
+function gamesEnsureMemoryScoreResetV990() {
+  try {
+    if (localStorage.getItem(GAMES_MEMORY_SCORE_RESET_MARKER_KEY) === '1') return false;
+    const parsed = JSON.parse(localStorage.getItem(GAMES_PROFILE_KEY) || 'null');
+    if (parsed && parsed.accounts && typeof parsed.accounts === 'object') {
+      Object.keys(parsed.accounts).forEach((id) => {
+        const acc = parsed.accounts[id];
+        if (!acc || typeof acc !== 'object') return;
+        if (!acc.stats || typeof acc.stats !== 'object') acc.stats = gamesEmptyStats();
+        if (!acc.stats.arcade || typeof acc.stats.arcade !== 'object') acc.stats.arcade = {};
+        Array.from(GAMES_MEMORY_SCORE_IDS).forEach((gid) => { delete acc.stats.arcade[gid]; });
+        if (acc.achievements && Array.isArray(acc.achievements)) {
+          acc.achievements = acc.achievements.filter((id) => String(id || '').indexOf('memory') !== 0);
+        }
+      });
+      parsed.profileVersion = GAMES_PROFILE_RESET_VERSION;
+      if (typeof setLocalStorageIfChanged === 'function') setLocalStorageIfChanged(GAMES_PROFILE_KEY, JSON.stringify(parsed));
+      else localStorage.setItem(GAMES_PROFILE_KEY, JSON.stringify(parsed));
+      if (app && typeof app === 'object') app.gamesProfile = parsed;
+    }
+    const toRemove = [];
+    for (let i = 0; i < localStorage.length; i += 1) {
+      const k = String(localStorage.key(i) || '');
+      const lower = k.toLowerCase();
+      if (lower.indexOf('memory') >= 0 || lower.indexOf('pexeso') >= 0) toRemove.push(k);
+      if (k.indexOf(APP_KEY + ':games_leaderboard_memory') === 0 || k.indexOf(APP_KEY + ':games_top_score_memory') === 0) toRemove.push(k);
+    }
+    Array.from(new Set(toRemove)).forEach((k) => { if (k !== GAMES_MEMORY_SCORE_RESET_MARKER_KEY) localStorage.removeItem(k); });
+    if (app && typeof app === 'object') {
+      app.gamesLeaderboardCache = app.gamesLeaderboardCache || {};
+      app.gamesLeaderboardThrottle = app.gamesLeaderboardThrottle || {};
+      Array.from(GAMES_MEMORY_SCORE_IDS).forEach((gid) => { delete app.gamesLeaderboardCache[gid]; delete app.gamesLeaderboardThrottle[gid]; });
+    }
+    if (typeof setLocalStorageIfChanged === 'function') setLocalStorageIfChanged(GAMES_MEMORY_SCORE_RESET_MARKER_KEY, '1');
+    else localStorage.setItem(GAMES_MEMORY_SCORE_RESET_MARKER_KEY, '1');
+    window.__rakGamesMemoryScoreResetV990 = { ok: true, cutoff: GAMES_MEMORY_SCORE_RESET_CUTOFF_MS, at: Date.now() };
+    return true;
+  } catch (err) {
+    console.warn('gamesEnsureMemoryScoreResetV990 failed', err);
+    return false;
+  }
+}
+
 function gamesNormalizeStoredAccount(account, fallbackName) {
   const id = String(account && account.id || '').trim();
   const name = String(account && account.name || fallbackName || id).trim() || id;
@@ -13971,6 +14050,7 @@ function gamesNormalizeStoredAccount(account, fallbackName) {
 function gamesLoadProfile() {
   try {
     gamesEnsureScoreResetV912();
+    gamesEnsureMemoryScoreResetV990();
     const parsed = typeof parseLocalStorageJsonCached === 'function'
       ? parseLocalStorageJsonCached(GAMES_PROFILE_KEY, null)
       : JSON.parse(localStorage.getItem(GAMES_PROFILE_KEY) || 'null');
@@ -14050,6 +14130,7 @@ function gamesGetRemoteProfileStatIds() {
 function gamesApplyRemoteProfileStat(profile, row) {
   if (!profile || !row) return false;
   if (!gamesIsRemoteStatAfterReset(row)) return false;
+  if (!gamesIsMemoryRemoteStatAfterReset(row)) return false;
   const remoteUpdated = gamesParseRemoteTimestamp(row.last_played_at || row.lastPlayedAt || row.updated_at || row.updatedAt || row.created_at);
   const accountId = String((row.account_number || row.accountNumber || row.id || '')).trim();
   if (!accountId || GAMES_ACCOUNT_BLOCKLIST.has(accountId)) return false;
