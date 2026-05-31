@@ -1,3 +1,4 @@
+// RaK 1.2 (1.27) – arcade hry a denní challenge.
 (() => {
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;

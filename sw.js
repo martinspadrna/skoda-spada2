@@ -1,5 +1,6 @@
-const CACHE_VERSION = 'v1.2-1.24';
-const SW_APP_VERSION = '1.2 (1.24)';
+// RaK 1.2 (1.27) – sw.
+const CACHE_VERSION = 'v1.2-1.27';
+const SW_APP_VERSION = '1.2 (1.27)';
 const STATIC_CACHE = `rotace-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `rotace-runtime-${CACHE_VERSION}`;
 const APP_SHELL = [
@@ -48,8 +49,10 @@ const APP_SHELL = [
   "./app-navigation.js",
   "./app-menu.js",
   "./app-actions.js",
+  "./app-boot-selftest.js",
   "./games-arcade.js",
   "./export.js",
+  "./app-excel-import.js",
   "./app-init.js",
   "./supabase-config.js",
   "./supabase-bridge.js",

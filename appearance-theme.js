@@ -1,4 +1,4 @@
-// Refactor – Theme, pozadí a profilové UI nastavení oddělené z hlavního UI modulu.
+// RaK 1.2 (1.27) – theme, pozadí a profilové UI nastavení.
 
 const RAK_THEME_STORAGE_KEY = APP_KEY + ':theme_v1';
 const RAK_THEME_BASE_VARS = {

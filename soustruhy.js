@@ -1,3 +1,4 @@
+// RaK 1.2 (1.27) – kalkulačky Soustruhy.
 function resetSoustruhy() {
   ["lis_first", "lis_plan", "v126_first", "v126_plan", "v126_heat_first", "v106_first", "v106_plan", "v106_heat_first", "v106_c1", "v106_c2", "v106_c3", "v106_c4", "combo_first_start", "combo_first_end", "combo_second_start", "combo_second_plan", "combo_heat_first", "combo106_c1", "combo106_c2", "combo106_c3", "combo106_c4"].forEach(id => {
     const el = document.getElementById(id);

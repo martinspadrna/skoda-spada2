@@ -1,4 +1,4 @@
-// v.1.5 (963) – export/release audit ponechán a Supabase client/queue audit je read-only readiness signál.
+// RaK 1.2 (1.27) – export/release audit.
 
 (function setupRakExportReleaseAudit() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -93,6 +93,8 @@
       'app-navigation.js',
       'app-menu.js',
       'app-actions.js',
+      'app-boot-selftest.js',
+      'app-excel-import.js',
       'games-engine.js',
       'export.js',
       'sw.js',
@@ -110,7 +112,7 @@
       'runRakExportSmokeReport'
     ];
     const missingExportSignals = requiredExportSignals.filter((name) => typeof window[name] === 'undefined');
-    const missingScripts = ['rak-export-release-audit.js', 'export.js', 'app-init.js'].filter((tail) => !scripts.some((src) => String(src).split('?')[0].endsWith(tail)));
+    const missingScripts = ['rak-export-release-audit.js', 'export.js', 'app-excel-import.js', 'app-init.js'].filter((tail) => !scripts.some((src) => String(src).split('?')[0].endsWith(tail)));
     if (missingExportSignals.length) warnings.push('export signals not visible yet: ' + missingExportSignals.join(', '));
     if (missingScripts.length) warnings.push('runtime scripts not visible yet: ' + missingScripts.join(', '));
     if (!stylesheets.some((href) => /styles\.css$/.test(href))) warnings.push('styles.css not visible in DOM stylesheet inventory');

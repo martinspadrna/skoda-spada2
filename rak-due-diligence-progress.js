@@ -1,4 +1,4 @@
-// v.1.5 (963) – due diligence audit progress + prompt-compliance closure tracker.
+// RaK 1.2 (1.27) – due diligence audit progress tracker.
 (function setupRakDueDiligenceAuditProgress() {
   const VERSION = 'v.1.5 (963)';
   const MODE = 'due-diligence-audit-progress-v928';

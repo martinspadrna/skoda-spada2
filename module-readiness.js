@@ -1,4 +1,4 @@
-// v.1.5 (963) – module readiness registry včetně release gate helperu.
+// RaK 1.2 (1.27) – module readiness registry a boot kontrola.
 
 (function setupRakModuleReadinessRegistry() {
   if (window.__rakModuleReadinessRegistry && typeof window.rakMarkModuleReady === 'function') {

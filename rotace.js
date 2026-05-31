@@ -1,3 +1,4 @@
+// RaK 1.2 (1.27) – Rotace render a volba jmen.
 function renderRotace() {
   const namesGrid = document.getElementById('namesGrid');
   const personView = document.getElementById('personView');

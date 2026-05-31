@@ -1,4 +1,4 @@
-// Refactor – Hry / profily / leaderboard oddělené z hlavního UI modulu.
+// RaK 1.2 (1.27) – herní profily a leaderboardy.
 
 // -------------------------
 // Games hub + account profile

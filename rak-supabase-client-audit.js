@@ -1,4 +1,4 @@
-// v.1.5 (963) – Online game contract audit closure read-only bez DB/policy/online-flow změn.
+// RaK 1.2 (1.27) – Supabase klientský/online contract audit.
 
 (function setupRakSupabaseClientAudit() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();

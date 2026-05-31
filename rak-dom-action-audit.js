@@ -1,4 +1,4 @@
-// v.1.5 (963) – DOM/action registry audit včetně admin announcement akce a dashboard tickeru.
+// RaK 1.2 (1.27) – DOM/action registry audit.
 
 (function setupRakDomActionRegistryAudit() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();

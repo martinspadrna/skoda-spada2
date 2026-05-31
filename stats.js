@@ -1,3 +1,4 @@
+// RaK 1.2 (1.27) – Statistiky.
 function renderMonthGrid() {
   const monthSelect = document.getElementById("monthSelect");
   if (!monthSelect) return;

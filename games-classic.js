@@ -1,4 +1,4 @@
-// Refactor – Klasické hry 2048 / Had / Flappy Car oddělené z hlavního UI modulu.
+// RaK 1.2 (1.27) – klasické hry 2048, Had a Flappy Car.
 
 function gamesEnsureKeyBindings() {
   if (window.__rotaceGamesKeysBound) return;

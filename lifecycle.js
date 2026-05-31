@@ -1,4 +1,4 @@
-// Shared lifecycle helpers for listeners, intervals, timeouts and one-shot bindings.
+// RaK 1.2 (1.27) – lifecycle stabilizace aplikace.
 (function setupLifecycleHelpers() {
   if (window.__rotaceLifecycleHelpersInstalled) return;
   window.__rotaceLifecycleHelpersInstalled = true;

@@ -1,4 +1,4 @@
-// Extracted dashboard logic (v1(321))
+// RaK 1.2 (1.27) – dashboard a domácí přehled.
 
 function setDashboardHtmlIfChanged(element, html, key) {
   if (!element) return false;

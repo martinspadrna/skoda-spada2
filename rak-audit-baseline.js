@@ -1,4 +1,4 @@
-// v.1.5 (963) – release/architecture readiness bere i release ops checklist jako read-only signál.
+// RaK 1.2 (1.27) – release/architecture readiness audit.
 
 (function setupRakAuditBaselineHelpers() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();

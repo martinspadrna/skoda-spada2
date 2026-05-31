@@ -1,6 +1,6 @@
-// Refactor: Navigace, spodní aktivní indikátor, home refresh a dashboard modaly jsou oddělené v app-navigation.js.
+// RaK 1.2 (1.27) – zbytkový UI bridge po oddělení modulů.
 
-// Refactor: Více/menu shell je oddělený v app-menu.js.
+// RaK 1.2 (1.27) – Více/menu shell je oddělený v app-menu.js.
 
 const UI_PREFS_KEY = APP_KEY + ':uiPrefs';
 const DEVICE_PERFORMANCE_PROBE_KEY = APP_KEY + ':devicePerformanceProbe';
@@ -402,7 +402,7 @@ function getRakPerformanceDprMax() {
 
 try { window.getRakPerformanceDprMax = getRakPerformanceDprMax; } catch (err) {}
 
-// Refactor: Piškvorky jsou oddělené v games-gomoku.js.
+// RaK 1.2 (1.27) – Piškvorky jsou oddělené v games-gomoku.js.
 
 function triggerAboutAction() {
   const state = typeof app !== 'undefined' ? app : null;
@@ -878,19 +878,19 @@ function buildAppHistoryHtml(versionText) {
 }
 
 
-// Refactor: Administrace / Rozpisy a Nastavení strojů jsou oddělené v admin-rotation.js.
+// RaK 1.2 (1.27) – Administrace / Rozpisy a Nastavení strojů jsou oddělené v admin-rotation.js.
 
 
 
 
-// Refactor: Administrace / Reporty chyb jsou oddělené v admin-reports.js.
+// RaK 1.2 (1.27) – Administrace / Reporty chyb jsou oddělené v admin-reports.js.
 
-// Refactor: Administrace / Přehled připojení, servis a oznámení jsou oddělené v admin-service-usage.js.
+// RaK 1.2 (1.27) – Administrace / Přehled připojení, servis a oznámení jsou oddělené v admin-service-usage.js.
 
 
-// Refactor: App menu / administrace shell / bug report formulář jsou oddělené v app-menu.js.
+// RaK 1.2 (1.27) – App menu / administrace shell / bug report formulář jsou oddělené v app-menu.js.
 
-// Refactor: showFoodSchedule je v app-navigation.js.
+// RaK 1.2 (1.27) – showFoodSchedule je v app-navigation.js.
 
 
 
@@ -1002,7 +1002,7 @@ try { window.updateRotaceNamesDockMetrics = updateRotaceNamesDockMetrics; } catc
 try { window.scheduleRotaceNamesDockMetrics = scheduleRotaceNamesDockMetrics; } catch (err) {}
 
 
-// Refactor: showPage, home refresh, externí dlaždice a rotace/kalkulačky zkratky jsou v app-navigation.js.
+// RaK 1.2 (1.27) – showPage, home refresh, externí dlaždice a rotace/kalkulačky zkratky jsou v app-navigation.js.
 
 
 function setRotaceView(view) {
@@ -1051,12 +1051,12 @@ function setRotaceView(view) {
 }
 
 
-// Refactor: Food/kalendář modaly a vazba dashboard kalendáře jsou v app-navigation.js.
+// RaK 1.2 (1.27) – Food/kalendář modaly a vazba dashboard kalendáře jsou v app-navigation.js.
 
 
-// Refactor: Games hub + account profile jsou oddělené v games-profile.js.
+// RaK 1.2 (1.27) – Games hub + account profile jsou oddělené v games-profile.js.
 
-// Refactor: Klasické hry 2048 / Had / Flappy Car jsou oddělené v games-classic.js.
+// RaK 1.2 (1.27) – Klasické hry 2048 / Had / Flappy Car jsou oddělené v games-classic.js.
 
 function renderGamesTttShell() {
 
@@ -1120,7 +1120,7 @@ if (!window.__tttHashInviteBound) {
 
 
 
-// Refactor: Theme, pozadí a profilové UI nastavení jsou oddělené v appearance-theme.js.
+// RaK 1.2 (1.27) – Theme, pozadí a profilové UI nastavení jsou oddělené v appearance-theme.js.
 
 function getRakRotaceNamesDockHealth() {
   const result = {
@@ -1169,5 +1169,5 @@ function getRakRotaceNamesDockHealth() {
 window.getRakRotaceNamesDockHealth = getRakRotaceNamesDockHealth;
 
 
-// Refactor: resize/orientation hlídání aktivního glass indikátoru spodní lišty je v app-navigation.js.
+// RaK 1.2 (1.27) – resize/orientation hlídání aktivního glass indikátoru spodní lišty je v app-navigation.js.
 

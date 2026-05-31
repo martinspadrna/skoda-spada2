@@ -1,4 +1,4 @@
-## 1.2 (1.24)
+## 1.2 (1.27)
 - PWA / service worker / konektivita oddělené z `app.js` do nového modulu `app-pwa-connectivity.js`.
 - `app.js` zůstává víc jako boot/load shell; PWA refresh, online/offline hooky, SW update toast a cache-status helpery jsou samostatně.
 - Nový modul doplněný do loaderu, module readiness, npm check, export manifestu, service workeru, boot/export auditů a app-usage smoke testu.

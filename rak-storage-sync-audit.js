@@ -1,4 +1,4 @@
-// v.1.5 (963) – storage/sync audit closure, smoke report a cleanup guard bez automatického mazání dat.
+// RaK 1.2 (1.27) – storage/sync audit a cleanup guard.
 
 (function setupRakStorageSyncAudit() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();

@@ -1,4 +1,4 @@
-// 1.2 (1.20) – sdílený herní engine/lifecycle baseline oddělený z app.js.
+// RaK 1.2 (1.27) – sdílený herní engine a lifecycle baseline.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('games-engine.js', 'loaded', { source: 'dynamic-loader' }); } catch (err) {}
 
 function ensureRakGameEngineState() {

@@ -1,4 +1,4 @@
-// v.1.5 (963) – window.RaK namespace doplněný o Dashboard announcement diagnostiku.
+// RaK 1.2 (1.27) – window.RaK namespace bridge.
 
 (function setupRakNamespaceBridge() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();

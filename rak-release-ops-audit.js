@@ -1,4 +1,4 @@
-// v.1.5 (963) – release ops checklist, monitoring map a rollback playbook jako read-only diagnostika.
+// RaK 1.2 (1.27) – release ops checklist a rollback playbook.
 
 (function setupRakReleaseOpsAudit() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();

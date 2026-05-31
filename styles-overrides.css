@@ -21223,3 +21223,72 @@ body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .r
   background:transparent !important;
   background-color:transparent !important;
 }
+
+
+/* 1.2 (1.27) – Rotace: jmenné bloky o cca 15 % vyšší a pořád hodně průhledný glass. */
+:root{
+  --rak-v1008-rotace-names-h:clamp(128px, 38svh, 202px);
+  --rak-rotace-name-chip-h:48px;
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid,
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"],
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"]{
+  max-height:var(--rak-v1008-rotace-names-h) !important;
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem,
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceNameTile,
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem,
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile,
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem,
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile,
+body.lightweightMode #rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem,
+body.lowEndDevice #rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem,
+body.lightweightMode #rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceNameTile,
+body.lowEndDevice #rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceNameTile,
+body.lightweightMode.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem,
+body.lowEndDevice.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem,
+body.lightweightMode.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile,
+body.lowEndDevice.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile{
+  min-height:var(--rak-rotace-name-chip-h) !important;
+  padding:10px 7px !important;
+  border:1px solid rgba(255,255,255,.135) !important;
+  background:linear-gradient(145deg, rgba(255,255,255,.026), rgba(255,255,255,.003)) !important;
+  background-color:rgba(255,255,255,.004) !important;
+  background-image:linear-gradient(145deg, rgba(255,255,255,.026), rgba(255,255,255,.003)) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.115),
+    inset 0 -1px 0 rgba(255,255,255,.014),
+    0 4px 12px rgba(0,0,0,.095) !important;
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceTileTitle,
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem .rotaceTileTitle,
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceTileTitle,
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceTileTitle{
+  font-size:clamp(14px, 3.65vw, 15.8px) !important;
+  line-height:1.12 !important;
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem.activeChoice,
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceNameTile.activeChoice,
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem.activeChoice,
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile.activeChoice,
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem.activeChoice,
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile.activeChoice{
+  border-color:rgba(var(--rakThemeRgb, 124,255,124), .34) !important;
+  background:linear-gradient(145deg, rgba(255,255,255,.040), rgba(255,255,255,.006)) !important;
+  background-color:rgba(255,255,255,.008) !important;
+  background-image:linear-gradient(145deg, rgba(255,255,255,.040), rgba(255,255,255,.006)) !important;
+}
+@media (max-width:430px){
+  :root{
+    --rak-v1008-rotace-names-h:clamp(120px, 35svh, 178px);
+    --rak-rotace-name-chip-h:46px;
+  }
+  #rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem,
+  #rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceNameTile,
+  html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem,
+  html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile,
+  body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem,
+  body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile{
+    padding:9px 6px !important;
+  }
+}

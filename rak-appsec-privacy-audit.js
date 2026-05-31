@@ -1,4 +1,4 @@
-// v.1.5 (963) – AppSec/privacy klientský povrch uzavřený jako read-only audit bez mutací.
+// RaK 1.2 (1.27) – AppSec/privacy read-only audit.
 (function setupRakAppSecPrivacyAudit() {
   try {
     if (typeof window.rakMarkModuleReady === 'function') {

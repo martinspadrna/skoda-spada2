@@ -1,4 +1,4 @@
-// Refactor – Navigační shell, home refresh a dashboard modaly oddělené z ui.js.
+// RaK 1.2 (1.27) – navigační shell, home refresh a dashboard modaly.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app-navigation.js', 'loaded', { source: 'dynamic-loader' }); } catch (err) {}
 
 function centerBottomNavButton(btn) {

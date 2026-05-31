@@ -1,4 +1,4 @@
-// RaK 1.2 (1.24) – export manifest počítá s oddělenou PWA/konektivitou v app-pwa-connectivity.js.
+// RaK 1.2 (1.27) – export manifest a release metadata.
 const EXPORT_SOURCE_IDS = {
   "module-readiness.js": "src-module-readiness-js",
   "rak-namespace.js": "src-rak-namespace-js",
@@ -43,8 +43,10 @@ const EXPORT_SOURCE_IDS = {
   "app-navigation.js": "src-app-navigation-js",
   "app-menu.js": "src-app-menu-js",
   "app-actions.js": "src-app-actions-js",
+  "app-boot-selftest.js": "src-app-boot-selftest-js",
   "games-arcade.js": "src-games-arcade-js",
   "export.js": "src-export-js",
+  "app-excel-import.js": "src-app-excel-import-js",
   "app-init.js": "src-app-init-js",
   "supabase-config.js": "src-supabase-config-js",
   "supabase-bridge.js": "src-supabase-bridge-js",
@@ -98,7 +100,7 @@ const EXPORT_SMOKE_REPORT = window.__RAK_EXPORT_SMOKE_REPORT__ || (window.__RAK_
   ok: null,
   status: 'not-run',
   mode: 'export-smoke-report-v939',
-  version: '1.2 (1.24)',
+  version: '1.2 (1.27)',
   checkedAt: null,
   lastStage: 'čeká na export',
   runCount: 0,
@@ -185,8 +187,10 @@ const EXPORT_JS_FILES = [
   "app-navigation.js",
   "app-menu.js",
   "app-actions.js",
+  "app-boot-selftest.js",
   "games-arcade.js",
   "export.js",
+  "app-excel-import.js",
   "app-init.js",
   "supabase-config.js",
   "supabase-bridge.js",
@@ -214,7 +218,7 @@ const EXPORT_TEXT_FILES = [
 
 function getRakExportManifest() {
   return {
-    version: String(window.APP_VERSION || '1.2 (1.24)'),
+    version: String(window.APP_VERSION || '1.2 (1.27)'),
     mode: 'export-manifest-preflight-v939',
     indexFile: 'index.html',
     jsFiles: Array.from(new Set(EXPORT_JS_FILES)),
@@ -324,7 +328,7 @@ function updateRakExportSmokeReport(partial) {
   const data = partial && typeof partial === 'object' ? partial : {};
   Object.assign(EXPORT_SMOKE_REPORT, data, {
     mode: 'export-smoke-report-v939',
-    version: String(window.APP_VERSION || '1.2 (1.24)'),
+    version: String(window.APP_VERSION || '1.2 (1.27)'),
     checkedAt: new Date().toISOString()
   });
   return getRakExportSmokeReport();

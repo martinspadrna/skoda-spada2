@@ -1,4 +1,4 @@
-// v.1.5 (963) – runtime health vrstva bere release ops closure jako read-only warning signál.
+// RaK 1.2 (1.27) – runtime health helpery.
 
 (function setupRakRuntimeHealthHelpers() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();

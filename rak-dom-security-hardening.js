@@ -1,4 +1,4 @@
-// v.1.5 (963) – DOM/security hardening návrhy po jednotlivých sinkách bez runtime mutací.
+// RaK 1.2 (1.27) – DOM/security hardening read-only návrhy.
 (function setupRakDomSecurityHardening() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
   const VERSION = 'v.1.5 (963)';

@@ -1,4 +1,4 @@
-// v.1.5 (963) – boot sequence audit včetně online game contract audit helperu.
+// RaK 1.2 (1.27) – boot sequence audit.
 
 (function setupRakBootSequenceAudit() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -79,10 +79,12 @@
       'app-navigation.js',
       'app-menu.js',
       'app-actions.js',
+      'app-boot-selftest.js',
       'games-arcade.js',
       'export.js',
       'supabase-config.js',
       'supabase-bridge.js',
+      'app-excel-import.js',
       'app-init.js'
     ];
     const missingDynamic = dynamicExpected.filter((name) => !loadedOrder.includes(name));
