@@ -1,4 +1,4 @@
-// RaK 1.2 (1.66) – Rotace render a volba jmen.
+// RaK 1.2 (1.67) – Rotace render a volba jmen.
 function renderRotace() {
   const namesGrid = document.getElementById('namesGrid');
   const personView = document.getElementById('personView');
@@ -751,17 +751,75 @@ function getRotationMonthExportFileName(monthKey) {
 function getRotationMonthExportAbsences(month) {
   const notes = Array.isArray(month && month.notes) ? month.notes : [];
   return notes
-    .map(n => (typeof normalizeNoteEntry === 'function' ? normalizeNoteEntry(n) : n))
-    .filter(n => n && n.isAbsence)
-    .map(n => {
+    .map((note, index) => ({
+      entry: typeof normalizeNoteEntry === 'function' ? normalizeNoteEntry(note) : note,
+      index
+    }))
+    .filter(item => item.entry && item.entry.isAbsence)
+    .flatMap(item => {
+      const n = item.entry;
       const parsed = typeof parseDateToken === 'function' ? parseDateToken(n.date) : null;
-      return {
-        date: parsed ? String(parsed.day) + '.' + String(parsed.month) + '.' : String(n.date || ''),
-        shift: String(n.shift || (parsed ? parsed.shift : '') || ''),
-        people: String((n.people && n.people.length) ? n.people.join(' a ') : (n.person || '')),
-        reason: String(n.label || n.code || '')
+      const shift = String(n.shift || (parsed ? parsed.shift : '') || '').trim();
+      const date = parsed ? String(parsed.day) + '.' + String(parsed.month) + '.' : String(n.date || '');
+      const people = (Array.isArray(n.people) && n.people.length)
+        ? n.people.map(person => String(person || '').trim()).filter(Boolean)
+        : [String(n.person || '').trim()].filter(Boolean);
+      const reason = String(n.label || n.code || '').trim();
+      const shiftOrder = shift.toUpperCase().startsWith('R') ? 1 : (shift.toUpperCase().startsWith('N') ? 2 : 9);
+      const base = {
+        date,
+        shift,
+        day: parsed && Number.isFinite(Number(parsed.day)) ? Number(parsed.day) : 999,
+        month: parsed && Number.isFinite(Number(parsed.month)) ? Number(parsed.month) : 999,
+        shiftOrder,
+        reason,
+        index: item.index
       };
-    });
+      return (people.length ? people : ['']).map((person, personIndex) => ({
+        ...base,
+        people: person,
+        personIndex
+      }));
+    })
+    .sort((a, b) => (a.month - b.month) || (a.day - b.day) || (a.shiftOrder - b.shiftOrder) || (a.index - b.index) || (a.personIndex - b.personIndex));
+}
+
+function buildRotationExportAbsenceTable(absences, dateWeight, personWeight) {
+  const groups = [];
+  const map = new Map();
+  (Array.isArray(absences) ? absences : []).forEach(row => {
+    const key = [row.date || '', row.shift || ''].join('|');
+    let group = map.get(key);
+    if (!group) {
+      group = {
+        label: [String(row.date || '—'), String(row.shift || '').trim()].filter(Boolean).join(' '),
+        sort: [Number(row.month) || 999, Number(row.day) || 999, Number(row.shiftOrder) || 9, Number(row.index) || 0],
+        items: []
+      };
+      map.set(key, group);
+      groups.push(group);
+    }
+    group.items.push({ person: String(row.people || '').trim(), reason: String(row.reason || '').trim() });
+  });
+  groups.sort((a, b) => (a.sort[0] - b.sort[0]) || (a.sort[1] - b.sort[1]) || (a.sort[2] - b.sort[2]) || (a.sort[3] - b.sort[3]));
+  const maxItems = Math.max(1, ...groups.map(group => group.items.length));
+  const columns = [{ label: 'Datum', width: dateWeight, align: 'center', fontWeight: '900 ' }];
+  for (let idx = 0; idx < maxItems; idx += 1) {
+    columns.push({ label: 'Jméno', width: personWeight, align: 'center', fontWeight: '750 ' });
+    columns.push({ label: 'Důvod', width: personWeight, align: 'center', fontWeight: '750 ' });
+  }
+  const rows = groups.length
+    ? groups.map(group => {
+        const cells = [group.label || '—'];
+        for (let idx = 0; idx < maxItems; idx += 1) {
+          const item = group.items[idx] || {};
+          cells.push(item.person || '');
+          cells.push(item.reason || '');
+        }
+        return cells;
+      })
+    : [['—', 'Bez absencí', '—'].concat(Array.from({ length: Math.max(0, (maxItems - 1) * 2) }, () => ''))];
+  return { columns, rows, maxItems };
 }
 
 function drawRotationExportRoundRect(ctx, x, y, w, h, r) {
@@ -915,26 +973,25 @@ function createRotationMonthExportCanvas(monthKey) {
   const absences = getRotationMonthExportAbsences(month);
   const exportDateColWeight = Number(hard && hard.columns && hard.columns[0] && hard.columns[0].width) || 0.1215;
   const exportMachineColWeight = Number(hard && hard.columns && hard.columns[1] && hard.columns[1].width) || 0.1757;
-  const absenceColumns = [
-    { label: 'Datum', width: exportDateColWeight, align: 'center', fontWeight: '900 ' },
-    { label: 'Jméno', width: exportMachineColWeight, align: 'center', fontWeight: '750 ' },
-    { label: 'Důvod', width: exportMachineColWeight, align: 'center', fontWeight: '750 ' }
-  ];
-  const absenceRows = absences.length
-    ? absences.map(row => [String(row.date || '—') + ' ' + String(row.shift || '').trim(), row.people, row.reason])
-    : [['—', 'Bez absencí', '—']];
+  const absenceTable = buildRotationExportAbsenceTable(absences, exportDateColWeight, exportMachineColWeight);
+  const absenceColumns = absenceTable.columns;
+  const absenceRows = absenceTable.rows;
 
-  const width = 4800;
-  const margin = 116;
+  const margin = 96;
   const titleH = 88;
   const gap = 68;
   const leftW = 1508;
-  const rightW = width - margin * 2 - gap - leftW;
+  const hardTotalWeightForExport = Math.max(0.0001, (hard.columns || []).reduce((sum, col) => sum + Math.max(0, Number(col && col.width) || 0), 0));
+  const hardDatePxForExport = Math.round(leftW * ((Number(hard && hard.columns && hard.columns[0] && hard.columns[0].width) || 0) / hardTotalWeightForExport));
+  const hardMachinePxForExport = Math.round(leftW * ((Number(hard && hard.columns && hard.columns[1] && hard.columns[1].width) || 0) / hardTotalWeightForExport));
+  const absenceTableW = Math.max(hardDatePxForExport + hardMachinePxForExport * Math.max(2, (absenceColumns.length - 1)), 420);
+  const contentW = leftW + gap + absenceTableW;
+  const width = Math.ceil(margin * 2 + contentW);
   const hardH = 88 + 66 + 52 * Math.max(hard.rows.length, 1);
   const softH = 88 + 66 + 52 * Math.max(soft.rows.length, 1);
   const absenceH = 88 + 66 + 52 * Math.max(absenceRows.length, 1);
   const contentH = Math.max(hardH + gap + softH, absenceH);
-  const height = Math.max(2650, margin + titleH + 62 + contentH + margin);
+  const height = Math.ceil(margin + titleH + 62 + contentH + margin);
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
@@ -959,10 +1016,6 @@ function createRotationMonthExportCanvas(monthKey) {
   const top = margin + titleH + 40;
   const leftX = margin;
   const rightX = margin + leftW + gap;
-  const hardTotalWeight = Math.max(0.0001, (hard.columns || []).reduce((sum, col) => sum + Math.max(0, Number(col && col.width) || 0), 0));
-  const hardDatePx = Math.round(leftW * ((Number(hard && hard.columns && hard.columns[0] && hard.columns[0].width) || 0) / hardTotalWeight));
-  const hardMachinePx = Math.round(leftW * ((Number(hard && hard.columns && hard.columns[1] && hard.columns[1].width) || 0) / hardTotalWeight));
-  const absenceTableW = Math.min(rightW, Math.max(hardDatePx + hardMachinePx * 2, 420));
   const absenceX = rightX;
   const hardTableH = drawRotationExportTable(ctx, 'Tvrdota', hard.columns, hard.rows, leftX, top, leftW, {
     rowH: 52,
@@ -987,10 +1040,6 @@ function createRotationMonthExportCanvas(monthKey) {
     titleBg: '#172554'
   });
 
-  ctx.fillStyle = '#64748b';
-  ctx.font = '700 25px system-ui, -apple-system, Segoe UI, sans-serif';
-  ctx.textAlign = 'right';
-  ctx.fillText('RaK ' + String(window.APP_VERSION || ''), width - margin, height - 52);
   return canvas;
 }
 

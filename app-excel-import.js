@@ -1,4 +1,4 @@
-// RaK 1.2 (1.66) – Excel import rozpisů oddělený ze startovacích vazeb aplikace.
+// RaK 1.2 (1.67) – Excel import rozpisů oddělený ze startovacích vazeb aplikace.
 function normalizeExcelImportMonthKey(value, fallbackYear) {
   const raw = String(value || '').trim();
   if (!raw) return '';

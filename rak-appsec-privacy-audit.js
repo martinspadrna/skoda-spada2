@@ -1,4 +1,4 @@
-// RaK 1.2 (1.66) – AppSec/privacy read-only audit.
+// RaK 1.2 (1.67) – AppSec/privacy read-only audit.
 (function setupRakAppSecPrivacyAudit() {
   try {
     if (typeof window.rakMarkModuleReady === 'function') {
@@ -7,7 +7,7 @@
   } catch (err) {}
 
   const startedAt = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
-  const VERSION = '1.2 (1.66)';
+  const VERSION = '1.2 (1.67)';
   const MODE = 'appsec-privacy-client-surface-readonly-v923';
   const sensitiveKeyPattern = /(password|passwd|secret|token|bearer|jwt|private|admin|role|auth|session|cookie|api[_-]?key|service[_-]?role)/i;
 
