@@ -19551,7 +19551,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
 }
 
 
-/* v.1.5 (994) – Administrace / Rozpisy: doladěné šířky, čitelnější mini přehled a Odebrat přímo u jména. */
+/* v.1.5 (995) – Administrace / Rozpisy: doladěné šířky, čitelnější mini přehled a Odebrat přímo u jména. */
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable col:first-child{
   width:53px !important;
 }
@@ -19619,7 +19619,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
 }
 
 
-/* v.1.5 (994) – Administrace / Rozpisy: datumy širší, neobsazené mini buňky zvýrazněné, rychlé Odebrat stabilní. */
+/* v.1.5 (995) – Administrace / Rozpisy: datumy širší, neobsazené mini buňky zvýrazněné, rychlé Odebrat stabilní. */
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adminRotationMiniTable tr.adminRotationMiniDayHasEmpty td:first-child{
   color:rgba(255,231,160,.98) !important;
   background:rgba(255,190,72,.10) !important;
@@ -19639,7 +19639,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   transform:translateY(0) !important;
 }
 
-/* v.1.5 (994) – iOS start: spodní lišta sedí hned po otevření dole, bez černého pruhu pod panelem. */
+/* v.1.5 (995) – iOS start: spodní lišta sedí hned po otevření dole, bez černého pruhu pod panelem. */
 :root{
   --rak-nav-ios-start-bottom: max(1px, calc(env(safe-area-inset-bottom) * .12));
   --rak-rotace-names-dock-bottom: calc(var(--bottom-nav-h, 58px) + var(--rak-bottom-nav-live-gap, 2px) + 7px);
@@ -19664,7 +19664,7 @@ html body nav.bottomNav{
   }
 }
 
-/* v.1.5 (994) – Rotace: dock jmen navázaný na reálnou výšku/polohu spodní lišty, ne na starý vysoký safe-area odhad. */
+/* v.1.5 (995) – Rotace: dock jmen navázaný na reálnou výšku/polohu spodní lišty, ne na starý vysoký safe-area odhad. */
 #rotace.page.active #rotaceNamesPanel.active{
   padding-bottom:var(--rak-rotace-names-content-bottom) !important;
   scroll-padding-bottom:var(--rak-rotace-names-content-bottom) !important;
@@ -19683,7 +19683,7 @@ html body nav.bottomNav{
   }
 }
 
-/* v.1.5 (994) – Administrace / Rozpisy: datumy ještě širší podle mobilního testu. */
+/* v.1.5 (995) – Administrace / Rozpisy: datumy ještě širší podle mobilního testu. */
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable col:first-child{
   width:61px !important;
 }
@@ -19720,7 +19720,7 @@ html body nav.bottomNav{
   transform:translate3d(0,0,0) !important;
 }
 
-/* v.1.5 (994) – iOS start: okamžité dosednutí bez černého spodku při prvním otevření. */
+/* v.1.5 (995) – iOS start: okamžité dosednutí bez černého spodku při prvním otevření. */
 :root{
   --rak-nav-ios-start-bottom:0px !important;
   --rak-start-viewport-h:100dvh;
@@ -19755,7 +19755,7 @@ html body nav.bottomNav{
   }
 }
 
-/* v.1.5 (994) – Administrace / Rozpisy: jmenné sloupce v tvrdotě a měkotě +8 %, volné mini buňky jen barevně. */
+/* v.1.5 (995) – Administrace / Rozpisy: jmenné sloupce v tvrdotě a měkotě +8 %, volné mini buňky jen barevně. */
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable col:not(:first-child){
   width:54px !important;
 }
@@ -19773,7 +19773,7 @@ html body nav.bottomNav{
   text-shadow:none !important;
 }
 
-/* v.1.5 (994) – Administrace / Rozpisy: rychlá nabídka kódů absence. */
+/* v.1.5 (995) – Administrace / Rozpisy: rychlá nabídka kódů absence. */
 .adminAbsenceCodePicker{
   position:fixed;
   width:214px;
@@ -19825,7 +19825,7 @@ html body nav.bottomNav{
   background:rgba(124,255,124,.13);
 }
 
-/* v.1.5 (994) – iOS/PWA start: bez viditelného dorůstání viewportu po otevření. */
+/* v.1.5 (995) – iOS/PWA start: bez viditelného dorůstání viewportu po otevření. */
 :root{
   --rak-start-viewport-h:100svh !important;
   --rak-start-viewport-dynamic-h:100dvh !important;
@@ -19876,7 +19876,7 @@ html.rakStableBootViewport body{
     transition:none !important;
   }
 }
-/* v.1.5 (994) – zmrazení startovní výšky Dashboardu; JS metriky dál měří lištu, ale neroztahují appku po startu. */
+/* v.1.5 (995) – zmrazení startovní výšky Dashboardu; JS metriky dál měří lištu, ale neroztahují appku po startu. */
 html.rakStableBootViewport{
   --rak-visual-viewport-h:100svh !important;
   --rak-v968-home-h:calc(100svh - var(--rak-v968-dashboard-bottom-space) - env(safe-area-inset-top) - 8px) !important;
@@ -19890,5 +19890,334 @@ html.rakStableBootViewport{
   }
   html.rakStableBootViewport body{
     min-height:100lvh !important;
+  }
+}
+
+
+/* v.1.5 (995) – Theme/pozadí globálně: zvolený background musí být vidět na každé stránce a theme má barvit celé UI. */
+:root{
+  --rakThemeAccentStrong:var(--rakThemeAccent, var(--green2, #7CFF7C));
+  --rakThemeAccentSoft:color-mix(in srgb, var(--rakThemeAccentStrong) 18%, transparent);
+  --rakThemeAccentMid:color-mix(in srgb, var(--rakThemeAccentStrong) 34%, transparent);
+  --rakThemeStroke:color-mix(in srgb, var(--rakThemeAccentStrong) 32%, rgba(255,255,255,.14));
+  --rakThemeStrokeSoft:color-mix(in srgb, var(--rakThemeAccentStrong) 20%, rgba(255,255,255,.10));
+  --rakThemeGlowSoft:color-mix(in srgb, var(--rakThemeAccentStrong) 23%, transparent);
+  --rakGlassPanelBg:linear-gradient(180deg, rgba(255,255,255,.105), rgba(255,255,255,.024)), color-mix(in srgb, var(--panel, rgba(8,14,12,.44)) 52%, transparent);
+  --rakGlassCardBg:linear-gradient(180deg, rgba(255,255,255,.088), rgba(255,255,255,.018)), color-mix(in srgb, var(--panel2, rgba(8,14,12,.36)) 46%, transparent);
+  --rakGlassSoftBg:linear-gradient(180deg, rgba(255,255,255,.070), rgba(255,255,255,.014)), color-mix(in srgb, var(--panel2, rgba(8,14,12,.28)) 34%, transparent);
+  --rakGlassActiveBg:linear-gradient(180deg, color-mix(in srgb, var(--rakThemeAccentStrong) 19%, rgba(255,255,255,.09)), rgba(255,255,255,.024)), color-mix(in srgb, var(--panel2, rgba(8,14,12,.32)) 38%, transparent);
+}
+html,
+html.rakStableBootViewport,
+html.rakViewportPrimed{
+  background:var(--rakAppBackground, var(--bg, #050816)) !important;
+  background-color:var(--rakBgBase, var(--bg, #050816)) !important;
+}
+body,
+html.rakStableBootViewport body,
+html.rakViewportPrimed body{
+  background:var(--rakAppBackground, var(--bg, #050816)) !important;
+  background-color:var(--rakBgBase, var(--bg, #050816)) !important;
+  background-attachment:fixed !important;
+}
+body::before{
+  background:var(--rakAppBackgroundOverlay, transparent) !important;
+  opacity:1 !important;
+}
+body::after{
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--rakThemeAccentStrong) 15%, rgba(255,255,255,.05)) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--rakThemeAccentStrong) 12%, rgba(255,255,255,.045)) 1px, transparent 1px) !important;
+  background-color:transparent !important;
+  opacity:.14 !important;
+  z-index:-1 !important;
+}
+@supports (-webkit-touch-callout:none){
+  html,
+  html.rakStableBootViewport,
+  html.rakViewportPrimed,
+  html.rakStableBootViewport body,
+  html.rakViewportPrimed body,
+  body{
+    background:var(--rakAppBackground, var(--bg, #050816)) !important;
+    background-color:var(--rakBgBase, var(--bg, #050816)) !important;
+  }
+  body::after{
+    background-image:none !important;
+    background:linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--rakBgBase, #050816) 76%, transparent) 58%, var(--rakBgBase, #050816) 100%) !important;
+    opacity:.96 !important;
+    z-index:0 !important;
+  }
+}
+.page,
+.page.active,
+#home,
+#rotace,
+#statistiky,
+#rozpisy,
+#kalkulacky,
+#games,
+#soustruhy,
+#frezky,
+#brusy,
+.calcPage{
+  background:transparent !important;
+  background-color:transparent !important;
+}
+.headerBar,
+.dashboardShell,
+.dashboardHeroCard,
+.dashboardCard,
+.tile,
+.card,
+.personCard,
+.adminBox,
+.listItem,
+.calcPanel,
+.calcTile,
+.calcResultCard,
+.calcInfoCard,
+.brusDetails,
+.subNav,
+.bgrid,
+.indexGrid,
+.statsSummary .tile,
+.appMenuSheet,
+.appMenuCard,
+.appMenuAction,
+.appMenuThemeCard,
+.appMenuBackgroundCard,
+.appMenuThemeSummary,
+.appMenuAdminCard,
+.appMenuSubSection,
+.appMenuTableWrap,
+.foodScheduleModal,
+.foodScheduleRow,
+.personScheduleModal,
+.personScheduleRow,
+.calendarModal,
+.qrModal,
+.rakUpdateToast,
+#games .gamesShellTop,
+#games .gamesAccountCard,
+#games .gamesActiveAccountBar,
+#games .gamesLaunchTile,
+#games .gamesStatsCard,
+#games .arcadePanel,
+#games .gameBoard{
+  border-color:var(--rakThemeStrokeSoft, rgba(255,255,255,.12)) !important;
+  box-shadow:
+    0 16px 40px rgba(0,0,0,.22),
+    inset 0 1px 0 rgba(255,255,255,.10),
+    inset 0 -1px 0 color-mix(in srgb, var(--rakThemeAccentStrong) 10%, transparent) !important;
+}
+.dashboardShell,
+.appMenuSheet,
+.foodScheduleModal,
+.personScheduleModal,
+.calendarModal,
+.qrModal,
+#games .gamesShellTop{
+  background:var(--rakGlassPanelBg) !important;
+  background-color:color-mix(in srgb, var(--panel, rgba(8,14,12,.44)) 48%, transparent) !important;
+  -webkit-backdrop-filter:blur(26px) saturate(180%) !important;
+  backdrop-filter:blur(26px) saturate(180%) !important;
+}
+.dashboardHeroCard,
+.dashboardCard,
+.tile,
+.card,
+.personCard,
+.adminBox,
+.listItem,
+.calcPanel,
+.calcTile,
+.calcResultCard,
+.calcInfoCard,
+.brusDetails,
+.appMenuCard,
+.appMenuAction,
+.appMenuThemeCard,
+.appMenuBackgroundCard,
+.appMenuThemeSummary,
+.appMenuAdminCard,
+.appMenuSubSection,
+.appMenuTableWrap,
+.foodScheduleRow,
+.personScheduleRow,
+.rakUpdateToast,
+#games .gamesAccountCard,
+#games .gamesActiveAccountBar,
+#games .gamesLaunchTile,
+#games .gamesStatsCard,
+#games .arcadePanel,
+#games .gameBoard{
+  background:var(--rakGlassCardBg) !important;
+  background-color:color-mix(in srgb, var(--panel2, rgba(8,14,12,.36)) 40%, transparent) !important;
+  -webkit-backdrop-filter:blur(22px) saturate(170%) !important;
+  backdrop-filter:blur(22px) saturate(170%) !important;
+}
+button:not(.bottomNavBtn):not(.bottomNavMenuBtn),
+input,
+select,
+textarea,
+.bbtn,
+.btn,
+.pillBtn,
+.tabBtn,
+.subNavBtn,
+.resetBtn,
+.calcPrimaryBtn,
+.calcCloseBtn,
+.homeBtn,
+.appMenuInlineInput,
+.appMenuInput,
+.appMenuSelect,
+.appMenuTextarea,
+.appMenuInlineClearBtn,
+.gameControlBtn,
+.gameControlBtnSmall{
+  border-color:var(--rakThemeStrokeSoft, rgba(255,255,255,.13)) !important;
+  background:var(--rakGlassSoftBg) !important;
+  color:var(--text, #fff) !important;
+  box-shadow:0 10px 26px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.10) !important;
+}
+button:not(.bottomNavBtn):not(.bottomNavMenuBtn):active,
+.bbtn.activeChoice,
+.bbtn.activeIndex,
+.subNavBtn.active,
+.tabBtn.active,
+.calcPrimaryBtn,
+button.primary,
+.appMenuAction.isActive,
+.appMenuSettingBtn.isActive,
+.appMenuThemeCard.isActive,
+.appMenuBackgroundCard.isActive,
+.dashboardSyncBadge:not(.dashboardSyncBadge--offline){
+  background:var(--rakGlassActiveBg) !important;
+  border-color:var(--rakThemeStroke, rgba(124,255,124,.34)) !important;
+  box-shadow:
+    0 16px 36px rgba(0,0,0,.24),
+    0 0 28px var(--rakThemeGlowSoft, rgba(124,255,124,.18)),
+    inset 0 1px 0 rgba(255,255,255,.14) !important;
+}
+h1,
+h2,
+h3,
+.sectionTitle,
+.dashboardAppTitle,
+.dashboardTitle,
+.dashboardValue,
+.calcHeaderTitleOneLine,
+.appMenuTitle,
+.appMenuCardTitle,
+.appMenuThemeTitle,
+.gamesTitle,
+#games .gameTitle{
+  color:var(--soft, #eef7ff) !important;
+}
+.dashboardLabel,
+.smallText,
+.appMenuThemeBadge,
+.appMenuThemeSummaryMeta,
+.dashboardMeta,
+.rotaceMiniLabel{
+  color:color-mix(in srgb, var(--soft, #eef7ff) 68%, transparent) !important;
+}
+a,
+.dashboardDot.is-open,
+.calcTileIcon,
+.bottomNavBtn.active .bottomNavIcon,
+.appMenuThemeSummaryChevron,
+.gameMetricValue{
+  color:var(--rakThemeAccentStrong, var(--green2, #7CFF7C)) !important;
+}
+.bottomNav,
+nav.bottomNav{
+  background:linear-gradient(180deg, rgba(255,255,255,.085), rgba(255,255,255,.020)), color-mix(in srgb, var(--panel, rgba(7,10,8,.46)) 46%, transparent) !important;
+  border-color:var(--rakThemeStrokeSoft, rgba(255,255,255,.12)) !important;
+  box-shadow:0 18px 42px rgba(0,0,0,.36), 0 0 24px color-mix(in srgb, var(--rakThemeAccentStrong) 10%, transparent) !important;
+}
+.bottomNavBtn{
+  background:transparent !important;
+  border-color:color-mix(in srgb, var(--rakThemeAccentStrong) 18%, rgba(255,255,255,.10)) !important;
+}
+.bottomNavBtn.active{
+  background:transparent !important;
+  border-color:color-mix(in srgb, var(--rakThemeAccentStrong) 76%, rgba(255,255,255,.22)) !important;
+  box-shadow:0 0 0 1px color-mix(in srgb, var(--rakThemeAccentStrong) 20%, transparent) inset, 0 12px 26px rgba(0,0,0,.18), 0 0 18px color-mix(in srgb, var(--rakThemeAccentStrong) 16%, transparent) !important;
+}
+.appMenuOverlay,
+.foodScheduleOverlay,
+.personScheduleOverlay,
+.calendarOverlay,
+.qrModalOverlay,
+.tttOverlay{
+  background:
+    var(--rakAppBackgroundOverlay, transparent),
+    color-mix(in srgb, var(--rakBgBase, #050816) 56%, transparent) !important;
+  -webkit-backdrop-filter:blur(18px) saturate(150%) !important;
+  backdrop-filter:blur(18px) saturate(150%) !important;
+}
+body.gamesOpen #games .gamesStage{
+  background:var(--rakAppBackground, var(--bg, #050816)) !important;
+  background-color:var(--rakBgBase, var(--bg, #050816)) !important;
+}
+body.gamesOpen #games .gamesStage::before{
+  background:var(--rakAppBackgroundOverlay, transparent) !important;
+  opacity:1 !important;
+}
+.appMenuTable,
+.appMenuAdminTable,
+.appMenuAdminTableDense,
+.appMenuAdminRotationTable,
+table.rotTable,
+.statsTable,
+.noteTable{
+  background:color-mix(in srgb, var(--panel, rgba(8,14,12,.34)) 35%, transparent) !important;
+  border-color:var(--rakThemeStrokeSoft, rgba(255,255,255,.10)) !important;
+}
+.appMenuTable th,
+.appMenuAdminTable th,
+.appMenuAdminTableDense th,
+.appMenuAdminRotationTable th,
+table.rotTable th,
+.statsTable th,
+.noteTable th,
+td.dateCell{
+  background:linear-gradient(180deg, color-mix(in srgb, var(--rakThemeAccentStrong) 14%, rgba(255,255,255,.055)), rgba(255,255,255,.018)) !important;
+  color:var(--soft, #eef7ff) !important;
+  border-color:var(--rakThemeStrokeSoft, rgba(255,255,255,.10)) !important;
+}
+.appMenuTable td,
+.appMenuAdminTable td,
+.appMenuAdminTableDense td,
+.appMenuAdminRotationTable td,
+table.rotTable td,
+.statsTable td,
+.noteTable td{
+  background:color-mix(in srgb, var(--panel2, rgba(8,14,12,.22)) 32%, transparent) !important;
+  border-color:color-mix(in srgb, var(--rakThemeAccentStrong) 12%, rgba(255,255,255,.08)) !important;
+}
+body.lightweightMode,
+body.lowEndDevice{
+  background:var(--rakAppBackgroundLite, var(--rakAppBackground, var(--bg, #050816))) !important;
+  background-color:var(--rakBgBase, var(--bg, #050816)) !important;
+}
+body.lightweightMode :is(.dashboardShell,.dashboardCard,.tile,.card,.appMenuCard,.appMenuAction,.calcTile,.bottomNav),
+body.lowEndDevice :is(.dashboardShell,.dashboardCard,.tile,.card,.appMenuCard,.appMenuAction,.calcTile,.bottomNav){
+  border-color:color-mix(in srgb, var(--rakThemeAccentStrong) 18%, rgba(255,255,255,.10)) !important;
+}
+@supports not (color: color-mix(in srgb, white 50%, transparent)){
+  :root{
+    --rakThemeAccentSoft:rgba(124,255,124,.16);
+    --rakThemeAccentMid:rgba(124,255,124,.30);
+    --rakThemeStroke:rgba(124,255,124,.30);
+    --rakThemeStrokeSoft:rgba(124,255,124,.16);
+    --rakThemeGlowSoft:rgba(124,255,124,.18);
+    --rakGlassPanelBg:linear-gradient(180deg, rgba(255,255,255,.105), rgba(255,255,255,.024)), rgba(8,14,12,.42);
+    --rakGlassCardBg:linear-gradient(180deg, rgba(255,255,255,.088), rgba(255,255,255,.018)), rgba(8,14,12,.32);
+    --rakGlassSoftBg:linear-gradient(180deg, rgba(255,255,255,.070), rgba(255,255,255,.014)), rgba(8,14,12,.24);
+    --rakGlassActiveBg:linear-gradient(180deg, rgba(124,255,124,.18), rgba(255,255,255,.024)), rgba(8,14,12,.30);
   }
 }

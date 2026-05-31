@@ -1,4 +1,4 @@
-// v.1.5 (994) – spodní lišta beze změny výšky: aktivní ikona větší, text aktivní položky skrytý.
+// v.1.5 (995) – spodní lišta beze změny výšky: aktivní ikona větší, text aktivní položky skrytý.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app.js', 'loaded', { source: 'index' }); } catch (err) {}
 
 
