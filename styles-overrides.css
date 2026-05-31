@@ -19549,3 +19549,71 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable input{
   box-sizing:border-box !important;
 }
+
+
+/* v.1.5 (989) – Administrace / Rozpisy: doladěné šířky, čitelnější mini přehled a Odebrat přímo u jména. */
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable col:first-child{
+  width:46px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable col:not(:first-child){
+  width:50px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuTableWrap:nth-of-type(1) .appMenuAdminTable,
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuTableWrap:nth-of-type(2) .appMenuAdminTable{
+  width:auto !important;
+  min-width:296px !important;
+  max-width:none !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable input[data-rot-field="date"]{
+  width:44px !important;
+  min-width:44px !important;
+  max-width:44px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable input[data-rot-field^="cell-"]{
+  width:48px !important;
+  min-width:48px !important;
+  max-width:48px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable{
+  min-width:193px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable col:nth-child(1){
+  width:55px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable col:nth-child(2){
+  width:106px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable col:nth-child(3){
+  width:32px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable input[data-note-field="date"]{
+  width:53px !important;
+  min-width:53px !important;
+  max-width:53px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable input[data-note-field="person"]{
+  width:104px !important;
+  min-width:104px !important;
+  max-width:104px !important;
+  padding-right:1px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable input[data-note-field="code"]{
+  width:28px !important;
+  min-width:28px !important;
+  max-width:28px !important;
+  margin-left:-1px !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adminRotationMiniTable th,
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adminRotationMiniTable td{
+  font-size:7.6px !important;
+  letter-spacing:-.035em !important;
+  padding-left:0 !important;
+  padding-right:0 !important;
+  text-overflow:clip !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adminRotationSelectedRemoveBtn:not([hidden]){
+  display:none !important;
+}
+.adminRotationQuickRemove{
+  min-width:176px !important;
+}

@@ -10583,9 +10583,9 @@ function buildAdminRotationColgroupHtml(columnCount, firstWidthPx, otherWidthPx)
 
 function buildAdminAbsenceColgroupHtml() {
   return '<colgroup>' +
-    '<col style="width:50px;">' +
-    '<col style="width:118px;">' +
-    '<col style="width:34px;">' +
+    '<col style="width:55px;">' +
+    '<col style="width:106px;">' +
+    '<col style="width:32px;">' +
     '</colgroup>';
 }
 
@@ -10759,7 +10759,7 @@ function adminShortRotationName(value) {
   const parts = raw.split(/\s+/).filter(Boolean);
   const base = parts.length > 1 ? parts[parts.length - 1] : parts[0];
   const clean = String(base || raw).replace(/[^0-9A-Za-zÁ-Žá-ž]/g, '');
-  return clean ? clean.slice(0, 6) : raw.slice(0, 6);
+  return clean ? clean.slice(0, 8) : raw.slice(0, 8);
 }
 
 function buildAdminRotationCompactOverviewHtml(monthKey, hardRows, softRows, hardMachines, softMachines) {
@@ -10818,8 +10818,8 @@ function buildAdminRotationTableHtml(monthKey) {
     return withBlank.map((row, idx) => adminNotesRowTemplate(row, idx, true)).join('');
   };
 
-  const hardColgroup = buildAdminRotationColgroupHtml(hardMachines.length, 42, 48);
-  const softColgroup = buildAdminRotationColgroupHtml(softMachines.length, 42, 48);
+  const hardColgroup = buildAdminRotationColgroupHtml(hardMachines.length, 46, 50);
+  const softColgroup = buildAdminRotationColgroupHtml(softMachines.length, 46, 50);
   const absenceColgroup = buildAdminAbsenceColgroupHtml();
 
   return [
@@ -12115,11 +12115,13 @@ function adminShowRotationSelectedRemove(input) {
       return;
     }
     window.__rakAdminRotationSelectedInput = input;
-    btn.hidden = false;
+    // v.1.5 (989): horní sticky tlačítko už při kliknutí do jména nevytahujeme.
+    // Rychlé Odebrat se vykreslí přímo u aktivního pole přes adminShowRotationQuickRemove().
+    btn.hidden = true;
     btn.dataset.targetReady = '1';
     btn.textContent = 'Odebrat vybrané';
     const status = document.getElementById('adminRotationDraftStatus');
-    if (status) status.textContent = 'Vybrané: ' + value + ' · změny se uloží až tlačítkem.';
+    if (status) status.textContent = 'Vybrané: ' + value + ' · odebrání je přímo u jména.';
   } catch (err) {
     console.warn('Admin selected remove failed', err);
   }
@@ -12190,8 +12192,8 @@ function adminShowRotationQuickRemove(input) {
     if (txt) txt.textContent = 'Jméno: ' + value;
     const rect = input.getBoundingClientRect();
     const vw = Math.max(320, window.innerWidth || document.documentElement.clientWidth || 320);
-    const top = Math.max(8, Math.round(rect.top - 50));
-    const left = Math.max(8, Math.min(vw - 196, Math.round(rect.left)));
+    const top = Math.max(8, Math.round(rect.bottom + 6));
+    const left = Math.max(8, Math.min(vw - 196, Math.round(rect.left + (rect.width / 2) - 94)));
     box.style.top = String(top) + 'px';
     box.style.left = String(left) + 'px';
     box.classList.add('isVisible');
