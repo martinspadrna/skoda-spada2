@@ -1,4 +1,4 @@
-// 1.2 (1.14) – Více/menu shell, O aplikaci, Nastavení, Report chyby a admin menu oddělené z hlavního UI modulu.
+// Refactor – Více/menu shell, O aplikaci, Nastavení, Report chyby a admin menu oddělené z hlavního UI modulu.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app-menu.js', 'loaded', { source: 'dynamic-loader' }); } catch (err) {}
 
 
@@ -370,7 +370,7 @@ async function handleBugReportAction(action) {
 
 
 
-// 1.2 (1.14): Plovoucí odebrání a údržba editoru rozpisů jsou oddělené v admin-rotation.js.
+// Refactor: Plovoucí odebrání a údržba editoru rozpisů jsou oddělené v admin-rotation.js.
 
 function bindAppMenuHandlers(body) {
   if (!body || body.dataset.menuHandlersBound === '1') return;

@@ -86,6 +86,8 @@
       'core.js',
       'app.js',
       'app-runtime-guards.js',
+      'app-health-audits.js',
+      'app-pwa-connectivity.js',
       'admin-food.js',
       'ui.js',
       'app-navigation.js',

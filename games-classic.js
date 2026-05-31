@@ -1,4 +1,4 @@
-// 1.2 (1.14) – Klasické hry 2048 / Had / Flappy Car oddělené z hlavního UI modulu.
+// Refactor – Klasické hry 2048 / Had / Flappy Car oddělené z hlavního UI modulu.
 
 function gamesEnsureKeyBindings() {
   if (window.__rotaceGamesKeysBound) return;

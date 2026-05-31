@@ -61,6 +61,8 @@
     const loadedOrder = moduleHealth && Array.isArray(moduleHealth.loadedOrder) ? moduleHealth.loadedOrder.slice() : [];
     const dynamicExpected = [
       'app-runtime-guards.js',
+      'app-health-audits.js',
+      'app-pwa-connectivity.js',
       'core.js',
       'lifecycle.js',
       'qr.js',

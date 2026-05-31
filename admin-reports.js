@@ -1,4 +1,4 @@
-// 1.2 (1.14) – Administrace / Reporty chyb oddělené z hlavního UI modulu.
+// Refactor – Administrace / Reporty chyb oddělené z hlavního UI modulu.
 (function(){
 'use strict';
 

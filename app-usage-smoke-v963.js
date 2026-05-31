@@ -10,7 +10,7 @@ function assert(cond, msg) {
 }
 
 const bridge = read('supabase-bridge.js');
-const ui = read('ui.js') + '\n' + read('app-runtime-guards.js') + '\n' + read('games-engine.js') + '\n' + read('games-profile.js') + '\n' + read('appearance-theme.js') + '\n' + read('admin-service-usage.js') + '\n' + read('admin-rotation.js') + '\n' + read('app-navigation.js') + '\n' + read('app-menu.js') + '\n' + read('app-actions.js');
+const ui = read('ui.js') + '\n' + read('app-runtime-guards.js') + '\n' + read('app-health-audits.js') + '\n' + read('app-pwa-connectivity.js') + '\n' + read('games-engine.js') + '\n' + read('games-profile.js') + '\n' + read('appearance-theme.js') + '\n' + read('admin-service-usage.js') + '\n' + read('admin-rotation.js') + '\n' + read('app-navigation.js') + '\n' + read('app-menu.js') + '\n' + read('app-actions.js');
 const sql = read('assets/docs/sql/supabase_app_usage_v963.sql');
 
 assert(bridge.includes('recordAppUsage'), 'RotationSupabaseBridge.recordAppUsage chybí');

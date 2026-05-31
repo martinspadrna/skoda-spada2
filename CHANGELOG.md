@@ -1,3 +1,19 @@
+## 1.2 (1.24)
+- PWA / service worker / konektivita oddělené z `app.js` do nového modulu `app-pwa-connectivity.js`.
+- `app.js` zůstává víc jako boot/load shell; PWA refresh, online/offline hooky, SW update toast a cache-status helpery jsou samostatně.
+- Nový modul doplněný do loaderu, module readiness, npm check, export manifestu, service workeru, boot/export auditů a app-usage smoke testu.
+- Supabase DB, policies, online hry a spodní lišta beze změny.
+
+## 1.2 (1.23)
+- Opravené a sjednocené release značení po upozornění, že GitHub může v aktivních zdrojových souborech ukazovat matoucí starý zápis 1.2 (1.14).
+- Aktivní zdrojové komentáře s historickým 1.2 (1.14) byly převedené na neutrální refactor poznámky, aby nepůsobily jako aktuální verze.
+- Sjednocená aktuální verze aplikace, package.json, cache, service worker, realtime kanál a exportní metadata na RaK 1.2 (1.23).
+
+## 1.2 (1.22)
+- Health/audit helpery aplikace oddělené z `app.js` do nového modulu `app-health-audits.js`.
+- `app.js` zůstává víc jako boot/runtime shell; phase audity, runtime health helpery a post-stabilization kontroly jsou v samostatném modulu.
+- Do Supabase DB/policies, online her ani spodní lišty se nesahalo.
+
 ## 1.2 (1.21)
 - Runtime guardy aplikace oddělené z `app.js` do nového modulu `app-runtime-guards.js`.
 - Přesunutá ochrana proti výběru textu, numerická klávesnice kalkulaček a lokální zachytávání chyb.

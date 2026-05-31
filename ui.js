@@ -1,6 +1,6 @@
-// 1.2 (1.14): Navigace, spodní aktivní indikátor, home refresh a dashboard modaly jsou oddělené v app-navigation.js.
+// Refactor: Navigace, spodní aktivní indikátor, home refresh a dashboard modaly jsou oddělené v app-navigation.js.
 
-// 1.2 (1.14): Více/menu shell je oddělený v app-menu.js.
+// Refactor: Více/menu shell je oddělený v app-menu.js.
 
 const UI_PREFS_KEY = APP_KEY + ':uiPrefs';
 const DEVICE_PERFORMANCE_PROBE_KEY = APP_KEY + ':devicePerformanceProbe';
@@ -402,7 +402,7 @@ function getRakPerformanceDprMax() {
 
 try { window.getRakPerformanceDprMax = getRakPerformanceDprMax; } catch (err) {}
 
-// 1.2 (1.14): Piškvorky jsou oddělené v games-gomoku.js.
+// Refactor: Piškvorky jsou oddělené v games-gomoku.js.
 
 function triggerAboutAction() {
   const state = typeof app !== 'undefined' ? app : null;
@@ -878,19 +878,19 @@ function buildAppHistoryHtml(versionText) {
 }
 
 
-// 1.2 (1.14): Administrace / Rozpisy a Nastavení strojů jsou oddělené v admin-rotation.js.
+// Refactor: Administrace / Rozpisy a Nastavení strojů jsou oddělené v admin-rotation.js.
 
 
 
 
-// 1.2 (1.14): Administrace / Reporty chyb jsou oddělené v admin-reports.js.
+// Refactor: Administrace / Reporty chyb jsou oddělené v admin-reports.js.
 
-// 1.2 (1.14): Administrace / Přehled připojení, servis a oznámení jsou oddělené v admin-service-usage.js.
+// Refactor: Administrace / Přehled připojení, servis a oznámení jsou oddělené v admin-service-usage.js.
 
 
-// 1.2 (1.14): App menu / administrace shell / bug report formulář jsou oddělené v app-menu.js.
+// Refactor: App menu / administrace shell / bug report formulář jsou oddělené v app-menu.js.
 
-// 1.2 (1.14): showFoodSchedule je v app-navigation.js.
+// Refactor: showFoodSchedule je v app-navigation.js.
 
 
 
@@ -1002,7 +1002,7 @@ try { window.updateRotaceNamesDockMetrics = updateRotaceNamesDockMetrics; } catc
 try { window.scheduleRotaceNamesDockMetrics = scheduleRotaceNamesDockMetrics; } catch (err) {}
 
 
-// 1.2 (1.14): showPage, home refresh, externí dlaždice a rotace/kalkulačky zkratky jsou v app-navigation.js.
+// Refactor: showPage, home refresh, externí dlaždice a rotace/kalkulačky zkratky jsou v app-navigation.js.
 
 
 function setRotaceView(view) {
@@ -1051,12 +1051,12 @@ function setRotaceView(view) {
 }
 
 
-// 1.2 (1.14): Food/kalendář modaly a vazba dashboard kalendáře jsou v app-navigation.js.
+// Refactor: Food/kalendář modaly a vazba dashboard kalendáře jsou v app-navigation.js.
 
 
-// 1.2 (1.14): Games hub + account profile jsou oddělené v games-profile.js.
+// Refactor: Games hub + account profile jsou oddělené v games-profile.js.
 
-// 1.2 (1.14): Klasické hry 2048 / Had / Flappy Car jsou oddělené v games-classic.js.
+// Refactor: Klasické hry 2048 / Had / Flappy Car jsou oddělené v games-classic.js.
 
 function renderGamesTttShell() {
 
@@ -1120,7 +1120,7 @@ if (!window.__tttHashInviteBound) {
 
 
 
-// 1.2 (1.14): Theme, pozadí a profilové UI nastavení jsou oddělené v appearance-theme.js.
+// Refactor: Theme, pozadí a profilové UI nastavení jsou oddělené v appearance-theme.js.
 
 function getRakRotaceNamesDockHealth() {
   const result = {
@@ -1169,5 +1169,5 @@ function getRakRotaceNamesDockHealth() {
 window.getRakRotaceNamesDockHealth = getRakRotaceNamesDockHealth;
 
 
-// 1.2 (1.14): resize/orientation hlídání aktivního glass indikátoru spodní lišty je v app-navigation.js.
+// Refactor: resize/orientation hlídání aktivního glass indikátoru spodní lišty je v app-navigation.js.
 

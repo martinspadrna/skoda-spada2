@@ -1,4 +1,4 @@
-// 1.2 (1.14) – Hry / profily / leaderboard oddělené z hlavního UI modulu.
+// Refactor – Hry / profily / leaderboard oddělené z hlavního UI modulu.
 
 // -------------------------
 // Games hub + account profile

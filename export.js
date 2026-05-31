@@ -1,4 +1,4 @@
-// 1.2 (1.21) – export manifest počítá s odděleným modulem app-runtime-guards.js.
+// RaK 1.2 (1.24) – export manifest počítá s oddělenou PWA/konektivitou v app-pwa-connectivity.js.
 const EXPORT_SOURCE_IDS = {
   "module-readiness.js": "src-module-readiness-js",
   "rak-namespace.js": "src-rak-namespace-js",
@@ -18,6 +18,8 @@ const EXPORT_SOURCE_IDS = {
   "rak-mobile-smoke-audit.js": "src-rak-mobile-smoke-audit-js",
   "app.js": "src-app-js",
   "app-runtime-guards.js": "src-app-runtime-guards-js",
+  "app-health-audits.js": "src-app-health-audits-js",
+  "app-pwa-connectivity.js": "src-app-pwa-connectivity-js",
   "core.js": "src-core-js",
   "lifecycle.js": "src-lifecycle-js",
   "qr.js": "src-qr-js",
@@ -96,7 +98,7 @@ const EXPORT_SMOKE_REPORT = window.__RAK_EXPORT_SMOKE_REPORT__ || (window.__RAK_
   ok: null,
   status: 'not-run',
   mode: 'export-smoke-report-v939',
-  version: '1.2 (1.21)',
+  version: '1.2 (1.24)',
   checkedAt: null,
   lastStage: 'čeká na export',
   runCount: 0,
@@ -158,6 +160,8 @@ const EXPORT_JS_FILES = [
   "rak-mobile-smoke-audit.js",
   "app.js",
   "app-runtime-guards.js",
+  "app-health-audits.js",
+  "app-pwa-connectivity.js",
   "core.js",
   "lifecycle.js",
   "qr.js",
@@ -210,7 +214,7 @@ const EXPORT_TEXT_FILES = [
 
 function getRakExportManifest() {
   return {
-    version: String(window.APP_VERSION || '1.2 (1.21)'),
+    version: String(window.APP_VERSION || '1.2 (1.24)'),
     mode: 'export-manifest-preflight-v939',
     indexFile: 'index.html',
     jsFiles: Array.from(new Set(EXPORT_JS_FILES)),
@@ -320,7 +324,7 @@ function updateRakExportSmokeReport(partial) {
   const data = partial && typeof partial === 'object' ? partial : {};
   Object.assign(EXPORT_SMOKE_REPORT, data, {
     mode: 'export-smoke-report-v939',
-    version: String(window.APP_VERSION || '1.2 (1.21)'),
+    version: String(window.APP_VERSION || '1.2 (1.24)'),
     checkedAt: new Date().toISOString()
   });
   return getRakExportSmokeReport();

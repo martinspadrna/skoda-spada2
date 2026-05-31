@@ -1,5 +1,5 @@
-const CACHE_VERSION = 'v1.2-1.21';
-const SW_APP_VERSION = '1.2 (1.21)';
+const CACHE_VERSION = 'v1.2-1.24';
+const SW_APP_VERSION = '1.2 (1.24)';
 const STATIC_CACHE = `rotace-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `rotace-runtime-${CACHE_VERSION}`;
 const APP_SHELL = [
@@ -23,6 +23,8 @@ const APP_SHELL = [
   "./rak-mobile-smoke-audit.js",
   "./app.js",
   "./app-runtime-guards.js",
+  "./app-health-audits.js",
+  "./app-pwa-connectivity.js",
   "./core.js",
   "./lifecycle.js",
   "./qr.js",
