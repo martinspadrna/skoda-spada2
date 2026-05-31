@@ -1,4 +1,4 @@
-// RaK 1.2 (1.69) – module readiness registry a boot kontrola.
+// RaK 1.2 (1.70) – module readiness registry a boot kontrola.
 
 (function setupRakModuleReadinessRegistry() {
   if (window.__rakModuleReadinessRegistry && typeof window.rakMarkModuleReady === 'function') {

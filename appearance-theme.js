@@ -1,4 +1,4 @@
-// RaK 1.2 (1.69) – theme, pozadí a profilové UI nastavení.
+// RaK 1.2 (1.70) – theme, pozadí a profilové UI nastavení.
 
 const RAK_THEME_STORAGE_KEY = APP_KEY + ':theme_v1';
 const RAK_THEME_BASE_VARS = {
@@ -1063,7 +1063,7 @@ function getRakProfileAppearanceRewardHealth() {
   const themeRewards = themes.filter(item => String(item && item.id || '') !== 'default');
   const backgroundRewards = backgrounds.filter(item => String(item && item.id || '') !== 'ios-mesh');
   return {
-    version: window.APP_VERSION || '1.2 (1.69)',
+    version: window.APP_VERSION || '1.2 (1.70)',
     mode: 'profile-appearance-reward-health-v928',
     activeProfile: metrics.hasProfile,
     profileThemeStorage: 'account.uiSettings.themeId',
@@ -1152,7 +1152,7 @@ function getRakDashboardGlassThemeHealth() {
   const lightweight = /(?:^|\s)(?:lightweightMode|lowEndDevice|ladaMode)(?:\s|$)/.test(bodyClass);
   return {
     ok: true,
-    version: window.APP_VERSION || '1.2 (1.69)',
+    version: window.APP_VERSION || '1.2 (1.70)',
     mode: 'dashboard-ios-glass-viewport-fit-v945',
     theme,
     background,

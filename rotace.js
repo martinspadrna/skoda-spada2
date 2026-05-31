@@ -1,4 +1,4 @@
-// RaK 1.2 (1.69) – Rotace render a volba jmen.
+// RaK 1.2 (1.70) – Rotace render a volba jmen.
 function renderRotace() {
   const namesGrid = document.getElementById('namesGrid');
   const personView = document.getElementById('personView');
@@ -980,6 +980,9 @@ function createRotationMonthExportCanvas(monthKey) {
   const margin = 96;
   const titleH = 88;
   const gap = 68;
+  const footerH = 46;
+  const exportScale = 2;
+  const footerText = 'Vygenerováno aplikací RaK ze stránky https://skoda-spada.vercel.app';
   const leftW = 1508;
   const hardTotalWeightForExport = Math.max(0.0001, (hard.columns || []).reduce((sum, col) => sum + Math.max(0, Number(col && col.width) || 0), 0));
   const hardDatePxForExport = Math.round(leftW * ((Number(hard && hard.columns && hard.columns[0] && hard.columns[0].width) || 0) / hardTotalWeightForExport));
@@ -991,12 +994,17 @@ function createRotationMonthExportCanvas(monthKey) {
   const softH = 88 + 66 + 52 * Math.max(soft.rows.length, 1);
   const absenceH = 88 + 66 + 52 * Math.max(absenceRows.length, 1);
   const contentH = Math.max(hardH + gap + softH, absenceH);
-  const height = Math.ceil(margin + titleH + 62 + contentH + margin);
+  const height = Math.ceil(margin + titleH + 62 + contentH + footerH + margin);
   const canvas = document.createElement('canvas');
-  canvas.width = width;
-  canvas.height = height;
+  canvas.width = Math.ceil(width * exportScale);
+  canvas.height = Math.ceil(height * exportScale);
+  canvas.style.width = String(width) + 'px';
+  canvas.style.height = String(height) + 'px';
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('Canvas není dostupný.');
+  ctx.setTransform(exportScale, 0, 0, exportScale, 0, 0);
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
 
   ctx.fillStyle = '#edf6ff';
   ctx.fillRect(0, 0, width, height);
@@ -1039,6 +1047,12 @@ function createRotationMonthExportCanvas(monthKey) {
     align: 'center',
     titleBg: '#172554'
   });
+
+  ctx.fillStyle = 'rgba(30,41,59,.74)';
+  ctx.font = '800 22px system-ui, -apple-system, Segoe UI, sans-serif';
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText(footerText, width - margin, height - Math.max(24, Math.round(margin * .35)));
 
   return canvas;
 }
