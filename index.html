@@ -17,20 +17,14 @@
 <link rel="icon" type="image/png" href="assets/app-icons/icon-192.png">
 <script>
 (function(){
-  function rakPrimeViewport(){
-    try {
-      var h = Math.max(480, Math.round((window.visualViewport && window.visualViewport.height) || window.innerHeight || document.documentElement.clientHeight || 0));
-      document.documentElement.style.setProperty('--rak-start-viewport-h', h + 'px');
-      document.documentElement.classList.add('rakViewportPrimed');
-    } catch (err) {}
-  }
-  rakPrimeViewport();
-  window.addEventListener('pageshow', rakPrimeViewport, { passive: true });
-  window.addEventListener('resize', rakPrimeViewport, { passive: true });
-  if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', rakPrimeViewport, { passive: true });
-    window.visualViewport.addEventListener('scroll', rakPrimeViewport, { passive: true });
-  }
+  // v994: iOS/PWA start guard. Nevážeme počáteční výšku appky na visualViewport,
+  // protože Safari/PWA ji po spuštění pár vteřin mění a appka pak viditelně „dorůstá".
+  try {
+    var root = document.documentElement;
+    root.style.setProperty('--rak-start-viewport-h', '100svh');
+    root.style.setProperty('--rak-start-viewport-dynamic-h', '100dvh');
+    root.classList.add('rakViewportPrimed', 'rakStableBootViewport');
+  } catch (err) {}
 })();
 </script>
 <script>

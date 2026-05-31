@@ -10593,7 +10593,7 @@ function buildAdminAbsenceColgroupHtml() {
 
 
 function buildAdminAbsenceCodeDatalistHtml() {
-  const codes = ['D', 'N', 'NV', '§', 'OČR', 'od 14h D', 'do půlnoci D'];
+  const codes = ['D', 'N', 'NV', '§', 'Lázně'];
   return '<datalist id="adminAbsenceCodeOptions">' + codes.map(code => '<option value="' + escapeHtml(code) + '"></option>').join('') + '</datalist>';
 }
 
@@ -12126,7 +12126,7 @@ function adminShowRotationSelectedRemove(input) {
       return;
     }
     window.__rakAdminRotationSelectedInput = input;
-    // v.1.5 (992): horní sticky tlačítko už při kliknutí do jména nevytahujeme.
+    // v.1.5 (994): horní sticky tlačítko už při kliknutí do jména nevytahujeme.
     // Rychlé Odebrat se vykreslí přímo u aktivního pole přes adminShowRotationQuickRemove().
     btn.hidden = true;
     btn.dataset.targetReady = '1';
@@ -12241,7 +12241,7 @@ function adminShowAbsenceCodePicker(input) {
       box = document.createElement('div');
       box.id = 'adminAbsenceCodePicker';
       box.className = 'adminAbsenceCodePicker';
-      const codes = ['D', 'N', 'NV', '§', 'OČR', 'od 14h D', 'do půlnoci D'];
+      const codes = ['D', 'N', 'NV', '§', 'Lázně'];
       box.innerHTML = '<div class="adminAbsenceCodePickerTitle">Zkratka absence</div><div class="adminAbsenceCodePickerGrid">' +
         codes.map(code => '<button type="button" class="adminAbsenceCodeChip" data-absence-code="' + escapeHtml(code) + '">' + escapeHtml(code) + '</button>').join('') +
         '</div>';
@@ -13419,7 +13419,7 @@ function updateRotaceNamesDockMetrics(reason) {
 }
 
 function scheduleRotaceNamesDockMetrics(reason) {
-  // v992: dock jmen se drží těsně nad skutečnou spodní lištou i po iOS přepočtu viewportu.
+  // v993: dock jmen se drží těsně nad skutečnou spodní lištou i po iOS přepočtu viewportu.
   try {
     const root = document.documentElement;
     const nav = document.querySelector('nav.bottomNav') || document.querySelector('.bottomNav');
@@ -13435,11 +13435,11 @@ function scheduleRotaceNamesDockMetrics(reason) {
     const gridHeight = gridRect ? Math.max(88, Math.min(146, Math.round(Number(gridRect.height || 0) || 120))) : 120;
     root.style.setProperty('--rak-rotace-names-dock-bottom', dockBottom + 'px');
     root.style.setProperty('--rak-rotace-names-content-bottom', (dockBottom + gridHeight + 20) + 'px');
-    root.dataset.rakRotaceNamesDockMode = 'adaptive-v992';
-    setTimeout(() => { try { updateRotaceNamesDockMetrics(reason || 'adaptive-v992'); } catch (err) {} }, 0);
-    return updateRotaceNamesDockMetrics(reason || 'adaptive-v992');
+    root.dataset.rakRotaceNamesDockMode = 'adaptive-v993';
+    setTimeout(() => { try { updateRotaceNamesDockMetrics(reason || 'adaptive-v993'); } catch (err) {} }, 0);
+    return updateRotaceNamesDockMetrics(reason || 'adaptive-v993');
   } catch (err) {
-    try { return updateRotaceNamesDockMetrics(reason || 'adaptive-v992-fallback'); } catch (_) { return null; }
+    try { return updateRotaceNamesDockMetrics(reason || 'adaptive-v993-fallback'); } catch (_) { return null; }
   }
 }
 

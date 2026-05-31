@@ -1,9 +1,14 @@
-## v.1.5 (992)
+## v.1.5 (994)
+- iOS/PWA start: odstraněný dynamický startovní `visualViewport` přepočet, který po otevření appky způsoboval viditelné dorůstání výšky.
+- Přidaný stabilní boot viewport guard: počáteční výška appky drží `100svh` / `-webkit-fill-available`, spodní lišta zůstává bez změny výšky a vzhledu.
+- Verze sjednocena na v.1.5 (994), cache na `v1.5-994`, realtime kanál na `rak-public-live-v994`, package na `1.5.994`.
+
+## v.1.5 (993)
 - iOS/PWA start: spodní lišta se po prvním otevření kotví hned na spodní hranu a pod panelem nezůstává dočasný černý pruh.
 - Administrace / Rozpisy: v úpravě tvrdoty a měkoty jsou sloupce se jmény rozšířené o cca 8 %.
 - Administrace / Rozpisy: u absencí se po kliknutí do pole Kód zobrazí rychlá nabídka zkratek `D`, `N`, `NV`, `§`, `OČR` a časté varianty s dovolenou.
 - Administrace / Rozpisy: horní mini přehled dál barevně zvýrazňuje neobsazené stroje/dny, ale do prázdných polí už nepíše „volno“.
-- Verze sjednocena na v.1.5 (992), cache na `v1.5-992`, realtime kanál na `rak-public-live-v992`, package na `1.5.992`.
+- Verze sjednocena na v.1.5 (993), cache na `v1.5-993`, realtime kanál na `rak-public-live-v993`, package na `1.5.993`.
 
 ## v.1.5 (991)
 - Opraveno startovní ukotvení spodní lišty na iOS/Safari/PWA: panel se nemá po prvním spuštění držet výš s černým pruhem pod sebou.

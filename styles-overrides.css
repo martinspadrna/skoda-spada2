@@ -19551,7 +19551,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
 }
 
 
-/* v.1.5 (992) – Administrace / Rozpisy: doladěné šířky, čitelnější mini přehled a Odebrat přímo u jména. */
+/* v.1.5 (994) – Administrace / Rozpisy: doladěné šířky, čitelnější mini přehled a Odebrat přímo u jména. */
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable col:first-child{
   width:53px !important;
 }
@@ -19619,7 +19619,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
 }
 
 
-/* v.1.5 (992) – Administrace / Rozpisy: datumy širší, neobsazené mini buňky zvýrazněné, rychlé Odebrat stabilní. */
+/* v.1.5 (994) – Administrace / Rozpisy: datumy širší, neobsazené mini buňky zvýrazněné, rychlé Odebrat stabilní. */
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adminRotationMiniTable tr.adminRotationMiniDayHasEmpty td:first-child{
   color:rgba(255,231,160,.98) !important;
   background:rgba(255,190,72,.10) !important;
@@ -19639,7 +19639,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   transform:translateY(0) !important;
 }
 
-/* v.1.5 (992) – iOS start: spodní lišta sedí hned po otevření dole, bez černého pruhu pod panelem. */
+/* v.1.5 (994) – iOS start: spodní lišta sedí hned po otevření dole, bez černého pruhu pod panelem. */
 :root{
   --rak-nav-ios-start-bottom: max(1px, calc(env(safe-area-inset-bottom) * .12));
   --rak-rotace-names-dock-bottom: calc(var(--bottom-nav-h, 58px) + var(--rak-bottom-nav-live-gap, 2px) + 7px);
@@ -19664,7 +19664,7 @@ html body nav.bottomNav{
   }
 }
 
-/* v.1.5 (992) – Rotace: dock jmen navázaný na reálnou výšku/polohu spodní lišty, ne na starý vysoký safe-area odhad. */
+/* v.1.5 (994) – Rotace: dock jmen navázaný na reálnou výšku/polohu spodní lišty, ne na starý vysoký safe-area odhad. */
 #rotace.page.active #rotaceNamesPanel.active{
   padding-bottom:var(--rak-rotace-names-content-bottom) !important;
   scroll-padding-bottom:var(--rak-rotace-names-content-bottom) !important;
@@ -19683,7 +19683,7 @@ html body nav.bottomNav{
   }
 }
 
-/* v.1.5 (992) – Administrace / Rozpisy: datumy ještě širší podle mobilního testu. */
+/* v.1.5 (994) – Administrace / Rozpisy: datumy ještě širší podle mobilního testu. */
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable col:first-child{
   width:61px !important;
 }
@@ -19720,7 +19720,7 @@ html body nav.bottomNav{
   transform:translate3d(0,0,0) !important;
 }
 
-/* v.1.5 (992) – iOS start: okamžité dosednutí bez černého spodku při prvním otevření. */
+/* v.1.5 (994) – iOS start: okamžité dosednutí bez černého spodku při prvním otevření. */
 :root{
   --rak-nav-ios-start-bottom:0px !important;
   --rak-start-viewport-h:100dvh;
@@ -19755,7 +19755,7 @@ html body nav.bottomNav{
   }
 }
 
-/* v.1.5 (992) – Administrace / Rozpisy: jmenné sloupce v tvrdotě a měkotě +8 %, volné mini buňky jen barevně. */
+/* v.1.5 (994) – Administrace / Rozpisy: jmenné sloupce v tvrdotě a měkotě +8 %, volné mini buňky jen barevně. */
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable col:not(:first-child){
   width:54px !important;
 }
@@ -19773,7 +19773,7 @@ html body nav.bottomNav{
   text-shadow:none !important;
 }
 
-/* v.1.5 (992) – Administrace / Rozpisy: rychlá nabídka kódů absence. */
+/* v.1.5 (994) – Administrace / Rozpisy: rychlá nabídka kódů absence. */
 .adminAbsenceCodePicker{
   position:fixed;
   width:214px;
@@ -19823,4 +19823,72 @@ html body nav.bottomNav{
 .adminAbsenceCodeChip:active{
   transform:translateY(1px) scale(.98);
   background:rgba(124,255,124,.13);
+}
+
+/* v.1.5 (994) – iOS/PWA start: bez viditelného dorůstání viewportu po otevření. */
+:root{
+  --rak-start-viewport-h:100svh !important;
+  --rak-start-viewport-dynamic-h:100dvh !important;
+}
+html,
+body{
+  background-color:#07111c !important;
+}
+html{
+  min-height:100% !important;
+  min-height:100svh !important;
+  overflow-x:hidden !important;
+}
+body{
+  min-height:100vh !important;
+  min-height:100svh !important;
+  transition:none !important;
+  background-color:#07111c !important;
+}
+html.rakViewportPrimed body,
+html.rakStableBootViewport body{
+  min-height:100svh !important;
+}
+@supports (height:100lvh){
+  html{
+    min-height:100lvh !important;
+  }
+}
+@supports (-webkit-touch-callout:none){
+  html{
+    height:-webkit-fill-available !important;
+    min-height:-webkit-fill-available !important;
+    background:#07111c !important;
+  }
+  body{
+    min-height:-webkit-fill-available !important;
+    background:#07111c !important;
+  }
+  body::after{
+    height:calc(72px + env(safe-area-inset-bottom)) !important;
+    background:#07111c !important;
+    z-index:0 !important;
+  }
+  html body nav.bottomNav,
+  html body .bottomNav{
+    bottom:0 !important;
+    transform:translate3d(-50%,0,0) !important;
+    transition:none !important;
+  }
+}
+/* v.1.5 (994) – zmrazení startovní výšky Dashboardu; JS metriky dál měří lištu, ale neroztahují appku po startu. */
+html.rakStableBootViewport{
+  --rak-visual-viewport-h:100svh !important;
+  --rak-v968-home-h:calc(100svh - var(--rak-v968-dashboard-bottom-space) - env(safe-area-inset-top) - 8px) !important;
+}
+@media (display-mode:standalone){
+  html.rakStableBootViewport{
+    --rak-start-viewport-h:100lvh !important;
+    --rak-visual-viewport-h:100lvh !important;
+    --rak-v968-home-h:calc(100lvh - var(--rak-v968-dashboard-bottom-space) - env(safe-area-inset-top) - 8px) !important;
+    min-height:100lvh !important;
+  }
+  html.rakStableBootViewport body{
+    min-height:100lvh !important;
+  }
 }
