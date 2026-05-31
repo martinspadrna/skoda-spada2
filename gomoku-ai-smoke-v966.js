@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.61) – smoke test offline Gomoku AI.
+// RaK 1.2 (1.62) – smoke test offline Gomoku AI.
 const fs = require('fs');
 const { performance } = require('perf_hooks');
 

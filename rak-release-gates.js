@@ -1,8 +1,8 @@
-// RaK 1.2 (1.61) – release gates a checklist vrstva.
+// RaK 1.2 (1.62) – release gates a checklist vrstva.
 
 (function setupRakReleaseGates() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
-  const VERSION = '1.2 (1.61)';
+  const VERSION = '1.2 (1.62)';
   const MODE = 'release-gates-readonly-v929';
 
   try {
