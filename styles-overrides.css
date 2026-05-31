@@ -19551,7 +19551,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
 }
 
 
-/* v.1.5 (995) – Administrace / Rozpisy: doladěné šířky, čitelnější mini přehled a Odebrat přímo u jména. */
+/* v.1.5 (996) – Administrace / Rozpisy: doladěné šířky, čitelnější mini přehled a Odebrat přímo u jména. */
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable col:first-child{
   width:53px !important;
 }
@@ -19619,7 +19619,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
 }
 
 
-/* v.1.5 (995) – Administrace / Rozpisy: datumy širší, neobsazené mini buňky zvýrazněné, rychlé Odebrat stabilní. */
+/* v.1.5 (996) – Administrace / Rozpisy: datumy širší, neobsazené mini buňky zvýrazněné, rychlé Odebrat stabilní. */
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adminRotationMiniTable tr.adminRotationMiniDayHasEmpty td:first-child{
   color:rgba(255,231,160,.98) !important;
   background:rgba(255,190,72,.10) !important;
@@ -19639,7 +19639,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   transform:translateY(0) !important;
 }
 
-/* v.1.5 (995) – iOS start: spodní lišta sedí hned po otevření dole, bez černého pruhu pod panelem. */
+/* v.1.5 (996) – iOS start: spodní lišta sedí hned po otevření dole, bez černého pruhu pod panelem. */
 :root{
   --rak-nav-ios-start-bottom: max(1px, calc(env(safe-area-inset-bottom) * .12));
   --rak-rotace-names-dock-bottom: calc(var(--bottom-nav-h, 58px) + var(--rak-bottom-nav-live-gap, 2px) + 7px);
@@ -19664,7 +19664,7 @@ html body nav.bottomNav{
   }
 }
 
-/* v.1.5 (995) – Rotace: dock jmen navázaný na reálnou výšku/polohu spodní lišty, ne na starý vysoký safe-area odhad. */
+/* v.1.5 (996) – Rotace: dock jmen navázaný na reálnou výšku/polohu spodní lišty, ne na starý vysoký safe-area odhad. */
 #rotace.page.active #rotaceNamesPanel.active{
   padding-bottom:var(--rak-rotace-names-content-bottom) !important;
   scroll-padding-bottom:var(--rak-rotace-names-content-bottom) !important;
@@ -19683,7 +19683,7 @@ html body nav.bottomNav{
   }
 }
 
-/* v.1.5 (995) – Administrace / Rozpisy: datumy ještě širší podle mobilního testu. */
+/* v.1.5 (996) – Administrace / Rozpisy: datumy ještě širší podle mobilního testu. */
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable col:first-child{
   width:61px !important;
 }
@@ -19720,7 +19720,7 @@ html body nav.bottomNav{
   transform:translate3d(0,0,0) !important;
 }
 
-/* v.1.5 (995) – iOS start: okamžité dosednutí bez černého spodku při prvním otevření. */
+/* v.1.5 (996) – iOS start: okamžité dosednutí bez černého spodku při prvním otevření. */
 :root{
   --rak-nav-ios-start-bottom:0px !important;
   --rak-start-viewport-h:100dvh;
@@ -19755,7 +19755,7 @@ html body nav.bottomNav{
   }
 }
 
-/* v.1.5 (995) – Administrace / Rozpisy: jmenné sloupce v tvrdotě a měkotě +8 %, volné mini buňky jen barevně. */
+/* v.1.5 (996) – Administrace / Rozpisy: jmenné sloupce v tvrdotě a měkotě +8 %, volné mini buňky jen barevně. */
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable col:not(:first-child){
   width:54px !important;
 }
@@ -19773,7 +19773,7 @@ html body nav.bottomNav{
   text-shadow:none !important;
 }
 
-/* v.1.5 (995) – Administrace / Rozpisy: rychlá nabídka kódů absence. */
+/* v.1.5 (996) – Administrace / Rozpisy: rychlá nabídka kódů absence. */
 .adminAbsenceCodePicker{
   position:fixed;
   width:214px;
@@ -19825,7 +19825,7 @@ html body nav.bottomNav{
   background:rgba(124,255,124,.13);
 }
 
-/* v.1.5 (995) – iOS/PWA start: bez viditelného dorůstání viewportu po otevření. */
+/* v.1.5 (996) – iOS/PWA start: bez viditelného dorůstání viewportu po otevření. */
 :root{
   --rak-start-viewport-h:100svh !important;
   --rak-start-viewport-dynamic-h:100dvh !important;
@@ -19876,7 +19876,7 @@ html.rakStableBootViewport body{
     transition:none !important;
   }
 }
-/* v.1.5 (995) – zmrazení startovní výšky Dashboardu; JS metriky dál měří lištu, ale neroztahují appku po startu. */
+/* v.1.5 (996) – zmrazení startovní výšky Dashboardu; JS metriky dál měří lištu, ale neroztahují appku po startu. */
 html.rakStableBootViewport{
   --rak-visual-viewport-h:100svh !important;
   --rak-v968-home-h:calc(100svh - var(--rak-v968-dashboard-bottom-space) - env(safe-area-inset-top) - 8px) !important;
@@ -19894,7 +19894,7 @@ html.rakStableBootViewport{
 }
 
 
-/* v.1.5 (995) – Theme/pozadí globálně: zvolený background musí být vidět na každé stránce a theme má barvit celé UI. */
+/* v.1.5 (996) – Theme/pozadí globálně: zvolený background musí být vidět na každé stránce a theme má barvit celé UI. */
 :root{
   --rakThemeAccentStrong:var(--rakThemeAccent, var(--green2, #7CFF7C));
   --rakThemeAccentSoft:color-mix(in srgb, var(--rakThemeAccentStrong) 18%, transparent);
@@ -20220,4 +20220,161 @@ body.lowEndDevice :is(.dashboardShell,.dashboardCard,.tile,.card,.appMenuCard,.a
     --rakGlassSoftBg:linear-gradient(180deg, rgba(255,255,255,.070), rgba(255,255,255,.014)), rgba(8,14,12,.24);
     --rakGlassActiveBg:linear-gradient(180deg, rgba(124,255,124,.18), rgba(255,255,255,.024)), rgba(8,14,12,.30);
   }
+}
+
+
+/* v.1.5 (996) – Theme sjednocení: Dashboard i nadpisové panely berou odstíny z aktuální barvy; žádný natvrdo zelený roh/linka. */
+:root{
+  --rakThemeHue:var(--rakThemeAccent, var(--green, #7CFF7C));
+  --rakThemeHueSoft:color-mix(in srgb, var(--rakThemeHue) 18%, transparent);
+  --rakThemeHueMid:color-mix(in srgb, var(--rakThemeHue) 34%, transparent);
+  --rakThemeHueLine:color-mix(in srgb, var(--rakThemeHue) 62%, rgba(255,255,255,.26));
+  --rakThemeHueBright:color-mix(in srgb, var(--rakThemeHue) 72%, #ffffff);
+  --rakThemeHueShadow:color-mix(in srgb, var(--rakThemeHue) 20%, transparent);
+  --rak-rotace-names-dock-bottom:clamp(48px, calc(min(var(--bottom-nav-h, 56px), 70px) + min(var(--rak-bottom-nav-live-gap, 0px), 6px) + 2px), 76px);
+  --rak-rotace-names-content-bottom:calc(var(--rak-rotace-names-dock-bottom) + min(29dvh, 124px) + 14px);
+}
+#home.page.active .dashboardShell,
+#home .dashboardShell{
+  border-color:color-mix(in srgb, var(--rakThemeHue) 28%, rgba(255,255,255,.16)) !important;
+  border-top-color:color-mix(in srgb, var(--rakThemeHue) 46%, rgba(255,255,255,.22)) !important;
+  background:
+    radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--rakThemeHue) 18%, transparent), transparent 34%),
+    radial-gradient(circle at 0% 12%, color-mix(in srgb, var(--rakThemeHue) 10%, transparent), transparent 38%),
+    var(--rakGlassPanelBg, linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.025))) !important;
+  box-shadow:
+    0 20px 54px rgba(0,0,0,.32),
+    0 0 28px color-mix(in srgb, var(--rakThemeHue) 10%, transparent),
+    inset 0 2px 0 color-mix(in srgb, var(--rakThemeHue) 18%, rgba(255,255,255,.12)),
+    inset 0 1px 0 rgba(255,255,255,.14) !important;
+}
+#home.page.active .dashboardShell::before,
+html body #home.page.active > .dashboardShell::before{
+  content:"" !important;
+  position:absolute !important;
+  left:1px !important;
+  right:1px !important;
+  top:1px !important;
+  height:2px !important;
+  border-top-left-radius:inherit !important;
+  border-top-right-radius:inherit !important;
+  background:linear-gradient(90deg, rgba(255,255,255,.08), var(--rakThemeHueLine), rgba(255,255,255,.10)) !important;
+  box-shadow:0 0 12px var(--rakThemeHueShadow) !important;
+  pointer-events:none !important;
+  z-index:60 !important;
+  display:block !important;
+}
+#home.page.active .dashboardShell::after,
+html body #home.page.active > .dashboardShell::after{
+  content:"" !important;
+  position:absolute !important;
+  left:0 !important;
+  right:0 !important;
+  top:0 !important;
+  height:22px !important;
+  border-top:1px solid color-mix(in srgb, var(--rakThemeHue) 38%, rgba(255,255,255,.18)) !important;
+  border-top-left-radius:inherit !important;
+  border-top-right-radius:inherit !important;
+  background:linear-gradient(180deg, color-mix(in srgb, var(--rakThemeHue) 8%, transparent), transparent) !important;
+  box-shadow:none !important;
+  pointer-events:none !important;
+  z-index:59 !important;
+}
+#home .dashboardHeroCard,
+#home .dashboardCard,
+#home .tile.dashboardCard{
+  border-color:color-mix(in srgb, var(--rakThemeHue) 24%, rgba(255,255,255,.14)) !important;
+  background:
+    radial-gradient(circle at 96% 0%, color-mix(in srgb, var(--rakThemeHue) 16%, transparent), transparent 36%),
+    radial-gradient(circle at 8% 8%, color-mix(in srgb, var(--rakThemeHue) 8%, transparent), transparent 34%),
+    var(--rakGlassCardBg, linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.02))) !important;
+  box-shadow:
+    0 14px 34px rgba(0,0,0,.26),
+    0 0 0 1px color-mix(in srgb, var(--rakThemeHue) 10%, transparent) inset,
+    inset 0 1px 0 rgba(255,255,255,.10) !important;
+}
+#home .dashboardHeroCard::before,
+#home .dashboardCard::before{
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.13), transparent 28%),
+    radial-gradient(circle at 92% 8%, color-mix(in srgb, var(--rakThemeHue) 20%, transparent), transparent 38%),
+    radial-gradient(circle at 16% 14%, color-mix(in srgb, var(--rakThemeHueBright) 12%, transparent), transparent 36%) !important;
+  opacity:.76 !important;
+}
+#home .dashboardHeroCard::after,
+#home .dashboardCard::after{
+  background:linear-gradient(90deg, transparent, color-mix(in srgb, var(--rakThemeHue) 62%, rgba(255,255,255,.22)), transparent) !important;
+  opacity:.34 !important;
+}
+#home .dashboardCardClickable:hover{
+  border-color:color-mix(in srgb, var(--rakThemeHue) 44%, rgba(255,255,255,.12)) !important;
+  box-shadow:
+    0 18px 38px rgba(0,0,0,.30),
+    0 0 0 1px color-mix(in srgb, var(--rakThemeHue) 16%, transparent) inset,
+    0 0 22px color-mix(in srgb, var(--rakThemeHue) 12%, transparent) !important;
+}
+#home .dashboardLabel,
+#home .dashboardIcon.dashboardIconInline,
+#home .dashboardDot.is-open,
+#home .dashboardSyncBadge:not(.dashboardSyncBadge--offline){
+  color:color-mix(in srgb, var(--rakThemeHueBright) 72%, #ffffff) !important;
+  border-color:color-mix(in srgb, var(--rakThemeHue) 28%, rgba(255,255,255,.16)) !important;
+}
+#home .dashboardIcon.dashboardIconInline{
+  background:linear-gradient(180deg, color-mix(in srgb, var(--rakThemeHue) 18%, transparent), rgba(255,255,255,.035)) !important;
+}
+.page:not(#home) > .headerBar,
+#kalkulacky.page > .headerBar,
+:is(#soustruhy,#frezky,#brusy,#pracka,#korekce-soustruhy,#korekce-frezky,#korekce-brusy).page.calcPage > .headerBar.calcHeaderBar,
+:is(#soustruhy,#frezky,#brusy,#pracka,#korekce-soustruhy,#korekce-frezky,#korekce-brusy).page.calcPage.calcCorrectionPage > .headerBar.calcHeaderBar{
+  border-color:color-mix(in srgb, var(--rakThemeHue) 24%, rgba(255,255,255,.13)) !important;
+  border-bottom-color:color-mix(in srgb, var(--rakThemeHue) 30%, rgba(255,255,255,.13)) !important;
+  background:
+    radial-gradient(circle at 92% 0%, color-mix(in srgb, var(--rakThemeHue) 14%, transparent), transparent 34%),
+    linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.035)) !important;
+  box-shadow:
+    0 14px 34px rgba(0,0,0,.22),
+    inset 0 1px 0 rgba(255,255,255,.13),
+    inset 0 -1px 0 color-mix(in srgb, var(--rakThemeHue) 22%, transparent) !important;
+}
+.page:not(#home) > .headerBar::before,
+:is(#soustruhy,#frezky,#brusy,#pracka,#korekce-soustruhy,#korekce-frezky,#korekce-brusy).page.calcPage > .headerBar.calcHeaderBar::before{
+  background:
+    radial-gradient(circle at 18% 0%, rgba(255,255,255,.16), transparent 44%),
+    linear-gradient(180deg, color-mix(in srgb, var(--rakThemeHue) 9%, transparent), transparent 72%) !important;
+  opacity:.78 !important;
+}
+.page:not(#home) > .headerBar::after,
+#kalkulacky.page > .headerBar::after,
+:is(#soustruhy,#frezky,#brusy,#pracka,#korekce-soustruhy,#korekce-frezky,#korekce-brusy).page.calcPage > .headerBar.calcHeaderBar::after,
+:is(#soustruhy,#frezky,#brusy,#pracka,#korekce-soustruhy,#korekce-frezky,#korekce-brusy).page.calcPage.calcCorrectionPage > .headerBar.calcHeaderBar::after{
+  content:"" !important;
+  position:absolute !important;
+  left:14px !important;
+  right:14px !important;
+  bottom:0 !important;
+  height:1px !important;
+  border-radius:999px !important;
+  background:linear-gradient(90deg, transparent, color-mix(in srgb, var(--rakThemeHue) 48%, rgba(255,255,255,.22)), transparent) !important;
+  opacity:.48 !important;
+  pointer-events:none !important;
+  z-index:1 !important;
+}
+#rotace.page.active #rotaceNamesPanel.active{
+  padding-bottom:var(--rak-rotace-names-content-bottom) !important;
+  scroll-padding-bottom:var(--rak-rotace-names-content-bottom) !important;
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid{
+  bottom:var(--rak-rotace-names-dock-bottom) !important;
+  max-height:min(29dvh, 124px) !important;
+  transform:translate3d(-50%,0,0) !important;
+  transition:none !important;
+  animation:none !important;
+}
+@media (max-height:700px), (max-width:430px){
+  :root{
+    --rak-rotace-names-dock-bottom:clamp(46px, calc(min(var(--bottom-nav-h, 54px), 66px) + min(var(--rak-bottom-nav-live-gap, 0px), 5px) + 1px), 72px);
+    --rak-rotace-names-content-bottom:calc(var(--rak-rotace-names-dock-bottom) + min(27dvh, 112px) + 12px);
+  }
+  #rotace.page.active #rotaceNamesPanel.active #namesGrid{max-height:min(27dvh,112px) !important;}
 }

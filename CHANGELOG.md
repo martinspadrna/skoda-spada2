@@ -1,7 +1,9 @@
-## v.1.5 (995)
-- iOS/PWA start: odstraněný dynamický startovní `visualViewport` přepočet, který po otevření appky způsoboval viditelné dorůstání výšky.
-- Přidaný stabilní boot viewport guard: počáteční výška appky drží `100svh` / `-webkit-fill-available`, spodní lišta zůstává bez změny výšky a vzhledu.
-- Verze sjednocena na v.1.5 (995), cache na `v1.5-995`, realtime kanál na `rak-public-live-v995`, package na `1.5.995`.
+## v.1.5 (996)
+- Dashboard kompletně navázán na aktuální theme barvu: horní roh, linky, glow, karty a dashboard shell už nejsou natvrdo zelené.
+- Nadpisové panely stránek mají spodní linku jako jemný odstín zvolené theme barvy, ne pevnou zelenou.
+- Rotace: seznam jmen je posazen těsněji ke spodnímu panelu a JS metrika už ho po otevření nevytahuje zbytečně nahoru.
+- Supabase beze změn.
+- Verze sjednocena na v.1.5 (996), cache na `v1.5-996`, realtime kanál na `rak-public-live-v996`, package na `1.5.996`.
 
 ## v.1.5 (993)
 - iOS/PWA start: spodní lišta se po prvním otevření kotví hned na spodní hranu a pod panelem nezůstává dočasný černý pruh.

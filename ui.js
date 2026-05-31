@@ -12126,7 +12126,7 @@ function adminShowRotationSelectedRemove(input) {
       return;
     }
     window.__rakAdminRotationSelectedInput = input;
-    // v.1.5 (995): horní sticky tlačítko už při kliknutí do jména nevytahujeme.
+    // v.1.5 (996): horní sticky tlačítko už při kliknutí do jména nevytahujeme.
     // Rychlé Odebrat se vykreslí přímo u aktivního pole přes adminShowRotationQuickRemove().
     btn.hidden = true;
     btn.dataset.targetReady = '1';
@@ -13419,7 +13419,7 @@ function updateRotaceNamesDockMetrics(reason) {
 }
 
 function scheduleRotaceNamesDockMetrics(reason) {
-  // v993: dock jmen se drží těsně nad skutečnou spodní lištou i po iOS přepočtu viewportu.
+  // v996: dock jmen drží těsně nad spodní lištou; žádné opožděné povyskočení nahoru po otevření Rotace.
   try {
     const root = document.documentElement;
     const nav = document.querySelector('nav.bottomNav') || document.querySelector('.bottomNav');
@@ -13428,18 +13428,22 @@ function scheduleRotaceNamesDockMetrics(reason) {
     const vh = Math.round(Number(viewport && viewport.height || window.innerHeight || root.clientHeight || 720) || 720);
     const navRect = nav && typeof nav.getBoundingClientRect === 'function' ? nav.getBoundingClientRect() : null;
     const gridRect = grid && typeof grid.getBoundingClientRect === 'function' ? grid.getBoundingClientRect() : null;
-    const navHeight = navRect ? Math.max(44, Math.round(Number(navRect.height || 0) || 56)) : 58;
-    const navBottomGap = navRect ? Math.max(0, Math.round(vh - Number(navRect.bottom || vh))) : 4;
-    const dockGap = vh >= 850 ? 7 : 5;
-    const dockBottom = Math.max(54, Math.min(96, navHeight + navBottomGap + dockGap));
-    const gridHeight = gridRect ? Math.max(88, Math.min(146, Math.round(Number(gridRect.height || 0) || 120))) : 120;
+    const navHeightRaw = navRect ? Math.round(Number(navRect.height || 0) || 56) : 56;
+    const navHeight = Math.max(46, Math.min(70, navHeightRaw));
+    const navBottomGapRaw = navRect ? Math.max(0, Math.round(vh - Number(navRect.bottom || vh))) : 0;
+    const navBottomGap = Math.max(0, Math.min(6, navBottomGapRaw));
+    const dockGap = vh >= 850 ? 3 : 2;
+    const dockBottom = Math.max(48, Math.min(76, navHeight + navBottomGap + dockGap));
+    const gridHeight = gridRect ? Math.max(82, Math.min(136, Math.round(Number(gridRect.height || 0) || 114))) : 112;
     root.style.setProperty('--rak-rotace-names-dock-bottom', dockBottom + 'px');
-    root.style.setProperty('--rak-rotace-names-content-bottom', (dockBottom + gridHeight + 20) + 'px');
-    root.dataset.rakRotaceNamesDockMode = 'adaptive-v993';
-    setTimeout(() => { try { updateRotaceNamesDockMetrics(reason || 'adaptive-v993'); } catch (err) {} }, 0);
-    return updateRotaceNamesDockMetrics(reason || 'adaptive-v993');
+    root.style.setProperty('--rak-rotace-names-content-bottom', (dockBottom + gridHeight + 14) + 'px');
+    root.dataset.rakRotaceNamesDockMode = 'tight-v996';
+    if (typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(() => { try { updateRotaceNamesDockMetrics(reason || 'tight-v996'); } catch (err) {} });
+    }
+    return updateRotaceNamesDockMetrics(reason || 'tight-v996');
   } catch (err) {
-    try { return updateRotaceNamesDockMetrics(reason || 'adaptive-v993-fallback'); } catch (_) { return null; }
+    try { return updateRotaceNamesDockMetrics(reason || 'tight-v996-fallback'); } catch (_) { return null; }
   }
 }
 

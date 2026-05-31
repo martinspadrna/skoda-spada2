@@ -1,4 +1,4 @@
-// v.1.5 (995) – zúžený export manifest pro čistý ostrý ZIP.
+// v.1.5 (996) – zúžený export manifest pro čistý ostrý ZIP.
 const EXPORT_SOURCE_IDS = {
   "module-readiness.js": "src-module-readiness-js",
   "rak-namespace.js": "src-rak-namespace-js",
@@ -83,7 +83,7 @@ const EXPORT_SMOKE_REPORT = window.__RAK_EXPORT_SMOKE_REPORT__ || (window.__RAK_
   ok: null,
   status: 'not-run',
   mode: 'export-smoke-report-v939',
-  version: 'v.1.5 (995)',
+  version: 'v.1.5 (996)',
   checkedAt: null,
   lastStage: 'čeká na export',
   runCount: 0,
@@ -184,7 +184,7 @@ const EXPORT_TEXT_FILES = [
 
 function getRakExportManifest() {
   return {
-    version: String(window.APP_VERSION || 'v.1.5 (995)'),
+    version: String(window.APP_VERSION || 'v.1.5 (996)'),
     mode: 'export-manifest-preflight-v939',
     indexFile: 'index.html',
     jsFiles: Array.from(new Set(EXPORT_JS_FILES)),
@@ -294,7 +294,7 @@ function updateRakExportSmokeReport(partial) {
   const data = partial && typeof partial === 'object' ? partial : {};
   Object.assign(EXPORT_SMOKE_REPORT, data, {
     mode: 'export-smoke-report-v939',
-    version: String(window.APP_VERSION || 'v.1.5 (995)'),
+    version: String(window.APP_VERSION || 'v.1.5 (996)'),
     checkedAt: new Date().toISOString()
   });
   return getRakExportSmokeReport();
