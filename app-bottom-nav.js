@@ -1,4 +1,4 @@
-// RaK 1.2 (1.67) – spodní navigace a její bezpečné metriky.
+// RaK 1.2 (1.68) – spodní navigace a její bezpečné metriky.
 function installBottomNavBindings() {
   const nav = document.querySelector('.bottomNav');
   if (!nav || nav.__rotaceBound) return;

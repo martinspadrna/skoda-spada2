@@ -1,4 +1,4 @@
-// RaK 1.2 (1.67) – boot self-test oddělený z app.js.
+// RaK 1.2 (1.68) – boot self-test oddělený z app.js.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app-boot-selftest.js', 'loaded', { source: 'dynamic-loader' }); } catch (err) {}
 
 function runRakBootSelfTest() {

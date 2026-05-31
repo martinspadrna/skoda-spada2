@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.67) – smoke test přehledu připojení.
+// RaK 1.2 (1.68) – smoke test přehledu připojení.
 const fs = require('fs');
 const path = require('path');
 

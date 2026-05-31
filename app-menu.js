@@ -1,4 +1,4 @@
-// RaK 1.2 (1.67) – Více/menu shell, O aplikaci, Nastavení, Report chyby a admin menu.
+// RaK 1.2 (1.68) – Více/menu shell, O aplikaci, Nastavení, Report chyby a admin menu.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app-menu.js', 'loaded', { source: 'dynamic-loader' }); } catch (err) {}
 
 
@@ -370,7 +370,7 @@ async function handleBugReportAction(action) {
 
 
 
-// RaK 1.2 (1.67) – Plovoucí odebrání a údržba editoru rozpisů jsou oddělené v admin-rotation.js.
+// RaK 1.2 (1.68) – Plovoucí odebrání a údržba editoru rozpisů jsou oddělené v admin-rotation.js.
 
 function bindAppMenuHandlers(body) {
   if (!body || body.dataset.menuHandlersBound === '1') return;

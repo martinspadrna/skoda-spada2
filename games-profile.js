@@ -1,4 +1,4 @@
-// RaK 1.2 (1.67) – herní profily a leaderboardy.
+// RaK 1.2 (1.68) – herní profily a leaderboardy.
 
 // -------------------------
 // Games hub + account profile
