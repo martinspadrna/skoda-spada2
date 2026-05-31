@@ -70,6 +70,7 @@
       'soustruhy.js',
       'rotace.js',
       'changelog.js',
+      'admin-food.js',
       'ui.js',
       'games-arcade.js',
       'export.js',

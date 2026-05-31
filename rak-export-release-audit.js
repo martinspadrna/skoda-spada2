@@ -85,6 +85,7 @@
       'index.html',
       'core.js',
       'app.js',
+      'admin-food.js',
       'ui.js',
       'export.js',
       'sw.js',

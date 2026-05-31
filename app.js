@@ -1,4 +1,4 @@
-// v.1.6 (1003) – spodní lišta beze změny výšky: aktivní ikona větší, text aktivní položky skrytý.
+// v.1.6 (1007) – spodní lišta beze změny výšky: aktivní ikona větší, text aktivní položky skrytý.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app.js', 'loaded', { source: 'index' }); } catch (err) {}
 
 
@@ -1054,6 +1054,9 @@ function getPhaseTenScriptLoadHealth() {
     'soustruhy.js',
     'rotace.js',
     'changelog.js',
+    'admin-food.js',
+    'admin-reports.js',
+    'admin-service-usage.js',
     'ui.js',
     'games-arcade.js',
     'export.js',
@@ -2379,6 +2382,9 @@ function runPhaseTenFinalStabilizationAudit() {
     "soustruhy.js",
     "rotace.js",
     "changelog.js",
+    "admin-food.js",
+    "admin-reports.js",
+    "admin-service-usage.js",
     "ui.js",
     "games-arcade.js",
     "export.js",

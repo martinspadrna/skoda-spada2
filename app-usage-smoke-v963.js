@@ -10,7 +10,7 @@ function assert(cond, msg) {
 }
 
 const bridge = read('supabase-bridge.js');
-const ui = read('ui.js');
+const ui = read('ui.js') + '\n' + read('admin-service-usage.js');
 const sql = read('assets/docs/sql/supabase_app_usage_v963.sql');
 
 assert(bridge.includes('recordAppUsage'), 'RotationSupabaseBridge.recordAppUsage chybí');
