@@ -1,4 +1,4 @@
-// v.1.6 (1007) – Administrace / Připojení, servis a oznámení oddělené z hlavního UI modulu.
+// v.1.6 (1008) – Administrace / Připojení, servis a oznámení oddělené z hlavního UI modulu.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('admin-service-usage.js', 'loaded', { source: 'dynamic-loader' }); } catch (err) {}
 
 function formatAdminServiceCount(value) {

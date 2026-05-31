@@ -1,4 +1,4 @@
-// v.1.6 (1007) – Administrace / Kantýna-jídelna oddělená z hlavního UI modulu.
+// v.1.6 (1008) – Administrace / Kantýna-jídelna oddělená z hlavního UI modulu.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('admin-food.js', 'loaded', { source: 'dynamic-loader' }); } catch (err) {}
 
 function adminFoodIsoToCzechDate(value) {

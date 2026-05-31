@@ -1,6 +1,8 @@
-## v.1.6 (1007)
+## v.1.6 (1008)
 
-- Větší refactor administrace: oddělený Přehled připojení, Servis / synchronizace a Oznámení Dashboard do `admin-service-usage.js`.
-- `ui.js` zůstal jako koordinátor menu a handlerů, ale renderovací/servisní helpery jsou mimo hlavní monolit.
-- Funkčnost administrace, Supabase DB, spodní lišta, Rotace, hry a rozpisy beze změny.
-- Verze sjednocena na v.1.6 (1007), cache na `v1.6-1007`, realtime kanál na `rak-public-live-v1007`, package na `1.6.1007`.
+- Oprava Rotace: vypnutá vstupní `pageIn` animace pro stránku Rotace, aby spodní panel se jmény po kliknutí na Rotace už viditelně nevyskočil.
+- Větší refactor administrace: oddělené Rozpisy / Nastavení strojů a související helpery do nového `admin-rotation.js`.
+- Aktualizovaný loader, service worker, export manifest a kontroly pro nový admin modul.
+- Supabase DB, policies, hry a spodní lišta beze změny.
+- Verze sjednocena na v.1.6 (1008), cache na `v1.6-1008`, realtime kanál na `rak-public-live-v1008`, package na `1.6.1008`.
+

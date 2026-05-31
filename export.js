@@ -1,4 +1,4 @@
-// v.1.6 (1007) – zúžený export manifest pro čistý ostrý ZIP.
+// v.1.6 (1008) – zúžený export manifest pro čistý ostrý ZIP.
 const EXPORT_SOURCE_IDS = {
   "module-readiness.js": "src-module-readiness-js",
   "rak-namespace.js": "src-rak-namespace-js",
@@ -27,6 +27,7 @@ const EXPORT_SOURCE_IDS = {
   "brusy.js": "src-brusy-js",
   "rotace.js": "src-rotace-js",
   "changelog.js": "src-changelog-js",
+  "admin-rotation.js": "src-admin-rotation-js",
   "admin-food.js": "src-admin-food-js",
   "admin-reports.js": "src-admin-reports-js",
   "admin-service-usage.js": "src-admin-service-usage-js",
@@ -86,7 +87,7 @@ const EXPORT_SMOKE_REPORT = window.__RAK_EXPORT_SMOKE_REPORT__ || (window.__RAK_
   ok: null,
   status: 'not-run',
   mode: 'export-smoke-report-v939',
-  version: 'v.1.6 (1007)',
+  version: 'v.1.6 (1008)',
   checkedAt: null,
   lastStage: 'čeká na export',
   runCount: 0,
@@ -157,6 +158,7 @@ const EXPORT_JS_FILES = [
   "brusy.js",
   "rotace.js",
   "changelog.js",
+  "admin-rotation.js",
   "admin-food.js",
   "admin-reports.js",
   "admin-service-usage.js",
@@ -190,7 +192,7 @@ const EXPORT_TEXT_FILES = [
 
 function getRakExportManifest() {
   return {
-    version: String(window.APP_VERSION || 'v.1.6 (1007)'),
+    version: String(window.APP_VERSION || 'v.1.6 (1008)'),
     mode: 'export-manifest-preflight-v939',
     indexFile: 'index.html',
     jsFiles: Array.from(new Set(EXPORT_JS_FILES)),
@@ -300,7 +302,7 @@ function updateRakExportSmokeReport(partial) {
   const data = partial && typeof partial === 'object' ? partial : {};
   Object.assign(EXPORT_SMOKE_REPORT, data, {
     mode: 'export-smoke-report-v939',
-    version: String(window.APP_VERSION || 'v.1.6 (1007)'),
+    version: String(window.APP_VERSION || 'v.1.6 (1008)'),
     checkedAt: new Date().toISOString()
   });
   return getRakExportSmokeReport();

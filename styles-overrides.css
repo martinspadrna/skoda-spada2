@@ -20379,7 +20379,7 @@ html body #home.page.active > .dashboardShell::after{
   #rotace.page.active #rotaceNamesPanel.active #namesGrid{max-height:min(27dvh,112px) !important;}
 }
 
-/* v.1.6 (1007) – stabilizace pozadí, iOS startu a Rotace doku jmen. */
+/* v.1.6 (1008) – stabilizace pozadí, iOS startu a Rotace doku jmen. */
 :root{
   --rak-v1003-start-h:var(--rak-start-viewport-h, 100dvh);
   --rak-v1003-nav-gap:1px;
@@ -20453,7 +20453,7 @@ html body .bottomNav{
 }
 
 
-/* v.1.6 (1007) – Rotace dock bez poskočení + kompaktní Kantýna/jídelna admin. */
+/* v.1.6 (1008) – Rotace dock bez poskočení + kompaktní Kantýna/jídelna admin. */
 :root{
   --rak-v1003-rotace-dock-bottom: max(58px, calc(53px + env(safe-area-inset-bottom)));
   --rak-v1003-rotace-names-h: min(26dvh, 112px);
@@ -20536,7 +20536,7 @@ html.rakRotaceEntering #rotace.page.active #rotaceNamesPanel.active #namesGrid{
   #menu .adminFoodDatesTable td{padding:5px 4px !important;}
 }
 
-/* v.1.6 (1007) – kompaktní jídlo na dashboardu + užší datumy přesčasů. */
+/* v.1.6 (1008) – kompaktní jídlo na dashboardu + užší datumy přesčasů. */
 .dashboardValue,
 .dashboardMeta{
   overflow-wrap:normal;
@@ -20582,7 +20582,7 @@ html.rakRotaceEntering #rotace.page.active #rotaceNamesPanel.active #namesGrid{
 }
 
 
-/* v.1.6 (1007) – Rotace: vyšší volba jmen bez zbytečného scrollu a bez uřezaných jmen. */
+/* v.1.6 (1008) – Rotace: vyšší volba jmen bez zbytečného scrollu a bez uřezaných jmen. */
 :root{
   --rak-v1003-rotace-dock-bottom:max(56px, calc(51px + env(safe-area-inset-bottom)));
   --rak-v1003-rotace-names-h:min(36svh, 188px);
@@ -20644,7 +20644,7 @@ html.rakRotaceEntering #rotace.page.active #rotaceNamesPanel.active #namesGrid{
   :root{--rak-v1003-rotace-names-h:min(34svh, 166px);}
 }
 
-/* v.1.6 (1007) – Rotace: spodní volba jmen bezpečně nad spodním panelem na všech výškách. */
+/* v.1.6 (1008) – Rotace: spodní volba jmen bezpečně nad spodním panelem na všech výškách. */
 :root{
   --rak-v1003-rotace-safe-bottom:max(74px, var(--rak-bottom-total-space, calc(var(--bottom-nav-h, 64px) + env(safe-area-inset-bottom) + 10px)));
   --rak-v1003-rotace-names-h:clamp(118px, 34svh, 184px);
@@ -20684,12 +20684,12 @@ html.rakRotaceEntering #rotace.page.active #rotaceNamesPanel.active #namesGrid{
 }
 
 
-/* v.1.6 (1007) – Rotace: pozice jmen zůstává dobrá, ale bez viditelného vyskočení po kliknutí. */
+/* v.1.6 (1008) – Rotace: pozice jmen zůstává dobrá, ale bez viditelného vyskočení po kliknutí. */
 :root{
-  --rak-v1007-rotace-safe-bottom:calc(76px + env(safe-area-inset-bottom));
-  --rak-v1007-rotace-names-h:clamp(112px, 33svh, 176px);
-  --rak-rotace-names-dock-bottom:var(--rak-v1007-rotace-safe-bottom) !important;
-  --rak-rotace-names-content-bottom:calc(var(--rak-v1007-rotace-safe-bottom) + var(--rak-v1007-rotace-names-h) + 16px) !important;
+  --rak-v1008-rotace-safe-bottom:calc(76px + env(safe-area-inset-bottom));
+  --rak-v1008-rotace-names-h:clamp(112px, 33svh, 176px);
+  --rak-rotace-names-dock-bottom:var(--rak-v1008-rotace-safe-bottom) !important;
+  --rak-rotace-names-content-bottom:calc(var(--rak-v1008-rotace-safe-bottom) + var(--rak-v1008-rotace-names-h) + 16px) !important;
 }
 html.rakRotaceEntering #rotace.page.active #rotaceNamesPanel.active #namesGrid{
   opacity:1 !important;
@@ -20701,8 +20701,8 @@ html.rakRotaceEntering #rotace.page.active #rotaceNamesPanel.active #namesGrid{
   scroll-padding-bottom:var(--rak-rotace-names-content-bottom) !important;
 }
 #rotace.page.active #rotaceNamesPanel.active #namesGrid{
-  bottom:var(--rak-v1007-rotace-safe-bottom) !important;
-  max-height:var(--rak-v1007-rotace-names-h) !important;
+  bottom:var(--rak-v1008-rotace-safe-bottom) !important;
+  max-height:var(--rak-v1008-rotace-names-h) !important;
   transform:translate3d(-50%,0,0) !important;
   transition:none !important;
   animation:none !important;
@@ -20711,15 +20711,63 @@ html.rakRotaceEntering #rotace.page.active #rotaceNamesPanel.active #namesGrid{
 }
 @media (max-width:430px){
   :root{
-    --rak-v1007-rotace-safe-bottom:calc(74px + env(safe-area-inset-bottom));
-    --rak-v1007-rotace-names-h:clamp(108px, 32svh, 168px);
+    --rak-v1008-rotace-safe-bottom:calc(74px + env(safe-area-inset-bottom));
+    --rak-v1008-rotace-names-h:clamp(108px, 32svh, 168px);
   }
 }
 @media (max-height:700px){
-  :root{--rak-v1007-rotace-names-h:clamp(104px, 30svh, 154px);}
+  :root{--rak-v1008-rotace-names-h:clamp(104px, 30svh, 154px);}
 }
 body.lightweightMode,
 body.lowEndDevice,
 body.ladaMode{
-  --rak-v1007-rotace-safe-bottom:calc(74px + env(safe-area-inset-bottom));
+  --rak-v1008-rotace-safe-bottom:calc(74px + env(safe-area-inset-bottom));
+}
+
+/* v.1.6 (1008) – Rotace: definitivně bez vstupního poskoku panelu jmen. 
+   Příčina byla pageIn transform na .page.active; fixed dock uvnitř transformovaného rodiče se hýbal s celou stránkou. */
+:root{
+  --rak-v1008-rotace-safe-bottom:calc(76px + env(safe-area-inset-bottom));
+  --rak-v1008-rotace-names-h:clamp(112px, 33svh, 176px);
+  --rak-rotace-names-dock-bottom:var(--rak-v1008-rotace-safe-bottom) !important;
+  --rak-rotace-names-content-bottom:calc(var(--rak-v1008-rotace-safe-bottom) + var(--rak-v1008-rotace-names-h) + 16px) !important;
+}
+#rotace.page.active{
+  animation:none !important;
+  transform:none !important;
+  transition:none !important;
+}
+#rotace.page.active #rotaceNamesPanel,
+#rotace.page.active #rotaceNamesPanel.active{
+  animation:none !important;
+  transform:none !important;
+  transition:none !important;
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid{
+  position:fixed !important;
+  left:50% !important;
+  bottom:var(--rak-v1008-rotace-safe-bottom) !important;
+  max-height:var(--rak-v1008-rotace-names-h) !important;
+  transform:translate3d(-50%,0,0) !important;
+  animation:none !important;
+  transition:none !important;
+  will-change:auto !important;
+  opacity:1 !important;
+  visibility:visible !important;
+  pointer-events:auto !important;
+}
+html.rakRotaceEntering #rotace.page.active,
+html.rakRotaceEntering #rotace.page.active #rotaceNamesPanel,
+html.rakRotaceEntering #rotace.page.active #rotaceNamesPanel.active #namesGrid{
+  animation:none !important;
+  transition:none !important;
+}
+@media (max-width:430px){
+  :root{
+    --rak-v1008-rotace-safe-bottom:calc(74px + env(safe-area-inset-bottom));
+    --rak-v1008-rotace-names-h:clamp(108px, 32svh, 168px);
+  }
+}
+@media (max-height:700px){
+  :root{--rak-v1008-rotace-names-h:clamp(104px, 30svh, 154px);}
 }
