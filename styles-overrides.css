@@ -21225,7 +21225,7 @@ body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .r
 }
 
 
-/* 1.2 (1.28) – Rotace: jmenné bloky o cca 15 % vyšší a pořád hodně průhledný glass. */
+/* 1.2 (1.34) – Rotace: jmenné bloky o cca 15 % vyšší a pořád hodně průhledný glass. */
 :root{
   --rak-v1008-rotace-names-h:clamp(128px, 38svh, 202px);
   --rak-rotace-name-chip-h:48px;
@@ -21293,7 +21293,7 @@ body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .r
   }
 }
 
-/* 1.2 (1.28) – Rotace: jména zůstávají větší, ale písmo je o chlup menší kvůli delším jménům. */
+/* 1.2 (1.34) – Rotace: jména zůstávají větší, ale písmo je o chlup menší kvůli delším jménům. */
 #rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceTileTitle,
 #rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem .rotaceTileTitle,
 html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceTileTitle,
@@ -21311,7 +21311,7 @@ body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .r
   }
 }
 
-/* 1.2 (1.28) – Korekce Frézky: aktuální korekce bez zeleného podbarvení, jen neutrální glass. */
+/* 1.2 (1.34) – Korekce Frézky: aktuální korekce bez zeleného podbarvení, jen neutrální glass. */
 #korekce-frezky .calcCorrectionFhbCard .calcCorrectionGroup--currentCorrection,
 #korekce-frezky .calcCorrectionFhbCard .calcCorrectionGroup--soft.calcCorrectionGroup--currentCorrection{
   background:linear-gradient(145deg, rgba(255,255,255,.042), rgba(255,255,255,.010)) !important;
@@ -21340,3 +21340,21 @@ body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .r
   box-shadow:0 0 0 2px rgba(255,255,255,.10), inset 0 1px 0 rgba(255,255,255,.14) !important;
 }
 
+/* 1.2 (1.34) – Rotace: jména ponechaná vyšší, písmo ještě malinko menší kvůli dvěma delším jménům. */
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceTileTitle,
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem .rotaceTileTitle,
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceTileTitle,
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceTileTitle{
+  font-size:clamp(12.95px, 3.28vw, 14.55px) !important;
+  letter-spacing:-.012em !important;
+  line-height:1.10 !important;
+}
+@media (max-width:430px){
+  #rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceTileTitle,
+  #rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem .rotaceTileTitle,
+  html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceTileTitle,
+  body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceTileTitle{
+    font-size:clamp(12.75px, 3.16vw, 14.25px) !important;
+    letter-spacing:-.014em !important;
+  }
+}

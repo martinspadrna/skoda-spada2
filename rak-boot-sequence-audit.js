@@ -1,4 +1,4 @@
-// RaK 1.2 (1.28) – boot sequence audit.
+// RaK 1.2 (1.34) – boot sequence audit.
 
 (function setupRakBootSequenceAudit() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -62,6 +62,7 @@
     const dynamicExpected = [
       'app-runtime-guards.js',
       'app-health-audits.js',
+      'app-postload-audits.js',
       'app-pwa-connectivity.js',
       'core.js',
       'lifecycle.js',
@@ -77,6 +78,7 @@
       'admin-food.js',
       'ui.js',
       'app-navigation.js',
+      'app-bottom-nav.js',
       'app-menu.js',
       'app-actions.js',
       'app-boot-selftest.js',
@@ -84,7 +86,11 @@
       'export.js',
       'supabase-config.js',
       'supabase-bridge.js',
+      'app-rotation-sync.js',
       'app-excel-import.js',
+      'app-rotation-controls.js',
+      'app-admin-unlock.js',
+      'app-home-boot.js',
       'app-init.js'
     ];
     const missingDynamic = dynamicExpected.filter((name) => !loadedOrder.includes(name));

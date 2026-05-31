@@ -1,4 +1,4 @@
-// RaK 1.2 (1.28) – export/release audit.
+// RaK 1.2 (1.34) – export/release audit.
 
 (function setupRakExportReleaseAudit() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -87,14 +87,19 @@
       'app.js',
       'app-runtime-guards.js',
       'app-health-audits.js',
+      'app-postload-audits.js',
       'app-pwa-connectivity.js',
       'admin-food.js',
       'ui.js',
       'app-navigation.js',
+      'app-bottom-nav.js',
       'app-menu.js',
       'app-actions.js',
       'app-boot-selftest.js',
       'app-excel-import.js',
+      'app-home-boot.js',
+      'app-rotation-sync.js',
+      'app-rotation-controls.js',
       'games-engine.js',
       'export.js',
       'sw.js',
@@ -112,7 +117,7 @@
       'runRakExportSmokeReport'
     ];
     const missingExportSignals = requiredExportSignals.filter((name) => typeof window[name] === 'undefined');
-    const missingScripts = ['rak-export-release-audit.js', 'export.js', 'app-excel-import.js', 'app-init.js'].filter((tail) => !scripts.some((src) => String(src).split('?')[0].endsWith(tail)));
+    const missingScripts = ['rak-export-release-audit.js', 'export.js', 'app-postload-audits.js', 'app-bottom-nav.js', 'app-rotation-sync.js', 'app-excel-import.js', 'app-rotation-controls.js', 'app-admin-unlock.js', 'app-home-boot.js', 'app-init.js'].filter((tail) => !scripts.some((src) => String(src).split('?')[0].endsWith(tail)));
     if (missingExportSignals.length) warnings.push('export signals not visible yet: ' + missingExportSignals.join(', '));
     if (missingScripts.length) warnings.push('runtime scripts not visible yet: ' + missingScripts.join(', '));
     if (!stylesheets.some((href) => /styles\.css$/.test(href))) warnings.push('styles.css not visible in DOM stylesheet inventory');

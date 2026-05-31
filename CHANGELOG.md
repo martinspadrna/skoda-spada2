@@ -1,8 +1,37 @@
-## 1.2 (1.28)
-- PWA / service worker / konektivita oddělené z `app.js` do nového modulu `app-pwa-connectivity.js`.
-- `app.js` zůstává víc jako boot/load shell; PWA refresh, online/offline hooky, SW update toast a cache-status helpery jsou samostatně.
-- Nový modul doplněný do loaderu, module readiness, npm check, export manifestu, service workeru, boot/export auditů a app-usage smoke testu.
-- Supabase DB, policies, online hry a spodní lišta beze změny.
+## 1.2 (1.34)
+- Větší refactor boot shellu: spodní navigace a její bezpečné metriky jsou oddělené z `app.js` do `app-bottom-nav.js`.
+- Post-load audit orchestrace je oddělená do `app-postload-audits.js`, takže `app.js` zůstává víc jen loader/orchestrátor.
+- Release metadata, cache, realtime kanál, service worker, export manifest a GitHub hlavičky sjednocené na `RaK 1.2 (1.34)`.
+
+## 1.2 (1.34)
+- Větší refactor startu aplikace: online synchronizace rozpisů je oddělená z `app-init.js` do nového `app-rotation-sync.js`.
+- Startovací vazby voleb Rotace a Excel importu jsou oddělené z `app-init.js` do nového `app-rotation-controls.js`.
+- `app-init.js` zůstává už hlavně jako krátký startovací orchestrátor; nové moduly jsou doplněné do loaderu, module readiness, export manifestu, service workeru a auditů.
+- Bez zásahu do Supabase DB/policies, online her, spodní lišty, kalkulaček, Rotace logiky a Statistik.
+
+## 1.2 (1.32)
+- Home boot sekvence oddělená z `app-init.js` do nového modulu `app-home-boot.js`.
+- `app-init.js` zůstává víc pro startovací formulářové vazby, Excel import bridge a Supabase synchronizaci rozpisů.
+- Nový modul je doplněný do loaderu, module readiness, export manifestu, service workeru, boot auditu, export auditu a app-usage smoke testu.
+- Bez zásahu do Supabase DB/policies, online her, spodní lišty, kalkulaček, Rotace a Statistik.
+
+## 1.2 (1.31)
+- Admin odemčení přes 3 tapnutí na „Více“ je oddělené z `app-init.js` do nového modulu `app-admin-unlock.js`.
+- `app-init.js` se zmenšil a zůstává víc pro startovací vazby, Excel import bridge a online synchronizaci rozpisů.
+- Nový modul je doplněný do loaderu, module readiness, export manifestu, service workeru a release kontrol.
+- Bez zásahu do Supabase DB/policies, online her, spodní lišty, kalkulaček a Rotace.
+
+## 1.2 (1.30)
+- Rotace: písmo v dlaždicích jmen je ještě lehce zmenšené, aby se vešla i delší jména.
+- Výška dlaždic a průhledný glass vzhled jmen zůstaly zachované.
+- Build byl záměrně malý a stabilizační kvůli následnému ručnímu testu.
+- Bez zásahu do Supabase DB/policies, online her, spodní lišty a výpočtové logiky.
+
+## 1.2 (1.29)
+- Stabilizované release/version metadata: aktivní diagnostické fallbacky, namespace bridge a release gates už nepoužívají staré `v.1.5` jako aktuální verzi.
+- Release gate kontrola verze je navázaná na aktuální řadu `1.2`, aby Diagnostika nehlásila starý blok kvůli historickému řetězci.
+- GitHub hlavičky, `APP_VERSION`, package semver, cache verze, service worker, realtime kanál a export metadata sjednocené na aktuální build.
+- Bez zásahu do Supabase DB/policies, online her, spodní lišty, kalkulaček a Rotace.
 
 ## 1.2 (1.23)
 - Opravené a sjednocené release značení po upozornění, že GitHub může v aktivních zdrojových souborech ukazovat matoucí starý zápis 1.2 (1.14).

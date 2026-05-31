@@ -1,4 +1,4 @@
-// RaK 1.2 (1.28) – window.RaK namespace bridge.
+// RaK 1.2 (1.34) – window.RaK namespace bridge.
 
 (function setupRakNamespaceBridge() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -11,7 +11,7 @@
 
   const root = window.RaK || {};
   const existingVersion = root.namespaceVersion || '';
-  root.namespaceVersion = 'v.1.5 (963)';
+  root.namespaceVersion = '1.2 (1.34)';
   root.mode = 'passive-namespace-readonly-release-gates-frezky-sign-toggle-v931';
   root.createdAt = root.createdAt || new Date().toISOString();
   root.updatedAt = new Date().toISOString();
@@ -146,7 +146,7 @@
   };
   root.getNamespaceMap = cloneMap;
   root.namespaceMap = cloneMap();
-  root.namespaceMapVersion = 'v.1.5 (963)';
+  root.namespaceMapVersion = '1.2 (1.34)';
   root.namespacePlan = {
     phase: 'phase C',
     mode: 'namespace-readonly-phase-closed-with-online-game-contract-alias-v897',
@@ -344,7 +344,7 @@
     if (missingLegacy.length) warnings.push('legacy globals not available yet: ' + missingLegacy.slice(0, 6).join(', '));
 
     const namespaceVersion = String(window.RaK && window.RaK.namespaceVersion || '');
-    if (!/^v\.\d+\.\d+ \(\d+\)$/.test(namespaceVersion)) issues.push('namespace version format');
+    if (!/^\d+\.\d+ \(\d+\.\d+\)$/.test(namespaceVersion)) issues.push('namespace version format');
     if (existingVersion && existingVersion !== namespaceVersion) warnings.push('namespace bridge refreshed from ' + existingVersion + ' to ' + namespaceVersion);
     if (!window.RaK || !Array.isArray(window.RaK.namespaceMap) || window.RaK.namespaceMap.length < namespaceMap.length) issues.push('namespace map incomplete');
     if (!window.RaK || typeof window.RaK.getNamespaceMap !== 'function') issues.push('namespace map getter missing');

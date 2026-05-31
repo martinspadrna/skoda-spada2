@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.28) – smoke test přehledu připojení.
+// RaK 1.2 (1.34) – smoke test přehledu připojení.
 const fs = require('fs');
 const path = require('path');
 
@@ -11,7 +11,7 @@ function assert(cond, msg) {
 }
 
 const bridge = read('supabase-bridge.js');
-const ui = read('ui.js') + '\n' + read('app-runtime-guards.js') + '\n' + read('app-health-audits.js') + '\n' + read('app-pwa-connectivity.js') + '\n' + read('games-engine.js') + '\n' + read('games-profile.js') + '\n' + read('appearance-theme.js') + '\n' + read('admin-service-usage.js') + '\n' + read('admin-rotation.js') + '\n' + read('app-navigation.js') + '\n' + read('app-menu.js') + '\n' + read('app-actions.js') + '\n' + read('app-boot-selftest.js') + '\n' + read('app-excel-import.js');
+const ui = read('ui.js') + '\n' + read('app-runtime-guards.js') + '\n' + read('app-health-audits.js') + '\n' + read('app-postload-audits.js') + '\n' + read('app-pwa-connectivity.js') + '\n' + read('games-engine.js') + '\n' + read('games-profile.js') + '\n' + read('appearance-theme.js') + '\n' + read('admin-service-usage.js') + '\n' + read('admin-rotation.js') + '\n' + read('app-navigation.js') + '\n' + read('app-bottom-nav.js') + '\n' + read('app-menu.js') + '\n' + read('app-actions.js') + '\n' + read('app-boot-selftest.js') + '\n' + read('app-rotation-sync.js') + '\n' + read('app-excel-import.js') + '\n' + read('app-rotation-controls.js') + '\n' + read('app-admin-unlock.js') + '\n' + read('app-home-boot.js') + '\n' + read('app-init.js');
 const sql = read('assets/docs/sql/supabase_app_usage_v963.sql');
 
 assert(bridge.includes('recordAppUsage'), 'RotationSupabaseBridge.recordAppUsage chybí');

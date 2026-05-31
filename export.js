@@ -1,4 +1,4 @@
-// RaK 1.2 (1.28) – export manifest a release metadata.
+// RaK 1.2 (1.34) – export manifest a release metadata.
 const EXPORT_SOURCE_IDS = {
   "module-readiness.js": "src-module-readiness-js",
   "rak-namespace.js": "src-rak-namespace-js",
@@ -19,6 +19,7 @@ const EXPORT_SOURCE_IDS = {
   "app.js": "src-app-js",
   "app-runtime-guards.js": "src-app-runtime-guards-js",
   "app-health-audits.js": "src-app-health-audits-js",
+  "app-postload-audits.js": "src-app-postload-audits-js",
   "app-pwa-connectivity.js": "src-app-pwa-connectivity-js",
   "core.js": "src-core-js",
   "lifecycle.js": "src-lifecycle-js",
@@ -41,12 +42,17 @@ const EXPORT_SOURCE_IDS = {
   "admin-service-usage.js": "src-admin-service-usage-js",
   "ui.js": "src-ui-js",
   "app-navigation.js": "src-app-navigation-js",
+  "app-bottom-nav.js": "src-app-bottom-nav-js",
   "app-menu.js": "src-app-menu-js",
   "app-actions.js": "src-app-actions-js",
   "app-boot-selftest.js": "src-app-boot-selftest-js",
   "games-arcade.js": "src-games-arcade-js",
   "export.js": "src-export-js",
   "app-excel-import.js": "src-app-excel-import-js",
+  "app-admin-unlock.js": "src-app-admin-unlock-js",
+  "app-home-boot.js": "src-app-home-boot-js",
+  "app-rotation-sync.js": "src-app-rotation-sync-js",
+  "app-rotation-controls.js": "src-app-rotation-controls-js",
   "app-init.js": "src-app-init-js",
   "supabase-config.js": "src-supabase-config-js",
   "supabase-bridge.js": "src-supabase-bridge-js",
@@ -100,7 +106,7 @@ const EXPORT_SMOKE_REPORT = window.__RAK_EXPORT_SMOKE_REPORT__ || (window.__RAK_
   ok: null,
   status: 'not-run',
   mode: 'export-smoke-report-v939',
-  version: '1.2 (1.28)',
+  version: '1.2 (1.34)',
   checkedAt: null,
   lastStage: 'čeká na export',
   runCount: 0,
@@ -163,6 +169,7 @@ const EXPORT_JS_FILES = [
   "app.js",
   "app-runtime-guards.js",
   "app-health-audits.js",
+  "app-postload-audits.js",
   "app-pwa-connectivity.js",
   "core.js",
   "lifecycle.js",
@@ -185,12 +192,17 @@ const EXPORT_JS_FILES = [
   "admin-service-usage.js",
   "ui.js",
   "app-navigation.js",
+  "app-bottom-nav.js",
   "app-menu.js",
   "app-actions.js",
   "app-boot-selftest.js",
   "games-arcade.js",
   "export.js",
   "app-excel-import.js",
+  "app-admin-unlock.js",
+  "app-home-boot.js",
+  "app-rotation-sync.js",
+  "app-rotation-controls.js",
   "app-init.js",
   "supabase-config.js",
   "supabase-bridge.js",
@@ -218,7 +230,7 @@ const EXPORT_TEXT_FILES = [
 
 function getRakExportManifest() {
   return {
-    version: String(window.APP_VERSION || '1.2 (1.28)'),
+    version: String(window.APP_VERSION || '1.2 (1.34)'),
     mode: 'export-manifest-preflight-v939',
     indexFile: 'index.html',
     jsFiles: Array.from(new Set(EXPORT_JS_FILES)),
@@ -328,7 +340,7 @@ function updateRakExportSmokeReport(partial) {
   const data = partial && typeof partial === 'object' ? partial : {};
   Object.assign(EXPORT_SMOKE_REPORT, data, {
     mode: 'export-smoke-report-v939',
-    version: String(window.APP_VERSION || '1.2 (1.28)'),
+    version: String(window.APP_VERSION || '1.2 (1.34)'),
     checkedAt: new Date().toISOString()
   });
   return getRakExportSmokeReport();
