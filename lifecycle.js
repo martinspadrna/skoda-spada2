@@ -1,4 +1,4 @@
-// RaK 1.2 (1.64) – lifecycle stabilizace aplikace.
+// RaK 1.2 (1.65) – lifecycle stabilizace aplikace.
 (function setupLifecycleHelpers() {
   if (window.__rotaceLifecycleHelpersInstalled) return;
   window.__rotaceLifecycleHelpersInstalled = true;
