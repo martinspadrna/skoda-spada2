@@ -12297,7 +12297,7 @@ function adminShowRotationSelectedRemove(input) {
       return;
     }
     window.__rakAdminRotationSelectedInput = input;
-    // v.1.5 (1000): horní sticky tlačítko už při kliknutí do jména nevytahujeme.
+    // v.1.6 (1003): horní sticky tlačítko už při kliknutí do jména nevytahujeme.
     // Rychlé Odebrat se vykreslí přímo u aktivního pole přes adminShowRotationQuickRemove().
     btn.hidden = true;
     btn.dataset.targetReady = '1';
@@ -13592,7 +13592,7 @@ function updateRotaceNamesDockMetrics(reason) {
     ok: true,
     reason: String(reason || 'manual'),
     checkedAt: new Date().toISOString(),
-    mode: 'stable-css-fixed-bottom-v1000',
+    mode: 'safe-css-bottom-v1003',
     bottomPx: 0,
     maxHeightPx: 0,
     contentBottomPx: 0,
@@ -13634,17 +13634,17 @@ function updateRotaceNamesDockMetrics(reason) {
 }
 
 function scheduleRotaceNamesDockMetrics(reason) {
-  // v1000: už nepřepisujeme polohu doku jmen z JS podle visualViewportu.
+  // v1003: už nepřepisujeme polohu doku jmen z JS podle visualViewportu.
   // iOS po otevření mění viewport a stará metrika tím dock po chvíli vytahovala nahoru.
   try {
     const root = document.documentElement;
-    if (root && root.dataset) root.dataset.rakRotaceNamesDockMode = 'css-locked-v1000';
+    if (root && root.dataset) root.dataset.rakRotaceNamesDockMode = 'css-safe-bottom-v1003';
     if (typeof requestAnimationFrame === 'function') {
-      requestAnimationFrame(() => { try { updateRotaceNamesDockMetrics(reason || 'css-locked-v1000'); } catch (err) {} });
+      requestAnimationFrame(() => { try { updateRotaceNamesDockMetrics(reason || 'css-safe-bottom-v1003'); } catch (err) {} });
     }
-    return updateRotaceNamesDockMetrics(reason || 'css-locked-v1000');
+    return updateRotaceNamesDockMetrics(reason || 'css-safe-bottom-v1003');
   } catch (err) {
-    try { return updateRotaceNamesDockMetrics(reason || 'css-locked-v1000-fallback'); } catch (_) { return null; }
+    try { return updateRotaceNamesDockMetrics(reason || 'css-safe-bottom-v1003-fallback'); } catch (_) { return null; }
   }
 }
 
@@ -13652,7 +13652,7 @@ if (!window.__rakRotaceNamesDockMetricsBound) {
   window.__rakRotaceNamesDockMetricsBound = true;
   try { window.addEventListener('resize', () => scheduleRotaceNamesDockMetrics('window-resize'), { passive: true }); } catch (err) {}
   try { window.addEventListener('orientationchange', () => scheduleRotaceNamesDockMetrics('orientationchange'), { passive: true }); } catch (err) {}
-  // v1000: Rotace dock nesmí po kliknutí viditelně poskočit kvůli iOS visualViewport usazování.
+  // v1003: Rotace dock nesmí po kliknutí viditelně poskočit kvůli iOS visualViewport usazování.
   // Přeměření podle visualViewportu tu už nepoužíváme; poloha je pevná v CSS.
   try { document.addEventListener('DOMContentLoaded', () => scheduleRotaceNamesDockMetrics('dom-ready'), { once: true }); } catch (err) {}
 }

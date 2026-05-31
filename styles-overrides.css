@@ -20379,18 +20379,18 @@ html body #home.page.active > .dashboardShell::after{
   #rotace.page.active #rotaceNamesPanel.active #namesGrid{max-height:min(27dvh,112px) !important;}
 }
 
-/* v.1.5 (1000) – stabilizace pozadí, iOS startu a Rotace doku jmen. */
+/* v.1.6 (1003) – stabilizace pozadí, iOS startu a Rotace doku jmen. */
 :root{
-  --rak-v1000-start-h:var(--rak-start-viewport-h, 100dvh);
-  --rak-v1000-nav-gap:1px;
-  --rak-v1000-rotace-names-h:min(26dvh, 112px);
-  --rak-rotace-names-dock-bottom:calc(var(--bottom-nav-h, 58px) + var(--rak-v1000-nav-gap)) !important;
-  --rak-rotace-names-content-bottom:calc(var(--bottom-nav-h, 58px) + var(--rak-v1000-rotace-names-h) + 12px) !important;
+  --rak-v1003-start-h:var(--rak-start-viewport-h, 100dvh);
+  --rak-v1003-nav-gap:1px;
+  --rak-v1003-rotace-names-h:min(26dvh, 112px);
+  --rak-rotace-names-dock-bottom:calc(var(--bottom-nav-h, 58px) + var(--rak-v1003-nav-gap)) !important;
+  --rak-rotace-names-content-bottom:calc(var(--bottom-nav-h, 58px) + var(--rak-v1003-rotace-names-h) + 12px) !important;
 }
 html,
 html.rakViewportPrimed,
 html.rakStableBootViewport{
-  min-height:var(--rak-v1000-start-h) !important;
+  min-height:var(--rak-v1003-start-h) !important;
   background:var(--rakAppBackground, var(--bg, #050816)) !important;
   background-color:var(--rakBgBase, var(--bg, #050816)) !important;
   overflow-x:hidden !important;
@@ -20398,7 +20398,7 @@ html.rakStableBootViewport{
 body,
 html.rakViewportPrimed body,
 html.rakStableBootViewport body{
-  min-height:var(--rak-v1000-start-h) !important;
+  min-height:var(--rak-v1003-start-h) !important;
   background:var(--rakAppBackground, var(--bg, #050816)) !important;
   background-color:var(--rakBgBase, var(--bg, #050816)) !important;
   background-attachment:scroll !important;
@@ -20429,7 +20429,7 @@ html body .bottomNav{
 }
 #rotace.page.active #rotaceNamesPanel.active #namesGrid{
   bottom:var(--rak-rotace-names-dock-bottom) !important;
-  max-height:var(--rak-v1000-rotace-names-h) !important;
+  max-height:var(--rak-v1003-rotace-names-h) !important;
   transform:translate3d(-50%,0,0) !important;
   transition:none !important;
   animation:none !important;
@@ -20438,7 +20438,7 @@ html body .bottomNav{
 @media (display-mode:standalone){
   html.rakStableBootViewport,
   html.rakStableBootViewport body{
-    min-height:var(--rak-v1000-start-h) !important;
+    min-height:var(--rak-v1003-start-h) !important;
   }
 }
 @supports (-webkit-touch-callout:none){
@@ -20446,27 +20446,27 @@ html body .bottomNav{
   body,
   html.rakStableBootViewport,
   html.rakStableBootViewport body{
-    min-height:var(--rak-v1000-start-h) !important;
+    min-height:var(--rak-v1003-start-h) !important;
     background:var(--rakAppBackground, var(--bg, #050816)) !important;
     background-color:var(--rakBgBase, var(--bg, #050816)) !important;
   }
 }
 
 
-/* v.1.5 (1000) – Rotace dock bez poskočení + kompaktní Kantýna/jídelna admin. */
+/* v.1.6 (1003) – Rotace dock bez poskočení + kompaktní Kantýna/jídelna admin. */
 :root{
-  --rak-v1000-rotace-dock-bottom: max(58px, calc(53px + env(safe-area-inset-bottom)));
-  --rak-v1000-rotace-names-h: min(26dvh, 112px);
-  --rak-rotace-names-dock-bottom: var(--rak-v1000-rotace-dock-bottom) !important;
-  --rak-rotace-names-content-bottom: calc(var(--rak-v1000-rotace-dock-bottom) + var(--rak-v1000-rotace-names-h) + 12px) !important;
+  --rak-v1003-rotace-dock-bottom: max(58px, calc(53px + env(safe-area-inset-bottom)));
+  --rak-v1003-rotace-names-h: min(26dvh, 112px);
+  --rak-rotace-names-dock-bottom: var(--rak-v1003-rotace-dock-bottom) !important;
+  --rak-rotace-names-content-bottom: calc(var(--rak-v1003-rotace-dock-bottom) + var(--rak-v1003-rotace-names-h) + 12px) !important;
 }
 html.rakRotaceEntering #rotace.page.active #rotaceNamesPanel.active #namesGrid{
   opacity:0 !important;
   pointer-events:none !important;
 }
 #rotace.page.active #rotaceNamesPanel.active #namesGrid{
-  bottom:var(--rak-v1000-rotace-dock-bottom) !important;
-  max-height:var(--rak-v1000-rotace-names-h) !important;
+  bottom:var(--rak-v1003-rotace-dock-bottom) !important;
+  max-height:var(--rak-v1003-rotace-names-h) !important;
   transform:translate3d(-50%,0,0) !important;
   transition:none !important;
   animation:none !important;
@@ -20522,8 +20522,8 @@ html.rakRotaceEntering #rotace.page.active #rotaceNamesPanel.active #namesGrid{
 }
 @media (max-width:430px){
   :root{
-    --rak-v1000-rotace-dock-bottom:max(56px, calc(51px + env(safe-area-inset-bottom)));
-    --rak-v1000-rotace-names-h:min(25dvh, 108px);
+    --rak-v1003-rotace-dock-bottom:max(56px, calc(51px + env(safe-area-inset-bottom)));
+    --rak-v1003-rotace-names-h:min(25dvh, 108px);
   }
   #menu .adminFoodRegularTable .adminFoodColPlace{width:17% !important;}
   #menu .adminFoodRegularTable .adminFoodColDay{width:17% !important;}
@@ -20535,3 +20535,151 @@ html.rakRotaceEntering #rotace.page.active #rotaceNamesPanel.active #namesGrid{
   #menu .adminFoodDatesTable th,
   #menu .adminFoodDatesTable td{padding:5px 4px !important;}
 }
+
+/* v.1.6 (1003) – kompaktní jídlo na dashboardu + užší datumy přesčasů. */
+.dashboardValue,
+.dashboardMeta{
+  overflow-wrap:normal;
+}
+#dashKantyna .dashboardValue,
+#dashJidelna .dashboardValue,
+#dashKantyna .dashboardMeta,
+#dashJidelna .dashboardMeta{
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  line-height:1.12 !important;
+}
+#dashKantyna .dashboardMeta,
+#dashJidelna .dashboardMeta{
+  font-size:clamp(10px, 2.55vw, 12px) !important;
+}
+#menu .adminFoodDatesTable{
+  width:min(100%, 220px) !important;
+  max-width:220px !important;
+}
+#menu .adminFoodDatesTable .adminFoodDateNumberCol{width:30px !important;}
+#menu .adminFoodDatesTable .adminFoodDateValueCol{width:118px !important;}
+#menu .adminFoodDatesTable th:first-child,
+#menu .adminFoodDatesTable td:first-child{
+  width:30px !important;
+  max-width:30px !important;
+  padding-left:3px !important;
+  padding-right:3px !important;
+}
+#menu .adminFoodDateInput{
+  max-width:118px !important;
+  text-align:center !important;
+}
+@media (max-width:430px){
+  #menu .adminFoodDatesTable{
+    width:206px !important;
+    max-width:206px !important;
+  }
+  #menu .adminFoodDatesTable .adminFoodDateNumberCol{width:28px !important;}
+  #menu .adminFoodDatesTable .adminFoodDateValueCol{width:112px !important;}
+  #menu .adminFoodDateInput{max-width:112px !important;}
+}
+
+
+/* v.1.6 (1003) – Rotace: vyšší volba jmen bez zbytečného scrollu a bez uřezaných jmen. */
+:root{
+  --rak-v1003-rotace-dock-bottom:max(56px, calc(51px + env(safe-area-inset-bottom)));
+  --rak-v1003-rotace-names-h:min(36svh, 188px);
+  --rak-rotace-names-dock-bottom:var(--rak-v1003-rotace-dock-bottom) !important;
+  --rak-rotace-names-content-bottom:calc(var(--rak-v1003-rotace-dock-bottom) + var(--rak-v1003-rotace-names-h) + 14px) !important;
+}
+#rotace.page.active #rotaceNamesPanel.active{
+  padding-bottom:var(--rak-rotace-names-content-bottom) !important;
+  scroll-padding-bottom:var(--rak-rotace-names-content-bottom) !important;
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid{
+  bottom:var(--rak-v1003-rotace-dock-bottom) !important;
+  max-height:var(--rak-v1003-rotace-names-h) !important;
+  grid-template-columns:repeat(5, minmax(0, 1fr)) !important;
+  align-content:start !important;
+  overflow-y:auto !important;
+  overflow-x:visible !important;
+  padding:7px 6px !important;
+  gap:6px !important;
+  scroll-padding:8px !important;
+  scrollbar-gutter:stable both-edges !important;
+  transform:translate3d(-50%,0,0) !important;
+  transition:none !important;
+  animation:none !important;
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem,
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceNameTile{
+  min-height:42px !important;
+  padding:6px 4px !important;
+  overflow:visible !important;
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceTileTitle,
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem .rotaceTileTitle{
+  white-space:normal !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  display:block !important;
+  -webkit-line-clamp:unset !important;
+  line-clamp:unset !important;
+  max-width:100% !important;
+  line-height:1.08 !important;
+}
+@media (max-width:430px){
+  :root{
+    --rak-v1003-rotace-dock-bottom:max(54px, calc(49px + env(safe-area-inset-bottom)));
+    --rak-v1003-rotace-names-h:min(35svh, 176px);
+  }
+  #rotace.page.active #rotaceNamesPanel.active #namesGrid{
+    padding:6px 5px !important;
+    gap:5px !important;
+  }
+  #rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem,
+  #rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceNameTile{
+    min-height:41px !important;
+    padding:5px 3px !important;
+  }
+}
+@media (max-height:700px){
+  :root{--rak-v1003-rotace-names-h:min(34svh, 166px);}
+}
+
+/* v.1.6 (1003) – Rotace: spodní volba jmen bezpečně nad spodním panelem na všech výškách. */
+:root{
+  --rak-v1003-rotace-safe-bottom:max(74px, var(--rak-bottom-total-space, calc(var(--bottom-nav-h, 64px) + env(safe-area-inset-bottom) + 10px)));
+  --rak-v1003-rotace-names-h:clamp(118px, 34svh, 184px);
+  --rak-rotace-names-dock-bottom:calc(var(--rak-v1003-rotace-safe-bottom) + 4px) !important;
+  --rak-rotace-names-content-bottom:calc(var(--rak-v1003-rotace-safe-bottom) + var(--rak-v1003-rotace-names-h) + 18px) !important;
+}
+#rotace.page.active #rotaceNamesPanel.active{
+  padding-bottom:var(--rak-rotace-names-content-bottom) !important;
+  scroll-padding-bottom:var(--rak-rotace-names-content-bottom) !important;
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid{
+  bottom:calc(var(--rak-v1003-rotace-safe-bottom) + 4px) !important;
+  max-height:var(--rak-v1003-rotace-names-h) !important;
+  padding-bottom:12px !important;
+  overscroll-behavior:contain !important;
+  transform:translate3d(-50%,0,0) !important;
+  transition:none !important;
+  animation:none !important;
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid::after{
+  content:"";
+  display:block;
+  height:2px;
+  grid-column:1 / -1;
+}
+@media (max-width:430px){
+  :root{
+    --rak-v1003-rotace-safe-bottom:max(72px, var(--rak-bottom-total-space, calc(var(--bottom-nav-h, 62px) + env(safe-area-inset-bottom) + 8px)));
+    --rak-v1003-rotace-names-h:clamp(112px, 33svh, 176px);
+  }
+  #rotace.page.active #rotaceNamesPanel.active #namesGrid{
+    padding-bottom:11px !important;
+  }
+}
+@media (max-height:700px){
+  :root{--rak-v1003-rotace-names-h:clamp(104px, 31svh, 158px);}
+}
+

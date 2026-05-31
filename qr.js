@@ -197,6 +197,7 @@ function getFoodAdminSettingsSnapshot() {
 
 if (typeof window !== 'undefined') {
   window.getFoodAdminSettingsSnapshot = getFoodAdminSettingsSnapshot;
+  window.getFoodSpecialDateSet = getFoodSpecialDateSet;
   window.normalizeFoodWindows = normalizeFoodWindows;
 }
 
@@ -646,7 +647,7 @@ function getFoodScheduleSundayGuardHealth() {
   const ok = rows.every((row) => row.plainMatchesRegular && row.overtimeDiffersFromRegular && row.overtimeSundayMarked);
   return {
     ok,
-    mode: 'food-admin-schedule-v1000',
+    mode: 'food-admin-schedule-v1003',
     version: String(window.APP_VERSION || 'v.1.5 (920)'),
     overtimeSundayCount: FOOD_SPECIAL_SUNDAY_DATES.size,
     plainSundaySample: foodIsoDate(samplePlainSunday),

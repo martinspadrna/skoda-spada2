@@ -631,7 +631,7 @@ function updateDashboard() {
     : (nextWorkShift ? 'Směna ' + String(nextWorkShift.team || '—') + (nextWorkShift.label ? ' · ' + nextWorkShift.label : '') + ' · ' + formatDashboardNextShiftMeta(nextWorkShift) : '');
   setCard('dashCountdown', shiftCountdownTitle, shiftCountdownValue, shiftCountdownMeta, '', false, clockIcon);
 
-  const foodText = status => (status && status.isOpen && status.active) ? ('Otevřeno do ' + formatFoodTime(status.active.end) + (status.active.specialOvertime ? ' · přesčas' : '')) : 'Zavřeno';
+  const foodText = status => (status && status.isOpen && status.active) ? ('Do ' + formatFoodTime(status.active.end) + (status.active.specialOvertime ? ' · přesčas' : '')) : 'Zavřeno';
   const foodDot = status => (status && status.isOpen) ? 'is-open' : 'is-closed';
   const foodDate = value => {
     try {
@@ -643,7 +643,7 @@ function updateDashboard() {
   };
   const foodMeta = status => {
     if (!status) return '';
-    const activePrefix = status.isOpen && status.active && status.active.specialOvertime ? 'Běží přesčasový režim. ' : '';
+    const activePrefix = status.isOpen && status.active && status.active.specialOvertime ? 'Přesčas · ' : '';
     if (!status.next) return status.isOpen ? (activePrefix + 'Dnes už nic dalšího.') : 'Rozpis není dostupný.';
     const nextStart = new Date(status.next.start);
     const nextEnd = new Date(status.next.end);
@@ -657,7 +657,7 @@ function updateDashboard() {
         ? 'Zítra ' + formatFoodTime(nextStart)
         : foodDate(nextStart) + ' ' + formatFoodTime(nextStart));
     const nextPrefix = status.next.specialOvertime ? 'Přesčas · ' : '';
-    return activePrefix + 'Další termín\n' + nextPrefix + label + ' – ' + formatFoodTime(nextEnd);
+    return activePrefix + 'Další: ' + nextPrefix + label + '–' + formatFoodTime(nextEnd);
   };
   setCard('dashKantyna', 'Kantýna', foodText(kantyna), foodMeta(kantyna), foodDot(kantyna), true, croissantIcon);
   setCard('dashJidelna', 'Jídelna', foodText(jidelna), foodMeta(jidelna), foodDot(jidelna), true, plateIcon);
@@ -901,7 +901,7 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
     const foodText = (status) => {
       if (!status) return '—';
       if (status.isOpen && status.active) {
-        return 'Otevřeno do ' + formatFoodTime(status.active.end) + (status.active.specialOvertime ? ' · přesčas' : '');
+        return 'Do ' + formatFoodTime(status.active.end) + (status.active.specialOvertime ? ' · přesčas' : '');
       }
       return 'Zavřeno';
     };
@@ -915,7 +915,7 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
     };
     const foodMeta = (status) => {
       if (!status) return '';
-      const activePrefix = status.isOpen && status.active && status.active.specialOvertime ? 'Běží přesčasový režim. ' : '';
+      const activePrefix = status.isOpen && status.active && status.active.specialOvertime ? 'Přesčas · ' : '';
       if (!status.next) return status.isOpen ? (activePrefix + 'Dnes už nic dalšího.') : '';
       const nextStart = new Date(status.next.start);
       const nextEnd = new Date(status.next.end);
@@ -929,7 +929,7 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
           ? 'Zítra ' + formatFoodTime(nextStart)
           : foodDate(nextStart) + ' ' + formatFoodTime(nextStart));
       const nextPrefix = status.next.specialOvertime ? 'Přesčas · ' : '';
-      return activePrefix + 'Další termín\n' + nextPrefix + label + ' – ' + formatFoodTime(nextEnd);
+      return activePrefix + 'Další: ' + nextPrefix + label + '–' + formatFoodTime(nextEnd);
     };
     const hero = document.getElementById('dashHero');
     if (hero) {

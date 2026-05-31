@@ -1,6 +1,6 @@
 
 const APP_KEY = "rotace_kalkulacky_state_v123";
-const APP_VERSION = "v.1.5 (1000)";
+const APP_VERSION = "v.1.6 (1003)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-05-28-" + APP_VERSION;
 window.ROTATION_BUILD = ROTATION_BUILD;
@@ -50,9 +50,20 @@ function dateKeyISO(date) {
   return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
 }
 
+function getSpecialOvertimeSundayNightDateSet() {
+  try {
+    if (typeof window !== 'undefined' && typeof window.getFoodSpecialDateSet === 'function') {
+      const dynamicSet = window.getFoodSpecialDateSet();
+      if (dynamicSet && typeof dynamicSet.has === 'function') return dynamicSet;
+    }
+  } catch (err) {}
+  return SPECIAL_OVERTIME_SUNDAY_NIGHTS_2026;
+}
+
 function isSpecialOvertimeSundayNight(date) {
   const d = date instanceof Date ? date : new Date(date);
-  return d.getDay() === 0 && SPECIAL_OVERTIME_SUNDAY_NIGHTS_2026.has(dateKeyISO(d));
+  const set = getSpecialOvertimeSundayNightDateSet();
+  return d.getDay() === 0 && !!(set && typeof set.has === 'function' && set.has(dateKeyISO(d)));
 }
 
 function getSpecialSundayNightStartHour(date, fallbackHour = 22) {

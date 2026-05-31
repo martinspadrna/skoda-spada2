@@ -1,10 +1,19 @@
-## v.1.5 (1000)
+## v.1.6 (1003)
+- Start v1.6 navazuje na stabilizovanou větev v1.5 a zatím dělá bezpečný UI krok bez velkého refactor rizika.
+- Rotace: zvýšena dostupná výška spodní volby jmen, aby se na různých rozlišeních zbytečně neusekávala a nemusela se scrollovat, když je nad ní místo.
+- Rotace: text jmen už se v dlaždicích neřeže přes ellipsis/line clamp, ale může se normálně zobrazit.
+- Verze sjednocena na v.1.6 (1003), cache na `v1.6-1003`, realtime kanál na `rak-public-live-v1003`, package na `1.6.1003`.
+
+## v.1.5 (1001)
+- Dashboard Kantýna/Jídelna: zkrácený text „Do HH:MM“ a další termín v jednom řádku, aby nepřekrýval čas dalšího termínu.
+- Administrace → Kantýna / jídelna: zúžený sloupec s datem v seznamu přesčasů.
+- Seznam přesčasových nedělí z nastavení jídla se používá i pro výpočet nedělní noční směny na Dashboardu; přesčasová neděle startuje v 18:00.
 - Rotace: seznam jmen se při kliknutí na Rotace během prvního vykreslení krátce schová a zobrazí až ve stabilní poloze, aby nebylo vidět poskočení nad spodní panel.
 - Rotace: dock jmen už nepoužívá živou proměnnou `--bottom-nav-h`, která se po startu/změně viewportu přepočítávala a mohla dock vytáhnout nahoru.
 - Administrace → Kantýna / jídelna: opraveno ukládání `FOOD_SCHEDULE_SETTINGS`; food řádek se ukládá přímým upsertem mimo staré RPC pro stroje, které vracelo `invalid category`.
 - Administrace → Kantýna / jídelna: zúžené sloupce Místo/Den, kompaktnější přesčasová tabulka a užší tabulka seznamu přesčasů.
 - Supabase DB schéma ani policies beze změny; změna ukládání je jen klientská.
-- Verze sjednocena na v.1.5 (1000), cache na `v1.5-1000`, realtime kanál na `rak-public-live-v1000`, package na `1.5.1000`.
+- Verze sjednocena na v.1.5 (1001), cache na `v1.5-1001`, realtime kanál na `rak-public-live-v1001`, package na `1.5.1001`.
 
 ## v.1.5 (998)
 
