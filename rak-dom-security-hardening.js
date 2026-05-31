@@ -1,4 +1,4 @@
-// RaK 1.2 (1.27) – DOM/security hardening read-only návrhy.
+// RaK 1.2 (1.28) – DOM/security hardening read-only návrhy.
 (function setupRakDomSecurityHardening() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
   const VERSION = 'v.1.5 (963)';

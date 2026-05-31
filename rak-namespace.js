@@ -1,4 +1,4 @@
-// RaK 1.2 (1.27) – window.RaK namespace bridge.
+// RaK 1.2 (1.28) – window.RaK namespace bridge.
 
 (function setupRakNamespaceBridge() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();

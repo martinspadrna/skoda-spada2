@@ -1,4 +1,4 @@
-// RaK 1.2 (1.27) – AppSec/privacy read-only audit.
+// RaK 1.2 (1.28) – AppSec/privacy read-only audit.
 (function setupRakAppSecPrivacyAudit() {
   try {
     if (typeof window.rakMarkModuleReady === 'function') {

@@ -1,6 +1,6 @@
-// RaK 1.2 (1.27) – zbytkový UI bridge po oddělení modulů.
+// RaK 1.2 (1.28) – zbytkový UI bridge po oddělení modulů.
 
-// RaK 1.2 (1.27) – Více/menu shell je oddělený v app-menu.js.
+// RaK 1.2 (1.28) – Více/menu shell je oddělený v app-menu.js.
 
 const UI_PREFS_KEY = APP_KEY + ':uiPrefs';
 const DEVICE_PERFORMANCE_PROBE_KEY = APP_KEY + ':devicePerformanceProbe';
@@ -402,7 +402,7 @@ function getRakPerformanceDprMax() {
 
 try { window.getRakPerformanceDprMax = getRakPerformanceDprMax; } catch (err) {}
 
-// RaK 1.2 (1.27) – Piškvorky jsou oddělené v games-gomoku.js.
+// RaK 1.2 (1.28) – Piškvorky jsou oddělené v games-gomoku.js.
 
 function triggerAboutAction() {
   const state = typeof app !== 'undefined' ? app : null;
@@ -705,53 +705,51 @@ function buildSupabaseKeepaliveStatusHtml(options) {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v.1.5 951–1000',
-      title: 'Piškvorky, Dashboard a administrace',
+      range: 'v.1.2 1.1–1.28',
+      title: 'Nové číslování a velký refactor',
       lines: [
-        'Piškvorky mají vlastní ruleset verzi oddělenou od verze aplikace, silnější offline AI s forcing prioritami a žebříček filtrovaný podle aktuálních pravidel.',
-        'Dashboard se průběžně ladí pro různé mobilní displeje a administrace ukazuje základní přehled připojených zařízení včetně rozlišení.',
-        'Spodní navigace se zjednodušila: Rozpisy a Statistiky jsou dostupné z Rotace, dole zůstává víc místa pro hlavní sekce.'
+        'Přešlo se na číslování RaK 1.2, sjednotily se verze v aplikaci, cache, service workeru, ZIPu a GitHub hlavičkách.',
+        'Velké části aplikace se rozdělily do menších modulů: menu, navigace, hry, theme, PWA, audity a Excel import.'
       ]
     },
     {
-      range: 'v.1.5 901–950',
-      title: 'Stabilizace, glass UI a provozní jistota',
+      range: 'v.1.1 951–1000',
+      title: 'Dashboard, Piškvorky a mobilní ladění',
       lines: [
-        'Proběhly hlavně audity, release kontroly, PWA/cache úklid, bezpečnější export ZIPu a lepší diagnostika před vydáním.',
-        'Dashboard přešel do čistšího glass stylu, přibyl announcement systém a ladily se grafy, profily, hry i mobilní použitelnost.',
-        'Kantýna, jídelna, Top score, achievementy a Supabase heartbeat se zpřesnily tak, aby appka líp fungovala běžně v provozu.'
+        'Ladily se Piškvorky, dashboard, spodní lišta, mobilní rozložení a přehled připojení v administraci.',
+        'Přibylo víc provozních kontrol, lepší práce s Top score a bezpečnější pravidla pro vydání ZIPu.'
       ]
     },
     {
-      range: 'v.1.5 851–900',
-      title: 'Auditní základ, PWA/export a reset her',
+      range: 'v.1.1 901–950',
+      title: 'Glass UI, stabilita a provoz',
       lines: [
-        'Vznikl read-only auditní základ: boot/runtime/storage/Supabase/DOM/namespace/export kontroly a větší jistota před ZIPem.',
-        'PWA a export se uklidily: ikony v assets, ZIP bez vnitřní hlavní složky, export manifest a service worker cache kontroly.',
-        'Supabase heartbeat drží Free projekt aktivní přes RPC/app_keepalive a aplikace zůstává použitelná offline.',
-        'Top score se začalo filtrovat podle skutečného času odehrání výsledku, aby se staré score nevracelo přes updated_at.'
+        'Dashboard a hlavní panely dostaly čistší glass styl, oznámení a lepší chování na různých mobilech.',
+        'Zpřesnila se kantýna, jídelna, profily, achievementy, cache a Supabase heartbeat.'
       ]
     },
     {
-      range: 'v.1.5 801–850',
-      title: 'Online hry, Supabase a PWA úklid',
+      range: 'v.1.1 851–900',
+      title: 'Audity, PWA a export',
       lines: [
-        'Online Piškvorky a Lodě dostaly stabilnější pozvánky, role hráčů, move guard, deep-link flow a vzájemné skóre bez ručního přepínání.',
-        'Supabase heartbeat se přesunul na RPC/app_keepalive a Diagnostika ukazuje čitelný lokální stav bez matoucího UTC.',
-        'Supabase hardening se posunul jen bezpečnými kroky: RPC smoke/readiness kontroly bez naslepo utažených game_invites/game_sessions policies.',
-        'PWA ikony se přesunuly do assets/app-icons, ZIP se vyčistil na root soubory + assets/ a SQL skripty se přesunuly do assets/docs/sql.',
-        'Spodní lišta a Láďův režim dostaly drobné vizuální/výkonové opravy bez změny běžného glass režimu.'
+        'Vznikly read-only audity pro boot, runtime, storage, Supabase, DOM, namespace, export a release kontroly.',
+        'PWA/export se uklidil na kořenové soubory + assets/ a začaly se hlídat chybějící soubory v cache.'
       ]
     },
     {
-      range: 'v.1.5 751–800',
-      title: 'Korekce, administrace a spodní lišta',
+      range: 'v.1.1 801–850',
+      title: 'Online hry a Supabase vrstva',
       lines: [
-        'Výpočet kusů a Korekce se oddělily; přibyla Pračka, konicita/fhβ pro Frézky a osa X vrtáků 3/7 pro Soustruhy.',
-        'Frézky a Soustruhy dostaly obrázkové nápovědy, stručnější výsledky a strojní hodnoty napojené na administraci / machine_settings.',
-        'Sudoku, Pexeso, XP/ranky a Top výsledky se sjednotily podle obtížnosti, velikosti a dokončených her.',
-        'Administrace rozpisů má stabilnější lokální editor, sticky Uložit rozpis, bezpečné Odebrat vybrané a ochrany proti iOS auto-zoomu.',
-        'Spodní lišta se postupně usadila jako pevný průhledný glass dock dole; původní ikonky zůstaly, neaktivní položky jsou čistší a aktivní položka má větší glass zvýraznění.'
+        'Online Piškvorky a Lodě dostaly stabilnější pozvánky, role hráčů, deep-link flow a kontrolu tahů.',
+        'Supabase heartbeat se přesunul na RPC/app_keepalive a diagnostika začala ukazovat čitelnější stav.'
+      ]
+    },
+    {
+      range: 'v.1.1 751–800',
+      title: 'Korekce, kalkulačky a administrace',
+      lines: [
+        'Rozšiřovaly se korekce pro Soustruhy, Frézky a Brusy včetně strojních hodnot a obrázkových nápověd.',
+        'Administrace rozpisů dostala stabilnější editor, ukládání, odebrání lidí a lepší použitelnost na mobilu.'
       ]
     },
     {
@@ -759,107 +757,95 @@ function buildAppHistoryHtml(versionText) {
       title: 'Importy, statistiky a hry',
       lines: [
         'Dotažený import Excelu podle měsíčních listů, online ukládání rozpisů a přepínání let.',
-        'Statistiky hlídají správný rok, fond 2025, průběžný rok 2026 a pravidlo TNKS01/TPKW01.',
-        'Přibyly a ladily se Lodě, Pampuch, správa pozvánek, servisní synchronizace a kontrola aktualizací.'
+        'Statistiky hlídají správný rok, fond 2025, průběžný rok 2026 a pravidlo TNKS01/TPKW01.'
       ]
     },
     {
       range: 'v.1.1 650–699',
       title: 'Velké herní ladění',
       lines: [
-        'Piškvorky, 2048, Snake, Flappy Car, Aim Trainer, Reaction Test, Tetris, Space Shooter, Brick, Doodle a Bubble prošly mobile-first úpravami.',
-        'Hry dostaly lepší dotykové ovládání, výsledkové obrazovky, achievementy, Top výsledky a zápis jen po dokončení.',
-        'Online hraní, pozvánky, skóre a herní profily se stabilizovaly pro běžné používání.'
+        'Piškvorky, 2048, Had, Flappy Car a další hry prošly mobile-first úpravami.',
+        'Hry dostaly lepší dotykové ovládání, výsledky, achievementy, Top výsledky a herní profily.'
       ]
     },
     {
       range: 'v.1.1 600–649',
       title: 'Stabilizace a výkon',
       lines: [
-        'Dokončené PWA/service worker hardening, security/render cleanup a finální readiness kontroly.',
-        'Přibyly výkonové pojistky pro Láďův režim, méně náročný render a lepší diagnostika.',
-        'Supabase vrstva dostala víc kontrol, auditů a bezpečnější chování při syncu.'
+        'Dokončoval se PWA/service worker hardening, security/render cleanup a readiness kontroly.',
+        'Přibyly výkonové pojistky pro slabší zařízení a lepší diagnostika.'
       ]
     },
     {
       range: 'v.1.1 550–599',
       title: 'Data a online vrstva',
       lines: [
-        'Probíhalo zrychlení lokální cache, omezení zbytečných renderů a bezpečnější práce s uloženými daty.',
-        'Online synchronizace dostala frontu, retry/backoff, deduplikaci a fallback cache.',
-        'Ladily se profily, herní data, rozpisy a spolehlivější návrat po výpadku internetu.'
+        'Zrychlovala se lokální cache, omezovaly zbytečné rendery a zlepšovala práce s uloženými daty.',
+        'Online synchronizace dostala frontu, retry/backoff, deduplikaci a fallback cache.'
       ]
     },
     {
       range: 'v.1.1 500–549',
       title: 'Kalkulačky a odlehčení UI',
       lines: [
-        'Kalkulačky se sjednotily přes calcPanel systém a opravovaly se výšky, tlačítka, indexy i rozdělané dávky.',
-        'Láďův režim začal šetřit náročné efekty, stíny a animace pro slabší zařízení.',
-        'Herní hub dostal cache profilů, výsledků a základ výkonových guardů.'
+        'Kalkulačky se sjednotily přes calcPanel systém a ladily se výšky, tlačítka, indexy i rozdělané dávky.',
+        'Láďův režim začal šetřit náročné efekty, stíny a animace.'
       ]
     },
     {
-      range: 'v.1 450–499',
+      range: 'v.1.0 450–499',
       title: 'Příprava refactoru',
       lines: [
-        'Upevnil se postup práce: pokračovat z posledního potvrzeného buildu a safepoint použít jen na výslovný pokyn.',
-        'Začaly se řešit duplicity, přebíjení stylů, technický dluh a bezpečnější guardy.',
-        'Mobilní použitelnost šla nahoru přes safe-area, spodní lištu, výšky panelů a čitelnost.'
+        'Upevnil se postup práce: pokračovat z posledního potvrzeného buildu a safepoint použít jen na pokyn.',
+        'Začaly se řešit duplicity, přebíjení stylů, technický dluh a bezpečnější guardy.'
       ]
     },
     {
-      range: 'v.1 400–449',
+      range: 'v.1.0 400–449',
       title: 'Hry a online data',
       lines: [
         'Rozšířily se hráčské profily, herní statistiky, leaderboardy a vazba na Supabase.',
-        'Začal větší herní plán a přesun her do jednotného hubu.',
-        'Appka se posouvala k mobilnímu ovládání a menšímu počtu rušivých reloadů.'
+        'Začal větší herní plán a přesun her do jednotného hubu.'
       ]
     },
     {
-      range: 'v.1 350–399',
+      range: 'v.1.0 350–399',
       title: 'Herní hub a přehledy',
       lines: [
-        'Výrazně se ladily hry, spodní lišta, Rotace a Statistiky.',
-        'Přibyly herní moduly, online pozvánky a lepší návrat do rozehrané hry.',
-        'Rotace a Statistiky dostaly více dlaždic, menší rozestupy a lepší zobrazení jmen a strojů.'
+        'Ladily se hry, spodní lišta, Rotace a Statistiky.',
+        'Přibyly herní moduly, online pozvánky a lepší návrat do rozehrané hry.'
       ]
     },
     {
-      range: 'v.1 300–349',
+      range: 'v.1.0 300–349',
       title: 'PWA a cache',
       lines: [
         'Vznikal stabilnější PWA základ: service worker, manifest, offline fallback a aktualizační hooky.',
-        'Rozdělovaly se části inline skriptů do samostatnějších modulů.',
-        'Dashboard, spodní lišta a přihlášení se ladily kvůli stabilnějšímu načítání.'
+        'Rozdělovaly se části inline skriptů do samostatnějších modulů.'
       ]
     },
     {
-      range: 'v.1 250–299',
+      range: 'v.1.0 250–299',
       title: 'Dashboard a kalkulačky',
       lines: [
         'Dashboard se rozšířil o směny, absenci, průběh směny, výplatu, kantýnu a jídelnu.',
-        'Kalkulačky pro Frézky a Brusy se zpřesňovaly v časech, dávkách a hotových kusech.',
-        'Mobilní layout se čistil, aby šel používat bez zoomu a bez posouvání mimo obrazovku.'
+        'Kalkulačky pro Frézky a Brusy se zpřesňovaly v časech, dávkách a hotových kusech.'
       ]
     },
     {
-      range: 'v.1 200–249',
+      range: 'v.1.0 200–249',
       title: 'Vícestránková appka',
       lines: [
         'Aplikace se posouvala do stabilnější struktury s Dashboardem, Rotací, Rozpisy, Statistikami a Kalkulačkami.',
-        'Začalo se víc řešit ukládání dat, export, build verze a návaznost mezi ZIPy.',
-        'Rozpisy a rotace se ladily podle reálného provozu v práci.'
+        'Začalo se víc řešit ukládání dat, export, build verze a návaznost mezi ZIPy.'
       ]
     },
     {
-      range: 'v.0.xx až v.1 199',
+      range: 'v.0.xx až v.1.0 199',
       title: 'Základ projektu',
       lines: [
         'Vznikl základ směnové logiky, dashboardu, prvních kalkulaček a pracovních přehledů.',
-        'Přidávaly se stroje, jména, směny, první statistiky a základ exportní/logické vrstvy.',
-        'Postupně vznikla potřeba pevnějších pravidel verzí, safepointů a bezpečnějšího refactoru.'
+        'Postupně přibyla potřeba pevnějších pravidel verzí, safepointů a bezpečnějšího refactoru.'
       ]
     }
   ];
@@ -878,19 +864,19 @@ function buildAppHistoryHtml(versionText) {
 }
 
 
-// RaK 1.2 (1.27) – Administrace / Rozpisy a Nastavení strojů jsou oddělené v admin-rotation.js.
+// RaK 1.2 (1.28) – Administrace / Rozpisy a Nastavení strojů jsou oddělené v admin-rotation.js.
 
 
 
 
-// RaK 1.2 (1.27) – Administrace / Reporty chyb jsou oddělené v admin-reports.js.
+// RaK 1.2 (1.28) – Administrace / Reporty chyb jsou oddělené v admin-reports.js.
 
-// RaK 1.2 (1.27) – Administrace / Přehled připojení, servis a oznámení jsou oddělené v admin-service-usage.js.
+// RaK 1.2 (1.28) – Administrace / Přehled připojení, servis a oznámení jsou oddělené v admin-service-usage.js.
 
 
-// RaK 1.2 (1.27) – App menu / administrace shell / bug report formulář jsou oddělené v app-menu.js.
+// RaK 1.2 (1.28) – App menu / administrace shell / bug report formulář jsou oddělené v app-menu.js.
 
-// RaK 1.2 (1.27) – showFoodSchedule je v app-navigation.js.
+// RaK 1.2 (1.28) – showFoodSchedule je v app-navigation.js.
 
 
 
@@ -1002,7 +988,7 @@ try { window.updateRotaceNamesDockMetrics = updateRotaceNamesDockMetrics; } catc
 try { window.scheduleRotaceNamesDockMetrics = scheduleRotaceNamesDockMetrics; } catch (err) {}
 
 
-// RaK 1.2 (1.27) – showPage, home refresh, externí dlaždice a rotace/kalkulačky zkratky jsou v app-navigation.js.
+// RaK 1.2 (1.28) – showPage, home refresh, externí dlaždice a rotace/kalkulačky zkratky jsou v app-navigation.js.
 
 
 function setRotaceView(view) {
@@ -1051,12 +1037,12 @@ function setRotaceView(view) {
 }
 
 
-// RaK 1.2 (1.27) – Food/kalendář modaly a vazba dashboard kalendáře jsou v app-navigation.js.
+// RaK 1.2 (1.28) – Food/kalendář modaly a vazba dashboard kalendáře jsou v app-navigation.js.
 
 
-// RaK 1.2 (1.27) – Games hub + account profile jsou oddělené v games-profile.js.
+// RaK 1.2 (1.28) – Games hub + account profile jsou oddělené v games-profile.js.
 
-// RaK 1.2 (1.27) – Klasické hry 2048 / Had / Flappy Car jsou oddělené v games-classic.js.
+// RaK 1.2 (1.28) – Klasické hry 2048 / Had / Flappy Car jsou oddělené v games-classic.js.
 
 function renderGamesTttShell() {
 
@@ -1120,12 +1106,12 @@ if (!window.__tttHashInviteBound) {
 
 
 
-// RaK 1.2 (1.27) – Theme, pozadí a profilové UI nastavení jsou oddělené v appearance-theme.js.
+// RaK 1.2 (1.28) – Theme, pozadí a profilové UI nastavení jsou oddělené v appearance-theme.js.
 
 function getRakRotaceNamesDockHealth() {
   const result = {
     ok: true,
-    version: window.APP_VERSION || 'v.1.5 (963)',
+    version: window.APP_VERSION || '1.2 (1.28)',
     mode: 'rotace-names-dock-stable-css-v930',
     checkedAt: new Date().toISOString(),
     scope: 'Rotace / seznam jmen / stabilní spodní dock',
@@ -1169,5 +1155,5 @@ function getRakRotaceNamesDockHealth() {
 window.getRakRotaceNamesDockHealth = getRakRotaceNamesDockHealth;
 
 
-// RaK 1.2 (1.27) – resize/orientation hlídání aktivního glass indikátoru spodní lišty je v app-navigation.js.
+// RaK 1.2 (1.28) – resize/orientation hlídání aktivního glass indikátoru spodní lišty je v app-navigation.js.
 

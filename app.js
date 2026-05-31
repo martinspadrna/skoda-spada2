@@ -1,13 +1,13 @@
-// RaK 1.2 (1.27) – boot/load shell aplikace.
+// RaK 1.2 (1.28) – boot/load shell aplikace.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app.js', 'loaded', { source: 'index' }); } catch (err) {}
 
 
-// RaK 1.2 (1.27) – runtime guardy aplikace jsou oddělené v app-runtime-guards.js.
-// RaK 1.2 (1.27) – delegované klikací akce jsou oddělené v app-actions.js.
-// RaK 1.2 (1.27) – health/audit helpery aplikace jsou oddělené v app-health-audits.js.
-// RaK 1.2 (1.27) – PWA/service worker konektivita je oddělená v app-pwa-connectivity.js.
-// RaK 1.2 (1.27) – boot self-test je oddělený v app-boot-selftest.js.
-// RaK 1.2 (1.27) – Excel import rozpisů je oddělený v app-excel-import.js.
+// RaK 1.2 (1.28) – runtime guardy aplikace jsou oddělené v app-runtime-guards.js.
+// RaK 1.2 (1.28) – delegované klikací akce jsou oddělené v app-actions.js.
+// RaK 1.2 (1.28) – health/audit helpery aplikace jsou oddělené v app-health-audits.js.
+// RaK 1.2 (1.28) – PWA/service worker konektivita je oddělená v app-pwa-connectivity.js.
+// RaK 1.2 (1.28) – boot self-test je oddělený v app-boot-selftest.js.
+// RaK 1.2 (1.28) – Excel import rozpisů je oddělený v app-excel-import.js.
 
 
 function installBottomNavBindings() {

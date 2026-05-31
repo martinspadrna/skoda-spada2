@@ -1,4 +1,4 @@
-// RaK 1.2 (1.27) – arcade hry a denní challenge.
+// RaK 1.2 (1.28) – arcade hry a denní challenge.
 (() => {
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
@@ -705,7 +705,7 @@
       perGame[id] = { achievementCount: direct, shiftDRewardCount: dShift, ok: direct >= 3 && dShift >= 2 };
     });
     return {
-      version: window.APP_VERSION || 'v.1.5 (963)',
+      version: window.APP_VERSION || '1.2 (1.28)',
       mode: 'games-achievement-reward-health-v928',
       totalAchievementDefs: defs.length,
       gamesCovered: ids.length,
@@ -1423,7 +1423,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok: noMs && hasSeconds,
       mode: 'games-top-score-seconds-v923',
-      version: String(window.APP_VERSION || 'v.1.5 (963)'),
+      version: String(window.APP_VERSION || '1.2 (1.28)'),
       scope: 'Top výsledky her – reakční čas ve vteřinách místo milisekund',
       probe,
       note: 'Herní Top score pro Reaction Test zobrazuje čas jako sekundy s desetinnou čárkou, ne jako ms.'

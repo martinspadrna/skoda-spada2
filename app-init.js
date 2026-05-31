@@ -1,4 +1,4 @@
-// RaK 1.2 (1.27) – startovací vazby aplikace a admin odemčení.
+// RaK 1.2 (1.28) – startovací vazby aplikace a admin odemčení.
 function bindAdminSecretUnlock() {
   try { localStorage.removeItem('adminUnlocked'); } catch (err) {}
   if (document.documentElement.dataset.adminSecretBound === '1') return true;
@@ -111,7 +111,7 @@ if (!bindAdminSecretUnlock()) {
 
 
 
-// RaK 1.2 (1.27) – Excel import rozpisů je oddělený v app-excel-import.js.
+// RaK 1.2 (1.28) – Excel import rozpisů je oddělený v app-excel-import.js.
 
 
 function initAppInitBindings() {

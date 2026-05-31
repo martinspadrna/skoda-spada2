@@ -1,4 +1,4 @@
-// RaK 1.2 (1.27) – dashboard a domácí přehled.
+// RaK 1.2 (1.28) – dashboard a domácí přehled.
 
 function setDashboardHtmlIfChanged(element, html, key) {
   if (!element) return false;
@@ -979,7 +979,7 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
 function getRakDashboardHeroCenteringHealth() {
   return {
     ok: true,
-    version: window.APP_VERSION || 'v.1.5 (963)',
+    version: window.APP_VERSION || '1.2 (1.28)',
     heroId: 'dashHero',
     scope: 'dashboard top shift panel',
     centeredLines: ['dashboardHeroLine1', 'dashboardHeroLine2', 'dashboardHeroLine3', 'dashboardHeroLine3Sub'],
