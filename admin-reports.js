@@ -1,4 +1,4 @@
-// v.1.6 (1008) – Administrace / Reporty chyb oddělené z hlavního UI modulu.
+// 1.2 (1.10) – Administrace / Reporty chyb oddělené z hlavního UI modulu.
 (function(){
 'use strict';
 

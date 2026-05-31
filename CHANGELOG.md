@@ -1,8 +1,7 @@
-## v.1.6 (1008)
+## 1.2 (1.10)
 
-- Oprava Rotace: vypnutá vstupní `pageIn` animace pro stránku Rotace, aby spodní panel se jmény po kliknutí na Rotace už viditelně nevyskočil.
-- Větší refactor administrace: oddělené Rozpisy / Nastavení strojů a související helpery do nového `admin-rotation.js`.
-- Aktualizovaný loader, service worker, export manifest a kontroly pro nový admin modul.
-- Supabase DB, policies, hry a spodní lišta beze změny.
-- Verze sjednocena na v.1.6 (1008), cache na `v1.6-1008`, realtime kanál na `rak-public-live-v1008`, package na `1.6.1008`.
-
+- Větší refactor: Piškvorky / Gomoku oddělené z hlavního `ui.js` do samostatného `games-gomoku.js`.
+- `ui.js` se zmenšil o velkou herní část a zůstává víc jako koordinátor UI.
+- Rotace: panel jmen se při otevření stránky nejdřív stabilizuje skrytě a až potom se ukáže ve finální poloze, aby nebylo vidět poskočení.
+- Aktualizované release manifesty, service worker, smoke test Piškvorek a kontrola načtených modulů pro nový soubor.
+- Supabase DB, policies ani online flow beze změny.

@@ -1,4 +1,4 @@
-// v.1.6 (1008) – zúžený export manifest pro čistý ostrý ZIP.
+// 1.2 (1.10) – zúžený export manifest pro čistý ostrý ZIP.
 const EXPORT_SOURCE_IDS = {
   "module-readiness.js": "src-module-readiness-js",
   "rak-namespace.js": "src-rak-namespace-js",
@@ -26,6 +26,7 @@ const EXPORT_SOURCE_IDS = {
   "soustruhy.js": "src-soustruhy-js",
   "brusy.js": "src-brusy-js",
   "rotace.js": "src-rotace-js",
+  "games-gomoku.js": "src-games-gomoku-js",
   "changelog.js": "src-changelog-js",
   "admin-rotation.js": "src-admin-rotation-js",
   "admin-food.js": "src-admin-food-js",
@@ -87,7 +88,7 @@ const EXPORT_SMOKE_REPORT = window.__RAK_EXPORT_SMOKE_REPORT__ || (window.__RAK_
   ok: null,
   status: 'not-run',
   mode: 'export-smoke-report-v939',
-  version: 'v.1.6 (1008)',
+  version: '1.2 (1.10)',
   checkedAt: null,
   lastStage: 'čeká na export',
   runCount: 0,
@@ -157,6 +158,7 @@ const EXPORT_JS_FILES = [
   "soustruhy.js",
   "brusy.js",
   "rotace.js",
+  "games-gomoku.js",
   "changelog.js",
   "admin-rotation.js",
   "admin-food.js",
@@ -192,7 +194,7 @@ const EXPORT_TEXT_FILES = [
 
 function getRakExportManifest() {
   return {
-    version: String(window.APP_VERSION || 'v.1.6 (1008)'),
+    version: String(window.APP_VERSION || '1.2 (1.10)'),
     mode: 'export-manifest-preflight-v939',
     indexFile: 'index.html',
     jsFiles: Array.from(new Set(EXPORT_JS_FILES)),
@@ -302,7 +304,7 @@ function updateRakExportSmokeReport(partial) {
   const data = partial && typeof partial === 'object' ? partial : {};
   Object.assign(EXPORT_SMOKE_REPORT, data, {
     mode: 'export-smoke-report-v939',
-    version: String(window.APP_VERSION || 'v.1.6 (1008)'),
+    version: String(window.APP_VERSION || '1.2 (1.10)'),
     checkedAt: new Date().toISOString()
   });
   return getRakExportSmokeReport();
@@ -512,9 +514,12 @@ ${document.documentElement.cloneNode(true).outerHTML}`;
     const a = document.createElement('a');
     a.href = url;
     const versionText = String(window.APP_VERSION || '').trim();
-    const versionMatch = versionText.match(/v\.(\d+)\.(\d+)\s*\((\d+)\)/i);
-    const versionSuffix = versionMatch ? `${versionMatch[1]}_${versionMatch[2]}_${versionMatch[3]}` : 'current';
-    a.download = `RaK_v${versionSuffix}.zip`;
+    const legacyMatch = versionText.match(/v\.(\d+)\.(\d+)\s*\((\d+)\)/i);
+    const newMatch = versionText.match(/^(\d+)\.(\d+)\s*\(\s*(\d+)\.(\d+)\s*\)$/i);
+    const versionSuffix = newMatch
+      ? `${newMatch[1]}_${newMatch[2]}_${newMatch[3]}_${newMatch[4]}`
+      : (legacyMatch ? `${legacyMatch[1]}_${legacyMatch[2]}_${legacyMatch[3]}` : 'current');
+    a.download = `RaK_${versionSuffix}.zip`;
     updateRakExportSmokeReport({ ok: true, status: 'export-ready', lastStage: 'ZIP sestavený, spouštím stažení', lastDownloadName: a.download, lastError: '' });
     document.body.appendChild(a);
     a.click();

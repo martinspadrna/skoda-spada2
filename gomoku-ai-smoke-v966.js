@@ -2,11 +2,11 @@
 const fs = require('fs');
 const { performance } = require('perf_hooks');
 
-const source = fs.readFileSync('ui.js', 'utf8');
+const source = fs.readFileSync('games-gomoku.js', 'utf8');
 const start = source.indexOf('const TTT_ROWS = 19;');
 const end = source.indexOf('function tttHardWinLog()');
 if (start < 0 || end < start) {
-  console.error('Nepodařilo se najít AI úsek v ui.js.');
+  console.error('Nepodařilo se najít AI úsek v games-gomoku.js.');
   process.exit(1);
 }
 

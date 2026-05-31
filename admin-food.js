@@ -1,4 +1,4 @@
-// v.1.6 (1008) – Administrace / Kantýna-jídelna oddělená z hlavního UI modulu.
+// 1.2 (1.10) – Administrace / Kantýna-jídelna oddělená z hlavního UI modulu.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('admin-food.js', 'loaded', { source: 'dynamic-loader' }); } catch (err) {}
 
 function adminFoodIsoToCzechDate(value) {
@@ -91,7 +91,7 @@ function buildAdminFoodScheduleSettingsHtml() {
   return [
     '<details class="appMenuFoldSection adminFoodScheduleFold" open>',
     '  <summary>Kantýna / jídelna</summary>',
-    '  <div class="smallText uMb10">Tady si můžeš upravit běžnou otevírací dobu, přesčasovou dobu a seznam přesčasových nedělí. Časy piš třeba <b>05:30–09:00, 10:00–12:00</b>. Datumy piš česky, třeba <b>11.1.2027</b>.</div>',
+    '  <div class="smallText uMb10">Tady si můžeš upravit běžnou otevírací dobu, přesčasovou dobu kantýny/jídelny a seznam přesčasových nedělí. Časy piš třeba <b>05:30–09:00, 10:00–12:00</b>. Datumy piš česky, třeba <b>11.1.2027</b>. <br><b>Pozn.:</b> seznam přesčasových nedělí se pro Dashboard směny bere jen jako nedělní noční směna <b>18:00–6:00</b>. Časy v tabulce přesčasové doby jsou jen pro kantýnu/jídelnu.</div>',
     '  <div class="tableWrap appMenuTableWrap uMt8">',
     '    <div class="smallText">Běžná otevírací doba</div>',
     '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminFoodScheduleTable adminFoodRegularTable">',
@@ -109,7 +109,7 @@ function buildAdminFoodScheduleSettingsHtml() {
     '    </table>',
     '  </div>',
     '  <div class="tableWrap appMenuTableWrap uMt12">',
-    '    <div class="smallText">Seznam přesčasových nedělí</div>',
+    '    <div class="smallText">Seznam přesčasových nedělí · pro směnu jen 18:00–6:00</div>',
     '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminFoodDatesTable">',
     '      <colgroup><col class="adminFoodDateNumberCol"><col class="adminFoodDateValueCol"></colgroup>',
     '      <thead><tr><th>#</th><th>Datum</th></tr></thead>',

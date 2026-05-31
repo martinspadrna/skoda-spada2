@@ -1,4 +1,4 @@
-// v.1.6 (1008) – spodní lišta beze změny výšky: aktivní ikona větší, text aktivní položky skrytý.
+// 1.2 (1.10) – větší refactor: Piškvorky oddělené do games-gomoku.js.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app.js', 'loaded', { source: 'index' }); } catch (err) {}
 
 
@@ -1053,6 +1053,7 @@ function getPhaseTenScriptLoadHealth() {
     'dashboard.js',
     'soustruhy.js',
     'rotace.js',
+    'games-gomoku.js',
     'changelog.js',
     'admin-rotation.js',
     'admin-food.js',
@@ -2382,6 +2383,7 @@ function runPhaseTenFinalStabilizationAudit() {
     "dashboard.js",
     "soustruhy.js",
     "rotace.js",
+    "games-gomoku.js",
     "changelog.js",
     "admin-rotation.js",
     "admin-food.js",
