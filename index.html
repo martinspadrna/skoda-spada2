@@ -17,12 +17,18 @@
 <link rel="icon" type="image/png" href="assets/app-icons/icon-192.png">
 <script>
 (function(){
-  // v994: iOS/PWA start guard. Nevážeme počáteční výšku appky na visualViewport,
-  // protože Safari/PWA ji po spuštění pár vteřin mění a appka pak viditelně „dorůstá".
+  // v999: iOS/PWA start guard. Zamkneme počáteční výšku hned před prvním paintem
+  // podle layout viewportu, ne podle visualViewport, který se na iPhonu po startu ještě usazuje.
   try {
     var root = document.documentElement;
-    root.style.setProperty('--rak-start-viewport-h', '100svh');
-    root.style.setProperty('--rak-start-viewport-dynamic-h', '100dvh');
+    var h = Math.max(
+      Number(window.innerHeight || 0) || 0,
+      Number(root && root.clientHeight || 0) || 0,
+      Number(screen && screen.height || 0) || 0
+    );
+    if (!Number.isFinite(h) || h < 480) h = 720;
+    root.style.setProperty('--rak-start-viewport-h', Math.round(h) + 'px');
+    root.style.setProperty('--rak-start-viewport-dynamic-h', Math.round(h) + 'px');
     root.classList.add('rakViewportPrimed', 'rakStableBootViewport');
   } catch (err) {}
 })();
@@ -42,8 +48,8 @@ window.rakNoteExternalDependency = function(name, status, src) {
 };
 </script>
 <style id="rak-critical-shell-fallback">
-  html{background:#07111c;color:#eef7ff;}
-  body{margin:0;min-height:100vh;background:#07111c;color:#eef7ff;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}
+  html{background:#050816;color:#eef7ff;min-height:var(--rak-start-viewport-h,100vh);}
+  body{margin:0;min-height:var(--rak-start-viewport-h,100vh);background:#050816;color:#eef7ff;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}
   .page:not(.active){display:none;}
   .bottomNav{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;justify-content:center;background:rgba(7,17,28,.82);}
   .bottomNavScroll{display:flex;gap:6px;max-width:720px;width:100%;overflow-x:auto;padding:6px 8px calc(6px + env(safe-area-inset-bottom));}

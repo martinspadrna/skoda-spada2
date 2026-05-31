@@ -82,6 +82,124 @@ const FOOD_SPECIAL_OVERRIDES = {
   jidelna: [["10:00", "12:00"], ["21:30", "23:30"]]
 };
 
+const FOOD_SETTINGS_MACHINE_KEY = 'FOOD_SCHEDULE_SETTINGS';
+const FOOD_ADMIN_DAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
+
+function parseFoodSettingsJson(value) {
+  if (value && typeof value === 'object') return value;
+  if (!value) return {};
+  try { return JSON.parse(String(value)); } catch (err) { return {}; }
+}
+
+function getFoodMachineSettingsRow() {
+  const rows = (typeof app !== 'undefined' && app && Array.isArray(app.machineSettingsRows)) ? app.machineSettingsRows : [];
+  return rows.find((row) => String(row && row.category || '').trim() === 'food_schedule')
+    || rows.find((row) => String(row && row.machine_key || '').trim() === FOOD_SETTINGS_MACHINE_KEY)
+    || null;
+}
+
+function getFoodMachineSettings() {
+  const row = getFoodMachineSettingsRow();
+  const settings = parseFoodSettingsJson(row && row.settings_json);
+  return settings && typeof settings === 'object' ? settings : {};
+}
+
+function normalizeFoodTimeText(value) {
+  const raw = String(value || '').trim();
+  const match = raw.match(/^(\d{1,2})[:.](\d{2})$/);
+  if (!match) return '';
+  const hour = Number(match[1]);
+  const minute = Number(match[2]);
+  if (!Number.isFinite(hour) || !Number.isFinite(minute) || hour < 0 || hour > 23 || minute < 0 || minute > 59) return '';
+  return pad2(hour) + ':' + pad2(minute);
+}
+
+function normalizeFoodWindows(value) {
+  if (Array.isArray(value)) {
+    return value.map((item) => {
+      if (Array.isArray(item)) return [normalizeFoodTimeText(item[0]), normalizeFoodTimeText(item[1])];
+      if (item && typeof item === 'object') return [normalizeFoodTimeText(item.start || item.from || item[0]), normalizeFoodTimeText(item.end || item.to || item[1])];
+      return null;
+    }).filter((item) => item && item[0] && item[1]);
+  }
+  const raw = String(value || '').trim();
+  if (!raw) return [];
+  return raw.split(/[\n;,]+/).map((part) => part.trim()).filter(Boolean).map((part) => {
+    const pieces = part.split(/\s*(?:–|—|-)\s*/);
+    if (pieces.length < 2) return null;
+    const start = normalizeFoodTimeText(pieces[0]);
+    const end = normalizeFoodTimeText(pieces[1]);
+    return start && end ? [start, end] : null;
+  }).filter(Boolean);
+}
+
+function foodWindowSignature(window) {
+  return String(window && window[0] || '') + '–' + String(window && window[1] || '');
+}
+
+function foodWindowStartMinutes(window) {
+  const start = String(window && window[0] || '00:00').split(':');
+  return (Number(start[0]) || 0) * 60 + (Number(start[1]) || 0);
+}
+
+function cloneFoodWindow(window, specialOvertime) {
+  const copy = [String(window && window[0] || ''), String(window && window[1] || '')];
+  if (specialOvertime) copy.specialOvertime = true;
+  return copy;
+}
+
+function getFoodSpecialDateSet() {
+  const settings = getFoodMachineSettings();
+  const hasCustom = Object.prototype.hasOwnProperty.call(settings, 'overtimeDates') || Object.prototype.hasOwnProperty.call(settings, 'overtime_dates');
+  if (!hasCustom) return new Set(FOOD_SPECIAL_SUNDAY_DATES);
+  const raw = settings.overtimeDates ?? settings.overtime_dates;
+  const list = Array.isArray(raw) ? raw : String(raw || '').split(/[\n,;\s]+/);
+  return new Set(list.map((item) => String(item || '').trim()).filter((item) => /^\d{4}-\d{2}-\d{2}$/.test(item)));
+}
+
+function getFoodAdminWindowText(windows) {
+  return normalizeFoodWindows(windows).map((window) => window[0] + '–' + window[1]).join(', ');
+}
+
+function getFoodOvertimeWindows(location) {
+  const settings = getFoodMachineSettings();
+  const key = String(location && location.key || '').trim();
+  const overtime = settings && settings.overtime && typeof settings.overtime === 'object' ? settings.overtime : {};
+  if (Object.prototype.hasOwnProperty.call(overtime, key)) return normalizeFoodWindows(overtime[key]);
+  return normalizeFoodWindows(FOOD_SPECIAL_OVERRIDES[key] || []);
+}
+
+function isFoodOvertimeWindow(window, regularSet) {
+  const signature = foodWindowSignature(window);
+  const startMinutes = foodWindowStartMinutes(window);
+  if (!regularSet.has(signature)) return true;
+  return startMinutes >= 14 * 60;
+}
+
+function getFoodAdminSettingsSnapshot() {
+  const dates = Array.from(getFoodSpecialDateSet()).sort();
+  return {
+    dayOrder: FOOD_ADMIN_DAY_ORDER.slice(),
+    dayNames: FOOD_DAY_NAMES.slice(),
+    dates,
+    locations: FOOD_LOCATIONS.map((location) => ({
+      key: location.key,
+      label: location.label,
+      regular: FOOD_ADMIN_DAY_ORDER.map((dayIndex) => ({
+        dayIndex,
+        dayLabel: FOOD_DAY_NAMES[dayIndex] || String(dayIndex),
+        windowsText: getFoodAdminWindowText(getFoodRegularWindows(location, dayIndex))
+      })),
+      overtimeText: getFoodAdminWindowText(getFoodOvertimeWindows(location))
+    }))
+  };
+}
+
+if (typeof window !== 'undefined') {
+  window.getFoodAdminSettingsSnapshot = getFoodAdminSettingsSnapshot;
+  window.normalizeFoodWindows = normalizeFoodWindows;
+}
+
 const FOOD_DAY_NAMES = [
   "neděle",
   "pondělí",
@@ -100,7 +218,7 @@ function foodIsoDate(date) {
 
 function isFoodSpecialSunday(date) {
   const day = date instanceof Date ? date : null;
-  return !!(day && day.getDay() === 0 && FOOD_SPECIAL_SUNDAY_DATES.has(foodIsoDate(day)));
+  return !!(day && day.getDay() === 0 && getFoodSpecialDateSet().has(foodIsoDate(day)));
 }
 
 function pad2(value) {
@@ -173,15 +291,28 @@ function foodRangeFromWindow(baseDate, window) {
 }
 
 function getFoodScheduleForDay(location, dayIndex, date) {
-  const dayWindows = (location && location.days && location.days[dayIndex]) ? location.days[dayIndex] : [];
+  const regularWindows = getFoodRegularWindows(location, dayIndex).map((window) => cloneFoodWindow(window, false));
   const day = date instanceof Date ? date : null;
   const isSpecialSunday = isFoodSpecialSunday(day);
 
-  if (dayIndex === 0 && isSpecialSunday && location && FOOD_SPECIAL_OVERRIDES[location.key]) {
-    return FOOD_SPECIAL_OVERRIDES[location.key];
+  if (dayIndex === 0 && isSpecialSunday && location) {
+    const regularSet = new Set(regularWindows.map(foodWindowSignature));
+    const merged = new Map();
+    regularWindows.forEach((window) => merged.set(foodWindowSignature(window), window));
+    getFoodOvertimeWindows(location).forEach((window) => {
+      const signature = foodWindowSignature(window);
+      const special = isFoodOvertimeWindow(window, regularSet);
+      const existing = merged.get(signature);
+      if (existing) {
+        if (special) existing.specialOvertime = true;
+      } else {
+        merged.set(signature, cloneFoodWindow(window, special));
+      }
+    });
+    return Array.from(merged.values()).sort((a, b) => foodWindowStartMinutes(a) - foodWindowStartMinutes(b));
   }
 
-  return dayWindows;
+  return regularWindows;
 }
 
 function findFoodStatus(location, now) {
@@ -198,9 +329,9 @@ function findFoodStatus(location, now) {
 
     for (const window of windows) {
       const range = foodRangeFromWindow(baseDate, window);
-      range.specialOvertime = isFoodSpecialSunday(baseDate);
+      range.specialOvertime = !!(window && window.specialOvertime);
       if (baseNow >= range.start && baseNow < range.end) {
-        if (!active || range.start < active.start) active = range;
+        if (!active || range.start < active.start || (range.start.getTime && active.start && range.start.getTime() === active.start.getTime() && range.end > active.end)) active = range;
       }
       if (range.start > baseNow && (!next || range.start < next.start)) {
         next = range;
@@ -366,11 +497,17 @@ function formatFoodDayRangeLabel(startDayIndex, endDayIndex) {
 }
 
 function getFoodRegularWindows(location, dayIndex) {
-  return (location && location.days && Array.isArray(location.days[dayIndex])) ? location.days[dayIndex] : [];
+  const settings = getFoodMachineSettings();
+  const key = String(location && location.key || '').trim();
+  const regular = settings && settings.regular && typeof settings.regular === 'object' ? settings.regular : {};
+  const locationRegular = regular && regular[key] && typeof regular[key] === 'object' ? regular[key] : null;
+  if (locationRegular && Object.prototype.hasOwnProperty.call(locationRegular, String(dayIndex))) return normalizeFoodWindows(locationRegular[String(dayIndex)]);
+  if (locationRegular && Object.prototype.hasOwnProperty.call(locationRegular, dayIndex)) return normalizeFoodWindows(locationRegular[dayIndex]);
+  return (location && location.days && Array.isArray(location.days[dayIndex])) ? normalizeFoodWindows(location.days[dayIndex]) : [];
 }
 
 function formatFoodSpecialSundayDates() {
-  return Array.from(FOOD_SPECIAL_SUNDAY_DATES)
+  return Array.from(getFoodSpecialDateSet())
     .sort()
     .map((value) => {
       const parts = String(value || '').split('-');
@@ -460,11 +597,11 @@ function buildFoodRegularScheduleGroups(location) {
 }
 
 function buildFoodSpecialSundaySection(location, highlight) {
-  const specialWindows = location && FOOD_SPECIAL_OVERRIDES[location.key] ? FOOD_SPECIAL_OVERRIDES[location.key] : [];
+  const specialWindows = getFoodOvertimeWindows(location);
   if (!Array.isArray(specialWindows) || !specialWindows.length) return '';
   const regularSundayWindows = getFoodRegularWindows(location, 0);
-  const regularSet = new Set((Array.isArray(regularSundayWindows) ? regularSundayWindows : []).map((window) => String(window && window[0]) + '–' + String(window && window[1])));
-  const changedWindows = specialWindows.filter((window) => !regularSet.has(String(window && window[0]) + '–' + String(window && window[1])));
+  const regularSet = new Set((Array.isArray(regularSundayWindows) ? regularSundayWindows : []).map(foodWindowSignature));
+  const changedWindows = specialWindows.filter((window) => isFoodOvertimeWindow(window, regularSet));
   const highlightIsSunday = highlight && highlight.dayIndex === 0 && (highlight.type === 'open' || highlight.type === 'next');
   const lines = changedWindows.length ? changedWindows.map((window) => {
     const isHighlighted = highlightIsSunday && foodWindowMatchesHighlight(window, highlight);
@@ -480,7 +617,7 @@ function buildFoodSpecialSundaySection(location, highlight) {
     '<div class="foodScheduleDay">Neděle (přesčas)</div>',
     '<div class="foodScheduleWindows">' + lines + '</div>',
     '</div>',
-    '<div class="smallText uMt8">Seznam přesčasových nedělí 2026: ' + escapeHtml(formatFoodSpecialSundayDates()) + '</div>'
+    '<div class="smallText uMt8">Seznam přesčasových nedělí: ' + escapeHtml(formatFoodSpecialSundayDates()) + '</div>'
   ].join('');
 }
 
@@ -509,7 +646,7 @@ function getFoodScheduleSundayGuardHealth() {
   const ok = rows.every((row) => row.plainMatchesRegular && row.overtimeDiffersFromRegular && row.overtimeSundayMarked);
   return {
     ok,
-    mode: 'food-sunday-overtime-guard-v920',
+    mode: 'food-admin-schedule-v999',
     version: String(window.APP_VERSION || 'v.1.5 (920)'),
     overtimeSundayCount: FOOD_SPECIAL_SUNDAY_DATES.size,
     plainSundaySample: foodIsoDate(samplePlainSunday),

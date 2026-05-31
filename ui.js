@@ -10683,9 +10683,152 @@ function buildAdminFhbTargetSettingsHtml() {
   ].join('');
 }
 
+
+function adminFoodIsoToCzechDate(value) {
+  const raw = String(value || '').trim();
+  const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return raw;
+  return String(Number(match[3])) + '.' + String(Number(match[2])) + '.' + match[1];
+}
+
+function adminFoodCzechDateToIso(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  const iso = raw.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (iso) {
+    const year = Number(iso[1]);
+    const month = Number(iso[2]);
+    const day = Number(iso[3]);
+    if (year >= 2000 && year <= 2100 && month >= 1 && month <= 12 && day >= 1 && day <= 31) return String(year) + '-' + String(month).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+  }
+  const cz = raw.match(/^(\d{1,2})\s*[.]\s*(\d{1,2})\s*[.]\s*(\d{4})\s*[.]?$/);
+  if (!cz) return '';
+  const day = Number(cz[1]);
+  const month = Number(cz[2]);
+  const year = Number(cz[3]);
+  if (!Number.isFinite(day) || !Number.isFinite(month) || !Number.isFinite(year)) return '';
+  if (year < 2000 || year > 2100 || month < 1 || month > 12 || day < 1 || day > 31) return '';
+  return String(year) + '-' + String(month).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+}
+
+function makeAdminFoodScheduleSettingsRow(foodSettings) {
+  const settings = foodSettings && typeof foodSettings === 'object' ? foodSettings : { type: 'food_schedule', regular: {}, overtime: {}, overtimeDates: [] };
+  return {
+    machine_key: 'FOOD_SCHEDULE_SETTINGS',
+    machine_code: 'FOOD',
+    machine_index: 'schedule',
+    label: 'Kantýna / jídelna',
+    category: 'food_schedule',
+    cycle_time: '',
+    speed: '',
+    dress_time: '',
+    dress_count: '',
+    settings_json: Object.assign({ machine: 'FOOD', index: 'schedule' }, settings)
+  };
+}
+
+function adminIsFoodScheduleRow(row) {
+  return String(row && row.category || '').trim() === 'food_schedule' || String(row && row.machine_key || '').trim() === 'FOOD_SCHEDULE_SETTINGS';
+}
+
+function mergeAdminFoodScheduleSettingsRows(foodSettings) {
+  const base = Array.isArray(app.machineSettingsRows) ? app.machineSettingsRows : [];
+  const rows = base.filter((row) => !adminIsFoodScheduleRow(row));
+  rows.push(makeAdminFoodScheduleSettingsRow(foodSettings));
+  return rows;
+}
+
+function buildAdminFoodScheduleSettingsHtml() {
+  const snapshot = (typeof getFoodAdminSettingsSnapshot === 'function') ? getFoodAdminSettingsSnapshot() : null;
+  const locations = snapshot && Array.isArray(snapshot.locations) ? snapshot.locations : [];
+  if (!locations.length) return '';
+  const dayRows = [];
+  locations.forEach((location) => {
+    (Array.isArray(location.regular) ? location.regular : []).forEach((day) => {
+      dayRows.push([
+        '<tr data-food-regular-row data-food-location="' + escapeHtml(location.key) + '" data-food-day="' + escapeHtml(String(day.dayIndex)) + '">',
+        '  <td>' + escapeHtml(location.label) + '</td>',
+        '  <td>' + escapeHtml(day.dayLabel) + '</td>',
+        '  <td><input class="appMenuInlineInput adminFoodWindowsInput" data-food-regular-field="windows" value="' + escapeHtml(day.windowsText || '') + '" placeholder="05:30–09:00, 10:00–12:00"></td>',
+        '</tr>'
+      ].join(''));
+    });
+  });
+  const overtimeRows = locations.map((location) => [
+    '<tr data-food-overtime-row data-food-location="' + escapeHtml(location.key) + '">',
+    '  <td>' + escapeHtml(location.label) + '</td>',
+    '  <td><input class="appMenuInlineInput adminFoodWindowsInput" data-food-overtime-field="windows" value="' + escapeHtml(location.overtimeText || '') + '" placeholder="17:30–21:00, 21:30–23:30"></td>',
+    '</tr>'
+  ].join('')).join('');
+  const dates = Array.isArray(snapshot.dates) ? snapshot.dates.slice().sort() : [];
+  const minRows = Math.max(36, dates.length + 8);
+  const dateRows = Array.from({ length: minRows }, (_, index) => {
+    const value = adminFoodIsoToCzechDate(dates[index] || '');
+    return [
+      '<tr data-food-overtime-date-row>',
+      '  <td>' + String(index + 1) + '</td>',
+      '  <td><input class="appMenuInlineInput adminFoodDateInput" data-food-overtime-date value="' + escapeHtml(value) + '" placeholder="11.1.2027" inputmode="numeric"></td>',
+      '</tr>'
+    ].join('');
+  }).join('');
+  return [
+    '<details class="appMenuFoldSection adminFoodScheduleFold" open>',
+    '  <summary>Kantýna / jídelna</summary>',
+    '  <div class="smallText uMb10">Tady si můžeš upravit běžnou otevírací dobu, přesčasovou dobu a seznam přesčasových nedělí. Časy piš třeba <b>05:30–09:00, 10:00–12:00</b>. Datumy piš česky, třeba <b>11.1.2027</b>.</div>',
+    '  <div class="tableWrap appMenuTableWrap uMt8">',
+    '    <div class="smallText">Běžná otevírací doba</div>',
+    '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminFoodScheduleTable">',
+    '      <thead><tr><th>Místo</th><th>Den</th><th>Časy</th></tr></thead>',
+    '      <tbody>' + dayRows.join('') + '</tbody>',
+    '    </table>',
+    '  </div>',
+    '  <div class="tableWrap appMenuTableWrap uMt12">',
+    '    <div class="smallText">Přesčasová doba</div>',
+    '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminFoodScheduleTable">',
+    '      <thead><tr><th>Místo</th><th>Časy při přesčasu</th></tr></thead>',
+    '      <tbody>' + overtimeRows + '</tbody>',
+    '    </table>',
+    '  </div>',
+    '  <div class="tableWrap appMenuTableWrap uMt12">',
+    '    <div class="smallText">Seznam přesčasových nedělí</div>',
+    '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminFoodDatesTable">',
+    '      <thead><tr><th>#</th><th>Datum</th></tr></thead>',
+    '      <tbody>' + dateRows + '</tbody>',
+    '    </table>',
+    '  </div>',
+    '</details>'
+  ].join('');
+}
+
+function readAdminFoodScheduleSettingsFromDom() {
+  const regular = {};
+  document.querySelectorAll('#appMenuBody tr[data-food-regular-row]').forEach((tr) => {
+    const location = String(tr.getAttribute('data-food-location') || '').trim();
+    const day = String(tr.getAttribute('data-food-day') || '').trim();
+    const value = String(tr.querySelector('[data-food-regular-field="windows"]')?.value || '').trim();
+    if (!location || !day) return;
+    if (!regular[location]) regular[location] = {};
+    regular[location][day] = value;
+  });
+  const overtime = {};
+  document.querySelectorAll('#appMenuBody tr[data-food-overtime-row]').forEach((tr) => {
+    const location = String(tr.getAttribute('data-food-location') || '').trim();
+    const value = String(tr.querySelector('[data-food-overtime-field="windows"]')?.value || '').trim();
+    if (!location) return;
+    overtime[location] = value;
+  });
+  const overtimeDates = [];
+  document.querySelectorAll('#appMenuBody [data-food-overtime-date]').forEach((input) => {
+    const value = adminFoodCzechDateToIso(input.value || '');
+    if (value && !overtimeDates.includes(value)) overtimeDates.push(value);
+  });
+  overtimeDates.sort();
+  return { type: 'food_schedule', regular, overtime, overtimeDates };
+}
+
 function buildAdminMachineSettingsTableHtml() {
   const rows = Array.isArray(app.machineSettingsRows) ? app.machineSettingsRows : [];
-  const machineRows = rows.filter(row => { const cat = String(row && row.category ? row.category : '').trim(); return cat !== 'brus' && cat !== 'fhb_target'; });
+  const machineRows = rows.filter(row => { const cat = String(row && row.category ? row.category : '').trim(); return cat !== 'brus' && cat !== 'fhb_target' && cat !== 'food_schedule'; });
   const brusRows = rows.filter(row => String(row && row.category ? row.category : '').trim() === 'brus');
 
   const machineDefaults = machineRows.length ? machineRows : [
@@ -10739,7 +10882,7 @@ function buildAdminMachineSettingsTableHtml() {
   return [
     '<div class="appMenuSubSection" id="adminMachinesSection">',
     '  <div class="appMenuSubTitle">Nastavení strojů</div>',
-    '  <div class="appMenuText">Frezky a pračka mají jen čas výroby kola. Brusky mají stroj, index, čas výroby kola, čas orovnání a počet kusů po orovnání. Níž upravíš i středy fhβ pro frézky.</div>',
+    '  <div class="appMenuText">Frezky a pračka mají jen čas výroby kola. Brusky mají stroj, index, čas výroby kola, čas orovnání a počet kusů po orovnání. Níž upravíš i středy fhβ.</div>',
     '  <div class="tableWrap appMenuTableWrap">',
     '    <div class="smallText">Frezky a pračka</div>',
     '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense">',
@@ -10935,6 +11078,12 @@ function readAdminMachineSettingsFromDom() {
       settings_json: { machine: 'FHB', index: key, type: 'fhb_target', key, label, target_left: left, target_right: right, tolerance_minus: toleranceMinus, tolerance_plus: tolerancePlus }
     });
   });
+  const foodSettings = readAdminFoodScheduleSettingsFromDom();
+  if (foodSettings && foodSettings.regular && Object.keys(foodSettings.regular).length) {
+    rows.push(makeAdminFoodScheduleSettingsRow(foodSettings));
+  } else if (Array.isArray(app.machineSettingsRows)) {
+    app.machineSettingsRows.filter(adminIsFoodScheduleRow).forEach((row) => rows.push(row));
+  }
   return rows;
 }
 function makeRotationRowKey(row) {
@@ -11823,6 +11972,7 @@ function renderAdminMenuBody(body, section) {
     '  </div>',
     '  <div class="appMenuSettingsList">',
     '    <button type="button" class="appMenuAction" data-admin-action="open-machines">Nastavení strojů</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="open-food">Kantýna / jídelna</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-rotation">Rozpisy</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-announcement">Oznámení Dashboard</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-usage">Přehled připojení</button>',
@@ -11845,6 +11995,22 @@ function renderAdminMenuBody(body, section) {
     '  <div class="appMenuActionRow">',
     '    <button type="button" class="appMenuAction" data-admin-action="load-machines">Načíst online</button>',
     '    <button type="button" class="appMenuAction isActive" data-admin-action="save-machines">Uložit stroje</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
+    '  </div>',
+    '</div>'
+  ].join('');
+
+  const foodHtml = [
+    '<div class="appMenuCard appMenuAdminCard adminFoodScheduleCard">',
+    '  <div class="appMenuCardTitle">Kantýna / jídelna</div>',
+    '  <div class="appMenuText">',
+    '    <div>Tady si nastavíš běžnou otevírací dobu, přesčasovou dobu a seznam přesčasových nedělí. Datumy piš česky: třeba 11.1.2027.</div>',
+    '    <div class="smallText" id="adminOnlineSaveStatus">Stav uložení se zobrazí po kliknutí na Uložit časy.</div>',
+    '  </div>',
+    buildAdminFoodScheduleSettingsHtml(),
+    '  <div class="appMenuActionRow">',
+    '    <button type="button" class="appMenuAction" data-admin-action="load-food-schedule">Načíst online</button>',
+    '    <button type="button" class="appMenuAction isActive" data-admin-action="save-food-schedule">Uložit časy</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
     '  </div>',
     '</div>'
@@ -11918,6 +12084,8 @@ function renderAdminMenuBody(body, section) {
 
   if (mode === 'machines') {
     body.innerHTML = machinesHtml;
+  } else if (mode === 'food') {
+    body.innerHTML = foodHtml;
   } else if (mode === 'rotation') {
     body.innerHTML = rotationHtml;
   } else if (mode === 'announcement') {
@@ -12126,7 +12294,7 @@ function adminShowRotationSelectedRemove(input) {
       return;
     }
     window.__rakAdminRotationSelectedInput = input;
-    // v.1.5 (996): horní sticky tlačítko už při kliknutí do jména nevytahujeme.
+    // v.1.5 (999): horní sticky tlačítko už při kliknutí do jména nevytahujeme.
     // Rychlé Odebrat se vykreslí přímo u aktivního pole přes adminShowRotationQuickRemove().
     btn.hidden = true;
     btn.dataset.targetReady = '1';
@@ -12903,6 +13071,10 @@ function bindAppMenuHandlers(body) {
         openAppMenu('admin-machines');
         return;
       }
+      if (adminAction === 'open-food') {
+        openAppMenu('admin-food');
+        return;
+      }
       if (adminAction === 'open-rotation') {
         openAppMenu('admin-rotation');
         return;
@@ -13063,9 +13235,37 @@ function bindAppMenuHandlers(body) {
         renderAdminMenuBody(body, currentView);
         return;
       }
+      if (adminAction === 'load-food-schedule') {
+        if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.loadMachineSettings === 'function') {
+          app.machineSettingsRows = await window.RotationSupabaseBridge.loadMachineSettings();
+          try { if (typeof updateFoodTile === 'function') updateFoodTile(); } catch (err) {}
+          try { if (typeof renderFoodSchedulePage === 'function') renderFoodSchedulePage(); } catch (err) {}
+          renderAdminMenuBody(body, 'food');
+          return;
+        }
+      }
+      if (adminAction === 'save-food-schedule') {
+        const foodSettings = readAdminFoodScheduleSettingsFromDom();
+        const rows = mergeAdminFoodScheduleSettingsRows(foodSettings);
+        if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.saveMachineSettings === 'function') {
+          const result = await window.RotationSupabaseBridge.saveMachineSettings(rows);
+          if (result && result.ok === false) throw (result.error || new Error('Uložení časů selhalo.'));
+          app.machineSettingsRows = rows;
+          try { if (typeof updateFoodTile === 'function') updateFoodTile(); } catch (err) {}
+          try { if (typeof renderFoodSchedulePage === 'function') renderFoodSchedulePage(); } catch (err) {}
+          renderAdminMenuBody(body, 'food');
+          const statusEl = document.getElementById('adminOnlineSaveStatus');
+          if (statusEl) statusEl.textContent = (result && result.queued)
+            ? ('Časy uložené lokálně ✓ · po připojení se synchronizují')
+            : ('Časy uložené online ✓');
+          return;
+        }
+      }
       if (adminAction === 'load-machines') {
         if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.loadMachineSettings === 'function') {
           app.machineSettingsRows = await window.RotationSupabaseBridge.loadMachineSettings();
+          try { if (typeof updateFoodTile === 'function') updateFoodTile(); } catch (err) {}
+          try { if (typeof renderFoodSchedulePage === 'function') renderFoodSchedulePage(); } catch (err) {}
           renderAdminMenuBody(body, currentView);
           return;
         }
@@ -13084,6 +13284,8 @@ function bindAppMenuHandlers(body) {
             if (typeof refreshFhbSettingsUi === 'function') refreshFhbSettingsUi({ source: 'admin-save-machines', recalculate: true });
             else if (typeof updateFhbPresetButtons === 'function') updateFhbPresetButtons();
           } catch (err) {}
+          try { if (typeof updateFoodTile === 'function') updateFoodTile(); } catch (err) {}
+          try { if (typeof renderFoodSchedulePage === 'function') renderFoodSchedulePage(); } catch (err) {}
           renderAdminMenuBody(body, currentView);
           const statusEl = document.getElementById('adminOnlineSaveStatus');
           if (statusEl) statusEl.textContent = (result && result.queued)
@@ -13281,6 +13483,16 @@ function openAppMenu(view) {
           renderAdminMenuBody(body, 'machines');
         }
       })();
+    } else if (v === 'admin-food') {
+      void (async () => {
+        try {
+          await loadAdminMachineSettingsFromSupabase();
+          renderAdminMenuBody(body, 'food');
+        } catch (err) {
+          console.warn('Admin food preload failed', err);
+          renderAdminMenuBody(body, 'food');
+        }
+      })();
     } else if (v === 'admin-rotation') {
       void (async () => {
         try {
@@ -13419,31 +13631,17 @@ function updateRotaceNamesDockMetrics(reason) {
 }
 
 function scheduleRotaceNamesDockMetrics(reason) {
-  // v996: dock jmen drží těsně nad spodní lištou; žádné opožděné povyskočení nahoru po otevření Rotace.
+  // v999: už nepřepisujeme polohu doku jmen z JS podle visualViewportu.
+  // iOS po otevření mění viewport a stará metrika tím dock po chvíli vytahovala nahoru.
   try {
     const root = document.documentElement;
-    const nav = document.querySelector('nav.bottomNav') || document.querySelector('.bottomNav');
-    const grid = document.getElementById('namesGrid');
-    const viewport = window.visualViewport || null;
-    const vh = Math.round(Number(viewport && viewport.height || window.innerHeight || root.clientHeight || 720) || 720);
-    const navRect = nav && typeof nav.getBoundingClientRect === 'function' ? nav.getBoundingClientRect() : null;
-    const gridRect = grid && typeof grid.getBoundingClientRect === 'function' ? grid.getBoundingClientRect() : null;
-    const navHeightRaw = navRect ? Math.round(Number(navRect.height || 0) || 56) : 56;
-    const navHeight = Math.max(46, Math.min(70, navHeightRaw));
-    const navBottomGapRaw = navRect ? Math.max(0, Math.round(vh - Number(navRect.bottom || vh))) : 0;
-    const navBottomGap = Math.max(0, Math.min(6, navBottomGapRaw));
-    const dockGap = vh >= 850 ? 3 : 2;
-    const dockBottom = Math.max(48, Math.min(76, navHeight + navBottomGap + dockGap));
-    const gridHeight = gridRect ? Math.max(82, Math.min(136, Math.round(Number(gridRect.height || 0) || 114))) : 112;
-    root.style.setProperty('--rak-rotace-names-dock-bottom', dockBottom + 'px');
-    root.style.setProperty('--rak-rotace-names-content-bottom', (dockBottom + gridHeight + 14) + 'px');
-    root.dataset.rakRotaceNamesDockMode = 'tight-v996';
+    if (root && root.dataset) root.dataset.rakRotaceNamesDockMode = 'css-locked-v999';
     if (typeof requestAnimationFrame === 'function') {
-      requestAnimationFrame(() => { try { updateRotaceNamesDockMetrics(reason || 'tight-v996'); } catch (err) {} });
+      requestAnimationFrame(() => { try { updateRotaceNamesDockMetrics(reason || 'css-locked-v999'); } catch (err) {} });
     }
-    return updateRotaceNamesDockMetrics(reason || 'tight-v996');
+    return updateRotaceNamesDockMetrics(reason || 'css-locked-v999');
   } catch (err) {
-    try { return updateRotaceNamesDockMetrics(reason || 'tight-v996-fallback'); } catch (_) { return null; }
+    try { return updateRotaceNamesDockMetrics(reason || 'css-locked-v999-fallback'); } catch (_) { return null; }
   }
 }
 

@@ -1,9 +1,31 @@
+## v.1.5 (999)
+- Mobilní stabilizace startu: počáteční výška appky se zamkne před prvním vykreslením podle layout viewportu, ne podle později se měnícího visualViewportu.
+- Odstraněná stará fixní pseudo-vrstva pozadí, která dělala tmavší přechod ve výšce nadpisů a zůstávala na místě při scrollu.
+- Rotace: dock jmen už nepřepisuje polohu z JS po otevření stránky, drží se CSS těsně nad spodním panelem.
+- Kontrola kantýny/jídelny po přesunu do samostatné administrace bez změny DB/policies.
+- Verze sjednocena na v.1.5 (999), cache na `v1.5-999`, realtime kanál na `rak-public-live-v999`, package na `1.5.999`.
+
+## v.1.5 (998)
+
+- Administrace: Kantýna / jídelna přesunuta do samostatné sekce mimo Nastavení strojů.
+- Administrace: seznam přesčasových nedělí se zadává česky ve formátu `den.měsíc.rok` (např. `11.1.2027`), interně se dál ukládá jako ISO kvůli výpočtům.
+- Nastavení strojů: při uložení už lokálně neztratí řádek s časy kantýny/jídelny.
+- ZIP cleanup: ověřeno, že ostrý ZIP obsahuje jen kořenové runtime soubory a složku `assets/`.
+- Verze sjednocena na v.1.5 (998), cache na `v1.5-998`, realtime kanál na `rak-public-live-v998`, package na `1.5.998`.
+
+## v.1.5 (997)
+- Kantýna/jídelna: přesčasová neděle už neoznačí běžné nedělní denní okno jako přesčas; neděle 6–14 jede podle normální otevírací doby.
+- Administrace → Nastavení strojů: přidána editovatelná sekce Kantýna / jídelna pro běžnou otevírací dobu, přesčasovou dobu a seznam přesčasových nedělí pro další rok.
+- Časy jídla se ukládají do existujícího `machine_settings` řádku `FOOD_SCHEDULE_SETTINGS`, bez změny Supabase schématu nebo policies.
+- Verze sjednocena na v.1.5 (997), cache na `v1.5-997`, realtime kanál na `rak-public-live-v997`, package na `1.5.997`.
+
 ## v.1.5 (996)
 - Dashboard kompletně navázán na aktuální theme barvu: horní roh, linky, glow, karty a dashboard shell už nejsou natvrdo zelené.
 - Nadpisové panely stránek mají spodní linku jako jemný odstín zvolené theme barvy, ne pevnou zelenou.
 - Rotace: seznam jmen je posazen těsněji ke spodnímu panelu a JS metrika už ho po otevření nevytahuje zbytečně nahoru.
 - Supabase beze změn.
 - Verze sjednocena na v.1.5 (996), cache na `v1.5-996`, realtime kanál na `rak-public-live-v996`, package na `1.5.996`.
+
 
 ## v.1.5 (993)
 - iOS/PWA start: spodní lišta se po prvním otevření kotví hned na spodní hranu a pod panelem nezůstává dočasný černý pruh.
