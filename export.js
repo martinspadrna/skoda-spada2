@@ -1,4 +1,4 @@
-// RaK 1.2 (1.100) – export manifest a release metadata.
+// RaK 1.2 (1.102) – export manifest a release metadata.
 const EXPORT_SOURCE_IDS = {
   "module-readiness.js": "src-module-readiness-js",
   "rak-namespace.js": "src-rak-namespace-js",
@@ -111,12 +111,12 @@ const EXPORT_SOURCE_IDS = {
 const SOURCE_CACHE = window.__ROTACE_SOURCE_CACHE__ || (window.__ROTACE_SOURCE_CACHE__ = {});
 const BINARY_SOURCE_CACHE = window.__ROTACE_BINARY_SOURCE_CACHE__ || (window.__ROTACE_BINARY_SOURCE_CACHE__ = {});
 const RAK_RELEASE_METADATA_CONTRACT_V199 = Object.freeze({
-  displayVersion: '1.2 (1.100)',
-  appLabel: 'RaK 1.2 (1.100)',
-  packageVersion: '1.2.100',
-  cacheVersion: 'v1.2-1.100',
-  realtimeChannel: 'rak-public-live-v1-2-1-100',
-  changelogHeader: '## RaK 1.2 (1.100)',
+  displayVersion: '1.2 (1.102)',
+  appLabel: 'RaK 1.2 (1.102)',
+  packageVersion: '1.2.102',
+  cacheVersion: 'v1.2-1.102',
+  realtimeChannel: 'rak-public-live-v1-2-1-102',
+  changelogHeader: '## RaK 1.2 (1.102)',
   serviceWorkerVersionGuard: 'CACHE_VERSION + SW_APP_VERSION'
 });
 const RAK_DASHBOARD_CSS_GUARD_SERIES_CONTRACT_V1100 = Object.freeze({
@@ -137,11 +137,29 @@ const RAK_DASHBOARD_CSS_GUARD_SERIES_CONTRACT_V1100 = Object.freeze({
   ]),
   nextWork: 'Další Dashboard změny dělat už jako konkrétní funkční/vizuální požadavek, ne jako další cleanup-only guard.'
 });
+const RAK_BRUSY_CHOICE_SIZE_CONTRACT_V1101 = Object.freeze({
+  scope: 'kalkulacky-brusy-vypocet-kusu',
+  reference: 'korekce-frezky-calcFhbPresetBtn',
+  targetHeightPx: 58,
+  protectedButtons: Object.freeze(['TBKR01', 'TBKR07', 'AD', 'AE', 'AH', 'AD volné', 'AE volné'])
+});
+const RAK_FIXED_APP_BACKGROUND_CONTRACT_V1101 = Object.freeze({
+  scope: 'whole-app-fixed-background',
+  method: 'fixed-body-pseudo-background',
+  protectedEffect: 'content-scrolls-over-stable-background-for-glass-panels',
+  pages: Object.freeze(['home', 'rotace', 'statistiky', 'rozpisy', 'kalkulacky', 'games', 'soustruhy', 'frezky', 'brusy'])
+});
+const RAK_NAME_CHOICE_FIT_CONTRACT_V1102 = Object.freeze({
+  scope: 'rotace-and-statistiky-name-choice-buttons',
+  intent: 'fit-full-names-on-narrow-displays',
+  protectedSelectors: Object.freeze(['.rotaceNameTile .rotaceTileTitle', '#statsNameGrid .statsNameTile .statsTileTitle']),
+  textRules: Object.freeze(['white-space:normal', 'overflow:visible', 'text-overflow:clip', 'overflow-wrap:anywhere'])
+});
 const EXPORT_SMOKE_REPORT = window.__RAK_EXPORT_SMOKE_REPORT__ || (window.__RAK_EXPORT_SMOKE_REPORT__ = {
   ok: null,
   status: 'not-run',
   mode: 'export-smoke-report-v939',
-  version: '1.2 (1.100)',
+  version: '1.2 (1.102)',
   checkedAt: null,
   lastStage: 'čeká na export',
   runCount: 0,
@@ -273,7 +291,7 @@ const EXPORT_TEXT_FILES = [
 
 function getRakExportManifest() {
   return {
-    version: String(window.APP_VERSION || '1.2 (1.100)'),
+    version: String(window.APP_VERSION || '1.2 (1.102)'),
     mode: 'export-manifest-preflight-v939',
     indexFile: 'index.html',
     jsFiles: Array.from(new Set(EXPORT_JS_FILES)),
@@ -383,7 +401,7 @@ function updateRakExportSmokeReport(partial) {
   const data = partial && typeof partial === 'object' ? partial : {};
   Object.assign(EXPORT_SMOKE_REPORT, data, {
     mode: 'export-smoke-report-v939',
-    version: String(window.APP_VERSION || '1.2 (1.100)'),
+    version: String(window.APP_VERSION || '1.2 (1.102)'),
     checkedAt: new Date().toISOString()
   });
   return getRakExportSmokeReport();

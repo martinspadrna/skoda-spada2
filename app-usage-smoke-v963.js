@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.100) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.102) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -28,6 +28,7 @@ const dashboardFitCss = read('styles-dashboard-fit.css');
 const dashboardPolishCss = read('styles-dashboard-polish.css');
 const menuPolishCss = read('styles-menu-polish.css');
 const stylesGamesCss = read('styles-games.css');
+const stylesReleasePolishCss = read('styles-release-polish.css');
 const rotaceJs = read('rotace.js');
 const dashboardCss = `${dashboardFitCss}
 ${dashboardPolishCss}`;
@@ -213,13 +214,13 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.100)',
-  appLabel: 'RaK 1.2 (1.100)',
-  packageVersion: '1.2.100',
-  cacheVersion: 'v1.2-1.100',
-  realtimeChannel: 'rak-public-live-v1-2-1-100',
-  changelogHeader: '## RaK 1.2 (1.100)',
-  previousBuildFragments: Object.freeze(['1.2 (1.99)', '1.2.99', 'v1.2-1.99', 'rak-public-live-v1-2-1-99'])
+  displayVersion: '1.2 (1.102)',
+  appLabel: 'RaK 1.2 (1.102)',
+  packageVersion: '1.2.102',
+  cacheVersion: 'v1.2-1.102',
+  realtimeChannel: 'rak-public-live-v1-2-1-102',
+  changelogHeader: '## RaK 1.2 (1.102)',
+  previousBuildFragments: Object.freeze(['1.2 (1.101)', '1.2.101', 'v1.2-1.101', 'rak-public-live-v1-2-1-101'])
 });
 
 const releaseMetadataActiveFilesV199 = Object.freeze([
@@ -323,17 +324,17 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.100)'", 'Release contract v export.js musí držet display verzi 1.100');
-  assertIncludes(exportJs, "packageVersion: '1.2.100'", 'Release contract v export.js musí držet package verzi 1.2.100');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.102)'", 'Release contract v export.js musí držet display verzi 1.102');
+  assertIncludes(exportJs, "packageVersion: '1.2.102'", 'Release contract v export.js musí držet package verzi 1.2.102');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
-  assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.100');
-  assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.100');
-  assertIncludes(serviceWorkerJs, `const SW_APP_VERSION = '${contract.displayVersion}';`, 'sw.js SW_APP_VERSION není sjednocený s 1.100');
-  assertIncludes(bridge, `client.channel('${contract.realtimeChannel}')`, 'Supabase realtime kanál není sjednocený s 1.100');
-  assertIncludes(bridge, `realtimeChannel: '${contract.realtimeChannel}'`, 'Supabase diagnostika realtime kanálu není sjednocená s 1.100');
-  assert(changelogMd.startsWith(contract.changelogHeader), 'CHANGELOG.md musí začínat aktuálním buildem 1.100');
-  assertIncludes(changelogMd, `technická verze \`${contract.packageVersion}\``, 'CHANGELOG.md musí uvádět technickou verzi 1.2.100');
-  assertIncludes(changelogMd, `cache \`${contract.cacheVersion}\``, 'CHANGELOG.md musí uvádět cache verzi 1.100');
+  assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.102');
+  assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.102');
+  assertIncludes(serviceWorkerJs, `const SW_APP_VERSION = '${contract.displayVersion}';`, 'sw.js SW_APP_VERSION není sjednocený s 1.102');
+  assertIncludes(bridge, `client.channel('${contract.realtimeChannel}')`, 'Supabase realtime kanál není sjednocený s 1.102');
+  assertIncludes(bridge, `realtimeChannel: '${contract.realtimeChannel}'`, 'Supabase diagnostika realtime kanálu není sjednocená s 1.101');
+  assert(changelogMd.startsWith(contract.changelogHeader), 'CHANGELOG.md musí začínat aktuálním buildem 1.102');
+  assertIncludes(changelogMd, `technická verze \`${contract.packageVersion}\``, 'CHANGELOG.md musí uvádět technickou verzi 1.2.102');
+  assertIncludes(changelogMd, `cache \`${contract.cacheVersion}\``, 'CHANGELOG.md musí uvádět cache verzi 1.102');
   assertIncludes(exportJs, `version: '${contract.displayVersion}'`, 'export.js smoke report musí nést aktuální display verzi');
   assertIncludes(exportJs, `version: String(window.APP_VERSION || '${contract.displayVersion}')`, 'export.js fallbacky musí používat aktuální display verzi');
   releaseMetadataActiveFilesV199.forEach(([fileName, source]) => {
@@ -341,6 +342,49 @@ function assertReleaseMetadataContractV199() {
       assert(!String(source || '').includes(fragment), `Aktivní release soubor ${fileName} obsahuje starý build fragment: ${fragment}`);
     });
   });
+}
+
+function assertBrusyChoiceSizeContractV1101() {
+  assertIncludes(exportJs, 'RAK_BRUSY_CHOICE_SIZE_CONTRACT_V1101', 'export.js musí dokumentovat sjednocení velikosti voleb Brusy v1.101');
+  assertIncludes(stylesReleasePolishCss, 'Brusy / Výpočet kusů: volby brusu a indexů dorovnané velikostí', 'styles-release-polish.css musí obsahovat poznámku k Brusy v1.101');
+  ['.bbtn.brusMachineBtn', '.bbtn.brusIndexBtn', '.bbtn.brusFreeIndexBtn'].forEach((selector) => {
+    assertIncludes(stylesReleasePolishCss, selector, `Brusy velikostní contract v1.101 musí hlídat ${selector}`);
+  });
+  assertIncludes(stylesReleasePolishCss, 'height:58px !important;', 'Brusy volby musí mít stejnou výšku jako Frézky preset tlačítka');
+  assertIncludes(stylesReleasePolishCss, 'min-height:58px !important;', 'Brusy volby musí držet minimální výšku 58px');
+  assertIncludes(stylesReleasePolishCss, 'max-height:58px !important;', 'Brusy volby musí držet maximální výšku 58px');
+  assertIncludes(stylesReleasePolishCss, '--brus-main-choice-h:58px !important;', 'Brusy hlavní volby musí být dorovnané na 58px');
+  assertIncludes(stylesReleasePolishCss, '--brus-free-choice-h:58px !important;', 'Brusy volné indexy musí být dorovnané na 58px');
+  assertIncludes(stylesOverridesCss, '#korekce-frezky .calcFhbPresetBtn{display:grid !important;grid-template-rows:auto auto !important;align-content:center !important;justify-items:center !important;gap:4px !important;min-height:58px !important;', 'Referenční Frézky preset tlačítka musí dál držet 58px');
+}
+
+function assertFixedAppBackgroundContractV1101() {
+  assertIncludes(exportJs, 'RAK_FIXED_APP_BACKGROUND_CONTRACT_V1101', 'export.js musí dokumentovat pevné pozadí appky v1.101');
+  assertIncludes(stylesReleasePolishCss, 'Pevné pozadí celé appky', 'styles-release-polish.css musí obsahovat pevné pozadí celé appky');
+  assertIncludes(stylesReleasePolishCss, 'body::before', 'Pevné pozadí musí používat body::before jako fixed background vrstvu');
+  assertIncludes(stylesReleasePolishCss, 'body::after', 'Pevné pozadí musí používat body::after jako fixed overlay vrstvu');
+  assertIncludes(stylesReleasePolishCss, 'position:fixed !important;', 'Pozadí musí být fixované vůči viewportu');
+  assertIncludes(stylesReleasePolishCss, 'background:var(--rakAppBackground, var(--bg, #050816)) !important;', 'Pevná background vrstva musí používat zvolené pozadí aplikace');
+  assertIncludes(stylesReleasePolishCss, 'background:var(--rakAppBackgroundOverlay, transparent) !important;', 'Pevná overlay vrstva musí používat overlay zvoleného pozadí');
+  assertIncludes(stylesReleasePolishCss, `body,
+html.rakViewportPrimed body,
+html.rakStableBootViewport body{
+  background:transparent !important;`, 'Body musí být průhledné, aby pevná pseudo background vrstva nebyla překrytá scrollujícím pozadím');
+  ['#home', '#rotace', '#statistiky', '#rozpisy', '#kalkulacky', '#games', '#soustruhy', '#frezky', '#brusy'].forEach((selector) => {
+    assertIncludes(stylesReleasePolishCss, selector, `Pevné pozadí v1.101 musí pokrýt stránku ${selector}`);
+  });
+}
+
+function assertNameChoiceFitContractV1102() {
+  assertIncludes(exportJs, 'RAK_NAME_CHOICE_FIT_CONTRACT_V1102', 'export.js musí dokumentovat fit jmen pro Rotaci a Statistiky v1.102');
+  assertIncludes(stylesReleasePolishCss, 'Volba jmen v Rotaci a Statistikách', 'styles-release-polish.css musí obsahovat poznámku k volbě jmen v1.102');
+  ['#rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceTileTitle', '#statsNameGrid .statsNameTile .statsTileTitle'].forEach((selector) => {
+    assertIncludes(stylesReleasePolishCss, selector, `Fit jmen v1.102 musí hlídat selector ${selector}`);
+  });
+  ['white-space:normal !important;', 'overflow:visible !important;', 'text-overflow:clip !important;', 'overflow-wrap:anywhere !important;', '--rak-name-choice-font:clamp(10.4px, 2.62vw, 12.6px);', '--rak-name-choice-font-tight:clamp(9.8px, 2.48vw, 11.8px);'].forEach((fragment) => {
+    assertIncludes(stylesReleasePolishCss, fragment, `Fit jmen v1.102 musí obsahovat pravidlo ${fragment}`);
+  });
+  assertIncludes(stylesReleasePolishCss, '@media (max-width:390px)', 'Fit jmen v1.102 musí mít užší mobilní breakpoint');
 }
 
 function assertDashboardCssGuardSeriesCompleteV1100() {
@@ -777,5 +821,8 @@ assertDashboardLayerScopeGuard(dashboardPolishCss, 'styles-dashboard-polish.css'
 assertDashboardReleaseIsolationGuardV198();
 assertDashboardCssGuardSeriesCompleteV1100();
 assertReleaseMetadataContractV199();
+assertBrusyChoiceSizeContractV1101();
+assertFixedAppBackgroundContractV1101();
+assertNameChoiceFitContractV1102();
 
-console.log('app-usage-smoke-v963 OK + dashboard-css-contract-guard + appearance-reward-contract + rotation-export-summary-simple-guard + rotation-export-glass-guard + appearance-readability-guard + css-layer-order-v194-guard + dashboard-owner-registry-v195-guard + dashboard-overrides-selector-lock-v196-guard + dashboard-scope-v197-guard + dashboard-release-isolation-v198-guard + dashboard-css-guard-series-v1100-complete + release-metadata-v199-guard + no-visual-owner-drift-guard OK');
+console.log('app-usage-smoke-v963 OK + dashboard-css-contract-guard + appearance-reward-contract + rotation-export-summary-simple-guard + rotation-export-glass-guard + appearance-readability-guard + css-layer-order-v194-guard + dashboard-owner-registry-v195-guard + dashboard-overrides-selector-lock-v196-guard + dashboard-scope-v197-guard + dashboard-release-isolation-v198-guard + dashboard-css-guard-series-v1100-complete + release-metadata-v199-guard + brusy-choice-size-v1101-guard + fixed-app-background-v1101-guard + name-choice-fit-v1102-guard + no-visual-owner-drift-guard OK');

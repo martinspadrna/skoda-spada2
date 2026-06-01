@@ -1,4 +1,4 @@
-/* RaK 1.2 (1.100) – release polish override vrstva oddělená ze styles-overrides.css.
+/* RaK 1.2 (1.102) – release polish override vrstva oddělená ze styles-overrides.css.
    Tady jsou pozdní opravy vzhledu, které musí zůstat načtené až po historických overridech. */
 
 /* 1.2 (1.9) – stabilizace pozadí, iOS startu a Rotace doku jmen. */
@@ -847,7 +847,7 @@ body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .r
 }
 
 
-/* 1.2 (1.100) – Rotace: jmenné bloky o cca 15 % vyšší a pořád hodně průhledný glass. */
+/* 1.2 (1.102) – Rotace: jmenné bloky o cca 15 % vyšší a pořád hodně průhledný glass. */
 :root{
   --rak-v1008-rotace-names-h:clamp(128px, 38svh, 202px);
   --rak-rotace-name-chip-h:48px;
@@ -915,7 +915,7 @@ body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .r
   }
 }
 
-/* 1.2 (1.100) – Rotace: jména zůstávají větší, ale písmo je o chlup menší kvůli delším jménům. */
+/* 1.2 (1.102) – Rotace: jména zůstávají větší, ale písmo je o chlup menší kvůli delším jménům. */
 #rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceTileTitle,
 #rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem .rotaceTileTitle,
 html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceTileTitle,
@@ -933,7 +933,7 @@ body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .r
   }
 }
 
-/* 1.2 (1.100) – Korekce Frézky: aktuální korekce bez zeleného podbarvení, jen neutrální glass. */
+/* 1.2 (1.102) – Korekce Frézky: aktuální korekce bez zeleného podbarvení, jen neutrální glass. */
 #korekce-frezky .calcCorrectionFhbCard .calcCorrectionGroup--currentCorrection,
 #korekce-frezky .calcCorrectionFhbCard .calcCorrectionGroup--soft.calcCorrectionGroup--currentCorrection{
   background:linear-gradient(145deg, rgba(255,255,255,.042), rgba(255,255,255,.010)) !important;
@@ -962,7 +962,7 @@ body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .r
   box-shadow:0 0 0 2px rgba(255,255,255,.10), inset 0 1px 0 rgba(255,255,255,.14) !important;
 }
 
-/* 1.2 (1.100) – Rotace: jména ponechaná vyšší, písmo ještě malinko menší kvůli dvěma delším jménům. */
+/* 1.2 (1.102) – Rotace: jména ponechaná vyšší, písmo ještě malinko menší kvůli dvěma delším jménům. */
 #rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceTileTitle,
 #rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem .rotaceTileTitle,
 html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceTileTitle,
@@ -981,7 +981,7 @@ body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .r
   }
 }
 
-/* 1.2 (1.100) – Rozpisy: běžně dostupné stažení PNG bez administrace. */
+/* 1.2 (1.102) – Rozpisy: běžně dostupné stažení PNG bez administrace. */
 .rotaceDownloadMonthBtn{
   width:100% !important;
   margin-top:12px !important;
@@ -1003,4 +1003,207 @@ body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .r
   margin-top:6px !important;
   text-align:center !important;
   opacity:.72 !important;
+}
+
+/* 1.2 (1.102) – Brusy / Výpočet kusů: volby brusu a indexů dorovnané velikostí na Frézky / Korekce preset tlačítka. */
+#brusy.calcPage{
+  --brus-main-choice-h:58px !important;
+  --brus-free-choice-h:58px !important;
+  --brus-choice-gap:8px !important;
+}
+html body #brusy.calcPage .brusChoiceGrid,
+html body #brusy.calcPage .brusIndexGrid,
+html body #brusy.calcPage .brusIndexGrid > .brusFreeWrap{
+  gap:var(--brus-choice-gap, 8px) !important;
+  align-items:stretch !important;
+}
+html body #brusy.calcPage .brusChoiceGrid{
+  margin-bottom:0 !important;
+}
+html body #brusy.calcPage .brusIndexGrid{
+  margin-top:0 !important;
+}
+html body #brusy.calcPage .bbtn.brusMachineBtn,
+html body #brusy.calcPage .bbtn.brusIndexBtn,
+html body #brusy.calcPage .bbtn.brusFreeIndexBtn{
+  height:58px !important;
+  min-height:58px !important;
+  max-height:58px !important;
+  padding:8px 7px !important;
+  border-radius:13px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  text-align:center !important;
+  box-sizing:border-box !important;
+  overflow:hidden !important;
+  font-size:14px !important;
+  line-height:1 !important;
+  font-weight:900 !important;
+}
+@media (max-width:430px){
+  #brusy.calcPage{
+    --brus-main-choice-h:58px !important;
+    --brus-free-choice-h:58px !important;
+    --brus-choice-gap:8px !important;
+  }
+  html body #brusy.calcPage .bbtn.brusMachineBtn,
+  html body #brusy.calcPage .bbtn.brusIndexBtn,
+  html body #brusy.calcPage .bbtn.brusFreeIndexBtn{
+    height:58px !important;
+    min-height:58px !important;
+    max-height:58px !important;
+    padding:8px 7px !important;
+    font-size:14px !important;
+  }
+}
+
+/* 1.2 (1.102) – Pevné pozadí celé appky: obsah scrolluje nad ukotveným backgroundem, aby glass panely víc fungovaly. */
+html,
+html.rakViewportPrimed,
+html.rakStableBootViewport{
+  background:var(--rakBgBase, var(--bg, #050816)) !important;
+  background-color:var(--rakBgBase, var(--bg, #050816)) !important;
+}
+body,
+html.rakViewportPrimed body,
+html.rakStableBootViewport body{
+  background:transparent !important;
+  background-color:transparent !important;
+  background-image:none !important;
+  background-attachment:fixed !important;
+}
+body::before{
+  content:"" !important;
+  display:block !important;
+  position:fixed !important;
+  inset:-1px !important;
+  pointer-events:none !important;
+  z-index:-2 !important;
+  opacity:1 !important;
+  background:var(--rakAppBackground, var(--bg, #050816)) !important;
+  background-color:var(--rakBgBase, var(--bg, #050816)) !important;
+  background-repeat:no-repeat !important;
+  background-size:cover !important;
+  background-position:center center !important;
+  transform:translate3d(0,0,0) !important;
+  will-change:transform !important;
+}
+body::after{
+  content:"" !important;
+  display:block !important;
+  position:fixed !important;
+  inset:0 !important;
+  pointer-events:none !important;
+  z-index:-1 !important;
+  opacity:1 !important;
+  background:var(--rakAppBackgroundOverlay, transparent) !important;
+  background-repeat:no-repeat !important;
+  background-size:cover !important;
+  background-position:center center !important;
+  transform:translate3d(0,0,0) !important;
+  will-change:transform !important;
+}
+.page,
+.page.active,
+#home,
+#rotace,
+#statistiky,
+#rozpisy,
+#kalkulacky,
+#games,
+#soustruhy,
+#frezky,
+#brusy,
+.calcPage{
+  background:transparent !important;
+  background-color:transparent !important;
+}
+@supports (-webkit-touch-callout:none){
+  body,
+  html.rakViewportPrimed body,
+  html.rakStableBootViewport body{
+    background:transparent !important;
+    background-color:transparent !important;
+  }
+  body::before,
+  body::after{
+    position:fixed !important;
+    transform:translate3d(0,0,0) !important;
+  }
+}
+
+
+/* RaK 1.2 (1.102) – Volba jmen v Rotaci a Statistikách: delší jména se mají vejít na menších displejích. */
+:root{
+  --rak-name-choice-font:clamp(10.4px, 2.62vw, 12.6px);
+  --rak-name-choice-font-tight:clamp(9.8px, 2.48vw, 11.8px);
+  --rak-name-choice-line:1.04;
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceNameTile,
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem,
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile,
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem,
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile,
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem,
+#statsNameGrid .statsNameTile,
+#statsNameGrid .listItem{
+  align-items:center !important;
+  justify-content:center !important;
+  min-width:0 !important;
+  padding-left:5px !important;
+  padding-right:5px !important;
+  overflow:visible !important;
+}
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceTileTitle,
+#rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem .rotaceTileTitle,
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceTileTitle,
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceTileTitle,
+#statsNameGrid .statsNameTile .statsTileTitle,
+#statsNameGrid .listItem .statsTileTitle{
+  display:block !important;
+  width:100% !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  white-space:normal !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  overflow-wrap:anywhere !important;
+  word-break:normal !important;
+  hyphens:auto !important;
+  text-align:center !important;
+  font-size:var(--rak-name-choice-font) !important;
+  line-height:var(--rak-name-choice-line) !important;
+  letter-spacing:-.028em !important;
+}
+#statsNameGrid .statsTileMain{
+  width:100% !important;
+  min-width:0 !important;
+  align-items:center !important;
+  justify-content:center !important;
+  text-align:center !important;
+}
+@media (max-width:390px){
+  #rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceTileTitle,
+  #rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem .rotaceTileTitle,
+  html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceTileTitle,
+  body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceTileTitle,
+  #statsNameGrid .statsNameTile .statsTileTitle,
+  #statsNameGrid .listItem .statsTileTitle{
+    font-size:var(--rak-name-choice-font-tight) !important;
+    letter-spacing:-.035em !important;
+  }
+}
+@media (max-width:360px){
+  #rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceNameTile,
+  #rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem,
+  html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile,
+  html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem,
+  body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceNameTile,
+  body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .listItem,
+  #statsNameGrid .statsNameTile,
+  #statsNameGrid .listItem{
+    padding-left:4px !important;
+    padding-right:4px !important;
+  }
 }

@@ -1,3 +1,20 @@
+## RaK 1.2 (1.102)
+
+- Rotace / volba jmen: delší jména v klikacích políčkách se na užších displejích líp vejdou díky menšímu adaptivnímu písmu, povolenému zalomení a zrušení ořezávání textu.
+- Statistiky / volba jmen: stejné fit pravidlo je přidané i pro jmenné dlaždice ve Statistikách, bez změny výpočtů nebo logiky výběru.
+- Přidaný contract `RAK_NAME_CHOICE_FIT_CONTRACT_V1102` a guard v `npm run test:app-usage`, aby se jména nevrátila k ořezávání/ellipsis.
+- Bez zásahu do spodní lišty, Dashboardu, výpočtů, exportu Rozpisů, her nebo Supabase DB/policies.
+- Release metadata sjednocená na `RaK 1.2 (1.102)`, technická verze `1.2.102`, cache `v1.2-1.102`.
+
+## RaK 1.2 (1.101)
+
+- Kalkulačky / Výpočet kusů / Brusy: volby `TBKR01`, `TBKR07`, `AD`, `AE`, `AH`, `AD volné` a `AE volné` jsou dorovnané velikostí na preset tlačítka z Korekce / Frézky.
+- Pozadí celé appky je pevně ukotvené vůči viewportu: při scrollování se hýbe obsah nad pozadím, ne pozadí samotné, aby glass panely a ikonky působily přirozeněji.
+- Přidané contracty `RAK_BRUSY_CHOICE_SIZE_CONTRACT_V1101` a `RAK_FIXED_APP_BACKGROUND_CONTRACT_V1101`.
+- `npm run test:app-usage` hlídá sjednocenou velikost voleb Brusy a pevné pozadí celé appky.
+- Browser smoke test z plánovaného kroku byl odložený, protože do buildu šly konkrétní UI úpravy.
+- Release metadata sjednocená na `RaK 1.2 (1.101)`, technická verze `1.2.101`, cache `v1.2-1.101`.
+
 ## RaK 1.2 (1.100)
 
 - Stabilizační uzavření série Dashboard CSS guardů: přidaný `RAK_DASHBOARD_CSS_GUARD_SERIES_CONTRACT_V1100`, který označuje guard sérii 1.90–1.100 jako uzavřenou.

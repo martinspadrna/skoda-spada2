@@ -1,4 +1,4 @@
-// RaK 1.2 (1.100) – theme, pozadí a profilové UI nastavení.
+// RaK 1.2 (1.102) – theme, pozadí a profilové UI nastavení.
 
 const RAK_THEME_STORAGE_KEY = APP_KEY + ':theme_v1';
 const RAK_THEME_BASE_VARS = {
@@ -757,11 +757,11 @@ RAK_BACKGROUND_DEFS.forEach((bg) => {
   if (unlock) Object.assign(bg, unlock);
 });
 
-// RaK 1.2 (1.100) – appearance reward contract guard.
+// RaK 1.2 (1.102) – appearance reward contract guard.
 // Slouží jako jednoduché interní pravidlo pro budoucí theme/pozadí: klidně jich může přibýt víc,
 // ale nesmí to být skoro stejné varianty a výrazné kusy se musí odemykat postupně.
 const RAK_APPEARANCE_REWARD_CONTRACT_V181 = Object.freeze({
-  version: '1.2 (1.100)',
+  version: '1.2 (1.102)',
   intent: 'distinct-progressive-appearance-rewards',
   defaultThemeId: 'default',
   defaultBackgroundId: 'ios-mesh',
@@ -790,11 +790,11 @@ const RAK_APPEARANCE_REWARD_CONTRACT_V181 = Object.freeze({
   reservedRemovedBackgroundIds: Object.freeze(['nebula-shock', 'emerald-smoke', 'ruby-circuit', 'cobalt-fire', 'solar-flare'])
 });
 
-// RaK 1.2 (1.100) – appearance readability contract guard.
+// RaK 1.2 (1.102) – appearance readability contract guard.
 // Cíl: výrazné theme/pozadí mohou být odemykané rewardy, ale nesmí zhoršit čitelnost Dashboardu,
 // Administrace, Nastavení vzhledu ani herních karet. Je to statická pojistka pro budoucí skiny.
 const RAK_APPEARANCE_READABILITY_CONTRACT_V189 = Object.freeze({
-  version: '1.2 (1.100)',
+  version: '1.2 (1.102)',
   intent: 'dashboard-admin-readable-appearance',
   protectedScreens: Object.freeze(['dashboard', 'admin-connections', 'settings-appearance', 'games-leaderboards']),
   requiredThemeVars: Object.freeze(['--bg', '--panel', '--panel2', '--green', '--green2', '--muted', '--soft', '--rakThemeGlow', '--rakThemeBorder']),
@@ -1493,7 +1493,7 @@ function getRakProfileAppearanceRewardHealth() {
   const themeRewards = themes.filter(item => String(item && item.id || '') !== 'default');
   const backgroundRewards = backgrounds.filter(item => String(item && item.id || '') !== 'ios-mesh');
   return {
-    version: window.APP_VERSION || '1.2 (1.100)',
+    version: window.APP_VERSION || '1.2 (1.102)',
     mode: 'profile-appearance-reward-health-v928',
     activeProfile: metrics.hasProfile,
     profileThemeStorage: 'account.uiSettings.themeId',
@@ -1582,7 +1582,7 @@ function getRakDashboardGlassThemeHealth() {
   const lightweight = /(?:^|\s)(?:lightweightMode|lowEndDevice|ladaMode)(?:\s|$)/.test(bodyClass);
   return {
     ok: true,
-    version: window.APP_VERSION || '1.2 (1.100)',
+    version: window.APP_VERSION || '1.2 (1.102)',
     mode: 'dashboard-ios-glass-viewport-fit-v945',
     theme,
     background,
