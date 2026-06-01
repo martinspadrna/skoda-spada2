@@ -1,3 +1,19 @@
+## RaK 1.2 (1.95)
+
+- Dashboard CSS cleanup bez vizuální změny: zpřesněný audit rozdílu mezi legacy inventurou ve `styles-overrides.css` a aktivními Dashboard vlastníky v `styles-dashboard-fit.css` / `styles-dashboard-polish.css`.
+- `styles-overrides.css` má nově popsaný `Dashboard legacy-only inventory`, aby bylo jasné, že staré Dashboard hotfixy v téhle vrstvě jsou jen historická stopa.
+- `styles-dashboard-polish.css` má nově `Dashboard active owner registry`, kde jsou pojmenované hlavní aktivní selektory Dashboardu.
+- `npm run test:app-usage` nově hlídá, že legacy-only selektory a active owner selektory nejsou smíchané dohromady a že aktivní vlastníci zůstávají v povolených dashboard vrstvách.
+- Release metadata sjednocená na `RaK 1.2 (1.95)`, technická verze `1.2.95`, cache `v1.2-1.95`.
+
+## RaK 1.2 (1.94)
+
+- Dashboard CSS cleanup bez vizuální změny: přidaný `Dashboard CSS layer order contract v1.94`.
+- `npm run test:app-usage` nově hlídá přesné pořadí lokálních CSS vrstev, aby se mezi `styles-overrides.css`, `styles-dashboard-fit.css` a finální `styles-dashboard-polish.css` omylem nevložila nová vítězná Dashboard vrstva.
+- Guard zároveň kontroluje dokumentační poznámku přímo ve `styles-dashboard-polish.css`, takže je z kódu jasné, proč musí zůstat poslední lokální CSS vrstvou.
+- Bez změny vzhledu Dashboardu, bez změny spodní lišty a bez zásahu do Supabase DB/policies.
+- Release metadata sjednocená na `RaK 1.2 (1.94)`, technická verze `1.2.94`, cache `v1.2-1.94`.
+
 ## RaK 1.2 (1.93)
 
 - Export PNG Rozpisů je upravený víc do iOS glass stylu: jemnější modro-bílé pozadí, měkčí stíny, průsvitné panely a lehčí tabulkové výplně.

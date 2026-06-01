@@ -1,6 +1,7 @@
-/* RaK 1.2 (1.93) – dashboard panely, food modaly a home layout polish.
+/* RaK 1.2 (1.95) – dashboard panely, food modaly a home layout polish.
    1.75: pozdní vítězná dashboard vrstva. Držet bez zásahu do spodní lišty; mobilní viewport pojistky hlídá npm run test:app-usage.
-   1.76: final visual owner guard; finální Dashboard selektory musí zůstat tady nebo ve viewport-fit vrstvě, ne ve slepých overrides. */
+   1.76: final visual owner guard; finální Dashboard selektory musí zůstat tady nebo ve viewport-fit vrstvě, ne ve slepých overrides.
+   1.94: Dashboard CSS layer order contract v1.94 – držet pořadí styles-overrides.css → styles-dashboard-fit.css → admin/menu/stats/viewport/theme/release polish vrstvy → styles-release-polish.css → styles-dashboard-polish.css. */
 #home.page.active .dashboardShell{
   --rak-dash-glass-bg: color-mix(in srgb, rgba(5,9,16,.34) 68%, var(--theme-surface, rgba(255,255,255,.10)) 32%) !important;
   --rak-dash-glass-bg-strong: color-mix(in srgb, rgba(5,9,16,.40) 70%, var(--theme-surface, rgba(255,255,255,.12)) 30%) !important;
@@ -86,7 +87,7 @@ body.ladaMode .dashboardAnnouncementBar{
 }
 
 
-/* 1.2 (1.93) – Dashboard: ještě matnější a průhlednější glass, bez zásahu do spodní lišty. */
+/* 1.2 (1.95) – Dashboard: ještě matnější a průhlednější glass, bez zásahu do spodní lišty. */
 #home.page.active .dashboardShell{
   --rak-dash-glass-bg: color-mix(in srgb, rgba(5,9,16,.24) 64%, var(--theme-surface, rgba(255,255,255,.12)) 36%) !important;
   --rak-dash-glass-bg-strong: color-mix(in srgb, rgba(5,9,16,.28) 66%, var(--theme-surface, rgba(255,255,255,.14)) 34%) !important;
@@ -139,7 +140,7 @@ body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) #home .tile.dashboa
   box-shadow:0 12px 30px rgba(0,0,0,.16), inset 0 1px 0 rgba(255,255,255,.14) !important;
 }
 
-/* 1.2 (1.93) – Když je zapnuté oznámení, hero panel dostane víc místa a neschová se za první řádek dlaždic. */
+/* 1.2 (1.95) – Když je zapnuté oznámení, hero panel dostane víc místa a neschová se za první řádek dlaždic. */
 #dashboardAnnouncementBar:not([hidden]) + #dashHero.dashboardHeroCard{
   min-height:132px !important;
   padding-top:12px !important;
@@ -187,7 +188,7 @@ body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) #home .tile.dashboa
   }
 }
 
-/* 1.2 (1.93) – Kantýna/Jídelna modal: bez zeleného vzhledu, bere theme/pozadí a je víc matně glass. */
+/* 1.2 (1.95) – Kantýna/Jídelna modal: bez zeleného vzhledu, bere theme/pozadí a je víc matně glass. */
 .foodScheduleOverlay{
   background:
     var(--rakAppBackgroundOverlay, transparent),
@@ -312,7 +313,7 @@ body.ladaMode .foodScheduleNowBox{
   backdrop-filter:none !important;
 }
 
-/* 1.2 (1.93) – tvrdý finální override Kantýna/Jídelna modalu: nahoře bez zeleného bloku, hodně průhledný glass. */
+/* 1.2 (1.95) – tvrdý finální override Kantýna/Jídelna modalu: nahoře bez zeleného bloku, hodně průhledný glass. */
 html body .foodScheduleOverlay.isVisible{
   background:
     var(--rakAppBackgroundOverlay, transparent),
@@ -394,7 +395,7 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
 }
 
 
-/* 1.2 (1.93) – Dashboard panely ještě o chlup nižší. */
+/* 1.2 (1.95) – Dashboard panely ještě o chlup nižší. */
 #home .dashboardCard,
 #home .tile.dashboardCard{
   min-height: calc(var(--rak-dashboard-fit-card-min, 82px) * .90) !important;
@@ -415,7 +416,7 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
 }
 
 
-/* 1.2 (1.93) – Dashboard: 8 běžných panelů větší a všechny stejně vysoké.
+/* 1.2 (1.95) – Dashboard: 8 běžných panelů větší a všechny stejně vysoké.
    Auto řádky zůstávají, ale karty mají pevnou cílovou výšku, aby Kalendář/Zbývá/Kantýna/Jídelna/Jídelní lístek/ePortál/Výplata/Dovolená byly stejně velké. */
 #home.page.active .dashboardGrid{
   height:auto !important;
@@ -499,7 +500,7 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
 }
 
 
-/* 1.2 (1.93) – Dashboard finální doladění po mobilním testu.
+/* 1.2 (1.95) – Dashboard finální doladění po mobilním testu.
    Panely zůstávají velké a stejně vysoké; jen jídlo dostane delší řádek a hero panel s oznámením víc prostoru dole. */
 #home.page.active #dashKantyna.dashboardCardFood .dashboardValue,
 #home.page.active #dashJidelna.dashboardCardFood .dashboardValue{
@@ -571,7 +572,7 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
 }
 
 
-/* 1.2 (1.93) – 390×844 fix: při oznámení držet procenta směny uvnitř hero panelu. */
+/* 1.2 (1.95) – 390×844 fix: při oznámení držet procenta směny uvnitř hero panelu. */
 @media (min-width:380px) and (max-width:400px) and (min-height:830px) and (max-height:860px){
   #dashboardAnnouncementBar:not([hidden]) + #dashHero.dashboardHeroCard{
     min-height:148px !important;
@@ -595,7 +596,7 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
 }
 
 
-/* 1.2 (1.93) – Dashboard: jídlo bez „přesčas“ na kartě, stejné měřítko textu jako ostatní panely. */
+/* 1.2 (1.95) – Dashboard: jídlo bez „přesčas“ na kartě, stejné měřítko textu jako ostatní panely. */
 #home.page.active #dashKantyna.dashboardCardFood .dashboardValue,
 #home.page.active #dashJidelna.dashboardCardFood .dashboardValue{
   grid-column:1 / -1 !important;
@@ -620,7 +621,7 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
   text-overflow:clip !important;
 }
 
-/* 1.2 (1.93) – 360×800: stavové kolečko u Kantýny/Jídelny zůstává viditelné vedle názvu a Jídelní lístek má název vedle ikony. */
+/* 1.2 (1.95) – 360×800: stavové kolečko u Kantýny/Jídelny zůstává viditelné vedle názvu a Jídelní lístek má název vedle ikony. */
 #home.page.active #dashKantyna .dashboardLabelRow,
 #home.page.active #dashJidelna .dashboardLabelRow,
 #home.page.active #dashFoodLink .dashboardLabelRow{
@@ -665,7 +666,7 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
   }
 }
 
-/* 1.2 (1.93) – 390×844: procenta směny drží pevně uvnitř hero panelu při zapnutém oznámení. */
+/* 1.2 (1.95) – 390×844: procenta směny drží pevně uvnitř hero panelu při zapnutém oznámení. */
 @media (min-width:380px) and (max-width:410px) and (min-height:760px) and (max-height:900px){
   #home.page.active #dashboardAnnouncementBar:not([hidden]) + #dashHero.dashboardHeroCard{
     position:relative !important;
@@ -705,7 +706,7 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
 }
 
 
-/* 1.2 (1.93) – Dashboard: 390×844 finální odskok hero panelu od karet.
+/* 1.2 (1.95) – Dashboard: 390×844 finální odskok hero panelu od karet.
    Funguje i když oznámení změní skutečnou výšku horní části. */
 @media (min-width:380px) and (max-width:410px) and (min-height:760px) and (max-height:900px){
   #home.page.active #dashHero.dashboardHeroCard{
@@ -739,7 +740,7 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
   }
 }
 
-/* 1.2 (1.93) – 360×800: top řádek potravin/linku drží ikonu, název a kolečko v jednom řádku. */
+/* 1.2 (1.95) – 360×800: top řádek potravin/linku drží ikonu, název a kolečko v jednom řádku. */
 @media (max-width:370px) and (max-height:820px){
   #home.page.active #dashKantyna .dashboardTop,
   #home.page.active #dashJidelna .dashboardTop,
@@ -796,7 +797,7 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
 }
 
 
-/* 1.2 (1.93) – 390×844: progress směny je součástí hero panelu, ne překryvná vrstva přes karty. */
+/* 1.2 (1.95) – 390×844: progress směny je součástí hero panelu, ne překryvná vrstva přes karty. */
 @media (min-width:380px) and (max-width:410px) and (min-height:760px) and (max-height:900px){
   #home.page.active #dashHero.dashboardHeroCard,
   #home.page.active #dashboardAnnouncementBar:not([hidden]) + #dashHero.dashboardHeroCard{
@@ -866,7 +867,7 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
 }
 
 
-/* 1.2 (1.93) – 390×844 + aktivní oznámení: hero panel nesmí pustit progress přes první řadu karet. */
+/* 1.2 (1.95) – 390×844 + aktivní oznámení: hero panel nesmí pustit progress přes první řadu karet. */
 @media (min-width:380px) and (max-width:410px) and (min-height:760px) and (max-height:900px){
   #home.page.active #dashboardAnnouncementBar:not([hidden]) + #dashHero.dashboardHeroCard{
     display:flex !important;
@@ -904,7 +905,7 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
   }
 }
 
-/* 1.2 (1.93) – 390×844 + aktivní oznámení: oprava skutečné příčiny překryvu.
+/* 1.2 (1.95) – 390×844 + aktivní oznámení: oprava skutečné příčiny překryvu.
    Dashboard shell při oznámení potřebuje 4 řádky: hlavička, oznámení, směnový panel, karty. */
 @media (min-width:380px) and (max-width:410px) and (min-height:830px) and (max-height:860px){
   #home.page.active .dashboardShell{
@@ -1015,7 +1016,7 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
 }
 
 
-/* 1.2 (1.93) – 390×844 + aktivní oznámení: posunout jen běžné panely níž.
+/* 1.2 (1.95) – 390×844 + aktivní oznámení: posunout jen běžné panely níž.
    Směnový hero panel s procenty zůstává na místě, odskok dostává až grid karet. */
 @media (min-width:380px) and (max-width:410px) and (min-height:830px) and (max-height:860px){
   #home.page.active #dashboardAnnouncementBar:not([hidden]) + #dashHero + .dashboardGrid{
@@ -1026,7 +1027,7 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
 }
 
 
-/* 1.2 (1.93) – 390×844 + aktivní oznámení: pevná skladba Dashboardu.
+/* 1.2 (1.95) – 390×844 + aktivní oznámení: pevná skladba Dashboardu.
    Příčina: v této kombinaci se míchalo několik starých viewport-fit vrstev a pozdější
    refresh Dashboardu měnil výšku hero obsahu. Grid karet pak znovu vyhrál v kaskádě
    moc nízký margin/řádek a vyskočil pod progress. Tady je pořadí napevno:
@@ -1166,7 +1167,7 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
   }
 }
 
-/* 1.2 (1.93) – Dashboard: finální pevný stack pro iPhone šířky 390–428.
+/* 1.2 (1.95) – Dashboard: finální pevný stack pro iPhone šířky 390–428.
    Řeší: 390×844 půlšířkový progress, název dole místo nahoře a iPhone 13 Pro Max překryv procent/panelů. */
 @media (min-width:380px) and (max-width:440px) and (min-height:830px) and (max-height:940px){
   #home.page.active .dashboardShell{
@@ -1320,7 +1321,7 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
   }
 }
 
-/* 1.2 (1.93) – Dashboard mobile finální stabilizace: horní směnový panel o cca 10 % nižší,
+/* 1.2 (1.95) – Dashboard mobile finální stabilizace: horní směnový panel o cca 10 % nižší,
    běžné panely se drží uvnitř shellu a stavové kolečko je vždy kruh. */
 #home.page.active #dashKantyna .dashboardDot,
 #home.page.active #dashJidelna .dashboardDot,
@@ -1517,7 +1518,7 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
 }
 
 
-/* 1.2 (1.93) – Dashboard: mírně větší písmo a kompaktnější horní směnový panel. */
+/* 1.2 (1.95) – Dashboard: mírně větší písmo a kompaktnější horní směnový panel. */
 #home.page.active .dashboardLabel{
   font-size:clamp(11.7px, 3.12vw, 14px) !important;
   line-height:1.08 !important;
@@ -1633,7 +1634,7 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
   }
 }
 
-/* 1.2 (1.93) – Kantýna/Jídelna: stavová tečka se nesmí deformovat ve flex/grid řádku. */
+/* 1.2 (1.95) – Kantýna/Jídelna: stavová tečka se nesmí deformovat ve flex/grid řádku. */
 #home.page.active #dashKantyna .dashboardLabelRow,
 #home.page.active #dashJidelna .dashboardLabelRow{
   align-items:center !important;
@@ -1668,7 +1669,7 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
   line-height:0 !important;
 }
 
-/* 1.2 (1.93) – Dashboard: čitelnější písmo a výraznější horní směnový panel. */
+/* 1.2 (1.95) – Dashboard: čitelnější písmo a výraznější horní směnový panel. */
 #home.page.active .dashboardLabel{
   font-size:clamp(12.1px, 3.25vw, 14.6px) !important;
   line-height:1.09 !important;
@@ -1719,7 +1720,7 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
 }
 
 
-/* 1.2 (1.93) – Dashboard: jemnější vrchní panel a Směna D na dva řádky. */
+/* 1.2 (1.95) – Dashboard: jemnější vrchní panel a Směna D na dva řádky. */
 #home.page.active #dashHero .dashboardHeroLine1,
 #home.page.active #dashHero .dashboardHeroLine1Text{
   font-size:clamp(15px, 4.1vw, 22.5px) !important;
@@ -1791,7 +1792,7 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
 }
 
 
-/* 1.2 (1.93) – Dashboard: „kdo bude chybět“ stejně velké jako řádek se směnou D. */
+/* 1.2 (1.95) – Dashboard: „kdo bude chybět“ stejně velké jako řádek se směnou D. */
 #home.page.active #dashHero .dashboardHeroLine3Sub{
   font-size:clamp(15px, 3.9vw, 21px) !important;
   line-height:1.03 !important;
@@ -1806,7 +1807,7 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
   }
 }
 
-/* 1.2 (1.93) – Dashboard: běžné panely opatrně vyšší max o 5 %, bez zásahu do spodní lišty. */
+/* 1.2 (1.95) – Dashboard: běžné panely opatrně vyšší max o 5 %, bez zásahu do spodní lišty. */
 #home.page.active .dashboardGrid{
   grid-auto-rows:128px !important;
 }
@@ -1870,14 +1871,14 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
   }
 }
 
-/* 1.2 (1.93) – Dashboard active owner map guard: bez vizuální změny.
+/* 1.2 (1.95) – Dashboard active owner map guard: bez vizuální změny.
    Tahle vrstva zůstává poslední vlastník běžných panelů, hero panelu a mobilních stacků. */
 
-/* 1.2 (1.93) – Dashboard viewport stack contract guard: bez vizuální změny.
+/* 1.2 (1.95) – Dashboard viewport stack contract guard: bez vizuální změny.
    Hlídáme ručně laděné stacky 360×800, 390×844, 428×926, 430×932 a desktop základ.
    Další úpravy Dashboardu mají nejdřív projít přes tyhle vlastníky, ne přes nové slepé override bloky. */
 
-/* 1.2 (1.93) – Dashboard: vrchní směnový panel vyšší cca o 10 %, běžné panely a spodní lišta beze změny. */
+/* 1.2 (1.95) – Dashboard: vrchní směnový panel vyšší cca o 10 %, běžné panely a spodní lišta beze změny. */
 #home.page.active #dashHero.dashboardHeroCard{
   min-height:154px !important;
 }
@@ -1906,9 +1907,18 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
     min-height:143px !important;
   }
 }
-/* 1.2 (1.93) – Dashboard legacy cleanup active owners remain here; no visual change. */
-/* 1.2 (1.93) – Dashboard legacy cleanup extended owners remain here; no visual change. */
+/* 1.2 (1.95) – Dashboard legacy cleanup active owners remain here; no visual change. */
+/* 1.2 (1.95) – Dashboard legacy cleanup extended owners remain here; no visual change. */
 
-/* 1.2 (1.93) – Dashboard no visual owner drift guard: bez vizuální změny.
+/* 1.2 (1.95) – Dashboard no visual owner drift guard: bez vizuální změny.
    Ručně laděné aktivní Dashboard vlastníky držíme jen ve styles-dashboard-fit.css / styles-dashboard-polish.css.
    Ostatní lokální vrstvy můžou nést obecný theme/release polish, ale poslední vlastník kritických Dashboard selektorů nesmí odplavat jinam. */
+
+/* 1.2 (1.95) – Dashboard active owner registry: bez vizuální změny.
+   Aktivní vlastníci jsou oddělení od legacy inventury a musí zůstat v dashboard vrstvách.
+   Active owner selektory: #home.page.active .dashboardShell, #home.page.active .dashboardGrid,
+   #home.page.active .dashboardCard, #home.page.active #dashHero.dashboardHeroCard,
+   #home.page.active #dashHero .dashboardHeroLine2, #home.page.active #dashHero .dashboardHeroLine3,
+   #home.page.active #dashHero .dashboardHeroLine3Pill,
+   #home.page.active .dashboardCard .dashboardIcon.dashboardIconInline,
+   #home.page.active #dashKantyna .dashboardDot, #home.page.active #dashJidelna .dashboardDot. */

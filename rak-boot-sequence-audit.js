@@ -1,4 +1,4 @@
-// RaK 1.2 (1.93) – boot sequence audit.
+// RaK 1.2 (1.95) – boot sequence audit.
 
 (function setupRakBootSequenceAudit() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();

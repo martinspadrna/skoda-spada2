@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.93) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.95) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 
@@ -28,6 +28,21 @@ const localStyleHrefs = styleHrefs.filter((href) => !/^https?:/i.test(href));
 const localCssByHref = Object.fromEntries(localStyleHrefs
   .filter((href) => href.endsWith('.css') && fs.existsSync(path.join(__dirname, href)))
   .map((href) => [href, read(href)]));
+const dashboardCssLayerOrderContractV194 = Object.freeze([
+  'styles.css',
+  'styles-inline-legacy.css',
+  'styles-calc-panels.css',
+  'styles-games.css',
+  'styles-overrides.css',
+  'styles-dashboard-fit.css',
+  'styles-admin-polish.css',
+  'styles-menu-polish.css',
+  'styles-stats-polish.css',
+  'styles-viewport-polish.css',
+  'styles-theme-polish.css',
+  'styles-release-polish.css',
+  'styles-dashboard-polish.css'
+]);
 const dashboardCriticalStyles = [
   'styles-overrides.css',
   'styles-dashboard-fit.css',
@@ -115,6 +130,33 @@ const dashboardLegacyOwnerMap = [
   ['#dashJidelna .dashboardDot', '#home.page.active #dashJidelna .dashboardDot'],
   ['#home.page.active .dashboardShell', '#home.page.active .dashboardShell']
 ];
+
+const dashboardLegacyOnlyInventoryV195 = Object.freeze([
+  '#home .dashboardGrid',
+  '#home .dashboardCard',
+  '#home .dashboardHeroCard',
+  '#dashHero .dashboardHeroLine2',
+  '#dashHero .dashboardHeroLine3',
+  '#dashHero .dashboardHeroLine3Pill',
+  '#home .dashboardIconInline',
+  '#home .dashboardIcon.dashboardIconInline',
+  '#home .dashboardDot',
+  '#dashKantyna .dashboardDot',
+  '#dashJidelna .dashboardDot'
+]);
+const dashboardActiveOwnerRegistryV195 = Object.freeze([
+  '#home.page.active .dashboardShell',
+  '#home.page.active .dashboardGrid',
+  '#home.page.active .dashboardCard',
+  '#home.page.active #dashHero.dashboardHeroCard',
+  '#home.page.active #dashHero .dashboardHeroLine2',
+  '#home.page.active #dashHero .dashboardHeroLine3',
+  '#home.page.active #dashHero .dashboardHeroLine3Pill',
+  '#home.page.active .dashboardCard .dashboardIcon.dashboardIconInline',
+  '#home.page.active #dashKantyna .dashboardDot',
+  '#home.page.active #dashJidelna .dashboardDot'
+]);
+
 
 
 function countMatches(source, pattern) {
@@ -266,6 +308,13 @@ assertIncludes(indexHtml, 'class="dashboardGrid"', 'Dashboard grid chybí');
 assert(countMatches(indexHtml, /class="[^"]*dashboardCard/g) >= 8, 'Dashboard musí mít minimálně 8 hlavních panelů');
 
 // Kaskáda: staré dashboard override bloky mohou existovat, ale vítězné vrstvy musí být načtené později.
+assert(
+  JSON.stringify(localStyleHrefs) === JSON.stringify(dashboardCssLayerOrderContractV194),
+  `CSS layer order drift: čekám ${dashboardCssLayerOrderContractV194.join(' → ')}, mám ${localStyleHrefs.join(' → ')}`
+);
+assertIncludes(dashboardPolishCss, 'Dashboard CSS layer order contract v1.94', 'styles-dashboard-polish.css musí mít 1.94 CSS layer order contract poznámku');
+assertIncludes(dashboardPolishCss, 'styles-overrides.css → styles-dashboard-fit.css', '1.94 guard musí pojmenovat přechod overrides → dashboard-fit');
+assertIncludes(dashboardPolishCss, 'styles-release-polish.css → styles-dashboard-polish.css', '1.94 guard musí pojmenovat finální přechod release-polish → dashboard-polish');
 assert(localStyleHrefs.length >= 10, 'Index musí načítat lokální CSS vrstvy aplikace');
 assert(localStyleHrefs[localStyleHrefs.length - 1] === 'styles-dashboard-polish.css', 'Dashboard polish musí být úplně poslední lokální CSS vrstva');
 dashboardCriticalStyles.forEach((href) => assertSingleOccurrence(localStyleHrefs, href, 'CSS vrstva nesmí být načtená víckrát ani chybět'));
@@ -278,6 +327,32 @@ dashboardCriticalStyles.slice(0, -1).forEach((href) => {
 dashboardNoVisualOwnerDriftSelectors.forEach((selector) => assertDashboardNoVisualOwnerDrift(selector));
 assertIncludes(dashboardPolishCss, 'Dashboard no visual owner drift guard', 'styles-dashboard-polish.css musí mít 1.92 no visual owner drift guard');
 assertIncludes(dashboardPolishCss, 'styles-dashboard-fit.css / styles-dashboard-polish.css', '1.92 guard musí jasně pojmenovat povolené Dashboard vlastníky');
+
+assertIncludes(stylesOverridesCss, 'Dashboard legacy-only inventory', 'styles-overrides.css musí mít 1.95 legacy-only inventory guard');
+assertIncludes(stylesOverridesCss, 'Tahle vrstva je u Dashboardu braná jen jako historická stopa starých hotfixů.', '1.95 legacy guard musí jasně říct, že overrides není aktivní vlastník Dashboardu');
+assertIncludes(stylesOverridesCss, 'Aktivní vizuální vlastníci pro stejné oblasti jsou evidovaní zvlášť ve styles-dashboard-fit.css / styles-dashboard-polish.css.', '1.95 legacy guard musí odkázat na aktivní dashboard vrstvy');
+assertIncludes(dashboardPolishCss, 'Dashboard active owner registry', 'styles-dashboard-polish.css musí mít 1.95 active owner registry guard');
+assertIncludes(dashboardPolishCss, 'Aktivní vlastníci jsou oddělení od legacy inventury', '1.95 active owner registry musí jasně oddělit aktivní vlastníky od legacy inventury');
+const dashboardLegacyOnlySetV195 = new Set(dashboardLegacyOnlyInventoryV195);
+const dashboardActiveOwnerSetV195 = new Set(dashboardActiveOwnerRegistryV195);
+dashboardLegacyOnlyInventoryV195.forEach((selector) => {
+  assertIncludes(stylesOverridesCss, selector, `1.95 legacy-only inventory musí obsahovat ${selector}`);
+  assert(!dashboardActiveOwnerSetV195.has(selector), `Legacy-only selector nesmí být zároveň aktivní vlastník: ${selector}`);
+});
+dashboardActiveOwnerRegistryV195.forEach((selector) => {
+  assertCssOwner(selector, `1.95 active owner registry musí mít pozdní dashboard vlastníka pro ${selector}`);
+  assert(!dashboardLegacyOnlySetV195.has(selector), `Active owner selector nesmí být zároveň legacy-only položka: ${selector}`);
+  assertDashboardNoVisualOwnerDrift(selector);
+});
+dashboardLegacyOwnerMap.forEach(([legacySelector, ownerSelector]) => {
+  if (legacySelector !== ownerSelector) {
+    assert(dashboardLegacyOnlySetV195.has(legacySelector), `Legacy selector není v 1.95 legacy-only inventuře: ${legacySelector}`);
+    assert(dashboardActiveOwnerSetV195.has(ownerSelector), `Owner selector není v 1.95 active registry: ${ownerSelector}`);
+  }
+});
+assert(dashboardLegacyOnlyInventoryV195.length >= 11, '1.95 legacy-only inventory musí dál pokrýt všechny staré Dashboard oblasti');
+assert(dashboardActiveOwnerRegistryV195.length >= 10, '1.95 active owner registry musí dál pokrýt hlavní Dashboard vlastníky');
+
 
 // Vítězné dashboard vlastnictví: test drží klíčové selektory v dashboard vrstvách, ne ve slepých globálních přepisech.
 lockedDashboardSelectors.forEach((selector) => assertCssOwner(selector));
@@ -486,4 +561,4 @@ assertIncludes(rotaceJs, "'Obsazenost': formatPercent(occupancyPercent)", 'Zjedn
 
 assert(!/bottomNav|bottomNavBtn|bottomNavScroll|bottomNavIndicator/.test(dashboardCss), 'Dashboard CSS vrstva nesmí upravovat spodní lištu');
 
-console.log('app-usage-smoke-v963 OK + dashboard-css-contract-guard + appearance-reward-contract + rotation-export-summary-simple-guard + rotation-export-glass-guard + appearance-readability-guard + no-visual-owner-drift-guard OK');
+console.log('app-usage-smoke-v963 OK + dashboard-css-contract-guard + appearance-reward-contract + rotation-export-summary-simple-guard + rotation-export-glass-guard + appearance-readability-guard + css-layer-order-v194-guard + dashboard-owner-registry-v195-guard + no-visual-owner-drift-guard OK');
