@@ -1,6 +1,6 @@
-/* RaK 1.2 (1.85) – Dashboard legacy override inventory guard.
+/* RaK 1.2 (1.86) – Dashboard legacy override inventory guard.
    Tenhle soubor pořád obsahuje historické Dashboard hotfixy. Nejsou mazány naslepo; vítězné Dashboard vrstvy jsou styles-dashboard-fit.css a styles-dashboard-polish.css, které se načítají později. */
-/* RaK 1.2 (1.85) – Dashboard legacy owner map.
+/* RaK 1.2 (1.86) – Dashboard legacy owner map.
    Ověřené staré Dashboard selektory v tomhle souboru jsou ponechané jako inventura,
    ale aktivní vlastník je pozdější dvojice styles-dashboard-fit.css / styles-dashboard-polish.css.
    Test app-usage hlídá mapu legacy → active owner, aby se další úpravy neopíraly o staré bloky.
@@ -15355,11 +15355,11 @@ body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsCell{
   body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsInlineHint{display:none !important;}
 }
 
-/* RaK 1.2 (1.85) – Diagnostika/O aplikaci dlouhé řádky přesunuto do styles-menu-polish.css. */
+/* RaK 1.2 (1.86) – Diagnostika/O aplikaci dlouhé řádky přesunuto do styles-menu-polish.css. */
 
-/* RaK 1.2 (1.85) – Statistiky/obsazenost polish přesunutý do styles-stats-polish.css. */
+/* RaK 1.2 (1.86) – Statistiky/obsazenost polish přesunutý do styles-stats-polish.css. */
 
-/* RaK 1.2 (1.85) – Nastavení vzhledu zamčené odměnové pozadí přesunuto do styles-menu-polish.css. */
+/* RaK 1.2 (1.86) – Nastavení vzhledu zamčené odměnové pozadí přesunuto do styles-menu-polish.css. */
 
 /* v.1.5 (927) – Rotace: seznam jmen o kousek výš nad spodním panelem. */
 #rotace.page.active #rotaceNamesPanel.active{
@@ -16370,9 +16370,9 @@ body.ladaMode .dashboardAnnouncementBar{
   .adminAnnouncementToggleRow .adminAnnouncementCheck{font-size:12.5px !important;}
 }
 
-/* RaK 1.2 (1.85) – Statistiky/obsazenost theme polish přesunutý do styles-stats-polish.css. */
+/* RaK 1.2 (1.86) – Statistiky/obsazenost theme polish přesunutý do styles-stats-polish.css. */
 
-/* RaK 1.2 (1.85) – Dashboard compact panel polish přesunutý do styles-dashboard-fit.css. */
+/* RaK 1.2 (1.86) – Dashboard compact panel polish přesunutý do styles-dashboard-fit.css. */
 
 
 /* v.1.5 (939) – Obsazenost strojů: odstranění černého SVG fallbacku pod čárou. */
@@ -16449,7 +16449,7 @@ body.ladaMode #stats .statsOccupancyLineArea{
 }
 
 
-/* RaK 1.2 (1.85) – Dashboard viewport-fit a centrování hero panelu přesunuté do styles-dashboard-fit.css. */
+/* RaK 1.2 (1.86) – Dashboard viewport-fit a centrování hero panelu přesunuté do styles-dashboard-fit.css. */
 
 
 /* v.1.5 (963) – update toast: větší ikona a Dashboard hero text dorovnání jen na problematických viewportech. */
@@ -16494,7 +16494,7 @@ body.ladaMode #stats .statsOccupancyLineArea{
   }
 }
 
-/* RaK 1.2 (1.85) – Admin přehled připojení / anonymní využití přesunuto do styles-menu-polish.css. */
+/* RaK 1.2 (1.86) – Admin přehled připojení / anonymní využití přesunuto do styles-menu-polish.css. */
 
 /* v.1.5 (966) – Navazuje na stabilizaci Dashboardu, 5tlačítkovou lištu a prokliky v Rotaci. */
 @media (min-width:405px) and (max-width:420px) and (min-height:910px) and (max-height:925px){
@@ -18476,16 +18476,16 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
 }
 
 
-/* RaK 1.2 (1.85) – admin/rozpis polish přesunutý do styles-admin-polish.css. */
+/* RaK 1.2 (1.86) – admin/rozpis polish přesunutý do styles-admin-polish.css. */
 
-/* RaK 1.2 (1.85) – viewport/iOS/PWA start polish přesunutý do styles-viewport-polish.css. */
+/* RaK 1.2 (1.86) – viewport/iOS/PWA start polish přesunutý do styles-viewport-polish.css. */
 
-/* RaK 1.2 (1.85) – finální theme/background polish je přesunutý do styles-theme-polish.css. */
+/* RaK 1.2 (1.86) – finální theme/background polish je přesunutý do styles-theme-polish.css. */
 
-/* RaK 1.2 (1.85) – pozdní release polish pravidla jsou přesunutá do styles-release-polish.css. */
+/* RaK 1.2 (1.86) – pozdní release polish pravidla jsou přesunutá do styles-release-polish.css. */
 
 
-/* RaK 1.2 (1.85) – Přehled připojení bez vnitřního scroll boxu. */
+/* RaK 1.2 (1.86) – Přehled připojení bez vnitřního scroll boxu. */
 #menu .adminUsageCard{
   max-height:none !important;
   overflow:visible !important;

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.85) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.86) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 
@@ -342,19 +342,21 @@ assertOrder(appearanceThemeJs, 'RAK_APPEARANCE_REWARD_CONTRACT_V181', 'window.RA
 
 assertIncludes(rotaceJs, 'function buildRotationMonthExportSummary(month)', 'Export rozpisu musí umět spočítat měsíční přehled');
 assertIncludes(rotaceJs, "drawRotationExportSummaryCard(ctx, 'Měsíční přehled'", 'Export rozpisu musí vykreslit kartu Měsíční přehled');
-assertIncludes(rotaceJs, 'plannedOccupancyPercent', 'Měsíční exportní přehled musí oddělit plánovanou obsazenost od obsazenosti po absencích');
-assertIncludes(rotaceJs, 'const rowH = Math.max(36, Number(opts.rowH) || 44);', 'Měsíční exportní přehled musí mít kompaktnější řádky pro delší souhrn');
-assertIncludes(rotaceJs, 'Plán = obsazení zapsané v rozpisu. Po absencích = plán mínus absence směn.', 'Měsíční přehled musí mít vysvětlivku rozdílu plán / po absencích');
-assertIncludes(rotaceJs, 'note: summaryNote', 'Měsíční přehled musí vykreslit vysvětlivku přímo v kartě');
+assertIncludes(rotaceJs, 'const rowH = Math.max(36, Number(opts.rowH) || 44);', 'Helper měsíčního přehledu musí držet kompaktní řádky');
 assertIncludes(rotaceJs, 'function getRotationExportSummaryCardHeight(rows, options)', 'Export musí počítat výšku Měsíčního přehledu sdíleným helperem');
 assertIncludes(rotaceJs, 'const summaryH = getRotationExportSummaryCardHeight', 'Canvas výška musí používat stejný helper jako vykreslení karty Měsíční přehled');
 assertIncludes(rotaceJs, 'const exportFooterSafeGap = 36', 'Export Rozpisů musí mít bezpečnou mezeru mezi pravým souhrnem a footerem');
 assertIncludes(rotaceJs, 'contentH + exportFooterSafeGap + footerH', 'Výška exportního canvasu musí započítat footer safe gap');
-assertIncludes(rotaceJs, 'return titleH + headerH + rowH * dataRows.length + noteH;', 'Sdílený helper výšky měsíčního přehledu musí počítat i s vysvětlivkou');
-['Směn do práce', 'Ranní směny', 'Noční směny', 'Plán obsazenost', 'Po absencích obsazeno', 'Obsazenost měsíce', 'Absence záznamů', 'Absence směn'].forEach((label) => {
+assertIncludes(rotaceJs, 'return titleH + headerH + rowH * dataRows.length + noteH;', 'Sdílený helper výšky měsíčního přehledu musí fungovat i bez poznámky');
+['Směn do práce', 'Ranní směny', 'Noční směny', 'Obsazenost'].forEach((label) => {
   assertIncludes(rotaceJs, label, `Měsíční exportní přehled musí obsahovat položku ${label}`);
 });
+['Dní se směnou', 'Míst celkem', 'Plán obsazeno', 'Plán volno', 'Plán obsazenost', 'Po absencích obsazeno', 'Po absencích volno', 'Obsazenost měsíce', 'Absence záznamů', 'Absence směn', 'note: summaryNote', 'Plán = obsazení zapsané v rozpisu. Po absencích = plán mínus absence směn.'].forEach((label) => {
+  assert(!rotaceJs.includes(label), `Zjednodušený měsíční přehled už nemá obsahovat ${label}`);
+});
+assertIncludes(rotaceJs, 'const rows = [', 'Měsíční přehled musí stavět jednoduché pole řádků');
+assertIncludes(rotaceJs, "{ label: 'Obsazenost', value: formatPercent(occupancyPercent) }", 'Zjednodušený měsíční přehled musí ukázat jedinou obsazenost');
 
 assert(!/bottomNav|bottomNavBtn|bottomNavScroll|bottomNavIndicator/.test(dashboardCss), 'Dashboard CSS vrstva nesmí upravovat spodní lištu');
 
-console.log('app-usage-smoke-v963 OK + dashboard-css-contract-guard + appearance-reward-contract + rotation-export-summary-fit-guard OK');
+console.log('app-usage-smoke-v963 OK + dashboard-css-contract-guard + appearance-reward-contract + rotation-export-summary-simple-guard OK');

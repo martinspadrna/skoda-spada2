@@ -1,9 +1,16 @@
+## RaK 1.2 (1.86)
+
+- Export PNG Rozpisů: Měsíční přehled je zjednodušený jen na to hlavní — počet směn, ranní směny, noční směny a obsazenost.
+- Z pravého souhrnu zmizely detailní položky a vysvětlivka, takže obrázek působí čistěji a je rychlejší na přečtení.
+- `npm run test:app-usage` upravený tak, aby hlídal jednoduchý obsah Měsíčního přehledu a nevracel zpátky staré detailní položky.
+- Release metadata sjednocená na `RaK 1.2 (1.86)`, technická verze `1.2.86`, cache `v1.2-1.86`.
+
 ## RaK 1.2 (1.85)
 
 - Export PNG Rozpisů: Měsíční přehled má sdílený výpočet výšky karty, takže výška canvasu odpovídá skutečně vykreslenému souhrnu.
 - Přidaná bezpečná mezera před footerem, aby se pravý sloupec s Absencemi a Měsíčním přehledem nepřiblížil k poznámce vpravo dole ani u měsíců s delším seznamem absencí.
 - `npm run test:app-usage` rozšířený o guard pro výpočet výšky Měsíčního přehledu a footer safe gap.
-- Release metadata sjednocená na `RaK 1.2 (1.85)`, technická verze `1.2.85`, cache `v1.2-1.85`.
+- Release metadata sjednocená na `RaK 1.2 (1.86)`, technická verze `1.2.86`, cache `v1.2-1.86`.
 
 ## RaK 1.2 (1.84)
 

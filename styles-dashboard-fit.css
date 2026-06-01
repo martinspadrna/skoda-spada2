@@ -1,4 +1,4 @@
-/* RaK 1.2 (1.85) – Dashboard viewport-fit / compact polish oddělený ze styles-overrides.css.
+/* RaK 1.2 (1.86) – Dashboard viewport-fit / compact polish oddělený ze styles-overrides.css.
    Načítá se hned po styles-overrides.css, aby zůstalo zachované původní pořadí vůči admin/stats/theme/release polish vrstvám.
    1.75: stabilizační vlastník mobilních breakpointů; starší bloky v overrides necháváme být, vítězí tato pozdější vrstva + styles-dashboard-polish.css.
    1.76: legacy override inventory guard; historické viewport/hero korekce se nemažou naslepo, ale drží je test a pozdější vlastníci. */

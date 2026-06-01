@@ -1,4 +1,4 @@
-// RaK 1.2 (1.85) – Rotace render a volba jmen.
+// RaK 1.2 (1.86) – Rotace render a volba jmen.
 function renderRotace() {
   const namesGrid = document.getElementById('namesGrid');
   const personView = document.getElementById('personView');
@@ -875,9 +875,6 @@ function buildRotationMonthExportSummary(month) {
   const totalShifts = summary.shiftKeys.size;
   const plannedOccupiedSlots = Math.max(0, summary.occupiedSlots);
   const adjustedOccupiedSlots = Math.max(0, plannedOccupiedSlots - summary.absenceWeight);
-  const freeSlots = Math.max(0, summary.totalSlots - adjustedOccupiedSlots);
-  const plannedFreeSlots = Math.max(0, summary.totalSlots - plannedOccupiedSlots);
-  const plannedOccupancyPercent = summary.totalSlots > 0 ? Math.round((plannedOccupiedSlots / summary.totalSlots) * 1000) / 10 : 0;
   const occupancyPercent = summary.totalSlots > 0 ? Math.round((adjustedOccupiedSlots / summary.totalSlots) * 1000) / 10 : 0;
   const formatNumber = (value) => (Math.round((Number(value) || 0) * 10) / 10).toString().replace('.', ',');
   const formatPercent = (value) => formatNumber(value) + ' %';
@@ -885,18 +882,9 @@ function buildRotationMonthExportSummary(month) {
     { label: 'Směn do práce', value: totalShifts },
     { label: 'Ranní směny', value: summary.morningShifts },
     { label: 'Noční směny', value: summary.nightShifts },
-    { label: 'Dní se směnou', value: summary.workDays.size },
-    { label: 'Míst celkem', value: summary.totalSlots },
-    { label: 'Plán obsazeno', value: formatNumber(plannedOccupiedSlots) },
-    { label: 'Plán volno', value: formatNumber(plannedFreeSlots) },
-    { label: 'Plán obsazenost', value: formatPercent(plannedOccupancyPercent) },
-    { label: 'Po absencích obsazeno', value: formatNumber(adjustedOccupiedSlots) },
-    { label: 'Po absencích volno', value: formatNumber(freeSlots) },
-    { label: 'Obsazenost měsíce', value: formatPercent(occupancyPercent) },
-    { label: 'Absence záznamů', value: summary.absencePeople },
-    { label: 'Absence směn', value: formatNumber(summary.absenceWeight) }
+    { label: 'Obsazenost', value: formatPercent(occupancyPercent) }
   ];
-  return { rows, totalShifts, morningShifts: summary.morningShifts, nightShifts: summary.nightShifts, plannedOccupancyPercent, occupancyPercent, totalSlots: summary.totalSlots, plannedOccupiedSlots, occupiedSlots: adjustedOccupiedSlots, freeSlots, plannedFreeSlots, absenceWeight: summary.absenceWeight, absencePeople: summary.absencePeople };
+  return { rows, totalShifts, morningShifts: summary.morningShifts, nightShifts: summary.nightShifts, occupancyPercent, totalSlots: summary.totalSlots, occupiedSlots: adjustedOccupiedSlots, absenceWeight: summary.absenceWeight, absencePeople: summary.absencePeople };
 }
 
 function getRotationExportSummaryCardHeight(rows, options) {
@@ -1160,8 +1148,7 @@ function createRotationMonthExportCanvas(monthKey) {
   const hardH = 88 + 66 + 52 * Math.max(hard.rows.length, 1);
   const softH = 88 + 66 + 52 * Math.max(soft.rows.length, 1);
   const absenceH = 88 + 66 + 52 * Math.max(absenceRows.length, 1);
-  const summaryNote = 'Plán = obsazení zapsané v rozpisu. Po absencích = plán mínus absence směn.';
-  const summaryCardOptions = { rowH: 44, note: summaryNote, noteH: 58, titleH: 82, headerH: 58 };
+  const summaryCardOptions = { rowH: 44, titleH: 82, headerH: 58 };
   const summaryH = getRotationExportSummaryCardHeight(monthSummary && monthSummary.rows, summaryCardOptions);
   const leftColumnH = hardH + gap + softH;
   const rightColumnH = absenceH + gap + summaryH;
