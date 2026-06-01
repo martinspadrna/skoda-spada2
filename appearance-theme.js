@@ -1,4 +1,4 @@
-// RaK 1.2 (1.86) – theme, pozadí a profilové UI nastavení.
+// RaK 1.2 (1.91) – theme, pozadí a profilové UI nastavení.
 
 const RAK_THEME_STORAGE_KEY = APP_KEY + ':theme_v1';
 const RAK_THEME_BASE_VARS = {
@@ -757,11 +757,11 @@ RAK_BACKGROUND_DEFS.forEach((bg) => {
   if (unlock) Object.assign(bg, unlock);
 });
 
-// RaK 1.2 (1.86) – appearance reward contract guard.
+// RaK 1.2 (1.91) – appearance reward contract guard.
 // Slouží jako jednoduché interní pravidlo pro budoucí theme/pozadí: klidně jich může přibýt víc,
 // ale nesmí to být skoro stejné varianty a výrazné kusy se musí odemykat postupně.
 const RAK_APPEARANCE_REWARD_CONTRACT_V181 = Object.freeze({
-  version: '1.2 (1.86)',
+  version: '1.2 (1.91)',
   intent: 'distinct-progressive-appearance-rewards',
   defaultThemeId: 'default',
   defaultBackgroundId: 'ios-mesh',
@@ -789,7 +789,28 @@ const RAK_APPEARANCE_REWARD_CONTRACT_V181 = Object.freeze({
   reservedRemovedThemeIds: Object.freeze(['electric-ocean', 'gold-rush-neon', 'arctic-radar', 'candy-voltage', 'stealth-purple', 'ultra-violet']),
   reservedRemovedBackgroundIds: Object.freeze(['nebula-shock', 'emerald-smoke', 'ruby-circuit', 'cobalt-fire', 'solar-flare'])
 });
+
+// RaK 1.2 (1.91) – appearance readability contract guard.
+// Cíl: výrazné theme/pozadí mohou být odemykané rewardy, ale nesmí zhoršit čitelnost Dashboardu,
+// Administrace, Nastavení vzhledu ani herních karet. Je to statická pojistka pro budoucí skiny.
+const RAK_APPEARANCE_READABILITY_CONTRACT_V189 = Object.freeze({
+  version: '1.2 (1.91)',
+  intent: 'dashboard-admin-readable-appearance',
+  protectedScreens: Object.freeze(['dashboard', 'admin-connections', 'settings-appearance', 'games-leaderboards']),
+  requiredThemeVars: Object.freeze(['--bg', '--panel', '--panel2', '--green', '--green2', '--muted', '--soft', '--rakThemeGlow', '--rakThemeBorder']),
+  requiredBackgroundVars: Object.freeze(['--rakBgBase', '--rakAppBackground', '--rakAppBackgroundOverlay', '--rakAppBackgroundLite', '--rakBgAccent']),
+  minSoftContrastOnBg: 4.5,
+  minMutedContrastOnBg: 3,
+  maxBackgroundBaseLuminance: 0.08,
+  glassReadabilityRules: Object.freeze([
+    'Každé theme musí mít světlé --soft a dostatečně čitelné --muted proti --bg.',
+    'Každé pozadí musí mít tmavý --rakBgBase, aby glass panely zůstaly čitelné.',
+    'Dashboard, Administrace a Nastavení vzhledu nesmí spoléhat jen na barvu akcentu.',
+    'Výrazný reward skin může měnit náladu, ale nesmí zhoršit kontrast textu a panelů.'
+  ])
+});
 window.RAK_APPEARANCE_REWARD_CONTRACT_V181 = RAK_APPEARANCE_REWARD_CONTRACT_V181;
+window.RAK_APPEARANCE_READABILITY_CONTRACT_V189 = RAK_APPEARANCE_READABILITY_CONTRACT_V189;
 window.RAK_BACKGROUND_DEFS = RAK_BACKGROUND_DEFS;
 
 const RAK_PROFILE_UI_REMOTE_DEBOUNCE_MS = 650;
@@ -1472,7 +1493,7 @@ function getRakProfileAppearanceRewardHealth() {
   const themeRewards = themes.filter(item => String(item && item.id || '') !== 'default');
   const backgroundRewards = backgrounds.filter(item => String(item && item.id || '') !== 'ios-mesh');
   return {
-    version: window.APP_VERSION || '1.2 (1.86)',
+    version: window.APP_VERSION || '1.2 (1.91)',
     mode: 'profile-appearance-reward-health-v928',
     activeProfile: metrics.hasProfile,
     profileThemeStorage: 'account.uiSettings.themeId',
@@ -1561,7 +1582,7 @@ function getRakDashboardGlassThemeHealth() {
   const lightweight = /(?:^|\s)(?:lightweightMode|lowEndDevice|ladaMode)(?:\s|$)/.test(bodyClass);
   return {
     ok: true,
-    version: window.APP_VERSION || '1.2 (1.86)',
+    version: window.APP_VERSION || '1.2 (1.91)',
     mode: 'dashboard-ios-glass-viewport-fit-v945',
     theme,
     background,

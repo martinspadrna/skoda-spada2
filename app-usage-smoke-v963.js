@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.86) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.91) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 
@@ -95,6 +95,7 @@ const dashboardLegacyOwnerMap = [
   ['#dashHero .dashboardHeroLine3', '#home.page.active #dashHero .dashboardHeroLine3'],
   ['#dashHero .dashboardHeroLine3Pill', '#home.page.active #dashHero .dashboardHeroLine3Pill'],
   ['#home .dashboardIcon.dashboardIconInline', '#home.page.active .dashboardCard .dashboardIcon.dashboardIconInline'],
+  ['#home .dashboardIconInline', '#home.page.active .dashboardCard .dashboardIcon.dashboardIconInline'],
   ['#home .dashboardDot', '#home.page.active #dashKantyna .dashboardDot'],
   ['#dashKantyna .dashboardDot', '#home.page.active #dashKantyna .dashboardDot'],
   ['#dashJidelna .dashboardDot', '#home.page.active #dashJidelna .dashboardDot'],
@@ -162,6 +163,29 @@ function readAppearanceArray(name) {
   return Function('return ' + extractConstArrayLiteral(appearanceThemeJs, name))();
 }
 
+function hexToRgb(hex) {
+  const raw = String(hex || '').trim().replace(/^#/, '');
+  const full = raw.length === 3 ? raw.split('').map(ch => ch + ch).join('') : raw;
+  assert(/^[0-9a-f]{6}$/i.test(full), `Neplatná hex barva: ${hex}`);
+  return [0, 2, 4].map(offset => parseInt(full.slice(offset, offset + 2), 16));
+}
+
+function relativeLuminance(hex) {
+  const [r, g, b] = hexToRgb(hex).map(value => {
+    const channel = value / 255;
+    return channel <= 0.03928 ? channel / 12.92 : Math.pow((channel + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+function contrastRatio(foreground, background) {
+  const a = relativeLuminance(foreground);
+  const b = relativeLuminance(background);
+  const lighter = Math.max(a, b);
+  const darker = Math.min(a, b);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
 
 assert(bridge.includes('recordAppUsage'), 'RotationSupabaseBridge.recordAppUsage chybí');
 assert(bridge.includes('loadAppUsage'), 'RotationSupabaseBridge.loadAppUsage chybí');
@@ -176,6 +200,12 @@ assert(ui.includes('toLocaleUpperCase(\'cs-CZ\')'), 'Iniciály mají respektovat
 assertIncludes(menuPolishCss, '#menu .adminUsageSummaryText{display:flex !important;flex-direction:column !important;gap:2px !important;min-width:0 !important;}', 'Přehled připojení musí mít samostatný text wrapper, aby avatar nebyl mimo střed');
 assertIncludes(menuPolishCss, '#menu .adminUsageAvatar{', 'CSS avatar přehledu připojení chybí');
 assertIncludes(menuPolishCss, 'place-items:center !important;', 'Avatar přehledu připojení musí centrovat iniciály');
+assertIncludes(menuPolishCss, 'Přehled připojení avatar contract', 'Přehled připojení musí mít 1.88 avatar contract');
+assertIncludes(menuPolishCss, '#menu .adminUsageSummary .adminUsageAvatar', 'Avatar musí mít silnější selektor než obecná summary span pravidla');
+assertIncludes(menuPolishCss, 'align-items:center !important;', 'Avatar musí centrovat iniciály svisle');
+assertIncludes(menuPolishCss, 'justify-content:center !important;', 'Avatar musí centrovat iniciály vodorovně');
+assertIncludes(menuPolishCss, 'flex-direction:row !important;', 'Avatar nesmí zdědit sloupcové řazení textového wrapperu');
+assert(!menuPolishCss.includes('#menu .adminUsageSummary span{'), 'Obecné pravidlo #menu .adminUsageSummary span by znovu rozhodilo avatar iniciál');
 assert(ui.includes('adminUsageDeviceList'), 'Admin přehled musí ukazovat zařízení uvnitř jedné složky jména');
 assert(ui.includes('data-admin-action="open-usage"'), 'Tlačítko Přehled připojení chybí');
 assert(ui.includes("openAppMenu('admin-usage')"), 'Admin usage routing chybí');
@@ -214,11 +244,23 @@ lockedDashboardSelectors.forEach((selector) => assertCssOwner(selector));
 assertIncludes(stylesOverridesCss, 'Dashboard legacy override inventory guard', 'styles-overrides.css musí mít legacy guard poznámku pro historické Dashboard hotfixy');
 assertIncludes(stylesOverridesCss, 'vítězné Dashboard vrstvy jsou styles-dashboard-fit.css a styles-dashboard-polish.css', 'Legacy guard musí jasně pojmenovat pozdější Dashboard vlastníky');
 assertIncludes(stylesOverridesCss, 'Dashboard legacy owner map', 'styles-overrides.css musí mít 1.78 mapu legacy → active owner');
+assertIncludes(stylesOverridesCss, 'Dashboard proven-overridden legacy candidates', 'styles-overrides.css musí mít 1.90 seznam prvních přebitých Dashboard legacy kandidátů');
+assertIncludes(stylesOverridesCss, 'Dashboard extended proven-overridden legacy candidates', 'styles-overrides.css musí mít 1.91 rozšířený seznam přebitých Dashboard legacy kandidátů');
+assertIncludes(stylesOverridesCss, 'Nepřidávat sem nové Dashboard hotfixy', '1.90 guard musí varovat před novými Dashboard hotfixy ve staré overrides vrstvě');
+['#home .dashboardGrid', '#home .dashboardCard', '#home .dashboardHeroCard', '#dashHero .dashboardHeroLine3', '#home .dashboardDot'].forEach((selector) => {
+  assertIncludes(stylesOverridesCss, selector, `1.90 legacy candidate chybí: ${selector}`);
+});
+['#home .dashboardIconInline', '#home .dashboardIcon.dashboardIconInline', '#dashHero .dashboardHeroLine2', '#dashHero .dashboardHeroLine3Pill', '#dashKantyna .dashboardDot', '#dashJidelna .dashboardDot'].forEach((selector) => {
+  assertIncludes(stylesOverridesCss, selector, `1.91 extended legacy candidate chybí: ${selector}`);
+});
+assertIncludes(stylesOverridesCss, 'žádné mazání ani vizuální změna Dashboardu', '1.91 guard musí držet cleanup bez vizuální změny');
+assertIncludes(dashboardPolishCss, 'Dashboard legacy cleanup active owners remain here', 'styles-dashboard-polish.css musí držet 1.90 aktivní owner guard');
+assertIncludes(dashboardPolishCss, 'Dashboard legacy cleanup extended owners remain here', 'styles-dashboard-polish.css musí držet 1.91 rozšířený aktivní owner guard');
 assertIncludes(stylesOverridesCss, 'Mapované oblasti: shell, hero panel, grid, karty, stavové tečky Kantýna/Jídelna', 'Legacy mapa musí pojmenovat hlavní Dashboard oblasti');
 dashboardLegacyOwnerMap.forEach(([legacySelector, ownerSelector]) => {
   assertLegacyDashboardGuard(legacySelector, ownerSelector);
 });
-assert(dashboardLegacyOwnerMap.length >= 10, 'Dashboard legacy owner mapa musí hlídat minimálně 10 starých Dashboard oblastí');
+assert(dashboardLegacyOwnerMap.length >= 11, 'Dashboard legacy owner mapa musí hlídat minimálně 11 starých Dashboard oblastí');
 assertIncludes(dashboardFitCss, 'stabilizační vlastník mobilních breakpointů', 'styles-dashboard-fit.css musí mít poznámku vlastníka mobilních breakpointů');
 assertIncludes(dashboardFitCss, 'legacy override inventory guard', 'styles-dashboard-fit.css musí mít 1.76 legacy inventory guard');
 assertIncludes(dashboardPolishCss, 'pozdní vítězná dashboard vrstva', 'styles-dashboard-polish.css musí mít poznámku pozdní vítězné vrstvy');
@@ -340,7 +382,45 @@ assert(backgroundFreeEntries.length === 1 && backgroundFreeEntries[0][0] === 'io
 assertOrder(appearanceThemeJs, 'RAK_BACKGROUND_UNLOCKS_V927', 'RAK_APPEARANCE_REWARD_CONTRACT_V181', 'Appearance contract má být až za unlock mapou, aby navazoval na reálné odemykání');
 assertOrder(appearanceThemeJs, 'RAK_APPEARANCE_REWARD_CONTRACT_V181', 'window.RAK_BACKGROUND_DEFS = RAK_BACKGROUND_DEFS', 'Appearance contract má být dostupný před finálním vystavením background definic');
 
+// 1.89: readability guard – odemykané theme/pozadí mohou být výrazné, ale musí držet čitelnost na Dashboardu a v Administraci.
+assertIncludes(appearanceThemeJs, 'RAK_APPEARANCE_READABILITY_CONTRACT_V189', 'Chybí 1.89 appearance readability contract');
+assertIncludes(appearanceThemeJs, "intent: 'dashboard-admin-readable-appearance'", 'Readability contract musí mířit na Dashboard/Admin čitelnost');
+['dashboard', 'admin-connections', 'settings-appearance', 'games-leaderboards'].forEach((screen) => {
+  assertIncludes(appearanceThemeJs, screen, `Readability contract musí chránit obrazovku ${screen}`);
+});
+['--bg', '--panel', '--panel2', '--green', '--green2', '--muted', '--soft', '--rakThemeGlow', '--rakThemeBorder'].forEach((varName) => {
+  assertIncludes(appearanceThemeJs, varName, `Readability contract musí hlídat theme proměnnou ${varName}`);
+});
+['--rakBgBase', '--rakAppBackground', '--rakAppBackgroundOverlay', '--rakAppBackgroundLite', '--rakBgAccent'].forEach((varName) => {
+  assertIncludes(appearanceThemeJs, varName, `Readability contract musí hlídat background proměnnou ${varName}`);
+});
+[
+  'Každé theme musí mít světlé --soft a dostatečně čitelné --muted proti --bg.',
+  'Každé pozadí musí mít tmavý --rakBgBase, aby glass panely zůstaly čitelné.',
+  'Dashboard, Administrace a Nastavení vzhledu nesmí spoléhat jen na barvu akcentu.',
+  'Výrazný reward skin může měnit náladu, ale nesmí zhoršit kontrast textu a panelů.'
+].forEach((rule) => assertIncludes(appearanceThemeJs, rule, `Readability pravidlo chybí: ${rule}`));
+assertOrder(appearanceThemeJs, 'RAK_APPEARANCE_REWARD_CONTRACT_V181', 'RAK_APPEARANCE_READABILITY_CONTRACT_V189', 'Readability contract musí navazovat na reward contract');
+assertOrder(appearanceThemeJs, 'RAK_APPEARANCE_READABILITY_CONTRACT_V189', 'window.RAK_BACKGROUND_DEFS = RAK_BACKGROUND_DEFS', 'Readability contract má být vystavený před background definicemi');
+themeDefs.forEach((theme) => {
+  const vars = theme && theme.vars ? theme.vars : {};
+  ['--bg', '--panel', '--panel2', '--green', '--green2', '--muted', '--soft', '--rakThemeGlow', '--rakThemeBorder'].forEach((varName) => {
+    assert(vars[varName], `Theme ${theme.id} nemá čitelnostní proměnnou ${varName}`);
+  });
+  assert(contrastRatio(vars['--soft'], vars['--bg']) >= 4.5, `Theme ${theme.id} má slabý kontrast --soft proti --bg`);
+  assert(contrastRatio(vars['--muted'], vars['--bg']) >= 3, `Theme ${theme.id} má slabý kontrast --muted proti --bg`);
+});
+backgroundDefs.forEach((bg) => {
+  const vars = bg && bg.vars ? bg.vars : {};
+  ['--rakBgBase', '--rakAppBackground', '--rakAppBackgroundOverlay', '--rakAppBackgroundLite', '--rakBgAccent'].forEach((varName) => {
+    assert(vars[varName], `Pozadí ${bg.id} nemá čitelnostní proměnnou ${varName}`);
+  });
+  assert(relativeLuminance(vars['--rakBgBase']) <= 0.08, `Pozadí ${bg.id} má moc světlý základ pro glass čitelnost`);
+});
+
 assertIncludes(rotaceJs, 'function buildRotationMonthExportSummary(month)', 'Export rozpisu musí umět spočítat měsíční přehled');
+assertIncludes(rotaceJs, 'ROTATION_EXPORT_MONTH_SUMMARY_LABELS_V187', 'Export Rozpisů musí mít uzamčený 1.87 contract pro 4 řádky měsíčního přehledu');
+assertIncludes(rotaceJs, "const rows = ROTATION_EXPORT_MONTH_SUMMARY_LABELS_V187.map", 'Měsíční přehled musí vznikat z contract labelů, ne ručně bobtnat dalšími řádky');
 assertIncludes(rotaceJs, "drawRotationExportSummaryCard(ctx, 'Měsíční přehled'", 'Export rozpisu musí vykreslit kartu Měsíční přehled');
 assertIncludes(rotaceJs, 'const rowH = Math.max(36, Number(opts.rowH) || 44);', 'Helper měsíčního přehledu musí držet kompaktní řádky');
 assertIncludes(rotaceJs, 'function getRotationExportSummaryCardHeight(rows, options)', 'Export musí počítat výšku Měsíčního přehledu sdíleným helperem');
@@ -348,15 +428,15 @@ assertIncludes(rotaceJs, 'const summaryH = getRotationExportSummaryCardHeight', 
 assertIncludes(rotaceJs, 'const exportFooterSafeGap = 36', 'Export Rozpisů musí mít bezpečnou mezeru mezi pravým souhrnem a footerem');
 assertIncludes(rotaceJs, 'contentH + exportFooterSafeGap + footerH', 'Výška exportního canvasu musí započítat footer safe gap');
 assertIncludes(rotaceJs, 'return titleH + headerH + rowH * dataRows.length + noteH;', 'Sdílený helper výšky měsíčního přehledu musí fungovat i bez poznámky');
-['Směn do práce', 'Ranní směny', 'Noční směny', 'Obsazenost'].forEach((label) => {
+['Směn celkem', 'Ranní směny', 'Noční směny', 'Obsazenost'].forEach((label) => {
   assertIncludes(rotaceJs, label, `Měsíční exportní přehled musí obsahovat položku ${label}`);
 });
-['Dní se směnou', 'Míst celkem', 'Plán obsazeno', 'Plán volno', 'Plán obsazenost', 'Po absencích obsazeno', 'Po absencích volno', 'Obsazenost měsíce', 'Absence záznamů', 'Absence směn', 'note: summaryNote', 'Plán = obsazení zapsané v rozpisu. Po absencích = plán mínus absence směn.'].forEach((label) => {
+['Směn do práce', 'Dní se směnou', 'Míst celkem', 'Plán obsazeno', 'Plán volno', 'Plán obsazenost', 'Po absencích obsazeno', 'Po absencích volno', 'Obsazenost měsíce', 'Absence záznamů', 'Absence směn', 'note: summaryNote', 'Plán = obsazení zapsané v rozpisu. Po absencích = plán mínus absence směn.'].forEach((label) => {
   assert(!rotaceJs.includes(label), `Zjednodušený měsíční přehled už nemá obsahovat ${label}`);
 });
 assertIncludes(rotaceJs, 'const rows = [', 'Měsíční přehled musí stavět jednoduché pole řádků');
-assertIncludes(rotaceJs, "{ label: 'Obsazenost', value: formatPercent(occupancyPercent) }", 'Zjednodušený měsíční přehled musí ukázat jedinou obsazenost');
+assertIncludes(rotaceJs, "'Obsazenost': formatPercent(occupancyPercent)", 'Zjednodušený měsíční přehled musí ukázat jedinou obsazenost z contract mapy');
 
 assert(!/bottomNav|bottomNavBtn|bottomNavScroll|bottomNavIndicator/.test(dashboardCss), 'Dashboard CSS vrstva nesmí upravovat spodní lištu');
 
-console.log('app-usage-smoke-v963 OK + dashboard-css-contract-guard + appearance-reward-contract + rotation-export-summary-simple-guard OK');
+console.log('app-usage-smoke-v963 OK + dashboard-css-contract-guard + appearance-reward-contract + rotation-export-summary-simple-guard + appearance-readability-guard OK');

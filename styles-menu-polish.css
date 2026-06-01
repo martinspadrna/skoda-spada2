@@ -1,4 +1,4 @@
-/* RaK 1.2 (1.86) – menu/O aplikaci/diagnostika polish oddělený ze styles-overrides.css.
+/* RaK 1.2 (1.91) – menu/O aplikaci/diagnostika polish oddělený ze styles-overrides.css.
    Jen přesun existujících pravidel kvůli dokončení CSS cleanupu; bez změny vizuální logiky spodní lišty. */
 
 /* v.1.5 (877): Diagnostika/O aplikaci – dlouhé řádky zůstávají uvnitř buňky. */
@@ -83,7 +83,7 @@ body.lowEndDevice #menu .adminUsageMetric,
 body.ladaMode #menu .adminUsageMetric{backdrop-filter:none !important;-webkit-backdrop-filter:none !important;box-shadow:none !important;}
 
 
-/* RaK 1.2 (1.86) – Přehled připojení jako rozklikávací profily.
+/* RaK 1.2 (1.91) – Přehled připojení jako rozklikávací profily.
    Iniciály v avataru mají vlastní summary text wrapper, aby zůstaly přesně uprostřed ikonky. */
 #menu .adminUsageCard{
   max-height:none !important;
@@ -227,3 +227,27 @@ body.ladaMode #menu .adminUsageMetric{backdrop-filter:none !important;-webkit-ba
   }
   #menu .adminUsageProfileMeta{grid-template-columns:1fr !important;}
 }
+
+/* RaK 1.2 (1.91) – Přehled připojení avatar contract.
+   Avatar má silnější selektor než obecná summary pravidla, aby dvě iniciály zůstaly přesně uprostřed ikonky i na malém mobilu. */
+#menu .adminUsageSummary .adminUsageAvatar{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  justify-self:center !important;
+  align-self:center !important;
+  flex-direction:row !important;
+  box-sizing:border-box !important;
+  aspect-ratio:1 / 1 !important;
+  padding:0 0 1px !important;
+  line-height:1 !important;
+  letter-spacing:-.025em !important;
+  overflow:hidden !important;
+}
+@media (max-width:420px){
+  #menu .adminUsageSummary .adminUsageAvatar{
+    font-size:12.5px !important;
+    padding:0 0 1px !important;
+  }
+}
+

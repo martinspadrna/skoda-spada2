@@ -1,3 +1,38 @@
+## RaK 1.2 (1.91)
+
+- Dashboard CSS cleanup bez vizuální změny: rozšířená inventura bezpečně přebitých legacy selektorů ve `styles-overrides.css`.
+- Přidaní další kandidáti s jasným pozdějším vlastníkem: ikonky Dashboard panelů, druhý řádek hero panelu, hero pill a konkrétní tečky Kantýna/Jídelna.
+- `npm run test:app-usage` rozšířený o guard, že aktivní vlastníci zůstávají ve `styles-dashboard-fit.css` / `styles-dashboard-polish.css` a že cleanup zůstává bez mazání naslepo.
+- Release metadata sjednocená na `RaK 1.2 (1.91)`, technická verze `1.2.91`, cache `v1.2-1.91`.
+
+## RaK 1.2 (1.90)
+
+- Dashboard CSS cleanup: označené první prokazatelně přebité legacy Dashboard selektory jako inventura, bez mazání a bez vizuální změny.
+- Aktivní vlastníci Dashboardu zůstávají v `styles-dashboard-fit.css` a `styles-dashboard-polish.css`.
+- `npm run test:app-usage` rozšířený o guard, aby se nové Dashboard hotfixy nepřidávaly zpět do staré overrides vrstvy bez ověření.
+- Release metadata sjednocená na `RaK 1.2 (1.90)`, technická verze `1.2.90`, cache `v1.2-1.90`.
+
+## RaK 1.2 (1.89)
+
+- Appearance/theme audit: přidaný `RAK_APPEARANCE_READABILITY_CONTRACT_V189`, který hlídá čitelnost odemykaných theme a pozadí na Dashboardu, v Přehledu připojení, Nastavení vzhledu a herních žebříčcích.
+- Contract drží povinné theme proměnné, tmavý background základ pro glass panely a minimální kontrast `--soft` / `--muted` proti `--bg`.
+- `npm run test:app-usage` rozšířený o statickou kontrolu kontrastu theme a tmavosti `--rakBgBase` u všech pozadí.
+- Release metadata sjednocená na `RaK 1.2 (1.89)`, technická verze `1.2.89`, cache `v1.2-1.89`.
+
+## RaK 1.2 (1.88)
+
+- Administrace → Přehled připojení: doplněný silnější avatar contract pro dvoupísmenné iniciály, aby zůstaly přesně uprostřed ikonky i na malých mobilech.
+- CSS už výslovně hlídá, že avatar nesmí zdědit sloupcové řazení textového wrapperu ani obecné `summary span` pravidlo.
+- `npm run test:app-usage` rozšířený o guard proti návratu obecného `#menu .adminUsageSummary span` pravidla, které dřív umělo rozhodit centrování avataru.
+- Release metadata sjednocená na `RaK 1.2 (1.88)`, technická verze `1.2.88`, cache `v1.2-1.88`.
+
+## RaK 1.2 (1.87)
+
+- Export PNG Rozpisů: zjednodušený `Měsíční přehled` je uzamčený contractem `ROTATION_EXPORT_MONTH_SUMMARY_LABELS_V187` na 4 řádky — `Směn celkem`, `Ranní směny`, `Noční směny`, `Obsazenost`.
+- Popisek prvního řádku sjednocený na `Směn celkem`, aby export zněl obecně a přirozeně.
+- `npm run test:app-usage` hlídá, že měsíční přehled vzniká z contract labelů a že se nevrátí staré podrobné položky.
+- Release metadata sjednocená na `RaK 1.2 (1.87)`, technická verze `1.2.87`, cache `v1.2-1.87`.
+
 ## RaK 1.2 (1.86)
 
 - Export PNG Rozpisů: Měsíční přehled je zjednodušený jen na to hlavní — počet směn, ranní směny, noční směny a obsazenost.

@@ -1,4 +1,4 @@
-// RaK 1.2 (1.86) – Rotace render a volba jmen.
+// RaK 1.2 (1.91) – Rotace render a volba jmen.
 function renderRotace() {
   const namesGrid = document.getElementById('namesGrid');
   const personView = document.getElementById('personView');
@@ -823,6 +823,8 @@ function buildRotationExportAbsenceTable(absences, dateWeight, personWeight) {
 }
 
 
+const ROTATION_EXPORT_MONTH_SUMMARY_LABELS_V187 = Object.freeze(['Směn celkem', 'Ranní směny', 'Noční směny', 'Obsazenost']);
+
 function buildRotationMonthExportSummary(month) {
   const summary = {
     shiftKeys: new Set(),
@@ -878,12 +880,13 @@ function buildRotationMonthExportSummary(month) {
   const occupancyPercent = summary.totalSlots > 0 ? Math.round((adjustedOccupiedSlots / summary.totalSlots) * 1000) / 10 : 0;
   const formatNumber = (value) => (Math.round((Number(value) || 0) * 10) / 10).toString().replace('.', ',');
   const formatPercent = (value) => formatNumber(value) + ' %';
-  const rows = [
-    { label: 'Směn do práce', value: totalShifts },
-    { label: 'Ranní směny', value: summary.morningShifts },
-    { label: 'Noční směny', value: summary.nightShifts },
-    { label: 'Obsazenost', value: formatPercent(occupancyPercent) }
-  ];
+  const valuesByLabel = {
+    'Směn celkem': totalShifts,
+    'Ranní směny': summary.morningShifts,
+    'Noční směny': summary.nightShifts,
+    'Obsazenost': formatPercent(occupancyPercent)
+  };
+  const rows = ROTATION_EXPORT_MONTH_SUMMARY_LABELS_V187.map(label => ({ label, value: valuesByLabel[label] }));
   return { rows, totalShifts, morningShifts: summary.morningShifts, nightShifts: summary.nightShifts, occupancyPercent, totalSlots: summary.totalSlots, occupiedSlots: adjustedOccupiedSlots, absenceWeight: summary.absenceWeight, absencePeople: summary.absencePeople };
 }
 
