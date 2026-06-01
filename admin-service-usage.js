@@ -1,4 +1,4 @@
-// RaK 1.2 (1.72) – Administrace Připojení, servis a oznámení oddělené z hlavního UI modulu.
+// RaK 1.2 (1.80) – Administrace Připojení, servis a oznámení oddělené z hlavního UI modulu.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('admin-service-usage.js', 'loaded', { source: 'dynamic-loader' }); } catch (err) {}
 
 function formatAdminServiceCount(value) {
@@ -90,6 +90,26 @@ async function recordAdminAppUsageNow() {
   return { ok: false, reason: 'missing-bridge' };
 }
 
+function buildAdminUsageInitials(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '??';
+  const cleaned = raw
+    .normalize('NFC')
+    .replace(/[_@.]+/g, ' ')
+    .replace(/[^\p{L}\p{N}\s-]+/gu, ' ')
+    .trim();
+  const parts = cleaned.split(/[\s-]+/u).filter(Boolean);
+  let initials = '';
+  if (parts.length >= 2) {
+    initials = parts.slice(0, 2).map((part) => Array.from(part)[0] || '').join('');
+  } else if (parts.length === 1) {
+    initials = Array.from(parts[0]).slice(0, 2).join('');
+  } else {
+    initials = Array.from(raw).slice(0, 2).join('');
+  }
+  return initials.toLocaleUpperCase('cs-CZ').slice(0, 2) || '??';
+}
+
 function buildAdminUsageGroups(devices) {
   const rows = Array.isArray(devices) ? devices : [];
   const map = new Map();
@@ -174,11 +194,11 @@ function buildAdminUsageHtml() {
           '</div>'
         ].join('');
       }).join('');
-    const initial = String(group.name || 'P').trim().slice(0, 1).toUpperCase() || 'P';
+    const initials = buildAdminUsageInitials(group.name || group.account || 'Profil');
     return [
       '<details class="adminUsageItem" name="adminUsageConnectionProfiles">',
       '  <summary class="adminUsageSummary">',
-      '    <span class="adminUsageAvatar" aria-hidden="true">' + escapeHtml(initial) + '</span>',
+      '    <span class="adminUsageAvatar" aria-hidden="true" title="' + escapeHtml(group.name || 'Profil') + '">' + escapeHtml(initials) + '</span>',
       '    <span class="adminUsageSummaryText"><b>' + escapeHtml(group.name) + '</b><small>' + escapeHtml(String(deviceCount) + ' zařízení · ' + (ago || formatAdminUsageDate(group.lastSeen))) + '</small></span>',
       '    <em class="adminUsageOpenCount">' + escapeHtml(String(group.openCount || 0) + '×') + '</em>',
       '  </summary>',

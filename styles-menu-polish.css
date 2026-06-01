@@ -1,4 +1,4 @@
-/* RaK 1.2 (1.72) – menu/O aplikaci/diagnostika polish oddělený ze styles-overrides.css.
+/* RaK 1.2 (1.80) – menu/O aplikaci/diagnostika polish oddělený ze styles-overrides.css.
    Jen přesun existujících pravidel kvůli dokončení CSS cleanupu; bez změny vizuální logiky spodní lišty. */
 
 /* v.1.5 (877): Diagnostika/O aplikaci – dlouhé řádky zůstávají uvnitř buňky. */
@@ -83,7 +83,7 @@ body.lowEndDevice #menu .adminUsageMetric,
 body.ladaMode #menu .adminUsageMetric{backdrop-filter:none !important;-webkit-backdrop-filter:none !important;box-shadow:none !important;}
 
 
-/* RaK 1.2 (1.72) – Přehled připojení jako rozklikávací profily. */
+/* RaK 1.2 (1.80) – Přehled připojení jako rozklikávací profily. */
 #menu .adminUsageCard{
   max-height:none !important;
   overflow:visible !important;
@@ -126,11 +126,14 @@ body.ladaMode #menu .adminUsageMetric{backdrop-filter:none !important;-webkit-ba
   min-width:40px !important;
   min-height:40px !important;
   border-radius:16px !important;
-  display:grid !important;
+  display:inline-grid !important;
   place-items:center !important;
-  font-size:17px !important;
+  text-align:center !important;
+  font-size:14px !important;
   line-height:1 !important;
   font-weight:950 !important;
+  letter-spacing:-.035em !important;
+  white-space:nowrap !important;
   color:#06130b !important;
   background:
     radial-gradient(circle at 28% 22%, rgba(255,255,255,.80), transparent 32%),
@@ -216,7 +219,7 @@ body.ladaMode #menu .adminUsageMetric{backdrop-filter:none !important;-webkit-ba
     min-width:36px !important;
     min-height:36px !important;
     border-radius:14px !important;
-    font-size:15px !important;
+    font-size:13px !important;
   }
   #menu .adminUsageProfileMeta{grid-template-columns:1fr !important;}
 }

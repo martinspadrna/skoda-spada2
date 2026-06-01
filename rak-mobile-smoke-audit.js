@@ -1,6 +1,6 @@
-// RaK 1.2 (1.72) – mobile/Playwright smoke readiness.
+// RaK 1.2 (1.80) – mobile/Playwright smoke readiness.
 (function setupRakMobileSmokeAudit() {
-  const VERSION = '1.2 (1.72)';
+  const VERSION = '1.2 (1.80)';
   const MODE = 'mobile-performance-smoke-readonly-v928';
 
   try {

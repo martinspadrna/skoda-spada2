@@ -1,3 +1,62 @@
+## RaK 1.2 (1.80)
+
+- Dashboard: vrchní směnový panel je vyšší cca o 10 %, běžné panely a spodní lišta beze změny.
+- Theme/pozadí: vyřazené nejpodobnější nové varianty, ponechané výrazné kusy jsou znovu postupně odemykané rankem nebo achievementy.
+- `npm run test:app-usage` rozšířený o guard pro 1.80 hero height a appearance reward contract.
+- Release metadata sjednocená na `RaK 1.2 (1.80)`, technická verze `1.2.80`, cache `v1.2-1.80`.
+
+## 1.2 (1.79)
+
+## RaK 1.2 (1.79)
+- Dashboard CSS stabilizace bez viditelného redesignu: doplněný viewport stack contract guard pro ručně laděné rozměry 360×800, 390×844, 428×926, 430×932 a desktop základ.
+- `npm run test:app-usage` rozšířený o kontrolu, že jednotlivé viewport stacky mají pořád pozdní vlastníky ve `styles-dashboard-fit.css` / `styles-dashboard-polish.css` a že 1.79 guard zůstává až za 1.77 výškovou vrstvou.
+- Release metadata sjednocená na `RaK 1.2 (1.79)`, technická verze `1.2.79`, cache `v1.2-1.79`.
+- Bez zásahu do Supabase DB/policies, spodní lišty, online her, exportu Rozpisů a výpočtové logiky kalkulaček.
+
+## 1.2 (1.77)
+
+## RaK 1.2 (1.77)
+
+- Dashboard: běžné panely jsou opatrně zvýšené maximálně zhruba o 5 % podle viewportu, bez změny spodní lišty a bez redesignu glass stylu.
+- `npm run test:app-usage` rozšířený o guard, který hlídá nové výšky panelů a poznámku k 1.77 stabilizační vrstvě.
+- Bez zásahu do Supabase DB/policies, online her, exportu Rozpisů, Rotací, Statistik a Kalkulaček.
+- Release metadata sjednocená na `RaK 1.2 (1.77)`, technická verze `1.2.77`, cache `v1.2-1.77`.
+
+## 1.2 (1.76)
+
+## RaK 1.2 (1.76)
+- Dashboard CSS stabilizace: doplněný legacy inventory guard pro staré dashboard override bloky ve `styles-overrides.css`.
+- `npm run test:app-usage` nově hlídá, že historické Dashboard override bloky zůstávají označené jako legacy a že vítězné selektory drží dedikované vrstvy `styles-dashboard-fit.css` / `styles-dashboard-polish.css`.
+- Bez viditelného redesignu Dashboardu, bez zásahu do spodní lišty, exportu Rozpisů, herního online flow a Supabase DB/policies.
+- Release metadata sjednocená na `RaK 1.2 (1.76)`, technická verze `1.2.76`, cache `v1.2-1.76`.
+
+## 1.2 (1.75)
+
+## RaK 1.2 (1.75)
+
+- Administrace → Přehled připojení: avatar u profilu už nepoužívá jen jedno písmeno, ale dvoupísmenné iniciály. U jména se dvěma částmi bere první písmeno z prvních dvou částí, u jednoslovného profilu první dvě písmena.
+- Iniciály jsou převáděné přes české locale, aby zůstala přirozená diakritika, a avatar je dorovnaný přes střed ikony.
+- `npm run test:app-usage` rozšířený o kontrolu generování dvoupísmenných iniciál v Přehledu připojení.
+- Release metadata sjednocená na `RaK 1.2 (1.75)`, technická verze `1.2.75`, cache `v1.2-1.75`.
+
+## 1.2 (1.74)
+
+## RaK 1.2 (1.74)
+
+- Navázání na potvrzený build 1.73: bez viditelného redesignu, bez změny Dashboard vzhledu a bez zásahu do spodní lišty.
+- Rozšířený `npm run test:app-usage` o pevnější Dashboard CSS contract guard: kontroluje poslední CSS vrstvu, jedinečné načtení klíčových polish souborů, pořadí všech dashboard-relevantních CSS vrstev a vlastnictví hlavních dashboard selektorů.
+- Přidaná pojistka, že finální dashboard polish vrstva znovu nekreslí shell pseudo-elementy a nesahá do spodní navigace.
+- Release metadata sjednocená na `RaK 1.2 (1.74)`, technická verze `1.2.74`, cache `v1.2-1.74`.
+
+## 1.2 (1.73)
+
+## RaK 1.2 (1.73)
+
+- Technická stabilizace Dashboard CSS po dlouhém mobilním ladění: bez viditelného redesignu, bez změny spodní lišty a bez zásahu do exportu Rozpisů.
+- Rozšířený `npm run test:app-usage` o statické hlídání Dashboardu, pořadí CSS vrstev a pokrytí hlavních viewportů 360×800, 390×844, 428×926 / 430×932 + desktop základ.
+- Přidaná pojistka, že dashboardové CSS vrstvy nezačnou upravovat spodní navigaci.
+- Release metadata sjednocená na `RaK 1.2 (1.73)`, technická verze `1.2.73`, cache `v1.2-1.73`.
+
 ## 1.2 (1.72)
 
 ## RaK 1.2 (1.72)
