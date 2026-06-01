@@ -1,7 +1,8 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.95) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.100) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 function read(file) {
   return fs.readFileSync(path.join(__dirname, file), 'utf8');
@@ -10,6 +11,13 @@ function assert(cond, msg) {
   if (!cond) throw new Error(msg);
 }
 
+const appUsageSmokeSource = fs.readFileSync(__filename, 'utf8');
+const coreJs = read('core.js');
+const packageJsonText = read('package.json');
+const packageJson = JSON.parse(packageJsonText);
+const serviceWorkerJs = read('sw.js');
+const exportJs = read('export.js');
+const changelogMd = read('CHANGELOG.md');
 const bridge = read('supabase-bridge.js');
 const appearanceThemeJs = read('appearance-theme.js');
 const ui = read('ui.js') + '\n' + read('app-runtime-guards.js') + '\n' + read('app-health-audits.js') + '\n' + read('app-postload-audits.js') + '\n' + read('app-pwa-connectivity.js') + '\n' + read('games-engine.js') + '\n' + read('games-profile.js') + '\n' + appearanceThemeJs + '\n' + read('admin-service-usage.js') + '\n' + read('admin-rotation.js') + '\n' + read('app-navigation.js') + '\n' + read('app-bottom-nav.js') + '\n' + read('app-menu.js') + '\n' + read('app-actions.js') + '\n' + read('app-boot-selftest.js') + '\n' + read('app-rotation-sync.js') + '\n' + read('app-excel-import.js') + '\n' + read('app-rotation-controls.js') + '\n' + read('app-admin-unlock.js') + '\n' + read('app-home-boot.js') + '\n' + read('app-init.js');
@@ -19,6 +27,7 @@ const stylesOverridesCss = read('styles-overrides.css');
 const dashboardFitCss = read('styles-dashboard-fit.css');
 const dashboardPolishCss = read('styles-dashboard-polish.css');
 const menuPolishCss = read('styles-menu-polish.css');
+const stylesGamesCss = read('styles-games.css');
 const rotaceJs = read('rotace.js');
 const dashboardCss = `${dashboardFitCss}
 ${dashboardPolishCss}`;
@@ -116,6 +125,19 @@ const dashboardNoVisualOwnerDriftSelectors = Array.from(new Set([
 ]));
 const dashboardAllowedVisualOwnerLayers = new Set(['styles-dashboard-fit.css', 'styles-dashboard-polish.css']);
 
+const dashboardLayerScopeGuardV197 = Object.freeze({
+  intent: 'dashboard-layers-stay-inside-dashboard-scope',
+  protectedAreas: Object.freeze(['bottom-navigation', 'menu', 'admin-usage', 'generic-menu-polish']),
+  allowedNonDashboardPrefix: 'foodSchedule'
+});
+const dashboardLayerForbiddenSelectorPatternsV197 = Object.freeze([
+  /(^|[\s>+~,.])(?:nav\.bottomNav|\.bottomNav[A-Za-z0-9_-]*|#bottomNavScroll|\.bottom-navigation)\b/,
+  /(^|[\s>+~,.])#menu/,
+  /(^|[\s>+~,.])\.adminUsage[A-Za-z0-9_-]*\b/,
+  /(^|[\s>+~,.])\.adminMenu[A-Za-z0-9_-]*\b/,
+  /(^|[\s>+~,.])\.menuPolish[A-Za-z0-9_-]*\b/
+]);
+
 const dashboardLegacyOwnerMap = [
   ['#home .dashboardGrid', '#home.page.active .dashboardGrid'],
   ['#home .dashboardCard', '#home.page.active .dashboardCard'],
@@ -157,6 +179,78 @@ const dashboardActiveOwnerRegistryV195 = Object.freeze([
   '#home.page.active #dashJidelna .dashboardDot'
 ]);
 
+const dashboardOverridesSelectorLockV196 = Object.freeze({
+  count: 256,
+  sha256: '797b74acd9f476627b6b2d9e16bae57f48c684f4d2460bebb9a33a2217651113'
+});
+
+const dashboardReleaseIsolationGuardV198 = Object.freeze({
+  intent: 'dashboard-cleanup-does-not-touch-export-or-games',
+  protectedFiles: Object.freeze(['rotace.js', 'styles-games.css']),
+  protectedFeatureMarkers: Object.freeze([
+    'ROTATION_EXPORT_GLASS_THEME_V193',
+    'drawRotationExportGlassPanelShell',
+    'drawRotationExportGlassTitleBar',
+    'downloadSelectedRotationMonthImage',
+    '#games .gameBoard',
+    '#games .gameBoard.game2048Board',
+    '#games .gameBoard.gameSnakeBoard',
+    '#games .gameBoard.gameFlapBoard'
+  ]),
+  forbiddenDashboardFragments: Object.freeze([
+    'ROTATION_EXPORT_',
+    'drawRotationExport',
+    'downloadSelectedRotationMonthImage',
+    'canvas.toBlob',
+    '#games',
+    'body.gamesOpen',
+    '.gameBoard',
+    '.gamesShell',
+    '.game2048Board',
+    '.gameSnakeBoard',
+    '.gameFlapBoard'
+  ])
+});
+
+const releaseMetadataContractV199 = Object.freeze({
+  displayVersion: '1.2 (1.100)',
+  appLabel: 'RaK 1.2 (1.100)',
+  packageVersion: '1.2.100',
+  cacheVersion: 'v1.2-1.100',
+  realtimeChannel: 'rak-public-live-v1-2-1-100',
+  changelogHeader: '## RaK 1.2 (1.100)',
+  previousBuildFragments: Object.freeze(['1.2 (1.99)', '1.2.99', 'v1.2-1.99', 'rak-public-live-v1-2-1-99'])
+});
+
+const releaseMetadataActiveFilesV199 = Object.freeze([
+  ['core.js', coreJs],
+  ['package.json', packageJsonText],
+  ['sw.js', serviceWorkerJs],
+  ['supabase-bridge.js', bridge],
+  ['export.js', exportJs]
+]);
+
+const dashboardCssGuardSeriesCompleteV1100 = Object.freeze({
+  intent: 'dashboard-css-guard-series-closed',
+  status: 'closed',
+  requiredMarkers: Object.freeze([
+    ['styles-overrides.css', 'Dashboard legacy override inventory guard'],
+    ['styles-overrides.css', 'Dashboard proven-overridden legacy candidates'],
+    ['styles-overrides.css', 'Dashboard extended proven-overridden legacy candidates'],
+    ['styles-dashboard-polish.css', 'Dashboard no visual owner drift guard'],
+    ['styles-dashboard-polish.css', 'Dashboard CSS layer order contract v1.94'],
+    ['styles-dashboard-polish.css', 'Dashboard active owner registry'],
+    ['styles-overrides.css', 'Dashboard no-new-hotfix lock v1.96'],
+    ['styles-dashboard-polish.css', 'Dashboard override selector lock v1.96'],
+    ['styles-dashboard-polish.css', 'Dashboard scope guard v1.97'],
+    ['styles-dashboard-polish.css', 'Dashboard release isolation guard v1.98'],
+    ['export.js', 'RAK_RELEASE_METADATA_CONTRACT_V199'],
+    ['export.js', 'RAK_DASHBOARD_CSS_GUARD_SERIES_CONTRACT_V1100'],
+    ['styles-dashboard-polish.css', 'Dashboard CSS guard series complete v1.100']
+  ]),
+  closedByBuild: 'RaK 1.2 (1.100)'
+});
+
 
 
 function countMatches(source, pattern) {
@@ -182,6 +276,107 @@ function assertSingleOccurrence(list, value, msg) {
 
 function stripCssComments(source) {
   return String(source || '').replace(/\/\*[\s\S]*?\*\//g, '');
+}
+
+function getCssRuleSelectors(source) {
+  const selectors = [];
+  const body = stripCssComments(source);
+  const rulePattern = /([^{}]+)\{/g;
+  let match;
+  while ((match = rulePattern.exec(body))) {
+    const selector = String(match[1] || '').replace(/\s+/g, ' ').trim();
+    if (!selector || selector.startsWith('@')) continue;
+    selectors.push(selector);
+  }
+  return selectors;
+}
+
+function assertDashboardLayerScopeGuard(css, layerName) {
+  assertIncludes(dashboardPolishCss, 'Dashboard scope guard v1.97', 'Chybí dokumentace Dashboard scope guard v1.97');
+  assert(dashboardLayerScopeGuardV197.intent === 'dashboard-layers-stay-inside-dashboard-scope', 'Dashboard scope guard v1.97 má špatný intent');
+  const selectors = getCssRuleSelectors(css);
+  selectors.forEach((selector) => {
+    dashboardLayerForbiddenSelectorPatternsV197.forEach((pattern) => {
+      assert(
+        !pattern.test(selector),
+        `Dashboard CSS vrstva ${layerName} nesmí upravovat mimo Dashboard scope: ${selector}`
+      );
+    });
+  });
+}
+
+function assertDashboardReleaseIsolationGuardV198() {
+  assertIncludes(dashboardPolishCss, 'Dashboard release isolation guard v1.98', 'Chybí dokumentace Dashboard release isolation guard v1.98');
+  assert(dashboardReleaseIsolationGuardV198.intent === 'dashboard-cleanup-does-not-touch-export-or-games', 'Dashboard release isolation guard v1.98 má špatný intent');
+  dashboardReleaseIsolationGuardV198.protectedFiles.forEach((fileName) => {
+    assertIncludes(appUsageSmokeSource || '', fileName, `Dashboard release isolation guard v1.98 musí jmenovat chráněný soubor ${fileName}`);
+  });
+  dashboardReleaseIsolationGuardV198.protectedFeatureMarkers.forEach((marker) => {
+    const source = marker.startsWith('#games') ? stylesGamesCss : rotaceJs;
+    assertIncludes(source, marker, `Chráněný marker pro export/hry chybí: ${marker}`);
+  });
+  dashboardReleaseIsolationGuardV198.forbiddenDashboardFragments.forEach((fragment) => {
+    assert(!dashboardCss.includes(fragment), `Dashboard CSS cleanup nesmí zasahovat export Rozpisů ani herní vrstvy: ${fragment}`);
+  });
+}
+
+function assertReleaseMetadataContractV199() {
+  const contract = releaseMetadataContractV199;
+  assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.100)'", 'Release contract v export.js musí držet display verzi 1.100');
+  assertIncludes(exportJs, "packageVersion: '1.2.100'", 'Release contract v export.js musí držet package verzi 1.2.100');
+  assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
+  assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.100');
+  assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.100');
+  assertIncludes(serviceWorkerJs, `const SW_APP_VERSION = '${contract.displayVersion}';`, 'sw.js SW_APP_VERSION není sjednocený s 1.100');
+  assertIncludes(bridge, `client.channel('${contract.realtimeChannel}')`, 'Supabase realtime kanál není sjednocený s 1.100');
+  assertIncludes(bridge, `realtimeChannel: '${contract.realtimeChannel}'`, 'Supabase diagnostika realtime kanálu není sjednocená s 1.100');
+  assert(changelogMd.startsWith(contract.changelogHeader), 'CHANGELOG.md musí začínat aktuálním buildem 1.100');
+  assertIncludes(changelogMd, `technická verze \`${contract.packageVersion}\``, 'CHANGELOG.md musí uvádět technickou verzi 1.2.100');
+  assertIncludes(changelogMd, `cache \`${contract.cacheVersion}\``, 'CHANGELOG.md musí uvádět cache verzi 1.100');
+  assertIncludes(exportJs, `version: '${contract.displayVersion}'`, 'export.js smoke report musí nést aktuální display verzi');
+  assertIncludes(exportJs, `version: String(window.APP_VERSION || '${contract.displayVersion}')`, 'export.js fallbacky musí používat aktuální display verzi');
+  releaseMetadataActiveFilesV199.forEach(([fileName, source]) => {
+    contract.previousBuildFragments.forEach((fragment) => {
+      assert(!String(source || '').includes(fragment), `Aktivní release soubor ${fileName} obsahuje starý build fragment: ${fragment}`);
+    });
+  });
+}
+
+function assertDashboardCssGuardSeriesCompleteV1100() {
+  assert(dashboardCssGuardSeriesCompleteV1100.intent === 'dashboard-css-guard-series-closed', 'Dashboard CSS guard series v1.100 má špatný intent');
+  assert(dashboardCssGuardSeriesCompleteV1100.status === 'closed', 'Dashboard CSS guard series v1.100 musí být uzavřená');
+  assertIncludes(dashboardPolishCss, 'Dashboard CSS guard series complete v1.100', 'styles-dashboard-polish.css musí dokumentovat uzavření série Dashboard CSS guardů');
+  assertIncludes(exportJs, 'RAK_DASHBOARD_CSS_GUARD_SERIES_CONTRACT_V1100', 'export.js musí obsahovat contract uzavření Dashboard CSS guardů v1.100');
+  assertIncludes(exportJs, "status: 'closed'", 'Dashboard CSS guard series contract musí být označený jako closed');
+  assertIncludes(exportJs, "guardRange: 'v1.90-v1.100'", 'Dashboard CSS guard series contract musí pokrývat rozsah v1.90-v1.100');
+  const sources = {
+    'styles-overrides.css': stylesOverridesCss,
+    'styles-dashboard-polish.css': dashboardPolishCss,
+    'export.js': exportJs
+  };
+  dashboardCssGuardSeriesCompleteV1100.requiredMarkers.forEach(([fileName, marker]) => {
+    assertIncludes(sources[fileName], marker, `Dashboard CSS guard series v1.100: chybí marker ${marker} v ${fileName}`);
+  });
+  assertOrder(dashboardPolishCss, 'Dashboard release isolation guard v1.98', 'Dashboard CSS guard series complete v1.100', 'Uzavření Dashboard CSS guardů musí být až za release isolation guardem');
+}
+
+function getDashboardOverrideSelectorSignature(source) {
+  const selectors = [];
+  const body = stripCssComments(source);
+  const rulePattern = /([^{}]+)\{/g;
+  let match;
+  while ((match = rulePattern.exec(body))) {
+    const selector = String(match[1] || '').replace(/\s+/g, ' ').trim();
+    if (/dashboard|dashHero|dashKantyna|dashJidelna/.test(selector)) {
+      selectors.push(selector);
+    }
+  }
+  const joined = selectors.join('\n');
+  return {
+    count: selectors.length,
+    sha256: crypto.createHash('sha256').update(joined).digest('hex')
+  };
 }
 
 function lastLocalCssOwner(selector) {
@@ -352,6 +547,19 @@ dashboardLegacyOwnerMap.forEach(([legacySelector, ownerSelector]) => {
 });
 assert(dashboardLegacyOnlyInventoryV195.length >= 11, '1.95 legacy-only inventory musí dál pokrýt všechny staré Dashboard oblasti');
 assert(dashboardActiveOwnerRegistryV195.length >= 10, '1.95 active owner registry musí dál pokrýt hlavní Dashboard vlastníky');
+
+assertIncludes(stylesOverridesCss, 'Dashboard no-new-hotfix lock v1.96', 'styles-overrides.css musí mít 1.96 guard proti novým Dashboard hotfixům');
+assertIncludes(stylesOverridesCss, 'Nové vizuální Dashboard úpravy už sem nepřidávat', '1.96 guard musí jasně říkat, že nové Dashboard úpravy nepatří do overrides');
+assertIncludes(dashboardPolishCss, 'Dashboard override selector lock v1.96', 'styles-dashboard-polish.css musí mít 1.96 owner-side lock poznámku');
+const dashboardOverridesSignatureV196 = getDashboardOverrideSelectorSignature(stylesOverridesCss);
+assert(
+  dashboardOverridesSignatureV196.count === dashboardOverridesSelectorLockV196.count,
+  `Dashboard overrides selector count drift: čekám ${dashboardOverridesSelectorLockV196.count}, mám ${dashboardOverridesSignatureV196.count}`
+);
+assert(
+  dashboardOverridesSignatureV196.sha256 === dashboardOverridesSelectorLockV196.sha256,
+  `Dashboard overrides selector lock drift: čekám ${dashboardOverridesSelectorLockV196.sha256}, mám ${dashboardOverridesSignatureV196.sha256}`
+);
 
 
 // Vítězné dashboard vlastnictví: test drží klíčové selektory v dashboard vrstvách, ne ve slepých globálních přepisech.
@@ -560,5 +768,14 @@ assertIncludes(rotaceJs, 'const rows = [', 'Měsíční přehled musí stavět j
 assertIncludes(rotaceJs, "'Obsazenost': formatPercent(occupancyPercent)", 'Zjednodušený měsíční přehled musí ukázat jedinou obsazenost z contract mapy');
 
 assert(!/bottomNav|bottomNavBtn|bottomNavScroll|bottomNavIndicator/.test(dashboardCss), 'Dashboard CSS vrstva nesmí upravovat spodní lištu');
+assertIncludes(dashboardPolishCss, 'Dashboard scope guard v1.97', 'styles-dashboard-polish.css musí dokumentovat, že Dashboard vrstvy nesahají mimo Dashboard scope');
+assertDashboardLayerScopeGuard(dashboardFitCss, 'styles-dashboard-fit.css');
+assertDashboardLayerScopeGuard(dashboardPolishCss, 'styles-dashboard-polish.css');
+['bottom-navigation', 'menu', 'admin-usage', 'generic-menu-polish'].forEach((area) => {
+  assertIncludes(appUsageSmokeSource || '', area, `Dashboard scope guard v1.97 musí jmenovat chráněnou oblast ${area}`);
+});
+assertDashboardReleaseIsolationGuardV198();
+assertDashboardCssGuardSeriesCompleteV1100();
+assertReleaseMetadataContractV199();
 
-console.log('app-usage-smoke-v963 OK + dashboard-css-contract-guard + appearance-reward-contract + rotation-export-summary-simple-guard + rotation-export-glass-guard + appearance-readability-guard + css-layer-order-v194-guard + dashboard-owner-registry-v195-guard + no-visual-owner-drift-guard OK');
+console.log('app-usage-smoke-v963 OK + dashboard-css-contract-guard + appearance-reward-contract + rotation-export-summary-simple-guard + rotation-export-glass-guard + appearance-readability-guard + css-layer-order-v194-guard + dashboard-owner-registry-v195-guard + dashboard-overrides-selector-lock-v196-guard + dashboard-scope-v197-guard + dashboard-release-isolation-v198-guard + dashboard-css-guard-series-v1100-complete + release-metadata-v199-guard + no-visual-owner-drift-guard OK');

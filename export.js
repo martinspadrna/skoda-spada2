@@ -1,4 +1,4 @@
-// RaK 1.2 (1.95) – export manifest a release metadata.
+// RaK 1.2 (1.100) – export manifest a release metadata.
 const EXPORT_SOURCE_IDS = {
   "module-readiness.js": "src-module-readiness-js",
   "rak-namespace.js": "src-rak-namespace-js",
@@ -110,11 +110,38 @@ const EXPORT_SOURCE_IDS = {
 
 const SOURCE_CACHE = window.__ROTACE_SOURCE_CACHE__ || (window.__ROTACE_SOURCE_CACHE__ = {});
 const BINARY_SOURCE_CACHE = window.__ROTACE_BINARY_SOURCE_CACHE__ || (window.__ROTACE_BINARY_SOURCE_CACHE__ = {});
+const RAK_RELEASE_METADATA_CONTRACT_V199 = Object.freeze({
+  displayVersion: '1.2 (1.100)',
+  appLabel: 'RaK 1.2 (1.100)',
+  packageVersion: '1.2.100',
+  cacheVersion: 'v1.2-1.100',
+  realtimeChannel: 'rak-public-live-v1-2-1-100',
+  changelogHeader: '## RaK 1.2 (1.100)',
+  serviceWorkerVersionGuard: 'CACHE_VERSION + SW_APP_VERSION'
+});
+const RAK_DASHBOARD_CSS_GUARD_SERIES_CONTRACT_V1100 = Object.freeze({
+  status: 'closed',
+  scope: 'dashboard-css-cleanup-guards',
+  guardRange: 'v1.90-v1.100',
+  guards: Object.freeze([
+    'v1.90 legacy candidates',
+    'v1.91 extended legacy candidates',
+    'v1.92 no visual owner drift',
+    'v1.94 css layer order',
+    'v1.95 owner registry',
+    'v1.96 no-new-hotfix lock',
+    'v1.97 dashboard scope',
+    'v1.98 release isolation',
+    'v1.99 release metadata',
+    'v1.100 guard series completion'
+  ]),
+  nextWork: 'Další Dashboard změny dělat už jako konkrétní funkční/vizuální požadavek, ne jako další cleanup-only guard.'
+});
 const EXPORT_SMOKE_REPORT = window.__RAK_EXPORT_SMOKE_REPORT__ || (window.__RAK_EXPORT_SMOKE_REPORT__ = {
   ok: null,
   status: 'not-run',
   mode: 'export-smoke-report-v939',
-  version: '1.2 (1.95)',
+  version: '1.2 (1.100)',
   checkedAt: null,
   lastStage: 'čeká na export',
   runCount: 0,
@@ -246,7 +273,7 @@ const EXPORT_TEXT_FILES = [
 
 function getRakExportManifest() {
   return {
-    version: String(window.APP_VERSION || '1.2 (1.95)'),
+    version: String(window.APP_VERSION || '1.2 (1.100)'),
     mode: 'export-manifest-preflight-v939',
     indexFile: 'index.html',
     jsFiles: Array.from(new Set(EXPORT_JS_FILES)),
@@ -356,7 +383,7 @@ function updateRakExportSmokeReport(partial) {
   const data = partial && typeof partial === 'object' ? partial : {};
   Object.assign(EXPORT_SMOKE_REPORT, data, {
     mode: 'export-smoke-report-v939',
-    version: String(window.APP_VERSION || '1.2 (1.95)'),
+    version: String(window.APP_VERSION || '1.2 (1.100)'),
     checkedAt: new Date().toISOString()
   });
   return getRakExportSmokeReport();

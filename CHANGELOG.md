@@ -1,3 +1,39 @@
+## RaK 1.2 (1.100)
+
+- Stabilizační uzavření série Dashboard CSS guardů: přidaný `RAK_DASHBOARD_CSS_GUARD_SERIES_CONTRACT_V1100`, který označuje guard sérii 1.90–1.100 jako uzavřenou.
+- `npm run test:app-usage` nově hlídá kompletní řetěz Dashboard CSS pojistek od legacy inventury přes active owner registry až po release metadata guard.
+- `styles-dashboard-polish.css` má novou dokumentační poznámku `Dashboard CSS guard series complete v1.100`, aby bylo jasné, že další Dashboard práce už má být konkrétní funkční/vizuální požadavek, ne další cleanup-only guard.
+- Bez vizuální změny a bez zásahu do Dashboardu, spodní lišty, exportu Rozpisů, her nebo Supabase DB/policies.
+- Release metadata sjednocená na `RaK 1.2 (1.100)`, technická verze `1.2.100`, cache `v1.2-1.100`.
+
+## RaK 1.2 (1.99)
+
+- Release metadata guard: přidaný `RAK_RELEASE_METADATA_CONTRACT_V199`, který drží pohromadě display verzi, package semver, cache verzi, realtime kanál, changelog a service worker metadata.
+- `npm run test:app-usage` nově hlídá, že aktivní release soubory neobsahují staré build fragmenty z předchozí verze a že `APP_VERSION`, `package.json`, `sw.js`, `supabase-bridge.js`, `export.js` a `CHANGELOG.md` ukazují na stejný build.
+- Bez vizuální změny a bez zásahu do Dashboardu, spodní lišty, exportu Rozpisů, her nebo Supabase DB/policies.
+- Release metadata sjednocená na `RaK 1.2 (1.99)`, technická verze `1.2.99`, cache `v1.2-1.99`.
+
+## RaK 1.2 (1.98)
+
+- Dashboard CSS cleanup bez vizuální změny: přidaný `Dashboard release isolation guard v1.98`, který hlídá, že Dashboard vrstvy nezačnou obsahovat export Rozpisů ani herní CSS/selektory.
+- `npm run test:app-usage` nově kontroluje chráněné markery exportu Rozpisů (`ROTATION_EXPORT_GLASS_THEME_V193`, glass helpery a stažení PNG) i herních CSS vrstev (`#games .gameBoard`, 2048, Had a Flappy Car board).
+- `styles-dashboard-polish.css` má doplněnou dokumentační poznámku, že export Rozpisů a herní styly nepatří do Dashboard cleanup vrstev.
+- Release metadata sjednocená na `RaK 1.2 (1.98)`, technická verze `1.2.98`, cache `v1.2-1.98`.
+
+## RaK 1.2 (1.97)
+
+- Dashboard CSS cleanup bez vizuální změny: přidaný `Dashboard scope guard v1.97`, který hlídá, že dashboard-fit/polish vrstvy nesahají mimo Dashboard scope.
+- `npm run test:app-usage` nově kontroluje, že Dashboard CSS vrstvy neupravují spodní lištu, menu, admin přehled připojení ani obecné menu polish selektory.
+- `styles-dashboard-polish.css` má doplněnou dokumentační poznámku, že spodní lišta, menu a admin přehled patří do vlastních vrstev, ne do Dashboard vrstev.
+- Release metadata sjednocená na `RaK 1.2 (1.97)`, technická verze `1.2.97`, cache `v1.2-1.97`.
+
+## RaK 1.2 (1.96)
+
+- Dashboard CSS cleanup bez vizuální změny: přidaný `Dashboard no-new-hotfix lock v1.96` pro `styles-overrides.css`.
+- `npm run test:app-usage` nově hlídá počet a SHA-256 podpis Dashboard selektorů ve `styles-overrides.css`, aby se tam omylem nevracely nové vizuální Dashboard hotfixy.
+- Aktivní Dashboard změny mají dál patřit jen do `styles-dashboard-fit.css` / `styles-dashboard-polish.css`; `styles-overrides.css` zůstává historická inventura starých přepisů.
+- Release metadata sjednocená na `RaK 1.2 (1.96)`, technická verze `1.2.96`, cache `v1.2-1.96`.
+
 ## RaK 1.2 (1.95)
 
 - Dashboard CSS cleanup bez vizuální změny: zpřesněný audit rozdílu mezi legacy inventurou ve `styles-overrides.css` a aktivními Dashboard vlastníky v `styles-dashboard-fit.css` / `styles-dashboard-polish.css`.
