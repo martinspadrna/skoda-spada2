@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.80) – smoke test přehledu připojení + Dashboard viewport stack contract guard.
+// RaK 1.2 (1.82) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 
@@ -18,6 +18,8 @@ const indexHtml = read('index.html');
 const stylesOverridesCss = read('styles-overrides.css');
 const dashboardFitCss = read('styles-dashboard-fit.css');
 const dashboardPolishCss = read('styles-dashboard-polish.css');
+const menuPolishCss = read('styles-menu-polish.css');
+const rotaceJs = read('rotace.js');
 const dashboardCss = `${dashboardFitCss}
 ${dashboardPolishCss}`;
 const styleHrefMatches = Array.from(indexHtml.matchAll(/<link[^>]+rel=["']stylesheet["'][^>]+href=["']([^"']+)["'][^>]*>/g));
@@ -171,6 +173,9 @@ assert(ui.includes('buildAdminUsageGroups'), 'Admin přehled musí seskupovat za
 assert(ui.includes('buildAdminUsageInitials'), 'Admin přehled musí generovat dvoupísmenné iniciály profilu');
 assert(ui.includes("Array.from(parts[0]).slice(0, 2)"), 'Jednoslovné profily mají v avataru použít první dvě písmena');
 assert(ui.includes('toLocaleUpperCase(\'cs-CZ\')'), 'Iniciály mají respektovat českou diakritiku při převodu na velká písmena');
+assertIncludes(menuPolishCss, '#menu .adminUsageSummaryText{display:flex !important;flex-direction:column !important;gap:2px !important;min-width:0 !important;}', 'Přehled připojení musí mít samostatný text wrapper, aby avatar nebyl mimo střed');
+assertIncludes(menuPolishCss, '#menu .adminUsageAvatar{', 'CSS avatar přehledu připojení chybí');
+assertIncludes(menuPolishCss, 'place-items:center !important;', 'Avatar přehledu připojení musí centrovat iniciály');
 assert(ui.includes('adminUsageDeviceList'), 'Admin přehled musí ukazovat zařízení uvnitř jedné složky jména');
 assert(ui.includes('data-admin-action="open-usage"'), 'Tlačítko Přehled připojení chybí');
 assert(ui.includes("openAppMenu('admin-usage')"), 'Admin usage routing chybí');
@@ -301,6 +306,46 @@ assert(freeThemes.length === 1 && freeThemes[0] === 'default', `Vždy dostupný 
 assert(themeDefs.length <= 18, 'Theme seznam je po 1.80 zbytečně podobný/nafouknutý');
 assert(backgroundDefs.length <= 23, 'Pozadí seznam je po 1.80 zbytečně podobný/nafouknutý');
 
+// 1.81: appearance reward contract – budoucí theme/pozadí mohou přibývat, ale ne jako skoro stejné kopie bez postupného odemykání.
+assertIncludes(appearanceThemeJs, 'RAK_APPEARANCE_REWARD_CONTRACT_V181', 'Chybí 1.81 appearance reward contract');
+assertIncludes(appearanceThemeJs, "intent: 'distinct-progressive-appearance-rewards'", 'Appearance contract musí jasně řešit odlišnost a postupné odemykání');
+assertIncludes(appearanceThemeJs, "defaultThemeId: 'default'", 'Appearance contract musí držet základní theme');
+assertIncludes(appearanceThemeJs, "defaultBackgroundId: 'ios-mesh'", 'Appearance contract musí držet základní pozadí');
+[
+  'Vždy dostupný zůstává jen základní theme a základní pozadí.',
+  'Nové theme/pozadí nesmí být jen lehce přebarvená kopie existujícího skinu.',
+  'Každý nový výrazný skin musí mít minPlays, minAchievements nebo minRank.',
+  'Před přidáním nového skinu porovnat hlavní color/swatch/akcent s existující rodinou.',
+  'Když nový skin spadá do stejné rodiny, musí mít jiný kontrast, náladu nebo účel v UI.'
+].forEach((rule) => assertIncludes(appearanceThemeJs, rule, `Appearance contract pravidlo chybí: ${rule}`));
+['green', 'blueCyan', 'violetPink', 'redOrange', 'neutralPremium'].forEach((family) => {
+  assertIncludes(appearanceThemeJs, family + ': Object.freeze([', `Theme family contract chybí: ${family}`);
+});
+['green', 'blueCyan', 'violetPink', 'warm', 'calm'].forEach((family) => {
+  assertIncludes(appearanceThemeJs, family + ': Object.freeze([', `Background family contract chybí: ${family}`);
+});
+['electric-ocean', 'gold-rush-neon', 'arctic-radar', 'candy-voltage', 'stealth-purple', 'ultra-violet'].forEach((id) => {
+  assertIncludes(appearanceThemeJs, id, `Vyřazený theme ${id} musí být dohledatelný v reservedRemovedThemeIds`);
+});
+['nebula-shock', 'emerald-smoke', 'ruby-circuit', 'cobalt-fire', 'solar-flare'].forEach((id) => {
+  assertIncludes(appearanceThemeJs, id, `Vyřazené pozadí ${id} musí být dohledatelné v reservedRemovedBackgroundIds`);
+});
+const backgroundFreeEntries = Object.entries({
+  'ios-mesh': 'Vždy dostupné'
+}).filter(([id]) => backgroundIds.has(id));
+assert(backgroundFreeEntries.length === 1 && backgroundFreeEntries[0][0] === 'ios-mesh', 'Základní volné pozadí má zůstat ios-mesh');
+['storm-signal', 'midnight-gold'].forEach((id) => {
+  assertIncludes(appearanceThemeJs, `'${id}': { unlockText: 'Rank`, `Pozadí ${id} musí zůstat v rank/achievement unlock mapě i po 1.81 contractu`);
+});
+assertOrder(appearanceThemeJs, 'RAK_BACKGROUND_UNLOCKS_V927', 'RAK_APPEARANCE_REWARD_CONTRACT_V181', 'Appearance contract má být až za unlock mapou, aby navazoval na reálné odemykání');
+assertOrder(appearanceThemeJs, 'RAK_APPEARANCE_REWARD_CONTRACT_V181', 'window.RAK_BACKGROUND_DEFS = RAK_BACKGROUND_DEFS', 'Appearance contract má být dostupný před finálním vystavením background definic');
+
+assertIncludes(rotaceJs, 'function buildRotationMonthExportSummary(month)', 'Export rozpisu musí umět spočítat měsíční přehled');
+assertIncludes(rotaceJs, "drawRotationExportSummaryCard(ctx, 'Měsíční přehled'", 'Export rozpisu musí vykreslit kartu Měsíční přehled');
+['Směn do práce', 'Ranní směny', 'Noční směny', 'Obsazenost', 'Absence směn'].forEach((label) => {
+  assertIncludes(rotaceJs, label, `Měsíční exportní přehled musí obsahovat položku ${label}`);
+});
+
 assert(!/bottomNav|bottomNavBtn|bottomNavScroll|bottomNavIndicator/.test(dashboardCss), 'Dashboard CSS vrstva nesmí upravovat spodní lištu');
 
-console.log('app-usage-smoke-v963 OK + dashboard-css-contract-guard OK');
+console.log('app-usage-smoke-v963 OK + dashboard-css-contract-guard + appearance-reward-contract + rotation-export-summary OK');

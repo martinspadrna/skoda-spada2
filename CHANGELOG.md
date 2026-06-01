@@ -1,3 +1,17 @@
+## RaK 1.2 (1.82)
+
+- Administrace → Přehled připojení: opravené centrování iniciál v avatar ikonách, textová část má vlastní wrapper a dvoupísmenné iniciály sedí uprostřed ikonky.
+- Export PNG Rozpisů: přidaný nový blok `Měsíční přehled` pod tabulku Absence. Ukazuje směny do práce, ranní/noční směny, dny se směnou, místa celkem, obsazená/volná místa, měsíční obsazenost a absence směn.
+- `npm run test:app-usage` rozšířený o guard pro centrovaný avatar Přehledu připojení a pro nový měsíční přehled v exportu Rozpisů.
+- Release metadata sjednocená na `RaK 1.2 (1.82)`, technická verze `1.2.82`, cache `v1.2-1.82`.
+
+## RaK 1.2 (1.81)
+
+- Appearance systém: přidaný interní reward contract pro budoucí theme a pozadí, aby nové skiny nebyly jen podobné přebarvené varianty.
+- Contract drží pravidlo, že vždy dostupný je jen základní theme a základní pozadí, výrazné skiny se mají odemykat přes hry, achievementy nebo rank.
+- `npm run test:app-usage` rozšířený o guard pro appearance contract, vyřazené podobné ID a postupné odemykání.
+- Release metadata sjednocená na `RaK 1.2 (1.81)`, technická verze `1.2.81`, cache `v1.2-1.81`.
+
 ## RaK 1.2 (1.80)
 
 - Dashboard: vrchní směnový panel je vyšší cca o 10 %, běžné panely a spodní lišta beze změny.

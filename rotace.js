@@ -1,4 +1,4 @@
-// RaK 1.2 (1.80) – Rotace render a volba jmen.
+// RaK 1.2 (1.82) – Rotace render a volba jmen.
 function renderRotace() {
   const namesGrid = document.getElementById('namesGrid');
   const personView = document.getElementById('personView');
@@ -822,6 +822,141 @@ function buildRotationExportAbsenceTable(absences, dateWeight, personWeight) {
   return { columns, rows, maxItems };
 }
 
+
+function buildRotationMonthExportSummary(month) {
+  const summary = {
+    shiftKeys: new Set(),
+    workDays: new Set(),
+    morningShifts: 0,
+    nightShifts: 0,
+    totalSlots: 0,
+    occupiedSlots: 0,
+    absenceWeight: 0,
+    absencePeople: 0
+  };
+  const sections = ['hard', 'soft'];
+  sections.forEach((sectionKey) => {
+    const section = month && month[sectionKey] ? month[sectionKey] : null;
+    const machines = Array.isArray(section && section.machines) ? section.machines : [];
+    const rows = Array.isArray(section && section.rows) ? section.rows : [];
+    rows.forEach((row) => {
+      const parsed = typeof parseDateToken === 'function' ? parseDateToken(row && row.date) : null;
+      const shiftText = String((parsed && parsed.shift) || '').trim();
+      const normalizedShift = typeof normalizeShiftText === 'function' ? normalizeShiftText(shiftText) : shiftText;
+      const shiftKey = [String((parsed && parsed.day) || row && row.date || ''), String((parsed && parsed.month) || ''), normalizedShift].join('|');
+      if (normalizedShift && !summary.shiftKeys.has(shiftKey)) {
+        summary.shiftKeys.add(shiftKey);
+        if (/^(?:R|R8)\b|rann/i.test(normalizedShift)) summary.morningShifts += 1;
+        else if (/^(?:N|N8)\b|noč|noc/i.test(normalizedShift)) summary.nightShifts += 1;
+      }
+      if (parsed && Number.isFinite(Number(parsed.day))) {
+        summary.workDays.add(String(parsed.day) + '.' + String(parsed.month || ''));
+      }
+      machines.forEach((machine, idx) => {
+        const machineName = String(machine || '').trim();
+        if (!machineName) return;
+        summary.totalSlots += 1;
+        const worker = String(row && row.cells ? row.cells[idx] || '' : '').trim();
+        if (worker) summary.occupiedSlots += 1;
+      });
+    });
+  });
+
+  const notes = Array.isArray(month && month.notes) ? month.notes : [];
+  notes.forEach((note) => {
+    const normalized = typeof normalizeNoteEntry === 'function' ? normalizeNoteEntry(note) : note;
+    if (!normalized || !normalized.isAbsence) return;
+    const weight = typeof estimateAbsenceWeight === 'function' ? estimateAbsenceWeight(normalized) : 1;
+    const people = Array.isArray(normalized.people) ? normalized.people.filter(Boolean) : [];
+    summary.absenceWeight += weight * Math.max(1, people.length || (normalized.person ? 1 : 0));
+    summary.absencePeople += Math.max(1, people.length || (normalized.person ? 1 : 0));
+  });
+
+  const totalShifts = summary.shiftKeys.size;
+  const adjustedOccupiedSlots = Math.max(0, summary.occupiedSlots - summary.absenceWeight);
+  const freeSlots = Math.max(0, summary.totalSlots - adjustedOccupiedSlots);
+  const occupancyPercent = summary.totalSlots > 0 ? Math.round((adjustedOccupiedSlots / summary.totalSlots) * 1000) / 10 : 0;
+  const formattedAbsenceWeight = (Math.round(summary.absenceWeight * 10) / 10).toString().replace('.', ',');
+  const rows = [
+    { label: 'Směn do práce', value: totalShifts },
+    { label: 'Ranní směny', value: summary.morningShifts },
+    { label: 'Noční směny', value: summary.nightShifts },
+    { label: 'Dní se směnou', value: summary.workDays.size },
+    { label: 'Míst celkem', value: summary.totalSlots },
+    { label: 'Obsazených míst', value: Math.round(adjustedOccupiedSlots * 10) / 10 },
+    { label: 'Volných míst', value: Math.round(freeSlots * 10) / 10 },
+    { label: 'Obsazenost', value: String(occupancyPercent).replace('.', ',') + ' %' },
+    { label: 'Absence směn', value: formattedAbsenceWeight }
+  ];
+  return { rows, totalShifts, morningShifts: summary.morningShifts, nightShifts: summary.nightShifts, occupancyPercent, totalSlots: summary.totalSlots, occupiedSlots: adjustedOccupiedSlots, freeSlots, absenceWeight: summary.absenceWeight, absencePeople: summary.absencePeople };
+}
+
+function drawRotationExportSummaryCard(ctx, title, rows, x, y, w, options) {
+  const opts = options || {};
+  const labelWeight = Math.max(0.35, Math.min(0.72, Number(opts.labelWeight) || 0.64));
+  const rowH = Math.max(40, Number(opts.rowH) || 48);
+  const titleH = 88;
+  const headerH = 66;
+  const dataRows = Array.isArray(rows) && rows.length ? rows : [{ label: 'Bez dat', value: '—' }];
+  const tableH = titleH + headerH + rowH * dataRows.length;
+
+  drawRotationExportRoundRect(ctx, x, y, w, tableH, 28);
+  ctx.save();
+  ctx.shadowColor = 'rgba(9, 30, 66, .16)';
+  ctx.shadowBlur = 28;
+  ctx.shadowOffsetY = 10;
+  ctx.fillStyle = 'rgba(255,255,255,.94)';
+  ctx.fill();
+  ctx.restore();
+  ctx.strokeStyle = 'rgba(24, 42, 74, .14)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  const titleBg = ctx.createLinearGradient(x, y, x + w, y + titleH);
+  titleBg.addColorStop(0, opts.titleBg || '#0b5bd3');
+  titleBg.addColorStop(1, opts.titleBgAlt || '#172554');
+  ctx.save();
+  drawRotationExportRoundRect(ctx, x, y, w, titleH, 28);
+  ctx.clip();
+  ctx.fillStyle = titleBg;
+  ctx.fillRect(x, y, w, titleH);
+  ctx.restore();
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '900 40px system-ui, -apple-system, Segoe UI, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(String(title || 'Přehled'), x + 28, y + titleH / 2 + 1);
+
+  const headerY = y + titleH;
+  const labelW = Math.round(w * labelWeight);
+  const valueW = w - labelW;
+  ctx.fillStyle = 'rgba(15, 23, 42, .08)';
+  ctx.fillRect(x, headerY, w, headerH);
+  ctx.strokeStyle = 'rgba(28,38,58,.18)';
+  ctx.strokeRect(x, headerY, w, headerH);
+  ctx.strokeRect(x + labelW, headerY, valueW, headerH);
+  ctx.fillStyle = '#0f172a';
+  ctx.font = '900 23px system-ui, -apple-system, Segoe UI, sans-serif';
+  drawRotationExportCellText(ctx, 'Ukazatel', x, headerY, labelW, headerH, { maxLines: 1, lineHeight: 24, align: 'left', pad: 16 });
+  drawRotationExportCellText(ctx, 'Hodnota', x + labelW, headerY, valueW, headerH, { maxLines: 1, lineHeight: 24, align: 'center', pad: 12 });
+
+  dataRows.forEach((row, rowIdx) => {
+    const rowY = headerY + headerH + rowIdx * rowH;
+    ctx.fillStyle = rowIdx % 2 ? 'rgba(241,245,249,.84)' : 'rgba(255,255,255,.90)';
+    ctx.fillRect(x, rowY, w, rowH);
+    ctx.strokeStyle = 'rgba(28,38,58,.18)';
+    ctx.strokeRect(x, rowY, labelW, rowH);
+    ctx.strokeRect(x + labelW, rowY, valueW, rowH);
+    ctx.fillStyle = '#0f172a';
+    ctx.font = '800 22px system-ui, -apple-system, Segoe UI, sans-serif';
+    drawRotationExportCellText(ctx, String(row && row.label || '—'), x, rowY, labelW, rowH, { maxLines: 2, lineHeight: 23, align: 'left', pad: 16 });
+    ctx.font = '900 22px system-ui, -apple-system, Segoe UI, sans-serif';
+    drawRotationExportCellText(ctx, String(row && row.value || '—'), x + labelW, rowY, valueW, rowH, { maxLines: 2, lineHeight: 23, align: 'center', pad: 12 });
+  });
+  return tableH;
+}
+
 function drawRotationExportRoundRect(ctx, x, y, w, h, r) {
   const radius = Math.max(0, Math.min(r || 0, w / 2, h / 2));
   ctx.beginPath();
@@ -976,6 +1111,7 @@ function createRotationMonthExportCanvas(monthKey) {
   const absenceTable = buildRotationExportAbsenceTable(absences, exportDateColWeight, exportMachineColWeight);
   const absenceColumns = absenceTable.columns;
   const absenceRows = absenceTable.rows;
+  const monthSummary = buildRotationMonthExportSummary(month);
 
   const margin = 96;
   const titleH = 88;
@@ -993,7 +1129,10 @@ function createRotationMonthExportCanvas(monthKey) {
   const hardH = 88 + 66 + 52 * Math.max(hard.rows.length, 1);
   const softH = 88 + 66 + 52 * Math.max(soft.rows.length, 1);
   const absenceH = 88 + 66 + 52 * Math.max(absenceRows.length, 1);
-  const contentH = Math.max(hardH + gap + softH, absenceH);
+  const summaryH = 88 + 66 + 48 * Math.max((monthSummary && monthSummary.rows ? monthSummary.rows.length : 0), 1);
+  const leftColumnH = hardH + gap + softH;
+  const rightColumnH = absenceH + gap + summaryH;
+  const contentH = Math.max(leftColumnH, rightColumnH);
   const height = Math.ceil(margin + titleH + 62 + contentH + footerH + margin);
   const canvas = document.createElement('canvas');
   canvas.width = Math.ceil(width * exportScale);
@@ -1039,13 +1178,19 @@ function createRotationMonthExportCanvas(monthKey) {
     titleBg: '#172554',
     highlightEmptyCells: true
   });
-  drawRotationExportTable(ctx, 'Absence', absenceColumns, absenceRows, absenceX, top, absenceTableW, {
+  const drawnAbsenceH = drawRotationExportTable(ctx, 'Absence', absenceColumns, absenceRows, absenceX, top, absenceTableW, {
     rowH: 52,
     fontSize: 22,
     lineHeight: 26,
     maxLines: 2,
     align: 'center',
     titleBg: '#172554'
+  });
+  drawRotationExportSummaryCard(ctx, 'Měsíční přehled', monthSummary.rows, absenceX, top + drawnAbsenceH + gap, absenceTableW, {
+    rowH: 48,
+    titleBg: '#0b5bd3',
+    titleBgAlt: '#172554',
+    labelWeight: 0.65
   });
 
   ctx.fillStyle = 'rgba(30,41,59,.74)';

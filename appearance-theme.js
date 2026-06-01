@@ -1,4 +1,4 @@
-// RaK 1.2 (1.80) – theme, pozadí a profilové UI nastavení.
+// RaK 1.2 (1.82) – theme, pozadí a profilové UI nastavení.
 
 const RAK_THEME_STORAGE_KEY = APP_KEY + ':theme_v1';
 const RAK_THEME_BASE_VARS = {
@@ -756,6 +756,40 @@ RAK_BACKGROUND_DEFS.forEach((bg) => {
   const unlock = RAK_BACKGROUND_UNLOCKS_V927[String(bg && bg.id || '')] || null;
   if (unlock) Object.assign(bg, unlock);
 });
+
+// RaK 1.2 (1.82) – appearance reward contract guard.
+// Slouží jako jednoduché interní pravidlo pro budoucí theme/pozadí: klidně jich může přibýt víc,
+// ale nesmí to být skoro stejné varianty a výrazné kusy se musí odemykat postupně.
+const RAK_APPEARANCE_REWARD_CONTRACT_V181 = Object.freeze({
+  version: '1.2 (1.82)',
+  intent: 'distinct-progressive-appearance-rewards',
+  defaultThemeId: 'default',
+  defaultBackgroundId: 'ios-mesh',
+  rules: Object.freeze([
+    'Vždy dostupný zůstává jen základní theme a základní pozadí.',
+    'Nové theme/pozadí nesmí být jen lehce přebarvená kopie existujícího skinu.',
+    'Každý nový výrazný skin musí mít minPlays, minAchievements nebo minRank.',
+    'Před přidáním nového skinu porovnat hlavní color/swatch/akcent s existující rodinou.',
+    'Když nový skin spadá do stejné rodiny, musí mít jiný kontrast, náladu nebo účel v UI.'
+  ]),
+  themeFamilies: Object.freeze({
+    green: Object.freeze(['default', 'emerald-pro', 'toxic-lime', 'acid-cyber', 'matrix-redline']),
+    blueCyan: Object.freeze(['midnight-blue', 'cyber-cyan', 'ice-prism', 'storm-signal']),
+    violetPink: Object.freeze(['violet-pulse', 'hyper-magenta']),
+    redOrange: Object.freeze(['crimson-alert', 'sunset-plasma', 'lava-core']),
+    neutralPremium: Object.freeze(['graphite', 'royal-gold', 'amoled-legend'])
+  }),
+  backgroundFamilies: Object.freeze({
+    green: Object.freeze(['skoda-green', 'light-green', 'electric-lime', 'acid-night', 'classic-rak']),
+    blueCyan: Object.freeze(['ios-mesh', 'deep-aurora', 'neon-lagoon', 'skoda-electric', 'blue-orbit', 'storm-signal']),
+    violetPink: Object.freeze(['candy-glass', 'violet-storm', 'neon-carnival', 'violet-blackout']),
+    warm: Object.freeze(['ember', 'sunset-plasma', 'magma-lime', 'lava-neon', 'midnight-gold']),
+    calm: Object.freeze(['aurora-punch', 'polar-mint'])
+  }),
+  reservedRemovedThemeIds: Object.freeze(['electric-ocean', 'gold-rush-neon', 'arctic-radar', 'candy-voltage', 'stealth-purple', 'ultra-violet']),
+  reservedRemovedBackgroundIds: Object.freeze(['nebula-shock', 'emerald-smoke', 'ruby-circuit', 'cobalt-fire', 'solar-flare'])
+});
+window.RAK_APPEARANCE_REWARD_CONTRACT_V181 = RAK_APPEARANCE_REWARD_CONTRACT_V181;
 window.RAK_BACKGROUND_DEFS = RAK_BACKGROUND_DEFS;
 
 const RAK_PROFILE_UI_REMOTE_DEBOUNCE_MS = 650;
@@ -1438,7 +1472,7 @@ function getRakProfileAppearanceRewardHealth() {
   const themeRewards = themes.filter(item => String(item && item.id || '') !== 'default');
   const backgroundRewards = backgrounds.filter(item => String(item && item.id || '') !== 'ios-mesh');
   return {
-    version: window.APP_VERSION || '1.2 (1.80)',
+    version: window.APP_VERSION || '1.2 (1.82)',
     mode: 'profile-appearance-reward-health-v928',
     activeProfile: metrics.hasProfile,
     profileThemeStorage: 'account.uiSettings.themeId',
@@ -1527,7 +1561,7 @@ function getRakDashboardGlassThemeHealth() {
   const lightweight = /(?:^|\s)(?:lightweightMode|lowEndDevice|ladaMode)(?:\s|$)/.test(bodyClass);
   return {
     ok: true,
-    version: window.APP_VERSION || '1.2 (1.80)',
+    version: window.APP_VERSION || '1.2 (1.82)',
     mode: 'dashboard-ios-glass-viewport-fit-v945',
     theme,
     background,

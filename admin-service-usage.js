@@ -1,4 +1,4 @@
-// RaK 1.2 (1.80) – Administrace Připojení, servis a oznámení oddělené z hlavního UI modulu.
+// RaK 1.2 (1.82) – Administrace Připojení, servis a oznámení oddělené z hlavního UI modulu.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('admin-service-usage.js', 'loaded', { source: 'dynamic-loader' }); } catch (err) {}
 
 function formatAdminServiceCount(value) {
