@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.91) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.93) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 
@@ -25,6 +25,9 @@ ${dashboardPolishCss}`;
 const styleHrefMatches = Array.from(indexHtml.matchAll(/<link[^>]+rel=["']stylesheet["'][^>]+href=["']([^"']+)["'][^>]*>/g));
 const styleHrefs = styleHrefMatches.map((match) => String(match[1] || '').trim()).filter(Boolean);
 const localStyleHrefs = styleHrefs.filter((href) => !/^https?:/i.test(href));
+const localCssByHref = Object.fromEntries(localStyleHrefs
+  .filter((href) => href.endsWith('.css') && fs.existsSync(path.join(__dirname, href)))
+  .map((href) => [href, read(href)]));
 const dashboardCriticalStyles = [
   'styles-overrides.css',
   'styles-dashboard-fit.css',
@@ -87,6 +90,17 @@ const dashboardViewportStackContracts = [
 ];
 
 
+const dashboardNoVisualOwnerDriftSelectors = Array.from(new Set([
+  ...lockedDashboardSelectors,
+  ...dashboardViewportStackContracts.map((contract) => contract.ownerGuard),
+  '#home.page.active .dashboardShell > .dashboardGrid',
+  '#home.page.active .tile.dashboardCard',
+  '#home.page.active .dashboardCard .dashboardIcon.dashboardIconInline',
+  '#home.page.active #dashKantyna .dashboardDot',
+  '#home.page.active #dashJidelna .dashboardDot'
+]));
+const dashboardAllowedVisualOwnerLayers = new Set(['styles-dashboard-fit.css', 'styles-dashboard-polish.css']);
+
 const dashboardLegacyOwnerMap = [
   ['#home .dashboardGrid', '#home.page.active .dashboardGrid'],
   ['#home .dashboardCard', '#home.page.active .dashboardCard'],
@@ -122,6 +136,29 @@ function assertOrder(source, before, after, msg) {
 function assertSingleOccurrence(list, value, msg) {
   const found = list.filter((item) => item === value).length;
   assert(found === 1, `${msg}: ${value} (${found}×)`);
+}
+
+function stripCssComments(source) {
+  return String(source || '').replace(/\/\*[\s\S]*?\*\//g, '');
+}
+
+function lastLocalCssOwner(selector) {
+  let owner = '';
+  localStyleHrefs.forEach((href) => {
+    const css = localCssByHref[href];
+    if (!css) return;
+    if (stripCssComments(css).includes(selector)) owner = href;
+  });
+  return owner;
+}
+
+function assertDashboardNoVisualOwnerDrift(selector) {
+  const owner = lastLocalCssOwner(selector);
+  assert(owner, `Dashboard visual owner chybí pro ${selector}`);
+  assert(
+    dashboardAllowedVisualOwnerLayers.has(owner),
+    `Dashboard visual owner drift pro ${selector}: poslední vlastník je ${owner}, povoleno jen styles-dashboard-fit.css / styles-dashboard-polish.css`
+  );
 }
 
 function assertCssOwner(selector, msg) {
@@ -238,6 +275,9 @@ assertOrder(indexHtml, 'styles-release-polish.css', 'styles-dashboard-polish.css
 dashboardCriticalStyles.slice(0, -1).forEach((href) => {
   assertOrder(indexHtml, href, 'styles-dashboard-polish.css', `styles-dashboard-polish.css musí zůstat za ${href}`);
 });
+dashboardNoVisualOwnerDriftSelectors.forEach((selector) => assertDashboardNoVisualOwnerDrift(selector));
+assertIncludes(dashboardPolishCss, 'Dashboard no visual owner drift guard', 'styles-dashboard-polish.css musí mít 1.92 no visual owner drift guard');
+assertIncludes(dashboardPolishCss, 'styles-dashboard-fit.css / styles-dashboard-polish.css', '1.92 guard musí jasně pojmenovat povolené Dashboard vlastníky');
 
 // Vítězné dashboard vlastnictví: test drží klíčové selektory v dashboard vrstvách, ne ve slepých globálních přepisech.
 lockedDashboardSelectors.forEach((selector) => assertCssOwner(selector));
@@ -422,6 +462,13 @@ assertIncludes(rotaceJs, 'function buildRotationMonthExportSummary(month)', 'Exp
 assertIncludes(rotaceJs, 'ROTATION_EXPORT_MONTH_SUMMARY_LABELS_V187', 'Export Rozpisů musí mít uzamčený 1.87 contract pro 4 řádky měsíčního přehledu');
 assertIncludes(rotaceJs, "const rows = ROTATION_EXPORT_MONTH_SUMMARY_LABELS_V187.map", 'Měsíční přehled musí vznikat z contract labelů, ne ručně bobtnat dalšími řádky');
 assertIncludes(rotaceJs, "drawRotationExportSummaryCard(ctx, 'Měsíční přehled'", 'Export rozpisu musí vykreslit kartu Měsíční přehled');
+assertIncludes(rotaceJs, 'ROTATION_EXPORT_GLASS_THEME_V193', 'Export Rozpisů musí mít sdílený glass contract pro všechny exportní karty');
+assertIncludes(rotaceJs, 'function drawRotationExportGlassPanelShell', 'Export Rozpisů musí mít sdílený glass shell pro panely');
+assertIncludes(rotaceJs, 'function drawRotationExportGlassTitleBar', 'Export Rozpisů musí mít sdílený glass title bar pro všechny panely');
+assertIncludes(rotaceJs, 'Object.assign({}, ROTATION_EXPORT_GLASS_THEME_V193', 'Export Rozpisů musí používat sdílený glass theme místo ručně rozhozených barev');
+assertIncludes(rotaceJs, 'const glowTopRight = ctx.createRadialGradient', 'Export Rozpisů musí mít jemné iOS glass pozadí');
+assert(!rotaceJs.includes("titleBg: '#0f172a'"), 'Export Rozpisů už nemá vracet tmavý jednobarevný header Tvrdota');
+assert(!rotaceJs.includes("titleBg: '#172554'"), 'Export Rozpisů už nemá vracet staré oddělené jednobarevné headery');
 assertIncludes(rotaceJs, 'const rowH = Math.max(36, Number(opts.rowH) || 44);', 'Helper měsíčního přehledu musí držet kompaktní řádky');
 assertIncludes(rotaceJs, 'function getRotationExportSummaryCardHeight(rows, options)', 'Export musí počítat výšku Měsíčního přehledu sdíleným helperem');
 assertIncludes(rotaceJs, 'const summaryH = getRotationExportSummaryCardHeight', 'Canvas výška musí používat stejný helper jako vykreslení karty Měsíční přehled');
@@ -439,4 +486,4 @@ assertIncludes(rotaceJs, "'Obsazenost': formatPercent(occupancyPercent)", 'Zjedn
 
 assert(!/bottomNav|bottomNavBtn|bottomNavScroll|bottomNavIndicator/.test(dashboardCss), 'Dashboard CSS vrstva nesmí upravovat spodní lištu');
 
-console.log('app-usage-smoke-v963 OK + dashboard-css-contract-guard + appearance-reward-contract + rotation-export-summary-simple-guard + appearance-readability-guard OK');
+console.log('app-usage-smoke-v963 OK + dashboard-css-contract-guard + appearance-reward-contract + rotation-export-summary-simple-guard + rotation-export-glass-guard + appearance-readability-guard + no-visual-owner-drift-guard OK');

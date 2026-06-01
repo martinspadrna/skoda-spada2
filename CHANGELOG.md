@@ -1,3 +1,18 @@
+## RaK 1.2 (1.93)
+
+- Export PNG Rozpisů je upravený víc do iOS glass stylu: jemnější modro-bílé pozadí, měkčí stíny, průsvitné panely a lehčí tabulkové výplně.
+- Panely `Tvrdota`, `Měkota` a `Absence` teď používají stejný modrý gradient hlavičky jako `Měsíční přehled`, aby export působil jednotně.
+- Export dostal sdílený `ROTATION_EXPORT_GLASS_THEME_V193` contract a helpery pro glass shell/title bar, takže se vzhled drží na jednom místě a nebude se znovu rozjíždět po částech.
+- `npm run test:app-usage` nově hlídá i glass export contract, sdílený title bar a to, že se do exportu nevrací staré jednobarevné tmavé headery.
+- Release metadata sjednocená na `RaK 1.2 (1.93)`, technická verze `1.2.93`, cache `v1.2-1.93`.
+
+## RaK 1.2 (1.92)
+
+- Dashboard CSS cleanup bez vizuální změny: přidaný malý `no visual owner drift` guard pro aktivní Dashboard selektory.
+- `npm run test:app-usage` nově hlídá, že poslední lokální CSS vlastník ručně laděných Dashboard pravidel zůstává jen ve `styles-dashboard-fit.css` nebo `styles-dashboard-polish.css`.
+- Test zároveň potvrzuje, že `styles-dashboard-polish.css` zůstává poslední lokální CSS vrstva a že Dashboard CSS vrstvy nesahají na spodní lištu.
+- Release metadata sjednocená na `RaK 1.2 (1.92)`, technická verze `1.2.92`, cache `v1.2-1.92`.
+
 ## RaK 1.2 (1.91)
 
 - Dashboard CSS cleanup bez vizuální změny: rozšířená inventura bezpečně přebitých legacy selektorů ve `styles-overrides.css`.

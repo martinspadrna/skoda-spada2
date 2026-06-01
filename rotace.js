@@ -1,4 +1,4 @@
-// RaK 1.2 (1.91) – Rotace render a volba jmen.
+// RaK 1.2 (1.93) – Rotace render a volba jmen.
 function renderRotace() {
   const namesGrid = document.getElementById('namesGrid');
   const personView = document.getElementById('personView');
@@ -824,6 +824,27 @@ function buildRotationExportAbsenceTable(absences, dateWeight, personWeight) {
 
 
 const ROTATION_EXPORT_MONTH_SUMMARY_LABELS_V187 = Object.freeze(['Směn celkem', 'Ranní směny', 'Noční směny', 'Obsazenost']);
+const ROTATION_EXPORT_GLASS_THEME_V193 = Object.freeze({
+  titleBg: '#0b5bd3',
+  titleBgAlt: '#172554',
+  panelBgTop: 'rgba(255,255,255,.82)',
+  panelBgBottom: 'rgba(244,249,255,.58)',
+  border: 'rgba(148,163,184,.34)',
+  innerBorder: 'rgba(255,255,255,.74)',
+  headerBgTop: 'rgba(255,255,255,.52)',
+  headerBgBottom: 'rgba(224,236,255,.72)',
+  rowEvenTop: 'rgba(255,255,255,.62)',
+  rowEvenBottom: 'rgba(247,250,255,.44)',
+  rowOddTop: 'rgba(239,246,255,.70)',
+  rowOddBottom: 'rgba(228,238,255,.52)',
+  shadow: 'rgba(37, 99, 235, .15)',
+  shadowBlur: 34,
+  shadowOffsetY: 14,
+  glossTop: 'rgba(255,255,255,.40)',
+  glossBottom: 'rgba(255,255,255,0)',
+  titleGlossTop: 'rgba(255,255,255,.28)',
+  titleGlossBottom: 'rgba(255,255,255,0)'
+});
 
 function buildRotationMonthExportSummary(month) {
   const summary = {
@@ -902,7 +923,7 @@ function getRotationExportSummaryCardHeight(rows, options) {
 }
 
 function drawRotationExportSummaryCard(ctx, title, rows, x, y, w, options) {
-  const opts = options || {};
+  const opts = Object.assign({}, ROTATION_EXPORT_GLASS_THEME_V193, options || {});
   const labelWeight = Math.max(0.35, Math.min(0.72, Number(opts.labelWeight) || 0.64));
   const rowH = Math.max(36, Number(opts.rowH) || 44);
   const titleH = Math.max(72, Number(opts.titleH) || 82);
@@ -912,27 +933,8 @@ function drawRotationExportSummaryCard(ctx, title, rows, x, y, w, options) {
   const dataRows = Array.isArray(rows) && rows.length ? rows : [{ label: 'Bez dat', value: '—' }];
   const tableH = getRotationExportSummaryCardHeight(dataRows, opts);
 
-  drawRotationExportRoundRect(ctx, x, y, w, tableH, 28);
-  ctx.save();
-  ctx.shadowColor = 'rgba(9, 30, 66, .16)';
-  ctx.shadowBlur = 28;
-  ctx.shadowOffsetY = 10;
-  ctx.fillStyle = 'rgba(255,255,255,.94)';
-  ctx.fill();
-  ctx.restore();
-  ctx.strokeStyle = 'rgba(24, 42, 74, .14)';
-  ctx.lineWidth = 1;
-  ctx.stroke();
-
-  const titleBg = ctx.createLinearGradient(x, y, x + w, y + titleH);
-  titleBg.addColorStop(0, opts.titleBg || '#0b5bd3');
-  titleBg.addColorStop(1, opts.titleBgAlt || '#172554');
-  ctx.save();
-  drawRotationExportRoundRect(ctx, x, y, w, titleH, 28);
-  ctx.clip();
-  ctx.fillStyle = titleBg;
-  ctx.fillRect(x, y, w, titleH);
-  ctx.restore();
+  drawRotationExportGlassPanelShell(ctx, x, y, w, tableH, 28, opts);
+  drawRotationExportGlassTitleBar(ctx, x, y, w, titleH, 28, opts);
 
   ctx.fillStyle = '#ffffff';
   ctx.font = '900 37px system-ui, -apple-system, Segoe UI, sans-serif';
@@ -943,8 +945,7 @@ function drawRotationExportSummaryCard(ctx, title, rows, x, y, w, options) {
   const headerY = y + titleH;
   const labelW = Math.round(w * labelWeight);
   const valueW = w - labelW;
-  ctx.fillStyle = 'rgba(15, 23, 42, .08)';
-  ctx.fillRect(x, headerY, w, headerH);
+  fillRotationExportGlassBand(ctx, x, headerY, w, headerH, opts.headerBgTop, opts.headerBgBottom);
   ctx.strokeStyle = 'rgba(28,38,58,.18)';
   ctx.strokeRect(x, headerY, w, headerH);
   ctx.strokeRect(x + labelW, headerY, valueW, headerH);
@@ -955,9 +956,16 @@ function drawRotationExportSummaryCard(ctx, title, rows, x, y, w, options) {
 
   dataRows.forEach((row, rowIdx) => {
     const rowY = headerY + headerH + rowIdx * rowH;
-    ctx.fillStyle = rowIdx % 2 ? 'rgba(241,245,249,.84)' : 'rgba(255,255,255,.90)';
-    ctx.fillRect(x, rowY, w, rowH);
-    ctx.strokeStyle = 'rgba(28,38,58,.18)';
+    fillRotationExportGlassBand(
+      ctx,
+      x,
+      rowY,
+      w,
+      rowH,
+      rowIdx % 2 ? opts.rowOddTop : opts.rowEvenTop,
+      rowIdx % 2 ? opts.rowOddBottom : opts.rowEvenBottom
+    );
+    ctx.strokeStyle = 'rgba(28,38,58,.16)';
     ctx.strokeRect(x, rowY, labelW, rowH);
     ctx.strokeRect(x + labelW, rowY, valueW, rowH);
     ctx.fillStyle = '#0f172a';
@@ -968,8 +976,7 @@ function drawRotationExportSummaryCard(ctx, title, rows, x, y, w, options) {
   });
   if (note) {
     const noteY = headerY + headerH + dataRows.length * rowH;
-    ctx.fillStyle = 'rgba(15,23,42,.065)';
-    ctx.fillRect(x, noteY, w, noteH);
+    fillRotationExportGlassBand(ctx, x, noteY, w, noteH, 'rgba(255,255,255,.42)', 'rgba(231,238,250,.56)');
     ctx.strokeStyle = 'rgba(28,38,58,.16)';
     ctx.strokeRect(x, noteY, w, noteH);
     ctx.fillStyle = 'rgba(15,23,42,.78)';
@@ -992,6 +999,70 @@ function drawRotationExportRoundRect(ctx, x, y, w, h, r) {
   ctx.lineTo(x, y + radius);
   ctx.quadraticCurveTo(x, y, x + radius, y);
   ctx.closePath();
+}
+
+
+function drawRotationExportGlassPanelShell(ctx, x, y, w, h, radius, options) {
+  const opts = Object.assign({}, ROTATION_EXPORT_GLASS_THEME_V193, options || {});
+  drawRotationExportRoundRect(ctx, x, y, w, h, radius);
+  ctx.save();
+  ctx.shadowColor = opts.shadow;
+  ctx.shadowBlur = Math.max(0, Number(opts.shadowBlur) || 0);
+  ctx.shadowOffsetY = Number(opts.shadowOffsetY) || 0;
+  const panelBg = ctx.createLinearGradient(x, y, x, y + h);
+  panelBg.addColorStop(0, opts.panelBgTop);
+  panelBg.addColorStop(1, opts.panelBgBottom);
+  ctx.fillStyle = panelBg;
+  ctx.fill();
+  ctx.restore();
+
+  ctx.save();
+  drawRotationExportRoundRect(ctx, x, y, w, h, radius);
+  ctx.clip();
+  const gloss = ctx.createLinearGradient(x, y, x, y + h * 0.46);
+  gloss.addColorStop(0, opts.glossTop);
+  gloss.addColorStop(.7, opts.glossBottom);
+  ctx.fillStyle = gloss;
+  ctx.fillRect(x + 2, y + 2, Math.max(0, w - 4), Math.max(0, h * 0.48));
+  ctx.restore();
+
+  drawRotationExportRoundRect(ctx, x, y, w, h, radius);
+  ctx.strokeStyle = opts.border;
+  ctx.lineWidth = 1.6;
+  ctx.stroke();
+
+  if (w > 6 && h > 6) {
+    drawRotationExportRoundRect(ctx, x + 1.5, y + 1.5, w - 3, h - 3, Math.max(0, radius - 1.5));
+    ctx.strokeStyle = opts.innerBorder;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+}
+
+function drawRotationExportGlassTitleBar(ctx, x, y, w, titleH, radius, options) {
+  const opts = Object.assign({}, ROTATION_EXPORT_GLASS_THEME_V193, options || {});
+  const titleBg = ctx.createLinearGradient(x, y, x + w, y + titleH);
+  titleBg.addColorStop(0, opts.titleBg);
+  titleBg.addColorStop(1, opts.titleBgAlt);
+  ctx.save();
+  drawRotationExportRoundRect(ctx, x, y, w, titleH, radius);
+  ctx.clip();
+  ctx.fillStyle = titleBg;
+  ctx.fillRect(x, y, w, titleH);
+  const gloss = ctx.createLinearGradient(x, y, x, y + titleH);
+  gloss.addColorStop(0, opts.titleGlossTop);
+  gloss.addColorStop(.72, opts.titleGlossBottom);
+  ctx.fillStyle = gloss;
+  ctx.fillRect(x, y, w, titleH);
+  ctx.restore();
+}
+
+function fillRotationExportGlassBand(ctx, x, y, w, h, startColor, endColor) {
+  const band = ctx.createLinearGradient(x, y, x, y + h);
+  band.addColorStop(0, startColor);
+  band.addColorStop(1, endColor);
+  ctx.fillStyle = band;
+  ctx.fillRect(x, y, w, h);
 }
 
 function drawRotationExportCellText(ctx, text, x, y, w, h, options) {
@@ -1028,22 +1099,14 @@ function drawRotationExportCellText(ctx, text, x, y, w, h, options) {
 }
 
 function drawRotationExportTable(ctx, title, columns, rows, x, y, w, options) {
-  const opts = options || {};
+  const opts = Object.assign({}, ROTATION_EXPORT_GLASS_THEME_V193, options || {});
   const headerH = opts.headerH || 66;
   const rowH = opts.rowH || 52;
   const titleH = opts.titleH || 88;
   const radius = opts.radius || 32;
   const tableH = titleH + headerH + rowH * Math.max(rows.length, 1);
-  drawRotationExportRoundRect(ctx, x, y, w, tableH, radius);
-  ctx.fillStyle = opts.panelBg || 'rgba(255,255,255,.92)';
-  ctx.fill();
-  ctx.strokeStyle = opts.border || 'rgba(28,38,58,.22)';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-
-  ctx.fillStyle = opts.titleBg || '#0f172a';
-  drawRotationExportRoundRect(ctx, x, y, w, titleH, radius);
-  ctx.fill();
+  drawRotationExportGlassPanelShell(ctx, x, y, w, tableH, radius, opts);
+  drawRotationExportGlassTitleBar(ctx, x, y, w, titleH, radius, opts);
   ctx.fillStyle = '#ffffff';
   ctx.font = '900 46px system-ui, -apple-system, Segoe UI, sans-serif';
   ctx.textAlign = 'left';
@@ -1055,8 +1118,7 @@ function drawRotationExportTable(ctx, title, columns, rows, x, y, w, options) {
   const colWidths = columns.map(col => Math.round(w * (Math.max(0, Number(col && col.width) || 0) / totalWeight)));
   colWidths[colWidths.length - 1] += w - colWidths.reduce((a, b) => a + b, 0);
 
-  ctx.fillStyle = opts.headerBg || '#e2e8f0';
-  ctx.fillRect(x, cy, w, headerH);
+  fillRotationExportGlassBand(ctx, x, cy, w, headerH, opts.headerBgTop, opts.headerBgBottom);
   ctx.strokeStyle = opts.grid || 'rgba(28,38,58,.20)';
   ctx.lineWidth = 1.5;
   let cx = x;
@@ -1073,20 +1135,27 @@ function drawRotationExportTable(ctx, title, columns, rows, x, y, w, options) {
   const safeRows = rows.length ? rows : [columns.map(() => '—')];
   safeRows.forEach((row, rowIdx) => {
     cx = x;
-    ctx.fillStyle = rowIdx % 2 ? 'rgba(241,245,249,.84)' : 'rgba(255,255,255,.88)';
-    ctx.fillRect(x, cy, w, rowH);
+    fillRotationExportGlassBand(
+      ctx,
+      x,
+      cy,
+      w,
+      rowH,
+      rowIdx % 2 ? opts.rowOddTop : opts.rowEvenTop,
+      rowIdx % 2 ? opts.rowOddBottom : opts.rowEvenBottom
+    );
     row.forEach((cell, idx) => {
       const cw = colWidths[idx];
       const column = Array.isArray(columns) ? (columns[idx] || {}) : {};
       const rawCell = String(cell || '').trim();
       if (opts.highlightEmptyCells && idx > 0 && !rawCell) {
         const emptyBg = ctx.createLinearGradient(cx, cy, cx, cy + rowH);
-        emptyBg.addColorStop(0, 'rgba(255,248,184,.92)');
-        emptyBg.addColorStop(1, 'rgba(245,198,64,.78)');
+        emptyBg.addColorStop(0, 'rgba(255,248,184,.78)');
+        emptyBg.addColorStop(1, 'rgba(245,198,64,.54)');
         ctx.fillStyle = emptyBg;
         ctx.fillRect(cx + 1, cy + 1, Math.max(0, cw - 2), Math.max(0, rowH - 2));
       }
-      ctx.strokeStyle = opts.grid || 'rgba(28,38,58,.20)';
+      ctx.strokeStyle = opts.grid || 'rgba(28,38,58,.18)';
       ctx.strokeRect(cx, cy, cw, rowH);
       const isDate = idx === 0;
       const align = column.align || (Array.isArray(opts.aligns) ? opts.aligns[idx] : '') || opts.align || 'center';
@@ -1151,7 +1220,7 @@ function createRotationMonthExportCanvas(monthKey) {
   const hardH = 88 + 66 + 52 * Math.max(hard.rows.length, 1);
   const softH = 88 + 66 + 52 * Math.max(soft.rows.length, 1);
   const absenceH = 88 + 66 + 52 * Math.max(absenceRows.length, 1);
-  const summaryCardOptions = { rowH: 44, titleH: 82, headerH: 58 };
+  const summaryCardOptions = Object.assign({}, ROTATION_EXPORT_GLASS_THEME_V193, { rowH: 44, titleH: 82, headerH: 58 });
   const summaryH = getRotationExportSummaryCardHeight(monthSummary && monthSummary.rows, summaryCardOptions);
   const leftColumnH = hardH + gap + softH;
   const rightColumnH = absenceH + gap + summaryH;
@@ -1172,10 +1241,24 @@ function createRotationMonthExportCanvas(monthKey) {
   ctx.fillStyle = '#edf6ff';
   ctx.fillRect(0, 0, width, height);
   const bg = ctx.createLinearGradient(0, 0, width, height);
-  bg.addColorStop(0, '#f6fbff');
-  bg.addColorStop(.46, '#ebf5ff');
-  bg.addColorStop(1, '#e3f0ff');
+  bg.addColorStop(0, '#f9fcff');
+  bg.addColorStop(.42, '#edf5ff');
+  bg.addColorStop(1, '#dce9fb');
   ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, width, height);
+
+  const glowTopRight = ctx.createRadialGradient(width * 0.85, height * 0.12, 24, width * 0.85, height * 0.12, width * 0.42);
+  glowTopRight.addColorStop(0, 'rgba(255,255,255,.80)');
+  glowTopRight.addColorStop(.45, 'rgba(214,231,255,.36)');
+  glowTopRight.addColorStop(1, 'rgba(214,231,255,0)');
+  ctx.fillStyle = glowTopRight;
+  ctx.fillRect(0, 0, width, height);
+
+  const glowBottomLeft = ctx.createRadialGradient(width * 0.16, height * 0.82, 18, width * 0.16, height * 0.82, width * 0.38);
+  glowBottomLeft.addColorStop(0, 'rgba(255,255,255,.58)');
+  glowBottomLeft.addColorStop(.42, 'rgba(181,214,255,.24)');
+  glowBottomLeft.addColorStop(1, 'rgba(181,214,255,0)');
+  ctx.fillStyle = glowBottomLeft;
   ctx.fillRect(0, 0, width, height);
 
   ctx.fillStyle = '#0f172a';
@@ -1192,14 +1275,12 @@ function createRotationMonthExportCanvas(monthKey) {
     rowH: 52,
     fontSize: 27,
     lineHeight: 30,
-    titleBg: '#0f172a',
     highlightEmptyCells: true
   });
   drawRotationExportTable(ctx, 'Měkota', soft.columns, soft.rows, leftX, top + hardTableH + gap, leftW, {
     rowH: 52,
     fontSize: 27,
     lineHeight: 30,
-    titleBg: '#172554',
     highlightEmptyCells: true
   });
   const drawnAbsenceH = drawRotationExportTable(ctx, 'Absence', absenceColumns, absenceRows, absenceX, top, absenceTableW, {
@@ -1207,12 +1288,9 @@ function createRotationMonthExportCanvas(monthKey) {
     fontSize: 22,
     lineHeight: 26,
     maxLines: 2,
-    align: 'center',
-    titleBg: '#172554'
+    align: 'center'
   });
   drawRotationExportSummaryCard(ctx, 'Měsíční přehled', monthSummary.rows, absenceX, top + drawnAbsenceH + gap, absenceTableW, Object.assign({}, summaryCardOptions, {
-    titleBg: '#0b5bd3',
-    titleBgAlt: '#172554',
     labelWeight: 0.65
   }));
 

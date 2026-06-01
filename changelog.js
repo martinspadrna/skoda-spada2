@@ -1,4 +1,4 @@
-// RaK 1.2 (1.91) – zobrazení changelogu aplikace.
+// RaK 1.2 (1.93) – zobrazení changelogu aplikace.
 
 (function () {
   const CHANGELOG_URL = 'CHANGELOG.md';
