@@ -1,4 +1,4 @@
-// RaK 1.2 (1.82) – export manifest a release metadata.
+// RaK 1.2 (1.85) – export manifest a release metadata.
 const EXPORT_SOURCE_IDS = {
   "module-readiness.js": "src-module-readiness-js",
   "rak-namespace.js": "src-rak-namespace-js",
@@ -114,7 +114,7 @@ const EXPORT_SMOKE_REPORT = window.__RAK_EXPORT_SMOKE_REPORT__ || (window.__RAK_
   ok: null,
   status: 'not-run',
   mode: 'export-smoke-report-v939',
-  version: '1.2 (1.82)',
+  version: '1.2 (1.85)',
   checkedAt: null,
   lastStage: 'čeká na export',
   runCount: 0,
@@ -246,7 +246,7 @@ const EXPORT_TEXT_FILES = [
 
 function getRakExportManifest() {
   return {
-    version: String(window.APP_VERSION || '1.2 (1.82)'),
+    version: String(window.APP_VERSION || '1.2 (1.85)'),
     mode: 'export-manifest-preflight-v939',
     indexFile: 'index.html',
     jsFiles: Array.from(new Set(EXPORT_JS_FILES)),
@@ -356,7 +356,7 @@ function updateRakExportSmokeReport(partial) {
   const data = partial && typeof partial === 'object' ? partial : {};
   Object.assign(EXPORT_SMOKE_REPORT, data, {
     mode: 'export-smoke-report-v939',
-    version: String(window.APP_VERSION || '1.2 (1.82)'),
+    version: String(window.APP_VERSION || '1.2 (1.85)'),
     checkedAt: new Date().toISOString()
   });
   return getRakExportSmokeReport();

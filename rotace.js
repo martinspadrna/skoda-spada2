@@ -1,4 +1,4 @@
-// RaK 1.2 (1.82) – Rotace render a volba jmen.
+// RaK 1.2 (1.85) – Rotace render a volba jmen.
 function renderRotace() {
   const namesGrid = document.getElementById('namesGrid');
   const personView = document.getElementById('personView');
@@ -873,32 +873,53 @@ function buildRotationMonthExportSummary(month) {
   });
 
   const totalShifts = summary.shiftKeys.size;
-  const adjustedOccupiedSlots = Math.max(0, summary.occupiedSlots - summary.absenceWeight);
+  const plannedOccupiedSlots = Math.max(0, summary.occupiedSlots);
+  const adjustedOccupiedSlots = Math.max(0, plannedOccupiedSlots - summary.absenceWeight);
   const freeSlots = Math.max(0, summary.totalSlots - adjustedOccupiedSlots);
+  const plannedFreeSlots = Math.max(0, summary.totalSlots - plannedOccupiedSlots);
+  const plannedOccupancyPercent = summary.totalSlots > 0 ? Math.round((plannedOccupiedSlots / summary.totalSlots) * 1000) / 10 : 0;
   const occupancyPercent = summary.totalSlots > 0 ? Math.round((adjustedOccupiedSlots / summary.totalSlots) * 1000) / 10 : 0;
-  const formattedAbsenceWeight = (Math.round(summary.absenceWeight * 10) / 10).toString().replace('.', ',');
+  const formatNumber = (value) => (Math.round((Number(value) || 0) * 10) / 10).toString().replace('.', ',');
+  const formatPercent = (value) => formatNumber(value) + ' %';
   const rows = [
     { label: 'Směn do práce', value: totalShifts },
     { label: 'Ranní směny', value: summary.morningShifts },
     { label: 'Noční směny', value: summary.nightShifts },
     { label: 'Dní se směnou', value: summary.workDays.size },
     { label: 'Míst celkem', value: summary.totalSlots },
-    { label: 'Obsazených míst', value: Math.round(adjustedOccupiedSlots * 10) / 10 },
-    { label: 'Volných míst', value: Math.round(freeSlots * 10) / 10 },
-    { label: 'Obsazenost', value: String(occupancyPercent).replace('.', ',') + ' %' },
-    { label: 'Absence směn', value: formattedAbsenceWeight }
+    { label: 'Plán obsazeno', value: formatNumber(plannedOccupiedSlots) },
+    { label: 'Plán volno', value: formatNumber(plannedFreeSlots) },
+    { label: 'Plán obsazenost', value: formatPercent(plannedOccupancyPercent) },
+    { label: 'Po absencích obsazeno', value: formatNumber(adjustedOccupiedSlots) },
+    { label: 'Po absencích volno', value: formatNumber(freeSlots) },
+    { label: 'Obsazenost měsíce', value: formatPercent(occupancyPercent) },
+    { label: 'Absence záznamů', value: summary.absencePeople },
+    { label: 'Absence směn', value: formatNumber(summary.absenceWeight) }
   ];
-  return { rows, totalShifts, morningShifts: summary.morningShifts, nightShifts: summary.nightShifts, occupancyPercent, totalSlots: summary.totalSlots, occupiedSlots: adjustedOccupiedSlots, freeSlots, absenceWeight: summary.absenceWeight, absencePeople: summary.absencePeople };
+  return { rows, totalShifts, morningShifts: summary.morningShifts, nightShifts: summary.nightShifts, plannedOccupancyPercent, occupancyPercent, totalSlots: summary.totalSlots, plannedOccupiedSlots, occupiedSlots: adjustedOccupiedSlots, freeSlots, plannedFreeSlots, absenceWeight: summary.absenceWeight, absencePeople: summary.absencePeople };
+}
+
+function getRotationExportSummaryCardHeight(rows, options) {
+  const opts = options || {};
+  const rowH = Math.max(36, Number(opts.rowH) || 44);
+  const titleH = Math.max(72, Number(opts.titleH) || 82);
+  const headerH = Math.max(48, Number(opts.headerH) || 58);
+  const note = String(opts.note || '').trim();
+  const noteH = note ? Math.max(48, Number(opts.noteH) || 58) : 0;
+  const dataRows = Array.isArray(rows) && rows.length ? rows : [{ label: 'Bez dat', value: '—' }];
+  return titleH + headerH + rowH * dataRows.length + noteH;
 }
 
 function drawRotationExportSummaryCard(ctx, title, rows, x, y, w, options) {
   const opts = options || {};
   const labelWeight = Math.max(0.35, Math.min(0.72, Number(opts.labelWeight) || 0.64));
-  const rowH = Math.max(40, Number(opts.rowH) || 48);
-  const titleH = 88;
-  const headerH = 66;
+  const rowH = Math.max(36, Number(opts.rowH) || 44);
+  const titleH = Math.max(72, Number(opts.titleH) || 82);
+  const headerH = Math.max(48, Number(opts.headerH) || 58);
+  const note = String(opts.note || '').trim();
+  const noteH = note ? Math.max(48, Number(opts.noteH) || 58) : 0;
   const dataRows = Array.isArray(rows) && rows.length ? rows : [{ label: 'Bez dat', value: '—' }];
-  const tableH = titleH + headerH + rowH * dataRows.length;
+  const tableH = getRotationExportSummaryCardHeight(dataRows, opts);
 
   drawRotationExportRoundRect(ctx, x, y, w, tableH, 28);
   ctx.save();
@@ -923,7 +944,7 @@ function drawRotationExportSummaryCard(ctx, title, rows, x, y, w, options) {
   ctx.restore();
 
   ctx.fillStyle = '#ffffff';
-  ctx.font = '900 40px system-ui, -apple-system, Segoe UI, sans-serif';
+  ctx.font = '900 37px system-ui, -apple-system, Segoe UI, sans-serif';
   ctx.textAlign = 'left';
   ctx.textBaseline = 'middle';
   ctx.fillText(String(title || 'Přehled'), x + 28, y + titleH / 2 + 1);
@@ -937,7 +958,7 @@ function drawRotationExportSummaryCard(ctx, title, rows, x, y, w, options) {
   ctx.strokeRect(x, headerY, w, headerH);
   ctx.strokeRect(x + labelW, headerY, valueW, headerH);
   ctx.fillStyle = '#0f172a';
-  ctx.font = '900 23px system-ui, -apple-system, Segoe UI, sans-serif';
+  ctx.font = '900 21px system-ui, -apple-system, Segoe UI, sans-serif';
   drawRotationExportCellText(ctx, 'Ukazatel', x, headerY, labelW, headerH, { maxLines: 1, lineHeight: 24, align: 'left', pad: 16 });
   drawRotationExportCellText(ctx, 'Hodnota', x + labelW, headerY, valueW, headerH, { maxLines: 1, lineHeight: 24, align: 'center', pad: 12 });
 
@@ -949,11 +970,21 @@ function drawRotationExportSummaryCard(ctx, title, rows, x, y, w, options) {
     ctx.strokeRect(x, rowY, labelW, rowH);
     ctx.strokeRect(x + labelW, rowY, valueW, rowH);
     ctx.fillStyle = '#0f172a';
-    ctx.font = '800 22px system-ui, -apple-system, Segoe UI, sans-serif';
-    drawRotationExportCellText(ctx, String(row && row.label || '—'), x, rowY, labelW, rowH, { maxLines: 2, lineHeight: 23, align: 'left', pad: 16 });
-    ctx.font = '900 22px system-ui, -apple-system, Segoe UI, sans-serif';
-    drawRotationExportCellText(ctx, String(row && row.value || '—'), x + labelW, rowY, valueW, rowH, { maxLines: 2, lineHeight: 23, align: 'center', pad: 12 });
+    ctx.font = '800 20px system-ui, -apple-system, Segoe UI, sans-serif';
+    drawRotationExportCellText(ctx, String(row && row.label || '—'), x, rowY, labelW, rowH, { maxLines: 2, lineHeight: 21, align: 'left', pad: 16 });
+    ctx.font = '900 20px system-ui, -apple-system, Segoe UI, sans-serif';
+    drawRotationExportCellText(ctx, String(row && row.value || '—'), x + labelW, rowY, valueW, rowH, { maxLines: 2, lineHeight: 21, align: 'center', pad: 12 });
   });
+  if (note) {
+    const noteY = headerY + headerH + dataRows.length * rowH;
+    ctx.fillStyle = 'rgba(15,23,42,.065)';
+    ctx.fillRect(x, noteY, w, noteH);
+    ctx.strokeStyle = 'rgba(28,38,58,.16)';
+    ctx.strokeRect(x, noteY, w, noteH);
+    ctx.fillStyle = 'rgba(15,23,42,.78)';
+    ctx.font = '800 18px system-ui, -apple-system, Segoe UI, sans-serif';
+    drawRotationExportCellText(ctx, note, x, noteY, w, noteH, { maxLines: 2, lineHeight: 20, align: 'left', pad: 18 });
+  }
   return tableH;
 }
 
@@ -1129,11 +1160,14 @@ function createRotationMonthExportCanvas(monthKey) {
   const hardH = 88 + 66 + 52 * Math.max(hard.rows.length, 1);
   const softH = 88 + 66 + 52 * Math.max(soft.rows.length, 1);
   const absenceH = 88 + 66 + 52 * Math.max(absenceRows.length, 1);
-  const summaryH = 88 + 66 + 48 * Math.max((monthSummary && monthSummary.rows ? monthSummary.rows.length : 0), 1);
+  const summaryNote = 'Plán = obsazení zapsané v rozpisu. Po absencích = plán mínus absence směn.';
+  const summaryCardOptions = { rowH: 44, note: summaryNote, noteH: 58, titleH: 82, headerH: 58 };
+  const summaryH = getRotationExportSummaryCardHeight(monthSummary && monthSummary.rows, summaryCardOptions);
   const leftColumnH = hardH + gap + softH;
   const rightColumnH = absenceH + gap + summaryH;
   const contentH = Math.max(leftColumnH, rightColumnH);
-  const height = Math.ceil(margin + titleH + 62 + contentH + footerH + margin);
+  const exportFooterSafeGap = 36;
+  const height = Math.ceil(margin + titleH + 62 + contentH + exportFooterSafeGap + footerH + margin);
   const canvas = document.createElement('canvas');
   canvas.width = Math.ceil(width * exportScale);
   canvas.height = Math.ceil(height * exportScale);
@@ -1186,12 +1220,11 @@ function createRotationMonthExportCanvas(monthKey) {
     align: 'center',
     titleBg: '#172554'
   });
-  drawRotationExportSummaryCard(ctx, 'Měsíční přehled', monthSummary.rows, absenceX, top + drawnAbsenceH + gap, absenceTableW, {
-    rowH: 48,
+  drawRotationExportSummaryCard(ctx, 'Měsíční přehled', monthSummary.rows, absenceX, top + drawnAbsenceH + gap, absenceTableW, Object.assign({}, summaryCardOptions, {
     titleBg: '#0b5bd3',
     titleBgAlt: '#172554',
     labelWeight: 0.65
-  });
+  }));
 
   ctx.fillStyle = 'rgba(30,41,59,.74)';
   ctx.font = '800 22px system-ui, -apple-system, Segoe UI, sans-serif';

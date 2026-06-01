@@ -1,4 +1,4 @@
-// RaK 1.2 (1.82) – theme, pozadí a profilové UI nastavení.
+// RaK 1.2 (1.85) – theme, pozadí a profilové UI nastavení.
 
 const RAK_THEME_STORAGE_KEY = APP_KEY + ':theme_v1';
 const RAK_THEME_BASE_VARS = {
@@ -757,11 +757,11 @@ RAK_BACKGROUND_DEFS.forEach((bg) => {
   if (unlock) Object.assign(bg, unlock);
 });
 
-// RaK 1.2 (1.82) – appearance reward contract guard.
+// RaK 1.2 (1.85) – appearance reward contract guard.
 // Slouží jako jednoduché interní pravidlo pro budoucí theme/pozadí: klidně jich může přibýt víc,
 // ale nesmí to být skoro stejné varianty a výrazné kusy se musí odemykat postupně.
 const RAK_APPEARANCE_REWARD_CONTRACT_V181 = Object.freeze({
-  version: '1.2 (1.82)',
+  version: '1.2 (1.85)',
   intent: 'distinct-progressive-appearance-rewards',
   defaultThemeId: 'default',
   defaultBackgroundId: 'ios-mesh',
@@ -1472,7 +1472,7 @@ function getRakProfileAppearanceRewardHealth() {
   const themeRewards = themes.filter(item => String(item && item.id || '') !== 'default');
   const backgroundRewards = backgrounds.filter(item => String(item && item.id || '') !== 'ios-mesh');
   return {
-    version: window.APP_VERSION || '1.2 (1.82)',
+    version: window.APP_VERSION || '1.2 (1.85)',
     mode: 'profile-appearance-reward-health-v928',
     activeProfile: metrics.hasProfile,
     profileThemeStorage: 'account.uiSettings.themeId',
@@ -1561,7 +1561,7 @@ function getRakDashboardGlassThemeHealth() {
   const lightweight = /(?:^|\s)(?:lightweightMode|lowEndDevice|ladaMode)(?:\s|$)/.test(bodyClass);
   return {
     ok: true,
-    version: window.APP_VERSION || '1.2 (1.82)',
+    version: window.APP_VERSION || '1.2 (1.85)',
     mode: 'dashboard-ios-glass-viewport-fit-v945',
     theme,
     background,

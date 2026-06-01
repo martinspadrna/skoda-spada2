@@ -1,3 +1,25 @@
+## RaK 1.2 (1.85)
+
+- Export PNG Rozpisů: Měsíční přehled má sdílený výpočet výšky karty, takže výška canvasu odpovídá skutečně vykreslenému souhrnu.
+- Přidaná bezpečná mezera před footerem, aby se pravý sloupec s Absencemi a Měsíčním přehledem nepřiblížil k poznámce vpravo dole ani u měsíců s delším seznamem absencí.
+- `npm run test:app-usage` rozšířený o guard pro výpočet výšky Měsíčního přehledu a footer safe gap.
+- Release metadata sjednocená na `RaK 1.2 (1.85)`, technická verze `1.2.85`, cache `v1.2-1.85`.
+
+## RaK 1.2 (1.84)
+
+- Export PNG Rozpisů: Měsíční přehled dostal krátkou vysvětlivku přímo do karty, aby bylo jasné, že `Plán` je obsazení z rozpisu a `Po absencích` je plán mínus absence směn.
+- Layout exportu počítá i s výškou vysvětlivky, takže se footer nepřekryje se souhrnem.
+- `npm run test:app-usage` rozšířený o guard, že vysvětlivka zůstává v exportní kartě a že plán/po absencích zůstávají oddělené.
+- Release metadata sjednocená na `RaK 1.2 (1.84)`, technická verze `1.2.84`, cache `v1.2-1.84`.
+
+## RaK 1.2 (1.83)
+
+- Export PNG Rozpisů: měsíční přehled je rozšířený o oddělenou plánovanou obsazenost a obsazenost po absencích.
+- Přehled nově ukazuje plán obsazeno/volno, plán obsazenost, po absencích obsazeno/volno, obsazenost měsíce, absence záznamů a absence směn.
+- Karta měsíčního přehledu má kompaktnější řádky, aby se delší souhrn vešel vedle Absencí bez zbytečného nafukování obrázku.
+- `npm run test:app-usage` rozšířený o guard pro oddělení plánované a výsledné obsazenosti v exportním přehledu.
+- Release metadata sjednocená na `RaK 1.2 (1.83)`, technická verze `1.2.83`, cache `v1.2-1.83`.
+
 ## RaK 1.2 (1.82)
 
 - Administrace → Přehled připojení: opravené centrování iniciál v avatar ikonách, textová část má vlastní wrapper a dvoupísmenné iniciály sedí uprostřed ikonky.

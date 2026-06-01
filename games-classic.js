@@ -1,4 +1,4 @@
-// RaK 1.2 (1.82) – klasické hry 2048, Had a Flappy Car.
+// RaK 1.2 (1.85) – klasické hry 2048, Had a Flappy Car.
 
 function gamesEnsureKeyBindings() {
   if (window.__rotaceGamesKeysBound) return;
