@@ -1,4 +1,4 @@
-// RaK 1.2 (1.102) – sdílený herní engine a lifecycle baseline.
+// RaK 1.2 (1.104) – sdílený herní engine a lifecycle baseline.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('games-engine.js', 'loaded', { source: 'dynamic-loader' }); } catch (err) {}
 
 function ensureRakGameEngineState() {

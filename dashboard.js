@@ -1,4 +1,4 @@
-// RaK 1.2 (1.102) – dashboard a domácí přehled.
+// RaK 1.2 (1.104) – dashboard a domácí přehled.
 
 function setDashboardHtmlIfChanged(element, html, key) {
   if (!element) return false;
@@ -170,9 +170,19 @@ function getDashboardTeamDStatus(now) {
   }
 }
 
+const RAK_DASHBOARD_EMPTY_ABSENCE_TEXT_CONTRACT_V1104 = Object.freeze({
+  scope: 'team-d-next-shift-empty-absence-line',
+  text: 'Nikdo nebude chybět.'
+});
+
 function formatDashboardAbsenceList(names) {
   const list = Array.isArray(names) ? names.filter(Boolean) : [];
   return list.length ? list.join(', ') : 'nikdo';
+}
+
+function formatDashboardFutureAbsenceLine(names) {
+  const list = Array.isArray(names) ? names.filter(Boolean) : [];
+  return list.length ? 'bude chybět: ' + list.join(', ') : 'Nikdo nebude chybět.';
 }
 
 function formatDashboardTeamDParts(now, teamDStatus) {
@@ -197,7 +207,7 @@ function formatDashboardTeamDParts(now, teamDStatus) {
     const names = typeof getAbsenceNamesForDate === 'function' ? getAbsenceNamesForDate(next.start) : [];
     return {
       main: 'Směna D začíná za ' + safeDuration(next.start),
-      sub: 'bude chybět: ' + formatDashboardAbsenceList(names)
+      sub: formatDashboardFutureAbsenceLine(names)
     };
   }
 
@@ -975,7 +985,7 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
 function getRakDashboardHeroCenteringHealth() {
   return {
     ok: true,
-    version: window.APP_VERSION || '1.2 (1.102)',
+    version: window.APP_VERSION || '1.2 (1.104)',
     heroId: 'dashHero',
     scope: 'dashboard top shift panel',
     centeredLines: ['dashboardHeroLine1', 'dashboardHeroLine2', 'dashboardHeroLine3', 'dashboardHeroLine3Sub'],

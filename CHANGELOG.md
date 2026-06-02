@@ -1,3 +1,12 @@
+## RaK 1.2 (1.104)
+
+- Přidaný reálný browser smoke test `npm run test:browser-smoke` přes lokální Chromium/CDP.
+- Test spouští appku v lokálním Chromiu přes CDP; kvůli policy blokaci localhost/file v sandboxu používá inline `about:blank` načtení celé appky a projíždí mobilní viewporty iPhone 13/14 Pro Max, Samsung A15 / běžný Android a úzký mobil 360×800.
+- Browser smoke ověřuje boot aplikace, verzi, spodní navigaci, Dashboard karty, Rotace export canvas, výšku voleb v Brusech proti Frézky presetům, Hry, Menu/Více a pevné pozadí.
+- Browser smoke zároveň odhalil, že volné indexy Brusy v reálném layoutu zůstávaly na 48 px; doplněný pozdní selector je dorovnal na 58 px stejně jako ostatní volby a Frézky presety.
+- Přidaný `RAK_BROWSER_SMOKE_CONTRACT_V1103` a `npm run test:app-usage` hlídá, že browser smoke test zůstává součástí balíčku i release kontrol.
+- Release metadata sjednocená na `RaK 1.2 (1.104)`, technická verze `1.2.104`, cache `v1.2-1.104`.
+
 ## RaK 1.2 (1.102)
 
 - Rotace / volba jmen: delší jména v klikacích políčkách se na užších displejích líp vejdou díky menšímu adaptivnímu písmu, povolenému zalomení a zrušení ořezávání textu.

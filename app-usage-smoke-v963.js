@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.102) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.104) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -23,6 +23,7 @@ const appearanceThemeJs = read('appearance-theme.js');
 const ui = read('ui.js') + '\n' + read('app-runtime-guards.js') + '\n' + read('app-health-audits.js') + '\n' + read('app-postload-audits.js') + '\n' + read('app-pwa-connectivity.js') + '\n' + read('games-engine.js') + '\n' + read('games-profile.js') + '\n' + appearanceThemeJs + '\n' + read('admin-service-usage.js') + '\n' + read('admin-rotation.js') + '\n' + read('app-navigation.js') + '\n' + read('app-bottom-nav.js') + '\n' + read('app-menu.js') + '\n' + read('app-actions.js') + '\n' + read('app-boot-selftest.js') + '\n' + read('app-rotation-sync.js') + '\n' + read('app-excel-import.js') + '\n' + read('app-rotation-controls.js') + '\n' + read('app-admin-unlock.js') + '\n' + read('app-home-boot.js') + '\n' + read('app-init.js');
 const sql = read('assets/docs/sql/supabase_app_usage_v963.sql');
 const indexHtml = read('index.html');
+const dashboardJs = read('dashboard.js');
 const stylesOverridesCss = read('styles-overrides.css');
 const dashboardFitCss = read('styles-dashboard-fit.css');
 const dashboardPolishCss = read('styles-dashboard-polish.css');
@@ -30,6 +31,7 @@ const menuPolishCss = read('styles-menu-polish.css');
 const stylesGamesCss = read('styles-games.css');
 const stylesReleasePolishCss = read('styles-release-polish.css');
 const rotaceJs = read('rotace.js');
+const browserSmokeJs = read('browser-smoke-v1103.js');
 const dashboardCss = `${dashboardFitCss}
 ${dashboardPolishCss}`;
 const styleHrefMatches = Array.from(indexHtml.matchAll(/<link[^>]+rel=["']stylesheet["'][^>]+href=["']([^"']+)["'][^>]*>/g));
@@ -214,12 +216,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.102)',
-  appLabel: 'RaK 1.2 (1.102)',
-  packageVersion: '1.2.102',
-  cacheVersion: 'v1.2-1.102',
-  realtimeChannel: 'rak-public-live-v1-2-1-102',
-  changelogHeader: '## RaK 1.2 (1.102)',
+  displayVersion: '1.2 (1.104)',
+  appLabel: 'RaK 1.2 (1.104)',
+  packageVersion: '1.2.104',
+  cacheVersion: 'v1.2-1.104',
+  realtimeChannel: 'rak-public-live-v1-2-1-104',
+  changelogHeader: '## RaK 1.2 (1.104)',
   previousBuildFragments: Object.freeze(['1.2 (1.101)', '1.2.101', 'v1.2-1.101', 'rak-public-live-v1-2-1-101'])
 });
 
@@ -324,8 +326,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.102)'", 'Release contract v export.js musí držet display verzi 1.102');
-  assertIncludes(exportJs, "packageVersion: '1.2.102'", 'Release contract v export.js musí držet package verzi 1.2.102');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.104)'", 'Release contract v export.js musí držet display verzi 1.102');
+  assertIncludes(exportJs, "packageVersion: '1.2.104'", 'Release contract v export.js musí držet package verzi 1.2.104');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.102');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.102');
@@ -333,7 +335,7 @@ function assertReleaseMetadataContractV199() {
   assertIncludes(bridge, `client.channel('${contract.realtimeChannel}')`, 'Supabase realtime kanál není sjednocený s 1.102');
   assertIncludes(bridge, `realtimeChannel: '${contract.realtimeChannel}'`, 'Supabase diagnostika realtime kanálu není sjednocená s 1.101');
   assert(changelogMd.startsWith(contract.changelogHeader), 'CHANGELOG.md musí začínat aktuálním buildem 1.102');
-  assertIncludes(changelogMd, `technická verze \`${contract.packageVersion}\``, 'CHANGELOG.md musí uvádět technickou verzi 1.2.102');
+  assertIncludes(changelogMd, `technická verze \`${contract.packageVersion}\``, 'CHANGELOG.md musí uvádět technickou verzi 1.2.104');
   assertIncludes(changelogMd, `cache \`${contract.cacheVersion}\``, 'CHANGELOG.md musí uvádět cache verzi 1.102');
   assertIncludes(exportJs, `version: '${contract.displayVersion}'`, 'export.js smoke report musí nést aktuální display verzi');
   assertIncludes(exportJs, `version: String(window.APP_VERSION || '${contract.displayVersion}')`, 'export.js fallbacky musí používat aktuální display verzi');
@@ -355,6 +357,7 @@ function assertBrusyChoiceSizeContractV1101() {
   assertIncludes(stylesReleasePolishCss, 'max-height:58px !important;', 'Brusy volby musí držet maximální výšku 58px');
   assertIncludes(stylesReleasePolishCss, '--brus-main-choice-h:58px !important;', 'Brusy hlavní volby musí být dorovnané na 58px');
   assertIncludes(stylesReleasePolishCss, '--brus-free-choice-h:58px !important;', 'Brusy volné indexy musí být dorovnané na 58px');
+  assertIncludes(stylesReleasePolishCss, 'brusFreeWrap > .bbtn.brusFreeIndexBtn', 'Volné indexy Brusy musí mít pozdní konkrétní selector kvůli reálnému browser smoke testu');
   assertIncludes(stylesOverridesCss, '#korekce-frezky .calcFhbPresetBtn{display:grid !important;grid-template-rows:auto auto !important;align-content:center !important;justify-items:center !important;gap:4px !important;min-height:58px !important;', 'Referenční Frézky preset tlačítka musí dál držet 58px');
 }
 
@@ -650,6 +653,10 @@ assertIncludes(dashboardPolishCss, '@media (min-width:380px) and (max-width:440p
 assertIncludes(dashboardCss, '#dashboardAnnouncementBar:not([hidden]) + #dashHero.dashboardHeroCard', 'Oznámení musí mít vlastní hero layout guard');
 assertIncludes(dashboardCss, '#home.page.active .dashboardGrid', 'Dashboard grid musí mít pozdní stabilizační pravidla');
 assertIncludes(dashboardCss, '#home.page.active #dashHero .dashboardHeroLine3Sub', 'Řádek kdo chybí musí mít pozdní stabilizační pravidla');
+assertIncludes(dashboardJs, 'RAK_DASHBOARD_EMPTY_ABSENCE_TEXT_CONTRACT_V1104', 'Dashboard musí mít contract pro prázdný stav absence směny D');
+assertIncludes(dashboardJs, "text: 'Nikdo nebude chybět.'", 'Dashboard prázdný stav směny D musí psát přesně: Nikdo nebude chybět.');
+assertIncludes(dashboardJs, "return list.length ? 'bude chybět: ' + list.join(', ') : 'Nikdo nebude chybět.';", 'Dashboard musí pro budoucí směnu D nahradit bude chybět: nikdo přirozeným textem');
+assert(!dashboardJs.includes("sub: 'bude chybět: ' + formatDashboardAbsenceList(names)"), 'Dashboard se nesmí vrátit k textu bude chybět: nikdo');
 
 // 1.77: Dashboard běžné panely jsou zvýšené opatrně, nejvýš kolem 5 % vůči 1.76 baseline.
 assertIncludes(dashboardPolishCss, 'Dashboard: běžné panely opatrně vyšší max o 5 %', 'Chybí poznámka k 1.77 opatrnému navýšení dashboard panelů');
@@ -819,10 +826,28 @@ assertDashboardLayerScopeGuard(dashboardPolishCss, 'styles-dashboard-polish.css'
   assertIncludes(appUsageSmokeSource || '', area, `Dashboard scope guard v1.97 musí jmenovat chráněnou oblast ${area}`);
 });
 assertDashboardReleaseIsolationGuardV198();
+
+function assertBrowserSmokeContractV1103() {
+  assertIncludes(exportJs, 'RAK_BROWSER_SMOKE_CONTRACT_V1103', 'export.js musí dokumentovat browser smoke contract v1.103');
+  assertIncludes(exportJs, "command: 'npm run test:browser-smoke'", 'Browser smoke contract musí uvádět npm příkaz');
+  assertIncludes(packageJsonText, '"test:browser-smoke": "node browser-smoke-v1103.js"', 'package.json musí obsahovat test:browser-smoke');
+  assertIncludes(packageJsonText, 'node --check browser-smoke-v1103.js', 'npm run check musí kontrolovat syntaxi browser smoke testu');
+  assertIncludes(exportJs, '"browser-smoke-v1103.js": "src-browser-smoke-v1103-js"', 'export manifest musí obsahovat browser-smoke-v1103.js');
+  assertIncludes(exportJs, '"browser-smoke-v1103.js"', 'export JS files musí obsahovat browser-smoke-v1103.js');
+  ['local-chromium-cdp', 'about-blank-inline-html', 'iPhone 13/14 Pro Max', 'Samsung A15 / Android běžný', 'úzký mobil 360×800', 'Rotace export canvas', 'fixed background'].forEach((fragment) => {
+    assertIncludes(exportJs, fragment, `Browser smoke contract musí hlídat ${fragment}`);
+    assertIncludes(browserSmokeJs, fragment, `browser-smoke-v1103.js musí reálně testovat/uvádět ${fragment}`);
+  });
+  ['CHROMIUM_BIN', 'buildInlineSmokeHtml', 'createStaticServer', 'CdpClient', 'Emulation.setDeviceMetricsOverride', 'about-blank-inline-html', 'createRotationMonthExportCanvas', '#brusy .brusMachineBtn', '#games.page.active', '#menu.page.active'].forEach((fragment) => {
+    assertIncludes(browserSmokeJs, fragment, `browser-smoke-v1103.js musí obsahovat ${fragment}`);
+  });
+}
+
 assertDashboardCssGuardSeriesCompleteV1100();
 assertReleaseMetadataContractV199();
 assertBrusyChoiceSizeContractV1101();
 assertFixedAppBackgroundContractV1101();
 assertNameChoiceFitContractV1102();
+assertBrowserSmokeContractV1103();
 
-console.log('app-usage-smoke-v963 OK + dashboard-css-contract-guard + appearance-reward-contract + rotation-export-summary-simple-guard + rotation-export-glass-guard + appearance-readability-guard + css-layer-order-v194-guard + dashboard-owner-registry-v195-guard + dashboard-overrides-selector-lock-v196-guard + dashboard-scope-v197-guard + dashboard-release-isolation-v198-guard + dashboard-css-guard-series-v1100-complete + release-metadata-v199-guard + brusy-choice-size-v1101-guard + fixed-app-background-v1101-guard + name-choice-fit-v1102-guard + no-visual-owner-drift-guard OK');
+console.log('app-usage-smoke-v963 OK + dashboard-css-contract-guard + appearance-reward-contract + rotation-export-summary-simple-guard + rotation-export-glass-guard + appearance-readability-guard + css-layer-order-v194-guard + dashboard-owner-registry-v195-guard + dashboard-overrides-selector-lock-v196-guard + dashboard-scope-v197-guard + dashboard-release-isolation-v198-guard + dashboard-css-guard-series-v1100-complete + release-metadata-v199-guard + brusy-choice-size-v1101-guard + fixed-app-background-v1101-guard + name-choice-fit-v1102-guard + browser-smoke-v1103-guard + dashboard-empty-absence-text-v1104-guard + no-visual-owner-drift-guard OK');
