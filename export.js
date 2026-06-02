@@ -1,4 +1,4 @@
-// RaK 1.2 (1.104) – export manifest a release metadata.
+// RaK 1.2 (1.105) – export manifest a release metadata.
 const EXPORT_SOURCE_IDS = {
   "module-readiness.js": "src-module-readiness-js",
   "rak-namespace.js": "src-rak-namespace-js",
@@ -112,12 +112,12 @@ const EXPORT_SOURCE_IDS = {
 const SOURCE_CACHE = window.__ROTACE_SOURCE_CACHE__ || (window.__ROTACE_SOURCE_CACHE__ = {});
 const BINARY_SOURCE_CACHE = window.__ROTACE_BINARY_SOURCE_CACHE__ || (window.__ROTACE_BINARY_SOURCE_CACHE__ = {});
 const RAK_RELEASE_METADATA_CONTRACT_V199 = Object.freeze({
-  displayVersion: '1.2 (1.104)',
-  appLabel: 'RaK 1.2 (1.104)',
-  packageVersion: '1.2.104',
-  cacheVersion: 'v1.2-1.104',
-  realtimeChannel: 'rak-public-live-v1-2-1-104',
-  changelogHeader: '## RaK 1.2 (1.104)',
+  displayVersion: '1.2 (1.105)',
+  appLabel: 'RaK 1.2 (1.105)',
+  packageVersion: '1.2.105',
+  cacheVersion: 'v1.2-1.105',
+  realtimeChannel: 'rak-public-live-v1-2-1-105',
+  changelogHeader: '## RaK 1.2 (1.105)',
   serviceWorkerVersionGuard: 'CACHE_VERSION + SW_APP_VERSION'
 });
 const RAK_DASHBOARD_CSS_GUARD_SERIES_CONTRACT_V1100 = Object.freeze({
@@ -156,6 +156,18 @@ const RAK_NAME_CHOICE_FIT_CONTRACT_V1102 = Object.freeze({
   protectedSelectors: Object.freeze(['.rotaceNameTile .rotaceTileTitle', '#statsNameGrid .statsNameTile .statsTileTitle']),
   textRules: Object.freeze(['white-space:normal', 'overflow:visible', 'text-overflow:clip', 'overflow-wrap:anywhere'])
 });
+const RAK_ROTACE_EMPTY_ABSENCE_TEXT_CONTRACT_V1105 = Object.freeze({
+  scope: 'rotace-upcoming-shift-empty-absence-line',
+  text: 'Nikdo nebude chybět.',
+  relatedDashboardContract: 'RAK_DASHBOARD_EMPTY_ABSENCE_TEXT_CONTRACT_V1104'
+});
+const RAK_APPEARANCE_UPDATE_PERSISTENCE_CONTRACT_V1105 = Object.freeze({
+  scope: 'profile-appearance-update-migration',
+  intent: 'nevracet vybrané pozadí po aktualizaci na základní',
+  migrationSource: 'localStorage fallback při chybějícím account.uiSettings.backgroundId',
+  protectedStorage: Object.freeze(['account.uiSettings.backgroundId', 'rakApp:background_v1']),
+  fallbackBackground: 'ios-mesh'
+});
 const RAK_BROWSER_SMOKE_CONTRACT_V1103 = Object.freeze({
   scope: 'real-browser-smoke-test',
   command: 'npm run test:browser-smoke',
@@ -168,7 +180,7 @@ const EXPORT_SMOKE_REPORT = window.__RAK_EXPORT_SMOKE_REPORT__ || (window.__RAK_
   ok: null,
   status: 'not-run',
   mode: 'export-smoke-report-v939',
-  version: '1.2 (1.104)',
+  version: '1.2 (1.105)',
   checkedAt: null,
   lastStage: 'čeká na export',
   runCount: 0,
@@ -301,7 +313,7 @@ const EXPORT_TEXT_FILES = [
 
 function getRakExportManifest() {
   return {
-    version: String(window.APP_VERSION || '1.2 (1.104)'),
+    version: String(window.APP_VERSION || '1.2 (1.105)'),
     mode: 'export-manifest-preflight-v939',
     indexFile: 'index.html',
     jsFiles: Array.from(new Set(EXPORT_JS_FILES)),
@@ -411,7 +423,7 @@ function updateRakExportSmokeReport(partial) {
   const data = partial && typeof partial === 'object' ? partial : {};
   Object.assign(EXPORT_SMOKE_REPORT, data, {
     mode: 'export-smoke-report-v939',
-    version: String(window.APP_VERSION || '1.2 (1.104)'),
+    version: String(window.APP_VERSION || '1.2 (1.105)'),
     checkedAt: new Date().toISOString()
   });
   return getRakExportSmokeReport();

@@ -1,3 +1,10 @@
+## RaK 1.2 (1.105)
+
+- Rotace: prázdný stav u přehledu příští směny používá stejnou přirozenou větu jako Dashboard — `Nikdo nebude chybět.`
+- Nastavení vzhledu: opravená migrace chybějícího profilového pozadí po aktualizaci. Když profil ještě nemá `uiSettings.backgroundId`, použije se uložené lokální pozadí místo okamžitého návratu na základní `ios-mesh`.
+- Přidané guardy `RAK_ROTACE_EMPTY_ABSENCE_TEXT_CONTRACT_V1105` a `RAK_APPEARANCE_UPDATE_PERSISTENCE_CONTRACT_V1105`, aby se prázdný stav Rotace ani pozadí po update nevrátily zpět.
+- Release metadata sjednocená na `RaK 1.2 (1.105)`, technická verze `1.2.105`, cache `v1.2-1.105`.
+
 ## RaK 1.2 (1.104)
 
 - Přidaný reálný browser smoke test `npm run test:browser-smoke` přes lokální Chromium/CDP.

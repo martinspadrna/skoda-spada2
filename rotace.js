@@ -1,4 +1,4 @@
-// RaK 1.2 (1.104) – Rotace render a volba jmen.
+// RaK 1.2 (1.105) – Rotace render a volba jmen.
 function renderRotace() {
   const namesGrid = document.getElementById('namesGrid');
   const personView = document.getElementById('personView');
@@ -457,6 +457,11 @@ function ensurePersonScheduleModal() {
 
 
 
+const RAK_ROTACE_EMPTY_ABSENCE_TEXT_CONTRACT_V1105 = Object.freeze({
+  scope: 'rotace-upcoming-shift-empty-absence-line',
+  text: 'Nikdo nebude chybět.'
+});
+
 function renderUpcomingShiftsPreview(limit = 10) {
   const personView = document.getElementById("personView");
   if (!personView) return;
@@ -516,12 +521,12 @@ function renderUpcomingShiftsPreview(limit = 10) {
   const headerText = nextShiftText ? (title + ' ' + nextShiftText) : title;
   const totalPeople = names.length || Math.max(presentEntries.length + missingNames.length, 1);
   const presentCount = presentEntries.length;
-  const missingText = missingNames.length ? missingNames.join(', ') : 'nikdo';
+  const missingText = missingNames.length ? 'Chybí: ' + missingNames.join(', ') : 'Nikdo nebude chybět.';
   setRotaceHtmlIfChanged(personView, [
     '<div class="rotacePersonHeader rotaceOverviewHeader">',
     '  <div class="rotacePersonTitle">' + escapeHtml(headerText) + '</div>',
     '</div>',
-    '<div class="rotacePersonMeta rotaceOverviewMeta">Přítomno ' + String(presentCount) + ' z ' + String(totalPeople) + ' lidí · Chybí: ' + escapeHtml(missingText) + '</div>',
+    '<div class="rotacePersonMeta rotaceOverviewMeta">Přítomno ' + String(presentCount) + ' z ' + String(totalPeople) + ' lidí · ' + escapeHtml(missingText) + '</div>',
     '<div class="rotaceQuickCards rotacePreviewGrid rotaceOverviewGrid">',
     presentEntries.length ? presentEntries.map(entry => [
       '<div class="rotaceMiniCard rotaceOverviewCard">',

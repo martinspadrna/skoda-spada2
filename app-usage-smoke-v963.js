@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.104) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.105) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -216,13 +216,13 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.104)',
-  appLabel: 'RaK 1.2 (1.104)',
-  packageVersion: '1.2.104',
-  cacheVersion: 'v1.2-1.104',
-  realtimeChannel: 'rak-public-live-v1-2-1-104',
-  changelogHeader: '## RaK 1.2 (1.104)',
-  previousBuildFragments: Object.freeze(['1.2 (1.101)', '1.2.101', 'v1.2-1.101', 'rak-public-live-v1-2-1-101'])
+  displayVersion: '1.2 (1.105)',
+  appLabel: 'RaK 1.2 (1.105)',
+  packageVersion: '1.2.105',
+  cacheVersion: 'v1.2-1.105',
+  realtimeChannel: 'rak-public-live-v1-2-1-105',
+  changelogHeader: '## RaK 1.2 (1.105)',
+  previousBuildFragments: Object.freeze(['1.2 (1.104)', '1.2.104', 'v1.2-1.104', 'rak-public-live-v1-2-1-104'])
 });
 
 const releaseMetadataActiveFilesV199 = Object.freeze([
@@ -326,17 +326,17 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.104)'", 'Release contract v export.js musí držet display verzi 1.102');
-  assertIncludes(exportJs, "packageVersion: '1.2.104'", 'Release contract v export.js musí držet package verzi 1.2.104');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.105)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.105'", 'Release contract v export.js musí držet package verzi 1.2.105');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
-  assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.102');
-  assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.102');
-  assertIncludes(serviceWorkerJs, `const SW_APP_VERSION = '${contract.displayVersion}';`, 'sw.js SW_APP_VERSION není sjednocený s 1.102');
-  assertIncludes(bridge, `client.channel('${contract.realtimeChannel}')`, 'Supabase realtime kanál není sjednocený s 1.102');
-  assertIncludes(bridge, `realtimeChannel: '${contract.realtimeChannel}'`, 'Supabase diagnostika realtime kanálu není sjednocená s 1.101');
-  assert(changelogMd.startsWith(contract.changelogHeader), 'CHANGELOG.md musí začínat aktuálním buildem 1.102');
-  assertIncludes(changelogMd, `technická verze \`${contract.packageVersion}\``, 'CHANGELOG.md musí uvádět technickou verzi 1.2.104');
-  assertIncludes(changelogMd, `cache \`${contract.cacheVersion}\``, 'CHANGELOG.md musí uvádět cache verzi 1.102');
+  assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
+  assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
+  assertIncludes(serviceWorkerJs, `const SW_APP_VERSION = '${contract.displayVersion}';`, 'sw.js SW_APP_VERSION není sjednocený s 1.105');
+  assertIncludes(bridge, `client.channel('${contract.realtimeChannel}')`, 'Supabase realtime kanál není sjednocený s 1.105');
+  assertIncludes(bridge, `realtimeChannel: '${contract.realtimeChannel}'`, 'Supabase diagnostika realtime kanálu není sjednocená s 1.105');
+  assert(changelogMd.startsWith(contract.changelogHeader), 'CHANGELOG.md musí začínat aktuálním buildem 1.105');
+  assertIncludes(changelogMd, `technická verze \`${contract.packageVersion}\``, 'CHANGELOG.md musí uvádět technickou verzi 1.2.105');
+  assertIncludes(changelogMd, `cache \`${contract.cacheVersion}\``, 'CHANGELOG.md musí uvádět cache verzi 1.105');
   assertIncludes(exportJs, `version: '${contract.displayVersion}'`, 'export.js smoke report musí nést aktuální display verzi');
   assertIncludes(exportJs, `version: String(window.APP_VERSION || '${contract.displayVersion}')`, 'export.js fallbacky musí používat aktuální display verzi');
   releaseMetadataActiveFilesV199.forEach(([fileName, source]) => {
@@ -657,6 +657,10 @@ assertIncludes(dashboardJs, 'RAK_DASHBOARD_EMPTY_ABSENCE_TEXT_CONTRACT_V1104', '
 assertIncludes(dashboardJs, "text: 'Nikdo nebude chybět.'", 'Dashboard prázdný stav směny D musí psát přesně: Nikdo nebude chybět.');
 assertIncludes(dashboardJs, "return list.length ? 'bude chybět: ' + list.join(', ') : 'Nikdo nebude chybět.';", 'Dashboard musí pro budoucí směnu D nahradit bude chybět: nikdo přirozeným textem');
 assert(!dashboardJs.includes("sub: 'bude chybět: ' + formatDashboardAbsenceList(names)"), 'Dashboard se nesmí vrátit k textu bude chybět: nikdo');
+assertIncludes(rotaceJs, 'RAK_ROTACE_EMPTY_ABSENCE_TEXT_CONTRACT_V1105', 'Rotace musí mít stejný prázdný stav absencí jako Dashboard');
+assertIncludes(rotaceJs, "text: 'Nikdo nebude chybět.'", 'Rotace prázdný stav směny musí psát přesně: Nikdo nebude chybět.');
+assertIncludes(rotaceJs, "missingNames.length ? 'Chybí: ' + missingNames.join(', ') : 'Nikdo nebude chybět.'", 'Rotace musí pro nulovou absenci psát Nikdo nebude chybět.');
+assert(!rotaceJs.includes("Chybí: ' + escapeHtml(missingText)") || rotaceJs.includes("' + escapeHtml(missingText) + '"), 'Rotace nesmí skládat prázdné Chybí: nikdo');
 
 // 1.77: Dashboard běžné panely jsou zvýšené opatrně, nejvýš kolem 5 % vůči 1.76 baseline.
 assertIncludes(dashboardPolishCss, 'Dashboard: běžné panely opatrně vyšší max o 5 %', 'Chybí poznámka k 1.77 opatrnému navýšení dashboard panelů');
@@ -827,6 +831,15 @@ assertDashboardLayerScopeGuard(dashboardPolishCss, 'styles-dashboard-polish.css'
 });
 assertDashboardReleaseIsolationGuardV198();
 
+function assertAppearanceUpdatePersistenceContractV1105() {
+  assertIncludes(exportJs, 'RAK_APPEARANCE_UPDATE_PERSISTENCE_CONTRACT_V1105', 'export.js musí dokumentovat appearance update persistence contract v1.105');
+  assertIncludes(appearanceThemeJs, 'RAK_APPEARANCE_UPDATE_PERSISTENCE_CONTRACT_V1105', 'appearance-theme.js musí obsahovat update persistence contract v1.105');
+  assertIncludes(appearanceThemeJs, 'nevracet vybrané pozadí po aktualizaci na základní', 'Appearance contract musí popsat problém resetu pozadí při aktualizaci');
+  assertIncludes(appearanceThemeJs, 'if (!ui.backgroundId) { ui.backgroundId = localBg || defaultBg; changed = true; }', 'Chybějící profilové pozadí se musí migrovat z localStorage fallbacku');
+  assertIncludes(appearanceThemeJs, 'if (!ui.themeId) { ui.themeId = localTheme || defaultTheme; changed = true; }', 'Chybějící profilové theme se musí migrovat z localStorage fallbacku');
+  assert(!appearanceThemeJs.includes('if (!ui.backgroundId) { ui.backgroundId = defaultBg; changed = true; }'), 'Aktualizace se nesmí vrátit k okamžitému resetu pozadí na defaultBg');
+}
+
 function assertBrowserSmokeContractV1103() {
   assertIncludes(exportJs, 'RAK_BROWSER_SMOKE_CONTRACT_V1103', 'export.js musí dokumentovat browser smoke contract v1.103');
   assertIncludes(exportJs, "command: 'npm run test:browser-smoke'", 'Browser smoke contract musí uvádět npm příkaz');
@@ -849,5 +862,6 @@ assertBrusyChoiceSizeContractV1101();
 assertFixedAppBackgroundContractV1101();
 assertNameChoiceFitContractV1102();
 assertBrowserSmokeContractV1103();
+assertAppearanceUpdatePersistenceContractV1105();
 
-console.log('app-usage-smoke-v963 OK + dashboard-css-contract-guard + appearance-reward-contract + rotation-export-summary-simple-guard + rotation-export-glass-guard + appearance-readability-guard + css-layer-order-v194-guard + dashboard-owner-registry-v195-guard + dashboard-overrides-selector-lock-v196-guard + dashboard-scope-v197-guard + dashboard-release-isolation-v198-guard + dashboard-css-guard-series-v1100-complete + release-metadata-v199-guard + brusy-choice-size-v1101-guard + fixed-app-background-v1101-guard + name-choice-fit-v1102-guard + browser-smoke-v1103-guard + dashboard-empty-absence-text-v1104-guard + no-visual-owner-drift-guard OK');
+console.log('app-usage-smoke-v963 OK + dashboard-css-contract-guard + appearance-reward-contract + rotation-export-summary-simple-guard + rotation-export-glass-guard + appearance-readability-guard + css-layer-order-v194-guard + dashboard-owner-registry-v195-guard + dashboard-overrides-selector-lock-v196-guard + dashboard-scope-v197-guard + dashboard-release-isolation-v198-guard + dashboard-css-guard-series-v1100-complete + release-metadata-v199-guard + brusy-choice-size-v1101-guard + fixed-app-background-v1101-guard + name-choice-fit-v1102-guard + browser-smoke-v1103-guard + dashboard-empty-absence-text-v1104-guard + rotace-empty-absence-text-v1105-guard + appearance-update-persistence-v1105-guard + no-visual-owner-drift-guard OK');
