@@ -1,4 +1,4 @@
-// RaK 1.2 (1.110) – Supabase klientský/online contract audit.
+// RaK 1.2 (1.112) – Supabase klientský/online contract audit.
 
 (function setupRakSupabaseClientAudit() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -289,7 +289,7 @@
       ok: issues.length === 0,
       mode: 'supabase-client-queue-closure-v897',
       checkedAt: nowIso(),
-      version: safeString(window.APP_VERSION || '1.2 (1.110)'),
+      version: safeString(window.APP_VERSION || '1.2 (1.112)'),
       phase: 'phase H Supabase client/offline queue audit',
       phasePercent: 100,
       phaseClosed: true,
@@ -421,7 +421,7 @@
       ok: issues.length === 0,
       mode: 'online-game-contract-audit-v901',
       checkedAt: nowIso(),
-      version: safeString(window.APP_VERSION || '1.2 (1.110)'),
+      version: safeString(window.APP_VERSION || '1.2 (1.112)'),
       phase: 'phase I Supabase online hry create/accept/save kontrakty',
       phasePercent: 100,
       phaseClosed: true,
@@ -474,7 +474,7 @@
       ok: issues.length === 0,
       mode: 'online-game-contract-closure-v901',
       checkedAt: nowIso(),
-      version: safeString(window.APP_VERSION || '1.2 (1.110)'),
+      version: safeString(window.APP_VERSION || '1.2 (1.112)'),
       phase: 'phase I Supabase online hry create/accept/save kontrakty',
       phasePercent: 100,
       phaseClosed: true,
@@ -508,7 +508,7 @@
       status: audit ? (audit.ok ? 'audit-ready' : 'kontrola') : 'unavailable',
       mode: 'online-game-contract-smoke-v901',
       checkedAt: nowIso(),
-      version: safeString(window.APP_VERSION || '1.2 (1.110)'),
+      version: safeString(window.APP_VERSION || '1.2 (1.112)'),
       readOnly: true,
       dbMutations: false,
       policyChanges: false,

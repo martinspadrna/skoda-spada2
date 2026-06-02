@@ -1,4 +1,4 @@
-// RaK 1.2 (1.110) – Administrace Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
+// RaK 1.2 (1.112) – Administrace Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('admin-rotation.js', 'loading', { source: 'dynamic-loader' }); } catch (err) {}
 
 
@@ -721,10 +721,11 @@ function buildAdminRotationTableHtml(monthKey) {
   return [
     '<div class="appMenuSubSection" id="adminRotationEditor">',
     '  <div class="appMenuSubTitle">Rozpis – ' + escapeHtml(monthKey) + '</div>',
-    '  <div class="appMenuText">Stejný rozpis, jen editovatelný. Změny zůstávají rozepsané lokálně a do Supabase jdou až po kliknutí na Uložit rozpis.</div>',
+    '  <div class="appMenuText">Stejný rozpis, jen editovatelný. Změny zůstávají rozepsané lokálně a do Supabase jdou až po kliknutí na Uložit rozpis nebo OK, odeslat.</div>',
     '  <div class="adminRotationSaveDock">',
     '    <div class="adminRotationSaveActions">',
     '      <button type="button" class="appMenuAction isActive adminRotationSaveDockBtn" data-admin-action="save-rotation">Uložit rozpis</button>',
+    '      <button type="button" class="appMenuAction adminRotationSaveDockBtn" data-admin-action="save-rotation">OK, odeslat</button>',
     '      <button type="button" class="appMenuAction adminRotationSelectedRemoveBtn" data-admin-selected-remove hidden>Odebrat vybrané</button>',
     '    </div>',
     '    <span id="adminRotationDraftStatus" class="adminRotationDraftStatus">Rozepsané změny se uloží až tlačítkem.</span>',
@@ -1322,6 +1323,110 @@ function adminRotationGeneratorBuildDay(month, model, counters, rowIdx, dateLabe
   };
 }
 
+
+function adminRotationGeneratorCollectWorkingNames(month, knownNames) {
+  const working = new Set();
+  const names = Array.isArray(knownNames) ? knownNames : adminGetKnownNames();
+  const addRows = (sectionKey) => {
+    const section = month && month[sectionKey] ? month[sectionKey] : null;
+    const rows = Array.isArray(section && section.rows) ? section.rows : [];
+    rows.forEach((row) => {
+      (Array.isArray(row && row.cells) ? row.cells : []).forEach((cell) => {
+        const name = adminRotationCanonicalName(cell, names);
+        if (name && names.includes(name)) working.add(name);
+      });
+    });
+  };
+  addRows('hard');
+  addRows('soft');
+  return Array.from(working);
+}
+
+function adminRotationGeneratorCountHardMachine(month, machineName, names) {
+  const result = Object.create(null);
+  (Array.isArray(names) ? names : adminGetKnownNames()).forEach((name) => { result[name] = 0; });
+  const machineIdx = adminRotationGeneratorMachineIndex(HARD_MACHINE_HEADERS, machineName);
+  const rows = Array.isArray(month && month.hard && month.hard.rows) ? month.hard.rows : [];
+  if (machineIdx < 0) return result;
+  rows.forEach((row) => {
+    const name = adminRotationCanonicalName(row && row.cells ? row.cells[machineIdx] : '', names);
+    if (name && Object.prototype.hasOwnProperty.call(result, name)) result[name] += 1;
+  });
+  return result;
+}
+
+function adminRotationGeneratorFindPersonCellOnDay(month, rowIdx, person, preferredSection) {
+  const wanted = String(person || '').trim();
+  if (!wanted) return null;
+  const scan = (sectionKey, machines) => {
+    const section = month && month[sectionKey] ? month[sectionKey] : null;
+    const row = section && Array.isArray(section.rows) ? section.rows[rowIdx] : null;
+    const cells = Array.isArray(row && row.cells) ? row.cells : [];
+    for (let idx = 0; idx < cells.length; idx += 1) {
+      const cellName = String(cells[idx] || '').trim();
+      if (cellName === wanted) return { sectionKey, row, cells, idx, machine: machines[idx] || '' };
+    }
+    return null;
+  };
+  if (preferredSection === 'soft') {
+    return scan('soft', SOFT_MACHINE_HEADERS) || scan('hard', HARD_MACHINE_HEADERS);
+  }
+  if (preferredSection === 'hard') {
+    return scan('hard', HARD_MACHINE_HEADERS) || scan('soft', SOFT_MACHINE_HEADERS);
+  }
+  return scan('soft', SOFT_MACHINE_HEADERS) || scan('hard', HARD_MACHINE_HEADERS);
+}
+
+function adminRotationGeneratorBalanceHardMachine(month, machineName, model) {
+  const knownNames = model && Array.isArray(model.knownNames) ? model.knownNames : adminGetKnownNames();
+  const hardPreferred = RAK_ROTATION_GENERATOR_RULES_V1107.hardPreferred.filter((name) => knownNames.includes(name));
+  const workingNames = adminRotationGeneratorCollectWorkingNames(month, knownNames).filter((name) => knownNames.includes(name));
+  const machineIdx = adminRotationGeneratorMachineIndex(HARD_MACHINE_HEADERS, machineName);
+  const hardRows = Array.isArray(month && month.hard && month.hard.rows) ? month.hard.rows : [];
+  if (machineIdx < 0 || !workingNames.length || !hardRows.length) return { swaps: 0, counts: Object.create(null) };
+
+  let counts = adminRotationGeneratorCountHardMachine(month, machineName, workingNames);
+  let swaps = 0;
+  const maxPasses = hardRows.length * 2;
+
+  const getMinName = () => workingNames.slice().sort((a, b) => {
+    const diff = Number(counts[a] || 0) - Number(counts[b] || 0);
+    if (diff) return diff;
+    const pref = (hardPreferred.includes(b) ? 1 : 0) - (hardPreferred.includes(a) ? 1 : 0);
+    if (pref) return pref;
+    return a.localeCompare(b, 'cs');
+  })[0];
+
+  for (let pass = 0; pass < maxPasses; pass += 1) {
+    const sorted = workingNames.slice().sort((a, b) => Number(counts[b] || 0) - Number(counts[a] || 0));
+    const highName = sorted[0];
+    const lowName = getMinName();
+    if (!highName || !lowName || highName === lowName) break;
+    if (Number(counts[highName] || 0) - Number(counts[lowName] || 0) <= 1) break;
+
+    let didSwap = false;
+    for (let rowIdx = 0; rowIdx < hardRows.length; rowIdx += 1) {
+      const hardRow = hardRows[rowIdx];
+      const tnksName = adminRotationCanonicalName(hardRow && hardRow.cells ? hardRow.cells[machineIdx] : '', knownNames);
+      if (tnksName !== highName) continue;
+
+      const lowCell = adminRotationGeneratorFindPersonCellOnDay(month, rowIdx, lowName, 'soft');
+      if (!lowCell || !lowCell.cells) continue;
+      lowCell.cells[lowCell.idx] = highName;
+      hardRow.cells[machineIdx] = lowName;
+      counts[highName] = Number(counts[highName] || 0) - 1;
+      counts[lowName] = Number(counts[lowName] || 0) + 1;
+      swaps += 1;
+      didSwap = true;
+      break;
+    }
+    if (!didSwap) break;
+  }
+
+  return { swaps, counts };
+}
+
+
 function adminRotationGeneratorCanReadEditorDraftFromDom() {
   const body = document.getElementById('appMenuBody');
   return !!(body && body.querySelector('#adminRotationEditor tr[data-rotation-section]'));
@@ -1379,6 +1484,7 @@ function adminGenerateRotationMonthDraft(monthKey) {
   month.soft.rows = softRows;
   month.soft.machines = SOFT_MACHINE_HEADERS.slice();
   month.soft.title = month.soft.title || 'Rotace měkota';
+  const tnksBalance = adminRotationGeneratorBalanceHardMachine(month, 'TNKS01', model);
   const normalized = normalizeMonthForImport(month, fallback);
   if (!app.rotation.months) app.rotation.months = {};
   app.rotation.months[monthKey] = normalized;
@@ -1398,7 +1504,8 @@ function adminGenerateRotationMonthDraft(monthKey) {
     blockedByAbsence,
     skippedDays,
     protectedEmptyCells,
-    ruleVersion: '1.107'
+    tnksBalanceSwaps: tnksBalance && Number(tnksBalance.swaps || 0),
+    ruleVersion: '1.112'
   };
 }
 
@@ -1420,6 +1527,18 @@ const RAK_ROTATION_GENERATOR_WIZARD_RUN_CONTRACT_V1110 = Object.freeze({
   guard: 'adminGenerateRotationMonthDraft smí číst readAdminRotationFromDom jen tehdy, když v DOMu existuje #adminRotationEditor s řádky rozpisu; jinak musí použít připravený měsíc z app.rotation.months.'
 });
 
+const RAK_ROTATION_GENERATOR_WIZARD_STATE_CONTRACT_V1111 = Object.freeze({
+  version: '1.111',
+  rule: 'Průvodce generátorem nesmí v kroku Návrh vygenerovat prázdný měsíc jen proto, že se stav dnů ztratil nebo byl předchozí pokus nulový.',
+  guard: 'Dny se při generování řeší přes adminRotationGeneratorResolveWizardDays: nejdřív wizard state, potom aktuální rozpis, potom výchozí initialRotationData. Pokud nejsou žádné dny, generátor skončí chybou místo nulového návrhu.'
+});
+
+const RAK_ROTATION_GENERATOR_MONTH_BALANCE_CONTRACT_V1112 = Object.freeze({
+  version: '1.112',
+  rule: 'Výběr měsíce v generátoru musí být řazený podle roku/měsíce a TNKS01/nýtovačka se po vygenerování vyrovnává mezi lidmi v měsíci.',
+  guard: 'Měsíce se renderují přes optgroup podle roku a po sestavení měsíce běží adminRotationGeneratorBalanceHardMachine, která může prohodit člověka na TNKS01 s člověkem z tvrdoty dočasně napsaným na měkotě.'
+});
+
 const RAK_ROTATION_GENERATOR_WIZARD_CONTRACT_V1108 = Object.freeze({
   version: '1.108',
   scope: 'Administrace dat / Rozpisy / Vygenerovat návrh',
@@ -1437,8 +1556,31 @@ function adminRotationGetNextMonthKeyFrom(monthKey) {
   return current || ordered[ordered.length - 1];
 }
 
-function adminRotationGetMonthWorkDates(monthKey) {
-  const month = app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
+function adminRotationMonthYearLabel(monthKey) {
+  const parsed = typeof parseMonthKey === 'function' ? parseMonthKey(monthKey) : null;
+  if (parsed && Number.isFinite(parsed.year)) return String(parsed.year);
+  const match = String(monthKey || '').match(/^\d{1,2}\/(\d{2,4})$/);
+  if (!match) return 'Bez roku';
+  const rawYear = Number(match[1]);
+  return String(rawYear < 100 ? 2000 + rawYear : rawYear);
+}
+
+function adminRotationGeneratorBuildMonthOptions(selected) {
+  const keys = getAdminRotationMonthKeys().slice().sort((a, b) => adminRotationMonthSortValue(a) - adminRotationMonthSortValue(b));
+  if (!keys.length) return '';
+  const groups = new Map();
+  keys.forEach((key) => {
+    const year = adminRotationMonthYearLabel(key);
+    if (!groups.has(year)) groups.set(year, []);
+    groups.get(year).push(key);
+  });
+  return Array.from(groups.entries()).map(([year, yearKeys]) => {
+    const options = yearKeys.map((key) => '<option value="' + escapeHtml(key) + '"' + (key === selected ? ' selected' : '') + '>' + escapeHtml(key) + '</option>').join('');
+    return '<optgroup label="Rok ' + escapeHtml(year) + '">' + options + '</optgroup>';
+  }).join('');
+}
+
+function adminRotationCollectMonthWorkDatesFromMonth(month) {
   if (!month) return [];
   const hardRows = Array.isArray(month.hard && month.hard.rows) ? month.hard.rows : [];
   const softRows = Array.isArray(month.soft && month.soft.rows) ? month.soft.rows : [];
@@ -1452,6 +1594,33 @@ function adminRotationGetMonthWorkDates(monthKey) {
     dates.push(raw);
   }
   return dates;
+}
+
+function adminRotationGetDefaultMonthWorkDates(monthKey) {
+  const source = (typeof initialRotationData !== 'undefined' && initialRotationData && initialRotationData.months)
+    ? initialRotationData.months[monthKey]
+    : null;
+  return adminRotationCollectMonthWorkDatesFromMonth(source);
+}
+
+function adminRotationGetMonthWorkDates(monthKey) {
+  const month = app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
+  const currentDates = adminRotationCollectMonthWorkDatesFromMonth(month);
+  if (currentDates.length) return currentDates;
+  return adminRotationGetDefaultMonthWorkDates(monthKey);
+}
+
+function adminRotationGeneratorResolveWizardDays(state) {
+  const liveState = state || adminRotationGeneratorGetWizardState();
+  const fromState = Array.isArray(liveState.days) ? liveState.days.map((d) => String(d || '').trim()).filter(Boolean) : [];
+  if (fromState.length) return fromState;
+  const monthKey = String(liveState.monthKey || '').trim();
+  const fallbackDays = adminRotationGetMonthWorkDates(monthKey);
+  if (fallbackDays.length) {
+    liveState.days = fallbackDays.slice();
+    return fallbackDays;
+  }
+  return [];
 }
 
 function adminRotationGeneratorGetWizardState() {
@@ -1504,9 +1673,8 @@ function adminRotationGeneratorRenderWizard(step) {
   const body = document.getElementById('appMenuBody');
   if (!body) return;
   const state = adminRotationGeneratorGetWizardState();
-  const keys = getAdminRotationMonthKeys();
   const selected = state.monthKey || adminRotationGetNextMonthKeyFrom(getAdminSelectedMonthKey());
-  const monthOptions = keys.map((key) => '<option value="' + escapeHtml(key) + '"' + (key === selected ? ' selected' : '') + '>' + escapeHtml(key) + '</option>').join('');
+  const monthOptions = adminRotationGeneratorBuildMonthOptions(selected);
   body.dataset.adminView = 'rotation';
   body.innerHTML = [
     '<div class="appMenuCard appMenuAdminCard adminRotationGeneratorWizard">',
@@ -1571,7 +1739,7 @@ function adminRotationGeneratorRenderDaysStep(state) {
 }
 
 function adminRotationGeneratorRenderAbsencesStep(state) {
-  const days = Array.isArray(state.days) ? state.days : [];
+  const days = adminRotationGeneratorResolveWizardDays(state);
   let absencesByDay = Array.isArray(state.absencesByDay) ? state.absencesByDay : [];
   absencesByDay = days.map((date, idx) => {
     const existing = absencesByDay[idx] || {};
@@ -1619,6 +1787,7 @@ function adminRotationGeneratorRenderResultStep(state) {
     '  <div class="appMenuActionRow">',
     '    <button type="button" class="appMenuAction" data-admin-action="generator-back-absences">Zpět na absence</button>',
     '    <button type="button" class="appMenuAction isActive" data-admin-action="generator-open-editor">Otevřít rozpis</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="generator-open-editor">Upravit / OK, odeslat</button>',
     '  </div>',
     '</div>'
   ].join('');
@@ -1630,7 +1799,8 @@ function adminRotationGeneratorEnsurePreparedMonthFromWizard() {
   if (!monthKey) throw new Error('Chybí měsíc.');
   const fallback = app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
   if (!fallback) throw new Error('Pro vybraný měsíc nejsou připravená data.');
-  const days = Array.isArray(state.days) ? state.days.map((d) => String(d || '').trim()).filter(Boolean) : [];
+  const days = adminRotationGeneratorResolveWizardDays(state);
+  if (!days.length) throw new Error('Nejsou vybrané žádné pracovní dny. Vrať se na krok Dny a přidej aspoň jeden den.');
   const month = JSON.parse(JSON.stringify(fallback));
   month.hard = month.hard || { title: 'Rotace tvrdota', machines: HARD_MACHINE_HEADERS.slice(), rows: [] };
   month.soft = month.soft || { title: 'Rotace měkota', machines: SOFT_MACHINE_HEADERS.slice(), rows: [] };
@@ -1797,15 +1967,22 @@ function adminHandleRotationGeneratorWizardAction(action, target) {
     return true;
   }
   if (action === 'generator-run') {
+    state.days = adminRotationGeneratorResolveWizardDays(state);
     state.absencesByDay = adminRotationGeneratorCollectAbsencesFromDom();
-    const hasFilledCells = typeof adminRotationMonthHasFilledCells === 'function' ? adminRotationMonthHasFilledCells(state.monthKey) : false;
-    if (hasFilledCells && !confirm('Tenhle měsíc už má v rozpisu jména. Přepsat ho novým návrhem podle průvodce?')) return true;
-    adminRotationGeneratorEnsurePreparedMonthFromWizard();
-    const result = adminGenerateRotationMonthDraft(state.monthKey);
-    state.result = result;
-    state.resultText = result
-      ? ('Návrh vygenerovaný lokálně ✓ · dnů: ' + String(result.days || 0) + ' · políček: ' + String(result.filledCells || 0) + ' · absence: ' + String(result.blockedByAbsence || 0) + '.')
-      : 'Návrh se nepodařilo vygenerovat.';
+    try {
+      if (!state.days.length) throw new Error('Nejsou vybrané žádné pracovní dny. Vrať se na krok Dny a přidej aspoň jeden den.');
+      const hasFilledCells = typeof adminRotationMonthHasFilledCells === 'function' ? adminRotationMonthHasFilledCells(state.monthKey) : false;
+      if (hasFilledCells && !confirm('Tenhle měsíc už má v rozpisu jména. Přepsat ho novým návrhem podle průvodce?')) return true;
+      adminRotationGeneratorEnsurePreparedMonthFromWizard();
+      const result = adminGenerateRotationMonthDraft(state.monthKey);
+      state.result = result;
+      state.resultText = result && result.filledCells > 0
+        ? ('Návrh vygenerovaný lokálně ✓ · dnů: ' + String(result.days || 0) + ' · políček: ' + String(result.filledCells || 0) + ' · absence: ' + String(result.blockedByAbsence || 0) + '.')
+        : 'Návrh se nepodařilo vygenerovat. Vrať se na krok Dny a zkontroluj, že jsou vybrané pracovní dny.';
+    } catch (err) {
+      state.result = null;
+      state.resultText = 'Návrh se nepodařilo vygenerovat: ' + (err && err.message ? err.message : String(err || 'neznámá chyba'));
+    }
     adminRotationGeneratorRenderWizard('result');
     return true;
   }
@@ -1815,13 +1992,17 @@ function adminHandleRotationGeneratorWizardAction(action, target) {
 
 
 
+window.RAK_ROTATION_GENERATOR_MONTH_BALANCE_CONTRACT_V1112 = RAK_ROTATION_GENERATOR_MONTH_BALANCE_CONTRACT_V1112;
 window.RAK_ROTATION_GENERATOR_ABSENCE_STATE_CONTRACT_V1109 = RAK_ROTATION_GENERATOR_ABSENCE_STATE_CONTRACT_V1109;
 window.RAK_ROTATION_GENERATOR_WIZARD_RUN_CONTRACT_V1110 = RAK_ROTATION_GENERATOR_WIZARD_RUN_CONTRACT_V1110;
+window.RAK_ROTATION_GENERATOR_WIZARD_STATE_CONTRACT_V1111 = RAK_ROTATION_GENERATOR_WIZARD_STATE_CONTRACT_V1111;
 window.RAK_ROTATION_GENERATOR_WIZARD_CONTRACT_V1108 = RAK_ROTATION_GENERATOR_WIZARD_CONTRACT_V1108;
 window.adminOpenRotationGeneratorWizard = adminOpenRotationGeneratorWizard;
 window.adminHandleRotationGeneratorWizardAction = adminHandleRotationGeneratorWizardAction;
 window.adminAddAbsenceRowToEditor = adminAddAbsenceRowToEditor;
 window.adminBuildRotationMachineCountSummaryHtml = adminBuildRotationMachineCountSummaryHtml;
+window.adminRotationGeneratorBuildMonthOptions = adminRotationGeneratorBuildMonthOptions;
+window.adminRotationGeneratorBalanceHardMachine = adminRotationGeneratorBalanceHardMachine;
 
 function adminGetSelectedRemoveButton() {
   const body = document.getElementById('appMenuBody');
@@ -1855,7 +2036,7 @@ function adminShowRotationSelectedRemove(input) {
       return;
     }
     window.__rakAdminRotationSelectedInput = input;
-    // RaK 1.2 (1.110) – horní sticky tlačítko už při kliknutí do jména nevytahujeme.
+    // RaK 1.2 (1.112) – horní sticky tlačítko už při kliknutí do jména nevytahujeme.
     // Rychlé Odebrat se vykreslí přímo u aktivního pole přes adminShowRotationQuickRemove().
     btn.hidden = true;
     btn.dataset.targetReady = '1';

@@ -1,9 +1,16 @@
-## RaK 1.2 (1.110)
+## RaK 1.2 (1.112)
+
+- Generátor rozpisu: výběr měsíce je teď řazený podle roku/měsíce a seskupený podle roku, aby se nepletly měsíce z 2025 a 2026.
+- Generátor rozpisu: po vygenerování běží vyrovnání `TNKS01` / nýtovačky. Když někdo vyjde na TNKS01 víckrát a někdo v měsíci vůbec, generátor se pokusí prohodit člověka na TNKS01 s člověkem z tvrdoty dočasně napsaným na Měkotě.
+- Přidaný contract `RAK_ROTATION_GENERATOR_MONTH_BALANCE_CONTRACT_V1112` a browser/app-usage guard pro řazení měsíců a rovnoměrnější rozdělení TNKS01.
+- Release metadata sjednocená na `RaK 1.2 (1.112)`, technická verze `1.2.112`, cache `v1.2-1.112`.
+
+## RaK 1.2 (1.111)
 
 - Administrace / Rozpisy / generátor: opravené finální `Vygenerovat rozpis` z průvodce, které ve wizard DOMu omylem četlo prázdný editor a tím vytvořilo prázdný návrh / nulový přehled stroje × jména.
 - Generátor teď čte `readAdminRotationFromDom` jen v reálném editoru `#adminRotationEditor`; v průvodci používá připravený měsíc ze stavu aplikace.
 - Browser smoke nově reálně kliká na `Vygenerovat rozpis` v průvodci a hlídá, že výsledný návrh i kontrolní tabulka stroje × jména mají nenulové hodnoty.
-- Release metadata sjednocená na `RaK 1.2 (1.110)`, technická verze `1.2.110`, cache `v1.2-1.110`.
+- Release metadata sjednocená na `RaK 1.2 (1.111)`, technická verze `1.2.111`, cache `v1.2-1.111`.
 
 ## RaK 1.2 (1.109)
 

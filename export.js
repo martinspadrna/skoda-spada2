@@ -1,4 +1,4 @@
-// RaK 1.2 (1.110) – export manifest a release metadata.
+// RaK 1.2 (1.112) – export manifest a release metadata.
 const EXPORT_SOURCE_IDS = {
   "module-readiness.js": "src-module-readiness-js",
   "rak-namespace.js": "src-rak-namespace-js",
@@ -112,12 +112,12 @@ const EXPORT_SOURCE_IDS = {
 const SOURCE_CACHE = window.__ROTACE_SOURCE_CACHE__ || (window.__ROTACE_SOURCE_CACHE__ = {});
 const BINARY_SOURCE_CACHE = window.__ROTACE_BINARY_SOURCE_CACHE__ || (window.__ROTACE_BINARY_SOURCE_CACHE__ = {});
 const RAK_RELEASE_METADATA_CONTRACT_V199 = Object.freeze({
-  displayVersion: '1.2 (1.110)',
-  appLabel: 'RaK 1.2 (1.110)',
-  packageVersion: '1.2.110',
-  cacheVersion: 'v1.2-1.110',
-  realtimeChannel: 'rak-public-live-v1-2-1-110',
-  changelogHeader: '## RaK 1.2 (1.110)',
+  displayVersion: '1.2 (1.112)',
+  appLabel: 'RaK 1.2 (1.112)',
+  packageVersion: '1.2.112',
+  cacheVersion: 'v1.2-1.112',
+  realtimeChannel: 'rak-public-live-v1-2-1-112',
+  changelogHeader: '## RaK 1.2 (1.112)',
   serviceWorkerVersionGuard: 'CACHE_VERSION + SW_APP_VERSION'
 });
 const RAK_DASHBOARD_CSS_GUARD_SERIES_CONTRACT_V1100 = Object.freeze({
@@ -215,11 +215,24 @@ const RAK_ROTATION_GENERATOR_WIZARD_RUN_CONTRACT_V1110 = Object.freeze({
   domRule: 'readAdminRotationFromDom se smí použít jen v reálném editoru #adminRotationEditor, ne ve wizard DOMu',
   browserGuard: 'browser smoke musí po kliknutí na generator-run ověřit nenulový návrh a nenulovou tabulku stroje × jména'
 });
+const RAK_ROTATION_GENERATOR_WIZARD_STATE_CONTRACT_V1111 = Object.freeze({
+  scope: 'administrace-dat-rozpisy-generator-wizard-state',
+  fix: 'Průvodce nesmí vygenerovat nulový návrh, když se po předchozím neúspěšném pokusu ztratily řádky měsíce.',
+  dayFallback: 'pracovní dny se berou ze state.days, potom z aktuálního měsíce a nakonec z initialRotationData',
+  failRule: 'pokud nejsou žádné pracovní dny, zobrazit chybu místo výsledku dnů 0 / políček 0',
+  sendButton: 'v editoru rozpisu je dostupné OK, odeslat jako jasná ruční akce pro uložení zkontrolovaného návrhu'
+});
+const RAK_ROTATION_GENERATOR_MONTH_BALANCE_CONTRACT_V1112 = Object.freeze({
+  scope: 'administrace-dat-rozpisy-generator-month-balance',
+  monthSelect: 'měsíce v generátoru jsou řazené podle roku/měsíce a seskupené podle roku, aby se nepletly 2025/2026',
+  tnks01Rule: 'nýtovačka/TNKS01 se po vygenerování vyrovnává mezi lidmi v měsíci',
+  swapRule: 'pokud někdo vyjde na TNKS01 víckrát a někdo vůbec, generátor může prohodit člověka na TNKS01 s člověkem z tvrdoty dočasně napsaným na měkotě'
+});
 const EXPORT_SMOKE_REPORT = window.__RAK_EXPORT_SMOKE_REPORT__ || (window.__RAK_EXPORT_SMOKE_REPORT__ = {
   ok: null,
   status: 'not-run',
   mode: 'export-smoke-report-v939',
-  version: '1.2 (1.110)',
+  version: '1.2 (1.112)',
   checkedAt: null,
   lastStage: 'čeká na export',
   runCount: 0,
@@ -352,7 +365,7 @@ const EXPORT_TEXT_FILES = [
 
 function getRakExportManifest() {
   return {
-    version: String(window.APP_VERSION || '1.2 (1.110)'),
+    version: String(window.APP_VERSION || '1.2 (1.112)'),
     mode: 'export-manifest-preflight-v939',
     indexFile: 'index.html',
     jsFiles: Array.from(new Set(EXPORT_JS_FILES)),
@@ -462,7 +475,7 @@ function updateRakExportSmokeReport(partial) {
   const data = partial && typeof partial === 'object' ? partial : {};
   Object.assign(EXPORT_SMOKE_REPORT, data, {
     mode: 'export-smoke-report-v939',
-    version: String(window.APP_VERSION || '1.2 (1.110)'),
+    version: String(window.APP_VERSION || '1.2 (1.112)'),
     checkedAt: new Date().toISOString()
   });
   return getRakExportSmokeReport();

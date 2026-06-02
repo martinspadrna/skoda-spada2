@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.110) – browser smoke test přes lokální Chromium/CDP.
+// RaK 1.2 (1.112) – browser smoke test přes lokální Chromium/CDP.
 // Browser smoke coverage: Rotace export canvas + fixed background + file URL fallback.
 const http = require('http');
 const fs = require('fs');
@@ -10,7 +10,7 @@ const { spawn } = require('child_process');
 const { pathToFileURL } = require('url');
 
 const ROOT_DIR = __dirname;
-const EXPECTED_APP_VERSION = '1.2 (1.110)';
+const EXPECTED_APP_VERSION = '1.2 (1.112)';
 const RAK_BROWSER_SMOKE_ENGINE = 'local-chromium-cdp';
 const RAK_BROWSER_SMOKE_LOAD_MODE = 'about-blank-inline-html';
 const CHROMIUM_BIN = process.env.CHROMIUM_BIN || process.env.CHROME_BIN || '/usr/bin/chromium';
@@ -557,12 +557,27 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml) {
     const filled = month ? [...(month.hard?.rows || []), ...(month.soft?.rows || [])].flatMap(row => row.cells || []).filter(Boolean).length : 0;
     const machineCountHitCount = document.querySelectorAll('.adminRotationGeneratorMachineSummaryTable .adminRotationMachineCountHit').length;
     const summaryText = document.querySelector('.adminRotationGeneratorMachineSummaryTable')?.textContent || '';
+    const tnksBalance = (() => {
+      const names = typeof adminGetKnownNames === 'function' ? adminGetKnownNames() : [];
+      const idx = (typeof HARD_MACHINE_HEADERS !== 'undefined' ? HARD_MACHINE_HEADERS : []).indexOf('TNKS01');
+      const counts = {};
+      names.forEach((name) => counts[name] = 0);
+      if (idx >= 0 && month?.hard?.rows) {
+        month.hard.rows.forEach((row) => {
+          const name = String((row.cells || [])[idx] || '').trim();
+          if (Object.prototype.hasOwnProperty.call(counts, name)) counts[name] += 1;
+        });
+      }
+      const active = Object.values(counts).filter((value) => value > 0);
+      return { counts, max: active.length ? Math.max(...active) : 0, min: active.length ? Math.min(...active) : 0, swaps: state.result ? Number(state.result.tnksBalanceSwaps || 0) : 0 };
+    })();
     return {
       ok: true,
       resultFilledCells: state.result ? state.result.filledCells : 0,
       resultDays: state.result ? state.result.days : 0,
       filled,
       machineCountHitCount,
+      tnksBalance,
       summaryTextLength: summaryText.length,
       resultText: state.resultText || ''
     };
@@ -570,6 +585,42 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml) {
   assert(wizardRunState.ok, `${viewport.name}: Vygenerovat rozpis z průvodce se nespustilo ${JSON.stringify(wizardRunState)}`);
   assert(wizardRunState.resultFilledCells > 0 && wizardRunState.filled > 0, `${viewport.name}: Vygenerovat rozpis z průvodce skončilo prázdným rozpisem ${JSON.stringify(wizardRunState)}`);
   assert(wizardRunState.machineCountHitCount > 0 && wizardRunState.summaryTextLength > 20, `${viewport.name}: přehled stroje × jména po průvodci je nulový/prázdný ${JSON.stringify(wizardRunState)}`);
+  assert(wizardRunState.tnksBalance && wizardRunState.tnksBalance.max - wizardRunState.tnksBalance.min <= 1, `${viewport.name}: TNKS01/nýtovačka není po vygenerování vyrovnaná ${JSON.stringify(wizardRunState.tnksBalance)}`);
+
+  const corruptedMonthRecovery = await evalInPage(client, `(() => {
+    const monthKey = '6/26';
+    const original = JSON.parse(JSON.stringify(app.rotation?.months?.[monthKey] || null));
+    try {
+      if (!app.rotation.months[monthKey]) return { ok: false, reason: 'missing month' };
+      app.rotation.months[monthKey].hard.rows = [];
+      app.rotation.months[monthKey].soft.rows = [];
+      const previousBody = document.getElementById('appMenuBody');
+      if (previousBody) previousBody.remove();
+      const body = document.createElement('div');
+      body.id = 'appMenuBody';
+      document.body.appendChild(body);
+      window.confirm = () => true;
+      adminRotationGeneratorSetWizardState({ step: 'absences', monthKey, days: [], absencesByDay: [] });
+      adminRotationGeneratorRenderWizard('absences');
+      const restoredDays = (window.__rakRotationGeneratorWizard?.days || []).length;
+      const runBtn = body.querySelector('[data-admin-action="generator-run"]');
+      if (!runBtn) return { ok: false, reason: 'missing run button', restoredDays };
+      adminHandleRotationGeneratorWizardAction('generator-run', runBtn);
+      const state = window.__rakRotationGeneratorWizard || {};
+      return {
+        ok: true,
+        restoredDays,
+        resultDays: state.result ? state.result.days : 0,
+        resultFilledCells: state.result ? state.result.filledCells : 0,
+        resultText: state.resultText || '',
+        hasOkSend: !!document.querySelector('[data-admin-action="generator-open-editor"]')
+      };
+    } finally {
+      if (original) app.rotation.months[monthKey] = original;
+    }
+  })()`);
+  assert(corruptedMonthRecovery.ok, `${viewport.name}: obnova prázdného měsíce v průvodci se nespustila ${JSON.stringify(corruptedMonthRecovery)}`);
+  assert(corruptedMonthRecovery.restoredDays > 0 && corruptedMonthRecovery.resultDays > 0 && corruptedMonthRecovery.resultFilledCells > 0, `${viewport.name}: průvodce po prázdném měsíci znovu skončil nulou ${JSON.stringify(corruptedMonthRecovery)}`);
 
   await clickAndWait(client, 'kalkulacky', '#kalkulacky.page.active');
   await clickAndWait(client, 'page-brusy', '#brusy.page.active');
