@@ -1,4 +1,4 @@
-// RaK 1.2 (1.108) – PWA, service worker a konektivita oddělené z app.js.
+// RaK 1.2 (1.109) – PWA, service worker a konektivita oddělené z app.js.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app-pwa-connectivity.js', 'loaded', { source: 'dynamic-loader' }); } catch (err) {}
 
 function installPwaAndConnectivityHooks() {

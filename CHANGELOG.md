@@ -1,3 +1,11 @@
+## RaK 1.2 (1.109)
+
+- Administrace / Rozpisy / Generátor: opraveno přidávání další absence ve stejný den. Kliknutí na `+ Přidat jméno` už nemaže vyplněná jména ani kódy v kroku Absence.
+- Sběr absencí v průvodci teď používá pracovní dny uložené ve stavu průvodce, protože v kroku Absence už v DOMu nejsou pole z kroku Dny.
+- Během editace se zachovávají i prázdné řádky absencí; ignorují se až při přípravě poznámek pro generátor.
+- `npm run test:app-usage` a `npm run test:browser-smoke` nově hlídají, že přidání druhého jména ve stejný den zachová už vyplněnou absenci.
+- Release metadata sjednocená na `RaK 1.2 (1.109)`, technická verze `1.2.109`, cache `v1.2-1.109`.
+
 ## RaK 1.2 (1.108)
 
 - Administrace / Rozpisy: mini přehled Tvrdoty už nezkracuje názvy strojů o první `T`, takže `TNKS01`, `TBKR07`, `TPKW01`, `TPKW02`, `TBKR01` zůstávají celé.

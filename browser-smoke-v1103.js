@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.108) – browser smoke test přes lokální Chromium/CDP.
+// RaK 1.2 (1.109) – browser smoke test přes lokální Chromium/CDP.
 // Browser smoke coverage: Rotace export canvas + fixed background + file URL fallback.
 const http = require('http');
 const fs = require('fs');
@@ -10,7 +10,7 @@ const { spawn } = require('child_process');
 const { pathToFileURL } = require('url');
 
 const ROOT_DIR = __dirname;
-const EXPECTED_APP_VERSION = '1.2 (1.108)';
+const EXPECTED_APP_VERSION = '1.2 (1.109)';
 const RAK_BROWSER_SMOKE_ENGINE = 'local-chromium-cdp';
 const RAK_BROWSER_SMOKE_LOAD_MODE = 'about-blank-inline-html';
 const CHROMIUM_BIN = process.env.CHROMIUM_BIN || process.env.CHROME_BIN || '/usr/bin/chromium';
@@ -492,6 +492,41 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml) {
   assert(generatorAbsenceRuleState.mskc01 === '', `${viewport.name}: při dvou absencích musí být MSKC01 prázdná ${JSON.stringify(generatorAbsenceRuleState)}`);
   assert(generatorAbsenceRuleState.mfkf10, `${viewport.name}: při dvou absencích musí být člověk na MFKF10 ${JSON.stringify(generatorAbsenceRuleState)}`);
   assert(!generatorAbsenceRuleState.duplicate, `${viewport.name}: generátor absencí vytvořil duplicitu ${JSON.stringify(generatorAbsenceRuleState)}`);
+
+  const absenceStateAfterAdd = await evalInPage(client, `(() => {
+    const previousBody = document.getElementById('appMenuBody');
+    if (previousBody) previousBody.remove();
+    const body = document.createElement('div');
+    body.id = 'appMenuBody';
+    document.body.appendChild(body);
+    if (typeof adminRotationGeneratorSetWizardState !== 'function' || typeof adminRotationGeneratorCollectAbsencesFromDom !== 'function' || typeof adminRotationGeneratorRenderWizard !== 'function') {
+      return { ok: false, reason: 'missing wizard functions' };
+    }
+    adminRotationGeneratorSetWizardState({
+      step: 'absences',
+      monthKey: '6/26',
+      days: ['1.6. R'],
+      absencesByDay: [{ date: '1.6. R', rows: [{ person: 'Blažek', code: 'D' }] }]
+    });
+    adminRotationGeneratorRenderWizard('absences');
+    const firstPerson = body.querySelector('[data-generator-absence-person]');
+    const firstCode = body.querySelector('[data-generator-absence-code]');
+    if (firstPerson) firstPerson.value = 'Kříž';
+    if (firstCode) firstCode.value = 'D';
+    const addBtn = body.querySelector('[data-admin-action="generator-absence-add"][data-day-index="0"]');
+    if (!addBtn || typeof adminHandleRotationGeneratorWizardAction !== 'function') {
+      return { ok: false, reason: 'missing add button/action' };
+    }
+    adminHandleRotationGeneratorWizardAction('generator-absence-add', addBtn);
+    const rows = Array.from(document.querySelectorAll('[data-generator-absence-day="0"] [data-generator-absence-row]')).map((row) => ({
+      person: row.querySelector('[data-generator-absence-person]')?.value || '',
+      code: row.querySelector('[data-generator-absence-code]')?.value || ''
+    }));
+    return { ok: true, rows, rowCount: rows.length };
+  })()`);
+  assert(absenceStateAfterAdd.ok, `${viewport.name}: test zachování absencí se nespustil ${JSON.stringify(absenceStateAfterAdd)}`);
+  assert(absenceStateAfterAdd.rowCount >= 2, `${viewport.name}: + Přidat jméno nepřidalo druhý řádek ${JSON.stringify(absenceStateAfterAdd)}`);
+  assert(absenceStateAfterAdd.rows[0] && absenceStateAfterAdd.rows[0].person === 'Kříž' && absenceStateAfterAdd.rows[0].code === 'D', `${viewport.name}: + Přidat jméno smazalo vyplněnou absenci ${JSON.stringify(absenceStateAfterAdd)}`);
 
   await clickAndWait(client, 'kalkulacky', '#kalkulacky.page.active');
   await clickAndWait(client, 'page-brusy', '#brusy.page.active');
