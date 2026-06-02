@@ -1,4 +1,4 @@
-// RaK 1.2 (1.109) – export manifest a release metadata.
+// RaK 1.2 (1.110) – export manifest a release metadata.
 const EXPORT_SOURCE_IDS = {
   "module-readiness.js": "src-module-readiness-js",
   "rak-namespace.js": "src-rak-namespace-js",
@@ -112,12 +112,12 @@ const EXPORT_SOURCE_IDS = {
 const SOURCE_CACHE = window.__ROTACE_SOURCE_CACHE__ || (window.__ROTACE_SOURCE_CACHE__ = {});
 const BINARY_SOURCE_CACHE = window.__ROTACE_BINARY_SOURCE_CACHE__ || (window.__ROTACE_BINARY_SOURCE_CACHE__ = {});
 const RAK_RELEASE_METADATA_CONTRACT_V199 = Object.freeze({
-  displayVersion: '1.2 (1.109)',
-  appLabel: 'RaK 1.2 (1.109)',
-  packageVersion: '1.2.109',
-  cacheVersion: 'v1.2-1.109',
-  realtimeChannel: 'rak-public-live-v1-2-1-109',
-  changelogHeader: '## RaK 1.2 (1.109)',
+  displayVersion: '1.2 (1.110)',
+  appLabel: 'RaK 1.2 (1.110)',
+  packageVersion: '1.2.110',
+  cacheVersion: 'v1.2-1.110',
+  realtimeChannel: 'rak-public-live-v1-2-1-110',
+  changelogHeader: '## RaK 1.2 (1.110)',
   serviceWorkerVersionGuard: 'CACHE_VERSION + SW_APP_VERSION'
 });
 const RAK_DASHBOARD_CSS_GUARD_SERIES_CONTRACT_V1100 = Object.freeze({
@@ -209,11 +209,17 @@ const RAK_ROTATION_GENERATOR_ABSENCE_STATE_CONTRACT_V1109 = Object.freeze({
   stateRule: 'krok Absence používá state.days, když v DOMu nejsou data-generator-day-input pole',
   editRule: 'během editace se zachovávají i prázdné řádky; ignorují se až při přípravě poznámek pro generátor'
 });
+const RAK_ROTATION_GENERATOR_WIZARD_RUN_CONTRACT_V1110 = Object.freeze({
+  scope: 'administrace-dat-rozpisy-generator-wizard-run',
+  fix: 'Vygenerování z průvodce nesmí skončit prázdným rozpisem ani nulovým přehledem stroje × jména.',
+  domRule: 'readAdminRotationFromDom se smí použít jen v reálném editoru #adminRotationEditor, ne ve wizard DOMu',
+  browserGuard: 'browser smoke musí po kliknutí na generator-run ověřit nenulový návrh a nenulovou tabulku stroje × jména'
+});
 const EXPORT_SMOKE_REPORT = window.__RAK_EXPORT_SMOKE_REPORT__ || (window.__RAK_EXPORT_SMOKE_REPORT__ = {
   ok: null,
   status: 'not-run',
   mode: 'export-smoke-report-v939',
-  version: '1.2 (1.109)',
+  version: '1.2 (1.110)',
   checkedAt: null,
   lastStage: 'čeká na export',
   runCount: 0,
@@ -346,7 +352,7 @@ const EXPORT_TEXT_FILES = [
 
 function getRakExportManifest() {
   return {
-    version: String(window.APP_VERSION || '1.2 (1.109)'),
+    version: String(window.APP_VERSION || '1.2 (1.110)'),
     mode: 'export-manifest-preflight-v939',
     indexFile: 'index.html',
     jsFiles: Array.from(new Set(EXPORT_JS_FILES)),
@@ -456,7 +462,7 @@ function updateRakExportSmokeReport(partial) {
   const data = partial && typeof partial === 'object' ? partial : {};
   Object.assign(EXPORT_SMOKE_REPORT, data, {
     mode: 'export-smoke-report-v939',
-    version: String(window.APP_VERSION || '1.2 (1.109)'),
+    version: String(window.APP_VERSION || '1.2 (1.110)'),
     checkedAt: new Date().toISOString()
   });
   return getRakExportSmokeReport();

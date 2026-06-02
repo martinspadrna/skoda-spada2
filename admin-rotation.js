@@ -1,4 +1,4 @@
-// RaK 1.2 (1.109) – Administrace Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
+// RaK 1.2 (1.110) – Administrace Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('admin-rotation.js', 'loading', { source: 'dynamic-loader' }); } catch (err) {}
 
 
@@ -1322,9 +1322,14 @@ function adminRotationGeneratorBuildDay(month, model, counters, rowIdx, dateLabe
   };
 }
 
+function adminRotationGeneratorCanReadEditorDraftFromDom() {
+  const body = document.getElementById('appMenuBody');
+  return !!(body && body.querySelector('#adminRotationEditor tr[data-rotation-section]'));
+}
+
 function adminGenerateRotationMonthDraft(monthKey) {
   if (!monthKey) throw new Error('Chybí měsíc.');
-  const domMonth = document.getElementById('appMenuBody') ? readAdminRotationFromDom(monthKey) : null;
+  const domMonth = adminRotationGeneratorCanReadEditorDraftFromDom() ? readAdminRotationFromDom(monthKey) : null;
   const fallback = domMonth || (app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null);
   if (!fallback) throw new Error('Pro vybraný měsíc nejsou připravené řádky.');
   const model = adminBuildRotationGenerationModel(monthKey);
@@ -1407,6 +1412,12 @@ const RAK_ROTATION_GENERATOR_ABSENCE_STATE_CONTRACT_V1109 = Object.freeze({
   version: '1.109',
   rule: 'Při kliknutí na + Přidat jméno v kroku Absence se musí zachovat už vyplněná jména i kódy.',
   guard: 'adminRotationGeneratorCollectAbsencesFromDom používá state.days, když krok Absence nemá v DOMu day inputy, a nevyhazuje prázdné řádky během editace.'
+});
+
+const RAK_ROTATION_GENERATOR_WIZARD_RUN_CONTRACT_V1110 = Object.freeze({
+  version: '1.110',
+  rule: 'Vygenerovat rozpis z průvodce nesmí číst prázdný wizard DOM jako editor rozpisu.',
+  guard: 'adminGenerateRotationMonthDraft smí číst readAdminRotationFromDom jen tehdy, když v DOMu existuje #adminRotationEditor s řádky rozpisu; jinak musí použít připravený měsíc z app.rotation.months.'
 });
 
 const RAK_ROTATION_GENERATOR_WIZARD_CONTRACT_V1108 = Object.freeze({
@@ -1805,6 +1816,7 @@ function adminHandleRotationGeneratorWizardAction(action, target) {
 
 
 window.RAK_ROTATION_GENERATOR_ABSENCE_STATE_CONTRACT_V1109 = RAK_ROTATION_GENERATOR_ABSENCE_STATE_CONTRACT_V1109;
+window.RAK_ROTATION_GENERATOR_WIZARD_RUN_CONTRACT_V1110 = RAK_ROTATION_GENERATOR_WIZARD_RUN_CONTRACT_V1110;
 window.RAK_ROTATION_GENERATOR_WIZARD_CONTRACT_V1108 = RAK_ROTATION_GENERATOR_WIZARD_CONTRACT_V1108;
 window.adminOpenRotationGeneratorWizard = adminOpenRotationGeneratorWizard;
 window.adminHandleRotationGeneratorWizardAction = adminHandleRotationGeneratorWizardAction;
@@ -1843,7 +1855,7 @@ function adminShowRotationSelectedRemove(input) {
       return;
     }
     window.__rakAdminRotationSelectedInput = input;
-    // RaK 1.2 (1.109) – horní sticky tlačítko už při kliknutí do jména nevytahujeme.
+    // RaK 1.2 (1.110) – horní sticky tlačítko už při kliknutí do jména nevytahujeme.
     // Rychlé Odebrat se vykreslí přímo u aktivního pole přes adminShowRotationQuickRemove().
     btn.hidden = true;
     btn.dataset.targetReady = '1';

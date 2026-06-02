@@ -1,3 +1,10 @@
+## RaK 1.2 (1.110)
+
+- Administrace / Rozpisy / generátor: opravené finální `Vygenerovat rozpis` z průvodce, které ve wizard DOMu omylem četlo prázdný editor a tím vytvořilo prázdný návrh / nulový přehled stroje × jména.
+- Generátor teď čte `readAdminRotationFromDom` jen v reálném editoru `#adminRotationEditor`; v průvodci používá připravený měsíc ze stavu aplikace.
+- Browser smoke nově reálně kliká na `Vygenerovat rozpis` v průvodci a hlídá, že výsledný návrh i kontrolní tabulka stroje × jména mají nenulové hodnoty.
+- Release metadata sjednocená na `RaK 1.2 (1.110)`, technická verze `1.2.110`, cache `v1.2-1.110`.
+
 ## RaK 1.2 (1.109)
 
 - Administrace / Rozpisy / Generátor: opraveno přidávání další absence ve stejný den. Kliknutí na `+ Přidat jméno` už nemaže vyplněná jména ani kódy v kroku Absence.

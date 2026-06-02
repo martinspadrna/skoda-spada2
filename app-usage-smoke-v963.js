@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.109) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.110) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -216,13 +216,13 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.109)',
-  appLabel: 'RaK 1.2 (1.109)',
-  packageVersion: '1.2.109',
-  cacheVersion: 'v1.2-1.109',
-  realtimeChannel: 'rak-public-live-v1-2-1-109',
-  changelogHeader: '## RaK 1.2 (1.109)',
-  previousBuildFragments: Object.freeze(['1.2 (1.107)', '1.2.107', 'v1.2-1.107', 'rak-public-live-v1-2-1-107'])
+  displayVersion: '1.2 (1.110)',
+  appLabel: 'RaK 1.2 (1.110)',
+  packageVersion: '1.2.110',
+  cacheVersion: 'v1.2-1.110',
+  realtimeChannel: 'rak-public-live-v1-2-1-110',
+  changelogHeader: '## RaK 1.2 (1.110)',
+  previousBuildFragments: Object.freeze(['1.2 (1.109)', '1.2.109', 'v1.2-1.109', 'rak-public-live-v1-2-1-109'])
 });
 
 const releaseMetadataActiveFilesV199 = Object.freeze([
@@ -326,8 +326,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.109)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.109'", 'Release contract v export.js musí držet package verzi 1.2.109');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.110)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.110'", 'Release contract v export.js musí držet package verzi 1.2.110');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -335,7 +335,7 @@ function assertReleaseMetadataContractV199() {
   assertIncludes(bridge, `client.channel('${contract.realtimeChannel}')`, 'Supabase realtime kanál není sjednocený s 1.105');
   assertIncludes(bridge, `realtimeChannel: '${contract.realtimeChannel}'`, 'Supabase diagnostika realtime kanálu není sjednocená s 1.105');
   assert(changelogMd.startsWith(contract.changelogHeader), 'CHANGELOG.md musí začínat aktuálním buildem 1.105');
-  assertIncludes(changelogMd, `technická verze \`${contract.packageVersion}\``, 'CHANGELOG.md musí uvádět technickou verzi 1.2.109');
+  assertIncludes(changelogMd, `technická verze \`${contract.packageVersion}\``, 'CHANGELOG.md musí uvádět technickou verzi 1.2.110');
   assertIncludes(changelogMd, `cache \`${contract.cacheVersion}\``, 'CHANGELOG.md musí uvádět cache verzi 1.105');
   assertIncludes(exportJs, `version: '${contract.displayVersion}'`, 'export.js smoke report musí nést aktuální display verzi');
   assertIncludes(exportJs, `version: String(window.APP_VERSION || '${contract.displayVersion}')`, 'export.js fallbacky musí používat aktuální display verzi');
@@ -912,6 +912,16 @@ function assertRotationGeneratorAbsenceStateContractV1109() {
   assertIncludes(browserSmokeJs, 'absenceStateAfterAdd', 'Browser smoke musí ověřit zachování vyplněné absence po + Přidat jméno');
 }
 
+function assertRotationGeneratorWizardRunContractV1110() {
+  assertIncludes(exportJs, 'RAK_ROTATION_GENERATOR_WIZARD_RUN_CONTRACT_V1110', 'export.js musí dokumentovat opravu generování z průvodce v1.110');
+  assertIncludes(ui, 'RAK_ROTATION_GENERATOR_WIZARD_RUN_CONTRACT_V1110', 'admin-rotation.js musí mít contract pro generování z průvodce v1.110');
+  assertIncludes(ui, 'function adminRotationGeneratorCanReadEditorDraftFromDom()', 'Generátor musí rozlišit editor rozpisu od wizard DOMu');
+  assertIncludes(ui, "body.querySelector('#adminRotationEditor tr[data-rotation-section]')", 'Generátor smí číst DOM jen z reálného editoru rozpisu');
+  assertIncludes(ui, 'const domMonth = adminRotationGeneratorCanReadEditorDraftFromDom() ? readAdminRotationFromDom(monthKey) : null;', 'Generátor nesmí ve wizardu číst prázdný DOM jako rozpis');
+  assertIncludes(browserSmokeJs, 'wizardRunState', 'Browser smoke musí reálně ověřit Vygenerovat rozpis z průvodce');
+  assertIncludes(browserSmokeJs, 'machineCountHitCount', 'Browser smoke musí hlídat nenulový přehled stroje × jména');
+}
+
 assertDashboardCssGuardSeriesCompleteV1100();
 assertReleaseMetadataContractV199();
 assertBrusyChoiceSizeContractV1101();
@@ -923,5 +933,6 @@ assertRotationGeneratorContractV1106();
 assertRotationGeneratorRulesContractV1107();
 assertRotationGeneratorWizardContractV1108();
 assertRotationGeneratorAbsenceStateContractV1109();
+assertRotationGeneratorWizardRunContractV1110();
 
-console.log('app-usage-smoke-v963 OK + rotation-generator-wizard-v1108-guard + rotation-generator-absence-state-v1109-guard + dashboard-css-contract-guard + appearance-reward-contract + rotation-export-summary-simple-guard + rotation-export-glass-guard + appearance-readability-guard + css-layer-order-v194-guard + dashboard-owner-registry-v195-guard + dashboard-overrides-selector-lock-v196-guard + dashboard-scope-v197-guard + dashboard-release-isolation-v198-guard + dashboard-css-guard-series-v1100-complete + release-metadata-v199-guard + brusy-choice-size-v1101-guard + fixed-app-background-v1101-guard + name-choice-fit-v1102-guard + browser-smoke-v1103-guard + dashboard-empty-absence-text-v1104-guard + rotace-empty-absence-text-v1105-guard + appearance-update-persistence-v1105-guard + rotation-generator-v1106-guard + rotation-generator-rules-v1107-guard + no-visual-owner-drift-guard OK');
+console.log('app-usage-smoke-v963 OK + rotation-generator-wizard-v1108-guard + rotation-generator-absence-state-v1109-guard + rotation-generator-wizard-run-v1110-guard + dashboard-css-contract-guard + appearance-reward-contract + rotation-export-summary-simple-guard + rotation-export-glass-guard + appearance-readability-guard + css-layer-order-v194-guard + dashboard-owner-registry-v195-guard + dashboard-overrides-selector-lock-v196-guard + dashboard-scope-v197-guard + dashboard-release-isolation-v198-guard + dashboard-css-guard-series-v1100-complete + release-metadata-v199-guard + brusy-choice-size-v1101-guard + fixed-app-background-v1101-guard + name-choice-fit-v1102-guard + browser-smoke-v1103-guard + dashboard-empty-absence-text-v1104-guard + rotace-empty-absence-text-v1105-guard + appearance-update-persistence-v1105-guard + rotation-generator-v1106-guard + rotation-generator-rules-v1107-guard + no-visual-owner-drift-guard OK');

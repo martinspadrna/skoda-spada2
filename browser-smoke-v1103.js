@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.109) – browser smoke test přes lokální Chromium/CDP.
+// RaK 1.2 (1.110) – browser smoke test přes lokální Chromium/CDP.
 // Browser smoke coverage: Rotace export canvas + fixed background + file URL fallback.
 const http = require('http');
 const fs = require('fs');
@@ -10,7 +10,7 @@ const { spawn } = require('child_process');
 const { pathToFileURL } = require('url');
 
 const ROOT_DIR = __dirname;
-const EXPECTED_APP_VERSION = '1.2 (1.109)';
+const EXPECTED_APP_VERSION = '1.2 (1.110)';
 const RAK_BROWSER_SMOKE_ENGINE = 'local-chromium-cdp';
 const RAK_BROWSER_SMOKE_LOAD_MODE = 'about-blank-inline-html';
 const CHROMIUM_BIN = process.env.CHROMIUM_BIN || process.env.CHROME_BIN || '/usr/bin/chromium';
@@ -528,6 +528,49 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml) {
   assert(absenceStateAfterAdd.rowCount >= 2, `${viewport.name}: + Přidat jméno nepřidalo druhý řádek ${JSON.stringify(absenceStateAfterAdd)}`);
   assert(absenceStateAfterAdd.rows[0] && absenceStateAfterAdd.rows[0].person === 'Kříž' && absenceStateAfterAdd.rows[0].code === 'D', `${viewport.name}: + Přidat jméno smazalo vyplněnou absenci ${JSON.stringify(absenceStateAfterAdd)}`);
 
+  const wizardRunState = await evalInPage(client, `(() => {
+    const previousBody = document.getElementById('appMenuBody');
+    if (previousBody) previousBody.remove();
+    const body = document.createElement('div');
+    body.id = 'appMenuBody';
+    document.body.appendChild(body);
+    if (typeof adminRotationGeneratorSetWizardState !== 'function' || typeof adminRotationGeneratorRenderWizard !== 'function' || typeof adminHandleRotationGeneratorWizardAction !== 'function') {
+      return { ok: false, reason: 'missing wizard functions' };
+    }
+    const monthKey = '6/26';
+    const days = typeof adminRotationGetMonthWorkDates === 'function'
+      ? adminRotationGetMonthWorkDates(monthKey).slice(0, 4)
+      : ((app.rotation?.months?.[monthKey]?.hard?.rows || []).slice(0, 4).map(row => row.date).filter(Boolean));
+    window.confirm = () => true;
+    adminRotationGeneratorSetWizardState({
+      step: 'absences',
+      monthKey,
+      days,
+      absencesByDay: days.map((date) => ({ date, rows: [] }))
+    });
+    adminRotationGeneratorRenderWizard('absences');
+    const runBtn = body.querySelector('[data-admin-action="generator-run"]');
+    if (!runBtn) return { ok: false, reason: 'missing run button', days };
+    adminHandleRotationGeneratorWizardAction('generator-run', runBtn);
+    const state = window.__rakRotationGeneratorWizard || {};
+    const month = app.rotation?.months?.[monthKey] || null;
+    const filled = month ? [...(month.hard?.rows || []), ...(month.soft?.rows || [])].flatMap(row => row.cells || []).filter(Boolean).length : 0;
+    const machineCountHitCount = document.querySelectorAll('.adminRotationGeneratorMachineSummaryTable .adminRotationMachineCountHit').length;
+    const summaryText = document.querySelector('.adminRotationGeneratorMachineSummaryTable')?.textContent || '';
+    return {
+      ok: true,
+      resultFilledCells: state.result ? state.result.filledCells : 0,
+      resultDays: state.result ? state.result.days : 0,
+      filled,
+      machineCountHitCount,
+      summaryTextLength: summaryText.length,
+      resultText: state.resultText || ''
+    };
+  })()`);
+  assert(wizardRunState.ok, `${viewport.name}: Vygenerovat rozpis z průvodce se nespustilo ${JSON.stringify(wizardRunState)}`);
+  assert(wizardRunState.resultFilledCells > 0 && wizardRunState.filled > 0, `${viewport.name}: Vygenerovat rozpis z průvodce skončilo prázdným rozpisem ${JSON.stringify(wizardRunState)}`);
+  assert(wizardRunState.machineCountHitCount > 0 && wizardRunState.summaryTextLength > 20, `${viewport.name}: přehled stroje × jména po průvodci je nulový/prázdný ${JSON.stringify(wizardRunState)}`);
+
   await clickAndWait(client, 'kalkulacky', '#kalkulacky.page.active');
   await clickAndWait(client, 'page-brusy', '#brusy.page.active');
   const brusState = await evalInPage(client, `(() => {
@@ -590,6 +633,7 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml) {
     homeCards: bootState.homeCards,
     rotationExport: exportState,
     rotationGenerator: generatorState,
+    rotationGeneratorWizard: wizardRunState,
     brusChoiceHeight: { min: brusState.minHeight, max: brusState.maxHeight },
     gamesTiles: gamesState.tiles,
     consoleErrorCount: consoleErrors.length,
