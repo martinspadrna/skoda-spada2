@@ -1,4 +1,4 @@
-// RaK 1.2 (1.105) – export manifest a release metadata.
+// RaK 1.2 (1.107) – export manifest a release metadata.
 const EXPORT_SOURCE_IDS = {
   "module-readiness.js": "src-module-readiness-js",
   "rak-namespace.js": "src-rak-namespace-js",
@@ -112,12 +112,12 @@ const EXPORT_SOURCE_IDS = {
 const SOURCE_CACHE = window.__ROTACE_SOURCE_CACHE__ || (window.__ROTACE_SOURCE_CACHE__ = {});
 const BINARY_SOURCE_CACHE = window.__ROTACE_BINARY_SOURCE_CACHE__ || (window.__ROTACE_BINARY_SOURCE_CACHE__ = {});
 const RAK_RELEASE_METADATA_CONTRACT_V199 = Object.freeze({
-  displayVersion: '1.2 (1.105)',
-  appLabel: 'RaK 1.2 (1.105)',
-  packageVersion: '1.2.105',
-  cacheVersion: 'v1.2-1.105',
-  realtimeChannel: 'rak-public-live-v1-2-1-105',
-  changelogHeader: '## RaK 1.2 (1.105)',
+  displayVersion: '1.2 (1.107)',
+  appLabel: 'RaK 1.2 (1.107)',
+  packageVersion: '1.2.107',
+  cacheVersion: 'v1.2-1.107',
+  realtimeChannel: 'rak-public-live-v1-2-1-107',
+  changelogHeader: '## RaK 1.2 (1.107)',
   serviceWorkerVersionGuard: 'CACHE_VERSION + SW_APP_VERSION'
 });
 const RAK_DASHBOARD_CSS_GUARD_SERIES_CONTRACT_V1100 = Object.freeze({
@@ -174,13 +174,31 @@ const RAK_BROWSER_SMOKE_CONTRACT_V1103 = Object.freeze({
   engine: 'local-chromium-cdp',
   loadMode: 'about-blank-inline-html',
   viewports: Object.freeze(['iPhone 13/14 Pro Max', 'Samsung A15 / Android běžný', 'úzký mobil 360×800']),
-  checks: Object.freeze(['app boot', 'bottom navigation', 'Dashboard cards', 'Rotace export canvas', 'Brusy choice height', 'Frézky presets', 'Hry', 'Menu/Více', 'fixed background'])
+  checks: Object.freeze(['app boot', 'bottom navigation', 'Dashboard cards', 'Rotace export canvas', 'Administrace Rozpisy generator', 'Brusy choice height', 'Frézky presets', 'Hry', 'Menu/Více', 'fixed background'])
+});
+const RAK_ROTATION_GENERATOR_CONTRACT_V1106 = Object.freeze({
+  scope: 'administrace-dat-rozpisy-generator',
+  action: 'data-admin-action="generate-rotation"',
+  button: 'Vygenerovat návrh',
+  source: 'historical-rotation-analysis',
+  saveRule: 'vygeneruje lokální návrh, online jde až po Uložit rozpis',
+  safety: Object.freeze(['confirm-before-overwrite', 'one-name-once-per-day', 'respect-absence-notes', 'historical-machine-fit', 'month-fairness'])
+});
+const RAK_ROTATION_GENERATOR_RULES_CONTRACT_V1107 = Object.freeze({
+  scope: 'administrace-dat-rozpisy-generator-rules',
+  flow: 'absence-a-kontrola-dní-před-generováním',
+  softPreferred: Object.freeze(['Střížek', 'Synek', 'Třasák', 'Špadrna', 'Novotný']),
+  hardPreferred: Object.freeze(['Blažek', 'Kmínek', 'Kříž', 'Pech', 'Starý']),
+  softHardCycle: Object.freeze(['TNKS01', 'TPKW01', 'TPKW02']),
+  hardCycle: Object.freeze(['TNKS01', 'TBKR07', 'TPKW01', 'TPKW02', 'TBKR01']),
+  protectedEmptyRules: Object.freeze(['MFKF06 prázdná vždy, když je na frézkách jen jeden člověk', 'při dvou absencích MSKC01 prázdná a MFKF06 prázdná']),
+  saveRule: 'generátor vytvoří jen lokální návrh; online uložení až ručně přes Uložit rozpis'
 });
 const EXPORT_SMOKE_REPORT = window.__RAK_EXPORT_SMOKE_REPORT__ || (window.__RAK_EXPORT_SMOKE_REPORT__ = {
   ok: null,
   status: 'not-run',
   mode: 'export-smoke-report-v939',
-  version: '1.2 (1.105)',
+  version: '1.2 (1.107)',
   checkedAt: null,
   lastStage: 'čeká na export',
   runCount: 0,
@@ -313,7 +331,7 @@ const EXPORT_TEXT_FILES = [
 
 function getRakExportManifest() {
   return {
-    version: String(window.APP_VERSION || '1.2 (1.105)'),
+    version: String(window.APP_VERSION || '1.2 (1.107)'),
     mode: 'export-manifest-preflight-v939',
     indexFile: 'index.html',
     jsFiles: Array.from(new Set(EXPORT_JS_FILES)),
@@ -423,7 +441,7 @@ function updateRakExportSmokeReport(partial) {
   const data = partial && typeof partial === 'object' ? partial : {};
   Object.assign(EXPORT_SMOKE_REPORT, data, {
     mode: 'export-smoke-report-v939',
-    version: String(window.APP_VERSION || '1.2 (1.105)'),
+    version: String(window.APP_VERSION || '1.2 (1.107)'),
     checkedAt: new Date().toISOString()
   });
   return getRakExportSmokeReport();

@@ -1,4 +1,4 @@
-// RaK 1.2 (1.105) – Více/menu shell, O aplikaci, Nastavení, Report chyby a admin menu.
+// RaK 1.2 (1.107) – Více/menu shell, O aplikaci, Nastavení, Report chyby a admin menu.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app-menu.js', 'loaded', { source: 'dynamic-loader' }); } catch (err) {}
 
 
@@ -126,13 +126,14 @@ function renderAdminMenuBody(body, section) {
     '<div class="appMenuCard appMenuAdminCard">',
     '  <div class="appMenuCardTitle">Rozpisy</div>',
     '  <div class="appMenuText">',
-    '    <div>Vyber měsíc a uprav si rozpis. Změny se ukládají online a hned se promítnou zpět do aplikace.</div>',
-    '    <div class="smallText" id="adminOnlineSaveStatus">Stav uložení se zobrazí po kliknutí na Uložit rozpis.</div>',
+    '    <div>Vyber měsíc, nejdřív doplň absence / svátek / odstávku a až potom vygeneruj návrh. Změny jdou online až po kliknutí na Uložit rozpis.</div>',
+    '    <div class="smallText" id="adminOnlineSaveStatus">Před generováním zkontroluj absence a dny měsíce. Stav uložení se zobrazí po kliknutí na Uložit rozpis.</div>',
     '  </div>',
     renderAdminMonthPickerHtml(monthKey),
     '  <select id="adminMonthSelect" class="appMenuSelect appMenuHiddenSelect">' + months.map(m => '<option value="' + escapeHtml(m) + '"' + (m === monthKey ? ' selected' : '') + '>' + escapeHtml(m) + '</option>').join('') + '</select>',
     '  <div class="appMenuActionRow">',
     '    <button type="button" class="appMenuAction" data-admin-action="load-month">Načíst měsíc</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="generate-rotation">Vygenerovat návrh</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="load-online">Načíst online</button>',
     '    <button type="button" class="appMenuAction isActive" data-admin-action="save-rotation">Uložit rozpis</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
@@ -370,7 +371,7 @@ async function handleBugReportAction(action) {
 
 
 
-// RaK 1.2 (1.105) – Plovoucí odebrání a údržba editoru rozpisů jsou oddělené v admin-rotation.js.
+// RaK 1.2 (1.107) – Plovoucí odebrání a údržba editoru rozpisů jsou oddělené v admin-rotation.js.
 
 function bindAppMenuHandlers(body) {
   if (!body || body.dataset.menuHandlersBound === '1') return;
@@ -1028,6 +1029,25 @@ function bindAppMenuHandlers(body) {
       if (adminAction === 'load-online') {
         await loadAdminRotationFromSupabase();
         renderAdminMenuBody(body, currentView);
+        return;
+      }
+      if (adminAction === 'generate-rotation') {
+        const statusEl = document.getElementById('adminOnlineSaveStatus');
+        if (!monthKey) {
+          if (statusEl) statusEl.textContent = 'Nejdřív vyber měsíc.';
+          return;
+        }
+        const hasFilledCells = typeof adminRotationMonthHasFilledCells === 'function' ? adminRotationMonthHasFilledCells(monthKey) : false;
+        if (hasFilledCells && !confirm('Tenhle měsíc už má v rozpisu jména. Přepsat ho novým návrhem podle pravidel Měkota/Tvrdota?')) return;
+        if (statusEl) statusEl.textContent = 'Generuji návrh podle absencí a pravidel Měkota/Tvrdota…';
+        const result = typeof adminGenerateRotationMonthDraft === 'function' ? adminGenerateRotationMonthDraft(monthKey) : null;
+        renderAdminMenuBody(body, currentView);
+        const nextStatus = document.getElementById('adminOnlineSaveStatus');
+        if (nextStatus) {
+          nextStatus.textContent = result
+            ? ('Návrh vygenerovaný lokálně ✓ · dnů: ' + String(result.days || 0) + ' · políček: ' + String(result.filledCells || 0) + ' · absence: ' + String(result.blockedByAbsence || 0) + ' · chráněná prázdná místa: ' + String(result.protectedEmptyCells || 0) + '. Zkontroluj dny a pak klikni na Uložit rozpis.')
+            : 'Návrh se nepodařilo vygenerovat.';
+        }
         return;
       }
       if (adminAction === 'save-rotation') {

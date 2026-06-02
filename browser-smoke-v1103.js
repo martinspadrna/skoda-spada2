@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.105) – browser smoke test přes lokální Chromium/CDP.
+// RaK 1.2 (1.107) – browser smoke test přes lokální Chromium/CDP.
 // Browser smoke coverage: Rotace export canvas + fixed background + file URL fallback.
 const http = require('http');
 const fs = require('fs');
@@ -10,7 +10,7 @@ const { spawn } = require('child_process');
 const { pathToFileURL } = require('url');
 
 const ROOT_DIR = __dirname;
-const EXPECTED_APP_VERSION = '1.2 (1.105)';
+const EXPECTED_APP_VERSION = '1.2 (1.107)';
 const RAK_BROWSER_SMOKE_ENGINE = 'local-chromium-cdp';
 const RAK_BROWSER_SMOKE_LOAD_MODE = 'about-blank-inline-html';
 const CHROMIUM_BIN = process.env.CHROMIUM_BIN || process.env.CHROME_BIN || '/usr/bin/chromium';
@@ -95,6 +95,7 @@ function getInlineScriptSource(file) {
       source = source.replace(new RegExp('\\blet\\s+' + name + '\\b'), 'var ' + name);
     });
   }
+  source = source.replace(/\bconst\s+(RAK_[A-Z0-9_]+_CONTRACT_V\d+)\b/g, 'var $1');
   return source;
 }
 
@@ -334,7 +335,12 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml) {
   await client.open();
   client.on('Runtime.exceptionThrown', (params) => {
     const details = params.exceptionDetails || {};
-    runtimeExceptions.push(details.text || (details.exception && details.exception.description) || JSON.stringify(details));
+    runtimeExceptions.push([
+      details.text,
+      details.exception && details.exception.description,
+      details.lineNumber != null ? `line ${details.lineNumber}` : '',
+      details.columnNumber != null ? `col ${details.columnNumber}` : ''
+    ].filter(Boolean).join(' | ') || JSON.stringify(details));
   });
   client.on('Runtime.consoleAPICalled', (params) => {
     if (params.type === 'error') {
@@ -426,6 +432,67 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml) {
   })()`);
   assert(exportState.selected && exportState.width > 800 && exportState.height > 800, `${viewport.name}: export Rotace nevytvořil platný canvas ${JSON.stringify(exportState)}`);
 
+  const generatorState = await evalInPage(client, `(() => {
+    const monthKey = '6/26';
+    const beforeMonth = window.app && app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
+    const beforeFilled = beforeMonth ? [...(beforeMonth.hard?.rows || []), ...(beforeMonth.soft?.rows || [])].flatMap(row => row.cells || []).filter(Boolean).length : -1;
+    const result = typeof adminGenerateRotationMonthDraft === 'function' ? adminGenerateRotationMonthDraft(monthKey) : null;
+    const month = window.app && app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
+    const rows = month ? (month.hard.rows || []).map((hardRow, idx) => ({ hard: hardRow, soft: (month.soft.rows || [])[idx] || { cells: [] } })) : [];
+    let duplicateDays = 0;
+    let emptyCells = 0;
+    rows.forEach(pair => {
+      const names = [...(pair.hard.cells || []), ...(pair.soft.cells || [])].filter(Boolean);
+      emptyCells += [...(pair.hard.cells || []), ...(pair.soft.cells || [])].filter(v => !String(v || '').trim()).length;
+      if (new Set(names).size !== names.length) duplicateDays += 1;
+    });
+    return {
+      canGenerate: typeof adminGenerateRotationMonthDraft === 'function',
+      beforeFilled,
+      days: result ? result.days : 0,
+      filledCells: result ? result.filledCells : 0,
+      historyTemplates: result ? result.historyTemplates : 0,
+      previousYearTemplates: result ? result.previousYearTemplates : 0,
+      duplicateDays,
+      emptyCells
+    };
+  })()`);
+  assert(generatorState.canGenerate, `${viewport.name}: chybí adminGenerateRotationMonthDraft`);
+  assert(generatorState.days >= 12 && generatorState.filledCells >= 120, `${viewport.name}: generátor rozpisu nevyplnil dost dat ${JSON.stringify(generatorState)}`);
+  assert(generatorState.historyTemplates >= 120, `${viewport.name}: generátor rozpisu nevychází z dost historických řádků ${JSON.stringify(generatorState)}`);
+  assert(generatorState.duplicateDays === 0, `${viewport.name}: generátor rozpisu vytvořil duplicitní jméno v jednom dni ${JSON.stringify(generatorState)}`);
+
+  const generatorAbsenceRuleState = await evalInPage(client, `(() => {
+    const monthKey = '7/26';
+    const month = window.app && app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
+    if (!month || typeof adminGenerateRotationMonthDraft !== 'function') return { ok: false, reason: 'missing month/generator' };
+    const firstDate = month.hard?.rows?.[0]?.date || month.soft?.rows?.[0]?.date || '';
+    month.notes = [{ date: firstDate, person: 'Blažek', code: 'D' }, { date: firstDate, person: 'Kříž', code: 'D' }];
+    (month.hard?.rows || []).forEach(row => { row.cells = Array(5).fill(''); });
+    (month.soft?.rows || []).forEach(row => { row.cells = Array(5).fill(''); });
+    const result = adminGenerateRotationMonthDraft(monthKey);
+    const row = app.rotation.months[monthKey].soft.rows[0];
+    const hardRow = app.rotation.months[monthKey].hard.rows[0];
+    const soft = row ? row.cells || [] : [];
+    const names = [...(hardRow?.cells || []), ...soft].filter(Boolean);
+    return {
+      ok: true,
+      ruleVersion: result && result.ruleVersion,
+      protectedEmptyCells: result && result.protectedEmptyCells,
+      mskc01: soft[0] || '',
+      mfkf06: soft[3] || '',
+      mfkf10: soft[4] || '',
+      filled: names.length,
+      duplicate: new Set(names).size !== names.length
+    };
+  })()`);
+  assert(generatorAbsenceRuleState.ok, `${viewport.name}: generátor pravidel absencí se nespustil ${JSON.stringify(generatorAbsenceRuleState)}`);
+  assert(generatorAbsenceRuleState.ruleVersion === '1.107', `${viewport.name}: generátor nemá pravidla 1.107 ${JSON.stringify(generatorAbsenceRuleState)}`);
+  assert(generatorAbsenceRuleState.mfkf06 === '', `${viewport.name}: při jednom člověku na frézkách musí být MFKF06 prázdná ${JSON.stringify(generatorAbsenceRuleState)}`);
+  assert(generatorAbsenceRuleState.mskc01 === '', `${viewport.name}: při dvou absencích musí být MSKC01 prázdná ${JSON.stringify(generatorAbsenceRuleState)}`);
+  assert(generatorAbsenceRuleState.mfkf10, `${viewport.name}: při dvou absencích musí být člověk na MFKF10 ${JSON.stringify(generatorAbsenceRuleState)}`);
+  assert(!generatorAbsenceRuleState.duplicate, `${viewport.name}: generátor absencí vytvořil duplicitu ${JSON.stringify(generatorAbsenceRuleState)}`);
+
   await clickAndWait(client, 'kalkulacky', '#kalkulacky.page.active');
   await clickAndWait(client, 'page-brusy', '#brusy.page.active');
   const brusState = await evalInPage(client, `(() => {
@@ -487,6 +554,7 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml) {
     appVersion: bootState.appVersion,
     homeCards: bootState.homeCards,
     rotationExport: exportState,
+    rotationGenerator: generatorState,
     brusChoiceHeight: { min: brusState.minHeight, max: brusState.maxHeight },
     gamesTiles: gamesState.tiles,
     consoleErrorCount: consoleErrors.length,

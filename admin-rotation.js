@@ -1,4 +1,4 @@
-// RaK 1.2 (1.105) – Administrace Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
+// RaK 1.2 (1.107) – Administrace Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('admin-rotation.js', 'loading', { source: 'dynamic-loader' }); } catch (err) {}
 
 
@@ -925,6 +925,481 @@ async function saveAdminRotationFromDom(monthKey) {
 
 
 
+const RAK_ROTATION_GENERATOR_CONTRACT_V1106 = Object.freeze({
+  version: '1.106',
+  action: 'data-admin-action="generate-rotation"',
+  scope: 'Administrace dat / Rozpisy',
+  source: 'historical-rotation-analysis',
+  rule: 'Generátor tvoří první návrh rozpisu pro zvolený měsíc podle předchozích vyplněných rotací. Neodesílá ho online, dokud uživatel neklikne na Uložit rozpis.',
+  safety: 'Jedno jméno smí být v jednom dni použité nejvýš jednou; absence v daný den se vynechá; existující obsazený měsíc se přepisuje až po potvrzení.'
+});
+
+const RAK_ROTATION_GENERATOR_RULES_V1107 = Object.freeze({
+  version: '1.107',
+  scope: 'Administrace dat / Rozpisy / Vygenerovat návrh',
+  flow: 'Nejdřív doplnit absence a zkontrolovat dny v měsíci, pak teprve generovat návrh.',
+  softPreferred: Object.freeze(['Střížek', 'Synek', 'Třasák', 'Špadrna', 'Novotný']),
+  hardPreferred: Object.freeze(['Blažek', 'Kmínek', 'Kříž', 'Pech', 'Starý']),
+  softHardCycle: Object.freeze(['TNKS01', 'TPKW01', 'TPKW02']),
+  hardCycle: Object.freeze(['TNKS01', 'TBKR07', 'TPKW01', 'TPKW02', 'TBKR01']),
+  softMachines: Object.freeze(['MSKC01', 'MSKC03', 'MSKC04', 'MFKF06', 'MFKF10']),
+  absenceRules: Object.freeze([
+    'Když je na frézkách jen jeden člověk, píše se MFKF06 jako neobsazená, i když reálně hlídá obě frézky.',
+    'Při jedné absenci zůstává MFKF06 neobsazená a člověk na MFKF10 bere i MFKF06.',
+    'Při dvou absencích je na frézkách jeden člověk, MFKF06 je neobsazená, na soustruhách jsou dva lidé a MSKC01 je neobsazená.'
+  ]),
+  fairness: Object.freeze(['měsíce na sebe navazují', 'tvrdota drží pořadí TNKS01/TBKR07/TPKW01/TPKW02/TBKR01', 'měkota chodí po TNKS01/TPKW01/TPKW02', 'Špadrna a Novotný spíš měkota, ale pomáhají vyrovnat tvrdotu', 'lidé z tvrdoty na měkotě mají mít rozumně střídané MSKC/MFKF'])
+});
+
+function adminRotationMonthSortValue(monthKey) {
+  const parsed = typeof parseMonthKey === 'function' ? parseMonthKey(monthKey) : null;
+  if (parsed && Number.isFinite(parsed.year) && Number.isFinite(parsed.month)) return parsed.year * 100 + parsed.month;
+  const match = String(monthKey || '').match(/^(\d{1,2})\/(\d{2,4})$/);
+  if (!match) return 0;
+  const month = Number(match[1]);
+  const rawYear = Number(match[2]);
+  const year = rawYear < 100 ? 2000 + rawYear : rawYear;
+  return year * 100 + month;
+}
+
+function adminRotationCanonicalName(name, knownNames) {
+  const raw = String(name || '').trim();
+  if (!raw) return '';
+  const lowered = raw.toLocaleLowerCase('cs-CZ');
+  const known = Array.isArray(knownNames) ? knownNames : adminGetKnownNames();
+  const match = known.find((item) => String(item || '').trim().toLocaleLowerCase('cs-CZ') === lowered);
+  return match || raw;
+}
+
+function adminRotationIsRealName(name, knownNames) {
+  const value = adminRotationCanonicalName(name, knownNames);
+  if (!value) return false;
+  const low = value.toLocaleLowerCase('cs-CZ');
+  if (['dát pryč', 'odebrat', 'remove', 'pryc', 'pryč', 'volno'].includes(low)) return false;
+  const known = Array.isArray(knownNames) ? knownNames : adminGetKnownNames();
+  return known.includes(value);
+}
+
+function adminRotationRowHasNames(row, knownNames) {
+  const cells = Array.isArray(row && row.cells) ? row.cells : [];
+  return cells.some((cell) => adminRotationIsRealName(cell, knownNames));
+}
+
+function adminRotationMonthHasFilledCells(monthKey) {
+  const knownNames = adminGetKnownNames();
+  const month = app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
+  if (!month) return false;
+  const hardRows = Array.isArray(month.hard && month.hard.rows) ? month.hard.rows : [];
+  const softRows = Array.isArray(month.soft && month.soft.rows) ? month.soft.rows : [];
+  return hardRows.concat(softRows).some((row) => adminRotationRowHasNames(row, knownNames));
+}
+
+function adminRotationHashString(value) {
+  const text = String(value || '');
+  let hash = 2166136261;
+  for (let i = 0; i < text.length; i += 1) {
+    hash ^= text.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+function adminRotationShiftFromRow(row) {
+  const raw = String(row && row.date ? row.date : '').trim();
+  const parsed = typeof parseDateToken === 'function' ? parseDateToken(raw) : null;
+  const shift = String((parsed && parsed.shift) || '').trim();
+  return shift || (raw.match(/\b(R8|N8|R|N)\b/i) || [])[1] || '';
+}
+
+function adminRotationDateBaseKey(rawDate) {
+  const parsed = typeof parseDateToken === 'function' ? parseDateToken(rawDate) : null;
+  if (parsed && Number.isFinite(Number(parsed.day)) && Number.isFinite(Number(parsed.month))) {
+    return String(Number(parsed.day)) + '.' + String(Number(parsed.month)) + '.';
+  }
+  return String(rawDate || '').replace(/\b(?:R8|N8|R|N)\b/gi, '').trim();
+}
+
+function adminRotationNamesForAbsenceDate(notesRows, dateLabel, knownNames) {
+  const wanted = adminRotationDateBaseKey(dateLabel);
+  const blocked = new Set();
+  (Array.isArray(notesRows) ? notesRows : []).forEach((note) => {
+    if (adminRotationDateBaseKey(note && note.date) !== wanted) return;
+    const people = adminSplitPeopleList(note && note.person ? note.person : '');
+    people.forEach((person) => {
+      const name = adminRotationCanonicalName(person, knownNames);
+      if (name) blocked.add(name);
+    });
+  });
+  return blocked;
+}
+
+function adminBuildRotationGenerationModel(targetMonthKey) {
+  const knownNames = adminGetKnownNames();
+  const targetSort = adminRotationMonthSortValue(targetMonthKey);
+  const targetParsed = typeof parseMonthKey === 'function' ? parseMonthKey(targetMonthKey) : null;
+  const previousYearKey = targetParsed && Number.isFinite(targetParsed.month) && Number.isFinite(targetParsed.year)
+    ? (String(targetParsed.month) + '/' + String((targetParsed.year - 1) % 100).padStart(2, '0'))
+    : '';
+  const machineStats = { hard: [], soft: [] };
+  const globalStats = Object.create(null);
+  const dayTemplates = [];
+  const previousYearTemplates = [];
+  knownNames.forEach((name) => { globalStats[name] = 0; });
+
+  const months = getAdminRotationMonthKeys()
+    .filter((monthKey) => adminRotationMonthSortValue(monthKey) < targetSort)
+    .sort((a, b) => adminRotationMonthSortValue(a) - adminRotationMonthSortValue(b));
+
+  const addMachineStat = (sectionKey, machineIdx, name, weight) => {
+    if (!machineStats[sectionKey][machineIdx]) machineStats[sectionKey][machineIdx] = Object.create(null);
+    machineStats[sectionKey][machineIdx][name] = (machineStats[sectionKey][machineIdx][name] || 0) + weight;
+    globalStats[name] = (globalStats[name] || 0) + weight;
+  };
+
+  months.forEach((monthKey, monthIdx) => {
+    const month = app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
+    if (!month) return;
+    const hardRows = Array.isArray(month.hard && month.hard.rows) ? month.hard.rows : [];
+    const softRows = Array.isArray(month.soft && month.soft.rows) ? month.soft.rows : [];
+    const maxRows = Math.max(hardRows.length, softRows.length);
+    const recencyWeight = 1 + monthIdx * 0.035;
+    for (let rowIdx = 0; rowIdx < maxRows; rowIdx += 1) {
+      const hardRow = hardRows[rowIdx] || null;
+      const softRow = softRows[rowIdx] || null;
+      const hardCells = Array.from({ length: HARD_MACHINE_HEADERS.length }, (_, idx) => adminRotationCanonicalName(hardRow && hardRow.cells ? hardRow.cells[idx] : '', knownNames));
+      const softCells = Array.from({ length: SOFT_MACHINE_HEADERS.length }, (_, idx) => adminRotationCanonicalName(softRow && softRow.cells ? softRow.cells[idx] : '', knownNames));
+      const hasAny = hardCells.concat(softCells).some((name) => adminRotationIsRealName(name, knownNames));
+      if (!hasAny) continue;
+      const template = {
+        monthKey,
+        rowIdx,
+        shift: adminRotationShiftFromRow(hardRow || softRow || {}),
+        hardCells,
+        softCells
+      };
+      dayTemplates.push(template);
+      if (monthKey === previousYearKey) previousYearTemplates.push(template);
+      hardCells.forEach((name, idx) => { if (adminRotationIsRealName(name, knownNames)) addMachineStat('hard', idx, name, recencyWeight); });
+      softCells.forEach((name, idx) => { if (adminRotationIsRealName(name, knownNames)) addMachineStat('soft', idx, name, recencyWeight); });
+    }
+  });
+
+  return { knownNames, machineStats, globalStats, dayTemplates, previousYearTemplates, previousYearKey };
+}
+
+function adminPickRotationGeneratorName(model, sectionKey, machineIdx, rowIdx, usedNames, monthCounts, previousRowNames, suggestedName, shift) {
+  const knownNames = model && Array.isArray(model.knownNames) ? model.knownNames : adminGetKnownNames();
+  const available = knownNames.filter((name) => !usedNames.has(name));
+  if (!available.length) return '';
+  const stats = model && model.machineStats && model.machineStats[sectionKey] && model.machineStats[sectionKey][machineIdx]
+    ? model.machineStats[sectionKey][machineIdx]
+    : Object.create(null);
+  const globalStats = model && model.globalStats ? model.globalStats : Object.create(null);
+  let best = '';
+  let bestScore = -Infinity;
+  available.forEach((name) => {
+    const skill = Number(stats[name] || 0);
+    const global = Number(globalStats[name] || 0);
+    const monthly = Number(monthCounts[name] || 0);
+    const suggested = suggestedName && name === suggestedName ? 760 : 0;
+    const previousPenalty = previousRowNames && previousRowNames.has(name) ? 46 : 0;
+    const shiftHash = adminRotationHashString([sectionKey, machineIdx, rowIdx, shift || '', name].join('|')) % 23;
+    const score = suggested + Math.log1p(skill) * 130 + skill * 4.5 + Math.log1p(global) * 12 - monthly * 62 - previousPenalty + shiftHash / 10;
+    if (score > bestScore) {
+      bestScore = score;
+      best = name;
+    }
+  });
+  return best;
+}
+
+function adminRotationGeneratorMachineIndex(headers, machineName) {
+  const wanted = String(machineName || '').trim().toUpperCase();
+  return (Array.isArray(headers) ? headers : []).findIndex((item) => String(item || '').trim().toUpperCase() === wanted);
+}
+
+function adminRotationGeneratorDateNotes(month, dateLabel) {
+  const wanted = adminRotationDateBaseKey(dateLabel);
+  return (Array.isArray(month && month.notes) ? month.notes : []).filter((note) => adminRotationDateBaseKey(note && note.date) === wanted);
+}
+
+function adminRotationGeneratorIsDayBlocked(notes) {
+  return (Array.isArray(notes) ? notes : []).some((note) => {
+    const text = [note && note.person, note && note.code, note && note.text].map((part) => String(part || '').toLocaleLowerCase('cs-CZ')).join(' ');
+    return /\b(?:svátek|svatek|odstávka|odstavka|odstaveno|shutdown|bez\s+směny|bez\s+smeny|nejet|nejede)\b/i.test(text);
+  });
+}
+
+function adminRotationGeneratorCreateCounters(model) {
+  const counters = { total: Object.create(null), hard: Object.create(null), soft: Object.create(null), hardMachine: Object.create(null), softMachine: Object.create(null), softKind: Object.create(null) };
+  const known = model && Array.isArray(model.knownNames) ? model.knownNames : adminGetKnownNames();
+  known.forEach((name) => {
+    counters.total[name] = 0;
+    counters.hard[name] = 0;
+    counters.soft[name] = 0;
+    counters.softKind[name] = { lathe: 0, mill: 0 };
+    counters.hardMachine[name] = Object.create(null);
+    counters.softMachine[name] = Object.create(null);
+  });
+  return counters;
+}
+
+function adminRotationGeneratorHistoricalMachineScore(model, sectionKey, machineIdx, name) {
+  const stats = model && model.machineStats && model.machineStats[sectionKey] && model.machineStats[sectionKey][machineIdx]
+    ? model.machineStats[sectionKey][machineIdx]
+    : null;
+  return Number(stats && stats[name] || 0);
+}
+
+function adminRotationGeneratorPickName(candidates, usedNames, counters, options) {
+  const opts = options || {};
+  const list = (Array.isArray(candidates) ? candidates : []).filter((name) => name && !usedNames.has(name));
+  if (!list.length) return '';
+  let best = '';
+  let bestScore = Infinity;
+  list.forEach((name) => {
+    const total = Number(counters.total[name] || 0);
+    const section = Number((opts.sectionKey === 'soft' ? counters.soft[name] : counters.hard[name]) || 0);
+    const machineMap = opts.sectionKey === 'soft' ? counters.softMachine[name] : counters.hardMachine[name];
+    const machineKey = String(opts.machineName || '');
+    const machine = Number(machineMap && machineMap[machineKey] || 0);
+    const historical = Number(opts.historical || 0);
+    const preferred = Array.isArray(opts.preferred) && opts.preferred.includes(name) ? -120 : 0;
+    const required = Array.isArray(opts.required) && opts.required.includes(name) ? -300 : 0;
+    const avoid = Array.isArray(opts.avoid) && opts.avoid.includes(name) ? 220 : 0;
+    const hardBalance = opts.machineName === 'TNKS01' || opts.machineName === 'TPKW02'
+      ? Math.abs(Number((counters.hardMachine[name] && counters.hardMachine[name].TNKS01) || 0) - Number((counters.hardMachine[name] && counters.hardMachine[name].TPKW02) || 0)) * 34
+      : 0;
+    const kindBalance = opts.softKind === 'mill'
+      ? Math.max(0, Number((counters.softKind[name] && counters.softKind[name].mill) || 0) - Number((counters.softKind[name] && counters.softKind[name].lathe) || 0)) * 42
+      : (opts.softKind === 'lathe'
+        ? Math.max(0, Number((counters.softKind[name] && counters.softKind[name].lathe) || 0) - Number((counters.softKind[name] && counters.softKind[name].mill) || 0)) * 24
+        : 0);
+    const jitter = (adminRotationHashString([opts.sectionKey || '', opts.machineName || '', opts.rowIdx || 0, name].join('|')) % 19) / 100;
+    const score = total * 44 + section * 18 + machine * 95 - Math.log1p(Math.max(0, historical)) * 9 + preferred + required + avoid + hardBalance + kindBalance + jitter;
+    if (score < bestScore) {
+      bestScore = score;
+      best = name;
+    }
+  });
+  return best;
+}
+
+function adminRotationGeneratorMarkAssignment(counters, sectionKey, machineName, name, softKind) {
+  if (!name) return;
+  counters.total[name] = Number(counters.total[name] || 0) + 1;
+  if (sectionKey === 'soft') counters.soft[name] = Number(counters.soft[name] || 0) + 1;
+  else counters.hard[name] = Number(counters.hard[name] || 0) + 1;
+  const machineMap = sectionKey === 'soft' ? counters.softMachine : counters.hardMachine;
+  if (!machineMap[name]) machineMap[name] = Object.create(null);
+  machineMap[name][machineName] = Number(machineMap[name][machineName] || 0) + 1;
+  if (sectionKey === 'soft' && softKind) {
+    if (!counters.softKind[name]) counters.softKind[name] = { lathe: 0, mill: 0 };
+    counters.softKind[name][softKind] = Number(counters.softKind[name][softKind] || 0) + 1;
+  }
+}
+
+function adminRotationGeneratorSoftSlotPlan(softCount) {
+  const idx = {
+    MSKC01: adminRotationGeneratorMachineIndex(SOFT_MACHINE_HEADERS, 'MSKC01'),
+    MSKC03: adminRotationGeneratorMachineIndex(SOFT_MACHINE_HEADERS, 'MSKC03'),
+    MSKC04: adminRotationGeneratorMachineIndex(SOFT_MACHINE_HEADERS, 'MSKC04'),
+    MFKF06: adminRotationGeneratorMachineIndex(SOFT_MACHINE_HEADERS, 'MFKF06'),
+    MFKF10: adminRotationGeneratorMachineIndex(SOFT_MACHINE_HEADERS, 'MFKF10')
+  };
+  if (softCount >= 5) return [idx.MSKC01, idx.MSKC03, idx.MSKC04, idx.MFKF06, idx.MFKF10].filter((n) => n >= 0);
+  if (softCount === 4) return [idx.MSKC01, idx.MSKC03, idx.MSKC04, idx.MFKF10].filter((n) => n >= 0);
+  if (softCount === 3) return [idx.MSKC03, idx.MSKC04, idx.MFKF10].filter((n) => n >= 0);
+  if (softCount === 2) return [idx.MSKC03, idx.MFKF10].filter((n) => n >= 0);
+  if (softCount === 1) return [idx.MFKF10].filter((n) => n >= 0);
+  return [];
+}
+
+function adminRotationGeneratorSoftKind(machineName) {
+  return /^MFKF/i.test(String(machineName || '')) ? 'mill' : 'lathe';
+}
+
+function adminRotationGeneratorBuildDay(month, model, counters, rowIdx, dateLabel, blockedNames) {
+  const knownNames = model.knownNames;
+  const softPreferred = RAK_ROTATION_GENERATOR_RULES_V1107.softPreferred.filter((name) => knownNames.includes(name));
+  const hardPreferred = RAK_ROTATION_GENERATOR_RULES_V1107.hardPreferred.filter((name) => knownNames.includes(name));
+  const available = knownNames.filter((name) => !blockedNames.has(name));
+  const usedNames = new Set();
+  const hardCells = Array(HARD_MACHINE_HEADERS.length).fill('');
+  const softCells = Array(SOFT_MACHINE_HEADERS.length).fill('');
+  const hardTargetCount = Math.min(HARD_MACHINE_HEADERS.length, available.length);
+  const softTargetCount = Math.max(0, Math.min(SOFT_MACHINE_HEADERS.length, available.length - hardTargetCount));
+
+  if (!available.length) return { hardCells, softCells, filledCells: 0, emptyProtected: 0 };
+
+  const softHardCycle = RAK_ROTATION_GENERATOR_RULES_V1107.softHardCycle;
+  const cycleMachine = softHardCycle[rowIdx % softHardCycle.length];
+  const cycleIdx = adminRotationGeneratorMachineIndex(HARD_MACHINE_HEADERS, cycleMachine);
+  const softHardCandidates = softPreferred.filter((name) => available.includes(name));
+  const exchangeSoft = cycleIdx >= 0 && hardTargetCount > 0
+    ? adminRotationGeneratorPickName(softHardCandidates, usedNames, counters, {
+        sectionKey: 'hard',
+        machineName: cycleMachine,
+        rowIdx,
+        preferred: softPreferred.slice(0, 3),
+        historical: adminRotationGeneratorHistoricalMachineScore(model, 'hard', cycleIdx, softHardCandidates[0] || '')
+      })
+    : '';
+  if (exchangeSoft) {
+    hardCells[cycleIdx] = exchangeSoft;
+    usedNames.add(exchangeSoft);
+    adminRotationGeneratorMarkAssignment(counters, 'hard', cycleMachine, exchangeSoft);
+  }
+
+  HARD_MACHINE_HEADERS.forEach((machineName, machineIdx) => {
+    if (hardCells[machineIdx] || usedNames.size >= hardTargetCount) return;
+    const historicalCandidates = (model.dayTemplates[rowIdx % model.dayTemplates.length] && model.dayTemplates[rowIdx % model.dayTemplates.length].hardCells) || [];
+    const suggested = adminRotationCanonicalName(historicalCandidates[machineIdx] || '', knownNames);
+    const preferred = hardPreferred.filter((name) => available.includes(name));
+    const fallback = available.filter((name) => !softPreferred.includes(name)).concat(available.filter((name) => softPreferred.includes(name)));
+    const ordered = Array.from(new Set((suggested ? [suggested] : []).concat(preferred, fallback))).filter((name) => available.includes(name));
+    const name = adminRotationGeneratorPickName(ordered, usedNames, counters, {
+      sectionKey: 'hard',
+      machineName,
+      rowIdx,
+      preferred: hardPreferred,
+      avoid: softPreferred,
+      historical: adminRotationGeneratorHistoricalMachineScore(model, 'hard', machineIdx, suggested || '')
+    });
+    if (name) {
+      hardCells[machineIdx] = name;
+      usedNames.add(name);
+      adminRotationGeneratorMarkAssignment(counters, 'hard', machineName, name);
+    }
+  });
+
+  const remaining = available.filter((name) => !usedNames.has(name));
+  const softSlots = adminRotationGeneratorSoftSlotPlan(Math.min(softTargetCount, remaining.length));
+  softSlots.forEach((machineIdx) => {
+    const machineName = SOFT_MACHINE_HEADERS[machineIdx] || '';
+    const kind = adminRotationGeneratorSoftKind(machineName);
+    const preferred = kind === 'mill'
+      ? remaining.filter((name) => !softPreferred.includes(name)).concat(remaining.filter((name) => softPreferred.includes(name)))
+      : remaining.filter((name) => softPreferred.includes(name)).concat(remaining.filter((name) => !softPreferred.includes(name)));
+    const name = adminRotationGeneratorPickName(Array.from(new Set(preferred)), usedNames, counters, {
+      sectionKey: 'soft',
+      machineName,
+      rowIdx,
+      softKind: kind,
+      preferred: kind === 'lathe' ? softPreferred : hardPreferred,
+      historical: adminRotationGeneratorHistoricalMachineScore(model, 'soft', machineIdx, preferred[0] || '')
+    });
+    if (name) {
+      softCells[machineIdx] = name;
+      usedNames.add(name);
+      adminRotationGeneratorMarkAssignment(counters, 'soft', machineName, name, kind);
+    }
+  });
+
+  const mfkf06Idx = adminRotationGeneratorMachineIndex(SOFT_MACHINE_HEADERS, 'MFKF06');
+  const mfkf10Idx = adminRotationGeneratorMachineIndex(SOFT_MACHINE_HEADERS, 'MFKF10');
+  const mskc01Idx = adminRotationGeneratorMachineIndex(SOFT_MACHINE_HEADERS, 'MSKC01');
+  const millPeopleCount = [mfkf06Idx, mfkf10Idx].filter((idx) => idx >= 0 && String(softCells[idx] || '').trim()).length;
+  const lathePeopleCount = [mskc01Idx, adminRotationGeneratorMachineIndex(SOFT_MACHINE_HEADERS, 'MSKC03'), adminRotationGeneratorMachineIndex(SOFT_MACHINE_HEADERS, 'MSKC04')].filter((idx) => idx >= 0 && String(softCells[idx] || '').trim()).length;
+  let emptyProtected = 0;
+  if (millPeopleCount === 1 && mfkf06Idx >= 0) {
+    softCells[mfkf06Idx] = '';
+    emptyProtected += 1;
+  }
+  if (softTargetCount === 3 && lathePeopleCount === 2 && mskc01Idx >= 0) {
+    softCells[mskc01Idx] = '';
+    emptyProtected += 1;
+  }
+
+  return {
+    hardCells,
+    softCells,
+    filledCells: hardCells.concat(softCells).filter((cell) => String(cell || '').trim()).length,
+    emptyProtected
+  };
+}
+
+function adminGenerateRotationMonthDraft(monthKey) {
+  if (!monthKey) throw new Error('Chybí měsíc.');
+  const domMonth = document.getElementById('appMenuBody') ? readAdminRotationFromDom(monthKey) : null;
+  const fallback = domMonth || (app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null);
+  if (!fallback) throw new Error('Pro vybraný měsíc nejsou připravené řádky.');
+  const model = adminBuildRotationGenerationModel(monthKey);
+  if (!model.dayTemplates.length) throw new Error('Nemám z čeho vycházet. Nejdřív musí existovat aspoň jeden vyplněný předchozí rozpis.');
+  const month = JSON.parse(JSON.stringify(fallback));
+  month.hard = month.hard || { title: 'Rotace tvrdota', machines: HARD_MACHINE_HEADERS.slice(), rows: [] };
+  month.soft = month.soft || { title: 'Rotace měkota', machines: SOFT_MACHINE_HEADERS.slice(), rows: [] };
+  month.notes = Array.isArray(month.notes) ? month.notes : [];
+  const hardRows = Array.isArray(month.hard.rows) ? month.hard.rows : [];
+  const softRows = Array.isArray(month.soft.rows) ? month.soft.rows : [];
+  const maxRows = Math.max(hardRows.length, softRows.length);
+  const counters = adminRotationGeneratorCreateCounters(model);
+  let filledCells = 0;
+  let days = 0;
+  let blockedByAbsence = 0;
+  let skippedDays = 0;
+  let protectedEmptyCells = 0;
+  const knownNames = model.knownNames;
+
+  for (let rowIdx = 0; rowIdx < maxRows; rowIdx += 1) {
+    if (!hardRows[rowIdx] && softRows[rowIdx]) hardRows[rowIdx] = { date: softRows[rowIdx].date || '', cells: Array(HARD_MACHINE_HEADERS.length).fill('') };
+    if (!softRows[rowIdx] && hardRows[rowIdx]) softRows[rowIdx] = { date: hardRows[rowIdx].date || '', cells: Array(SOFT_MACHINE_HEADERS.length).fill('') };
+    const hardRow = hardRows[rowIdx];
+    const softRow = softRows[rowIdx];
+    if (!hardRow && !softRow) continue;
+    const dateLabel = (hardRow && hardRow.date) || (softRow && softRow.date) || '';
+    const dayNotes = adminRotationGeneratorDateNotes(month, dateLabel);
+    const absenceNames = adminRotationNamesForAbsenceDate(month.notes, dateLabel, knownNames);
+    blockedByAbsence += absenceNames.size;
+    if (adminRotationGeneratorIsDayBlocked(dayNotes)) {
+      if (hardRow) hardRow.cells = Array(HARD_MACHINE_HEADERS.length).fill('');
+      if (softRow) softRow.cells = Array(SOFT_MACHINE_HEADERS.length).fill('');
+      skippedDays += 1;
+      continue;
+    }
+    const generated = adminRotationGeneratorBuildDay(month, model, counters, rowIdx, dateLabel, absenceNames);
+    if (hardRow) hardRow.cells = generated.hardCells;
+    if (softRow) softRow.cells = generated.softCells;
+    filledCells += generated.filledCells;
+    protectedEmptyCells += generated.emptyProtected;
+    if (generated.filledCells) days += 1;
+  }
+
+  month.hard.rows = hardRows;
+  month.hard.machines = HARD_MACHINE_HEADERS.slice();
+  month.hard.title = month.hard.title || 'Rotace tvrdota';
+  month.soft.rows = softRows;
+  month.soft.machines = SOFT_MACHINE_HEADERS.slice();
+  month.soft.title = month.soft.title || 'Rotace měkota';
+  const normalized = normalizeMonthForImport(month, fallback);
+  if (!app.rotation.months) app.rotation.months = {};
+  app.rotation.months[monthKey] = normalized;
+  app.rotation = normalizeRotationData(app.rotation);
+  app.selectedMonth = monthKey;
+  saveRotationData();
+  renderRotace();
+  if (typeof renderMonth === 'function') renderMonth(monthKey);
+  if (app.selectedName && typeof renderPerson === 'function') renderPerson(app.selectedName);
+  return {
+    normalized,
+    days,
+    filledCells,
+    historyTemplates: model.dayTemplates.length,
+    previousYearTemplates: model.previousYearTemplates.length,
+    previousYearKey: model.previousYearKey,
+    blockedByAbsence,
+    skippedDays,
+    protectedEmptyCells,
+    ruleVersion: '1.107'
+  };
+}
+
+window.RAK_ROTATION_GENERATOR_CONTRACT_V1106 = RAK_ROTATION_GENERATOR_CONTRACT_V1106;
+window.RAK_ROTATION_GENERATOR_RULES_V1107 = RAK_ROTATION_GENERATOR_RULES_V1107;
+window.adminGenerateRotationMonthDraft = adminGenerateRotationMonthDraft;
+window.adminRotationMonthHasFilledCells = adminRotationMonthHasFilledCells;
+
+
 function adminGetSelectedRemoveButton() {
   const body = document.getElementById('appMenuBody');
   return body ? body.querySelector('[data-admin-selected-remove]') : null;
@@ -957,7 +1432,7 @@ function adminShowRotationSelectedRemove(input) {
       return;
     }
     window.__rakAdminRotationSelectedInput = input;
-    // RaK 1.2 (1.105) – horní sticky tlačítko už při kliknutí do jména nevytahujeme.
+    // RaK 1.2 (1.107) – horní sticky tlačítko už při kliknutí do jména nevytahujeme.
     // Rychlé Odebrat se vykreslí přímo u aktivního pole přes adminShowRotationQuickRemove().
     btn.hidden = true;
     btn.dataset.targetReady = '1';

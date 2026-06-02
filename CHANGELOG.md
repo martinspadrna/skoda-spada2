@@ -1,3 +1,23 @@
+## RaK 1.2 (1.107)
+
+- Administrace / Rozpisy: generátor návrhu teď počítá podle pravidel Měkota/Tvrdota místo čistého historického doplnění.
+- Před generováním se počítá s tím, že nejdřív doplníš absence a zkontroluješ dny měsíce; generátor čte rozepsané absence přímo z editoru před výpočtem.
+- Pravidla generátoru: Střížek, Synek, Třasák, Špadrna a Novotný jsou prioritně Měkota; ostatní zpravidla Tvrdota.
+- Měkota lidé se střídají na tvrdotních strojích TNKS01 / TPKW01 / TPKW02; tvrdota drží cyklus TNKS01 / TBKR07 / TPKW01 / TPKW02 / TBKR01.
+- Pravidlo absencí: kdykoliv je na frézkách jen jeden člověk, MFKF06 se píše jako neobsazená a člověk na MFKF10 reálně hlídá obě frézky.
+- Při dvou absencích generátor nechává MFKF06 i MSKC01 prázdné: jeden člověk na frézkách, dva lidé na soustruhách.
+- Generátor umí vynechat den označený v absencích jako svátek / odstávka / bez směny.
+- `npm run test:app-usage` a `npm run test:browser-smoke` hlídají pravidlový generátor v1.107 včetně prázdné MFKF06 a MSKC01 při dvou absencích.
+- Release metadata sjednocená na `RaK 1.2 (1.107)`, technická verze `1.2.107`, cache `v1.2-1.107`.
+
+## RaK 1.2 (1.106)
+
+- Administrace / Rozpisy: přidané tlačítko `Vygenerovat návrh`, které po zvolení měsíce vytvoří první návrh rozpisu podle historicky vyplněných rotací.
+- Generátor vychází z předchozích měsíců, preferuje loňský stejný měsíc jako vzor, hlídá jedno jméno nejvýš jednou v jednom dni, respektuje absence v daný den a snaží se držet historické vazby lidí na stroje.
+- Návrh se uloží jen lokálně do rozepsaného rozpisu; online se odešle až po ruční kontrole a kliknutí na `Uložit rozpis`. Obsazený měsíc se před přepsáním ptá na potvrzení.
+- Přidaný guard `RAK_ROTATION_GENERATOR_CONTRACT_V1106`, aby generátor zůstal v Administraci/Rozpisech, chránil existující data a neukládal online bez ručního potvrzení.
+- Release metadata sjednocená na `RaK 1.2 (1.106)`, technická verze `1.2.106`, cache `v1.2-1.106`.
+
 ## RaK 1.2 (1.105)
 
 - Rotace: prázdný stav u přehledu příští směny používá stejnou přirozenou větu jako Dashboard — `Nikdo nebude chybět.`
