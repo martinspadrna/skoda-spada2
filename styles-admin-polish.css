@@ -1,4 +1,4 @@
-/* RaK 1.2 (1.107) – Administrace/Rozpisy polish oddělený ze styles-overrides.css.
+/* RaK 1.2 (1.108) – Administrace/Rozpisy polish oddělený ze styles-overrides.css.
    Bez změny logiky, Supabase ani spodní lišty. */
 
 /* v.1.5 (988) – Administrace / Rozpisy: užší sloupce pro tvrdotu, měkotu a absence. */
@@ -301,4 +301,142 @@
 .adminAbsenceCodeChip:active{
   transform:translateY(1px) scale(.98);
   background:rgba(124,255,124,.13);
+}
+
+
+/* RaK 1.2 (1.108) – Administrace/Rozpisy: průvodce generátorem a čitelné mini hlavičky Tvrdoty. */
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adminRotationMiniTable th{
+  min-width:30px !important;
+  font-size:7.2px !important;
+  letter-spacing:-.055em !important;
+  white-space:nowrap !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adminRotationMiniTable th:first-child{
+  min-width:34px !important;
+  letter-spacing:-.04em !important;
+}
+#appMenuBody[data-admin-view="rotation"] .adminRotationAbsenceAddRow{
+  padding:8px 2px 0 !important;
+  display:flex !important;
+  justify-content:flex-end !important;
+}
+#appMenuBody[data-admin-view="rotation"] .adminRotationAbsenceAddBtn{
+  min-height:34px !important;
+  padding:7px 12px !important;
+  border-radius:14px !important;
+}
+.adminRotationGeneratorWizard{
+  gap:12px !important;
+}
+.adminRotationGeneratorSteps{
+  display:grid !important;
+  grid-template-columns:repeat(4, minmax(0, 1fr)) !important;
+  gap:6px !important;
+  margin:6px 0 10px !important;
+}
+.adminRotationGeneratorSteps span{
+  border:1px solid rgba(255,255,255,.10) !important;
+  border-radius:14px !important;
+  padding:7px 5px !important;
+  text-align:center !important;
+  font-size:10px !important;
+  font-weight:850 !important;
+  color:rgba(235,255,245,.66) !important;
+  background:rgba(255,255,255,.035) !important;
+}
+.adminRotationGeneratorSteps span.isActive{
+  color:var(--soft, #eef7ff) !important;
+  border-color:rgba(76,255,137,.35) !important;
+  background:linear-gradient(180deg, rgba(76,255,137,.16), rgba(255,255,255,.035)) !important;
+}
+.adminRotationGeneratorPanel{
+  border:1px solid rgba(255,255,255,.10) !important;
+  border-radius:18px !important;
+  background:rgba(255,255,255,.035) !important;
+  padding:12px !important;
+}
+.adminRotationGeneratorDayList,
+.adminRotationGeneratorAbsenceList{
+  display:grid !important;
+  gap:8px !important;
+  margin:10px 0 !important;
+}
+.adminRotationGeneratorDayRow,
+.adminRotationGeneratorAbsenceRow{
+  display:grid !important;
+  grid-template-columns:minmax(0, 1fr) 38px !important;
+  gap:8px !important;
+  align-items:center !important;
+}
+.adminRotationGeneratorAbsenceRow{
+  grid-template-columns:minmax(0, 1fr) 74px 38px !important;
+}
+.adminRotationGeneratorIconBtn{
+  min-width:34px !important;
+  min-height:34px !important;
+  border:1px solid rgba(255,255,255,.14) !important;
+  border-radius:12px !important;
+  background:rgba(255,255,255,.055) !important;
+  color:var(--soft, #eef7ff) !important;
+  font-weight:950 !important;
+  font-size:18px !important;
+}
+.adminRotationGeneratorSmallAdd{
+  min-height:34px !important;
+  padding:7px 12px !important;
+  border-radius:14px !important;
+  width:max-content !important;
+}
+.adminRotationGeneratorAbsenceDay{
+  border:1px solid rgba(255,255,255,.08) !important;
+  border-radius:16px !important;
+  padding:10px !important;
+  background:rgba(0,0,0,.08) !important;
+}
+.adminRotationGeneratorAbsenceTitle{
+  font-weight:950 !important;
+  margin-bottom:7px !important;
+  color:var(--soft, #eef7ff) !important;
+}
+.adminRotationGeneratorAbsenceRows{
+  display:grid !important;
+  gap:7px !important;
+  margin-bottom:8px !important;
+}
+.adminRotationGeneratorMachineSummary{
+  margin-top:12px !important;
+  border:1px solid rgba(255,255,255,.10) !important;
+  border-radius:16px !important;
+  overflow:hidden !important;
+}
+.adminRotationGeneratorMachineSummary summary{
+  padding:10px 12px !important;
+  cursor:pointer !important;
+  font-weight:950 !important;
+}
+.adminRotationGeneratorMachineSummaryScroll{
+  overflow:auto !important;
+  -webkit-overflow-scrolling:touch !important;
+  padding:0 10px 10px !important;
+}
+.adminRotationGeneratorMachineSummaryTable{
+  min-width:720px !important;
+}
+.adminRotationGeneratorMachineSummaryTable th,
+.adminRotationGeneratorMachineSummaryTable td{
+  text-align:center !important;
+  white-space:nowrap !important;
+  font-size:10px !important;
+}
+.adminRotationGeneratorMachineSummaryTable td:first-child,
+.adminRotationGeneratorMachineSummaryTable th:first-child{
+  position:sticky !important;
+  left:0 !important;
+  z-index:1 !important;
+  text-align:left !important;
+}
+.adminRotationGeneratorMachineSummaryTable .adminRotationMachineCountHit{
+  color:var(--soft, #eef7ff) !important;
+  font-weight:950 !important;
+  background:rgba(76,255,137,.10) !important;
 }

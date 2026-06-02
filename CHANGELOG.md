@@ -1,3 +1,12 @@
+## RaK 1.2 (1.108)
+
+- Administrace / Rozpisy: mini přehled Tvrdoty už nezkracuje názvy strojů o první `T`, takže `TNKS01`, `TBKR07`, `TPKW01`, `TPKW02`, `TBKR01` zůstávají celé.
+- Administrace / Rozpisy / Absence: přidané tlačítko `+ Přidat další absenci`, aby šlo zadat víc lidí bez ručního boje s jedním řádkem.
+- `Vygenerovat návrh` nově otevírá průvodce: volba měsíce, kontrola pracovních dnů, mazání dnů křížkem, přidání dne přes `+`, zadání absencí pro dny a až potom vygenerování návrhu.
+- Po vygenerování návrhu se ukáže soukromý kontrolní přehled `stroje × jména`, kde je vidět, kolikrát kdo v daném měsíci vychází na jednotlivé stroje.
+- Generátor dál ukládá jen lokální návrh; online uložení zůstává až po ručním kliknutí na `Uložit rozpis`.
+- Release metadata sjednocená na `RaK 1.2 (1.108)`, technická verze `1.2.108`, cache `v1.2-1.108`.
+
 ## RaK 1.2 (1.107)
 
 - Administrace / Rozpisy: generátor návrhu teď počítá podle pravidel Měkota/Tvrdota místo čistého historického doplnění.

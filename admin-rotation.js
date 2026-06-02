@@ -1,4 +1,4 @@
-// RaK 1.2 (1.107) – Administrace Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
+// RaK 1.2 (1.108) – Administrace Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('admin-rotation.js', 'loading', { source: 'dynamic-loader' }); } catch (err) {}
 
 
@@ -661,7 +661,7 @@ function buildAdminRotationCompactOverviewHtml(monthKey, hardRows, softRows, har
     const safeRows = Array.isArray(rows) ? rows : [];
     const safeMachines = Array.isArray(machines) ? machines : [];
     if (!safeRows.length) return '';
-    const head = '<tr><th>Den</th>' + safeMachines.map((m) => '<th>' + escapeHtml(String(m || '').replace(/^T/, '')) + '</th>').join('') + '</tr>';
+    const head = '<tr><th>Den</th>' + safeMachines.map((m) => '<th>' + escapeHtml(String(m || '')) + '</th>').join('') + '</tr>';
     const body = safeRows.map((row) => {
       const date = adminRotationDateLabel(row && row.date ? row.date : '') || String(row && row.date ? row.date : '');
       const cells = Array.isArray(row && row.cells) ? row.cells : [];
@@ -762,6 +762,9 @@ function buildAdminRotationTableHtml(monthKey) {
     '        <thead><tr><th>Datum</th><th>Jméno</th><th>Kód</th></tr></thead>',
     '        <tbody>' + renderNotes() + '</tbody>',
     '      </table>',
+    '    </div>',
+    '    <div class="adminRotationAbsenceAddRow">',
+    '      <button type="button" class="appMenuAction adminRotationAbsenceAddBtn" data-admin-action="add-absence-row">+ Přidat další absenci</button>',
     '    </div>',
     buildAdminAbsenceCodeDatalistHtml(),
     buildAdminAbsenceSummaryHtml(notesRows),
@@ -1400,6 +1403,401 @@ window.adminGenerateRotationMonthDraft = adminGenerateRotationMonthDraft;
 window.adminRotationMonthHasFilledCells = adminRotationMonthHasFilledCells;
 
 
+const RAK_ROTATION_GENERATOR_WIZARD_CONTRACT_V1108 = Object.freeze({
+  version: '1.108',
+  scope: 'Administrace dat / Rozpisy / Vygenerovat návrh',
+  flow: Object.freeze(['volba měsíce', 'kontrola pracovních dnů', 'absence přes +', 'vygenerování návrhu', 'měsíční přehled stroje × jména']),
+  rules: 'Generátor se spouští až po kontrole dnů a absencí. Přehled strojů podle jmen je jen pro rychlou kontrolu před ručním uložením.'
+});
+
+function adminRotationGetNextMonthKeyFrom(monthKey) {
+  const keys = getAdminRotationMonthKeys();
+  if (!keys.length) return monthKey || '';
+  const ordered = keys.slice().sort((a, b) => adminRotationMonthSortValue(a) - adminRotationMonthSortValue(b));
+  const current = monthKey && ordered.includes(monthKey) ? monthKey : (app.selectedMonth && ordered.includes(app.selectedMonth) ? app.selectedMonth : ordered[ordered.length - 1]);
+  const idx = ordered.indexOf(current);
+  if (idx >= 0 && idx < ordered.length - 1) return ordered[idx + 1];
+  return current || ordered[ordered.length - 1];
+}
+
+function adminRotationGetMonthWorkDates(monthKey) {
+  const month = app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
+  if (!month) return [];
+  const hardRows = Array.isArray(month.hard && month.hard.rows) ? month.hard.rows : [];
+  const softRows = Array.isArray(month.soft && month.soft.rows) ? month.soft.rows : [];
+  const maxRows = Math.max(hardRows.length, softRows.length);
+  const dates = [];
+  const seen = new Set();
+  for (let i = 0; i < maxRows; i += 1) {
+    const raw = String((hardRows[i] && hardRows[i].date) || (softRows[i] && softRows[i].date) || '').trim();
+    if (!raw || seen.has(raw)) continue;
+    seen.add(raw);
+    dates.push(raw);
+  }
+  return dates;
+}
+
+function adminRotationGeneratorGetWizardState() {
+  if (!window.__rakRotationGeneratorWizard || typeof window.__rakRotationGeneratorWizard !== 'object') {
+    window.__rakRotationGeneratorWizard = { step: 'month', monthKey: '', days: [], absencesByDay: [] };
+  }
+  return window.__rakRotationGeneratorWizard;
+}
+
+function adminRotationGeneratorSetWizardState(next) {
+  window.__rakRotationGeneratorWizard = Object.assign(adminRotationGeneratorGetWizardState(), next || {});
+  return window.__rakRotationGeneratorWizard;
+}
+
+function adminRotationGeneratorCollectDaysFromDom() {
+  const body = document.getElementById('appMenuBody');
+  if (!body) return [];
+  return Array.from(body.querySelectorAll('[data-generator-day-input]'))
+    .map((input) => String(input.value || '').trim())
+    .filter(Boolean);
+}
+
+function adminRotationGeneratorCollectAbsencesFromDom() {
+  const body = document.getElementById('appMenuBody');
+  const days = adminRotationGeneratorCollectDaysFromDom();
+  const absencesByDay = days.map((date) => ({ date, rows: [] }));
+  if (!body) return absencesByDay;
+  body.querySelectorAll('[data-generator-absence-day]').forEach((box) => {
+    const dayIndex = Number(box.getAttribute('data-generator-absence-day') || -1);
+    if (!Number.isFinite(dayIndex) || dayIndex < 0 || !absencesByDay[dayIndex]) return;
+    const rows = [];
+    box.querySelectorAll('[data-generator-absence-row]').forEach((row) => {
+      const person = String(row.querySelector('[data-generator-absence-person]')?.value || '').trim();
+      const code = String(row.querySelector('[data-generator-absence-code]')?.value || '').trim();
+      if (!person && !code) return;
+      rows.push({ person, code });
+    });
+    absencesByDay[dayIndex].rows = rows;
+  });
+  return absencesByDay;
+}
+
+function adminRotationGeneratorRenderWizard(step) {
+  const body = document.getElementById('appMenuBody');
+  if (!body) return;
+  const state = adminRotationGeneratorGetWizardState();
+  const keys = getAdminRotationMonthKeys();
+  const selected = state.monthKey || adminRotationGetNextMonthKeyFrom(getAdminSelectedMonthKey());
+  const monthOptions = keys.map((key) => '<option value="' + escapeHtml(key) + '"' + (key === selected ? ' selected' : '') + '>' + escapeHtml(key) + '</option>').join('');
+  body.dataset.adminView = 'rotation';
+  body.innerHTML = [
+    '<div class="appMenuCard appMenuAdminCard adminRotationGeneratorWizard">',
+    '  <div class="appMenuCardTitle">Generátor rozpisu</div>',
+    '  <div class="appMenuText">Průvodce nejdřív zkontroluje měsíc a pracovní dny, potom absence a až nakonec vytvoří návrh. Online se nic neukládá bez tlačítka Uložit rozpis.</div>',
+    '  <div class="adminRotationGeneratorSteps">',
+    '    <span class="' + (step === 'month' ? 'isActive' : '') + '">1. Měsíc</span>',
+    '    <span class="' + (step === 'days' ? 'isActive' : '') + '">2. Dny</span>',
+    '    <span class="' + (step === 'absences' ? 'isActive' : '') + '">3. Absence</span>',
+    '    <span class="' + (step === 'result' ? 'isActive' : '') + '">4. Návrh</span>',
+    '  </div>',
+    step === 'month' ? adminRotationGeneratorRenderMonthStep(monthOptions, selected) : '',
+    step === 'days' ? adminRotationGeneratorRenderDaysStep(state) : '',
+    step === 'absences' ? adminRotationGeneratorRenderAbsencesStep(state) : '',
+    step === 'result' ? adminRotationGeneratorRenderResultStep(state) : '',
+    '  <div id="adminOnlineSaveStatus" class="appMenuStatusLine"></div>',
+    '</div>'
+  ].join('');
+  try {
+    const status = document.getElementById('adminOnlineSaveStatus');
+    if (status) status.textContent = step === 'month'
+      ? 'Nabízím další měsíc, ale můžeš vybrat jiný.'
+      : (step === 'days' ? 'Zkontroluj pracovní dny. Křížkem den smažeš, tlačítkem + přidáš další.' : '');
+  } catch (err) {}
+}
+
+function adminRotationGeneratorRenderMonthStep(monthOptions, selected) {
+  return [
+    '<div class="adminRotationGeneratorPanel">',
+    '  <label class="appMenuFieldLabel" for="adminGeneratorMonthSelect">Měsíc pro návrh</label>',
+    '  <select id="adminGeneratorMonthSelect" class="appMenuSelect">' + monthOptions + '</select>',
+    '  <div class="smallText">Výchozí návrh je další dostupný měsíc: ' + escapeHtml(selected || '—') + '.</div>',
+    '  <div class="appMenuActionRow">',
+    '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
+    '    <button type="button" class="appMenuAction isActive" data-admin-action="generator-month-next">Pokračovat na dny</button>',
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
+function adminRotationGeneratorRenderDaysStep(state) {
+  const days = Array.isArray(state.days) && state.days.length ? state.days : adminRotationGetMonthWorkDates(state.monthKey);
+  state.days = days.slice();
+  const rows = days.map((date, idx) => [
+    '<div class="adminRotationGeneratorDayRow" data-generator-day-row="' + String(idx) + '">',
+    '  <input class="appMenuInlineInput" data-generator-day-input value="' + escapeHtml(date) + '" placeholder="např. 1.6. R">',
+    '  <button type="button" class="adminRotationGeneratorIconBtn" data-admin-action="generator-day-remove" data-day-index="' + String(idx) + '" title="Odebrat den">×</button>',
+    '</div>'
+  ].join('')).join('');
+  return [
+    '<div class="adminRotationGeneratorPanel">',
+    '  <div class="appMenuSubTitle">Pracovní dny</div>',
+    '  <div class="smallText">Zkontroluj dny před generováním. Svátek nebo odstávku prostě smaž křížkem; chybějící den přidej přes +.</div>',
+    '  <div class="adminRotationGeneratorDayList">' + (rows || '<div class="smallText">Tenhle měsíc zatím nemá dny. Přidej je ručně.</div>') + '</div>',
+    '  <button type="button" class="appMenuAction adminRotationGeneratorSmallAdd" data-admin-action="generator-day-add">+ Přidat den</button>',
+    '  <div class="appMenuActionRow">',
+    '    <button type="button" class="appMenuAction" data-admin-action="generator-back-month">Zpět</button>',
+    '    <button type="button" class="appMenuAction isActive" data-admin-action="generator-days-next">Dny jsou OK</button>',
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
+function adminRotationGeneratorRenderAbsencesStep(state) {
+  const days = Array.isArray(state.days) ? state.days : [];
+  let absencesByDay = Array.isArray(state.absencesByDay) ? state.absencesByDay : [];
+  absencesByDay = days.map((date, idx) => {
+    const existing = absencesByDay[idx] || {};
+    return { date, rows: Array.isArray(existing.rows) ? existing.rows : [] };
+  });
+  state.absencesByDay = absencesByDay;
+  const blocks = absencesByDay.map((day, dayIdx) => {
+    const rows = (day.rows.length ? day.rows : [{ person: '', code: '' }]).map((row, rowIdx) => [
+      '<div class="adminRotationGeneratorAbsenceRow" data-generator-absence-row="' + String(rowIdx) + '">',
+      '  <input class="appMenuInlineInput" data-generator-absence-person value="' + escapeHtml(row.person || '') + '" placeholder="jméno">',
+      '  <input class="appMenuInlineInput appMenuInlineInputTiny" data-generator-absence-code value="' + escapeHtml(row.code || '') + '" placeholder="kód" list="adminAbsenceCodeOptions">',
+      '  <button type="button" class="adminRotationGeneratorIconBtn" data-admin-action="generator-absence-remove" data-day-index="' + String(dayIdx) + '" data-row-index="' + String(rowIdx) + '" title="Odebrat absenci">×</button>',
+      '</div>'
+    ].join('')).join('');
+    return [
+      '<div class="adminRotationGeneratorAbsenceDay" data-generator-absence-day="' + String(dayIdx) + '">',
+      '  <div class="adminRotationGeneratorAbsenceTitle">' + escapeHtml(day.date || 'Den') + '</div>',
+      '  <div class="adminRotationGeneratorAbsenceRows">' + rows + '</div>',
+      '  <button type="button" class="appMenuAction adminRotationGeneratorSmallAdd" data-admin-action="generator-absence-add" data-day-index="' + String(dayIdx) + '">+ Přidat jméno</button>',
+      '</div>'
+    ].join('');
+  }).join('');
+  return [
+    '<div class="adminRotationGeneratorPanel">',
+    buildAdminAbsenceCodeDatalistHtml(),
+    '  <div class="appMenuSubTitle">Absence před generováním</div>',
+    '  <div class="smallText">U každého dne můžeš přes + přidat víc lidí. Nevyplněné řádky se ignorují.</div>',
+    '  <div class="adminRotationGeneratorAbsenceList">' + (blocks || '<div class="smallText">Nejsou vybrané žádné pracovní dny.</div>') + '</div>',
+    '  <div class="appMenuActionRow">',
+    '    <button type="button" class="appMenuAction" data-admin-action="generator-back-days">Zpět na dny</button>',
+    '    <button type="button" class="appMenuAction isActive" data-admin-action="generator-run">Vygenerovat rozpis</button>',
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
+function adminRotationGeneratorRenderResultStep(state) {
+  const month = app.rotation && app.rotation.months ? app.rotation.months[state.monthKey] : null;
+  const summary = adminBuildRotationMachineCountSummaryHtml(month);
+  return [
+    '<div class="adminRotationGeneratorPanel">',
+    '  <div class="appMenuSubTitle">Návrh je hotový</div>',
+    '  <div class="appMenuText">' + escapeHtml(state.resultText || 'Návrh se vytvořil lokálně. Teď ho zkontroluj, pak se vrať do editoru a ručně ulož.') + '</div>',
+    summary,
+    '  <div class="appMenuActionRow">',
+    '    <button type="button" class="appMenuAction" data-admin-action="generator-back-absences">Zpět na absence</button>',
+    '    <button type="button" class="appMenuAction isActive" data-admin-action="generator-open-editor">Otevřít rozpis</button>',
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
+function adminRotationGeneratorEnsurePreparedMonthFromWizard() {
+  const state = adminRotationGeneratorGetWizardState();
+  const monthKey = state.monthKey;
+  if (!monthKey) throw new Error('Chybí měsíc.');
+  const fallback = app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
+  if (!fallback) throw new Error('Pro vybraný měsíc nejsou připravená data.');
+  const days = Array.isArray(state.days) ? state.days.map((d) => String(d || '').trim()).filter(Boolean) : [];
+  const month = JSON.parse(JSON.stringify(fallback));
+  month.hard = month.hard || { title: 'Rotace tvrdota', machines: HARD_MACHINE_HEADERS.slice(), rows: [] };
+  month.soft = month.soft || { title: 'Rotace měkota', machines: SOFT_MACHINE_HEADERS.slice(), rows: [] };
+  month.hard.machines = HARD_MACHINE_HEADERS.slice();
+  month.soft.machines = SOFT_MACHINE_HEADERS.slice();
+  month.hard.rows = days.map((date) => ({ date, cells: Array(HARD_MACHINE_HEADERS.length).fill('') }));
+  month.soft.rows = days.map((date) => ({ date, cells: Array(SOFT_MACHINE_HEADERS.length).fill('') }));
+  const notes = [];
+  const absencesByDay = Array.isArray(state.absencesByDay) ? state.absencesByDay : [];
+  days.forEach((date, dayIdx) => {
+    const day = absencesByDay[dayIdx] || {};
+    const rows = Array.isArray(day.rows) ? day.rows : [];
+    rows.forEach((row) => {
+      const person = String(row.person || '').trim();
+      const code = String(row.code || '').trim();
+      if (!person && !code) return;
+      const parsed = typeof parseDateToken === 'function' ? parseDateToken(date) : null;
+      const shift = parsed && parsed.shift ? parsed.shift : '';
+      notes.push({ date, person, code, shift, text: [person, code].filter(Boolean).join(' ') });
+    });
+  });
+  month.notes = notes;
+  if (!app.rotation.months) app.rotation.months = {};
+  app.rotation.months[monthKey] = normalizeMonthForImport(month, fallback);
+  saveRotationData();
+}
+
+function adminBuildRotationMachineCountSummaryHtml(month) {
+  if (!month) return '<div class="smallText">Souhrn zatím není dostupný.</div>';
+  const names = adminGetKnownNames();
+  const machineMap = new Map();
+  const addSection = (sectionKey, fallbackMachines) => {
+    const section = month[sectionKey] || {};
+    const machines = Array.isArray(section.machines) ? section.machines : fallbackMachines;
+    const rows = Array.isArray(section.rows) ? section.rows : [];
+    machines.forEach((machine, machineIdx) => {
+      const machineName = String(machine || '').trim();
+      if (!machineName) return;
+      if (!machineMap.has(machineName)) machineMap.set(machineName, new Map());
+      const rowMap = machineMap.get(machineName);
+      rows.forEach((row) => {
+        const person = adminRotationCanonicalName(row && row.cells ? row.cells[machineIdx] : '', names);
+        if (!person || !names.includes(person)) return;
+        rowMap.set(person, (rowMap.get(person) || 0) + 1);
+      });
+    });
+  };
+  addSection('hard', HARD_MACHINE_HEADERS);
+  addSection('soft', SOFT_MACHINE_HEADERS);
+  const usedNames = names.filter((name) => Array.from(machineMap.values()).some((map) => map.has(name)));
+  if (!usedNames.length || !machineMap.size) return '<div class="smallText">Souhrn bude dostupný po vygenerování rozpisu.</div>';
+  const head = '<tr><th>Stroj</th>' + usedNames.map((name) => '<th>' + escapeHtml(name) + '</th>').join('') + '</tr>';
+  const body = Array.from(machineMap.entries()).map(([machine, counts]) => {
+    return '<tr><td>' + escapeHtml(machine) + '</td>' + usedNames.map((name) => {
+      const count = counts.get(name) || 0;
+      return '<td class="' + (count ? 'adminRotationMachineCountHit' : '') + '">' + (count ? String(count) : '') + '</td>';
+    }).join('') + '</tr>';
+  }).join('');
+  return [
+    '<details class="adminRotationGeneratorMachineSummary" open>',
+    '  <summary>Rychlý přehled: stroje × jména</summary>',
+    '  <div class="smallText">Soukromý kontrolní přehled pro rychlé ověření, jestli jsou lidi v měsíci rozdělení rozumně.</div>',
+    '  <div class="adminRotationGeneratorMachineSummaryScroll">',
+    '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminRotationGeneratorMachineSummaryTable"><thead>' + head + '</thead><tbody>' + body + '</tbody></table>',
+    '  </div>',
+    '</details>'
+  ].join('');
+}
+
+function adminOpenRotationGeneratorWizard(monthKey) {
+  const suggested = adminRotationGetNextMonthKeyFrom(monthKey || getAdminSelectedMonthKey());
+  adminRotationGeneratorSetWizardState({
+    step: 'month',
+    monthKey: suggested,
+    days: adminRotationGetMonthWorkDates(suggested),
+    absencesByDay: []
+  });
+  adminRotationGeneratorRenderWizard('month');
+}
+
+function adminAddAbsenceRowToEditor() {
+  const body = document.getElementById('appMenuBody');
+  const tbody = body ? body.querySelector('#adminRotationEditor .appMenuAdminAbsenceTable tbody') : null;
+  if (!tbody) return;
+  const index = tbody.querySelectorAll('tr[data-note-row-index]').length;
+  tbody.insertAdjacentHTML('beforeend', adminNotesRowTemplate({ date: '', person: '', code: '' }, index, true));
+  const status = document.getElementById('adminRotationDraftStatus');
+  if (status) status.textContent = 'Přidaný další řádek absence. Rozpis se uloží až tlačítkem.';
+}
+
+function adminHandleRotationGeneratorWizardAction(action, target) {
+  const state = adminRotationGeneratorGetWizardState();
+  const body = document.getElementById('appMenuBody');
+  if (action === 'generator-back-month') {
+    adminRotationGeneratorRenderWizard('month');
+    return true;
+  }
+  if (action === 'generator-back-days') {
+    state.days = adminRotationGeneratorCollectDaysFromDom();
+    adminRotationGeneratorRenderWizard('days');
+    return true;
+  }
+  if (action === 'generator-back-absences') {
+    adminRotationGeneratorRenderWizard('absences');
+    return true;
+  }
+  if (action === 'generator-open-editor') {
+    app.selectedMonth = state.monthKey || app.selectedMonth;
+    if (typeof renderAdminMenuBody === 'function') renderAdminMenuBody(body, 'rotation');
+    return true;
+  }
+  if (action === 'generator-month-next') {
+    const select = body ? body.querySelector('#adminGeneratorMonthSelect') : null;
+    const monthKey = select ? String(select.value || '').trim() : state.monthKey;
+    adminRotationGeneratorSetWizardState({
+      step: 'days',
+      monthKey,
+      days: adminRotationGetMonthWorkDates(monthKey),
+      absencesByDay: []
+    });
+    adminRotationGeneratorRenderWizard('days');
+    return true;
+  }
+  if (action === 'generator-day-remove') {
+    state.days = adminRotationGeneratorCollectDaysFromDom();
+    const idx = Number(target && target.getAttribute('data-day-index'));
+    if (Number.isFinite(idx) && idx >= 0) state.days.splice(idx, 1);
+    adminRotationGeneratorRenderWizard('days');
+    return true;
+  }
+  if (action === 'generator-day-add') {
+    state.days = adminRotationGeneratorCollectDaysFromDom();
+    state.days.push('');
+    adminRotationGeneratorRenderWizard('days');
+    return true;
+  }
+  if (action === 'generator-days-next') {
+    const days = adminRotationGeneratorCollectDaysFromDom();
+    adminRotationGeneratorSetWizardState({
+      step: 'absences',
+      days,
+      absencesByDay: days.map((date) => ({ date, rows: [] }))
+    });
+    adminRotationGeneratorRenderWizard('absences');
+    return true;
+  }
+  if (action === 'generator-absence-add') {
+    state.absencesByDay = adminRotationGeneratorCollectAbsencesFromDom();
+    const dayIdx = Number(target && target.getAttribute('data-day-index'));
+    if (Number.isFinite(dayIdx) && state.absencesByDay[dayIdx]) {
+      state.absencesByDay[dayIdx].rows.push({ person: '', code: '' });
+    }
+    adminRotationGeneratorRenderWizard('absences');
+    return true;
+  }
+  if (action === 'generator-absence-remove') {
+    state.absencesByDay = adminRotationGeneratorCollectAbsencesFromDom();
+    const dayIdx = Number(target && target.getAttribute('data-day-index'));
+    const rowIdx = Number(target && target.getAttribute('data-row-index'));
+    if (Number.isFinite(dayIdx) && Number.isFinite(rowIdx) && state.absencesByDay[dayIdx] && Array.isArray(state.absencesByDay[dayIdx].rows)) {
+      state.absencesByDay[dayIdx].rows.splice(rowIdx, 1);
+    }
+    adminRotationGeneratorRenderWizard('absences');
+    return true;
+  }
+  if (action === 'generator-run') {
+    state.absencesByDay = adminRotationGeneratorCollectAbsencesFromDom();
+    const hasFilledCells = typeof adminRotationMonthHasFilledCells === 'function' ? adminRotationMonthHasFilledCells(state.monthKey) : false;
+    if (hasFilledCells && !confirm('Tenhle měsíc už má v rozpisu jména. Přepsat ho novým návrhem podle průvodce?')) return true;
+    adminRotationGeneratorEnsurePreparedMonthFromWizard();
+    const result = adminGenerateRotationMonthDraft(state.monthKey);
+    state.result = result;
+    state.resultText = result
+      ? ('Návrh vygenerovaný lokálně ✓ · dnů: ' + String(result.days || 0) + ' · políček: ' + String(result.filledCells || 0) + ' · absence: ' + String(result.blockedByAbsence || 0) + '.')
+      : 'Návrh se nepodařilo vygenerovat.';
+    adminRotationGeneratorRenderWizard('result');
+    return true;
+  }
+  return false;
+}
+
+
+
+
+window.RAK_ROTATION_GENERATOR_WIZARD_CONTRACT_V1108 = RAK_ROTATION_GENERATOR_WIZARD_CONTRACT_V1108;
+window.adminOpenRotationGeneratorWizard = adminOpenRotationGeneratorWizard;
+window.adminHandleRotationGeneratorWizardAction = adminHandleRotationGeneratorWizardAction;
+window.adminAddAbsenceRowToEditor = adminAddAbsenceRowToEditor;
+window.adminBuildRotationMachineCountSummaryHtml = adminBuildRotationMachineCountSummaryHtml;
+
 function adminGetSelectedRemoveButton() {
   const body = document.getElementById('appMenuBody');
   return body ? body.querySelector('[data-admin-selected-remove]') : null;
@@ -1432,7 +1830,7 @@ function adminShowRotationSelectedRemove(input) {
       return;
     }
     window.__rakAdminRotationSelectedInput = input;
-    // RaK 1.2 (1.107) – horní sticky tlačítko už při kliknutí do jména nevytahujeme.
+    // RaK 1.2 (1.108) – horní sticky tlačítko už při kliknutí do jména nevytahujeme.
     // Rychlé Odebrat se vykreslí přímo u aktivního pole přes adminShowRotationQuickRemove().
     btn.hidden = true;
     btn.dataset.targetReady = '1';

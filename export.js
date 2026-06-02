@@ -1,4 +1,4 @@
-// RaK 1.2 (1.107) – export manifest a release metadata.
+// RaK 1.2 (1.108) – export manifest a release metadata.
 const EXPORT_SOURCE_IDS = {
   "module-readiness.js": "src-module-readiness-js",
   "rak-namespace.js": "src-rak-namespace-js",
@@ -112,12 +112,12 @@ const EXPORT_SOURCE_IDS = {
 const SOURCE_CACHE = window.__ROTACE_SOURCE_CACHE__ || (window.__ROTACE_SOURCE_CACHE__ = {});
 const BINARY_SOURCE_CACHE = window.__ROTACE_BINARY_SOURCE_CACHE__ || (window.__ROTACE_BINARY_SOURCE_CACHE__ = {});
 const RAK_RELEASE_METADATA_CONTRACT_V199 = Object.freeze({
-  displayVersion: '1.2 (1.107)',
-  appLabel: 'RaK 1.2 (1.107)',
-  packageVersion: '1.2.107',
-  cacheVersion: 'v1.2-1.107',
-  realtimeChannel: 'rak-public-live-v1-2-1-107',
-  changelogHeader: '## RaK 1.2 (1.107)',
+  displayVersion: '1.2 (1.108)',
+  appLabel: 'RaK 1.2 (1.108)',
+  packageVersion: '1.2.108',
+  cacheVersion: 'v1.2-1.108',
+  realtimeChannel: 'rak-public-live-v1-2-1-108',
+  changelogHeader: '## RaK 1.2 (1.108)',
   serviceWorkerVersionGuard: 'CACHE_VERSION + SW_APP_VERSION'
 });
 const RAK_DASHBOARD_CSS_GUARD_SERIES_CONTRACT_V1100 = Object.freeze({
@@ -194,11 +194,20 @@ const RAK_ROTATION_GENERATOR_RULES_CONTRACT_V1107 = Object.freeze({
   protectedEmptyRules: Object.freeze(['MFKF06 prázdná vždy, když je na frézkách jen jeden člověk', 'při dvou absencích MSKC01 prázdná a MFKF06 prázdná']),
   saveRule: 'generátor vytvoří jen lokální návrh; online uložení až ručně přes Uložit rozpis'
 });
+const RAK_ROTATION_GENERATOR_WIZARD_CONTRACT_V1108 = Object.freeze({
+  scope: 'administrace-dat-rozpisy-generator-wizard',
+  flow: Object.freeze(['volba měsíce', 'kontrola pracovních dnů', 'absence přes +', 'vygenerování návrhu', 'přehled stroje × jména']),
+  defaultMonth: 'nabídnout další dostupný měsíc, ale nechat ruční volbu',
+  dayControls: Object.freeze(['odebrat den křížkem', 'přidat den přes +']),
+  absenceControls: Object.freeze(['více jmen ke dni přes +', 'nevyplněné řádky ignorovat']),
+  review: 'po vygenerování ukázat kontrolní tabulku stroje × jména pro Martina',
+  saveRule: 'pořád jen lokální návrh; online až ručně přes Uložit rozpis'
+});
 const EXPORT_SMOKE_REPORT = window.__RAK_EXPORT_SMOKE_REPORT__ || (window.__RAK_EXPORT_SMOKE_REPORT__ = {
   ok: null,
   status: 'not-run',
   mode: 'export-smoke-report-v939',
-  version: '1.2 (1.107)',
+  version: '1.2 (1.108)',
   checkedAt: null,
   lastStage: 'čeká na export',
   runCount: 0,
@@ -331,7 +340,7 @@ const EXPORT_TEXT_FILES = [
 
 function getRakExportManifest() {
   return {
-    version: String(window.APP_VERSION || '1.2 (1.107)'),
+    version: String(window.APP_VERSION || '1.2 (1.108)'),
     mode: 'export-manifest-preflight-v939',
     indexFile: 'index.html',
     jsFiles: Array.from(new Set(EXPORT_JS_FILES)),
@@ -441,7 +450,7 @@ function updateRakExportSmokeReport(partial) {
   const data = partial && typeof partial === 'object' ? partial : {};
   Object.assign(EXPORT_SMOKE_REPORT, data, {
     mode: 'export-smoke-report-v939',
-    version: String(window.APP_VERSION || '1.2 (1.107)'),
+    version: String(window.APP_VERSION || '1.2 (1.108)'),
     checkedAt: new Date().toISOString()
   });
   return getRakExportSmokeReport();

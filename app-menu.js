@@ -1,4 +1,4 @@
-// RaK 1.2 (1.107) – Více/menu shell, O aplikaci, Nastavení, Report chyby a admin menu.
+// RaK 1.2 (1.108) – Více/menu shell, O aplikaci, Nastavení, Report chyby a admin menu.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app-menu.js', 'loaded', { source: 'dynamic-loader' }); } catch (err) {}
 
 
@@ -371,7 +371,7 @@ async function handleBugReportAction(action) {
 
 
 
-// RaK 1.2 (1.107) – Plovoucí odebrání a údržba editoru rozpisů jsou oddělené v admin-rotation.js.
+// RaK 1.2 (1.108) – Plovoucí odebrání a údržba editoru rozpisů jsou oddělené v admin-rotation.js.
 
 function bindAppMenuHandlers(body) {
   if (!body || body.dataset.menuHandlersBound === '1') return;
@@ -1032,23 +1032,17 @@ function bindAppMenuHandlers(body) {
         return;
       }
       if (adminAction === 'generate-rotation') {
-        const statusEl = document.getElementById('adminOnlineSaveStatus');
-        if (!monthKey) {
-          if (statusEl) statusEl.textContent = 'Nejdřív vyber měsíc.';
-          return;
-        }
-        const hasFilledCells = typeof adminRotationMonthHasFilledCells === 'function' ? adminRotationMonthHasFilledCells(monthKey) : false;
-        if (hasFilledCells && !confirm('Tenhle měsíc už má v rozpisu jména. Přepsat ho novým návrhem podle pravidel Měkota/Tvrdota?')) return;
-        if (statusEl) statusEl.textContent = 'Generuji návrh podle absencí a pravidel Měkota/Tvrdota…';
-        const result = typeof adminGenerateRotationMonthDraft === 'function' ? adminGenerateRotationMonthDraft(monthKey) : null;
-        renderAdminMenuBody(body, currentView);
-        const nextStatus = document.getElementById('adminOnlineSaveStatus');
-        if (nextStatus) {
-          nextStatus.textContent = result
-            ? ('Návrh vygenerovaný lokálně ✓ · dnů: ' + String(result.days || 0) + ' · políček: ' + String(result.filledCells || 0) + ' · absence: ' + String(result.blockedByAbsence || 0) + ' · chráněná prázdná místa: ' + String(result.protectedEmptyCells || 0) + '. Zkontroluj dny a pak klikni na Uložit rozpis.')
-            : 'Návrh se nepodařilo vygenerovat.';
+        if (typeof adminOpenRotationGeneratorWizard === 'function') {
+          adminOpenRotationGeneratorWizard(monthKey);
         }
         return;
+      }
+      if (adminAction === 'add-absence-row') {
+        if (typeof adminAddAbsenceRowToEditor === 'function') adminAddAbsenceRowToEditor();
+        return;
+      }
+      if (adminAction && adminAction.indexOf('generator-') === 0) {
+        if (typeof adminHandleRotationGeneratorWizardAction === 'function' && adminHandleRotationGeneratorWizardAction(adminAction, target, body)) return;
       }
       if (adminAction === 'save-rotation') {
         const result = await saveAdminRotationFromDom(monthKey);
