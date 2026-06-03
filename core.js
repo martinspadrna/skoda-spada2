@@ -1,9 +1,9 @@
-// RaK 1.2 (1.124) – core stav, verze a sdílené helpery aplikace.
+// RaK 1.2 (1.125) – core stav, verze a sdílené helpery aplikace.
 
 const APP_KEY = "rotace_kalkulacky_state_v123";
-const APP_VERSION = "1.2 (1.124)";
+const APP_VERSION = "1.2 (1.125)";
 window.APP_VERSION = APP_VERSION;
-const ROTATION_BUILD = "2026-06-01-" + APP_VERSION;
+const ROTATION_BUILD = "2026-06-03-" + APP_VERSION;
 window.ROTATION_BUILD = ROTATION_BUILD;
 
 const HARD_MACHINE_HEADERS = ["TNKS01", "TBKR07", "TPKW01", "TPKW02", "TBKR01"];
@@ -51,19 +51,114 @@ window.SPECIAL_OVERTIME_SUNDAY_NIGHTS_2026 = SPECIAL_OVERTIME_SUNDAY_NIGHTS_2026
 const SPECIAL_OVERTIME_MO_ONLY_SUNDAYS_2026 = new Set(["2026-03-01"]);
 window.SPECIAL_OVERTIME_MO_ONLY_SUNDAYS_2026 = SPECIAL_OVERTIME_MO_ONLY_SUNDAYS_2026;
 
+const ROTATION_OVERTIME_SETTINGS_MACHINE_KEY = 'ROTATION_OVERTIME_SETTINGS';
+const ROTATION_OVERTIME_SETTINGS_CATEGORY = 'rotation_overtime_settings';
+window.ROTATION_OVERTIME_SETTINGS_MACHINE_KEY = ROTATION_OVERTIME_SETTINGS_MACHINE_KEY;
+window.ROTATION_OVERTIME_SETTINGS_CATEGORY = ROTATION_OVERTIME_SETTINGS_CATEGORY;
+
 function dateKeyISO(date) {
   const d = date instanceof Date ? date : new Date(date);
   return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
 }
 
+function parseRotationOvertimeSettingsJson(value) {
+  if (value && typeof value === 'object') return value;
+  if (!value) return {};
+  try { return JSON.parse(String(value)); } catch (err) { return {}; }
+}
+
+function isValidRotationOvertimeIsoDate(value) {
+  const raw = String(value || '').trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(raw)) return false;
+  const date = new Date(raw + 'T00:00:00');
+  return !Number.isNaN(date.getTime()) && dateKeyISO(date) === raw;
+}
+
+function getRotationOvertimeSettingsRow() {
+  const rows = (typeof app !== 'undefined' && app && Array.isArray(app.machineSettingsRows)) ? app.machineSettingsRows : [];
+  return rows.find((row) => String(row && row.category || '').trim() === ROTATION_OVERTIME_SETTINGS_CATEGORY)
+    || rows.find((row) => String(row && row.machine_key || '').trim() === ROTATION_OVERTIME_SETTINGS_MACHINE_KEY)
+    || null;
+}
+
+function hasRotationOvertimeCustomSettings() {
+  return !!getRotationOvertimeSettingsRow();
+}
+
+function normalizeRotationOvertimeEntry(item) {
+  const src = item && typeof item === 'object' ? item : { date: item };
+  const date = String(src.date || src.iso || src.day || '').trim();
+  if (!isValidRotationOvertimeIsoDate(date)) return null;
+  const rawTo = src.to ?? src.isTo ?? src.hard ?? src.hardOvertime ?? src.splitPress;
+  const to = rawTo === false || rawTo === 0 || rawTo === '0' || /^false|ne|no|mo$/i.test(String(rawTo || '').trim()) ? false : true;
+  return {
+    date,
+    to,
+    note: String(src.note || src.label || '').trim()
+  };
+}
+
+function getDefaultRotationOvertimeEntries() {
+  let dates = [];
+  try {
+    if (typeof window !== 'undefined' && typeof window.getFoodSpecialDateSet === 'function') {
+      const foodSet = window.getFoodSpecialDateSet();
+      if (foodSet && typeof foodSet.forEach === 'function') foodSet.forEach((date) => dates.push(String(date || '').trim()));
+    }
+  } catch (err) {}
+  if (!dates.length) dates = Array.from(SPECIAL_OVERTIME_SUNDAY_NIGHTS_2026);
+  return Array.from(new Set(dates.filter(isValidRotationOvertimeIsoDate))).sort().map((date) => ({
+    date,
+    to: !SPECIAL_OVERTIME_MO_ONLY_SUNDAYS_2026.has(date),
+    note: SPECIAL_OVERTIME_MO_ONLY_SUNDAYS_2026.has(date) ? 'Jen MO' : ''
+  }));
+}
+
+function getRotationOvertimeSettings() {
+  const row = getRotationOvertimeSettingsRow();
+  if (!row) return { type: ROTATION_OVERTIME_SETTINGS_CATEGORY, custom: false, entries: getDefaultRotationOvertimeEntries() };
+  const settings = parseRotationOvertimeSettingsJson(row.settings_json);
+  const rawEntries = Array.isArray(settings.entries)
+    ? settings.entries
+    : (Array.isArray(settings.overtimes) ? settings.overtimes : (Array.isArray(settings.dates) ? settings.dates : []));
+  const map = new Map();
+  rawEntries.forEach((item) => {
+    const entry = normalizeRotationOvertimeEntry(item);
+    if (entry) map.set(entry.date, entry);
+  });
+  return {
+    type: ROTATION_OVERTIME_SETTINGS_CATEGORY,
+    custom: true,
+    entries: Array.from(map.values()).sort((a, b) => a.date.localeCompare(b.date))
+  };
+}
+
+function getRotationOvertimeDateSet() {
+  const settings = getRotationOvertimeSettings();
+  return new Set((Array.isArray(settings.entries) ? settings.entries : []).map((entry) => entry.date).filter(Boolean));
+}
+
+function getRotationOvertimeMoOnlyDateSet() {
+  const settings = getRotationOvertimeSettings();
+  return new Set((Array.isArray(settings.entries) ? settings.entries : []).filter((entry) => entry && entry.to === false).map((entry) => entry.date).filter(Boolean));
+}
+
+function getRotationOvertimeToDateSet() {
+  const settings = getRotationOvertimeSettings();
+  return new Set((Array.isArray(settings.entries) ? settings.entries : []).filter((entry) => entry && entry.to !== false).map((entry) => entry.date).filter(Boolean));
+}
+
 function getSpecialOvertimeSundayNightDateSet() {
+  try {
+    if (hasRotationOvertimeCustomSettings()) return getRotationOvertimeDateSet();
+  } catch (err) {}
   try {
     if (typeof window !== 'undefined' && typeof window.getFoodSpecialDateSet === 'function') {
       const dynamicSet = window.getFoodSpecialDateSet();
       if (dynamicSet && typeof dynamicSet.has === 'function') return dynamicSet;
     }
   } catch (err) {}
-  return SPECIAL_OVERTIME_SUNDAY_NIGHTS_2026;
+  return getRotationOvertimeDateSet();
 }
 
 function isSpecialOvertimeSundayNight(date) {
@@ -74,12 +169,29 @@ function isSpecialOvertimeSundayNight(date) {
 
 function isSpecialOvertimeSundayMoOnly(date) {
   const d = date instanceof Date ? date : new Date(date);
-  const set = typeof window !== 'undefined' && window.SPECIAL_OVERTIME_MO_ONLY_SUNDAYS_2026
-    ? window.SPECIAL_OVERTIME_MO_ONLY_SUNDAYS_2026
-    : SPECIAL_OVERTIME_MO_ONLY_SUNDAYS_2026;
-  return d.getDay() === 0 && !!(set && typeof set.has === 'function' && set.has(dateKeyISO(d)));
+  const allSet = getSpecialOvertimeSundayNightDateSet();
+  const moOnlySet = getRotationOvertimeMoOnlyDateSet();
+  const key = dateKeyISO(d);
+  return d.getDay() === 0
+    && !!(allSet && typeof allSet.has === 'function' && allSet.has(key))
+    && !!(moOnlySet && typeof moOnlySet.has === 'function' && moOnlySet.has(key));
 }
+
+function isSpecialOvertimeSundayTo(date) {
+  const d = date instanceof Date ? date : new Date(date);
+  const allSet = getSpecialOvertimeSundayNightDateSet();
+  const toSet = getRotationOvertimeToDateSet();
+  const key = dateKeyISO(d);
+  return d.getDay() === 0
+    && !!(allSet && typeof allSet.has === 'function' && allSet.has(key))
+    && !!(toSet && typeof toSet.has === 'function' && toSet.has(key));
+}
+window.getRotationOvertimeSettings = getRotationOvertimeSettings;
+window.getRotationOvertimeDateSet = getRotationOvertimeDateSet;
+window.getRotationOvertimeMoOnlyDateSet = getRotationOvertimeMoOnlyDateSet;
+window.getRotationOvertimeToDateSet = getRotationOvertimeToDateSet;
 window.isSpecialOvertimeSundayMoOnly = isSpecialOvertimeSundayMoOnly;
+window.isSpecialOvertimeSundayTo = isSpecialOvertimeSundayTo;
 
 function getSpecialSundayNightStartHour(date, fallbackHour = 22) {
   return isSpecialOvertimeSundayNight(date) ? 18 : fallbackHour;

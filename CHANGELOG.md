@@ -1,9 +1,10 @@
-## RaK 1.2 (1.124)
+## RaK 1.2 (1.125)
 
-- Dashboard: ukazatel procent odpracování aktuální směny v první/hero kartě zmenšený o cca 50 % proti výrazné verzi 1.121.
-- Export obrázku Rozpisů: tabulka `Nýtování a úklid` má v nadpisu rok, prázdná první hlavička už nezobrazuje pomlčku, `Nýt.` je přejmenované na `Nýtování`.
-- Export obrázku Rozpisů: hlavičky `Úklid MSK/MFK/TNK/TBK/W01/W02` jsou čitelnější na dva řádky, sloupec se jmény je užší a písmo pravých tabulek je sjednocené s hlavními tabulkami Tvrdé/Měkké obrábění.
-- Release metadata sjednocená na `RaK 1.2 (1.124)`, technická verze `1.2.124`, cache `v1.2-1.124`.
+- Administrace / Rozpisy: přidané tlačítko `Přesčasy` pro samostatnou správu přesčasových nedělí podle roků.
+- U každého přesčasu je přepínač `TO`: zapnuto = přesčas jde na tvrdotu a TNKS01/TPKW01 se půlí 0,5 + 0,5; vypnuto = přesčas nejde na tvrdotu a každý má +1 na zapsaném stroji.
+- Přesčasy se ukládají přes stávající machine settings řádek `ROTATION_OVERTIME_SETTINGS`, takže není potřeba měnit Supabase DB ani policies.
+- Statistiky, generátor i kontrolní přehled používají nově dynamické nastavení přesčasů; výchozí stav dál obsahuje 1.3.2026 jako `TO` vypnuto / jen MO.
+- Release metadata sjednocená na `RaK 1.2 (1.125)`, technická verze `1.2.125`, cache `v1.2-1.125`.
 
 ## RaK 1.2 (1.118)
 

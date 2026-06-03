@@ -1,4 +1,4 @@
-// RaK 1.2 (1.124) – Více/menu shell, O aplikaci, Nastavení, Report chyby a admin menu.
+// RaK 1.2 (1.125) – Více/menu shell, O aplikaci, Nastavení, Report chyby a admin menu.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app-menu.js', 'loaded', { source: 'dynamic-loader' }); } catch (err) {}
 
 
@@ -134,11 +134,28 @@ function renderAdminMenuBody(body, section) {
     '  <div class="appMenuActionRow">',
     '    <button type="button" class="appMenuAction" data-admin-action="load-month">Načíst měsíc</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="generate-rotation">Vygenerovat návrh</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="open-overtime">Přesčasy</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="load-online">Načíst online</button>',
     '    <button type="button" class="appMenuAction isActive" data-admin-action="save-rotation">Uložit rozpis</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
     '  </div>',
     buildAdminRotationTableHtml(monthKey),
+    '</div>'
+  ].join('');
+
+  const overtimeHtml = [
+    '<div class="appMenuCard appMenuAdminCard adminRotationOvertimeCard">',
+    '  <div class="appMenuCardTitle">Přesčasy rozpisu</div>',
+    '  <div class="appMenuText">',
+    '    <div>Tady si spravuješ přesčasové neděle pro rozpisy a statistiky. Přepínač TO říká, jestli jde přesčas na tvrdotu.</div>',
+    '    <div class="smallText" id="adminOnlineSaveStatus">Změny se uloží přes stávající nastavení strojů, bez změny databáze.</div>',
+    '  </div>',
+    buildAdminRotationOvertimeSettingsHtml(),
+    '  <div class="appMenuActionRow">',
+    '    <button type="button" class="appMenuAction" data-admin-action="load-overtime-settings">Načíst online</button>',
+    '    <button type="button" class="appMenuAction isActive" data-admin-action="save-overtime-settings">Uložit přesčasy</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="open-rotation">Zpět na rozpisy</button>',
+    '  </div>',
     '</div>'
   ].join('');
 
@@ -195,6 +212,8 @@ function renderAdminMenuBody(body, section) {
     body.innerHTML = foodHtml;
   } else if (mode === 'rotation') {
     body.innerHTML = rotationHtml;
+  } else if (mode === 'overtime') {
+    body.innerHTML = overtimeHtml;
   } else if (mode === 'announcement') {
     body.innerHTML = announcementHtml;
   } else if (mode === 'usage') {
@@ -371,7 +390,7 @@ async function handleBugReportAction(action) {
 
 
 
-// RaK 1.2 (1.124) – Plovoucí odebrání a údržba editoru rozpisů jsou oddělené v admin-rotation.js.
+// RaK 1.2 (1.125) – Plovoucí odebrání a údržba editoru rozpisů jsou oddělené v admin-rotation.js.
 
 function bindAppMenuHandlers(body) {
   if (!body || body.dataset.menuHandlersBound === '1') return;
@@ -889,6 +908,10 @@ function bindAppMenuHandlers(body) {
         openAppMenu('admin-rotation');
         return;
       }
+      if (adminAction === 'open-overtime') {
+        openAppMenu('admin-overtime');
+        return;
+      }
       if (adminAction === 'open-announcement') {
         openAppMenu('admin-announcement');
         return;
@@ -1034,6 +1057,37 @@ function bindAppMenuHandlers(body) {
       if (adminAction === 'generate-rotation') {
         if (typeof adminOpenRotationGeneratorWizard === 'function') {
           adminOpenRotationGeneratorWizard(monthKey);
+        }
+        return;
+      }
+      if (adminAction === 'overtime-row-add') {
+        if (typeof adminRotationAddOvertimeRow === 'function') adminRotationAddOvertimeRow(target && target.getAttribute('data-overtime-year'));
+        return;
+      }
+      if (adminAction === 'overtime-row-clear') {
+        if (typeof adminRotationClearOvertimeRow === 'function') adminRotationClearOvertimeRow(target);
+        return;
+      }
+      if (adminAction === 'load-overtime-settings') {
+        await loadAdminMachineSettingsFromSupabase();
+        renderAdminMenuBody(body, 'overtime');
+        return;
+      }
+      if (adminAction === 'save-overtime-settings') {
+        const overtimeSettings = readAdminRotationOvertimeSettingsFromDom();
+        const rows = mergeAdminRotationOvertimeSettingsRows(overtimeSettings);
+        if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.saveMachineSettings === 'function') {
+          const result = await window.RotationSupabaseBridge.saveMachineSettings(rows);
+          if (result && result.ok === false) throw (result.error || new Error('Uložení přesčasů selhalo.'));
+          app.machineSettingsRows = rows;
+          try { if (typeof renderStatsPanel === 'function') renderStatsPanel(); } catch (err) {}
+          try { if (typeof updateFoodTile === 'function') updateFoodTile(); } catch (err) {}
+          try { if (typeof renderFoodSchedulePage === 'function') renderFoodSchedulePage(); } catch (err) {}
+          renderAdminMenuBody(body, 'overtime');
+          const statusEl = document.getElementById('adminOnlineSaveStatus');
+          if (statusEl) statusEl.textContent = (result && result.queued)
+            ? 'Přesčasy uložené lokálně ✓ · po připojení se synchronizují'
+            : 'Přesčasy uložené online ✓';
         }
         return;
       }
@@ -1325,6 +1379,16 @@ function openAppMenu(view) {
         } catch (err) {
           console.warn('Admin rotation preload failed', err);
           renderAdminMenuBody(body, 'rotation');
+        }
+      })();
+    } else if (v === 'admin-overtime') {
+      void (async () => {
+        try {
+          await loadAdminMachineSettingsFromSupabase();
+          renderAdminMenuBody(body, 'overtime');
+        } catch (err) {
+          console.warn('Admin overtime preload failed', err);
+          renderAdminMenuBody(body, 'overtime');
         }
       })();
     } else if (v === 'admin-announcement') {

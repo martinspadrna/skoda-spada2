@@ -1,4 +1,4 @@
-// RaK 1.2 (1.124) – Administrace Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
+// RaK 1.2 (1.125) – Administrace Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('admin-rotation.js', 'loading', { source: 'dynamic-loader' }); } catch (err) {}
 
 
@@ -112,6 +112,176 @@ async function loadAdminMachineSettingsFromSupabase() {
     return app.machineSettingsRows;
   }
   return [];
+}
+
+
+const ADMIN_ROTATION_OVERTIME_SETTINGS_KEY = (typeof ROTATION_OVERTIME_SETTINGS_MACHINE_KEY !== 'undefined' ? ROTATION_OVERTIME_SETTINGS_MACHINE_KEY : 'ROTATION_OVERTIME_SETTINGS');
+const ADMIN_ROTATION_OVERTIME_SETTINGS_CATEGORY = (typeof ROTATION_OVERTIME_SETTINGS_CATEGORY !== 'undefined' ? ROTATION_OVERTIME_SETTINGS_CATEGORY : 'rotation_overtime_settings');
+
+function adminRotationOvertimeIsoToCzechDate(value) {
+  const raw = String(value || '').trim();
+  const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return raw;
+  return String(Number(match[3])) + '.' + String(Number(match[2])) + '.' + match[1];
+}
+
+function adminRotationOvertimeCzechDateToIso(value, fallbackYear) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  const iso = raw.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (iso) {
+    const year = Number(iso[1]);
+    const month = Number(iso[2]);
+    const day = Number(iso[3]);
+    if (year >= 2000 && year <= 2100 && month >= 1 && month <= 12 && day >= 1 && day <= 31) return String(year) + '-' + String(month).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+  }
+  const cz = raw.match(/^(\d{1,2})\s*[.]\s*(\d{1,2})(?:\s*[.]\s*(\d{2,4})\s*[.]?)?$/);
+  if (!cz) return '';
+  const day = Number(cz[1]);
+  const month = Number(cz[2]);
+  const yearRaw = cz[3] ? Number(cz[3]) : Number(fallbackYear || new Date().getFullYear());
+  const year = yearRaw < 100 ? 2000 + yearRaw : yearRaw;
+  if (!Number.isFinite(day) || !Number.isFinite(month) || !Number.isFinite(year)) return '';
+  if (year < 2000 || year > 2100 || month < 1 || month > 12 || day < 1 || day > 31) return '';
+  return String(year) + '-' + String(month).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+}
+
+function adminIsRotationOvertimeSettingsRow(row) {
+  return String(row && row.category || '').trim() === ADMIN_ROTATION_OVERTIME_SETTINGS_CATEGORY
+    || String(row && row.machine_key || '').trim() === ADMIN_ROTATION_OVERTIME_SETTINGS_KEY;
+}
+
+function makeAdminRotationOvertimeSettingsRow(settings) {
+  const safe = settings && typeof settings === 'object' ? settings : { type: ADMIN_ROTATION_OVERTIME_SETTINGS_CATEGORY, entries: [] };
+  return {
+    machine_key: ADMIN_ROTATION_OVERTIME_SETTINGS_KEY,
+    machine_code: 'ROTATION',
+    machine_index: 'overtime',
+    label: 'Přesčasy rozpisu',
+    category: ADMIN_ROTATION_OVERTIME_SETTINGS_CATEGORY,
+    cycle_time: '',
+    speed: '',
+    dress_time: '',
+    dress_count: '',
+    settings_json: Object.assign({ machine: 'ROTATION', index: 'overtime' }, safe)
+  };
+}
+
+function mergeAdminRotationOvertimeSettingsRows(settings) {
+  const base = Array.isArray(app.machineSettingsRows) ? app.machineSettingsRows : [];
+  const rows = base.filter((row) => !adminIsRotationOvertimeSettingsRow(row));
+  rows.push(makeAdminRotationOvertimeSettingsRow(settings));
+  return rows;
+}
+
+function getAdminRotationOvertimeEntries() {
+  try {
+    if (typeof getRotationOvertimeSettings === 'function') {
+      const settings = getRotationOvertimeSettings();
+      return Array.isArray(settings && settings.entries) ? settings.entries.slice() : [];
+    }
+  } catch (err) {}
+  try {
+    const all = typeof SPECIAL_OVERTIME_SUNDAY_NIGHTS_2026 !== 'undefined' ? Array.from(SPECIAL_OVERTIME_SUNDAY_NIGHTS_2026) : [];
+    const mo = typeof SPECIAL_OVERTIME_MO_ONLY_SUNDAYS_2026 !== 'undefined' ? SPECIAL_OVERTIME_MO_ONLY_SUNDAYS_2026 : new Set();
+    return all.sort().map((date) => ({ date, to: !(mo && typeof mo.has === 'function' && mo.has(date)), note: (mo && typeof mo.has === 'function' && mo.has(date)) ? 'Jen MO' : '' }));
+  } catch (err) {}
+  return [];
+}
+
+function buildAdminRotationOvertimeRowHtml(entry, index, year) {
+  const safe = entry && typeof entry === 'object' ? entry : {};
+  const date = adminRotationOvertimeIsoToCzechDate(safe.date || '');
+  const to = safe.to !== false;
+  const note = String(safe.note || '').trim();
+  return [
+    '<tr data-rotation-overtime-row data-overtime-year="' + escapeHtml(String(year || '')) + '">',
+    '  <td><input class="appMenuInlineInput adminRotationOvertimeDateInput" data-rotation-overtime-date value="' + escapeHtml(date) + '" placeholder="1.3.' + escapeHtml(String(year || new Date().getFullYear())) + '" inputmode="numeric"></td>',
+    '  <td><label class="adminRotationOvertimeSwitch"><input type="checkbox" data-rotation-overtime-to ' + (to ? 'checked' : '') + '><span>TO</span></label></td>',
+    '  <td><input class="appMenuInlineInput adminRotationOvertimeNoteInput" data-rotation-overtime-note value="' + escapeHtml(note) + '" placeholder="poznámka, např. jen MO"></td>',
+    '  <td><button type="button" class="adminRotationGeneratorIconBtn" data-admin-action="overtime-row-clear" title="Smazat řádek">×</button></td>',
+    '</tr>'
+  ].join('');
+}
+
+function buildAdminRotationOvertimeSettingsHtml() {
+  const entries = getAdminRotationOvertimeEntries().slice().sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
+  const currentYear = new Date().getFullYear();
+  const yearSet = new Set([String(currentYear), String(currentYear + 1)]);
+  entries.forEach((entry) => {
+    const match = String(entry.date || '').match(/^(\d{4})-/);
+    if (match) yearSet.add(match[1]);
+  });
+  const years = Array.from(yearSet).sort();
+  const groups = years.map((year) => {
+    const groupEntries = entries.filter((entry) => String(entry.date || '').startsWith(year + '-'));
+    const rows = groupEntries.map((entry, idx) => buildAdminRotationOvertimeRowHtml(entry, idx, year));
+    for (let i = 0; i < 4; i += 1) rows.push(buildAdminRotationOvertimeRowHtml({ date: '', to: true, note: '' }, groupEntries.length + i, year));
+    return [
+      '<details class="appMenuFoldSection adminRotationOvertimeYear" open>',
+      '  <summary>Rok ' + escapeHtml(year) + ' <span class="smallText">' + String(groupEntries.length) + '×</span></summary>',
+      '  <div class="tableWrap appMenuTableWrap">',
+      '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminRotationOvertimeTable">',
+      '      <colgroup><col class="adminRotationOvertimeDateCol"><col class="adminRotationOvertimeToCol"><col class="adminRotationOvertimeNoteCol"><col class="adminRotationOvertimeDeleteCol"></colgroup>',
+      '      <thead><tr><th>Datum</th><th>TO</th><th>Poznámka</th><th></th></tr></thead>',
+      '      <tbody data-rotation-overtime-year-body="' + escapeHtml(year) + '">' + rows.join('') + '</tbody>',
+      '    </table>',
+      '  </div>',
+      '  <button type="button" class="appMenuAction adminRotationGeneratorSmallAdd" data-admin-action="overtime-row-add" data-overtime-year="' + escapeHtml(year) + '">+ Přidat přesčas</button>',
+      '</details>'
+    ].join('');
+  }).join('');
+  return [
+    '<div class="adminRotationOvertimeHelp">',
+    '  <b>TO zapnuto</b> = přesčas jde na tvrdotu a TNKS01/TPKW01 se ve statistikách počítá 0,5 + 0,5. ',
+    '  <b>TO vypnuto</b> = přesčas nejde na tvrdotu, takže TNKS01 i TPKW01 mají +1 na stroji, kde jsou napsané.',
+    '</div>',
+    groups
+  ].join('');
+}
+
+function readAdminRotationOvertimeSettingsFromDom() {
+  const map = new Map();
+  document.querySelectorAll('#appMenuBody tr[data-rotation-overtime-row]').forEach((tr) => {
+    const fallbackYear = String(tr.getAttribute('data-overtime-year') || '').trim();
+    const dateInput = tr.querySelector('[data-rotation-overtime-date]');
+    const iso = adminRotationOvertimeCzechDateToIso(dateInput ? dateInput.value : '', fallbackYear);
+    if (!iso) return;
+    const toInput = tr.querySelector('[data-rotation-overtime-to]');
+    const noteInput = tr.querySelector('[data-rotation-overtime-note]');
+    map.set(iso, {
+      date: iso,
+      to: !!(toInput && toInput.checked),
+      note: String(noteInput && noteInput.value || '').trim()
+    });
+  });
+  return {
+    type: ADMIN_ROTATION_OVERTIME_SETTINGS_CATEGORY,
+    entries: Array.from(map.values()).sort((a, b) => a.date.localeCompare(b.date)),
+    updatedAt: new Date().toISOString()
+  };
+}
+
+function adminRotationAddOvertimeRow(year) {
+  const safeYear = String(year || new Date().getFullYear()).trim();
+  const body = document.querySelector('#appMenuBody [data-rotation-overtime-year-body="' + safeYear.replace(/"/g, '') + '"]');
+  if (!body) return;
+  body.insertAdjacentHTML('beforeend', buildAdminRotationOvertimeRowHtml({ date: '', to: true, note: '' }, body.querySelectorAll('tr').length, safeYear));
+  const status = document.getElementById('adminOnlineSaveStatus');
+  if (status) status.textContent = 'Přidaný prázdný řádek. Přesčasy se uloží až tlačítkem Uložit přesčasy.';
+}
+
+function adminRotationClearOvertimeRow(target) {
+  const row = target && typeof target.closest === 'function' ? target.closest('tr[data-rotation-overtime-row]') : null;
+  if (!row) return;
+  const date = row.querySelector('[data-rotation-overtime-date]');
+  const to = row.querySelector('[data-rotation-overtime-to]');
+  const note = row.querySelector('[data-rotation-overtime-note]');
+  if (date) date.value = '';
+  if (to) to.checked = true;
+  if (note) note.value = '';
+  const status = document.getElementById('adminOnlineSaveStatus');
+  if (status) status.textContent = 'Řádek je vyčištěný. Změna se uloží až tlačítkem Uložit přesčasy.';
 }
 
 async function saveAdminRotationToSupabase(monthKey, rawText) {
@@ -571,7 +741,7 @@ function buildAdminFhbTargetSettingsHtml() {
 
 function buildAdminMachineSettingsTableHtml() {
   const rows = Array.isArray(app.machineSettingsRows) ? app.machineSettingsRows : [];
-  const machineRows = rows.filter(row => { const cat = String(row && row.category ? row.category : '').trim(); return cat !== 'brus' && cat !== 'fhb_target' && cat !== 'food_schedule'; });
+  const machineRows = rows.filter(row => { const cat = String(row && row.category ? row.category : '').trim(); return cat !== 'brus' && cat !== 'fhb_target' && cat !== 'food_schedule' && cat !== ADMIN_ROTATION_OVERTIME_SETTINGS_CATEGORY; });
   const brusRows = rows.filter(row => String(row && row.category ? row.category : '').trim() === 'brus');
 
   const machineDefaults = machineRows.length ? machineRows : [
@@ -829,6 +999,9 @@ function readAdminMachineSettingsFromDom() {
     rows.push(makeAdminFoodScheduleSettingsRow(foodSettings));
   } else if (Array.isArray(app.machineSettingsRows)) {
     app.machineSettingsRows.filter(adminIsFoodScheduleRow).forEach((row) => rows.push(row));
+  }
+  if (Array.isArray(app.machineSettingsRows)) {
+    app.machineSettingsRows.filter(adminIsRotationOvertimeSettingsRow).forEach((row) => rows.push(row));
   }
   return rows;
 }
@@ -2679,7 +2852,7 @@ function adminShowRotationSelectedRemove(input) {
       return;
     }
     window.__rakAdminRotationSelectedInput = input;
-    // RaK 1.2 (1.124) – horní sticky tlačítko už při kliknutí do jména nevytahujeme.
+    // RaK 1.2 (1.125) – horní sticky tlačítko už při kliknutí do jména nevytahujeme.
     // Rychlé Odebrat se vykreslí přímo u aktivního pole přes adminShowRotationQuickRemove().
     btn.hidden = true;
     btn.dataset.targetReady = '1';

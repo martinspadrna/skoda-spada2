@@ -1,4 +1,4 @@
-// RaK 1.2 (1.124) – post-load audit orchestrace aplikace.
+// RaK 1.2 (1.125) – post-load audit orchestrace aplikace.
 
 function runRakPostLoadAudits() {
   try { runPhaseOneFinalAudit(); } catch (err) { console.warn('Phase 1 final audit failed', err); }

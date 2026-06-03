@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.124) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.125) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -216,12 +216,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.124)',
-  appLabel: 'RaK 1.2 (1.124)',
-  packageVersion: '1.2.124',
-  cacheVersion: 'v1.2-1.124',
-  realtimeChannel: 'rak-public-live-v1-2-1-124',
-  changelogHeader: '## RaK 1.2 (1.124)',
+  displayVersion: '1.2 (1.125)',
+  appLabel: 'RaK 1.2 (1.125)',
+  packageVersion: '1.2.125',
+  cacheVersion: 'v1.2-1.125',
+  realtimeChannel: 'rak-public-live-v1-2-1-125',
+  changelogHeader: '## RaK 1.2 (1.125)',
   previousBuildFragments: Object.freeze(['1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -326,8 +326,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.124)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.124'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.125)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.125'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1043,7 +1043,7 @@ function assertStatsPressMachineMoOnlyExceptionContractV1124() {
   const statsJs = read('stats.js');
   const coreJs = read('core.js');
   const ui = read('admin-rotation.js');
-  assertIncludes(exportJs, 'RAK_STATS_PRESS_MACHINE_MO_ONLY_EXCEPTION_CONTRACT_V1124', 'export.js musí dokumentovat MO-only výjimku TNKS01/TPKW01 v1.124');
+  assertIncludes(exportJs, 'RAK_STATS_PRESS_MACHINE_MO_ONLY_EXCEPTION_CONTRACT_V1124', 'export.js musí dokumentovat MO-only výjimku TNKS01/TPKW01 v1.125');
   assertIncludes(coreJs, 'SPECIAL_OVERTIME_MO_ONLY_SUNDAYS_2026', 'core.js musí mít seznam nedělních přesčasů jen MO');
   assertIncludes(coreJs, '"2026-03-01"', '1.3.2026 musí být evidovaný jako přesčas jen MO');
   assertIncludes(coreJs, 'function isSpecialOvertimeSundayMoOnly', 'core.js musí mít helper pro MO-only přesčasovou neděli');
