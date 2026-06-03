@@ -1,4 +1,4 @@
-// RaK 1.2 (1.116) – Administrace Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
+// RaK 1.2 (1.117) – Administrace Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('admin-rotation.js', 'loading', { source: 'dynamic-loader' }); } catch (err) {}
 
 
@@ -1824,6 +1824,96 @@ function adminRotationGeneratorBalanceHardMachine(month, machineName, model, mon
   return { swaps, counts };
 }
 
+function adminRotationGeneratorCountSectionTotals(month, names) {
+  const result = Object.create(null);
+  const list = Array.isArray(names) ? names : adminGetKnownNames();
+  list.forEach((name) => { result[name] = { hard: 0, soft: 0 }; });
+  const add = (sectionKey, row) => {
+    const cells = Array.isArray(row && row.cells) ? row.cells : [];
+    cells.forEach((cell) => {
+      const name = adminRotationCanonicalName(cell, list);
+      if (!name || !Object.prototype.hasOwnProperty.call(result, name)) return;
+      if (sectionKey === 'soft') result[name].soft += 1;
+      else result[name].hard += 1;
+    });
+  };
+  (Array.isArray(month && month.hard && month.hard.rows) ? month.hard.rows : []).forEach((row) => add('hard', row));
+  (Array.isArray(month && month.soft && month.soft.rows) ? month.soft.rows : []).forEach((row) => add('soft', row));
+  return result;
+}
+
+function adminRotationGeneratorMoToPairScore(totals, firstName, secondName) {
+  const first = totals && totals[firstName] ? totals[firstName] : { hard: 0, soft: 0 };
+  const second = totals && totals[secondName] ? totals[secondName] : { hard: 0, soft: 0 };
+  return Math.abs(Number(first.hard || 0) - Number(second.hard || 0)) + Math.abs(Number(first.soft || 0) - Number(second.soft || 0));
+}
+
+function adminRotationGeneratorFindPairCellOnDay(month, rowIdx, person, sectionKey) {
+  const knownNames = adminGetKnownNames();
+  const wanted = adminRotationCanonicalName(person, knownNames);
+  const section = sectionKey === 'soft' ? month && month.soft : month && month.hard;
+  const machines = sectionKey === 'soft' ? SOFT_MACHINE_HEADERS : HARD_MACHINE_HEADERS;
+  const row = section && Array.isArray(section.rows) ? section.rows[rowIdx] : null;
+  const cells = Array.isArray(row && row.cells) ? row.cells : [];
+  for (let idx = 0; idx < cells.length; idx += 1) {
+    const name = adminRotationCanonicalName(cells[idx], knownNames);
+    if (name === wanted) return { sectionKey, row, cells, idx, machine: machines[idx] || '' };
+  }
+  return null;
+}
+
+function adminRotationGeneratorBalanceKminekNovotnyMoTo(month, model) {
+  const knownNames = model && Array.isArray(model.knownNames) ? model.knownNames : adminGetKnownNames();
+  const kminek = adminRotationCanonicalName('Kmínek', knownNames);
+  const novotny = adminRotationCanonicalName('Novotný', knownNames);
+  if (!kminek || !novotny || !knownNames.includes(kminek) || !knownNames.includes(novotny)) return { swaps: 0, totals: Object.create(null) };
+  const hardRows = Array.isArray(month && month.hard && month.hard.rows) ? month.hard.rows : [];
+  const softRows = Array.isArray(month && month.soft && month.soft.rows) ? month.soft.rows : [];
+  const maxRows = Math.max(hardRows.length, softRows.length);
+  let totals = adminRotationGeneratorCountSectionTotals(month, [kminek, novotny]);
+  let swaps = 0;
+  const maxPasses = Math.max(1, maxRows * 2);
+
+  for (let pass = 0; pass < maxPasses; pass += 1) {
+    const currentScore = adminRotationGeneratorMoToPairScore(totals, kminek, novotny);
+    if (currentScore <= 1) break;
+    let best = null;
+    let bestScore = currentScore;
+    for (let rowIdx = 0; rowIdx < maxRows; rowIdx += 1) {
+      const options = [
+        [adminRotationGeneratorFindPairCellOnDay(month, rowIdx, kminek, 'hard'), adminRotationGeneratorFindPairCellOnDay(month, rowIdx, novotny, 'soft')],
+        [adminRotationGeneratorFindPairCellOnDay(month, rowIdx, novotny, 'hard'), adminRotationGeneratorFindPairCellOnDay(month, rowIdx, kminek, 'soft')]
+      ];
+      for (const pair of options) {
+        const hardCell = pair[0];
+        const softCell = pair[1];
+        if (!hardCell || !softCell || !hardCell.cells || !softCell.cells) continue;
+        const hardName = adminRotationCanonicalName(hardCell.cells[hardCell.idx], knownNames);
+        const softName = adminRotationCanonicalName(softCell.cells[softCell.idx], knownNames);
+        const nextTotals = JSON.parse(JSON.stringify(totals));
+        if (nextTotals[hardName]) {
+          nextTotals[hardName].hard -= 1;
+          nextTotals[hardName].soft += 1;
+        }
+        if (nextTotals[softName]) {
+          nextTotals[softName].soft -= 1;
+          nextTotals[softName].hard += 1;
+        }
+        const score = adminRotationGeneratorMoToPairScore(nextTotals, kminek, novotny);
+        if (score < bestScore) {
+          bestScore = score;
+          best = { hardCell, softCell, hardName, softName };
+        }
+      }
+    }
+    if (!best) break;
+    best.hardCell.cells[best.hardCell.idx] = best.softName;
+    best.softCell.cells[best.softCell.idx] = best.hardName;
+    swaps += 1;
+    totals = adminRotationGeneratorCountSectionTotals(month, [kminek, novotny]);
+  }
+  return { swaps, totals };
+}
 
 function adminRotationGeneratorCanReadEditorDraftFromDom() {
   const body = document.getElementById('appMenuBody');
@@ -1886,6 +1976,7 @@ function adminGenerateRotationMonthDraft(monthKey) {
   const soloMillBalance = adminRotationGeneratorBalanceSoloMill(month, model);
   const softKindBalance = adminRotationGeneratorBalanceSoftKind(month, model);
   const soloMillRebalance = adminRotationGeneratorBalanceSoloMill(month, model);
+  const kminekNovotnyMoToBalance = adminRotationGeneratorBalanceKminekNovotnyMoTo(month, model);
   const normalized = normalizeMonthForImport(month, fallback);
   if (!app.rotation.months) app.rotation.months = {};
   app.rotation.months[monthKey] = normalized;
@@ -1908,7 +1999,8 @@ function adminGenerateRotationMonthDraft(monthKey) {
     tnksBalanceSwaps: tnksBalance && Number(tnksBalance.swaps || 0),
     soloMillBalanceSwaps: (soloMillBalance && Number(soloMillBalance.swaps || 0)) + (soloMillRebalance && Number(soloMillRebalance.swaps || 0)),
     softKindBalanceSwaps: softKindBalance && Number(softKindBalance.swaps || 0),
-    ruleVersion: '1.116'
+    kminekNovotnyMoToBalanceSwaps: kminekNovotnyMoToBalance && Number(kminekNovotnyMoToBalance.swaps || 0),
+    ruleVersion: '1.117'
   };
 }
 
@@ -1977,6 +2069,14 @@ const RAK_ROTATION_GENERATOR_RULES_V1116 = Object.freeze({
   pressBalanceRule: 'Nýtovačka se vyrovnává podle společného počtu TNKS01/TPKW01 s pravidlem 0,5 + 0,5, takže stav 1,5 proti 0 je potřeba dál prohazovat.',
   softKindBalanceRule: 'Měkota se po vygenerování dorovnává i podle typu práce: kdo má moc frézek a žádný soustruh se prohazuje s tím, kdo má moc soustruhů a žádné frézky.',
   resultFields: Object.freeze(['tnksBalanceSwaps', 'soloMillBalanceSwaps', 'softKindBalanceSwaps'])
+});
+
+const RAK_ROTATION_GENERATOR_RULES_V1117 = Object.freeze({
+  version: '1.117',
+  scope: 'Administrace dat / Rozpisy / Vygenerovat návrh',
+  kminekNovotnyMoToRule: 'Kmínek a Novotný se můžou po vygenerování prohazovat mezi sebou, aby měli co nejpodobnější počet směn na MO a TO.',
+  guardFunction: 'adminRotationGeneratorBalanceKminekNovotnyMoTo',
+  resultFields: Object.freeze(['kminekNovotnyMoToBalanceSwaps'])
 });
 
 const RAK_ROTATION_GENERATOR_WIZARD_CONTRACT_V1108 = Object.freeze({
@@ -2499,6 +2599,7 @@ function adminHandleRotationGeneratorWizardAction(action, target) {
 
 
 
+window.RAK_ROTATION_GENERATOR_RULES_V1117 = RAK_ROTATION_GENERATOR_RULES_V1117;
 window.RAK_ROTATION_GENERATOR_RULES_V1116 = RAK_ROTATION_GENERATOR_RULES_V1116;
 window.RAK_ROTATION_GENERATOR_RULES_V1115 = RAK_ROTATION_GENERATOR_RULES_V1115;
 window.RAK_ROTATION_GENERATOR_RULES_V1114 = RAK_ROTATION_GENERATOR_RULES_V1114;
@@ -2548,7 +2649,7 @@ function adminShowRotationSelectedRemove(input) {
       return;
     }
     window.__rakAdminRotationSelectedInput = input;
-    // RaK 1.2 (1.116) – horní sticky tlačítko už při kliknutí do jména nevytahujeme.
+    // RaK 1.2 (1.117) – horní sticky tlačítko už při kliknutí do jména nevytahujeme.
     // Rychlé Odebrat se vykreslí přímo u aktivního pole přes adminShowRotationQuickRemove().
     btn.hidden = true;
     btn.dataset.targetReady = '1';

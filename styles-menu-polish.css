@@ -1,4 +1,4 @@
-/* RaK 1.2 (1.116) – menu/O aplikaci/diagnostika polish oddělený ze styles-overrides.css.
+/* RaK 1.2 (1.117) – menu/O aplikaci/diagnostika polish oddělený ze styles-overrides.css.
    Jen přesun existujících pravidel kvůli dokončení CSS cleanupu; bez změny vizuální logiky spodní lišty. */
 
 /* v.1.5 (877): Diagnostika/O aplikaci – dlouhé řádky zůstávají uvnitř buňky. */
@@ -83,7 +83,7 @@ body.lowEndDevice #menu .adminUsageMetric,
 body.ladaMode #menu .adminUsageMetric{backdrop-filter:none !important;-webkit-backdrop-filter:none !important;box-shadow:none !important;}
 
 
-/* RaK 1.2 (1.116) – Přehled připojení jako rozklikávací profily.
+/* RaK 1.2 (1.117) – Přehled připojení jako rozklikávací profily.
    Iniciály v avataru mají vlastní summary text wrapper, aby zůstaly přesně uprostřed ikonky. */
 #menu .adminUsageCard{
   max-height:none !important;
@@ -228,7 +228,7 @@ body.ladaMode #menu .adminUsageMetric{backdrop-filter:none !important;-webkit-ba
   #menu .adminUsageProfileMeta{grid-template-columns:1fr !important;}
 }
 
-/* RaK 1.2 (1.116) – Přehled připojení avatar contract.
+/* RaK 1.2 (1.117) – Přehled připojení avatar contract.
    Avatar má silnější selektor než obecná summary pravidla, aby dvě iniciály zůstaly přesně uprostřed ikonky i na malém mobilu. */
 #menu .adminUsageSummary .adminUsageAvatar{
   display:flex !important;

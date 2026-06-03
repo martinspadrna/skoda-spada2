@@ -1,4 +1,4 @@
-// RaK 1.2 (1.116) – window.RaK namespace bridge.
+// RaK 1.2 (1.117) – window.RaK namespace bridge.
 
 (function setupRakNamespaceBridge() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -11,7 +11,7 @@
 
   const root = window.RaK || {};
   const existingVersion = root.namespaceVersion || '';
-  root.namespaceVersion = '1.2 (1.116)';
+  root.namespaceVersion = '1.2 (1.117)';
   root.mode = 'passive-namespace-readonly-release-gates-frezky-sign-toggle-v931';
   root.createdAt = root.createdAt || new Date().toISOString();
   root.updatedAt = new Date().toISOString();
@@ -146,7 +146,7 @@
   };
   root.getNamespaceMap = cloneMap;
   root.namespaceMap = cloneMap();
-  root.namespaceMapVersion = '1.2 (1.116)';
+  root.namespaceMapVersion = '1.2 (1.117)';
   root.namespacePlan = {
     phase: 'phase C',
     mode: 'namespace-readonly-phase-closed-with-online-game-contract-alias-v897',

@@ -1,10 +1,10 @@
-## RaK 1.2 (1.116)
+## RaK 1.2 (1.117)
 
 - Generátor rozpisů: zesílené vyrovnání nýtovačky/TNKS01 podle společného pravidla TNKS01/TPKW01 = 0,5 + 0,5, aby nevznikal stav, kdy má někdo 1,5 a někdo 0.
 - Generátor rozpisů: přidané dorovnání poměru MFKF/MSKC, aby člověk nebyl jen na frézkách a jiný jen na soustruhách, pokud existuje rozumný prohoz ve stejném dni.
 - Kontrolní přehled po vygenerování je otočený: jména jsou v řádcích, stroje ve sloupcích. Přidané souhrnné sloupce TO a MO.
 - Přidaný contract `RAK_ROTATION_GENERATOR_RULES_V1116` a guardy v `npm run test:app-usage`.
-- Release metadata sjednocená na `RaK 1.2 (1.116)`, technická verze `1.2.116`, cache `v1.2-1.116`.
+- Release metadata sjednocená na `RaK 1.2 (1.117)`, technická verze `1.2.117`, cache `v1.2-1.117`.
 
 ## RaK 1.2 (1.115)
 
