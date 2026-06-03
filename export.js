@@ -1,4 +1,4 @@
-// RaK 1.2 (1.112) – export manifest a release metadata.
+// RaK 1.2 (1.113) – export manifest a release metadata.
 const EXPORT_SOURCE_IDS = {
   "module-readiness.js": "src-module-readiness-js",
   "rak-namespace.js": "src-rak-namespace-js",
@@ -112,12 +112,12 @@ const EXPORT_SOURCE_IDS = {
 const SOURCE_CACHE = window.__ROTACE_SOURCE_CACHE__ || (window.__ROTACE_SOURCE_CACHE__ = {});
 const BINARY_SOURCE_CACHE = window.__ROTACE_BINARY_SOURCE_CACHE__ || (window.__ROTACE_BINARY_SOURCE_CACHE__ = {});
 const RAK_RELEASE_METADATA_CONTRACT_V199 = Object.freeze({
-  displayVersion: '1.2 (1.112)',
-  appLabel: 'RaK 1.2 (1.112)',
-  packageVersion: '1.2.112',
-  cacheVersion: 'v1.2-1.112',
-  realtimeChannel: 'rak-public-live-v1-2-1-112',
-  changelogHeader: '## RaK 1.2 (1.112)',
+  displayVersion: '1.2 (1.113)',
+  appLabel: 'RaK 1.2 (1.113)',
+  packageVersion: '1.2.113',
+  cacheVersion: 'v1.2-1.113',
+  realtimeChannel: 'rak-public-live-v1-2-1-113',
+  changelogHeader: '## RaK 1.2 (1.113)',
   serviceWorkerVersionGuard: 'CACHE_VERSION + SW_APP_VERSION'
 });
 const RAK_DASHBOARD_CSS_GUARD_SERIES_CONTRACT_V1100 = Object.freeze({
@@ -228,11 +228,18 @@ const RAK_ROTATION_GENERATOR_MONTH_BALANCE_CONTRACT_V1112 = Object.freeze({
   tnks01Rule: 'nýtovačka/TNKS01 se po vygenerování vyrovnává mezi lidmi v měsíci',
   swapRule: 'pokud někdo vyjde na TNKS01 víckrát a někdo vůbec, generátor může prohodit člověka na TNKS01 s člověkem z tvrdoty dočasně napsaným na měkotě'
 });
+const RAK_ROTATION_GENERATOR_RULES_CONTRACT_V1113 = Object.freeze({
+  scope: 'administrace-dat-rozpisy-generator-rules-v1113',
+  machineCountRule: 'TNKS01 a TPKW01 se v kontrolním přehledu mimo běžnou neděli počítají jako 0,5 + 0,5; běžná neděle ranní/noční zůstává celá na zapsaném stroji, přesčasová neděle se střídá.',
+  softCoreRule: 'Synek, Třasák, Střížek chodí z Měkoty na Tvrdotu jen na TNKS01/TPKW01/TPKW02 po blocích 3 pracovních dnů na stejný stroj.',
+  softBaseLathe: Object.freeze({ Synek: 'MSKC04', Střížek: 'MSKC03', Třasák: 'MSKC01' }),
+  previewRule: 'Po vygenerování průvodce ukáže celý rozpis a umožní návrat na měsíc/dny/absence bez klikání od začátku.'
+});
 const EXPORT_SMOKE_REPORT = window.__RAK_EXPORT_SMOKE_REPORT__ || (window.__RAK_EXPORT_SMOKE_REPORT__ = {
   ok: null,
   status: 'not-run',
   mode: 'export-smoke-report-v939',
-  version: '1.2 (1.112)',
+  version: '1.2 (1.113)',
   checkedAt: null,
   lastStage: 'čeká na export',
   runCount: 0,
@@ -365,7 +372,7 @@ const EXPORT_TEXT_FILES = [
 
 function getRakExportManifest() {
   return {
-    version: String(window.APP_VERSION || '1.2 (1.112)'),
+    version: String(window.APP_VERSION || '1.2 (1.113)'),
     mode: 'export-manifest-preflight-v939',
     indexFile: 'index.html',
     jsFiles: Array.from(new Set(EXPORT_JS_FILES)),
@@ -475,7 +482,7 @@ function updateRakExportSmokeReport(partial) {
   const data = partial && typeof partial === 'object' ? partial : {};
   Object.assign(EXPORT_SMOKE_REPORT, data, {
     mode: 'export-smoke-report-v939',
-    version: String(window.APP_VERSION || '1.2 (1.112)'),
+    version: String(window.APP_VERSION || '1.2 (1.113)'),
     checkedAt: new Date().toISOString()
   });
   return getRakExportSmokeReport();

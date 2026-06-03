@@ -1,6 +1,6 @@
-// RaK 1.2 (1.112) – due diligence audit progress tracker.
+// RaK 1.2 (1.113) – due diligence audit progress tracker.
 (function setupRakDueDiligenceAuditProgress() {
-  const VERSION = '1.2 (1.112)';
+  const VERSION = '1.2 (1.113)';
   const MODE = 'due-diligence-audit-progress-v928';
 
 

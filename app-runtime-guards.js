@@ -1,4 +1,4 @@
-// RaK 1.2 (1.112) – runtime guardy aplikace oddělené z app.js.
+// RaK 1.2 (1.113) – runtime guardy aplikace oddělené z app.js.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app-runtime-guards.js', 'loaded', { source: 'dynamic-loader' }); } catch (err) {}
 
 (function setupRakAppLikeTextSelectionGuard() {

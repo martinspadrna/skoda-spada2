@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.112) – browser smoke test přes lokální Chromium/CDP.
+// RaK 1.2 (1.113) – browser smoke test přes lokální Chromium/CDP.
 // Browser smoke coverage: Rotace export canvas + fixed background + file URL fallback.
 const http = require('http');
 const fs = require('fs');
@@ -10,7 +10,7 @@ const { spawn } = require('child_process');
 const { pathToFileURL } = require('url');
 
 const ROOT_DIR = __dirname;
-const EXPECTED_APP_VERSION = '1.2 (1.112)';
+const EXPECTED_APP_VERSION = '1.2 (1.113)';
 const RAK_BROWSER_SMOKE_ENGINE = 'local-chromium-cdp';
 const RAK_BROWSER_SMOKE_LOAD_MODE = 'about-blank-inline-html';
 const CHROMIUM_BIN = process.env.CHROMIUM_BIN || process.env.CHROME_BIN || '/usr/bin/chromium';
@@ -487,7 +487,7 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml) {
     };
   })()`);
   assert(generatorAbsenceRuleState.ok, `${viewport.name}: generátor pravidel absencí se nespustil ${JSON.stringify(generatorAbsenceRuleState)}`);
-  assert(generatorAbsenceRuleState.ruleVersion === '1.107', `${viewport.name}: generátor nemá pravidla 1.107 ${JSON.stringify(generatorAbsenceRuleState)}`);
+  assert(generatorAbsenceRuleState.ruleVersion === '1.113', `${viewport.name}: generátor nemá pravidla 1.113 ${JSON.stringify(generatorAbsenceRuleState)}`);
   assert(generatorAbsenceRuleState.mfkf06 === '', `${viewport.name}: při jednom člověku na frézkách musí být MFKF06 prázdná ${JSON.stringify(generatorAbsenceRuleState)}`);
   assert(generatorAbsenceRuleState.mskc01 === '', `${viewport.name}: při dvou absencích musí být MSKC01 prázdná ${JSON.stringify(generatorAbsenceRuleState)}`);
   assert(generatorAbsenceRuleState.mfkf10, `${viewport.name}: při dvou absencích musí být člověk na MFKF10 ${JSON.stringify(generatorAbsenceRuleState)}`);
@@ -557,6 +557,7 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml) {
     const filled = month ? [...(month.hard?.rows || []), ...(month.soft?.rows || [])].flatMap(row => row.cells || []).filter(Boolean).length : 0;
     const machineCountHitCount = document.querySelectorAll('.adminRotationGeneratorMachineSummaryTable .adminRotationMachineCountHit').length;
     const summaryText = document.querySelector('.adminRotationGeneratorMachineSummaryTable')?.textContent || '';
+    const previewText = document.querySelector('.adminRotationGeneratorPreviewTable')?.textContent || '';
     const tnksBalance = (() => {
       const names = typeof adminGetKnownNames === 'function' ? adminGetKnownNames() : [];
       const idx = (typeof HARD_MACHINE_HEADERS !== 'undefined' ? HARD_MACHINE_HEADERS : []).indexOf('TNKS01');
@@ -579,12 +580,14 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml) {
       machineCountHitCount,
       tnksBalance,
       summaryTextLength: summaryText.length,
+      previewTextLength: previewText.length,
       resultText: state.resultText || ''
     };
   })()`);
   assert(wizardRunState.ok, `${viewport.name}: Vygenerovat rozpis z průvodce se nespustilo ${JSON.stringify(wizardRunState)}`);
   assert(wizardRunState.resultFilledCells > 0 && wizardRunState.filled > 0, `${viewport.name}: Vygenerovat rozpis z průvodce skončilo prázdným rozpisem ${JSON.stringify(wizardRunState)}`);
   assert(wizardRunState.machineCountHitCount > 0 && wizardRunState.summaryTextLength > 20, `${viewport.name}: přehled stroje × jména po průvodci je nulový/prázdný ${JSON.stringify(wizardRunState)}`);
+  assert(wizardRunState.previewTextLength > 80, `${viewport.name}: náhled celého rozpisu po průvodci chybí nebo je prázdný ${JSON.stringify(wizardRunState)}`);
   assert(wizardRunState.tnksBalance && wizardRunState.tnksBalance.max - wizardRunState.tnksBalance.min <= 1, `${viewport.name}: TNKS01/nýtovačka není po vygenerování vyrovnaná ${JSON.stringify(wizardRunState.tnksBalance)}`);
 
   const corruptedMonthRecovery = await evalInPage(client, `(() => {

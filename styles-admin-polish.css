@@ -1,4 +1,4 @@
-/* RaK 1.2 (1.112) – Administrace/Rozpisy polish oddělený ze styles-overrides.css.
+/* RaK 1.2 (1.113) – Administrace/Rozpisy polish oddělený ze styles-overrides.css.
    Bez změny logiky, Supabase ani spodní lišty. */
 
 /* v.1.5 (988) – Administrace / Rozpisy: užší sloupce pro tvrdotu, měkotu a absence. */
@@ -304,7 +304,7 @@
 }
 
 
-/* RaK 1.2 (1.112) – Administrace/Rozpisy: průvodce generátorem a čitelné mini hlavičky Tvrdoty. */
+/* RaK 1.2 (1.113) – Administrace/Rozpisy: průvodce generátorem a čitelné mini hlavičky Tvrdoty. */
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adminRotationMiniTable th{
   min-width:30px !important;
   font-size:7.2px !important;

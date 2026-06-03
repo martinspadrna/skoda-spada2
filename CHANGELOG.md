@@ -1,3 +1,12 @@
+## RaK 1.2 (1.113)
+
+- Generátor rozpisu: kontrolní tabulka stroje × jména teď počítá TNKS01/TPKW01 podle reálného střídání jako 0,5 + 0,5 mimo běžnou neděli; běžná neděle ranní/noční zůstává jako celá směna na zapsaném stroji, přesčasová neděle se střídá.
+- Generátor rozpisu: Synek, Třasák a Střížek chodí z Měkoty na Tvrdotu jen na TNKS01/TPKW01/TPKW02 po blocích 3 pracovních dnů na stejný stroj; při absenci se pořadí v bloku přeskupí, aby se tomu člověk nevyhnul.
+- Generátor rozpisu: základní soustruhy Měkoty jsou Synek MSKC04, Střížek MSKC03 a Třasák MSKC01, pokud jsou dostupní a nejsou zrovna na Tvrdotě.
+- Průvodce generátorem po vygenerování ukazuje náhled celého rozpisu Tvrdota/Měkota a umožňuje návrat na měsíc, dny nebo absence bez naklikání od začátku.
+- Přidaný contract `RAK_ROTATION_GENERATOR_RULES_V1113` a testy pro 0,5 přehled, 3denní bloky Měkoty, základní soustruhy a náhled celého rozpisu.
+- Release metadata sjednocená na `RaK 1.2 (1.113)`, technická verze `1.2.113`, cache `v1.2-1.113`.
+
 ## RaK 1.2 (1.112)
 
 - Generátor rozpisu: výběr měsíce je teď řazený podle roku/měsíce a seskupený podle roku, aby se nepletly měsíce z 2025 a 2026.

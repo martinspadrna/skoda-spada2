@@ -1,4 +1,4 @@
-// RaK 1.2 (1.112) – Administrace Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
+// RaK 1.2 (1.113) – Administrace Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('admin-rotation.js', 'loading', { source: 'dynamic-loader' }); } catch (err) {}
 
 
@@ -945,6 +945,10 @@ const RAK_ROTATION_GENERATOR_RULES_V1107 = Object.freeze({
   softPreferred: Object.freeze(['Střížek', 'Synek', 'Třasák', 'Špadrna', 'Novotný']),
   hardPreferred: Object.freeze(['Blažek', 'Kmínek', 'Kříž', 'Pech', 'Starý']),
   softHardCycle: Object.freeze(['TNKS01', 'TPKW01', 'TPKW02']),
+  softHardBlockLength: 3,
+  softCore: Object.freeze(['Synek', 'Třasák', 'Střížek']),
+  softBaseLathe: Object.freeze({ Synek: 'MSKC04', 'Střížek': 'MSKC03', 'Třasák': 'MSKC01' }),
+  machineCountSplitRule: 'Mimo běžnou neděli se TNKS01 a TPKW01 v kontrolním přehledu počítají jako 0,5 + 0,5 pro oba stroje.',
   hardCycle: Object.freeze(['TNKS01', 'TBKR07', 'TPKW01', 'TPKW02', 'TBKR01']),
   softMachines: Object.freeze(['MSKC01', 'MSKC03', 'MSKC04', 'MFKF06', 'MFKF10']),
   absenceRules: Object.freeze([
@@ -1223,6 +1227,90 @@ function adminRotationGeneratorSoftKind(machineName) {
   return /^MFKF/i.test(String(machineName || '')) ? 'mill' : 'lathe';
 }
 
+
+function adminRotationGeneratorParseDayMeta(dateLabel, monthKey) {
+  const parsed = typeof parseDateToken === 'function' ? parseDateToken(dateLabel) : null;
+  const monthParsed = typeof parseMonthKey === 'function' ? parseMonthKey(monthKey) : null;
+  const day = Number(parsed && parsed.day);
+  const month = Number((parsed && parsed.month) || (monthParsed && monthParsed.month));
+  const year = Number(monthParsed && monthParsed.year) || new Date().getFullYear();
+  const shift = String((parsed && parsed.shift) || (String(dateLabel || '').match(/\b(R8|N8|R|N)\b/i) || [])[1] || '').toUpperCase();
+  const isSunday = Number.isFinite(day) && Number.isFinite(month) && Number.isFinite(year)
+    ? new Date(year, month - 1, day).getDay() === 0
+    : /(?:ne|neděle|nedele)/i.test(String(dateLabel || ''));
+  return { day, month, year, shift, isSunday };
+}
+
+function adminRotationGeneratorIsOvertimeSunday(dateLabel, monthKey, month) {
+  const meta = adminRotationGeneratorParseDayMeta(dateLabel, monthKey);
+  if (!meta.isSunday) return false;
+  const baseKey = adminRotationDateBaseKey(dateLabel);
+  const noteText = (Array.isArray(month && month.notes) ? month.notes : [])
+    .filter((note) => adminRotationDateBaseKey(note && note.date) === baseKey)
+    .map((note) => [note.person, note.code, note.text].map((part) => String(part || '')).join(' '))
+    .join(' ');
+  return /přesčas|prescas|22\s*[-–]\s*6|22\s*h/i.test(String(dateLabel || '') + ' ' + noteText);
+}
+
+function adminRotationGeneratorShouldSplitPressMachines(dateLabel, monthKey, month) {
+  const meta = adminRotationGeneratorParseDayMeta(dateLabel, monthKey);
+  if (!meta.isSunday) return true;
+  return adminRotationGeneratorIsOvertimeSunday(dateLabel, monthKey, month);
+}
+
+function adminRotationGeneratorAddMachineCount(machineMap, machineName, person, value) {
+  const name = String(person || '').trim();
+  const machine = String(machineName || '').trim();
+  if (!name || !machine) return;
+  if (!machineMap.has(machine)) machineMap.set(machine, new Map());
+  const rowMap = machineMap.get(machine);
+  rowMap.set(name, Number(rowMap.get(name) || 0) + Number(value || 0));
+}
+
+function adminRotationGeneratorFormatCount(value) {
+  const n = Math.round((Number(value) || 0) * 10) / 10;
+  if (!n) return '';
+  return String(n).replace('.', ',');
+}
+
+function adminRotationGeneratorSoftCoreBlockInfo(rowIdx) {
+  const cycle = RAK_ROTATION_GENERATOR_RULES_V1107.softHardCycle;
+  const blockLength = Math.max(1, Number(RAK_ROTATION_GENERATOR_RULES_V1107.softHardBlockLength) || 3);
+  const blockIdx = Math.floor(Math.max(0, Number(rowIdx) || 0) / blockLength);
+  const blockStart = blockIdx * blockLength;
+  const blockEnd = blockStart + blockLength - 1;
+  const machine = cycle[blockIdx % cycle.length] || cycle[0] || 'TNKS01';
+  return { blockIdx, blockLength, blockStart, blockEnd, machine };
+}
+
+function adminRotationGeneratorPickSoftCoreForHard(month, knownNames, rowIdx, machineIdx, available, usedNames, counters) {
+  const core = RAK_ROTATION_GENERATOR_RULES_V1107.softCore.filter((name) => knownNames.includes(name));
+  const info = adminRotationGeneratorSoftCoreBlockInfo(rowIdx);
+  const already = new Set();
+  const rows = Array.isArray(month && month.hard && month.hard.rows) ? month.hard.rows : [];
+  for (let i = info.blockStart; i < rowIdx; i += 1) {
+    const row = rows[i];
+    const name = adminRotationCanonicalName(row && row.cells ? row.cells[machineIdx] : '', knownNames);
+    if (core.includes(name)) already.add(name);
+  }
+  const candidates = core.filter((name) => available.includes(name) && !usedNames.has(name) && !already.has(name));
+  if (!candidates.length) return '';
+  return adminRotationGeneratorPickName(candidates, usedNames, counters, {
+    sectionKey: 'hard',
+    machineName: info.machine,
+    rowIdx,
+    required: candidates,
+    preferred: core
+  });
+}
+
+function adminRotationGeneratorBaseLathePerson(machineName, knownNames, available, usedNames) {
+  const map = RAK_ROTATION_GENERATOR_RULES_V1107.softBaseLathe || {};
+  const wantedEntry = Object.entries(map).find((entry) => String(entry[1] || '').toUpperCase() === String(machineName || '').toUpperCase());
+  const person = wantedEntry ? adminRotationCanonicalName(wantedEntry[0], knownNames) : '';
+  return person && knownNames.includes(person) && available.includes(person) && !usedNames.has(person) ? person : '';
+}
+
 function adminRotationGeneratorBuildDay(month, model, counters, rowIdx, dateLabel, blockedNames) {
   const knownNames = model.knownNames;
   const softPreferred = RAK_ROTATION_GENERATOR_RULES_V1107.softPreferred.filter((name) => knownNames.includes(name));
@@ -1236,18 +1324,11 @@ function adminRotationGeneratorBuildDay(month, model, counters, rowIdx, dateLabe
 
   if (!available.length) return { hardCells, softCells, filledCells: 0, emptyProtected: 0 };
 
-  const softHardCycle = RAK_ROTATION_GENERATOR_RULES_V1107.softHardCycle;
-  const cycleMachine = softHardCycle[rowIdx % softHardCycle.length];
+  const softCoreBlock = adminRotationGeneratorSoftCoreBlockInfo(rowIdx);
+  const cycleMachine = softCoreBlock.machine;
   const cycleIdx = adminRotationGeneratorMachineIndex(HARD_MACHINE_HEADERS, cycleMachine);
-  const softHardCandidates = softPreferred.filter((name) => available.includes(name));
   const exchangeSoft = cycleIdx >= 0 && hardTargetCount > 0
-    ? adminRotationGeneratorPickName(softHardCandidates, usedNames, counters, {
-        sectionKey: 'hard',
-        machineName: cycleMachine,
-        rowIdx,
-        preferred: softPreferred.slice(0, 3),
-        historical: adminRotationGeneratorHistoricalMachineScore(model, 'hard', cycleIdx, softHardCandidates[0] || '')
-      })
+    ? adminRotationGeneratorPickSoftCoreForHard(month, knownNames, rowIdx, cycleIdx, available, usedNames, counters)
     : '';
   if (exchangeSoft) {
     hardCells[cycleIdx] = exchangeSoft;
@@ -1282,9 +1363,11 @@ function adminRotationGeneratorBuildDay(month, model, counters, rowIdx, dateLabe
   softSlots.forEach((machineIdx) => {
     const machineName = SOFT_MACHINE_HEADERS[machineIdx] || '';
     const kind = adminRotationGeneratorSoftKind(machineName);
+    const remainingNow = available.filter((name) => !usedNames.has(name));
+    const baseLathe = kind === 'lathe' ? adminRotationGeneratorBaseLathePerson(machineName, knownNames, available, usedNames) : '';
     const preferred = kind === 'mill'
-      ? remaining.filter((name) => !softPreferred.includes(name)).concat(remaining.filter((name) => softPreferred.includes(name)))
-      : remaining.filter((name) => softPreferred.includes(name)).concat(remaining.filter((name) => !softPreferred.includes(name)));
+      ? remainingNow.filter((name) => !softPreferred.includes(name)).concat(remainingNow.filter((name) => softPreferred.includes(name)))
+      : (baseLathe ? [baseLathe] : []).concat(remainingNow.filter((name) => softPreferred.includes(name)), remainingNow.filter((name) => !softPreferred.includes(name)));
     const name = adminRotationGeneratorPickName(Array.from(new Set(preferred)), usedNames, counters, {
       sectionKey: 'soft',
       machineName,
@@ -1342,14 +1425,26 @@ function adminRotationGeneratorCollectWorkingNames(month, knownNames) {
   return Array.from(working);
 }
 
-function adminRotationGeneratorCountHardMachine(month, machineName, names) {
+function adminRotationGeneratorCountHardMachine(month, machineName, names, monthKey) {
   const result = Object.create(null);
-  (Array.isArray(names) ? names : adminGetKnownNames()).forEach((name) => { result[name] = 0; });
+  const list = Array.isArray(names) ? names : adminGetKnownNames();
+  list.forEach((name) => { result[name] = 0; });
+  const wanted = String(machineName || '').toUpperCase();
+  const tnksIdx = adminRotationGeneratorMachineIndex(HARD_MACHINE_HEADERS, 'TNKS01');
+  const tpkw01Idx = adminRotationGeneratorMachineIndex(HARD_MACHINE_HEADERS, 'TPKW01');
   const machineIdx = adminRotationGeneratorMachineIndex(HARD_MACHINE_HEADERS, machineName);
   const rows = Array.isArray(month && month.hard && month.hard.rows) ? month.hard.rows : [];
   if (machineIdx < 0) return result;
   rows.forEach((row) => {
-    const name = adminRotationCanonicalName(row && row.cells ? row.cells[machineIdx] : '', names);
+    const splitPress = adminRotationGeneratorShouldSplitPressMachines(row && row.date, monthKey, month);
+    if ((wanted === 'TNKS01' || wanted === 'TPKW01') && splitPress && tnksIdx >= 0 && tpkw01Idx >= 0) {
+      [tnksIdx, tpkw01Idx].forEach((idx) => {
+        const name = adminRotationCanonicalName(row && row.cells ? row.cells[idx] : '', list);
+        if (name && Object.prototype.hasOwnProperty.call(result, name)) result[name] += 0.5;
+      });
+      return;
+    }
+    const name = adminRotationCanonicalName(row && row.cells ? row.cells[machineIdx] : '', list);
     if (name && Object.prototype.hasOwnProperty.call(result, name)) result[name] += 1;
   });
   return result;
@@ -1377,7 +1472,7 @@ function adminRotationGeneratorFindPersonCellOnDay(month, rowIdx, person, prefer
   return scan('soft', SOFT_MACHINE_HEADERS) || scan('hard', HARD_MACHINE_HEADERS);
 }
 
-function adminRotationGeneratorBalanceHardMachine(month, machineName, model) {
+function adminRotationGeneratorBalanceHardMachine(month, machineName, model, monthKey) {
   const knownNames = model && Array.isArray(model.knownNames) ? model.knownNames : adminGetKnownNames();
   const hardPreferred = RAK_ROTATION_GENERATOR_RULES_V1107.hardPreferred.filter((name) => knownNames.includes(name));
   const workingNames = adminRotationGeneratorCollectWorkingNames(month, knownNames).filter((name) => knownNames.includes(name));
@@ -1385,7 +1480,7 @@ function adminRotationGeneratorBalanceHardMachine(month, machineName, model) {
   const hardRows = Array.isArray(month && month.hard && month.hard.rows) ? month.hard.rows : [];
   if (machineIdx < 0 || !workingNames.length || !hardRows.length) return { swaps: 0, counts: Object.create(null) };
 
-  let counts = adminRotationGeneratorCountHardMachine(month, machineName, workingNames);
+  let counts = adminRotationGeneratorCountHardMachine(month, machineName, workingNames, monthKey);
   let swaps = 0;
   const maxPasses = hardRows.length * 2;
 
@@ -1484,7 +1579,7 @@ function adminGenerateRotationMonthDraft(monthKey) {
   month.soft.rows = softRows;
   month.soft.machines = SOFT_MACHINE_HEADERS.slice();
   month.soft.title = month.soft.title || 'Rotace měkota';
-  const tnksBalance = adminRotationGeneratorBalanceHardMachine(month, 'TNKS01', model);
+  const tnksBalance = adminRotationGeneratorBalanceHardMachine(month, 'TNKS01', model, monthKey);
   const normalized = normalizeMonthForImport(month, fallback);
   if (!app.rotation.months) app.rotation.months = {};
   app.rotation.months[monthKey] = normalized;
@@ -1505,7 +1600,7 @@ function adminGenerateRotationMonthDraft(monthKey) {
     skippedDays,
     protectedEmptyCells,
     tnksBalanceSwaps: tnksBalance && Number(tnksBalance.swaps || 0),
-    ruleVersion: '1.112'
+    ruleVersion: '1.113'
   };
 }
 
@@ -1537,6 +1632,15 @@ const RAK_ROTATION_GENERATOR_MONTH_BALANCE_CONTRACT_V1112 = Object.freeze({
   version: '1.112',
   rule: 'Výběr měsíce v generátoru musí být řazený podle roku/měsíce a TNKS01/nýtovačka se po vygenerování vyrovnává mezi lidmi v měsíci.',
   guard: 'Měsíce se renderují přes optgroup podle roku a po sestavení měsíce běží adminRotationGeneratorBalanceHardMachine, která může prohodit člověka na TNKS01 s člověkem z tvrdoty dočasně napsaným na měkotě.'
+});
+
+const RAK_ROTATION_GENERATOR_RULES_V1113 = Object.freeze({
+  version: '1.113',
+  scope: 'Administrace dat / Rozpisy / Vygenerovat návrh',
+  machineCountRule: 'V kontrolní tabulce stroje × jména se TNKS01 a TPKW01 mimo běžnou neděli počítají jako 0,5 na oba stroje; běžná neděle ranní/noční zůstává celá směna na zapsaném stroji, přesčasová neděle se střídá.',
+  softCoreRule: 'Synek, Třasák a Střížek chodí z Měkoty na Tvrdotu jen na TNKS01/TPKW01/TPKW02 po blocích 3 pracovních dnů na stejný stroj. Když někdo chybí, pořadí se přeskupí tak, aby se tvrdotě nevyhnul.',
+  softLatheBase: Object.freeze({ Synek: 'MSKC04', 'Střížek': 'MSKC03', 'Třasák': 'MSKC01' }),
+  previewRule: 'Po vygenerování musí průvodce ukázat celý rozpis v náhledu a umožnit návrat na měsíc/dny/absence bez naklikání od začátku.'
 });
 
 const RAK_ROTATION_GENERATOR_WIZARD_CONTRACT_V1108 = Object.freeze({
@@ -1778,16 +1882,19 @@ function adminRotationGeneratorRenderAbsencesStep(state) {
 
 function adminRotationGeneratorRenderResultStep(state) {
   const month = app.rotation && app.rotation.months ? app.rotation.months[state.monthKey] : null;
-  const summary = adminBuildRotationMachineCountSummaryHtml(month);
+  const summary = adminBuildRotationMachineCountSummaryHtml(month, state.monthKey);
+  const preview = adminBuildRotationGeneratorPreviewHtml(month, state.monthKey);
   return [
     '<div class="adminRotationGeneratorPanel">',
     '  <div class="appMenuSubTitle">Návrh je hotový</div>',
     '  <div class="appMenuText">' + escapeHtml(state.resultText || 'Návrh se vytvořil lokálně. Teď ho zkontroluj, pak se vrať do editoru a ručně ulož.') + '</div>',
+    preview,
     summary,
     '  <div class="appMenuActionRow">',
+    '    <button type="button" class="appMenuAction" data-admin-action="generator-back-month">Zpět na měsíc</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="generator-back-days">Zpět na dny</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="generator-back-absences">Zpět na absence</button>',
-    '    <button type="button" class="appMenuAction isActive" data-admin-action="generator-open-editor">Otevřít rozpis</button>',
-    '    <button type="button" class="appMenuAction" data-admin-action="generator-open-editor">Upravit / OK, odeslat</button>',
+    '    <button type="button" class="appMenuAction isActive" data-admin-action="generator-open-editor">Otevřít rozpis / OK, odeslat</button>',
     '  </div>',
     '</div>'
   ].join('');
@@ -1828,7 +1935,7 @@ function adminRotationGeneratorEnsurePreparedMonthFromWizard() {
   saveRotationData();
 }
 
-function adminBuildRotationMachineCountSummaryHtml(month) {
+function adminBuildRotationMachineCountSummaryHtml(month, monthKey) {
   if (!month) return '<div class="smallText">Souhrn zatím není dostupný.</div>';
   const names = adminGetKnownNames();
   const machineMap = new Map();
@@ -1836,15 +1943,33 @@ function adminBuildRotationMachineCountSummaryHtml(month) {
     const section = month[sectionKey] || {};
     const machines = Array.isArray(section.machines) ? section.machines : fallbackMachines;
     const rows = Array.isArray(section.rows) ? section.rows : [];
-    machines.forEach((machine, machineIdx) => {
-      const machineName = String(machine || '').trim();
-      if (!machineName) return;
-      if (!machineMap.has(machineName)) machineMap.set(machineName, new Map());
-      const rowMap = machineMap.get(machineName);
-      rows.forEach((row) => {
+    rows.forEach((row) => {
+      if (sectionKey === 'hard') {
+        const tnksIdx = adminRotationGeneratorMachineIndex(machines, 'TNKS01');
+        const tpkw01Idx = adminRotationGeneratorMachineIndex(machines, 'TPKW01');
+        const splitPress = adminRotationGeneratorShouldSplitPressMachines(row && row.date, monthKey, month);
+        if (splitPress && tnksIdx >= 0 && tpkw01Idx >= 0) {
+          [tnksIdx, tpkw01Idx].forEach((idx) => {
+            const person = adminRotationCanonicalName(row && row.cells ? row.cells[idx] : '', names);
+            if (!person || !names.includes(person)) return;
+            adminRotationGeneratorAddMachineCount(machineMap, 'TNKS01', person, 0.5);
+            adminRotationGeneratorAddMachineCount(machineMap, 'TPKW01', person, 0.5);
+          });
+          machines.forEach((machine, machineIdx) => {
+            const machineName = String(machine || '').trim();
+            if (!machineName || machineName === 'TNKS01' || machineName === 'TPKW01') return;
+            const person = adminRotationCanonicalName(row && row.cells ? row.cells[machineIdx] : '', names);
+            if (person && names.includes(person)) adminRotationGeneratorAddMachineCount(machineMap, machineName, person, 1);
+          });
+          return;
+        }
+      }
+      machines.forEach((machine, machineIdx) => {
+        const machineName = String(machine || '').trim();
+        if (!machineName) return;
         const person = adminRotationCanonicalName(row && row.cells ? row.cells[machineIdx] : '', names);
         if (!person || !names.includes(person)) return;
-        rowMap.set(person, (rowMap.get(person) || 0) + 1);
+        adminRotationGeneratorAddMachineCount(machineMap, machineName, person, 1);
       });
     });
   };
@@ -1856,17 +1981,43 @@ function adminBuildRotationMachineCountSummaryHtml(month) {
   const body = Array.from(machineMap.entries()).map(([machine, counts]) => {
     return '<tr><td>' + escapeHtml(machine) + '</td>' + usedNames.map((name) => {
       const count = counts.get(name) || 0;
-      return '<td class="' + (count ? 'adminRotationMachineCountHit' : '') + '">' + (count ? String(count) : '') + '</td>';
+      return '<td class="' + (count ? 'adminRotationMachineCountHit' : '') + '">' + adminRotationGeneratorFormatCount(count) + '</td>';
     }).join('') + '</tr>';
   }).join('');
   return [
     '<details class="adminRotationGeneratorMachineSummary" open>',
     '  <summary>Rychlý přehled: stroje × jména</summary>',
-    '  <div class="smallText">Soukromý kontrolní přehled pro rychlé ověření, jestli jsou lidi v měsíci rozdělení rozumně.</div>',
+    '  <div class="smallText">TNKS01 a TPKW01 se mimo běžnou neděli počítají jako 0,5 + 0,5 na oba stroje. Běžná neděle ranní/noční zůstává jako celá směna na zapsaném stroji.</div>',
     '  <div class="adminRotationGeneratorMachineSummaryScroll">',
     '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminRotationGeneratorMachineSummaryTable"><thead>' + head + '</thead><tbody>' + body + '</tbody></table>',
     '  </div>',
     '</details>'
+  ].join('');
+}
+
+function adminBuildRotationGeneratorPreviewHtml(month, monthKey) {
+  if (!month) return '<div class="smallText">Náhled zatím není dostupný.</div>';
+  const renderSection = (title, section, fallbackMachines) => {
+    const machines = Array.isArray(section && section.machines) ? section.machines : fallbackMachines;
+    const rows = Array.isArray(section && section.rows) ? section.rows : [];
+    const head = '<tr><th>Den</th>' + machines.map((machine) => '<th>' + escapeHtml(machine) + '</th>').join('') + '</tr>';
+    const body = rows.map((row) => '<tr><td>' + escapeHtml(row && row.date || '') + '</td>' + machines.map((_, idx) => '<td>' + escapeHtml(row && row.cells ? row.cells[idx] || '' : '') + '</td>').join('') + '</tr>').join('');
+    return [
+      '<details class="adminRotationGeneratorPreviewSection" open>',
+      '  <summary>' + escapeHtml(title) + '</summary>',
+      '  <div class="adminRotationGeneratorMachineSummaryScroll">',
+      '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminRotationGeneratorPreviewTable"><thead>' + head + '</thead><tbody>' + body + '</tbody></table>',
+      '  </div>',
+      '</details>'
+    ].join('');
+  };
+  return [
+    '<div class="adminRotationGeneratorPreview">',
+    '  <div class="appMenuSubTitle">Náhled celého rozpisu ' + escapeHtml(monthKey || '') + '</div>',
+    '  <div class="smallText">Tady si rozpis projdi ještě před otevřením editoru. Když najdeš špatný den nebo absenci, vrať se na příslušný krok a nic nemusíš klikat od začátku.</div>',
+    renderSection('Tvrdota', month.hard, HARD_MACHINE_HEADERS),
+    renderSection('Měkota', month.soft, SOFT_MACHINE_HEADERS),
+    '</div>'
   ].join('');
 }
 
@@ -1992,6 +2143,7 @@ function adminHandleRotationGeneratorWizardAction(action, target) {
 
 
 
+window.RAK_ROTATION_GENERATOR_RULES_V1113 = RAK_ROTATION_GENERATOR_RULES_V1113;
 window.RAK_ROTATION_GENERATOR_MONTH_BALANCE_CONTRACT_V1112 = RAK_ROTATION_GENERATOR_MONTH_BALANCE_CONTRACT_V1112;
 window.RAK_ROTATION_GENERATOR_ABSENCE_STATE_CONTRACT_V1109 = RAK_ROTATION_GENERATOR_ABSENCE_STATE_CONTRACT_V1109;
 window.RAK_ROTATION_GENERATOR_WIZARD_RUN_CONTRACT_V1110 = RAK_ROTATION_GENERATOR_WIZARD_RUN_CONTRACT_V1110;
@@ -2001,6 +2153,7 @@ window.adminOpenRotationGeneratorWizard = adminOpenRotationGeneratorWizard;
 window.adminHandleRotationGeneratorWizardAction = adminHandleRotationGeneratorWizardAction;
 window.adminAddAbsenceRowToEditor = adminAddAbsenceRowToEditor;
 window.adminBuildRotationMachineCountSummaryHtml = adminBuildRotationMachineCountSummaryHtml;
+window.adminBuildRotationGeneratorPreviewHtml = adminBuildRotationGeneratorPreviewHtml;
 window.adminRotationGeneratorBuildMonthOptions = adminRotationGeneratorBuildMonthOptions;
 window.adminRotationGeneratorBalanceHardMachine = adminRotationGeneratorBalanceHardMachine;
 
@@ -2036,7 +2189,7 @@ function adminShowRotationSelectedRemove(input) {
       return;
     }
     window.__rakAdminRotationSelectedInput = input;
-    // RaK 1.2 (1.112) – horní sticky tlačítko už při kliknutí do jména nevytahujeme.
+    // RaK 1.2 (1.113) – horní sticky tlačítko už při kliknutí do jména nevytahujeme.
     // Rychlé Odebrat se vykreslí přímo u aktivního pole přes adminShowRotationQuickRemove().
     btn.hidden = true;
     btn.dataset.targetReady = '1';
