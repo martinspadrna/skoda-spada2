@@ -1,4 +1,4 @@
-/* RaK 1.2 (1.117) – Administrace/Rozpisy polish oddělený ze styles-overrides.css.
+/* RaK 1.2 (1.124) – Administrace/Rozpisy polish oddělený ze styles-overrides.css.
    Bez změny logiky, Supabase ani spodní lišty. */
 
 /* v.1.5 (988) – Administrace / Rozpisy: užší sloupce pro tvrdotu, měkotu a absence. */
@@ -304,7 +304,7 @@
 }
 
 
-/* RaK 1.2 (1.117) – Administrace/Rozpisy: průvodce generátorem a čitelné mini hlavičky Tvrdoty. */
+/* RaK 1.2 (1.124) – Administrace/Rozpisy: průvodce generátorem a čitelné mini hlavičky Tvrdoty. */
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adminRotationMiniTable th{
   min-width:30px !important;
   font-size:7.2px !important;
@@ -439,4 +439,16 @@
   color:var(--soft, #eef7ff) !important;
   font-weight:950 !important;
   background:rgba(76,255,137,.10) !important;
+}
+
+/* RaK 1.2 (1.124) – Rozpisy/Rotace: prázdné pozice zvýraznit světle červeně. */
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable td.adminRotationEditorEmptyCell,
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable input[data-rot-field^="cell-"]:placeholder-shown,
+#appMenuBody[data-admin-view="rotation"] .adminRotationGeneratorPreviewTable td.adminRotationPreviewEmptyCell,
+#appMenuBody[data-admin-view="rotation"] .adminRotationMiniTable td.adminRotationMiniEmpty{
+  background:linear-gradient(135deg, rgba(255,214,214,.44), rgba(255,126,126,.22)) !important;
+  box-shadow:inset 0 0 0 1px rgba(255,154,154,.42) !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable input[data-rot-field^="cell-"]:placeholder-shown{
+  color:rgba(255,238,238,.92) !important;
 }

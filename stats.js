@@ -1,4 +1,4 @@
-// RaK 1.2 (1.117) – Statistiky.
+// RaK 1.2 (1.124) – Statistiky.
 function renderMonthGrid() {
   const monthSelect = document.getElementById("monthSelect");
   if (!monthSelect) return;
@@ -192,6 +192,56 @@ function getStatsMachineOrder(machineKeys) {
     .forEach(key => out.push(key));
 
   return out;
+}
+
+
+function getStatsDateFromMonthKey(monthKey, parsedDate) {
+  const parsedMonth = typeof parseMonthKey === 'function' ? parseMonthKey(monthKey) : null;
+  const day = Number(parsedDate && parsedDate.day);
+  const month = Number((parsedDate && parsedDate.month) || (parsedMonth && parsedMonth.month));
+  const year = Number(parsedMonth && parsedMonth.year) || new Date().getFullYear();
+  if (!Number.isFinite(day) || !Number.isFinite(month) || !Number.isFinite(year)) return null;
+  return new Date(year, month - 1, day);
+}
+
+function isStatsOvertimeSundayMoOnly(monthKey, parsedDate) {
+  const date = getStatsDateFromMonthKey(monthKey, parsedDate);
+  if (!date || date.getDay() !== 0) return false;
+  try {
+    if (typeof isSpecialOvertimeSundayMoOnly === 'function') return !!isSpecialOvertimeSundayMoOnly(date);
+  } catch (err) {}
+  try {
+    const set = typeof SPECIAL_OVERTIME_MO_ONLY_SUNDAYS_2026 !== 'undefined' ? SPECIAL_OVERTIME_MO_ONLY_SUNDAYS_2026 : null;
+    const key = date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
+    return !!(set && typeof set.has === 'function' && set.has(key));
+  } catch (err) {}
+  return false;
+}
+
+function isStatsOvertimeSundayShift(monthKey, parsedDate) {
+  const date = getStatsDateFromMonthKey(monthKey, parsedDate);
+  if (!date || date.getDay() !== 0) return false;
+  const shift = String((parsedDate && parsedDate.shift) || '').trim().toUpperCase();
+  if (shift && !/^N/.test(shift)) return false;
+  if (isStatsOvertimeSundayMoOnly(monthKey, parsedDate)) return false;
+  try {
+    if (typeof isSpecialOvertimeSundayNight === 'function') return !!isSpecialOvertimeSundayNight(date);
+  } catch (err) {}
+  try {
+    const set = typeof getSpecialOvertimeSundayNightDateSet === 'function'
+      ? getSpecialOvertimeSundayNightDateSet()
+      : (typeof SPECIAL_OVERTIME_SUNDAY_NIGHTS_2026 !== 'undefined' ? SPECIAL_OVERTIME_SUNDAY_NIGHTS_2026 : null);
+    const key = date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
+    return !!(set && typeof set.has === 'function' && set.has(key));
+  } catch (err) {}
+  return false;
+}
+
+function shouldStatsSplitPressMachines(monthKey, parsedDate) {
+  const date = getStatsDateFromMonthKey(monthKey, parsedDate);
+  if (!date) return true;
+  if (date.getDay() !== 0) return true;
+  return isStatsOvertimeSundayShift(monthKey, parsedDate);
 }
 
 function getBestEntry(counts) {
@@ -429,6 +479,7 @@ function buildStatsForYear(year) {
         if (!parsedDate) return;
         const isSunday = isSundayForMonthKey(monthKey, parsedDate.day);
         const isSundayMorning = isSunday && /^R/.test(parsedDate.shift || "");
+        const shouldSplitPress = shouldStatsSplitPressMachines(monthKey, parsedDate);
 
         const rowNames = new Set();
 
@@ -445,23 +496,23 @@ function buildStatsForYear(year) {
           monthOverview.occupiedSlots += 1;
           rowNames.add(name);
           const person = ensurePerson(name);
-          // TNKS01 + TPKW01: mimo neděli se střídá půl směny/půl směny; v neděli se nepůlí.
+          // TNKS01 + TPKW01: mimo běžnou neděli se střídá půl směny/půl směny; běžná neděle se nepůlí, přesčasová TO neděle se půlí, přesčas jen MO se nepůlí.
           const isPairMachine = section === "hard" && (machine === "TNKS01" || machine === "TPKW01");
 
           if (isPairMachine) {
-            if (isSunday) {
-              const column = ensureColumn(getStatsMachineLabel(machine));
-              if (column) {
-                person.work[column] = (person.work[column] || 0) + 1;
-                stats.machineTotals[column] = (stats.machineTotals[column] || 0) + 1;
-              }
-            } else {
+            if (shouldSplitPress) {
               ["TNK", "W01"].forEach(columnName => {
                 const column = ensureColumn(columnName);
                 if (!column) return;
                 person.work[column] = (person.work[column] || 0) + 0.5;
                 stats.machineTotals[column] = (stats.machineTotals[column] || 0) + 0.5;
               });
+            } else {
+              const column = ensureColumn(getStatsMachineLabel(machine));
+              if (column) {
+                person.work[column] = (person.work[column] || 0) + 1;
+                stats.machineTotals[column] = (stats.machineTotals[column] || 0) + 1;
+              }
             }
           } else {
             const column = ensureColumn(getStatsMachineLabel(machine));
@@ -1383,7 +1434,7 @@ function getRakStatsMonthlyThemeChartHealth() {
   const lineStyle = line && window.getComputedStyle ? window.getComputedStyle(line) : null;
   return {
     ok: true,
-    version: window.APP_VERSION || '1.2 (1.117)',
+    version: window.APP_VERSION || '1.2 (1.124)',
     mode: 'stats-monthly-occupancy-theme-chart-v942',
     chartPresent: !!chart,
     containerPresent: !!box,

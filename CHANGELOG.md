@@ -1,3 +1,17 @@
+## RaK 1.2 (1.124)
+
+- Dashboard: ukazatel procent odpracování aktuální směny v první/hero kartě zmenšený o cca 50 % proti výrazné verzi 1.121.
+- Export obrázku Rozpisů: tabulka `Nýtování a úklid` má v nadpisu rok, prázdná první hlavička už nezobrazuje pomlčku, `Nýt.` je přejmenované na `Nýtování`.
+- Export obrázku Rozpisů: hlavičky `Úklid MSK/MFK/TNK/TBK/W01/W02` jsou čitelnější na dva řádky, sloupec se jmény je užší a písmo pravých tabulek je sjednocené s hlavními tabulkami Tvrdé/Měkké obrábění.
+- Release metadata sjednocená na `RaK 1.2 (1.124)`, technická verze `1.2.124`, cache `v1.2-1.124`.
+
+## RaK 1.2 (1.118)
+
+- Administrace/Rozpisy: odstraněné duplicitní tlačítko `OK, odeslat`, protože dělalo stejnou akci jako `Uložit rozpis` a mátlo to.
+- Editor rozpisu i návrh z generátoru používají jako jedinou finální akci `Uložit rozpis`; v náhledu generátoru zůstává jen `Otevřít rozpis`.
+- Přidaný contract `RAK_ROTATION_SAVE_BUTTON_CONTRACT_V1118` a guard v `npm run test:app-usage`, aby se duplicitní tlačítko nevrátilo.
+- Release metadata sjednocená na `RaK 1.2 (1.118)`, technická verze `1.2.118`, cache `v1.2-1.118`.
+
 ## RaK 1.2 (1.117)
 
 - Generátor rozpisů: zesílené vyrovnání nýtovačky/TNKS01 podle společného pravidla TNKS01/TPKW01 = 0,5 + 0,5, aby nevznikal stav, kdy má někdo 1,5 a někdo 0.

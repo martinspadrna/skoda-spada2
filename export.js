@@ -1,4 +1,4 @@
-// RaK 1.2 (1.117) – export manifest a release metadata.
+// RaK 1.2 (1.124) – export manifest a release metadata.
 const EXPORT_SOURCE_IDS = {
   "module-readiness.js": "src-module-readiness-js",
   "rak-namespace.js": "src-rak-namespace-js",
@@ -112,12 +112,12 @@ const EXPORT_SOURCE_IDS = {
 const SOURCE_CACHE = window.__ROTACE_SOURCE_CACHE__ || (window.__ROTACE_SOURCE_CACHE__ = {});
 const BINARY_SOURCE_CACHE = window.__ROTACE_BINARY_SOURCE_CACHE__ || (window.__ROTACE_BINARY_SOURCE_CACHE__ = {});
 const RAK_RELEASE_METADATA_CONTRACT_V199 = Object.freeze({
-  displayVersion: '1.2 (1.117)',
-  appLabel: 'RaK 1.2 (1.117)',
-  packageVersion: '1.2.117',
-  cacheVersion: 'v1.2-1.117',
-  realtimeChannel: 'rak-public-live-v1-2-1-117',
-  changelogHeader: '## RaK 1.2 (1.117)',
+  displayVersion: '1.2 (1.124)',
+  appLabel: 'RaK 1.2 (1.124)',
+  packageVersion: '1.2.124',
+  cacheVersion: 'v1.2-1.124',
+  realtimeChannel: 'rak-public-live-v1-2-1-124',
+  changelogHeader: '## RaK 1.2 (1.124)',
   serviceWorkerVersionGuard: 'CACHE_VERSION + SW_APP_VERSION'
 });
 const RAK_DASHBOARD_CSS_GUARD_SERIES_CONTRACT_V1100 = Object.freeze({
@@ -220,7 +220,12 @@ const RAK_ROTATION_GENERATOR_WIZARD_STATE_CONTRACT_V1111 = Object.freeze({
   fix: 'Průvodce nesmí vygenerovat nulový návrh, když se po předchozím neúspěšném pokusu ztratily řádky měsíce.',
   dayFallback: 'pracovní dny se berou ze state.days, potom z aktuálního měsíce a nakonec z initialRotationData',
   failRule: 'pokud nejsou žádné pracovní dny, zobrazit chybu místo výsledku dnů 0 / políček 0',
-  sendButton: 'v editoru rozpisu je dostupné OK, odeslat jako jasná ruční akce pro uložení zkontrolovaného návrhu'
+  saveButton: 'v editoru rozpisu zůstává jedno jasné tlačítko Uložit rozpis; duplicitní duplicitní odesílací tlačítko se odstraňuje'
+});
+const RAK_ROTATION_SAVE_BUTTON_CONTRACT_V1118 = Object.freeze({
+  scope: 'administrace-dat-rozpisy-save-button',
+  rule: 'Po kontrole návrhu se používá pouze Uložit rozpis. Tlačítko duplicitní odesílací tlačítko je odstraněné, protože dělalo stejnou akci.',
+  generatorResult: 'V náhledu generátoru je jen Otevřít rozpis; uložení zůstává v editoru.'
 });
 const RAK_ROTATION_GENERATOR_MONTH_BALANCE_CONTRACT_V1112 = Object.freeze({
   scope: 'administrace-dat-rozpisy-generator-month-balance',
@@ -259,18 +264,47 @@ const RAK_ROTATION_GENERATOR_RULES_CONTRACT_V1116 = Object.freeze({
   resultRule: 'Výsledek generátoru vrací softKindBalanceSwaps a ruleVersion 1.116.'
 });
 
+const RAK_ROTATION_EMPTY_CELL_HIGHLIGHT_CONTRACT_V1119 = Object.freeze({
+  scope: 'rotace-rozpisy-empty-cell-highlight',
+  intent: 'neobsazené pozice v Rotaci, Rozpisech a náhledu generátoru zvýraznit světle červeně',
+  protectedClasses: Object.freeze(['missingCell', 'adminRotationEditorEmptyCell', 'adminRotationPreviewEmptyCell', 'adminRotationMiniEmpty'])
+});
+const RAK_DASHBOARD_SHIFT_PERCENT_SIZE_CONTRACT_V1119 = Object.freeze({
+  scope: 'dashboard-hero-shift-percent',
+  intent: 'ukazatel procent odpracování aktuální směny výrazně zvětšit',
+  target: 'cca dvojnásobná velikost proti původním 12px'
+});
+
 const RAK_ROTATION_GENERATOR_RULES_CONTRACT_V1117 = Object.freeze({
   scope: 'administrace-dat-rozpisy-generator-kminek-novotny-mo-to-v1117',
   moToPairRule: 'Kmínek a Novotný se po vygenerování můžou prohazovat mezi sebou, aby měli navzájem co nejpodobnější počet směn na MO a TO.',
   balanceFunction: 'adminRotationGeneratorBalanceKminekNovotnyMoTo',
-  resultRule: 'Výsledek generátoru vrací kminekNovotnyMoToBalanceSwaps a ruleVersion 1.117.'
+  resultRule: 'Výsledek generátoru vrací kminekNovotnyMoToBalanceSwaps a ruleVersion 1.118.'
+});
+
+
+const RAK_STATS_PRESS_MACHINE_SPLIT_CONTRACT_V1123 = Object.freeze({
+  version: '1.2 (1.124)',
+  rule: 'Statistiky a export Nýtování a úklid používají stejné půlení TNKS01/TPKW01 jako generátor.',
+  normal: 'Mimo neděli se TNKS01 i TPKW01 počítají jako 0,5 TNKS01 + 0,5 TPKW01.',
+  sunday: 'Běžná neděle zůstává celá na zapsaném stroji.',
+  overtimeSunday: 'Přesčasová neděle ze seznamu přesčasových nedělí/kantýny se znovu počítá 0,5 + 0,5.'
+});
+
+
+const RAK_STATS_PRESS_MACHINE_MO_ONLY_EXCEPTION_CONTRACT_V1124 = Object.freeze({
+  version: '1.2 (1.124)',
+  defaultRule: 'Nedělní přesčas se standardně bere jako TO/tvrdota a TNKS01/TPKW01 se půlí 0,5 + 0,5.',
+  exceptionRule: 'Výjimky označené jako přesčas jen MO se ve statistikách tvrdoty nepůlí a počítají se jako běžná neděle.',
+  currentException: '2026-03-01 je přesčas jen na MO, proto se TNKS01/TPKW01 v tvrdotě nepůlí.',
+  sharedSources: ['SPECIAL_OVERTIME_SUNDAY_NIGHTS_2026', 'SPECIAL_OVERTIME_MO_ONLY_SUNDAYS_2026', 'shouldStatsSplitPressMachines', 'adminRotationGeneratorShouldSplitPressMachines']
 });
 
 const EXPORT_SMOKE_REPORT = window.__RAK_EXPORT_SMOKE_REPORT__ || (window.__RAK_EXPORT_SMOKE_REPORT__ = {
   ok: null,
   status: 'not-run',
   mode: 'export-smoke-report-v939',
-  version: '1.2 (1.117)',
+  version: '1.2 (1.124)',
   checkedAt: null,
   lastStage: 'čeká na export',
   runCount: 0,
@@ -403,7 +437,7 @@ const EXPORT_TEXT_FILES = [
 
 function getRakExportManifest() {
   return {
-    version: String(window.APP_VERSION || '1.2 (1.117)'),
+    version: String(window.APP_VERSION || '1.2 (1.124)'),
     mode: 'export-manifest-preflight-v939',
     indexFile: 'index.html',
     jsFiles: Array.from(new Set(EXPORT_JS_FILES)),
@@ -513,7 +547,7 @@ function updateRakExportSmokeReport(partial) {
   const data = partial && typeof partial === 'object' ? partial : {};
   Object.assign(EXPORT_SMOKE_REPORT, data, {
     mode: 'export-smoke-report-v939',
-    version: String(window.APP_VERSION || '1.2 (1.117)'),
+    version: String(window.APP_VERSION || '1.2 (1.124)'),
     checkedAt: new Date().toISOString()
   });
   return getRakExportSmokeReport();

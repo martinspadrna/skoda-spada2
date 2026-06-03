@@ -1,4 +1,4 @@
-/* RaK 1.2 (1.117) – finální theme/background polish oddělený ze styles-overrides.css. */
+/* RaK 1.2 (1.124) – finální theme/background polish oddělený ze styles-overrides.css. */
 /* v.1.5 (998) – Theme/pozadí globálně: zvolený background musí být vidět na každé stránce a theme má barvit celé UI. */
 :root{
   --rakThemeAccentStrong:var(--rakThemeAccent, var(--green2, #7CFF7C));
@@ -484,3 +484,11 @@ html body #home.page.active > .dashboardShell::after{
   #rotace.page.active #rotaceNamesPanel.active #namesGrid{max-height:min(27dvh,112px) !important;}
 }
 
+
+/* RaK 1.2 (1.124) – Rotace/Rozpisy: světle červeně jen prázdná pracovní políčka rozpisu, ne absence. */
+#monthView table.rotTable td.missingCell{
+  background:linear-gradient(135deg, rgba(255,214,214,.42), rgba(255,126,126,.24)) !important;
+  color:rgba(255,245,245,.98) !important;
+  box-shadow:inset 0 0 0 1px rgba(255,154,154,.42) !important;
+  font-weight:950 !important;
+}

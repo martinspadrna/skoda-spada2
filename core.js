@@ -1,7 +1,7 @@
-// RaK 1.2 (1.117) – core stav, verze a sdílené helpery aplikace.
+// RaK 1.2 (1.124) – core stav, verze a sdílené helpery aplikace.
 
 const APP_KEY = "rotace_kalkulacky_state_v123";
-const APP_VERSION = "1.2 (1.117)";
+const APP_VERSION = "1.2 (1.124)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-06-01-" + APP_VERSION;
 window.ROTATION_BUILD = ROTATION_BUILD;
@@ -46,6 +46,11 @@ const SPECIAL_OVERTIME_SUNDAY_NIGHTS_2026 = new Set([
 ]);
 window.SPECIAL_OVERTIME_SUNDAY_NIGHTS_2026 = SPECIAL_OVERTIME_SUNDAY_NIGHTS_2026;
 
+// Přesčasové neděle jsou v drtivé většině TO/tvrdota. Výjimky, kdy byl přesčas jen na MO,
+// nesmí půlit TNKS01/TPKW01 ve statistikách ani exportu.
+const SPECIAL_OVERTIME_MO_ONLY_SUNDAYS_2026 = new Set(["2026-03-01"]);
+window.SPECIAL_OVERTIME_MO_ONLY_SUNDAYS_2026 = SPECIAL_OVERTIME_MO_ONLY_SUNDAYS_2026;
+
 function dateKeyISO(date) {
   const d = date instanceof Date ? date : new Date(date);
   return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
@@ -66,6 +71,15 @@ function isSpecialOvertimeSundayNight(date) {
   const set = getSpecialOvertimeSundayNightDateSet();
   return d.getDay() === 0 && !!(set && typeof set.has === 'function' && set.has(dateKeyISO(d)));
 }
+
+function isSpecialOvertimeSundayMoOnly(date) {
+  const d = date instanceof Date ? date : new Date(date);
+  const set = typeof window !== 'undefined' && window.SPECIAL_OVERTIME_MO_ONLY_SUNDAYS_2026
+    ? window.SPECIAL_OVERTIME_MO_ONLY_SUNDAYS_2026
+    : SPECIAL_OVERTIME_MO_ONLY_SUNDAYS_2026;
+  return d.getDay() === 0 && !!(set && typeof set.has === 'function' && set.has(dateKeyISO(d)));
+}
+window.isSpecialOvertimeSundayMoOnly = isSpecialOvertimeSundayMoOnly;
 
 function getSpecialSundayNightStartHour(date, fallbackHour = 22) {
   return isSpecialOvertimeSundayNight(date) ? 18 : fallbackHour;

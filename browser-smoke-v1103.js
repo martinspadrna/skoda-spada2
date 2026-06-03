@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.117) – browser smoke test přes lokální Chromium/CDP.
+// RaK 1.2 (1.124) – browser smoke test přes lokální Chromium/CDP.
 // Browser smoke coverage: Rotace export canvas + fixed background + file URL fallback.
 const http = require('http');
 const fs = require('fs');
@@ -10,7 +10,7 @@ const { spawn } = require('child_process');
 const { pathToFileURL } = require('url');
 
 const ROOT_DIR = __dirname;
-const EXPECTED_APP_VERSION = '1.2 (1.117)';
+const EXPECTED_APP_VERSION = '1.2 (1.124)';
 const RAK_BROWSER_SMOKE_ENGINE = 'local-chromium-cdp';
 const RAK_BROWSER_SMOKE_LOAD_MODE = 'about-blank-inline-html';
 const CHROMIUM_BIN = process.env.CHROMIUM_BIN || process.env.CHROME_BIN || '/usr/bin/chromium';
@@ -487,7 +487,7 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml) {
     };
   })()`);
   assert(generatorAbsenceRuleState.ok, `${viewport.name}: generátor pravidel absencí se nespustil ${JSON.stringify(generatorAbsenceRuleState)}`);
-  assert(generatorAbsenceRuleState.ruleVersion === '1.117', `${viewport.name}: generátor nemá pravidla 1.117 ${JSON.stringify(generatorAbsenceRuleState)}`);
+  assert(generatorAbsenceRuleState.ruleVersion === '1.119', `${viewport.name}: generátor nemá pravidla 1.119 ${JSON.stringify(generatorAbsenceRuleState)}`);
   assert(generatorAbsenceRuleState.mfkf06 === '', `${viewport.name}: při jednom člověku na frézkách musí být MFKF06 prázdná ${JSON.stringify(generatorAbsenceRuleState)}`);
   assert(generatorAbsenceRuleState.mskc01 === '', `${viewport.name}: při dvou absencích musí být MSKC01 prázdná ${JSON.stringify(generatorAbsenceRuleState)}`);
   assert(generatorAbsenceRuleState.mfkf10, `${viewport.name}: při dvou absencích musí být člověk na MFKF10 ${JSON.stringify(generatorAbsenceRuleState)}`);

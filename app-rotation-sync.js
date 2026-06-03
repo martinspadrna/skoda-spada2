@@ -1,4 +1,4 @@
-// RaK 1.2 (1.117) – online synchronizace rozpisů oddělená ze startovacích vazeb aplikace.
+// RaK 1.2 (1.124) – online synchronizace rozpisů oddělená ze startovacích vazeb aplikace.
 async function syncRotationFromSupabase(force) {
   const bridge = window.RotationSupabaseBridge;
   if (!bridge || typeof bridge.loadRotationState !== 'function') return null;

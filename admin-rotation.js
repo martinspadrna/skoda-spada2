@@ -1,4 +1,4 @@
-// RaK 1.2 (1.117) – Administrace Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
+// RaK 1.2 (1.124) – Administrace Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('admin-rotation.js', 'loading', { source: 'dynamic-loader' }); } catch (err) {}
 
 
@@ -153,7 +153,7 @@ function adminRotationRowTemplate(section, row, rowIndex, machineCount, allowBla
   return [
     '<tr data-rotation-section="' + escapeHtml(section) + '" data-rotation-row-index="' + String(rowIndex) + '">',
     '  <td>' + renderAdminInlineFieldHtml('data-rot-field', 'date', date, 'datum', false) + '</td>',
-    cells.map((value, idx) => '<td>' + renderAdminInlineFieldHtml('data-rot-field', 'cell-' + String(idx), value, String(idx + 1), true) + '</td>').join(''),
+    cells.map((value, idx) => '<td class="' + (String(value || '').trim() ? '' : 'adminRotationEditorEmptyCell') + '">' + renderAdminInlineFieldHtml('data-rot-field', 'cell-' + String(idx), value, String(idx + 1), true) + '</td>').join(''),
     '</tr>'
   ].join('');
 }
@@ -721,11 +721,10 @@ function buildAdminRotationTableHtml(monthKey) {
   return [
     '<div class="appMenuSubSection" id="adminRotationEditor">',
     '  <div class="appMenuSubTitle">Rozpis – ' + escapeHtml(monthKey) + '</div>',
-    '  <div class="appMenuText">Stejný rozpis, jen editovatelný. Změny zůstávají rozepsané lokálně a do Supabase jdou až po kliknutí na Uložit rozpis nebo OK, odeslat.</div>',
+    '  <div class="appMenuText">Stejný rozpis, jen editovatelný. Změny zůstávají rozepsané lokálně a do Supabase jdou až po kliknutí na Uložit rozpis.</div>',
     '  <div class="adminRotationSaveDock">',
     '    <div class="adminRotationSaveActions">',
     '      <button type="button" class="appMenuAction isActive adminRotationSaveDockBtn" data-admin-action="save-rotation">Uložit rozpis</button>',
-    '      <button type="button" class="appMenuAction adminRotationSaveDockBtn" data-admin-action="save-rotation">OK, odeslat</button>',
     '      <button type="button" class="appMenuAction adminRotationSelectedRemoveBtn" data-admin-selected-remove hidden>Odebrat vybrané</button>',
     '    </div>',
     '    <span id="adminRotationDraftStatus" class="adminRotationDraftStatus">Rozepsané změny se uloží až tlačítkem.</span>',
@@ -1284,12 +1283,32 @@ function adminRotationGeneratorIsOvertimeSunday(dateLabel, monthKey, month) {
     .filter((note) => adminRotationDateBaseKey(note && note.date) === baseKey)
     .map((note) => [note.person, note.code, note.text].map((part) => String(part || '')).join(' '))
     .join(' ');
+  const date = Number.isFinite(meta.day) && Number.isFinite(meta.month) && Number.isFinite(meta.year)
+    ? new Date(meta.year, meta.month - 1, meta.day)
+    : null;
+  if (date && typeof isSpecialOvertimeSundayNight === 'function' && isSpecialOvertimeSundayNight(date)) return true;
   return /přesčas|prescas|22\s*[-–]\s*6|22\s*h/i.test(String(dateLabel || '') + ' ' + noteText);
+}
+
+function adminRotationGeneratorIsMoOnlyOvertimeSunday(dateLabel, monthKey, month) {
+  const meta = adminRotationGeneratorParseDayMeta(dateLabel, monthKey);
+  if (!meta.isSunday) return false;
+  const date = Number.isFinite(meta.day) && Number.isFinite(meta.month) && Number.isFinite(meta.year)
+    ? new Date(meta.year, meta.month - 1, meta.day)
+    : null;
+  if (date && typeof isSpecialOvertimeSundayMoOnly === 'function' && isSpecialOvertimeSundayMoOnly(date)) return true;
+  const baseKey = adminRotationDateBaseKey(dateLabel);
+  const noteText = (Array.isArray(month && month.notes) ? month.notes : [])
+    .filter((note) => adminRotationDateBaseKey(note && note.date) === baseKey)
+    .map((note) => [note.person, note.code, note.text].map((part) => String(part || '')).join(' '))
+    .join(' ');
+  return /(?:jen|pouze)\s*MO|měkk(?:é|e)\s*obrábění|mekk(?:e|é)\s*obr/i.test(String(dateLabel || '') + ' ' + noteText);
 }
 
 function adminRotationGeneratorShouldSplitPressMachines(dateLabel, monthKey, month) {
   const meta = adminRotationGeneratorParseDayMeta(dateLabel, monthKey);
   if (!meta.isSunday) return true;
+  if (adminRotationGeneratorIsMoOnlyOvertimeSunday(dateLabel, monthKey, month)) return false;
   return adminRotationGeneratorIsOvertimeSunday(dateLabel, monthKey, month);
 }
 
@@ -2000,7 +2019,7 @@ function adminGenerateRotationMonthDraft(monthKey) {
     soloMillBalanceSwaps: (soloMillBalance && Number(soloMillBalance.swaps || 0)) + (soloMillRebalance && Number(soloMillRebalance.swaps || 0)),
     softKindBalanceSwaps: softKindBalance && Number(softKindBalance.swaps || 0),
     kminekNovotnyMoToBalanceSwaps: kminekNovotnyMoToBalance && Number(kminekNovotnyMoToBalance.swaps || 0),
-    ruleVersion: '1.117'
+    ruleVersion: '1.119'
   };
 }
 
@@ -2037,7 +2056,7 @@ const RAK_ROTATION_GENERATOR_MONTH_BALANCE_CONTRACT_V1112 = Object.freeze({
 const RAK_ROTATION_GENERATOR_RULES_V1113 = Object.freeze({
   version: '1.113',
   scope: 'Administrace dat / Rozpisy / Vygenerovat návrh',
-  machineCountRule: 'V kontrolní tabulce stroje × jména se TNKS01 a TPKW01 mimo běžnou neděli počítají jako 0,5 na oba stroje; běžná neděle ranní/noční zůstává celá směna na zapsaném stroji, přesčasová neděle se střídá.',
+  machineCountRule: 'V kontrolní tabulce stroje × jména se TNKS01 a TPKW01 mimo běžnou neděli počítají jako 0,5 na oba stroje; běžná neděle ranní/noční zůstává celá směna na zapsaném stroji, přesčasová TO neděle se střídá a výjimka jen MO se nepůlí.',
   softCoreRule: 'Synek, Třasák a Střížek chodí z Měkoty na Tvrdotu jen na TNKS01/TPKW01/TPKW02 po blocích 3 pracovních dnů na stejný stroj. Když někdo chybí, pořadí se přeskupí tak, aby se tvrdotě nevyhnul.',
   softLatheBase: Object.freeze({ Synek: 'MSKC04', 'Střížek': 'MSKC03', 'Třasák': 'MSKC01' }),
   previewRule: 'Po vygenerování musí průvodce ukázat celý rozpis v náhledu a umožnit návrat na měsíc/dny/absence bez naklikání od začátku.'
@@ -2069,6 +2088,17 @@ const RAK_ROTATION_GENERATOR_RULES_V1116 = Object.freeze({
   pressBalanceRule: 'Nýtovačka se vyrovnává podle společného počtu TNKS01/TPKW01 s pravidlem 0,5 + 0,5, takže stav 1,5 proti 0 je potřeba dál prohazovat.',
   softKindBalanceRule: 'Měkota se po vygenerování dorovnává i podle typu práce: kdo má moc frézek a žádný soustruh se prohazuje s tím, kdo má moc soustruhů a žádné frézky.',
   resultFields: Object.freeze(['tnksBalanceSwaps', 'soloMillBalanceSwaps', 'softKindBalanceSwaps'])
+});
+
+const RAK_ROTATION_SAVE_BUTTON_CONTRACT_V1118 = Object.freeze({
+  scope: 'administrace-dat-rozpisy-save-button',
+  rule: 'Editor rozpisu má mít jen jedno jasné tlačítko Uložit rozpis; duplicitní duplicitní odesílací tlačítko se nepoužívá.',
+  generatorResult: 'Náhled generátoru má otevírat rozpis, samotné odeslání/uložení zůstává až přes Uložit rozpis.'
+});
+const RAK_ROTATION_EMPTY_CELL_HIGHLIGHT_CONTRACT_V1119 = Object.freeze({
+  scope: 'rotace-a-rozpisy-prazdne-pozice',
+  intent: 'neobsazené pozice zvýraznit světle červenou v Rotaci, editoru Rozpisů i náhledu generátoru',
+  protectedClasses: Object.freeze(['missingCell', 'adminRotationEditorEmptyCell', 'adminRotationPreviewEmptyCell', 'adminRotationMiniEmpty'])
 });
 
 const RAK_ROTATION_GENERATOR_RULES_V1117 = Object.freeze({
@@ -2330,7 +2360,7 @@ function adminRotationGeneratorRenderResultStep(state) {
     '    <button type="button" class="appMenuAction" data-admin-action="generator-back-month">Zpět na měsíc</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="generator-back-days">Zpět na dny</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="generator-back-absences">Zpět na absence</button>',
-    '    <button type="button" class="appMenuAction isActive" data-admin-action="generator-open-editor">Otevřít rozpis / OK, odeslat</button>',
+    '    <button type="button" class="appMenuAction isActive" data-admin-action="generator-open-editor">Otevřít rozpis</button>',
     '  </div>',
     '</div>'
   ].join('');
@@ -2443,7 +2473,7 @@ function adminBuildRotationMachineCountSummaryHtml(month, monthKey) {
   return [
     '<details class="adminRotationGeneratorMachineSummary" open>',
     '  <summary>Rychlý přehled: jména × stroje</summary>',
-    '  <div class="smallText">Jména jsou v řádcích, stroje ve sloupcích. Sloupce TO/MO ukazují součet tvrdého a měkkého obrábění. TNKS01 a TPKW01 se mimo běžnou neděli počítají jako 0,5 + 0,5 na oba stroje.</div>',
+    '  <div class="smallText">Jména jsou v řádcích, stroje ve sloupcích. Sloupce TO/MO ukazují součet tvrdého a měkkého obrábění. TNKS01 a TPKW01 se mimo běžnou neděli počítají jako 0,5 + 0,5 na oba stroje. Přesčasová neděle se bere jako TO, pokud není označená jen MO.</div>',
     '  <div class="adminRotationGeneratorMachineSummaryScroll">',
     '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminRotationGeneratorMachineSummaryTable"><thead>' + head + '</thead><tbody>' + body + '</tbody></table>',
     '  </div>',
@@ -2457,7 +2487,7 @@ function adminBuildRotationGeneratorPreviewHtml(month, monthKey) {
     const machines = Array.isArray(section && section.machines) ? section.machines : fallbackMachines;
     const rows = Array.isArray(section && section.rows) ? section.rows : [];
     const head = '<tr><th>Den</th>' + machines.map((machine) => '<th>' + escapeHtml(machine) + '</th>').join('') + '</tr>';
-    const body = rows.map((row) => '<tr><td>' + escapeHtml(row && row.date || '') + '</td>' + machines.map((_, idx) => '<td>' + escapeHtml(row && row.cells ? row.cells[idx] || '' : '') + '</td>').join('') + '</tr>').join('');
+    const body = rows.map((row) => '<tr><td>' + escapeHtml(row && row.date || '') + '</td>' + machines.map((_, idx) => { const value = String(row && row.cells ? row.cells[idx] || '' : '').trim(); return '<td class="' + (value ? '' : 'adminRotationPreviewEmptyCell') + '">' + escapeHtml(value || '—') + '</td>'; }).join('') + '</tr>').join('');
     return [
       '<details class="adminRotationGeneratorPreviewSection" open>',
       '  <summary>' + escapeHtml(title) + '</summary>',
@@ -2649,7 +2679,7 @@ function adminShowRotationSelectedRemove(input) {
       return;
     }
     window.__rakAdminRotationSelectedInput = input;
-    // RaK 1.2 (1.117) – horní sticky tlačítko už při kliknutí do jména nevytahujeme.
+    // RaK 1.2 (1.124) – horní sticky tlačítko už při kliknutí do jména nevytahujeme.
     // Rychlé Odebrat se vykreslí přímo u aktivního pole přes adminShowRotationQuickRemove().
     btn.hidden = true;
     btn.dataset.targetReady = '1';
