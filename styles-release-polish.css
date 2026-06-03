@@ -1,4 +1,4 @@
-/* RaK 1.2 (1.115) – release polish override vrstva oddělená ze styles-overrides.css.
+/* RaK 1.2 (1.116) – release polish override vrstva oddělená ze styles-overrides.css.
    Tady jsou pozdní opravy vzhledu, které musí zůstat načtené až po historických overridech. */
 
 /* 1.2 (1.9) – stabilizace pozadí, iOS startu a Rotace doku jmen. */
@@ -847,7 +847,7 @@ body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .r
 }
 
 
-/* 1.2 (1.115) – Rotace: jmenné bloky o cca 15 % vyšší a pořád hodně průhledný glass. */
+/* 1.2 (1.116) – Rotace: jmenné bloky o cca 15 % vyšší a pořád hodně průhledný glass. */
 :root{
   --rak-v1008-rotace-names-h:clamp(128px, 38svh, 202px);
   --rak-rotace-name-chip-h:48px;
@@ -915,7 +915,7 @@ body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .r
   }
 }
 
-/* 1.2 (1.115) – Rotace: jména zůstávají větší, ale písmo je o chlup menší kvůli delším jménům. */
+/* 1.2 (1.116) – Rotace: jména zůstávají větší, ale písmo je o chlup menší kvůli delším jménům. */
 #rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceTileTitle,
 #rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem .rotaceTileTitle,
 html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceTileTitle,
@@ -933,7 +933,7 @@ body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .r
   }
 }
 
-/* 1.2 (1.115) – Korekce Frézky: aktuální korekce bez zeleného podbarvení, jen neutrální glass. */
+/* 1.2 (1.116) – Korekce Frézky: aktuální korekce bez zeleného podbarvení, jen neutrální glass. */
 #korekce-frezky .calcCorrectionFhbCard .calcCorrectionGroup--currentCorrection,
 #korekce-frezky .calcCorrectionFhbCard .calcCorrectionGroup--soft.calcCorrectionGroup--currentCorrection{
   background:linear-gradient(145deg, rgba(255,255,255,.042), rgba(255,255,255,.010)) !important;
@@ -962,7 +962,7 @@ body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .r
   box-shadow:0 0 0 2px rgba(255,255,255,.10), inset 0 1px 0 rgba(255,255,255,.14) !important;
 }
 
-/* 1.2 (1.115) – Rotace: jména ponechaná vyšší, písmo ještě malinko menší kvůli dvěma delším jménům. */
+/* 1.2 (1.116) – Rotace: jména ponechaná vyšší, písmo ještě malinko menší kvůli dvěma delším jménům. */
 #rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceTileTitle,
 #rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem .rotaceTileTitle,
 html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceTileTitle,
@@ -981,7 +981,7 @@ body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .r
   }
 }
 
-/* 1.2 (1.115) – Rozpisy: běžně dostupné stažení PNG bez administrace. */
+/* 1.2 (1.116) – Rozpisy: běžně dostupné stažení PNG bez administrace. */
 .rotaceDownloadMonthBtn{
   width:100% !important;
   margin-top:12px !important;
@@ -1005,7 +1005,7 @@ body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .r
   opacity:.72 !important;
 }
 
-/* 1.2 (1.115) – Brusy / Výpočet kusů: volby brusu a indexů dorovnané velikostí na Frézky / Korekce preset tlačítka. */
+/* 1.2 (1.116) – Brusy / Výpočet kusů: volby brusu a indexů dorovnané velikostí na Frézky / Korekce preset tlačítka. */
 #brusy.calcPage{
   --brus-main-choice-h:58px !important;
   --brus-free-choice-h:58px !important;
@@ -1058,7 +1058,7 @@ html body #brusy.calcPage .bbtn.brusFreeIndexBtn{
   }
 }
 
-/* 1.2 (1.115) – Pevné pozadí celé appky: obsah scrolluje nad ukotveným backgroundem, aby glass panely víc fungovaly. */
+/* 1.2 (1.116) – Pevné pozadí celé appky: obsah scrolluje nad ukotveným backgroundem, aby glass panely víc fungovaly. */
 html,
 html.rakViewportPrimed,
 html.rakStableBootViewport{
@@ -1134,7 +1134,7 @@ body::after{
 }
 
 
-/* RaK 1.2 (1.115) – Volba jmen v Rotaci a Statistikách: delší jména se mají vejít na menších displejích. */
+/* RaK 1.2 (1.116) – Volba jmen v Rotaci a Statistikách: delší jména se mají vejít na menších displejích. */
 :root{
   --rak-name-choice-font:clamp(10.4px, 2.62vw, 12.6px);
   --rak-name-choice-font-tight:clamp(9.8px, 2.48vw, 11.8px);
@@ -1208,7 +1208,7 @@ body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .r
   }
 }
 
-/* 1.2 (1.115) – Browser smoke: volné indexy Brusy drží stejnou reálnou výšku jako TBKR/AD/AE/AH a Frézky presety. */
+/* 1.2 (1.116) – Browser smoke: volné indexy Brusy drží stejnou reálnou výšku jako TBKR/AD/AE/AH a Frézky presety. */
 html body #brusy.calcPage .brusIndexGrid > .brusFreeWrap > .bbtn.brusFreeIndexBtn,
 html body #brusy.calcPage .brusFreeWrap > .bbtn.brusFreeIndexBtn{
   height:58px !important;

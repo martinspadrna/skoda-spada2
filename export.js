@@ -1,4 +1,4 @@
-// RaK 1.2 (1.115) – export manifest a release metadata.
+// RaK 1.2 (1.116) – export manifest a release metadata.
 const EXPORT_SOURCE_IDS = {
   "module-readiness.js": "src-module-readiness-js",
   "rak-namespace.js": "src-rak-namespace-js",
@@ -112,12 +112,12 @@ const EXPORT_SOURCE_IDS = {
 const SOURCE_CACHE = window.__ROTACE_SOURCE_CACHE__ || (window.__ROTACE_SOURCE_CACHE__ = {});
 const BINARY_SOURCE_CACHE = window.__ROTACE_BINARY_SOURCE_CACHE__ || (window.__ROTACE_BINARY_SOURCE_CACHE__ = {});
 const RAK_RELEASE_METADATA_CONTRACT_V199 = Object.freeze({
-  displayVersion: '1.2 (1.115)',
-  appLabel: 'RaK 1.2 (1.115)',
-  packageVersion: '1.2.115',
-  cacheVersion: 'v1.2-1.115',
-  realtimeChannel: 'rak-public-live-v1-2-1-115',
-  changelogHeader: '## RaK 1.2 (1.115)',
+  displayVersion: '1.2 (1.116)',
+  appLabel: 'RaK 1.2 (1.116)',
+  packageVersion: '1.2.116',
+  cacheVersion: 'v1.2-1.116',
+  realtimeChannel: 'rak-public-live-v1-2-1-116',
+  changelogHeader: '## RaK 1.2 (1.116)',
   serviceWorkerVersionGuard: 'CACHE_VERSION + SW_APP_VERSION'
 });
 const RAK_DASHBOARD_CSS_GUARD_SERIES_CONTRACT_V1100 = Object.freeze({
@@ -250,11 +250,20 @@ const RAK_ROTATION_GENERATOR_RULES_CONTRACT_V1115 = Object.freeze({
   softExchangeRule: 'Synek/Třasák/Střížek z Měkoty jdou na Tvrdotu po 3denních blocích a vytlačený člověk z Tvrdoty jde na Měkotu hlavně na frézy.',
   flexPeople: Object.freeze(['Špadrna', 'Novotný'])
 });
+
+const RAK_ROTATION_GENERATOR_RULES_CONTRACT_V1116 = Object.freeze({
+  scope: 'administrace-dat-rozpisy-generator-balance-summary-v1116',
+  machineSummaryRule: 'Kontrolní přehled je otočený jako jména v řádcích a stroje ve sloupcích, včetně souhrnů TO a MO.',
+  pressBalanceRule: 'TNKS01/TPKW01 se vyrovnávají podle společného 0,5 + 0,5 počtu, aby nevznikal stav 1,5 proti 0.',
+  softKindBalanceRule: 'Po vygenerování se dorovnává poměr frézky/soustruhy mezi lidmi na Měkotě.',
+  resultRule: 'Výsledek generátoru vrací softKindBalanceSwaps a ruleVersion 1.116.'
+});
+
 const EXPORT_SMOKE_REPORT = window.__RAK_EXPORT_SMOKE_REPORT__ || (window.__RAK_EXPORT_SMOKE_REPORT__ = {
   ok: null,
   status: 'not-run',
   mode: 'export-smoke-report-v939',
-  version: '1.2 (1.115)',
+  version: '1.2 (1.116)',
   checkedAt: null,
   lastStage: 'čeká na export',
   runCount: 0,
@@ -387,7 +396,7 @@ const EXPORT_TEXT_FILES = [
 
 function getRakExportManifest() {
   return {
-    version: String(window.APP_VERSION || '1.2 (1.115)'),
+    version: String(window.APP_VERSION || '1.2 (1.116)'),
     mode: 'export-manifest-preflight-v939',
     indexFile: 'index.html',
     jsFiles: Array.from(new Set(EXPORT_JS_FILES)),
@@ -497,7 +506,7 @@ function updateRakExportSmokeReport(partial) {
   const data = partial && typeof partial === 'object' ? partial : {};
   Object.assign(EXPORT_SMOKE_REPORT, data, {
     mode: 'export-smoke-report-v939',
-    version: String(window.APP_VERSION || '1.2 (1.115)'),
+    version: String(window.APP_VERSION || '1.2 (1.116)'),
     checkedAt: new Date().toISOString()
   });
   return getRakExportSmokeReport();

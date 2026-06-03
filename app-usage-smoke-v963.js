@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.115) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.116) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -216,13 +216,13 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.115)',
-  appLabel: 'RaK 1.2 (1.115)',
-  packageVersion: '1.2.115',
-  cacheVersion: 'v1.2-1.115',
-  realtimeChannel: 'rak-public-live-v1-2-1-115',
-  changelogHeader: '## RaK 1.2 (1.115)',
-  previousBuildFragments: Object.freeze(['1.2 (1.114)', '1.2.114', 'v1.2-1.114', 'rak-public-live-v1-2-1-114'])
+  displayVersion: '1.2 (1.116)',
+  appLabel: 'RaK 1.2 (1.116)',
+  packageVersion: '1.2.116',
+  cacheVersion: 'v1.2-1.116',
+  realtimeChannel: 'rak-public-live-v1-2-1-116',
+  changelogHeader: '## RaK 1.2 (1.116)',
+  previousBuildFragments: Object.freeze(['1.2 (1.115)', '1.2.115', 'v1.2-1.115', 'rak-public-live-v1-2-1-115'])
 });
 
 const releaseMetadataActiveFilesV199 = Object.freeze([
@@ -326,8 +326,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.115)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.115'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.116)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.116'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -884,7 +884,7 @@ function assertRotationGeneratorRulesContractV1107() {
   assertIncludes(ui, 'if (softTargetCount === 3 && lathePeopleCount === 2 && mskc01Idx >= 0)', 'Při dvou absencích musí zůstat MSKC01 neobsazená');
   assertIncludes(ui, 'readAdminRotationFromDom(monthKey)', 'Generátor musí před výpočtem číst rozepsané absence z DOMu');
   assertIncludes(ui, 'adminRotationGeneratorIsDayBlocked', 'Generátor musí umět vynechat den označený jako svátek/odstávka');
-  assertIncludes(ui, "ruleVersion: '1.115'", 'Výsledek generátoru musí vracet aktuální verzi pravidel 1.115');
+  assertIncludes(ui, "ruleVersion: '1.116'", 'Výsledek generátoru musí vracet aktuální verzi pravidel 1.116');
 
 }
 
@@ -935,7 +935,7 @@ function assertRotationGeneratorMonthBalanceContractV1112() {
   assertIncludes(ui, '<optgroup label="Rok ', 'Volba měsíce v generátoru musí být seskupená podle roku');
   assertIncludes(ui, 'function adminRotationGeneratorBalanceHardMachine', 'Generátor musí po sestavení měsíce umět vyrovnat tvrdotní stroj');
   assertIncludes(ui, "adminRotationGeneratorBalanceHardMachine(month, 'TNKS01', model, monthKey)", 'Generátor musí vyrovnávat nýtovačku TNKS01 po vygenerování');
-  assertIncludes(ui, 'adminRotationGeneratorFindPersonCellOnDay(month, rowIdx, lowName, \'soft\')', 'Vyrovnání TNKS01 musí umět prohodit člověka z tvrdoty dočasně napsaného na měkotě');
+  assertIncludes(ui, 'adminRotationGeneratorFindPersonCellOnDay(month, rowIdx, targetLowName, \'soft\')', 'Vyrovnání TNKS01 musí umět prohodit člověka z tvrdoty dočasně napsaného na měkotě');
   assertIncludes(ui, 'tnksBalanceSwaps', 'Výsledek generátoru musí vracet počet prohozů TNKS01');
   assertIncludes(browserSmokeJs, 'tnksBalance', 'Browser smoke musí ověřit nenulovou/rozumnou rovnováhu TNKS01');
 }
@@ -967,7 +967,7 @@ function assertRotationGeneratorRulesContractV1114() {
   assertIncludes(ui, 'function adminRotationGeneratorCountSoloMill', 'Generátor musí umět spočítat samostatné MFKF10 s prázdnou MFKF06');
   assertIncludes(ui, "const soloMillBalance = adminRotationGeneratorBalanceSoloMill(month, model);", 'Po sestavení měsíce musí běžet vyrovnání samostatných frézek');
   assertIncludes(ui, 'soloMillBalanceSwaps', 'Výsledek generátoru musí vracet počet prohozů samostatných frézek');
-  assertIncludes(ui, "ruleVersion: '1.115'", 'Výsledek generátoru musí vracet aktuální verzi pravidel 1.115');
+  assertIncludes(ui, "ruleVersion: '1.116'", 'Výsledek generátoru musí vracet aktuální verzi pravidel 1.116');
 }
 
 
@@ -982,6 +982,18 @@ function assertRotationGeneratorRulesContractV1115() {
   assertIncludes(ui, 'displacedToSoft', 'Člověk vytlačený z Tvrdoty člověkem z Měkoty musí jít na Měkotu');
   assertIncludes(ui, 'hard-displaced-to-mill', 'Vytlačený člověk z Tvrdoty má jít přednostně na frézky');
   assertIncludes(ui, 'Špadrna a Novotný pomáhají vyrovnat Tvrdotu', 'Špadrna a Novotný musí být vyrovnávací lidé podle Martinova postupu');
+}
+
+
+function assertRotationGeneratorRulesContractV1116() {
+  assertIncludes(exportJs, 'RAK_ROTATION_GENERATOR_RULES_CONTRACT_V1116', 'export.js musí dokumentovat pravidla generátoru v1.116');
+  assertIncludes(ui, 'RAK_ROTATION_GENERATOR_RULES_V1116', 'admin-rotation.js musí mít contract pravidel v1.116');
+  assertIncludes(ui, 'Rychlý přehled: jména × stroje', 'Kontrolní přehled musí být otočený na jména v řádcích a stroje ve sloupcích');
+  assertIncludes(ui, '<th>Jméno</th><th>TO</th><th>MO</th>', 'Kontrolní přehled musí mít sloupce TO a MO');
+  assertIncludes(ui, 'function adminRotationGeneratorCountSoftKinds', 'Generátor musí umět spočítat poměr frézky/soustruhy');
+  assertIncludes(ui, 'function adminRotationGeneratorBalanceSoftKind', 'Generátor musí po vygenerování dorovnat MFKF/MSKC poměr');
+  assertIncludes(ui, 'softKindBalanceSwaps', 'Výsledek generátoru musí vracet počet prohozů frézky/soustruhy');
+  assertIncludes(ui, 'const allowedDiff = isPressBalance ? 0.5 : 1', 'Vyrovnání nýtovačky musí řešit i rozdíl 1,5 proti 0');
 }
 
 assertDashboardCssGuardSeriesCompleteV1100();
@@ -1000,5 +1012,6 @@ assertRotationGeneratorMonthBalanceContractV1112();
 assertRotationGeneratorRulesContractV1113();
 assertRotationGeneratorRulesContractV1114();
 assertRotationGeneratorRulesContractV1115();
+assertRotationGeneratorRulesContractV1116();
 
-console.log('app-usage-smoke-v963 OK + rotation-generator-wizard-v1108-guard + rotation-generator-absence-state-v1109-guard + rotation-generator-wizard-run-v1110-guard + rotation-generator-wizard-state-v1111-guard + rotation-generator-month-balance-v1112-guard + rotation-generator-rules-v1113-guard + rotation-generator-rules-v1114-guard + rotation-generator-rules-v1115-guard + dashboard-css-contract-guard + appearance-reward-contract + rotation-export-summary-simple-guard + rotation-export-glass-guard + appearance-readability-guard + css-layer-order-v194-guard + dashboard-owner-registry-v195-guard + dashboard-overrides-selector-lock-v196-guard + dashboard-scope-v197-guard + dashboard-release-isolation-v198-guard + dashboard-css-guard-series-v1100-complete + release-metadata-v199-guard + brusy-choice-size-v1101-guard + fixed-app-background-v1101-guard + name-choice-fit-v1102-guard + browser-smoke-v1103-guard + dashboard-empty-absence-text-v1104-guard + rotace-empty-absence-text-v1105-guard + appearance-update-persistence-v1105-guard + rotation-generator-v1106-guard + rotation-generator-rules-v1107-guard + no-visual-owner-drift-guard OK');
+console.log('app-usage-smoke-v963 OK + rotation-generator-wizard-v1108-guard + rotation-generator-absence-state-v1109-guard + rotation-generator-wizard-run-v1110-guard + rotation-generator-wizard-state-v1111-guard + rotation-generator-month-balance-v1112-guard + rotation-generator-rules-v1113-guard + rotation-generator-rules-v1114-guard + rotation-generator-rules-v1115-guard + rotation-generator-rules-v1116-guard + dashboard-css-contract-guard + appearance-reward-contract + rotation-export-summary-simple-guard + rotation-export-glass-guard + appearance-readability-guard + css-layer-order-v194-guard + dashboard-owner-registry-v195-guard + dashboard-overrides-selector-lock-v196-guard + dashboard-scope-v197-guard + dashboard-release-isolation-v198-guard + dashboard-css-guard-series-v1100-complete + release-metadata-v199-guard + brusy-choice-size-v1101-guard + fixed-app-background-v1101-guard + name-choice-fit-v1102-guard + browser-smoke-v1103-guard + dashboard-empty-absence-text-v1104-guard + rotace-empty-absence-text-v1105-guard + appearance-update-persistence-v1105-guard + rotation-generator-v1106-guard + rotation-generator-rules-v1107-guard + no-visual-owner-drift-guard OK');
