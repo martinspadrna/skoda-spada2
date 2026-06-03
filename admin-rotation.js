@@ -1,4 +1,4 @@
-// RaK 1.2 (1.114) – Administrace Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
+// RaK 1.2 (1.115) – Administrace Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('admin-rotation.js', 'loading', { source: 'dynamic-loader' }); } catch (err) {}
 
 
@@ -949,7 +949,7 @@ const RAK_ROTATION_GENERATOR_RULES_V1107 = Object.freeze({
   softCore: Object.freeze(['Synek', 'Třasák', 'Střížek']),
   softBaseLathe: Object.freeze({ Synek: 'MSKC04', 'Střížek': 'MSKC03', 'Třasák': 'MSKC01' }),
   machineCountSplitRule: 'Mimo běžnou neděli se TNKS01 a TPKW01 v kontrolním přehledu počítají jako 0,5 + 0,5 pro oba stroje.',
-  hardCycle: Object.freeze(['TNKS01', 'TBKR07', 'TPKW01', 'TPKW02', 'TBKR01']),
+  hardCycle: Object.freeze(['TBKR01', 'TNKS01', 'TBKR07', 'TPKW01', 'TPKW02']),
   softMachines: Object.freeze(['MSKC01', 'MSKC03', 'MSKC04', 'MFKF06', 'MFKF10']),
   absenceRules: Object.freeze([
     'Když je na frézkách jen jeden člověk, píše se MFKF06 jako neobsazená, i když reálně hlídá obě frézky.',
@@ -1052,6 +1052,7 @@ function adminBuildRotationGenerationModel(targetMonthKey) {
   const globalStats = Object.create(null);
   const dayTemplates = [];
   const previousYearTemplates = [];
+  const previousHardMachine = Object.create(null);
   knownNames.forEach((name) => { globalStats[name] = 0; });
 
   const months = getAdminRotationMonthKeys()
@@ -1087,12 +1088,17 @@ function adminBuildRotationGenerationModel(targetMonthKey) {
       };
       dayTemplates.push(template);
       if (monthKey === previousYearKey) previousYearTemplates.push(template);
-      hardCells.forEach((name, idx) => { if (adminRotationIsRealName(name, knownNames)) addMachineStat('hard', idx, name, recencyWeight); });
+      hardCells.forEach((name, idx) => {
+        if (adminRotationIsRealName(name, knownNames)) {
+          addMachineStat('hard', idx, name, recencyWeight);
+          previousHardMachine[name] = HARD_MACHINE_HEADERS[idx] || previousHardMachine[name] || '';
+        }
+      });
       softCells.forEach((name, idx) => { if (adminRotationIsRealName(name, knownNames)) addMachineStat('soft', idx, name, recencyWeight); });
     }
   });
 
-  return { knownNames, machineStats, globalStats, dayTemplates, previousYearTemplates, previousYearKey };
+  return { knownNames, machineStats, globalStats, dayTemplates, previousYearTemplates, previousYearKey, previousHardMachine };
 }
 
 function adminPickRotationGeneratorName(model, sectionKey, machineIdx, rowIdx, usedNames, monthCounts, previousRowNames, suggestedName, shift) {
@@ -1139,8 +1145,9 @@ function adminRotationGeneratorIsDayBlocked(notes) {
 }
 
 function adminRotationGeneratorCreateCounters(model) {
-  const counters = { total: Object.create(null), hard: Object.create(null), soft: Object.create(null), hardMachine: Object.create(null), softMachine: Object.create(null), softKind: Object.create(null) };
+  const counters = { total: Object.create(null), hard: Object.create(null), soft: Object.create(null), hardMachine: Object.create(null), softMachine: Object.create(null), softKind: Object.create(null), hardCycleCursor: Object.create(null) };
   const known = model && Array.isArray(model.knownNames) ? model.knownNames : adminGetKnownNames();
+  const hardCycle = Array.isArray(RAK_ROTATION_GENERATOR_RULES_V1107.hardCycle) ? RAK_ROTATION_GENERATOR_RULES_V1107.hardCycle : [];
   known.forEach((name) => {
     counters.total[name] = 0;
     counters.hard[name] = 0;
@@ -1148,6 +1155,9 @@ function adminRotationGeneratorCreateCounters(model) {
     counters.softKind[name] = { lathe: 0, mill: 0 };
     counters.hardMachine[name] = Object.create(null);
     counters.softMachine[name] = Object.create(null);
+    const previousMachine = model && model.previousHardMachine ? String(model.previousHardMachine[name] || '').trim().toUpperCase() : '';
+    const previousIdx = hardCycle.findIndex((machine) => String(machine || '').toUpperCase() === previousMachine);
+    counters.hardCycleCursor[name] = previousIdx >= 0 ? (previousIdx + 1) % Math.max(1, hardCycle.length) : 0;
   });
   return counters;
 }
@@ -1205,6 +1215,31 @@ function adminRotationGeneratorMarkAssignment(counters, sectionKey, machineName,
     if (!counters.softKind[name]) counters.softKind[name] = { lathe: 0, mill: 0 };
     counters.softKind[name][softKind] = Number(counters.softKind[name][softKind] || 0) + 1;
   }
+}
+
+
+function adminRotationGeneratorUnmarkAssignment(counters, sectionKey, machineName, name, softKind) {
+  if (!name) return;
+  counters.total[name] = Math.max(0, Number(counters.total[name] || 0) - 1);
+  if (sectionKey === 'soft') counters.soft[name] = Math.max(0, Number(counters.soft[name] || 0) - 1);
+  else counters.hard[name] = Math.max(0, Number(counters.hard[name] || 0) - 1);
+  const machineMap = sectionKey === 'soft' ? counters.softMachine : counters.hardMachine;
+  if (machineMap[name]) machineMap[name][machineName] = Math.max(0, Number(machineMap[name][machineName] || 0) - 1);
+  if (sectionKey === 'soft' && softKind && counters.softKind[name]) counters.softKind[name][softKind] = Math.max(0, Number(counters.softKind[name][softKind] || 0) - 1);
+}
+
+function adminRotationGeneratorNextHardCycleMachine(counters, name) {
+  const cycle = Array.isArray(RAK_ROTATION_GENERATOR_RULES_V1107.hardCycle) ? RAK_ROTATION_GENERATOR_RULES_V1107.hardCycle : [];
+  if (!name || !cycle.length) return '';
+  const cursor = Number(counters && counters.hardCycleCursor ? counters.hardCycleCursor[name] : 0) || 0;
+  return cycle[((cursor % cycle.length) + cycle.length) % cycle.length] || '';
+}
+
+function adminRotationGeneratorAdvanceHardCycle(counters, name) {
+  const cycle = Array.isArray(RAK_ROTATION_GENERATOR_RULES_V1107.hardCycle) ? RAK_ROTATION_GENERATOR_RULES_V1107.hardCycle : [];
+  if (!name || !cycle.length) return;
+  const cursor = Number(counters && counters.hardCycleCursor ? counters.hardCycleCursor[name] : 0) || 0;
+  counters.hardCycleCursor[name] = (cursor + 1) % cycle.length;
 }
 
 function adminRotationGeneratorSoftSlotPlan(softCount) {
@@ -1342,6 +1377,7 @@ function adminRotationGeneratorBuildDay(month, model, counters, rowIdx, dateLabe
   const hardPreferred = RAK_ROTATION_GENERATOR_RULES_V1107.hardPreferred.filter((name) => knownNames.includes(name));
   const available = knownNames.filter((name) => !blockedNames.has(name));
   const usedNames = new Set();
+  const forcedSoft = new Set();
   const hardCells = Array(HARD_MACHINE_HEADERS.length).fill('');
   const softCells = Array(SOFT_MACHINE_HEADERS.length).fill('');
   const hardTargetCount = Math.min(HARD_MACHINE_HEADERS.length, available.length);
@@ -1349,24 +1385,70 @@ function adminRotationGeneratorBuildDay(month, model, counters, rowIdx, dateLabe
 
   if (!available.length) return { hardCells, softCells, filledCells: 0, emptyProtected: 0 };
 
+  const assignHardCell = (machineIdx, name, reason) => {
+    const machineName = HARD_MACHINE_HEADERS[machineIdx] || '';
+    if (machineIdx < 0 || !machineName || !name || usedNames.has(name) || !available.includes(name) || hardCells[machineIdx]) return false;
+    hardCells[machineIdx] = name;
+    usedNames.add(name);
+    adminRotationGeneratorMarkAssignment(counters, 'hard', machineName, name);
+    if (reason === 'hard-cycle') adminRotationGeneratorAdvanceHardCycle(counters, name);
+    return true;
+  };
+
+  const assignSoftCell = (machineIdx, name, reason) => {
+    const machineName = SOFT_MACHINE_HEADERS[machineIdx] || '';
+    if (machineIdx < 0 || !machineName || !name || usedNames.has(name) || !available.includes(name) || softCells[machineIdx]) return false;
+    const kind = adminRotationGeneratorSoftKind(machineName);
+    softCells[machineIdx] = name;
+    usedNames.add(name);
+    adminRotationGeneratorMarkAssignment(counters, 'soft', machineName, name, kind);
+    return true;
+  };
+
+  // 1) Nejdřív rozepiš základ Tvrdoty podle návazné rotace z minulého měsíce:
+  // TBKR01 → TNKS01 → TBKR07 → TPKW01 → TPKW02.
+  hardPreferred.filter((name) => available.includes(name)).forEach((name) => {
+    if (usedNames.size >= hardTargetCount) return;
+    const wantedMachine = adminRotationGeneratorNextHardCycleMachine(counters, name);
+    const wantedIdx = adminRotationGeneratorMachineIndex(HARD_MACHINE_HEADERS, wantedMachine);
+    if (assignHardCell(wantedIdx, name, 'hard-cycle')) return;
+    const cycle = Array.isArray(RAK_ROTATION_GENERATOR_RULES_V1107.hardCycle) ? RAK_ROTATION_GENERATOR_RULES_V1107.hardCycle : [];
+    for (const machine of cycle) {
+      const idx = adminRotationGeneratorMachineIndex(HARD_MACHINE_HEADERS, machine);
+      if (assignHardCell(idx, name, 'hard-cycle')) return;
+    }
+  });
+
+  // 2) Pak přesuň jednoho ze základu Měkoty na tvrdotní stroj v 3denním bloku.
+  // Když někdo z nich později chybí, pořadí se smí prohodit, aby se tomu nevyhnul.
   const softCoreBlock = adminRotationGeneratorSoftCoreBlockInfo(rowIdx);
   const cycleMachine = softCoreBlock.machine;
   const cycleIdx = adminRotationGeneratorMachineIndex(HARD_MACHINE_HEADERS, cycleMachine);
   const exchangeSoft = cycleIdx >= 0 && hardTargetCount > 0
     ? adminRotationGeneratorPickSoftCoreForHard(month, knownNames, rowIdx, cycleIdx, available, usedNames, counters)
     : '';
-  if (exchangeSoft) {
-    hardCells[cycleIdx] = exchangeSoft;
-    usedNames.add(exchangeSoft);
-    adminRotationGeneratorMarkAssignment(counters, 'hard', cycleMachine, exchangeSoft);
+  const displacedToSoft = [];
+  if (exchangeSoft && cycleIdx >= 0 && available.includes(exchangeSoft) && !usedNames.has(exchangeSoft)) {
+    const displaced = adminRotationCanonicalName(hardCells[cycleIdx], knownNames);
+    if (displaced) {
+      adminRotationGeneratorUnmarkAssignment(counters, 'hard', HARD_MACHINE_HEADERS[cycleIdx] || '', displaced);
+      usedNames.delete(displaced);
+      forcedSoft.add(displaced);
+      displacedToSoft.push(displaced);
+    }
+    hardCells[cycleIdx] = '';
+    assignHardCell(cycleIdx, exchangeSoft, 'soft-core-hard-block');
   }
 
+  // 3) Doplnění zbytku Tvrdoty až po základním rozepsání a výměně.
   HARD_MACHINE_HEADERS.forEach((machineName, machineIdx) => {
-    if (hardCells[machineIdx] || usedNames.size >= hardTargetCount) return;
+    if (hardCells[machineIdx] || hardCells.filter((cell) => String(cell || '').trim()).length >= hardTargetCount) return;
     const historicalCandidates = (model.dayTemplates[rowIdx % model.dayTemplates.length] && model.dayTemplates[rowIdx % model.dayTemplates.length].hardCells) || [];
     const suggested = adminRotationCanonicalName(historicalCandidates[machineIdx] || '', knownNames);
-    const preferred = hardPreferred.filter((name) => available.includes(name));
-    const fallback = available.filter((name) => !softPreferred.includes(name)).concat(available.filter((name) => softPreferred.includes(name)));
+    const preferred = hardPreferred.filter((name) => available.includes(name) && !forcedSoft.has(name));
+    const balancing = ['Špadrna', 'Novotný'].map((name) => adminRotationCanonicalName(name, knownNames)).filter((name) => available.includes(name) && !forcedSoft.has(name));
+    const fallback = available.filter((name) => !softPreferred.includes(name) && !forcedSoft.has(name))
+      .concat(balancing, available.filter((name) => softPreferred.includes(name) && !forcedSoft.has(name)));
     const ordered = Array.from(new Set((suggested ? [suggested] : []).concat(preferred, fallback))).filter((name) => available.includes(name));
     const name = adminRotationGeneratorPickName(ordered, usedNames, counters, {
       sectionKey: 'hard',
@@ -1376,23 +1458,39 @@ function adminRotationGeneratorBuildDay(month, model, counters, rowIdx, dateLabe
       avoid: softPreferred,
       historical: adminRotationGeneratorHistoricalMachineScore(model, 'hard', machineIdx, suggested || '')
     });
-    if (name) {
-      hardCells[machineIdx] = name;
-      usedNames.add(name);
-      adminRotationGeneratorMarkAssignment(counters, 'hard', machineName, name);
-    }
+    if (name) assignHardCell(machineIdx, name, hardPreferred.includes(name) ? 'hard-cycle' : 'hard-fill');
   });
 
-  const remaining = available.filter((name) => !usedNames.has(name));
-  const softSlots = adminRotationGeneratorSoftSlotPlan(Math.min(softTargetCount, remaining.length));
+  const softSlots = adminRotationGeneratorSoftSlotPlan(Math.min(softTargetCount, available.filter((name) => !usedNames.has(name)).length));
+  const hasSoftSlot = (machineName) => softSlots.includes(adminRotationGeneratorMachineIndex(SOFT_MACHINE_HEADERS, machineName));
+
+  // 4) Základ Měkoty: Třasák/MSKC01, Střížek/MSKC03, Synek/MSKC04, pokud jsou dostupní a nejsou zrovna na Tvrdotě.
+  ['MSKC01', 'MSKC03', 'MSKC04'].forEach((machineName) => {
+    const idx = adminRotationGeneratorMachineIndex(SOFT_MACHINE_HEADERS, machineName);
+    if (!hasSoftSlot(machineName) || softCells[idx]) return;
+    const base = adminRotationGeneratorBaseLathePerson(machineName, knownNames, available, usedNames);
+    if (base) assignSoftCell(idx, base, 'soft-base-lathe');
+  });
+
+  // 5) Člověk vytlačený z Tvrdoty člověkem z Měkoty jde přednostně na frézky.
+  ['MFKF10', 'MFKF06'].forEach((machineName) => {
+    const idx = adminRotationGeneratorMachineIndex(SOFT_MACHINE_HEADERS, machineName);
+    if (!hasSoftSlot(machineName) || softCells[idx]) return;
+    const name = displacedToSoft.find((person) => available.includes(person) && !usedNames.has(person));
+    if (name) assignSoftCell(idx, name, 'hard-displaced-to-mill');
+  });
+
+  // 6) Špadrna a Novotný pomáhají vyrovnat Tvrdotu; zbytek dnů jdou hlavně na frézky/Měkotu.
   softSlots.forEach((machineIdx) => {
+    if (softCells[machineIdx]) return;
     const machineName = SOFT_MACHINE_HEADERS[machineIdx] || '';
     const kind = adminRotationGeneratorSoftKind(machineName);
     const remainingNow = available.filter((name) => !usedNames.has(name));
     const baseLathe = kind === 'lathe' ? adminRotationGeneratorBaseLathePerson(machineName, knownNames, available, usedNames) : '';
+    const flexSoft = ['Špadrna', 'Novotný'].map((name) => adminRotationCanonicalName(name, knownNames)).filter((name) => remainingNow.includes(name));
     const preferred = kind === 'mill'
-      ? remainingNow.filter((name) => !softPreferred.includes(name)).concat(remainingNow.filter((name) => softPreferred.includes(name)))
-      : (baseLathe ? [baseLathe] : []).concat(remainingNow.filter((name) => softPreferred.includes(name)), remainingNow.filter((name) => !softPreferred.includes(name)));
+      ? displacedToSoft.concat(flexSoft, remainingNow.filter((name) => !softPreferred.includes(name)), remainingNow.filter((name) => softPreferred.includes(name)))
+      : (baseLathe ? [baseLathe] : []).concat(remainingNow.filter((name) => softPreferred.includes(name)), flexSoft, remainingNow.filter((name) => !softPreferred.includes(name)));
     const name = adminRotationGeneratorPickName(Array.from(new Set(preferred)), usedNames, counters, {
       sectionKey: 'soft',
       machineName,
@@ -1401,11 +1499,7 @@ function adminRotationGeneratorBuildDay(month, model, counters, rowIdx, dateLabe
       preferred: kind === 'lathe' ? softPreferred : hardPreferred,
       historical: adminRotationGeneratorHistoricalMachineScore(model, 'soft', machineIdx, preferred[0] || '')
     });
-    if (name) {
-      softCells[machineIdx] = name;
-      usedNames.add(name);
-      adminRotationGeneratorMarkAssignment(counters, 'soft', machineName, name, kind);
-    }
+    if (name) assignSoftCell(machineIdx, name, 'soft-fill');
   });
 
   const mfkf06Idx = adminRotationGeneratorMachineIndex(SOFT_MACHINE_HEADERS, 'MFKF06');
@@ -1415,10 +1509,14 @@ function adminRotationGeneratorBuildDay(month, model, counters, rowIdx, dateLabe
   const lathePeopleCount = [mskc01Idx, adminRotationGeneratorMachineIndex(SOFT_MACHINE_HEADERS, 'MSKC03'), adminRotationGeneratorMachineIndex(SOFT_MACHINE_HEADERS, 'MSKC04')].filter((idx) => idx >= 0 && String(softCells[idx] || '').trim()).length;
   let emptyProtected = 0;
   if (millPeopleCount === 1 && mfkf06Idx >= 0) {
+    const removed = adminRotationCanonicalName(softCells[mfkf06Idx], knownNames);
+    if (removed) adminRotationGeneratorUnmarkAssignment(counters, 'soft', 'MFKF06', removed, 'mill');
     softCells[mfkf06Idx] = '';
     emptyProtected += 1;
   }
   if (softTargetCount === 3 && lathePeopleCount === 2 && mskc01Idx >= 0) {
+    const removed = adminRotationCanonicalName(softCells[mskc01Idx], knownNames);
+    if (removed) adminRotationGeneratorUnmarkAssignment(counters, 'soft', 'MSKC01', removed, 'lathe');
     softCells[mskc01Idx] = '';
     emptyProtected += 1;
   }
@@ -1430,7 +1528,6 @@ function adminRotationGeneratorBuildDay(month, model, counters, rowIdx, dateLabe
     emptyProtected
   };
 }
-
 
 function adminRotationGeneratorCollectWorkingNames(month, knownNames) {
   const working = new Set();
@@ -1713,7 +1810,7 @@ function adminGenerateRotationMonthDraft(monthKey) {
     protectedEmptyCells,
     tnksBalanceSwaps: tnksBalance && Number(tnksBalance.swaps || 0),
     soloMillBalanceSwaps: soloMillBalance && Number(soloMillBalance.swaps || 0),
-    ruleVersion: '1.114'
+    ruleVersion: '1.115'
   };
 }
 
@@ -1761,6 +1858,17 @@ const RAK_ROTATION_GENERATOR_RULES_V1114 = Object.freeze({
   scope: 'Administrace dat / Rozpisy / Vygenerovat návrh',
   softCoreAvailabilityRule: 'Když Synek/Třasák/Střížek mají v bloku absenci, generátor má prohodit pořadí a dát na Tvrdotu dřív toho, kdo později nebude dostupný, aby se tvrdotě nevyhnul.',
   soloMillBalanceRule: 'Samostatné frézky/MFKF10 s prázdnou MFKF06 se po vygenerování vyrovnávají mezi lidmi podobně jako TNKS01, aby někdo nebyl sám na frézkách opakovaně a jiný vůbec.'
+});
+
+
+const RAK_ROTATION_GENERATOR_RULES_V1115 = Object.freeze({
+  version: '1.115',
+  scope: 'Administrace dat / Rozpisy / Vygenerovat návrh',
+  humanFlowRule: 'Generátor postupuje víc jako Martin: nejdřív rozepsat lidi z Tvrdoty podle návaznosti z minulého měsíce, potom základ Měkoty, potom absence/výměny, potom Špadrna a Novotný pro vyrovnání a zbytek na frézky.',
+  hardCycle: Object.freeze(['TBKR01', 'TNKS01', 'TBKR07', 'TPKW01', 'TPKW02']),
+  previousMonthRule: 'Pro lidi z Tvrdoty se drží cursor podle posledního tvrdotního stroje z předchozích měsíců.',
+  displacedHardRule: 'Když člověk z Měkoty jde na tvrdotní stroj, vytlačený člověk z Tvrdoty jde v tom dni na Měkotu, přednostně na frézky.',
+  flexPeople: Object.freeze(['Špadrna', 'Novotný'])
 });
 
 const RAK_ROTATION_GENERATOR_WIZARD_CONTRACT_V1108 = Object.freeze({
@@ -2263,6 +2371,7 @@ function adminHandleRotationGeneratorWizardAction(action, target) {
 
 
 
+window.RAK_ROTATION_GENERATOR_RULES_V1115 = RAK_ROTATION_GENERATOR_RULES_V1115;
 window.RAK_ROTATION_GENERATOR_RULES_V1114 = RAK_ROTATION_GENERATOR_RULES_V1114;
 window.RAK_ROTATION_GENERATOR_RULES_V1113 = RAK_ROTATION_GENERATOR_RULES_V1113;
 window.RAK_ROTATION_GENERATOR_MONTH_BALANCE_CONTRACT_V1112 = RAK_ROTATION_GENERATOR_MONTH_BALANCE_CONTRACT_V1112;
@@ -2310,7 +2419,7 @@ function adminShowRotationSelectedRemove(input) {
       return;
     }
     window.__rakAdminRotationSelectedInput = input;
-    // RaK 1.2 (1.114) – horní sticky tlačítko už při kliknutí do jména nevytahujeme.
+    // RaK 1.2 (1.115) – horní sticky tlačítko už při kliknutí do jména nevytahujeme.
     // Rychlé Odebrat se vykreslí přímo u aktivního pole přes adminShowRotationQuickRemove().
     btn.hidden = true;
     btn.dataset.targetReady = '1';

@@ -1,3 +1,12 @@
+## RaK 1.2 (1.115)
+
+- Generátor rozpisu upravený víc podle reálného Martinova postupu: nejdřív návazně rozepíše lidi z Tvrdoty podle toho, kde skončili v minulých měsících, potom řeší základ Měkoty, výměny, absence a až nakonec vyrovnávání.
+- Tvrdotní rotace nově používá pořadí `TBKR01 → TNKS01 → TBKR07 → TPKW01 → TPKW02` a drží návaznost přes `previousHardMachine` / `hardCycleCursor`.
+- Když Synek/Třasák/Střížek z Měkoty jdou na Tvrdotu, člověk vytlačený z Tvrdoty jde ten den na Měkotu, přednostně na frézky.
+- Špadrna a Novotný jsou v generátoru výslovně vedení jako vyrovnávací lidé pro Tvrdotu a zbytek dní spíš pro Měkotu/frézky.
+- Přidaný contract `RAK_ROTATION_GENERATOR_RULES_V1115` a test guard pro lidský postup generátoru.
+- Release metadata sjednocená na `RaK 1.2 (1.115)`, technická verze `1.2.115`, cache `v1.2-1.115`.
+
 ## RaK 1.2 (1.114)
 
 - Generátor rozpisu: Synek/Třasák/Střížek se v 3denním bloku Měkoty na Tvrdotu nově přeskupují podle dostupnosti. Když je někdo dostupný jen první dny a potom má absenci, má jít na Tvrdotu dřív, aby se tvrdotě nevyhnul.

@@ -1,4 +1,4 @@
-// RaK 1.2 (1.114) – export manifest a release metadata.
+// RaK 1.2 (1.115) – export manifest a release metadata.
 const EXPORT_SOURCE_IDS = {
   "module-readiness.js": "src-module-readiness-js",
   "rak-namespace.js": "src-rak-namespace-js",
@@ -112,12 +112,12 @@ const EXPORT_SOURCE_IDS = {
 const SOURCE_CACHE = window.__ROTACE_SOURCE_CACHE__ || (window.__ROTACE_SOURCE_CACHE__ = {});
 const BINARY_SOURCE_CACHE = window.__ROTACE_BINARY_SOURCE_CACHE__ || (window.__ROTACE_BINARY_SOURCE_CACHE__ = {});
 const RAK_RELEASE_METADATA_CONTRACT_V199 = Object.freeze({
-  displayVersion: '1.2 (1.114)',
-  appLabel: 'RaK 1.2 (1.114)',
-  packageVersion: '1.2.114',
-  cacheVersion: 'v1.2-1.114',
-  realtimeChannel: 'rak-public-live-v1-2-1-114',
-  changelogHeader: '## RaK 1.2 (1.114)',
+  displayVersion: '1.2 (1.115)',
+  appLabel: 'RaK 1.2 (1.115)',
+  packageVersion: '1.2.115',
+  cacheVersion: 'v1.2-1.115',
+  realtimeChannel: 'rak-public-live-v1-2-1-115',
+  changelogHeader: '## RaK 1.2 (1.115)',
   serviceWorkerVersionGuard: 'CACHE_VERSION + SW_APP_VERSION'
 });
 const RAK_DASHBOARD_CSS_GUARD_SERIES_CONTRACT_V1100 = Object.freeze({
@@ -190,7 +190,7 @@ const RAK_ROTATION_GENERATOR_RULES_CONTRACT_V1107 = Object.freeze({
   softPreferred: Object.freeze(['Střížek', 'Synek', 'Třasák', 'Špadrna', 'Novotný']),
   hardPreferred: Object.freeze(['Blažek', 'Kmínek', 'Kříž', 'Pech', 'Starý']),
   softHardCycle: Object.freeze(['TNKS01', 'TPKW01', 'TPKW02']),
-  hardCycle: Object.freeze(['TNKS01', 'TBKR07', 'TPKW01', 'TPKW02', 'TBKR01']),
+  hardCycle: Object.freeze(['TBKR01', 'TNKS01', 'TBKR07', 'TPKW01', 'TPKW02']),
   protectedEmptyRules: Object.freeze(['MFKF06 prázdná vždy, když je na frézkách jen jeden člověk', 'při dvou absencích MSKC01 prázdná a MFKF06 prázdná']),
   saveRule: 'generátor vytvoří jen lokální návrh; online uložení až ručně přes Uložit rozpis'
 });
@@ -241,11 +241,20 @@ const RAK_ROTATION_GENERATOR_RULES_CONTRACT_V1114 = Object.freeze({
   soloMillBalanceRule: 'Samostatná obsluha frézek se počítá jako MFKF10 při prázdné MFKF06 a po vygenerování se vyrovnává mezi lidmi.',
   resultRule: 'Výsledek generátoru vrací soloMillBalanceSwaps a ruleVersion 1.114.'
 });
+
+const RAK_ROTATION_GENERATOR_RULES_CONTRACT_V1115 = Object.freeze({
+  scope: 'administrace-dat-rozpisy-generator-human-flow-v1115',
+  flow: 'Generátor staví rozpis víc jako Martin: nejdřív návazná Tvrdota, potom základní Měkota, potom absence/výměny, potom Špadrna a Novotný jako vyrovnání a nakonec kontrola férovosti.',
+  hardCycle: Object.freeze(['TBKR01', 'TNKS01', 'TBKR07', 'TPKW01', 'TPKW02']),
+  previousMonthRule: 'Tvrdota pokračuje podle toho, kde člověk skončil v minulém měsíci.',
+  softExchangeRule: 'Synek/Třasák/Střížek z Měkoty jdou na Tvrdotu po 3denních blocích a vytlačený člověk z Tvrdoty jde na Měkotu hlavně na frézy.',
+  flexPeople: Object.freeze(['Špadrna', 'Novotný'])
+});
 const EXPORT_SMOKE_REPORT = window.__RAK_EXPORT_SMOKE_REPORT__ || (window.__RAK_EXPORT_SMOKE_REPORT__ = {
   ok: null,
   status: 'not-run',
   mode: 'export-smoke-report-v939',
-  version: '1.2 (1.114)',
+  version: '1.2 (1.115)',
   checkedAt: null,
   lastStage: 'čeká na export',
   runCount: 0,
@@ -378,7 +387,7 @@ const EXPORT_TEXT_FILES = [
 
 function getRakExportManifest() {
   return {
-    version: String(window.APP_VERSION || '1.2 (1.114)'),
+    version: String(window.APP_VERSION || '1.2 (1.115)'),
     mode: 'export-manifest-preflight-v939',
     indexFile: 'index.html',
     jsFiles: Array.from(new Set(EXPORT_JS_FILES)),
@@ -488,7 +497,7 @@ function updateRakExportSmokeReport(partial) {
   const data = partial && typeof partial === 'object' ? partial : {};
   Object.assign(EXPORT_SMOKE_REPORT, data, {
     mode: 'export-smoke-report-v939',
-    version: String(window.APP_VERSION || '1.2 (1.114)'),
+    version: String(window.APP_VERSION || '1.2 (1.115)'),
     checkedAt: new Date().toISOString()
   });
   return getRakExportSmokeReport();
