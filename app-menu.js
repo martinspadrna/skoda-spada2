@@ -1,4 +1,4 @@
-// RaK 1.2 (1.125) – Více/menu shell, O aplikaci, Nastavení, Report chyby a admin menu.
+// RaK 1.2 (1.127) – Více/menu shell, O aplikaci, Nastavení, Report chyby a admin menu.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app-menu.js', 'loaded', { source: 'dynamic-loader' }); } catch (err) {}
 
 
@@ -231,6 +231,9 @@ function renderAdminMenuBody(body, section) {
   if (mode === 'rotation') {
     runAdminRotationEditorMaintenance(body, 'render-admin-rotation');
   }
+  if (mode === 'overtime' && typeof adminRotationRefreshOvertimeShiftBadges === 'function') {
+    try { adminRotationRefreshOvertimeShiftBadges(body, true); } catch (err) {}
+  }
   if (mode === 'export' && typeof updateRakExcelImportPreviewUi === 'function') {
     setTimeout(() => {
       try { updateRakExcelImportPreviewUi(); } catch (err) { console.warn('Excel preview UI update failed', err); }
@@ -390,7 +393,7 @@ async function handleBugReportAction(action) {
 
 
 
-// RaK 1.2 (1.125) – Plovoucí odebrání a údržba editoru rozpisů jsou oddělené v admin-rotation.js.
+// RaK 1.2 (1.127) – Plovoucí odebrání a údržba editoru rozpisů jsou oddělené v admin-rotation.js.
 
 function bindAppMenuHandlers(body) {
   if (!body || body.dataset.menuHandlersBound === '1') return;
@@ -405,6 +408,9 @@ function bindAppMenuHandlers(body) {
   body.addEventListener('input', (event) => {
     const target = event.target;
     if (target && target.matches && target.matches('[data-rot-field^="cell-"], [data-note-field="person"]')) adminShowRotationSelectedRemove(target);
+    if (target && target.matches && target.matches('[data-rotation-overtime-date]') && typeof adminRotationRefreshOvertimeShiftBadges === 'function') {
+      adminRotationRefreshOvertimeShiftBadges(body, false);
+    }
   }, true);
 
   body.addEventListener('click', async (event) => {
@@ -1060,8 +1066,14 @@ function bindAppMenuHandlers(body) {
         }
         return;
       }
+      if (adminAction === 'overtime-shift-filter') {
+        if (typeof adminRotationOvertimeSetShiftFilter === 'function') adminRotationOvertimeSetShiftFilter(target && target.getAttribute('data-overtime-shift-filter'));
+        renderAdminMenuBody(body, 'overtime');
+        return;
+      }
       if (adminAction === 'overtime-row-add') {
         if (typeof adminRotationAddOvertimeRow === 'function') adminRotationAddOvertimeRow(target && target.getAttribute('data-overtime-year'));
+        if (typeof adminRotationRefreshOvertimeShiftBadges === 'function') adminRotationRefreshOvertimeShiftBadges(body, true);
         return;
       }
       if (adminAction === 'overtime-row-clear') {

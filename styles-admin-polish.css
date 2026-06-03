@@ -1,4 +1,4 @@
-/* RaK 1.2 (1.125) – Administrace/Rozpisy polish oddělený ze styles-overrides.css.
+/* RaK 1.2 (1.127) – Administrace/Rozpisy polish oddělený ze styles-overrides.css.
    Bez změny logiky, Supabase ani spodní lišty. */
 
 /* v.1.5 (988) – Administrace / Rozpisy: užší sloupce pro tvrdotu, měkotu a absence. */
@@ -304,7 +304,7 @@
 }
 
 
-/* RaK 1.2 (1.125) – Administrace/Rozpisy: průvodce generátorem a čitelné mini hlavičky Tvrdoty. */
+/* RaK 1.2 (1.127) – Administrace/Rozpisy: průvodce generátorem a čitelné mini hlavičky Tvrdoty. */
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adminRotationMiniTable th{
   min-width:30px !important;
   font-size:7.2px !important;
@@ -441,7 +441,7 @@
   background:rgba(76,255,137,.10) !important;
 }
 
-/* RaK 1.2 (1.125) – Rozpisy/Rotace: prázdné pozice zvýraznit světle červeně. */
+/* RaK 1.2 (1.127) – Rozpisy/Rotace: prázdné pozice zvýraznit světle červeně. */
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable td.adminRotationEditorEmptyCell,
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable input[data-rot-field^="cell-"]:placeholder-shown,
 #appMenuBody[data-admin-view="rotation"] .adminRotationGeneratorPreviewTable td.adminRotationPreviewEmptyCell,
@@ -453,7 +453,66 @@
   color:rgba(255,238,238,.92) !important;
 }
 
-/* 1.2 (1.125) – Administrace/Rozpisy: správa přesčasů s TO přepínačem. */
+/* 1.2 (1.127) – Administrace/Rozpisy: přesčasy umí automaticky dopočítat směnu a filtrovat ji. */
+.adminRotationOvertimeFilterBox{
+  margin:8px 0 10px;
+  padding:10px 12px;
+  border-radius:18px;
+  background:rgba(255,255,255,.58);
+  border:1px solid rgba(120,140,170,.18);
+  box-shadow:0 10px 28px rgba(20,34,60,.08);
+}
+.adminRotationOvertimeFilterTitle{
+  font-size:12px;
+  font-weight:850;
+  color:rgba(32,42,58,.74);
+  margin-bottom:7px;
+}
+.adminRotationOvertimeFilterBar{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+  margin-bottom:7px;
+}
+.adminRotationOvertimeFilterChip{
+  appearance:none;
+  border:1px solid rgba(120,140,170,.22);
+  border-radius:999px;
+  background:rgba(255,255,255,.72);
+  color:rgba(38,49,68,.78);
+  min-height:31px;
+  padding:6px 11px;
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:.01em;
+  cursor:pointer;
+}
+.adminRotationOvertimeFilterChip.isActive{
+  background:linear-gradient(135deg, rgba(84,132,255,.92), rgba(58,184,151,.9));
+  color:#fff;
+  border-color:rgba(255,255,255,.34);
+  box-shadow:0 8px 18px rgba(64,116,220,.2);
+}
+.adminRotationOvertimeHiddenByFilter{
+  display:none;
+}
+.adminRotationOvertimeShiftCol{width:92px;}
+.adminRotationOvertimeShiftCell{white-space:nowrap;}
+.adminRotationOvertimeShiftBadge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:72px;
+  min-height:28px;
+  border-radius:999px;
+  border:1px solid rgba(120,140,170,.2);
+  background:rgba(255,255,255,.68);
+  color:rgba(42,54,74,.78);
+  font-size:12px;
+  font-weight:850;
+}
+
+/* 1.2 (1.127) – Administrace/Rozpisy: správa přesčasů s TO přepínačem. */
 .adminRotationOvertimeHelp{
   margin:8px 0 12px;
   padding:10px 12px;
@@ -508,8 +567,10 @@
 .adminRotationOvertimeSwitch:active span{transform:scale(.96);}
 @media (max-width: 560px){
   .adminRotationOvertimeDateCol{width:112px;}
+  .adminRotationOvertimeShiftCol{width:82px;}
   .adminRotationOvertimeToCol{width:64px;}
   .adminRotationOvertimeNoteCol{width:160px;}
+  .adminRotationOvertimeShiftBadge{min-width:64px;font-size:11px;}
   .adminRotationOvertimeTable th,
   .adminRotationOvertimeTable td{padding:5px 4px;}
 }

@@ -1,4 +1,4 @@
-// RaK 1.2 (1.125) – admin odemčení oddělené ze startovacích vazeb aplikace.
+// RaK 1.2 (1.127) – admin odemčení oddělené ze startovacích vazeb aplikace.
 function bindAdminSecretUnlock() {
   try { localStorage.removeItem('adminUnlocked'); } catch (err) {}
   if (document.documentElement.dataset.adminSecretBound === '1') return true;

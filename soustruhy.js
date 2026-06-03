@@ -1,6 +1,6 @@
-// RaK 1.2 (1.125) – kalkulačky Soustruhy.
+// RaK 1.2 (1.127) – kalkulačky Soustruhy.
 function resetSoustruhy() {
-  ["lis_first", "lis_plan", "v126_first", "v126_plan", "v126_heat_first", "v106_first", "v106_plan", "v106_heat_first", "v106_c1", "v106_c2", "v106_c3", "v106_c4", "combo_first_start", "combo_first_end", "combo_second_start", "combo_second_plan", "combo_heat_first", "combo106_c1", "combo106_c2", "combo106_c3", "combo106_c4"].forEach(id => {
+  ["lis_first", "lis_plan", "v127_first", "v127_plan", "v127_heat_first", "v106_first", "v106_plan", "v106_heat_first", "v106_c1", "v106_c2", "v106_c3", "v106_c4", "combo_first_start", "combo_first_end", "combo_second_start", "combo_second_plan", "combo_heat_first", "combo106_c1", "combo106_c2", "combo106_c3", "combo106_c4"].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = "";
   });
@@ -733,9 +733,9 @@ function renderSoustruhy() {
 
   const lisFirst = document.getElementById('lis_first');
   const lisPlan = document.getElementById('lis_plan');
-  const v126First = document.getElementById('v126_first');
-  const v126Plan = document.getElementById('v126_plan');
-  const v126HeatFirst = document.getElementById('v126_heat_first');
+  const v127First = document.getElementById('v127_first');
+  const v127Plan = document.getElementById('v127_plan');
+  const v127HeatFirst = document.getElementById('v127_heat_first');
   const v106First = document.getElementById('v106_first');
   const v106Plan = document.getElementById('v106_plan');
   const v106HeatFirst = document.getElementById('v106_heat_first');
@@ -752,8 +752,8 @@ function renderSoustruhy() {
 
   const defaultPlan = String(app.soustruhPlan || (typeof getSoustruhDefaultPlan === "function" ? getSoustruhDefaultPlan() : 1216));
   if (lisPlan && !lisPlan.value) lisPlan.value = defaultPlan;
-  if (v126Plan && !v126Plan.value) v126Plan.value = defaultPlan;
-  if (v126HeatFirst && !v126HeatFirst.value) v126HeatFirst.value = app.soustruh126HeatFirst || '';
+  if (v127Plan && !v127Plan.value) v127Plan.value = defaultPlan;
+  if (v127HeatFirst && !v127HeatFirst.value) v127HeatFirst.value = app.soustruh126HeatFirst || '';
   if (v106Plan && !v106Plan.value) v106Plan.value = defaultPlan;
   if (v106HeatFirst && !v106HeatFirst.value) v106HeatFirst.value = app.soustruh106HeatFirst || '';
   if (v106C1 && !v106C1.value) v106C1.value = app.soustruh106Counts[0] || '';
@@ -812,8 +812,8 @@ function calcSoustruhyLis() {
 }
 
 function calcSoustruhy126() {
-  const first = parseInt(document.getElementById('v126_first').value, 10);
-  const plan = parseInt(document.getElementById('v126_plan').value, 10);
+  const first = parseInt(document.getElementById('v127_first').value, 10);
+  const plan = parseInt(document.getElementById('v127_plan').value, 10);
   const out = document.getElementById('soustruhy126Result');
   const heatOut = document.getElementById('soustruhy126HeatResult');
   if (!Number.isFinite(first) || !Number.isFinite(plan) || plan <= 0) {
@@ -822,7 +822,7 @@ function calcSoustruhy126() {
     return;
   }
   app.soustruhPlan = String(plan);
-  const heatFirst = parseInt(document.getElementById('v126_heat_first')?.value || '', 10);
+  const heatFirst = parseInt(document.getElementById('v127_heat_first')?.value || '', 10);
   app.soustruh126HeatFirst = Number.isFinite(heatFirst) ? String(heatFirst) : '';
   const startSize = app.soustruh126Start === 31 ? 31 : 32;
   const sizes = startSize === 32 ? [32, 31] : [31, 32];
@@ -1850,7 +1850,7 @@ function getRakFrezkyCorrectionSignToggleHealth() {
   const allInputs = ids.every(id => status.inputs[id]);
   return {
     ok: !!(allButtons && allInputs),
-    version: window.APP_VERSION || '1.2 (1.125)',
+    version: window.APP_VERSION || '1.2 (1.127)',
     mode: 'frezky-correction-sign-toggle-v932',
     scope: 'Korekce Frézky / naměřeno i aktuální korekce ve stroji',
     buttons: Object.assign({

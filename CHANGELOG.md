@@ -1,3 +1,18 @@
+## RaK 1.2 (1.127)
+
+- V Administraci / Rozpisy / Přesčasy upravený filtr směn: místo `Moje D` jsou čisté volby `Vše`, `A`, `B`, `C`, `D`.
+- Filtrování dál jen vizuálně skrývá řádky jiných směn, takže se při uložení nemažou.
+- Logika TO/MO a ukládání přes `ROTATION_OVERTIME_SETTINGS` beze změny.
+- Release metadata sjednocená na `RaK 1.2 (1.127)`, technická verze `1.2.127`, cache `v1.2-1.127`.
+
+## RaK 1.2 (1.126)
+
+- Administrace / Rozpisy / Přesčasy: přidaný automatický sloupec `Směna`, který z data přesčasu dopočítá směnu podle rotačního cyklu.
+- Přidaný filtr přesčasů podle směny: `Vše`, `Moje D`, `A`, `B`, `C`; filtr jen vizuálně skrývá řádky, takže uložené přesčasy jiných směn se při ukládání neztratí.
+- U ručně zadávaného data se badge směny přepočítá průběžně, bez ručního vyplňování směny.
+- Logika `TO` zůstává stejná: zapnuto = tvrdota a půlení TNKS01/TPKW01, vypnuto = MO bez půlení.
+- Release metadata sjednocená na `RaK 1.2 (1.126)`, technická verze `1.2.126`, cache `v1.2-1.126`.
+
 ## RaK 1.2 (1.125)
 
 - Administrace / Rozpisy: přidané tlačítko `Přesčasy` pro samostatnou správu přesčasových nedělí podle roků.

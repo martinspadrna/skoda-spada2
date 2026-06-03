@@ -1,7 +1,7 @@
-// RaK 1.2 (1.125) – core stav, verze a sdílené helpery aplikace.
+// RaK 1.2 (1.127) – core stav, verze a sdílené helpery aplikace.
 
 const APP_KEY = "rotace_kalkulacky_state_v123";
-const APP_VERSION = "1.2 (1.125)";
+const APP_VERSION = "1.2 (1.127)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-06-03-" + APP_VERSION;
 window.ROTATION_BUILD = ROTATION_BUILD;
@@ -1205,7 +1205,7 @@ function saveRotationData() {
     write("soustruhFirstBatch", app.soustruhFirstBatch || "");
     write("soustruhPlan", app.soustruhPlan || "");
     write("soustruh126Start", String(app.soustruh126Start || 32));
-    write("soustruh126HeatFirst", app.soustruh126HeatFirst || document.getElementById("v126_heat_first")?.value || "");
+    write("soustruh126HeatFirst", app.soustruh126HeatFirst || document.getElementById("v127_heat_first")?.value || "");
     write("soustruh106HeatFirst", app.soustruh106HeatFirst || document.getElementById("v106_heat_first")?.value || "");
     write("soustruhComboFreeType", app.soustruhComboFreeType || "126");
     write("soustruhComboFirstType", app.soustruhComboFirstType || "lis");
@@ -1245,14 +1245,14 @@ function restoreInputs() {
   const lisPlanEl = document.getElementById("lis_plan");
   const soustruhDefaultPlan = String(typeof getSoustruhDefaultPlan === "function" ? getSoustruhDefaultPlan() : 1216);
   if (lisPlanEl) lisPlanEl.value = soustruhDefaultPlan;
-  const v126PlanEl = document.getElementById("v126_plan");
-  if (v126PlanEl) v126PlanEl.value = soustruhDefaultPlan;
+  const v127PlanEl = document.getElementById("v127_plan");
+  if (v127PlanEl) v127PlanEl.value = soustruhDefaultPlan;
   const v106PlanEl = document.getElementById("v106_plan");
   if (v106PlanEl) v106PlanEl.value = soustruhDefaultPlan;
   const soustruhCounts = parseLocalStorageJsonCached("soustruh106Counts", ["", "", "", ""]);
   const soustruhComboCounts = parseLocalStorageJsonCached("soustruhCombo106Counts", ["", "", "", ""]);
-  const v126HeatFirstEl = document.getElementById("v126_heat_first");
-  if (v126HeatFirstEl && !v126HeatFirstEl.value) v126HeatFirstEl.value = getLocalStorageCached("soustruh126HeatFirst", "") || "";
+  const v127HeatFirstEl = document.getElementById("v127_heat_first");
+  if (v127HeatFirstEl && !v127HeatFirstEl.value) v127HeatFirstEl.value = getLocalStorageCached("soustruh126HeatFirst", "") || "";
   const v106HeatFirstEl = document.getElementById("v106_heat_first");
   if (v106HeatFirstEl && !v106HeatFirstEl.value) v106HeatFirstEl.value = getLocalStorageCached("soustruh106HeatFirst", "") || "";
   const comboHeatFirstEl = document.getElementById("combo_heat_first");

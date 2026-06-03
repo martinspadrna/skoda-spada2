@@ -1,4 +1,4 @@
-// RaK 1.2 (1.125) – Administrace Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
+// RaK 1.2 (1.127) – Administrace Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('admin-rotation.js', 'loading', { source: 'dynamic-loader' }); } catch (err) {}
 
 
@@ -117,6 +117,8 @@ async function loadAdminMachineSettingsFromSupabase() {
 
 const ADMIN_ROTATION_OVERTIME_SETTINGS_KEY = (typeof ROTATION_OVERTIME_SETTINGS_MACHINE_KEY !== 'undefined' ? ROTATION_OVERTIME_SETTINGS_MACHINE_KEY : 'ROTATION_OVERTIME_SETTINGS');
 const ADMIN_ROTATION_OVERTIME_SETTINGS_CATEGORY = (typeof ROTATION_OVERTIME_SETTINGS_CATEGORY !== 'undefined' ? ROTATION_OVERTIME_SETTINGS_CATEGORY : 'rotation_overtime_settings');
+const ADMIN_ROTATION_OVERTIME_SHIFT_FILTER_KEY = 'rak_admin_overtime_shift_filter_v127';
+const ADMIN_ROTATION_OVERTIME_DEFAULT_TEAM = 'D';
 
 function adminRotationOvertimeIsoToCzechDate(value) {
   const raw = String(value || '').trim();
@@ -189,14 +191,109 @@ function getAdminRotationOvertimeEntries() {
   return [];
 }
 
+function adminRotationOvertimeStartOfWeekMonday(date) {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  const day = d.getDay() || 7;
+  d.setDate(d.getDate() - day + 1);
+  return d;
+}
+
+function adminRotationOvertimeGetShiftTeams() {
+  const teams = (typeof SHIFT_CYCLE_ORDER !== 'undefined' && Array.isArray(SHIFT_CYCLE_ORDER) && SHIFT_CYCLE_ORDER.length)
+    ? SHIFT_CYCLE_ORDER.slice()
+    : ['B', 'D', 'A', 'C'];
+  return Array.from(new Set(teams.map((team) => String(team || '').trim().toUpperCase()).filter(Boolean)));
+}
+
+function adminRotationOvertimeGetMyTeam() {
+  const raw = String((app && app.adminOvertimeMyShift) || ADMIN_ROTATION_OVERTIME_DEFAULT_TEAM || 'D').trim().toUpperCase();
+  return adminRotationOvertimeGetShiftTeams().includes(raw) ? raw : 'D';
+}
+
+function adminRotationOvertimeGetSelectedShiftFilter() {
+  let raw = 'ALL';
+  try { raw = String(localStorage.getItem(ADMIN_ROTATION_OVERTIME_SHIFT_FILTER_KEY) || 'ALL').trim().toUpperCase(); } catch (err) {}
+  if (raw === 'ALL') return raw;
+  return adminRotationOvertimeGetShiftTeams().includes(raw) ? raw : 'ALL';
+}
+
+function adminRotationOvertimeSetShiftFilter(value) {
+  const raw = String(value || 'ALL').trim().toUpperCase();
+  const next = raw === 'ALL' || adminRotationOvertimeGetShiftTeams().includes(raw) ? raw : 'ALL';
+  try { localStorage.setItem(ADMIN_ROTATION_OVERTIME_SHIFT_FILTER_KEY, next); } catch (err) {}
+  return next;
+}
+
+function adminRotationOvertimeGetShiftInfoForIsoDate(value) {
+  const iso = String(value || '').trim();
+  if (!isValidRotationOvertimeIsoDate(iso)) return null;
+  const parts = iso.split('-').map(Number);
+  const probe = new Date(parts[0], parts[1] - 1, parts[2], 22, 1, 0, 0);
+  if (Number.isNaN(probe.getTime())) return null;
+  const teams = adminRotationOvertimeGetShiftTeams();
+  if (typeof getTeamShiftState === 'function') {
+    for (const team of teams) {
+      try {
+        const state = getTeamShiftState(probe, team);
+        if (state && state.active) return { team, label: 'Směna ' + team, detail: state.label || 'noční' };
+      } catch (err) {}
+    }
+  }
+  try {
+    const baseWeek = adminRotationOvertimeStartOfWeekMonday(typeof SHIFT_CYCLE_START !== 'undefined' ? SHIFT_CYCLE_START : new Date(2026, 3, 27));
+    const currentWeek = adminRotationOvertimeStartOfWeekMonday(probe);
+    const weekDiff = Math.floor((currentWeek.getTime() - baseWeek.getTime()) / 86400000 / 7);
+    const phaseMap = (typeof SHIFT_PHASE_BY_TEAM !== 'undefined' && SHIFT_PHASE_BY_TEAM) ? SHIFT_PHASE_BY_TEAM : { B: 0, D: 1, A: 2, C: 3 };
+    for (const team of teams) {
+      const phase = Number(phaseMap[team]);
+      if (!Number.isFinite(phase)) continue;
+      const cycleIndex = ((weekDiff + phase) % 4 + 4) % 4;
+      if (cycleIndex === 0) return { team, label: 'Směna ' + team, detail: 'noční' };
+    }
+  } catch (err) {}
+  return null;
+}
+
+function adminRotationOvertimeBuildShiftBadgeHtml(iso) {
+  const info = adminRotationOvertimeGetShiftInfoForIsoDate(iso);
+  const label = info && info.team ? ('Směna ' + info.team) : '—';
+  const title = info && info.team ? ('Automaticky dopočítáno z data přesčasu: ' + label) : 'Směna se dopočítá po zadání platného data.';
+  return '<span class="adminRotationOvertimeShiftBadge" data-rotation-overtime-shift-label title="' + escapeHtml(title) + '">' + escapeHtml(label) + '</span>';
+}
+
+function buildAdminRotationOvertimeFilterHtml() {
+  const selected = adminRotationOvertimeGetSelectedShiftFilter();
+  const chips = [
+    { value: 'ALL', label: 'Vše' },
+    { value: 'A', label: 'A' },
+    { value: 'B', label: 'B' },
+    { value: 'C', label: 'C' },
+    { value: 'D', label: 'D' }
+  ];
+  return [
+    '<div class="adminRotationOvertimeFilterBox">',
+    '  <div class="adminRotationOvertimeFilterTitle">Filtrovat podle směny</div>',
+    '  <div class="adminRotationOvertimeFilterBar">' + chips.map((chip) => '<button type="button" class="adminRotationOvertimeFilterChip' + (selected === chip.value ? ' isActive' : '') + '" data-admin-action="overtime-shift-filter" data-overtime-shift-filter="' + escapeHtml(chip.value) + '">' + escapeHtml(chip.label) + '</button>').join('') + '</div>',
+    '  <div class="smallText">Směna se dopočítá automaticky z data podle rotačního cyklu. Uložené záznamy se nemažou ani při zapnutém filtru.</div>',
+    '</div>'
+  ].join('');
+}
+
 function buildAdminRotationOvertimeRowHtml(entry, index, year) {
   const safe = entry && typeof entry === 'object' ? entry : {};
   const date = adminRotationOvertimeIsoToCzechDate(safe.date || '');
+  const iso = isValidRotationOvertimeIsoDate(safe.date || '') ? String(safe.date || '').trim() : adminRotationOvertimeCzechDateToIso(date, year);
+  const shiftInfo = adminRotationOvertimeGetShiftInfoForIsoDate(iso);
+  const shiftTeam = shiftInfo && shiftInfo.team ? shiftInfo.team : '';
+  const selectedFilter = adminRotationOvertimeGetSelectedShiftFilter();
+  const hiddenByFilter = !!(iso && selectedFilter !== 'ALL' && shiftTeam && shiftTeam !== selectedFilter);
   const to = safe.to !== false;
   const note = String(safe.note || '').trim();
   return [
-    '<tr data-rotation-overtime-row data-overtime-year="' + escapeHtml(String(year || '')) + '">',
+    '<tr data-rotation-overtime-row data-overtime-year="' + escapeHtml(String(year || '')) + '" data-overtime-shift="' + escapeHtml(shiftTeam) + '"' + (hiddenByFilter ? ' class="adminRotationOvertimeHiddenByFilter"' : '') + '>',
     '  <td><input class="appMenuInlineInput adminRotationOvertimeDateInput" data-rotation-overtime-date value="' + escapeHtml(date) + '" placeholder="1.3.' + escapeHtml(String(year || new Date().getFullYear())) + '" inputmode="numeric"></td>',
+    '  <td class="adminRotationOvertimeShiftCell">' + adminRotationOvertimeBuildShiftBadgeHtml(iso) + '</td>',
     '  <td><label class="adminRotationOvertimeSwitch"><input type="checkbox" data-rotation-overtime-to ' + (to ? 'checked' : '') + '><span>TO</span></label></td>',
     '  <td><input class="appMenuInlineInput adminRotationOvertimeNoteInput" data-rotation-overtime-note value="' + escapeHtml(note) + '" placeholder="poznámka, např. jen MO"></td>',
     '  <td><button type="button" class="adminRotationGeneratorIconBtn" data-admin-action="overtime-row-clear" title="Smazat řádek">×</button></td>',
@@ -222,8 +319,8 @@ function buildAdminRotationOvertimeSettingsHtml() {
       '  <summary>Rok ' + escapeHtml(year) + ' <span class="smallText">' + String(groupEntries.length) + '×</span></summary>',
       '  <div class="tableWrap appMenuTableWrap">',
       '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminRotationOvertimeTable">',
-      '      <colgroup><col class="adminRotationOvertimeDateCol"><col class="adminRotationOvertimeToCol"><col class="adminRotationOvertimeNoteCol"><col class="adminRotationOvertimeDeleteCol"></colgroup>',
-      '      <thead><tr><th>Datum</th><th>TO</th><th>Poznámka</th><th></th></tr></thead>',
+      '      <colgroup><col class="adminRotationOvertimeDateCol"><col class="adminRotationOvertimeShiftCol"><col class="adminRotationOvertimeToCol"><col class="adminRotationOvertimeNoteCol"><col class="adminRotationOvertimeDeleteCol"></colgroup>',
+      '      <thead><tr><th>Datum</th><th>Směna</th><th>TO</th><th>Poznámka</th><th></th></tr></thead>',
       '      <tbody data-rotation-overtime-year-body="' + escapeHtml(year) + '">' + rows.join('') + '</tbody>',
       '    </table>',
       '  </div>',
@@ -232,12 +329,35 @@ function buildAdminRotationOvertimeSettingsHtml() {
     ].join('');
   }).join('');
   return [
+    buildAdminRotationOvertimeFilterHtml(),
     '<div class="adminRotationOvertimeHelp">',
     '  <b>TO zapnuto</b> = přesčas jde na tvrdotu a TNKS01/TPKW01 se ve statistikách počítá 0,5 + 0,5. ',
     '  <b>TO vypnuto</b> = přesčas nejde na tvrdotu, takže TNKS01 i TPKW01 mají +1 na stroji, kde jsou napsané.',
     '</div>',
     groups
   ].join('');
+}
+
+function adminRotationRefreshOvertimeShiftBadges(root, applyFilter) {
+  const scope = root || document.getElementById('appMenuBody') || document;
+  const selectedFilter = adminRotationOvertimeGetSelectedShiftFilter();
+  scope.querySelectorAll('tr[data-rotation-overtime-row]').forEach((row) => {
+    const fallbackYear = String(row.getAttribute('data-overtime-year') || '').trim();
+    const dateInput = row.querySelector('[data-rotation-overtime-date]');
+    const iso = adminRotationOvertimeCzechDateToIso(dateInput ? dateInput.value : '', fallbackYear);
+    const info = adminRotationOvertimeGetShiftInfoForIsoDate(iso);
+    const team = info && info.team ? info.team : '';
+    row.setAttribute('data-overtime-shift', team);
+    const badge = row.querySelector('[data-rotation-overtime-shift-label]');
+    if (badge) {
+      badge.textContent = team ? ('Směna ' + team) : '—';
+      badge.setAttribute('title', team ? ('Automaticky dopočítáno z data přesčasu: Směna ' + team) : 'Směna se dopočítá po zadání platného data.');
+    }
+    if (applyFilter !== false) {
+      const shouldHide = !!(iso && selectedFilter !== 'ALL' && team && team !== selectedFilter);
+      row.classList.toggle('adminRotationOvertimeHiddenByFilter', shouldHide);
+    }
+  });
 }
 
 function readAdminRotationOvertimeSettingsFromDom() {
@@ -280,6 +400,7 @@ function adminRotationClearOvertimeRow(target) {
   if (date) date.value = '';
   if (to) to.checked = true;
   if (note) note.value = '';
+  try { adminRotationRefreshOvertimeShiftBadges(document.getElementById('appMenuBody'), true); } catch (err) {}
   const status = document.getElementById('adminOnlineSaveStatus');
   if (status) status.textContent = 'Řádek je vyčištěný. Změna se uloží až tlačítkem Uložit přesčasy.';
 }
@@ -2852,7 +2973,7 @@ function adminShowRotationSelectedRemove(input) {
       return;
     }
     window.__rakAdminRotationSelectedInput = input;
-    // RaK 1.2 (1.125) – horní sticky tlačítko už při kliknutí do jména nevytahujeme.
+    // RaK 1.2 (1.127) – horní sticky tlačítko už při kliknutí do jména nevytahujeme.
     // Rychlé Odebrat se vykreslí přímo u aktivního pole přes adminShowRotationQuickRemove().
     btn.hidden = true;
     btn.dataset.targetReady = '1';
@@ -3121,5 +3242,10 @@ function scheduleAdminRotationEditorMaintenance(body, reason, delayMs) {
   }
 }
 
+try {
+  window.adminRotationOvertimeGetShiftInfoForIsoDate = adminRotationOvertimeGetShiftInfoForIsoDate;
+  window.adminRotationOvertimeSetShiftFilter = adminRotationOvertimeSetShiftFilter;
+  window.adminRotationRefreshOvertimeShiftBadges = adminRotationRefreshOvertimeShiftBadges;
+} catch (err) {}
 
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('admin-rotation.js', 'loaded', { source: 'dynamic-loader' }); } catch (err) {}

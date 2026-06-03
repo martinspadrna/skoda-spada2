@@ -1,4 +1,4 @@
-// RaK 1.2 (1.125) – health/audit helpery oddělené z app.js.
+// RaK 1.2 (1.127) – health/audit helpery oddělené z app.js.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app-health-audits.js', 'loaded', { source: 'dynamic-loader' }); } catch (err) {}
 
 function runPhaseOneFinalAudit() {
@@ -966,9 +966,9 @@ function getPhaseTenFormHealth() {
       'excelFile',
       'lis_first',
       'lis_plan',
-      'v126_first',
-      'v126_plan',
-      'v126_heat_first',
+      'v127_first',
+      'v127_plan',
+      'v127_heat_first',
       'v106_first',
       'v106_c1',
       'v106_c2',
@@ -1254,7 +1254,7 @@ function runLadaPerformanceAudit() {
 }
 window.runLadaPerformanceAudit = runLadaPerformanceAudit;
 
-// 1.2 (1.125): Sdílený herní engine baseline je oddělený v games-engine.js.
+// 1.2 (1.127): Sdílený herní engine baseline je oddělený v games-engine.js.
 
 
 

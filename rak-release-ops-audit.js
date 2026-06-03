@@ -1,4 +1,4 @@
-// RaK 1.2 (1.125) – release ops checklist a rollback playbook.
+// RaK 1.2 (1.127) – release ops checklist a rollback playbook.
 
 (function setupRakReleaseOpsAudit() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
