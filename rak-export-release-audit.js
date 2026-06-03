@@ -1,4 +1,4 @@
-// RaK 1.2 (1.127) – export/release audit.
+// RaK 1.2 (1.128) – export/release audit.
 
 (function setupRakExportReleaseAudit() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();

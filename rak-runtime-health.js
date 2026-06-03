@@ -1,4 +1,4 @@
-// RaK 1.2 (1.127) – runtime health helpery.
+// RaK 1.2 (1.128) – runtime health helpery.
 
 (function setupRakRuntimeHealthHelpers() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();

@@ -1,4 +1,4 @@
-/* RaK 1.2 (1.127) – Administrace/Rozpisy polish oddělený ze styles-overrides.css.
+/* RaK 1.2 (1.128) – Administrace/Rozpisy polish oddělený ze styles-overrides.css.
    Bez změny logiky, Supabase ani spodní lišty. */
 
 /* v.1.5 (988) – Administrace / Rozpisy: užší sloupce pro tvrdotu, měkotu a absence. */
@@ -304,7 +304,7 @@
 }
 
 
-/* RaK 1.2 (1.127) – Administrace/Rozpisy: průvodce generátorem a čitelné mini hlavičky Tvrdoty. */
+/* RaK 1.2 (1.128) – Administrace/Rozpisy: průvodce generátorem a čitelné mini hlavičky Tvrdoty. */
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adminRotationMiniTable th{
   min-width:30px !important;
   font-size:7.2px !important;
@@ -441,7 +441,7 @@
   background:rgba(76,255,137,.10) !important;
 }
 
-/* RaK 1.2 (1.127) – Rozpisy/Rotace: prázdné pozice zvýraznit světle červeně. */
+/* RaK 1.2 (1.128) – Rozpisy/Rotace: prázdné pozice zvýraznit světle červeně. */
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable td.adminRotationEditorEmptyCell,
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable input[data-rot-field^="cell-"]:placeholder-shown,
 #appMenuBody[data-admin-view="rotation"] .adminRotationGeneratorPreviewTable td.adminRotationPreviewEmptyCell,
@@ -453,19 +453,20 @@
   color:rgba(255,238,238,.92) !important;
 }
 
-/* 1.2 (1.127) – Administrace/Rozpisy: přesčasy umí automaticky dopočítat směnu a filtrovat ji. */
+/* 1.2 (1.128) – Administrace/Rozpisy: přesčasy umí automaticky dopočítat směnu a filtrovat ji. */
 .adminRotationOvertimeFilterBox{
   margin:8px 0 10px;
   padding:10px 12px;
   border-radius:18px;
-  background:rgba(255,255,255,.58);
-  border:1px solid rgba(120,140,170,.18);
-  box-shadow:0 10px 28px rgba(20,34,60,.08);
+  background:var(--rakGlassCardBg, rgba(10,16,24,.56)) !important;
+  border:1px solid var(--rakThemeStrokeSoft, rgba(255,255,255,.14)) !important;
+  color:var(--soft, #eef7ff) !important;
+  box-shadow:0 14px 34px rgba(0,0,0,.20), inset 0 1px 0 rgba(255,255,255,.10) !important;
 }
 .adminRotationOvertimeFilterTitle{
   font-size:12px;
   font-weight:850;
-  color:rgba(32,42,58,.74);
+  color:var(--soft, #eef7ff) !important;
   margin-bottom:7px;
 }
 .adminRotationOvertimeFilterBar{
@@ -474,24 +475,77 @@
   gap:7px;
   margin-bottom:7px;
 }
-.adminRotationOvertimeFilterChip{
+#appMenuBody .adminRotationOvertimeFilterChip{
   appearance:none;
-  border:1px solid rgba(120,140,170,.22);
+  border:1px solid color-mix(in srgb, var(--rakThemeAccentStrong, #7CFF7C) 22%, rgba(255,255,255,.14)) !important;
   border-radius:999px;
-  background:rgba(255,255,255,.72);
-  color:rgba(38,49,68,.78);
+  background:var(--rakGlassSoftBg, rgba(255,255,255,.055)) !important;
+  color:var(--soft, #eef7ff) !important;
   min-height:31px;
   padding:6px 11px;
   font-size:12px;
-  font-weight:800;
+  font-weight:850;
   letter-spacing:.01em;
   cursor:pointer;
+  box-shadow:0 8px 18px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.10) !important;
 }
-.adminRotationOvertimeFilterChip.isActive{
-  background:linear-gradient(135deg, rgba(84,132,255,.92), rgba(58,184,151,.9));
-  color:#fff;
-  border-color:rgba(255,255,255,.34);
-  box-shadow:0 8px 18px rgba(64,116,220,.2);
+#appMenuBody .adminRotationOvertimeFilterChip.isActive{
+  background:var(--rakGlassActiveBg, linear-gradient(135deg, rgba(124,255,124,.24), rgba(255,255,255,.04))) !important;
+  color:var(--soft, #eef7ff) !important;
+  border-color:var(--rakThemeStroke, rgba(124,255,124,.38)) !important;
+  box-shadow:0 12px 26px rgba(0,0,0,.22), 0 0 22px var(--rakThemeGlowSoft, rgba(124,255,124,.18)), inset 0 1px 0 rgba(255,255,255,.14) !important;
+}
+.adminRotationOvertimeYearSummary{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:7px;
+  margin:8px 0 10px;
+  padding:9px 10px;
+  border-radius:16px;
+  background:var(--rakGlassSoftBg, rgba(255,255,255,.055)) !important;
+  border:1px solid var(--rakThemeStrokeSoft, rgba(255,255,255,.12)) !important;
+  color:var(--soft, #eef7ff) !important;
+}
+.adminRotationOvertimeYearSummaryLabel{
+  font-size:12px;
+  font-weight:850;
+  color:color-mix(in srgb, var(--soft, #eef7ff) 82%, transparent) !important;
+  margin-right:2px;
+}
+.adminRotationOvertimeYearSummaryTotal{
+  display:inline-flex;
+  align-items:center;
+  min-height:26px;
+  padding:5px 9px;
+  border-radius:999px;
+  background:color-mix(in srgb, var(--rakThemeAccentStrong, #7CFF7C) 15%, rgba(255,255,255,.055)) !important;
+  border:1px solid color-mix(in srgb, var(--rakThemeAccentStrong, #7CFF7C) 28%, rgba(255,255,255,.12)) !important;
+  color:var(--soft, #eef7ff) !important;
+  font-size:12px;
+  font-weight:850;
+}
+.adminRotationOvertimeYearSummaryChips{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+}
+.adminRotationOvertimeYearSummaryChip{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  min-height:26px;
+  padding:5px 8px;
+  border-radius:999px;
+  background:rgba(255,255,255,.045) !important;
+  border:1px solid color-mix(in srgb, var(--rakThemeAccentStrong, #7CFF7C) 18%, rgba(255,255,255,.10)) !important;
+  color:color-mix(in srgb, var(--soft, #eef7ff) 86%, transparent) !important;
+  font-size:12px;
+  font-weight:800;
+}
+.adminRotationOvertimeYearSummaryChip b{
+  color:var(--rakThemeAccentStrong, #7CFF7C) !important;
+  font-weight:950;
 }
 .adminRotationOvertimeHiddenByFilter{
   display:none;
@@ -512,7 +566,7 @@
   font-weight:850;
 }
 
-/* 1.2 (1.127) – Administrace/Rozpisy: správa přesčasů s TO přepínačem. */
+/* 1.2 (1.128) – Administrace/Rozpisy: správa přesčasů s TO přepínačem. */
 .adminRotationOvertimeHelp{
   margin:8px 0 12px;
   padding:10px 12px;

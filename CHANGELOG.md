@@ -1,3 +1,10 @@
+## RaK 1.2 (1.128)
+
+- Administrace / Rozpisy / Přesčasy: filtr směn přebarvený do aktuálního theme/glass stylu aplikace, aby nebyl světlý a hůř čitelný.
+- U každého roku v Přesčasech přidaný přehled počtů přesčasů podle směn A/B/C/D. Přehled se přepočítává i při ruční změně data nebo vyčištění řádku.
+- Logika TO/MO, statistiky TNKS01/TPKW01, generátor i Supabase DB/policies beze změny.
+- Release metadata sjednocená na `RaK 1.2 (1.128)`, technická verze `1.2.128`, cache `v1.2-1.128`.
+
 ## RaK 1.2 (1.127)
 
 - V Administraci / Rozpisy / Přesčasy upravený filtr směn: místo `Moje D` jsou čisté volby `Vše`, `A`, `B`, `C`, `D`.

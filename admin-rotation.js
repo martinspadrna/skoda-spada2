@@ -1,4 +1,4 @@
-// RaK 1.2 (1.127) – Administrace Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
+// RaK 1.2 (1.128) – Administrace Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('admin-rotation.js', 'loading', { source: 'dynamic-loader' }); } catch (err) {}
 
 
@@ -262,6 +262,36 @@ function adminRotationOvertimeBuildShiftBadgeHtml(iso) {
   return '<span class="adminRotationOvertimeShiftBadge" data-rotation-overtime-shift-label title="' + escapeHtml(title) + '">' + escapeHtml(label) + '</span>';
 }
 
+function adminRotationOvertimeBuildEmptyShiftCounts() {
+  return { A: 0, B: 0, C: 0, D: 0 };
+}
+
+function adminRotationOvertimeCountEntriesByShift(entries) {
+  const counts = adminRotationOvertimeBuildEmptyShiftCounts();
+  const list = Array.isArray(entries) ? entries : [];
+  list.forEach((entry) => {
+    const iso = String(entry && entry.date || '').trim();
+    if (!isValidRotationOvertimeIsoDate(iso)) return;
+    const info = adminRotationOvertimeGetShiftInfoForIsoDate(iso);
+    const team = info && info.team ? String(info.team).trim().toUpperCase() : '';
+    if (Object.prototype.hasOwnProperty.call(counts, team)) counts[team] += 1;
+  });
+  return counts;
+}
+
+function adminRotationOvertimeBuildYearSummaryHtml(year, entries) {
+  const counts = adminRotationOvertimeCountEntriesByShift(entries);
+  const teams = ['A', 'B', 'C', 'D'];
+  const total = teams.reduce((sum, team) => sum + (counts[team] || 0), 0);
+  return [
+    '<div class="adminRotationOvertimeYearSummary" data-rotation-overtime-year-summary="' + escapeHtml(String(year || '')) + '">',
+    '  <span class="adminRotationOvertimeYearSummaryLabel">Přesčasy podle směn</span>',
+    '  <span class="adminRotationOvertimeYearSummaryTotal" data-overtime-year-total>' + String(total) + '× celkem</span>',
+    '  <span class="adminRotationOvertimeYearSummaryChips">' + teams.map((team) => '<span class="adminRotationOvertimeYearSummaryChip" data-overtime-shift-count="' + escapeHtml(team) + '">' + escapeHtml(team) + ' <b>' + String(counts[team] || 0) + '×</b></span>').join('') + '</span>',
+    '</div>'
+  ].join('');
+}
+
 function buildAdminRotationOvertimeFilterHtml() {
   const selected = adminRotationOvertimeGetSelectedShiftFilter();
   const chips = [
@@ -316,7 +346,8 @@ function buildAdminRotationOvertimeSettingsHtml() {
     for (let i = 0; i < 4; i += 1) rows.push(buildAdminRotationOvertimeRowHtml({ date: '', to: true, note: '' }, groupEntries.length + i, year));
     return [
       '<details class="appMenuFoldSection adminRotationOvertimeYear" open>',
-      '  <summary>Rok ' + escapeHtml(year) + ' <span class="smallText">' + String(groupEntries.length) + '×</span></summary>',
+      '  <summary>Rok ' + escapeHtml(year) + ' <span class="smallText" data-rotation-overtime-year-total-label="' + escapeHtml(year) + '">' + String(groupEntries.length) + '×</span></summary>',
+      adminRotationOvertimeBuildYearSummaryHtml(year, groupEntries),
       '  <div class="tableWrap appMenuTableWrap">',
       '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminRotationOvertimeTable">',
       '      <colgroup><col class="adminRotationOvertimeDateCol"><col class="adminRotationOvertimeShiftCol"><col class="adminRotationOvertimeToCol"><col class="adminRotationOvertimeNoteCol"><col class="adminRotationOvertimeDeleteCol"></colgroup>',
@@ -338,6 +369,39 @@ function buildAdminRotationOvertimeSettingsHtml() {
   ].join('');
 }
 
+function adminRotationRefreshOvertimeYearSummaries(root) {
+  const scope = root || document.getElementById('appMenuBody') || document;
+  const teams = ['A', 'B', 'C', 'D'];
+  scope.querySelectorAll('[data-rotation-overtime-year-body]').forEach((body) => {
+    const year = String(body.getAttribute('data-rotation-overtime-year-body') || '').trim();
+    const counts = adminRotationOvertimeBuildEmptyShiftCounts();
+    let total = 0;
+    body.querySelectorAll('tr[data-rotation-overtime-row]').forEach((row) => {
+      const fallbackYear = String(row.getAttribute('data-overtime-year') || year || '').trim();
+      const dateInput = row.querySelector('[data-rotation-overtime-date]');
+      const iso = adminRotationOvertimeCzechDateToIso(dateInput ? dateInput.value : '', fallbackYear);
+      if (!isValidRotationOvertimeIsoDate(iso)) return;
+      const info = adminRotationOvertimeGetShiftInfoForIsoDate(iso);
+      const team = info && info.team ? String(info.team).trim().toUpperCase() : '';
+      if (!Object.prototype.hasOwnProperty.call(counts, team)) return;
+      counts[team] += 1;
+      total += 1;
+    });
+    const summary = scope.querySelector('[data-rotation-overtime-year-summary="' + year + '"]');
+    if (summary) {
+      const totalEl = summary.querySelector('[data-overtime-year-total]');
+      if (totalEl) totalEl.textContent = String(total) + '× celkem';
+      teams.forEach((team) => {
+        const chip = summary.querySelector('[data-overtime-shift-count="' + team + '"]');
+        if (chip) chip.innerHTML = escapeHtml(team) + ' <b>' + String(counts[team] || 0) + '×</b>';
+      });
+    }
+    const totalLabel = scope.querySelector('[data-rotation-overtime-year-total-label="' + year + '"]');
+    if (totalLabel) totalLabel.textContent = String(total) + '×';
+  });
+}
+
+
 function adminRotationRefreshOvertimeShiftBadges(root, applyFilter) {
   const scope = root || document.getElementById('appMenuBody') || document;
   const selectedFilter = adminRotationOvertimeGetSelectedShiftFilter();
@@ -358,6 +422,7 @@ function adminRotationRefreshOvertimeShiftBadges(root, applyFilter) {
       row.classList.toggle('adminRotationOvertimeHiddenByFilter', shouldHide);
     }
   });
+  adminRotationRefreshOvertimeYearSummaries(scope);
 }
 
 function readAdminRotationOvertimeSettingsFromDom() {
@@ -2973,7 +3038,7 @@ function adminShowRotationSelectedRemove(input) {
       return;
     }
     window.__rakAdminRotationSelectedInput = input;
-    // RaK 1.2 (1.127) – horní sticky tlačítko už při kliknutí do jména nevytahujeme.
+    // RaK 1.2 (1.128) – horní sticky tlačítko už při kliknutí do jména nevytahujeme.
     // Rychlé Odebrat se vykreslí přímo u aktivního pole přes adminShowRotationQuickRemove().
     btn.hidden = true;
     btn.dataset.targetReady = '1';
