@@ -1,4 +1,4 @@
-/* RaK 1.2 (1.128) – Administrace/Rozpisy polish oddělený ze styles-overrides.css.
+/* RaK 1.2 (1.129) – Administrace/Rozpisy polish oddělený ze styles-overrides.css.
    Bez změny logiky, Supabase ani spodní lišty. */
 
 /* v.1.5 (988) – Administrace / Rozpisy: užší sloupce pro tvrdotu, měkotu a absence. */
@@ -304,7 +304,7 @@
 }
 
 
-/* RaK 1.2 (1.128) – Administrace/Rozpisy: průvodce generátorem a čitelné mini hlavičky Tvrdoty. */
+/* RaK 1.2 (1.129) – Administrace/Rozpisy: průvodce generátorem a čitelné mini hlavičky Tvrdoty. */
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adminRotationMiniTable th{
   min-width:30px !important;
   font-size:7.2px !important;
@@ -441,7 +441,7 @@
   background:rgba(76,255,137,.10) !important;
 }
 
-/* RaK 1.2 (1.128) – Rozpisy/Rotace: prázdné pozice zvýraznit světle červeně. */
+/* RaK 1.2 (1.129) – Rozpisy/Rotace: prázdné pozice zvýraznit světle červeně. */
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable td.adminRotationEditorEmptyCell,
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable input[data-rot-field^="cell-"]:placeholder-shown,
 #appMenuBody[data-admin-view="rotation"] .adminRotationGeneratorPreviewTable td.adminRotationPreviewEmptyCell,
@@ -453,7 +453,7 @@
   color:rgba(255,238,238,.92) !important;
 }
 
-/* 1.2 (1.128) – Administrace/Rozpisy: přesčasy umí automaticky dopočítat směnu a filtrovat ji. */
+/* 1.2 (1.129) – Administrace/Rozpisy: přesčasy umí automaticky dopočítat směnu a filtrovat ji. */
 .adminRotationOvertimeFilterBox{
   margin:8px 0 10px;
   padding:10px 12px;
@@ -566,7 +566,7 @@
   font-weight:850;
 }
 
-/* 1.2 (1.128) – Administrace/Rozpisy: správa přesčasů s TO přepínačem. */
+/* 1.2 (1.129) – Administrace/Rozpisy: správa přesčasů s TO přepínačem. */
 .adminRotationOvertimeHelp{
   margin:8px 0 12px;
   padding:10px 12px;

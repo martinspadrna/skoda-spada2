@@ -1,3 +1,11 @@
+## RaK 1.2 (1.129)
+
+- Administrace / Rozpisy / Přesčasy: doplněný výchozí seznam 12 přesčasů pro rok 2025 podle upřesnění: 12.1., 26.1., 16.2., 2.3., 16.3., 30.3., 5.10., 19.10., 9.11., 23.11., 30.11. a 14.12.2025.
+- Přesčasy 2025 se chovají jako výchozí TO/tvrdota, takže TNKS01/TPKW01 se na nich standardně půlí, dokud u konkrétního data nevypneš přepínač TO.
+- Přidaná seed/migrační ochrana `ROTATION_OVERTIME_DEFAULT_SEED_VERSION = 129`, aby se nově doplněné defaulty 2025 zobrazily i uživatelům se starším uloženým nastavením, ale po novém uložení se už ručně smazané defaulty nevracely.
+- Supabase DB/policies beze změny; ukládání dál přes `ROTATION_OVERTIME_SETTINGS`.
+- Release metadata sjednocená na `RaK 1.2 (1.129)`, technická verze `1.2.129`, cache `v1.2-1.129`.
+
 ## RaK 1.2 (1.128)
 
 - Administrace / Rozpisy / Přesčasy: filtr směn přebarvený do aktuálního theme/glass stylu aplikace, aby nebyl světlý a hůř čitelný.

@@ -1,4 +1,4 @@
-// RaK 1.2 (1.128) – Administrace Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
+// RaK 1.2 (1.129) – Administrace Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('admin-rotation.js', 'loading', { source: 'dynamic-loader' }); } catch (err) {}
 
 
@@ -442,6 +442,7 @@ function readAdminRotationOvertimeSettingsFromDom() {
   });
   return {
     type: ADMIN_ROTATION_OVERTIME_SETTINGS_CATEGORY,
+    defaultSeedVersion: (typeof ROTATION_OVERTIME_DEFAULT_SEED_VERSION !== 'undefined' ? ROTATION_OVERTIME_DEFAULT_SEED_VERSION : 129),
     entries: Array.from(map.values()).sort((a, b) => a.date.localeCompare(b.date)),
     updatedAt: new Date().toISOString()
   };
@@ -3038,7 +3039,7 @@ function adminShowRotationSelectedRemove(input) {
       return;
     }
     window.__rakAdminRotationSelectedInput = input;
-    // RaK 1.2 (1.128) – horní sticky tlačítko už při kliknutí do jména nevytahujeme.
+    // RaK 1.2 (1.129) – horní sticky tlačítko už při kliknutí do jména nevytahujeme.
     // Rychlé Odebrat se vykreslí přímo u aktivního pole přes adminShowRotationQuickRemove().
     btn.hidden = true;
     btn.dataset.targetReady = '1';

@@ -1,7 +1,7 @@
-// RaK 1.2 (1.128) – core stav, verze a sdílené helpery aplikace.
+// RaK 1.2 (1.129) – core stav, verze a sdílené helpery aplikace.
 
 const APP_KEY = "rotace_kalkulacky_state_v123";
-const APP_VERSION = "1.2 (1.128)";
+const APP_VERSION = "1.2 (1.129)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-06-03-" + APP_VERSION;
 window.ROTATION_BUILD = ROTATION_BUILD;
@@ -17,6 +17,22 @@ const NO_START_HOLIDAYS = new Set(["1-1", "4-3", "4-6", "5-1", "5-8", "7-5", "7-
 function dateKeyMD(date) {
   return (date.getMonth() + 1) + "-" + date.getDate();
 }
+
+const SPECIAL_OVERTIME_SUNDAY_NIGHTS_2025 = new Set([
+  "2025-01-12",
+  "2025-01-26",
+  "2025-02-16",
+  "2025-03-02",
+  "2025-03-16",
+  "2025-03-30",
+  "2025-10-05",
+  "2025-10-19",
+  "2025-11-09",
+  "2025-11-23",
+  "2025-11-30",
+  "2025-12-14"
+]);
+window.SPECIAL_OVERTIME_SUNDAY_NIGHTS_2025 = SPECIAL_OVERTIME_SUNDAY_NIGHTS_2025;
 
 const SPECIAL_OVERTIME_SUNDAY_NIGHTS_2026 = new Set([
   "2026-01-11",
@@ -98,20 +114,40 @@ function normalizeRotationOvertimeEntry(item) {
   };
 }
 
-function getDefaultRotationOvertimeEntries() {
-  let dates = [];
+const ROTATION_OVERTIME_DEFAULT_SEED_VERSION = 129;
+window.ROTATION_OVERTIME_DEFAULT_SEED_VERSION = ROTATION_OVERTIME_DEFAULT_SEED_VERSION;
+
+function getRotationOvertimeDefaultDateList() {
+  const dates = new Set();
+  try { SPECIAL_OVERTIME_SUNDAY_NIGHTS_2025.forEach((date) => dates.add(date)); } catch (err) {}
+  try { SPECIAL_OVERTIME_SUNDAY_NIGHTS_2026.forEach((date) => dates.add(date)); } catch (err) {}
   try {
     if (typeof window !== 'undefined' && typeof window.getFoodSpecialDateSet === 'function') {
       const foodSet = window.getFoodSpecialDateSet();
-      if (foodSet && typeof foodSet.forEach === 'function') foodSet.forEach((date) => dates.push(String(date || '').trim()));
+      if (foodSet && typeof foodSet.forEach === 'function') foodSet.forEach((date) => {
+        const safe = String(date || '').trim();
+        if (safe) dates.add(safe);
+      });
     }
   } catch (err) {}
-  if (!dates.length) dates = Array.from(SPECIAL_OVERTIME_SUNDAY_NIGHTS_2026);
-  return Array.from(new Set(dates.filter(isValidRotationOvertimeIsoDate))).sort().map((date) => ({
+  return Array.from(dates).filter(isValidRotationOvertimeIsoDate).sort();
+}
+
+function getDefaultRotationOvertimeEntries() {
+  return getRotationOvertimeDefaultDateList().map((date) => ({
     date,
     to: !SPECIAL_OVERTIME_MO_ONLY_SUNDAYS_2026.has(date),
     note: SPECIAL_OVERTIME_MO_ONLY_SUNDAYS_2026.has(date) ? 'Jen MO' : ''
   }));
+}
+
+function mergeRotationOvertimeDefaultSeedEntries(map, settings) {
+  const currentSeed = Number(settings && (settings.defaultSeedVersion || settings.seedVersion || settings.default_seed_version));
+  if (Number.isFinite(currentSeed) && currentSeed >= ROTATION_OVERTIME_DEFAULT_SEED_VERSION) return map;
+  getDefaultRotationOvertimeEntries().forEach((entry) => {
+    if (entry && entry.date && !map.has(entry.date)) map.set(entry.date, entry);
+  });
+  return map;
 }
 
 function getRotationOvertimeSettings() {
@@ -126,9 +162,11 @@ function getRotationOvertimeSettings() {
     const entry = normalizeRotationOvertimeEntry(item);
     if (entry) map.set(entry.date, entry);
   });
+  mergeRotationOvertimeDefaultSeedEntries(map, settings);
   return {
     type: ROTATION_OVERTIME_SETTINGS_CATEGORY,
     custom: true,
+    defaultSeedVersion: ROTATION_OVERTIME_DEFAULT_SEED_VERSION,
     entries: Array.from(map.values()).sort((a, b) => a.date.localeCompare(b.date))
   };
 }
@@ -149,15 +187,9 @@ function getRotationOvertimeToDateSet() {
 }
 
 function getSpecialOvertimeSundayNightDateSet() {
-  try {
-    if (hasRotationOvertimeCustomSettings()) return getRotationOvertimeDateSet();
-  } catch (err) {}
-  try {
-    if (typeof window !== 'undefined' && typeof window.getFoodSpecialDateSet === 'function') {
-      const dynamicSet = window.getFoodSpecialDateSet();
-      if (dynamicSet && typeof dynamicSet.has === 'function') return dynamicSet;
-    }
-  } catch (err) {}
+  // Od 1.129 se rozpisové přesčasy drží jako samostatný zdroj pravdy.
+  // Pokud existuje starší/uživatelské nastavení kantýny, defaulty 2025/2026 se s ním jen sloučí
+  // v getDefaultRotationOvertimeEntries(), aby historické roky ze správy přesčasů nevypadly.
   return getRotationOvertimeDateSet();
 }
 
