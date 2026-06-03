@@ -1,4 +1,4 @@
-// RaK 1.2 (1.113) – Administrace Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
+// RaK 1.2 (1.114) – Administrace Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('admin-rotation.js', 'loading', { source: 'dynamic-loader' }); } catch (err) {}
 
 
@@ -1283,6 +1283,22 @@ function adminRotationGeneratorSoftCoreBlockInfo(rowIdx) {
   return { blockIdx, blockLength, blockStart, blockEnd, machine };
 }
 
+function adminRotationGeneratorSoftCoreFutureAvailability(month, knownNames, rowIdx, candidate, blockInfo) {
+  const hardRows = Array.isArray(month && month.hard && month.hard.rows) ? month.hard.rows : [];
+  const softRows = Array.isArray(month && month.soft && month.soft.rows) ? month.soft.rows : [];
+  let score = 0;
+  for (let i = rowIdx + 1; i <= blockInfo.blockEnd; i += 1) {
+    const row = hardRows[i] || softRows[i] || null;
+    const dateLabel = row && row.date ? row.date : '';
+    if (!dateLabel) continue;
+    const dayNotes = adminRotationGeneratorDateNotes(month, dateLabel);
+    if (adminRotationGeneratorIsDayBlocked(dayNotes)) continue;
+    const absenceNames = adminRotationNamesForAbsenceDate(month.notes, dateLabel, knownNames);
+    if (!absenceNames.has(candidate)) score += 1;
+  }
+  return score;
+}
+
 function adminRotationGeneratorPickSoftCoreForHard(month, knownNames, rowIdx, machineIdx, available, usedNames, counters) {
   const core = RAK_ROTATION_GENERATOR_RULES_V1107.softCore.filter((name) => knownNames.includes(name));
   const info = adminRotationGeneratorSoftCoreBlockInfo(rowIdx);
@@ -1295,7 +1311,16 @@ function adminRotationGeneratorPickSoftCoreForHard(month, knownNames, rowIdx, ma
   }
   const candidates = core.filter((name) => available.includes(name) && !usedNames.has(name) && !already.has(name));
   if (!candidates.length) return '';
-  return adminRotationGeneratorPickName(candidates, usedNames, counters, {
+  const ordered = candidates.slice().sort((a, b) => {
+    const futureDiff = adminRotationGeneratorSoftCoreFutureAvailability(month, knownNames, rowIdx, a, info) - adminRotationGeneratorSoftCoreFutureAvailability(month, knownNames, rowIdx, b, info);
+    if (futureDiff) return futureDiff;
+    const machineDiff = Number((counters.hardMachine[a] && counters.hardMachine[a][info.machine]) || 0) - Number((counters.hardMachine[b] && counters.hardMachine[b][info.machine]) || 0);
+    if (machineDiff) return machineDiff;
+    const totalDiff = Number(counters.hard[a] || 0) - Number(counters.hard[b] || 0);
+    if (totalDiff) return totalDiff;
+    return (adminRotationHashString([info.machine, rowIdx, a].join('|')) % 97) - (adminRotationHashString([info.machine, rowIdx, b].join('|')) % 97);
+  });
+  return ordered[0] || adminRotationGeneratorPickName(candidates, usedNames, counters, {
     sectionKey: 'hard',
     machineName: info.machine,
     rowIdx,
@@ -1472,6 +1497,92 @@ function adminRotationGeneratorFindPersonCellOnDay(month, rowIdx, person, prefer
   return scan('soft', SOFT_MACHINE_HEADERS) || scan('hard', HARD_MACHINE_HEADERS);
 }
 
+function adminRotationGeneratorCountSoloMill(month, names) {
+  const result = Object.create(null);
+  const list = Array.isArray(names) ? names : adminGetKnownNames();
+  list.forEach((name) => { result[name] = 0; });
+  const mfkf06Idx = adminRotationGeneratorMachineIndex(SOFT_MACHINE_HEADERS, 'MFKF06');
+  const mfkf10Idx = adminRotationGeneratorMachineIndex(SOFT_MACHINE_HEADERS, 'MFKF10');
+  const rows = Array.isArray(month && month.soft && month.soft.rows) ? month.soft.rows : [];
+  if (mfkf06Idx < 0 || mfkf10Idx < 0) return result;
+  rows.forEach((row) => {
+    const cells = Array.isArray(row && row.cells) ? row.cells : [];
+    const mfkf06 = adminRotationCanonicalName(cells[mfkf06Idx], list);
+    const mfkf10 = adminRotationCanonicalName(cells[mfkf10Idx], list);
+    if (!mfkf06 && mfkf10 && Object.prototype.hasOwnProperty.call(result, mfkf10)) result[mfkf10] += 1;
+  });
+  return result;
+}
+
+function adminRotationGeneratorFindSoloMillSwapCell(month, rowIdx, lowName) {
+  const wanted = String(lowName || '').trim();
+  if (!wanted) return null;
+  const mfkf06Idx = adminRotationGeneratorMachineIndex(SOFT_MACHINE_HEADERS, 'MFKF06');
+  const mfkf10Idx = adminRotationGeneratorMachineIndex(SOFT_MACHINE_HEADERS, 'MFKF10');
+  const softRow = month && month.soft && Array.isArray(month.soft.rows) ? month.soft.rows[rowIdx] : null;
+  const hardRow = month && month.hard && Array.isArray(month.hard.rows) ? month.hard.rows[rowIdx] : null;
+  const softCells = Array.isArray(softRow && softRow.cells) ? softRow.cells : [];
+  const hardCells = Array.isArray(hardRow && hardRow.cells) ? hardRow.cells : [];
+  const scanSoft = () => {
+    for (let idx = 0; idx < softCells.length; idx += 1) {
+      if (idx === mfkf06Idx || idx === mfkf10Idx) continue;
+      if (String(softCells[idx] || '').trim() === wanted) return { sectionKey: 'soft', row: softRow, cells: softCells, idx, machine: SOFT_MACHINE_HEADERS[idx] || '' };
+    }
+    return null;
+  };
+  const scanHard = (avoidPress) => {
+    for (let idx = 0; idx < hardCells.length; idx += 1) {
+      const machine = HARD_MACHINE_HEADERS[idx] || '';
+      if (avoidPress && /^(?:TNKS01|TPKW01)$/i.test(machine)) continue;
+      if (String(hardCells[idx] || '').trim() === wanted) return { sectionKey: 'hard', row: hardRow, cells: hardCells, idx, machine };
+    }
+    return null;
+  };
+  return scanSoft() || scanHard(true) || scanHard(false);
+}
+
+function adminRotationGeneratorBalanceSoloMill(month, model) {
+  const knownNames = model && Array.isArray(model.knownNames) ? model.knownNames : adminGetKnownNames();
+  const workingNames = adminRotationGeneratorCollectWorkingNames(month, knownNames).filter((name) => knownNames.includes(name));
+  const mfkf06Idx = adminRotationGeneratorMachineIndex(SOFT_MACHINE_HEADERS, 'MFKF06');
+  const mfkf10Idx = adminRotationGeneratorMachineIndex(SOFT_MACHINE_HEADERS, 'MFKF10');
+  const softRows = Array.isArray(month && month.soft && month.soft.rows) ? month.soft.rows : [];
+  if (mfkf06Idx < 0 || mfkf10Idx < 0 || !workingNames.length || !softRows.length) return { swaps: 0, counts: Object.create(null) };
+  let counts = adminRotationGeneratorCountSoloMill(month, workingNames);
+  let swaps = 0;
+  const maxPasses = softRows.length * 2;
+  for (let pass = 0; pass < maxPasses; pass += 1) {
+    const highNames = workingNames.slice().sort((a, b) => Number(counts[b] || 0) - Number(counts[a] || 0));
+    const lowNames = workingNames.slice().sort((a, b) => Number(counts[a] || 0) - Number(counts[b] || 0));
+    const highName = highNames[0];
+    if (!highName || Number(counts[highName] || 0) <= 1) break;
+    let didSwap = false;
+    for (const lowName of lowNames) {
+      if (!lowName || lowName === highName) continue;
+      if (Number(counts[highName] || 0) - Number(counts[lowName] || 0) <= 1) break;
+      for (let rowIdx = 0; rowIdx < softRows.length; rowIdx += 1) {
+        const softRow = softRows[rowIdx];
+        const cells = Array.isArray(softRow && softRow.cells) ? softRow.cells : [];
+        const mfkf06 = adminRotationCanonicalName(cells[mfkf06Idx], knownNames);
+        const mfkf10 = adminRotationCanonicalName(cells[mfkf10Idx], knownNames);
+        if (mfkf06 || mfkf10 !== highName) continue;
+        const lowCell = adminRotationGeneratorFindSoloMillSwapCell(month, rowIdx, lowName);
+        if (!lowCell || !lowCell.cells) continue;
+        lowCell.cells[lowCell.idx] = highName;
+        cells[mfkf10Idx] = lowName;
+        counts[highName] = Number(counts[highName] || 0) - 1;
+        counts[lowName] = Number(counts[lowName] || 0) + 1;
+        swaps += 1;
+        didSwap = true;
+        break;
+      }
+      if (didSwap) break;
+    }
+    if (!didSwap) break;
+  }
+  return { swaps, counts };
+}
+
 function adminRotationGeneratorBalanceHardMachine(month, machineName, model, monthKey) {
   const knownNames = model && Array.isArray(model.knownNames) ? model.knownNames : adminGetKnownNames();
   const hardPreferred = RAK_ROTATION_GENERATOR_RULES_V1107.hardPreferred.filter((name) => knownNames.includes(name));
@@ -1580,6 +1691,7 @@ function adminGenerateRotationMonthDraft(monthKey) {
   month.soft.machines = SOFT_MACHINE_HEADERS.slice();
   month.soft.title = month.soft.title || 'Rotace měkota';
   const tnksBalance = adminRotationGeneratorBalanceHardMachine(month, 'TNKS01', model, monthKey);
+  const soloMillBalance = adminRotationGeneratorBalanceSoloMill(month, model);
   const normalized = normalizeMonthForImport(month, fallback);
   if (!app.rotation.months) app.rotation.months = {};
   app.rotation.months[monthKey] = normalized;
@@ -1600,7 +1712,8 @@ function adminGenerateRotationMonthDraft(monthKey) {
     skippedDays,
     protectedEmptyCells,
     tnksBalanceSwaps: tnksBalance && Number(tnksBalance.swaps || 0),
-    ruleVersion: '1.113'
+    soloMillBalanceSwaps: soloMillBalance && Number(soloMillBalance.swaps || 0),
+    ruleVersion: '1.114'
   };
 }
 
@@ -1641,6 +1754,13 @@ const RAK_ROTATION_GENERATOR_RULES_V1113 = Object.freeze({
   softCoreRule: 'Synek, Třasák a Střížek chodí z Měkoty na Tvrdotu jen na TNKS01/TPKW01/TPKW02 po blocích 3 pracovních dnů na stejný stroj. Když někdo chybí, pořadí se přeskupí tak, aby se tvrdotě nevyhnul.',
   softLatheBase: Object.freeze({ Synek: 'MSKC04', 'Střížek': 'MSKC03', 'Třasák': 'MSKC01' }),
   previewRule: 'Po vygenerování musí průvodce ukázat celý rozpis v náhledu a umožnit návrat na měsíc/dny/absence bez naklikání od začátku.'
+});
+
+const RAK_ROTATION_GENERATOR_RULES_V1114 = Object.freeze({
+  version: '1.114',
+  scope: 'Administrace dat / Rozpisy / Vygenerovat návrh',
+  softCoreAvailabilityRule: 'Když Synek/Třasák/Střížek mají v bloku absenci, generátor má prohodit pořadí a dát na Tvrdotu dřív toho, kdo později nebude dostupný, aby se tvrdotě nevyhnul.',
+  soloMillBalanceRule: 'Samostatné frézky/MFKF10 s prázdnou MFKF06 se po vygenerování vyrovnávají mezi lidmi podobně jako TNKS01, aby někdo nebyl sám na frézkách opakovaně a jiný vůbec.'
 });
 
 const RAK_ROTATION_GENERATOR_WIZARD_CONTRACT_V1108 = Object.freeze({
@@ -2143,6 +2263,7 @@ function adminHandleRotationGeneratorWizardAction(action, target) {
 
 
 
+window.RAK_ROTATION_GENERATOR_RULES_V1114 = RAK_ROTATION_GENERATOR_RULES_V1114;
 window.RAK_ROTATION_GENERATOR_RULES_V1113 = RAK_ROTATION_GENERATOR_RULES_V1113;
 window.RAK_ROTATION_GENERATOR_MONTH_BALANCE_CONTRACT_V1112 = RAK_ROTATION_GENERATOR_MONTH_BALANCE_CONTRACT_V1112;
 window.RAK_ROTATION_GENERATOR_ABSENCE_STATE_CONTRACT_V1109 = RAK_ROTATION_GENERATOR_ABSENCE_STATE_CONTRACT_V1109;
@@ -2189,7 +2310,7 @@ function adminShowRotationSelectedRemove(input) {
       return;
     }
     window.__rakAdminRotationSelectedInput = input;
-    // RaK 1.2 (1.113) – horní sticky tlačítko už při kliknutí do jména nevytahujeme.
+    // RaK 1.2 (1.114) – horní sticky tlačítko už při kliknutí do jména nevytahujeme.
     // Rychlé Odebrat se vykreslí přímo u aktivního pole přes adminShowRotationQuickRemove().
     btn.hidden = true;
     btn.dataset.targetReady = '1';

@@ -1,3 +1,11 @@
+## RaK 1.2 (1.114)
+
+- Generátor rozpisu: Synek/Třasák/Střížek se v 3denním bloku Měkoty na Tvrdotu nově přeskupují podle dostupnosti. Když je někdo dostupný jen první dny a potom má absenci, má jít na Tvrdotu dřív, aby se tvrdotě nevyhnul.
+- Generátor rozpisu: přidané vyrovnání samostatných frézek. Samostatná obsluha se počítá jako `MFKF10` s prázdnou `MFKF06` a po vygenerování se prohazuje tak, aby někdo nebyl sám na frézkách opakovaně a jiný vůbec.
+- Výsledek generátoru nově vrací `soloMillBalanceSwaps` a pravidla jsou označená jako `1.114`.
+- `npm run test:app-usage` hlídá dostupnostní prioritu Měkoty na Tvrdotě i vyrovnání samostatných frézek.
+- Release metadata sjednocená na `RaK 1.2 (1.114)`, technická verze `1.2.114`, cache `v1.2-1.114`.
+
 ## RaK 1.2 (1.113)
 
 - Generátor rozpisu: kontrolní tabulka stroje × jména teď počítá TNKS01/TPKW01 podle reálného střídání jako 0,5 + 0,5 mimo běžnou neděli; běžná neděle ranní/noční zůstává jako celá směna na zapsaném stroji, přesčasová neděle se střídá.
