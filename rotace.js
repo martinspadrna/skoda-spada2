@@ -1,4 +1,4 @@
-// RaK 1.2 (1.129) – Rotace render a volba jmen.
+// RaK 1.2 (1.130) – Rotace render a volba jmen.
 function renderRotace() {
   const namesGrid = document.getElementById('namesGrid');
   const personView = document.getElementById('personView');
@@ -690,23 +690,11 @@ function renderMonth(monthKey) {
   html += wrapRotationViewSection("Tvrdota", renderTable("hard", "Tvrdota"));
   html += wrapRotationViewSection("Měkota", renderTable("soft", "Měkota"));
 
-  const absNotes = (month.notes || []).map(normalizeNoteEntry).filter(n => n.isAbsence);
+  const absenceGroups = getRotationMonthShiftAbsenceGroups(month);
   let absenceHtml = "";
 
-  if (absNotes.length) {
-    const grouped = new Map();
-    absNotes.forEach(n => {
-      const key = n.date || "";
-      if (!grouped.has(key)) grouped.set(key, []);
-      grouped.get(key).push(n);
-    });
-
-    const rows = [...grouped.entries()].map(([date, items]) => ({
-      date,
-      items: items.slice().sort((a, b) => String(a.person || "").localeCompare(String(b.person || ""), "cs"))
-    }));
-
-    const maxPairs = Math.max(1, ...rows.map(r => r.items.length));
+  if (absenceGroups.length) {
+    const maxPairs = Math.max(1, ...absenceGroups.map(group => Math.max(1, group.items.length)));
     absenceHtml += "<div class='tableWrap'><table class='noteTable'><thead><tr>";
     for (let i = 0; i < maxPairs; i += 1) {
       if (i > 0) absenceHtml += "<th class='noteSpacer'></th>";
@@ -714,20 +702,21 @@ function renderMonth(monthKey) {
     }
     absenceHtml += "</tr></thead><tbody>";
 
-    rows.forEach(row => {
-      absenceHtml += "<tr>";
+    absenceGroups.forEach(group => {
+      const items = group.items && group.items.length ? group.items.slice().sort((a, b) => String(a.person || "").localeCompare(String(b.person || ""), "cs")) : [];
+      absenceHtml += "<tr" + (!items.length ? " class='noteEmptyAbsenceDay'" : "") + ">";
       for (let i = 0; i < maxPairs; i += 1) {
         if (i > 0) absenceHtml += "<td class='noteSpacer'></td>";
-        const n = row.items[i];
-        if (n) {
-          const parsed = parseDateToken(n.date);
-          const dateOnly = parsed ? String(parsed.day) + "." + String(parsed.month) + "." : n.date;
-          const shift = n.shift || (parsed ? parsed.shift : "");
-          const people = (n.people && n.people.length) ? n.people.join(" a ") : (n.person || "");
-          const reason = n.label || n.code || "";
-          absenceHtml += "<td class='noteDateCell'>" + escapeHtml(dateOnly) + "</td><td class='noteShiftCell'>" + escapeHtml(shift) + "</td><td class='notePersonCell'>" + escapeHtml(people) + "</td><td class='noteReasonCell'>" + escapeHtml(reason) + "</td>";
+        const item = items[i];
+        if (i === 0) {
+          absenceHtml += "<td class='noteDateCell'>" + escapeHtml(group.date || '—') + "</td><td class='noteShiftCell'>" + escapeHtml(group.shift || '') + "</td>";
         } else {
-          absenceHtml += "<td class='emptyCell noteDateCell'>—</td><td class='emptyCell noteShiftCell'>—</td><td class='emptyCell notePersonCell'>—</td><td class='emptyCell noteReasonCell'>—</td>";
+          absenceHtml += "<td class='emptyCell noteDateCell'>—</td><td class='emptyCell noteShiftCell'>—</td>";
+        }
+        if (item) {
+          absenceHtml += "<td class='notePersonCell'>" + escapeHtml(item.person || '') + "</td><td class='noteReasonCell'>" + escapeHtml(item.reason || '') + "</td>";
+        } else {
+          absenceHtml += "<td class='emptyCell notePersonCell'>—</td><td class='emptyCell noteReasonCell'>—</td>";
         }
       }
       absenceHtml += "</tr>";
@@ -735,7 +724,7 @@ function renderMonth(monthKey) {
 
     absenceHtml += "</tbody></table></div>";
   } else {
-    absenceHtml += "<div class='smallText'>Bez poznámek.</div>";
+    absenceHtml += "<div class='smallText'>Bez pracovních dnů.</div>";
   }
 
   html += wrapRotationViewSection("Absence", absenceHtml);
@@ -753,37 +742,90 @@ function getRotationMonthExportFileName(monthKey) {
   return 'rozpis_' + String(monthKey || 'mesic').replace(/[^0-9a-zA-Z_-]+/g, '_') + '.png';
 }
 
-function getRotationMonthExportAbsences(month) {
-  const notes = Array.isArray(month && month.notes) ? month.notes : [];
-  return notes
-    .map((note, index) => ({
-      entry: typeof normalizeNoteEntry === 'function' ? normalizeNoteEntry(note) : note,
-      index
-    }))
+function getRotationMonthShiftAbsenceGroups(month) {
+  const groups = [];
+  const byKey = new Map();
+  const addGroup = (dateText, sourceIndex) => {
+    const parsed = typeof parseDateToken === 'function' ? parseDateToken(dateText) : null;
+    const shift = String((parsed && parsed.shift) || (String(dateText || '').match(/\b(R8|N8|R|N)\b/i) || [])[1] || '').trim();
+    const day = parsed && Number.isFinite(Number(parsed.day)) ? Number(parsed.day) : 999;
+    const monthNo = parsed && Number.isFinite(Number(parsed.month)) ? Number(parsed.month) : 999;
+    const date = parsed ? String(parsed.day) + '.' + String(parsed.month) + '.' : String(dateText || '').replace(/\b(?:R8|N8|R|N)\b/gi, '').trim();
+    const shiftOrder = shift.toUpperCase().startsWith('R') ? 1 : (shift.toUpperCase().startsWith('N') ? 2 : 9);
+    const key = [date || String(dateText || '').trim(), shift].join('|');
+    if (!String(date || '').trim() && !shift) return null;
+    if (!byKey.has(key)) {
+      const group = {
+        key,
+        date,
+        shift,
+        label: [date || '—', shift].filter(Boolean).join(' '),
+        day,
+        month: monthNo,
+        shiftOrder,
+        index: Number.isFinite(Number(sourceIndex)) ? Number(sourceIndex) : groups.length,
+        items: []
+      };
+      byKey.set(key, group);
+      groups.push(group);
+    }
+    return byKey.get(key);
+  };
+
+  ['hard', 'soft'].forEach((sectionKey) => {
+    const rows = Array.isArray(month && month[sectionKey] && month[sectionKey].rows) ? month[sectionKey].rows : [];
+    rows.forEach((row, idx) => addGroup(row && row.date, idx));
+  });
+
+  const findFallbackGroupForNote = (normalized, noteIndex) => {
+    const parsed = typeof parseDateToken === 'function' ? parseDateToken(normalized && normalized.date) : null;
+    const shift = String((normalized && normalized.shift) || (parsed && parsed.shift) || '').trim();
+    const date = parsed ? String(parsed.day) + '.' + String(parsed.month) + '.' : String(normalized && normalized.date || '').replace(/\b(?:R8|N8|R|N)\b/gi, '').trim();
+    if (date || shift) {
+      const exact = byKey.get([date || String(normalized && normalized.date || '').trim(), shift].join('|'));
+      if (exact) return exact;
+      const sameDay = groups.find(group => String(group.date || '') === String(date || '') && (!shift || String(group.shift || '') === shift));
+      if (sameDay) return sameDay;
+      return addGroup(String(normalized && normalized.date || ''), noteIndex);
+    }
+    return null;
+  };
+
+  (Array.isArray(month && month.notes) ? month.notes : [])
+    .map((note, index) => ({ entry: typeof normalizeNoteEntry === 'function' ? normalizeNoteEntry(note) : note, index }))
     .filter(item => item.entry && item.entry.isAbsence)
-    .flatMap(item => {
+    .forEach((item) => {
       const n = item.entry;
-      const parsed = typeof parseDateToken === 'function' ? parseDateToken(n.date) : null;
-      const shift = String(n.shift || (parsed ? parsed.shift : '') || '').trim();
-      const date = parsed ? String(parsed.day) + '.' + String(parsed.month) + '.' : String(n.date || '');
+      const group = findFallbackGroupForNote(n, item.index);
+      if (!group) return;
       const people = (Array.isArray(n.people) && n.people.length)
         ? n.people.map(person => String(person || '').trim()).filter(Boolean)
         : [String(n.person || '').trim()].filter(Boolean);
       const reason = String(n.label || n.code || '').trim();
-      const shiftOrder = shift.toUpperCase().startsWith('R') ? 1 : (shift.toUpperCase().startsWith('N') ? 2 : 9);
-      const base = {
-        date,
-        shift,
-        day: parsed && Number.isFinite(Number(parsed.day)) ? Number(parsed.day) : 999,
-        month: parsed && Number.isFinite(Number(parsed.month)) ? Number(parsed.month) : 999,
-        shiftOrder,
-        reason,
-        index: item.index
-      };
-      return (people.length ? people : ['']).map((person, personIndex) => ({
-        ...base,
-        people: person,
-        personIndex
+      (people.length ? people : ['']).forEach((person, personIndex) => {
+        group.items.push({ person, reason, index: item.index, personIndex });
+      });
+    });
+
+  groups.sort((a, b) => (a.month - b.month) || (a.day - b.day) || (a.shiftOrder - b.shiftOrder) || (a.index - b.index));
+  return groups;
+}
+
+function getRotationMonthExportAbsences(month) {
+  return getRotationMonthShiftAbsenceGroups(month)
+    .flatMap((group) => {
+      const items = group.items && group.items.length ? group.items : [{ person: '', reason: '', index: group.index, personIndex: 0, empty: true }];
+      return items.map((item) => ({
+        date: group.date,
+        shift: group.shift,
+        day: group.day,
+        month: group.month,
+        shiftOrder: group.shiftOrder,
+        reason: String(item.reason || '').trim(),
+        index: Number.isFinite(Number(item.index)) ? Number(item.index) : group.index,
+        people: String(item.person || '').trim(),
+        personIndex: Number.isFinite(Number(item.personIndex)) ? Number(item.personIndex) : 0,
+        isEmptyAbsenceDay: !!item.empty
       }));
     })
     .sort((a, b) => (a.month - b.month) || (a.day - b.day) || (a.shiftOrder - b.shiftOrder) || (a.index - b.index) || (a.personIndex - b.personIndex));
@@ -860,7 +902,8 @@ function formatRotationExportStatCount(value) {
 function buildRotationYearlyExportStats(monthKey) {
   const parsedMonth = typeof parseMonthKey === 'function' ? parseMonthKey(monthKey) : null;
   const year = parsedMonth && Number.isFinite(Number(parsedMonth.year)) ? Number(parsedMonth.year) : new Date().getFullYear();
-  const stats = typeof buildStatsForYear === 'function' ? buildStatsForYear(year) : null;
+  const maxMonth = parsedMonth && Number.isFinite(Number(parsedMonth.month)) ? Number(parsedMonth.month) : 12;
+  const stats = typeof buildStatsForYear === 'function' ? buildStatsForYear(year, { maxMonth }) : null;
   const columns = [
     { label: '​', width: 0.16, align: 'left', pad: 12, fontWeight: '850 ' },
     { label: 'Nýtování', width: 0.16 },
@@ -888,7 +931,7 @@ function buildRotationYearlyExportStats(monthKey) {
   return {
     year,
     title: 'Nýtování a úklid ' + year,
-    note: 'Od začátku roku včetně exportovaného měsíce.',
+    note: 'Od ledna do exportovaného měsíce včetně.',
     columns,
     rows: rows.length ? rows : [['—', '0', '0', '0', '0', '0', '0', '0']]
   };

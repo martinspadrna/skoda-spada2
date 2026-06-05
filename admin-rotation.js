@@ -1,4 +1,4 @@
-// RaK 1.2 (1.129) – Administrace Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
+// RaK 1.2 (1.130) – Administrace Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('admin-rotation.js', 'loading', { source: 'dynamic-loader' }); } catch (err) {}
 
 
@@ -1315,7 +1315,7 @@ const RAK_ROTATION_GENERATOR_RULES_V1107 = Object.freeze({
     'Při jedné absenci zůstává MFKF06 neobsazená a člověk na MFKF10 bere i MFKF06.',
     'Při dvou absencích je na frézkách jeden člověk, MFKF06 je neobsazená, na soustruhách jsou dva lidé a MSKC01 je neobsazená.'
   ]),
-  fairness: Object.freeze(['měsíce na sebe navazují', 'tvrdota drží pořadí TNKS01/TBKR07/TPKW01/TPKW02/TBKR01', 'měkota chodí po TNKS01/TPKW01/TPKW02', 'Špadrna a Novotný spíš měkota, ale pomáhají vyrovnat tvrdotu', 'lidé z tvrdoty na měkotě mají mít rozumně střídané MSKC/MFKF'])
+  fairness: Object.freeze(['měsíce na sebe navazují', 'tvrdota drží pořadí TNKS01/TBKR07/TPKW01/TPKW02/TBKR01', 'měkota chodí po TNKS01/TPKW01/TPKW02', 'Špadrna a Novotný spíš měkota, ale pomáhají vyrovnat tvrdotu', 'lidé z tvrdoty na měkotě mají mít rozumně střídané MSKC/MFKF', 'nýtování se dorovnává podle měsíce i celkového počtu v exportovaném roce'])
 });
 
 function adminRotationMonthSortValue(monthKey) {
@@ -1408,6 +1408,7 @@ function adminBuildRotationGenerationModel(targetMonthKey) {
     ? (String(targetParsed.month) + '/' + String((targetParsed.year - 1) % 100).padStart(2, '0'))
     : '';
   const machineStats = { hard: [], soft: [] };
+  const yearHardMachineStats = Object.create(null);
   const globalStats = Object.create(null);
   const dayTemplates = [];
   const previousYearTemplates = [];
@@ -1422,6 +1423,13 @@ function adminBuildRotationGenerationModel(targetMonthKey) {
     if (!machineStats[sectionKey][machineIdx]) machineStats[sectionKey][machineIdx] = Object.create(null);
     machineStats[sectionKey][machineIdx][name] = (machineStats[sectionKey][machineIdx][name] || 0) + weight;
     globalStats[name] = (globalStats[name] || 0) + weight;
+  };
+
+  const addYearHardMachineStat = (machineName, name, weight) => {
+    const machine = String(machineName || '').trim().toUpperCase();
+    if (!machine || !name) return;
+    if (!yearHardMachineStats[machine]) yearHardMachineStats[machine] = Object.create(null);
+    yearHardMachineStats[machine][name] = (yearHardMachineStats[machine][name] || 0) + Number(weight || 0);
   };
 
   months.forEach((monthKey, monthIdx) => {
@@ -1447,17 +1455,31 @@ function adminBuildRotationGenerationModel(targetMonthKey) {
       };
       dayTemplates.push(template);
       if (monthKey === previousYearKey) previousYearTemplates.push(template);
+      const parsedHistoryMonth = typeof parseMonthKey === 'function' ? parseMonthKey(monthKey) : null;
+      const isTargetYearBeforeMonth = parsedHistoryMonth && targetParsed && Number(parsedHistoryMonth.year) === Number(targetParsed.year) && Number(parsedHistoryMonth.month) < Number(targetParsed.month);
+      const splitPressForYear = isTargetYearBeforeMonth && typeof adminRotationGeneratorShouldSplitPressMachines === 'function'
+        ? adminRotationGeneratorShouldSplitPressMachines(hardRow && hardRow.date, monthKey, month)
+        : false;
       hardCells.forEach((name, idx) => {
         if (adminRotationIsRealName(name, knownNames)) {
+          const machineName = HARD_MACHINE_HEADERS[idx] || '';
           addMachineStat('hard', idx, name, recencyWeight);
-          previousHardMachine[name] = HARD_MACHINE_HEADERS[idx] || previousHardMachine[name] || '';
+          previousHardMachine[name] = machineName || previousHardMachine[name] || '';
+          if (isTargetYearBeforeMonth) {
+            if (splitPressForYear && /^(?:TNKS01|TPKW01)$/i.test(machineName)) {
+              addYearHardMachineStat('TNKS01', name, 0.5);
+              addYearHardMachineStat('TPKW01', name, 0.5);
+            } else {
+              addYearHardMachineStat(machineName, name, 1);
+            }
+          }
         }
       });
       softCells.forEach((name, idx) => { if (adminRotationIsRealName(name, knownNames)) addMachineStat('soft', idx, name, recencyWeight); });
     }
   });
 
-  return { knownNames, machineStats, globalStats, dayTemplates, previousYearTemplates, previousYearKey, previousHardMachine };
+  return { knownNames, machineStats, yearHardMachineStats, globalStats, dayTemplates, previousYearTemplates, previousYearKey, previousHardMachine };
 }
 
 function adminPickRotationGeneratorName(model, sectionKey, machineIdx, rowIdx, usedNames, monthCounts, previousRowNames, suggestedName, shift) {
@@ -2135,6 +2157,8 @@ function adminRotationGeneratorBalanceHardMachine(month, machineName, model, mon
   const tnksIdx = adminRotationGeneratorMachineIndex(HARD_MACHINE_HEADERS, 'TNKS01');
   const tpkw01Idx = adminRotationGeneratorMachineIndex(HARD_MACHINE_HEADERS, 'TPKW01');
   const isPressBalance = /^(?:TNKS01|TPKW01)$/i.test(String(machineName || ''));
+  const machineYearKey = String(machineName || '').trim().toUpperCase();
+  const yearCounts = model && model.yearHardMachineStats && model.yearHardMachineStats[machineYearKey] ? model.yearHardMachineStats[machineYearKey] : Object.create(null);
   const hardRows = Array.isArray(month && month.hard && month.hard.rows) ? month.hard.rows : [];
   if (machineIdx < 0 || !workingNames.length || !hardRows.length) return { swaps: 0, counts: Object.create(null) };
 
@@ -2142,14 +2166,23 @@ function adminRotationGeneratorBalanceHardMachine(month, machineName, model, mon
   let swaps = 0;
   const maxPasses = hardRows.length * 4;
 
+  const currentCount = (name) => Number(counts[name] || 0);
+  const yearCount = (name) => Number(yearCounts[name] || 0);
+  const combinedCount = (name) => currentCount(name) + yearCount(name);
   const getSortedHigh = () => workingNames.slice().sort((a, b) => {
-    const diff = Number(counts[b] || 0) - Number(counts[a] || 0);
+    const diff = combinedCount(b) - combinedCount(a);
     if (diff) return diff;
+    const monthDiff = currentCount(b) - currentCount(a);
+    if (monthDiff) return monthDiff;
     return a.localeCompare(b, 'cs');
   });
   const getSortedLow = () => workingNames.slice().sort((a, b) => {
-    const diff = Number(counts[a] || 0) - Number(counts[b] || 0);
+    const diff = combinedCount(a) - combinedCount(b);
     if (diff) return diff;
+    const yearDiff = yearCount(a) - yearCount(b);
+    if (yearDiff) return yearDiff;
+    const monthDiff = currentCount(a) - currentCount(b);
+    if (monthDiff) return monthDiff;
     const pref = (hardPreferred.includes(b) ? 1 : 0) - (hardPreferred.includes(a) ? 1 : 0);
     if (pref) return pref;
     return a.localeCompare(b, 'cs');
@@ -2174,12 +2207,12 @@ function adminRotationGeneratorBalanceHardMachine(month, machineName, model, mon
     const lowName = lowNames[0];
     if (!highName || !lowName || highName === lowName) break;
     const allowedDiff = isPressBalance ? 0.5 : 1;
-    if (Number(counts[highName] || 0) - Number(counts[lowName] || 0) <= allowedDiff) break;
+    if (combinedCount(highName) - combinedCount(lowName) <= allowedDiff) break;
 
     let didSwap = false;
     for (const targetLowName of lowNames) {
       if (!targetLowName || targetLowName === highName) continue;
-      if (Number(counts[highName] || 0) - Number(counts[targetLowName] || 0) <= allowedDiff) break;
+      if (combinedCount(highName) - combinedCount(targetLowName) <= allowedDiff) break;
       for (let rowIdx = 0; rowIdx < hardRows.length; rowIdx += 1) {
         const hardRow = hardRows[rowIdx];
         const highCell = findPressOrMachineCell(hardRow, rowIdx, highName);
@@ -2379,7 +2412,7 @@ function adminGenerateRotationMonthDraft(monthKey) {
     soloMillBalanceSwaps: (soloMillBalance && Number(soloMillBalance.swaps || 0)) + (soloMillRebalance && Number(soloMillRebalance.swaps || 0)),
     softKindBalanceSwaps: softKindBalance && Number(softKindBalance.swaps || 0),
     kminekNovotnyMoToBalanceSwaps: kminekNovotnyMoToBalance && Number(kminekNovotnyMoToBalance.swaps || 0),
-    ruleVersion: '1.119'
+    ruleVersion: '1.130'
   };
 }
 
@@ -3039,7 +3072,7 @@ function adminShowRotationSelectedRemove(input) {
       return;
     }
     window.__rakAdminRotationSelectedInput = input;
-    // RaK 1.2 (1.129) – horní sticky tlačítko už při kliknutí do jména nevytahujeme.
+    // RaK 1.2 (1.130) – horní sticky tlačítko už při kliknutí do jména nevytahujeme.
     // Rychlé Odebrat se vykreslí přímo u aktivního pole přes adminShowRotationQuickRemove().
     btn.hidden = true;
     btn.dataset.targetReady = '1';

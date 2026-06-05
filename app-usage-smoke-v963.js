@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.129) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.130) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -216,12 +216,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.129)',
-  appLabel: 'RaK 1.2 (1.129)',
-  packageVersion: '1.2.129',
-  cacheVersion: 'v1.2-1.129',
+  displayVersion: '1.2 (1.130)',
+  appLabel: 'RaK 1.2 (1.130)',
+  packageVersion: '1.2.130',
+  cacheVersion: 'v1.2-1.130',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.129)',
+  changelogHeader: '## RaK 1.2 (1.130)',
   previousBuildFragments: Object.freeze(['1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -330,8 +330,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.129)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.129'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.130)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.130'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -726,7 +726,7 @@ const backgroundIds = new Set(backgroundDefs.map((item) => String(item && item.i
   assertIncludes(appearanceThemeJs, `'${id}': { unlockText: 'Rank`, `Pozadí ${id} musí mít rank/achievement unlock v mapě`);
 });
 const freeThemes = themeDefs.filter((item) => String(item && item.unlockText || '') === 'Vždy dostupné').map((item) => String(item.id || ''));
-assert(freeThemes.length === 1 && freeThemes[0] === 'default', `Vždy dostupný má zůstat jen základní theme, nalezeno: ${freeThemes.join(', ')}`);
+assert(freeThemes.includes('default') && freeThemes.includes('light-brown') && freeThemes.length === 2, `Vždy dostupné mají být jen základní theme default + light-brown, nalezeno: ${freeThemes.join(', ')}`);
 assert(themeDefs.length <= 18, 'Theme seznam je po 1.80 zbytečně podobný/nafouknutý');
 assert(backgroundDefs.length <= 23, 'Pozadí seznam je po 1.80 zbytečně podobný/nafouknutý');
 
@@ -736,7 +736,7 @@ assertIncludes(appearanceThemeJs, "intent: 'distinct-progressive-appearance-rewa
 assertIncludes(appearanceThemeJs, "defaultThemeId: 'default'", 'Appearance contract musí držet základní theme');
 assertIncludes(appearanceThemeJs, "defaultBackgroundId: 'ios-mesh'", 'Appearance contract musí držet základní pozadí');
 [
-  'Vždy dostupný zůstává jen základní theme a základní pozadí.',
+  'Vždy dostupné mohou být základní theme a základní světlý theme/pozadí podle pracovního nastavení.',
   'Nové theme/pozadí nesmí být jen lehce přebarvená kopie existujícího skinu.',
   'Každý nový výrazný skin musí mít minPlays, minAchievements nebo minRank.',
   'Před přidáním nového skinu porovnat hlavní color/swatch/akcent s existující rodinou.',
@@ -755,9 +755,10 @@ assertIncludes(appearanceThemeJs, "defaultBackgroundId: 'ios-mesh'", 'Appearance
   assertIncludes(appearanceThemeJs, id, `Vyřazené pozadí ${id} musí být dohledatelné v reservedRemovedBackgroundIds`);
 });
 const backgroundFreeEntries = Object.entries({
-  'ios-mesh': 'Vždy dostupné'
+  'ios-mesh': 'Vždy dostupné',
+  'light-zigzag': 'Vždy dostupné'
 }).filter(([id]) => backgroundIds.has(id));
-assert(backgroundFreeEntries.length === 1 && backgroundFreeEntries[0][0] === 'ios-mesh', 'Základní volné pozadí má zůstat ios-mesh');
+assert(backgroundFreeEntries.some(([id]) => id === 'ios-mesh') && backgroundFreeEntries.some(([id]) => id === 'light-zigzag') && backgroundFreeEntries.length === 2, 'Základní volná pozadí mají být ios-mesh + light-zigzag');
 ['storm-signal', 'midnight-gold'].forEach((id) => {
   assertIncludes(appearanceThemeJs, `'${id}': { unlockText: 'Rank`, `Pozadí ${id} musí zůstat v rank/achievement unlock mapě i po 1.81 contractu`);
 });
@@ -778,7 +779,7 @@ assertIncludes(appearanceThemeJs, "intent: 'dashboard-admin-readable-appearance'
 });
 [
   'Každé theme musí mít světlé --soft a dostatečně čitelné --muted proti --bg.',
-  'Každé pozadí musí mít tmavý --rakBgBase, aby glass panely zůstaly čitelné.',
+  'Pozadí může být tmavé nebo světlé, ale glass panely a text musí zůstat čitelné.',
   'Dashboard, Administrace a Nastavení vzhledu nesmí spoléhat jen na barvu akcentu.',
   'Výrazný reward skin může měnit náladu, ale nesmí zhoršit kontrast textu a panelů.'
 ].forEach((rule) => assertIncludes(appearanceThemeJs, rule, `Readability pravidlo chybí: ${rule}`));
@@ -797,7 +798,7 @@ backgroundDefs.forEach((bg) => {
   ['--rakBgBase', '--rakAppBackground', '--rakAppBackgroundOverlay', '--rakAppBackgroundLite', '--rakBgAccent'].forEach((varName) => {
     assert(vars[varName], `Pozadí ${bg.id} nemá čitelnostní proměnnou ${varName}`);
   });
-  assert(relativeLuminance(vars['--rakBgBase']) <= 0.08, `Pozadí ${bg.id} má moc světlý základ pro glass čitelnost`);
+  assert(bg.id === 'light-zigzag' || relativeLuminance(vars['--rakBgBase']) <= 0.08, `Pozadí ${bg.id} má moc světlý základ pro dark glass čitelnost`);
 });
 
 assertIncludes(rotaceJs, 'function buildRotationMonthExportSummary(month)', 'Export rozpisu musí umět spočítat měsíční přehled');
@@ -823,7 +824,7 @@ assertIncludes(rotaceJs, 'return titleH + headerH + rowH * dataRows.length + not
 ['Směn do práce', 'Dní se směnou', 'Míst celkem', 'Plán obsazeno', 'Plán volno', 'Plán obsazenost', 'Po absencích obsazeno', 'Po absencích volno', 'Obsazenost měsíce', 'Absence záznamů', 'Absence směn', 'note: summaryNote', 'Plán = obsazení zapsané v rozpisu. Po absencích = plán mínus absence směn.'].forEach((label) => {
   assert(!rotaceJs.includes(label), `Zjednodušený měsíční přehled už nemá obsahovat ${label}`);
 });
-assertIncludes(rotaceJs, 'const rows = [', 'Měsíční přehled musí stavět jednoduché pole řádků');
+assertIncludes(rotaceJs, 'const rows = ROTATION_EXPORT_MONTH_SUMMARY_LABELS_V187.map', 'Měsíční přehled musí stavět jednoduché pole řádků z contract mapy');
 assertIncludes(rotaceJs, "'Obsazenost': formatPercent(occupancyPercent)", 'Zjednodušený měsíční přehled musí ukázat jedinou obsazenost z contract mapy');
 
 assert(!/bottomNav|bottomNavBtn|bottomNavScroll|bottomNavIndicator/.test(dashboardCss), 'Dashboard CSS vrstva nesmí upravovat spodní lištu');
@@ -888,7 +889,7 @@ function assertRotationGeneratorRulesContractV1107() {
   assertIncludes(ui, 'if (softTargetCount === 3 && lathePeopleCount === 2 && mskc01Idx >= 0)', 'Při dvou absencích musí zůstat MSKC01 neobsazená');
   assertIncludes(ui, 'readAdminRotationFromDom(monthKey)', 'Generátor musí před výpočtem číst rozepsané absence z DOMu');
   assertIncludes(ui, 'adminRotationGeneratorIsDayBlocked', 'Generátor musí umět vynechat den označený jako svátek/odstávka');
-  assertIncludes(ui, "ruleVersion: '1.119'", 'Výsledek generátoru musí vracet aktuální verzi pravidel 1.117');
+  assertIncludes(ui, "ruleVersion: '1.130'", 'Výsledek generátoru musí vracet aktuální verzi pravidel 1.130');
 
 }
 
@@ -974,7 +975,7 @@ function assertRotationGeneratorRulesContractV1114() {
   assertIncludes(ui, 'function adminRotationGeneratorCountSoloMill', 'Generátor musí umět spočítat samostatné MFKF10 s prázdnou MFKF06');
   assertIncludes(ui, "const soloMillBalance = adminRotationGeneratorBalanceSoloMill(month, model);", 'Po sestavení měsíce musí běžet vyrovnání samostatných frézek');
   assertIncludes(ui, 'soloMillBalanceSwaps', 'Výsledek generátoru musí vracet počet prohozů samostatných frézek');
-  assertIncludes(ui, "ruleVersion: '1.119'", 'Výsledek generátoru musí vracet aktuální verzi pravidel 1.117');
+  assertIncludes(ui, "ruleVersion: '1.130'", 'Výsledek generátoru musí vracet aktuální verzi pravidel 1.130');
 }
 
 
@@ -1076,6 +1077,11 @@ function assertRotationOvertimeShiftFilterContractV1128() {
   assertIncludes(css, '#appMenuBody .adminRotationOvertimeFilterChip', 'Filtr směn musí přebít světlý globální styl tlačítek');
   assertIncludes(css, 'var(--rakGlassActiveBg', 'Filtr směn musí používat theme/glass aktivní barvy aplikace');
   assertIncludes(css, '.adminRotationOvertimeYearSummary', 'Roční přehled přesčasů musí mít vlastní čitelný theme styl');
+assertIncludes(rotaceJs, 'getRotationMonthShiftAbsenceGroups', 'Absence v Rozpisech/exportu musí držet i prázdné pracovní dny');
+assertIncludes(rotaceJs, 'buildStatsForYear(year, { maxMonth })', 'Nýtování a úklid v exportu musí být omezené exportovaným měsícem');
+assertIncludes(ui, 'yearHardMachineStats', 'Generátor musí při nýtování zohledňovat roční počty před cílovým měsícem');
+assertIncludes(appearanceThemeJs, '"id": "light-brown"', 'Musí existovat základní světlý hnědý theme');
+assertIncludes(appearanceThemeJs, '"id": "light-zigzag"', 'Musí existovat základní světlé cikcak pozadí');
   assertIncludes(css, '.adminRotationOvertimeFilterChip.isActive', 'Aktivní filtr směny musí být vizuálně odlišený');
   assertIncludes(css, '.adminRotationOvertimeHiddenByFilter', 'Filtrované přesčasy se musí skrýt jen vizuálně, ne mazat z DOM');
 }
@@ -1123,4 +1129,4 @@ assertStatsPressMachineMoOnlyExceptionContractV1124();
 assertRotationOvertimeShiftFilterContractV1128();
 assertRotationOvertimeDefaults2025ContractV1129();
 
-console.log('app-usage-smoke-v963 OK + rotation-generator-wizard-v1108-guard + rotation-generator-absence-state-v1109-guard + rotation-generator-wizard-run-v1110-guard + rotation-generator-wizard-state-v1111-guard + rotation-generator-month-balance-v1112-guard + rotation-generator-rules-v1113-guard + rotation-generator-rules-v1114-guard + rotation-generator-rules-v1115-guard + rotation-generator-rules-v1116-guard + rotation-generator-rules-v1117-guard + dashboard-percent-empty-cells-v1119-guard + stats-press-machine-split-v1123-guard + rotation-overtime-shift-filter-v1128-guard + rotation-overtime-defaults-2025-v1129-guard + dashboard-css-contract-guard + appearance-reward-contract + rotation-export-summary-simple-guard + rotation-export-glass-guard + appearance-readability-guard + css-layer-order-v194-guard + dashboard-owner-registry-v195-guard + dashboard-overrides-selector-lock-v196-guard + dashboard-scope-v197-guard + dashboard-release-isolation-v198-guard + dashboard-css-guard-series-v1100-complete + release-metadata-v199-guard + brusy-choice-size-v1101-guard + fixed-app-background-v1101-guard + name-choice-fit-v1102-guard + browser-smoke-v1103-guard + dashboard-empty-absence-text-v1104-guard + rotace-empty-absence-text-v1105-guard + appearance-update-persistence-v1105-guard + rotation-generator-v1106-guard + rotation-generator-rules-v1107-guard + no-visual-owner-drift-guard OK');
+console.log('app-usage-smoke-v963 OK + rotation-generator-wizard-v1108-guard + rotation-generator-absence-state-v1109-guard + rotation-generator-wizard-run-v1110-guard + rotation-generator-wizard-state-v1111-guard + rotation-generator-month-balance-v1112-guard + rotation-generator-rules-v1113-guard + rotation-generator-rules-v1114-guard + rotation-generator-rules-v1115-guard + rotation-generator-rules-v1116-guard + rotation-generator-rules-v1117-guard + dashboard-percent-empty-cells-v1119-guard + stats-press-machine-split-v1123-guard + rotation-overtime-shift-filter-v1128-guard + rotation-overtime-defaults-2025-v1129-guard + rotation-absence-export-ytd-generator-theme-v1130-guard + dashboard-css-contract-guard + appearance-reward-contract + rotation-export-summary-simple-guard + rotation-export-glass-guard + appearance-readability-guard + css-layer-order-v194-guard + dashboard-owner-registry-v195-guard + dashboard-overrides-selector-lock-v196-guard + dashboard-scope-v197-guard + dashboard-release-isolation-v198-guard + dashboard-css-guard-series-v1100-complete + release-metadata-v199-guard + brusy-choice-size-v1101-guard + fixed-app-background-v1101-guard + name-choice-fit-v1102-guard + browser-smoke-v1103-guard + dashboard-empty-absence-text-v1104-guard + rotace-empty-absence-text-v1105-guard + appearance-update-persistence-v1105-guard + rotation-generator-v1106-guard + rotation-generator-rules-v1107-guard + no-visual-owner-drift-guard OK');

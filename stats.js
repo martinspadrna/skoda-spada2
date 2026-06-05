@@ -1,4 +1,4 @@
-// RaK 1.2 (1.129) – Statistiky.
+// RaK 1.2 (1.130) – Statistiky.
 function renderMonthGrid() {
   const monthSelect = document.getElementById("monthSelect");
   if (!monthSelect) return;
@@ -410,7 +410,9 @@ function finalizeStatsYearOverview(stats) {
 }
 
 
-function buildStatsForYear(year) {
+function buildStatsForYear(year, options = {}) {
+  const statsScopeMaxMonth = Number(options && options.maxMonth);
+  const useExplicitStatsScope = Number.isFinite(statsScopeMaxMonth) && statsScopeMaxMonth >= 1 && statsScopeMaxMonth <= 12;
   const stats = {
     year,
     people: {},
@@ -466,7 +468,11 @@ function buildStatsForYear(year) {
 
   Object.entries(app.rotation.months || {}).forEach(([monthKey, month]) => {
     const parsedMonth = parseMonthKey(monthKey);
-    if (!shouldIncludeMonthInStats(parsedMonth, year)) return;
+    if (useExplicitStatsScope) {
+      if (!parsedMonth || parsedMonth.year !== year || parsedMonth.month > statsScopeMaxMonth) return;
+    } else if (!shouldIncludeMonthInStats(parsedMonth, year)) {
+      return;
+    }
     includedMonthSet.add(monthKey);
     const monthOverview = getStatsMonthOverview(stats, monthKey);
 
@@ -545,7 +551,11 @@ function buildStatsForYear(year) {
 
   Object.entries(app.rotation.months || {}).forEach(([monthKey, month]) => {
     const parsedMonth = parseMonthKey(monthKey);
-    if (!shouldIncludeMonthInStats(parsedMonth, year)) return;
+    if (useExplicitStatsScope) {
+      if (!parsedMonth || parsedMonth.year !== year || parsedMonth.month > statsScopeMaxMonth) return;
+    } else if (!shouldIncludeMonthInStats(parsedMonth, year)) {
+      return;
+    }
     const monthOverview = getStatsMonthOverview(stats, monthKey);
 
     (month.notes || []).forEach(note => {
@@ -1434,7 +1444,7 @@ function getRakStatsMonthlyThemeChartHealth() {
   const lineStyle = line && window.getComputedStyle ? window.getComputedStyle(line) : null;
   return {
     ok: true,
-    version: window.APP_VERSION || '1.2 (1.129)',
+    version: window.APP_VERSION || '1.2 (1.130)',
     mode: 'stats-monthly-occupancy-theme-chart-v942',
     chartPresent: !!chart,
     containerPresent: !!box,

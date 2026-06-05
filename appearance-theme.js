@@ -1,4 +1,4 @@
-// RaK 1.2 (1.129) – theme, pozadí a profilové UI nastavení.
+// RaK 1.2 (1.130) – theme, pozadí a profilové UI nastavení.
 
 const RAK_THEME_STORAGE_KEY = APP_KEY + ':theme_v1';
 const RAK_THEME_BASE_VARS = {
@@ -355,6 +355,29 @@ const RAK_THEME_DEFS = [
       "--rakThemeAccentSoft": "#FF3B3B"
     },
     "minRank": "RaK nesmrtelný"
+  },
+  {
+    "id": "light-brown",
+    "label": "Světlý hnědý",
+    "subtitle": "Světlý základ s tmavě hnědými okraji",
+    "color": "#6B3F22",
+    "unlockText": "Vždy dostupné",
+    "minPlays": 0,
+    "minAchievements": 0,
+    "vars": {
+      "--bg": "#f8f3eb",
+      "--panel": "rgba(255,252,246,.88)",
+      "--panel2": "rgba(246,235,219,.84)",
+      "--green": "#6B3F22",
+      "--green2": "#8B5E34",
+      "--text": "#25170f",
+      "--muted": "#725f4f",
+      "--soft": "#2f1d12",
+      "--rakThemeGlow": "rgba(107,63,34,.20)",
+      "--rakThemeBorder": "rgba(79,49,30,.34)",
+      "--rakThemeAccentStrong": "#6B3F22",
+      "--rakThemeAccentSoft": "#B08968"
+    }
   }
 ];
 window.RAK_THEME_DEFS = RAK_THEME_DEFS;
@@ -729,10 +752,30 @@ const RAK_BACKGROUND_DEFS = [
       "--green2": "#fef3c7"
     },
     "minRank": "RaK nesmrtelný"
+  },
+  {
+    "id": "light-zigzag",
+    "label": "Světlý cikcak",
+    "subtitle": "Bílé pozadí se světlými úzkými cikcak čárkami",
+    "color": "#6B3F22",
+    "swatch": "linear-gradient(135deg, rgba(107,63,34,.18) 25%, transparent 25%) -8px 0/16px 16px, linear-gradient(225deg, rgba(107,63,34,.14) 25%, transparent 25%) -8px 0/16px 16px, linear-gradient(315deg, rgba(107,63,34,.10) 25%, transparent 25%) 0 0/16px 16px, linear-gradient(45deg, rgba(107,63,34,.10) 25%, #fffdf8 25%) 0 0/16px 16px",
+    "unlockText": "Vždy dostupné",
+    "minPlays": 0,
+    "minAchievements": 0,
+    "vars": {
+      "--rakBgBase": "#f8f3eb",
+      "--rakAppBackground": "linear-gradient(135deg, rgba(107,63,34,.10) 25%, transparent 25%) -12px 0/24px 24px, linear-gradient(225deg, rgba(107,63,34,.08) 25%, transparent 25%) -12px 0/24px 24px, linear-gradient(315deg, rgba(107,63,34,.065) 25%, transparent 25%) 0 0/24px 24px, linear-gradient(45deg, rgba(107,63,34,.065) 25%, transparent 25%) 0 0/24px 24px, linear-gradient(180deg, #fffefa 0%, #f8f3eb 56%, #efe3d2 100%)",
+      "--rakAppBackgroundOverlay": "linear-gradient(90deg, rgba(255,255,255,.70), transparent 24%, rgba(107,63,34,.035) 50%, transparent 76%, rgba(255,255,255,.70)), radial-gradient(circle at 48% 42%, rgba(255,255,255,.48), transparent 46%)",
+      "--rakAppBackgroundLite": "linear-gradient(180deg, #fffefa 0%, #f8f3eb 60%, #efe3d2 100%)",
+      "--rakBgAccent": "rgba(107,63,34,.18)",
+      "--green": "#6B3F22",
+      "--green2": "#8B5E34"
+    }
   }
 ];
 
 const RAK_BACKGROUND_UNLOCKS_V927 = {
+  'light-zigzag': { unlockText: 'Vždy dostupné', minPlays: 0, minAchievements: 0 },
   'ios-mesh': { unlockText: 'Vždy dostupné', minPlays: 0, minAchievements: 0 },
   'skoda-green': { unlockText: '5 her nebo 1 achievement', minPlays: 5, minAchievements: 1 },
   'light-green': { unlockText: '10 her nebo 2 achievementy', minPlays: 10, minAchievements: 2 },
@@ -757,16 +800,18 @@ RAK_BACKGROUND_DEFS.forEach((bg) => {
   if (unlock) Object.assign(bg, unlock);
 });
 
-// RaK 1.2 (1.129) – appearance reward contract guard.
+// RaK 1.2 (1.130) – appearance reward contract guard.
 // Slouží jako jednoduché interní pravidlo pro budoucí theme/pozadí: klidně jich může přibýt víc,
 // ale nesmí to být skoro stejné varianty a výrazné kusy se musí odemykat postupně.
 const RAK_APPEARANCE_REWARD_CONTRACT_V181 = Object.freeze({
-  version: '1.2 (1.129)',
+  version: '1.2 (1.130)',
   intent: 'distinct-progressive-appearance-rewards',
   defaultThemeId: 'default',
   defaultBackgroundId: 'ios-mesh',
+  basicThemeIds: Object.freeze(['default', 'light-brown']),
+  basicBackgroundIds: Object.freeze(['ios-mesh', 'light-zigzag']),
   rules: Object.freeze([
-    'Vždy dostupný zůstává jen základní theme a základní pozadí.',
+    'Vždy dostupné mohou být základní theme a základní světlý theme/pozadí podle pracovního nastavení.',
     'Nové theme/pozadí nesmí být jen lehce přebarvená kopie existujícího skinu.',
     'Každý nový výrazný skin musí mít minPlays, minAchievements nebo minRank.',
     'Před přidáním nového skinu porovnat hlavní color/swatch/akcent s existující rodinou.',
@@ -790,21 +835,21 @@ const RAK_APPEARANCE_REWARD_CONTRACT_V181 = Object.freeze({
   reservedRemovedBackgroundIds: Object.freeze(['nebula-shock', 'emerald-smoke', 'ruby-circuit', 'cobalt-fire', 'solar-flare'])
 });
 
-// RaK 1.2 (1.129) – appearance readability contract guard.
+// RaK 1.2 (1.130) – appearance readability contract guard.
 // Cíl: výrazné theme/pozadí mohou být odemykané rewardy, ale nesmí zhoršit čitelnost Dashboardu,
 // Administrace, Nastavení vzhledu ani herních karet. Je to statická pojistka pro budoucí skiny.
 const RAK_APPEARANCE_READABILITY_CONTRACT_V189 = Object.freeze({
-  version: '1.2 (1.129)',
+  version: '1.2 (1.130)',
   intent: 'dashboard-admin-readable-appearance',
   protectedScreens: Object.freeze(['dashboard', 'admin-connections', 'settings-appearance', 'games-leaderboards']),
   requiredThemeVars: Object.freeze(['--bg', '--panel', '--panel2', '--green', '--green2', '--muted', '--soft', '--rakThemeGlow', '--rakThemeBorder']),
   requiredBackgroundVars: Object.freeze(['--rakBgBase', '--rakAppBackground', '--rakAppBackgroundOverlay', '--rakAppBackgroundLite', '--rakBgAccent']),
   minSoftContrastOnBg: 4.5,
   minMutedContrastOnBg: 3,
-  maxBackgroundBaseLuminance: 0.08,
+  maxBackgroundBaseLuminance: 1,
   glassReadabilityRules: Object.freeze([
     'Každé theme musí mít světlé --soft a dostatečně čitelné --muted proti --bg.',
-    'Každé pozadí musí mít tmavý --rakBgBase, aby glass panely zůstaly čitelné.',
+    'Pozadí může být tmavé nebo světlé, ale glass panely a text musí zůstat čitelné.',
     'Dashboard, Administrace a Nastavení vzhledu nesmí spoléhat jen na barvu akcentu.',
     'Výrazný reward skin může měnit náladu, ale nesmí zhoršit kontrast textu a panelů.'
   ])
@@ -1094,7 +1139,7 @@ function applyProfileUiPreferencesForActiveAccount(options = {}) {
   const defaultTheme = normalizeThemePreferenceId('default', 'default');
   const defaultBg = normalizeBackgroundPreferenceId('ios-mesh', 'ios-mesh');
   let changed = false;
-  // RaK 1.2 (1.129): při aktualizaci nesmí prázdné profilové uiSettings shodit uživatelské pozadí zpět na základ.
+  // RaK 1.2 (1.130): při aktualizaci nesmí prázdné profilové uiSettings shodit uživatelské pozadí zpět na základ.
   // Local fallback použijeme jen pro aktivní účet a jen jako migraci chybějící hodnoty; zamčené skiny se níže dál normalizují na default.
   if (!ui.themeId) { ui.themeId = localTheme || defaultTheme; changed = true; }
   if (!ui.backgroundId) { ui.backgroundId = localBg || defaultBg; changed = true; }
@@ -1503,7 +1548,7 @@ function getRakProfileAppearanceRewardHealth() {
   const themeRewards = themes.filter(item => String(item && item.id || '') !== 'default');
   const backgroundRewards = backgrounds.filter(item => String(item && item.id || '') !== 'ios-mesh');
   return {
-    version: window.APP_VERSION || '1.2 (1.129)',
+    version: window.APP_VERSION || '1.2 (1.130)',
     mode: 'profile-appearance-reward-health-v928',
     activeProfile: metrics.hasProfile,
     profileThemeStorage: 'account.uiSettings.themeId',
@@ -1592,7 +1637,7 @@ function getRakDashboardGlassThemeHealth() {
   const lightweight = /(?:^|\s)(?:lightweightMode|lowEndDevice|ladaMode)(?:\s|$)/.test(bodyClass);
   return {
     ok: true,
-    version: window.APP_VERSION || '1.2 (1.129)',
+    version: window.APP_VERSION || '1.2 (1.130)',
     mode: 'dashboard-ios-glass-viewport-fit-v945',
     theme,
     background,

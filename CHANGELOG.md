@@ -1,3 +1,13 @@
+## RaK 1.2 (1.130)
+
+- Rozpisy / Absence: tabulka absencí v měsíčním rozpisu nově zobrazuje všechny pracovní dny/směny, i když v daný den nikdo nechybí. Prázdné dny mají v kolonkách jméno/důvod pomlčku, aby byl přehled kompletní.
+- Export obrázku rozpisu: tabulka Absence nově také drží všechny pracovní dny/směny včetně dnů bez absence.
+- Export obrázku rozpisu: `Roční přehled` i tabulka `Nýtování a úklid [rok]` jsou omezené podle exportovaného měsíce. Export května počítá leden–květen, export srpna leden–srpen, bez ohledu na aktuální datum exportu.
+- Generátor rozpisu: dorovnání nýtovačky/TNKS01 nově při výběru bere v úvahu nejen měsíční rozložení, ale i celkové roční počty před generovaným měsícem, aby nedával další nýtovačku člověku, který už je v roce výrazně napřed.
+- V Nastavení vzhledu přidaný základní odemčený světlý theme `Světlý hnědý` a základní odemčené pozadí `Světlý cikcak` s bílým podkladem a jemnými úzkými cikcak čárkami.
+- Supabase DB/policies beze změny; ukládání rozpisů a přesčasů dál přes stávající mechanismy.
+- Release metadata sjednocená na `RaK 1.2 (1.130)`, technická verze `1.2.130`, cache `v1.2-1.130`.
+
 ## RaK 1.2 (1.129)
 
 - Administrace / Rozpisy / Přesčasy: doplněný výchozí seznam 12 přesčasů pro rok 2025 podle upřesnění: 12.1., 26.1., 16.2., 2.3., 16.3., 30.3., 5.10., 19.10., 9.11., 23.11., 30.11. a 14.12.2025.
