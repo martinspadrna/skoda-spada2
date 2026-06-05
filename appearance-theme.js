@@ -1,4 +1,4 @@
-// RaK 1.2 (1.130) – theme, pozadí a profilové UI nastavení.
+// RaK 1.2 (1.131) – theme, pozadí a profilové UI nastavení.
 
 const RAK_THEME_STORAGE_KEY = APP_KEY + ':theme_v1';
 const RAK_THEME_BASE_VARS = {
@@ -358,25 +358,25 @@ const RAK_THEME_DEFS = [
   },
   {
     "id": "light-brown",
-    "label": "Světlý hnědý",
-    "subtitle": "Světlý základ s tmavě hnědými okraji",
-    "color": "#6B3F22",
+    "label": "Světlý modrý",
+    "subtitle": "Bílý základ s modrým písmem a okraji",
+    "color": "#2563EB",
     "unlockText": "Vždy dostupné",
     "minPlays": 0,
     "minAchievements": 0,
     "vars": {
-      "--bg": "#f8f3eb",
-      "--panel": "rgba(255,252,246,.88)",
-      "--panel2": "rgba(246,235,219,.84)",
-      "--green": "#6B3F22",
-      "--green2": "#8B5E34",
-      "--text": "#25170f",
-      "--muted": "#725f4f",
-      "--soft": "#2f1d12",
-      "--rakThemeGlow": "rgba(107,63,34,.20)",
-      "--rakThemeBorder": "rgba(79,49,30,.34)",
-      "--rakThemeAccentStrong": "#6B3F22",
-      "--rakThemeAccentSoft": "#B08968"
+      "--bg": "#f7fbff",
+      "--panel": "rgba(255,255,255,.90)",
+      "--panel2": "rgba(232,241,255,.86)",
+      "--green": "#2563EB",
+      "--green2": "#60A5FA",
+      "--text": "#0F2E5F",
+      "--muted": "#486A98",
+      "--soft": "#08275A",
+      "--rakThemeGlow": "rgba(37,99,235,.20)",
+      "--rakThemeBorder": "rgba(37,99,235,.34)",
+      "--rakThemeAccentStrong": "#2563EB",
+      "--rakThemeAccentSoft": "#93C5FD"
     }
   }
 ];
@@ -774,6 +774,257 @@ const RAK_BACKGROUND_DEFS = [
   }
 ];
 
+// RaK 1.2 (1.131) – světlé pracovní patterny pro část existujících pozadí.
+// Záměr: zachovat původní ID kvůli kompatibilitě profilů, ale dát zhruba polovině pozadí
+// jemnější bílý styl podobný „Světlému cikcaku“ s odlišnými linkami, mřížkami a úhlovými vzory.
+const RAK_LIGHT_PATTERN_BACKGROUND_PATCHES_V1131 = Object.freeze({
+  'skoda-green': Object.freeze({
+    label: 'Škoda linky',
+    subtitle: 'Bílé pozadí s jemnými zelenými šikmými linkami',
+    color: '#0E7A52',
+    swatch: 'repeating-linear-gradient(135deg, rgba(14,122,82,.18) 0 2px, transparent 2px 14px), linear-gradient(180deg, #ffffff 0%, #f3fbf7 100%)',
+    vars: Object.freeze({
+      '--rakBgBase': '#f3fbf7',
+      '--rakAppBackground': 'repeating-linear-gradient(135deg, rgba(14,122,82,.075) 0 1px, transparent 1px 18px), repeating-linear-gradient(45deg, rgba(120,250,174,.050) 0 1px, transparent 1px 28px), linear-gradient(180deg, #ffffff 0%, #f3fbf7 58%, #e8f7ef 100%)',
+      '--rakAppBackgroundOverlay': 'linear-gradient(90deg, rgba(255,255,255,.74), transparent 24%, rgba(14,122,82,.035) 50%, transparent 76%, rgba(255,255,255,.74)), radial-gradient(circle at 48% 42%, rgba(255,255,255,.44), transparent 46%)',
+      '--rakAppBackgroundLite': 'linear-gradient(180deg, #ffffff 0%, #f3fbf7 60%, #e8f7ef 100%)',
+      '--rakBgAccent': 'rgba(14,122,82,.18)',
+      '--green': '#0E7A52',
+      '--green2': '#78FAAE'
+    })
+  }),
+  'light-green': Object.freeze({
+    label: 'Mint mřížka',
+    subtitle: 'Světlý mint základ s tenkou technickou mřížkou',
+    color: '#22C55E',
+    swatch: 'linear-gradient(rgba(34,197,94,.16) 1px, transparent 1px) 0 0/14px 14px, linear-gradient(90deg, rgba(34,197,94,.12) 1px, transparent 1px) 0 0/14px 14px, linear-gradient(180deg, #ffffff, #f0fff6)',
+    vars: Object.freeze({
+      '--rakBgBase': '#f0fff6',
+      '--rakAppBackground': 'linear-gradient(rgba(34,197,94,.060) 1px, transparent 1px) 0 0/22px 22px, linear-gradient(90deg, rgba(34,197,94,.050) 1px, transparent 1px) 0 0/22px 22px, linear-gradient(180deg, #ffffff 0%, #f0fff6 58%, #e8f8ee 100%)',
+      '--rakAppBackgroundOverlay': 'linear-gradient(90deg, rgba(255,255,255,.76), transparent 24%, rgba(34,197,94,.030) 50%, transparent 76%, rgba(255,255,255,.76))',
+      '--rakAppBackgroundLite': 'linear-gradient(180deg, #ffffff 0%, #f0fff6 64%, #e8f8ee 100%)',
+      '--rakBgAccent': 'rgba(34,197,94,.16)',
+      '--green': '#22C55E',
+      '--green2': '#86EFAC'
+    })
+  }),
+  'deep-aurora': Object.freeze({
+    label: 'Modrý blueprint',
+    subtitle: 'Bílý podklad s jemnými modrými technickými linkami',
+    color: '#2563EB',
+    swatch: 'linear-gradient(90deg, rgba(37,99,235,.16) 1px, transparent 1px) 0 0/16px 16px, linear-gradient(rgba(37,99,235,.10) 1px, transparent 1px) 0 0/16px 16px, linear-gradient(180deg, #ffffff, #eef6ff)',
+    vars: Object.freeze({
+      '--rakBgBase': '#eef6ff',
+      '--rakAppBackground': 'linear-gradient(90deg, rgba(37,99,235,.060) 1px, transparent 1px) 0 0/24px 24px, linear-gradient(rgba(37,99,235,.045) 1px, transparent 1px) 0 0/24px 24px, radial-gradient(circle at 80% 16%, rgba(96,165,250,.18), transparent 30%), linear-gradient(180deg, #ffffff 0%, #eef6ff 62%, #e4f0ff 100%)',
+      '--rakAppBackgroundOverlay': 'linear-gradient(90deg, rgba(255,255,255,.75), transparent 24%, rgba(37,99,235,.032) 50%, transparent 76%, rgba(255,255,255,.75))',
+      '--rakAppBackgroundLite': 'linear-gradient(180deg, #ffffff 0%, #eef6ff 62%, #e4f0ff 100%)',
+      '--rakBgAccent': 'rgba(37,99,235,.18)',
+      '--green': '#2563EB',
+      '--green2': '#93C5FD'
+    })
+  }),
+  'ember': Object.freeze({
+    label: 'Pískové šipky',
+    subtitle: 'Teplé světlé pozadí s úzkými zalomenými linkami',
+    color: '#B45309',
+    swatch: 'linear-gradient(135deg, rgba(180,83,9,.16) 25%, transparent 25%) -8px 0/16px 16px, linear-gradient(225deg, rgba(180,83,9,.12) 25%, transparent 25%) -8px 0/16px 16px, linear-gradient(180deg, #fffaf2, #f8eddf)',
+    vars: Object.freeze({
+      '--rakBgBase': '#fff7ed',
+      '--rakAppBackground': 'linear-gradient(135deg, rgba(180,83,9,.070) 25%, transparent 25%) -12px 0/24px 24px, linear-gradient(225deg, rgba(180,83,9,.055) 25%, transparent 25%) -12px 0/24px 24px, linear-gradient(180deg, #fffdf8 0%, #fff7ed 58%, #f4e6d6 100%)',
+      '--rakAppBackgroundOverlay': 'linear-gradient(90deg, rgba(255,255,255,.72), transparent 24%, rgba(180,83,9,.032) 50%, transparent 76%, rgba(255,255,255,.72))',
+      '--rakAppBackgroundLite': 'linear-gradient(180deg, #fffdf8 0%, #fff7ed 62%, #f4e6d6 100%)',
+      '--rakBgAccent': 'rgba(180,83,9,.18)',
+      '--green': '#B45309',
+      '--green2': '#FDBA74'
+    })
+  }),
+  'neon-lagoon': Object.freeze({
+    label: 'Lagoon vlnky',
+    subtitle: 'Světlý tyrkysový podklad s jemnými vlnkami',
+    color: '#0891B2',
+    swatch: 'radial-gradient(ellipse at 50% 0%, transparent 55%, rgba(8,145,178,.16) 56% 58%, transparent 59%) 0 0/28px 16px, linear-gradient(180deg, #ffffff, #ecfeff)',
+    vars: Object.freeze({
+      '--rakBgBase': '#ecfeff',
+      '--rakAppBackground': 'radial-gradient(ellipse at 50% 0%, transparent 55%, rgba(8,145,178,.060) 56% 58%, transparent 59%) 0 0/34px 20px, radial-gradient(circle at 18% 16%, rgba(34,211,238,.16), transparent 30%), linear-gradient(180deg, #ffffff 0%, #ecfeff 58%, #dff8fb 100%)',
+      '--rakAppBackgroundOverlay': 'linear-gradient(90deg, rgba(255,255,255,.75), transparent 24%, rgba(8,145,178,.030) 50%, transparent 76%, rgba(255,255,255,.75))',
+      '--rakAppBackgroundLite': 'linear-gradient(180deg, #ffffff 0%, #ecfeff 60%, #dff8fb 100%)',
+      '--rakBgAccent': 'rgba(8,145,178,.18)',
+      '--green': '#0891B2',
+      '--green2': '#67E8F9'
+    })
+  }),
+  'electric-lime': Object.freeze({
+    label: 'Limetkové řezy',
+    subtitle: 'Bílý základ s ostrými limetkovými řezy',
+    color: '#65A30D',
+    swatch: 'repeating-linear-gradient(60deg, rgba(101,163,13,.18) 0 2px, transparent 2px 15px), linear-gradient(180deg, #ffffff, #f7fee7)',
+    vars: Object.freeze({
+      '--rakBgBase': '#f7fee7',
+      '--rakAppBackground': 'repeating-linear-gradient(60deg, rgba(101,163,13,.070) 0 1px, transparent 1px 20px), repeating-linear-gradient(120deg, rgba(190,242,100,.050) 0 1px, transparent 1px 34px), linear-gradient(180deg, #ffffff 0%, #f7fee7 58%, #eff8d6 100%)',
+      '--rakAppBackgroundOverlay': 'linear-gradient(90deg, rgba(255,255,255,.74), transparent 24%, rgba(101,163,13,.030) 50%, transparent 76%, rgba(255,255,255,.74))',
+      '--rakAppBackgroundLite': 'linear-gradient(180deg, #ffffff 0%, #f7fee7 62%, #eff8d6 100%)',
+      '--rakBgAccent': 'rgba(101,163,13,.18)',
+      '--green': '#65A30D',
+      '--green2': '#BEF264'
+    })
+  }),
+  'skoda-electric': Object.freeze({
+    label: 'Zelený okruh',
+    subtitle: 'Světlé pozadí s propojenými úhlovými linkami',
+    color: '#047857',
+    swatch: 'linear-gradient(45deg, transparent 44%, rgba(4,120,87,.16) 45% 55%, transparent 56%) 0 0/22px 22px, linear-gradient(-45deg, transparent 44%, rgba(4,120,87,.12) 45% 55%, transparent 56%) 0 0/22px 22px, linear-gradient(180deg, #ffffff, #effdf5)',
+    vars: Object.freeze({
+      '--rakBgBase': '#effdf5',
+      '--rakAppBackground': 'linear-gradient(45deg, transparent 44%, rgba(4,120,87,.058) 45% 55%, transparent 56%) 0 0/30px 30px, linear-gradient(-45deg, transparent 44%, rgba(4,120,87,.046) 45% 55%, transparent 56%) 0 0/30px 30px, linear-gradient(180deg, #ffffff 0%, #effdf5 58%, #e3f8ed 100%)',
+      '--rakAppBackgroundOverlay': 'linear-gradient(90deg, rgba(255,255,255,.75), transparent 24%, rgba(4,120,87,.030) 50%, transparent 76%, rgba(255,255,255,.75))',
+      '--rakAppBackgroundLite': 'linear-gradient(180deg, #ffffff 0%, #effdf5 62%, #e3f8ed 100%)',
+      '--rakBgAccent': 'rgba(4,120,87,.18)',
+      '--green': '#047857',
+      '--green2': '#6EE7B7'
+    })
+  }),
+  'candy-glass': Object.freeze({
+    label: 'Růžové střípky',
+    subtitle: 'Bílý podklad s jemnými růžovými zalomenými čárkami',
+    color: '#DB2777',
+    swatch: 'repeating-linear-gradient(150deg, rgba(219,39,119,.16) 0 2px, transparent 2px 13px), repeating-linear-gradient(30deg, rgba(168,85,247,.10) 0 1px, transparent 1px 21px), linear-gradient(180deg, #ffffff, #fff1f7)',
+    vars: Object.freeze({
+      '--rakBgBase': '#fff1f7',
+      '--rakAppBackground': 'repeating-linear-gradient(150deg, rgba(219,39,119,.060) 0 1px, transparent 1px 20px), repeating-linear-gradient(30deg, rgba(168,85,247,.040) 0 1px, transparent 1px 32px), linear-gradient(180deg, #ffffff 0%, #fff1f7 58%, #f8e8ff 100%)',
+      '--rakAppBackgroundOverlay': 'linear-gradient(90deg, rgba(255,255,255,.74), transparent 24%, rgba(219,39,119,.030) 50%, transparent 76%, rgba(255,255,255,.74))',
+      '--rakAppBackgroundLite': 'linear-gradient(180deg, #ffffff 0%, #fff1f7 62%, #f8e8ff 100%)',
+      '--rakBgAccent': 'rgba(219,39,119,.18)',
+      '--green': '#DB2777',
+      '--green2': '#F9A8D4'
+    })
+  }),
+  'aurora-punch': Object.freeze({
+    label: 'Fialové zlomy',
+    subtitle: 'Světlé pozadí s nepravidelnými fialovými úhly',
+    color: '#7C3AED',
+    swatch: 'linear-gradient(120deg, transparent 0 42%, rgba(124,58,237,.15) 43% 45%, transparent 46% 100%) 0 0/24px 18px, linear-gradient(180deg, #ffffff, #f6f0ff)',
+    vars: Object.freeze({
+      '--rakBgBase': '#f6f0ff',
+      '--rakAppBackground': 'linear-gradient(120deg, transparent 0 42%, rgba(124,58,237,.060) 43% 45%, transparent 46% 100%) 0 0/32px 24px, linear-gradient(30deg, transparent 0 52%, rgba(14,165,233,.035) 53% 55%, transparent 56% 100%) 0 0/42px 28px, linear-gradient(180deg, #ffffff 0%, #f6f0ff 58%, #ece4ff 100%)',
+      '--rakAppBackgroundOverlay': 'linear-gradient(90deg, rgba(255,255,255,.75), transparent 24%, rgba(124,58,237,.030) 50%, transparent 76%, rgba(255,255,255,.75))',
+      '--rakAppBackgroundLite': 'linear-gradient(180deg, #ffffff 0%, #f6f0ff 62%, #ece4ff 100%)',
+      '--rakBgAccent': 'rgba(124,58,237,.18)',
+      '--green': '#7C3AED',
+      '--green2': '#C4B5FD'
+    })
+  }),
+  'violet-storm': Object.freeze({
+    label: 'Levandulový cikcak',
+    subtitle: 'Bílé pozadí s levandulovým cikcak vzorem',
+    color: '#8B5CF6',
+    swatch: 'linear-gradient(135deg, rgba(139,92,246,.18) 25%, transparent 25%) -8px 0/16px 16px, linear-gradient(225deg, rgba(139,92,246,.12) 25%, transparent 25%) -8px 0/16px 16px, linear-gradient(180deg, #ffffff, #f7f2ff)',
+    vars: Object.freeze({
+      '--rakBgBase': '#f7f2ff',
+      '--rakAppBackground': 'linear-gradient(135deg, rgba(139,92,246,.070) 25%, transparent 25%) -12px 0/24px 24px, linear-gradient(225deg, rgba(139,92,246,.055) 25%, transparent 25%) -12px 0/24px 24px, linear-gradient(315deg, rgba(56,189,248,.035) 25%, transparent 25%) 0 0/24px 24px, linear-gradient(180deg, #ffffff 0%, #f7f2ff 58%, #eee7ff 100%)',
+      '--rakAppBackgroundOverlay': 'linear-gradient(90deg, rgba(255,255,255,.74), transparent 24%, rgba(139,92,246,.030) 50%, transparent 76%, rgba(255,255,255,.74))',
+      '--rakAppBackgroundLite': 'linear-gradient(180deg, #ffffff 0%, #f7f2ff 62%, #eee7ff 100%)',
+      '--rakBgAccent': 'rgba(139,92,246,.18)',
+      '--green': '#8B5CF6',
+      '--green2': '#C4B5FD'
+    })
+  }),
+  'sunset-plasma': Object.freeze({
+    label: 'Meruňkové linky',
+    subtitle: 'Světlý teplý základ s tenkými oranžovými tahy',
+    color: '#EA580C',
+    swatch: 'repeating-linear-gradient(100deg, rgba(234,88,12,.16) 0 2px, transparent 2px 17px), linear-gradient(180deg, #ffffff, #fff3e8)',
+    vars: Object.freeze({
+      '--rakBgBase': '#fff3e8',
+      '--rakAppBackground': 'repeating-linear-gradient(100deg, rgba(234,88,12,.062) 0 1px, transparent 1px 22px), repeating-linear-gradient(160deg, rgba(251,146,60,.040) 0 1px, transparent 1px 36px), linear-gradient(180deg, #ffffff 0%, #fff3e8 58%, #fbe3cf 100%)',
+      '--rakAppBackgroundOverlay': 'linear-gradient(90deg, rgba(255,255,255,.74), transparent 24%, rgba(234,88,12,.030) 50%, transparent 76%, rgba(255,255,255,.74))',
+      '--rakAppBackgroundLite': 'linear-gradient(180deg, #ffffff 0%, #fff3e8 62%, #fbe3cf 100%)',
+      '--rakBgAccent': 'rgba(234,88,12,.18)',
+      '--green': '#EA580C',
+      '--green2': '#FDBA74'
+    })
+  }),
+  'polar-mint': Object.freeze({
+    label: 'Ledové čáry',
+    subtitle: 'Čistý bílý vzhled s ledově modrými úzkými linkami',
+    color: '#0EA5E9',
+    swatch: 'repeating-linear-gradient(0deg, rgba(14,165,233,.13) 0 1px, transparent 1px 9px), repeating-linear-gradient(90deg, rgba(45,212,191,.08) 0 1px, transparent 1px 18px), linear-gradient(180deg, #ffffff, #effcff)',
+    vars: Object.freeze({
+      '--rakBgBase': '#effcff',
+      '--rakAppBackground': 'repeating-linear-gradient(0deg, rgba(14,165,233,.050) 0 1px, transparent 1px 14px), repeating-linear-gradient(90deg, rgba(45,212,191,.035) 0 1px, transparent 1px 28px), linear-gradient(180deg, #ffffff 0%, #effcff 58%, #e4f8ff 100%)',
+      '--rakAppBackgroundOverlay': 'linear-gradient(90deg, rgba(255,255,255,.76), transparent 24%, rgba(14,165,233,.030) 50%, transparent 76%, rgba(255,255,255,.76))',
+      '--rakAppBackgroundLite': 'linear-gradient(180deg, #ffffff 0%, #effcff 62%, #e4f8ff 100%)',
+      '--rakBgAccent': 'rgba(14,165,233,.18)',
+      '--green': '#0EA5E9',
+      '--green2': '#BAE6FD'
+    })
+  }),
+  'blue-orbit': Object.freeze({
+    label: 'Modré orbity',
+    subtitle: 'Světlý podklad s jemnými kruhovými linkami',
+    color: '#1D4ED8',
+    swatch: 'radial-gradient(circle at 50% 50%, transparent 0 54%, rgba(29,78,216,.16) 55% 57%, transparent 58%) 0 0/28px 28px, linear-gradient(180deg, #ffffff, #edf4ff)',
+    vars: Object.freeze({
+      '--rakBgBase': '#edf4ff',
+      '--rakAppBackground': 'radial-gradient(circle at 50% 50%, transparent 0 54%, rgba(29,78,216,.055) 55% 57%, transparent 58%) 0 0/38px 38px, radial-gradient(circle at 82% 16%, rgba(96,165,250,.16), transparent 28%), linear-gradient(180deg, #ffffff 0%, #edf4ff 58%, #e2edff 100%)',
+      '--rakAppBackgroundOverlay': 'linear-gradient(90deg, rgba(255,255,255,.75), transparent 24%, rgba(29,78,216,.030) 50%, transparent 76%, rgba(255,255,255,.75))',
+      '--rakAppBackgroundLite': 'linear-gradient(180deg, #ffffff 0%, #edf4ff 62%, #e2edff 100%)',
+      '--rakBgAccent': 'rgba(29,78,216,.18)',
+      '--green': '#1D4ED8',
+      '--green2': '#93C5FD'
+    })
+  })
+});
+
+function applyLightPatternBackgroundsV1131() {
+  RAK_BACKGROUND_DEFS.forEach((bg) => {
+    const patch = RAK_LIGHT_PATTERN_BACKGROUND_PATCHES_V1131[String(bg && bg.id || '')];
+    if (!patch) return;
+    Object.assign(bg, patch, { vars: Object.assign({}, bg.vars || {}, patch.vars || {}) });
+  });
+}
+applyLightPatternBackgroundsV1131();
+
+
+// RaK 1.2 (1.131) – výkonová vrstva nad světlými patterny.
+// Swatche i reálná pozadí držíme záměrně lehká: jedna jemná linková vrstva + světlý podklad.
+// Vzory zůstávají rozdílné úhlem, rozestupem a akcentem, ale nemají drahé vícenásobné radiální vrstvy.
+const RAK_LIGHT_PATTERN_FAST_VARIANTS_V1131 = Object.freeze({
+  'skoda-green': Object.freeze({ angle: '135deg', gap: 24, base: '#f3fbf7', low: 'rgba(14,122,82,.060)', high: 'rgba(14,122,82,.16)', green: '#0E7A52', green2: '#78FAAE' }),
+  'light-green': Object.freeze({ angle: '90deg', gap: 22, base: '#f0fff6', low: 'rgba(34,197,94,.055)', high: 'rgba(34,197,94,.15)', green: '#22C55E', green2: '#86EFAC' }),
+  'deep-aurora': Object.freeze({ angle: '0deg', gap: 20, base: '#eef6ff', low: 'rgba(37,99,235,.055)', high: 'rgba(37,99,235,.16)', green: '#2563EB', green2: '#93C5FD' }),
+  'ember': Object.freeze({ angle: '45deg', gap: 26, base: '#fff7ed', low: 'rgba(180,83,9,.055)', high: 'rgba(180,83,9,.16)', green: '#B45309', green2: '#FDBA74' }),
+  'neon-lagoon': Object.freeze({ angle: '120deg', gap: 26, base: '#ecfeff', low: 'rgba(8,145,178,.055)', high: 'rgba(8,145,178,.16)', green: '#0891B2', green2: '#67E8F9' }),
+  'electric-lime': Object.freeze({ angle: '60deg', gap: 24, base: '#f7fee7', low: 'rgba(101,163,13,.055)', high: 'rgba(101,163,13,.16)', green: '#65A30D', green2: '#BEF264' }),
+  'skoda-electric': Object.freeze({ angle: '-45deg', gap: 28, base: '#effdf5', low: 'rgba(4,120,87,.052)', high: 'rgba(4,120,87,.15)', green: '#047857', green2: '#6EE7B7' }),
+  'candy-glass': Object.freeze({ angle: '150deg', gap: 24, base: '#fff1f7', low: 'rgba(219,39,119,.052)', high: 'rgba(219,39,119,.15)', green: '#DB2777', green2: '#F9A8D4' }),
+  'aurora-punch': Object.freeze({ angle: '30deg', gap: 30, base: '#f6f0ff', low: 'rgba(124,58,237,.052)', high: 'rgba(124,58,237,.15)', green: '#7C3AED', green2: '#C4B5FD' }),
+  'violet-storm': Object.freeze({ angle: '135deg', gap: 18, base: '#f7f2ff', low: 'rgba(139,92,246,.052)', high: 'rgba(139,92,246,.15)', green: '#8B5CF6', green2: '#C4B5FD' }),
+  'sunset-plasma': Object.freeze({ angle: '100deg', gap: 28, base: '#fff3e8', low: 'rgba(234,88,12,.052)', high: 'rgba(234,88,12,.15)', green: '#EA580C', green2: '#FDBA74' }),
+  'polar-mint': Object.freeze({ angle: '0deg', gap: 14, base: '#effcff', low: 'rgba(14,165,233,.045)', high: 'rgba(14,165,233,.13)', green: '#0EA5E9', green2: '#BAE6FD' }),
+  'blue-orbit': Object.freeze({ angle: '90deg', gap: 30, base: '#edf4ff', low: 'rgba(29,78,216,.050)', high: 'rgba(29,78,216,.15)', green: '#1D4ED8', green2: '#93C5FD' })
+});
+
+function applyLightPatternFastVariantsV1131() {
+  RAK_BACKGROUND_DEFS.forEach((bg) => {
+    const v = RAK_LIGHT_PATTERN_FAST_VARIANTS_V1131[String(bg && bg.id || '')];
+    if (!v) return;
+    const swatch = 'repeating-linear-gradient(' + v.angle + ', ' + v.high + ' 0 1px, transparent 1px ' + Math.max(12, Math.round(v.gap * 0.70)) + 'px), linear-gradient(180deg, #ffffff 0%, ' + v.base + ' 100%)';
+    const appBackground = 'repeating-linear-gradient(' + v.angle + ', ' + v.low + ' 0 1px, transparent 1px ' + v.gap + 'px), linear-gradient(180deg, #ffffff 0%, ' + v.base + ' 62%, #eaf2ff 100%)';
+    bg.swatch = swatch;
+    bg.vars = Object.assign({}, bg.vars || {}, {
+      '--rakBgBase': v.base,
+      '--rakAppBackground': appBackground,
+      '--rakAppBackgroundOverlay': 'linear-gradient(90deg, rgba(255,255,255,.76), transparent 24%, rgba(37,99,235,.026) 50%, transparent 76%, rgba(255,255,255,.76))',
+      '--rakAppBackgroundLite': 'linear-gradient(180deg, #ffffff 0%, ' + v.base + ' 64%, #eaf2ff 100%)',
+      '--rakBgAccent': v.high,
+      '--green': v.green,
+      '--green2': v.green2
+    });
+  });
+}
+applyLightPatternFastVariantsV1131();
+
+
 const RAK_BACKGROUND_UNLOCKS_V927 = {
   'light-zigzag': { unlockText: 'Vždy dostupné', minPlays: 0, minAchievements: 0 },
   'ios-mesh': { unlockText: 'Vždy dostupné', minPlays: 0, minAchievements: 0 },
@@ -800,11 +1051,11 @@ RAK_BACKGROUND_DEFS.forEach((bg) => {
   if (unlock) Object.assign(bg, unlock);
 });
 
-// RaK 1.2 (1.130) – appearance reward contract guard.
+// RaK 1.2 (1.131) – appearance reward contract guard.
 // Slouží jako jednoduché interní pravidlo pro budoucí theme/pozadí: klidně jich může přibýt víc,
 // ale nesmí to být skoro stejné varianty a výrazné kusy se musí odemykat postupně.
 const RAK_APPEARANCE_REWARD_CONTRACT_V181 = Object.freeze({
-  version: '1.2 (1.130)',
+  version: '1.2 (1.131)',
   intent: 'distinct-progressive-appearance-rewards',
   defaultThemeId: 'default',
   defaultBackgroundId: 'ios-mesh',
@@ -835,11 +1086,11 @@ const RAK_APPEARANCE_REWARD_CONTRACT_V181 = Object.freeze({
   reservedRemovedBackgroundIds: Object.freeze(['nebula-shock', 'emerald-smoke', 'ruby-circuit', 'cobalt-fire', 'solar-flare'])
 });
 
-// RaK 1.2 (1.130) – appearance readability contract guard.
+// RaK 1.2 (1.131) – appearance readability contract guard.
 // Cíl: výrazné theme/pozadí mohou být odemykané rewardy, ale nesmí zhoršit čitelnost Dashboardu,
 // Administrace, Nastavení vzhledu ani herních karet. Je to statická pojistka pro budoucí skiny.
 const RAK_APPEARANCE_READABILITY_CONTRACT_V189 = Object.freeze({
-  version: '1.2 (1.130)',
+  version: '1.2 (1.131)',
   intent: 'dashboard-admin-readable-appearance',
   protectedScreens: Object.freeze(['dashboard', 'admin-connections', 'settings-appearance', 'games-leaderboards']),
   requiredThemeVars: Object.freeze(['--bg', '--panel', '--panel2', '--green', '--green2', '--muted', '--soft', '--rakThemeGlow', '--rakThemeBorder']),
@@ -1139,7 +1390,7 @@ function applyProfileUiPreferencesForActiveAccount(options = {}) {
   const defaultTheme = normalizeThemePreferenceId('default', 'default');
   const defaultBg = normalizeBackgroundPreferenceId('ios-mesh', 'ios-mesh');
   let changed = false;
-  // RaK 1.2 (1.130): při aktualizaci nesmí prázdné profilové uiSettings shodit uživatelské pozadí zpět na základ.
+  // RaK 1.2 (1.131): při aktualizaci nesmí prázdné profilové uiSettings shodit uživatelské pozadí zpět na základ.
   // Local fallback použijeme jen pro aktivní účet a jen jako migraci chybějící hodnoty; zamčené skiny se níže dál normalizují na default.
   if (!ui.themeId) { ui.themeId = localTheme || defaultTheme; changed = true; }
   if (!ui.backgroundId) { ui.backgroundId = localBg || defaultBg; changed = true; }
@@ -1548,7 +1799,7 @@ function getRakProfileAppearanceRewardHealth() {
   const themeRewards = themes.filter(item => String(item && item.id || '') !== 'default');
   const backgroundRewards = backgrounds.filter(item => String(item && item.id || '') !== 'ios-mesh');
   return {
-    version: window.APP_VERSION || '1.2 (1.130)',
+    version: window.APP_VERSION || '1.2 (1.131)',
     mode: 'profile-appearance-reward-health-v928',
     activeProfile: metrics.hasProfile,
     profileThemeStorage: 'account.uiSettings.themeId',
@@ -1637,7 +1888,7 @@ function getRakDashboardGlassThemeHealth() {
   const lightweight = /(?:^|\s)(?:lightweightMode|lowEndDevice|ladaMode)(?:\s|$)/.test(bodyClass);
   return {
     ok: true,
-    version: window.APP_VERSION || '1.2 (1.130)',
+    version: window.APP_VERSION || '1.2 (1.131)',
     mode: 'dashboard-ios-glass-viewport-fit-v945',
     theme,
     background,

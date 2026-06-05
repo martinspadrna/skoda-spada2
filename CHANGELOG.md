@@ -1,3 +1,11 @@
+## RaK 1.2 (1.131)
+
+- Nastavení vzhledu: theme s původním ID `light-brown` je předělaný na `Světlý modrý` – bílý základ, modré písmo, modré okraje/akcenty a jemnější světlý panelový vzhled. ID zůstalo kvůli kompatibilitě uložených profilů.
+- Nastavení vzhledu: zhruba polovina existujících pozadí je převedená do jemnějšího světlého pattern stylu podobného `Světlému cikcaku`, ale každé má jiný vzor: šikmé linky, mřížku, blueprint, vlnky, úhlové linky, orbitální kruhy, levandulový cikcak nebo teplé pískové/meruňkové čáry.
+- Původní tmavší/premium pozadí nejsou smazaná všechna; část zůstává tmavá, aby byl pořád výběr mezi světlým pracovním stylem a výraznými odměnovými skiny.
+- Supabase DB/policies beze změny.
+- Release metadata sjednocená na `RaK 1.2 (1.131)`, technická verze `1.2.131`, cache `v1.2-1.131`.
+
 ## RaK 1.2 (1.130)
 
 - Rozpisy / Absence: tabulka absencí v měsíčním rozpisu nově zobrazuje všechny pracovní dny/směny, i když v daný den nikdo nechybí. Prázdné dny mají v kolonkách jméno/důvod pomlčku, aby byl přehled kompletní.

@@ -1,4 +1,4 @@
-// RaK 1.2 (1.130) – Statistiky.
+// RaK 1.2 (1.131) – Statistiky.
 function renderMonthGrid() {
   const monthSelect = document.getElementById("monthSelect");
   if (!monthSelect) return;
@@ -1444,7 +1444,7 @@ function getRakStatsMonthlyThemeChartHealth() {
   const lineStyle = line && window.getComputedStyle ? window.getComputedStyle(line) : null;
   return {
     ok: true,
-    version: window.APP_VERSION || '1.2 (1.130)',
+    version: window.APP_VERSION || '1.2 (1.131)',
     mode: 'stats-monthly-occupancy-theme-chart-v942',
     chartPresent: !!chart,
     containerPresent: !!box,

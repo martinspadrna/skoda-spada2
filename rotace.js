@@ -1,4 +1,4 @@
-// RaK 1.2 (1.130) – Rotace render a volba jmen.
+// RaK 1.2 (1.131) – Rotace render a volba jmen.
 function renderRotace() {
   const namesGrid = document.getElementById('namesGrid');
   const personView = document.getElementById('personView');
