@@ -1,11 +1,20 @@
-## RaK 1.2 (1.133)
+## RaK 1.2 (1.135)
 
-- Generátor rozpisu / TNKS01: roční počty už nemají přebíjet měsíční vyrovnání. Základ je znovu měsíční rovnováha; roční nýtovačka/TNKS01 se použije jen jako jemný tie-break při stavu typu 0,5 vs 1,5 nebo když je měsíc jinak vyrovnaný a jen 1–2 lidé mají o 0,5 navíc.
-- Roční dorovnání TNKS01 smí v měsíci udělat jen omezený jemný přesun, aby člověk s nízkým ročním počtem nezačal dostávat TNKS01 moc často jen kvůli roku.
-- Nastavení vzhledu: nová patternová pozadí jsou méně bílá, jemně víc zabarvená a čáry/vzory jsou výrazně širší a kontrastnější. Některé vzory mají i křivky/orbitální linky, ne jen rovné čáry.
-- AMOLED theme `AMOLED modrý` je přejmenovaný na `AMOLED černý` a drží čistě černý základ s modrým akcentem.
+- Generátor rozpisu / Synek, Třasák, Střížek: tahle trojice už nevstupuje do měsíčního ani ročního dorovnání TNKS01. Drží vlastní návazný cyklus `TNKS01 → TPKW01 → TPKW02`.
+- Generátor rozpisu: cyklus Synka/Třasáka/Střížka se nově dopočítává z předchozích měsíců, takže navazuje mezi měsíci stejně jako ostatní rotace.
+- Generátor rozpisu: po dokončení bloku může vložit pracovní den mezery na Měkotě, když by návaznost udělala v měsíci přílišný náskok.
+- Podmínka `stejný pracovník nesmí být na TNKS01 dvě pracovní směny po sobě` zůstává aktivní.
 - Supabase DB/policies beze změny.
-- Release metadata sjednocená na `RaK 1.2 (1.133)`, technická verze `1.2.133`, cache `v1.2-1.133`.
+- Release metadata sjednocená na `RaK 1.2 (1.135)`, technická verze `1.2.135`, cache `v1.2-1.135`.
+
+## RaK 1.2 (1.134)
+
+- Generátor rozpisu / TNKS01: Synek, Střížek a Třasák jsou vyřazení z ročního tie-break dorovnání TNKS01; měsíční vyrovnání pro ně v této verzi ještě zůstalo.
+- Přidaná podmínka, že stejný pracovník nesmí být na TNKS01 dvě pracovní směny po sobě.
+- Administrace / Rozpisy: odstraněné duplicitní tlačítko `Uložit rozpis` v editoru; zůstalo jedno hlavní tlačítko nahoře.
+- Vzhled: odstraněný theme `AMOLED černý` / `amoled-midnight`.
+- Supabase DB/policies beze změny.
+- Release metadata sjednocená na `RaK 1.2 (1.134)`, technická verze `1.2.134`, cache `v1.2-1.134`.
 
 ## RaK 1.2 (1.132)
 

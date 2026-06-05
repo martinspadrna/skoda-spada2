@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.133) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.135) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -216,12 +216,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.133)',
-  appLabel: 'RaK 1.2 (1.133)',
-  packageVersion: '1.2.133',
-  cacheVersion: 'v1.2-1.133',
+  displayVersion: '1.2 (1.135)',
+  appLabel: 'RaK 1.2 (1.135)',
+  packageVersion: '1.2.135',
+  cacheVersion: 'v1.2-1.135',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.133)',
+  changelogHeader: '## RaK 1.2 (1.135)',
   previousBuildFragments: Object.freeze(['1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -330,8 +330,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.133)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.133'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.135)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.135'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -726,8 +726,8 @@ const backgroundIds = new Set(backgroundDefs.map((item) => String(item && item.i
   assertIncludes(appearanceThemeJs, `'${id}': { unlockText: 'Rank`, `Pozadí ${id} musí mít rank/achievement unlock v mapě`);
 });
 const freeThemes = themeDefs.filter((item) => String(item && item.unlockText || '') === 'Vždy dostupné').map((item) => String(item.id || ''));
-assert(freeThemes.includes('default') && freeThemes.includes('light-brown') && freeThemes.includes('amoled-midnight') && freeThemes.length === 3, `Vždy dostupné mají být základní theme default + light-brown + amoled-midnight, nalezeno: ${freeThemes.join(', ')}`);
-assert(themeDefs.length <= 20, 'Theme seznam je po 1.80 zbytečně podobný/nafouknutý');
+assert(freeThemes.includes('default') && freeThemes.includes('light-brown') && freeThemes.length === 2, `Vždy dostupné mají být základní theme default + light-brown, nalezeno: ${freeThemes.join(', ')}`);
+assert(themeDefs.length <= 19, 'Theme seznam je po 1.80 zbytečně podobný/nafouknutý');
 assert(backgroundDefs.length <= 25, 'Pozadí seznam je po 1.80 zbytečně podobný/nafouknutý');
 
 // 1.81: appearance reward contract – budoucí theme/pozadí mohou přibývat, ale ne jako skoro stejné kopie bez postupného odemykání.
@@ -890,7 +890,7 @@ function assertRotationGeneratorRulesContractV1107() {
   assertIncludes(ui, 'if (softTargetCount === 3 && lathePeopleCount === 2 && mskc01Idx >= 0)', 'Při dvou absencích musí zůstat MSKC01 neobsazená');
   assertIncludes(ui, 'readAdminRotationFromDom(monthKey)', 'Generátor musí před výpočtem číst rozepsané absence z DOMu');
   assertIncludes(ui, 'adminRotationGeneratorIsDayBlocked', 'Generátor musí umět vynechat den označený jako svátek/odstávka');
-  assertIncludes(ui, "ruleVersion: '1.133'", 'Výsledek generátoru musí vracet aktuální verzi pravidel 1.133');
+  assertIncludes(ui, "ruleVersion: '1.135'", 'Výsledek generátoru musí vracet aktuální verzi pravidel 1.135');
 
 }
 
@@ -976,7 +976,7 @@ function assertRotationGeneratorRulesContractV1114() {
   assertIncludes(ui, 'function adminRotationGeneratorCountSoloMill', 'Generátor musí umět spočítat samostatné MFKF10 s prázdnou MFKF06');
   assertIncludes(ui, "const soloMillBalance = adminRotationGeneratorBalanceSoloMill(month, model);", 'Po sestavení měsíce musí běžet vyrovnání samostatných frézek');
   assertIncludes(ui, 'soloMillBalanceSwaps', 'Výsledek generátoru musí vracet počet prohozů samostatných frézek');
-  assertIncludes(ui, "ruleVersion: '1.133'", 'Výsledek generátoru musí vracet aktuální verzi pravidel 1.133');
+  assertIncludes(ui, "ruleVersion: '1.135'", 'Výsledek generátoru musí vracet aktuální verzi pravidel 1.135');
 }
 
 
@@ -1112,6 +1112,7 @@ function assertLightPatternThemeContractV1131() {
     'skoda-electric', 'candy-glass', 'aurora-punch', 'violet-storm', 'sunset-plasma', 'polar-mint', 'blue-orbit'
   ];
   assertIncludes(appearanceThemeJs, 'RAK_PATTERN_BACKGROUND_VARIANTS_V1132', 'Pozadí musí mít patch pro patternová pozadí v1.132');
+  assert(!themeIds.has('amoled-midnight'), 'AMOLED černý theme má být po 1.134 odstraněný');
   assertIncludes(appearanceThemeJs, 'function applyLightPatternBackgroundsV1131', 'Světlé patterny musí být aplikované kompatibilním patchem přes původní ID');
   assertIncludes(appearanceThemeJs, '"label": "Světlý modrý"', 'Původní světlý hnědý theme musí být přejmenovaný na světlý modrý');
   assertIncludes(appearanceThemeJs, '"--text": "#0F2E5F"', 'Světlý modrý theme musí mít modré písmo');
@@ -1150,3 +1151,11 @@ assertRotationOvertimeDefaults2025ContractV1129();
 assertLightPatternThemeContractV1131();
 
 console.log('app-usage-smoke-v963 OK + rotation-generator-wizard-v1108-guard + rotation-generator-absence-state-v1109-guard + rotation-generator-wizard-run-v1110-guard + rotation-generator-wizard-state-v1111-guard + rotation-generator-month-balance-v1112-guard + rotation-generator-rules-v1113-guard + rotation-generator-rules-v1114-guard + rotation-generator-rules-v1115-guard + rotation-generator-rules-v1116-guard + rotation-generator-rules-v1117-guard + dashboard-percent-empty-cells-v1119-guard + stats-press-machine-split-v1123-guard + rotation-overtime-shift-filter-v1128-guard + rotation-overtime-defaults-2025-v1129-guard + rotation-absence-export-ytd-generator-theme-v1130-guard + light-pattern-theme-v1131-guard + dashboard-css-contract-guard + appearance-reward-contract + rotation-export-summary-simple-guard + rotation-export-glass-guard + appearance-readability-guard + css-layer-order-v194-guard + dashboard-owner-registry-v195-guard + dashboard-overrides-selector-lock-v196-guard + dashboard-scope-v197-guard + dashboard-release-isolation-v198-guard + dashboard-css-guard-series-v1100-complete + release-metadata-v199-guard + brusy-choice-size-v1101-guard + fixed-app-background-v1101-guard + name-choice-fit-v1102-guard + browser-smoke-v1103-guard + dashboard-empty-absence-text-v1104-guard + rotace-empty-absence-text-v1105-guard + appearance-update-persistence-v1105-guard + rotation-generator-v1106-guard + rotation-generator-rules-v1107-guard + no-visual-owner-drift-guard OK');
+
+// v1.135 guard: soft-core fixed cycle + no TNKS balancing + removed AMOLED black.
+assertIncludes(ui, 'RAK_ROTATION_GENERATOR_RULES_V1135', 'Chybí pravidla generátoru v1.135');
+assertIncludes(ui, "excludedFromTnksBalance: Object.freeze(['Střížek', 'Synek', 'Třasák'])", 'Synek/Střížek/Třasák nesmí vstupovat do měsíčního ani ročního TNKS dorovnání');
+assertIncludes(ui, 'softCoreContinuationRule', 'Synek/Třasák/Střížek musí mít vlastní návazný cyklus mezi měsíci');
+assertIncludes(ui, 'adminRotationGeneratorAdvanceSoftCoreCycle', 'Generátor musí umět posouvat vlastní cyklus Synka/Třasáka/Střížka');
+assertIncludes(ui, 'adminRotationGeneratorWouldBreakConsecutiveTnks', 'Generátor musí hlídat dvě směny po sobě na TNKS01');
+assert(!ui.includes('adminRotationSaveDockBtn'), 'Editor rozpisu už nesmí mít duplicitní dock tlačítko Uložit rozpis');
