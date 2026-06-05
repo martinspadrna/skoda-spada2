@@ -1,3 +1,12 @@
+## RaK 1.2 (1.133)
+
+- Generátor rozpisu / TNKS01: roční počty už nemají přebíjet měsíční vyrovnání. Základ je znovu měsíční rovnováha; roční nýtovačka/TNKS01 se použije jen jako jemný tie-break při stavu typu 0,5 vs 1,5 nebo když je měsíc jinak vyrovnaný a jen 1–2 lidé mají o 0,5 navíc.
+- Roční dorovnání TNKS01 smí v měsíci udělat jen omezený jemný přesun, aby člověk s nízkým ročním počtem nezačal dostávat TNKS01 moc často jen kvůli roku.
+- Nastavení vzhledu: nová patternová pozadí jsou méně bílá, jemně víc zabarvená a čáry/vzory jsou výrazně širší a kontrastnější. Některé vzory mají i křivky/orbitální linky, ne jen rovné čáry.
+- AMOLED theme `AMOLED modrý` je přejmenovaný na `AMOLED černý` a drží čistě černý základ s modrým akcentem.
+- Supabase DB/policies beze změny.
+- Release metadata sjednocená na `RaK 1.2 (1.133)`, technická verze `1.2.133`, cache `v1.2-1.133`.
+
 ## RaK 1.2 (1.132)
 
 - Nastavení vzhledu: světlé patternové pozadí z 1.131 jsou předělané tak, aby nebyly tak bílé. Zhruba polovina drží světlejší směr podobný `Světlému cikcaku`, druhá polovina je o něco tmavší a všechny mají výraznější linky/vzory, aby byly na pozadí líp vidět.

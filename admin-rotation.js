@@ -1,4 +1,4 @@
-// RaK 1.2 (1.132) – Administrace Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
+// RaK 1.2 (1.133) – Administrace Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('admin-rotation.js', 'loading', { source: 'dynamic-loader' }); } catch (err) {}
 
 
@@ -2165,11 +2165,39 @@ function adminRotationGeneratorBalanceHardMachine(month, machineName, model, mon
   let counts = adminRotationGeneratorCountHardMachine(month, machineName, workingNames, monthKey);
   let swaps = 0;
   const maxPasses = hardRows.length * 4;
+  const allowedDiff = isPressBalance ? 0.5 : 1;
 
   const currentCount = (name) => Number(counts[name] || 0);
   const yearCount = (name) => Number(yearCounts[name] || 0);
   const combinedCount = (name) => currentCount(name) + yearCount(name);
+  const averageYearCount = () => {
+    if (!workingNames.length) return 0;
+    return workingNames.reduce((sum, name) => sum + yearCount(name), 0) / workingNames.length;
+  };
+  const sortByMonthHigh = () => workingNames.slice().sort((a, b) => {
+    const monthDiff = currentCount(b) - currentCount(a);
+    if (monthDiff) return monthDiff;
+    const yearDiff = yearCount(b) - yearCount(a);
+    if (yearDiff) return yearDiff;
+    return a.localeCompare(b, 'cs');
+  });
+  const sortByMonthLow = () => workingNames.slice().sort((a, b) => {
+    const monthDiff = currentCount(a) - currentCount(b);
+    if (monthDiff) return monthDiff;
+    const yearDiff = yearCount(a) - yearCount(b);
+    if (yearDiff) return yearDiff;
+    const pref = (hardPreferred.includes(b) ? 1 : 0) - (hardPreferred.includes(a) ? 1 : 0);
+    if (pref) return pref;
+    return a.localeCompare(b, 'cs');
+  });
   const getSortedHigh = () => workingNames.slice().sort((a, b) => {
+    if (isPressBalance) {
+      const monthDiff = currentCount(b) - currentCount(a);
+      if (monthDiff) return monthDiff;
+      const yearDiff = yearCount(b) - yearCount(a);
+      if (yearDiff) return yearDiff;
+      return a.localeCompare(b, 'cs');
+    }
     const diff = combinedCount(b) - combinedCount(a);
     if (diff) return diff;
     const monthDiff = currentCount(b) - currentCount(a);
@@ -2177,6 +2205,15 @@ function adminRotationGeneratorBalanceHardMachine(month, machineName, model, mon
     return a.localeCompare(b, 'cs');
   });
   const getSortedLow = () => workingNames.slice().sort((a, b) => {
+    if (isPressBalance) {
+      const monthDiff = currentCount(a) - currentCount(b);
+      if (monthDiff) return monthDiff;
+      const yearDiff = yearCount(a) - yearCount(b);
+      if (yearDiff) return yearDiff;
+      const pref = (hardPreferred.includes(b) ? 1 : 0) - (hardPreferred.includes(a) ? 1 : 0);
+      if (pref) return pref;
+      return a.localeCompare(b, 'cs');
+    }
     const diff = combinedCount(a) - combinedCount(b);
     if (diff) return diff;
     const yearDiff = yearCount(a) - yearCount(b);
@@ -2200,19 +2237,16 @@ function adminRotationGeneratorBalanceHardMachine(month, machineName, model, mon
     return null;
   };
 
-  for (let pass = 0; pass < maxPasses; pass += 1) {
-    const highNames = getSortedHigh();
-    const lowNames = getSortedLow();
-    const highName = highNames[0];
-    const lowName = lowNames[0];
-    if (!highName || !lowName || highName === lowName) break;
-    const allowedDiff = isPressBalance ? 0.5 : 1;
-    if (combinedCount(highName) - combinedCount(lowName) <= allowedDiff) break;
-
-    let didSwap = false;
+  const trySwapPressOrMachine = (highName, lowNames, allowYearTieBreak) => {
     for (const targetLowName of lowNames) {
       if (!targetLowName || targetLowName === highName) continue;
-      if (combinedCount(highName) - combinedCount(targetLowName) <= allowedDiff) break;
+      if (isPressBalance) {
+        const monthDiff = currentCount(highName) - currentCount(targetLowName);
+        if (!allowYearTieBreak && monthDiff <= allowedDiff) continue;
+        if (allowYearTieBreak && Math.abs(monthDiff - allowedDiff) > 0.001) continue;
+      } else if (combinedCount(highName) - combinedCount(targetLowName) <= 1) {
+        break;
+      }
       for (let rowIdx = 0; rowIdx < hardRows.length; rowIdx += 1) {
         const hardRow = hardRows[rowIdx];
         const highCell = findPressOrMachineCell(hardRow, rowIdx, highName);
@@ -2225,12 +2259,62 @@ function adminRotationGeneratorBalanceHardMachine(month, machineName, model, mon
         highCell.cells[highCell.idx] = targetLowName;
         swaps += 1;
         counts = adminRotationGeneratorCountHardMachine(month, machineName, workingNames, monthKey);
-        didSwap = true;
-        break;
+        return true;
       }
-      if (didSwap) break;
     }
-    if (!didSwap) break;
+    return false;
+  };
+
+  if (isPressBalance) {
+    let yearTieBreakUsed = false;
+    for (let pass = 0; pass < maxPasses; pass += 1) {
+      const highNames = sortByMonthHigh();
+      const lowNames = sortByMonthLow();
+      const highName = highNames[0];
+      const lowName = lowNames[0];
+      if (!highName || !lowName || highName === lowName) break;
+      const monthSpread = currentCount(highName) - currentCount(lowName);
+      if (monthSpread > allowedDiff) {
+        const targetLows = lowNames.filter((name) => currentCount(highName) - currentCount(name) > allowedDiff)
+          .sort((a, b) => {
+            const monthDiff = currentCount(a) - currentCount(b);
+            if (monthDiff) return monthDiff;
+            const yearDiff = yearCount(a) - yearCount(b);
+            if (yearDiff) return yearDiff;
+            return a.localeCompare(b, 'cs');
+          });
+        if (!trySwapPressOrMachine(highName, targetLows, false)) break;
+        continue;
+      }
+      if (yearTieBreakUsed) break;
+      // Roční dorovnání je jen jemný tie-break: když je měsíc prakticky vyrovnaný
+      // a jen 1 člověk má o 0,5 více, smí se max jednou přesunout na člověka s nejnižším rokem.
+      if (Math.abs(monthSpread - allowedDiff) > 0.001) break;
+      const maxMonth = currentCount(highName);
+      const minMonth = currentCount(lowName);
+      const highExtra = workingNames.filter((name) => Math.abs(currentCount(name) - maxMonth) < 0.001)
+        .sort((a, b) => yearCount(b) - yearCount(a) || a.localeCompare(b, 'cs'))[0];
+      const lowYearCandidates = workingNames.filter((name) => Math.abs(currentCount(name) - minMonth) < 0.001)
+        .sort((a, b) => yearCount(a) - yearCount(b) || a.localeCompare(b, 'cs'));
+      const yearAvg = averageYearCount();
+      const targetLow = lowYearCandidates[0];
+      if (!highExtra || !targetLow || highExtra === targetLow) break;
+      if (yearCount(highExtra) <= yearAvg) break;
+      if (yearCount(targetLow) >= yearCount(highExtra)) break;
+      if (!trySwapPressOrMachine(highExtra, [targetLow], true)) break;
+      yearTieBreakUsed = true;
+    }
+    return { swaps, counts, yearTieBreakUsed };
+  }
+
+  for (let pass = 0; pass < maxPasses; pass += 1) {
+    const highNames = getSortedHigh();
+    const lowNames = getSortedLow();
+    const highName = highNames[0];
+    const lowName = lowNames[0];
+    if (!highName || !lowName || highName === lowName) break;
+    if (combinedCount(highName) - combinedCount(lowName) <= 1) break;
+    if (!trySwapPressOrMachine(highName, lowNames, false)) break;
   }
 
   return { swaps, counts };
@@ -2412,7 +2496,7 @@ function adminGenerateRotationMonthDraft(monthKey) {
     soloMillBalanceSwaps: (soloMillBalance && Number(soloMillBalance.swaps || 0)) + (soloMillRebalance && Number(soloMillRebalance.swaps || 0)),
     softKindBalanceSwaps: softKindBalance && Number(softKindBalance.swaps || 0),
     kminekNovotnyMoToBalanceSwaps: kminekNovotnyMoToBalance && Number(kminekNovotnyMoToBalance.swaps || 0),
-    ruleVersion: '1.132'
+    ruleVersion: '1.133'
   };
 }
 
@@ -3157,7 +3241,7 @@ function adminShowRotationSelectedRemove(input) {
       return;
     }
     window.__rakAdminRotationSelectedInput = input;
-    // RaK 1.2 (1.132) – horní sticky tlačítko už při kliknutí do jména nevytahujeme.
+    // RaK 1.2 (1.133) – horní sticky tlačítko už při kliknutí do jména nevytahujeme.
     // Rychlé Odebrat se vykreslí přímo u aktivního pole přes adminShowRotationQuickRemove().
     btn.hidden = true;
     btn.dataset.targetReady = '1';

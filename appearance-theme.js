@@ -1,4 +1,4 @@
-// RaK 1.2 (1.132) – theme, pozadí a profilové UI nastavení.
+// RaK 1.2 (1.133) – theme, pozadí a profilové UI nastavení.
 
 const RAK_THEME_STORAGE_KEY = APP_KEY + ':theme_v1';
 const RAK_THEME_BASE_VARS = {
@@ -381,16 +381,16 @@ const RAK_THEME_DEFS = [
   },
   {
     "id": "amoled-midnight",
-    "label": "AMOLED modrý",
-    "subtitle": "Skoro černý základ s modrými akcenty pro OLED displeje",
+    "label": "AMOLED černý",
+    "subtitle": "Čistě černý základ s modrými akcenty pro OLED displeje",
     "color": "#38BDF8",
     "unlockText": "Vždy dostupné",
     "minPlays": 0,
     "minAchievements": 0,
     "vars": {
       "--bg": "#000000",
-      "--panel": "rgba(7,12,18,.92)",
-      "--panel2": "rgba(10,16,25,.84)",
+      "--panel": "rgba(2,6,10,.94)",
+      "--panel2": "rgba(4,9,15,.88)",
       "--green": "#38BDF8",
       "--green2": "#93C5FD",
       "--text": "#E6F4FF",
@@ -858,7 +858,7 @@ const RAK_BACKGROUND_DEFS = [
   }
 ];
 
-// RaK 1.2 (1.132) – patternové varianty pro pracovní světlá pozadí.
+// RaK 1.2 (1.133) – patternové varianty pro pracovní světlá pozadí.
 // Záměr: část pozadí držet světlejší jako Světlý cikcak, ale ne čistě bílá,
 // a druhou část o chlup tmavší. Linky jsou silnější než v 1.131, aby byly lépe vidět.
 const RAK_PATTERN_BACKGROUND_META_V1132 = Object.freeze({
@@ -878,30 +878,34 @@ const RAK_PATTERN_BACKGROUND_META_V1132 = Object.freeze({
 });
 
 const RAK_PATTERN_BACKGROUND_VARIANTS_V1132 = Object.freeze({
-  'skoda-green': Object.freeze({ top: '#fffaf0', mid: '#f6efdf', bottom: '#e9dcc4', accentTop: '#fef4e4', angle: '135deg', gap: 24, lineWidth: 2, low: 'rgba(72,104,55,.12)', high: 'rgba(72,104,55,.28)', green: '#5A4730', green2: '#7E6645' }),
-  'light-green': Object.freeze({ top: '#fffbf2', mid: '#f2f3de', bottom: '#e4e4c9', accentTop: '#fbf7dc', angle: '90deg', gap: 22, lineWidth: 2, low: 'rgba(94,130,70,.11)', high: 'rgba(94,130,70,.27)', green: '#5B6E35', green2: '#879B4F' }),
-  'deep-aurora': Object.freeze({ top: '#f7f8f1', mid: '#eaf0e5', bottom: '#d8e3d6', accentTop: '#eef6f2', angle: '0deg', gap: 20, lineWidth: 2, low: 'rgba(59,96,130,.11)', high: 'rgba(59,96,130,.27)', green: '#486582', green2: '#6E8BAA' }),
-  'ember': Object.freeze({ top: '#fff8ef', mid: '#f7ead9', bottom: '#ead6bb', accentTop: '#fdf0df', angle: '45deg', gap: 26, lineWidth: 2, low: 'rgba(132,86,38,.11)', high: 'rgba(132,86,38,.28)', green: '#865B31', green2: '#B8834B' }),
-  'neon-lagoon': Object.freeze({ top: '#f8fbf6', mid: '#e6f4e8', bottom: '#d3e4d7', accentTop: '#edf8f0', angle: '120deg', gap: 26, lineWidth: 2, low: 'rgba(52,112,97,.11)', high: 'rgba(52,112,97,.28)', green: '#3D6E67', green2: '#6F9E99' }),
-  'electric-lime': Object.freeze({ top: '#fffbf0', mid: '#f3f0db', bottom: '#e3dfbf', accentTop: '#fbf4d2', angle: '60deg', gap: 24, lineWidth: 2, low: 'rgba(115,112,39,.11)', high: 'rgba(115,112,39,.28)', green: '#737028', green2: '#9F9742' }),
-  'skoda-electric': Object.freeze({ top: '#efe9dd', mid: '#ddd1bf', bottom: '#c8b69d', accentTop: '#e8decd', angle: '-45deg', gap: 28, lineWidth: 2, low: 'rgba(46,90,70,.13)', high: 'rgba(46,90,70,.30)', green: '#476854', green2: '#70917E' }),
-  'candy-glass': Object.freeze({ top: '#f3ebe4', mid: '#e6d3cb', bottom: '#d5b9b0', accentTop: '#edd7d0', angle: '150deg', gap: 24, lineWidth: 2, low: 'rgba(132,76,93,.13)', high: 'rgba(132,76,93,.31)', green: '#8D5164', green2: '#B87A8E' }),
-  'aurora-punch': Object.freeze({ top: '#eee9e3', mid: '#d8d1d6', bottom: '#c1bac2', accentTop: '#e5dde6', angle: '30deg', gap: 30, lineWidth: 2, low: 'rgba(103,88,127,.13)', high: 'rgba(103,88,127,.31)', green: '#695879', green2: '#9583A4' }),
-  'violet-storm': Object.freeze({ top: '#f1ebe6', mid: '#ddd1d8', bottom: '#c6b4c1', accentTop: '#e8dde6', angle: '135deg', gap: 18, lineWidth: 2, low: 'rgba(112,88,124,.13)', high: 'rgba(112,88,124,.31)', green: '#70587C', green2: '#9A80A4' }),
-  'sunset-plasma': Object.freeze({ top: '#f7efe5', mid: '#e6d4c2', bottom: '#d2b79d', accentTop: '#edd9c8', angle: '100deg', gap: 28, lineWidth: 2, low: 'rgba(147,94,57,.13)', high: 'rgba(147,94,57,.30)', green: '#96603B', green2: '#C18A60' }),
-  'polar-mint': Object.freeze({ top: '#eef1ec', mid: '#d6ddd8', bottom: '#bcc8c2', accentTop: '#e1e8e4', angle: '0deg', gap: 14, lineWidth: 2, low: 'rgba(81,109,116,.12)', high: 'rgba(81,109,116,.29)', green: '#56717A', green2: '#7E9AA1' }),
-  'blue-orbit': Object.freeze({ top: '#ece9e3', mid: '#d5d9de', bottom: '#bcc6d0', accentTop: '#e2e8ee', angle: '90deg', gap: 30, lineWidth: 2, low: 'rgba(72,93,125,.13)', high: 'rgba(72,93,125,.31)', green: '#56718B', green2: '#7D95AC', orbit: true })
+  'skoda-green': Object.freeze({ top: '#f4ead8', mid: '#e7d8be', bottom: '#d7c3a3', accentTop: '#efe0c9', angle: '135deg', gap: 22, lineWidth: 4, low: 'rgba(72,104,55,.20)', high: 'rgba(72,104,55,.42)', green: '#5A4730', green2: '#7E6645' }),
+  'light-green': Object.freeze({ top: '#f1efd1', mid: '#e0e4b8', bottom: '#ccd39a', accentTop: '#e9e7bd', angle: '90deg', gap: 20, lineWidth: 4, low: 'rgba(94,130,70,.19)', high: 'rgba(94,130,70,.40)', green: '#5B6E35', green2: '#879B4F' }),
+  'deep-aurora': Object.freeze({ top: '#e8efe9', mid: '#d1dfd8', bottom: '#b8cbc4', accentTop: '#dce8e2', angle: '0deg', gap: 19, lineWidth: 4, low: 'rgba(59,96,130,.18)', high: 'rgba(59,96,130,.40)', green: '#486582', green2: '#6E8BAA' }),
+  'ember': Object.freeze({ top: '#f3e2ca', mid: '#e5cba8', bottom: '#d1ae80', accentTop: '#ecd5b9', angle: '45deg', gap: 24, lineWidth: 4, low: 'rgba(132,86,38,.19)', high: 'rgba(132,86,38,.42)', green: '#865B31', green2: '#B8834B' }),
+  'neon-lagoon': Object.freeze({ top: '#e5f0e7', mid: '#c9dfd1', bottom: '#accbbb', accentTop: '#d7eadf', angle: '120deg', gap: 25, lineWidth: 4, low: 'rgba(52,112,97,.19)', high: 'rgba(52,112,97,.42)', green: '#3D6E67', green2: '#6F9E99', curve: true }),
+  'electric-lime': Object.freeze({ top: '#f0eabf', mid: '#dfdca4', bottom: '#cac77d', accentTop: '#e8e2ad', angle: '60deg', gap: 22, lineWidth: 4, low: 'rgba(115,112,39,.19)', high: 'rgba(115,112,39,.42)', green: '#737028', green2: '#9F9742' }),
+  'skoda-electric': Object.freeze({ top: '#e0d2bd', mid: '#cbb894', bottom: '#b29b77', accentTop: '#d5c2a7', angle: '-45deg', gap: 26, lineWidth: 4, low: 'rgba(46,90,70,.22)', high: 'rgba(46,90,70,.44)', green: '#476854', green2: '#70917E' }),
+  'candy-glass': Object.freeze({ top: '#e8d3cb', mid: '#d2afa6', bottom: '#ba9187', accentTop: '#dbc0b8', angle: '150deg', gap: 23, lineWidth: 4, low: 'rgba(132,76,93,.22)', high: 'rgba(132,76,93,.45)', green: '#8D5164', green2: '#B87A8E', curve: true }),
+  'aurora-punch': Object.freeze({ top: '#ddd3cd', mid: '#c5b9c2', bottom: '#a99daf', accentTop: '#d0c4d1', angle: '30deg', gap: 28, lineWidth: 4, low: 'rgba(103,88,127,.22)', high: 'rgba(103,88,127,.45)', green: '#695879', green2: '#9583A4' }),
+  'violet-storm': Object.freeze({ top: '#e1d0c9', mid: '#c8acbd', bottom: '#ab8fa4', accentTop: '#d3bdce', angle: '135deg', gap: 18, lineWidth: 4, low: 'rgba(112,88,124,.23)', high: 'rgba(112,88,124,.46)', green: '#70587C', green2: '#9A80A4' }),
+  'sunset-plasma': Object.freeze({ top: '#ecd8c2', mid: '#d7b58f', bottom: '#bf9568', accentTop: '#dec4ab', angle: '100deg', gap: 25, lineWidth: 4, low: 'rgba(147,94,57,.22)', high: 'rgba(147,94,57,.44)', green: '#96603B', green2: '#C18A60' }),
+  'polar-mint': Object.freeze({ top: '#dfe7e2', mid: '#c2d0c9', bottom: '#9fb2ab', accentTop: '#d0ddd8', angle: '0deg', gap: 14, lineWidth: 3, low: 'rgba(81,109,116,.21)', high: 'rgba(81,109,116,.42)', green: '#56717A', green2: '#7E9AA1', curve: true }),
+  'blue-orbit': Object.freeze({ top: '#dfe4e8', mid: '#becbd6', bottom: '#9eb0c2', accentTop: '#cfdae5', angle: '90deg', gap: 28, lineWidth: 4, low: 'rgba(72,93,125,.23)', high: 'rgba(72,93,125,.46)', green: '#56718B', green2: '#7D95AC', orbit: true })
 });
 
 function buildRakPatternSwatchV1132(v) {
-  return 'repeating-linear-gradient(' + v.angle + ', ' + v.high + ' 0 ' + v.lineWidth + 'px, transparent ' + v.lineWidth + 'px ' + v.gap + 'px), linear-gradient(180deg, ' + v.top + ' 0%, ' + v.mid + ' 58%, ' + v.bottom + ' 100%)';
+  const lineLayer = 'repeating-linear-gradient(' + v.angle + ', ' + v.high + ' 0 ' + v.lineWidth + 'px, transparent ' + v.lineWidth + 'px ' + v.gap + 'px)';
+  const shapeLayer = v.orbit
+    ? 'radial-gradient(circle at 50% 50%, transparent 0 48%, ' + v.high + ' 49% 55%, transparent 56%) 0 0/32px 32px'
+    : (v.curve ? 'radial-gradient(ellipse at 50% 50%, transparent 0 46%, ' + v.high + ' 47% 54%, transparent 55%) 0 0/38px 24px' : 'linear-gradient(180deg, ' + v.accentTop + ' 0%, transparent 34%)');
+  return lineLayer + ', ' + shapeLayer + ', linear-gradient(180deg, ' + v.top + ' 0%, ' + v.mid + ' 58%, ' + v.bottom + ' 100%)';
 }
 
 function buildRakPatternBackgroundV1132(v) {
   const baseLayer = 'repeating-linear-gradient(' + v.angle + ', ' + v.low + ' 0 ' + v.lineWidth + 'px, transparent ' + v.lineWidth + 'px ' + v.gap + 'px)';
   const accentLayer = v.orbit
-    ? 'radial-gradient(circle at 24% 24%, transparent 0 52%, ' + v.low + ' 53% 55%, transparent 56%) 0 0/52px 52px'
-    : 'linear-gradient(180deg, ' + v.accentTop + ' 0%, transparent 24%)';
+    ? 'radial-gradient(circle at 24% 24%, transparent 0 50%, ' + v.low + ' 51% 56%, transparent 57%) 0 0/52px 52px'
+    : (v.curve ? 'radial-gradient(ellipse at 50% 50%, transparent 0 48%, ' + v.low + ' 49% 54%, transparent 55%) 0 0/58px 34px' : 'linear-gradient(180deg, ' + v.accentTop + ' 0%, transparent 28%)');
   return baseLayer + ', ' + accentLayer + ', linear-gradient(180deg, ' + v.top + ' 0%, ' + v.mid + ' 58%, ' + v.bottom + ' 100%)';
 }
 
@@ -957,11 +961,11 @@ RAK_BACKGROUND_DEFS.forEach((bg) => {
   if (unlock) Object.assign(bg, unlock);
 });
 
-// RaK 1.2 (1.132) – appearance reward contract guard.
+// RaK 1.2 (1.133) – appearance reward contract guard.
 // Slouží jako jednoduché interní pravidlo pro budoucí theme/pozadí: klidně jich může přibýt víc,
 // ale nesmí to být skoro stejné varianty a výrazné kusy se musí odemykat postupně.
 const RAK_APPEARANCE_REWARD_CONTRACT_V181 = Object.freeze({
-  version: '1.2 (1.132)',
+  version: '1.2 (1.133)',
   intent: 'distinct-progressive-appearance-rewards',
   defaultThemeId: 'default',
   defaultBackgroundId: 'ios-mesh',
@@ -993,11 +997,11 @@ const RAK_APPEARANCE_REWARD_CONTRACT_V181 = Object.freeze({
   reservedRemovedBackgroundIds: Object.freeze(['nebula-shock', 'emerald-smoke', 'ruby-circuit', 'cobalt-fire', 'solar-flare'])
 });
 
-// RaK 1.2 (1.132) – appearance readability contract guard.
+// RaK 1.2 (1.133) – appearance readability contract guard.
 // Cíl: výrazné theme/pozadí mohou být odemykané rewardy, ale nesmí zhoršit čitelnost Dashboardu,
 // Administrace, Nastavení vzhledu ani herních karet. Je to statická pojistka pro budoucí skiny.
 const RAK_APPEARANCE_READABILITY_CONTRACT_V189 = Object.freeze({
-  version: '1.2 (1.132)',
+  version: '1.2 (1.133)',
   intent: 'dashboard-admin-readable-appearance',
   protectedScreens: Object.freeze(['dashboard', 'admin-connections', 'settings-appearance', 'games-leaderboards']),
   requiredThemeVars: Object.freeze(['--bg', '--panel', '--panel2', '--green', '--green2', '--muted', '--soft', '--rakThemeGlow', '--rakThemeBorder']),
@@ -1297,7 +1301,7 @@ function applyProfileUiPreferencesForActiveAccount(options = {}) {
   const defaultTheme = normalizeThemePreferenceId('default', 'default');
   const defaultBg = normalizeBackgroundPreferenceId('ios-mesh', 'ios-mesh');
   let changed = false;
-  // RaK 1.2 (1.132): při aktualizaci nesmí prázdné profilové uiSettings shodit uživatelské pozadí zpět na základ.
+  // RaK 1.2 (1.133): při aktualizaci nesmí prázdné profilové uiSettings shodit uživatelské pozadí zpět na základ.
   // Local fallback použijeme jen pro aktivní účet a jen jako migraci chybějící hodnoty; zamčené skiny se níže dál normalizují na default.
   if (!ui.themeId) { ui.themeId = localTheme || defaultTheme; changed = true; }
   if (!ui.backgroundId) { ui.backgroundId = localBg || defaultBg; changed = true; }
@@ -1706,7 +1710,7 @@ function getRakProfileAppearanceRewardHealth() {
   const themeRewards = themes.filter(item => String(item && item.id || '') !== 'default');
   const backgroundRewards = backgrounds.filter(item => String(item && item.id || '') !== 'ios-mesh');
   return {
-    version: window.APP_VERSION || '1.2 (1.132)',
+    version: window.APP_VERSION || '1.2 (1.133)',
     mode: 'profile-appearance-reward-health-v928',
     activeProfile: metrics.hasProfile,
     profileThemeStorage: 'account.uiSettings.themeId',
@@ -1795,7 +1799,7 @@ function getRakDashboardGlassThemeHealth() {
   const lightweight = /(?:^|\s)(?:lightweightMode|lowEndDevice|ladaMode)(?:\s|$)/.test(bodyClass);
   return {
     ok: true,
-    version: window.APP_VERSION || '1.2 (1.132)',
+    version: window.APP_VERSION || '1.2 (1.133)',
     mode: 'dashboard-ios-glass-viewport-fit-v945',
     theme,
     background,
