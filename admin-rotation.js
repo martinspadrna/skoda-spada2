@@ -1,4 +1,4 @@
-// RaK 1.2 (1.131) – Administrace Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
+// RaK 1.2 (1.132) – Administrace Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('admin-rotation.js', 'loading', { source: 'dynamic-loader' }); } catch (err) {}
 
 
@@ -2412,7 +2412,7 @@ function adminGenerateRotationMonthDraft(monthKey) {
     soloMillBalanceSwaps: (soloMillBalance && Number(soloMillBalance.swaps || 0)) + (soloMillRebalance && Number(soloMillRebalance.swaps || 0)),
     softKindBalanceSwaps: softKindBalance && Number(softKindBalance.swaps || 0),
     kminekNovotnyMoToBalanceSwaps: kminekNovotnyMoToBalance && Number(kminekNovotnyMoToBalance.swaps || 0),
-    ruleVersion: '1.131'
+    ruleVersion: '1.132'
   };
 }
 
@@ -2573,6 +2573,88 @@ function adminRotationGetMonthWorkDates(monthKey) {
   return adminRotationGetDefaultMonthWorkDates(monthKey);
 }
 
+function adminRotationCollectMonthAbsencesFromMonth(month, days) {
+  const workingDays = Array.isArray(days) ? days.map((date) => String(date || '').trim()).filter(Boolean) : [];
+  const result = workingDays.map((date) => ({ date, rows: [] }));
+  if (!month || !result.length) return result;
+  const exactMap = new Map();
+  const baseMap = new Map();
+  result.forEach((day, idx) => {
+    const exact = adminRotationDateLabel(day.date);
+    const base = adminRotationDateBaseKey(day.date);
+    if (exact && !exactMap.has(exact)) exactMap.set(exact, idx);
+    if (base) {
+      if (!baseMap.has(base)) baseMap.set(base, []);
+      baseMap.get(base).push(idx);
+    }
+  });
+  (Array.isArray(month.notes) ? month.notes : []).forEach((note) => {
+    const normalized = typeof normalizeNoteEntry === 'function' ? normalizeNoteEntry(note) : null;
+    if (!normalized || !normalized.isAbsence) return;
+    const person = String(normalized.person || '').trim();
+    const code = String(normalized.code || '').trim();
+    if (!person && !code) return;
+    const exact = adminRotationDateLabel(normalized.date || '');
+    const base = adminRotationDateBaseKey(normalized.date || '');
+    let idx = exactMap.has(exact) ? exactMap.get(exact) : -1;
+    if ((!Number.isFinite(idx) || idx < 0) && baseMap.has(base)) {
+      const bucket = baseMap.get(base) || [];
+      idx = bucket.length ? bucket[0] : -1;
+      const normalizedShift = typeof normalizeShiftText === 'function'
+        ? normalizeShiftText(String(normalized.shift || '').trim())
+        : String(normalized.shift || '').trim();
+      if (normalizedShift && bucket.length > 1) {
+        const matched = bucket.find((candidateIdx) => {
+          const parsed = typeof parseDateToken === 'function' ? parseDateToken(result[candidateIdx] && result[candidateIdx].date) : null;
+          const candidateShift = parsed && parsed.shift && typeof normalizeShiftText === 'function'
+            ? normalizeShiftText(parsed.shift)
+            : (parsed && parsed.shift ? parsed.shift : '');
+          return String(candidateShift || '').trim() === String(normalizedShift || '').trim();
+        });
+        if (Number.isFinite(matched)) idx = matched;
+      }
+    }
+    if (!Number.isFinite(idx) || idx < 0 || !result[idx]) return;
+    result[idx].rows.push({ person, code });
+  });
+  return result;
+}
+
+function adminRotationGeneratorAlignAbsencesToDays(days, absencesByDay) {
+  const workingDays = Array.isArray(days) ? days.map((date) => String(date || '').trim()).filter(Boolean) : [];
+  const source = Array.isArray(absencesByDay) ? absencesByDay : [];
+  const exactMap = new Map();
+  const baseMap = new Map();
+  source.forEach((day, idx) => {
+    const date = String(day && day.date || '').trim();
+    if (!date) return;
+    const exact = adminRotationDateLabel(date);
+    const base = adminRotationDateBaseKey(date);
+    if (exact && !exactMap.has(exact)) exactMap.set(exact, idx);
+    if (base && !baseMap.has(base)) baseMap.set(base, idx);
+  });
+  return workingDays.map((date) => {
+    const exact = adminRotationDateLabel(date);
+    const base = adminRotationDateBaseKey(date);
+    let sourceIdx = exactMap.has(exact) ? exactMap.get(exact) : -1;
+    if ((!Number.isFinite(sourceIdx) || sourceIdx < 0) && baseMap.has(base)) sourceIdx = baseMap.get(base);
+    const rows = Number.isFinite(sourceIdx) && source[sourceIdx] && Array.isArray(source[sourceIdx].rows)
+      ? source[sourceIdx].rows.map((row) => ({ person: String(row && row.person || '').trim(), code: String(row && row.code || '').trim() }))
+      : [];
+    return { date, rows };
+  });
+}
+
+function adminRotationGeneratorBuildPrefillState(monthKey) {
+  const days = adminRotationGetMonthWorkDates(monthKey);
+  const month = app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
+  return {
+    days: days.slice(),
+    absencesByDay: adminRotationCollectMonthAbsencesFromMonth(month, days)
+  };
+}
+
+
 function adminRotationGeneratorResolveWizardDays(state) {
   const liveState = state || adminRotationGeneratorGetWizardState();
   const fromState = Array.isArray(liveState.days) ? liveState.days.map((d) => String(d || '').trim()).filter(Boolean) : [];
@@ -2659,7 +2741,7 @@ function adminRotationGeneratorRenderWizard(step) {
   try {
     const status = document.getElementById('adminOnlineSaveStatus');
     if (status) status.textContent = step === 'month'
-      ? 'Nabízím další měsíc, ale můžeš vybrat jiný.'
+      ? 'Nabízím další měsíc, ale můžeš vybrat jiný. Když už měsíc má dny a absence, průvodce je předvyplní.'
       : (step === 'days' ? 'Zkontroluj pracovní dny. Křížkem den smažeš, tlačítkem + přidáš další.' : '');
   } catch (err) {}
 }
@@ -2902,11 +2984,12 @@ function adminBuildRotationGeneratorPreviewHtml(month, monthKey) {
 
 function adminOpenRotationGeneratorWizard(monthKey) {
   const suggested = adminRotationGetNextMonthKeyFrom(monthKey || getAdminSelectedMonthKey());
+  const prefill = adminRotationGeneratorBuildPrefillState(suggested);
   adminRotationGeneratorSetWizardState({
     step: 'month',
     monthKey: suggested,
-    days: adminRotationGetMonthWorkDates(suggested),
-    absencesByDay: []
+    days: prefill.days,
+    absencesByDay: prefill.absencesByDay
   });
   adminRotationGeneratorRenderWizard('month');
 }
@@ -2945,11 +3028,12 @@ function adminHandleRotationGeneratorWizardAction(action, target) {
   if (action === 'generator-month-next') {
     const select = body ? body.querySelector('#adminGeneratorMonthSelect') : null;
     const monthKey = select ? String(select.value || '').trim() : state.monthKey;
+    const prefill = adminRotationGeneratorBuildPrefillState(monthKey);
     adminRotationGeneratorSetWizardState({
       step: 'days',
       monthKey,
-      days: adminRotationGetMonthWorkDates(monthKey),
-      absencesByDay: []
+      days: prefill.days,
+      absencesByDay: prefill.absencesByDay
     });
     adminRotationGeneratorRenderWizard('days');
     return true;
@@ -2969,10 +3053,11 @@ function adminHandleRotationGeneratorWizardAction(action, target) {
   }
   if (action === 'generator-days-next') {
     const days = adminRotationGeneratorCollectDaysFromDom();
+    const preservedAbsences = adminRotationGeneratorAlignAbsencesToDays(days, state.absencesByDay);
     adminRotationGeneratorSetWizardState({
       step: 'absences',
       days,
-      absencesByDay: days.map((date) => ({ date, rows: [] }))
+      absencesByDay: preservedAbsences
     });
     adminRotationGeneratorRenderWizard('absences');
     return true;
@@ -3072,7 +3157,7 @@ function adminShowRotationSelectedRemove(input) {
       return;
     }
     window.__rakAdminRotationSelectedInput = input;
-    // RaK 1.2 (1.131) – horní sticky tlačítko už při kliknutí do jména nevytahujeme.
+    // RaK 1.2 (1.132) – horní sticky tlačítko už při kliknutí do jména nevytahujeme.
     // Rychlé Odebrat se vykreslí přímo u aktivního pole přes adminShowRotationQuickRemove().
     btn.hidden = true;
     btn.dataset.targetReady = '1';

@@ -1,10 +1,12 @@
-## RaK 1.2 (1.131)
+## RaK 1.2 (1.132)
 
-- Nastavení vzhledu: theme s původním ID `light-brown` je předělaný na `Světlý modrý` – bílý základ, modré písmo, modré okraje/akcenty a jemnější světlý panelový vzhled. ID zůstalo kvůli kompatibilitě uložených profilů.
-- Nastavení vzhledu: zhruba polovina existujících pozadí je převedená do jemnějšího světlého pattern stylu podobného `Světlému cikcaku`, ale každé má jiný vzor: šikmé linky, mřížku, blueprint, vlnky, úhlové linky, orbitální kruhy, levandulový cikcak nebo teplé pískové/meruňkové čáry.
-- Původní tmavší/premium pozadí nejsou smazaná všechna; část zůstává tmavá, aby byl pořád výběr mezi světlým pracovním stylem a výraznými odměnovými skiny.
+- Nastavení vzhledu: světlé patternové pozadí z 1.131 jsou předělané tak, aby nebyly tak bílé. Zhruba polovina drží světlejší směr podobný `Světlému cikcaku`, druhá polovina je o něco tmavší a všechny mají výraznější linky/vzory, aby byly na pozadí líp vidět.
+- Přidané dva AMOLED theme: `AMOLED modrý` a `AMOLED zelený`.
+- Přidaná dvě AMOLED pozadí: `AMOLED mřížka` a `AMOLED pulse`.
+- Administrace / Rozpisy / Generátor: když vybereš měsíc, který už má zadané pracovní dny a absence, průvodce si je teď převezme jako předvyplněný základ. Dá se tedy navázat na rozdělaný měsíc místo zadávání od nuly.
+- `O aplikaci` nově začíná stručným souhrnem po větších blocích verzí; přidaný aktuální blok `v.1.2 1.30–1.49`.
 - Supabase DB/policies beze změny.
-- Release metadata sjednocená na `RaK 1.2 (1.131)`, technická verze `1.2.131`, cache `v1.2-1.131`.
+- Release metadata sjednocená na `RaK 1.2 (1.132)`, technická verze `1.2.132`, cache `v1.2-1.132`.
 
 ## RaK 1.2 (1.130)
 
