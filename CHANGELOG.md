@@ -1,3 +1,10 @@
+## RaK 1.2 (1.137)
+
+- Administrace / Rozpisy / Generátor: po vygenerování návrhu přidané tlačítko `Stáhnout Excel`.
+- Excel export návrhu vytváří list ve stejném základním rozložení jako Martinova tabulka: vlevo Tvrdota, pod ní Měkota a vpravo Absence podle pracovních dnů, aby šly bloky jednoduše kopírovat do měsíčního Excelu.
+- Export využívá stávající XLSX knihovnu z aplikace; bez změny Supabase DB/policies.
+- Release metadata sjednocená na `RaK 1.2 (1.137)`, technická verze `1.2.137`, cache `v1.2-1.137`.
+
 ## RaK 1.2 (1.136)
 
 - Generátor rozpisu / návaznost cyklu Synka, Třasáka a Střížka: opravené čtení historie z celého předchozího měsíce. Extra TNKS01 po už dokončeném bloku už neresetuje cyklus zpět na TNKS01.

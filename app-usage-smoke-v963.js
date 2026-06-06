@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.136) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.137) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -216,12 +216,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.136)',
-  appLabel: 'RaK 1.2 (1.136)',
-  packageVersion: '1.2.136',
-  cacheVersion: 'v1.2-1.136',
+  displayVersion: '1.2 (1.137)',
+  appLabel: 'RaK 1.2 (1.137)',
+  packageVersion: '1.2.137',
+  cacheVersion: 'v1.2-1.137',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.136)',
+  changelogHeader: '## RaK 1.2 (1.137)',
   previousBuildFragments: Object.freeze(['1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -330,8 +330,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.136)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.136'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.137)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.137'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -890,7 +890,9 @@ function assertRotationGeneratorRulesContractV1107() {
   assertIncludes(ui, 'if (softTargetCount === 3 && lathePeopleCount === 2 && mskc01Idx >= 0)', 'Při dvou absencích musí zůstat MSKC01 neobsazená');
   assertIncludes(ui, 'readAdminRotationFromDom(monthKey)', 'Generátor musí před výpočtem číst rozepsané absence z DOMu');
   assertIncludes(ui, 'adminRotationGeneratorIsDayBlocked', 'Generátor musí umět vynechat den označený jako svátek/odstávka');
-  assertIncludes(ui, "ruleVersion: '1.136'", 'Výsledek generátoru musí vracet aktuální verzi pravidel 1.136');
+  assertIncludes(ui, "ruleVersion: '1.137'", 'Výsledek generátoru musí vracet aktuální verzi pravidel 1.137');
+assertIncludes(ui, 'generator-download-excel', 'Výsledek generátoru musí nabízet stažení návrhu do Excelu');
+assertIncludes(ui, 'function adminRotationGeneratorDownloadExcel', 'Chybí funkce pro stažení návrhu do Excelu');
 
 }
 
@@ -976,7 +978,7 @@ function assertRotationGeneratorRulesContractV1114() {
   assertIncludes(ui, 'function adminRotationGeneratorCountSoloMill', 'Generátor musí umět spočítat samostatné MFKF10 s prázdnou MFKF06');
   assertIncludes(ui, "const soloMillBalance = adminRotationGeneratorBalanceSoloMill(month, model);", 'Po sestavení měsíce musí běžet vyrovnání samostatných frézek');
   assertIncludes(ui, 'soloMillBalanceSwaps', 'Výsledek generátoru musí vracet počet prohozů samostatných frézek');
-  assertIncludes(ui, "ruleVersion: '1.136'", 'Výsledek generátoru musí vracet aktuální verzi pravidel 1.136');
+  assertIncludes(ui, "ruleVersion: '1.137'", 'Výsledek generátoru musí vracet aktuální verzi pravidel 1.137');
 }
 
 

@@ -1,4 +1,4 @@
-// RaK 1.2 (1.136) – Administrace Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
+// RaK 1.2 (1.137) – Administrace Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('admin-rotation.js', 'loading', { source: 'dynamic-loader' }); } catch (err) {}
 
 
@@ -1451,7 +1451,7 @@ function adminBuildRotationGenerationModel(targetMonthKey) {
     const previousIdx = (currentIdx - 1 + cycleLength) % cycleLength;
     const blockLength = Math.max(1, Number(RAK_ROTATION_GENERATOR_RULES_V1107.softHardBlockLength) || 3);
 
-    // RaK 1.2 (1.136): návaznost Synka/Třasáka/Střížka se nesmí odvozovat jen z posledního dne
+    // RaK 1.2 (1.137): návaznost Synka/Třasáka/Střížka se nesmí odvozovat jen z posledního dne
     // ani resetovat zpět, když je v historii po dokončeném bloku ještě extra TNKS01.
     // Procházíme celý předchozí měsíc chronologicky a zpětný "spillover" předchozího stroje ignorujeme.
     if (machineIdx !== currentIdx) {
@@ -2646,7 +2646,7 @@ function adminGenerateRotationMonthDraft(monthKey) {
     soloMillBalanceSwaps: (soloMillBalance && Number(soloMillBalance.swaps || 0)) + (soloMillRebalance && Number(soloMillRebalance.swaps || 0)),
     softKindBalanceSwaps: softKindBalance && Number(softKindBalance.swaps || 0),
     kminekNovotnyMoToBalanceSwaps: kminekNovotnyMoToBalance && Number(kminekNovotnyMoToBalance.swaps || 0),
-    ruleVersion: '1.136'
+    ruleVersion: '1.137'
   };
 }
 
@@ -3055,6 +3055,147 @@ function adminRotationGeneratorRenderAbsencesStep(state) {
   ].join('');
 }
 
+function adminRotationGeneratorExcelText(value) {
+  return String(value == null ? '' : value).trim();
+}
+
+function adminRotationGeneratorExcelBlankRow(width) {
+  return Array(Math.max(1, Number(width) || 1)).fill('');
+}
+
+function adminRotationGeneratorExcelSheetName(monthKey) {
+  const raw = String(monthKey || '').trim();
+  const match = raw.match(/^(\d{1,2})\s*\/\s*(\d{2,4})$/);
+  if (match) {
+    const month = String(match[1]).padStart(2, '0');
+    const yearRaw = Number(match[2]);
+    const year = String(yearRaw < 100 ? 2000 + yearRaw : yearRaw);
+    return month + '.' + year;
+  }
+  return raw.replace(/[\\/?*\[\]:]/g, '_').slice(0, 31) || 'Navrh';
+}
+
+function adminRotationGeneratorExcelFileName(monthKey) {
+  return 'RaK_navrh_rozpisu_' + adminRotationGeneratorExcelSheetName(monthKey).replace(/[^0-9A-Za-z._-]+/g, '_') + '.xlsx';
+}
+
+function adminRotationGeneratorBuildAbsenceExcelMaps(month) {
+  const exact = new Map();
+  const base = new Map();
+  const add = (map, key, item) => {
+    const safeKey = String(key || '').trim();
+    if (!safeKey) return;
+    if (!map.has(safeKey)) map.set(safeKey, []);
+    map.get(safeKey).push(item);
+  };
+  (Array.isArray(month && month.notes) ? month.notes : []).forEach((note) => {
+    const normalized = typeof normalizeNoteEntry === 'function' ? normalizeNoteEntry(note) : null;
+    if (!normalized || !normalized.isAbsence) return;
+    const people = Array.isArray(normalized.people) && normalized.people.length
+      ? normalized.people
+      : [normalized.person].filter(Boolean);
+    const code = adminRotationGeneratorExcelText(normalized.code || (note && note.code) || '');
+    people.forEach((person) => {
+      const item = { person: adminRotationGeneratorExcelText(person), code };
+      if (!item.person && !item.code) return;
+      add(exact, typeof adminRotationDateLabel === 'function' ? adminRotationDateLabel(normalized.date || (note && note.date) || '') : adminRotationGeneratorExcelText(normalized.date || (note && note.date) || ''), item);
+      add(base, typeof adminRotationDateBaseKey === 'function' ? adminRotationDateBaseKey(normalized.date || (note && note.date) || '') : adminRotationGeneratorExcelText(normalized.date || (note && note.date) || ''), item);
+    });
+  });
+  return { exact, base };
+}
+
+function adminRotationGeneratorGetExcelAbsencesForDate(absenceMaps, dateLabel) {
+  const exactKey = typeof adminRotationDateLabel === 'function' ? adminRotationDateLabel(dateLabel) : adminRotationGeneratorExcelText(dateLabel);
+  const baseKey = typeof adminRotationDateBaseKey === 'function' ? adminRotationDateBaseKey(dateLabel) : adminRotationGeneratorExcelText(dateLabel);
+  if (absenceMaps && absenceMaps.exact && absenceMaps.exact.has(exactKey)) return absenceMaps.exact.get(exactKey) || [];
+  if (absenceMaps && absenceMaps.base && absenceMaps.base.has(baseKey)) return absenceMaps.base.get(baseKey) || [];
+  return [];
+}
+
+function adminRotationGeneratorBuildExcelAoa(month) {
+  const hard = month && month.hard ? month.hard : {};
+  const soft = month && month.soft ? month.soft : {};
+  const hardMachines = Array.isArray(hard.machines) && hard.machines.length ? hard.machines : HARD_MACHINE_HEADERS.slice();
+  const softMachines = Array.isArray(soft.machines) && soft.machines.length ? soft.machines : SOFT_MACHINE_HEADERS.slice();
+  const hardRows = Array.isArray(hard.rows) ? hard.rows : [];
+  const softRows = Array.isArray(soft.rows) ? soft.rows : [];
+  const dayCount = Math.max(hardRows.length, softRows.length);
+  const width = 27;
+  const absenceMaps = adminRotationGeneratorBuildAbsenceExcelMaps(month);
+  const rows = [];
+  const hardHeader = adminRotationGeneratorExcelBlankRow(width);
+  hardHeader[0] = 'Rotace  tvrdota';
+  hardMachines.slice(0, 5).forEach((machine, idx) => { hardHeader[1 + idx] = adminRotationGeneratorExcelText(machine); });
+  hardHeader[7] = 'Dovolená, neschopenka atd.:';
+  rows.push(hardHeader);
+  for (let i = 0; i < dayCount; i += 1) {
+    const hardRow = hardRows[i] || {};
+    const softRow = softRows[i] || {};
+    const date = adminRotationGeneratorExcelText(hardRow.date || softRow.date || '');
+    const row = adminRotationGeneratorExcelBlankRow(width);
+    row[0] = date;
+    const hardCells = Array.isArray(hardRow.cells) ? hardRow.cells : [];
+    hardMachines.slice(0, 5).forEach((_, idx) => { row[1 + idx] = adminRotationGeneratorExcelText(hardCells[idx] || ''); });
+    row[7] = date;
+    const absences = adminRotationGeneratorGetExcelAbsencesForDate(absenceMaps, date).slice(0, 8);
+    absences.forEach((absence, idx) => {
+      row[8 + idx * 2] = adminRotationGeneratorExcelText(absence.person || '');
+      row[9 + idx * 2] = adminRotationGeneratorExcelText(absence.code || '');
+    });
+    rows.push(row);
+  }
+  rows.push(adminRotationGeneratorExcelBlankRow(width));
+  const softHeader = adminRotationGeneratorExcelBlankRow(width);
+  softHeader[0] = 'Rotace  měkota';
+  softMachines.slice(0, 5).forEach((machine, idx) => { softHeader[1 + idx] = adminRotationGeneratorExcelText(machine); });
+  rows.push(softHeader);
+  for (let i = 0; i < dayCount; i += 1) {
+    const hardRow = hardRows[i] || {};
+    const softRow = softRows[i] || {};
+    const date = adminRotationGeneratorExcelText(softRow.date || hardRow.date || '');
+    const row = adminRotationGeneratorExcelBlankRow(width);
+    row[0] = date;
+    const softCells = Array.isArray(softRow.cells) ? softRow.cells : [];
+    softMachines.slice(0, 5).forEach((_, idx) => { row[1 + idx] = adminRotationGeneratorExcelText(softCells[idx] || ''); });
+    rows.push(row);
+  }
+  return rows;
+}
+
+function adminRotationGeneratorDownloadExcel(monthKey) {
+  try {
+    if (typeof XLSX === 'undefined' || !XLSX || !XLSX.utils || typeof XLSX.writeFile !== 'function') {
+      throw new Error('Knihovna XLSX není dostupná. Zkus to online nebo po načtení stránky znovu.');
+    }
+    const key = String(monthKey || (app && app.selectedMonth) || '').trim();
+    const month = app && app.rotation && app.rotation.months ? app.rotation.months[key] : null;
+    if (!month) throw new Error('Není dostupný vygenerovaný měsíc pro export.');
+    const aoa = adminRotationGeneratorBuildExcelAoa(month);
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    ws['!cols'] = [
+      { wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 4 },
+      { wch: 12 }, { wch: 14 }, { wch: 8 }, { wch: 14 }, { wch: 8 }, { wch: 14 }, { wch: 8 }, { wch: 14 }, { wch: 8 }, { wch: 4 },
+      { wch: 14 }, { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 10 }
+    ];
+    XLSX.utils.book_append_sheet(wb, ws, adminRotationGeneratorExcelSheetName(key));
+    XLSX.writeFile(wb, adminRotationGeneratorExcelFileName(key));
+    return true;
+  } catch (err) {
+    const msg = err && err.message ? err.message : String(err || 'Excel export se nepovedl.');
+    try {
+      const status = document.getElementById('adminOnlineSaveStatus');
+      if (status) {
+        status.textContent = 'Excel export se nepovedl: ' + msg;
+        status.classList.add('isError');
+      }
+    } catch (inner) {}
+    alert('Excel export se nepovedl: ' + msg);
+    return false;
+  }
+}
+
 function adminRotationGeneratorRenderResultStep(state) {
   const month = app.rotation && app.rotation.months ? app.rotation.months[state.monthKey] : null;
   const summary = adminBuildRotationMachineCountSummaryHtml(month, state.monthKey);
@@ -3069,6 +3210,7 @@ function adminRotationGeneratorRenderResultStep(state) {
     '    <button type="button" class="appMenuAction" data-admin-action="generator-back-month">Zpět na měsíc</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="generator-back-days">Zpět na dny</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="generator-back-absences">Zpět na absence</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="generator-download-excel">Stáhnout Excel</button>',
     '    <button type="button" class="appMenuAction isActive" data-admin-action="generator-open-editor">Otevřít rozpis</button>',
     '  </div>',
     '</div>'
@@ -3254,6 +3396,10 @@ function adminHandleRotationGeneratorWizardAction(action, target) {
     adminRotationGeneratorRenderWizard('absences');
     return true;
   }
+  if (action === 'generator-download-excel') {
+    adminRotationGeneratorDownloadExcel(state.monthKey || app.selectedMonth);
+    return true;
+  }
   if (action === 'generator-open-editor') {
     app.selectedMonth = state.monthKey || app.selectedMonth;
     if (typeof renderAdminMenuBody === 'function') renderAdminMenuBody(body, 'rotation');
@@ -3368,6 +3514,7 @@ window.adminHandleRotationGeneratorWizardAction = adminHandleRotationGeneratorWi
 window.adminAddAbsenceRowToEditor = adminAddAbsenceRowToEditor;
 window.adminBuildRotationMachineCountSummaryHtml = adminBuildRotationMachineCountSummaryHtml;
 window.adminBuildRotationGeneratorPreviewHtml = adminBuildRotationGeneratorPreviewHtml;
+window.adminRotationGeneratorDownloadExcel = adminRotationGeneratorDownloadExcel;
 window.adminRotationGeneratorBuildMonthOptions = adminRotationGeneratorBuildMonthOptions;
 window.adminRotationGeneratorBalanceHardMachine = adminRotationGeneratorBalanceHardMachine;
 
@@ -3403,7 +3550,7 @@ function adminShowRotationSelectedRemove(input) {
       return;
     }
     window.__rakAdminRotationSelectedInput = input;
-    // RaK 1.2 (1.136) – horní sticky tlačítko už při kliknutí do jména nevytahujeme.
+    // RaK 1.2 (1.137) – horní sticky tlačítko už při kliknutí do jména nevytahujeme.
     // Rychlé Odebrat se vykreslí přímo u aktivního pole přes adminShowRotationQuickRemove().
     btn.hidden = true;
     btn.dataset.targetReady = '1';
