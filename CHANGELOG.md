@@ -1,3 +1,17 @@
+## RaK 1.2 (1.139)
+- Administrace / Export / import: přidaný stejný XLSX export rozpisu jako v generátoru, včetně výběru měsíce a tlačítka `Stáhnout Excel rozpisu`.
+- Export používá sdílenou funkci `adminRotationGeneratorDownloadExcel`, takže layout zůstává Tvrdota A:F, Měkota pod ní A:F a Absence od H dál.
+- Import Excelu, ZIP export, Supabase DB/policies a online ukládání rozpisu beze změny.
+- Release metadata sjednocená na `RaK 1.2 (1.139)`, technická verze `1.2.139`, cache `v1.2-1.139`.
+
+## RaK 1.2 (1.138)
+
+- Administrace / Rozpisy / Generátor: dolaďený XLSX export návrhu pro praktičtější kopírování do měsíční tabulky. Tvrdota zůstává v A:F, Měkota pod ní v A:F a Absence začínají od H.
+- Absence v XLSX exportu mají nově jasnější hlavičky: H = datum absence, od I dál dvojice `Jméno` / `Kód`. Počet dvojic se generuje podle měsíce v bezpečném rozsahu 4–8, bez slučovaných buněk.
+- Šířky sloupců XLSX exportu se nově staví podle reálné šířky exportovaných dat, takže nezůstávají zbytečné prázdné sloupce navíc a bloky se líp označují/kopírují.
+- Supabase DB/policies beze změny.
+- Release metadata sjednocená na `RaK 1.2 (1.138)`, technická verze `1.2.138`, cache `v1.2-1.138`.
+
 ## RaK 1.2 (1.137)
 
 - Administrace / Rozpisy / Generátor: po vygenerování návrhu přidané tlačítko `Stáhnout Excel`.

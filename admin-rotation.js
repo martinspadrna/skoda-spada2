@@ -1,4 +1,4 @@
-// RaK 1.2 (1.137) – Administrace Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
+// RaK 1.2 (1.139) – Administrace Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('admin-rotation.js', 'loading', { source: 'dynamic-loader' }); } catch (err) {}
 
 
@@ -1451,7 +1451,7 @@ function adminBuildRotationGenerationModel(targetMonthKey) {
     const previousIdx = (currentIdx - 1 + cycleLength) % cycleLength;
     const blockLength = Math.max(1, Number(RAK_ROTATION_GENERATOR_RULES_V1107.softHardBlockLength) || 3);
 
-    // RaK 1.2 (1.137): návaznost Synka/Třasáka/Střížka se nesmí odvozovat jen z posledního dne
+    // RaK 1.2 (1.139): návaznost Synka/Třasáka/Střížka se nesmí odvozovat jen z posledního dne
     // ani resetovat zpět, když je v historii po dokončeném bloku ještě extra TNKS01.
     // Procházíme celý předchozí měsíc chronologicky a zpětný "spillover" předchozího stroje ignorujeme.
     if (machineIdx !== currentIdx) {
@@ -2646,7 +2646,7 @@ function adminGenerateRotationMonthDraft(monthKey) {
     soloMillBalanceSwaps: (soloMillBalance && Number(soloMillBalance.swaps || 0)) + (soloMillRebalance && Number(soloMillRebalance.swaps || 0)),
     softKindBalanceSwaps: softKindBalance && Number(softKindBalance.swaps || 0),
     kminekNovotnyMoToBalanceSwaps: kminekNovotnyMoToBalance && Number(kminekNovotnyMoToBalance.swaps || 0),
-    ruleVersion: '1.137'
+    ruleVersion: '1.139'
   };
 }
 
@@ -3055,6 +3055,14 @@ function adminRotationGeneratorRenderAbsencesStep(state) {
   ].join('');
 }
 
+
+const RAK_ROTATION_GENERATOR_EXCEL_COPY_CONTRACT_V1138 = Object.freeze({
+  version: '1.139',
+  layout: 'kopírovací XLSX návrh rozpisu: Tvrdota A:F, prázdný oddělovač G, Absence od H dál podle pracovních dnů, Měkota znovu A:F pod Tvrdotou',
+  absenceRule: 'Absence mají datum v H a dvojice Jméno/Kód od I dál; počet dvojic je dynamický 4 až 8 podle měsíce.',
+  copyRule: 'Bez slučovaných buněk a bez stylových triků, aby šly bloky jednoduše označit a kopírovat do Martinovy měsíční tabulky.'
+});
+
 function adminRotationGeneratorExcelText(value) {
   return String(value == null ? '' : value).trim();
 }
@@ -3113,6 +3121,27 @@ function adminRotationGeneratorGetExcelAbsencesForDate(absenceMaps, dateLabel) {
   return [];
 }
 
+function adminRotationGeneratorBuildExcelAbsenceSlots(absenceMaps, dayLabels) {
+  let maxAbsences = 0;
+  (Array.isArray(dayLabels) ? dayLabels : []).forEach((dateLabel) => {
+    const count = adminRotationGeneratorGetExcelAbsencesForDate(absenceMaps, dateLabel).length;
+    if (count > maxAbsences) maxAbsences = count;
+  });
+  return Math.max(4, Math.min(8, maxAbsences || 0));
+}
+
+function adminRotationGeneratorBuildExcelCols(aoa) {
+  const width = Math.max(8, ...(Array.isArray(aoa) ? aoa.map((row) => Array.isArray(row) ? row.length : 0) : [0]));
+  const cols = [];
+  for (let idx = 0; idx < width; idx += 1) {
+    if (idx === 0 || idx === 7) cols.push({ wch: 12 });
+    else if (idx >= 1 && idx <= 5) cols.push({ wch: 14 });
+    else if (idx === 6) cols.push({ wch: 3 });
+    else cols.push({ wch: idx % 2 === 0 ? 15 : 8 });
+  }
+  return cols;
+}
+
 function adminRotationGeneratorBuildExcelAoa(month) {
   const hard = month && month.hard ? month.hard : {};
   const soft = month && month.soft ? month.soft : {};
@@ -3121,24 +3150,35 @@ function adminRotationGeneratorBuildExcelAoa(month) {
   const hardRows = Array.isArray(hard.rows) ? hard.rows : [];
   const softRows = Array.isArray(soft.rows) ? soft.rows : [];
   const dayCount = Math.max(hardRows.length, softRows.length);
-  const width = 27;
   const absenceMaps = adminRotationGeneratorBuildAbsenceExcelMaps(month);
+  const dayLabels = [];
+  for (let i = 0; i < dayCount; i += 1) {
+    const hardRow = hardRows[i] || {};
+    const softRow = softRows[i] || {};
+    dayLabels.push(adminRotationGeneratorExcelText(hardRow.date || softRow.date || ''));
+  }
+  const absenceSlots = adminRotationGeneratorBuildExcelAbsenceSlots(absenceMaps, dayLabels);
+  const width = 8 + absenceSlots * 2;
   const rows = [];
   const hardHeader = adminRotationGeneratorExcelBlankRow(width);
   hardHeader[0] = 'Rotace  tvrdota';
   hardMachines.slice(0, 5).forEach((machine, idx) => { hardHeader[1 + idx] = adminRotationGeneratorExcelText(machine); });
   hardHeader[7] = 'Dovolená, neschopenka atd.:';
+  for (let idx = 0; idx < absenceSlots; idx += 1) {
+    hardHeader[8 + idx * 2] = idx === 0 ? 'Jméno' : ('Jméno ' + String(idx + 1));
+    hardHeader[9 + idx * 2] = idx === 0 ? 'Kód' : ('Kód ' + String(idx + 1));
+  }
   rows.push(hardHeader);
   for (let i = 0; i < dayCount; i += 1) {
     const hardRow = hardRows[i] || {};
     const softRow = softRows[i] || {};
-    const date = adminRotationGeneratorExcelText(hardRow.date || softRow.date || '');
+    const date = dayLabels[i] || adminRotationGeneratorExcelText(hardRow.date || softRow.date || '');
     const row = adminRotationGeneratorExcelBlankRow(width);
     row[0] = date;
     const hardCells = Array.isArray(hardRow.cells) ? hardRow.cells : [];
     hardMachines.slice(0, 5).forEach((_, idx) => { row[1 + idx] = adminRotationGeneratorExcelText(hardCells[idx] || ''); });
     row[7] = date;
-    const absences = adminRotationGeneratorGetExcelAbsencesForDate(absenceMaps, date).slice(0, 8);
+    const absences = adminRotationGeneratorGetExcelAbsencesForDate(absenceMaps, date).slice(0, absenceSlots);
     absences.forEach((absence, idx) => {
       row[8 + idx * 2] = adminRotationGeneratorExcelText(absence.person || '');
       row[9 + idx * 2] = adminRotationGeneratorExcelText(absence.code || '');
@@ -3174,11 +3214,7 @@ function adminRotationGeneratorDownloadExcel(monthKey) {
     const aoa = adminRotationGeneratorBuildExcelAoa(month);
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.aoa_to_sheet(aoa);
-    ws['!cols'] = [
-      { wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 4 },
-      { wch: 12 }, { wch: 14 }, { wch: 8 }, { wch: 14 }, { wch: 8 }, { wch: 14 }, { wch: 8 }, { wch: 14 }, { wch: 8 }, { wch: 4 },
-      { wch: 14 }, { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 10 }
-    ];
+    ws['!cols'] = adminRotationGeneratorBuildExcelCols(aoa);
     XLSX.utils.book_append_sheet(wb, ws, adminRotationGeneratorExcelSheetName(key));
     XLSX.writeFile(wb, adminRotationGeneratorExcelFileName(key));
     return true;
@@ -3550,7 +3586,7 @@ function adminShowRotationSelectedRemove(input) {
       return;
     }
     window.__rakAdminRotationSelectedInput = input;
-    // RaK 1.2 (1.137) – horní sticky tlačítko už při kliknutí do jména nevytahujeme.
+    // RaK 1.2 (1.139) – horní sticky tlačítko už při kliknutí do jména nevytahujeme.
     // Rychlé Odebrat se vykreslí přímo u aktivního pole přes adminShowRotationQuickRemove().
     btn.hidden = true;
     btn.dataset.targetReady = '1';

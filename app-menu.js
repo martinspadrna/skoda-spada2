@@ -1,4 +1,4 @@
-// RaK 1.2 (1.137) – Více/menu shell, O aplikaci, Nastavení, Report chyby a admin menu.
+// RaK 1.2 (1.139) – Více/menu shell, O aplikaci, Nastavení, Report chyby a admin menu.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app-menu.js', 'loaded', { source: 'dynamic-loader' }); } catch (err) {}
 
 
@@ -7,6 +7,13 @@ function formatRakDisplayVersion(version) {
   if (!text) return '—';
   return /^RaK\s+/i.test(text) ? text : ('RaK ' + text);
 }
+
+const RAK_ADMIN_EXPORT_IMPORT_EXCEL_COPY_CONTRACT_V1139 = Object.freeze({
+  version: '1.2 (1.139)',
+  scope: 'administrace-export-import-rotation-excel-copy-layout',
+  action: 'admin-download-rotation-excel',
+  rule: 'Export / import používá stejný XLSX layout rozpisu jako generátor.'
+});
 
 
 function ensureAppMenuOverlay() {
@@ -163,14 +170,23 @@ function renderAdminMenuBody(body, section) {
   const usageHtml = buildAdminUsageHtml();
 
   const importPreview = (typeof getRakExcelImportPreview === 'function') ? getRakExcelImportPreview() : null;
+  const rotationExcelMonthOptions = months.length
+    ? months.map((m) => '<option value="' + escapeHtml(m) + '"' + (m === monthKey ? ' selected' : '') + '>' + escapeHtml(m) + '</option>').join('')
+    : '<option value="">Není dostupný žádný měsíc</option>';
   const exportHtml = [
     '<div class="appMenuCard appMenuAdminCard">',
     '  <div class="appMenuCardTitle">Export / import</div>',
     '  <div class="appMenuText">',
     '    <div>Import funguje ve dvou krocích: vybereš Excel, appka načte jen měsíční listy typu 01.2025 a potom si vybereš celý rok nebo konkrétní měsíc. Pomocné listy se ignorují.</div>',
-    '    <div class="smallText" id="rakExcelImportStatus">Export ZIP se stáhne jako kompletní build aplikace.</div>',
+    '    <div class="smallText" id="rakExcelImportStatus">ZIP export stáhne kompletní build aplikace. XLSX rozpis stáhne jen vybraný měsíc v kopírovacím layoutu.</div>',
     '  </div>',
     '  <div class="appMenuSettingsList">',
+    '    <div class="appMenuSubTitle">XLSX rozpis pro kopírování</div>',
+    '    <div class="smallText">Stejný export jako v generátoru: Tvrdota v A:F, Měkota pod ní v A:F a Absence od H dál po pracovních dnech.</div>',
+    '    <label class="appMenuFieldLabel" for="rakRotationExcelExportMonth">Měsíc rozpisu</label>',
+    '    <select id="rakRotationExcelExportMonth" class="appMenuSelect">' + rotationExcelMonthOptions + '</select>',
+    '    <button type="button" class="appMenuAction" data-admin-action="admin-download-rotation-excel">Stáhnout Excel rozpisu</button>',
+    '    <div class="appMenuSubTitle">Import rozpisů z Excelu</div>',
     '    <div class="smallText" id="rakExcelImportFileStatus">' + escapeHtml(importPreview ? ('Načteno: ' + importPreview.fileName + ' · měsíčních listů: ' + importPreview.monthKeys.length) : 'Zatím není vybraný žádný Excel.') + '</div>',
     '    <button type="button" class="appMenuAction" data-admin-action="excel-pick">Vybrat Excel</button>',
     '    <label class="appMenuFieldLabel" for="rakExcelImportScope">Co importovat</label>',
@@ -393,7 +409,7 @@ async function handleBugReportAction(action) {
 
 
 
-// RaK 1.2 (1.137) – Plovoucí odebrání a údržba editoru rozpisů jsou oddělené v admin-rotation.js.
+// RaK 1.2 (1.139) – Plovoucí odebrání a údržba editoru rozpisů jsou oddělené v admin-rotation.js.
 
 function bindAppMenuHandlers(body) {
   if (!body || body.dataset.menuHandlersBound === '1') return;
@@ -463,6 +479,21 @@ function bindAppMenuHandlers(body) {
       }
       if (adminAction === 'excel-import') {
         document.getElementById('importBtn')?.click();
+        return;
+      }
+      if (adminAction === 'admin-download-rotation-excel') {
+        const exportMonthEl = document.getElementById('rakRotationExcelExportMonth');
+        const exportMonthKey = String((exportMonthEl && exportMonthEl.value) || app.selectedMonth || '').trim();
+        if (!exportMonthKey) {
+          alert('Nejdřív vyber měsíc pro Excel export rozpisu.');
+          return;
+        }
+        app.selectedMonth = exportMonthKey;
+        if (typeof adminRotationGeneratorDownloadExcel === 'function') {
+          adminRotationGeneratorDownloadExcel(exportMonthKey);
+        } else {
+          alert('Excel export rozpisu není dostupný. Zkus aplikaci obnovit.');
+        }
         return;
       }
       if (menuAction === 'export' || adminAction === 'export') {
