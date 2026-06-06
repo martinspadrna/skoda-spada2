@@ -1,4 +1,4 @@
-// RaK 1.2 (1.140) – herní profily a leaderboardy.
+// RaK 1.2 (1.141) – herní profily a leaderboardy.
 
 // -------------------------
 // Games hub + account profile
@@ -403,13 +403,20 @@ async function gamesSyncProfileFromRemote(force = false) {
 
   try {
     const profile = gamesGetProfile();
+    const activeAccountId = String(profile && profile.activeAccountId || '').trim();
     const remoteAccounts = await bridge.loadGameAccounts().catch(() => []);
-    const remoteStatsRows = typeof bridge.loadGameStats === 'function'
+    const leaderboardStatsRows = typeof bridge.loadGameStats === 'function'
       ? (await Promise.all(gamesGetRemoteProfileStatIds().map((id) => {
           const limit = id === 'ttt' ? 100 : 20;
           return bridge.loadGameStats(id, limit, { force: !!force }).catch(() => []);
         }))).flat()
       : [];
+    // RaK 1.2 (1.141): aktivní profil nesmí záviset jen na Top score limitech.
+    // PC bez lokální historie si musí rank/theme dopočítat přímo ze všech statistik svého účtu.
+    const activeAccountStatsRows = activeAccountId && typeof bridge.loadGameStatsForAccount === 'function'
+      ? await bridge.loadGameStatsForAccount(activeAccountId, { force: !!force }).catch(() => [])
+      : [];
+    const remoteStatsRows = leaderboardStatsRows.concat(activeAccountStatsRows);
     let changed = false;
 
     (Array.isArray(remoteAccounts) ? remoteAccounts : []).forEach((row) => {
@@ -463,6 +470,7 @@ async function gamesSyncProfileFromRemote(force = false) {
       gamesRenderProfiles();
       gamesRenderAchievements();
       gamesRenderStats();
+      if (typeof applyProfileUiPreferencesForActiveAccount === 'function') applyProfileUiPreferencesForActiveAccount({ loadRemote: false, source: 'remote-stats-sync' });
       if (typeof renderThemeSettingsCards === 'function') renderThemeSettingsCards();
       if (typeof syncGamesLockedSections === 'function') syncGamesLockedSections();
     }
@@ -565,6 +573,17 @@ function gamesSetActiveAccount(accountId) {
   gamesApplyActiveAccountUI(active);
   if (typeof renderGamesProfileStatus === 'function') renderGamesProfileStatus();
   gamesRenderStats();
+  // RaK 1.2 (1.141): po přihlášení vynutit načtení statistik aktivního účtu,
+  // aby se rank a odemčené theme/pozadí sjednotily mezi mobilem a PC.
+  void gamesSyncProfileFromRemote(true).then(() => {
+    if (typeof applyProfileUiPreferencesForActiveAccount === 'function') applyProfileUiPreferencesForActiveAccount({ loadRemote: false, source: 'login-remote-stats' });
+    if (typeof renderGamesProfileStatus === 'function') renderGamesProfileStatus();
+    gamesRenderProfiles();
+    gamesRenderAchievements();
+    gamesRenderStats();
+    if (typeof renderThemeSettingsCards === 'function') renderThemeSettingsCards();
+    if (typeof syncGamesLockedSections === 'function') syncGamesLockedSections();
+  });
   renderGamesHub();
   if (typeof syncGamesLockedSections === 'function') syncGamesLockedSections();
   return true;
@@ -1290,5 +1309,16 @@ function gamesTop3Block(gameId, label, limit = 10) {
     '</div>'
   ].join('');
 }
+
+
+const GAMES_ACTIVE_ACCOUNT_DIRECT_STATS_CONTRACT_V1141 = Object.freeze({
+  version: '1.2 (1.141)',
+  scope: 'games-profile-rank-sync',
+  issue: 'rank a appearance unlocky nesmí záviset jen na leaderboard/top-score limitech',
+  activeAccountLoader: 'RotationSupabaseBridge.loadGameStatsForAccount(accountNumber)',
+  protectedAccount: 'aktivní účet podle account_number',
+  result: 'mobil a PC počítají rank/theme/pozadí ze stejných online statistik účtu'
+});
+window.GAMES_ACTIVE_ACCOUNT_DIRECT_STATS_CONTRACT_V1141 = GAMES_ACTIVE_ACCOUNT_DIRECT_STATS_CONTRACT_V1141;
 
 try { if (typeof window !== 'undefined' && typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('games-profile.js','loaded',{source:'games-profile'}); } catch (err) {}

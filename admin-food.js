@@ -1,4 +1,4 @@
-// RaK 1.2 (1.140) – Administrace Kantýna/jídelna oddělená z hlavního UI modulu.
+// RaK 1.2 (1.141) – Administrace Kantýna/jídelna oddělená z hlavního UI modulu.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('admin-food.js', 'loaded', { source: 'dynamic-loader' }); } catch (err) {}
 
 function adminFoodIsoToCzechDate(value) {

@@ -1,3 +1,10 @@
+## RaK 1.2 (1.141)
+
+- Opravené sjednocení herního profilu/ranku mezi mobilem a PC: aktivní účet se nově při syncu doplňuje přímo přes `account_number`, ne jen z leaderboard/top-score limitů.
+- Přidaný přímý Supabase read helper `loadGameStatsForAccount(accountNumber)`, který čte všechny statistiky aktivního účtu po reset cutoffu bez změny DB/policies.
+- Uložené theme/pozadí profilu se už na novém zařízení nepřepisuje na default jen proto, že rank ještě nebyl stažený; dočasně se vizuálně použije default a po načtení statistik se uložený skin znovu aplikuje, pokud je odemčený.
+- Release metadata sjednocená na `RaK 1.2 (1.141)`, technická verze `1.2.141`, cache `v1.2-1.141`.
+
 ## RaK 1.2 (1.140)
 - Administrace / Export / import / XLSX rozpis pro kopírování: opravený výběr měsíce, aby se nemíchaly stejné měsíce z různých roků.
 - Seznam měsíců pro Excel export je teď řazený chronologicky a skupinovaný podle roku přes `optgroup Rok`, takže 2025 a 2026 nejsou v jednom promíchaném seznamu.

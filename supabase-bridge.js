@@ -1,4 +1,4 @@
-// RaK 1.2 (1.140) – Supabase bridge a online synchronizace.
+// RaK 1.2 (1.141) – Supabase bridge a online synchronizace.
 (function () {
   const SUPABASE_CONFIG = window.SUPABASE_CONFIG || {};
   const state = {
@@ -236,7 +236,7 @@
     { table: 'gomoku_wins', realtime: true, queueType: 'gomoku_win', access: 'anon SELECT/INSERT/UPDATE', note: 'výhry piškvorek / legacy leaderboard' }
   ];
 
-  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = '1.2 (1.140)';
+  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = '1.2 (1.141)';
   const SUPABASE_POLICY_AUDIT_SNAPSHOT_AT = '2026-05-24';
   const SUPABASE_POLICY_HARDENING_PHASE = {
     current: 'V856 – release hygiene po kontrole vlastních buildů: changelog opravený, SQL auditní soubory jsou archivované v assets/docs/sql a DB policies se nemění.',
@@ -296,7 +296,7 @@
   ];
 
   const SUPABASE_RPC_HARDENING_STATUS = {
-    version: '1.2 (1.140)',
+    version: '1.2 (1.141)',
     phase: '2E-O online invite/session RPC smoke + accept RPC / no policy tightening',
     rpcPreferred: true,
     migrationApplied: true,
@@ -1019,7 +1019,7 @@
       ends_at: payload.ends_at,
       marquee: payload.marquee,
       updated_at: nowIso,
-      app_version: String(window.APP_VERSION || '1.2 (1.140)'),
+      app_version: String(window.APP_VERSION || '1.2 (1.141)'),
       priority: 0
     });
     return [
@@ -1064,7 +1064,7 @@
           ends_at: fallback.ends_at,
           marquee: fallback.marquee,
           updated_at: new Date().toISOString(),
-          app_version: String(window.APP_VERSION || '1.2 (1.140)'),
+          app_version: String(window.APP_VERSION || '1.2 (1.141)'),
           priority: 0
         });
   }
@@ -1079,7 +1079,7 @@
         p_ends_at: safe.ends_at,
         p_marquee: safe.marquee,
         p_updated_by: 'rak-admin-ui',
-        p_app_version: String(window.APP_VERSION || '1.2 (1.140)'),
+        p_app_version: String(window.APP_VERSION || '1.2 (1.141)'),
         p_priority: 0
       }), { mode: 'write', timeoutMs: 8000, attempts: 1 });
       if (res && res.error) return { ok: false, error: res.error, shape: 'rpc-save' };
@@ -1093,7 +1093,7 @@
     try {
       const res = await runSupabaseOperation('announcements.rpc-clear', () => client.rpc('rak_clear_dashboard_announcement', {
         p_updated_by: 'rak-admin-ui',
-        p_app_version: String(window.APP_VERSION || '1.2 (1.140)')
+        p_app_version: String(window.APP_VERSION || '1.2 (1.141)')
       }), { mode: 'write', timeoutMs: 8000, attempts: 1 });
       if (res && res.error) return { ok: false, error: res.error, shape: 'rpc-clear' };
       return { ok: true, cleared: true, count: Number(res && res.data || 0), shape: 'rpc-clear' };
@@ -3538,6 +3538,10 @@
     return LOCAL_GAME_STATS_PREFIX + encodeURIComponent(String(gameType || '').trim() || 'unknown') + ':' + String(Math.max(1, Math.min(100, Number(limit) || 10)));
   }
 
+  function gameStatsAccountCacheKey(accountNumber) {
+    return LOCAL_GAME_STATS_PREFIX + 'account:' + encodeURIComponent(String(accountNumber || '').trim() || 'unknown') + ':all';
+  }
+
   function clearGameStatsCache(gameType) {
     const type = encodeURIComponent(String(gameType || '').trim() || 'unknown');
     const prefix = LOCAL_GAME_STATS_PREFIX + type + ':';
@@ -3611,6 +3615,56 @@
     }
     clearAllGameStatsCaches();
     return result;
+  }
+
+  async function loadGameStatsForAccountDirect(client, accountNumber, options = {}) {
+    const account = String(accountNumber || '').trim();
+    if (!account) return [];
+    const cacheKey = gameStatsAccountCacheKey(account);
+    const forceRefresh = !!(options && options.force);
+    const cachedStats = forceRefresh ? null : readTimedCache(cacheKey, SUPABASE_GAME_CACHE_TTL_MS);
+    if (cachedStats && cachedStats.fresh) {
+      rememberTimedCacheHit('stats', cachedStats);
+      return cachedStats.rows;
+    }
+    try {
+      const [accounts, statsRes] = await Promise.all([
+        loadGameAccountsDirect(client, { preferCache: true }).catch(() => []),
+        runSharedSupabaseRead('game_stats.account.load:' + account, () => runSupabaseOperation('game_stats.account.load', () => client
+          .from('game_stats')
+          .select('id,account_number,game_type,games_played,wins,losses,draws,points,last_played_at,updated_at')
+          .eq('account_number', account)
+          .neq('game_type', GAME_UI_SETTINGS_TYPE)
+          .gte('last_played_at', GAME_PROGRESS_RESET_CUTOFF_ISO)
+          .order('last_played_at', { ascending: false })
+          .limit(200), { mode: 'read' }))
+      ]);
+      if (statsRes && statsRes.error) throw statsRes.error;
+      const nameMap = new Map((Array.isArray(accounts) ? accounts : []).map(row => [String(row.account_number || '').trim(), String(row.full_name || '').trim()]));
+      const rows = (Array.isArray(statsRes && statsRes.data) ? statsRes.data : [])
+        .map(row => ({
+          id: row.id,
+          account_number: String(row.account_number || '').trim(),
+          game_type: String(row.game_type || '').trim(),
+          games_played: Number(row.games_played || 0) || 0,
+          wins: Number(row.wins || 0) || 0,
+          losses: Number(row.losses || 0) || 0,
+          draws: Number(row.draws || 0) || 0,
+          points: Number(row.game_type === 'ttt' ? (row.games_played || row.points || 0) : (row.points || 0)) || 0,
+          last_played_at: row.last_played_at || null,
+          updated_at: row.updated_at || null,
+          player_name: nameMap.get(String(row.account_number || '').trim()) || String(row.account_number || '').trim()
+        }))
+        .filter(row => String(row.account_number || '').trim() === account && String(row.game_type || '').trim() && String(row.game_type || '').trim() !== GAME_UI_SETTINGS_TYPE);
+      writeTimedCache(cacheKey, rows, 'stats');
+      return rows;
+    } catch (err) {
+      if (cachedStats && cachedStats.rows) {
+        rememberTimedCacheHit('stats', cachedStats);
+        return cachedStats.rows;
+      }
+      throw err;
+    }
   }
 
   async function loadGameStatsDirect(client, gameType, limit, options) {
@@ -4392,7 +4446,7 @@
     return {
       ok: blockers.length === 0,
       mode: 'supabase-hardening-readiness-audit-only',
-      version: '1.2 (1.140)',
+      version: '1.2 (1.141)',
       checkedAt: new Date().toISOString(),
       confirmed,
       readinessPercent,
@@ -4722,6 +4776,28 @@
       if (!client || !navigator.onLine) return { ok: false, reason: 'offline' };
       try { const result = await recordTttSessionResultByInviteCodeDirect(client, code, options); state.lastError = null; return result; }
       catch (err) { state.lastError = err; console.error('TTT session result record failed', err); return { ok: false, error: err }; }
+    },
+    loadGameStatsForAccount: async (accountNumber, options = {}) => {
+      const account = String(accountNumber || '').trim();
+      const cache = readTimedCache(gameStatsAccountCacheKey(account), SUPABASE_GAME_CACHE_TTL_MS);
+      const client = getClient();
+      if (!client || !navigator.onLine) {
+        if (cache && cache.rows) {
+          rememberTimedCacheHit('stats', cache);
+          return cache.rows;
+        }
+        return [];
+      }
+      try { const rows = await loadGameStatsForAccountDirect(client, account, options); state.lastError = null; return rows; }
+      catch (err) {
+        state.lastError = err;
+        console.error('Game account stats load failed', err);
+        if (cache && cache.rows) {
+          rememberTimedCacheHit('stats', cache);
+          return cache.rows;
+        }
+        return [];
+      }
     },
     loadGameStats: async (gameType, limit = 10, options = {}) => {
       const safeLimit = Math.max(1, Math.min(100, Number(limit) || 10));

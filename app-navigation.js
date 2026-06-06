@@ -1,4 +1,4 @@
-// RaK 1.2 (1.140) – navigační shell, home refresh a dashboard modaly.
+// RaK 1.2 (1.141) – navigační shell, home refresh a dashboard modaly.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app-navigation.js', 'loaded', { source: 'dynamic-loader' }); } catch (err) {}
 
 function centerBottomNavButton(btn) {

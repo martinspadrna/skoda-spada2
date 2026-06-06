@@ -1,19 +1,19 @@
-// RaK 1.2 (1.140) – boot/load shell aplikace.
+// RaK 1.2 (1.141) – boot/load shell aplikace.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app.js', 'loaded', { source: 'index' }); } catch (err) {}
 
 
-// RaK 1.2 (1.140) – runtime guardy aplikace jsou oddělené v app-runtime-guards.js.
-// RaK 1.2 (1.140) – delegované klikací akce jsou oddělené v app-actions.js.
-// RaK 1.2 (1.140) – health/audit helpery aplikace jsou oddělené v app-health-audits.js.
-// RaK 1.2 (1.140) – PWA/service worker konektivita je oddělená v app-pwa-connectivity.js.
-// RaK 1.2 (1.140) – boot self-test je oddělený v app-boot-selftest.js.
-// RaK 1.2 (1.140) – Excel import rozpisů je oddělený v app-excel-import.js.
-// RaK 1.2 (1.140) – admin odemčení je oddělené v app-admin-unlock.js.
-// RaK 1.2 (1.140) – home boot sekvence je oddělená v app-home-boot.js.
-// RaK 1.2 (1.140) – sync a startovací volby Rotace jsou v app-rotation-sync.js a app-rotation-controls.js.
+// RaK 1.2 (1.141) – runtime guardy aplikace jsou oddělené v app-runtime-guards.js.
+// RaK 1.2 (1.141) – delegované klikací akce jsou oddělené v app-actions.js.
+// RaK 1.2 (1.141) – health/audit helpery aplikace jsou oddělené v app-health-audits.js.
+// RaK 1.2 (1.141) – PWA/service worker konektivita je oddělená v app-pwa-connectivity.js.
+// RaK 1.2 (1.141) – boot self-test je oddělený v app-boot-selftest.js.
+// RaK 1.2 (1.141) – Excel import rozpisů je oddělený v app-excel-import.js.
+// RaK 1.2 (1.141) – admin odemčení je oddělené v app-admin-unlock.js.
+// RaK 1.2 (1.141) – home boot sekvence je oddělená v app-home-boot.js.
+// RaK 1.2 (1.141) – sync a startovací volby Rotace jsou v app-rotation-sync.js a app-rotation-controls.js.
 
 
-// RaK 1.2 (1.140) – spodní navigace je oddělená v app-bottom-nav.js.
+// RaK 1.2 (1.141) – spodní navigace je oddělená v app-bottom-nav.js.
 
 
 

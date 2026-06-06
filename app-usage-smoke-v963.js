@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.140) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.141) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -216,12 +216,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.140)',
-  appLabel: 'RaK 1.2 (1.140)',
-  packageVersion: '1.2.140',
-  cacheVersion: 'v1.2-1.140',
+  displayVersion: '1.2 (1.141)',
+  appLabel: 'RaK 1.2 (1.141)',
+  packageVersion: '1.2.141',
+  cacheVersion: 'v1.2-1.141',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.140)',
+  changelogHeader: '## RaK 1.2 (1.141)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -330,8 +330,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.140)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.140'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.141)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.141'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -890,7 +890,7 @@ function assertRotationGeneratorRulesContractV1107() {
   assertIncludes(ui, 'if (softTargetCount === 3 && lathePeopleCount === 2 && mskc01Idx >= 0)', 'Při dvou absencích musí zůstat MSKC01 neobsazená');
   assertIncludes(ui, 'readAdminRotationFromDom(monthKey)', 'Generátor musí před výpočtem číst rozepsané absence z DOMu');
   assertIncludes(ui, 'adminRotationGeneratorIsDayBlocked', 'Generátor musí umět vynechat den označený jako svátek/odstávka');
-  assertIncludes(ui, "ruleVersion: '1.140'", 'Výsledek generátoru musí vracet aktuální verzi pravidel 1.140');
+  assertIncludes(ui, "ruleVersion: '1.141'", 'Výsledek generátoru musí vracet aktuální verzi pravidel 1.141');
 assertIncludes(ui, 'generator-download-excel', 'Výsledek generátoru musí nabízet stažení návrhu do Excelu');
 assertIncludes(ui, 'admin-download-rotation-excel', 'Administrace / Export import musí nabízet stejný XLSX export rozpisu');
 assertIncludes(ui, 'rakRotationExcelExportMonth', 'Export / import musí mít vlastní výběr měsíce pro XLSX export rozpisu');
@@ -980,7 +980,7 @@ function assertRotationGeneratorRulesContractV1114() {
   assertIncludes(ui, 'function adminRotationGeneratorCountSoloMill', 'Generátor musí umět spočítat samostatné MFKF10 s prázdnou MFKF06');
   assertIncludes(ui, "const soloMillBalance = adminRotationGeneratorBalanceSoloMill(month, model);", 'Po sestavení měsíce musí běžet vyrovnání samostatných frézek');
   assertIncludes(ui, 'soloMillBalanceSwaps', 'Výsledek generátoru musí vracet počet prohozů samostatných frézek');
-  assertIncludes(ui, "ruleVersion: '1.140'", 'Výsledek generátoru musí vracet aktuální verzi pravidel 1.140');
+  assertIncludes(ui, "ruleVersion: '1.141'", 'Výsledek generátoru musí vracet aktuální verzi pravidel 1.141');
 }
 
 
@@ -1041,12 +1041,12 @@ function assertRotationGeneratorRulesContractV1117() {
 
 
 function assertRotationGeneratorExcelCopyContractV1138() {
-  assertIncludes(exportJs, 'RAK_ROTATION_GENERATOR_EXCEL_COPY_CONTRACT_V1138', 'export.js musí dokumentovat kopírovací XLSX layout generátoru v1.140');
-  assertIncludes(ui, 'RAK_ROTATION_GENERATOR_EXCEL_COPY_CONTRACT_V1138', 'admin-rotation.js musí mít contract pro XLSX kopírovací layout v1.140');
-  assertIncludes(exportJs, 'RAK_ADMIN_EXPORT_IMPORT_EXCEL_COPY_CONTRACT_V1139', 'export.js musí dokumentovat XLSX export v Administraci / Export import v1.140');
-  assertIncludes(ui, 'RAK_ADMIN_EXPORT_IMPORT_EXCEL_COPY_CONTRACT_V1139', 'app-menu.js musí mít contract pro XLSX export v Export/import v1.140');
-  assertIncludes(exportJs, 'RAK_ADMIN_EXPORT_IMPORT_EXCEL_MONTH_GROUP_CONTRACT_V1140', 'export.js musí dokumentovat skupinovaný výběr měsíců pro XLSX export v1.140');
-  assertIncludes(ui, 'RAK_ADMIN_EXPORT_IMPORT_EXCEL_MONTH_GROUP_CONTRACT_V1140', 'app-menu.js musí mít contract pro řazení a skupiny roků v XLSX exportu v1.140');
+  assertIncludes(exportJs, 'RAK_ROTATION_GENERATOR_EXCEL_COPY_CONTRACT_V1138', 'export.js musí dokumentovat kopírovací XLSX layout generátoru v1.141');
+  assertIncludes(ui, 'RAK_ROTATION_GENERATOR_EXCEL_COPY_CONTRACT_V1138', 'admin-rotation.js musí mít contract pro XLSX kopírovací layout v1.141');
+  assertIncludes(exportJs, 'RAK_ADMIN_EXPORT_IMPORT_EXCEL_COPY_CONTRACT_V1139', 'export.js musí dokumentovat XLSX export v Administraci / Export import v1.141');
+  assertIncludes(ui, 'RAK_ADMIN_EXPORT_IMPORT_EXCEL_COPY_CONTRACT_V1139', 'app-menu.js musí mít contract pro XLSX export v Export/import v1.141');
+  assertIncludes(exportJs, 'RAK_ADMIN_EXPORT_IMPORT_EXCEL_MONTH_GROUP_CONTRACT_V1140', 'export.js musí dokumentovat skupinovaný výběr měsíců pro XLSX export v1.141');
+  assertIncludes(ui, 'RAK_ADMIN_EXPORT_IMPORT_EXCEL_MONTH_GROUP_CONTRACT_V1140', 'app-menu.js musí mít contract pro řazení a skupiny roků v XLSX exportu v1.141');
   assertIncludes(ui, 'function buildRakRotationExcelExportMonthOptions', 'Export / import musí mít vlastní builder výběru měsíců pro XLSX export');
   assertIncludes(ui, '<optgroup label="Rok ', 'Výběr XLSX exportu musí skupinovat měsíce podle roku');
   assertIncludes(ui, 'function adminRotationGeneratorBuildExcelAbsenceSlots', 'Excel export musí dynamicky určit počet dvojic Jméno/Kód pro absence');
@@ -1056,7 +1056,23 @@ function assertRotationGeneratorExcelCopyContractV1138() {
   assertIncludes(ui, 'const width = 8 + absenceSlots * 2', 'Excel layout musí mít A:F + G mezera + H absence datum + dynamické dvojice');
   assertIncludes(ui, "softHeader[0] = 'Rotace  měkota'", 'Měkota musí zůstat jako samostatný blok pod Tvrdotou v A:F');
   assertIncludes(ui, "ws['!cols'] = adminRotationGeneratorBuildExcelCols(aoa);", 'Stažený XLSX musí použít nové kopírovací šířky sloupců');
-  assertIncludes(ui, "ruleVersion: '1.140'", 'Výsledek generátoru musí vracet aktuální verzi pravidel 1.140');
+  assertIncludes(ui, "ruleVersion: '1.141'", 'Výsledek generátoru musí vracet aktuální verzi pravidel 1.141');
+}
+
+
+function assertGamesActiveAccountDirectStatsContractV1141() {
+  assertIncludes(bridge, 'function gameStatsAccountCacheKey', 'Supabase bridge musí mít cache klíč pro statistiky konkrétního účtu v1.141');
+  assertIncludes(bridge, 'async function loadGameStatsForAccountDirect', 'Supabase bridge musí umět přímo načíst všechny statistiky aktivního účtu v1.141');
+  assertIncludes(bridge, 'loadGameStatsForAccount: async', 'RotationSupabaseBridge musí vystavit loadGameStatsForAccount pro profil/rank sync v1.141');
+  assertIncludes(bridge, ".eq('account_number', account)", 'Přímé načtení statistik musí filtrovat podle account_number');
+  assertIncludes(ui, 'GAMES_ACTIVE_ACCOUNT_DIRECT_STATS_CONTRACT_V1141', 'games-profile.js musí dokumentovat přímý sync aktivního účtu v1.141');
+  assertIncludes(ui, 'bridge.loadGameStatsForAccount(activeAccountId', 'Profilový sync musí používat přímé statistiky aktivního účtu');
+  assertIncludes(ui, 'login-remote-stats', 'Po přihlášení se musí vynutit přepočet ranku/theme po stažení statistik účtu');
+  assertIncludes(appearanceThemeJs, 'RAK_APPEARANCE_LOCKED_PREFERENCE_PRESERVE_CONTRACT_V1141', 'appearance musí chránit uložené theme/pozadí před předčasným přepsáním na default');
+  assertIncludes(appearanceThemeJs, 'const themeToApply = savedThemeUnlocked', 'Zamčené uložené theme se má dočasně jen vizuálně nahradit defaultem');
+  assertIncludes(appearanceThemeJs, 'const bgToApply = savedBgUnlocked', 'Zamčené uložené pozadí se má dočasně jen vizuálně nahradit defaultem');
+  assert(!appearanceThemeJs.includes("if (!isAppearanceRewardUnlocked(savedTheme, rewardMetrics, 'default')) { ui.themeId = defaultTheme"), 'Uložené profilové theme se nesmí mazat při dočasně nízkém ranku');
+  assert(!appearanceThemeJs.includes("if (!isAppearanceRewardUnlocked(savedBg, rewardMetrics, 'ios-mesh')) { ui.backgroundId = defaultBg"), 'Uložené profilové pozadí se nesmí mazat při dočasně nízkém ranku');
 }
 
 function assertStatsPressMachineSplitContractV1123() {
@@ -1169,13 +1185,14 @@ assertRotationGeneratorRulesContractV1116();
 assertRotationGeneratorRulesContractV1117();
 assertDashboardAndRotationEmptyVisualContractV1119();
 assertRotationGeneratorExcelCopyContractV1138();
+assertGamesActiveAccountDirectStatsContractV1141();
 assertStatsPressMachineSplitContractV1123();
 assertStatsPressMachineMoOnlyExceptionContractV1124();
 assertRotationOvertimeShiftFilterContractV1128();
 assertRotationOvertimeDefaults2025ContractV1129();
 assertLightPatternThemeContractV1131();
 
-console.log('app-usage-smoke-v963 OK + rotation-generator-wizard-v1108-guard + rotation-generator-absence-state-v1109-guard + rotation-generator-wizard-run-v1110-guard + rotation-generator-wizard-state-v1111-guard + rotation-generator-month-balance-v1112-guard + rotation-generator-rules-v1113-guard + rotation-generator-rules-v1114-guard + rotation-generator-rules-v1115-guard + rotation-generator-rules-v1116-guard + rotation-generator-rules-v1117-guard + dashboard-percent-empty-cells-v1119-guard + stats-press-machine-split-v1123-guard + rotation-overtime-shift-filter-v1128-guard + rotation-overtime-defaults-2025-v1129-guard + rotation-absence-export-ytd-generator-theme-v1130-guard + light-pattern-theme-v1131-guard + rotation-generator-excel-copy-v1138-guard + dashboard-css-contract-guard + appearance-reward-contract + rotation-export-summary-simple-guard + rotation-export-glass-guard + appearance-readability-guard + css-layer-order-v194-guard + dashboard-owner-registry-v195-guard + dashboard-overrides-selector-lock-v196-guard + dashboard-scope-v197-guard + dashboard-release-isolation-v198-guard + dashboard-css-guard-series-v1100-complete + release-metadata-v199-guard + brusy-choice-size-v1101-guard + fixed-app-background-v1101-guard + name-choice-fit-v1102-guard + browser-smoke-v1103-guard + dashboard-empty-absence-text-v1104-guard + rotace-empty-absence-text-v1105-guard + appearance-update-persistence-v1105-guard + rotation-generator-v1106-guard + rotation-generator-rules-v1107-guard + no-visual-owner-drift-guard OK');
+console.log('app-usage-smoke-v963 OK + rotation-generator-wizard-v1108-guard + rotation-generator-absence-state-v1109-guard + rotation-generator-wizard-run-v1110-guard + rotation-generator-wizard-state-v1111-guard + rotation-generator-month-balance-v1112-guard + rotation-generator-rules-v1113-guard + rotation-generator-rules-v1114-guard + rotation-generator-rules-v1115-guard + rotation-generator-rules-v1116-guard + rotation-generator-rules-v1117-guard + dashboard-percent-empty-cells-v1119-guard + stats-press-machine-split-v1123-guard + rotation-overtime-shift-filter-v1128-guard + rotation-overtime-defaults-2025-v1129-guard + rotation-absence-export-ytd-generator-theme-v1130-guard + light-pattern-theme-v1131-guard + rotation-generator-excel-copy-v1138-guard + games-active-account-direct-stats-v1141-guard + dashboard-css-contract-guard + appearance-reward-contract + rotation-export-summary-simple-guard + rotation-export-glass-guard + appearance-readability-guard + css-layer-order-v194-guard + dashboard-owner-registry-v195-guard + dashboard-overrides-selector-lock-v196-guard + dashboard-scope-v197-guard + dashboard-release-isolation-v198-guard + dashboard-css-guard-series-v1100-complete + release-metadata-v199-guard + brusy-choice-size-v1101-guard + fixed-app-background-v1101-guard + name-choice-fit-v1102-guard + browser-smoke-v1103-guard + dashboard-empty-absence-text-v1104-guard + rotace-empty-absence-text-v1105-guard + appearance-update-persistence-v1105-guard + rotation-generator-v1106-guard + rotation-generator-rules-v1107-guard + no-visual-owner-drift-guard OK');
 
 // v1.136 guard: soft-core fixed cycle + no TNKS balancing + removed AMOLED black.
 assertIncludes(ui, 'RAK_ROTATION_GENERATOR_RULES_V1135', 'Chybí pravidla generátoru v1.136');
