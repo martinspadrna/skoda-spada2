@@ -1,3 +1,13 @@
+## RaK 1.2 (1.143)
+
+- Nastavení / Výkon zařízení: ověřený a dotažený Láďův režim pro plynulejší chod na slabších mobilech.
+- Aktivní Láďův režim nově zapíná `rakLadaPaintLite`, která vypne pevné pseudo vrstvy pozadí `body::before/after` a použije jednoduché statické pozadí bez drahého fixed paintu.
+- Tvrdší výkonové odlehčení pro aktivní `ladaMode`, `lowEndDevice` i `lightweightMode`: bez `backdrop-filter`, bez filtrů, bez animací/přechodů a s lehčími stíny na hlavních kartách, modalech, navigaci a herních panelech.
+- Health audit Láďova režimu nově hlídá i lite paint vrstvu a diagnostiku `rakLadaPaintLite`.
+- Ruční vypnutí z 1.142 zůstává zachované: když si uživatel Láďův režim vypne, low-end detekce dál jen diagnostikuje, ale nevnucuje CSS efekty ani DPR limit.
+- Supabase DB/policies beze změny.
+- Release metadata sjednocená na `RaK 1.2 (1.143)`, technická verze `1.2.143`, cache `v1.2-1.143`.
+
 ## RaK 1.2 (1.141)
 
 - Opravené sjednocení herního profilu/ranku mezi mobilem a PC: aktivní účet se nově při syncu doplňuje přímo přes `account_number`, ne jen z leaderboard/top-score limitů.

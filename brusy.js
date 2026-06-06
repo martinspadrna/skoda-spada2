@@ -1,4 +1,4 @@
-// RaK 1.2 (1.141) – kalkulačky Brusy.
+// RaK 1.2 (1.143) – kalkulačky Brusy.
 function renderBrusy() {
   const toggleClass = typeof toggleElementClassIfChanged === "function"
     ? toggleElementClassIfChanged

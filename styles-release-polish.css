@@ -1,4 +1,4 @@
-/* RaK 1.2 (1.141) – release polish override vrstva oddělená ze styles-overrides.css.
+/* RaK 1.2 (1.143) – release polish override vrstva oddělená ze styles-overrides.css.
    Tady jsou pozdní opravy vzhledu, které musí zůstat načtené až po historických overridech. */
 
 /* 1.2 (1.9) – stabilizace pozadí, iOS startu a Rotace doku jmen. */
@@ -847,7 +847,7 @@ body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .r
 }
 
 
-/* 1.2 (1.141) – Rotace: jmenné bloky o cca 15 % vyšší a pořád hodně průhledný glass. */
+/* 1.2 (1.143) – Rotace: jmenné bloky o cca 15 % vyšší a pořád hodně průhledný glass. */
 :root{
   --rak-v1008-rotace-names-h:clamp(128px, 38svh, 202px);
   --rak-rotace-name-chip-h:48px;
@@ -915,7 +915,7 @@ body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .r
   }
 }
 
-/* 1.2 (1.141) – Rotace: jména zůstávají větší, ale písmo je o chlup menší kvůli delším jménům. */
+/* 1.2 (1.143) – Rotace: jména zůstávají větší, ale písmo je o chlup menší kvůli delším jménům. */
 #rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceTileTitle,
 #rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem .rotaceTileTitle,
 html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceTileTitle,
@@ -933,7 +933,7 @@ body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .r
   }
 }
 
-/* 1.2 (1.141) – Korekce Frézky: aktuální korekce bez zeleného podbarvení, jen neutrální glass. */
+/* 1.2 (1.143) – Korekce Frézky: aktuální korekce bez zeleného podbarvení, jen neutrální glass. */
 #korekce-frezky .calcCorrectionFhbCard .calcCorrectionGroup--currentCorrection,
 #korekce-frezky .calcCorrectionFhbCard .calcCorrectionGroup--soft.calcCorrectionGroup--currentCorrection{
   background:linear-gradient(145deg, rgba(255,255,255,.042), rgba(255,255,255,.010)) !important;
@@ -962,7 +962,7 @@ body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .r
   box-shadow:0 0 0 2px rgba(255,255,255,.10), inset 0 1px 0 rgba(255,255,255,.14) !important;
 }
 
-/* 1.2 (1.141) – Rotace: jména ponechaná vyšší, písmo ještě malinko menší kvůli dvěma delším jménům. */
+/* 1.2 (1.143) – Rotace: jména ponechaná vyšší, písmo ještě malinko menší kvůli dvěma delším jménům. */
 #rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceTileTitle,
 #rotace.page.active #rotaceNamesPanel.active #namesGrid .listItem .rotaceTileTitle,
 html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"] .rotaceTileTitle,
@@ -981,7 +981,7 @@ body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .r
   }
 }
 
-/* 1.2 (1.141) – Rozpisy: běžně dostupné stažení PNG bez administrace. */
+/* 1.2 (1.143) – Rozpisy: běžně dostupné stažení PNG bez administrace. */
 .rotaceDownloadMonthBtn{
   width:100% !important;
   margin-top:12px !important;
@@ -1005,7 +1005,7 @@ body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .r
   opacity:.72 !important;
 }
 
-/* 1.2 (1.141) – Brusy / Výpočet kusů: volby brusu a indexů dorovnané velikostí na Frézky / Korekce preset tlačítka. */
+/* 1.2 (1.143) – Brusy / Výpočet kusů: volby brusu a indexů dorovnané velikostí na Frézky / Korekce preset tlačítka. */
 #brusy.calcPage{
   --brus-main-choice-h:58px !important;
   --brus-free-choice-h:58px !important;
@@ -1058,7 +1058,7 @@ html body #brusy.calcPage .bbtn.brusFreeIndexBtn{
   }
 }
 
-/* 1.2 (1.141) – Pevné pozadí celé appky: obsah scrolluje nad ukotveným backgroundem, aby glass panely víc fungovaly. */
+/* 1.2 (1.143) – Pevné pozadí celé appky: obsah scrolluje nad ukotveným backgroundem, aby glass panely víc fungovaly. */
 html,
 html.rakViewportPrimed,
 html.rakStableBootViewport{
@@ -1134,7 +1134,7 @@ body::after{
 }
 
 
-/* RaK 1.2 (1.141) – Volba jmen v Rotaci a Statistikách: delší jména se mají vejít na menších displejích. */
+/* RaK 1.2 (1.143) – Volba jmen v Rotaci a Statistikách: delší jména se mají vejít na menších displejích. */
 :root{
   --rak-name-choice-font:clamp(10.4px, 2.62vw, 12.6px);
   --rak-name-choice-font-tight:clamp(9.8px, 2.48vw, 11.8px);
@@ -1208,7 +1208,7 @@ body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"] .r
   }
 }
 
-/* 1.2 (1.141) – Browser smoke: volné indexy Brusy drží stejnou reálnou výšku jako TBKR/AD/AE/AH a Frézky presety. */
+/* 1.2 (1.143) – Browser smoke: volné indexy Brusy drží stejnou reálnou výšku jako TBKR/AD/AE/AH a Frézky presety. */
 html body #brusy.calcPage .brusIndexGrid > .brusFreeWrap > .bbtn.brusFreeIndexBtn,
 html body #brusy.calcPage .brusFreeWrap > .bbtn.brusFreeIndexBtn{
   height:58px !important;
@@ -1229,4 +1229,243 @@ html body #brusy.calcPage .brusFreeWrap > .bbtn.brusFreeIndexBtn{
     padding:8px 7px !important;
     font-size:14px !important;
   }
+}
+
+/* RaK 1.2 (1.143) – Láďův režim: plynulost na slabších mobilech.
+   Aktivní režim používá jednoduchou paint vrstvu bez fixed pseudo backgroundů,
+   těžkých blurů, glow filtrů a dlouhých animací. Ruční vypnutí z 1.142 zůstává beze změny. */
+html.rakLadaPaintLite,
+html.rakLadaPaintLite body{
+  background:#050b09 !important;
+  background-color:#050b09 !important;
+  background-image:linear-gradient(160deg, #050b09 0%, #07110d 54%, #0a1712 100%) !important;
+  background-attachment:scroll !important;
+}
+html.rakLadaPaintLite body::before,
+html.rakLadaPaintLite body::after{
+  display:none !important;
+  content:none !important;
+  opacity:0 !important;
+  background:none !important;
+  transform:none !important;
+  will-change:auto !important;
+}
+body.ladaMode,
+body.lowEndDevice,
+body.lightweightMode{
+  --rak-lada-blur-px:0px;
+  --rak-lada-card-bg:rgba(8,14,11,.86);
+  --rak-lada-card-border:rgba(255,255,255,.075);
+  --rak-lada-card-shadow:0 3px 8px rgba(0,0,0,.16);
+  text-rendering:optimizeSpeed;
+}
+body.ladaMode .dashboardHeroCard,
+body.ladaMode .dashboardCard,
+body.ladaMode .card,
+body.ladaMode .tile,
+body.ladaMode .listItem,
+body.ladaMode .bbtn,
+body.ladaMode .bottomNav,
+body.ladaMode .bottomNavBtn,
+body.ladaMode .bottomNavMenuBtn,
+body.ladaMode .appMenuCard,
+body.ladaMode .appMenuAction,
+body.ladaMode .appMenuThemeCard,
+body.ladaMode .appMenuThemeSummary,
+body.ladaMode .appMenuSettingsCard,
+body.ladaMode .appMenuSettingBtn,
+body.ladaMode .calcTile,
+body.ladaMode .brusDetails,
+body.ladaMode .qrModal,
+body.ladaMode .personScheduleModal,
+body.ladaMode .foodScheduleModal,
+body.ladaMode .calendarModal,
+body.ladaMode .rakUpdateToast,
+body.ladaMode .dashboardSyncBadge,
+body.ladaMode .foodScheduleNowBox,
+body.ladaMode .foodScheduleRow,
+body.ladaMode .personScheduleRow,
+body.ladaMode .shiftPersonCard,
+body.ladaMode #games .gamesStage,
+body.ladaMode #games .gamesShell,
+body.ladaMode #games .gamesShellTop,
+body.ladaMode #games .gamesActiveAccountBar,
+body.ladaMode #games .gamesDevFolder,
+body.ladaMode #games .gamesProfilesFolder,
+body.ladaMode #games .gamesAchievementsFolder,
+body.ladaMode #games .gamesStatsFolder,
+body.ladaMode #games .gamesLaunchTile,
+body.ladaMode #games .gamesStatsCard,
+body.ladaMode #games .gamesTop3Card,
+body.ladaMode #games .arcadePanel,
+body.ladaMode #games .arcadeBoardWrap,
+body.ladaMode #games .gameBoard,
+body.lowEndDevice .dashboardHeroCard,
+body.lowEndDevice .dashboardCard,
+body.lowEndDevice .card,
+body.lowEndDevice .tile,
+body.lowEndDevice .listItem,
+body.lowEndDevice .bbtn,
+body.lowEndDevice .bottomNav,
+body.lowEndDevice .bottomNavBtn,
+body.lowEndDevice .bottomNavMenuBtn,
+body.lowEndDevice .appMenuCard,
+body.lowEndDevice .appMenuAction,
+body.lowEndDevice .appMenuThemeCard,
+body.lowEndDevice .appMenuThemeSummary,
+body.lowEndDevice .appMenuSettingsCard,
+body.lowEndDevice .appMenuSettingBtn,
+body.lowEndDevice .calcTile,
+body.lowEndDevice .brusDetails,
+body.lowEndDevice .qrModal,
+body.lowEndDevice .personScheduleModal,
+body.lowEndDevice .foodScheduleModal,
+body.lowEndDevice .calendarModal,
+body.lowEndDevice .rakUpdateToast,
+body.lowEndDevice .dashboardSyncBadge,
+body.lowEndDevice .foodScheduleNowBox,
+body.lowEndDevice .foodScheduleRow,
+body.lowEndDevice .personScheduleRow,
+body.lowEndDevice .shiftPersonCard,
+body.lowEndDevice #games .gamesStage,
+body.lowEndDevice #games .gamesShell,
+body.lowEndDevice #games .gamesShellTop,
+body.lowEndDevice #games .gamesActiveAccountBar,
+body.lowEndDevice #games .gamesDevFolder,
+body.lowEndDevice #games .gamesProfilesFolder,
+body.lowEndDevice #games .gamesAchievementsFolder,
+body.lowEndDevice #games .gamesStatsFolder,
+body.lowEndDevice #games .gamesLaunchTile,
+body.lowEndDevice #games .gamesStatsCard,
+body.lowEndDevice #games .gamesTop3Card,
+body.lowEndDevice #games .arcadePanel,
+body.lowEndDevice #games .arcadeBoardWrap,
+body.lowEndDevice #games .gameBoard,
+body.lightweightMode .dashboardHeroCard,
+body.lightweightMode .dashboardCard,
+body.lightweightMode .card,
+body.lightweightMode .tile,
+body.lightweightMode .listItem,
+body.lightweightMode .bbtn,
+body.lightweightMode .bottomNav,
+body.lightweightMode .bottomNavBtn,
+body.lightweightMode .bottomNavMenuBtn,
+body.lightweightMode .appMenuCard,
+body.lightweightMode .appMenuAction,
+body.lightweightMode .appMenuThemeCard,
+body.lightweightMode .appMenuThemeSummary,
+body.lightweightMode .appMenuSettingsCard,
+body.lightweightMode .appMenuSettingBtn,
+body.lightweightMode .calcTile,
+body.lightweightMode .brusDetails,
+body.lightweightMode .qrModal,
+body.lightweightMode .personScheduleModal,
+body.lightweightMode .foodScheduleModal,
+body.lightweightMode .calendarModal,
+body.lightweightMode .rakUpdateToast,
+body.lightweightMode .dashboardSyncBadge,
+body.lightweightMode .foodScheduleNowBox,
+body.lightweightMode .foodScheduleRow,
+body.lightweightMode .personScheduleRow,
+body.lightweightMode .shiftPersonCard,
+body.lightweightMode #games .gamesStage,
+body.lightweightMode #games .gamesShell,
+body.lightweightMode #games .gamesShellTop,
+body.lightweightMode #games .gamesActiveAccountBar,
+body.lightweightMode #games .gamesDevFolder,
+body.lightweightMode #games .gamesProfilesFolder,
+body.lightweightMode #games .gamesAchievementsFolder,
+body.lightweightMode #games .gamesStatsFolder,
+body.lightweightMode #games .gamesLaunchTile,
+body.lightweightMode #games .gamesStatsCard,
+body.lightweightMode #games .gamesTop3Card,
+body.lightweightMode #games .arcadePanel,
+body.lightweightMode #games .arcadeBoardWrap,
+body.lightweightMode #games .gameBoard{
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+  filter:none !important;
+  box-shadow:var(--rak-lada-card-shadow) !important;
+}
+body.ladaTurboMode .dashboardHeroCard,
+body.ladaTurboMode .dashboardCard,
+body.ladaTurboMode .card,
+body.ladaTurboMode .tile,
+body.ladaTurboMode .appMenuCard,
+body.ladaTurboMode .calcTile,
+body.ladaTurboMode #games .gamesLaunchTile,
+body.ladaTurboMode #games .gamesStatsCard,
+body.ladaTurboMode #games .arcadePanel,
+body.ladaTurboMode #games .gameBoard{
+  background:var(--rak-lada-card-bg) !important;
+  border-color:var(--rak-lada-card-border) !important;
+}
+body.ladaMode *,
+body.ladaMode *::before,
+body.ladaMode *::after,
+body.lowEndDevice *,
+body.lowEndDevice *::before,
+body.lowEndDevice *::after,
+body.lightweightMode *,
+body.lightweightMode *::before,
+body.lightweightMode *::after{
+  transition:none !important;
+  animation:none !important;
+  scroll-behavior:auto !important;
+}
+body.ladaMode img,
+body.ladaMode svg,
+body.ladaMode canvas,
+body.ladaMode .bottomNavIconImg,
+body.ladaMode .dashboardCardIcon,
+body.ladaMode .dashboardCardIcon img,
+body.ladaMode .dashboardIconImg,
+body.ladaMode .dashboardIconSvg,
+body.lowEndDevice img,
+body.lowEndDevice svg,
+body.lowEndDevice canvas,
+body.lowEndDevice .bottomNavIconImg,
+body.lowEndDevice .dashboardCardIcon,
+body.lowEndDevice .dashboardCardIcon img,
+body.lowEndDevice .dashboardIconImg,
+body.lowEndDevice .dashboardIconSvg,
+body.lightweightMode img,
+body.lightweightMode svg,
+body.lightweightMode canvas,
+body.lightweightMode .bottomNavIconImg,
+body.lightweightMode .dashboardCardIcon,
+body.lightweightMode .dashboardCardIcon img,
+body.lightweightMode .dashboardIconImg,
+body.lightweightMode .dashboardIconSvg{
+  filter:none !important;
+  transform:none !important;
+  will-change:auto !important;
+}
+body.ladaMode .page,
+body.ladaMode .dashboardShell,
+body.ladaMode .calcPage,
+body.ladaMode .appMenuPage,
+body.ladaMode #games .gamesStage,
+body.lowEndDevice .page,
+body.lowEndDevice .dashboardShell,
+body.lowEndDevice .calcPage,
+body.lowEndDevice .appMenuPage,
+body.lowEndDevice #games .gamesStage{
+  contain:layout paint !important;
+}
+body.ladaMode .appMenuOverlay,
+body.ladaMode .calendarOverlay,
+body.ladaMode .foodScheduleOverlay,
+body.ladaMode .personScheduleOverlay,
+body.ladaMode .qrModalOverlay,
+body.ladaMode .tttOverlay,
+body.lowEndDevice .appMenuOverlay,
+body.lowEndDevice .calendarOverlay,
+body.lowEndDevice .foodScheduleOverlay,
+body.lowEndDevice .personScheduleOverlay,
+body.lowEndDevice .qrModalOverlay,
+body.lowEndDevice .tttOverlay{
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+  background:rgba(4,8,6,.82) !important;
 }

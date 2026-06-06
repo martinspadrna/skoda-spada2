@@ -1,6 +1,6 @@
-// RaK 1.2 (1.141) – zbytkový UI bridge po oddělení modulů.
+// RaK 1.2 (1.143) – zbytkový UI bridge po oddělení modulů.
 
-// RaK 1.2 (1.141) – Více/menu shell je oddělený v app-menu.js.
+// RaK 1.2 (1.143) – Více/menu shell je oddělený v app-menu.js.
 
 const UI_PREFS_KEY = APP_KEY + ':uiPrefs';
 const DEVICE_PERFORMANCE_PROBE_KEY = APP_KEY + ':devicePerformanceProbe';
@@ -339,20 +339,27 @@ function applyUiPrefs(prefs) {
   if (lowEndDetected && !incoming.lightweightManual) incoming.lightweight = true;
   const next = saveUiPrefs(incoming);
   const lightweight = !!next.lightweight;
-  const ladaMode = lightweight || lowEndDetected;
+  // RaK 1.2 (1.143): slabé zařízení dál zapíná Láďův režim automaticky,
+  // ale ruční volba má přednost. Když ho uživatel vypne, nesmí ho lowEndDevice
+  // třída ani výkonová detekce okamžitě držet aktivní přes CSS a DPR limity.
+  const autoLowEndActive = lowEndDetected && !next.lightweightManual;
+  const ladaMode = lightweight || autoLowEndActive;
   const profile = buildRakLadaPerformanceProfile(ladaMode, lowEndInfo, next);
   document.body.classList.toggle('compactUI', !!next.compact);
   document.body.classList.toggle('reduceMotion', !!next.reduceMotion || ladaMode);
   document.body.classList.toggle('lightweightMode', lightweight);
   document.body.classList.toggle('ladaMode', ladaMode);
-  document.body.classList.toggle('lowEndDevice', lowEndDetected);
+  document.body.classList.toggle('lowEndDevice', autoLowEndActive);
   document.body.classList.toggle('ladaTurboMode', ladaMode && profile.level === 'turbo');
   try {
     document.documentElement.dataset.rakLightweight = lightweight ? 'on' : 'off';
     document.documentElement.dataset.rakLightweightLabel = LIGHTWEIGHT_MODE_LABEL;
     document.documentElement.dataset.rakLowEndDevice = lowEndDetected ? 'yes' : 'no';
+    document.documentElement.dataset.rakLowEndAutoActive = autoLowEndActive ? 'yes' : 'no';
     document.documentElement.dataset.rakLowEndReason = lowEndDetected ? lowEndInfo.reasons.join(', ') : '';
-    document.documentElement.dataset.rakPerformanceMode = ladaMode ? (lowEndDetected ? 'lada-auto-low-end-turbo' : 'lada-manual-turbo') : 'normal';
+    document.documentElement.dataset.rakPerformanceMode = ladaMode ? (autoLowEndActive ? 'lada-auto-low-end-turbo' : 'lada-manual-turbo') : 'normal';
+    document.documentElement.classList.toggle('rakLadaPaintLite', !!ladaMode);
+    document.documentElement.dataset.rakLadaPaintLite = ladaMode ? 'yes' : 'no';
     document.documentElement.dataset.rakLadaProfile = ladaMode ? profile.level : 'normal';
     document.documentElement.dataset.rakLadaFrameMs = String(profile.frameMs || 0);
     document.documentElement.dataset.rakLadaCanvasDpr = String(profile.canvasDprMax || 2);
@@ -363,6 +370,7 @@ function applyUiPrefs(prefs) {
   if (typeof app !== 'undefined') {
     app.uiPrefs = next;
     app.lowEndDeviceDetected = lowEndDetected;
+    app.lowEndDeviceAutoActive = autoLowEndActive;
     app.lowEndDeviceInfo = lowEndInfo;
     app.ladaPerformanceProfile = profile;
   }
@@ -395,14 +403,36 @@ function getRakPerformanceDprMax() {
     const lite = !!(body && body.classList && (body.classList.contains('lightweightMode') || body.classList.contains('lowEndDevice') || body.classList.contains('ladaMode')));
     if (lite) return 1;
     const info = typeof getLowEndDeviceInfo === 'function' ? getLowEndDeviceInfo() : null;
-    if (info && info.lowEnd) return 1;
+    if (info && info.lowEnd) {
+      const prefs = (typeof app !== 'undefined' && app && app.uiPrefs) ? app.uiPrefs : (typeof loadUiPrefs === 'function' ? loadUiPrefs() : null);
+      if (prefs && prefs.lightweightManual && !prefs.lightweight) return 2;
+      return 1;
+    }
   } catch (err) {}
   return 2;
 }
 
 try { window.getRakPerformanceDprMax = getRakPerformanceDprMax; } catch (err) {}
 
-// RaK 1.2 (1.141) – Piškvorky jsou oddělené v games-gomoku.js.
+const RAK_LADA_MANUAL_OVERRIDE_CONTRACT_V1143 = Object.freeze({
+  version: '1.2 (1.143)',
+  behavior: 'auto-low-end-can-be-manually-disabled',
+  manualOffKeepsDetectionButDisablesEffects: true,
+  autoButtonRestoresLowEndAutomation: true
+});
+try { window.RAK_LADA_MANUAL_OVERRIDE_CONTRACT_V1143 = RAK_LADA_MANUAL_OVERRIDE_CONTRACT_V1143; } catch (err) {}
+
+const RAK_LADA_SMOOTH_PERFORMANCE_CONTRACT_V1143 = Object.freeze({
+  version: '1.2 (1.143)',
+  behavior: 'active-lada-mode-uses-lite-paint-layer-and-zero-heavy-effects',
+  hidesFixedBackgroundPseudoLayers: true,
+  removesBackdropBlurOnHeavySurfaces: true,
+  keepsCanvasDprAtOneWhenActive: true,
+  keepsManualOffFreeOfLowEndEffects: true
+});
+try { window.RAK_LADA_SMOOTH_PERFORMANCE_CONTRACT_V1143 = RAK_LADA_SMOOTH_PERFORMANCE_CONTRACT_V1143; } catch (err) {}
+
+// RaK 1.2 (1.143) – Piškvorky jsou oddělené v games-gomoku.js.
 
 function triggerAboutAction() {
   const state = typeof app !== 'undefined' ? app : null;
@@ -873,19 +903,19 @@ function buildAppHistoryHtml(versionText) {
 }
 
 
-// RaK 1.2 (1.141) – Administrace / Rozpisy a Nastavení strojů jsou oddělené v admin-rotation.js.
+// RaK 1.2 (1.143) – Administrace / Rozpisy a Nastavení strojů jsou oddělené v admin-rotation.js.
 
 
 
 
-// RaK 1.2 (1.141) – Administrace / Reporty chyb jsou oddělené v admin-reports.js.
+// RaK 1.2 (1.143) – Administrace / Reporty chyb jsou oddělené v admin-reports.js.
 
-// RaK 1.2 (1.141) – Administrace / Přehled připojení, servis a oznámení jsou oddělené v admin-service-usage.js.
+// RaK 1.2 (1.143) – Administrace / Přehled připojení, servis a oznámení jsou oddělené v admin-service-usage.js.
 
 
-// RaK 1.2 (1.141) – App menu / administrace shell / bug report formulář jsou oddělené v app-menu.js.
+// RaK 1.2 (1.143) – App menu / administrace shell / bug report formulář jsou oddělené v app-menu.js.
 
-// RaK 1.2 (1.141) – showFoodSchedule je v app-navigation.js.
+// RaK 1.2 (1.143) – showFoodSchedule je v app-navigation.js.
 
 
 
@@ -997,7 +1027,7 @@ try { window.updateRotaceNamesDockMetrics = updateRotaceNamesDockMetrics; } catc
 try { window.scheduleRotaceNamesDockMetrics = scheduleRotaceNamesDockMetrics; } catch (err) {}
 
 
-// RaK 1.2 (1.141) – showPage, home refresh, externí dlaždice a rotace/kalkulačky zkratky jsou v app-navigation.js.
+// RaK 1.2 (1.143) – showPage, home refresh, externí dlaždice a rotace/kalkulačky zkratky jsou v app-navigation.js.
 
 
 function setRotaceView(view) {
@@ -1046,12 +1076,12 @@ function setRotaceView(view) {
 }
 
 
-// RaK 1.2 (1.141) – Food/kalendář modaly a vazba dashboard kalendáře jsou v app-navigation.js.
+// RaK 1.2 (1.143) – Food/kalendář modaly a vazba dashboard kalendáře jsou v app-navigation.js.
 
 
-// RaK 1.2 (1.141) – Games hub + account profile jsou oddělené v games-profile.js.
+// RaK 1.2 (1.143) – Games hub + account profile jsou oddělené v games-profile.js.
 
-// RaK 1.2 (1.141) – Klasické hry 2048 / Had / Flappy Car jsou oddělené v games-classic.js.
+// RaK 1.2 (1.143) – Klasické hry 2048 / Had / Flappy Car jsou oddělené v games-classic.js.
 
 function renderGamesTttShell() {
 
@@ -1115,12 +1145,12 @@ if (!window.__tttHashInviteBound) {
 
 
 
-// RaK 1.2 (1.141) – Theme, pozadí a profilové UI nastavení jsou oddělené v appearance-theme.js.
+// RaK 1.2 (1.143) – Theme, pozadí a profilové UI nastavení jsou oddělené v appearance-theme.js.
 
 function getRakRotaceNamesDockHealth() {
   const result = {
     ok: true,
-    version: window.APP_VERSION || '1.2 (1.141)',
+    version: window.APP_VERSION || '1.2 (1.143)',
     mode: 'rotace-names-dock-stable-css-v930',
     checkedAt: new Date().toISOString(),
     scope: 'Rotace / seznam jmen / stabilní spodní dock',
@@ -1164,5 +1194,5 @@ function getRakRotaceNamesDockHealth() {
 window.getRakRotaceNamesDockHealth = getRakRotaceNamesDockHealth;
 
 
-// RaK 1.2 (1.141) – resize/orientation hlídání aktivního glass indikátoru spodní lišty je v app-navigation.js.
+// RaK 1.2 (1.143) – resize/orientation hlídání aktivního glass indikátoru spodní lišty je v app-navigation.js.
 

@@ -1,4 +1,4 @@
-// RaK 1.2 (1.141) – health/audit helpery oddělené z app.js.
+// RaK 1.2 (1.143) – health/audit helpery oddělené z app.js.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app-health-audits.js', 'loaded', { source: 'dynamic-loader' }); } catch (err) {}
 
 function runPhaseOneFinalAudit() {
@@ -1194,6 +1194,8 @@ function getLadaPerformanceHealth() {
   if (active && maxBlur > 3.5) issues.push('heavy blur still active');
   if (active && animatedSamples.length) issues.push('animations/transitions still active');
   if (active && root && !String(root.dataset.rakPerformanceMode || '').includes('lada')) issues.push('performance dataset missing');
+  if (active && root && !root.classList.contains('rakLadaPaintLite')) issues.push('lada lite paint layer missing');
+  if (active && root && String(root.dataset.rakLadaPaintLite || '') !== 'yes') issues.push('lada lite paint dataset missing');
   if (active && profile && Number(profile.frameMs || 0) < 28) issues.push('lada frame throttle too low');
   if (active && profile && String(profile.cssEffects || '') !== 'minimal') issues.push('lada css effects not minimal');
   const deviceStatus = typeof getRakDevicePerformanceStatus === 'function' ? getRakDevicePerformanceStatus() : null;
@@ -1217,6 +1219,8 @@ function getLadaPerformanceHealth() {
     resizeThrottleMs: Number(profile && profile.resizeThrottleMs || 0) || 0,
     leaderboardTtlMs: Number(profile && profile.leaderboardTtlMs || 0) || 0,
     cssEffects: String(profile && profile.cssEffects || 'full'),
+    litePaintLayer: !!(root && root.classList && root.classList.contains('rakLadaPaintLite')),
+    litePaintDataset: root ? String(root.dataset.rakLadaPaintLite || '') : '',
     detectedDpr: Number(lowEndInfo && lowEndInfo.dpr || window.devicePixelRatio || 1) || 1,
     lowEndDetected: !!(lowEndInfo && lowEndInfo.lowEnd),
     lowEndReasons: Array.isArray(lowEndInfo && lowEndInfo.reasons) ? lowEndInfo.reasons.slice(0, 8) : [],
@@ -1254,7 +1258,7 @@ function runLadaPerformanceAudit() {
 }
 window.runLadaPerformanceAudit = runLadaPerformanceAudit;
 
-// 1.2 (1.141): Sdílený herní engine baseline je oddělený v games-engine.js.
+// 1.2 (1.143): Sdílený herní engine baseline je oddělený v games-engine.js.
 
 
 

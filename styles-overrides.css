@@ -1,31 +1,31 @@
-/* RaK 1.2 (1.141) – Dashboard legacy override inventory guard.
+/* RaK 1.2 (1.143) – Dashboard legacy override inventory guard.
    Tenhle soubor pořád obsahuje historické Dashboard hotfixy. Nejsou mazány naslepo; vítězné Dashboard vrstvy jsou styles-dashboard-fit.css a styles-dashboard-polish.css, které se načítají později. */
-/* RaK 1.2 (1.141) – Dashboard proven-overridden legacy candidates.
+/* RaK 1.2 (1.143) – Dashboard proven-overridden legacy candidates.
    Tyhle staré Dashboard selektory jsou už jen inventura/legacy stopa.
    Aktivní vlastníci zůstávají v styles-dashboard-fit.css a styles-dashboard-polish.css.
    Kandidáti: #home .dashboardGrid, #home .dashboardCard, #home .dashboardHeroCard,
    #dashHero .dashboardHeroLine3, #home .dashboardDot.
    Nepřidávat sem nové Dashboard hotfixy bez ověření vítězné vrstvy. */
-/* RaK 1.2 (1.141) – Dashboard extended proven-overridden legacy candidates.
+/* RaK 1.2 (1.143) – Dashboard extended proven-overridden legacy candidates.
    Rozšířená inventura dalších starých selektorů, které mají pozdějšího vlastníka.
    Kandidáti: #home .dashboardIconInline, #home .dashboardIcon.dashboardIconInline,
    #dashHero .dashboardHeroLine2, #dashHero .dashboardHeroLine3Pill,
    #dashKantyna .dashboardDot, #dashJidelna .dashboardDot.
    Pořád jen označení a guard; žádné mazání ani vizuální změna Dashboardu. */
-/* RaK 1.2 (1.141) – Dashboard legacy owner map.
+/* RaK 1.2 (1.143) – Dashboard legacy owner map.
    Ověřené staré Dashboard selektory v tomhle souboru jsou ponechané jako inventura,
    ale aktivní vlastník je pozdější dvojice styles-dashboard-fit.css / styles-dashboard-polish.css.
    Test app-usage hlídá mapu legacy → active owner, aby se další úpravy neopíraly o staré bloky.
    Mapované oblasti: shell, hero panel, grid, karty, stavové tečky Kantýna/Jídelna,
    ikonky panelů a posuny hero řádků pro ručně laděné mobilní viewporty. */
-/* RaK 1.2 (1.141) – Dashboard legacy-only inventory.
+/* RaK 1.2 (1.143) – Dashboard legacy-only inventory.
    Tahle vrstva je u Dashboardu braná jen jako historická stopa starých hotfixů.
    Legacy-only selektory: #home .dashboardGrid, #home .dashboardCard, #home .dashboardHeroCard,
    #dashHero .dashboardHeroLine2, #dashHero .dashboardHeroLine3, #dashHero .dashboardHeroLine3Pill,
    #home .dashboardIconInline, #home .dashboardIcon.dashboardIconInline, #home .dashboardDot,
    #dashKantyna .dashboardDot, #dashJidelna .dashboardDot.
    Aktivní vizuální vlastníci pro stejné oblasti jsou evidovaní zvlášť ve styles-dashboard-fit.css / styles-dashboard-polish.css. */
-/* RaK 1.2 (1.141) – Dashboard no-new-hotfix lock v1.96.
+/* RaK 1.2 (1.143) – Dashboard no-new-hotfix lock v1.96.
    Nové vizuální Dashboard úpravy už sem nepřidávat. Tahle vrstva zůstává jen historická inventura starých přepisů; nové aktivní změny patří do styles-dashboard-fit.css nebo styles-dashboard-polish.css.
    Test app-usage hlídá počet a podpis Dashboard selektorů v téhle vrstvě, aby se sem omylem nevrátil další vizuální hotfix. */
 
@@ -15377,11 +15377,11 @@ body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsCell{
   body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsInlineHint{display:none !important;}
 }
 
-/* RaK 1.2 (1.141) – Diagnostika/O aplikaci dlouhé řádky přesunuto do styles-menu-polish.css. */
+/* RaK 1.2 (1.143) – Diagnostika/O aplikaci dlouhé řádky přesunuto do styles-menu-polish.css. */
 
-/* RaK 1.2 (1.141) – Statistiky/obsazenost polish přesunutý do styles-stats-polish.css. */
+/* RaK 1.2 (1.143) – Statistiky/obsazenost polish přesunutý do styles-stats-polish.css. */
 
-/* RaK 1.2 (1.141) – Nastavení vzhledu zamčené odměnové pozadí přesunuto do styles-menu-polish.css. */
+/* RaK 1.2 (1.143) – Nastavení vzhledu zamčené odměnové pozadí přesunuto do styles-menu-polish.css. */
 
 /* v.1.5 (927) – Rotace: seznam jmen o kousek výš nad spodním panelem. */
 #rotace.page.active #rotaceNamesPanel.active{
@@ -16392,9 +16392,9 @@ body.ladaMode .dashboardAnnouncementBar{
   .adminAnnouncementToggleRow .adminAnnouncementCheck{font-size:12.5px !important;}
 }
 
-/* RaK 1.2 (1.141) – Statistiky/obsazenost theme polish přesunutý do styles-stats-polish.css. */
+/* RaK 1.2 (1.143) – Statistiky/obsazenost theme polish přesunutý do styles-stats-polish.css. */
 
-/* RaK 1.2 (1.141) – Dashboard compact panel polish přesunutý do styles-dashboard-fit.css. */
+/* RaK 1.2 (1.143) – Dashboard compact panel polish přesunutý do styles-dashboard-fit.css. */
 
 
 /* v.1.5 (939) – Obsazenost strojů: odstranění černého SVG fallbacku pod čárou. */
@@ -16471,7 +16471,7 @@ body.ladaMode #stats .statsOccupancyLineArea{
 }
 
 
-/* RaK 1.2 (1.141) – Dashboard viewport-fit a centrování hero panelu přesunuté do styles-dashboard-fit.css. */
+/* RaK 1.2 (1.143) – Dashboard viewport-fit a centrování hero panelu přesunuté do styles-dashboard-fit.css. */
 
 
 /* v.1.5 (963) – update toast: větší ikona a Dashboard hero text dorovnání jen na problematických viewportech. */
@@ -16516,7 +16516,7 @@ body.ladaMode #stats .statsOccupancyLineArea{
   }
 }
 
-/* RaK 1.2 (1.141) – Admin přehled připojení / anonymní využití přesunuto do styles-menu-polish.css. */
+/* RaK 1.2 (1.143) – Admin přehled připojení / anonymní využití přesunuto do styles-menu-polish.css. */
 
 /* v.1.5 (966) – Navazuje na stabilizaci Dashboardu, 5tlačítkovou lištu a prokliky v Rotaci. */
 @media (min-width:405px) and (max-width:420px) and (min-height:910px) and (max-height:925px){
@@ -18498,16 +18498,16 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
 }
 
 
-/* RaK 1.2 (1.141) – admin/rozpis polish přesunutý do styles-admin-polish.css. */
+/* RaK 1.2 (1.143) – admin/rozpis polish přesunutý do styles-admin-polish.css. */
 
-/* RaK 1.2 (1.141) – viewport/iOS/PWA start polish přesunutý do styles-viewport-polish.css. */
+/* RaK 1.2 (1.143) – viewport/iOS/PWA start polish přesunutý do styles-viewport-polish.css. */
 
-/* RaK 1.2 (1.141) – finální theme/background polish je přesunutý do styles-theme-polish.css. */
+/* RaK 1.2 (1.143) – finální theme/background polish je přesunutý do styles-theme-polish.css. */
 
-/* RaK 1.2 (1.141) – pozdní release polish pravidla jsou přesunutá do styles-release-polish.css. */
+/* RaK 1.2 (1.143) – pozdní release polish pravidla jsou přesunutá do styles-release-polish.css. */
 
 
-/* RaK 1.2 (1.141) – Přehled připojení bez vnitřního scroll boxu. */
+/* RaK 1.2 (1.143) – Přehled připojení bez vnitřního scroll boxu. */
 #menu .adminUsageCard{
   max-height:none !important;
   overflow:visible !important;
