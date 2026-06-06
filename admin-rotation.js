@@ -1,4 +1,4 @@
-// RaK 1.2 (1.135) – Administrace Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
+// RaK 1.2 (1.136) – Administrace Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('admin-rotation.js', 'loading', { source: 'dynamic-loader' }); } catch (err) {}
 
 
@@ -1446,17 +1446,28 @@ function adminBuildRotationGenerationModel(targetMonthKey) {
     const machineIdx = softCoreCycle.findIndex((machine) => String(machine || '').toUpperCase() === String(machineName || '').toUpperCase());
     const personIdx = softCoreNames.findIndex((person) => person === name);
     if (machineIdx < 0 || personIdx < 0) return;
-    if (machineIdx !== softCoreCycleState.machineCursor) {
+    const cycleLength = Math.max(1, softCoreCycle.length);
+    const currentIdx = ((Number(softCoreCycleState.machineCursor) || 0) % cycleLength + cycleLength) % cycleLength;
+    const previousIdx = (currentIdx - 1 + cycleLength) % cycleLength;
+    const blockLength = Math.max(1, Number(RAK_ROTATION_GENERATOR_RULES_V1107.softHardBlockLength) || 3);
+
+    // RaK 1.2 (1.136): návaznost Synka/Třasáka/Střížka se nesmí odvozovat jen z posledního dne
+    // ani resetovat zpět, když je v historii po dokončeném bloku ještě extra TNKS01.
+    // Procházíme celý předchozí měsíc chronologicky a zpětný "spillover" předchozího stroje ignorujeme.
+    if (machineIdx !== currentIdx) {
+      const looksLikePreviousMachineSpillover = machineIdx === previousIdx;
+      if (looksLikePreviousMachineSpillover) return;
       softCoreCycleState.machineCursor = machineIdx;
       softCoreCycleState.filledInMachine = 0;
       softCoreCycleState.assignedInMachineBlock = [];
     }
+
     if (!softCoreCycleState.assignedInMachineBlock.includes(name)) softCoreCycleState.assignedInMachineBlock.push(name);
     softCoreCycleState.filledInMachine = Math.max(softCoreCycleState.filledInMachine + 1, softCoreCycleState.assignedInMachineBlock.length);
     softCoreCycleState.personCursor = (personIdx + 1) % Math.max(1, softCoreNames.length);
-    const blockLength = Math.max(1, Number(RAK_ROTATION_GENERATOR_RULES_V1107.softHardBlockLength) || 3);
+    const activeMachineIdx = ((Number(softCoreCycleState.machineCursor) || 0) % cycleLength + cycleLength) % cycleLength;
     if (softCoreCycleState.filledInMachine >= blockLength || softCoreCycleState.assignedInMachineBlock.length >= Math.min(blockLength, softCoreNames.length)) {
-      softCoreCycleState.machineCursor = (machineIdx + 1) % Math.max(1, softCoreCycle.length);
+      softCoreCycleState.machineCursor = (activeMachineIdx + 1) % cycleLength;
       softCoreCycleState.filledInMachine = 0;
       softCoreCycleState.assignedInMachineBlock = [];
     }
@@ -2635,7 +2646,7 @@ function adminGenerateRotationMonthDraft(monthKey) {
     soloMillBalanceSwaps: (soloMillBalance && Number(soloMillBalance.swaps || 0)) + (soloMillRebalance && Number(soloMillRebalance.swaps || 0)),
     softKindBalanceSwaps: softKindBalance && Number(softKindBalance.swaps || 0),
     kminekNovotnyMoToBalanceSwaps: kminekNovotnyMoToBalance && Number(kminekNovotnyMoToBalance.swaps || 0),
-    ruleVersion: '1.135'
+    ruleVersion: '1.136'
   };
 }
 
@@ -3332,7 +3343,7 @@ function adminHandleRotationGeneratorWizardAction(action, target) {
 
 
 const RAK_ROTATION_GENERATOR_RULES_V1135 = Object.freeze({
-  version: '1.135',
+  version: '1.136',
   tnksMonthlyFirstRule: 'TNKS01/nýtovačka se v generátoru vyrovnává primárně v rámci měsíce; roční počty jsou jen jemný tie-break.',
   excludedFromTnksBalance: Object.freeze(['Střížek', 'Synek', 'Třasák']),
   softCoreContinuationRule: 'Synek/Třasák/Střížek drží pevný návazný cyklus TNKS01 → TPKW01 → TPKW02 mezi měsíci a TNKS01 dorovnání jim do něj nesahá.',
@@ -3392,7 +3403,7 @@ function adminShowRotationSelectedRemove(input) {
       return;
     }
     window.__rakAdminRotationSelectedInput = input;
-    // RaK 1.2 (1.135) – horní sticky tlačítko už při kliknutí do jména nevytahujeme.
+    // RaK 1.2 (1.136) – horní sticky tlačítko už při kliknutí do jména nevytahujeme.
     // Rychlé Odebrat se vykreslí přímo u aktivního pole přes adminShowRotationQuickRemove().
     btn.hidden = true;
     btn.dataset.targetReady = '1';

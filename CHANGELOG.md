@@ -1,3 +1,11 @@
+## RaK 1.2 (1.136)
+
+- Generátor rozpisu / návaznost cyklu Synka, Třasáka a Střížka: opravené čtení historie z celého předchozího měsíce. Extra TNKS01 po už dokončeném bloku už neresetuje cyklus zpět na TNKS01.
+- Příklad z června: když byli Třasák/Synek/Střížek v závěru měsíce na TNKS01 a blok je hotový, červenec má pokračovat na TPKW01, ne začít znovu TNKS01.
+- Návaznost se dál dopočítává chronologicky z předchozích měsíců; poslední den měsíce s absencí nebo Měkotou nemá rozbít pokračování rotace.
+- Supabase DB/policies beze změny.
+- Release metadata sjednocená na `RaK 1.2 (1.136)`, technická verze `1.2.136`, cache `v1.2-1.136`.
+
 ## RaK 1.2 (1.135)
 
 - Generátor rozpisu / Synek, Třasák, Střížek: tahle trojice už nevstupuje do měsíčního ani ročního dorovnání TNKS01. Drží vlastní návazný cyklus `TNKS01 → TPKW01 → TPKW02`.
