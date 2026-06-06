@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.139) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.140) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -216,12 +216,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.139)',
-  appLabel: 'RaK 1.2 (1.139)',
-  packageVersion: '1.2.139',
-  cacheVersion: 'v1.2-1.139',
+  displayVersion: '1.2 (1.140)',
+  appLabel: 'RaK 1.2 (1.140)',
+  packageVersion: '1.2.140',
+  cacheVersion: 'v1.2-1.140',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.139)',
+  changelogHeader: '## RaK 1.2 (1.140)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -330,8 +330,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.139)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.139'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.140)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.140'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -890,7 +890,7 @@ function assertRotationGeneratorRulesContractV1107() {
   assertIncludes(ui, 'if (softTargetCount === 3 && lathePeopleCount === 2 && mskc01Idx >= 0)', 'Při dvou absencích musí zůstat MSKC01 neobsazená');
   assertIncludes(ui, 'readAdminRotationFromDom(monthKey)', 'Generátor musí před výpočtem číst rozepsané absence z DOMu');
   assertIncludes(ui, 'adminRotationGeneratorIsDayBlocked', 'Generátor musí umět vynechat den označený jako svátek/odstávka');
-  assertIncludes(ui, "ruleVersion: '1.139'", 'Výsledek generátoru musí vracet aktuální verzi pravidel 1.139');
+  assertIncludes(ui, "ruleVersion: '1.140'", 'Výsledek generátoru musí vracet aktuální verzi pravidel 1.140');
 assertIncludes(ui, 'generator-download-excel', 'Výsledek generátoru musí nabízet stažení návrhu do Excelu');
 assertIncludes(ui, 'admin-download-rotation-excel', 'Administrace / Export import musí nabízet stejný XLSX export rozpisu');
 assertIncludes(ui, 'rakRotationExcelExportMonth', 'Export / import musí mít vlastní výběr měsíce pro XLSX export rozpisu');
@@ -980,7 +980,7 @@ function assertRotationGeneratorRulesContractV1114() {
   assertIncludes(ui, 'function adminRotationGeneratorCountSoloMill', 'Generátor musí umět spočítat samostatné MFKF10 s prázdnou MFKF06');
   assertIncludes(ui, "const soloMillBalance = adminRotationGeneratorBalanceSoloMill(month, model);", 'Po sestavení měsíce musí běžet vyrovnání samostatných frézek');
   assertIncludes(ui, 'soloMillBalanceSwaps', 'Výsledek generátoru musí vracet počet prohozů samostatných frézek');
-  assertIncludes(ui, "ruleVersion: '1.139'", 'Výsledek generátoru musí vracet aktuální verzi pravidel 1.139');
+  assertIncludes(ui, "ruleVersion: '1.140'", 'Výsledek generátoru musí vracet aktuální verzi pravidel 1.140');
 }
 
 
@@ -1041,10 +1041,14 @@ function assertRotationGeneratorRulesContractV1117() {
 
 
 function assertRotationGeneratorExcelCopyContractV1138() {
-  assertIncludes(exportJs, 'RAK_ROTATION_GENERATOR_EXCEL_COPY_CONTRACT_V1138', 'export.js musí dokumentovat kopírovací XLSX layout generátoru v1.139');
-  assertIncludes(ui, 'RAK_ROTATION_GENERATOR_EXCEL_COPY_CONTRACT_V1138', 'admin-rotation.js musí mít contract pro XLSX kopírovací layout v1.139');
-  assertIncludes(exportJs, 'RAK_ADMIN_EXPORT_IMPORT_EXCEL_COPY_CONTRACT_V1139', 'export.js musí dokumentovat XLSX export v Administraci / Export import v1.139');
-  assertIncludes(ui, 'RAK_ADMIN_EXPORT_IMPORT_EXCEL_COPY_CONTRACT_V1139', 'app-menu.js musí mít contract pro XLSX export v Export/import v1.139');
+  assertIncludes(exportJs, 'RAK_ROTATION_GENERATOR_EXCEL_COPY_CONTRACT_V1138', 'export.js musí dokumentovat kopírovací XLSX layout generátoru v1.140');
+  assertIncludes(ui, 'RAK_ROTATION_GENERATOR_EXCEL_COPY_CONTRACT_V1138', 'admin-rotation.js musí mít contract pro XLSX kopírovací layout v1.140');
+  assertIncludes(exportJs, 'RAK_ADMIN_EXPORT_IMPORT_EXCEL_COPY_CONTRACT_V1139', 'export.js musí dokumentovat XLSX export v Administraci / Export import v1.140');
+  assertIncludes(ui, 'RAK_ADMIN_EXPORT_IMPORT_EXCEL_COPY_CONTRACT_V1139', 'app-menu.js musí mít contract pro XLSX export v Export/import v1.140');
+  assertIncludes(exportJs, 'RAK_ADMIN_EXPORT_IMPORT_EXCEL_MONTH_GROUP_CONTRACT_V1140', 'export.js musí dokumentovat skupinovaný výběr měsíců pro XLSX export v1.140');
+  assertIncludes(ui, 'RAK_ADMIN_EXPORT_IMPORT_EXCEL_MONTH_GROUP_CONTRACT_V1140', 'app-menu.js musí mít contract pro řazení a skupiny roků v XLSX exportu v1.140');
+  assertIncludes(ui, 'function buildRakRotationExcelExportMonthOptions', 'Export / import musí mít vlastní builder výběru měsíců pro XLSX export');
+  assertIncludes(ui, '<optgroup label="Rok ', 'Výběr XLSX exportu musí skupinovat měsíce podle roku');
   assertIncludes(ui, 'function adminRotationGeneratorBuildExcelAbsenceSlots', 'Excel export musí dynamicky určit počet dvojic Jméno/Kód pro absence');
   assertIncludes(ui, 'function adminRotationGeneratorBuildExcelCols', 'Excel export musí mít vlastní šířky sloupců podle reálné šířky AoA');
   assertIncludes(ui, "hardHeader[7] = 'Dovolená, neschopenka atd.:'", 'Absence musí začínat v H vedle Tvrdoty');
@@ -1052,7 +1056,7 @@ function assertRotationGeneratorExcelCopyContractV1138() {
   assertIncludes(ui, 'const width = 8 + absenceSlots * 2', 'Excel layout musí mít A:F + G mezera + H absence datum + dynamické dvojice');
   assertIncludes(ui, "softHeader[0] = 'Rotace  měkota'", 'Měkota musí zůstat jako samostatný blok pod Tvrdotou v A:F');
   assertIncludes(ui, "ws['!cols'] = adminRotationGeneratorBuildExcelCols(aoa);", 'Stažený XLSX musí použít nové kopírovací šířky sloupců');
-  assertIncludes(ui, "ruleVersion: '1.139'", 'Výsledek generátoru musí vracet aktuální verzi pravidel 1.139');
+  assertIncludes(ui, "ruleVersion: '1.140'", 'Výsledek generátoru musí vracet aktuální verzi pravidel 1.140');
 }
 
 function assertStatsPressMachineSplitContractV1123() {

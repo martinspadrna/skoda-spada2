@@ -1,4 +1,4 @@
-// RaK 1.2 (1.139) – Více/menu shell, O aplikaci, Nastavení, Report chyby a admin menu.
+// RaK 1.2 (1.140) – Více/menu shell, O aplikaci, Nastavení, Report chyby a admin menu.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app-menu.js', 'loaded', { source: 'dynamic-loader' }); } catch (err) {}
 
 
@@ -9,11 +9,42 @@ function formatRakDisplayVersion(version) {
 }
 
 const RAK_ADMIN_EXPORT_IMPORT_EXCEL_COPY_CONTRACT_V1139 = Object.freeze({
-  version: '1.2 (1.139)',
+  version: '1.2 (1.140)',
   scope: 'administrace-export-import-rotation-excel-copy-layout',
   action: 'admin-download-rotation-excel',
   rule: 'Export / import používá stejný XLSX layout rozpisu jako generátor.'
 });
+
+const RAK_ADMIN_EXPORT_IMPORT_EXCEL_MONTH_GROUP_CONTRACT_V1140 = Object.freeze({
+  version: '1.2 (1.140)',
+  scope: 'administrace-export-import-rotation-excel-month-picker',
+  action: 'admin-download-rotation-excel',
+  rule: 'Výběr měsíce pro XLSX export je řazený chronologicky a skupinovaný podle roku, aby se nemíchaly stejné měsíce z různých roků.'
+});
+
+function buildRakRotationExcelExportMonthOptions(selectedMonthKey) {
+  const selected = String(selectedMonthKey || '').trim();
+  if (typeof adminRotationGeneratorBuildMonthOptions === 'function') {
+    const grouped = adminRotationGeneratorBuildMonthOptions(selected);
+    if (grouped) return grouped;
+  }
+  const keys = getAdminRotationMonthKeys().slice().sort((a, b) => {
+    const diff = adminRotationMonthSortValue(a) - adminRotationMonthSortValue(b);
+    return diff || a.localeCompare(b, 'cs');
+  });
+  if (!keys.length) return '<option value="">Není dostupný žádný měsíc</option>';
+  const groups = new Map();
+  keys.forEach((key) => {
+    const parsed = typeof parseMonthKey === 'function' ? parseMonthKey(key) : null;
+    const year = parsed && Number.isFinite(parsed.year) ? String(parsed.year) : 'Bez roku';
+    if (!groups.has(year)) groups.set(year, []);
+    groups.get(year).push(key);
+  });
+  return Array.from(groups.entries()).map(([year, yearKeys]) => {
+    const options = yearKeys.map((key) => '<option value="' + escapeHtml(key) + '"' + (key === selected ? ' selected' : '') + '>' + escapeHtml(key) + '</option>').join('');
+    return '<optgroup label="Rok ' + escapeHtml(year) + '">' + options + '</optgroup>';
+  }).join('');
+}
 
 
 function ensureAppMenuOverlay() {
@@ -170,9 +201,7 @@ function renderAdminMenuBody(body, section) {
   const usageHtml = buildAdminUsageHtml();
 
   const importPreview = (typeof getRakExcelImportPreview === 'function') ? getRakExcelImportPreview() : null;
-  const rotationExcelMonthOptions = months.length
-    ? months.map((m) => '<option value="' + escapeHtml(m) + '"' + (m === monthKey ? ' selected' : '') + '>' + escapeHtml(m) + '</option>').join('')
-    : '<option value="">Není dostupný žádný měsíc</option>';
+  const rotationExcelMonthOptions = buildRakRotationExcelExportMonthOptions(monthKey);
   const exportHtml = [
     '<div class="appMenuCard appMenuAdminCard">',
     '  <div class="appMenuCardTitle">Export / import</div>',
@@ -409,7 +438,7 @@ async function handleBugReportAction(action) {
 
 
 
-// RaK 1.2 (1.139) – Plovoucí odebrání a údržba editoru rozpisů jsou oddělené v admin-rotation.js.
+// RaK 1.2 (1.140) – Plovoucí odebrání a údržba editoru rozpisů jsou oddělené v admin-rotation.js.
 
 function bindAppMenuHandlers(body) {
   if (!body || body.dataset.menuHandlersBound === '1') return;

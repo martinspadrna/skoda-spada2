@@ -1,9 +1,12 @@
-// RaK 1.2 (1.139) – Administrace Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
+// RaK 1.2 (1.140) – Administrace Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('admin-rotation.js', 'loading', { source: 'dynamic-loader' }); } catch (err) {}
 
 
 function getAdminRotationMonthKeys() {
-  return Object.keys(app.rotation && app.rotation.months ? app.rotation.months : {}).sort((a, b) => a.localeCompare(b, 'cs'));
+  return Object.keys(app.rotation && app.rotation.months ? app.rotation.months : {}).sort((a, b) => {
+    const diff = adminRotationMonthSortValue(a) - adminRotationMonthSortValue(b);
+    return diff || a.localeCompare(b, 'cs');
+  });
 }
 
 function getAdminSelectedMonthKey() {
@@ -1451,7 +1454,7 @@ function adminBuildRotationGenerationModel(targetMonthKey) {
     const previousIdx = (currentIdx - 1 + cycleLength) % cycleLength;
     const blockLength = Math.max(1, Number(RAK_ROTATION_GENERATOR_RULES_V1107.softHardBlockLength) || 3);
 
-    // RaK 1.2 (1.139): návaznost Synka/Třasáka/Střížka se nesmí odvozovat jen z posledního dne
+    // RaK 1.2 (1.140): návaznost Synka/Třasáka/Střížka se nesmí odvozovat jen z posledního dne
     // ani resetovat zpět, když je v historii po dokončeném bloku ještě extra TNKS01.
     // Procházíme celý předchozí měsíc chronologicky a zpětný "spillover" předchozího stroje ignorujeme.
     if (machineIdx !== currentIdx) {
@@ -2646,7 +2649,7 @@ function adminGenerateRotationMonthDraft(monthKey) {
     soloMillBalanceSwaps: (soloMillBalance && Number(soloMillBalance.swaps || 0)) + (soloMillRebalance && Number(soloMillRebalance.swaps || 0)),
     softKindBalanceSwaps: softKindBalance && Number(softKindBalance.swaps || 0),
     kminekNovotnyMoToBalanceSwaps: kminekNovotnyMoToBalance && Number(kminekNovotnyMoToBalance.swaps || 0),
-    ruleVersion: '1.139'
+    ruleVersion: '1.140'
   };
 }
 
@@ -3057,7 +3060,7 @@ function adminRotationGeneratorRenderAbsencesStep(state) {
 
 
 const RAK_ROTATION_GENERATOR_EXCEL_COPY_CONTRACT_V1138 = Object.freeze({
-  version: '1.139',
+  version: '1.140',
   layout: 'kopírovací XLSX návrh rozpisu: Tvrdota A:F, prázdný oddělovač G, Absence od H dál podle pracovních dnů, Měkota znovu A:F pod Tvrdotou',
   absenceRule: 'Absence mají datum v H a dvojice Jméno/Kód od I dál; počet dvojic je dynamický 4 až 8 podle měsíce.',
   copyRule: 'Bez slučovaných buněk a bez stylových triků, aby šly bloky jednoduše označit a kopírovat do Martinovy měsíční tabulky.'
@@ -3586,7 +3589,7 @@ function adminShowRotationSelectedRemove(input) {
       return;
     }
     window.__rakAdminRotationSelectedInput = input;
-    // RaK 1.2 (1.139) – horní sticky tlačítko už při kliknutí do jména nevytahujeme.
+    // RaK 1.2 (1.140) – horní sticky tlačítko už při kliknutí do jména nevytahujeme.
     // Rychlé Odebrat se vykreslí přímo u aktivního pole přes adminShowRotationQuickRemove().
     btn.hidden = true;
     btn.dataset.targetReady = '1';

@@ -1,4 +1,4 @@
-// RaK 1.2 (1.139) – export manifest a release metadata.
+// RaK 1.2 (1.140) – export manifest a release metadata.
 const EXPORT_SOURCE_IDS = {
   "module-readiness.js": "src-module-readiness-js",
   "rak-namespace.js": "src-rak-namespace-js",
@@ -112,12 +112,12 @@ const EXPORT_SOURCE_IDS = {
 const SOURCE_CACHE = window.__ROTACE_SOURCE_CACHE__ || (window.__ROTACE_SOURCE_CACHE__ = {});
 const BINARY_SOURCE_CACHE = window.__ROTACE_BINARY_SOURCE_CACHE__ || (window.__ROTACE_BINARY_SOURCE_CACHE__ = {});
 const RAK_RELEASE_METADATA_CONTRACT_V199 = Object.freeze({
-  displayVersion: '1.2 (1.139)',
-  appLabel: 'RaK 1.2 (1.139)',
-  packageVersion: '1.2.139',
-  cacheVersion: 'v1.2-1.139',
+  displayVersion: '1.2 (1.140)',
+  appLabel: 'RaK 1.2 (1.140)',
+  packageVersion: '1.2.140',
+  cacheVersion: 'v1.2-1.140',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.139)',
+  changelogHeader: '## RaK 1.2 (1.140)',
   serviceWorkerVersionGuard: 'CACHE_VERSION + SW_APP_VERSION'
 });
 const RAK_DASHBOARD_CSS_GUARD_SERIES_CONTRACT_V1100 = Object.freeze({
@@ -284,7 +284,7 @@ const RAK_ROTATION_GENERATOR_RULES_CONTRACT_V1117 = Object.freeze({
 
 
 const RAK_ROTATION_GENERATOR_EXCEL_COPY_CONTRACT_V1138 = Object.freeze({
-  version: '1.2 (1.139)',
+  version: '1.2 (1.140)',
   scope: 'administrace-dat-rozpisy-generator-excel-copy-layout',
   layout: 'Tvrdota A:F, Měkota A:F pod Tvrdotou, Absence od H dál po pracovních dnech',
   columns: Object.freeze(['A datum', 'B:F stroje', 'G mezera', 'H datum absence', 'I dál dvojice Jméno/Kód']),
@@ -292,15 +292,23 @@ const RAK_ROTATION_GENERATOR_EXCEL_COPY_CONTRACT_V1138 = Object.freeze({
 });
 
 const RAK_ADMIN_EXPORT_IMPORT_EXCEL_COPY_CONTRACT_V1139 = Object.freeze({
-  version: '1.2 (1.139)',
+  version: '1.2 (1.140)',
   scope: 'administrace-export-import-rotation-excel-copy-layout',
   source: 'sdílí adminRotationGeneratorDownloadExcel a stejný AoA layout jako generátor rozpisu',
   ui: 'Export / import má vlastní výběr měsíce a tlačítko Stáhnout Excel rozpisu',
   noDbChange: true
 });
 
+const RAK_ADMIN_EXPORT_IMPORT_EXCEL_MONTH_GROUP_CONTRACT_V1140 = Object.freeze({
+  version: '1.2 (1.140)',
+  scope: 'administrace-export-import-rotation-excel-month-picker',
+  source: 'buildRakRotationExcelExportMonthOptions používá chronologické řazení a optgroup Rok',
+  ui: 'Měsíce ve výběru Excel exportu nejsou smíchané napříč roky',
+  noDbChange: true
+});
+
 const RAK_STATS_PRESS_MACHINE_SPLIT_CONTRACT_V1123 = Object.freeze({
-  version: '1.2 (1.139)',
+  version: '1.2 (1.140)',
   rule: 'Statistiky a export Nýtování a úklid používají stejné půlení TNKS01/TPKW01 jako generátor.',
   normal: 'Mimo neděli se TNKS01 i TPKW01 počítají jako 0,5 TNKS01 + 0,5 TPKW01.',
   sunday: 'Běžná neděle zůstává celá na zapsaném stroji.',
@@ -309,7 +317,7 @@ const RAK_STATS_PRESS_MACHINE_SPLIT_CONTRACT_V1123 = Object.freeze({
 
 
 const RAK_STATS_PRESS_MACHINE_MO_ONLY_EXCEPTION_CONTRACT_V1124 = Object.freeze({
-  version: '1.2 (1.139)',
+  version: '1.2 (1.140)',
   defaultRule: 'Nedělní přesčas se standardně bere jako TO/tvrdota a TNKS01/TPKW01 se půlí 0,5 + 0,5.',
   exceptionRule: 'Výjimky označené jako přesčas jen MO se ve statistikách tvrdoty nepůlí a počítají se jako běžná neděle.',
   currentException: '2026-03-01 je přesčas jen na MO, proto se TNKS01/TPKW01 v tvrdotě nepůlí.',
@@ -318,7 +326,7 @@ const RAK_STATS_PRESS_MACHINE_MO_ONLY_EXCEPTION_CONTRACT_V1124 = Object.freeze({
 
 
 const RAK_ROTATION_OVERTIME_DEFAULTS_2025_CONTRACT_V1129 = Object.freeze({
-  version: '1.2 (1.139)',
+  version: '1.2 (1.140)',
   year: 2025,
   count: 12,
   defaultRule: 'Nově dodané přesčasy 2025 jsou výchozí TO/tvrdota; konkrétní datum lze přepínačem TO vypnout na MO.',
@@ -330,7 +338,7 @@ const EXPORT_SMOKE_REPORT = window.__RAK_EXPORT_SMOKE_REPORT__ || (window.__RAK_
   ok: null,
   status: 'not-run',
   mode: 'export-smoke-report-v939',
-  version: '1.2 (1.139)',
+  version: '1.2 (1.140)',
   checkedAt: null,
   lastStage: 'čeká na export',
   runCount: 0,
@@ -463,7 +471,7 @@ const EXPORT_TEXT_FILES = [
 
 function getRakExportManifest() {
   return {
-    version: String(window.APP_VERSION || '1.2 (1.139)'),
+    version: String(window.APP_VERSION || '1.2 (1.140)'),
     mode: 'export-manifest-preflight-v939',
     indexFile: 'index.html',
     jsFiles: Array.from(new Set(EXPORT_JS_FILES)),
@@ -573,7 +581,7 @@ function updateRakExportSmokeReport(partial) {
   const data = partial && typeof partial === 'object' ? partial : {};
   Object.assign(EXPORT_SMOKE_REPORT, data, {
     mode: 'export-smoke-report-v939',
-    version: String(window.APP_VERSION || '1.2 (1.139)'),
+    version: String(window.APP_VERSION || '1.2 (1.140)'),
     checkedAt: new Date().toISOString()
   });
   return getRakExportSmokeReport();

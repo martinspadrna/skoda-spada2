@@ -1,3 +1,10 @@
+## RaK 1.2 (1.140)
+- Administrace / Export / import / XLSX rozpis pro kopírování: opravený výběr měsíce, aby se nemíchaly stejné měsíce z různých roků.
+- Seznam měsíců pro Excel export je teď řazený chronologicky a skupinovaný podle roku přes `optgroup Rok`, takže 2025 a 2026 nejsou v jednom promíchaném seznamu.
+- Stejné chronologické řazení používá i sdílený seznam měsíců v administraci, aby návazné výběry nepadaly na abecední/lexikální pořadí.
+- Supabase DB/policies, import Excelu, ZIP export a logika rozpisů beze změny.
+- Release metadata sjednocená na `RaK 1.2 (1.140)`, technická verze `1.2.140`, cache `v1.2-1.140`.
+
 ## RaK 1.2 (1.139)
 - Administrace / Export / import: přidaný stejný XLSX export rozpisu jako v generátoru, včetně výběru měsíce a tlačítka `Stáhnout Excel rozpisu`.
 - Export používá sdílenou funkci `adminRotationGeneratorDownloadExcel`, takže layout zůstává Tvrdota A:F, Měkota pod ní A:F a Absence od H dál.

@@ -1,6 +1,6 @@
-// RaK 1.2 (1.139) – zbytkový UI bridge po oddělení modulů.
+// RaK 1.2 (1.140) – zbytkový UI bridge po oddělení modulů.
 
-// RaK 1.2 (1.139) – Více/menu shell je oddělený v app-menu.js.
+// RaK 1.2 (1.140) – Více/menu shell je oddělený v app-menu.js.
 
 const UI_PREFS_KEY = APP_KEY + ':uiPrefs';
 const DEVICE_PERFORMANCE_PROBE_KEY = APP_KEY + ':devicePerformanceProbe';
@@ -402,7 +402,7 @@ function getRakPerformanceDprMax() {
 
 try { window.getRakPerformanceDprMax = getRakPerformanceDprMax; } catch (err) {}
 
-// RaK 1.2 (1.139) – Piškvorky jsou oddělené v games-gomoku.js.
+// RaK 1.2 (1.140) – Piškvorky jsou oddělené v games-gomoku.js.
 
 function triggerAboutAction() {
   const state = typeof app !== 'undefined' ? app : null;
@@ -873,19 +873,19 @@ function buildAppHistoryHtml(versionText) {
 }
 
 
-// RaK 1.2 (1.139) – Administrace / Rozpisy a Nastavení strojů jsou oddělené v admin-rotation.js.
+// RaK 1.2 (1.140) – Administrace / Rozpisy a Nastavení strojů jsou oddělené v admin-rotation.js.
 
 
 
 
-// RaK 1.2 (1.139) – Administrace / Reporty chyb jsou oddělené v admin-reports.js.
+// RaK 1.2 (1.140) – Administrace / Reporty chyb jsou oddělené v admin-reports.js.
 
-// RaK 1.2 (1.139) – Administrace / Přehled připojení, servis a oznámení jsou oddělené v admin-service-usage.js.
+// RaK 1.2 (1.140) – Administrace / Přehled připojení, servis a oznámení jsou oddělené v admin-service-usage.js.
 
 
-// RaK 1.2 (1.139) – App menu / administrace shell / bug report formulář jsou oddělené v app-menu.js.
+// RaK 1.2 (1.140) – App menu / administrace shell / bug report formulář jsou oddělené v app-menu.js.
 
-// RaK 1.2 (1.139) – showFoodSchedule je v app-navigation.js.
+// RaK 1.2 (1.140) – showFoodSchedule je v app-navigation.js.
 
 
 
@@ -997,7 +997,7 @@ try { window.updateRotaceNamesDockMetrics = updateRotaceNamesDockMetrics; } catc
 try { window.scheduleRotaceNamesDockMetrics = scheduleRotaceNamesDockMetrics; } catch (err) {}
 
 
-// RaK 1.2 (1.139) – showPage, home refresh, externí dlaždice a rotace/kalkulačky zkratky jsou v app-navigation.js.
+// RaK 1.2 (1.140) – showPage, home refresh, externí dlaždice a rotace/kalkulačky zkratky jsou v app-navigation.js.
 
 
 function setRotaceView(view) {
@@ -1046,12 +1046,12 @@ function setRotaceView(view) {
 }
 
 
-// RaK 1.2 (1.139) – Food/kalendář modaly a vazba dashboard kalendáře jsou v app-navigation.js.
+// RaK 1.2 (1.140) – Food/kalendář modaly a vazba dashboard kalendáře jsou v app-navigation.js.
 
 
-// RaK 1.2 (1.139) – Games hub + account profile jsou oddělené v games-profile.js.
+// RaK 1.2 (1.140) – Games hub + account profile jsou oddělené v games-profile.js.
 
-// RaK 1.2 (1.139) – Klasické hry 2048 / Had / Flappy Car jsou oddělené v games-classic.js.
+// RaK 1.2 (1.140) – Klasické hry 2048 / Had / Flappy Car jsou oddělené v games-classic.js.
 
 function renderGamesTttShell() {
 
@@ -1115,12 +1115,12 @@ if (!window.__tttHashInviteBound) {
 
 
 
-// RaK 1.2 (1.139) – Theme, pozadí a profilové UI nastavení jsou oddělené v appearance-theme.js.
+// RaK 1.2 (1.140) – Theme, pozadí a profilové UI nastavení jsou oddělené v appearance-theme.js.
 
 function getRakRotaceNamesDockHealth() {
   const result = {
     ok: true,
-    version: window.APP_VERSION || '1.2 (1.139)',
+    version: window.APP_VERSION || '1.2 (1.140)',
     mode: 'rotace-names-dock-stable-css-v930',
     checkedAt: new Date().toISOString(),
     scope: 'Rotace / seznam jmen / stabilní spodní dock',
@@ -1164,5 +1164,5 @@ function getRakRotaceNamesDockHealth() {
 window.getRakRotaceNamesDockHealth = getRakRotaceNamesDockHealth;
 
 
-// RaK 1.2 (1.139) – resize/orientation hlídání aktivního glass indikátoru spodní lišty je v app-navigation.js.
+// RaK 1.2 (1.140) – resize/orientation hlídání aktivního glass indikátoru spodní lišty je v app-navigation.js.
 

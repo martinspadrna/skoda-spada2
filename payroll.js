@@ -1,4 +1,4 @@
-// RaK 1.2 (1.139) – výplatní helpery.
+// RaK 1.2 (1.140) – výplatní helpery.
 function isPayrollWorkday(date) {
   const day = date.getDay();
   if (day === 0 || day === 6) return false;
