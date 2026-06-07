@@ -1,4 +1,4 @@
-// RaK 1.2 (1.143) – herní profily a leaderboardy.
+// RaK 1.2 (1.144) – herní profily a leaderboardy.
 
 // -------------------------
 // Games hub + account profile
@@ -313,6 +313,34 @@ function gamesGetRemoteProfileStatIds() {
   ];
 }
 
+const GAMES_PROFILE_LOW_POINT_SCALE = 1000000000;
+const GAMES_PROFILE_LOW_TIME_IDS = new Set(['reaction', 'daily_reaction', 'memory', 'daily_memory', 'sudoku']);
+function gamesProfileIsLowTimeGame(gameId) {
+  const id = String(gameId || '').trim();
+  return GAMES_PROFILE_LOW_TIME_IDS.has(id) || /^memory_\d+x\d+$/.test(id) || /^sudoku_(easy|medium|hard)$/.test(id);
+}
+function gamesProfileDecodeRemoteMetric(gameId, value) {
+  const raw = Number(value) || 0;
+  if (!raw || !gamesProfileIsLowTimeGame(gameId)) return raw;
+  const rounded = Math.round(raw);
+  if (rounded > 86400000 && rounded < GAMES_PROFILE_LOW_POINT_SCALE) {
+    const decoded = GAMES_PROFILE_LOW_POINT_SCALE - rounded;
+    if (decoded > 0 && decoded < 86400000) return decoded;
+  }
+  return raw;
+}
+function gamesProfileFormatTimeValue(gameId, value) {
+  const n = Number(value) || 0;
+  if (!n) return '—';
+  if (typeof window !== 'undefined' && typeof window.RaKGamesFormatTimeValue === 'function') return window.RaKGamesFormatTimeValue(gameId, n);
+  if (String(gameId || '') === 'reaction' || String(gameId || '') === 'daily_reaction') return String(Math.max(1, Math.round(n))) + ' ms';
+  const seconds = Math.max(1, Math.round(n / 1000));
+  if (seconds < 60) return String(seconds) + ' s';
+  const minutes = Math.floor(seconds / 60);
+  const rest = seconds % 60;
+  return rest ? (String(minutes) + ' min ' + String(rest) + ' s') : (String(minutes) + ' min');
+}
+
 function gamesApplyRemoteProfileStat(profile, row) {
   if (!profile || !row) return false;
   if (!gamesIsRemoteStatAfterReset(row)) return false;
@@ -338,18 +366,30 @@ function gamesApplyRemoteProfileStat(profile, row) {
   const wins = Number(row.wins || 0) || 0;
   const losses = Number(row.losses || 0) || 0;
   const draws = Number(row.draws || 0) || 0;
-  const points = Number(row.points ?? row.best_score ?? row.bestScore ?? row.value ?? 0) || 0;
+  const rawPoints = Number(row.points ?? row.best_score ?? row.bestScore ?? row.value ?? 0) || 0;
+  const points = gamesProfileDecodeRemoteMetric(gameType, rawPoints);
   const lastTs = gamesParseRemoteTimestamp(row.last_played_at || row.lastPlayedAt || row.updated_at || row.updatedAt);
 
-  const mergeGeneric = (current) => Object.assign({}, current || {}, {
-    plays: Math.max(Number(current && current.plays || 0) || 0, plays),
-    wins: Math.max(Number(current && current.wins || 0) || 0, wins),
-    losses: Math.max(Number(current && current.losses || 0) || 0, losses),
-    draws: Math.max(Number(current && current.draws || 0) || 0, draws),
-    bestScore: Math.max(Number(current && current.bestScore || 0) || 0, points),
-    leaderboardValue: Math.max(Number(current && current.leaderboardValue || 0) || 0, points),
-    lastPlayedAt: Math.max(Number(current && current.lastPlayedAt || 0) || 0, lastTs || 0)
-  });
+  const mergeGeneric = (current) => {
+    const base = Object.assign({}, current || {}, {
+      plays: Math.max(Number(current && current.plays || 0) || 0, plays),
+      wins: Math.max(Number(current && current.wins || 0) || 0, wins),
+      losses: Math.max(Number(current && current.losses || 0) || 0, losses),
+      draws: Math.max(Number(current && current.draws || 0) || 0, draws),
+      points: Math.max(Number(current && current.points || 0) || 0, rawPoints),
+      lastPlayedAt: Math.max(Number(current && current.lastPlayedAt || 0) || 0, lastTs || 0)
+    });
+    if (gamesProfileIsLowTimeGame(gameType)) {
+      const oldTime = Number(current && (current.bestTimeMs || current.leaderboardValue) || 0) || 0;
+      const nextTime = points > 0 ? (oldTime > 0 ? Math.min(oldTime, points) : points) : oldTime;
+      base.bestTimeMs = nextTime;
+      base.leaderboardValue = nextTime;
+    } else {
+      base.bestScore = Math.max(Number(current && current.bestScore || 0) || 0, points);
+      base.leaderboardValue = Math.max(Number(current && current.leaderboardValue || 0) || 0, points);
+    }
+    return base;
+  };
 
   if (gameType === 'ttt') {
     const current = acc.stats.ttt && typeof acc.stats.ttt === 'object' ? acc.stats.ttt : {};
@@ -411,7 +451,7 @@ async function gamesSyncProfileFromRemote(force = false) {
           return bridge.loadGameStats(id, limit, { force: !!force }).catch(() => []);
         }))).flat()
       : [];
-    // RaK 1.2 (1.143): aktivní profil nesmí záviset jen na Top score limitech.
+    // RaK 1.2 (1.144): aktivní profil nesmí záviset jen na Top score limitech.
     // PC bez lokální historie si musí rank/theme dopočítat přímo ze všech statistik svého účtu.
     const activeAccountStatsRows = activeAccountId && typeof bridge.loadGameStatsForAccount === 'function'
       ? await bridge.loadGameStatsForAccount(activeAccountId, { force: !!force }).catch(() => [])
@@ -573,7 +613,7 @@ function gamesSetActiveAccount(accountId) {
   gamesApplyActiveAccountUI(active);
   if (typeof renderGamesProfileStatus === 'function') renderGamesProfileStatus();
   gamesRenderStats();
-  // RaK 1.2 (1.143): po přihlášení vynutit načtení statistik aktivního účtu,
+  // RaK 1.2 (1.144): po přihlášení vynutit načtení statistik aktivního účtu,
   // aby se rank a odemčené theme/pozadí sjednotily mezi mobilem a PC.
   void gamesSyncProfileFromRemote(true).then(() => {
     if (typeof applyProfileUiPreferencesForActiveAccount === 'function') applyProfileUiPreferencesForActiveAccount({ loadRemote: false, source: 'login-remote-stats' });
@@ -796,7 +836,8 @@ function gamesMergeRemoteLeaderboardRowIntoAccount(account, gameId, row) {
   if (!account || !id || id === '__profile_ui') return account;
   account.stats = account.stats && typeof account.stats === 'object' ? account.stats : {};
   const updated = gamesParseRemoteTimestamp(row && (row.last_played_at || row.lastPlayedAt || row.updated_at || row.updatedAt));
-  const value = Number(row && (row.value ?? row.points ?? row.bestScore ?? row.best_score ?? row.games_played) || 0) || 0;
+  const rawValue = Number(row && (row.value ?? row.points ?? row.bestScore ?? row.best_score ?? row.games_played) || 0) || 0;
+  const value = gamesProfileDecodeRemoteMetric(id, rawValue);
   const gamesPlayed = Number(row && (row.games_played ?? row.plays) || 0) || 0;
   const wins = Number(row && row.wins || 0) || 0;
   const losses = Number(row && row.losses || 0) || 0;
@@ -822,7 +863,7 @@ function gamesMergeRemoteLeaderboardRowIntoAccount(account, gameId, row) {
   } else {
     account.stats.arcade = account.stats.arcade && typeof account.stats.arcade === 'object' ? account.stats.arcade : {};
     const local = account.stats.arcade[id] && typeof account.stats.arcade[id] === 'object' ? account.stats.arcade[id] : {};
-    const lowBetter = typeof isLowBetter === 'function' && isLowBetter(id);
+    const lowBetter = gamesProfileIsLowTimeGame(id);
     const merged = Object.assign({}, local, {
       plays: Math.max(Number(local.plays || 0) || 0, gamesPlayed || (value > 0 ? 1 : 0)),
       points: Math.max(Number(local.points || 0) || 0, value),
@@ -830,8 +871,9 @@ function gamesMergeRemoteLeaderboardRowIntoAccount(account, gameId, row) {
       lastPlayedAt: Math.max(Number(local.lastPlayedAt || 0) || 0, updated || 0)
     });
     if (lowBetter) {
-      const oldTime = Number(local.bestTimeMs || 0) || 0;
+      const oldTime = Number(local.bestTimeMs || local.leaderboardValue || 0) || 0;
       merged.bestTimeMs = oldTime && value ? Math.min(oldTime, value) : (oldTime || value || 0);
+      merged.leaderboardValue = merged.bestTimeMs || 0;
     } else {
       merged.bestScore = Math.max(Number(local.bestScore || 0) || 0, value);
     }
@@ -905,10 +947,12 @@ function gamesRenderProfiles() {
       else if (game.id === '2048') value = Number(total.g2048.bestScore || 0) || 0;
       else if (game.id === 'snake') value = Number(total.snake.bestScore || 0) || 0;
       else if (game.id === 'flap') value = Number(total.flap.bestScore || 0) || 0;
-      else if (gameStats) value = Number(gameStats.bestScore || gameStats.plays || gameStats.bestTimeMs || 0) || 0;
+      else if (gameStats) value = gamesProfileIsLowTimeGame(game.id)
+        ? Number(gameStats.bestTimeMs || gameStats.leaderboardValue || 0) || 0
+        : Number(gameStats.bestScore || gameStats.leaderboardValue || gameStats.plays || 0) || 0;
       const display = game.id === 'ttt'
         ? (String(value) + '× · V ' + String(Number((gameStats && gameStats.wins) || total.ttt.wins || 0) || 0) + ' / P ' + String(Number((gameStats && gameStats.losses) || total.ttt.losses || 0) || 0) + ' / R ' + String(Number((gameStats && gameStats.draws) || total.ttt.draws || 0) || 0))
-        : (game.id === 'reaction' ? (value ? (String(value) + ' ms') : '—') : (String(value) + ' ' + game.unit));
+        : (gamesProfileIsLowTimeGame(game.id) ? gamesProfileFormatTimeValue(game.id, value) : (String(value) + ' ' + game.unit));
       return '<div class="gamesProfileRow"><strong>' + escapeHtml(game.title) + '</strong><span>' + escapeHtml(display) + '</span></div>';
     }).join('');
     const isActive = String(acc.id) === String(activeId);
@@ -1311,14 +1355,24 @@ function gamesTop3Block(gameId, label, limit = 10) {
 }
 
 
-const GAMES_ACTIVE_ACCOUNT_DIRECT_STATS_CONTRACT_V1143 = Object.freeze({
-  version: '1.2 (1.143)',
+const GAMES_ACTIVE_ACCOUNT_DIRECT_STATS_CONTRACT_V1144 = Object.freeze({
+  version: '1.2 (1.144)',
   scope: 'games-profile-rank-sync',
   issue: 'rank a appearance unlocky nesmí záviset jen na leaderboard/top-score limitech',
   activeAccountLoader: 'RotationSupabaseBridge.loadGameStatsForAccount(accountNumber)',
   protectedAccount: 'aktivní účet podle account_number',
   result: 'mobil a PC počítají rank/theme/pozadí ze stejných online statistik účtu'
 });
-window.GAMES_ACTIVE_ACCOUNT_DIRECT_STATS_CONTRACT_V1143 = GAMES_ACTIVE_ACCOUNT_DIRECT_STATS_CONTRACT_V1143;
+window.GAMES_ACTIVE_ACCOUNT_DIRECT_STATS_CONTRACT_V1144 = GAMES_ACTIVE_ACCOUNT_DIRECT_STATS_CONTRACT_V1144;
+
+const GAMES_TIME_PROFILE_FORMAT_CONTRACT_V1144 = Object.freeze({
+  version: '1.2 (1.144)',
+  guard: 'games-time-profile-format-v1144-guard',
+  lowTimeGames: ['reaction', 'memory', 'sudoku'],
+  reactionUnit: 'ms',
+  longerTimes: 'min+s',
+  decodedEncodedLowScore: gamesProfileDecodeRemoteMetric('sudoku', 999875000) === 125000
+});
+window.GAMES_TIME_PROFILE_FORMAT_CONTRACT_V1144 = GAMES_TIME_PROFILE_FORMAT_CONTRACT_V1144;
 
 try { if (typeof window !== 'undefined' && typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('games-profile.js','loaded',{source:'games-profile'}); } catch (err) {}

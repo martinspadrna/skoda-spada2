@@ -1,12 +1,12 @@
-## RaK 1.2 (1.143)
+## RaK 1.2 (1.144)
 
-- Nastavení / Výkon zařízení: ověřený a dotažený Láďův režim pro plynulejší chod na slabších mobilech.
-- Aktivní Láďův režim nově zapíná `rakLadaPaintLite`, která vypne pevné pseudo vrstvy pozadí `body::before/after` a použije jednoduché statické pozadí bez drahého fixed paintu.
-- Tvrdší výkonové odlehčení pro aktivní `ladaMode`, `lowEndDevice` i `lightweightMode`: bez `backdrop-filter`, bez filtrů, bez animací/přechodů a s lehčími stíny na hlavních kartách, modalech, navigaci a herních panelech.
-- Health audit Láďova režimu nově hlídá i lite paint vrstvu a diagnostiku `rakLadaPaintLite`.
-- Ruční vypnutí z 1.142 zůstává zachované: když si uživatel Láďův režim vypne, low-end detekce dál jen diagnostikuje, ale nevnucuje CSS efekty ani DPR limit.
+- Hry / Sudoku: opravené ukládání dokončeného Sudoku do profilu a online Top score. Po vyřešení se zapisuje společné `sudoku` i varianta obtížnosti `sudoku_easy/medium/hard`.
+- Dohrané Sudoku se počítá jako dokončení/výhra (`wins: 1`) a ukládá se s časem `bestTimeMs/timeMs/elapsedMs`, aby se správně propsalo do profilu hráče i tabule.
+- Supabase klient: zvýšen klientský limit `p_points_delta` pro RPC `rak_record_game_stat_delta`, protože časové low-score hry ukládají rekord jako velké zakódované body `POINT_SCALE - čas_ms`; starý limit 5000 mohl Sudoku oříznout tak, že se výsledek nezobrazil.
+- Profily hráčů nově dekódují online low-score body zpět na čas, takže Sudoku/Pexeso/Reaction nezobrazují nesmyslné body nebo počet her místo času.
+- Formát časů v tabulkách výher sjednocený: časové hry jsou v sekundách, nad minutu jako `min + s`, Reaction Test jediný zůstává v `ms`.
 - Supabase DB/policies beze změny.
-- Release metadata sjednocená na `RaK 1.2 (1.143)`, technická verze `1.2.143`, cache `v1.2-1.143`.
+- Release metadata sjednocená na `RaK 1.2 (1.144)`, technická verze `1.2.144`, cache `v1.2-1.144`.
 
 ## RaK 1.2 (1.141)
 

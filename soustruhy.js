@@ -1,4 +1,4 @@
-// RaK 1.2 (1.143) – kalkulačky Soustruhy.
+// RaK 1.2 (1.144) – kalkulačky Soustruhy.
 function resetSoustruhy() {
   ["lis_first", "lis_plan", "v127_first", "v127_plan", "v127_heat_first", "v106_first", "v106_plan", "v106_heat_first", "v106_c1", "v106_c2", "v106_c3", "v106_c4", "combo_first_start", "combo_first_end", "combo_second_start", "combo_second_plan", "combo_heat_first", "combo106_c1", "combo106_c2", "combo106_c3", "combo106_c4"].forEach(id => {
     const el = document.getElementById(id);
@@ -1850,7 +1850,7 @@ function getRakFrezkyCorrectionSignToggleHealth() {
   const allInputs = ids.every(id => status.inputs[id]);
   return {
     ok: !!(allButtons && allInputs),
-    version: window.APP_VERSION || '1.2 (1.143)',
+    version: window.APP_VERSION || '1.2 (1.144)',
     mode: 'frezky-correction-sign-toggle-v932',
     scope: 'Korekce Frézky / naměřeno i aktuální korekce ve stroji',
     buttons: Object.assign({

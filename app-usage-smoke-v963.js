@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.143) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.144) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -19,6 +19,8 @@ const serviceWorkerJs = read('sw.js');
 const exportJs = read('export.js');
 const changelogMd = read('CHANGELOG.md');
 const bridge = read('supabase-bridge.js');
+const gamesArcadeJs = read('games-arcade.js');
+const gamesProfileJs = read('games-profile.js');
 const appearanceThemeJs = read('appearance-theme.js');
 const ui = read('ui.js') + '\n' + read('app-runtime-guards.js') + '\n' + read('app-health-audits.js') + '\n' + read('app-postload-audits.js') + '\n' + read('app-pwa-connectivity.js') + '\n' + read('games-engine.js') + '\n' + read('games-profile.js') + '\n' + appearanceThemeJs + '\n' + read('admin-service-usage.js') + '\n' + read('admin-rotation.js') + '\n' + read('app-navigation.js') + '\n' + read('app-bottom-nav.js') + '\n' + read('app-menu.js') + '\n' + read('app-actions.js') + '\n' + read('app-boot-selftest.js') + '\n' + read('app-rotation-sync.js') + '\n' + read('app-excel-import.js') + '\n' + read('app-rotation-controls.js') + '\n' + read('app-admin-unlock.js') + '\n' + read('app-home-boot.js') + '\n' + read('app-init.js');
 const sql = read('assets/docs/sql/supabase_app_usage_v963.sql');
@@ -216,12 +218,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.143)',
-  appLabel: 'RaK 1.2 (1.143)',
-  packageVersion: '1.2.143',
-  cacheVersion: 'v1.2-1.143',
+  displayVersion: '1.2 (1.144)',
+  appLabel: 'RaK 1.2 (1.144)',
+  packageVersion: '1.2.144',
+  cacheVersion: 'v1.2-1.144',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.143)',
+  changelogHeader: '## RaK 1.2 (1.144)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -330,8 +332,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.143)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.143'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.144)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.144'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -890,7 +892,7 @@ function assertRotationGeneratorRulesContractV1107() {
   assertIncludes(ui, 'if (softTargetCount === 3 && lathePeopleCount === 2 && mskc01Idx >= 0)', 'Při dvou absencích musí zůstat MSKC01 neobsazená');
   assertIncludes(ui, 'readAdminRotationFromDom(monthKey)', 'Generátor musí před výpočtem číst rozepsané absence z DOMu');
   assertIncludes(ui, 'adminRotationGeneratorIsDayBlocked', 'Generátor musí umět vynechat den označený jako svátek/odstávka');
-  assertIncludes(ui, "ruleVersion: '1.143'", 'Výsledek generátoru musí vracet aktuální verzi pravidel 1.143');
+  assertIncludes(ui, "ruleVersion: '1.144'", 'Výsledek generátoru musí vracet aktuální verzi pravidel 1.144');
 assertIncludes(ui, 'generator-download-excel', 'Výsledek generátoru musí nabízet stažení návrhu do Excelu');
 assertIncludes(ui, 'admin-download-rotation-excel', 'Administrace / Export import musí nabízet stejný XLSX export rozpisu');
 assertIncludes(ui, 'rakRotationExcelExportMonth', 'Export / import musí mít vlastní výběr měsíce pro XLSX export rozpisu');
@@ -980,7 +982,7 @@ function assertRotationGeneratorRulesContractV1114() {
   assertIncludes(ui, 'function adminRotationGeneratorCountSoloMill', 'Generátor musí umět spočítat samostatné MFKF10 s prázdnou MFKF06');
   assertIncludes(ui, "const soloMillBalance = adminRotationGeneratorBalanceSoloMill(month, model);", 'Po sestavení měsíce musí běžet vyrovnání samostatných frézek');
   assertIncludes(ui, 'soloMillBalanceSwaps', 'Výsledek generátoru musí vracet počet prohozů samostatných frézek');
-  assertIncludes(ui, "ruleVersion: '1.143'", 'Výsledek generátoru musí vracet aktuální verzi pravidel 1.143');
+  assertIncludes(ui, "ruleVersion: '1.144'", 'Výsledek generátoru musí vracet aktuální verzi pravidel 1.144');
 }
 
 
@@ -1041,12 +1043,12 @@ function assertRotationGeneratorRulesContractV1117() {
 
 
 function assertRotationGeneratorExcelCopyContractV1138() {
-  assertIncludes(exportJs, 'RAK_ROTATION_GENERATOR_EXCEL_COPY_CONTRACT_V1138', 'export.js musí dokumentovat kopírovací XLSX layout generátoru v1.143');
-  assertIncludes(ui, 'RAK_ROTATION_GENERATOR_EXCEL_COPY_CONTRACT_V1138', 'admin-rotation.js musí mít contract pro XLSX kopírovací layout v1.143');
-  assertIncludes(exportJs, 'RAK_ADMIN_EXPORT_IMPORT_EXCEL_COPY_CONTRACT_V1139', 'export.js musí dokumentovat XLSX export v Administraci / Export import v1.143');
-  assertIncludes(ui, 'RAK_ADMIN_EXPORT_IMPORT_EXCEL_COPY_CONTRACT_V1139', 'app-menu.js musí mít contract pro XLSX export v Export/import v1.143');
-  assertIncludes(exportJs, 'RAK_ADMIN_EXPORT_IMPORT_EXCEL_MONTH_GROUP_CONTRACT_V1140', 'export.js musí dokumentovat skupinovaný výběr měsíců pro XLSX export v1.143');
-  assertIncludes(ui, 'RAK_ADMIN_EXPORT_IMPORT_EXCEL_MONTH_GROUP_CONTRACT_V1140', 'app-menu.js musí mít contract pro řazení a skupiny roků v XLSX exportu v1.143');
+  assertIncludes(exportJs, 'RAK_ROTATION_GENERATOR_EXCEL_COPY_CONTRACT_V1138', 'export.js musí dokumentovat kopírovací XLSX layout generátoru v1.144');
+  assertIncludes(ui, 'RAK_ROTATION_GENERATOR_EXCEL_COPY_CONTRACT_V1138', 'admin-rotation.js musí mít contract pro XLSX kopírovací layout v1.144');
+  assertIncludes(exportJs, 'RAK_ADMIN_EXPORT_IMPORT_EXCEL_COPY_CONTRACT_V1139', 'export.js musí dokumentovat XLSX export v Administraci / Export import v1.144');
+  assertIncludes(ui, 'RAK_ADMIN_EXPORT_IMPORT_EXCEL_COPY_CONTRACT_V1139', 'app-menu.js musí mít contract pro XLSX export v Export/import v1.144');
+  assertIncludes(exportJs, 'RAK_ADMIN_EXPORT_IMPORT_EXCEL_MONTH_GROUP_CONTRACT_V1140', 'export.js musí dokumentovat skupinovaný výběr měsíců pro XLSX export v1.144');
+  assertIncludes(ui, 'RAK_ADMIN_EXPORT_IMPORT_EXCEL_MONTH_GROUP_CONTRACT_V1140', 'app-menu.js musí mít contract pro řazení a skupiny roků v XLSX exportu v1.144');
   assertIncludes(ui, 'function buildRakRotationExcelExportMonthOptions', 'Export / import musí mít vlastní builder výběru měsíců pro XLSX export');
   assertIncludes(ui, '<optgroup label="Rok ', 'Výběr XLSX exportu musí skupinovat měsíce podle roku');
   assertIncludes(ui, 'function adminRotationGeneratorBuildExcelAbsenceSlots', 'Excel export musí dynamicky určit počet dvojic Jméno/Kód pro absence');
@@ -1056,19 +1058,19 @@ function assertRotationGeneratorExcelCopyContractV1138() {
   assertIncludes(ui, 'const width = 8 + absenceSlots * 2', 'Excel layout musí mít A:F + G mezera + H absence datum + dynamické dvojice');
   assertIncludes(ui, "softHeader[0] = 'Rotace  měkota'", 'Měkota musí zůstat jako samostatný blok pod Tvrdotou v A:F');
   assertIncludes(ui, "ws['!cols'] = adminRotationGeneratorBuildExcelCols(aoa);", 'Stažený XLSX musí použít nové kopírovací šířky sloupců');
-  assertIncludes(ui, "ruleVersion: '1.143'", 'Výsledek generátoru musí vracet aktuální verzi pravidel 1.143');
+  assertIncludes(ui, "ruleVersion: '1.144'", 'Výsledek generátoru musí vracet aktuální verzi pravidel 1.144');
 }
 
 
-function assertGamesActiveAccountDirectStatsContractV1143() {
-  assertIncludes(bridge, 'function gameStatsAccountCacheKey', 'Supabase bridge musí mít cache klíč pro statistiky konkrétního účtu v1.143');
-  assertIncludes(bridge, 'async function loadGameStatsForAccountDirect', 'Supabase bridge musí umět přímo načíst všechny statistiky aktivního účtu v1.143');
-  assertIncludes(bridge, 'loadGameStatsForAccount: async', 'RotationSupabaseBridge musí vystavit loadGameStatsForAccount pro profil/rank sync v1.143');
+function assertGamesActiveAccountDirectStatsContractV1144() {
+  assertIncludes(bridge, 'function gameStatsAccountCacheKey', 'Supabase bridge musí mít cache klíč pro statistiky konkrétního účtu v1.144');
+  assertIncludes(bridge, 'async function loadGameStatsForAccountDirect', 'Supabase bridge musí umět přímo načíst všechny statistiky aktivního účtu v1.144');
+  assertIncludes(bridge, 'loadGameStatsForAccount: async', 'RotationSupabaseBridge musí vystavit loadGameStatsForAccount pro profil/rank sync v1.144');
   assertIncludes(bridge, ".eq('account_number', account)", 'Přímé načtení statistik musí filtrovat podle account_number');
-  assertIncludes(ui, 'GAMES_ACTIVE_ACCOUNT_DIRECT_STATS_CONTRACT_V1143', 'games-profile.js musí dokumentovat přímý sync aktivního účtu v1.143');
+  assertIncludes(ui, 'GAMES_ACTIVE_ACCOUNT_DIRECT_STATS_CONTRACT_V1144', 'games-profile.js musí dokumentovat přímý sync aktivního účtu v1.144');
   assertIncludes(ui, 'bridge.loadGameStatsForAccount(activeAccountId', 'Profilový sync musí používat přímé statistiky aktivního účtu');
   assertIncludes(ui, 'login-remote-stats', 'Po přihlášení se musí vynutit přepočet ranku/theme po stažení statistik účtu');
-  assertIncludes(appearanceThemeJs, 'RAK_APPEARANCE_LOCKED_PREFERENCE_PRESERVE_CONTRACT_V1143', 'appearance musí chránit uložené theme/pozadí před předčasným přepsáním na default');
+  assertIncludes(appearanceThemeJs, 'RAK_APPEARANCE_LOCKED_PREFERENCE_PRESERVE_CONTRACT_V1144', 'appearance musí chránit uložené theme/pozadí před předčasným přepsáním na default');
   assertIncludes(appearanceThemeJs, 'const themeToApply = savedThemeUnlocked', 'Zamčené uložené theme se má dočasně jen vizuálně nahradit defaultem');
   assertIncludes(appearanceThemeJs, 'const bgToApply = savedBgUnlocked', 'Zamčené uložené pozadí se má dočasně jen vizuálně nahradit defaultem');
   assert(!appearanceThemeJs.includes("if (!isAppearanceRewardUnlocked(savedTheme, rewardMetrics, 'default')) { ui.themeId = defaultTheme"), 'Uložené profilové theme se nesmí mazat při dočasně nízkém ranku');
@@ -1076,8 +1078,23 @@ function assertGamesActiveAccountDirectStatsContractV1143() {
 }
 
 
-function assertLadaManualOverrideContractV1143() {
-  assertIncludes(ui, 'RAK_LADA_MANUAL_OVERRIDE_CONTRACT_V1143', 'ui.js musí dokumentovat ruční vypnutí Láďova režimu na slabém zařízení v1.143');
+
+function assertSudokuCompletionAndTimeFormatContractV1144() {
+  assertIncludes(gamesArcadeJs, 'sudoku-completion-save-v1144', 'Sudoku musí mít guard pro uložení dokončení v1.144');
+  assertIncludes(gamesArcadeJs, "gamesRecordStat('sudoku', sudokuResultPatch)", 'Sudoku musí po dohrání zapsat společné Sudoku do profilu/Top score');
+  assertIncludes(gamesArcadeJs, 'gamesRecordStat(sudokuBoardId, sudokuVariantPatch)', 'Sudoku musí po dohrání zapsat i variantu obtížnosti');
+  assertIncludes(gamesArcadeJs, 'wins: 1', 'Dohrané Sudoku se má počítat jako výhra/dokončení');
+  assertIncludes(gamesArcadeJs, 'window.__rakLastSudokuCompletion', 'Sudoku musí mít runtime stopu posledního zápisu pro diagnostiku');
+  assertIncludes(bridge, 'GAME_STATS_POINTS_DELTA_LIMIT = 1000000000', 'RPC ukládání game_stats nesmí oříznout zakódované low-score body pro Sudoku/Pexeso/Reaction na 5000');
+  assertIncludes(bridge, 'Math.min(GAME_STATS_POINTS_DELTA_LIMIT', 'RPC points delta musí používat nový vyšší limit');
+  assertIncludes(gamesProfileJs, 'gamesProfileDecodeRemoteMetric', 'Profil musí dekódovat online low-score body zpět na čas');
+  assertIncludes(gamesProfileJs, 'gamesProfileIsLowTimeGame(game.id)', 'Profil musí časové hry zobrazovat jako čas, ne jako počet her/body');
+  assertIncludes(gamesArcadeJs, 'function fmtReactionMs', 'Reaction Test musí zůstat v ms');
+  assertIncludes(gamesArcadeJs, "return rest ? `${minutes} min ${rest} s`", 'Časové hry nad minutu musí zobrazit min + s');
+}
+
+function assertLadaManualOverrideContractV1144() {
+  assertIncludes(ui, 'RAK_LADA_MANUAL_OVERRIDE_CONTRACT_V1144', 'ui.js musí dokumentovat ruční vypnutí Láďova režimu na slabém zařízení v1.144');
   assertIncludes(ui, 'const autoLowEndActive = lowEndDetected && !next.lightweightManual', 'Ruční volba musí mít přednost před lowEnd automatikou');
   assertIncludes(ui, "document.body.classList.toggle('lowEndDevice', autoLowEndActive)", 'lowEndDevice CSS třída se nesmí držet aktivní po ručním vypnutí');
   assertIncludes(ui, 'document.documentElement.dataset.rakLowEndAutoActive', 'Diagnostika musí rozlišit detekci slabého zařízení a aktivní automatiku');
@@ -1087,8 +1104,8 @@ function assertLadaManualOverrideContractV1143() {
 }
 
 
-function assertLadaSmoothPerformanceContractV1143() {
-  assertIncludes(ui, 'RAK_LADA_SMOOTH_PERFORMANCE_CONTRACT_V1143', 'ui.js musí dokumentovat plynulostní contract Láďova režimu v1.143');
+function assertLadaSmoothPerformanceContractV1144() {
+  assertIncludes(ui, 'RAK_LADA_SMOOTH_PERFORMANCE_CONTRACT_V1144', 'ui.js musí dokumentovat plynulostní contract Láďova režimu v1.144');
   assertIncludes(ui, "document.documentElement.classList.toggle('rakLadaPaintLite', !!ladaMode)", 'Aktivní Láďův režim musí zapnout jednoduchou paint vrstvu');
   assertIncludes(ui, "document.documentElement.dataset.rakLadaPaintLite = ladaMode ? 'yes' : 'no'", 'Diagnostika musí hlásit lite paint vrstvu');
   assertIncludes(ui, 'litePaintLayer', 'Health audit musí kontrolovat lite paint vrstvu');
@@ -1212,16 +1229,17 @@ assertRotationGeneratorRulesContractV1116();
 assertRotationGeneratorRulesContractV1117();
 assertDashboardAndRotationEmptyVisualContractV1119();
 assertRotationGeneratorExcelCopyContractV1138();
-assertGamesActiveAccountDirectStatsContractV1143();
-assertLadaManualOverrideContractV1143();
-assertLadaSmoothPerformanceContractV1143();
+assertGamesActiveAccountDirectStatsContractV1144();
+assertSudokuCompletionAndTimeFormatContractV1144();
+assertLadaManualOverrideContractV1144();
+assertLadaSmoothPerformanceContractV1144();
 assertStatsPressMachineSplitContractV1123();
 assertStatsPressMachineMoOnlyExceptionContractV1124();
 assertRotationOvertimeShiftFilterContractV1128();
 assertRotationOvertimeDefaults2025ContractV1129();
 assertLightPatternThemeContractV1131();
 
-console.log('app-usage-smoke-v963 OK + rotation-generator-wizard-v1108-guard + rotation-generator-absence-state-v1109-guard + rotation-generator-wizard-run-v1110-guard + rotation-generator-wizard-state-v1111-guard + rotation-generator-month-balance-v1112-guard + rotation-generator-rules-v1113-guard + rotation-generator-rules-v1114-guard + rotation-generator-rules-v1115-guard + rotation-generator-rules-v1116-guard + rotation-generator-rules-v1117-guard + dashboard-percent-empty-cells-v1119-guard + stats-press-machine-split-v1123-guard + rotation-overtime-shift-filter-v1128-guard + rotation-overtime-defaults-2025-v1129-guard + rotation-absence-export-ytd-generator-theme-v1130-guard + light-pattern-theme-v1131-guard + rotation-generator-excel-copy-v1138-guard + games-active-account-direct-stats-v1143-guard + lada-manual-override-v1143-guard + lada-smooth-performance-v1143-guard + dashboard-css-contract-guard + appearance-reward-contract + rotation-export-summary-simple-guard + rotation-export-glass-guard + appearance-readability-guard + css-layer-order-v194-guard + dashboard-owner-registry-v195-guard + dashboard-overrides-selector-lock-v196-guard + dashboard-scope-v197-guard + dashboard-release-isolation-v198-guard + dashboard-css-guard-series-v1100-complete + release-metadata-v199-guard + brusy-choice-size-v1101-guard + fixed-app-background-v1101-guard + name-choice-fit-v1102-guard + browser-smoke-v1103-guard + dashboard-empty-absence-text-v1104-guard + rotace-empty-absence-text-v1105-guard + appearance-update-persistence-v1105-guard + rotation-generator-v1106-guard + rotation-generator-rules-v1107-guard + no-visual-owner-drift-guard OK');
+console.log('app-usage-smoke-v963 OK + rotation-generator-wizard-v1108-guard + rotation-generator-absence-state-v1109-guard + rotation-generator-wizard-run-v1110-guard + rotation-generator-wizard-state-v1111-guard + rotation-generator-month-balance-v1112-guard + rotation-generator-rules-v1113-guard + rotation-generator-rules-v1114-guard + rotation-generator-rules-v1115-guard + rotation-generator-rules-v1116-guard + rotation-generator-rules-v1117-guard + dashboard-percent-empty-cells-v1119-guard + stats-press-machine-split-v1123-guard + rotation-overtime-shift-filter-v1128-guard + rotation-overtime-defaults-2025-v1129-guard + rotation-absence-export-ytd-generator-theme-v1130-guard + light-pattern-theme-v1131-guard + rotation-generator-excel-copy-v1138-guard + games-active-account-direct-stats-v1144-guard + sudoku-completion-save-v1144-guard + game-time-format-v1144-guard + lada-manual-override-v1144-guard + lada-smooth-performance-v1144-guard + dashboard-css-contract-guard + appearance-reward-contract + rotation-export-summary-simple-guard + rotation-export-glass-guard + appearance-readability-guard + css-layer-order-v194-guard + dashboard-owner-registry-v195-guard + dashboard-overrides-selector-lock-v196-guard + dashboard-scope-v197-guard + dashboard-release-isolation-v198-guard + dashboard-css-guard-series-v1100-complete + release-metadata-v199-guard + brusy-choice-size-v1101-guard + fixed-app-background-v1101-guard + name-choice-fit-v1102-guard + browser-smoke-v1103-guard + dashboard-empty-absence-text-v1104-guard + rotace-empty-absence-text-v1105-guard + appearance-update-persistence-v1105-guard + rotation-generator-v1106-guard + rotation-generator-rules-v1107-guard + no-visual-owner-drift-guard OK');
 
 // v1.136 guard: soft-core fixed cycle + no TNKS balancing + removed AMOLED black.
 assertIncludes(ui, 'RAK_ROTATION_GENERATOR_RULES_V1135', 'Chybí pravidla generátoru v1.136');
