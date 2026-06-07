@@ -1,4 +1,4 @@
-// RaK 1.2 (1.144) – arcade hry a denní challenge.
+// RaK 1.2 (1.145) – arcade hry a denní challenge.
 (() => {
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
@@ -705,7 +705,7 @@
       perGame[id] = { achievementCount: direct, shiftDRewardCount: dShift, ok: direct >= 3 && dShift >= 2 };
     });
     return {
-      version: window.APP_VERSION || '1.2 (1.144)',
+      version: window.APP_VERSION || '1.2 (1.145)',
       mode: 'games-achievement-reward-health-v928',
       totalAchievementDefs: defs.length,
       gamesCovered: ids.length,
@@ -1404,7 +1404,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok,
       mode: GAMES_TOP_SCORE_DOM_HARDENING.mode,
-      version: String(window.APP_VERSION || '1.2 (1.144)'),
+      version: String(window.APP_VERSION || '1.2 (1.145)'),
       scope: 'Top score řádky ve hrách',
       sinks: GAMES_TOP_SCORE_DOM_HARDENING.sinks.slice(),
       escapedFields: GAMES_TOP_SCORE_DOM_HARDENING.escapedFields.slice(),
@@ -1423,7 +1423,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok,
       mode: 'games-top-score-time-format-v1144',
-      version: String(window.APP_VERSION || '1.2 (1.144)'),
+      version: String(window.APP_VERSION || '1.2 (1.145)'),
       scope: 'Top výsledky her – časy v sekundách/minutách, Reaction v ms',
       reactionProbe,
       sudokuProbe,
@@ -1449,7 +1449,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok,
       mode: GAMES_PROFILE_DOM_HARDENING.mode,
-      version: String(window.APP_VERSION || '1.2 (1.144)'),
+      version: String(window.APP_VERSION || '1.2 (1.145)'),
       scope: 'Profily, statistiky a achievementy ve hrách',
       sinks: GAMES_PROFILE_DOM_HARDENING.sinks.slice(),
       escapedFields: GAMES_PROFILE_DOM_HARDENING.escapedFields.slice(),
@@ -1496,7 +1496,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok,
       mode: GAMES_HUD_MESSAGE_DOM_HARDENING.mode,
-      version: String(window.APP_VERSION || '1.2 (1.144)'),
+      version: String(window.APP_VERSION || '1.2 (1.145)'),
       scope: 'Herní HUD a chybové/stavové hlášky arcade rendererů',
       sinks: GAMES_HUD_MESSAGE_DOM_HARDENING.sinks.slice(),
       escapedFields: GAMES_HUD_MESSAGE_DOM_HARDENING.escapedFields.slice(),
@@ -1526,7 +1526,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok,
       mode: GAMES_SHIPS_MENU_DOM_HARDENING.mode,
-      version: String(window.APP_VERSION || '1.2 (1.144)'),
+      version: String(window.APP_VERSION || '1.2 (1.145)'),
       scope: 'Menu Lodí, pozvánka a uložené vzájemné zápasy',
       sinks: GAMES_SHIPS_MENU_DOM_HARDENING.sinks.slice(),
       escapedFields: GAMES_SHIPS_MENU_DOM_HARDENING.escapedFields.slice(),
@@ -1564,7 +1564,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok,
       mode: GAMES_DAILY_CHALLENGE_DOM_HARDENING.mode,
-      version: String(window.APP_VERSION || '1.2 (1.144)'),
+      version: String(window.APP_VERSION || '1.2 (1.145)'),
       scope: 'Denní challenge – úvodní texty, HUD a Top score nadpis',
       sinks: GAMES_DAILY_CHALLENGE_DOM_HARDENING.sinks.slice(),
       escapedFields: GAMES_DAILY_CHALLENGE_DOM_HARDENING.escapedFields.slice(),
@@ -3938,16 +3938,66 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
 
   // Sudoku -----------------------------------------------------------------
   const SUDOKU_PUZZLES = [
-    { difficulty: 'easy', label: 'Lehké', puzzle: ['530070000','600195000','098000060','800060003','400803001','700020006','060000280','000419005','000080079'], solution: ['534678912','672195348','198342567','859761423','426853791','713924856','961537284','287419635','345286179'] },
-    { difficulty: 'medium', label: 'Střední', puzzle: ['003020600','900305001','001806400','008102900','700000008','006708200','002609500','800203009','005010300'], solution: ['483921657','967345821','251876493','548132976','729564138','136798245','372689514','814253769','695417382'] },
-    { difficulty: 'hard', label: 'Těžké', puzzle: ['000000907','000420180','000705026','100904000','050000040','000507009','920108000','034059000','507000000'], solution: ['462831957','397426185','851795326','176984253','259673841','483517629','925148763','634259718','517362494'] }
+    { difficulty: 'easy', label: 'Lehké', targetGivens: 50, variableGivens: 4, puzzle: ['530070000','600195000','098000060','800060003','400803001','700020006','060000280','000419005','000080079'], solution: ['534678912','672195348','198342567','859761423','426853791','713924856','961537284','287419635','345286179'] },
+    { difficulty: 'medium', label: 'Střední', targetGivens: 32, variableGivens: 2, puzzle: ['003020600','900305001','001806400','008102900','700000008','006708200','002609500','800203009','005010300'], solution: ['483921657','967345821','251876493','548132976','729564138','136798245','372689514','814253769','695417382'] },
+    { difficulty: 'hard', label: 'Těžké', targetGivens: 24, variableGivens: 1, puzzle: ['000000907','000420180','000705026','100904000','050000040','000507009','920108000','034059000','507000000'], solution: ['462831957','397426185','851795326','176984253','259673841','483517629','925148763','634259718','517362494'] }
   ];
+  function sudokuTemplateFor(diff) {
+    return SUDOKU_PUZZLES.find(p => p.difficulty === diff) || SUDOKU_PUZZLES[0];
+  }
+  function sudokuCountGivens(rows) {
+    return rows.join('').split('').filter(v => v !== '0').length;
+  }
+  function sudokuRowsFromFlat(flat) {
+    return Array.from({ length: 9 }, (_, r) => flat.slice(r * 9, r * 9 + 9).join(''));
+  }
+  function sudokuRandomTargetGivens(template) {
+    const base = Number(template.targetGivens || sudokuCountGivens(template.puzzle) || 30);
+    const spread = Math.max(0, Number(template.variableGivens || 0) || 0);
+    return Math.min(81, Math.max(17, base + (spread ? Math.floor(Math.random() * (spread + 1)) : 0)));
+  }
+  function sudokuBuildPuzzleFromTemplate(template) {
+    const solutionFlat = template.solution.join('').split('');
+    const puzzleFlat = template.puzzle.join('').split('');
+    const targetGivens = sudokuRandomTargetGivens(template);
+    const missing = shuffle(Array.from({ length: 81 }, (_, i) => i).filter(i => puzzleFlat[i] === '0'));
+    let givenCount = puzzleFlat.filter(v => v !== '0').length;
+    for (const idx of missing) {
+      if (givenCount >= targetGivens) break;
+      puzzleFlat[idx] = solutionFlat[idx];
+      givenCount += 1;
+    }
+    const bands = shuffle([0, 1, 2]);
+    const stacks = shuffle([0, 1, 2]);
+    const rows = bands.flatMap(b => shuffle([0, 1, 2]).map(r => b * 3 + r));
+    const cols = stacks.flatMap(s => shuffle([0, 1, 2]).map(c => s * 3 + c));
+    const digitMap = {};
+    shuffle(['1','2','3','4','5','6','7','8','9']).forEach((digit, idx) => { digitMap[String(idx + 1)] = digit; });
+    const transform = (flat) => {
+      const out = [];
+      for (const r of rows) {
+        for (const c of cols) {
+          const v = flat[r * 9 + c];
+          out.push(v === '0' ? '0' : digitMap[v]);
+        }
+      }
+      return sudokuRowsFromFlat(out);
+    };
+    return {
+      difficulty: template.difficulty,
+      label: template.label,
+      puzzle: transform(puzzleFlat),
+      solution: transform(solutionFlat),
+      givens: givenCount,
+      seed: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
+    };
+  }
   function createSudokuState(diff) {
-    return { started: false, selected: diff || 'easy', startAt: 0, finished: false, solution: null, puzzle: null, entries: Array(81).fill(''), selectedCell: null, wrong: {} };
+    return { started: false, selected: diff || 'easy', startAt: 0, finished: false, solution: null, puzzle: null, entries: Array(81).fill(''), selectedCell: null, wrong: {}, sudokuSeed: '' };
   }
   function renderSudoku(body) {
     const state = getState('sudoku', () => createSudokuState('easy'));
-    const pick = SUDOKU_PUZZLES.find(p => p.difficulty === state.selected) || SUDOKU_PUZZLES[0];
+    const meta = sudokuTemplateFor(state.selected);
     if (!state.started) {
       const diffBtns = SUDOKU_PUZZLES.map((p) => `<button type="button" class="gameControlBtn sudokuDifficultyBtn${state.selected === p.difficulty ? ' isActive' : ''}" data-sudoku-diff="${p.difficulty}"><strong>${p.label}</strong><span>Obtížnost</span></button>`).join('');
       body.innerHTML = `
@@ -3965,21 +4015,30 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
         const fresh = createSudokuState(state.selected);
         fresh.started = true;
         fresh.startAt = Date.now();
+        const generated = sudokuBuildPuzzleFromTemplate(sudokuTemplateFor(fresh.selected));
+        fresh.solution = generated.solution;
+        fresh.puzzle = generated.puzzle;
+        fresh.sudokuSeed = generated.seed;
+        fresh.givens = generated.givens;
         window.app.gamesArcade['sudoku'] = fresh;
         renderSudoku(body);
       });
       setActiveState('sudoku', state);
       return;
     }
-    if (!state.solution || !state.puzzle || state.puzzle.join('') !== pick.puzzle.join('')) {
-      state.solution = pick.solution;
-      state.puzzle = pick.puzzle;
+    if (!state.solution || !state.puzzle) {
+      const generated = sudokuBuildPuzzleFromTemplate(meta);
+      state.solution = generated.solution;
+      state.puzzle = generated.puzzle;
+      state.sudokuSeed = generated.seed;
+      state.givens = generated.givens;
       state.startAt = state.startAt || Date.now();
       state.finished = false;
       state.entries = Array(81).fill('');
       state.wrong = {};
       state.selectedCell = null;
     }
+    const pick = { difficulty: state.selected, label: meta.label, puzzle: state.puzzle, solution: state.solution };
     const selectedIdx = Number.isFinite(state.selectedCell) ? state.selectedCell : -1;
     const gridHtml = pick.puzzle.map((row, r) => row.split('').map((v, c) => {
       const idx = r * 9 + c;
@@ -4028,7 +4087,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
         const sudokuVariantPatch = Object.assign({}, sudokuResultPatch, { bestScore: encodePoints(sudokuBoardId, time) });
         gamesRecordStat('sudoku', sudokuResultPatch);
         gamesRecordStat(sudokuBoardId, sudokuVariantPatch);
-        window.__rakLastSudokuCompletion = { boardId: sudokuBoardId, difficulty: state.selected, timeMs: time, recordedAt: Date.now(), version: '1.2 (1.144)' };
+        window.__rakLastSudokuCompletion = { boardId: sudokuBoardId, difficulty: state.selected, timeMs: time, recordedAt: Date.now(), seed: state.sudokuSeed || '', version: '1.2 (1.145)' };
         const done = body.querySelector('.sudokuGameControls');
         if (done) done.insertAdjacentHTML('beforebegin', `<div class="arcadeBar arcadePanel uPad10x12"><div class="arcadeStatus"><strong>Vyřešeno!</strong> Čas ${fmtTime(time)}.</div></div>`);
       }
@@ -6064,7 +6123,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok: typeof gamesRecordDailyChallengeStat === 'function' && typeof gamesGetDailyChallengeSession === 'function',
       mode: 'daily-challenge-current-day-isolated-v983',
-      version: String(window.APP_VERSION || '1.2 (1.144)'),
+      version: String(window.APP_VERSION || '1.2 (1.145)'),
       sourceModes: DAILY_MODES.slice(),
       targetGame: 'daily',
       note: 'Výsledek dnešní hry se ukládá jen do denního leaderboardu aktuálního dne; běžné skóre hry zůstává oddělené.'
@@ -6076,7 +6135,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok: true,
       mode: 'reaction-top-score-visibility-v920',
-      version: String(window.APP_VERSION || '1.2 (1.144)'),
+      version: String(window.APP_VERSION || '1.2 (1.145)'),
       scope: 'Reaction Test layout',
       fix: 'Reaction/Daily shell má viditelný overflow a menší reakční plochu, aby Top score nezůstalo pod spodní vrstvou.',
       note: 'Browser/mobil test je pořád ruční.'
@@ -6096,7 +6155,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok,
       mode: 'games-post-fix-score-flow-v920',
-      version: String(window.APP_VERSION || '1.2 (1.144)'),
+      version: String(window.APP_VERSION || '1.2 (1.145)'),
       scope: 'Reaction Test Top score + Denní challenge score bridge',
       checks: {
         reactionTopScoreVisible: !!(reaction && reaction.ok),
@@ -6132,7 +6191,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok,
       mode: GAMES_ACTION_TEXT_DOM_HARDENING.mode,
-      version: String(window.APP_VERSION || '1.2 (1.144)'),
+      version: String(window.APP_VERSION || '1.2 (1.145)'),
       scope: 'Herní akční texty, tlačítka a toast/stavové popisky',
       sinks: GAMES_ACTION_TEXT_DOM_HARDENING.sinks.slice(),
       escapedFields: GAMES_ACTION_TEXT_DOM_HARDENING.escapedFields.slice(),
@@ -6172,7 +6231,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok,
       mode: GAMES_OVERLAY_RESULT_DOM_HARDENING.mode,
-      version: String(window.APP_VERSION || '1.2 (1.144)'),
+      version: String(window.APP_VERSION || '1.2 (1.145)'),
       scope: 'Herní modaly, overlaye a výsledkové texty',
       sinks: GAMES_OVERLAY_RESULT_DOM_HARDENING.sinks.slice(),
       escapedFields: GAMES_OVERLAY_RESULT_DOM_HARDENING.escapedFields.slice(),
@@ -6232,7 +6291,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok: basePoints > 5000 && variantPoints > 5000 && fmtGameValue('sudoku', sampleTime).indexOf('min') >= 0 && fmtGameValue('reaction', 184).indexOf('ms') >= 0,
       mode: 'sudoku-completion-save-v1144',
-      version: String(window.APP_VERSION || '1.2 (1.144)'),
+      version: String(window.APP_VERSION || '1.2 (1.145)'),
       scope: 'Sudoku dokončení: profil, online game_stats a Top score',
       baseGameType: 'sudoku',
       variantGameTypes: ['sudoku_easy', 'sudoku_medium', 'sudoku_hard'],
@@ -6242,6 +6301,29 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     };
   }
   window.getRakSudokuCompletionSaveHealth = getRakSudokuCompletionSaveHealth;
+
+
+  function getRakSudokuRandomPuzzleHealth() {
+    const easy = sudokuTemplateFor('easy');
+    const first = sudokuBuildPuzzleFromTemplate(easy);
+    const second = sudokuBuildPuzzleFromTemplate(easy);
+    const firstFlat = first.puzzle.join('');
+    const secondFlat = second.puzzle.join('');
+    const easyGivensOk = sudokuCountGivens(first.puzzle) >= 50 && sudokuCountGivens(second.puzzle) >= 50;
+    const randomizedOk = firstFlat !== secondFlat || first.solution.join('') !== second.solution.join('');
+    return {
+      ok: easyGivensOk && randomizedOk,
+      mode: 'sudoku-random-puzzle-v1145',
+      version: String(window.APP_VERSION || '1.2 (1.145)'),
+      scope: 'Sudoku generování polí a lehká obtížnost',
+      easyTargetGivens: easy.targetGivens,
+      firstGivens: sudokuCountGivens(first.puzzle),
+      secondGivens: sudokuCountGivens(second.puzzle),
+      randomized: randomizedOk,
+      note: 'Sudoku už nestartuje vždy ze stejné mřížky; každá nová hra náhodně transformuje šablonu a lehká obtížnost má výrazně víc základních čísel.'
+    };
+  }
+  window.getRakSudokuRandomPuzzleHealth = getRakSudokuRandomPuzzleHealth;
 
   function runArcadeGamesFullAudit() {
     const ids = CORE_GAMES.slice();
@@ -6255,7 +6337,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     const allHot = EXTRA_GAMES.length === 0;
     const completedOnlyGuard = typeof window.gamesRecordStat === 'function';
     return {
-      version: '1.2 (1.144)',
+      version: '1.2 (1.145)',
       ok: !missingMeta.length && !missingRenderer.length && allHot && completedOnlyGuard,
       totalGames: ids.length,
       coreGames: ids,

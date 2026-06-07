@@ -1,4 +1,4 @@
-// RaK 1.2 (1.144) – herní profily a leaderboardy.
+// RaK 1.2 (1.145) – herní profily a leaderboardy.
 
 // -------------------------
 // Games hub + account profile
@@ -451,7 +451,7 @@ async function gamesSyncProfileFromRemote(force = false) {
           return bridge.loadGameStats(id, limit, { force: !!force }).catch(() => []);
         }))).flat()
       : [];
-    // RaK 1.2 (1.144): aktivní profil nesmí záviset jen na Top score limitech.
+    // RaK 1.2 (1.145): aktivní profil nesmí záviset jen na Top score limitech.
     // PC bez lokální historie si musí rank/theme dopočítat přímo ze všech statistik svého účtu.
     const activeAccountStatsRows = activeAccountId && typeof bridge.loadGameStatsForAccount === 'function'
       ? await bridge.loadGameStatsForAccount(activeAccountId, { force: !!force }).catch(() => [])
@@ -613,7 +613,7 @@ function gamesSetActiveAccount(accountId) {
   gamesApplyActiveAccountUI(active);
   if (typeof renderGamesProfileStatus === 'function') renderGamesProfileStatus();
   gamesRenderStats();
-  // RaK 1.2 (1.144): po přihlášení vynutit načtení statistik aktivního účtu,
+  // RaK 1.2 (1.145): po přihlášení vynutit načtení statistik aktivního účtu,
   // aby se rank a odemčené theme/pozadí sjednotily mezi mobilem a PC.
   void gamesSyncProfileFromRemote(true).then(() => {
     if (typeof applyProfileUiPreferencesForActiveAccount === 'function') applyProfileUiPreferencesForActiveAccount({ loadRemote: false, source: 'login-remote-stats' });
@@ -1356,7 +1356,7 @@ function gamesTop3Block(gameId, label, limit = 10) {
 
 
 const GAMES_ACTIVE_ACCOUNT_DIRECT_STATS_CONTRACT_V1144 = Object.freeze({
-  version: '1.2 (1.144)',
+  version: '1.2 (1.145)',
   scope: 'games-profile-rank-sync',
   issue: 'rank a appearance unlocky nesmí záviset jen na leaderboard/top-score limitech',
   activeAccountLoader: 'RotationSupabaseBridge.loadGameStatsForAccount(accountNumber)',
@@ -1366,7 +1366,7 @@ const GAMES_ACTIVE_ACCOUNT_DIRECT_STATS_CONTRACT_V1144 = Object.freeze({
 window.GAMES_ACTIVE_ACCOUNT_DIRECT_STATS_CONTRACT_V1144 = GAMES_ACTIVE_ACCOUNT_DIRECT_STATS_CONTRACT_V1144;
 
 const GAMES_TIME_PROFILE_FORMAT_CONTRACT_V1144 = Object.freeze({
-  version: '1.2 (1.144)',
+  version: '1.2 (1.145)',
   guard: 'games-time-profile-format-v1144-guard',
   lowTimeGames: ['reaction', 'memory', 'sudoku'],
   reactionUnit: 'ms',

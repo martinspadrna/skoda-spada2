@@ -1,3 +1,12 @@
+## RaK 1.2 (1.145)
+
+- Hry / Sudoku: každé spuštění nové hry teď vytvoří čerstvě namíchanou mřížku místo stále stejného pole pro danou obtížnost.
+- Sudoku používá bezpečnou náhodnou transformaci šablony: promíchá řádky v blocích, bloky řádků, sloupce ve sloupcových blocích, bloky sloupců i číslice, takže řešení zůstává platné a pole se pokaždé liší.
+- Lehká obtížnost Sudoku je zlehčená výrazně větším počtem základních čísel: cílově 50–54 předvyplněných polí podle náhodného rozptylu.
+- Přidaný runtime/test guard `sudoku-random-puzzle-v1145`, který hlídá náhodné generování a lehčí easy obtížnost.
+- Supabase DB/policies beze změny.
+- Release metadata sjednocená na `RaK 1.2 (1.145)`, technická verze `1.2.145`, cache `v1.2-1.145`.
+
 ## RaK 1.2 (1.144)
 
 - Hry / Sudoku: opravené ukládání dokončeného Sudoku do profilu a online Top score. Po vyřešení se zapisuje společné `sudoku` i varianta obtížnosti `sudoku_easy/medium/hard`.
