@@ -1,4 +1,4 @@
-// RaK 1.2 (1.145) – arcade hry a denní challenge.
+// RaK 1.2 (1.146) – arcade hry a denní challenge.
 (() => {
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
@@ -10,6 +10,10 @@
   const LEGACY_RENDER_GAMES = ['2048', 'snake', 'flap'];
   const ARCADE_RENDER_GAMES = ['aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'pampuch', 'ships', 'daily'];
   const POINT_SCALE = 1000000000;
+  // RaK 1.2 (1.146): online score časových her musí projít stávajícím Supabase RPC limitem
+  // a zároveň nesmí nafukovat XP. Pro leaderboard ukládáme bezpečný rank-score do 5000.
+  const LOW_TIME_SAFE_POINT_SCALE = 5000;
+  const LOW_TIME_SAFE_POINT_MAX = LOW_TIME_SAFE_POINT_SCALE - 1;
   const ARC_KEY = 'arcade';
   const DAILY_MODES = ['aim', 'reaction', 'memory', 'mines', 'bubble', 'doodle', 'brick', 'shooter', 'bomber', 'pampuch', 'ships'];
 
@@ -705,7 +709,7 @@
       perGame[id] = { achievementCount: direct, shiftDRewardCount: dShift, ok: direct >= 3 && dShift >= 2 };
     });
     return {
-      version: window.APP_VERSION || '1.2 (1.145)',
+      version: window.APP_VERSION || '1.2 (1.146)',
       mode: 'games-achievement-reward-health-v928',
       totalAchievementDefs: defs.length,
       gamesCovered: ids.length,
@@ -1404,7 +1408,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok,
       mode: GAMES_TOP_SCORE_DOM_HARDENING.mode,
-      version: String(window.APP_VERSION || '1.2 (1.145)'),
+      version: String(window.APP_VERSION || '1.2 (1.146)'),
       scope: 'Top score řádky ve hrách',
       sinks: GAMES_TOP_SCORE_DOM_HARDENING.sinks.slice(),
       escapedFields: GAMES_TOP_SCORE_DOM_HARDENING.escapedFields.slice(),
@@ -1423,7 +1427,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok,
       mode: 'games-top-score-time-format-v1144',
-      version: String(window.APP_VERSION || '1.2 (1.145)'),
+      version: String(window.APP_VERSION || '1.2 (1.146)'),
       scope: 'Top výsledky her – časy v sekundách/minutách, Reaction v ms',
       reactionProbe,
       sudokuProbe,
@@ -1449,7 +1453,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok,
       mode: GAMES_PROFILE_DOM_HARDENING.mode,
-      version: String(window.APP_VERSION || '1.2 (1.145)'),
+      version: String(window.APP_VERSION || '1.2 (1.146)'),
       scope: 'Profily, statistiky a achievementy ve hrách',
       sinks: GAMES_PROFILE_DOM_HARDENING.sinks.slice(),
       escapedFields: GAMES_PROFILE_DOM_HARDENING.escapedFields.slice(),
@@ -1496,7 +1500,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok,
       mode: GAMES_HUD_MESSAGE_DOM_HARDENING.mode,
-      version: String(window.APP_VERSION || '1.2 (1.145)'),
+      version: String(window.APP_VERSION || '1.2 (1.146)'),
       scope: 'Herní HUD a chybové/stavové hlášky arcade rendererů',
       sinks: GAMES_HUD_MESSAGE_DOM_HARDENING.sinks.slice(),
       escapedFields: GAMES_HUD_MESSAGE_DOM_HARDENING.escapedFields.slice(),
@@ -1526,7 +1530,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok,
       mode: GAMES_SHIPS_MENU_DOM_HARDENING.mode,
-      version: String(window.APP_VERSION || '1.2 (1.145)'),
+      version: String(window.APP_VERSION || '1.2 (1.146)'),
       scope: 'Menu Lodí, pozvánka a uložené vzájemné zápasy',
       sinks: GAMES_SHIPS_MENU_DOM_HARDENING.sinks.slice(),
       escapedFields: GAMES_SHIPS_MENU_DOM_HARDENING.escapedFields.slice(),
@@ -1564,7 +1568,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok,
       mode: GAMES_DAILY_CHALLENGE_DOM_HARDENING.mode,
-      version: String(window.APP_VERSION || '1.2 (1.145)'),
+      version: String(window.APP_VERSION || '1.2 (1.146)'),
       scope: 'Denní challenge – úvodní texty, HUD a Top score nadpis',
       sinks: GAMES_DAILY_CHALLENGE_DOM_HARDENING.sinks.slice(),
       escapedFields: GAMES_DAILY_CHALLENGE_DOM_HARDENING.escapedFields.slice(),
@@ -1872,13 +1876,38 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   function allGameIds() { return ALL_GAMES.slice(); }
   function isLowBetter(id) { return META[key(id)] && META[key(id)].mode === 'low'; }
   function gameMeta(id) { return META[key(id)] || { title: String(id), subtitle: '', unit: 'bodů', mode: 'high', icon: '' }; }
-  function encodePoints(id, value) { const v = Number(value) || 0; return isLowBetter(id) ? (POINT_SCALE - Math.max(0, Math.round(v))) : Math.max(0, Math.round(v)); }
+  function lowBetterUsesMs(id) {
+    const gid = key(id);
+    return gid === 'reaction' || gid === 'daily_reaction';
+  }
+  function lowBetterMetricFromTime(id, value) {
+    const n = Number(value) || 0;
+    if (!Number.isFinite(n) || n <= 0) return 0;
+    if (lowBetterUsesMs(id)) return Math.max(1, Math.round(n));
+    return Math.max(1, Math.round(n / 1000));
+  }
+  function encodePoints(id, value) {
+    const v = Number(value) || 0;
+    if (!isLowBetter(id)) return Math.max(0, Math.round(v));
+    const metric = lowBetterMetricFromTime(id, v);
+    if (!metric) return 0;
+    // Bezpečný zápis do Supabase: vyšší score = lepší čas, ale zůstává do 5000.
+    return Math.max(1, Math.min(LOW_TIME_SAFE_POINT_MAX, LOW_TIME_SAFE_POINT_SCALE - Math.min(LOW_TIME_SAFE_POINT_MAX, metric)));
+  }
   function decodePoints(id, value) {
     const v = Number(value) || 0;
     if (isLowBetter(id)) {
       const rounded = Math.max(0, Math.round(v));
-      if (rounded <= 0 || rounded >= POINT_SCALE) return 0;
-      return Math.max(0, POINT_SCALE - rounded);
+      if (!rounded) return 0;
+      // Zpětná kompatibilita s krátce používaným zápisem 1e9 - čas_ms.
+      if (rounded > 86400000 && rounded < POINT_SCALE) return Math.max(0, POINT_SCALE - rounded);
+      // Nový bezpečný zápis do 5000: Reaction v ms, ostatní časové hry v sekundách.
+      if (rounded > 0 && rounded < LOW_TIME_SAFE_POINT_SCALE) {
+        const metric = Math.max(1, LOW_TIME_SAFE_POINT_SCALE - rounded);
+        return lowBetterUsesMs(id) ? metric : metric * 1000;
+      }
+      // Starší řádky s raw hodnotou necháváme čitelné.
+      return Math.max(0, rounded);
     }
     return Math.max(0, Math.round(v));
   }
@@ -4083,11 +4112,11 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
         state.finished = true;
         const time = Date.now() - state.startAt;
         const sudokuBoardId = sudokuVariantId(state.selected);
-        const sudokuResultPatch = { completed: true, plays: 1, wins: 1, bestTimeMs: time, timeMs: time, elapsedMs: time, bestScore: encodePoints('sudoku', time), difficulty: state.selected, lastResult: `${pick.label || state.selected} · ${fmtTime(time)}` };
-        const sudokuVariantPatch = Object.assign({}, sudokuResultPatch, { bestScore: encodePoints(sudokuBoardId, time) });
+        const sudokuResultPatch = { completed: true, plays: 1, wins: 1, bestTimeMs: time, timeMs: time, elapsedMs: time, difficulty: state.selected, lastResult: `${pick.label || state.selected} · ${fmtTime(time)}` };
+        const sudokuVariantPatch = Object.assign({}, sudokuResultPatch);
         gamesRecordStat('sudoku', sudokuResultPatch);
         gamesRecordStat(sudokuBoardId, sudokuVariantPatch);
-        window.__rakLastSudokuCompletion = { boardId: sudokuBoardId, difficulty: state.selected, timeMs: time, recordedAt: Date.now(), seed: state.sudokuSeed || '', version: '1.2 (1.145)' };
+        window.__rakLastSudokuCompletion = { boardId: sudokuBoardId, difficulty: state.selected, timeMs: time, safeScore: encodePoints(sudokuBoardId, time), recordedAt: Date.now(), seed: state.sudokuSeed || '', version: '1.2 (1.146)' };
         const done = body.querySelector('.sudokuGameControls');
         if (done) done.insertAdjacentHTML('beforebegin', `<div class="arcadeBar arcadePanel uPad10x12"><div class="arcadeStatus"><strong>Vyřešeno!</strong> Čas ${fmtTime(time)}.</div></div>`);
       }
@@ -6123,7 +6152,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok: typeof gamesRecordDailyChallengeStat === 'function' && typeof gamesGetDailyChallengeSession === 'function',
       mode: 'daily-challenge-current-day-isolated-v983',
-      version: String(window.APP_VERSION || '1.2 (1.145)'),
+      version: String(window.APP_VERSION || '1.2 (1.146)'),
       sourceModes: DAILY_MODES.slice(),
       targetGame: 'daily',
       note: 'Výsledek dnešní hry se ukládá jen do denního leaderboardu aktuálního dne; běžné skóre hry zůstává oddělené.'
@@ -6135,7 +6164,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok: true,
       mode: 'reaction-top-score-visibility-v920',
-      version: String(window.APP_VERSION || '1.2 (1.145)'),
+      version: String(window.APP_VERSION || '1.2 (1.146)'),
       scope: 'Reaction Test layout',
       fix: 'Reaction/Daily shell má viditelný overflow a menší reakční plochu, aby Top score nezůstalo pod spodní vrstvou.',
       note: 'Browser/mobil test je pořád ruční.'
@@ -6155,7 +6184,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok,
       mode: 'games-post-fix-score-flow-v920',
-      version: String(window.APP_VERSION || '1.2 (1.145)'),
+      version: String(window.APP_VERSION || '1.2 (1.146)'),
       scope: 'Reaction Test Top score + Denní challenge score bridge',
       checks: {
         reactionTopScoreVisible: !!(reaction && reaction.ok),
@@ -6191,7 +6220,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok,
       mode: GAMES_ACTION_TEXT_DOM_HARDENING.mode,
-      version: String(window.APP_VERSION || '1.2 (1.145)'),
+      version: String(window.APP_VERSION || '1.2 (1.146)'),
       scope: 'Herní akční texty, tlačítka a toast/stavové popisky',
       sinks: GAMES_ACTION_TEXT_DOM_HARDENING.sinks.slice(),
       escapedFields: GAMES_ACTION_TEXT_DOM_HARDENING.escapedFields.slice(),
@@ -6231,7 +6260,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok,
       mode: GAMES_OVERLAY_RESULT_DOM_HARDENING.mode,
-      version: String(window.APP_VERSION || '1.2 (1.145)'),
+      version: String(window.APP_VERSION || '1.2 (1.146)'),
       scope: 'Herní modaly, overlaye a výsledkové texty',
       sinks: GAMES_OVERLAY_RESULT_DOM_HARDENING.sinks.slice(),
       escapedFields: GAMES_OVERLAY_RESULT_DOM_HARDENING.escapedFields.slice(),
@@ -6288,16 +6317,21 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     const sampleTime = 125000;
     const basePoints = encodePoints('sudoku', sampleTime);
     const variantPoints = encodePoints('sudoku_easy', sampleTime);
+    const decodedBase = decodePoints('sudoku', basePoints);
+    const reactionPoints = encodePoints('reaction', 184);
     return {
-      ok: basePoints > 5000 && variantPoints > 5000 && fmtGameValue('sudoku', sampleTime).indexOf('min') >= 0 && fmtGameValue('reaction', 184).indexOf('ms') >= 0,
-      mode: 'sudoku-completion-save-v1144',
-      version: String(window.APP_VERSION || '1.2 (1.145)'),
+      ok: basePoints > 0 && basePoints <= LOW_TIME_SAFE_POINT_MAX && variantPoints > 0 && variantPoints <= LOW_TIME_SAFE_POINT_MAX && decodedBase === 125000 && fmtGameValue('sudoku', sampleTime).indexOf('min') >= 0 && fmtGameValue('reaction', 184).indexOf('ms') >= 0,
+      mode: 'sudoku-completion-save-v1146',
+      version: String(window.APP_VERSION || '1.2 (1.146)'),
       scope: 'Sudoku dokončení: profil, online game_stats a Top score',
       baseGameType: 'sudoku',
       variantGameTypes: ['sudoku_easy', 'sudoku_medium', 'sudoku_hard'],
+      sampleSafeScore: basePoints,
+      sampleVariantSafeScore: variantPoints,
+      reactionSafeScore: reactionPoints,
       sampleTimeText: fmtGameValue('sudoku', sampleTime),
       reactionTimeText: fmtGameValue('reaction', 184),
-      note: 'Sudoku po vyřešení zapisuje společné Sudoku i obtížnost, počítá dokončení jako výhru a časové hodnoty se formátují podle pravidla v1144.'
+      note: 'Sudoku po vyřešení zapisuje společné Sudoku i obtížnost. Online score časových her je bezpečně do 5000, XP zůstává vyrovnané a UI ho dekóduje zpět na čas.'
     };
   }
   window.getRakSudokuCompletionSaveHealth = getRakSudokuCompletionSaveHealth;
@@ -6313,8 +6347,8 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     const randomizedOk = firstFlat !== secondFlat || first.solution.join('') !== second.solution.join('');
     return {
       ok: easyGivensOk && randomizedOk,
-      mode: 'sudoku-random-puzzle-v1145',
-      version: String(window.APP_VERSION || '1.2 (1.145)'),
+      mode: 'sudoku-random-puzzle-v1146',
+      version: String(window.APP_VERSION || '1.2 (1.146)'),
       scope: 'Sudoku generování polí a lehká obtížnost',
       easyTargetGivens: easy.targetGivens,
       firstGivens: sudokuCountGivens(first.puzzle),
@@ -6337,7 +6371,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     const allHot = EXTRA_GAMES.length === 0;
     const completedOnlyGuard = typeof window.gamesRecordStat === 'function';
     return {
-      version: '1.2 (1.145)',
+      version: '1.2 (1.146)',
       ok: !missingMeta.length && !missingRenderer.length && allHot && completedOnlyGuard,
       totalGames: ids.length,
       coreGames: ids,

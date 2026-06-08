@@ -1,4 +1,4 @@
-// RaK 1.2 (1.145) – home boot sekvence oddělená ze startovacích vazeb aplikace.
+// RaK 1.2 (1.146) – home boot sekvence oddělená ze startovacích vazeb aplikace.
 function runRakHomeBootRefresh() {
   const activePage = document.querySelector(".page.active")?.id || "";
   if ((typeof app !== "undefined" && app.homeBootSuppressed && activePage !== "home") || window.__rotaceManualNavLocked || (window.__rotaceHomeBootLocked && activePage !== "home") || (window.__rotaceUserNavigated && activePage !== 'home')) {
