@@ -1,4 +1,4 @@
-// RaK 1.2 (1.146) – arcade hry a denní challenge.
+// RaK 1.2 (1.148) – arcade hry a denní challenge.
 (() => {
   if (window.__rakArcadeLoaded) return;
   window.__rakArcadeLoaded = true;
@@ -10,7 +10,7 @@
   const LEGACY_RENDER_GAMES = ['2048', 'snake', 'flap'];
   const ARCADE_RENDER_GAMES = ['aim', 'reaction', 'tetris', 'shooter', 'brick', 'doodle', 'bubble', 'sudoku', 'mines', 'memory', 'bomber', 'pampuch', 'ships', 'daily'];
   const POINT_SCALE = 1000000000;
-  // RaK 1.2 (1.146): online score časových her musí projít stávajícím Supabase RPC limitem
+  // RaK 1.2 (1.148): online score časových her musí projít stávajícím Supabase RPC limitem
   // a zároveň nesmí nafukovat XP. Pro leaderboard ukládáme bezpečný rank-score do 5000.
   const LOW_TIME_SAFE_POINT_SCALE = 5000;
   const LOW_TIME_SAFE_POINT_MAX = LOW_TIME_SAFE_POINT_SCALE - 1;
@@ -709,7 +709,7 @@
       perGame[id] = { achievementCount: direct, shiftDRewardCount: dShift, ok: direct >= 3 && dShift >= 2 };
     });
     return {
-      version: window.APP_VERSION || '1.2 (1.146)',
+      version: window.APP_VERSION || '1.2 (1.148)',
       mode: 'games-achievement-reward-health-v928',
       totalAchievementDefs: defs.length,
       gamesCovered: ids.length,
@@ -1408,7 +1408,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok,
       mode: GAMES_TOP_SCORE_DOM_HARDENING.mode,
-      version: String(window.APP_VERSION || '1.2 (1.146)'),
+      version: String(window.APP_VERSION || '1.2 (1.148)'),
       scope: 'Top score řádky ve hrách',
       sinks: GAMES_TOP_SCORE_DOM_HARDENING.sinks.slice(),
       escapedFields: GAMES_TOP_SCORE_DOM_HARDENING.escapedFields.slice(),
@@ -1427,7 +1427,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok,
       mode: 'games-top-score-time-format-v1144',
-      version: String(window.APP_VERSION || '1.2 (1.146)'),
+      version: String(window.APP_VERSION || '1.2 (1.148)'),
       scope: 'Top výsledky her – časy v sekundách/minutách, Reaction v ms',
       reactionProbe,
       sudokuProbe,
@@ -1453,7 +1453,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok,
       mode: GAMES_PROFILE_DOM_HARDENING.mode,
-      version: String(window.APP_VERSION || '1.2 (1.146)'),
+      version: String(window.APP_VERSION || '1.2 (1.148)'),
       scope: 'Profily, statistiky a achievementy ve hrách',
       sinks: GAMES_PROFILE_DOM_HARDENING.sinks.slice(),
       escapedFields: GAMES_PROFILE_DOM_HARDENING.escapedFields.slice(),
@@ -1500,7 +1500,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok,
       mode: GAMES_HUD_MESSAGE_DOM_HARDENING.mode,
-      version: String(window.APP_VERSION || '1.2 (1.146)'),
+      version: String(window.APP_VERSION || '1.2 (1.148)'),
       scope: 'Herní HUD a chybové/stavové hlášky arcade rendererů',
       sinks: GAMES_HUD_MESSAGE_DOM_HARDENING.sinks.slice(),
       escapedFields: GAMES_HUD_MESSAGE_DOM_HARDENING.escapedFields.slice(),
@@ -1530,7 +1530,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok,
       mode: GAMES_SHIPS_MENU_DOM_HARDENING.mode,
-      version: String(window.APP_VERSION || '1.2 (1.146)'),
+      version: String(window.APP_VERSION || '1.2 (1.148)'),
       scope: 'Menu Lodí, pozvánka a uložené vzájemné zápasy',
       sinks: GAMES_SHIPS_MENU_DOM_HARDENING.sinks.slice(),
       escapedFields: GAMES_SHIPS_MENU_DOM_HARDENING.escapedFields.slice(),
@@ -1568,7 +1568,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok,
       mode: GAMES_DAILY_CHALLENGE_DOM_HARDENING.mode,
-      version: String(window.APP_VERSION || '1.2 (1.146)'),
+      version: String(window.APP_VERSION || '1.2 (1.148)'),
       scope: 'Denní challenge – úvodní texty, HUD a Top score nadpis',
       sinks: GAMES_DAILY_CHALLENGE_DOM_HARDENING.sinks.slice(),
       escapedFields: GAMES_DAILY_CHALLENGE_DOM_HARDENING.escapedFields.slice(),
@@ -4116,7 +4116,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
         const sudokuVariantPatch = Object.assign({}, sudokuResultPatch);
         gamesRecordStat('sudoku', sudokuResultPatch);
         gamesRecordStat(sudokuBoardId, sudokuVariantPatch);
-        window.__rakLastSudokuCompletion = { boardId: sudokuBoardId, difficulty: state.selected, timeMs: time, safeScore: encodePoints(sudokuBoardId, time), recordedAt: Date.now(), seed: state.sudokuSeed || '', version: '1.2 (1.146)' };
+        window.__rakLastSudokuCompletion = { boardId: sudokuBoardId, difficulty: state.selected, timeMs: time, safeScore: encodePoints(sudokuBoardId, time), recordedAt: Date.now(), seed: state.sudokuSeed || '', version: '1.2 (1.148)' };
         const done = body.querySelector('.sudokuGameControls');
         if (done) done.insertAdjacentHTML('beforebegin', `<div class="arcadeBar arcadePanel uPad10x12"><div class="arcadeStatus"><strong>Vyřešeno!</strong> Čas ${fmtTime(time)}.</div></div>`);
       }
@@ -4767,6 +4767,10 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     { id: 'submarine', len: 3, name: 'Ponorka', icon: '🛥️' },
     { id: 'destroyer', len: 2, name: 'Torpédoborec', icon: '🚤' }
   ];
+  // RaK 1.2 (1.148): Lodě nesmí překreslovat celou 10×10 tabuli při každém pollu.
+  // Krátký poll drží rozumnou odezvu soupeřova tahu, ale render proběhne jen při skutečné změně revize/stavu.
+  const SHIPS_POLL_ACTIVE_MS = 750;
+  const SHIPS_POLL_IDLE_MS = 1450;
 
   function shipsCellKey(r, c) { return String(r) + ':' + String(c); }
   function shipsHasCell(list, r, c) {
@@ -5051,7 +5055,9 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     clearCleanups();
     try { document.body.classList.add('shipsGameOpen'); } catch (err) {}
     addCleanup(() => { try { document.body.classList.remove('shipsGameOpen'); } catch (err) {} });
-    const local = getState('ships', () => ({ code: '', state: null, loadedRevision: 0, busy: false, poll: 0, savedFinishedCode: '', view: '', lastTurn: '', lastStatus: '', placing: { manual: false, selected: 'carrier', horizontal: true } }));
+    const local = getState('ships', () => ({ code: '', state: null, loadedRevision: 0, busy: false, refreshing: false, poll: 0, pollDelay: 0, savedFinishedCode: '', view: '', lastTurn: '', lastStatus: '', placing: { manual: false, selected: 'carrier', horizontal: true } }));
+    local.refreshing = false;
+    local.pollDelay = Number(local.pollDelay || 0) || 0;
     local.placing = local.placing || { manual: false, selected: 'carrier', horizontal: true };
     const account = shipsAccountId();
     const accountName = shipsAccountName();
@@ -5268,28 +5274,66 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
       const won = st.winner === role;
       gamesRecordStat('ships', { completed: true, online: true, onlinePlay: true, onlinePlays: 1, onlineWins: won ? 1 : 0, wins: won ? 1 : 0, losses: won ? 0 : 1, bestScore: won ? 1000 + (sum.hits * 80) + (sum.sunk * 220) : Math.max(100, sum.hits * 70), bestHits: sum.hits, bestClears: sum.sunk, lastResult: won ? 'Výhra v Lodích' : 'Prohra v Lodích' });
     };
-    const refreshRemote = async (soft) => {
-      if (!local.code || typeof window.loadGameSessionByInviteCode !== 'function') return;
-      const res = await window.loadGameSessionByInviteCode(local.code);
-      if (res && res.ok === false && (res.expired || res.reason === 'expired-invite')) {
-        shipsReturnToMenu(res.message || 'Tahle pozvánka už vypršela. Vytvoř novou.');
+    const shipsDesiredPollDelay = (st, role) => {
+      const state = st ? shipsNormalizeState(st, local.code) : null;
+      if (!state || state.status === 'finished') return 0;
+      if (state.status === 'active') return SHIPS_POLL_ACTIVE_MS;
+      if (role && !state[readyKey(role)]) return SHIPS_POLL_IDLE_MS;
+      return SHIPS_POLL_IDLE_MS;
+    };
+    const ensureShipsPoll = (st) => {
+      if (!local.code) return;
+      const role = st ? shipsRoleForState(st) : '';
+      const delay = shipsDesiredPollDelay(st || local.state, role);
+      if (!delay) {
+        if (local.poll) clearInterval(local.poll);
+        local.poll = 0;
+        local.pollDelay = 0;
         return;
       }
-      const remote = res && res.session && res.session.board_state ? shipsRecomputeStatus(shipsNormalizeState(res.session.board_state, local.code)) : null;
-      if (!remote) return;
+      if (local.poll && local.pollDelay === delay) return;
+      if (local.poll) clearInterval(local.poll);
+      local.pollDelay = delay;
+      local.poll = rakGameSetInterval(() => refreshRemote(true), delay);
+    };
+    const maybeRenderRemoteState = (remote, soft) => {
       const oldState = local.state || {};
       const oldRev = Number(oldState.revision || 0) || 0;
-      const nextRev = Number(remote.revision || 0) || 0;
-      const role = shipsRoleForState(remote || oldState);
-      const mineReady = role ? !!remote[readyKey(role)] : true;
+      const nextRev = Number(remote && remote.revision || 0) || 0;
+      const oldStatus = String(oldState.status || '');
+      const newStatus = String(remote && remote.status || '');
       const opponentChanged = String(oldState.playerOAccountNumber || '') !== String(remote.playerOAccountNumber || '') || (!!oldState.o !== !!remote.o);
-      const statusChanged = String(oldState.status || '') !== String(remote.status || '') || String(oldState.turn || '') !== String(remote.turn || '');
-      const becameActive = String(remote.status || '') === 'active' && !!remote.xReady && !!remote.oReady && !!remote.x && !!remote.o;
-      if (!soft || mineReady || opponentChanged || statusChanged || becameActive || nextRev > oldRev) {
+      const statusChanged = oldStatus !== newStatus || String(oldState.turn || '') !== String(remote.turn || '');
+      const becameActive = oldStatus !== 'active' && newStatus === 'active' && !!remote.xReady && !!remote.oReady && !!remote.x && !!remote.o;
+      const revisionChanged = nextRev > oldRev || (!oldRev && !!nextRev);
+      if (!soft || opponentChanged || statusChanged || becameActive || revisionChanged) {
         local.state = remote;
+        const role = shipsRoleForState(remote || oldState);
         if (becameActive && role && remote.turn === role) local.view = 'enemy';
         maybeRecordFinished();
         renderGame(true);
+        return true;
+      }
+      return false;
+    };
+    const refreshRemote = async (soft) => {
+      if (!local.code || typeof window.loadGameSessionByInviteCode !== 'function') return;
+      if (local.refreshing) return;
+      local.refreshing = true;
+      try {
+        const res = await window.loadGameSessionByInviteCode(local.code);
+        if (res && res.ok === false && (res.expired || res.reason === 'expired-invite')) {
+          shipsReturnToMenu(res.message || 'Tahle pozvánka už vypršela. Vytvoř novou.');
+          return;
+        }
+        const remote = res && res.session && res.session.board_state ? shipsRecomputeStatus(shipsNormalizeState(res.session.board_state, local.code)) : null;
+        if (!remote) return;
+        maybeRenderRemoteState(remote, soft);
+        ensureShipsPoll(remote);
+      } catch (err) {
+        try { console.warn('ships refresh failed', err); } catch (logErr) {}
+      } finally {
+        local.refreshing = false;
       }
     };
     const renderPlacement = (st, role, message) => {
@@ -5319,7 +5363,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
         </div>
       </div>`;
       shipsBindInviteBannerActions();
-      if (!local.poll && st.status !== 'finished') local.poll = rakGameSetInterval(() => refreshRemote(true), 900);
+      ensureShipsPoll(st);
       const menuBack = body.querySelector('#shipsMenuBackBtn');
       if (menuBack) menuBack.addEventListener('click', () => shipsReturnToMenu('Zpět v menu Lodí. Hru můžeš založit znovu nebo přijmout kód.'));
       const shuffle = body.querySelector('#shipsShuffleBtn');
@@ -5449,14 +5493,19 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
           }
           local.state = stNow;
           renderGame();
-          await shipsSaveState(stNow);
-          maybeRecordFinished();
+          void shipsSaveState(stNow).then(() => {
+            maybeRecordFinished();
+            ensureShipsPoll(stNow);
+            return refreshRemote(true);
+          }).catch((err) => {
+            try { console.warn('ships save shot failed', err); } catch (logErr) {}
+          });
         });
       });
-      if (!fromPoll && local.poll) { clearInterval(local.poll); local.poll = 0; }
-      if (!local.poll && st.status !== 'finished') local.poll = rakGameSetInterval(() => refreshRemote(true), 900);
+      if (!fromPoll && local.poll) { clearInterval(local.poll); local.poll = 0; local.pollDelay = 0; }
+      ensureShipsPoll(st);
     };
-    addCleanup(() => { if (local.poll) clearInterval(local.poll); local.poll = 0; });
+    addCleanup(() => { if (local.poll) clearInterval(local.poll); local.poll = 0; local.pollDelay = 0; local.refreshing = false; });
     if (local.code && local.state) renderGame();
     else renderMenu('');
     const pendingInvite = String(window.__rakShipsPendingInviteCode || '').replace(/\D/g, '').slice(0, 4);
@@ -5492,6 +5541,20 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
       } catch (err) {
         return false;
       }
+    };
+  }
+
+
+  // RaK 1.2 (1.148): smoke guard pro plynulost Lodí – žádný render při každém pollu beze změny.
+  if (typeof window !== 'undefined') {
+    window.__rakShipsSmoothPerformanceGuard = {
+      version: String(window.APP_VERSION || '1.2 (1.148)'),
+      mode: 'ships-smooth-performance-v1148-guard',
+      pollActiveMs: SHIPS_POLL_ACTIVE_MS,
+      pollIdleMs: SHIPS_POLL_IDLE_MS,
+      avoidsRenderWithoutRevisionChange: true,
+      preventsOverlappingRefresh: true,
+      immediateShotRender: true
     };
   }
 
@@ -6152,7 +6215,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok: typeof gamesRecordDailyChallengeStat === 'function' && typeof gamesGetDailyChallengeSession === 'function',
       mode: 'daily-challenge-current-day-isolated-v983',
-      version: String(window.APP_VERSION || '1.2 (1.146)'),
+      version: String(window.APP_VERSION || '1.2 (1.148)'),
       sourceModes: DAILY_MODES.slice(),
       targetGame: 'daily',
       note: 'Výsledek dnešní hry se ukládá jen do denního leaderboardu aktuálního dne; běžné skóre hry zůstává oddělené.'
@@ -6164,7 +6227,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok: true,
       mode: 'reaction-top-score-visibility-v920',
-      version: String(window.APP_VERSION || '1.2 (1.146)'),
+      version: String(window.APP_VERSION || '1.2 (1.148)'),
       scope: 'Reaction Test layout',
       fix: 'Reaction/Daily shell má viditelný overflow a menší reakční plochu, aby Top score nezůstalo pod spodní vrstvou.',
       note: 'Browser/mobil test je pořád ruční.'
@@ -6184,7 +6247,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok,
       mode: 'games-post-fix-score-flow-v920',
-      version: String(window.APP_VERSION || '1.2 (1.146)'),
+      version: String(window.APP_VERSION || '1.2 (1.148)'),
       scope: 'Reaction Test Top score + Denní challenge score bridge',
       checks: {
         reactionTopScoreVisible: !!(reaction && reaction.ok),
@@ -6220,7 +6283,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok,
       mode: GAMES_ACTION_TEXT_DOM_HARDENING.mode,
-      version: String(window.APP_VERSION || '1.2 (1.146)'),
+      version: String(window.APP_VERSION || '1.2 (1.148)'),
       scope: 'Herní akční texty, tlačítka a toast/stavové popisky',
       sinks: GAMES_ACTION_TEXT_DOM_HARDENING.sinks.slice(),
       escapedFields: GAMES_ACTION_TEXT_DOM_HARDENING.escapedFields.slice(),
@@ -6260,7 +6323,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     return {
       ok,
       mode: GAMES_OVERLAY_RESULT_DOM_HARDENING.mode,
-      version: String(window.APP_VERSION || '1.2 (1.146)'),
+      version: String(window.APP_VERSION || '1.2 (1.148)'),
       scope: 'Herní modaly, overlaye a výsledkové texty',
       sinks: GAMES_OVERLAY_RESULT_DOM_HARDENING.sinks.slice(),
       escapedFields: GAMES_OVERLAY_RESULT_DOM_HARDENING.escapedFields.slice(),
@@ -6321,8 +6384,8 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     const reactionPoints = encodePoints('reaction', 184);
     return {
       ok: basePoints > 0 && basePoints <= LOW_TIME_SAFE_POINT_MAX && variantPoints > 0 && variantPoints <= LOW_TIME_SAFE_POINT_MAX && decodedBase === 125000 && fmtGameValue('sudoku', sampleTime).indexOf('min') >= 0 && fmtGameValue('reaction', 184).indexOf('ms') >= 0,
-      mode: 'sudoku-completion-save-v1146',
-      version: String(window.APP_VERSION || '1.2 (1.146)'),
+      mode: 'sudoku-completion-save-v1148',
+      version: String(window.APP_VERSION || '1.2 (1.148)'),
       scope: 'Sudoku dokončení: profil, online game_stats a Top score',
       baseGameType: 'sudoku',
       variantGameTypes: ['sudoku_easy', 'sudoku_medium', 'sudoku_hard'],
@@ -6347,8 +6410,8 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     const randomizedOk = firstFlat !== secondFlat || first.solution.join('') !== second.solution.join('');
     return {
       ok: easyGivensOk && randomizedOk,
-      mode: 'sudoku-random-puzzle-v1146',
-      version: String(window.APP_VERSION || '1.2 (1.146)'),
+      mode: 'sudoku-random-puzzle-v1148',
+      version: String(window.APP_VERSION || '1.2 (1.148)'),
       scope: 'Sudoku generování polí a lehká obtížnost',
       easyTargetGivens: easy.targetGivens,
       firstGivens: sudokuCountGivens(first.puzzle),
@@ -6371,7 +6434,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
     const allHot = EXTRA_GAMES.length === 0;
     const completedOnlyGuard = typeof window.gamesRecordStat === 'function';
     return {
-      version: '1.2 (1.146)',
+      version: '1.2 (1.148)',
       ok: !missingMeta.length && !missingRenderer.length && allHot && completedOnlyGuard,
       totalGames: ids.length,
       coreGames: ids,

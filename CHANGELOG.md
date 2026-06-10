@@ -1,3 +1,19 @@
+## RaK 1.2 (1.148)
+
+- Hry / Lodě online: opravené zbytečné překreslování celé 10×10 tabule při každém online pollu beze změny stavu.
+- Poll Lodí je adaptivní: rychlejší během aktivní hry, pomalejší při čekání/přípravě, s blokací překrytých refreshů.
+- Tah se po kliknutí vykreslí okamžitě a online save doběhne bez blokování klik handleru.
+- Přidané lehčí CSS pro Lodě: contain paint/layout, vypnuté pseudo overlay vrstvy tabule a tvrdší odlehčení animací ve výkonových režimech.
+- Release metadata sjednocená na `RaK 1.2 (1.148)`, technická verze `1.2.148`, cache `v1.2-1.148`.
+
+## RaK 1.2 (1.147)
+
+- Administrace / Rozpisy: přidaná ruční výjimka dne pro TNKS01/TPKW01 – rotuje / nerotuje / automaticky podle pravidel.
+- Výchozí chování zůstává stejné: mimo běžnou neděli se TNKS01/TPKW01 půlí 0,5 + 0,5, běžná neděle se nepůlí, přesčasová TO neděle se půlí a MO výjimka se nepůlí.
+- Ruční volba `Nerotuje / každý +1` má přednost ve statistikách, kontrolní tabulce stroje × jména, generátorových souhrnech i navazujících exportech používajících statistiky.
+- Ukládá se do měsíce jako `pressRotationOverrides`, bez změny Supabase DB/policies.
+- Release metadata sjednocená na `RaK 1.2 (1.147)`, technická verze `1.2.147`, cache `v1.2-1.147`.
+
 ## RaK 1.2 (1.146)
 
 - Hry / Sudoku: každé spuštění nové hry teď vytvoří čerstvě namíchanou mřížku místo stále stejného pole pro danou obtížnost.

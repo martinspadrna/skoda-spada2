@@ -1,7 +1,7 @@
-// RaK 1.2 (1.146) – core stav, verze a sdílené helpery aplikace.
+// RaK 1.2 (1.148) – core stav, verze a sdílené helpery aplikace.
 
 const APP_KEY = "rotace_kalkulacky_state_v123";
-const APP_VERSION = "1.2 (1.146)";
+const APP_VERSION = "1.2 (1.148)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-06-03-" + APP_VERSION;
 window.ROTATION_BUILD = ROTATION_BUILD;
@@ -1173,13 +1173,50 @@ function normalizeMonthForImport(monthData, fallbackMonthData) {
     ? Object.assign({}, monthData.importMeta)
     : ((fallbackMonthData && fallbackMonthData.importMeta && typeof fallbackMonthData.importMeta === 'object') ? Object.assign({}, fallbackMonthData.importMeta) : null);
 
+  const normalizePressRotationOverrides = (value) => {
+    const out = {};
+    const source = value && typeof value === 'object' ? value : {};
+    Object.entries(source).forEach(([key, raw]) => {
+      const cleanKey = String(key || '').trim();
+      const mode = String(raw || '').trim().toLowerCase();
+      if (!cleanKey) return;
+      if (mode === 'split' || mode === 'rotate' || mode === 'rotace' || mode === 'yes' || mode === 'ano') out[cleanKey] = 'split';
+      if (mode === 'nosplit' || mode === 'no-split' || mode === 'none' || mode === 'nerotace' || mode === 'ne' || mode === 'no') out[cleanKey] = 'nosplit';
+    });
+    return out;
+  };
+
+  const incomingPressOverrides = monthData && Object.prototype.hasOwnProperty.call(monthData, 'pressRotationOverrides')
+    ? normalizePressRotationOverrides(monthData.pressRotationOverrides)
+    : null;
+  const fallbackPressOverrides = fallbackMonthData && fallbackMonthData.pressRotationOverrides
+    ? normalizePressRotationOverrides(fallbackMonthData.pressRotationOverrides)
+    : {};
+
   const normalized = {
     hard: normalizeSection("hard", HARD_MACHINE_HEADERS),
     soft: normalizeSection("soft", SOFT_MACHINE_HEADERS),
     notes: incomingNotes !== null ? incomingNotes : fallbackNotes
   };
+  const pressRotationOverrides = incomingPressOverrides !== null ? incomingPressOverrides : fallbackPressOverrides;
+  if (pressRotationOverrides && Object.keys(pressRotationOverrides).length) normalized.pressRotationOverrides = pressRotationOverrides;
   if (importMeta) normalized.importMeta = importMeta;
   return normalized;
+}
+
+function getRotationPressRotationOverride(month, dateBaseKey) {
+  const key = String(dateBaseKey || '').trim();
+  const map = month && month.pressRotationOverrides && typeof month.pressRotationOverrides === 'object' ? month.pressRotationOverrides : null;
+  const value = map && key ? String(map[key] || '').trim().toLowerCase() : '';
+  return value === 'split' || value === 'nosplit' ? value : '';
+}
+
+function getRotationDateBaseKeyFromParsed(parsedDate, monthKey) {
+  const parsedMonth = typeof parseMonthKey === 'function' ? parseMonthKey(monthKey) : null;
+  const day = Number(parsedDate && parsedDate.day);
+  const month = Number((parsedDate && parsedDate.month) || (parsedMonth && parsedMonth.month));
+  if (Number.isFinite(day) && Number.isFinite(month)) return String(day) + '.' + String(month) + '.';
+  return '';
 }
 
 function normalizeRotationData(rotation) {

@@ -1,4 +1,4 @@
-// RaK 1.2 (1.146) – Statistiky.
+// RaK 1.2 (1.148) – Statistiky.
 function renderMonthGrid() {
   const monthSelect = document.getElementById("monthSelect");
   if (!monthSelect) return;
@@ -238,6 +238,11 @@ function isStatsOvertimeSundayShift(monthKey, parsedDate) {
 }
 
 function shouldStatsSplitPressMachines(monthKey, parsedDate) {
+  const month = app && app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
+  const baseKey = typeof getRotationDateBaseKeyFromParsed === 'function' ? getRotationDateBaseKeyFromParsed(parsedDate, monthKey) : '';
+  const manual = typeof getRotationPressRotationOverride === 'function' ? getRotationPressRotationOverride(month, baseKey) : '';
+  if (manual === 'split') return true;
+  if (manual === 'nosplit') return false;
   const date = getStatsDateFromMonthKey(monthKey, parsedDate);
   if (!date) return true;
   if (date.getDay() !== 0) return true;
@@ -1444,7 +1449,7 @@ function getRakStatsMonthlyThemeChartHealth() {
   const lineStyle = line && window.getComputedStyle ? window.getComputedStyle(line) : null;
   return {
     ok: true,
-    version: window.APP_VERSION || '1.2 (1.146)',
+    version: window.APP_VERSION || '1.2 (1.148)',
     mode: 'stats-monthly-occupancy-theme-chart-v942',
     chartPresent: !!chart,
     containerPresent: !!box,

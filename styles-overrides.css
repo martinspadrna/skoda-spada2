@@ -18525,3 +18525,32 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
   overflow:visible !important;
   overscroll-behavior:auto !important;
 }
+
+
+/* RaK 1.2 (1.148) – Lodě: lehčí render tabule a méně janku na mobilech. */
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsBoard,
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsBoardCardLift,
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSingleBoardWrap{
+  contain:layout paint style !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsCell::before,
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsBoard::before{
+  display:none !important;
+}
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsCell,
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsShipSegment,
+body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsShotMark{
+  transition:none !important;
+  backface-visibility:hidden !important;
+}
+body.ladaMode.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsCell,
+body.lowEndDevice.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsCell,
+body.lightweightMode.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsCell{
+  box-shadow:none !important;
+  filter:none !important;
+}
+body.ladaMode.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsCell.isHit .shipsShipSegment,
+body.lowEndDevice.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsCell.isHit .shipsShipSegment,
+body.lightweightMode.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsCell.isHit .shipsShipSegment{
+  animation:none !important;
+}

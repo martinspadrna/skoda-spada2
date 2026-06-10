@@ -1,4 +1,4 @@
-// RaK 1.2 (1.146) – Administrace Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
+// RaK 1.2 (1.148) – Administrace Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('admin-rotation.js', 'loading', { source: 'dynamic-loader' }); } catch (err) {}
 
 
@@ -1093,6 +1093,7 @@ function buildAdminRotationTableHtml(monthKey) {
     '    <div class="appMenuFreeNamesTitle">Kontrola měsíce</div>',
     '    <div class="appMenuFreeNamesText">Vyber měsíc a hned uvidíš, kdo v něm není zapsaný ani jednou a na kterých dnech ještě někdo chybí.</div>',
     '  </div>',
+    buildAdminPressRotationOverridesHtml(month, monthKey, hardRows),
     '  <details class="appMenuFoldSection adminRotationFold" open>',
     '    <summary>Tvrdota</summary>',
     '    <div class="tableWrap appMenuTableWrap">',
@@ -1265,6 +1266,16 @@ function readAdminRotationFromDom(monthKey) {
     notes.push(note);
   });
   month.notes = notes;
+
+  const pressRotationOverrides = {};
+  root.querySelectorAll('[data-press-rotation-date]').forEach((select) => {
+    const key = String(select.getAttribute('data-press-rotation-date') || '').trim();
+    const value = String(select.value || '').trim().toLowerCase();
+    if (!key || value === 'auto') return;
+    if (value === 'split' || value === 'nosplit') pressRotationOverrides[key] = value;
+  });
+  if (Object.keys(pressRotationOverrides).length) month.pressRotationOverrides = pressRotationOverrides;
+  else delete month.pressRotationOverrides;
 
   return normalizeMonthForImport(month, fallback);
 }
@@ -1454,7 +1465,7 @@ function adminBuildRotationGenerationModel(targetMonthKey) {
     const previousIdx = (currentIdx - 1 + cycleLength) % cycleLength;
     const blockLength = Math.max(1, Number(RAK_ROTATION_GENERATOR_RULES_V1107.softHardBlockLength) || 3);
 
-    // RaK 1.2 (1.146): návaznost Synka/Třasáka/Střížka se nesmí odvozovat jen z posledního dne
+    // RaK 1.2 (1.148): návaznost Synka/Třasáka/Střížka se nesmí odvozovat jen z posledního dne
     // ani resetovat zpět, když je v historii po dokončeném bloku ještě extra TNKS01.
     // Procházíme celý předchozí měsíc chronologicky a zpětný "spillover" předchozího stroje ignorujeme.
     if (machineIdx !== currentIdx) {
@@ -1748,11 +1759,61 @@ function adminRotationGeneratorIsMoOnlyOvertimeSunday(dateLabel, monthKey, month
   return /(?:jen|pouze)\s*MO|měkk(?:é|e)\s*obrábění|mekk(?:e|é)\s*obr/i.test(String(dateLabel || '') + ' ' + noteText);
 }
 
+function adminRotationGetPressRotationOverride(month, dateLabel) {
+  const baseKey = adminRotationDateBaseKey(dateLabel);
+  if (typeof getRotationPressRotationOverride === 'function') return getRotationPressRotationOverride(month, baseKey);
+  const value = month && month.pressRotationOverrides && baseKey ? String(month.pressRotationOverrides[baseKey] || '').trim().toLowerCase() : '';
+  return value === 'split' || value === 'nosplit' ? value : '';
+}
+
 function adminRotationGeneratorShouldSplitPressMachines(dateLabel, monthKey, month) {
+  const manual = adminRotationGetPressRotationOverride(month, dateLabel);
+  if (manual === 'split') return true;
+  if (manual === 'nosplit') return false;
   const meta = adminRotationGeneratorParseDayMeta(dateLabel, monthKey);
   if (!meta.isSunday) return true;
   if (adminRotationGeneratorIsMoOnlyOvertimeSunday(dateLabel, monthKey, month)) return false;
   return adminRotationGeneratorIsOvertimeSunday(dateLabel, monthKey, month);
+}
+
+function buildAdminPressRotationOverridesHtml(month, monthKey, hardRows) {
+  const rows = Array.isArray(hardRows) ? hardRows : [];
+  if (!rows.length) return '';
+  const seen = new Set();
+  const options = [
+    ['auto', 'Automaticky podle pravidel'],
+    ['split', 'Rotuje / půlit 0,5 + 0,5'],
+    ['nosplit', 'Nerotuje / každý +1']
+  ];
+  const body = rows.map((row) => {
+    const date = String(row && row.date ? row.date : '').trim();
+    const baseKey = adminRotationDateBaseKey(date);
+    if (!date || !baseKey || seen.has(baseKey)) return '';
+    seen.add(baseKey);
+    const manual = adminRotationGetPressRotationOverride(month, date);
+    const autoSplit = adminRotationGeneratorShouldSplitPressMachines(date, monthKey, Object.assign({}, month || {}, { pressRotationOverrides: {} }));
+    const current = manual || 'auto';
+    return [
+      '<tr data-press-rotation-row data-date-base="' + escapeHtml(baseKey) + '">',
+      '  <td>' + escapeHtml(adminRotationDateLabel(date) || date) + '</td>',
+      '  <td><select class="appMenuSelect adminRotationPressSelect" data-press-rotation-date="' + escapeHtml(baseKey) + '">' + options.map(([value, label]) => '<option value="' + value + '" ' + (current === value ? 'selected' : '') + '>' + escapeHtml(label) + '</option>').join('') + '</select></td>',
+      '  <td class="smallText">' + escapeHtml(autoSplit ? 'Auto: rotuje' : 'Auto: nerotuje') + '</td>',
+      '</tr>'
+    ].join('');
+  }).filter(Boolean).join('');
+  if (!body) return '';
+  return [
+    '<details class="appMenuFoldSection adminRotationFold">',
+    '  <summary>TNKS01 / TPKW01 – rotace dne</summary>',
+    '  <div class="appMenuText">Výchozí stav je podle pravidel. Když se konkrétní den neplánovaně nerotuje, nastav „Nerotuje / každý +1“. Tahle výjimka má přednost ve statistikách, kontrolní tabulce i exportech.</div>',
+    '  <div class="tableWrap appMenuTableWrap">',
+    '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense">',
+    '      <thead><tr><th>Den</th><th>Režim</th><th>Výchozí</th></tr></thead>',
+    '      <tbody>' + body + '</tbody>',
+    '    </table>',
+    '  </div>',
+    '</details>'
+  ].join('');
 }
 
 function adminRotationGeneratorAddMachineCount(machineMap, machineName, person, value) {
@@ -3363,7 +3424,7 @@ function adminBuildRotationMachineCountSummaryHtml(month, monthKey) {
   return [
     '<details class="adminRotationGeneratorMachineSummary" open>',
     '  <summary>Rychlý přehled: jména × stroje</summary>',
-    '  <div class="smallText">Jména jsou v řádcích, stroje ve sloupcích. Sloupce TO/MO ukazují součet tvrdého a měkkého obrábění. TNKS01 a TPKW01 se mimo běžnou neděli počítají jako 0,5 + 0,5 na oba stroje. Přesčasová neděle se bere jako TO, pokud není označená jen MO.</div>',
+    '  <div class="smallText">Jména jsou v řádcích, stroje ve sloupcích. Sloupce TO/MO ukazují součet tvrdého a měkkého obrábění. TNKS01 a TPKW01 se mimo běžnou neděli počítají jako 0,5 + 0,5 na oba stroje. Ruční výjimka „Nerotuje / každý +1“ má přednost.</div>',
     '  <div class="adminRotationGeneratorMachineSummaryScroll">',
     '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminRotationGeneratorMachineSummaryTable"><thead>' + head + '</thead><tbody>' + body + '</tbody></table>',
     '  </div>',
@@ -3589,7 +3650,7 @@ function adminShowRotationSelectedRemove(input) {
       return;
     }
     window.__rakAdminRotationSelectedInput = input;
-    // RaK 1.2 (1.146) – horní sticky tlačítko už při kliknutí do jména nevytahujeme.
+    // RaK 1.2 (1.148) – horní sticky tlačítko už při kliknutí do jména nevytahujeme.
     // Rychlé Odebrat se vykreslí přímo u aktivního pole přes adminShowRotationQuickRemove().
     btn.hidden = true;
     btn.dataset.targetReady = '1';
