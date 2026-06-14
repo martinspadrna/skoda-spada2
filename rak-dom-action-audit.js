@@ -1,4 +1,4 @@
-// RaK 1.2 (1.150) – DOM/action registry audit.
+// RaK 1.2 (1.151) – DOM/action registry audit.
 
 (function setupRakDomActionRegistryAudit() {
   const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -42,7 +42,7 @@
     ok: null,
     status: 'not-run',
     mode: 'dom-action-smoke-report-v897',
-    version: '1.2 (1.150)',
+    version: '1.2 (1.151)',
     checkedAt: null,
     lastStage: 'čeká na DOM/action kontrolu',
     runCount: 0,
@@ -77,7 +77,7 @@
       DOM_ACTION_SMOKE_REPORT.ok = ok;
       DOM_ACTION_SMOKE_REPORT.status = ok ? 'ok' : 'kontrola';
       DOM_ACTION_SMOKE_REPORT.mode = 'dom-action-smoke-report-v897';
-      DOM_ACTION_SMOKE_REPORT.version = String(window.APP_VERSION || '1.2 (1.150)');
+      DOM_ACTION_SMOKE_REPORT.version = String(window.APP_VERSION || '1.2 (1.151)');
       DOM_ACTION_SMOKE_REPORT.checkedAt = new Date().toISOString();
       DOM_ACTION_SMOKE_REPORT.lastStage = String(stage || 'dom-action-health');
       DOM_ACTION_SMOKE_REPORT.runCount = Number(DOM_ACTION_SMOKE_REPORT.runCount || 0) + 1;

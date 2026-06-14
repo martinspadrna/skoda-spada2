@@ -1,11 +1,12 @@
-## RaK 1.2 (1.150)
+## RaK 1.2 (1.151)
 
-- Hry / Pexeso 8×8: opravený mobilní layout, aby pole nebyla vodorovné obdélníky, ale skutečné čtverce.
-- 8×8 board má pevně definovaných 8 řádků i 8 sloupců, menší mezery, menší font a velikost omezenou šířkou i výškou viewportu.
-- Přidané `data-memory-size` / `data-memory-grid` značky pro bezpečné CSS cílení pouze na aktuální velikost Pexesa.
-- 8×8 režim má kompaktnější HUD a ovládání, aby se spodní řada i tlačítko Nová hra na mobilu nevešly pod spodní lištu.
+- Hry / Pexeso 8×8: opravený reálný mobilní problém z iPhonu, kdy se karty zobrazovaly jako dlouhé svislé pilulky a spodní část pole se nevešla.
+- Přidaný tvrdý runtime fit přímo při renderu 8×8: board i karty dostanou inline `!important` rozměry, takže je nepřebije starší globální `min-height` z herního CSS.
+- 8×8 board má pevně stejnou šířku i výšku podle dostupného viewportu, 8 řádků × 8 sloupců, menší HUD, menší tlačítko Nová hra a menší horní rezerva.
+- Doplněný CSS fallback s vyšší specificitou pro `body.gamesOpen[data-rak-arcade-game="memory"]`, aby se fix držel i při starších vrstvách stylů.
+- `rak-memory-total-time-fix.js` nově zná i `memory_8x8`, aby se 8×8 Pexeso ukládalo se stejnou ochranou celkového času jako 4×4/6×6.
 - Supabase DB/policies beze změny.
-- Release metadata sjednocená na `RaK 1.2 (1.150)`, technická verze `1.2.150`, cache `v1.2-1.150`.
+- Release metadata sjednocená na `RaK 1.2 (1.151)`, technická verze `1.2.151`, cache `v1.2-1.151`.
 
 ## RaK 1.2 (1.149)
 

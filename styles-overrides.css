@@ -18527,7 +18527,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
 }
 
 
-/* RaK 1.2 (1.150) – Lodě: lehčí render tabule a méně janku na mobilech. */
+/* RaK 1.2 (1.151) – Lodě: lehčí render tabule a méně janku na mobilech. */
 body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsBoard,
 body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsBoardCardLift,
 body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSingleBoardWrap{
@@ -18555,7 +18555,7 @@ body.lightweightMode.shipsGameOpen #games #gamesShellBody[data-arcade-game="ship
   animation:none !important;
 }
 
-/* RaK 1.2 (1.150) – Pexeso 8×8: čtvercové karty a mobilní fit.
+/* RaK 1.2 (1.151) – Pexeso 8×8: čtvercové karty a mobilní fit.
    8×8 nesmí dělat vodorovné obdélníky ani schovat spodní řadu pod spodní lištu. */
 #games .memoryStage[data-memory-size="8"]{
   gap:6px !important;
@@ -18644,5 +18644,100 @@ body.lightweightMode.shipsGameOpen #games #gamesShellBody[data-arcade-game="ship
   #games .arcadeMemoryBoard[data-memory-grid="8"]{
     width:min(100%,308px,calc(100vw - 22px),calc(100dvh - 240px)) !important;
     max-width:308px !important;
+  }
+}
+
+/* RaK 1.2 (1.151) – Pexeso 8×8: tvrdý mobilní fit podle reálného iPhone testu.
+   Přepíše starší globální min-height pro arcadeMemoryBoardLarge, aby karty nebyly dlouhé pilulky. */
+body.gamesOpen[data-rak-arcade-game="memory"] #games .gamesStage{
+  overflow:auto !important;
+  padding-top:max(4px, env(safe-area-inset-top)) !important;
+  padding-bottom:calc(var(--rak-fixed-bottom-space, 56px) + env(safe-area-inset-bottom) + 4px) !important;
+}
+body.gamesOpen[data-rak-arcade-game="memory"] #games .arcadeShellRoot{
+  padding-top:max(4px, env(safe-area-inset-top)) !important;
+  padding-bottom:calc(var(--rak-fixed-bottom-space, 56px) + 4px) !important;
+  min-height:auto !important;
+  overflow:visible !important;
+}
+body.gamesOpen[data-rak-arcade-game="memory"] #games #gamesShellBody[data-arcade-game="memory"]{
+  min-height:auto !important;
+  overflow:visible !important;
+  padding-top:0 !important;
+  padding-bottom:calc(var(--rak-fixed-bottom-space, 56px) + 4px) !important;
+}
+body.gamesOpen[data-rak-arcade-game="memory"] #games #gamesShellBody[data-arcade-game="memory"] .memoryStage[data-memory-size="8"]{
+  gap:5px !important;
+  min-height:0 !important;
+  overflow:visible !important;
+  padding-bottom:max(6px, env(safe-area-inset-bottom)) !important;
+}
+body.gamesOpen[data-rak-arcade-game="memory"] #games #gamesShellBody[data-arcade-game="memory"] .memoryStage[data-memory-size="8"] .memoryHud{
+  gap:4px !important;
+  margin:0 !important;
+}
+body.gamesOpen[data-rak-arcade-game="memory"] #games #gamesShellBody[data-arcade-game="memory"] .memoryStage[data-memory-size="8"] .memoryHud .gamesStatLine,
+body.gamesOpen[data-rak-arcade-game="memory"] #games #gamesShellBody[data-arcade-game="memory"] .memoryStage[data-memory-size="8"] .memoryHud .gamesStatCard{
+  min-height:28px !important;
+  height:28px !important;
+  padding:3px 6px !important;
+  border-radius:10px !important;
+}
+body.gamesOpen[data-rak-arcade-game="memory"] #games #gamesShellBody[data-arcade-game="memory"] .arcadeMemoryBoard.arcadeMemoryBoardLarge.grid-8[data-memory-grid="8"]{
+  display:grid !important;
+  grid-template-columns:repeat(8,minmax(0,1fr)) !important;
+  grid-template-rows:repeat(8,minmax(0,1fr)) !important;
+  grid-auto-rows:minmax(0,1fr) !important;
+  width:min(calc(100vw - 28px), calc(100dvh - var(--bottom-nav-h, 52px) - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 214px), 336px) !important;
+  height:min(calc(100vw - 28px), calc(100dvh - var(--bottom-nav-h, 52px) - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 214px), 336px) !important;
+  max-width:336px !important;
+  max-height:336px !important;
+  aspect-ratio:1 / 1 !important;
+  gap:2px !important;
+  padding:4px !important;
+  margin:0 auto !important;
+  align-items:stretch !important;
+  justify-items:stretch !important;
+  box-sizing:border-box !important;
+  overflow:hidden !important;
+  contain:layout paint style !important;
+}
+body.gamesOpen[data-rak-arcade-game="memory"] #games #gamesShellBody[data-arcade-game="memory"] .arcadeMemoryBoard.arcadeMemoryBoardLarge.grid-8[data-memory-grid="8"] > .arcadeMemoryCard{
+  width:100% !important;
+  height:100% !important;
+  inline-size:100% !important;
+  block-size:100% !important;
+  min-width:0 !important;
+  min-height:0 !important;
+  min-block-size:0 !important;
+  max-width:none !important;
+  max-height:100% !important;
+  aspect-ratio:auto !important;
+  align-self:stretch !important;
+  justify-self:stretch !important;
+  display:grid !important;
+  place-items:center !important;
+  padding:0 !important;
+  line-height:1 !important;
+  overflow:hidden !important;
+  border-radius:7px !important;
+  font-size:clamp(13px, 4vw, 20px) !important;
+  transform:none !important;
+}
+body.gamesOpen[data-rak-arcade-game="memory"] #games #gamesShellBody[data-arcade-game="memory"] .memoryStage[data-memory-size="8"] .arcadeControls .gameControlBtn{
+  min-height:32px !important;
+  height:32px !important;
+  padding:0 10px !important;
+  border-radius:12px !important;
+  font-size:14px !important;
+}
+@media (max-height:740px){
+  body.gamesOpen[data-rak-arcade-game="memory"] #games #gamesShellBody[data-arcade-game="memory"] .arcadeMemoryBoard.arcadeMemoryBoardLarge.grid-8[data-memory-grid="8"]{
+    width:min(calc(100vw - 24px), calc(100dvh - var(--bottom-nav-h, 52px) - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 198px), 318px) !important;
+    height:min(calc(100vw - 24px), calc(100dvh - var(--bottom-nav-h, 52px) - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 198px), 318px) !important;
+    max-width:318px !important;
+    max-height:318px !important;
+    gap:1.5px !important;
+    padding:3px !important;
   }
 }

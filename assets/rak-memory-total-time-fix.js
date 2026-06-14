@@ -1,18 +1,18 @@
-/* RaK 1.2 (1.150) – Pexeso total-time online guard
+/* RaK 1.2 (1.151) – Pexeso total-time online guard + 8×8
    Oprava: Pexeso/Memory ukládá výherní čas jako celkový čas hry od startu kola.
    Důvod: staré zápisy uměly poslat skóre 5000/10000, které se v tabulce tvářilo jako pár vteřin.
 */
 (function rakMemoryTotalTimeGuard(){
   'use strict';
-  if (window.__rakMemoryTotalTimeGuardV149) return;
-  window.__rakMemoryTotalTimeGuardV149 = true;
+  if (window.__rakMemoryTotalTimeGuardV151) return;
+  window.__rakMemoryTotalTimeGuardV151 = true;
 
-  var START_KEY = 'rakMemoryTotalTimeStartMs.v149';
-  var ACTIVE_KEY = 'rakMemoryTotalTimeActive.v149';
-  var LAST_REASON_KEY = 'rakMemoryTotalTimeReason.v149';
+  var START_KEY = 'rakMemoryTotalTimeStartMs.v151';
+  var ACTIVE_KEY = 'rakMemoryTotalTimeActive.v151';
+  var LAST_REASON_KEY = 'rakMemoryTotalTimeReason.v151';
   var SCORE_SCALE = 5000;
-  var MEMORY_TYPES = { memory: true, memory_4x4: true, memory_6x6: true };
-  var MIN_VALID_MS = { memory: 12000, memory_4x4: 12000, memory_6x6: 30000 };
+  var MEMORY_TYPES = { memory: true, memory_4x4: true, memory_6x6: true, memory_8x8: true };
+  var MIN_VALID_MS = { memory: 12000, memory_4x4: 12000, memory_6x6: 30000, memory_8x8: 60000 };
   var MAX_REASONABLE_MS = 6 * 60 * 60 * 1000;
 
   function now(){ return Date.now ? Date.now() : new Date().getTime(); }
@@ -177,7 +177,7 @@
   }
 
   window.rakMemoryTotalTimeGuard = {
-    version: '1.150',
+    version: '1.151',
     start: startMemoryRound,
     reset: resetMemoryRound,
     encodeTimeScore: encodeTimeScore,
