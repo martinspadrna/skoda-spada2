@@ -1,4 +1,4 @@
-// RaK 1.2 (1.149) – Administrace Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
+// RaK 1.2 (1.150) – Administrace Rozpisy a Nastavení strojů oddělené z hlavního UI modulu.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('admin-rotation.js', 'loading', { source: 'dynamic-loader' }); } catch (err) {}
 
 
@@ -1465,7 +1465,7 @@ function adminBuildRotationGenerationModel(targetMonthKey) {
     const previousIdx = (currentIdx - 1 + cycleLength) % cycleLength;
     const blockLength = Math.max(1, Number(RAK_ROTATION_GENERATOR_RULES_V1107.softHardBlockLength) || 3);
 
-    // RaK 1.2 (1.149): návaznost Synka/Třasáka/Střížka se nesmí odvozovat jen z posledního dne
+    // RaK 1.2 (1.150): návaznost Synka/Třasáka/Střížka se nesmí odvozovat jen z posledního dne
     // ani resetovat zpět, když je v historii po dokončeném bloku ještě extra TNKS01.
     // Procházíme celý předchozí měsíc chronologicky a zpětný "spillover" předchozího stroje ignorujeme.
     if (machineIdx !== currentIdx) {
@@ -3650,7 +3650,7 @@ function adminShowRotationSelectedRemove(input) {
       return;
     }
     window.__rakAdminRotationSelectedInput = input;
-    // RaK 1.2 (1.149) – horní sticky tlačítko už při kliknutí do jména nevytahujeme.
+    // RaK 1.2 (1.150) – horní sticky tlačítko už při kliknutí do jména nevytahujeme.
     // Rychlé Odebrat se vykreslí přímo u aktivního pole přes adminShowRotationQuickRemove().
     btn.hidden = true;
     btn.dataset.targetReady = '1';

@@ -1,18 +1,35 @@
+## RaK 1.2 (1.150)
+
+- Hry / Pexeso 8×8: opravený mobilní layout, aby pole nebyla vodorovné obdélníky, ale skutečné čtverce.
+- 8×8 board má pevně definovaných 8 řádků i 8 sloupců, menší mezery, menší font a velikost omezenou šířkou i výškou viewportu.
+- Přidané `data-memory-size` / `data-memory-grid` značky pro bezpečné CSS cílení pouze na aktuální velikost Pexesa.
+- 8×8 režim má kompaktnější HUD a ovládání, aby se spodní řada i tlačítko Nová hra na mobilu nevešly pod spodní lištu.
+- Supabase DB/policies beze změny.
+- Release metadata sjednocená na `RaK 1.2 (1.150)`, technická verze `1.2.150`, cache `v1.2-1.150`.
+
 ## RaK 1.2 (1.149)
+
+- Hry / Pexeso: opravené ukládání výherního času jako celkový čas hry od startu kola do dokončení.
+- Přidaný guard proti nesmyslným časům typu pár vteřin a bezpečné ukládání časového skóre do existující Supabase `game_stats`.
+- V Supabase byly smazané zjevně chybné Pexeso rekordy se score `10000` a `5000`, které v UI dělaly falešné párvteřinové časy.
+- Supabase DB struktura a policies beze změny.
+- Release metadata sjednocená na `RaK 1.2 (1.149)`, technická verze `1.2.149`, cache `v1.2-1.149`.
+
+## RaK 1.2 (1.148)
 
 - Hry / Lodě online: opravené zbytečné překreslování celé 10×10 tabule při každém online pollu beze změny stavu.
 - Poll Lodí je adaptivní: rychlejší během aktivní hry, pomalejší při čekání/přípravě, s blokací překrytých refreshů.
 - Tah se po kliknutí vykreslí okamžitě a online save doběhne bez blokování klik handleru.
 - Přidané lehčí CSS pro Lodě: contain paint/layout, vypnuté pseudo overlay vrstvy tabule a tvrdší odlehčení animací ve výkonových režimech.
-- Release metadata sjednocená na `RaK 1.2 (1.149)`, technická verze `1.2.149`, cache `v1.2-1.149`.
+- Release metadata sjednocená na `RaK 1.2 (1.148)`, technická verze `1.2.148`, cache `v1.2-1.148`.
 
-## RaK 1.2 (1.149)
+## RaK 1.2 (1.147)
 
 - Administrace / Rozpisy: přidaná ruční výjimka dne pro TNKS01/TPKW01 – rotuje / nerotuje / automaticky podle pravidel.
 - Výchozí chování zůstává stejné: mimo běžnou neděli se TNKS01/TPKW01 půlí 0,5 + 0,5, běžná neděle se nepůlí, přesčasová TO neděle se půlí a MO výjimka se nepůlí.
 - Ruční volba `Nerotuje / každý +1` má přednost ve statistikách, kontrolní tabulce stroje × jména, generátorových souhrnech i navazujících exportech používajících statistiky.
 - Ukládá se do měsíce jako `pressRotationOverrides`, bez změny Supabase DB/policies.
-- Release metadata sjednocená na `RaK 1.2 (1.149)`, technická verze `1.2.149`, cache `v1.2-1.149`.
+- Release metadata sjednocená na `RaK 1.2 (1.147)`, technická verze `1.2.147`, cache `v1.2-1.147`.
 
 ## RaK 1.2 (1.146)
 

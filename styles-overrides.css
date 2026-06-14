@@ -18527,7 +18527,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
 }
 
 
-/* RaK 1.2 (1.149) – Lodě: lehčí render tabule a méně janku na mobilech. */
+/* RaK 1.2 (1.150) – Lodě: lehčí render tabule a méně janku na mobilech. */
 body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsBoard,
 body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsBoardCardLift,
 body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSingleBoardWrap{
@@ -18553,4 +18553,96 @@ body.ladaMode.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .sh
 body.lowEndDevice.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsCell.isHit .shipsShipSegment,
 body.lightweightMode.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsCell.isHit .shipsShipSegment{
   animation:none !important;
+}
+
+/* RaK 1.2 (1.150) – Pexeso 8×8: čtvercové karty a mobilní fit.
+   8×8 nesmí dělat vodorovné obdélníky ani schovat spodní řadu pod spodní lištu. */
+#games .memoryStage[data-memory-size="8"]{
+  gap:6px !important;
+  min-height:0 !important;
+  overflow:visible !important;
+  padding-bottom:max(8px, env(safe-area-inset-bottom)) !important;
+}
+#games .memoryStage[data-memory-size="8"] .memoryHud{
+  gap:5px !important;
+  margin-bottom:0 !important;
+}
+#games .memoryStage[data-memory-size="8"] .memoryHud .gamesStatLine,
+#games .memoryStage[data-memory-size="8"] .memoryHud .gamesStatCard{
+  min-height:34px !important;
+  padding:5px 6px !important;
+  border-radius:13px !important;
+}
+#games .memoryStage[data-memory-size="8"] .arcadeControls{
+  margin-top:0 !important;
+}
+#games .memoryStage[data-memory-size="8"] .arcadeControls .gameControlBtn{
+  min-height:36px !important;
+  border-radius:14px !important;
+}
+#games .arcadeMemoryBoard.grid-8,
+#games .arcadeMemoryBoard[data-memory-grid="8"]{
+  display:grid !important;
+  grid-template-columns:repeat(8,minmax(0,1fr)) !important;
+  grid-template-rows:repeat(8,minmax(0,1fr)) !important;
+  grid-auto-rows:minmax(0,1fr) !important;
+  aspect-ratio:1 / 1 !important;
+  width:min(100%,336px,calc(100vw - 28px),calc(100dvh - 280px)) !important;
+  max-width:336px !important;
+  height:auto !important;
+  max-height:336px !important;
+  margin:0 auto !important;
+  gap:2px !important;
+  padding:4px !important;
+  align-items:stretch !important;
+  justify-items:stretch !important;
+  box-sizing:border-box !important;
+  overflow:hidden !important;
+  contain:layout paint !important;
+}
+#games .arcadeMemoryBoard.grid-8 .arcadeMemoryCard,
+#games .arcadeMemoryBoard[data-memory-grid="8"] .arcadeMemoryCard{
+  width:100% !important;
+  height:100% !important;
+  min-width:0 !important;
+  min-height:0 !important;
+  max-width:none !important;
+  max-height:none !important;
+  aspect-ratio:auto !important;
+  display:grid !important;
+  place-items:center !important;
+  padding:0 !important;
+  line-height:1 !important;
+  overflow:hidden !important;
+  contain:layout paint !important;
+  font-size:clamp(15px,4.4vw,22px) !important;
+  border-radius:8px !important;
+  transform:none !important;
+}
+#games .arcadeMemoryBoard.grid-8 .arcadeMemoryCard.isFlipped,
+#games .arcadeMemoryBoard.grid-8 .arcadeMemoryCard.isMatched,
+#games .arcadeMemoryBoard[data-memory-grid="8"] .arcadeMemoryCard.isFlipped,
+#games .arcadeMemoryBoard[data-memory-grid="8"] .arcadeMemoryCard.isMatched{
+  transform:none !important;
+}
+@media (max-width:380px){
+  #games .arcadeMemoryBoard.grid-8,
+  #games .arcadeMemoryBoard[data-memory-grid="8"]{
+    width:min(100%,324px,calc(100vw - 22px),calc(100dvh - 270px)) !important;
+    max-width:324px !important;
+    gap:1.5px !important;
+    padding:3px !important;
+  }
+  #games .arcadeMemoryBoard.grid-8 .arcadeMemoryCard,
+  #games .arcadeMemoryBoard[data-memory-grid="8"] .arcadeMemoryCard{
+    font-size:clamp(14px,4.2vw,20px) !important;
+    border-radius:7px !important;
+  }
+}
+@media (max-height:700px){
+  #games .arcadeMemoryBoard.grid-8,
+  #games .arcadeMemoryBoard[data-memory-grid="8"]{
+    width:min(100%,308px,calc(100vw - 22px),calc(100dvh - 240px)) !important;
+    max-width:308px !important;
+  }
 }
