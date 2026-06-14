@@ -18527,7 +18527,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
 }
 
 
-/* RaK 1.2 (1.148) – Lodě: lehčí render tabule a méně janku na mobilech. */
+/* RaK 1.2 (1.149) – Lodě: lehčí render tabule a méně janku na mobilech. */
 body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsBoard,
 body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsBoardCardLift,
 body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSingleBoardWrap{

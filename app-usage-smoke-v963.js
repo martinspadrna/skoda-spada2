@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.148) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.149) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -218,12 +218,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.148)',
-  appLabel: 'RaK 1.2 (1.148)',
-  packageVersion: '1.2.148',
-  cacheVersion: 'v1.2-1.148',
+  displayVersion: '1.2 (1.149)',
+  appLabel: 'RaK 1.2 (1.149)',
+  packageVersion: '1.2.149',
+  cacheVersion: 'v1.2-1.149',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.148)',
+  changelogHeader: '## RaK 1.2 (1.149)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -332,8 +332,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.148)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.148'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.149)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.149'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1081,7 +1081,7 @@ function assertGamesActiveAccountDirectStatsContractV1144() {
 
 function assertSudokuCompletionAndTimeFormatContractV1144() {
 
-  assertIncludes(gamesArcadeJs, '__rakShipsSmoothPerformanceGuard', 'Lodě musí mít performance guard 1.148');
+  assertIncludes(gamesArcadeJs, '__rakShipsSmoothPerformanceGuard', 'Lodě musí mít performance guard 1.149');
   assertIncludes(gamesArcadeJs, 'maybeRenderRemoteState(remote, soft)', 'Lodě nesmí renderovat při každém pollu bez změny stavu');
   assertIncludes(gamesArcadeJs, 'if (local.refreshing) return;', 'Lodě musí blokovat překryté online refreshe');
   assertIncludes(gamesArcadeJs, 'sudoku-completion-save-v1148', 'Sudoku musí mít guard pro bezpečné uložení dokončení v1.146');
