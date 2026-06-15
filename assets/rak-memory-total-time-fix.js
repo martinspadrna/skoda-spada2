@@ -1,4 +1,4 @@
-/* RaK 1.2 (1.154) – Pexeso total-time online guard + RPC-safe payload
+/* RaK 1.2 (1.155) – Pexeso total-time online guard + RPC-safe payload
    Oprava: Pexeso/Memory ukládá výherní čas jako celkový čas hry od startu kola.
    Důvod: staré zápisy uměly poslat skóre 5000/10000, které se v tabulce tvářilo jako pár vteřin.
 */
@@ -129,7 +129,7 @@
     var safeScore = encodeTimeScore(elapsedMs);
     writeNumericDeep(obj, function(k){ return /(^|_)(points?|score)(_delta)?$|p_points_delta|p_score_delta/i.test(k); }, safeScore);
     ensureTimeFields(obj, elapsedMs);
-    // RaK 1.2 (1.154): do RPC payloadu nesmíme přidávat nové klíče.
+    // RaK 1.2 (1.155): do RPC payloadu nesmíme přidávat nové klíče.
     // PostgREST pak hledá funkci s parametry __rakMemory... a vrací 404.
     resetMemoryRound();
     return obj;
@@ -177,7 +177,7 @@
   }
 
   window.rakMemoryTotalTimeGuard = {
-    version: '1.154',
+    version: '1.155',
     start: startMemoryRound,
     reset: resetMemoryRound,
     encodeTimeScore: encodeTimeScore,

@@ -1,4 +1,4 @@
-## RaK 1.2 (1.154)
+## RaK 1.2 (1.155)
 
 - Hry / Pexeso: opravené zobrazení a merge starých falešných časů typu 5 s.
 - Pexeso teď bere za platný výherní čas jen reálný celkový čas hry: 4×4/společné Pexeso minimálně 12 s, 6×6 minimálně 30 s, 8×8 minimálně 60 s.
@@ -6,7 +6,7 @@
 - Při nové výhře Pexesa se posílá i `wins: 1`, aby dokončení bylo vidět i v profilu jako výhra/dokončení.
 - Supabase bridge nově odmítne explicitní nereálný Pexeso čas při zápisu, takže se 5s fallback nemá znovu propsat online.
 - Supabase DB/policies beze změny; kontrola dat ukázala jen jeden Pexeso záznam `memory_6x6` se score 4918, tj. cca 82 s.
-- Release metadata sjednocená na `RaK 1.2 (1.154)`, technická verze `1.2.154`, cache `v1.2-1.154`.
+- Release metadata sjednocená na `RaK 1.2 (1.155)`, technická verze `1.2.155`, cache `v1.2-1.155`.
 
 ## RaK 1.2 (1.149)
 

@@ -1,4 +1,4 @@
-// RaK 1.2 (1.154) – export manifest a release metadata.
+// RaK 1.2 (1.155) – export manifest a release metadata.
 var EXPORT_SOURCE_IDS = {
   "module-readiness.js": "src-module-readiness-js",
   "rak-namespace.js": "src-rak-namespace-js",
@@ -111,16 +111,17 @@ var EXPORT_SOURCE_IDS = {
 
 var SOURCE_CACHE = window.__ROTACE_SOURCE_CACHE__ || (window.__ROTACE_SOURCE_CACHE__ = {});
 var BINARY_SOURCE_CACHE = window.__ROTACE_BINARY_SOURCE_CACHE__ || (window.__ROTACE_BINARY_SOURCE_CACHE__ = {});
-var RAK_RELEASE_METADATA_CONTRACT_V199 = Object.freeze({
-  displayVersion: '1.2 (1.154)',
-  appLabel: 'RaK 1.2 (1.154)',
-  packageVersion: '1.2.154',
-  cacheVersion: 'v1.2-1.154',
+window.RAK_EXPORT_CONTRACTS = window.RAK_EXPORT_CONTRACTS || {};
+window.RAK_EXPORT_CONTRACTS.RAK_RELEASE_METADATA_CONTRACT_V199 = window.RAK_EXPORT_CONTRACTS.RAK_RELEASE_METADATA_CONTRACT_V199 || Object.freeze({
+  displayVersion: '1.2 (1.155)',
+  appLabel: 'RaK 1.2 (1.155)',
+  packageVersion: '1.2.155',
+  cacheVersion: 'v1.2-1.155',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.154)',
+  changelogHeader: '## RaK 1.2 (1.155)',
   serviceWorkerVersionGuard: 'CACHE_VERSION + SW_APP_VERSION'
 });
-var RAK_DASHBOARD_CSS_GUARD_SERIES_CONTRACT_V1100 = Object.freeze({
+window.RAK_EXPORT_CONTRACTS.RAK_DASHBOARD_CSS_GUARD_SERIES_CONTRACT_V1100 = window.RAK_EXPORT_CONTRACTS.RAK_DASHBOARD_CSS_GUARD_SERIES_CONTRACT_V1100 || Object.freeze({
   status: 'closed',
   scope: 'dashboard-css-cleanup-guards',
   guardRange: 'v1.90-v1.100',
@@ -138,19 +139,19 @@ var RAK_DASHBOARD_CSS_GUARD_SERIES_CONTRACT_V1100 = Object.freeze({
   ]),
   nextWork: 'Další Dashboard změny dělat už jako konkrétní funkční/vizuální požadavek, ne jako další cleanup-only guard.'
 });
-var RAK_BRUSY_CHOICE_SIZE_CONTRACT_V1101 = Object.freeze({
+window.RAK_EXPORT_CONTRACTS.RAK_BRUSY_CHOICE_SIZE_CONTRACT_V1101 = window.RAK_EXPORT_CONTRACTS.RAK_BRUSY_CHOICE_SIZE_CONTRACT_V1101 || Object.freeze({
   scope: 'kalkulacky-brusy-vypocet-kusu',
   reference: 'korekce-frezky-calcFhbPresetBtn',
   targetHeightPx: 58,
   protectedButtons: Object.freeze(['TBKR01', 'TBKR07', 'AD', 'AE', 'AH', 'AD volné', 'AE volné'])
 });
-var RAK_FIXED_APP_BACKGROUND_CONTRACT_V1101 = Object.freeze({
+window.RAK_EXPORT_CONTRACTS.RAK_FIXED_APP_BACKGROUND_CONTRACT_V1101 = window.RAK_EXPORT_CONTRACTS.RAK_FIXED_APP_BACKGROUND_CONTRACT_V1101 || Object.freeze({
   scope: 'whole-app-fixed-background',
   method: 'fixed-body-pseudo-background',
   protectedEffect: 'content-scrolls-over-stable-background-for-glass-panels',
   pages: Object.freeze(['home', 'rotace', 'statistiky', 'rozpisy', 'kalkulacky', 'games', 'soustruhy', 'frezky', 'brusy'])
 });
-var RAK_NAME_CHOICE_FIT_CONTRACT_V1102 = Object.freeze({
+window.RAK_EXPORT_CONTRACTS.RAK_NAME_CHOICE_FIT_CONTRACT_V1102 = window.RAK_EXPORT_CONTRACTS.RAK_NAME_CHOICE_FIT_CONTRACT_V1102 || Object.freeze({
   scope: 'rotace-and-statistiky-name-choice-buttons',
   intent: 'fit-full-names-on-narrow-displays',
   protectedSelectors: Object.freeze(['.rotaceNameTile .rotaceTileTitle', '#statsNameGrid .statsNameTile .statsTileTitle']),
@@ -161,14 +162,14 @@ window.RAK_ROTACE_EMPTY_ABSENCE_TEXT_CONTRACT_V1105 = window.RAK_ROTACE_EMPTY_AB
   text: 'Nikdo nebude chybět.',
   relatedDashboardContract: 'RAK_DASHBOARD_EMPTY_ABSENCE_TEXT_CONTRACT_V1104'
 });
-var RAK_APPEARANCE_UPDATE_PERSISTENCE_CONTRACT_V1105 = Object.freeze({
+window.RAK_EXPORT_CONTRACTS.RAK_APPEARANCE_UPDATE_PERSISTENCE_CONTRACT_V1105 = window.RAK_EXPORT_CONTRACTS.RAK_APPEARANCE_UPDATE_PERSISTENCE_CONTRACT_V1105 || Object.freeze({
   scope: 'profile-appearance-update-migration',
   intent: 'nevracet vybrané pozadí po aktualizaci na základní',
   migrationSource: 'localStorage fallback při chybějícím account.uiSettings.backgroundId',
   protectedStorage: Object.freeze(['account.uiSettings.backgroundId', 'rakApp:background_v1']),
   fallbackBackground: 'ios-mesh'
 });
-var RAK_BROWSER_SMOKE_CONTRACT_V1103 = Object.freeze({
+window.RAK_EXPORT_CONTRACTS.RAK_BROWSER_SMOKE_CONTRACT_V1103 = window.RAK_EXPORT_CONTRACTS.RAK_BROWSER_SMOKE_CONTRACT_V1103 || Object.freeze({
   scope: 'real-browser-smoke-test',
   command: 'npm run test:browser-smoke',
   engine: 'local-chromium-cdp',
@@ -176,7 +177,7 @@ var RAK_BROWSER_SMOKE_CONTRACT_V1103 = Object.freeze({
   viewports: Object.freeze(['iPhone 13/14 Pro Max', 'Samsung A15 / Android běžný', 'úzký mobil 360×800']),
   checks: Object.freeze(['app boot', 'bottom navigation', 'Dashboard cards', 'Rotace export canvas', 'Administrace Rozpisy generator', 'Brusy choice height', 'Frézky presets', 'Hry', 'Menu/Více', 'fixed background'])
 });
-var RAK_ROTATION_GENERATOR_CONTRACT_V1106 = Object.freeze({
+window.RAK_EXPORT_CONTRACTS.RAK_ROTATION_GENERATOR_CONTRACT_V1106 = window.RAK_EXPORT_CONTRACTS.RAK_ROTATION_GENERATOR_CONTRACT_V1106 || Object.freeze({
   scope: 'administrace-dat-rozpisy-generator',
   action: 'data-admin-action="generate-rotation"',
   button: 'Vygenerovat návrh',
@@ -184,7 +185,7 @@ var RAK_ROTATION_GENERATOR_CONTRACT_V1106 = Object.freeze({
   saveRule: 'vygeneruje lokální návrh, online jde až po Uložit rozpis',
   safety: Object.freeze(['confirm-before-overwrite', 'one-name-once-per-day', 'respect-absence-notes', 'historical-machine-fit', 'month-fairness'])
 });
-var RAK_ROTATION_GENERATOR_RULES_CONTRACT_V1107 = Object.freeze({
+window.RAK_EXPORT_CONTRACTS.RAK_ROTATION_GENERATOR_RULES_CONTRACT_V1107 = window.RAK_EXPORT_CONTRACTS.RAK_ROTATION_GENERATOR_RULES_CONTRACT_V1107 || Object.freeze({
   scope: 'administrace-dat-rozpisy-generator-rules',
   flow: 'absence-a-kontrola-dní-před-generováním',
   softPreferred: Object.freeze(['Střížek', 'Synek', 'Třasák', 'Špadrna', 'Novotný']),
@@ -194,7 +195,7 @@ var RAK_ROTATION_GENERATOR_RULES_CONTRACT_V1107 = Object.freeze({
   protectedEmptyRules: Object.freeze(['MFKF06 prázdná vždy, když je na frézkách jen jeden člověk', 'při dvou absencích MSKC01 prázdná a MFKF06 prázdná']),
   saveRule: 'generátor vytvoří jen lokální návrh; online uložení až ručně přes Uložit rozpis'
 });
-var RAK_ROTATION_GENERATOR_WIZARD_CONTRACT_V1108 = Object.freeze({
+window.RAK_EXPORT_CONTRACTS.RAK_ROTATION_GENERATOR_WIZARD_CONTRACT_V1108 = window.RAK_EXPORT_CONTRACTS.RAK_ROTATION_GENERATOR_WIZARD_CONTRACT_V1108 || Object.freeze({
   scope: 'administrace-dat-rozpisy-generator-wizard',
   flow: Object.freeze(['volba měsíce', 'kontrola pracovních dnů', 'absence přes +', 'vygenerování návrhu', 'přehled stroje × jména']),
   defaultMonth: 'nabídnout další dostupný měsíc, ale nechat ruční volbu',
@@ -203,51 +204,51 @@ var RAK_ROTATION_GENERATOR_WIZARD_CONTRACT_V1108 = Object.freeze({
   review: 'po vygenerování ukázat kontrolní tabulku stroje × jména pro Martina',
   saveRule: 'pořád jen lokální návrh; online až ručně přes Uložit rozpis'
 });
-var RAK_ROTATION_GENERATOR_ABSENCE_STATE_CONTRACT_V1109 = Object.freeze({
+window.RAK_EXPORT_CONTRACTS.RAK_ROTATION_GENERATOR_ABSENCE_STATE_CONTRACT_V1109 = window.RAK_EXPORT_CONTRACTS.RAK_ROTATION_GENERATOR_ABSENCE_STATE_CONTRACT_V1109 || Object.freeze({
   scope: 'administrace-dat-rozpisy-generator-absence-state',
   fix: 'Při + Přidat jméno v kroku Absence se nesmí smazat už vyplněné absence.',
   stateRule: 'krok Absence používá state.days, když v DOMu nejsou data-generator-day-input pole',
   editRule: 'během editace se zachovávají i prázdné řádky; ignorují se až při přípravě poznámek pro generátor'
 });
-var RAK_ROTATION_GENERATOR_WIZARD_RUN_CONTRACT_V1110 = Object.freeze({
+window.RAK_EXPORT_CONTRACTS.RAK_ROTATION_GENERATOR_WIZARD_RUN_CONTRACT_V1110 = window.RAK_EXPORT_CONTRACTS.RAK_ROTATION_GENERATOR_WIZARD_RUN_CONTRACT_V1110 || Object.freeze({
   scope: 'administrace-dat-rozpisy-generator-wizard-run',
   fix: 'Vygenerování z průvodce nesmí skončit prázdným rozpisem ani nulovým přehledem stroje × jména.',
   domRule: 'readAdminRotationFromDom se smí použít jen v reálném editoru #adminRotationEditor, ne ve wizard DOMu',
   browserGuard: 'browser smoke musí po kliknutí na generator-run ověřit nenulový návrh a nenulovou tabulku stroje × jména'
 });
-var RAK_ROTATION_GENERATOR_WIZARD_STATE_CONTRACT_V1111 = Object.freeze({
+window.RAK_EXPORT_CONTRACTS.RAK_ROTATION_GENERATOR_WIZARD_STATE_CONTRACT_V1111 = window.RAK_EXPORT_CONTRACTS.RAK_ROTATION_GENERATOR_WIZARD_STATE_CONTRACT_V1111 || Object.freeze({
   scope: 'administrace-dat-rozpisy-generator-wizard-state',
   fix: 'Průvodce nesmí vygenerovat nulový návrh, když se po předchozím neúspěšném pokusu ztratily řádky měsíce.',
   dayFallback: 'pracovní dny se berou ze state.days, potom z aktuálního měsíce a nakonec z initialRotationData',
   failRule: 'pokud nejsou žádné pracovní dny, zobrazit chybu místo výsledku dnů 0 / políček 0',
   saveButton: 'v editoru rozpisu zůstává jedno jasné tlačítko Uložit rozpis; duplicitní duplicitní odesílací tlačítko se odstraňuje'
 });
-var RAK_ROTATION_SAVE_BUTTON_CONTRACT_V1118 = Object.freeze({
+window.RAK_EXPORT_CONTRACTS.RAK_ROTATION_SAVE_BUTTON_CONTRACT_V1118 = window.RAK_EXPORT_CONTRACTS.RAK_ROTATION_SAVE_BUTTON_CONTRACT_V1118 || Object.freeze({
   scope: 'administrace-dat-rozpisy-save-button',
   rule: 'Po kontrole návrhu se používá pouze Uložit rozpis. Tlačítko duplicitní odesílací tlačítko je odstraněné, protože dělalo stejnou akci.',
   generatorResult: 'V náhledu generátoru je jen Otevřít rozpis; uložení zůstává v editoru.'
 });
-var RAK_ROTATION_GENERATOR_MONTH_BALANCE_CONTRACT_V1112 = Object.freeze({
+window.RAK_EXPORT_CONTRACTS.RAK_ROTATION_GENERATOR_MONTH_BALANCE_CONTRACT_V1112 = window.RAK_EXPORT_CONTRACTS.RAK_ROTATION_GENERATOR_MONTH_BALANCE_CONTRACT_V1112 || Object.freeze({
   scope: 'administrace-dat-rozpisy-generator-month-balance',
   monthSelect: 'měsíce v generátoru jsou řazené podle roku/měsíce a seskupené podle roku, aby se nepletly 2025/2026',
   tnks01Rule: 'nýtovačka/TNKS01 se po vygenerování vyrovnává mezi lidmi v měsíci',
   swapRule: 'pokud někdo vyjde na TNKS01 víckrát a někdo vůbec, generátor může prohodit člověka na TNKS01 s člověkem z tvrdoty dočasně napsaným na měkotě'
 });
-var RAK_ROTATION_GENERATOR_RULES_CONTRACT_V1113 = Object.freeze({
+window.RAK_EXPORT_CONTRACTS.RAK_ROTATION_GENERATOR_RULES_CONTRACT_V1113 = window.RAK_EXPORT_CONTRACTS.RAK_ROTATION_GENERATOR_RULES_CONTRACT_V1113 || Object.freeze({
   scope: 'administrace-dat-rozpisy-generator-rules-v1113',
   machineCountRule: 'TNKS01 a TPKW01 se v kontrolním přehledu mimo běžnou neděli počítají jako 0,5 + 0,5; běžná neděle ranní/noční zůstává celá na zapsaném stroji, přesčasová neděle se střídá.',
   softCoreRule: 'Synek, Třasák, Střížek chodí z Měkoty na Tvrdotu jen na TNKS01/TPKW01/TPKW02 po blocích 3 pracovních dnů na stejný stroj.',
   softBaseLathe: Object.freeze({ Synek: 'MSKC04', Střížek: 'MSKC03', Třasák: 'MSKC01' }),
   previewRule: 'Po vygenerování průvodce ukáže celý rozpis a umožní návrat na měsíc/dny/absence bez klikání od začátku.'
 });
-var RAK_ROTATION_GENERATOR_RULES_CONTRACT_V1114 = Object.freeze({
+window.RAK_EXPORT_CONTRACTS.RAK_ROTATION_GENERATOR_RULES_CONTRACT_V1114 = window.RAK_EXPORT_CONTRACTS.RAK_ROTATION_GENERATOR_RULES_CONTRACT_V1114 || Object.freeze({
   scope: 'administrace-dat-rozpisy-generator-rules-v1114',
   softCoreAvailabilityRule: 'Synek/Třasák/Střížek se v 3denním bloku na Tvrdotě přeskupí podle absencí tak, aby člověk dostupný jen první dny šel na Tvrdotu dřív a nevyhnul se jí.',
   soloMillBalanceRule: 'Samostatná obsluha frézek se počítá jako MFKF10 při prázdné MFKF06 a po vygenerování se vyrovnává mezi lidmi.',
   resultRule: 'Výsledek generátoru vrací soloMillBalanceSwaps a ruleVersion 1.114.'
 });
 
-var RAK_ROTATION_GENERATOR_RULES_CONTRACT_V1115 = Object.freeze({
+window.RAK_EXPORT_CONTRACTS.RAK_ROTATION_GENERATOR_RULES_CONTRACT_V1115 = window.RAK_EXPORT_CONTRACTS.RAK_ROTATION_GENERATOR_RULES_CONTRACT_V1115 || Object.freeze({
   scope: 'administrace-dat-rozpisy-generator-human-flow-v1115',
   flow: 'Generátor staví rozpis víc jako Martin: nejdřív návazná Tvrdota, potom základní Měkota, potom absence/výměny, potom Špadrna a Novotný jako vyrovnání a nakonec kontrola férovosti.',
   hardCycle: Object.freeze(['TBKR01', 'TNKS01', 'TBKR07', 'TPKW01', 'TPKW02']),
@@ -256,7 +257,7 @@ var RAK_ROTATION_GENERATOR_RULES_CONTRACT_V1115 = Object.freeze({
   flexPeople: Object.freeze(['Špadrna', 'Novotný'])
 });
 
-var RAK_ROTATION_GENERATOR_RULES_CONTRACT_V1116 = Object.freeze({
+window.RAK_EXPORT_CONTRACTS.RAK_ROTATION_GENERATOR_RULES_CONTRACT_V1116 = window.RAK_EXPORT_CONTRACTS.RAK_ROTATION_GENERATOR_RULES_CONTRACT_V1116 || Object.freeze({
   scope: 'administrace-dat-rozpisy-generator-balance-summary-v1116',
   machineSummaryRule: 'Kontrolní přehled je otočený jako jména v řádcích a stroje ve sloupcích, včetně souhrnů TO a MO.',
   pressBalanceRule: 'TNKS01/TPKW01 se vyrovnávají podle společného 0,5 + 0,5 počtu, aby nevznikal stav 1,5 proti 0.',
@@ -264,18 +265,18 @@ var RAK_ROTATION_GENERATOR_RULES_CONTRACT_V1116 = Object.freeze({
   resultRule: 'Výsledek generátoru vrací softKindBalanceSwaps a ruleVersion 1.116.'
 });
 
-var RAK_ROTATION_EMPTY_CELL_HIGHLIGHT_CONTRACT_V1119 = Object.freeze({
+window.RAK_EXPORT_CONTRACTS.RAK_ROTATION_EMPTY_CELL_HIGHLIGHT_CONTRACT_V1119 = window.RAK_EXPORT_CONTRACTS.RAK_ROTATION_EMPTY_CELL_HIGHLIGHT_CONTRACT_V1119 || Object.freeze({
   scope: 'rotace-rozpisy-empty-cell-highlight',
   intent: 'neobsazené pozice v Rotaci, Rozpisech a náhledu generátoru zvýraznit světle červeně',
   protectedClasses: Object.freeze(['missingCell', 'adminRotationEditorEmptyCell', 'adminRotationPreviewEmptyCell', 'adminRotationMiniEmpty'])
 });
-var RAK_DASHBOARD_SHIFT_PERCENT_SIZE_CONTRACT_V1119 = Object.freeze({
+window.RAK_EXPORT_CONTRACTS.RAK_DASHBOARD_SHIFT_PERCENT_SIZE_CONTRACT_V1119 = window.RAK_EXPORT_CONTRACTS.RAK_DASHBOARD_SHIFT_PERCENT_SIZE_CONTRACT_V1119 || Object.freeze({
   scope: 'dashboard-hero-shift-percent',
   intent: 'ukazatel procent odpracování aktuální směny výrazně zvětšit',
   target: 'cca dvojnásobná velikost proti původním 12px'
 });
 
-var RAK_ROTATION_GENERATOR_RULES_CONTRACT_V1117 = Object.freeze({
+window.RAK_EXPORT_CONTRACTS.RAK_ROTATION_GENERATOR_RULES_CONTRACT_V1117 = window.RAK_EXPORT_CONTRACTS.RAK_ROTATION_GENERATOR_RULES_CONTRACT_V1117 || Object.freeze({
   scope: 'administrace-dat-rozpisy-generator-kminek-novotny-mo-to-v1117',
   moToPairRule: 'Kmínek a Novotný se po vygenerování můžou prohazovat mezi sebou, aby měli navzájem co nejpodobnější počet směn na MO a TO.',
   balanceFunction: 'adminRotationGeneratorBalanceKminekNovotnyMoTo',
@@ -283,32 +284,32 @@ var RAK_ROTATION_GENERATOR_RULES_CONTRACT_V1117 = Object.freeze({
 });
 
 
-var RAK_ROTATION_GENERATOR_EXCEL_COPY_CONTRACT_V1138 = Object.freeze({
-  version: '1.2 (1.154)',
+window.RAK_EXPORT_CONTRACTS.RAK_ROTATION_GENERATOR_EXCEL_COPY_CONTRACT_V1138 = window.RAK_EXPORT_CONTRACTS.RAK_ROTATION_GENERATOR_EXCEL_COPY_CONTRACT_V1138 || Object.freeze({
+  version: '1.2 (1.155)',
   scope: 'administrace-dat-rozpisy-generator-excel-copy-layout',
   layout: 'Tvrdota A:F, Měkota A:F pod Tvrdotou, Absence od H dál po pracovních dnech',
   columns: Object.freeze(['A datum', 'B:F stroje', 'G mezera', 'H datum absence', 'I dál dvojice Jméno/Kód']),
   rule: 'Bez sloučených buněk; šířka a počet absence dvojic se generuje tak, aby se bloky daly prakticky kopírovat do Rotace týmu 2026.'
 });
 
-var RAK_ADMIN_EXPORT_IMPORT_EXCEL_COPY_CONTRACT_V1139 = Object.freeze({
-  version: '1.2 (1.154)',
+window.RAK_EXPORT_CONTRACTS.RAK_ADMIN_EXPORT_IMPORT_EXCEL_COPY_CONTRACT_V1139 = window.RAK_EXPORT_CONTRACTS.RAK_ADMIN_EXPORT_IMPORT_EXCEL_COPY_CONTRACT_V1139 || Object.freeze({
+  version: '1.2 (1.155)',
   scope: 'administrace-export-import-rotation-excel-copy-layout',
   source: 'sdílí adminRotationGeneratorDownloadExcel a stejný AoA layout jako generátor rozpisu',
   ui: 'Export / import má vlastní výběr měsíce a tlačítko Stáhnout Excel rozpisu',
   noDbChange: true
 });
 
-var RAK_ADMIN_EXPORT_IMPORT_EXCEL_MONTH_GROUP_CONTRACT_V1140 = Object.freeze({
-  version: '1.2 (1.154)',
+window.RAK_EXPORT_CONTRACTS.RAK_ADMIN_EXPORT_IMPORT_EXCEL_MONTH_GROUP_CONTRACT_V1140 = window.RAK_EXPORT_CONTRACTS.RAK_ADMIN_EXPORT_IMPORT_EXCEL_MONTH_GROUP_CONTRACT_V1140 || Object.freeze({
+  version: '1.2 (1.155)',
   scope: 'administrace-export-import-rotation-excel-month-picker',
   source: 'buildRakRotationExcelExportMonthOptions používá chronologické řazení a optgroup Rok',
   ui: 'Měsíce ve výběru Excel exportu nejsou smíchané napříč roky',
   noDbChange: true
 });
 
-var RAK_STATS_PRESS_MACHINE_SPLIT_CONTRACT_V1123 = Object.freeze({
-  version: '1.2 (1.154)',
+window.RAK_EXPORT_CONTRACTS.RAK_STATS_PRESS_MACHINE_SPLIT_CONTRACT_V1123 = window.RAK_EXPORT_CONTRACTS.RAK_STATS_PRESS_MACHINE_SPLIT_CONTRACT_V1123 || Object.freeze({
+  version: '1.2 (1.155)',
   rule: 'Statistiky a export Nýtování a úklid používají stejné půlení TNKS01/TPKW01 jako generátor.',
   normal: 'Mimo neděli se TNKS01 i TPKW01 počítají jako 0,5 TNKS01 + 0,5 TPKW01.',
   sunday: 'Běžná neděle zůstává celá na zapsaném stroji.',
@@ -316,8 +317,8 @@ var RAK_STATS_PRESS_MACHINE_SPLIT_CONTRACT_V1123 = Object.freeze({
 });
 
 
-var RAK_STATS_PRESS_MACHINE_MO_ONLY_EXCEPTION_CONTRACT_V1124 = Object.freeze({
-  version: '1.2 (1.154)',
+window.RAK_EXPORT_CONTRACTS.RAK_STATS_PRESS_MACHINE_MO_ONLY_EXCEPTION_CONTRACT_V1124 = window.RAK_EXPORT_CONTRACTS.RAK_STATS_PRESS_MACHINE_MO_ONLY_EXCEPTION_CONTRACT_V1124 || Object.freeze({
+  version: '1.2 (1.155)',
   defaultRule: 'Nedělní přesčas se standardně bere jako TO/tvrdota a TNKS01/TPKW01 se půlí 0,5 + 0,5.',
   exceptionRule: 'Výjimky označené jako přesčas jen MO se ve statistikách tvrdoty nepůlí a počítají se jako běžná neděle.',
   currentException: '2026-03-01 je přesčas jen na MO, proto se TNKS01/TPKW01 v tvrdotě nepůlí.',
@@ -325,8 +326,8 @@ var RAK_STATS_PRESS_MACHINE_MO_ONLY_EXCEPTION_CONTRACT_V1124 = Object.freeze({
 });
 
 
-var RAK_ROTATION_OVERTIME_DEFAULTS_2025_CONTRACT_V1129 = Object.freeze({
-  version: '1.2 (1.154)',
+window.RAK_EXPORT_CONTRACTS.RAK_ROTATION_OVERTIME_DEFAULTS_2025_CONTRACT_V1129 = window.RAK_EXPORT_CONTRACTS.RAK_ROTATION_OVERTIME_DEFAULTS_2025_CONTRACT_V1129 || Object.freeze({
+  version: '1.2 (1.155)',
   year: 2025,
   count: 12,
   defaultRule: 'Nově dodané přesčasy 2025 jsou výchozí TO/tvrdota; konkrétní datum lze přepínačem TO vypnout na MO.',
@@ -338,7 +339,7 @@ var EXPORT_SMOKE_REPORT = window.__RAK_EXPORT_SMOKE_REPORT__ || (window.__RAK_EX
   ok: null,
   status: 'not-run',
   mode: 'export-smoke-report-v939',
-  version: '1.2 (1.154)',
+  version: '1.2 (1.155)',
   checkedAt: null,
   lastStage: 'čeká na export',
   runCount: 0,
@@ -471,7 +472,7 @@ var EXPORT_TEXT_FILES = [
 
 function getRakExportManifest() {
   return {
-    version: String(window.APP_VERSION || '1.2 (1.154)'),
+    version: String(window.APP_VERSION || '1.2 (1.155)'),
     mode: 'export-manifest-preflight-v939',
     indexFile: 'index.html',
     jsFiles: Array.from(new Set(EXPORT_JS_FILES)),
@@ -581,7 +582,7 @@ function updateRakExportSmokeReport(partial) {
   const data = partial && typeof partial === 'object' ? partial : {};
   Object.assign(EXPORT_SMOKE_REPORT, data, {
     mode: 'export-smoke-report-v939',
-    version: String(window.APP_VERSION || '1.2 (1.154)'),
+    version: String(window.APP_VERSION || '1.2 (1.155)'),
     checkedAt: new Date().toISOString()
   });
   return getRakExportSmokeReport();
