@@ -1,12 +1,12 @@
-## RaK 1.2 (1.151)
+## RaK 1.2 (1.152)
 
-- Hry / Pexeso 8×8: opravený reálný mobilní problém z iPhonu, kdy se karty zobrazovaly jako dlouhé svislé pilulky a spodní část pole se nevešla.
-- Přidaný tvrdý runtime fit přímo při renderu 8×8: board i karty dostanou inline `!important` rozměry, takže je nepřebije starší globální `min-height` z herního CSS.
-- 8×8 board má pevně stejnou šířku i výšku podle dostupného viewportu, 8 řádků × 8 sloupců, menší HUD, menší tlačítko Nová hra a menší horní rezerva.
-- Doplněný CSS fallback s vyšší specificitou pro `body.gamesOpen[data-rak-arcade-game="memory"]`, aby se fix držel i při starších vrstvách stylů.
-- `rak-memory-total-time-fix.js` nově zná i `memory_8x8`, aby se 8×8 Pexeso ukládalo se stejnou ochranou celkového času jako 4×4/6×6.
-- Supabase DB/policies beze změny.
-- Release metadata sjednocená na `RaK 1.2 (1.151)`, technická verze `1.2.151`, cache `v1.2-1.151`.
+- Hry / Pexeso: opravené zobrazení a merge starých falešných časů typu 5 s.
+- Pexeso teď bere za platný výherní čas jen reálný celkový čas hry: 4×4/společné Pexeso minimálně 12 s, 6×6 minimálně 30 s, 8×8 minimálně 60 s.
+- Staré lokální/cache záznamy s 5 s se v tabulkách a profilu schovají a po online syncu je může nahradit skutečný čas ze Supabase.
+- Při nové výhře Pexesa se posílá i `wins: 1`, aby dokončení bylo vidět i v profilu jako výhra/dokončení.
+- Supabase bridge nově odmítne explicitní nereálný Pexeso čas při zápisu, takže se 5s fallback nemá znovu propsat online.
+- Supabase DB/policies beze změny; kontrola dat ukázala jen jeden Pexeso záznam `memory_6x6` se score 4918, tj. cca 82 s.
+- Release metadata sjednocená na `RaK 1.2 (1.152)`, technická verze `1.2.152`, cache `v1.2-1.152`.
 
 ## RaK 1.2 (1.149)
 

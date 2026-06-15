@@ -1,4 +1,4 @@
-// RaK 1.2 (1.151) – Více/menu shell, O aplikaci, Nastavení, Report chyby a admin menu.
+// RaK 1.2 (1.152) – Více/menu shell, O aplikaci, Nastavení, Report chyby a admin menu.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app-menu.js', 'loaded', { source: 'dynamic-loader' }); } catch (err) {}
 
 
@@ -9,14 +9,14 @@ function formatRakDisplayVersion(version) {
 }
 
 const RAK_ADMIN_EXPORT_IMPORT_EXCEL_COPY_CONTRACT_V1139 = Object.freeze({
-  version: '1.2 (1.151)',
+  version: '1.2 (1.152)',
   scope: 'administrace-export-import-rotation-excel-copy-layout',
   action: 'admin-download-rotation-excel',
   rule: 'Export / import používá stejný XLSX layout rozpisu jako generátor.'
 });
 
 const RAK_ADMIN_EXPORT_IMPORT_EXCEL_MONTH_GROUP_CONTRACT_V1140 = Object.freeze({
-  version: '1.2 (1.151)',
+  version: '1.2 (1.152)',
   scope: 'administrace-export-import-rotation-excel-month-picker',
   action: 'admin-download-rotation-excel',
   rule: 'Výběr měsíce pro XLSX export je řazený chronologicky a skupinovaný podle roku, aby se nemíchaly stejné měsíce z různých roků.'
@@ -438,7 +438,7 @@ async function handleBugReportAction(action) {
 
 
 
-// RaK 1.2 (1.151) – Plovoucí odebrání a údržba editoru rozpisů jsou oddělené v admin-rotation.js.
+// RaK 1.2 (1.152) – Plovoucí odebrání a údržba editoru rozpisů jsou oddělené v admin-rotation.js.
 
 function bindAppMenuHandlers(body) {
   if (!body || body.dataset.menuHandlersBound === '1') return;

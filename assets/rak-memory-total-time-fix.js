@@ -1,15 +1,15 @@
-/* RaK 1.2 (1.151) – Pexeso total-time online guard + 8×8
+/* RaK 1.2 (1.152) – Pexeso total-time online guard + 8×8
    Oprava: Pexeso/Memory ukládá výherní čas jako celkový čas hry od startu kola.
    Důvod: staré zápisy uměly poslat skóre 5000/10000, které se v tabulce tvářilo jako pár vteřin.
 */
 (function rakMemoryTotalTimeGuard(){
   'use strict';
-  if (window.__rakMemoryTotalTimeGuardV151) return;
-  window.__rakMemoryTotalTimeGuardV151 = true;
+  if (window.__rakMemoryTotalTimeGuardV152) return;
+  window.__rakMemoryTotalTimeGuardV152 = true;
 
-  var START_KEY = 'rakMemoryTotalTimeStartMs.v151';
-  var ACTIVE_KEY = 'rakMemoryTotalTimeActive.v151';
-  var LAST_REASON_KEY = 'rakMemoryTotalTimeReason.v151';
+  var START_KEY = 'rakMemoryTotalTimeStartMs.v152';
+  var ACTIVE_KEY = 'rakMemoryTotalTimeActive.v152';
+  var LAST_REASON_KEY = 'rakMemoryTotalTimeReason.v152';
   var SCORE_SCALE = 5000;
   var MEMORY_TYPES = { memory: true, memory_4x4: true, memory_6x6: true, memory_8x8: true };
   var MIN_VALID_MS = { memory: 12000, memory_4x4: 12000, memory_6x6: 30000, memory_8x8: 60000 };
@@ -177,7 +177,7 @@
   }
 
   window.rakMemoryTotalTimeGuard = {
-    version: '1.151',
+    version: '1.152',
     start: startMemoryRound,
     reset: resetMemoryRound,
     encodeTimeScore: encodeTimeScore,

@@ -1,4 +1,4 @@
-// RaK 1.2 (1.151) – herní profily a leaderboardy.
+// RaK 1.2 (1.152) – herní profily a leaderboardy.
 
 // -------------------------
 // Games hub + account profile
@@ -194,7 +194,25 @@ function gamesNormalizeStoredAccount(account, fallbackName) {
   const g2048 = incoming.g2048 && typeof incoming.g2048 === 'object' ? incoming.g2048 : {};
   const snake = incoming.snake && typeof incoming.snake === 'object' ? incoming.snake : {};
   const flap = incoming.flap && typeof incoming.flap === 'object' ? incoming.flap : {};
-  const arcade = incoming.arcade && typeof incoming.arcade === 'object' ? incoming.arcade : {};
+  const arcade = incoming.arcade && typeof incoming.arcade === 'object' ? Object.assign({}, incoming.arcade) : {};
+  Object.keys(arcade).forEach((gid) => {
+    if (!gamesProfileIsLowTimeGame(gid)) return;
+    const item = arcade[gid] && typeof arcade[gid] === 'object' ? Object.assign({}, arcade[gid]) : {};
+    const rawTime = Number(item.bestTimeMs || item.leaderboardValue || item.timeMs || item.elapsedMs || 0) || 0;
+    const safeTime = gamesProfileSanitizeLowTime(gid, rawTime);
+    if (rawTime > 0 && !safeTime) {
+      delete item.bestTimeMs;
+      delete item.timeMs;
+      delete item.elapsedMs;
+      item.leaderboardValue = 0;
+      if (String(gid || '').indexOf('memory') === 0) item.points = 0;
+      arcade[gid] = item;
+    } else if (safeTime > 0) {
+      item.bestTimeMs = safeTime;
+      item.leaderboardValue = safeTime;
+      arcade[gid] = item;
+    }
+  });
   stats.ttt.plays = Number(ttt.plays || 0) || 0;
   stats.ttt.wins = Number(ttt.wins || 0) || 0;
   stats.ttt.losses = Number(ttt.losses || 0) || 0;
@@ -324,6 +342,22 @@ function gamesProfileLowTimeUsesMs(gameId) {
   const id = String(gameId || '').trim();
   return id === 'reaction' || id === 'daily_reaction';
 }
+function gamesProfileMemoryMinValidMs(gameId) {
+  const id = String(gameId || '').trim();
+  if (id === 'memory_8x8') return 60000;
+  if (id === 'memory_6x6') return 30000;
+  if (id === 'memory' || id === 'memory_4x4' || id === 'daily_memory') return 12000;
+  return 0;
+}
+function gamesProfileSanitizeLowTime(gameId, value) {
+  const n = Number(value) || 0;
+  if (!n || !gamesProfileIsLowTimeGame(gameId)) return n > 0 ? n : 0;
+  const minMs = gamesProfileMemoryMinValidMs(gameId);
+  if (minMs > 0 && n < minMs) return 0;
+  if (n >= 86400000) return 0;
+  if ((String(gameId || '').trim() === 'reaction' || String(gameId || '').trim() === 'daily_reaction') && n > 60000) return 0;
+  return n;
+}
 function gamesProfileDecodeRemoteMetric(gameId, value) {
   const raw = Number(value) || 0;
   if (!raw || !gamesProfileIsLowTimeGame(gameId)) return raw;
@@ -333,12 +367,12 @@ function gamesProfileDecodeRemoteMetric(gameId, value) {
     const decoded = GAMES_PROFILE_LOW_POINT_SCALE - rounded;
     if (decoded > 0 && decoded < 86400000) return decoded;
   }
-  // RaK 1.2 (1.151): nový online zápis časových her je bezpečné score do 5000.
+  // RaK 1.2 (1.152): nový online zápis časových her je bezpečné score do 5000.
   if (rounded > 0 && rounded < GAMES_PROFILE_SAFE_TIME_SCORE_SCALE) {
     const metric = Math.max(1, GAMES_PROFILE_SAFE_TIME_SCORE_SCALE - rounded);
     return gamesProfileLowTimeUsesMs(gameId) ? metric : metric * 1000;
   }
-  return raw;
+  return gamesProfileSanitizeLowTime(gameId, raw);
 }
 function gamesProfileFormatTimeValue(gameId, value) {
   const n = Number(value) || 0;
@@ -391,8 +425,9 @@ function gamesApplyRemoteProfileStat(profile, row) {
       lastPlayedAt: Math.max(Number(current && current.lastPlayedAt || 0) || 0, lastTs || 0)
     });
     if (gamesProfileIsLowTimeGame(gameType)) {
-      const oldTime = Number(current && (current.bestTimeMs || current.leaderboardValue) || 0) || 0;
-      const nextTime = points > 0 ? (oldTime > 0 ? Math.min(oldTime, points) : points) : oldTime;
+      const oldTime = gamesProfileSanitizeLowTime(gameType, Number(current && (current.bestTimeMs || current.leaderboardValue) || 0) || 0);
+      const nextRemoteTime = gamesProfileSanitizeLowTime(gameType, points);
+      const nextTime = nextRemoteTime > 0 ? (oldTime > 0 ? Math.min(oldTime, nextRemoteTime) : nextRemoteTime) : oldTime;
       base.bestTimeMs = nextTime;
       base.leaderboardValue = nextTime;
     } else {
@@ -462,7 +497,7 @@ async function gamesSyncProfileFromRemote(force = false) {
           return bridge.loadGameStats(id, limit, { force: !!force }).catch(() => []);
         }))).flat()
       : [];
-    // RaK 1.2 (1.151): aktivní profil nesmí záviset jen na Top score limitech.
+    // RaK 1.2 (1.152): aktivní profil nesmí záviset jen na Top score limitech.
     // PC bez lokální historie si musí rank/theme dopočítat přímo ze všech statistik svého účtu.
     const activeAccountStatsRows = activeAccountId && typeof bridge.loadGameStatsForAccount === 'function'
       ? await bridge.loadGameStatsForAccount(activeAccountId, { force: !!force }).catch(() => [])
@@ -624,7 +659,7 @@ function gamesSetActiveAccount(accountId) {
   gamesApplyActiveAccountUI(active);
   if (typeof renderGamesProfileStatus === 'function') renderGamesProfileStatus();
   gamesRenderStats();
-  // RaK 1.2 (1.151): po přihlášení vynutit načtení statistik aktivního účtu,
+  // RaK 1.2 (1.152): po přihlášení vynutit načtení statistik aktivního účtu,
   // aby se rank a odemčené theme/pozadí sjednotily mezi mobilem a PC.
   void gamesSyncProfileFromRemote(true).then(() => {
     if (typeof applyProfileUiPreferencesForActiveAccount === 'function') applyProfileUiPreferencesForActiveAccount({ loadRemote: false, source: 'login-remote-stats' });
@@ -882,8 +917,9 @@ function gamesMergeRemoteLeaderboardRowIntoAccount(account, gameId, row) {
       lastPlayedAt: Math.max(Number(local.lastPlayedAt || 0) || 0, updated || 0)
     });
     if (lowBetter) {
-      const oldTime = Number(local.bestTimeMs || local.leaderboardValue || 0) || 0;
-      merged.bestTimeMs = oldTime && value ? Math.min(oldTime, value) : (oldTime || value || 0);
+      const oldTime = gamesProfileSanitizeLowTime(id, Number(local.bestTimeMs || local.leaderboardValue || 0) || 0);
+      const nextRemoteTime = gamesProfileSanitizeLowTime(id, value);
+      merged.bestTimeMs = oldTime && nextRemoteTime ? Math.min(oldTime, nextRemoteTime) : (oldTime || nextRemoteTime || 0);
       merged.leaderboardValue = merged.bestTimeMs || 0;
     } else {
       merged.bestScore = Math.max(Number(local.bestScore || 0) || 0, value);
@@ -1367,7 +1403,7 @@ function gamesTop3Block(gameId, label, limit = 10) {
 
 
 const GAMES_ACTIVE_ACCOUNT_DIRECT_STATS_CONTRACT_V1144 = Object.freeze({
-  version: '1.2 (1.151)',
+  version: '1.2 (1.152)',
   scope: 'games-profile-rank-sync',
   issue: 'rank a appearance unlocky nesmí záviset jen na leaderboard/top-score limitech',
   activeAccountLoader: 'RotationSupabaseBridge.loadGameStatsForAccount(accountNumber)',
@@ -1376,8 +1412,17 @@ const GAMES_ACTIVE_ACCOUNT_DIRECT_STATS_CONTRACT_V1144 = Object.freeze({
 });
 window.GAMES_ACTIVE_ACCOUNT_DIRECT_STATS_CONTRACT_V1144 = GAMES_ACTIVE_ACCOUNT_DIRECT_STATS_CONTRACT_V1144;
 
+
+window.GAMES_MEMORY_TIME_SANITIZE_CONTRACT_V1152 = Object.freeze({
+  version: '1.2 (1.152)',
+  guard: 'memory-total-time-no-5s-v1152-guard',
+  memory4x4FiveSecondsInvalid: gamesProfileSanitizeLowTime('memory_4x4', 5000) === 0,
+  memory6x6FiveSecondsInvalid: gamesProfileSanitizeLowTime('memory_6x6', 5000) === 0,
+  memory8x8FiveSecondsInvalid: gamesProfileSanitizeLowTime('memory_8x8', 5000) === 0,
+  memory82SecondsValid: gamesProfileSanitizeLowTime('memory_6x6', 82000) === 82000
+});
 const GAMES_TIME_PROFILE_FORMAT_CONTRACT_V1144 = Object.freeze({
-  version: '1.2 (1.151)',
+  version: '1.2 (1.152)',
   guard: 'games-time-profile-format-v1144-guard',
   lowTimeGames: ['reaction', 'memory', 'sudoku'],
   reactionUnit: 'ms',

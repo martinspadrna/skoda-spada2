@@ -1,4 +1,4 @@
-// RaK 1.2 (1.151) – Supabase bridge a online synchronizace.
+// RaK 1.2 (1.152) – Supabase bridge a online synchronizace.
 (function () {
   const SUPABASE_CONFIG = window.SUPABASE_CONFIG || {};
   const state = {
@@ -236,7 +236,7 @@
     { table: 'gomoku_wins', realtime: true, queueType: 'gomoku_win', access: 'anon SELECT/INSERT/UPDATE', note: 'výhry piškvorek / legacy leaderboard' }
   ];
 
-  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = '1.2 (1.151)';
+  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = '1.2 (1.152)';
   const SUPABASE_POLICY_AUDIT_SNAPSHOT_AT = '2026-05-24';
   const SUPABASE_POLICY_HARDENING_PHASE = {
     current: 'V856 – release hygiene po kontrole vlastních buildů: changelog opravený, SQL auditní soubory jsou archivované v assets/docs/sql a DB policies se nemění.',
@@ -296,7 +296,7 @@
   ];
 
   const SUPABASE_RPC_HARDENING_STATUS = {
-    version: '1.2 (1.151)',
+    version: '1.2 (1.152)',
     phase: '2E-O online invite/session RPC smoke + accept RPC / no policy tightening',
     rpcPreferred: true,
     migrationApplied: true,
@@ -1019,7 +1019,7 @@
       ends_at: payload.ends_at,
       marquee: payload.marquee,
       updated_at: nowIso,
-      app_version: String(window.APP_VERSION || '1.2 (1.151)'),
+      app_version: String(window.APP_VERSION || '1.2 (1.152)'),
       priority: 0
     });
     return [
@@ -1064,7 +1064,7 @@
           ends_at: fallback.ends_at,
           marquee: fallback.marquee,
           updated_at: new Date().toISOString(),
-          app_version: String(window.APP_VERSION || '1.2 (1.151)'),
+          app_version: String(window.APP_VERSION || '1.2 (1.152)'),
           priority: 0
         });
   }
@@ -1079,7 +1079,7 @@
         p_ends_at: safe.ends_at,
         p_marquee: safe.marquee,
         p_updated_by: 'rak-admin-ui',
-        p_app_version: String(window.APP_VERSION || '1.2 (1.151)'),
+        p_app_version: String(window.APP_VERSION || '1.2 (1.152)'),
         p_priority: 0
       }), { mode: 'write', timeoutMs: 8000, attempts: 1 });
       if (res && res.error) return { ok: false, error: res.error, shape: 'rpc-save' };
@@ -1093,7 +1093,7 @@
     try {
       const res = await runSupabaseOperation('announcements.rpc-clear', () => client.rpc('rak_clear_dashboard_announcement', {
         p_updated_by: 'rak-admin-ui',
-        p_app_version: String(window.APP_VERSION || '1.2 (1.151)')
+        p_app_version: String(window.APP_VERSION || '1.2 (1.152)')
       }), { mode: 'write', timeoutMs: 8000, attempts: 1 });
       if (res && res.error) return { ok: false, error: res.error, shape: 'rpc-clear' };
       return { ok: true, cleared: true, count: Number(res && res.data || 0), shape: 'rpc-clear' };
@@ -3726,7 +3726,7 @@
     return Number.isFinite(num) ? num : (Number.isFinite(Number(fallback)) ? Number(fallback) : 0);
   }
 
-  // RaK 1.2 (1.151): online score časových her držíme do 5000, aby prošlo stávajícím
+  // RaK 1.2 (1.152): online score časových her držíme do 5000, aby prošlo stávajícím
   // rak_record_game_stat_delta RPC a zároveň nenafukovalo XP v profilu.
   const GAME_STATS_POINTS_DELTA_LIMIT = 5000;
   const GAME_STATS_LOW_POINT_SCALE_LEGACY = 1000000000;
@@ -3740,15 +3740,31 @@
     const type = String(gameType || '').trim();
     return type === 'reaction' || type === 'daily_reaction';
   }
+  function memoryGameStatMinValidMs(gameType) {
+    const type = String(gameType || '').trim();
+    if (type === 'memory_8x8') return 60000;
+    if (type === 'memory_6x6') return 30000;
+    if (type === 'memory' || type === 'memory_4x4' || type === 'daily_memory') return 12000;
+    return 0;
+  }
+  function sanitizeLowTimeGameStatMs(gameType, value) {
+    const ms = getSafeGameStatNumber(value, 0);
+    if (!ms || ms <= 0) return 0;
+    const minMs = memoryGameStatMinValidMs(gameType);
+    if (minMs > 0 && ms < minMs) return 0;
+    if ((String(gameType || '').trim() === 'reaction' || String(gameType || '').trim() === 'daily_reaction') && ms > 60000) return 0;
+    if (ms >= 86400000) return 0;
+    return ms;
+  }
   function decodeLowTimeGameStatMs(gameType, rawValue) {
     const raw = Math.round(getSafeGameStatNumber(rawValue, 0));
     if (!raw) return 0;
     if (raw > 86400000 && raw < GAME_STATS_LOW_POINT_SCALE_LEGACY) return Math.max(0, GAME_STATS_LOW_POINT_SCALE_LEGACY - raw);
     if (raw > 0 && raw < GAME_STATS_SAFE_TIME_SCORE_SCALE) {
       const metric = Math.max(1, GAME_STATS_SAFE_TIME_SCORE_SCALE - raw);
-      return lowTimeGameStatUsesMs(gameType) ? metric : metric * 1000;
+      return sanitizeLowTimeGameStatMs(gameType, lowTimeGameStatUsesMs(gameType) ? metric : metric * 1000);
     }
-    return Math.max(0, raw);
+    return sanitizeLowTimeGameStatMs(gameType, Math.max(0, raw));
   }
   function encodeLowTimeGameStatPoints(gameType, timeMs) {
     const ms = getSafeGameStatNumber(timeMs, 0);
@@ -3758,7 +3774,7 @@
   }
   function normalizeGameStatEntryPoints(gameType, entry) {
     if (!isLowTimeGameStatType(gameType)) return Math.round(getSafeGameStatNumber(entry && (entry.points ?? entry.bestScore ?? entry.score), 0));
-    const explicitTime = getSafeGameStatNumber(entry && (entry.bestTimeMs ?? entry.timeMs ?? entry.elapsedMs), 0);
+    const explicitTime = sanitizeLowTimeGameStatMs(gameType, getSafeGameStatNumber(entry && (entry.bestTimeMs ?? entry.timeMs ?? entry.elapsedMs), 0));
     if (explicitTime > 0) return encodeLowTimeGameStatPoints(gameType, explicitTime);
     const rawPoints = getSafeGameStatNumber(entry && (entry.points ?? entry.bestScore ?? entry.score), 0);
     const decodedTime = decodeLowTimeGameStatMs(gameType, rawPoints);
@@ -4485,7 +4501,7 @@
     return {
       ok: blockers.length === 0,
       mode: 'supabase-hardening-readiness-audit-only',
-      version: '1.2 (1.151)',
+      version: '1.2 (1.152)',
       checkedAt: new Date().toISOString(),
       confirmed,
       readinessPercent,

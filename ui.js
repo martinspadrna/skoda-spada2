@@ -1,6 +1,6 @@
-// RaK 1.2 (1.151) – zbytkový UI bridge po oddělení modulů.
+// RaK 1.2 (1.152) – zbytkový UI bridge po oddělení modulů.
 
-// RaK 1.2 (1.151) – Více/menu shell je oddělený v app-menu.js.
+// RaK 1.2 (1.152) – Více/menu shell je oddělený v app-menu.js.
 
 const UI_PREFS_KEY = APP_KEY + ':uiPrefs';
 const DEVICE_PERFORMANCE_PROBE_KEY = APP_KEY + ':devicePerformanceProbe';
@@ -339,7 +339,7 @@ function applyUiPrefs(prefs) {
   if (lowEndDetected && !incoming.lightweightManual) incoming.lightweight = true;
   const next = saveUiPrefs(incoming);
   const lightweight = !!next.lightweight;
-  // RaK 1.2 (1.151): slabé zařízení dál zapíná Láďův režim automaticky,
+  // RaK 1.2 (1.152): slabé zařízení dál zapíná Láďův režim automaticky,
   // ale ruční volba má přednost. Když ho uživatel vypne, nesmí ho lowEndDevice
   // třída ani výkonová detekce okamžitě držet aktivní přes CSS a DPR limity.
   const autoLowEndActive = lowEndDetected && !next.lightweightManual;
@@ -415,7 +415,7 @@ function getRakPerformanceDprMax() {
 try { window.getRakPerformanceDprMax = getRakPerformanceDprMax; } catch (err) {}
 
 const RAK_LADA_MANUAL_OVERRIDE_CONTRACT_V1144 = Object.freeze({
-  version: '1.2 (1.151)',
+  version: '1.2 (1.152)',
   behavior: 'auto-low-end-can-be-manually-disabled',
   manualOffKeepsDetectionButDisablesEffects: true,
   autoButtonRestoresLowEndAutomation: true
@@ -423,7 +423,7 @@ const RAK_LADA_MANUAL_OVERRIDE_CONTRACT_V1144 = Object.freeze({
 try { window.RAK_LADA_MANUAL_OVERRIDE_CONTRACT_V1144 = RAK_LADA_MANUAL_OVERRIDE_CONTRACT_V1144; } catch (err) {}
 
 const RAK_LADA_SMOOTH_PERFORMANCE_CONTRACT_V1144 = Object.freeze({
-  version: '1.2 (1.151)',
+  version: '1.2 (1.152)',
   behavior: 'active-lada-mode-uses-lite-paint-layer-and-zero-heavy-effects',
   hidesFixedBackgroundPseudoLayers: true,
   removesBackdropBlurOnHeavySurfaces: true,
@@ -432,7 +432,7 @@ const RAK_LADA_SMOOTH_PERFORMANCE_CONTRACT_V1144 = Object.freeze({
 });
 try { window.RAK_LADA_SMOOTH_PERFORMANCE_CONTRACT_V1144 = RAK_LADA_SMOOTH_PERFORMANCE_CONTRACT_V1144; } catch (err) {}
 
-// RaK 1.2 (1.151) – Piškvorky jsou oddělené v games-gomoku.js.
+// RaK 1.2 (1.152) – Piškvorky jsou oddělené v games-gomoku.js.
 
 function triggerAboutAction() {
   const state = typeof app !== 'undefined' ? app : null;
@@ -903,19 +903,19 @@ function buildAppHistoryHtml(versionText) {
 }
 
 
-// RaK 1.2 (1.151) – Administrace / Rozpisy a Nastavení strojů jsou oddělené v admin-rotation.js.
+// RaK 1.2 (1.152) – Administrace / Rozpisy a Nastavení strojů jsou oddělené v admin-rotation.js.
 
 
 
 
-// RaK 1.2 (1.151) – Administrace / Reporty chyb jsou oddělené v admin-reports.js.
+// RaK 1.2 (1.152) – Administrace / Reporty chyb jsou oddělené v admin-reports.js.
 
-// RaK 1.2 (1.151) – Administrace / Přehled připojení, servis a oznámení jsou oddělené v admin-service-usage.js.
+// RaK 1.2 (1.152) – Administrace / Přehled připojení, servis a oznámení jsou oddělené v admin-service-usage.js.
 
 
-// RaK 1.2 (1.151) – App menu / administrace shell / bug report formulář jsou oddělené v app-menu.js.
+// RaK 1.2 (1.152) – App menu / administrace shell / bug report formulář jsou oddělené v app-menu.js.
 
-// RaK 1.2 (1.151) – showFoodSchedule je v app-navigation.js.
+// RaK 1.2 (1.152) – showFoodSchedule je v app-navigation.js.
 
 
 
@@ -1027,7 +1027,7 @@ try { window.updateRotaceNamesDockMetrics = updateRotaceNamesDockMetrics; } catc
 try { window.scheduleRotaceNamesDockMetrics = scheduleRotaceNamesDockMetrics; } catch (err) {}
 
 
-// RaK 1.2 (1.151) – showPage, home refresh, externí dlaždice a rotace/kalkulačky zkratky jsou v app-navigation.js.
+// RaK 1.2 (1.152) – showPage, home refresh, externí dlaždice a rotace/kalkulačky zkratky jsou v app-navigation.js.
 
 
 function setRotaceView(view) {
@@ -1076,12 +1076,12 @@ function setRotaceView(view) {
 }
 
 
-// RaK 1.2 (1.151) – Food/kalendář modaly a vazba dashboard kalendáře jsou v app-navigation.js.
+// RaK 1.2 (1.152) – Food/kalendář modaly a vazba dashboard kalendáře jsou v app-navigation.js.
 
 
-// RaK 1.2 (1.151) – Games hub + account profile jsou oddělené v games-profile.js.
+// RaK 1.2 (1.152) – Games hub + account profile jsou oddělené v games-profile.js.
 
-// RaK 1.2 (1.151) – Klasické hry 2048 / Had / Flappy Car jsou oddělené v games-classic.js.
+// RaK 1.2 (1.152) – Klasické hry 2048 / Had / Flappy Car jsou oddělené v games-classic.js.
 
 function renderGamesTttShell() {
 
@@ -1145,12 +1145,12 @@ if (!window.__tttHashInviteBound) {
 
 
 
-// RaK 1.2 (1.151) – Theme, pozadí a profilové UI nastavení jsou oddělené v appearance-theme.js.
+// RaK 1.2 (1.152) – Theme, pozadí a profilové UI nastavení jsou oddělené v appearance-theme.js.
 
 function getRakRotaceNamesDockHealth() {
   const result = {
     ok: true,
-    version: window.APP_VERSION || '1.2 (1.151)',
+    version: window.APP_VERSION || '1.2 (1.152)',
     mode: 'rotace-names-dock-stable-css-v930',
     checkedAt: new Date().toISOString(),
     scope: 'Rotace / seznam jmen / stabilní spodní dock',
@@ -1194,5 +1194,5 @@ function getRakRotaceNamesDockHealth() {
 window.getRakRotaceNamesDockHealth = getRakRotaceNamesDockHealth;
 
 
-// RaK 1.2 (1.151) – resize/orientation hlídání aktivního glass indikátoru spodní lišty je v app-navigation.js.
+// RaK 1.2 (1.152) – resize/orientation hlídání aktivního glass indikátoru spodní lišty je v app-navigation.js.
 
