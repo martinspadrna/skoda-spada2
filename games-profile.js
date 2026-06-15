@@ -1,4 +1,4 @@
-// RaK 1.2 (1.152) – herní profily a leaderboardy.
+// RaK 1.2 (1.153) – herní profily a leaderboardy.
 
 // -------------------------
 // Games hub + account profile
@@ -367,7 +367,7 @@ function gamesProfileDecodeRemoteMetric(gameId, value) {
     const decoded = GAMES_PROFILE_LOW_POINT_SCALE - rounded;
     if (decoded > 0 && decoded < 86400000) return decoded;
   }
-  // RaK 1.2 (1.152): nový online zápis časových her je bezpečné score do 5000.
+  // RaK 1.2 (1.153): nový online zápis časových her je bezpečné score do 5000.
   if (rounded > 0 && rounded < GAMES_PROFILE_SAFE_TIME_SCORE_SCALE) {
     const metric = Math.max(1, GAMES_PROFILE_SAFE_TIME_SCORE_SCALE - rounded);
     return gamesProfileLowTimeUsesMs(gameId) ? metric : metric * 1000;
@@ -497,7 +497,7 @@ async function gamesSyncProfileFromRemote(force = false) {
           return bridge.loadGameStats(id, limit, { force: !!force }).catch(() => []);
         }))).flat()
       : [];
-    // RaK 1.2 (1.152): aktivní profil nesmí záviset jen na Top score limitech.
+    // RaK 1.2 (1.153): aktivní profil nesmí záviset jen na Top score limitech.
     // PC bez lokální historie si musí rank/theme dopočítat přímo ze všech statistik svého účtu.
     const activeAccountStatsRows = activeAccountId && typeof bridge.loadGameStatsForAccount === 'function'
       ? await bridge.loadGameStatsForAccount(activeAccountId, { force: !!force }).catch(() => [])
@@ -659,7 +659,7 @@ function gamesSetActiveAccount(accountId) {
   gamesApplyActiveAccountUI(active);
   if (typeof renderGamesProfileStatus === 'function') renderGamesProfileStatus();
   gamesRenderStats();
-  // RaK 1.2 (1.152): po přihlášení vynutit načtení statistik aktivního účtu,
+  // RaK 1.2 (1.153): po přihlášení vynutit načtení statistik aktivního účtu,
   // aby se rank a odemčené theme/pozadí sjednotily mezi mobilem a PC.
   void gamesSyncProfileFromRemote(true).then(() => {
     if (typeof applyProfileUiPreferencesForActiveAccount === 'function') applyProfileUiPreferencesForActiveAccount({ loadRemote: false, source: 'login-remote-stats' });
@@ -1403,7 +1403,7 @@ function gamesTop3Block(gameId, label, limit = 10) {
 
 
 const GAMES_ACTIVE_ACCOUNT_DIRECT_STATS_CONTRACT_V1144 = Object.freeze({
-  version: '1.2 (1.152)',
+  version: '1.2 (1.153)',
   scope: 'games-profile-rank-sync',
   issue: 'rank a appearance unlocky nesmí záviset jen na leaderboard/top-score limitech',
   activeAccountLoader: 'RotationSupabaseBridge.loadGameStatsForAccount(accountNumber)',
@@ -1414,15 +1414,15 @@ window.GAMES_ACTIVE_ACCOUNT_DIRECT_STATS_CONTRACT_V1144 = GAMES_ACTIVE_ACCOUNT_D
 
 
 window.GAMES_MEMORY_TIME_SANITIZE_CONTRACT_V1152 = Object.freeze({
-  version: '1.2 (1.152)',
-  guard: 'memory-total-time-no-5s-v1152-guard',
+  version: '1.2 (1.153)',
+  guard: 'memory-total-time-no-5s-v1153-guard',
   memory4x4FiveSecondsInvalid: gamesProfileSanitizeLowTime('memory_4x4', 5000) === 0,
   memory6x6FiveSecondsInvalid: gamesProfileSanitizeLowTime('memory_6x6', 5000) === 0,
   memory8x8FiveSecondsInvalid: gamesProfileSanitizeLowTime('memory_8x8', 5000) === 0,
   memory82SecondsValid: gamesProfileSanitizeLowTime('memory_6x6', 82000) === 82000
 });
 const GAMES_TIME_PROFILE_FORMAT_CONTRACT_V1144 = Object.freeze({
-  version: '1.2 (1.152)',
+  version: '1.2 (1.153)',
   guard: 'games-time-profile-format-v1144-guard',
   lowTimeGames: ['reaction', 'memory', 'sudoku'],
   reactionUnit: 'ms',

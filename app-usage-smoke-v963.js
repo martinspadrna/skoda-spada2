@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.152) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.153) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -218,12 +218,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.152)',
-  appLabel: 'RaK 1.2 (1.152)',
-  packageVersion: '1.2.152',
-  cacheVersion: 'v1.2-1.152',
+  displayVersion: '1.2 (1.153)',
+  appLabel: 'RaK 1.2 (1.153)',
+  packageVersion: '1.2.153',
+  cacheVersion: 'v1.2-1.153',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.152)',
+  changelogHeader: '## RaK 1.2 (1.153)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -332,8 +332,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.152)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.152'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.153)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.153'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1081,7 +1081,7 @@ function assertGamesActiveAccountDirectStatsContractV1144() {
 
 
 function assertMemory8x8SquareFitContractV1152() {
-  assertIncludes(gamesArcadeJs, '__rakMemory8x8SquareFitGuard', 'Pexeso 8×8 musí mít square-fit guard v1.152');
+  assertIncludes(gamesArcadeJs, '__rakMemory8x8SquareFitGuard', 'Pexeso 8×8 musí mít square-fit guard v1.153');
   assertIncludes(gamesArcadeJs, 'data-memory-size="${size}"', 'Pexeso stage musí nést velikost pro 8×8 mobilní CSS');
   assertIncludes(gamesArcadeJs, 'data-memory-grid="${size}"', 'Pexeso board musí nést velikost gridu');
   assertIncludes(stylesOverridesCss, 'Pexeso 8×8: tvrdý mobilní fit', 'CSS musí dokumentovat 8×8 square-fit fix');
@@ -1095,7 +1095,7 @@ function assertMemory8x8SquareFitContractV1152() {
 
 
 function assertMemoryTotalTimeNoFiveSecondsContractV1152() {
-  assertIncludes(gamesArcadeJs, 'memory-total-time-no-5s-v1152-guard', 'Pexeso musí mít guard proti starému 5s fallbacku');
+  assertIncludes(gamesArcadeJs, 'memory-total-time-no-5s-v1153-guard', 'Pexeso musí mít guard proti starému 5s fallbacku');
   assertIncludes(gamesArcadeJs, 'function gamesMemoryMinValidMs', 'Arcade musí znát minimální reálné časy Pexesa');
   assertIncludes(gamesArcadeJs, "gamesSanitizeLowBestTime('memory_6x6', 5000) === 0", '5s v Pexesu 6×6 nesmí být platný leaderboard čas');
   assertIncludes(gamesProfileJs, 'function gamesProfileMemoryMinValidMs', 'Profil musí čistit lokální staré 5s Pexeso záznamy');
@@ -1106,7 +1106,7 @@ function assertMemoryTotalTimeNoFiveSecondsContractV1152() {
 
 function assertSudokuCompletionAndTimeFormatContractV1144() {
 
-  assertIncludes(gamesArcadeJs, '__rakShipsSmoothPerformanceGuard', 'Lodě musí mít performance guard 1.152');
+  assertIncludes(gamesArcadeJs, '__rakShipsSmoothPerformanceGuard', 'Lodě musí mít performance guard 1.153');
   assertIncludes(gamesArcadeJs, 'maybeRenderRemoteState(remote, soft)', 'Lodě nesmí renderovat při každém pollu bez změny stavu');
   assertIncludes(gamesArcadeJs, 'if (local.refreshing) return;', 'Lodě musí blokovat překryté online refreshe');
   assertIncludes(gamesArcadeJs, 'sudoku-completion-save-v1148', 'Sudoku musí mít guard pro bezpečné uložení dokončení v1.146');
@@ -1280,7 +1280,7 @@ assertRotationOvertimeShiftFilterContractV1128();
 assertRotationOvertimeDefaults2025ContractV1129();
 assertLightPatternThemeContractV1131();
 
-console.log('app-usage-smoke-v963 OK + rotation-generator-wizard-v1108-guard + rotation-generator-absence-state-v1109-guard + rotation-generator-wizard-run-v1110-guard + rotation-generator-wizard-state-v1111-guard + rotation-generator-month-balance-v1112-guard + rotation-generator-rules-v1113-guard + rotation-generator-rules-v1114-guard + rotation-generator-rules-v1115-guard + rotation-generator-rules-v1116-guard + rotation-generator-rules-v1117-guard + dashboard-percent-empty-cells-v1119-guard + stats-press-machine-split-v1123-guard + rotation-overtime-shift-filter-v1128-guard + rotation-overtime-defaults-2025-v1129-guard + rotation-absence-export-ytd-generator-theme-v1130-guard + light-pattern-theme-v1131-guard + rotation-generator-excel-copy-v1138-guard + games-active-account-direct-stats-v1144-guard + sudoku-completion-save-v1148-guard + sudoku-random-puzzle-v1148-guard + game-time-format-v1144-guard + lada-manual-override-v1144-guard + lada-smooth-performance-v1144-guard + dashboard-css-contract-guard + appearance-reward-contract + rotation-export-summary-simple-guard + rotation-export-glass-guard + appearance-readability-guard + css-layer-order-v194-guard + dashboard-owner-registry-v195-guard + dashboard-overrides-selector-lock-v196-guard + dashboard-scope-v197-guard + dashboard-release-isolation-v198-guard + dashboard-css-guard-series-v1100-complete + release-metadata-v199-guard + brusy-choice-size-v1101-guard + fixed-app-background-v1101-guard + name-choice-fit-v1102-guard + browser-smoke-v1103-guard + dashboard-empty-absence-text-v1104-guard + rotace-empty-absence-text-v1105-guard + appearance-update-persistence-v1105-guard + rotation-generator-v1106-guard + rotation-generator-rules-v1107-guard + memory-8x8-square-fit-v1152-guard + memory-total-time-no-5s-v1152-guard + no-visual-owner-drift-guard OK');
+console.log('app-usage-smoke-v963 OK + rotation-generator-wizard-v1108-guard + rotation-generator-absence-state-v1109-guard + rotation-generator-wizard-run-v1110-guard + rotation-generator-wizard-state-v1111-guard + rotation-generator-month-balance-v1112-guard + rotation-generator-rules-v1113-guard + rotation-generator-rules-v1114-guard + rotation-generator-rules-v1115-guard + rotation-generator-rules-v1116-guard + rotation-generator-rules-v1117-guard + dashboard-percent-empty-cells-v1119-guard + stats-press-machine-split-v1123-guard + rotation-overtime-shift-filter-v1128-guard + rotation-overtime-defaults-2025-v1129-guard + rotation-absence-export-ytd-generator-theme-v1130-guard + light-pattern-theme-v1131-guard + rotation-generator-excel-copy-v1138-guard + games-active-account-direct-stats-v1144-guard + sudoku-completion-save-v1148-guard + sudoku-random-puzzle-v1148-guard + game-time-format-v1144-guard + lada-manual-override-v1144-guard + lada-smooth-performance-v1144-guard + dashboard-css-contract-guard + appearance-reward-contract + rotation-export-summary-simple-guard + rotation-export-glass-guard + appearance-readability-guard + css-layer-order-v194-guard + dashboard-owner-registry-v195-guard + dashboard-overrides-selector-lock-v196-guard + dashboard-scope-v197-guard + dashboard-release-isolation-v198-guard + dashboard-css-guard-series-v1100-complete + release-metadata-v199-guard + brusy-choice-size-v1101-guard + fixed-app-background-v1101-guard + name-choice-fit-v1102-guard + browser-smoke-v1103-guard + dashboard-empty-absence-text-v1104-guard + rotace-empty-absence-text-v1105-guard + appearance-update-persistence-v1105-guard + rotation-generator-v1106-guard + rotation-generator-rules-v1107-guard + memory-8x8-square-fit-v1153-guard + memory-total-time-no-5s-v1153-guard + no-visual-owner-drift-guard OK');
 
 // v1.136 guard: soft-core fixed cycle + no TNKS balancing + removed AMOLED black.
 assertIncludes(ui, 'RAK_ROTATION_GENERATOR_RULES_V1135', 'Chybí pravidla generátoru v1.136');

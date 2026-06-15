@@ -1,5 +1,5 @@
-// RaK 1.2 (1.152) – startovací orchestrátor aplikace.
-// RaK 1.2 (1.152) – online sync je v app-rotation-sync.js, volby Rotace v app-rotation-controls.js.
+// RaK 1.2 (1.153) – startovací orchestrátor aplikace.
+// RaK 1.2 (1.153) – online sync je v app-rotation-sync.js, volby Rotace v app-rotation-controls.js.
 
 function initAppInitBindings() {
   if (typeof installRakRotationControlBindings === 'function') {

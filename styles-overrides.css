@@ -18527,7 +18527,7 @@ body.gamesOpen[data-rak-arcade-game="sudoku"] #games #gamesShellBody[data-arcade
 }
 
 
-/* RaK 1.2 (1.152) – Lodě: lehčí render tabule a méně janku na mobilech. */
+/* RaK 1.2 (1.153) – Lodě: lehčí render tabule a méně janku na mobilech. */
 body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsBoard,
 body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsBoardCardLift,
 body.shipsGameOpen #games #gamesShellBody[data-arcade-game="ships"] .shipsSingleBoardWrap{
@@ -18555,7 +18555,7 @@ body.lightweightMode.shipsGameOpen #games #gamesShellBody[data-arcade-game="ship
   animation:none !important;
 }
 
-/* RaK 1.2 (1.152) – Pexeso 8×8: čtvercové karty a mobilní fit.
+/* RaK 1.2 (1.153) – Pexeso 8×8: čtvercové karty a mobilní fit.
    8×8 nesmí dělat vodorovné obdélníky ani schovat spodní řadu pod spodní lištu. */
 #games .memoryStage[data-memory-size="8"]{
   gap:6px !important;
@@ -18647,7 +18647,7 @@ body.lightweightMode.shipsGameOpen #games #gamesShellBody[data-arcade-game="ship
   }
 }
 
-/* RaK 1.2 (1.152) – Pexeso 8×8: tvrdý mobilní fit podle reálného iPhone testu.
+/* RaK 1.2 (1.153) – Pexeso 8×8: tvrdý mobilní fit podle reálného iPhone testu.
    Přepíše starší globální min-height pro arcadeMemoryBoardLarge, aby karty nebyly dlouhé pilulky. */
 body.gamesOpen[data-rak-arcade-game="memory"] #games .gamesStage{
   overflow:auto !important;
