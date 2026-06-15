@@ -1,4 +1,4 @@
-// RaK 1.2 (1.153) – Supabase bridge a online synchronizace.
+// RaK 1.2 (1.154) – Supabase bridge a online synchronizace.
 (function () {
   const SUPABASE_CONFIG = window.SUPABASE_CONFIG || {};
   const state = {
@@ -236,7 +236,7 @@
     { table: 'gomoku_wins', realtime: true, queueType: 'gomoku_win', access: 'anon SELECT/INSERT/UPDATE', note: 'výhry piškvorek / legacy leaderboard' }
   ];
 
-  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = '1.2 (1.153)';
+  const SUPABASE_POLICY_AUDIT_SNAPSHOT_VERSION = '1.2 (1.154)';
   const SUPABASE_POLICY_AUDIT_SNAPSHOT_AT = '2026-05-24';
   const SUPABASE_POLICY_HARDENING_PHASE = {
     current: 'V856 – release hygiene po kontrole vlastních buildů: changelog opravený, SQL auditní soubory jsou archivované v assets/docs/sql a DB policies se nemění.',
@@ -296,7 +296,7 @@
   ];
 
   const SUPABASE_RPC_HARDENING_STATUS = {
-    version: '1.2 (1.153)',
+    version: '1.2 (1.154)',
     phase: '2E-O online invite/session RPC smoke + accept RPC / no policy tightening',
     rpcPreferred: true,
     migrationApplied: true,
@@ -1019,7 +1019,7 @@
       ends_at: payload.ends_at,
       marquee: payload.marquee,
       updated_at: nowIso,
-      app_version: String(window.APP_VERSION || '1.2 (1.153)'),
+      app_version: String(window.APP_VERSION || '1.2 (1.154)'),
       priority: 0
     });
     return [
@@ -1064,7 +1064,7 @@
           ends_at: fallback.ends_at,
           marquee: fallback.marquee,
           updated_at: new Date().toISOString(),
-          app_version: String(window.APP_VERSION || '1.2 (1.153)'),
+          app_version: String(window.APP_VERSION || '1.2 (1.154)'),
           priority: 0
         });
   }
@@ -1079,7 +1079,7 @@
         p_ends_at: safe.ends_at,
         p_marquee: safe.marquee,
         p_updated_by: 'rak-admin-ui',
-        p_app_version: String(window.APP_VERSION || '1.2 (1.153)'),
+        p_app_version: String(window.APP_VERSION || '1.2 (1.154)'),
         p_priority: 0
       }), { mode: 'write', timeoutMs: 8000, attempts: 1 });
       if (res && res.error) return { ok: false, error: res.error, shape: 'rpc-save' };
@@ -1093,7 +1093,7 @@
     try {
       const res = await runSupabaseOperation('announcements.rpc-clear', () => client.rpc('rak_clear_dashboard_announcement', {
         p_updated_by: 'rak-admin-ui',
-        p_app_version: String(window.APP_VERSION || '1.2 (1.153)')
+        p_app_version: String(window.APP_VERSION || '1.2 (1.154)')
       }), { mode: 'write', timeoutMs: 8000, attempts: 1 });
       if (res && res.error) return { ok: false, error: res.error, shape: 'rpc-clear' };
       return { ok: true, cleared: true, count: Number(res && res.data || 0), shape: 'rpc-clear' };
@@ -3726,7 +3726,7 @@
     return Number.isFinite(num) ? num : (Number.isFinite(Number(fallback)) ? Number(fallback) : 0);
   }
 
-  // RaK 1.2 (1.153): online score časových her držíme do 5000, aby prošlo stávajícím
+  // RaK 1.2 (1.154): online score časových her držíme do 5000, aby prošlo stávajícím
   // rak_record_game_stat_delta RPC a zároveň nenafukovalo XP v profilu.
   const GAME_STATS_POINTS_DELTA_LIMIT = 5000;
   const GAME_STATS_LOW_POINT_SCALE_LEGACY = 1000000000;
@@ -3807,7 +3807,7 @@
         rememberGameStatsRpcSmoke('fallback', type, 'rpc-unavailable');
         return null;
       }
-      // RaK 1.2 (1.153): game_stats má v DB restriktivní RLS insert/update pouze přes RPC.
+      // RaK 1.2 (1.154): game_stats má v DB restriktivní RLS insert/update pouze přes RPC; Pexeso payload nesmí přidávat extra klíče.
       // Přímý fallback by jen vyrobil 401/42501 v konzoli a výsledek by stejně nezapsal.
       rememberGameStatsRpcSmoke('fallback', type, err && err.message ? err.message : err);
       console.warn('rak_record_game_stat_delta failed; direct game_stats fallback is disabled by RPC-only RLS.', err);
@@ -3869,23 +3869,16 @@
         clearGameStatsCache(gameType);
         return rpcRow;
       }
-      const rpcOnlyErr = new Error('Herní statistiky se nepodařilo uložit: RPC rak_record_game_stat_delta není dostupná v REST API. Přímý zápis je správně blokovaný RLS.');
+      const rpcOnlyErr = new Error('Herní statistiky se nepodařilo uložit přes RPC rak_record_game_stat_delta. Přímý zápis je správně blokovaný RLS.');
       rpcOnlyErr.code = 'RAK_GAME_STATS_RPC_REQUIRED';
       rpcOnlyErr.game_type = gameType;
       throw rpcOnlyErr;
     }
 
-    if (existing && existing.id) {
-      const { data, error } = await runSupabaseOperation('game_stats.update', () => client.from('game_stats').update(next).eq('id', existing.id).select('*').maybeSingle(), { mode: 'write' });
-      if (error) throw error;
-      clearGameStatsCache(gameType);
-      return data || next;
-    }
-
-    const { data, error } = await runSupabaseOperation('game_stats.insert', () => client.from('game_stats').insert([next]).select('*').maybeSingle(), { mode: 'write', attempts: 1 });
-    if (error) throw error;
+    // RaK 1.2 (1.154): pokud se nemění žádný čítač/body, nepokoušíme se o přímý update/insert.
+    // game_stats je z bezpečnostních důvodů RPC-only a přímý zápis by jen vyrobil RLS chybu.
     clearGameStatsCache(gameType);
-    return data || next;
+    return existing || next;
   }
 
 
@@ -4506,7 +4499,7 @@
     return {
       ok: blockers.length === 0,
       mode: 'supabase-hardening-readiness-audit-only',
-      version: '1.2 (1.153)',
+      version: '1.2 (1.154)',
       checkedAt: new Date().toISOString(),
       confirmed,
       readinessPercent,
