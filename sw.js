@@ -1,6 +1,6 @@
-// RaK 1.2 (1.155) – sw.
-const CACHE_VERSION = 'v1.2-1.155';
-const SW_APP_VERSION = '1.2 (1.155)';
+// RaK 1.2 (1.168) – sw.
+const CACHE_VERSION = 'v1.2-1.168';
+const SW_APP_VERSION = '1.2 (1.168)';
 const STATIC_CACHE = `rotace-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `rotace-runtime-${CACHE_VERSION}`;
 const APP_SHELL = [
@@ -46,6 +46,7 @@ const APP_SHELL = [
   "./admin-food.js",
   "./admin-reports.js",
   "./admin-service-usage.js",
+  "./admin-daymods.js",
   "./ui.js",
   "./app-navigation.js",
   "./app-bottom-nav.js",
@@ -82,6 +83,7 @@ const APP_SHELL = [
   "./styles-theme-polish.css",
   "./styles-release-polish.css",
   "./styles-dashboard-polish.css",
+  "./styles-daymods.css",
   "./manifest.webmanifest",
   "./assets/app-icons/icon-16.png",
   "./assets/app-icons/icon-32.png",

@@ -1,3 +1,87 @@
+## RaK 1.2 (1.168)
+
+- Nedělní noční bez přesčasu (příchod na 22 h): počítá se až druhá pauza (02:00), úvodní pauza ve 22:00 se nezapočítává → 7,5 h.
+- O aplikaci: doplněn stručný blok historie pro verze 1.150–1.167 (denní výjimky a hodinová statistika).
+- Release metadata sjednocená na `RaK 1.2 (1.168)`, technická verze `1.2.168`, cache `v1.2-1.168`.
+
+## RaK 1.2 (1.167)
+
+- Výjimky dne – přesné přestávky: počítají se pevné pauzy 10:00–10:30, 14:00–14:30, 02:00–02:30, 22:00–22:30 (každá 30 min). Do odpracovaných hodin se započítají jen pauzy, které spadají do odpracovaného úseku.
+- Platí pro odchod dřív, pozdní příchod i přesun na jiný stroj. Pauza spadající do nepřítomnosti se nepočítá do dovolené ani do druhého stroje.
+- Release metadata sjednocená na `RaK 1.2 (1.167)`, technická verze `1.2.167`, cache `v1.2-1.167`.
+
+## RaK 1.2 (1.166)
+
+- Přesun na jiný stroj se dělí poměrně podle času, takže přesun přesně v polovině směny vyjde 50/50 (např. 5,5 h + 5,5 h místo 5 + 6). Pauza se rozloží mezi oba stroje.
+- Release metadata sjednocená na `RaK 1.2 (1.166)`, technická verze `1.2.166`, cache `v1.2-1.166`.
+
+## RaK 1.2 (1.165)
+
+- Statistika strojů: výsledky se zobrazují v celých číslech (vnitřně se drží desetiny). Výjimka jsou párové stroje TNKS01/TPKW01 (TNK/W01), kde zůstávají půlky.
+- Oprava skloňování: 1 den, 2–4 dny, 5+ dní.
+- Release metadata sjednocená na `RaK 1.2 (1.165)`, technická verze `1.2.165`, cache `v1.2-1.165`.
+
+## RaK 1.2 (1.164)
+
+- Statistika – zapojení denních výjimek: přesun na jiný stroj se rozpočítá po hodinách mezi původní a nový stroj; částečný odchod/příchod s důvodem ubere odpracovaný díl a přičte ho do absence.
+- Dovolená se v detailu člověka ukazuje jako „X dní Y h" (plné dny dnem, částečné v hodinách; neděle 7,5 h, jinak 11 h).
+- Kalírna ven (jméno na soustruhu) se počítá jako soustruh, kalírna k nám (prázdná buňka) se nepočítá, příchod od 22 h zůstává celá 1 na stroji – vychází to z obsazení buňky.
+- Release metadata sjednocená na `RaK 1.2 (1.164)`, technická verze `1.2.164`, cache `v1.2-1.164`.
+
+## RaK 1.2 (1.163)
+
+- Přesčasová neděle: každý zapsaný na stroji je automaticky brán jako „na přesčasu". Přes výjimky se jen odškrtnou ti, co jdou až od 22 h (uloží se lehký záznam, jinak žádný).
+- Nové tlačítko „Přehled přesčasů" v administraci rozpisu: po nedělích vypíše, kdo je na přesčasu a kdo jde od 22 h.
+- Release metadata sjednocená na `RaK 1.2 (1.163)`, technická verze `1.2.163`, cache `v1.2-1.163`.
+
+## RaK 1.2 (1.162)
+
+- Výjimky dne – přesun na stroj: ve výběru jsou teď všechny stroje z Tvrdoty i Měkoty (s označením sekce).
+- Čas se zaokrouhluje na dokončené čtvrthodiny (odchod/přesun dolů: 16:01→16:00, 15:29→15:15; pozdní příchod nahoru). Dovolená = okno od zaokrouhleného času do konce směny, odpracováno = hodnota směny − dovolená (pauza padá na odpracovanou část).
+- Přesčasová neděle: zaškrtnuté „na přesčasu" = dlouhá směna 11 h; odškrtnuté = příchod na 22 h (7,5 h), počítá se od 22 h jen při odchodu.
+- Release metadata sjednocená na `RaK 1.2 (1.162)`, technická verze `1.2.162`, cache `v1.2-1.162`.
+
+## RaK 1.2 (1.161)
+
+- Výjimky dne – neděle a přesčas: nedělní směna se počítá jako 7,5 h (i dovolená v neděli = 7,5 h).
+- V okně se v neděli ukáže zaškrtávátko „Je na přesčasu"; zaškrtnuté se směna počítá jako dlouhá (11 h). Předvyplní se podle toho, jestli appka danou nedělní směnu zná jako přesčasovou.
+- Release metadata sjednocená na `RaK 1.2 (1.161)`, technická verze `1.2.161`, cache `v1.2-1.161`.
+
+## RaK 1.2 (1.160)
+
+- Výjimky dne – výpočet hodin: směna se počítá jako čistý čas bez pauzy (12h směna = 11 h, 8h/nedělní = 7,5 h). Dovolená/zbytek = hodnota směny − odpracováno, takže pauza se do dovolené nezapočítává.
+- Náhled v okně ukazuje hodnotu směny, odpracováno a zbytek (u přesunu hodiny na původním a novém stroji, součet = směna).
+- Release metadata sjednocená na `RaK 1.2 (1.160)`, technická verze `1.2.160`, cache `v1.2-1.160`.
+
+## RaK 1.2 (1.159)
+
+- Výjimky dne: zadává se jen čas (odchodu / příchodu / přesunu) a appka sama dopočítá odpracované hodiny i čas na strojích podle směny. Ruční pole hodin a dovolené zrušena.
+- Nový typ „Přišel později do práce" se zadáním času příchodu.
+- V okně se rovnou ukáže náhled dopočítaných hodin.
+- Když je důvodem dovolená / náhradní volno / § / lékař, automaticky se to žlutě propíše do tabulky Absence (od/do daného času).
+- Kalírna: odchod na kalírnu se značí na soustruhu (počítá se jako soustruh), kalírna k nám se značí na prázdné buňce (nepočítá se).
+- Release metadata sjednocená na `RaK 1.2 (1.159)`, technická verze `1.2.159`, cache `v1.2-1.159`.
+
+## RaK 1.2 (1.158)
+
+- Rozpisy / výjimky dne: zadávání zpřehledněno. Místo malé tužky v buňce je u názvu tabulky (Tvrdota / Měkota) větší tlačítko „Výjimky dne".
+- Po zapnutí režimu výjimek stačí klepnout na celou buňku (velký cíl) a otevře se okno; mimo režim se buňky upravují jako dřív.
+- Release metadata sjednocená na `RaK 1.2 (1.158)`, technická verze `1.2.158`, cache `v1.2-1.158`.
+
+## RaK 1.2 (1.157)
+
+- Rozpisy / administrace: nové okno na klik do buňky pro zadání výjimky dne (odchod dřív z práce, půl směny / přesun na jiný stroj, odchod na kalírnu, kalírna k nám) – čas, důvod zbytku směny, hodiny, cílový stroj.
+- Buňka s výjimkou se v editoru i ve veřejném rozpisu zvýrazní žlutě jako upozornění, že pracovník nebude celou směnu. Jméno zůstává na stroji.
+- Data výjimek (`dayMods`) se ukládají u měsíce, normalizace i synchronizace je zachovají. Statistický přepočet (dovolená v hodinách, kalírna, přesun po hodinách) navazuje v dalším kroku.
+- Release metadata sjednocená na `RaK 1.2 (1.157)`, technická verze `1.2.157`, cache `v1.2-1.157`.
+
+## RaK 1.2 (1.156)
+
+- Bezpečnost: sjednocená funkce `escapeHtml` na jedinou bezpečnou verzi z `core.js` (escapuje i apostrof `'` a používá `?? ""`).
+- Odstraněná slabší duplicitní `escapeHtml` z `rotace.js`, která dříve kvůli pořadí načítání globálně přepisovala bezpečnější verzi.
+- Bez funkčních změn v UI ani datech; bump release metadat kvůli zneplatnění cache, aby se oprava dostala na zařízení.
+- Release metadata sjednocená na `RaK 1.2 (1.156)`, technická verze `1.2.156`, cache `v1.2-1.156`.
+
 ## RaK 1.2 (1.155)
 
 - Hry / Pexeso: opravené zobrazení a merge starých falešných časů typu 5 s.

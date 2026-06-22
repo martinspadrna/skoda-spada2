@@ -1,7 +1,7 @@
-// RaK 1.2 (1.155) – core stav, verze a sdílené helpery aplikace.
+// RaK 1.2 (1.168) – core stav, verze a sdílené helpery aplikace.
 
 const APP_KEY = "rotace_kalkulacky_state_v123";
-const APP_VERSION = "1.2 (1.155)";
+const APP_VERSION = "1.2 (1.168)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-06-03-" + APP_VERSION;
 window.ROTATION_BUILD = ROTATION_BUILD;
@@ -1193,6 +1193,26 @@ function normalizeMonthForImport(monthData, fallbackMonthData) {
     ? normalizePressRotationOverrides(fallbackMonthData.pressRotationOverrides)
     : {};
 
+  const normalizeDayMods = (arr) => (Array.isArray(arr) ? arr : []).map(d => ({
+    section: (String(d && d.section ? d.section : '').trim().toLowerCase() === 'soft') ? 'soft' : 'hard',
+    date: String(d && d.date ? d.date : '').trim(),
+    cellIndex: Number.isFinite(Number(d && d.cellIndex)) ? Number(d.cellIndex) : -1,
+    person: String(d && d.person ? d.person : '').trim(),
+    type: String(d && d.type ? d.type : '').trim(),
+    time: String(d && d.time ? d.time : '').trim(),
+    restReason: String(d && d.restReason ? d.restReason : '').trim(),
+    workedHours: Number.isFinite(Number(d && d.workedHours)) ? Number(d.workedHours) : null,
+    restHours: Number.isFinite(Number(d && d.restHours)) ? Number(d.restHours) : null,
+    overtime: (d && d.overtime === true) ? true : ((d && d.overtime === false) ? false : null),
+    toSection: (String(d && d.toSection ? d.toSection : '').trim().toLowerCase() === 'soft') ? 'soft' : (String(d && d.toSection ? d.toSection : '').trim().toLowerCase() === 'hard' ? 'hard' : ''),
+    toCellIndex: Number.isFinite(Number(d && d.toCellIndex)) ? Number(d.toCellIndex) : null,
+    note: String(d && d.note ? d.note : '').trim()
+  })).filter(d => d.date && d.cellIndex >= 0 && d.type);
+
+  const hasDayMods = monthData && Object.prototype.hasOwnProperty.call(monthData, 'dayMods');
+  const incomingDayMods = hasDayMods ? normalizeDayMods(monthData.dayMods) : null;
+  const fallbackDayMods = fallbackMonthData && Array.isArray(fallbackMonthData.dayMods) ? normalizeDayMods(fallbackMonthData.dayMods) : [];
+
   const normalized = {
     hard: normalizeSection("hard", HARD_MACHINE_HEADERS),
     soft: normalizeSection("soft", SOFT_MACHINE_HEADERS),
@@ -1200,6 +1220,8 @@ function normalizeMonthForImport(monthData, fallbackMonthData) {
   };
   const pressRotationOverrides = incomingPressOverrides !== null ? incomingPressOverrides : fallbackPressOverrides;
   if (pressRotationOverrides && Object.keys(pressRotationOverrides).length) normalized.pressRotationOverrides = pressRotationOverrides;
+  const dayMods = incomingDayMods !== null ? incomingDayMods : fallbackDayMods;
+  if (dayMods && dayMods.length) normalized.dayMods = dayMods;
   if (importMeta) normalized.importMeta = importMeta;
   return normalized;
 }

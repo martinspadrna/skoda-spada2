@@ -668,12 +668,18 @@ function renderMonth(monthKey) {
         ? 'currentShiftRow'
         : (rowKey && rowKey === shiftHighlight.nextKey ? 'nextShiftRow' : '');
       out += "<tr" + (rowClass ? " class='" + rowClass + "'" : "") + "><td class='dateCell'>" + escapeHtml(row.date) + "</td>";
-      (row.cells || []).forEach(cell => {
+      (row.cells || []).forEach((cell, cellIdx) => {
         const val = (cell || "").trim();
+        let mod = null;
+        try { if (typeof rakDayModForCell === 'function') mod = rakDayModForCell(month, section, row.date, cellIdx); } catch (e) { mod = null; }
+        const tip = mod && typeof rakDayModTooltip === 'function' ? rakDayModTooltip(mod) : "";
+        const badge = mod && typeof rakDayModBadge === 'function' ? rakDayModBadge(mod) : "";
+        const titleAttr = tip ? " title='" + escapeHtml(tip) + "'" : "";
+        const markHtml = badge ? " <span class='rakDayModMark'>" + escapeHtml(badge) + "</span>" : "";
         if (val) {
-          out += "<td>" + escapeHtml(val) + "</td>";
+          out += "<td" + (mod ? " class='rakDayModCell'" : "") + titleAttr + ">" + escapeHtml(val) + markHtml + "</td>";
         } else {
-          out += "<td class='missingCell'>—</td>";
+          out += "<td class='missingCell" + (mod ? " rakDayModCell" : "") + "'" + titleAttr + ">" + (badge ? escapeHtml(badge) : "—") + "</td>";
         }
       });
       out += "</tr>";
@@ -1544,13 +1550,8 @@ function refreshInitialUI() {
   updateImportBoxVisibility();
 }
 
-function escapeHtml(str) {
-  return String(str || "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
+// escapeHtml je definovaná centrálně v core.js (escapuje i apostrof, používá ?? "").
+// Dřívější slabší kopie zde byla odstraněna, aby globálně platila jediná bezpečná verze.
 
 /* SIGNATURE TYPEWRITER */
 (function typeSignature() {

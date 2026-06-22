@@ -513,7 +513,18 @@ function adminRotationRowTemplate(section, row, rowIndex, machineCount, allowBla
   return [
     '<tr data-rotation-section="' + escapeHtml(section) + '" data-rotation-row-index="' + String(rowIndex) + '">',
     '  <td>' + renderAdminInlineFieldHtml('data-rot-field', 'date', date, 'datum', false) + '</td>',
-    cells.map((value, idx) => '<td class="' + (String(value || '').trim() ? '' : 'adminRotationEditorEmptyCell') + '">' + renderAdminInlineFieldHtml('data-rot-field', 'cell-' + String(idx), value, String(idx + 1), true) + '</td>').join(''),
+    cells.map((value, idx) => {
+      const filled = String(value || '').trim();
+      let mod = null;
+      try { if (typeof rakDayModForAdminCell === 'function') mod = rakDayModForAdminCell(section, date, idx); } catch (e) { mod = null; }
+      const tdClasses = [];
+      if (!filled) tdClasses.push('adminRotationEditorEmptyCell');
+      if (mod) tdClasses.push('rakDayModCell');
+      const badge = mod && typeof rakDayModBadge === 'function' ? rakDayModBadge(mod) : '';
+      const tip = mod && typeof rakDayModTooltip === 'function' ? rakDayModTooltip(mod) : '';
+      const mark = badge ? '<span class="rakDayModMark" aria-hidden="true">' + escapeHtml(badge) + '</span>' : '';
+      return '<td class="' + tdClasses.join(' ') + '"' + (tip ? ' title="' + escapeHtml(tip) + '"' : '') + '>' + renderAdminInlineFieldHtml('data-rot-field', 'cell-' + String(idx), value, String(idx + 1), true) + mark + '</td>';
+    }).join(''),
     '</tr>'
   ].join('');
 }
@@ -1071,7 +1082,20 @@ function buildAdminRotationTableHtml(monthKey) {
 
   const renderNotes = () => {
     const withBlank = notesRows.concat([ { date: '', person: '', code: '' } ]);
-    return withBlank.map((row, idx) => adminNotesRowTemplate(row, idx, true)).join('');
+    let html = withBlank.map((row, idx) => adminNotesRowTemplate(row, idx, true)).join('');
+    try {
+      if (typeof rakDayModAbsenceRows === 'function') {
+        const derived = rakDayModAbsenceRows(month) || [];
+        html += derived.map(r =>
+          '<tr class="rakDayModAbsenceRow" title="Automaticky z výjimky dne v rozpisu">'
+          + '<td>' + escapeHtml(r.date) + '</td>'
+          + '<td>' + escapeHtml(r.person) + '</td>'
+          + '<td>' + escapeHtml(r.code) + '</td>'
+          + '</tr>'
+        ).join('');
+      }
+    } catch (e) {}
+    return html;
   };
 
   const hardColgroup = buildAdminRotationColgroupHtml(hardMachines.length, 46, 50);
@@ -1085,6 +1109,7 @@ function buildAdminRotationTableHtml(monthKey) {
     '  <div class="adminRotationSaveDock">',
     '    <div class="adminRotationSaveActions">',
     '      <button type="button" class="appMenuAction adminRotationSelectedRemoveBtn" data-admin-selected-remove hidden>Odebrat vybrané</button>',
+    '      <button type="button" class="appMenuAction rakOtOverviewBtn" data-daymod-overtime-overview>Přehled přesčasů</button>',
     '    </div>',
     '    <span id="adminRotationDraftStatus" class="adminRotationDraftStatus">Rozepsané změny se uloží horním tlačítkem Uložit rozpis.</span>',
     '  </div>',
@@ -1095,9 +1120,9 @@ function buildAdminRotationTableHtml(monthKey) {
     '  </div>',
     buildAdminPressRotationOverridesHtml(month, monthKey, hardRows),
     '  <details class="appMenuFoldSection adminRotationFold" open>',
-    '    <summary>Tvrdota</summary>',
+    '    <summary>Tvrdota <button type="button" class="rakDayModModeBtn" data-daymod-mode="hard">✎ Výjimky dne</button></summary>',
     '    <div class="tableWrap appMenuTableWrap">',
-    '      <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense appMenuAdminRotationTable">',
+    '      <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense appMenuAdminRotationTable" data-daymod-section="hard">',
     '        ' + hardColgroup,
     '        <thead><tr><th>Datum</th>' + hardMachines.map(m => '<th>' + escapeHtml(m) + '</th>').join('') + '</tr></thead>',
     '        <tbody>' + renderRows('hard', hardRows, hardMachines.length) + '</tbody>',
@@ -1105,9 +1130,9 @@ function buildAdminRotationTableHtml(monthKey) {
     '    </div>',
     '  </details>',
     '  <details class="appMenuFoldSection adminRotationFold" open>',
-    '    <summary>Měkota</summary>',
+    '    <summary>Měkota <button type="button" class="rakDayModModeBtn" data-daymod-mode="soft">✎ Výjimky dne</button></summary>',
     '    <div class="tableWrap appMenuTableWrap">',
-    '      <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense appMenuAdminRotationTable">',
+    '      <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense appMenuAdminRotationTable" data-daymod-section="soft">',
     '        ' + softColgroup,
     '        <thead><tr><th>Datum</th>' + softMachines.map(m => '<th>' + escapeHtml(m) + '</th>').join('') + '</tr></thead>',
     '        <tbody>' + renderRows('soft', softRows, softMachines.length) + '</tbody>',

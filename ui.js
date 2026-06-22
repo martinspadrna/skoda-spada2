@@ -735,6 +735,15 @@ function buildSupabaseKeepaliveStatusHtml(options) {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
+      range: 'v.1.2 1.150–1.167',
+      title: 'Denní výjimky v rozpisu a hodinová statistika',
+      lines: [
+        'V administraci rozpisu přibyly denní výjimky: odchod dřív, pozdní příchod, půl směny / přesun na jiný stroj a kalírna (ven se počítá jako soustruh, k nám ne). Buňka s výjimkou je žlutá.',
+        'Hodiny se dopočítají z času podle směny a pevných přestávek (10:00, 14:00, 02:00, 22:00), neděle se počítá 7,5 h a přesčasová neděle má zaškrtávátko „na přesčasu" i přehled přesčasů.',
+        'Výjimky se promítají do statistiky: přesun po hodinách mezi stroji, částečná absence a dovolená jako „X dní Y h".'
+      ]
+    },
+    {
       range: 'v.1.2 1.30–1.49',
       title: 'Rozpisy, vzhled a praktičtější administrace',
       lines: [

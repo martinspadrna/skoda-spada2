@@ -43,6 +43,7 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     "admin-food.js",
     "admin-reports.js",
     "admin-service-usage.js",
+    "admin-daymods.js",
     "ui.js",
     "app-navigation.js",
     "app-bottom-nav.js",

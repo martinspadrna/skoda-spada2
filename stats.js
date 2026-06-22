@@ -279,10 +279,17 @@ function getTopEntries(counts, limit = 3) {
   return items.slice(0, limit);
 }
 
+function formatMachineCount(value, label) {
+  const num = Number(value) || 0;
+  // Párové stroje (TNK = TNKS01, W01 = TPKW01) se půlí, u nich necháme desetiny.
+  if (label === 'TNK' || label === 'W01') return formatCount(num);
+  return String(Math.round(num));
+}
+
 function formatMachineWinners(entries) {
   const list = Array.isArray(entries) ? entries : [];
   if (!list.length) return '—';
-  return list.map(([name, value]) => name + ' (' + formatCount(value) + ')').join('\n');
+  return list.map(([name, value]) => name + ' (' + formatMachineCount(value, name) + ')').join('\n');
 }
 
 
@@ -456,6 +463,8 @@ function buildStatsForYear(year, options = {}) {
         totalWork: 0,
         totalClean: 0,
         totalAbsence: 0,
+        vacFullDays: 0,
+        vacPartialHours: 0,
         workDays: new Set(),
         topWorkMachine: null,
         topCleanMachine: null,
@@ -470,6 +479,11 @@ function buildStatsForYear(year, options = {}) {
   const knownStatNames = getKnownStatNames();
   const annualWorkAbsenceTarget = getAnnualWorkAbsenceTarget(year);
   const includedMonthSet = new Set();
+
+  const dayModReasonLabel = (code) => {
+    const map = { D: 'Dovolená', NV: 'Náhradní volno', '§': 'Paragraf', LEK: 'Lékař', NEPL: 'Neplacené' };
+    return map[code] || (typeof normalizeStatsAbsenceReasonName === 'function' ? normalizeStatsAbsenceReasonName(code) : (code || 'Ostatní'));
+  };
 
   Object.entries(app.rotation.months || {}).forEach(([monthKey, month]) => {
     const parsedMonth = parseMonthKey(monthKey);
@@ -578,6 +592,14 @@ function buildStatsForYear(year, options = {}) {
         const reasonLabel = getStatsAbsenceReasonLabel(n);
         stats.absenceReasons[reasonLabel] = (stats.absenceReasons[reasonLabel] || 0) + weight;
         monthOverview.absenceReasons[reasonLabel] = (monthOverview.absenceReasons[reasonLabel] || 0) + weight;
+        if (reasonLabel === 'Dovolená') {
+          if (weight >= 1) {
+            person.vacFullDays += 1;
+          } else {
+            const isSunVac = (typeof isSundayForMonthKey === 'function' && parsedDate) ? isSundayForMonthKey(monthKey, parsedDate.day) : false;
+            person.vacPartialHours += weight * (isSunVac ? 7.5 : 11);
+          }
+        }
         const candidates = (nameIndex[name] || []).filter(entry => {
           if (entry.absence) return false;
           if (entry.monthKey !== monthKey) return false;
@@ -601,6 +623,72 @@ function buildStatsForYear(year, options = {}) {
         person.totalAbsence += weight;
         person.totalWork = Math.max(0, (Number(person.totalWork || 0) || 0) - weight);
       });
+    });
+  });
+
+  // --- Denní výjimky (dayMods): přesun stroje po hodinách + částečná absence v hodinách ---
+  // Kalírna ven = jméno na soustruhu (už započítané), kalírna k nám = prázdná buňka (nezapočítané),
+  // od 22 h = celá 1 na stroji (beze změny). Řešíme jen přesun a částečné odchody/příchody s důvodem.
+  Object.entries(app.rotation.months || {}).forEach(([monthKey, month]) => {
+    const parsedMonth = parseMonthKey(monthKey);
+    if (useExplicitStatsScope) {
+      if (!parsedMonth || parsedMonth.year !== year || parsedMonth.month > statsScopeMaxMonth) return;
+    } else if (!shouldIncludeMonthInStats(parsedMonth, year)) {
+      return;
+    }
+    const monthOverview = getStatsMonthOverview(stats, monthKey);
+    const mods = Array.isArray(month.dayMods) ? month.dayMods : [];
+    mods.forEach(mod => {
+      if (!mod || !mod.type) return;
+      const section = mod.section === 'soft' ? 'soft' : 'hard';
+      const sec = month[section];
+      if (!sec || !Array.isArray(sec.machines)) return;
+      const name = String(mod.person || '').trim();
+      const machine = sec.machines[Number(mod.cellIndex)] || '';
+      if (!name || !machine || !knownStatNames.has(name)) return;
+      const worked = Number(mod.workedHours);
+      const rest = Number(mod.restHours);
+      const net = (Number.isFinite(worked) && Number.isFinite(rest) && (worked + rest) > 0) ? (worked + rest) : null;
+      if (!net) return;
+
+      if (mod.type === 'machineMove') {
+        const targetSection = mod.toSection === 'soft' ? 'soft' : (mod.toSection === 'hard' ? 'hard' : section);
+        const tSec = month[targetSection];
+        const targetMachine = (tSec && Array.isArray(tSec.machines)) ? (tSec.machines[Number(mod.toCellIndex)] || '') : '';
+        if (!targetMachine) return;
+        const person = ensurePerson(name);
+        const origCol = ensureColumn(getStatsMachineLabel(machine));
+        const tgtCol = ensureColumn(getStatsMachineLabel(targetMachine));
+        const moveFrac = Math.min(1, rest / net); // část odpracovaná na novém stroji
+        if (origCol) {
+          person.work[origCol] = Math.max(0, (Number(person.work[origCol] || 0)) - moveFrac);
+          stats.machineTotals[origCol] = Math.max(0, (Number(stats.machineTotals[origCol] || 0)) - moveFrac);
+        }
+        if (tgtCol) {
+          person.work[tgtCol] = (Number(person.work[tgtCol] || 0)) + moveFrac;
+          stats.machineTotals[tgtCol] = (Number(stats.machineTotals[tgtCol] || 0)) + moveFrac;
+        }
+        return;
+      }
+
+      if ((mod.type === 'leaveEarly' || mod.type === 'arriveLate') && mod.restReason) {
+        const person = ensurePerson(name);
+        const col = ensureColumn(getStatsMachineLabel(machine));
+        const restFrac = Math.min(1, rest / net); // část mimo práci (absence)
+        if (col) {
+          person.work[col] = Math.max(0, (Number(person.work[col] || 0)) - restFrac);
+          stats.machineTotals[col] = Math.max(0, (Number(stats.machineTotals[col] || 0)) - restFrac);
+          person.absence[col] = (Number(person.absence[col] || 0)) + restFrac;
+          stats.absenceTotals[col] = (Number(stats.absenceTotals[col] || 0)) + restFrac;
+        }
+        person.totalWork = Math.max(0, (Number(person.totalWork || 0)) - restFrac);
+        person.totalAbsence = (Number(person.totalAbsence || 0)) + restFrac;
+        const reasonLabel = dayModReasonLabel(mod.restReason);
+        stats.absenceReasons[reasonLabel] = (Number(stats.absenceReasons[reasonLabel] || 0)) + restFrac;
+        monthOverview.absenceReasons[reasonLabel] = (Number(monthOverview.absenceReasons[reasonLabel] || 0)) + restFrac;
+        if (mod.restReason === 'D') person.vacPartialHours = (Number(person.vacPartialHours || 0)) + rest;
+        return;
+      }
     });
   });
 
@@ -977,6 +1065,24 @@ function createStatsYearOverviewNodes(stats, year) {
   return [wrap];
 }
 
+function czDayWord(n) {
+  const num = Math.abs(Math.round(Number(n) || 0));
+  const last = num % 10;
+  const last2 = num % 100;
+  if (num === 1) return 'den';
+  if (last >= 2 && last <= 4 && !(last2 >= 12 && last2 <= 14)) return 'dny';
+  return 'dní';
+}
+
+function formatVacationDaysHours(person) {
+  const days = Math.round(Number(person && person.vacFullDays || 0));
+  const hours = Math.round((Number(person && person.vacPartialHours || 0)) * 10) / 10;
+  const parts = [];
+  if (days) parts.push(days + ' ' + czDayWord(days));
+  if (hours) parts.push(String(hours).replace('.', ',') + ' h');
+  return parts.length ? parts.join(' ') : '0';
+}
+
 function renderStatsNameViewNodes(person, year, stats, topWork, topClean) {
   if (!person || !stats) return [];
 
@@ -989,6 +1095,7 @@ function renderStatsNameViewNodes(person, year, stats, topWork, topClean) {
   summary.appendChild(createStatsSummaryTile('Práce celkem', formatCount(person.totalWork)));
   summary.appendChild(createStatsSummaryTile('Úklid celkem', formatCount(person.totalClean)));
   summary.appendChild(createStatsSummaryTile('Absence celkem', formatCount(person.totalAbsence)));
+  summary.appendChild(createStatsSummaryTile('Dovolená', formatVacationDaysHours(person)));
   summary.appendChild(createStatsSummaryTile('Práce + absence', formatCount(person.totalWork + person.totalAbsence)));
   summary.appendChild(createStatsSummaryTile('Nejvíc pracoval na', topWork, 'statsMultiLine statsSummaryValueCompact'));
   summary.appendChild(createStatsSummaryTile('Nejvíc uklízel na', topClean, 'statsMultiLine statsSummaryValueCompact'));
@@ -1011,7 +1118,7 @@ function renderStatsNameViewNodes(person, year, stats, topWork, topClean) {
   const tbody = document.createElement('tbody');
   (Array.isArray(stats.machineOrder) ? stats.machineOrder : []).forEach(machine => {
     const row = document.createElement('tr');
-    [machine, formatCount(person.work[machine] || 0), formatCount(person.clean[machine] || 0)].forEach(value => {
+    [machine, formatMachineCount(person.work[machine] || 0, machine), formatMachineCount(person.clean[machine] || 0, machine)].forEach(value => {
       const td = document.createElement('td');
       td.textContent = String(value ?? '');
       row.appendChild(td);
@@ -1157,12 +1264,13 @@ function renderStatsPanel() {
           "<div class='tile'><div class='smallText'>Práce celkem</div><div class='statsSummaryValue'>" + formatCount(person.totalWork) + "</div></div>" +
           "<div class='tile'><div class='smallText'>Úklid celkem</div><div class='statsSummaryValue'>" + formatCount(person.totalClean) + "</div></div>" +
           "<div class='tile'><div class='smallText'>Absence celkem</div><div class='statsSummaryValue'>" + formatCount(person.totalAbsence) + "</div></div>" +
+          "<div class='tile'><div class='smallText'>Dovolená</div><div class='statsSummaryValue'>" + formatVacationDaysHours(person) + "</div></div>" +
           "<div class='tile'><div class='smallText'>Práce + absence</div><div class='statsSummaryValue'>" + formatCount(person.totalWork + person.totalAbsence) + "</div></div>" +
           "<div class='tile'><div class='smallText'>Nejvíc pracoval na</div><div class='statsMultiLine statsSummaryValueCompact'>" + escapeHtml(topWork) + "</div></div>" +
           "<div class='tile'><div class='smallText'>Nejvíc uklízel na</div><div class='statsMultiLine statsSummaryValueCompact'>" + escapeHtml(topClean) + "</div></div>" +
           "</div>" +
           "<div class='tableWrap'><table class='statsTable'><thead><tr><th>Stroj</th><th>Práce</th><th>Úklid</th></tr></thead><tbody>" +
-          stats.machineOrder.map(machine => "<tr><td>" + escapeHtml(machine) + "</td><td>" + formatCount(person.work[machine] || 0) + "</td><td>" + formatCount(person.clean[machine] || 0) + "</td></tr>").join("") +
+          stats.machineOrder.map(machine => "<tr><td>" + escapeHtml(machine) + "</td><td>" + formatMachineCount(person.work[machine] || 0, machine) + "</td><td>" + formatMachineCount(person.clean[machine] || 0, machine) + "</td></tr>").join("") +
           "</tbody></table></div>";
         if (typeof setElementHtmlIfChanged === 'function') setElementHtmlIfChanged(statsNameView, statsNameHtml, 'statsNameView');
         else statsNameView.innerHTML = statsNameHtml;
@@ -1189,7 +1297,7 @@ function renderStatsPanel() {
       })
       .slice(0, 3);
     const topWorkersText = topWorkers.length
-      ? topWorkers.map(([name, value], index) => `${index + 1}. ${name} (${formatCount(value)})`).join('\n')
+      ? topWorkers.map(([name, value], index) => `${index + 1}. ${name} (${formatMachineCount(value, machine)})`).join('\n')
       : '—';
 
     const statsMachineViewFingerprint = JSON.stringify({ machine, leaderNames, topWorkersText });
