@@ -1,3 +1,9 @@
+## RaK 1.2 (1.169)
+
+- Admin ukládání rozpisů po uzamčení Supabase používá novou admin RPC cestu a PWA cache se přebíjí na `v1.2-1.169`.
+- Denní výjimky v rozpisu po odebrání čekají na online uložení a zobrazí jasný stav uložení.
+- Release metadata sjednocená na `RaK 1.2 (1.169)`, technická verze `1.2.169`, cache `v1.2-1.169`.
+
 ## RaK 1.2 (1.168)
 
 - Nedělní noční bez přesčasu (příchod na 22 h): počítá se až druhá pauza (02:00), úvodní pauza ve 22:00 se nezapočítává → 7,5 h.

@@ -19,6 +19,7 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
 
 
 (async () => {
+  const RAK_MODULE_CACHE_VERSION = "1.2.169";
   const files = [
     "app-runtime-guards.js",
     "app-health-audits.js",
@@ -75,7 +76,7 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     const script = document.createElement("script");
     const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
     if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady(src, 'loading', { source: 'dynamic-loader' });
-    script.src = src;
+    script.src = src + "?v=" + encodeURIComponent(RAK_MODULE_CACHE_VERSION);
     script.async = false;
     script.onload = () => {
       const ended = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();

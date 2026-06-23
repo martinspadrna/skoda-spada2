@@ -401,8 +401,8 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
       btn.addEventListener('click', function () {
         var act = btn.getAttribute('data-dm-act');
         if (act === 'close') { closeModal(); return; }
-        if (act === 'delete') { saveFromModal(ctx, modal, true); return; }
-        if (act === 'save') { saveFromModal(ctx, modal, false); return; }
+        if (act === 'delete') { void saveFromModal(ctx, modal, true); return; }
+        if (act === 'save') { void saveFromModal(ctx, modal, false); return; }
       });
     });
     overlay.addEventListener('click', function (ev) { if (ev.target === overlay) closeModal(); }, { once: true });
@@ -421,7 +421,7 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     return el ? String(el.value || '').trim() : '';
   }
 
-  function saveFromModal(ctx, modal, remove) {
+  async function saveFromModal(ctx, modal, remove) {
     var monthKey = ctx.monthKey;
 
     // Nejdřív posbíráme aktuální stav rozpisu z DOM, ať nepřijdeme o rozepsané úpravy jmen.
@@ -496,7 +496,13 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
 
     try {
       if (window.app && app.adminUnlocked && typeof saveRotationToSupabase === 'function') {
-        saveRotationToSupabase(app.rotation, { source: 'admin-daymod', monthKey: monthKey });
+        var result = await saveRotationToSupabase(app.rotation, { source: 'admin-daymod', monthKey: monthKey });
+        var statusEl = document.getElementById('adminOnlineSaveStatus');
+        if (statusEl) {
+          statusEl.textContent = result && result.ok === true
+            ? (remove ? 'Výjimka odebrána a rozpis uložen online.' : 'Výjimka uložena online.')
+            : 'Výjimka je změněná jen lokálně, online uložení se nepovedlo.';
+        }
       }
     } catch (e) {}
   }
