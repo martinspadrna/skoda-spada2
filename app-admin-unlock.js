@@ -25,10 +25,12 @@ function bindAdminSecretUnlock() {
     if (pass.trim() === '772326') {
       if (typeof app !== 'undefined') {
         app.adminUnlocked = true;
+        app.adminPin = pass.trim();
         app.contactTapCount = 0;
       }
       try {
         sessionStorage.setItem('adminUnlockedSession', '1');
+        sessionStorage.setItem('adminPinSession', pass.trim());
         localStorage.removeItem('adminUnlocked');
       } catch (err) {
         console.warn(err);

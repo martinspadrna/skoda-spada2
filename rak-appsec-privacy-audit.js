@@ -24,6 +24,15 @@
     { id: 'storage-admin-session', match: /^adminUnlockedSession$/, category: 'session-admin-gate', priority: 'P1-review', sensitivity: 'session-only-authorization-like-flag', action: 'Držet jen v sessionStorage; nikdy nepersistovat do localStorage.' }
   ];
 
+  STORAGE_CLASSIFICATION_RULES.push({
+    id: 'storage-admin-pin-session',
+    match: /^adminPinSession$/,
+    category: 'session-admin-secret',
+    priority: 'P0',
+    sensitivity: 'session-only-admin-secret',
+    action: 'Drzet jen v sessionStorage pro DB overeni; nikdy nepersistovat do localStorage ani nezobrazovat v UI.'
+  });
+
   const STATIC_DOM_SINK_INVENTORY = [
     { file: 'games-arcade.js', sink: 'innerHTML', count: 38, priority: 'P2-review', note: 'Herní šablony; přednostně hlídat escapeHtml u dynamických hodnot.' },
     { file: 'ui.js', sink: 'innerHTML', count: 33, priority: 'P2-review', note: 'Hlavní UI render; postupně převádět nové dynamické části na safe helpery.' },

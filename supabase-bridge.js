@@ -1970,10 +1970,23 @@
     };
   }
 
-  async function trySaveMachineSettingsViaRpc(client, payloads) {
+  function getAdminPinForWrite(options) {
+    if (options && options.adminPin) return String(options.adminPin);
+    if (typeof app !== 'undefined' && app && app.adminPin) return String(app.adminPin);
+    try {
+      return String(sessionStorage.getItem('adminPinSession') || '');
+    } catch (err) {
+      return '';
+    }
+  }
+
+  async function trySaveMachineSettingsViaRpc(client, payloads, options) {
     if (!client || typeof client.rpc !== 'function' || !Array.isArray(payloads) || !payloads.length) return null;
     try {
-      const { data, error } = await client.rpc('rak_save_machine_settings', { p_rows: payloads });
+      const { data, error } = await client.rpc('rak_admin_save_machine_settings', {
+        p_rows: payloads,
+        p_admin_pin: getAdminPinForWrite(options || {})
+      });
       if (error) throw error;
       return {
         ok: true,
@@ -1990,13 +2003,14 @@
     }
   }
 
-  async function trySaveRotationStateViaRpc(client, row) {
+  async function trySaveRotationStateViaRpc(client, row, options) {
     if (!client || typeof client.rpc !== 'function' || !row) return null;
     try {
-      const { data, error } = await client.rpc('rak_save_rotation_state', {
+      const { data, error } = await client.rpc('rak_admin_save_rotation_state', {
         p_key: row.key || 'main',
         p_payload: row.payload || null,
-        p_meta: row.meta || {}
+        p_meta: row.meta || {},
+        p_admin_pin: getAdminPinForWrite(options || {})
       });
       if (error) throw error;
       return data || row;
@@ -2010,11 +2024,16 @@
     }
   }
 
-  async function upsertMachineSettingsDirect(client, rows) {
+  async function upsertMachineSettingsDirect(client, rows, options) {
     const list = Array.isArray(rows) ? rows : [];
     const payloads = list
       .map((row) => normalizeMachineSettingsPayload(row))
       .filter((payload) => payload && payload.machine_key && payload.label);
+
+    if (!payloads.length) return 0;
+    const adminRpcResult = await trySaveMachineSettingsViaRpc(client, payloads, options || {});
+    if (adminRpcResult && adminRpcResult.ok) return Number(adminRpcResult.savedCount || payloads.length) || payloads.length;
+    throw new Error('admin machine settings RPC unavailable');
 
     const isFoodPayload = (payload) => String(payload && payload.category || '').trim() === 'food_schedule' || String(payload && payload.machine_key || '').trim() === 'FOOD_SCHEDULE_SETTINGS';
     const foodPayloads = payloads.filter(isFoodPayload);
@@ -2044,7 +2063,7 @@
     return savedCount;
   }
 
-  async function upsertRotationStateDirect(client, rotation, meta) {
+  async function upsertRotationStateDirect(client, rotation, meta, options) {
     const payload = rotation && typeof rotation === 'object' ? rotation : null;
     const row = {
       key: 'main',
@@ -2053,7 +2072,7 @@
       updated_at: new Date().toISOString()
     };
 
-    const rpcRow = await trySaveRotationStateViaRpc(client, row);
+    const rpcRow = await trySaveRotationStateViaRpc(client, row, options || {});
     if (rpcRow) {
       return {
         key: rpcRow.key || row.key,
@@ -2063,9 +2082,7 @@
       };
     }
 
-    const { error } = await client.from('rotation_state').upsert([row], { onConflict: 'key' });
-    if (error) throw error;
-    return row;
+    throw new Error('admin rotation RPC unavailable');
   }
 
   async function upsertRotationMonthEntriesDirect(client, monthStart, label, rows) {
@@ -3106,14 +3123,14 @@
         attempted += 1;
         try {
           if (task.type === 'rotation_state') {
-            await runSupabaseOperation('queue.rotation_state', () => upsertRotationStateDirect(client, task.rotation, task.meta), { mode: 'write' });
-            flushed += 1;
+            dropped += 1;
+            state.syncGuard.queueDroppedInvalid += 1;
           } else if (task.type === 'machine_settings') {
-            await runSupabaseOperation('queue.machine_settings', () => upsertMachineSettingsDirect(client, task.rows), { mode: 'write' });
-            flushed += 1;
+            dropped += 1;
+            state.syncGuard.queueDroppedInvalid += 1;
           } else if (task.type === 'rotation_month_entries') {
-            await runSupabaseOperation('queue.rotation_month_entries', () => upsertRotationMonthEntriesDirect(client, task.monthStart, task.label, task.rows), { mode: 'write' });
-            flushed += 1;
+            dropped += 1;
+            state.syncGuard.queueDroppedInvalid += 1;
           } else if (task.type === 'gomoku_win') {
             await runSupabaseOperation('queue.gomoku_win', () => upsertGomokuWinDirect(client, task.entry), { mode: 'write' });
             flushed += 1;
@@ -3192,6 +3209,7 @@
 
   async function seedFromLocalSnapshot(rotation, machineSettingsRows) {
     saveLocalSnapshot(rotation, machineSettingsRows);
+    return { ok: true, seeded: false, queued: false, reason: 'admin-only-online-write' };
     if (!navigator.onLine || !getClient()) {
       enqueueTask({ type: 'rotation_state', rotation, meta: { source: 'local-seed' } });
       if (Array.isArray(machineSettingsRows) && machineSettingsRows.length) {
@@ -3447,24 +3465,23 @@
     return defaults;
   }
 
-  async function saveMachineSettings(rows) {
+  async function saveMachineSettings(rows, options) {
     const client = getClient();
+    const adminPin = getAdminPinForWrite(options || {});
+    if (!adminPin) return { ok: false, reason: 'admin-pin-required' };
     try {
       if (client && navigator.onLine) {
-        if (shouldDeferOnlineWrite()) return Object.assign(await enqueueAndMaybeFlush({ type: 'machine_settings', rows }), { savedCount: Array.isArray(rows) ? rows.length : 0, deferred: true });
-        const savedCount = await runOptimizedSupabaseWrite('machine_settings.save', rows, () => runSupabaseOperation('machine_settings.save', () => upsertMachineSettingsDirect(client, rows), { mode: 'write' }));
+        if (shouldDeferOnlineWrite()) return { ok: false, queued: false, deferred: true, reason: 'admin-online-required', savedCount: 0 };
+        const savedCount = await runOptimizedSupabaseWrite('machine_settings.save', rows, () => runSupabaseOperation('machine_settings.save', () => upsertMachineSettingsDirect(client, rows, { adminPin }), { mode: 'write' }));
         state.machineSettingsSnapshot = Array.isArray(rows) ? rows : [];
         saveLocalSnapshot(state.rotationSnapshot || null, rows);
         await flushPendingWrites();
         return { ok: true, savedCount, queued: false };
       }
-      return Object.assign(await enqueueAndMaybeFlush({ type: 'machine_settings', rows }), { savedCount: Array.isArray(rows) ? rows.length : 0 });
+      return { ok: false, queued: false, reason: 'admin-online-required', savedCount: 0 };
     } catch (err) {
       state.lastError = err;
       console.error('Supabase machine settings save failed', err);
-      if (isLikelyOfflineError(err)) {
-        return await enqueueAndMaybeFlush({ type: 'machine_settings', rows });
-      }
       return { ok: false, error: err };
     }
   }
@@ -3493,18 +3510,15 @@
     const client = getClient();
     try {
       if (client && navigator.onLine) {
-        if (shouldDeferOnlineWrite()) return Object.assign(await enqueueAndMaybeFlush({ type: 'rotation_month_entries', monthStart, label, rows }), { months: 1, entries: Array.isArray(rows) ? rows.length : 0, deferred: true });
+        if (shouldDeferOnlineWrite()) return { ok: false, queued: false, deferred: true, reason: 'admin-online-required', months: 0, entries: 0 };
         const summary = await runOptimizedSupabaseWrite('rotation_entries.save:' + String(monthStart || ''), { monthStart, label, rows }, () => runSupabaseOperation('rotation_entries.save', () => upsertRotationMonthEntriesDirect(client, monthStart, label, rows), { mode: 'write' }), { windowMs: 2200 });
         await flushPendingWrites();
         return { ok: true, queued: false, months: summary.months, entries: summary.entries };
       }
-      return Object.assign(await enqueueAndMaybeFlush({ type: 'rotation_month_entries', monthStart, label, rows }), { months: 1, entries: Array.isArray(rows) ? rows.length : 0 });
+      return { ok: false, queued: false, reason: 'admin-online-required', months: 0, entries: 0 };
     } catch (err) {
       state.lastError = err;
       console.error('Supabase rotation entries save failed', err);
-      if (isLikelyOfflineError(err)) {
-        return await enqueueAndMaybeFlush({ type: 'rotation_month_entries', monthStart, label, rows });
-      }
       return { ok: false, error: err };
     }
   }
@@ -4332,12 +4346,14 @@
     return null;
   }
 
-  async function saveRotationState(rotation, meta) {
+  async function saveRotationState(rotation, meta, options) {
     const client = getClient();
+    const adminPin = getAdminPinForWrite(options || {});
+    if (!adminPin) return { ok: false, reason: 'admin-pin-required' };
     try {
       if (client && navigator.onLine) {
-        if (shouldDeferOnlineWrite()) return Object.assign(await enqueueAndMaybeFlush({ type: 'rotation_state', rotation, meta }), { deferred: true });
-        const row = await runOptimizedSupabaseWrite('rotation_state.save', { rotation, meta }, () => runSupabaseOperation('rotation_state.save', () => upsertRotationStateDirect(client, rotation, meta), { mode: 'write' }), { windowMs: 2200 });
+        if (shouldDeferOnlineWrite()) return { ok: false, queued: false, deferred: true, reason: 'admin-online-required' };
+        const row = await runOptimizedSupabaseWrite('rotation_state.save', { rotation, meta }, () => runSupabaseOperation('rotation_state.save', () => upsertRotationStateDirect(client, rotation, meta, { adminPin }), { mode: 'write' }), { windowMs: 2200 });
         state.rotationSnapshot = rotation && typeof rotation === 'object' ? rotation : null;
         state.lastError = null;
         saveLocalSnapshot(state.rotationSnapshot, state.machineSettingsSnapshot || []);
@@ -4349,13 +4365,10 @@
           updatedAt: row.updated_at
         };
       }
-      return await enqueueAndMaybeFlush({ type: 'rotation_state', rotation, meta });
+      return { ok: false, queued: false, reason: 'admin-online-required' };
     } catch (err) {
       state.lastError = err;
       console.warn('Supabase rotation save failed', err);
-      if (isLikelyOfflineError(err)) {
-        return await enqueueAndMaybeFlush({ type: 'rotation_state', rotation, meta });
-      }
       return { ok: false, error: err };
     }
   }
@@ -5127,7 +5140,7 @@
   };
 
   window.flushSupabaseSyncQueue = flushPendingWrites;
-  window.seedSupabaseFromLocalSnapshot = seedFromLocalSnapshot;
+  window.seedSupabaseFromLocalSnapshot = () => ({ ok: false, reason: 'admin-only-online-write' });
 
   window.getSupabaseAnnouncement = getBridgeText;
   window.saveRakDashboardAnnouncementOnline = (payload) => window.RotationSupabaseBridge.saveDashboardAnnouncementOnline(payload);

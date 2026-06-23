@@ -3,11 +3,7 @@ async function syncRotationFromSupabase(force) {
   const bridge = window.RotationSupabaseBridge;
   if (!bridge || typeof bridge.loadRotationState !== 'function') return null;
   try {
-    let remote = await bridge.loadRotationState();
-    if ((!remote || !remote.payload) && typeof bridge.seedFromLocalSnapshot === 'function' && typeof app !== 'undefined' && app.rotation && app.rotation.months && Object.keys(app.rotation.months).length) {
-      await bridge.seedFromLocalSnapshot(app.rotation, app.machineSettingsRows || []);
-      remote = await bridge.loadRotationState();
-    }
+    const remote = await bridge.loadRotationState();
     if (!remote || !remote.payload) return null;
     const next = typeof normalizeRotationData === 'function' ? normalizeRotationData(remote.payload) : remote.payload;
     if (!next || !next.months) return null;
@@ -48,11 +44,33 @@ async function syncRotationFromSupabase(force) {
   }
 }
 
+function getRakAdminPinForWrite() {
+  if (typeof app === 'undefined' || !app.adminUnlocked) return '';
+  if (app.adminPin) return String(app.adminPin);
+  try {
+    return String(sessionStorage.getItem('adminPinSession') || '');
+  } catch (err) {
+    return '';
+  }
+}
+
+function isRakAdminRotationWrite(meta) {
+  if (typeof app === 'undefined' || !app.adminUnlocked) return false;
+  const source = String(meta && meta.source ? meta.source : '').trim();
+  return source === 'admin-menu'
+    || source === 'admin-daymod'
+    || source === 'excel-import'
+    || source === 'admin-excel-import';
+}
+
 async function saveRotationToSupabase(rotation, meta) {
   const bridge = window.RotationSupabaseBridge;
   if (!bridge || typeof bridge.saveRotationState !== 'function') return { ok: false, reason: 'missing-bridge' };
+  if (!isRakAdminRotationWrite(meta || {})) return { ok: false, reason: 'admin-required' };
+  const adminPin = getRakAdminPinForWrite();
+  if (!adminPin) return { ok: false, reason: 'admin-pin-required' };
   try {
-    return await bridge.saveRotationState(rotation, meta || {});
+    return await bridge.saveRotationState(rotation, meta || {}, { adminPin });
   } catch (err) {
     console.warn('Supabase rotation save helper failed', err);
     return { ok: false, error: err };
