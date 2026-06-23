@@ -98,6 +98,102 @@ function startMenuImport() {
   app.pendingMenuImport = true;
   input.click();
 }
+
+function formatAdminRotationBackupDate(value) {
+  if (!value) return '—';
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return String(value);
+  try {
+    return date.toLocaleString('cs-CZ', { dateStyle: 'short', timeStyle: 'short' });
+  } catch (err) {
+    return date.toLocaleString('cs-CZ');
+  }
+}
+
+function buildAdminRotationBackupsHtml() {
+  const snapshot = app && app.adminRotationBackupsSnapshot ? app.adminRotationBackupsSnapshot : null;
+  const backups = snapshot && Array.isArray(snapshot.backups) ? snapshot.backups : [];
+  if (snapshot && snapshot.loading) {
+    return '<div class="smallText uMt8">Načítám zálohy…</div>';
+  }
+  if (snapshot && snapshot.ok === false) {
+    const message = snapshot.error && snapshot.error.message ? snapshot.error.message : (snapshot.reason || 'Zálohy se nepodařilo načíst.');
+    return '<div class="smallText uMt8">Zálohy se nepodařilo načíst: ' + escapeHtml(message) + '</div>';
+  }
+  if (!backups.length) {
+    return '<div class="smallText uMt8">Zatím nejsou načtené žádné zálohy. Klikni na Načíst zálohy.</div>';
+  }
+  const rows = backups.map((backup) => {
+    const id = String(backup && backup.id || '');
+    const source = String(backup && backup.source || '').trim() || 'uložení rozpisu';
+    const monthKey = String(backup && backup.month_key || '').trim();
+    const monthCount = Number(backup && backup.month_count) || 0;
+    const daymodCount = Number(backup && backup.daymod_count) || 0;
+    const label = [
+      formatAdminRotationBackupDate(backup && backup.replaced_at),
+      monthKey ? ('měsíc ' + monthKey) : '',
+      monthCount ? (String(monthCount) + ' měsíců') : '',
+      daymodCount ? (String(daymodCount) + ' výjimek') : ''
+    ].filter(Boolean).join(' · ');
+    return [
+      '<tr>',
+      '  <td>' + escapeHtml(label || 'Záloha') + '<div class="smallText">' + escapeHtml(source) + '</div></td>',
+      '  <td><button type="button" class="appMenuAction" data-admin-action="restore-rotation-backup" data-backup-id="' + escapeHtml(id) + '">Obnovit</button></td>',
+      '</tr>'
+    ].join('');
+  }).join('');
+  return [
+    '<div class="tableWrap appMenuTableWrap uMt8">',
+    '  <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense">',
+    '    <thead><tr><th>Záloha</th><th>Akce</th></tr></thead>',
+    '    <tbody>' + rows + '</tbody>',
+    '  </table>',
+    '</div>'
+  ].join('');
+}
+
+async function loadAdminRotationBackupsFromSupabase() {
+  if (typeof app === 'undefined' || !app) return { ok: false, reason: 'missing-app', backups: [] };
+  app.adminRotationBackupsSnapshot = { loading: true, backups: [] };
+  const bridge = window.RotationSupabaseBridge;
+  if (!bridge || typeof bridge.listRotationBackups !== 'function') {
+    app.adminRotationBackupsSnapshot = { ok: false, reason: 'missing-bridge', backups: [] };
+    return app.adminRotationBackupsSnapshot;
+  }
+  const result = await bridge.listRotationBackups({ limit: 50 });
+  app.adminRotationBackupsSnapshot = Object.assign({}, result || {}, {
+    backups: result && Array.isArray(result.backups) ? result.backups : [],
+    loading: false
+  });
+  return app.adminRotationBackupsSnapshot;
+}
+
+async function restoreAdminRotationBackupFromSupabase(backupId) {
+  const bridge = window.RotationSupabaseBridge;
+  if (!bridge || typeof bridge.restoreRotationBackup !== 'function') {
+    return { ok: false, reason: 'missing-bridge' };
+  }
+  const result = await bridge.restoreRotationBackup(backupId, {
+    meta: { adminSource: 'admin-menu-backups' }
+  });
+  if (!result || result.ok === false) return result || { ok: false, reason: 'restore-failed' };
+  const row = result.row || (result.data && result.data.row) || null;
+  const payload = row && row.payload ? row.payload : null;
+  if (payload && typeof app !== 'undefined') {
+    app.rotation = typeof normalizeRotationData === 'function' ? normalizeRotationData(payload) : payload;
+    if (typeof getAvailableYears === 'function' && typeof getInitialSelectedYear === 'function' && (!app.selectedYear || !getAvailableYears(app.rotation).includes(parseInt(app.selectedYear, 10)))) {
+      app.selectedYear = getInitialSelectedYear(app.rotation);
+    }
+    if (typeof saveRotationData === 'function') saveRotationData();
+    if (typeof renderRotace === 'function') renderRotace();
+    if (typeof renderStatsPanel === 'function') renderStatsPanel();
+    if (app.selectedMonth && typeof renderMonth === 'function') renderMonth(app.selectedMonth);
+    if (app.selectedName && typeof renderPerson === 'function') renderPerson(app.selectedName);
+    if (typeof updateDashboard === 'function') updateDashboard();
+  }
+  return result;
+}
+
 function renderAdminMenuBody(body, section) {
   const mode = String(section || 'home').trim() || 'home';
   const months = getAdminRotationMonthKeys();
@@ -118,6 +214,7 @@ function renderAdminMenuBody(body, section) {
     '    <button type="button" class="appMenuAction" data-admin-action="open-machines">Nastavení strojů</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-food">Kantýna / jídelna</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-rotation">Rozpisy</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="open-backups">Zálohy rozpisů</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-announcement">Oznámení Dashboard</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-usage">Přehled připojení</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-export">Export / import</button>',
@@ -197,6 +294,22 @@ function renderAdminMenuBody(body, section) {
     '</div>'
   ].join('');
 
+  const backupsHtml = [
+    '<div class="appMenuCard appMenuAdminCard adminRotationBackupsCard">',
+    '  <div class="appMenuCardTitle">Zálohy rozpisů</div>',
+    '  <div class="appMenuText">',
+    '    <div>Tady jsou poslední online zálohy, které vznikly před přepsáním rozpisu. Obnova přepíše aktuální rozpis a současný stav si předtím ještě uloží jako novou zálohu.</div>',
+    '    <div class="smallText" id="adminOnlineSaveStatus">Načti zálohy a vyber, kterou chceš obnovit.</div>',
+    '  </div>',
+    buildAdminRotationBackupsHtml(),
+    '  <div class="appMenuActionRow">',
+    '    <button type="button" class="appMenuAction" data-admin-action="load-rotation-backups">Načíst zálohy</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="open-rotation">Zpět na rozpisy</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
+    '  </div>',
+    '</div>'
+  ].join('');
+
   const announcementHtml = buildAdminAnnouncementHtml();
   const usageHtml = buildAdminUsageHtml();
 
@@ -259,6 +372,8 @@ function renderAdminMenuBody(body, section) {
     body.innerHTML = rotationHtml;
   } else if (mode === 'overtime') {
     body.innerHTML = overtimeHtml;
+  } else if (mode === 'backups') {
+    body.innerHTML = backupsHtml;
   } else if (mode === 'announcement') {
     body.innerHTML = announcementHtml;
   } else if (mode === 'usage') {
@@ -978,6 +1093,10 @@ function bindAppMenuHandlers(body) {
         openAppMenu('admin-overtime');
         return;
       }
+      if (adminAction === 'open-backups') {
+        openAppMenu('admin-backups');
+        return;
+      }
       if (adminAction === 'open-announcement') {
         openAppMenu('admin-announcement');
         return;
@@ -1118,6 +1237,27 @@ function bindAppMenuHandlers(body) {
       if (adminAction === 'load-online') {
         await loadAdminRotationFromSupabase();
         renderAdminMenuBody(body, currentView);
+        return;
+      }
+      if (adminAction === 'load-rotation-backups') {
+        const statusEl = document.getElementById('adminOnlineSaveStatus');
+        if (statusEl) statusEl.textContent = 'Načítám zálohy…';
+        await loadAdminRotationBackupsFromSupabase();
+        renderAdminMenuBody(body, 'backups');
+        return;
+      }
+      if (adminAction === 'restore-rotation-backup') {
+        const backupId = target.getAttribute('data-backup-id') || target.closest('[data-backup-id]')?.getAttribute('data-backup-id') || '';
+        if (!backupId) return;
+        if (!confirm('Obnovit vybranou zálohu rozpisu? Aktuální stav se před obnovou ještě uloží jako nová záloha.')) return;
+        const statusEl = document.getElementById('adminOnlineSaveStatus');
+        if (statusEl) statusEl.textContent = 'Obnovuji zálohu…';
+        const result = await restoreAdminRotationBackupFromSupabase(backupId);
+        if (!result || result.ok === false) throw (result && result.error ? result.error : new Error('Obnova zálohy selhala.'));
+        await loadAdminRotationBackupsFromSupabase();
+        renderAdminMenuBody(body, 'backups');
+        const nextStatus = document.getElementById('adminOnlineSaveStatus');
+        if (nextStatus) nextStatus.textContent = 'Záloha obnovená online ✓';
         return;
       }
       if (adminAction === 'generate-rotation') {
@@ -1263,6 +1403,13 @@ function bindAppMenuHandlers(body) {
   body.addEventListener('focusout', (event) => {
     const target = event.target;
     if (!target || typeof target.matches !== 'function') return;
+    if (target.matches('[data-food-overtime-date]')) {
+      if (typeof adminFoodNormalizeDateInput === 'function') {
+        const normalized = adminFoodNormalizeDateInput(target.value || '');
+        if (normalized && normalized !== target.value) target.value = normalized;
+      }
+      return;
+    }
     if (!target.matches('[data-rot-field], [data-note-field]')) return;
     window.setTimeout(() => {
       const next = document.activeElement;
@@ -1461,6 +1608,17 @@ function openAppMenu(view) {
         } catch (err) {
           console.warn('Admin overtime preload failed', err);
           renderAdminMenuBody(body, 'overtime');
+        }
+      })();
+    } else if (v === 'admin-backups') {
+      void (async () => {
+        try {
+          await loadAdminRotationBackupsFromSupabase();
+          renderAdminMenuBody(body, 'backups');
+        } catch (err) {
+          console.warn('Admin backups preload failed', err);
+          if (typeof app !== 'undefined') app.adminRotationBackupsSnapshot = { ok: false, error: err, backups: [] };
+          renderAdminMenuBody(body, 'backups');
         }
       })();
     } else if (v === 'admin-announcement') {

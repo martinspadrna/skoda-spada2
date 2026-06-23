@@ -8,23 +8,52 @@ function adminFoodIsoToCzechDate(value) {
   return String(Number(match[3])) + '.' + String(Number(match[2])) + '.' + match[1];
 }
 
-function adminFoodCzechDateToIso(value) {
+function adminFoodIsValidDateParts(day, month, year) {
+  if (!Number.isFinite(day) || !Number.isFinite(month) || !Number.isFinite(year)) return false;
+  if (year < 2000 || year > 2100 || month < 1 || month > 12 || day < 1 || day > 31) return false;
+  const date = new Date(year, month - 1, day);
+  return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
+}
+
+function adminFoodNormalizeDateInput(value) {
   const raw = String(value || '').trim();
+  if (!raw) return '';
+  const compact = raw.replace(/[^\d]/g, '');
+  let day = null;
+  let month = null;
+  let year = null;
+  if (/^\d{8}$/.test(compact)) {
+    day = Number(compact.slice(0, 2));
+    month = Number(compact.slice(2, 4));
+    year = Number(compact.slice(4, 8));
+  } else if (/^\d{6}$/.test(compact)) {
+    day = Number(compact.slice(0, 2));
+    month = Number(compact.slice(2, 4));
+    year = 2000 + Number(compact.slice(4, 6));
+  }
+  if (adminFoodIsValidDateParts(day, month, year)) {
+    return String(day) + '.' + String(month) + '.' + String(year);
+  }
+  return raw;
+}
+try { window.adminFoodNormalizeDateInput = adminFoodNormalizeDateInput; } catch (err) {}
+
+function adminFoodCzechDateToIso(value) {
+  const raw = adminFoodNormalizeDateInput(value);
   if (!raw) return '';
   const iso = raw.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
   if (iso) {
     const year = Number(iso[1]);
     const month = Number(iso[2]);
     const day = Number(iso[3]);
-    if (year >= 2000 && year <= 2100 && month >= 1 && month <= 12 && day >= 1 && day <= 31) return String(year) + '-' + String(month).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+    if (adminFoodIsValidDateParts(day, month, year)) return String(year) + '-' + String(month).padStart(2, '0') + '-' + String(day).padStart(2, '0');
   }
   const cz = raw.match(/^(\d{1,2})\s*[.]\s*(\d{1,2})\s*[.]\s*(\d{4})\s*[.]?$/);
   if (!cz) return '';
   const day = Number(cz[1]);
   const month = Number(cz[2]);
   const year = Number(cz[3]);
-  if (!Number.isFinite(day) || !Number.isFinite(month) || !Number.isFinite(year)) return '';
-  if (year < 2000 || year > 2100 || month < 1 || month > 12 || day < 1 || day > 31) return '';
+  if (!adminFoodIsValidDateParts(day, month, year)) return '';
   return String(year) + '-' + String(month).padStart(2, '0') + '-' + String(day).padStart(2, '0');
 }
 
@@ -139,7 +168,9 @@ function readAdminFoodScheduleSettingsFromDom() {
   });
   const overtimeDates = [];
   document.querySelectorAll('#appMenuBody [data-food-overtime-date]').forEach((input) => {
-    const value = adminFoodCzechDateToIso(input.value || '');
+    const normalized = adminFoodNormalizeDateInput(input.value || '');
+    if (normalized && normalized !== input.value) input.value = normalized;
+    const value = adminFoodCzechDateToIso(normalized);
     if (value && !overtimeDates.includes(value)) overtimeDates.push(value);
   });
   overtimeDates.sort();

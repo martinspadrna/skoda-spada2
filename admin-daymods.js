@@ -142,6 +142,33 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
   }
   window.closeRakDayModModal = closeModal;
 
+  function openInfoModal(info, heading) {
+    var text = String(info || '').trim();
+    if (!text) return;
+    var overlay = document.getElementById('rakDayModOverlay');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'rakDayModOverlay';
+      overlay.className = 'rakDayModOverlay';
+      document.body.appendChild(overlay);
+    }
+    overlay.innerHTML = [
+      '<div class="rakDayModWin" role="dialog" aria-modal="true" aria-labelledby="rakDayModInfoTitle">',
+      '  <div class="rakDayModHead">',
+      '    <div>',
+      '      <div class="rakDayModTitle" id="rakDayModInfoTitle">Výjimka v rozpisu</div>',
+      '      <div class="rakDayModSub">' + esc(heading || 'Detail buňky') + '</div>',
+      '    </div>',
+      '    <button type="button" class="rakDayModClose" data-dm-act="close" aria-label="Zavřít">×</button>',
+      '  </div>',
+      '  <div class="rakDayModBody"><div class="smallText">' + esc(text) + '</div></div>',
+      '  <div class="rakDayModFoot"><span></span><div class="rakDayModFootRight"><button type="button" class="rakDayModBtn" data-dm-act="close">Zavřít</button></div></div>',
+      '</div>'
+    ].join('');
+    overlay.classList.add('isVisible');
+    document.body.classList.add('rakDayModOpen');
+  }
+
   function fieldRowsHtml(existing) {
     var typeOptions = DM_TYPES.map(function (t) {
       return '<option value="' + esc(t.value) + '"' + (existing && existing.type === t.value ? ' selected' : '') + '>' + esc(t.label) + '</option>';
@@ -626,6 +653,14 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
       ev.stopPropagation();
       var mk = typeof getAdminSelectedMonthKey === 'function' ? getAdminSelectedMonthKey() : (window.app ? app.selectedMonth : '');
       if (mk) openOvertimeOverview(mk);
+      return;
+    }
+
+    var publicInfoCell = t.closest('td.rakDayModCell[data-daymod-info]');
+    if (publicInfoCell && !publicInfoCell.closest('table[data-daymod-section]')) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      openInfoModal(publicInfoCell.getAttribute('data-daymod-info') || publicInfoCell.getAttribute('title') || '', publicInfoCell.textContent || '');
       return;
     }
 

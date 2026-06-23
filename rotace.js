@@ -675,11 +675,12 @@ function renderMonth(monthKey) {
         const tip = mod && typeof rakDayModTooltip === 'function' ? rakDayModTooltip(mod) : "";
         const badge = mod && typeof rakDayModBadge === 'function' ? rakDayModBadge(mod) : "";
         const titleAttr = tip ? " title='" + escapeHtml(tip) + "'" : "";
+        const infoAttr = tip ? " data-daymod-info='" + escapeHtml(tip) + "'" : "";
         const markHtml = badge ? " <span class='rakDayModMark'>" + escapeHtml(badge) + "</span>" : "";
         if (val) {
-          out += "<td" + (mod ? " class='rakDayModCell'" : "") + titleAttr + ">" + escapeHtml(val) + markHtml + "</td>";
+          out += "<td" + (mod ? " class='rakDayModCell'" : "") + titleAttr + infoAttr + ">" + escapeHtml(val) + markHtml + "</td>";
         } else {
-          out += "<td class='missingCell" + (mod ? " rakDayModCell" : "") + "'" + titleAttr + ">" + (badge ? escapeHtml(badge) : "—") + "</td>";
+          out += "<td class='missingCell" + (mod ? " rakDayModCell" : "") + "'" + titleAttr + infoAttr + ">" + (badge ? escapeHtml(badge) : "—") + "</td>";
         }
       });
       out += "</tr>";
@@ -1285,6 +1286,7 @@ function drawRotationExportTable(ctx, title, columns, rows, x, y, w, options) {
     row.forEach((cell, idx) => {
       const cw = colWidths[idx];
       const column = Array.isArray(columns) ? (columns[idx] || {}) : {};
+      const dayModMeta = opts.cellMeta && opts.cellMeta[rowIdx] && opts.cellMeta[rowIdx][idx] ? opts.cellMeta[rowIdx][idx] : null;
       const rawCell = String(cell || '').trim();
       if (opts.highlightEmptyCells && idx > 0 && !rawCell) {
         const emptyBg = ctx.createLinearGradient(cx, cy, cx, cy + rowH);
@@ -1293,20 +1295,41 @@ function drawRotationExportTable(ctx, title, columns, rows, x, y, w, options) {
         ctx.fillStyle = emptyBg;
         ctx.fillRect(cx + 1, cy + 1, Math.max(0, cw - 2), Math.max(0, rowH - 2));
       }
+      if (dayModMeta) {
+        const modBg = ctx.createLinearGradient(cx, cy, cx, cy + rowH);
+        modBg.addColorStop(0, 'rgba(254,243,199,.98)');
+        modBg.addColorStop(1, 'rgba(252,211,77,.78)');
+        ctx.fillStyle = modBg;
+        ctx.fillRect(cx + 1, cy + 1, Math.max(0, cw - 2), Math.max(0, rowH - 2));
+      }
       ctx.strokeStyle = opts.grid || 'rgba(15,23,42,.24)';
       ctx.strokeRect(cx, cy, cw, rowH);
+      if (dayModMeta) {
+        ctx.strokeStyle = 'rgba(180,83,9,.92)';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(cx + 2, cy + 2, Math.max(0, cw - 4), Math.max(0, rowH - 4));
+        ctx.lineWidth = 1.5;
+      }
       const isDate = idx === 0;
       const align = column.align || (Array.isArray(opts.aligns) ? opts.aligns[idx] : '') || opts.align || 'center';
       const textColor = column.textColor || (isDate ? '#0f172a' : '#1e293b');
       const fontWeight = column.fontWeight || (isDate ? '900 ' : '750 ');
       ctx.fillStyle = textColor;
       ctx.font = fontWeight + (opts.fontSize || 22) + 'px system-ui, -apple-system, Segoe UI, sans-serif';
-      drawRotationExportCellText(ctx, cell, cx, cy, cw, rowH, {
+      const printableCell = rawCell || (dayModMeta && dayModMeta.badge ? dayModMeta.badge : cell);
+      drawRotationExportCellText(ctx, printableCell, cx, cy, cw, rowH, {
         maxLines: opts.maxLines || 2,
         lineHeight: opts.lineHeight || 25,
         align,
         pad: typeof column.pad === 'number' ? column.pad : 12
       });
+      if (dayModMeta && dayModMeta.badge && rawCell) {
+        ctx.fillStyle = '#92400e';
+        ctx.font = '900 18px system-ui, -apple-system, Segoe UI, sans-serif';
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'top';
+        ctx.fillText(String(dayModMeta.badge), cx + cw - 8, cy + 6, Math.max(18, cw - 16));
+      }
       cx += cw;
     });
     cy += rowH;
@@ -1314,26 +1337,37 @@ function drawRotationExportTable(ctx, title, columns, rows, x, y, w, options) {
   return tableH;
 }
 
-function buildRotationExportRows(section) {
+function buildRotationExportRows(section, sectionKey, month) {
   const sec = section || {};
   const machines = Array.isArray(sec.machines) ? sec.machines : [];
   const dateWidth = 0.1215;
   const columns = [{ label: 'Datum', width: dateWidth }];
   const rest = machines.length ? (1 - dateWidth) / machines.length : (1 - dateWidth);
   machines.forEach(machine => columns.push({ label: String(machine || ''), width: rest }));
+  const cellMeta = [];
   const rows = (Array.isArray(sec.rows) ? sec.rows : []).map(row => {
     const cells = [String(row && row.date ? row.date : '')];
-    machines.forEach((_, idx) => cells.push(String((row && row.cells ? row.cells[idx] : '') || '')));
+    const metaRow = [null];
+    machines.forEach((_, idx) => {
+      cells.push(String((row && row.cells ? row.cells[idx] : '') || ''));
+      let mod = null;
+      try { if (typeof rakDayModForCell === 'function') mod = rakDayModForCell(month, sectionKey, row && row.date, idx); } catch (e) { mod = null; }
+      metaRow.push(mod ? {
+        badge: typeof rakDayModBadge === 'function' ? rakDayModBadge(mod) : '',
+        tooltip: typeof rakDayModTooltip === 'function' ? rakDayModTooltip(mod) : ''
+      } : null);
+    });
+    cellMeta.push(metaRow);
     return cells;
   });
-  return { columns, rows };
+  return { columns, rows, cellMeta };
 }
 
 function createRotationMonthExportCanvas(monthKey) {
   const month = app && app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
   if (!month) throw new Error('Vybraný měsíc není dostupný.');
-  const hard = buildRotationExportRows(month.hard);
-  const soft = buildRotationExportRows(month.soft);
+  const hard = buildRotationExportRows(month.hard, 'hard', month);
+  const soft = buildRotationExportRows(month.soft, 'soft', month);
   const absences = getRotationMonthExportAbsences(month);
   const exportDateColWeight = Number(hard && hard.columns && hard.columns[0] && hard.columns[0].width) || 0.1215;
   const exportMachineColWeight = Number(hard && hard.columns && hard.columns[1] && hard.columns[1].width) || 0.1757;
@@ -1430,6 +1464,7 @@ function createRotationMonthExportCanvas(monthKey) {
     fontSize: 27,
     lineHeight: 30,
     highlightEmptyCells: true,
+    cellMeta: hard.cellMeta,
     radius: 32,
     titleH: 86,
     headerH: 64
@@ -1439,6 +1474,7 @@ function createRotationMonthExportCanvas(monthKey) {
     fontSize: 27,
     lineHeight: 30,
     highlightEmptyCells: true,
+    cellMeta: soft.cellMeta,
     radius: 32,
     titleH: 86,
     headerH: 64
@@ -1574,4 +1610,3 @@ function updateImportBoxVisibility() {
   const box = document.getElementById("adminBox");
   if (box) box.style.display = "none";
 }
-

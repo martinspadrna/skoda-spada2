@@ -4373,6 +4373,58 @@
     }
   }
 
+  async function listRotationBackups(options) {
+    const client = getClient();
+    const opts = options || {};
+    const adminPin = getAdminPinForWrite(opts);
+    if (!adminPin) return { ok: false, reason: 'admin-pin-required', backups: [] };
+    if (!client || !navigator.onLine) return { ok: false, reason: 'admin-online-required', backups: [] };
+    try {
+      const limit = Math.max(1, Math.min(100, Number(opts.limit) || 30));
+      const { data, error } = await runSupabaseOperation('rotation_backups.list', () => client.rpc('rak_admin_list_rotation_backups', {
+        p_admin_pin: adminPin,
+        p_limit: limit
+      }), { mode: 'read', attempts: 1, timeoutMs: 12000 });
+      if (error) throw error;
+      return { ok: true, backups: Array.isArray(data) ? data : [], at: new Date().toISOString() };
+    } catch (err) {
+      state.lastError = err;
+      console.warn('Supabase rotation backups list failed', err);
+      return { ok: false, error: err, backups: [] };
+    }
+  }
+
+  async function restoreRotationBackup(backupId, options) {
+    const client = getClient();
+    const opts = options || {};
+    const adminPin = getAdminPinForWrite(opts);
+    const id = String(backupId || '').trim();
+    if (!adminPin) return { ok: false, reason: 'admin-pin-required' };
+    if (!id) return { ok: false, reason: 'missing-backup-id' };
+    if (!client || !navigator.onLine) return { ok: false, reason: 'admin-online-required' };
+    try {
+      const meta = opts.meta && typeof opts.meta === 'object' ? opts.meta : {};
+      const { data, error } = await runSupabaseOperation('rotation_backups.restore', () => client.rpc('rak_admin_restore_rotation_backup', {
+        p_backup_id: id,
+        p_admin_pin: adminPin,
+        p_meta: meta
+      }), { mode: 'write', attempts: 1, timeoutMs: 16000 });
+      if (error) throw error;
+      const row = data && data.row ? data.row : null;
+      if (row && row.payload) {
+        state.rotationSnapshot = row.payload;
+        state.lastError = null;
+        saveLocalSnapshot(row.payload, state.machineSettingsSnapshot || []);
+      }
+      await flushPendingWrites();
+      return { ok: true, data: data || null, row, updatedAt: row && row.updated_at ? row.updated_at : null };
+    } catch (err) {
+      state.lastError = err;
+      console.warn('Supabase rotation backup restore failed', err);
+      return { ok: false, error: err };
+    }
+  }
+
   async function loadGomokuWins(limit, options) {
     const client = getClient();
     if (!client || !navigator.onLine) return [];
@@ -4797,6 +4849,8 @@
     sendGomokuWin,
     loadRotationState,
     saveRotationState,
+    listRotationBackups,
+    restoreRotationBackup,
     loadGomokuWins,
     loadMachineSettings,
     saveMachineSettings,

@@ -1,3 +1,11 @@
+## RaK 1.2 (1.170)
+
+- Supabase admin ukládání nastavení nově povoluje kategorii přesčasů rozpisu `rotation_overtime_settings`, takže přidání přesčasu už nekončí chybou `invalid category`.
+- Administrace má novou sekci Zálohy rozpisů: umí načíst poslední online zálohy a obnovit vybranou zálohu přes admin PIN; aktuální stav se před obnovou uloží jako další záloha.
+- Veřejný rozpis po kliknutí na žlutě označenou výjimku otevře detail výjimky a PNG export rozpisu zvýrazňuje stejné výjimky.
+- Datumy přesčasových nedělí v Kantýna / jídelna přijmou i číselný zápis typu `24122026` a převedou ho na `24.12.2026`.
+- Release metadata sjednocená na `RaK 1.2 (1.170)`, technická verze `1.2.170`, cache `v1.2-1.170`.
+
 ## RaK 1.2 (1.169)
 
 - Admin ukládání rozpisů po uzamčení Supabase používá novou admin RPC cestu a PWA cache se přebíjí na `v1.2-1.169`.
