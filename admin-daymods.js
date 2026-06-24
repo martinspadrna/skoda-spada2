@@ -167,6 +167,8 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     ].join('');
     overlay.classList.add('isVisible');
     document.body.classList.add('rakDayModOpen');
+    overlay.querySelectorAll('[data-dm-act="close"]').forEach(function (b) { b.addEventListener('click', closeModal); });
+    overlay.addEventListener('click', function (ev) { if (ev.target === overlay) closeModal(); }, { once: true });
   }
 
   function fieldRowsHtml(existing) {

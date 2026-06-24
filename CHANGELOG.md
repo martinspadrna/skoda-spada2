@@ -1,3 +1,9 @@
+## RaK 1.2 (1.171)
+
+- Detail žluté výjimky ve veřejném rozpisu jde zavřít křížkem, tlačítkem i kliknutím mimo okno.
+- Křížek v okně výjimky je zarovnaný uprostřed svého tlačítka v horní části okna.
+- Release metadata sjednocená na `RaK 1.2 (1.171)`, technická verze `1.2.171`, cache `v1.2-1.171`.
+
 ## RaK 1.2 (1.170)
 
 - Supabase admin ukládání nastavení nově povoluje kategorii přesčasů rozpisu `rotation_overtime_settings`, takže přidání přesčasu už nekončí chybou `invalid category`.

@@ -77,12 +77,17 @@ body.rakDayModOpen { overflow: hidden; }
   gap: 12px;
   padding: 16px 18px 8px;
 }
+.rakDayModHead > div:first-child { flex: 1 1 auto; min-width: 0; }
 .rakDayModTitle { font-size: 17px; font-weight: 700; }
 .rakDayModSub { font-size: 12.5px; color: #9fb6d4; margin-top: 3px; }
 .rakDayModMuted { color: #7388a6; }
 .rakDayModClose {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex: 0 0 auto;
   width: 34px; height: 34px;
+  padding: 0;
   border: 0; border-radius: 9px;
   background: rgba(255, 255, 255, 0.08);
   color: #d7e6ff; font-size: 22px; line-height: 1; cursor: pointer;
