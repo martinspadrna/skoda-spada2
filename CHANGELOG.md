@@ -1,3 +1,10 @@
+## RaK 1.2 (1.172)
+
+- Generátor rozpisu hlídá dvě směny po sobě na nýtovačce přes `TNKS01` i rotující `TPKW01`, protože při půlení jde TPKW01 zároveň na TNKS01.
+- Krátká / nerotující neděle zůstává výjimka: když se TNKS01/TPKW01 nepůlí, TPKW01 se pro tohle pravidlo nepočítá jako TNKS01.
+- Dorovnávací prohozy TNKS01 používají stejné pravidlo, takže vyrovnání po vygenerování nemá vytvořit zakázanou návaznost.
+- Release metadata sjednocená na `RaK 1.2 (1.172)`, technická verze `1.2.172`, cache `v1.2-1.172`.
+
 ## RaK 1.2 (1.171)
 
 - Detail žluté výjimky ve veřejném rozpisu jde zavřít křížkem, tlačítkem i kliknutím mimo okno.
