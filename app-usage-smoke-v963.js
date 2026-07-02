@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.172) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.173) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -219,12 +219,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.172)',
-  appLabel: 'RaK 1.2 (1.172)',
-  packageVersion: '1.2.172',
-  cacheVersion: 'v1.2-1.172',
+  displayVersion: '1.2 (1.173)',
+  appLabel: 'RaK 1.2 (1.173)',
+  packageVersion: '1.2.173',
+  cacheVersion: 'v1.2-1.173',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.172)',
+  changelogHeader: '## RaK 1.2 (1.173)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -333,8 +333,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.172)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.172'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.173)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.173'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -870,7 +870,7 @@ function assertRotationGeneratorContractV1106() {
   assertIncludes(ui, 'RAK_ROTATION_GENERATOR_CONTRACT_V1106', 'admin-rotation.js musí obsahovat generátor contract v1.106');
   assertIncludes(ui, 'data-admin-action="generate-rotation"', 'Administrace Rozpisů musí mít akci generate-rotation');
   assertIncludes(ui, 'Vygenerovat návrh', 'Administrace Rozpisů musí mít tlačítko Vygenerovat návrh');
-  assertIncludes(ui, 'function adminGenerateRotationMonthDraft(monthKey)', 'Generátor rozpisu musí mít samostatnou funkci');
+  assertIncludes(ui, 'function adminGenerateRotationMonthDraft(monthKey, preparedMonth)', 'Generátor rozpisu musí mít samostatnou funkci');
   assertIncludes(ui, 'adminBuildRotationGenerationModel(monthKey)', 'Generátor musí stavět model z historických rotací');
   assertIncludes(ui, 'previousYearTemplates', 'Generátor musí umět preferovat loňský měsíc jako historický vzor');
   assertIncludes(ui, 'adminRotationNamesForAbsenceDate', 'Generátor musí respektovat absence v daný den');
@@ -1292,4 +1292,7 @@ assertIncludes(ui, 'adminRotationGeneratorWouldBreakConsecutiveTnks', 'Generáto
 assertIncludes(ui, 'adminRotationGeneratorPersonHasTnksWorkOnRow', 'Generátor musí brát rotující TPKW01 jako práci na TNKS01');
 assertIncludes(ui, "machine === 'TPKW01' && adminRotationGeneratorRowShouldSplitPress", 'TPKW01 se smí počítat jako TNKS01 jen ve dnech s půlením TNKS01/TPKW01');
 assertIncludes(exportJs, 'consecutivePressRule', 'Export contract musí dokumentovat hlídání TNKS01 i rotující TPKW01');
+assertIncludes(ui, 'adminRotationGeneratorSetPendingDraft', 'Generátor musí ukládat nový návrh bokem jako čekající draft');
+assertIncludes(ui, 'adminRotationGeneratorApplyPendingDraft', 'Otevření editoru musí umět převzít čekající draft bez online uložení');
+assertIncludes(ui, 'const preparedMonth = adminRotationGeneratorEnsurePreparedMonthFromWizard();', 'Příprava dnů generátoru nesmí rovnou přepsat skutečný rozpis');
 assert(!ui.includes('adminRotationSaveDockBtn'), 'Editor rozpisu už nesmí mít duplicitní dock tlačítko Uložit rozpis');

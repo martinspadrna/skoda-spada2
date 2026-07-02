@@ -1,3 +1,10 @@
+## RaK 1.2 (1.173)
+
+- Generátor rozpisu u hotového měsíce drží nový návrh bokem jako čekající draft a nepřepisuje skutečný rozpis hned při výpočtu.
+- `Otevřít rozpis` vloží čekající návrh do editoru jako neuložený pracovní stav; online se zapíše až přes `Uložit rozpis`.
+- Náhled výsledku a Excel export generátoru používají čekající návrh, ne původní hotovou rotaci.
+- Release metadata sjednocená na `RaK 1.2 (1.173)`, technická verze `1.2.173`, cache `v1.2-1.173`.
+
 ## RaK 1.2 (1.172)
 
 - Generátor rozpisu hlídá dvě směny po sobě na nýtovačce přes `TNKS01` i rotující `TPKW01`, protože při půlení jde TPKW01 zároveň na TNKS01.

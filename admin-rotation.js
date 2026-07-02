@@ -1321,6 +1321,9 @@ async function saveAdminRotationFromDom(monthKey) {
   if (app.adminUnlocked) {
     saveResult = await saveRotationToSupabase(app.rotation, { source: 'admin-menu', monthKey });
   }
+  try {
+    if (app.adminRotationPendingDrafts && monthKey) delete app.adminRotationPendingDrafts[monthKey];
+  } catch (err) {}
   return { normalized, saveResult };
 }
 
@@ -2678,10 +2681,41 @@ function adminRotationGeneratorCanReadEditorDraftFromDom() {
   return !!(body && body.querySelector('#adminRotationEditor tr[data-rotation-section]'));
 }
 
-function adminGenerateRotationMonthDraft(monthKey) {
+function adminRotationGeneratorEnsurePendingDrafts() {
+  if (!app.adminRotationPendingDrafts || typeof app.adminRotationPendingDrafts !== 'object') app.adminRotationPendingDrafts = {};
+  return app.adminRotationPendingDrafts;
+}
+
+function adminRotationGeneratorSetPendingDraft(monthKey, month) {
+  const key = String(monthKey || '').trim();
+  if (!key || !month) return null;
+  const drafts = adminRotationGeneratorEnsurePendingDrafts();
+  drafts[key] = JSON.parse(JSON.stringify(month));
+  return drafts[key];
+}
+
+function adminRotationGeneratorGetPendingDraft(monthKey) {
+  const key = String(monthKey || '').trim();
+  const drafts = app && app.adminRotationPendingDrafts && typeof app.adminRotationPendingDrafts === 'object' ? app.adminRotationPendingDrafts : {};
+  return key && drafts[key] ? JSON.parse(JSON.stringify(drafts[key])) : null;
+}
+
+function adminRotationGeneratorApplyPendingDraft(monthKey) {
+  const key = String(monthKey || '').trim();
+  const draft = adminRotationGeneratorGetPendingDraft(key);
+  if (!key || !draft || !app || !app.rotation) return false;
+  if (!app.rotation.months) app.rotation.months = {};
+  app.rotation.months[key] = typeof normalizeMonthForImport === 'function'
+    ? normalizeMonthForImport(draft, app.rotation.months[key] || null)
+    : draft;
+  app.selectedMonth = key;
+  return true;
+}
+
+function adminGenerateRotationMonthDraft(monthKey, preparedMonth) {
   if (!monthKey) throw new Error('Chybí měsíc.');
   const domMonth = adminRotationGeneratorCanReadEditorDraftFromDom() ? readAdminRotationFromDom(monthKey) : null;
-  const fallback = domMonth || (app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null);
+  const fallback = domMonth || preparedMonth || (app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null);
   if (!fallback) throw new Error('Pro vybraný měsíc nejsou připravené řádky.');
   const model = adminBuildRotationGenerationModel(monthKey);
   if (!model.dayTemplates.length) throw new Error('Nemám z čeho vycházet. Nejdřív musí existovat aspoň jeden vyplněný předchozí rozpis.');
@@ -2736,14 +2770,7 @@ function adminGenerateRotationMonthDraft(monthKey) {
   const soloMillRebalance = adminRotationGeneratorBalanceSoloMill(month, model);
   const kminekNovotnyMoToBalance = adminRotationGeneratorBalanceKminekNovotnyMoTo(month, model);
   const normalized = normalizeMonthForImport(month, fallback);
-  if (!app.rotation.months) app.rotation.months = {};
-  app.rotation.months[monthKey] = normalized;
-  app.rotation = normalizeRotationData(app.rotation);
-  app.selectedMonth = monthKey;
-  saveRotationData();
-  renderRotace();
-  if (typeof renderMonth === 'function') renderMonth(monthKey);
-  if (app.selectedName && typeof renderPerson === 'function') renderPerson(app.selectedName);
+  adminRotationGeneratorSetPendingDraft(monthKey, normalized);
   return {
     normalized,
     days,
@@ -3321,7 +3348,7 @@ function adminRotationGeneratorDownloadExcel(monthKey) {
       throw new Error('Knihovna XLSX není dostupná. Zkus to online nebo po načtení stránky znovu.');
     }
     const key = String(monthKey || (app && app.selectedMonth) || '').trim();
-    const month = app && app.rotation && app.rotation.months ? app.rotation.months[key] : null;
+    const month = adminRotationGeneratorGetPendingDraft(key) || (app && app.rotation && app.rotation.months ? app.rotation.months[key] : null);
     if (!month) throw new Error('Není dostupný vygenerovaný měsíc pro export.');
     const aoa = adminRotationGeneratorBuildExcelAoa(month);
     const wb = XLSX.utils.book_new();
@@ -3345,7 +3372,9 @@ function adminRotationGeneratorDownloadExcel(monthKey) {
 }
 
 function adminRotationGeneratorRenderResultStep(state) {
-  const month = app.rotation && app.rotation.months ? app.rotation.months[state.monthKey] : null;
+  const month = (state && state.result && state.result.normalized)
+    || adminRotationGeneratorGetPendingDraft(state && state.monthKey)
+    || (app.rotation && app.rotation.months ? app.rotation.months[state.monthKey] : null);
   const summary = adminBuildRotationMachineCountSummaryHtml(month, state.monthKey);
   const preview = adminBuildRotationGeneratorPreviewHtml(month, state.monthKey);
   return [
@@ -3395,9 +3424,7 @@ function adminRotationGeneratorEnsurePreparedMonthFromWizard() {
     });
   });
   month.notes = notes;
-  if (!app.rotation.months) app.rotation.months = {};
-  app.rotation.months[monthKey] = normalizeMonthForImport(month, fallback);
-  saveRotationData();
+  return normalizeMonthForImport(month, fallback);
 }
 
 function adminBuildRotationMachineCountSummaryHtml(month, monthKey) {
@@ -3549,8 +3576,12 @@ function adminHandleRotationGeneratorWizardAction(action, target) {
     return true;
   }
   if (action === 'generator-open-editor') {
-    app.selectedMonth = state.monthKey || app.selectedMonth;
+    const monthKey = state.monthKey || app.selectedMonth;
+    const applied = adminRotationGeneratorApplyPendingDraft(monthKey);
+    app.selectedMonth = monthKey;
     if (typeof renderAdminMenuBody === 'function') renderAdminMenuBody(body, 'rotation');
+    const status = document.getElementById('adminOnlineSaveStatus') || document.getElementById('adminRotationDraftStatus');
+    if (status && applied) status.textContent = 'Návrh je otevřený v editoru. Online se uloží až tlačítkem Uložit rozpis.';
     return true;
   }
   if (action === 'generator-month-next') {
@@ -3616,8 +3647,8 @@ function adminHandleRotationGeneratorWizardAction(action, target) {
       if (!state.days.length) throw new Error('Nejsou vybrané žádné pracovní dny. Vrať se na krok Dny a přidej aspoň jeden den.');
       const hasFilledCells = typeof adminRotationMonthHasFilledCells === 'function' ? adminRotationMonthHasFilledCells(state.monthKey) : false;
       if (hasFilledCells && !confirm('Tenhle měsíc už má v rozpisu jména. Přepsat ho novým návrhem podle průvodce?')) return true;
-      adminRotationGeneratorEnsurePreparedMonthFromWizard();
-      const result = adminGenerateRotationMonthDraft(state.monthKey);
+      const preparedMonth = adminRotationGeneratorEnsurePreparedMonthFromWizard();
+      const result = adminGenerateRotationMonthDraft(state.monthKey, preparedMonth);
       state.result = result;
       state.resultText = result && result.filledCells > 0
         ? ('Návrh vygenerovaný lokálně ✓ · dnů: ' + String(result.days || 0) + ' · políček: ' + String(result.filledCells || 0) + ' · absence: ' + String(result.blockedByAbsence || 0) + '.')
