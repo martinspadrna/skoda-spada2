@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.173) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.174) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -219,12 +219,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.173)',
-  appLabel: 'RaK 1.2 (1.173)',
-  packageVersion: '1.2.173',
-  cacheVersion: 'v1.2-1.173',
+  displayVersion: '1.2 (1.174)',
+  appLabel: 'RaK 1.2 (1.174)',
+  packageVersion: '1.2.174',
+  cacheVersion: 'v1.2-1.174',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.173)',
+  changelogHeader: '## RaK 1.2 (1.174)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -333,8 +333,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.173)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.173'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.174)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.174'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -947,8 +947,11 @@ function assertRotationGeneratorWizardRunContractV1110() {
 function assertRotationGeneratorMonthBalanceContractV1112() {
   assertIncludes(exportJs, 'RAK_ROTATION_GENERATOR_MONTH_BALANCE_CONTRACT_V1112', 'export.js musí dokumentovat řazení měsíců a vyrovnání TNKS01 v1.112');
   assertIncludes(ui, 'RAK_ROTATION_GENERATOR_MONTH_BALANCE_CONTRACT_V1112', 'admin-rotation.js musí mít contract pro řazení měsíců a vyrovnání TNKS01');
-  assertIncludes(ui, 'function adminRotationGeneratorBuildMonthOptions', 'Generátor musí stavět volbu měsíců přes seřazené optgroup podle roku');
-  assertIncludes(ui, '<optgroup label="Rok ', 'Volba měsíce v generátoru musí být seskupená podle roku');
+  assertIncludes(ui, 'function adminRotationGetAllowedGeneratorMonthKeys', 'Generátor musí umět omezit výběr na další navazující měsíc');
+  assertIncludes(ui, 'function adminRotationGeneratorBuildYearOptions', 'Generátor musí mít samostatný výběr roku');
+  assertIncludes(ui, 'function adminRotationGeneratorBuildMonthOptions', 'Generátor musí stavět volbu měsíce jen z povolených měsíců');
+  assertIncludes(ui, 'adminGeneratorYearSelect', 'Volba měsíce v generátoru musí nejdřív ukázat rok');
+  assertIncludes(ui, 'adminRotationGeneratorResolveSelectableMonthKey', 'Pokračování generátoru musí znovu ověřit povolený měsíc');
   assertIncludes(ui, 'function adminRotationGeneratorBalanceHardMachine', 'Generátor musí po sestavení měsíce umět vyrovnat tvrdotní stroj');
   assertIncludes(ui, "adminRotationGeneratorBalanceHardMachine(month, 'TNKS01', model, monthKey)", 'Generátor musí vyrovnávat nýtovačku TNKS01 po vygenerování');
   assertIncludes(ui, 'adminRotationGeneratorFindPersonCellOnDay(month, rowIdx, targetLowName, \'soft\')', 'Vyrovnání TNKS01 musí umět prohodit člověka z tvrdoty dočasně napsaného na měkotě');
@@ -1203,6 +1206,8 @@ function assertRotationOvertimeShiftFilterContractV1128() {
   assertIncludes(css, 'var(--rakGlassActiveBg', 'Filtr směn musí používat theme/glass aktivní barvy aplikace');
   assertIncludes(css, '.adminRotationOvertimeYearSummary', 'Roční přehled přesčasů musí mít vlastní čitelný theme styl');
 assertIncludes(rotaceJs, 'getRotationMonthShiftAbsenceGroups', 'Absence v Rozpisech/exportu musí držet i prázdné pracovní dny');
+assertIncludes(rotaceJs, 'if (i === 0) absenceHtml += "<th class=\'noteDateCell\'>Datum</th><th class=\'noteShiftCell\'>Směna</th>";', 'Absence v Rozpisech mají datum/směnu jen u první dvojice dne');
+assertNotIncludes(rotaceJs, "emptyCell noteDateCell", 'Absence v Rozpisech už nesmí vykreslovat prázdné opakované sloupce Datum/Směna');
 assertIncludes(rotaceJs, 'buildStatsForYear(year, { maxMonth })', 'Nýtování a úklid v exportu musí být omezené exportovaným měsícem');
 assertIncludes(ui, 'yearHardMachineStats', 'Generátor musí při nýtování zohledňovat roční počty před cílovým měsícem');
 assertIncludes(appearanceThemeJs, '"id": "light-brown"', 'Musí existovat základní světlý hnědý theme');

@@ -705,7 +705,8 @@ function renderMonth(monthKey) {
     absenceHtml += "<div class='tableWrap'><table class='noteTable'><thead><tr>";
     for (let i = 0; i < maxPairs; i += 1) {
       if (i > 0) absenceHtml += "<th class='noteSpacer'></th>";
-      absenceHtml += "<th class='noteDateCell'>Datum</th><th class='noteShiftCell'>Směna</th><th class='notePersonCell'>Jméno</th><th class='noteReasonCell'>Důvod</th>";
+      if (i === 0) absenceHtml += "<th class='noteDateCell'>Datum</th><th class='noteShiftCell'>Směna</th>";
+      absenceHtml += "<th class='notePersonCell'>Jméno</th><th class='noteReasonCell'>Důvod</th>";
     }
     absenceHtml += "</tr></thead><tbody>";
 
@@ -717,8 +718,6 @@ function renderMonth(monthKey) {
         const item = items[i];
         if (i === 0) {
           absenceHtml += "<td class='noteDateCell'>" + escapeHtml(group.date || '—') + "</td><td class='noteShiftCell'>" + escapeHtml(group.shift || '') + "</td>";
-        } else {
-          absenceHtml += "<td class='emptyCell noteDateCell'>—</td><td class='emptyCell noteShiftCell'>—</td>";
         }
         if (item) {
           absenceHtml += "<td class='notePersonCell'>" + escapeHtml(item.person || '') + "</td><td class='noteReasonCell'>" + escapeHtml(item.reason || '') + "</td>";

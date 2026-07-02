@@ -2882,14 +2882,79 @@ const RAK_ROTATION_GENERATOR_WIZARD_CONTRACT_V1108 = Object.freeze({
   rules: 'Generátor se spouští až po kontrole dnů a absencí. Přehled strojů podle jmen je jen pro rychlou kontrolu před ručním uložením.'
 });
 
-function adminRotationGetNextMonthKeyFrom(monthKey) {
-  const keys = getAdminRotationMonthKeys();
+function adminRotationGetOrderedMonthKeys() {
+  return getAdminRotationMonthKeys().slice().sort((a, b) => adminRotationMonthSortValue(a) - adminRotationMonthSortValue(b));
+}
+
+function adminRotationGetNextExistingMonthKeyAfter(monthKey) {
+  const keys = adminRotationGetOrderedMonthKeys();
   if (!keys.length) return monthKey || '';
-  const ordered = keys.slice().sort((a, b) => adminRotationMonthSortValue(a) - adminRotationMonthSortValue(b));
-  const current = monthKey && ordered.includes(monthKey) ? monthKey : (app.selectedMonth && ordered.includes(app.selectedMonth) ? app.selectedMonth : ordered[ordered.length - 1]);
-  const idx = ordered.indexOf(current);
-  if (idx >= 0 && idx < ordered.length - 1) return ordered[idx + 1];
-  return current || ordered[ordered.length - 1];
+  const current = monthKey && keys.includes(monthKey) ? monthKey : (app.selectedMonth && keys.includes(app.selectedMonth) ? app.selectedMonth : keys[keys.length - 1]);
+  const idx = keys.indexOf(current);
+  if (idx >= 0 && idx < keys.length - 1) return keys[idx + 1];
+  const currentSort = adminRotationMonthSortValue(current);
+  const later = keys.find((key) => adminRotationMonthSortValue(key) > currentSort);
+  return later || '';
+}
+
+function adminRotationFindExistingMonthKeyAtOrAfter(monthKey) {
+  const keys = adminRotationGetOrderedMonthKeys();
+  if (!keys.length) return '';
+  if (monthKey && keys.includes(monthKey)) return monthKey;
+  const targetSort = adminRotationMonthSortValue(monthKey);
+  if (targetSort) {
+    const later = keys.find((key) => adminRotationMonthSortValue(key) >= targetSort);
+    if (later) return later;
+  }
+  return keys[0] || '';
+}
+
+function adminRotationGetLatestGeneratedMonthKey() {
+  const keys = adminRotationGetOrderedMonthKeys();
+  let latest = '';
+  let started = false;
+  for (let i = 0; i < keys.length; i += 1) {
+    const key = keys[i];
+    if (adminRotationMonthHasFilledCells(key)) {
+      latest = key;
+      started = true;
+      continue;
+    }
+    if (started) break;
+  }
+  return latest;
+}
+
+function adminRotationGetDefaultFutureMonthKey() {
+  const today = new Date();
+  const future = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+  const key = typeof monthKeyFromYearMonth === 'function'
+    ? monthKeyFromYearMonth(future.getFullYear(), future.getMonth() + 1)
+    : String(future.getMonth() + 1) + '/' + String(future.getFullYear()).slice(-2);
+  return adminRotationFindExistingMonthKeyAtOrAfter(key);
+}
+
+function adminRotationGetAllowedGeneratorMonthKeys() {
+  const keys = adminRotationGetOrderedMonthKeys();
+  if (!keys.length) return [];
+  const latestGenerated = adminRotationGetLatestGeneratedMonthKey();
+  if (latestGenerated) {
+    const next = adminRotationGetNextExistingMonthKeyAfter(latestGenerated);
+    return next ? [next] : [];
+  }
+  const fallback = adminRotationGetDefaultFutureMonthKey() || keys[0];
+  return fallback ? [fallback] : [];
+}
+
+function adminRotationGeneratorResolveSelectableMonthKey(monthKey) {
+  const allowed = adminRotationGetAllowedGeneratorMonthKeys();
+  if (!allowed.length) return '';
+  if (monthKey && allowed.includes(monthKey)) return monthKey;
+  return allowed[0];
+}
+
+function adminRotationGetNextMonthKeyFrom(monthKey) {
+  return adminRotationGeneratorResolveSelectableMonthKey(monthKey);
 }
 
 function adminRotationMonthYearLabel(monthKey) {
@@ -2901,19 +2966,34 @@ function adminRotationMonthYearLabel(monthKey) {
   return String(rawYear < 100 ? 2000 + rawYear : rawYear);
 }
 
-function adminRotationGeneratorBuildMonthOptions(selected) {
-  const keys = getAdminRotationMonthKeys().slice().sort((a, b) => adminRotationMonthSortValue(a) - adminRotationMonthSortValue(b));
+function adminRotationMonthFullLabel(monthKey) {
+  const parsed = typeof parseMonthKey === 'function' ? parseMonthKey(monthKey) : null;
+  if (!parsed || !Number.isFinite(parsed.month) || !Number.isFinite(parsed.year)) return String(monthKey || '');
+  const names = ['leden', 'únor', 'březen', 'duben', 'květen', 'červen', 'červenec', 'srpen', 'září', 'říjen', 'listopad', 'prosinec'];
+  const name = names[parsed.month - 1] || String(parsed.month);
+  return name + ' ' + String(parsed.year) + ' (' + String(monthKey) + ')';
+}
+
+function adminRotationGeneratorBuildYearOptions(selected) {
+  const keys = adminRotationGetAllowedGeneratorMonthKeys();
+  const rawSelected = selected || (keys[0] || '');
+  const parsedYear = rawSelected ? adminRotationMonthYearLabel(rawSelected) : '';
+  const selectedYear = parsedYear && parsedYear !== 'Bez roku' ? parsedYear : String(new Date().getFullYear());
+  const years = keys.length
+    ? Array.from(new Set(keys.map((key) => adminRotationMonthYearLabel(key)))).filter(Boolean)
+    : [String(new Date().getFullYear())];
+  return years.map((year) => '<option value="' + escapeHtml(year) + '"' + (String(year) === String(selectedYear) ? ' selected' : '') + '>' + escapeHtml(year) + '</option>').join('');
+}
+
+function adminRotationGeneratorBuildMonthOptions(selected, selectedYear) {
+  const keys = adminRotationGetAllowedGeneratorMonthKeys();
   if (!keys.length) return '';
-  const groups = new Map();
-  keys.forEach((key) => {
-    const year = adminRotationMonthYearLabel(key);
-    if (!groups.has(year)) groups.set(year, []);
-    groups.get(year).push(key);
-  });
-  return Array.from(groups.entries()).map(([year, yearKeys]) => {
-    const options = yearKeys.map((key) => '<option value="' + escapeHtml(key) + '"' + (key === selected ? ' selected' : '') + '>' + escapeHtml(key) + '</option>').join('');
-    return '<optgroup label="Rok ' + escapeHtml(year) + '">' + options + '</optgroup>';
-  }).join('');
+  const active = adminRotationGeneratorResolveSelectableMonthKey(selected);
+  const year = selectedYear || adminRotationMonthYearLabel(active);
+  return keys
+    .filter((key) => !year || adminRotationMonthYearLabel(key) === String(year))
+    .map((key) => '<option value="' + escapeHtml(key) + '"' + (key === active ? ' selected' : '') + '>' + escapeHtml(adminRotationMonthFullLabel(key)) + '</option>')
+    .join('');
 }
 
 function adminRotationCollectMonthWorkDatesFromMonth(month) {
@@ -3091,8 +3171,10 @@ function adminRotationGeneratorRenderWizard(step) {
   const body = document.getElementById('appMenuBody');
   if (!body) return;
   const state = adminRotationGeneratorGetWizardState();
-  const selected = state.monthKey || adminRotationGetNextMonthKeyFrom(getAdminSelectedMonthKey());
-  const monthOptions = adminRotationGeneratorBuildMonthOptions(selected);
+  const selected = adminRotationGeneratorResolveSelectableMonthKey(state.monthKey || adminRotationGetNextMonthKeyFrom(getAdminSelectedMonthKey()));
+  const selectedYear = adminRotationMonthYearLabel(selected);
+  const yearOptions = adminRotationGeneratorBuildYearOptions(selected);
+  const monthOptions = adminRotationGeneratorBuildMonthOptions(selected, selectedYear);
   body.dataset.adminView = 'rotation';
   body.innerHTML = [
     '<div class="appMenuCard appMenuAdminCard adminRotationGeneratorWizard">',
@@ -3104,7 +3186,7 @@ function adminRotationGeneratorRenderWizard(step) {
     '    <span class="' + (step === 'absences' ? 'isActive' : '') + '">3. Absence</span>',
     '    <span class="' + (step === 'result' ? 'isActive' : '') + '">4. Návrh</span>',
     '  </div>',
-    step === 'month' ? adminRotationGeneratorRenderMonthStep(monthOptions, selected) : '',
+    step === 'month' ? adminRotationGeneratorRenderMonthStep(yearOptions, monthOptions, selected) : '',
     step === 'days' ? adminRotationGeneratorRenderDaysStep(state) : '',
     step === 'absences' ? adminRotationGeneratorRenderAbsencesStep(state) : '',
     step === 'result' ? adminRotationGeneratorRenderResultStep(state) : '',
@@ -3114,20 +3196,23 @@ function adminRotationGeneratorRenderWizard(step) {
   try {
     const status = document.getElementById('adminOnlineSaveStatus');
     if (status) status.textContent = step === 'month'
-      ? 'Nabízím další měsíc, ale můžeš vybrat jiný. Když už měsíc má dny a absence, průvodce je předvyplní.'
+      ? (selected ? 'Nabízím jen další měsíc po posledním hotovém rozpisu, aby na sebe měsíce navazovaly.' : 'V seznamu rozpisů teď není žádný další měsíc po posledním hotovém rozpisu.')
       : (step === 'days' ? 'Zkontroluj pracovní dny. Křížkem den smažeš, tlačítkem + přidáš další.' : '');
   } catch (err) {}
 }
 
-function adminRotationGeneratorRenderMonthStep(monthOptions, selected) {
+function adminRotationGeneratorRenderMonthStep(yearOptions, monthOptions, selected) {
+  const disabled = monthOptions ? '' : ' disabled';
   return [
     '<div class="adminRotationGeneratorPanel">',
+    '  <label class="appMenuFieldLabel" for="adminGeneratorYearSelect">Rok</label>',
+    '  <select id="adminGeneratorYearSelect" class="appMenuSelect">' + yearOptions + '</select>',
     '  <label class="appMenuFieldLabel" for="adminGeneratorMonthSelect">Měsíc pro návrh</label>',
-    '  <select id="adminGeneratorMonthSelect" class="appMenuSelect">' + monthOptions + '</select>',
-    '  <div class="smallText">Výchozí návrh je další dostupný měsíc: ' + escapeHtml(selected || '—') + '.</div>',
+    '  <select id="adminGeneratorMonthSelect" class="appMenuSelect"' + disabled + '>' + monthOptions + '</select>',
+    '  <div class="smallText">' + (selected ? 'Navazující měsíc: ' + escapeHtml(adminRotationMonthFullLabel(selected)) + '.' : 'Nejdřív musí existovat další měsíc v seznamu rozpisů.') + '</div>',
     '  <div class="appMenuActionRow">',
     '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
-    '    <button type="button" class="appMenuAction isActive" data-admin-action="generator-month-next">Pokračovat na dny</button>',
+    '    <button type="button" class="appMenuAction isActive" data-admin-action="generator-month-next"' + disabled + '>Pokračovat na dny</button>',
     '  </div>',
     '</div>'
   ].join('');
@@ -3586,7 +3671,12 @@ function adminHandleRotationGeneratorWizardAction(action, target) {
   }
   if (action === 'generator-month-next') {
     const select = body ? body.querySelector('#adminGeneratorMonthSelect') : null;
-    const monthKey = select ? String(select.value || '').trim() : state.monthKey;
+    const monthKey = adminRotationGeneratorResolveSelectableMonthKey(select ? String(select.value || '').trim() : state.monthKey);
+    if (!monthKey) {
+      const status = document.getElementById('adminOnlineSaveStatus');
+      if (status) status.textContent = 'Nejdřív musí existovat další navazující měsíc v seznamu rozpisů.';
+      return true;
+    }
     const prefill = adminRotationGeneratorBuildPrefillState(monthKey);
     adminRotationGeneratorSetWizardState({
       step: 'days',
@@ -3694,6 +3784,8 @@ window.adminAddAbsenceRowToEditor = adminAddAbsenceRowToEditor;
 window.adminBuildRotationMachineCountSummaryHtml = adminBuildRotationMachineCountSummaryHtml;
 window.adminBuildRotationGeneratorPreviewHtml = adminBuildRotationGeneratorPreviewHtml;
 window.adminRotationGeneratorDownloadExcel = adminRotationGeneratorDownloadExcel;
+window.adminRotationGetAllowedGeneratorMonthKeys = adminRotationGetAllowedGeneratorMonthKeys;
+window.adminRotationGeneratorBuildYearOptions = adminRotationGeneratorBuildYearOptions;
 window.adminRotationGeneratorBuildMonthOptions = adminRotationGeneratorBuildMonthOptions;
 window.adminRotationGeneratorBalanceHardMachine = adminRotationGeneratorBalanceHardMachine;
 

@@ -1,3 +1,9 @@
+## RaK 1.2 (1.174)
+
+- Rozpisy / Absence: u více dovolených ve stejný den se další osoby zobrazují už jen jako `Jméno` a `Důvod`, bez prázdných opakovaných sloupců `Datum` a `Směna`.
+- Generátor rozpisu: výběr měsíce je rozdělený na `Rok` a `Měsíc` a nabízí jen další měsíc po posledním hotovém rozpisu, aby se nepřeskakovalo v návaznosti.
+- Release metadata sjednocená na `RaK 1.2 (1.174)`, technická verze `1.2.174`, cache `v1.2-1.174`.
+
 ## RaK 1.2 (1.173)
 
 - Generátor rozpisu u hotového měsíce drží nový návrh bokem jako čekající draft a nepřepisuje skutečný rozpis hned při výpočtu.
