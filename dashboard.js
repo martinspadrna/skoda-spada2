@@ -172,7 +172,8 @@ function getDashboardTeamDStatus(now) {
 
 const RAK_DASHBOARD_EMPTY_ABSENCE_TEXT_CONTRACT_V1104 = Object.freeze({
   scope: 'team-d-next-shift-empty-absence-line',
-  text: 'Nikdo nebude chybět.'
+  currentText: 'Nikdo nechybí.',
+  futureText: 'Nikdo nebude chybět.'
 });
 
 function formatDashboardAbsenceList(names) {
@@ -197,9 +198,10 @@ function formatDashboardTeamDParts(now, teamDStatus) {
 
   if (active) {
     const names = typeof getAbsenceNamesForDate === 'function' ? getAbsenceNamesForDate(active.start || now) : [];
+    const list = Array.isArray(names) ? names.filter(Boolean) : [];
     return {
       main: '',
-      sub: 'chybí: ' + formatDashboardAbsenceList(names)
+      sub: list.length ? 'chybí: ' + formatDashboardAbsenceList(list) : 'Nikdo nechybí.'
     };
   }
 

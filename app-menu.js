@@ -24,10 +24,6 @@ const RAK_ADMIN_EXPORT_IMPORT_EXCEL_MONTH_GROUP_CONTRACT_V1140 = Object.freeze({
 
 function buildRakRotationExcelExportMonthOptions(selectedMonthKey) {
   const selected = String(selectedMonthKey || '').trim();
-  if (typeof adminRotationGeneratorBuildMonthOptions === 'function') {
-    const grouped = adminRotationGeneratorBuildMonthOptions(selected);
-    if (grouped) return grouped;
-  }
   const keys = getAdminRotationMonthKeys().slice().sort((a, b) => {
     const diff = adminRotationMonthSortValue(a) - adminRotationMonthSortValue(b);
     return diff || a.localeCompare(b, 'cs');

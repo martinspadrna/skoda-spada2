@@ -1,3 +1,9 @@
+## RaK 1.2 (1.175)
+
+- Home / aktuální směna: když na právě běžící směně nikdo nechybí, horní přehled píše `Nikdo nechybí.` místo `chybí: nikdo`.
+- Administrace / Export import: XLSX export rozpisu má znovu výběr ze všech měsíců; omezení na navazující měsíc zůstává jen v generátoru rozpisu.
+- Release metadata sjednocená na `RaK 1.2 (1.175)`, technická verze `1.2.175`, cache `v1.2-1.175`.
+
 ## RaK 1.2 (1.174)
 
 - Rozpisy / Absence: u více dovolených ve stejný den se další osoby zobrazují už jen jako `Jméno` a `Důvod`, bez prázdných opakovaných sloupců `Datum` a `Směna`.
