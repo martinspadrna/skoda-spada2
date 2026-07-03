@@ -2934,16 +2934,54 @@ function adminRotationGetDefaultFutureMonthKey() {
   return adminRotationFindExistingMonthKeyAtOrAfter(key);
 }
 
+function adminRotationGetCurrentExistingMonthKey() {
+  const keys = adminRotationGetOrderedMonthKeys();
+  if (!keys.length) return '';
+  const today = new Date();
+  const key = typeof monthKeyFromYearMonth === 'function'
+    ? monthKeyFromYearMonth(today.getFullYear(), today.getMonth() + 1)
+    : String(today.getMonth() + 1) + '/' + String(today.getFullYear()).slice(-2);
+  return keys.includes(key) ? key : '';
+}
+
+function adminRotationAddGeneratorAllowedRange(result, fromKey, toKey) {
+  const keys = adminRotationGetOrderedMonthKeys();
+  const fromSort = adminRotationMonthSortValue(fromKey);
+  const toSort = adminRotationMonthSortValue(toKey);
+  if (!fromSort || !toSort) return;
+  keys.forEach((key) => {
+    const sort = adminRotationMonthSortValue(key);
+    if (sort >= fromSort && sort <= toSort && !result.includes(key)) result.push(key);
+  });
+}
+
 function adminRotationGetAllowedGeneratorMonthKeys() {
   const keys = adminRotationGetOrderedMonthKeys();
   if (!keys.length) return [];
+  const result = [];
+  const currentMonth = adminRotationGetCurrentExistingMonthKey();
   const latestGenerated = adminRotationGetLatestGeneratedMonthKey();
-  if (latestGenerated) {
-    const next = adminRotationGetNextExistingMonthKeyAfter(latestGenerated);
-    return next ? [next] : [];
+  const currentSort = adminRotationMonthSortValue(currentMonth);
+  const latestSort = adminRotationMonthSortValue(latestGenerated);
+  const baseForNext = currentSort && (!latestSort || currentSort > latestSort)
+    ? currentMonth
+    : latestGenerated;
+  const next = baseForNext ? adminRotationGetNextExistingMonthKeyAfter(baseForNext) : '';
+
+  if (currentMonth && next) {
+    adminRotationAddGeneratorAllowedRange(result, currentMonth, next);
+  } else if (currentMonth) {
+    result.push(currentMonth);
+  } else if (next) {
+    result.push(next);
   }
-  const fallback = adminRotationGetDefaultFutureMonthKey() || keys[0];
-  return fallback ? [fallback] : [];
+
+  if (!result.length) {
+    const fallback = adminRotationGetDefaultFutureMonthKey() || keys[0];
+    if (fallback) result.push(fallback);
+  }
+
+  return result.sort((a, b) => adminRotationMonthSortValue(a) - adminRotationMonthSortValue(b));
 }
 
 function adminRotationGeneratorResolveSelectableMonthKey(monthKey) {
@@ -3196,7 +3234,7 @@ function adminRotationGeneratorRenderWizard(step) {
   try {
     const status = document.getElementById('adminOnlineSaveStatus');
     if (status) status.textContent = step === 'month'
-      ? (selected ? 'Nabízím jen další měsíc po posledním hotovém rozpisu, aby na sebe měsíce navazovaly.' : 'V seznamu rozpisů teď není žádný další měsíc po posledním hotovém rozpisu.')
+      ? (selected ? 'Nabízím aktuální měsíc pro případné přegenerování a další navazující měsíc po hotových rozpisech.' : 'V seznamu rozpisů teď není dostupný žádný měsíc pro generátor.')
       : (step === 'days' ? 'Zkontroluj pracovní dny. Křížkem den smažeš, tlačítkem + přidáš další.' : '');
   } catch (err) {}
 }
@@ -3209,13 +3247,30 @@ function adminRotationGeneratorRenderMonthStep(yearOptions, monthOptions, select
     '  <select id="adminGeneratorYearSelect" class="appMenuSelect">' + yearOptions + '</select>',
     '  <label class="appMenuFieldLabel" for="adminGeneratorMonthSelect">Měsíc pro návrh</label>',
     '  <select id="adminGeneratorMonthSelect" class="appMenuSelect"' + disabled + '>' + monthOptions + '</select>',
-    '  <div class="smallText">' + (selected ? 'Navazující měsíc: ' + escapeHtml(adminRotationMonthFullLabel(selected)) + '.' : 'Nejdřív musí existovat další měsíc v seznamu rozpisů.') + '</div>',
+    '  <div class="smallText">' + (selected ? 'Dostupný měsíc: ' + escapeHtml(adminRotationMonthFullLabel(selected)) + '.' : 'Nejdřív musí existovat měsíc v seznamu rozpisů.') + '</div>',
     '  <div class="appMenuActionRow">',
     '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
     '    <button type="button" class="appMenuAction isActive" data-admin-action="generator-month-next"' + disabled + '>Pokračovat na dny</button>',
     '  </div>',
     '</div>'
   ].join('');
+}
+
+function adminRotationGeneratorHandleYearSelectChange(target) {
+  const yearSelect = target && typeof target.closest === 'function' ? target.closest('#adminGeneratorYearSelect') : null;
+  if (!yearSelect) return false;
+  const body = document.getElementById('appMenuBody');
+  if (!body || !body.querySelector('.adminRotationGeneratorWizard')) return false;
+  const monthSelect = body.querySelector('#adminGeneratorMonthSelect');
+  if (!monthSelect) return true;
+  const options = adminRotationGeneratorBuildMonthOptions(monthSelect.value, String(yearSelect.value || '').trim());
+  monthSelect.innerHTML = options;
+  monthSelect.disabled = !options;
+  if (options && !monthSelect.value) {
+    const first = monthSelect.querySelector('option[value]');
+    if (first) monthSelect.value = first.value || '';
+  }
+  return true;
 }
 
 function adminRotationGeneratorRenderDaysStep(state) {
@@ -3788,6 +3843,12 @@ window.adminRotationGetAllowedGeneratorMonthKeys = adminRotationGetAllowedGenera
 window.adminRotationGeneratorBuildYearOptions = adminRotationGeneratorBuildYearOptions;
 window.adminRotationGeneratorBuildMonthOptions = adminRotationGeneratorBuildMonthOptions;
 window.adminRotationGeneratorBalanceHardMachine = adminRotationGeneratorBalanceHardMachine;
+
+try {
+  document.addEventListener('change', (event) => {
+    adminRotationGeneratorHandleYearSelectChange(event.target);
+  });
+} catch (err) {}
 
 function adminGetSelectedRemoveButton() {
   const body = document.getElementById('appMenuBody');

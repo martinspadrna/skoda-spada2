@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.175) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.176) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -219,12 +219,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.175)',
-  appLabel: 'RaK 1.2 (1.175)',
-  packageVersion: '1.2.175',
-  cacheVersion: 'v1.2-1.175',
+  displayVersion: '1.2 (1.176)',
+  appLabel: 'RaK 1.2 (1.176)',
+  packageVersion: '1.2.176',
+  cacheVersion: 'v1.2-1.176',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.175)',
+  changelogHeader: '## RaK 1.2 (1.176)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -333,8 +333,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.175)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.175'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.176)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.176'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -950,10 +950,13 @@ function assertRotationGeneratorWizardRunContractV1110() {
 function assertRotationGeneratorMonthBalanceContractV1112() {
   assertIncludes(exportJs, 'RAK_ROTATION_GENERATOR_MONTH_BALANCE_CONTRACT_V1112', 'export.js musí dokumentovat řazení měsíců a vyrovnání TNKS01 v1.112');
   assertIncludes(ui, 'RAK_ROTATION_GENERATOR_MONTH_BALANCE_CONTRACT_V1112', 'admin-rotation.js musí mít contract pro řazení měsíců a vyrovnání TNKS01');
-  assertIncludes(ui, 'function adminRotationGetAllowedGeneratorMonthKeys', 'Generátor musí umět omezit výběr na další navazující měsíc');
+  assertIncludes(ui, 'function adminRotationGetAllowedGeneratorMonthKeys', 'Generátor musí umět omezit výběr na aktuální měsíc a další navazující měsíce');
+  assertIncludes(ui, 'function adminRotationGetCurrentExistingMonthKey', 'Generátor musí umět nabídnout aktuální měsíc k přegenerování');
+  assertIncludes(ui, 'function adminRotationAddGeneratorAllowedRange', 'Generátor musí umět nabídnout rozsah od aktuálního měsíce po další navazující měsíc');
   assertIncludes(ui, 'function adminRotationGeneratorBuildYearOptions', 'Generátor musí mít samostatný výběr roku');
   assertIncludes(ui, 'function adminRotationGeneratorBuildMonthOptions', 'Generátor musí stavět volbu měsíce jen z povolených měsíců');
   assertIncludes(ui, 'adminGeneratorYearSelect', 'Volba měsíce v generátoru musí nejdřív ukázat rok');
+  assertIncludes(ui, 'function adminRotationGeneratorHandleYearSelectChange', 'Změna roku v generátoru musí přepnout nabídku měsíců');
   assertIncludes(ui, 'adminRotationGeneratorResolveSelectableMonthKey', 'Pokračování generátoru musí znovu ověřit povolený měsíc');
   assertIncludes(ui, 'function adminRotationGeneratorBalanceHardMachine', 'Generátor musí po sestavení měsíce umět vyrovnat tvrdotní stroj');
   assertIncludes(ui, "adminRotationGeneratorBalanceHardMachine(month, 'TNKS01', model, monthKey)", 'Generátor musí vyrovnávat nýtovačku TNKS01 po vygenerování');

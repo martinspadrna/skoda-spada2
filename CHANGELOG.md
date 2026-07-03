@@ -1,3 +1,9 @@
+## RaK 1.2 (1.176)
+
+- Generátor rozpisu: výběr měsíce teď nabízí aktuální měsíc pro případné přegenerování a zároveň rozsah až po další navazující měsíc za hotovými rozpisy.
+- Příklad: v červenci 2026 se nabízí `7/26` a `8/26`; pokud jsou `7/26` i `8/26` hotové, přibude i `9/26`.
+- Release metadata sjednocená na `RaK 1.2 (1.176)`, technická verze `1.2.176`, cache `v1.2-1.176`.
+
 ## RaK 1.2 (1.175)
 
 - Home / aktuální směna: když na právě běžící směně nikdo nechybí, horní přehled píše `Nikdo nechybí.` místo `chybí: nikdo`.
