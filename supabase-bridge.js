@@ -1970,6 +1970,26 @@
     };
   }
 
+  function isSpecialAdminMachineSettingsPayload(payload) {
+    const category = String(payload && payload.category || '').trim();
+    const key = String(payload && payload.machine_key || '').trim();
+    return category === 'food_schedule'
+      || key === 'FOOD_SCHEDULE_SETTINGS'
+      || category === 'vacation_countdown_settings'
+      || key === 'VACATION_COUNTDOWN_SETTINGS';
+  }
+
+  function makeMachineSettingsRpcPayload(payload) {
+    if (!isSpecialAdminMachineSettingsPayload(payload)) return payload;
+    return Object.assign({}, payload, {
+      category: 'frezka',
+      settings_json: Object.assign({}, payload && payload.settings_json && typeof payload.settings_json === 'object' ? payload.settings_json : {}, {
+        stored_category: String(payload && payload.category || ''),
+        admin_settings_key: String(payload && payload.machine_key || '')
+      })
+    });
+  }
+
   function getAdminPinForWrite(options) {
     if (options && options.adminPin) return String(options.adminPin);
     if (typeof app !== 'undefined' && app && app.adminPin) return String(app.adminPin);
@@ -2031,33 +2051,12 @@
       .filter((payload) => payload && payload.machine_key && payload.label);
 
     if (!payloads.length) return 0;
-    const isDirectAdminSettingsPayload = (payload) => {
-      const category = String(payload && payload.category || '').trim();
-      const key = String(payload && payload.machine_key || '').trim();
-      return category === 'food_schedule'
-        || key === 'FOOD_SCHEDULE_SETTINGS'
-        || category === 'vacation_countdown_settings'
-        || key === 'VACATION_COUNTDOWN_SETTINGS';
-    };
-    const directAdminPayloads = payloads.filter(isDirectAdminSettingsPayload);
-    const machinePayloads = payloads.filter((payload) => !isDirectAdminSettingsPayload(payload));
+    const rpcPayloads = payloads.map(makeMachineSettingsRpcPayload);
+    const rpcResult = await trySaveMachineSettingsViaRpc(client, rpcPayloads, options || {});
+    if (rpcResult && rpcResult.ok) return Number(rpcResult.savedCount || payloads.length) || payloads.length;
 
     let savedCount = 0;
-    if (machinePayloads.length) {
-      const rpcResult = await trySaveMachineSettingsViaRpc(client, machinePayloads, options || {});
-      if (rpcResult && rpcResult.ok) savedCount += Number(rpcResult.savedCount || machinePayloads.length) || machinePayloads.length;
-      else {
-        for (const payload of machinePayloads) {
-          const { error } = await client.from('machine_settings').upsert([payload], { onConflict: 'machine_key' });
-          if (error) throw error;
-          savedCount += 1;
-        }
-      }
-    }
-
-    // Samostatne admin sekce mohou mit vlastni kategorii, kterou starsi RPC nezna.
-    // Ukladaci format zustava v machine_settings stejny, proto je ukladame primo.
-    for (const payload of directAdminPayloads) {
+    for (const payload of payloads) {
       const { error } = await client.from('machine_settings').upsert([payload], { onConflict: 'machine_key' });
       if (error) throw error;
       savedCount += 1;

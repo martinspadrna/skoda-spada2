@@ -1,3 +1,9 @@
+## RaK 1.2 (1.179)
+
+- Administrace / Dovolená odstávky: speciální řádky se už neukládají přímým zápisem do `machine_settings`, ale přes kompatibilní RPC payload, aby nepadaly na `permission denied for table machine_settings`.
+- O aplikaci: historie verzí má nahoře doplněné krátké souhrny po zhruba 50 verzích včetně aktuálních změn rozpisů, výjimek, záloh a CZD/dovolených.
+- Release metadata sjednocená na `RaK 1.2 (1.179)`, technická verze `1.2.179`, cache `v1.2-1.179`.
+
 ## RaK 1.2 (1.178)
 
 - Administrace / Dovolená odstávky: uložení už neposílá speciální řádek `VACATION_COUNTDOWN_SETTINGS` do starší RPC funkce pro stroje, takže nepadá na `invalid category`.

@@ -735,12 +735,30 @@ function buildSupabaseKeepaliveStatusHtml(options) {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v.1.2 1.150–1.167',
-      title: 'Denní výjimky v rozpisu a hodinová statistika',
+      range: 'v.1.2 1.150–1.178',
+      title: 'Administrace rozpisů, výjimky a dovolené',
       lines: [
-        'V administraci rozpisu přibyly denní výjimky: odchod dřív, pozdní příchod, půl směny / přesun na jiný stroj a kalírna (ven se počítá jako soustruh, k nám ne). Buňka s výjimkou je žlutá.',
-        'Hodiny se dopočítají z času podle směny a pevných přestávek (10:00, 14:00, 02:00, 22:00), neděle se počítá 7,5 h a přesčasová neděle má zaškrtávátko „na přesčasu" i přehled přesčasů.',
-        'Výjimky se promítají do statistiky: přesun po hodinách mezi stroji, částečná absence a dovolená jako „X dní Y h".'
+        'Rozpisy dostaly bezpečnější ukládání přes administraci, zálohy změn, přehlednější generátor a opravy návaznosti hotových měsíců.',
+        'Denní výjimky se zvýrazňují v rozpisu, jdou zobrazit i ve veřejném přehledu a počítají se do hodin i statistik.',
+        'Přibyl samostatný panel Dovolená / odstávky pro CZD, Vánoce a další období od-do včetně hodin; home karta Dovolená bere nejbližší termín.'
+      ]
+    },
+    {
+      range: 'v.1.2 1.100–1.149',
+      title: 'Generátor, exporty a provozní hlídání',
+      lines: [
+        'Generátor rozpisu začal víc hlídat návaznosti mezi měsíci, roční vytížení lidí a pravidla pro tvrdotu, měkotu, nýtování a samostatné frézky.',
+        'Exporty a Excel výstupy se sjednotily s administrací, přibyly kontroly releasu a lepší hlídání cache/service workeru.',
+        'Dashboard, synchronizace a administrace dostaly víc provozních stavů, aby bylo poznat, co je uložené online a co čeká na opravu.'
+      ]
+    },
+    {
+      range: 'v.1.2 1.50–1.99',
+      title: 'Stabilizace aplikace a vzhledu',
+      lines: [
+        'Dolaďoval se vzhled pro mobil i desktop, spodní navigace, světlé motivy, čitelnost tabulek a sjednocení panelů.',
+        'Rozšiřovaly se servisní kontroly, diagnostika, reporty chyb, přehled připojení a bezpečnější ukládání přes Supabase.',
+        'Hry, profily a nastavení aplikace se přesouvaly do oddělených modulů, aby se aplikace lépe udržovala.'
       ]
     },
     {
@@ -1204,4 +1222,3 @@ window.getRakRotaceNamesDockHealth = getRakRotaceNamesDockHealth;
 
 
 // RaK 1.2 (1.155) – resize/orientation hlídání aktivního glass indikátoru spodní lišty je v app-navigation.js.
-
