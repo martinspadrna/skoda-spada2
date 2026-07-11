@@ -32,6 +32,20 @@ function setDashboardClassNameIfChanged(element, className, key) {
   element.className = nextClassName;
   return true;
 }
+
+function buildDashboardCardMetaHtml(meta, esc) {
+  const safeEsc = typeof esc === 'function' ? esc : (value) => String(value ?? '');
+  const parts = Array.isArray(meta)
+    ? meta.map(part => String(part || '').trim()).filter(Boolean)
+    : String(meta || '').split(/\r?\n/).map(part => part.trim()).filter(Boolean);
+  if (!parts.length) return '';
+  return [
+    '<div class="dashboardMeta' + (parts.length > 1 ? ' dashboardMetaStack' : '') + '">',
+    parts.map((part, index) => '<div class="' + (index > 0 ? 'dashboardMetaLine dashboardMetaLineDivider' : 'dashboardMetaLine') + '">' + safeEsc(part) + '</div>').join(''),
+    '</div>'
+  ].join('');
+}
+
 function getDashboardShiftTeams() {
   return (typeof SHIFT_CYCLE_ORDER !== 'undefined' && Array.isArray(SHIFT_CYCLE_ORDER) && SHIFT_CYCLE_ORDER.length)
     ? SHIFT_CYCLE_ORDER
@@ -608,7 +622,7 @@ function updateDashboard() {
       '</div>',
       '</div>',
       '<div class="dashboardValue">' + esc(value || '--') + '</div>',
-      meta ? '<div class="dashboardMeta">' + esc(meta) + '</div>' : ''
+      buildDashboardCardMetaHtml(meta, esc)
     ].join(''), id || 'dashboardCard');
   };
 
@@ -672,7 +686,7 @@ function updateDashboard() {
   setCard('dashKantyna', 'Kantýna', foodText(kantyna), foodMeta(kantyna), foodDot(kantyna), true, croissantIcon);
   setCard('dashJidelna', 'Jídelna', foodText(jidelna), foodMeta(jidelna), foodDot(jidelna), true, plateIcon);
   setCard('dashVyplata', 'Výplata', payDateText, payMeta, '', true, walletIcon);
-  setCard('dashCzd', 'Dovolená', vacationCountdown.text, vacationCountdown.meta || 'Odpočet do dovolené', '', false, palmIcon);
+  setCard('dashCzd', 'Dovolená', vacationCountdown.text, [vacationCountdown.meta || 'Odpočet do dovolené', vacationCountdown.shiftMeta || ''].filter(Boolean), '', false, palmIcon);
   setCard('dashFoodLink', 'Jídelní lístek', 'Otevřít', 'Aktuální menu', '', true, bookIcon);
   setCard('dashEportalLink', 'Eportal', 'Otevřít', 'Firemní portál', '', true, eportalIcon);
   try { renderRakDashboardAnnouncement(now); } catch (err) {}
@@ -872,7 +886,7 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
       '  </div>',
       '</div>',
       '<div class="dashboardValue">' + esc(value || '--') + '</div>',
-      meta ? '<div class="dashboardMeta">' + esc(meta) + '</div>' : ''
+      buildDashboardCardMetaHtml(meta, esc)
     ].join(''), id || 'dashboardFallbackCard');
   }
 
@@ -955,7 +969,7 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
     setCardSimple('dashKantyna', 'Kantýna', foodText(foodA), foodMeta(foodA), foodA && foodA.isOpen ? 'is-open' : 'is-closed', true, fallbackDashboardIcons.kantyna);
     setCardSimple('dashJidelna', 'Jídelna', foodText(foodB), foodMeta(foodB), foodB && foodB.isOpen ? 'is-open' : 'is-closed', true, fallbackDashboardIcons.jidelna);
     setCardSimple('dashVyplata', 'Výplata', payText, payMeta, '', true, fallbackDashboardIcons.vyplata);
-    setCardSimple('dashCzd', 'Dovolená', vacationCountdown.text || '--', vacationCountdown.meta || 'Odpočet do dovolené', '', false, fallbackDashboardIcons.dovolena);
+    setCardSimple('dashCzd', 'Dovolená', vacationCountdown.text || '--', [vacationCountdown.meta || 'Odpočet do dovolené', vacationCountdown.shiftMeta || ''].filter(Boolean), '', false, fallbackDashboardIcons.dovolena);
     setCardSimple('dashFoodLink', 'Jídelní lístek', 'Otevřít', 'Aktuální menu', '', true, fallbackDashboardIcons.menu);
     setCardSimple('dashEportalLink', 'Eportal', 'Otevřít', 'Firemní portál', '', true, fallbackDashboardIcons.eportal);
 

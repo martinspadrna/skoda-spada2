@@ -1,3 +1,9 @@
+## RaK 1.2 (1.180)
+
+- Home / Dovolená: karta odpočtu do CZD/Vánoc/odstávky nově pod hlavním odpočtem ukazuje i počet zbývajících směn pro směnu D, např. `3 směny, směna D`.
+- Home / Dovolená: druhý řádek je oddělený jemnou linkou, aby bylo jasné, že jde o samostatný údaj.
+- Release metadata sjednocená na `RaK 1.2 (1.180)`, technická verze `1.2.180`, cache `v1.2-1.180`.
+
 ## RaK 1.2 (1.179)
 
 - Administrace / Dovolená odstávky: speciální řádky se už neukládají přímým zápisem do `machine_settings`, ale přes kompatibilní RPC payload, aby nepadaly na `permission denied for table machine_settings`.

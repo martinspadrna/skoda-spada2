@@ -1953,6 +1953,27 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
   text-align:right !important;
   text-shadow:0 0 12px rgba(124,255,124,.22) !important;
 }
+
+/* RaK 1.2 (1.180) - Dashboard / Dovolena: druhy radek odpoctu smeny D. */
+#home.page.active #dashCzd .dashboardMetaStack{
+  display:flex !important;
+  flex-direction:column !important;
+  gap:3px !important;
+  align-items:flex-start !important;
+  max-width:100% !important;
+}
+#home.page.active #dashCzd .dashboardMetaLine{
+  display:block !important;
+  max-width:100% !important;
+}
+#home.page.active #dashCzd .dashboardMetaLineDivider{
+  width:100% !important;
+  margin-top:2px !important;
+  padding-top:5px !important;
+  border-top:1px solid rgba(174,255,174,.28) !important;
+  color:rgba(210,255,210,.92) !important;
+  font-weight:800 !important;
+}
 @media (max-width:370px){
   #home.page.active #dashHero .dashboardHeroBarPercent,
   #home.page.active #dashboardAnnouncementBar:not([hidden]) + #dashHero .dashboardHeroBarPercent{

@@ -1,7 +1,7 @@
-// RaK 1.2 (1.179) – core stav, verze a sdílené helpery aplikace.
+// RaK 1.2 (1.180) – core stav, verze a sdílené helpery aplikace.
 
 const APP_KEY = "rotace_kalkulacky_state_v123";
-const APP_VERSION = "1.2 (1.179)";
+const APP_VERSION = "1.2 (1.180)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-06-03-" + APP_VERSION;
 window.ROTATION_BUILD = ROTATION_BUILD;
@@ -361,6 +361,38 @@ function getVacationCountdownAdminSettingsSnapshot() {
   return getVacationCountdownSettings();
 }
 
+function formatVacationCountdownShiftCount(count, team) {
+  if (!Number.isFinite(count)) return '';
+  const safeCount = Math.max(0, Math.round(count));
+  const word = safeCount === 1 ? 'směna' : (safeCount >= 2 && safeCount <= 4 ? 'směny' : 'směn');
+  return String(safeCount) + ' ' + word + ', směna ' + String(team || 'D').trim().toUpperCase();
+}
+
+function getVacationCountdownTeamShiftCount(now, targetStart, team) {
+  if (typeof getTeamShiftState !== 'function') return null;
+  const source = now instanceof Date ? new Date(now) : new Date(now || new Date());
+  const target = targetStart instanceof Date ? new Date(targetStart) : parseVacationCountdownDateTime(targetStart);
+  const targetTeam = String(team || 'D').trim().toUpperCase() || 'D';
+  if (Number.isNaN(source.getTime()) || !target || Number.isNaN(target.getTime())) return null;
+  if (target.getTime() <= source.getTime()) return 0;
+  const seen = new Set();
+  let cursor = new Date(source);
+  let count = 0;
+  for (let guard = 0; guard < 260; guard += 1) {
+    const state = getTeamShiftState(cursor, targetTeam);
+    const next = state && state.next && state.next.start ? state.next : null;
+    if (!next || !(next.start instanceof Date) || Number.isNaN(next.start.getTime())) break;
+    if (next.start.getTime() >= target.getTime()) break;
+    const key = String(next.start.getTime());
+    if (!seen.has(key)) {
+      seen.add(key);
+      count += 1;
+    }
+    cursor = new Date(next.start.getTime() + 60000);
+  }
+  return count;
+}
+
 function getVacationCountdown(now) {
   const sourceDate = new Date(now || new Date());
   const today = new Date(sourceDate);
@@ -374,9 +406,12 @@ function getVacationCountdown(now) {
   start.setHours(0, 0, 0, 0);
   const diffDays = Math.max(0, Math.round((start.getTime() - today.getTime()) / 86400000));
   const targetLabel = active ? String(upcoming.workLabel || upcoming.label || 'Dovolená') : ('k ' + String(upcoming.countdownLabel || upcoming.label || 'dovolené'));
+  const shiftCount = active ? 0 : getVacationCountdownTeamShiftCount(sourceDate, upcoming.start, 'D');
   return {
     text: diffDays === 0 ? 'Dnes' : (diffDays + ' ' + (diffDays === 1 ? 'den' : 'dní')),
-    meta: targetLabel
+    meta: targetLabel,
+    shiftMeta: formatVacationCountdownShiftCount(shiftCount, 'D'),
+    shiftCount
   };
 }
 
@@ -385,6 +420,7 @@ window.getVacationCountdownPeriods = getVacationCountdownPeriods;
 window.getVacationCountdownAdminSettingsSnapshot = getVacationCountdownAdminSettingsSnapshot;
 window.getVacationPeriodForDate = getVacationPeriodForDate;
 window.formatVacationCountdownDateTime = formatVacationCountdownDateTime;
+window.getVacationCountdownTeamShiftCount = getVacationCountdownTeamShiftCount;
 
 const appRotation = loadRotationData();
 const app = {
