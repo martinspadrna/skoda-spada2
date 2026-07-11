@@ -46,6 +46,45 @@ function buildDashboardCardMetaHtml(meta, esc) {
   ].join('');
 }
 
+function splitDashboardVacationShiftMeta(countdown) {
+  const src = countdown && typeof countdown === 'object' ? countdown : {};
+  const shiftText = String(src.shiftText || '').trim();
+  const shiftTeamMeta = String(src.shiftTeamMeta || '').trim();
+  if (shiftText || shiftTeamMeta) return { shiftText, shiftTeamMeta };
+  const parts = String(src.shiftMeta || '').split(',').map(part => part.trim()).filter(Boolean);
+  return {
+    shiftText: parts[0] || '',
+    shiftTeamMeta: parts.slice(1).join(', ')
+  };
+}
+
+function buildDashboardVacationCardHtml(title, countdown, iconHtml, esc) {
+  const safeEsc = typeof esc === 'function' ? esc : (value) => String(value ?? '');
+  const source = countdown && typeof countdown === 'object' ? countdown : {};
+  const shift = splitDashboardVacationShiftMeta(source);
+  const icon = iconHtml ? '<span class="dashboardIcon dashboardIconInline" aria-hidden="true">' + iconHtml + '</span>' : '';
+  return [
+    '<div class="dashboardTop">',
+    '<div class="dashboardHead">',
+    '<div class="dashboardLabelRow">',
+    icon,
+    '<div class="dashboardLabel">' + safeEsc(title || 'Dovolená') + '</div>',
+    '</div>',
+    '</div>',
+    '</div>',
+    '<div class="dashboardVacationSplit">',
+    '<div class="dashboardVacationSide dashboardVacationSideMain">',
+    '<div class="dashboardValue">' + safeEsc(source.text || '--') + '</div>',
+    '<div class="dashboardMeta"><div class="dashboardMetaLine">' + safeEsc(source.meta || 'Odpočet do dovolené') + '</div></div>',
+    '</div>',
+    '<div class="dashboardVacationSide dashboardVacationSideShift">',
+    '<div class="dashboardVacationShiftValue">' + safeEsc(shift.shiftText || '--') + '</div>',
+    '<div class="dashboardVacationShiftMeta">' + safeEsc(shift.shiftTeamMeta || 'směna D') + '</div>',
+    '</div>',
+    '</div>'
+  ].join('');
+}
+
 function getDashboardShiftTeams() {
   return (typeof SHIFT_CYCLE_ORDER !== 'undefined' && Array.isArray(SHIFT_CYCLE_ORDER) && SHIFT_CYCLE_ORDER.length)
     ? SHIFT_CYCLE_ORDER
@@ -686,7 +725,11 @@ function updateDashboard() {
   setCard('dashKantyna', 'Kantýna', foodText(kantyna), foodMeta(kantyna), foodDot(kantyna), true, croissantIcon);
   setCard('dashJidelna', 'Jídelna', foodText(jidelna), foodMeta(jidelna), foodDot(jidelna), true, plateIcon);
   setCard('dashVyplata', 'Výplata', payDateText, payMeta, '', true, walletIcon);
-  setCard('dashCzd', 'Dovolená', vacationCountdown.text, [vacationCountdown.meta || 'Odpočet do dovolené', vacationCountdown.shiftMeta || ''].filter(Boolean), '', false, palmIcon);
+  const vacationCard = document.getElementById('dashCzd');
+  if (vacationCard) {
+    vacationCard.classList.toggle('dashboardCardClickable', false);
+    setDashboardHtmlIfChanged(vacationCard, buildDashboardVacationCardHtml('Dovolená', vacationCountdown, palmIcon, esc), 'dashCzd');
+  }
   setCard('dashFoodLink', 'Jídelní lístek', 'Otevřít', 'Aktuální menu', '', true, bookIcon);
   setCard('dashEportalLink', 'Eportal', 'Otevřít', 'Firemní portál', '', true, eportalIcon);
   try { renderRakDashboardAnnouncement(now); } catch (err) {}
@@ -969,7 +1012,11 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
     setCardSimple('dashKantyna', 'Kantýna', foodText(foodA), foodMeta(foodA), foodA && foodA.isOpen ? 'is-open' : 'is-closed', true, fallbackDashboardIcons.kantyna);
     setCardSimple('dashJidelna', 'Jídelna', foodText(foodB), foodMeta(foodB), foodB && foodB.isOpen ? 'is-open' : 'is-closed', true, fallbackDashboardIcons.jidelna);
     setCardSimple('dashVyplata', 'Výplata', payText, payMeta, '', true, fallbackDashboardIcons.vyplata);
-    setCardSimple('dashCzd', 'Dovolená', vacationCountdown.text || '--', [vacationCountdown.meta || 'Odpočet do dovolené', vacationCountdown.shiftMeta || ''].filter(Boolean), '', false, fallbackDashboardIcons.dovolena);
+    const fallbackVacationCard = document.getElementById('dashCzd');
+    if (fallbackVacationCard) {
+      fallbackVacationCard.classList.toggle('dashboardCardClickable', false);
+      setDashboardHtmlIfChanged(fallbackVacationCard, buildDashboardVacationCardHtml('Dovolená', vacationCountdown, fallbackDashboardIcons.dovolena, esc), 'dashboardFallbackCzd');
+    }
     setCardSimple('dashFoodLink', 'Jídelní lístek', 'Otevřít', 'Aktuální menu', '', true, fallbackDashboardIcons.menu);
     setCardSimple('dashEportalLink', 'Eportal', 'Otevřít', 'Firemní portál', '', true, fallbackDashboardIcons.eportal);
 

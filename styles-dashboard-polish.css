@@ -1954,25 +1954,42 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
   text-shadow:0 0 12px rgba(124,255,124,.22) !important;
 }
 
-/* RaK 1.2 (1.180) - Dashboard / Dovolena: druhy radek odpoctu smeny D. */
-#home.page.active #dashCzd .dashboardMetaStack{
+/* RaK 1.2 (1.181) - Dashboard / Dovolena: karta rozdelena 50/50 se smenou D vpravo. */
+#home.page.active #dashCzd .dashboardVacationSplit{
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
+  gap:0 !important;
+  align-items:stretch !important;
+  width:100% !important;
+  min-width:0 !important;
+  margin-top:auto !important;
+}
+#home.page.active #dashCzd .dashboardVacationSide{
+  min-width:0 !important;
   display:flex !important;
   flex-direction:column !important;
-  gap:3px !important;
-  align-items:flex-start !important;
-  max-width:100% !important;
+  justify-content:flex-end !important;
 }
-#home.page.active #dashCzd .dashboardMetaLine{
-  display:block !important;
-  max-width:100% !important;
+#home.page.active #dashCzd .dashboardVacationSideMain{
+  padding-right:9px !important;
 }
-#home.page.active #dashCzd .dashboardMetaLineDivider{
-  width:100% !important;
-  margin-top:2px !important;
-  padding-top:5px !important;
-  border-top:1px solid rgba(174,255,174,.28) !important;
-  color:rgba(210,255,210,.92) !important;
-  font-weight:800 !important;
+#home.page.active #dashCzd .dashboardVacationSideShift{
+  padding-left:10px !important;
+  border-left:1px solid rgba(174,255,174,.34) !important;
+}
+#home.page.active #dashCzd .dashboardVacationShiftValue{
+  color:var(--accent2, #baff9d) !important;
+  font-weight:900 !important;
+  font-size:clamp(12px,3.25vw,16px) !important;
+  line-height:1.04 !important;
+  white-space:normal !important;
+  overflow-wrap:anywhere !important;
+}
+#home.page.active #dashCzd .dashboardVacationShiftMeta{
+  color:rgba(232,255,232,.72) !important;
+  font-size:clamp(9px,2.4vw,11px) !important;
+  line-height:1.08 !important;
+  margin-top:3px !important;
 }
 @media (max-width:370px){
   #home.page.active #dashHero .dashboardHeroBarPercent,

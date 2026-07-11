@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.180) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.181) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -219,12 +219,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.180)',
-  appLabel: 'RaK 1.2 (1.180)',
-  packageVersion: '1.2.180',
-  cacheVersion: 'v1.2-1.180',
+  displayVersion: '1.2 (1.181)',
+  appLabel: 'RaK 1.2 (1.181)',
+  packageVersion: '1.2.181',
+  cacheVersion: 'v1.2-1.181',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.180)',
+  changelogHeader: '## RaK 1.2 (1.181)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -333,8 +333,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.180)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.180'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.181)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.181'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1230,9 +1230,11 @@ assertIncludes(appearanceThemeJs, '"id": "light-zigzag"', 'Musí existovat zákl
   assertIncludes(coreJs, 'const vacationPeriod = typeof getVacationPeriodForDate', 'getSpecialWorkInfo musi blokovat praci behem nastavene dovolene/odstavky');
   assertIncludes(coreJs, 'function getVacationCountdownTeamShiftCount', 'Odpočet dovolené musí počítat zbývající směny D do cílového období');
   assertIncludes(coreJs, 'shiftMeta: formatVacationCountdownShiftCount', 'Odpočet dovolené musí vracet text pro řádek směny D');
-  assertIncludes(dashboardJs, "vacationCountdown.shiftMeta", 'Dashboard karta Dovolená musí vykreslit druhý řádek se směnami D');
-  assertIncludes(dashboardJs, 'function buildDashboardCardMetaHtml', 'Dashboard karty musí umět vícerádkovou meta informaci s předělem');
-  assertIncludes(dashboardPolishCss, '#home.page.active #dashCzd .dashboardMetaLineDivider', 'Karta Dovolená musí mít vizuální předěl před řádkem směny D');
+  assertIncludes(dashboardJs, 'function buildDashboardVacationCardHtml', 'Dashboard karta Dovolená musí mít vlastní 50/50 layout');
+  assertIncludes(dashboardJs, 'dashboardVacationSplit', 'Dashboard karta Dovolená musí vykreslit svisle rozdělený obsah');
+  assertIncludes(dashboardJs, 'dashboardVacationShiftValue', 'Dashboard karta Dovolená musí mít hodnotu směn D v pravé části');
+  assertIncludes(dashboardPolishCss, '#home.page.active #dashCzd .dashboardVacationSplit', 'Karta Dovolená musí mít 50/50 grid pro svislý předěl');
+  assertIncludes(dashboardPolishCss, 'border-left:1px solid rgba(174,255,174,.34)', 'Karta Dovolená musí mít svislý předěl před směnou D');
   assertIncludes(adminFoodJs, 'function buildAdminVacationCountdownSettingsHtml', 'Administrace musi mit samostatny formular dovolene/odstavek');
   assertIncludes(adminFoodJs, 'data-vacation-period-row', 'Formular dovolene/odstavek musi ukladat vice pojmenovanych obdobi od-do');
   assertIncludes(menuJs, "adminAction === 'open-vacation'", 'Admin menu musi otevirat samostatny panel dovolene/odstavek');

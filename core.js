@@ -1,7 +1,7 @@
-// RaK 1.2 (1.180) – core stav, verze a sdílené helpery aplikace.
+// RaK 1.2 (1.181) – core stav, verze a sdílené helpery aplikace.
 
 const APP_KEY = "rotace_kalkulacky_state_v123";
-const APP_VERSION = "1.2 (1.180)";
+const APP_VERSION = "1.2 (1.181)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-06-03-" + APP_VERSION;
 window.ROTATION_BUILD = ROTATION_BUILD;
@@ -365,7 +365,18 @@ function formatVacationCountdownShiftCount(count, team) {
   if (!Number.isFinite(count)) return '';
   const safeCount = Math.max(0, Math.round(count));
   const word = safeCount === 1 ? 'směna' : (safeCount >= 2 && safeCount <= 4 ? 'směny' : 'směn');
-  return String(safeCount) + ' ' + word + ', směna ' + String(team || 'D').trim().toUpperCase();
+  return formatVacationCountdownShiftCountValue(safeCount) + ', ' + formatVacationCountdownShiftTeamLabel(team);
+}
+
+function formatVacationCountdownShiftCountValue(count) {
+  if (!Number.isFinite(count)) return '';
+  const safeCount = Math.max(0, Math.round(count));
+  const word = safeCount === 1 ? 'směna' : (safeCount >= 2 && safeCount <= 4 ? 'směny' : 'směn');
+  return String(safeCount) + ' ' + word;
+}
+
+function formatVacationCountdownShiftTeamLabel(team) {
+  return 'směna ' + String(team || 'D').trim().toUpperCase();
 }
 
 function getVacationCountdownTeamShiftCount(now, targetStart, team) {
@@ -411,6 +422,8 @@ function getVacationCountdown(now) {
     text: diffDays === 0 ? 'Dnes' : (diffDays + ' ' + (diffDays === 1 ? 'den' : 'dní')),
     meta: targetLabel,
     shiftMeta: formatVacationCountdownShiftCount(shiftCount, 'D'),
+    shiftText: formatVacationCountdownShiftCountValue(shiftCount),
+    shiftTeamMeta: formatVacationCountdownShiftTeamLabel('D'),
     shiftCount
   };
 }
