@@ -109,6 +109,34 @@ function absenceLabelFromCode(code) {
   return raw;
 }
 
+function absenceReasonShortCode(code, label) {
+  const rawCode = String(code || "").trim();
+  const rawLabel = String(label || "").trim();
+  const raw = rawCode || rawLabel;
+  if (!raw) return "";
+  const normalized = raw
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  const upper = raw.toUpperCase().trim();
+  if (upper === "D" || normalized === "dovolena") return "D";
+  if (upper === "NV" || normalized === "nahradni volno" || normalized === "nahradni") return "NV";
+  if (upper === "N" || normalized === "nemoc" || normalized === "neschopenka" || normalized === "pracovni neschopnost") return "N";
+  if (upper === "L" || normalized === "lazne") return "L";
+  if (upper === "S" || normalized === "senior") return "S";
+  if (upper === "Š" || upper === "Š" || normalized === "skoleni") return "Š";
+  if (raw === "§" || normalized === "paragraf") return "§";
+  if (rawCode && rawCode.length <= 3) return rawCode.toUpperCase();
+  const byLabel = Object.entries(ABSENCE_LABELS || {}).find(([, value]) => {
+    const clean = String(value || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+    return clean === normalized;
+  });
+  if (byLabel) return byLabel[0];
+  return raw.length <= 3 ? raw.toUpperCase() : raw.slice(0, 3).toUpperCase();
+}
+
 function sanitizeAbsencePersonName(text) {
   return String(text || "")
     .trim()
@@ -282,5 +310,6 @@ window.normalizeNoteEntry = normalizeNoteEntry;
 window.normalizeShiftText = normalizeShiftText;
 window.sanitizeAbsencePersonName = sanitizeAbsencePersonName;
 window.absenceLabelFromCode = absenceLabelFromCode;
+window.absenceReasonShortCode = absenceReasonShortCode;
 window.splitAbsencePeople = splitAbsencePeople;
 window.getKnownStatNames = getKnownStatNames;

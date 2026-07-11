@@ -1,3 +1,9 @@
+## RaK 1.2 (1.187)
+
+- Rotace / Rozpisy a Administrace / Rozpisy: absence používají zkratky důvodů, užší sloupec důvodu a stabilní sloupce podle nejdelší souvislé absence.
+- Administrace / Rozpisy: u absence stačí zadat datum; směna se při uložení dopočítá z rozpisu a absence se řadí podle data.
+- Release metadata sjednocená na `RaK 1.2 (1.187)`, technická verze `1.2.187`, cache `v1.2-1.187`.
+
 ## RaK 1.2 (1.186)
 
 - Home / Dovolená: popisek `směna D` nově používá stejný metatextový styl jako `k CZD`, takže sedí velikost, barva, řádkování i mezera pod hodnotou.

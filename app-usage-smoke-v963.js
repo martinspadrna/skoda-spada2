@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.186) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.187) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -33,6 +33,8 @@ const menuPolishCss = read('styles-menu-polish.css');
 const stylesGamesCss = read('styles-games.css');
 const stylesReleasePolishCss = read('styles-release-polish.css');
 const rotaceJs = read('rotace.js');
+const brusyJs = read('brusy.js');
+const stylesLayoutCss = read('styles-layout.css');
 const browserSmokeJs = read('browser-smoke-v1103.js');
 const dashboardCss = `${dashboardFitCss}
 ${dashboardPolishCss}`;
@@ -219,12 +221,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.186)',
-  appLabel: 'RaK 1.2 (1.186)',
-  packageVersion: '1.2.186',
-  cacheVersion: 'v1.2-1.186',
+  displayVersion: '1.2 (1.187)',
+  appLabel: 'RaK 1.2 (1.187)',
+  packageVersion: '1.2.187',
+  cacheVersion: 'v1.2-1.187',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.186)',
+  changelogHeader: '## RaK 1.2 (1.187)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -333,8 +335,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.186)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.186'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.187)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.187'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1219,6 +1221,16 @@ function assertRotationOvertimeShiftFilterContractV1128() {
 assertIncludes(rotaceJs, 'getRotationMonthShiftAbsenceGroups', 'Absence v Rozpisech/exportu musí držet i prázdné pracovní dny');
 assertIncludes(rotaceJs, 'if (i === 0) absenceHtml += "<th class=\'noteDateCell\'>Datum</th><th class=\'noteShiftCell\'>Směna</th>";', 'Absence v Rozpisech mají datum/směnu jen u první dvojice dne');
 assertNotIncludes(rotaceJs, "emptyCell noteDateCell", 'Absence v Rozpisech už nesmí vykreslovat prázdné opakované sloupce Datum/Směna');
+assertIncludes(brusyJs, 'function absenceReasonShortCode', 'Absence musí mít krátké kódy důvodu pro Rozpisy a admin přehled');
+assertIncludes(rotaceJs, 'absenceReasonShortCode(n.code, n.label)', 'Rozpisy musí zobrazovat důvody absencí zkratkou');
+assertIncludes(rotaceJs, 'sortRotationAbsenceGroupItems(groups)', 'Absence v Rozpisech musí mít stabilní sloupce podle souvislých bloků');
+assertIncludes(rotaceJs, 'slotIndex', 'Export Rozpisu musí zachovat stabilní sloupec osoby i v obrázku');
+assertIncludes(ui, 'function buildAdminAbsenceSummaryHtml(month)', 'Admin přehled absencí musí použít stejný denní model jako Rozpisy');
+assertIncludes(ui, 'if (i === 0) html += "<th class=\'noteDateCell\'>Datum</th><th class=\'noteShiftCell\'>Směna</th>";', 'Admin přehled absencí má datum/směnu jen jednou na řádek');
+assertNotIncludes(ui, "emptyCell noteDateCell", 'Admin přehled absencí nesmí opakovat prázdné datum/směnu sloupce');
+assertIncludes(ui, 'function adminRotationFindShiftForAbsenceDate', 'Admin absence musí umět dopočítat směnu z rozpisu podle zadaného data');
+assertIncludes(ui, 'month.notes = adminRotationSortNotes(notes, month)', 'Admin absence se po uložení musí řadit podle data');
+assertIncludes(stylesLayoutCss, '.noteReasonCell{width:34px;', 'Sloupec důvodu absence musí být užší než sloupec jména');
 assertIncludes(rotaceJs, 'buildStatsForYear(year, { maxMonth })', 'Nýtování a úklid v exportu musí být omezené exportovaným měsícem');
 assertIncludes(ui, 'yearHardMachineStats', 'Generátor musí při nýtování zohledňovat roční počty před cílovým měsícem');
 assertIncludes(appearanceThemeJs, '"id": "light-brown"', 'Musí existovat základní světlý hnědý theme');

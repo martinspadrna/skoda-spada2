@@ -266,7 +266,10 @@ td.missingCell{background:#4b1f1f;
  text-align:center;}
 .notePersonCell, .noteReasonCell{white-space:normal;}
 .notePersonCell{min-width:111px;}
-.noteReasonCell{min-width:78px;}
+.noteReasonCell{width:34px;
+ min-width:34px;
+ max-width:44px;
+ text-align:center;}
 .noteTable th.noteSpacer, .noteTable td.noteSpacer{width:7px;
  min-width:7px;
  padding:0;

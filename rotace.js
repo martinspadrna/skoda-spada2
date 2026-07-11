@@ -711,7 +711,7 @@ function renderMonth(monthKey) {
     absenceHtml += "</tr></thead><tbody>";
 
     absenceGroups.forEach(group => {
-      const items = group.items && group.items.length ? group.items.slice().sort((a, b) => String(a.person || "").localeCompare(String(b.person || ""), "cs")) : [];
+      const items = group.items && group.items.length ? group.items.slice() : [];
       absenceHtml += "<tr" + (!items.length ? " class='noteEmptyAbsenceDay'" : "") + ">";
       for (let i = 0; i < maxPairs; i += 1) {
         if (i > 0) absenceHtml += "<td class='noteSpacer'></td>";
@@ -807,14 +807,65 @@ function getRotationMonthShiftAbsenceGroups(month) {
       const people = (Array.isArray(n.people) && n.people.length)
         ? n.people.map(person => String(person || '').trim()).filter(Boolean)
         : [String(n.person || '').trim()].filter(Boolean);
-      const reason = String(n.label || n.code || '').trim();
+      const reason = typeof absenceReasonShortCode === 'function'
+        ? absenceReasonShortCode(n.code, n.label)
+        : String(n.code || n.label || '').trim();
       (people.length ? people : ['']).forEach((person, personIndex) => {
         group.items.push({ person, reason, index: item.index, personIndex });
       });
     });
 
   groups.sort((a, b) => (a.month - b.month) || (a.day - b.day) || (a.shiftOrder - b.shiftOrder) || (a.index - b.index));
+  sortRotationAbsenceGroupItems(groups);
   return groups;
+}
+
+function sortRotationAbsenceGroupItems(groups) {
+  const safeGroups = Array.isArray(groups) ? groups : [];
+  const byPerson = new Map();
+  safeGroups.forEach((group, groupIndex) => {
+    (Array.isArray(group && group.items) ? group.items : []).forEach((item) => {
+      const person = String(item && item.person || '').trim();
+      if (!person) return;
+      if (!byPerson.has(person)) byPerson.set(person, []);
+      byPerson.get(person).push(groupIndex);
+    });
+  });
+  const personBlocks = new Map();
+  byPerson.forEach((indexes, person) => {
+    const sorted = Array.from(new Set(indexes)).sort((a, b) => a - b);
+    const blocks = [];
+    let start = null;
+    let last = null;
+    sorted.forEach((idx) => {
+      if (start === null || idx !== last + 1) {
+        if (start !== null) blocks.push({ start, end: last, length: last - start + 1 });
+        start = idx;
+      }
+      last = idx;
+    });
+    if (start !== null) blocks.push({ start, end: last, length: last - start + 1 });
+    personBlocks.set(person, blocks);
+  });
+  const metaFor = (person, groupIndex) => {
+    const blocks = personBlocks.get(String(person || '').trim()) || [];
+    return blocks.find(block => groupIndex >= block.start && groupIndex <= block.end) || { start: 9999, end: 9999, length: 1 };
+  };
+  safeGroups.forEach((group, groupIndex) => {
+    if (!group || !Array.isArray(group.items)) return;
+    group.items.sort((a, b) => {
+      const aMeta = metaFor(a && a.person, groupIndex);
+      const bMeta = metaFor(b && b.person, groupIndex);
+      return (bMeta.length - aMeta.length)
+        || (aMeta.start - bMeta.start)
+        || String(a.person || '').localeCompare(String(b.person || ''), 'cs')
+        || ((Number(a.personIndex) || 0) - (Number(b.personIndex) || 0));
+    });
+    group.items.forEach((item, slotIndex) => {
+      item.slotIndex = slotIndex;
+    });
+  });
+  return safeGroups;
 }
 
 function getRotationMonthExportAbsences(month) {
@@ -831,10 +882,11 @@ function getRotationMonthExportAbsences(month) {
         index: Number.isFinite(Number(item.index)) ? Number(item.index) : group.index,
         people: String(item.person || '').trim(),
         personIndex: Number.isFinite(Number(item.personIndex)) ? Number(item.personIndex) : 0,
+        slotIndex: Number.isFinite(Number(item.slotIndex)) ? Number(item.slotIndex) : 0,
         isEmptyAbsenceDay: !!item.empty
       }));
     })
-    .sort((a, b) => (a.month - b.month) || (a.day - b.day) || (a.shiftOrder - b.shiftOrder) || (a.index - b.index) || (a.personIndex - b.personIndex));
+    .sort((a, b) => (a.month - b.month) || (a.day - b.day) || (a.shiftOrder - b.shiftOrder) || (a.slotIndex - b.slotIndex) || (a.index - b.index) || (a.personIndex - b.personIndex));
 }
 
 function buildRotationExportAbsenceTable(absences, dateWeight, personWeight) {
@@ -857,9 +909,10 @@ function buildRotationExportAbsenceTable(absences, dateWeight, personWeight) {
   groups.sort((a, b) => (a.sort[0] - b.sort[0]) || (a.sort[1] - b.sort[1]) || (a.sort[2] - b.sort[2]) || (a.sort[3] - b.sort[3]));
   const maxItems = Math.max(1, ...groups.map(group => group.items.length));
   const columns = [{ label: 'Datum', width: dateWeight, align: 'center', fontWeight: '900 ' }];
+  const reasonWeight = Math.max(28, Math.round(personWeight * 0.45));
   for (let idx = 0; idx < maxItems; idx += 1) {
     columns.push({ label: 'Jméno', width: personWeight, align: 'center', fontWeight: '750 ' });
-    columns.push({ label: 'Důvod', width: personWeight, align: 'center', fontWeight: '750 ' });
+    columns.push({ label: 'Důvod', width: reasonWeight, align: 'center', fontWeight: '750 ' });
   }
   const rows = groups.length
     ? groups.map(group => {

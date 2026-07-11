@@ -563,6 +563,50 @@ function adminRotationDateLabel(rawDate) {
   return raw;
 }
 
+function adminRotationFindShiftForAbsenceDate(month, rawDate) {
+  const parsed = typeof parseDateToken === 'function' ? parseDateToken(rawDate) : null;
+  const explicitShift = String((parsed && parsed.shift) || '').trim();
+  if (explicitShift) return explicitShift;
+  const wanted = adminRotationDateBaseKey(rawDate);
+  if (!wanted) return '';
+  const shifts = [];
+  ['hard', 'soft'].forEach((section) => {
+    const rows = Array.isArray(month && month[section] && month[section].rows) ? month[section].rows : [];
+    rows.forEach((row) => {
+      if (adminRotationDateBaseKey(row && row.date) !== wanted) return;
+      const shift = String(adminRotationShiftFromRow(row) || '').trim();
+      if (shift && !shifts.includes(shift)) shifts.push(shift);
+    });
+  });
+  if (!shifts.length) return '';
+  shifts.sort((a, b) => {
+    const order = (value) => String(value || '').toUpperCase().startsWith('R') ? 1 : (String(value || '').toUpperCase().startsWith('N') ? 2 : 9);
+    return order(a) - order(b) || String(a).localeCompare(String(b), 'cs');
+  });
+  return shifts[0] || '';
+}
+
+function adminRotationSortNotes(notesRows, month) {
+  const rows = Array.isArray(notesRows) ? notesRows.slice() : [];
+  const dateMeta = (note) => {
+    const parsed = typeof parseDateToken === 'function' ? parseDateToken(note && note.date) : null;
+    const day = parsed && Number.isFinite(Number(parsed.day)) ? Number(parsed.day) : 999;
+    const monthNo = parsed && Number.isFinite(Number(parsed.month)) ? Number(parsed.month) : 999;
+    const shift = String((note && note.shift) || (parsed && parsed.shift) || adminRotationFindShiftForAbsenceDate(month, note && note.date) || '').trim();
+    const shiftOrder = shift.toUpperCase().startsWith('R') ? 1 : (shift.toUpperCase().startsWith('N') ? 2 : 9);
+    return { day, month: monthNo, shiftOrder, shift };
+  };
+  return rows.sort((a, b) => {
+    const am = dateMeta(a);
+    const bm = dateMeta(b);
+    return (am.month - bm.month)
+      || (am.day - bm.day)
+      || (am.shiftOrder - bm.shiftOrder)
+      || String(a && a.person || '').localeCompare(String(b && b.person || ''), 'cs')
+      || String(a && a.code || '').localeCompare(String(b && b.code || ''), 'cs');
+  });
+}
+
 function adminGetKnownNames() {
   if (typeof getKnownStatNames === 'function') {
     return Array.from(getKnownStatNames()).filter(Boolean).sort((a, b) => String(a).localeCompare(String(b), 'cs'));
@@ -851,44 +895,34 @@ function buildAdminAbsenceCodeDatalistHtml() {
   return '<datalist id="adminAbsenceCodeOptions">' + codes.map(code => '<option value="' + escapeHtml(code) + '"></option>').join('') + '</datalist>';
 }
 
-function buildAdminAbsenceSummaryHtml(notesRows) {
-  const absNotes = Array.isArray(notesRows) ? notesRows.map(normalizeNoteEntry).filter(n => n.isAbsence) : [];
-  if (!absNotes.length) return '<div class="smallText">Bez poznámek.</div>';
+function buildAdminAbsenceSummaryHtml(month) {
+  const groups = typeof getRotationMonthShiftAbsenceGroups === 'function'
+    ? getRotationMonthShiftAbsenceGroups(month)
+    : [];
+  if (!groups.length) return '<div class="smallText">Bez poznámek.</div>';
 
-  const grouped = new Map();
-  absNotes.forEach(n => {
-    const key = n.date || '';
-    if (!grouped.has(key)) grouped.set(key, []);
-    grouped.get(key).push(n);
-  });
-
-  const rows = [...grouped.entries()].map(([date, items]) => ({
-    date,
-    items: items.slice().sort((a, b) => String(a.person || '').localeCompare(String(b.person || ''), 'cs'))
-  }));
-
-  const maxPairs = Math.max(1, ...rows.map(r => r.items.length));
+  const maxPairs = Math.max(1, ...groups.map(group => Math.max(1, Array.isArray(group.items) ? group.items.length : 0)));
   let html = "<div class='smallText uMt12 uBold'>Absence podle dne</div>";
   html += "<div class='tableWrap'><table class='noteTable noteTableCompact'><thead><tr>";
   for (let i = 0; i < maxPairs; i += 1) {
     if (i > 0) html += "<th class='noteSpacer'></th>";
-    html += "<th class='noteDateCell'>Datum</th><th class='noteShiftCell'>Směna</th><th class='notePersonCell'>Jméno</th><th class='noteReasonCell'>Důvod</th>";
+    if (i === 0) html += "<th class='noteDateCell'>Datum</th><th class='noteShiftCell'>Směna</th>";
+    html += "<th class='notePersonCell'>Jméno</th><th class='noteReasonCell'>Důvod</th>";
   }
   html += "</tr></thead><tbody>";
-  rows.forEach(row => {
-    html += "<tr>";
+  groups.forEach(group => {
+    const items = group.items && group.items.length ? group.items.slice() : [];
+    html += "<tr" + (!items.length ? " class='noteEmptyAbsenceDay'" : "") + ">";
     for (let i = 0; i < maxPairs; i += 1) {
       if (i > 0) html += "<td class='noteSpacer'></td>";
-      const n = row.items[i];
-      if (n) {
-        const parsed = parseDateToken(n.date);
-        const dateOnly = parsed ? String(parsed.day) + "." + String(parsed.month) + "." : n.date;
-        const shift = n.shift || (parsed ? parsed.shift : "");
-        const people = (n.people && n.people.length) ? n.people.join(" a ") : (n.person || "");
-        const reason = n.label || n.code || "";
-        html += "<td class='noteDateCell'>" + escapeHtml(dateOnly) + "</td><td class='noteShiftCell'>" + escapeHtml(shift) + "</td><td class='notePersonCell'>" + escapeHtml(people) + "</td><td class='noteReasonCell'>" + escapeHtml(reason) + "</td>";
+      const item = items[i];
+      if (i === 0) {
+        html += "<td class='noteDateCell'>" + escapeHtml(group.date || '—') + "</td><td class='noteShiftCell'>" + escapeHtml(group.shift || '') + "</td>";
+      }
+      if (item) {
+        html += "<td class='notePersonCell'>" + escapeHtml(item.person || '') + "</td><td class='noteReasonCell'>" + escapeHtml(item.reason || '') + "</td>";
       } else {
-        html += "<td class='emptyCell noteDateCell'>—</td><td class='emptyCell noteShiftCell'>—</td><td class='emptyCell notePersonCell'>—</td><td class='emptyCell noteReasonCell'>—</td>";
+        html += "<td class='emptyCell notePersonCell'>—</td><td class='emptyCell noteReasonCell'>—</td>";
       }
     }
     html += "</tr>";
@@ -1090,7 +1124,8 @@ function buildAdminRotationTableHtml(monthKey) {
   };
 
   const renderNotes = () => {
-    const withBlank = notesRows.concat([ { date: '', person: '', code: '' } ]);
+    const sortedNotesRows = adminRotationSortNotes(notesRows, month);
+    const withBlank = sortedNotesRows.concat([ { date: '', person: '', code: '' } ]);
     let html = withBlank.map((row, idx) => adminNotesRowTemplate(row, idx, true)).join('');
     try {
       if (typeof rakDayModAbsenceRows === 'function') {
@@ -1161,7 +1196,7 @@ function buildAdminRotationTableHtml(monthKey) {
     '      <button type="button" class="appMenuAction adminRotationAbsenceAddBtn" data-admin-action="add-absence-row">+ Přidat další absenci</button>',
     '    </div>',
     buildAdminAbsenceCodeDatalistHtml(),
-    buildAdminAbsenceSummaryHtml(notesRows),
+    buildAdminAbsenceSummaryHtml(month),
     '  </details>',
     '</div>'
   ].join('');
@@ -1293,7 +1328,7 @@ function readAdminRotationFromDom(monthKey) {
     const person = get('person');
     const code = get('code');
     const parsed = typeof parseDateToken === 'function' ? parseDateToken(date) : null;
-    const shift = parsed && parsed.shift ? parsed.shift : '';
+    const shift = parsed && parsed.shift ? parsed.shift : adminRotationFindShiftForAbsenceDate(month, date);
     const text = [person, code].filter(Boolean).join(' ').trim();
     const note = { date, person, code, shift, text };
     if (!note.date && !note.person && !note.code && !note.shift && !note.text) return;
@@ -1302,7 +1337,7 @@ function readAdminRotationFromDom(monthKey) {
     seenNotes.add(key);
     notes.push(note);
   });
-  month.notes = notes;
+  month.notes = adminRotationSortNotes(notes, month);
 
   const pressRotationOverrides = {};
   root.querySelectorAll('[data-press-rotation-date]').forEach((select) => {
