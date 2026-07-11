@@ -1954,21 +1954,31 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
   text-shadow:0 0 12px rgba(124,255,124,.22) !important;
 }
 
-/* RaK 1.2 (1.181) - Dashboard / Dovolena: karta rozdelena 50/50 se smenou D vpravo. */
+/* RaK 1.2 (1.183) - Dashboard / Dovolena: karta rozdelena 50/50 se smenou D vpravo. */
+#home.page.active #dashCzd .dashboardTop{
+  grid-column:1 / -1 !important;
+  grid-row:1 !important;
+  align-self:start !important;
+  min-width:0 !important;
+}
 #home.page.active #dashCzd .dashboardVacationSplit{
   display:grid !important;
+  grid-column:1 / -1 !important;
+  grid-row:2 / span 2 !important;
   grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
   gap:0 !important;
-  align-items:stretch !important;
+  align-self:end !important;
+  align-items:end !important;
   width:100% !important;
   min-width:0 !important;
-  margin-top:auto !important;
+  margin-top:0 !important;
 }
 #home.page.active #dashCzd .dashboardVacationSide{
   min-width:0 !important;
   display:flex !important;
   flex-direction:column !important;
   justify-content:flex-end !important;
+  min-height:42px !important;
 }
 #home.page.active #dashCzd .dashboardVacationSideMain{
   padding-right:9px !important;
@@ -1990,6 +2000,14 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
   font-size:clamp(9px,2.4vw,11px) !important;
   line-height:1.08 !important;
   margin-top:3px !important;
+}
+@media (max-width:390px) and (max-height:820px){
+  #home.page.active #dashCzd .dashboardVacationSide{
+    min-height:38px !important;
+  }
+  #home.page.active #dashCzd .dashboardVacationShiftValue{
+    font-size:clamp(11px,3.05vw,14px) !important;
+  }
 }
 @media (max-width:370px){
   #home.page.active #dashHero .dashboardHeroBarPercent,
