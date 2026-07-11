@@ -1,3 +1,8 @@
+## RaK 1.2 (1.185)
+
+- Home / Dovolená: počet směn D má stejnou velikost, váhu a barvu jako počet dní do CZD a obě poloviny mají větší mezeru mezi hodnotou a popiskem.
+- Release metadata sjednocená na `RaK 1.2 (1.185)`, technická verze `1.2.185`, cache `v1.2-1.185`.
+
 ## RaK 1.2 (1.184)
 
 - Home / Dovolená: počet směn D má stejnou zelenou barvu jako počet dní do CZD a spodní hodnoty jsou posazené výš, aby seděly s ostatními panely.

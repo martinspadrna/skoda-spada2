@@ -78,7 +78,7 @@ function buildDashboardVacationCardHtml(title, countdown, iconHtml, esc) {
     '<div class="dashboardMeta"><div class="dashboardMetaLine">' + safeEsc(source.meta || 'Odpočet do dovolené') + '</div></div>',
     '</div>',
     '<div class="dashboardVacationSide dashboardVacationSideShift">',
-    '<div class="dashboardVacationShiftValue">' + safeEsc(shift.shiftText || '--') + '</div>',
+    '<div class="dashboardValue dashboardVacationShiftValue">' + safeEsc(shift.shiftText || '--') + '</div>',
     '<div class="dashboardVacationShiftMeta">' + safeEsc(shift.shiftTeamMeta || 'směna D') + '</div>',
     '</div>',
     '</div>'

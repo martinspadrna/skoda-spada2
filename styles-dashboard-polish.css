@@ -1954,7 +1954,7 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
   text-shadow:0 0 12px rgba(124,255,124,.22) !important;
 }
 
-/* RaK 1.2 (1.184) - Dashboard / Dovolena: karta rozdelena 50/50 se smenou D vpravo. */
+/* RaK 1.2 (1.185) - Dashboard / Dovolena: karta rozdelena 50/50 se smenou D vpravo. */
 #home.page.active #dashCzd .dashboardTop{
   grid-column:1 / -1 !important;
   grid-row:1 !important;
@@ -1965,7 +1965,7 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
   display:grid !important;
   grid-column:1 / -1 !important;
   grid-row:2 / span 2 !important;
-  grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
+  grid-template-columns:minmax(0,.46fr) minmax(0,.54fr) !important;
   gap:0 !important;
   align-self:end !important;
   align-items:end !important;
@@ -1981,32 +1981,28 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
   min-height:42px !important;
 }
 #home.page.active #dashCzd .dashboardVacationSideMain{
-  padding-right:9px !important;
+  padding-right:8px !important;
 }
 #home.page.active #dashCzd .dashboardVacationSideShift{
-  padding-left:10px !important;
+  padding-left:8px !important;
   border-left:1px solid rgba(174,255,174,.34) !important;
 }
 #home.page.active #dashCzd .dashboardVacationShiftValue{
-  color:color-mix(in srgb, var(--soft, #e5f7e9) 88%, white) !important;
-  font-weight:900 !important;
-  font-size:clamp(12px,3.25vw,16px) !important;
-  line-height:1.04 !important;
-  white-space:normal !important;
-  overflow-wrap:anywhere !important;
+  white-space:nowrap !important;
+  overflow-wrap:normal !important;
+}
+#home.page.active #dashCzd .dashboardVacationSide .dashboardMeta,
+#home.page.active #dashCzd .dashboardVacationShiftMeta{
+  margin-top:5px !important;
 }
 #home.page.active #dashCzd .dashboardVacationShiftMeta{
   color:rgba(232,255,232,.72) !important;
   font-size:clamp(9px,2.4vw,11px) !important;
   line-height:1.08 !important;
-  margin-top:3px !important;
 }
 @media (max-width:390px) and (max-height:820px){
   #home.page.active #dashCzd .dashboardVacationSide{
     min-height:38px !important;
-  }
-  #home.page.active #dashCzd .dashboardVacationShiftValue{
-    font-size:clamp(11px,3.05vw,14px) !important;
   }
 }
 @media (max-width:370px){
