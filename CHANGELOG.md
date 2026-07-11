@@ -1,3 +1,8 @@
+## RaK 1.2 (1.184)
+
+- Home / Dovolená: počet směn D má stejnou zelenou barvu jako počet dní do CZD a spodní hodnoty jsou posazené výš, aby seděly s ostatními panely.
+- Release metadata sjednocená na `RaK 1.2 (1.184)`, technická verze `1.2.184`, cache `v1.2-1.184`.
+
 ## RaK 1.2 (1.183)
 
 - Home / Dovolená: karta odpočtu má znovu stejné rozložení jako ostatní panely; nadpis je vedle ikonky nahoře a spodní část je rozdělená na dny vlevo a směny D vpravo.
