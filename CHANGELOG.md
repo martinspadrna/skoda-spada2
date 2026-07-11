@@ -1,3 +1,8 @@
+## RaK 1.2 (1.178)
+
+- Administrace / Dovolená odstávky: uložení už neposílá speciální řádek `VACATION_COUNTDOWN_SETTINGS` do starší RPC funkce pro stroje, takže nepadá na `invalid category`.
+- Release metadata sjednocená na `RaK 1.2 (1.178)`, technická verze `1.2.178`, cache `v1.2-1.178`.
+
 ## RaK 1.2 (1.177)
 
 - Administrace: přibyl samostatný panel `Dovolená / odstávky` s pojmenovanými obdobími od-do včetně hodin.

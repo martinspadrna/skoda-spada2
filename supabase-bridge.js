@@ -2031,9 +2031,6 @@
       .filter((payload) => payload && payload.machine_key && payload.label);
 
     if (!payloads.length) return 0;
-    const adminRpcResult = await trySaveMachineSettingsViaRpc(client, payloads, options || {});
-    if (adminRpcResult && adminRpcResult.ok) return Number(adminRpcResult.savedCount || payloads.length) || payloads.length;
-
     const isDirectAdminSettingsPayload = (payload) => {
       const category = String(payload && payload.category || '').trim();
       const key = String(payload && payload.machine_key || '').trim();
@@ -2047,7 +2044,7 @@
 
     let savedCount = 0;
     if (machinePayloads.length) {
-      const rpcResult = await trySaveMachineSettingsViaRpc(client, machinePayloads);
+      const rpcResult = await trySaveMachineSettingsViaRpc(client, machinePayloads, options || {});
       if (rpcResult && rpcResult.ok) savedCount += Number(rpcResult.savedCount || machinePayloads.length) || machinePayloads.length;
       else {
         for (const payload of machinePayloads) {
