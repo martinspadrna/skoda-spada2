@@ -1,3 +1,8 @@
+## RaK 1.2 (1.186)
+
+- Home / Dovolená: popisek `směna D` nově používá stejný metatextový styl jako `k CZD`, takže sedí velikost, barva, řádkování i mezera pod hodnotou.
+- Release metadata sjednocená na `RaK 1.2 (1.186)`, technická verze `1.2.186`, cache `v1.2-1.186`.
+
 ## RaK 1.2 (1.185)
 
 - Home / Dovolená: počet směn D má stejnou velikost, váhu a barvu jako počet dní do CZD a obě poloviny mají větší mezeru mezi hodnotou a popiskem.

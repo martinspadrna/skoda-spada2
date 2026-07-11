@@ -1954,7 +1954,7 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
   text-shadow:0 0 12px rgba(124,255,124,.22) !important;
 }
 
-/* RaK 1.2 (1.185) - Dashboard / Dovolena: karta rozdelena 50/50 se smenou D vpravo. */
+/* RaK 1.2 (1.186) - Dashboard / Dovolena: karta rozdelena 50/50 se smenou D vpravo. */
 #home.page.active #dashCzd .dashboardTop{
   grid-column:1 / -1 !important;
   grid-row:1 !important;
@@ -1994,11 +1994,6 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
 #home.page.active #dashCzd .dashboardVacationSide .dashboardMeta,
 #home.page.active #dashCzd .dashboardVacationShiftMeta{
   margin-top:5px !important;
-}
-#home.page.active #dashCzd .dashboardVacationShiftMeta{
-  color:rgba(232,255,232,.72) !important;
-  font-size:clamp(9px,2.4vw,11px) !important;
-  line-height:1.08 !important;
 }
 @media (max-width:390px) and (max-height:820px){
   #home.page.active #dashCzd .dashboardVacationSide{
