@@ -209,6 +209,7 @@ function renderAdminMenuBody(body, section) {
     '  <div class="appMenuSettingsList">',
     '    <button type="button" class="appMenuAction" data-admin-action="open-machines">Nastavení strojů</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-food">Kantýna / jídelna</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="open-vacation">Dovolená / odstávky</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-rotation">Rozpisy</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-backups">Zálohy rozpisů</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-announcement">Oznámení Dashboard</button>',
@@ -248,6 +249,22 @@ function renderAdminMenuBody(body, section) {
     '  <div class="appMenuActionRow">',
     '    <button type="button" class="appMenuAction" data-admin-action="load-food-schedule">Načíst online</button>',
     '    <button type="button" class="appMenuAction isActive" data-admin-action="save-food-schedule">Uložit časy</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
+    '  </div>',
+    '</div>'
+  ].join('');
+
+  const vacationHtml = [
+    '<div class="appMenuCard appMenuAdminCard adminVacationCountdownCard">',
+    '  <div class="appMenuCardTitle">Dovolená / odstávky</div>',
+    '  <div class="appMenuText">',
+    '    <div>Tady nastavíš období od-do včetně hodin. Home karta Dovolená bere nejbližší nadcházející řádek a během zadaného období se směna bere jako volno.</div>',
+    '    <div class="smallText" id="adminOnlineSaveStatus">Prázdné řádky se neukládají. Pro odstranění řádek vymaž a ulož.</div>',
+    '  </div>',
+    buildAdminVacationCountdownSettingsHtml(),
+    '  <div class="appMenuActionRow">',
+    '    <button type="button" class="appMenuAction" data-admin-action="load-vacation-countdown">Načíst online</button>',
+    '    <button type="button" class="appMenuAction isActive" data-admin-action="save-vacation-countdown">Uložit dovolenou</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
     '  </div>',
     '</div>'
@@ -364,6 +381,8 @@ function renderAdminMenuBody(body, section) {
     body.innerHTML = machinesHtml;
   } else if (mode === 'food') {
     body.innerHTML = foodHtml;
+  } else if (mode === 'vacation') {
+    body.innerHTML = vacationHtml;
   } else if (mode === 'rotation') {
     body.innerHTML = rotationHtml;
   } else if (mode === 'overtime') {
@@ -1081,6 +1100,10 @@ function bindAppMenuHandlers(body) {
         openAppMenu('admin-food');
         return;
       }
+      if (adminAction === 'open-vacation') {
+        openAppMenu('admin-vacation');
+        return;
+      }
       if (adminAction === 'open-rotation') {
         openAppMenu('admin-rotation');
         return;
@@ -1325,6 +1348,7 @@ function bindAppMenuHandlers(body) {
           app.machineSettingsRows = await window.RotationSupabaseBridge.loadMachineSettings();
           try { if (typeof updateFoodTile === 'function') updateFoodTile(); } catch (err) {}
           try { if (typeof renderFoodSchedulePage === 'function') renderFoodSchedulePage(); } catch (err) {}
+          try { if (typeof updateDashboard === 'function') updateDashboard(); } catch (err) {}
           renderAdminMenuBody(body, 'food');
           return;
         }
@@ -1338,6 +1362,7 @@ function bindAppMenuHandlers(body) {
           app.machineSettingsRows = rows;
           try { if (typeof updateFoodTile === 'function') updateFoodTile(); } catch (err) {}
           try { if (typeof renderFoodSchedulePage === 'function') renderFoodSchedulePage(); } catch (err) {}
+          try { if (typeof updateDashboard === 'function') updateDashboard(); } catch (err) {}
           renderAdminMenuBody(body, 'food');
           const statusEl = document.getElementById('adminOnlineSaveStatus');
           if (statusEl) statusEl.textContent = (result && result.queued)
@@ -1346,11 +1371,36 @@ function bindAppMenuHandlers(body) {
           return;
         }
       }
+      if (adminAction === 'load-vacation-countdown') {
+        if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.loadMachineSettings === 'function') {
+          app.machineSettingsRows = await window.RotationSupabaseBridge.loadMachineSettings();
+          try { if (typeof updateDashboard === 'function') updateDashboard(); } catch (err) {}
+          renderAdminMenuBody(body, 'vacation');
+          return;
+        }
+      }
+      if (adminAction === 'save-vacation-countdown') {
+        const vacationSettings = readAdminVacationCountdownSettingsFromDom();
+        const rows = mergeAdminVacationCountdownSettingsRows(vacationSettings);
+        if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.saveMachineSettings === 'function') {
+          const result = await window.RotationSupabaseBridge.saveMachineSettings(rows);
+          if (result && result.ok === false) throw (result.error || new Error('Uložení dovolené selhalo.'));
+          app.machineSettingsRows = rows;
+          try { if (typeof updateDashboard === 'function') updateDashboard(); } catch (err) {}
+          renderAdminMenuBody(body, 'vacation');
+          const statusEl = document.getElementById('adminOnlineSaveStatus');
+          if (statusEl) statusEl.textContent = (result && result.queued)
+            ? ('Dovolená uložená lokálně ✓ · po připojení se synchronizuje')
+            : ('Dovolená uložená online ✓');
+          return;
+        }
+      }
       if (adminAction === 'load-machines') {
         if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.loadMachineSettings === 'function') {
           app.machineSettingsRows = await window.RotationSupabaseBridge.loadMachineSettings();
           try { if (typeof updateFoodTile === 'function') updateFoodTile(); } catch (err) {}
           try { if (typeof renderFoodSchedulePage === 'function') renderFoodSchedulePage(); } catch (err) {}
+          try { if (typeof updateDashboard === 'function') updateDashboard(); } catch (err) {}
           renderAdminMenuBody(body, currentView);
           return;
         }
@@ -1583,6 +1633,16 @@ function openAppMenu(view) {
         } catch (err) {
           console.warn('Admin food preload failed', err);
           renderAdminMenuBody(body, 'food');
+        }
+      })();
+    } else if (v === 'admin-vacation') {
+      void (async () => {
+        try {
+          await loadAdminMachineSettingsFromSupabase();
+          renderAdminMenuBody(body, 'vacation');
+        } catch (err) {
+          console.warn('Admin vacation preload failed', err);
+          renderAdminMenuBody(body, 'vacation');
         }
       })();
     } else if (v === 'admin-rotation') {

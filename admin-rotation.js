@@ -942,7 +942,16 @@ function buildAdminFhbTargetSettingsHtml() {
 
 function buildAdminMachineSettingsTableHtml() {
   const rows = Array.isArray(app.machineSettingsRows) ? app.machineSettingsRows : [];
-  const machineRows = rows.filter(row => { const cat = String(row && row.category ? row.category : '').trim(); return cat !== 'brus' && cat !== 'fhb_target' && cat !== 'food_schedule' && cat !== ADMIN_ROTATION_OVERTIME_SETTINGS_CATEGORY; });
+  const machineRows = rows.filter(row => {
+    const cat = String(row && row.category ? row.category : '').trim();
+    const key = String(row && row.machine_key ? row.machine_key : '').trim();
+    return cat !== 'brus'
+      && cat !== 'fhb_target'
+      && cat !== 'food_schedule'
+      && cat !== 'vacation_countdown_settings'
+      && key !== 'VACATION_COUNTDOWN_SETTINGS'
+      && cat !== ADMIN_ROTATION_OVERTIME_SETTINGS_CATEGORY;
+  });
   const brusRows = rows.filter(row => String(row && row.category ? row.category : '').trim() === 'brus');
 
   const machineDefaults = machineRows.length ? machineRows : [
@@ -1217,6 +1226,9 @@ function readAdminMachineSettingsFromDom() {
   }
   if (Array.isArray(app.machineSettingsRows)) {
     app.machineSettingsRows.filter(adminIsRotationOvertimeSettingsRow).forEach((row) => rows.push(row));
+  }
+  if (Array.isArray(app.machineSettingsRows) && typeof adminIsVacationCountdownSettingsRow === 'function') {
+    app.machineSettingsRows.filter(adminIsVacationCountdownSettingsRow).forEach((row) => rows.push(row));
   }
   return rows;
 }

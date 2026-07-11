@@ -2033,11 +2033,17 @@
     if (!payloads.length) return 0;
     const adminRpcResult = await trySaveMachineSettingsViaRpc(client, payloads, options || {});
     if (adminRpcResult && adminRpcResult.ok) return Number(adminRpcResult.savedCount || payloads.length) || payloads.length;
-    throw new Error('admin machine settings RPC unavailable');
 
-    const isFoodPayload = (payload) => String(payload && payload.category || '').trim() === 'food_schedule' || String(payload && payload.machine_key || '').trim() === 'FOOD_SCHEDULE_SETTINGS';
-    const foodPayloads = payloads.filter(isFoodPayload);
-    const machinePayloads = payloads.filter((payload) => !isFoodPayload(payload));
+    const isDirectAdminSettingsPayload = (payload) => {
+      const category = String(payload && payload.category || '').trim();
+      const key = String(payload && payload.machine_key || '').trim();
+      return category === 'food_schedule'
+        || key === 'FOOD_SCHEDULE_SETTINGS'
+        || category === 'vacation_countdown_settings'
+        || key === 'VACATION_COUNTDOWN_SETTINGS';
+    };
+    const directAdminPayloads = payloads.filter(isDirectAdminSettingsPayload);
+    const machinePayloads = payloads.filter((payload) => !isDirectAdminSettingsPayload(payload));
 
     let savedCount = 0;
     if (machinePayloads.length) {
@@ -2052,10 +2058,9 @@
       }
     }
 
-    // v1003: Kantýna / jídelna je samostatná admin sekce a používá kategorii food_schedule.
-    // Starší RPC rak_save_machine_settings validuje jen strojové kategorie a vrací "invalid category".
-    // Food řádek proto ukládáme přímo do machine_settings; DB schema to povoluje a ukládací formát zůstává stejný.
-    for (const payload of foodPayloads) {
+    // Samostatne admin sekce mohou mit vlastni kategorii, kterou starsi RPC nezna.
+    // Ukladaci format zustava v machine_settings stejny, proto je ukladame primo.
+    for (const payload of directAdminPayloads) {
       const { error } = await client.from('machine_settings').upsert([payload], { onConflict: 'machine_key' });
       if (error) throw error;
       savedCount += 1;

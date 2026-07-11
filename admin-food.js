@@ -77,11 +77,108 @@ function adminIsFoodScheduleRow(row) {
   return String(row && row.category || '').trim() === 'food_schedule' || String(row && row.machine_key || '').trim() === 'FOOD_SCHEDULE_SETTINGS';
 }
 
+function adminVacationSlugify(value, fallback) {
+  const slug = String(value || '').trim().toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  return slug || String(fallback || 'dovolena');
+}
+
+function adminVacationFormatInputDateTime(value) {
+  if (typeof formatVacationCountdownDateTime === 'function') return formatVacationCountdownDateTime(value);
+  const date = value instanceof Date ? value : new Date(String(value || '').replace('T', ' '));
+  if (Number.isNaN(date.getTime())) return '';
+  return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0') + 'T' + String(date.getHours()).padStart(2, '0') + ':' + String(date.getMinutes()).padStart(2, '0');
+}
+
+function makeAdminVacationCountdownSettingsRow(vacationSettings) {
+  const settings = vacationSettings && typeof vacationSettings === 'object' ? vacationSettings : { type: 'vacation_countdown_settings', periods: [] };
+  return {
+    machine_key: 'VACATION_COUNTDOWN_SETTINGS',
+    machine_code: 'VACATION',
+    machine_index: 'countdown',
+    label: 'Dovolena / odstavky',
+    category: 'vacation_countdown_settings',
+    cycle_time: '',
+    speed: '',
+    dress_time: '',
+    dress_count: '',
+    settings_json: Object.assign({ machine: 'VACATION', index: 'countdown' }, settings)
+  };
+}
+
+function adminIsVacationCountdownSettingsRow(row) {
+  return String(row && row.category || '').trim() === 'vacation_countdown_settings'
+    || String(row && row.machine_key || '').trim() === 'VACATION_COUNTDOWN_SETTINGS';
+}
+
+function mergeAdminVacationCountdownSettingsRows(vacationSettings) {
+  const base = Array.isArray(app.machineSettingsRows) ? app.machineSettingsRows : [];
+  const rows = base.filter((row) => !adminIsVacationCountdownSettingsRow(row));
+  rows.push(makeAdminVacationCountdownSettingsRow(vacationSettings));
+  return rows;
+}
+
 function mergeAdminFoodScheduleSettingsRows(foodSettings) {
   const base = Array.isArray(app.machineSettingsRows) ? app.machineSettingsRows : [];
   const rows = base.filter((row) => !adminIsFoodScheduleRow(row));
   rows.push(makeAdminFoodScheduleSettingsRow(foodSettings));
   return rows;
+}
+
+function buildAdminVacationCountdownSettingsHtml() {
+  const snapshot = (typeof getVacationCountdownAdminSettingsSnapshot === 'function') ? getVacationCountdownAdminSettingsSnapshot() : { periods: [] };
+  const periods = snapshot && Array.isArray(snapshot.periods) ? snapshot.periods : [];
+  const rowCount = Math.max(8, periods.length + 4);
+  const rows = Array.from({ length: rowCount }, (_, index) => {
+    const period = periods[index] || {};
+    const label = String(period.label || period.name || '').trim();
+    const key = String(period.key || '').trim();
+    const countdownLabel = String(period.countdownLabel || period.countdown_label || label || '').trim();
+    const workLabel = String(period.workLabel || period.work_label || label || '').trim();
+    const start = adminVacationFormatInputDateTime(period.startText || period.start || '');
+    const end = adminVacationFormatInputDateTime(period.endText || period.end || '');
+    return [
+      '<tr data-vacation-period-row data-vacation-key="' + escapeHtml(key) + '" data-vacation-countdown-label="' + escapeHtml(countdownLabel) + '" data-vacation-work-label="' + escapeHtml(workLabel) + '">',
+      '  <td><input class="appMenuInlineInput adminVacationNameInput" data-vacation-field="label" value="' + escapeHtml(label) + '" placeholder="CZD"></td>',
+      '  <td><input class="appMenuInlineInput adminVacationDateTimeInput" data-vacation-field="start" type="datetime-local" value="' + escapeHtml(start) + '"></td>',
+      '  <td><input class="appMenuInlineInput adminVacationDateTimeInput" data-vacation-field="end" type="datetime-local" value="' + escapeHtml(end) + '"></td>',
+      '</tr>'
+    ].join('');
+  }).join('');
+  return [
+    '<div class="tableWrap appMenuTableWrap uMt8">',
+    '  <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminVacationCountdownTable">',
+    '    <thead><tr><th>Název</th><th>Od</th><th>Do</th></tr></thead>',
+    '    <tbody>' + rows + '</tbody>',
+    '  </table>',
+    '</div>'
+  ].join('');
+}
+
+function readAdminVacationCountdownSettingsFromDom() {
+  const periods = [];
+  document.querySelectorAll('#appMenuBody tr[data-vacation-period-row]').forEach((tr, index) => {
+    const label = String(tr.querySelector('[data-vacation-field="label"]')?.value || '').trim();
+    const start = String(tr.querySelector('[data-vacation-field="start"]')?.value || '').trim();
+    const end = String(tr.querySelector('[data-vacation-field="end"]')?.value || '').trim();
+    if (!label || !start || !end) return;
+    const existingKey = String(tr.getAttribute('data-vacation-key') || '').trim();
+    const key = existingKey || (adminVacationSlugify(label, 'dovolena') + '-' + String(index + 1));
+    const existingCountdownLabel = String(tr.getAttribute('data-vacation-countdown-label') || '').trim();
+    const existingWorkLabel = String(tr.getAttribute('data-vacation-work-label') || '').trim();
+    periods.push({
+      key,
+      label,
+      countdownLabel: existingCountdownLabel || label,
+      workLabel: existingWorkLabel || label,
+      start,
+      end
+    });
+  });
+  periods.sort((a, b) => String(a.start || '').localeCompare(String(b.start || '')));
+  return { type: 'vacation_countdown_settings', periods };
 }
 
 function buildAdminFoodScheduleSettingsHtml() {

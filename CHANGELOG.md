@@ -1,3 +1,10 @@
+## RaK 1.2 (1.177)
+
+- Administrace: přibyl samostatný panel `Dovolená / odstávky` s pojmenovanými obdobími od-do včetně hodin.
+- Home / Dovolená: odpočet bere nejbližší nadcházející uložené období; během aktivního období se směna bere jako pracovní volno.
+- Online uložení: samostatné admin nastavení dovolené/odstávek se ukládá do `machine_settings` i při starší serverové funkci s omezenými kategoriemi.
+- Release metadata sjednocená na `RaK 1.2 (1.177)`, technická verze `1.2.177`, cache `v1.2-1.177`.
+
 ## RaK 1.2 (1.176)
 
 - Generátor rozpisu: výběr měsíce teď nabízí aktuální měsíc pro případné přegenerování a zároveň rozsah až po další navazující měsíc za hotovými rozpisy.

@@ -1,7 +1,7 @@
-// RaK 1.2 (1.176) – core stav, verze a sdílené helpery aplikace.
+// RaK 1.2 (1.177) – core stav, verze a sdílené helpery aplikace.
 
 const APP_KEY = "rotace_kalkulacky_state_v123";
-const APP_VERSION = "1.2 (1.176)";
+const APP_VERSION = "1.2 (1.177)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-06-03-" + APP_VERSION;
 window.ROTATION_BUILD = ROTATION_BUILD;
@@ -71,6 +71,11 @@ const ROTATION_OVERTIME_SETTINGS_MACHINE_KEY = 'ROTATION_OVERTIME_SETTINGS';
 const ROTATION_OVERTIME_SETTINGS_CATEGORY = 'rotation_overtime_settings';
 window.ROTATION_OVERTIME_SETTINGS_MACHINE_KEY = ROTATION_OVERTIME_SETTINGS_MACHINE_KEY;
 window.ROTATION_OVERTIME_SETTINGS_CATEGORY = ROTATION_OVERTIME_SETTINGS_CATEGORY;
+
+const VACATION_COUNTDOWN_SETTINGS_MACHINE_KEY = 'VACATION_COUNTDOWN_SETTINGS';
+const VACATION_COUNTDOWN_SETTINGS_CATEGORY = 'vacation_countdown_settings';
+window.VACATION_COUNTDOWN_SETTINGS_MACHINE_KEY = VACATION_COUNTDOWN_SETTINGS_MACHINE_KEY;
+window.VACATION_COUNTDOWN_SETTINGS_CATEGORY = VACATION_COUNTDOWN_SETTINGS_CATEGORY;
 
 function dateKeyISO(date) {
   const d = date instanceof Date ? date : new Date(date);
@@ -253,33 +258,133 @@ function getSpecialWorkInfo(now) {
   };
   if (HOLIDAY_LABELS[key]) return { type: "holiday", label: HOLIDAY_LABELS[key] };
   if (key === "10-24" || key === "10-25") return { type: "czd", label: "CZD – celozávodní dovolená" };
-  if ((now >= new Date(2026, 6, 19, 14, 0, 0, 0) && now < new Date(2026, 7, 2, 18, 0, 0, 0)) ||
-      (now >= new Date(2026, 11, 23, 18, 0, 0, 0) && now < new Date(2027, 0, 2, 6, 0, 0, 0))) {
-    return { type: "czd", label: "CZD – celozávodní dovolená" };
-  }
+  const vacationPeriod = typeof getVacationPeriodForDate === 'function' ? getVacationPeriodForDate(now) : null;
+  if (vacationPeriod) return { type: "czd", label: String(vacationPeriod.workLabel || vacationPeriod.label || "CZD") };
   return null;
 }
 
-const CZD_PERIODS = [
-  { start: new Date(2026, 6, 19, 14, 0, 0, 0), end: new Date(2026, 7, 2, 18, 0, 0, 0) },
-  { start: new Date(2026, 11, 23, 18, 0, 0, 0), end: new Date(2027, 0, 2, 6, 0, 0, 0) }
+const DEFAULT_VACATION_COUNTDOWN_PERIODS = [
+  { key: 'czd-2026', label: 'CZD', workLabel: 'CZD', start: '2026-07-19T14:00', end: '2026-08-02T18:00' },
+  { key: 'vanoce-2026', label: 'Vánoce', countdownLabel: 'Vánocům', workLabel: 'Vánoční dovolená', start: '2026-12-23T18:00', end: '2027-01-02T06:00' }
 ];
 
+const CZD_PERIODS = DEFAULT_VACATION_COUNTDOWN_PERIODS.map((period) => ({
+  start: new Date(String(period.start).replace('T', ' ')),
+  end: new Date(String(period.end).replace('T', ' '))
+}));
+
+function parseVacationCountdownSettingsJson(value) {
+  if (value && typeof value === 'object') return value;
+  if (!value) return {};
+  try { return JSON.parse(String(value)); } catch (err) { return {}; }
+}
+
+function parseVacationCountdownDateTime(value) {
+  const raw = String(value || '').trim();
+  const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T\s](\d{1,2})(?::(\d{2}))?)?$/);
+  if (!match) return null;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const hour = match[4] === undefined ? 0 : Number(match[4]);
+  const minute = match[5] === undefined ? 0 : Number(match[5]);
+  const date = new Date(year, month - 1, day, hour, minute, 0, 0);
+  if (Number.isNaN(date.getTime())) return null;
+  if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day || date.getHours() !== hour || date.getMinutes() !== minute) return null;
+  return date;
+}
+
+function formatVacationCountdownDateTime(date) {
+  const d = date instanceof Date ? date : parseVacationCountdownDateTime(date);
+  if (!d || Number.isNaN(d.getTime())) return '';
+  return dateKeyISO(d) + 'T' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+}
+
+function getVacationCountdownSettingsRow() {
+  const rows = (typeof app !== 'undefined' && app && Array.isArray(app.machineSettingsRows)) ? app.machineSettingsRows : [];
+  return rows.find((row) => String(row && row.category || '').trim() === VACATION_COUNTDOWN_SETTINGS_CATEGORY)
+    || rows.find((row) => String(row && row.machine_key || '').trim() === VACATION_COUNTDOWN_SETTINGS_MACHINE_KEY)
+    || null;
+}
+
+function normalizeVacationCountdownPeriod(item, index) {
+  const src = item && typeof item === 'object' ? item : {};
+  const fallback = DEFAULT_VACATION_COUNTDOWN_PERIODS[index] || {};
+  const start = parseVacationCountdownDateTime(src.start || src.start_at || fallback.start);
+  const end = parseVacationCountdownDateTime(src.end || src.end_at || fallback.end);
+  if (!start || !end || end.getTime() <= start.getTime()) return null;
+  const key = String(src.key || fallback.key || ('vacation-' + String(index + 1))).trim();
+  const label = String(src.label || src.name || fallback.label || 'Dovolena').trim();
+  const countdownLabel = String(src.countdownLabel || src.countdown_label || fallback.countdownLabel || label).trim();
+  const workLabel = String(src.workLabel || src.work_label || src.label || src.name || fallback.workLabel || label).trim();
+  return {
+    key,
+    label,
+    countdownLabel,
+    workLabel,
+    start,
+    end,
+    startText: formatVacationCountdownDateTime(start),
+    endText: formatVacationCountdownDateTime(end)
+  };
+}
+
+function getVacationCountdownSettings() {
+  const row = getVacationCountdownSettingsRow();
+  const settings = row ? parseVacationCountdownSettingsJson(row.settings_json) : {};
+  const sourcePeriods = Array.isArray(settings.periods)
+    ? settings.periods
+    : (Array.isArray(settings.vacations) ? settings.vacations : DEFAULT_VACATION_COUNTDOWN_PERIODS);
+  const periods = sourcePeriods
+    .map((item, index) => normalizeVacationCountdownPeriod(item, index))
+    .filter(Boolean)
+    .sort((a, b) => a.start.getTime() - b.start.getTime());
+  return {
+    type: VACATION_COUNTDOWN_SETTINGS_CATEGORY,
+    custom: !!row,
+    periods: periods.length ? periods : DEFAULT_VACATION_COUNTDOWN_PERIODS.map(normalizeVacationCountdownPeriod).filter(Boolean)
+  };
+}
+
+function getVacationCountdownPeriods() {
+  return getVacationCountdownSettings().periods || [];
+}
+
+function getVacationPeriodForDate(now) {
+  const date = now instanceof Date ? now : new Date(now || new Date());
+  const time = date.getTime();
+  if (Number.isNaN(time)) return null;
+  return getVacationCountdownPeriods().find((period) => period && period.start && period.end && time >= period.start.getTime() && time < period.end.getTime()) || null;
+}
+
+function getVacationCountdownAdminSettingsSnapshot() {
+  return getVacationCountdownSettings();
+}
+
 function getVacationCountdown(now) {
-  const today = new Date(now || new Date());
+  const sourceDate = new Date(now || new Date());
+  const today = new Date(sourceDate);
   today.setHours(0, 0, 0, 0);
-  const upcoming = CZD_PERIODS.find(period => period.start.getTime() > today.getTime()) || CZD_PERIODS[0];
+  const periods = getVacationCountdownPeriods();
+  const active = getVacationPeriodForDate(sourceDate);
+  const upcoming = active || periods.find(period => period.start.getTime() >= today.getTime()) || null;
   if (!upcoming) return { text: '—', meta: '' };
 
   const start = new Date(upcoming.start);
   start.setHours(0, 0, 0, 0);
   const diffDays = Math.max(0, Math.round((start.getTime() - today.getTime()) / 86400000));
-  const targetLabel = upcoming.start.getTime() === CZD_PERIODS[0].start.getTime() ? 'k CZD' : 'k Vánocům';
+  const targetLabel = active ? String(upcoming.workLabel || upcoming.label || 'Dovolená') : ('k ' + String(upcoming.countdownLabel || upcoming.label || 'dovolené'));
   return {
     text: diffDays === 0 ? 'Dnes' : (diffDays + ' ' + (diffDays === 1 ? 'den' : 'dní')),
     meta: targetLabel
   };
 }
+
+window.getVacationCountdownSettings = getVacationCountdownSettings;
+window.getVacationCountdownPeriods = getVacationCountdownPeriods;
+window.getVacationCountdownAdminSettingsSnapshot = getVacationCountdownAdminSettingsSnapshot;
+window.getVacationPeriodForDate = getVacationPeriodForDate;
+window.formatVacationCountdownDateTime = formatVacationCountdownDateTime;
 
 const appRotation = loadRotationData();
 const app = {
