@@ -1,7 +1,7 @@
-// RaK 1.2 (1.181) – core stav, verze a sdílené helpery aplikace.
+// RaK 1.2 (1.182) – core stav, verze a sdílené helpery aplikace.
 
 const APP_KEY = "rotace_kalkulacky_state_v123";
-const APP_VERSION = "1.2 (1.181)";
+const APP_VERSION = "1.2 (1.182)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-06-03-" + APP_VERSION;
 window.ROTATION_BUILD = ROTATION_BUILD;
@@ -391,15 +391,20 @@ function getVacationCountdownTeamShiftCount(now, targetStart, team) {
   let count = 0;
   for (let guard = 0; guard < 260; guard += 1) {
     const state = getTeamShiftState(cursor, targetTeam);
-    const next = state && state.next && state.next.start ? state.next : null;
-    if (!next || !(next.start instanceof Date) || Number.isNaN(next.start.getTime())) break;
-    if (next.start.getTime() >= target.getTime()) break;
-    const key = String(next.start.getTime());
+    const candidate = state && state.active && state.start && state.end && state.end > cursor
+      ? { start: state.start, end: state.end }
+      : (state && state.next && state.next.start ? state.next : null);
+    if (!candidate || !(candidate.start instanceof Date) || Number.isNaN(candidate.start.getTime())) break;
+    if (candidate.start.getTime() >= target.getTime()) break;
+    const key = String(candidate.start.getTime());
     if (!seen.has(key)) {
       seen.add(key);
       count += 1;
     }
-    cursor = new Date(next.start.getTime() + 60000);
+    const endTime = candidate.end instanceof Date && !Number.isNaN(candidate.end.getTime())
+      ? candidate.end.getTime()
+      : candidate.start.getTime() + 12 * 60 * 60 * 1000;
+    cursor = new Date(Math.max(endTime, cursor.getTime() + 60000) + 60000);
   }
   return count;
 }

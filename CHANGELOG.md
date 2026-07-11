@@ -1,3 +1,8 @@
+## RaK 1.2 (1.182)
+
+- Home / Dovolená: opravený výpočet směn D do CZD/Vánoc; po započtení směny se kontrola posouvá až za její konec, takže se nezastaví na první aktivní směně.
+- Release metadata sjednocená na `RaK 1.2 (1.182)`, technická verze `1.2.182`, cache `v1.2-1.182`.
+
 ## RaK 1.2 (1.181)
 
 - Home / Dovolená: odpočet je rozdělený svislým předělem přibližně na půlku panelu; vlevo zůstává odpočet do CZD/Vánoc a vpravo je počet směn pro směnu D.
