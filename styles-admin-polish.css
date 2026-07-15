@@ -858,6 +858,51 @@
   width:100% !important;
   min-height:36px !important;
 }
+.adminSettingsMapGrid{
+  display:grid !important;
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  gap:9px !important;
+  margin:12px 0 !important;
+}
+.adminSettingsMapItem{
+  display:grid !important;
+  gap:7px !important;
+  align-content:start !important;
+  padding:10px !important;
+  border:1px solid rgba(180,255,190,.22) !important;
+  border-radius:8px !important;
+  background:rgba(255,255,255,.045) !important;
+}
+.adminSettingsMapHead{
+  display:grid !important;
+  gap:3px !important;
+  min-width:0 !important;
+}
+.adminSettingsMapHead span{
+  font-weight:900 !important;
+  line-height:1.15 !important;
+}
+.adminSettingsMapHead b{
+  color:#b8d7ff !important;
+  font-size:12px !important;
+  line-height:1.15 !important;
+}
+.adminSettingsMapMeta{
+  color:rgba(235,255,240,.72) !important;
+  font-size:12px !important;
+  font-weight:800 !important;
+  line-height:1.25 !important;
+}
+.adminSettingsMapActions{
+  display:grid !important;
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  gap:7px !important;
+}
+.adminSettingsMapActions .appMenuAction{
+  width:100% !important;
+  min-height:34px !important;
+  padding:7px 9px !important;
+}
 @media (max-width:430px){
   .adminGuideItem{
     grid-template-columns:30px minmax(0,1fr) !important;
@@ -880,6 +925,12 @@
     width:100% !important;
   }
   .adminManualActionRow{
+    grid-template-columns:1fr !important;
+  }
+  .adminSettingsMapGrid{
+    grid-template-columns:1fr !important;
+  }
+  .adminSettingsMapActions{
     grid-template-columns:1fr !important;
   }
 }

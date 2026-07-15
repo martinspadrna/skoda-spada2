@@ -715,6 +715,101 @@ function buildAdminManualHtml(monthKey) {
   ].join('');
 }
 
+function adminSettingsMapItemHtml(item) {
+  const actions = Array.isArray(item && item.actions) ? item.actions : [];
+  return [
+    '<div class="adminSettingsMapItem">',
+    '  <div class="adminSettingsMapHead">',
+    '    <span>' + escapeHtml(item.title || '') + '</span>',
+    '    <b>' + escapeHtml(item.scope || '') + '</b>',
+    '  </div>',
+    '  <div class="smallText">' + escapeHtml(item.detail || '') + '</div>',
+    '  <div class="adminSettingsMapMeta">' + escapeHtml(item.visible || '') + '</div>',
+    actions.length ? ('  <div class="adminSettingsMapActions">' + actions.map((action) => '<button type="button" class="appMenuAction" data-admin-action="' + escapeHtml(action.action || '') + '">' + escapeHtml(action.label || 'Otevřít') + '</button>').join('') + '</div>') : '',
+    '</div>'
+  ].join('');
+}
+
+function buildAdminSettingsMapHtml() {
+  const items = [
+    {
+      title: 'Rozpis a absence',
+      scope: 'Administrace / Rozpisy',
+      detail: 'Pracovní dny, absence, ruční úpravy směn a uložení hotového měsíce.',
+      visible: 'Viditelné v Rotace / Rozpisy a v exportech.',
+      actions: [
+        { action: 'open-rotation', label: 'Rozpisy' },
+        { action: 'open-backups', label: 'Zálohy' }
+      ]
+    },
+    {
+      title: 'Generátor rozpisu',
+      scope: 'Pravidla generátoru',
+      detail: 'Pořadí lidí, základní cykly a pravidla, podle kterých vzniká nový návrh.',
+      visible: 'Projeví se až při dalším vygenerování návrhu.',
+      actions: [
+        { action: 'open-generator-settings', label: 'Pravidla' },
+        { action: 'open-rotation', label: 'Vygenerovat' }
+      ]
+    },
+    {
+      title: 'Dovolená, odstávky a volno',
+      scope: 'Dovolená / Mimořádné volné dny',
+      detail: 'Delší období od-do, jednorázové dny bez práce a nejbližší odpočet na home.',
+      visible: 'Viditelné na home kartě Dovolená a v počítání směn.',
+      actions: [
+        { action: 'open-vacation', label: 'Dovolená' },
+        { action: 'open-special-days', label: 'Volné dny' }
+      ]
+    },
+    {
+      title: 'Přesčasy',
+      scope: 'Přesčasy',
+      detail: 'Přesčasové neděle podle roků, směn a tvrdoty.',
+      visible: 'Používá rozpis, statistiky a provozní přehledy.',
+      actions: [
+        { action: 'open-overtime', label: 'Přesčasy' }
+      ]
+    },
+    {
+      title: 'Kantýna a jídelna',
+      scope: 'Kantýna / jídelna',
+      detail: 'Běžná otevírací doba, přesčasové časy a budoucí přesčasové neděle.',
+      visible: 'Viditelné na home kartách Kantýna a Jídelna.',
+      actions: [
+        { action: 'open-food', label: 'Časy' }
+      ]
+    },
+    {
+      title: 'Odkazy, kontakt a výplata',
+      scope: 'Aplikace pro lidi',
+      detail: 'Jídelní lístek, Eportal, kalendář, kontakt aplikace a pravidlo výplaty.',
+      visible: 'Viditelné v běžném menu a na home kartách.',
+      actions: [
+        { action: 'open-external-links', label: 'Odkazy' },
+        { action: 'open-app-contact', label: 'Kontakt' },
+        { action: 'open-payroll-settings', label: 'Výplata' }
+      ]
+    },
+    {
+      title: 'Správci a kontrola provozu',
+      scope: 'Kontrola a servis',
+      detail: 'Admin účty, připojená zařízení, reporty chyb, synchronizace a exporty.',
+      visible: 'Dostupné jen administrátorům.',
+      actions: [
+        { action: 'open-admin-accounts', label: 'Správci' },
+        { action: 'open-usage', label: 'Připojení' },
+        { action: 'open-service', label: 'Servis' }
+      ]
+    }
+  ];
+  return [
+    '<div class="adminSettingsMapGrid">',
+    items.map(adminSettingsMapItemHtml).join(''),
+    '</div>'
+  ].join('');
+}
+
 function buildAdminManualText(monthKey) {
   const monthLabel = String(monthKey || '').trim() || 'vybraný měsíc';
   const version = formatRakDisplayVersion((typeof app !== 'undefined' && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : ''));
@@ -822,6 +917,7 @@ function renderAdminMenuBody(body, section) {
       { action: 'open-generator-settings', label: 'Pravidla generátoru' },
       { action: 'open-handover', label: 'Předání správy' },
       { action: 'open-admin-manual', label: 'Příručka správce' },
+      { action: 'open-settings-map', label: 'Kde co upravit' },
       { action: 'open-backups', label: 'Zálohy rozpisů' },
       { action: 'open-export', label: 'Export / import' }
     ]),
@@ -1070,6 +1166,21 @@ function renderAdminMenuBody(body, section) {
     '</div>'
   ].join('');
 
+  const settingsMapHtml = [
+    '<div class="appMenuCard appMenuAdminCard adminSettingsMapCard">',
+    '  <div class="appMenuCardTitle">Kde co upravit</div>',
+    '  <div class="appMenuText">',
+    '    <div>Mapa správy pro člověka, který bude aplikaci udržovat. Ukazuje, kde se která věc mění a kde se projeví.</div>',
+    '    <div class="smallText" id="adminOnlineSaveStatus">Tahle obrazovka sama nic neukládá. Jen otevírá existující admin sekce.</div>',
+    '  </div>',
+    buildAdminSettingsMapHtml(),
+    '  <div class="appMenuActionRow">',
+    '    <button type="button" class="appMenuAction" data-admin-action="open-admin-manual">Příručka správce</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
+    '  </div>',
+    '</div>'
+  ].join('');
+
   const announcementHtml = buildAdminAnnouncementHtml();
   const usageHtml = buildAdminUsageHtml();
 
@@ -1152,6 +1263,8 @@ function renderAdminMenuBody(body, section) {
     body.innerHTML = handoverHtml;
   } else if (mode === 'manual') {
     body.innerHTML = manualHtml;
+  } else if (mode === 'settings-map') {
+    body.innerHTML = settingsMapHtml;
   } else if (mode === 'announcement') {
     body.innerHTML = announcementHtml;
   } else if (mode === 'usage') {
@@ -1903,6 +2016,10 @@ function bindAppMenuHandlers(body) {
         openAppMenu('admin-manual');
         return;
       }
+      if (adminAction === 'open-settings-map') {
+        openAppMenu('admin-settings-map');
+        return;
+      }
       if (adminAction === 'open-admin-accounts') {
         openAppMenu('admin-accounts');
         return;
@@ -2477,7 +2594,7 @@ function openAppMenu(view) {
   page.classList.add('active');
   const body = page.querySelector('#appMenuBody');
   const v = view || 'menu';
-  const adminViews = new Set(['admin', 'admin-machines', 'admin-food', 'admin-vacation', 'admin-special-days', 'admin-rotation', 'admin-overtime', 'admin-generator-settings', 'admin-handover', 'admin-manual', 'admin-accounts', 'admin-external-links', 'admin-app-contact', 'admin-payroll-settings', 'admin-backups', 'admin-announcement', 'admin-usage', 'admin-export', 'admin-reports', 'admin-service']);
+  const adminViews = new Set(['admin', 'admin-machines', 'admin-food', 'admin-vacation', 'admin-special-days', 'admin-rotation', 'admin-overtime', 'admin-generator-settings', 'admin-handover', 'admin-manual', 'admin-settings-map', 'admin-accounts', 'admin-external-links', 'admin-app-contact', 'admin-payroll-settings', 'admin-backups', 'admin-announcement', 'admin-usage', 'admin-export', 'admin-reports', 'admin-service']);
 
   const versionText = (typeof app !== 'undefined' && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '');
   const contact = typeof getRakAppContactSettings === 'function'
@@ -2664,6 +2781,16 @@ function openAppMenu(view) {
         } catch (err) {
           console.warn('Admin manual preload failed', err);
           renderAdminMenuBody(body, 'manual');
+        }
+      })();
+    } else if (v === 'admin-settings-map') {
+      void (async () => {
+        try {
+          await loadAdminMachineSettingsFromSupabase();
+          renderAdminMenuBody(body, 'settings-map');
+        } catch (err) {
+          console.warn('Admin settings map preload failed', err);
+          renderAdminMenuBody(body, 'settings-map');
         }
       })();
     } else if (v === 'admin-accounts') {

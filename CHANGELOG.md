@@ -1,3 +1,10 @@
+## RaK 1.2 (1.207)
+
+- Administrace: přidaná chráněná mapa `Kde co upravit`, která novému správci ukáže, ve které admin sekci měnit rozpis, dovolené, volné dny, přesčasy, kantýnu, odkazy, výplatu, správce a servis.
+- Mapa nastavení: položky pouze otevírají existující admin sekce a vysvětlují, kde se změna projeví; nic samy neukládají.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá novou admin-only mapu nastavení, chráněný pohled, handler a styly.
+- Release metadata sjednocená na `RaK 1.2 (1.207)`, technická verze `1.2.207`, cache `v1.2-1.207`.
+
 ## RaK 1.2 (1.206)
 
 - Administrace / Předání správy: přidané tlačítko `Stáhnout stav`, které vytvoří textový souhrn aktuálního nastavení, správců, provozu, volna, rozpisu a záloh.
