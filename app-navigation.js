@@ -422,6 +422,13 @@ function openKalkulacky() {
 const FOOD_MENU_URL = 'https://sa.gthcatering.cz/restaurant/c1/';
 const EPORTAL_URL = 'https://space.skoda.vwgroup.com/group/b2eportal/home-page';
 const PAYROLL_URL = 'https://smartappspki.skoda.vwgroup.com/sap/bc/ui2/flp?sap-client=010&sap-language=CS#eMA_EV-open';
+const RAK_EXTERNAL_LINKS_SETTINGS_KEY = 'EXTERNAL_LINKS_SETTINGS';
+const RAK_EXTERNAL_LINKS_SETTINGS_CATEGORY = 'external_links_settings';
+const RAK_DEFAULT_EXTERNAL_LINKS = Object.freeze({
+  food: Object.freeze({ key: 'food', label: 'Jídelní lístek', value: 'Otevřít', meta: 'Aktuální menu', url: FOOD_MENU_URL }),
+  eportal: Object.freeze({ key: 'eportal', label: 'Eportal', value: 'Otevřít', meta: 'Firemní portál', url: EPORTAL_URL }),
+  payroll: Object.freeze({ key: 'payroll', label: 'Výplata', value: '', meta: '', url: PAYROLL_URL })
+});
 const RAK_EXTERNAL_TILE_HOSTS = Object.freeze([
   'sa.gthcatering.cz',
   'space.skoda.vwgroup.com',
@@ -431,10 +438,153 @@ window.FOOD_MENU_URL = FOOD_MENU_URL;
 window.EPORTAL_URL = EPORTAL_URL;
 window.PAYROLL_URL = PAYROLL_URL;
 window.RAK_EXTERNAL_TILE_HOSTS = RAK_EXTERNAL_TILE_HOSTS;
+window.RAK_EXTERNAL_LINKS_SETTINGS_KEY = RAK_EXTERNAL_LINKS_SETTINGS_KEY;
+window.RAK_EXTERNAL_LINKS_SETTINGS_CATEGORY = RAK_EXTERNAL_LINKS_SETTINGS_CATEGORY;
+
+function rakExternalLinksSettingsJson(row) {
+  if (row && row.settings_json && typeof row.settings_json === 'object') return row.settings_json;
+  try { return row && row.settings_json ? JSON.parse(String(row.settings_json)) : {}; }
+  catch (err) { return {}; }
+}
+
+function isRakExternalLinksSettingsRow(row) {
+  const settings = rakExternalLinksSettingsJson(row);
+  return String(row && row.category || '').trim() === RAK_EXTERNAL_LINKS_SETTINGS_CATEGORY
+    || String(row && row.machine_key || '').trim() === RAK_EXTERNAL_LINKS_SETTINGS_KEY
+    || String(settings && settings.stored_category || '').trim() === RAK_EXTERNAL_LINKS_SETTINGS_CATEGORY
+    || String(settings && settings.admin_settings_key || '').trim() === RAK_EXTERNAL_LINKS_SETTINGS_KEY;
+}
+
+function normalizeRakExternalLinkEntry(key, entry) {
+  const base = RAK_DEFAULT_EXTERNAL_LINKS[key] || { key, label: key, value: 'Otevřít', meta: '', url: '' };
+  const safe = entry && typeof entry === 'object' ? entry : {};
+  const url = String(safe.url || base.url || '').trim();
+  return {
+    key,
+    label: String(safe.label || base.label || key).trim(),
+    value: String(safe.value || base.value || '').trim(),
+    meta: String(safe.meta || base.meta || '').trim(),
+    url: url || String(base.url || '')
+  };
+}
+
+function normalizeRakExternalLinksSettings(settings) {
+  const raw = settings && typeof settings === 'object' ? settings : {};
+  const links = raw.links && typeof raw.links === 'object' ? raw.links : raw;
+  return {
+    type: RAK_EXTERNAL_LINKS_SETTINGS_CATEGORY,
+    links: {
+      food: normalizeRakExternalLinkEntry('food', links.food),
+      eportal: normalizeRakExternalLinkEntry('eportal', links.eportal),
+      payroll: normalizeRakExternalLinkEntry('payroll', links.payroll)
+    }
+  };
+}
+
+function getRakExternalLinksSettings() {
+  const rows = Array.isArray(app && app.machineSettingsRows) ? app.machineSettingsRows : [];
+  const row = rows.find(isRakExternalLinksSettingsRow);
+  return normalizeRakExternalLinksSettings(row ? rakExternalLinksSettingsJson(row) : null);
+}
+
+function getRakExternalLink(key) {
+  const normalizedKey = String(key || '').trim();
+  const settings = getRakExternalLinksSettings();
+  return normalizeRakExternalLinkEntry(normalizedKey, settings.links[normalizedKey]);
+}
+
+function getRakExternalLinkUrl(key) {
+  return String(getRakExternalLink(key).url || '').trim();
+}
+
+function getRakExternalTileHosts() {
+  const hosts = new Set(Array.from(RAK_EXTERNAL_TILE_HOSTS));
+  const settings = getRakExternalLinksSettings();
+  Object.keys(settings.links || {}).forEach((key) => {
+    try {
+      const url = new URL(String(settings.links[key] && settings.links[key].url || ''));
+      if (url.protocol === 'https:' || url.protocol === 'http:') hosts.add(url.hostname);
+    } catch (err) {}
+  });
+  return Array.from(hosts);
+}
+
+function makeRakExternalLinksSettingsRow(settings) {
+  const safe = normalizeRakExternalLinksSettings(settings);
+  return {
+    machine_key: RAK_EXTERNAL_LINKS_SETTINGS_KEY,
+    machine_code: 'APP',
+    machine_index: 'external_links',
+    label: 'Externí odkazy',
+    category: RAK_EXTERNAL_LINKS_SETTINGS_CATEGORY,
+    cycle_time: '',
+    speed: '',
+    dress_time: '',
+    dress_count: '',
+    settings_json: Object.assign({ machine: 'APP', index: 'external_links' }, safe)
+  };
+}
+
+function mergeRakExternalLinksSettingsRows(settings) {
+  const base = Array.isArray(app.machineSettingsRows) ? app.machineSettingsRows : [];
+  const rows = base.filter((row) => !isRakExternalLinksSettingsRow(row));
+  rows.push(makeRakExternalLinksSettingsRow(settings));
+  return rows;
+}
+
+function buildAdminExternalLinksSettingsHtml() {
+  const settings = getRakExternalLinksSettings();
+  const rows = ['food', 'eportal', 'payroll'].map((key) => {
+    const link = normalizeRakExternalLinkEntry(key, settings.links[key]);
+    return [
+      '<tr data-external-link-row="' + escapeHtml(key) + '">',
+      '  <td><input class="appMenuInlineInput" data-external-link-field="label" value="' + escapeHtml(link.label) + '"></td>',
+      '  <td><input class="appMenuInlineInput" data-external-link-field="value" value="' + escapeHtml(link.value) + '"></td>',
+      '  <td><input class="appMenuInlineInput" data-external-link-field="meta" value="' + escapeHtml(link.meta) + '"></td>',
+      '  <td><input class="appMenuInlineInput appMenuWideInput" data-external-link-field="url" value="' + escapeHtml(link.url) + '" inputmode="url"></td>',
+      '</tr>'
+    ].join('');
+  }).join('');
+  return [
+    '<div class="tableWrap appMenuTableWrap uMt12">',
+    '  <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminExternalLinksTable">',
+    '    <thead><tr><th>Název</th><th>Text</th><th>Popis</th><th>Odkaz</th></tr></thead>',
+    '    <tbody>' + rows + '</tbody>',
+    '  </table>',
+    '</div>'
+  ].join('');
+}
+
+function readAdminExternalLinksSettingsFromDom() {
+  const links = {};
+  document.querySelectorAll('#appMenuBody tr[data-external-link-row]').forEach((tr) => {
+    const key = String(tr.getAttribute('data-external-link-row') || '').trim();
+    const get = (field) => String(tr.querySelector('[data-external-link-field="' + field + '"]')?.value || '').trim();
+    if (!key) return;
+    links[key] = normalizeRakExternalLinkEntry(key, {
+      label: get('label'),
+      value: get('value'),
+      meta: get('meta'),
+      url: get('url')
+    });
+  });
+  return normalizeRakExternalLinksSettings({ links });
+}
+
+try {
+  window.isRakExternalLinksSettingsRow = isRakExternalLinksSettingsRow;
+  window.getRakExternalLinksSettings = getRakExternalLinksSettings;
+  window.getRakExternalLink = getRakExternalLink;
+  window.getRakExternalLinkUrl = getRakExternalLinkUrl;
+  window.getRakExternalTileHosts = getRakExternalTileHosts;
+  window.buildAdminExternalLinksSettingsHtml = buildAdminExternalLinksSettingsHtml;
+  window.readAdminExternalLinksSettingsFromDom = readAdminExternalLinksSettingsFromDom;
+  window.mergeRakExternalLinksSettingsRows = mergeRakExternalLinksSettingsRows;
+} catch (err) {}
 
 function normalizeExternalTileUrl(url, key = 'openExternalTile') {
   if (typeof normalizeAllowedExternalUrl === 'function') {
-    return normalizeAllowedExternalUrl(url, RAK_EXTERNAL_TILE_HOSTS, key);
+    return normalizeAllowedExternalUrl(url, getRakExternalTileHosts(), key);
   }
   return typeof normalizeSafeExternalUrl === 'function'
     ? normalizeSafeExternalUrl(url, key)
@@ -458,17 +608,18 @@ function openExternalTile(url, key = 'openExternalTile') {
 }
 
 function openEportal() {
-  return openExternalTile(EPORTAL_URL, 'openEportal');
+  return openExternalTile(getRakExternalLinkUrl('eportal'), 'openEportal');
 }
 
 function openPayroll() {
-  return openExternalTile(PAYROLL_URL, 'openPayroll');
+  return openExternalTile(getRakExternalLinkUrl('payroll'), 'openPayroll');
 }
 
 function syncDashboardExternalLinks() {
   if (typeof document === 'undefined' || typeof setSafeExternalAnchor !== 'function') return false;
-  const food = setSafeExternalAnchor(document.getElementById('dashFoodLink'), FOOD_MENU_URL, RAK_EXTERNAL_TILE_HOSTS, 'dashFoodLink');
-  const eportal = setSafeExternalAnchor(document.getElementById('dashEportalLink'), EPORTAL_URL, RAK_EXTERNAL_TILE_HOSTS, 'dashEportalLink');
+  const hosts = getRakExternalTileHosts();
+  const food = setSafeExternalAnchor(document.getElementById('dashFoodLink'), getRakExternalLinkUrl('food'), hosts, 'dashFoodLink');
+  const eportal = setSafeExternalAnchor(document.getElementById('dashEportalLink'), getRakExternalLinkUrl('eportal'), hosts, 'dashEportalLink');
   return !!(food || eportal);
 }
 window.syncDashboardExternalLinks = syncDashboardExternalLinks;

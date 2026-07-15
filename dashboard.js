@@ -724,14 +724,17 @@ function updateDashboard() {
   };
   setCard('dashKantyna', 'Kantýna', foodText(kantyna), foodMeta(kantyna), foodDot(kantyna), true, croissantIcon);
   setCard('dashJidelna', 'Jídelna', foodText(jidelna), foodMeta(jidelna), foodDot(jidelna), true, plateIcon);
-  setCard('dashVyplata', 'Výplata', payDateText, payMeta, '', true, walletIcon);
+  const payrollLink = typeof getRakExternalLink === 'function' ? getRakExternalLink('payroll') : { label: 'Výplata' };
+  const foodLink = typeof getRakExternalLink === 'function' ? getRakExternalLink('food') : { label: 'Jídelní lístek', value: 'Otevřít', meta: 'Aktuální menu' };
+  const eportalLink = typeof getRakExternalLink === 'function' ? getRakExternalLink('eportal') : { label: 'Eportal', value: 'Otevřít', meta: 'Firemní portál' };
+  setCard('dashVyplata', payrollLink.label || 'Výplata', payDateText, payMeta, '', true, walletIcon);
   const vacationCard = document.getElementById('dashCzd');
   if (vacationCard) {
     vacationCard.classList.toggle('dashboardCardClickable', false);
     setDashboardHtmlIfChanged(vacationCard, buildDashboardVacationCardHtml('Dovolená', vacationCountdown, palmIcon, esc), 'dashCzd');
   }
-  setCard('dashFoodLink', 'Jídelní lístek', 'Otevřít', 'Aktuální menu', '', true, bookIcon);
-  setCard('dashEportalLink', 'Eportal', 'Otevřít', 'Firemní portál', '', true, eportalIcon);
+  setCard('dashFoodLink', foodLink.label || 'Jídelní lístek', foodLink.value || 'Otevřít', foodLink.meta || 'Aktuální menu', '', true, bookIcon);
+  setCard('dashEportalLink', eportalLink.label || 'Eportal', eportalLink.value || 'Otevřít', eportalLink.meta || 'Firemní portál', '', true, eportalIcon);
   try { renderRakDashboardAnnouncement(now); } catch (err) {}
 }
 
@@ -1011,14 +1014,17 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
     setCardSimple('dashCountdown', active ? 'Zbývá' : (nextWorkShift ? 'Začíná' : 'Zbývá'), countdownText, countdownMeta, '', false, fallbackDashboardIcons.countdown);
     setCardSimple('dashKantyna', 'Kantýna', foodText(foodA), foodMeta(foodA), foodA && foodA.isOpen ? 'is-open' : 'is-closed', true, fallbackDashboardIcons.kantyna);
     setCardSimple('dashJidelna', 'Jídelna', foodText(foodB), foodMeta(foodB), foodB && foodB.isOpen ? 'is-open' : 'is-closed', true, fallbackDashboardIcons.jidelna);
-    setCardSimple('dashVyplata', 'Výplata', payText, payMeta, '', true, fallbackDashboardIcons.vyplata);
+    const payrollLink = typeof getRakExternalLink === 'function' ? getRakExternalLink('payroll') : { label: 'Výplata' };
+    const foodLink = typeof getRakExternalLink === 'function' ? getRakExternalLink('food') : { label: 'Jídelní lístek', value: 'Otevřít', meta: 'Aktuální menu' };
+    const eportalLink = typeof getRakExternalLink === 'function' ? getRakExternalLink('eportal') : { label: 'Eportal', value: 'Otevřít', meta: 'Firemní portál' };
+    setCardSimple('dashVyplata', payrollLink.label || 'Výplata', payText, payMeta, '', true, fallbackDashboardIcons.vyplata);
     const fallbackVacationCard = document.getElementById('dashCzd');
     if (fallbackVacationCard) {
       fallbackVacationCard.classList.toggle('dashboardCardClickable', false);
       setDashboardHtmlIfChanged(fallbackVacationCard, buildDashboardVacationCardHtml('Dovolená', vacationCountdown, fallbackDashboardIcons.dovolena, esc), 'dashboardFallbackCzd');
     }
-    setCardSimple('dashFoodLink', 'Jídelní lístek', 'Otevřít', 'Aktuální menu', '', true, fallbackDashboardIcons.menu);
-    setCardSimple('dashEportalLink', 'Eportal', 'Otevřít', 'Firemní portál', '', true, fallbackDashboardIcons.eportal);
+    setCardSimple('dashFoodLink', foodLink.label || 'Jídelní lístek', foodLink.value || 'Otevřít', foodLink.meta || 'Aktuální menu', '', true, fallbackDashboardIcons.menu);
+    setCardSimple('dashEportalLink', eportalLink.label || 'Eportal', eportalLink.value || 'Otevřít', eportalLink.meta || 'Firemní portál', '', true, fallbackDashboardIcons.eportal);
 
     if (err) {
       console.warn('Dashboard fallback activated', err);

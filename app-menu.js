@@ -292,6 +292,13 @@ function buildAdminHandoverChecklistHtml(monthKey) {
       actionLabel: 'Pravidla'
     },
     {
+      ok: true,
+      title: 'Externí odkazy',
+      detail: 'Jídelní lístek, Eportal a Výplata se dají upravit bez zásahu do souborů.',
+      action: 'open-external-links',
+      actionLabel: 'Odkazy'
+    },
+    {
       ok: backups.length > 0,
       title: 'Zálohy',
       detail: backups.length ? ('Načtených záloh: ' + String(backups.length) + '.') : 'Před předáním si ověř, že jsou zálohy dostupné.',
@@ -354,6 +361,7 @@ function renderAdminMenuBody(body, section) {
     '    <button type="button" class="appMenuAction" data-admin-action="open-backups">Zálohy rozpisů</button>',
     '    <div class="appMenuSubTitle">Komunikace a kontrola</div>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-announcement">Oznámení Dashboard</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="open-external-links">Odkazy</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-usage">Přehled připojení</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-export">Export / import</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-reports">Reporty chyb</button>',
@@ -481,6 +489,22 @@ function renderAdminMenuBody(body, section) {
     '</div>'
   ].join('');
 
+  const externalLinksHtml = [
+    '<div class="appMenuCard appMenuAdminCard adminExternalLinksCard">',
+    '  <div class="appMenuCardTitle">Odkazy</div>',
+    '  <div class="appMenuText">',
+    '    <div>Tady nastavíš odkazy na jídelní lístek, Eportal a výplatní portál. Změna se projeví na kartách na hlavní obrazovce.</div>',
+    '    <div class="smallText" id="adminOnlineSaveStatus">Bez uložené změny zůstávají původní odkazy.</div>',
+    '  </div>',
+    buildAdminExternalLinksSettingsHtml(),
+    '  <div class="appMenuActionRow">',
+    '    <button type="button" class="appMenuAction" data-admin-action="load-external-links">Načíst online</button>',
+    '    <button type="button" class="appMenuAction isActive" data-admin-action="save-external-links">Uložit odkazy</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
+    '  </div>',
+    '</div>'
+  ].join('');
+
   const backupsHtml = [
     '<div class="appMenuCard appMenuAdminCard adminRotationBackupsCard">',
     '  <div class="appMenuCardTitle">Zálohy rozpisů</div>',
@@ -565,6 +589,8 @@ function renderAdminMenuBody(body, section) {
     body.innerHTML = generatorSettingsHtml;
   } else if (mode === 'admin-accounts') {
     body.innerHTML = adminAccountsHtml;
+  } else if (mode === 'external-links') {
+    body.innerHTML = externalLinksHtml;
   } else if (mode === 'backups') {
     body.innerHTML = backupsHtml;
   } else if (mode === 'announcement') {
@@ -1302,6 +1328,10 @@ function bindAppMenuHandlers(body) {
         openAppMenu('admin-accounts');
         return;
       }
+      if (adminAction === 'open-external-links') {
+        openAppMenu('admin-external-links');
+        return;
+      }
       if (adminAction === 'open-backups') {
         openAppMenu('admin-backups');
         return;
@@ -1555,6 +1585,28 @@ function bindAppMenuHandlers(body) {
         }
         return;
       }
+      if (adminAction === 'load-external-links') {
+        await loadAdminMachineSettingsFromSupabase();
+        renderAdminMenuBody(body, 'external-links');
+        return;
+      }
+      if (adminAction === 'save-external-links') {
+        const linkSettings = readAdminExternalLinksSettingsFromDom();
+        const rows = mergeRakExternalLinksSettingsRows(linkSettings);
+        if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.saveMachineSettings === 'function') {
+          const result = await window.RotationSupabaseBridge.saveMachineSettings(rows);
+          if (result && result.ok === false) throw (result.error || new Error('Uložení odkazů selhalo.'));
+          app.machineSettingsRows = rows;
+          try { if (typeof syncDashboardExternalLinks === 'function') syncDashboardExternalLinks(); } catch (err) {}
+          try { if (typeof updateDashboard === 'function') updateDashboard(); } catch (err) {}
+          renderAdminMenuBody(body, 'external-links');
+          const statusEl = document.getElementById('adminOnlineSaveStatus');
+          if (statusEl) statusEl.textContent = (result && result.queued)
+            ? 'Odkazy uložené lokálně - po připojení se synchronizují'
+            : 'Odkazy uložené online';
+        }
+        return;
+      }
       if (adminAction === 'add-absence-row') {
         if (typeof adminAddAbsenceRowToEditor === 'function') adminAddAbsenceRowToEditor();
         return;
@@ -1771,7 +1823,7 @@ function openAppMenu(view) {
   page.classList.add('active');
   const body = page.querySelector('#appMenuBody');
   const v = view || 'menu';
-  const adminViews = new Set(['admin', 'admin-machines', 'admin-food', 'admin-vacation', 'admin-rotation', 'admin-overtime', 'admin-generator-settings', 'admin-accounts', 'admin-backups', 'admin-announcement', 'admin-usage', 'admin-export', 'admin-reports', 'admin-service']);
+  const adminViews = new Set(['admin', 'admin-machines', 'admin-food', 'admin-vacation', 'admin-rotation', 'admin-overtime', 'admin-generator-settings', 'admin-accounts', 'admin-external-links', 'admin-backups', 'admin-announcement', 'admin-usage', 'admin-export', 'admin-reports', 'admin-service']);
 
   const versionText = (typeof app !== 'undefined' && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '');
   const contactName = 'Martin Špadrna';
@@ -1938,6 +1990,16 @@ function openAppMenu(view) {
         } catch (err) {
           console.warn('Admin accounts preload failed', err);
           renderAdminMenuBody(body, 'admin-accounts');
+        }
+      })();
+    } else if (v === 'admin-external-links') {
+      void (async () => {
+        try {
+          await loadAdminMachineSettingsFromSupabase();
+          renderAdminMenuBody(body, 'external-links');
+        } catch (err) {
+          console.warn('Admin external links preload failed', err);
+          renderAdminMenuBody(body, 'external-links');
         }
       })();
     } else if (v === 'admin-backups') {

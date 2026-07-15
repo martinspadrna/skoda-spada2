@@ -1981,6 +1981,8 @@
       || key === 'ROTATION_OVERTIME_SETTINGS'
       || category === 'rotation_generator_settings'
       || key === 'ROTATION_GENERATOR_SETTINGS'
+      || category === 'external_links_settings'
+      || key === 'EXTERNAL_LINKS_SETTINGS'
       || category === 'admin_accounts_settings'
       || key === 'ADMIN_ACCOUNTS_SETTINGS';
   }

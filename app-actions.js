@@ -44,7 +44,7 @@ function installDelegatedAppActions() {
     },
     'calc-soustruhy-combo': () => calcSoustruhyCombo(),
     'calc-soustruhy-combo-heat': () => calcSoustruhyComboHeat(),
-    'open-food-link': () => openExternalTile(window.FOOD_MENU_URL || 'https://sa.gthcatering.cz/restaurant/c1/', 'openFoodLink'),
+    'open-food-link': () => openExternalTile(typeof getRakExternalLinkUrl === 'function' ? getRakExternalLinkUrl('food') : (window.FOOD_MENU_URL || 'https://sa.gthcatering.cz/restaurant/c1/'), 'openFoodLink'),
     'open-eportal-link': () => openEportal(),
     'open-payroll-link': () => openPayroll(),
     'calc-f': () => calcF(),

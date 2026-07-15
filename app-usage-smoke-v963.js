@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.195) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.196) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -223,12 +223,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.195)',
-  appLabel: 'RaK 1.2 (1.195)',
-  packageVersion: '1.2.195',
-  cacheVersion: 'v1.2-1.195',
+  displayVersion: '1.2 (1.196)',
+  appLabel: 'RaK 1.2 (1.196)',
+  packageVersion: '1.2.196',
+  cacheVersion: 'v1.2-1.196',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.195)',
+  changelogHeader: '## RaK 1.2 (1.196)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -337,8 +337,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.195)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.195'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.196)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.196'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1406,6 +1406,30 @@ function assertAdminGeneratorSettingsContractV1143() {
   assertNotIncludes(ui, 'RAK_ROTATION_GENERATOR_RULES_V1107.softCore.filter', 'Generator uz nema cist softCore primo z konstanty');
 }
 
+function assertAdminExternalLinksSettingsContractV1144() {
+  assertIncludes(ui, "const RAK_EXTERNAL_LINKS_SETTINGS_KEY = 'EXTERNAL_LINKS_SETTINGS'", 'Externi odkazy musi mit vlastni machine_settings klic');
+  assertIncludes(ui, "const RAK_EXTERNAL_LINKS_SETTINGS_CATEGORY = 'external_links_settings'", 'Externi odkazy musi mit vlastni kategorii nastaveni');
+  assertIncludes(ui, 'function getRakExternalLinksSettings', 'Verejne odkazy musi cist ulozene admin nastaveni');
+  assertIncludes(ui, 'function getRakExternalLinkUrl', 'Klikaci akce musi umet nacist URL z admin nastaveni');
+  assertIncludes(ui, 'function buildAdminExternalLinksSettingsHtml', 'Administrace musi mit formular externich odkazu');
+  assertIncludes(ui, 'function readAdminExternalLinksSettingsFromDom', 'Administrace musi umet nacist externi odkazy z formulare');
+  assertIncludes(ui, 'function mergeRakExternalLinksSettingsRows', 'Externi odkazy se musi ukladat do machine_settings bez mazani ostatnich nastaveni');
+  assertIncludes(ui, "data-admin-action=\"open-external-links\">Odkazy</button>", 'Admin menu musi obsahovat sekci Odkazy');
+  assertIncludes(ui, "adminAction === 'open-external-links'", 'Admin menu musi umet otevrit odkazy');
+  assertIncludes(ui, "adminAction === 'save-external-links'", 'Admin menu musi umet ulozit odkazy');
+  assertIncludes(ui, "adminAction === 'load-external-links'", 'Admin menu musi umet nacist odkazy online');
+  assertIncludes(ui, "'admin-external-links'", 'Odkazy musi byt mezi chranenymi admin view');
+  assertIncludes(ui, "openExternalTile(typeof getRakExternalLinkUrl === 'function' ? getRakExternalLinkUrl('food')", 'Jidelni listek musi otevirat adminovatelny odkaz');
+  assertIncludes(ui, "return openExternalTile(getRakExternalLinkUrl('eportal')", 'Eportal musi otevirat adminovatelny odkaz');
+  assertIncludes(ui, "return openExternalTile(getRakExternalLinkUrl('payroll')", 'Vyplata musi otevirat adminovatelny odkaz');
+  assertIncludes(dashboardJs, "getRakExternalLink('food')", 'Dashboard musi zobrazovat adminovatelny text jidelniho listku');
+  assertIncludes(dashboardJs, "getRakExternalLink('eportal')", 'Dashboard musi zobrazovat adminovatelny text Eportalu');
+  assertIncludes(dashboardJs, "getRakExternalLink('payroll')", 'Dashboard musi zobrazovat adminovatelny text Vyplaty');
+  assertIncludes(ui, 'app.machineSettingsRows.filter(isRakExternalLinksSettingsRow)', 'Ulozeni stroju nesmi smazat externi odkazy');
+  assertIncludes(bridge, "category === 'external_links_settings'", 'Supabase compatibility save musi povolit externi odkazy');
+  assertIncludes(bridge, "key === 'EXTERNAL_LINKS_SETTINGS'", 'Supabase compatibility save musi povolit klic externich odkazu');
+}
+
 assertDashboardCssGuardSeriesCompleteV1100();
 assertReleaseMetadataContractV199();
 assertBrusyChoiceSizeContractV1101();
@@ -1440,8 +1464,9 @@ assertLightPatternThemeContractV1131();
 assertAdminAccountLoginContractV1141();
 assertAdminHandoverGuideContractV1142();
 assertAdminGeneratorSettingsContractV1143();
+assertAdminExternalLinksSettingsContractV1144();
 
-console.log('app-usage-smoke-v963 OK + rotation-generator-wizard-v1108-guard + rotation-generator-absence-state-v1109-guard + rotation-generator-wizard-run-v1110-guard + rotation-generator-wizard-state-v1111-guard + rotation-generator-month-balance-v1112-guard + rotation-generator-rules-v1113-guard + rotation-generator-rules-v1114-guard + rotation-generator-rules-v1115-guard + rotation-generator-rules-v1116-guard + rotation-generator-rules-v1117-guard + dashboard-percent-empty-cells-v1119-guard + stats-press-machine-split-v1123-guard + rotation-overtime-shift-filter-v1128-guard + rotation-overtime-defaults-2025-v1129-guard + rotation-absence-export-ytd-generator-theme-v1130-guard + light-pattern-theme-v1131-guard + admin-account-login-v1141-guard + admin-handover-guide-v1142-guard + admin-generator-settings-v1143-guard + rotation-generator-excel-copy-v1138-guard + games-active-account-direct-stats-v1144-guard + sudoku-completion-save-v1148-guard + sudoku-random-puzzle-v1148-guard + game-time-format-v1144-guard + lada-manual-override-v1144-guard + lada-smooth-performance-v1144-guard + dashboard-css-contract-guard + appearance-reward-contract + rotation-export-summary-simple-guard + rotation-export-glass-guard + appearance-readability-guard + css-layer-order-v194-guard + dashboard-owner-registry-v195-guard + dashboard-overrides-selector-lock-v196-guard + dashboard-scope-v197-guard + dashboard-release-isolation-v198-guard + dashboard-css-guard-series-v1100-complete + release-metadata-v199-guard + brusy-choice-size-v1101-guard + fixed-app-background-v1101-guard + name-choice-fit-v1102-guard + browser-smoke-v1103-guard + dashboard-empty-absence-text-v1104-guard + rotace-empty-absence-text-v1105-guard + appearance-update-persistence-v1105-guard + rotation-generator-v1106-guard + rotation-generator-rules-v1107-guard + memory-8x8-square-fit-v1153-guard + memory-total-time-no-5s-v1153-guard + no-visual-owner-drift-guard OK');
+console.log('app-usage-smoke-v963 OK + rotation-generator-wizard-v1108-guard + rotation-generator-absence-state-v1109-guard + rotation-generator-wizard-run-v1110-guard + rotation-generator-wizard-state-v1111-guard + rotation-generator-month-balance-v1112-guard + rotation-generator-rules-v1113-guard + rotation-generator-rules-v1114-guard + rotation-generator-rules-v1115-guard + rotation-generator-rules-v1116-guard + rotation-generator-rules-v1117-guard + dashboard-percent-empty-cells-v1119-guard + stats-press-machine-split-v1123-guard + rotation-overtime-shift-filter-v1128-guard + rotation-overtime-defaults-2025-v1129-guard + rotation-absence-export-ytd-generator-theme-v1130-guard + light-pattern-theme-v1131-guard + admin-account-login-v1141-guard + admin-handover-guide-v1142-guard + admin-generator-settings-v1143-guard + admin-external-links-v1144-guard + rotation-generator-excel-copy-v1138-guard + games-active-account-direct-stats-v1144-guard + sudoku-completion-save-v1148-guard + sudoku-random-puzzle-v1148-guard + game-time-format-v1144-guard + lada-manual-override-v1144-guard + lada-smooth-performance-v1144-guard + dashboard-css-contract-guard + appearance-reward-contract + rotation-export-summary-simple-guard + rotation-export-glass-guard + appearance-readability-guard + css-layer-order-v194-guard + dashboard-owner-registry-v195-guard + dashboard-overrides-selector-lock-v196-guard + dashboard-scope-v197-guard + dashboard-release-isolation-v198-guard + dashboard-css-guard-series-v1100-complete + release-metadata-v199-guard + brusy-choice-size-v1101-guard + fixed-app-background-v1101-guard + name-choice-fit-v1102-guard + browser-smoke-v1103-guard + dashboard-empty-absence-text-v1104-guard + rotace-empty-absence-text-v1105-guard + appearance-update-persistence-v1105-guard + rotation-generator-v1106-guard + rotation-generator-rules-v1107-guard + memory-8x8-square-fit-v1153-guard + memory-total-time-no-5s-v1153-guard + no-visual-owner-drift-guard OK');
 
 // v1.136 guard: soft-core fixed cycle + no TNKS balancing + removed AMOLED black.
 assertIncludes(ui, 'RAK_ROTATION_GENERATOR_RULES_V1135', 'Chybí pravidla generátoru v1.136');

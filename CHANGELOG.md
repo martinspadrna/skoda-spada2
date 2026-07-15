@@ -1,3 +1,10 @@
+## RaK 1.2 (1.196)
+
+- Administrace: přidaná sekce Odkazy pro správu jídelního lístku, Eportalu a výplatního portálu bez zásahu do souborů aplikace.
+- Home: karty Jídelní lístek, Eportal a Výplata používají uložené admin nastavení; bez uložené změny zůstávají původní odkazy a texty.
+- Supabase: externí odkazy se ukládají jako speciální admin nastavení přes `machine_settings` a zachovávají se při ukládání strojů.
+- Release metadata sjednocená na `RaK 1.2 (1.196)`, technická verze `1.2.196`, cache `v1.2-1.196`.
+
 ## RaK 1.2 (1.195)
 
 - Administrace / Rozpisy: přidaná sekce Pravidla generátoru pro úpravu základních lidí, tvrdotového cyklu, TNKS/TPKW cyklu měkké trojice a jejich základních soustruhů.

@@ -1173,6 +1173,7 @@ function buildAdminMachineSettingsTableHtml() {
       && key !== 'VACATION_COUNTDOWN_SETTINGS'
       && cat !== ADMIN_ROTATION_OVERTIME_SETTINGS_CATEGORY
       && !(typeof rakAdminIsAccountsSettingsRow === 'function' && rakAdminIsAccountsSettingsRow(row))
+      && !(typeof isRakExternalLinksSettingsRow === 'function' && isRakExternalLinksSettingsRow(row))
       && !adminIsRotationGeneratorSettingsRow(row);
   });
   const brusRows = rows.filter(row => String(row && row.category ? row.category : '').trim() === 'brus');
@@ -1459,6 +1460,9 @@ function readAdminMachineSettingsFromDom() {
   }
   if (Array.isArray(app.machineSettingsRows)) {
     app.machineSettingsRows.filter(adminIsRotationGeneratorSettingsRow).forEach((row) => rows.push(row));
+  }
+  if (Array.isArray(app.machineSettingsRows) && typeof isRakExternalLinksSettingsRow === 'function') {
+    app.machineSettingsRows.filter(isRakExternalLinksSettingsRow).forEach((row) => rows.push(row));
   }
   return rows;
 }
