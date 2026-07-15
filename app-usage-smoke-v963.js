@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.200) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.201) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -224,12 +224,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.200)',
-  appLabel: 'RaK 1.2 (1.200)',
-  packageVersion: '1.2.200',
-  cacheVersion: 'v1.2-1.200',
+  displayVersion: '1.2 (1.201)',
+  appLabel: 'RaK 1.2 (1.201)',
+  packageVersion: '1.2.201',
+  cacheVersion: 'v1.2-1.201',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.200)',
+  changelogHeader: '## RaK 1.2 (1.201)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -338,8 +338,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.200)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.200'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.201)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.201'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -540,7 +540,7 @@ assertIncludes(menuPolishCss, 'justify-content:center !important;', 'Avatar mus�
 assertIncludes(menuPolishCss, 'flex-direction:row !important;', 'Avatar nesmí zdědit sloupcové řazení textového wrapperu');
 assert(!menuPolishCss.includes('#menu .adminUsageSummary span{'), 'Obecné pravidlo #menu .adminUsageSummary span by znovu rozhodilo avatar iniciál');
 assert(ui.includes('adminUsageDeviceList'), 'Admin přehled musí ukazovat zařízení uvnitř jedné složky jména');
-assert(ui.includes('data-admin-action="open-usage"'), 'Tlačítko Přehled připojení chybí');
+assert(ui.includes("action: 'open-usage', label: 'Přehled připojení'"), 'Tlačítko Přehled připojení chybí');
 assert(ui.includes("openAppMenu('admin-usage')"), 'Admin usage routing chybí');
 assert(!ui.includes('Zapsat mě teď'), 'Testovací tlačítko Zapsat mě teď nemá být viditelné');
 assert(!ui.includes('<b>Stránka:</b>'), 'Přehled připojení už nemá ukazovat stránku');
@@ -1220,7 +1220,7 @@ function assertRotationOvertimeShiftFilterContractV1128() {
   assertIncludes(ui, "{ value: 'D', label: 'D' }", 'Filtr přesčasů má mít čistou volbu D bez prefixu Moje');
   assertNotIncludes(ui, "label: 'Moje ' +", 'Filtr přesčasů už nemá používat Moje D');
   assertIncludes(menuJs, "adminAction === 'overtime-shift-filter'", 'Admin menu musí obsloužit filtr přesčasů podle směny');
-  assertIncludes(menuJs, 'data-admin-action="open-overtime">Přesčasy</button>', 'Přesčasy musí být samostatná položka v hlavní administraci');
+  assertIncludes(menuJs, "action: 'open-overtime', label: 'Přesčasy'", 'Přesčasy musí být samostatná položka v hlavní administraci');
   assertIncludes(menuJs, 'data-admin-action="back-admin">Zpět</button>', 'Samostatné menu přesčasů se má vracet do hlavní administrace');
   assertIncludes(menuJs, 'adminRotationRefreshOvertimeShiftBadges(body, true)', 'Po renderu přesčasů se musí obnovit směnové badge a filtr');
   assertIncludes(css, '#appMenuBody .adminRotationOvertimeFilterChip', 'Filtr směn musí přebít světlý globální styl tlačítek');
@@ -1295,7 +1295,7 @@ assertIncludes(appearanceThemeJs, '"id": "light-zigzag"', 'Musí existovat zákl
   assertIncludes(coreJs, 'function buildAdminSpecialDaysSettingsHtml', 'Administrace musi mit formular mimoradnych volnych dnu');
   assertIncludes(coreJs, 'function readAdminSpecialDaysSettingsFromDom', 'Administrace musi umet nacist mimoradne volne dny z formulare');
   assertIncludes(coreJs, 'function mergeRakSpecialDaysSettingsRows', 'Mimoradne volne dny se musi ukladat do machine_settings bez mazani ostatnich nastaveni');
-  assertIncludes(menuJs, "data-admin-action=\"open-special-days\">Mimořádné volné dny</button>", 'Admin menu musi obsahovat sekci Mimoradne volne dny');
+  assertIncludes(menuJs, "action: 'open-special-days', label: 'Mimořádné volné dny'", 'Admin menu musi obsahovat sekci Mimoradne volne dny');
   assertIncludes(menuJs, "adminAction === 'open-special-days'", 'Admin menu musi umet otevrit mimoradne volne dny');
   assertIncludes(menuJs, "adminAction === 'save-special-days'", 'Admin menu musi umet ulozit mimoradne volne dny');
   assertIncludes(menuJs, "adminAction === 'load-special-days'", 'Admin menu musi umet nacist mimoradne volne dny online');
@@ -1365,11 +1365,13 @@ function assertAdminAccountLoginContractV1141() {
   assertIncludes(gamesProfileJs, 'window.RotationSupabaseBridge.loadMachineSettings', 'Pri prihlaseni se musi nacist online seznam adminu');
   assertIncludes(gamesProfileJs, "if (typeof rakAdminLock === 'function') rakAdminLock();", 'Odhlaseni profilu musi zamknout admin relaci');
   assertIncludes(ui, "const adminViews = new Set(['admin'", 'Prime otevreni admin obrazovek musi byt hlidane seznamem admin views');
-  assertIncludes(ui, "data-admin-action=\"open-admin-accounts\">Správci</button>", 'Owner admin musi mit v administraci sekci Spravci');
+  assertIncludes(ui, "action: 'open-admin-accounts', label: 'Správci'", 'Owner admin musi mit v administraci sekci Spravci');
   assertIncludes(ui, "adminAction === 'save-admin-accounts'", 'Admin menu musi umet ulozit seznam spravcu');
   assertIncludes(ui, "adminAction === 'load-admin-accounts'", 'Admin menu musi umet nacist seznam spravcu online');
   assertIncludes(ui, 'rakAdminCanOpenAdmin()', 'Tlačítko Administrace i admin view musi pouzivat novou kontrolu opravneni');
   assertIncludes(ui, 'Provoz před rozpisem', 'Admin menu musi byt rozdelene do prehlednych provoznich skupin');
+  assertIncludes(ui, 'buildAdminMenuSectionHtml', 'Admin menu musi skladat prehledne skupiny pres spolecny helper');
+  assertIncludes(ui, 'adminMenuSections', 'Admin uvod musi mit zabalitelne skupiny spravcovskych oblasti');
   assertIncludes(bridge, "category === 'admin_accounts_settings'", 'Supabase compatibility save musi povolit specialni kategorii spravcu');
   assertIncludes(ui, "cat !== 'admin_accounts_settings'", 'Specialni radek spravcu nesmi byt v bezne tabulce stroju');
   assertNotIncludes(adminUnlockJs, 'bottomNavMenuBtn', 'Admin odemceni uz nesmi byt skryte za klikáním na spodni menu Vice');
@@ -1392,12 +1394,14 @@ function assertAdminHandoverGuideContractV1142() {
     'open-export',
     'open-admin-accounts'
   ].forEach((action) => {
-    assertIncludes(ui, 'data-admin-action="' + action + '"', 'Pruvodce musi obsahovat akci ' + action);
+    assertIncludes(ui, "'" + action + "'", 'Pruvodce musi obsahovat akci ' + action);
     assertIncludes(ui, "adminAction === '" + action + "'", 'Admin menu musi umet obslouzit akci ' + action);
   });
   assertIncludes(ui, 'rakAdminCanManageAdmins()', 'Polozka Spravci v pruvodci smi byt jen pro owner admina');
   assertIncludes(stylesAdminPolishCss, '.adminGuideItem', 'Pruvodce musi mit vlastni admin-only styl polozek');
   assertIncludes(stylesAdminPolishCss, '.adminGuideAction', 'Pruvodce musi mit vlastni styl akcnich tlacitek');
+  assertIncludes(stylesAdminPolishCss, '.adminMenuSection', 'Admin rozcestnik musi mit vlastni styl zabalitelnych sekci');
+  assertIncludes(stylesAdminPolishCss, '.adminMenuActionGrid', 'Admin rozcestnik musi mit prehlednou mrizku akci');
 }
 
 function assertAdminGeneratorSettingsContractV1143() {
@@ -1407,7 +1411,7 @@ function assertAdminGeneratorSettingsContractV1143() {
   assertIncludes(ui, 'function buildAdminRotationGeneratorSettingsHtml', 'Administrace musi mit formular pravidel generatoru');
   assertIncludes(ui, 'function readAdminRotationGeneratorSettingsFromDom', 'Administrace musi umet nacist pravidla generatoru z formulare');
   assertIncludes(ui, 'function mergeAdminRotationGeneratorSettingsRows', 'Pravidla generatoru se musi ukladat do machine_settings bez mazani ostatnich nastaveni');
-  assertIncludes(ui, "data-admin-action=\"open-generator-settings\">Pravidla generátoru</button>", 'Admin menu musi obsahovat sekci Pravidla generatoru');
+  assertIncludes(ui, "action: 'open-generator-settings', label: 'Pravidla generátoru'", 'Admin menu musi obsahovat sekci Pravidla generatoru');
   assertIncludes(ui, "adminAction === 'open-generator-settings'", 'Admin menu musi umet otevrit pravidla generatoru');
   assertIncludes(ui, "adminAction === 'save-generator-settings'", 'Admin menu musi umet ulozit pravidla generatoru');
   assertIncludes(ui, "adminAction === 'load-generator-settings'", 'Admin menu musi umet nacist pravidla generatoru online');
@@ -1431,7 +1435,7 @@ function assertAdminExternalLinksSettingsContractV1144() {
   assertIncludes(ui, 'function buildAdminExternalLinksSettingsHtml', 'Administrace musi mit formular externich odkazu');
   assertIncludes(ui, 'function readAdminExternalLinksSettingsFromDom', 'Administrace musi umet nacist externi odkazy z formulare');
   assertIncludes(ui, 'function mergeRakExternalLinksSettingsRows', 'Externi odkazy se musi ukladat do machine_settings bez mazani ostatnich nastaveni');
-  assertIncludes(ui, "data-admin-action=\"open-external-links\">Odkazy</button>", 'Admin menu musi obsahovat sekci Odkazy');
+  assertIncludes(ui, "action: 'open-external-links', label: 'Odkazy'", 'Admin menu musi obsahovat sekci Odkazy');
   assertIncludes(ui, "adminAction === 'open-external-links'", 'Admin menu musi umet otevrit odkazy');
   assertIncludes(ui, "adminAction === 'save-external-links'", 'Admin menu musi umet ulozit odkazy');
   assertIncludes(ui, "adminAction === 'load-external-links'", 'Admin menu musi umet nacist odkazy online');
@@ -1460,7 +1464,7 @@ function assertAdminAppContactSettingsContractV1145() {
   assertIncludes(ui, 'function buildAdminAppContactSettingsHtml', 'Administrace musi mit formular kontaktu aplikace');
   assertIncludes(ui, 'function readAdminAppContactSettingsFromDom', 'Administrace musi umet nacist kontakt z formulare');
   assertIncludes(ui, 'function mergeRakAppContactSettingsRows', 'Kontakt aplikace se musi ukladat do machine_settings bez mazani ostatnich nastaveni');
-  assertIncludes(ui, "data-admin-action=\"open-app-contact\">Kontakt aplikace</button>", 'Admin menu musi obsahovat sekci Kontakt aplikace');
+  assertIncludes(ui, "action: 'open-app-contact', label: 'Kontakt aplikace'", 'Admin menu musi obsahovat sekci Kontakt aplikace');
   assertIncludes(ui, "adminAction === 'open-app-contact'", 'Admin menu musi umet otevrit kontakt aplikace');
   assertIncludes(ui, "adminAction === 'save-app-contact'", 'Admin menu musi umet ulozit kontakt aplikace');
   assertIncludes(ui, "adminAction === 'load-app-contact'", 'Admin menu musi umet nacist kontakt aplikace online');
@@ -1481,7 +1485,7 @@ function assertAdminPayrollSettingsContractV1146() {
   assertIncludes(payrollJs, 'const payrollSettings = getRakPayrollSettings();', 'Vypocet vyplaty musi pouzivat adminovatelne pravidlo');
   assertIncludes(payrollJs, "workdayCount === payrollSettings.workdayOrdinal", 'Vypocet vyplaty nesmi mit natvrdo 4. pracovni den');
   assertNotIncludes(payrollJs, 'workdayCount === 4', 'payroll.js nesmi nechavat pevne pravidlo 4. pracovni den');
-  assertIncludes(ui, "data-admin-action=\"open-payroll-settings\">Výplata</button>", 'Admin menu musi obsahovat sekci Vyplata');
+  assertIncludes(ui, "action: 'open-payroll-settings', label: 'Výplata'", 'Admin menu musi obsahovat sekci Vyplata');
   assertIncludes(ui, "adminAction === 'open-payroll-settings'", 'Admin menu musi umet otevrit nastaveni vyplaty');
   assertIncludes(ui, "adminAction === 'save-payroll-settings'", 'Admin menu musi umet ulozit nastaveni vyplaty');
   assertIncludes(ui, "adminAction === 'load-payroll-settings'", 'Admin menu musi umet nacist nastaveni vyplaty online');
@@ -1529,7 +1533,7 @@ assertAdminExternalLinksSettingsContractV1144();
 assertAdminAppContactSettingsContractV1145();
 assertAdminPayrollSettingsContractV1146();
 
-console.log('app-usage-smoke-v963 OK + rotation-generator-wizard-v1108-guard + rotation-generator-absence-state-v1109-guard + rotation-generator-wizard-run-v1110-guard + rotation-generator-wizard-state-v1111-guard + rotation-generator-month-balance-v1112-guard + rotation-generator-rules-v1113-guard + rotation-generator-rules-v1114-guard + rotation-generator-rules-v1115-guard + rotation-generator-rules-v1116-guard + rotation-generator-rules-v1117-guard + dashboard-percent-empty-cells-v1119-guard + stats-press-machine-split-v1123-guard + rotation-overtime-shift-filter-v1128-guard + admin-special-days-v1148-guard + rotation-overtime-defaults-2025-v1129-guard + rotation-absence-export-ytd-generator-theme-v1130-guard + light-pattern-theme-v1131-guard + admin-account-login-v1141-guard + admin-handover-guide-v1142-guard + admin-generator-settings-v1143-guard + admin-external-links-v1144-guard + admin-calendar-link-v1147-guard + admin-app-contact-v1145-guard + admin-payroll-settings-v1146-guard + rotation-generator-excel-copy-v1138-guard + games-active-account-direct-stats-v1144-guard + sudoku-completion-save-v1148-guard + sudoku-random-puzzle-v1148-guard + game-time-format-v1144-guard + lada-manual-override-v1144-guard + lada-smooth-performance-v1144-guard + dashboard-css-contract-guard + appearance-reward-contract + rotation-export-summary-simple-guard + rotation-export-glass-guard + appearance-readability-guard + css-layer-order-v194-guard + dashboard-owner-registry-v195-guard + dashboard-overrides-selector-lock-v196-guard + dashboard-scope-v197-guard + dashboard-release-isolation-v198-guard + dashboard-css-guard-series-v1100-complete + release-metadata-v199-guard + brusy-choice-size-v1101-guard + fixed-app-background-v1101-guard + name-choice-fit-v1102-guard + browser-smoke-v1103-guard + dashboard-empty-absence-text-v1104-guard + rotace-empty-absence-text-v1105-guard + appearance-update-persistence-v1105-guard + rotation-generator-v1106-guard + rotation-generator-rules-v1107-guard + memory-8x8-square-fit-v1153-guard + memory-total-time-no-5s-v1153-guard + no-visual-owner-drift-guard OK');
+console.log('app-usage-smoke-v963 OK + rotation-generator-wizard-v1108-guard + rotation-generator-absence-state-v1109-guard + rotation-generator-wizard-run-v1110-guard + rotation-generator-wizard-state-v1111-guard + rotation-generator-month-balance-v1112-guard + rotation-generator-rules-v1113-guard + rotation-generator-rules-v1114-guard + rotation-generator-rules-v1115-guard + rotation-generator-rules-v1116-guard + rotation-generator-rules-v1117-guard + dashboard-percent-empty-cells-v1119-guard + stats-press-machine-split-v1123-guard + rotation-overtime-shift-filter-v1128-guard + admin-special-days-v1148-guard + admin-menu-sections-v1149-guard + rotation-overtime-defaults-2025-v1129-guard + rotation-absence-export-ytd-generator-theme-v1130-guard + light-pattern-theme-v1131-guard + admin-account-login-v1141-guard + admin-handover-guide-v1142-guard + admin-generator-settings-v1143-guard + admin-external-links-v1144-guard + admin-calendar-link-v1147-guard + admin-app-contact-v1145-guard + admin-payroll-settings-v1146-guard + rotation-generator-excel-copy-v1138-guard + games-active-account-direct-stats-v1144-guard + sudoku-completion-save-v1148-guard + sudoku-random-puzzle-v1148-guard + game-time-format-v1144-guard + lada-manual-override-v1144-guard + lada-smooth-performance-v1144-guard + dashboard-css-contract-guard + appearance-reward-contract + rotation-export-summary-simple-guard + rotation-export-glass-guard + appearance-readability-guard + css-layer-order-v194-guard + dashboard-owner-registry-v195-guard + dashboard-overrides-selector-lock-v196-guard + dashboard-scope-v197-guard + dashboard-release-isolation-v198-guard + dashboard-css-guard-series-v1100-complete + release-metadata-v199-guard + brusy-choice-size-v1101-guard + fixed-app-background-v1101-guard + name-choice-fit-v1102-guard + browser-smoke-v1103-guard + dashboard-empty-absence-text-v1104-guard + rotace-empty-absence-text-v1105-guard + appearance-update-persistence-v1105-guard + rotation-generator-v1106-guard + rotation-generator-rules-v1107-guard + memory-8x8-square-fit-v1153-guard + memory-total-time-no-5s-v1153-guard + no-visual-owner-drift-guard OK');
 
 // v1.136 guard: soft-core fixed cycle + no TNKS balancing + removed AMOLED black.
 assertIncludes(ui, 'RAK_ROTATION_GENERATOR_RULES_V1135', 'Chybí pravidla generátoru v1.136');

@@ -251,6 +251,23 @@ function adminGuideItemHtml(item) {
   ].join('');
 }
 
+function buildAdminMenuSectionHtml(title, detail, actions, options = {}) {
+  const safeActions = (Array.isArray(actions) ? actions : []).filter((item) => item && item.action && item.label);
+  if (!safeActions.length) return '';
+  const openAttr = options.open === false ? '' : ' open';
+  return [
+    '<details class="adminMenuSection"' + openAttr + '>',
+    '  <summary>',
+    '    <span>' + escapeHtml(title || '') + '</span>',
+    detail ? '    <small>' + escapeHtml(detail) + '</small>' : '',
+    '  </summary>',
+    '  <div class="adminMenuActionGrid">',
+    safeActions.map((item) => '<button type="button" class="appMenuAction" data-admin-action="' + escapeHtml(item.action) + '">' + escapeHtml(item.label) + '</button>').join(''),
+    '  </div>',
+    '</details>'
+  ].join('');
+}
+
 function buildAdminHandoverChecklistHtml(monthKey) {
   const rows = Array.isArray(app && app.machineSettingsRows) ? app.machineSettingsRows : [];
   const month = app && app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
@@ -375,6 +392,13 @@ function renderAdminMenuBody(body, section) {
   const page = document.getElementById('menu');
   if (page) page.dataset.adminView = mode;
 
+  const adminServiceActions = [
+    { action: 'open-service', label: 'Servis / synchronizace' }
+  ];
+  if (typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins()) {
+    adminServiceActions.unshift({ action: 'open-admin-accounts', label: 'Správci' });
+  }
+
   const homeHtml = [
     '<div class="appMenuCard appMenuAdminCard">',
     '  <div class="appMenuCardTitle">Administrace</div>',
@@ -383,28 +407,30 @@ function renderAdminMenuBody(body, section) {
     '    <div class="smallText" id="adminOnlineSaveStatus">Vyber sekci, kterou chceš upravit.</div>',
     '  </div>',
     buildAdminHandoverChecklistHtml(monthKey),
-    '  <div class="appMenuSettingsList">',
-    '    <div class="appMenuSubTitle">Provoz před rozpisem</div>',
-    '    <button type="button" class="appMenuAction" data-admin-action="open-machines">Nastavení strojů</button>',
-    '    <button type="button" class="appMenuAction" data-admin-action="open-food">Kantýna / jídelna</button>',
-    '    <button type="button" class="appMenuAction" data-admin-action="open-overtime">Přesčasy</button>',
-    '    <button type="button" class="appMenuAction" data-admin-action="open-vacation">Dovolená / odstávky</button>',
-    '    <button type="button" class="appMenuAction" data-admin-action="open-special-days">Mimořádné volné dny</button>',
-    '    <div class="appMenuSubTitle">Rozpisy</div>',
-    '    <button type="button" class="appMenuAction" data-admin-action="open-rotation">Rozpisy</button>',
-    '    <button type="button" class="appMenuAction" data-admin-action="open-generator-settings">Pravidla generátoru</button>',
-    '    <button type="button" class="appMenuAction" data-admin-action="open-backups">Zálohy rozpisů</button>',
-    '    <div class="appMenuSubTitle">Komunikace a kontrola</div>',
-    '    <button type="button" class="appMenuAction" data-admin-action="open-announcement">Oznámení Dashboard</button>',
-    '    <button type="button" class="appMenuAction" data-admin-action="open-external-links">Odkazy</button>',
-    '    <button type="button" class="appMenuAction" data-admin-action="open-app-contact">Kontakt aplikace</button>',
-    '    <button type="button" class="appMenuAction" data-admin-action="open-payroll-settings">Výplata</button>',
-    '    <button type="button" class="appMenuAction" data-admin-action="open-usage">Přehled připojení</button>',
-    '    <button type="button" class="appMenuAction" data-admin-action="open-export">Export / import</button>',
-    '    <button type="button" class="appMenuAction" data-admin-action="open-reports">Reporty chyb</button>',
-    '    <div class="appMenuSubTitle">Servis</div>',
-    (typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins() ? '    <button type="button" class="appMenuAction" data-admin-action="open-admin-accounts">Správci</button>' : ''),
-    '    <button type="button" class="appMenuAction" data-admin-action="open-service">Servis / synchronizace</button>',
+    '  <div class="adminMenuSections">',
+    buildAdminMenuSectionHtml('1. Provoz před rozpisem', 'Co musí sedět před generováním dalšího měsíce.', [
+      { action: 'open-machines', label: 'Nastavení strojů' },
+      { action: 'open-food', label: 'Kantýna / jídelna' },
+      { action: 'open-overtime', label: 'Přesčasy' },
+      { action: 'open-vacation', label: 'Dovolená / odstávky' },
+      { action: 'open-special-days', label: 'Mimořádné volné dny' }
+    ]),
+    buildAdminMenuSectionHtml('2. Rozpisy a předání', 'Tvorba, kontrola, zálohy a export rozpisu.', [
+      { action: 'open-rotation', label: 'Rozpisy' },
+      { action: 'open-generator-settings', label: 'Pravidla generátoru' },
+      { action: 'open-backups', label: 'Zálohy rozpisů' },
+      { action: 'open-export', label: 'Export / import' }
+    ]),
+    buildAdminMenuSectionHtml('3. Aplikace pro lidi', 'Texty, odkazy a informace viditelné v běžné aplikaci.', [
+      { action: 'open-announcement', label: 'Oznámení Dashboard' },
+      { action: 'open-external-links', label: 'Odkazy' },
+      { action: 'open-app-contact', label: 'Kontakt aplikace' },
+      { action: 'open-payroll-settings', label: 'Výplata' }
+    ]),
+    buildAdminMenuSectionHtml('4. Kontrola a servis', 'Připojení, reporty, synchronizace a správa adminů.', [
+      { action: 'open-usage', label: 'Přehled připojení' },
+      { action: 'open-reports', label: 'Reporty chyb' }
+    ].concat(adminServiceActions)),
     '  </div>',
     '  <button type="button" class="appMenuAction appMenuBack" data-menu-back="1">Zpět</button>',
     '</div>'

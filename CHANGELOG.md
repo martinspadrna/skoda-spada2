@@ -1,3 +1,10 @@
+## RaK 1.2 (1.201)
+
+- Administrace: úvodní rozcestník je nově rozdělený do zabalitelných sekcí Provoz před rozpisem, Rozpisy a předání, Aplikace pro lidi a Kontrola a servis.
+- Správa aplikace: jednotlivé admin akce se skládají přes společný helper, aby šlo menu dál rozšiřovat bez ručního přepisování dlouhého seznamu tlačítek.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá nový admin-only rozcestník, jeho akce a styly.
+- Release metadata sjednocená na `RaK 1.2 (1.201)`, technická verze `1.2.201`, cache `v1.2-1.201`.
+
 ## RaK 1.2 (1.200)
 
 - Administrace: přidaná sekce Mimořádné volné dny pro jednorázové svátky, odstávky a další dny bez práce.
