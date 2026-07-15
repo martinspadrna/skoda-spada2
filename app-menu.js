@@ -221,6 +221,7 @@ function renderAdminMenuBody(body, section) {
     '    <button type="button" class="appMenuAction" data-admin-action="open-export">Export / import</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-reports">Reporty chyb</button>',
     '    <div class="appMenuSubTitle">Servis</div>',
+    (typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins() ? '    <button type="button" class="appMenuAction" data-admin-action="open-admin-accounts">Správci</button>' : ''),
     '    <button type="button" class="appMenuAction" data-admin-action="open-service">Servis / synchronizace</button>',
     '  </div>',
     '  <button type="button" class="appMenuAction appMenuBack" data-menu-back="1">Zpět</button>',
@@ -311,6 +312,22 @@ function renderAdminMenuBody(body, section) {
     '</div>'
   ].join('');
 
+  const adminAccountsHtml = [
+    '<div class="appMenuCard appMenuAdminCard adminAccountsCard">',
+    '  <div class="appMenuCardTitle">Správci</div>',
+    '  <div class="appMenuText">',
+    '    <div>Tady hlavní admin nastaví další admin účty. Běžní uživatelé tuhle sekci neuvidí.</div>',
+    '    <div class="smallText" id="adminOnlineSaveStatus">Prázdné řádky se neukládají. Pro odebrání správce smaž účet nebo heslo a ulož.</div>',
+    '  </div>',
+    buildAdminAccountsSettingsHtml(),
+    '  <div class="appMenuActionRow">',
+    '    <button type="button" class="appMenuAction" data-admin-action="load-admin-accounts">Načíst online</button>',
+    '    <button type="button" class="appMenuAction isActive" data-admin-action="save-admin-accounts">Uložit správce</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
+    '  </div>',
+    '</div>'
+  ].join('');
+
   const backupsHtml = [
     '<div class="appMenuCard appMenuAdminCard adminRotationBackupsCard">',
     '  <div class="appMenuCardTitle">Zálohy rozpisů</div>',
@@ -391,6 +408,8 @@ function renderAdminMenuBody(body, section) {
     body.innerHTML = rotationHtml;
   } else if (mode === 'overtime') {
     body.innerHTML = overtimeHtml;
+  } else if (mode === 'admin-accounts') {
+    body.innerHTML = adminAccountsHtml;
   } else if (mode === 'backups') {
     body.innerHTML = backupsHtml;
   } else if (mode === 'announcement') {
@@ -1120,6 +1139,10 @@ function bindAppMenuHandlers(body) {
         openAppMenu('admin-overtime');
         return;
       }
+      if (adminAction === 'open-admin-accounts') {
+        openAppMenu('admin-accounts');
+        return;
+      }
       if (adminAction === 'open-backups') {
         openAppMenu('admin-backups');
         return;
@@ -1327,6 +1350,29 @@ function bindAppMenuHandlers(body) {
           if (statusEl) statusEl.textContent = (result && result.queued)
             ? 'Přesčasy uložené lokálně ✓ · po připojení se synchronizují'
             : 'Přesčasy uložené online ✓';
+        }
+        return;
+      }
+      if (adminAction === 'load-admin-accounts') {
+        if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.loadMachineSettings === 'function') {
+          app.machineSettingsRows = await window.RotationSupabaseBridge.loadMachineSettings();
+          renderAdminMenuBody(body, 'admin-accounts');
+          return;
+        }
+      }
+      if (adminAction === 'save-admin-accounts') {
+        if (!(typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins())) return;
+        const adminSettings = readAdminAccountsSettingsFromDom();
+        const rows = mergeAdminAccountsSettingsRows(adminSettings);
+        if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.saveMachineSettings === 'function') {
+          const result = await window.RotationSupabaseBridge.saveMachineSettings(rows);
+          if (result && result.ok === false) throw (result.error || new Error('Uložení správců selhalo.'));
+          app.machineSettingsRows = rows;
+          renderAdminMenuBody(body, 'admin-accounts');
+          const statusEl = document.getElementById('adminOnlineSaveStatus');
+          if (statusEl) statusEl.textContent = (result && result.queued)
+            ? 'Správci uložení lokálně ✓ · po připojení se synchronizují'
+            : 'Správci uložení online ✓';
         }
         return;
       }
@@ -1546,7 +1592,7 @@ function openAppMenu(view) {
   page.classList.add('active');
   const body = page.querySelector('#appMenuBody');
   const v = view || 'menu';
-  const adminViews = new Set(['admin', 'admin-machines', 'admin-food', 'admin-vacation', 'admin-rotation', 'admin-overtime', 'admin-backups', 'admin-announcement', 'admin-usage', 'admin-export', 'admin-reports', 'admin-service']);
+  const adminViews = new Set(['admin', 'admin-machines', 'admin-food', 'admin-vacation', 'admin-rotation', 'admin-overtime', 'admin-accounts', 'admin-backups', 'admin-announcement', 'admin-usage', 'admin-export', 'admin-reports', 'admin-service']);
 
   const versionText = (typeof app !== 'undefined' && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '');
   const contactName = 'Martin Špadrna';
@@ -1560,6 +1606,16 @@ function openAppMenu(view) {
         '<div class="appMenuCard appMenuAdminCard">',
         '  <div class="appMenuCardTitle">Administrace zamčena</div>',
         '  <div class="appMenuText">Administrace je dostupná jen po přihlášení admin účtem.</div>',
+        '  <button type="button" class="appMenuAction appMenuBack" data-menu-back="1">Zpět</button>',
+        '</div>'
+      ].join('');
+      return;
+    }
+    if (v === 'admin-accounts' && !(typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins())) {
+      body.innerHTML = [
+        '<div class="appMenuCard appMenuAdminCard">',
+        '  <div class="appMenuCardTitle">Správci</div>',
+        '  <div class="appMenuText">Správce může měnit jen hlavní admin účet.</div>',
         '  <button type="button" class="appMenuAction appMenuBack" data-menu-back="1">Zpět</button>',
         '</div>'
       ].join('');
@@ -1683,6 +1739,16 @@ function openAppMenu(view) {
         } catch (err) {
           console.warn('Admin overtime preload failed', err);
           renderAdminMenuBody(body, 'overtime');
+        }
+      })();
+    } else if (v === 'admin-accounts') {
+      void (async () => {
+        try {
+          await loadAdminMachineSettingsFromSupabase();
+          renderAdminMenuBody(body, 'admin-accounts');
+        } catch (err) {
+          console.warn('Admin accounts preload failed', err);
+          renderAdminMenuBody(body, 'admin-accounts');
         }
       })();
     } else if (v === 'admin-backups') {

@@ -1,3 +1,10 @@
+## RaK 1.2 (1.193)
+
+- Administrace / Správci: hlavní admin účet může přidat další admin účty, nastavit jim heslo a zapnout/vypnout jejich přístup.
+- Přihlášení: před ověřením admin účtu se načte online seznam správců, aby nově přidaní admini fungovali i na jiném zařízení.
+- Supabase: seznam správců se ukládá jako samostatné admin nastavení v `machine_settings` a neukazuje se v běžné tabulce strojů.
+- Release metadata sjednocená na `RaK 1.2 (1.193)`, technická verze `1.2.193`, cache `v1.2-1.193`.
+
 ## RaK 1.2 (1.192)
 
 - Administrace: vstup je nově navázaný na admin účet `9811`; při přihlášení tohoto účtu se vyžádá heslo a běžné účty zůstávají bez hesla.

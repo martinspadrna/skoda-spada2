@@ -985,6 +985,8 @@ function buildAdminMachineSettingsTableHtml() {
       && cat !== 'fhb_target'
       && cat !== 'food_schedule'
       && cat !== 'vacation_countdown_settings'
+      && cat !== 'admin_accounts_settings'
+      && key !== 'ADMIN_ACCOUNTS_SETTINGS'
       && key !== 'VACATION_COUNTDOWN_SETTINGS'
       && cat !== ADMIN_ROTATION_OVERTIME_SETTINGS_CATEGORY;
   });

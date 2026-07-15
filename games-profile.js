@@ -787,6 +787,9 @@ function gamesRenderAccountChips() {
       if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.loadGameAccounts === 'function') {
         await gamesSyncProfileFromRemote(true);
       }
+      if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.loadMachineSettings === 'function') {
+        try { app.machineSettingsRows = await window.RotationSupabaseBridge.loadMachineSettings(); } catch (err) { console.warn('admin accounts preload failed', err); }
+      }
       const found = gamesAccountById(typed);
       if (!found) {
         setLoginFeedback('Uživatel nenalezen');

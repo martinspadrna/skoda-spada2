@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.192) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.193) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -222,12 +222,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.192)',
-  appLabel: 'RaK 1.2 (1.192)',
-  packageVersion: '1.2.192',
-  cacheVersion: 'v1.2-1.192',
+  displayVersion: '1.2 (1.193)',
+  appLabel: 'RaK 1.2 (1.193)',
+  packageVersion: '1.2.193',
+  cacheVersion: 'v1.2-1.193',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.192)',
+  changelogHeader: '## RaK 1.2 (1.193)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -336,8 +336,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.192)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.192'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.193)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.193'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1333,14 +1333,28 @@ function assertLightPatternThemeContractV1131() {
 
 function assertAdminAccountLoginContractV1141() {
   assertIncludes(adminUnlockJs, "const RAK_OWNER_ADMIN_ACCOUNT_ID = '9811'", 'Root admin musi byt navazany na ucet 9811');
+  assertIncludes(adminUnlockJs, "const RAK_ADMIN_ACCOUNTS_SETTINGS_KEY = 'ADMIN_ACCOUNTS_SETTINGS'", 'Seznam dalsich adminu musi mit vlastni machine_settings klic');
+  assertIncludes(adminUnlockJs, "const RAK_ADMIN_ACCOUNTS_SETTINGS_CATEGORY = 'admin_accounts_settings'", 'Seznam dalsich adminu musi mit vlastni kategorii nastaveni');
+  assertIncludes(adminUnlockJs, "const RAK_ADMIN_SESSION_AUTH_PIN_KEY = 'adminAuthPinSession'", 'Admin login heslo musi byt oddelene od interniho Supabase PINu');
+  assertIncludes(adminUnlockJs, 'app.adminPin = RAK_OWNER_ADMIN_PASSWORD', 'Platny admin musi pro online zapisy pouzit interni owner PIN');
+  assertIncludes(adminUnlockJs, 'function buildAdminAccountsSettingsHtml', 'Owner admin musi mit formular pro spravu dalsich adminu');
+  assertIncludes(adminUnlockJs, 'function readAdminAccountsSettingsFromDom', 'Owner admin musi umet nacist spravce z formulare');
+  assertIncludes(adminUnlockJs, 'function mergeAdminAccountsSettingsRows', 'Spravci se musi ukladat do machine_settings bez mazani ostatnich nastaveni');
+  assertIncludes(adminUnlockJs, 'function rakAdminCanManageAdmins', 'Jen owner admin smi spravovat dalsi adminy');
   assertIncludes(adminUnlockJs, 'function rakAdminPromptUnlockForAccount', 'Pri prihlaseni admin uctu se musi vyzadat heslo');
   assertIncludes(adminUnlockJs, 'function rakAdminCanOpenAdmin', 'Admin menu musi mit centralni kontrolu otevreni');
   assertIncludes(adminUnlockJs, 'rakAdminLock()', 'Bez admin uctu se musi admin opravneni zrusit');
   assertIncludes(gamesProfileJs, 'rakAdminPromptUnlockForAccount(id)', 'Pri vyberu aktivniho uctu se musi overit admin heslo');
+  assertIncludes(gamesProfileJs, 'window.RotationSupabaseBridge.loadMachineSettings', 'Pri prihlaseni se musi nacist online seznam adminu');
   assertIncludes(gamesProfileJs, "if (typeof rakAdminLock === 'function') rakAdminLock();", 'Odhlaseni profilu musi zamknout admin relaci');
   assertIncludes(ui, "const adminViews = new Set(['admin'", 'Prime otevreni admin obrazovek musi byt hlidane seznamem admin views');
+  assertIncludes(ui, "data-admin-action=\"open-admin-accounts\">Správci</button>", 'Owner admin musi mit v administraci sekci Spravci');
+  assertIncludes(ui, "adminAction === 'save-admin-accounts'", 'Admin menu musi umet ulozit seznam spravcu');
+  assertIncludes(ui, "adminAction === 'load-admin-accounts'", 'Admin menu musi umet nacist seznam spravcu online');
   assertIncludes(ui, 'rakAdminCanOpenAdmin()', 'Tlačítko Administrace i admin view musi pouzivat novou kontrolu opravneni');
   assertIncludes(ui, 'Provoz před rozpisem', 'Admin menu musi byt rozdelene do prehlednych provoznich skupin');
+  assertIncludes(bridge, "category === 'admin_accounts_settings'", 'Supabase compatibility save musi povolit specialni kategorii spravcu');
+  assertIncludes(ui, "cat !== 'admin_accounts_settings'", 'Specialni radek spravcu nesmi byt v bezne tabulce stroju');
   assertNotIncludes(adminUnlockJs, 'bottomNavMenuBtn', 'Admin odemceni uz nesmi byt skryte za klikáním na spodni menu Vice');
   assertNotIncludes(adminUnlockJs, 'tapCount', 'Admin odemceni uz nesmi pouzivat tajny pocet kliknuti');
 }

@@ -1976,7 +1976,9 @@
     return category === 'food_schedule'
       || key === 'FOOD_SCHEDULE_SETTINGS'
       || category === 'vacation_countdown_settings'
-      || key === 'VACATION_COUNTDOWN_SETTINGS';
+      || key === 'VACATION_COUNTDOWN_SETTINGS'
+      || category === 'admin_accounts_settings'
+      || key === 'ADMIN_ACCOUNTS_SETTINGS';
   }
 
   function makeMachineSettingsRpcPayload(payload) {
