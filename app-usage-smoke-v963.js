@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.197) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.198) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -27,6 +27,7 @@ const ui = read('ui.js') + '\n' + read('app-runtime-guards.js') + '\n' + read('a
 const sql = read('assets/docs/sql/supabase_app_usage_v963.sql');
 const indexHtml = read('index.html');
 const dashboardJs = read('dashboard.js');
+const payrollJs = read('payroll.js');
 const stylesOverridesCss = read('styles-overrides.css');
 const dashboardFitCss = read('styles-dashboard-fit.css');
 const dashboardPolishCss = read('styles-dashboard-polish.css');
@@ -223,12 +224,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.197)',
-  appLabel: 'RaK 1.2 (1.197)',
-  packageVersion: '1.2.197',
-  cacheVersion: 'v1.2-1.197',
+  displayVersion: '1.2 (1.198)',
+  appLabel: 'RaK 1.2 (1.198)',
+  packageVersion: '1.2.198',
+  cacheVersion: 'v1.2-1.198',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.197)',
+  changelogHeader: '## RaK 1.2 (1.198)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -337,8 +338,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.197)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.197'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.198)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.198'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1448,6 +1449,26 @@ function assertAdminAppContactSettingsContractV1145() {
   assertIncludes(bridge, "key === 'APP_CONTACT_SETTINGS'", 'Supabase compatibility save musi povolit klic kontaktu aplikace');
 }
 
+function assertAdminPayrollSettingsContractV1146() {
+  assertIncludes(payrollJs, "const RAK_PAYROLL_SETTINGS_KEY = 'PAYROLL_SETTINGS'", 'Vyplata musi mit vlastni machine_settings klic');
+  assertIncludes(payrollJs, "const RAK_PAYROLL_SETTINGS_CATEGORY = 'payroll_settings'", 'Vyplata musi mit vlastni kategorii nastaveni');
+  assertIncludes(payrollJs, 'function getRakPayrollSettings', 'Vyplata musi cist ulozene admin nastaveni');
+  assertIncludes(payrollJs, 'function buildAdminPayrollSettingsHtml', 'Administrace musi mit formular nastaveni vyplaty');
+  assertIncludes(payrollJs, 'function readAdminPayrollSettingsFromDom', 'Administrace musi umet nacist nastaveni vyplaty z formulare');
+  assertIncludes(payrollJs, 'function mergeRakPayrollSettingsRows', 'Vyplata se musi ukladat do machine_settings bez mazani ostatnich nastaveni');
+  assertIncludes(payrollJs, 'const payrollSettings = getRakPayrollSettings();', 'Vypocet vyplaty musi pouzivat adminovatelne pravidlo');
+  assertIncludes(payrollJs, "workdayCount === payrollSettings.workdayOrdinal", 'Vypocet vyplaty nesmi mit natvrdo 4. pracovni den');
+  assertNotIncludes(payrollJs, 'workdayCount === 4', 'payroll.js nesmi nechavat pevne pravidlo 4. pracovni den');
+  assertIncludes(ui, "data-admin-action=\"open-payroll-settings\">Výplata</button>", 'Admin menu musi obsahovat sekci Vyplata');
+  assertIncludes(ui, "adminAction === 'open-payroll-settings'", 'Admin menu musi umet otevrit nastaveni vyplaty');
+  assertIncludes(ui, "adminAction === 'save-payroll-settings'", 'Admin menu musi umet ulozit nastaveni vyplaty');
+  assertIncludes(ui, "adminAction === 'load-payroll-settings'", 'Admin menu musi umet nacist nastaveni vyplaty online');
+  assertIncludes(ui, "'admin-payroll-settings'", 'Vyplata musi byt mezi chranenymi admin view');
+  assertIncludes(ui, 'app.machineSettingsRows.filter(isRakPayrollSettingsRow)', 'Ulozeni stroju nesmi smazat nastaveni vyplaty');
+  assertIncludes(bridge, "category === 'payroll_settings'", 'Supabase compatibility save musi povolit nastaveni vyplaty');
+  assertIncludes(bridge, "key === 'PAYROLL_SETTINGS'", 'Supabase compatibility save musi povolit klic nastaveni vyplaty');
+}
+
 assertDashboardCssGuardSeriesCompleteV1100();
 assertReleaseMetadataContractV199();
 assertBrusyChoiceSizeContractV1101();
@@ -1484,8 +1505,9 @@ assertAdminHandoverGuideContractV1142();
 assertAdminGeneratorSettingsContractV1143();
 assertAdminExternalLinksSettingsContractV1144();
 assertAdminAppContactSettingsContractV1145();
+assertAdminPayrollSettingsContractV1146();
 
-console.log('app-usage-smoke-v963 OK + rotation-generator-wizard-v1108-guard + rotation-generator-absence-state-v1109-guard + rotation-generator-wizard-run-v1110-guard + rotation-generator-wizard-state-v1111-guard + rotation-generator-month-balance-v1112-guard + rotation-generator-rules-v1113-guard + rotation-generator-rules-v1114-guard + rotation-generator-rules-v1115-guard + rotation-generator-rules-v1116-guard + rotation-generator-rules-v1117-guard + dashboard-percent-empty-cells-v1119-guard + stats-press-machine-split-v1123-guard + rotation-overtime-shift-filter-v1128-guard + rotation-overtime-defaults-2025-v1129-guard + rotation-absence-export-ytd-generator-theme-v1130-guard + light-pattern-theme-v1131-guard + admin-account-login-v1141-guard + admin-handover-guide-v1142-guard + admin-generator-settings-v1143-guard + admin-external-links-v1144-guard + admin-app-contact-v1145-guard + rotation-generator-excel-copy-v1138-guard + games-active-account-direct-stats-v1144-guard + sudoku-completion-save-v1148-guard + sudoku-random-puzzle-v1148-guard + game-time-format-v1144-guard + lada-manual-override-v1144-guard + lada-smooth-performance-v1144-guard + dashboard-css-contract-guard + appearance-reward-contract + rotation-export-summary-simple-guard + rotation-export-glass-guard + appearance-readability-guard + css-layer-order-v194-guard + dashboard-owner-registry-v195-guard + dashboard-overrides-selector-lock-v196-guard + dashboard-scope-v197-guard + dashboard-release-isolation-v198-guard + dashboard-css-guard-series-v1100-complete + release-metadata-v199-guard + brusy-choice-size-v1101-guard + fixed-app-background-v1101-guard + name-choice-fit-v1102-guard + browser-smoke-v1103-guard + dashboard-empty-absence-text-v1104-guard + rotace-empty-absence-text-v1105-guard + appearance-update-persistence-v1105-guard + rotation-generator-v1106-guard + rotation-generator-rules-v1107-guard + memory-8x8-square-fit-v1153-guard + memory-total-time-no-5s-v1153-guard + no-visual-owner-drift-guard OK');
+console.log('app-usage-smoke-v963 OK + rotation-generator-wizard-v1108-guard + rotation-generator-absence-state-v1109-guard + rotation-generator-wizard-run-v1110-guard + rotation-generator-wizard-state-v1111-guard + rotation-generator-month-balance-v1112-guard + rotation-generator-rules-v1113-guard + rotation-generator-rules-v1114-guard + rotation-generator-rules-v1115-guard + rotation-generator-rules-v1116-guard + rotation-generator-rules-v1117-guard + dashboard-percent-empty-cells-v1119-guard + stats-press-machine-split-v1123-guard + rotation-overtime-shift-filter-v1128-guard + rotation-overtime-defaults-2025-v1129-guard + rotation-absence-export-ytd-generator-theme-v1130-guard + light-pattern-theme-v1131-guard + admin-account-login-v1141-guard + admin-handover-guide-v1142-guard + admin-generator-settings-v1143-guard + admin-external-links-v1144-guard + admin-app-contact-v1145-guard + admin-payroll-settings-v1146-guard + rotation-generator-excel-copy-v1138-guard + games-active-account-direct-stats-v1144-guard + sudoku-completion-save-v1148-guard + sudoku-random-puzzle-v1148-guard + game-time-format-v1144-guard + lada-manual-override-v1144-guard + lada-smooth-performance-v1144-guard + dashboard-css-contract-guard + appearance-reward-contract + rotation-export-summary-simple-guard + rotation-export-glass-guard + appearance-readability-guard + css-layer-order-v194-guard + dashboard-owner-registry-v195-guard + dashboard-overrides-selector-lock-v196-guard + dashboard-scope-v197-guard + dashboard-release-isolation-v198-guard + dashboard-css-guard-series-v1100-complete + release-metadata-v199-guard + brusy-choice-size-v1101-guard + fixed-app-background-v1101-guard + name-choice-fit-v1102-guard + browser-smoke-v1103-guard + dashboard-empty-absence-text-v1104-guard + rotace-empty-absence-text-v1105-guard + appearance-update-persistence-v1105-guard + rotation-generator-v1106-guard + rotation-generator-rules-v1107-guard + memory-8x8-square-fit-v1153-guard + memory-total-time-no-5s-v1153-guard + no-visual-owner-drift-guard OK');
 
 // v1.136 guard: soft-core fixed cycle + no TNKS balancing + removed AMOLED black.
 assertIncludes(ui, 'RAK_ROTATION_GENERATOR_RULES_V1135', 'Chybí pravidla generátoru v1.136');

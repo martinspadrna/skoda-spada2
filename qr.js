@@ -387,6 +387,15 @@ function isPayrollWorkday(date) {
 }
 
 function getPayrollDateForMonth(year, monthIndex) {
+  const payrollSettings = typeof getRakPayrollSettings === 'function'
+    ? getRakPayrollSettings()
+    : { workdayOrdinal: 4, overrides: [] };
+  const monthKey = String(year) + '-' + String(Number(monthIndex) + 1).padStart(2, '0');
+  const override = (Array.isArray(payrollSettings.overrides) ? payrollSettings.overrides : []).find((entry) => entry.month === monthKey);
+  if (override && override.date && typeof payrollParseIsoDate === 'function') {
+    const overrideDate = payrollParseIsoDate(override.date);
+    if (overrideDate) return overrideDate;
+  }
   const cursor = getPragueNow(new Date(year, monthIndex, 1));
   cursor.setHours(0, 0, 0, 0);
   let workdayCount = 0;
@@ -394,7 +403,7 @@ function getPayrollDateForMonth(year, monthIndex) {
   while (cursor.getMonth() === monthIndex) {
     if (isPayrollWorkday(cursor)) {
       workdayCount += 1;
-      if (workdayCount === 4) {
+      if (workdayCount === Number(payrollSettings.workdayOrdinal || 4)) {
         return new Date(cursor);
       }
     }

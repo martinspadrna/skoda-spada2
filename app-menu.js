@@ -306,6 +306,13 @@ function buildAdminHandoverChecklistHtml(monthKey) {
       actionLabel: 'Kontakt'
     },
     {
+      ok: true,
+      title: 'Výplata',
+      detail: 'Datum výplaty lze řídit pravidlem pracovního dne a ručními měsíčními výjimkami.',
+      action: 'open-payroll-settings',
+      actionLabel: 'Výplata'
+    },
+    {
       ok: backups.length > 0,
       title: 'Zálohy',
       detail: backups.length ? ('Načtených záloh: ' + String(backups.length) + '.') : 'Před předáním si ověř, že jsou zálohy dostupné.',
@@ -370,6 +377,7 @@ function renderAdminMenuBody(body, section) {
     '    <button type="button" class="appMenuAction" data-admin-action="open-announcement">Oznámení Dashboard</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-external-links">Odkazy</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-app-contact">Kontakt aplikace</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="open-payroll-settings">Výplata</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-usage">Přehled připojení</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-export">Export / import</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-reports">Reporty chyb</button>',
@@ -529,6 +537,22 @@ function renderAdminMenuBody(body, section) {
     '</div>'
   ].join('');
 
+  const payrollSettingsHtml = [
+    '<div class="appMenuCard appMenuAdminCard adminPayrollSettingsCard">',
+    '  <div class="appMenuCardTitle">Výplata</div>',
+    '  <div class="appMenuText">',
+    '    <div>Tady nastavíš, podle kterého pracovního dne v měsíci se počítá karta Výplata, a případné ruční výjimky.</div>',
+    '    <div class="smallText" id="adminOnlineSaveStatus">Bez uložené změny zůstává pravidlo 4. pracovní den v měsíci.</div>',
+    '  </div>',
+    buildAdminPayrollSettingsHtml(),
+    '  <div class="appMenuActionRow">',
+    '    <button type="button" class="appMenuAction" data-admin-action="load-payroll-settings">Načíst online</button>',
+    '    <button type="button" class="appMenuAction isActive" data-admin-action="save-payroll-settings">Uložit výplatu</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
+    '  </div>',
+    '</div>'
+  ].join('');
+
   const backupsHtml = [
     '<div class="appMenuCard appMenuAdminCard adminRotationBackupsCard">',
     '  <div class="appMenuCardTitle">Zálohy rozpisů</div>',
@@ -617,6 +641,8 @@ function renderAdminMenuBody(body, section) {
     body.innerHTML = externalLinksHtml;
   } else if (mode === 'app-contact') {
     body.innerHTML = appContactHtml;
+  } else if (mode === 'payroll-settings') {
+    body.innerHTML = payrollSettingsHtml;
   } else if (mode === 'backups') {
     body.innerHTML = backupsHtml;
   } else if (mode === 'announcement') {
@@ -1362,6 +1388,10 @@ function bindAppMenuHandlers(body) {
         openAppMenu('admin-app-contact');
         return;
       }
+      if (adminAction === 'open-payroll-settings') {
+        openAppMenu('admin-payroll-settings');
+        return;
+      }
       if (adminAction === 'open-backups') {
         openAppMenu('admin-backups');
         return;
@@ -1657,6 +1687,28 @@ function bindAppMenuHandlers(body) {
         }
         return;
       }
+      if (adminAction === 'load-payroll-settings') {
+        await loadAdminMachineSettingsFromSupabase();
+        renderAdminMenuBody(body, 'payroll-settings');
+        return;
+      }
+      if (adminAction === 'save-payroll-settings') {
+        const payrollSettings = readAdminPayrollSettingsFromDom();
+        const rows = mergeRakPayrollSettingsRows(payrollSettings);
+        if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.saveMachineSettings === 'function') {
+          const result = await window.RotationSupabaseBridge.saveMachineSettings(rows);
+          if (result && result.ok === false) throw (result.error || new Error('Uložení výplaty selhalo.'));
+          app.machineSettingsRows = rows;
+          try { if (typeof updateDashboard === 'function') updateDashboard(); } catch (err) {}
+          try { if (typeof updateFoodTile === 'function') updateFoodTile(); } catch (err) {}
+          renderAdminMenuBody(body, 'payroll-settings');
+          const statusEl = document.getElementById('adminOnlineSaveStatus');
+          if (statusEl) statusEl.textContent = (result && result.queued)
+            ? 'Výplata uložená lokálně - po připojení se synchronizuje'
+            : 'Výplata uložená online';
+        }
+        return;
+      }
       if (adminAction === 'add-absence-row') {
         if (typeof adminAddAbsenceRowToEditor === 'function') adminAddAbsenceRowToEditor();
         return;
@@ -1873,7 +1925,7 @@ function openAppMenu(view) {
   page.classList.add('active');
   const body = page.querySelector('#appMenuBody');
   const v = view || 'menu';
-  const adminViews = new Set(['admin', 'admin-machines', 'admin-food', 'admin-vacation', 'admin-rotation', 'admin-overtime', 'admin-generator-settings', 'admin-accounts', 'admin-external-links', 'admin-app-contact', 'admin-backups', 'admin-announcement', 'admin-usage', 'admin-export', 'admin-reports', 'admin-service']);
+  const adminViews = new Set(['admin', 'admin-machines', 'admin-food', 'admin-vacation', 'admin-rotation', 'admin-overtime', 'admin-generator-settings', 'admin-accounts', 'admin-external-links', 'admin-app-contact', 'admin-payroll-settings', 'admin-backups', 'admin-announcement', 'admin-usage', 'admin-export', 'admin-reports', 'admin-service']);
 
   const versionText = (typeof app !== 'undefined' && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '');
   const contact = typeof getRakAppContactSettings === 'function'
@@ -2060,6 +2112,16 @@ function openAppMenu(view) {
         } catch (err) {
           console.warn('Admin app contact preload failed', err);
           renderAdminMenuBody(body, 'app-contact');
+        }
+      })();
+    } else if (v === 'admin-payroll-settings') {
+      void (async () => {
+        try {
+          await loadAdminMachineSettingsFromSupabase();
+          renderAdminMenuBody(body, 'payroll-settings');
+        } catch (err) {
+          console.warn('Admin payroll settings preload failed', err);
+          renderAdminMenuBody(body, 'payroll-settings');
         }
       })();
     } else if (v === 'admin-backups') {

@@ -1,3 +1,10 @@
+## RaK 1.2 (1.198)
+
+- Administrace: přidaná sekce Výplata pro nastavení výchozího pořadí pracovního dne v měsíci a ručních měsíčních výjimek.
+- Home / Výplata: datum další výplaty se počítá z uloženého admin pravidla; bez uložené změny zůstává původní 4. pracovní den.
+- Supabase: nastavení výplaty se ukládá jako speciální admin nastavení přes `machine_settings` a zachovává se při ukládání strojů.
+- Release metadata sjednocená na `RaK 1.2 (1.198)`, technická verze `1.2.198`, cache `v1.2-1.198`.
+
 ## RaK 1.2 (1.197)
 
 - Administrace: přidaná sekce Kontakt aplikace pro správu jména, telefonu a e-mailu zobrazovaných v menu Kontakt.
