@@ -1,3 +1,10 @@
+## RaK 1.2 (1.197)
+
+- Administrace: přidaná sekce Kontakt aplikace pro správu jména, telefonu a e-mailu zobrazovaných v menu Kontakt.
+- Kontakt: veřejná karta Kontakt čte uložené admin nastavení; bez uložené změny zůstávají původní údaje.
+- Supabase: kontakt aplikace se ukládá jako speciální admin nastavení přes `machine_settings` a zachovává se při ukládání strojů.
+- Release metadata sjednocená na `RaK 1.2 (1.197)`, technická verze `1.2.197`, cache `v1.2-1.197`.
+
 ## RaK 1.2 (1.196)
 
 - Administrace: přidaná sekce Odkazy pro správu jídelního lístku, Eportalu a výplatního portálu bez zásahu do souborů aplikace.

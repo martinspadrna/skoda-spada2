@@ -582,6 +582,113 @@ try {
   window.mergeRakExternalLinksSettingsRows = mergeRakExternalLinksSettingsRows;
 } catch (err) {}
 
+const RAK_APP_CONTACT_SETTINGS_KEY = 'APP_CONTACT_SETTINGS';
+const RAK_APP_CONTACT_SETTINGS_CATEGORY = 'app_contact_settings';
+const RAK_DEFAULT_APP_CONTACT = Object.freeze({
+  name: 'Martin Špadrna',
+  phone: '+420 773 682 499',
+  email: 'martinspadrna@gmail.com'
+});
+window.RAK_APP_CONTACT_SETTINGS_KEY = RAK_APP_CONTACT_SETTINGS_KEY;
+window.RAK_APP_CONTACT_SETTINGS_CATEGORY = RAK_APP_CONTACT_SETTINGS_CATEGORY;
+
+function rakAppContactSettingsJson(row) {
+  if (row && row.settings_json && typeof row.settings_json === 'object') return row.settings_json;
+  try { return row && row.settings_json ? JSON.parse(String(row.settings_json)) : {}; }
+  catch (err) { return {}; }
+}
+
+function isRakAppContactSettingsRow(row) {
+  const settings = rakAppContactSettingsJson(row);
+  return String(row && row.category || '').trim() === RAK_APP_CONTACT_SETTINGS_CATEGORY
+    || String(row && row.machine_key || '').trim() === RAK_APP_CONTACT_SETTINGS_KEY
+    || String(settings && settings.stored_category || '').trim() === RAK_APP_CONTACT_SETTINGS_CATEGORY
+    || String(settings && settings.admin_settings_key || '').trim() === RAK_APP_CONTACT_SETTINGS_KEY;
+}
+
+function normalizeRakAppContactSettings(settings) {
+  const raw = settings && typeof settings === 'object' ? settings : {};
+  const contact = raw.contact && typeof raw.contact === 'object' ? raw.contact : raw;
+  const fallback = RAK_DEFAULT_APP_CONTACT;
+  return {
+    type: RAK_APP_CONTACT_SETTINGS_CATEGORY,
+    contact: {
+      name: String(contact.name || fallback.name || '').trim(),
+      phone: String(contact.phone || fallback.phone || '').trim(),
+      email: String(contact.email || fallback.email || '').trim()
+    }
+  };
+}
+
+function getRakAppContactSettings() {
+  const rows = Array.isArray(app && app.machineSettingsRows) ? app.machineSettingsRows : [];
+  const row = rows.find(isRakAppContactSettingsRow);
+  return normalizeRakAppContactSettings(row ? rakAppContactSettingsJson(row) : null).contact;
+}
+
+function makeRakAppContactSettingsRow(settings) {
+  const safe = normalizeRakAppContactSettings(settings);
+  return {
+    machine_key: RAK_APP_CONTACT_SETTINGS_KEY,
+    machine_code: 'APP',
+    machine_index: 'contact',
+    label: 'Kontakt aplikace',
+    category: RAK_APP_CONTACT_SETTINGS_CATEGORY,
+    cycle_time: '',
+    speed: '',
+    dress_time: '',
+    dress_count: '',
+    settings_json: Object.assign({ machine: 'APP', index: 'contact' }, safe)
+  };
+}
+
+function mergeRakAppContactSettingsRows(settings) {
+  const base = Array.isArray(app.machineSettingsRows) ? app.machineSettingsRows : [];
+  const rows = base.filter((row) => !isRakAppContactSettingsRow(row));
+  rows.push(makeRakAppContactSettingsRow(settings));
+  return rows;
+}
+
+function buildAdminAppContactSettingsHtml() {
+  const contact = getRakAppContactSettings();
+  const rows = [
+    ['name', 'Jméno', contact.name],
+    ['phone', 'Telefon', contact.phone],
+    ['email', 'E-mail', contact.email]
+  ].map(([key, label, value]) => [
+    '<tr data-app-contact-row="' + escapeHtml(key) + '">',
+    '  <td>' + escapeHtml(label) + '</td>',
+    '  <td><input class="appMenuInlineInput appMenuWideInput" data-app-contact-field="' + escapeHtml(key) + '" value="' + escapeHtml(value) + '"></td>',
+    '</tr>'
+  ].join('')).join('');
+  return [
+    '<div class="tableWrap appMenuTableWrap uMt12">',
+    '  <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminAppContactTable">',
+    '    <thead><tr><th>Položka</th><th>Hodnota</th></tr></thead>',
+    '    <tbody>' + rows + '</tbody>',
+    '  </table>',
+    '</div>'
+  ].join('');
+}
+
+function readAdminAppContactSettingsFromDom() {
+  const contact = {};
+  document.querySelectorAll('#appMenuBody [data-app-contact-field]').forEach((input) => {
+    const key = String(input.getAttribute('data-app-contact-field') || '').trim();
+    if (!key) return;
+    contact[key] = String(input.value || '').trim();
+  });
+  return normalizeRakAppContactSettings({ contact });
+}
+
+try {
+  window.isRakAppContactSettingsRow = isRakAppContactSettingsRow;
+  window.getRakAppContactSettings = getRakAppContactSettings;
+  window.buildAdminAppContactSettingsHtml = buildAdminAppContactSettingsHtml;
+  window.readAdminAppContactSettingsFromDom = readAdminAppContactSettingsFromDom;
+  window.mergeRakAppContactSettingsRows = mergeRakAppContactSettingsRows;
+} catch (err) {}
+
 function normalizeExternalTileUrl(url, key = 'openExternalTile') {
   if (typeof normalizeAllowedExternalUrl === 'function') {
     return normalizeAllowedExternalUrl(url, getRakExternalTileHosts(), key);

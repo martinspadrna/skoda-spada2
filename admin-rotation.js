@@ -1174,6 +1174,7 @@ function buildAdminMachineSettingsTableHtml() {
       && cat !== ADMIN_ROTATION_OVERTIME_SETTINGS_CATEGORY
       && !(typeof rakAdminIsAccountsSettingsRow === 'function' && rakAdminIsAccountsSettingsRow(row))
       && !(typeof isRakExternalLinksSettingsRow === 'function' && isRakExternalLinksSettingsRow(row))
+      && !(typeof isRakAppContactSettingsRow === 'function' && isRakAppContactSettingsRow(row))
       && !adminIsRotationGeneratorSettingsRow(row);
   });
   const brusRows = rows.filter(row => String(row && row.category ? row.category : '').trim() === 'brus');
@@ -1463,6 +1464,9 @@ function readAdminMachineSettingsFromDom() {
   }
   if (Array.isArray(app.machineSettingsRows) && typeof isRakExternalLinksSettingsRow === 'function') {
     app.machineSettingsRows.filter(isRakExternalLinksSettingsRow).forEach((row) => rows.push(row));
+  }
+  if (Array.isArray(app.machineSettingsRows) && typeof isRakAppContactSettingsRow === 'function') {
+    app.machineSettingsRows.filter(isRakAppContactSettingsRow).forEach((row) => rows.push(row));
   }
   return rows;
 }

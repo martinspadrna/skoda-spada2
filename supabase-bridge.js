@@ -1983,6 +1983,8 @@
       || key === 'ROTATION_GENERATOR_SETTINGS'
       || category === 'external_links_settings'
       || key === 'EXTERNAL_LINKS_SETTINGS'
+      || category === 'app_contact_settings'
+      || key === 'APP_CONTACT_SETTINGS'
       || category === 'admin_accounts_settings'
       || key === 'ADMIN_ACCOUNTS_SETTINGS';
   }
