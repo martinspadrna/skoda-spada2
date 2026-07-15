@@ -1,7 +1,7 @@
-// RaK 1.2 (1.199) – core stav, verze a sdílené helpery aplikace.
+// RaK 1.2 (1.200) – core stav, verze a sdílené helpery aplikace.
 
 const APP_KEY = "rotace_kalkulacky_state_v123";
-const APP_VERSION = "1.2 (1.199)";
+const APP_VERSION = "1.2 (1.200)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-06-03-" + APP_VERSION;
 window.ROTATION_BUILD = ROTATION_BUILD;
@@ -76,6 +76,11 @@ const VACATION_COUNTDOWN_SETTINGS_MACHINE_KEY = 'VACATION_COUNTDOWN_SETTINGS';
 const VACATION_COUNTDOWN_SETTINGS_CATEGORY = 'vacation_countdown_settings';
 window.VACATION_COUNTDOWN_SETTINGS_MACHINE_KEY = VACATION_COUNTDOWN_SETTINGS_MACHINE_KEY;
 window.VACATION_COUNTDOWN_SETTINGS_CATEGORY = VACATION_COUNTDOWN_SETTINGS_CATEGORY;
+
+const RAK_SPECIAL_DAYS_SETTINGS_KEY = 'SPECIAL_DAYS_SETTINGS';
+const RAK_SPECIAL_DAYS_SETTINGS_CATEGORY = 'special_days_settings';
+window.RAK_SPECIAL_DAYS_SETTINGS_KEY = RAK_SPECIAL_DAYS_SETTINGS_KEY;
+window.RAK_SPECIAL_DAYS_SETTINGS_CATEGORY = RAK_SPECIAL_DAYS_SETTINGS_CATEGORY;
 
 function dateKeyISO(date) {
   const d = date instanceof Date ? date : new Date(date);
@@ -273,7 +278,139 @@ function getMovableHolidayInfo(now) {
   return null;
 }
 
+function rakSpecialDaysSettingsJson(row) {
+  if (row && row.settings_json && typeof row.settings_json === 'object') return row.settings_json;
+  try { return row && row.settings_json ? JSON.parse(String(row.settings_json)) : {}; }
+  catch (err) { return {}; }
+}
+
+function isRakSpecialDaysSettingsRow(row) {
+  const settings = rakSpecialDaysSettingsJson(row);
+  return String(row && row.category || '').trim() === RAK_SPECIAL_DAYS_SETTINGS_CATEGORY
+    || String(row && row.machine_key || '').trim() === RAK_SPECIAL_DAYS_SETTINGS_KEY
+    || String(settings && settings.stored_category || '').trim() === RAK_SPECIAL_DAYS_SETTINGS_CATEGORY
+    || String(settings && settings.admin_settings_key || '').trim() === RAK_SPECIAL_DAYS_SETTINGS_KEY;
+}
+
+function isRakSpecialDayIsoDate(value) {
+  const raw = String(value || '').trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(raw)) return false;
+  const date = new Date(raw + 'T00:00:00');
+  return !Number.isNaN(date.getTime()) && dateKeyISO(date) === raw;
+}
+
+function normalizeRakSpecialDayEntry(entry) {
+  const source = entry && typeof entry === 'object' ? entry : {};
+  const date = String(source.date || source.iso || source.day || '').trim();
+  if (!isRakSpecialDayIsoDate(date)) return null;
+  const rawType = String(source.type || source.kind || 'shutdown').trim().toLowerCase();
+  const type = rawType === 'holiday' || rawType === 'volno' || rawType === 'free' ? 'holiday' : 'shutdown';
+  const label = String(source.label || source.name || (type === 'holiday' ? 'Volno' : 'Odstávka')).trim();
+  return { date, type, label };
+}
+
+function normalizeRakSpecialDaysSettings(settings) {
+  const raw = settings && typeof settings === 'object' ? settings : {};
+  const source = raw.specialDays && typeof raw.specialDays === 'object' ? raw.specialDays : raw;
+  const seen = new Set();
+  const days = (Array.isArray(source.days) ? source.days : (Array.isArray(source.entries) ? source.entries : []))
+    .map(normalizeRakSpecialDayEntry)
+    .filter(Boolean)
+    .filter((entry) => {
+      if (seen.has(entry.date)) return false;
+      seen.add(entry.date);
+      return true;
+    })
+    .sort((a, b) => a.date.localeCompare(b.date));
+  return {
+    type: RAK_SPECIAL_DAYS_SETTINGS_CATEGORY,
+    days
+  };
+}
+
+function getRakSpecialDaysSettings() {
+  const rows = (typeof app !== 'undefined' && app && Array.isArray(app.machineSettingsRows)) ? app.machineSettingsRows : [];
+  const row = rows.find(isRakSpecialDaysSettingsRow);
+  return normalizeRakSpecialDaysSettings(row ? rakSpecialDaysSettingsJson(row) : null);
+}
+
+function getRakSpecialDayInfo(now) {
+  const date = now instanceof Date ? now : new Date(now || new Date());
+  if (Number.isNaN(date.getTime())) return null;
+  const iso = dateKeyISO(date);
+  const settings = getRakSpecialDaysSettings();
+  const entry = (settings.days || []).find((day) => day.date === iso) || null;
+  if (!entry) return null;
+  return { type: entry.type || 'shutdown', label: entry.label || 'Odstávka' };
+}
+
+function makeRakSpecialDaysSettingsRow(settings) {
+  const safe = normalizeRakSpecialDaysSettings(settings);
+  return {
+    machine_key: RAK_SPECIAL_DAYS_SETTINGS_KEY,
+    machine_code: 'APP',
+    machine_index: 'special-days',
+    label: 'Mimořádné volné dny',
+    category: RAK_SPECIAL_DAYS_SETTINGS_CATEGORY,
+    cycle_time: '',
+    speed: '',
+    dress_time: '',
+    dress_count: '',
+    settings_json: Object.assign({ machine: 'APP', index: 'special-days' }, safe)
+  };
+}
+
+function mergeRakSpecialDaysSettingsRows(settings) {
+  const base = Array.isArray(app && app.machineSettingsRows) ? app.machineSettingsRows : [];
+  const rows = base.filter((row) => !isRakSpecialDaysSettingsRow(row));
+  rows.push(makeRakSpecialDaysSettingsRow(settings));
+  return rows;
+}
+
+function buildAdminSpecialDaysSettingsHtml() {
+  const settings = getRakSpecialDaysSettings();
+  const rowCount = Math.max(8, (settings.days || []).length + 4);
+  const rows = Array.from({ length: rowCount }, (_, index) => {
+    const entry = settings.days[index] || {};
+    const type = String(entry.type || 'shutdown');
+    return [
+      '<tr data-special-day-row>',
+      '  <td><input class="appMenuInlineInput" data-special-day-field="date" type="date" value="' + escapeHtml(entry.date || '') + '"></td>',
+      '  <td><select class="appMenuInlineInput" data-special-day-field="type">',
+      '    <option value="shutdown"' + (type === 'shutdown' ? ' selected' : '') + '>Odstávka</option>',
+      '    <option value="holiday"' + (type === 'holiday' ? ' selected' : '') + '>Volno</option>',
+      '  </select></td>',
+      '  <td><input class="appMenuInlineInput" data-special-day-field="label" value="' + escapeHtml(entry.label || '') + '" placeholder="např. Odstávka"></td>',
+      '</tr>'
+    ].join('');
+  }).join('');
+  return [
+    '<div class="tableWrap appMenuTableWrap uMt8">',
+    '  <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminSpecialDaysTable">',
+    '    <thead><tr><th>Datum</th><th>Typ</th><th>Název</th></tr></thead>',
+    '    <tbody>' + rows + '</tbody>',
+    '  </table>',
+    '</div>'
+  ].join('');
+}
+
+function readAdminSpecialDaysSettingsFromDom() {
+  const days = [];
+  document.querySelectorAll('#appMenuBody tr[data-special-day-row]').forEach((tr) => {
+    const get = (field) => String(tr.querySelector('[data-special-day-field="' + field + '"]')?.value || '').trim();
+    const entry = normalizeRakSpecialDayEntry({
+      date: get('date'),
+      type: get('type'),
+      label: get('label')
+    });
+    if (entry) days.push(entry);
+  });
+  return normalizeRakSpecialDaysSettings({ days });
+}
+
 function getSpecialWorkInfo(now) {
+  const customSpecial = typeof getRakSpecialDayInfo === 'function' ? getRakSpecialDayInfo(now) : null;
+  if (customSpecial) return customSpecial;
   const movableHoliday = getMovableHolidayInfo(now);
   if (movableHoliday) return movableHoliday;
   const key = dateKeyMD(now);
@@ -569,6 +706,12 @@ window.getVacationCountdownAdminSettingsSnapshot = getVacationCountdownAdminSett
 window.getVacationPeriodForDate = getVacationPeriodForDate;
 window.formatVacationCountdownDateTime = formatVacationCountdownDateTime;
 window.getVacationCountdownTeamShiftCount = getVacationCountdownTeamShiftCount;
+window.isRakSpecialDaysSettingsRow = isRakSpecialDaysSettingsRow;
+window.getRakSpecialDaysSettings = getRakSpecialDaysSettings;
+window.getRakSpecialDayInfo = getRakSpecialDayInfo;
+window.buildAdminSpecialDaysSettingsHtml = buildAdminSpecialDaysSettingsHtml;
+window.readAdminSpecialDaysSettingsFromDom = readAdminSpecialDaysSettingsFromDom;
+window.mergeRakSpecialDaysSettingsRows = mergeRakSpecialDaysSettingsRows;
 
 const appRotation = loadRotationData();
 const app = {

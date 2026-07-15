@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.199) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.200) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -224,12 +224,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.199)',
-  appLabel: 'RaK 1.2 (1.199)',
-  packageVersion: '1.2.199',
-  cacheVersion: 'v1.2-1.199',
+  displayVersion: '1.2 (1.200)',
+  appLabel: 'RaK 1.2 (1.200)',
+  packageVersion: '1.2.200',
+  cacheVersion: 'v1.2-1.200',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.199)',
+  changelogHeader: '## RaK 1.2 (1.200)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -338,8 +338,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.199)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.199'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.200)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.200'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1288,6 +1288,21 @@ assertIncludes(appearanceThemeJs, '"id": "light-zigzag"', 'Musí existovat zákl
   assertIncludes(menuJs, "adminAction === 'open-vacation'", 'Admin menu musi otevirat samostatny panel dovolene/odstavek');
   assertIncludes(menuJs, "adminAction === 'save-vacation-countdown'", 'Admin menu musi umet ulozit nastaveni dovolene/odstavek');
   assertIncludes(supabaseBridgeJs, 'VACATION_COUNTDOWN_SETTINGS', 'Supabase ukladani musi podporovat samostatny radek dovolene/odstavek mimo starsi RPC kategorie');
+  assertIncludes(coreJs, "const RAK_SPECIAL_DAYS_SETTINGS_KEY = 'SPECIAL_DAYS_SETTINGS'", 'Mimoradne volne dny musi mit vlastni machine_settings klic');
+  assertIncludes(coreJs, "const RAK_SPECIAL_DAYS_SETTINGS_CATEGORY = 'special_days_settings'", 'Mimoradne volne dny musi mit vlastni kategorii nastaveni');
+  assertIncludes(coreJs, 'function getRakSpecialDayInfo', 'getSpecialWorkInfo musi umet nacist mimoradny volny den z admin nastaveni');
+  assertIncludes(coreJs, 'const customSpecial = typeof getRakSpecialDayInfo', 'getSpecialWorkInfo musi pred pevnymi svatky kontrolovat admin mimoradne volne dny');
+  assertIncludes(coreJs, 'function buildAdminSpecialDaysSettingsHtml', 'Administrace musi mit formular mimoradnych volnych dnu');
+  assertIncludes(coreJs, 'function readAdminSpecialDaysSettingsFromDom', 'Administrace musi umet nacist mimoradne volne dny z formulare');
+  assertIncludes(coreJs, 'function mergeRakSpecialDaysSettingsRows', 'Mimoradne volne dny se musi ukladat do machine_settings bez mazani ostatnich nastaveni');
+  assertIncludes(menuJs, "data-admin-action=\"open-special-days\">Mimořádné volné dny</button>", 'Admin menu musi obsahovat sekci Mimoradne volne dny');
+  assertIncludes(menuJs, "adminAction === 'open-special-days'", 'Admin menu musi umet otevrit mimoradne volne dny');
+  assertIncludes(menuJs, "adminAction === 'save-special-days'", 'Admin menu musi umet ulozit mimoradne volne dny');
+  assertIncludes(menuJs, "adminAction === 'load-special-days'", 'Admin menu musi umet nacist mimoradne volne dny online');
+  assertIncludes(menuJs, "'admin-special-days'", 'Mimoradne volne dny musi byt mezi chranenymi admin view');
+  assertIncludes(ui, 'app.machineSettingsRows.filter(isRakSpecialDaysSettingsRow)', 'Ulozeni stroju nesmi smazat mimoradne volne dny');
+  assertIncludes(supabaseBridgeJs, "category === 'special_days_settings'", 'Supabase compatibility save musi povolit mimoradne volne dny');
+  assertIncludes(supabaseBridgeJs, "key === 'SPECIAL_DAYS_SETTINGS'", 'Supabase compatibility save musi povolit klic mimoradnych volnych dnu');
   assertIncludes(supabaseBridgeJs, 'function makeMachineSettingsRpcPayload', 'Specialni admin nastaveni musi mit kompatibilni RPC payload bez primeho zapisu do tabulky');
   assertIncludes(supabaseBridgeJs, "category: 'frezka'", 'Specialni admin nastaveni musi pro starsi RPC pouzit povolenou kategorii a skutecny typ nechat v settings_json');
   assertIncludes(supabaseBridgeJs, 'admin_settings_key', 'Kompatibilni RPC payload musi zachovat puvodni specialni klic v settings_json');
@@ -1514,7 +1529,7 @@ assertAdminExternalLinksSettingsContractV1144();
 assertAdminAppContactSettingsContractV1145();
 assertAdminPayrollSettingsContractV1146();
 
-console.log('app-usage-smoke-v963 OK + rotation-generator-wizard-v1108-guard + rotation-generator-absence-state-v1109-guard + rotation-generator-wizard-run-v1110-guard + rotation-generator-wizard-state-v1111-guard + rotation-generator-month-balance-v1112-guard + rotation-generator-rules-v1113-guard + rotation-generator-rules-v1114-guard + rotation-generator-rules-v1115-guard + rotation-generator-rules-v1116-guard + rotation-generator-rules-v1117-guard + dashboard-percent-empty-cells-v1119-guard + stats-press-machine-split-v1123-guard + rotation-overtime-shift-filter-v1128-guard + rotation-overtime-defaults-2025-v1129-guard + rotation-absence-export-ytd-generator-theme-v1130-guard + light-pattern-theme-v1131-guard + admin-account-login-v1141-guard + admin-handover-guide-v1142-guard + admin-generator-settings-v1143-guard + admin-external-links-v1144-guard + admin-calendar-link-v1147-guard + admin-app-contact-v1145-guard + admin-payroll-settings-v1146-guard + rotation-generator-excel-copy-v1138-guard + games-active-account-direct-stats-v1144-guard + sudoku-completion-save-v1148-guard + sudoku-random-puzzle-v1148-guard + game-time-format-v1144-guard + lada-manual-override-v1144-guard + lada-smooth-performance-v1144-guard + dashboard-css-contract-guard + appearance-reward-contract + rotation-export-summary-simple-guard + rotation-export-glass-guard + appearance-readability-guard + css-layer-order-v194-guard + dashboard-owner-registry-v195-guard + dashboard-overrides-selector-lock-v196-guard + dashboard-scope-v197-guard + dashboard-release-isolation-v198-guard + dashboard-css-guard-series-v1100-complete + release-metadata-v199-guard + brusy-choice-size-v1101-guard + fixed-app-background-v1101-guard + name-choice-fit-v1102-guard + browser-smoke-v1103-guard + dashboard-empty-absence-text-v1104-guard + rotace-empty-absence-text-v1105-guard + appearance-update-persistence-v1105-guard + rotation-generator-v1106-guard + rotation-generator-rules-v1107-guard + memory-8x8-square-fit-v1153-guard + memory-total-time-no-5s-v1153-guard + no-visual-owner-drift-guard OK');
+console.log('app-usage-smoke-v963 OK + rotation-generator-wizard-v1108-guard + rotation-generator-absence-state-v1109-guard + rotation-generator-wizard-run-v1110-guard + rotation-generator-wizard-state-v1111-guard + rotation-generator-month-balance-v1112-guard + rotation-generator-rules-v1113-guard + rotation-generator-rules-v1114-guard + rotation-generator-rules-v1115-guard + rotation-generator-rules-v1116-guard + rotation-generator-rules-v1117-guard + dashboard-percent-empty-cells-v1119-guard + stats-press-machine-split-v1123-guard + rotation-overtime-shift-filter-v1128-guard + admin-special-days-v1148-guard + rotation-overtime-defaults-2025-v1129-guard + rotation-absence-export-ytd-generator-theme-v1130-guard + light-pattern-theme-v1131-guard + admin-account-login-v1141-guard + admin-handover-guide-v1142-guard + admin-generator-settings-v1143-guard + admin-external-links-v1144-guard + admin-calendar-link-v1147-guard + admin-app-contact-v1145-guard + admin-payroll-settings-v1146-guard + rotation-generator-excel-copy-v1138-guard + games-active-account-direct-stats-v1144-guard + sudoku-completion-save-v1148-guard + sudoku-random-puzzle-v1148-guard + game-time-format-v1144-guard + lada-manual-override-v1144-guard + lada-smooth-performance-v1144-guard + dashboard-css-contract-guard + appearance-reward-contract + rotation-export-summary-simple-guard + rotation-export-glass-guard + appearance-readability-guard + css-layer-order-v194-guard + dashboard-owner-registry-v195-guard + dashboard-overrides-selector-lock-v196-guard + dashboard-scope-v197-guard + dashboard-release-isolation-v198-guard + dashboard-css-guard-series-v1100-complete + release-metadata-v199-guard + brusy-choice-size-v1101-guard + fixed-app-background-v1101-guard + name-choice-fit-v1102-guard + browser-smoke-v1103-guard + dashboard-empty-absence-text-v1104-guard + rotace-empty-absence-text-v1105-guard + appearance-update-persistence-v1105-guard + rotation-generator-v1106-guard + rotation-generator-rules-v1107-guard + memory-8x8-square-fit-v1153-guard + memory-total-time-no-5s-v1153-guard + no-visual-owner-drift-guard OK');
 
 // v1.136 guard: soft-core fixed cycle + no TNKS balancing + removed AMOLED black.
 assertIncludes(ui, 'RAK_ROTATION_GENERATOR_RULES_V1135', 'Chybí pravidla generátoru v1.136');

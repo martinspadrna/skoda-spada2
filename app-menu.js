@@ -212,6 +212,18 @@ function adminGuideUpcomingVacationCount() {
   }
 }
 
+function adminGuideUpcomingSpecialDaysCount() {
+  try {
+    const settings = typeof getRakSpecialDaysSettings === 'function' ? getRakSpecialDaysSettings() : null;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayKey = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+    return (Array.isArray(settings && settings.days) ? settings.days : []).filter((entry) => String(entry && entry.date || '') >= todayKey).length;
+  } catch (err) {
+    return 0;
+  }
+}
+
 function adminGuideOvertimeCount() {
   try {
     const settings = typeof getRotationOvertimeSettings === 'function' ? getRotationOvertimeSettings() : null;
@@ -245,6 +257,7 @@ function buildAdminHandoverChecklistHtml(monthKey) {
   const foodSnapshot = (typeof getFoodAdminSettingsSnapshot === 'function') ? getFoodAdminSettingsSnapshot() : null;
   const overtimeCount = adminGuideOvertimeCount();
   const vacationCount = adminGuideUpcomingVacationCount();
+  const specialDaysCount = adminGuideUpcomingSpecialDaysCount();
   const backups = app && app.adminRotationBackupsSnapshot && Array.isArray(app.adminRotationBackupsSnapshot.backups)
     ? app.adminRotationBackupsSnapshot.backups
     : [];
@@ -276,6 +289,13 @@ function buildAdminHandoverChecklistHtml(monthKey) {
       detail: vacationCount ? ('Nadcházejících období: ' + String(vacationCount) + '.') : 'Doplň nejbližší dovolenou nebo odstávku.',
       action: 'open-vacation',
       actionLabel: 'Dovolená'
+    },
+    {
+      ok: specialDaysCount > 0,
+      title: 'Mimořádné volné dny',
+      detail: specialDaysCount ? ('Budoucích dnů: ' + String(specialDaysCount) + '.') : 'Jednorázové svátky nebo odstávky lze doplnit podle potřeby.',
+      action: 'open-special-days',
+      actionLabel: 'Volné dny'
     },
     {
       ok: !!(month && adminGuideHasMonthRows(month)),
@@ -369,6 +389,7 @@ function renderAdminMenuBody(body, section) {
     '    <button type="button" class="appMenuAction" data-admin-action="open-food">Kantýna / jídelna</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-overtime">Přesčasy</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-vacation">Dovolená / odstávky</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="open-special-days">Mimořádné volné dny</button>',
     '    <div class="appMenuSubTitle">Rozpisy</div>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-rotation">Rozpisy</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-generator-settings">Pravidla generátoru</button>',
@@ -432,6 +453,22 @@ function renderAdminMenuBody(body, section) {
     '  <div class="appMenuActionRow">',
     '    <button type="button" class="appMenuAction" data-admin-action="load-vacation-countdown">Načíst online</button>',
     '    <button type="button" class="appMenuAction isActive" data-admin-action="save-vacation-countdown">Uložit dovolenou</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
+    '  </div>',
+    '</div>'
+  ].join('');
+
+  const specialDaysHtml = [
+    '<div class="appMenuCard appMenuAdminCard adminSpecialDaysCard">',
+    '  <div class="appMenuCardTitle">Mimořádné volné dny</div>',
+    '  <div class="appMenuText">',
+    '    <div>Tady doplníš jednorázové svátky, odstávky nebo jiné dny bez práce. Vestavěné české svátky zůstávají automatické.</div>',
+    '    <div class="smallText" id="adminOnlineSaveStatus">Prázdné řádky se neukládají. Pro odstranění řádek vymaž a ulož.</div>',
+    '  </div>',
+    buildAdminSpecialDaysSettingsHtml(),
+    '  <div class="appMenuActionRow">',
+    '    <button type="button" class="appMenuAction" data-admin-action="load-special-days">Načíst online</button>',
+    '    <button type="button" class="appMenuAction isActive" data-admin-action="save-special-days">Uložit volné dny</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
     '  </div>',
     '</div>'
@@ -629,6 +666,8 @@ function renderAdminMenuBody(body, section) {
     body.innerHTML = foodHtml;
   } else if (mode === 'vacation') {
     body.innerHTML = vacationHtml;
+  } else if (mode === 'special-days') {
+    body.innerHTML = specialDaysHtml;
   } else if (mode === 'rotation') {
     body.innerHTML = rotationHtml;
   } else if (mode === 'overtime') {
@@ -1364,6 +1403,10 @@ function bindAppMenuHandlers(body) {
         openAppMenu('admin-vacation');
         return;
       }
+      if (adminAction === 'open-special-days') {
+        openAppMenu('admin-special-days');
+        return;
+      }
       if (adminAction === 'open-rotation') {
         openAppMenu('admin-rotation');
         return;
@@ -1782,6 +1825,31 @@ function bindAppMenuHandlers(body) {
           return;
         }
       }
+      if (adminAction === 'load-special-days') {
+        if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.loadMachineSettings === 'function') {
+          app.machineSettingsRows = await window.RotationSupabaseBridge.loadMachineSettings();
+          try { if (typeof updateDashboard === 'function') updateDashboard(); } catch (err) {}
+          renderAdminMenuBody(body, 'special-days');
+          return;
+        }
+      }
+      if (adminAction === 'save-special-days') {
+        const specialDaysSettings = readAdminSpecialDaysSettingsFromDom();
+        const rows = mergeRakSpecialDaysSettingsRows(specialDaysSettings);
+        if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.saveMachineSettings === 'function') {
+          const result = await window.RotationSupabaseBridge.saveMachineSettings(rows);
+          if (result && result.ok === false) throw (result.error || new Error('Uložení volných dnů selhalo.'));
+          app.machineSettingsRows = rows;
+          try { if (typeof updateDashboard === 'function') updateDashboard(); } catch (err) {}
+          try { if (typeof updateFoodTile === 'function') updateFoodTile(); } catch (err) {}
+          renderAdminMenuBody(body, 'special-days');
+          const statusEl = document.getElementById('adminOnlineSaveStatus');
+          if (statusEl) statusEl.textContent = (result && result.queued)
+            ? 'Volné dny uložené lokálně ✓ · po připojení se synchronizují'
+            : 'Volné dny uložené online ✓';
+          return;
+        }
+      }
       if (adminAction === 'load-machines') {
         if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.loadMachineSettings === 'function') {
           app.machineSettingsRows = await window.RotationSupabaseBridge.loadMachineSettings();
@@ -1925,7 +1993,7 @@ function openAppMenu(view) {
   page.classList.add('active');
   const body = page.querySelector('#appMenuBody');
   const v = view || 'menu';
-  const adminViews = new Set(['admin', 'admin-machines', 'admin-food', 'admin-vacation', 'admin-rotation', 'admin-overtime', 'admin-generator-settings', 'admin-accounts', 'admin-external-links', 'admin-app-contact', 'admin-payroll-settings', 'admin-backups', 'admin-announcement', 'admin-usage', 'admin-export', 'admin-reports', 'admin-service']);
+  const adminViews = new Set(['admin', 'admin-machines', 'admin-food', 'admin-vacation', 'admin-special-days', 'admin-rotation', 'admin-overtime', 'admin-generator-settings', 'admin-accounts', 'admin-external-links', 'admin-app-contact', 'admin-payroll-settings', 'admin-backups', 'admin-announcement', 'admin-usage', 'admin-export', 'admin-reports', 'admin-service']);
 
   const versionText = (typeof app !== 'undefined' && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '');
   const contact = typeof getRakAppContactSettings === 'function'
@@ -2051,6 +2119,16 @@ function openAppMenu(view) {
         } catch (err) {
           console.warn('Admin vacation preload failed', err);
           renderAdminMenuBody(body, 'vacation');
+        }
+      })();
+    } else if (v === 'admin-special-days') {
+      void (async () => {
+        try {
+          await loadAdminMachineSettingsFromSupabase();
+          renderAdminMenuBody(body, 'special-days');
+        } catch (err) {
+          console.warn('Admin special days preload failed', err);
+          renderAdminMenuBody(body, 'special-days');
         }
       })();
     } else if (v === 'admin-rotation') {

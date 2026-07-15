@@ -1,3 +1,10 @@
+## RaK 1.2 (1.200)
+
+- Administrace: přidaná sekce Mimořádné volné dny pro jednorázové svátky, odstávky a další dny bez práce.
+- Směny / Výplata / Dashboard: `getSpecialWorkInfo` bere v potaz uložené admin volné dny navíc k vestavěným českým svátkům a dovoleným.
+- Supabase: mimořádné volné dny se ukládají jako speciální admin nastavení přes `machine_settings` a zachovávají se při ukládání strojů.
+- Release metadata sjednocená na `RaK 1.2 (1.200)`, technická verze `1.2.200`, cache `v1.2-1.200`.
+
 ## RaK 1.2 (1.199)
 
 - Administrace / Odkazy: do správy odkazů přidaný Kalendář, včetně Google embed odkazu pro modal v aplikaci.

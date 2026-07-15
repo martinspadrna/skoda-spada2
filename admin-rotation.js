@@ -1176,6 +1176,7 @@ function buildAdminMachineSettingsTableHtml() {
       && !(typeof isRakExternalLinksSettingsRow === 'function' && isRakExternalLinksSettingsRow(row))
       && !(typeof isRakAppContactSettingsRow === 'function' && isRakAppContactSettingsRow(row))
       && !(typeof isRakPayrollSettingsRow === 'function' && isRakPayrollSettingsRow(row))
+      && !(typeof isRakSpecialDaysSettingsRow === 'function' && isRakSpecialDaysSettingsRow(row))
       && !adminIsRotationGeneratorSettingsRow(row);
   });
   const brusRows = rows.filter(row => String(row && row.category ? row.category : '').trim() === 'brus');
@@ -1471,6 +1472,9 @@ function readAdminMachineSettingsFromDom() {
   }
   if (Array.isArray(app.machineSettingsRows) && typeof isRakPayrollSettingsRow === 'function') {
     app.machineSettingsRows.filter(isRakPayrollSettingsRow).forEach((row) => rows.push(row));
+  }
+  if (Array.isArray(app.machineSettingsRows) && typeof isRakSpecialDaysSettingsRow === 'function') {
+    app.machineSettingsRows.filter(isRakSpecialDaysSettingsRow).forEach((row) => rows.push(row));
   }
   return rows;
 }

@@ -1987,6 +1987,8 @@
       || key === 'APP_CONTACT_SETTINGS'
       || category === 'payroll_settings'
       || key === 'PAYROLL_SETTINGS'
+      || category === 'special_days_settings'
+      || key === 'SPECIAL_DAYS_SETTINGS'
       || category === 'admin_accounts_settings'
       || key === 'ADMIN_ACCOUNTS_SETTINGS';
   }
