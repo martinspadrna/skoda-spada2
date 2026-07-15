@@ -57,6 +57,11 @@ function adminFoodCzechDateToIso(value) {
   return String(year) + '-' + String(month).padStart(2, '0') + '-' + String(day).padStart(2, '0');
 }
 
+function adminFoodTodayIso() {
+  const now = new Date();
+  return now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+}
+
 function makeAdminFoodScheduleSettingsRow(foodSettings) {
   const settings = foodSettings && typeof foodSettings === 'object' ? foodSettings : { type: 'food_schedule', regular: {}, overtime: {}, overtimeDates: [] };
   return {
@@ -203,8 +208,12 @@ function buildAdminFoodScheduleSettingsHtml() {
     '  <td><input class="appMenuInlineInput adminFoodWindowsInput" data-food-overtime-field="windows" value="' + escapeHtml(location.overtimeText || '') + '" placeholder="17:30–21:00, 21:30–23:30"></td>',
     '</tr>'
   ].join('')).join('');
-  const dates = Array.isArray(snapshot.dates) ? snapshot.dates.slice().sort() : [];
-  const minRows = Math.max(36, dates.length + 8);
+  const todayIso = adminFoodTodayIso();
+  const allDates = Array.isArray(snapshot.dates) ? snapshot.dates.slice().sort() : [];
+  const pastDates = allDates.filter((date) => String(date || '').trim() && String(date || '').trim() < todayIso);
+  const dates = allDates.filter((date) => String(date || '').trim() && String(date || '').trim() >= todayIso);
+  const preservedPastDateInputs = pastDates.map((date) => '<input type="hidden" data-food-overtime-date value="' + escapeHtml(adminFoodIsoToCzechDate(date)) + '" data-food-past-overtime-date="1">').join('');
+  const minRows = Math.max(18, dates.length + 8);
   const dateRows = Array.from({ length: minRows }, (_, index) => {
     const value = adminFoodIsoToCzechDate(dates[index] || '');
     return [
@@ -236,6 +245,7 @@ function buildAdminFoodScheduleSettingsHtml() {
     '  </div>',
     '  <div class="tableWrap appMenuTableWrap uMt12">',
     '    <div class="smallText">Seznam přesčasových nedělí · pro směnu jen 18:00–6:00</div>',
+    preservedPastDateInputs,
     '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminFoodDatesTable">',
     '      <colgroup><col class="adminFoodDateNumberCol"><col class="adminFoodDateValueCol"></colgroup>',
     '      <thead><tr><th>#</th><th>Datum</th></tr></thead>',

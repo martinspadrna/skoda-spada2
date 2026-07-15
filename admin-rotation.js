@@ -347,8 +347,10 @@ function buildAdminRotationOvertimeSettingsHtml() {
     const groupEntries = entries.filter((entry) => String(entry.date || '').startsWith(year + '-'));
     const rows = groupEntries.map((entry, idx) => buildAdminRotationOvertimeRowHtml(entry, idx, year));
     for (let i = 0; i < 4; i += 1) rows.push(buildAdminRotationOvertimeRowHtml({ date: '', to: true, note: '' }, groupEntries.length + i, year));
+    const yearNumber = Number(year);
+    const yearOpenAttr = Number.isFinite(yearNumber) && yearNumber >= currentYear ? ' open' : '';
     return [
-      '<details class="appMenuFoldSection adminRotationOvertimeYear" open>',
+      '<details class="appMenuFoldSection adminRotationOvertimeYear"' + yearOpenAttr + '>',
       '  <summary>Rok ' + escapeHtml(year) + ' <span class="smallText" data-rotation-overtime-year-total-label="' + escapeHtml(year) + '">' + String(groupEntries.length) + '×</span></summary>',
       adminRotationOvertimeBuildYearSummaryHtml(year, groupEntries),
       '  <div class="tableWrap appMenuTableWrap">',

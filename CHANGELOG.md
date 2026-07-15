@@ -1,3 +1,9 @@
+## RaK 1.2 (1.190)
+
+- Administrace / Kantýna / jídelna: seznam přesčasových nedělí v tabulce ukazuje jen dnešní a budoucí termíny; starší uložené termíny zůstávají zachované při uložení.
+- Administrace / Přesčasy: roky jsou dál po skupinách a minulé roky se při otevření panelu zobrazují sbalené; aktuální a budoucí roky zůstávají otevřené.
+- Release metadata sjednocená na `RaK 1.2 (1.190)`, technická verze `1.2.190`, cache `v1.2-1.190`.
+
 ## RaK 1.2 (1.189)
 
 - Směny / svátky: Velký pátek a Velikonoční pondělí se nově dopočítávají podle Velikonoc pro daný rok, takže odpočet směn i blokování startu směny funguje i po roce 2026.
