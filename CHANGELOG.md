@@ -1,3 +1,9 @@
+## RaK 1.2 (1.188)
+
+- Home / Dovolená: počet zbývajících směn D do CZD/Vánoc bere u vytvořených měsíců skutečné řádky rozpisu, takže ručně zrušená směna nebo odstávka v rozpisu sníží počet.
+- Pro měsíce bez vytvořeného rozpisu zůstává záloha podle pevného rotačního cyklu směn a svátků.
+- Release metadata sjednocená na `RaK 1.2 (1.188)`, technická verze `1.2.188`, cache `v1.2-1.188`.
+
 ## RaK 1.2 (1.187)
 
 - Rotace / Rozpisy a Administrace / Rozpisy: absence používají zkratky důvodů, užší sloupec důvodu a stabilní sloupce podle nejdelší souvislé absence.

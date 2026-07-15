@@ -1,7 +1,7 @@
-// RaK 1.2 (1.187) – core stav, verze a sdílené helpery aplikace.
+// RaK 1.2 (1.188) – core stav, verze a sdílené helpery aplikace.
 
 const APP_KEY = "rotace_kalkulacky_state_v123";
-const APP_VERSION = "1.2 (1.187)";
+const APP_VERSION = "1.2 (1.188)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-06-03-" + APP_VERSION;
 window.ROTATION_BUILD = ROTATION_BUILD;
@@ -379,6 +379,100 @@ function formatVacationCountdownShiftTeamLabel(team) {
   return 'směna ' + String(team || 'D').trim().toUpperCase();
 }
 
+function getVacationCountdownMonthKey(date) {
+  const source = date instanceof Date ? date : new Date(date || new Date());
+  if (Number.isNaN(source.getTime())) return '';
+  if (typeof monthKeyFromYearMonth === 'function') {
+    return monthKeyFromYearMonth(source.getFullYear(), source.getMonth() + 1);
+  }
+  return String(source.getMonth() + 1) + '/' + String(source.getFullYear()).slice(-2);
+}
+
+function getVacationCountdownMonthKeysInWindow(source, target) {
+  const start = source instanceof Date ? new Date(source) : new Date(source || new Date());
+  const end = target instanceof Date ? new Date(target) : parseVacationCountdownDateTime(target);
+  if (Number.isNaN(start.getTime()) || !end || Number.isNaN(end.getTime()) || end <= start) return [];
+  const keys = [];
+  const cursor = new Date(start.getFullYear(), start.getMonth(), 1, 0, 0, 0, 0);
+  const last = new Date(end.getFullYear(), end.getMonth(), 1, 0, 0, 0, 0);
+  for (let guard = 0; guard < 80 && cursor <= last; guard += 1) {
+    keys.push(getVacationCountdownMonthKey(cursor));
+    cursor.setMonth(cursor.getMonth() + 1);
+  }
+  return keys.filter(Boolean);
+}
+
+function getVacationCountdownRotationMonth(monthKey) {
+  const months = (typeof app !== 'undefined' && app && app.rotation && app.rotation.months) ? app.rotation.months : {};
+  return months ? months[monthKey] || null : null;
+}
+
+function vacationCountdownMonthHasSchedule(monthKey) {
+  const month = getVacationCountdownRotationMonth(monthKey);
+  if (!month) return false;
+  return ['hard', 'soft'].some((section) => Array.isArray(month[section] && month[section].rows) && month[section].rows.length > 0);
+}
+
+function getVacationCountdownRowShiftStart(monthKey, dateText) {
+  const parsed = typeof parseDateToken === 'function' ? parseDateToken(String(dateText || '')) : null;
+  const monthInfo = typeof parseMonthKey === 'function' ? parseMonthKey(monthKey) : null;
+  if (!parsed || !monthInfo || !Number.isFinite(Number(parsed.day)) || !Number.isFinite(Number(parsed.month))) return null;
+  const shift = String((typeof normalizeShiftText === 'function' ? normalizeShiftText(parsed.shift || '') : parsed.shift) || '').trim().toUpperCase();
+  if (!shift) return null;
+  const start = new Date(monthInfo.year, Number(parsed.month) - 1, Number(parsed.day), 0, 0, 0, 0);
+  if (shift.includes('R')) {
+    start.setHours(6, 0, 0, 0);
+  } else if (shift.includes('N8')) {
+    const specialHour = typeof getSpecialSundayNightStartHour === 'function'
+      ? getSpecialSundayNightStartHour(start, 22)
+      : 22;
+    start.setHours(specialHour, 0, 0, 0);
+  } else if (shift.includes('N')) {
+    start.setHours(18, 0, 0, 0);
+  } else {
+    return null;
+  }
+  return Number.isNaN(start.getTime()) ? null : start;
+}
+
+function isVacationCountdownShiftForTeam(start, team) {
+  if (!(start instanceof Date) || Number.isNaN(start.getTime()) || typeof getTeamShiftState !== 'function') return false;
+  const targetTeam = String(team || 'D').trim().toUpperCase() || 'D';
+  const probe = new Date(start.getTime() + 60000);
+  const state = getTeamShiftState(probe, targetTeam);
+  return !!(state && state.active && state.start instanceof Date && state.start.getTime() === start.getTime());
+}
+
+function getVacationCountdownRotationShiftStartSet(monthKey, team) {
+  const month = getVacationCountdownRotationMonth(monthKey);
+  const starts = new Set();
+  if (!month) return starts;
+  ['hard', 'soft'].forEach((section) => {
+    const rows = Array.isArray(month[section] && month[section].rows) ? month[section].rows : [];
+    rows.forEach((row) => {
+      const start = getVacationCountdownRowShiftStart(monthKey, row && row.date);
+      if (!isVacationCountdownShiftForTeam(start, team)) return;
+      starts.add(String(start.getTime()));
+    });
+  });
+  return starts;
+}
+
+function countVacationCountdownRotationScheduledShifts(source, target, team) {
+  const start = source instanceof Date ? new Date(source) : new Date(source || new Date());
+  const end = target instanceof Date ? new Date(target) : parseVacationCountdownDateTime(target);
+  if (Number.isNaN(start.getTime()) || !end || Number.isNaN(end.getTime()) || end <= start) return 0;
+  let count = 0;
+  getVacationCountdownMonthKeysInWindow(start, end).forEach((monthKey) => {
+    if (!vacationCountdownMonthHasSchedule(monthKey)) return;
+    getVacationCountdownRotationShiftStartSet(monthKey, team).forEach((rawTime) => {
+      const time = Number(rawTime);
+      if (Number.isFinite(time) && time > start.getTime() && time < end.getTime()) count += 1;
+    });
+  });
+  return count;
+}
+
 function getVacationCountdownTeamShiftCount(now, targetStart, team) {
   if (typeof getTeamShiftState !== 'function') return null;
   const source = now instanceof Date ? new Date(now) : new Date(now || new Date());
@@ -397,7 +491,8 @@ function getVacationCountdownTeamShiftCount(now, targetStart, team) {
     if (!candidate || !(candidate.start instanceof Date) || Number.isNaN(candidate.start.getTime())) break;
     if (candidate.start.getTime() >= target.getTime()) break;
     const key = String(candidate.start.getTime());
-    if (!seen.has(key)) {
+    const monthKey = getVacationCountdownMonthKey(candidate.start);
+    if (!vacationCountdownMonthHasSchedule(monthKey) && !seen.has(key)) {
       seen.add(key);
       count += 1;
     }
@@ -406,7 +501,7 @@ function getVacationCountdownTeamShiftCount(now, targetStart, team) {
       : candidate.start.getTime() + 12 * 60 * 60 * 1000;
     cursor = new Date(Math.max(endTime, cursor.getTime() + 60000) + 60000);
   }
-  return count;
+  return count + countVacationCountdownRotationScheduledShifts(source, target, targetTeam);
 }
 
 function getVacationCountdown(now) {
