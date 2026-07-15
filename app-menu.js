@@ -251,6 +251,121 @@ function adminGuideItemHtml(item) {
   ].join('');
 }
 
+function adminHandoverAuditItemHtml(item) {
+  const state = String(item && item.state || 'info').trim() || 'info';
+  const action = String(item && item.action || '').trim();
+  const button = action
+    ? '<button type="button" class="appMenuAction adminHandoverAuditAction" data-admin-action="' + escapeHtml(action) + '">' + escapeHtml(item.actionLabel || 'Otevřít') + '</button>'
+    : '';
+  return [
+    '<div class="adminHandoverAuditItem is' + escapeHtml(state.charAt(0).toUpperCase() + state.slice(1)) + '">',
+    '  <div class="adminHandoverAuditHead">',
+    '    <span>' + escapeHtml(item.title || '') + '</span>',
+    '    <b>' + escapeHtml(item.value || '') + '</b>',
+    '  </div>',
+    '  <div class="smallText">' + escapeHtml(item.detail || '') + '</div>',
+    button,
+    '</div>'
+  ].join('');
+}
+
+function buildAdminHandoverAuditHtml(monthKey) {
+  const rows = Array.isArray(app && app.machineSettingsRows) ? app.machineSettingsRows : [];
+  const machineRows = rows.filter((row) => {
+    const cat = String(row && row.category || '').trim();
+    const key = String(row && row.machine_key || '').trim();
+    return cat !== 'admin_accounts_settings'
+      && cat !== 'rotation_overtime_settings'
+      && cat !== 'rotation_generator_settings'
+      && cat !== 'external_links_settings'
+      && cat !== 'app_contact_settings'
+      && cat !== 'payroll_settings'
+      && cat !== 'vacation_countdown_settings'
+      && cat !== 'special_days_settings'
+      && key !== 'ADMIN_ACCOUNTS_SETTINGS'
+      && key !== 'ROTATION_OVERTIME_SETTINGS'
+      && key !== 'ROTATION_GENERATOR_SETTINGS'
+      && key !== 'EXTERNAL_LINKS_SETTINGS'
+      && key !== 'APP_CONTACT_SETTINGS'
+      && key !== 'PAYROLL_SETTINGS'
+      && key !== 'VACATION_COUNTDOWN_SETTINGS'
+      && key !== 'SPECIAL_DAYS_SETTINGS';
+  });
+  const month = app && app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
+  const hasMonthRows = !!(month && adminGuideHasMonthRows(month));
+  const foodSnapshot = (typeof getFoodAdminSettingsSnapshot === 'function') ? getFoodAdminSettingsSnapshot() : null;
+  const foodOk = !!(foodSnapshot && Array.isArray(foodSnapshot.locations) && foodSnapshot.locations.length);
+  const overtimeCount = adminGuideOvertimeCount();
+  const vacationCount = adminGuideUpcomingVacationCount();
+  const specialDaysCount = adminGuideUpcomingSpecialDaysCount();
+  const backupsSnapshot = app && app.adminRotationBackupsSnapshot && typeof app.adminRotationBackupsSnapshot === 'object' ? app.adminRotationBackupsSnapshot : null;
+  const backups = backupsSnapshot && Array.isArray(backupsSnapshot.backups) ? backupsSnapshot.backups : [];
+  let activeAdmins = 1;
+  try {
+    const adminSettings = typeof rakAdminGetAccountsSettings === 'function' ? rakAdminGetAccountsSettings() : null;
+    activeAdmins += (Array.isArray(adminSettings && adminSettings.admins) ? adminSettings.admins : []).filter((entry) => entry && entry.enabled !== false).length;
+  } catch (err) {}
+  const items = [
+    {
+      state: rows.length ? 'ok' : 'warn',
+      title: 'Online nastavení',
+      value: rows.length ? (String(rows.length) + ' řádků') : 'nenačteno',
+      detail: rows.length ? ('Strojů v běžném nastavení: ' + String(machineRows.length) + '.') : 'Před předáním načti online data, ať správce nekouká na starý lokální stav.',
+      action: rows.length ? 'open-service' : 'load-machines',
+      actionLabel: rows.length ? 'Servis' : 'Načíst'
+    },
+    {
+      state: activeAdmins > 1 ? 'ok' : 'info',
+      title: 'Správci',
+      value: activeAdmins > 1 ? (String(activeAdmins) + ' účty') : 'jen hlavní',
+      detail: activeAdmins > 1 ? 'Je připravený aspoň jeden další admin účet.' : 'Hlavní admin funguje, dalšího správce může doplnit jen owner účet.',
+      action: (typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins()) ? 'open-admin-accounts' : '',
+      actionLabel: 'Správci'
+    },
+    {
+      state: foodOk && overtimeCount ? 'ok' : 'warn',
+      title: 'Provoz',
+      value: foodOk ? (overtimeCount ? 'připraveno' : 'bez přesčasů') : 'zkontrolovat',
+      detail: foodOk ? ('Kantýna/jídelna dostupná, přesčasů evidováno ' + String(overtimeCount) + '.') : 'Zkontroluj kantýnu, jídelnu a přesčasové neděle.',
+      action: foodOk && !overtimeCount ? 'open-overtime' : 'open-food',
+      actionLabel: foodOk && !overtimeCount ? 'Přesčasy' : 'Časy'
+    },
+    {
+      state: vacationCount ? 'ok' : 'warn',
+      title: 'Dovolená / volno',
+      value: vacationCount ? (String(vacationCount) + ' období') : 'chybí',
+      detail: specialDaysCount ? ('Mimořádné volné dny navíc: ' + String(specialDaysCount) + '.') : 'Doplň nejbližší dovolenou, odstávku nebo mimořádné volno podle potřeby.',
+      action: vacationCount ? 'open-special-days' : 'open-vacation',
+      actionLabel: vacationCount ? 'Volné dny' : 'Dovolená'
+    },
+    {
+      state: hasMonthRows ? 'ok' : 'warn',
+      title: 'Rozpis',
+      value: hasMonthRows ? String(monthKey || 'hotovo') : 'nevyplněno',
+      detail: hasMonthRows ? 'Vybraný měsíc má vyplněné směny.' : 'Před předáním zkontroluj, že navazující měsíc existuje a není prázdný.',
+      action: 'open-rotation',
+      actionLabel: 'Rozpis'
+    },
+    {
+      state: backups.length ? 'ok' : 'info',
+      title: 'Zálohy',
+      value: backups.length ? (String(backups.length) + ' záloh') : 'ověřit',
+      detail: backups.length ? 'Online zálohy jsou načtené a připravené k obnově.' : 'Načti zálohy a ověř, že se dá vrátit starší stav rozpisu.',
+      action: 'open-backups',
+      actionLabel: 'Zálohy'
+    }
+  ];
+  return [
+    '<div class="adminHandoverAudit">',
+    '  <div class="appMenuSubTitle">Kontrola předání</div>',
+    '  <div class="smallText uMb10">Rychlý stav věcí, které má nový správce zkontrolovat. Tohle nic samo nemění, jen vede do správné admin sekce.</div>',
+    '  <div class="adminHandoverAuditGrid">',
+    items.map(adminHandoverAuditItemHtml).join(''),
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
 function buildAdminMenuSectionHtml(title, detail, actions, options = {}) {
   const safeActions = (Array.isArray(actions) ? actions : []).filter((item) => item && item.action && item.label);
   if (!safeActions.length) return '';
@@ -702,6 +817,7 @@ function renderAdminMenuBody(body, section) {
     '    <div>Krátký postup pro člověka, který bude aplikaci spravovat: provoz, rozpis, veřejná část a závěrečná kontrola.</div>',
     '    <div class="smallText" id="adminOnlineSaveStatus">Všechny kroky vedou jen do administrace. Běžná aplikace se odsud nemění bez uložení v konkrétní sekci.</div>',
     '  </div>',
+    buildAdminHandoverAuditHtml(monthKey),
     buildAdminHandoverChecklistHtml(monthKey),
     buildAdminHandoverRunbookHtml(monthKey),
     '  <div class="appMenuActionRow">',

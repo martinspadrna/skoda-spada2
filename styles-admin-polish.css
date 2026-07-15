@@ -674,6 +674,53 @@
   min-width:74px !important;
   padding:7px 9px !important;
 }
+.adminHandoverAudit{
+  margin:12px 0 !important;
+}
+.adminHandoverAuditGrid{
+  display:grid !important;
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  gap:8px !important;
+}
+.adminHandoverAuditItem{
+  display:grid !important;
+  gap:6px !important;
+  align-content:start !important;
+  min-height:104px !important;
+  padding:10px !important;
+  border:1px solid rgba(180,255,190,.22) !important;
+  border-radius:8px !important;
+  background:rgba(255,255,255,.045) !important;
+}
+.adminHandoverAuditItem.isWarn{
+  border-color:rgba(255,210,120,.44) !important;
+  background:rgba(255,185,80,.07) !important;
+}
+.adminHandoverAuditItem.isInfo{
+  border-color:rgba(175,210,255,.28) !important;
+}
+.adminHandoverAuditHead{
+  display:grid !important;
+  gap:3px !important;
+  min-width:0 !important;
+}
+.adminHandoverAuditHead span{
+  font-size:12px !important;
+  font-weight:900 !important;
+  color:rgba(222,255,228,.82) !important;
+  line-height:1.1 !important;
+}
+.adminHandoverAuditHead b{
+  font-size:18px !important;
+  line-height:1.1 !important;
+  color:#b8d7ff !important;
+  overflow-wrap:anywhere !important;
+}
+#appMenuBody .adminHandoverAuditAction{
+  justify-self:start !important;
+  min-height:32px !important;
+  padding:6px 10px !important;
+}
 .adminMenuSections{
   display:grid !important;
   gap:10px !important;
@@ -764,6 +811,9 @@
     justify-self:start !important;
   }
   .adminMenuActionGrid{
+    grid-template-columns:1fr !important;
+  }
+  .adminHandoverAuditGrid{
     grid-template-columns:1fr !important;
   }
   .adminHandoverActionRow{

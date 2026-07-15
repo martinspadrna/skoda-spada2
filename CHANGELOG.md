@@ -1,3 +1,10 @@
+## RaK 1.2 (1.203)
+
+- Administrace / Předání správy: přidaná rychlá Kontrola předání se stavem online nastavení, správců, provozu, dovolené/volna, rozpisu a záloh.
+- Předání: kontrola jen čte existující admin data a vede do správných admin sekcí; nic sama neukládá a běžná část aplikace se nemění.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá nové stavové položky předání a jejich admin-only styly.
+- Release metadata sjednocená na `RaK 1.2 (1.203)`, technická verze `1.2.203`, cache `v1.2-1.203`.
+
 ## RaK 1.2 (1.202)
 
 - Administrace: přidaný panel Předání správy s krátkým postupem pro provoz, rozpis, veřejnou část a závěrečnou kontrolu.
