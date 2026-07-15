@@ -1,3 +1,10 @@
+## RaK 1.2 (1.206)
+
+- Administrace / Předání správy: přidané tlačítko `Stáhnout stav`, které vytvoří textový souhrn aktuálního nastavení, správců, provozu, volna, rozpisu a záloh.
+- Export stavu: soubor se skládá lokálně v prohlížeči, nic neukládá do Supabase a slouží jen jako předávací kontrola pro admina.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá textový export stavu předání, tlačítko a admin handler.
+- Release metadata sjednocená na `RaK 1.2 (1.206)`, technická verze `1.2.206`, cache `v1.2-1.206`.
+
 ## RaK 1.2 (1.205)
 
 - Administrace / Příručka správce: přidané tlačítko `Stáhnout příručku`, které vytvoří jednoduchý textový soubor pro předání dalšímu správci.

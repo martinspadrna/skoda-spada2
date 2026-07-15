@@ -269,9 +269,8 @@ function adminHandoverAuditItemHtml(item) {
   ].join('');
 }
 
-function buildAdminHandoverAuditHtml(monthKey) {
-  const rows = Array.isArray(app && app.machineSettingsRows) ? app.machineSettingsRows : [];
-  const machineRows = rows.filter((row) => {
+function adminHandoverMachineSettingsRows(rows) {
+  return (Array.isArray(rows) ? rows : []).filter((row) => {
     const cat = String(row && row.category || '').trim();
     const key = String(row && row.machine_key || '').trim();
     return cat !== 'admin_accounts_settings'
@@ -291,6 +290,11 @@ function buildAdminHandoverAuditHtml(monthKey) {
       && key !== 'VACATION_COUNTDOWN_SETTINGS'
       && key !== 'SPECIAL_DAYS_SETTINGS';
   });
+}
+
+function buildAdminHandoverAuditHtml(monthKey) {
+  const rows = Array.isArray(app && app.machineSettingsRows) ? app.machineSettingsRows : [];
+  const machineRows = adminHandoverMachineSettingsRows(rows);
   const month = app && app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
   const hasMonthRows = !!(month && adminGuideHasMonthRows(month));
   const foodSnapshot = (typeof getFoodAdminSettingsSnapshot === 'function') ? getFoodAdminSettingsSnapshot() : null;
@@ -364,6 +368,70 @@ function buildAdminHandoverAuditHtml(monthKey) {
     '  </div>',
     '</div>'
   ].join('');
+}
+
+function buildAdminHandoverStatusText(monthKey) {
+  const selectedMonth = String(monthKey || getAdminSelectedMonthKey() || '').trim();
+  const rows = Array.isArray(app && app.machineSettingsRows) ? app.machineSettingsRows : [];
+  const machineRows = adminHandoverMachineSettingsRows(rows);
+  const month = app && app.rotation && app.rotation.months ? app.rotation.months[selectedMonth] : null;
+  const hasMonthRows = !!(month && adminGuideHasMonthRows(month));
+  const foodSnapshot = (typeof getFoodAdminSettingsSnapshot === 'function') ? getFoodAdminSettingsSnapshot() : null;
+  const foodLocations = Array.isArray(foodSnapshot && foodSnapshot.locations) ? foodSnapshot.locations.length : 0;
+  const overtimeCount = adminGuideOvertimeCount();
+  const vacationCount = adminGuideUpcomingVacationCount();
+  const specialDaysCount = adminGuideUpcomingSpecialDaysCount();
+  const backupsSnapshot = app && app.adminRotationBackupsSnapshot && typeof app.adminRotationBackupsSnapshot === 'object' ? app.adminRotationBackupsSnapshot : null;
+  const backups = backupsSnapshot && Array.isArray(backupsSnapshot.backups) ? backupsSnapshot.backups : [];
+  let activeAdmins = 1;
+  try {
+    const adminSettings = typeof rakAdminGetAccountsSettings === 'function' ? rakAdminGetAccountsSettings() : null;
+    activeAdmins += (Array.isArray(adminSettings && adminSettings.admins) ? adminSettings.admins : []).filter((entry) => entry && entry.enabled !== false).length;
+  } catch (err) {}
+  const version = formatRakDisplayVersion((typeof app !== 'undefined' && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : ''));
+  return [
+    'RaK - Stav předání správy',
+    'Verze: ' + version,
+    'Vytvořeno: ' + new Date().toLocaleString('cs-CZ'),
+    '',
+    'Souhrn',
+    '- Online nastavení: ' + (rows.length ? ('načteno ' + rows.length + ' řádků') : 'nenačteno'),
+    '- Běžné stroje v nastavení: ' + String(machineRows.length),
+    '- Admin účty: ' + String(activeAdmins),
+    '- Kantýna / jídelna: ' + (foodLocations ? ('nastaveno ' + foodLocations + ' míst') : 'zkontrolovat'),
+    '- Přesčasové termíny: ' + String(overtimeCount),
+    '- Dovolené / odstávky: ' + String(vacationCount),
+    '- Mimořádné volné dny: ' + String(specialDaysCount),
+    '- Vybraný rozpis: ' + (selectedMonth || 'nevybrán'),
+    '- Rozpis má vyplněné směny: ' + (hasMonthRows ? 'ano' : 'ne / zkontrolovat'),
+    '- Načtené zálohy: ' + String(backups.length),
+    '',
+    'Doporučená kontrola',
+    '- Po načtení online dat projít Předání správy a Příručku správce.',
+    '- Před úpravou rozpisu ověřit zálohy.',
+    '- Po uložení zkontrolovat zelený stav synchronizace na hlavní stránce.',
+    '- Běžný uživatel nemá mít možnost měnit rozpis ani nastavení mimo administraci.',
+    ''
+  ].join('\n');
+}
+
+function downloadAdminHandoverStatusText() {
+  const monthKey = getAdminSelectedMonthKey();
+  const text = buildAdminHandoverStatusText(monthKey);
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const dateKey = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = 'RaK_stav_predani_' + dateKey + '.txt';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    try { URL.revokeObjectURL(url); } catch (err) {}
+    try { a.remove(); } catch (err) {}
+  }, 0);
+  const status = document.getElementById('adminOnlineSaveStatus');
+  if (status) status.textContent = 'Stav předání stažen jako textový soubor.';
 }
 
 function buildAdminMenuSectionHtml(title, detail, actions, options = {}) {
@@ -979,6 +1047,7 @@ function renderAdminMenuBody(body, section) {
     buildAdminHandoverChecklistHtml(monthKey),
     buildAdminHandoverRunbookHtml(monthKey),
     '  <div class="appMenuActionRow">',
+    '    <button type="button" class="appMenuAction isActive" data-admin-action="download-handover-status">Stáhnout stav</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="load-machines">Načíst online</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
     '  </div>',
@@ -1351,6 +1420,10 @@ function bindAppMenuHandlers(body) {
       }
       if (adminAction === 'download-admin-manual') {
         downloadAdminManualText();
+        return;
+      }
+      if (adminAction === 'download-handover-status') {
+        downloadAdminHandoverStatusText();
         return;
       }
       if (menuAction === 'export' || adminAction === 'export') {
