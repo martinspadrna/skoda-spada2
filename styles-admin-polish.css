@@ -802,6 +802,62 @@
   min-height:34px !important;
   padding:7px 10px !important;
 }
+.adminManualBox{
+  display:grid !important;
+  gap:9px !important;
+  margin:12px 0 !important;
+}
+.adminManualSection{
+  border:1px solid rgba(180,255,190,.22) !important;
+  border-radius:8px !important;
+  background:rgba(255,255,255,.04) !important;
+  overflow:hidden !important;
+}
+.adminManualSection > summary{
+  display:grid !important;
+  gap:4px !important;
+  padding:10px 12px !important;
+  cursor:pointer !important;
+  list-style:none !important;
+}
+.adminManualSection > summary::-webkit-details-marker{
+  display:none !important;
+}
+.adminManualSection > summary span{
+  font-weight:900 !important;
+  line-height:1.15 !important;
+}
+.adminManualSection > summary small{
+  color:rgba(235,255,240,.72) !important;
+  font-size:12px !important;
+  font-weight:700 !important;
+  line-height:1.25 !important;
+  padding-right:18px !important;
+}
+.adminManualSection > summary::after{
+  content:"" !important;
+  justify-self:end !important;
+  width:8px !important;
+  height:8px !important;
+  margin-top:-24px !important;
+  border-right:2px solid rgba(210,255,220,.82) !important;
+  border-bottom:2px solid rgba(210,255,220,.82) !important;
+  transform:rotate(45deg) !important;
+}
+.adminManualSection[open] > summary::after{
+  transform:rotate(225deg) !important;
+  margin-top:-20px !important;
+}
+.adminManualActionRow{
+  display:grid !important;
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  gap:8px !important;
+  padding:0 10px 10px !important;
+}
+.adminManualActionRow .appMenuAction{
+  width:100% !important;
+  min-height:36px !important;
+}
 @media (max-width:430px){
   .adminGuideItem{
     grid-template-columns:30px minmax(0,1fr) !important;
@@ -822,5 +878,8 @@
   }
   .adminHandoverActionRow .appMenuAction{
     width:100% !important;
+  }
+  .adminManualActionRow{
+    grid-template-columns:1fr !important;
   }
 }

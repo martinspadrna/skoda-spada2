@@ -1,3 +1,10 @@
+## RaK 1.2 (1.204)
+
+- Administrace: přidaná chráněná Příručka správce s krátkými postupy pro nový měsíc, dovolené/volno, přesčasy, odkazy, zálohy a předání dalšímu správci.
+- Příručka: všechny položky pouze otevírají existující admin sekce; nic se neukládá bez tlačítka Uložit v konkrétní sekci.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá novou admin-only příručku, její chráněný pohled a styly.
+- Release metadata sjednocená na `RaK 1.2 (1.204)`, technická verze `1.2.204`, cache `v1.2-1.204`.
+
 ## RaK 1.2 (1.203)
 
 - Administrace / Předání správy: přidaná rychlá Kontrola předání se stavem online nastavení, správců, provozu, dovolené/volna, rozpisu a záloh.
