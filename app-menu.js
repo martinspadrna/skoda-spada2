@@ -383,6 +383,68 @@ function buildAdminHandoverChecklistHtml(monthKey) {
   ].join('');
 }
 
+function buildAdminHandoverRunbookHtml(monthKey) {
+  const monthLabel = String(monthKey || '').trim() || 'vybraný měsíc';
+  const steps = [
+    {
+      title: '1. Provoz',
+      detail: 'Nejdřív načíst online nastavení a zkontrolovat stroje, kantýnu, přesčasy, dovolené a mimořádné volné dny.',
+      actions: [
+        { action: 'open-service', label: 'Servis' },
+        { action: 'open-machines', label: 'Stroje' },
+        { action: 'open-food', label: 'Kantýna' },
+        { action: 'open-overtime', label: 'Přesčasy' },
+        { action: 'open-vacation', label: 'Dovolená' },
+        { action: 'open-special-days', label: 'Volné dny' }
+      ]
+    },
+    {
+      title: '2. Rozpis ' + monthLabel,
+      detail: 'Doplnit absence, zkontrolovat pravidla generátoru, vygenerovat návrh a uložit ho až po ruční kontrole.',
+      actions: [
+        { action: 'open-rotation', label: 'Rozpisy' },
+        { action: 'open-generator-settings', label: 'Pravidla' },
+        { action: 'open-backups', label: 'Zálohy' }
+      ]
+    },
+    {
+      title: '3. Veřejná část',
+      detail: 'Upravit jen to, co mají lidé opravdu vidět: oznámení, odkazy, kontakt a výplatu.',
+      actions: [
+        { action: 'open-announcement', label: 'Oznámení' },
+        { action: 'open-external-links', label: 'Odkazy' },
+        { action: 'open-app-contact', label: 'Kontakt' },
+        { action: 'open-payroll-settings', label: 'Výplata' }
+      ]
+    },
+    {
+      title: '4. Kontrola',
+      detail: 'Po uložení ověřit synchronizaci, připojení, reporty chyb a připravit export pro předání.',
+      actions: [
+        { action: 'open-usage', label: 'Připojení' },
+        { action: 'open-reports', label: 'Reporty' },
+        { action: 'open-export', label: 'Export' }
+      ]
+    }
+  ];
+  if (typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins()) {
+    steps[3].actions.push({ action: 'open-admin-accounts', label: 'Správci' });
+  }
+  return [
+    '<div class="adminHandoverRunbook">',
+    steps.map((step) => [
+      '<div class="adminHandoverStep">',
+      '  <div class="adminHandoverStepTitle">' + escapeHtml(step.title) + '</div>',
+      '  <div class="smallText">' + escapeHtml(step.detail) + '</div>',
+      '  <div class="adminHandoverActionRow">',
+      (step.actions || []).map((item) => '<button type="button" class="appMenuAction" data-admin-action="' + escapeHtml(item.action) + '">' + escapeHtml(item.label) + '</button>').join(''),
+      '  </div>',
+      '</div>'
+    ].join('')).join(''),
+    '</div>'
+  ].join('');
+}
+
 function renderAdminMenuBody(body, section) {
   const mode = String(section || 'home').trim() || 'home';
   const months = getAdminRotationMonthKeys();
@@ -418,6 +480,7 @@ function renderAdminMenuBody(body, section) {
     buildAdminMenuSectionHtml('2. Rozpisy a předání', 'Tvorba, kontrola, zálohy a export rozpisu.', [
       { action: 'open-rotation', label: 'Rozpisy' },
       { action: 'open-generator-settings', label: 'Pravidla generátoru' },
+      { action: 'open-handover', label: 'Předání správy' },
       { action: 'open-backups', label: 'Zálohy rozpisů' },
       { action: 'open-export', label: 'Export / import' }
     ]),
@@ -632,6 +695,22 @@ function renderAdminMenuBody(body, section) {
     '</div>'
   ].join('');
 
+  const handoverHtml = [
+    '<div class="appMenuCard appMenuAdminCard adminHandoverCard">',
+    '  <div class="appMenuCardTitle">Předání správy</div>',
+    '  <div class="appMenuText">',
+    '    <div>Krátký postup pro člověka, který bude aplikaci spravovat: provoz, rozpis, veřejná část a závěrečná kontrola.</div>',
+    '    <div class="smallText" id="adminOnlineSaveStatus">Všechny kroky vedou jen do administrace. Běžná aplikace se odsud nemění bez uložení v konkrétní sekci.</div>',
+    '  </div>',
+    buildAdminHandoverChecklistHtml(monthKey),
+    buildAdminHandoverRunbookHtml(monthKey),
+    '  <div class="appMenuActionRow">',
+    '    <button type="button" class="appMenuAction" data-admin-action="load-machines">Načíst online</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
+    '  </div>',
+    '</div>'
+  ].join('');
+
   const announcementHtml = buildAdminAnnouncementHtml();
   const usageHtml = buildAdminUsageHtml();
 
@@ -710,6 +789,8 @@ function renderAdminMenuBody(body, section) {
     body.innerHTML = payrollSettingsHtml;
   } else if (mode === 'backups') {
     body.innerHTML = backupsHtml;
+  } else if (mode === 'handover') {
+    body.innerHTML = handoverHtml;
   } else if (mode === 'announcement') {
     body.innerHTML = announcementHtml;
   } else if (mode === 'usage') {
@@ -1445,6 +1526,10 @@ function bindAppMenuHandlers(body) {
         openAppMenu('admin-generator-settings');
         return;
       }
+      if (adminAction === 'open-handover') {
+        openAppMenu('admin-handover');
+        return;
+      }
       if (adminAction === 'open-admin-accounts') {
         openAppMenu('admin-accounts');
         return;
@@ -2019,7 +2104,7 @@ function openAppMenu(view) {
   page.classList.add('active');
   const body = page.querySelector('#appMenuBody');
   const v = view || 'menu';
-  const adminViews = new Set(['admin', 'admin-machines', 'admin-food', 'admin-vacation', 'admin-special-days', 'admin-rotation', 'admin-overtime', 'admin-generator-settings', 'admin-accounts', 'admin-external-links', 'admin-app-contact', 'admin-payroll-settings', 'admin-backups', 'admin-announcement', 'admin-usage', 'admin-export', 'admin-reports', 'admin-service']);
+  const adminViews = new Set(['admin', 'admin-machines', 'admin-food', 'admin-vacation', 'admin-special-days', 'admin-rotation', 'admin-overtime', 'admin-generator-settings', 'admin-handover', 'admin-accounts', 'admin-external-links', 'admin-app-contact', 'admin-payroll-settings', 'admin-backups', 'admin-announcement', 'admin-usage', 'admin-export', 'admin-reports', 'admin-service']);
 
   const versionText = (typeof app !== 'undefined' && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '');
   const contact = typeof getRakAppContactSettings === 'function'
@@ -2186,6 +2271,16 @@ function openAppMenu(view) {
         } catch (err) {
           console.warn('Admin generator settings preload failed', err);
           renderAdminMenuBody(body, 'generator-settings');
+        }
+      })();
+    } else if (v === 'admin-handover') {
+      void (async () => {
+        try {
+          await loadAdminMachineSettingsFromSupabase();
+          renderAdminMenuBody(body, 'handover');
+        } catch (err) {
+          console.warn('Admin handover preload failed', err);
+          renderAdminMenuBody(body, 'handover');
         }
       })();
     } else if (v === 'admin-accounts') {

@@ -729,6 +729,32 @@
   width:100% !important;
   min-height:38px !important;
 }
+.adminHandoverRunbook{
+  display:grid !important;
+  gap:10px !important;
+  margin:12px 0 !important;
+}
+.adminHandoverStep{
+  display:grid !important;
+  gap:7px !important;
+  padding:10px !important;
+  border:1px solid rgba(180,255,190,.22) !important;
+  border-radius:8px !important;
+  background:rgba(255,255,255,.04) !important;
+}
+.adminHandoverStepTitle{
+  font-weight:900 !important;
+  line-height:1.15 !important;
+}
+.adminHandoverActionRow{
+  display:flex !important;
+  flex-wrap:wrap !important;
+  gap:7px !important;
+}
+.adminHandoverActionRow .appMenuAction{
+  min-height:34px !important;
+  padding:7px 10px !important;
+}
 @media (max-width:430px){
   .adminGuideItem{
     grid-template-columns:30px minmax(0,1fr) !important;
@@ -739,5 +765,12 @@
   }
   .adminMenuActionGrid{
     grid-template-columns:1fr !important;
+  }
+  .adminHandoverActionRow{
+    display:grid !important;
+    grid-template-columns:1fr 1fr !important;
+  }
+  .adminHandoverActionRow .appMenuAction{
+    width:100% !important;
   }
 }

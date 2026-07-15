@@ -1,3 +1,10 @@
+## RaK 1.2 (1.202)
+
+- Administrace: přidaný panel Předání správy s krátkým postupem pro provoz, rozpis, veřejnou část a závěrečnou kontrolu.
+- Předání: panel používá jen existující admin akce a odkazy, takže běžná aplikace se odsud nemění bez uložení v konkrétní sekci.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá nový admin-only panel Předání správy a jeho styly.
+- Release metadata sjednocená na `RaK 1.2 (1.202)`, technická verze `1.2.202`, cache `v1.2-1.202`.
+
 ## RaK 1.2 (1.201)
 
 - Administrace: úvodní rozcestník je nově rozdělený do zabalitelných sekcí Provoz před rozpisem, Rozpisy a předání, Aplikace pro lidi a Kontrola a servis.
