@@ -422,21 +422,25 @@ function openKalkulacky() {
 const FOOD_MENU_URL = 'https://sa.gthcatering.cz/restaurant/c1/';
 const EPORTAL_URL = 'https://space.skoda.vwgroup.com/group/b2eportal/home-page';
 const PAYROLL_URL = 'https://smartappspki.skoda.vwgroup.com/sap/bc/ui2/flp?sap-client=010&sap-language=CS#eMA_EV-open';
+const CALENDAR_EMBED_URL = 'https://calendar.google.com/calendar/embed?height=900&wkst=2&ctz=Europe%2FPrague&showPrint=0&showTitle=0&showTabs=0&showCalendars=0&showTz=0&src=MzFlZWE5OWVkZmYxNzcxYmUxNWJhODc3ZjdjMmY1YjEzNzFlMGE3NDJhZDlkNTRmY2E1MjZkNDFlYWZhNTk5NUBncm91cC5jYWxlbmRhci5nb29nbGUuY29t&color=%230157ff';
 const RAK_EXTERNAL_LINKS_SETTINGS_KEY = 'EXTERNAL_LINKS_SETTINGS';
 const RAK_EXTERNAL_LINKS_SETTINGS_CATEGORY = 'external_links_settings';
 const RAK_DEFAULT_EXTERNAL_LINKS = Object.freeze({
   food: Object.freeze({ key: 'food', label: 'Jídelní lístek', value: 'Otevřít', meta: 'Aktuální menu', url: FOOD_MENU_URL }),
   eportal: Object.freeze({ key: 'eportal', label: 'Eportal', value: 'Otevřít', meta: 'Firemní portál', url: EPORTAL_URL }),
-  payroll: Object.freeze({ key: 'payroll', label: 'Výplata', value: '', meta: '', url: PAYROLL_URL })
+  payroll: Object.freeze({ key: 'payroll', label: 'Výplata', value: '', meta: '', url: PAYROLL_URL }),
+  calendar: Object.freeze({ key: 'calendar', label: 'Kalendář', value: '', meta: 'Google kalendář', url: CALENDAR_EMBED_URL })
 });
 const RAK_EXTERNAL_TILE_HOSTS = Object.freeze([
   'sa.gthcatering.cz',
   'space.skoda.vwgroup.com',
-  'smartappspki.skoda.vwgroup.com'
+  'smartappspki.skoda.vwgroup.com',
+  'calendar.google.com'
 ]);
 window.FOOD_MENU_URL = FOOD_MENU_URL;
 window.EPORTAL_URL = EPORTAL_URL;
 window.PAYROLL_URL = PAYROLL_URL;
+window.CALENDAR_EMBED_URL = CALENDAR_EMBED_URL;
 window.RAK_EXTERNAL_TILE_HOSTS = RAK_EXTERNAL_TILE_HOSTS;
 window.RAK_EXTERNAL_LINKS_SETTINGS_KEY = RAK_EXTERNAL_LINKS_SETTINGS_KEY;
 window.RAK_EXTERNAL_LINKS_SETTINGS_CATEGORY = RAK_EXTERNAL_LINKS_SETTINGS_CATEGORY;
@@ -476,7 +480,8 @@ function normalizeRakExternalLinksSettings(settings) {
     links: {
       food: normalizeRakExternalLinkEntry('food', links.food),
       eportal: normalizeRakExternalLinkEntry('eportal', links.eportal),
-      payroll: normalizeRakExternalLinkEntry('payroll', links.payroll)
+      payroll: normalizeRakExternalLinkEntry('payroll', links.payroll),
+      calendar: normalizeRakExternalLinkEntry('calendar', links.calendar)
     }
   };
 }
@@ -534,7 +539,7 @@ function mergeRakExternalLinksSettingsRows(settings) {
 
 function buildAdminExternalLinksSettingsHtml() {
   const settings = getRakExternalLinksSettings();
-  const rows = ['food', 'eportal', 'payroll'].map((key) => {
+  const rows = ['food', 'eportal', 'payroll', 'calendar'].map((key) => {
     const link = normalizeRakExternalLinkEntry(key, settings.links[key]);
     return [
       '<tr data-external-link-row="' + escapeHtml(key) + '">',
@@ -871,7 +876,15 @@ function hideCalendarModal() {
 
 function ensureCalendarModal() {
   let overlay = document.getElementById('calendarModal');
-  if (overlay) return overlay;
+  const calendarUrl = normalizeExternalTileUrl(
+    typeof getRakExternalLinkUrl === 'function' ? getRakExternalLinkUrl('calendar') : CALENDAR_EMBED_URL,
+    'calendarModalFrame'
+  ) || CALENDAR_EMBED_URL;
+  if (overlay) {
+    const frame = overlay.querySelector('.calendarModalFrame');
+    if (frame && frame.getAttribute('src') !== calendarUrl) frame.setAttribute('src', calendarUrl);
+    return overlay;
+  }
 
   overlay = document.createElement('div');
   overlay.id = 'calendarModal';
@@ -881,7 +894,7 @@ function ensureCalendarModal() {
     '<button type="button" class="calendarModalClose" aria-label="Zavřít">×</button>',
     '<div class="calendarModalTitle" id="calendarModalTitle">Kalendář</div>',
     '<div class="calendarModalFrameWrap">',
-    '<iframe class="calendarModalFrame" title="Google kalendář" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://calendar.google.com/calendar/embed?height=900&wkst=2&ctz=Europe%2FPrague&showPrint=0&showTitle=0&showTabs=0&showCalendars=0&showTz=0&src=MzFlZWE5OWVkZmYxNzcxYmUxNWJhODc3ZjdjMmY1YjEzNzFlMGE3NDJhZDlkNTRmY2E1MjZkNDFlYWZhNTk5NUBncm91cC5jYWxlbmRhci5nb29nbGUuY29t&color=%230157ff"></iframe>',
+    '<iframe class="calendarModalFrame" title="Google kalendář" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="' + escapeHtml(calendarUrl) + '"></iframe>',
     '</div>',
     '</div>'
   ].join('');

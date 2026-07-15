@@ -1,3 +1,10 @@
+## RaK 1.2 (1.199)
+
+- Administrace / Odkazy: do správy odkazů přidaný Kalendář, včetně Google embed odkazu pro modal v aplikaci.
+- Kalendář: iframe už neobsahuje pevně zapsané URL v HTML; při otevření bere uložený admin odkaz a bezpečně ho omezuje na povolené hosty.
+- Supabase: kalendářový odkaz se ukládá v existujícím `external_links_settings`, bez změny databázového schématu.
+- Release metadata sjednocená na `RaK 1.2 (1.199)`, technická verze `1.2.199`, cache `v1.2-1.199`.
+
 ## RaK 1.2 (1.198)
 
 - Administrace: přidaná sekce Výplata pro nastavení výchozího pořadí pracovního dne v měsíci a ručních měsíčních výjimek.

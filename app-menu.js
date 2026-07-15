@@ -294,7 +294,7 @@ function buildAdminHandoverChecklistHtml(monthKey) {
     {
       ok: true,
       title: 'Externí odkazy',
-      detail: 'Jídelní lístek, Eportal a Výplata se dají upravit bez zásahu do souborů.',
+      detail: 'Jídelní lístek, Eportal, Výplata a Kalendář se dají upravit bez zásahu do souborů.',
       action: 'open-external-links',
       actionLabel: 'Odkazy'
     },
@@ -509,7 +509,7 @@ function renderAdminMenuBody(body, section) {
     '<div class="appMenuCard appMenuAdminCard adminExternalLinksCard">',
     '  <div class="appMenuCardTitle">Odkazy</div>',
     '  <div class="appMenuText">',
-    '    <div>Tady nastavíš odkazy na jídelní lístek, Eportal a výplatní portál. Změna se projeví na kartách na hlavní obrazovce.</div>',
+    '    <div>Tady nastavíš odkazy na jídelní lístek, Eportal, výplatní portál a vložený Google kalendář. Změna se projeví v běžné aplikaci.</div>',
     '    <div class="smallText" id="adminOnlineSaveStatus">Bez uložené změny zůstávají původní odkazy.</div>',
     '  </div>',
     buildAdminExternalLinksSettingsHtml(),
