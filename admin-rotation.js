@@ -337,7 +337,7 @@ function buildAdminRotationOvertimeRowHtml(entry, index, year) {
 function buildAdminRotationOvertimeSettingsHtml() {
   const entries = getAdminRotationOvertimeEntries().slice().sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
   const currentYear = new Date().getFullYear();
-  const yearSet = new Set([String(currentYear), String(currentYear + 1)]);
+  const yearSet = new Set([String(currentYear)]);
   entries.forEach((entry) => {
     const match = String(entry.date || '').match(/^(\d{4})-/);
     if (match) yearSet.add(match[1]);

@@ -531,6 +531,24 @@ function formatFoodSpecialSundayDates() {
     .join(', ');
 }
 
+function foodTodayIso() {
+  const now = getPragueNow(new Date());
+  return foodIsoDate(now);
+}
+
+function formatFoodFutureSpecialSundayDates() {
+  const todayIso = foodTodayIso();
+  return Array.from(getFoodSpecialDateSet())
+    .filter((value) => String(value || '').trim() >= todayIso)
+    .sort()
+    .map((value) => {
+      const parts = String(value || '').split('-');
+      if (parts.length !== 3) return value;
+      return String(Number(parts[2])) + '.' + String(Number(parts[1])) + '.' + parts[0];
+    })
+    .join(', ');
+}
+
 function isFoodDayInsideGroup(dayIndex, group) {
   if (!group) return false;
   if (group.startDay <= group.endDay) {
@@ -613,6 +631,7 @@ function buildFoodRegularScheduleGroups(location) {
 function buildFoodSpecialSundaySection(location, highlight) {
   const specialWindows = getFoodOvertimeWindows(location);
   if (!Array.isArray(specialWindows) || !specialWindows.length) return '';
+  const futureDatesText = formatFoodFutureSpecialSundayDates();
   const regularSundayWindows = getFoodRegularWindows(location, 0);
   const regularSet = new Set((Array.isArray(regularSundayWindows) ? regularSundayWindows : []).map(foodWindowSignature));
   const changedWindows = specialWindows.filter((window) => isFoodOvertimeWindow(window, regularSet));
@@ -631,7 +650,7 @@ function buildFoodSpecialSundaySection(location, highlight) {
     '<div class="foodScheduleDay">Neděle (přesčas)</div>',
     '<div class="foodScheduleWindows">' + lines + '</div>',
     '</div>',
-    '<div class="smallText uMt8">Seznam přesčasových nedělí: ' + escapeHtml(formatFoodSpecialSundayDates()) + '</div>'
+    '<div class="smallText uMt8">Budoucí přesčasové neděle: ' + escapeHtml(futureDatesText || 'žádné') + '</div>'
   ].join('');
 }
 

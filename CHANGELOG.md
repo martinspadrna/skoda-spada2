@@ -1,3 +1,10 @@
+## RaK 1.2 (1.191)
+
+- Kantýna / jídelna: veřejný přehled přesčasových nedělí nově ukazuje jen dnešní a budoucí termíny; starší termíny zůstávají uložené, ale v seznamu se nezobrazují.
+- Administrace: Přesčasy jsou samostatná položka hlavního admin menu, ne tlačítko uvnitř Rozpisů.
+- Administrace / Přesčasy: roční skupiny se tvoří podle skutečně zadaných termínů; základně je vidět aktuální rok a další rok se objeví, jakmile v něm vznikne přesčas.
+- Release metadata sjednocená na `RaK 1.2 (1.191)`, technická verze `1.2.191`, cache `v1.2-1.191`.
+
 ## RaK 1.2 (1.190)
 
 - Administrace / Kantýna / jídelna: seznam přesčasových nedělí v tabulce ukazuje jen dnešní a budoucí termíny; starší uložené termíny zůstávají zachované při uložení.

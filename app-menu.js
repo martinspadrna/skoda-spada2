@@ -209,6 +209,7 @@ function renderAdminMenuBody(body, section) {
     '  <div class="appMenuSettingsList">',
     '    <button type="button" class="appMenuAction" data-admin-action="open-machines">Nastavení strojů</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-food">Kantýna / jídelna</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="open-overtime">Přesčasy</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-vacation">Dovolená / odstávky</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-rotation">Rozpisy</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-backups">Zálohy rozpisů</button>',
@@ -282,7 +283,6 @@ function renderAdminMenuBody(body, section) {
     '  <div class="appMenuActionRow">',
     '    <button type="button" class="appMenuAction" data-admin-action="load-month">Načíst měsíc</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="generate-rotation">Vygenerovat návrh</button>',
-    '    <button type="button" class="appMenuAction" data-admin-action="open-overtime">Přesčasy</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="load-online">Načíst online</button>',
     '    <button type="button" class="appMenuAction isActive" data-admin-action="save-rotation">Uložit rozpis</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
@@ -293,7 +293,7 @@ function renderAdminMenuBody(body, section) {
 
   const overtimeHtml = [
     '<div class="appMenuCard appMenuAdminCard adminRotationOvertimeCard">',
-    '  <div class="appMenuCardTitle">Přesčasy rozpisu</div>',
+    '  <div class="appMenuCardTitle">Přesčasy</div>',
     '  <div class="appMenuText">',
     '    <div>Tady si spravuješ přesčasové neděle pro rozpisy a statistiky. Přepínač TO říká, jestli jde přesčas na tvrdotu.</div>',
     '    <div class="smallText" id="adminOnlineSaveStatus">Změny se uloží přes stávající nastavení strojů, bez změny databáze.</div>',
@@ -302,7 +302,7 @@ function renderAdminMenuBody(body, section) {
     '  <div class="appMenuActionRow">',
     '    <button type="button" class="appMenuAction" data-admin-action="load-overtime-settings">Načíst online</button>',
     '    <button type="button" class="appMenuAction isActive" data-admin-action="save-overtime-settings">Uložit přesčasy</button>',
-    '    <button type="button" class="appMenuAction" data-admin-action="open-rotation">Zpět na rozpisy</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
     '  </div>',
     '</div>'
   ].join('');
