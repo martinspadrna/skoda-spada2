@@ -1,7 +1,7 @@
-// RaK 1.2 (1.188) – core stav, verze a sdílené helpery aplikace.
+// RaK 1.2 (1.189) – core stav, verze a sdílené helpery aplikace.
 
 const APP_KEY = "rotace_kalkulacky_state_v123";
-const APP_VERSION = "1.2 (1.188)";
+const APP_VERSION = "1.2 (1.189)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-06-03-" + APP_VERSION;
 window.ROTATION_BUILD = ROTATION_BUILD;
@@ -12,7 +12,7 @@ const SOFT_MACHINE_HEADERS = ["MSKC01", "MSKC03", "MSKC04", "MFKF06", "MFKF10"];
 const KNOWN_STAT_NAMES = new Set(["Blažek", "Kmínek", "Kříž", "Novotný", "Pech", "Starý", "Střížek", "Synek", "Třasák", "Špadrna"]);
 
 
-const NO_START_HOLIDAYS = new Set(["1-1", "4-3", "4-6", "5-1", "5-8", "7-5", "7-6", "9-28", "10-17", "10-28", "12-24", "12-25", "12-26"]);
+const NO_START_HOLIDAYS = new Set(["1-1", "5-1", "5-8", "7-5", "7-6", "9-28", "10-17", "10-28", "12-24", "12-25", "12-26"]);
 
 function dateKeyMD(date) {
   return (date.getMonth() + 1) + "-" + date.getDate();
@@ -238,12 +238,47 @@ function isShiftStartBlocked(date) {
   return !!getSpecialWorkInfo(date);
 }
 
+function getEasterSundayDate(year) {
+  const y = Number(year);
+  if (!Number.isFinite(y) || y < 1900 || y > 2200) return null;
+  const a = y % 19;
+  const b = Math.floor(y / 100);
+  const c = y % 100;
+  const d = Math.floor(b / 4);
+  const e = b % 4;
+  const f = Math.floor((b + 8) / 25);
+  const g = Math.floor((b - f + 1) / 3);
+  const h = (19 * a + b - d - g + 15) % 30;
+  const i = Math.floor(c / 4);
+  const k = c % 4;
+  const l = (32 + 2 * e + 2 * i - h - k) % 7;
+  const m = Math.floor((a + 11 * h + 22 * l) / 451);
+  const month = Math.floor((h + l - 7 * m + 114) / 31);
+  const day = ((h + l - 7 * m + 114) % 31) + 1;
+  return new Date(y, month - 1, day, 12, 0, 0, 0);
+}
+
+function getMovableHolidayInfo(now) {
+  const source = now instanceof Date ? now : new Date(now || new Date());
+  if (Number.isNaN(source.getTime())) return null;
+  const easterSunday = getEasterSundayDate(source.getFullYear());
+  if (!easterSunday) return null;
+  const goodFriday = new Date(easterSunday);
+  goodFriday.setDate(goodFriday.getDate() - 2);
+  const easterMonday = new Date(easterSunday);
+  easterMonday.setDate(easterMonday.getDate() + 1);
+  const key = dateKeyISO(source);
+  if (key === dateKeyISO(goodFriday)) return { type: "holiday", label: "Velký pátek" };
+  if (key === dateKeyISO(easterMonday)) return { type: "holiday", label: "Velikonoční pondělí" };
+  return null;
+}
+
 function getSpecialWorkInfo(now) {
+  const movableHoliday = getMovableHolidayInfo(now);
+  if (movableHoliday) return movableHoliday;
   const key = dateKeyMD(now);
   const HOLIDAY_LABELS = {
     "1-1": "Nový rok",
-    "4-3": "Velký pátek",
-    "4-6": "Velikonoční pondělí",
     "5-1": "Svátek práce",
     "5-8": "Den vítězství",
     "7-5": "Cyril a Metoděj",

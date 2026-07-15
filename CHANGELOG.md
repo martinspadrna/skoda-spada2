@@ -1,3 +1,9 @@
+## RaK 1.2 (1.189)
+
+- Směny / svátky: Velký pátek a Velikonoční pondělí se nově dopočítávají podle Velikonoc pro daný rok, takže odpočet směn i blokování startu směny funguje i po roce 2026.
+- Pevné svátky zůstávají podle dne a měsíce; pohyblivé velikonoční svátky už nejsou napevno navázané na datum `3.4.` a `6.4.`.
+- Release metadata sjednocená na `RaK 1.2 (1.189)`, technická verze `1.2.189`, cache `v1.2-1.189`.
+
 ## RaK 1.2 (1.188)
 
 - Home / Dovolená: počet zbývajících směn D do CZD/Vánoc bere u vytvořených měsíců skutečné řádky rozpisu, takže ručně zrušená směna nebo odstávka v rozpisu sníží počet.

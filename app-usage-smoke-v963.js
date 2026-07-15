@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.188) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.189) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -221,12 +221,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.188)',
-  appLabel: 'RaK 1.2 (1.188)',
-  packageVersion: '1.2.188',
-  cacheVersion: 'v1.2-1.188',
+  displayVersion: '1.2 (1.189)',
+  appLabel: 'RaK 1.2 (1.189)',
+  packageVersion: '1.2.189',
+  cacheVersion: 'v1.2-1.189',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.188)',
+  changelogHeader: '## RaK 1.2 (1.189)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -335,8 +335,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.188)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.188'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.189)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.189'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1239,6 +1239,11 @@ assertIncludes(appearanceThemeJs, '"id": "light-zigzag"', 'Musí existovat zákl
   assertIncludes(css, '.adminRotationOvertimeHiddenByFilter', 'Filtrované přesčasy se musí skrýt jen vizuálně, ne mazat z DOM');
   assertIncludes(coreJs, 'VACATION_COUNTDOWN_SETTINGS_CATEGORY', 'Dovolena/odstavky musi mit samostatnou kategorii v machine_settings');
   assertIncludes(coreJs, 'function getVacationPeriodForDate', 'Smenny provoz musi umet poznat aktivni dovolenou/odstavku podle data a casu');
+  assertIncludes(coreJs, 'function getEasterSundayDate', 'Pohyblive velikonoční svátky se musí dopočítávat podle roku');
+  assertIncludes(coreJs, 'function getMovableHolidayInfo', 'Velky patek a velikonoční pondeli nesmi byt pevne datum jen pro rok 2026');
+  assertNotIncludes(coreJs, '"4-3": "Velký pátek"', 'Velky patek nesmi zustat jako pevny svatek 4.3.');
+  assertNotIncludes(coreJs, '"4-6": "Velikonoční pondělí"', 'Velikonocni pondeli nesmi zustat jako pevny svatek 4.6.');
+  assertNotIncludes(coreJs, '"4-3", "4-6"', 'Velikonocni svatky nesmi zustat ve fixnim seznamu startu smen.');
   assertIncludes(coreJs, 'const vacationPeriod = typeof getVacationPeriodForDate', 'getSpecialWorkInfo musi blokovat praci behem nastavene dovolene/odstavky');
   assertIncludes(coreJs, 'function getVacationCountdownTeamShiftCount', 'Odpočet dovolené musí počítat zbývající směny D do cílového období');
   assertIncludes(coreJs, 'function countVacationCountdownRotationScheduledShifts', 'Odpočet směn D musí umět pro vytvořený měsíc použít skutečné řádky rozpisu');
