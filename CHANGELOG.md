@@ -1,3 +1,10 @@
+## RaK 1.2 (1.192)
+
+- Administrace: vstup je nově navázaný na admin účet `9811`; při přihlášení tohoto účtu se vyžádá heslo a běžné účty zůstávají bez hesla.
+- Administrace: staré skryté odemčení přes klikání na spodní menu je odstraněné; admin obrazovky se neotevřou bez odemčeného admin účtu.
+- Administrace: hlavní menu je přeskupené na provoz před rozpisem, rozpisy, komunikaci/kontrolu a servis.
+- Release metadata sjednocená na `RaK 1.2 (1.192)`, technická verze `1.2.192`, cache `v1.2-1.192`.
+
 ## RaK 1.2 (1.191)
 
 - Kantýna / jídelna: veřejný přehled přesčasových nedělí nově ukazuje jen dnešní a budoucí termíny; starší termíny zůstávají uložené, ale v seznamu se nezobrazují.

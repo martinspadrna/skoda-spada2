@@ -203,20 +203,24 @@ function renderAdminMenuBody(body, section) {
     '<div class="appMenuCard appMenuAdminCard">',
     '  <div class="appMenuCardTitle">Administrace</div>',
     '  <div class="appMenuText">',
-    '    <div>Nejprve stroje, pak rozpisy a export až nakonec. Všechno se ukládá online přes Supabase.</div>',
+    '    <div>Nejdřív nastav provoz, potom vygeneruj a ulož rozpis. Všechno se ukládá online přes Supabase.</div>',
     '    <div class="smallText" id="adminOnlineSaveStatus">Vyber sekci, kterou chceš upravit.</div>',
     '  </div>',
     '  <div class="appMenuSettingsList">',
+    '    <div class="appMenuSubTitle">Provoz před rozpisem</div>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-machines">Nastavení strojů</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-food">Kantýna / jídelna</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-overtime">Přesčasy</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-vacation">Dovolená / odstávky</button>',
+    '    <div class="appMenuSubTitle">Rozpisy</div>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-rotation">Rozpisy</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-backups">Zálohy rozpisů</button>',
+    '    <div class="appMenuSubTitle">Komunikace a kontrola</div>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-announcement">Oznámení Dashboard</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-usage">Přehled připojení</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-export">Export / import</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-reports">Reporty chyb</button>',
+    '    <div class="appMenuSubTitle">Servis</div>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-service">Servis / synchronizace</button>',
     '  </div>',
     '  <button type="button" class="appMenuAction appMenuBack" data-menu-back="1">Zpět</button>',
@@ -686,6 +690,10 @@ function bindAppMenuHandlers(body) {
         return;
       }
       if (menuAction === 'admin') {
+        if (!(typeof rakAdminCanOpenAdmin === 'function' && rakAdminCanOpenAdmin())) {
+          openAppMenu('menu');
+          return;
+        }
         openAppMenu('admin');
         return;
       }
@@ -1538,6 +1546,7 @@ function openAppMenu(view) {
   page.classList.add('active');
   const body = page.querySelector('#appMenuBody');
   const v = view || 'menu';
+  const adminViews = new Set(['admin', 'admin-machines', 'admin-food', 'admin-vacation', 'admin-rotation', 'admin-overtime', 'admin-backups', 'admin-announcement', 'admin-usage', 'admin-export', 'admin-reports', 'admin-service']);
 
   const versionText = (typeof app !== 'undefined' && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '');
   const contactName = 'Martin Špadrna';
@@ -1546,6 +1555,16 @@ function openAppMenu(view) {
 
   if (body) {
     bindAppMenuHandlers(body);
+    if (adminViews.has(v) && !(typeof rakAdminCanOpenAdmin === 'function' && rakAdminCanOpenAdmin())) {
+      body.innerHTML = [
+        '<div class="appMenuCard appMenuAdminCard">',
+        '  <div class="appMenuCardTitle">Administrace zamčena</div>',
+        '  <div class="appMenuText">Administrace je dostupná jen po přihlášení admin účtem.</div>',
+        '  <button type="button" class="appMenuAction appMenuBack" data-menu-back="1">Zpět</button>',
+        '</div>'
+      ].join('');
+      return;
+    }
     if (v === 'about') {
       body.innerHTML = [
         '<div class="appMenuCard">',
@@ -1721,7 +1740,7 @@ function openAppMenu(view) {
         '  <button type="button" class="appMenuAction" data-menu-action="about">O aplikaci</button>',
         '  <button type="button" class="appMenuAction" data-menu-action="contact">Kontakt</button>',
         '  <button type="button" class="appMenuAction" data-menu-action="bug-report">Pošli mi chybu</button>',
-        (app.adminUnlocked ? '  <button type="button" class="appMenuAction isActive" data-menu-action="admin">Administrace</button>' : ''),
+        ((typeof rakAdminCanOpenAdmin === 'function' && rakAdminCanOpenAdmin()) ? '  <button type="button" class="appMenuAction isActive" data-menu-action="admin">Administrace</button>' : ''),
         '</div>'
       ].join('');
     }

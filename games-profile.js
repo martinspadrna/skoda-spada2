@@ -642,6 +642,7 @@ function gamesSetActiveAccount(accountId) {
   const profile = gamesGetProfile();
   const id = String(accountId || '').trim();
   if (!id || GAMES_ACCOUNT_BLOCKLIST.has(id)) return false;
+  if (typeof rakAdminPromptUnlockForAccount === 'function' && !rakAdminPromptUnlockForAccount(id)) return false;
   const knownAccount = gamesAccountById(id);
   if (!profile.accounts[id]) {
     profile.accounts[id] = gamesMakeAccountEntry(id, knownAccount && knownAccount.name ? knownAccount.name : id);
@@ -681,6 +682,7 @@ function gamesClearActiveAccount() {
   profile.profileVersion = GAMES_PROFILE_RESET_VERSION;
   gamesSaveProfile(profile);
   app.gamesProfile = profile;
+  if (typeof rakAdminLock === 'function') rakAdminLock();
   try {
     if (typeof applyThemePreference === 'function') applyThemePreference(getThemePreference(), false);
     if (typeof applyBackgroundPreference === 'function') applyBackgroundPreference(getBackgroundPreference(), false);
@@ -793,9 +795,18 @@ function gamesRenderAccountChips() {
         return;
       }
       try {
-        gamesSetActiveAccount(found.id);
+        if (!gamesSetActiveAccount(found.id)) {
+          setLoginFeedback('PĹ™ihlĂˇĹˇenĂ­ se nepovedlo');
+          inputEl.focus();
+          inputEl.select();
+          return;
+        }
       } catch (err) {
         console.warn('games account save failed', err);
+        setLoginFeedback('PĹ™ihlĂˇĹˇenĂ­ se nepovedlo');
+        inputEl.focus();
+        inputEl.select();
+        return;
       }
       syncVisibleAccount(found);
       gamesApplyActiveAccountUI(found);
