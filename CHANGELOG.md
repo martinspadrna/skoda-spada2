@@ -1,3 +1,10 @@
+## RaK 1.2 (1.209)
+
+- Administrace: přidaný chráněný panel `Měsíční postup`, který novému správci ukáže pořadí práce pro běžný měsíc: načíst online data, zkontrolovat provoz, doplnit volno a absence, připravit rozpis, uložit až po ruční kontrole a ověřit zálohy/export.
+- Předání správy: měsíční postup je vložený i do panelu `Předání správy`, aby byl vidět spolu s kontrolou předání.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá nový admin-only panel, chráněný view, handler, položku v menu a vlastní styly.
+- Release metadata sjednocená na `RaK 1.2 (1.209)`, technická verze `1.2.209`, cache `v1.2-1.209`.
+
 ## RaK 1.2 (1.208)
 
 - Administrace: odstraněná poslední stará stopa skrytého admin vstupu z karty Kontakt; kontakt už není označený jako tajný admin trigger.

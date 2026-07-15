@@ -566,6 +566,92 @@ function buildAdminHandoverChecklistHtml(monthKey) {
   ].join('');
 }
 
+function adminMonthlyWorkflowItemHtml(item, index) {
+  const state = String(item && item.state || 'todo').trim() || 'todo';
+  const action = String(item && item.action || '').trim();
+  const button = action
+    ? '<button type="button" class="appMenuAction adminMonthlyWorkflowAction" data-admin-action="' + escapeHtml(action) + '">' + escapeHtml(item.actionLabel || 'Otevřít') + '</button>'
+    : '';
+  return [
+    '<div class="adminMonthlyWorkflowItem is' + escapeHtml(state.charAt(0).toUpperCase() + state.slice(1)) + '">',
+    '  <div class="adminMonthlyWorkflowIndex">' + String(index + 1) + '</div>',
+    '  <div class="adminMonthlyWorkflowText">',
+    '    <div class="adminMonthlyWorkflowTitle">' + escapeHtml(item.title || '') + '</div>',
+    '    <div class="smallText">' + escapeHtml(item.detail || '') + '</div>',
+    '  </div>',
+    button,
+    '</div>'
+  ].join('');
+}
+
+function buildAdminMonthlyWorkflowHtml(monthKey) {
+  const rows = Array.isArray(app && app.machineSettingsRows) ? app.machineSettingsRows : [];
+  const month = app && app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
+  const monthReady = !!(month && adminGuideHasMonthRows(month));
+  const foodSnapshot = (typeof getFoodAdminSettingsSnapshot === 'function') ? getFoodAdminSettingsSnapshot() : null;
+  const foodOk = !!(foodSnapshot && Array.isArray(foodSnapshot.locations) && foodSnapshot.locations.length);
+  const overtimeCount = adminGuideOvertimeCount();
+  const vacationCount = adminGuideUpcomingVacationCount();
+  const specialDaysCount = adminGuideUpcomingSpecialDaysCount();
+  const backups = app && app.adminRotationBackupsSnapshot && Array.isArray(app.adminRotationBackupsSnapshot.backups)
+    ? app.adminRotationBackupsSnapshot.backups
+    : [];
+  const monthLabel = String(monthKey || '').trim() || 'vybraný měsíc';
+  const items = [
+    {
+      state: rows.length ? 'ok' : 'warn',
+      title: 'Načíst online data',
+      detail: rows.length ? ('Nastavení je načtené (' + String(rows.length) + ' řádků).') : 'Nejdřív načti online nastavení, ať se nepracuje se starým lokálním stavem.',
+      action: rows.length ? 'open-service' : 'load-machines',
+      actionLabel: rows.length ? 'Servis' : 'Načíst'
+    },
+    {
+      state: foodOk ? 'ok' : 'warn',
+      title: 'Zkontrolovat provoz',
+      detail: foodOk ? ('Kantýna/jídelna je připravená, přesčasových termínů je ' + String(overtimeCount) + '.') : 'Projdi kantýnu, jídelnu a přesčasy ještě před generováním rozpisu.',
+      action: foodOk && overtimeCount ? 'open-overtime' : 'open-food',
+      actionLabel: foodOk && overtimeCount ? 'Přesčasy' : 'Provoz'
+    },
+    {
+      state: (vacationCount || specialDaysCount) ? 'ok' : 'info',
+      title: 'Doplnit volno a absence',
+      detail: (vacationCount || specialDaysCount)
+        ? ('Dovolené/odstávky: ' + String(vacationCount) + ', mimořádné volné dny: ' + String(specialDaysCount) + '.')
+        : 'Pokud je dovolená, odstávka, svátek nebo neplánované volno, doplň to před návrhem rozpisu.',
+      action: vacationCount ? 'open-rotation' : 'open-vacation',
+      actionLabel: vacationCount ? 'Absence' : 'Dovolená'
+    },
+    {
+      state: monthReady ? 'ok' : 'warn',
+      title: 'Připravit rozpis ' + monthLabel,
+      detail: monthReady ? 'Měsíc už má vyplněné směny. Při přegenerování zkontroluj návrh před uložením.' : 'Otevři rozpis, vyber měsíc, doplň absence a teprve potom vytvoř návrh.',
+      action: 'open-rotation',
+      actionLabel: 'Rozpis'
+    },
+    {
+      state: monthReady ? 'ok' : 'todo',
+      title: 'Uložit až po ruční kontrole',
+      detail: monthReady ? 'Po uložení ověř zelenou synchronizaci na home a případně stav v servisu.' : 'Návrh se nesmí brát jako hotový, dokud ho správce ručně nezkontroluje a neuloží.',
+      action: monthReady ? 'open-service' : 'open-rotation',
+      actionLabel: monthReady ? 'Servis' : 'Rozpis'
+    },
+    {
+      state: backups.length ? 'ok' : 'info',
+      title: 'Zálohy a export',
+      detail: backups.length ? ('Načtených záloh: ' + String(backups.length) + '. Export udělej až po finální kontrole.') : 'Před větší změnou ověř zálohy. Po dokončení můžeš stáhnout Excel nebo ZIP.',
+      action: backups.length ? 'open-export' : 'open-backups',
+      actionLabel: backups.length ? 'Export' : 'Zálohy'
+    }
+  ];
+  return [
+    '<div class="adminMonthlyWorkflow">',
+    '  <div class="appMenuSubTitle">Měsíční postup</div>',
+    '  <div class="smallText uMb10">Krátký pořádek práce pro správce. Panel nic sám neukládá, jen vede do chráněných admin sekcí.</div>',
+    items.map(adminMonthlyWorkflowItemHtml).join(''),
+    '</div>'
+  ].join('');
+}
+
 function buildAdminHandoverRunbookHtml(monthKey) {
   const monthLabel = String(monthKey || '').trim() || 'vybraný měsíc';
   const steps = [
@@ -915,6 +1001,7 @@ function renderAdminMenuBody(body, section) {
     buildAdminMenuSectionHtml('2. Rozpisy a předání', 'Tvorba, kontrola, zálohy a export rozpisu.', [
       { action: 'open-rotation', label: 'Rozpisy' },
       { action: 'open-generator-settings', label: 'Pravidla generátoru' },
+      { action: 'open-monthly-workflow', label: 'Měsíční postup' },
       { action: 'open-handover', label: 'Předání správy' },
       { action: 'open-admin-manual', label: 'Příručka správce' },
       { action: 'open-settings-map', label: 'Kde co upravit' },
@@ -1140,11 +1227,28 @@ function renderAdminMenuBody(body, section) {
     '    <div class="smallText" id="adminOnlineSaveStatus">Všechny kroky vedou jen do administrace. Běžná aplikace se odsud nemění bez uložení v konkrétní sekci.</div>',
     '  </div>',
     buildAdminHandoverAuditHtml(monthKey),
+    buildAdminMonthlyWorkflowHtml(monthKey),
     buildAdminHandoverChecklistHtml(monthKey),
     buildAdminHandoverRunbookHtml(monthKey),
     '  <div class="appMenuActionRow">',
     '    <button type="button" class="appMenuAction isActive" data-admin-action="download-handover-status">Stáhnout stav</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="load-machines">Načíst online</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
+    '  </div>',
+    '</div>'
+  ].join('');
+
+  const monthlyWorkflowHtml = [
+    '<div class="appMenuCard appMenuAdminCard adminMonthlyWorkflowCard">',
+    '  <div class="appMenuCardTitle">Měsíční postup</div>',
+    '  <div class="appMenuText">',
+    '    <div>Stručný postup pro člověka, který každý měsíc jen načte data, doplní provoz a absence, vygeneruje rozpis, uloží ho a ověří synchronizaci.</div>',
+    '    <div class="smallText" id="adminOnlineSaveStatus">Tahle obrazovka sama nic nemění. Každé tlačítko jen otevře odpovídající admin sekci.</div>',
+    '  </div>',
+    buildAdminMonthlyWorkflowHtml(monthKey),
+    '  <div class="appMenuActionRow">',
+    '    <button type="button" class="appMenuAction" data-admin-action="open-rotation">Rozpisy</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="open-handover">Předání správy</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
     '  </div>',
     '</div>'
@@ -1261,6 +1365,8 @@ function renderAdminMenuBody(body, section) {
     body.innerHTML = backupsHtml;
   } else if (mode === 'handover') {
     body.innerHTML = handoverHtml;
+  } else if (mode === 'monthly-workflow') {
+    body.innerHTML = monthlyWorkflowHtml;
   } else if (mode === 'manual') {
     body.innerHTML = manualHtml;
   } else if (mode === 'settings-map') {
@@ -2008,6 +2114,10 @@ function bindAppMenuHandlers(body) {
         openAppMenu('admin-generator-settings');
         return;
       }
+      if (adminAction === 'open-monthly-workflow') {
+        openAppMenu('admin-monthly-workflow');
+        return;
+      }
       if (adminAction === 'open-handover') {
         openAppMenu('admin-handover');
         return;
@@ -2594,7 +2704,7 @@ function openAppMenu(view) {
   page.classList.add('active');
   const body = page.querySelector('#appMenuBody');
   const v = view || 'menu';
-  const adminViews = new Set(['admin', 'admin-machines', 'admin-food', 'admin-vacation', 'admin-special-days', 'admin-rotation', 'admin-overtime', 'admin-generator-settings', 'admin-handover', 'admin-manual', 'admin-settings-map', 'admin-accounts', 'admin-external-links', 'admin-app-contact', 'admin-payroll-settings', 'admin-backups', 'admin-announcement', 'admin-usage', 'admin-export', 'admin-reports', 'admin-service']);
+  const adminViews = new Set(['admin', 'admin-machines', 'admin-food', 'admin-vacation', 'admin-special-days', 'admin-rotation', 'admin-overtime', 'admin-generator-settings', 'admin-monthly-workflow', 'admin-handover', 'admin-manual', 'admin-settings-map', 'admin-accounts', 'admin-external-links', 'admin-app-contact', 'admin-payroll-settings', 'admin-backups', 'admin-announcement', 'admin-usage', 'admin-export', 'admin-reports', 'admin-service']);
 
   const versionText = (typeof app !== 'undefined' && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '');
   const contact = typeof getRakAppContactSettings === 'function'
@@ -2771,6 +2881,16 @@ function openAppMenu(view) {
         } catch (err) {
           console.warn('Admin handover preload failed', err);
           renderAdminMenuBody(body, 'handover');
+        }
+      })();
+    } else if (v === 'admin-monthly-workflow') {
+      void (async () => {
+        try {
+          await loadAdminMachineSettingsFromSupabase();
+          renderAdminMenuBody(body, 'monthly-workflow');
+        } catch (err) {
+          console.warn('Admin monthly workflow preload failed', err);
+          renderAdminMenuBody(body, 'monthly-workflow');
         }
       })();
     } else if (v === 'admin-manual') {

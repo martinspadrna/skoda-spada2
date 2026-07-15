@@ -802,6 +802,56 @@
   min-height:34px !important;
   padding:7px 10px !important;
 }
+.adminMonthlyWorkflow{
+  display:grid !important;
+  gap:8px !important;
+  margin:12px 0 !important;
+}
+.adminMonthlyWorkflowItem{
+  display:grid !important;
+  grid-template-columns:32px minmax(0,1fr) auto !important;
+  gap:9px !important;
+  align-items:center !important;
+  padding:10px !important;
+  border:1px solid rgba(180,255,190,.22) !important;
+  border-radius:8px !important;
+  background:rgba(255,255,255,.045) !important;
+}
+.adminMonthlyWorkflowItem.isWarn{
+  border-color:rgba(255,210,120,.44) !important;
+  background:rgba(255,185,80,.07) !important;
+}
+.adminMonthlyWorkflowItem.isInfo,
+.adminMonthlyWorkflowItem.isTodo{
+  border-color:rgba(175,210,255,.28) !important;
+}
+.adminMonthlyWorkflowIndex{
+  display:grid !important;
+  place-items:center !important;
+  width:30px !important;
+  height:30px !important;
+  border-radius:999px !important;
+  color:#dfffea !important;
+  background:rgba(95,255,130,.18) !important;
+  font-size:13px !important;
+  font-weight:900 !important;
+}
+.adminMonthlyWorkflowItem.isWarn .adminMonthlyWorkflowIndex{
+  color:#fff4c6 !important;
+  background:rgba(255,190,80,.18) !important;
+}
+.adminMonthlyWorkflowText{
+  min-width:0 !important;
+}
+.adminMonthlyWorkflowTitle{
+  font-weight:900 !important;
+  line-height:1.15 !important;
+}
+#appMenuBody .adminMonthlyWorkflowAction{
+  min-width:78px !important;
+  min-height:34px !important;
+  padding:7px 9px !important;
+}
 .adminManualBox{
   display:grid !important;
   gap:9px !important;
@@ -923,6 +973,13 @@
   }
   .adminHandoverActionRow .appMenuAction{
     width:100% !important;
+  }
+  .adminMonthlyWorkflowItem{
+    grid-template-columns:30px minmax(0,1fr) !important;
+  }
+  #appMenuBody .adminMonthlyWorkflowAction{
+    grid-column:2 !important;
+    justify-self:start !important;
   }
   .adminManualActionRow{
     grid-template-columns:1fr !important;
