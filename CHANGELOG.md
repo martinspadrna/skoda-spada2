@@ -1,3 +1,9 @@
+## RaK 1.2 (1.194)
+
+- Administrace: úvodní stránka má nový průvodce správou, který ukazuje stav provozního nastavení, přesčasů, dovolených/odstávek, vybraného rozpisu, záloh a exportu.
+- Administrace: položky průvodce vedou přímo do odpovídajících sekcí, aby nový správce nemusel hledat správný postup ručně.
+- Release metadata sjednocená na `RaK 1.2 (1.194)`, technická verze `1.2.194`, cache `v1.2-1.194`.
+
 ## RaK 1.2 (1.193)
 
 - Administrace / Správci: hlavní admin účet může přidat další admin účty, nastavit jim heslo a zapnout/vypnout jejich přístup.

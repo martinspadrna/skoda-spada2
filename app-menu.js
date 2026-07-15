@@ -190,6 +190,134 @@ async function restoreAdminRotationBackupFromSupabase(backupId) {
   return result;
 }
 
+function adminGuideHasMonthRows(month) {
+  const hardRows = Array.isArray(month && month.hard && month.hard.rows) ? month.hard.rows : [];
+  const softRows = Array.isArray(month && month.soft && month.soft.rows) ? month.soft.rows : [];
+  return hardRows.concat(softRows).some((row) => {
+    const cells = Array.isArray(row && row.cells) ? row.cells : [];
+    return cells.some((cell) => String(cell || '').trim());
+  });
+}
+
+function adminGuideUpcomingVacationCount() {
+  try {
+    const periods = typeof getVacationCountdownPeriods === 'function' ? getVacationCountdownPeriods() : [];
+    const now = Date.now();
+    return (Array.isArray(periods) ? periods : []).filter((period) => {
+      const end = period && period.end instanceof Date ? period.end.getTime() : Date.parse(String(period && period.end || ''));
+      return Number.isFinite(end) && end >= now;
+    }).length;
+  } catch (err) {
+    return 0;
+  }
+}
+
+function adminGuideOvertimeCount() {
+  try {
+    const settings = typeof getRotationOvertimeSettings === 'function' ? getRotationOvertimeSettings() : null;
+    return Array.isArray(settings && settings.entries) ? settings.entries.length : 0;
+  } catch (err) {
+    return 0;
+  }
+}
+
+function adminGuideItemHtml(item) {
+  const ok = !!(item && item.ok);
+  const action = String(item && item.action || '').trim();
+  const button = action
+    ? '<button type="button" class="appMenuAction adminGuideAction" data-admin-action="' + escapeHtml(action) + '">' + escapeHtml(item.actionLabel || 'Otevřít') + '</button>'
+    : '';
+  return [
+    '<div class="adminGuideItem ' + (ok ? 'isOk' : 'needsAction') + '">',
+    '  <div class="adminGuideState">' + (ok ? 'OK' : '!') + '</div>',
+    '  <div class="adminGuideText">',
+    '    <div class="adminGuideTitle">' + escapeHtml(item.title || '') + '</div>',
+    '    <div class="smallText">' + escapeHtml(item.detail || '') + '</div>',
+    '  </div>',
+    button,
+    '</div>'
+  ].join('');
+}
+
+function buildAdminHandoverChecklistHtml(monthKey) {
+  const rows = Array.isArray(app && app.machineSettingsRows) ? app.machineSettingsRows : [];
+  const month = app && app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
+  const foodSnapshot = (typeof getFoodAdminSettingsSnapshot === 'function') ? getFoodAdminSettingsSnapshot() : null;
+  const overtimeCount = adminGuideOvertimeCount();
+  const vacationCount = adminGuideUpcomingVacationCount();
+  const backups = app && app.adminRotationBackupsSnapshot && Array.isArray(app.adminRotationBackupsSnapshot.backups)
+    ? app.adminRotationBackupsSnapshot.backups
+    : [];
+  const items = [
+    {
+      ok: rows.length > 0,
+      title: 'Online nastavení',
+      detail: rows.length ? ('Načteno ' + String(rows.length) + ' řádků nastavení.') : 'Nejdřív načti online nastavení.',
+      action: 'open-service',
+      actionLabel: 'Servis'
+    },
+    {
+      ok: !!(foodSnapshot && Array.isArray(foodSnapshot.locations) && foodSnapshot.locations.length),
+      title: 'Kantýna / jídelna',
+      detail: foodSnapshot && foodSnapshot.locations ? 'Provozní časy jsou dostupné.' : 'Zkontroluj provozní časy.',
+      action: 'open-food',
+      actionLabel: 'Časy'
+    },
+    {
+      ok: overtimeCount > 0,
+      title: 'Přesčasy',
+      detail: overtimeCount ? ('Evidováno ' + String(overtimeCount) + ' přesčasových termínů.') : 'Doplň přesčasové neděle.',
+      action: 'open-overtime',
+      actionLabel: 'Přesčasy'
+    },
+    {
+      ok: vacationCount > 0,
+      title: 'Dovolená / odstávky',
+      detail: vacationCount ? ('Nadcházejících období: ' + String(vacationCount) + '.') : 'Doplň nejbližší dovolenou nebo odstávku.',
+      action: 'open-vacation',
+      actionLabel: 'Dovolená'
+    },
+    {
+      ok: !!(month && adminGuideHasMonthRows(month)),
+      title: 'Rozpis ' + String(monthKey || ''),
+      detail: month ? (adminGuideHasMonthRows(month) ? 'Vybraný měsíc má vyplněné směny.' : 'Měsíc existuje, ale vypadá prázdně.') : 'Vybraný měsíc zatím není vytvořený.',
+      action: 'open-rotation',
+      actionLabel: 'Rozpis'
+    },
+    {
+      ok: backups.length > 0,
+      title: 'Zálohy',
+      detail: backups.length ? ('Načtených záloh: ' + String(backups.length) + '.') : 'Před předáním si ověř, že jsou zálohy dostupné.',
+      action: 'open-backups',
+      actionLabel: 'Zálohy'
+    },
+    {
+      ok: !!(month && adminGuideHasMonthRows(month)),
+      title: 'Export / předání',
+      detail: month && adminGuideHasMonthRows(month) ? 'Rozpis je připravený k exportu.' : 'Export dělej až po kontrole rozpisu.',
+      action: 'open-export',
+      actionLabel: 'Export'
+    }
+  ];
+  if (typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins()) {
+    items.push({
+      ok: true,
+      title: 'Správci',
+      detail: 'Hlavní admin může přidat nebo vypnout další správce.',
+      action: 'open-admin-accounts',
+      actionLabel: 'Správci'
+    });
+  }
+  const done = items.filter((item) => item.ok).length;
+  return [
+    '<div class="adminGuideBox">',
+    '  <div class="appMenuSubTitle">Průvodce správou</div>',
+    '  <div class="smallText uMb10">Postup pro předání aplikace: provozní nastavení, přesčasy, dovolené, rozpis, zálohy a export. Hotovo ' + String(done) + '/' + String(items.length) + '.</div>',
+    items.map(adminGuideItemHtml).join(''),
+    '</div>'
+  ].join('');
+}
+
 function renderAdminMenuBody(body, section) {
   const mode = String(section || 'home').trim() || 'home';
   const months = getAdminRotationMonthKeys();
@@ -206,6 +334,7 @@ function renderAdminMenuBody(body, section) {
     '    <div>Nejdřív nastav provoz, potom vygeneruj a ulož rozpis. Všechno se ukládá online přes Supabase.</div>',
     '    <div class="smallText" id="adminOnlineSaveStatus">Vyber sekci, kterou chceš upravit.</div>',
     '  </div>',
+    buildAdminHandoverChecklistHtml(monthKey),
     '  <div class="appMenuSettingsList">',
     '    <div class="appMenuSubTitle">Provoz před rozpisem</div>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-machines">Nastavení strojů</button>',

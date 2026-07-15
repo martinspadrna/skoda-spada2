@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.193) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.194) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -31,6 +31,7 @@ const stylesOverridesCss = read('styles-overrides.css');
 const dashboardFitCss = read('styles-dashboard-fit.css');
 const dashboardPolishCss = read('styles-dashboard-polish.css');
 const menuPolishCss = read('styles-menu-polish.css');
+const stylesAdminPolishCss = read('styles-admin-polish.css');
 const stylesGamesCss = read('styles-games.css');
 const stylesReleasePolishCss = read('styles-release-polish.css');
 const rotaceJs = read('rotace.js');
@@ -222,12 +223,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.193)',
-  appLabel: 'RaK 1.2 (1.193)',
-  packageVersion: '1.2.193',
-  cacheVersion: 'v1.2-1.193',
+  displayVersion: '1.2 (1.194)',
+  appLabel: 'RaK 1.2 (1.194)',
+  packageVersion: '1.2.194',
+  cacheVersion: 'v1.2-1.194',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.193)',
+  changelogHeader: '## RaK 1.2 (1.194)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -336,8 +337,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.193)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.193'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.194)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.194'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1359,6 +1360,30 @@ function assertAdminAccountLoginContractV1141() {
   assertNotIncludes(adminUnlockJs, 'tapCount', 'Admin odemceni uz nesmi pouzivat tajny pocet kliknuti');
 }
 
+function assertAdminHandoverGuideContractV1142() {
+  assertIncludes(ui, 'function buildAdminHandoverChecklistHtml', 'Admin uvod musi mit pruvodce pro predani spravy');
+  assertIncludes(ui, 'function adminGuideHasMonthRows', 'Pruvodce musi umet poznat, jestli ma vybrany mesic rozpis');
+  assertIncludes(ui, 'function adminGuideUpcomingVacationCount', 'Pruvodce musi ukazovat stav dovolene a odstavek');
+  assertIncludes(ui, 'function adminGuideOvertimeCount', 'Pruvodce musi ukazovat stav prescasu');
+  assertIncludes(ui, 'adminGuideBox', 'Admin uvod musi vykreslovat box pruvodce');
+  [
+    'open-service',
+    'open-food',
+    'open-overtime',
+    'open-vacation',
+    'open-rotation',
+    'open-backups',
+    'open-export',
+    'open-admin-accounts'
+  ].forEach((action) => {
+    assertIncludes(ui, 'data-admin-action="' + action + '"', 'Pruvodce musi obsahovat akci ' + action);
+    assertIncludes(ui, "adminAction === '" + action + "'", 'Admin menu musi umet obslouzit akci ' + action);
+  });
+  assertIncludes(ui, 'rakAdminCanManageAdmins()', 'Polozka Spravci v pruvodci smi byt jen pro owner admina');
+  assertIncludes(stylesAdminPolishCss, '.adminGuideItem', 'Pruvodce musi mit vlastni admin-only styl polozek');
+  assertIncludes(stylesAdminPolishCss, '.adminGuideAction', 'Pruvodce musi mit vlastni styl akcnich tlacitek');
+}
+
 assertDashboardCssGuardSeriesCompleteV1100();
 assertReleaseMetadataContractV199();
 assertBrusyChoiceSizeContractV1101();
@@ -1391,8 +1416,9 @@ assertRotationOvertimeShiftFilterContractV1128();
 assertRotationOvertimeDefaults2025ContractV1129();
 assertLightPatternThemeContractV1131();
 assertAdminAccountLoginContractV1141();
+assertAdminHandoverGuideContractV1142();
 
-console.log('app-usage-smoke-v963 OK + rotation-generator-wizard-v1108-guard + rotation-generator-absence-state-v1109-guard + rotation-generator-wizard-run-v1110-guard + rotation-generator-wizard-state-v1111-guard + rotation-generator-month-balance-v1112-guard + rotation-generator-rules-v1113-guard + rotation-generator-rules-v1114-guard + rotation-generator-rules-v1115-guard + rotation-generator-rules-v1116-guard + rotation-generator-rules-v1117-guard + dashboard-percent-empty-cells-v1119-guard + stats-press-machine-split-v1123-guard + rotation-overtime-shift-filter-v1128-guard + rotation-overtime-defaults-2025-v1129-guard + rotation-absence-export-ytd-generator-theme-v1130-guard + light-pattern-theme-v1131-guard + admin-account-login-v1141-guard + rotation-generator-excel-copy-v1138-guard + games-active-account-direct-stats-v1144-guard + sudoku-completion-save-v1148-guard + sudoku-random-puzzle-v1148-guard + game-time-format-v1144-guard + lada-manual-override-v1144-guard + lada-smooth-performance-v1144-guard + dashboard-css-contract-guard + appearance-reward-contract + rotation-export-summary-simple-guard + rotation-export-glass-guard + appearance-readability-guard + css-layer-order-v194-guard + dashboard-owner-registry-v195-guard + dashboard-overrides-selector-lock-v196-guard + dashboard-scope-v197-guard + dashboard-release-isolation-v198-guard + dashboard-css-guard-series-v1100-complete + release-metadata-v199-guard + brusy-choice-size-v1101-guard + fixed-app-background-v1101-guard + name-choice-fit-v1102-guard + browser-smoke-v1103-guard + dashboard-empty-absence-text-v1104-guard + rotace-empty-absence-text-v1105-guard + appearance-update-persistence-v1105-guard + rotation-generator-v1106-guard + rotation-generator-rules-v1107-guard + memory-8x8-square-fit-v1153-guard + memory-total-time-no-5s-v1153-guard + no-visual-owner-drift-guard OK');
+console.log('app-usage-smoke-v963 OK + rotation-generator-wizard-v1108-guard + rotation-generator-absence-state-v1109-guard + rotation-generator-wizard-run-v1110-guard + rotation-generator-wizard-state-v1111-guard + rotation-generator-month-balance-v1112-guard + rotation-generator-rules-v1113-guard + rotation-generator-rules-v1114-guard + rotation-generator-rules-v1115-guard + rotation-generator-rules-v1116-guard + rotation-generator-rules-v1117-guard + dashboard-percent-empty-cells-v1119-guard + stats-press-machine-split-v1123-guard + rotation-overtime-shift-filter-v1128-guard + rotation-overtime-defaults-2025-v1129-guard + rotation-absence-export-ytd-generator-theme-v1130-guard + light-pattern-theme-v1131-guard + admin-account-login-v1141-guard + admin-handover-guide-v1142-guard + rotation-generator-excel-copy-v1138-guard + games-active-account-direct-stats-v1144-guard + sudoku-completion-save-v1148-guard + sudoku-random-puzzle-v1148-guard + game-time-format-v1144-guard + lada-manual-override-v1144-guard + lada-smooth-performance-v1144-guard + dashboard-css-contract-guard + appearance-reward-contract + rotation-export-summary-simple-guard + rotation-export-glass-guard + appearance-readability-guard + css-layer-order-v194-guard + dashboard-owner-registry-v195-guard + dashboard-overrides-selector-lock-v196-guard + dashboard-scope-v197-guard + dashboard-release-isolation-v198-guard + dashboard-css-guard-series-v1100-complete + release-metadata-v199-guard + brusy-choice-size-v1101-guard + fixed-app-background-v1101-guard + name-choice-fit-v1102-guard + browser-smoke-v1103-guard + dashboard-empty-absence-text-v1104-guard + rotace-empty-absence-text-v1105-guard + appearance-update-persistence-v1105-guard + rotation-generator-v1106-guard + rotation-generator-rules-v1107-guard + memory-8x8-square-fit-v1153-guard + memory-total-time-no-5s-v1153-guard + no-visual-owner-drift-guard OK');
 
 // v1.136 guard: soft-core fixed cycle + no TNKS balancing + removed AMOLED black.
 assertIncludes(ui, 'RAK_ROTATION_GENERATOR_RULES_V1135', 'Chybí pravidla generátoru v1.136');

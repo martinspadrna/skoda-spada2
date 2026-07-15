@@ -628,3 +628,58 @@
   .adminRotationOvertimeTable th,
   .adminRotationOvertimeTable td{padding:5px 4px;}
 }
+
+/* v1.194 - Administrace: pruvodce spravou jen v admin menu. */
+.adminGuideBox{
+  display:grid !important;
+  gap:8px !important;
+  margin:12px 0 14px !important;
+}
+.adminGuideItem{
+  display:grid !important;
+  grid-template-columns:34px minmax(0,1fr) auto !important;
+  gap:8px !important;
+  align-items:center !important;
+  padding:9px !important;
+  border:1px solid rgba(180,255,190,.24) !important;
+  border-radius:8px !important;
+  background:rgba(255,255,255,.045) !important;
+}
+.adminGuideItem.needsAction{
+  border-color:rgba(255,210,120,.42) !important;
+}
+.adminGuideState{
+  display:grid !important;
+  place-items:center !important;
+  width:30px !important;
+  height:30px !important;
+  border-radius:999px !important;
+  font-weight:900 !important;
+  font-size:12px !important;
+  color:#dfffea !important;
+  background:rgba(95,255,130,.18) !important;
+}
+.adminGuideItem.needsAction .adminGuideState{
+  color:#fff4c6 !important;
+  background:rgba(255,190,80,.18) !important;
+}
+.adminGuideText{
+  min-width:0 !important;
+}
+.adminGuideTitle{
+  font-weight:900 !important;
+  line-height:1.15 !important;
+}
+#appMenuBody .adminGuideAction{
+  min-width:74px !important;
+  padding:7px 9px !important;
+}
+@media (max-width:430px){
+  .adminGuideItem{
+    grid-template-columns:30px minmax(0,1fr) !important;
+  }
+  #appMenuBody .adminGuideAction{
+    grid-column:2 !important;
+    justify-self:start !important;
+  }
+}
