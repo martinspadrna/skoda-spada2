@@ -285,6 +285,13 @@ function buildAdminHandoverChecklistHtml(monthKey) {
       actionLabel: 'Rozpis'
     },
     {
+      ok: true,
+      title: 'Pravidla generátoru',
+      detail: 'Pořadí lidí a strojů lze zkontrolovat před vytvořením návrhu.',
+      action: 'open-generator-settings',
+      actionLabel: 'Pravidla'
+    },
+    {
       ok: backups.length > 0,
       title: 'Zálohy',
       detail: backups.length ? ('Načtených záloh: ' + String(backups.length) + '.') : 'Před předáním si ověř, že jsou zálohy dostupné.',
@@ -343,6 +350,7 @@ function renderAdminMenuBody(body, section) {
     '    <button type="button" class="appMenuAction" data-admin-action="open-vacation">Dovolená / odstávky</button>',
     '    <div class="appMenuSubTitle">Rozpisy</div>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-rotation">Rozpisy</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="open-generator-settings">Pravidla generátoru</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-backups">Zálohy rozpisů</button>',
     '    <div class="appMenuSubTitle">Komunikace a kontrola</div>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-announcement">Oznámení Dashboard</button>',
@@ -436,6 +444,22 @@ function renderAdminMenuBody(body, section) {
     '  <div class="appMenuActionRow">',
     '    <button type="button" class="appMenuAction" data-admin-action="load-overtime-settings">Načíst online</button>',
     '    <button type="button" class="appMenuAction isActive" data-admin-action="save-overtime-settings">Uložit přesčasy</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
+    '  </div>',
+    '</div>'
+  ].join('');
+
+  const generatorSettingsHtml = [
+    '<div class="appMenuCard appMenuAdminCard adminGeneratorSettingsCard">',
+    '  <div class="appMenuCardTitle">Pravidla generátoru</div>',
+    '  <div class="appMenuText">',
+    '    <div>Tady nastavuješ pořadí lidí a strojů, podle kterých se skládá nový návrh rozpisu. Bez uložené změny zůstávají původní pravidla.</div>',
+    '    <div class="smallText" id="adminOnlineSaveStatus">Upravuj opatrně: změny se projeví až při dalším vygenerování návrhu.</div>',
+    '  </div>',
+    buildAdminRotationGeneratorSettingsHtml(),
+    '  <div class="appMenuActionRow">',
+    '    <button type="button" class="appMenuAction" data-admin-action="load-generator-settings">Načíst online</button>',
+    '    <button type="button" class="appMenuAction isActive" data-admin-action="save-generator-settings">Uložit pravidla</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
     '  </div>',
     '</div>'
@@ -537,6 +561,8 @@ function renderAdminMenuBody(body, section) {
     body.innerHTML = rotationHtml;
   } else if (mode === 'overtime') {
     body.innerHTML = overtimeHtml;
+  } else if (mode === 'generator-settings') {
+    body.innerHTML = generatorSettingsHtml;
   } else if (mode === 'admin-accounts') {
     body.innerHTML = adminAccountsHtml;
   } else if (mode === 'backups') {
@@ -1268,6 +1294,10 @@ function bindAppMenuHandlers(body) {
         openAppMenu('admin-overtime');
         return;
       }
+      if (adminAction === 'open-generator-settings') {
+        openAppMenu('admin-generator-settings');
+        return;
+      }
       if (adminAction === 'open-admin-accounts') {
         openAppMenu('admin-accounts');
         return;
@@ -1479,6 +1509,26 @@ function bindAppMenuHandlers(body) {
           if (statusEl) statusEl.textContent = (result && result.queued)
             ? 'Přesčasy uložené lokálně ✓ · po připojení se synchronizují'
             : 'Přesčasy uložené online ✓';
+        }
+        return;
+      }
+      if (adminAction === 'load-generator-settings') {
+        await loadAdminMachineSettingsFromSupabase();
+        renderAdminMenuBody(body, 'generator-settings');
+        return;
+      }
+      if (adminAction === 'save-generator-settings') {
+        const generatorSettings = readAdminRotationGeneratorSettingsFromDom();
+        const rows = mergeAdminRotationGeneratorSettingsRows(generatorSettings);
+        if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.saveMachineSettings === 'function') {
+          const result = await window.RotationSupabaseBridge.saveMachineSettings(rows);
+          if (result && result.ok === false) throw (result.error || new Error('Uložení pravidel generátoru selhalo.'));
+          app.machineSettingsRows = rows;
+          renderAdminMenuBody(body, 'generator-settings');
+          const statusEl = document.getElementById('adminOnlineSaveStatus');
+          if (statusEl) statusEl.textContent = (result && result.queued)
+            ? 'Pravidla uložená lokálně - po připojení se synchronizují'
+            : 'Pravidla generátoru uložená online';
         }
         return;
       }
@@ -1721,7 +1771,7 @@ function openAppMenu(view) {
   page.classList.add('active');
   const body = page.querySelector('#appMenuBody');
   const v = view || 'menu';
-  const adminViews = new Set(['admin', 'admin-machines', 'admin-food', 'admin-vacation', 'admin-rotation', 'admin-overtime', 'admin-accounts', 'admin-backups', 'admin-announcement', 'admin-usage', 'admin-export', 'admin-reports', 'admin-service']);
+  const adminViews = new Set(['admin', 'admin-machines', 'admin-food', 'admin-vacation', 'admin-rotation', 'admin-overtime', 'admin-generator-settings', 'admin-accounts', 'admin-backups', 'admin-announcement', 'admin-usage', 'admin-export', 'admin-reports', 'admin-service']);
 
   const versionText = (typeof app !== 'undefined' && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '');
   const contactName = 'Martin Špadrna';
@@ -1868,6 +1918,16 @@ function openAppMenu(view) {
         } catch (err) {
           console.warn('Admin overtime preload failed', err);
           renderAdminMenuBody(body, 'overtime');
+        }
+      })();
+    } else if (v === 'admin-generator-settings') {
+      void (async () => {
+        try {
+          await loadAdminMachineSettingsFromSupabase();
+          renderAdminMenuBody(body, 'generator-settings');
+        } catch (err) {
+          console.warn('Admin generator settings preload failed', err);
+          renderAdminMenuBody(body, 'generator-settings');
         }
       })();
     } else if (v === 'admin-accounts') {

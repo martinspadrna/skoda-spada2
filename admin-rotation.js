@@ -122,6 +122,8 @@ const ADMIN_ROTATION_OVERTIME_SETTINGS_KEY = (typeof ROTATION_OVERTIME_SETTINGS_
 const ADMIN_ROTATION_OVERTIME_SETTINGS_CATEGORY = (typeof ROTATION_OVERTIME_SETTINGS_CATEGORY !== 'undefined' ? ROTATION_OVERTIME_SETTINGS_CATEGORY : 'rotation_overtime_settings');
 const ADMIN_ROTATION_OVERTIME_SHIFT_FILTER_KEY = 'rak_admin_overtime_shift_filter_v127';
 const ADMIN_ROTATION_OVERTIME_DEFAULT_TEAM = 'D';
+const ADMIN_ROTATION_GENERATOR_SETTINGS_KEY = 'ROTATION_GENERATOR_SETTINGS';
+const ADMIN_ROTATION_GENERATOR_SETTINGS_CATEGORY = 'rotation_generator_settings';
 
 function adminRotationOvertimeIsoToCzechDate(value) {
   const raw = String(value || '').trim();
@@ -152,8 +154,11 @@ function adminRotationOvertimeCzechDateToIso(value, fallbackYear) {
 }
 
 function adminIsRotationOvertimeSettingsRow(row) {
+  const settings = adminRotationSettingsJson(row);
   return String(row && row.category || '').trim() === ADMIN_ROTATION_OVERTIME_SETTINGS_CATEGORY
-    || String(row && row.machine_key || '').trim() === ADMIN_ROTATION_OVERTIME_SETTINGS_KEY;
+    || String(row && row.machine_key || '').trim() === ADMIN_ROTATION_OVERTIME_SETTINGS_KEY
+    || String(settings && settings.stored_category || '').trim() === ADMIN_ROTATION_OVERTIME_SETTINGS_CATEGORY
+    || String(settings && settings.admin_settings_key || '').trim() === ADMIN_ROTATION_OVERTIME_SETTINGS_KEY;
 }
 
 function makeAdminRotationOvertimeSettingsRow(settings) {
@@ -177,6 +182,184 @@ function mergeAdminRotationOvertimeSettingsRows(settings) {
   const rows = base.filter((row) => !adminIsRotationOvertimeSettingsRow(row));
   rows.push(makeAdminRotationOvertimeSettingsRow(settings));
   return rows;
+}
+
+function adminRotationSettingsJson(row) {
+  if (row && row.settings_json && typeof row.settings_json === 'object') return row.settings_json;
+  try { return row && row.settings_json ? JSON.parse(String(row.settings_json)) : {}; }
+  catch (err) { return {}; }
+}
+
+function adminIsRotationGeneratorSettingsRow(row) {
+  const settings = adminRotationSettingsJson(row);
+  return String(row && row.category || '').trim() === ADMIN_ROTATION_GENERATOR_SETTINGS_CATEGORY
+    || String(row && row.machine_key || '').trim() === ADMIN_ROTATION_GENERATOR_SETTINGS_KEY
+    || String(settings && settings.stored_category || '').trim() === ADMIN_ROTATION_GENERATOR_SETTINGS_CATEGORY
+    || String(settings && settings.admin_settings_key || '').trim() === ADMIN_ROTATION_GENERATOR_SETTINGS_KEY;
+}
+
+function adminRotationSplitGeneratorList(value) {
+  const source = Array.isArray(value) ? value : String(value || '').split(/[\n,;]/);
+  const seen = new Set();
+  return source
+    .map((item) => String(item || '').trim())
+    .filter((item) => {
+      if (!item || seen.has(item)) return false;
+      seen.add(item);
+      return true;
+    });
+}
+
+function adminRotationFilterMachineList(list, headers) {
+  const allowed = new Set((Array.isArray(headers) ? headers : []).map((item) => String(item || '').trim().toUpperCase()).filter(Boolean));
+  return adminRotationSplitGeneratorList(list).filter((item) => allowed.has(String(item || '').toUpperCase()));
+}
+
+function adminRotationNormalizeSoftBaseLathe(value, softCore) {
+  const raw = value && typeof value === 'object' ? value : {};
+  const allowed = new Set((Array.isArray(SOFT_MACHINE_HEADERS) ? SOFT_MACHINE_HEADERS : []).map((item) => String(item || '').trim().toUpperCase()).filter(Boolean));
+  const names = adminRotationSplitGeneratorList(softCore);
+  const map = {};
+  names.forEach((name) => {
+    const machine = String(raw[name] || '').trim().toUpperCase();
+    if (machine && allowed.has(machine)) map[name] = machine;
+  });
+  return map;
+}
+
+function adminRotationNormalizeGeneratorSettings(settings) {
+  const base = RAK_ROTATION_GENERATOR_RULES_V1107 || {};
+  const raw = settings && typeof settings === 'object' ? settings : {};
+  const softPreferred = adminRotationSplitGeneratorList(raw.softPreferred).length
+    ? adminRotationSplitGeneratorList(raw.softPreferred)
+    : Array.from(base.softPreferred || []);
+  const hardPreferred = adminRotationSplitGeneratorList(raw.hardPreferred).length
+    ? adminRotationSplitGeneratorList(raw.hardPreferred)
+    : Array.from(base.hardPreferred || []);
+  const softCore = adminRotationSplitGeneratorList(raw.softCore).length
+    ? adminRotationSplitGeneratorList(raw.softCore)
+    : Array.from(base.softCore || []);
+  const softHardCycle = adminRotationFilterMachineList(raw.softHardCycle, HARD_MACHINE_HEADERS).length
+    ? adminRotationFilterMachineList(raw.softHardCycle, HARD_MACHINE_HEADERS)
+    : Array.from(base.softHardCycle || []);
+  const hardCycle = adminRotationFilterMachineList(raw.hardCycle, HARD_MACHINE_HEADERS).length
+    ? adminRotationFilterMachineList(raw.hardCycle, HARD_MACHINE_HEADERS)
+    : Array.from(base.hardCycle || []);
+  const softHardBlockLength = Math.max(1, Math.min(12, Number(raw.softHardBlockLength || base.softHardBlockLength || 3) || 3));
+  const softBaseLathe = Object.assign({}, base.softBaseLathe || {}, adminRotationNormalizeSoftBaseLathe(raw.softBaseLathe || {}, softCore));
+  return {
+    type: ADMIN_ROTATION_GENERATOR_SETTINGS_CATEGORY,
+    softPreferred,
+    hardPreferred,
+    softCore,
+    softHardCycle,
+    softHardBlockLength,
+    softBaseLathe,
+    hardCycle
+  };
+}
+
+function getAdminRotationGeneratorSettings() {
+  const rows = Array.isArray(app && app.machineSettingsRows) ? app.machineSettingsRows : [];
+  const row = rows.find(adminIsRotationGeneratorSettingsRow);
+  return adminRotationNormalizeGeneratorSettings(row ? adminRotationSettingsJson(row) : null);
+}
+
+function getAdminRotationGeneratorRules() {
+  const base = RAK_ROTATION_GENERATOR_RULES_V1107 || {};
+  const settings = getAdminRotationGeneratorSettings();
+  return Object.assign({}, base, {
+    softPreferred: settings.softPreferred,
+    hardPreferred: settings.hardPreferred,
+    softHardCycle: settings.softHardCycle,
+    softHardBlockLength: settings.softHardBlockLength,
+    softCore: settings.softCore,
+    softBaseLathe: settings.softBaseLathe,
+    softCoreNoTnksBalance: settings.softCore,
+    hardCycle: settings.hardCycle
+  });
+}
+
+function makeAdminRotationGeneratorSettingsRow(settings) {
+  const safe = adminRotationNormalizeGeneratorSettings(settings);
+  return {
+    machine_key: ADMIN_ROTATION_GENERATOR_SETTINGS_KEY,
+    machine_code: 'ROTATION',
+    machine_index: 'generator',
+    label: 'Pravidla generátoru rozpisu',
+    category: ADMIN_ROTATION_GENERATOR_SETTINGS_CATEGORY,
+    cycle_time: '',
+    speed: '',
+    dress_time: '',
+    dress_count: '',
+    settings_json: Object.assign({ machine: 'ROTATION', index: 'generator' }, safe)
+  };
+}
+
+function mergeAdminRotationGeneratorSettingsRows(settings) {
+  const base = Array.isArray(app.machineSettingsRows) ? app.machineSettingsRows : [];
+  const rows = base.filter((row) => !adminIsRotationGeneratorSettingsRow(row));
+  rows.push(makeAdminRotationGeneratorSettingsRow(settings));
+  return rows;
+}
+
+function adminRotationGeneratorListValue(list) {
+  return adminRotationSplitGeneratorList(list).join('\n');
+}
+
+function buildAdminRotationGeneratorSettingsHtml() {
+  const settings = getAdminRotationGeneratorSettings();
+  const baseRows = settings.softCore.map((name, idx) => [
+    '<tr data-generator-base-row="' + String(idx) + '">',
+    '  <td><input class="appMenuInlineInput" data-generator-base-field="person" value="' + escapeHtml(name) + '" placeholder="Jmeno"></td>',
+    '  <td><input class="appMenuInlineInput" data-generator-base-field="machine" value="' + escapeHtml(settings.softBaseLathe[name] || '') + '" placeholder="MSKC01"></td>',
+    '</tr>'
+  ].join('')).join('');
+  return [
+    '<div class="appMenuSettingsList adminGeneratorSettingsList">',
+    '  <div class="appMenuSubTitle">Lidé a pořadí</div>',
+    '  <label class="appMenuFieldLabel" for="adminGeneratorSoftPreferred">Základ měkoty</label>',
+    '  <textarea id="adminGeneratorSoftPreferred" class="appMenuTextarea" rows="5">' + escapeHtml(adminRotationGeneratorListValue(settings.softPreferred)) + '</textarea>',
+    '  <label class="appMenuFieldLabel" for="adminGeneratorHardPreferred">Základ tvrdoty</label>',
+    '  <textarea id="adminGeneratorHardPreferred" class="appMenuTextarea" rows="5">' + escapeHtml(adminRotationGeneratorListValue(settings.hardPreferred)) + '</textarea>',
+    '  <label class="appMenuFieldLabel" for="adminGeneratorSoftCore">Trojice s vlastním TNKS/TPKW cyklem</label>',
+    '  <textarea id="adminGeneratorSoftCore" class="appMenuTextarea" rows="3">' + escapeHtml(adminRotationGeneratorListValue(settings.softCore)) + '</textarea>',
+    '  <div class="appMenuSubTitle">Cykly strojů</div>',
+    '  <label class="appMenuFieldLabel" for="adminGeneratorSoftHardCycle">Cyklus trojice na tvrdotě</label>',
+    '  <textarea id="adminGeneratorSoftHardCycle" class="appMenuTextarea" rows="3">' + escapeHtml(adminRotationGeneratorListValue(settings.softHardCycle)) + '</textarea>',
+    '  <label class="appMenuFieldLabel" for="adminGeneratorSoftHardBlockLength">Kolik dní držet jeden stroj v cyklu</label>',
+    '  <input id="adminGeneratorSoftHardBlockLength" class="appMenuInput" type="number" min="1" max="12" step="1" value="' + escapeHtml(String(settings.softHardBlockLength || 3)) + '">',
+    '  <label class="appMenuFieldLabel" for="adminGeneratorHardCycle">Tvrdotový cyklus strojů</label>',
+    '  <textarea id="adminGeneratorHardCycle" class="appMenuTextarea" rows="5">' + escapeHtml(adminRotationGeneratorListValue(settings.hardCycle)) + '</textarea>',
+    '  <div class="appMenuSubTitle">Základní soustruhy měkoty</div>',
+    '  <div class="smallText">Jména musí odpovídat seznamu výše. Stroj použij například MSKC01, MSKC03 nebo MSKC04.</div>',
+    '  <div class="tableWrap appMenuTableWrap uMt12">',
+    '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense">',
+    '      <thead><tr><th>Jméno</th><th>Stroj</th></tr></thead>',
+    '      <tbody>' + baseRows + '</tbody>',
+    '    </table>',
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
+function readAdminRotationGeneratorSettingsFromDom() {
+  const getText = (id) => String(document.getElementById(id)?.value || '');
+  const softBaseLathe = {};
+  document.querySelectorAll('#appMenuBody tr[data-generator-base-row]').forEach((tr) => {
+    const person = String(tr.querySelector('[data-generator-base-field="person"]')?.value || '').trim();
+    const machine = String(tr.querySelector('[data-generator-base-field="machine"]')?.value || '').trim().toUpperCase();
+    if (person && machine) softBaseLathe[person] = machine;
+  });
+  return adminRotationNormalizeGeneratorSettings({
+    softPreferred: adminRotationSplitGeneratorList(getText('adminGeneratorSoftPreferred')),
+    hardPreferred: adminRotationSplitGeneratorList(getText('adminGeneratorHardPreferred')),
+    softCore: adminRotationSplitGeneratorList(getText('adminGeneratorSoftCore')),
+    softHardCycle: adminRotationSplitGeneratorList(getText('adminGeneratorSoftHardCycle')),
+    softHardBlockLength: Number(document.getElementById('adminGeneratorSoftHardBlockLength')?.value || 3),
+    hardCycle: adminRotationSplitGeneratorList(getText('adminGeneratorHardCycle')),
+    softBaseLathe
+  });
 }
 
 function getAdminRotationOvertimeEntries() {
@@ -988,7 +1171,9 @@ function buildAdminMachineSettingsTableHtml() {
       && cat !== 'admin_accounts_settings'
       && key !== 'ADMIN_ACCOUNTS_SETTINGS'
       && key !== 'VACATION_COUNTDOWN_SETTINGS'
-      && cat !== ADMIN_ROTATION_OVERTIME_SETTINGS_CATEGORY;
+      && cat !== ADMIN_ROTATION_OVERTIME_SETTINGS_CATEGORY
+      && !(typeof rakAdminIsAccountsSettingsRow === 'function' && rakAdminIsAccountsSettingsRow(row))
+      && !adminIsRotationGeneratorSettingsRow(row);
   });
   const brusRows = rows.filter(row => String(row && row.category ? row.category : '').trim() === 'brus');
 
@@ -1269,6 +1454,12 @@ function readAdminMachineSettingsFromDom() {
   if (Array.isArray(app.machineSettingsRows) && typeof adminIsVacationCountdownSettingsRow === 'function') {
     app.machineSettingsRows.filter(adminIsVacationCountdownSettingsRow).forEach((row) => rows.push(row));
   }
+  if (Array.isArray(app.machineSettingsRows) && typeof rakAdminIsAccountsSettingsRow === 'function') {
+    app.machineSettingsRows.filter(rakAdminIsAccountsSettingsRow).forEach((row) => rows.push(row));
+  }
+  if (Array.isArray(app.machineSettingsRows)) {
+    app.machineSettingsRows.filter(adminIsRotationGeneratorSettingsRow).forEach((row) => rows.push(row));
+  }
   return rows;
 }
 function makeRotationRowKey(row) {
@@ -1496,6 +1687,7 @@ function adminRotationNamesForAbsenceDate(notesRows, dateLabel, knownNames) {
 
 function adminBuildRotationGenerationModel(targetMonthKey) {
   const knownNames = adminGetKnownNames();
+  const generatorRules = getAdminRotationGeneratorRules();
   const targetSort = adminRotationMonthSortValue(targetMonthKey);
   const targetParsed = typeof parseMonthKey === 'function' ? parseMonthKey(targetMonthKey) : null;
   const previousYearKey = targetParsed && Number.isFinite(targetParsed.month) && Number.isFinite(targetParsed.year)
@@ -1507,8 +1699,8 @@ function adminBuildRotationGenerationModel(targetMonthKey) {
   const dayTemplates = [];
   const previousYearTemplates = [];
   const previousHardMachine = Object.create(null);
-  const softCoreCycle = Array.isArray(RAK_ROTATION_GENERATOR_RULES_V1107.softHardCycle) ? RAK_ROTATION_GENERATOR_RULES_V1107.softHardCycle : [];
-  const softCoreNames = Array.isArray(RAK_ROTATION_GENERATOR_RULES_V1107.softCore) ? RAK_ROTATION_GENERATOR_RULES_V1107.softCore.filter((name) => knownNames.includes(name)) : [];
+  const softCoreCycle = Array.isArray(generatorRules.softHardCycle) ? generatorRules.softHardCycle : [];
+  const softCoreNames = Array.isArray(generatorRules.softCore) ? generatorRules.softCore.filter((name) => knownNames.includes(name)) : [];
   const softCoreCycleState = {
     machineCursor: 0,
     personCursor: 0,
@@ -1542,7 +1734,7 @@ function adminBuildRotationGenerationModel(targetMonthKey) {
     const cycleLength = Math.max(1, softCoreCycle.length);
     const currentIdx = ((Number(softCoreCycleState.machineCursor) || 0) % cycleLength + cycleLength) % cycleLength;
     const previousIdx = (currentIdx - 1 + cycleLength) % cycleLength;
-    const blockLength = Math.max(1, Number(RAK_ROTATION_GENERATOR_RULES_V1107.softHardBlockLength) || 3);
+    const blockLength = Math.max(1, Number(generatorRules.softHardBlockLength) || 3);
 
     // RaK 1.2 (1.155): návaznost Synka/Třasáka/Střížka se nesmí odvozovat jen z posledního dne
     // ani resetovat zpět, když je v historii po dokončeném bloku ještě extra TNKS01.
@@ -1678,7 +1870,7 @@ function adminRotationGeneratorCreateCounters(model) {
     softCoreHardCount: Object.create(null)
   };
   const known = model && Array.isArray(model.knownNames) ? model.knownNames : adminGetKnownNames();
-  const hardCycle = Array.isArray(RAK_ROTATION_GENERATOR_RULES_V1107.hardCycle) ? RAK_ROTATION_GENERATOR_RULES_V1107.hardCycle : [];
+  const hardCycle = Array.isArray(generatorRules.hardCycle) ? generatorRules.hardCycle : [];
   known.forEach((name) => {
     counters.total[name] = 0;
     counters.hard[name] = 0;
@@ -1761,14 +1953,16 @@ function adminRotationGeneratorUnmarkAssignment(counters, sectionKey, machineNam
 }
 
 function adminRotationGeneratorNextHardCycleMachine(counters, name) {
-  const cycle = Array.isArray(RAK_ROTATION_GENERATOR_RULES_V1107.hardCycle) ? RAK_ROTATION_GENERATOR_RULES_V1107.hardCycle : [];
+  const generatorRules = getAdminRotationGeneratorRules();
+  const cycle = Array.isArray(generatorRules.hardCycle) ? generatorRules.hardCycle : [];
   if (!name || !cycle.length) return '';
   const cursor = Number(counters && counters.hardCycleCursor ? counters.hardCycleCursor[name] : 0) || 0;
   return cycle[((cursor % cycle.length) + cycle.length) % cycle.length] || '';
 }
 
 function adminRotationGeneratorAdvanceHardCycle(counters, name) {
-  const cycle = Array.isArray(RAK_ROTATION_GENERATOR_RULES_V1107.hardCycle) ? RAK_ROTATION_GENERATOR_RULES_V1107.hardCycle : [];
+  const generatorRules = getAdminRotationGeneratorRules();
+  const cycle = Array.isArray(generatorRules.hardCycle) ? generatorRules.hardCycle : [];
   if (!name || !cycle.length) return;
   const cursor = Number(counters && counters.hardCycleCursor ? counters.hardCycleCursor[name] : 0) || 0;
   counters.hardCycleCursor[name] = (cursor + 1) % cycle.length;
@@ -1912,13 +2106,15 @@ function adminRotationGeneratorFormatCount(value) {
 
 function adminRotationGeneratorGetSoftCoreNames(knownNames) {
   const known = Array.isArray(knownNames) ? knownNames : adminGetKnownNames();
-  return RAK_ROTATION_GENERATOR_RULES_V1107.softCore.filter((name) => known.includes(name));
+  const generatorRules = getAdminRotationGeneratorRules();
+  return generatorRules.softCore.filter((name) => known.includes(name));
 }
 
 function adminRotationGeneratorSoftCoreStateInfo(counters, knownNames) {
-  const cycle = Array.isArray(RAK_ROTATION_GENERATOR_RULES_V1107.softHardCycle) ? RAK_ROTATION_GENERATOR_RULES_V1107.softHardCycle : [];
+  const generatorRules = getAdminRotationGeneratorRules();
+  const cycle = Array.isArray(generatorRules.softHardCycle) ? generatorRules.softHardCycle : [];
   const core = adminRotationGeneratorGetSoftCoreNames(knownNames);
-  const blockLength = Math.max(1, Number(RAK_ROTATION_GENERATOR_RULES_V1107.softHardBlockLength) || 3);
+  const blockLength = Math.max(1, Number(generatorRules.softHardBlockLength) || 3);
   const machineCursor = ((Number(counters && counters.softCoreMachineCursor || 0) % Math.max(1, cycle.length)) + Math.max(1, cycle.length)) % Math.max(1, cycle.length);
   const personCursor = ((Number(counters && counters.softCorePersonCursor || 0) % Math.max(1, core.length)) + Math.max(1, core.length)) % Math.max(1, core.length);
   const assigned = counters && counters.softCoreAssignedInMachineBlock instanceof Set
@@ -2007,7 +2203,8 @@ function adminRotationGeneratorPickSoftCoreForHard(month, knownNames, rowIdx, ma
 }
 
 function adminRotationGeneratorBaseLathePerson(machineName, knownNames, available, usedNames) {
-  const map = RAK_ROTATION_GENERATOR_RULES_V1107.softBaseLathe || {};
+  const generatorRules = getAdminRotationGeneratorRules();
+  const map = generatorRules.softBaseLathe || {};
   const wantedEntry = Object.entries(map).find((entry) => String(entry[1] || '').toUpperCase() === String(machineName || '').toUpperCase());
   const person = wantedEntry ? adminRotationCanonicalName(wantedEntry[0], knownNames) : '';
   return person && knownNames.includes(person) && available.includes(person) && !usedNames.has(person) ? person : '';
@@ -2015,8 +2212,9 @@ function adminRotationGeneratorBaseLathePerson(machineName, knownNames, availabl
 
 function adminRotationGeneratorBuildDay(month, model, counters, rowIdx, dateLabel, blockedNames, monthKey) {
   const knownNames = model.knownNames;
-  const softPreferred = RAK_ROTATION_GENERATOR_RULES_V1107.softPreferred.filter((name) => knownNames.includes(name));
-  const hardPreferred = RAK_ROTATION_GENERATOR_RULES_V1107.hardPreferred.filter((name) => knownNames.includes(name));
+  const generatorRules = getAdminRotationGeneratorRules();
+  const softPreferred = generatorRules.softPreferred.filter((name) => knownNames.includes(name));
+  const hardPreferred = generatorRules.hardPreferred.filter((name) => knownNames.includes(name));
   const available = knownNames.filter((name) => !blockedNames.has(name));
   const usedNames = new Set();
   const forcedSoft = new Set();
@@ -2056,7 +2254,7 @@ function adminRotationGeneratorBuildDay(month, model, counters, rowIdx, dateLabe
     const wantedMachine = adminRotationGeneratorNextHardCycleMachine(counters, name);
     const wantedIdx = adminRotationGeneratorMachineIndex(HARD_MACHINE_HEADERS, wantedMachine);
     if (assignHardCell(wantedIdx, name, 'hard-cycle')) return;
-    const cycle = Array.isArray(RAK_ROTATION_GENERATOR_RULES_V1107.hardCycle) ? RAK_ROTATION_GENERATOR_RULES_V1107.hardCycle : [];
+    const cycle = Array.isArray(generatorRules.hardCycle) ? generatorRules.hardCycle : [];
     for (const machine of cycle) {
       const idx = adminRotationGeneratorMachineIndex(HARD_MACHINE_HEADERS, machine);
       if (assignHardCell(idx, name, 'hard-cycle')) return;
@@ -2459,9 +2657,10 @@ function adminRotationGeneratorBalanceSoftKind(month, model) {
 
 function adminRotationGeneratorBalanceHardMachine(month, machineName, model, monthKey) {
   const knownNames = model && Array.isArray(model.knownNames) ? model.knownNames : adminGetKnownNames();
-  const hardPreferred = RAK_ROTATION_GENERATOR_RULES_V1107.hardPreferred.filter((name) => knownNames.includes(name));
+  const generatorRules = getAdminRotationGeneratorRules();
+  const hardPreferred = generatorRules.hardPreferred.filter((name) => knownNames.includes(name));
   const isPressBalance = /^(?:TNKS01|TPKW01)$/i.test(String(machineName || ''));
-  const softCoreNoTnksBalance = RAK_ROTATION_GENERATOR_RULES_V1107.softCoreNoTnksBalance || [];
+  const softCoreNoTnksBalance = generatorRules.softCoreNoTnksBalance || [];
   const workingNames = adminRotationGeneratorCollectWorkingNames(month, knownNames)
     .filter((name) => knownNames.includes(name))
     .filter((name) => !(isPressBalance && softCoreNoTnksBalance.includes(name)));

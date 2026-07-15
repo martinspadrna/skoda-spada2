@@ -1,3 +1,10 @@
+## RaK 1.2 (1.195)
+
+- Administrace / Rozpisy: přidaná sekce Pravidla generátoru pro úpravu základních lidí, tvrdotového cyklu, TNKS/TPKW cyklu měkké trojice a jejich základních soustruhů.
+- Generátor rozpisu: při vytváření nového návrhu používá uložená admin pravidla; bez uložené změny zůstávají původní výchozí hodnoty.
+- Supabase: speciální admin nastavení pro přesčasy a pravidla generátoru se ukládají přes kompatibilní `machine_settings`, aby nenarážela na omezené kategorie.
+- Release metadata sjednocená na `RaK 1.2 (1.195)`, technická verze `1.2.195`, cache `v1.2-1.195`.
+
 ## RaK 1.2 (1.194)
 
 - Administrace: úvodní stránka má nový průvodce správou, který ukazuje stav provozního nastavení, přesčasů, dovolených/odstávek, vybraného rozpisu, záloh a exportu.

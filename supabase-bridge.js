@@ -1977,6 +1977,10 @@
       || key === 'FOOD_SCHEDULE_SETTINGS'
       || category === 'vacation_countdown_settings'
       || key === 'VACATION_COUNTDOWN_SETTINGS'
+      || category === 'rotation_overtime_settings'
+      || key === 'ROTATION_OVERTIME_SETTINGS'
+      || category === 'rotation_generator_settings'
+      || key === 'ROTATION_GENERATOR_SETTINGS'
       || category === 'admin_accounts_settings'
       || key === 'ADMIN_ACCOUNTS_SETTINGS';
   }
