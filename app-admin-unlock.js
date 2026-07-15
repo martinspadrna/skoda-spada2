@@ -1,4 +1,4 @@
-// RaK 1.2 (1.193) - admin opravneni navazane na prihlaseny ucet.
+// RaK 1.2 (1.208) - admin opravneni navazane na prihlaseny ucet.
 const RAK_OWNER_ADMIN_ACCOUNT_ID = '9811';
 const RAK_OWNER_ADMIN_PASSWORD = '772326';
 const RAK_ADMIN_ACCOUNTS_SETTINGS_KEY = 'ADMIN_ACCOUNTS_SETTINGS';
@@ -254,10 +254,10 @@ function readAdminAccountsSettingsFromDom() {
   };
 }
 
-function bindAdminSecretUnlock() {
+function bindAdminAccountUnlock() {
   try { localStorage.removeItem('adminUnlocked'); } catch (err) {}
-  if (document.documentElement.dataset.adminSecretBound === '1') return true;
-  document.documentElement.dataset.adminSecretBound = '1';
+  if (document.documentElement.dataset.adminAccountUnlockBound === '1') return true;
+  document.documentElement.dataset.adminAccountUnlockBound = '1';
   rakAdminRestoreSessionForActiveAccount();
   try {
     const activeId = rakAdminGetActiveAccountId();
@@ -289,6 +289,6 @@ try {
   window.mergeAdminAccountsSettingsRows = mergeAdminAccountsSettingsRows;
 } catch (err) {}
 
-if (!bindAdminSecretUnlock()) {
-  registerListener(document, 'DOMContentLoaded', bindAdminSecretUnlock, { once: true });
+if (!bindAdminAccountUnlock()) {
+  registerListener(document, 'DOMContentLoaded', bindAdminAccountUnlock, { once: true });
 }

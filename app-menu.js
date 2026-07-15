@@ -2638,7 +2638,7 @@ function openAppMenu(view) {
     } else if (v === 'contact') {
       bindAppMenuHandlers(body);
       body.innerHTML = [
-        '<div class="appMenuCard appMenuSecretCard" data-admin-secret="contact" role="button" tabindex="0">',
+        '<div class="appMenuCard">',
         '  <div class="appMenuCardTitle">Kontakt</div>',
         '',
         '  <div class="appMenuContactRow"><span>Jméno</span><b>' + escapeHtml(contact.name) + '</b></div>',

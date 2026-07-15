@@ -1,3 +1,10 @@
+## RaK 1.2 (1.208)
+
+- Administrace: odstraněná poslední stará stopa skrytého admin vstupu z karty Kontakt; kontakt už není označený jako tajný admin trigger.
+- Admin přihlášení: interní inicializace je pojmenovaná podle přihlášeného účtu, ne podle starého secret odemykání.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá, že se nevrátí `data-admin-secret`, `bindAdminSecretUnlock` ani starý `adminSecretBound`.
+- Release metadata sjednocená na `RaK 1.2 (1.208)`, technická verze `1.2.208`, cache `v1.2-1.208`.
+
 ## RaK 1.2 (1.207)
 
 - Administrace: přidaná chráněná mapa `Kde co upravit`, která novému správci ukáže, ve které admin sekci měnit rozpis, dovolené, volné dny, přesčasy, kantýnu, odkazy, výplatu, správce a servis.
