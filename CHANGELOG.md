@@ -1,3 +1,10 @@
+## RaK 1.2 (1.205)
+
+- Administrace / Příručka správce: přidané tlačítko `Stáhnout příručku`, které vytvoří jednoduchý textový soubor pro předání dalšímu správci.
+- Export příručky: soubor se skládá lokálně v prohlížeči, nic nezapisuje do Supabase a běžná část aplikace se nemění.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá textový export příručky, tlačítko a admin handler.
+- Release metadata sjednocená na `RaK 1.2 (1.205)`, technická verze `1.2.205`, cache `v1.2-1.205`.
+
 ## RaK 1.2 (1.204)
 
 - Administrace: přidaná chráněná Příručka správce s krátkými postupy pro nový měsíc, dovolené/volno, přesčasy, odkazy, zálohy a předání dalšímu správci.

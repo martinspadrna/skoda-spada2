@@ -647,6 +647,76 @@ function buildAdminManualHtml(monthKey) {
   ].join('');
 }
 
+function buildAdminManualText(monthKey) {
+  const monthLabel = String(monthKey || '').trim() || 'vybraný měsíc';
+  const version = formatRakDisplayVersion((typeof app !== 'undefined' && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : ''));
+  const generatedAt = new Date().toLocaleString('cs-CZ');
+  const ownerLine = (typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins())
+    ? 'Jsi hlavní admin: můžeš přidat další správce a nastavit jim heslo.'
+    : 'Další správce může přidat jen hlavní admin účet.';
+  return [
+    'RaK - Příručka správce',
+    'Verze: ' + version,
+    'Vytvořeno: ' + generatedAt,
+    '',
+    'Důležité pravidlo',
+    '- Tahle příručka nic sama nemění. Každou změnu je potřeba udělat v administraci a uložit v konkrétní sekci.',
+    '- Běžní uživatelé administraci neuvidí a nemají mít možnost měnit rozpis, provoz ani nastavení.',
+    '',
+    '1. Nový měsíc rozpisu',
+    '- Otevři Servis a načti online stav.',
+    '- Otevři Rozpis ' + monthLabel + ', zkontroluj pracovní dny a absence.',
+    '- Zkontroluj Pravidla generátoru.',
+    '- Vygeneruj návrh, projdi ho ručně a až potom ulož rozpis.',
+    '- Před větší změnou se podívej do Záloh.',
+    '',
+    '2. Dovolené, odstávky a volné dny',
+    '- Delší období od-do patří do Dovolená / odstávky.',
+    '- Jednorázový den bez práce patří do Mimořádné volné dny.',
+    '- Absence konkrétních lidí se zadávají v Rozpisech.',
+    '',
+    '3. Přesčasy a kantýna / jídelna',
+    '- Přesčasové neděle pro rozpis se spravují v Přesčasy.',
+    '- Otevírací časy kantýny a jídelny se spravují v Kantýna / jídelna.',
+    '',
+    '4. Odkazy a texty pro lidi',
+    '- Oznámení, odkazy, kontakt a výplata se mění jen v administraci.',
+    '- Po uložení se změna může projevit v běžné aplikaci.',
+    '',
+    '5. Zálohy a obnova',
+    '- Obnova zálohy přepíše aktuální rozpis.',
+    '- Před obnovou se aktuální stav uloží jako nová záloha.',
+    '',
+    '6. Předání dalšímu správci',
+    '- ' + ownerLine,
+    '- Nový správce má po přihlášení projít Předání správy a Kontrolu předání.',
+    '',
+    'Kontrola po úpravách',
+    '- Po uložení zkontroluj stav synchronizace na hlavní stránce.',
+    '- V administraci můžeš otevřít Přehled připojení, Reporty chyb a Servis / synchronizace.',
+    ''
+  ].join('\n');
+}
+
+function downloadAdminManualText() {
+  const monthKey = getAdminSelectedMonthKey();
+  const text = buildAdminManualText(monthKey);
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const dateKey = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = 'RaK_prirucka_spravce_' + dateKey + '.txt';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    try { URL.revokeObjectURL(url); } catch (err) {}
+    try { a.remove(); } catch (err) {}
+  }, 0);
+  const status = document.getElementById('adminOnlineSaveStatus');
+  if (status) status.textContent = 'Příručka správce stažena jako textový soubor.';
+}
+
 function renderAdminMenuBody(body, section) {
   const mode = String(section || 'home').trim() || 'home';
   const months = getAdminRotationMonthKeys();
@@ -924,6 +994,7 @@ function renderAdminMenuBody(body, section) {
     '  </div>',
     buildAdminManualHtml(monthKey),
     '  <div class="appMenuActionRow">',
+    '    <button type="button" class="appMenuAction isActive" data-admin-action="download-admin-manual">Stáhnout příručku</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-handover">Předání správy</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
     '  </div>',
@@ -1276,6 +1347,10 @@ function bindAppMenuHandlers(body) {
         } else {
           alert('Excel export rozpisu není dostupný. Zkus aplikaci obnovit.');
         }
+        return;
+      }
+      if (adminAction === 'download-admin-manual') {
+        downloadAdminManualText();
         return;
       }
       if (menuAction === 'export' || adminAction === 'export') {
