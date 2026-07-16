@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.217) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.218) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -224,12 +224,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.217)',
-  appLabel: 'RaK 1.2 (1.217)',
-  packageVersion: '1.2.217',
-  cacheVersion: 'v1.2-1.217',
+  displayVersion: '1.2 (1.218)',
+  appLabel: 'RaK 1.2 (1.218)',
+  packageVersion: '1.2.218',
+  cacheVersion: 'v1.2-1.218',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.217)',
+  changelogHeader: '## RaK 1.2 (1.218)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -338,8 +338,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.217)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.217'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.218)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.218'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1233,6 +1233,9 @@ function assertRotationOvertimeShiftFilterContractV1128() {
   assertIncludes(ui, 'data-admin-action="overtime-shift-filter"', 'Přesčasy musí mít filtrovací chipy směn');
   assertIncludes(ui, 'function adminRotationOvertimeBuildYearSummaryHtml', 'Přesčasy musí mít roční přehled počtů podle směn');
   assertIncludes(ui, 'data-rotation-overtime-year-summary', 'Roční přehled přesčasů musí mít DOM hook pro přepočet');
+  assertIncludes(ui, 'function buildAdminRotationOvertimeStatusHtml', 'Přesčasy musí mít horní stavový souhrn pro admina');
+  assertIncludes(ui, 'function adminRotationRefreshOvertimeStatus', 'Stav přesčasů se musí přepočítat podle rozepsaných řádků');
+  assertIncludes(ui, 'adminRotationOvertimeReadEntriesFromRoot', 'Stav přesčasů musí vycházet z aktuálních DOM řádků před uložením');
   assertIncludes(ui, 'const yearSet = new Set([String(currentYear)]);', 'Přesčasy mají zakládat další roky podle skutečně zadaných termínů');
   assertIncludes(ui, "const yearOpenAttr = Number.isFinite(yearNumber) && yearNumber >= currentYear ? ' open' : '';", 'Minulé roky v nastavení přesčasů mají být po letech sbalené');
   assertIncludes(ui, 'function adminRotationRefreshOvertimeYearSummaries', 'Roční přehled přesčasů se musí přepočítat při změně data');
@@ -1243,9 +1246,11 @@ function assertRotationOvertimeShiftFilterContractV1128() {
   assertIncludes(menuJs, "action: 'open-overtime', label: 'Přesčasy'", 'Přesčasy musí být samostatná položka v hlavní administraci');
   assertIncludes(menuJs, 'data-admin-action="back-admin">Zpět</button>', 'Samostatné menu přesčasů se má vracet do hlavní administrace');
   assertIncludes(menuJs, 'adminRotationRefreshOvertimeShiftBadges(body, true)', 'Po renderu přesčasů se musí obnovit směnové badge a filtr');
+  assertIncludes(menuJs, 'adminRotationRefreshOvertimeStatus(body)', 'Admin menu musí přepočítat stav přesčasů při změně poznámky nebo TO');
   assertIncludes(css, '#appMenuBody .adminRotationOvertimeFilterChip', 'Filtr směn musí přebít světlý globální styl tlačítek');
   assertIncludes(css, 'var(--rakGlassActiveBg', 'Filtr směn musí používat theme/glass aktivní barvy aplikace');
   assertIncludes(css, '.adminRotationOvertimeYearSummary', 'Roční přehled přesčasů musí mít vlastní čitelný theme styl');
+  assertIncludes(css, '.adminRotationOvertimeStatusGrid', 'Stav přesčasů musí mít vlastní responsive rozložení');
   assertIncludes(adminFoodJs, 'function adminFoodTodayIso', 'Kantyna/jidelna musi umet filtrovat seznam prescasu od dneska');
   assertIncludes(adminFoodJs, 'const dates = allDates.filter', 'Kantyna/jidelna ma v tabulce ukazovat jen budouci prescasove nedele');
   assertIncludes(adminFoodJs, 'preservedPastDateInputs', 'Stare prescasove nedele ve food nastaveni se nesmi pri ulozeni potichu smazat');

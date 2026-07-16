@@ -1,3 +1,10 @@
+## RaK 1.2 (1.218)
+
+- Administrace / Přesčasy: přidaný admin-only souhrn `Stav přesčasů`, který ukazuje celkový počet termínů, budoucí termíny, nejbližší přesčas a připomínku ručního uložení.
+- Přesčasy: souhrn se přepočítává podle rozepsaných řádků ještě před uložením, včetně změny data, poznámky a přepínače TO.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá nový stav přesčasů, jeho živé přepočítání a responsive admin-only styl.
+- Release metadata sjednocená na `RaK 1.2 (1.218)`, technická verze `1.2.218`, cache `v1.2-1.218`.
+
 ## RaK 1.2 (1.217)
 
 - Administrace / Export import: přidaný admin-only souhrn `Stav exportu / importu`, který ukazuje ZIP export, vybraný měsíc pro XLSX, načtený Excel a aktuální rozsah importu.

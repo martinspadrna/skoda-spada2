@@ -499,6 +499,90 @@ function adminRotationOvertimeCountEntriesByShift(entries) {
   return counts;
 }
 
+function adminRotationOvertimeTodayIso() {
+  const now = new Date();
+  return now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+}
+
+function adminRotationOvertimeReadEntriesFromRoot(root) {
+  const scope = root || document.getElementById('appMenuBody') || document;
+  const map = new Map();
+  scope.querySelectorAll('tr[data-rotation-overtime-row]').forEach((tr) => {
+    const fallbackYear = String(tr.getAttribute('data-overtime-year') || '').trim();
+    const dateInput = tr.querySelector('[data-rotation-overtime-date]');
+    const iso = adminRotationOvertimeCzechDateToIso(dateInput ? dateInput.value : '', fallbackYear);
+    if (!isValidRotationOvertimeIsoDate(iso)) return;
+    const toInput = tr.querySelector('[data-rotation-overtime-to]');
+    const noteInput = tr.querySelector('[data-rotation-overtime-note]');
+    map.set(iso, {
+      date: iso,
+      to: !!(toInput && toInput.checked),
+      note: String(noteInput && noteInput.value || '').trim()
+    });
+  });
+  return Array.from(map.values()).sort((a, b) => a.date.localeCompare(b.date));
+}
+
+function adminRotationOvertimeStatusItemHtml(label, value, detail, state) {
+  const safeState = state || 'ok';
+  return [
+    '<div class="adminRotationOvertimeStatusItem is' + escapeHtml(safeState.charAt(0).toUpperCase() + safeState.slice(1)) + '">',
+    '  <span>' + escapeHtml(label || '') + '</span>',
+    '  <b>' + escapeHtml(value || '') + '</b>',
+    detail ? '  <small>' + escapeHtml(detail) + '</small>' : '',
+    '</div>'
+  ].join('');
+}
+
+function buildAdminRotationOvertimeStatusHtml(entries) {
+  const list = (Array.isArray(entries) ? entries : []).filter((entry) => entry && isValidRotationOvertimeIsoDate(entry.date || ''));
+  const todayIso = adminRotationOvertimeTodayIso();
+  const future = list.filter((entry) => String(entry.date || '') >= todayIso);
+  const pastCount = Math.max(0, list.length - future.length);
+  const years = Array.from(new Set(list.map((entry) => String(entry.date || '').slice(0, 4)).filter(Boolean))).sort();
+  const nearest = future[0] || null;
+  const nearestInfo = nearest ? adminRotationOvertimeGetShiftInfoForIsoDate(nearest.date) : null;
+  const nearestMode = nearest ? (nearest.to === false ? 'jen MO' : 'TO') : '';
+  const nearestDetail = nearest
+    ? ((nearestInfo && nearestInfo.team ? ('Směna ' + nearestInfo.team) : 'Směna se dopočítá') + ' · ' + nearestMode + (nearest.note ? ' · ' + nearest.note : ''))
+    : 'Doplň termín do příslušného roku.';
+  const items = [
+    {
+      label: 'Celkem',
+      value: String(list.length) + '×',
+      detail: years.length ? ('Roky: ' + years.join(', ')) : 'Zatím není zadaný žádný termín.',
+      state: list.length ? 'ok' : 'warn'
+    },
+    {
+      label: 'Budoucí',
+      value: String(future.length) + '×',
+      detail: pastCount ? ('Minulé termíny zůstávají uložené: ' + String(pastCount) + '×.') : 'Všechny zadané termíny jsou aktuální nebo budoucí.',
+      state: future.length ? 'ok' : 'warn'
+    },
+    {
+      label: 'Nejbližší',
+      value: nearest ? adminRotationOvertimeIsoToCzechDate(nearest.date) : 'není',
+      detail: nearestDetail,
+      state: nearest ? 'ok' : 'warn'
+    },
+    {
+      label: 'Uložení',
+      value: 'ručně',
+      detail: 'Změny v tomhle přehledu se online zapíšou až tlačítkem Uložit přesčasy.',
+      state: 'ok'
+    }
+  ];
+  return [
+    '<div class="adminRotationOvertimeStatus" id="adminRotationOvertimeStatus">',
+    '  <div class="appMenuSubTitle">Stav přesčasů</div>',
+    '  <div class="smallText uMb10">Souhrn vychází z řádků níže, takže ukáže i rozepsané změny před uložením.</div>',
+    '  <div class="adminRotationOvertimeStatusGrid">',
+    items.map((item) => adminRotationOvertimeStatusItemHtml(item.label, item.value, item.detail, item.state)).join(''),
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
 function adminRotationOvertimeBuildYearSummaryHtml(year, entries) {
   const counts = adminRotationOvertimeCountEntriesByShift(entries);
   const teams = ['A', 'B', 'C', 'D'];
@@ -582,6 +666,7 @@ function buildAdminRotationOvertimeSettingsHtml() {
     ].join('');
   }).join('');
   return [
+    buildAdminRotationOvertimeStatusHtml(entries),
     buildAdminRotationOvertimeFilterHtml(),
     '<div class="adminRotationOvertimeHelp">',
     '  <b>TO zapnuto</b> = přesčas jde na tvrdotu a TNKS01/TPKW01 se ve statistikách počítá 0,5 + 0,5. ',
@@ -621,8 +706,18 @@ function adminRotationRefreshOvertimeYearSummaries(root) {
     const totalLabel = scope.querySelector('[data-rotation-overtime-year-total-label="' + year + '"]');
     if (totalLabel) totalLabel.textContent = String(total) + '×';
   });
+  adminRotationRefreshOvertimeStatus(scope);
 }
 
+function adminRotationRefreshOvertimeStatus(root) {
+  const scope = root || document.getElementById('appMenuBody') || document;
+  const box = scope.querySelector ? scope.querySelector('#adminRotationOvertimeStatus') : null;
+  if (!box) return;
+  const wrap = document.createElement('div');
+  wrap.innerHTML = buildAdminRotationOvertimeStatusHtml(adminRotationOvertimeReadEntriesFromRoot(scope));
+  const next = wrap.firstElementChild;
+  if (next) box.replaceWith(next);
+}
 
 function adminRotationRefreshOvertimeShiftBadges(root, applyFilter) {
   const scope = root || document.getElementById('appMenuBody') || document;

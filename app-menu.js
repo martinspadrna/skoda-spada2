@@ -1880,6 +1880,9 @@ function bindAppMenuHandlers(body) {
     if (target && target.matches && target.matches('[data-rotation-overtime-date]') && typeof adminRotationRefreshOvertimeShiftBadges === 'function') {
       adminRotationRefreshOvertimeShiftBadges(body, false);
     }
+    if (target && target.matches && target.matches('[data-rotation-overtime-note]') && typeof adminRotationRefreshOvertimeStatus === 'function') {
+      adminRotationRefreshOvertimeStatus(body);
+    }
   }, true);
 
   body.addEventListener('change', (event) => {
@@ -1887,6 +1890,9 @@ function bindAppMenuHandlers(body) {
     if (!target || typeof target.matches !== 'function') return;
     if (target.matches('#rakRotationExcelExportMonth, #rakExcelImportScope, #rakExcelImportDetectedMonth')) {
       renderAdminExportImportStatus();
+    }
+    if (target.matches('[data-rotation-overtime-to]') && typeof adminRotationRefreshOvertimeStatus === 'function') {
+      adminRotationRefreshOvertimeStatus(body);
     }
   }, true);
 
