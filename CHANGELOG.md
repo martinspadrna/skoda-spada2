@@ -1,3 +1,10 @@
+## RaK 1.2 (1.227)
+
+- Administrace / Servis synchronizace: přidaný admin-only souhrn `Stav servisu`, který ukazuje načtení online stavu, synchronizaci, položky k řešení a provoz/PWA update.
+- Servis: souhrn se zobrazuje nad detailními metrikami, aby správce před ruční synchronizací nebo úklidem hned viděl, co vyžaduje pozornost.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá nový stav servisu, jeho vložení nad metriky a responsive admin-only styl.
+- Release metadata sjednocená na `RaK 1.2 (1.227)`, technická verze `1.2.227`, cache `v1.2-1.227`.
+
 ## RaK 1.2 (1.226)
 
 - Administrace / Reporty chyb: přidaný admin-only souhrn `Stav reportů`, který ukazuje celkový počet, otevřené reporty, uzavřené reporty a zdroj online/lokální.
