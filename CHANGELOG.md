@@ -1,3 +1,10 @@
+## RaK 1.2 (1.242)
+
+- Administrace: na admin uvod a Predani spravy pridany panel `Kontrola po ulozeni` se ctyrmi kroky: synchronizace, verejny dopad, reporty a export.
+- Predani spravy: kontrola po ulozeni je soucasti textoveho predavaciho balicku, aby novy spravce vedel, co overit po kazde zmene.
+- Smoke guard: `app-usage-smoke-v963.js` hlida spolecny zdroj kontroly po ulozeni, vlozeni do admin-only obrazovek a kompaktni responsive styl.
+- Release metadata sjednocená na `RaK 1.2 (1.242)`, technická verze `1.2.242`, cache `v1.2-1.242`.
+
 ## RaK 1.2 (1.241)
 
 - Administrace: na admin uvod a Predani spravy pridany prehled `Kdo smi co menit` pro hlavniho admina, dalsi spravce a bezny ucet.

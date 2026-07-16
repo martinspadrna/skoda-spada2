@@ -520,6 +520,80 @@ function buildAdminAccessRulesHtml() {
   ].join('');
 }
 
+function adminPostSaveCheckItemHtml(item) {
+  const action = String(item && item.action || '').trim();
+  const button = action
+    ? '<button type="button" class="appMenuAction adminPostSaveCheckAction" data-admin-action="' + escapeHtml(action) + '">' + escapeHtml(item.actionLabel || 'Otevřít') + '</button>'
+    : '';
+  return [
+    '<div class="adminPostSaveCheckItem">',
+    '  <div class="adminPostSaveCheckIndex">' + escapeHtml(item && item.index || '') + '</div>',
+    '  <div class="adminPostSaveCheckText">',
+    '    <div class="adminPostSaveCheckTitle">' + escapeHtml(item && item.title || '') + '</div>',
+    '    <div class="smallText">' + escapeHtml(item && item.detail || '') + '</div>',
+    '  </div>',
+    button,
+    '</div>'
+  ].join('');
+}
+
+function getAdminPostSaveCheckItems() {
+  return [
+    {
+      index: '1',
+      title: 'Zelená synchronizace',
+      detail: 'Po každém uložení zkontroluj home nebo servis, že změna nezůstala jen lokálně.',
+      action: 'open-service',
+      actionLabel: 'Servis'
+    },
+    {
+      index: '2',
+      title: 'Veřejný dopad',
+      detail: 'U změn pro lidi otevři mapu, kde přesně vidíš, co se má projevit v běžné aplikaci nebo exportu.',
+      action: 'open-settings-map',
+      actionLabel: 'Mapa'
+    },
+    {
+      index: '3',
+      title: 'Reporty chyb',
+      detail: 'Když po uložení něco nesedí, nejdřív zkontroluj reporty a připojení zařízení.',
+      action: 'open-reports',
+      actionLabel: 'Reporty'
+    },
+    {
+      index: '4',
+      title: 'Export až nakonec',
+      detail: 'Excel, ZIP nebo předávací podklady dělej až po ruční kontrole uloženého stavu.',
+      action: 'open-export',
+      actionLabel: 'Export'
+    }
+  ];
+}
+
+function buildAdminPostSaveCheckHtml() {
+  return [
+    '<div class="adminPostSaveCheck">',
+    '  <div class="appMenuSubTitle">Kontrola po uložení</div>',
+    '  <div class="smallText uMb10">Krátký admin-only postup po každé změně. Tlačítka jen otevírají kontrolní sekce, nic sama neukládají.</div>',
+    '  <div class="adminPostSaveCheckList">',
+    getAdminPostSaveCheckItems().map(adminPostSaveCheckItemHtml).join(''),
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
+function buildAdminPostSaveCheckText() {
+  const lines = [
+    'Kontrola po ulozeni',
+    '- Tenhle seznam je kontrola pro spravce, ne automaticka zmena dat.'
+  ];
+  getAdminPostSaveCheckItems().forEach((item) => {
+    lines.push(String(item.index || '-') + '. ' + String(item.title || 'Kontrola') + ': ' + String(item.detail || ''));
+  });
+  lines.push('');
+  return lines.join('\n');
+}
+
 function buildAdminHandoverAuditHtml(monthKey) {
   const rows = Array.isArray(app && app.machineSettingsRows) ? app.machineSettingsRows : [];
   const machineRows = adminHandoverMachineSettingsRows(rows);
@@ -642,6 +716,7 @@ function buildAdminHandoverStatusText(monthKey) {
     '- Načtené zálohy: ' + String(backups.length),
     '',
     'Doporučená kontrola',
+    buildAdminPostSaveCheckText().trim(),
     '- Po načtení online dat projít Předání správy a Příručku správce.',
     '- Před úpravou rozpisu ověřit zálohy.',
     '- Po uložení zkontrolovat zelený stav synchronizace na hlavní stránce.',
@@ -683,6 +758,8 @@ function buildAdminHandoverPackageText(monthKey) {
     '- Zmeny delat jen v administraci a vzdy ulozit v konkretni sekci.',
     '- Bezni uzivatele nemaji mit moznost menit rozpis, provoz ani nastaveni.',
     '',
+    '============================================================',
+    buildAdminPostSaveCheckText(),
     '============================================================',
     buildAdminHandoverStatusText(selectedMonth),
     '============================================================',
@@ -1543,6 +1620,7 @@ function renderAdminMenuBody(body, section) {
     '  </div>',
     buildAdminPermissionStatusHtml(),
     buildAdminAccessRulesHtml(),
+    buildAdminPostSaveCheckHtml(),
     buildAdminNextStepsHtml(monthKey),
     buildAdminHandoverExportsHtml(monthKey),
     buildAdminActionLegendHtml(),
@@ -1786,6 +1864,7 @@ function renderAdminMenuBody(body, section) {
     '  </div>',
     buildAdminPermissionStatusHtml(),
     buildAdminAccessRulesHtml(),
+    buildAdminPostSaveCheckHtml(),
     buildAdminHandoverAuditHtml(monthKey),
     buildAdminMonthlyWorkflowHtml(monthKey),
     buildAdminHandoverChecklistHtml(monthKey),

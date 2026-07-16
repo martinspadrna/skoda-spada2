@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.241) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.242) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -225,12 +225,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.241)',
-  appLabel: 'RaK 1.2 (1.241)',
-  packageVersion: '1.2.241',
-  cacheVersion: 'v1.2-1.241',
+  displayVersion: '1.2 (1.242)',
+  appLabel: 'RaK 1.2 (1.242)',
+  packageVersion: '1.2.242',
+  cacheVersion: 'v1.2-1.242',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.241)',
+  changelogHeader: '## RaK 1.2 (1.242)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -339,8 +339,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.241)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.241'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.242)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.242'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1482,6 +1482,10 @@ function assertAdminHandoverGuideContractV1142() {
   assertIncludes(ui, 'function buildAdminAccessRulesHtml', 'Admin musi mit predavaci prehled kdo smi co menit');
   assertIncludes(ui, 'function adminAccessRuleItemHtml', 'Prehled pristupu musi mit samostatne polozky roli');
   assertIncludes(ui, 'buildAdminAccessRulesHtml()', 'Pravidla pristupu musi byt vlozena primo do admin-only obrazovek');
+  assertIncludes(ui, 'function buildAdminPostSaveCheckHtml', 'Admin musi mit kontrolu po ulozeni');
+  assertIncludes(ui, 'function getAdminPostSaveCheckItems', 'Kontrola po ulozeni musi mit spolecny zdroj pro UI i text');
+  assertIncludes(ui, 'function buildAdminPostSaveCheckText', 'Kontrola po ulozeni musi byt soucasti predavacich textu');
+  assertIncludes(ui, 'buildAdminPostSaveCheckHtml()', 'Kontrola po ulozeni musi byt vlozena primo do admin-only obrazovek');
   assertIncludes(ui, 'function buildAdminRotationBackupStatusHtml', 'Zalohy rozpisu musi mit admin-only souhrn stavu');
   assertIncludes(ui, 'function adminRotationBackupStatusItemHtml', 'Souhrn zaloh musi mit samostatne stavove polozky');
   assertIncludes(ui, 'function buildAdminManualHtml', 'Admin musi mit samostatnou prirucku spravce');
@@ -1543,6 +1547,9 @@ function assertAdminHandoverGuideContractV1142() {
   assertIncludes(ui, 'Oprávnění správce', 'Admin musi mit viditelnou kontrolu opravneni spravce');
   assertIncludes(ui, 'Kdo smí co měnit', 'Admin musi jasne ukazat role hlavni admin dalsi spravce a bezny ucet');
   assertIncludes(ui, 'Pravidlo běžného účtu', 'Textovy stav predani musi obsahovat pravidlo bezneho uctu');
+  assertIncludes(ui, 'Kontrola po uložení', 'Admin musi mit jasny postup kontroly po ulozeni');
+  assertIncludes(ui, 'Zelená synchronizace', 'Kontrola po ulozeni musi pripominat zelenou synchronizaci');
+  assertIncludes(ui, 'buildAdminPostSaveCheckText()', 'Predavaci balicek musi obsahovat kontrolu po ulozeni');
   assertIncludes(ui, 'Stav záloh', 'Panel zaloh musi ukazovat rychly stav zaloh');
   assertIncludes(ui, 'Před obnovou se současný stav uloží jako další záloha.', 'Panel zaloh musi vysvetlit bezpecnost obnovy');
   assertIncludes(ui, 'Aktivní admin účet', 'Textovy stav predani musi obsahovat aktivni admin ucet');
@@ -1579,6 +1586,8 @@ function assertAdminHandoverGuideContractV1142() {
   assertIncludes(stylesAdminPolishCss, '.adminPermissionStatusGrid', 'Stav opravneni musi mit prehlednou mrizku');
   assertIncludes(stylesAdminPolishCss, '.adminAccessRulesGrid', 'Prehled pristupu musi mit vlastni responsive mrizku');
   assertIncludes(stylesAdminPolishCss, '.adminAccessRuleItem.isUser', 'Prehled pristupu musi vizualne odlisit bezny ucet bez admin prav');
+  assertIncludes(stylesAdminPolishCss, '.adminPostSaveCheckList', 'Kontrola po ulozeni musi mit vlastni seznam');
+  assertIncludes(stylesAdminPolishCss, '.adminPostSaveCheckAction', 'Kontrola po ulozeni musi mit kompaktni admin akce');
   assertIncludes(stylesAdminPolishCss, '.adminRotationBackupStatus', 'Souhrn zaloh musi mit vlastni admin-only styl');
   assertIncludes(stylesAdminPolishCss, '.adminRotationBackupStatusGrid', 'Souhrn zaloh musi mit prehlednou mrizku');
   assertIncludes(stylesAdminPolishCss, '.adminHandoverRunbook', 'Predani spravy musi mit vlastni admin-only runbook styl');

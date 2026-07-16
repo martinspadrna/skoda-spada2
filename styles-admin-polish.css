@@ -1537,6 +1537,53 @@
   font-weight:700 !important;
   line-height:1.25 !important;
 }
+.adminPostSaveCheck{
+  display:grid !important;
+  gap:8px !important;
+  margin:12px 0 !important;
+  padding:10px !important;
+  border:1px solid rgba(175,210,255,.24) !important;
+  border-radius:8px !important;
+  background:rgba(255,255,255,.04) !important;
+}
+.adminPostSaveCheckList{
+  display:grid !important;
+  gap:8px !important;
+}
+.adminPostSaveCheckItem{
+  display:grid !important;
+  grid-template-columns:30px minmax(0,1fr) auto !important;
+  gap:9px !important;
+  align-items:start !important;
+  min-height:58px !important;
+  padding:9px !important;
+  border:1px solid rgba(175,210,255,.22) !important;
+  border-radius:8px !important;
+  background:rgba(0,0,0,.1) !important;
+}
+.adminPostSaveCheckIndex{
+  display:grid !important;
+  place-items:center !important;
+  width:30px !important;
+  height:30px !important;
+  border-radius:999px !important;
+  color:#dfffea !important;
+  background:rgba(95,255,130,.18) !important;
+  font-size:13px !important;
+  font-weight:900 !important;
+}
+.adminPostSaveCheckText{
+  min-width:0 !important;
+}
+.adminPostSaveCheckTitle{
+  font-weight:900 !important;
+  line-height:1.15 !important;
+}
+#appMenuBody .adminPostSaveCheckAction{
+  min-width:78px !important;
+  min-height:34px !important;
+  padding:7px 9px !important;
+}
 .adminRotationBackupStatus{
   display:grid !important;
   gap:8px !important;
@@ -2231,6 +2278,13 @@
   }
   .adminAccessRulesGrid{
     grid-template-columns:1fr !important;
+  }
+  .adminPostSaveCheckItem{
+    grid-template-columns:30px minmax(0,1fr) !important;
+  }
+  #appMenuBody .adminPostSaveCheckAction{
+    grid-column:2 !important;
+    justify-self:start !important;
   }
   .adminAccountsRoleOverview{
     grid-template-columns:1fr !important;
