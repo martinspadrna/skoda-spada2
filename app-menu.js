@@ -766,6 +766,21 @@ function buildAdminAccessRulesHtml() {
   ].join('');
 }
 
+function buildAdminAccessRulesText() {
+  const activeAdmins = adminHandoverActiveAdminCount();
+  const permissionStatus = adminPermissionStatusSnapshot();
+  return [
+    'Pristup a hesla',
+    '- Aktivni admin ucty: ' + String(activeAdmins),
+    '- Aktualni role: ' + String(permissionStatus.roleLabel || 'nezjisteno'),
+    '- Hlavni admin muze menit spravce, hesla, provoz i rozpisy.',
+    '- Dalsi spravce muze menit provoz, rozpisy, absence, zalohy a exporty, ale ne seznam spravcu.',
+    '- Bezny ucet nesmi menit rozpis, provoz ani online nastaveni.',
+    '- Predavaci exporty nestahuji hesla. Hesla se nastavuji jen v administraci / Spravci.',
+    ''
+  ].join('\n');
+}
+
 function adminPostSaveCheckItemHtml(item) {
   const action = String(item && item.action || '').trim();
   const button = action
@@ -946,6 +961,7 @@ function buildAdminHandoverStatusText(monthKey) {
     '- Pravidlo hlavního admina: hlavní admin smí měnit správce a hesla.',
     '- Pravidlo dalšího správce: smí měnit provoz a rozpisy, ale ne seznam správců.',
     '- Pravidlo běžného účtu: nesmí měnit rozpis, provoz ani online nastavení.',
+    buildAdminAccessRulesText().trim(),
     '- Admin účty: ' + String(activeAdmins),
     '- Kantýna / jídelna: ' + (foodLocations ? ('nastaveno ' + foodLocations + ' míst') : 'zkontrolovat'),
     '- Přesčasové termíny: ' + String(overtimeCount),
@@ -997,6 +1013,7 @@ function buildAdminHandoverPackageText(monthKey) {
     '- Tenhle soubor je jen predavaci podklad. Nic sam nemeni ani neuklada.',
     '- Zmeny delat jen v administraci a vzdy ulozit v konkretni sekci.',
     '- Bezni uzivatele nemaji mit moznost menit rozpis, provoz ani nastaveni.',
+    buildAdminAccessRulesText().trim(),
     '',
     '============================================================',
     buildAdminHandoverTodoText(selectedMonth),

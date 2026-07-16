@@ -1,3 +1,10 @@
+## RaK 1.2 (1.250)
+
+- Administrace / Predavaci podklady: textovy stav i souhrnny balicek obsahuji samostatny blok `Pristup a hesla`.
+- Predani spravy: v podkladech je jasne napsane, ze exporty nestahuji admin hesla a ze hesla se nastavujou jen v administraci / Spravci.
+- Smoke guard: `app-usage-smoke-v963.js` hlida pristupova pravidla v predavacich textech a pravidlo bez exportu hesel.
+- Release metadata sjednocená na `RaK 1.2 (1.250)`, technická verze `1.2.250`, cache `v1.2-1.250`.
+
 ## RaK 1.2 (1.249)
 
 - Administrace / Spravci: obrazovka spravcu ma novy admin-only souhrn `Bezpecnost pristupu` s owner uctem, poctem dalsich spravcu a pravidlem, ze predavaci exporty nestahuji hesla.
