@@ -1374,6 +1374,31 @@ function buildAdminAnnouncementPublicCheckHtml() {
   ].join('');
 }
 
+function adminExternalLinksPublicCheckItemHtml(label, value, detail, state) {
+  const safeState = state || 'info';
+  return [
+    '<div class="adminExternalLinksPublicCheckItem is' + escapeHtml(safeState.charAt(0).toUpperCase() + safeState.slice(1)) + '">',
+    '  <span>' + escapeHtml(label || '') + '</span>',
+    '  <b>' + escapeHtml(value || '') + '</b>',
+    detail ? '  <small>' + escapeHtml(detail) + '</small>' : '',
+    '</div>'
+  ].join('');
+}
+
+function buildAdminExternalLinksPublicCheckHtml() {
+  return [
+    '<div class="adminExternalLinksPublicCheck">',
+    '  <div class="appMenuSubTitle">Veřejná kontrola odkazů</div>',
+    '  <div class="smallText uMb10">Odkazy jsou viditelné v běžné aplikaci. Po uložení je potřeba ověřit, že se otevřou správné firemní stránky a kalendář.</div>',
+    '  <div class="adminExternalLinksPublicCheckGrid">',
+    adminExternalLinksPublicCheckItemHtml('Home a menu', 'otevřít', 'Zkontroluj Jídelní lístek, Eportal, Výplatu a Kalendář z běžné aplikace.', 'warn'),
+    adminExternalLinksPublicCheckItemHtml('Formát URL', 'https', 'U veřejných odkazů používej celé bezpečné adresy, ne zkrácené nebo rozbité odkazy.', 'info'),
+    adminExternalLinksPublicCheckItemHtml('Kalendář', 'iframe', 'Po změně kalendáře otevři modal a ověř, že se vložený kalendář opravdu načte.', 'info'),
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
 function buildAdminMonthlyWorkflowHtml(monthKey) {
   const workflow = getAdminMonthlyWorkflowItems(monthKey);
   return [
@@ -2100,6 +2125,7 @@ function renderAdminMenuBody(body, section) {
     '    <div class="smallText" id="adminOnlineSaveStatus">Bez uložené změny zůstávají původní odkazy.</div>',
     '  </div>',
     buildAdminExternalLinksSettingsHtml(),
+    buildAdminExternalLinksPublicCheckHtml(),
     '  <div class="appMenuActionRow">',
     '    <button type="button" class="appMenuAction" data-admin-action="load-external-links">Načíst online</button>',
     '    <button type="button" class="appMenuAction isActive" data-admin-action="save-external-links">Uložit odkazy</button>',

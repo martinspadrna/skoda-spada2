@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.252) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.253) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -225,12 +225,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.252)',
-  appLabel: 'RaK 1.2 (1.252)',
-  packageVersion: '1.2.252',
-  cacheVersion: 'v1.2-1.252',
+  displayVersion: '1.2 (1.253)',
+  appLabel: 'RaK 1.2 (1.253)',
+  packageVersion: '1.2.253',
+  cacheVersion: 'v1.2-1.253',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.252)',
+  changelogHeader: '## RaK 1.2 (1.253)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -339,8 +339,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.252)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.252'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.253)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.253'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1679,12 +1679,17 @@ function assertAdminExternalLinksSettingsContractV1144() {
   assertIncludes(ui, 'function getRakExternalLinkUrl', 'Klikaci akce musi umet nacist URL z admin nastaveni');
   assertIncludes(ui, 'function buildAdminExternalLinksSettingsHtml', 'Administrace musi mit formular externich odkazu');
   assertIncludes(ui, 'function buildAdminExternalLinksStatusHtml', 'Administrace musi mit souhrn stavu externich odkazu');
+  assertIncludes(ui, 'function buildAdminExternalLinksPublicCheckHtml', 'Externi odkazy musi mit admin-only kontrolu verejneho dopadu');
+  assertIncludes(ui, 'Veřejná kontrola odkazů', 'Externi odkazy musi spravci rikat, ze jde o verejne viditelnou zmenu');
+  assertIncludes(ui, 'Zkontroluj Jídelní lístek, Eportal, Výplatu a Kalendář', 'Externi odkazy musi mit jasnou kontrolu po ulozeni z bezne aplikace');
+  assertIncludes(ui, 'buildAdminExternalLinksPublicCheckHtml()', 'Kontrola verejneho dopadu odkazu musi byt vlozena do admin obrazovky odkazu');
   assertIncludes(ui, 'function adminExternalLinksRefreshStatus', 'Souhrn externich odkazu se musi prepocitat podle rozepsanych radku');
   assertIncludes(ui, 'readAdminExternalLinksStatusFromDom', 'Souhrn externich odkazu musi vychazet z aktualnich DOM radku pred ulozenim');
   assertIncludes(ui, 'function readAdminExternalLinksSettingsFromDom', 'Administrace musi umet nacist externi odkazy z formulare');
   assertIncludes(ui, 'function mergeRakExternalLinksSettingsRows', 'Externi odkazy se musi ukladat do machine_settings bez mazani ostatnich nastaveni');
   assertIncludes(ui, 'adminExternalLinksRefreshStatus(body)', 'Admin menu musi prepocitat souhrn externich odkazu pri zmene pole');
   assertIncludes(stylesAdminPolishCss, '.adminExternalLinksStatusGrid', 'Souhrn externich odkazu musi mit vlastni responsive admin styl');
+  assertIncludes(stylesAdminPolishCss, '.adminExternalLinksPublicCheckGrid', 'Verejna kontrola odkazu musi mit vlastni responsive admin styl');
   assertIncludes(ui, "action: 'open-external-links', label: 'Odkazy'", 'Admin menu musi obsahovat sekci Odkazy');
   assertIncludes(ui, "adminAction === 'open-external-links'", 'Admin menu musi umet otevrit odkazy');
   assertIncludes(ui, "adminAction === 'save-external-links'", 'Admin menu musi umet ulozit odkazy');

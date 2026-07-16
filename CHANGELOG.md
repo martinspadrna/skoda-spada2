@@ -1,3 +1,10 @@
+## RaK 1.2 (1.253)
+
+- Administrace / Odkazy: doplněna admin-only `Veřejná kontrola odkazů`, aby správce po změně ověřil Jídelní lístek, Eportal, Výplatu a Kalendář z běžné aplikace.
+- Odkazy: kontrola připomíná bezpečný formát URL, test vloženého kalendáře a veřejný dopad na home/menu.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá veřejnou kontrolu odkazů, vložení do admin obrazovky a responsive styl.
+- Release metadata sjednocená na `RaK 1.2 (1.253)`, technická verze `1.2.253`, cache `v1.2-1.253`.
+
 ## RaK 1.2 (1.252)
 
 - Administrace / Oznámení Dashboard: doplněna admin-only `Veřejná kontrola oznámení`, aby správce před veřejnou změnou viděl, kde se projeví a co ověřit po uložení nebo vypnutí.
