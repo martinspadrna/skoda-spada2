@@ -2513,6 +2513,20 @@
   font-weight:700 !important;
   line-height:1.25 !important;
 }
+.appMenuTinyButton{
+  border:1px solid rgba(255,210,120,.38) !important;
+  border-radius:8px !important;
+  background:rgba(255,185,80,.08) !important;
+  color:#fff1c6 !important;
+  min-height:28px !important;
+  padding:5px 9px !important;
+  font-size:12px !important;
+  font-weight:900 !important;
+  cursor:pointer !important;
+}
+.appMenuTinyButton:active{
+  transform:translateY(1px) !important;
+}
 .adminMenuSections{
   display:grid !important;
   gap:10px !important;

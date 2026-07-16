@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.265) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.266) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -225,12 +225,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.265)',
-  appLabel: 'RaK 1.2 (1.265)',
-  packageVersion: '1.2.265',
-  cacheVersion: 'v1.2-1.265',
+  displayVersion: '1.2 (1.266)',
+  appLabel: 'RaK 1.2 (1.266)',
+  packageVersion: '1.2.266',
+  cacheVersion: 'v1.2-1.266',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.265)',
+  changelogHeader: '## RaK 1.2 (1.266)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -339,8 +339,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.265)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.265'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.266)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.266'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1443,6 +1443,16 @@ function assertAdminAccountLoginContractV1141() {
   assertIncludes(adminUnlockJs, 'function mergeAdminAccountsSettingsRows', 'Spravci se musi ukladat do machine_settings bez mazani ostatnich nastaveni');
   assertIncludes(adminUnlockJs, 'function rakAdminCanManageAdmins', 'Jen owner admin smi spravovat dalsi adminy');
   assertIncludes(adminUnlockJs, 'function rakAdminPromptUnlockForAccount', 'Pri prihlaseni admin uctu se musi vyzadat heslo');
+  assertIncludes(adminUnlockJs, 'RAK_ADMIN_SESSION_PROMPTED_ACCOUNT_KEY', 'Startovni vyzva admin hesla musi byt hlidana proti opakovanemu promptu');
+  assertIncludes(adminUnlockJs, 'RAK_ADMIN_PERSISTENT_SESSION_KEY', 'Admin relace se po overeni musi umet zapamatovat na zarizeni');
+  assertIncludes(adminUnlockJs, 'function rakAdminRestorePersistentSessionForActiveAccount', 'Po znovuotevreni appky se musi obnovit ulozena admin relace');
+  assertIncludes(adminUnlockJs, 'function buildAdminSessionDevicesHtml', 'Hlavni admin musi videt odemcena admin zarizeni');
+  assertIncludes(adminUnlockJs, 'function rakAdminRevokePersistentSession', 'Hlavni admin musi umet odhlasit ulozenou admin relaci zarizeni');
+  assertIncludes(adminUnlockJs, 'function rakAdminPromptOnceForActiveAccount', 'Po znovuotevreni appky se musi admin ucet znovu zeptat na heslo');
+  assertIncludes(adminUnlockJs, 'function rakAdminLoadSettingsThenCheck', 'Start appky musi umet nacist online spravce pred kontrolou admin hesla');
+  assertIncludes(adminUnlockJs, "rakAdminLoadSettingsThenCheck('startup')", 'Start appky musi spustit jednorazovou kontrolu admin hesla');
+  assertIncludes(adminUnlockJs, "rakAdminPromptOnceForActiveAccount(reason || 'settings-loaded')", 'Dalsi admini z online nastaveni se musi overit po nacteni machine_settings');
+  assertIncludes(ui, "adminAction === 'revoke-admin-session'", 'Administrace Spravci musi mit akci pro odhlaseni admin zarizeni');
   assertIncludes(adminUnlockJs, 'function rakAdminCanOpenAdmin', 'Admin menu musi mit centralni kontrolu otevreni');
   assertIncludes(adminUnlockJs, 'function bindAdminAccountUnlock', 'Admin inicializace musi byt navazana na prihlaseny ucet, ne na tajne klikani');
   assertIncludes(adminUnlockJs, 'rakAdminLock()', 'Bez admin uctu se musi admin opravneni zrusit');

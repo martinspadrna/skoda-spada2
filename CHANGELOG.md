@@ -1,3 +1,10 @@
+## RaK 1.2 (1.266)
+
+- Admin prihlaseni: po overeni heslem zustane admin ucet odemceny na danem zarizeni i po znovuotevreni aplikace.
+- Spravci: hlavni admin vidi prihlasena admin zarizeni a muze jejich ulozenou relaci odhlasit bez mazani uctu nebo hesla.
+- Smoke guard: `app-usage-smoke-v963.js` hlida ulozenou admin relaci, seznam zarizeni a odhlaseni relace ze sekce Spravci.
+- Release metadata sjednocená na `RaK 1.2 (1.266)`, technická verze `1.2.266`, cache `v1.2-1.266`.
+
 ## RaK 1.2 (1.265)
 
 - Administrace / Export / import: doplněno potvrzení před načtením Excelu do rozpisů, aby se import nedal spustit omylem.

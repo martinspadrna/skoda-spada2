@@ -1,4 +1,4 @@
-// RaK 1.2 (1.265) - admin opravneni navazane na prihlaseny ucet.
+// RaK 1.2 (1.266) - admin opravneni navazane na prihlaseny ucet.
 const RAK_OWNER_ADMIN_ACCOUNT_ID = '9811';
 const RAK_OWNER_ADMIN_PASSWORD = '772326';
 const RAK_ADMIN_ACCOUNTS_SETTINGS_KEY = 'ADMIN_ACCOUNTS_SETTINGS';
@@ -8,6 +8,11 @@ const RAK_ADMIN_SESSION_PIN_KEY = 'adminPinSession';
 const RAK_ADMIN_SESSION_AUTH_PIN_KEY = 'adminAuthPinSession';
 const RAK_ADMIN_SESSION_ACCOUNT_KEY = 'adminAccountIdSession';
 const RAK_ADMIN_SESSION_OWNER_KEY = 'adminOwnerSession';
+const RAK_ADMIN_SESSION_PROMPTED_ACCOUNT_KEY = 'adminPromptedAccountSession';
+const RAK_ADMIN_PERSISTENT_SESSION_KEY = 'adminPersistentSessionV1';
+const RAK_ADMIN_DEVICE_ID_KEY = 'adminDeviceIdV1';
+const RAK_ADMIN_SESSION_MAX_AGE_MS = 180 * 24 * 60 * 60 * 1000;
+const RAK_ADMIN_SESSION_TOUCH_MS = 30 * 60 * 1000;
 
 function rakAdminGetActiveAccountId() {
   try {
@@ -55,6 +60,24 @@ function rakAdminNormalizeManagedEntry(entry) {
   };
 }
 
+function rakAdminNormalizeSessionEntry(entry) {
+  const safe = entry && typeof entry === 'object' ? entry : {};
+  const accountId = String(safe.accountId || safe.account_id || '').trim();
+  const deviceId = String(safe.deviceId || safe.device_id || '').trim();
+  const token = String(safe.token || '').trim();
+  if (!accountId || !deviceId || !token) return null;
+  return {
+    accountId,
+    deviceId,
+    token,
+    label: String(safe.label || safe.deviceLabel || safe.device_label || '').trim() || 'Zařízení',
+    createdAt: String(safe.createdAt || safe.created_at || '').trim(),
+    lastSeenAt: String(safe.lastSeenAt || safe.last_seen_at || '').trim(),
+    appVersion: String(safe.appVersion || safe.app_version || '').trim(),
+    revokedAt: String(safe.revokedAt || safe.revoked_at || '').trim()
+  };
+}
+
 function rakAdminGetAccountsSettings() {
   const row = rakAdminSettingsRows().find(rakAdminIsAccountsSettingsRow);
   const raw = row && row.settings_json && typeof row.settings_json === 'object'
@@ -65,10 +88,14 @@ function rakAdminGetAccountsSettings() {
   const entries = Array.isArray(raw && raw.admins)
     ? raw.admins.map(rakAdminNormalizeManagedEntry).filter(Boolean)
     : [];
+  const sessions = Array.isArray(raw && raw.sessions)
+    ? raw.sessions.map(rakAdminNormalizeSessionEntry).filter(Boolean)
+    : [];
   return {
     type: RAK_ADMIN_ACCOUNTS_SETTINGS_CATEGORY,
     ownerAccountId: RAK_OWNER_ADMIN_ACCOUNT_ID,
-    admins: entries
+    admins: entries,
+    sessions
   };
 }
 
@@ -89,7 +116,81 @@ function rakAdminExpectedPasswordForAccount(accountId) {
   return managed ? String(managed.password || '') : '';
 }
 
-function rakAdminClearSession() {
+function rakAdminMakeId(prefix) {
+  try {
+    const hasCrypto = typeof crypto !== 'undefined' && crypto && typeof crypto.getRandomValues === 'function';
+    const rnd = hasCrypto
+      ? Array.from(crypto.getRandomValues(new Uint32Array(4))).map(n => n.toString(36)).join('')
+      : (Date.now().toString(36) + Math.random().toString(36).slice(2, 14));
+    return (String(prefix || 'rak') + '-' + rnd).slice(0, 96);
+  } catch (err) {
+    return (String(prefix || 'rak') + '-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10)).slice(0, 96);
+  }
+}
+
+function rakAdminGetDeviceId() {
+  try {
+    let id = String(localStorage.getItem(RAK_ADMIN_DEVICE_ID_KEY) || '').trim();
+    if (/^rakadm-[a-z0-9-]{10,}$/i.test(id)) return id.slice(0, 96);
+    id = rakAdminMakeId('rakadm');
+    localStorage.setItem(RAK_ADMIN_DEVICE_ID_KEY, id);
+    return id;
+  } catch (err) {
+    return rakAdminMakeId('rakadm');
+  }
+}
+
+function rakAdminDeviceLabel() {
+  try {
+    const ua = String((typeof navigator !== 'undefined' && navigator.userAgent) ? navigator.userAgent : '').toLowerCase();
+    const platform = String((typeof navigator !== 'undefined' && navigator.platform) ? navigator.platform : '').trim();
+    const isPhone = /iphone|android.*mobile/.test(ua);
+    const isTablet = /ipad|tablet|android(?!.*mobile)/.test(ua);
+    const os = /iphone|ipad/.test(ua) ? 'iOS' : (/android/.test(ua) ? 'Android' : (/windows/.test(ua) ? 'Windows' : (platform || 'Zařízení')));
+    const browser = /edg\//.test(ua) ? 'Edge' : (/chrome|crios/.test(ua) ? 'Chrome' : (/safari/.test(ua) ? 'Safari' : 'Prohlížeč'));
+    return ((isPhone ? 'Mobil' : (isTablet ? 'Tablet' : 'Počítač')) + ' · ' + os + ' · ' + browser).slice(0, 120);
+  } catch (err) {
+    return 'Zařízení';
+  }
+}
+
+function rakAdminReadPersistentSession() {
+  try {
+    const raw = localStorage.getItem(RAK_ADMIN_PERSISTENT_SESSION_KEY);
+    const parsed = raw ? JSON.parse(raw) : null;
+    if (!parsed || typeof parsed !== 'object') return null;
+    const accountId = String(parsed.accountId || '').trim();
+    const deviceId = String(parsed.deviceId || '').trim();
+    const token = String(parsed.token || '').trim();
+    const createdAt = Number(parsed.createdAt || 0) || 0;
+    if (!accountId || !deviceId || !token || !createdAt) return null;
+    if (Date.now() - createdAt > RAK_ADMIN_SESSION_MAX_AGE_MS) return null;
+    return Object.assign({}, parsed, { accountId, deviceId, token, createdAt });
+  } catch (err) {
+    return null;
+  }
+}
+
+function rakAdminWritePersistentSession(session) {
+  try {
+    if (!session || typeof session !== 'object') return false;
+    localStorage.setItem(RAK_ADMIN_PERSISTENT_SESSION_KEY, JSON.stringify(session));
+    localStorage.removeItem('adminUnlocked');
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
+
+function rakAdminClearPersistentSession() {
+  try {
+    localStorage.removeItem(RAK_ADMIN_PERSISTENT_SESSION_KEY);
+    localStorage.removeItem('adminUnlocked');
+  } catch (err) {}
+}
+
+function rakAdminClearSession(options) {
+  const opts = options && typeof options === 'object' ? options : {};
   try {
     sessionStorage.removeItem(RAK_ADMIN_SESSION_UNLOCKED_KEY);
     sessionStorage.removeItem(RAK_ADMIN_SESSION_PIN_KEY);
@@ -98,26 +199,42 @@ function rakAdminClearSession() {
     sessionStorage.removeItem(RAK_ADMIN_SESSION_OWNER_KEY);
     localStorage.removeItem('adminUnlocked');
   } catch (err) {}
+  if (opts.clearPersistent === true) rakAdminClearPersistentSession();
 }
 
-function rakAdminLock() {
+function rakAdminLock(options) {
   if (typeof app !== 'undefined' && app) {
     app.adminUnlocked = false;
     app.adminPin = '';
     app.adminAccountId = '';
     app.adminIsOwner = false;
   }
-  rakAdminClearSession();
+  rakAdminClearSession(options && typeof options === 'object' ? options : {});
 }
 
-function rakAdminUnlockForAccount(accountId, pin) {
+function rakAdminSessionMatchesSettings(session, settings) {
+  const safe = session && typeof session === 'object' ? session : null;
+  if (!safe) return false;
+  const source = settings && typeof settings === 'object' ? settings : rakAdminGetAccountsSettings();
+  const sessions = Array.isArray(source && source.sessions) ? source.sessions : [];
+  if (!sessions.length) return true;
+  return sessions.some((entry) => (
+    entry
+    && !entry.revokedAt
+    && String(entry.accountId || '') === String(safe.accountId || '')
+    && String(entry.deviceId || '') === String(safe.deviceId || '')
+    && String(entry.token || '') === String(safe.token || '')
+  ));
+}
+
+function rakAdminApplyUnlockedAccount(accountId, authPin, options) {
   const id = String(accountId || '').trim();
-  const pass = String(pin || '').trim();
+  const pass = String(authPin || rakAdminExpectedPasswordForAccount(id) || RAK_OWNER_ADMIN_PASSWORD).trim();
+  const opts = options && typeof options === 'object' ? options : {};
   if (!id || !rakAdminAccountRequiresPassword(id)) {
-    rakAdminLock();
+    rakAdminLock({ clearPersistent: false });
     return false;
   }
-  if (pass !== rakAdminExpectedPasswordForAccount(id)) return false;
   if (typeof app !== 'undefined' && app) {
     app.adminUnlocked = true;
     app.adminPin = RAK_OWNER_ADMIN_PASSWORD;
@@ -133,14 +250,130 @@ function rakAdminUnlockForAccount(accountId, pin) {
     sessionStorage.setItem(RAK_ADMIN_SESSION_OWNER_KEY, rakAdminIsOwnerAccount(id) ? '1' : '0');
     localStorage.removeItem('adminUnlocked');
   } catch (err) {}
+  if (opts.touchPersistent !== false) rakAdminPersistUnlockedSession(id);
   if (typeof updateImportBoxVisibility === 'function') updateImportBoxVisibility();
   return true;
+}
+
+function rakAdminPersistUnlockedSession(accountId) {
+  const id = String(accountId || '').trim();
+  if (!id) return null;
+  const nowIso = new Date().toISOString();
+  const current = rakAdminReadPersistentSession();
+  const session = current && current.accountId === id
+    ? Object.assign({}, current)
+    : {
+        accountId: id,
+        deviceId: rakAdminGetDeviceId(),
+        token: rakAdminMakeId('raksess'),
+        createdAt: Date.now()
+      };
+  session.accountId = id;
+  session.deviceId = session.deviceId || rakAdminGetDeviceId();
+  session.token = session.token || rakAdminMakeId('raksess');
+  session.label = rakAdminDeviceLabel();
+  session.lastSeenAt = nowIso;
+  session.appVersion = String((typeof app !== 'undefined' && app && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '') || '').trim();
+  rakAdminWritePersistentSession(session);
+  const lastTouch = Number(session.lastOnlineTouchAt || 0) || 0;
+  if (!lastTouch || Date.now() - lastTouch > RAK_ADMIN_SESSION_TOUCH_MS) {
+    session.lastOnlineTouchAt = Date.now();
+    rakAdminWritePersistentSession(session);
+    void rakAdminSaveCurrentSessionDevice(session);
+  }
+  return session;
+}
+
+function rakAdminSaveCurrentSessionDevice(session) {
+  const safe = session && typeof session === 'object' ? session : rakAdminReadPersistentSession();
+  if (!safe || !safe.accountId || !safe.deviceId || !safe.token) return Promise.resolve({ ok: false, reason: 'missing-session' });
+  if (!(window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.saveMachineSettings === 'function')) return Promise.resolve({ ok: false, reason: 'missing-bridge' });
+  const loadPromise = (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.loadMachineSettings === 'function')
+    ? window.RotationSupabaseBridge.loadMachineSettings().then((rows) => {
+        if (typeof app !== 'undefined' && app) app.machineSettingsRows = Array.isArray(rows) ? rows : [];
+      }).catch(() => {})
+    : Promise.resolve();
+  return loadPromise.then(() => {
+    const settings = rakAdminGetAccountsSettings();
+    const sessions = (Array.isArray(settings.sessions) ? settings.sessions : [])
+      .filter((entry) => entry && String(entry.deviceId || '') !== String(safe.deviceId || ''));
+    sessions.push(rakAdminNormalizeSessionEntry(Object.assign({}, safe, {
+      createdAt: safe.createdAt ? new Date(Number(safe.createdAt)).toISOString() : new Date().toISOString(),
+      lastSeenAt: safe.lastSeenAt || new Date().toISOString(),
+      revokedAt: ''
+    })));
+    const nextSettings = Object.assign({}, settings, {
+      sessions: sessions.filter(Boolean).sort((a, b) => String(b.lastSeenAt || '').localeCompare(String(a.lastSeenAt || ''))),
+      updatedAt: new Date().toISOString()
+    });
+    const rows = mergeAdminAccountsSettingsRows(nextSettings);
+    return window.RotationSupabaseBridge.saveMachineSettings(rows).then((result) => {
+      if (typeof app !== 'undefined' && app) app.machineSettingsRows = rows;
+      return result || { ok: true };
+    });
+  }).catch((err) => ({ ok: false, error: err }));
+}
+
+function rakAdminRevokePersistentSession(deviceId) {
+  const targetId = String(deviceId || '').trim();
+  if (!targetId || !rakAdminCanManageAdmins()) return Promise.resolve({ ok: false, reason: 'not-allowed' });
+  const settings = rakAdminGetAccountsSettings();
+  const nowIso = new Date().toISOString();
+  const sessions = (Array.isArray(settings.sessions) ? settings.sessions : []).map((entry) => {
+    if (!entry || String(entry.deviceId || '') !== targetId) return entry;
+    return Object.assign({}, entry, { revokedAt: nowIso });
+  }).filter(Boolean);
+  const nextSettings = Object.assign({}, settings, { sessions, updatedAt: nowIso });
+  const rows = mergeAdminAccountsSettingsRows(nextSettings);
+  if (!(window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.saveMachineSettings === 'function')) return Promise.resolve({ ok: false, reason: 'missing-bridge' });
+  return window.RotationSupabaseBridge.saveMachineSettings(rows).then((result) => {
+    if (typeof app !== 'undefined' && app) app.machineSettingsRows = rows;
+    const current = rakAdminReadPersistentSession();
+    if (current && String(current.deviceId || '') === targetId) rakAdminLock({ clearPersistent: true });
+    return result || { ok: true };
+  }).catch((err) => ({ ok: false, error: err }));
+}
+
+function rakAdminRestorePersistentSessionForActiveAccount(reason) {
+  const activeId = rakAdminGetActiveAccountId();
+  const session = rakAdminReadPersistentSession();
+  if (!activeId || !session || String(session.accountId || '') !== activeId) return false;
+  if (!rakAdminIsOwnerAccount(activeId) && !rakAdminAccountRequiresPassword(activeId)) return false;
+  if (!rakAdminSessionMatchesSettings(session)) {
+    rakAdminLock({ clearPersistent: true });
+    return false;
+  }
+  const pass = rakAdminExpectedPasswordForAccount(activeId) || RAK_OWNER_ADMIN_PASSWORD;
+  const restored = rakAdminApplyUnlockedAccount(activeId, pass, { touchPersistent: false, source: reason || 'persistent' });
+  if (restored) rakAdminPersistUnlockedSession(activeId);
+  return restored;
+}
+
+function rakAdminCheckPersistentSessionAgainstSettings() {
+  const session = rakAdminReadPersistentSession();
+  if (!session) return false;
+  if (!rakAdminSessionMatchesSettings(session)) {
+    rakAdminLock({ clearPersistent: true });
+    return false;
+  }
+  return true;
+}
+
+function rakAdminUnlockForAccount(accountId, pin, options) {
+  const id = String(accountId || '').trim();
+  const pass = String(pin || '').trim();
+  if (!id || !rakAdminAccountRequiresPassword(id)) {
+    rakAdminLock({ clearPersistent: false });
+    return false;
+  }
+  if (pass !== rakAdminExpectedPasswordForAccount(id)) return false;
+  return rakAdminApplyUnlockedAccount(id, pass, options || {});
 }
 
 function rakAdminRestoreSessionForActiveAccount() {
   const activeId = rakAdminGetActiveAccountId();
   if (!rakAdminAccountRequiresPassword(activeId)) {
-    rakAdminLock();
+    rakAdminLock({ clearPersistent: false });
     return false;
   }
   try {
@@ -156,7 +389,7 @@ function rakAdminRestoreSessionForActiveAccount() {
 function rakAdminPromptUnlockForAccount(accountId) {
   const id = String(accountId || '').trim();
   if (!rakAdminAccountRequiresPassword(id)) {
-    rakAdminLock();
+    rakAdminLock({ clearPersistent: false });
     return true;
   }
   if (typeof app !== 'undefined' && app && app.adminUnlocked && String(app.adminAccountId || '') === id) return true;
@@ -167,9 +400,59 @@ function rakAdminPromptUnlockForAccount(accountId) {
     pass = '';
   }
   if (rakAdminUnlockForAccount(id, pass)) return true;
-  rakAdminLock();
+  rakAdminLock({ clearPersistent: true });
   try { alert('Spatne heslo administrace.'); } catch (err) {}
   return false;
+}
+
+function rakAdminPromptOnceForActiveAccount(reason) {
+  const id = rakAdminGetActiveAccountId();
+  if (!id || !rakAdminAccountRequiresPassword(id)) return false;
+  if (typeof app !== 'undefined' && app && app.adminUnlocked === true && String(app.adminAccountId || '') === id) return true;
+  let prompted = false;
+  try {
+    prompted = sessionStorage.getItem(RAK_ADMIN_SESSION_PROMPTED_ACCOUNT_KEY) === id;
+  } catch (err) {
+    prompted = String(window.__rakAdminPromptedAccountId || '') === id;
+  }
+  if (prompted) return false;
+  try {
+    sessionStorage.setItem(RAK_ADMIN_SESSION_PROMPTED_ACCOUNT_KEY, id);
+  } catch (err) {
+    window.__rakAdminPromptedAccountId = id;
+  }
+  return rakAdminPromptUnlockForAccount(id);
+}
+
+function rakAdminScheduleStartupPrompt() {
+  [0, 350, 1200].forEach((delay) => {
+    try {
+      setTimeout(() => rakAdminLoadSettingsThenCheck('startup'), delay);
+    } catch (err) {}
+  });
+}
+
+function rakAdminLoadSettingsThenCheck(reason) {
+  const activeId = rakAdminGetActiveAccountId();
+  if (!activeId) return false;
+  const alreadyKnownAdmin = rakAdminIsOwnerAccount(activeId) || rakAdminAccountRequiresPassword(activeId);
+  const persistentResult = alreadyKnownAdmin ? rakAdminRestorePersistentSessionForActiveAccount(reason || 'persistent') : false;
+  const promptResult = alreadyKnownAdmin && !persistentResult ? rakAdminPromptOnceForActiveAccount(reason) : persistentResult;
+  if (!(window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.loadMachineSettings === 'function')) return promptResult;
+  if (window.__rakAdminSettingsLoadPending === true) return promptResult;
+  window.__rakAdminSettingsLoadPending = true;
+  window.RotationSupabaseBridge.loadMachineSettings().then((rows) => {
+    window.__rakAdminSettingsLoadPending = false;
+    if (typeof app !== 'undefined' && app) app.machineSettingsRows = Array.isArray(rows) ? rows : [];
+    const restoredPersistent = rakAdminRestorePersistentSessionForActiveAccount(reason || 'settings-loaded');
+    if (restoredPersistent) return;
+    rakAdminCheckPersistentSessionAgainstSettings();
+    const restoredAfterSettings = rakAdminRestoreSessionForActiveAccount();
+    if (!restoredAfterSettings) rakAdminPromptOnceForActiveAccount(reason || 'settings-loaded');
+  }).catch(() => {
+    window.__rakAdminSettingsLoadPending = false;
+  });
+  return true;
 }
 
 function rakAdminCanOpenAdmin() {
@@ -267,6 +550,52 @@ function buildAdminAccountsSafetyHtml(source) {
     adminAccountsSafetyItemHtml('Predani', 'bez hesel', 'Predavaci exporty hesla nestahuji; hesla se nastavuji jen tady.', 'isInfo'),
     adminAccountsSafetyItemHtml('Bezni uzivatele', 'bez zmen', 'Bez admin hesla nevidi admin menu a nemeni provozni data.', 'isInfo'),
     '  </div>',
+    '</div>'
+  ].join('');
+}
+
+function adminSessionDateLabel(value) {
+  const text = String(value || '').trim();
+  if (!text) return 'neznámé';
+  try {
+    const date = new Date(text);
+    if (!Number.isFinite(date.getTime())) return text;
+    return date.toLocaleString('cs-CZ', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  } catch (err) {
+    return text;
+  }
+}
+
+function buildAdminSessionDevicesHtml(source) {
+  const settings = source && typeof source === 'object' && Array.isArray(source.sessions)
+    ? source
+    : rakAdminGetAccountsSettings();
+  const sessions = (Array.isArray(settings.sessions) ? settings.sessions : [])
+    .filter((entry) => entry && !entry.revokedAt)
+    .sort((a, b) => String(b.lastSeenAt || '').localeCompare(String(a.lastSeenAt || '')));
+  const current = rakAdminReadPersistentSession();
+  const currentDeviceId = String(current && current.deviceId || rakAdminGetDeviceId() || '').trim();
+  const rows = sessions.length
+    ? sessions.map((entry) => {
+        const isCurrent = String(entry.deviceId || '') === currentDeviceId;
+        return [
+          '<tr>',
+          '  <td><b>' + escapeHtml(entry.label || 'Zařízení') + '</b><br><small>' + escapeHtml(isCurrent ? 'toto zařízení' : entry.deviceId) + '</small></td>',
+          '  <td>' + escapeHtml(entry.accountId || '') + '</td>',
+          '  <td>' + escapeHtml(adminSessionDateLabel(entry.lastSeenAt || entry.createdAt)) + '</td>',
+          '  <td>' + (isCurrent ? '<span class="smallText">Aktuální</span>' : '<button type="button" class="appMenuTinyButton" data-admin-action="revoke-admin-session" data-admin-device-id="' + escapeHtml(entry.deviceId || '') + '">Odhlásit</button>') + '</td>',
+          '</tr>'
+        ].join('');
+      }).join('')
+    : '<tr><td colspan="4"><span class="smallText">Zatím není uložené žádné odemčené admin zařízení. Objeví se po přihlášení admin heslem.</span></td></tr>';
+  return [
+    '<div class="tableWrap appMenuTableWrap uMt8">',
+    '  <div class="appMenuSubTitle">Přihlášená admin zařízení</div>',
+    '  <div class="smallText uMb10">Hlavní admin tady vidí zařízení, kde zůstala administrace odemčená. Odhlášení zařízení zruší jeho uloženou admin relaci.</div>',
+    '  <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminAccountsTable">',
+    '    <thead><tr><th>Zařízení</th><th>Účet</th><th>Naposledy</th><th>Akce</th></tr></thead>',
+    '    <tbody>' + rows + '</tbody>',
+    '  </table>',
     '</div>'
   ].join('');
 }
@@ -375,6 +704,7 @@ function buildAdminAccountsSettingsHtml() {
     buildAdminAccountsStatusHtml({ rows }),
     buildAdminAccountsRoleOverviewHtml(settings),
     buildAdminAccountsSafetyHtml(settings),
+    buildAdminSessionDevicesHtml(settings),
     '<div class="tableWrap appMenuTableWrap uMt8">',
     '  <div class="smallText uMb10">Tady pridavas dalsi admin ucty, ktere po prihlaseni uvidi administraci. Pro odebrani spravce smaz ucet nebo heslo a uloz.</div>',
     '  <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminAccountsTable">',
@@ -414,6 +744,7 @@ function adminAccountsRefreshStatus(root) {
 
 function readAdminAccountsSettingsFromDom() {
   const map = new Map();
+  const current = rakAdminGetAccountsSettings();
   readAdminAccountsDraftRowsFromDom(document.getElementById('appMenuBody') || document).forEach((entry) => {
     const accountId = String(entry.accountId || '').trim();
     const label = String(entry.label || '').trim();
@@ -430,6 +761,7 @@ function readAdminAccountsSettingsFromDom() {
     type: RAK_ADMIN_ACCOUNTS_SETTINGS_CATEGORY,
     ownerAccountId: RAK_OWNER_ADMIN_ACCOUNT_ID,
     admins: Array.from(map.values()).sort((a, b) => a.accountId.localeCompare(b.accountId)),
+    sessions: Array.isArray(current.sessions) ? current.sessions : [],
     updatedAt: new Date().toISOString()
   };
 }
@@ -438,16 +770,10 @@ function bindAdminAccountUnlock() {
   try { localStorage.removeItem('adminUnlocked'); } catch (err) {}
   if (document.documentElement.dataset.adminAccountUnlockBound === '1') return true;
   document.documentElement.dataset.adminAccountUnlockBound = '1';
-  rakAdminRestoreSessionForActiveAccount();
+  const restored = rakAdminRestoreSessionForActiveAccount();
+  if (!restored) rakAdminScheduleStartupPrompt();
   try {
-    const activeId = rakAdminGetActiveAccountId();
-    const hasSession = sessionStorage.getItem(RAK_ADMIN_SESSION_UNLOCKED_KEY) === '1';
-    if (activeId && hasSession && window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.loadMachineSettings === 'function') {
-      window.RotationSupabaseBridge.loadMachineSettings().then((rows) => {
-        if (typeof app !== 'undefined' && app) app.machineSettingsRows = Array.isArray(rows) ? rows : [];
-        rakAdminRestoreSessionForActiveAccount();
-      }).catch(() => {});
-    }
+    rakAdminLoadSettingsThenCheck('settings-loaded');
   } catch (err) {}
   return true;
 }
@@ -460,7 +786,10 @@ try {
   window.rakAdminIsAccountsSettingsRow = rakAdminIsAccountsSettingsRow;
   window.rakAdminAccountRequiresPassword = rakAdminAccountRequiresPassword;
   window.rakAdminPromptUnlockForAccount = rakAdminPromptUnlockForAccount;
+  window.rakAdminPromptOnceForActiveAccount = rakAdminPromptOnceForActiveAccount;
   window.rakAdminRestoreSessionForActiveAccount = rakAdminRestoreSessionForActiveAccount;
+  window.rakAdminRestorePersistentSessionForActiveAccount = rakAdminRestorePersistentSessionForActiveAccount;
+  window.rakAdminRevokePersistentSession = rakAdminRevokePersistentSession;
   window.rakAdminLock = rakAdminLock;
   window.rakAdminCanOpenAdmin = rakAdminCanOpenAdmin;
   window.rakAdminCanManageAdmins = rakAdminCanManageAdmins;
