@@ -317,6 +317,139 @@ function adminRotationGeneratorRuleCardHtml(title, value, detail) {
   ].join('');
 }
 
+function adminRotationGeneratorStatusItemHtml(label, value, detail, modifier) {
+  const className = 'adminGeneratorSettingsStatusItem' + (modifier ? ' ' + modifier : '');
+  return [
+    '<div class="' + className + '">',
+    '  <span>' + escapeHtml(label || '') + '</span>',
+    '  <b>' + escapeHtml(value || '') + '</b>',
+    detail ? '  <small>' + escapeHtml(detail) + '</small>' : '',
+    '</div>'
+  ].join('');
+}
+
+function adminRotationGeneratorRawList(value) {
+  const source = Array.isArray(value) ? value : String(value || '').split(/[\n,;]/);
+  return source.map((item) => String(item || '').trim()).filter(Boolean);
+}
+
+function adminRotationGeneratorDuplicateList(list) {
+  const seen = new Set();
+  const duplicates = new Set();
+  adminRotationGeneratorRawList(list).forEach((item) => {
+    const key = String(item || '').trim().toLowerCase();
+    if (!key) return;
+    if (seen.has(key)) duplicates.add(String(item || '').trim());
+    seen.add(key);
+  });
+  return Array.from(duplicates);
+}
+
+function adminRotationHasGeneratorSettingsRow() {
+  const rows = Array.isArray(app && app.machineSettingsRows) ? app.machineSettingsRows : [];
+  return rows.some(adminIsRotationGeneratorSettingsRow);
+}
+
+function readAdminRotationGeneratorDraftFromDom(root) {
+  const scope = root && root.querySelector ? root : document;
+  const get = (id) => String((scope.querySelector ? scope.querySelector('#' + id) : document.getElementById(id))?.value || '');
+  const softBaseLathe = {};
+  const softBaseRows = [];
+  scope.querySelectorAll('tr[data-generator-base-row]').forEach((tr) => {
+    const person = String(tr.querySelector('[data-generator-base-field="person"]')?.value || '').trim();
+    const machine = String(tr.querySelector('[data-generator-base-field="machine"]')?.value || '').trim().toUpperCase();
+    if (person || machine) softBaseRows.push({ person, machine });
+    if (person && machine) softBaseLathe[person] = machine;
+  });
+  return {
+    softPreferred: adminRotationGeneratorRawList(get('adminGeneratorSoftPreferred')),
+    hardPreferred: adminRotationGeneratorRawList(get('adminGeneratorHardPreferred')),
+    softCore: adminRotationGeneratorRawList(get('adminGeneratorSoftCore')),
+    softHardCycle: adminRotationGeneratorRawList(get('adminGeneratorSoftHardCycle')).map((item) => String(item || '').toUpperCase()),
+    softHardBlockLength: Number(get('adminGeneratorSoftHardBlockLength') || 3),
+    hardCycle: adminRotationGeneratorRawList(get('adminGeneratorHardCycle')).map((item) => String(item || '').toUpperCase()),
+    softBaseLathe,
+    softBaseRows,
+    hasStoredRow: adminRotationHasGeneratorSettingsRow()
+  };
+}
+
+function buildAdminRotationGeneratorStatusHtml(source) {
+  const settings = source && typeof source === 'object' ? source : getAdminRotationGeneratorSettings();
+  const hardAllowed = new Set((Array.isArray(HARD_MACHINE_HEADERS) ? HARD_MACHINE_HEADERS : []).map((item) => String(item || '').trim().toUpperCase()).filter(Boolean));
+  const softAllowed = new Set((Array.isArray(SOFT_MACHINE_HEADERS) ? SOFT_MACHINE_HEADERS : []).map((item) => String(item || '').trim().toUpperCase()).filter(Boolean));
+  const softPreferred = adminRotationGeneratorRawList(settings.softPreferred);
+  const hardPreferred = adminRotationGeneratorRawList(settings.hardPreferred);
+  const softCore = adminRotationGeneratorRawList(settings.softCore);
+  const softHardCycle = adminRotationGeneratorRawList(settings.softHardCycle).map((item) => String(item || '').toUpperCase());
+  const hardCycle = adminRotationGeneratorRawList(settings.hardCycle).map((item) => String(item || '').toUpperCase());
+  const softBaseRows = Array.isArray(settings.softBaseRows)
+    ? settings.softBaseRows
+    : softCore.map((person) => ({ person, machine: String(settings.softBaseLathe && settings.softBaseLathe[person] || '').toUpperCase() }));
+  const duplicatePeople = []
+    .concat(adminRotationGeneratorDuplicateList(softPreferred))
+    .concat(adminRotationGeneratorDuplicateList(hardPreferred))
+    .concat(adminRotationGeneratorDuplicateList(softCore));
+  const uniquePeople = new Set(softPreferred.concat(hardPreferred).map((name) => String(name || '').trim().toLowerCase()).filter(Boolean));
+  const missingLists = [
+    softPreferred.length ? '' : 'mekota',
+    hardPreferred.length ? '' : 'tvrdota',
+    softCore.length ? '' : 'trojice',
+    softHardCycle.length ? '' : 'cyklus trojice',
+    hardCycle.length ? '' : 'tvrdotovy cyklus'
+  ].filter(Boolean);
+  const invalidHardMachines = softHardCycle.concat(hardCycle).filter((machine) => machine && !hardAllowed.has(machine));
+  const invalidSoftBase = softBaseRows.filter((row) => row.person && row.machine && !softAllowed.has(row.machine));
+  const missingSoftBase = softCore.filter((person) => !softBaseRows.some((row) => String(row.person || '').trim().toLowerCase() === String(person || '').trim().toLowerCase() && String(row.machine || '').trim()));
+  const block = Math.max(1, Math.min(12, Number(settings.softHardBlockLength || 3) || 3));
+  const machineIssues = invalidHardMachines.length + invalidSoftBase.length + missingSoftBase.length;
+  const issueCount = duplicatePeople.length + missingLists.length + machineIssues;
+  const hasStoredRow = Object.prototype.hasOwnProperty.call(settings, 'hasStoredRow') ? !!settings.hasStoredRow : adminRotationHasGeneratorSettingsRow();
+  const sourceValue = hasStoredRow ? 'Ulozeno' : 'Vychozi';
+  const sourceDetail = hasStoredRow ? 'Generator pouziva pravidla ulozena v administraci.' : 'Zatim se pouzivaji vychozi pravidla z aplikace.';
+  const peopleDetail = duplicatePeople.length
+    ? 'Duplicity: ' + Array.from(new Set(duplicatePeople)).join(', ')
+    : 'Mekota, tvrdota a trojice maji ' + String(uniquePeople.size) + ' unikatnich jmen.';
+  const machineDetail = machineIssues
+    ? [
+        invalidHardMachines.length ? 'neplatne tvrdotove stroje: ' + Array.from(new Set(invalidHardMachines)).join(', ') : '',
+        invalidSoftBase.length ? 'neplatne soustruhy: ' + invalidSoftBase.map((row) => row.machine).join(', ') : '',
+        missingSoftBase.length ? 'chybi soustruh: ' + missingSoftBase.join(', ') : ''
+      ].filter(Boolean).join('; ')
+    : 'Cykly a zakladni soustruhy odpovidaji znamym strojum.';
+  const controlDetail = issueCount
+    ? [
+        missingLists.length ? 'prazdne: ' + missingLists.join(', ') : '',
+        duplicatePeople.length ? 'duplicity jmen' : '',
+        machineIssues ? 'stroje k oprave' : ''
+      ].filter(Boolean).join('; ')
+    : 'Pravidla jsou pripravena pro dalsi generovani.';
+  return [
+    '<div class="adminGeneratorSettingsStatus" id="adminGeneratorSettingsStatus" aria-live="polite">',
+    '  <div class="appMenuSubTitle">Stav pravidel generatoru</div>',
+    '  <div class="adminGeneratorSettingsStatusGrid">',
+    adminRotationGeneratorStatusItemHtml('Zdroj pravidel', sourceValue, sourceDetail, hasStoredRow ? 'isOk' : 'isWarn'),
+    adminRotationGeneratorStatusItemHtml('Lide', String(uniquePeople.size) + ' jmen', peopleDetail, duplicatePeople.length ? 'isWarn' : 'isOk'),
+    adminRotationGeneratorStatusItemHtml('Stroje', String(block) + ' dny blok', machineDetail, machineIssues ? 'isWarn' : 'isOk'),
+    adminRotationGeneratorStatusItemHtml('Kontrola', issueCount ? String(issueCount) + ' k reseni' : 'OK', controlDetail, issueCount ? 'isWarn' : 'isOk'),
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
+function adminRotationRefreshGeneratorSettingsStatus(root) {
+  const scope = root && root.querySelector ? root : document;
+  const statusEl = scope.querySelector ? scope.querySelector('#adminGeneratorSettingsStatus') : document.getElementById('adminGeneratorSettingsStatus');
+  if (!statusEl) return false;
+  const html = buildAdminRotationGeneratorStatusHtml(readAdminRotationGeneratorDraftFromDom(scope));
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = html;
+  const fresh = wrapper.firstElementChild;
+  if (!fresh) return false;
+  statusEl.replaceWith(fresh);
+  return true;
+}
+
 function buildAdminRotationGeneratorRuleSummaryHtml() {
   const rules = getAdminRotationGeneratorRules();
   const latestRules = (typeof RAK_ROTATION_GENERATOR_RULES_V1135 !== 'undefined' && RAK_ROTATION_GENERATOR_RULES_V1135) ? RAK_ROTATION_GENERATOR_RULES_V1135 : {};
@@ -344,27 +477,28 @@ function buildAdminRotationGeneratorSettingsHtml() {
   const settings = getAdminRotationGeneratorSettings();
   const baseRows = settings.softCore.map((name, idx) => [
     '<tr data-generator-base-row="' + String(idx) + '">',
-    '  <td><input class="appMenuInlineInput" data-generator-base-field="person" value="' + escapeHtml(name) + '" placeholder="Jmeno"></td>',
-    '  <td><input class="appMenuInlineInput" data-generator-base-field="machine" value="' + escapeHtml(settings.softBaseLathe[name] || '') + '" placeholder="MSKC01"></td>',
+    '  <td><input class="appMenuInlineInput" data-generator-base-field="person" data-generator-settings-field value="' + escapeHtml(name) + '" placeholder="Jmeno"></td>',
+    '  <td><input class="appMenuInlineInput" data-generator-base-field="machine" data-generator-settings-field value="' + escapeHtml(settings.softBaseLathe[name] || '') + '" placeholder="MSKC01"></td>',
     '</tr>'
   ].join('')).join('');
   return [
+    buildAdminRotationGeneratorStatusHtml(settings),
     buildAdminRotationGeneratorRuleSummaryHtml(),
     '<div class="appMenuSettingsList adminGeneratorSettingsList">',
     '  <div class="appMenuSubTitle">Lidé a pořadí</div>',
     '  <label class="appMenuFieldLabel" for="adminGeneratorSoftPreferred">Základ měkoty</label>',
-    '  <textarea id="adminGeneratorSoftPreferred" class="appMenuTextarea" rows="5">' + escapeHtml(adminRotationGeneratorListValue(settings.softPreferred)) + '</textarea>',
+    '  <textarea id="adminGeneratorSoftPreferred" class="appMenuTextarea" data-generator-settings-field rows="5">' + escapeHtml(adminRotationGeneratorListValue(settings.softPreferred)) + '</textarea>',
     '  <label class="appMenuFieldLabel" for="adminGeneratorHardPreferred">Základ tvrdoty</label>',
-    '  <textarea id="adminGeneratorHardPreferred" class="appMenuTextarea" rows="5">' + escapeHtml(adminRotationGeneratorListValue(settings.hardPreferred)) + '</textarea>',
+    '  <textarea id="adminGeneratorHardPreferred" class="appMenuTextarea" data-generator-settings-field rows="5">' + escapeHtml(adminRotationGeneratorListValue(settings.hardPreferred)) + '</textarea>',
     '  <label class="appMenuFieldLabel" for="adminGeneratorSoftCore">Trojice s vlastním TNKS/TPKW cyklem</label>',
-    '  <textarea id="adminGeneratorSoftCore" class="appMenuTextarea" rows="3">' + escapeHtml(adminRotationGeneratorListValue(settings.softCore)) + '</textarea>',
+    '  <textarea id="adminGeneratorSoftCore" class="appMenuTextarea" data-generator-settings-field rows="3">' + escapeHtml(adminRotationGeneratorListValue(settings.softCore)) + '</textarea>',
     '  <div class="appMenuSubTitle">Cykly strojů</div>',
     '  <label class="appMenuFieldLabel" for="adminGeneratorSoftHardCycle">Cyklus trojice na tvrdotě</label>',
-    '  <textarea id="adminGeneratorSoftHardCycle" class="appMenuTextarea" rows="3">' + escapeHtml(adminRotationGeneratorListValue(settings.softHardCycle)) + '</textarea>',
+    '  <textarea id="adminGeneratorSoftHardCycle" class="appMenuTextarea" data-generator-settings-field rows="3">' + escapeHtml(adminRotationGeneratorListValue(settings.softHardCycle)) + '</textarea>',
     '  <label class="appMenuFieldLabel" for="adminGeneratorSoftHardBlockLength">Kolik dní držet jeden stroj v cyklu</label>',
-    '  <input id="adminGeneratorSoftHardBlockLength" class="appMenuInput" type="number" min="1" max="12" step="1" value="' + escapeHtml(String(settings.softHardBlockLength || 3)) + '">',
+    '  <input id="adminGeneratorSoftHardBlockLength" class="appMenuInput" data-generator-settings-field type="number" min="1" max="12" step="1" value="' + escapeHtml(String(settings.softHardBlockLength || 3)) + '">',
     '  <label class="appMenuFieldLabel" for="adminGeneratorHardCycle">Tvrdotový cyklus strojů</label>',
-    '  <textarea id="adminGeneratorHardCycle" class="appMenuTextarea" rows="5">' + escapeHtml(adminRotationGeneratorListValue(settings.hardCycle)) + '</textarea>',
+    '  <textarea id="adminGeneratorHardCycle" class="appMenuTextarea" data-generator-settings-field rows="5">' + escapeHtml(adminRotationGeneratorListValue(settings.hardCycle)) + '</textarea>',
     '  <div class="appMenuSubTitle">Základní soustruhy měkoty</div>',
     '  <div class="smallText">Jména musí odpovídat seznamu výše. Stroj použij například MSKC01, MSKC03 nebo MSKC04.</div>',
     '  <div class="tableWrap appMenuTableWrap uMt12">',

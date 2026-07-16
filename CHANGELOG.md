@@ -1,3 +1,10 @@
+## RaK 1.2 (1.230)
+
+- Administrace / Pravidla generatoru: pridany admin-only souhrn `Stav pravidel generatoru`, ktery ukazuje zdroj pravidel, pocet lidi, kontrolu stroju a problemy k oprave.
+- Pravidla generatoru: souhrn se prepocitava hned pri uprave seznamu lidi, cyklu stroju, delky bloku nebo zakladnich soustruhu, jeste pred ulozenim.
+- Smoke guard: `app-usage-smoke-v963.js` hlida novy stav pravidel generatoru, zive prepocitani a responsive admin-only styl.
+- Release metadata sjednocená na `RaK 1.2 (1.230)`, technická verze `1.2.230`, cache `v1.2-1.230`.
+
 ## RaK 1.2 (1.229)
 
 - Administrace / Spravci: pridany admin-only souhrn `Stav spravcu`, ktery ukazuje opravneni aktualniho uctu, pocet aktivnich spravcu, stav hesel a kontrolu rozepsanych radku.

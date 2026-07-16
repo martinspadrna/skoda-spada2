@@ -1907,6 +1907,9 @@ function bindAppMenuHandlers(body) {
     if (target && target.matches && target.matches('[data-admin-account-field]') && typeof adminAccountsRefreshStatus === 'function') {
       adminAccountsRefreshStatus(body);
     }
+    if (target && target.matches && target.matches('[data-generator-settings-field]') && typeof adminRotationRefreshGeneratorSettingsStatus === 'function') {
+      adminRotationRefreshGeneratorSettingsStatus(body);
+    }
   }, true);
 
   body.addEventListener('change', (event) => {
@@ -1935,6 +1938,9 @@ function bindAppMenuHandlers(body) {
     }
     if (target.matches('[data-admin-account-field]') && typeof adminAccountsRefreshStatus === 'function') {
       adminAccountsRefreshStatus(body);
+    }
+    if (target.matches('[data-generator-settings-field]') && typeof adminRotationRefreshGeneratorSettingsStatus === 'function') {
+      adminRotationRefreshGeneratorSettingsStatus(body);
     }
     if (target.matches('#adminPayrollWorkdayOrdinal, [data-payroll-override-field]') && typeof adminPayrollRefreshStatus === 'function') {
       adminPayrollRefreshStatus(body);
