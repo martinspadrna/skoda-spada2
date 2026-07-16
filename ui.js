@@ -735,6 +735,15 @@ function buildSupabaseKeepaliveStatusHtml(options) {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
+      range: 'v.1.2 1.234–1.289',
+      title: 'Průvodce předáním a bezpečnost adminů',
+      lines: [
+        'Admin úvod dostal průvodce předáním správy: připravenost, úkoly k vyřešení, měsíční postup, příručku, mapu nastavení a stažitelné podklady pro nového správce.',
+        'Přibyly úplné zálohy nastavení jen pro hlavního admina, přehled přihlášených admin zařízení s možností odhlášení a trvalé přihlášení admin účtu na zařízení.',
+        'Veřejné dopady změn (kontakt, odkazy, výplata, provoz, oznámení) dostaly vlastní kontrolní panely, aby šlo po uložení hned ověřit výsledek v běžné aplikaci.'
+      ]
+    },
+    {
       range: 'v.1.2 1.200–1.233',
       title: 'Předání správy a kontrolní souhrny',
       lines: [

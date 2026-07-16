@@ -3209,15 +3209,6 @@ function renderAdminMenuBody(body, section) {
     '    <div>Nejdřív nastav provoz, potom vygeneruj a ulož rozpis. Všechno se ukládá online přes Supabase.</div>',
     '    <div class="smallText" id="adminOnlineSaveStatus">Vyber sekci, kterou chceš upravit.</div>',
     '  </div>',
-    buildAdminPermissionStatusHtml(),
-    buildAdminAccessRulesHtml(),
-    buildAdminHandoverTodoHtml(monthKey),
-    buildAdminHandoverReadinessHtml(monthKey),
-    buildAdminPostSaveCheckHtml(),
-    buildAdminNextStepsHtml(monthKey),
-    buildAdminHandoverExportsHtml(monthKey),
-    buildAdminActionLegendHtml(),
-    buildAdminHandoverChecklistHtml(monthKey),
     '  <div class="adminMenuSections">',
     buildAdminMenuSectionHtml('1. Provoz před rozpisem', 'Co musí sedět před generováním dalšího měsíce.', [
       { action: 'open-machines', label: 'Nastavení strojů' },
@@ -3230,19 +3221,15 @@ function renderAdminMenuBody(body, section) {
       { action: 'open-rotation', label: 'Rozpisy' },
       { action: 'open-workers', label: 'Pracovníci' },
       { action: 'open-generator-settings', label: 'Pravidla generátoru' },
-      { action: 'open-monthly-workflow', label: 'Měsíční postup' },
-      { action: 'open-handover', label: 'Předání správy' },
-      { action: 'open-admin-manual', label: 'Příručka správce' },
-      { action: 'open-settings-map', label: 'Kde co upravit' },
       { action: 'open-backups', label: 'Zálohy rozpisů' },
       { action: 'open-export', label: 'Export / import' }
     ]),
     buildAdminMenuSectionHtml('3. Aplikace pro lidi', 'Texty, odkazy a informace viditelné v běžné aplikaci.', [
       { action: 'open-announcement', label: 'Oznámení Dashboard' },
-      { action: 'open-external-links', label: 'Odkazy' },
-      { action: 'open-app-contact', label: 'Kontakt aplikace' },
+      { action: 'open-external-links', label: 'Odkazy' }
+    ].concat((typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins()) ? [{ action: 'open-app-contact', label: 'Kontakt aplikace' }] : []).concat([
       { action: 'open-payroll-settings', label: 'Výplata' }
-    ]),
+    ])),
     buildAdminMenuSectionHtml('4. Kontrola a servis', adminServiceDetail, [
       { action: 'open-usage', label: 'Přehled připojení' },
       { action: 'open-reports', label: 'Reporty chyb' }
@@ -5008,6 +4995,7 @@ function bindAppMenuHandlers(body) {
         return;
       }
       if (adminAction === 'save-app-contact') {
+        if (!(typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins())) return;
         const contactSettings = readAdminAppContactSettingsFromDom();
         const rows = mergeRakAppContactSettingsRows(contactSettings);
         if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.saveMachineSettings === 'function') {
@@ -5323,6 +5311,16 @@ function openAppMenu(view) {
         '<div class="appMenuCard appMenuAdminCard">',
         '  <div class="appMenuCardTitle">Zálohy nastavení</div>',
         '  <div class="appMenuText">Úplné zálohy nastavení může vytvářet a obnovovat jen hlavní admin. Nižší admin může spravovat pracovní části aplikace, ale nemůže vracet celé nastavení.</div>',
+        '  <button type="button" class="appMenuAction appMenuBack" data-menu-back="1">Zpět</button>',
+        '</div>'
+      ].join('');
+      return;
+    }
+    if (v === 'admin-app-contact' && !(typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins())) {
+      body.innerHTML = [
+        '<div class="appMenuCard appMenuAdminCard">',
+        '  <div class="appMenuCardTitle">Kontakt aplikace</div>',
+        '  <div class="appMenuText">Jméno, telefon a e-mail v Kontaktu může měnit jen hlavní admin.</div>',
         '  <button type="button" class="appMenuAction appMenuBack" data-menu-back="1">Zpět</button>',
         '</div>'
       ].join('');

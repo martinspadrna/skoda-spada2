@@ -1,3 +1,12 @@
+## RaK 1.2 (1.291)
+
+- Admin úvod: zjednodušen na přehledné menu bez průvodce – odstraněny bloky Připravenost předání, Úkoly před předáním, Kontrola po uložení, Doporučené kroky, Předávací podklady, Legenda tlačítek, Stav oprávnění a Pravidla přístupu.
+- Admin menu: ze sekce Rozpisy a předání zmizely odkazy na Měsíční postup, Předání správy, Příručku správce a Kde co upravit; podkladové obrazovky zůstávají v kódu, jen už nejsou v menu.
+- O aplikaci: doplněn chybějící souhrn verzí 1.234–1.289 (průvodce předáním, zálohy nastavení, admin zařízení, kontrolní panely).
+- Kontakt aplikace: jméno, telefon a e-mail může měnit už jen hlavní admin (9811); nižší admin sekci nevidí v menu a při přímém pokusu o uložení je zablokován.
+- Smoke test: odstraněny zastaralé kontroly odstraněných bloků průvodce, přidané kontroly zůstávají beze změny.
+- Release metadata sjednocena na `RaK 1.2 (1.291)`, technicka verze `1.2.291`, cache `v1.2-1.291`; loader modulu ma cache znacku `1.2.291`.
+
 ## RaK 1.2 (1.290)
 
 - Pracovníci: nová admin sekce `Pracovníci` umožňuje přidávat a odebírat lidi, kteří se počítají v rozpisu, generátoru a statistikách (dřív jen natvrdo `KNOWN_STAT_NAMES` v core.js).
