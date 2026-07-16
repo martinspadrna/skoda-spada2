@@ -1,3 +1,10 @@
+## RaK 1.2 (1.217)
+
+- Administrace / Export import: přidaný admin-only souhrn `Stav exportu / importu`, který ukazuje ZIP export, vybraný měsíc pro XLSX, načtený Excel a aktuální rozsah importu.
+- Import Excelu: po výběru souboru nebo změně rozsahu importu se nový souhrn přepočítá stejně jako seznam načtených měsíců.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá nový export/import souhrn, živé překreslení a admin-only styl.
+- Release metadata sjednocená na `RaK 1.2 (1.217)`, technická verze `1.2.217`, cache `v1.2-1.217`.
+
 ## RaK 1.2 (1.216)
 
 - Administrace / Zálohy rozpisů: přidaný admin-only souhrn `Stav záloh`, který ukazuje stav načtení, počet záloh, nejnovější zálohu a připomínku, že obnova přepíše rozpis.

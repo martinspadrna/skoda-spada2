@@ -42,6 +42,74 @@ function buildRakRotationExcelExportMonthOptions(selectedMonthKey) {
   }).join('');
 }
 
+function adminExportImportStatusItemHtml(item) {
+  const state = String(item && item.state || 'info').trim() || 'info';
+  return [
+    '<div class="adminExportImportStatusItem is' + escapeHtml(state.charAt(0).toUpperCase() + state.slice(1)) + '">',
+    '  <span>' + escapeHtml(item && item.title || '') + '</span>',
+    '  <b>' + escapeHtml(item && item.value || '') + '</b>',
+    item && item.detail ? '  <small>' + escapeHtml(item.detail) + '</small>' : '',
+    '</div>'
+  ].join('');
+}
+
+function buildAdminExportImportStatusHtml(selectedMonthKey) {
+  const preview = (typeof getRakExcelImportPreview === 'function') ? getRakExcelImportPreview() : null;
+  const exportMonthEl = document.getElementById('rakRotationExcelExportMonth');
+  const exportMonthKey = String((exportMonthEl && exportMonthEl.value) || selectedMonthKey || app.selectedMonth || '').trim();
+  const scopeEl = document.getElementById('rakExcelImportScope');
+  const detectedMonthEl = document.getElementById('rakExcelImportDetectedMonth');
+  const scope = String(scopeEl && scopeEl.value ? scopeEl.value : 'all');
+  const selectedImportMonth = String(detectedMonthEl && detectedMonthEl.value ? detectedMonthEl.value : '').trim();
+  const monthCount = preview && Array.isArray(preview.monthKeys) ? preview.monthKeys.length : 0;
+  const items = [
+    {
+      state: 'info',
+      title: 'ZIP export',
+      value: 'celá aplikace',
+      detail: 'Stáhne kompletní build aplikace pro zálohu nebo nahrání.'
+    },
+    {
+      state: exportMonthKey ? 'ok' : 'warn',
+      title: 'Excel rozpisu',
+      value: exportMonthKey || 'nevybrán',
+      detail: exportMonthKey ? 'Stáhne jen vybraný měsíc v kopírovacím layoutu.' : 'Nejdřív vyber měsíc rozpisu.'
+    },
+    {
+      state: monthCount ? 'ok' : 'info',
+      title: 'Importovaný Excel',
+      value: preview ? (preview.fileName || 'Excel') : 'nevybrán',
+      detail: monthCount ? ('Použitelných měsíčních listů: ' + String(monthCount) + '.') : 'Po výběru souboru se načtou jen měsíční listy typu 01.2025.'
+    },
+    {
+      state: preview && scope === 'month' && !selectedImportMonth ? 'warn' : 'info',
+      title: 'Rozsah importu',
+      value: scope === 'month' ? (selectedImportMonth || 'vyber měsíc') : 'celý Excel / rok',
+      detail: scope === 'month' ? 'Import přepíše jen vybraný měsíc z načteného Excelu.' : 'Import přepíše všechny použitelné měsíce z načteného Excelu.'
+    }
+  ];
+  return [
+    '<div class="adminExportImportStatus" id="adminExportImportStatus">',
+    '  <div class="appMenuSubTitle">Stav exportu / importu</div>',
+    '  <div class="smallText uMb10">Rychlá kontrola před stažením nebo načtením dat. Tohle samo nic neimportuje.</div>',
+    '  <div class="adminExportImportStatusGrid">',
+    items.map(adminExportImportStatusItemHtml).join(''),
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
+function renderAdminExportImportStatus() {
+  const box = document.getElementById('adminExportImportStatus');
+  if (!box) return;
+  const exportMonthEl = document.getElementById('rakRotationExcelExportMonth');
+  const selectedMonthKey = String((exportMonthEl && exportMonthEl.value) || app.selectedMonth || '').trim();
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = buildAdminExportImportStatusHtml(selectedMonthKey);
+  const next = wrapper.firstElementChild;
+  if (next) box.replaceWith(next);
+}
+
 
 function ensureAppMenuOverlay() {
   let page = document.getElementById('menu');
@@ -1498,6 +1566,7 @@ function renderAdminMenuBody(body, section) {
     '    <div>Import funguje ve dvou krocích: vybereš Excel, appka načte jen měsíční listy typu 01.2025 a potom si vybereš celý rok nebo konkrétní měsíc. Pomocné listy se ignorují.</div>',
     '    <div class="smallText" id="rakExcelImportStatus">ZIP export stáhne kompletní build aplikace. XLSX rozpis stáhne jen vybraný měsíc v kopírovacím layoutu.</div>',
     '  </div>',
+    buildAdminExportImportStatusHtml(monthKey),
     '  <div class="appMenuSettingsList">',
     '    <div class="appMenuSubTitle">XLSX rozpis pro kopírování</div>',
     '    <div class="smallText">Stejný export jako v generátoru: Tvrdota v A:F, Měkota pod ní v A:F a Absence od H dál po pracovních dnech.</div>',
@@ -1810,6 +1879,14 @@ function bindAppMenuHandlers(body) {
     if (target && target.matches && target.matches('[data-rot-field^="cell-"], [data-note-field="person"]')) adminShowRotationSelectedRemove(target);
     if (target && target.matches && target.matches('[data-rotation-overtime-date]') && typeof adminRotationRefreshOvertimeShiftBadges === 'function') {
       adminRotationRefreshOvertimeShiftBadges(body, false);
+    }
+  }, true);
+
+  body.addEventListener('change', (event) => {
+    const target = event.target;
+    if (!target || typeof target.matches !== 'function') return;
+    if (target.matches('#rakRotationExcelExportMonth, #rakExcelImportScope, #rakExcelImportDetectedMonth')) {
+      renderAdminExportImportStatus();
     }
   }, true);
 

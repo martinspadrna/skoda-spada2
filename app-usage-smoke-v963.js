@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.216) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.217) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -224,12 +224,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.216)',
-  appLabel: 'RaK 1.2 (1.216)',
-  packageVersion: '1.2.216',
-  cacheVersion: 'v1.2-1.216',
+  displayVersion: '1.2 (1.217)',
+  appLabel: 'RaK 1.2 (1.217)',
+  packageVersion: '1.2.217',
+  cacheVersion: 'v1.2-1.217',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.216)',
+  changelogHeader: '## RaK 1.2 (1.217)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -338,8 +338,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.216)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.216'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.217)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.217'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1078,6 +1078,13 @@ function assertRotationGeneratorExcelCopyContractV1138() {
   assertIncludes(exportJs, 'RAK_ADMIN_EXPORT_IMPORT_EXCEL_MONTH_GROUP_CONTRACT_V1140', 'export.js musí dokumentovat skupinovaný výběr měsíců pro XLSX export v1.145');
   assertIncludes(ui, 'RAK_ADMIN_EXPORT_IMPORT_EXCEL_MONTH_GROUP_CONTRACT_V1140', 'app-menu.js musí mít contract pro řazení a skupiny roků v XLSX exportu v1.145');
   assertIncludes(ui, 'function buildRakRotationExcelExportMonthOptions', 'Export / import musí mít vlastní builder výběru měsíců pro XLSX export');
+  assertIncludes(ui, 'function buildAdminExportImportStatusHtml', 'Export / import musi mit admin-only souhrn stavu');
+  assertIncludes(ui, 'function renderAdminExportImportStatus', 'Export / import musi umet zive prekreslit souhrn stavu');
+  assertIncludes(ui, 'Stav exportu / importu', 'Export / import musi ukazovat rychly stav exportu a importu');
+  assertIncludes(ui, 'renderAdminExportImportStatus()', 'Zmena Excel importu musi prepocitat souhrn exportu/importu');
+  assertIncludes(ui, '#rakRotationExcelExportMonth, #rakExcelImportScope, #rakExcelImportDetectedMonth', 'Export / import musi prepocitat souhrn pri zmene vyberu');
+  assertIncludes(stylesAdminPolishCss, '.adminExportImportStatus', 'Souhrn exportu/importu musi mit vlastni admin-only styl');
+  assertIncludes(stylesAdminPolishCss, '.adminExportImportStatusGrid', 'Souhrn exportu/importu musi mit prehlednou mrizku');
   assertNotIncludes(ui, 'adminRotationGeneratorBuildMonthOptions(selected)', 'Export / import nesmí přebírat omezený výběr měsíce z generátoru');
   assertIncludes(ui, '<optgroup label="Rok ', 'Výběr XLSX exportu musí skupinovat měsíce podle roku');
   assertIncludes(ui, 'function adminRotationGeneratorBuildExcelAbsenceSlots', 'Excel export musí dynamicky určit počet dvojic Jméno/Kód pro absence');

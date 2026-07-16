@@ -115,6 +115,7 @@ function updateRakExcelImportPreviewUi() {
   }
   if (commitBtn) commitBtn.disabled = !(preview && preview.monthKeys.length);
   if (scopeEl && !scopeEl.value) scopeEl.value = 'all';
+  if (typeof renderAdminExportImportStatus === 'function') renderAdminExportImportStatus();
 }
 window.updateRakExcelImportPreviewUi = updateRakExcelImportPreviewUi;
 
