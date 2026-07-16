@@ -1,3 +1,10 @@
+## RaK 1.2 (1.269)
+
+- Predani spravy: pripravenost a kontrola predani ted ukazuji i stav reportu chyb pred predanim.
+- Predavaci exporty: stav predani a pravidla pristupu obsahuji reporty chyb, aby novy spravce neprebiral skryte problemy.
+- Smoke guard: `app-usage-smoke-v963.js` hlida souhrn reportu chyb v predani spravy i textovych podkladech.
+- Release metadata sjednocená na `RaK 1.2 (1.269)`, technická verze `1.2.269`, cache `v1.2-1.269`.
+
 ## RaK 1.2 (1.268)
 
 - Spravci: aktualni admin zarizeni uz neni jen oznacene jako aktivni, ale jde ho z panelu primo odhlasit.

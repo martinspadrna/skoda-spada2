@@ -499,6 +499,36 @@ function adminHandoverAdminSessionSnapshot() {
   };
 }
 
+function adminHandoverReportsSnapshot() {
+  let rows = [];
+  try {
+    rows = typeof getAdminReportsCache === 'function' ? getAdminReportsCache() : (Array.isArray(app && app.adminBugReports) ? app.adminBugReports : []);
+  } catch (err) {
+    rows = [];
+  }
+  let summary = null;
+  try {
+    summary = typeof buildAdminReportsStatusSummary === 'function'
+      ? buildAdminReportsStatusSummary(rows)
+      : null;
+  } catch (err) {
+    summary = null;
+  }
+  const total = Number(summary && summary.total || rows.length || 0) || 0;
+  const openCount = Number(summary && summary.newCount || 0) + Number(summary && summary.seenCount || 0);
+  const handledCount = Number(summary && summary.doneCount || 0) + Number(summary && summary.ignoredCount || 0);
+  return {
+    total,
+    openCount,
+    handledCount,
+    loaded: Array.isArray(rows),
+    label: total ? (openCount ? String(openCount) + ' otevřené' : String(total) + ' vyřešené') : 'žádné načtené',
+    detail: total
+      ? (openCount ? 'Před předáním otevři Reporty chyb a dořeš nové nebo viděné reporty.' : 'Načtené reporty jsou označené jako hotové nebo ignorované.')
+      : 'Před předáním načti reporty chyb, ať nový správce nepřebírá skryté problémy.'
+  };
+}
+
 function adminHandoverSyncReadinessSnapshot() {
   let syncStatus = null;
   let hardening = null;
@@ -642,6 +672,7 @@ function buildAdminHandoverReadinessSnapshot(monthKey) {
   const permissionStatus = adminPermissionStatusSnapshot();
   const activeAdmins = adminHandoverActiveAdminCount();
   const adminSessions = adminHandoverAdminSessionSnapshot();
+  const reportsSnapshot = adminHandoverReportsSnapshot();
   const syncReadiness = adminHandoverSyncReadinessSnapshot();
   const checks = [
     {
@@ -692,6 +723,12 @@ function buildAdminHandoverReadinessSnapshot(monthKey) {
       title: 'Admin zařízení',
       value: adminSessions.label,
       detail: adminSessions.detail
+    },
+    {
+      state: reportsSnapshot.openCount ? 'warn' : (reportsSnapshot.total ? 'ok' : 'info'),
+      title: 'Reporty chyb',
+      value: reportsSnapshot.label,
+      detail: reportsSnapshot.detail
     }
   ];
   const okCount = checks.filter((item) => item.state === 'ok').length;
@@ -843,11 +880,13 @@ function buildAdminAccessRulesHtml() {
 function buildAdminAccessRulesText() {
   const activeAdmins = adminHandoverActiveAdminCount();
   const adminSessions = adminHandoverAdminSessionSnapshot();
+  const reportsSnapshot = adminHandoverReportsSnapshot();
   const permissionStatus = adminPermissionStatusSnapshot();
   return [
     'Pristup a hesla',
     '- Aktivni admin ucty: ' + String(activeAdmins),
     '- Prihlasena admin zarizeni: ' + adminSessions.label,
+    '- Reporty chyb pred predanim: ' + reportsSnapshot.label,
     '- Aktualni role: ' + String(permissionStatus.roleLabel || 'nezjisteno'),
     '- Hlavni admin muze menit spravce, hesla, provoz i rozpisy.',
     '- Dalsi spravce muze menit provoz, rozpisy, absence, zalohy a exporty, ale ne seznam spravcu.',
@@ -945,6 +984,7 @@ function buildAdminHandoverAuditHtml(monthKey) {
   const backups = backupsSnapshot && Array.isArray(backupsSnapshot.backups) ? backupsSnapshot.backups : [];
   const activeAdmins = adminHandoverActiveAdminCount();
   const adminSessions = adminHandoverAdminSessionSnapshot();
+  const reportsSnapshot = adminHandoverReportsSnapshot();
   const items = [
     {
       state: rows.length ? 'ok' : 'warn',
@@ -969,6 +1009,14 @@ function buildAdminHandoverAuditHtml(monthKey) {
       detail: adminSessions.detail,
       action: (typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins()) ? 'open-admin-accounts' : '',
       actionLabel: 'Správci'
+    },
+    {
+      state: reportsSnapshot.openCount ? 'warn' : (reportsSnapshot.total ? 'ok' : 'info'),
+      title: 'Reporty chyb',
+      value: reportsSnapshot.label,
+      detail: reportsSnapshot.detail,
+      action: 'open-reports',
+      actionLabel: 'Reporty'
     },
     {
       state: foodOk && overtimeCount ? 'ok' : 'warn',
@@ -1029,6 +1077,7 @@ function buildAdminHandoverStatusText(monthKey) {
   const backups = backupsSnapshot && Array.isArray(backupsSnapshot.backups) ? backupsSnapshot.backups : [];
   const activeAdmins = adminHandoverActiveAdminCount();
   const adminSessions = adminHandoverAdminSessionSnapshot();
+  const reportsSnapshot = adminHandoverReportsSnapshot();
   const permissionStatus = adminPermissionStatusSnapshot();
   const version = formatRakDisplayVersion((typeof app !== 'undefined' && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : ''));
   return [
@@ -1045,12 +1094,14 @@ function buildAdminHandoverStatusText(monthKey) {
     '- Role administrace: ' + permissionStatus.roleLabel,
     '- Admin odemčen: ' + (permissionStatus.unlocked ? 'ano' : 'ne'),
     '- Přihlášená admin zařízení: ' + adminSessions.label,
+    '- Reporty chyb před předáním: ' + reportsSnapshot.label,
     '- Pravidlo hlavního admina: hlavní admin smí měnit správce a hesla.',
     '- Pravidlo dalšího správce: smí měnit provoz a rozpisy, ale ne seznam správců.',
     '- Pravidlo běžného účtu: nesmí měnit rozpis, provoz ani online nastavení.',
     buildAdminAccessRulesText().trim(),
     '- Admin účty: ' + String(activeAdmins),
     '- Admin zařízení: ' + adminSessions.label,
+    '- Reporty chyb: ' + reportsSnapshot.label,
     '- Kantýna / jídelna: ' + (foodLocations ? ('nastaveno ' + foodLocations + ' míst') : 'zkontrolovat'),
     '- Přesčasové termíny: ' + String(overtimeCount),
     '- Dovolené / odstávky: ' + String(vacationCount),
