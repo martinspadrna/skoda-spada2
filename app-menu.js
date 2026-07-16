@@ -1886,6 +1886,9 @@ function bindAppMenuHandlers(body) {
     if (target && target.matches && target.matches('[data-vacation-field]') && typeof adminVacationRefreshStatus === 'function') {
       adminVacationRefreshStatus(body);
     }
+    if (target && target.matches && target.matches('[data-food-schedule-field]') && typeof adminFoodRefreshStatus === 'function') {
+      adminFoodRefreshStatus(body);
+    }
     if (target && target.matches && target.matches('[data-special-day-field]') && typeof adminSpecialDaysRefreshStatus === 'function') {
       adminSpecialDaysRefreshStatus(body);
     }
@@ -1923,6 +1926,9 @@ function bindAppMenuHandlers(body) {
     }
     if (target.matches('[data-vacation-field]') && typeof adminVacationRefreshStatus === 'function') {
       adminVacationRefreshStatus(body);
+    }
+    if (target.matches('[data-food-schedule-field]') && typeof adminFoodRefreshStatus === 'function') {
+      adminFoodRefreshStatus(body);
     }
     if (target.matches('[data-special-day-field]') && typeof adminSpecialDaysRefreshStatus === 'function') {
       adminSpecialDaysRefreshStatus(body);
@@ -3010,6 +3016,7 @@ function bindAppMenuHandlers(body) {
         const normalized = adminFoodNormalizeDateInput(target.value || '');
         if (normalized && normalized !== target.value) target.value = normalized;
       }
+      if (typeof adminFoodRefreshStatus === 'function') adminFoodRefreshStatus(body);
       return;
     }
     if (!target.matches('[data-rot-field], [data-note-field]')) return;

@@ -1,3 +1,10 @@
+## RaK 1.2 (1.231)
+
+- Administrace / Kantyna a jidelna: pridany admin-only souhrn `Stav kantyny / jidelny`, ktery ukazuje vyplnenost beznych casu, prescasovych casu, budoucich nedeli a kontrolu datumu.
+- Kantyna a jidelna: souhrn se prepocitava hned pri uprave casu nebo prescasove nedele, vcetne automatickeho prevodu datumu po opusteni pole.
+- Smoke guard: `app-usage-smoke-v963.js` hlida novy stav kantyny/jidelny, zive prepocitani a responsive admin-only styl.
+- Release metadata sjednocená na `RaK 1.2 (1.231)`, technická verze `1.2.231`, cache `v1.2-1.231`.
+
 ## RaK 1.2 (1.230)
 
 - Administrace / Pravidla generatoru: pridany admin-only souhrn `Stav pravidel generatoru`, ktery ukazuje zdroj pravidel, pocet lidi, kontrolu stroju a problemy k oprave.
