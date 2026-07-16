@@ -1970,6 +1970,24 @@
     };
   }
 
+  function machineSettingsJson(row) {
+    if (row && row.settings_json && typeof row.settings_json === 'object') return row.settings_json;
+    try {
+      return row && row.settings_json ? JSON.parse(String(row.settings_json)) : {};
+    } catch (err) {
+      return {};
+    }
+  }
+
+  function isDeletedMachineSettingsRow(row) {
+    const settings = machineSettingsJson(row);
+    const category = String(row && row.category || '').trim();
+    return category === 'admin_settings_deleted'
+      || String(settings && settings.stored_category || '').trim() === 'admin_settings_deleted'
+      || settings.deleted === true
+      || String(settings && settings.type || '').trim() === 'admin_settings_deleted';
+  }
+
   function isSpecialAdminMachineSettingsPayload(payload) {
     const category = String(payload && payload.category || '').trim();
     const key = String(payload && payload.machine_key || '').trim();
@@ -1992,7 +2010,8 @@
       || category === 'admin_accounts_settings'
       || key === 'ADMIN_ACCOUNTS_SETTINGS'
       || category === 'admin_full_settings_backup'
-      || key.indexOf('ADMIN_FULL_SETTINGS_BACKUP_') === 0;
+      || key.indexOf('ADMIN_FULL_SETTINGS_BACKUP_') === 0
+      || category === 'admin_settings_deleted';
   }
 
   function makeMachineSettingsRpcPayload(payload) {
@@ -3457,8 +3476,8 @@
           .order('category', { ascending: true })
           .order('machine_key', { ascending: true }), { mode: 'read' }));
         if (error) throw error;
-        const rows = Array.isArray(data) ? data : [];
-        if (rows.length) {
+        const rows = (Array.isArray(data) ? data : []).filter((row) => !isDeletedMachineSettingsRow(row));
+        if (Array.isArray(data) && data.length) {
           state.machineSettingsSnapshot = rows;
           state.lastError = null;
           saveLocalSnapshot(state.rotationSnapshot || null, rows);
@@ -3471,9 +3490,10 @@
     }
     const cached = readLocalSnapshot();
     if (cached && Array.isArray(cached.machineSettingsRows) && cached.machineSettingsRows.length) {
-      state.machineSettingsSnapshot = cached.machineSettingsRows;
+      const rows = cached.machineSettingsRows.filter((row) => !isDeletedMachineSettingsRow(row));
+      state.machineSettingsSnapshot = rows;
       state.lastError = null;
-      return cached.machineSettingsRows;
+      return rows;
     }
     const defaults = defaultMachineSettingsRows();
     state.machineSettingsSnapshot = defaults;

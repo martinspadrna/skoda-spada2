@@ -1,3 +1,12 @@
+## RaK 1.2 (1.277)
+
+- Zalohy nastaveni: obnova uplne zalohy uz umi skryt i radky, ktere vznikly az po zaloze, aby rollback opravdu vratil stav k vybranemu bodu.
+- Supabase: pridana specialni kategorie `admin_settings_deleted`, ktera funguje jako bezpecny tombstone bez nutnosti primazavani z tabulky.
+- Nacitani nastaveni: online i lokalni cache ignoruji skryte deleted radky, takze se po obnove nevraceji do aplikace.
+- Administrace stroju: skryte rollback radky se nezobrazuji mezi beznymi stroji.
+- Smoke guard: `app-usage-smoke-v963.js` hlida deleted radky, filtr nacitani a editor stroju.
+- Release metadata sjednocena na `RaK 1.2 (1.277)`, technicka verze `1.2.277`, cache `v1.2-1.277`.
+
 ## RaK 1.2 (1.276)
 
 - Administrace: hlavni admin ma novou owner-only sekci Zalohy nastaveni pro uplnou online zalohu vsech nastaveni aplikace.

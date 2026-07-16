@@ -1597,6 +1597,7 @@ function adminMachineIsEditableMachineRow(row) {
     && cat !== 'vacation_countdown_settings'
     && cat !== 'admin_accounts_settings'
     && cat !== 'admin_full_settings_backup'
+    && cat !== 'admin_settings_deleted'
     && key !== 'ADMIN_ACCOUNTS_SETTINGS'
     && key.indexOf('ADMIN_FULL_SETTINGS_BACKUP_') !== 0
     && key !== 'VACATION_COUNTDOWN_SETTINGS'

@@ -373,6 +373,7 @@ async function restoreAdminRotationBackupFromSupabase(backupId) {
 
 const RAK_FULL_SETTINGS_BACKUP_CATEGORY = 'admin_full_settings_backup';
 const RAK_FULL_SETTINGS_BACKUP_KEY_PREFIX = 'ADMIN_FULL_SETTINGS_BACKUP_';
+const RAK_DELETED_MACHINE_SETTINGS_CATEGORY = 'admin_settings_deleted';
 
 function adminFullSettingsBackupJson(row) {
   if (row && row.settings_json && typeof row.settings_json === 'object') return row.settings_json;
@@ -392,6 +393,15 @@ function adminIsFullSettingsBackupRow(row) {
     || String(settings && settings.stored_category || '').trim() === RAK_FULL_SETTINGS_BACKUP_CATEGORY
     || String(settings && settings.type || '').trim() === RAK_FULL_SETTINGS_BACKUP_CATEGORY
     || String(settings && settings.admin_settings_key || '').trim().indexOf(RAK_FULL_SETTINGS_BACKUP_KEY_PREFIX) === 0;
+}
+
+function adminIsDeletedMachineSettingsRow(row) {
+  const settings = adminFullSettingsBackupJson(row);
+  const category = String(row && row.category || '').trim();
+  return category === RAK_DELETED_MACHINE_SETTINGS_CATEGORY
+    || String(settings && settings.stored_category || '').trim() === RAK_DELETED_MACHINE_SETTINGS_CATEGORY
+    || settings.deleted === true
+    || String(settings && settings.type || '').trim() === RAK_DELETED_MACHINE_SETTINGS_CATEGORY;
 }
 
 function adminCloneFullSettingsRow(row) {
@@ -419,8 +429,38 @@ function adminFullSettingsBackupRows() {
 function adminFullSettingsSourceRows(rows) {
   return (Array.isArray(rows) ? rows : [])
     .filter((row) => !adminIsFullSettingsBackupRow(row))
+    .filter((row) => !adminIsDeletedMachineSettingsRow(row))
     .map(adminCloneFullSettingsRow)
     .filter(Boolean);
+}
+
+function makeDeletedMachineSettingsRow(row) {
+  const source = row && typeof row === 'object' ? row : {};
+  const machineKey = String(source.machine_key || '').trim();
+  if (!machineKey) return null;
+  const now = new Date().toISOString();
+  return {
+    machine_key: machineKey,
+    machine_code: String(source.machine_code || source.machine || 'DELETED').trim() || 'DELETED',
+    machine_index: String(source.machine_index || source.index || '').trim(),
+    label: String(source.label || machineKey || 'Smazané nastavení').trim(),
+    category: RAK_DELETED_MACHINE_SETTINGS_CATEGORY,
+    cycle_time: '',
+    speed: '',
+    dress_time: '',
+    dress_count: '',
+    settings_json: {
+      type: RAK_DELETED_MACHINE_SETTINGS_CATEGORY,
+      stored_category: RAK_DELETED_MACHINE_SETTINGS_CATEGORY,
+      admin_settings_key: machineKey,
+      machine: String(source.machine_code || source.machine || 'DELETED').trim() || 'DELETED',
+      index: String(source.machine_index || source.index || '').trim(),
+      deleted: true,
+      deletedAt: now,
+      deletedBy: typeof rakAdminGetActiveAccountId === 'function' ? rakAdminGetActiveAccountId() : '',
+      reason: 'full-settings-backup-restore'
+    }
+  };
 }
 
 function adminFullSettingsBackupTimestampKey(value) {
@@ -574,19 +614,29 @@ async function restoreAdminFullSettingsBackupOnline(backupId) {
     : [];
   if (!backup || !restoredRows.length) return { ok: false, reason: 'missing-backup' };
   const backupRows = adminFullSettingsBackupRows().map(adminCloneFullSettingsRow).filter(Boolean);
+  const restoredKeys = new Set(restoredRows.map((row) => String(row && row.machine_key || '')).filter(Boolean));
+  const preservedBackupKeys = new Set(backupRows.map((row) => String(row && row.machine_key || '')).filter(Boolean));
+  const deletedRows = currentRows
+    .filter((row) => row && row.machine_key)
+    .filter((row) => !adminIsFullSettingsBackupRow(row))
+    .filter((row) => !adminIsDeletedMachineSettingsRow(row))
+    .filter((row) => !restoredKeys.has(String(row.machine_key || '')))
+    .filter((row) => !preservedBackupKeys.has(String(row.machine_key || '')))
+    .map(makeDeletedMachineSettingsRow)
+    .filter(Boolean);
   const merged = new Map();
-  restoredRows.concat(backupRows).forEach((row) => {
+  restoredRows.concat(backupRows, deletedRows).forEach((row) => {
     if (row && row.machine_key) merged.set(String(row.machine_key), row);
   });
-  const nextRows = Array.from(merged.values());
-  const result = await window.RotationSupabaseBridge.saveMachineSettings(nextRows);
+  const persistedRows = Array.from(merged.values());
+  const result = await window.RotationSupabaseBridge.saveMachineSettings(persistedRows);
   if (result && result.ok === false) return result;
-  app.machineSettingsRows = nextRows;
+  app.machineSettingsRows = restoredRows.concat(backupRows);
   try { if (typeof updateDashboard === 'function') updateDashboard(); } catch (err) {}
   try { if (typeof updateFoodTile === 'function') updateFoodTile(); } catch (err) {}
   try { if (typeof renderFoodSchedulePage === 'function') renderFoodSchedulePage(); } catch (err) {}
   try { if (typeof renderStatsPanel === 'function') renderStatsPanel(); } catch (err) {}
-  return { ok: true, backup, result };
+  return { ok: true, backup, result, deletedCount: deletedRows.length };
 }
 
 function adminGuideHasMonthRows(month) {

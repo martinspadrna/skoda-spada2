@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.276) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.277) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -226,12 +226,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.276)',
-  appLabel: 'RaK 1.2 (1.276)',
-  packageVersion: '1.2.276',
-  cacheVersion: 'v1.2-1.276',
+  displayVersion: '1.2 (1.277)',
+  appLabel: 'RaK 1.2 (1.277)',
+  packageVersion: '1.2.277',
+  cacheVersion: 'v1.2-1.277',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.276)',
+  changelogHeader: '## RaK 1.2 (1.277)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -340,8 +340,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.276)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.276'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.277)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.277'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1498,11 +1498,18 @@ function assertAdminAccountLoginContractV1141() {
   assertIncludes(ui, "serviceActions.unshift({ action: 'open-admin-accounts'", 'Mapa nastaveni musi ukazat Spravce jen hlavnimu adminovi');
   assertIncludes(ui, "serviceActions.push({ action: 'open-settings-backups'", 'Mapa nastaveni musi ukazat zalohy nastaveni jen hlavnimu adminovi');
   assertIncludes(ui, "const RAK_FULL_SETTINGS_BACKUP_CATEGORY = 'admin_full_settings_backup'", 'Uplna zaloha nastaveni musi mit vlastni kategorii');
+  assertIncludes(ui, "const RAK_DELETED_MACHINE_SETTINGS_CATEGORY = 'admin_settings_deleted'", 'Rollback nastaveni musi mit skryte deleted radky pro odebrani polozek mimo zalohu');
+  assertIncludes(ui, 'function makeDeletedMachineSettingsRow', 'Rollback nastaveni musi umet skryt radky, ktere v zaloze nebyly');
+  assertIncludes(ui, 'deletedCount: deletedRows.length', 'Obnova nastaveni musi vracet pocet skrytych radku mimo zalohu');
   assertIncludes(ui, "adminAction === 'create-full-settings-backup'", 'Hlavni admin musi umet vytvorit uplnou zalohu nastaveni');
   assertIncludes(ui, "adminAction === 'restore-full-settings-backup'", 'Hlavni admin musi umet obnovit uplnou zalohu nastaveni');
   assertIncludes(ui, "v === 'admin-settings-backups' && !(typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins())", 'Nizsi admin nesmi otevrit uplne zalohy nastaveni primo');
   assertIncludes(bridge, "category === 'admin_full_settings_backup'", 'Supabase compatibility save musi povolit uplne zalohy nastaveni');
+  assertIncludes(bridge, "category === 'admin_settings_deleted'", 'Supabase compatibility save musi povolit skryte deleted radky pro rollback nastaveni');
+  assertIncludes(bridge, 'function isDeletedMachineSettingsRow', 'Nacitani nastaveni musi umet ignorovat skryte deleted radky');
+  assertIncludes(bridge, '.filter((row) => !isDeletedMachineSettingsRow(row))', 'Nacitani nastaveni musi filtrovat deleted radky z online i cache');
   assertIncludes(adminRotationJs, "cat !== 'admin_full_settings_backup'", 'Uplna zaloha nastaveni nesmi byt v bezne tabulce stroju');
+  assertIncludes(adminRotationJs, "cat !== 'admin_settings_deleted'", 'Skryte rollback radky nesmi byt v bezne tabulce stroju');
   assertIncludes(stylesAdminPolishCss, '.adminAccountsStatusGrid', 'Sprava spravcu musi mit vlastni admin-only stavovy grid');
   assertIncludes(stylesAdminPolishCss, '.adminAccountsSafetyGrid', 'Sprava spravcu musi mit vlastni admin-only bezpecnostni grid');
   assertIncludes(stylesAdminPolishCss, '.adminAccountsRoleOverview', 'Sprava spravcu musi mit vlastni admin-only prehled roli');
