@@ -735,6 +735,24 @@ function buildSupabaseKeepaliveStatusHtml(options) {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
+      range: 'v.1.2 1.200–1.233',
+      title: 'Předání správy a kontrolní souhrny',
+      lines: [
+        'Administrace se rozdělila do přehlednějších oblastí pro provoz, rozpisy, veřejnou část, servis a předání dalšímu správci.',
+        'Přibyly chráněné návody, měsíční postup, mapa nastavení, export stavu a kontrola předání, aby nový správce věděl, kde co měnit.',
+        'Admin sekce postupně dostaly stavové souhrny, které před uložením ukazují vyplněnost, rizika a dopad změny; běžná část aplikace zůstává bez admin ovládání.'
+      ]
+    },
+    {
+      range: 'v.1.2 1.179–1.199',
+      title: 'Nastavení přímo z administrace',
+      lines: [
+        'Do administrace se přesunulo nastavení odkazů, kontaktu, výplaty a provozních období, aby se kvůli běžným změnám nemuselo sahat do souborů aplikace.',
+        'Dovolená / odstávky, CZD, Vánoce a mimořádné volné dny se začaly ukládat jako admin nastavení a promítat do home odpočtů i směnové logiky.',
+        'Ukládání speciálních nastavení se sjednotilo přes kompatibilní Supabase cestu, aby nepadalo na omezené kategorie nebo přímý zápis do tabulek.'
+      ]
+    },
+    {
       range: 'v.1.2 1.150–1.178',
       title: 'Administrace rozpisů, výjimky a dovolené',
       lines: [

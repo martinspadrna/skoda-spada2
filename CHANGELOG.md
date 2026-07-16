@@ -1,3 +1,10 @@
+## RaK 1.2 (1.233)
+
+- O aplikaci: doplnene nove horni bloky historie pro verze `1.179-1.199` a `1.200-1.233`, aby bylo pri predani jasne, co se v poslednich admin upravach zmenilo.
+- Historie: nove bloky shrnuji presun nastaveni do administrace, dovolene/odstavky, mimoradne volne dny, predani spravy a kontrolni admin souhrny.
+- Smoke guard: `app-usage-smoke-v963.js` hlida nove milniky v `O aplikaci`, aby se pri dalsich upravach neztratily.
+- Release metadata sjednocená na `RaK 1.2 (1.233)`, technická verze `1.2.233`, cache `v1.2-1.233`.
+
 ## RaK 1.2 (1.232)
 
 - Administrace / Kde co upravit: pridany admin-only souhrn `Stav mapy nastaveni`, ktery ukazuje pocet oblasti, rychlych akci, verejny dopad a stav spravcovskych opravneni.
