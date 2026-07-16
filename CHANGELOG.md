@@ -1,3 +1,10 @@
+## RaK 1.2 (1.210)
+
+- Administrace / Měsíční postup: přidané tlačítko `Stáhnout postup`, které vytvoří jednoduchý textový soubor s pořadím měsíční práce a aktuálním stavem kroků.
+- Předání správy: tlačítko `Stáhnout postup` je dostupné i přímo v panelu předání, vedle stažení stavu.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá textový export měsíčního postupu, handler, tlačítko a název souboru `RaK_mesicni_postup_`.
+- Release metadata sjednocená na `RaK 1.2 (1.210)`, technická verze `1.2.210`, cache `v1.2-1.210`.
+
 ## RaK 1.2 (1.209)
 
 - Administrace: přidaný chráněný panel `Měsíční postup`, který novému správci ukáže pořadí práce pro běžný měsíc: načíst online data, zkontrolovat provoz, doplnit volno a absence, připravit rozpis, uložit až po ruční kontrole a ověřit zálohy/export.

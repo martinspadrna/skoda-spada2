@@ -584,7 +584,7 @@ function adminMonthlyWorkflowItemHtml(item, index) {
   ].join('');
 }
 
-function buildAdminMonthlyWorkflowHtml(monthKey) {
+function getAdminMonthlyWorkflowItems(monthKey) {
   const rows = Array.isArray(app && app.machineSettingsRows) ? app.machineSettingsRows : [];
   const month = app && app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
   const monthReady = !!(month && adminGuideHasMonthRows(month));
@@ -597,7 +597,9 @@ function buildAdminMonthlyWorkflowHtml(monthKey) {
     ? app.adminRotationBackupsSnapshot.backups
     : [];
   const monthLabel = String(monthKey || '').trim() || 'vybraný měsíc';
-  const items = [
+  return {
+    monthLabel,
+    items: [
     {
       state: rows.length ? 'ok' : 'warn',
       title: 'Načíst online data',
@@ -642,14 +644,69 @@ function buildAdminMonthlyWorkflowHtml(monthKey) {
       action: backups.length ? 'open-export' : 'open-backups',
       actionLabel: backups.length ? 'Export' : 'Zálohy'
     }
-  ];
+    ]
+  };
+}
+
+function buildAdminMonthlyWorkflowHtml(monthKey) {
+  const workflow = getAdminMonthlyWorkflowItems(monthKey);
   return [
     '<div class="adminMonthlyWorkflow">',
     '  <div class="appMenuSubTitle">Měsíční postup</div>',
     '  <div class="smallText uMb10">Krátký pořádek práce pro správce. Panel nic sám neukládá, jen vede do chráněných admin sekcí.</div>',
-    items.map(adminMonthlyWorkflowItemHtml).join(''),
+    workflow.items.map(adminMonthlyWorkflowItemHtml).join(''),
     '</div>'
   ].join('');
+}
+
+function buildAdminMonthlyWorkflowText(monthKey) {
+  const workflow = getAdminMonthlyWorkflowItems(monthKey);
+  const version = formatRakDisplayVersion((typeof app !== 'undefined' && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : ''));
+  const stateLabels = { ok: 'OK', warn: 'zkontrolovat', info: 'podle potřeby', todo: 'čeká' };
+  const lines = [
+    'RaK - Měsíční postup správy',
+    'Verze: ' + version,
+    'Měsíc: ' + workflow.monthLabel,
+    'Vytvořeno: ' + new Date().toLocaleString('cs-CZ'),
+    '',
+    'Pravidlo',
+    '- Tenhle soubor nic sám nemění. Každou změnu udělej v administraci a ulož v konkrétní sekci.',
+    '- Běžní uživatelé nemají mít možnost měnit rozpis, provoz ani nastavení.',
+    '',
+    'Kroky'
+  ];
+  workflow.items.forEach((item, index) => {
+    const state = String(item && item.state || 'todo').trim() || 'todo';
+    lines.push(String(index + 1) + '. ' + String(item && item.title || 'Krok'));
+    lines.push('- Stav: ' + (stateLabels[state] || state));
+    lines.push('- ' + String(item && item.detail || ''));
+    lines.push('- Sekce v administraci: ' + String(item && item.actionLabel || 'otevřít'));
+    lines.push('');
+  });
+  lines.push('Kontrola po uložení');
+  lines.push('- Po uložení rozpisu zkontroluj zelenou synchronizaci na home.');
+  lines.push('- Při větší změně se podívej do Záloh rozpisu a podle potřeby stáhni Excel/ZIP export.');
+  lines.push('');
+  return lines.join('\n');
+}
+
+function downloadAdminMonthlyWorkflowText() {
+  const monthKey = getAdminSelectedMonthKey();
+  const text = buildAdminMonthlyWorkflowText(monthKey);
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const dateKey = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = 'RaK_mesicni_postup_' + dateKey + '.txt';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    try { URL.revokeObjectURL(url); } catch (err) {}
+    try { a.remove(); } catch (err) {}
+  }, 0);
+  const status = document.getElementById('adminOnlineSaveStatus');
+  if (status) status.textContent = 'Měsíční postup stažen jako textový soubor.';
 }
 
 function buildAdminHandoverRunbookHtml(monthKey) {
@@ -1232,6 +1289,7 @@ function renderAdminMenuBody(body, section) {
     buildAdminHandoverRunbookHtml(monthKey),
     '  <div class="appMenuActionRow">',
     '    <button type="button" class="appMenuAction isActive" data-admin-action="download-handover-status">Stáhnout stav</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="download-monthly-workflow">Stáhnout postup</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="load-machines">Načíst online</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
     '  </div>',
@@ -1247,6 +1305,7 @@ function renderAdminMenuBody(body, section) {
     '  </div>',
     buildAdminMonthlyWorkflowHtml(monthKey),
     '  <div class="appMenuActionRow">',
+    '    <button type="button" class="appMenuAction isActive" data-admin-action="download-monthly-workflow">Stáhnout postup</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-rotation">Rozpisy</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-handover">Předání správy</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
@@ -1639,6 +1698,10 @@ function bindAppMenuHandlers(body) {
       }
       if (adminAction === 'download-admin-manual') {
         downloadAdminManualText();
+        return;
+      }
+      if (adminAction === 'download-monthly-workflow') {
+        downloadAdminMonthlyWorkflowText();
         return;
       }
       if (adminAction === 'download-handover-status') {
