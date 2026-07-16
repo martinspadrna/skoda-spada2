@@ -495,6 +495,31 @@ function buildAdminPermissionStatusHtml() {
   ].join('');
 }
 
+function adminAccessRuleItemHtml(role, allowed, blocked, state) {
+  const stateClass = state ? ' is' + String(state).charAt(0).toUpperCase() + String(state).slice(1) : '';
+  return [
+    '<div class="adminAccessRuleItem' + escapeHtml(stateClass) + '">',
+    '  <span>' + escapeHtml(role || '') + '</span>',
+    '  <b>' + escapeHtml(allowed || '') + '</b>',
+    '  <small>' + escapeHtml(blocked || '') + '</small>',
+    '</div>'
+  ].join('');
+}
+
+function buildAdminAccessRulesHtml() {
+  return [
+    '<div class="adminAccessRules">',
+    '  <div class="appMenuSubTitle">Kdo smí co měnit</div>',
+    '  <div class="smallText uMb10">Předávací přehled rolí. Běžný uživatel odsud nic neuvidí a žádná změna se tady sama neukládá.</div>',
+    '  <div class="adminAccessRulesGrid">',
+    adminAccessRuleItemHtml('Hlavní admin', 'Správci, hesla, provoz i rozpisy.', 'Jediný smí určit další správce.', 'owner'),
+    adminAccessRuleItemHtml('Další správce', 'Provoz, rozpisy, absence, zálohy a exporty.', 'Nesmí měnit seznam správců ani jejich hesla.', 'admin'),
+    adminAccessRuleItemHtml('Běžný účet', 'Používá jen běžnou aplikaci.', 'Nesmí měnit rozpis, provoz ani online nastavení.', 'user'),
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
 function buildAdminHandoverAuditHtml(monthKey) {
   const rows = Array.isArray(app && app.machineSettingsRows) ? app.machineSettingsRows : [];
   const machineRows = adminHandoverMachineSettingsRows(rows);
@@ -604,6 +629,9 @@ function buildAdminHandoverStatusText(monthKey) {
     '- Aktivní admin účet: ' + (permissionStatus.activeAccountId || 'nezjištěn'),
     '- Role administrace: ' + permissionStatus.roleLabel,
     '- Admin odemčen: ' + (permissionStatus.unlocked ? 'ano' : 'ne'),
+    '- Pravidlo hlavního admina: hlavní admin smí měnit správce a hesla.',
+    '- Pravidlo dalšího správce: smí měnit provoz a rozpisy, ale ne seznam správců.',
+    '- Pravidlo běžného účtu: nesmí měnit rozpis, provoz ani online nastavení.',
     '- Admin účty: ' + String(activeAdmins),
     '- Kantýna / jídelna: ' + (foodLocations ? ('nastaveno ' + foodLocations + ' míst') : 'zkontrolovat'),
     '- Přesčasové termíny: ' + String(overtimeCount),
@@ -1514,6 +1542,7 @@ function renderAdminMenuBody(body, section) {
     '    <div class="smallText" id="adminOnlineSaveStatus">Vyber sekci, kterou chceš upravit.</div>',
     '  </div>',
     buildAdminPermissionStatusHtml(),
+    buildAdminAccessRulesHtml(),
     buildAdminNextStepsHtml(monthKey),
     buildAdminHandoverExportsHtml(monthKey),
     buildAdminActionLegendHtml(),
@@ -1756,6 +1785,7 @@ function renderAdminMenuBody(body, section) {
     '    <div class="smallText" id="adminOnlineSaveStatus">Všechny kroky vedou jen do administrace. Běžná aplikace se odsud nemění bez uložení v konkrétní sekci.</div>',
     '  </div>',
     buildAdminPermissionStatusHtml(),
+    buildAdminAccessRulesHtml(),
     buildAdminHandoverAuditHtml(monthKey),
     buildAdminMonthlyWorkflowHtml(monthKey),
     buildAdminHandoverChecklistHtml(monthKey),

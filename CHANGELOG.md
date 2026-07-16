@@ -1,3 +1,10 @@
+## RaK 1.2 (1.241)
+
+- Administrace: na admin uvod a Predani spravy pridany prehled `Kdo smi co menit` pro hlavniho admina, dalsi spravce a bezny ucet.
+- Predani spravy: textovy stav predani nově obsahuje pravidla, ze hlavni admin smi menit spravce, dalsi spravce jen provoz a rozpisy a bezny ucet nesmi menit online data.
+- Smoke guard: `app-usage-smoke-v963.js` hlida vlozeni prehledu roli do admin-only obrazovek i jeho responsive styl.
+- Release metadata sjednocená na `RaK 1.2 (1.241)`, technická verze `1.2.241`, cache `v1.2-1.241`.
+
 ## RaK 1.2 (1.240)
 
 - Administrace / Kde co upravit: pridany admin-only prehled `Verejny dopad zmen`, ktery deli oblasti na viditelne pro bezne lidi a ciste spravcovske.

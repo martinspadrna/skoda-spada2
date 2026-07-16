@@ -1484,6 +1484,59 @@
   min-height:32px !important;
   padding:6px 10px !important;
 }
+.adminAccessRules{
+  display:grid !important;
+  gap:8px !important;
+  margin:12px 0 !important;
+  padding:10px !important;
+  border:1px solid rgba(180,255,190,.24) !important;
+  border-radius:8px !important;
+  background:rgba(255,255,255,.04) !important;
+}
+.adminAccessRulesGrid{
+  display:grid !important;
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  gap:8px !important;
+}
+.adminAccessRuleItem{
+  display:grid !important;
+  gap:5px !important;
+  align-content:start !important;
+  min-height:104px !important;
+  padding:10px !important;
+  border:1px solid rgba(175,210,255,.26) !important;
+  border-radius:8px !important;
+  background:rgba(255,255,255,.04) !important;
+}
+.adminAccessRuleItem.isOwner{
+  border-color:rgba(180,255,190,.34) !important;
+  background:rgba(95,255,130,.07) !important;
+}
+.adminAccessRuleItem.isAdmin{
+  border-color:rgba(175,210,255,.32) !important;
+}
+.adminAccessRuleItem.isUser{
+  border-color:rgba(255,210,120,.34) !important;
+  background:rgba(255,185,80,.06) !important;
+}
+.adminAccessRuleItem span{
+  font-size:12px !important;
+  font-weight:900 !important;
+  color:rgba(222,255,228,.82) !important;
+  line-height:1.1 !important;
+}
+.adminAccessRuleItem b{
+  font-size:15px !important;
+  line-height:1.15 !important;
+  color:#b8d7ff !important;
+  overflow-wrap:anywhere !important;
+}
+.adminAccessRuleItem small{
+  color:rgba(235,255,240,.72) !important;
+  font-size:11px !important;
+  font-weight:700 !important;
+  line-height:1.25 !important;
+}
 .adminRotationBackupStatus{
   display:grid !important;
   gap:8px !important;
@@ -2174,6 +2227,9 @@
     grid-template-columns:1fr !important;
   }
   .adminPermissionStatusGrid{
+    grid-template-columns:1fr !important;
+  }
+  .adminAccessRulesGrid{
     grid-template-columns:1fr !important;
   }
   .adminAccountsRoleOverview{
