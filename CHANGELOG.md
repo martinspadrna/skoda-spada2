@@ -1,3 +1,10 @@
+## RaK 1.2 (1.239)
+
+- Administrace: na uvod pridana admin-only `Legenda tlacitek`, ktera vysvetluje rozdil mezi `Ulozit`, `Nacist`, `Stahnout` a `Zpet`.
+- Predani spravy: novy spravce hned vidi, ktera tlacitka meni online data a ktera jen nacitaji, stahuji soubor nebo se vraci zpet.
+- Smoke guard: `app-usage-smoke-v963.js` hlida vlozeni legendy na admin uvod a jeji styl vcetne odliseni ukladacich akci.
+- Release metadata sjednocená na `RaK 1.2 (1.239)`, technická verze `1.2.239`, cache `v1.2-1.239`.
+
 ## RaK 1.2 (1.238)
 
 - Administrace / Predavaci podklady: blok na admin uvodu nově ukazuje vybrany mesic, zdroj `aktualni stav` a potvrzeni, ze export nic neuklada.

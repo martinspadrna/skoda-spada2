@@ -959,6 +959,28 @@ function buildAdminHandoverExportsHtml(monthKey) {
   ].join('');
 }
 
+function buildAdminActionLegendHtml() {
+  const items = [
+    { label: 'Uložit', detail: 'mění online data', state: 'save' },
+    { label: 'Načíst', detail: 'jen načte uložený stav', state: 'load' },
+    { label: 'Stáhnout', detail: 'jen vytvoří soubor', state: 'download' },
+    { label: 'Zpět', detail: 'nic nemění', state: 'back' }
+  ];
+  return [
+    '<div class="adminActionLegend">',
+    '  <div class="appMenuSubTitle">Legenda tlačítek</div>',
+    '  <div class="adminActionLegendGrid">',
+    items.map((item) => [
+      '<div class="adminActionLegendItem is' + escapeHtml(item.state.charAt(0).toUpperCase() + item.state.slice(1)) + '">',
+      '  <b>' + escapeHtml(item.label) + '</b>',
+      '  <span>' + escapeHtml(item.detail) + '</span>',
+      '</div>'
+    ].join('')).join(''),
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
 function buildAdminMonthlyWorkflowHtml(monthKey) {
   const workflow = getAdminMonthlyWorkflowItems(monthKey);
   return [
@@ -1446,6 +1468,7 @@ function renderAdminMenuBody(body, section) {
     buildAdminPermissionStatusHtml(),
     buildAdminNextStepsHtml(monthKey),
     buildAdminHandoverExportsHtml(monthKey),
+    buildAdminActionLegendHtml(),
     buildAdminHandoverChecklistHtml(monthKey),
     '  <div class="adminMenuSections">',
     buildAdminMenuSectionHtml('1. Provoz před rozpisem', 'Co musí sedět před generováním dalšího měsíce.', [

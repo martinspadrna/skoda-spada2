@@ -1849,6 +1849,45 @@
   min-height:36px !important;
   padding:7px 8px !important;
 }
+.adminActionLegend{
+  display:grid !important;
+  gap:8px !important;
+  margin:12px 0 !important;
+  padding:10px !important;
+  border:1px solid rgba(180,255,190,.20) !important;
+  border-radius:8px !important;
+  background:rgba(255,255,255,.035) !important;
+}
+.adminActionLegendGrid{
+  display:grid !important;
+  grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+  gap:8px !important;
+}
+.adminActionLegendItem{
+  display:grid !important;
+  gap:4px !important;
+  align-content:start !important;
+  min-height:62px !important;
+  padding:8px !important;
+  border-radius:8px !important;
+  border:1px solid rgba(175,210,255,.24) !important;
+  background:rgba(255,255,255,.035) !important;
+}
+.adminActionLegendItem.isSave{
+  border-color:rgba(180,255,190,.34) !important;
+  background:rgba(95,255,130,.065) !important;
+}
+.adminActionLegendItem b{
+  color:#b8d7ff !important;
+  font-size:13px !important;
+  line-height:1.1 !important;
+}
+.adminActionLegendItem span{
+  color:rgba(235,255,240,.72) !important;
+  font-size:11px !important;
+  font-weight:750 !important;
+  line-height:1.2 !important;
+}
 .adminMonthlyWorkflowItem{
   display:grid !important;
   grid-template-columns:32px minmax(0,1fr) auto !important;
@@ -2149,6 +2188,9 @@
   }
   .adminHandoverExportStatus{
     grid-template-columns:1fr !important;
+  }
+  .adminActionLegendGrid{
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
   }
   .adminManualActionRow{
     grid-template-columns:1fr !important;
