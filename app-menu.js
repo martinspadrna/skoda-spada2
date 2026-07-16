@@ -1892,6 +1892,9 @@ function bindAppMenuHandlers(body) {
     if (target && target.matches && target.matches('[data-machine-field], [data-fhb-target-field]') && typeof adminMachineRefreshStatus === 'function') {
       adminMachineRefreshStatus(body);
     }
+    if (target && target.matches && target.matches('[data-external-link-field]') && typeof adminExternalLinksRefreshStatus === 'function') {
+      adminExternalLinksRefreshStatus(body);
+    }
   }, true);
 
   body.addEventListener('change', (event) => {
@@ -1911,6 +1914,9 @@ function bindAppMenuHandlers(body) {
     }
     if (target.matches('[data-machine-field], [data-fhb-target-field]') && typeof adminMachineRefreshStatus === 'function') {
       adminMachineRefreshStatus(body);
+    }
+    if (target.matches('[data-external-link-field]') && typeof adminExternalLinksRefreshStatus === 'function') {
+      adminExternalLinksRefreshStatus(body);
     }
   }, true);
 

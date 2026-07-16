@@ -1,3 +1,10 @@
+## RaK 1.2 (1.222)
+
+- Administrace / Odkazy: přidaný admin-only souhrn `Stav odkazů`, který ukazuje vyplněné URL, názvy, URL kontrolu a texty karet.
+- Odkazy: souhrn se přepočítává podle rozepsaných řádků ještě před uložením a upozorní na chybějící názvy, prázdné URL nebo neplatné http/https adresy.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá nový stav odkazů, jeho živé přepočítání a responsive admin-only styl.
+- Release metadata sjednocená na `RaK 1.2 (1.222)`, technická verze `1.2.222`, cache `v1.2-1.222`.
+
 ## RaK 1.2 (1.221)
 
 - Administrace / Nastavení strojů: přidaný admin-only souhrn `Stav nastavení strojů`, který ukazuje počty frezky/pračka, brusů, FHB středů a stav kontroly hodnot.

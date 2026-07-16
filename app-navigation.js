@@ -537,6 +537,112 @@ function mergeRakExternalLinksSettingsRows(settings) {
   return rows;
 }
 
+function isRakExternalLinkUrlValid(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return false;
+  try {
+    const url = new URL(raw);
+    return url.protocol === 'https:' || url.protocol === 'http:';
+  } catch (err) {
+    return false;
+  }
+}
+
+function readAdminExternalLinksStatusFromDom(root) {
+  const scope = root || document.getElementById('appMenuBody') || document;
+  const summary = { total: 0, labels: 0, urls: 0, invalid: 0, emptyText: 0 };
+  if (!scope.querySelectorAll) return summary;
+  scope.querySelectorAll('tr[data-external-link-row]').forEach((tr) => {
+    const get = (field) => String(tr.querySelector('[data-external-link-field="' + field + '"]')?.value || '').trim();
+    const label = get('label');
+    const value = get('value');
+    const meta = get('meta');
+    const url = get('url');
+    summary.total += 1;
+    if (label) summary.labels += 1;
+    if (url) summary.urls += 1;
+    if (url && !isRakExternalLinkUrlValid(url)) summary.invalid += 1;
+    if (!value && !meta) summary.emptyText += 1;
+  });
+  return summary;
+}
+
+function buildAdminExternalLinksStatusFromSettings(settings) {
+  const safe = normalizeRakExternalLinksSettings(settings);
+  const summary = { total: 0, labels: 0, urls: 0, invalid: 0, emptyText: 0 };
+  ['food', 'eportal', 'payroll', 'calendar'].forEach((key) => {
+    const link = normalizeRakExternalLinkEntry(key, safe.links[key]);
+    summary.total += 1;
+    if (link.label) summary.labels += 1;
+    if (link.url) summary.urls += 1;
+    if (link.url && !isRakExternalLinkUrlValid(link.url)) summary.invalid += 1;
+    if (!link.value && !link.meta) summary.emptyText += 1;
+  });
+  return summary;
+}
+
+function adminExternalLinksStatusItemHtml(label, value, detail, state) {
+  const safeState = state || 'ok';
+  return [
+    '<div class="adminExternalLinksStatusItem is' + escapeHtml(safeState.charAt(0).toUpperCase() + safeState.slice(1)) + '">',
+    '  <span>' + escapeHtml(label || '') + '</span>',
+    '  <b>' + escapeHtml(value || '') + '</b>',
+    detail ? '  <small>' + escapeHtml(detail) + '</small>' : '',
+    '</div>'
+  ].join('');
+}
+
+function buildAdminExternalLinksStatusHtml(summary) {
+  const safe = summary || { total: 0, labels: 0, urls: 0, invalid: 0, emptyText: 0 };
+  const missingLabels = Math.max(0, Number(safe.total || 0) - Number(safe.labels || 0));
+  const missingUrls = Math.max(0, Number(safe.total || 0) - Number(safe.urls || 0));
+  const items = [
+    {
+      label: 'Odkazy',
+      value: String(safe.urls || 0) + '/' + String(safe.total || 0),
+      detail: missingUrls ? ('Bez URL: ' + String(missingUrls) + '×.') : 'Všechny odkazy mají URL.',
+      state: missingUrls ? 'warn' : 'ok'
+    },
+    {
+      label: 'Názvy',
+      value: String(safe.labels || 0) + '/' + String(safe.total || 0),
+      detail: missingLabels ? ('Chybí název: ' + String(missingLabels) + '×.') : 'Každá karta má název.',
+      state: missingLabels ? 'warn' : 'ok'
+    },
+    {
+      label: 'URL kontrola',
+      value: safe.invalid ? 'zkontrolovat' : 'OK',
+      detail: safe.invalid ? ('Neplatné odkazy: ' + String(safe.invalid) + '×.') : 'Povoleny jsou http/https adresy.',
+      state: safe.invalid ? 'warn' : 'ok'
+    },
+    {
+      label: 'Text karet',
+      value: safe.emptyText ? 'doplnit' : 'OK',
+      detail: safe.emptyText ? ('Bez textu/popisu: ' + String(safe.emptyText) + '×.') : 'Text nebo popis je vyplněný.',
+      state: safe.emptyText ? 'info' : 'ok'
+    }
+  ];
+  return [
+    '<div class="adminExternalLinksStatus" id="adminExternalLinksStatus">',
+    '  <div class="appMenuSubTitle">Stav odkazů</div>',
+    '  <div class="smallText uMb10">Souhrn vychází z řádků níže. Odkazy se v běžné aplikaci změní až po uložení.</div>',
+    '  <div class="adminExternalLinksStatusGrid">',
+    items.map((item) => adminExternalLinksStatusItemHtml(item.label, item.value, item.detail, item.state)).join(''),
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
+function adminExternalLinksRefreshStatus(root) {
+  const scope = root || document.getElementById('appMenuBody') || document;
+  const box = scope.querySelector ? scope.querySelector('#adminExternalLinksStatus') : null;
+  if (!box) return;
+  const wrap = document.createElement('div');
+  wrap.innerHTML = buildAdminExternalLinksStatusHtml(readAdminExternalLinksStatusFromDom(scope));
+  const next = wrap.firstElementChild;
+  if (next) box.replaceWith(next);
+}
+
 function buildAdminExternalLinksSettingsHtml() {
   const settings = getRakExternalLinksSettings();
   const rows = ['food', 'eportal', 'payroll', 'calendar'].map((key) => {
@@ -551,6 +657,7 @@ function buildAdminExternalLinksSettingsHtml() {
     ].join('');
   }).join('');
   return [
+    buildAdminExternalLinksStatusHtml(buildAdminExternalLinksStatusFromSettings(settings)),
     '<div class="tableWrap appMenuTableWrap uMt12">',
     '  <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminExternalLinksTable">',
     '    <thead><tr><th>Název</th><th>Text</th><th>Popis</th><th>Odkaz</th></tr></thead>',
@@ -585,6 +692,7 @@ try {
   window.buildAdminExternalLinksSettingsHtml = buildAdminExternalLinksSettingsHtml;
   window.readAdminExternalLinksSettingsFromDom = readAdminExternalLinksSettingsFromDom;
   window.mergeRakExternalLinksSettingsRows = mergeRakExternalLinksSettingsRows;
+  window.adminExternalLinksRefreshStatus = adminExternalLinksRefreshStatus;
 } catch (err) {}
 
 const RAK_APP_CONTACT_SETTINGS_KEY = 'APP_CONTACT_SETTINGS';
