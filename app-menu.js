@@ -1399,6 +1399,31 @@ function buildAdminExternalLinksPublicCheckHtml() {
   ].join('');
 }
 
+function adminAppContactPublicCheckItemHtml(label, value, detail, state) {
+  const safeState = state || 'info';
+  return [
+    '<div class="adminAppContactPublicCheckItem is' + escapeHtml(safeState.charAt(0).toUpperCase() + safeState.slice(1)) + '">',
+    '  <span>' + escapeHtml(label || '') + '</span>',
+    '  <b>' + escapeHtml(value || '') + '</b>',
+    detail ? '  <small>' + escapeHtml(detail) + '</small>' : '',
+    '</div>'
+  ].join('');
+}
+
+function buildAdminAppContactPublicCheckHtml() {
+  return [
+    '<div class="adminAppContactPublicCheck">',
+    '  <div class="appMenuSubTitle">Veřejná kontrola kontaktu</div>',
+    '  <div class="smallText uMb10">Kontakt je viditelný v běžném menu. Po uložení ověř jméno, telefon a e-mail přes běžnou aplikaci, ne jen v administraci.</div>',
+    '  <div class="adminAppContactPublicCheckGrid">',
+    adminAppContactPublicCheckItemHtml('Běžné menu', 'Kontakt', 'Otevři menu Kontakt a ověř, že jsou údaje čitelné a aktuální.', 'warn'),
+    adminAppContactPublicCheckItemHtml('Telefon', 'volatelný', 'Zkontroluj formát čísla, aby ho mobil uměl rovnou použít.', 'info'),
+    adminAppContactPublicCheckItemHtml('E-mail', 'klikací', 'Zkontroluj adresu bez překlepů a bez zbytečných mezer.', 'info'),
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
 function buildAdminMonthlyWorkflowHtml(monthKey) {
   const workflow = getAdminMonthlyWorkflowItems(monthKey);
   return [
@@ -2142,6 +2167,7 @@ function renderAdminMenuBody(body, section) {
     '    <div class="smallText" id="adminOnlineSaveStatus">Bez uložené změny zůstanou původní údaje.</div>',
     '  </div>',
     buildAdminAppContactSettingsHtml(),
+    buildAdminAppContactPublicCheckHtml(),
     '  <div class="appMenuActionRow">',
     '    <button type="button" class="appMenuAction" data-admin-action="load-app-contact">Načíst online</button>',
     '    <button type="button" class="appMenuAction isActive" data-admin-action="save-app-contact">Uložit kontakt</button>',

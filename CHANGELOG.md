@@ -1,3 +1,10 @@
+## RaK 1.2 (1.254)
+
+- Administrace / Kontakt aplikace: doplněna admin-only `Veřejná kontrola kontaktu`, aby správce po uložení ověřil jméno, telefon a e-mail v běžném menu Kontakt.
+- Kontakt: kontrola připomíná čitelnost v menu, volatelný telefon a klikací e-mail bez překlepů.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá veřejnou kontrolu kontaktu, vložení do admin obrazovky a responsive styl.
+- Release metadata sjednocená na `RaK 1.2 (1.254)`, technická verze `1.2.254`, cache `v1.2-1.254`.
+
 ## RaK 1.2 (1.253)
 
 - Administrace / Odkazy: doplněna admin-only `Veřejná kontrola odkazů`, aby správce po změně ověřil Jídelní lístek, Eportal, Výplatu a Kalendář z běžné aplikace.
