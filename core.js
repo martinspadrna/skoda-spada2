@@ -1,7 +1,7 @@
-// RaK 1.2 (1.219) – core stav, verze a sdílené helpery aplikace.
+// RaK 1.2 (1.220) – core stav, verze a sdílené helpery aplikace.
 
 const APP_KEY = "rotace_kalkulacky_state_v123";
-const APP_VERSION = "1.2 (1.219)";
+const APP_VERSION = "1.2 (1.220)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-06-03-" + APP_VERSION;
 window.ROTATION_BUILD = ROTATION_BUILD;
@@ -367,6 +367,113 @@ function mergeRakSpecialDaysSettingsRows(settings) {
   return rows;
 }
 
+function rakSpecialDaysTodayIso() {
+  return dateKeyISO(new Date());
+}
+
+function readRakSpecialDaysEntriesFromRoot(root) {
+  const scope = root || document.getElementById('appMenuBody') || document;
+  const entries = [];
+  const seen = new Set();
+  let duplicateCount = 0;
+  if (!scope.querySelectorAll) return { days: [], duplicateCount: 0 };
+  scope.querySelectorAll('tr[data-special-day-row]').forEach((tr) => {
+    const get = (field) => String(tr.querySelector('[data-special-day-field="' + field + '"]')?.value || '').trim();
+    const entry = normalizeRakSpecialDayEntry({
+      date: get('date'),
+      type: get('type'),
+      label: get('label')
+    });
+    if (!entry) return;
+    if (seen.has(entry.date)) {
+      duplicateCount += 1;
+      return;
+    }
+    seen.add(entry.date);
+    entries.push(entry);
+  });
+  return {
+    days: entries.sort((a, b) => a.date.localeCompare(b.date)),
+    duplicateCount
+  };
+}
+
+function rakSpecialDaysIsoToCzechDate(value) {
+  const raw = String(value || '').trim();
+  const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return raw;
+  return String(Number(match[3])) + '.' + String(Number(match[2])) + '.' + match[1];
+}
+
+function adminSpecialDaysStatusItemHtml(label, value, detail, state) {
+  const safeState = state || 'ok';
+  return [
+    '<div class="adminSpecialDaysStatusItem is' + escapeHtml(safeState.charAt(0).toUpperCase() + safeState.slice(1)) + '">',
+    '  <span>' + escapeHtml(label || '') + '</span>',
+    '  <b>' + escapeHtml(value || '') + '</b>',
+    detail ? '  <small>' + escapeHtml(detail) + '</small>' : '',
+    '</div>'
+  ].join('');
+}
+
+function buildAdminSpecialDaysStatusHtml(input) {
+  const source = input && typeof input === 'object' && Array.isArray(input.days)
+    ? input
+    : { days: Array.isArray(input) ? input : [], duplicateCount: 0 };
+  const todayIso = rakSpecialDaysTodayIso();
+  const days = source.days.filter((entry) => entry && isRakSpecialDayIsoDate(entry.date || ''));
+  const future = days.filter((entry) => String(entry.date || '') >= todayIso);
+  const nearest = future[0] || null;
+  const shutdownCount = days.filter((entry) => entry.type !== 'holiday').length;
+  const holidayCount = days.length - shutdownCount;
+  const duplicateCount = Number(source.duplicateCount || 0) || 0;
+  const items = [
+    {
+      label: 'Zadané dny',
+      value: String(days.length) + '×',
+      detail: duplicateCount ? ('Duplicitní datumy se při uložení sloučí: ' + String(duplicateCount) + '×.') : 'Prázdné řádky se neukládají.',
+      state: days.length && !duplicateCount ? 'ok' : (duplicateCount ? 'warn' : 'info')
+    },
+    {
+      label: 'Budoucí',
+      value: String(future.length) + '×',
+      detail: future.length ? 'Budoucí volné dny ovlivní směny a generování.' : 'Žádný budoucí mimořádný den není zadaný.',
+      state: future.length ? 'ok' : 'info'
+    },
+    {
+      label: 'Nejbližší',
+      value: nearest ? rakSpecialDaysIsoToCzechDate(nearest.date) : 'není',
+      detail: nearest ? ((nearest.label || (nearest.type === 'holiday' ? 'Volno' : 'Odstávka')) + ' · ' + (nearest.type === 'holiday' ? 'Volno' : 'Odstávka')) : 'Doplň datum jen při mimořádné změně provozu.',
+      state: nearest ? 'ok' : 'info'
+    },
+    {
+      label: 'Typy',
+      value: String(shutdownCount) + ' / ' + String(holidayCount),
+      detail: 'Odstávky / volno. Vestavěné české svátky zůstávají automatické.',
+      state: days.length ? 'ok' : 'info'
+    }
+  ];
+  return [
+    '<div class="adminSpecialDaysStatus" id="adminSpecialDaysStatus">',
+    '  <div class="appMenuSubTitle">Stav mimořádných dnů</div>',
+    '  <div class="smallText uMb10">Souhrn vychází z řádků níže a pomáhá zkontrolovat jednorázové volno před uložením.</div>',
+    '  <div class="adminSpecialDaysStatusGrid">',
+    items.map((item) => adminSpecialDaysStatusItemHtml(item.label, item.value, item.detail, item.state)).join(''),
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
+function adminSpecialDaysRefreshStatus(root) {
+  const scope = root || document.getElementById('appMenuBody') || document;
+  const box = scope.querySelector ? scope.querySelector('#adminSpecialDaysStatus') : null;
+  if (!box) return;
+  const wrap = document.createElement('div');
+  wrap.innerHTML = buildAdminSpecialDaysStatusHtml(readRakSpecialDaysEntriesFromRoot(scope));
+  const next = wrap.firstElementChild;
+  if (next) box.replaceWith(next);
+}
+
 function buildAdminSpecialDaysSettingsHtml() {
   const settings = getRakSpecialDaysSettings();
   const rowCount = Math.max(8, (settings.days || []).length + 4);
@@ -385,6 +492,7 @@ function buildAdminSpecialDaysSettingsHtml() {
     ].join('');
   }).join('');
   return [
+    buildAdminSpecialDaysStatusHtml({ days: settings.days || [], duplicateCount: 0 }),
     '<div class="tableWrap appMenuTableWrap uMt8">',
     '  <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminSpecialDaysTable">',
     '    <thead><tr><th>Datum</th><th>Typ</th><th>Název</th></tr></thead>',
@@ -712,6 +820,7 @@ window.getRakSpecialDayInfo = getRakSpecialDayInfo;
 window.buildAdminSpecialDaysSettingsHtml = buildAdminSpecialDaysSettingsHtml;
 window.readAdminSpecialDaysSettingsFromDom = readAdminSpecialDaysSettingsFromDom;
 window.mergeRakSpecialDaysSettingsRows = mergeRakSpecialDaysSettingsRows;
+window.adminSpecialDaysRefreshStatus = adminSpecialDaysRefreshStatus;
 
 const appRotation = loadRotationData();
 const app = {

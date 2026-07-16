@@ -1,3 +1,10 @@
+## RaK 1.2 (1.220)
+
+- Administrace / Mimořádné volné dny: přidaný admin-only souhrn `Stav mimořádných dnů`, který ukazuje počet zadaných dnů, budoucí dny, nejbližší datum a rozpad odstávka/volno.
+- Mimořádné volné dny: souhrn se přepočítává podle rozepsaných řádků ještě před uložením a upozorní na duplicitní datumy.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá nový stav mimořádných dnů, jeho živé přepočítání a responsive admin-only styl.
+- Release metadata sjednocená na `RaK 1.2 (1.220)`, technická verze `1.2.220`, cache `v1.2-1.220`.
+
 ## RaK 1.2 (1.219)
 
 - Administrace / Dovolená / odstávky: přidaný admin-only souhrn `Stav dovolené / odstávek`, který ukazuje počet období, aktivní nebo nejbližší období, délku a odpočet směn D.

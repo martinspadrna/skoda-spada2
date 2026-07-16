@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.219) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.220) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -224,12 +224,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.219)',
-  appLabel: 'RaK 1.2 (1.219)',
-  packageVersion: '1.2.219',
-  cacheVersion: 'v1.2-1.219',
+  displayVersion: '1.2 (1.220)',
+  appLabel: 'RaK 1.2 (1.220)',
+  packageVersion: '1.2.220',
+  cacheVersion: 'v1.2-1.220',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.219)',
+  changelogHeader: '## RaK 1.2 (1.220)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -338,8 +338,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.219)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.219'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.220)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.220'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1323,8 +1323,13 @@ assertIncludes(appearanceThemeJs, '"id": "light-zigzag"', 'Musí existovat zákl
   assertIncludes(coreJs, 'function getRakSpecialDayInfo', 'getSpecialWorkInfo musi umet nacist mimoradny volny den z admin nastaveni');
   assertIncludes(coreJs, 'const customSpecial = typeof getRakSpecialDayInfo', 'getSpecialWorkInfo musi pred pevnymi svatky kontrolovat admin mimoradne volne dny');
   assertIncludes(coreJs, 'function buildAdminSpecialDaysSettingsHtml', 'Administrace musi mit formular mimoradnych volnych dnu');
+  assertIncludes(coreJs, 'function buildAdminSpecialDaysStatusHtml', 'Administrace musi mit souhrn stavu mimoradnych volnych dnu');
+  assertIncludes(coreJs, 'function adminSpecialDaysRefreshStatus', 'Souhrn mimoradnych volnych dnu se musi prepocitat podle rozepsanych radku');
+  assertIncludes(coreJs, 'readRakSpecialDaysEntriesFromRoot', 'Souhrn mimoradnych volnych dnu musi vychazet z aktualnich DOM radku pred ulozenim');
   assertIncludes(coreJs, 'function readAdminSpecialDaysSettingsFromDom', 'Administrace musi umet nacist mimoradne volne dny z formulare');
   assertIncludes(coreJs, 'function mergeRakSpecialDaysSettingsRows', 'Mimoradne volne dny se musi ukladat do machine_settings bez mazani ostatnich nastaveni');
+  assertIncludes(menuJs, 'adminSpecialDaysRefreshStatus(body)', 'Admin menu musi prepocitat souhrn mimoradnych volnych dnu pri zmene pole');
+  assertIncludes(css, '.adminSpecialDaysStatusGrid', 'Souhrn mimoradnych volnych dnu musi mit vlastni responsive admin styl');
   assertIncludes(menuJs, "action: 'open-special-days', label: 'Mimořádné volné dny'", 'Admin menu musi obsahovat sekci Mimoradne volne dny');
   assertIncludes(menuJs, "adminAction === 'open-special-days'", 'Admin menu musi umet otevrit mimoradne volne dny');
   assertIncludes(menuJs, "adminAction === 'save-special-days'", 'Admin menu musi umet ulozit mimoradne volne dny');
