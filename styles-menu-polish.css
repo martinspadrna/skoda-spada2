@@ -82,6 +82,21 @@ body.lightweightMode #menu .adminUsageMetric,
 body.lowEndDevice #menu .adminUsageMetric,
 body.ladaMode #menu .adminUsageMetric{backdrop-filter:none !important;-webkit-backdrop-filter:none !important;box-shadow:none !important;}
 
+/* v.1.2 (1.286): veřejný Kontakt používá klikací telefon/e-mail z admin nastavení. */
+#menu .appMenuContactLink{
+  color:var(--soft,#f4fff6) !important;
+  font-weight:800 !important;
+  text-align:right !important;
+  text-decoration:none !important;
+  overflow-wrap:anywhere !important;
+  word-break:break-word !important;
+}
+#menu .appMenuContactLink:hover,
+#menu .appMenuContactLink:focus-visible{
+  color:var(--rakThemeAccent,#7CFF7C) !important;
+  text-decoration:underline !important;
+}
+
 
 /* RaK 1.2 (1.146) – Přehled připojení jako rozklikávací profily.
    Iniciály v avataru mají vlastní summary text wrapper, aby zůstaly přesně uprostřed ikonky. */
@@ -250,4 +265,3 @@ body.ladaMode #menu .adminUsageMetric{backdrop-filter:none !important;-webkit-ba
     padding:0 0 1px !important;
   }
 }
-

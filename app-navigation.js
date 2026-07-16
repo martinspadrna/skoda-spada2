@@ -767,6 +767,24 @@ function isRakAppContactEmailValid(value) {
   return !!raw && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw);
 }
 
+function getRakAppContactPhoneHref(contact) {
+  const source = contact && typeof contact === 'object' ? contact : getRakAppContactSettings();
+  const raw = String(source && source.phone || '').trim();
+  const compact = raw.replace(/[^\d+]/g, '');
+  const digitCount = (compact.match(/\d/g) || []).length;
+  if (!compact || digitCount < 6) return '';
+  if ((compact.match(/\+/g) || []).length > 1) return '';
+  if (compact.indexOf('+') > 0) return '';
+  return 'tel:' + compact;
+}
+
+function getRakAppContactEmailHref(contact) {
+  const source = contact && typeof contact === 'object' ? contact : getRakAppContactSettings();
+  const raw = String(source && source.email || '').trim();
+  if (!isRakAppContactEmailValid(raw)) return '';
+  return 'mailto:' + encodeURIComponent(raw);
+}
+
 function readAdminAppContactStatusFromDom(root) {
   const scope = root || document.getElementById('appMenuBody') || document;
   const get = (field) => String(scope.querySelector && scope.querySelector('[data-app-contact-field="' + field + '"]')?.value || '').trim();
@@ -885,6 +903,8 @@ function readAdminAppContactSettingsFromDom() {
 try {
   window.isRakAppContactSettingsRow = isRakAppContactSettingsRow;
   window.getRakAppContactSettings = getRakAppContactSettings;
+  window.getRakAppContactPhoneHref = getRakAppContactPhoneHref;
+  window.getRakAppContactEmailHref = getRakAppContactEmailHref;
   window.buildAdminAppContactSettingsHtml = buildAdminAppContactSettingsHtml;
   window.readAdminAppContactSettingsFromDom = readAdminAppContactSettingsFromDom;
   window.mergeRakAppContactSettingsRows = mergeRakAppContactSettingsRows;

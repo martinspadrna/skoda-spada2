@@ -1,3 +1,11 @@
+## RaK 1.2 (1.286)
+
+- Kontakt: verejne menu Kontakt pouziva z admin nastaveni klikaci `tel:` odkaz pro telefon a `mailto:` odkaz pro e-mail.
+- Kontakt: neplatny telefon nebo e-mail zustane jen textem, aby se nevytvarel rozbity klik.
+- Verejna cast: vzhled kontaktu zustava stejny, jen platne hodnoty jdou rovnou zavolat nebo otevrit v e-mailu.
+- Smoke guard: `app-usage-smoke-v963.js` hlida helpery `getRakAppContactPhoneHref`, `getRakAppContactEmailHref` i klikaci radek verejneho kontaktu.
+- Release metadata sjednocena na `RaK 1.2 (1.286)`, technicka verze `1.2.286`, cache `v1.2-1.286`; loader modulu ma cache znacku `1.2.286`.
+
 ## RaK 1.2 (1.285)
 
 - Odkazy: dashboard po prekresleni propisuje admin nastavene URL i do skutecnych `href` atributu karet.

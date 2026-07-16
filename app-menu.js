@@ -5059,6 +5059,8 @@ function openAppMenu(view) {
   const contact = typeof getRakAppContactSettings === 'function'
     ? getRakAppContactSettings()
     : { name: 'Martin Špadrna', phone: '+420 773 682 499', email: 'martinspadrna@gmail.com' };
+  const contactPhoneHref = typeof getRakAppContactPhoneHref === 'function' ? getRakAppContactPhoneHref(contact) : '';
+  const contactEmailHref = typeof getRakAppContactEmailHref === 'function' ? getRakAppContactEmailHref(contact) : '';
 
   if (body) {
     bindAppMenuHandlers(body);
@@ -5112,8 +5114,8 @@ function openAppMenu(view) {
         '  <div class="appMenuCardTitle">Kontakt</div>',
         '',
         '  <div class="appMenuContactRow"><span>Jméno</span><b>' + escapeHtml(contact.name) + '</b></div>',
-        '  <div class="appMenuContactRow"><span>Telefon</span><b>' + escapeHtml(contact.phone) + '</b></div>',
-        '  <div class="appMenuContactRow"><span>E-mail</span><b>' + escapeHtml(contact.email) + '</b></div>',
+        '  <div class="appMenuContactRow"><span>Telefon</span>' + (contactPhoneHref ? '<a class="appMenuContactLink" href="' + escapeHtml(contactPhoneHref) + '">' + escapeHtml(contact.phone) + '</a>' : '<b>' + escapeHtml(contact.phone) + '</b>') + '</div>',
+        '  <div class="appMenuContactRow"><span>E-mail</span>' + (contactEmailHref ? '<a class="appMenuContactLink" href="' + escapeHtml(contactEmailHref) + '">' + escapeHtml(contact.email) + '</a>' : '<b>' + escapeHtml(contact.email) + '</b>') + '</div>',
         '  <button type="button" class="appMenuAction appMenuBack" data-menu-back="1">Zpět</button>',
         '</div>'
       ].join('');

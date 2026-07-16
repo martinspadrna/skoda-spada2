@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.285) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.286) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -226,12 +226,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.285)',
-  appLabel: 'RaK 1.2 (1.285)',
-  packageVersion: '1.2.285',
-  cacheVersion: 'v1.2-1.285',
+  displayVersion: '1.2 (1.286)',
+  appLabel: 'RaK 1.2 (1.286)',
+  packageVersion: '1.2.286',
+  cacheVersion: 'v1.2-1.286',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.285)',
+  changelogHeader: '## RaK 1.2 (1.286)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -340,8 +340,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.285)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.285'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.286)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.286'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1854,6 +1854,8 @@ function assertAdminAppContactSettingsContractV1145() {
   assertIncludes(ui, "const RAK_APP_CONTACT_SETTINGS_KEY = 'APP_CONTACT_SETTINGS'", 'Kontakt aplikace musi mit vlastni machine_settings klic');
   assertIncludes(ui, "const RAK_APP_CONTACT_SETTINGS_CATEGORY = 'app_contact_settings'", 'Kontakt aplikace musi mit vlastni kategorii nastaveni');
   assertIncludes(ui, 'function getRakAppContactSettings', 'Verejny kontakt musi cist ulozene admin nastaveni');
+  assertIncludes(ui, 'function getRakAppContactPhoneHref', 'Verejny kontakt musi umet vytvorit tel odkaz z admin telefonu');
+  assertIncludes(ui, 'function getRakAppContactEmailHref', 'Verejny kontakt musi umet vytvorit mailto odkaz z admin e-mailu');
   assertIncludes(ui, 'function buildAdminAppContactSettingsHtml', 'Administrace musi mit formular kontaktu aplikace');
   assertIncludes(ui, 'function buildAdminAppContactStatusHtml', 'Administrace musi mit souhrn stavu kontaktu aplikace');
   assertIncludes(ui, 'function buildAdminAppContactPublicCheckHtml', 'Kontakt aplikace musi mit admin-only kontrolu verejneho dopadu');
@@ -1872,6 +1874,10 @@ function assertAdminAppContactSettingsContractV1145() {
   assertIncludes(ui, "adminAction === 'load-app-contact'", 'Admin menu musi umet nacist kontakt aplikace online');
   assertIncludes(ui, "'admin-app-contact'", 'Kontakt aplikace musi byt mezi chranenymi admin view');
   assertIncludes(ui, "const contact = typeof getRakAppContactSettings === 'function'", 'Verejna karta Kontakt musi pouzivat adminovatelny getter');
+  assertIncludes(ui, 'const contactPhoneHref = typeof getRakAppContactPhoneHref === \'function\'', 'Verejna karta Kontakt musi nacitat adminovatelny tel href');
+  assertIncludes(ui, 'const contactEmailHref = typeof getRakAppContactEmailHref === \'function\'', 'Verejna karta Kontakt musi nacitat adminovatelny mailto href');
+  assertIncludes(ui, 'class="appMenuContactLink"', 'Verejny telefon/e-mail v Kontakt musi byt klikaci, pokud je platny');
+  assertIncludes(menuPolishCss, '#menu .appMenuContactLink', 'Klikaci kontakt musi mit vlastni menu styl');
   assertIncludes(ui, 'app.machineSettingsRows.filter(isRakAppContactSettingsRow)', 'Ulozeni stroju nesmi smazat kontakt aplikace');
   assertIncludes(bridge, "category === 'app_contact_settings'", 'Supabase compatibility save musi povolit kontakt aplikace');
   assertIncludes(bridge, "key === 'APP_CONTACT_SETTINGS'", 'Supabase compatibility save musi povolit klic kontaktu aplikace');
