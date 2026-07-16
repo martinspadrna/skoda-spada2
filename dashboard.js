@@ -735,6 +735,7 @@ function updateDashboard() {
   }
   setCard('dashFoodLink', foodLink.label || 'Jídelní lístek', foodLink.value || 'Otevřít', foodLink.meta || 'Aktuální menu', '', true, bookIcon);
   setCard('dashEportalLink', eportalLink.label || 'Eportal', eportalLink.value || 'Otevřít', eportalLink.meta || 'Firemní portál', '', true, eportalIcon);
+  if (typeof syncDashboardExternalLinks === 'function') syncDashboardExternalLinks();
   try { renderRakDashboardAnnouncement(now); } catch (err) {}
 }
 
@@ -1025,6 +1026,7 @@ window.__rotaceBootHomeRefreshLate = bootHomeRefreshLate;
     }
     setCardSimple('dashFoodLink', foodLink.label || 'Jídelní lístek', foodLink.value || 'Otevřít', foodLink.meta || 'Aktuální menu', '', true, fallbackDashboardIcons.menu);
     setCardSimple('dashEportalLink', eportalLink.label || 'Eportal', eportalLink.value || 'Otevřít', eportalLink.meta || 'Firemní portál', '', true, fallbackDashboardIcons.eportal);
+    if (typeof syncDashboardExternalLinks === 'function') syncDashboardExternalLinks();
 
     if (err) {
       console.warn('Dashboard fallback activated', err);

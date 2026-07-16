@@ -1,3 +1,11 @@
+## RaK 1.2 (1.285)
+
+- Odkazy: dashboard po prekresleni propisuje admin nastavene URL i do skutecnych `href` atributu karet.
+- Odkazy: Jidelni listek, Eportal i Vyplata maji `href` pres bezpecny `setSafeExternalAnchor`, takze i dlouhy stisk / otevreni odkazu bere admin nastaveni.
+- Verejna cast: vzhled karet se nemeni, jen se odstranuje riziko stareho fallback odkazu z HTML.
+- Smoke guard: `app-usage-smoke-v963.js` hlida synchronizaci `href` pro tri dashboard odkazy a volani synchronizace po prekresleni dashboardu.
+- Release metadata sjednocena na `RaK 1.2 (1.285)`, technicka verze `1.2.285`, cache `v1.2-1.285`; loader modulu ma cache znacku `1.2.285`.
+
 ## RaK 1.2 (1.284)
 
 - Predani spravy: prirucka a pruvodce ted hlavniho admina vedou i ke kontrole prihlasenych admin zarizeni.

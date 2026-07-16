@@ -929,7 +929,8 @@ function syncDashboardExternalLinks() {
   const hosts = getRakExternalTileHosts();
   const food = setSafeExternalAnchor(document.getElementById('dashFoodLink'), getRakExternalLinkUrl('food'), hosts, 'dashFoodLink');
   const eportal = setSafeExternalAnchor(document.getElementById('dashEportalLink'), getRakExternalLinkUrl('eportal'), hosts, 'dashEportalLink');
-  return !!(food || eportal);
+  const payroll = setSafeExternalAnchor(document.getElementById('dashVyplata'), getRakExternalLinkUrl('payroll'), hosts, 'dashVyplata');
+  return !!(food || eportal || payroll);
 }
 window.syncDashboardExternalLinks = syncDashboardExternalLinks;
 
