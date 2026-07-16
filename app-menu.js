@@ -973,6 +973,28 @@ function adminHandoverPayrollSnapshot() {
   };
 }
 
+function adminHandoverFullSettingsBackupSnapshot() {
+  let backups = [];
+  try {
+    backups = typeof adminFullSettingsBackupList === 'function' ? adminFullSettingsBackupList() : [];
+  } catch (err) {
+    backups = [];
+  }
+  const latest = Array.isArray(backups) && backups.length ? backups[0] : null;
+  const latestLabel = latest && latest.createdAt && typeof adminFullSettingsBackupDateLabel === 'function'
+    ? adminFullSettingsBackupDateLabel(latest.createdAt)
+    : '';
+  return {
+    count: Array.isArray(backups) ? backups.length : 0,
+    latest,
+    state: backups.length ? 'ok' : 'warn',
+    label: backups.length ? (String(backups.length) + ' bodů') : 'chybí',
+    detail: backups.length
+      ? ('Nejnovější úplná záloha nastavení: ' + latestLabel + '.')
+      : 'Hlavní admin má před předáním vytvořit první úplnou zálohu nastavení.'
+  };
+}
+
 function adminHandoverSyncReadinessSnapshot() {
   let syncStatus = null;
   let hardening = null;
@@ -1028,6 +1050,7 @@ function adminHandoverReadinessActionForTitle(title) {
   if (safeTitle.indexOf('rozpis') !== -1) return { action: 'open-rotation', label: 'Rozpis' };
   if (safeTitle.indexOf('provoz') !== -1) return { action: 'open-food', label: 'Provoz' };
   if (safeTitle.indexOf('volno') !== -1) return { action: 'open-vacation', label: 'Dovolená' };
+  if ((safeTitle.indexOf('záloh') !== -1 || safeTitle.indexOf('zaloh') !== -1) && safeTitle.indexOf('nastaven') !== -1) return { action: 'open-settings-backups', label: 'Zálohy nastavení' };
   if (safeTitle.indexOf('záloh') !== -1 || safeTitle.indexOf('zaloh') !== -1) return { action: 'open-backups', label: 'Zálohy' };
   if (safeTitle.indexOf('správc') !== -1 || safeTitle.indexOf('spravc') !== -1) return { action: 'open-admin-accounts', label: 'Správci' };
   if (safeTitle.indexOf('report') !== -1 || safeTitle.indexOf('chyb') !== -1) return { action: 'open-reports', label: 'Reporty' };
@@ -1124,6 +1147,7 @@ function buildAdminHandoverReadinessSnapshot(monthKey) {
   const contactSnapshot = adminHandoverAppContactSnapshot();
   const linksSnapshot = adminHandoverExternalLinksSnapshot();
   const payrollSnapshot = adminHandoverPayrollSnapshot();
+  const fullSettingsBackupSnapshot = adminHandoverFullSettingsBackupSnapshot();
   const syncReadiness = adminHandoverSyncReadinessSnapshot();
   const checks = [
     {
@@ -1162,6 +1186,12 @@ function buildAdminHandoverReadinessSnapshot(monthKey) {
       title: 'Zálohy',
       value: backups.length ? String(backups.length) + ' záloh' : 'ověřit',
       detail: backups.length ? 'Zálohy jsou načtené v administraci.' : 'Před větší úpravou načti a zkontroluj zálohy.'
+    },
+    {
+      state: fullSettingsBackupSnapshot.state,
+      title: 'Zálohy nastavení',
+      value: fullSettingsBackupSnapshot.label,
+      detail: fullSettingsBackupSnapshot.detail
     },
     {
       state: activeAdmins > 1 ? 'ok' : 'info',
@@ -1353,6 +1383,7 @@ function buildAdminAccessRulesText() {
   const contactSnapshot = adminHandoverAppContactSnapshot();
   const linksSnapshot = adminHandoverExternalLinksSnapshot();
   const payrollSnapshot = adminHandoverPayrollSnapshot();
+  const fullSettingsBackupSnapshot = adminHandoverFullSettingsBackupSnapshot();
   const permissionStatus = adminPermissionStatusSnapshot();
   return [
     'Pristup a hesla',
@@ -1362,6 +1393,7 @@ function buildAdminAccessRulesText() {
     '- Kontakt aplikace pred predanim: ' + contactSnapshot.label,
     '- Verejne odkazy pred predanim: ' + linksSnapshot.label,
     '- Vyplata pred predanim: ' + payrollSnapshot.label,
+    '- Uplne zalohy nastaveni pred predanim: ' + fullSettingsBackupSnapshot.label,
     '- Aktualni role: ' + String(permissionStatus.roleLabel || 'nezjisteno'),
     '- Hlavni admin muze menit spravce, hesla, provoz i rozpisy.',
     '- Nizsi admin muze menit provoz, rozpisy, absence, zalohy, exporty a nastaveni aplikace, ale ne seznam spravcu ani hesla.',
@@ -1551,6 +1583,14 @@ function buildAdminHandoverAuditHtml(monthKey) {
       detail: backups.length ? 'Online zálohy jsou načtené a připravené k obnově.' : 'Načti zálohy a ověř, že se dá vrátit starší stav rozpisu.',
       action: 'open-backups',
       actionLabel: 'Zálohy'
+    },
+    {
+      state: fullSettingsBackupSnapshot.state,
+      title: 'Zálohy nastavení',
+      value: fullSettingsBackupSnapshot.label,
+      detail: fullSettingsBackupSnapshot.detail,
+      action: 'open-settings-backups',
+      actionLabel: 'Zálohy nastavení'
     }
   ];
   return [
@@ -1583,6 +1623,7 @@ function buildAdminHandoverStatusText(monthKey) {
   const contactSnapshot = adminHandoverAppContactSnapshot();
   const linksSnapshot = adminHandoverExternalLinksSnapshot();
   const payrollSnapshot = adminHandoverPayrollSnapshot();
+  const fullSettingsBackupSnapshot = adminHandoverFullSettingsBackupSnapshot();
   const permissionStatus = adminPermissionStatusSnapshot();
   const version = formatRakDisplayVersion((typeof app !== 'undefined' && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : ''));
   return [
@@ -1603,6 +1644,7 @@ function buildAdminHandoverStatusText(monthKey) {
     '- Kontakt aplikace před předáním: ' + contactSnapshot.label,
     '- Veřejné odkazy před předáním: ' + linksSnapshot.label,
     '- Výplata před předáním: ' + payrollSnapshot.label,
+    '- Úplné zálohy nastavení před předáním: ' + fullSettingsBackupSnapshot.label,
     '- Pravidlo hlavního admina: hlavní admin smí měnit správce a hesla.',
     '- Pravidlo nižšího admina: smí měnit provoz, rozpisy, absence, zálohy, exporty a nastavení aplikace, ale ne správce a hesla.',
     '- Pravidlo běžného účtu: nesmí měnit rozpis, provoz ani online nastavení.',
@@ -1613,6 +1655,7 @@ function buildAdminHandoverStatusText(monthKey) {
     '- Kontakt aplikace: ' + contactSnapshot.label,
     '- Veřejné odkazy: ' + linksSnapshot.label,
     '- Výplata: ' + payrollSnapshot.label,
+    '- Úplné zálohy nastavení: ' + fullSettingsBackupSnapshot.label,
     '- Kantýna / jídelna: ' + (foodLocations ? ('nastaveno ' + foodLocations + ' míst') : 'zkontrolovat'),
     '- Přesčasové termíny: ' + String(overtimeCount),
     '- Dovolené / odstávky: ' + String(vacationCount),

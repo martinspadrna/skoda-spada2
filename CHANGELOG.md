@@ -1,3 +1,11 @@
+## RaK 1.2 (1.278)
+
+- Predani spravy: pripravenost a kontrola predani ted hlida, jestli existuje uplna zaloha nastaveni pro hlavniho admina.
+- Ukoly pred predanim: pokud uplna zaloha nastaveni chybi, objevi se mezi vecmi k vyreseni a tlacitko vede primo do owner-only sekce Zalohy nastaveni.
+- Predavaci exporty: stav predani i pristupova pravidla obsahuji informaci o uplnych zalohach nastaveni.
+- Smoke guard: `app-usage-smoke-v963.js` hlida snapshot uplnych zaloh, smerovani tlacitka a textove podklady predani.
+- Release metadata sjednocena na `RaK 1.2 (1.278)`, technicka verze `1.2.278`, cache `v1.2-1.278`.
+
 ## RaK 1.2 (1.277)
 
 - Zalohy nastaveni: obnova uplne zalohy uz umi skryt i radky, ktere vznikly az po zaloze, aby rollback opravdu vratil stav k vybranemu bodu.
