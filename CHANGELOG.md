@@ -1,3 +1,10 @@
+## RaK 1.2 (1.247)
+
+- Administrace / Predavaci podklady: rychle exporty na admin uvodu nově obsahuji i samostatny `Stav`, nejen balicek, ukoly, prirucku, postup a mapu.
+- Predani spravy: novy spravce si muze stahnout aktualni stav predani rovnou z uvodniho admin rozcestniku.
+- Smoke guard: `app-usage-smoke-v963.js` hlida, ze rychle predavaci podklady obsahuji akci `download-handover-status`.
+- Release metadata sjednocená na `RaK 1.2 (1.247)`, technická verze `1.2.247`, cache `v1.2-1.247`.
+
 ## RaK 1.2 (1.246)
 
 - Administrace / Predani spravy: seznam `Co jeste vyresit pred predanim` jde nově stahnout samostatne jako textovy soubor `RaK_ukoly_pred_predanim_...`.

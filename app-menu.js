@@ -1288,6 +1288,7 @@ function buildAdminHandoverExportsHtml(monthKey) {
   const monthLabel = String(monthKey || getAdminSelectedMonthKey() || '').trim() || 'nevybrán';
   const actions = [
     { action: 'download-handover-package', label: 'Balíček' },
+    { action: 'download-handover-status', label: 'Stav' },
     { action: 'download-handover-todo', label: 'Úkoly' },
     { action: 'download-admin-manual', label: 'Příručka' },
     { action: 'download-monthly-workflow', label: 'Postup' },
