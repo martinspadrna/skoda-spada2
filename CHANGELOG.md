@@ -1,3 +1,10 @@
+## RaK 1.2 (1.260)
+
+- Administrace / Pravidla generátoru: doplněn admin-only panel `Dopad pravidel`, aby správce viděl, že změna pravidel sama nepřepíše hotové měsíce.
+- Generátor: kontrola připomíná, že nová pravidla se projeví až při dalším návrhu a že před uložením je nutné ověřit výjimky, absence, TNKS01/TPKW01 a souhrn počtů.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá dopad pravidel generátoru, text o nezasahování do hotového rozpisu a responzivní admin styl.
+- Release metadata sjednocená na `RaK 1.2 (1.260)`, technická verze `1.2.260`, cache `v1.2-1.260`.
+
 ## RaK 1.2 (1.259)
 
 - Administrace / Rozpisy: doplněna admin-only `Veřejná kontrola rozpisu`, aby správce po uložení ověřil Rotace / Rozpisy, výjimky, absence a exporty.

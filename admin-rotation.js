@@ -328,6 +328,17 @@ function adminRotationGeneratorStatusItemHtml(label, value, detail, modifier) {
   ].join('');
 }
 
+function adminRotationGeneratorImpactItemHtml(label, value, detail, modifier) {
+  const className = 'adminGeneratorImpactItem' + (modifier ? ' ' + modifier : '');
+  return [
+    '<div class="' + className + '">',
+    '  <span>' + escapeHtml(label || '') + '</span>',
+    '  <b>' + escapeHtml(value || '') + '</b>',
+    detail ? '  <small>' + escapeHtml(detail) + '</small>' : '',
+    '</div>'
+  ].join('');
+}
+
 function adminRotationGeneratorRawList(value) {
   const source = Array.isArray(value) ? value : String(value || '').split(/[\n,;]/);
   return source.map((item) => String(item || '').trim()).filter(Boolean);
@@ -450,6 +461,20 @@ function adminRotationRefreshGeneratorSettingsStatus(root) {
   return true;
 }
 
+function buildAdminRotationGeneratorImpactHtml() {
+  return [
+    '<div class="adminGeneratorImpact">',
+    '  <div class="appMenuSubTitle">Dopad pravidel</div>',
+    '  <div class="smallText uMb10">Pravidla generátoru jsou jen pro další návrh. Už uložený rozpis se nezmění, dokud správce nevygeneruje návrh, ručně ho nezkontroluje a neuloží rozpis.</div>',
+    '  <div class="adminGeneratorImpactGrid">',
+    adminRotationGeneratorImpactItemHtml('Hotové měsíce', 'beze změny', 'Změna pravidel sama nepřepíše už uloženou rotaci ani veřejný rozpis.', 'isInfo'),
+    adminRotationGeneratorImpactItemHtml('Další návrh', 'použije pravidla', 'Nové pořadí lidí, cykly a stroje se projeví až při dalším generování návrhu.', 'isWarn'),
+    adminRotationGeneratorImpactItemHtml('Kontrola', 'před uložením', 'Po vygenerování ověř výjimky, absence, TNKS01/TPKW01 a souhrn počtů.', 'isInfo'),
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
 function buildAdminRotationGeneratorRuleSummaryHtml() {
   const rules = getAdminRotationGeneratorRules();
   const latestRules = (typeof RAK_ROTATION_GENERATOR_RULES_V1135 !== 'undefined' && RAK_ROTATION_GENERATOR_RULES_V1135) ? RAK_ROTATION_GENERATOR_RULES_V1135 : {};
@@ -483,6 +508,7 @@ function buildAdminRotationGeneratorSettingsHtml() {
   ].join('')).join('');
   return [
     buildAdminRotationGeneratorStatusHtml(settings),
+    buildAdminRotationGeneratorImpactHtml(),
     buildAdminRotationGeneratorRuleSummaryHtml(),
     '<div class="appMenuSettingsList adminGeneratorSettingsList">',
     '  <div class="appMenuSubTitle">Lidé a pořadí</div>',

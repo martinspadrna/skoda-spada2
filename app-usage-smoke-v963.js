@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.259) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.260) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -225,12 +225,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.259)',
-  appLabel: 'RaK 1.2 (1.259)',
-  packageVersion: '1.2.259',
-  cacheVersion: 'v1.2-1.259',
+  displayVersion: '1.2 (1.260)',
+  appLabel: 'RaK 1.2 (1.260)',
+  packageVersion: '1.2.260',
+  cacheVersion: 'v1.2-1.260',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.259)',
+  changelogHeader: '## RaK 1.2 (1.260)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -339,8 +339,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.259)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.259'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.260)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.260'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1669,6 +1669,9 @@ function assertAdminGeneratorSettingsContractV1143() {
   assertIncludes(ui, "const ADMIN_ROTATION_GENERATOR_SETTINGS_CATEGORY = 'rotation_generator_settings'", 'Pravidla generatoru musi mit vlastni kategorii nastaveni');
   assertIncludes(ui, 'function getAdminRotationGeneratorRules', 'Generator musi cist pravidla pres adminovatelny getter');
   assertIncludes(ui, 'function buildAdminRotationGeneratorStatusHtml', 'Pravidla generatoru musi mit admin-only stavovy souhrn');
+  assertIncludes(ui, 'function buildAdminRotationGeneratorImpactHtml', 'Pravidla generatoru musi mit admin-only souhrn dopadu');
+  assertIncludes(ui, 'Dopad pravidel', 'Pravidla generatoru musi spravci vysvetlit, co zmena ovlivni');
+  assertIncludes(ui, 'Už uložený rozpis se nezmění', 'Pravidla generatoru musi rikat, ze hotovy rozpis se sam neprepise');
   assertIncludes(ui, 'function adminRotationRefreshGeneratorSettingsStatus', 'Pravidla generatoru musi umet prepocitat stav pred ulozenim');
   assertIncludes(ui, 'function readAdminRotationGeneratorDraftFromDom', 'Pravidla generatoru musi umet zkontrolovat rozepsany formular');
   assertIncludes(ui, 'function buildAdminRotationGeneratorSettingsHtml', 'Administrace musi mit formular pravidel generatoru');
@@ -1687,6 +1690,7 @@ function assertAdminGeneratorSettingsContractV1143() {
   assertIncludes(bridge, "category === 'rotation_overtime_settings'", 'Supabase compatibility save musi povolit prescasy rozpisu');
   assertIncludes(ui, 'const generatorRules = getAdminRotationGeneratorRules();', 'Generator musi pri behu pouzivat ulozena pravidla');
   assertIncludes(stylesAdminPolishCss, '.adminGeneratorSettingsStatusGrid', 'Stav pravidel generatoru musi mit vlastni responsive admin styl');
+  assertIncludes(stylesAdminPolishCss, '.adminGeneratorImpactGrid', 'Dopad pravidel generatoru musi mit vlastni responsive admin styl');
   assertNotIncludes(ui, 'RAK_ROTATION_GENERATOR_RULES_V1107.hardCycle', 'Generator uz nema cist tvrdotovy cyklus primo z konstanty');
   assertNotIncludes(ui, 'RAK_ROTATION_GENERATOR_RULES_V1107.softCore.filter', 'Generator uz nema cist softCore primo z konstanty');
 }
