@@ -1,3 +1,10 @@
+## RaK 1.2 (1.212)
+
+- Administrace: přidaný admin-only panel `Oprávnění správce`, který ukáže aktivní účet, roli a jestli je administrace opravdu odemčená.
+- Předání správy: textový export stavu nově obsahuje aktivní admin účet, roli administrace a stav odemčení.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá nový stav oprávnění, jeho vložení do admin-only obrazovek a samostatný styl.
+- Release metadata sjednocená na `RaK 1.2 (1.212)`, technická verze `1.2.212`, cache `v1.2-1.212`.
+
 ## RaK 1.2 (1.211)
 
 - Administrace: přidaná centrální pojistka pro všechny admin klikací akce (`data-admin-action`, admin výběry měsíce/roku a starší `admin-*` menu akce).

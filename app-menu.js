@@ -292,6 +292,78 @@ function adminHandoverMachineSettingsRows(rows) {
   });
 }
 
+function adminPermissionStatusSnapshot() {
+  let activeAccountId = '';
+  try {
+    activeAccountId = typeof rakAdminGetActiveAccountId === 'function' ? String(rakAdminGetActiveAccountId() || '').trim() : '';
+  } catch (err) {}
+  if (!activeAccountId) {
+    try {
+      const profile = app && app.gamesProfile;
+      activeAccountId = String(profile && profile.activeAccountId || '').trim();
+    } catch (err) {}
+  }
+  const adminAccountId = String(app && app.adminAccountId || '').trim();
+  let unlocked = false;
+  try {
+    unlocked = typeof rakAdminCanOpenAdmin === 'function'
+      ? !!rakAdminCanOpenAdmin()
+      : !!(app && app.adminUnlocked === true && adminAccountId && adminAccountId === activeAccountId);
+  } catch (err) {
+    unlocked = false;
+  }
+  let owner = false;
+  try {
+    owner = typeof rakAdminCanManageAdmins === 'function' ? !!rakAdminCanManageAdmins() : !!(app && app.adminIsOwner === true);
+  } catch (err) {
+    owner = false;
+  }
+  const roleLabel = unlocked ? (owner ? 'Hlavní admin' : 'Správce') : 'Zamčeno';
+  const stateLabel = unlocked ? 'Odemčeno' : 'Zamčeno';
+  const detail = unlocked
+    ? (owner ? 'Můžeš měnit správce a všechny admin sekce.' : 'Můžeš spravovat provoz a rozpisy, správce mění jen hlavní admin.')
+    : 'Admin akce jsou vypnuté, dokud se účet neověří heslem.';
+  return {
+    activeAccountId,
+    adminAccountId,
+    unlocked,
+    owner,
+    roleLabel,
+    stateLabel,
+    detail
+  };
+}
+
+function adminPermissionStatusItemHtml(label, value, detail, state) {
+  const stateClass = state ? ' is' + String(state).charAt(0).toUpperCase() + String(state).slice(1) : '';
+  return [
+    '<div class="adminPermissionStatusItem' + escapeHtml(stateClass) + '">',
+    '  <span>' + escapeHtml(label || '') + '</span>',
+    '  <b>' + escapeHtml(value || '—') + '</b>',
+    detail ? '  <small>' + escapeHtml(detail) + '</small>' : '',
+    '</div>'
+  ].join('');
+}
+
+function buildAdminPermissionStatusHtml() {
+  const status = adminPermissionStatusSnapshot();
+  const action = status.owner
+    ? '<button type="button" class="appMenuAction adminPermissionStatusAction" data-admin-action="open-admin-accounts">Správci</button>'
+    : '';
+  return [
+    '<div class="adminPermissionStatus">',
+    '  <div class="appMenuSubTitle">Oprávnění správce</div>',
+    '  <div class="smallText uMb10">Rychlá kontrola, pod jakým účtem je administrace odemčená. Běžná aplikace odsud žádné změny nepozná.</div>',
+    '  <div class="adminPermissionStatusGrid">',
+    adminPermissionStatusItemHtml('Aktivní účet', status.activeAccountId || 'nezjištěn', 'Účet, pod kterým je aplikace otevřená.', status.activeAccountId ? 'ok' : 'warn'),
+    adminPermissionStatusItemHtml('Role', status.roleLabel, status.detail, status.unlocked ? 'ok' : 'warn'),
+    adminPermissionStatusItemHtml('Admin odemčen', status.stateLabel, status.adminAccountId ? ('Ověřeno pro účet ' + status.adminAccountId + '.') : 'Bez ověřeného admin účtu.', status.unlocked ? 'ok' : 'warn'),
+    '  </div>',
+    action,
+    '</div>'
+  ].join('');
+}
+
 function buildAdminHandoverAuditHtml(monthKey) {
   const rows = Array.isArray(app && app.machineSettingsRows) ? app.machineSettingsRows : [];
   const machineRows = adminHandoverMachineSettingsRows(rows);
@@ -388,6 +460,7 @@ function buildAdminHandoverStatusText(monthKey) {
     const adminSettings = typeof rakAdminGetAccountsSettings === 'function' ? rakAdminGetAccountsSettings() : null;
     activeAdmins += (Array.isArray(adminSettings && adminSettings.admins) ? adminSettings.admins : []).filter((entry) => entry && entry.enabled !== false).length;
   } catch (err) {}
+  const permissionStatus = adminPermissionStatusSnapshot();
   const version = formatRakDisplayVersion((typeof app !== 'undefined' && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : ''));
   return [
     'RaK - Stav předání správy',
@@ -397,6 +470,9 @@ function buildAdminHandoverStatusText(monthKey) {
     'Souhrn',
     '- Online nastavení: ' + (rows.length ? ('načteno ' + rows.length + ' řádků') : 'nenačteno'),
     '- Běžné stroje v nastavení: ' + String(machineRows.length),
+    '- Aktivní admin účet: ' + (permissionStatus.activeAccountId || 'nezjištěn'),
+    '- Role administrace: ' + permissionStatus.roleLabel,
+    '- Admin odemčen: ' + (permissionStatus.unlocked ? 'ano' : 'ne'),
     '- Admin účty: ' + String(activeAdmins),
     '- Kantýna / jídelna: ' + (foodLocations ? ('nastaveno ' + foodLocations + ' míst') : 'zkontrolovat'),
     '- Přesčasové termíny: ' + String(overtimeCount),
@@ -1046,6 +1122,7 @@ function renderAdminMenuBody(body, section) {
     '    <div>Nejdřív nastav provoz, potom vygeneruj a ulož rozpis. Všechno se ukládá online přes Supabase.</div>',
     '    <div class="smallText" id="adminOnlineSaveStatus">Vyber sekci, kterou chceš upravit.</div>',
     '  </div>',
+    buildAdminPermissionStatusHtml(),
     buildAdminHandoverChecklistHtml(monthKey),
     '  <div class="adminMenuSections">',
     buildAdminMenuSectionHtml('1. Provoz před rozpisem', 'Co musí sedět před generováním dalšího měsíce.', [
@@ -1283,6 +1360,7 @@ function renderAdminMenuBody(body, section) {
     '    <div>Krátký postup pro člověka, který bude aplikaci spravovat: provoz, rozpis, veřejná část a závěrečná kontrola.</div>',
     '    <div class="smallText" id="adminOnlineSaveStatus">Všechny kroky vedou jen do administrace. Běžná aplikace se odsud nemění bez uložení v konkrétní sekci.</div>',
     '  </div>',
+    buildAdminPermissionStatusHtml(),
     buildAdminHandoverAuditHtml(monthKey),
     buildAdminMonthlyWorkflowHtml(monthKey),
     buildAdminHandoverChecklistHtml(monthKey),
