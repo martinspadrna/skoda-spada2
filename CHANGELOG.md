@@ -1,3 +1,10 @@
+## RaK 1.2 (1.224)
+
+- Administrace / Výplata: přidaný admin-only souhrn `Stav výplaty`, který ukazuje pravidlo, počet ručních výjimek, nejbližší termín a kontrolu rozepsaných řádků.
+- Výplata: souhrn se přepočítává ještě před uložením a používá stejný výpočet termínu jako karta na home, včetně volných dnů a ručních výjimek.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá nový stav výplaty, živé přepočítání a responsive admin-only styl.
+- Release metadata sjednocená na `RaK 1.2 (1.224)`, technická verze `1.2.224`, cache `v1.2-1.224`.
+
 ## RaK 1.2 (1.223)
 
 - Administrace / Kontakt aplikace: přidaný admin-only souhrn `Stav kontaktu`, který ukazuje vyplněnost jména, telefonu a e-mailu.

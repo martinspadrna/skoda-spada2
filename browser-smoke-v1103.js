@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.223) – browser smoke test přes lokální Chromium/CDP.
+// RaK 1.2 (1.224) – browser smoke test přes lokální Chromium/CDP.
 // Browser smoke coverage: Rotace export canvas + fixed background + file URL fallback.
 const http = require('http');
 const fs = require('fs');
@@ -10,7 +10,7 @@ const { spawn } = require('child_process');
 const { pathToFileURL } = require('url');
 
 const ROOT_DIR = __dirname;
-const EXPECTED_APP_VERSION = '1.2 (1.223)';
+const EXPECTED_APP_VERSION = '1.2 (1.224)';
 const RAK_BROWSER_SMOKE_ENGINE = 'local-chromium-cdp';
 const RAK_BROWSER_SMOKE_LOAD_MODE = 'about-blank-inline-html';
 const CHROMIUM_BIN = process.env.CHROMIUM_BIN || process.env.CHROME_BIN || '/usr/bin/chromium';

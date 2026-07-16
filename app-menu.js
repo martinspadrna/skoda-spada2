@@ -1898,6 +1898,9 @@ function bindAppMenuHandlers(body) {
     if (target && target.matches && target.matches('[data-app-contact-field]') && typeof adminAppContactRefreshStatus === 'function') {
       adminAppContactRefreshStatus(body);
     }
+    if (target && target.matches && target.matches('#adminPayrollWorkdayOrdinal, [data-payroll-override-field]') && typeof adminPayrollRefreshStatus === 'function') {
+      adminPayrollRefreshStatus(body);
+    }
   }, true);
 
   body.addEventListener('change', (event) => {
@@ -1923,6 +1926,9 @@ function bindAppMenuHandlers(body) {
     }
     if (target.matches('[data-app-contact-field]') && typeof adminAppContactRefreshStatus === 'function') {
       adminAppContactRefreshStatus(body);
+    }
+    if (target.matches('#adminPayrollWorkdayOrdinal, [data-payroll-override-field]') && typeof adminPayrollRefreshStatus === 'function') {
+      adminPayrollRefreshStatus(body);
     }
   }, true);
 
