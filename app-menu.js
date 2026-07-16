@@ -1118,6 +1118,50 @@ function adminHandoverExternalLinksSnapshot() {
   };
 }
 
+function adminHandoverAnnouncementSnapshot() {
+  let announcement = null;
+  let active = null;
+  let health = null;
+  try {
+    announcement = typeof readRakDashboardAdminAnnouncement === 'function' ? readRakDashboardAdminAnnouncement() : null;
+  } catch (err) {
+    announcement = null;
+  }
+  try {
+    active = typeof getRakActiveDashboardAnnouncement === 'function' ? getRakActiveDashboardAnnouncement(new Date()) : null;
+  } catch (err) {
+    active = null;
+  }
+  try {
+    health = typeof getRakDashboardAnnouncementHealth === 'function' ? getRakDashboardAnnouncementHealth() : null;
+  } catch (err) {
+    health = null;
+  }
+  const item = announcement && typeof announcement === 'object' ? announcement : {};
+  const message = String(item.message || '').trim();
+  const title = String(item.title || '').trim();
+  const startAt = String(item.startAt || '').trim();
+  const endAt = String(item.endAt || '').trim();
+  const activeNow = !!(active && active.message);
+  const hasWindow = !!(startAt || endAt);
+  const source = String((active && active.source) || item.source || health && health.activeSource || '').trim();
+  return {
+    exists: !!message,
+    activeNow,
+    hasWindow,
+    title,
+    messageLength: message.length,
+    source,
+    state: !message ? 'info' : (activeNow ? 'warn' : 'info'),
+    label: !message ? 'vypnuto' : (activeNow ? 'aktivní na home' : 'naplánováno / mimo čas'),
+    detail: !message
+      ? 'Na home není aktivní žádné oznámení.'
+      : (activeNow
+        ? 'Oznámení je veřejně viditelné na home, před předáním ověř text a čas.'
+        : 'Oznámení existuje, ale teď není aktivní; zkontroluj čas Od/Do v administraci.')
+  };
+}
+
 function adminHandoverPayrollSnapshot() {
   let settings = null;
   try {
@@ -1256,6 +1300,7 @@ function adminHandoverReadinessActionForTitle(title) {
   if (safeTitle.indexOf('záloh') !== -1 || safeTitle.indexOf('zaloh') !== -1) return { action: 'open-backups', label: 'Zálohy' };
   if (safeTitle.indexOf('správc') !== -1 || safeTitle.indexOf('spravc') !== -1) return { action: 'open-admin-accounts', label: 'Správci' };
   if (safeTitle.indexOf('report') !== -1 || safeTitle.indexOf('chyb') !== -1) return { action: 'open-reports', label: 'Reporty' };
+  if (safeTitle.indexOf('oznámen') !== -1 || safeTitle.indexOf('oznamen') !== -1 || safeTitle.indexOf('dashboard') !== -1) return { action: 'open-announcement', label: 'Oznámení' };
   if (safeTitle.indexOf('kontakt') !== -1) return { action: 'open-app-contact', label: 'Kontakt' };
   if (safeTitle.indexOf('odkaz') !== -1) return { action: 'open-external-links', label: 'Odkazy' };
   if (safeTitle.indexOf('výplat') !== -1 || safeTitle.indexOf('vyplat') !== -1) return { action: 'open-payroll-settings', label: 'Výplata' };
@@ -1348,6 +1393,7 @@ function buildAdminHandoverReadinessSnapshot(monthKey) {
   const activeAdmins = adminHandoverActiveAdminCount();
   const adminSessions = adminHandoverAdminSessionSnapshot();
   const reportsSnapshot = adminHandoverReportsSnapshot();
+  const announcementSnapshot = adminHandoverAnnouncementSnapshot();
   const contactSnapshot = adminHandoverAppContactSnapshot();
   const linksSnapshot = adminHandoverExternalLinksSnapshot();
   const payrollSnapshot = adminHandoverPayrollSnapshot();
@@ -1414,6 +1460,12 @@ function buildAdminHandoverReadinessSnapshot(monthKey) {
       title: 'Reporty chyb',
       value: reportsSnapshot.label,
       detail: reportsSnapshot.detail
+    },
+    {
+      state: announcementSnapshot.state,
+      title: 'Oznámení Dashboard',
+      value: announcementSnapshot.label,
+      detail: announcementSnapshot.detail
     },
     {
       state: contactSnapshot.state,
@@ -1588,6 +1640,7 @@ function buildAdminAccessRulesText() {
   const activeAdmins = adminHandoverActiveAdminCount();
   const adminSessions = adminHandoverAdminSessionSnapshot();
   const reportsSnapshot = adminHandoverReportsSnapshot();
+  const announcementSnapshot = adminHandoverAnnouncementSnapshot();
   const contactSnapshot = adminHandoverAppContactSnapshot();
   const linksSnapshot = adminHandoverExternalLinksSnapshot();
   const payrollSnapshot = adminHandoverPayrollSnapshot();
@@ -1598,6 +1651,7 @@ function buildAdminAccessRulesText() {
     '- Aktivni admin ucty: ' + String(activeAdmins),
     '- Prihlasena admin zarizeni: ' + adminSessions.label,
     '- Reporty chyb pred predanim: ' + reportsSnapshot.label,
+    '- Oznameni Dashboard pred predanim: ' + announcementSnapshot.label,
     '- Kontakt aplikace pred predanim: ' + contactSnapshot.label,
     '- Verejne odkazy pred predanim: ' + linksSnapshot.label,
     '- Vyplata pred predanim: ' + payrollSnapshot.label,
@@ -1700,6 +1754,7 @@ function buildAdminHandoverAuditHtml(monthKey) {
   const activeAdmins = adminHandoverActiveAdminCount();
   const adminSessions = adminHandoverAdminSessionSnapshot();
   const reportsSnapshot = adminHandoverReportsSnapshot();
+  const announcementSnapshot = adminHandoverAnnouncementSnapshot();
   const contactSnapshot = adminHandoverAppContactSnapshot();
   const linksSnapshot = adminHandoverExternalLinksSnapshot();
   const payrollSnapshot = adminHandoverPayrollSnapshot();
@@ -1735,6 +1790,14 @@ function buildAdminHandoverAuditHtml(monthKey) {
       detail: reportsSnapshot.detail,
       action: 'open-reports',
       actionLabel: 'Reporty'
+    },
+    {
+      state: announcementSnapshot.state,
+      title: 'Oznámení Dashboard',
+      value: announcementSnapshot.label,
+      detail: announcementSnapshot.detail,
+      action: 'open-announcement',
+      actionLabel: 'Oznámení'
     },
     {
       state: contactSnapshot.state,
@@ -1828,6 +1891,7 @@ function buildAdminHandoverStatusText(monthKey) {
   const activeAdmins = adminHandoverActiveAdminCount();
   const adminSessions = adminHandoverAdminSessionSnapshot();
   const reportsSnapshot = adminHandoverReportsSnapshot();
+  const announcementSnapshot = adminHandoverAnnouncementSnapshot();
   const contactSnapshot = adminHandoverAppContactSnapshot();
   const linksSnapshot = adminHandoverExternalLinksSnapshot();
   const payrollSnapshot = adminHandoverPayrollSnapshot();
@@ -1848,6 +1912,7 @@ function buildAdminHandoverStatusText(monthKey) {
     '- Admin odemčen: ' + (permissionStatus.unlocked ? 'ano' : 'ne'),
     '- Přihlášená admin zařízení: ' + adminSessions.label,
     '- Reporty chyb před předáním: ' + reportsSnapshot.label,
+    '- Oznámení Dashboard před předáním: ' + announcementSnapshot.label,
     '- Kontakt aplikace před předáním: ' + contactSnapshot.label,
     '- Veřejné odkazy před předáním: ' + linksSnapshot.label,
     '- Výplata před předáním: ' + payrollSnapshot.label,
@@ -1859,6 +1924,7 @@ function buildAdminHandoverStatusText(monthKey) {
     '- Admin účty: ' + String(activeAdmins),
     '- Admin zařízení: ' + adminSessions.label,
     '- Reporty chyb: ' + reportsSnapshot.label,
+    '- Oznámení Dashboard: ' + announcementSnapshot.label,
     '- Kontakt aplikace: ' + contactSnapshot.label,
     '- Veřejné odkazy: ' + linksSnapshot.label,
     '- Výplata: ' + payrollSnapshot.label,
@@ -2855,12 +2921,13 @@ function getAdminSettingsMapItems() {
       ]
     },
     {
-      title: 'Odkazy, kontakt a výplata',
+      title: 'Oznámení, odkazy, kontakt a výplata',
       scope: 'Aplikace pro lidi',
-      detail: 'Jídelní lístek, Eportal, kalendář, kontakt aplikace a pravidlo výplaty.',
-      visible: 'Viditelné v běžném menu a na home kartách.',
-      check: 'Běžné menu, home karty Vyplata/Jidelni listek/Eportal a Kontakt.',
+      detail: 'Oznámení na home, jídelní lístek, Eportal, kalendář, kontakt aplikace a pravidlo výplaty.',
+      visible: 'Viditelné na home, v běžném menu a na home kartách.',
+      check: 'Home oznámení, běžné menu, home karty Vyplata/Jidelni listek/Eportal a Kontakt.',
       actions: [
+        { action: 'open-announcement', label: 'Oznámení' },
         { action: 'open-external-links', label: 'Odkazy' },
         { action: 'open-app-contact', label: 'Kontakt' },
         { action: 'open-payroll-settings', label: 'Výplata' }

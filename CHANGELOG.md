@@ -1,3 +1,11 @@
+## RaK 1.2 (1.288)
+
+- Předání správy: stav veřejného oznámení na Dashboardu je vidět v připravenosti, kontrole předání a textovém stavu předání.
+- Předání správy: aktivní oznámení se označí ke kontrole, aby nový správce nepřebíral veřejný text bez vědomí.
+- Mapa nastavení: oblast pro veřejné texty teď výslovně obsahuje Oznámení a vede rovnou do admin sekce oznámení.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá snapshot oznámení, řádky v předávacích textech i rychlou akci v mapě nastavení.
+- Release metadata sjednocena na `RaK 1.2 (1.288)`, technicka verze `1.2.288`, cache `v1.2-1.288`; loader modulu ma cache znacku `1.2.288`.
+
 ## RaK 1.2 (1.287)
 
 - Předání správy: stažené admin podklady mají jednotnou hlavičku s verzí, časem vytvoření, admin účtem, rolí a stavem odemčení.
