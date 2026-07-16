@@ -1,3 +1,11 @@
+## RaK 1.2 (1.273)
+
+- Predani spravy: pripravenost predani ted kontroluje i nastaveni vyplaty a nejblizsi termin.
+- Kontrola predani: Vyplata ma vlastni stav a rychlou akci do administrace vyplaty.
+- Predavaci exporty: stav predani a pravidla pristupu obsahuji vyplatu pred predanim.
+- Smoke guard: `app-usage-smoke-v963.js` hlida vyplatu v predani, textovych podkladech i smerovani do admin vyplaty.
+- Release metadata sjednocená na `RaK 1.2 (1.273)`, technická verze `1.2.273`, cache `v1.2-1.273`.
+
 ## RaK 1.2 (1.272)
 
 - Predani spravy: pripravenost predani ted kontroluje i verejne odkazy aplikace.

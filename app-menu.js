@@ -648,6 +648,63 @@ function adminHandoverExternalLinksSnapshot() {
   };
 }
 
+function adminHandoverPayrollSnapshot() {
+  let settings = null;
+  try {
+    settings = typeof getRakPayrollSettings === 'function' ? getRakPayrollSettings() : null;
+  } catch (err) {
+    settings = null;
+  }
+  const safe = settings && typeof settings === 'object' ? settings : {};
+  const workdayOrdinal = Math.max(1, Math.min(15, Number(safe.workdayOrdinal || 4) || 4));
+  const overrides = Array.isArray(safe.overrides) ? safe.overrides : [];
+  let nextDate = null;
+  try {
+    nextDate = typeof getNextPayrollDateWithSettings === 'function'
+      ? getNextPayrollDateWithSettings({ workdayOrdinal, overrides }, new Date())
+      : null;
+  } catch (err) {
+    nextDate = null;
+  }
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const diffDays = nextDate ? Math.max(0, Math.round((nextDate.getTime() - today.getTime()) / 86400000)) : null;
+  let stored = false;
+  try {
+    const rows = Array.isArray(app && app.machineSettingsRows) ? app.machineSettingsRows : [];
+    stored = rows.some((row) => {
+      const category = String(row && row.category || '').trim();
+      const key = String(row && row.machine_key || '').trim();
+      let rowSettings = row && row.settings_json && typeof row.settings_json === 'object' ? row.settings_json : null;
+      if (!rowSettings && row && row.settings_json) {
+        try { rowSettings = JSON.parse(String(row.settings_json)); } catch (err) { rowSettings = null; }
+      }
+      return category === 'payroll_settings'
+        || key === 'PAYROLL_SETTINGS'
+        || String(rowSettings && rowSettings.stored_category || '').trim() === 'payroll_settings'
+        || String(rowSettings && rowSettings.admin_settings_key || '').trim() === 'PAYROLL_SETTINGS';
+    });
+  } catch (err) {
+    stored = false;
+  }
+  const nextLabel = nextDate
+    ? nextDate.toLocaleDateString('cs-CZ', { day: '2-digit', month: '2-digit', year: 'numeric' })
+    : '';
+  const diffUnit = (typeof pluralizeDays === 'function') ? pluralizeDays(Number(diffDays || 0)) : (Number(diffDays) === 1 ? 'den' : 'dní');
+  return {
+    stored,
+    workdayOrdinal,
+    overridesCount: overrides.length,
+    nextDate,
+    diffDays,
+    label: nextDate ? (nextLabel + (stored ? '' : ' výchozí')) : 'zkontrolovat',
+    state: nextDate ? (stored ? 'ok' : 'info') : 'warn',
+    detail: nextDate
+      ? ((stored ? 'Výplata je nastavená v administraci.' : 'Výplata používá výchozí pravidlo, před předáním ověř, že stále platí.') + ' Pravidlo: ' + String(workdayOrdinal) + '. pracovní den' + (diffDays !== null ? ', nejbližší za ' + String(diffDays) + ' ' + diffUnit + '.' : '.'))
+      : 'Zkontroluj pravidlo výplaty v administraci / Výplata.'
+  };
+}
+
 function adminHandoverSyncReadinessSnapshot() {
   let syncStatus = null;
   let hardening = null;
@@ -708,6 +765,7 @@ function adminHandoverReadinessActionForTitle(title) {
   if (safeTitle.indexOf('report') !== -1 || safeTitle.indexOf('chyb') !== -1) return { action: 'open-reports', label: 'Reporty' };
   if (safeTitle.indexOf('kontakt') !== -1) return { action: 'open-app-contact', label: 'Kontakt' };
   if (safeTitle.indexOf('odkaz') !== -1) return { action: 'open-external-links', label: 'Odkazy' };
+  if (safeTitle.indexOf('výplat') !== -1 || safeTitle.indexOf('vyplat') !== -1) return { action: 'open-payroll-settings', label: 'Výplata' };
   return { action: 'open-handover', label: 'Předání' };
 }
 
@@ -797,6 +855,7 @@ function buildAdminHandoverReadinessSnapshot(monthKey) {
   const reportsSnapshot = adminHandoverReportsSnapshot();
   const contactSnapshot = adminHandoverAppContactSnapshot();
   const linksSnapshot = adminHandoverExternalLinksSnapshot();
+  const payrollSnapshot = adminHandoverPayrollSnapshot();
   const syncReadiness = adminHandoverSyncReadinessSnapshot();
   const checks = [
     {
@@ -865,6 +924,12 @@ function buildAdminHandoverReadinessSnapshot(monthKey) {
       title: 'Odkazy',
       value: linksSnapshot.label,
       detail: linksSnapshot.detail
+    },
+    {
+      state: payrollSnapshot.state,
+      title: 'Výplata',
+      value: payrollSnapshot.label,
+      detail: payrollSnapshot.detail
     }
   ];
   const okCount = checks.filter((item) => item.state === 'ok').length;
@@ -1019,6 +1084,7 @@ function buildAdminAccessRulesText() {
   const reportsSnapshot = adminHandoverReportsSnapshot();
   const contactSnapshot = adminHandoverAppContactSnapshot();
   const linksSnapshot = adminHandoverExternalLinksSnapshot();
+  const payrollSnapshot = adminHandoverPayrollSnapshot();
   const permissionStatus = adminPermissionStatusSnapshot();
   return [
     'Pristup a hesla',
@@ -1027,6 +1093,7 @@ function buildAdminAccessRulesText() {
     '- Reporty chyb pred predanim: ' + reportsSnapshot.label,
     '- Kontakt aplikace pred predanim: ' + contactSnapshot.label,
     '- Verejne odkazy pred predanim: ' + linksSnapshot.label,
+    '- Vyplata pred predanim: ' + payrollSnapshot.label,
     '- Aktualni role: ' + String(permissionStatus.roleLabel || 'nezjisteno'),
     '- Hlavni admin muze menit spravce, hesla, provoz i rozpisy.',
     '- Dalsi spravce muze menit provoz, rozpisy, absence, zalohy a exporty, ale ne seznam spravcu.',
@@ -1127,6 +1194,7 @@ function buildAdminHandoverAuditHtml(monthKey) {
   const reportsSnapshot = adminHandoverReportsSnapshot();
   const contactSnapshot = adminHandoverAppContactSnapshot();
   const linksSnapshot = adminHandoverExternalLinksSnapshot();
+  const payrollSnapshot = adminHandoverPayrollSnapshot();
   const items = [
     {
       state: rows.length ? 'ok' : 'warn',
@@ -1175,6 +1243,14 @@ function buildAdminHandoverAuditHtml(monthKey) {
       detail: linksSnapshot.detail,
       action: 'open-external-links',
       actionLabel: 'Odkazy'
+    },
+    {
+      state: payrollSnapshot.state,
+      title: 'Výplata',
+      value: payrollSnapshot.label,
+      detail: payrollSnapshot.detail,
+      action: 'open-payroll-settings',
+      actionLabel: 'Výplata'
     },
     {
       state: foodOk && overtimeCount ? 'ok' : 'warn',
@@ -1238,6 +1314,7 @@ function buildAdminHandoverStatusText(monthKey) {
   const reportsSnapshot = adminHandoverReportsSnapshot();
   const contactSnapshot = adminHandoverAppContactSnapshot();
   const linksSnapshot = adminHandoverExternalLinksSnapshot();
+  const payrollSnapshot = adminHandoverPayrollSnapshot();
   const permissionStatus = adminPermissionStatusSnapshot();
   const version = formatRakDisplayVersion((typeof app !== 'undefined' && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : ''));
   return [
@@ -1257,6 +1334,7 @@ function buildAdminHandoverStatusText(monthKey) {
     '- Reporty chyb před předáním: ' + reportsSnapshot.label,
     '- Kontakt aplikace před předáním: ' + contactSnapshot.label,
     '- Veřejné odkazy před předáním: ' + linksSnapshot.label,
+    '- Výplata před předáním: ' + payrollSnapshot.label,
     '- Pravidlo hlavního admina: hlavní admin smí měnit správce a hesla.',
     '- Pravidlo dalšího správce: smí měnit provoz a rozpisy, ale ne seznam správců.',
     '- Pravidlo běžného účtu: nesmí měnit rozpis, provoz ani online nastavení.',
@@ -1266,6 +1344,7 @@ function buildAdminHandoverStatusText(monthKey) {
     '- Reporty chyb: ' + reportsSnapshot.label,
     '- Kontakt aplikace: ' + contactSnapshot.label,
     '- Veřejné odkazy: ' + linksSnapshot.label,
+    '- Výplata: ' + payrollSnapshot.label,
     '- Kantýna / jídelna: ' + (foodLocations ? ('nastaveno ' + foodLocations + ' míst') : 'zkontrolovat'),
     '- Přesčasové termíny: ' + String(overtimeCount),
     '- Dovolené / odstávky: ' + String(vacationCount),
