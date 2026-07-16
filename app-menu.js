@@ -3660,6 +3660,27 @@ function appMenuCanRunAdminInteraction(currentView) {
     && rakAdminCanOpenAdmin();
 }
 
+function appMenuPersistentAdminSessionMatches(activeId) {
+  const id = String(activeId || '').trim();
+  if (!id) return false;
+  try {
+    const raw = localStorage.getItem('adminPersistentSessionV1');
+    const parsed = raw ? JSON.parse(raw) : null;
+    return !!(parsed && String(parsed.accountId || '').trim() === id && String(parsed.token || '').trim());
+  } catch (err) {
+    return false;
+  }
+}
+
+function appMenuShouldShowAdminEntry() {
+  const activeId = typeof rakAdminGetActiveAccountId === 'function' ? String(rakAdminGetActiveAccountId() || '').trim() : '';
+  if (!activeId) return false;
+  if (typeof rakAdminCanOpenAdmin === 'function' && rakAdminCanOpenAdmin()) return true;
+  if (typeof rakAdminAccountRequiresPassword === 'function' && rakAdminAccountRequiresPassword(activeId)) return true;
+  if (activeId === '9811') return true;
+  return appMenuPersistentAdminSessionMatches(activeId);
+}
+
 async function appMenuEnsureAdminAccessFromMenu() {
   const canOpen = () => !!(typeof rakAdminCanOpenAdmin === 'function' && rakAdminCanOpenAdmin());
   if (canOpen()) return true;
@@ -5333,7 +5354,7 @@ function openAppMenu(view) {
         '  <button type="button" class="appMenuAction" data-menu-action="about">O aplikaci</button>',
         '  <button type="button" class="appMenuAction" data-menu-action="contact">Kontakt</button>',
         '  <button type="button" class="appMenuAction" data-menu-action="bug-report">Pošli mi chybu</button>',
-        ((typeof rakAdminCanOpenAdmin === 'function' && rakAdminCanOpenAdmin()) ? '  <button type="button" class="appMenuAction isActive" data-menu-action="admin">Administrace</button>' : ''),
+        (appMenuShouldShowAdminEntry() ? '  <button type="button" class="appMenuAction isActive" data-menu-action="admin">Administrace</button>' : ''),
         '</div>'
       ].join('');
     }

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.282) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.283) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -226,12 +226,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.282)',
-  appLabel: 'RaK 1.2 (1.282)',
-  packageVersion: '1.2.282',
-  cacheVersion: 'v1.2-1.282',
+  displayVersion: '1.2 (1.283)',
+  appLabel: 'RaK 1.2 (1.283)',
+  packageVersion: '1.2.283',
+  cacheVersion: 'v1.2-1.283',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.282)',
+  changelogHeader: '## RaK 1.2 (1.283)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -340,8 +340,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.282)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.282'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.283)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.283'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1491,6 +1491,9 @@ function assertAdminAccountLoginContractV1141() {
   assertIncludes(ui, 'rakAdminCanOpenAdmin()', 'Tlačítko Administrace i admin view musi pouzivat novou kontrolu opravneni');
   assertIncludes(ui, 'async function appMenuEnsureAdminAccessFromMenu', 'Klik na administraci musi umet obnovit admin session pred otevrenim');
   assertIncludes(ui, 'const adminReady = await appMenuEnsureAdminAccessFromMenu()', 'Klik na administraci nesmi zustat bez odezvy pri ulozenem admin prihlaseni');
+  assertIncludes(ui, 'function appMenuShouldShowAdminEntry', 'Menu musi ukazat vstup do administrace i admin uctu pred dokoncenym obnovenim session');
+  assertIncludes(ui, "localStorage.getItem('adminPersistentSessionV1')", 'Menu musi poznat ulozenou admin session bez viditelneho dopadu na bezne ucty');
+  assertIncludes(ui, 'appMenuShouldShowAdminEntry() ? \'  <button type="button" class="appMenuAction isActive" data-menu-action="admin">Administrace</button>\'', 'Tlacitko Administrace musi pouzivat admin-entry helper');
   assertIncludes(ui, 'Provoz před rozpisem', 'Admin menu musi byt rozdelene do prehlednych provoznich skupin');
   assertIncludes(ui, 'buildAdminMenuSectionHtml', 'Admin menu musi skladat prehledne skupiny pres spolecny helper');
   assertIncludes(ui, 'adminMenuSections', 'Admin uvod musi mit zabalitelne skupiny spravcovskych oblasti');

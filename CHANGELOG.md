@@ -1,3 +1,11 @@
+## RaK 1.2 (1.283)
+
+- Administrace: tlacitko Administrace se admin uctu zobrazi i pred dokoncenym obnovenim ulozene session.
+- Admin session: menu umi poznat aktivni ucet `9811`, znamy admin ucet nebo ulozenou admin session a pri kliknuti teprve overi/obnovi pristup.
+- Bezny uzivatel: bez admin uctu se vstup do administrace dal nezobrazuje.
+- Smoke guard: `app-usage-smoke-v963.js` hlida helper `appMenuShouldShowAdminEntry`, ulozenou admin session i napojeni tlacitka Administrace.
+- Release metadata sjednocena na `RaK 1.2 (1.283)`, technicka verze `1.2.283`, cache `v1.2-1.283`; loader modulu ma cache znacku `1.2.283`.
+
 ## RaK 1.2 (1.282)
 
 - Administrace: klik na Administraci si pred otevrenim sam obnovi ulozene admin prihlaseni nebo vyzada heslo, aby tlacitko nezustalo bez odezvy.
