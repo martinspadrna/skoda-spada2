@@ -1,3 +1,10 @@
+## RaK 1.2 (1.292)
+
+- Oprava dat: řádek nastavení Kantýny/jídelny (`FOOD_SCHEDULE_SETTINGS`) měl v databázi poškozenou kategorii `frezka` místo `food_schedule`, takže se zobrazoval jako fantomový stroj v Nastavení strojů / Frezky a pračka. Kategorie opravena, časy kantýny/jídelny i přesčasové neděle zůstaly beze změny.
+- Nastavení strojů: `adminMachineIsEditableMachineRow` teď kromě kategorie kontroluje i `machine_key`, takže kantýnu (nebo jiný settings řádek se špatně nastavenou kategorií) už nejde omylem zobrazit ani uložit jako stroj.
+- Nastavení strojů: čtení tabulky z formuláře (`readAdminMachineSettingsFromDom`) přeskakuje řádky se strojovým kódem `FOOD`, aby uložení nemohlo znovu přepsat kategorii kantýny na `frezka`.
+- Release metadata sjednocena na `RaK 1.2 (1.292)`, technicka verze `1.2.292`, cache `v1.2-1.292`; loader modulu ma cache znacku `1.2.292`.
+
 ## RaK 1.2 (1.291)
 
 - Admin úvod: zjednodušen na přehledné menu bez průvodce – odstraněny bloky Připravenost předání, Úkoly před předáním, Kontrola po uložení, Doporučené kroky, Předávací podklady, Legenda tlačítek, Stav oprávnění a Pravidla přístupu.

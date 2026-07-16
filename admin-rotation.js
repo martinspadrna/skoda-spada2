@@ -1594,6 +1594,7 @@ function adminMachineIsEditableMachineRow(row) {
   return cat !== 'brus'
     && cat !== 'fhb_target'
     && cat !== 'food_schedule'
+    && !(typeof adminIsFoodScheduleRow === 'function' && adminIsFoodScheduleRow(row))
     && cat !== 'vacation_countdown_settings'
     && cat !== 'admin_accounts_settings'
     && cat !== 'admin_full_settings_backup'
@@ -1969,6 +1970,7 @@ function readAdminMachineSettingsFromDom() {
     const get = (field) => tr.querySelector('[data-machine-field="' + field + '"]')?.value ?? '';
     const label = String(get('label')).trim();
     const machine_code = String(get('machine_code')).trim();
+    if (machine_code.toUpperCase() === 'FOOD') return;
     const machine_index = String(get('machine_index')).trim();
     const cycle_time = String(get('cycle_time')).trim();
     const dress_time = String(get('dress_time')).trim();
