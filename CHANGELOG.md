@@ -1,3 +1,11 @@
+## RaK 1.2 (1.279)
+
+- Zalohy nastaveni: pred obnovou uplne zalohy se aktualni stav automaticky ulozi jako novy bod navratu.
+- Obnova nastaveni: automaticka zaloha pred obnovou ma zdroj `before-restore` a vazbu na obnovovanou zalohu.
+- Administrace: bezpecnostni panel u Zaloh nastaveni vysvetluje, ze se aktualni stav pred obnovou ulozi bokem.
+- Smoke guard: `app-usage-smoke-v963.js` hlida automatickou zalohu pred obnovou a jeji popis v admin UI.
+- Release metadata sjednocena na `RaK 1.2 (1.279)`, technicka verze `1.2.279`, cache `v1.2-1.279`.
+
 ## RaK 1.2 (1.278)
 
 - Predani spravy: pripravenost a kontrola predani ted hlida, jestli existuje uplna zaloha nastaveni pro hlavniho admina.

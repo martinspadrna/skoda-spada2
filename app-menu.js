@@ -467,17 +467,20 @@ function adminFullSettingsBackupTimestampKey(value) {
   return String(value || new Date().toISOString()).replace(/[^0-9A-Za-z]/g, '').slice(0, 32);
 }
 
-function makeAdminFullSettingsBackupRow(sourceRows) {
+function makeAdminFullSettingsBackupRow(sourceRows, options) {
+  const opts = options && typeof options === 'object' ? options : {};
   const now = new Date();
   const createdAt = now.toISOString();
   const key = RAK_FULL_SETTINGS_BACKUP_KEY_PREFIX + adminFullSettingsBackupTimestampKey(createdAt);
   const activeAccount = typeof rakAdminGetActiveAccountId === 'function' ? rakAdminGetActiveAccountId() : '';
   const rows = adminFullSettingsSourceRows(sourceRows);
+  const source = String(opts.source || 'manual').trim() || 'manual';
+  const labelPrefix = source === 'before-restore' ? 'Před obnovou nastavení ' : 'Úplná záloha nastavení ';
   return {
     machine_key: key,
     machine_code: 'ADMIN',
     machine_index: adminFullSettingsBackupTimestampKey(createdAt),
-    label: 'Úplná záloha nastavení ' + now.toLocaleString('cs-CZ'),
+    label: String(opts.label || (labelPrefix + now.toLocaleString('cs-CZ'))),
     category: RAK_FULL_SETTINGS_BACKUP_CATEGORY,
     cycle_time: '',
     speed: '',
@@ -487,6 +490,8 @@ function makeAdminFullSettingsBackupRow(sourceRows) {
       type: RAK_FULL_SETTINGS_BACKUP_CATEGORY,
       createdAt,
       createdBy: activeAccount,
+      source,
+      restoredBackupId: String(opts.restoredBackupId || '').trim(),
       appVersion: String((typeof app !== 'undefined' && app && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '') || '').trim(),
       rowCount: rows.length,
       rows
@@ -550,6 +555,7 @@ function buildAdminFullSettingsBackupSafetyHtml() {
     '  <div class="smallText uMb10">Obnova přepíše uložená nastavení hodnotami ze zálohy. Používej ji až po kontrole, že vybraná záloha je správný bod návratu.</div>',
     '  <div class="adminRotationBackupSafetyGrid">',
     adminRotationBackupSafetyItemHtml('Jen hlavní admin', '9811', 'Nižší admini zálohu nastavení nevytvoří ani neobnoví.', 'warn'),
+    adminRotationBackupSafetyItemHtml('Před obnovou', 'uloží se bokem', 'Aktuální nastavení se před obnovou uloží jako nový bod návratu.', 'info'),
     adminRotationBackupSafetyItemHtml('Rozsah', 'všechna nastavení', 'Stroje, kantýna, přesčasy, dovolené, odkazy, kontakt, výplata i správci.', 'info'),
     adminRotationBackupSafetyItemHtml('Po obnově', 'načíst a ověřit', 'Po obnově otevři dotčené sekce a zkontroluj běžnou aplikaci.', 'info'),
     '  </div>',
@@ -613,7 +619,12 @@ async function restoreAdminFullSettingsBackupOnline(backupId) {
     ? backupSettings.rows.map(adminCloneFullSettingsRow).filter(Boolean)
     : [];
   if (!backup || !restoredRows.length) return { ok: false, reason: 'missing-backup' };
+  const preRestoreBackup = makeAdminFullSettingsBackupRow(currentRows, {
+    source: 'before-restore',
+    restoredBackupId: backup.id
+  });
   const backupRows = adminFullSettingsBackupRows().map(adminCloneFullSettingsRow).filter(Boolean);
+  if (preRestoreBackup) backupRows.push(preRestoreBackup);
   const restoredKeys = new Set(restoredRows.map((row) => String(row && row.machine_key || '')).filter(Boolean));
   const preservedBackupKeys = new Set(backupRows.map((row) => String(row && row.machine_key || '')).filter(Boolean));
   const deletedRows = currentRows
@@ -636,7 +647,7 @@ async function restoreAdminFullSettingsBackupOnline(backupId) {
   try { if (typeof updateFoodTile === 'function') updateFoodTile(); } catch (err) {}
   try { if (typeof renderFoodSchedulePage === 'function') renderFoodSchedulePage(); } catch (err) {}
   try { if (typeof renderStatsPanel === 'function') renderStatsPanel(); } catch (err) {}
-  return { ok: true, backup, result, deletedCount: deletedRows.length };
+  return { ok: true, backup, preRestoreBackup, result, deletedCount: deletedRows.length };
 }
 
 function adminGuideHasMonthRows(month) {
