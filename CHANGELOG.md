@@ -1,3 +1,10 @@
+## RaK 1.2 (1.216)
+
+- Administrace / Zálohy rozpisů: přidaný admin-only souhrn `Stav záloh`, který ukazuje stav načtení, počet záloh, nejnovější zálohu a připomínku, že obnova přepíše rozpis.
+- Předání správy: nový správce má před obnovou jasnou kontrolu, jestli jsou online zálohy opravdu načtené a co se bude obnovovat.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá nový souhrn záloh a jeho admin-only styl.
+- Release metadata sjednocená na `RaK 1.2 (1.216)`, technická verze `1.2.216`, cache `v1.2-1.216`.
+
 ## RaK 1.2 (1.215)
 
 - Administrace / Rozpisy: přidaná živá kontrola `Kontrola před uložením`, která ukazuje vybraný měsíc, počet dnů, vyplněnost polí, počet absencí, stav záloh a připomínku, že online změna proběhne až ručním uložením.

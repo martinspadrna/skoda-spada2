@@ -106,6 +106,69 @@ function formatAdminRotationBackupDate(value) {
   }
 }
 
+function adminRotationBackupStatusItemHtml(item) {
+  const state = String(item && item.state || 'info').trim() || 'info';
+  return [
+    '<div class="adminRotationBackupStatusItem is' + escapeHtml(state.charAt(0).toUpperCase() + state.slice(1)) + '">',
+    '  <span>' + escapeHtml(item && item.title || '') + '</span>',
+    '  <b>' + escapeHtml(item && item.value || '') + '</b>',
+    item && item.detail ? '  <small>' + escapeHtml(item.detail) + '</small>' : '',
+    '</div>'
+  ].join('');
+}
+
+function buildAdminRotationBackupStatusHtml() {
+  const snapshot = app && app.adminRotationBackupsSnapshot ? app.adminRotationBackupsSnapshot : null;
+  const backups = snapshot && Array.isArray(snapshot.backups) ? snapshot.backups : [];
+  const latest = backups.slice().sort((a, b) => {
+    const ad = new Date(a && a.replaced_at || 0).getTime();
+    const bd = new Date(b && b.replaced_at || 0).getTime();
+    return (Number.isFinite(bd) ? bd : 0) - (Number.isFinite(ad) ? ad : 0);
+  })[0] || null;
+  const latestMonth = String(latest && latest.month_key || '').trim();
+  const latestMonthsCount = Number(latest && latest.month_count) || 0;
+  const latestDaymodCount = Number(latest && latest.daymod_count) || 0;
+  const loadedAt = snapshot && snapshot.at ? formatAdminRotationBackupDate(snapshot.at) : '';
+  const errorMessage = snapshot && snapshot.ok === false
+    ? (snapshot.error && snapshot.error.message ? snapshot.error.message : (snapshot.reason || 'Zálohy se nepodařilo načíst.'))
+    : '';
+  const items = [
+    {
+      state: snapshot && snapshot.loading ? 'info' : (snapshot && snapshot.ok === false ? 'warn' : (backups.length ? 'ok' : 'warn')),
+      title: 'Stav',
+      value: snapshot && snapshot.loading ? 'načítám' : (snapshot && snapshot.ok === false ? 'chyba' : (backups.length ? 'načteno' : 'nenačteno')),
+      detail: errorMessage || (loadedAt ? ('Poslední načtení: ' + loadedAt + '.') : 'Klikni na Načíst zálohy před obnovou.')
+    },
+    {
+      state: backups.length ? 'ok' : 'info',
+      title: 'Počet záloh',
+      value: String(backups.length),
+      detail: backups.length ? 'Zobrazuje se posledních online záloh.' : 'Po načtení se tady ukáže dostupný seznam.'
+    },
+    {
+      state: latest ? 'ok' : 'info',
+      title: 'Nejnovější',
+      value: latest ? formatAdminRotationBackupDate(latest.replaced_at) : '—',
+      detail: latest ? ([latestMonth ? ('měsíc ' + latestMonth) : '', latestMonthsCount ? (String(latestMonthsCount) + ' měsíců') : '', latestDaymodCount ? (String(latestDaymodCount) + ' výjimek') : ''].filter(Boolean).join(' · ') || 'Online záloha rozpisu.') : 'Zatím není načtená žádná záloha.'
+    },
+    {
+      state: 'info',
+      title: 'Obnova',
+      value: 'přepíše rozpis',
+      detail: 'Před obnovou se současný stav uloží jako další záloha.'
+    }
+  ];
+  return [
+    '<div class="adminRotationBackupStatus">',
+    '  <div class="appMenuSubTitle">Stav záloh</div>',
+    '  <div class="smallText uMb10">Rychlá kontrola před obnovou. Tahle část sama nic neobnovuje ani neukládá.</div>',
+    '  <div class="adminRotationBackupStatusGrid">',
+    items.map(adminRotationBackupStatusItemHtml).join(''),
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
 function buildAdminRotationBackupsHtml() {
   const snapshot = app && app.adminRotationBackupsSnapshot ? app.adminRotationBackupsSnapshot : null;
   const backups = snapshot && Array.isArray(snapshot.backups) ? snapshot.backups : [];
@@ -1344,6 +1407,7 @@ function renderAdminMenuBody(body, section) {
     '    <div>Tady jsou poslední online zálohy, které vznikly před přepsáním rozpisu. Obnova přepíše aktuální rozpis a současný stav si předtím ještě uloží jako novou zálohu.</div>',
     '    <div class="smallText" id="adminOnlineSaveStatus">Načti zálohy a vyber, kterou chceš obnovit.</div>',
     '  </div>',
+    buildAdminRotationBackupStatusHtml(),
     buildAdminRotationBackupsHtml(),
     '  <div class="appMenuActionRow">',
     '    <button type="button" class="appMenuAction" data-admin-action="load-rotation-backups">Načíst zálohy</button>',
