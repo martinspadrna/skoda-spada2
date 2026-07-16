@@ -586,6 +586,7 @@ function adminHandoverReadinessActionForTitle(title) {
   if (safeTitle.indexOf('volno') !== -1) return { action: 'open-vacation', label: 'Dovolená' };
   if (safeTitle.indexOf('záloh') !== -1 || safeTitle.indexOf('zaloh') !== -1) return { action: 'open-backups', label: 'Zálohy' };
   if (safeTitle.indexOf('správc') !== -1 || safeTitle.indexOf('spravc') !== -1) return { action: 'open-admin-accounts', label: 'Správci' };
+  if (safeTitle.indexOf('report') !== -1 || safeTitle.indexOf('chyb') !== -1) return { action: 'open-reports', label: 'Reporty' };
   return { action: 'open-handover', label: 'Předání' };
 }
 
@@ -2096,6 +2097,7 @@ function getAdminSettingsMapItems() {
       actions: [
         { action: 'open-admin-accounts', label: 'Správci' },
         { action: 'open-usage', label: 'Připojení' },
+        { action: 'open-reports', label: 'Reporty' },
         { action: 'open-service', label: 'Servis' }
       ]
     }

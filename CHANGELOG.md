@@ -1,3 +1,10 @@
+## RaK 1.2 (1.270)
+
+- Predani spravy: ukol Reporty chyb v seznamu pred predanim ted otevre primo panel reportu.
+- Kde co upravit: kontrola a servis ma rychlou akci Reporty, aby novy spravce nasel hlasene chyby bez hledani.
+- Smoke guard: `app-usage-smoke-v963.js` hlida smerovani reportu z predani i mapy nastaveni.
+- Release metadata sjednocená na `RaK 1.2 (1.270)`, technická verze `1.2.270`, cache `v1.2-1.270`.
+
 ## RaK 1.2 (1.269)
 
 - Predani spravy: pripravenost a kontrola predani ted ukazuji i stav reportu chyb pred predanim.
