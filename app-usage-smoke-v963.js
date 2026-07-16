@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.258) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.259) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -225,12 +225,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.258)',
-  appLabel: 'RaK 1.2 (1.258)',
-  packageVersion: '1.2.258',
-  cacheVersion: 'v1.2-1.258',
+  displayVersion: '1.2 (1.259)',
+  appLabel: 'RaK 1.2 (1.259)',
+  packageVersion: '1.2.259',
+  cacheVersion: 'v1.2-1.259',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.258)',
+  changelogHeader: '## RaK 1.2 (1.259)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -339,8 +339,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.258)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.258'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.259)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.259'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1351,6 +1351,11 @@ assertIncludes(appearanceThemeJs, '"id": "light-zigzag"', 'Musí existovat zákl
   assertIncludes(menuJs, 'adminSpecialDaysRefreshStatus(body)', 'Admin menu musi prepocitat souhrn mimoradnych volnych dnu pri zmene pole');
   assertIncludes(css, '.adminSpecialDaysStatusGrid', 'Souhrn mimoradnych volnych dnu musi mit vlastni responsive admin styl');
   assertIncludes(css, '.adminSpecialDaysPublicCheckGrid', 'Verejna kontrola mimoradnych volnych dnu musi mit vlastni responsive admin styl');
+  assertIncludes(menuJs, 'function buildAdminRotationPublicCheckHtml', 'Rozpisy musi mit admin-only kontrolu verejneho dopadu');
+  assertIncludes(menuJs, 'Veřejná kontrola rozpisu', 'Rozpisy musi spravci rikat, ze jde o verejne viditelnou zmenu');
+  assertIncludes(menuJs, 'Ověř vybraný měsíc, žluté výjimky', 'Rozpisy musi mit jasnou kontrolu po ulozeni v Rotace / Rozpisy');
+  assertIncludes(menuJs, 'buildAdminRotationPublicCheckHtml()', 'Kontrola verejneho dopadu rozpisu musi byt vlozena do admin obrazovky');
+  assertIncludes(css, '.adminRotationPublicCheckGrid', 'Verejna kontrola rozpisu musi mit vlastni responsive admin styl');
   assertIncludes(menuJs, "action: 'open-special-days', label: 'Mimořádné volné dny'", 'Admin menu musi obsahovat sekci Mimoradne volne dny');
   assertIncludes(menuJs, "adminAction === 'open-special-days'", 'Admin menu musi umet otevrit mimoradne volne dny');
   assertIncludes(menuJs, "adminAction === 'save-special-days'", 'Admin menu musi umet ulozit mimoradne volne dny');

@@ -1524,6 +1524,31 @@ function buildAdminSpecialDaysPublicCheckHtml() {
   ].join('');
 }
 
+function adminRotationPublicCheckItemHtml(label, value, detail, state) {
+  const safeState = state || 'info';
+  return [
+    '<div class="adminRotationPublicCheckItem is' + escapeHtml(safeState.charAt(0).toUpperCase() + safeState.slice(1)) + '">',
+    '  <span>' + escapeHtml(label || '') + '</span>',
+    '  <b>' + escapeHtml(value || '') + '</b>',
+    detail ? '  <small>' + escapeHtml(detail) + '</small>' : '',
+    '</div>'
+  ].join('');
+}
+
+function buildAdminRotationPublicCheckHtml() {
+  return [
+    '<div class="adminRotationPublicCheck">',
+    '  <div class="appMenuSubTitle">Veřejná kontrola rozpisu</div>',
+    '  <div class="smallText uMb10">Rozpis je viditelný v Rotace / Rozpisy a v exportech. Po uložení ověř veřejný přehled, absence a export, ne jen admin tabulku.</div>',
+    '  <div class="adminRotationPublicCheckGrid">',
+    adminRotationPublicCheckItemHtml('Rotace / Rozpisy', 'měsíc', 'Ověř vybraný měsíc, žluté výjimky a detail výjimky po kliknutí.', 'warn'),
+    adminRotationPublicCheckItemHtml('Absence', 'zkratky', 'Zkontroluj, že důvody jsou zkratkou a více absencí ve dni drží stabilní sloupce.', 'info'),
+    adminRotationPublicCheckItemHtml('Export', 'Excel / obrázek', 'Po větší změně stáhni export a ověř zvýraznění výjimek i kopírovací layout.', 'info'),
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
 function buildAdminMonthlyWorkflowHtml(monthKey) {
   const workflow = getAdminMonthlyWorkflowItems(monthKey);
   return [
@@ -2193,6 +2218,7 @@ function renderAdminMenuBody(body, section) {
     '    <button type="button" class="appMenuAction isActive" data-admin-action="save-rotation">Uložit rozpis</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
     '  </div>',
+    buildAdminRotationPublicCheckHtml(),
     buildAdminRotationTableHtml(monthKey),
     '</div>'
   ].join('');

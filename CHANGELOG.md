@@ -1,3 +1,10 @@
+## RaK 1.2 (1.259)
+
+- Administrace / Rozpisy: doplněna admin-only `Veřejná kontrola rozpisu`, aby správce po uložení ověřil Rotace / Rozpisy, výjimky, absence a exporty.
+- Rozpisy: kontrola připomíná žluté výjimky, detail výjimky po kliknutí, stabilní sloupce absencí a Excel/obrázkový export.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá veřejnou kontrolu rozpisu, vložení do admin obrazovky a responsive styl.
+- Release metadata sjednocená na `RaK 1.2 (1.259)`, technická verze `1.2.259`, cache `v1.2-1.259`.
+
 ## RaK 1.2 (1.258)
 
 - Administrace / Mimořádné volné dny: doplněna admin-only `Veřejná kontrola volných dnů`, aby správce po uložení ověřil dopad jednorázového volného dne.
