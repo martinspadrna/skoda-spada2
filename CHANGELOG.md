@@ -1,3 +1,10 @@
+## RaK 1.2 (1.211)
+
+- Administrace: přidaná centrální pojistka pro všechny admin klikací akce (`data-admin-action`, admin výběry měsíce/roku a starší `admin-*` menu akce).
+- Bezpečnost: veřejné menu po opuštění administrace maže starý admin view mód, takže běžná obrazovka nemůže omylem zdědit admin kontext.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá nový guard admin akcí, nulování veřejného módu a to, že prázdný mód není brán jako admin home.
+- Release metadata sjednocená na `RaK 1.2 (1.211)`, technická verze `1.2.211`, cache `v1.2-1.211`.
+
 ## RaK 1.2 (1.210)
 
 - Administrace / Měsíční postup: přidané tlačítko `Stáhnout postup`, které vytvoří jednoduchý textový soubor s pořadím měsíční práce a aktuálním stavem kroků.

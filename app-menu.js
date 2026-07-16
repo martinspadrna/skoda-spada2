@@ -1611,6 +1611,48 @@ async function handleBugReportAction(action) {
 
 // RaK 1.2 (1.155) – Plovoucí odebrání a údržba editoru rozpisů jsou oddělené v admin-rotation.js.
 
+function appMenuAdminModeSet() {
+  return new Set([
+    'home',
+    'machines',
+    'food',
+    'vacation',
+    'special-days',
+    'rotation',
+    'overtime',
+    'generator-settings',
+    'monthly-workflow',
+    'handover',
+    'manual',
+    'settings-map',
+    'admin-accounts',
+    'external-links',
+    'app-contact',
+    'payroll-settings',
+    'backups',
+    'announcement',
+    'usage',
+    'export',
+    'reports',
+    'service'
+  ]);
+}
+
+function appMenuIsAdminInteraction(target, menuAction, adminAction, adminMonthKey, adminYearKey) {
+  if (/^admin-/.test(String(menuAction || '').trim())) return true;
+  if (adminAction || adminMonthKey || adminYearKey) return true;
+  if (!target) return false;
+  if (target.hasAttribute && (target.hasAttribute('data-admin-clear-field') || target.hasAttribute('data-admin-selected-remove'))) return true;
+  return !!(target.matches && target.matches('[data-rot-field], [data-note-field]'));
+}
+
+function appMenuCanRunAdminInteraction(currentView) {
+  const view = String(currentView || '').trim();
+  return appMenuAdminModeSet().has(view)
+    && typeof rakAdminCanOpenAdmin === 'function'
+    && rakAdminCanOpenAdmin();
+}
+
 function bindAppMenuHandlers(body) {
   if (!body || body.dataset.menuHandlersBound === '1') return;
   body.dataset.menuHandlersBound = '1';
@@ -1640,12 +1682,19 @@ function bindAppMenuHandlers(body) {
     const uiPref = target.getAttribute('data-ui-pref');
     const uiReset = target.hasAttribute('data-ui-reset');
     const menuBack = target.getAttribute('data-menu-back');
-    const currentView = String(body.dataset.adminView || 'home');
+    const currentView = String(body.dataset.adminView || '');
     const select = body.querySelector('#adminMonthSelect');
     const monthKey = select ? select.value : getAdminSelectedMonthKey();
     const adminMonthKey = target.getAttribute('data-admin-month-key');
+    const adminYearKey = target.getAttribute('data-admin-year-key');
 
     try {
+      if (appMenuIsAdminInteraction(target, menuAction, adminAction, adminMonthKey, adminYearKey) && !appMenuCanRunAdminInteraction(currentView)) {
+        event.preventDefault();
+        openAppMenu('menu');
+        return;
+      }
+
       if (target.hasAttribute('data-admin-selected-remove')) {
         event.preventDefault();
         adminRemoveSelectedRotationName();
@@ -1754,7 +1803,6 @@ function bindAppMenuHandlers(body) {
         openAppMenu('admin-rotation');
         return;
       }
-      const adminYearKey = target.getAttribute('data-admin-year-key');
       if (adminYearKey) {
         const parsedYear = parseInt(adminYearKey, 10);
         if (Number.isFinite(parsedYear)) {
@@ -2776,6 +2824,7 @@ function openAppMenu(view) {
 
   if (body) {
     bindAppMenuHandlers(body);
+    if (!adminViews.has(v)) body.dataset.adminView = '';
     if (adminViews.has(v) && !(typeof rakAdminCanOpenAdmin === 'function' && rakAdminCanOpenAdmin())) {
       body.innerHTML = [
         '<div class="appMenuCard appMenuAdminCard">',
