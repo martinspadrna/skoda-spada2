@@ -424,8 +424,49 @@ function adminHandoverMachineSettingsRows(rows) {
 }
 
 function adminHandoverActiveAdminCount() {
-  const activeAdmins = adminHandoverActiveAdminCount();
+  let activeAdmins = 1;
+  try {
+    const adminSettings = typeof rakAdminGetAccountsSettings === 'function' ? rakAdminGetAccountsSettings() : null;
+    activeAdmins += (Array.isArray(adminSettings && adminSettings.admins) ? adminSettings.admins : []).filter((entry) => entry && entry.enabled !== false).length;
+  } catch (err) {}
   return activeAdmins;
+}
+
+function adminHandoverSyncReadinessSnapshot() {
+  let syncStatus = null;
+  let hardening = null;
+  try {
+    syncStatus = typeof window !== 'undefined' && typeof window.getSupabaseSyncStatus === 'function' ? window.getSupabaseSyncStatus() : null;
+  } catch (err) {
+    syncStatus = null;
+  }
+  try {
+    hardening = typeof window !== 'undefined' && typeof window.getSupabaseHardeningStatus === 'function' ? window.getSupabaseHardeningStatus() : null;
+  } catch (err) {
+    hardening = null;
+  }
+  const queueLength = Number((syncStatus && syncStatus.queued) || (hardening && hardening.queueLength) || 0);
+  const queueHealth = hardening && hardening.queueHealth ? hardening.queueHealth : null;
+  const syncKind = String(syncStatus && syncStatus.kind || '').trim();
+  const online = typeof navigator !== 'undefined' ? navigator.onLine !== false : true;
+  const critical = !!(queueHealth && queueHealth.critical);
+  const staleCount = Number(queueHealth && queueHealth.staleTaskCount || 0);
+  const missingDiag = !syncStatus && !hardening;
+  const hasProblem = !online || queueLength > 0 || critical || staleCount > 0 || /^(offline|pending|error)$/i.test(syncKind);
+  return {
+    state: hasProblem ? 'warn' : (missingDiag ? 'info' : 'ok'),
+    title: 'Synchronizace',
+    value: missingDiag ? 'nezjištěno' : (!online ? 'offline' : (queueLength > 0 ? String(queueLength) + ' ve frontě' : (critical || staleCount > 0 ? 'zkontrolovat' : 'bez fronty'))),
+    detail: missingDiag
+      ? 'Diagnostika synchronizace zatím není dostupná.'
+      : !online
+        ? 'Zařízení je offline, před předáním zkontroluj servis a opakuj synchronizaci.'
+        : queueLength > 0
+          ? 'Před předáním nech frontu odeslat nebo otevři servis synchronizace.'
+          : critical || staleCount > 0
+            ? 'Offline fronta hlásí staré nebo rizikové položky.'
+            : 'Online fronta je prázdná, pokračuj běžnou kontrolou.'
+  };
 }
 
 function adminHandoverReadinessItemHtml(item) {
@@ -454,6 +495,7 @@ function buildAdminHandoverReadinessSnapshot(monthKey) {
   const backups = backupsSnapshot && Array.isArray(backupsSnapshot.backups) ? backupsSnapshot.backups : [];
   const permissionStatus = adminPermissionStatusSnapshot();
   const activeAdmins = adminHandoverActiveAdminCount();
+  const syncReadiness = adminHandoverSyncReadinessSnapshot();
   const checks = [
     {
       state: permissionStatus.unlocked ? 'ok' : 'warn',
@@ -467,6 +509,7 @@ function buildAdminHandoverReadinessSnapshot(monthKey) {
       value: rows.length ? String(rows.length) + ' řádků' : 'nenačteno',
       detail: rows.length ? ('Běžných strojů v nastavení: ' + String(machineRows.length) + '.') : 'Načti online data, ať nový správce nepracuje se starým stavem.'
     },
+    syncReadiness,
     {
       state: hasMonthRows ? 'ok' : 'warn',
       title: 'Rozpis',

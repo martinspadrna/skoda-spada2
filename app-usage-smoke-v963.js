@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.243) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.244) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -225,12 +225,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.243)',
-  appLabel: 'RaK 1.2 (1.243)',
-  packageVersion: '1.2.243',
-  cacheVersion: 'v1.2-1.243',
+  displayVersion: '1.2 (1.244)',
+  appLabel: 'RaK 1.2 (1.244)',
+  packageVersion: '1.2.244',
+  cacheVersion: 'v1.2-1.244',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.243)',
+  changelogHeader: '## RaK 1.2 (1.244)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -339,8 +339,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.243)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.243'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.244)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.244'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1475,6 +1475,9 @@ function assertAdminHandoverGuideContractV1142() {
   assertIncludes(ui, 'function buildAdminHandoverReadinessSnapshot', 'Predani spravy musi mit souhrn pripravenosti z aktualniho stavu');
   assertIncludes(ui, 'function buildAdminHandoverReadinessHtml', 'Predani spravy musi umet vykreslit admin-only pripravenost');
   assertIncludes(ui, 'function buildAdminHandoverReadinessText', 'Predani spravy musi davat pripravenost i do textovych podkladu');
+  assertIncludes(ui, 'function adminHandoverSyncReadinessSnapshot', 'Pripravenost predani musi hlidat stav online synchronizace');
+  assertIncludes(ui, 'window.getSupabaseSyncStatus', 'Pripravenost predani musi cist existujici Supabase sync stav');
+  assertNotIncludes(ui, 'const activeAdmins = adminHandoverActiveAdminCount();\n  return activeAdmins;', 'Pocet spravcu v pripravenosti predani nesmi volat sam sebe');
   assertIncludes(ui, 'function buildAdminHandoverStatusText', 'Predani spravy musi mit textovy export aktualniho stavu');
   assertIncludes(ui, 'function downloadAdminHandoverStatusText', 'Predani spravy musi jit stahnout jako textovy souhrn');
   assertIncludes(ui, 'function buildAdminHandoverPackageText', 'Predani spravy musi mit souhrnny textovy balicek');
@@ -1553,6 +1556,7 @@ function assertAdminHandoverGuideContractV1142() {
   assertIncludes(ui, 'Připravenost předání', 'Admin musi mit celkovy stav pripravenosti predani');
   assertIncludes(ui, 'buildAdminHandoverReadinessHtml(monthKey)', 'Pripravenost predani musi byt vlozena primo do admin-only obrazovek');
   assertIncludes(ui, 'Pripravenost predani', 'Textovy export predani musi obsahovat pripravenost predani');
+  assertIncludes(ui, 'Synchronizace', 'Pripravenost predani musi ukazovat stav synchronizace a offline fronty');
   assertIncludes(ui, 'Kontrola po uložení', 'Admin musi mit jasny postup kontroly po ulozeni');
   assertIncludes(ui, 'Zelená synchronizace', 'Kontrola po ulozeni musi pripominat zelenou synchronizaci');
   assertIncludes(ui, 'buildAdminPostSaveCheckText()', 'Predavaci balicek musi obsahovat kontrolu po ulozeni');

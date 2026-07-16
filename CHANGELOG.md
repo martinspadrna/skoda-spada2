@@ -1,3 +1,10 @@
+## RaK 1.2 (1.244)
+
+- Administrace / Predani spravy: souhrn `Pripravenost predani` nově kontroluje i stav synchronizace a offline frontu Supabase.
+- Oprava: pocet aktivnich spravcu v pripravenosti predani uz znovu nepada do rekurzivniho volani helperu.
+- Smoke guard: `app-usage-smoke-v963.js` hlida sync snapshot, cteni `getSupabaseSyncStatus` a zakazuje navrat rekurze v poctu spravcu.
+- Release metadata sjednocená na `RaK 1.2 (1.244)`, technická verze `1.2.244`, cache `v1.2-1.244`.
+
 ## RaK 1.2 (1.243)
 
 - Administrace: na admin uvod a Predani spravy pridany souhrn `Pripravenost predani`, ktery ukaze celkovy stav, pocet OK bodu, varovani a informacni body.
