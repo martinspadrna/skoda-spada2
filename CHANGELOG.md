@@ -1,3 +1,10 @@
+## RaK 1.2 (1.226)
+
+- Administrace / Reporty chyb: přidaný admin-only souhrn `Stav reportů`, který ukazuje celkový počet, otevřené reporty, uzavřené reporty a zdroj online/lokální.
+- Reporty chyb: souhrn se zobrazuje nad seznamem, takže správce hned vidí, jestli je něco k řešení, bez rozklikávání jednotlivých reportů.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá nový stav reportů, jeho vložení nad seznam a responsive admin-only styl.
+- Release metadata sjednocená na `RaK 1.2 (1.226)`, technická verze `1.2.226`, cache `v1.2-1.226`.
+
 ## RaK 1.2 (1.225)
 
 - Administrace / Oznámení Dashboard: přidaný admin-only souhrn `Stav oznámení`, který ukazuje, jestli je oznámení aktivní, naplánované, skončené nebo bez textu.

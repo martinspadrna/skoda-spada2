@@ -41,6 +41,94 @@ function isAdminReportUuid(value) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value || '').trim());
 }
 
+function normalizeAdminReportStatusKey(value) {
+  const raw = String(value || '').trim().toLowerCase();
+  if (raw === 'seen' || raw === 'done' || raw === 'ignored') return raw;
+  return 'new';
+}
+
+function buildAdminReportsStatusSummary(rows) {
+  const list = Array.isArray(rows) ? rows : [];
+  const summary = {
+    total: list.length,
+    newCount: 0,
+    seenCount: 0,
+    doneCount: 0,
+    ignoredCount: 0,
+    localCount: 0,
+    onlineCount: 0,
+    latestAt: ''
+  };
+  list.forEach((row) => {
+    const status = normalizeAdminReportStatusKey(row && row.status);
+    if (status === 'seen') summary.seenCount += 1;
+    else if (status === 'done') summary.doneCount += 1;
+    else if (status === 'ignored') summary.ignoredCount += 1;
+    else summary.newCount += 1;
+
+    const id = String(row && row.id || '').trim();
+    if (row && (row.local_only || !isAdminReportUuid(id))) summary.localCount += 1;
+    else summary.onlineCount += 1;
+
+    const created = new Date(row && row.created_at || 0).getTime();
+    const latest = summary.latestAt ? new Date(summary.latestAt).getTime() : 0;
+    if (Number.isFinite(created) && created > latest) summary.latestAt = row.created_at;
+  });
+  return summary;
+}
+
+function adminReportsStatusItemHtml(label, value, detail, state) {
+  const safeState = state || 'ok';
+  return [
+    '<div class="adminReportsStatusItem is' + escapeHtml(safeState.charAt(0).toUpperCase() + safeState.slice(1)) + '">',
+    '  <span>' + escapeHtml(label || '') + '</span>',
+    '  <b>' + escapeHtml(value || '') + '</b>',
+    detail ? '  <small>' + escapeHtml(detail) + '</small>' : '',
+    '</div>'
+  ].join('');
+}
+
+function buildAdminReportsStatusHtml(rows) {
+  const summary = buildAdminReportsStatusSummary(rows);
+  const openCount = summary.newCount + summary.seenCount;
+  const handledCount = summary.doneCount + summary.ignoredCount;
+  const items = [
+    {
+      label: 'Celkem',
+      value: String(summary.total),
+      detail: summary.total ? ('Poslední: ' + formatAdminReportDate(summary.latestAt)) : 'Zatím není načtený žádný report.',
+      state: summary.total ? 'info' : 'ok'
+    },
+    {
+      label: 'K řešení',
+      value: String(openCount),
+      detail: String(summary.newCount) + ' nové · ' + String(summary.seenCount) + ' viděné.',
+      state: openCount ? 'warn' : 'ok'
+    },
+    {
+      label: 'Uzavřené',
+      value: String(handledCount),
+      detail: String(summary.doneCount) + ' hotovo · ' + String(summary.ignoredCount) + ' ignorováno.',
+      state: handledCount ? 'ok' : 'info'
+    },
+    {
+      label: 'Zdroj',
+      value: String(summary.onlineCount) + ' online',
+      detail: String(summary.localCount) + ' lokálně uložené zálohy.',
+      state: summary.localCount ? 'info' : 'ok'
+    }
+  ];
+  return [
+    '<div class="adminReportsStatus" id="adminReportsStatus">',
+    '  <div class="appMenuSubTitle">Stav reportů</div>',
+    '  <div class="smallText uMb10">Souhrn vychází z načtených reportů níže. Akce Viděno, Hotovo a Ignorovat mění jen vybraný report.</div>',
+    '  <div class="adminReportsStatusGrid">',
+    items.map((item) => adminReportsStatusItemHtml(item.label, item.value, item.detail, item.state)).join(''),
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
 function buildAdminReportsHtml() {
   const rows = getAdminReportsCache();
   const list = rows.length ? rows.map((row) => {
@@ -75,6 +163,7 @@ function buildAdminReportsHtml() {
   }).join('') : '<div class="appMenuText">Zatím tu nejsou žádné reporty.</div>';
   return [
     '<div class="adminReportsFolder">',
+    buildAdminReportsStatusHtml(rows),
     '  <div class="adminReportsToolbar">',
     '    <button type="button" class="appMenuAction isActive" data-admin-action="load-reports">Načíst reporty</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="download-reports">Stáhnout reporty</button>',
@@ -434,6 +523,9 @@ window.normalizeAdminReportTypeLabel = normalizeAdminReportTypeLabel;
 window.normalizeAdminReportStatusLabel = normalizeAdminReportStatusLabel;
 window.getAdminReportsCache = getAdminReportsCache;
 window.isAdminReportUuid = isAdminReportUuid;
+window.normalizeAdminReportStatusKey = normalizeAdminReportStatusKey;
+window.buildAdminReportsStatusSummary = buildAdminReportsStatusSummary;
+window.buildAdminReportsStatusHtml = buildAdminReportsStatusHtml;
 window.buildAdminReportsHtml = buildAdminReportsHtml;
 window.getAdminReportDeletedNoteMarker = getAdminReportDeletedNoteMarker;
 window.getAdminDeletedReportsKey = getAdminDeletedReportsKey;
