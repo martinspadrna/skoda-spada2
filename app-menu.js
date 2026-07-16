@@ -2040,6 +2040,13 @@ function buildAdminHandoverChecklistHtml(monthKey) {
       action: 'open-admin-accounts',
       actionLabel: 'Správci'
     });
+    items.push({
+      ok: true,
+      title: 'Admin zařízení',
+      detail: 'Hlavní admin zkontroluje přihlášená zařízení a odhlásí ta, která už nemají mít přístup.',
+      action: 'open-admin-accounts',
+      actionLabel: 'Zařízení'
+    });
   }
   const done = items.filter((item) => item.ok).length;
   return [
@@ -2626,9 +2633,10 @@ function buildAdminManualHtml(monthKey) {
     ),
     adminManualSectionHtml(
       'Zálohy a obnova',
-      'Před obnovou se aktuální rozpis ještě uloží jako nová záloha. Obnovu používat jen po kontrole správného času a měsíce.',
+      'Před obnovou rozpisu i nastavení se aktuální stav ještě uloží jako bod návratu. Obnovu používat jen po kontrole správného času, měsíce a typu zálohy.',
       [
         { action: 'open-backups', label: 'Zálohy' },
+        { action: 'open-settings-backups', label: 'Zálohy nastavení' },
         { action: 'open-export', label: 'Export / import' },
         { action: 'open-reports', label: 'Reporty' }
       ],
@@ -2641,7 +2649,10 @@ function buildAdminManualHtml(monthKey) {
         : 'Nižší admin může používat pracovní části administrace. Další adminy může přidat jen hlavní admin účet.',
       [
         { action: 'open-handover', label: 'Předání správy' }
-      ].concat(ownerCanManage ? [{ action: 'open-admin-accounts', label: 'Správci' }] : []),
+      ].concat(ownerCanManage ? [
+        { action: 'open-admin-accounts', label: 'Správci' },
+        { action: 'open-admin-accounts', label: 'Admin zařízení' }
+      ] : []),
       { open: false }
     )
   ];
@@ -2760,7 +2771,7 @@ function getAdminSettingsMapItems() {
     serviceActions.unshift({ action: 'open-admin-accounts', label: 'Správci' });
     serviceActions.push({ action: 'open-settings-backups', label: 'Zálohy nastavení' });
   }
-  return [
+  const items = [
     {
       title: 'Rozpis a absence',
       scope: 'Administrace / Rozpisy',
@@ -2837,6 +2848,19 @@ function getAdminSettingsMapItems() {
       actions: serviceActions
     }
   ];
+  if (ownerAccess) {
+    items.push({
+      title: 'Admin zařízení',
+      scope: 'Správci / přihlášená zařízení',
+      detail: 'Přehled zařízení, kde je admin účet trvale přihlášený, a možnost zařízení odhlásit.',
+      visible: 'Jen hlavní admin; běžní lidé ani nižší admini to nevidí.',
+      check: 'Spravci, prihlasena zarizeni a odhlaseni nepotrebnych zarizeni.',
+      actions: [
+        { action: 'open-admin-accounts', label: 'Správci' }
+      ]
+    });
+  }
+  return items;
 }
 
 function buildAdminSettingsMapHtml() {

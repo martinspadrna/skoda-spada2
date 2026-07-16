@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.283) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.284) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -226,12 +226,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.283)',
-  appLabel: 'RaK 1.2 (1.283)',
-  packageVersion: '1.2.283',
-  cacheVersion: 'v1.2-1.283',
+  displayVersion: '1.2 (1.284)',
+  appLabel: 'RaK 1.2 (1.284)',
+  packageVersion: '1.2.284',
+  cacheVersion: 'v1.2-1.284',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.283)',
+  changelogHeader: '## RaK 1.2 (1.284)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -340,8 +340,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.283)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.283'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.284)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.284'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1718,6 +1718,10 @@ function assertAdminHandoverGuideContractV1142() {
   assertIncludes(ui, 'Veřejný dopad změn', 'Mapa nastaveni musi jasne oddelit verejny dopad od admin-only casti');
   assertIncludes(ui, 'buildAdminSettingsMapImpactHtml(items)', 'Prehled verejneho dopadu musi byt vlozeny primo do mapy nastaveni');
   assertIncludes(ui, 'Po ulozeni over', 'Mapa nastaveni musi u kazde oblasti rikat co overit po ulozeni');
+  assertIncludes(ui, "title: 'Admin zařízení'", 'Mapa a pruvodce musi owner adminovi ukazat prihlasena admin zarizeni');
+  assertIncludes(ui, "scope: 'Správci / přihlášená zařízení'", 'Mapa nastaveni musi mit samostatnou oblast pro prihlasena admin zarizeni');
+  assertIncludes(ui, 'odhlásí ta, která už nemají mít přístup', 'Pruvodce predanim musi pripominat odhlaseni nepotrebnych admin zarizeni');
+  assertIncludes(ui, "{ action: 'open-settings-backups', label: 'Zálohy nastavení' }", 'Prirucka zaloh musi vest i na uplne zalohy nastaveni');
   assertIncludes(ui, "{ action: 'open-reports', label: 'Reporty' }", 'Mapa nastaveni musi mit rychlou akci Reporty');
   assertIncludes(ui, 'const checkCount = list.filter', 'Souhrn mapy nastaveni musi hlidat vyplnene kontroly po ulozeni');
   assertIncludes(ui, 'Kazda oblast ma rikat, co overit po ulozeni.', 'Stav mapy musi vysvetlovat pokryti kontrol po ulozeni');

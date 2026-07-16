@@ -1,3 +1,11 @@
+## RaK 1.2 (1.284)
+
+- Predani spravy: prirucka a pruvodce ted hlavniho admina vedou i ke kontrole prihlasenych admin zarizeni.
+- Mapa nastaveni: pribyla owner-only oblast `Admin zarizeni`, ktera ukazuje, kde zkontrolovat trvale prihlasena zarizeni a odhlasit nepotrebna.
+- Zalohy: prirucka v casti zaloh vede nejen na zalohy rozpisu, ale i na uplne zalohy nastaveni.
+- Smoke guard: `app-usage-smoke-v963.js` hlida mapu admin zarizeni, pripomenuti odhlaseni zarizeni a odkaz na uplne zalohy nastaveni.
+- Release metadata sjednocena na `RaK 1.2 (1.284)`, technicka verze `1.2.284`, cache `v1.2-1.284`; loader modulu ma cache znacku `1.2.284`.
+
 ## RaK 1.2 (1.283)
 
 - Administrace: tlacitko Administrace se admin uctu zobrazi i pred dokoncenym obnovenim ulozene session.
