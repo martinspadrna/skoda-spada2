@@ -1,3 +1,10 @@
+## RaK 1.2 (1.267)
+
+- Predani spravy: pripravenost a kontrola predani ted ukazuji i pocet prihlasenych admin zarizeni.
+- Predavaci exporty: stav predani a pravidla pristupu obsahuji admin zarizeni, aby novy spravce vedel, kde muze zustat odemcena administrace.
+- Smoke guard: `app-usage-smoke-v963.js` hlida souhrn admin zarizeni v predani spravy i textovych podkladech.
+- Release metadata sjednocená na `RaK 1.2 (1.267)`, technická verze `1.2.267`, cache `v1.2-1.267`.
+
 ## RaK 1.2 (1.266)
 
 - Admin prihlaseni: po overeni heslem zustane admin ucet odemceny na danem zarizeni i po znovuotevreni aplikace.

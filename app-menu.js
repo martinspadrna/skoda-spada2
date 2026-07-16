@@ -482,6 +482,23 @@ function adminHandoverActiveAdminCount() {
   return activeAdmins;
 }
 
+function adminHandoverAdminSessionSnapshot() {
+  let sessions = [];
+  try {
+    const adminSettings = typeof rakAdminGetAccountsSettings === 'function' ? rakAdminGetAccountsSettings() : null;
+    sessions = (Array.isArray(adminSettings && adminSettings.sessions) ? adminSettings.sessions : []).filter((entry) => entry && !entry.revokedAt);
+  } catch (err) {
+    sessions = [];
+  }
+  return {
+    count: sessions.length,
+    label: sessions.length ? (String(sessions.length) + ' zařízení') : 'žádné',
+    detail: sessions.length
+      ? 'V sekci Správci jde zkontrolovat a odhlásit uložené admin relace.'
+      : 'Po ověření admin heslem se tady ukážou zařízení s uloženou relací.'
+  };
+}
+
 function adminHandoverSyncReadinessSnapshot() {
   let syncStatus = null;
   let hardening = null;
@@ -624,6 +641,7 @@ function buildAdminHandoverReadinessSnapshot(monthKey) {
   const backups = backupsSnapshot && Array.isArray(backupsSnapshot.backups) ? backupsSnapshot.backups : [];
   const permissionStatus = adminPermissionStatusSnapshot();
   const activeAdmins = adminHandoverActiveAdminCount();
+  const adminSessions = adminHandoverAdminSessionSnapshot();
   const syncReadiness = adminHandoverSyncReadinessSnapshot();
   const checks = [
     {
@@ -668,6 +686,12 @@ function buildAdminHandoverReadinessSnapshot(monthKey) {
       title: 'Správci',
       value: activeAdmins > 1 ? String(activeAdmins) + ' účty' : 'jen hlavní',
       detail: activeAdmins > 1 ? 'Je připravený další správce.' : 'Dalšího správce může doplnit hlavní admin.'
+    },
+    {
+      state: adminSessions.count ? 'ok' : 'info',
+      title: 'Admin zařízení',
+      value: adminSessions.label,
+      detail: adminSessions.detail
     }
   ];
   const okCount = checks.filter((item) => item.state === 'ok').length;
@@ -818,10 +842,12 @@ function buildAdminAccessRulesHtml() {
 
 function buildAdminAccessRulesText() {
   const activeAdmins = adminHandoverActiveAdminCount();
+  const adminSessions = adminHandoverAdminSessionSnapshot();
   const permissionStatus = adminPermissionStatusSnapshot();
   return [
     'Pristup a hesla',
     '- Aktivni admin ucty: ' + String(activeAdmins),
+    '- Prihlasena admin zarizeni: ' + adminSessions.label,
     '- Aktualni role: ' + String(permissionStatus.roleLabel || 'nezjisteno'),
     '- Hlavni admin muze menit spravce, hesla, provoz i rozpisy.',
     '- Dalsi spravce muze menit provoz, rozpisy, absence, zalohy a exporty, ale ne seznam spravcu.',
@@ -918,6 +944,7 @@ function buildAdminHandoverAuditHtml(monthKey) {
   const backupsSnapshot = app && app.adminRotationBackupsSnapshot && typeof app.adminRotationBackupsSnapshot === 'object' ? app.adminRotationBackupsSnapshot : null;
   const backups = backupsSnapshot && Array.isArray(backupsSnapshot.backups) ? backupsSnapshot.backups : [];
   const activeAdmins = adminHandoverActiveAdminCount();
+  const adminSessions = adminHandoverAdminSessionSnapshot();
   const items = [
     {
       state: rows.length ? 'ok' : 'warn',
@@ -932,6 +959,14 @@ function buildAdminHandoverAuditHtml(monthKey) {
       title: 'Správci',
       value: activeAdmins > 1 ? (String(activeAdmins) + ' účty') : 'jen hlavní',
       detail: activeAdmins > 1 ? 'Je připravený aspoň jeden další admin účet.' : 'Hlavní admin funguje, dalšího správce může doplnit jen owner účet.',
+      action: (typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins()) ? 'open-admin-accounts' : '',
+      actionLabel: 'Správci'
+    },
+    {
+      state: adminSessions.count ? 'ok' : 'info',
+      title: 'Admin zařízení',
+      value: adminSessions.label,
+      detail: adminSessions.detail,
       action: (typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins()) ? 'open-admin-accounts' : '',
       actionLabel: 'Správci'
     },
@@ -993,6 +1028,7 @@ function buildAdminHandoverStatusText(monthKey) {
   const backupsSnapshot = app && app.adminRotationBackupsSnapshot && typeof app.adminRotationBackupsSnapshot === 'object' ? app.adminRotationBackupsSnapshot : null;
   const backups = backupsSnapshot && Array.isArray(backupsSnapshot.backups) ? backupsSnapshot.backups : [];
   const activeAdmins = adminHandoverActiveAdminCount();
+  const adminSessions = adminHandoverAdminSessionSnapshot();
   const permissionStatus = adminPermissionStatusSnapshot();
   const version = formatRakDisplayVersion((typeof app !== 'undefined' && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : ''));
   return [
@@ -1008,11 +1044,13 @@ function buildAdminHandoverStatusText(monthKey) {
     '- Aktivní admin účet: ' + (permissionStatus.activeAccountId || 'nezjištěn'),
     '- Role administrace: ' + permissionStatus.roleLabel,
     '- Admin odemčen: ' + (permissionStatus.unlocked ? 'ano' : 'ne'),
+    '- Přihlášená admin zařízení: ' + adminSessions.label,
     '- Pravidlo hlavního admina: hlavní admin smí měnit správce a hesla.',
     '- Pravidlo dalšího správce: smí měnit provoz a rozpisy, ale ne seznam správců.',
     '- Pravidlo běžného účtu: nesmí měnit rozpis, provoz ani online nastavení.',
     buildAdminAccessRulesText().trim(),
     '- Admin účty: ' + String(activeAdmins),
+    '- Admin zařízení: ' + adminSessions.label,
     '- Kantýna / jídelna: ' + (foodLocations ? ('nastaveno ' + foodLocations + ' míst') : 'zkontrolovat'),
     '- Přesčasové termíny: ' + String(overtimeCount),
     '- Dovolené / odstávky: ' + String(vacationCount),
