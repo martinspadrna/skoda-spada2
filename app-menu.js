@@ -514,12 +514,16 @@ function adminFullSettingsBackupList() {
   return adminFullSettingsBackupRows().map((row) => {
     const settings = adminFullSettingsBackupJson(row);
     const rows = Array.isArray(settings && settings.rows) ? settings.rows : [];
+    const source = String(settings && settings.source || 'manual').trim() || 'manual';
     return {
       row,
       id: String(row && row.machine_key || settings && settings.admin_settings_key || '').trim(),
       label: String(row && row.label || '').trim() || 'Úplná záloha nastavení',
       createdAt: String(settings && settings.createdAt || '').trim(),
       createdBy: String(settings && settings.createdBy || '').trim(),
+      source,
+      sourceLabel: source === 'before-restore' ? 'před obnovou' : 'ruční',
+      restoredBackupId: String(settings && settings.restoredBackupId || '').trim(),
       rowCount: Number(settings && (settings.rowCount || rows.length)) || rows.length,
       appVersion: String(settings && settings.appVersion || '').trim()
     };
@@ -529,11 +533,14 @@ function adminFullSettingsBackupList() {
 function buildAdminFullSettingsBackupStatusHtml() {
   const canManage = typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins();
   const backups = adminFullSettingsBackupList();
+  const manualCount = backups.filter((backup) => String(backup.source || '') !== 'before-restore').length;
+  const beforeRestoreCount = backups.filter((backup) => String(backup.source || '') === 'before-restore').length;
   const latest = backups[0] || null;
   const sourceCount = adminFullSettingsSourceRows(Array.isArray(app && app.machineSettingsRows) ? app.machineSettingsRows : []).length;
   const items = [
     { state: canManage ? 'ok' : 'warn', title: 'Přístup', value: canManage ? 'hlavní admin' : 'zamčeno', detail: canManage ? 'Vytvořit a obnovit může jen účet 9811.' : 'Nižší admin tuhle obnovu nespustí.' },
     { state: backups.length ? 'ok' : 'info', title: 'Zálohy', value: String(backups.length), detail: backups.length ? 'Online zálohy nastavení jsou načtené.' : 'Zatím není načtená žádná úplná záloha nastavení.' },
+    { state: manualCount ? 'ok' : 'info', title: 'Ruční / auto', value: String(manualCount) + ' / ' + String(beforeRestoreCount), detail: 'Ruční body jsou hlavní jistota; automatické vznikají před obnovou.' },
     { state: latest ? 'ok' : 'info', title: 'Nejnovější', value: latest ? adminFullSettingsBackupDateLabel(latest.createdAt) : '—', detail: latest ? (String(latest.rowCount) + ' řádků nastavení.') : 'Po vytvoření se tady ukáže poslední bod obnovy.' },
     { state: sourceCount ? 'info' : 'warn', title: 'Aktuální stav', value: String(sourceCount) + ' řádků', detail: 'Do nové zálohy se vezmou všechna aktuálně načtená nastavení.' }
   ];
@@ -573,7 +580,7 @@ function buildAdminFullSettingsBackupsHtml() {
   }
   const rows = backups.map((backup) => [
     '<tr>',
-    '  <td>' + escapeHtml(adminFullSettingsBackupDateLabel(backup.createdAt)) + '<div class="smallText">' + escapeHtml(String(backup.rowCount) + ' řádků' + (backup.appVersion ? (' · ' + backup.appVersion) : '') + (backup.createdBy ? (' · účet ' + backup.createdBy) : '')) + '</div></td>',
+    '  <td>' + escapeHtml(adminFullSettingsBackupDateLabel(backup.createdAt)) + '<div class="smallText">' + escapeHtml(String(backup.sourceLabel || 'ruční') + ' · ' + String(backup.rowCount) + ' řádků' + (backup.appVersion ? (' · ' + backup.appVersion) : '') + (backup.createdBy ? (' · účet ' + backup.createdBy) : '') + (backup.restoredBackupId ? (' · obnova ' + backup.restoredBackupId.slice(0, 16)) : '')) + '</div></td>',
     '  <td><button type="button" class="appMenuAction" data-admin-action="restore-full-settings-backup" data-settings-backup-id="' + escapeHtml(backup.id) + '">Obnovit</button></td>',
     '</tr>'
   ].join('')).join('');

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.279) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.280) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -226,12 +226,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.279)',
-  appLabel: 'RaK 1.2 (1.279)',
-  packageVersion: '1.2.279',
-  cacheVersion: 'v1.2-1.279',
+  displayVersion: '1.2 (1.280)',
+  appLabel: 'RaK 1.2 (1.280)',
+  packageVersion: '1.2.280',
+  cacheVersion: 'v1.2-1.280',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.279)',
+  changelogHeader: '## RaK 1.2 (1.280)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -340,8 +340,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.279)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.279'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.280)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.280'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1500,6 +1500,10 @@ function assertAdminAccountLoginContractV1141() {
   assertIncludes(ui, "const RAK_FULL_SETTINGS_BACKUP_CATEGORY = 'admin_full_settings_backup'", 'Uplna zaloha nastaveni musi mit vlastni kategorii');
   assertIncludes(ui, "const RAK_DELETED_MACHINE_SETTINGS_CATEGORY = 'admin_settings_deleted'", 'Rollback nastaveni musi mit skryte deleted radky pro odebrani polozek mimo zalohu');
   assertIncludes(ui, "source === 'before-restore'", 'Obnova nastaveni musi rozlisit automatickou zalohu pred obnovou');
+  assertIncludes(ui, "sourceLabel: source === 'before-restore' ? 'před obnovou' : 'ruční'", 'Seznam zaloh nastaveni musi rozlisit rucni a automaticke zalohy');
+  assertIncludes(ui, "const manualCount = backups.filter", 'Stav zaloh nastaveni musi pocitat rucni body obnovy');
+  assertIncludes(ui, "const beforeRestoreCount = backups.filter", 'Stav zaloh nastaveni musi pocitat automaticke body pred obnovou');
+  assertIncludes(ui, "Ruční / auto", 'Stav zaloh nastaveni musi zobrazit rucni a automaticke zalohy oddelene');
   assertIncludes(ui, "source: 'before-restore'", 'Obnova nastaveni musi vytvorit automatickou zalohu aktualniho stavu');
   assertIncludes(ui, 'restoredBackupId: backup.id', 'Automaticka zaloha pred obnovou musi vedet, ke ktere obnove patri');
   assertIncludes(ui, 'preRestoreBackup', 'Obnova nastaveni musi vracet bod navratu pred obnovou');

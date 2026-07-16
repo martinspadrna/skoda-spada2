@@ -1,3 +1,11 @@
+## RaK 1.2 (1.280)
+
+- Zalohy nastaveni: seznam ted rozlisuje rucni body obnovy a automaticke body vytvorene pred obnovou.
+- Zalohy nastaveni: stavovy souhrn ukazuje pocet rucnich a automatickych zaloh, aby hlavni admin poznal skutecny vychozi bod.
+- Obnova nastaveni: radek automaticke zalohy ukazuje vazbu na obnovu, pred kterou vznikl.
+- Smoke guard: `app-usage-smoke-v963.js` hlida popisky rucni/automaticke zalohy i jejich pocty ve stavovem souhrnu.
+- Release metadata sjednocena na `RaK 1.2 (1.280)`, technicka verze `1.2.280`, cache `v1.2-1.280`.
+
 ## RaK 1.2 (1.279)
 
 - Zalohy nastaveni: pred obnovou uplne zalohy se aktualni stav automaticky ulozi jako novy bod navratu.
