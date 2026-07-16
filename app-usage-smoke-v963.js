@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.288) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.289) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -226,12 +226,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.288)',
-  appLabel: 'RaK 1.2 (1.288)',
-  packageVersion: '1.2.288',
-  cacheVersion: 'v1.2-1.288',
+  displayVersion: '1.2 (1.289)',
+  appLabel: 'RaK 1.2 (1.289)',
+  packageVersion: '1.2.289',
+  cacheVersion: 'v1.2-1.289',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.288)',
+  changelogHeader: '## RaK 1.2 (1.289)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -340,8 +340,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.288)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.288'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.289)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.289'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1552,6 +1552,7 @@ function assertAdminHandoverGuideContractV1142() {
   assertIncludes(ui, 'Admin odemčen', 'Predavaci exporty musi obsahovat stav admin odemceni');
   assertIncludes(ui, 'function buildAdminHandoverChecklistHtml', 'Admin uvod musi mit pruvodce pro predani spravy');
   assertIncludes(ui, 'function buildAdminHandoverRunbookHtml', 'Admin musi mit samostatny panel pro predani spravy');
+  assertIncludes(ui, 'function adminHandoverMachineSettingsSnapshot', 'Predani spravy musi umet secist stav stroju a kalkulacek');
   assertIncludes(ui, 'function adminHandoverAdminSessionSnapshot', 'Predani spravy musi umet secist prihlasena admin zarizeni');
   assertIncludes(ui, 'function adminHandoverReportsSnapshot', 'Predani spravy musi umet secist reporty chyb');
   assertIncludes(ui, 'function adminHandoverAnnouncementSnapshot', 'Predani spravy musi umet zkontrolovat verejne oznameni na Dashboardu');
@@ -1588,6 +1589,7 @@ function assertAdminHandoverGuideContractV1142() {
   assertIncludes(ui, 'function buildAdminHandoverTodoText', 'Seznam ukolu pred predanim musi byt i v textovych podkladech');
   assertIncludes(ui, 'function downloadAdminHandoverTodoText', 'Seznam ukolu pred predanim musi jit stahnout samostatne');
   assertIncludes(ui, 'function adminHandoverReadinessActionForTitle', 'Ukoly pred predanim musi umet vest do spravne admin sekce');
+  assertIncludes(ui, "return { action: 'open-machines', label: 'Stroje' };", 'Ukol Stroje v predani musi otevrit primo nastaveni stroju');
   assertIncludes(ui, "return { action: 'open-reports', label: 'Reporty' };", 'Ukol Reporty chyb v predani musi otevrit primo reporty');
   assertIncludes(ui, "return { action: 'open-announcement', label: 'Oznámení' };", 'Ukol Oznameni Dashboard v predani musi otevrit primo oznameni');
   assertIncludes(ui, "return { action: 'open-app-contact', label: 'Kontakt' };", 'Ukol Kontakt v predani musi otevrit kontakt aplikace');
@@ -1606,9 +1608,12 @@ function assertAdminHandoverGuideContractV1142() {
   assertIncludes(ui, "buildRakAdminExportMetadataLines('RaK - Kde co upravit'", 'Mapa nastaveni musi mit jednotna admin metadata');
   assertIncludes(ui, "buildRakAdminExportMetadataLines('RaK - Příručka správce'", 'Prirucka spravce musi mit jednotna admin metadata');
   assertIncludes(ui, 'buildAdminAccessRulesText().trim()', 'Stav i balicek predani musi obsahovat pristupova pravidla bez hesel');
+  assertIncludes(ui, "cat !== 'admin_full_settings_backup'", 'Predani stroju nesmi pocitat technicke radky uplnych zaloh jako stroje');
+  assertIncludes(ui, "key.indexOf('ADMIN_FULL_SETTINGS_BACKUP_') !== 0", 'Predani stroju nesmi pocitat radky uplnych zaloh podle machine_key');
   assertIncludes(ui, "'- Prihlasena admin zarizeni: '", 'Predavaci pravidla musi obsahovat pocet prihlasenych admin zarizeni');
   assertIncludes(ui, "'- Reporty chyb pred predanim: '", 'Predavaci pravidla musi obsahovat stav reportu chyb');
   assertIncludes(ui, "'- Oznameni Dashboard pred predanim: '", 'Predavaci pravidla musi obsahovat stav oznameni Dashboard');
+  assertIncludes(ui, "'- Stroje a kalkulacky pred predanim: '", 'Predavaci pravidla musi obsahovat stav stroju a kalkulacek');
   assertIncludes(ui, "'- Kontakt aplikace pred predanim: '", 'Predavaci pravidla musi obsahovat stav kontaktu aplikace');
   assertIncludes(ui, "'- Verejne odkazy pred predanim: '", 'Predavaci pravidla musi obsahovat stav verejnych odkazu');
   assertIncludes(ui, "'- Vyplata pred predanim: '", 'Predavaci pravidla musi obsahovat stav vyplaty');
@@ -1708,6 +1713,8 @@ function assertAdminHandoverGuideContractV1142() {
   assertIncludes(ui, 'Před obnovou se současný stav uloží jako další záloha.', 'Panel zaloh musi vysvetlit bezpecnost obnovy');
   assertIncludes(ui, 'Aktivní admin účet', 'Textovy stav predani musi obsahovat aktivni admin ucet');
   assertIncludes(ui, 'Admin odemčen', 'Textovy stav predani musi obsahovat informaci, jestli je admin odemceny');
+  assertIncludes(ui, "'- Stroje a kalkulačky: ' + machineSettingsSnapshot.label", 'Textovy stav predani musi obsahovat stroje a kalkulacky');
+  assertIncludes(ui, "title: 'Stroje / kalkulačky'", 'Predani spravy musi mit viditelnou polozku stroju a kalkulacek');
   assertIncludes(ui, "'- Admin zařízení: ' + adminSessions.label", 'Textovy stav predani musi obsahovat admin zarizeni');
   assertIncludes(ui, "title: 'Admin zařízení'", 'Predani spravy musi mit viditelnou polozku admin zarizeni');
   assertIncludes(ui, "'- Reporty chyb: ' + reportsSnapshot.label", 'Textovy stav predani musi obsahovat reporty chyb');
@@ -1731,6 +1738,8 @@ function assertAdminHandoverGuideContractV1142() {
   assertIncludes(ui, 'RaK_balicek_predani_', 'Textovy export balicku predani musi mit jasny nazev souboru');
   assertIncludes(ui, 'RaK_kde_co_upravit_', 'Textovy export mapy nastaveni musi mit jasny nazev souboru');
   assertIncludes(ui, 'Kde co upravit', 'Mapa nastaveni musi byt pojmenovana srozumitelne pro spravce');
+  assertIncludes(ui, "title: 'Stroje a kalkulačky'", 'Mapa nastaveni musi mit samostatnou oblast pro stroje a kalkulacky');
+  assertIncludes(ui, "{ action: 'open-machines', label: 'Stroje' }", 'Mapa nastaveni musi mit rychlou akci Stroje');
   assertIncludes(ui, "title: 'Oznámení, odkazy, kontakt a výplata'", 'Mapa nastaveni musi zahrnovat oznameni Dashboard mezi verejne texty');
   assertIncludes(ui, "{ action: 'open-announcement', label: 'Oznámení' }", 'Mapa nastaveni musi mit rychlou akci Oznameni');
   assertIncludes(ui, 'Stav mapy nastaveni', 'Mapa nastaveni musi nahore vysvetlit, ze jde o rozcestnik');

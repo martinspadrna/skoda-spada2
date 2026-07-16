@@ -925,6 +925,8 @@ function adminHandoverMachineSettingsRows(rows) {
     const cat = String(row && row.category || '').trim();
     const key = String(row && row.machine_key || '').trim();
     return cat !== 'admin_accounts_settings'
+      && cat !== 'admin_full_settings_backup'
+      && cat !== 'admin_settings_deleted'
       && cat !== 'rotation_overtime_settings'
       && cat !== 'rotation_generator_settings'
       && cat !== 'external_links_settings'
@@ -933,6 +935,7 @@ function adminHandoverMachineSettingsRows(rows) {
       && cat !== 'vacation_countdown_settings'
       && cat !== 'special_days_settings'
       && key !== 'ADMIN_ACCOUNTS_SETTINGS'
+      && key.indexOf('ADMIN_FULL_SETTINGS_BACKUP_') !== 0
       && key !== 'ROTATION_OVERTIME_SETTINGS'
       && key !== 'ROTATION_GENERATOR_SETTINGS'
       && key !== 'EXTERNAL_LINKS_SETTINGS'
@@ -941,6 +944,47 @@ function adminHandoverMachineSettingsRows(rows) {
       && key !== 'VACATION_COUNTDOWN_SETTINGS'
       && key !== 'SPECIAL_DAYS_SETTINGS';
   });
+}
+
+function adminHandoverMachineSettingsSnapshot() {
+  const rows = Array.isArray(app && app.machineSettingsRows) ? app.machineSettingsRows : [];
+  const machineRows = adminHandoverMachineSettingsRows(rows);
+  const brusRows = machineRows.filter((row) => String(row && row.category || '').trim() === 'brus');
+  const fhbRows = machineRows.filter((row) => String(row && row.category || '').trim() === 'fhb_target');
+  const baseRows = machineRows.filter((row) => {
+    const cat = String(row && row.category || '').trim();
+    return cat !== 'brus' && cat !== 'fhb_target';
+  });
+  let summary = null;
+  try {
+    summary = typeof adminMachineBuildInitialStatus === 'function'
+      ? adminMachineBuildInitialStatus(baseRows, brusRows, rows)
+      : null;
+  } catch (err) {
+    summary = null;
+  }
+  const machines = Number(summary && summary.machines || baseRows.length || 0) || 0;
+  const brus = Number(summary && summary.brus || brusRows.length || 0) || 0;
+  const fhb = Number(summary && summary.fhb || fhbRows.length || 0) || 0;
+  const incomplete = Number(summary && summary.incomplete || 0) || 0;
+  const duplicates = Number(summary && summary.duplicates || 0) || 0;
+  const total = machines + brus + fhb;
+  const issues = incomplete + duplicates;
+  return {
+    total,
+    machines,
+    brus,
+    fhb,
+    incomplete,
+    duplicates,
+    state: !rows.length ? 'warn' : (issues ? 'warn' : (total ? 'ok' : 'info')),
+    label: total ? (String(total) + ' řádků') : 'nenačteno',
+    detail: !rows.length
+      ? 'Před předáním načti online nastavení, ať jsou stroje a kalkulačky aktuální.'
+      : (issues
+        ? ('Stroje mají ' + String(issues) + ' položek ke kontrole: neúplné ' + String(incomplete) + ', duplicity ' + String(duplicates) + '.')
+        : ('Frezky/pračka ' + String(machines) + ', brusy ' + String(brus) + ', FHB středy ' + String(fhb) + '.'))
+  };
 }
 
 function adminHandoverActiveAdminCount() {
@@ -1293,6 +1337,7 @@ function adminHandoverReadinessActionForTitle(title) {
   const safeTitle = String(title || '').trim().toLowerCase();
   if (safeTitle.indexOf('synchroniz') !== -1) return { action: 'open-service', label: 'Servis' };
   if (safeTitle.indexOf('online') !== -1) return { action: 'load-machines', label: 'Načíst' };
+  if (safeTitle.indexOf('stroj') !== -1 || safeTitle.indexOf('kalkula') !== -1) return { action: 'open-machines', label: 'Stroje' };
   if (safeTitle.indexOf('rozpis') !== -1) return { action: 'open-rotation', label: 'Rozpis' };
   if (safeTitle.indexOf('provoz') !== -1) return { action: 'open-food', label: 'Provoz' };
   if (safeTitle.indexOf('volno') !== -1) return { action: 'open-vacation', label: 'Dovolená' };
@@ -1394,6 +1439,7 @@ function buildAdminHandoverReadinessSnapshot(monthKey) {
   const adminSessions = adminHandoverAdminSessionSnapshot();
   const reportsSnapshot = adminHandoverReportsSnapshot();
   const announcementSnapshot = adminHandoverAnnouncementSnapshot();
+  const machineSettingsSnapshot = adminHandoverMachineSettingsSnapshot();
   const contactSnapshot = adminHandoverAppContactSnapshot();
   const linksSnapshot = adminHandoverExternalLinksSnapshot();
   const payrollSnapshot = adminHandoverPayrollSnapshot();
@@ -1413,6 +1459,12 @@ function buildAdminHandoverReadinessSnapshot(monthKey) {
       detail: rows.length ? ('Běžných strojů v nastavení: ' + String(machineRows.length) + '.') : 'Načti online data, ať nový správce nepracuje se starým stavem.'
     },
     syncReadiness,
+    {
+      state: machineSettingsSnapshot.state,
+      title: 'Stroje / kalkulačky',
+      value: machineSettingsSnapshot.label,
+      detail: machineSettingsSnapshot.detail
+    },
     {
       state: hasMonthRows ? 'ok' : 'warn',
       title: 'Rozpis',
@@ -1641,6 +1693,7 @@ function buildAdminAccessRulesText() {
   const adminSessions = adminHandoverAdminSessionSnapshot();
   const reportsSnapshot = adminHandoverReportsSnapshot();
   const announcementSnapshot = adminHandoverAnnouncementSnapshot();
+  const machineSettingsSnapshot = adminHandoverMachineSettingsSnapshot();
   const contactSnapshot = adminHandoverAppContactSnapshot();
   const linksSnapshot = adminHandoverExternalLinksSnapshot();
   const payrollSnapshot = adminHandoverPayrollSnapshot();
@@ -1652,6 +1705,7 @@ function buildAdminAccessRulesText() {
     '- Prihlasena admin zarizeni: ' + adminSessions.label,
     '- Reporty chyb pred predanim: ' + reportsSnapshot.label,
     '- Oznameni Dashboard pred predanim: ' + announcementSnapshot.label,
+    '- Stroje a kalkulacky pred predanim: ' + machineSettingsSnapshot.label,
     '- Kontakt aplikace pred predanim: ' + contactSnapshot.label,
     '- Verejne odkazy pred predanim: ' + linksSnapshot.label,
     '- Vyplata pred predanim: ' + payrollSnapshot.label,
@@ -1755,6 +1809,7 @@ function buildAdminHandoverAuditHtml(monthKey) {
   const adminSessions = adminHandoverAdminSessionSnapshot();
   const reportsSnapshot = adminHandoverReportsSnapshot();
   const announcementSnapshot = adminHandoverAnnouncementSnapshot();
+  const machineSettingsSnapshot = adminHandoverMachineSettingsSnapshot();
   const contactSnapshot = adminHandoverAppContactSnapshot();
   const linksSnapshot = adminHandoverExternalLinksSnapshot();
   const payrollSnapshot = adminHandoverPayrollSnapshot();
@@ -1790,6 +1845,14 @@ function buildAdminHandoverAuditHtml(monthKey) {
       detail: reportsSnapshot.detail,
       action: 'open-reports',
       actionLabel: 'Reporty'
+    },
+    {
+      state: machineSettingsSnapshot.state,
+      title: 'Stroje / kalkulačky',
+      value: machineSettingsSnapshot.label,
+      detail: machineSettingsSnapshot.detail,
+      action: 'open-machines',
+      actionLabel: 'Stroje'
     },
     {
       state: announcementSnapshot.state,
@@ -1892,6 +1955,7 @@ function buildAdminHandoverStatusText(monthKey) {
   const adminSessions = adminHandoverAdminSessionSnapshot();
   const reportsSnapshot = adminHandoverReportsSnapshot();
   const announcementSnapshot = adminHandoverAnnouncementSnapshot();
+  const machineSettingsSnapshot = adminHandoverMachineSettingsSnapshot();
   const contactSnapshot = adminHandoverAppContactSnapshot();
   const linksSnapshot = adminHandoverExternalLinksSnapshot();
   const payrollSnapshot = adminHandoverPayrollSnapshot();
@@ -1907,6 +1971,7 @@ function buildAdminHandoverStatusText(monthKey) {
     buildAdminHandoverReadinessText(selectedMonth).trim(),
     '- Online nastavení: ' + (rows.length ? ('načteno ' + rows.length + ' řádků') : 'nenačteno'),
     '- Běžné stroje v nastavení: ' + String(machineRows.length),
+    '- Stroje a kalkulačky: ' + machineSettingsSnapshot.label + ' - ' + machineSettingsSnapshot.detail,
     '- Aktivní admin účet: ' + (permissionStatus.activeAccountId || 'nezjištěn'),
     '- Role administrace: ' + permissionStatus.roleLabel,
     '- Admin odemčen: ' + (permissionStatus.unlocked ? 'ano' : 'ne'),
@@ -1924,6 +1989,7 @@ function buildAdminHandoverStatusText(monthKey) {
     '- Admin účty: ' + String(activeAdmins),
     '- Admin zařízení: ' + adminSessions.label,
     '- Reporty chyb: ' + reportsSnapshot.label,
+    '- Stroje a kalkulačky: ' + machineSettingsSnapshot.label,
     '- Oznámení Dashboard: ' + announcementSnapshot.label,
     '- Kontakt aplikace: ' + contactSnapshot.label,
     '- Veřejné odkazy: ' + linksSnapshot.label,
@@ -2867,6 +2933,16 @@ function getAdminSettingsMapItems() {
     serviceActions.push({ action: 'open-settings-backups', label: 'Zálohy nastavení' });
   }
   const items = [
+    {
+      title: 'Stroje a kalkulačky',
+      scope: 'Nastavení strojů',
+      detail: 'Frezky, pračka, brusy a FHB středy používané ve výpočtech a návazných kontrolách.',
+      visible: 'Viditelné v kalkulačkách, statistikách a kontrolách rozpisu.',
+      check: 'Kalkulacky, nastaveni stroju a zelena synchronizace po ulozeni.',
+      actions: [
+        { action: 'open-machines', label: 'Stroje' }
+      ]
+    },
     {
       title: 'Rozpis a absence',
       scope: 'Administrace / Rozpisy',

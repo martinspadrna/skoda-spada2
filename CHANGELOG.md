@@ -1,3 +1,12 @@
+## RaK 1.2 (1.289)
+
+- Předání správy: stroje a kalkulačky mají samostatný stav v připravenosti, kontrole předání a textovém stavu.
+- Předání správy: souhrn strojů ukazuje frezky/pračku, brusy, FHB středy a případné neúplné nebo duplicitní řádky.
+- Mapa nastavení: přibyla samostatná oblast `Stroje a kalkulačky` s rychlým otevřením Nastavení strojů.
+- Předání správy: technické řádky úplných záloh nastavení se už nepočítají jako běžné stroje.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá snapshot strojů, předávací řádky, filtr záloh a mapu nastavení.
+- Release metadata sjednocena na `RaK 1.2 (1.289)`, technicka verze `1.2.289`, cache `v1.2-1.289`; loader modulu ma cache znacku `1.2.289`.
+
 ## RaK 1.2 (1.288)
 
 - Předání správy: stav veřejného oznámení na Dashboardu je vidět v připravenosti, kontrole předání a textovém stavu předání.
