@@ -1,3 +1,11 @@
+## RaK 1.2 (1.271)
+
+- Predani spravy: pripravenost predani ted kontroluje i verejny kontakt aplikace.
+- Kontrola predani: kontakt aplikace ma vlastni stav a rychlou akci do administrace kontaktu.
+- Predavaci exporty: stav predani a pravidla pristupu obsahuji kontakt aplikace pred predanim.
+- Smoke guard: `app-usage-smoke-v963.js` hlida kontakt v predani, textovych podkladech i smerovani do admin kontaktu.
+- Release metadata sjednocená na `RaK 1.2 (1.271)`, technická verze `1.2.271`, cache `v1.2-1.271`.
+
 ## RaK 1.2 (1.270)
 
 - Predani spravy: ukol Reporty chyb v seznamu pred predanim ted otevre primo panel reportu.

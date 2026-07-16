@@ -529,6 +529,56 @@ function adminHandoverReportsSnapshot() {
   };
 }
 
+function adminHandoverAppContactSnapshot() {
+  let contact = {};
+  try {
+    contact = typeof getRakAppContactSettings === 'function' ? getRakAppContactSettings() : {};
+  } catch (err) {
+    contact = {};
+  }
+  const safe = {
+    name: String(contact && contact.name || '').trim(),
+    phone: String(contact && contact.phone || '').trim(),
+    email: String(contact && contact.email || '').trim()
+  };
+  const filled = ['name', 'phone', 'email'].filter((key) => safe[key]).length;
+  let emailOk = !!safe.email;
+  try {
+    emailOk = typeof isRakAppContactEmailValid === 'function' ? isRakAppContactEmailValid(safe.email) : /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(safe.email);
+  } catch (err) {
+    emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(safe.email);
+  }
+  let stored = false;
+  try {
+    const rows = Array.isArray(app && app.machineSettingsRows) ? app.machineSettingsRows : [];
+    stored = rows.some((row) => {
+      const category = String(row && row.category || '').trim();
+      const key = String(row && row.machine_key || '').trim();
+      let settings = row && row.settings_json && typeof row.settings_json === 'object' ? row.settings_json : null;
+      if (!settings && row && row.settings_json) {
+        try { settings = JSON.parse(String(row.settings_json)); } catch (err) { settings = null; }
+      }
+      return category === 'app_contact_settings'
+        || key === 'APP_CONTACT_SETTINGS'
+        || String(settings && settings.stored_category || '').trim() === 'app_contact_settings'
+        || String(settings && settings.admin_settings_key || '').trim() === 'APP_CONTACT_SETTINGS';
+    });
+  } catch (err) {
+    stored = false;
+  }
+  const complete = filled === 3 && emailOk;
+  return {
+    stored,
+    filled,
+    complete,
+    label: complete ? (stored ? 'vyplněn' : 'výchozí') : (String(filled) + '/3 údajů'),
+    state: complete ? (stored ? 'ok' : 'info') : 'warn',
+    detail: complete
+      ? (stored ? 'Kontakt pro běžné menu je uložený v administraci.' : 'Kontakt používá výchozí údaje, před předáním ověř, že stále platí.')
+      : 'Doplň jméno, telefon a platný e-mail v administraci / Kontakt aplikace.'
+  };
+}
+
 function adminHandoverSyncReadinessSnapshot() {
   let syncStatus = null;
   let hardening = null;
@@ -587,6 +637,7 @@ function adminHandoverReadinessActionForTitle(title) {
   if (safeTitle.indexOf('záloh') !== -1 || safeTitle.indexOf('zaloh') !== -1) return { action: 'open-backups', label: 'Zálohy' };
   if (safeTitle.indexOf('správc') !== -1 || safeTitle.indexOf('spravc') !== -1) return { action: 'open-admin-accounts', label: 'Správci' };
   if (safeTitle.indexOf('report') !== -1 || safeTitle.indexOf('chyb') !== -1) return { action: 'open-reports', label: 'Reporty' };
+  if (safeTitle.indexOf('kontakt') !== -1) return { action: 'open-app-contact', label: 'Kontakt' };
   return { action: 'open-handover', label: 'Předání' };
 }
 
@@ -674,6 +725,7 @@ function buildAdminHandoverReadinessSnapshot(monthKey) {
   const activeAdmins = adminHandoverActiveAdminCount();
   const adminSessions = adminHandoverAdminSessionSnapshot();
   const reportsSnapshot = adminHandoverReportsSnapshot();
+  const contactSnapshot = adminHandoverAppContactSnapshot();
   const syncReadiness = adminHandoverSyncReadinessSnapshot();
   const checks = [
     {
@@ -730,6 +782,12 @@ function buildAdminHandoverReadinessSnapshot(monthKey) {
       title: 'Reporty chyb',
       value: reportsSnapshot.label,
       detail: reportsSnapshot.detail
+    },
+    {
+      state: contactSnapshot.state,
+      title: 'Kontakt',
+      value: contactSnapshot.label,
+      detail: contactSnapshot.detail
     }
   ];
   const okCount = checks.filter((item) => item.state === 'ok').length;
@@ -882,12 +940,14 @@ function buildAdminAccessRulesText() {
   const activeAdmins = adminHandoverActiveAdminCount();
   const adminSessions = adminHandoverAdminSessionSnapshot();
   const reportsSnapshot = adminHandoverReportsSnapshot();
+  const contactSnapshot = adminHandoverAppContactSnapshot();
   const permissionStatus = adminPermissionStatusSnapshot();
   return [
     'Pristup a hesla',
     '- Aktivni admin ucty: ' + String(activeAdmins),
     '- Prihlasena admin zarizeni: ' + adminSessions.label,
     '- Reporty chyb pred predanim: ' + reportsSnapshot.label,
+    '- Kontakt aplikace pred predanim: ' + contactSnapshot.label,
     '- Aktualni role: ' + String(permissionStatus.roleLabel || 'nezjisteno'),
     '- Hlavni admin muze menit spravce, hesla, provoz i rozpisy.',
     '- Dalsi spravce muze menit provoz, rozpisy, absence, zalohy a exporty, ale ne seznam spravcu.',
@@ -986,6 +1046,7 @@ function buildAdminHandoverAuditHtml(monthKey) {
   const activeAdmins = adminHandoverActiveAdminCount();
   const adminSessions = adminHandoverAdminSessionSnapshot();
   const reportsSnapshot = adminHandoverReportsSnapshot();
+  const contactSnapshot = adminHandoverAppContactSnapshot();
   const items = [
     {
       state: rows.length ? 'ok' : 'warn',
@@ -1018,6 +1079,14 @@ function buildAdminHandoverAuditHtml(monthKey) {
       detail: reportsSnapshot.detail,
       action: 'open-reports',
       actionLabel: 'Reporty'
+    },
+    {
+      state: contactSnapshot.state,
+      title: 'Kontakt',
+      value: contactSnapshot.label,
+      detail: contactSnapshot.detail,
+      action: 'open-app-contact',
+      actionLabel: 'Kontakt'
     },
     {
       state: foodOk && overtimeCount ? 'ok' : 'warn',
@@ -1079,6 +1148,7 @@ function buildAdminHandoverStatusText(monthKey) {
   const activeAdmins = adminHandoverActiveAdminCount();
   const adminSessions = adminHandoverAdminSessionSnapshot();
   const reportsSnapshot = adminHandoverReportsSnapshot();
+  const contactSnapshot = adminHandoverAppContactSnapshot();
   const permissionStatus = adminPermissionStatusSnapshot();
   const version = formatRakDisplayVersion((typeof app !== 'undefined' && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : ''));
   return [
@@ -1096,6 +1166,7 @@ function buildAdminHandoverStatusText(monthKey) {
     '- Admin odemčen: ' + (permissionStatus.unlocked ? 'ano' : 'ne'),
     '- Přihlášená admin zařízení: ' + adminSessions.label,
     '- Reporty chyb před předáním: ' + reportsSnapshot.label,
+    '- Kontakt aplikace před předáním: ' + contactSnapshot.label,
     '- Pravidlo hlavního admina: hlavní admin smí měnit správce a hesla.',
     '- Pravidlo dalšího správce: smí měnit provoz a rozpisy, ale ne seznam správců.',
     '- Pravidlo běžného účtu: nesmí měnit rozpis, provoz ani online nastavení.',
@@ -1103,6 +1174,7 @@ function buildAdminHandoverStatusText(monthKey) {
     '- Admin účty: ' + String(activeAdmins),
     '- Admin zařízení: ' + adminSessions.label,
     '- Reporty chyb: ' + reportsSnapshot.label,
+    '- Kontakt aplikace: ' + contactSnapshot.label,
     '- Kantýna / jídelna: ' + (foodLocations ? ('nastaveno ' + foodLocations + ' míst') : 'zkontrolovat'),
     '- Přesčasové termíny: ' + String(overtimeCount),
     '- Dovolené / odstávky: ' + String(vacationCount),
