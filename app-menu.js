@@ -3792,9 +3792,14 @@ function bindAppMenuHandlers(body) {
       if (adminAction === 'revoke-admin-session') {
         if (!(typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins())) return;
         const deviceId = String(target && target.dataset ? target.dataset.adminDeviceId || '' : '').trim();
+        const isCurrentDevice = !!(target && target.dataset && target.dataset.adminCurrentDevice === '1');
         if (!deviceId || typeof rakAdminRevokePersistentSession !== 'function') return;
         const result = await rakAdminRevokePersistentSession(deviceId);
         if (result && result.ok === false) throw (result.error || new Error('Odhlášení zařízení selhalo.'));
+        if (isCurrentDevice || !(typeof rakAdminCanOpenAdmin === 'function' && rakAdminCanOpenAdmin())) {
+          openAppMenu('menu');
+          return;
+        }
         renderAdminMenuBody(body, 'admin-accounts');
         const statusEl = document.getElementById('adminOnlineSaveStatus');
         if (statusEl) statusEl.textContent = 'Zařízení odhlášené online ✓';

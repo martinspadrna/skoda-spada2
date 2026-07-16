@@ -1,3 +1,10 @@
+## RaK 1.2 (1.268)
+
+- Spravci: aktualni admin zarizeni uz neni jen oznacene jako aktivni, ale jde ho z panelu primo odhlasit.
+- Admin relace: po odhlaseni aktualniho zarizeni se administrace na nem hned zamkne a aplikace se vrati do bezneho menu.
+- Smoke guard: `app-usage-smoke-v963.js` hlida odhlaseni aktualniho zarizeni i navrat mimo admin menu.
+- Release metadata sjednocená na `RaK 1.2 (1.268)`, technická verze `1.2.268`, cache `v1.2-1.268`.
+
 ## RaK 1.2 (1.267)
 
 - Predani spravy: pripravenost a kontrola predani ted ukazuji i pocet prihlasenych admin zarizeni.

@@ -1,4 +1,4 @@
-// RaK 1.2 (1.266) - admin opravneni navazane na prihlaseny ucet.
+// RaK 1.2 (1.268) - admin opravneni navazane na prihlaseny ucet.
 const RAK_OWNER_ADMIN_ACCOUNT_ID = '9811';
 const RAK_OWNER_ADMIN_PASSWORD = '772326';
 const RAK_ADMIN_ACCOUNTS_SETTINGS_KEY = 'ADMIN_ACCOUNTS_SETTINGS';
@@ -583,7 +583,7 @@ function buildAdminSessionDevicesHtml(source) {
           '  <td><b>' + escapeHtml(entry.label || 'Zařízení') + '</b><br><small>' + escapeHtml(isCurrent ? 'toto zařízení' : entry.deviceId) + '</small></td>',
           '  <td>' + escapeHtml(entry.accountId || '') + '</td>',
           '  <td>' + escapeHtml(adminSessionDateLabel(entry.lastSeenAt || entry.createdAt)) + '</td>',
-          '  <td>' + (isCurrent ? '<span class="smallText">Aktuální</span>' : '<button type="button" class="appMenuTinyButton" data-admin-action="revoke-admin-session" data-admin-device-id="' + escapeHtml(entry.deviceId || '') + '">Odhlásit</button>') + '</td>',
+          '  <td>' + (isCurrent ? '<button type="button" class="appMenuTinyButton" data-admin-action="revoke-admin-session" data-admin-current-device="1" data-admin-device-id="' + escapeHtml(entry.deviceId || '') + '">Odhlásit toto</button>' : '<button type="button" class="appMenuTinyButton" data-admin-action="revoke-admin-session" data-admin-device-id="' + escapeHtml(entry.deviceId || '') + '">Odhlásit</button>') + '</td>',
           '</tr>'
         ].join('');
       }).join('')
