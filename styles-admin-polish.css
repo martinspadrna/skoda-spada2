@@ -1824,6 +1824,26 @@
   grid-template-columns:repeat(4,minmax(0,1fr)) !important;
   gap:8px !important;
 }
+.adminHandoverExportStatus{
+  display:grid !important;
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  gap:7px !important;
+}
+.adminHandoverExportStatus span{
+  display:block !important;
+  padding:7px 8px !important;
+  border-radius:8px !important;
+  background:rgba(0,0,0,.14) !important;
+  border:1px solid rgba(255,255,255,.08) !important;
+  color:rgba(235,255,240,.72) !important;
+  font-size:11px !important;
+  font-weight:800 !important;
+  line-height:1.15 !important;
+}
+.adminHandoverExportStatus b{
+  color:#b8d7ff !important;
+  font-weight:950 !important;
+}
 .adminHandoverExportGrid .appMenuAction{
   width:100% !important;
   min-height:36px !important;
@@ -2126,6 +2146,9 @@
   }
   .adminHandoverExportGrid{
     grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  }
+  .adminHandoverExportStatus{
+    grid-template-columns:1fr !important;
   }
   .adminManualActionRow{
     grid-template-columns:1fr !important;

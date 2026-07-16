@@ -935,7 +935,8 @@ function buildAdminNextStepsHtml(monthKey) {
   ].join('');
 }
 
-function buildAdminHandoverExportsHtml() {
+function buildAdminHandoverExportsHtml(monthKey) {
+  const monthLabel = String(monthKey || getAdminSelectedMonthKey() || '').trim() || 'nevybrán';
   const actions = [
     { action: 'download-handover-package', label: 'Balíček' },
     { action: 'download-admin-manual', label: 'Příručka' },
@@ -946,6 +947,11 @@ function buildAdminHandoverExportsHtml() {
     '<div class="adminHandoverExports">',
     '  <div class="appMenuSubTitle">Předávací podklady</div>',
     '  <div class="smallText uMb10">Rychlé stažení podkladů pro nového správce. Tlačítka jen vytvoří textový soubor, nic neukládají.</div>',
+    '  <div class="adminHandoverExportStatus">',
+    '    <span>Měsíc: <b>' + escapeHtml(monthLabel) + '</b></span>',
+    '    <span>Zdroj: <b>aktuální stav</b></span>',
+    '    <span>Uložení: <b>beze změn</b></span>',
+    '  </div>',
     '  <div class="adminHandoverExportGrid">',
     actions.map((item, index) => '<button type="button" class="appMenuAction' + (index === 0 ? ' isActive' : '') + '" data-admin-action="' + escapeHtml(item.action) + '">' + escapeHtml(item.label) + '</button>').join(''),
     '  </div>',
@@ -1439,7 +1445,7 @@ function renderAdminMenuBody(body, section) {
     '  </div>',
     buildAdminPermissionStatusHtml(),
     buildAdminNextStepsHtml(monthKey),
-    buildAdminHandoverExportsHtml(),
+    buildAdminHandoverExportsHtml(monthKey),
     buildAdminHandoverChecklistHtml(monthKey),
     '  <div class="adminMenuSections">',
     buildAdminMenuSectionHtml('1. Provoz před rozpisem', 'Co musí sedět před generováním dalšího měsíce.', [

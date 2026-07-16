@@ -1,3 +1,10 @@
+## RaK 1.2 (1.238)
+
+- Administrace / Predavaci podklady: blok na admin uvodu nově ukazuje vybrany mesic, zdroj `aktualni stav` a potvrzeni, ze export nic neuklada.
+- Predani spravy: spravce pred stazenim vidi, k jakemu mesici a stavu se podklady skladaji, takze nehrozi zameneni se starsim exportem.
+- Smoke guard: `app-usage-smoke-v963.js` hlida stavovy radek predavacich podkladu a jeho responsive styl.
+- Release metadata sjednocená na `RaK 1.2 (1.238)`, technická verze `1.2.238`, cache `v1.2-1.238`.
+
 ## RaK 1.2 (1.237)
 
 - Administrace: na uvod pridany admin-only blok `Predavaci podklady` s rychlym stazenim balicku predani, prirucky, mesicniho postupu a mapy nastaveni.
