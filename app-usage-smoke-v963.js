@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.274) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.276) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -22,6 +22,7 @@ const bridge = read('supabase-bridge.js');
 const gamesArcadeJs = read('games-arcade.js');
 const gamesProfileJs = read('games-profile.js');
 const adminUnlockJs = read('app-admin-unlock.js');
+const adminRotationJs = read('admin-rotation.js');
 const appearanceThemeJs = read('appearance-theme.js');
 const ui = read('ui.js') + '\n' + read('app-runtime-guards.js') + '\n' + read('app-health-audits.js') + '\n' + read('app-postload-audits.js') + '\n' + read('app-pwa-connectivity.js') + '\n' + read('games-engine.js') + '\n' + read('games-profile.js') + '\n' + appearanceThemeJs + '\n' + read('admin-service-usage.js') + '\n' + read('admin-rotation.js') + '\n' + read('app-navigation.js') + '\n' + read('app-bottom-nav.js') + '\n' + read('app-menu.js') + '\n' + read('app-actions.js') + '\n' + read('app-boot-selftest.js') + '\n' + read('app-rotation-sync.js') + '\n' + read('app-excel-import.js') + '\n' + read('app-rotation-controls.js') + '\n' + read('app-admin-unlock.js') + '\n' + read('app-home-boot.js') + '\n' + read('app-init.js');
 const sql = read('assets/docs/sql/supabase_app_usage_v963.sql');
@@ -225,12 +226,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.274)',
-  appLabel: 'RaK 1.2 (1.274)',
-  packageVersion: '1.2.274',
-  cacheVersion: 'v1.2-1.274',
+  displayVersion: '1.2 (1.276)',
+  appLabel: 'RaK 1.2 (1.276)',
+  packageVersion: '1.2.276',
+  cacheVersion: 'v1.2-1.276',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.274)',
+  changelogHeader: '## RaK 1.2 (1.276)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -339,8 +340,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.274)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.274'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.276)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.276'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -348,7 +349,7 @@ function assertReleaseMetadataContractV199() {
   assertIncludes(bridge, `client.channel('${contract.realtimeChannel}')`, 'Supabase realtime kanál není sjednocený s 1.105');
   assertIncludes(bridge, `realtimeChannel: '${contract.realtimeChannel}'`, 'Supabase diagnostika realtime kanálu není sjednocená s 1.105');
   assert(changelogMd.startsWith(contract.changelogHeader), 'CHANGELOG.md musí začínat aktuálním buildem 1.105');
-  assertIncludes(changelogMd, `technická verze \`${contract.packageVersion}\``, 'CHANGELOG.md musí uvádět technickou verzi 1.2.115');
+  assertIncludes(changelogMd, `technicka verze \`${contract.packageVersion}\``, 'CHANGELOG.md musi uvadet technickou verzi');
   assertIncludes(changelogMd, `cache \`${contract.cacheVersion}\``, 'CHANGELOG.md musí uvádět cache verzi 1.105');
   assertIncludes(exportJs, `version: '${contract.displayVersion}'`, 'export.js smoke report musí nést aktuální display verzi');
   assertIncludes(exportJs, `version: String(window.APP_VERSION || '${contract.displayVersion}')`, 'export.js fallbacky musí používat aktuální display verzi');
@@ -1475,13 +1476,15 @@ function assertAdminAccountLoginContractV1141() {
   assertIncludes(ui, "adminAction === 'load-admin-accounts'", 'Admin menu musi umet nacist seznam spravcu online');
   assertIncludes(ui, 'adminAccountsRefreshStatus(body)', 'Zmeny ve formulari spravcu musi hned prepocitat stav');
   assertIncludes(adminUnlockJs, 'Hlavni admin', 'Sprava spravcu musi jasne oznacit hlavni admin ucet');
-  assertIncludes(adminUnlockJs, 'Dalsi spravci', 'Sprava spravcu musi jasne oddelit dalsi spravce');
+  assertIncludes(adminUnlockJs, 'Nizsi admini', 'Sprava spravcu musi jasne oddelit nizsi adminy');
   assertIncludes(adminUnlockJs, 'Stav spravcu', 'Sprava spravcu musi mit jasny stavovy souhrn');
   assertIncludes(adminUnlockJs, 'function buildAdminAccountsSafetyHtml', 'Sprava spravcu musi mit bezpecnostni souhrn pro predani');
   assertIncludes(adminUnlockJs, 'Bezpecnost pristupu', 'Sprava spravcu musi jasne pojmenovat bezpecnost pristupu');
   assertIncludes(adminUnlockJs, 'Predavaci exporty hesla nestahuji', 'Predavaci podklady nesmi vytahovat admin hesla');
   assertIncludes(adminUnlockJs, 'Kontrola radku', 'Sprava spravcu musi upozornovat na nedokoncene nebo duplicitni radky');
-  assertIncludes(adminUnlockJs, 'Muzou spravovat provoz a rozpisy, ale nemuzou menit seznam spravcu.', 'Dalsi spravci nesmi byt popsani jako owner admini');
+  assertIncludes(adminUnlockJs, 'Muzou spravovat pracovni casti administrace, ale nemuzou menit hesla ani dalsi adminy.', 'Nizsi admini nesmi byt popsani jako owner admini');
+  assertIncludes(ui, 'Provoz, rozpisy, absence, zálohy, exporty a nastavení aplikace.', 'Prehled opravneni musi rikat, ze nizsi admin muze menit pracovni casti aplikace');
+  assertIncludes(ui, 'Nizsi admin muze menit provoz, rozpisy, absence, zalohy, exporty a nastaveni aplikace, ale ne seznam spravcu ani hesla.', 'Predavaci text musi rikat, ze nizsi admin smi vse krome spravcu a hesel');
   assertIncludes(ui, "owner ? 'Hlavní admin' : 'Nižší admin'", 'Admin uvod musi nizsiho admina pojmenovat srozumitelne');
   assertIncludes(ui, 'ale ne hesla ani další adminy', 'Nizsi admin musi mit jasne uvedene omezeni hesel a dalsich adminu');
   assertIncludes(ui, 'Seznam správců může měnit jen hlavní admin.', 'Prime otevreni spravcu bez owner role musi ukazat jasne vysvetleni');
@@ -1489,10 +1492,17 @@ function assertAdminAccountLoginContractV1141() {
   assertIncludes(ui, 'Provoz před rozpisem', 'Admin menu musi byt rozdelene do prehlednych provoznich skupin');
   assertIncludes(ui, 'buildAdminMenuSectionHtml', 'Admin menu musi skladat prehledne skupiny pres spolecny helper');
   assertIncludes(ui, 'adminMenuSections', 'Admin uvod musi mit zabalitelne skupiny spravcovskych oblasti');
-  assertIncludes(ui, "if (ownerAccess) serviceActions.unshift({ action: 'open-admin-accounts', label: 'Správci' });", 'Mapa nastaveni musi ukazat Spravce jen hlavnimu adminovi');
   assertIncludes(ui, 'Hesla a další adminy spravuje jen hlavní admin.', 'Admin menu musi nizsimu adminovi vysvetlit, proc nema spravu hesel');
   assertIncludes(bridge, "category === 'admin_accounts_settings'", 'Supabase compatibility save musi povolit specialni kategorii spravcu');
   assertIncludes(ui, "cat !== 'admin_accounts_settings'", 'Specialni radek spravcu nesmi byt v bezne tabulce stroju');
+  assertIncludes(ui, "serviceActions.unshift({ action: 'open-admin-accounts'", 'Mapa nastaveni musi ukazat Spravce jen hlavnimu adminovi');
+  assertIncludes(ui, "serviceActions.push({ action: 'open-settings-backups'", 'Mapa nastaveni musi ukazat zalohy nastaveni jen hlavnimu adminovi');
+  assertIncludes(ui, "const RAK_FULL_SETTINGS_BACKUP_CATEGORY = 'admin_full_settings_backup'", 'Uplna zaloha nastaveni musi mit vlastni kategorii');
+  assertIncludes(ui, "adminAction === 'create-full-settings-backup'", 'Hlavni admin musi umet vytvorit uplnou zalohu nastaveni');
+  assertIncludes(ui, "adminAction === 'restore-full-settings-backup'", 'Hlavni admin musi umet obnovit uplnou zalohu nastaveni');
+  assertIncludes(ui, "v === 'admin-settings-backups' && !(typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins())", 'Nizsi admin nesmi otevrit uplne zalohy nastaveni primo');
+  assertIncludes(bridge, "category === 'admin_full_settings_backup'", 'Supabase compatibility save musi povolit uplne zalohy nastaveni');
+  assertIncludes(adminRotationJs, "cat !== 'admin_full_settings_backup'", 'Uplna zaloha nastaveni nesmi byt v bezne tabulce stroju');
   assertIncludes(stylesAdminPolishCss, '.adminAccountsStatusGrid', 'Sprava spravcu musi mit vlastni admin-only stavovy grid');
   assertIncludes(stylesAdminPolishCss, '.adminAccountsSafetyGrid', 'Sprava spravcu musi mit vlastni admin-only bezpecnostni grid');
   assertIncludes(stylesAdminPolishCss, '.adminAccountsRoleOverview', 'Sprava spravcu musi mit vlastni admin-only prehled roli');

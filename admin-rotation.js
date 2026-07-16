@@ -1596,7 +1596,9 @@ function adminMachineIsEditableMachineRow(row) {
     && cat !== 'food_schedule'
     && cat !== 'vacation_countdown_settings'
     && cat !== 'admin_accounts_settings'
+    && cat !== 'admin_full_settings_backup'
     && key !== 'ADMIN_ACCOUNTS_SETTINGS'
+    && key.indexOf('ADMIN_FULL_SETTINGS_BACKUP_') !== 0
     && key !== 'VACATION_COUNTDOWN_SETTINGS'
     && cat !== ADMIN_ROTATION_OVERTIME_SETTINGS_CATEGORY
     && !(typeof rakAdminIsAccountsSettingsRow === 'function' && rakAdminIsAccountsSettingsRow(row))

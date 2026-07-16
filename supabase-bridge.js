@@ -1990,7 +1990,9 @@
       || category === 'special_days_settings'
       || key === 'SPECIAL_DAYS_SETTINGS'
       || category === 'admin_accounts_settings'
-      || key === 'ADMIN_ACCOUNTS_SETTINGS';
+      || key === 'ADMIN_ACCOUNTS_SETTINGS'
+      || category === 'admin_full_settings_backup'
+      || key.indexOf('ADMIN_FULL_SETTINGS_BACKUP_') === 0;
   }
 
   function makeMachineSettingsRpcPayload(payload) {

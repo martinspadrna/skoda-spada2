@@ -371,6 +371,224 @@ async function restoreAdminRotationBackupFromSupabase(backupId) {
   return result;
 }
 
+const RAK_FULL_SETTINGS_BACKUP_CATEGORY = 'admin_full_settings_backup';
+const RAK_FULL_SETTINGS_BACKUP_KEY_PREFIX = 'ADMIN_FULL_SETTINGS_BACKUP_';
+
+function adminFullSettingsBackupJson(row) {
+  if (row && row.settings_json && typeof row.settings_json === 'object') return row.settings_json;
+  try {
+    return row && row.settings_json ? JSON.parse(String(row.settings_json)) : {};
+  } catch (err) {
+    return {};
+  }
+}
+
+function adminIsFullSettingsBackupRow(row) {
+  const settings = adminFullSettingsBackupJson(row);
+  const category = String(row && row.category || '').trim();
+  const key = String(row && row.machine_key || '').trim();
+  return category === RAK_FULL_SETTINGS_BACKUP_CATEGORY
+    || key.indexOf(RAK_FULL_SETTINGS_BACKUP_KEY_PREFIX) === 0
+    || String(settings && settings.stored_category || '').trim() === RAK_FULL_SETTINGS_BACKUP_CATEGORY
+    || String(settings && settings.type || '').trim() === RAK_FULL_SETTINGS_BACKUP_CATEGORY
+    || String(settings && settings.admin_settings_key || '').trim().indexOf(RAK_FULL_SETTINGS_BACKUP_KEY_PREFIX) === 0;
+}
+
+function adminCloneFullSettingsRow(row) {
+  const source = row && typeof row === 'object' ? row : {};
+  const clone = {
+    machine_key: String(source.machine_key || '').trim(),
+    machine_code: String(source.machine_code || '').trim(),
+    machine_index: String(source.machine_index || '').trim(),
+    label: String(source.label || '').trim(),
+    category: String(source.category || '').trim(),
+    cycle_time: source.cycle_time ?? '',
+    speed: source.speed ?? '',
+    dress_time: source.dress_time ?? '',
+    dress_count: source.dress_count ?? '',
+    settings_json: adminFullSettingsBackupJson(source)
+  };
+  return clone.machine_key ? clone : null;
+}
+
+function adminFullSettingsBackupRows() {
+  const rows = Array.isArray(app && app.machineSettingsRows) ? app.machineSettingsRows : [];
+  return rows.filter(adminIsFullSettingsBackupRow);
+}
+
+function adminFullSettingsSourceRows(rows) {
+  return (Array.isArray(rows) ? rows : [])
+    .filter((row) => !adminIsFullSettingsBackupRow(row))
+    .map(adminCloneFullSettingsRow)
+    .filter(Boolean);
+}
+
+function adminFullSettingsBackupTimestampKey(value) {
+  return String(value || new Date().toISOString()).replace(/[^0-9A-Za-z]/g, '').slice(0, 32);
+}
+
+function makeAdminFullSettingsBackupRow(sourceRows) {
+  const now = new Date();
+  const createdAt = now.toISOString();
+  const key = RAK_FULL_SETTINGS_BACKUP_KEY_PREFIX + adminFullSettingsBackupTimestampKey(createdAt);
+  const activeAccount = typeof rakAdminGetActiveAccountId === 'function' ? rakAdminGetActiveAccountId() : '';
+  const rows = adminFullSettingsSourceRows(sourceRows);
+  return {
+    machine_key: key,
+    machine_code: 'ADMIN',
+    machine_index: adminFullSettingsBackupTimestampKey(createdAt),
+    label: 'Úplná záloha nastavení ' + now.toLocaleString('cs-CZ'),
+    category: RAK_FULL_SETTINGS_BACKUP_CATEGORY,
+    cycle_time: '',
+    speed: '',
+    dress_time: '',
+    dress_count: '',
+    settings_json: {
+      type: RAK_FULL_SETTINGS_BACKUP_CATEGORY,
+      createdAt,
+      createdBy: activeAccount,
+      appVersion: String((typeof app !== 'undefined' && app && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '') || '').trim(),
+      rowCount: rows.length,
+      rows
+    }
+  };
+}
+
+function adminFullSettingsBackupDateLabel(value) {
+  if (!value) return '—';
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return String(value);
+  try {
+    return date.toLocaleString('cs-CZ', { dateStyle: 'short', timeStyle: 'short' });
+  } catch (err) {
+    return date.toLocaleString('cs-CZ');
+  }
+}
+
+function adminFullSettingsBackupList() {
+  return adminFullSettingsBackupRows().map((row) => {
+    const settings = adminFullSettingsBackupJson(row);
+    const rows = Array.isArray(settings && settings.rows) ? settings.rows : [];
+    return {
+      row,
+      id: String(row && row.machine_key || settings && settings.admin_settings_key || '').trim(),
+      label: String(row && row.label || '').trim() || 'Úplná záloha nastavení',
+      createdAt: String(settings && settings.createdAt || '').trim(),
+      createdBy: String(settings && settings.createdBy || '').trim(),
+      rowCount: Number(settings && (settings.rowCount || rows.length)) || rows.length,
+      appVersion: String(settings && settings.appVersion || '').trim()
+    };
+  }).filter((item) => item.id).sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+}
+
+function buildAdminFullSettingsBackupStatusHtml() {
+  const canManage = typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins();
+  const backups = adminFullSettingsBackupList();
+  const latest = backups[0] || null;
+  const sourceCount = adminFullSettingsSourceRows(Array.isArray(app && app.machineSettingsRows) ? app.machineSettingsRows : []).length;
+  const items = [
+    { state: canManage ? 'ok' : 'warn', title: 'Přístup', value: canManage ? 'hlavní admin' : 'zamčeno', detail: canManage ? 'Vytvořit a obnovit může jen účet 9811.' : 'Nižší admin tuhle obnovu nespustí.' },
+    { state: backups.length ? 'ok' : 'info', title: 'Zálohy', value: String(backups.length), detail: backups.length ? 'Online zálohy nastavení jsou načtené.' : 'Zatím není načtená žádná úplná záloha nastavení.' },
+    { state: latest ? 'ok' : 'info', title: 'Nejnovější', value: latest ? adminFullSettingsBackupDateLabel(latest.createdAt) : '—', detail: latest ? (String(latest.rowCount) + ' řádků nastavení.') : 'Po vytvoření se tady ukáže poslední bod obnovy.' },
+    { state: sourceCount ? 'info' : 'warn', title: 'Aktuální stav', value: String(sourceCount) + ' řádků', detail: 'Do nové zálohy se vezmou všechna aktuálně načtená nastavení.' }
+  ];
+  return [
+    '<div class="adminRotationBackupStatus adminFullSettingsBackupStatus">',
+    '  <div class="appMenuSubTitle">Stav záloh nastavení</div>',
+    '  <div class="smallText uMb10">Úplná záloha je pojistka pro hlavního admina, kdyby jiný admin rozbil provozní nastavení.</div>',
+    '  <div class="adminRotationBackupStatusGrid">',
+    items.map(adminRotationBackupStatusItemHtml).join(''),
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
+function buildAdminFullSettingsBackupSafetyHtml() {
+  return [
+    '<div class="adminRotationBackupSafety adminFullSettingsBackupSafety">',
+    '  <div class="appMenuSubTitle">Bezpečnost obnovy</div>',
+    '  <div class="smallText uMb10">Obnova přepíše uložená nastavení hodnotami ze zálohy. Používej ji až po kontrole, že vybraná záloha je správný bod návratu.</div>',
+    '  <div class="adminRotationBackupSafetyGrid">',
+    adminRotationBackupSafetyItemHtml('Jen hlavní admin', '9811', 'Nižší admini zálohu nastavení nevytvoří ani neobnoví.', 'warn'),
+    adminRotationBackupSafetyItemHtml('Rozsah', 'všechna nastavení', 'Stroje, kantýna, přesčasy, dovolené, odkazy, kontakt, výplata i správci.', 'info'),
+    adminRotationBackupSafetyItemHtml('Po obnově', 'načíst a ověřit', 'Po obnově otevři dotčené sekce a zkontroluj běžnou aplikaci.', 'info'),
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
+function buildAdminFullSettingsBackupsHtml() {
+  const backups = adminFullSettingsBackupList();
+  if (!(typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins())) {
+    return '<div class="adminAccountsReadonlyNotice"><b>Úplné zálohy nastavení může měnit jen hlavní admin.</b><span>Nižší admin může spravovat pracovní části aplikace, ale nemůže vracet celé nastavení.</span></div>';
+  }
+  if (!backups.length) {
+    return '<div class="smallText uMt8">Zatím není načtená žádná úplná záloha nastavení. Nejdřív klikni na Načíst online nebo Vytvořit zálohu.</div>';
+  }
+  const rows = backups.map((backup) => [
+    '<tr>',
+    '  <td>' + escapeHtml(adminFullSettingsBackupDateLabel(backup.createdAt)) + '<div class="smallText">' + escapeHtml(String(backup.rowCount) + ' řádků' + (backup.appVersion ? (' · ' + backup.appVersion) : '') + (backup.createdBy ? (' · účet ' + backup.createdBy) : '')) + '</div></td>',
+    '  <td><button type="button" class="appMenuAction" data-admin-action="restore-full-settings-backup" data-settings-backup-id="' + escapeHtml(backup.id) + '">Obnovit</button></td>',
+    '</tr>'
+  ].join('')).join('');
+  return [
+    '<div class="tableWrap appMenuTableWrap uMt8">',
+    '  <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense">',
+    '    <thead><tr><th>Záloha nastavení</th><th>Akce</th></tr></thead>',
+    '    <tbody>' + rows + '</tbody>',
+    '  </table>',
+    '</div>'
+  ].join('');
+}
+
+async function loadAdminFullSettingsBackupsFromSupabase() {
+  if (!(window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.loadMachineSettings === 'function')) return { ok: false, reason: 'missing-bridge' };
+  app.machineSettingsRows = await window.RotationSupabaseBridge.loadMachineSettings();
+  return { ok: true, backups: adminFullSettingsBackupList() };
+}
+
+async function createAdminFullSettingsBackupOnline() {
+  if (!(typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins())) return { ok: false, reason: 'not-allowed' };
+  if (!(window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.loadMachineSettings === 'function' && typeof window.RotationSupabaseBridge.saveMachineSettings === 'function')) return { ok: false, reason: 'missing-bridge' };
+  const loadedRows = await window.RotationSupabaseBridge.loadMachineSettings();
+  const currentRows = Array.isArray(loadedRows) ? loadedRows : [];
+  app.machineSettingsRows = currentRows;
+  const backupRow = makeAdminFullSettingsBackupRow(currentRows);
+  const nextRows = currentRows.concat([backupRow]);
+  const result = await window.RotationSupabaseBridge.saveMachineSettings(nextRows);
+  if (result && result.ok === false) return result;
+  app.machineSettingsRows = nextRows;
+  return { ok: true, backup: backupRow, result };
+}
+
+async function restoreAdminFullSettingsBackupOnline(backupId) {
+  if (!(typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins())) return { ok: false, reason: 'not-allowed' };
+  if (!(window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.loadMachineSettings === 'function' && typeof window.RotationSupabaseBridge.saveMachineSettings === 'function')) return { ok: false, reason: 'missing-bridge' };
+  const loadedRows = await window.RotationSupabaseBridge.loadMachineSettings();
+  const currentRows = Array.isArray(loadedRows) ? loadedRows : [];
+  app.machineSettingsRows = currentRows;
+  const backup = adminFullSettingsBackupList().find((item) => item.id === String(backupId || '').trim());
+  const backupSettings = backup ? adminFullSettingsBackupJson(backup.row) : null;
+  const restoredRows = backupSettings && Array.isArray(backupSettings.rows)
+    ? backupSettings.rows.map(adminCloneFullSettingsRow).filter(Boolean)
+    : [];
+  if (!backup || !restoredRows.length) return { ok: false, reason: 'missing-backup' };
+  const backupRows = adminFullSettingsBackupRows().map(adminCloneFullSettingsRow).filter(Boolean);
+  const merged = new Map();
+  restoredRows.concat(backupRows).forEach((row) => {
+    if (row && row.machine_key) merged.set(String(row.machine_key), row);
+  });
+  const nextRows = Array.from(merged.values());
+  const result = await window.RotationSupabaseBridge.saveMachineSettings(nextRows);
+  if (result && result.ok === false) return result;
+  app.machineSettingsRows = nextRows;
+  try { if (typeof updateDashboard === 'function') updateDashboard(); } catch (err) {}
+  try { if (typeof updateFoodTile === 'function') updateFoodTile(); } catch (err) {}
+  try { if (typeof renderFoodSchedulePage === 'function') renderFoodSchedulePage(); } catch (err) {}
+  try { if (typeof renderStatsPanel === 'function') renderStatsPanel(); } catch (err) {}
+  return { ok: true, backup, result };
+}
+
 function adminGuideHasMonthRows(month) {
   const hardRows = Array.isArray(month && month.hard && month.hard.rows) ? month.hard.rows : [];
   const softRows = Array.isArray(month && month.soft && month.soft.rows) ? month.soft.rows : [];
@@ -1071,7 +1289,7 @@ function buildAdminAccessRulesHtml() {
     '  <div class="smallText uMb10">Předávací přehled rolí. Běžný uživatel odsud nic neuvidí a žádná změna se tady sama neukládá.</div>',
     '  <div class="adminAccessRulesGrid">',
     adminAccessRuleItemHtml('Hlavní admin', 'Správci, hesla, provoz i rozpisy.', 'Jediný smí určit další správce.', 'owner'),
-    adminAccessRuleItemHtml('Další správce', 'Provoz, rozpisy, absence, zálohy a exporty.', 'Nesmí měnit seznam správců ani jejich hesla.', 'admin'),
+    adminAccessRuleItemHtml('Nižší admin', 'Provoz, rozpisy, absence, zálohy, exporty a nastavení aplikace.', 'Nesmí měnit seznam správců ani jejich hesla.', 'admin'),
     adminAccessRuleItemHtml('Běžný účet', 'Používá jen běžnou aplikaci.', 'Nesmí měnit rozpis, provoz ani online nastavení.', 'user'),
     '  </div>',
     '</div>'
@@ -1096,7 +1314,7 @@ function buildAdminAccessRulesText() {
     '- Vyplata pred predanim: ' + payrollSnapshot.label,
     '- Aktualni role: ' + String(permissionStatus.roleLabel || 'nezjisteno'),
     '- Hlavni admin muze menit spravce, hesla, provoz i rozpisy.',
-    '- Dalsi spravce muze menit provoz, rozpisy, absence, zalohy a exporty, ale ne seznam spravcu.',
+    '- Nizsi admin muze menit provoz, rozpisy, absence, zalohy, exporty a nastaveni aplikace, ale ne seznam spravcu ani hesla.',
     '- Bezny ucet nesmi menit rozpis, provoz ani online nastaveni.',
     '- Predavaci exporty nestahuji hesla. Hesla se nastavuji jen v administraci / Spravci.',
     ''
@@ -1336,7 +1554,7 @@ function buildAdminHandoverStatusText(monthKey) {
     '- Veřejné odkazy před předáním: ' + linksSnapshot.label,
     '- Výplata před předáním: ' + payrollSnapshot.label,
     '- Pravidlo hlavního admina: hlavní admin smí měnit správce a hesla.',
-    '- Pravidlo dalšího správce: smí měnit provoz a rozpisy, ale ne seznam správců.',
+    '- Pravidlo nižšího admina: smí měnit provoz, rozpisy, absence, zálohy, exporty a nastavení aplikace, ale ne správce a hesla.',
     '- Pravidlo běžného účtu: nesmí měnit rozpis, provoz ani online nastavení.',
     buildAdminAccessRulesText().trim(),
     '- Admin účty: ' + String(activeAdmins),
@@ -2152,7 +2370,7 @@ function buildAdminManualHtml(monthKey) {
       'Předání dalšímu správci',
       ownerCanManage
         ? 'Hlavní admin může přidat další správce, nastavit jim heslo a potom projít panel Předání správy.'
-        : 'Další správce může přidat jen hlavní admin účet. Ostatní admini mohou používat pracovní části administrace.',
+        : 'Nižší admin může používat pracovní části administrace. Další adminy může přidat jen hlavní admin účet.',
       [
         { action: 'open-handover', label: 'Předání správy' }
       ].concat(ownerCanManage ? [{ action: 'open-admin-accounts', label: 'Správci' }] : []),
@@ -2257,7 +2475,7 @@ function buildAdminSettingsMapStatusHtml(items) {
     adminSettingsMapStatusItemHtml('Kontroly', String(checkCount) + '/' + String(list.length), 'Kazda oblast ma rikat, co overit po ulozeni.', checkCount === list.length && list.length ? 'ok' : 'warn'),
     adminSettingsMapStatusItemHtml('Rychle akce', String(actionCount), 'Tlacitka jen oteviraji admin sekce, sama nic neukladaji.', actionCount ? 'ok' : 'warn'),
     adminSettingsMapStatusItemHtml('Dopad pro lidi', String(publicCount), adminOnlyCount ? String(adminOnlyCount) + ' oblasti jsou jen pro spravce.' : 'Vsechny oblasti mohou mit verejny dopad.', publicCount ? 'info' : 'warn'),
-    adminSettingsMapStatusItemHtml('Spravci', ownerAccess ? 'owner' : 'bezny admin', ownerAccess ? 'Tento ucet muze menit dalsi spravce.' : 'Spravce smi menit provoz, ale ne seznam spravcu.', ownerAccess ? 'ok' : 'info'),
+    adminSettingsMapStatusItemHtml('Spravci', ownerAccess ? 'owner' : 'nizsi admin', ownerAccess ? 'Tento ucet muze menit dalsi spravce.' : 'Nizsi admin smi menit pracovni casti aplikace, ale ne spravce ani hesla.', ownerAccess ? 'ok' : 'info'),
     '  </div>',
     '</div>'
   ].join('');
@@ -2270,7 +2488,10 @@ function getAdminSettingsMapItems() {
     { action: 'open-reports', label: 'Reporty' },
     { action: 'open-service', label: 'Servis' }
   ];
-  if (ownerAccess) serviceActions.unshift({ action: 'open-admin-accounts', label: 'Správci' });
+  if (ownerAccess) {
+    serviceActions.unshift({ action: 'open-admin-accounts', label: 'Správci' });
+    serviceActions.push({ action: 'open-settings-backups', label: 'Zálohy nastavení' });
+  }
   return [
     {
       title: 'Rozpis a absence',
@@ -2374,7 +2595,7 @@ function buildAdminSettingsMapText() {
     '- Tenhle soubor je jen mapa administrace. Nic sám nemění ani neukládá.',
     '- Změny dělej jen v administraci a ukládej v konkrétní sekci.',
     '- Běžný uživatel nemá mít možnost měnit rozpis, provoz ani nastavení.',
-    '- Správci: ' + (ownerAccess ? 'hlavní admin může měnit další správce.' : 'běžný admin nemůže měnit seznam správců.'),
+    '- Správci: ' + (ownerAccess ? 'hlavní admin může měnit další správce.' : 'nižší admin nemůže měnit seznam správců ani hesla.'),
     '',
     'Oblasti'
   ];
@@ -2420,7 +2641,7 @@ function buildAdminManualText(monthKey) {
   const generatedAt = new Date().toLocaleString('cs-CZ');
   const ownerLine = (typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins())
     ? 'Jsi hlavní admin: můžeš přidat další správce a nastavit jim heslo.'
-    : 'Další správce může přidat jen hlavní admin účet.';
+    : 'Dalšího admina může přidat jen hlavní admin účet. Nižší admin může spravovat pracovní části aplikace.';
   return [
     'RaK - Příručka správce',
     'Verze: ' + version,
@@ -2501,6 +2722,7 @@ function renderAdminMenuBody(body, section) {
     : 'Připojení, reporty a synchronizace. Hesla a další adminy spravuje jen hlavní admin.';
   if (typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins()) {
     adminServiceActions.unshift({ action: 'open-admin-accounts', label: 'Správci' });
+    adminServiceActions.push({ action: 'open-settings-backups', label: 'Zálohy nastavení' });
   }
 
   const homeHtml = [
@@ -2758,6 +2980,24 @@ function renderAdminMenuBody(body, section) {
     '</div>'
   ].join('');
 
+  const fullSettingsBackupsHtml = [
+    '<div class="appMenuCard appMenuAdminCard adminFullSettingsBackupsCard">',
+    '  <div class="appMenuCardTitle">Zálohy nastavení</div>',
+    '  <div class="appMenuText">',
+    '    <div>Tady si hlavní admin vytvoří bod návratu pro všechna online nastavení aplikace. Slouží jako pojistka, když jiný admin něco rozbije.</div>',
+    '    <div class="smallText" id="adminOnlineSaveStatus">Vytvořit nebo obnovit může jen hlavní admin účet.</div>',
+    '  </div>',
+    buildAdminFullSettingsBackupStatusHtml(),
+    buildAdminFullSettingsBackupSafetyHtml(),
+    buildAdminFullSettingsBackupsHtml(),
+    '  <div class="appMenuActionRow">',
+    '    <button type="button" class="appMenuAction" data-admin-action="load-full-settings-backups">Načíst online</button>',
+    (typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins() ? '    <button type="button" class="appMenuAction isActive" data-admin-action="create-full-settings-backup">Vytvořit zálohu</button>' : ''),
+    '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
+    '  </div>',
+    '</div>'
+  ].join('');
+
   const handoverHtml = [
     '<div class="appMenuCard appMenuAdminCard adminHandoverCard">',
     '  <div class="appMenuCardTitle">Předání správy</div>',
@@ -2917,6 +3157,8 @@ function renderAdminMenuBody(body, section) {
     body.innerHTML = payrollSettingsHtml;
   } else if (mode === 'backups') {
     body.innerHTML = backupsHtml;
+  } else if (mode === 'settings-backups') {
+    body.innerHTML = fullSettingsBackupsHtml;
   } else if (mode === 'handover') {
     body.innerHTML = handoverHtml;
   } else if (mode === 'monthly-workflow') {
@@ -3125,6 +3367,7 @@ function appMenuAdminModeSet() {
     'app-contact',
     'payroll-settings',
     'backups',
+    'settings-backups',
     'announcement',
     'usage',
     'export',
@@ -3842,6 +4085,10 @@ function bindAppMenuHandlers(body) {
         openAppMenu('admin-backups');
         return;
       }
+      if (adminAction === 'open-settings-backups') {
+        openAppMenu('admin-settings-backups');
+        return;
+      }
       if (adminAction === 'open-announcement') {
         openAppMenu('admin-announcement');
         return;
@@ -4003,6 +4250,40 @@ function bindAppMenuHandlers(body) {
         renderAdminMenuBody(body, 'backups');
         const nextStatus = document.getElementById('adminOnlineSaveStatus');
         if (nextStatus) nextStatus.textContent = 'Záloha obnovená online ✓';
+        return;
+      }
+      if (adminAction === 'load-full-settings-backups') {
+        if (!(typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins())) return;
+        const statusEl = document.getElementById('adminOnlineSaveStatus');
+        if (statusEl) statusEl.textContent = 'Načítám zálohy nastavení…';
+        await loadAdminFullSettingsBackupsFromSupabase();
+        renderAdminMenuBody(body, 'settings-backups');
+        return;
+      }
+      if (adminAction === 'create-full-settings-backup') {
+        if (!(typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins())) return;
+        if (!confirm('Vytvořit úplnou zálohu všech online nastavení?')) return;
+        const statusEl = document.getElementById('adminOnlineSaveStatus');
+        if (statusEl) statusEl.textContent = 'Vytvářím úplnou zálohu nastavení…';
+        const result = await createAdminFullSettingsBackupOnline();
+        if (!result || result.ok === false) throw (result && result.error ? result.error : new Error('Vytvoření zálohy nastavení selhalo.'));
+        renderAdminMenuBody(body, 'settings-backups');
+        const nextStatus = document.getElementById('adminOnlineSaveStatus');
+        if (nextStatus) nextStatus.textContent = 'Úplná záloha nastavení vytvořená online ✓';
+        return;
+      }
+      if (adminAction === 'restore-full-settings-backup') {
+        if (!(typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins())) return;
+        const backupId = target.getAttribute('data-settings-backup-id') || target.closest('[data-settings-backup-id]')?.getAttribute('data-settings-backup-id') || '';
+        if (!backupId) return;
+        if (!confirm('Obnovit úplnou zálohu nastavení? Přepíše to uložená nastavení aplikace hodnotami ze zálohy.')) return;
+        const statusEl = document.getElementById('adminOnlineSaveStatus');
+        if (statusEl) statusEl.textContent = 'Obnovuji úplnou zálohu nastavení…';
+        const result = await restoreAdminFullSettingsBackupOnline(backupId);
+        if (!result || result.ok === false) throw (result && result.error ? result.error : new Error('Obnova zálohy nastavení selhala.'));
+        renderAdminMenuBody(body, 'settings-backups');
+        const nextStatus = document.getElementById('adminOnlineSaveStatus');
+        if (nextStatus) nextStatus.textContent = 'Nastavení obnovené ze zálohy online ✓';
         return;
       }
       if (adminAction === 'generate-rotation') {
@@ -4413,7 +4694,7 @@ function openAppMenu(view) {
   page.classList.add('active');
   const body = page.querySelector('#appMenuBody');
   const v = view || 'menu';
-  const adminViews = new Set(['admin', 'admin-machines', 'admin-food', 'admin-vacation', 'admin-special-days', 'admin-rotation', 'admin-overtime', 'admin-generator-settings', 'admin-monthly-workflow', 'admin-handover', 'admin-manual', 'admin-settings-map', 'admin-accounts', 'admin-external-links', 'admin-app-contact', 'admin-payroll-settings', 'admin-backups', 'admin-announcement', 'admin-usage', 'admin-export', 'admin-reports', 'admin-service']);
+  const adminViews = new Set(['admin', 'admin-machines', 'admin-food', 'admin-vacation', 'admin-special-days', 'admin-rotation', 'admin-overtime', 'admin-generator-settings', 'admin-monthly-workflow', 'admin-handover', 'admin-manual', 'admin-settings-map', 'admin-accounts', 'admin-external-links', 'admin-app-contact', 'admin-payroll-settings', 'admin-backups', 'admin-settings-backups', 'admin-announcement', 'admin-usage', 'admin-export', 'admin-reports', 'admin-service']);
 
   const versionText = (typeof app !== 'undefined' && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '');
   const contact = typeof getRakAppContactSettings === 'function'
@@ -4437,7 +4718,17 @@ function openAppMenu(view) {
       body.innerHTML = [
         '<div class="appMenuCard appMenuAdminCard">',
         '  <div class="appMenuCardTitle">Správci</div>',
-        '  <div class="appMenuText">Seznam správců může měnit jen hlavní admin. Běžný admin může spravovat provoz, rozpisy a nastavení, ale nemůže přidávat další správce ani měnit jejich hesla.</div>',
+        '  <div class="appMenuText">Seznam správců může měnit jen hlavní admin. Nižší admin může spravovat provoz, rozpisy, absence, zálohy, exporty a nastavení aplikace, ale nemůže přidávat další adminy ani měnit hesla.</div>',
+        '  <button type="button" class="appMenuAction appMenuBack" data-menu-back="1">Zpět</button>',
+        '</div>'
+      ].join('');
+      return;
+    }
+    if (v === 'admin-settings-backups' && !(typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins())) {
+      body.innerHTML = [
+        '<div class="appMenuCard appMenuAdminCard">',
+        '  <div class="appMenuCardTitle">Zálohy nastavení</div>',
+        '  <div class="appMenuText">Úplné zálohy nastavení může vytvářet a obnovovat jen hlavní admin. Nižší admin může spravovat pracovní části aplikace, ale nemůže vracet celé nastavení.</div>',
         '  <button type="button" class="appMenuAction appMenuBack" data-menu-back="1">Zpět</button>',
         '</div>'
       ].join('');
@@ -4672,6 +4963,16 @@ function openAppMenu(view) {
           console.warn('Admin backups preload failed', err);
           if (typeof app !== 'undefined') app.adminRotationBackupsSnapshot = { ok: false, error: err, backups: [] };
           renderAdminMenuBody(body, 'backups');
+        }
+      })();
+    } else if (v === 'admin-settings-backups') {
+      void (async () => {
+        try {
+          await loadAdminFullSettingsBackupsFromSupabase();
+          renderAdminMenuBody(body, 'settings-backups');
+        } catch (err) {
+          console.warn('Admin full settings backups preload failed', err);
+          renderAdminMenuBody(body, 'settings-backups');
         }
       })();
     } else if (v === 'admin-announcement') {

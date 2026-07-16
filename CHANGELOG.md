@@ -1,3 +1,20 @@
+## RaK 1.2 (1.276)
+
+- Administrace: hlavni admin ma novou owner-only sekci Zalohy nastaveni pro uplnou online zalohu vsech nastaveni aplikace.
+- Zalohy nastaveni: vytvoreni, nacteni i obnova jsou blokovane pro nizsi adminy; primo je muze pouzit jen ucet 9811.
+- Obnova nastaveni: snapshot vraci stroje, provozni nastaveni, prescasy, dovolene, odkazy, kontakt, vyplatu i spravce z vybrane zalohy.
+- Supabase: specialni kategorie `admin_full_settings_backup` je povolena pro RPC ulozeni a neskryva se mezi beznymi stroji.
+- Smoke guard: `app-usage-smoke-v963.js` hlida owner-only pristup k uplnym zaloham nastaveni.
+- Release metadata sjednocena na `RaK 1.2 (1.276)`, technicka verze `1.2.276`, cache `v1.2-1.276`.
+
+## RaK 1.2 (1.275)
+
+- Administrace: popisy roli sjednocuji nizsiho admina jako spravce pracovnich casti aplikace bez pristupu k heslum a dalsim adminum.
+- Spravci: prehled roli a readonly hlaska ted rikaji, ze nizsi admin muze spravovat provoz, rozpisy, absence, zalohy, exporty a nastaveni aplikace.
+- Predani spravy: textova pravidla pristupu uz neomezuji nizsiho admina jen na provoz a rozpisy.
+- Smoke guard: `app-usage-smoke-v963.js` hlida sjednocene popisy nizsiho admina.
+- Release metadata sjednocena na `RaK 1.2 (1.275)`, technicka verze `1.2.275`, cache `v1.2-1.275`.
+
 ## RaK 1.2 (1.274)
 
 - Administrace: nizsi admin je v prehledu opravneni pojmenovany jako nizsi admin a ma jasne uvedeno, ze nemeni hesla ani dalsi adminy.

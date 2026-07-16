@@ -501,9 +501,9 @@ function buildAdminAccountsRoleOverviewHtml(settings) {
     '    <small>Muze pridavat dalsi spravce, menit jejich hesla a zapinat nebo vypinat pristup.</small>',
     '  </div>',
     '  <div class="adminAccountsRoleCard">',
-    '    <span>Dalsi spravci</span>',
+    '    <span>Nizsi admini</span>',
     '    <b>' + String(enabledAdmins) + ' aktivni</b>',
-    '    <small>Muzou spravovat provoz a rozpisy, ale nemuzou menit seznam spravcu.</small>',
+    '    <small>Muzou spravovat pracovni casti administrace, ale nemuzou menit hesla ani dalsi adminy.</small>',
     '  </div>',
     '  <div class="adminAccountsRoleCard isInfo">',
     '    <span>Prihlaseni</span>',
@@ -546,7 +546,7 @@ function buildAdminAccountsSafetyHtml(source) {
     '  <div class="adminAccountsStatusTitle">Bezpecnost pristupu</div>',
     '  <div class="adminAccountsSafetyGrid">',
     adminAccountsSafetyItemHtml('Owner ucet', RAK_OWNER_ADMIN_ACCOUNT_ID, 'Vestaveny hlavni admin se do tabulky nepridava.', 'isOwner'),
-    adminAccountsSafetyItemHtml('Dalsi spravci', String(enabledAdmins) + ' aktivni', 'Kazdy dalsi admin musi mit vlastni ucet a heslo.', 'isOk'),
+    adminAccountsSafetyItemHtml('Nizsi admini', String(enabledAdmins) + ' aktivni', 'Kazdy nizsi admin musi mit vlastni ucet a heslo.', 'isOk'),
     adminAccountsSafetyItemHtml('Predani', 'bez hesel', 'Predavaci exporty hesla nestahuji; hesla se nastavuji jen tady.', 'isInfo'),
     adminAccountsSafetyItemHtml('Bezni uzivatele', 'bez zmen', 'Bez admin hesla nevidi admin menu a nemeni provozni data.', 'isInfo'),
     '  </div>',
@@ -686,7 +686,7 @@ function buildAdminAccountsSettingsHtml() {
       buildAdminAccountsStatusHtml(rakAdminGetAccountsSettings()),
       '<div class="adminAccountsReadonlyNotice">',
       '  <b>Seznam spravcu muze menit jen hlavni admin.</b>',
-      '  <span>Bezny admin muze spravovat provoz, rozpisy a nastaveni, ale nemuze pridavat dalsi spravce ani menit jejich hesla.</span>',
+      '  <span>Nizsi admin muze spravovat provoz, rozpisy, absence, zalohy, exporty a nastaveni aplikace, ale nemuze pridavat dalsi adminy ani menit hesla.</span>',
       '</div>'
     ].join('');
   }
