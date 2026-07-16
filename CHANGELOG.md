@@ -1,3 +1,10 @@
+## RaK 1.2 (1.261)
+
+- Administrace / Nastavení strojů: doplněna admin-only `Kontrola dopadu strojů`, aby správce po uložení ověřil kalkulačky, návazné rozpisové kontroly a online stav.
+- Stroje: kontrola připomíná, že změna časů, rychlostí nebo orovnání se nemá ověřovat jen v tabulce, ale i v běžné části aplikace.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá kontrolu dopadu strojů, vložení do admin obrazovky a responzivní styl.
+- Release metadata sjednocená na `RaK 1.2 (1.261)`, technická verze `1.2.261`, cache `v1.2-1.261`.
+
 ## RaK 1.2 (1.260)
 
 - Administrace / Pravidla generátoru: doplněn admin-only panel `Dopad pravidel`, aby správce viděl, že změna pravidel sama nepřepíše hotové měsíce.
