@@ -1,3 +1,11 @@
+## RaK 1.2 (1.274)
+
+- Administrace: nizsi admin je v prehledu opravneni pojmenovany jako nizsi admin a ma jasne uvedeno, ze nemeni hesla ani dalsi adminy.
+- Kde co upravit: tlacitko Spravci se v mape nastaveni zobrazuje jen hlavnimu adminovi.
+- Admin menu: sekce Kontrola a servis nizsimu adminovi vysvetluje, ze hesla a dalsi adminy spravuje jen hlavni admin.
+- Smoke guard: `app-usage-smoke-v963.js` hlida rozliseni hlavniho a nizsiho admina v menu i mape nastaveni.
+- Release metadata sjednocená na `RaK 1.2 (1.274)`, technická verze `1.2.274`, cache `v1.2-1.274`.
+
 ## RaK 1.2 (1.273)
 
 - Predani spravy: pripravenost predani ted kontroluje i nastaveni vyplaty a nejblizsi termin.

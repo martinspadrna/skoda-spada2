@@ -1007,10 +1007,10 @@ function adminPermissionStatusSnapshot() {
   } catch (err) {
     owner = false;
   }
-  const roleLabel = unlocked ? (owner ? 'Hlavní admin' : 'Správce') : 'Zamčeno';
+  const roleLabel = unlocked ? (owner ? 'Hlavní admin' : 'Nižší admin') : 'Zamčeno';
   const stateLabel = unlocked ? 'Odemčeno' : 'Zamčeno';
   const detail = unlocked
-    ? (owner ? 'Můžeš měnit správce a všechny admin sekce.' : 'Můžeš spravovat provoz a rozpisy, správce mění jen hlavní admin.')
+    ? (owner ? 'Můžeš měnit správce a všechny admin sekce.' : 'Můžeš spravovat provoz, rozpisy a nastavení, ale ne hesla ani další adminy.')
     : 'Admin akce jsou vypnuté, dokud se účet neověří heslem.';
   return {
     activeAccountId,
@@ -2264,6 +2264,13 @@ function buildAdminSettingsMapStatusHtml(items) {
 }
 
 function getAdminSettingsMapItems() {
+  const ownerAccess = typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins();
+  const serviceActions = [
+    { action: 'open-usage', label: 'Připojení' },
+    { action: 'open-reports', label: 'Reporty' },
+    { action: 'open-service', label: 'Servis' }
+  ];
+  if (ownerAccess) serviceActions.unshift({ action: 'open-admin-accounts', label: 'Správci' });
   return [
     {
       title: 'Rozpis a absence',
@@ -2331,17 +2338,14 @@ function getAdminSettingsMapItems() {
       ]
     },
     {
-      title: 'Správci a kontrola provozu',
+      title: ownerAccess ? 'Správci a kontrola provozu' : 'Kontrola a servis',
       scope: 'Kontrola a servis',
-      detail: 'Admin účty, připojená zařízení, reporty chyb, synchronizace a exporty.',
+      detail: ownerAccess
+        ? 'Admin účty, připojená zařízení, reporty chyb, synchronizace a exporty.'
+        : 'Připojená zařízení, reporty chyb, synchronizace a exporty bez správy hesel.',
       visible: 'Dostupné jen administrátorům.',
-      check: 'Spravci, servis synchronizace a predavaci podklady bez hesel.',
-      actions: [
-        { action: 'open-admin-accounts', label: 'Správci' },
-        { action: 'open-usage', label: 'Připojení' },
-        { action: 'open-reports', label: 'Reporty' },
-        { action: 'open-service', label: 'Servis' }
-      ]
+      check: ownerAccess ? 'Spravci, servis synchronizace a predavaci podklady bez hesel.' : 'Servis synchronizace, pripojeni, reporty a predavaci podklady.',
+      actions: serviceActions
     }
   ];
 }
@@ -2492,6 +2496,9 @@ function renderAdminMenuBody(body, section) {
   const adminServiceActions = [
     { action: 'open-service', label: 'Servis / synchronizace' }
   ];
+  const adminServiceDetail = (typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins())
+    ? 'Připojení, reporty, synchronizace a správa adminů.'
+    : 'Připojení, reporty a synchronizace. Hesla a další adminy spravuje jen hlavní admin.';
   if (typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins()) {
     adminServiceActions.unshift({ action: 'open-admin-accounts', label: 'Správci' });
   }
@@ -2536,7 +2543,7 @@ function renderAdminMenuBody(body, section) {
       { action: 'open-app-contact', label: 'Kontakt aplikace' },
       { action: 'open-payroll-settings', label: 'Výplata' }
     ]),
-    buildAdminMenuSectionHtml('4. Kontrola a servis', 'Připojení, reporty, synchronizace a správa adminů.', [
+    buildAdminMenuSectionHtml('4. Kontrola a servis', adminServiceDetail, [
       { action: 'open-usage', label: 'Přehled připojení' },
       { action: 'open-reports', label: 'Reporty chyb' }
     ].concat(adminServiceActions)),
