@@ -1349,6 +1349,31 @@ function buildAdminActionLegendHtml() {
   ].join('');
 }
 
+function adminAnnouncementPublicCheckItemHtml(label, value, detail, state) {
+  const safeState = state || 'info';
+  return [
+    '<div class="adminAnnouncementPublicCheckItem is' + escapeHtml(safeState.charAt(0).toUpperCase() + safeState.slice(1)) + '">',
+    '  <span>' + escapeHtml(label || '') + '</span>',
+    '  <b>' + escapeHtml(value || '') + '</b>',
+    detail ? '  <small>' + escapeHtml(detail) + '</small>' : '',
+    '</div>'
+  ].join('');
+}
+
+function buildAdminAnnouncementPublicCheckHtml() {
+  return [
+    '<div class="adminAnnouncementPublicCheck">',
+    '  <div class="appMenuSubTitle">Veřejná kontrola oznámení</div>',
+    '  <div class="smallText uMb10">Oznámení je jedna z mála admin změn, kterou po uložení uvidí běžní lidé hned na home. Tenhle blok nic neukládá, jen připomíná kontrolu.</div>',
+    '  <div class="adminAnnouncementPublicCheckGrid">',
+    adminAnnouncementPublicCheckItemHtml('Kde se projeví', 'Home / Dashboard', 'Po uložení otevři home a ověř, že text sedí a neblokuje ostatní karty.', 'warn'),
+    adminAnnouncementPublicCheckItemHtml('Vypnutí', 'bar zmizí', 'Po vypnutí oznámení zkontroluj, že na home nezůstal starý text z cache.', 'info'),
+    adminAnnouncementPublicCheckItemHtml('Čas Od / Do', 'dobrovolné', 'Když vyplníš časové omezení, ověř, že Od je před Do.', 'info'),
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
 function buildAdminMonthlyWorkflowHtml(monthKey) {
   const workflow = getAdminMonthlyWorkflowItems(monthKey);
   return [
@@ -2208,7 +2233,10 @@ function renderAdminMenuBody(body, section) {
     '</div>'
   ].join('');
 
-  const announcementHtml = buildAdminAnnouncementHtml();
+  const announcementHtml = [
+    buildAdminAnnouncementHtml(),
+    buildAdminAnnouncementPublicCheckHtml()
+  ].join('');
   const usageHtml = buildAdminUsageHtml();
 
   const importPreview = (typeof getRakExcelImportPreview === 'function') ? getRakExcelImportPreview() : null;

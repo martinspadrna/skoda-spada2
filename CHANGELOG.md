@@ -1,3 +1,10 @@
+## RaK 1.2 (1.252)
+
+- Administrace / Oznámení Dashboard: doplněna admin-only `Veřejná kontrola oznámení`, aby správce před veřejnou změnou viděl, kde se projeví a co ověřit po uložení nebo vypnutí.
+- Oznámení: kontrola připomíná ověření home/Dashboardu, zmizení baru po vypnutí a pořadí časů Od/Do.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá veřejnou kontrolu oznámení, vložení do admin obrazovky a responsive styl.
+- Release metadata sjednocená na `RaK 1.2 (1.252)`, technická verze `1.2.252`, cache `v1.2-1.252`.
+
 ## RaK 1.2 (1.251)
 
 - Administrace / Kde co upravit: kazda oblast mapy ma novy radek `Po ulozeni over`, aby novy spravce vedel, kde zkontrolovat vysledek zmeny.

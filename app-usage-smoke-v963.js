@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.251) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.252) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -225,12 +225,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.251)',
-  appLabel: 'RaK 1.2 (1.251)',
-  packageVersion: '1.2.251',
-  cacheVersion: 'v1.2-1.251',
+  displayVersion: '1.2 (1.252)',
+  appLabel: 'RaK 1.2 (1.252)',
+  packageVersion: '1.2.252',
+  cacheVersion: 'v1.2-1.252',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.251)',
+  changelogHeader: '## RaK 1.2 (1.252)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -339,8 +339,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.251)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.251'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.252)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.252'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1757,11 +1757,16 @@ function assertAdminPayrollSettingsContractV1146() {
 function assertAdminAnnouncementStatusContractV1157() {
   assertIncludes(ui, 'function buildAdminAnnouncementHtml', 'Administrace musi mit formular oznameni na Dashboardu');
   assertIncludes(ui, 'function buildAdminAnnouncementStatusHtml', 'Oznameni musi mit admin-only souhrn stavu');
+  assertIncludes(ui, 'function buildAdminAnnouncementPublicCheckHtml', 'Oznameni musi mit admin-only kontrolu verejneho dopadu');
+  assertIncludes(ui, 'Veřejná kontrola oznámení', 'Oznameni musi spravci rikat, ze jde o verejne viditelnou zmenu');
+  assertIncludes(ui, 'Po uložení otevři home', 'Oznameni musi mit jasnou kontrolu po ulozeni na home');
+  assertIncludes(ui, 'buildAdminAnnouncementPublicCheckHtml()', 'Kontrola verejneho dopadu oznameni musi byt vlozena do admin obrazovky');
   assertIncludes(ui, 'function adminAnnouncementRefreshStatus', 'Souhrn oznameni se musi prepocitat podle rozepsanych poli');
   assertIncludes(ui, 'function readAdminAnnouncementDraftFromDom', 'Souhrn oznameni musi vychazet z aktualnich DOM poli pred ulozenim');
   assertIncludes(ui, 'adminAnnouncementRefreshStatus(body)', 'Admin menu musi prepocitat souhrn oznameni pri zmene pole');
   assertIncludes(ui, 'adminAnnouncementPreview', 'Oznameni musi mit admin nahled');
   assertIncludes(stylesAdminPolishCss, '.adminAnnouncementStatusGrid', 'Souhrn oznameni musi mit vlastni responsive admin styl');
+  assertIncludes(stylesAdminPolishCss, '.adminAnnouncementPublicCheckGrid', 'Verejna kontrola oznameni musi mit vlastni responsive admin styl');
   assertIncludes(ui, "adminAction === 'save-announcement'", 'Admin menu musi umet ulozit oznameni');
   assertIncludes(ui, "adminAction === 'clear-announcement'", 'Admin menu musi umet vypnout oznameni');
   assertIncludes(ui, "'admin-announcement'", 'Oznameni musi byt mezi chranenymi admin view');
