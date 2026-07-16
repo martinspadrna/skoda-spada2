@@ -177,6 +177,29 @@ function ensureExcelFileInput() {
   return input;
 }
 
+function ensureFullSettingsBackupFileInput() {
+  let input = document.getElementById('rakFullSettingsBackupFile');
+  if (input && input.dataset.rakFullSettingsBackupBound !== '1') {
+    input.dataset.rakFullSettingsBackupBound = '1';
+    input.addEventListener('change', (event) => {
+      void handleFullSettingsBackupFileSelection(event.target, document.querySelector('#appMenuBody'));
+    });
+  }
+  if (input) return input;
+  input = document.createElement('input');
+  input.type = 'file';
+  input.id = 'rakFullSettingsBackupFile';
+  input.accept = '.json,application/json';
+  input.hidden = true;
+  input.style.display = 'none';
+  input.dataset.rakFullSettingsBackupBound = '1';
+  input.addEventListener('change', (event) => {
+    void handleFullSettingsBackupFileSelection(event.target, document.querySelector('#appMenuBody'));
+  });
+  document.body.appendChild(input);
+  return input;
+}
+
 function startMenuImport() {
   const input = ensureExcelFileInput();
   if (!input) {
@@ -186,6 +209,51 @@ function startMenuImport() {
   input.value = '';
   app.pendingMenuImport = true;
   input.click();
+}
+
+function startFullSettingsBackupImport() {
+  if (!(typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins())) return;
+  const input = ensureFullSettingsBackupFileInput();
+  if (!input) {
+    alert('Import zálohy nastavení není připravený.');
+    return;
+  }
+  input.value = '';
+  input.click();
+}
+
+function adminFullSettingsBackupImportErrorMessage(reason) {
+  const safe = String(reason || '').trim();
+  if (safe === 'invalid-json') return 'Soubor není platný JSON.';
+  if (safe === 'invalid-backup') return 'Soubor nevypadá jako záloha nastavení z této aplikace.';
+  if (safe === 'missing-bridge') return 'Online úložiště teď není připravené.';
+  if (safe === 'not-allowed') return 'Tuhle zálohu může nahrát jen hlavní admin.';
+  if (safe === 'missing-file') return 'Nebyl vybraný žádný soubor.';
+  return 'Nahrání zálohy nastavení selhalo.';
+}
+
+async function handleFullSettingsBackupFileSelection(input, body) {
+  const target = input && input.files ? input : null;
+  const file = target && target.files && target.files[0] ? target.files[0] : null;
+  if (!file) return;
+  if (target.dataset.rakFullSettingsBackupImporting === '1') return;
+  target.dataset.rakFullSettingsBackupImporting = '1';
+  const statusEl = document.getElementById('adminOnlineSaveStatus');
+  try {
+    if (statusEl) statusEl.textContent = 'Nahrávám zálohu nastavení…';
+    const result = await importAdminFullSettingsBackupFile(file);
+    if (!result || result.ok === false) throw new Error(adminFullSettingsBackupImportErrorMessage(result && result.reason));
+    const menuBody = body || document.querySelector('#appMenuBody');
+    if (menuBody && typeof renderAdminMenuBody === 'function') renderAdminMenuBody(menuBody, 'settings-backups');
+    const nextStatus = document.getElementById('adminOnlineSaveStatus');
+    if (nextStatus) nextStatus.textContent = 'Záloha nastavení nahraná online ✓';
+  } catch (err) {
+    if (statusEl) statusEl.textContent = 'Nahrání zálohy nastavení selhalo.';
+    try { alert(err && err.message ? err.message : 'Nahrání zálohy nastavení selhalo.'); } catch (alertErr) {}
+  } finally {
+    try { delete target.dataset.rakFullSettingsBackupImporting; } catch (err) {}
+    try { target.value = ''; } catch (err) {}
+  }
 }
 
 function formatAdminRotationBackupDate(value) {
@@ -522,7 +590,7 @@ function adminFullSettingsBackupList() {
       createdAt: String(settings && settings.createdAt || '').trim(),
       createdBy: String(settings && settings.createdBy || '').trim(),
       source,
-      sourceLabel: source === 'before-restore' ? 'před obnovou' : 'ruční',
+      sourceLabel: source === 'before-restore' ? 'před obnovou' : (source === 'imported' ? 'importovaná' : 'ruční'),
       restoredBackupId: String(settings && settings.restoredBackupId || '').trim(),
       rowCount: Number(settings && (settings.rowCount || rows.length)) || rows.length,
       appVersion: String(settings && settings.appVersion || '').trim()
@@ -620,6 +688,67 @@ function downloadAdminFullSettingsBackup(backupId) {
   const status = document.getElementById('adminOnlineSaveStatus');
   if (status) status.textContent = 'Záloha nastavení stažena jako JSON soubor.';
   return { ok: true, backup };
+}
+
+function normalizeImportedFullSettingsBackupRow(payload) {
+  const source = payload && typeof payload === 'object' ? payload : {};
+  const exportType = String(source.type || '').trim();
+  const row = source.backup && typeof source.backup === 'object' ? source.backup : source;
+  if (exportType && exportType !== 'rak-full-settings-backup-export') return null;
+  const clone = adminCloneFullSettingsRow(row);
+  if (!clone || !adminIsFullSettingsBackupRow(clone)) return null;
+  const settings = adminFullSettingsBackupJson(clone);
+  const rows = Array.isArray(settings && settings.rows) ? settings.rows : [];
+  if (!rows.length) return null;
+  const importedAt = new Date().toISOString();
+  const importedKey = RAK_FULL_SETTINGS_BACKUP_KEY_PREFIX + 'IMPORT_' + adminFullSettingsBackupTimestampKey(importedAt);
+  clone.machine_key = importedKey;
+  clone.machine_code = 'ADMIN';
+  clone.machine_index = 'import-' + adminFullSettingsBackupTimestampKey(importedAt).slice(0, 20);
+  clone.label = 'Importovaná záloha nastavení ' + new Date(importedAt).toLocaleString('cs-CZ');
+  clone.category = RAK_FULL_SETTINGS_BACKUP_CATEGORY;
+  clone.settings_json = Object.assign({}, settings, {
+    type: RAK_FULL_SETTINGS_BACKUP_CATEGORY,
+    importedAt,
+    importedBy: typeof rakAdminGetActiveAccountId === 'function' ? rakAdminGetActiveAccountId() : '',
+    originalBackupId: String(source.backupId || row.machine_key || settings.admin_settings_key || '').trim(),
+    originalSource: String(settings.source || '').trim(),
+    source: 'imported',
+    rowCount: rows.length
+  });
+  return clone;
+}
+
+function readTextFile(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ''));
+    reader.onerror = () => reject(reader.error || new Error('Soubor se nepodařilo načíst.'));
+    reader.readAsText(file, 'utf-8');
+  });
+}
+
+async function importAdminFullSettingsBackupFile(file) {
+  if (!(typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins())) return { ok: false, reason: 'not-allowed' };
+  if (!file) return { ok: false, reason: 'missing-file' };
+  if (!(window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.loadMachineSettings === 'function' && typeof window.RotationSupabaseBridge.saveMachineSettings === 'function')) return { ok: false, reason: 'missing-bridge' };
+  const text = await readTextFile(file);
+  let parsed = null;
+  try {
+    parsed = JSON.parse(text);
+  } catch (err) {
+    return { ok: false, reason: 'invalid-json', error: err };
+  }
+  const backupRow = normalizeImportedFullSettingsBackupRow(parsed);
+  if (!backupRow) return { ok: false, reason: 'invalid-backup' };
+  const loadedRows = await window.RotationSupabaseBridge.loadMachineSettings();
+  const currentRows = Array.isArray(loadedRows) ? loadedRows : [];
+  app.machineSettingsRows = currentRows;
+  const nextRows = currentRows.concat([backupRow]);
+  const result = await window.RotationSupabaseBridge.saveMachineSettings(nextRows);
+  if (result && result.ok === false) return result;
+  app.machineSettingsRows = nextRows;
+  return { ok: true, backup: backupRow, result };
 }
 
 async function loadAdminFullSettingsBackupsFromSupabase() {
@@ -3123,15 +3252,16 @@ function renderAdminMenuBody(body, section) {
     '<div class="appMenuCard appMenuAdminCard adminFullSettingsBackupsCard">',
     '  <div class="appMenuCardTitle">Zálohy nastavení</div>',
     '  <div class="appMenuText">',
-    '    <div>Tady si hlavní admin vytvoří bod návratu pro všechna online nastavení aplikace. Slouží jako pojistka, když jiný admin něco rozbije.</div>',
-    '    <div class="smallText" id="adminOnlineSaveStatus">Vytvořit nebo obnovit může jen hlavní admin účet.</div>',
+    '    <div>Tady si hlavní admin vytvoří bod návratu pro všechna online nastavení aplikace. Nová záloha se uloží online do Supabase a zároveň se stáhne jako JSON soubor.</div>',
+    '    <div class="smallText" id="adminOnlineSaveStatus">Vytvořit, nahrát nebo obnovit může jen hlavní admin účet.</div>',
     '  </div>',
     buildAdminFullSettingsBackupStatusHtml(),
     buildAdminFullSettingsBackupSafetyHtml(),
     buildAdminFullSettingsBackupsHtml(),
     '  <div class="appMenuActionRow">',
     '    <button type="button" class="appMenuAction" data-admin-action="load-full-settings-backups">Načíst online</button>',
-    (typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins() ? '    <button type="button" class="appMenuAction isActive" data-admin-action="create-full-settings-backup">Vytvořit zálohu</button>' : ''),
+    (typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins() ? '    <button type="button" class="appMenuAction" data-admin-action="import-full-settings-backup">Nahrát zálohu</button>' : ''),
+    (typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins() ? '    <button type="button" class="appMenuAction isActive" data-admin-action="create-full-settings-backup">Vytvořit a stáhnout</button>' : ''),
     '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
     '  </div>',
     '</div>'
@@ -3530,6 +3660,31 @@ function appMenuCanRunAdminInteraction(currentView) {
     && rakAdminCanOpenAdmin();
 }
 
+async function appMenuEnsureAdminAccessFromMenu() {
+  const canOpen = () => !!(typeof rakAdminCanOpenAdmin === 'function' && rakAdminCanOpenAdmin());
+  if (canOpen()) return true;
+  const activeId = typeof rakAdminGetActiveAccountId === 'function' ? String(rakAdminGetActiveAccountId() || '').trim() : '';
+  if (!activeId) return false;
+  try {
+    if (typeof rakAdminRestorePersistentSessionForActiveAccount === 'function' && rakAdminRestorePersistentSessionForActiveAccount('admin-menu-click') && canOpen()) return true;
+  } catch (err) {}
+  try {
+    if (typeof rakAdminRestoreSessionForActiveAccount === 'function' && rakAdminRestoreSessionForActiveAccount() && canOpen()) return true;
+  } catch (err) {}
+  try {
+    if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.loadMachineSettings === 'function') {
+      const rows = await window.RotationSupabaseBridge.loadMachineSettings();
+      if (typeof app !== 'undefined' && app) app.machineSettingsRows = Array.isArray(rows) ? rows : [];
+      if (typeof rakAdminRestorePersistentSessionForActiveAccount === 'function' && rakAdminRestorePersistentSessionForActiveAccount('admin-menu-click-online') && canOpen()) return true;
+      if (typeof rakAdminRestoreSessionForActiveAccount === 'function' && rakAdminRestoreSessionForActiveAccount() && canOpen()) return true;
+    }
+  } catch (err) {}
+  try {
+    if (typeof rakAdminPromptUnlockForAccount === 'function' && rakAdminPromptUnlockForAccount(activeId) && canOpen()) return true;
+  } catch (err) {}
+  return canOpen();
+}
+
 function bindAppMenuHandlers(body) {
   if (!body || body.dataset.menuHandlersBound === '1') return;
   body.dataset.menuHandlersBound = '1';
@@ -3584,6 +3739,10 @@ function bindAppMenuHandlers(body) {
   body.addEventListener('change', (event) => {
     const target = event.target;
     if (!target || typeof target.matches !== 'function') return;
+    if (target.matches('#rakFullSettingsBackupFile')) {
+      void handleFullSettingsBackupFileSelection(target, body);
+      return;
+    }
     if (target.matches('#rakRotationExcelExportMonth, #rakExcelImportScope, #rakExcelImportDetectedMonth')) {
       renderAdminExportImportStatus();
     }
@@ -3751,7 +3910,8 @@ function bindAppMenuHandlers(body) {
         return;
       }
       if (menuAction === 'admin') {
-        if (!(typeof rakAdminCanOpenAdmin === 'function' && rakAdminCanOpenAdmin())) {
+        const adminReady = await appMenuEnsureAdminAccessFromMenu();
+        if (!adminReady) {
           openAppMenu('menu');
           return;
         }
@@ -4401,14 +4561,22 @@ function bindAppMenuHandlers(body) {
       }
       if (adminAction === 'create-full-settings-backup') {
         if (!(typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins())) return;
-        if (!confirm('Vytvořit úplnou zálohu všech online nastavení?')) return;
+        if (!confirm('Vytvořit úplnou zálohu všech online nastavení a stáhnout ji jako JSON soubor?')) return;
         const statusEl = document.getElementById('adminOnlineSaveStatus');
         if (statusEl) statusEl.textContent = 'Vytvářím úplnou zálohu nastavení…';
         const result = await createAdminFullSettingsBackupOnline();
         if (!result || result.ok === false) throw (result && result.error ? result.error : new Error('Vytvoření zálohy nastavení selhalo.'));
+        const backupId = result.backup && result.backup.machine_key ? result.backup.machine_key : '';
+        const downloadResult = backupId ? downloadAdminFullSettingsBackup(backupId) : { ok: false };
+        if (!downloadResult || downloadResult.ok === false) throw new Error('Záloha je uložená online, ale stažení JSON souboru selhalo.');
         renderAdminMenuBody(body, 'settings-backups');
         const nextStatus = document.getElementById('adminOnlineSaveStatus');
-        if (nextStatus) nextStatus.textContent = 'Úplná záloha nastavení vytvořená online ✓';
+        if (nextStatus) nextStatus.textContent = 'Úplná záloha nastavení vytvořená online a stažená jako JSON ✓';
+        return;
+      }
+      if (adminAction === 'import-full-settings-backup') {
+        if (!(typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins())) return;
+        startFullSettingsBackupImport();
         return;
       }
       if (adminAction === 'download-full-settings-backup') {

@@ -1,3 +1,12 @@
+## RaK 1.2 (1.282)
+
+- Administrace: klik na Administraci si pred otevrenim sam obnovi ulozene admin prihlaseni nebo vyzada heslo, aby tlacitko nezustalo bez odezvy.
+- Zalohy nastaveni: vytvoreni uplne zalohy ted udela dvojite jisteni - ulozi bod obnovy do Supabase a hned stahne JSON soubor.
+- Zalohy nastaveni: hlavni admin muze nahrat stazenou JSON zalohu zpet do online seznamu zaloh.
+- Import zalohy: soubor se overi podle typu `rak-full-settings-backup-export`, ulozi se jako nova importovana zaloha a v seznamu se oznaci jako `importovana`.
+- Smoke guard: `app-usage-smoke-v963.js` hlida obnoveni admin session pri kliknuti, import JSON zalohy i automaticke stazeni po vytvoreni zalohy.
+- Release metadata sjednocena na `RaK 1.2 (1.282)`, technicka verze `1.2.282`, cache `v1.2-1.282`; loader modulu ma cache znacku `1.2.282`.
+
 ## RaK 1.2 (1.281)
 
 - Zalohy nastaveni: hlavni admin muze stahnout konkretni uplnou zalohu jako JSON soubor pro offline archiv.

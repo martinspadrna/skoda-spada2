@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.281) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.282) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -226,12 +226,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.281)',
-  appLabel: 'RaK 1.2 (1.281)',
-  packageVersion: '1.2.281',
-  cacheVersion: 'v1.2-1.281',
+  displayVersion: '1.2 (1.282)',
+  appLabel: 'RaK 1.2 (1.282)',
+  packageVersion: '1.2.282',
+  cacheVersion: 'v1.2-1.282',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.281)',
+  changelogHeader: '## RaK 1.2 (1.282)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -340,8 +340,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.281)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.281'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.282)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.282'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1489,6 +1489,8 @@ function assertAdminAccountLoginContractV1141() {
   assertIncludes(ui, 'ale ne hesla ani další adminy', 'Nizsi admin musi mit jasne uvedene omezeni hesel a dalsich adminu');
   assertIncludes(ui, 'Seznam správců může měnit jen hlavní admin.', 'Prime otevreni spravcu bez owner role musi ukazat jasne vysvetleni');
   assertIncludes(ui, 'rakAdminCanOpenAdmin()', 'Tlačítko Administrace i admin view musi pouzivat novou kontrolu opravneni');
+  assertIncludes(ui, 'async function appMenuEnsureAdminAccessFromMenu', 'Klik na administraci musi umet obnovit admin session pred otevrenim');
+  assertIncludes(ui, 'const adminReady = await appMenuEnsureAdminAccessFromMenu()', 'Klik na administraci nesmi zustat bez odezvy pri ulozenem admin prihlaseni');
   assertIncludes(ui, 'Provoz před rozpisem', 'Admin menu musi byt rozdelene do prehlednych provoznich skupin');
   assertIncludes(ui, 'buildAdminMenuSectionHtml', 'Admin menu musi skladat prehledne skupiny pres spolecny helper');
   assertIncludes(ui, 'adminMenuSections', 'Admin uvod musi mit zabalitelne skupiny spravcovskych oblasti');
@@ -1500,7 +1502,7 @@ function assertAdminAccountLoginContractV1141() {
   assertIncludes(ui, "const RAK_FULL_SETTINGS_BACKUP_CATEGORY = 'admin_full_settings_backup'", 'Uplna zaloha nastaveni musi mit vlastni kategorii');
   assertIncludes(ui, "const RAK_DELETED_MACHINE_SETTINGS_CATEGORY = 'admin_settings_deleted'", 'Rollback nastaveni musi mit skryte deleted radky pro odebrani polozek mimo zalohu');
   assertIncludes(ui, "source === 'before-restore'", 'Obnova nastaveni musi rozlisit automatickou zalohu pred obnovou');
-  assertIncludes(ui, "sourceLabel: source === 'before-restore' ? 'před obnovou' : 'ruční'", 'Seznam zaloh nastaveni musi rozlisit rucni a automaticke zalohy');
+  assertIncludes(ui, "sourceLabel: source === 'before-restore' ? 'před obnovou' : (source === 'imported' ? 'importovaná' : 'ruční')", 'Seznam zaloh nastaveni musi rozlisit rucni, importovane a automaticke zalohy');
   assertIncludes(ui, "const manualCount = backups.filter", 'Stav zaloh nastaveni musi pocitat rucni body obnovy');
   assertIncludes(ui, "const beforeRestoreCount = backups.filter", 'Stav zaloh nastaveni musi pocitat automaticke body pred obnovou');
   assertIncludes(ui, "Ruční / auto", 'Stav zaloh nastaveni musi zobrazit rucni a automaticke zalohy oddelene');
@@ -1515,6 +1517,11 @@ function assertAdminAccountLoginContractV1141() {
   assertIncludes(ui, 'function downloadAdminFullSettingsBackup', 'Uplna zaloha nastaveni musi mit JSON export pro offline archiv');
   assertIncludes(ui, "type: 'rak-full-settings-backup-export'", 'JSON export uplne zalohy musi mit jasny typ');
   assertIncludes(ui, "RaK_zaloha_nastaveni_", 'Stazena zaloha nastaveni musi mit jasny nazev souboru');
+  assertIncludes(ui, "downloadAdminFullSettingsBackup(backupId)", 'Vytvoreni zalohy nastaveni musi ulozit Supabase bod a hned stahnout JSON');
+  assertIncludes(ui, "adminAction === 'import-full-settings-backup'", 'Hlavni admin musi umet nahrat stazenou JSON zalohu zpet online');
+  assertIncludes(ui, 'function ensureFullSettingsBackupFileInput', 'Import zalohy nastaveni musi mit vlastni file input');
+  assertIncludes(ui, 'function importAdminFullSettingsBackupFile', 'Import zalohy nastaveni musi umet ulozit JSON zalohu do Supabase');
+  assertIncludes(ui, "source: 'imported'", 'Importovana zaloha nastaveni musi byt v seznamu rozlisena');
   assertIncludes(ui, "adminAction === 'restore-full-settings-backup'", 'Hlavni admin musi umet obnovit uplnou zalohu nastaveni');
   assertIncludes(ui, "v === 'admin-settings-backups' && !(typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins())", 'Nizsi admin nesmi otevrit uplne zalohy nastaveni primo');
   assertIncludes(bridge, "category === 'admin_full_settings_backup'", 'Supabase compatibility save musi povolit uplne zalohy nastaveni');
