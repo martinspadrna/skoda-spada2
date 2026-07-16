@@ -423,6 +423,130 @@ function adminHandoverMachineSettingsRows(rows) {
   });
 }
 
+function adminHandoverActiveAdminCount() {
+  const activeAdmins = adminHandoverActiveAdminCount();
+  return activeAdmins;
+}
+
+function adminHandoverReadinessItemHtml(item) {
+  const state = String(item && item.state || 'info').trim() || 'info';
+  return [
+    '<div class="adminHandoverReadinessItem is' + escapeHtml(state.charAt(0).toUpperCase() + state.slice(1)) + '">',
+    '  <span>' + escapeHtml(item && item.title || '') + '</span>',
+    '  <b>' + escapeHtml(item && item.value || '') + '</b>',
+    '  <small>' + escapeHtml(item && item.detail || '') + '</small>',
+    '</div>'
+  ].join('');
+}
+
+function buildAdminHandoverReadinessSnapshot(monthKey) {
+  const selectedMonth = String(monthKey || getAdminSelectedMonthKey() || '').trim();
+  const rows = Array.isArray(app && app.machineSettingsRows) ? app.machineSettingsRows : [];
+  const machineRows = adminHandoverMachineSettingsRows(rows);
+  const month = app && app.rotation && app.rotation.months ? app.rotation.months[selectedMonth] : null;
+  const hasMonthRows = !!(month && adminGuideHasMonthRows(month));
+  const foodSnapshot = (typeof getFoodAdminSettingsSnapshot === 'function') ? getFoodAdminSettingsSnapshot() : null;
+  const foodLocations = Array.isArray(foodSnapshot && foodSnapshot.locations) ? foodSnapshot.locations.length : 0;
+  const overtimeCount = adminGuideOvertimeCount();
+  const vacationCount = adminGuideUpcomingVacationCount();
+  const specialDaysCount = adminGuideUpcomingSpecialDaysCount();
+  const backupsSnapshot = app && app.adminRotationBackupsSnapshot && typeof app.adminRotationBackupsSnapshot === 'object' ? app.adminRotationBackupsSnapshot : null;
+  const backups = backupsSnapshot && Array.isArray(backupsSnapshot.backups) ? backupsSnapshot.backups : [];
+  const permissionStatus = adminPermissionStatusSnapshot();
+  const activeAdmins = adminHandoverActiveAdminCount();
+  const checks = [
+    {
+      state: permissionStatus.unlocked ? 'ok' : 'warn',
+      title: 'Přístup',
+      value: permissionStatus.unlocked ? permissionStatus.roleLabel : 'zamčeno',
+      detail: permissionStatus.unlocked ? 'Administrace je odemčená pro ověřený účet.' : 'Nejdřív ověř admin účet heslem.'
+    },
+    {
+      state: rows.length ? 'ok' : 'warn',
+      title: 'Online data',
+      value: rows.length ? String(rows.length) + ' řádků' : 'nenačteno',
+      detail: rows.length ? ('Běžných strojů v nastavení: ' + String(machineRows.length) + '.') : 'Načti online data, ať nový správce nepracuje se starým stavem.'
+    },
+    {
+      state: hasMonthRows ? 'ok' : 'warn',
+      title: 'Rozpis',
+      value: hasMonthRows ? (selectedMonth || 'vyplněn') : 'zkontrolovat',
+      detail: hasMonthRows ? 'Vybraný měsíc má vyplněné směny.' : 'Vybraný měsíc chybí nebo vypadá prázdně.'
+    },
+    {
+      state: foodLocations ? 'ok' : 'warn',
+      title: 'Provoz',
+      value: foodLocations ? String(foodLocations) + ' míst' : 'chybí',
+      detail: overtimeCount ? ('Přesčasových termínů: ' + String(overtimeCount) + '.') : 'Zkontroluj kantýnu, jídelnu a podle potřeby přesčasy.'
+    },
+    {
+      state: (vacationCount || specialDaysCount) ? 'ok' : 'info',
+      title: 'Volno',
+      value: vacationCount ? String(vacationCount) + ' období' : (specialDaysCount ? String(specialDaysCount) + ' dnů' : 'ověřit'),
+      detail: specialDaysCount ? ('Mimořádné volné dny: ' + String(specialDaysCount) + '.') : 'Pokud je dovolená, odstávka nebo svátek, doplň ji před rozpisem.'
+    },
+    {
+      state: backups.length ? 'ok' : 'info',
+      title: 'Zálohy',
+      value: backups.length ? String(backups.length) + ' záloh' : 'ověřit',
+      detail: backups.length ? 'Zálohy jsou načtené v administraci.' : 'Před větší úpravou načti a zkontroluj zálohy.'
+    },
+    {
+      state: activeAdmins > 1 ? 'ok' : 'info',
+      title: 'Správci',
+      value: activeAdmins > 1 ? String(activeAdmins) + ' účty' : 'jen hlavní',
+      detail: activeAdmins > 1 ? 'Je připravený další správce.' : 'Dalšího správce může doplnit hlavní admin.'
+    }
+  ];
+  const okCount = checks.filter((item) => item.state === 'ok').length;
+  const warnCount = checks.filter((item) => item.state === 'warn').length;
+  const infoCount = checks.filter((item) => item.state === 'info').length;
+  return {
+    checks,
+    okCount,
+    warnCount,
+    infoCount,
+    totalCount: checks.length,
+    ready: warnCount === 0,
+    selectedMonth
+  };
+}
+
+function buildAdminHandoverReadinessHtml(monthKey) {
+  const snapshot = buildAdminHandoverReadinessSnapshot(monthKey);
+  const summary = snapshot.ready
+    ? 'Předání nevypadá blokované. Projdi ještě informační body a potom stáhni předávací podklady.'
+    : 'Před předáním zkontroluj varování. Tenhle panel jen čte aktuální stav a nic sám neukládá.';
+  return [
+    '<div class="adminHandoverReadiness">',
+    '  <div class="appMenuSubTitle">Připravenost předání</div>',
+    '  <div class="adminHandoverReadinessSummary is' + (snapshot.ready ? 'Ok' : 'Warn') + '">',
+    '    <span>' + escapeHtml(snapshot.ready ? 'Připraveno ke kontrole' : 'Ještě zkontrolovat') + '</span>',
+    '    <b>' + escapeHtml(String(snapshot.okCount) + '/' + String(snapshot.totalCount) + ' OK') + '</b>',
+    '    <small>' + escapeHtml(summary) + '</small>',
+    '  </div>',
+    '  <div class="adminHandoverReadinessGrid">',
+    snapshot.checks.map(adminHandoverReadinessItemHtml).join(''),
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
+function buildAdminHandoverReadinessText(monthKey) {
+  const snapshot = buildAdminHandoverReadinessSnapshot(monthKey);
+  const lines = [
+    'Pripravenost predani',
+    '- Mesic: ' + (snapshot.selectedMonth || 'nevybran'),
+    '- Stav: ' + (snapshot.ready ? 'bez blokujicich varovani' : 'zkontrolovat varovani'),
+    '- Souhrn: ' + String(snapshot.okCount) + '/' + String(snapshot.totalCount) + ' OK, varovani ' + String(snapshot.warnCount) + ', info ' + String(snapshot.infoCount)
+  ];
+  snapshot.checks.forEach((item) => {
+    lines.push('- ' + String(item.title || 'Kontrola') + ': ' + String(item.value || '') + ' - ' + String(item.detail || ''));
+  });
+  lines.push('');
+  return lines.join('\n');
+}
+
 function adminPermissionStatusSnapshot() {
   let activeAccountId = '';
   try {
@@ -606,11 +730,7 @@ function buildAdminHandoverAuditHtml(monthKey) {
   const specialDaysCount = adminGuideUpcomingSpecialDaysCount();
   const backupsSnapshot = app && app.adminRotationBackupsSnapshot && typeof app.adminRotationBackupsSnapshot === 'object' ? app.adminRotationBackupsSnapshot : null;
   const backups = backupsSnapshot && Array.isArray(backupsSnapshot.backups) ? backupsSnapshot.backups : [];
-  let activeAdmins = 1;
-  try {
-    const adminSettings = typeof rakAdminGetAccountsSettings === 'function' ? rakAdminGetAccountsSettings() : null;
-    activeAdmins += (Array.isArray(adminSettings && adminSettings.admins) ? adminSettings.admins : []).filter((entry) => entry && entry.enabled !== false).length;
-  } catch (err) {}
+  const activeAdmins = adminHandoverActiveAdminCount();
   const items = [
     {
       state: rows.length ? 'ok' : 'warn',
@@ -698,6 +818,7 @@ function buildAdminHandoverStatusText(monthKey) {
     'Vytvořeno: ' + new Date().toLocaleString('cs-CZ'),
     '',
     'Souhrn',
+    buildAdminHandoverReadinessText(selectedMonth).trim(),
     '- Online nastavení: ' + (rows.length ? ('načteno ' + rows.length + ' řádků') : 'nenačteno'),
     '- Běžné stroje v nastavení: ' + String(machineRows.length),
     '- Aktivní admin účet: ' + (permissionStatus.activeAccountId || 'nezjištěn'),
@@ -758,6 +879,8 @@ function buildAdminHandoverPackageText(monthKey) {
     '- Zmeny delat jen v administraci a vzdy ulozit v konkretni sekci.',
     '- Bezni uzivatele nemaji mit moznost menit rozpis, provoz ani nastaveni.',
     '',
+    '============================================================',
+    buildAdminHandoverReadinessText(selectedMonth),
     '============================================================',
     buildAdminPostSaveCheckText(),
     '============================================================',
@@ -1620,6 +1743,7 @@ function renderAdminMenuBody(body, section) {
     '  </div>',
     buildAdminPermissionStatusHtml(),
     buildAdminAccessRulesHtml(),
+    buildAdminHandoverReadinessHtml(monthKey),
     buildAdminPostSaveCheckHtml(),
     buildAdminNextStepsHtml(monthKey),
     buildAdminHandoverExportsHtml(monthKey),
@@ -1864,6 +1988,7 @@ function renderAdminMenuBody(body, section) {
     '  </div>',
     buildAdminPermissionStatusHtml(),
     buildAdminAccessRulesHtml(),
+    buildAdminHandoverReadinessHtml(monthKey),
     buildAdminPostSaveCheckHtml(),
     buildAdminHandoverAuditHtml(monthKey),
     buildAdminMonthlyWorkflowHtml(monthKey),

@@ -1,3 +1,10 @@
+## RaK 1.2 (1.243)
+
+- Administrace: na admin uvod a Predani spravy pridany souhrn `Pripravenost predani`, ktery ukaze celkovy stav, pocet OK bodu, varovani a informacni body.
+- Predani spravy: stejny souhrn pripravenosti je soucasti textoveho stavu i souhrnneho predavaciho balicku.
+- Smoke guard: `app-usage-smoke-v963.js` hlida snapshot pripravenosti, vlozeni do admin-only obrazovek, textovy export i responsive styl.
+- Release metadata sjednocená na `RaK 1.2 (1.243)`, technická verze `1.2.243`, cache `v1.2-1.243`.
+
 ## RaK 1.2 (1.242)
 
 - Administrace: na admin uvod a Predani spravy pridany panel `Kontrola po ulozeni` se ctyrmi kroky: synchronizace, verejny dopad, reporty a export.

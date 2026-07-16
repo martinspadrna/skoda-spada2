@@ -1434,6 +1434,93 @@
   min-height:32px !important;
   padding:6px 10px !important;
 }
+.adminHandoverReadiness{
+  display:grid !important;
+  gap:8px !important;
+  margin:12px 0 !important;
+  padding:10px !important;
+  border:1px solid rgba(180,255,190,.24) !important;
+  border-radius:8px !important;
+  background:rgba(255,255,255,.04) !important;
+}
+.adminHandoverReadinessSummary{
+  display:grid !important;
+  gap:4px !important;
+  min-height:84px !important;
+  padding:10px !important;
+  border:1px solid rgba(175,210,255,.28) !important;
+  border-radius:8px !important;
+  background:rgba(0,0,0,.1) !important;
+}
+.adminHandoverReadinessSummary.isOk{
+  border-color:rgba(180,255,190,.38) !important;
+  background:rgba(95,255,130,.08) !important;
+}
+.adminHandoverReadinessSummary.isWarn{
+  border-color:rgba(255,210,120,.44) !important;
+  background:rgba(255,185,80,.07) !important;
+}
+.adminHandoverReadinessSummary span{
+  font-size:12px !important;
+  font-weight:900 !important;
+  color:rgba(222,255,228,.82) !important;
+  line-height:1.1 !important;
+}
+.adminHandoverReadinessSummary b{
+  font-size:20px !important;
+  line-height:1.1 !important;
+  color:#b8d7ff !important;
+}
+.adminHandoverReadinessSummary small{
+  color:rgba(235,255,240,.72) !important;
+  font-size:11px !important;
+  font-weight:700 !important;
+  line-height:1.25 !important;
+}
+.adminHandoverReadinessGrid{
+  display:grid !important;
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  gap:8px !important;
+}
+.adminHandoverReadinessItem{
+  display:grid !important;
+  gap:4px !important;
+  align-content:start !important;
+  min-height:88px !important;
+  padding:9px !important;
+  border:1px solid rgba(175,210,255,.24) !important;
+  border-radius:8px !important;
+  background:rgba(255,255,255,.035) !important;
+}
+.adminHandoverReadinessItem.isOk{
+  border-color:rgba(180,255,190,.3) !important;
+  background:rgba(95,255,130,.06) !important;
+}
+.adminHandoverReadinessItem.isWarn{
+  border-color:rgba(255,210,120,.42) !important;
+  background:rgba(255,185,80,.07) !important;
+}
+.adminHandoverReadinessItem.isInfo{
+  border-color:rgba(175,210,255,.28) !important;
+}
+.adminHandoverReadinessItem span{
+  font-size:12px !important;
+  font-weight:900 !important;
+  color:rgba(222,255,228,.82) !important;
+  line-height:1.1 !important;
+}
+.adminHandoverReadinessItem b{
+  font-size:16px !important;
+  line-height:1.1 !important;
+  color:#b8d7ff !important;
+  overflow-wrap:anywhere !important;
+}
+.adminHandoverReadinessItem small{
+  color:rgba(235,255,240,.72) !important;
+  font-size:11px !important;
+  font-weight:700 !important;
+  line-height:1.25 !important;
+}
 .adminPermissionStatus{
   display:grid !important;
   gap:8px !important;
@@ -2271,6 +2358,9 @@
     grid-template-columns:1fr !important;
   }
   .adminHandoverAuditGrid{
+    grid-template-columns:1fr !important;
+  }
+  .adminHandoverReadinessGrid{
     grid-template-columns:1fr !important;
   }
   .adminPermissionStatusGrid{

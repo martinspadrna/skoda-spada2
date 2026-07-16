@@ -1,4 +1,4 @@
-// RaK 1.2 (1.242) - admin opravneni navazane na prihlaseny ucet.
+// RaK 1.2 (1.243) - admin opravneni navazane na prihlaseny ucet.
 const RAK_OWNER_ADMIN_ACCOUNT_ID = '9811';
 const RAK_OWNER_ADMIN_PASSWORD = '772326';
 const RAK_ADMIN_ACCOUNTS_SETTINGS_KEY = 'ADMIN_ACCOUNTS_SETTINGS';
