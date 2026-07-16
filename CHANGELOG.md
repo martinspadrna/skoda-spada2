@@ -1,3 +1,10 @@
+## RaK 1.2 (1.265)
+
+- Administrace / Export / import: doplněno potvrzení před načtením Excelu do rozpisů, aby se import nedal spustit omylem.
+- Excel import: potvrzení ukazuje rozsah importu, počet měsíců a upozornění, že akce změní rozpisy; při zrušení zůstanou rozpisy beze změny.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá potvrzení importu, varovný text a bezpečné zrušení bez zápisu.
+- Release metadata sjednocená na `RaK 1.2 (1.265)`, technická verze `1.2.265`, cache `v1.2-1.265`.
+
 ## RaK 1.2 (1.264)
 
 - Administrace: rozšířena `Legenda tlačítek` o rizikové akce `Import` a `Obnovit`, aby nový správce hned viděl, že nejde o běžné načtení.

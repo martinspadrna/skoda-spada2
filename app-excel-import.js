@@ -169,6 +169,31 @@ async function ensureFreshRakExcelImportPreview() {
   return preview;
 }
 
+function buildRakExcelImportConfirmMessage(entries, importOptions) {
+  const safeEntries = Array.isArray(entries) ? entries : [];
+  const scope = importOptions && importOptions.scope === 'month' ? 'month' : 'all';
+  const monthKeys = safeEntries.map(([monthKey]) => String(monthKey || '').trim()).filter(Boolean);
+  const scopeLine = scope === 'month'
+    ? ('Import přepíše vybraný měsíc ' + (monthKeys[0] || String(importOptions && importOptions.monthKey || '').trim() || ''))
+    : ('Import přepíše načtené měsíce: ' + (monthKeys.join(', ') || String(safeEntries.length) + ' měsíců'));
+  return [
+    'Načíst Excel do rozpisů?',
+    '',
+    scopeLine,
+    'Počet měsíců: ' + String(safeEntries.length),
+    '',
+    'Tahle akce změní rozpisy. Před importem zkontroluj rozsah a zálohy.'
+  ].join('\n');
+}
+
+function confirmRakExcelImportOverwrite(entries, importOptions) {
+  try {
+    return confirm(buildRakExcelImportConfirmMessage(entries, importOptions));
+  } catch (err) {
+    return false;
+  }
+}
+
 async function performRakExcelImportFromPreview() {
   const preview = await ensureFreshRakExcelImportPreview();
   const importOptions = getExcelImportOptions();
@@ -188,6 +213,11 @@ async function performRakExcelImportFromPreview() {
     alert(importOptions.scope === 'month'
       ? ('V Excelu jsem nenašel vybraný měsíc ' + importOptions.monthKey + '.' + warn)
       : ('V Excelu jsem nenašel žádný použitelný rozpis.' + warn));
+    return;
+  }
+
+  if (!confirmRakExcelImportOverwrite(entries, importOptions)) {
+    setRakExcelImportStatus('Import zrušený. Rozpisy zůstaly beze změny.', false);
     return;
   }
 
