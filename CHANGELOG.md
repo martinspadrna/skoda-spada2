@@ -1,3 +1,10 @@
+## RaK 1.2 (1.225)
+
+- Administrace / Oznámení Dashboard: přidaný admin-only souhrn `Stav oznámení`, který ukazuje, jestli je oznámení aktivní, naplánované, skončené nebo bez textu.
+- Oznámení: stav i náhled se přepočítávají podle rozepsaných polí ještě před uložením, včetně časového okna a volby běžícího textu.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá nový stav oznámení, živé přepočítání a responsive admin-only styl.
+- Release metadata sjednocená na `RaK 1.2 (1.225)`, technická verze `1.2.225`, cache `v1.2-1.225`.
+
 ## RaK 1.2 (1.224)
 
 - Administrace / Výplata: přidaný admin-only souhrn `Stav výplaty`, který ukazuje pravidlo, počet ručních výjimek, nejbližší termín a kontrolu rozepsaných řádků.

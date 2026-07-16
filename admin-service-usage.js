@@ -321,6 +321,129 @@ function rakDatetimeLocalToIso(value) {
   return Number.isNaN(d.getTime()) ? '' : d.toISOString();
 }
 
+function adminAnnouncementParseDate(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return null;
+  const date = new Date(raw);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function adminAnnouncementFormatDate(value) {
+  const date = value instanceof Date ? value : adminAnnouncementParseDate(value);
+  if (!date) return '';
+  try {
+    return date.toLocaleString('cs-CZ', { dateStyle: 'short', timeStyle: 'short' });
+  } catch (err) {
+    const pad = (n) => String(n).padStart(2, '0');
+    return pad(date.getDate()) + '.' + pad(date.getMonth() + 1) + '.' + date.getFullYear() + ' ' + pad(date.getHours()) + ':' + pad(date.getMinutes());
+  }
+}
+
+function readAdminAnnouncementDraftFromDom(root) {
+  const scope = root || document.getElementById('appMenuBody') || document;
+  const get = (id) => String(scope.querySelector && scope.querySelector('#' + id)?.value || '').trim();
+  const checked = (id) => !!(scope.querySelector && scope.querySelector('#' + id)?.checked);
+  return {
+    title: get('adminAnnouncementTitle'),
+    message: get('adminAnnouncementMessage'),
+    startAt: rakDatetimeLocalToIso(get('adminAnnouncementStart')),
+    endAt: rakDatetimeLocalToIso(get('adminAnnouncementEnd')),
+    isActive: checked('adminAnnouncementActive'),
+    marquee: checked('adminAnnouncementMarquee')
+  };
+}
+
+function adminAnnouncementStatusItemHtml(label, value, detail, state) {
+  const safeState = state || 'ok';
+  return [
+    '<div class="adminAnnouncementStatusItem is' + escapeHtml(safeState.charAt(0).toUpperCase() + safeState.slice(1)) + '">',
+    '  <span>' + escapeHtml(label || '') + '</span>',
+    '  <b>' + escapeHtml(value || '') + '</b>',
+    detail ? '  <small>' + escapeHtml(detail) + '</small>' : '',
+    '</div>'
+  ].join('');
+}
+
+function buildAdminAnnouncementStatusHtml(payload, health) {
+  const item = payload && typeof payload === 'object' ? payload : {};
+  const now = new Date();
+  const message = String(item.message || '').trim();
+  const title = String(item.title || '').trim();
+  const start = adminAnnouncementParseDate(item.startAt);
+  const end = adminAnnouncementParseDate(item.endAt);
+  const isActive = item.isActive !== false;
+  const invalidWindow = !!(start && end && start.getTime() > end.getTime());
+  const beforeStart = !!(start && now.getTime() < start.getTime());
+  const afterEnd = !!(end && now.getTime() > end.getTime());
+  const activeNow = !!(isActive && message && !invalidWindow && !beforeStart && !afterEnd);
+  const windowText = invalidWindow
+    ? 'Čas Od musí být před časem Do.'
+    : (start && end
+        ? (adminAnnouncementFormatDate(start) + ' - ' + adminAnnouncementFormatDate(end))
+        : (start ? ('Od ' + adminAnnouncementFormatDate(start)) : (end ? ('Do ' + adminAnnouncementFormatDate(end)) : 'Bez časového omezení')));
+  const sourceText = health
+    ? ((health.hasOnlineAnnouncement ? 'online' : (health.hasLocalAnnouncement ? 'lokálně' : 'bez uloženého')) + ' · panel ' + (health.domPresent ? 'připraven' : 'nenalezen'))
+    : 'Stav online panelu není dostupný.';
+  const items = [
+    {
+      label: 'Zobrazení',
+      value: activeNow ? 'aktivní teď' : (isActive ? (beforeStart ? 'naplánováno' : (afterEnd ? 'skončilo' : (message ? 'kontrola' : 'bez textu'))) : 'vypnuto'),
+      detail: activeNow ? 'Běžný uživatel ho uvidí na Dashboardu.' : (isActive ? 'Po uložení se zobrazí jen při splnění textu a času.' : 'Oznámení je vypnuté.'),
+      state: activeNow ? 'ok' : (isActive && !message ? 'warn' : 'info')
+    },
+    {
+      label: 'Text',
+      value: String(message.length) + '/500',
+      detail: message ? (title ? ('Nadpis: ' + title) : 'Bez nadpisu, zobrazí se jen text.') : 'Nejdřív napiš text oznámení.',
+      state: message ? 'ok' : 'warn'
+    },
+    {
+      label: 'Časové okno',
+      value: invalidWindow ? 'chyba času' : (start || end ? 'nastaveno' : 'bez omezení'),
+      detail: windowText,
+      state: invalidWindow ? 'warn' : (beforeStart ? 'info' : 'ok')
+    },
+    {
+      label: 'Náhled / uložení',
+      value: item.marquee === false ? 'stojí' : 'jede',
+      detail: sourceText,
+      state: health && health.domPresent === false ? 'warn' : 'ok'
+    }
+  ];
+  return [
+    '<div class="adminAnnouncementStatus" id="adminAnnouncementStatus">',
+    '  <div class="appMenuSubTitle">Stav oznámení</div>',
+    '  <div class="smallText uMb10">Souhrn vychází z polí níže. Běžný uživatel ho uvidí až po uložení a načtení Dashboardu.</div>',
+    '  <div class="adminAnnouncementStatusGrid">',
+    items.map((entry) => adminAnnouncementStatusItemHtml(entry.label, entry.value, entry.detail, entry.state)).join(''),
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
+function adminAnnouncementRefreshStatus(root) {
+  const scope = root || document.getElementById('appMenuBody') || document;
+  const payload = readAdminAnnouncementDraftFromDom(scope);
+  const health = typeof window.getRakDashboardAnnouncementHealth === 'function' ? window.getRakDashboardAnnouncementHealth() : null;
+  const box = scope.querySelector ? scope.querySelector('#adminAnnouncementStatus') : null;
+  if (box) {
+    const wrap = document.createElement('div');
+    wrap.innerHTML = buildAdminAnnouncementStatusHtml(payload, health);
+    const next = wrap.firstElementChild;
+    if (next) box.replaceWith(next);
+  }
+  const preview = scope.querySelector ? scope.querySelector('.adminAnnouncementPreview') : null;
+  if (preview) {
+    const label = preview.querySelector('.dashboardAnnouncementLabel');
+    const track = preview.querySelector('.dashboardAnnouncementTrack');
+    const text = track ? track.querySelector('span') : null;
+    if (label) label.textContent = payload.title || 'Náhled';
+    if (text) text.textContent = payload.message || 'Tady pojede nastavený text oznámení.';
+    if (track) track.classList.toggle('isMarquee', payload.marquee !== false);
+    preview.classList.toggle('isMuted', !payload.isActive || !payload.message);
+  }
+}
+
 function buildAdminAnnouncementHtml() {
   const current = typeof window.readRakDashboardAdminAnnouncement === 'function'
     ? window.readRakDashboardAdminAnnouncement()
@@ -338,6 +461,14 @@ function buildAdminAnnouncementHtml() {
     '    <div>Nastavíš text, který se zobrazí nad prvním panelem na Dashboardu. Ukládá se lokálně v této appce a má se znovu ukázat i po vypnutí a zapnutí.</div>',
     '    <div class="smallText" id="adminOnlineSaveStatus">' + escapeHtml(status) + '</div>',
     '  </div>',
+    buildAdminAnnouncementStatusHtml({
+      title: current ? current.title || '' : '',
+      message: current ? current.message || '' : '',
+      startAt: current ? current.startAt || '' : '',
+      endAt: current ? current.endAt || '' : '',
+      isActive: active,
+      marquee
+    }, health),
     '  <label class="appMenuFieldLabel" for="adminAnnouncementTitle">Nadpis <span class="smallText">volitelné</span></label>',
     '  <input class="appMenuInlineInput adminAnnouncementInput" id="adminAnnouncementTitle" maxlength="80" value="' + escapeHtml(current ? current.title || '' : '') + '" placeholder="Volitelné – klidně nech prázdné">',
     '  <label class="appMenuFieldLabel" for="adminAnnouncementMessage">Text</label>',
@@ -364,11 +495,10 @@ function buildAdminAnnouncementHtml() {
 }
 
 function readAdminAnnouncementFromDom() {
-  const title = String(document.getElementById('adminAnnouncementTitle')?.value || '').trim();
-  const message = String(document.getElementById('adminAnnouncementMessage')?.value || '').trim();
-  const startAt = rakDatetimeLocalToIso(document.getElementById('adminAnnouncementStart')?.value || '');
-  const endAt = rakDatetimeLocalToIso(document.getElementById('adminAnnouncementEnd')?.value || '');
-  const isActive = !!document.getElementById('adminAnnouncementActive')?.checked;
-  const marquee = !!document.getElementById('adminAnnouncementMarquee')?.checked;
-  return { title, message, startAt, endAt, isActive, marquee };
+  return readAdminAnnouncementDraftFromDom(document);
 }
+
+try {
+  window.buildAdminAnnouncementStatusHtml = buildAdminAnnouncementStatusHtml;
+  window.adminAnnouncementRefreshStatus = adminAnnouncementRefreshStatus;
+} catch (err) {}
