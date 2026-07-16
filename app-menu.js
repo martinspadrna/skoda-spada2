@@ -480,6 +480,66 @@ function adminHandoverReadinessItemHtml(item) {
   ].join('');
 }
 
+function adminHandoverReadinessActionForTitle(title) {
+  const safeTitle = String(title || '').trim().toLowerCase();
+  if (safeTitle.indexOf('synchroniz') !== -1) return { action: 'open-service', label: 'Servis' };
+  if (safeTitle.indexOf('online') !== -1) return { action: 'load-machines', label: 'Načíst' };
+  if (safeTitle.indexOf('rozpis') !== -1) return { action: 'open-rotation', label: 'Rozpis' };
+  if (safeTitle.indexOf('provoz') !== -1) return { action: 'open-food', label: 'Provoz' };
+  if (safeTitle.indexOf('volno') !== -1) return { action: 'open-vacation', label: 'Dovolená' };
+  if (safeTitle.indexOf('záloh') !== -1 || safeTitle.indexOf('zaloh') !== -1) return { action: 'open-backups', label: 'Zálohy' };
+  if (safeTitle.indexOf('správc') !== -1 || safeTitle.indexOf('spravc') !== -1) return { action: 'open-admin-accounts', label: 'Správci' };
+  return { action: 'open-handover', label: 'Předání' };
+}
+
+function adminHandoverTodoItemHtml(item) {
+  const state = String(item && item.state || 'info').trim() || 'info';
+  const action = adminHandoverReadinessActionForTitle(item && item.title);
+  return [
+    '<div class="adminHandoverTodoItem is' + escapeHtml(state.charAt(0).toUpperCase() + state.slice(1)) + '">',
+    '  <div class="adminHandoverTodoText">',
+    '    <div class="adminHandoverTodoTitle">' + escapeHtml(item && item.title || '') + '</div>',
+    '    <div class="smallText">' + escapeHtml(item && item.detail || '') + '</div>',
+    '  </div>',
+    '  <button type="button" class="appMenuAction adminHandoverTodoAction" data-admin-action="' + escapeHtml(action.action) + '">' + escapeHtml(action.label) + '</button>',
+    '</div>'
+  ].join('');
+}
+
+function buildAdminHandoverTodoHtml(monthKey) {
+  const snapshot = buildAdminHandoverReadinessSnapshot(monthKey);
+  const warnings = snapshot.checks.filter((item) => item && item.state === 'warn');
+  const infos = snapshot.checks.filter((item) => item && item.state === 'info');
+  const selected = (warnings.length ? warnings : infos).slice(0, 4);
+  const ready = !selected.length;
+  return [
+    '<div class="adminHandoverTodo">',
+    '  <div class="appMenuSubTitle">Co ještě vyřešit před předáním</div>',
+    '  <div class="smallText uMb10">' + escapeHtml(ready ? 'Nejsou tu žádná varování. Před stažením podkladů stačí projít informační body v připravenosti.' : 'Krátký seznam podle aktuálních varování v připravenosti předání. Tlačítka jen otevírají administraci.') + '</div>',
+    ready ? '  <div class="adminHandoverTodoDone">Všechna blokující varování jsou vyřešená.</div>' : selected.map(adminHandoverTodoItemHtml).join(''),
+    '</div>'
+  ].join('');
+}
+
+function buildAdminHandoverTodoText(monthKey) {
+  const snapshot = buildAdminHandoverReadinessSnapshot(monthKey);
+  const warnings = snapshot.checks.filter((item) => item && item.state === 'warn');
+  const infos = snapshot.checks.filter((item) => item && item.state === 'info');
+  const selected = warnings.length ? warnings : infos;
+  const lines = [
+    'Co jeste vyresit pred predanim'
+  ];
+  if (!selected.length) {
+    lines.push('- Bez blokujicich varovani.');
+  } else {
+    selected.forEach((item) => {
+      lines.push('- ' + String(item.title || 'Kontrola') + ': ' + String(item.detail || ''));
+    });
+  }
+  lines.push('');
+  return lines.join('\n');
+}
+
 function buildAdminHandoverReadinessSnapshot(monthKey) {
   const selectedMonth = String(monthKey || getAdminSelectedMonthKey() || '').trim();
   const rows = Array.isArray(app && app.machineSettingsRows) ? app.machineSettingsRows : [];
@@ -861,6 +921,7 @@ function buildAdminHandoverStatusText(monthKey) {
     'Vytvořeno: ' + new Date().toLocaleString('cs-CZ'),
     '',
     'Souhrn',
+    buildAdminHandoverTodoText(selectedMonth).trim(),
     buildAdminHandoverReadinessText(selectedMonth).trim(),
     '- Online nastavení: ' + (rows.length ? ('načteno ' + rows.length + ' řádků') : 'nenačteno'),
     '- Běžné stroje v nastavení: ' + String(machineRows.length),
@@ -922,6 +983,8 @@ function buildAdminHandoverPackageText(monthKey) {
     '- Zmeny delat jen v administraci a vzdy ulozit v konkretni sekci.',
     '- Bezni uzivatele nemaji mit moznost menit rozpis, provoz ani nastaveni.',
     '',
+    '============================================================',
+    buildAdminHandoverTodoText(selectedMonth),
     '============================================================',
     buildAdminHandoverReadinessText(selectedMonth),
     '============================================================',
@@ -1786,6 +1849,7 @@ function renderAdminMenuBody(body, section) {
     '  </div>',
     buildAdminPermissionStatusHtml(),
     buildAdminAccessRulesHtml(),
+    buildAdminHandoverTodoHtml(monthKey),
     buildAdminHandoverReadinessHtml(monthKey),
     buildAdminPostSaveCheckHtml(),
     buildAdminNextStepsHtml(monthKey),
@@ -2031,6 +2095,7 @@ function renderAdminMenuBody(body, section) {
     '  </div>',
     buildAdminPermissionStatusHtml(),
     buildAdminAccessRulesHtml(),
+    buildAdminHandoverTodoHtml(monthKey),
     buildAdminHandoverReadinessHtml(monthKey),
     buildAdminPostSaveCheckHtml(),
     buildAdminHandoverAuditHtml(monthKey),

@@ -1,3 +1,10 @@
+## RaK 1.2 (1.245)
+
+- Administrace / Predani spravy: pridany seznam `Co jeste vyresit pred predanim`, ktery bere varovani z pripravenosti predani a vede spravce do spravne admin sekce.
+- Predani spravy: stejny seznam ukolu je soucasti textoveho stavu i predavaciho balicku, aby novy spravce videl nejblizsi kroky i mimo aplikaci.
+- Smoke guard: `app-usage-smoke-v963.js` hlida UI seznam ukolu, textovy export, mapovani akci i responsive styl.
+- Release metadata sjednocená na `RaK 1.2 (1.245)`, technická verze `1.2.245`, cache `v1.2-1.245`.
+
 ## RaK 1.2 (1.244)
 
 - Administrace / Predani spravy: souhrn `Pripravenost predani` nově kontroluje i stav synchronizace a offline frontu Supabase.

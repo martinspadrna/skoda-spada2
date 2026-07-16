@@ -1434,6 +1434,53 @@
   min-height:32px !important;
   padding:6px 10px !important;
 }
+.adminHandoverTodo{
+  display:grid !important;
+  gap:8px !important;
+  margin:12px 0 !important;
+  padding:10px !important;
+  border:1px solid rgba(255,210,120,.28) !important;
+  border-radius:8px !important;
+  background:rgba(255,255,255,.04) !important;
+}
+.adminHandoverTodoItem{
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) auto !important;
+  gap:9px !important;
+  align-items:start !important;
+  min-height:62px !important;
+  padding:9px !important;
+  border:1px solid rgba(175,210,255,.24) !important;
+  border-radius:8px !important;
+  background:rgba(0,0,0,.1) !important;
+}
+.adminHandoverTodoItem.isWarn{
+  border-color:rgba(255,210,120,.44) !important;
+  background:rgba(255,185,80,.07) !important;
+}
+.adminHandoverTodoItem.isInfo{
+  border-color:rgba(175,210,255,.3) !important;
+}
+.adminHandoverTodoText{
+  min-width:0 !important;
+}
+.adminHandoverTodoTitle{
+  font-weight:900 !important;
+  line-height:1.15 !important;
+}
+#appMenuBody .adminHandoverTodoAction{
+  min-width:82px !important;
+  min-height:34px !important;
+  padding:7px 9px !important;
+}
+.adminHandoverTodoDone{
+  padding:10px !important;
+  border:1px solid rgba(180,255,190,.28) !important;
+  border-radius:8px !important;
+  color:rgba(222,255,228,.88) !important;
+  font-weight:900 !important;
+  background:rgba(95,255,130,.07) !important;
+}
 .adminHandoverReadiness{
   display:grid !important;
   gap:8px !important;
@@ -2359,6 +2406,12 @@
   }
   .adminHandoverAuditGrid{
     grid-template-columns:1fr !important;
+  }
+  .adminHandoverTodoItem{
+    grid-template-columns:1fr !important;
+  }
+  #appMenuBody .adminHandoverTodoAction{
+    justify-self:start !important;
   }
   .adminHandoverReadinessGrid{
     grid-template-columns:1fr !important;
