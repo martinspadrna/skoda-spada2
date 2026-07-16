@@ -307,6 +307,39 @@ function adminRotationGeneratorListValue(list) {
   return adminRotationSplitGeneratorList(list).join('\n');
 }
 
+function adminRotationGeneratorRuleCardHtml(title, value, detail) {
+  return [
+    '<div class="adminGeneratorRuleCard">',
+    '  <span>' + escapeHtml(title || '') + '</span>',
+    '  <b>' + escapeHtml(value || '') + '</b>',
+    detail ? '  <small>' + escapeHtml(detail) + '</small>' : '',
+    '</div>'
+  ].join('');
+}
+
+function buildAdminRotationGeneratorRuleSummaryHtml() {
+  const rules = getAdminRotationGeneratorRules();
+  const latestRules = (typeof RAK_ROTATION_GENERATOR_RULES_V1135 !== 'undefined' && RAK_ROTATION_GENERATOR_RULES_V1135) ? RAK_ROTATION_GENERATOR_RULES_V1135 : {};
+  const balanceRules = (typeof RAK_ROTATION_GENERATOR_RULES_V1116 !== 'undefined' && RAK_ROTATION_GENERATOR_RULES_V1116) ? RAK_ROTATION_GENERATOR_RULES_V1116 : {};
+  const hardCycle = adminRotationGeneratorListValue(rules.hardCycle || []);
+  const softCore = adminRotationGeneratorListValue(rules.softCore || []);
+  const softHardCycle = adminRotationGeneratorListValue(rules.softHardCycle || []);
+  return [
+    '<div class="adminGeneratorRulesSummary">',
+    '  <div class="appMenuSubTitle">Podmínky generování</div>',
+    '  <div class="smallText uMb10">Rychlý souhrn toho, co generátor hlídá před uložením rozpisu. Návrh se do online rotace propíše až po ruční kontrole a tlačítku Uložit rozpis.</div>',
+    '  <div class="adminGeneratorRulesGrid">',
+    adminRotationGeneratorRuleCardHtml('Příprava měsíce', 'dny + absence první', 'Nejdřív vyber měsíc, zkontroluj pracovní dny, doplň svátky, odstávky a absence.'),
+    adminRotationGeneratorRuleCardHtml('Uložení návrhu', 'jen po kontrole', 'Vygenerovaný návrh se nejdřív otevře v editoru. Online se uloží až tlačítkem Uložit rozpis.'),
+    adminRotationGeneratorRuleCardHtml('Tvrdotový cyklus', hardCycle.replace(/\n/g, ' → '), 'Pořadí strojů pro návaznou tvrdotu lze upravit níže.'),
+    adminRotationGeneratorRuleCardHtml('Trojice z měkoty', softCore, 'Chodí na ' + softHardCycle.replace(/\n/g, ' → ') + ' po blocích ' + String(rules.softHardBlockLength || 3) + ' pracovních dnů.'),
+    adminRotationGeneratorRuleCardHtml('TNKS01 / TPKW01 po sobě', 'zakázáno', latestRules.consecutiveTnksRule || 'Stejný pracovník nemá být na nýtovačce dvě pracovní směny po sobě.'),
+    adminRotationGeneratorRuleCardHtml('Vyrovnání nýtovačky', 'měsíc má přednost', latestRules.tnksMonthlyFirstRule || balanceRules.pressBalanceRule || 'TNKS01 a TPKW01 se vyrovnávají podle společných počtů.'),
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
 function buildAdminRotationGeneratorSettingsHtml() {
   const settings = getAdminRotationGeneratorSettings();
   const baseRows = settings.softCore.map((name, idx) => [
@@ -316,6 +349,7 @@ function buildAdminRotationGeneratorSettingsHtml() {
     '</tr>'
   ].join('')).join('');
   return [
+    buildAdminRotationGeneratorRuleSummaryHtml(),
     '<div class="appMenuSettingsList adminGeneratorSettingsList">',
     '  <div class="appMenuSubTitle">Lidé a pořadí</div>',
     '  <label class="appMenuFieldLabel" for="adminGeneratorSoftPreferred">Základ měkoty</label>',

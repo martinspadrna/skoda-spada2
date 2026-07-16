@@ -1,3 +1,10 @@
+## RaK 1.2 (1.214)
+
+- Administrace / Pravidla generátoru: přidaný admin-only přehled `Podmínky generování`, který ukazuje přípravu měsíce, pravidlo ručního uložení, tvrdotový cyklus, trojici z měkoty, zákaz TNKS01/TPKW01 po sobě a vyrovnání nýtovačky.
+- Předání správy: nový správce vidí podmínky přímo v aplikaci před spuštěním návrhu rozpisu, bez nutnosti hledat pravidla v historii změn.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá nový přehled pravidel generátoru a jeho admin-only styl.
+- Release metadata sjednocená na `RaK 1.2 (1.214)`, technická verze `1.2.214`, cache `v1.2-1.214`.
+
 ## RaK 1.2 (1.213)
 
 - Administrace / Správci: přidaný přehled rolí, který přímo v admin-only sekci ukazuje hlavní admin účet `9811`, počet aktivních dalších správců a pravidlo přihlášení účet + heslo.
