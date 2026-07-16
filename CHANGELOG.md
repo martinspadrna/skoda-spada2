@@ -1,3 +1,10 @@
+## RaK 1.2 (1.215)
+
+- Administrace / Rozpisy: přidaná živá kontrola `Kontrola před uložením`, která ukazuje vybraný měsíc, počet dnů, vyplněnost polí, počet absencí, stav záloh a připomínku, že online změna proběhne až ručním uložením.
+- Předání správy: nový správce má přímo nad editorem rozpisu rychlý stav, jestli měsíc vypadá připravený k uložení nebo je potřeba ještě ověřit prázdná pole a zálohy.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá nový předuložovací panel, živé přepočítání a admin-only styl.
+- Release metadata sjednocená na `RaK 1.2 (1.215)`, technická verze `1.2.215`, cache `v1.2-1.215`.
+
 ## RaK 1.2 (1.214)
 
 - Administrace / Pravidla generátoru: přidaný admin-only přehled `Podmínky generování`, který ukazuje přípravu měsíce, pravidlo ručního uložení, tvrdotový cyklus, trojici z měkoty, zákaz TNKS01/TPKW01 po sobě a vyrovnání nýtovačky.

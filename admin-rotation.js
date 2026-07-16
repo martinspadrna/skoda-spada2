@@ -1030,6 +1030,145 @@ function adminRenderRotationAvailabilitySummary(root) {
   }
 }
 
+function adminRotationPreSaveItemHtml(item) {
+  const state = String(item && item.state || 'info').trim() || 'info';
+  return [
+    '<div class="adminRotationPreSaveItem is' + escapeHtml(state.charAt(0).toUpperCase() + state.slice(1)) + '">',
+    '  <span>' + escapeHtml(item && item.title || '') + '</span>',
+    '  <b>' + escapeHtml(item && item.value || '') + '</b>',
+    item && item.detail ? '  <small>' + escapeHtml(item.detail) + '</small>' : '',
+    '</div>'
+  ].join('');
+}
+
+function adminRotationBuildPreSaveStatus(monthKey, month) {
+  const safeMonth = month || (app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null);
+  const hardRows = Array.isArray(safeMonth && safeMonth.hard && safeMonth.hard.rows) ? safeMonth.hard.rows : [];
+  const softRows = Array.isArray(safeMonth && safeMonth.soft && safeMonth.soft.rows) ? safeMonth.soft.rows : [];
+  const notesRows = Array.isArray(safeMonth && safeMonth.notes) ? safeMonth.notes : [];
+  const dateKeys = new Set();
+  let filledCells = 0;
+  let totalCells = 0;
+  const countRows = (rows) => {
+    rows.forEach((row) => {
+      const date = adminRotationDateLabel(row && row.date ? row.date : '');
+      const cells = Array.isArray(row && row.cells) ? row.cells : [];
+      if (date) dateKeys.add(date);
+      cells.forEach((cell) => {
+        totalCells += 1;
+        if (String(cell || '').trim()) filledCells += 1;
+      });
+    });
+  };
+  countRows(hardRows);
+  countRows(softRows);
+  const backupsSnapshot = app && app.adminRotationBackupsSnapshot && typeof app.adminRotationBackupsSnapshot === 'object' ? app.adminRotationBackupsSnapshot : null;
+  const backups = backupsSnapshot && Array.isArray(backupsSnapshot.backups) ? backupsSnapshot.backups : [];
+  const hasBackupsLoaded = !!(backupsSnapshot && backupsSnapshot.loading !== true && (backupsSnapshot.ok !== false || backups.length));
+  const emptyCells = Math.max(0, totalCells - filledCells);
+  const occupancy = totalCells ? Math.round((filledCells / totalCells) * 100) : 0;
+  return {
+    monthKey: String(monthKey || '').trim(),
+    hasMonth: !!safeMonth,
+    dayCount: dateKeys.size,
+    hardRowCount: hardRows.length,
+    softRowCount: softRows.length,
+    notesCount: notesRows.length,
+    filledCells,
+    totalCells,
+    emptyCells,
+    occupancy,
+    backupsCount: backups.length,
+    hasBackupsLoaded
+  };
+}
+
+function buildAdminRotationPreSaveChecklistHtml(monthKey) {
+  return [
+    '<div class="adminRotationPreSaveCheck" id="adminRotationPreSaveCheck" data-pre-save-month="' + escapeHtml(monthKey || '') + '">',
+    '  <div class="appMenuSubTitle">Kontrola před uložením</div>',
+    '  <div class="smallText uMb10">Rychlý stav rozpisu. Přepočítá se i při úpravách v tabulce a nic sám neukládá.</div>',
+    '  <div class="adminRotationPreSaveGrid">',
+    adminRotationPreSaveItemHtml({ state: 'info', title: 'Měsíc', value: monthKey || '—', detail: 'Vybraný měsíc rozpisu.' }),
+    adminRotationPreSaveItemHtml({ state: 'info', title: 'Stav', value: 'počítám', detail: 'Kontrola se dopočítá po vykreslení editoru.' }),
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
+function adminRenderRotationPreSaveChecklist(root) {
+  if (!root || root.dataset.adminView !== 'rotation') return;
+  const box = root.querySelector('#adminRotationPreSaveCheck');
+  if (!box) return;
+  const monthSelect = root.querySelector('#adminMonthSelect');
+  const monthKey = monthSelect ? String(monthSelect.value || '').trim() : getAdminSelectedMonthKey();
+  let month = null;
+  try {
+    month = typeof readAdminRotationFromDom === 'function' && root.querySelector('#adminRotationEditor')
+      ? readAdminRotationFromDom(monthKey)
+      : (app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null);
+  } catch (err) {
+    month = app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
+  }
+  const status = adminRotationBuildPreSaveStatus(monthKey, month);
+  const items = [
+    {
+      state: status.hasMonth ? 'ok' : 'warn',
+      title: 'Měsíc',
+      value: status.monthKey || 'nevybrán',
+      detail: status.hasMonth ? 'Měsíc existuje v rozpisu.' : 'Pro tenhle měsíc zatím nejsou data.'
+    },
+    {
+      state: status.dayCount ? 'ok' : 'warn',
+      title: 'Dny',
+      value: String(status.dayCount),
+      detail: 'Tvrdota řádků: ' + String(status.hardRowCount) + ', měkota řádků: ' + String(status.softRowCount) + '.'
+    },
+    {
+      state: status.emptyCells ? 'warn' : (status.totalCells ? 'ok' : 'info'),
+      title: 'Obsazení',
+      value: status.totalCells ? (String(status.occupancy) + ' %') : '—',
+      detail: status.totalCells ? ('Vyplněno ' + String(status.filledCells) + '/' + String(status.totalCells) + ', prázdné ' + String(status.emptyCells) + '.') : 'Žádná políčka k ověření.'
+    },
+    {
+      state: status.notesCount ? 'ok' : 'info',
+      title: 'Absence',
+      value: String(status.notesCount),
+      detail: status.notesCount ? 'Zadané absence / výjimky jsou v měsíci.' : 'Bez ručně zadaných absencí.'
+    },
+    {
+      state: status.backupsCount ? 'ok' : (status.hasBackupsLoaded ? 'info' : 'warn'),
+      title: 'Zálohy',
+      value: status.backupsCount ? (String(status.backupsCount) + ' načteno') : 'ověřit',
+      detail: status.backupsCount ? 'Online zálohy jsou načtené.' : 'Před větší změnou otevři Zálohy rozpisů.'
+    },
+    {
+      state: 'info',
+      title: 'Uložení',
+      value: 'ručně',
+      detail: 'Online změna proběhne až tlačítkem Uložit rozpis.'
+    }
+  ];
+  const fingerprint = JSON.stringify(status);
+  const buildContent = () => {
+    const title = document.createElement('div');
+    title.className = 'appMenuSubTitle';
+    title.textContent = 'Kontrola před uložením';
+    const detail = document.createElement('div');
+    detail.className = 'smallText uMb10';
+    detail.textContent = 'Rychlý stav rozpisu. Přepočítá se i při úpravách v tabulce a nic sám neukládá.';
+    const grid = document.createElement('div');
+    grid.className = 'adminRotationPreSaveGrid';
+    grid.innerHTML = items.map(adminRotationPreSaveItemHtml).join('');
+    return [title, detail, grid];
+  };
+  if (typeof setElementChildrenIfChanged === 'function') {
+    setElementChildrenIfChanged(box, fingerprint, buildContent, 'adminRotationPreSaveCheck');
+  } else {
+    box.replaceChildren(...buildContent());
+  }
+}
+
 function adminRefreshRotationSuggestions(root) {
   if (!root || root.dataset.adminView !== 'rotation' || !root.isConnected) return;
   try {
@@ -1037,6 +1176,7 @@ function adminRefreshRotationSuggestions(root) {
   } catch (err) {}
   try {
     adminRenderRotationAvailabilitySummary(root);
+    adminRenderRotationPreSaveChecklist(root);
   } catch (err) {
     console.warn('Admin rotation summary failed', err);
   }
@@ -1384,6 +1524,7 @@ function buildAdminRotationTableHtml(monthKey) {
     '    </div>',
     '    <span id="adminRotationDraftStatus" class="adminRotationDraftStatus">Rozepsané změny se uloží horním tlačítkem Uložit rozpis.</span>',
     '  </div>',
+    buildAdminRotationPreSaveChecklistHtml(monthKey),
     buildAdminRotationCompactOverviewHtml(monthKey, hardRows, softRows, hardMachines, softMachines),
     '  <div class="appMenuFreeNamesBox" id="adminRotationFreeNamesSummary">',
     '    <div class="appMenuFreeNamesTitle">Kontrola měsíce</div>',
