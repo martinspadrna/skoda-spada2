@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.235) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.236) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -225,12 +225,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.235)',
-  appLabel: 'RaK 1.2 (1.235)',
-  packageVersion: '1.2.235',
-  cacheVersion: 'v1.2-1.235',
+  displayVersion: '1.2 (1.236)',
+  appLabel: 'RaK 1.2 (1.236)',
+  packageVersion: '1.2.236',
+  cacheVersion: 'v1.2-1.236',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.235)',
+  changelogHeader: '## RaK 1.2 (1.236)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -339,8 +339,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.235)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.235'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.236)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.236'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1467,6 +1467,8 @@ function assertAdminHandoverGuideContractV1142() {
   assertIncludes(ui, 'function adminHandoverAuditItemHtml', 'Provozni kontrola predani musi mit samostatne stavove polozky');
   assertIncludes(ui, 'function buildAdminHandoverStatusText', 'Predani spravy musi mit textovy export aktualniho stavu');
   assertIncludes(ui, 'function downloadAdminHandoverStatusText', 'Predani spravy musi jit stahnout jako textovy souhrn');
+  assertIncludes(ui, 'function buildAdminHandoverPackageText', 'Predani spravy musi mit souhrnny textovy balicek');
+  assertIncludes(ui, 'function downloadAdminHandoverPackageText', 'Predani spravy musi umet stahnout souhrnny balicek');
   assertIncludes(ui, 'function adminPermissionStatusSnapshot', 'Admin musi umet sestavit stav aktivniho uctu a opravneni');
   assertIncludes(ui, 'function buildAdminPermissionStatusHtml', 'Admin uvod musi ukazovat stav opravneni spravce');
   assertIncludes(ui, 'buildAdminPermissionStatusHtml()', 'Stav opravneni musi byt vlozeny primo do admin-only obrazovek');
@@ -1509,6 +1511,7 @@ function assertAdminHandoverGuideContractV1142() {
   assertIncludes(ui, 'data-admin-action="download-admin-manual"', 'Prirucka spravce musi mit tlacitko Stahnout prirucku');
   assertIncludes(ui, 'data-admin-action="download-monthly-workflow"', 'Mesicni postup musi mit tlacitko Stahnout postup');
   assertIncludes(ui, 'data-admin-action="download-handover-status"', 'Predani spravy musi mit tlacitko Stahnout stav');
+  assertIncludes(ui, 'data-admin-action="download-handover-package"', 'Predani spravy musi mit tlacitko Stahnout balicek');
   assertIncludes(ui, 'data-admin-action="download-settings-map"', 'Mapa nastaveni musi mit tlacitko Stahnout mapu');
   assertIncludes(ui, "adminAction === 'open-handover'", 'Admin menu musi umet otevrit panel Predani spravy');
   assertIncludes(ui, "adminAction === 'open-monthly-workflow'", 'Admin menu musi umet otevrit mesicni postup');
@@ -1517,6 +1520,7 @@ function assertAdminHandoverGuideContractV1142() {
   assertIncludes(ui, "adminAction === 'download-admin-manual'", 'Admin menu musi umet stahnout prirucku spravce');
   assertIncludes(ui, "adminAction === 'download-monthly-workflow'", 'Admin menu musi umet stahnout mesicni postup');
   assertIncludes(ui, "adminAction === 'download-handover-status'", 'Admin menu musi umet stahnout stav predani');
+  assertIncludes(ui, "adminAction === 'download-handover-package'", 'Admin menu musi umet stahnout balicek predani');
   assertIncludes(ui, "adminAction === 'download-settings-map'", 'Admin menu musi umet stahnout mapu nastaveni');
   assertIncludes(ui, "'admin-handover'", 'Predani spravy musi byt mezi chranenymi admin view');
   assertIncludes(ui, "'admin-monthly-workflow'", 'Mesicni postup musi byt mezi chranenymi admin view');
@@ -1535,6 +1539,7 @@ function assertAdminHandoverGuideContractV1142() {
   assertIncludes(ui, 'RaK_prirucka_spravce_', 'Textovy export prirucky musi mit jasny nazev souboru');
   assertIncludes(ui, 'RaK_mesicni_postup_', 'Textovy export mesicniho postupu musi mit jasny nazev souboru');
   assertIncludes(ui, 'RaK_stav_predani_', 'Textovy export stavu predani musi mit jasny nazev souboru');
+  assertIncludes(ui, 'RaK_balicek_predani_', 'Textovy export balicku predani musi mit jasny nazev souboru');
   assertIncludes(ui, 'RaK_kde_co_upravit_', 'Textovy export mapy nastaveni musi mit jasny nazev souboru');
   assertIncludes(ui, 'Kde co upravit', 'Mapa nastaveni musi byt pojmenovana srozumitelne pro spravce');
   assertIncludes(ui, 'Stav mapy nastaveni', 'Mapa nastaveni musi nahore vysvetlit, ze jde o rozcestnik');

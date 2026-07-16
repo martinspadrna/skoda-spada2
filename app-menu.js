@@ -641,6 +641,50 @@ function downloadAdminHandoverStatusText() {
   if (status) status.textContent = 'Stav předání stažen jako textový soubor.';
 }
 
+function buildAdminHandoverPackageText(monthKey) {
+  const selectedMonth = String(monthKey || getAdminSelectedMonthKey() || '').trim();
+  const version = formatRakDisplayVersion((typeof app !== 'undefined' && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : ''));
+  return [
+    'RaK - Balicek predani spravy',
+    'Verze: ' + version,
+    'Mesic: ' + (selectedMonth || 'nevybran'),
+    'Vytvoreno: ' + new Date().toLocaleString('cs-CZ'),
+    '',
+    'Pravidlo',
+    '- Tenhle soubor je jen predavaci podklad. Nic sam nemeni ani neuklada.',
+    '- Zmeny delat jen v administraci a vzdy ulozit v konkretni sekci.',
+    '- Bezni uzivatele nemaji mit moznost menit rozpis, provoz ani nastaveni.',
+    '',
+    '============================================================',
+    buildAdminHandoverStatusText(selectedMonth),
+    '============================================================',
+    buildAdminMonthlyWorkflowText(selectedMonth),
+    '============================================================',
+    buildAdminManualText(selectedMonth),
+    '============================================================',
+    buildAdminSettingsMapText()
+  ].join('\n');
+}
+
+function downloadAdminHandoverPackageText() {
+  const monthKey = getAdminSelectedMonthKey();
+  const text = buildAdminHandoverPackageText(monthKey);
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const dateKey = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = 'RaK_balicek_predani_' + dateKey + '.txt';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    try { URL.revokeObjectURL(url); } catch (err) {}
+    try { a.remove(); } catch (err) {}
+  }, 0);
+  const status = document.getElementById('adminOnlineSaveStatus');
+  if (status) status.textContent = 'Balíček předání stažen jako textový soubor.';
+}
+
 function buildAdminMenuSectionHtml(title, detail, actions, options = {}) {
   const safeActions = (Array.isArray(actions) ? actions : []).filter((item) => item && item.action && item.label);
   if (!safeActions.length) return '';
@@ -1621,6 +1665,7 @@ function renderAdminMenuBody(body, section) {
     buildAdminHandoverChecklistHtml(monthKey),
     buildAdminHandoverRunbookHtml(monthKey),
     '  <div class="appMenuActionRow">',
+    '    <button type="button" class="appMenuAction isActive" data-admin-action="download-handover-package">Stáhnout balíček</button>',
     '    <button type="button" class="appMenuAction isActive" data-admin-action="download-handover-status">Stáhnout stav</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="download-monthly-workflow">Stáhnout postup</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="load-machines">Načíst online</button>',
@@ -2164,6 +2209,10 @@ function bindAppMenuHandlers(body) {
       }
       if (adminAction === 'download-handover-status') {
         downloadAdminHandoverStatusText();
+        return;
+      }
+      if (adminAction === 'download-handover-package') {
+        downloadAdminHandoverPackageText();
         return;
       }
       if (adminAction === 'download-settings-map') {

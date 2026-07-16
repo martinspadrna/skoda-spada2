@@ -1,3 +1,10 @@
+## RaK 1.2 (1.236)
+
+- Administrace / Predani spravy: pridane tlacitko `Stahnout balicek`, ktere vytvori jeden textovy soubor se stavem predani, mesicnim postupem, priruckou spravce a mapou nastaveni.
+- Predani: balicek sklada existujici textove exporty, takze nic sam neuklada ani nemeni a novy spravce dostane vsechny podklady najednou.
+- Smoke guard: `app-usage-smoke-v963.js` hlida funkce balicku, tlacitko, handler a nazev souboru `RaK_balicek_predani_`.
+- Release metadata sjednocená na `RaK 1.2 (1.236)`, technická verze `1.2.236`, cache `v1.2-1.236`.
+
 ## RaK 1.2 (1.235)
 
 - Administrace / Kde co upravit: pridane tlacitko `Stahnout mapu`, ktere vytvori textovy soubor s prehledem, kde se co v aplikaci upravuje.
