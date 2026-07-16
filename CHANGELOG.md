@@ -1,3 +1,10 @@
+## RaK 1.2 (1.213)
+
+- Administrace / Správci: přidaný přehled rolí, který přímo v admin-only sekci ukazuje hlavní admin účet `9811`, počet aktivních dalších správců a pravidlo přihlášení účet + heslo.
+- Bezpečnost: běžný admin při přímém otevření panelu Správci vidí jasné vysvětlení, že další správce a jejich hesla může měnit jen hlavní admin.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá přehled rolí správců, readonly hlášku a admin-only styl.
+- Release metadata sjednocená na `RaK 1.2 (1.213)`, technická verze `1.2.213`, cache `v1.2-1.213`.
+
 ## RaK 1.2 (1.212)
 
 - Administrace: přidaný admin-only panel `Oprávnění správce`, který ukáže aktivní účet, roli a jestli je administrace opravdu odemčená.

@@ -1,4 +1,4 @@
-// RaK 1.2 (1.212) - admin opravneni navazane na prihlaseny ucet.
+// RaK 1.2 (1.213) - admin opravneni navazane na prihlaseny ucet.
 const RAK_OWNER_ADMIN_ACCOUNT_ID = '9811';
 const RAK_OWNER_ADMIN_PASSWORD = '772326';
 const RAK_ADMIN_ACCOUNTS_SETTINGS_KEY = 'ADMIN_ACCOUNTS_SETTINGS';
@@ -206,9 +206,39 @@ function mergeAdminAccountsSettingsRows(settings) {
   return rows;
 }
 
+function buildAdminAccountsRoleOverviewHtml(settings) {
+  const safe = settings && typeof settings === 'object' ? settings : rakAdminGetAccountsSettings();
+  const admins = Array.isArray(safe && safe.admins) ? safe.admins : [];
+  const enabledAdmins = admins.filter((entry) => entry && entry.enabled !== false).length;
+  return [
+    '<div class="adminAccountsRoleOverview">',
+    '  <div class="adminAccountsRoleCard isOwner">',
+    '    <span>Hlavni admin</span>',
+    '    <b>Ucet ' + escapeHtml(RAK_OWNER_ADMIN_ACCOUNT_ID) + '</b>',
+    '    <small>Muze pridavat dalsi spravce, menit jejich hesla a zapinat nebo vypinat pristup.</small>',
+    '  </div>',
+    '  <div class="adminAccountsRoleCard">',
+    '    <span>Dalsi spravci</span>',
+    '    <b>' + String(enabledAdmins) + ' aktivni</b>',
+    '    <small>Muzou spravovat provoz a rozpisy, ale nemuzou menit seznam spravcu.</small>',
+    '  </div>',
+    '  <div class="adminAccountsRoleCard isInfo">',
+    '    <span>Prihlaseni</span>',
+    '    <b>ucet + heslo</b>',
+    '    <small>Novy spravce musi mit bezny ucet v aplikaci; po jeho vyberu se administrace zepta na heslo.</small>',
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
 function buildAdminAccountsSettingsHtml() {
   if (!rakAdminCanManageAdmins()) {
-    return '<div class="smallText">Spravce muze menit jen hlavni admin ucet.</div>';
+    return [
+      '<div class="adminAccountsReadonlyNotice">',
+      '  <b>Seznam spravcu muze menit jen hlavni admin.</b>',
+      '  <span>Bezny admin muze spravovat provoz, rozpisy a nastaveni, ale nemuze pridavat dalsi spravce ani menit jejich hesla.</span>',
+      '</div>'
+    ].join('');
   }
   const settings = rakAdminGetAccountsSettings();
   const rows = settings.admins.concat(Array.from({ length: 4 }, () => ({ accountId: '', label: '', password: '', enabled: true })));
@@ -221,8 +251,9 @@ function buildAdminAccountsSettingsHtml() {
     '</tr>'
   ].join('')).join('');
   return [
+    buildAdminAccountsRoleOverviewHtml(settings),
     '<div class="tableWrap appMenuTableWrap uMt8">',
-    '  <div class="smallText uMb10">Hlavni admin je ucet ' + escapeHtml(RAK_OWNER_ADMIN_ACCOUNT_ID) + '. Tady pridavas dalsi admin ucty, ktere po prihlaseni uvidi administraci.</div>',
+    '  <div class="smallText uMb10">Tady pridavas dalsi admin ucty, ktere po prihlaseni uvidi administraci. Pro odebrani spravce smaz ucet nebo heslo a uloz.</div>',
     '  <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminAccountsTable">',
     '    <thead><tr><th>Ucet</th><th>Popis</th><th>Heslo</th><th>Aktivni</th></tr></thead>',
     '    <tbody>' + body + '</tbody>',
@@ -284,6 +315,7 @@ try {
   window.rakAdminLock = rakAdminLock;
   window.rakAdminCanOpenAdmin = rakAdminCanOpenAdmin;
   window.rakAdminCanManageAdmins = rakAdminCanManageAdmins;
+  window.buildAdminAccountsRoleOverviewHtml = buildAdminAccountsRoleOverviewHtml;
   window.buildAdminAccountsSettingsHtml = buildAdminAccountsSettingsHtml;
   window.readAdminAccountsSettingsFromDom = readAdminAccountsSettingsFromDom;
   window.mergeAdminAccountsSettingsRows = mergeAdminAccountsSettingsRows;

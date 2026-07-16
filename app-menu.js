@@ -2917,7 +2917,7 @@ function openAppMenu(view) {
       body.innerHTML = [
         '<div class="appMenuCard appMenuAdminCard">',
         '  <div class="appMenuCardTitle">Správci</div>',
-        '  <div class="appMenuText">Správce může měnit jen hlavní admin účet.</div>',
+        '  <div class="appMenuText">Seznam správců může měnit jen hlavní admin. Běžný admin může spravovat provoz, rozpisy a nastavení, ale nemůže přidávat další správce ani měnit jejich hesla.</div>',
         '  <button type="button" class="appMenuAction appMenuBack" data-menu-back="1">Zpět</button>',
         '</div>'
       ].join('');
