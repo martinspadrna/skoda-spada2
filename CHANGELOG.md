@@ -1,3 +1,11 @@
+## RaK 1.2 (1.272)
+
+- Predani spravy: pripravenost predani ted kontroluje i verejne odkazy aplikace.
+- Kontrola predani: odkazy maji vlastni stav a rychlou akci do administrace odkazu.
+- Predavaci exporty: stav predani a pravidla pristupu obsahuji verejne odkazy pred predanim.
+- Smoke guard: `app-usage-smoke-v963.js` hlida odkazy v predani, textovych podkladech i smerovani do admin odkazu.
+- Release metadata sjednocená na `RaK 1.2 (1.272)`, technická verze `1.2.272`, cache `v1.2-1.272`.
+
 ## RaK 1.2 (1.271)
 
 - Predani spravy: pripravenost predani ted kontroluje i verejny kontakt aplikace.
