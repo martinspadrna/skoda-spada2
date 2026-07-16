@@ -1,3 +1,10 @@
+## RaK 1.2 (1.258)
+
+- Administrace / Mimořádné volné dny: doplněna admin-only `Veřejná kontrola volných dnů`, aby správce po uložení ověřil dopad jednorázového volného dne.
+- Volné dny: kontrola připomíná přesné datum, důvod, dopad na rozpis/výpočty a rozdíl proti delším obdobím v Dovolená / odstávky.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá veřejnou kontrolu volných dnů, vložení do admin obrazovky a responsive styl.
+- Release metadata sjednocená na `RaK 1.2 (1.258)`, technická verze `1.2.258`, cache `v1.2-1.258`.
+
 ## RaK 1.2 (1.257)
 
 - Administrace / Dovolená a odstávky: doplněna admin-only `Veřejná kontrola dovolené`, aby správce po uložení ověřil home kartu Dovolená.

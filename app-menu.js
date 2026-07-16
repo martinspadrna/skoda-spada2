@@ -1499,6 +1499,31 @@ function buildAdminVacationPublicCheckHtml() {
   ].join('');
 }
 
+function adminSpecialDaysPublicCheckItemHtml(label, value, detail, state) {
+  const safeState = state || 'info';
+  return [
+    '<div class="adminSpecialDaysPublicCheckItem is' + escapeHtml(safeState.charAt(0).toUpperCase() + safeState.slice(1)) + '">',
+    '  <span>' + escapeHtml(label || '') + '</span>',
+    '  <b>' + escapeHtml(value || '') + '</b>',
+    detail ? '  <small>' + escapeHtml(detail) + '</small>' : '',
+    '</div>'
+  ].join('');
+}
+
+function buildAdminSpecialDaysPublicCheckHtml() {
+  return [
+    '<div class="adminSpecialDaysPublicCheck">',
+    '  <div class="appMenuSubTitle">Veřejná kontrola volných dnů</div>',
+    '  <div class="smallText uMb10">Mimořádný volný den mění práci v konkrétní datum. Po uložení ověř rozpis a běžnou aplikaci, hlavně jestli se směna správně bere jako volno.</div>',
+    '  <div class="adminSpecialDaysPublicCheckGrid">',
+    adminSpecialDaysPublicCheckItemHtml('Datum', 'jeden den', 'Zkontroluj přesný den a důvod, aby se neblokoval jiný termín.', 'warn'),
+    adminSpecialDaysPublicCheckItemHtml('Rozpis', 'volno', 'Ověř, že se v rozpisu a výpočtech ten den nebere jako běžná práce.', 'info'),
+    adminSpecialDaysPublicCheckItemHtml('Návaznost', 'dovolená', 'Delší období patří do Dovolená / odstávky, tady nech jen jednorázové dny.', 'info'),
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
 function buildAdminMonthlyWorkflowHtml(monthKey) {
   const workflow = getAdminMonthlyWorkflowItems(monthKey);
   return [
@@ -2143,6 +2168,7 @@ function renderAdminMenuBody(body, section) {
     '    <div class="smallText" id="adminOnlineSaveStatus">Prázdné řádky se neukládají. Pro odstranění řádek vymaž a ulož.</div>',
     '  </div>',
     buildAdminSpecialDaysSettingsHtml(),
+    buildAdminSpecialDaysPublicCheckHtml(),
     '  <div class="appMenuActionRow">',
     '    <button type="button" class="appMenuAction" data-admin-action="load-special-days">Načíst online</button>',
     '    <button type="button" class="appMenuAction isActive" data-admin-action="save-special-days">Uložit volné dny</button>',
