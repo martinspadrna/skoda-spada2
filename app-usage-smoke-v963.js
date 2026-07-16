@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.248) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.249) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -225,12 +225,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.248)',
-  appLabel: 'RaK 1.2 (1.248)',
-  packageVersion: '1.2.248',
-  cacheVersion: 'v1.2-1.248',
+  displayVersion: '1.2 (1.249)',
+  appLabel: 'RaK 1.2 (1.249)',
+  packageVersion: '1.2.249',
+  cacheVersion: 'v1.2-1.249',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.248)',
+  changelogHeader: '## RaK 1.2 (1.249)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -339,8 +339,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.248)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.248'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.249)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.249'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1433,6 +1433,9 @@ function assertAdminAccountLoginContractV1141() {
   assertIncludes(adminUnlockJs, 'Hlavni admin', 'Sprava spravcu musi jasne oznacit hlavni admin ucet');
   assertIncludes(adminUnlockJs, 'Dalsi spravci', 'Sprava spravcu musi jasne oddelit dalsi spravce');
   assertIncludes(adminUnlockJs, 'Stav spravcu', 'Sprava spravcu musi mit jasny stavovy souhrn');
+  assertIncludes(adminUnlockJs, 'function buildAdminAccountsSafetyHtml', 'Sprava spravcu musi mit bezpecnostni souhrn pro predani');
+  assertIncludes(adminUnlockJs, 'Bezpecnost pristupu', 'Sprava spravcu musi jasne pojmenovat bezpecnost pristupu');
+  assertIncludes(adminUnlockJs, 'Predavaci exporty hesla nestahuji', 'Predavaci podklady nesmi vytahovat admin hesla');
   assertIncludes(adminUnlockJs, 'Kontrola radku', 'Sprava spravcu musi upozornovat na nedokoncene nebo duplicitni radky');
   assertIncludes(adminUnlockJs, 'Muzou spravovat provoz a rozpisy, ale nemuzou menit seznam spravcu.', 'Dalsi spravci nesmi byt popsani jako owner admini');
   assertIncludes(ui, 'Seznam správců může měnit jen hlavní admin.', 'Prime otevreni spravcu bez owner role musi ukazat jasne vysvetleni');
@@ -1443,6 +1446,7 @@ function assertAdminAccountLoginContractV1141() {
   assertIncludes(bridge, "category === 'admin_accounts_settings'", 'Supabase compatibility save musi povolit specialni kategorii spravcu');
   assertIncludes(ui, "cat !== 'admin_accounts_settings'", 'Specialni radek spravcu nesmi byt v bezne tabulce stroju');
   assertIncludes(stylesAdminPolishCss, '.adminAccountsStatusGrid', 'Sprava spravcu musi mit vlastni admin-only stavovy grid');
+  assertIncludes(stylesAdminPolishCss, '.adminAccountsSafetyGrid', 'Sprava spravcu musi mit vlastni admin-only bezpecnostni grid');
   assertIncludes(stylesAdminPolishCss, '.adminAccountsRoleOverview', 'Sprava spravcu musi mit vlastni admin-only prehled roli');
   assertIncludes(stylesAdminPolishCss, '.adminAccountsReadonlyNotice', 'Sprava spravcu musi mit vlastni styl readonly vysvetleni');
   assertNotIncludes(adminUnlockJs, 'bottomNavMenuBtn', 'Admin odemceni uz nesmi byt skryte za klikáním na spodni menu Vice');

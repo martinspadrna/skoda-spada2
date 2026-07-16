@@ -1,4 +1,4 @@
-// RaK 1.2 (1.248) - admin opravneni navazane na prihlaseny ucet.
+// RaK 1.2 (1.249) - admin opravneni navazane na prihlaseny ucet.
 const RAK_OWNER_ADMIN_ACCOUNT_ID = '9811';
 const RAK_OWNER_ADMIN_PASSWORD = '772326';
 const RAK_ADMIN_ACCOUNTS_SETTINGS_KEY = 'ADMIN_ACCOUNTS_SETTINGS';
@@ -242,6 +242,35 @@ function adminAccountsStatusItemHtml(label, value, detail, modifier) {
   ].join('');
 }
 
+function adminAccountsSafetyItemHtml(label, value, detail, modifier) {
+  const className = 'adminAccountsSafetyItem' + (modifier ? ' ' + modifier : '');
+  return [
+    '<div class="' + className + '">',
+    '  <span>' + escapeHtml(label) + '</span>',
+    '  <b>' + escapeHtml(value) + '</b>',
+    '  <small>' + escapeHtml(detail) + '</small>',
+    '</div>'
+  ].join('');
+}
+
+function buildAdminAccountsSafetyHtml(source) {
+  const settings = source && typeof source === 'object' && Array.isArray(source.admins)
+    ? source
+    : rakAdminGetAccountsSettings();
+  const enabledAdmins = (Array.isArray(settings.admins) ? settings.admins : []).filter((entry) => entry && entry.enabled !== false).length;
+  return [
+    '<div class="adminAccountsSafety">',
+    '  <div class="adminAccountsStatusTitle">Bezpecnost pristupu</div>',
+    '  <div class="adminAccountsSafetyGrid">',
+    adminAccountsSafetyItemHtml('Owner ucet', RAK_OWNER_ADMIN_ACCOUNT_ID, 'Vestaveny hlavni admin se do tabulky nepridava.', 'isOwner'),
+    adminAccountsSafetyItemHtml('Dalsi spravci', String(enabledAdmins) + ' aktivni', 'Kazdy dalsi admin musi mit vlastni ucet a heslo.', 'isOk'),
+    adminAccountsSafetyItemHtml('Predani', 'bez hesel', 'Predavaci exporty hesla nestahuji; hesla se nastavuji jen tady.', 'isInfo'),
+    adminAccountsSafetyItemHtml('Bezni uzivatele', 'bez zmen', 'Bez admin hesla nevidi admin menu a nemeni provozni data.', 'isInfo'),
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
 function normalizeAdminAccountDraftRows(rows) {
   const safeRows = Array.isArray(rows) ? rows : [];
   const filledRows = safeRows.filter((entry) => {
@@ -345,6 +374,7 @@ function buildAdminAccountsSettingsHtml() {
   return [
     buildAdminAccountsStatusHtml({ rows }),
     buildAdminAccountsRoleOverviewHtml(settings),
+    buildAdminAccountsSafetyHtml(settings),
     '<div class="tableWrap appMenuTableWrap uMt8">',
     '  <div class="smallText uMb10">Tady pridavas dalsi admin ucty, ktere po prihlaseni uvidi administraci. Pro odebrani spravce smaz ucet nebo heslo a uloz.</div>',
     '  <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminAccountsTable">',
