@@ -1,3 +1,10 @@
+## RaK 1.2 (1.248)
+
+- Administrace / Predavaci podklady: rychle exporty na admin uvodu maji na desktopu vyrovnanou mrizku 3 + 3 tlacitka.
+- Predani spravy: podklady `Balicek`, `Stav`, `Ukoly`, `Prirucka`, `Postup`, `Mapa` se lepe ctou a mobil zustava po dvou tlacitkach.
+- Smoke guard: `app-usage-smoke-v963.js` hlida desktopovou mrizku rychlych predavacich exportu.
+- Release metadata sjednocená na `RaK 1.2 (1.248)`, technická verze `1.2.248`, cache `v1.2-1.248`.
+
 ## RaK 1.2 (1.247)
 
 - Administrace / Predavaci podklady: rychle exporty na admin uvodu nově obsahuji i samostatny `Stav`, nejen balicek, ukoly, prirucku, postup a mapu.

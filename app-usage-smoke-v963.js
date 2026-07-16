@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.247) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.248) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -225,12 +225,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.247)',
-  appLabel: 'RaK 1.2 (1.247)',
-  packageVersion: '1.2.247',
-  cacheVersion: 'v1.2-1.247',
+  displayVersion: '1.2 (1.248)',
+  appLabel: 'RaK 1.2 (1.248)',
+  packageVersion: '1.2.248',
+  cacheVersion: 'v1.2-1.248',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.247)',
+  changelogHeader: '## RaK 1.2 (1.248)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -339,8 +339,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.247)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.247'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.248)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.248'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1598,6 +1598,7 @@ function assertAdminHandoverGuideContractV1142() {
   assertIncludes(stylesAdminPolishCss, '.adminNextStepItem', 'Doporucene kroky v admin uvodu musi mit stabilni rozvrzeni');
   assertIncludes(stylesAdminPolishCss, '.adminHandoverExports', 'Admin rozcestnik musi mit vlastni styl rychlych predavacich exportu');
   assertIncludes(stylesAdminPolishCss, '.adminHandoverExportGrid', 'Predavaci exporty musi mit stabilni responsive mrizku');
+  assertIncludes(stylesAdminPolishCss, '.adminHandoverExportGrid{\n  display:grid !important;\n  grid-template-columns:repeat(3,minmax(0,1fr)) !important;', 'Predavaci exporty maji na desktopu vychazet do dvou vyrovnanych rad po trech tlacitkach');
   assertIncludes(stylesAdminPolishCss, '.adminHandoverExportStatus', 'Predavaci exporty musi mit citelny stavovy radek');
   assertIncludes(stylesAdminPolishCss, '.adminActionLegend', 'Admin rozcestnik musi mit vlastni styl legendy tlacitek');
   assertIncludes(stylesAdminPolishCss, '.adminActionLegendItem.isSave', 'Legenda musi vizualne odlisit tlacitka, ktera ukladaji data');
