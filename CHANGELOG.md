@@ -1,3 +1,10 @@
+## RaK 1.2 (1.255)
+
+- Administrace / Výplata: doplněna admin-only `Veřejná kontrola výplaty`, aby správce po uložení ověřil home kartu Výplata a text odpočtu.
+- Výplata: kontrola připomíná pravidlo pracovního dne, ruční měsíční výjimky a zelenou synchronizaci po uložení.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá veřejnou kontrolu výplaty, vložení do admin obrazovky a responsive styl.
+- Release metadata sjednocená na `RaK 1.2 (1.255)`, technická verze `1.2.255`, cache `v1.2-1.255`.
+
 ## RaK 1.2 (1.254)
 
 - Administrace / Kontakt aplikace: doplněna admin-only `Veřejná kontrola kontaktu`, aby správce po uložení ověřil jméno, telefon a e-mail v běžném menu Kontakt.

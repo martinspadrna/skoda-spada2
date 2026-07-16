@@ -1424,6 +1424,31 @@ function buildAdminAppContactPublicCheckHtml() {
   ].join('');
 }
 
+function adminPayrollPublicCheckItemHtml(label, value, detail, state) {
+  const safeState = state || 'info';
+  return [
+    '<div class="adminPayrollPublicCheckItem is' + escapeHtml(safeState.charAt(0).toUpperCase() + safeState.slice(1)) + '">',
+    '  <span>' + escapeHtml(label || '') + '</span>',
+    '  <b>' + escapeHtml(value || '') + '</b>',
+    detail ? '  <small>' + escapeHtml(detail) + '</small>' : '',
+    '</div>'
+  ].join('');
+}
+
+function buildAdminPayrollPublicCheckHtml() {
+  return [
+    '<div class="adminPayrollPublicCheck">',
+    '  <div class="appMenuSubTitle">Veřejná kontrola výplaty</div>',
+    '  <div class="smallText uMb10">Datum výplaty je viditelné na home kartě Výplata. Po uložení ověř nejbližší datum v běžné aplikaci a zelenou synchronizaci.</div>',
+    '  <div class="adminPayrollPublicCheckGrid">',
+    adminPayrollPublicCheckItemHtml('Home karta', 'Výplata', 'Otevři home a ověř datum i text „za X dní“ po uložení pravidla.', 'warn'),
+    adminPayrollPublicCheckItemHtml('Pravidlo', 'pracovní den', 'Zkontroluj, že pořadí pracovního dne odpovídá dohodnutému výplatnímu pravidlu.', 'info'),
+    adminPayrollPublicCheckItemHtml('Výjimky', 'měsíc', 'U ruční výjimky ověř správný měsíc, datum a poznámku bez překlepů.', 'info'),
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
 function buildAdminMonthlyWorkflowHtml(monthKey) {
   const workflow = getAdminMonthlyWorkflowItems(monthKey);
   return [
@@ -2184,6 +2209,7 @@ function renderAdminMenuBody(body, section) {
     '    <div class="smallText" id="adminOnlineSaveStatus">Bez uložené změny zůstává pravidlo 4. pracovní den v měsíci.</div>',
     '  </div>',
     buildAdminPayrollSettingsHtml(),
+    buildAdminPayrollPublicCheckHtml(),
     '  <div class="appMenuActionRow">',
     '    <button type="button" class="appMenuAction" data-admin-action="load-payroll-settings">Načíst online</button>',
     '    <button type="button" class="appMenuAction isActive" data-admin-action="save-payroll-settings">Uložit výplatu</button>',
