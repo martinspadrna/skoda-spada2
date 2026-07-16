@@ -1,3 +1,11 @@
+## RaK 1.2 (1.281)
+
+- Zalohy nastaveni: hlavni admin muze stahnout konkretni uplnou zalohu jako JSON soubor pro offline archiv.
+- Zalohy nastaveni: v seznamu je u kazde zalohy vedle obnovy i tlacitko Stahnout, ktere nic nemeni online.
+- Export zalohy: soubor ma typ `rak-full-settings-backup-export` a jasny nazev `RaK_zaloha_nastaveni_...json`.
+- Smoke guard: `app-usage-smoke-v963.js` hlida tlacitko, handler i JSON export uplne zalohy nastaveni.
+- Release metadata sjednocena na `RaK 1.2 (1.281)`, technicka verze `1.2.281`, cache `v1.2-1.281`.
+
 ## RaK 1.2 (1.280)
 
 - Zalohy nastaveni: seznam ted rozlisuje rucni body obnovy a automaticke body vytvorene pred obnovou.

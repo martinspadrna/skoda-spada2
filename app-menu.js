@@ -581,7 +581,7 @@ function buildAdminFullSettingsBackupsHtml() {
   const rows = backups.map((backup) => [
     '<tr>',
     '  <td>' + escapeHtml(adminFullSettingsBackupDateLabel(backup.createdAt)) + '<div class="smallText">' + escapeHtml(String(backup.sourceLabel || 'ruční') + ' · ' + String(backup.rowCount) + ' řádků' + (backup.appVersion ? (' · ' + backup.appVersion) : '') + (backup.createdBy ? (' · účet ' + backup.createdBy) : '') + (backup.restoredBackupId ? (' · obnova ' + backup.restoredBackupId.slice(0, 16)) : '')) + '</div></td>',
-    '  <td><button type="button" class="appMenuAction" data-admin-action="restore-full-settings-backup" data-settings-backup-id="' + escapeHtml(backup.id) + '">Obnovit</button></td>',
+    '  <td><button type="button" class="appMenuAction" data-admin-action="download-full-settings-backup" data-settings-backup-id="' + escapeHtml(backup.id) + '">Stáhnout</button><button type="button" class="appMenuAction" data-admin-action="restore-full-settings-backup" data-settings-backup-id="' + escapeHtml(backup.id) + '">Obnovit</button></td>',
     '</tr>'
   ].join('')).join('');
   return [
@@ -592,6 +592,34 @@ function buildAdminFullSettingsBackupsHtml() {
     '  </table>',
     '</div>'
   ].join('');
+}
+
+function downloadAdminFullSettingsBackup(backupId) {
+  if (!(typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins())) return { ok: false, reason: 'not-allowed' };
+  const backup = adminFullSettingsBackupList().find((item) => item.id === String(backupId || '').trim());
+  if (!backup) return { ok: false, reason: 'missing-backup' };
+  const payload = {
+    type: 'rak-full-settings-backup-export',
+    exportedAt: new Date().toISOString(),
+    appVersion: String((typeof app !== 'undefined' && app && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '') || '').trim(),
+    backupId: backup.id,
+    backup: adminCloneFullSettingsRow(backup.row)
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const dateKey = String(backup.createdAt || new Date().toISOString()).slice(0, 10) || new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = 'RaK_zaloha_nastaveni_' + dateKey + '_' + String(backup.source || 'manual') + '.json';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    try { URL.revokeObjectURL(url); } catch (err) {}
+    try { a.remove(); } catch (err) {}
+  }, 0);
+  const status = document.getElementById('adminOnlineSaveStatus');
+  if (status) status.textContent = 'Záloha nastavení stažena jako JSON soubor.';
+  return { ok: true, backup };
 }
 
 async function loadAdminFullSettingsBackupsFromSupabase() {
@@ -4381,6 +4409,13 @@ function bindAppMenuHandlers(body) {
         renderAdminMenuBody(body, 'settings-backups');
         const nextStatus = document.getElementById('adminOnlineSaveStatus');
         if (nextStatus) nextStatus.textContent = 'Úplná záloha nastavení vytvořená online ✓';
+        return;
+      }
+      if (adminAction === 'download-full-settings-backup') {
+        if (!(typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins())) return;
+        const backupId = target.getAttribute('data-settings-backup-id') || target.closest('[data-settings-backup-id]')?.getAttribute('data-settings-backup-id') || '';
+        const result = downloadAdminFullSettingsBackup(backupId);
+        if (!result || result.ok === false) throw new Error('Stažení zálohy nastavení selhalo.');
         return;
       }
       if (adminAction === 'restore-full-settings-backup') {
